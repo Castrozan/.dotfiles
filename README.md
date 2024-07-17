@@ -4,7 +4,7 @@
 
 > install GNU Stow
 
-> clone git@github.com:Castrozan/.dotfiles_ubuntu.git on $HOME
+clone Castrozan/.dotfiles_ubuntu on **$HOME**
 
 ## Apply configs
 
