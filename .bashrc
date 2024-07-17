@@ -153,6 +153,7 @@ alias code='code . -n'
 alias lc='ls -a --color=never'
 alias oo='cd ~/Documents/Obsidian\ Vault/'
 alias studio3t="cd ~/studio3t && ./Studio-3T .sh"
+alias nvim='~/nvim.appimage'
 
 # pnpm
 export PNPM_HOME="/home/lucas.zanoni/.local/share/pnpm"
