@@ -154,6 +154,9 @@ alias lc='ls -a --color=never'
 alias oo='cd ~/Documents/Obsidian\ Vault/'
 alias studio3t="cd ~/studio3t && ./Studio-3T .sh"
 alias nvim='~/nvim.appimage'
+alias bashrc='nvim ~/.bashrc'
+alias dotfiles='cd ~/.dotfiles_ubuntu && nvim .'
+alias source-bash='source ~/.bashrc'
 
 # pnpm
 export PNPM_HOME="/home/lucas.zanoni/.local/share/pnpm"
