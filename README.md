@@ -1,4 +1,4 @@
-# My dotfiles configs
+# My dotfile configs
 
 ## Setup
 
