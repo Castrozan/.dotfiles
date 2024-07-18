@@ -135,28 +135,33 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
+# Pyenv variables
+command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
+export PYENV_ROOT=/home/lucas.zanoni/.pyenv
+export PATH="$HOME/.pyenv/bin:$PATH"
+
+# aliases
 alias k="kubectl"
 export FLY_HOME=/home/lucas.zanoni/betha-fly
 alias fly-java6='sdk use java 1.6.0_45-fly; sdk use maven 3.2.3-fly'
 alias fly-jboss='/home/lucas.zanoni/betha-fly/tools/jboss-5.1.0.GA/bin/run.sh -c betha'
 alias wildfly='cd /opt/wildfly-aplicacoes/bin; ./standalone.sh'
+alias fly-java6='sdk use java 1.6.0_45-fly; sdk use maven 3.2.3-fly'
 export PATH=$PATH:~/.local/bin
-alias killport='sh /home/lucas.zanoni/.local/bin/killport'
+alias jboss='/home/lucas.zanoni/betha-fly/tools/jboss-5.1.0.GA/bin/run.sh -c betha'alias killport='sh /home/lucas.zanoni/.local/bin/killport'
 alias vt_prod='aws sso login --profile eks-plataforma-production'
 alias vt_test='aws sso login --profile eks-plataforma-test'
 . "$HOME/.asdf/asdf.sh"
 . "$HOME/.asdf/completions/asdf.bash"
-export PYENV_ROOT=/home/lucas.zanoni/.pyenv
-export PATH="$HOME/.pyenv/bin:$PATH"
-command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
-alias code='code . -n'
-alias lc='ls -a --color=never'
-alias oo='cd ~/Documents/Obsidian\ Vault/'
+export OBSIDIAN_HOME="$HOME/Documents/obsidianVault"
+alias code="code . -n"
+alias lc="ls -a --color=never"
+alias oo="cd $OBSIDIAN_HOME"
 alias studio3t="cd ~/studio3t && ./Studio-3T .sh"
-alias nvim='~/nvim.appimage'
-alias bashrc='nvim ~/.bashrc'
-alias dotfiles='cd ~/.dotfiles_ubuntu && nvim .'
-alias source-bash='source ~/.bashrc'
+alias nvim="$HOME/nvim.appimage"
+alias bashrc="nvim ~/.bashrc"
+alias dotfiles="cd ~/.dotfiles_ubuntu && nvim ."
+alias source-bash="source ~/.bashrc"
 
 # pnpm
 export PNPM_HOME="/home/lucas.zanoni/.local/share/pnpm"
@@ -165,6 +170,3 @@ case ":$PATH:" in
   *) export PATH="$PNPM_HOME:$PATH" ;;
 esac
 # pnpm end
-export FLY_HOME=/home/lucas.zanoni/betha-fly
-alias fly-java6='sdk use java 1.6.0_45-fly; sdk use maven 3.2.3-fly'
-alias jboss='/home/lucas.zanoni/betha-fly/tools/jboss-5.1.0.GA/bin/run.sh -c betha'
