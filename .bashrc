@@ -162,6 +162,10 @@ alias nvim="$HOME/nvim.appimage"
 alias bashrc="nvim ~/.bashrc"
 alias dotfiles="cd ~/.dotfiles_ubuntu && nvim ."
 alias source-bash="source ~/.bashrc"
+alias obsidian="flatpak run md.obsidian.Obsidian >/dev/null 2>&1 &"
+
+# flatpak
+export XDG_DATA_DIRS=/var/lib/flatpak/exports/share:/home/lucas.zanoni/.local/share/flatpak/exports/share:$XDG_DATA_DIRS
 
 # pnpm
 export PNPM_HOME="/home/lucas.zanoni/.local/share/pnpm"
