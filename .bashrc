@@ -93,24 +93,6 @@ fi
 # colored GCC warnings and errors
 #export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
 
-# some more ls aliases
-alias ll='ls -alF'
-alias la='ls -A'
-alias l='ls -CF'
-
-# Add an "alert" alias for long running commands.  Use like so:
-#   sleep 10; alert
-alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
-
-# Alias definitions.
-# You may want to put all your additions into a separate file like
-# ~/.bash_aliases, instead of adding them here directly.
-# See /usr/share/doc/bash-doc/examples in the bash-doc package.
-
-if [ -f ~/.bash_aliases ]; then
-    . ~/.bash_aliases
-fi
-
 # enable programmable completion features (you don't need to enable
 # this, if it's already enabled in /etc/bash.bashrc and /etc/profile
 # sources /etc/bash.bashrc).
@@ -122,50 +104,28 @@ if ! shopt -oq posix; then
   fi
 fi
 
-#THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
-export SDKMAN_DIR="$HOME/.sdkman"
-[[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
-
 # Open tmux on startup
 #if command -v tmux &> /dev/null && [ -n "$PS1" ] && [[ ! "$TERM" =~ screen ]] && [[ ! "$TERM" =~ tmux ]] && [ -z "$TMUX" ]; then
   #exec tmux
 #fi
 
+# BEGIN EVN VARIABLES
+# asdf
+. "$HOME/.asdf/asdf.sh"
+. "$HOME/.asdf/completions/asdf.bash"
+
+# NVM variables
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
 # Pyenv variables
-command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
 export PYENV_ROOT=/home/lucas.zanoni/.pyenv
+command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
 export PATH="$HOME/.pyenv/bin:$PATH"
 
-# aliases
-alias k="kubectl"
-export FLY_HOME=/home/lucas.zanoni/betha-fly
-alias fly-java6='sdk use java 1.6.0_45-fly; sdk use maven 3.2.3-fly'
-alias fly-jboss='/home/lucas.zanoni/betha-fly/tools/jboss-5.1.0.GA/bin/run.sh -c betha'
-alias wildfly='cd /opt/wildfly-aplicacoes/bin; ./standalone.sh'
-alias fly-java6='sdk use java 1.6.0_45-fly; sdk use maven 3.2.3-fly'
 export PATH=$PATH:~/.local/bin
-alias jboss='/home/lucas.zanoni/betha-fly/tools/jboss-5.1.0.GA/bin/run.sh -c betha'alias killport='sh /home/lucas.zanoni/.local/bin/killport'
-alias vt_prod='aws sso login --profile eks-plataforma-production'
-alias vt_test='aws sso login --profile eks-plataforma-test'
-. "$HOME/.asdf/asdf.sh"
-. "$HOME/.asdf/completions/asdf.bash"
 export OBSIDIAN_HOME="$HOME/Documents/obsidianVault"
-alias code="code . -n"
-alias lc="ls -a --color=never"
-alias oo="cd $OBSIDIAN_HOME"
-alias studio3t="cd ~/studio3t && ./Studio-3T .sh"
-alias nvim="$HOME/nvim.appimage"
-alias bashrc="nvim ~/.bashrc"
-alias dotfiles="cd ~/.dotfiles_ubuntu && nvim ."
-alias source-bash="source ~/.bashrc"
-alias obsidian="flatpak run md.obsidian.Obsidian >/dev/null 2>&1 &"
-alias t="tmux"
-alias todo="nvim $OBSIDIAN_HOME/TODO.md"
-
 # flatpak
 export XDG_DATA_DIRS=/var/lib/flatpak/exports/share:/home/lucas.zanoni/.local/share/flatpak/exports/share:$XDG_DATA_DIRS
 
@@ -175,4 +135,47 @@ case ":$PATH:" in
   *":$PNPM_HOME:"*) ;;
   *) export PATH="$PNPM_HOME:$PATH" ;;
 esac
-# pnpm end
+
+#THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
+# sdkman
+export SDKMAN_DIR="$HOME/.sdkman"
+[[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
+# END ENV VARIABLES
+
+# Alias definitions.
+# You may want to put all your additions into a separate file like
+# ~/.bash_aliases, instead of adding them here directly.
+# See /usr/share/doc/bash-doc/examples in the bash-doc package.
+# TODO: source aliases from a file
+if [ -f ~/.bash_aliases ]; then
+    . ~/.bash_aliases
+fi
+
+# BEGIN ALIASES
+# aliases Betha
+alias k="kubectl"
+export FLY_HOME=/home/lucas.zanoni/betha-fly
+alias fly-java6='sdk use java 1.6.0_45-fly; sdk use maven 3.2.3-fly'
+alias fly-jboss='/home/lucas.zanoni/betha-fly/tools/jboss-5.1.0.GA/bin/run.sh -c betha'
+alias wildfly='cd /opt/wildfly-aplicacoes/bin; ./standalone.sh'
+alias fly-java6='sdk use java 1.6.0_45-fly; sdk use maven 3.2.3-fly'
+alias jboss='/home/lucas.zanoni/betha-fly/tools/jboss-5.1.0.GA/bin/run.sh -c betha'alias killport='sh /home/lucas.zanoni/.local/bin/killport'
+alias vt_prod='aws sso login --profile eks-plataforma-production'
+alias vt_test='aws sso login --profile eks-plataforma-test'
+alias studio3t="cd ~/studio3t && ./Studio-3T .sh"
+
+# aliases personal
+alias ll='ls -alF'
+alias la='ls -A'
+alias l='ls -CF'
+alias code="code . -n"
+alias lc="ls -a --color=never"
+alias oo="cd $OBSIDIAN_HOME"
+alias nvim="$HOME/nvim.appimage"
+alias bashrc="nvim ~/.bashrc"
+alias dotfiles="cd ~/.dotfiles_ubuntu && nvim ."
+alias source-bash="source ~/.bashrc"
+alias obsidian="flatpak run md.obsidian.Obsidian >/dev/null 2>&1 &"
+alias t="tmux"
+alias todo="nvim $OBSIDIAN_HOME/TODO.md"
+# END ALIASES
