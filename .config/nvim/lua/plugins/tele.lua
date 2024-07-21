@@ -1,6 +1,6 @@
 
 -- New maker to ignore files bigger than a threshold
--- source: https://github.com/nvim-telescope/telescope.nvim/issues/623
+-- inspired by: https://github.com/nvim-telescope/telescope.nvim/issues/623
 local previewers = require('telescope.previewers')
 local Job = require('plenary.job')
 
