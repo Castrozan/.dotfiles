@@ -156,7 +156,7 @@ alias vt_test='aws sso login --profile eks-plataforma-test'
 export OBSIDIAN_HOME="$HOME/Documents/obsidianVault"
 alias code="code . -n"
 alias lc="ls -a --color=never"
-alias oo="cd $OBSIDIAN_HOME"
+alias oo="cd $OBSIDIAN_HOME && nvim ."
 alias studio3t="cd ~/studio3t && ./Studio-3T .sh"
 alias nvim="$HOME/nvim.appimage"
 alias bashrc="nvim ~/.bashrc"
@@ -164,7 +164,8 @@ alias dotfiles="cd ~/.dotfiles_ubuntu && nvim ."
 alias source-bash="source ~/.bashrc"
 alias obsidian="flatpak run md.obsidian.Obsidian >/dev/null 2>&1 &"
 alias t="tmux"
-alias todo="nvim $OBSIDIAN_HOME/TODO.md"
+alias todo="cd $HOME/Documents/obsidianVault && nvim TODO.md"
+alias scripts="cd $HOME/repo/scripts && nvim ."
 
 # flatpak
 export XDG_DATA_DIRS=/var/lib/flatpak/exports/share:/home/lucas.zanoni/.local/share/flatpak/exports/share:$XDG_DATA_DIRS
@@ -176,3 +177,12 @@ case ":$PATH:" in
   *) export PATH="$PNPM_HOME:$PATH" ;;
 esac
 # pnpm end
+
+# Set autocomplete for terraform
+complete -C /usr/bin/terraform terraform
+
+# Source bash env config
+if [ -f ~/.bash_env_variables ]; then
+    . ~/.bash_env_variables
+fi
+
