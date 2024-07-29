@@ -1,5 +1,2 @@
 # Bash env variables that are not tracked by git
 # vim: ft=sh
-
-# Localstack auth token
-LOCALSTACK_AUTH_TOKEN="ls-CAFA9325-SIPo-Wuva-GojI-9255sIMEf8de"
