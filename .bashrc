@@ -178,6 +178,11 @@ case ":$PATH:" in
 esac
 # pnpm end
 
+# Source git completions
+if [ -f /usr/share/bash-completion/completions ]; then
+    source /usr/share/bash-completion/completions/git
+fi
+
 # Set autocomplete for terraform
 complete -C /usr/bin/terraform terraform
 
