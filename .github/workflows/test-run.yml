@@ -1,4 +1,5 @@
-name: CI Pipeline
+name: Test run
+description: Just runs the install script on a fresh Ubuntu instance
 
 on:
   push:
