@@ -44,7 +44,7 @@ echo ""
 
 # Ask if configs should be sourced
 if ask "Do you want to $SH to source files?"; then
-    iterate_config_scripts "$DOTFILES_HOME$INSTALL_SCRIPT_DIR/configs/*"
+    iterate_config_scripts "$DOTFILES_HOME$INSTALL_SCRIPT_DIR/configs/*.sh"
 fi
 echo ""
 
