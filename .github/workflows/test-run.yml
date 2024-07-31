@@ -11,9 +11,6 @@ on:
 jobs:
   install-dotfiles:
     runs-on: ubuntu-latest
-    container:
-      image: ubuntu:latest
-      options: --user 1001  # Specify a non-root user ID
 
     steps:
     - name: Checkout repository
