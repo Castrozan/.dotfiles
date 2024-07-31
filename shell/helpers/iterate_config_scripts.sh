@@ -2,7 +2,7 @@
 
 # Function to iterate over config scripts
 iterate_config_scripts() {
-    for file in $(echo "$DOTFILES_HOME$INSTALL_SCRIPT_DIR/configs/*"); do
+    for file in "$DOTFILES_HOME$INSTALL_SCRIPT_DIR/configs/*"; do
         if is_sourced "$file"; then
             echo "${YELLOW}$file is already sourced in $SH.${RESET}"
         else
