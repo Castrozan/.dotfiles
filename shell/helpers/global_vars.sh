@@ -10,8 +10,11 @@ PKG_MGR="apt"
 # Define default install clause
 INSTALL_CLAUSE="sudo $PKG_MGR install"
 
-# Default shell
+# Default shell location
 SH="${HOME}/.bashrc"
 
 # Dotfiles home directory
 DOTFILES_HOME="$HOME/.dotfiles_ubuntu"
+
+# Stow clause
+STOW_CLAUSE="stow --adopt ."

@@ -21,16 +21,10 @@ fi
 echo "${GREEN}Internet connection established.${RESET}"
 echo ""
 
-# Tell that Stow is required to create symlinks 
-# and ask if it should be installed
+# Ask if stow should be used
 echo "${YELLOW}${BOLD}Stow is required to create symlinks.${RESET}"
-should_install stow
-echo ""
-
-# Ask if Stow should provide symlinks
-if ask "Do you want to run 'stow .' and create symlinks?"; then
-    #stow .
-    echo "${GREEN}Dotfiles stowed.${RESET}"
+if ask "Do you want to use stow?"; then
+    use_stow
 fi
 echo ""
 
