@@ -15,7 +15,3 @@ DOTFILES_HOME="$HOME/.dotfiles_ubuntu"
 
 # Stow clause
 STOW_CLAUSE="stow --adopt ."
-
-# Default install directory
-# install_pkg() function will use this as the default install directory
-DEFAULT_INSTALL_DIR="$HOME"

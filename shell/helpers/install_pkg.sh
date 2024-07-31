@@ -10,10 +10,6 @@ install_pkg() {
         pkg_mgr=$2
     fi
 
-    cd $DEFAULT_INSTALL_DIR
-
     $pkg_mgr install $1
     echo "Installing $1..."
-
-    cd $DOTFILES_HOME
 }
