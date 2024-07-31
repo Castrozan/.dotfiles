@@ -4,8 +4,11 @@
 # $1: directory with install scripts
 iterate_install_scripts() {
     for file in $1; do
-        if [ -f "$file" ]; then
-            . "$file" # source install script
+        filename=$(basename "$file")
+        if ask "Do you want to install ${filename}?"; then
+            if [ -f "$file" ]; then
+                . "$file" # source install script
+            fi
         fi
     done
 }
