@@ -7,8 +7,10 @@ INSTALL_SCRIPT_DIR="/shell"
 # Define the default package manager
 PKG_MGR="apt"
 
+echo $HOME
+
 # Define the original home directory
-ORIGINAL_HOME=$(getent passwd $(logname) | cut -d: -f6)
+ORIGINAL_HOME=$(getent passwd "$(whoami)" | cut -d: -f6)
 
 # Default shell location
 SH=$ORIGINAL_HOME"/.bashrc"
