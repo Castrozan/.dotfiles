@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Function to use stow
+# TODO: remove files to be stowed from the repo
 use_stow() {
     # Tell that Stow is required to create symlinks 
     # and ask if it should be installed

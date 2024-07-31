@@ -1,0 +1,32 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  install-dotfiles:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up environment
+      run: |
+        # Install any necessary dependencies here if needed
+        sudo apt-get update
+
+    - name: Run install script
+      run: |
+        chmod +x install.sh
+        sh install.sh
+
+    - name: Clean up
+      run: |
+        # Clean up actions if needed
+        echo "Cleaning up..."
