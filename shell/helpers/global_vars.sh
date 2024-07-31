@@ -7,18 +7,11 @@ INSTALL_SCRIPT_DIR="/shell"
 # Define the default package manager
 PKG_MGR="apt"
 
-echo $HOME
-
-# Define the original home directory
-ORIGINAL_HOME=$(getent passwd "$(whoami)" | cut -d: -f6)
-
 # Default shell location
-SH=$ORIGINAL_HOME"/.bashrc"
+SH=$HOME"/.bashrc"
 
 # Dotfiles home directory
-DOTFILES_HOME="$ORIGINAL_HOME/.dotfiles_ubuntu"
-echo $DOTFILES_HOME
-echo $ORIGINAL_HOME
+DOTFILES_HOME="$HOME/.dotfiles_ubuntu"
 
 # Stow clause
 STOW_CLAUSE="stow --adopt ."

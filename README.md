@@ -4,8 +4,10 @@
 
 This will walk you through the install process
 
+-E flag preserves the environment variables of your user
+
 ```bash
-sudo sh install.sh
+sudo -E sh install.sh
 ```
 
 ## Config nvim

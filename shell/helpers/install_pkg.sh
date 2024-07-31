@@ -10,6 +10,6 @@ install_pkg() {
         pkg_mgr=$2
     fi
 
-    sudo $pkg_mgr install $1
+    $pkg_mgr install $1
     echo "Installing $1..."
 }
