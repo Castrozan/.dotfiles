@@ -37,14 +37,13 @@ echo ""
 
 # Ask if pkgs should be installed
 if ask "Do you want to install pkgs?"; then
-    # echo "$DOTFILES_HOME$INSTALL_SCRIPT_DIR/pkgs/*.sh"
-    iterate_install_scripts "$DOTFILES_HOME$INSTALL_SCRIPT_DIR/pkgs/*.sh"
+    iterate_install_scripts
 fi
 echo ""
 
 # Ask if configs should be sourced
 if ask "Do you want to $SH to source files?"; then
-    iterate_config_scripts "$DOTFILES_HOME$INSTALL_SCRIPT_DIR/configs/*.sh"
+    iterate_config_scripts
 fi
 echo ""
 
