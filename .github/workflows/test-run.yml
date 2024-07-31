@@ -23,6 +23,14 @@ jobs:
 
     - name: Run install script
       run: |
-        ls -la
         chmod +x install.sh
         sh install.sh
+
+    - name: Test pkgs
+      run: |
+        neofetch
+        stow -h
+
+    - name: Test configs
+      run: |
+        # Test that the configs
