@@ -5,7 +5,11 @@ iterate_install_scripts() {
     local dir=$INSTALL_SCRIPTS_DIR
 
     echo "dir: $dir"
-    for file in "$dir"/*.sh; do
+
+    # Use a fallback method to handle file expansion
+    files=$(ls "$dir"/*.sh 2>/dev/null)
+
+    for file in $files; do
         echo file: $file
 
         if [ -f "$file" ]; then
