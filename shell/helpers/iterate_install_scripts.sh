@@ -6,11 +6,23 @@ iterate_install_scripts() {
 
     echo "dir: $dir"
 
+    # Check if the directory exists
+    if [ ! -d "$dir" ]; then
+        echo "Directory does not exist: $dir"
+        return 1
+    fi
+
     # Use a fallback method to handle file expansion
     files=$(ls "$dir"/*.sh 2>/dev/null)
 
+    # Check if files variable is empty
+    if [ -z "$files" ]; then
+        echo "No .sh files found in $dir"
+        return 1
+    fi
+
     for file in $files; do
-        echo file: $file
+        echo "file: $file"
 
         if [ -f "$file" ]; then
             echo "file is a file"
