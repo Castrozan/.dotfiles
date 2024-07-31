@@ -2,5 +2,5 @@
 
 # Check internet connection
 internet_on() {
-    ping -c 1 google.com
+    curl -s --head http://www.google.com | head -n 1 | grep "HTTP/1.[01] [23].."
 }

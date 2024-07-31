@@ -25,8 +25,3 @@ jobs:
       run: |
         chmod +x install.sh
         sh install.sh
-
-    - name: Clean up
-      run: |
-        # Clean up actions if needed
-        echo "Cleaning up..."
