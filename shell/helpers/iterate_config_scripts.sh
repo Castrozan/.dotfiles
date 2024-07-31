@@ -5,11 +5,11 @@
 iterate_config_scripts() {
     for file in $1; do
             if is_sourced "$file"; then
-                echo "${YELLOW}${BOLD}$file is already sourced in $SH.${RESET}"
+                echo "${YELLOW}$file is already sourced in $SH.${RESET}"
             else
                 # Add the source command to .bashrc
                 echo ". $file" >> "$SH"
-                echo "${GREEN}${BOLD}$file has been sourced.${RESET}"
+                echo "${GREEN}$file has been sourced.${RESET}"
             fi
     done
 }

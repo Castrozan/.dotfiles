@@ -23,7 +23,7 @@ echo ""
 
 # Tell that Stow is required to create symlinks 
 # and ask if it should be installed
-echo "${YELLOW}Stow is required to create symlinks.${RESET}"
+echo "${YELLOW}${BOLD}Stow is required to create symlinks.${RESET}"
 should_install stow
 echo ""
 
@@ -46,11 +46,16 @@ if ask "Do you want to $SH to source files?"; then
 fi
 echo ""
 
-# Ask if the shell should be reloaded
-if ask "Do you want to reload the shell?"; then
-    #source $SH
-    echo "${GREEN}Shell reloaded.${RESET}"
-fi
+# End of script
+echo "${MAGENTA}${BOLD}# ------------------------ End of script ------------------------${RESET}"
 echo ""
 
-echo "${MAGENTA}${BOLD}# -------------- End of script ---------------${RESET}"
+# Final reminder to the user
+echo "${GREEN}To apply changes to your current shell session, run:${RESET}"
+echo "${GREEN}source ~/.bashrc${RESET}"
+echo ""
+
+# Cutely tell goodbye
+printf "${CYAN}( ੭ ˘ ³˘)੭°｡⋆♡‧₊˚ bye!${RESET}\n"
+echo ""
+echo ""
