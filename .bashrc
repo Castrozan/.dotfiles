@@ -174,6 +174,7 @@ alias obsidian="flatpak run md.obsidian.Obsidian >/dev/null 2>&1 &"
 alias t="tmux"
 alias todo="cd $HOME/Documents/obsidianVault && nvim TODO.md"
 alias scripts="cd $HOME/repo/scripts && nvim ."
+alias g="lazygit"
 
 # flatpak
 export XDG_DATA_DIRS=/var/lib/flatpak/exports/share:/home/lucas.zanoni/.local/share/flatpak/exports/share:$XDG_DATA_DIRS
