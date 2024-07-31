@@ -37,6 +37,7 @@ echo ""
 
 # Ask if pkgs should be installed
 if ask "Do you want to install pkgs?"; then
+    echo "$DOTFILES_HOME$INSTALL_SCRIPT_DIR/pkgs/*"
     iterate_install_scripts "$DOTFILES_HOME$INSTALL_SCRIPT_DIR/pkgs/*"
 fi
 echo ""
