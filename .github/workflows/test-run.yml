@@ -23,5 +23,6 @@ jobs:
 
     - name: Run install script
       run: |
+        ls -la
         chmod +x install.sh
         sh install.sh
