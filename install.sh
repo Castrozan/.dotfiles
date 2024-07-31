@@ -27,6 +27,13 @@ echo "${YELLOW}Stow is required to create symlinks.${RESET}"
 should_install stow
 echo ""
 
+# Ask if Stow should provide symlinks
+if ask "Do you want to run 'stow .' and create symlinks?"; then
+    #stow .
+    echo "${GREEN}Dotfiles stowed.${RESET}"
+fi
+echo ""
+
 # Ask if pkgs should be installed
 if ask "Do you want to install pkgs?"; then
     iterate_install_scripts "$DOTFILES_HOME$INSTALL_SCRIPT_DIR/pkgs/*"
