@@ -188,7 +188,7 @@ esac
 
 # Source git completions
 if [ -f /usr/share/bash-completion/completions ]; then
-    source /usr/share/bash-completion/completions/git
+    . /usr/share/bash-completion/completions/git
 fi
 
 # Set autocomplete for terraform
@@ -199,3 +199,5 @@ if [ -f ~/.bash_env_variables ]; then
     . ~/.bash_env_variables
 fi
 
+. /home/lucas.zanoni/.dotfiles_ubuntu/shell/configs/case_insensitive_completion.sh
+. /home/lucas.zanoni/.dotfiles_ubuntu/shell/configs/git_aliases.sh

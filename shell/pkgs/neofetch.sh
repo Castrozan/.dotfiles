@@ -1,1 +1,3 @@
-#apt install neofetch
+#!/bin/bash
+
+should_install neofetch
