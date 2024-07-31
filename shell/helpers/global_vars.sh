@@ -14,7 +14,9 @@ ORIGINAL_HOME=$(getent passwd $(logname) | cut -d: -f6)
 SH=$ORIGINAL_HOME"/.bashrc"
 
 # Dotfiles home directory
-DOTFILES_HOME=$ORIGINAL_HOME"/.dotfiles_ubuntu"
+DOTFILES_HOME="$ORIGINAL_HOME/.dotfiles_ubuntu"
+echo $DOTFILES_HOME
+echo $ORIGINAL_HOME
 
 # Stow clause
 STOW_CLAUSE="stow --adopt ."
