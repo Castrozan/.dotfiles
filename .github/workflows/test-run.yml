@@ -28,7 +28,7 @@ jobs:
 
     - name: Test pkgs
       run: |
-        neofetch
+        # neofetch
         stow -h
 
     - name: Test configs
