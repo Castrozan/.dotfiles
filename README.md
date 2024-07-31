@@ -5,7 +5,7 @@
 This will walk you throught the install process
 
 ```bash
-sudo sh install.sh
+sh install.sh
 ```
 
 ## Config nvim

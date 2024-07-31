@@ -24,7 +24,7 @@ jobs:
     - name: Run install script
       run: |
         chmod +x install.sh
-        sudo sh install.sh
+        yes | sh install.sh
 
     - name: Test pkgs
       run: |
