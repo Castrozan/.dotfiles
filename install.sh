@@ -8,6 +8,13 @@ for file in shell/helpers/*; do
     fi
 done
 
+# Ask if stow should be used
+echo "${YELLOW}${BOLD}Some packages are required to run the install script.${RESET}"
+if ask "Do you want to install them?"; then
+    should_install curl
+fi
+echo ""
+
 # Tell what is going to happen
 echo "${MAGENTA}${BOLD}# -------------- castrozan:dotfiles install script ---------------${RESET}"
 echo ""
