@@ -4,6 +4,7 @@
 # $1: directory with install scripts
 iterate_install_scripts() {
     for file in "$1"; do
+        echo $1
         filename=$(basename "$file")
         if ask "Do you want to install ${filename}?"; then
             if [ -f "$file" ]; then
