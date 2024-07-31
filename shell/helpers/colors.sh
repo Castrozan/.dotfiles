@@ -3,6 +3,11 @@
 # Color definition
 # ${CYAN} is only for ask the function
 # ${GREEN} is for success
+# ${YELLOW} is for warning
+# ${RED} is for error
+# ${MAGENTA} is for the script name
+# ${BOLD} is for bold text
+# ${RESET} is to reset the color
 
 # Define colors
 RED='\033[0;31m'
