@@ -7,9 +7,6 @@ INSTALL_SCRIPT_DIR="/shell"
 # Define the default package manager
 PKG_MGR="apt"
 
-# Define default install clause
-INSTALL_CLAUSE="sudo $PKG_MGR install"
-
 # Default shell location
 SH="${HOME}/.bashrc"
 
