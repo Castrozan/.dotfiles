@@ -36,3 +36,7 @@ jobs:
       run: |
         # TODO: Add tests for the installed configs
         # Test that the configs
+
+    - name: Test stow ignore
+      run: |
+        # TODO: Test that the stow ignore file is working as expected
