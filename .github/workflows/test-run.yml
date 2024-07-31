@@ -28,9 +28,11 @@ jobs:
 
     - name: Test pkgs
       run: |
-        # neofetch
+        # TODO: Add tests for the installed packages
+        # neofetch TODO: its not running because y is not fed to the script
         stow -h
 
     - name: Test configs
       run: |
+        # TODO: Add tests for the installed configs
         # Test that the configs
