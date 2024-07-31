@@ -11,8 +11,6 @@ on:
 jobs:
   install-dotfiles:
     runs-on: ubuntu-latest
-    container:
-      image: ubuntu:latest
 
     steps:
     - name: Checkout repository
@@ -21,11 +19,10 @@ jobs:
     - name: Set up environment
       run: |
         # Install any necessary dependencies here if needed
-        apt-get update
+        sudo apt-get update
 
     - name: Run install script
       run: |
-        chmod +x install.sh
         yes | sudo -E sh install.sh
 
     - name: Test pkgs
