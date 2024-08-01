@@ -14,10 +14,10 @@ SH=$HOME"/.bashrc"
 DOTFILES_HOME="$HOME/.dotfiles_ubuntu"
 
 # Directory with config scripts
-CONFIG_SCRIPTS_DIR="$DOTFILES_HOME/shell/configs"
+CONFIG_SCRIPTS_DIR="shell/configs/"
 
 # Directory with install scripts
-INSTALL_SCRIPTS_DIR="$DOTFILES_HOME/shell/pkgs"
+INSTALL_SCRIPTS_DIR="shell/pkgs/"
 
 # Stow clause
 STOW_CLAUSE="stow --adopt ."
@@ -29,8 +29,4 @@ echo "DOTFILES_HOME: $DOTFILES_HOME"
 echo "CONFIG_SCRIPTS_DIR: $CONFIG_SCRIPTS_DIR"
 echo "INSTALL_SCRIPTS_DIR: $INSTALL_SCRIPTS_DIR"
 echo "STOW_CLAUSE: $STOW_CLAUSE"
-pwd
-ls $INSTALL_SCRIPTS_DIR/
-echo $(ls $INSTALL_SCRIPTS_DIR)
 ls shell/pkgs/
-echo $(echo "$INSTALL_SCRIPTS_DIR/*")

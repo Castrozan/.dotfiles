@@ -4,7 +4,7 @@
 iterate_config_scripts() {
     local dir=$CONFIG_SCRIPTS_DIR
 
-    for file in "$dir"/*.sh; do
+    for file in $CONFIG_SCRIPTS_DIR*; do
         if [ -f "$file" ]; then
             if is_sourced "$file"; then
                 echo "${YELLOW}$file is already sourced in $SH.${RESET}"
