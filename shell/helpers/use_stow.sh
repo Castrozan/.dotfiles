@@ -2,8 +2,9 @@
 
 # Function to use stow
 use_stow() {
+
     # Tell that Stow is required to create symlinks
-    # and ask if it should be installed
+    echo "${YELLOW}${BOLD}Stow is required to create symlinks.${RESET}"
     should_install stow
 
     # Tell that Stow with --adopt flag is used

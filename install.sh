@@ -15,12 +15,8 @@ echo ""
 echo "${YELLOW}${BOLD}Some packages are required to run the install script.${RESET}"
 if ask "Do you want to install them?"; then
     should_install curl
-
-    # Ask if stow should be used
-    echo "${YELLOW}${BOLD}Stow is required to create symlinks.${RESET}"
-    if ask "Do you want to use stow?"; then
-        use_stow
-    fi
+    use_brew
+    use_stow
 fi
 echo ""
 
