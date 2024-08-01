@@ -4,7 +4,7 @@
 iterate_install_scripts() {
     local dir=$INSTALL_SCRIPTS_DIR
 
-    for file in shell/pkgs/*; do
+    for file in $dir*; do
         if [ -f "$file" ]; then
             local filename=$(basename "$file")
             if ask "Do you want to install ${filename}?"; then

@@ -204,3 +204,7 @@ fi
 . /home/lucas.zanoni/.dotfiles_ubuntu/shell/configs/git_aliases.sh
 
 eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+# Files sourced by dotfiles at /home/lucas.zanoni/.dotfiles_ubuntu
+. shell/configs/case_insensitive_completion.sh
+# Files sourced by dotfiles at /home/lucas.zanoni/.dotfiles_ubuntu
+. shell/configs/git_aliases.sh
