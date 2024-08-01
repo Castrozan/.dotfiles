@@ -29,3 +29,5 @@ _darcs
 
 shell
 install.sh
+test.sh
+TODO.md

@@ -25,16 +25,15 @@ jobs:
       run: |
         yes | sh install.sh
 
-    - name: Test pkgs
+    - name: Test install script
       run: |
-        # TODO: Add tests for the installed packages
-        # neofetch TODO: its not running because y is not fed to the script
-        stow -h
+        sh test.sh
 
-    - name: Test configs
+    - name: Test dotfiles
       run: |
-        # TODO: Add tests for the installed configs
-        # Test that the configs
+        # TODO: test the configuration of the dotfiles
+        # not the installation
+        # e.g. test that a alias is working as expected
 
     - name: Test stow ignore
       run: |

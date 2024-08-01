@@ -19,5 +19,8 @@ CONFIG_SCRIPTS_DIR="shell/configs/"
 # Directory with install scripts
 INSTALL_SCRIPTS_DIR="shell/pkgs/"
 
+# Directory with test scripts
+TEST_DIR="shell/test/"
+
 # Stow clause
 STOW_CLAUSE="stow --adopt ."
