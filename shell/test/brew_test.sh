@@ -5,10 +5,10 @@ brew_test() {
 
     if ! brew --version; then
         print "brew is not installed." $RED
-        return 1
+        exit 1
     else
         print "brew is installed." $GREEN
-        return 0
+        exit 0
     fi
 }
 

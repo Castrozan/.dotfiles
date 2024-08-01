@@ -4,7 +4,8 @@
 echo "Sourcing helper files...\n"
 for file in shell/helpers/*; do
     if [ -f "$file" ]; then
-        . "$file" # Source the file
+        # Source file and check for errors exiting if any
+        . "$file" || { echo "Error sourcing $file"; exit 1; }
     fi
 done
 
