@@ -200,11 +200,10 @@ if [ -f ~/.bash_env_variables ]; then
     . ~/.bash_env_variables
 fi
 
-. /home/lucas.zanoni/.dotfiles_ubuntu/shell/configs/case_insensitive_completion.sh
-. /home/lucas.zanoni/.dotfiles_ubuntu/shell/configs/git_aliases.sh
-
+# Add brew to PATH
 eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+
 # Files sourced by dotfiles at /home/lucas.zanoni/.dotfiles_ubuntu
-. shell/configs/case_insensitive_completion.sh
+. /home/lucas.zanoni/.dotfiles_ubuntu/shell/configs/case_insensitive_completion.sh
 # Files sourced by dotfiles at /home/lucas.zanoni/.dotfiles_ubuntu
-. shell/configs/git_aliases.sh
+. /home/lucas.zanoni/.dotfiles_ubuntu/shell/configs/git_aliases.sh

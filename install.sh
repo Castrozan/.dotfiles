@@ -8,30 +8,19 @@ for file in shell/helpers/*; do
     fi
 done
 
-# Ask if stow should be used
-echo "${YELLOW}${BOLD}Some packages are required to run the install script.${RESET}"
-if ask "Do you want to install them?"; then
-    should_install curl
-fi
-echo ""
-
 # Tell what is going to happen
 echo "${MAGENTA}${BOLD}# -------------- castrozan:dotfiles install script ---------------${RESET}"
 echo ""
 
-# Tell that internet connection is required
-echo "${YELLOW}${BOLD}Internet connection is required.${RESET}"
-if ! internet_on; then
-    echo "${RED}No internet connection.${RESET}"
-    exit 1
-fi
-echo "${GREEN}Internet connection established.${RESET}"
-echo ""
+echo "${YELLOW}${BOLD}Some packages are required to run the install script.${RESET}"
+if ask "Do you want to install them?"; then
+    should_install curl
 
-# Ask if stow should be used
-echo "${YELLOW}${BOLD}Stow is required to create symlinks.${RESET}"
-if ask "Do you want to use stow?"; then
-    use_stow
+    # Ask if stow should be used
+    echo "${YELLOW}${BOLD}Stow is required to create symlinks.${RESET}"
+    if ask "Do you want to use stow?"; then
+        use_stow
+    fi
 fi
 echo ""
 

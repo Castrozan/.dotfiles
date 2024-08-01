@@ -21,12 +21,3 @@ INSTALL_SCRIPTS_DIR="shell/pkgs/"
 
 # Stow clause
 STOW_CLAUSE="stow --adopt ."
-
-# Echo all variables
-echo "PKG_MGR: $PKG_MGR"
-echo "SH: $SH"
-echo "DOTFILES_HOME: $DOTFILES_HOME"
-echo "CONFIG_SCRIPTS_DIR: $CONFIG_SCRIPTS_DIR"
-echo "INSTALL_SCRIPTS_DIR: $INSTALL_SCRIPTS_DIR"
-echo "STOW_CLAUSE: $STOW_CLAUSE"
-ls shell/pkgs/
