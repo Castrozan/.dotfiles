@@ -26,6 +26,11 @@ require('telescope').setup {
   defaults = {
     buffer_previewer_maker = new_maker,
     layout_strategy = "vertical",
+    vimgrep_arguments = {
+    },
+    file_ignore_patterns = {
+      "node_modules", --"build", "dist", "yarn.lock"
+    },
     layout_config = {
       preview_height = 0.7,
       vertical = {
