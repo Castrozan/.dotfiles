@@ -7,7 +7,7 @@ INSTALL_SCRIPT_DIR="/shell"
 # Define the default package manager
 PKG_MGR="apt"
 
-# Default shell location
+# Default shell config location
 SH=$HOME"/.bashrc"
 
 # Dotfiles home directory

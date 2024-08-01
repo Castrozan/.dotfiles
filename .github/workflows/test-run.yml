@@ -23,7 +23,7 @@ jobs:
 
     - name: Run install script
       run: |
-        yes | sudo -E sh install.sh
+        yes | sh install.sh
 
     - name: Test pkgs
       run: |
