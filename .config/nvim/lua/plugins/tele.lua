@@ -24,6 +24,24 @@ end
 -- See `:help telescope` and `:help telescope.setup()`
 require('telescope').setup {
   defaults = {
+    pickers = {
+      live_grep = {
+        file_ignore_patterns = { 'node_modules', '.git', '.venv' },
+          additional_args = function(_)
+            return { "--hidden" }
+          end
+      },
+    },
+    vimgrep_arguments = {
+      "rg",
+      "--color=never",
+      "--no-heading",
+      "--with-filename",
+      "--line-number",
+      "--column",
+      "--hidden",
+      "--smart-case",
+    },
     buffer_previewer_maker = new_maker,
     layout_strategy = "vertical",
     layout_config = {
