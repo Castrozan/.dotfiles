@@ -18,23 +18,25 @@ jobs:
 
     - name: Set up environment
       run: |
-        # Install any necessary dependencies here if needed
+        # Install any necessary dependencies
         sudo apt-get update
 
-    - name: Run install script
+    - name: Run install script, test install script, and test dotfiles
       run: |
+        # TODO: Fins a way to run tests steps separately
         yes | sh install.sh
-
-    - name: Test install script
-      run: |
         sh test.sh
 
-    - name: Test dotfiles
-      run: |
-        # TODO: test the configuration of the dotfiles
-        # not the installation
-        # e.g. test that a alias is working as expected
+    # - name: Test install script
+    #   run: |
+    #     sh test.sh
 
-    - name: Test stow ignore
-      run: |
-        # TODO: Test that the stow ignore file is working as expected
+    # - name: Test dotfiles
+    #   run: |
+    #     # TODO: test the configuration of the dotfiles
+    #     # not the installation
+    #     # e.g. test that a alias is working as expected
+
+    # - name: Test stow ignore
+    #   run: |
+    #     # TODO: Test that the stow ignore file is working as expected
