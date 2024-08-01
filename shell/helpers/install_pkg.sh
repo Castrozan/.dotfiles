@@ -8,13 +8,13 @@ install_pkg() {
     local pkg_name="$1"
 
     # Attempt to install the package
-    if ! $pkg_mgr install -y "$pkg_name"; then
+    if ! $pkg_mgr install "$pkg_name"; then
         # Check if the error is related to permission issues
-        local error_message=$($pkg_mgr install -y "$pkg_name" 2>&1)
+        local error_message=$($pkg_mgr install "$pkg_name" 2>&1)
         if echo "$error_message" | grep -q "Permission denied\|are you root"; then
             echo "${RED}It looks like you don't have sufficient permissions to install $pkg_name.${RESET}"
             if ask "Would you like to try running the command with sudo?"; then
-                sudo $pkg_mgr install -y "$pkg_name"
+                sudo $pkg_mgr install "$pkg_name"
             else
                 echo "${YELLOW}Skipping the installation of $pkg_name.${RESET}"
             fi
