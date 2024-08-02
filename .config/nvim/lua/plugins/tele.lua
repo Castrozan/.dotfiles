@@ -24,13 +24,14 @@ end
 -- See `:help telescope` and `:help telescope.setup()`
 require('telescope').setup {
   defaults = {
-    pickers = {
-      live_grep = {
-        file_ignore_patterns = { 'node_modules', '.git', '.venv' },
-          additional_args = function(_)
-            return { "--hidden" }
-          end
-      },
+    file_ignore_patterns = {
+      "node_modules",
+      ".m2",
+      ".cache",
+      ".pyenv",
+      ".vscode",
+      ".asdf",
+      "betha-fly"
     },
     vimgrep_arguments = {
       "rg",
