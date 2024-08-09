@@ -150,6 +150,7 @@ export PATH="$HOME/.pyenv/bin:$PATH"
 
 # aliases
 alias k="kubectl"
+alias standalone="cd /opt/wildfly-aplicacoes/standalone/configuration"
 export FLY_HOME=/home/lucas.zanoni/betha-fly
 alias fly-java6='sdk use java 1.6.0_45-fly; sdk use maven 3.2.3-fly'
 alias fly-jboss='/home/lucas.zanoni/betha-fly/tools/jboss-5.1.0.GA/bin/run.sh -c betha'
@@ -167,8 +168,6 @@ alias lc="ls -a --color=never"
 alias oo="cd $OBSIDIAN_HOME && nvim ."
 alias studio3t="cd ~/studio3t && ./Studio-3T .sh"
 alias nvim="$HOME/nvim.appimage"
-alias nvm="nvim"
-alias vnm="nvim"
 alias bashrc="nvim ~/.bashrc"
 alias dotfiles="cd ~/.dotfiles_ubuntu && nvim ."
 alias source-bash="source ~/.bashrc"
