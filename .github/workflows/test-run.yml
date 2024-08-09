@@ -14,7 +14,6 @@ jobs:
 
     container:
       image: ubuntu:latest
-      options: --privileged
 
     steps:
     - name: Checkout repository
@@ -24,12 +23,11 @@ jobs:
       run: |
         # Install any necessary dependencies
         apt-get update
-        #apt-get install -y sudo
 
     - name: Run install script, test install script, and test dotfiles
       run: |
         # TODO: Find a way to run test steps separately
-        cd $HOME
+        chmod +x install.sh
         yes | sh install.sh
         sh test.sh
 
