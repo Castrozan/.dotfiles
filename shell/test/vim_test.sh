@@ -3,7 +3,7 @@
 # Test if vim is installed
 vim_test() {
 
-    if ! vim --version; then
+    if ! vim --version | head -n 1; then
         print "Vim is not installed." $RED
         exit 1
     else

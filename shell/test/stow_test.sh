@@ -8,7 +8,6 @@ stow_test() {
         exit 1
     else
         print "Stow is installed." $GREEN
-        exit 0
     fi
 }
 

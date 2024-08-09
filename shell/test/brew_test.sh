@@ -9,7 +9,6 @@ brew_test() {
     #     exit 1
     # else
     #     print "brew is installed." $GREEN
-    #     exit 0
     # fi
 }
 

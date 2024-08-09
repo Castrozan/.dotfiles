@@ -13,10 +13,9 @@ test_gs() {
     echo "Test gs"
     if ! gs; then
         print "gs was not sourced." $RED
-        return 1
+        exit 1
     else
         print "gs was sourced." $GREEN
-        return 0
     fi
 }
 

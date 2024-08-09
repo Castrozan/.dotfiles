@@ -8,7 +8,6 @@ tmux_test() {
         exit 1
     else
         print "Tmux is installed." $GREEN
-        exit 0
     fi
 }
 
