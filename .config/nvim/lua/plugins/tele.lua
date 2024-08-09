@@ -24,6 +24,25 @@ end
 -- See `:help telescope` and `:help telescope.setup()`
 require('telescope').setup {
   defaults = {
+    file_ignore_patterns = {
+      "node_modules",
+      ".m2",
+      ".cache",
+      ".pyenv",
+      ".vscode",
+      ".asdf",
+      "betha-fly"
+    },
+    vimgrep_arguments = {
+      "rg",
+      "--color=never",
+      "--no-heading",
+      "--with-filename",
+      "--line-number",
+      "--column",
+      "--hidden",
+      "--smart-case",
+    },
     buffer_previewer_maker = new_maker,
     layout_strategy = "vertical",
     layout_config = {

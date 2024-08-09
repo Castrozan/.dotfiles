@@ -109,6 +109,14 @@ fi
   #exec tmux
 #fi
 
+# Enable case-insensitive tab completion
+# If ~/.inputrc doesn't exist yet: First include the original /etc/inputrc
+# so it won't get overriden
+if [ ! -a ~/.inputrc ]; then echo '$include /etc/inputrc' > ~/.inputrc; fi
+
+# Add shell-option to ~/.inputrc to enable case-insensitive tab completion
+echo 'set completion-ignore-case On' >> ~/.inputrc
+
 # BEGIN EVN VARIABLES
 # asdf
 . "$HOME/.asdf/asdf.sh"
@@ -154,6 +162,7 @@ fi
 # BEGIN ALIASES
 # aliases Betha
 alias k="kubectl"
+alias standalone="cd /opt/wildfly-aplicacoes/standalone/configuration"
 export FLY_HOME=/home/lucas.zanoni/betha-fly
 alias fly-java6='sdk use java 1.6.0_45-fly; sdk use maven 3.2.3-fly'
 alias fly-jboss='/home/lucas.zanoni/betha-fly/tools/jboss-5.1.0.GA/bin/run.sh -c betha'
@@ -170,12 +179,47 @@ alias la='ls -A'
 alias l='ls -CF'
 alias code="code . -n"
 alias lc="ls -a --color=never"
-alias oo="cd $OBSIDIAN_HOME"
+alias oo="cd $OBSIDIAN_HOME && nvim ."
+alias studio3t="cd ~/studio3t && ./Studio-3T .sh"
 alias nvim="$HOME/nvim.appimage"
 alias bashrc="nvim ~/.bashrc"
 alias dotfiles="cd ~/.dotfiles_ubuntu && nvim ."
 alias source-bash="source ~/.bashrc"
 alias obsidian="flatpak run md.obsidian.Obsidian >/dev/null 2>&1 &"
 alias t="tmux"
-alias todo="nvim $OBSIDIAN_HOME/TODO.md"
-# END ALIASES
+alias todo="cd $HOME/Documents/obsidianVault && nvim TODO.md"
+alias scripts="cd $HOME/repo/scripts && nvim ."
+alias g="lazygit"
+alias d="lazydocker"
+
+# flatpak
+export XDG_DATA_DIRS=/var/lib/flatpak/exports/share:/home/lucas.zanoni/.local/share/flatpak/exports/share:$XDG_DATA_DIRS
+
+# pnpm
+export PNPM_HOME="/home/lucas.zanoni/.local/share/pnpm"
+case ":$PATH:" in
+  *":$PNPM_HOME:"*) ;;
+  *) export PATH="$PNPM_HOME:$PATH" ;;
+esac
+# pnpm end
+
+# Source git completions
+if [ -f /usr/share/bash-completion/completions ]; then
+    . /usr/share/bash-completion/completions/git
+fi
+
+# Set autocomplete for terraform
+complete -C /usr/bin/terraform terraform
+
+# Source bash env config
+if [ -f ~/.bash_env_variables ]; then
+    . ~/.bash_env_variables
+fi
+
+# Add brew to PATH
+eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+
+# Files sourced by dotfiles at /home/lucas.zanoni/.dotfiles_ubuntu
+. /home/lucas.zanoni/.dotfiles_ubuntu/shell/configs/case_insensitive_completion.sh
+# Files sourced by dotfiles at /home/lucas.zanoni/.dotfiles_ubuntu
+. /home/lucas.zanoni/.dotfiles_ubuntu/shell/configs/git_aliases.sh
