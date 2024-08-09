@@ -2,7 +2,7 @@
 
 # Tell that the script is sourcing helper files
 echo "Sourcing helper files..."
-for file in shell/helpers/*; do
+for file in shell/src/*; do
     if [ -f "$file" ]; then
         . "$file" # Source the file
     fi
