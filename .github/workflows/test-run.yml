@@ -12,6 +12,10 @@ jobs:
   install-dotfiles:
     runs-on: ubuntu-latest
 
+    container:
+      image: ubuntu:latest
+      options: --privileged
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
@@ -19,23 +23,26 @@ jobs:
     - name: Set up environment
       run: |
         # Install any necessary dependencies
-        sudo apt-get update
+        apt-get update
+        #apt-get install -y sudo
 
     - name: Run install script, test install script, and test dotfiles
       run: |
-        # TODO: Fins a way to run tests steps separately
+        # TODO: Find a way to run test steps separately
+        cd $HOME
         yes | sh install.sh
         sh test.sh
 
+    # Uncomment and adjust these steps when ready
     # - name: Test install script
     #   run: |
     #     sh test.sh
 
     # - name: Test dotfiles
     #   run: |
-    #     # TODO: test the configuration of the dotfiles
+    #     # TODO: Test the configuration of the dotfiles
     #     # not the installation
-    #     # e.g. test that a alias is working as expected
+    #     # e.g. test that an alias is working as expected
 
     # - name: Test stow ignore
     #   run: |
