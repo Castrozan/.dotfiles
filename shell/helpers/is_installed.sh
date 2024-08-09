@@ -12,10 +12,10 @@ is_installed() {
 
     case $pkg_mgr in
         apt)
-            dpkg -l | grep -q $1
+            dpkg -l | grep -q "^ii\s\+$1\s"
             ;;
         brew)
-            brew list | grep -q $1
+            brew list | grep -q "^$1\$"
             ;;
         *)
             echo "Unsupported package manager: ${pkg_mgr}"
