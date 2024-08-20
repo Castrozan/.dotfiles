@@ -1,0 +1,16 @@
+# The .inputrc file is a configuration file used by the GNU Readline library, 
+# which provides line-editing and command-line editing capabilities for various programs, including the Bash shell.
+
+# The purpose of the .inputrc file is to customize the behavior of the Readline library. 
+# It allows you to define keybindings, macros, and various settings that affect the way you interact with the command line.
+# For example, you can define keybindings to perform specific actions when certain keys are pressed, 
+# such as moving the cursor, deleting characters, or invoking commands. 
+
+# You can also configure settings like tab completion behavior, history management, and case sensitivity.
+# By modifying the .inputrc file, you can tailor the command line editing experience to your preferences, 
+# making it more efficient and convenient for your specific needs.
+
+$include /etc/inputrc
+
+# Case-insensitive tab completion
+set completion-ignore-case On
