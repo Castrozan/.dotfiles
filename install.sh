@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Tell that the script is sourcing helper files
+# Tell that the script is sourcing src
 echo "Sourcing helper files..."
 for file in shell/src/*; do
     if [ -f "$file" ]; then
@@ -9,39 +9,34 @@ for file in shell/src/*; do
 done
 
 # Tell what is going to happen
-echo "${MAGENTA}${BOLD}# -------------- castrozan:dotfiles install script ---------------${RESET}"
-echo ""
+print "# -------------- castrozan:dotfiles install script ---------------\n" "${MAGENTA}" "${BOLD}"
 
-echo "${YELLOW}${BOLD}Some packages are required to run the install script.${RESET}"
+print "Some packages are required to run the install script.\n" "${YELLOW}" "${BOLD}"
 if ask "Do you want to install them?"; then
     should_install curl
     use_brew
     use_stow
 fi
-echo ""
+print "\n"
 
 # Ask if pkgs should be installed
 if ask "Do you want to install pkgs?"; then
     iterate_install_scripts
 fi
-echo ""
+print "\n"
 
 # Ask if configs should be sourced
 if ask "Do you want to $SH to source files?"; then
     iterate_config_scripts
 fi
-echo ""
+print "\n"
 
 # End of script
-echo "${MAGENTA}${BOLD}# ------------------------ End of script ------------------------${RESET}"
-echo ""
+print "# ------------------------ End of script ------------------------\n" "${MAGENTA}" "${BOLD}"
 
 # Final reminder to the user
-echo "${GREEN}To apply changes to your current shell session, run:${RESET}"
-echo "${GREEN}source ~/.bashrc${RESET}"
-echo ""
+print "To apply changes to your current shell session, run:\n" "${GREEN}"
+print "source ~/.bashrc\n" "${GREEN}"
 
 # Cutely tell goodbye
-printf "${CYAN}( ੭ ˘ ³˘)੭°｡⋆♡‧₊˚ bye!${RESET}\n"
-echo ""
-echo ""
+print "( ੭ ˘ ³˘)੭°｡⋆♡‧₊˚ bye!\n" "${CYAN}"
