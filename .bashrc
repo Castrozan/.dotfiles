@@ -94,6 +94,11 @@ if [ -f ~/.bash_env_variables ]; then
     . ~/.bash_env_variables
 fi
 
+# Source bash completion
+if [ -f /etc/bash_completion ]; then
+  . /etc/bash_completion
+fi
+
 # BEGIN EVN VARIABLES
 # Add local bin to PATH
 export PATH=$PATH:~/.local/bin
