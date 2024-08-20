@@ -7,9 +7,11 @@
 install_tzdata() {
     export DEBIAN_FRONTEND=noninteractive
 
-    ln -fs /usr/share/zoneinfo/America/Sao_Paulo /etc/localtime
-    apt-get install -y tzdata
-    dpkg-reconfigure --frontend noninteractive tzdata
+    if ! is_installed tzdata; then
+        ln -fs /usr/share/zoneinfo/America/Sao_Paulo /etc/localtime
+        apt-get install -y tzdata
+        dpkg-reconfigure --frontend noninteractive tzdata
+    fi
 }
 
 install_tzdata
