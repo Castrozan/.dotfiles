@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# TODO: enable color and bold support
 # Ask Y/n question with color
 # $1: prompt
 ask() {

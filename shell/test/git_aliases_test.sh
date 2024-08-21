@@ -5,6 +5,7 @@ git_aliases_test() {
     # TODO: fix test that the file was sourced
     # not that the alias is working
     #test_gs
+    print "TODO: fix git aliases tests" $RED
     print "Skip Test git aliases" $RED
 }
 

@@ -8,8 +8,8 @@ run_tests() {
     for file in $dir*; do
         if [ -f "$file" ]; then
             local filename=$(basename "$file")
-            . "$file" # source install script
-            echo ""
+            print "\n${filename}" $YELLOW
+            . "$file" # source test script
         fi
     done
 }
