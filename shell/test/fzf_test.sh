@@ -3,7 +3,7 @@
 # Test if fzf is installed
 fzf_test() {
 
-    if brew info fzf; then
+    if brew info fzf &> /dev/null; then
         print "Fzf is installed." $GREEN
     else
         print "Fzf is not installed." $RED
