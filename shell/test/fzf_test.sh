@@ -3,11 +3,11 @@
 # Test if fzf is installed
 fzf_test() {
 
-    if ! fzf --version; then
+    if brew info fzf; then
+        print "Fzf is installed." $GREEN
+    else
         print "Fzf is not installed." $RED
         exit 1
-    else
-        print "Fzf is installed." $GREEN
     fi
 }
 
