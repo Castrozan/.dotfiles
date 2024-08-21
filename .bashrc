@@ -157,3 +157,26 @@ eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 . /home/lucas.zanoni/.dotfiles_ubuntu/shell/configs/git_aliases.sh
 
 [ -f ~/.fzf.bash ] && source ~/.fzf.bash
+
+# while true; do
+#     read -n 1 -s key
+#     echo "You pressed: $key"
+#     # Optionally break the loop or do something based on the key pressed
+#     break
+# done
+
+# preexec_invoke_exec() {
+#     # if [ -z "$READLINE_LINE" ]; then
+#         # fhe
+#     # fi
+#     echo "aa"
+# }
+
+# trap 'preexec_invoke_exec' DEBUG
+
+# fhe - repeat history edit
+writecmd (){ perl -e 'ioctl STDOUT, 0x5412, $_ for split //, do{ chomp($_ = <>); $_ }' ; }
+
+f() {
+  (fc -l 1 || history) | fzf +s --tac | sed -re 's/^\s*[0-9]+\s*//' | writecmd
+}
