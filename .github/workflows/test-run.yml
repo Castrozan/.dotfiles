@@ -21,7 +21,6 @@ jobs:
 
     - name: Set up environment
       run: |
-        # Install any necessary dependencies
         apt-get update
 
     - name: Run install script
