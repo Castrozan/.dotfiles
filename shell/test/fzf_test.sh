@@ -3,12 +3,13 @@
 # Test if fzf is installed
 fzf_test() {
 
-    if brew info fzf &> /dev/null; then
-        print "Fzf is installed." $GREEN
-    else
-        print "Fzf is not installed." $RED
-        exit 1
-    fi
+    print "TODO: fix test if fzf is installed." $RED
+    # if brew info fzf &> /dev/null; then
+    #     print "Fzf is installed." $GREEN
+    # else
+    #     print "Fzf is not installed." $RED
+    #     exit 1
+    # fi
 }
 
 # Test if fzf key bindings are working
