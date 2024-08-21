@@ -155,3 +155,5 @@ eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 # TODO: lucas.zanoni doesen't exist on other sistems
 # Files sourced by dotfiles at /home/lucas.zanoni/.dotfiles_ubuntu
 . /home/lucas.zanoni/.dotfiles_ubuntu/shell/configs/git_aliases.sh
+
+[ -f ~/.fzf.bash ] && source ~/.fzf.bash
