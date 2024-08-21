@@ -16,6 +16,9 @@ use_brew() {
             (echo; echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"') >> $SH
             eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 
+            # Install gcc
+            brew postinstall gcc
+
             # Check if brew is installed
             if brew --version; then
                 echo "${GREEN}Homebrew installed.${RESET}"
