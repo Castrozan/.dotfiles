@@ -26,7 +26,6 @@ jobs:
 
     - name: Run install script
       run: |
-        git --version
         chmod +x install.sh
         yes | sh install.sh
 
