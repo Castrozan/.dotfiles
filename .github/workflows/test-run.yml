@@ -24,17 +24,17 @@ jobs:
         # Install any necessary dependencies
         apt-get update
 
-    - name: Run install script, test install script, and test dotfiles
+    - name: Run install script
       run: |
-        # TODO: Find a way to run test steps separately
+        git --version
+        chmod +x install.sh
+        yes | sh install.sh
+
+    - name: Test install script
+      run: |
         chmod +x install.sh
         yes | sh install.sh
         sh test.sh
-
-    # Uncomment and adjust these steps when ready
-    # - name: Test install script
-    #   run: |
-    #     sh test.sh
 
     # - name: Test dotfiles
     #   run: |
