@@ -156,5 +156,6 @@ eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 . /home/lucas.zanoni/.dotfiles_ubuntu/shell/configs/git_aliases.sh
 . /home/lucas.zanoni/.dotfiles_ubuntu/shell/configs/fzf_bash_history.sh
 . /home/lucas.zanoni/.dotfiles_ubuntu/shell/configs/bash_history.sh
+. /home/lucas.zanoni/.dotfiles_ubuntu/shell/configs/fzf.sh
 
 [ -f ~/.fzf.bash ] && source ~/.fzf.bash
