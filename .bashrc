@@ -89,7 +89,7 @@ if [ -x /usr/bin/dircolors ]; then
 fi
 
 # Remove duplicates from history
-HISTCONTROL=ignoredups:erasedups
+HISTCONTROL=ignoreboth:erasedups
 shopt -s histappend
 PROMPT_COMMAND="history -n; history -w; history -c; history -r; $PROMPT_COMMAND"
 
