@@ -79,6 +79,9 @@ xterm*|rxvt*)
     ;;
 esac
 
+# Remove duplicates from history
+export HISTCONTROL=ignoreboth:erasedups
+
 # Open tmux on startup
 if command -v tmux &> /dev/null && [ -n "$PS1" ] && [[ ! "$TERM" =~ screen ]] && [[ ! "$TERM" =~ tmux ]] && [ -z "$TMUX" ]; then
   exec tmux
@@ -155,28 +158,6 @@ eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 # TODO: lucas.zanoni doesen't exist on other sistems
 # Files sourced by dotfiles at /home/lucas.zanoni/.dotfiles_ubuntu
 . /home/lucas.zanoni/.dotfiles_ubuntu/shell/configs/git_aliases.sh
+. /home/lucas.zanoni/.dotfiles_ubuntu/shell/configs/fzf_bash_history.sh
 
 [ -f ~/.fzf.bash ] && source ~/.fzf.bash
-
-# while true; do
-#     read -n 1 -s key
-#     echo "You pressed: $key"
-#     # Optionally break the loop or do something based on the key pressed
-#     break
-# done
-
-# preexec_invoke_exec() {
-#     # if [ -z "$READLINE_LINE" ]; then
-#         # fhe
-#     # fi
-#     echo "aa"
-# }
-
-# trap 'preexec_invoke_exec' DEBUG
-
-# fhe - repeat history edit
-writecmd (){ perl -e 'ioctl STDOUT, 0x5412, $_ for split //, do{ chomp($_ = <>); $_ }' ; }
-
-f() {
-  (fc -l 1 || history) | fzf +s --tac | sed -re 's/^\s*[0-9]+\s*//' | writecmd
-}
