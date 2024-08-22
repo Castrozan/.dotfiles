@@ -79,6 +79,9 @@ xterm*|rxvt*)
     ;;
 esac
 
+# Remove duplicates from history
+export HISTCONTROL=ignoreboth:erasedups
+
 # Open tmux on startup
 if command -v tmux &> /dev/null && [ -n "$PS1" ] && [[ ! "$TERM" =~ screen ]] && [[ ! "$TERM" =~ tmux ]] && [ -z "$TMUX" ]; then
   exec tmux
@@ -155,5 +158,6 @@ eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 # TODO: lucas.zanoni doesen't exist on other sistems
 # Files sourced by dotfiles at /home/lucas.zanoni/.dotfiles_ubuntu
 . /home/lucas.zanoni/.dotfiles_ubuntu/shell/configs/git_aliases.sh
+. /home/lucas.zanoni/.dotfiles_ubuntu/shell/configs/fzf_bash_history.sh
 
 [ -f ~/.fzf.bash ] && source ~/.fzf.bash

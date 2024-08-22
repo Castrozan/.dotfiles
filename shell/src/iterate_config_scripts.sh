@@ -11,8 +11,7 @@ iterate_config_scripts() {
                 echo "${YELLOW}$full_path is already sourced in $SH.${RESET}"
             else
                 # Add the source command to .bashrc
-                echo "# Files sourced by dotfiles at $DOTFILES_HOME" >> "$SH"
-                echo ". $full_path" >> "$SH"
+                echo "\n. $full_path" >> "$SH"
                 echo "${GREEN}$full_path has been sourced.${RESET}"
             fi
         fi
