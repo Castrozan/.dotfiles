@@ -151,8 +151,10 @@ complete -C /usr/bin/terraform terraform
 eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 
 # TODO: lucas.zanoni doesen't exist on other sistems
+# TODO: revise adding direcly here to source control it
 # Files sourced by dotfiles at /home/lucas.zanoni/.dotfiles_ubuntu
 . /home/lucas.zanoni/.dotfiles_ubuntu/shell/configs/git_aliases.sh
 . /home/lucas.zanoni/.dotfiles_ubuntu/shell/configs/fzf_bash_history.sh
+. /home/lucas.zanoni/.dotfiles_ubuntu/shell/configs/bash_history.sh
 
 [ -f ~/.fzf.bash ] && source ~/.fzf.bash
