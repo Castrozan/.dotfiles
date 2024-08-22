@@ -89,7 +89,9 @@ if [ -x /usr/bin/dircolors ]; then
 fi
 
 # Remove duplicates from history
-export HISTCONTROL=ignoreboth:erasedups
+HISTCONTROL=ignoredups:erasedups
+shopt -s histappend
+PROMPT_COMMAND="history -n; history -w; history -c; history -r; $PROMPT_COMMAND"
 
 # Open tmux on startup
 if command -v tmux &> /dev/null && [ -n "$PS1" ] && [[ ! "$TERM" =~ screen ]] && [[ ! "$TERM" =~ tmux ]] && [ -z "$TMUX" ]; then
