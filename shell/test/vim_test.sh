@@ -8,7 +8,6 @@ vim_test() {
         exit 1
     else
         print "Vim is installed." $GREEN
-        exit 0
     fi
 }
 

@@ -150,6 +150,19 @@ complete -C /usr/bin/terraform terraform
 # Add brew to PATH
 eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 
+# Zoxide
+if command -v zoxide &> /dev/null; then
+    # TODO: add alias cd to zoxide after training
+    # eval "$(zoxide init --cmd cd bash)"
+    eval "$(zoxide init bash)"
+    # fzf integration and theme
+    export _ZO_FZF_OPTS="--height 40% \
+    --layout=reverse --border --preview='command -p ls -ACp \
+    --color=always --group-directories-first {2..}' \
+    --preview-window=right,50%,sharp \
+    $FZF_DEFAULT_OPTS"
+fi
+
 # TODO: lucas.zanoni doesen't exist on other sistems
 # TODO: revise adding direcly here to source control it
 # Files sourced by dotfiles at /home/lucas.zanoni/.dotfiles_ubuntu
