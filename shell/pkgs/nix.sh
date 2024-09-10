@@ -4,5 +4,5 @@
 if command -v nix >/dev/null 2>&1; then
     print "Nix already installed" "$YELLOW"
 else
-    curl -L https://nixos.org/nix/install | yes | sh /dev/stdin
+    curl -L https://nixos.org/nix/install | sh /dev/stdin
 fi
