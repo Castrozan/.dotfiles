@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Aliases file for bash shell
 
 # aliases personal
@@ -6,7 +8,7 @@ alias la='ls -A'
 alias l='ls -CF'
 alias code="code . -n"
 alias lc="ls -a --color=never"
-alias oo="cd $OBSIDIAN_HOME && nvim ."
+alias oo="cd $OBSIDIAN_HOME"
 alias studio3t="cd ~/studio3t && ./Studio-3T .sh"
 alias nvim="$HOME/nvim.appimage"
 alias vim="$HOME/nvim.appimage"
