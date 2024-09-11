@@ -2,7 +2,7 @@
 
 # Function to iterate over install scripts
 iterate_install_scripts() {
-    local dir=$INSTALL_SCRIPTS_DIR
+    local dir=$_INSTALL_SCRIPTS_DIR
 
     for file in $dir*; do
         if [ -f "$file" ]; then

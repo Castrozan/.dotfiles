@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Install a package with a custom script via curl
 # $1: uri to download custom script

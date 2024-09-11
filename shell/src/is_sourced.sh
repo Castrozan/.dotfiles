@@ -4,5 +4,5 @@
 # $1: file to check
 is_sourced() {
     local file="$1"
-    grep -q ". $file" "$SH"
+    grep -q ". $file" "$_SH"
 }

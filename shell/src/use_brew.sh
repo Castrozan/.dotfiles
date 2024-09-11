@@ -13,7 +13,10 @@ use_brew() {
             /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
             # Add Homebrew to PATH
-            (echo; echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"') >> $SH
+            (
+                echo
+                echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"'
+            ) >>$_SH
             eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 
             # Install gcc
@@ -22,7 +25,7 @@ use_brew() {
             # Check if brew is installed
             if brew --version; then
                 echo "${GREEN}Homebrew installed.${RESET}"
-            else 
+            else
                 echo "${RED}Homebrew installation failed.${RESET}"
             fi
         fi

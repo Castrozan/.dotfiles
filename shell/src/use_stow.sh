@@ -16,7 +16,7 @@ use_stow() {
     echo "${YELLOW}${BOLD}Adopted files can be reverted with git reset HEAD .file${RESET}"
     echo "${YELLOW}${BOLD}Check https://www.gnu.org/software/stow/manual/html_node/Invoking-Stow.html for more info${RESET}"
     if ask "Do you want to run 'stow --adopt .' and create symlinks?"; then
-        $STOW_CLAUSE
+        $_STOW_CLAUSE
         echo "${GREEN}Dotfiles stowed.${RESET}"
     fi
 }

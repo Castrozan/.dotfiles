@@ -27,7 +27,7 @@ fi
 print "\n"
 
 # Ask if configs should be sourced
-if ask "Do you want to $SH to source files?"; then
+if ask "Do you want to $_SH to source files?"; then
     iterate_config_scripts
 fi
 print "\n"

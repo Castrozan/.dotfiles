@@ -2,7 +2,7 @@
 
 # Function to run tests
 run_tests() {
-    local dir=$TEST_DIR
+    local dir=$_TEST_DIR
 
     print "Running test ..." $YELLOW
     for file in $dir*; do
