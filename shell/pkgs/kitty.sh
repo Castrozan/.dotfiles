@@ -1,9 +1,8 @@
 #!/bin/sh
 
-# shellcheck disable=SC1091
-. "../src/install_with_custom_script_via_curl.sh"
-. "../src/print.sh"
-. "../src/ask.sh"
+. "shell/src/print.sh"
+. "shell/src/ask.sh"
+. "shell/src/install_with_custom_script_via_curl.sh"
 
 # Desktop integration on Linux
 # If you want the kitty icon to appear in the taskbar and an entry for it to be present in the menus,
