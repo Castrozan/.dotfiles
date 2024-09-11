@@ -1,16 +1,5 @@
 #!/bin/sh
 
-# Check if kitty is installed
-if command -v kitty >/dev/null 2>&1; then
-    print "Kitty already installed" "$YELLOW"
-else
-    install_with_custom_script_via_curl "https://sw.kovidgoyal.net/kitty/installer.sh"
-
-    if ask "Do you want to install kitty.desktop integration?"; then
-        install_kitty_desktop_integration
-    fi
-fi
-
 # Desktop integration on Linux
 # If you want the kitty icon to appear in the taskbar and an entry for it to be present in the menus,
 # you will need to install the kitty.desktop file.
@@ -31,3 +20,14 @@ install_kitty_desktop_integration() {
     # Make xdg-terminal-exec (and hence desktop environments that support it use kitty)
     echo 'kitty.desktop' >~/.config/xdg-terminals.list
 }
+
+# Check if kitty is installed
+if command -v kitty >/dev/null 2>&1; then
+    print "Kitty already installed" "$YELLOW"
+else
+    install_with_custom_script_via_curl "https://sw.kovidgoyal.net/kitty/installer.sh"
+
+    if ask "Do you want to install kitty.desktop integration?"; then
+        install_kitty_desktop_integration
+    fi
+fi
