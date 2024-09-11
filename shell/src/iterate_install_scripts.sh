@@ -1,13 +1,16 @@
-#!/bin/bash
+#!/bin/sh
+
+. "shell/src/ask.sh"
 
 # Function to iterate over install scripts
 iterate_install_scripts() {
-    local dir=$_INSTALL_SCRIPTS_DIR
+    _dir=$_INSTALL_SCRIPTS_DIR
 
-    for file in $dir*; do
+    for file in "$_dir"/*; do
         if [ -f "$file" ]; then
-            local filename=$(basename "$file")
+            filename=$(basename "$file")
             if ask "Do you want to install ${filename}?"; then
+                # shellcheck disable=SC1090
                 . "$file" # source install script
             fi
         fi

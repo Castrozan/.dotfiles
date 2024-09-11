@@ -17,7 +17,7 @@ _DOTFILES_HOME="$HOME/.dotfiles_ubuntu"
 _CONFIG_SCRIPTS_DIR="shell/configs/"
 
 # Directory with install scripts
-_INSTALL_SCRIPTS_DIR="shell/pkgs/"
+_INSTALL_SCRIPTS_DIR="shell/pkgs"
 
 # Directory with src scripts
 _SRC_SCRIPTS_DIR="shell/src"

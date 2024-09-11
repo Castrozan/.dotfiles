@@ -1,9 +1,18 @@
-#!/bin/bash
+#!/bin/sh
+
+. "shell/src/ask.sh"
+. "shell/src/print.sh"
+. "shell/src/should_install.sh"
+. "shell/src/iterate_install_scripts.sh"
+. "shell/src/iterate_config_scripts.sh"
+. "shell/src/use_brew.sh"
+. "shell/src/use_stow.sh"
 
 # Tell that the script is sourcing src
 echo "Sourcing helper files..."
 for file in shell/src/*; do
     if [ -f "$file" ]; then
+        # shellcheck disable=SC1090
         . "$file" # Source the file
     fi
 done
