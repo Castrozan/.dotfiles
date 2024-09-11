@@ -1,15 +1,14 @@
-#!/bin/bash
+#!/bin/sh
 
 # Install a package with a custom script via curl
 # $1: uri to download custom script
 install_with_custom_script_via_curl() {
-    _uri="$1"
-
+    uri="$1"
     # Create a temporary file
     tmp="$(mktemp)"
 
     # Send the script to the temporary file
-    curl -L "$1" >"$tmp"
+    curl -L "$uri" >"$tmp"
 
     # Execute the script stored in the temporary file
     sh "$tmp"
