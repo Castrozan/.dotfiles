@@ -12,7 +12,7 @@ install_with_custom_script_via_curl() {
     curl -L "$1" >"$tmp"
 
     # Execute the script stored in the temporary file
-    sh "$tmp" --daemon
+    sh "$tmp"
 
     # Clean up the temporary file
     rm "$tmp"
