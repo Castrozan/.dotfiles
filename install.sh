@@ -9,6 +9,7 @@
 . "shell/src/use_stow.sh"
 
 # Tell that the script is sourcing src
+# TODO: remove it after refactoring to import src files manually
 echo "Sourcing helper files..."
 for file in shell/src/*; do
     if [ -f "$file" ]; then

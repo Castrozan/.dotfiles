@@ -14,7 +14,7 @@ _SH=$HOME"/.bashrc"
 _DOTFILES_HOME="$HOME/.dotfiles_ubuntu"
 
 # Directory with config scripts
-_CONFIG_SCRIPTS_DIR="shell/configs/"
+_CONFIG_SCRIPTS_DIR="shell/configs"
 
 # Directory with install scripts
 _INSTALL_SCRIPTS_DIR="shell/pkgs"
@@ -23,7 +23,7 @@ _INSTALL_SCRIPTS_DIR="shell/pkgs"
 _SRC_SCRIPTS_DIR="shell/src"
 
 # Directory with test scripts
-_TEST_DIR="shell/test/"
+_TEST_DIR="shell/test"
 
 # Stow clause
 _STOW_CLAUSE="stow --adopt ."
