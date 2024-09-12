@@ -112,7 +112,7 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" # This loads nvm bash_completion
 
 # Pyenv variables
-export PYENV_ROOT=/home/lucas.zanoni/.pyenv
+export PYENV_ROOT=$HOME/.pyenv
 command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
 export PATH="$HOME/.pyenv/bin:$PATH"
 
@@ -120,10 +120,10 @@ export PATH="$HOME/.pyenv/bin:$PATH"
 export OBSIDIAN_HOME="$HOME/Documents/obsidianVault"
 
 # flatpak
-export XDG_DATA_DIRS=/var/lib/flatpak/exports/share:/home/lucas.zanoni/.local/share/flatpak/exports/share:$XDG_DATA_DIRS
+export XDG_DATA_DIRS=/var/lib/flatpak/exports/share:$HOME/.local/share/flatpak/exports/share:$XDG_DATA_DIRS
 
 # pnpm
-export PNPM_HOME="/home/lucas.zanoni/.local/share/pnpm"
+export PNPM_HOME="$HOME/.local/share/pnpm"
 case ":$PATH:" in
 *":$PNPM_HOME:"*) ;;
 *) export PATH="$PNPM_HOME:$PATH" ;;
@@ -134,10 +134,10 @@ export SDKMAN_DIR="$HOME/.sdkman"
 [[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
 
 # flatpak
-export XDG_DATA_DIRS=/var/lib/flatpak/exports/share:/home/lucas.zanoni/.local/share/flatpak/exports/share:$XDG_DATA_DIRS
+export XDG_DATA_DIRS=/var/lib/flatpak/exports/share:$HOME/.local/share/flatpak/exports/share:$XDG_DATA_DIRS
 
 # pnpm
-export PNPM_HOME="/home/lucas.zanoni/.local/share/pnpm"
+export PNPM_HOME="$HOME/.local/share/pnpm"
 case ":$PATH:" in
 *":$PNPM_HOME:"*) ;;
 *) export PATH="$PNPM_HOME:$PATH" ;;
@@ -151,13 +151,11 @@ complete -C /usr/bin/terraform terraform
 # Add brew to PATH
 eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 
-# TODO: lucas.zanoni doesen't exist on other sistems
-# TODO: revise adding direcly here to source control it
-# Files sourced by dotfiles at /home/lucas.zanoni/.dotfiles_ubuntu
-. /home/lucas.zanoni/.dotfiles_ubuntu/shell/configs/git_aliases.sh
-. /home/lucas.zanoni/.dotfiles_ubuntu/shell/configs/fzf_bash_history.sh
-. /home/lucas.zanoni/.dotfiles_ubuntu/shell/configs/bash_history.sh
-. /home/lucas.zanoni/.dotfiles_ubuntu/shell/configs/fzf.sh
-. /home/lucas.zanoni/.dotfiles_ubuntu/shell/configs/zoxide.sh
+# Files sourced by dotfiles at $HOME/.dotfiles_ubuntu
+. $HOME/.dotfiles_ubuntu/shell/configs/git_aliases.sh
+. $HOME/.dotfiles_ubuntu/shell/configs/fzf_bash_history.sh
+. $HOME/.dotfiles_ubuntu/shell/configs/bash_history.sh
+. $HOME/.dotfiles_ubuntu/shell/configs/fzf.sh
+. $HOME/.dotfiles_ubuntu/shell/configs/zoxide.sh
 
 [ -f ~/.fzf.bash ] && source ~/.fzf.bash
