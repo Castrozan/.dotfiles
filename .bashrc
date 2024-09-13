@@ -102,6 +102,9 @@ fi
 # Add local bin to PATH
 export PATH=$PATH:~/.local/bin
 
+# Neovim
+export PATH="$PATH:/opt/nvim-linux64/bin"
+
 # asdf
 . "$HOME/.asdf/asdf.sh"
 . "$HOME/.asdf/completions/asdf.bash"

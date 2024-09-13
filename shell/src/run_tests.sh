@@ -4,11 +4,11 @@
 run_tests() {
     local dir=$_TEST_DIR
 
-    print "Running test ..." $YELLOW
-    for file in $dir*; do
+    print "Running test ..." "$YELLOW"
+    for file in $dir/*; do
         if [ -f "$file" ]; then
             local filename=$(basename "$file")
-            print "\n${filename}" $YELLOW
+            print "\n${filename}" "$YELLOW"
             . "$file" # source test script
         fi
     done
