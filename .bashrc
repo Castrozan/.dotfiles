@@ -98,6 +98,11 @@ if [ -f /etc/bash_completion ]; then
     . /etc/bash_completion
 fi
 
+# Create repo directory if it doesn't exist
+if [ ! -d "$HOME/repo" ]; then
+    mkdir -p "$HOME/repo"
+fi
+
 # BEGIN EVN VARIABLES
 # Add local bin to PATH
 export PATH=$PATH:~/.local/bin
