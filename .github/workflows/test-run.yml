@@ -30,7 +30,9 @@ jobs:
 
     - name: Test install script
       run: |
-        echo $OBSIDIAN_HOME
+        pwd
+        git reset --hard origin/main
+        source ~/.bashrc
         chmod +x install.sh
         yes | sh install.sh
         sh test.sh
