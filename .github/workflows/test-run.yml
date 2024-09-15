@@ -30,6 +30,7 @@ jobs:
 
     - name: Test install script
       run: |
+        echo $OBSIDIAN_HOME
         chmod +x install.sh
         yes | sh install.sh
         sh test.sh
