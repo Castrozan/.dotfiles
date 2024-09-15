@@ -1,5 +1,8 @@
 #!/bin/bash
 
+. "./shell/src/is_installed.sh"
+. "./shell/src/install_pkg.sh"
+
 # Function to install a package
 # $1: package name
 # $2: custom package manager (optional)
