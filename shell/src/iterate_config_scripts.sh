@@ -9,7 +9,7 @@ iterate_config_scripts() {
 
     for file in "$_dir"/*; do
         if [ -f "$file" ]; then
-            full_path="$_DOTFILES_HOME/$file"
+            full_path="./$file"
             if is_sourced "$full_path"; then
                 print "$full_path is already sourced in $_SH." "${YELLOW}"
             else

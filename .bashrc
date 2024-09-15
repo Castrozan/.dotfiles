@@ -169,8 +169,8 @@ complete -C /usr/bin/terraform terraform
 eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 
 # Files sourced by dotfiles at $HOME/.dotfiles_ubuntu
-. $HOME/.dotfiles_ubuntu/shell/configs/git_aliases.sh
-. $HOME/.dotfiles_ubuntu/shell/configs/fzf_bash_history.sh
-. $HOME/.dotfiles_ubuntu/shell/configs/bash_history.sh
-. $HOME/.dotfiles_ubuntu/shell/configs/fzf.sh
-. $HOME/.dotfiles_ubuntu/shell/configs/zoxide.sh
+. ./shell/configs/git_aliases.sh
+. ./shell/configs/fzf_bash_history.sh
+. ./shell/configs/bash_history.sh
+. ./shell/configs/fzf.sh
+. ./shell/configs/zoxide.sh

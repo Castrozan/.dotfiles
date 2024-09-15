@@ -46,8 +46,9 @@ print "\n"
 print "# ------------------------ End of script ------------------------\n" "${MAGENTA}" "${BOLD}"
 
 # Final reminder to the user
-print "To apply changes to your current shell session, run:\n" "${GREEN}"
-print "source ~/.bashrc\n" "${GREEN}"
+print "To apply changes to your current shell session, run:\n" "${GREEN}" "${BOLD}"
+print "git reset --hard origin/main\n" "${GREEN}" "${BOLD}"
+print "source ~/.bashrc\n" "${GREEN}" "${BOLD}"
 
 # Cutely tell goodbye
 print "( ੭ ˘ ³˘)੭°｡⋆♡‧₊˚ bye!\n" "${CYAN}"
