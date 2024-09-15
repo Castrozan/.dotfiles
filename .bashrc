@@ -103,11 +103,12 @@ fi
 export PATH=$PATH:~/.local/bin
 
 # Neovim
+# This exports is broken, it should be fixed
 export PATH="$PATH:/opt/nvim-linux64/bin"
 
 # asdf
-. "$HOME/.asdf/asdf.sh"
-. "$HOME/.asdf/completions/asdf.bash"
+[ -f "$HOME/.asdf/asdf.sh" ] && . "$HOME/.asdf/asdf.sh"
+[ -f "$HOME/.asdf/completions/asdf.bash" ] && . "$HOME/.asdf/completions/asdf.bash"
 
 # NVM variables
 export NVM_DIR="$HOME/.nvm"
@@ -120,6 +121,11 @@ command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
 export PATH="$HOME/.pyenv/bin:$PATH"
 
 # Obsidian
+# Create valt if it doesn't exist
+if [ ! -d "$HOME/Documents/obsidianVault" ]; then
+    mkdir -p "$HOME/Documents/obsidianVault"
+fi
+# Set the path to the Obsidian vault
 export OBSIDIAN_HOME="$HOME/Documents/obsidianVault"
 
 # flatpak
@@ -146,6 +152,9 @@ case ":$PATH:" in
 *) export PATH="$PNPM_HOME:$PATH" ;;
 esac
 
+# fzf
+[ -f $HOME/.fzf.bash ] && . $HOME/.fzf.bash
+
 # Terraform
 # Set autocomplete for terraform
 complete -C /usr/bin/terraform terraform
@@ -160,5 +169,3 @@ eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 . $HOME/.dotfiles_ubuntu/shell/configs/bash_history.sh
 . $HOME/.dotfiles_ubuntu/shell/configs/fzf.sh
 . $HOME/.dotfiles_ubuntu/shell/configs/zoxide.sh
-
-[ -f ~/.fzf.bash ] && source ~/.fzf.bash
