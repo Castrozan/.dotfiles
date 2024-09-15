@@ -10,3 +10,4 @@
 - [ ] fix lazygit install. it is working but gives error on install
 - [ ] Configure nerd fonts for terminal
 - [ ] Remove all unnecessary output from scripts
+- [ ] Source the bashrc in the test ci
