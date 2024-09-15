@@ -13,6 +13,9 @@ _SH=$HOME"/.bashrc"
 # Dotfiles home directory
 _DOTFILES_HOME="$HOME/.dotfiles_ubuntu"
 
+# Dotfiles dir name
+_DOTFILES_DIR=".dotfiles_ubuntu"
+
 # Directory with config scripts
 _CONFIG_SCRIPTS_DIR="shell/configs"
 

@@ -9,13 +9,13 @@ iterate_config_scripts() {
 
     for file in "$_dir"/*; do
         if [ -f "$file" ]; then
-            full_path="$_DOTFILES_HOME/$file"
+            full_path="\$HOME/$_DOTFILES_DIR/$file"
             if is_sourced "$full_path"; then
                 print "$full_path is already sourced in $_SH." "${YELLOW}"
             else
                 # Add the source command to .bashrc
                 # shellcheck disable=SC2028
-                echo "\n. $full_path" >>"$_SH"
+                echo ". $full_path" >>"$_SH"
                 print "$full_path has been sourced." "${GREEN}"
             fi
         fi
