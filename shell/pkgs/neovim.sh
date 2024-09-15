@@ -8,7 +8,7 @@ install_nvim() {
 }
 
 # Check if neovim is installed
-if command -v nvim >/dev/null 2>&1; then
+if nvim --version >/dev/null 2>&1; then
     print "Neovim already installed" "$YELLOW"
 else
     install_nvim

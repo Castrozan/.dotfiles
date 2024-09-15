@@ -2,7 +2,7 @@
 
 . "shell/src/print.sh"
 . "shell/src/ask.sh"
-. "shell/src/install_with_custom_script_via_curl.sh"
+. "shell/src/install_with_temp_custom_script.sh"
 
 # Desktop integration on Linux
 # If you want the kitty icon to appear in the taskbar and an entry for it to be present in the menus,
@@ -29,7 +29,7 @@ install_kitty_desktop_integration() {
 if command -v kitty >/dev/null 2>&1; then
     print "Kitty already installed" "$YELLOW"
 else
-    install_with_custom_script_via_curl "https://sw.kovidgoyal.net/kitty/installer.sh"
+    install_with_temp_custom_script "https://sw.kovidgoyal.net/kitty/installer.sh"
 
     if ask "Do you want to install kitty.desktop integration?"; then
         install_kitty_desktop_integration
