@@ -30,9 +30,9 @@ jobs:
 
     - name: Test install script
       run: |
-        echo $HOME
-        source ~/.bashrc
-        echo $OBSIDIAN_HOME
+        # echo $HOME
+        # source ~/.bashrc
+        # echo $OBSIDIAN_HOME
         chmod +x install.sh
         yes | sh install.sh
         sh test.sh
