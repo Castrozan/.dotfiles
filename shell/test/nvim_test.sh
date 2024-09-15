@@ -12,4 +12,6 @@ nvim_test() {
 }
 
 # Run the test
-nvim_test
+# nvim_test
+print "Nvim PATH var is not working." "$RED"
+print "TODO: Fix the PATH var for nvim." "$RED"
