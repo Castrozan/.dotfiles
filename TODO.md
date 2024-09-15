@@ -8,3 +8,4 @@
 - [ ] Fix nvim path variable
 - [ ] Add more lsp servers for nvim (lua, python, etc)
 - [ ] fix lazygit install. it is working but gives error on install
+- [ ] Configure nerd fonts for terminal
