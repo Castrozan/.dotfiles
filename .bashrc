@@ -103,6 +103,11 @@ if [ ! -d "$HOME/repo" ]; then
     mkdir -p "$HOME/repo"
 fi
 
+# Create fonts directory if it doesn't exist
+if [ ! -d "$HOME/.local/share/fonts" ]; then
+    mkdir -p "$HOME/.local/share/fonts"
+fi
+
 # BEGIN EVN VARIABLES
 # Add local bin to PATH
 export PATH=$PATH:~/.local/bin
