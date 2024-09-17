@@ -88,9 +88,9 @@ if [ -f ~/.bash_aliases ]; then
     . ~/.bash_aliases
 fi
 
-# Source bash env config
-if [ -f ~/.bash_env_variables ]; then
-    . ~/.bash_env_variables
+# Source bash env vars config
+if [ -f ~/.bash_env_vars ]; then
+    . ~/.bash_env_vars
 fi
 
 # Source bash completion
