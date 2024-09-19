@@ -108,6 +108,10 @@ if [ ! -d "$HOME/.local/share/fonts" ]; then
     mkdir -p "$HOME/.local/share/fonts"
 fi
 
+# Experimental
+# Set caps lock to escape
+setxkbmap -option caps:escape
+
 # BEGIN EVN VARIABLES
 # Add local bin to PATH
 export PATH=$PATH:~/.local/bin
