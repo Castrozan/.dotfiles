@@ -58,7 +58,6 @@ require('mason').setup()
 -- Feel free to add/remove any LSPs that you want here. They will automatically be installed
 local servers = {
   'pyright',
-  'tsserver',
   'bash-language-server',
   'typescript-language-server'
 }
