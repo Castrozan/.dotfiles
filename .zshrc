@@ -22,6 +22,8 @@ zstyle ':omz:update' mode reminder # just remind me to update when it's time
 zstyle ':omz:lib:*' aliases no
 # Skip only the aliases from the git plugin
 zstyle ':omz:plugins:git' aliases no
+# Skip directories aliases
+zstyle ':omz:lib:directories' aliases no
 
 # Uncomment the following line to change how often to auto-update (in days).
 # zstyle ':omz:update' frequency 13
