@@ -47,27 +47,22 @@ install_zsh_plugins() {
         >"$ZSH_CUSTOM"/catppuccin_mocha-zsh-syntax-highlighting.zsh
 }
 
-zsh() {
+# zsh home directory
+# Seting it for installing scripts and plugins
+if [ -z "$ZSH" ]; then
+    ZSH="$HOME/.oh-my-zsh"
+fi
 
-    # zsh home directory
-    # Seting it for installing scripts and plugins
-    if [ -z "$ZSH" ]; then
-        ZSH="$HOME/.oh-my-zsh"
-    fi
+# zsh custom directory for plugins and other customizations
+# Seting it for installing scripts and plugins
+if [ -z "$ZSH_CUSTOM" ]; then
+    ZSH_CUSTOM=$ZSH/custom
+fi
 
-    # zsh custom directory for plugins and other customizations
-    # Seting it for installing scripts and plugins
-    if [ -z "$ZSH_CUSTOM" ]; then
-        ZSH_CUSTOM=$ZSH/custom
-    fi
+should_install zsh
 
-    should_install zsh
-
-    # Check if zsh is installed to install oh-my-zsh and plugins
-    if ! zsh --version >/dev/null 2>&1; then
-        install_ohmyzsh
-        install_zsh_plugins
-    fi
-}
-
-zsh
+# Check if zsh is installed to install oh-my-zsh and plugins
+if zsh --version >/dev/null 2>&1; then
+    install_ohmyzsh
+    install_zsh_plugins
+fi
