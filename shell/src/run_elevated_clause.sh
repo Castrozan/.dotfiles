@@ -19,7 +19,8 @@ run_elevated_clause() {
             print "It looks like you need elevated permissions to run this script." "$RED"
 
             if ask "Would you like to try running the command with sudo?"; then
-                [ -n "$2" ] && cd "$2" || exit
+                # shellcheck disable=SC2164
+                [ -n "$2" ] && cd "$2"
                 sudo "$_clause"
             else
                 print "Skipping the command." "$YELLOW"
