@@ -87,6 +87,9 @@ source $ZSH/oh-my-zsh.sh
 # - $ZSH_CUSTOM/macos.zsh
 # For a full list of active aliases, run `alias`.
 
+# Bind tab to accept autosuggestions
+bindkey '^I' autosuggest-accept
+
 # Load Catppucchin the theme for zsh-syntax-highlighting
 source $ZSH_CUSTOM/catppuccin_mocha-zsh-syntax-highlighting.zsh
 
