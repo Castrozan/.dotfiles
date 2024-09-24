@@ -11,3 +11,4 @@
 - [ ] Configure nerd fonts for terminal
 - [ ] Remove all unnecessary output from scripts
 - [ ] Source the bashrc in the test ci
+- [ ] Re-arch the way to install dotfiles declaratively instead of interactively
