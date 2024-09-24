@@ -18,10 +18,11 @@ install_with_temp_custom_script() {
     tmpFile=$(mktemp)
 
     # Send the script to the temporary file
-    echo "$tool" "$flags" "$uri" >"$tmpFile"
+    echo "$tool" "$flags" "$uri" "$tmpFile"
     "$tool" "$flags" "$uri" >"$tmpFile"
 
     # Execute the script stored in the temporary file
+    echo "$shell" "$tmpFile" "$shellFlags"
     "$shell" "$tmpFile" "$shellFlags"
 
     # Clean up the temporary file

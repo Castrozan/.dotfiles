@@ -40,6 +40,11 @@ install_zsh_plugins() {
     #zsh-autocomplete plugin
     install_plugin "git clone --depth 1 -- https://github.com/marlonrichert/zsh-autocomplete.git" \
         "$ZSH_CUSTOM"/plugins/zsh-autocomplete
+
+    # Catppuccin theme for zsh-syntax-highlighting
+    # Sourced on .zshrc
+    curl "https://raw.githubusercontent.com/catppuccin/zsh-syntax-highlighting/refs/heads/main/themes/catppuccin_mocha-zsh-syntax-highlighting.zsh" \
+        >"$ZSH_CUSTOM"/catppuccin_mocha-zsh-syntax-highlighting.zsh
 }
 
 zsh() {

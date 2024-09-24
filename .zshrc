@@ -8,7 +8,7 @@ export ZSH="$HOME/.oh-my-zsh"
 # load a random theme each time Oh My Zsh is loaded, in which case,
 # to know which specific one was loaded, run: echo $RANDOM_THEME
 # See https://github.com/ohmyzsh/ohmyzsh/wiki/Themes
-ZSH_THEME="cloud"
+ZSH_THEME="robbyrussell"
 
 # Case-sensitive completion.
 CASE_SENSITIVE="true"
@@ -17,6 +17,11 @@ CASE_SENSITIVE="true"
 # zstyle ':omz:update' mode disabled  # disable automatic updates
 # zstyle ':omz:update' mode auto      # update automatically without asking
 zstyle ':omz:update' mode reminder # just remind me to update when it's time
+
+# Skip all aliases in lib files
+zstyle ':omz:lib:*' aliases no
+# Skip only the aliases from the git plugin
+zstyle ':omz:plugins:git' aliases no
 
 # Uncomment the following line to change how often to auto-update (in days).
 # zstyle ':omz:update' frequency 13
@@ -81,7 +86,12 @@ source $ZSH/oh-my-zsh.sh
 # - $ZSH_CUSTOM/aliases.zsh
 # - $ZSH_CUSTOM/macos.zsh
 # For a full list of active aliases, run `alias`.
-#
-# Example aliases
-# alias zshconfig="mate ~/.zshrc"
-# alias ohmyzsh="mate ~/.oh-my-zsh"
+
+# Load Catppucchin the theme for zsh-syntax-highlighting
+source $ZSH_CUSTOM/catppuccin_mocha-zsh-syntax-highlighting.zsh
+
+# Files sourcered by $HOME/.dotfiles_ubuntu
+. $HOME/.dotfiles_ubuntu/shell/configs/fzf.sh
+. $HOME/.dotfiles_ubuntu/shell/configs/git_aliases.sh
+. $HOME/.dotfiles_ubuntu/shell/configs/zoxide.sh
+. $HOME/.dotfiles_ubuntu/.bash_aliases
