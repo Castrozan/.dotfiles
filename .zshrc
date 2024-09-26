@@ -48,6 +48,20 @@ COMPLETION_WAITING_DOTS="true"
 # see 'man strftime' for details.
 # HIST_STAMPS="mm/dd/yyyy"
 
+# History settings from https://github.com/rothgar/mastering-zsh/blob/master/docs/config/history.md
+setopt EXTENDED_HISTORY       # Write the history file in the ':start:elapsed;command' format.
+setopt INC_APPEND_HISTORY     # Write to the history file immediately, not when the shell exits.
+setopt SHARE_HISTORY          # Share history between all sessions.
+setopt HIST_EXPIRE_DUPS_FIRST # Expire a duplicate event first when trimming history.
+setopt HIST_IGNORE_DUPS       # Do not record an event that was just recorded again.
+setopt HIST_IGNORE_ALL_DUPS   # Delete an old recorded event if a new event is a duplicate.
+setopt HIST_FIND_NO_DUPS      # Do not display a previously found event.
+setopt HIST_IGNORE_SPACE      # Do not record an event starting with a space.
+setopt HIST_SAVE_NO_DUPS      # Do not write a duplicate event to the history file.
+setopt HIST_VERIFY            # Do not execute immediately upon history expansion.
+setopt APPEND_HISTORY         # append to history file
+setopt HIST_NO_STORE          # Don't store history commands
+
 # Would you like to use another custom folder than $ZSH/custom?
 # ZSH_CUSTOM=/path/to/new-custom-folder
 
@@ -62,7 +76,16 @@ plugins=(
     zsh-syntax-highlighting
     fast-syntax-highlighting
     zsh-autocomplete
+    zsh-fzf-history-search
 )
+
+# Keybind to trigger zsh-fzf-history-search
+ZSH_FZF_HISTORY_SEARCH_BIND="^f"
+# Extra arguments for fzf
+ZSH_FZF_HISTORY_SEARCH_FZF_EXTRA_ARGS="--tac --tiebreak=index --height=40% --layout=reverse --border"
+
+# Bind tab to accept zsh-autosuggestions
+bindkey '^I' autosuggest-accept
 
 source $ZSH/oh-my-zsh.sh
 
@@ -80,17 +103,6 @@ source $ZSH/oh-my-zsh.sh
 
 # Compilation flags
 # export ARCHFLAGS="-arch $(uname -m)"
-
-# Set personal aliases, overriding those provided by Oh My Zsh libs,
-# plugins, and themes. Aliases can be placed here, though Oh My Zsh
-# users are encouraged to define aliases within a top-level file in
-# the $ZSH_CUSTOM folder, with .zsh extension. Examples:
-# - $ZSH_CUSTOM/aliases.zsh
-# - $ZSH_CUSTOM/macos.zsh
-# For a full list of active aliases, run `alias`.
-
-# Bind tab to accept autosuggestions
-bindkey '^I' autosuggest-accept
 
 # Load Catppucchin the theme for zsh-syntax-highlighting
 source $ZSH_CUSTOM/catppuccin_mocha-zsh-syntax-highlighting.zsh

@@ -26,6 +26,7 @@ install_plugin() {
 }
 
 install_zsh_plugins() {
+    # zsh-autosuggestions plugin
     install_plugin "git clone https://github.com/zsh-users/zsh-autosuggestions.git" \
         "$ZSH_CUSTOM"/plugins/zsh-autosuggestions
 
@@ -37,9 +38,13 @@ install_zsh_plugins() {
     install_plugin "git clone https://github.com/zdharma-continuum/fast-syntax-highlighting.git" \
         "$ZSH_CUSTOM"/plugins/fast-syntax-highlighting
 
-    #zsh-autocomplete plugin
+    # zsh-autocomplete plugin
     install_plugin "git clone --depth 1 -- https://github.com/marlonrichert/zsh-autocomplete.git" \
         "$ZSH_CUSTOM"/plugins/zsh-autocomplete
+
+    # zsh-fzf-history-search plugin
+    install_plugin "git clone https://github.com/joshskidmore/zsh-fzf-history-search" \
+        "$ZSH_CUSTOM"/plugins/zsh-fzf-history-search
 
     # Catppuccin theme for zsh-syntax-highlighting
     # Sourced on .zshrc
