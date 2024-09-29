@@ -15,6 +15,7 @@ run_elevated_clause() {
         # Check if the error is related to permission issues
         error_message=$($_clause 2>&1)
 
+        # TODO: Check if error code is 126 or 100 (permission denied)
         if echo "$error_message" | grep -q "Permission denied"; then
             print "It looks like you need elevated permissions to run this script." "$RED"
 
