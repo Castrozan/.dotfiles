@@ -13,16 +13,16 @@ install_ncurses() {
 }
 
 # Install cbonsai
-cbonsai() {
+install_cbonsai() {
     git clone https://gitlab.com/jallbrit/cbonsai "$HOME/repo/cbonsai"
     run_elevated_clause "make install" "$HOME/repo/cbonsai"
 }
 
 # Check if cbonsai is installed
-# if [ -d "$HOME/repo/cbonsai" ]; then
-#     print "Cbonsai already installed" "$YELLOW"
-# else
-install_ncurses
-install_scdoc
-cbonsai
-# fi
+if [ -d "$HOME/repo/cbonsai" ]; then
+    print "Cbonsai already installed" "$YELLOW"
+else
+    install_ncurses
+    install_scdoc
+    install_cbonsai
+fi

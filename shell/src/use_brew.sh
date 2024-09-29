@@ -12,13 +12,6 @@ use_brew() {
             # Install Homebrew from https://brew.sh
             /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
-            # Add Homebrew to PATH
-            (
-                echo
-                echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"'
-            ) >>$_SH
-            eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-
             # Install gcc
             brew postinstall gcc
 
