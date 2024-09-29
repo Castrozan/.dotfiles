@@ -9,10 +9,10 @@ ask() {
 
     # Use printf to display the prompt with colors
     printf "${CYAN}%b${RESET} (Y/n): " "$prompt"
-    
+
     # Read the user input
     read -r resp
-    
+
     if [ -z "$resp" ]; then
         # empty is Yes
         response_lc="y"

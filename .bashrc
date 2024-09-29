@@ -54,7 +54,7 @@ parse_git_branch() {
 
 # Define PS1
 if [ "$color_prompt" = yes ]; then
-    PS1="\[\e]0;${debian_chroot:+($debian_chroot)}\[\033[01;32m\] \u\[\033[00m\]\[\033[01;34m\] \W\[\033[00m\]\[\033[01;1;38;2;253;200;169m\]\$(parse_git_branch)\[\033[00m\]\$ "
+    PS1="\[\033[01;32m\] \u\[\033[00m\]\[\033[01;34m\] \W\[\033[00m\]\[\033[01;1;38;2;253;200;169m\]\$(parse_git_branch)\[\033[00m\]\$ "
 else
     PS1="\u@\h:\w\$(parse_git_branch)\$ "
 fi
@@ -69,9 +69,25 @@ xterm* | rxvt*)
 *) ;;
 esac
 
-# Open tmux on startup, but not if terminal emulator is kitty
-if command -v tmux &>/dev/null && [ -n "$PS1" ] && [[ ! "$TERM" =~ screen ]] && [[ ! "$TERM" =~ tmux ]] && [ -z "$TMUX" ] && [ -z "$KITTY_PID" ]; then
-    exec tmux
+# Creates a screensaver with pipes and bonsai
+_start_first_tmux_session() {
+    # Check if any tmux session exists
+    if ! tmux has-session 2>/dev/null; then
+        # Start tmux and split panes
+        tmux new-session -d -s 1 \; \
+            rename-window 'screensaver' \; \
+            send-keys 'bonsai' C-m \; \
+            split-window -h \; \
+            send-keys 'pipes' C-m \; \
+            attach
+    else
+        tmux attach -t 1
+    fi
+}
+
+# Open tmux on startup
+if command -v tmux &>/dev/null && [ -n "$PS1" ] && [[ ! "$TERM" =~ screen ]] && [[ ! "$TERM" =~ tmux ]] && [ -z "$TMUX" ]; then
+    _start_first_tmux_session
 fi
 
 # Source aliases
