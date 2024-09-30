@@ -15,7 +15,7 @@ install_ncurses() {
 # Install cbonsai
 install_cbonsai() {
     git clone https://gitlab.com/jallbrit/cbonsai "$HOME/repo/cbonsai"
-    run_elevated_clause "make install" "$HOME/repo/cbonsai"
+    run_elevated_clause "make -C $HOME/repo/cbonsai install"
 }
 
 # Check if cbonsai is installed

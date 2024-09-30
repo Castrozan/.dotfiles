@@ -44,4 +44,4 @@ help:
 	@echo "Available targets:"
 	@echo "  make        - Run installation script"
 	@echo "  make test   - Run tests locally"
-	@echo "  make clean  - Clean temporary files"
+	@echo "  make ci     - Run tests and install in Docker (CI-like environment)"

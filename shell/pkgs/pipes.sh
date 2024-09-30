@@ -5,7 +5,7 @@
 # Install pipes.sh
 install_pipes() {
     git clone https://github.com/pipeseroni/pipes.sh "$HOME/repo/pipes.sh"
-    run_elevated_clause "make install" "$HOME/repo/pipes.sh"
+    run_elevated_clause "make -C $HOME/repo/pipes.sh install"
 }
 
 # Check if pipes.sh is installed
