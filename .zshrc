@@ -79,11 +79,13 @@ plugins=(
     zsh-fzf-history-search
 )
 
+# ZSH-FZF-HISTORY-SEARCH
 # Keybind to trigger zsh-fzf-history-search
 ZSH_FZF_HISTORY_SEARCH_BIND="^f"
 # Extra arguments for fzf
 ZSH_FZF_HISTORY_SEARCH_FZF_EXTRA_ARGS="--tac --tiebreak=index --height=40% --layout=reverse --border"
 
+# ZSH-AUTOSUGGESTIONS
 # Bind tab to accept zsh-autosuggestions
 bindkey '^I' autosuggest-accept
 
