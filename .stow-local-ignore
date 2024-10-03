@@ -37,3 +37,4 @@ nixos
 install.sh
 test.sh
 TODO.md
+Makefile

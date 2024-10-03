@@ -11,10 +11,10 @@ _PKG_MGR="apt"
 _SH=$HOME"/.bashrc"
 
 # Dotfiles home directory
-_DOTFILES_HOME="$HOME/.dotfiles
+_DOTFILES_HOME="$HOME/.dotfiles"
 
 # Dotfiles dir name
-_DOTFILES_DIR=".dotfiles
+_DOTFILES_DIR=".dotfiles"
 
 # Directory with config scripts
 _CONFIG_SCRIPTS_DIR="shell/configs"
