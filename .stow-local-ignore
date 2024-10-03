@@ -21,10 +21,14 @@ _darcs
 \.github
 \.vscode
 
-.+~    # emacs backup files
+.+~ # emacs backup files
+# shellcheck disable=SC2288
+# shellcheck disable=SC2211
 \#.*\# # emacs autosave files
 
+# shellcheck disable=SC2211
 ^/README.*
+# shellcheck disable=SC2211
 ^/LICENSE.*
 ^/COPYING
 
