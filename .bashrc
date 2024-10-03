@@ -90,13 +90,9 @@ if command -v tmux &>/dev/null && [ -n "$PS1" ] && [[ ! "$TERM" =~ screen ]] && 
     _start_first_tmux_session
 fi
 
-# Source aliases
-if [ -f ~/.bash_aliases ]; then
-    . ~/.bash_aliases
-fi
-
 # Source bash env vars config
 if [ -f ~/.bash_env_vars ]; then
+    # shellcheck source=.bash_env_vars
     . ~/.bash_env_vars
 fi
 
@@ -189,4 +185,5 @@ eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 . $HOME/.dotfiles/shell/configs/fzf.sh
 . $HOME/.dotfiles/shell/configs/fzf_bash_history.sh
 . $HOME/.dotfiles/shell/configs/git_aliases.sh
+. $HOME/.dotfiles/shell/configs/bash_aliases.sh
 . $HOME/.dotfiles/shell/configs/zoxide.sh
