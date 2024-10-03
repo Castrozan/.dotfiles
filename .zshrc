@@ -113,4 +113,4 @@ source $ZSH_CUSTOM/catppuccin_mocha-zsh-syntax-highlighting.zsh
 . $HOME/.dotfiles/shell/configs/fzf.sh
 . $HOME/.dotfiles/shell/configs/git_aliases.sh
 . $HOME/.dotfiles/shell/configs/zoxide.sh
-. $HOME/.dotfiles/.bash_aliases
+. $HOME/.dotfiles/shell/configs/bash_aliases.sh
