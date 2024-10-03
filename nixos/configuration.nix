@@ -10,7 +10,7 @@
     /etc/nixos/hardware-configuration.nix
     ./packages.nix
     #./env.nix
-    #./virtualization.nix
+    ./virtualization.nix
   ];
 
   # BEGIN SYSTEM CONFIGURATION
