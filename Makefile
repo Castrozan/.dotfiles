@@ -3,7 +3,7 @@
 # Variables
 DOCKER_IMAGE = ubuntu:latest
 CONTAINER_NAME = dotfiles-test
-WORKDIR = /root/.dotfiles_ubuntu
+WORKDIR = /root/.dotfiles
 
 # Default target
 .PHONY: all

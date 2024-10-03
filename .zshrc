@@ -109,8 +109,8 @@ source $ZSH/oh-my-zsh.sh
 # Load Catppucchin the theme for zsh-syntax-highlighting
 source $ZSH_CUSTOM/catppuccin_mocha-zsh-syntax-highlighting.zsh
 
-# Files sourcered by $HOME/.dotfiles_ubuntu
-. $HOME/.dotfiles_ubuntu/shell/configs/fzf.sh
-. $HOME/.dotfiles_ubuntu/shell/configs/git_aliases.sh
-. $HOME/.dotfiles_ubuntu/shell/configs/zoxide.sh
-. $HOME/.dotfiles_ubuntu/.bash_aliases
+# Files sourcered by $HOME/.dotfiles
+. $HOME/.dotfiles/shell/configs/fzf.sh
+. $HOME/.dotfiles/shell/configs/git_aliases.sh
+. $HOME/.dotfiles/shell/configs/zoxide.sh
+. $HOME/.dotfiles/.bash_aliases

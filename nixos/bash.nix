@@ -75,8 +75,8 @@
     alias l='ls -CF'
     alias oo="cd $OBSIDIAN_HOME"
     alias lc="ls -a --color=never"
-    alias dotfiles="cd ~/.dotfiles_ubuntu"
-    alias rebuild="sudo nixos-rebuild switch --flake /home/zanoni/.dotfiles_ubuntu/nixos#zanoni --impure"
+    alias dotfiles="cd ~/.dotfiles"
+    alias rebuild="sudo nixos-rebuild switch --flake /home/zanoni/.dotfiles/nixos#zanoni --impure"
     alias t="tmux"
     alias todo="code $OBSIDIAN_HOME -g $OBSIDIAN_HOME/TODO.md"
     alias g="lazygit"

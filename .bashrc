@@ -184,9 +184,9 @@ complete -C /usr/bin/terraform terraform
 # Add brew to PATH
 eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 
-# Files sourcered by $HOME/.dotfiles_ubuntu
-. $HOME/.dotfiles_ubuntu/shell/configs/bash_history.sh
-. $HOME/.dotfiles_ubuntu/shell/configs/fzf.sh
-. $HOME/.dotfiles_ubuntu/shell/configs/fzf_bash_history.sh
-. $HOME/.dotfiles_ubuntu/shell/configs/git_aliases.sh
-. $HOME/.dotfiles_ubuntu/shell/configs/zoxide.sh
+# Files sourcered by $HOME/.dotfiles
+. $HOME/.dotfiles/shell/configs/bash_history.sh
+. $HOME/.dotfiles/shell/configs/fzf.sh
+. $HOME/.dotfiles/shell/configs/fzf_bash_history.sh
+. $HOME/.dotfiles/shell/configs/git_aliases.sh
+. $HOME/.dotfiles/shell/configs/zoxide.sh
