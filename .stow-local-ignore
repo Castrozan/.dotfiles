@@ -29,6 +29,7 @@ _darcs
 ^/COPYING
 
 shell
+nixos
 install.sh
 test.sh
 TODO.md
