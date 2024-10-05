@@ -43,6 +43,8 @@
     zip
     azure-cli
     terraform
+    cbonsai
+    pipes
     lazygit
     lazydocker
     # tmux yank depends on xsel
