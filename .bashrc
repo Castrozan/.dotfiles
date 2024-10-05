@@ -69,25 +69,32 @@ xterm* | rxvt*)
 *) ;;
 esac
 
-# Creates a screensaver with pipes and bonsai
-_start_first_tmux_session() {
-    # Check if any tmux session exists
-    if ! tmux has-session 2>/dev/null; then
-        # Start tmux and split panes
-        tmux new-session -d -s 1 \; \
+# Function to start the first tmux session for screensaver
+_start_screensaver_tmux_session() {
+    # Check if the screensaver session exists
+    if ! tmux has-session -t screensaver 2>/dev/null; then
+        # Start tmux screensaver session and split panes
+        tmux new-session -d -s screensaver \; \
             rename-window 'screensaver' \; \
             send-keys 'bonsai_screensaver' C-m \; \
             split-window -h \; \
-            send-keys 'pipes_screensaver' C-m \; \
-            attach
-    else
-        tmux attach -t 1
+            send-keys 'pipes_screensaver' C-m
     fi
 }
 
-# Open tmux on startup
+# Function to start a main tmux session
+_start_main_tmux_session() {
+    # Check if the main session exists
+    if ! tmux has-session -t main 2>/dev/null; then
+        tmux new-session -d -s main -n main
+    fi
+}
+
+# Open tmux sessions on startup
 if command -v tmux &>/dev/null && [ -n "$PS1" ] && [[ ! "$TERM" =~ screen ]] && [[ ! "$TERM" =~ tmux ]] && [ -z "$TMUX" ]; then
-    _start_first_tmux_session
+    _start_screensaver_tmux_session
+    _start_main_tmux_session
+    tmux attach -t screensaver
 fi
 
 # Set random background image in Kitty terminal only on NixOS
