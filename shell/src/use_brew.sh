@@ -14,6 +14,8 @@ use_brew() {
 
             # Install gcc
             brew postinstall gcc
+            # Add brew to PATH
+            eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 
             # Check if brew is installed
             if brew --version; then

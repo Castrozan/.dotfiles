@@ -12,12 +12,14 @@
 
   # List packages installed in system profile. To search, run: nix search wget
   environment.systemPackages = with pkgs; [
+    # TODO: organize this
     # UTILS BEGIN
     zsh
     vim
     git
     bash-completion
     tmux
+    gnumake
     yazi
     usbutils
     dbeaver-bin

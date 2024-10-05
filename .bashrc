@@ -118,10 +118,6 @@ if [ ! -d "$HOME/.local/share/fonts" ]; then
     mkdir -p "$HOME/.local/share/fonts"
 fi
 
-# Experimental
-# Set caps lock to escape
-setxkbmap -option caps:escape
-
 # BEGIN EVN VARIABLES
 # Add local bin to PATH
 export PATH=$PATH:~/.local/bin
@@ -183,10 +179,6 @@ esac
 # Set autocomplete for terraform
 complete -C /usr/bin/terraform terraform
 
-# Brew
-# Add brew to PATH
-eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-
 # Files sourcered by $HOME/.dotfiles
 . $HOME/.dotfiles/shell/configs/bash_history.sh
 . $HOME/.dotfiles/shell/configs/fzf.sh
@@ -194,3 +186,4 @@ eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 . $HOME/.dotfiles/shell/configs/git_aliases.sh
 . $HOME/.dotfiles/shell/configs/bash_aliases.sh
 . $HOME/.dotfiles/shell/configs/zoxide.sh
+. $HOME/.dotfiles/shell/configs/screensaver.sh

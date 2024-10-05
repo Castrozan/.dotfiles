@@ -26,9 +26,7 @@ alias scripts='cd $HOME/repo/scripts && nvim .'
 alias g='lazygit'
 alias d='lazydocker'
 alias killport='sh $HOME/.local/bin/killport'
-alias bonsai='$HOME/repo/cbonsai/cbonsai'
-alias pipes='$HOME/repo/pipes.sh/pipes.sh'
-alias pipes_screensaver='pipes'
-alias bonsai_screensaver='bonsai -l -i -b 1 -c mWm,wMw,mMw,wWm -M 3 -L 40'
-alias rebuild="sudo nixos-rebuild switch --flake /home/zanoni/.dotfiles/nixos#zanoni --impure"
 alias kc="nvim ~/.config/kitty/kitty.conf"
+
+# aliases for nixos
+alias rebuild="sudo nixos-rebuild switch --flake /home/zanoni/.dotfiles/nixos#zanoni --impure"
