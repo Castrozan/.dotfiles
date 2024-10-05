@@ -90,6 +90,13 @@ if command -v tmux &>/dev/null && [ -n "$PS1" ] && [[ ! "$TERM" =~ screen ]] && 
     _start_first_tmux_session
 fi
 
+# Set random background image in Kitty terminal only on NixOS
+if grep -q "ID=nixos" /etc/os-release; then
+    if ps aux | grep "[k]itty" >/dev/null; then
+        [ -n "$KITTY_WINDOW_ID" ] && set-random-bg-kitty
+    fi
+fi
+
 # Source bash env vars config
 if [ -f ~/.bash_env_vars ]; then
     # shellcheck source=.bash_env_vars
