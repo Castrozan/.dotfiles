@@ -54,13 +54,22 @@
       enable = true;
       config = {
         pager = "less -FR";
-        theme = "catppuccin-mocha";
+        theme = "dracula";
       };
       themes = {
-        # https://raw.githubusercontent.com/catppuccin/bat/main/Catppuccin-mocha.tmTheme
-        catppuccin-mocha = {
-          src = catppuccin-bat;
-          file = "Catppuccin-mocha.tmTheme";
+        # # https://raw.githubusercontent.com/catppuccin/bat/main/Catppuccin-mocha.tmTheme
+        # catppuccin-mocha = {
+        #   src = catppuccin-bat;
+        #   file = "Catppuccin-mocha.tmTheme";
+        # };
+        dracula = {
+          src = pkgs.fetchFromGitHub {
+            owner = "dracula";
+            repo = "sublime"; # Bat uses sublime syntax for its themes
+            rev = "26c57ec282abcaa76e57e055f38432bd827ac34e";
+            sha256 = "019hfl4zbn4vm4154hh3bwk6hm7bdxbr1hdww83nabxwjn99ndhv";
+          };
+          file = "Dracula.tmTheme";
         };
       };
     };

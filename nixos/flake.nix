@@ -19,7 +19,7 @@
     ...
   }: {
     nixosConfigurations = {
-      nixos = let
+      zanoni = let
         username = "zanoni";
         specialArgs = {inherit username;};
       in
