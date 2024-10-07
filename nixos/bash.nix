@@ -1,7 +1,7 @@
 { pkgs, ... }:
 
 let
-  bashrc = builtins.readFile /home/zanoni/.dotfiles/.bashrc;
+  bashrc = builtins.readFile ../.bashrc;
 in
 {
   # Global Bash configuration
