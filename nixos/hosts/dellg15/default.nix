@@ -11,7 +11,8 @@
       # ../../modules/i3.nix
 
       # Include the results of the hardware scan.
-      # ./hardware-configuration.nix
+      # Gen with the command: sudo nixos-generate-config --show-hardware-config
+      ./hardware-configuration.nix
     ];
 
   # Bootloader.

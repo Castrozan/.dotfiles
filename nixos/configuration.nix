@@ -7,7 +7,8 @@
 {
   imports = [
     # Include the results of the hardware scan.
-    /etc/nixos/hardware-configuration.nix
+    # Im setting this on hosts/dellg15/default.nix
+    # /etc/nixos/hardware-configuration.nix
     ./packages.nix
     ./env.nix
     ./virtualization.nix

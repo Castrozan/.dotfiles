@@ -29,7 +29,7 @@
 
           modules = [
             ./configuration.nix
-            ./hosts/nixos
+            ./hosts/dellg15
             ./users/${username}/nixos.nix
 
             home-manager.nixosModules.home-manager
