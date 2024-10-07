@@ -30,3 +30,5 @@ alias kc="nvim ~/.config/kitty/kitty.conf"
 
 # aliases for nixos
 alias rebuild='sudo nixos-rebuild switch --flake $HOME/.dotfiles/nixos#$(whoami)'
+alias nord-on-us='sudo wgnord c US'
+alias nord-off='sudo wgnord d'
