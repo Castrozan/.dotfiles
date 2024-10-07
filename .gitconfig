@@ -1,0 +1,8 @@
+[core]
+	pager = less -F -X
+	hooksPath = /home/lucas.zanoni/.git_books
+[user]
+	name = Lucas de Castro Zanoni
+	email = lucas.zanoni@betha.com.br
+[alias]
+	fzf = !/home/lucas.zanoni/.dotfiles/bin/git_fzf.sh

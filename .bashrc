@@ -187,6 +187,11 @@ esac
 # fzf
 [ -f $HOME/.fzf.bash ] && . $HOME/.fzf.bash
 
+# Brew
+# Add brew to PATH
+# TODO: fix for nixos
+eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+
 # Terraform
 # Set autocomplete for terraform
 complete -C /usr/bin/terraform terraform
