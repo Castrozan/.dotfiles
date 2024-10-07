@@ -189,6 +189,7 @@ esac
 
 # Brew
 # Add brew to PATH
+# TODO: fix for nixos
 eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 
 # Terraform
