@@ -90,11 +90,16 @@ _start_main_tmux_session() {
     fi
 }
 
-# Open tmux sessions on startup
-if command -v tmux &>/dev/null && [ -n "$PS1" ] && [[ ! "$TERM" =~ screen ]] && [[ ! "$TERM" =~ tmux ]] && [ -z "$TMUX" ]; then
+_start_tmux() {
+    # Start tmux
     _start_screensaver_tmux_session
     _start_main_tmux_session
     tmux attach -t screensaver
+}
+
+# Open tmux sessions on startup
+if command -v tmux &>/dev/null && [ -n "$PS1" ] && [[ ! "$TERM" =~ screen ]] && [[ ! "$TERM" =~ tmux ]] && [ -z "$TMUX" ]; then
+    _start_tmux
 fi
 
 # Set random background image in Kitty terminal only on NixOS
