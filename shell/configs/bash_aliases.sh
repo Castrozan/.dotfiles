@@ -29,4 +29,4 @@ alias killport='sh $HOME/.local/bin/killport'
 alias kc="nvim ~/.config/kitty/kitty.conf"
 
 # aliases for nixos
-alias rebuild="sudo nixos-rebuild switch --flake /home/zanoni/.dotfiles/nixos#zanoni --impure"
+alias rebuild='sudo nixos-rebuild switch --flake $HOME/.dotfiles/nixos#$(whoami)'
