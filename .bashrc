@@ -76,9 +76,9 @@ _start_screensaver_tmux_session() {
         # Start tmux screensaver session and split panes
         tmux new-session -d -s screensaver \; \
             rename-window 'screensaver' \; \
-            send-keys 'pipes_screensaver' C-m \; \
+            send-keys 'bonsai_screensaver' C-m \; \
             split-window -h \; \
-            send-keys 'bonsai_screensaver' C-m
+            send-keys 'pipes_screensaver' C-m
     fi
 }
 
