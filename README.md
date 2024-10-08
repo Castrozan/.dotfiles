@@ -34,3 +34,5 @@ make install
 ```
 
 This script will guide you through the installation process. However, there are a few dependencies that are not automatically installed, which are noted below.
+
+You can use the config.sh file to customize the installation process. Commenting the pkgs and configs you don't want to install.

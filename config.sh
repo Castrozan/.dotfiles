@@ -8,6 +8,7 @@
 # Below are array like structures that you should modify to install-
 # the packages and configs that you want
 # Now it shows all packages and configs that are available
+# It is up to you to comment the ones that you don't want
 
 # Packages
 # These are the packages that are available
