@@ -28,6 +28,7 @@ Currently, the setup is configured for user `zanoni` on my Dell G15 laptop. To u
 
 For Ubuntu, the dotfiles and applications can be installed using the following command:
 
+> Make sure to clone this repo on your home directory before running the install script.
 ```bash
 make install
 ```
