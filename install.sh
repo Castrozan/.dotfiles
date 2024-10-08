@@ -1,5 +1,6 @@
 #!/bin/sh
 
+. "./config.sh"
 . "./shell/src/ask.sh"
 . "./shell/src/print.sh"
 . "./shell/src/should_install.sh"
@@ -23,6 +24,7 @@ print "# -------------- castrozan:dotfiles install script ---------------\n" "${
 
 print "Some packages are required to run the install script.\n" "${YELLOW}" "${BOLD}"
 if ask "Do you want to install them?"; then
+    should_install build-essential
     should_install curl
     should_install git
     use_brew

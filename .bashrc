@@ -189,8 +189,10 @@ esac
 
 # Brew
 # Add brew to PATH
-# TODO: fix for nixos
-eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+# TODO: define a better way of setting os specific commands
+if ! grep -q "ID=nixos" /etc/os-release; then
+    eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+fi
 
 # Terraform
 # Set autocomplete for terraform
@@ -198,7 +200,7 @@ complete -C /usr/bin/terraform terraform
 
 # Files sourcered by $HOME/.dotfiles
 . $HOME/.dotfiles/shell/configs/bash_history.sh
-. $HOME/.dotfiles/shell/configs/fzf.sh
+. $HOME/.dotfiles/shell/configs/fzf_catppuccin_theme.sh
 . $HOME/.dotfiles/shell/configs/fzf_bash_history.sh
 . $HOME/.dotfiles/shell/configs/git_aliases.sh
 . $HOME/.dotfiles/shell/configs/bash_aliases.sh

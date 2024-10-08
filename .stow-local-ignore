@@ -38,3 +38,4 @@ install.sh
 test.sh
 TODO.md
 Makefile
+config.sh
