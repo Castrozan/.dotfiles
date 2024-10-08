@@ -3,6 +3,8 @@
 . "./config.sh"
 . "shell/src/ask.sh"
 
+# Function to install pkgs defined on _DOTFILES_PACKAGES_TO_INSTALL
+# defined on the ./config.sh file
 _declarative_install() {
     _pkgs=$_DOTFILES_PACKAGES_TO_INSTALL
 
@@ -18,6 +20,7 @@ _declarative_install() {
     done
 }
 
+# Function to install all pkgs that are in the /shell/pkgs directory
 _interactive_install() {
     _dir=$_INSTALL_SCRIPTS_DIR
 
