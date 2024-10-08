@@ -38,17 +38,6 @@ This script will guide you through the installation process. However, there are 
 
 These dependencies need to be installed manually as they are not yet covered by the install script:
 
-### Neovim Dependencies
-
-#### Telescope
-
-Ensure you have the following tools installed for Telescope:
-
-- [ripgrep](https://github.com/BurntSushi/ripgrep)
-- [fd](https://github.com/sharkdp/fd)
-
-### Applications
-
 #### Obsidian
 
 To install Obsidian via Flatpak, follow the official instructions [here](https://help.obsidian.md/Getting+started/Download+and+install+Obsidian#Install+Obsidian+using+Flatpak).
