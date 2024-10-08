@@ -34,11 +34,3 @@ make install
 ```
 
 This script will guide you through the installation process. However, there are a few dependencies that are not automatically installed, which are noted below.
-
-## Manual Dependencies for Ubuntu
-
-These dependencies need to be installed manually as they are not yet covered by the install script:
-
-#### Obsidian
-
-To install Obsidian via Flatpak, follow the official instructions [here](https://help.obsidian.md/Getting+started/Download+and+install+Obsidian#Install+Obsidian+using+Flatpak).
