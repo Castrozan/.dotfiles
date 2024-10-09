@@ -110,7 +110,7 @@ source $ZSH/oh-my-zsh.sh
 source $ZSH_CUSTOM/catppuccin_mocha-zsh-syntax-highlighting.zsh
 
 # Files sourcered by $HOME/.dotfiles
-. $HOME/.dotfiles/shell/configs/fzf.sh
+. $HOME/.dotfiles/shell/configs/fzf_catppuccin_theme.sh
 . $HOME/.dotfiles/shell/configs/git_aliases.sh
 . $HOME/.dotfiles/shell/configs/zoxide.sh
 . $HOME/.dotfiles/shell/configs/bash_aliases.sh

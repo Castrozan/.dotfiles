@@ -12,40 +12,40 @@
 
 # Packages
 # These are the packages that are available
-# remove the ones that you don't want
-# Inicia a variável vazia
-_DOTFILES_PACKAGES_TO_INSTALL=""
-# Adiciona os pacotes à variável, linha por linha
-_DOTFILES_PACKAGES_TO_INSTALL="${_DOTFILES_PACKAGES_TO_INSTALL} bash_completion"
-_DOTFILES_PACKAGES_TO_INSTALL="${_DOTFILES_PACKAGES_TO_INSTALL} cbonsai"
-_DOTFILES_PACKAGES_TO_INSTALL="${_DOTFILES_PACKAGES_TO_INSTALL} fzf"
-#_DOTFILES_PACKAGES_TO_INSTALL="${_DOTFILES_PACKAGES_TO_INSTALL} kitty"
-_DOTFILES_PACKAGES_TO_INSTALL="${_DOTFILES_PACKAGES_TO_INSTALL} lazygit"
-_DOTFILES_PACKAGES_TO_INSTALL="${_DOTFILES_PACKAGES_TO_INSTALL} neofetch"
-_DOTFILES_PACKAGES_TO_INSTALL="${_DOTFILES_PACKAGES_TO_INSTALL} neovim"
-#_DOTFILES_PACKAGES_TO_INSTALL="${_DOTFILES_PACKAGES_TO_INSTALL} nix"
-_DOTFILES_PACKAGES_TO_INSTALL="${_DOTFILES_PACKAGES_TO_INSTALL} nodejs"
-_DOTFILES_PACKAGES_TO_INSTALL="${_DOTFILES_PACKAGES_TO_INSTALL} npm"
-_DOTFILES_PACKAGES_TO_INSTALL="${_DOTFILES_PACKAGES_TO_INSTALL} nvm"
-_DOTFILES_PACKAGES_TO_INSTALL="${_DOTFILES_PACKAGES_TO_INSTALL} obsidian"
-_DOTFILES_PACKAGES_TO_INSTALL="${_DOTFILES_PACKAGES_TO_INSTALL} pipes"
-_DOTFILES_PACKAGES_TO_INSTALL="${_DOTFILES_PACKAGES_TO_INSTALL} tmux"
-_DOTFILES_PACKAGES_TO_INSTALL="${_DOTFILES_PACKAGES_TO_INSTALL} vim"
-_DOTFILES_PACKAGES_TO_INSTALL="${_DOTFILES_PACKAGES_TO_INSTALL} yazi"
-_DOTFILES_PACKAGES_TO_INSTALL="${_DOTFILES_PACKAGES_TO_INSTALL} zoxide"
-_DOTFILES_PACKAGES_TO_INSTALL="${_DOTFILES_PACKAGES_TO_INSTALL} zsh"
+# They are set this way to make it easier to comment out the ones you don't want
+_PKG_SEL=""
+_PKG_SEL="$_PKG_SEL bash_completion"
+_PKG_SEL="$_PKG_SEL cbonsai"
+_PKG_SEL="$_PKG_SEL fzf"
+#_PKG_SEL="$_PKG_SEL kitty"
+_PKG_SEL="$_PKG_SEL lazygit"
+_PKG_SEL="$_PKG_SEL neofetch"
+_PKG_SEL="$_PKG_SEL neovim"
+#_PKG_SEL="$_PKG_SEL nix"
+_PKG_SEL="$_PKG_SEL nodejs"
+_PKG_SEL="$_PKG_SEL npm"
+_PKG_SEL="$_PKG_SEL nvm"
+_PKG_SEL="$_PKG_SEL obsidian"
+_PKG_SEL="$_PKG_SEL pipes"
+_PKG_SEL="$_PKG_SEL tmux"
+_PKG_SEL="$_PKG_SEL vim"
+_PKG_SEL="$_PKG_SEL yazi"
+_PKG_SEL="$_PKG_SEL zoxide"
+_PKG_SEL="$_PKG_SEL zsh"
+_DOTFILES_PACKAGES_TO_INSTALL="$_PKG_SEL"
 
 # Configs
 # These are the configurations that are available
 # Remove the ones that you don't want
 #   Some of these are already sourced in my shell configs-
 #   so to remove, comment out on the shell rc file
-_DOTFILES_CONFIGS_TO_INSTALL=""
-# Adicione itens à variável, comentando/descomentando conforme necessário
-_DOTFILES_CONFIGS_TO_INSTALL="${_DOTFILES_CONFIGS_TO_INSTALL} bash_aliases"
-_DOTFILES_CONFIGS_TO_INSTALL="${_DOTFILES_CONFIGS_TO_INSTALL} bash_history"
-_DOTFILES_CONFIGS_TO_INSTALL="${_DOTFILES_CONFIGS_TO_INSTALL} fzf_bash_history"
-_DOTFILES_CONFIGS_TO_INSTALL="${_DOTFILES_CONFIGS_TO_INSTALL} fzf_catppuccin_theme"
-_DOTFILES_CONFIGS_TO_INSTALL="${_DOTFILES_CONFIGS_TO_INSTALL} git_aliases"
-_DOTFILES_CONFIGS_TO_INSTALL="${_DOTFILES_CONFIGS_TO_INSTALL} screensaver"
-_DOTFILES_CONFIGS_TO_INSTALL="${_DOTFILES_CONFIGS_TO_INSTALL} zoxide"
+# They are set this way to make it easier to comment out the ones you don't want
+_CONFIG_SEL=""
+_CONFIG_SEL="$_CONFIG_SEL bash_aliases"
+_CONFIG_SEL="$_CONFIG_SEL bash_history"
+_CONFIG_SEL="$_CONFIG_SEL fzf_bash_history"
+_CONFIG_SEL="$_CONFIG_SEL fzf_catppuccin_theme"
+_CONFIG_SEL="$_CONFIG_SEL git_aliases"
+_CONFIG_SEL="$_CONFIG_SEL screensaver"
+_CONFIG_SEL="$_CONFIG_SEL zoxide"
+_DOTFILES_CONFIGS_TO_INSTALL="$_CONFIG_SEL"
