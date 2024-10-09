@@ -14,8 +14,10 @@
   - [ ] Remove all unnecessary output from scripts
   - [ ] Source the bashrc in the test ci
   - [ ] Re-arch the way to install dotfiles declaratively instead of interactively
+  - [ ] Migrate to zsh
 
 - Nixos
   - [ ] Rewrite config to use home-manager by rayan's style
   - [ ] Zsh
   - [ ] Nvim
+  - [ ] Migrate to zsh
