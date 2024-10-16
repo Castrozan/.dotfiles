@@ -10,6 +10,7 @@
 
     # ../../home/fcitx5
     # ../../home/i3
+    ../../home/kitty
     ../../home/programs
     # ../../home/rofi
     # ../../home/shell
