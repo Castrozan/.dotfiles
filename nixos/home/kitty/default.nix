@@ -3,6 +3,8 @@
   config,
   ...
 }: {
+  programs.kitty.enable = true;
+
   # kitty configuration
   home.file.".config/kitty/current-theme.conf".source = ../../../.config/kitty/current-theme.conf;
   home.file.".config/kitty/kitty.conf".source = ../../../.config/kitty/kitty.conf;

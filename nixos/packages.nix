@@ -6,7 +6,7 @@
     ./tmux.nix
     ./neovim.nix
     ./vscode.nix
-    ./kitty.nix
+    # ./kitty.nix
     ./steam.nix
   ];
 
@@ -55,7 +55,7 @@
 
     # APPS BEGIN
     # TODO: Config kitty
-    kitty
+    # kitty
     docker
     scrcpy
     obsidian
