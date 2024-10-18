@@ -120,16 +120,6 @@ if [ -f /etc/bash_completion ]; then
     . /etc/bash_completion
 fi
 
-# Create repo directory if it doesn't exist
-if [ ! -d "$HOME/repo" ]; then
-    mkdir -p "$HOME/repo"
-fi
-
-# Create fonts directory if it doesn't exist
-if [ ! -d "$HOME/.local/share/fonts" ]; then
-    mkdir -p "$HOME/.local/share/fonts"
-fi
-
 # BEGIN EVN VARIABLES
 # Add local bin to PATH
 export PATH=$PATH:~/.local/bin
@@ -206,3 +196,4 @@ complete -C /usr/bin/terraform terraform
 . $HOME/.dotfiles/shell/configs/bash_aliases.sh
 . $HOME/.dotfiles/shell/configs/zoxide.sh
 . $HOME/.dotfiles/shell/configs/screensaver.sh
+. $HOME/.dotfiles/shell/configs/default_directories.sh
