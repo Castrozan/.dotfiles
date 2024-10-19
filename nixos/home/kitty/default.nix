@@ -1,12 +1,18 @@
+{ pkgs, config, ... }: 
+let
+  kittyConf = builtins.readFile ../../../.config/kitty/kitty.conf;
+in
 {
-  pkgs,
-  config,
-  ...
-}: {
-  programs.kitty.enable = true;
+  programs.kitty = {
+    enable = true;
+    theme = "Catppuccin-Mocha";
+    font = {
+      name = "Fira Code";
+      size = 18;
+      package = pkgs.fira-code;
+    };
+    extraConfig = kittyConf;
+  };
 
-  # kitty configuration
-  home.file.".config/kitty/current-theme.conf".source = ../../../.config/kitty/current-theme.conf;
-  home.file.".config/kitty/kitty.conf".source = ../../../.config/kitty/kitty.conf;
   home.file.".config/kitty/startup.conf".source = ../../../.config/kitty/startup.conf;
 }
