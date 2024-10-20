@@ -2,7 +2,7 @@
 {
   imports = [
     ./scripts.nix
-    ./bash.nix
+    # ./bash.nix
     ./tmux.nix
     ./neovim.nix
     ./vscode.nix
