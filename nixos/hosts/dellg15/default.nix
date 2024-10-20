@@ -8,6 +8,7 @@
       # NixOS modules
       # These are configurations that can be done on the system level
       ../../modules/system.nix
+      ../../modules/game-shift.nix
       # ../../modules/i3.nix
 
       # Include the results of the hardware scan.
