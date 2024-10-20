@@ -1,6 +1,7 @@
 #
 # NixOS Configuration for zanoni
 #
+{ pkgs, ... }:
 let
   bashrc = builtins.readFile ../../../.bashrc;
 in
@@ -10,7 +11,11 @@ in
   # TODO: this is workaroun from home/programs/bash.nix
   environment.etc."bashrc".text = bashrc;
 
+# Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.zanoni = {
-    # Some nixos config for the user
+    isNormalUser = true;
+    description = "zanoni";
+    extraGroups = [ "networkmanager" "wheel" ];
+    packages = with pkgs; [ ];
   };
 }

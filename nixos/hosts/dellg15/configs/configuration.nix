@@ -91,19 +91,6 @@
   system.stateVersion = "24.05"; # Did you read the comment?
   # END SYSTEM CONFIGURATION
 
-
-
-
-
-  # Define a user account. Don't forget to set a password with ‘passwd’.
-  users.users.zanoni = {
-    isNormalUser = true;
-    description = "zanoni";
-    extraGroups = [ "networkmanager" "wheel" ];
-    packages = with pkgs; [
-    ];
-  };
-
   # Enable OpenGL
   hardware.opengl = {
     enable = true;
