@@ -2,7 +2,7 @@
 # NixOS Configuration for zanoni
 #
 let
-  bashrc = builtins.readFile ../../.bashrc;
+  bashrc = builtins.readFile ../../../.bashrc;
 in
 {
 

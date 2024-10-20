@@ -1,6 +1,9 @@
+# 
+# /nixos/modules/system.nix
+# User related system configuration
+#
 { pkgs, lib, username, ... }:
 {
-  # ============================= User related =============================
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   # users.users.${username} = {
@@ -113,22 +116,30 @@
   #   openFirewall = true;
   # };
 
-  # # List packages installed in system profile. To search, run:
-  # # $ nix search wget
-  # environment.systemPackages = with pkgs; [
-  #   vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
-  #   wget
-  #   curl
-  #   git
-  #   sysstat
-  #   lm_sensors # for `sensors` command
-  #   # minimal screen capture tool, used by i3 blur lock to take a screenshot
-  #   # print screen key is also bound to this tool in i3 config
-  #   scrot
-  #   neofetch
-  #   xfce.thunar # xfce4's file manager
-  #   nnn # terminal file manager
-  # ];
+  # List packages installed in general system
+  environment.systemPackages = with pkgs; [
+    vim
+    wget
+    curl
+    git
+    bash
+    bash-completion
+    tmux
+    usbutils
+    htop
+    wget
+    # see hardware info
+    lshw
+    jq
+    # sysstat
+    # lm_sensors # for `sensors` command
+    # minimal screen capture tool, used by i3 blur lock to take a screenshot
+    # print screen key is also bound to this tool in i3 config
+    # scrot
+    neofetch
+    # xfce.thunar # xfce4's file manager
+    # nnn # terminal file manager
+  ];
 
   # # Enable sound with pipewire.
   # sound.enable = true;

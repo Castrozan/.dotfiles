@@ -4,7 +4,7 @@
     ./common.nix
     ./git.nix
     ./bash.nix
-    ./apps.nix
+    ./pkgs.nix
     # ./media.nix
     # ./xdg.nix
   ];

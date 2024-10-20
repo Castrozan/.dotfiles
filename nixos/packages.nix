@@ -21,17 +21,12 @@
     tmux
     gnumake
     yazi
-    usbutils
     dbeaver-bin
     neovim
     htop
     btop
     wget
     fzf
-    # see hardware info
-    lshw
-    jq
-    neofetch
     # TODO: check if this is the correct package
     wireguard-go
     direnv

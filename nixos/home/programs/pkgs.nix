@@ -1,7 +1,9 @@
+#
+# /nixos/home/programs/apps.nix
+# Home manager pkgs
+#
 { pkgs, ... }:
-
 {
-  # Nix packages to install for the user
   home.packages = with pkgs; [
     tree
     bash
