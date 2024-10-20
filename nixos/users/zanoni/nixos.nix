@@ -6,12 +6,16 @@ let
   bashrc = builtins.readFile ../../../.bashrc;
 in
 {
+  imports = [
+    # TODO: Change this to be managed as home programs
+    ./scripts/default.nix
+  ];
 
   # Global Bash configuration
   # TODO: this is workaroun from home/programs/bash.nix
   environment.etc."bashrc".text = bashrc;
 
-# Define a user account. Don't forget to set a password with ‘passwd’.
+  # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.zanoni = {
     isNormalUser = true;
     description = "zanoni";

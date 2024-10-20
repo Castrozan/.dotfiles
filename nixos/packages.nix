@@ -1,10 +1,7 @@
 { pkgs, ... }:
 {
   imports = [
-    ./scripts.nix
-    # ./bash.nix
     ./tmux.nix
-    ./neovim.nix
     ./vscode.nix
     ./steam.nix
   ];
