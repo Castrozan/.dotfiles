@@ -3,7 +3,12 @@
   lib,
   username,
   ...
-}: {
+}:
+let
+  bashrc = builtins.readFile ../../.bashrc;
+in
+{
+  environment.etc."bashrc".text = bashrc;
   # ============================= User related =============================
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
@@ -16,6 +21,8 @@
   #    1. `nixConfig.substituers` in `flake.nix`
   #    2. command line args `--options substituers http://xxx`
   nix.settings.trusted-users = [username];
+
+
 
   # customise /etc/nix/nix.conf declaratively via `nix.settings`
   # nix.settings = {
