@@ -16,7 +16,8 @@
     zsh
     vim
     git
-    bash-completion
+    # bash
+    # bash-completion
     tmux
     gnumake
     yazi
