@@ -1,14 +1,16 @@
+#
+# NixOS Configuration for zanoni
+#
+let
+  bashrc = builtins.readFile ../../.bashrc;
+in
 {
-  ##################################################################################################################
-  #
-  # NixOS Configuration
-  #
-  ##################################################################################################################
+
+  # Global Bash configuration
+  # TODO: this is workaroun from home/programs/bash.nix
+  environment.etc."bashrc".text = bashrc;
 
   users.users.zanoni = {
-    # Ryan's authorizedKeys
-    # openssh.authorizedKeys.keys = [
-    #   "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJx3Sk20pLL1b2PPKZey2oTyioODrErq83xG78YpFBoj ryan@ryan"
-    # ];
+    # Some nixos config for the user
   };
 }

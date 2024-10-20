@@ -1,14 +1,5 @@
+{ pkgs, lib, username, ... }:
 {
-  pkgs,
-  lib,
-  username,
-  ...
-}:
-let
-  bashrc = builtins.readFile ../../.bashrc;
-in
-{
-  environment.etc."bashrc".text = bashrc;
   # ============================= User related =============================
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
