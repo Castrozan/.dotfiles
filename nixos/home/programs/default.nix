@@ -5,7 +5,7 @@
     ./git.nix
     ./bash.nix
     ./pkgs.nix
-    ./neovim.nixg
+    ./neovim.nix
     # ./media.nix
     # ./xdg.nix
   ];
