@@ -12,12 +12,10 @@
     };
   };
 
-  outputs = inputs @ {
-    self,
-    nixpkgs,
-    home-manager,
-    ...
-  }: {
+  outputs = inputs @ { self, nixpkgs, home-manager, ... }: {
+
+    # nixosConfigurations.zanoni is a NixOS system configuration that
+    # can be instantiated with: nixos-rebuild switch --flake .#zanoni
     nixosConfigurations = {
       zanoni = let
         username = "zanoni";
@@ -28,7 +26,6 @@
           system = "x86_64-linux";
 
           modules = [
-            ./configuration.nix
             ./hosts/dellg15
             ./users/${username}/nixos.nix
 
@@ -43,13 +40,5 @@
           ];
         };
     };
-
-    # # The host with the hostname `my-nixos` will use this configuration
-    # nixosConfigurations.zanoni = nixpkgs.lib.nixosSystem {
-    #   system = "x86_64-linux";
-    #   modules = [
-    #     ./configuration.nix
-    #   ];
-    # };
   };
 }

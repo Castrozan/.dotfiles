@@ -7,11 +7,11 @@
 {
   imports = [
     # Include the results of the hardware scan.
-    # Im setting this on hosts/dellg15/default.nix
+    # Im setting this on hosts/<user>/default.nix
     # /etc/nixos/hardware-configuration.nix
-    ./packages.nix
-    ./env.nix
-    ./virtualization.nix
+    ../../../packages.nix
+    ../../../env.nix
+    ../../../virtualization.nix
   ];
 
   # BEGIN SYSTEM CONFIGURATION
