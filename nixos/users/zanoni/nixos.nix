@@ -14,6 +14,11 @@ in
     ./steam.nix
   ];
 
+  programs.hyprland = {
+    enable = true;
+    xwayland.enable = true;
+  };
+
   # Global Bash configuration
   # TODO: this is workaroun from home/programs/bash.nix
   environment.etc."bashrc".text = bashrc;

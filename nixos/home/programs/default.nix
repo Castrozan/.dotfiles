@@ -8,6 +8,7 @@
     ./neovim.nix
     ./tmux.nix
     ./vscode.nix
+    ./hyprland.nix
     # ./media.nix
     # ./xdg.nix
   ];
