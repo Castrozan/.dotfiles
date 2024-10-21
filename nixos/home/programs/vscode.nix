@@ -1,6 +1,7 @@
-# Enable vscode with config to set version
+#
+# Enable vscode with config to set a specific version
+#
 { pkgs, ... }:
-
 let
   vscode = pkgs.vscode.overrideAttrs (old: rec {
     version = "1.92.0";
@@ -12,9 +13,7 @@ let
   });
 in
 {
-  config = {
-    environment.systemPackages = [
-      vscode
-    ];
-  };
+  home.packages = with pkgs; [
+    vscode
+  ];
 }

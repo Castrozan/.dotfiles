@@ -7,6 +7,7 @@
     ./pkgs.nix
     ./neovim.nix
     ./tmux.nix
+    ./vscode.nix
     # ./media.nix
     # ./xdg.nix
   ];
