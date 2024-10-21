@@ -1,9 +1,8 @@
+#
+# TODO: move this to home manager packages
+#
 { pkgs, ... }:
 {
-  imports = [
-    # ./steam.nix
-  ];
-
   # List packages installed in system profile. To search, run: nix search wget
   environment.systemPackages = with pkgs; [
     # TODO: organize this
