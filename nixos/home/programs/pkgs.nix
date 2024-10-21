@@ -8,5 +8,12 @@
     tree
     bash
     bash-completion
+
+    # wm - hyprland
+    swaylock-effects
+    swww
+    xclip
+    wl-clipboard
+    gnome.gnome-tweaks
   ];
 }
