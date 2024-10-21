@@ -1,7 +1,6 @@
 { pkgs, ... }:
 {
   imports = [
-    ./tmux.nix
     ./vscode.nix
     ./steam.nix
   ];

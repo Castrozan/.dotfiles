@@ -6,6 +6,7 @@
     ./bash.nix
     ./pkgs.nix
     ./neovim.nix
+    ./tmux.nix
     # ./media.nix
     # ./xdg.nix
   ];
