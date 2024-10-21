@@ -10,6 +10,7 @@ in
     # TODO: Change this two to be managed as home programs
     ./scripts/default.nix
     ./virtualization.nix
+    ./steam.nix
   ];
 
   # Global Bash configuration
