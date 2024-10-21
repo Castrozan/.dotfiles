@@ -9,7 +9,6 @@
     # Include the results of the hardware scan.
     # Im setting this on hosts/<user>/default.nix
     # /etc/nixos/hardware-configuration.nix
-    ../../../packages.nix
   ];
 
   # BEGIN SYSTEM CONFIGURATION
