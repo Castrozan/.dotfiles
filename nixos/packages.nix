@@ -1,7 +1,7 @@
 { pkgs, ... }:
 {
   imports = [
-    ./steam.nix
+    # ./steam.nix
   ];
 
   # List packages installed in system profile. To search, run: nix search wget
