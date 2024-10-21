@@ -10,7 +10,6 @@
     # Im setting this on hosts/<user>/default.nix
     # /etc/nixos/hardware-configuration.nix
     ../../../packages.nix
-    ../../../virtualization.nix
   ];
 
   # BEGIN SYSTEM CONFIGURATION

@@ -7,8 +7,9 @@ let
 in
 {
   imports = [
-    # TODO: Change this to be managed as home programs
+    # TODO: Change this two to be managed as home programs
     ./scripts/default.nix
+    ./virtualization.nix
   ];
 
   # Global Bash configuration
