@@ -2,7 +2,9 @@
 # TODO
 
 - Ubuntu
-  - [ ] Convert all scripts to sh or make it POSIX compliant
+  - [F] Convert all scripts to sh or make it POSIX compliant - Fuck POSIX let's do bash
+  - [ ] Convert all scripts to bash
+  - [ ] Fix install configs declaratively
   - [ ] Remove auto import with files and use a single import with ". shell/src/file.sh"
   - [x] Add tmux tpm plugins
     - [ ] Remove tmp plugin folder on local ci
@@ -20,5 +22,4 @@
   - [ ] Rewrite config to use home-manager by rayan's style
   - [ ] Zsh
   - [ ] Migrate to zsh
-  - [ ] Nvim https://github.com/ryan4yin/nix-config/commit/21b3d4ad37fe61b0832cc70a335f4b59d41c2713
   - [ ] Configure monitors with https://github.com/ryan4yin/nix-config/commit/ec485779ceb7afef5fbd12d3f80bbfe66e634f7f
