@@ -1,10 +1,13 @@
 #!/bin/bash
 
 . "shell/src/install_with_temp_custom_script.sh"
+. "./shell/src/iterate_config_scripts.sh"
 
 # Check if nvm is installed
 if nvm --version; then
     print "Nvm already installed" "$YELLOW"
+
+    _source_config_by_name "shell/configs/nvm.sh"
 else
     install_with_temp_custom_script "https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh" "curl" "-L" "bash"
 fi
