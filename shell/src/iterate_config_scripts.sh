@@ -1,6 +1,6 @@
 #!/bin/sh
 
-. "./config.sh"
+. "./declarative.sh"
 . "shell/src/print.sh"
 . "shell/src/is_sourced.sh"
 
