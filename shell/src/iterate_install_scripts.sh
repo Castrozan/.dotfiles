@@ -1,6 +1,6 @@
 #!/bin/sh
 
-. "./config.sh"
+. "./declarative.sh"
 . "shell/src/ask.sh"
 
 # Function to install pkgs defined on _DOTFILES_PACKAGES_TO_INSTALL

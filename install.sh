@@ -1,6 +1,5 @@
 #!/bin/sh
 
-. "./config.sh"
 . "./shell/src/ask.sh"
 . "./shell/src/print.sh"
 . "./shell/src/should_install.sh"
@@ -18,6 +17,12 @@ for file in shell/src/*; do
         . "$file" # Source the file
     fi
 done
+
+# TODO: check if any of the params are -d not only the first one
+# Check if -d flag is passed and source declarative install script
+if [ "$1" = "-d" ]; then
+    . "./declarative.sh"
+fi
 
 # Tell what is going to happen
 print "# -------------- castrozan:dotfiles install script ---------------\n" "${MAGENTA}" "${BOLD}"
