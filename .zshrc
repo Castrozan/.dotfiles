@@ -109,6 +109,11 @@ source $ZSH/oh-my-zsh.sh
 # Load Catppucchin the theme for zsh-syntax-highlighting
 source $ZSH_CUSTOM/catppuccin_mocha-zsh-syntax-highlighting.zsh
 
+# NVM variables
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"                   # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" # This loads nvm bash_completion
+
 # Files sourcered by $HOME/.dotfiles
 . $HOME/.dotfiles/shell/configs/fzf_catppuccin_theme.sh
 . $HOME/.dotfiles/shell/configs/git_aliases.sh
