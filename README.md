@@ -81,6 +81,7 @@ Dotfiles that inspired me:
 
 - Nix Flakes
   - [ryan4yin/nix-config](https://github.com/ryan4yin/nix-config)
+  - [OfflineBot/nixos](https://github.com/OfflineBot/nixos)
 
 [Hyprland]: https://github.com/hyprwm/Hyprland
 [Kitty]: https://github.com/kovidgoyal/kitty
