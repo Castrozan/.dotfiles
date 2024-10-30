@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 . "./shell/src/ask.sh"
 . "./shell/src/print.sh"
