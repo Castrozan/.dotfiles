@@ -15,6 +15,7 @@
 # They are set this way to make it easier to comment out the ones you don't want
 _PKG_SEL=""
 _PKG_SEL="$_PKG_SEL bash_completion"
+_PKG_SEL="$_PKG_SEL btop"
 _PKG_SEL="$_PKG_SEL cbonsai"
 _PKG_SEL="$_PKG_SEL fzf"
 # _PKG_SEL="$_PKG_SEL kitty"
