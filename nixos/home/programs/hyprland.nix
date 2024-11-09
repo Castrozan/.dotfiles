@@ -11,6 +11,5 @@
     gnome.gnome-tweaks
 
     waybar
-    fuzzel
   ];
 }
