@@ -188,6 +188,11 @@ fi
 # Set autocomplete for terraform
 complete -C /usr/bin/terraform terraform
 
+# Experimental
+# Set caps lock to escape
+# TODO: check if this works on NixOS with hyprland
+setxkbmap -option caps:escape
+
 # Files sourcered by $HOME/.dotfiles
 . $HOME/.dotfiles/shell/configs/bash_history.sh
 . $HOME/.dotfiles/shell/configs/fzf_catppuccin_theme.sh
