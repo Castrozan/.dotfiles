@@ -69,6 +69,13 @@ xterm* | rxvt*)
 *) ;;
 esac
 
+## BEGIN DEFINE GLOBAL VARIABLES
+
+# Define default editor
+export EDITOR=nvim
+
+## END GLOBAL VARIABLES
+
 # Function to start the first tmux session for screensaver
 _start_screensaver_tmux_session() {
     # Check if the screensaver session exists
