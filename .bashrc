@@ -102,8 +102,12 @@ if command -v tmux &>/dev/null && [ -n "$PS1" ] && [[ ! "$TERM" =~ screen ]] && 
     _start_tmux
 fi
 
+is_nixos() {
+    grep -q "ID=nixos" /etc/os-release
+}
+
 # Set random background image in Kitty terminal only on NixOS
-if grep -q "ID=nixos" /etc/os-release; then
+if is_nixos; then
     if ps aux | grep "[k]itty" >/dev/null; then
         [ -n "$KITTY_WINDOW_ID" ] && set-random-bg-kitty
     fi
@@ -180,7 +184,7 @@ esac
 # Brew
 # Add brew to PATH
 # TODO: define a better way of setting os specific commands
-if ! grep -q "ID=nixos" /etc/os-release; then
+if ! is_nixos; then
     eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 fi
 
@@ -190,8 +194,9 @@ complete -C /usr/bin/terraform terraform
 
 # Experimental
 # Set caps lock to escape
-# TODO: check if this works on NixOS with hyprland
-setxkbmap -option caps:escape
+if ! is_nixos; then
+    setxkbmap -option caps:escape
+fi
 
 # Files sourcered by $HOME/.dotfiles
 . $HOME/.dotfiles/shell/configs/bash_history.sh
