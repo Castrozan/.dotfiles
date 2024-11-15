@@ -22,3 +22,9 @@
   - [ ] Rewrite config to use home-manager by rayan's style
   - [ ] Zsh
   - [ ] Configure monitors with https://github.com/ryan4yin/nix-config/commit/ec485779ceb7afef5fbd12d3f80bbfe66e634f7f
+
+- Hyprland
+  - [ ] Config bar
+  - [ ] Config dmenu
+  - [ ] Show workspaces on bar
+  - [ ] Config audio selections
