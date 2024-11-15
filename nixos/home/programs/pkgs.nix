@@ -8,7 +8,5 @@
     tree
     bash
     bash-completion
-
-    dolphin
   ];
 }
