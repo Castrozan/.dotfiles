@@ -148,11 +148,11 @@ export PATH="$HOME/.pyenv/bin:$PATH"
 
 # Obsidian
 # Create valt if it doesn't exist
-if [ ! -d "$HOME/Documents/obsidianVault" ]; then
-    mkdir -p "$HOME/Documents/obsidianVault"
+if [ ! -d "$HOME/vault" ]; then
+    mkdir -p "$HOME/vault"
 fi
 # Set the path to the Obsidian vault
-export OBSIDIAN_HOME="$HOME/Documents/obsidianVault"
+export OBSIDIAN_HOME="$HOME/vault"
 
 # flatpak
 export XDG_DATA_DIRS=/var/lib/flatpak/exports/share:$HOME/.local/share/flatpak/exports/share:$XDG_DATA_DIRS
