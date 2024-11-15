@@ -21,6 +21,7 @@
     btop
     wget
     fzf
+    k6
     # TODO: check if this is the correct package
     wireguard-go
     direnv
