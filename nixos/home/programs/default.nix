@@ -9,6 +9,7 @@
     ./tmux.nix
     ./vscode.nix
     ./hyprland.nix
+    ./fuzzel.nix
     # ./media.nix
     # ./xdg.nix
   ];
