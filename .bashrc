@@ -72,7 +72,7 @@ esac
 ## BEGIN DEFINE GLOBAL VARIABLES
 
 # Define default editor
-export EDITOR=nvim
+export EDITOR=code
 
 ## END GLOBAL VARIABLES
 
