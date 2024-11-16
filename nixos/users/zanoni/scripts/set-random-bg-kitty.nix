@@ -1,7 +1,5 @@
 # Script to set a random background image in Kitty terminal
-{ pkgs, ... }:
-
-let
+{pkgs, ...}: let
   set-random-bg-kitty = pkgs.writeShellScriptBin "set-random-bg-kitty" ''
     #!/usr/bin/env bash
 
@@ -14,8 +12,6 @@ let
     # Set the selected image as the background in Kitty
     kitty @ set-background-image "$RANDOM_IMAGE"
   '';
-
-in
-{
-  environment.systemPackages = [ set-random-bg-kitty ];
+in {
+  environment.systemPackages = [set-random-bg-kitty];
 }

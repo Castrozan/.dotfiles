@@ -20,7 +20,6 @@
     yazi
     dbeaver-bin
     neovim
-    nixd
     htop
     btop
     wget
@@ -29,7 +28,9 @@
     # TODO: check if this is the correct package
     wireguard-go
     direnv
+    nixd
     nixpkgs-fmt
+    nixfmt-rfc-style
     # NordVpn Wireguard client
     linuxKernel.packages.linux_5_4.wireguard
     wireguard-tools
