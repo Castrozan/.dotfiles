@@ -109,6 +109,7 @@ if command -v tmux &>/dev/null && [ -n "$PS1" ] && [[ ! "$TERM" =~ screen ]] && 
     _start_tmux
 fi
 
+# Check if the OS is NixOS
 is_nixos() {
     grep -q "ID=nixos" /etc/os-release
 }
@@ -146,8 +147,10 @@ export PATH="$PATH:/opt/nvim-linux64/bin"
 
 # NVM variables
 export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"                   # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" # This loads nvm bash_completion
+# This loads nvm
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+# This loads nvm bash_completion
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
 
 # Pyenv variables
 export PYENV_ROOT=$HOME/.pyenv
@@ -161,16 +164,6 @@ if [ ! -d "$HOME/vault" ]; then
 fi
 # Set the path to the Obsidian vault
 export OBSIDIAN_HOME="$HOME/vault"
-
-# flatpak
-export XDG_DATA_DIRS=/var/lib/flatpak/exports/share:$HOME/.local/share/flatpak/exports/share:$XDG_DATA_DIRS
-
-# pnpm
-export PNPM_HOME="$HOME/.local/share/pnpm"
-case ":$PATH:" in
-*":$PNPM_HOME:"*) ;;
-*) export PATH="$PNPM_HOME:$PATH" ;;
-esac
 
 # Sdkman
 export SDKMAN_DIR="$HOME/.sdkman"
@@ -211,7 +204,7 @@ fi
 # Files sourcered by $HOME/.dotfiles
 . $HOME/.dotfiles/shell/configs/bash_history.sh
 . $HOME/.dotfiles/shell/configs/fzf_catppuccin_theme.sh
-#. $HOME/.dotfiles/shell/configs/fzf_bash_history.sh
+. $HOME/.dotfiles/shell/configs/fzf_bash_history.sh
 . $HOME/.dotfiles/shell/configs/git_aliases.sh
 . $HOME/.dotfiles/shell/configs/bash_aliases.sh
 . $HOME/.dotfiles/shell/configs/zoxide.sh
