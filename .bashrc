@@ -114,11 +114,12 @@ is_nixos() {
 }
 
 # Set random background image in Kitty terminal only on NixOS
-if is_nixos; then
-    if ps aux | grep "[k]itty" >/dev/null; then
-        [ -n "$KITTY_WINDOW_ID" ] && set-random-bg-kitty
-    fi
-fi
+# TODO: some day this should be fixed
+#if is_nixos; then
+#    if ps aux | grep "[k]itty" >/dev/null; then
+#        [ -n "$KITTY_WINDOW_ID" ] && set-random-bg-kitty
+#    fi
+#fi
 
 # Source bash env vars config
 if [ -f ~/.bash_env_vars ]; then
@@ -197,7 +198,9 @@ fi
 
 # Terraform
 # Set autocomplete for terraform
-complete -C /usr/bin/terraform terraform
+if ! is_nixos; then
+    complete -C /usr/bin/terraform terraform
+fi
 
 # Experimental
 # Set caps lock to escape
@@ -208,7 +211,7 @@ fi
 # Files sourcered by $HOME/.dotfiles
 . $HOME/.dotfiles/shell/configs/bash_history.sh
 . $HOME/.dotfiles/shell/configs/fzf_catppuccin_theme.sh
-. $HOME/.dotfiles/shell/configs/fzf_bash_history.sh
+#. $HOME/.dotfiles/shell/configs/fzf_bash_history.sh
 . $HOME/.dotfiles/shell/configs/git_aliases.sh
 . $HOME/.dotfiles/shell/configs/bash_aliases.sh
 . $HOME/.dotfiles/shell/configs/zoxide.sh
