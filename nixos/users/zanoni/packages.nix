@@ -18,6 +18,7 @@
     gnumake
     alejandra
     yazi
+    nix-prefetch-github
     dbeaver-bin
     neovim
     htop
