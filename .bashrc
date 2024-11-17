@@ -195,12 +195,6 @@ if ! is_nixos; then
     complete -C /usr/bin/terraform terraform
 fi
 
-# Experimental
-# Set caps lock to escape
-if ! is_nixos; then
-    setxkbmap -option caps:escape
-fi
-
 # Files sourcered by $HOME/.dotfiles
 . $HOME/.dotfiles/shell/configs/bash_history.sh
 . $HOME/.dotfiles/shell/configs/fzf_catppuccin_theme.sh
