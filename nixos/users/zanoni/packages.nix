@@ -20,6 +20,7 @@
     yazi
     nix-prefetch-github
     dbeaver-bin
+    ventoy-full
     neovim
     htop
     btop
