@@ -1,7 +1,7 @@
 
 # TODO
 
-- Ubuntu
+- Config
   - [F] Convert all scripts to sh or make it POSIX compliant - Fuck POSIX let's do bash
   - [ ] Convert all scripts to bash
   - [ ] Remove auto import with files and use a single import with ". shell/src/file.sh"
@@ -10,13 +10,16 @@
   - [x] Add tmux tpm plugins
     - [ ] Remove tmp plugin folder on local ci
   - [ ] Add more lsp servers for nvim (lua, python, etc)
+    - [ ] remove Mason
   - [ ] fix lazygit install. it is working but gives error on install
   - [ ] Configure nerd fonts for terminal
+    - [ ] Jetbrains mono nerd fonts
   - [ ] Remove all unnecessary output from scripts
   - [ ] Source the bashrc in the test ci
   - [ ] Run the install script with bash install.sh to make sure bash is the one to be changed
   - [ ] Migrate to zsh
   - [ ] Update README
+  - [ ] clean kitty conf file
 
 - Nixos
   - [ ] Rewrite config to use home-manager by rayan's style
