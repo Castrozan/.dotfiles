@@ -21,7 +21,7 @@ This repository contains the setup for my development environment on both NixOS 
 
 ## Components
 
-|                       | NixOS(Wayland) |
+|                       | NixOS |
 | --------------------- | -------------- |
 | **Window Manager**    | Hyprland       |
 | **Terminal Emulator** | Bash + Kitty   |
