@@ -20,6 +20,7 @@
   - [ ] Migrate to zsh
   - [ ] Update README
   - [ ] clean kitty conf file
+  - [ ] Change color vars to begin with underline
 
 - Nixos
   - [ ] Rewrite config to use home-manager by rayan's style
