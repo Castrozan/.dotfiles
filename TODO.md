@@ -21,6 +21,7 @@
   - [ ] Update README
   - [ ] clean kitty conf file
   - [ ] Change color vars to begin with underline
+  - [ ] change bash location to #!/usr/bin/env bash
 
 - Nixos
   - [ ] Rewrite config to use home-manager by rayan's style
