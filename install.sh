@@ -5,6 +5,7 @@
 . "./shell/src/should_install.sh"
 . "./shell/src/iterate_install_scripts.sh"
 . "./shell/src/iterate_config_scripts.sh"
+. "./shell/src/use_tzdata.sh"
 . "./shell/src/use_brew.sh"
 . "./shell/src/use_stow.sh"
 . "./shell/src/use_flatpak.sh"
@@ -33,6 +34,7 @@ if ask "Do you want to install them?"; then
     should_install build-essential
     should_install curl
     should_install git
+    use_tzdata
     use_flatpak
     use_brew
     use_stow
