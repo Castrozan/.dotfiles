@@ -7,6 +7,7 @@
 . "./shell/src/iterate_config_scripts.sh"
 . "./shell/src/use_brew.sh"
 . "./shell/src/use_stow.sh"
+. "./shell/src/use_flatpak.sh"
 
 # Tell that the script is sourcing src
 # TODO: remove it after refactoring to import src files manually
@@ -32,6 +33,7 @@ if ask "Do you want to install them?"; then
     should_install build-essential
     should_install curl
     should_install git
+    use_flatpak
     use_brew
     use_stow
 fi
