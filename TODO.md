@@ -8,7 +8,7 @@
   - [x] Fix install configs declaratively
     - Now the -d flag can be set to use de declarative install
   - [x] Add tmux tpm plugins
-    - [ ] Remove tmp plugin folder on local ci
+    - [x] Remove tmp plugin folder on local ci
   - [ ] Add more lsp servers for nvim (lua, python, etc)
     - [ ] remove Mason
   - [ ] fix lazygit install. it is working but gives error on install

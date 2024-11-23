@@ -29,4 +29,4 @@ _SRC_SCRIPTS_DIR="shell/src"
 _TEST_DIR="shell/test"
 
 # Stow clause
-_STOW_CLAUSE="stow --adopt ."
+_STOW_CLAUSE="stow --no-folding --adopt ."
