@@ -114,8 +114,14 @@ is_nixos() {
     grep -q "ID=nixos" /etc/os-release
 }
 
+# Check if is wsl session
+is_wsl() {
+    [ -f "/proc/sys/fs/binfmt_misc/WSLInterop" ]
+}
+
 # Set random background image in Kitty terminal only on NixOS
 # TODO: some day this should be fixed
+# I really like custom switching backgrounds
 #if is_nixos; then
 #    if ps aux | grep "[k]itty" >/dev/null; then
 #        [ -n "$KITTY_WINDOW_ID" ] && set-random-bg-kitty
@@ -182,6 +188,12 @@ esac
 # fzf
 [ -f $HOME/.fzf.bash ] && . $HOME/.fzf.bash
 
+# Java
+# Add JBang to environment
+alias j!=jbang
+export PATH="$HOME/.jbang/bin:$HOME/.jbang/currentjdk/bin:$PATH"
+export JAVA_HOME=$HOME/.jbang/currentjdk
+
 # Brew
 # Add brew to PATH
 # TODO: define a better way of setting os specific commands
@@ -195,7 +207,12 @@ if ! is_nixos; then
     complete -C /usr/bin/terraform terraform
 fi
 
-# Files sourcered by $HOME/.dotfiles
+# Set the default browser on WSL
+if is_wsl; then
+    export BROWSER='/mnt/c/Users/castr/AppData/Local/BraveSoftware/Brave-Browser/Application/brave.exe'
+fi
+
+# Files sourced by $HOME/.dotfiles
 . $HOME/.dotfiles/shell/configs/bash_history.sh
 . $HOME/.dotfiles/shell/configs/fzf_catppuccin_theme.sh
 . $HOME/.dotfiles/shell/configs/fzf_bash_history.sh
