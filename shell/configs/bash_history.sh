@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Remove duplicates from history
 export HISTCONTROL=ignoreboth:erasedups

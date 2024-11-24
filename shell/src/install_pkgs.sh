@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 . "./declarative.sh"
 . "shell/src/ask.sh"

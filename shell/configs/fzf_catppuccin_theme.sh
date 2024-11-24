@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Catppuccin fzf theme
 export FZF_DEFAULT_OPTS=" \

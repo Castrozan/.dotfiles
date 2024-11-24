@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 . "./shell/src/should_install.sh"
 . "./shell/src/install_with_temp_custom_script.sh"

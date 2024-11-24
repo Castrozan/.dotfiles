@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # TODO: enable color and bold support
 # Ask Y/n question with color

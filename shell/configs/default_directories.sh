@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Default directories for the shell
 
 # Create repo directory if it doesn't exist

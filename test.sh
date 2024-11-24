@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 # Tell that the script is sourcing helper files
 printf "Sourcing helper files...\n"

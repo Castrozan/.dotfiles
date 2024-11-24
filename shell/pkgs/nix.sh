@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 # Check if nix is installed
 if command -v nix >/dev/null 2>&1; then

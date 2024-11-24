@@ -1,4 +1,6 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+. "./shell/src/print.sh"
 
 # Function to install a package
 # $1: package name
@@ -12,17 +14,17 @@ install_pkg() {
         # Check if the error is related to permission issues
         error_message=$($pkg_mgr install "$pkg_name" 2>&1)
         if echo "$error_message" | grep -q "Permission denied\|are you root"; then
-            echo "${RED}It looks like you don't have sufficient permissions to install $pkg_name.${RESET}"
+            print "It looks like you don't have sufficient permissions to install $pkg_name." "$RED"
             if ask "Would you like to try running the command with sudo?"; then
                 sudo $pkg_mgr install "$pkg_name"
             else
-                echo "${YELLOW}Skipping the installation of $pkg_name.${RESET}"
+                print "Skipping the installation of $pkg_name." "$YELLOW"
             fi
         else
-            echo "${RED}An error occurred while trying to install $pkg_name:${RESET}"
-            echo "$error_message"
+            print "An error occurred while trying to install $pkg_name:" "$RED"
+            print "$error_message" "$RED"
         fi
     else
-        echo "${GREEN}Successfully installed $pkg_name.${RESET}"
+        print "Successfully installed $pkg_name." "$GREEN"
     fi
 }

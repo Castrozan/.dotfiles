@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 # Function to check if a file is already sourced in .bashrc
 # $1: file to check
