@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+
+# daily_note
+# This script creates a daily note in the Obsidian vault.
+# The note is named as Y-m-d-daily-note.md.
+# When called multiple times in the same day, it opens the same note.
+# Each note includes a header with the date and the note name.
+daily_note() {
+    local filename fullpath today
+
+    today=$(date "+%Y-%m-%d")
+    filename=$(_get_daily_note_file_name "$today")
+
+    # Check if OBSIDIAN_HOME is defined
+    if [ -z "$OBSIDIAN_HOME" ]; then
+        echo "Error: OBSIDIAN_HOME is not defined."
+        return 1
+    fi
+
+    fullpath="$OBSIDIAN_HOME/$filename"
+
+    # Create the file if it doesn't exist and add the header
+    if [ ! -f "$fullpath" ]; then
+        touch "$fullpath"
+        _add_note_header "$today" "$filename" "$fullpath"
+    fi
+
+    _open_daily_note "$fullpath"
+}
+
+# Generate the daily note file name
+# $1: date
+_get_daily_note_file_name() {
+    local date=$1
+
+    echo "$date-daily-note.md"
+}
+
+# Add a header to the daily note
+# $1: date
+# $2: file name
+# $3: file path
+_add_note_header() {
+    local date=$1 filename=$2 fullpath=$3
+
+    {
+        echo "# $date Daily Note"
+        echo "### $filename"
+        echo
+    } >>"$fullpath"
+}
+
+# Open the daily note
+# $1: file path
+_open_daily_note() {
+    local fullpath=$1
+
+    "$EDITOR" "$fullpath"
+}
+
+daily_note

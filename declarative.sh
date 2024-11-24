@@ -37,8 +37,18 @@ _PKG_SEL="$_PKG_SEL zoxide"
 _PKG_SEL="$_PKG_SEL zsh"
 _DOTFILES_PACKAGES_TO_INSTALL="$_PKG_SEL"
 
+# Scripts
+# These are the scripts that are available
+# They are set this way to make it easier to comment out the ones you don't want
+_SCRIPT_SEL=""
+_SCRIPT_SEL="$_SCRIPT_SEL daily_note"
+_SCRIPT_SEL="$_SCRIPT_SEL git_fzf"
+_SCRIPT_SEL="$_SCRIPT_SEL killport"
+_SCRIPT_SEL="$_SCRIPT_SEL on"
+_DOTFILES_SCRIPTS_TO_INSTALL="$_SCRIPT_SEL"
+
 # Configs
-# These are the configurations that are available
+# These are the shell configurations that are available
 # Remove the ones that you don't want
 #   Some of these are already sourced in my shell configs-
 #   so to remove, comment out on the shell rc file

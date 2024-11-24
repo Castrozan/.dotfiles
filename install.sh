@@ -3,8 +3,9 @@
 . "./shell/src/ask.sh"
 . "./shell/src/print.sh"
 . "./shell/src/should_install.sh"
-. "./shell/src/iterate_install_scripts.sh"
-. "./shell/src/iterate_config_scripts.sh"
+. "./shell/src/install_scripts.sh"
+. "./shell/src/install_pkgs.sh"
+. "./shell/src/install_configs.sh"
 . "./shell/src/use_tzdata.sh"
 . "./shell/src/use_brew.sh"
 . "./shell/src/use_stow.sh"
@@ -43,13 +44,19 @@ print "\n"
 
 # Ask if pkgs should be installed
 if ask "Do you want to install pkgs?"; then
-    iterate_install_scripts
+    install_pkgs
+fi
+print "\n"
+
+# Ask if scripts should be installed
+if ask "Do you want to install scripts?"; then
+    install_scripts
 fi
 print "\n"
 
 # Ask if configs should be sourced
 if ask "Do you want to $_SH to source files?"; then
-    iterate_config_scripts
+    install_configs
 fi
 print "\n"
 

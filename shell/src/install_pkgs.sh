@@ -22,7 +22,7 @@ _declarative_install() {
 
 # Function to install all pkgs that are in the /shell/pkgs directory
 _interactive_install() {
-    _dir=$_INSTALL_SCRIPTS_DIR
+    _dir=$_PKGS_DIR
 
     for file in "$_dir"/*; do
         if [ -f "$file" ]; then
@@ -36,8 +36,8 @@ _interactive_install() {
 }
 
 # Function to install pkgs
-# and source the install scripts
-iterate_install_scripts() {
+# and source the install pkgs
+install_pkgs() {
 
     # Check if pkgs are set to install declaratively
     if [ -n "$_DOTFILES_PACKAGES_TO_INSTALL" ]; then

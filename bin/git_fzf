@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # From https://gist.github.com/junegunn/f4fca918e937e6bf5bad?permalink_comment_id=3715673#gistcomment-3715673
 function git_fzf() {
@@ -35,4 +35,5 @@ function git_fzf() {
                 {}\nFZFEOF" \
             --preview-window=right:60%
 }
+
 git_fzf "$@"

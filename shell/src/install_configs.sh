@@ -38,15 +38,15 @@ _declarative_config() {
 
 # Function to config all configs that are in the /shell/configs directory
 _interactive_config() {
-    _dir=$_CONFIG_SCRIPTS_DIR
+    _dir=$_CONFIGS_DIR
 
     for file in "$_dir"/*; do
         _source_config_by_name "$file"
     done
 }
 
-# Function to iterate and set config scripts
-iterate_config_scripts() {
+# Function to install configs
+install_configs() {
 
     # Check if configs are set to be installed declaratively
     if [ -n "$_DOTFILES_CONFIGS_TO_INSTALL" ]; then
