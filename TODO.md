@@ -20,6 +20,9 @@
   - [ ] Migrate to zsh
   - [ ] Update README
   - [ ] clean kitty conf file
+  - [ ] Fix fira-code font install
+  - [ ] Fix nvm install
+  - [ ] Fix obsidian install
   - [ ] Change color vars to begin with underline
   - [ ] change bash location to #!/usr/bin/env bash
 
