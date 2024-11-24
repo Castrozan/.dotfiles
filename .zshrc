@@ -116,6 +116,5 @@ export NVM_DIR="$HOME/.nvm"
 
 # Files sourcered by $HOME/.dotfiles
 . $HOME/.dotfiles/shell/configs/fzf_catppuccin_theme.sh
-. $HOME/.dotfiles/shell/configs/git_aliases.sh
 . $HOME/.dotfiles/shell/configs/zoxide.sh
 . $HOME/.dotfiles/shell/configs/bash_aliases.sh
