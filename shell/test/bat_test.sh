@@ -3,7 +3,7 @@
 # Test if bat is installed
 bat_test() {
 
-    if ! bat --version; then
+    if ! dpkg -l | grep -q "bat"; then
         print "Bat is not installed." "$RED"
         exit 1
     else
