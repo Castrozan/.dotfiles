@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Fuzzy find history search
 # ctrl-f to search history
 # enter to select command

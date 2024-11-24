@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 . "shell/src/install_with_temp_custom_script.sh"
 

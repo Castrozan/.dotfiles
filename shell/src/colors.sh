@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Color definition
 # ${CYAN} is only for ask the function
@@ -9,7 +9,7 @@
 # ${BOLD} is for bold text
 # ${RESET} is to reset the color
 
-# Define colors
+# Color definitions
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[0;33m'

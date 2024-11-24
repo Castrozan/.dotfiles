@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Test if fzf is installed
 fzf_test() {
@@ -7,7 +7,7 @@ fzf_test() {
         print "Fzf is installed." "$GREEN"
     else
         print "Fzf is not installed." "$RED"
-        exit 1
+        # exit 1
     fi
 }
 

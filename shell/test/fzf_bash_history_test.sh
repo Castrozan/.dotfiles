@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Test if fzf bash history was sourced
 fzf_bash_history_test() {
