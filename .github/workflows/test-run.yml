@@ -26,6 +26,7 @@ jobs:
     - name: Run install script
       run: |
         chmod +x install.sh
+        bash
         yes | bash install.sh
 
     - name: Test install script
@@ -35,6 +36,7 @@ jobs:
         # echo $OBSIDIAN_HOME
         chmod +x install.sh
         yes | bash install.sh
+        bash
         bash test.sh
 
     # - name: Test dotfiles
