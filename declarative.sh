@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # This file is set for you to chose pkgs and configs that you want to install
-# That way you can declarativly set up your system
+# That way you can declaratively set up your system
 # There are 2 types of configurations:
 # _DOTFILES_PACKAGES_TO_INSTALL: These are packages that you want to install
 # _DOTFILES_CONFIGS_TO_INSTALL: These are configurations that you want to set up
