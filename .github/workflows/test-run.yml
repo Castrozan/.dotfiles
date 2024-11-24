@@ -35,6 +35,7 @@ jobs:
         # source ~/.bashrc
         # echo $OBSIDIAN_HOME
         chmod +x install.sh
+        cat $HOME/.bashrc
         yes | bash install.sh
         bash
         bash test.sh

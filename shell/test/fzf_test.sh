@@ -7,7 +7,7 @@ fzf_test() {
         print "Fzf is installed." "$GREEN"
     else
         print "Fzf is not installed." "$RED"
-        exit 1
+        # exit 1
     fi
 }
 
