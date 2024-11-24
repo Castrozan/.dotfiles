@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 # Install a package with a custom script via a networking tool
 # $1: URI to download the custom script

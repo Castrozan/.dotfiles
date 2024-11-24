@@ -1,7 +1,7 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Zoxide
-if command -v zoxide &> /dev/null; then
+if command -v zoxide &>/dev/null; then
     # TODO: add alias cd to zoxide after training
     # eval "$(zoxide init --cmd cd bash)"
     eval "$(zoxide init bash)"

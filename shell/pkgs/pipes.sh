@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 . "./shell/src/run_elevated_clause.sh"
 

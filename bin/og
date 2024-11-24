@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # TODO: fix this script and convert it to bash
 # Directory containing markdown files

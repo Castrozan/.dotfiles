@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # NVM variables
 export NVM_DIR="$HOME/.nvm"

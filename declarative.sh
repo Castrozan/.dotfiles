@@ -1,63 +1,57 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # This file is set for you to chose pkgs and configs that you want to install
 # That way you can declaratively set up your system
 # There are 2 types of configurations:
 # _DOTFILES_PACKAGES_TO_INSTALL: These are packages that you want to install
+# _DOTFILES_SCRIPTS_TO_INSTALL: These are scripts that you want to install
 # _DOTFILES_CONFIGS_TO_INSTALL: These are configurations that you want to set up
-# Below are array like structures that you should modify to install-
-# the packages and configs that you want
 # Now it shows all packages and configs that are available
-# It is up to you to comment the ones that you don't want
+# Comment out any you don't want to install.
 
 # Packages
-# These are the packages that are available
-# They are set this way to make it easier to comment out the ones you don't want
-_PKG_SEL=""
-_PKG_SEL="$_PKG_SEL bash_completion"
-_PKG_SEL="$_PKG_SEL bat"
-_PKG_SEL="$_PKG_SEL btop"
-_PKG_SEL="$_PKG_SEL cbonsai"
-_PKG_SEL="$_PKG_SEL fzf"
-# _PKG_SEL="$_PKG_SEL kitty"
-_PKG_SEL="$_PKG_SEL lazygit"
-_PKG_SEL="$_PKG_SEL neofetch"
-_PKG_SEL="$_PKG_SEL neovim"
-# _PKG_SEL="$_PKG_SEL nix"
-_PKG_SEL="$_PKG_SEL nodejs"
-_PKG_SEL="$_PKG_SEL npm"
-_PKG_SEL="$_PKG_SEL nvm"
-_PKG_SEL="$_PKG_SEL obsidian"
-_PKG_SEL="$_PKG_SEL fira_code"
-_PKG_SEL="$_PKG_SEL pipes"
-_PKG_SEL="$_PKG_SEL tmux"
-_PKG_SEL="$_PKG_SEL vim"
-_PKG_SEL="$_PKG_SEL yazi"
-_PKG_SEL="$_PKG_SEL zoxide"
-_PKG_SEL="$_PKG_SEL zsh"
-_DOTFILES_PACKAGES_TO_INSTALL="$_PKG_SEL"
-
+PACKAGES=(
+    bash_completion
+    bat
+    btop
+    cbonsai
+    fzf
+    # kitty
+    lazygit
+    neofetch
+    neovim
+    # nix
+    nodejs
+    npm
+    nvm
+    obsidian
+    fira_code
+    pipes
+    tmux
+    vim
+    yazi
+    zoxide
+    zsh
+)
 # Scripts
-# These are the scripts that are available
-# They are set this way to make it easier to comment out the ones you don't want
-_SCRIPT_SEL=""
-_SCRIPT_SEL="$_SCRIPT_SEL daily_note"
-_SCRIPT_SEL="$_SCRIPT_SEL git_fzf"
-_SCRIPT_SEL="$_SCRIPT_SEL killport"
-_SCRIPT_SEL="$_SCRIPT_SEL on"
-_DOTFILES_SCRIPTS_TO_INSTALL="$_SCRIPT_SEL"
+SCRIPTS=(
+    daily_note
+    git_fzf
+    killport
+    on
+)
 
 # Configs
-# These are the shell configurations that are available
-# Remove the ones that you don't want
-#   Some of these are already sourced in my shell configs-
-#   so to remove, comment out on the shell rc file
-# They are set this way to make it easier to comment out the ones you don't want
-_CONFIG_SEL=""
-_CONFIG_SEL="$_CONFIG_SEL bash_aliases"
-_CONFIG_SEL="$_CONFIG_SEL bash_history"
-_CONFIG_SEL="$_CONFIG_SEL fzf_bash_history"
-_CONFIG_SEL="$_CONFIG_SEL fzf_catppuccin_theme"
-_CONFIG_SEL="$_CONFIG_SEL screensaver"
-_CONFIG_SEL="$_CONFIG_SEL zoxide"
-_DOTFILES_CONFIGS_TO_INSTALL="$_CONFIG_SEL"
+CONFIGS=(
+    bash_aliases
+    bash_history
+    fzf_bash_history
+    fzf_catppuccin_theme
+    screensaver
+    zoxide
+)
+
+# Join the array into a space-separated string
+_DOTFILES_PACKAGES_TO_INSTALL="${PACKAGES[*]}"
+_DOTFILES_SCRIPTS_TO_INSTALL="${SCRIPTS[*]}"
+_DOTFILES_CONFIGS_TO_INSTALL="${CONFIGS[*]}"

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 . "./shell/src/ask.sh"
 . "./shell/src/print.sh"

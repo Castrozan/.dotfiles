@@ -23,6 +23,7 @@
   - [ ] Fix fira-code font install
   - [ ] Fix nvm install
   - [ ] Fix obsidian install
+  - [ ] fix fzf test
   - [ ] Change color vars to begin with underline
   - [ ] change bash location to #!/usr/bin/env bash
 
