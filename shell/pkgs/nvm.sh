@@ -1,7 +1,6 @@
 #!/bin/bash
 
 . "shell/src/install_with_temp_custom_script.sh"
-. "./shell/src/iterate_config_scripts.sh"
 
 # Check if nvm is installed
 if nvm --version; then
