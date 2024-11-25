@@ -29,13 +29,9 @@ jobs:
 
     - name: Test install script
       run: |
-        cat .bashrc >$HOME/.bashrc
-        cat $HOME/.bashrc
-        echo $(bash)
-        bash --rcfile .bashrc -c "echo $OBSIDIAN_HOME"
-        echo "pener: $OBSIDIAN_HOME"
+        echo .bashrc >$HOME/.bashrc
         yes | bash install.sh
-        bash --rcfile .bashrc -c "bash test.sh"
+        bash --rcfile .bashrc -c "echo "cleber $OBSIDIAN_HOME" && bash test.sh"
 
     # - name: Test dotfiles
     #   run: |
