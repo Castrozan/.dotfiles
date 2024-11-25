@@ -55,7 +55,12 @@ _add_note_header() {
 _open_daily_note() {
     local fullpath=$1
 
-    "$EDITOR" "$fullpath"
+    # Open the note in the default editor
+    # I'm using VS Code as the default editor for now
+    # so "$OBSIDIAN_HOME" "-g" "$fullpath" will open the note in
+    # the Obsidian vault
+    # "$EDITOR" "$fullpath"
+    "$EDITOR" "$OBSIDIAN_HOME" "-g" "$fullpath"
 }
 
 daily_note
