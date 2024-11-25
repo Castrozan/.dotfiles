@@ -32,9 +32,10 @@ jobs:
         cat .bashrc >$HOME/.bashrc
         cat $HOME/.bashrc
         echo $(bash)
+        bash --rcfile .bashrc -c "echo $OBSIDIAN_HOME"
         echo "pener: $OBSIDIAN_HOME"
         yes | bash install.sh
-        bash test.sh
+        bash --rcfile .bashrc -c "bash test.sh"
 
     # - name: Test dotfiles
     #   run: |
