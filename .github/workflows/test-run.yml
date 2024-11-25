@@ -29,11 +29,10 @@ jobs:
 
     - name: Test install script
       run: |
-        bash
-        cat $HOME/.bashrc
         cat .bashrc >$HOME/.bashrc
         cat $HOME/.bashrc
-        bash
+        source $HOME/.bashrc
+        echo $(bash)
         echo "pener: $OBSIDIAN_HOME"
         yes | bash install.sh
         bash test.sh
