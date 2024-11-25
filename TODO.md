@@ -27,6 +27,7 @@
   - [ ] Change color vars to begin with underline
   - [ ] change bash location to #!/usr/bin/env bash
   - [ ] Make daily note to get undone todos from the day before to the current day
+  - [ ] fix bash_history
 
 - Nixos
   - [ ] Rewrite config to use home-manager by rayan's style
