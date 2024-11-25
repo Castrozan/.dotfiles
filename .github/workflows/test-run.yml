@@ -25,20 +25,13 @@ jobs:
 
     - name: Run install script
       run: |
-        chmod +x install.sh
-        bash
         yes | bash install.sh
 
     - name: Test install script
       run: |
-        # echo $HOME
-        # source ~/.bashrc
-        # echo $OBSIDIAN_HOME
-        chmod +x install.sh
-        cat $HOME/.bashrc
+        echo .bashrc >$HOME/.bashrc
         yes | bash install.sh
-        bash
-        bash test.sh
+        bash --rcfile .bashrc test.sh
 
     # - name: Test dotfiles
     #   run: |
