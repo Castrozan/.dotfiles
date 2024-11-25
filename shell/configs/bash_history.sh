@@ -11,12 +11,10 @@ export HISTFILESIZE=20000
 # Function to trim trailing spaces and replace the last command
 trim_and_save_history() {
     # Extract the current command (excluding history number)
-    local current_command last_command
-    current_command=$(history 1 | sed 's/^[ ]*[0-9]*[ ]*//' | awk '{$1=$1};1')
+    local current_command=$(history 1 | sed 's/^[ ]*[0-9]*[ ]*//' | awk '{$1=$1};1')
 
     # Remove the last command in history
-    last_command=$(history | tail -n 1 | awk '{$1=$1};1')
-    history -d "$last_command"
+    history -d $(history | tail -n 1 | awk '{print $1}')
 
     # Add the trimmed command to history
     history -s "$current_command"
