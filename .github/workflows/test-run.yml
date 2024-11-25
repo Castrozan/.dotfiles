@@ -31,7 +31,6 @@ jobs:
       run: |
         cat .bashrc >$HOME/.bashrc
         cat $HOME/.bashrc
-        source $HOME/.bashrc
         echo $(bash)
         echo "pener: $OBSIDIAN_HOME"
         yes | bash install.sh
