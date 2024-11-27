@@ -6,5 +6,5 @@
 is_already_installed() {
     local pkg=$1
 
-    print "$pkg is already installed." "$YELLOW"
+    print "$pkg is already installed." "$_YELLOW"
 }

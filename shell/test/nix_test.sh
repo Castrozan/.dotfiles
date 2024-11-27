@@ -4,13 +4,13 @@
 nix_test() {
 
     if ! nix --help >/dev/null 2>&1; then
-        print "Nix is not installed." "$RED"
+        print "Nix is not installed." "$_RED"
         exit 1
     else
-        print "Nix is installed." "$GREEN"
+        print "Nix is installed." "$_GREEN"
     fi
 }
 
 # Run the test
 # nix_test
-print "TODO: fix nix install script" "$RED"
+print "TODO: fix nix install script" "$_RED"

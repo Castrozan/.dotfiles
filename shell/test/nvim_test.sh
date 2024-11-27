@@ -4,14 +4,14 @@
 nvim_test() {
 
     if ! nvim -v >/dev/null; then
-        print "Nvim is not installed." "$RED"
+        print "Nvim is not installed." "$_RED"
         exit 1
     else
-        print "Nvim is installed." "$GREEN"
+        print "Nvim is installed." "$_GREEN"
     fi
 }
 
 # Run the test
 # nvim_test
-print "Nvim PATH var is not working." "$RED"
-print "TODO: Fix the PATH var for nvim." "$RED"
+print "Nvim PATH var is not working." "$_RED"
+print "TODO: Fix the PATH var for nvim." "$_RED"

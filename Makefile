@@ -12,12 +12,12 @@ all: install
 # Run installation script
 .PHONY: install
 install:
-	sh install.sh
+	bash install.sh
 
 # Run test suite locally
 .PHONY: test
 test:
-	sh test.sh
+	bash test.sh
 
 # Run tests and install in Docker (CI-like environment)
 .PHONY: ci
@@ -27,9 +27,9 @@ ci:
 	@docker run --name $(CONTAINER_NAME) -v $(shell pwd):$(WORKDIR) -w $(WORKDIR) $(DOCKER_IMAGE) /bin/bash -c "\
 		apt-get update && \
 		rm -rf /root/.bashrc /root/.profile && \
-		yes | sh install.sh && \
+		yes | bash install.sh && \
 		source /root/.bashrc && \
-		sh test.sh" && \
+		bash test.sh" && \
 		RESULT=$$? && \
 		if [ $$RESULT -eq 0 ]; then \
 			echo '\n$(shell tput setaf 2)✔ All Tests passed$(shell tput sgr0)'; \

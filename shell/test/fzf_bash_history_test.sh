@@ -13,5 +13,5 @@ test_cf() {
 # Run the test
 # fzf_bash_history_test
 # test_cf
-print "TODO: fix fzf bash history tests" $RED
-print "Skip Test fzf bash history" $RED
+print "TODO: fix fzf bash history tests" $_RED
+print "Skip Test fzf bash history" $_RED
