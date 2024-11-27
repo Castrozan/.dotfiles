@@ -20,7 +20,7 @@ install_cbonsai() {
 
 # Check if cbonsai is installed
 if [ -d "$HOME/repo/cbonsai" ]; then
-    print "Cbonsai already installed" "$YELLOW"
+    print "Cbonsai already installed" "$_YELLOW"
 else
     install_ncurses
     install_scdoc

@@ -4,7 +4,7 @@
 
 # Check if nvm is installed
 if nvm --version; then
-    print "Nvm already installed" "$YELLOW"
+    print "Nvm already installed" "$_YELLOW"
 
     _source_config_by_name "shell/configs/nvm.sh"
 else

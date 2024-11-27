@@ -16,7 +16,7 @@ install_obsidian() {
 if is_desktop_environment; then
     # Check if Obsidian is installed
     if is_installed "obsidian" >/dev/null 2>&1; then
-        print "Obsidian already installed" "$YELLOW"
+        print "Obsidian already installed" "$_YELLOW"
     else
         install_obsidian
     fi

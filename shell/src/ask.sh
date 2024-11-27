@@ -8,7 +8,7 @@ ask() {
     local resp
 
     # Use printf to display the prompt with colors
-    printf "${CYAN}%b${RESET} (Y/n): " "$prompt"
+    printf "$_CYAN%b$_RESET (Y/n): " "$prompt"
 
     # Read the user input
     read -r resp

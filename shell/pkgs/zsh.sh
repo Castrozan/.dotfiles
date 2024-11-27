@@ -20,7 +20,7 @@ install_ohmyzsh() {
 install_plugin() {
     if [ ! -d "$2" ]; then
         plugin_name=$(basename "$2")
-        print "Installing plugin $plugin_name..." "$GREEN"
+        print "Installing plugin $plugin_name..." "$_GREEN"
         run_elevated_clause "$1 $2"
     fi
 }

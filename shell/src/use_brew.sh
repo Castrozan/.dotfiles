@@ -9,7 +9,7 @@ use_brew() {
     if ask "Do you want to install Homebrew?"; then
         # Check if brew is installed
         if brew --version; then
-            print "Homebrew is already installed." "${YELLOW}"
+            print "Homebrew is already installed." "$_YELLOW"
         else
             # Install Homebrew from https://brew.sh
             /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
@@ -21,9 +21,9 @@ use_brew() {
 
             # Check if brew is installed
             if brew --version; then
-                print "Homebrew installed." "${GREEN}"
+                print "Homebrew installed." "$_GREEN"
             else
-                print "Homebrew installation failed." "${RED}"
+                print "Homebrew installation failed." "$_RED"
             fi
         fi
     fi

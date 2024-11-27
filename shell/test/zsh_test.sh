@@ -4,18 +4,18 @@
 zsh_test() {
 
     if ! zsh --version | head -n 1; then
-        print "Zsh is not installed." "$RED"
+        print "Zsh is not installed." "$_RED"
         exit 1
     else
-        print "Zsh is installed." "$GREEN"
+        print "Zsh is installed." "$_GREEN"
     fi
 }
 
 ohmyzsh_test() {
     if [ ! -d "$HOME/.oh-my-zsh" ]; then
-        print "Oh-my-zsh is not installed." "$RED"
+        print "Oh-my-zsh is not installed." "$_RED"
     else
-        print "Oh-my-zsh is installed." "$GREEN"
+        print "Oh-my-zsh is installed." "$_GREEN"
     fi
 }
 

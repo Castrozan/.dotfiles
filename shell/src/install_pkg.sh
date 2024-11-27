@@ -14,17 +14,17 @@ install_pkg() {
         # Check if the error is related to permission issues
         error_message=$($pkg_mgr install "$pkg_name" 2>&1)
         if echo "$error_message" | grep -q "Permission denied\|are you root"; then
-            print "It looks like you don't have sufficient permissions to install $pkg_name." "$RED"
+            print "It looks like you don't have sufficient permissions to install $pkg_name." "$_RED"
             if ask "Would you like to try running the command with sudo?"; then
                 sudo $pkg_mgr install "$pkg_name"
             else
-                print "Skipping the installation of $pkg_name." "$YELLOW"
+                print "Skipping the installation of $pkg_name." "$_YELLOW"
             fi
         else
-            print "An error occurred while trying to install $pkg_name:" "$RED"
-            print "$error_message" "$RED"
+            print "An error occurred while trying to install $pkg_name:" "$_RED"
+            print "$error_message" "$_RED"
         fi
     else
-        print "Successfully installed $pkg_name." "$GREEN"
+        print "Successfully installed $pkg_name." "$_GREEN"
     fi
 }

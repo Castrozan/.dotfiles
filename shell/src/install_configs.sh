@@ -12,15 +12,15 @@ _source_config_by_name() {
     if [ -f "$file" ]; then
         full_path="\$HOME/$_DOTFILES_DIR/$file"
         if is_sourced "$full_path"; then
-            print "$full_path is already sourced in $_SH." "${YELLOW}"
+            print "$full_path is already sourced in $_SH." "$_YELLOW"
         else
             # Add the source command to .bashrc
             # shellcheck disable=SC2028
             echo ". $full_path" >>"$_SH"
-            print "$full_path has been sourced." "${GREEN}"
+            print "$full_path has been sourced." "$_GREEN"
         fi
     else
-        print "Config $file does not exist." "${RED}"
+        print "Config $file does not exist." "$_RED"
     fi
 }
 
