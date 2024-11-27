@@ -10,7 +10,7 @@ install_pipes() {
 
 # Check if pipes.sh is installed
 if [ -d "$HOME/repo/pipes.sh" ]; then
-    print "Pipes.sh already installed" "$YELLOW"
+    print "Pipes.sh already installed" "$_YELLOW"
 else
     install_pipes
 fi

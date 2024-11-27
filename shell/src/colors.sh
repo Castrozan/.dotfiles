@@ -1,20 +1,20 @@
 #!/usr/bin/env bash
 
 # Color definition
-# ${CYAN} is only for ask the function
-# ${GREEN} is for success
-# ${YELLOW} is for warning
-# ${RED} is for error
-# ${MAGENTA} is for the script name
-# ${BOLD} is for bold text
-# ${RESET} is to reset the color
+# $_CYAN is only for ask the function
+# $_GREEN is for success
+# $_YELLOW is for warning
+# $_RED is for error
+# $_MAGENTA is for the script name
+# $_BOLD is for bold text
+# $_RESET is to reset the color
 
 # Color definitions
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[0;33m'
-BLUE='\033[0;34m'
-MAGENTA='\033[0;35m'
-CYAN='\033[0;36m'
-BOLD='\033[1m'
-RESET='\033[0m'
+_RED='\033[0;31m'
+_GREEN='\033[0;32m'
+_YELLOW='\033[0;33m'
+_BLUE='\033[0;34m'
+_MAGENTA='\033[0;35m'
+_CYAN='\033[0;36m'
+_BOLD='\033[1m'
+_RESET='\033[0m'

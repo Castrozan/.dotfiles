@@ -4,10 +4,10 @@
 flatpak_test() {
 
     if ! flatpak --version; then
-        print "Flatpak is not installed." "$RED"
+        print "Flatpak is not installed." "$_RED"
         exit 1
     else
-        print "Flatpak is installed." "$GREEN"
+        print "Flatpak is installed." "$_GREEN"
     fi
 }
 

@@ -17,7 +17,7 @@ install_scripts() {
             if [ -f "$file" ]; then
                 _make_file_executable "$file"
             else
-                print "Error: File $file does not exist." "$RED"
+                print "Error: File $file does not exist." "$_RED"
             fi
         fi
     done
@@ -30,7 +30,7 @@ _get_scripts() {
     elif [ -d "$HOME/bin/" ]; then
         ls -1 "$HOME/bin/"
     else
-        print "Error: Directory $HOME/bin does not exist." "$RED"
+        print "Error: Directory $HOME/bin does not exist." "$_RED"
         return 1
     fi
 }
@@ -41,8 +41,8 @@ _make_file_executable() {
     local file="$1"
 
     if chmod +x "$file"; then
-        print "Successfully made $file executable." "$GREEN"
+        print "Successfully made $file executable." "$_GREEN"
     else
-        print "Error: Failed to make $file executable." "$RED"
+        print "Error: Failed to make $file executable." "$_RED"
     fi
 }

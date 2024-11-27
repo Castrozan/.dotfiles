@@ -4,9 +4,9 @@
 bash_completion_test() {
 
     if [ -f /etc/bash_completion ]; then
-        print "Bash completion is installed." $GREEN
+        print "Bash completion is installed." $_GREEN
     else
-        print "Bash completion is not installed." $RED
+        print "Bash completion is not installed." $_RED
         exit 1
     fi
 }

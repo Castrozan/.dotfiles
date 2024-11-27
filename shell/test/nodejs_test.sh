@@ -4,10 +4,10 @@
 nodejs_test() {
 
     if ! node --version; then
-        print "NodeJS is not installed." "$RED"
+        print "NodeJS is not installed." "$_RED"
         exit 1
     else
-        print "NodeJS is installed." "$GREEN"
+        print "NodeJS is installed." "$_GREEN"
     fi
 }
 

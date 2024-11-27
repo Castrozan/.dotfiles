@@ -4,10 +4,10 @@
 vim_test() {
 
     if ! vim --version | head -n 1; then
-        print "Vim is not installed." $RED
+        print "Vim is not installed." $_RED
         exit 1
     else
-        print "Vim is installed." $GREEN
+        print "Vim is installed." $_GREEN
     fi
 }
 
