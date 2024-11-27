@@ -6,8 +6,7 @@
 obsidian_test() {
 
     if is_desktop_environment; then
-        if ! is_installed obsidian; then
-            print "Obsidian is not installed." "$RED"
+        if ! is_installed obsidian &&
             exit 1
         else
             print "Obsidian is installed." "$GREEN"
