@@ -4,10 +4,10 @@
 stow_test() {
 
     if ! stow --version; then
-        print "Stow is not installed." $RED
+        print "Stow is not installed." $_RED
         exit 1
     else
-        print "Stow is installed." $GREEN
+        print "Stow is installed." $_GREEN
     fi
 }
 

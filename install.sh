@@ -28,9 +28,9 @@ if [ "$1" = "-d" ]; then
 fi
 
 # Tell what is going to happen
-print "# -------------- castrozan:dotfiles install script ---------------\n" "${MAGENTA}" "${BOLD}"
+print "# -------------- castrozan:dotfiles install script ---------------\n" "$_MAGENTA" "$_BOLD"
 
-print "Some packages are required to run the install script.\n" "${YELLOW}" "${BOLD}"
+print "Some packages are required to run the install script.\n" "$_YELLOW" "$_BOLD"
 if ask "Do you want to install them?"; then
     should_install build-essential
     should_install curl
@@ -61,12 +61,12 @@ fi
 print "\n"
 
 # End of script
-print "# ------------------------ End of script ------------------------\n" "${MAGENTA}" "${BOLD}"
+print "# ------------------------ End of script ------------------------\n" "$_MAGENTA" "$_BOLD"
 
 # Final reminder to the user
-print "To apply changes to your current shell session, run:\n" "${GREEN}" "${BOLD}"
-print "git reset --hard origin/main\n" "${GREEN}" "${BOLD}"
-print "source ~/.bashrc\n" "${GREEN}" "${BOLD}"
+print "To apply changes to your current shell session, run:\n" "$_GREEN" "$_BOLD"
+print "git reset --hard origin/main\n" "$_GREEN" "$_BOLD"
+print "source ~/.bashrc\n" "$_GREEN" "$_BOLD"
 
 # Cutely tell goodbye
-print "( ੭ ˘ ³˘)੭°｡⋆♡‧₊˚ bye!\n" "${CYAN}"
+print "( ੭ ˘ ³˘)੭°｡⋆♡‧₊˚ bye!\n" "$_CYAN"

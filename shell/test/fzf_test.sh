@@ -4,9 +4,9 @@
 fzf_test() {
 
     if fzf --version &>/dev/null; then
-        print "Fzf is installed." "$GREEN"
+        print "Fzf is installed." "$_GREEN"
     else
-        print "Fzf is not installed." "$RED"
+        print "Fzf is not installed." "$_RED"
         # exit 1
     fi
 }

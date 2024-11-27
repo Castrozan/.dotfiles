@@ -17,20 +17,20 @@ run_elevated_clause() {
 
         # TODO: Check if error code is 126 or 100 (permission denied)
         if echo "$error_message" | grep -q "Permission denied"; then
-            print "It looks like you need elevated permissions to run this script." "$RED"
+            print "It looks like you need elevated permissions to run this script." "$_RED"
 
             if ask "Would you like to try running the command with sudo?"; then
                 # shellcheck disable=SC2164
                 [ -n "$2" ] && cd "$2"
                 sudo "$_clause"
             else
-                print "Skipping the command." "$YELLOW"
+                print "Skipping the command." "$_YELLOW"
             fi
         else
-            print "An error occurred while trying to run the command:" "$RED"
-            print "$error_message" "$RED"
+            print "An error occurred while trying to run the command:" "$_RED"
+            print "$error_message" "$_RED"
         fi
     else
-        print "Successfully ran the command." "$GREEN"
+        print "Successfully ran the command." "$_GREEN"
     fi
 }

@@ -25,7 +25,7 @@ install_kitty_desktop_integration() {
 
 # Check if kitty is installed
 if command -v kitty >/dev/null 2>&1; then
-    print "Kitty already installed" "$YELLOW"
+    print "Kitty already installed" "$_YELLOW"
 else
     install_with_temp_custom_script "https://sw.kovidgoyal.net/kitty/installer.sh"
 

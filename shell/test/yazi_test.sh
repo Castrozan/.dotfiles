@@ -4,10 +4,10 @@
 yazi_test() {
 
     if ! yazi --version | head -n 1; then
-        print "Yazi is not installed." "$RED"
+        print "Yazi is not installed." "$_RED"
         exit 1
     else
-        print "Yazi is installed." "$GREEN"
+        print "Yazi is installed." "$_GREEN"
     fi
 }
 

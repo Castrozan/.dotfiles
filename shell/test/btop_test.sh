@@ -4,10 +4,10 @@
 btop_test() {
 
     if ! btop --version; then
-        print "Btop is not installed." "$RED"
+        print "Btop is not installed." "$_RED"
         exit 1
     else
-        print "Btop is installed." "$GREEN"
+        print "Btop is installed." "$_GREEN"
     fi
 }
 
