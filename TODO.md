@@ -3,7 +3,7 @@
 
 - Config
   - [F] Convert all scripts to sh or make it POSIX compliant - Fuck POSIX let's do bash
-  - [ ] Convert all scripts to bash
+  - [x] Convert all scripts to bash
   - [ ] Remove auto import with files and use a single import with ". shell/src/file.sh"
   - [x] Fix install configs declaratively
     - Now the -d flag can be set to use de declarative install
@@ -16,18 +16,18 @@
     - [ ] Jetbrains mono nerd fonts
   - [ ] Remove all unnecessary output from scripts
   - [ ] Source the bashrc in the test ci
-  - [ ] Run the install script with bash install.sh to make sure bash is the one to be changed
+  - [x] Run the install script with bash install.sh to make sure bash is the one to be changed
   - [ ] Migrate to zsh
-  - [ ] Update README
-  - [ ] clean kitty conf file
+  - [x] Update README
+  - [x] clean kitty conf file
   - [ ] Fix fira-code font install
   - [ ] Fix nvm install
   - [ ] Fix obsidian install
   - [ ] fix fzf test
-  - [ ] Change color vars to begin with underline
-  - [ ] change bash location to #!/usr/bin/env bash
+  - [x] Change color vars to begin with underline
+  - [x] change bash location to #!/usr/bin/env bash
   - [ ] Make daily note to get undone todos from the day before to the current day
-  - [ ] fix bash_history
+  - [x] fix bash_history
 
 - Nixos
   - [ ] Rewrite config to use home-manager by rayan's style
