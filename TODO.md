@@ -31,6 +31,7 @@
 
 - Nixos
   - [ ] Rewrite config to use home-manager by rayan's style
+  - [ ] Remove not used configs from rayan's config
   - [ ] Zsh
   - [ ] Configure monitors with https://github.com/ryan4yin/nix-config/commit/ec485779ceb7afef5fbd12d3f80bbfe66e634f7f
 
