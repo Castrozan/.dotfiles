@@ -189,10 +189,13 @@ esac
 [ -f $HOME/.fzf.bash ] && . $HOME/.fzf.bash
 
 # Java
+# Set a default JAVA_HOME for devices
+# Chose between sdkman and jbang
+# Current ubuntu is using sdkman
 # Add JBang to environment
-alias j!=jbang
-export PATH="$HOME/.jbang/bin:$HOME/.jbang/currentjdk/bin:$PATH"
-export JAVA_HOME=$HOME/.jbang/currentjdk
+# alias j!=jbang
+# export PATH="$HOME/.jbang/bin:$HOME/.jbang/currentjdk/bin:$PATH"
+# export JAVA_HOME=$HOME/.jbang/currentjdk
 
 # Brew
 # Add brew to PATH
