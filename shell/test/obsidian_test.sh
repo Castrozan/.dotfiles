@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 . "./shell/src/is_installed.sh"
+. "./shell/src/print.sh"
 
 # Test if obsidian is installed
 obsidian_test() {

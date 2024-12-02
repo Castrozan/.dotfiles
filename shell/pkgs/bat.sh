@@ -2,7 +2,6 @@
 
 . "./shell/src/should_install.sh"
 . "./shell/src/is_installed.sh"
-. "./shell/src/print.sh"
 . "./shell/src/is_already_installed.sh"
 
 # Check if bat is installed
