@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+. "./shell/src/print.sh"
+
 # Test if tmux is installed
 tmux_test() {
 

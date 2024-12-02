@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+. "./shell/src/print.sh"
+
 # Test if flatpak is installed
 flatpak_test() {
 

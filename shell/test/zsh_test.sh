@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+. "./shell/src/print.sh"
+
 # Test if zsh is installed
 zsh_test() {
 

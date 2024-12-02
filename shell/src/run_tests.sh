@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+. "./shell/src/print.sh"
+
 # Function to run tests
 run_tests() {
     local dir=$_TEST_DIR

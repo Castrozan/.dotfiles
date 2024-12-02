@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+. "./shell/src/print.sh"
+
 # Test if nvim is installed
 nvim_test() {
 
