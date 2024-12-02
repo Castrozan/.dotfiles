@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+. "./shell/src/should_install.sh"
+
 should_install tmux
 
 # Check if plugins/tpm exists and install it
