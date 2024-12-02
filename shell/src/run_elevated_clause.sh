@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 . "./shell/src/ask.sh"
+. "./shell/src/print.sh"
 
 # Function to run a command that may require sudo
 # $1: command to be run

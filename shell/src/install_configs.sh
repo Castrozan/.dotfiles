@@ -6,7 +6,7 @@
 
 # Function to source config by file path
 # $1: config file path
-_source_config_by_name() {
+source_config_by_name() {
     file="$1"
 
     if [ -f "$file" ]; then
@@ -32,7 +32,7 @@ _declarative_config() {
     for _config in $_configs; do
         file="shell/configs/$_config.sh"
 
-        _source_config_by_name "$file"
+        source_config_by_name "$file"
     done
 }
 
@@ -41,7 +41,7 @@ _interactive_config() {
     _dir=$_CONFIGS_DIR
 
     for file in "$_dir"/*; do
-        _source_config_by_name "$file"
+        source_config_by_name "$file"
     done
 }
 

@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
 . "./shell/src/run_elevated_clause.sh"
+. "./shell/src/print.sh"
+. "./shell/src/should_install.sh"
 
 # Install scdoc as it is a dependency of cbonsai man page
 install_scdoc() {

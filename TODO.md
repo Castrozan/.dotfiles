@@ -4,7 +4,7 @@
 - Config
   - [F] Convert all scripts to sh or make it POSIX compliant - Fuck POSIX let's do bash
   - [x] Convert all scripts to bash
-  - [ ] Remove auto import with files and use a single import with ". shell/src/file.sh"
+  - [x] Remove auto import with files and use a single import with ". shell/src/file.sh"
   - [x] Fix install configs declaratively
     - Now the -d flag can be set to use de declarative install
   - [x] Add tmux tpm plugins
