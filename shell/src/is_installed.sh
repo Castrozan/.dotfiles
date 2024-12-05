@@ -10,12 +10,18 @@ is_installed() {
         pkg_mgr=$2
     fi
 
+    # TODO: make package manager detection more robust
+    #   like sourcing them from a bash array
+    #   from another file
     case $pkg_mgr in
     apt)
         dpkg -l | grep -q "^ii\s\+$1\s"
         ;;
     brew)
         brew list | grep -q "^$1\$"
+        ;;
+    nix)
+        nix-env -q | grep -q "$1"
         ;;
     *)
         echo "Unsupported package manager: ${pkg_mgr}"

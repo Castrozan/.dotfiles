@@ -15,6 +15,7 @@ PACKAGES=(
     bat
     btop
     cbonsai
+    clipse
     fzf
     # kitty
     lazygit

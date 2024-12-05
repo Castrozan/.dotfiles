@@ -4,9 +4,9 @@
 
 # Function to install a package
 # $1: package name
-# $2: custom package manager (optional)
+# $2: custom package manager (optional) - defaults to $_PKG_MGR=apt
 install_pkg() {
-    local pkg_mgr="${2:-$_PKG_MGR}" # Use $2 if provided, else default to $_PKG_MGR
+    local pkg_mgr="${2:-$_PKG_MGR}" # Use $2 if provided, else default to $_PKG_MGR=apt
     local pkg_name="$1"
 
     # Attempt to install the package
