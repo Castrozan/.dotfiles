@@ -1,0 +1,6 @@
+[Desktop Entry]
+Name=clipse
+Comment=Clipse event listener autostart.
+Exec=/home/$(whoami)/.nix-profile/bin/clipse -listen %f
+Terminal=false
+Type=Application
