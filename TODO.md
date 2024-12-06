@@ -7,6 +7,7 @@
   - [x] Remove auto import with files and use a single import with ". shell/src/file.sh"
   - [x] Fix install configs declaratively
     - Now the -d flag can be set to use de declarative install
+    - [ ] Only the declarative install is working now FIXMEEEE!!
   - [x] Add tmux tpm plugins
     - [x] Remove tmp plugin folder on local ci
   - [ ] Add more lsp servers for nvim (lua, python, etc)
