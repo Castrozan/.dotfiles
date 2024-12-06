@@ -28,6 +28,7 @@
   - [x] change bash location to #!/usr/bin/env bash
   - [ ] Make daily note to get undone todos from the day before to the current day
   - [x] fix bash_history
+  - [ ] Config Ci to run quickly (maybe set only some scripts to run)
 
 - Nixos
   - [ ] Rewrite config to use home-manager by rayan's style
