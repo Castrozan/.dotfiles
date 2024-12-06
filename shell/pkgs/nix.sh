@@ -4,16 +4,13 @@
 
 install_nix() {
     # Check if nix is installed
-    if command -v nix >/dev/null 2>&1; then
+    if nix --version >/dev/null 2>&1; then
         print "Nix already installed" "$_YELLOW"
     else
-        install_with_temp_custom_script "https://nixos.org/nix/install"
-        # TODO: set up nix channels like
-        #   nix-channel --add https://channels.nixos.org/nixos-24.05 nixpkgs
-        #   nix-channel --update
+        install_with_temp_custom_script "https://nixos.org/nix/install" "curl" \
+            "-L" "sh" "--no-daemon --yes --no-channel-add"
     fi
 }
 
 # Install nix
-# install_nix
-# TODO: fix nix install
+install_nix
