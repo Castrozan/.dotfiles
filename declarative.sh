@@ -21,7 +21,7 @@ PACKAGES=(
     lazygit
     neofetch
     neovim
-    # nix
+    nix
     nodejs
     npm
     nvm
