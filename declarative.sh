@@ -17,6 +17,7 @@ PACKAGES=(
     cbonsai
     clipse
     fzf
+    intellij
     # kitty
     lazygit
     neofetch
@@ -48,6 +49,7 @@ CONFIGS=(
     bash_history
     fzf_bash_history
     fzf_catppuccin_theme
+    intellij
     screensaver
     zoxide
 )

@@ -223,3 +223,4 @@ fi
 . $HOME/.dotfiles/shell/configs/zoxide.sh
 . $HOME/.dotfiles/shell/configs/screensaver.sh
 . $HOME/.dotfiles/shell/configs/default_directories.sh
+. $HOME/.dotfiles/shell/configs/intellij.sh
