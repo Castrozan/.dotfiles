@@ -85,7 +85,7 @@
   # this value at the release version of the first install of this system.
   # Before changing this value read the documentation for this option
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
-  system.stateVersion = "24.05"; # Did you read the comment?
+  system.stateVersion = "24.11"; # Did you read the comment?
   # END SYSTEM CONFIGURATION
 
   # Enable OpenGL
@@ -144,18 +144,9 @@
 
   # Set up fonts
   fonts.packages = with pkgs; [
-    noto-fonts
-    noto-fonts-cjk
-    noto-fonts-emoji
-    liberation_ttf
-    fira-code
-    fira-code-symbols
-    mplus-outline-fonts.githubRelease
-    dina-font
-    proggyfonts
-    nerdfonts
+    
   ];
 
   # Comentarrrr
-  services.xserver.wacom.enable = true;
+  #services.xserver.wacom.enable = true;
 }
