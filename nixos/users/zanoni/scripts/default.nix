@@ -1,6 +1,6 @@
 {
   imports = [
-    ./daily-note.nix
+    #./daily-note.nix
     ./on.nix
     ./set-random-bg-kitty.nix
   ];
