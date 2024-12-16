@@ -8,7 +8,7 @@
     swww
     xclip
     wl-clipboard
-    gnome.gnome-tweaks
+    gnome-tweaks
 
     waybar
   ];
