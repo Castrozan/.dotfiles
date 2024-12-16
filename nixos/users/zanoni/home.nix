@@ -1,5 +1,4 @@
-{ pkgs, ... }:
-{
+{pkgs, ...}: {
   ##################################################################################################################
   #
   # All Zanoni's Home Manager Configuration
@@ -12,14 +11,9 @@
     # ../../home/fcitx5
     # ../../home/i3
     ../../home/kitty
-    ../../home/wallpaper
+    #../../home/wallpaper
     ../../home/programs
     # ../../home/rofi
     # ../../home/shell
   ];
-
-  programs.git = {
-    userName = "Castrozan";
-    userEmail = "castro.lucas290@gmail.com";
-  };
 }
