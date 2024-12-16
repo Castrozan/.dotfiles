@@ -5,7 +5,8 @@
   config,
   pkgs,
   ...
-}: {
+}:
+{
   imports = [
     # Include the results of the hardware scan.
     # Im setting this on hosts/<user>/default.nix
@@ -89,13 +90,14 @@
   system.stateVersion = "24.11"; # Did you read the comment?
   # END SYSTEM CONFIGURATION
 
-  # Enable OpenGL
-  hardware.opengl = {
-    enable = true;
-  };
+
+  # BEGIN NVIDIA CONFIGURATION
+  # Follow the instructions at https://nixos.wiki/wiki/Nvidia
+  # Enable graphics
+  hardware.graphics.enable = true;
 
   # Load nvidia driver for Xorg and Wayland
-  services.xserver.videoDrivers = ["nvidia"];
+  services.xserver.videoDrivers = [ "nvidia" ];
 
   hardware.nvidia = {
     # Modesetting is required.
@@ -123,10 +125,10 @@
 
     # Enable the Nvidia settings menu,
     # accessible via `nvidia-settings`.
-    nvidiaSettings = true;
+    nvidiaSettings = false;
 
     # Optionally, you may need to select the appropriate driver version for your specific GPU.
-    package = config.boot.kernelPackages.nvidiaPackages.stable;
+    package = config.boot.kernelPackages.nvidiaPackages.beta;
   };
 
   hardware.nvidia.prime = {
@@ -140,12 +142,27 @@
   };
 
   # Enable some experimental features
-  nix.settings.experimental-features = ["nix-command" "flakes"];
+  nix.settings.experimental-features = [
+    "nix-command"
+    "flakes"
+  ];
 
   # Set up fonts
   fonts.packages = with pkgs; [
+    noto-fonts
+    # noto-fonts-cjk
+    noto-fonts-emoji
+    liberation_ttf
+    fira-code
+    fira-code-symbols
+    mplus-outline-fonts.githubRelease
+    dina-font
+    proggyfonts
+    nerdfonts
   ];
 
   # Comentarrrr
-  services.xserver.wacom.enable = true;
+  # This process errors and hangs the system on shutdown
+  # TODO: find why i put this here
+  # services.xserver.wacom.enable = true;
 }
