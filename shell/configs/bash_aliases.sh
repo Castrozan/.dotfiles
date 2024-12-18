@@ -6,11 +6,13 @@
 alias bashrc='nvim ~/.bashrc'
 alias c='code'
 alias cat='bat'
+alias ccat='cat'
 alias code='code . -n'
 alias d='lazydocker'
 alias dotfiles='cd ~/.dotfiles'
 alias g='lazygit'
 alias grep='grep --color=auto'
+alias i='idea'
 alias idea='idea . > /dev/null 2>&1 &'
 alias kc="nvim ~/.config/kitty/kitty.conf"
 alias killport='sh $HOME/.local/bin/killport'
