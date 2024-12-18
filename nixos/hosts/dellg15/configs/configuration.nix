@@ -158,6 +158,12 @@
     nerdfonts
   ];
 
+
+  # BEGIN SERVICES
+  # Enable touchpad https://nixos.org/manual/nixos/stable/#sec-x11-touchpads
+  services.libinput.enable = true;
+  # END SERVICES
+
   # Comentarrrr
   # This process errors and hangs the system on shutdown
   # TODO: find why i put this here
