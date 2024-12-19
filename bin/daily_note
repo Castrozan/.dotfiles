@@ -1,66 +1,159 @@
 #!/usr/bin/env bash
+# daily_note.sh
 
-# daily_note
+# Constants
+readonly MAX_DAYS_BACK=5
+readonly TODO_SECTION_MARKER="## TODO"
+readonly LAST_NOTES_HEADER="## Last Daily Notes with unchecked tasks"
+
 # This script creates a daily note in the Obsidian vault.
 # The note is named as Y-m-d-daily-note.md.
 # When called multiple times in the same day, it opens the same note.
 # Each note includes a header with the date and the note name.
+# It also includes unchecked todos from the last N days (excluding today).
 daily_note() {
     local filename fullpath today
 
     today=$(date "+%Y-%m-%d")
     filename=$(_get_daily_note_file_name "$today")
 
-    # Check if OBSIDIAN_HOME is defined
-    if [ -z "$OBSIDIAN_HOME" ]; then
-        echo "Error: OBSIDIAN_HOME is not defined."
+    if ! _validate_environment; then
         return 1
     fi
 
     fullpath="$OBSIDIAN_HOME/$filename"
 
-    # Create the file if it doesn't exist and add the header
+    # Create the file if it doesn't exist
     if [ ! -f "$fullpath" ]; then
-        touch "$fullpath"
-        _add_note_header "$today" "$filename" "$fullpath"
+        _create_new_note "$today" "$filename" "$fullpath"
     fi
 
     _open_daily_note "$fullpath"
 }
 
+# Validate the environment variables and requirements
+_validate_environment() {
+    if [ -z "$OBSIDIAN_HOME" ]; then
+        echo "Error: OBSIDIAN_HOME is not defined."
+        return 1
+    fi
+    return 0
+}
+
 # Generate the daily note file name
-# $1: date
+# Args:
+#   $1: date (YYYY-MM-DD)
 _get_daily_note_file_name() {
     local date=$1
-
     echo "$date-daily-note.md"
 }
 
-# Add a header to the daily note
-# $1: date
-# $2: file name
-# $3: file path
-_add_note_header() {
+# Create a new note with headers and fetch unchecked todos
+# Args:
+#   $1: date (YYYY-MM-DD)
+#   $2: filename
+#   $3: fullpath
+_create_new_note() {
     local date=$1 filename=$2 fullpath=$3
 
     {
         echo "# $date Daily Note"
         echo "### $filename"
         echo
-    } >>"$fullpath"
+        echo "$TODO_SECTION_MARKER"
+        echo
+        echo
+        echo
+        echo "$LAST_NOTES_HEADER"
+    } >"$fullpath"
+
+    _append_unchecked_todos "$fullpath"
+}
+
+# Get dates for the last N days, excluding today
+# Args:
+#   $1: number of days back
+_get_past_dates() {
+    local days=$1
+    for i in $(seq 1 "$days"); do
+        date -v "-${i}d" "+%Y-%m-%d" 2>/dev/null || date -d "-${i} days" "+%Y-%m-%d"
+    done
+}
+
+# Check if a line contains an unchecked todo item
+# Args:
+#   $1: line to check
+_is_unchecked_todo() {
+    local line=$1
+    # Match only lines that start with - [ ] (allowing for optional spaces)
+    [[ "$line" =~ ^[[:space:]]*-[[:space:]]*\[[[:space:]]*\][[:space:]]+ ]]
+}
+
+# Extract unchecked todos from a file
+# Args:
+#   $1: file path
+_extract_unchecked_todos() {
+    local file=$1
+    local in_todo_section=false
+    local todos=()
+    local filename
+
+    filename=$(basename "$file")
+
+    while IFS= read -r line; do
+        if [[ $line == "## TODO"* ]]; then
+            in_todo_section=$([[ $line == "## TODO"* ]])
+            continue
+        fi
+
+        if $in_todo_section && _is_unchecked_todo "$line"; then
+            todos+=("$line")
+        fi
+    done <"$file"
+
+    if [ ${#todos[@]} -gt 0 ]; then
+        echo
+        echo "### $filename"
+        echo
+        printf '%s\n' "${todos[@]}"
+    fi
+}
+
+# Append unchecked todos from recent notes
+# Args:
+#   $1: current note path
+_append_unchecked_todos() {
+    local current_note=$1
+    local past_dates
+
+    readarray -t past_dates < <(_get_past_dates "$MAX_DAYS_BACK")
+
+    for date in "${past_dates[@]}"; do
+        local filename
+        filename=$(_get_daily_note_file_name "$date")
+        local filepath="$OBSIDIAN_HOME/$filename"
+
+        if [ -f "$filepath" ]; then
+            _extract_unchecked_todos "$filepath" >>"$current_note"
+        fi
+    done
 }
 
 # Open the daily note
-# $1: file path
+# Args:
+#   $1: file path
 _open_daily_note() {
     local fullpath=$1
 
-    # Open the note in the default editor
-    # I'm using VS Code as the default editor for now
-    # so "$OBSIDIAN_HOME" "-g" "$fullpath" will open the note in
-    # the Obsidian vault
-    # "$EDITOR" "$fullpath"
-    "$EDITOR" "$OBSIDIAN_HOME" "-g" "$fullpath"
+    if [[ "$EDITOR" == "code" ]]; then
+        # Check if the editor is VS Code
+        # code "$OBSIDIAN_HOME" "-g" "$fullpath" will open the note
+        "$EDITOR" "$OBSIDIAN_HOME" "-g" "$fullpath"
+    else
+        # For other editors (vim, nvim, nano, etc.)
+        "$EDITOR" "$fullpath"
+    fi
 }
 
+# Main execution
 daily_note
