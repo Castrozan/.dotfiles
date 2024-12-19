@@ -4,6 +4,7 @@
 
 # aliases personal
 alias bashrc='nvim ~/.bashrc'
+alias b='btop'
 alias c='code'
 alias cat='bat'
 alias ccat='cat'
