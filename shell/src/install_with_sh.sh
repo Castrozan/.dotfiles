@@ -7,22 +7,15 @@
 # $4: Shell to run the script (default: sh)
 # $5: Shell flags to pass to the shell (default: none)
 # Works like this: "$tool" "$flags" "$uri" "$tmpFile"
-install_with_temp_custom_script() {
-    uri="$1"
+install_with_sh() {
+    shell="${1:-sh}"
     tool="${2:-curl}"
     flags="${3:--L}"
-    shell="${4:-sh}"
+    uri="$4"
     shellFlags="${5:-}"
 
-    # Create a temporary file
-    tmpFile=$(mktemp)
-
-    # Send the script to the temporary file
-    "$tool" "$flags" "$uri" >"$tmpFile"
-
-    # Execute the script stored in the temporary file
-    "$shell" "$tmpFile" "$shellFlags"
-
-    # Clean up the temporary file
-    rm "$tmpFile"
+    # sh <(curl -L https://nixos.org/nix/install) --no-daemon --yes --no-channel-add
+    echo "$shell <($tool $flags $uri) $shellFlags"
+    # shellcheck disable=SC2086
+    $shell <($tool $flags $uri) $shellFlags
 }

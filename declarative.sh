@@ -11,45 +11,45 @@
 
 # Packages
 PACKAGES=(
-    bash_completion
-    bat
-    btop
-    cbonsai
-    clipse
-    fzf
+    # bash_completion
+    # bat
+    # btop
+    # cbonsai
+    # clipse
+    # fzf
     # kitty
-    lazygit
-    neofetch
-    neovim
+    # lazygit
+    # neofetch
+    # neovim
     nix
-    nodejs
-    npm
-    nvm
-    obsidian
-    fira_code
-    pipes
-    tmux
-    vim
-    yazi
-    zoxide
-    zsh
+    # nodejs
+    # npm
+    # nvm
+    # obsidian
+    # fira_code
+    # pipes
+    # tmux
+    # vim
+    # yazi
+    # zoxide
+    # zsh
 )
 # Scripts
 SCRIPTS=(
-    daily_note
-    git_fzf
-    killport
+    # daily_note
+    # git_fzf
+    # killport
     on
 )
 
 # Configs
 CONFIGS=(
     bash_aliases
-    bash_history
-    fzf_bash_history
-    fzf_catppuccin_theme
-    screensaver
-    zoxide
+    # bash_history
+    # fzf_bash_history
+    # fzf_catppuccin_theme
+    # screensaver
+    # zoxide
 )
 
 # Join the array into a space-separated string

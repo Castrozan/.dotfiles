@@ -3,13 +3,19 @@
 # Variables
 DOCKER_IMAGE = ubuntu:latest
 CONTAINER_NAME = dotfiles-test
-WORKDIR = /root/.dotfiles
-DEPLOY_ON_CONTAINER_SCRIPT = "\
-	apt-get update && \
-	rm -rf /root/.bashrc /root/.profile && \
-	yes | bash install.sh && \
-	source /root/.bashrc && \
-	bash test.sh \
+WORKDIR = /home/ciuser/.dotfiles
+DEPLOY_ON_CONTAINER_SCRIPT="\
+    apt-get update && \
+    apt-get install adduser sudo -y && \
+    useradd -m -s /bin/bash ciuser && \
+    passwd -d ciuser && \
+    usermod -aG sudo ciuser && \
+    sudo su - ciuser -c ' \
+        rm -rf /home/ciuser/.bashrc /home/ciuser/.profile && \
+		cd /home/ciuser/.dotfiles && \
+        yes | bash install.sh && \
+        bash test.sh \
+    ' \
 "
 COMPILE_RESULT_SCRIPT = RESULT=$$? && \
 	if [ $$RESULT -eq 0 ]; then \
