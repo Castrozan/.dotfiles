@@ -35,10 +35,10 @@ if ask "Do you want to install them?"; then
     should_install build-essential
     should_install curl
     should_install git
-    use_tzdata
-    use_flatpak
-    use_brew
-    use_stow
+    # use_tzdata
+    # use_flatpak
+    # use_brew
+    # use_stow
 fi
 print "\n"
 
