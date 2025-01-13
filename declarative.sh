@@ -40,6 +40,7 @@ SCRIPTS=(
     git_fzf
     killport
     on
+    pybase
 )
 
 # Configs
