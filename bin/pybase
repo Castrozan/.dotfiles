@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+echo "Enter base64 string:"
+IFS= read -r base64_string
+
+echo
+
+python3 -m base64 -d <<<"$base64_string"
+
+echo
