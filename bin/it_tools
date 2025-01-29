@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+
+it-tools() {
+    # Check if container exists
+    if ! docker ps -a --format '{{.Names}}' | grep -q '^it-tools$'; then
+        # Container doesn't exist, create it
+        docker run -d --name it-tools --restart unless-stopped -p 8085:80 ghcr.io/corentinth/it-tools:latest
+    else
+        # Container exists, check if it's running
+        if ! docker ps --format '{{.Names}}' | grep -q '^it-tools$'; then
+            # Container is stopped, start it
+            docker start it-tools
+        fi
+    fi
+
+    # Wait a moment for the container to be ready
+    sleep 1
+
+    # Open in default browser (handles different OS platforms)
+    case "$(uname -s)" in
+    Darwin) # macOS
+        open http://localhost:8085
+        ;;
+    Linux)
+        xdg-open http://localhost:8085 >/dev/null 2>&1 &
+        ;;
+    MINGW* | CYGWIN* | MSYS*) # Windows
+        start http://localhost:8085
+        ;;
+    esac
+}
+
+it-tools "$@"
