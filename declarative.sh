@@ -41,6 +41,7 @@ SCRIPTS=(
     killport
     on
     pybase
+    it_tools
 )
 
 # Configs
