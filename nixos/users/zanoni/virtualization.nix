@@ -1,6 +1,7 @@
 { pkgs, ... }:
 {
   # Docker configuration
+  # TODO: check if this is breaking the system
   virtualisation.docker = {
     enable = true;
     #setSocketVariable = true;
