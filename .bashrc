@@ -215,6 +215,12 @@ if is_wsl; then
     export BROWSER='/mnt/c/Users/castr/AppData/Local/BraveSoftware/Brave-Browser/Application/brave.exe'
 fi
 
+# Check if clipse is installed and run clipse --listen if it is
+# TODO: this should be properly implemented
+if command -v clipse &>/dev/null; then
+    clipse --listen
+fi
+
 # Files sourced by $HOME/.dotfiles
 . $HOME/.dotfiles/shell/configs/bash_history.sh
 . $HOME/.dotfiles/shell/configs/fzf_catppuccin_theme.sh
