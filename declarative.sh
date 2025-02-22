@@ -38,6 +38,7 @@ PACKAGES=(
 SCRIPTS=(
     daily_note
     git_fzf
+    kill_process
     killport
     on
     pybase

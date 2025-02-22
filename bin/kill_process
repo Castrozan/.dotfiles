@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+# Check if at least one service name is provided
+if [ "$#" -eq 0 ]; then
+    echo "Usage: $0 service1 [service2 ...]"
+    exit 1
+fi
+
+# Loop through each argument (service name) provided
+for service in "$@"; do
+    echo "$@"
+    echo "Killing all processes matching: $service"
+    # -9 sends SIGKILL, -f matches against the full command line
+    pkill -9 -f "$service"
+done
+
+echo "Specified services have been terminated."
