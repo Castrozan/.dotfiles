@@ -15,10 +15,10 @@ is_installed() {
     #   from another file
     case $pkg_mgr in
     apt)
-        dpkg -l | grep -q "^ii\s\+$1\s"
+        dpkg -l | grep -q "$1"
         ;;
     brew)
-        brew list | grep -q "^$1\$"
+        brew list | grep -q "$1"
         ;;
     nix)
         nix-env -q | grep -q "$1"

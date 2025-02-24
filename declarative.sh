@@ -30,6 +30,7 @@ PACKAGES=(
     pipes
     tmux
     vim
+    warp
     yazi
     zoxide
     zsh
