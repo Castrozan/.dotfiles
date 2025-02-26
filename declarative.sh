@@ -16,6 +16,7 @@ PACKAGES=(
     btop
     cbonsai
     clipse
+    flameshot
     fzf
     # kitty
     lazygit
