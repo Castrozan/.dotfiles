@@ -11,5 +11,7 @@
     gnome-tweaks
 
     waybar
+    hyprlock
+    hyprpaper
   ];
 }
