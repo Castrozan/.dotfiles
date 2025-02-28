@@ -65,7 +65,6 @@ This repository contains the setup for my desktop environment on both NixOS and 
 - **docs/** – Detailed guides:
   - [NixOS Setup](docs/nixos.md)
   - [Ubuntu Setup](docs/ubuntu.md)
-  - [Components & Showcase](docs/components.md)
 - **nixos/** – NixOS configurations (hosts, users, etc.)
 - **ubuntu/** – This does not exists since it's all scattered around (*.rc, .config, bin, etc.)
 

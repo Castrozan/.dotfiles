@@ -24,5 +24,3 @@ If you prefer a more declarative approach, you can use the `-d` flag. This tells
 ```bash
 make install -d
 ```
-
-Happy Installing! ✨
