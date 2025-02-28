@@ -75,15 +75,26 @@ TODO: add screenshots
 
 ### How to Deploy this Flake?
 
-<!-- prettier-ignore -->
-> :red_circle: **IMPORTANT**: **You should NOT deploy this flake directly on your machine :exclamation:
-> It will not succeed.** This flake contains my hardware configuration(such as
-> [hardware-configuration.nix](nixos/hosts/dellg15/configs/hardware-configuration.nix),
-> [Nvidia Support](https://github.com/castrozan/.dotfiles/blob/main/nixos/hosts/dellg15/configs/configuration.nix#L99-L140),
-> etc.) which is not suitable for your hardwares, so make sure to adapt to your config and generate your hardware-configuration file.
+> To install nixos on your machine i recommend following the official guide on the nixos website: [nixos.org/download](https://nixos.org/download/)
+> and going with the GNOME, 64-bit Intel/AMD option for ease of first-time setup.
 
-> To deploy this flake from NixOS's official ISO image(purest installation method), please refer to
-> [nixos.org/download](https://nixos.org/download/)
+I recommend going through /nixos/hosts and checking the configurations for the hosts that are already there for my dell g15 setup. You can use them as a reference for your own host machine setup.
+
+And check out the /nixos/users to get a sense of the user configurations that are available, like my zanoni one.
+
+Once you've checked those out and made the necessary changes, you can follow the steps below to deploy the flake.
+
+Replace `dellg15` with the name of your custom host if needed.
+
+- Generate the hardware configuration for your system:
+
+```bash
+   nixos-generate-config --dir nixos/hosts/configs/dellg15
+```
+
+this will generate a hardware-configuration.nix that nixos will use to configure your system based on the hardware it detects.
+
+Replace `zanoni` with the name of your user if needed.
 
 - Rebuild the system configuration using flakes:
 
@@ -91,13 +102,7 @@ TODO: add screenshots
    sudo nixos-rebuild switch --flake .#zanoni
 ```
 
-Replace `dellg15` with the name of your custom host if needed.
-
-- Generate the hardware configuration for your system:
-
-```bash
-   nixos-generate-config --dir nixos/hosts/dellg15
-```
+and now you should have a system configured with the flake. Enjoy!
 
 ## Ubuntu Setup
 
