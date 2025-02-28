@@ -18,7 +18,7 @@ PACKAGES=(
     clipse
     flameshot
     fzf
-    # kitty
+    kitty
     lazygit
     neofetch
     neovim
