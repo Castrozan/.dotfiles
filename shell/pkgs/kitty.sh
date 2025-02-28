@@ -3,6 +3,7 @@
 . "shell/src/print.sh"
 . "shell/src/ask.sh"
 . "shell/src/install_with_temp_custom_script.sh"
+. "./shell/src/is_desktop_environment.sh"
 
 # Desktop integration on Linux
 # If you want the kitty icon to appear in the taskbar and an entry for it to be present in the menus,
@@ -23,13 +24,15 @@ install_kitty_desktop_integration() {
     sed -i "s|Exec=kitty|Exec=$(readlink -f ~)/.local/kitty.app/bin/kitty|g" ~/.local/share/applications/kitty*.desktop
 }
 
-# Check if kitty is installed
-if command -v kitty >/dev/null 2>&1; then
-    print "Kitty already installed" "$_YELLOW"
-else
-    install_with_temp_custom_script "https://sw.kovidgoyal.net/kitty/installer.sh"
+if is_desktop_environment; then
+    # Check if kitty is installed
+    if command -v kitty >/dev/null 2>&1; then
+        print "Kitty already installed" "$_YELLOW"
+    else
+        install_with_temp_custom_script "https://sw.kovidgoyal.net/kitty/installer.sh"
 
-    if ask "Do you want to install kitty.desktop integration?"; then
-        install_kitty_desktop_integration
+        if ask "Do you want to install kitty.desktop integration?"; then
+            install_kitty_desktop_integration
+        fi
     fi
 fi
