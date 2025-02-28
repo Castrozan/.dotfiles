@@ -56,6 +56,21 @@ TODO: add screenshots
 
 </details>
 
+### Neovim
+
+<details>
+<summary>:wq Editor</summary>
+
+![editor](docs/img/neovim/showcase-editor.png)
+
+</details>
+<details>
+<summary>🎯 Focused Editor</summary>
+
+![editor](docs/img/neovim/showcase-focused-editor.png)
+
+</details>
+
 ## NixOS Setup
 
 ### How to Deploy this Flake?
