@@ -27,10 +27,34 @@ This repository contains the setup for my development environment on both NixOS 
 | **Terminal Emulator** | Bash + Kitty   |
 
 
-## Hyprland + Bash + Kitty
+## Showcase: Hyprland + Bash + Kitty + Neovim 
 
-TODO: add desktop screenshots
-<!-- ![](./_img/hyprland_2023-07-29_1.webp) -->
+TODO: add desktop video showcase
+<!-- ![Showcase video](docs/aaa) -->
+
+### Hyprland
+TODO: add screenshots
+
+### Kitty ᓚᘏᗢ
+
+<details>
+<summary>🪟 Panes</summary>
+
+![panes](docs/img/tmux/showcase-panes.png)
+
+</details>
+<details>
+<summary>🪴 Screensaver</summary>
+
+![screensaver](docs/img/tmux/showcase-screensaver.png)
+
+</details>
+<details>
+<summary>🔱 Sessions</summary>
+
+![sessions](docs/img/tmux/showcase-sessions.png)
+
+</details>
 
 ## NixOS Setup
 
