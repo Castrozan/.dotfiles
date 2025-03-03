@@ -50,26 +50,26 @@
     # UTILS END
 
     # APPS BEGIN
-    docker
-    scrcpy
-    obsidian
     brave
-    firefox
-    # Set opera to use its codecs. This enables it to display videos
-    (opera.override {
-      proprietaryCodecs = true;
-    })
-    # Should install manually rn from github.com/phirecc/wgnord
-    wgnord
     # Discord and vesktop to enable screensharing on wayland
     discord
-    vesktop
-    # Config to enable OpenAsar / Vencord
     (discord.override {
       withOpenASAR = true;
       # Vencord for costumization
       withVencord = true;
     })
+    docker
+    firefox
+    obsidian
+    postman
+    # Set opera to use its codecs. This enables it to display videos
+    (opera.override {
+      proprietaryCodecs = true;
+    })
+    scrcpy
+    vesktop
+    # Should install manually rn from github.com/phirecc/wgnord
+    wgnord
     # APPS END
   ];
 }
