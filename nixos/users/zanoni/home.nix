@@ -1,4 +1,4 @@
-{pkgs, ...}: {
+{
   ##################################################################################################################
   #
   # All Zanoni's Home Manager Configuration
@@ -13,6 +13,7 @@
     ../../home/kitty
     #../../home/wallpaper
     ../../home/programs
+    ../../home/system
     # ../../home/rofi
     # ../../home/shell
   ];
