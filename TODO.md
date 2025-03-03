@@ -38,6 +38,7 @@
   - [ ] Zsh
   - [ ] Fix refresh bash source-bash
   - [ ] Configure monitors with https://github.com/ryan4yin/nix-config/commit/ec485779ceb7afef5fbd12d3f80bbfe66e634f7f
+  - [ ] Fix tmux config to the last version of zanoni
 
 - Hyprland
   - [ ] Config bar
