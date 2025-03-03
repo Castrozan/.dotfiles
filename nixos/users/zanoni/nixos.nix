@@ -1,7 +1,7 @@
 #
 # NixOS Configuration for zanoni
 #
-{ pkgs, ... }:
+{ ... }:
 let
   bashrc = builtins.readFile ../../../.bashrc;
 in
@@ -32,6 +32,6 @@ in
       "networkmanager"
       "wheel"
     ];
-    packages = with pkgs; [ ];
+    packages = [ ];
   };
 }
