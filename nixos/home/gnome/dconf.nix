@@ -10,6 +10,7 @@ with lib.hm.gvariant;
     };
 
     "org/gnome/desktop/interface" = {
+      gtk-theme = "Adwaita-dark";
       color-scheme = "prefer-dark";
     };
 

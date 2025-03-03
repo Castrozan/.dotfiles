@@ -13,7 +13,7 @@
     ../../home/kitty
     #../../home/wallpaper
     ../../home/programs
-    ../../home/system
+    ../../home/gnome
     # ../../home/rofi
     # ../../home/shell
   ];
