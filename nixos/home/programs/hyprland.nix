@@ -1,5 +1,9 @@
 { pkgs, ... }:
 {
+  imports = [
+    ./wlogout.nix
+  ];
+
   home.file.".config/hypr".source = ../../../.config/hypr;
 
   # Hyprland packages
@@ -13,5 +17,6 @@
     waybar
     hyprlock
     hyprpaper
+    wlogout
   ];
 }
