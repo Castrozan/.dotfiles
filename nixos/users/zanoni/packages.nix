@@ -1,9 +1,10 @@
 #
 # TODO: move this to home manager packages
 #
-{pkgs, ...}: {
+{ pkgs, ... }:
+{
   # TODO: fix this like https://www.youtube.com/watch?v=M_zMoHlbZBY
-  nix.nixPath = ["nixpkgs=github:nixos/nixpkgs/nixos-24.11"];
+  nix.nixPath = [ "nixpkgs=github:nixos/nixpkgs/nixos-24.11" ];
 
   # List packages installed in system profile. To search, run: nix search wget
   environment.systemPackages = with pkgs; [
