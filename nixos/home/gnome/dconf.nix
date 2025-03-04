@@ -47,5 +47,15 @@ with lib.hm.gvariant;
         "wsmatrix@martin.zurowietz.de"
       ];
     };
+
+    "org/gnome/shell/extensions/default-workspace" = {
+      default-workspace-number = 3;
+    };
+
+    "org/gnome/shell/extensions/wsmatrix" = {
+      num-columns = 5;
+      num-rows = 2;
+      show-popup = false;
+    };
   };
 }
