@@ -23,7 +23,7 @@ This repository contains the setup for my desktop environment on both NixOS and 
 ### Hyprland
 <!-- TODO: add screenshots -->
 
-### Kitty ᓚᘏᗢ
+### Kitty ᓚᘏᗢ + Tmux
 
 <details>
 <summary>🪟 Panes</summary>
