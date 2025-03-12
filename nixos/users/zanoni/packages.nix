@@ -25,6 +25,7 @@
     htop
     btop
     wget
+    python3
     fzf
     k6
     # TODO: check if this is the correct package
