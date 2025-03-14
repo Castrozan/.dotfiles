@@ -23,6 +23,10 @@ is_installed() {
     nix)
         nix-env -q | grep -q "$1"
         ;;
+    appimage)
+        [ -f "$HOME/.local/bin/$1" ] || \
+        [ -f "$HOME/.local/share/$1/$1.AppImage" ]
+        ;;
     *)
         echo "Unsupported package manager: ${pkg_mgr}"
         ;;

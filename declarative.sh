@@ -16,6 +16,7 @@ PACKAGES=(
     btop
     cbonsai
     clipse
+    cursor
     flameshot
     fzf
     kitty
