@@ -1,6 +1,7 @@
 {
   imports = [
     ./browsers.nix
+    ./claude-desktop.nix
     ./common.nix
     ./git.nix
     ./bash.nix

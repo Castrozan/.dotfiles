@@ -17,6 +17,7 @@
       background_image = "wallpaper.png";
       startup_session = "startup.conf";
       background_image_layout = "cscaled";
+      hide_window_decorations = "yes";
     };
   };
   home.file.".config/kitty/startup.conf".source = ../../../.config/kitty/startup.conf;

@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+# Just a wrapper to open cursor with the correct arguments
+
+cursor "$@"
