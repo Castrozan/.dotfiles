@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ pkgs, ... }:
 let
   conf = builtins.readFile ../../../.config/tmux/tmux.conf;
 in

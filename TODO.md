@@ -16,7 +16,7 @@
   - [ ] Configure nerd fonts for terminal
     - [ ] Jetbrains mono nerd fonts
   - [ ] Remove all unnecessary output from scripts
-  - [ ] Source the bashrc in the test ci
+  - [x] Source the bashrc in the test ci
   - [x] Run the install script with bash install.sh to make sure bash is the one to be changed
   - [ ] Migrate to zsh
   - [x] Update README
@@ -27,7 +27,7 @@
   - [ ] fix fzf test
   - [x] Change color vars to begin with underline
   - [x] change bash location to #!/usr/bin/env bash
-  - [ ] Make daily note to get undone todos from the day before to the current day
+  - [x] Make daily note to get undone todos from the day before to the current day
   - [x] fix bash_history
   - [ ] Config Ci to run quickly (maybe set only some scripts to run)
   - [x] Fix kitty install script
@@ -38,6 +38,7 @@
   - [ ] Zsh
   - [ ] Fix refresh bash source-bash
   - [ ] Configure monitors with https://github.com/ryan4yin/nix-config/commit/ec485779ceb7afef5fbd12d3f80bbfe66e634f7f
+  - [ ] Fix tmux config to the last version of zanoni
 
 - Hyprland
   - [ ] Config bar
