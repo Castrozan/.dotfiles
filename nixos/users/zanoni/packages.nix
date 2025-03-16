@@ -25,7 +25,16 @@
     htop
     btop
     wget
-    python3
+    # python3
+
+    python312
+    python312Packages.pip
+    python312Packages.uvicorn
+    python312Packages.fastapi
+    python312Packages.uv
+    python312Packages.pydantic
+    python312Packages.httpx
+
     fzf
     k6
     # TODO: check if this is the correct package
