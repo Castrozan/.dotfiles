@@ -25,6 +25,8 @@
     htop
     btop
     wget
+    p7zip
+
     # python3
 
     python312

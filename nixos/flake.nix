@@ -10,12 +10,21 @@
       url = "github:catppuccin/bat";
       flake = false;
     };
+
+    flake-utils.url = "github:numtide/flake-utils";
+    
+    claude-desktop = {
+      url = "github:castrozan/claude-desktop-linux-flake-zanoni";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.flake-utils.follows = "flake-utils";
+    };
   };
 
   outputs = inputs @ {
     self,
     nixpkgs,
     home-manager,
+    claude-desktop,
     ...
   }: {
     # nixosConfigurations.zanoni is a NixOS system configuration that
@@ -23,7 +32,10 @@
     nixosConfigurations = {
       zanoni = let
         username = "zanoni";
-        specialArgs = {inherit username;};
+        specialArgs = {
+          inherit username;
+          inherit inputs;
+        };
       in
         nixpkgs.lib.nixosSystem {
           inherit specialArgs;
@@ -38,7 +50,7 @@
               home-manager.useGlobalPkgs = true;
               home-manager.useUserPackages = true;
 
-              home-manager.extraSpecialArgs = inputs // specialArgs;
+              home-manager.extraSpecialArgs = specialArgs;
               home-manager.users.${username} = import ./users/${username}/home.nix;
             }
           ];
