@@ -1,3 +1,5 @@
+{ config, pkgs, lib, inputs, ... }:
+
 {
   imports = [
     ./browsers.nix
