@@ -1,9 +1,11 @@
 #
 # NixOS Configuration for zanoni
 #
-{ lib, ...}: let
+{ lib, ... }:
+let
   bashrc = builtins.readFile ../../../.bashrc;
-in {
+in
+{
   imports = [
     # TODO: Change this three to be managed as home programs
     ./packages.nix
@@ -40,6 +42,6 @@ in {
       "networkmanager"
       "wheel"
     ];
-    packages = [];
+    packages = [ ];
   };
 }

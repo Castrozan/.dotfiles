@@ -8,5 +8,8 @@
     SDL2
     alsa-lib.dev
     pkg-config
+
+    # formatting nix
+    nixfmt-rfc-style
   ];
 }

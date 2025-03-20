@@ -1,7 +1,8 @@
 #
 # TODO: move this to home manager packages
 #
-{pkgs, ...}: {
+{ pkgs, ... }:
+{
   # List packages installed in system profile. To search, run: nix search wget
   environment.systemPackages = with pkgs; [
     # TODO: organize this
@@ -40,7 +41,6 @@
     alejandra
     nixd
     nixpkgs-fmt
-    nixfmt-rfc-style
     # NordVpn Wireguard client
     linuxKernel.packages.linux_5_4.wireguard
     wireguard-tools
