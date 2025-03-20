@@ -1,11 +1,10 @@
 {
-  lib,
   pkgs,
-  catppuccin-bat,
   unstable,
   ...
 }:
 {
+  # TODO: fix this
   home.packages = with pkgs; [
     # archives
     # zip
