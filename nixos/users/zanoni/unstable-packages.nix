@@ -1,17 +1,4 @@
-let
-  unstable =
-    import
-      (builtins.fetchTarball {
-        url = "https://github.com/NixOS/nixpkgs/archive/nixos-unstable.tar.gz";
-        sha256 = "0aa89pl1xs0kri9ixxg488n7riqi5n9ys89xqc0immyqshqc1d7f";
-      })
-      {
-        config = {
-          allowUnfree = true;
-        };
-        system = "x86_64-linux";
-      };
-in
+{ unstable, ... }:
 {
   environment.systemPackages = with unstable; [
     # Cursor and its dependencies

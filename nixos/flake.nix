@@ -3,6 +3,7 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-24.11";
+    nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
     home-manager.url = "github:nix-community/home-manager/release-24.11";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
@@ -23,6 +24,7 @@
   outputs = inputs @ {
     self,
     nixpkgs,
+    nixpkgs-unstable,
     home-manager,
     claude-desktop,
     ...
@@ -32,14 +34,18 @@
     nixosConfigurations = {
       zanoni = let
         username = "zanoni";
+        system = "x86_64-linux";
+        unstable = import nixpkgs-unstable {
+          inherit system;
+          config.allowUnfree = true;
+        };
         specialArgs = {
-          inherit username;
-          inherit inputs;
+          inherit username inputs unstable;
         };
       in
         nixpkgs.lib.nixosSystem {
           inherit specialArgs;
-          system = "x86_64-linux";
+          inherit system;
 
           modules = [
             ./hosts/dellg15

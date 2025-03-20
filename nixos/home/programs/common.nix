@@ -2,6 +2,7 @@
   lib,
   pkgs,
   catppuccin-bat,
+  unstable,
   ...
 }: {
   home.packages = with pkgs; [
@@ -31,9 +32,9 @@
     docker-compose
     kubectl
 
-    nodejs
-    nodePackages.npm
-    nodePackages.pnpm
+    unstable.nodejs_22
+    unstable.nodePackages_latest.npm
+    unstable.nodePackages_latest.pnpm
     yarn
 
     # db related
@@ -75,7 +76,7 @@
     };
 
     # btop.enable = true; # replacement of htop/nmon
-    # eza.enable = true; # A modern replacement for ‘ls’
+    # eza.enable = true; # A modern replacement for 'ls'
     # jq.enable = true; # A lightweight and flexible command-line JSON processor
     # ssh.enable = true;
     # aria2.enable = true;
