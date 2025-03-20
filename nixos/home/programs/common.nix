@@ -4,7 +4,8 @@
   catppuccin-bat,
   unstable,
   ...
-}: {
+}:
+{
   home.packages = with pkgs; [
     # archives
     # zip
