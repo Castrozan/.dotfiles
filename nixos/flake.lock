@@ -94,13 +94,30 @@
         "type": "github"
       }
     },
+    "nixpkgs-unstable": {
+      "locked": {
+        "lastModified": 1742069588,
+        "narHash": "sha256-C7jVfohcGzdZRF6DO+ybyG/sqpo1h6bZi9T56sxLy+k=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "c80f6a7e10b39afcc1894e02ef785b1ad0b0d7e5",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "catppuccin-bat": "catppuccin-bat",
         "claude-desktop": "claude-desktop",
         "flake-utils": "flake-utils",
         "home-manager": "home-manager",
-        "nixpkgs": "nixpkgs"
+        "nixpkgs": "nixpkgs",
+        "nixpkgs-unstable": "nixpkgs-unstable"
       }
     },
     "systems": {
