@@ -41,7 +41,7 @@
   - [ ] Fix tmux config to the last version of zanoni
 
 - Hyprland
-  - [ ] Config bar
-  - [ ] Config dmenu
+  - [ ] Config top bar
+  - [x] Config dmenu
   - [ ] Show workspaces on bar
   - [ ] Config audio selections
