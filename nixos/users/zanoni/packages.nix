@@ -5,80 +5,71 @@
 {
   # List packages installed in system profile. To search, run: nix search wget
   environment.systemPackages = with pkgs; [
-    # TODO: organize this
-    # UTILS BEGIN
-    zsh
-    vim
-    git
-    # bash
-    # bash-completion
-    tmux
-    gnumake
-    yazi
-    nix-prefetch-github
-    dbeaver-bin
-    ventoy-full
-    neovim
-    htop
-    btop
-    wget
-    p7zip
-
-    # python3
-
-    python312
-    python312Packages.pip
-    python312Packages.uvicorn
-    python312Packages.fastapi
-    python312Packages.uv
-    python312Packages.pydantic
-    python312Packages.httpx
-
-    fzf
-    k6
-    # TODO: check if this is the correct package
-    wireguard-go
+    # Development Tools
     alejandra
+    azure-cli
+    dbeaver-bin
+    docker
+    gh
+    git
+    gnumake
+    k6
+    lazydocker
+    lazygit
     nixd
     nixpkgs-fmt
-    # NordVpn Wireguard client
-    linuxKernel.packages.linux_5_4.wireguard
-    wireguard-tools
-    ffmpeg
-    gh
-    unzip
-    zip
-    azure-cli
+    nix-prefetch-github
     terraform
-    cbonsai
-    pipes
-    lazygit
-    lazydocker
-    # tmux yank depends on xsel
-    xsel
-    # UTILS END
 
-    # APPS BEGIN
+    # Python and Dependencies
+    python312
+    python312Packages.fastapi
+    python312Packages.httpx
+    python312Packages.pip
+    python312Packages.pydantic
+    python312Packages.uv
+    python312Packages.uvicorn
+
+    # System Utilities
+    btop
+    clipse
+    ffmpeg
+    fzf
+    htop
+    p7zip
+    tmux
+    unzip
+    vim
+    wget
+    xsel # Required for tmux yank
+    yazi
+    zip
+    zsh
+
+    # Network Tools
+    linuxKernel.packages.linux_5_4.wireguard
+    wgnord # Note: Should install manually from github.com/phirecc/wgnord
+    wireguard-go
+    wireguard-tools
+
+    # Applications
     brave
-    # Discord and vesktop to enable screensharing on wayland
     discord
     (discord.override {
       withOpenASAR = true;
-      # Vencord for costumization
-      withVencord = true;
+      withVencord = true; # For customization
     })
-    docker
     firefox
     obsidian
-    postman
-    # Set opera to use its codecs. This enables it to display videos
     (opera.override {
-      proprietaryCodecs = true;
+      proprietaryCodecs = true; # Enables video playback
     })
+    postman
     scrcpy
     vesktop
-    # Should install manually rn from github.com/phirecc/wgnord
-    wgnord
-    # APPS END
+
+    # Terminal Eye Candy
+    cbonsai
+    pipes
   ];
 }
