@@ -1,11 +1,12 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, inputs, ... }:
 
 {
-  home.packages = with pkgs; [
-    (makeDesktopItem {
+  home.packages = [
+    inputs.claude-desktop.packages.${pkgs.system}.claude-desktop-with-fhs
+    (pkgs.makeDesktopItem {
       name = "claude-desktop";
       desktopName = "Claude Desktop";
-      exec = "${pkgs.chromium}/bin/chromium --app=https://claude.ai";
+      exec = "claude-desktop";
       icon = builtins.fetchurl {
         url = "https://claude.ai/favicon.ico";
         # TODO: Replace with actual sha strategy
