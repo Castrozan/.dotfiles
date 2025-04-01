@@ -5,6 +5,12 @@
 {
   # List packages installed in system profile. To search, run: nix search wget
   environment.systemPackages = with pkgs; [
+    # TCC tools
+    pandoc
+    haskellPackages.citeproc
+    texlive.combined.scheme-full
+    texliveTeTeX
+
     # Development Tools
     alejandra
     azure-cli
@@ -54,6 +60,7 @@
 
     # Applications
     brave
+    google-chrome
     discord
     (discord.override {
       withOpenASAR = true;
