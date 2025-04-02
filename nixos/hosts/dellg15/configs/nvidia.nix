@@ -7,6 +7,7 @@
   hardware.nvidia.open = false;
   hardware.nvidia.nvidiaSettings = true;
 
+  # TODO: fix, this seams to disable use of the dedicated GPU
   # Temporarily fixes the following.
   # https://discourse.nixos.org/t/laptop-hangs-at-started-session-c1-of-user-gdm/26834
   hardware.nvidia.package = config.boot.kernelPackages.nvidiaPackages.production;
