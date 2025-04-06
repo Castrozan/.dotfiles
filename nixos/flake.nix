@@ -13,54 +13,57 @@
     };
 
     flake-utils.url = "github:numtide/flake-utils";
-    
+
     claude-desktop = {
-      url = "github:castrozan/claude-desktop-linux-flake-zanoni";
+      url = "github:k3d3/claude-desktop-linux-flake";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.flake-utils.follows = "flake-utils";
     };
   };
 
-  outputs = inputs @ {
-    self,
-    nixpkgs,
-    nixpkgs-unstable,
-    home-manager,
-    claude-desktop,
-    ...
-  }: {
-    # nixosConfigurations.zanoni is a NixOS system configuration that
-    # can be instantiated with: nixos-rebuild switch --flake .#zanoni
-    nixosConfigurations = {
-      zanoni = let
-        username = "zanoni";
-        system = "x86_64-linux";
-        unstable = import nixpkgs-unstable {
-          inherit system;
-          config.allowUnfree = true;
-        };
-        specialArgs = {
-          inherit username inputs unstable;
-        };
-      in
-        nixpkgs.lib.nixosSystem {
-          inherit specialArgs;
-          inherit system;
+  outputs =
+    inputs@{
+      self,
+      nixpkgs,
+      nixpkgs-unstable,
+      home-manager,
+      claude-desktop,
+      ...
+    }:
+    {
+      # nixosConfigurations.zanoni is a NixOS system configuration that
+      # can be instantiated with: nixos-rebuild switch --flake .#zanoni
+      nixosConfigurations = {
+        zanoni =
+          let
+            username = "zanoni";
+            system = "x86_64-linux";
+            unstable = import nixpkgs-unstable {
+              inherit system;
+              config.allowUnfree = true;
+            };
+            specialArgs = {
+              inherit username inputs unstable;
+            };
+          in
+          nixpkgs.lib.nixosSystem {
+            inherit specialArgs;
+            inherit system;
 
-          modules = [
-            ./hosts/dellg15
-            ./users/${username}/nixos.nix
+            modules = [
+              ./hosts/dellg15
+              ./users/${username}/nixos.nix
 
-            home-manager.nixosModules.home-manager
-            {
-              home-manager.useGlobalPkgs = true;
-              home-manager.useUserPackages = true;
+              home-manager.nixosModules.home-manager
+              {
+                home-manager.useGlobalPkgs = true;
+                home-manager.useUserPackages = true;
 
-              home-manager.extraSpecialArgs = specialArgs;
-              home-manager.users.${username} = import ./users/${username}/home.nix;
-            }
-          ];
-        };
+                home-manager.extraSpecialArgs = specialArgs;
+                home-manager.users.${username} = import ./users/${username}/home.nix;
+              }
+            ];
+          };
+      };
     };
-  };
 }
