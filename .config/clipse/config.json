@@ -1,10 +1,10 @@
 {
-    "allowDuplicates": false,
     "historyFile": "clipboard_history.json",
     "maxHistory": 100,
-    "logFile": "clipse.log",
+    "allowDuplicates": false,
     "themeFile": "custom_theme.json",
     "tempDir": "tmp_files",
+    "logFile": "clipse.log",
     "keyBindings": {
         "choose": "enter",
         "clearSelected": "S",
@@ -15,7 +15,7 @@
         "more": "?",
         "nextPage": "right",
         "prevPage": "left",
-        "preview": " ",
+        "preview": "t",
         "quit": "q",
         "remove": "x",
         "selectDown": "ctrl+down",

@@ -11,5 +11,8 @@
 
     # formatting nix
     nixfmt-rfc-style
+
+    # Tools
+    clipse
   ];
 }

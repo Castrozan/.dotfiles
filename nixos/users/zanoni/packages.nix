@@ -38,7 +38,6 @@
 
     # System Utilities
     btop
-    clipse
     ffmpeg
     fzf
     htop
@@ -47,9 +46,11 @@
     unzip
     vim
     wget
+    xclip
     xsel # Required for tmux yank
     yazi
     zip
+    zoxide
     zsh
 
     # Network Tools
