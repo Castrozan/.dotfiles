@@ -63,9 +63,8 @@ This repository contains the setup for my desktop environment on both NixOS and 
 
 - **README.md** – Quick start & overview (this file)
 - **docs/** – Detailed guides:
-  - [NixOS Setup](docs/nixos.md)
   - [Ubuntu Setup](docs/ubuntu.md)
-- **nixos/** – NixOS configurations (hosts, users, etc.)
+- **nixos/** – NixOS configurations with [detailed setup guide](nixos/README.md)
 - **ubuntu/** – This does not exists since it's all scattered around (*.rc, .config, bin, etc.)
 
 ## ⚙️ Quick Start
@@ -86,7 +85,7 @@ This repository contains the setup for my desktop environment on both NixOS and 
    sudo nixos-rebuild switch --flake .#your_user
    ```
 
-_For more details, see [NixOS Setup](docs/nixos.md)._
+See the [NixOS Setup Guide](nixos/README.md) for detailed instructions.
 
 ### Ubuntu Users
 1. **Clone the repo into your home directory.**
