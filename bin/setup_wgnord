@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+# Check if script is run as root
+if [ "$EUID" -ne 0 ]; then
+    echo "This script must be run as root (with sudo)"
+    exit 1
+fi
+
+# Create required directories
+mkdir -p /var/lib/wgnord
+mkdir -p /etc/wireguard
+
+# Install configuration files
+install -Dm644 template.conf /var/lib/wgnord/template.conf
+install -Dm644 countries.txt /var/lib/wgnord/countries.txt
+install -Dm644 countries_iso31662.txt /var/lib/wgnord/countries_iso31662.txt
+
+# Create empty WireGuard configuration file
+touch /etc/wireguard/wgnord.conf
+
+echo "wgnord setup completed successfully!"
