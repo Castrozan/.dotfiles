@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+
+# Enable strict error checking and safety measures
+set -euo pipefail
+
+# Display usage information
+show_help() {
+    echo "Usage: ${0##*/} ARCHIVE_FILE"
+    echo "Extract a .tar.gz or .tgz archive into a directory named after the file."
+}
+
+# Validate input parameters
+if [[ $# -ne 1 ]]; then
+    show_help >&2
+    exit 1
+fi
+
+archive_file="$1"
+
+# Check if file exists and is readable
+if [[ ! -f "$archive_file" ]]; then
+    echo "Error: File '$archive_file' not found or inaccessible." >&2
+    exit 1
+fi
+
+# Determine output directory name
+case "$archive_file" in
+*.tar.gz) output_dir="${archive_file%.tar.gz}" ;;
+*.tgz) output_dir="${archive_file%.tgz}" ;;
+*)
+    echo "Error: File must be a .tar.gz or .tgz archive." >&2
+    exit 1
+    ;;
+esac
+
+# Prevent accidental overwrites
+if [[ -e "$output_dir" ]]; then
+    echo "Error: '$output_dir' already exists. Remove it or choose another name." >&2
+    exit 1
+fi
+
+# Create output directory and extract archive
+mkdir -p "$output_dir"
+tar -xzf "$archive_file" -C "$output_dir"
+
+# Final status message
+echo "Success: Extracted '$archive_file' to '$output_dir'"
