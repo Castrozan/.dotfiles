@@ -6,6 +6,7 @@
   # List packages installed in system profile. To search, run: nix search wget
   environment.systemPackages = with pkgs; [
     # TCC tools
+    gdrive3
     pandoc_3_5
     haskellPackages.citeproc
     texlive.combined.scheme-full
