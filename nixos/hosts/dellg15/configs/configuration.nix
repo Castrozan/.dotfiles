@@ -1,7 +1,12 @@
 # Edit this configuration file to define what should be installed on
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
-{ pkgs, ... }:
+{
+  pkgs,
+  lib,
+  username,
+  ...
+}:
 {
   imports = [
     # Include the results of the hardware scan.
@@ -15,8 +20,18 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
+  # Garbage collection
+  nix.gc = {
+    automatic = lib.mkDefault true;
+    dates = lib.mkDefault "weekly";
+    options = lib.mkDefault "--delete-older-than 7d";
+  };
+
   # Define your hostname.
   networking.hostName = "nixos";
+
+  # Allow the user to run nix commands
+  nix.settings.trusted-users = [ username ];
 
   # Enable networking
   networking.networkmanager.enable = true;
@@ -75,19 +90,19 @@
     pulse.enable = true;
   };
 
+  programs.dconf.enable = true;
+
   # Enable touchpad https://nixos.org/manual/nixos/stable/#sec-x11-touchpads
   services.libinput.enable = true;
 
   # Load nvidia driver for Xorg and Wayland
   services.xserver.videoDrivers = [ "nvidia" ];
 
-  # Enable some experimental features
   nix.settings.experimental-features = [
     "nix-command"
     "flakes"
   ];
 
-  # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
 
   # This value determines the NixOS release from which the default
