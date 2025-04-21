@@ -58,7 +58,7 @@
     wireguard-tools
 
     # Applications
-    brave
+    # brave # using the unstable channel
     google-chrome
     discord
     (discord.override {
