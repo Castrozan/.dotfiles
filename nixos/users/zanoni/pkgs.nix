@@ -85,6 +85,7 @@
     git
     bash
     bash-completion
+    vlc
     tmux
     usbutils
     htop
