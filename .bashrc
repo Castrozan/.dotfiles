@@ -80,12 +80,24 @@ export EDITOR=code
 _start_screensaver_tmux_session() {
     # Check if the screensaver session exists
     if ! tmux has-session -t screensaver 2>/dev/null; then
-        # Start tmux screensaver session and split panes
-        tmux new-session -d -s screensaver \; \
-            rename-window 'screensaver' \; \
-            send-keys 'bonsai_screensaver' C-m \; \
-            split-window -h \; \
-            send-keys 'pipes_screensaver' C-m
+
+        if command -v cmatrix &>/dev/null; then
+            # Start cmatrix, bonsai and pipes as screensaver
+            tmux new-session -d -s screensaver \; \
+                rename-window 'screensaver' \; \
+                send-keys 'bonsai_screensaver' C-m \; \
+                split-window -h \; \
+                send-keys 'pipes_screensaver' C-m \; \
+                split-window -v \; \
+                send-keys 'cmatrix -f' C-m
+        else
+            # Start bonsai and pipes as screensaver
+            tmux new-session -d -s screensaver \; \
+                rename-window 'screensaver' \; \
+                send-keys 'bonsai_screensaver' C-m \; \
+                split-window -h \; \
+                send-keys 'pipes_screensaver' C-m
+        fi
     fi
 }
 
