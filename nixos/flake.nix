@@ -31,7 +31,7 @@
       nixpkgs,
       nixpkgs-unstable,
       home-manager,
-      claude-desktop,
+      #claude-desktop,
       ...
     }:
     {
