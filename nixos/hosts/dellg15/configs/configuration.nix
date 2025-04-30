@@ -19,6 +19,8 @@
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
+  # TODO: this is a workaround for https://chatgpt.com/c/680d6aab-a500-800e-879c-e63a1b1e65fe
+  boot.kernelParams = [ "noapic" ];
 
   # Garbage collection
   nix.gc = {
@@ -62,7 +64,6 @@
   services.xserver.desktopManager.gnome.enable = true;
 
   # Set the display configuration
-  # TODO: this is not working
   services.xserver.displayManager.setupCommands = ''
     ${pkgs.xorg.xrandr}/bin/xrandr --output HDMI-1 --mode 1920x1080 --rate 164.00 --primary
     ${pkgs.xorg.xrandr}/bin/xrandr --output eDP-1  --mode 1920x1080 --rate 120.00 --left-of HDMI-1
