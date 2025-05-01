@@ -47,11 +47,11 @@
         "nixpkgs": "nixpkgs"
       },
       "locked": {
-        "lastModified": 1744942634,
-        "narHash": "sha256-ljHx2idKUm+Gs01Rp8glvLzZQ2GX1qV5qTDb37eMmfw=",
+        "lastModified": 1746056032,
+        "narHash": "sha256-4SwdbvX/oSsfYdndnBLZAVsMeDHkjbF/irvHawHDKqw=",
         "owner": "castrozan",
         "repo": "codex-flake",
-        "rev": "47873ed800ee55f9e7a9496ff3965e9b0d47617c",
+        "rev": "d990adc2336f51e42f05bf7cbfa479e36bdb5e16",
         "type": "github"
       },
       "original": {
