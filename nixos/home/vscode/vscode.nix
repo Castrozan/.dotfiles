@@ -1,6 +1,3 @@
-#
-# Enable vscode with config to set a specific version
-#
 { pkgs, ... }:
 let
   vscode = pkgs.vscode.overrideAttrs (old: rec {
