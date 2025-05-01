@@ -1,9 +1,8 @@
+{ pkgs, ... }:
 {
-  # Enable wlogout and configure its package, layout and style.
   programs.wlogout = {
     enable = true;
-    # Optionally override the package (by default the module will use the one from pkgs)
-    # package = pkgs.wlogout;
+    package = pkgs.wlogout;
     layout = [
       {
         label = "lock";
