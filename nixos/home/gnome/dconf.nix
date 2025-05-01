@@ -4,7 +4,7 @@
   dconf.settings = {
     "org/gnome/desktop/peripherals/mouse" = {
       natural-scroll = false;
-      speed = -0.9;
+      speed = -0.5;
     };
 
     "org/gnome/desktop/interface" = {
