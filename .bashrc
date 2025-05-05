@@ -160,8 +160,9 @@ export PATH=$PATH:~/.local/bin
 export PATH="$PATH:/opt/nvim-linux64/bin"
 
 # asdf
-[ -f "$HOME/.asdf/asdf.sh" ] && . "$HOME/.asdf/asdf.sh"
-[ -f "$HOME/.asdf/completions/asdf.bash" ] && . "$HOME/.asdf/completions/asdf.bash"
+# TODO: should i use asdf or pyenv and others?
+# [ -f "$HOME/.asdf/asdf.sh" ] && . "$HOME/.asdf/asdf.sh"
+# [ -f "$HOME/.asdf/completions/asdf.bash" ] && . "$HOME/.asdf/completions/asdf.bash"
 
 # NVM variables
 export NVM_DIR="$HOME/.nvm"
@@ -172,8 +173,7 @@ export NVM_DIR="$HOME/.nvm"
 
 # Pyenv variables
 export PYENV_ROOT=$HOME/.pyenv
-command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
-export PATH="$HOME/.pyenv/bin:$PATH"
+export PATH="$PYENV_ROOT/bin:$PATH"
 
 # Obsidian
 # Create valt if it doesn't exist
