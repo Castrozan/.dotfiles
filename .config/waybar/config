@@ -1,0 +1,137 @@
+{
+  "layer": "top",
+  "height": 32,
+  "spacing": 5,
+  "modules-left": [
+    "image",
+    "hyprland/workspaces"
+  ],
+  "modules-center": [
+    "user"
+  ],
+  "modules-right": [
+    "tray",
+    "power-profiles-daemon",
+    "pulseaudio",
+    "network",
+    "battery",
+    "clock",
+    "custom/power"
+  ],
+  "hyprland/window": {
+    "separate-outputs": false
+  },
+  "hyprland/workspaces": {
+    "format": "{icon}",
+    "on-click": "activate",
+    "format-icons": {
+      "1": "1",
+      "2": "2",
+      "3": "3",
+      "4": "4",
+      "5": "5",
+      "6": "6",
+      "7": "7",
+      "8": "8",
+      "9": "9",
+      "10": "10",
+      "urgent": "",
+      "active": "",
+      "default": ""
+    },
+    "sort-by-number": true,
+    "persistent-workspaces": {
+      "1": [],
+      "2": [],
+      "3": [],
+      "4": [],
+      "5": [],
+      "6": [],
+      "7": [],
+      "8": [],
+      "9": [],
+      "10": []
+    }
+  },
+  "user": {
+    "format": "  zanoni | ({work_H}hr {work_M} mins ↑)",
+    "interval": 60,
+    "height": 23,
+    "width": 23,
+    "icon": true
+  },
+  "tray": {
+    "spacing": 10
+  },
+  "clock": {
+    "tooltip-format": "{:%A, %B %d, %Y}",
+    "format": "{:%I:%M}"
+  },
+  "battery": {
+    "states": {
+      "warning": 40
+    },
+    "format": "{capacity}% {icon}",
+    "format-icons": [
+      "󰂎",
+      "󰁺",
+      "󰁻",
+      "󰁼",
+      "󰁽",
+      "󰁾",
+      "󰁿",
+      "󰂀",
+      "󰂁",
+      "󰂂",
+      "󰁹"
+    ],
+    "format-charging": "󰂄",
+    "format-warning": "󰂃",
+    "tooltip-format": "{capacity}%"
+  },
+  "network": {
+    "format-wifi": "{ipaddr}",
+    "format-ethernet": "",
+    "format-disconnected": "",
+    "tooltip-format": "Connected to {essid}",
+    "tooltip-format-ethernet": "{ifname} ",
+    "on-click": "hyprctl dispatch exec '[float]' '$TERMINAL -e nmtui'"
+  },
+  "pulseaudio": {
+    "scroll-step": 5,
+    "format": "{icon}",
+    "format-muted": "",
+    "format-icons": {
+      "default": [
+        "",
+        "",
+        ""
+      ]
+    },
+    "tooltip-format": "{volume}% volume",
+    "on-click": "volume --toggle",
+    "on-scroll-up": "volume --inc",
+    "on-scroll-down": "volume --dec"
+  },
+  "custom/power": {
+    "format": "󰐥",
+    "on-click": "wlogout"
+  },
+  "power-profiles-daemon": {
+    "format": "{icon}",
+    "tooltip-format": "Power profile: {profile}\nDriver: {driver}",
+    "tooltip": true,
+    "format-icons": {
+      "default": "",
+      "performance": "",
+      "balanced": "",
+      "power-saver": ""
+    }
+  },
+  "image": {
+    "path": "/home/zanoni/.config/waybar/nix.svg",
+    "size": 20,
+    "interval": 5,
+    "on-click": "brave https://search.nixos.org/packages"
+  }
+}

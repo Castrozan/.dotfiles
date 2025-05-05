@@ -1,0 +1,5 @@
+{
+  imports = [
+    ./vscode-speech.nix
+  ];
+}

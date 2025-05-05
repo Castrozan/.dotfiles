@@ -19,6 +19,10 @@
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.flake-utils.follows = "flake-utils";
     };
+    codex-flake = {
+      url = "github:castrozan/codex-flake";
+      inputs.flake-utils.follows = "flake-utils";
+    };
   };
 
   outputs =
@@ -27,7 +31,7 @@
       nixpkgs,
       nixpkgs-unstable,
       home-manager,
-      claude-desktop,
+      #claude-desktop,
       ...
     }:
     {

@@ -1,7 +1,12 @@
 # Edit this configuration file to define what should be installed on
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
-{ pkgs, ... }:
+{
+  pkgs,
+  lib,
+  username,
+  ...
+}:
 {
   imports = [
     # Include the results of the hardware scan.
@@ -14,9 +19,21 @@
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
+  # TODO: this is a workaround for https://chatgpt.com/c/680d6aab-a500-800e-879c-e63a1b1e65fe
+  boot.kernelParams = [ "noapic" ];
+
+  # Garbage collection
+  nix.gc = {
+    automatic = lib.mkDefault true;
+    dates = lib.mkDefault "weekly";
+    options = lib.mkDefault "--delete-older-than 7d";
+  };
 
   # Define your hostname.
   networking.hostName = "nixos";
+
+  # Allow the user to run nix commands
+  nix.settings.trusted-users = [ username ];
 
   # Enable networking
   networking.networkmanager.enable = true;
@@ -47,7 +64,6 @@
   services.xserver.desktopManager.gnome.enable = true;
 
   # Set the display configuration
-  # TODO: this is not working
   services.xserver.displayManager.setupCommands = ''
     ${pkgs.xorg.xrandr}/bin/xrandr --output HDMI-1 --mode 1920x1080 --rate 164.00 --primary
     ${pkgs.xorg.xrandr}/bin/xrandr --output eDP-1  --mode 1920x1080 --rate 120.00 --left-of HDMI-1
@@ -75,19 +91,19 @@
     pulse.enable = true;
   };
 
+  programs.dconf.enable = true;
+
   # Enable touchpad https://nixos.org/manual/nixos/stable/#sec-x11-touchpads
   services.libinput.enable = true;
 
   # Load nvidia driver for Xorg and Wayland
   services.xserver.videoDrivers = [ "nvidia" ];
 
-  # Enable some experimental features
   nix.settings.experimental-features = [
     "nix-command"
     "flakes"
   ];
 
-  # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
 
   # This value determines the NixOS release from which the default
