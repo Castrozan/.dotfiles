@@ -14,5 +14,7 @@
 
     # Tools
     clipse
+
+    brave
   ];
 }

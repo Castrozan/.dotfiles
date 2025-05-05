@@ -8,7 +8,8 @@ in
 {
   imports = [
     # TODO: Change this three to be managed as home programs
-    ./packages.nix
+    ./system-packages.nix
+    ./pkgs.nix
     ./unstable-packages.nix
     ./scripts/default.nix
     ./virtualization.nix

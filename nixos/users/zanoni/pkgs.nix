@@ -1,9 +1,6 @@
-#
-# TODO: move this to home manager packages
-#
 { pkgs, ... }:
 {
-  # List packages installed in system profile. To search, run: nix search wget
+  # List of pkgs available in nixpkgs. To search, run: nix search wget
   environment.systemPackages = with pkgs; [
     # TCC tools
     gdrive3
@@ -61,7 +58,7 @@
     wireguard-tools
 
     # Applications
-    brave
+    # brave # using the unstable channel
     google-chrome
     discord
     (discord.override {
@@ -80,5 +77,27 @@
     # Terminal Eye Candy
     cbonsai
     pipes
+    cmatrix
+
+    vim
+    wget
+    curl
+    git
+    bash
+    bash-completion
+    vlc
+    tmux
+    usbutils
+    htop
+    wget
+    # see hardware info
+    lshw
+    jq
+    # sysstat
+    # lm_sensors # for `sensors` command
+    # minimal screen capture tool, used by i3 blur lock to take a screenshot
+    # print screen key is also bound to this tool in i3 config
+    # scrot
+    neofetch
   ];
 }

@@ -1,4 +1,8 @@
-{pkgs, ...}: {
+{ pkgs, ... }:
+{
+  home.file.".config/kitty/startup.conf".source = ../../../.config/kitty/startup.conf;
+  home.file.".config/kitty/wallpaper.png".source = ../../../resources/wallpaper.png;
+
   programs.kitty = {
     enable = true;
     themeFile = "Catppuccin-Mocha";
@@ -20,6 +24,4 @@
       hide_window_decorations = "yes";
     };
   };
-  home.file.".config/kitty/startup.conf".source = ../../../.config/kitty/startup.conf;
-  home.file.".config/kitty/wallpaper.png".source = ../../../resources/wallpaper.png;
 }
