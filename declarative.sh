@@ -20,6 +20,7 @@ PACKAGES=(
     cursor
     flameshot
     fzf
+    gh
     kitty
     lazygit
     neofetch
