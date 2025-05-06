@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
 
-. "./shell/src/run_elevated_clause.sh"
 . "./shell/src/is_desktop_environment.sh"
 . "./shell/src/is_installed.sh"
 
 # Install Obsidian
+# TODO: Fix this. Use flatpak to install Obsidian
 install_obsidian() {
-    local version="1.7.7"
+    local version="1.8.10"
     local release_url="https://github.com/obsidianmd/obsidian-releases/releases/download/v${version}/obsidian_${version}_amd64.deb"
     wget "$release_url" -O /tmp/obsidian.deb
 
-    run_elevated_clause "dpkg -i /tmp/obsidian.deb"
+    sudo dpkg -i /tmp/obsidian.deb
 }
 
 if is_desktop_environment; then
