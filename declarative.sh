@@ -29,6 +29,7 @@ PACKAGES=(
     nodejs
     npm
     nvm
+    postman
     obsidian
     fira_code
     pipes

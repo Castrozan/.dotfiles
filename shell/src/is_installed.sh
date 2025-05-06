@@ -20,6 +20,9 @@ is_installed() {
     brew)
         brew list | grep -q "^$1\$"
         ;;
+    snap)
+        snap list | grep -q "$1"
+        ;;
     nix)
         nix-env -q | grep -q "$1"
         ;;
