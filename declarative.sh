@@ -45,6 +45,7 @@ SCRIPTS=(
     git_fzf
     killport
     on
+    rebuild
     pybase
     it_tools
 )
