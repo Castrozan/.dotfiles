@@ -1,14 +1,19 @@
 #!/usr/bin/env bash
 
 . "./shell/src/print.sh"
+. "./shell/src/is_desktop_environment.sh"
 
 # Test if Cursor is installed
 cursor_test() {
-    if [ ! -f "$HOME/.local/bin/cursor" ]; then
-        print "Cursor is not installed." "$_RED"
-        exit 1
+    if is_desktop_environment; then
+        if [ ! -f "$HOME/.local/bin/cursor" ]; then
+            print "Cursor is not installed." "$_RED"
+            exit 1
+        else
+            print "Cursor is installed." "$_GREEN"
+        fi
     else
-        print "Cursor is installed." "$_GREEN"
+        print "Desktop environment is not installed." "$_YELLOW"
     fi
 }
 
