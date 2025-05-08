@@ -1,5 +1,7 @@
 {
   pkgs,
+  lib,
+  config,
   ...
 }:
 
@@ -35,13 +37,19 @@
         echo "  $ toggle-gpu-mode"
       fi
 
-      # Run the command with NVIDIA GPU and GameMode
-      if command -v gamemoderun &> /dev/null; then
-        echo "Running with maximum performance: $@"
-        nvidia-offload gamemoderun "$@"
+      # Special handling for Steam
+      if [ "$1" = "steam" ]; then
+        echo "Running Steam with maximum performance..."
+        nvidia-offload steam-gamemode
       else
-        echo "GameMode not found, running with NVIDIA GPU only: $@"
-        nvidia-offload "$@"
+        # Run the command with NVIDIA GPU and GameMode
+        if command -v gamemoderun &> /dev/null; then
+          echo "Running with maximum performance: $@"
+          nvidia-offload gamemoderun "$@"
+        else
+          echo "GameMode not found, running with NVIDIA GPU only: $@"
+          nvidia-offload "$@"
+        fi
       fi
     '')
 
@@ -127,6 +135,19 @@
           echo "  status - Show current gaming configuration status"
           ;;
       esac
+    '')
+
+    # Add a command to specifically run Steam with optimizations
+    (writeShellScriptBin "steam-gaming" ''
+      #!/usr/bin/env bash
+
+      # Activate Game Shift
+      echo "Activating Dell Game Shift mode..."
+      game-shift
+
+      # Run Steam with NVIDIA GPU and GameMode
+      echo "Launching Steam with NVIDIA GPU and GameMode..."
+      nvidia-offload steam-gamemode
     '')
   ];
 

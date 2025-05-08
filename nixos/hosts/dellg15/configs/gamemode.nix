@@ -1,9 +1,10 @@
-{ pkgs, ... }:
+{ pkgs, lib, ... }:
 
 {
   # Enable gamemode system-wide
   programs.gamemode = {
     enable = true;
+    enableRenice = true; # Ensure process priority adjustment is enabled
     settings = {
       general = {
         # Prioritize GPU performance over power savings when gamemode is active
@@ -40,6 +41,13 @@
 
     # Dependencies for gamemode scripts
     libnotify
+
+    # Create a wrapper script for running Steam with GameMode properly
+    (writeShellScriptBin "steam-gamemode" ''
+      #!/usr/bin/env bash
+      export LD_PRELOAD="${lib.getLib pkgs.gamemode}/lib/libgamemode.so''${LD_PRELOAD:+:$LD_PRELOAD}"
+      exec steam "$@"
+    '')
   ];
 
   # Enable Steam with proper gamemode integration
@@ -48,6 +56,11 @@
     remotePlay.openFirewall = true; # Open ports for Steam Remote Play
     dedicatedServer.openFirewall = true; # Open ports for Steam Dedicated Server
     gamescopeSession.enable = true; # Enable gamescope session (separate compositor optimized for gaming)
+
+    # Fix GameMode integration with Steam
+    extraCompatPackages = [
+      pkgs.gamemode
+    ];
   };
 
   # Add environment variables for Steam Proton
@@ -58,7 +71,10 @@
     PROTON_HIDE_NVIDIA_GPU = "0";
     # Enable FSR (FidelityFX Super Resolution) for all games
     WINE_FULLSCREEN_FSR = "1";
-    # GameMode integration with Proton
-    STEAM_GAMEMODE_LIBRARIES = "${pkgs.gamemode}/lib";
+    # GameMode integration with Proton - Add the specific library path
+    STEAM_GAMEMODE_LIBRARIES = "${lib.getLib pkgs.gamemode}/lib";
   };
+
+  # Make the gamemode library available system-wide
+  hardware.opengl.extraPackages = [ pkgs.gamemode.lib ];
 }
