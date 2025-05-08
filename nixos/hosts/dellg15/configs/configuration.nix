@@ -13,6 +13,8 @@
     # Im setting this on hosts/<user>/default.nix
     # /etc/nixos/hardware-configuration.nix
     ./nvidia.nix
+    ./nvidia-offload-script.nix
+    ./gamemode.nix
     ./fonts.nix
     ./libinput-quirks.nix
   ];
@@ -114,6 +116,18 @@
 
   # Add custom udev rules for Dell G15 5515 touchpad
   services.udev.extraRules = builtins.readFile ./udev-rules/99-dell-g15-touchpad.rules;
+
+  # Additional packages for hardware monitoring and management
+  environment.systemPackages = with pkgs; [
+    # Hardware monitoring tools
+    lm_sensors
+    i2c-tools
+    powertop
+    glxinfo
+    vulkan-tools
+    pciutils
+    usbutils
+  ];
 
   # Load nvidia driver for Xorg and Wayland
   services.xserver.videoDrivers = [ "nvidia" ];
