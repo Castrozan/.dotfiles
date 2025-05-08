@@ -19,9 +19,11 @@
     modesetting.enable = true;
 
     # Enable power management (important for laptops)
+    # Only enable basic power management in the default config
+    # Fine-grained will be conditionally enabled in offload mode only
     powerManagement = {
       enable = true;
-      finegrained = true; # More aggressive power savings
+      finegrained = false; # Default is basic power management
     };
 
     # Use the open kernel module for better Wayland compatibility
@@ -52,6 +54,13 @@
     gaming-mode.configuration = {
       system.nixos.tags = [ "gaming-mode" ];
       hardware.nvidia = {
+        # In gaming mode, disable power management completely
+        # since the GPU will be always on
+        powerManagement = {
+          enable = lib.mkForce false;
+          finegrained = lib.mkForce false;
+        };
+
         prime = {
           # Disable offload and enable sync when in gaming mode
           # This provides better performance by using the NVIDIA GPU all the time
