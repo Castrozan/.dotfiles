@@ -9,6 +9,7 @@
 	imports = [
 		./modules/pipx.nix
 		./modules/dooit.nix
+		./modules/sdkman.nix
 	];
 
 	home.packages = with pkgs; [
