@@ -4,7 +4,7 @@
     ../../home/core.nix
 
     ../../home/hyprland
-    # ../../home/gnome
+    ../../home/gnome
     ../../home/kitty
     ../../home/programs
     ../../home/vscode
