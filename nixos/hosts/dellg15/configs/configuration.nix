@@ -94,7 +94,7 @@
   programs.dconf.enable = true;
 
   # Enable touchpad https://nixos.org/manual/nixos/stable/#sec-x11-touchpads
-  services.libinput.enable = true;
+  # services.libinput.enable = true;
 
   # Load nvidia driver for Xorg and Wayland
   services.xserver.videoDrivers = [ "nvidia" ];
