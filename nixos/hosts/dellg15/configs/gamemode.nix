@@ -36,7 +36,7 @@
     mangohud
 
     # Add tools for GPU monitoring while gaming
-    nvtop
+    nvtopPackages.full
 
     # Dependencies for gamemode scripts
     libnotify
