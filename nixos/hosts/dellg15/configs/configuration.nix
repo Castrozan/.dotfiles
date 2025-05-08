@@ -20,7 +20,7 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
   # TODO: this is a workaround for https://chatgpt.com/c/680d6aab-a500-800e-879c-e63a1b1e65fe
-  boot.kernelParams = [ "noapic" ];
+  # boot.kernelParams = [ "noapic" ];
 
   # Garbage collection
   nix.gc = {
