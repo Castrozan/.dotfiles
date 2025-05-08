@@ -15,6 +15,7 @@
     ./nvidia.nix
     ./nvidia-offload-script.nix
     ./gamemode.nix
+    ./gaming-integration.nix
     ./fonts.nix
     ./libinput-quirks.nix
   ];
