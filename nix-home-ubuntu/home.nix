@@ -4,6 +4,7 @@
 	home.homeDirectory = "/home/${username}";
 	home.stateVersion = home-version;
 	programs.home-manager.enable = true;
+	news.display = "silent";
 
 	imports = [
 		./modules/pipx.nix
@@ -12,5 +13,6 @@
 
 	home.packages = with pkgs; [
 		insomnia
+		uv
 	];
 }
