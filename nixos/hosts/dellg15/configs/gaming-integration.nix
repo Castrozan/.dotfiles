@@ -1,7 +1,5 @@
 {
   pkgs,
-  lib,
-  config,
   ...
 }:
 
@@ -29,7 +27,7 @@
 
       # Activate Dell Game Shift mode
       echo "Activating Dell Game Shift mode..."
-      game-shift
+      sudo game-shift
 
       # Check if we're in gaming mode for NVIDIA PRIME
       if [[ "$(readlink /run/current-system)" != *"gaming-mode"* ]]; then
@@ -61,7 +59,7 @@
         on|ON|start|START)
           # Enable Game Shift
           echo "Enabling Dell Game Shift mode..."
-          game-shift
+          sudo game-shift
           
           # Check if we're in gaming-mode specialization
           if [[ "$(readlink /run/current-system)" != *"gaming-mode"* ]]; then
@@ -101,7 +99,7 @@
           
           # Disable Game Shift (note: game-shift toggles the mode)
           echo "Disabling Dell Game Shift mode..."
-          game-shift
+          sudo game-shift
           ;;
           
         status|STATUS)
@@ -109,7 +107,7 @@
           
           # Game Shift status
           echo -e "\n--- Dell Game Shift Mode ---"
-          game-shift
+          game-shift-status
           
           # NVIDIA PRIME mode
           echo -e "\n--- NVIDIA PRIME Mode ---"
@@ -143,7 +141,7 @@
 
       # Activate Game Shift
       echo "Activating Dell Game Shift mode..."
-      game-shift
+      sudo game-shift
 
       # Run Steam with NVIDIA GPU and GameMode
       echo "Launching Steam with NVIDIA GPU and GameMode..."
