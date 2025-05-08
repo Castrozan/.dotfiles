@@ -7,6 +7,7 @@
 
 	imports = [
 		./modules/pipx.nix
+		./modules/dooit.nix
 	];
 
 	home.packages = with pkgs; [
