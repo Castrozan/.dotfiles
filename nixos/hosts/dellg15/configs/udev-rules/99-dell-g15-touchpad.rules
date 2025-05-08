@@ -1,0 +1,3 @@
+# Dell G15 5515 touchpad pressure sensitivity adjustments
+# This sets the touchpad pressure thresholds that better fit the Dell G15 5515 model
+ACTION=="add|change", KERNEL=="event[0-9]*", ATTRS{name}=="*Touchpad*", ATTRS{id/product}=="*", ENV{LIBINPUT_ATTR_PRESSURE_RANGE}="4:25", ENV{LIBINPUT_ATTR_PALM_PRESSURE_THRESHOLD}="150" 
