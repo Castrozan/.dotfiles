@@ -16,9 +16,11 @@ PACKAGES=(
     btop
     cbonsai
     clipse
+    code
     cursor
     flameshot
     fzf
+    gh
     kitty
     lazygit
     neofetch
@@ -27,6 +29,7 @@ PACKAGES=(
     nodejs
     npm
     nvm
+    postman
     obsidian
     fira_code
     pipes
@@ -42,6 +45,7 @@ SCRIPTS=(
     git_fzf
     killport
     on
+    rebuild
     pybase
     it_tools
 )

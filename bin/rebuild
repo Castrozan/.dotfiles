@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+# Detect if we're on NixOS
+if [ -f /etc/os-release ]; then
+    . /etc/os-release
+    if [ "$ID" = "nixos" ]; then
+        # We're on NixOS
+        sudo nixos-rebuild switch --flake $HOME/.dotfiles/nixos#$(whoami)
+    else
+        # We're on Ubuntu or another distro
+        home-manager --flake $HOME/.dotfiles/nix-home-ubuntu#lucas.zanoni@x86_64-linux switch
+    fi
+fi 
