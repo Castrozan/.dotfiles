@@ -89,7 +89,7 @@ _start_screensaver_tmux_session() {
                 split-window -h \; \
                 send-keys 'pipes_screensaver' C-m \; \
                 split-window -v \; \
-                send-keys 'cmatrix -f' C-m
+                send-keys 'sleep 1; cmatrix' C-m
         else
             # Start bonsai and pipes as screensaver
             tmux new-session -d -s screensaver \; \
