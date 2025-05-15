@@ -21,7 +21,6 @@ alias grep='grep --color=auto'
 alias i='idea'
 alias idea='idea . > /dev/null 2>&1 &'
 alias kc="nvim ~/.config/kitty/kitty.conf"
-alias killport='sh $HOME/.local/bin/killport'
 alias l='ls -CF'
 alias la='ls -A'
 alias lc='ls -a --color=never'
