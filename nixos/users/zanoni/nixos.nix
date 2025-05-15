@@ -1,7 +1,7 @@
 #
 # NixOS Configuration for zanoni
 #
-{ lib, ... }:
+{ lib, pkgs, ... }:
 let
   bashrc = builtins.readFile ../../../.bashrc;
 in
@@ -24,6 +24,14 @@ in
   environment.variables = {
     NIX_PATH = lib.mkDefault "nixpkgs=/nix/var/nix/profiles/per-user/root/channels/nixos";
   };
+
+  programs.nix-ld.enable = true;
+  programs.nix-ld.libraries = with pkgs; [
+    stdenv.cc.cc
+    zlib
+    openssl
+    curl
+  ];
 
   # # make `nix repl '<nixpkgs>'` use the same nixpkgs as the one used by this flake.
   # # discard all the default paths, and only use the one from this flake.
