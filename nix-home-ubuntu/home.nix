@@ -21,10 +21,12 @@
 		unzip
 		gnutar
 		curl
+		lazydocker
 
 		insomnia
 		uv
 		postman
 		redisinsight
+		lens
 	];
 }
