@@ -7,12 +7,17 @@ fi
 
 PORT=$1
 
-PID=$(lsof -ti:"$PORT")
+PIDs=$(lsof -ti:"$PORT")
 
-if [ -z "$PID" ]; then
+if [ -z "$PIDs" ]; then
   echo "No process found listening on port $PORT."
   exit 1
 else
-  kill -9 "$PID"
-  echo "Process on port $PORT has been killed."
+  for PID in $PIDs; do
+    if kill -9 "$PID" 2>/dev/null; then
+      echo "Process $PID on port $PORT has been killed."
+    else
+      echo "Failed to kill process $PID on port $PORT."
+    fi
+  done
 fi
