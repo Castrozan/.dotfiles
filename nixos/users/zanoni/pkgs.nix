@@ -89,6 +89,7 @@
     tmux
     usbutils
     htop
+    supabase-cli
     wget
     # see hardware info
     lshw
