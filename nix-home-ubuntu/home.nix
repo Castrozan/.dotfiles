@@ -10,7 +10,7 @@
 		./modules/pipx.nix
 		./modules/dooit.nix
 		./modules/sdkman.nix
-		./modules/m2.nix
+		# ./modules/m2.nix
 	];
 
 	home.packages = with pkgs; [
@@ -24,5 +24,6 @@
 
 		insomnia
 		uv
+		postman
 	];
 }
