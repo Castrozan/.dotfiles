@@ -117,7 +117,12 @@ _start_tmux() {
 }
 
 # Open tmux sessions on startup
-if command -v tmux &>/dev/null && [ -n "$PS1" ] && [[ ! "$TERM" =~ screen ]] && [[ ! "$TERM" =~ tmux ]] && [ -z "$TMUX" ]; then
+if command -v tmux &>/dev/null && \
+   [ -n "$PS1" ] && \
+   [[ ! "$TERM" =~ screen ]] && \
+   [[ ! "$TERM" =~ tmux ]] && \
+   [ -z "$TMUX" ] && \
+   [[ $(ps -o comm= -p "$PPID") != "cursor" ]]; then
     _start_tmux
 fi
 
