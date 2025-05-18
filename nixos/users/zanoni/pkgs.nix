@@ -11,6 +11,7 @@
 
     # Development Tools
     alejandra
+    cacert
     azure-cli
     dbeaver-bin
     docker
