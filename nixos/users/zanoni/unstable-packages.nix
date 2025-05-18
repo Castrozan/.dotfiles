@@ -8,6 +8,7 @@
     SDL2
     alsa-lib.dev
     pkg-config
+    supabase-cli
 
     # formatting nix
     nixfmt-rfc-style
