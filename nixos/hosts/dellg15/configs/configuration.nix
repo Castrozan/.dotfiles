@@ -30,6 +30,13 @@
     options = lib.mkDefault "--delete-older-than 7d";
   };
 
+  swapDevices = [
+    {
+      device = "/swapfile";
+      size = 8192; # 8 GiB
+    }
+  ];
+
   # Define your hostname.
   networking.hostName = "nixos";
 
