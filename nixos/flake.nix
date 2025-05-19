@@ -6,14 +6,12 @@
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
     home-manager.url = "github:nix-community/home-manager/release-24.11";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
+    flake-utils.url = "github:numtide/flake-utils";
 
     catppuccin-bat = {
       url = "github:catppuccin/bat";
       flake = false;
     };
-
-    flake-utils.url = "github:numtide/flake-utils";
-
     claude-desktop = {
       url = "github:k3d3/claude-desktop-linux-flake";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -23,10 +21,11 @@
       url = "github:castrozan/codex-flake";
       inputs.flake-utils.follows = "flake-utils";
     };
-    whisper-input = {
-      url = "github:Quoteme/whisper-input";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    # TODO: find why this does not build
+    # whisper-input = {
+    #   url = "github:Quoteme/whisper-input";
+    #   inputs.nixpkgs.follows = "nixpkgs";
+    # };
   };
 
   outputs =
@@ -35,7 +34,6 @@
       nixpkgs,
       nixpkgs-unstable,
       home-manager,
-      #claude-desktop,
       ...
     }:
     {
