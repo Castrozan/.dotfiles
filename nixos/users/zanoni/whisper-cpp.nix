@@ -1,5 +1,5 @@
 # Configuration for Whisper speech-to-text
-{ pkgs, lib, ... }:
+{ pkgs, ... }:
 
 {
   environment.systemPackages = with pkgs; [
