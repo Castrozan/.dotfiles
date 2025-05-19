@@ -1,6 +1,7 @@
 {
   imports = [
     ./configs/configuration.nix
+    ./configs/cuda.nix
 
     # NixOS modules
     # These are configurations that can be done on the system level

@@ -23,6 +23,10 @@
       url = "github:castrozan/codex-flake";
       inputs.flake-utils.follows = "flake-utils";
     };
+    whisper-input = {
+      url = "github:Quoteme/whisper-input";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
