@@ -14,6 +14,7 @@ in
     ./scripts/default.nix
     ./virtualization.nix
     ./steam.nix
+    ./whisper-cpp.nix
   ];
 
   programs.hyprland = {
@@ -43,7 +44,7 @@ in
   # TODO: this is workaround from home/programs/bash.nix
   environment.etc."bashrc".text = bashrc;
 
-  # Define a user account. Don't forget to set a password with ‘passwd’.
+  # Define a user account. Don't forget to set a password with 'passwd'.
   users.users.zanoni = {
     isNormalUser = true;
     description = "zanoni";
