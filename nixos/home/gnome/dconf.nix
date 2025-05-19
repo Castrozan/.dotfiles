@@ -55,5 +55,27 @@
       num-rows = 3;
       show-popup = false;
     };
+
+    # Custom keybindings
+    "org/gnome/settings-daemon/plugins/media-keys" = {
+      custom-keybindings = [
+        "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/"
+      ];
+    };
+
+    "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0" = {
+      binding = "<Alt>a";
+      command = "nix run github:quoteme/whisper-input";
+      name = "whisper";
+    };
+
+    # Window manager keybindings
+    "org/gnome/desktop/wm/keybindings" = {
+      close = [ "<Shift><Control>w" ];
+      switch-applications = [ ];
+      switch-applications-backward = [ ];
+      switch-windows = [ "<Alt>Tab" ];
+      switch-windows-backward = [ "<Shift><Alt>Tab" ];
+    };
   };
 }
