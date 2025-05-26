@@ -34,6 +34,7 @@
     python312Packages.pydantic
     python312Packages.uv
     python312Packages.uvicorn
+    poetry
 
     # System Utilities
     btop
