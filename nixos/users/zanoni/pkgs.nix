@@ -35,6 +35,7 @@
     python312Packages.uv
     python312Packages.uvicorn
     poetry
+    playwright-driver.browsers
 
     # System Utilities
     btop
