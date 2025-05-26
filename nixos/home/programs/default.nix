@@ -8,5 +8,6 @@
     ./neovim.nix
     ./tmux.nix
     ./fuzzel.nix
+    ./playwright.nix
   ];
 }
