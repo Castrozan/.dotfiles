@@ -61,7 +61,7 @@
     wireguard-tools
 
     # Applications
-    # brave # using the unstable channel
+    obs-studio
     google-chrome
     discord
     (discord.override {
@@ -93,14 +93,8 @@
     usbutils
     htop
     wget
-    # see hardware info
-    lshw
+    lshw # see hardware info
     jq
-    # sysstat
-    # lm_sensors # for `sensors` command
-    # minimal screen capture tool, used by i3 blur lock to take a screenshot
-    # print screen key is also bound to this tool in i3 config
-    # scrot
     neofetch
   ];
 }
