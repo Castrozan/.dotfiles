@@ -1,10 +1,8 @@
-# Configuration for Whisper speech-to-text
+# TODO: move this to a module
 { pkgs, ... }:
-
 {
   environment.systemPackages = with pkgs; [
-    # Use the official OpenAI Whisper implementation
-    openai-whisper
+    openai-whisper # The official OpenAI Whisper implementation
 
     # Optional dependencies
     ffmpeg
