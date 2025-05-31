@@ -1,16 +1,11 @@
 { lib, ... }:
 {
   # From https://nixos.wiki/wiki/Steam
-
-  # Enable the Steam runtime
   programs.steam = {
     enable = true;
-    # Open ports in the firewall for Steam Remote Play
-    remotePlay.openFirewall = true;
-    # Open ports in the firewall for Source Dedicated Server
-    dedicatedServer.openFirewall = true;
-    # Open ports in the firewall for Steam Local Network Game Transfers
-    localNetworkGameTransfers.openFirewall = true;
+    remotePlay.openFirewall = true; # For Steam Remote Play
+    dedicatedServer.openFirewall = true; # For Source Dedicated Server
+    localNetworkGameTransfers.openFirewall = true; # For Steam Local Network Game Transfers
   };
 
   nixpkgs.config.allowUnfreePredicate =
