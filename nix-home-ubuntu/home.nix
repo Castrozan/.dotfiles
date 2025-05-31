@@ -10,7 +10,7 @@
 		./modules/pipx.nix
 		./modules/dooit.nix
 		./modules/sdkman.nix
-		./modules/m2.nix
+		# ./modules/m2.nix
 	];
 
 	home.packages = with pkgs; [
@@ -21,8 +21,12 @@
 		unzip
 		gnutar
 		curl
+		lazydocker
 
 		insomnia
 		uv
+		postman
+		redisinsight
+		lens
 	];
 }

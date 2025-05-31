@@ -13,6 +13,9 @@
     # Im setting this on hosts/<user>/default.nix
     # /etc/nixos/hardware-configuration.nix
     ./nvidia.nix
+    ./nvidia-offload-script.nix
+    ./gamemode.nix
+    ./gaming-integration.nix
     ./fonts.nix
     ./libinput-quirks.nix
   ];
