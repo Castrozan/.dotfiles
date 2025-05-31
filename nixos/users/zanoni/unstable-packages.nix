@@ -1,9 +1,7 @@
-{ unstable, ... }:
+{ unstable, latest, ... }:
 {
   # List of pkgs installed from the unstable channel
   environment.systemPackages = with unstable; [
-    # Cursor and its dependencies
-    code-cursor
     cargo
     rustc
     SDL2
@@ -19,5 +17,6 @@
 
     # Applications
     brave
+    latest.code-cursor
   ];
 }
