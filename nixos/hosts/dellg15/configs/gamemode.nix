@@ -76,5 +76,5 @@
   };
 
   # Make the gamemode library available system-wide
-  hardware.opengl.extraPackages = [ pkgs.gamemode.lib ];
+  hardware.graphics.extraPackages = [ pkgs.gamemode.lib ];
 }
