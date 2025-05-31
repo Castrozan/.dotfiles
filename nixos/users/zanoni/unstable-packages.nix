@@ -1,5 +1,6 @@
 { unstable, ... }:
 {
+  # List of pkgs installed from the unstable channel
   environment.systemPackages = with unstable; [
     # Cursor and its dependencies
     code-cursor
@@ -16,6 +17,7 @@
     # Tools
     clipse
 
+    # Applications
     brave
   ];
 }

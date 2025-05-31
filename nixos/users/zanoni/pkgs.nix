@@ -1,6 +1,6 @@
 { pkgs, ... }:
 {
-  # List of pkgs available in nixpkgs. To search, run: nix search wget
+  # List of pkgs installed from nixpkgs. To search, run: nix search wget
   environment.systemPackages = with pkgs; [
     # TCC tools
     gdrive3
