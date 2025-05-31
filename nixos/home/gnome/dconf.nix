@@ -47,12 +47,12 @@
     };
 
     "org/gnome/shell/extensions/default-workspace" = {
-      default-workspace-number = 3;
+      default-workspace-number = 8;
     };
 
     "org/gnome/shell/extensions/wsmatrix" = {
       num-columns = 5;
-      num-rows = 2;
+      num-rows = 3;
       show-popup = false;
     };
 

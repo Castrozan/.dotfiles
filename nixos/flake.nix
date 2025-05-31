@@ -4,6 +4,7 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-24.11";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
+    flake-utils.url = "github:numtide/flake-utils";
     home-manager.url = "github:nix-community/home-manager/release-24.11";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
@@ -11,9 +12,6 @@
       url = "github:catppuccin/bat";
       flake = false;
     };
-
-    flake-utils.url = "github:numtide/flake-utils";
-
     claude-desktop = {
       url = "github:k3d3/claude-desktop-linux-flake";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -31,7 +29,6 @@
       nixpkgs,
       nixpkgs-unstable,
       home-manager,
-      #claude-desktop,
       ...
     }:
     {
