@@ -49,29 +49,6 @@
     };
   };
 
-  # Specialization for gaming mode with PRIME sync
-  specialisation = {
-    gaming-mode.configuration = {
-      system.nixos.tags = [ "gaming-mode" ];
-      hardware.nvidia = {
-        # In gaming mode, disable power management completely
-        # since the GPU will be always on
-        powerManagement = {
-          enable = lib.mkForce false;
-          finegrained = lib.mkForce false;
-        };
-
-        prime = {
-          # Disable offload and enable sync when in gaming mode
-          # This provides better performance by using the NVIDIA GPU all the time
-          offload.enable = lib.mkForce false;
-          offload.enableOffloadCmd = lib.mkForce false;
-          sync.enable = lib.mkForce true;
-        };
-      };
-    };
-  };
-
   # Runtime environment for better NVIDIA GPU support
   environment.sessionVariables = {
     # Improve PRIME render offload compatibility
@@ -94,4 +71,27 @@
     "nouveau"
     "nvidiafb"
   ];
+
+  # Specialization for gaming mode with PRIME sync
+  specialisation = {
+    gaming-mode.configuration = {
+      system.nixos.tags = [ "gaming-mode" ];
+      hardware.nvidia = {
+        # In gaming mode, disable power management completely
+        # since the GPU will be always on
+        powerManagement = {
+          enable = lib.mkForce false;
+          finegrained = lib.mkForce false;
+        };
+
+        prime = {
+          # Disable offload and enable sync when in gaming mode
+          # This provides better performance by using the NVIDIA GPU all the time
+          offload.enable = lib.mkForce false;
+          offload.enableOffloadCmd = lib.mkForce false;
+          sync.enable = lib.mkForce true;
+        };
+      };
+    };
+  };
 }
