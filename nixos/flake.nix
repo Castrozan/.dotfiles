@@ -4,6 +4,7 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-24.11";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixpkgs-latest.url = "github:nixos/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
     home-manager.url = "github:nix-community/home-manager/release-24.11";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
@@ -28,6 +29,7 @@
       self,
       nixpkgs,
       nixpkgs-unstable,
+      nixpkgs-latest,
       home-manager,
       ...
     }:
@@ -43,8 +45,17 @@
               inherit system;
               config.allowUnfree = true;
             };
+            latest = import nixpkgs-latest {
+              inherit system;
+              config.allowUnfree = true;
+            };
             specialArgs = {
-              inherit username inputs unstable;
+              inherit
+                username
+                inputs
+                unstable
+                latest
+                ;
             };
           in
           nixpkgs.lib.nixosSystem {
