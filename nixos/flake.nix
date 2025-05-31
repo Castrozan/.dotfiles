@@ -7,6 +7,7 @@
     flake-utils.url = "github:numtide/flake-utils";
     home-manager.url = "github:nix-community/home-manager/release-24.11";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
+    flake-utils.url = "github:numtide/flake-utils";
 
     catppuccin-bat = {
       url = "github:catppuccin/bat";
@@ -21,6 +22,11 @@
       url = "github:castrozan/codex-flake";
       inputs.flake-utils.follows = "flake-utils";
     };
+    # TODO: find why this does not build
+    # whisper-input = {
+    #   url = "github:Quoteme/whisper-input";
+    #   inputs.nixpkgs.follows = "nixpkgs";
+    # };
   };
 
   outputs =
