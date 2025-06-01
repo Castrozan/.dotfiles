@@ -1,6 +1,8 @@
 { config, pkgs, ... }:
 {
   # Follow the instructions at https://nixos.wiki/wiki/Nvidia
+  services.xserver.videoDrivers = [ "nvidia" ];
+
   hardware.nvidia.modesetting.enable = true;
   hardware.nvidia.powerManagement.enable = false;
   hardware.nvidia.powerManagement.finegrained = false;
@@ -40,7 +42,7 @@
     cudatoolkit
 
     # Monitoring tools
-    nvtopPackages.full
+    nvtop-nvidia
   ];
 
   # Environment variables for CUDA development and NVIDIA GPU use
