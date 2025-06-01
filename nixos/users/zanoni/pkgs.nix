@@ -21,6 +21,7 @@
     k6
     lazydocker
     lazygit
+    tig
     nixd
     nixpkgs-fmt
     nix-prefetch-github
