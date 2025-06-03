@@ -8,6 +8,8 @@
     haskellPackages.citeproc
     texlive.combined.scheme-full
     texliveTeTeX
+    imagemagick
+    convertall
 
     # Development Tools
     alejandra
