@@ -2,8 +2,6 @@
 let
   sdkmanDir = "$HOME/.sdkman";
   curlBin = "${pkgs.curl}/bin/curl";
-  unzipBin = "${pkgs.unzip}/bin/unzip";
-  tarBin = "${pkgs.gnutar}/bin/tar";
 in
 {
   # Ensure dependencies needed by SDKMAN! itself
