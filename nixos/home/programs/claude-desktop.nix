@@ -8,9 +8,9 @@
       desktopName = "Claude Desktop";
       exec = "claude-desktop";
       #icon = builtins.fetchurl {
-       # url = "https://claude.ai/favicon.ico";
-        # TODO: Replace with actual sha strategy
-        #sha256 = "1qw5w3c2v6clyv608kizpppyz501v29cnmlmibz51szgif15asl1";
+      # url = "https://claude.ai/favicon.ico";
+      # TODO: Replace with actual sha strategy
+      #sha256 = "1qw5w3c2v6clyv608kizpppyz501v29cnmlmibz51szgif15asl1";
       #};
       categories = [
         "Development"

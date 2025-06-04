@@ -1,9 +1,12 @@
-{pkgs, ...}: let
+{ pkgs, ... }:
+let
   script = builtins.readFile ../../../../bin/rebuild;
-in let
+in
+let
   rebuild = pkgs.writeShellScriptBin "rebuild" ''
     ${script}
   '';
-in {
-  environment.systemPackages = [rebuild];
+in
+{
+  environment.systemPackages = [ rebuild ];
 }
