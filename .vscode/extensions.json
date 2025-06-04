@@ -1,5 +1,6 @@
 {
     "recommendations": [
-        "timonwong.shellcheck"
+        "timonwong.shellcheck",
+        "jnoortheen.nix-ide",
     ]
 }

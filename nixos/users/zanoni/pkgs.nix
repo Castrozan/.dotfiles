@@ -28,6 +28,7 @@
     nixpkgs-fmt
     nix-prefetch-github
     terraform
+    nodePackages.prettier
 
     # Python and Dependencies
     python312
