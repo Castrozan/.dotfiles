@@ -1,5 +1,5 @@
-{ pkgs, ... }:
+{ ... }:
 {
   # create a symlink to the m2 directory
-  home.file.".m3".source = ../dotfiles/.m2;
+  home.file.".m2".source = ../dotfiles/.m2;
 }
