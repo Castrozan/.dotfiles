@@ -8,6 +8,7 @@
     flake-utils.url = "github:numtide/flake-utils";
     home-manager.url = "github:nix-community/home-manager/release-24.11";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
+    determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
 
     catppuccin-bat = {
       url = "github:catppuccin/bat";
@@ -31,6 +32,7 @@
       nixpkgs-unstable,
       nixpkgs-latest,
       home-manager,
+      determinate,
       ...
     }:
     {
@@ -65,6 +67,7 @@
             modules = [
               ./hosts/dellg15
               ./users/${username}/nixos.nix
+              determinate.nixosModules.default
 
               home-manager.nixosModules.home-manager
               {
