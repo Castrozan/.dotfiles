@@ -2,6 +2,55 @@
 
 This guide explains how to deploy the NixOS configuration from this repository using Nix Flakes. The configuration is designed for systems running NixOS.
 
+## NixOS Configuration Diagram
+
+Here's a high-level overview of how the NixOS configuration is structured:
+
+```mermaid
+graph TD
+    subgraph "flake.nix (Entry Point)"
+        Flake[nixosConfigurations.zanoni]
+    end
+
+    subgraph "Host Configuration"
+        Host[./hosts/dellg15]
+    end
+
+    subgraph "User Configuration (zanoni)"
+        UserNixOS[./users/zanoni/nixos.nix]
+        UserHome[./users/zanoni/home.nix]
+    end
+
+    subgraph "External Modules"
+        HomeManager["home-manager"]
+        Determinate["determinate.systems"]
+    end
+
+    subgraph "Custom Modules"
+        CustomModules[./modules]
+    end
+
+
+    Flake -- imports --> Host
+    Flake -- imports --> UserNixOS
+    Flake -- imports & configures --> HomeManager
+    Flake -- imports --> Determinate
+    
+    HomeManager -- uses --> UserHome
+
+    Host -- may import --> CustomModules
+    UserNixOS -- may import --> CustomModules
+
+    style Flake fill:#844,color:white
+    style Host fill:#484,color:white
+    style UserNixOS fill:#448,color:white
+    style UserHome fill:#448,color:white
+    style HomeManager fill:#864,color:white
+    style Determinate fill:#864,color:white
+    style CustomModules fill:#488,color:white
+
+```
+
 ## Prerequisites
 
 Before you begin, make sure you have:
