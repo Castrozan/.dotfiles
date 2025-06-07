@@ -29,6 +29,8 @@
     nix-prefetch-github
     terraform
     nodePackages.prettier
+    awscli2
+    cypress
 
     # Python and Dependencies
     python312
