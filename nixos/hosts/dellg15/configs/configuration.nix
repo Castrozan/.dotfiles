@@ -7,9 +7,6 @@
 {
   imports = [
     ./nvidia.nix
-    ./nvidia-offload-script.nix # TODO: Revaluate this script usage
-    ./gamemode.nix # TODO: Revaluate this script usage
-    ./gaming-integration.nix # TODO: Revaluate this script usage
     ./fonts.nix
     ./libinput-quirks.nix
   ];
