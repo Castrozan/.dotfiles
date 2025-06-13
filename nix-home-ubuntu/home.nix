@@ -28,6 +28,7 @@
     curl
     lazydocker
 
+    brave
     insomnia
     uv
     postman
