@@ -1,6 +1,7 @@
 { pkgs, ... }:
 let
-  conf = builtins.readFile ../../../.config/tmux/tmux.conf;
+  settings = builtins.readFile ../../../.config/tmux/settings.conf;
+  binds = builtins.readFile ../../../.config/tmux/binds.conf;
 in
 {
   programs.tmux = {
@@ -13,7 +14,8 @@ in
       resurrect
     ];
     extraConfig = ''
-      ${conf}
+      ${settings}
+      ${binds}
     '';
   };
 }
