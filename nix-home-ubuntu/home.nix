@@ -1,5 +1,6 @@
 {
   pkgs,
+  latest,
   username,
   home-version,
   ...
@@ -12,10 +13,10 @@
   news.display = "silent";
 
   imports = [
-    ./modules/pipx.nix
     ./modules/dooit.nix
-    ./modules/sdkman.nix
     # ./modules/m2.nix
+    ./modules/pipx.nix
+    ./modules/sdkman.nix
   ];
 
   home.packages = with pkgs; [
@@ -27,7 +28,10 @@
     gnutar
     curl
     lazydocker
+
+    # nix formatting tools
     nixd
+    nixfmt-rfc-style
     alejandra
 
     brave
@@ -36,5 +40,6 @@
     postman
     redisinsight
     lens
+    latest.code-cursor
   ];
 }
