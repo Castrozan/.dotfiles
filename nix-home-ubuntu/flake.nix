@@ -3,16 +3,16 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    home-manager = {
-      url = "github:nix-community/home-manager";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    nixpkgs-latest.url = "github:nixos/nixpkgs/nixos-unstable";
+    home-manager.url = "github:nix-community/home-manager";
+    home-manager.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs =
     inputs@{
       self,
       nixpkgs,
+      nixpkgs-latest,
       home-manager,
       ...
     }:
@@ -20,6 +20,10 @@
       system = "x86_64-linux";
       username = "lucas.zanoni";
       home-version = "23.11";
+      latest = import nixpkgs-latest {
+        inherit system;
+        config.allowUnfree = true;
+      };
       pkgs = import nixpkgs {
         inherit system;
         config.allowUnfree = true;
@@ -34,7 +38,7 @@
           inherit pkgs;
 
           extraSpecialArgs = {
-            inherit username home-version specialArgs;
+            inherit username home-version specialArgs latest;
           };
 
           modules = [ ./home.nix ];
