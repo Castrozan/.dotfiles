@@ -27,6 +27,8 @@
     gnutar
     curl
     lazydocker
+    nixd
+    alejandra
 
     brave
     insomnia
