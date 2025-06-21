@@ -3,6 +3,7 @@
 # Aliases file for bash shell
 
 # aliases personal
+alias clebr='cd $HOME/.clebr'
 alias bashrc='nvim ~/.bashrc'
 alias b='btop'
 alias c='code'
