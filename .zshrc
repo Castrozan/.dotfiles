@@ -103,6 +103,66 @@ source $ZSH/oh-my-zsh.sh
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
+# Source bash functions and configurations for tmux management
+if [ -f ~/.dotfiles/shell/configs/screensaver.sh ]; then
+    source ~/.dotfiles/shell/configs/screensaver.sh
+fi
+
+# Source additional shell configurations (similar to bashrc)
+[ -f ~/.dotfiles/shell/configs/bash_aliases.sh ] && source ~/.dotfiles/shell/configs/bash_aliases.sh
+[ -f ~/.dotfiles/shell/configs/zoxide.sh ] && source ~/.dotfiles/shell/configs/zoxide.sh
+[ -f ~/.dotfiles/shell/configs/default_directories.sh ] && source ~/.dotfiles/shell/configs/default_directories.sh
+
+# Function to start the first tmux session for screensaver
+_start_screensaver_tmux_session() {
+    # Check if the screensaver session exists
+    if ! tmux has-session -t screensaver 2>/dev/null; then
+
+        if command -v cmatrix &>/dev/null; then
+            # Start cmatrix, bonsai and pipes as screensaver
+            tmux new-session -d -s screensaver \; \
+                rename-window 'screensaver' \; \
+                send-keys 'bonsai_screensaver' C-m \; \
+                split-window -h \; \
+                send-keys 'pipes_screensaver' C-m \; \
+                split-window -v \; \
+                send-keys 'sleep 1; cmatrix' C-m
+        else
+            # Start bonsai and pipes as screensaver
+            tmux new-session -d -s screensaver \; \
+                rename-window 'screensaver' \; \
+                send-keys 'bonsai_screensaver' C-m \; \
+                split-window -h \; \
+                send-keys 'pipes_screensaver' C-m
+        fi
+    fi
+}
+
+# Function to start a main tmux session
+_start_main_tmux_session() {
+    # Check if the main session exists
+    if ! tmux has-session -t main 2>/dev/null; then
+        tmux new-session -d -s main -n main
+    fi
+}
+
+_start_tmux() {
+    # Start tmux
+    _start_screensaver_tmux_session
+    _start_main_tmux_session
+    tmux attach -t screensaver
+}
+
+# Open tmux sessions on startup - prevent when running from Cursor
+if command -v tmux &>/dev/null &&
+    [ -n "$PS1" ] &&
+    [[ ! "$TERM" =~ screen ]] &&
+    [[ ! "$TERM" =~ tmux ]] &&
+    [ -z "$TMUX" ] &&
+    [[ $(ps -o comm= -p "$PPID") != "cursor" ]]; then
+    _start_tmux
+fi
+
 #THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
 export SDKMAN_DIR="/home/lucas.zanoni/.sdkman"
 [[ -s "/home/lucas.zanoni/.sdkman/bin/sdkman-init.sh" ]] && source "/home/lucas.zanoni/.sdkman/bin/sdkman-init.sh"
