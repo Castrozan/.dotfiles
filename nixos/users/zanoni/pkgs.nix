@@ -4,7 +4,7 @@
   environment.systemPackages = with pkgs; [
     # TCC tools
     gdrive3
-    pandoc_3_5
+    #pandoc_3_5
     haskellPackages.citeproc
     texlive.combined.scheme-full
     texliveTeTeX
@@ -76,9 +76,9 @@
     })
     firefox
     obsidian
-    (opera.override {
-      proprietaryCodecs = true; # Enables video playback
-    })
+    #(opera.override {
+    #  proprietaryCodecs = true; # Enables video playback
+    #})
     postman
     scrcpy
     vesktop

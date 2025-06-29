@@ -42,7 +42,7 @@
     cudatoolkit
 
     # Monitoring tools
-    nvtop-nvidia
+    #nvtop-nvidia
   ];
 
   # Environment variables for CUDA development and NVIDIA GPU use

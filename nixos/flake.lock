@@ -16,29 +16,6 @@
         "type": "github"
       }
     },
-    "claude-desktop": {
-      "inputs": {
-        "flake-utils": [
-          "flake-utils"
-        ],
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1745459952,
-        "narHash": "sha256-DqfNL28ny9M13s4Ae0PmdYdcu+CXQ0U9pM+3z/vGRDI=",
-        "owner": "k3d3",
-        "repo": "claude-desktop-linux-flake",
-        "rev": "467706b81668e2c59f118d9a469455d193489531",
-        "type": "github"
-      },
-      "original": {
-        "owner": "k3d3",
-        "repo": "claude-desktop-linux-flake",
-        "type": "github"
-      }
-    },
     "codex-flake": {
       "inputs": {
         "flake-utils": [
@@ -216,16 +193,16 @@
         ]
       },
       "locked": {
-        "lastModified": 1743808813,
-        "narHash": "sha256-2lDQBOmlz9ggPxcS7/GvcVdzXMIiT+PpMao6FbLJSr0=",
+        "lastModified": 1750792728,
+        "narHash": "sha256-Lh3dopA8DdY+ZoaAJPrtkZOZaFEJGSYjOdAYYgOPgE4=",
         "owner": "nix-community",
         "repo": "home-manager",
-        "rev": "a9f8b3db211b4609ddd83683f9db89796c7f6ac6",
+        "rev": "366f00797b1efb70f2882d3da485e3c10fd3d557",
         "type": "github"
       },
       "original": {
         "owner": "nix-community",
-        "ref": "release-24.11",
+        "ref": "release-25.05",
         "repo": "home-manager",
         "type": "github"
       }
@@ -363,16 +340,16 @@
     },
     "nixpkgs_4": {
       "locked": {
-        "lastModified": 1743813633,
-        "narHash": "sha256-BgkBz4NpV6Kg8XF7cmHDHRVGZYnKbvG0Y4p+jElwxaM=",
+        "lastModified": 1750969886,
+        "narHash": "sha256-zW/OFnotiz/ndPFdebpo3X0CrbVNf22n4DjN2vxlb58=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "7819a0d29d1dd2bc331bec4b327f0776359b1fa6",
+        "rev": "a676066377a2fe7457369dd37c31fd2263b662f4",
         "type": "github"
       },
       "original": {
         "owner": "nixos",
-        "ref": "nixos-24.11",
+        "ref": "nixos-25.05",
         "repo": "nixpkgs",
         "type": "github"
       }
@@ -380,7 +357,6 @@
     "root": {
       "inputs": {
         "catppuccin-bat": "catppuccin-bat",
-        "claude-desktop": "claude-desktop",
         "codex-flake": "codex-flake",
         "determinate": "determinate",
         "flake-utils": "flake-utils",

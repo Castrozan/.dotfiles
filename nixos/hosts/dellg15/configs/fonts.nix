@@ -9,6 +9,6 @@
     mplus-outline-fonts.githubRelease
     dina-font
     proggyfonts
-    nerdfonts
+    #nerdfonts
   ];
 }

@@ -1,6 +1,6 @@
 {
   imports = [
-    ./claude-desktop.nix
+    #./claude-desktop.nix
     ./common.nix
     ./git.nix
     ./bash.nix
