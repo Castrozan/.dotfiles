@@ -2,11 +2,11 @@
   description = "not A very basic flake";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-24.11";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-25.05";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
     nixpkgs-latest.url = "github:nixos/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
-    home-manager.url = "github:nix-community/home-manager/release-24.11";
+    home-manager.url = "github:nix-community/home-manager/release-25.05";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
     determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
 
@@ -14,11 +14,11 @@
       url = "github:catppuccin/bat";
       flake = false;
     };
-    claude-desktop = {
-      url = "github:k3d3/claude-desktop-linux-flake";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.flake-utils.follows = "flake-utils";
-    };
+    #claude-desktop = {
+    #  url = "github:k3d3/claude-desktop-linux-flake";
+    #  inputs.nixpkgs.follows = "nixpkgs";
+    #  inputs.flake-utils.follows = "flake-utils";
+    #};
     codex-flake = {
       url = "github:castrozan/codex-flake";
       inputs.flake-utils.follows = "flake-utils";
