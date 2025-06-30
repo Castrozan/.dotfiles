@@ -39,12 +39,12 @@
     options = lib.mkDefault "--delete-older-than 7d";
   };
 
-  # swapDevices = [
-  #   {
-  #     device = "/swapfile";
-  #     size = 8192; # 8 GiB
-  #   }
-  # ];
+  swapDevices = [
+    {
+      device = "/swapfile";
+      size = 8192; # 8 GiB
+    }
+  ];
 
   # Define your hostname
   networking.hostName = "nixos";
@@ -75,7 +75,8 @@
   services.xserver.desktopManager.gnome.enable = true;
   programs.dconf.enable = true;
 
-  # Set the display configuration # TODO: Revaluate if this is needed
+  # Set the display configuration
+  # window manager should manage this so no need to set it here
   # services.xserver.displayManager.setupCommands = ''
   #   ${pkgs.xorg.xrandr}/bin/xrandr --output HDMI-1 --mode 1920x1080 --rate 164.00 --primary
   #   ${pkgs.xorg.xrandr}/bin/xrandr --output eDP-1  --mode 1920x1080 --rate 120.00 --left-of HDMI-1
