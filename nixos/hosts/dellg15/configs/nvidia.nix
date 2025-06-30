@@ -6,6 +6,13 @@
 {
   services.xserver.videoDrivers = [ "nvidia" ];
 
+  # Kernel version and NVIDIA-SMI version
+  # uname -r
+  # 6.1.141
+  # nvidia-smi | head -n3
+  # Sun Jun 29 23:05:49 2025
+  # NVIDIA-SMI 550.135
+
   # Use the LTS kernel (6.1.x) that NVIDIA officially supports.
   boot.kernelPackages = pkgs.linuxPackages_6_1;
 
