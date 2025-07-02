@@ -14,6 +14,7 @@
 
   imports = [
     ./modules/dooit.nix
+    ./modules/gemini.nix
     # ./modules/m2.nix
     ./modules/pipx.nix
     ./modules/sdkman.nix
