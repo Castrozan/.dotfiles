@@ -28,6 +28,7 @@
     gnutar
     curl
     lazydocker
+    ripgrep-all
 
     # nix formatting tools
     nixd
