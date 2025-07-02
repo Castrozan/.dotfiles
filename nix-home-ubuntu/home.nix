@@ -42,5 +42,6 @@
     redisinsight
     lens
     latest.code-cursor
+    latest.claude-code
   ];
 }
