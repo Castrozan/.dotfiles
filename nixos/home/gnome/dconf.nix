@@ -75,8 +75,14 @@
       close = [ "<Shift><Control>w" ];
       switch-applications = [ ];
       switch-applications-backward = [ ];
-      switch-windows = [ "<Alt>Tab" ];
-      switch-windows-backward = [ "<Shift><Alt>Tab" ];
+      switch-windows = [
+        "<Alt>Tab"
+        "<Super>Tab"
+      ];
+      switch-windows-backward = [
+        "<Shift><Alt>Tab"
+        "<Shift><Super>Tab"
+      ];
     };
   };
 }
