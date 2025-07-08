@@ -9,5 +9,6 @@
     ./tmux.nix
     ./fuzzel.nix
     ./playwright.nix
+    ./vesktop.nix
   ];
 }
