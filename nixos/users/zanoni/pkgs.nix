@@ -75,10 +75,13 @@
       withVencord = true; # For customization
     })
     firefox
+    # vivaldi
+    # vivaldi-ffmpeg-codecs
     obsidian
-    #(opera.override {
-    #  proprietaryCodecs = true; # Enables video playback
-    #})
+    (vivaldi.override {
+      proprietaryCodecs = true; # Enables video playback
+      enableWidevine = true;
+    })
     postman
     scrcpy
     vesktop
