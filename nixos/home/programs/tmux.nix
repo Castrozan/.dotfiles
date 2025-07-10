@@ -2,7 +2,7 @@
 let
   settings = builtins.readFile ../../../.config/tmux/settings.conf;
   binds = builtins.readFile ../../../.config/tmux/binds.conf;
-  pluginSettings = builtins.readFile ../../../.config/tmux/plugin-settings.conf;
+  catppuccinSettings = builtins.readFile ../../../.config/tmux/catppuccin.conf;
 
   catppuccinZanoni = pkgs.tmuxPlugins.mkTmuxPlugin {
     pluginName = "catppuccin";
@@ -23,12 +23,16 @@ in
       pkgs.tmuxPlugins.sensible
       pkgs.tmuxPlugins.yank
       pkgs.tmuxPlugins.resurrect
-      catppuccinZanoni
+      {
+        plugin = catppuccinZanoni;
+        extraConfig = ''
+          ${catppuccinSettings}
+        '';
+      }
     ];
     extraConfig = ''
       ${settings}
       ${binds}
-      ${pluginSettings}
     '';
   };
 }
