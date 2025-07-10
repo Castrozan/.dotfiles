@@ -54,7 +54,7 @@
     "org/gnome/shell/extensions/wsmatrix" = {
       num-columns = 5;
       num-rows = 3;
-      show-popup = false;
+      show-popup = true;
     };
 
     # Custom keybindings
