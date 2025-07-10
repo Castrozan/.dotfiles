@@ -75,9 +75,9 @@
       withVencord = true; # For customization
     })
     firefox
-    # vivaldi
-    # vivaldi-ffmpeg-codecs
     obsidian
+    vivaldi
+    vivaldi-ffmpeg-codecs
     (vivaldi.override {
       proprietaryCodecs = true; # Enables video playback
       enableWidevine = true;
