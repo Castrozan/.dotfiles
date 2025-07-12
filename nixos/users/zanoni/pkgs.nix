@@ -42,6 +42,7 @@
     python312Packages.uvicorn
     poetry
     playwright-driver.browsers
+    playwright-driver
 
     # System Utilities
     btop
