@@ -55,7 +55,6 @@ graph TD
 
 Before you begin, make sure you have:
 - A NixOS system installed (the GNOME, 64-bit Intel/AMD option is recommended for beginners).
-- Nix Flakes enabled on your system. (Add `experimental-features = nix-command flakes` to `/etc/nix/nix.conf` if needed.)
 
 ## Steps to Deploy
 
@@ -69,24 +68,24 @@ Take a look at the following directories:
 
 ### 3. Generate Hardware Configuration
 
-Create a hardware configuration to your system. Replace `your_host` with your machine's identifier (e.g., for a Dell G15):
+Create a hardware configuration to your new nixoa inatalation on the system (new installs have different configs for the same system).
 ```bash
-nixos-generate-config --dir nixos/hosts/your_host/configs
+nixos-generate-config --dir nixos/hosts/dellg15/configs
 ```
 This command generates a `hardware-configuration.nix` file that NixOS uses for hardware-specific settings.
 
 ### 4. Build and Deploy the Flake
 
-Replace the user and host on the nixosConfigurations module in the [flake](/nixos/flake.nix) and run the flake: Replace `your_user` with your username (e.g., `zanoni`):
+Replace the user and host on the nixosConfigurations module in the [flake](/nixos/flake.nix) and run the flake:
 ```bash
-sudo nixos-rebuild switch --flake .#your_user
+sudo nixos-rebuild switch --flake .#zanoni
 ```
 This command applies the configuration defined in the flake to your system.
 
 ### 5. Post-Deployment
 
 After deployment:
-- Restart your machine if required.
+- Restart your system is advised.
 - Verify that the new settings are active.
 - Continue tweaking your configurations to fit your workflow.
 
