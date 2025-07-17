@@ -18,5 +18,7 @@
     # Applications
     brave
     latest.code-cursor
+    latest.devenv
+    latest.direnv
   ];
 }
