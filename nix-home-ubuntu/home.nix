@@ -29,6 +29,8 @@
     curl
     lazydocker
     ripgrep-all
+    latest.direnv
+    latest.devenv
 
     # nix formatting tools
     nixd
