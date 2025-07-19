@@ -181,7 +181,7 @@ export PYENV_ROOT=$HOME/.pyenv
 export PATH="$PYENV_ROOT/bin:$PATH"
 
 # Obsidian
-# Create valt if it doesn't exist
+# Create vault if it doesn't exist
 if [ ! -d "$HOME/vault" ]; then
     mkdir -p "$HOME/vault"
 fi
