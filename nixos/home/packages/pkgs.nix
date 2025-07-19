@@ -1,12 +1,12 @@
 { pkgs, ... }:
 {
   home.packages = with pkgs; [
-    tree
     bash
     bash-completion
+    imv
     pavucontrol
     playerctl
     pulsemixer
-    imv
+    tree
   ];
 }
