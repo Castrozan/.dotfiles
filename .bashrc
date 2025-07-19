@@ -72,7 +72,7 @@ esac
 ## BEGIN DEFINE GLOBAL VARIABLES
 
 # Define default editor
-export EDITOR=code
+export EDITOR=cursor
 
 ## END GLOBAL VARIABLES
 
