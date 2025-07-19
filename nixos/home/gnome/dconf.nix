@@ -1,4 +1,13 @@
 { ... }:
+let
+  kitty-quick-temp-shell-command = ''
+    kitty --override remember_window_size=no
+      --override initial_window_width=80c
+      --override initial_window_height=24c
+      --override window_padding_width=10
+      -e tmux new-session
+  '';
+in
 {
   # GNOME settings
   dconf.settings = {
@@ -14,17 +23,6 @@
       cursor-size = 24;
       show-battery-percentage = true;
     };
-
-    # "org/gnome/desktop/peripherals/touchpad" = {
-    #   tap-to-click = false;
-    #   two-finger-scrolling-enabled = true;
-    # };
-
-    # "org/gnome/desktop/input-sources" = {
-    #   current = mkUint32 0;
-    #   sources = [ (mkTuple [ "xkb" "us" ]) ];
-    #   xkb-options = [ "terminate:ctrl_alt_bksp" "lv3:ralt_switch" "caps:ctrl_modifier" ];
-    # };
 
     "org/gnome/desktop/background" = {
       color-shading-type = "solid";
@@ -62,10 +60,10 @@
       show-popup = true;
     };
 
-    # Custom keybindings
     "org/gnome/settings-daemon/plugins/media-keys" = {
       custom-keybindings = [
         "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/"
+        "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1/"
       ];
     };
 
@@ -73,6 +71,17 @@
       binding = "<Alt>a";
       command = "nix run github:quoteme/whisper-input";
       name = "whisper";
+    };
+
+    "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1" = {
+      name = "kitty-quick-temp-shell";
+      binding = "<Super>2";
+      command = kitty-quick-temp-shell-command;
+    };
+
+    "org/gnome/shell/keybindings" = {
+      # Disable Super+2 for kitty custom keybinding
+      switch-to-application-2 = [ ];
     };
 
     # Window manager keybindings
