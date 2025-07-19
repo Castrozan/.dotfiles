@@ -39,8 +39,13 @@
       picture-uri = "file:///home/zanoni/.dotfiles/resources/alter-jellyfish-dark.jpg";
     };
 
-    # TODO: This conf do not install the extensions by itself
     "org/gnome/shell" = {
+      # Enable Super+1,2,3... to launch them
+      favorite-apps = [
+        "brave-browser.desktop"
+        "kitty.desktop"
+      ];
+      # TODO: This conf do not install the extensions by itself
       enabled-extensions = [
         "default-workspace@mateusrodcosta.com"
         "wsmatrix@martin.zurowietz.de"
