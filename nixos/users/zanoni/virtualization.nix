@@ -16,9 +16,6 @@
 
   # Virt-Manager
   # From https://github.com/TechsupportOnHold/Nixos-VM
-  # Enable dconf (System Management Tool)
-  programs.dconf.enable = true;
-
   # Add user to libvirtd group
   users.users.zanoni.extraGroups = [ "libvirtd" ];
 
