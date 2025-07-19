@@ -67,6 +67,7 @@ in
       ];
     };
 
+    # TODO: quoteme/whisper-input is broken, need to fix it
     "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0" = {
       binding = "<Alt>a";
       command = "nix run github:quoteme/whisper-input";
@@ -75,13 +76,8 @@ in
 
     "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1" = {
       name = "kitty-quick-temp-shell";
-      binding = "<Super>2";
+      binding = "<Shift><Alt>2";
       command = kitty-quick-temp-shell-command;
-    };
-
-    "org/gnome/shell/keybindings" = {
-      # Disable Super+2 for kitty custom keybinding
-      switch-to-application-2 = [ ];
     };
 
     # Window manager keybindings
