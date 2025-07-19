@@ -10,5 +10,6 @@
     ./fuzzel.nix
     ./playwright.nix
     ./vesktop.nix
+    ./lazygit.nix
   ];
 }
