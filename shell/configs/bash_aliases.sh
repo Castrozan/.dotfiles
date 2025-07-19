@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 
-# Aliases file for bash shell
-
-# aliases personal
+# Personal aliases
 alias clebr='cd $HOME/.clebr'
 alias bashrc='nvim ~/.bashrc'
 alias b='btop'
@@ -13,11 +11,11 @@ alias cd.='cd ..'
 alias cd..='cd ..'
 alias claude-nix='NIXPKGS_ALLOW_UNFREE=1 nix run github:k3d3/claude-desktop-linux-flake --impure'
 alias code='code . -n'
-alias cu='cursor'
-alias cursor='cursor . -n > /dev/null 2>&1 &'
+. "$HOME/.dotfiles/shell/configs/cursor.sh"
 alias d='lazydocker'
 alias dotfiles='cd ~/.dotfiles'
 alias g='lazygit'
+alias game-shift='sudo game-shift'
 alias grep='grep --color=auto'
 alias i='idea'
 alias idea='idea . > /dev/null 2>&1 &'
@@ -28,6 +26,8 @@ alias lc='ls -a --color=never'
 alias ll='ls -alF'
 alias ls='ls --color=auto'
 alias n='nvim'
+alias nord-off='sudo wgnord d'
+alias nord-on-us='sudo wgnord c US'
 alias obsidian='obsidian >/dev/null 2>&1 & disown'
 alias oo='cd $OBSIDIAN_HOME'
 alias repo='cd $HOME/repo'
@@ -38,8 +38,3 @@ alias source-bash='source ~/.bashrc'
 alias t='tmux attach -t screensaver 2>/dev/null || _start_tmux'
 alias todo='cd $HOME/vault'
 alias y='yazi'
-
-# aliases for nixos
-alias game-shift='sudo game-shift'
-alias nord-off='sudo wgnord d'
-alias nord-on-us='sudo wgnord c US'
