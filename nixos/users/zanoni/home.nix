@@ -6,7 +6,7 @@
     ../../home/hyprland
     ../../home/gnome
     ../../home/kitty
-    ../../home/programs
+    ../../home/packages
     ../../home/vscode
   ];
 }
