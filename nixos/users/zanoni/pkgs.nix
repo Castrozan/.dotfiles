@@ -40,6 +40,7 @@
     python312Packages.uv
     python312Packages.uvicorn
     poetry
+    # TODO: migrate this to home-manager /home/packages/playwright.nix
     playwright-driver.browsers
     playwright-driver
 
