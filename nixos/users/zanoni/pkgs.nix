@@ -13,24 +13,23 @@
 
     # Development Tools
     alejandra
-    cacert
+    awscli2
     azure-cli
     dbeaver-bin
+    cacert
+    cypress
     docker
     gh
     git
     gnumake
     k6
     lazydocker
-    lazygit
-    tig
     nixd
     nixpkgs-fmt
     nix-prefetch-github
-    terraform
     nodePackages.prettier
-    awscli2
-    cypress
+    terraform
+    tig
 
     # Python and Dependencies
     python312
