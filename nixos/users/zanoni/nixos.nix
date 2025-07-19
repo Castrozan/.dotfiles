@@ -7,14 +7,12 @@ let
 in
 {
   imports = [
-    ./system-packages.nix
     ./pkgs.nix
-    ./unstable-packages.nix
-    ./scripts/default.nix
+    ./unstable-pkgs.nix
+    ./scripts
     ./virtualization.nix
-    ./programs/steam.nix
-    ./programs/whisper-cpp.nix
-    ./programs
+    ./unstable-pkgs.nix
+    ./packages
   ];
 
   users.users.zanoni = {
@@ -27,7 +25,7 @@ in
   };
 
   # Global Bash configuration
-  # TODO: this is workaround from home/programs/bash.nix
+  # TODO: this is workaround from home/packages/bash.nix
   environment.etc."bashrc".text = bashrc;
 
   # More hyprland configuration in home/hyprland.nix
