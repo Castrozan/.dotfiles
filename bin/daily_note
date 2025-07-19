@@ -145,7 +145,7 @@ _append_unchecked_todos() {
 _open_daily_note() {
     local fullpath=$1
 
-    if [[ "$EDITOR" == "code" ]]; then
+    if [[ "$EDITOR" == "code" || "$EDITOR" == "cursor" ]]; then
         # Check if the editor is VS Code
         # code "$OBSIDIAN_HOME" "-g" "$fullpath" will open the note
         "$EDITOR" "$OBSIDIAN_HOME" "-g" "$fullpath"
