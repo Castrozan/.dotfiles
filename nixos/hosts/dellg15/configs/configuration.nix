@@ -7,7 +7,6 @@
 {
   imports = [
     ./nvidia.nix
-    ./fonts.nix
     ./libinput-quirks.nix
   ];
 
