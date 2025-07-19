@@ -14,6 +14,7 @@ in
     ./virtualization.nix
     ./programs/steam.nix
     ./programs/whisper-cpp.nix
+    ./programs
   ];
 
   users.users.zanoni = {
