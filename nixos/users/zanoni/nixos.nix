@@ -12,8 +12,8 @@ in
     ./unstable-packages.nix
     ./scripts/default.nix
     ./virtualization.nix
-    ./steam.nix
-    ./whisper-cpp.nix
+    ./programs/steam.nix
+    ./programs/whisper-cpp.nix
   ];
 
   users.users.zanoni = {
