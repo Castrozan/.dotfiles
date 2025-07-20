@@ -8,6 +8,7 @@
   imports = [
     ./nvidia.nix
     ./libinput-quirks.nix
+    ../scripts
   ];
 
   # Bootloader
