@@ -7,6 +7,7 @@
     # ../../home/hyprland
     # ../../home/gnome
     # ../../home/kitty
+    ../../home/modules/tmux.nix
     # ../../home/packages
     # ../../home/vscode
   ];
