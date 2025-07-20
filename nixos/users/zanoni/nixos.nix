@@ -7,12 +7,14 @@ let
 in
 {
   imports = [
+    ./scripts
     ./pkgs.nix
     ./unstable-pkgs.nix
-    ./scripts
-    ./virtualization.nix
-    ./unstable-pkgs.nix
-    ./packages
+    ../../nixos/modules/virtualization.nix
+    ../../nixos/modules/fonts.nix
+    ../../nixos/modules/input-pkgs.nix
+    ../../nixos/modules/steam.nix
+    ../../nixos/modules/whisper-cpp.nix
   ];
 
   users.users.zanoni = {
