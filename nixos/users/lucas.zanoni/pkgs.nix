@@ -1,21 +1,14 @@
 {
   pkgs,
   latest,
-  username,
-  home-version,
   ...
 }:
 {
-  home.username = username;
-  home.homeDirectory = "/home/${username}";
-  home.stateVersion = home-version;
-  programs.home-manager.enable = true;
-  news.display = "silent";
 
   imports = [
-    ./modules/dooit.nix
-    ./modules/pipx.nix
-    ./modules/sdkman.nix
+    ../../home/modules/dooit.nix
+    ../../home/modules/pipx.nix
+    ../../home/modules/sdkman.nix
   ];
 
   home.packages = with pkgs; [

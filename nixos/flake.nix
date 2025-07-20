@@ -39,6 +39,22 @@
       determinate,
       ...
     }:
+    let
+      system = "x86_64-linux"; # linux system architecture
+      pkgs = import nixpkgs {
+        inherit system;
+        config.allowUnfree = true;
+      };
+      unstable = import nixpkgs-unstable {
+        inherit system;
+        config.allowUnfree = true;
+      };
+      latest = import nixpkgs-latest {
+        inherit system;
+        config.allowUnfree = true;
+      };
+      home-version = "25.05";
+    in
     {
       # nixosConfigurations.zanoni is a NixOS system configuration that
       # can be instantiated with: nixos-rebuild switch --flake ~/.dotfiles/nixos#zanoni
@@ -46,19 +62,11 @@
         zanoni =
           let
             username = "zanoni";
-            system = "x86_64-linux";
-            unstable = import nixpkgs-unstable {
-              inherit system;
-              config.allowUnfree = true;
-            };
-            latest = import nixpkgs-latest {
-              inherit system;
-              config.allowUnfree = true;
-            };
             specialArgs = {
               inherit
                 username
                 inputs
+                home-version
                 unstable
                 latest
                 ;
@@ -91,23 +99,7 @@
       # nix run home-manager/master -- --flake $HOME/.dotfiles/nix-home-ubuntu#lucas.zanoni@x86_64-linux switch
       homeConfigurations =
         let
-          system = "x86_64-linux";
           username = "lucas.zanoni";
-          home-version = "25.05";
-          latest = import nixpkgs-latest {
-            inherit system;
-            config.allowUnfree = true;
-          };
-          pkgs = import nixpkgs {
-            inherit system;
-            config.allowUnfree = true;
-          };
-          specialArgs = {
-            inherit
-              inputs
-              home-version
-              ;
-          };
         in
         {
           "${username}@${system}" = home-manager.lib.homeManagerConfiguration {
@@ -115,14 +107,15 @@
 
             extraSpecialArgs = {
               inherit
+                inputs
                 username
-                specialArgs
+                unstable
                 latest
                 home-version
                 ;
             };
 
-            modules = [ ./home/home.nix ];
+            modules = [ ./users/${username}/home.nix ];
           };
         };
     };
