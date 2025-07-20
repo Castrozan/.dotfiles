@@ -85,5 +85,45 @@
             ];
           };
       };
+
+      # homeConfigurations.${username}@${system} is a home manager configuration that
+      # can be instantiated with:
+      # nix run home-manager/master -- --flake $HOME/.dotfiles/nix-home-ubuntu#lucas.zanoni@x86_64-linux switch
+      homeConfigurations =
+        let
+          system = "x86_64-linux";
+          username = "lucas.zanoni";
+          home-version = "25.05";
+          latest = import nixpkgs-latest {
+            inherit system;
+            config.allowUnfree = true;
+          };
+          pkgs = import nixpkgs {
+            inherit system;
+            config.allowUnfree = true;
+          };
+          specialArgs = {
+            inherit
+              inputs
+              home-version
+              ;
+          };
+        in
+        {
+          "${username}@${system}" = home-manager.lib.homeManagerConfiguration {
+            inherit pkgs;
+
+            extraSpecialArgs = {
+              inherit
+                username
+                specialArgs
+                latest
+                home-version
+                ;
+            };
+
+            modules = [ ./home.nix ];
+          };
+        };
     };
 }
