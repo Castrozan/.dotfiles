@@ -37,6 +37,22 @@ in
       picture-uri = "file:///home/zanoni/.dotfiles/resources/alter-jellyfish-dark.jpg";
     };
 
+    "org/gnome/shell/extensions/default-workspace" = {
+      default-workspace-number = 8;
+    };
+
+    "org/gnome/shell/extensions/wsmatrix" = {
+      num-columns = 5;
+      num-rows = 3;
+      show-popup = true;
+    };
+
+    # TODO: unbind favorite-apps and configure them manually
+    # so i dont need to favorite apps
+    # Disable favorite-apps keybindings
+    # "org/gnome/shell/keybindings" = {
+    #   switch-to-application-1 = [ ];
+    # };
     "org/gnome/shell" = {
       # Enable Super+1,2,3... to launch them
       favorite-apps = [
@@ -50,16 +66,6 @@ in
       ];
     };
 
-    "org/gnome/shell/extensions/default-workspace" = {
-      default-workspace-number = 8;
-    };
-
-    "org/gnome/shell/extensions/wsmatrix" = {
-      num-columns = 5;
-      num-rows = 3;
-      show-popup = true;
-    };
-
     "org/gnome/settings-daemon/plugins/media-keys" = {
       custom-keybindings = [
         "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/"
@@ -67,17 +73,17 @@ in
       ];
     };
 
+    "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1" = {
+      name = "kitty-quick-temp-shell";
+      binding = "<Shift><Alt>2";
+      command = kitty-quick-temp-shell-command;
+    };
+
     # TODO: quoteme/whisper-input is broken, need to fix it
     "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0" = {
       binding = "<Alt>a";
       command = "nix run github:quoteme/whisper-input";
       name = "whisper";
-    };
-
-    "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1" = {
-      name = "kitty-quick-temp-shell";
-      binding = "<Shift><Alt>2";
-      command = kitty-quick-temp-shell-command;
     };
 
     # Window manager keybindings
