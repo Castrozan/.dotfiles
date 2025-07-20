@@ -63,7 +63,7 @@
           username = "zanoni";
         in
         {
-          ${username}.nixpkgs.lib.nixosSystem = {
+          ${username} = nixpkgs.lib.nixosSystem {
             inherit specialArgs;
             inherit username;
 
@@ -76,8 +76,7 @@
           };
         };
 
-      # homeConfigurations.${username}@${system} is a home manager configuration that
-      # can be instantiated with:
+      # homeConfigurations.${username}@${system} is a stanalone home manager configuration
       # nix run home-manager/master -- --flake $HOME/.dotfiles/nix-home-ubuntu#lucas.zanoni@x86_64-linux switch -b backup
       homeConfigurations =
         let
@@ -87,7 +86,9 @@
           "${username}@${system}" = home-manager.lib.homeManagerConfiguration {
             inherit pkgs;
 
-            extraSpecialArgs = specialArgs;
+            extraSpecialArgs = specialArgs // {
+              inherit username;
+            };
 
             modules = [ ./users/${username}/home.nix ];
           };
