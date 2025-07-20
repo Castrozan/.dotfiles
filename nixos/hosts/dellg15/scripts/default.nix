@@ -1,0 +1,5 @@
+{
+  imports = [
+    ./game-shift.nix
+  ];
+}
