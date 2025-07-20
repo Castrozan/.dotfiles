@@ -13,10 +13,9 @@
   news.display = "silent";
 
   imports = [
-    # ./modules/dooit.nix
-    # ./modules/m2.nix
-    # ./modules/pipx.nix
-    # ./modules/sdkman.nix
+    ./modules/dooit.nix
+    ./modules/pipx.nix
+    ./modules/sdkman.nix
   ];
 
   home.packages = with pkgs; [
