@@ -14,19 +14,10 @@
       url = "github:catppuccin/bat";
       flake = false;
     };
-    #claude-desktop = {
-    #  url = "github:k3d3/claude-desktop-linux-flake";
-    #  inputs.nixpkgs.follows = "nixpkgs";
-    #  inputs.flake-utils.follows = "flake-utils";
-    #};
     codex-flake = {
       url = "github:castrozan/codex-flake";
       inputs.flake-utils.follows = "flake-utils";
     };
-    #zen-browser = {
-    #  url = "github:MarceColl/zen-browser-flake";
-    #  inputs.nixpkgs.follows = "nixpkgs";
-    #};
   };
 
   outputs =
@@ -54,6 +45,14 @@
         config.allowUnfree = true;
       };
       home-version = "25.05";
+      specialArgs = {
+        inherit
+          inputs
+          home-version
+          unstable
+          latest
+          ;
+      };
     in
     {
       # nixosConfigurations.zanoni is a NixOS system configuration that
@@ -62,34 +61,16 @@
         zanoni =
           let
             username = "zanoni";
-            specialArgs = {
-              inherit
-                username
-                inputs
-                home-version
-                unstable
-                latest
-                ;
-            };
           in
           nixpkgs.lib.nixosSystem {
             inherit specialArgs;
-            inherit system;
+            inherit username;
 
             modules = [
               ./hosts/dellg15
               ./users/${username}/nixos.nix
+              ./users/${username}/home.nix
               determinate.nixosModules.default
-
-              home-manager.nixosModules.home-manager
-              {
-                home-manager.useGlobalPkgs = true;
-                home-manager.useUserPackages = true;
-                home-manager.backupFileExtension = "backup";
-
-                home-manager.extraSpecialArgs = specialArgs;
-                home-manager.users.${username} = import ./users/${username}/home.nix;
-              }
             ];
           };
       };
@@ -105,15 +86,7 @@
           "${username}@${system}" = home-manager.lib.homeManagerConfiguration {
             inherit pkgs;
 
-            extraSpecialArgs = {
-              inherit
-                inputs
-                username
-                unstable
-                latest
-                home-version
-                ;
-            };
+            extraSpecialArgs = specialArgs;
 
             modules = [ ./users/${username}/home.nix ];
           };
