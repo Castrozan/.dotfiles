@@ -45,11 +45,10 @@
         config.allowUnfree = true;
       };
       home-version = "25.05";
-      specialArgs = {
+      specialArgsBase = {
         inherit
-          inputs
           home-version
-          pkgs
+          inputs
           unstable
           latest
           ;
@@ -61,16 +60,20 @@
       nixosConfigurations =
         let
           username = "zanoni";
+          specialArgs = specialArgsBase // {
+            inherit username;
+          };
         in
         {
-          ${username} = nixpkgs.lib.nixosSystem {
+          "${username}" = nixpkgs.lib.nixosSystem {
             inherit specialArgs;
-            inherit username;
+            inherit system;
 
             modules = [
               ./hosts/dellg15
               ./users/${username}/nixos.nix
-              ./users/${username}/home.nix
+              home-manager.nixosModules.home-manager
+              (import ./users/${username}/nixos-home.nix)
               determinate.nixosModules.default
             ];
           };
@@ -86,7 +89,7 @@
           "${username}@${system}" = home-manager.lib.homeManagerConfiguration {
             inherit pkgs;
 
-            extraSpecialArgs = specialArgs // {
+            extraSpecialArgs = specialArgsBase // {
               inherit username;
             };
 
