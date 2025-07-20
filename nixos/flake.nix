@@ -96,7 +96,7 @@
 
       # homeConfigurations.${username}@${system} is a home manager configuration that
       # can be instantiated with:
-      # nix run home-manager/master -- --flake $HOME/.dotfiles/nix-home-ubuntu#lucas.zanoni@x86_64-linux switch
+      # nix run home-manager/master -- --flake $HOME/.dotfiles/nix-home-ubuntu#lucas.zanoni@x86_64-linux switch -b backup
       homeConfigurations =
         let
           username = "lucas.zanoni";
