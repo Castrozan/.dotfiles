@@ -49,6 +49,7 @@
         inherit
           inputs
           home-version
+          pkgs
           unstable
           latest
           ;
@@ -57,12 +58,12 @@
     {
       # nixosConfigurations.zanoni is a NixOS system configuration that
       # can be instantiated with: nixos-rebuild switch --flake ~/.dotfiles/nixos#zanoni
-      nixosConfigurations = {
-        zanoni =
-          let
-            username = "zanoni";
-          in
-          nixpkgs.lib.nixosSystem {
+      nixosConfigurations =
+        let
+          username = "zanoni";
+        in
+        {
+          ${username}.nixpkgs.lib.nixosSystem = {
             inherit specialArgs;
             inherit username;
 
@@ -73,7 +74,7 @@
               determinate.nixosModules.default
             ];
           };
-      };
+        };
 
       # homeConfigurations.${username}@${system} is a home manager configuration that
       # can be instantiated with:
