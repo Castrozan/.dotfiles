@@ -1,12 +1,12 @@
-# All Zanoni's Home Manager Configuration
+# Zanoni's Home Manager Configuration
 {
   imports = [
     ../../home/core.nix
 
-    ../../home/hyprland
-    ../../home/gnome
-    ../../home/kitty
+    ../../home/modules/hyprland
+    ../../home/modules/gnome
+    ../../home/modules/kitty.nix
     ../../home/packages
-    ../../home/vscode
+    ../../home/modules/vscode
   ];
 }
