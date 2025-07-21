@@ -30,6 +30,7 @@ in
     "org/gnome/desktop/background" = {
       color-shading-type = "solid";
       picture-options = "zoom";
+      # TODO: the bkg image does not apply itself, need to fix select it on gnome settings
       picture-uri = "file:///home/zanoni/.dotfiles/resources/alter-jellyfish-dark.jpg";
       picture-uri-dark = "file:///home/zanoni/.dotfiles/resources/alter-jellyfish-dark.jpg";
       primary-color = "#000000000000";
