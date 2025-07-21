@@ -1,10 +1,10 @@
+# TODO: idk nothing about this file. remove or refactor it
 {
   pkgs,
   unstable,
   ...
 }:
 {
-  # TODO: fix this
   home.packages = with pkgs; [
     # archives
     # zip
