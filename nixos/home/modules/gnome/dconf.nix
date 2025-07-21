@@ -18,6 +18,7 @@ in
 
     "org/gnome/desktop/interface" = {
       font-hinting = "slight";
+      enable-hot-corners = true;
       clock-show-weekday = true;
       gtk-theme = "Yaru-viridian-dark";
       icon-theme = "Yaru-viridian";
