@@ -24,6 +24,7 @@
     ripgrep-all
     latest.direnv
     latest.devenv
+    tree
 
     # nix formatting tools
     nixd
