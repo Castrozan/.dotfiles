@@ -9,7 +9,6 @@ in
   imports = [
     ./scripts
     ./pkgs.nix
-    ./unstable-pkgs.nix
     ../../nixos/modules/virtualization.nix
     ../../nixos/modules/fonts.nix
     ../../nixos/modules/input-pkgs.nix
