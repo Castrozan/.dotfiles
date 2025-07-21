@@ -14,6 +14,7 @@
   home.packages = with pkgs; [
     git
     xclip
+    delta
     curl
     zip
     unzip
