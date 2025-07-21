@@ -2,8 +2,11 @@
   description = "not A very basic flake";
 
   inputs = {
+    # For stable packages
     nixpkgs.url = "github:nixos/nixpkgs/nixos-25.05";
+    # For packages not yet in nixpkgs
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
+    # For latest bleeding edge packages - daily* updated
     nixpkgs-latest.url = "github:nixos/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
     home-manager.url = "github:nix-community/home-manager/release-25.05";
@@ -69,7 +72,7 @@
               ./hosts/dellg15
               ./users/${username}/nixos.nix
               home-manager.nixosModules.home-manager
-              (import ./users/${username}/nixos-home.nix)
+              (import ./users/${username}/nixos-home-config.nix)
               determinate.nixosModules.default
             ];
           };
