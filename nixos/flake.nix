@@ -79,7 +79,7 @@
           };
         };
 
-      # homeConfigurations.${username}@${system} is a stanalone home manager configuration
+      # homeConfigurations.${username}@${system} is a standalone home manager configuration
       # nix run home-manager/master -- --flake $HOME/.dotfiles/nix-home-ubuntu#lucas.zanoni@x86_64-linux switch -b backup
       homeConfigurations =
         let
