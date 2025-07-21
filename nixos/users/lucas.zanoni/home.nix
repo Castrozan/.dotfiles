@@ -5,7 +5,7 @@
     ./pkgs.nix
 
     # ../../home/hyprland
-    # ../../home/gnome
+    ../../home/modules/gnome
     ../../home/modules/kitty.nix
     ../../home/modules/tmux.nix
     ../../home/modules/lazygit.nix
