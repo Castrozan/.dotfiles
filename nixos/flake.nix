@@ -83,14 +83,15 @@
       homeConfigurations =
         let
           username = "lucas.zanoni";
+          specialArgs = specialArgsBase // {
+            inherit username;
+          };
         in
         {
           "${username}@${system}" = home-manager.lib.homeManagerConfiguration {
             inherit pkgs;
 
-            extraSpecialArgs = specialArgsBase // {
-              inherit username;
-            };
+            extraSpecialArgs = specialArgs;
 
             modules = [ ./users/${username}/home.nix ];
           };
