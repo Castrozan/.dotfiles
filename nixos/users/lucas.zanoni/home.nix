@@ -3,7 +3,7 @@
     ../../home/core.nix
     ./pkgs.nix
 
-    ../../home/modules/gnome
+    ../../home/modules/gnome/dconf.nix
     ../../home/modules/neovim.nix
     ../../home/modules/kitty.nix
     ../../home/modules/tmux.nix

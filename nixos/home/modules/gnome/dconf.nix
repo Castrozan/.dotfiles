@@ -17,7 +17,10 @@ in
     };
 
     "org/gnome/desktop/interface" = {
-      gtk-theme = "Adwaita-dark";
+      font-hinting = "slight";
+      clock-show-weekday = true;
+      gtk-theme = "Yaru-viridian-dark";
+      icon-theme = "Yaru-viridian";
       color-scheme = "prefer-dark";
       cursor-theme = "Adwaita";
       cursor-size = 24;
