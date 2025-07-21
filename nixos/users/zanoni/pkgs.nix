@@ -1,7 +1,31 @@
-{ pkgs, ... }:
+{
+  pkgs,
+  unstable,
+  latest,
+  ...
+}:
 {
   # List of pkgs installed from nixpkgs. To search, run: nix search wget
   environment.systemPackages = with pkgs; [
+    unstable.cargo
+    unstable.rustc
+    unstable.SDL2
+    unstable.alsa-lib.dev
+    unstable.pkg-config
+    unstable.supabase-cli
+
+    # formatting nix
+    unstable.nixfmt-rfc-style
+
+    # Tools
+    unstable.clipse
+
+    # Applications
+    unstable.brave
+    latest.code-cursor
+    latest.devenv
+    latest.direnv
+
     # TCC tools
     gdrive3
     #pandoc_3_5
