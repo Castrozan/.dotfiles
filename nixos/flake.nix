@@ -10,14 +10,10 @@
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
     determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
 
-    catppuccin-bat = {
-      url = "github:catppuccin/bat";
-      flake = false;
-    };
-    codex-flake = {
-      url = "github:castrozan/codex-flake";
-      inputs.flake-utils.follows = "flake-utils";
-    };
+    catppuccin-bat.url = "github:catppuccin/bat";
+    catppuccin-bat.flake = false;
+    codex-flake.url = "github:castrozan/codex-flake";
+    codex-flake.inputs.flake-utils.follows = "flake-utils";
   };
 
   outputs =
@@ -55,8 +51,8 @@
       };
     in
     {
-      # nixosConfigurations.zanoni is a NixOS system configuration that
-      # can be instantiated with: nixos-rebuild switch --flake ~/.dotfiles/nixos#zanoni
+      # nixosConfigurations.${username} is a NixOS system configuration
+      # nixos-rebuild switch --flake ~/.dotfiles/nixos#${username}
       nixosConfigurations =
         let
           username = "zanoni";
@@ -80,7 +76,7 @@
         };
 
       # homeConfigurations.${username}@${system} is a standalone home manager configuration
-      # nix run home-manager/master -- --flake $HOME/.dotfiles/nix-home-ubuntu#lucas.zanoni@x86_64-linux switch -b backup
+      # nix run home-manager/master -- --flake $HOME/.dotfiles/nixos#${username}@${system} switch -b backup
       homeConfigurations =
         let
           username = "lucas.zanoni";
