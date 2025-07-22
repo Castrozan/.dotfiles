@@ -1,6 +1,7 @@
 {
   imports = [
     ../../home/core.nix
+
     ./pkgs.nix
     ./scripts
 
