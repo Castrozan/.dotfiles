@@ -1,16 +1,10 @@
 {
+  # Dependecy injection
   pkgs,
   latest,
   ...
 }:
 {
-
-  imports = [
-    ../../home/modules/dooit.nix
-    ../../home/modules/pipx.nix
-    ../../home/modules/sdkman.nix
-  ];
-
   home.packages = with pkgs; [
     git
     xclip
