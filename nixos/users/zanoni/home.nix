@@ -3,12 +3,13 @@
   imports = [
     ../../home/core.nix
 
+    ./home/git.nix
+
     ../../home/modules/hyprland
     ../../home/modules/gnome
     ../../home/modules/kitty.nix
     ../../home/modules/vscode
     ../../home/modules/common.nix
-    ../../home/modules/git.nix
     ../../home/modules/bash.nix
     ../../home/modules/pkgs.nix
     ../../home/modules/neovim.nix

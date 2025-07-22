@@ -3,6 +3,8 @@
     ../../home/core.nix
     ./pkgs.nix
 
+    ./home/git.nix
+
     ../../home/modules/neovim.nix
     ../../home/modules/kitty.nix
     ../../home/modules/tmux.nix
