@@ -6,6 +6,22 @@
 }:
 {
   home.packages = with pkgs; [
+    cbonsai
+    clipse
+    flameshot
+    fzf
+    gh
+    neofetch
+    nix
+    nodejs
+    obsidian
+    pipes
+    vim
+    yazi
+    zoxide
+    zsh
+    bash-completion
+    bat
     git
     xclip
     delta
