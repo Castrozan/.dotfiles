@@ -1,0 +1,170 @@
+#!/usr/bin/env bash
+
+# Git User Toggle Script
+# Toggles between work and personal git user configurations for the current repository
+
+set -euo pipefail
+
+# User configurations
+WORK_NAME="Lucas de Castro Zanoni"
+WORK_EMAIL="lucas.zanoni@betha.com.br"
+
+PERSONAL_NAME="Castrozan"
+PERSONAL_EMAIL="castro.lucas290@gmail.com"
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Helper functions
+print_info() {
+    echo -e "${BLUE}ℹ${NC} $1"
+}
+
+print_success() {
+    echo -e "${GREEN}✓${NC} $1"
+}
+
+print_warning() {
+    echo -e "${YELLOW}⚠${NC} $1"
+}
+
+print_error() {
+    echo -e "${RED}✗${NC} $1"
+}
+
+# Check if we're in a git repository
+check_git_repo() {
+    if ! git rev-parse --git-dir > /dev/null 2>&1; then
+        print_error "Not in a git repository!"
+        exit 1
+    fi
+}
+
+# Get current local git user configuration
+get_current_user() {
+    local current_name=$(git config --local user.name 2>/dev/null || echo "")
+    local current_email=$(git config --local user.email 2>/dev/null || echo "")
+    
+    if [[ -z "$current_name" || -z "$current_email" ]]; then
+        # Fall back to global config if local is not set
+        current_name=$(git config --global user.name 2>/dev/null || echo "Unknown")
+        current_email=$(git config --global user.email 2>/dev/null || echo "unknown@example.com")
+        echo "GLOBAL|$current_name|$current_email"
+    else
+        echo "LOCAL|$current_name|$current_email"
+    fi
+}
+
+# Set git user configuration locally
+set_user() {
+    local name="$1"
+    local email="$2"
+    
+    git config --local user.name "$name"
+    git config --local user.email "$email"
+}
+
+# Determine which user to switch to
+determine_target_user() {
+    local current_info=$(get_current_user)
+    local config_level=$(echo "$current_info" | cut -d'|' -f1)
+    local current_email=$(echo "$current_info" | cut -d'|' -f3)
+    
+    if [[ "$current_email" == "$WORK_EMAIL" ]]; then
+        echo "PERSONAL|$PERSONAL_NAME|$PERSONAL_EMAIL"
+    elif [[ "$current_email" == "$PERSONAL_EMAIL" ]]; then
+        echo "WORK|$WORK_NAME|$WORK_EMAIL"
+    else
+        # Default to personal if current user is neither work nor personal
+        print_warning "Current user not recognized, defaulting to personal account"
+        echo "PERSONAL|$PERSONAL_NAME|$PERSONAL_EMAIL"
+    fi
+}
+
+# Show current status
+show_status() {
+    local current_info=$(get_current_user)
+    local config_level=$(echo "$current_info" | cut -d'|' -f1)
+    local current_name=$(echo "$current_info" | cut -d'|' -f2)
+    local current_email=$(echo "$current_info" | cut -d'|' -f3)
+    
+    echo
+    print_info "Current git user configuration ($config_level):"
+    echo "  Name:  $current_name"
+    echo "  Email: $current_email"
+    echo
+}
+
+# Main function
+main() {
+    local show_status_only=false
+    
+    # Parse arguments
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            -s|--status)
+                show_status_only=true
+                shift
+                ;;
+            -h|--help)
+                echo "Usage: git-toggle-user [OPTIONS]"
+                echo ""
+                echo "Toggle between work and personal git user configurations for the current repository."
+                echo ""
+                echo "Options:"
+                echo "  -s, --status    Show current git user configuration"
+                echo "  -h, --help      Show this help message"
+                echo ""
+                echo "User configurations:"
+                echo "  Work:     $WORK_NAME <$WORK_EMAIL>"
+                echo "  Personal: $PERSONAL_NAME <$PERSONAL_EMAIL>"
+                exit 0
+                ;;
+            *)
+                print_error "Unknown option: $1"
+                echo "Use --help for usage information."
+                exit 1
+                ;;
+        esac
+    done
+    
+    check_git_repo
+    
+    if [[ "$show_status_only" == true ]]; then
+        show_status
+        exit 0
+    fi
+    
+    # Show current status
+    show_status
+    
+    # Determine target user
+    local target_info=$(determine_target_user)
+    local target_type=$(echo "$target_info" | cut -d'|' -f1)
+    local target_name=$(echo "$target_info" | cut -d'|' -f2)
+    local target_email=$(echo "$target_info" | cut -d'|' -f3)
+    
+    # Set new user configuration
+    set_user "$target_name" "$target_email"
+    
+    # Confirm the change
+    print_success "Switched to $target_type account:"
+    echo "  Name:  $target_name"
+    echo "  Email: $target_email"
+    echo
+    print_info "This configuration is set locally for this repository only."
+    
+    # Show reminder about existing commits
+    local commit_count=$(git rev-list --count HEAD 2>/dev/null || echo "0")
+    if [[ "$commit_count" != "0" ]]; then
+        echo
+        print_warning "Note: This change only affects future commits."
+        print_warning "Existing commits will keep their original author information."
+    fi
+}
+
+main "$@" 
