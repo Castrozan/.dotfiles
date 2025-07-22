@@ -1,8 +1,17 @@
+# TODO: migrate this to nix
 [core]
-	pager = less -F -X
-	hooksPath = /home/lucas.zanoni/.git_books
-[user]
-	name = Lucas de Castro Zanoni
-	email = lucas.zanoni@betha.com.br
+  pager = delta --paging=never --detect-dark-light always
+	hooksPath = ~/.git_books
 [alias]
-	fzf = !/home/lucas.zanoni/.dotfiles/bin/git_fzf.sh
+	fzf = !~/.dotfiles/bin/git_fzf.sh
+[interactive]
+  diffFilter = delta --color-only --paging=never --detect-dark-light always
+[delta]
+  navigate = false
+  line-numbers = true
+  syntax-theme = Monokai Extended
+  dark = true 
+[diff]
+  # https://github.com/dandavison/delta/issues/543
+  # TODO: this context config is not working on lazygit
+  context = 5
