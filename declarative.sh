@@ -43,6 +43,7 @@ PACKAGES=(
 SCRIPTS=(
     daily_note
     git_fzf
+    git-toggle-user
     killport
     on
     rebuild
