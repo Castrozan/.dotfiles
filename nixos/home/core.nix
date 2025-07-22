@@ -1,4 +1,4 @@
-{ username, home-version, ... }:
+{ username, home-version, ... }: # Dependecy injection
 {
   home.username = username;
   home.homeDirectory = "/home/${username}";
