@@ -2,25 +2,12 @@
 
 # Function for cbonsai
 bonsai() {
-    if grep -q "ID=nixos" /etc/os-release; then
-        # NixOS case
-        cbonsai "$@"
-    else
-        # Ubuntu case
-        "$HOME/repo/cbonsai/cbonsai" "$@"
-    fi
+    cbonsai "$@"
 }
 
 # Function for pipes.sh
-# shellcheck disable=SC2120
 pipes() {
-    if grep -q "ID=nixos" /etc/os-release; then
-        # NixOS case
-        pipes.sh "$@"
-    else
-        # Ubuntu case
-        "$HOME/repo/pipes.sh/pipes.sh" "$@"
-    fi
+    pipes.sh "$@"
 }
 
 # Function for pipes as screensaver
