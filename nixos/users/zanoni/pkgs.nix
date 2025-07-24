@@ -131,4 +131,19 @@
     jq
     neofetch
   ];
+  # ] ++ (with latest; [
+  #   claude-code
+  #   code-cursor
+  #   devenv
+  #   direnv
+  #   gemini-cli
+  #   vscode
+  # ]) ++ (with unstable; [
+  #   cargo
+  #   rustc
+  #   SDL2
+  #   alsa-lib.dev
+  #   pkg-config
+  #   supabase-cli
+  # ]);
 }
