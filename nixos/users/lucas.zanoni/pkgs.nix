@@ -47,6 +47,7 @@
     postman
     redisinsight
     lens
+    latest.vscode
     latest.code-cursor
     latest.claude-code
     latest.gemini-cli
