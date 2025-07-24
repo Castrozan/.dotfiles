@@ -6,50 +6,46 @@
 }:
 {
   home.packages = with pkgs; [
+    alejandra
+    bash-completion
+    bat
+    brave
     cbonsai
+    latest.claude-code
     clipse
+    latest.code-cursor
+    curl
+    delta
+    latest.devenv
+    latest.direnv
     flameshot
     fzf
+    latest.gemini-cli
     gh
+    git
+    gnutar
+    insomnia
+    lazydocker
+    lens
     neofetch
     nix
+    nixd
+    nixfmt-rfc-style
     nodejs
     obsidian
     pipes
-    vim
-    yazi
-    zoxide
-    zsh
-    bash-completion
-    bat
-    git
-    xclip
-    delta
-    curl
-    zip
-    unzip
-    gnutar
-    curl
-    lazydocker
-    ripgrep-all
-    latest.direnv
-    latest.devenv
-    tree
-
-    # nix formatting tools
-    nixd
-    nixfmt-rfc-style
-    alejandra
-
-    brave
-    insomnia
-    uv
     postman
     redisinsight
-    lens
+    ripgrep-all
+    tree
+    unzip
+    uv
+    vim
     latest.vscode
-    latest.code-cursor
-    latest.claude-code
-    latest.gemini-cli
+    xclip
+    yazi
+    zip
+    zoxide
+    zsh
   ];
 }
