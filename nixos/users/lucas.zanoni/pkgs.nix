@@ -5,47 +5,52 @@
   ...
 }:
 {
-  home.packages = with pkgs; [
-    alejandra
-    bash-completion
-    bat
-    brave
-    cbonsai
-    latest.claude-code
-    clipse
-    latest.code-cursor
-    curl
-    delta
-    latest.devenv
-    latest.direnv
-    flameshot
-    fzf
-    latest.gemini-cli
-    gh
-    git
-    gnutar
-    insomnia
-    lazydocker
-    lens
-    neofetch
-    nix
-    nixd
-    nixfmt-rfc-style
-    nodejs
-    obsidian
-    pipes
-    postman
-    redisinsight
-    ripgrep-all
-    tree
-    unzip
-    uv
-    vim
-    latest.vscode
-    xclip
-    yazi
-    zip
-    zoxide
-    zsh
-  ];
+  home.packages =
+    with pkgs;
+    [
+      alejandra
+      bash-completion
+      bat
+      brave
+      cbonsai
+      clipse
+      curl
+      delta
+      flameshot
+      fzf
+      gh
+      git
+      gnutar
+      insomnia
+      lazydocker
+      lens
+      neofetch
+      nix
+      nixd
+      nixfmt-rfc-style
+      nodejs
+      obsidian
+      pipes
+      postman
+      redisinsight
+      ripgrep-all
+      tree
+      unzip
+      uv
+      vim
+      xclip
+      yazi
+      zip
+      zoxide
+      zsh
+    ]
+    # Appending to list
+    ++ (with latest; [
+      claude-code
+      code-cursor
+      devenv
+      direnv
+      gemini-cli
+      vscode
+    ]);
 }
