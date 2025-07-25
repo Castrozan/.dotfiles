@@ -52,7 +52,7 @@
       code-cursor
       devenv
       direnv
-      gemini-cli
+      # gemini-cli TODO: fix gemini-cli, im using the npm version for now
       vscode
     ]);
 }
