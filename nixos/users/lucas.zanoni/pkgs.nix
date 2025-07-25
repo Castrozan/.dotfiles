@@ -23,7 +23,7 @@
       gnutar
       insomnia
       lazydocker
-      lens
+      # lens TODO: fix lens, im using the snap version for now
       neofetch
       nix
       nixd
