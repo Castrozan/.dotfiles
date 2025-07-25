@@ -19,6 +19,7 @@ alias game-shift='sudo game-shift'
 alias grep='grep --color=auto'
 alias i='idea'
 alias idea='idea . > /dev/null 2>&1 &'
+alias k='k9s'
 alias kc="nvim ~/.config/kitty/kitty.conf"
 alias l='ls -CF'
 alias la='ls -A'
