@@ -115,6 +115,7 @@
       neofetch
     ]
     ++ (with unstable; [
+      brave
       cargo
       rustc
       SDL2
