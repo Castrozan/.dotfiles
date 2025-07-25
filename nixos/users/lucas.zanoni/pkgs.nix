@@ -40,6 +40,7 @@
       uv
       vim
       xclip
+      yamllint
       yazi
       zip
       zoxide
