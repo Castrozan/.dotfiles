@@ -8,6 +8,7 @@ if [ -f /etc/os-release ]; then
         sudo nixos-rebuild switch --flake $HOME/.dotfiles/nixos#"$(whoami)"
     else
         # Not nixos
-        nix run home-manager/master -- --flake $HOME/.dotfiles/nixos#lucas.zanoni@x86_64-linux switch -b backup
+        nix run home-manager/master -- --flake $HOME/.dotfiles/nixos#lucas.zanoni@x86_64-linux switch \
+            -b "backup-$(date +%Y-%m-%d-%H-%M-%S)"
     fi
 fi 
