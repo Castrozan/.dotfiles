@@ -117,6 +117,7 @@
     ++ (with unstable; [
       brave
       cargo
+      gcc
       rustc
       SDL2
       alsa-lib.dev
