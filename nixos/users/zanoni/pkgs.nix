@@ -119,6 +119,8 @@
       cargo
       gcc
       rustc
+      openssl.dev
+      openssl
       SDL2
       alsa-lib.dev
       pkg-config
