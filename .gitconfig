@@ -1,7 +1,7 @@
 # TODO: migrate this to nix
 [core]
   pager = delta --paging=never --detect-dark-light always
-	hooksPath = ~/.git_books
+	hooksPath = ~/.githooks
 [alias]
 	fzf = !~/.dotfiles/bin/git_fzf.sh
 [interactive]
