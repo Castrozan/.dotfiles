@@ -25,4 +25,9 @@ in
         email = ${userEmail}
     '';
   };
+
+  home.file.".githooks/commit-msg" = {
+    source = ../../../../.githooks/dotfiles-user-commit.sh;
+    executable = true;
+  };
 }
