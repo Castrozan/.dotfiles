@@ -39,6 +39,7 @@
       unzip
       uv
       vim
+      wl-clipboard
       xclip
       yamllint
       yazi
