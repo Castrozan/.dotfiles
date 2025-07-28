@@ -16,6 +16,7 @@
       clipse
       curl
       delta
+      docker-compose
       flameshot
       fzf
       gh
