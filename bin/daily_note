@@ -148,10 +148,10 @@ _open_daily_note() {
     if [[ "$EDITOR" == "code" || "$EDITOR" == "cursor" ]]; then
         # Check if the editor is VS Code
         # code "$OBSIDIAN_HOME" "-g" "$fullpath" will open the note
-        "$EDITOR" "$OBSIDIAN_HOME" "-g" "$fullpath"
+        "$EDITOR" "$OBSIDIAN_HOME" "-g" "$fullpath" >/dev/null 2>&1 & disown
     else
         # For other editors (vim, nvim, nano, etc.)
-        "$EDITOR" "$fullpath"
+        "$EDITOR" "$fullpath" >/dev/null 2>&1 & disown
     fi
 }
 
