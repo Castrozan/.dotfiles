@@ -119,6 +119,7 @@
       cargo
       gcc
       rustc
+      rustPlatform.rustcSrc
       openssl.dev
       openssl
       SDL2
