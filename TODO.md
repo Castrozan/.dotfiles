@@ -16,7 +16,8 @@
   - [ ] create a home-manager ci
   - [ ] Config Ci to run quickly (maybe set only some scripts to run)
   - [ ] Remove not used configs from rayan's config
-  - [ ] Zsh
+  - [ ] Fish
+  - [ ] Tmux cpu is not working
 
 - Hyprland
   - [ ] Config top bar
