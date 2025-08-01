@@ -17,5 +17,6 @@ source ~/.dotfiles/shell/configs/fish/conf.d/key_bindings.fish
 source ~/.dotfiles/shell/configs/fish/functions/fish_prompt.fish
 source ~/.dotfiles/shell/configs/fish/functions/screensaver.fish
 source ~/.dotfiles/shell/configs/fish/functions/cursor.fish
+source ~/.dotfiles/shell/configs/fish/functions/sdk.fish
 
 zoxide init fish | source
