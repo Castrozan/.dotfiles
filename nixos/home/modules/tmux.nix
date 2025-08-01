@@ -19,6 +19,7 @@ in
   programs.tmux = {
     enable = true;
     clock24 = false;
+    shell = "${pkgs.fish}/bin/fish";
     plugins = [
       pkgs.tmuxPlugins.sensible
       pkgs.tmuxPlugins.yank
