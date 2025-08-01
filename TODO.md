@@ -2,6 +2,7 @@
 # TODO
 
 - Config
+  - [ ] Rice the config with quickshell https://github.com/caelestia-dots/shell
   - [x] Add tmux tpm plugins
     - [x] Remove tmp plugin folder on local ci
   - [ ] Add more lsp servers for nvim (lua, python, etc)
