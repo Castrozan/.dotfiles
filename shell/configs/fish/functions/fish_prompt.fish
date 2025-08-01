@@ -1,6 +1,6 @@
 function fish_prompt
   set_color green
-  printf '%s ' (whoami)
+  printf ' %s ' (whoami)
   set_color blue
   printf '%s' (prompt_pwd)
   set_color yellow
