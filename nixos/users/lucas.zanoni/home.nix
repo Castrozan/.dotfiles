@@ -9,6 +9,7 @@
 
     ../../home/modules/neovim.nix
     ../../home/modules/kitty.nix
+    ../../home/modules/fish.nix
     ../../home/modules/tmux.nix
     ../../home/modules/lazygit.nix
     ../../home/modules/dooit.nix
