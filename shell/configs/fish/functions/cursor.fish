@@ -1,15 +1,13 @@
-#!/usr/bin/env bash
-
 # Functions for cursor - allows parameters and runs detached
-cursor() {
-    command cursor "$@" > /dev/null 2>&1 &
-}
+function cursor
+    command cursor $argv > /dev/null 2>&1 &
+end
 
 # Function for cu - defaults to current directory if no params, otherwise passes all params
-cu() {
-    if [ $# -eq 0 ]; then
-        cursor .
+function cu
+    if count $argv > /dev/null
+        cursor $argv
     else
-        cursor "$@"
-    fi
-}
+        cursor .
+    end
+end
