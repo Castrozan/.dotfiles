@@ -1,13 +1,19 @@
 { pkgs, ... }:
+let
+  shellInit = builtins.readFile ../../../shell/configs/fish/config.fish;
+in
 {
+  home.packages = with pkgs; [
+    fishPlugins.bass # For running bash scripts in fish
+    fishPlugins.fzf-fish
+  ];
+
   programs.fish = {
     enable = true;
     package = pkgs.fish;
-    extraConfig = builtins.readFile ../../../shell/configs/fish/config.fish;
+    interactiveShellInit = ''${shellInit}'';
   };
 
-  # Link the new fish config files to the correct location
-  # home.file.".config/fish/config.fish".source is not needed due to extraConfig
   home.file.".config/fish/bass_env.fish".source = ../../../shell/configs/fish/bass_env.fish;
   home.file.".config/fish/conf.d/tmux.fish".source = ../../../shell/configs/fish/conf.d/tmux.fish;
   home.file.".config/fish/conf.d/fzf.fish".source = ../../../shell/configs/fish/conf.d/fzf.fish;
