@@ -1,14 +1,12 @@
-#!/usr/bin/env bash
 # TODO: this should not be done in the shell
-
-if [ ! -d "$HOME/repo" ]; then
+if test ! -d "$HOME/repo"
     mkdir -p "$HOME/repo"
-fi
+end
 
-if [ ! -d "$HOME/repo/satc" ]; then
+if test ! -d "$HOME/repo/satc"
     mkdir -p "$HOME/repo/satc"
-fi
+end
 
-if [ ! -d "$HOME/.local/share/fonts" ]; then
+if test ! -d "$HOME/.local/share/fonts"
     mkdir -p "$HOME/.local/share/fonts"
-fi
+end
