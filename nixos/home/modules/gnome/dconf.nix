@@ -43,7 +43,7 @@ in
     };
 
     "org/gnome/shell/extensions/default-workspace" = {
-      default-workspace-number = 12;
+      default-workspace-number = 11;
     };
 
     "org/gnome/shell/extensions/wsmatrix" = {
