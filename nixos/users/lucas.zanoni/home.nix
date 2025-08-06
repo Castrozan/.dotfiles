@@ -17,5 +17,6 @@
     ../../home/modules/pipx.nix
     ../../home/modules/sdkman.nix
     ../../home/modules/gnome/dconf.nix
+    ../../home/modules/flameshot.nix
   ];
 }
