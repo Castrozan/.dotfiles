@@ -6,7 +6,7 @@
 # Test if Cursor is installed
 cursor_test() {
     if is_desktop_environment; then
-        if [ ! -f "$HOME/.local/bin/cursor" ]; then
+        if ! which cursor; then
             print "Cursor is not installed." "$_RED"
             exit 1
         else
