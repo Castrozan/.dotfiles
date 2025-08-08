@@ -28,6 +28,7 @@
   - [ ] Fish for zanoni
   - [ ] zsh?
   - [ ] Tmux cpu is not working
+  - [ ] Fix formatting for nix
 
 - Hyprland
   - [ ] Config better top bar
