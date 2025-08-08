@@ -9,18 +9,28 @@
     - [ ] remove Mason
   - [ ] Configure nerd fonts for terminal
     - [ ] Jetbrains mono nerd fonts
+  - [ ] Config Fira code font for lucas.zanoni
   - [ ] Remove scripts framework
-  - [ ] Migrate to zsh
+    - [x] Remove pkgs
+    - [ ] Remove src
+    - [ ] Remove configs
+    - [ ] Remove Makefile
+    - [x] Remove install.sh
+    - [x] Remove test.sh
+    - [x] Remove declarative.sh
   - [ ] Update README
-  - [ ] create a nixos ci
-  - [ ] create a home-manager ci
-  - [ ] Config Ci to run quickly (maybe set only some scripts to run)
+  - [ ] .inputrc
+  - [ ] Tests
+    - [ ] Config Ci
+      - [ ] create a nixos ci
+      - [ ] create a home-manager ci
   - [ ] Remove not used configs from rayan's config
-  - [ ] Fish
+  - [ ] Fish for zanoni
+  - [ ] zsh?
   - [ ] Tmux cpu is not working
 
 - Hyprland
-  - [ ] Config top bar
+  - [ ] Config better top bar
   - [x] Config dmenu
   - [ ] Show workspaces on bar
   - [ ] Config audio selections

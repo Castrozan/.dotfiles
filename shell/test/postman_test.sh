@@ -5,7 +5,7 @@
 
 # Test if Postman is installed
 postman_test() {
-    if ! snap list | grep -q "postman"; then
+    if ! which postman; then
         print "Postman is not installed." "$_RED"
         exit 1
     else

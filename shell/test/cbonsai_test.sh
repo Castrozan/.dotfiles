@@ -5,11 +5,11 @@
 # Test if cbonsai is installed
 cbonsai_test() {
 
-    if [ -d "$HOME/repo/cbonsai" ]; then
-        print "Cbonsai is installed." "$_GREEN"
-    else
+    if ! which cbonsai; then
         print "Cbonsai is not installed." "$_RED"
         exit 1
+    else
+        print "Cbonsai is installed." "$_GREEN"
     fi
 }
 

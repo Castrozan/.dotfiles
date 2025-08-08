@@ -7,8 +7,7 @@
 obsidian_test() {
 
     if is_desktop_environment; then
-        if ! is_installed obsidian &&
-            ! flatpak list --app | grep md.obsidian.Obsidian; then
+        if ! which obsidian; then
             print "Obsidian is not installed." "$_RED"
             exit 1
         else

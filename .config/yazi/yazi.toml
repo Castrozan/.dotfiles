@@ -1,6 +1,6 @@
 # yazi.toml
 
-[manager]
+[mgr]
 show_hidden = true
 ratio = [2, 4, 3]
 show_symlink = true

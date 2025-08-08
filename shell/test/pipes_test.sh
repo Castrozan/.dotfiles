@@ -5,11 +5,11 @@
 # Test if pipes is installed
 pipes_test() {
 
-    if [ -d "$HOME/repo/pipes.sh" ]; then
-        print "Pipes.sh is installed." "$_GREEN"
-    else
+    if ! which pipes.sh; then
         print "Pipes.sh is not installed." "$_RED"
         exit 1
+    else
+        print "Pipes.sh is installed." "$_GREEN"
     fi
 }
 

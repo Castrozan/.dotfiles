@@ -5,7 +5,7 @@
 # Test if clipse is installed
 clipse_test() {
 
-    if ! clipse -v; then
+    if ! which clipse; then
         print "Clipse is not installed." "$_RED"
         exit 1
     else
@@ -14,5 +14,4 @@ clipse_test() {
 }
 
 # Run the test
-# clipse_test
-print "TODO: fix clipse install. Nix install is a dependency and needs fix" "$_RED"
+clipse_test
