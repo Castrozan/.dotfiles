@@ -1,0 +1,19 @@
+{
+    "nix.serverPath": "nixd",
+    "nix.enableLanguageServer": true,
+    "nix.serverSettings": {
+        "nixd": {
+            "formatting": {
+                "command": [
+                    "nixfmt"
+                ]
+            }
+        }
+    },
+    "[nix]": {
+        "editor.defaultFormatter": "jnoortheen.nix-ide",
+        "editor.insertSpaces": true,
+        "editor.tabSize": 4,
+        "editor.useTabStops": true
+    },
+}
