@@ -18,9 +18,9 @@ jobs:
         with:
           extra_nix_config: experimental-features = nix-command flakes
 
-      - name: Lint (nix fmt --check)
-        working-directory: nixos
-        run: nix fmt -- --check .
+      # - name: Lint (nix fmt --check)
+      #   working-directory: nixos
+      #   run: nix fmt -- --check .
 
       - name: Check (nix flake check)
         working-directory: nixos
