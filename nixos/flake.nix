@@ -107,5 +107,11 @@
             ];
           };
         };
+      formatter.${system} = pkgs.alejandra;
+
+      checks.${system} = {
+        build-nixos-zanoni = self.nixosConfigurations.zanoni.config.system.build.toplevel;
+        build-home-lucas = self.homeConfigurations."lucas.zanoni@${system}".activationPackage;
+      };
     };
 }

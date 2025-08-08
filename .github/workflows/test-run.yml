@@ -1,44 +1,35 @@
-name: Test run
+name: Nix CI
 
 on:
   push:
-    branches:
-      - main
+    branches: [main, feature*]
   pull_request:
-    branches:
-      - main
+    branches: [main, feature*]
 
 jobs:
-  install-dotfiles:
+  nix:
     runs-on: ubuntu-latest
-
-    container:
-      image: ubuntu:latest
-
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - name: Set up environment
-      run: |
-        apt-get update
+      - name: Install Nix
+        uses: cachix/install-nix-action@v27
+        with:
+          extra_nix_config: experimental-features = nix-command flakes
 
-    - name: Run install script
-      run: |
-        yes | bash install.sh
+      - name: Lint (nix fmt --check)
+        working-directory: nixos
+        run: nix fmt -- --check .
 
-    - name: Test install script
-      run: |
-        echo .bashrc >$HOME/.bashrc
-        yes | bash install.sh
-        bash --rcfile .bashrc test.sh
+      - name: Check (nix flake check)
+        working-directory: nixos
+        run: nix flake check -L --keep-going
 
-    # - name: Test dotfiles
-    #   run: |
-    #     # TODO: Test the configuration of the dotfiles
-    #     # not the installation
-    #     # e.g. test that an alias is working as expected
+      - name: Build NixOS toplevel
+        working-directory: nixos
+        run: nix build -L .#nixosConfigurations.zanoni.config.system.build.toplevel
 
-    # - name: Test stow ignore
-    #   run: |
-    #     # TODO: Test that the stow ignore file is working as expected
+      - name: Build Home Manager activationPackage
+        working-directory: nixos
+        run: nix build -L ".#homeConfigurations.lucas.zanoni@x86_64-linux.activationPackage"
