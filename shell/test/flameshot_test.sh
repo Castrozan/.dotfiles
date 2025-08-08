@@ -6,7 +6,7 @@
 flameshot_test() {
 
     if is_desktop_environment; then
-        if ! is_installed flameshot; then
+        if ! which flameshot; then
             print "Flameshot is not installed." "$_RED"
             exit 1
         else
