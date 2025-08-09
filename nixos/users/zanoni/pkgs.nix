@@ -130,6 +130,7 @@
     ++ (with latest; [
       claude-code
       code-cursor
+      openshot-qt
       devenv
       direnv
       gemini-cli
