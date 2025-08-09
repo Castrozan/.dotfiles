@@ -3,4 +3,6 @@ function nvm
 end
 
 set -x NVM_DIR ~/.nvm
-nvm use default --silent
+if test -d $NVM_DIR
+  nvm use default --silent ^/dev/null
+end

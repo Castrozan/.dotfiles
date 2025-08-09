@@ -23,6 +23,7 @@ in
       "networkmanager"
       "wheel"
     ];
+    shell = pkgs.fish;
   };
 
   # Global Bash configuration
@@ -34,6 +35,9 @@ in
     enable = true;
     xwayland.enable = true;
   };
+
+  # Enable fish globally so it's registered in /etc/shells and available as a login shell
+  programs.fish.enable = true;
 
   # TODO: review this. Which path configuration is better?
   # make `nix repl '<nixpkgs>'` use the same nixpkgs as the one used by this flake.
