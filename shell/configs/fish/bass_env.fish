@@ -1,6 +1,15 @@
 function __load_bash_env
-  # Source only the portable parts of .bashrc
-  bass source ~/.bashrc
+  # Source the most appropriate bashrc if available
+  set -l bashrc_path
+  if test -f ~/.bashrc
+    set bashrc_path ~/.bashrc
+  else if test -f /etc/bashrc
+    set bashrc_path /etc/bashrc
+  end
+
+  if test -n "$bashrc_path"; and type -q bass
+    bass source $bashrc_path
+  end
 
   # Manually set environment variables that don't transfer cleanly
   set -gx EDITOR cursor
@@ -10,4 +19,4 @@ function __load_bash_env
   fish_add_path $PNPM_HOME
 end
 
-__load_bash_env 
+__load_bash_env
