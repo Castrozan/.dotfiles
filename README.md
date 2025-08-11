@@ -13,13 +13,13 @@
 
 Welcome to my dotfiles! This repository contains my desktop environment setup for both **NixOS** and **Ubuntu**. It's built with Nix Flakes and Home Manager.
 
-## 🎬 Showcase: Hyprland + Bash/Fish + Kitty + Neovim 
+<!-- ## 🎬 Showcase: Hyprland + Bash/Fish + Kitty + Neovim  -->
 <!-- TODO: add desktop video showcase -->
-*(More screenshots & videos coming soon!)*
+<!-- *(More screenshots & videos coming soon!)* -->
 
-### Hyprland
+<!-- ### Hyprland -->
 <!-- TODO: add screenshots -->
-*Coming soon! Currently ricing with waybar and fuzzel*
+<!-- *Coming soon! Currently ricing with waybar and fuzzel* -->
 
 ### Kitty ᓚᘏᗢ + Tmux
 
@@ -73,10 +73,10 @@ Welcome to my dotfiles! This repository contains my desktop environment setup fo
 ├── users/               # User-specific configurations
 │   ├── lucas.zanoni/    # Home Manager standalone config (Ubuntu/non-NixOS)
 │   └── zanoni/          # Full NixOS system config
-├── flake.nix           # Nix Flakes entry point
-├── flake.lock          # Locked dependencies
-├── Makefile            # Helper commands
-└── README.md           # This file!
+├── flake.nix            # Nix Flakes entry point
+├── flake.lock           # Locked dependencies
+├── Makefile             # Helper commands
+└── README.md            # This file!
 ```
 ---
 
