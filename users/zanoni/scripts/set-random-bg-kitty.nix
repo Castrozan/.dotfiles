@@ -5,7 +5,7 @@ let
     #!/usr/bin/env bash
 
     # Directory containing background images
-    IMAGE_DIR="$HOME/.dotfiles/resources/fate"
+    IMAGE_DIR="$HOME/.dotfiles/static/fate"
 
     # Select a random image from the directory
     RANDOM_IMAGE=$(find "$IMAGE_DIR" -type f | shuf -n 1)
