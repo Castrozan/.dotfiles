@@ -1,4 +1,4 @@
-# Same as /shell/configs/daily-note.sh
+# Same as /shell/daily-note.sh
 { pkgs, ... }:
 let
   script = builtins.readFile ../../../../bin/daily_note;

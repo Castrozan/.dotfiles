@@ -237,10 +237,10 @@ if command -v clipse &>/dev/null; then
 fi
 
 # Files sourced by $HOME/.dotfiles
-. $HOME/.dotfiles/shell/configs/bash_history.sh
-. $HOME/.dotfiles/shell/configs/fzf_catppuccin_theme.sh
-. $HOME/.dotfiles/shell/configs/fzf_bash_history.sh
-. $HOME/.dotfiles/shell/configs/bash_aliases.sh
-. $HOME/.dotfiles/shell/configs/zoxide.sh
-. $HOME/.dotfiles/shell/configs/screensaver.sh
-. $HOME/.dotfiles/shell/configs/default_directories.sh
+. $HOME/.dotfiles/shell/bash_history.sh
+. $HOME/.dotfiles/shell/fzf_catppuccin_theme.sh
+. $HOME/.dotfiles/shell/fzf_bash_history.sh
+. $HOME/.dotfiles/shell/bash_aliases.sh
+. $HOME/.dotfiles/shell/zoxide.sh
+. $HOME/.dotfiles/shell/screensaver.sh
+. $HOME/.dotfiles/shell/default_directories.sh
