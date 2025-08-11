@@ -24,6 +24,7 @@ in
       pkgs.tmuxPlugins.sensible
       pkgs.tmuxPlugins.yank
       pkgs.tmuxPlugins.resurrect
+      pkgs.tmuxPlugins.cpu
       {
         plugin = catppuccinZanoni;
         extraConfig = ''
