@@ -1,4 +1,4 @@
-# TODO: move this to a module
+# TODO: review this
 { pkgs, ... }:
 {
   # Docker configuration
