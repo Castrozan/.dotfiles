@@ -1,5 +1,5 @@
 {
-  # Dependecy injection
+  # Dependency injection
   pkgs,
   latest,
   ...
