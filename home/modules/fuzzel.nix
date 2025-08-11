@@ -1,6 +1,6 @@
 { pkgs, ... }:
 {
-  home.file.".config/fuzzel".source = ../../../.config/fuzzel;
+  home.file.".config/fuzzel".source = ../../.config/fuzzel;
 
   programs.fuzzel = {
     enable = true;

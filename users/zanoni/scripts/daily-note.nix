@@ -1,7 +1,7 @@
 # Same as /shell/daily-note.sh
 { pkgs, ... }:
 let
-  script = builtins.readFile ../../../../bin/daily_note;
+  script = builtins.readFile ../../../bin/daily_note;
 in
 let
   daily-note = pkgs.writeShellScriptBin "daily-note" ''
