@@ -1,4 +1,4 @@
-# TODO: move this to a module
+# TODO: This is needed?
 { pkgs, ... }:
 {
   environment.systemPackages = with pkgs; [
