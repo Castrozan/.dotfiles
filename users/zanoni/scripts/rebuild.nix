@@ -1,6 +1,6 @@
 { pkgs, ... }:
 let
-  script = builtins.readFile ../../../../bin/rebuild;
+  script = builtins.readFile ../../../bin/rebuild;
 in
 let
   rebuild = pkgs.writeShellScriptBin "rebuild" ''

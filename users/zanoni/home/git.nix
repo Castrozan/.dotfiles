@@ -1,8 +1,8 @@
 { pkgs, ... }:
 let
-  gitconfig = builtins.readFile ../../../../.gitconfig;
-  userName = "Lucas de Castro Zanoni";
-  userEmail = "lucas.zanoni@betha.com.br";
+  gitconfig = builtins.readFile ../../../.gitconfig;
+  userName = "Castrozan";
+  userEmail = "castro.lucas290@gmail.com";
 in
 {
   home.packages = with pkgs; [
@@ -27,7 +27,7 @@ in
   };
 
   home.file.".githooks/commit-msg" = {
-    source = ../../../../.githooks/dotfiles-user-commit.sh;
+    source = ../../../.githooks/dotfiles-user-commit.sh;
     executable = true;
   };
 }

@@ -5,10 +5,10 @@ if [ -f /etc/os-release ]; then
     . /etc/os-release
     if [ "$ID" = "nixos" ]; then
         # We're on NixOS
-        sudo nixos-rebuild switch --flake $HOME/.dotfiles/nixos#"$(whoami)"
+        sudo nixos-rebuild switch --flake $HOME/.dotfiles#"$(whoami)"
     else
         # Not nixos
-        nix run home-manager/master -- --flake $HOME/.dotfiles/nixos#lucas.zanoni@x86_64-linux switch \
+        nix run home-manager/master -- --flake $HOME/.dotfiles#lucas.zanoni@x86_64-linux switch \
             -b "backup-$(date +%Y-%m-%d-%H-%M-%S)"
     fi
 fi 
