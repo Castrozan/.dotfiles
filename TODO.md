@@ -12,9 +12,9 @@
   - [ ] Config Fira code font for lucas.zanoni
   - [ ] Remove scripts framework
     - [x] Remove pkgs
-    - [ ] Remove src
+    - [x] Remove src
     - [ ] Remove configs
-    - [ ] Remove Makefile
+    - [x] Remove Makefile
     - [x] Remove install.sh
     - [x] Remove test.sh
     - [x] Remove declarative.sh
@@ -24,8 +24,8 @@
     - [ ] Config Ci
       - [ ] create a nixos ci
       - [ ] create a home-manager ci
-  - [ ] Remove not used configs from rayan's config
-  - [ ] Fish for zanoni
+  - [x] Remove not used configs from rayan's config
+  - [x] Fish for zanoni
   - [ ] zsh?
   - [ ] Tmux cpu is not working
   - [ ] Fix formatting for nix
