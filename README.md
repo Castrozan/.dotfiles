@@ -9,14 +9,9 @@
    <a href="https://nixos.org/">
       <img src="https://img.shields.io/badge/NixOS-25.05-informational.svg?style=for-the-badge&logo=nixos&color=F2CDCD&logoColor=D9E0EE&labelColor=302D41">
    </a>
-   <a href="https://github.com/ryan4yin/nixos-and-flakes-book">
-      <img src="https://img.shields.io/static/v1?label=Nix Flakes&message=learning&style=for-the-badge&logo=nixos&color=DDB6F2&logoColor=D9E0EE&labelColor=302D41">
-   </a>
 </p>
 
-Welcome to my dotfiles! This repository contains my desktop environment setup for both **NixOS** and **Ubuntu**. It's built with Nix Flakes, Home Manager, and lots of ☕. 
-
-> **Note:** *Forget everything you know about nix, this is just a framework to configure apps and dotfiles.* - Me, in the flake.nix
+Welcome to my dotfiles! This repository contains my desktop environment setup for both **NixOS** and **Ubuntu**. It's built with Nix Flakes and Home Manager.
 
 ## 🎬 Showcase: Hyprland + Bash/Fish + Kitty + Neovim 
 <!-- TODO: add desktop video showcase -->
