@@ -104,14 +104,14 @@ source $ZSH/oh-my-zsh.sh
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
 # Source bash functions and configurations for tmux management
-if [ -f ~/.dotfiles/shell/configs/screensaver.sh ]; then
-    source ~/.dotfiles/shell/configs/screensaver.sh
+if [ -f ~/.dotfiles/shell/screensaver.sh ]; then
+    source ~/.dotfiles/shell/screensaver.sh
 fi
 
 # Source additional shell configurations (similar to bashrc)
-[ -f ~/.dotfiles/shell/configs/bash_aliases.sh ] && source ~/.dotfiles/shell/configs/bash_aliases.sh
-[ -f ~/.dotfiles/shell/configs/zoxide.sh ] && source ~/.dotfiles/shell/configs/zoxide.sh
-[ -f ~/.dotfiles/shell/configs/default_directories.sh ] && source ~/.dotfiles/shell/configs/default_directories.sh
+[ -f ~/.dotfiles/shell/bash_aliases.sh ] && source ~/.dotfiles/shell/bash_aliases.sh
+[ -f ~/.dotfiles/shell/zoxide.sh ] && source ~/.dotfiles/shell/zoxide.sh
+[ -f ~/.dotfiles/shell/default_directories.sh ] && source ~/.dotfiles/shell/default_directories.sh
 
 # Function to start the first tmux session for screensaver
 _start_screensaver_tmux_session() {

@@ -13,7 +13,7 @@
   - [ ] Remove scripts framework
     - [x] Remove pkgs
     - [x] Remove src
-    - [ ] Remove configs
+    - [x] Remove configs
     - [x] Remove Makefile
     - [x] Remove install.sh
     - [x] Remove test.sh

@@ -11,7 +11,7 @@ alias cd.='cd ..'
 alias cd..='cd ..'
 alias claude-nix='NIXPKGS_ALLOW_UNFREE=1 nix run github:k3d3/claude-desktop-linux-flake --impure'
 alias code='code . -n'
-# . "$HOME/.dotfiles/shell/configs/cursor.sh"
+# . "$HOME/.dotfiles/shell/cursor.sh"
 alias d='lazydocker'
 alias dotfiles='cd ~/.dotfiles'
 alias g='lazygit'
