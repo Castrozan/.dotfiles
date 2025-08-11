@@ -1,8 +1,8 @@
 { pkgs, ... }:
 let
-  settings = builtins.readFile ../../../.config/tmux/settings.conf;
-  binds = builtins.readFile ../../../.config/tmux/binds.conf;
-  catppuccinSettings = builtins.readFile ../../../.config/tmux/catppuccin.conf;
+  settings = builtins.readFile ../../.config/tmux/settings.conf;
+  binds = builtins.readFile ../../.config/tmux/binds.conf;
+  catppuccinSettings = builtins.readFile ../../.config/tmux/catppuccin.conf;
 
   catppuccinZanoni = pkgs.tmuxPlugins.mkTmuxPlugin {
     pluginName = "catppuccin";

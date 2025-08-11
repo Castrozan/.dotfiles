@@ -1,6 +1,6 @@
 { pkgs, ... }:
 let
-  shellInit = builtins.readFile ../../../shell/fish/config.fish;
+  shellInit = builtins.readFile ../../shell/fish/config.fish;
 in
 {
   home.packages = with pkgs; [
