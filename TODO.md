@@ -10,7 +10,7 @@
   - [ ] Configure nerd fonts for terminal
     - [ ] Jetbrains mono nerd fonts
   - [ ] Config Fira code font for lucas.zanoni
-  - [ ] Remove scripts framework
+  - [x] Remove scripts framework
     - [x] Remove pkgs
     - [x] Remove src
     - [x] Remove configs
@@ -29,6 +29,7 @@
   - [ ] zsh?
   - [ ] Tmux cpu is not working
   - [ ] Fix formatting for nix
+  - [ ] Fix nix formatting on vscode
 
 - Hyprland
   - [ ] Config better top bar
