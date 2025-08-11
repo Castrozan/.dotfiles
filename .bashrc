@@ -145,10 +145,10 @@ is_wsl() {
 #    fi
 #fi
 
-# Source bash env vars config
-if [ -f ~/.bash_env_vars ]; then
-    # shellcheck source=.bash_env_vars
-    . ~/.bash_env_vars
+# Source shell env vars config
+if [ -f ~/.shell_env_vars ]; then
+    # shellcheck source=.shell_env_vars
+    . ~/.shell_env_vars
 fi
 
 # Source bash completion

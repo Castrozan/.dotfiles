@@ -1,5 +1,8 @@
 source ~/.dotfiles/shell/bash_aliases.sh
-source ~/.dotfiles/.bash_env_vars
+
+if test -f ~/.dotfiles/.shell_env_vars
+  source ~/.dotfiles/.shell_env_vars
+end
 
 alias source-shell 'source ~/.dotfiles/shell/fish/config.fish'
 
