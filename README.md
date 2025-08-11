@@ -78,10 +78,9 @@ Welcome to my dotfiles! This repository contains my desktop environment setup fo
 ├── Makefile            # Helper commands
 └── README.md           # This file!
 ```
+---
 
-## ⚙️ Quick Start
-
-Choose your adventure:
+## ⚙️ Quick Start for:
 
 <details>
 <summary>
@@ -121,6 +120,8 @@ sudo nixos-rebuild switch --flake .#your_user
 
 </details>
 
+---
+
 <details>
 <summary>
    <h2><b>🐧 Ubuntu/Non-NixOS Users</b></h2>
@@ -147,10 +148,14 @@ curl -L https://nixos.org/nix/install | sh -s -- --daemon
 # For the lucas.zanoni configuration (adjust username as needed)
 nix run home-manager/release-25.05 -- --flake .#lucas.zanoni@x86_64-linux switch -b "backup-$(date +%Y-%m-%d-%H-%M-%S)"
 ```
-
 </details>
 
-## 🏗️ Architecture Overview
+---
+
+<details>
+<summary>
+   <h2><b>🏗️ Architecture Overview</b></h2>
+</summary>
 
 Here's how everything fits together:
 
@@ -199,6 +204,10 @@ graph TD
     style Nixpkgs fill:#f9e2af,color:#1e1e2e
     style HM fill:#cba6f7,color:#1e1e2e
 ```
+
+</details>
+
+---
 
 ## 🔗 Inspiration & Credits
 
