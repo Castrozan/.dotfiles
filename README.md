@@ -7,40 +7,43 @@
 <p align="center">
    <img alt="Stargazers" src="https://img.shields.io/github/stars/castrozan/.dotfiles?style=for-the-badge&logo=starship&color=C9CBFF&logoColor=D9E0EE&labelColor=302D41">
    <a href="https://nixos.org/">
-      <img src="https://img.shields.io/badge/NixOS-24.11-informational.svg?style=for-the-badge&logo=nixos&color=F2CDCD&logoColor=D9E0EE&labelColor=302D41">
+      <img src="https://img.shields.io/badge/NixOS-25.05-informational.svg?style=for-the-badge&logo=nixos&color=F2CDCD&logoColor=D9E0EE&labelColor=302D41">
    </a>
    <a href="https://github.com/ryan4yin/nixos-and-flakes-book">
       <img src="https://img.shields.io/static/v1?label=Nix Flakes&message=learning&style=for-the-badge&logo=nixos&color=DDB6F2&logoColor=D9E0EE&labelColor=302D41">
    </a>
 </p>
 
-This repository contains the setup for my desktop environment on both NixOS and Ubuntu. It includes scripts for installing necessary applications and configuring dotfiles to set up a new system.
+Welcome to my dotfiles! This repository contains my desktop environment setup for both **NixOS** and **Ubuntu**. It's built with Nix Flakes, Home Manager, and lots of ☕. 
 
-## 🎬 Showcase: Hyprland + Bash + Kitty + Neovim 
-*(More screenshots & videos coming soon!)*
+> **Note:** *Forget everything you know about nix, this is just a framework to configure apps and dotfiles.* - Me, in the flake.nix
+
+## 🎬 Showcase: Hyprland + Bash/Fish + Kitty + Neovim 
 <!-- TODO: add desktop video showcase -->
+*(More screenshots & videos coming soon!)*
 
 ### Hyprland
 <!-- TODO: add screenshots -->
+*Coming soon! Currently ricing with waybar and fuzzel*
 
 ### Kitty ᓚᘏᗢ + Tmux
 
 <details>
 <summary>🪟 Panes</summary>
 
-![panes](docs/img/tmux/showcase-panes.png)
+![panes](static/docs/tmux/showcase-panes.png)
 
 </details>
 <details>
 <summary>🪴 Screensaver</summary>
 
-![screensaver](docs/img/tmux/showcase-screensaver.png)
+![screensaver](static/docs/tmux/showcase-screensaver.png)
 
 </details>
 <details>
 <summary>🔱 Sessions</summary>
 
-![sessions](docs/img/tmux/showcase-sessions.png)
+![sessions](static/docs/tmux/showcase-sessions.png)
 
 </details>
 
@@ -49,56 +52,174 @@ This repository contains the setup for my desktop environment on both NixOS and 
 <details>
 <summary>:wq Editor</summary>
 
-![editor](docs/img/neovim/showcase-editor.png)
+![editor](static/docs/neovim/showcase-editor.png)
 
 </details>
 <details>
 <summary>🎯 Focused Editor</summary>
 
-![editor](docs/img/neovim/showcase-focused-editor.png)
+![editor](static/docs/neovim/showcase-focused-editor.png)
 
 </details>
 
-## 📂 Repository Structure
+## 📂 Repository Structure - Relevant things
 
-- **README.md** – Quick start & overview (this file)
-- **docs/** – Detailed guides:
-  - [Ubuntu Setup](docs/ubuntu.md)
-- **nixos/** – NixOS configurations with [detailed setup guide](nixos/README.md)
-- **ubuntu/** – This does not exists since it's all scattered around (*.rc, .config, bin, etc.)
+```
+.dotfiles/
+├── .bashrc              # Main shell configuration (i'm using fish with [bass](https://github.com/edc/bass))
+├── .config/             # Application configs (hypr, kitty, tmux, nvim, etc.)
+├── .shell_env_vars      # Local environment variables (git-ignored)
+├── bin/                 # Custom shell scripts & utilities
+├── home/                # Home Manager modules
+├── hosts/               # NixOS host configurations
+├── nixos/               # NixOS system modules
+├── shell/               # Shell configurations (bash, fish, zsh)
+├── static/              # Wallpapers, screenshots, and other assets
+├── users/               # User-specific configurations
+│   ├── lucas.zanoni/    # Home Manager standalone config (Ubuntu/non-NixOS)
+│   └── zanoni/          # Full NixOS system config
+├── flake.nix           # Nix Flakes entry point
+├── flake.lock          # Locked dependencies
+├── Makefile            # Helper commands
+└── README.md           # This file!
+```
 
 ## ⚙️ Quick Start
 
-### NixOS Users
-1. **Clone the repo into your home directory.**
-2. **Generate Hardware Config:**
-   Replace [my hosts](nixos/hosts) with `your_host`:
-   ```bash
-   nixos-generate-config --dir nixos/hosts/your_host/configs
-   ```
-3. **Update Users:**
-   Replace [my users](nixos/users) with `your_user` directory:
+Choose your adventure:
 
-3. **Deploy the Flake:**
-   Replace the user and host on the nixosConfigurations module and run the flake:
-   ```bash
-   sudo nixos-rebuild switch --flake .#your_user
-   ```
+<details>
+<summary>
+   <!-- add snowflake emoji -->
+   <h2><b> NixOS Users</b></h2>
+</summary>
 
-See the [NixOS Setup Guide](nixos/README.md) for detailed instructions.
+### The Declarative Way
 
-### Ubuntu Users
-1. **Clone the repo into your home directory.**
-2. **Run the installer:**
-   ```bash
-   make install
-   ```
-   Use the `-d` flag to install only selected configurations (see [docs/ubuntu.md](docs/ubuntu.md) for details).
+Got NixOS? Perfect. Here's how to deploy this flake:
 
-## 🔗 Inspiration
-This setup is inspired by projects like:
-- [ryan4yin/nix-config](https://github.com/ryan4yin/nix-config)
-- [OfflineBot/nixos](https://github.com/OfflineBot/nixos)
-- and many others, sorry there are too many i don't remember.
+#### 1. Clone the Repository
+```bash
+cd ~
+git clone https://github.com/castrozan/.dotfiles.git
+cd .dotfiles
+```
 
-Enjoy ricing and happy hacking!
+#### 2. Generate Hardware Configuration
+Replace `your_host` with your machine's identifier (e.g., `dellg15`):
+```bash
+sudo nixos-generate-config --dir hosts/your_host/configs
+```
+
+#### 3. Customize Your Configuration
+- Copy and modify a user directory from `users/` (use `zanoni` as template)
+- Update `flake.nix` to add your configuration in `nixosConfigurations`
+
+#### 4. Deploy the Flake
+```bash
+sudo nixos-rebuild switch --flake .#your_user
+```
+
+#### 5. Post-Deployment
+- Restart your system (recommended)
+- Enjoy your new setup! 🎉
+
+</details>
+
+<details>
+<summary>
+   <h2><b>🐧 Ubuntu/Non-NixOS Users</b></h2>
+</summary>
+
+### Home Manager Standalone
+
+Don't have NixOS? No worries! You can still use Home Manager to manage your dotfiles:
+
+#### 1. Clone the Repository
+```bash
+cd ~
+git clone https://github.com/castrozan/.dotfiles.git
+cd .dotfiles
+```
+
+#### 2. Install Nix (if not already installed)
+```bash
+curl -L https://nixos.org/nix/install | sh -s -- --daemon
+```
+
+#### 3. Deploy with Home Manager
+```bash
+# For the lucas.zanoni configuration (adjust username as needed)
+nix run home-manager/release-25.05 -- --flake .#lucas.zanoni@x86_64-linux switch -b "backup-$(date +%Y-%m-%d-%H-%M-%S)"
+```
+
+</details>
+
+## 🏗️ Architecture Overview
+
+Here's how everything fits together:
+
+```mermaid
+graph TD
+    subgraph "flake.nix"
+        Flake["Entry Point<br/>defines configs"]
+    end
+
+    subgraph "NixOS Configuration"
+        NixOS["nixosConfigurations.zanoni"]
+        Host["hosts/dellg15<br/>hardware config"]
+        UserNixOS["users/zanoni/nixos.nix"]
+    end
+
+    subgraph "Home Manager Configuration"
+        HomeStandalone["homeConfigurations<br/>lucas.zanoni@x86_64-linux"]
+        UserHome["users/*/home.nix"]
+        Modules["home/modules/*<br/>app configs"]
+    end
+
+    subgraph "External Inputs"
+        Nixpkgs["nixpkgs-25.05"]
+        Unstable["nixpkgs-unstable"]
+        HM["home-manager"]
+        Determinate["determinate.systems"]
+    end
+
+    Flake --> NixOS
+    Flake --> HomeStandalone
+    
+    NixOS --> Host
+    NixOS --> UserNixOS
+    NixOS --> HM
+    
+    HomeStandalone --> UserHome
+    UserHome --> Modules
+    
+    Flake --> Nixpkgs
+    Flake --> Unstable
+    Flake --> Determinate
+
+    style Flake fill:#f38ba8,color:#1e1e2e
+    style NixOS fill:#a6e3a1,color:#1e1e2e
+    style HomeStandalone fill:#89b4fa,color:#1e1e2e
+    style Nixpkgs fill:#f9e2af,color:#1e1e2e
+    style HM fill:#cba6f7,color:#1e1e2e
+```
+
+## 🔗 Inspiration & Credits
+
+This setup is inspired by and borrows from:
+- [ryan4yin/nix-config](https://github.com/ryan4yin/nix-config) - Excellent complex Nix configurations
+- [OfflineBot/nixos](https://github.com/OfflineBot/nixos) - Clean NixOS setup
+- The amazing NixOS and Home Manager communities
+- And countless other dotfiles repos I've stumbled upon at 3 AM 🌙
+
+## 📚 Resources
+
+- [NixOS Manual](https://nixos.org/manual) - Official documentation
+- [Home Manager Manual](https://nix-community.github.io/home-manager/) - Home Manager docs
+- [Nix Pills](https://nixos.org/guides/nix-pills/) - Learn Nix the fun way
+- [NixOS & Flakes Book](https://github.com/ryan4yin/nixos-and-flakes-book) - Comprehensive guide
+
+---
+
+Enjoy ricing and happy hacking! If you like this setup, consider giving it a ⭐
