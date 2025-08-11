@@ -6,6 +6,7 @@ bonsai() {
 }
 
 # Function for pipes.sh
+# shellcheck disable=SC2120
 pipes() {
     pipes.sh "$@"
 }
