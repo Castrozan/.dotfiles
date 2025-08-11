@@ -1,4 +1,3 @@
-# TODO: migrate this to nix
 [core]
   pager = delta --paging=never --detect-dark-light always
 	hooksPath = ~/.githooks
