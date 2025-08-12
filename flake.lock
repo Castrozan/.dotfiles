@@ -354,6 +354,22 @@
         "type": "github"
       }
     },
+    "nixpkgs_5": {
+      "locked": {
+        "lastModified": 1720535198,
+        "narHash": "sha256-zwVvxrdIzralnSbcpghA92tWu2DV2lwv89xZc8MTrbg=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "205fd4226592cc83fd4c0885a3e4c9c400efabb5",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixos-23.11",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "catppuccin-bat": "catppuccin-bat",
@@ -363,7 +379,8 @@
         "home-manager": "home-manager",
         "nixpkgs": "nixpkgs_4",
         "nixpkgs-latest": "nixpkgs-latest",
-        "nixpkgs-unstable": "nixpkgs-unstable"
+        "nixpkgs-unstable": "nixpkgs-unstable",
+        "tui-notifier": "tui-notifier"
       }
     },
     "systems": {
@@ -378,6 +395,24 @@
       "original": {
         "owner": "nix-systems",
         "repo": "default",
+        "type": "github"
+      }
+    },
+    "tui-notifier": {
+      "inputs": {
+        "nixpkgs": "nixpkgs_5"
+      },
+      "locked": {
+        "lastModified": 1755000793,
+        "narHash": "sha256-ngFYR1KrGImVFTio0QlJ52pUh9MG+KXQ1E9NRGwiWsM=",
+        "owner": "castrozan",
+        "repo": "tui-notifier",
+        "rev": "d36ab0fbe5fa27d35b45886ed7a63f06cb5c8cde",
+        "type": "github"
+      },
+      "original": {
+        "owner": "castrozan",
+        "repo": "tui-notifier",
         "type": "github"
       }
     }
