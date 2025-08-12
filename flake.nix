@@ -22,6 +22,8 @@
     catppuccin-bat.flake = false;
     codex-flake.url = "github:castrozan/codex-flake";
     codex-flake.inputs.flake-utils.follows = "flake-utils";
+    tui-notifier.url = "github:castrozan/tui-notifier";
+    tui-notifier.inputs.flake-utils.follows = "flake-utils";
   };
 
   # Outputs are used to define apps and dotfiles configuration for different systems and users
