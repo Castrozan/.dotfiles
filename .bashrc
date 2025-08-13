@@ -146,9 +146,9 @@ is_wsl() {
 #fi
 
 # Source shell env vars config
-if [ -f ~/.shell_env_vars ]; then
+if [ -f ~/.dotfiles/.shell_env_vars ]; then
     # shellcheck source=.shell_env_vars
-    . ~/.shell_env_vars
+    . ~/.dotfiles/.shell_env_vars
 fi
 
 # Source bash completion
