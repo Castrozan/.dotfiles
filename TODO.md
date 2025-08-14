@@ -18,7 +18,7 @@
     - [x] Remove install.sh
     - [x] Remove test.sh
     - [x] Remove declarative.sh
-  - [ ] Update README
+  - [x] Update README
   - [ ] .inputrc
   - [ ] Tests
     - [ ] Config Ci
