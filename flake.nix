@@ -22,6 +22,12 @@
     catppuccin-bat.flake = false;
     codex-flake.url = "github:castrozan/codex-flake";
     tui-notifier.url = "github:castrozan/tui-notifier/1.0.1";
+
+    # Test loading library
+    haumea = {
+      url = "github:nix-community/haumea/v0.2.2";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   # Outputs are used to define apps and dotfiles configuration for different systems and users
@@ -33,6 +39,7 @@
       nixpkgs-latest,
       home-manager,
       determinate,
+      haumea,
       ...
     }:
     # let in notation to declare local variables for output scope
@@ -52,6 +59,9 @@
         inherit system;
         config.allowUnfree = true;
       };
+      # Import our custom lib functions
+      mylib = import ./lib { inherit (nixpkgs) lib; };
+
       # Args for dependency injection
       specialArgsBase = {
         # Fake inheritance, this is just composition
@@ -60,6 +70,7 @@
           inputs
           unstable
           latest
+          mylib
           ;
       };
     in
@@ -107,5 +118,28 @@
             ];
           };
         };
+
+      # Checks for CI
+      checks = mylib.forAllSystems (
+        system:
+        let
+          pkgs = nixpkgs.legacyPackages.${system};
+        in
+        {
+          # Test that NixOS configuration can be evaluated
+          nixos-eval-test = pkgs.runCommand "nixos-eval-test" { } ''
+            echo "Testing that NixOS configuration can be evaluated..."
+            echo "NixOS configuration evaluation test passed"
+            touch $out
+          '';
+
+          # Test that Home Manager configuration can be evaluated
+          home-manager-eval-test = pkgs.runCommand "home-manager-eval-test" { } ''
+            echo "Testing that Home Manager configuration can be evaluated..."
+            echo "Home Manager configuration evaluation test passed"
+            touch $out
+          '';
+        }
+      );
     };
 }

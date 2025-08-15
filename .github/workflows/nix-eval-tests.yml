@@ -1,0 +1,72 @@
+name: Nix Flake Evaluation Tests
+
+on:
+  push:
+    branches:
+      - main
+      - ci-nix
+    paths-ignore:
+      - "bin/**"
+      - "**.md"
+      - "Makefile"
+  pull_request:
+    branches:
+      - main
+      - ci-nix
+    paths-ignore:
+      - "bin/**"
+      - "**.md"
+      - "Makefile"
+
+jobs:
+  eval-tests:
+    name: Evaluate Nix Configurations
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v24
+        with:
+          install_url: https://nixos.org/nix/install
+          extra_nix_config: |
+            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
+            experimental-features = nix-command flakes
+            substituters = https://cache.nixos.org/ https://nix-community.cachix.org/
+            trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs=
+
+      - name: Setup Magic Nix Cache
+        uses: DeterminateSystems/magic-nix-cache-action@v2
+
+      - name: Check flake
+        run: |
+          echo "Checking flake validity..."
+          nix flake check --show-trace
+
+      - name: Test NixOS Configuration Evaluation
+        run: |
+          echo "Testing NixOS configuration evaluation..."
+          nix eval .#nixosConfigurations.zanoni.config.system.build.toplevel --show-trace
+
+      - name: Test Home Manager Configuration Evaluation  
+        run: |
+          echo "Testing Home Manager configuration evaluation..."
+          nix eval .#homeConfigurations.\"lucas.zanoni@x86_64-linux\".activationPackage --show-trace
+
+      - name: Build NixOS Configuration (dry-run)
+        run: |
+          echo "Building NixOS configuration (dry-run)..."
+          nix build .#nixosConfigurations.zanoni.config.system.build.toplevel --dry-run --show-trace
+
+      - name: Build Home Manager Configuration (dry-run)
+        run: |
+          echo "Building Home Manager configuration (dry-run)..."
+          nix build .#homeConfigurations.\"lucas.zanoni@x86_64-linux\".activationPackage --dry-run --show-trace
+
+      - name: Run Checks
+        run: |
+          echo "Running checks..."
+          nix build .#checks.x86_64-linux.nixos-eval-test --show-trace
+          nix build .#checks.x86_64-linux.home-manager-eval-test --show-trace

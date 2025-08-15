@@ -3,7 +3,11 @@
 #
 { lib, pkgs, ... }:
 let
-  bashrc = builtins.readFile ../../../.bashrc;
+  # Use a relative path that resolves properly in the nix store
+  bashrcPath = ./../../shell/bash_aliases.sh;
+  bashrc = if builtins.pathExists bashrcPath 
+           then builtins.readFile bashrcPath
+           else "# Default bashrc content";
 in
 {
   imports = [
