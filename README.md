@@ -13,6 +13,8 @@
 
 Welcome to my dotfiles! This repository contains my desktop environment setup for both **NixOS** and **Ubuntu**. It's built with Nix Flakes and Home Manager.
 
+![screensaver](static/docs/tmux/showcase-screensaver.png)
+
 <!-- ## 🎬 Showcase: Hyprland + Bash/Fish + Kitty + Neovim  -->
 <!-- TODO: add desktop video showcase -->
 <!-- *(More screenshots & videos coming soon!)* -->
@@ -20,6 +22,8 @@ Welcome to my dotfiles! This repository contains my desktop environment setup fo
 <!-- ### Hyprland -->
 <!-- TODO: add screenshots -->
 <!-- *Coming soon! Currently ricing with waybar and fuzzel* -->
+
+## Desktop Showcase
 
 ### Kitty ᓚᘏᗢ + Tmux
 
@@ -57,40 +61,16 @@ Welcome to my dotfiles! This repository contains my desktop environment setup fo
 
 </details>
 
-## 📂 Repository Structure - Relevant things
-
-```
-.dotfiles/
-├── .bashrc              # Main shell configuration (i'm using fish with [bass](https://github.com/edc/bass))
-├── .config/             # Application configs (hypr, kitty, tmux, nvim, etc.)
-├── .shell_env_vars      # Local environment variables (git-ignored)
-├── bin/                 # Custom shell scripts & utilities
-├── home/                # Home Manager modules
-├── hosts/               # NixOS host configurations
-├── nixos/               # NixOS system modules
-├── shell/               # Shell configurations (bash, fish, zsh)
-├── static/              # Wallpapers, screenshots, and other assets
-├── users/               # User-specific configurations
-│   ├── lucas.zanoni/    # Home Manager standalone config (Ubuntu/non-NixOS)
-│   └── zanoni/          # Full NixOS system config
-├── flake.nix            # Nix Flakes entry point
-├── flake.lock           # Locked dependencies
-├── Makefile             # Helper commands
-└── README.md            # This file!
-```
 ---
-
-## ⚙️ Quick Start for:
-
-<details>
-<summary>
-   <!-- add snowflake emoji -->
-   <h2><b> NixOS Users</b></h2>
-</summary>
 
 ### The Declarative Way
 
-Got NixOS? Perfect. Here's how to deploy this flake:
+Got NixOS from the [installer](https://nixos.org/download.html)? Perfect. Here's how to deploy this flake:
+
+<details>
+<summary>
+   <b>Quick Start for: ❄️ NixOS Users</b>
+</summary>
 
 #### 1. Clone the Repository
 ```bash
@@ -122,14 +102,13 @@ sudo nixos-rebuild switch --flake .#your_user
 
 ---
 
-<details>
-<summary>
-   <h2><b>🐧 Ubuntu/Non-NixOS Users</b></h2>
-</summary>
-
 ### Home Manager Standalone
 
-Don't have NixOS? No worries! You can still use Home Manager to manage your dotfiles:
+Don't wanna go full NixOS for now? No worries! You can still use the flake with Home Manager to manage your dotfiles:
+<details>
+<summary>
+   <b>Quick Start for: 🐧 Ubuntu/Non-NixOS systems</b>
+</summary>
 
 #### 1. Clone the Repository
 ```bash
@@ -152,10 +131,10 @@ nix run home-manager/release-25.05 -- --flake .#lucas.zanoni@x86_64-linux switch
 
 ---
 
+### 🏗️ Architecture Overview
+
 <details>
-<summary>
-   <h2><b>🏗️ Architecture Overview</b></h2>
-</summary>
+<summary>📦 mermaid</summary>
 
 Here's how everything fits together:
 
@@ -205,6 +184,32 @@ graph TD
     style HM fill:#cba6f7,color:#1e1e2e
 ```
 
+</details>
+
+---
+
+## 📂 Repository Structure - Relevant things
+
+<details>
+<summary>📂 Structure</summary>
+
+```
+.dotfiles/
+├── .bashrc              # Main shell configuration (i'm using fish with [bass](https://github.com/edc/bass))
+├── .config/             # Application configs (hypr, kitty, tmux, nvim, etc.)
+├── .shell_env_vars      # Local environment variables (git-ignored)
+├── bin/                 # Custom shell scripts & utilities
+├── home/                # Home Manager shared modules
+├── hosts/               # NixOS hosts configuration
+├── nixos/               # NixOS shared system modules
+├── shell/               # Shell configurations (bash, fish, zsh)
+├── users/               # User-specific configurations
+│   ├── lucas.zanoni/    # Home Manager standalone config (Ubuntu/non-NixOS)
+│   └── zanoni/          # Full NixOS system config
+├── flake.nix            # Nix Flakes entry point
+├── Makefile             # Helper commands
+└── README.md            # This file!
+```
 </details>
 
 ---
