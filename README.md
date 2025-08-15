@@ -195,7 +195,7 @@ graph TD
 
 ```
 .dotfiles/
-├── .bashrc              # Main shell configuration (i'm using fish with [bass](https://github.com/edc/bass))
+├── .bashrc              # Main shell configuration (i'm using fish with bass)
 ├── .config/             # Application configs (hypr, kitty, tmux, nvim, etc.)
 ├── .shell_env_vars      # Local environment variables (git-ignored)
 ├── bin/                 # Custom shell scripts & utilities
