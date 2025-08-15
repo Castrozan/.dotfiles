@@ -23,6 +23,7 @@
       git
       gnutar
       insomnia
+      just
       kubectl
       lazydocker
       # lens TODO: fix lens, im using the snap version for now

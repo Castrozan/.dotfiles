@@ -143,13 +143,13 @@ info:
 #
 ############################################################################
 
-[group('git')]
 # Remove all reflog entries and prune unreachable objects
+[group('git')]
 ggc:
   git reflog expire --expire-unreachable=now --all
   git gc --prune=now
 
-[group('git')]
 # Amend the last commit without changing the commit message
+[group('git')]
 game:
   git commit --amend -a --no-edit
