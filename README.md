@@ -63,6 +63,8 @@ Welcome to my dotfiles! This repository contains my desktop environment setup fo
 
 ---
 
+## Getting Started
+
 ### The Declarative Way
 
 Got NixOS from the [installer](https://nixos.org/download.html)? Perfect. Here's how to deploy this flake:
@@ -131,7 +133,7 @@ nix run home-manager/release-25.05 -- --flake .#lucas.zanoni@x86_64-linux switch
 
 ---
 
-### 🏗️ Architecture Overview
+## 🏗️ Architecture Overview
 
 <details>
 <summary>📦 mermaid</summary>
