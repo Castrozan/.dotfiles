@@ -3,7 +3,7 @@
 #
 { lib, pkgs, ... }:
 let
-  bashrc = builtins.readFile ../../../.bashrc;
+  bashrc = builtins.readFile ../../.bashrc;
 in
 {
   imports = [
