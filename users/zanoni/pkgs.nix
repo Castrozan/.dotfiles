@@ -29,6 +29,7 @@
       gh
       git
       gnumake
+      just
       k6
       lazydocker
       nixd
