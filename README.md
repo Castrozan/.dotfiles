@@ -1,4 +1,4 @@
-<h2 align="center">Zanoni's Desktop Configs</h2>
+<h2 align="center"><a href="https://github.com/castrozan" target="_blank" rel="noopener noreferrer">Zanoni's</a> Desktop Configs</h2>
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/catppuccin/catppuccin/main/assets/palette/macchiato.png" width="400" />
@@ -67,7 +67,7 @@ Welcome to my dotfiles! This repository contains my desktop environment setup fo
 
 ### The Declarative Way
 
-Got NixOS from the [installer](https://nixos.org/download.html)? Perfect. Here's how to deploy this flake:
+Got NixOS from the <a href="https://nixos.org/download.html" target="_blank" rel="noopener noreferrer">installer</a>? Perfect. Here's how to deploy this flake:
 
 <details>
 <summary>
@@ -219,17 +219,17 @@ graph TD
 ## 🔗 Inspiration & Credits
 
 This setup is inspired by and borrows from:
-- [ryan4yin/nix-config](https://github.com/ryan4yin/nix-config) - Excellent complex Nix configurations
-- [OfflineBot/nixos](https://github.com/OfflineBot/nixos) - Clean NixOS setup
+- <a href="https://github.com/ryan4yin/nix-config" target="_blank" rel="noopener noreferrer">ryan4yin/nix-config</a> - Excellent complex Nix configurations
+- <a href="https://github.com/OfflineBot/nixos" target="_blank" rel="noopener noreferrer">OfflineBot/nixos</a> - Clean NixOS setup
 - The amazing NixOS and Home Manager communities
 - And countless other dotfiles repos I've stumbled upon at 3 AM 🌙
 
 ## 📚 Resources
 
-- [NixOS Manual](https://nixos.org/manual) - Official documentation
-- [Home Manager Manual](https://nix-community.github.io/home-manager/) - Home Manager docs
-- [Nix Pills](https://nixos.org/guides/nix-pills/) - Learn Nix the fun way
-- [NixOS & Flakes Book](https://github.com/ryan4yin/nixos-and-flakes-book) - Comprehensive guide
+- <a href="https://nixos.org/manual" target="_blank" rel="noopener noreferrer">NixOS Manual</a> - Official documentation
+- <a href="https://nix-community.github.io/home-manager/" target="_blank" rel="noopener noreferrer">Home Manager Manual</a> - Home Manager docs
+- <a href="https://nixos.org/guides/nix-pills/" target="_blank" rel="noopener noreferrer">Nix Pills</a> - Learn Nix the fun way
+- <a href="https://github.com/ryan4yin/nixos-and-flakes-book" target="_blank" rel="noopener noreferrer">NixOS & Flakes Book</a> - Comprehensive guide
 
 ---
 
