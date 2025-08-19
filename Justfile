@@ -79,9 +79,7 @@ verify-store:
   nix store verify --all
 
 ############################################################################
-#
 #  NixOS Desktop related commands
-#
 ############################################################################
 
 [group('desktop')]
@@ -97,9 +95,7 @@ nixos-boot:
   sudo nixos-rebuild boot --flake .#zanoni --show-trace
 
 ############################################################################
-#
 #  Home Manager related commands  
-#
 ############################################################################
 
 [group('home')]
@@ -107,49 +103,19 @@ home-switch:
   home-manager switch --flake .#lucas.zanoni@x86_64-linux --show-trace
 
 [group('home')]
-home-test:
+home-build:
   home-manager build --flake .#lucas.zanoni@x86_64-linux --show-trace
 
-[group('home')]
-home-news:
-  home-manager news --flake .#lucas.zanoni@x86_64-linux
-
 ############################################################################
-#
 #  Development commands
-#
 ############################################################################
 
 [group('dev')]
 dev-shell:
   nix develop
 
-# Build configurations (dry-run)
+# Dry-run build
 [group('dev')]
 build-test:
   nix build .#nixosConfigurations.zanoni.config.system.build.toplevel --dry-run --show-trace
   nix build .#homeConfigurations.\"lucas.zanoni@x86_64-linux\".activationPackage --dry-run --show-trace
-
-# Show configuration info
-[group('dev')]
-info:
-  @echo "NixOS Configuration: zanoni"
-  @echo "Home Manager Configuration: lucas.zanoni@x86_64-linux"
-  @echo "System: x86_64-linux"
-
-############################################################################
-#
-#  Git and maintenance commands
-#
-############################################################################
-
-# Remove all reflog entries and prune unreachable objects
-[group('git')]
-ggc:
-  git reflog expire --expire-unreachable=now --all
-  git gc --prune=now
-
-# Amend the last commit without changing the commit message
-[group('git')]
-game:
-  git commit --amend -a --no-edit
