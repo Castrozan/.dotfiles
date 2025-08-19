@@ -6,6 +6,7 @@
     ./scripts
 
     ./home/git.nix
+    ./home/ssh.nix
 
     ../../home/modules/neovim.nix
     ../../home/modules/kitty.nix
