@@ -54,6 +54,7 @@
       devenv
       direnv
       # gemini-cli TODO: fix gemini-cli, im using the npm version for now
+      vial
       vscode
     ]);
 }
