@@ -22,5 +22,6 @@
     ../../home/modules/tui-notifier.nix
     ../../home/modules/clipse.nix
     ../../home/modules/cursor.nix
+    ../../home/modules/vial.nix
   ];
 }
