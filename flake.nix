@@ -22,6 +22,7 @@
     catppuccin-bat.flake = false;
     codex-flake.url = "github:castrozan/codex-flake";
     tui-notifier.url = "github:castrozan/tui-notifier/1.0.1";
+    readItNow-rc.url = "github:castrozan/readItNow-rc/1.0.0";
   };
 
   # Outputs are used to define apps and dotfiles configuration for different systems and users

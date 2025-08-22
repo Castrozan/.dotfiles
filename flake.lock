@@ -372,6 +372,22 @@
     },
     "nixpkgs_5": {
       "locked": {
+        "lastModified": 1755704039,
+        "narHash": "sha256-gKlP0LbyJ3qX0KObfIWcp5nbuHSb5EHwIvU6UcNBg2A=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "9cb344e96d5b6918e94e1bca2d9f3ea1e9615545",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixos-25.05",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs_6": {
+      "locked": {
         "lastModified": 1720535198,
         "narHash": "sha256-zwVvxrdIzralnSbcpghA92tWu2DV2lwv89xZc8MTrbg=",
         "owner": "NixOS",
@@ -386,6 +402,25 @@
         "type": "github"
       }
     },
+    "readItNow-rc": {
+      "inputs": {
+        "nixpkgs": "nixpkgs_5"
+      },
+      "locked": {
+        "lastModified": 1755895656,
+        "narHash": "sha256-ANBdD+ObilY2+J31ZtQT2Yw4umjx37UGqi6eQ3E12MQ=",
+        "owner": "castrozan",
+        "repo": "readItNow-rc",
+        "rev": "dc220d8bfdd2ad2e99f1a31b952b1f3f999b355a",
+        "type": "github"
+      },
+      "original": {
+        "owner": "castrozan",
+        "ref": "1.0.0",
+        "repo": "readItNow-rc",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "catppuccin-bat": "catppuccin-bat",
@@ -396,6 +431,7 @@
         "nixpkgs": "nixpkgs_4",
         "nixpkgs-latest": "nixpkgs-latest",
         "nixpkgs-unstable": "nixpkgs-unstable",
+        "readItNow-rc": "readItNow-rc",
         "tui-notifier": "tui-notifier"
       }
     },
@@ -431,7 +467,7 @@
     },
     "tui-notifier": {
       "inputs": {
-        "nixpkgs": "nixpkgs_5"
+        "nixpkgs": "nixpkgs_6"
       },
       "locked": {
         "lastModified": 1755004924,
