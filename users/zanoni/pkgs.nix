@@ -84,6 +84,7 @@
         withVencord = true; # For customization
       })
       firefox
+      flameshot
       obsidian
       # vivaldi
       # vivaldi-ffmpeg-codecs
