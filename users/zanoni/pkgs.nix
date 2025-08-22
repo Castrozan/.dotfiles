@@ -85,12 +85,12 @@
       })
       firefox
       obsidian
-      vivaldi
-      vivaldi-ffmpeg-codecs
-      (vivaldi.override {
-        proprietaryCodecs = true; # Enables video playback
-        enableWidevine = true;
-      })
+      # vivaldi
+      # vivaldi-ffmpeg-codecs
+      # (vivaldi.override {
+      #   proprietaryCodecs = true; # Enables video playback
+      #   enableWidevine = true;
+      # })
       postman
       scrcpy
       vesktop
