@@ -17,6 +17,7 @@
     ../../home/modules/tmux.nix
     ../../home/modules/fuzzel.nix
     ../../home/modules/playwright.nix
+    ../../home/modules/cursor.nix
     ../../home/modules/vesktop.nix
     ../../home/modules/lazygit.nix
     ../../home/modules/flameshot.nix
