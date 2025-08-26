@@ -54,6 +54,7 @@
 
       # System Utilities
       btop
+      clipse
       ffmpeg
       fzf
       htop
