@@ -25,6 +25,7 @@ in
       pkgs.tmuxPlugins.yank
       pkgs.tmuxPlugins.resurrect
       pkgs.tmuxPlugins.cpu
+      # The problem is between this catppuccin and the cpu plugin
       {
         plugin = catppuccinZanoni;
         extraConfig = ''
