@@ -57,4 +57,7 @@ in
     openssl
     curl
   ];
+
+  # Enable Flatpak
+  services.flatpak.enable = true;
 }

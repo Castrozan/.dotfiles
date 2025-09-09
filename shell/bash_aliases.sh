@@ -40,3 +40,4 @@ alias todo='cd $HOME/vault'
 alias vial='Vial'
 alias workbench='cd $HOME/workbench'
 alias y='yazi'
+alias vivaldi="flatpak run com.vivaldi.Vivaldi"

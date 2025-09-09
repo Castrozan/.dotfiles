@@ -87,12 +87,6 @@
       firefox
       flameshot
       obsidian
-      # vivaldi
-      # vivaldi-ffmpeg-codecs
-      # (vivaldi.override {
-      #   proprietaryCodecs = true; # Enables video playback
-      #   enableWidevine = true;
-      # })
       postman
       scrcpy
       vesktop
