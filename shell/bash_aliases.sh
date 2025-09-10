@@ -40,4 +40,5 @@ alias todo='cd $HOME/vault'
 alias vial='Vial'
 alias workbench='cd $HOME/workbench'
 alias y='yazi'
+# TODO: fix vivaldi, it should not be running as flatpak
 alias vivaldi="flatpak run com.vivaldi.Vivaldi"
