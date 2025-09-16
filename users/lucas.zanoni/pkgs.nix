@@ -16,6 +16,7 @@
       clipse
       curl
       delta
+      discord
       docker-compose
       flameshot
       fzf
