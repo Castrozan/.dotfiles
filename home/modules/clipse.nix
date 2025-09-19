@@ -1,23 +1,20 @@
 { pkgs, ... }:
 {
-  # Configure clipse as a systemd user service to run in the background
+  home.packages = [ pkgs.clipse ];
+
   systemd.user.services.clipse = {
     Unit = {
-      Description = "Clipse clipboard manager";
+      Description = "Clipse clipboard manager daemon";
       After = [ "graphical-session.target" ];
     };
-
     Service = {
-      ExecStart = "${pkgs.clipse}/bin/clipse --listen-shell";
-      Restart = "on-failure";
-      RestartSec = "5s";
+      Type = "simple";
+      ExecStart = "${pkgs.clipse}/bin/clipse --listen";
+      Restart = "always";
+      RestartSec = 3;
     };
-
     Install = {
-      WantedBy = [ "default.target" ];
+      WantedBy = [ "graphical-session.target" ];
     };
   };
-
-  # Enable the service to start automatically
-  systemd.user.startServices = "sd-switch";
 }
