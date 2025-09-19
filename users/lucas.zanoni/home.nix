@@ -13,9 +13,9 @@
     ../../home/modules/fish.nix
     ../../home/modules/tmux.nix
     ../../home/modules/lazygit.nix
-    ../../home/modules/dooit.nix
+    # ../../home/modules/dooit.nix
     ../../home/modules/k9s.nix
-    ../../home/modules/pipx.nix
+    # ../../home/modules/pipx.nix
     ../../home/modules/sdkman.nix
     ../../home/modules/gnome/dconf.nix
     ../../home/modules/flameshot.nix
