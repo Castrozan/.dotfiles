@@ -27,6 +27,7 @@
       kubectl
       lazydocker
       # lens TODO: fix lens, im using the snap version for now
+      micronaut
       neofetch
       nix
       nixd
