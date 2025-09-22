@@ -29,7 +29,7 @@
       # lens TODO: fix lens, im using the snap version for now
       micronaut
       neofetch
-      nix
+      # nix # leave the manually installed version
       nixd
       nixfmt-rfc-style
       nodejs
