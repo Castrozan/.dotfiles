@@ -16,7 +16,6 @@
     flake-utils.url = "github:numtide/flake-utils";
     home-manager.url = "github:nix-community/home-manager/release-25.05";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
-    # determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
 
     catppuccin-bat.url = "github:catppuccin/bat";
     catppuccin-bat.flake = false;
@@ -33,7 +32,6 @@
       nixpkgs-unstable,
       nixpkgs-latest,
       home-manager,
-      # determinate,
       ...
     }:
     # let in notation to declare local variables for output scope
@@ -104,7 +102,6 @@
               ./users/${username}/nixos.nix
               home-manager.nixosModules.home-manager
               (import ./users/${username}/nixos-home-config.nix)
-              # determinate.nixosModules.default
             ];
           };
         };
