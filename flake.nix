@@ -10,13 +10,13 @@
     # For stable packages definitions
     nixpkgs.url = "github:nixos/nixpkgs/nixos-25.05";
     # For packages not yet in nixpkgs
-    nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
+    # nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
     # For latest bleeding edge packages - daily* updated with: $ nix flake update nixpkgs-latest
-    nixpkgs-latest.url = "github:nixos/nixpkgs/nixos-unstable";
+    # nixpkgs-latest.url = "github:nixos/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
     home-manager.url = "github:nix-community/home-manager/release-25.05";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
-    determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
+    # determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
 
     catppuccin-bat.url = "github:catppuccin/bat";
     catppuccin-bat.flake = false;
@@ -30,10 +30,10 @@
     inputs@{
       self,
       nixpkgs,
-      nixpkgs-unstable,
-      nixpkgs-latest,
+      # nixpkgs-unstable,
+      # nixpkgs-latest,
       home-manager,
-      determinate,
+      # determinate,
       ...
     }:
     # let in notation to declare local variables for output scope
@@ -45,11 +45,11 @@
         inherit system;
         config.allowUnfree = true;
       };
-      unstable = import nixpkgs-unstable {
+      unstable = import nixpkgs {
         inherit system;
         config.allowUnfree = true;
       };
-      latest = import nixpkgs-latest {
+      latest = import nixpkgs {
         inherit system;
         config.allowUnfree = true;
       };
@@ -104,7 +104,7 @@
               ./users/${username}/nixos.nix
               home-manager.nixosModules.home-manager
               (import ./users/${username}/nixos-home-config.nix)
-              determinate.nixosModules.default
+              # determinate.nixosModules.default
             ];
           };
         };
