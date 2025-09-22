@@ -162,7 +162,6 @@ graph TD
         Nixpkgs["nixpkgs-25.05"]
         Unstable["nixpkgs-unstable"]
         HM["home-manager"]
-        Determinate["determinate.systems"]
     end
 
     Flake --> NixOS
@@ -177,7 +176,6 @@ graph TD
     
     Flake --> Nixpkgs
     Flake --> Unstable
-    Flake --> Determinate
 
     style Flake fill:#f38ba8,color:#1e1e2e
     style NixOS fill:#a6e3a1,color:#1e1e2e
