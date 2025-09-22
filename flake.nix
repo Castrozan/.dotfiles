@@ -12,7 +12,7 @@
     # For packages not yet in nixpkgs
     # nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
     # For latest bleeding edge packages - daily* updated with: $ nix flake update nixpkgs-latest
-    # nixpkgs-latest.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixpkgs-latest.url = "github:nixos/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
     home-manager.url = "github:nix-community/home-manager/release-25.05";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
@@ -31,7 +31,7 @@
       self,
       nixpkgs,
       # nixpkgs-unstable,
-      # nixpkgs-latest,
+      nixpkgs-latest,
       home-manager,
       # determinate,
       ...
@@ -49,7 +49,7 @@
         inherit system;
         config.allowUnfree = true;
       };
-      latest = import nixpkgs {
+      latest = import nixpkgs-latest {
         inherit system;
         config.allowUnfree = true;
       };
