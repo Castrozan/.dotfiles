@@ -230,6 +230,13 @@ if is_wsl; then
     export BROWSER='/mnt/c/Users/castr/AppData/Local/BraveSoftware/Brave-Browser/Application/brave.exe'
 fi
 
+# TODO: this should be sourced from a lucas.zanoni specific file on it's config dir
+# NSS library preload for corporate authentication (required for devenv)
+# Only set for lucas.zanoni user
+if [ "$USER" = "lucas.zanoni" ]; then
+    export LD_PRELOAD='/lib/x86_64-linux-gnu/libnss_sss.so.2'
+fi
+
 # Check if clipse is installed and run clipse --listen if it is
 # TODO: this should be properly implemented
 if command -v clipse &>/dev/null; then
