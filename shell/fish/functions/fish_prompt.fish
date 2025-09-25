@@ -1,4 +1,10 @@
 function fish_prompt
+  if test -n "$DEVENV_ROOT"
+    set_color red
+    printf '(devenv)'
+    set_color normal
+  end
+
   set_color --bold green
   printf ' %s ' (whoami)
   set_color --bold blue
