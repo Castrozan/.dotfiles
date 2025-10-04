@@ -126,7 +126,7 @@
     ])
     ++ (with latest; [
       claude-code
-      openshot-qt
+      # openshot-qt
       devenv
       direnv
       gemini-cli
