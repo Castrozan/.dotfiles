@@ -10,7 +10,7 @@
     ../../home/modules/kitty.nix
     ../../home/modules/fish.nix
     ../../home/modules/vscode
-    ../../home/modules/common.nix
+    # ../../home/modules/common.nix
     ../../home/modules/bash.nix
     ../../home/modules/pkgs.nix
     ../../home/modules/neovim.nix
