@@ -18,6 +18,8 @@
   # Override filesystem configuration with labels for resilience
   # This prevents UUID mismatch issues during GPT corruption recovery
   # https://chatgpt.com/share/68e1bfff-f1d0-800e-b971-24f822d1c93b
+  # For new machines: Run `./bin/setup-filesystem-labels` after NixOS installation
+  # to create the required labels, then rebuild with this configuration.
   fileSystems = lib.mkForce {
     "/" = {
       device = "/dev/disk/by-label/nixos-root";

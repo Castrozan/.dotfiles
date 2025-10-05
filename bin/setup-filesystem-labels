@@ -1,0 +1,116 @@
+#!/usr/bin/env bash
+
+# Setup filesystem labels for NixOS resilience
+# This script labels the root and boot partitions to prevent UUID mismatch issues
+# during GPT corruption recovery scenarios.
+
+set -e
+
+echo "🏷️  NixOS Filesystem Label Setup"
+echo "================================"
+echo
+
+# Check if running as root
+if [ "$EUID" -eq 0 ]; then
+    echo "❌ Don't run this script as root. It will use sudo when needed."
+    exit 1
+fi
+
+# Function to find partition by mount point
+find_partition_by_mount() {
+    local mount_point="$1"
+    findmnt -n -o SOURCE "$mount_point" 2>/dev/null || echo ""
+}
+
+# Function to check if label exists
+label_exists() {
+    local label="$1"
+    blkid -L "$label" >/dev/null 2>&1
+}
+
+# Function to label ext4 filesystem
+label_ext4() {
+    local device="$1"
+    local label="$2"
+    echo "🏷️  Labeling $device as '$label'..."
+    sudo e2label "$device" "$label"
+}
+
+# Function to label vfat filesystem
+label_vfat() {
+    local device="$1"
+    local label="$2"
+    echo "🏷️  Labeling $device as '$label'..."
+    sudo fatlabel "$device" "$label"
+}
+
+echo "🔍 Detecting current filesystem setup..."
+
+# Find root partition
+ROOT_DEV=$(find_partition_by_mount "/")
+if [ -z "$ROOT_DEV" ]; then
+    echo "❌ Could not find root partition"
+    exit 1
+fi
+
+# Find boot partition
+BOOT_DEV=$(find_partition_by_mount "/boot")
+if [ -z "$BOOT_DEV" ]; then
+    echo "❌ Could not find boot partition"
+    exit 1
+fi
+
+echo "   Root partition: $ROOT_DEV"
+echo "   Boot partition: $BOOT_DEV"
+echo
+
+# Check and label root partition
+if label_exists "nixos-root"; then
+    echo "✅ Root partition already labeled as 'nixos-root'"
+else
+    echo "📋 Root partition needs labeling..."
+    if [[ $ROOT_DEV == *"by-"* ]]; then
+        # Convert symlink to actual device
+        ROOT_DEV=$(readlink -f "$ROOT_DEV")
+    fi
+    label_ext4 "$ROOT_DEV" "nixos-root"
+    echo "✅ Root partition labeled successfully"
+fi
+
+# Check and label boot partition
+if label_exists "NIXOS_BOOT"; then
+    echo "✅ Boot partition already labeled as 'NIXOS_BOOT'"
+else
+    echo "📋 Boot partition needs labeling..."
+    if [[ $BOOT_DEV == *"by-"* ]]; then
+        # Convert symlink to actual device
+        BOOT_DEV=$(readlink -f "$BOOT_DEV")
+    fi
+    label_vfat "$BOOT_DEV" "NIXOS_BOOT"
+    echo "✅ Boot partition labeled successfully"
+fi
+
+echo
+echo "🔄 Refreshing device links..."
+sudo udevadm trigger --subsystem-match=block
+sleep 1
+
+echo
+echo "🔍 Verifying labels..."
+if [ -e "/dev/disk/by-label/nixos-root" ] && [ -e "/dev/disk/by-label/NIXOS_BOOT" ]; then
+    echo "✅ All filesystem labels created successfully!"
+    echo
+    echo "📋 Labels created:"
+    echo "   /dev/disk/by-label/nixos-root  -> $(readlink -f /dev/disk/by-label/nixos-root)"
+    echo "   /dev/disk/by-label/NIXOS_BOOT  -> $(readlink -f /dev/disk/by-label/NIXOS_BOOT)"
+    echo
+    echo "🚀 Next steps:"
+    echo "   1. Your NixOS configuration is already set to use these labels"
+    echo "   2. Run: sudo nixos-rebuild switch --flake ~/.dotfiles#zanoni"
+    echo "   3. Reboot to test the label-based configuration"
+    echo
+    echo "🛡️  Your system is now resilient to UUID changes during recovery!"
+else
+    echo "❌ Label verification failed. Check the output above for errors."
+    exit 1
+fi
