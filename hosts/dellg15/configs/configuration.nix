@@ -15,6 +15,21 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
+  # Override filesystem configuration with labels for resilience
+  # This prevents UUID mismatch issues during GPT corruption recovery
+  # https://chatgpt.com/share/68e1bfff-f1d0-800e-b971-24f822d1c93b
+  fileSystems = lib.mkForce {
+    "/" = {
+      device = "/dev/disk/by-label/nixos-root";
+      fsType = "ext4";
+    };
+    "/boot" = {
+      device = "/dev/disk/by-label/NIXOS_BOOT";
+      fsType = "vfat";
+      options = [ "fmask=0022" "dmask=0022" ];
+    };
+  };
+
   # Enable experimental features
   nix.settings.experimental-features = [
     "nix-command"
