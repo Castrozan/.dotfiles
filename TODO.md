@@ -3,21 +3,15 @@
 
 - Config
   - [ ] Rice the config with quickshell https://github.com/caelestia-dots/shell
-  - [ ] zsh?
   - [ ] Tmux cpu is not working
-  - [ ] Fix formatting for nix
-  - [ ] Fix nix formatting on vscode
+  - [ ] Fix formatting for nix on vscode
   - [ ] Configure bonjour https://github.com/victrme/Bonjourr for brave and chrome
-  - [ ] Add more lsp servers for nvim (lua, python, etc)
-    - [ ] remove Mason
-  - [ ] Configure nerd fonts for terminal
-    - [ ] Jetbrains mono nerd fonts
-  - [ ] Config Fira code font for lucas.zanoni
-  - [ ] .inputrc
   - [ ] Tests
     - [ ] Config Ci
       - [ ] create a nixos ci
       - [ ] create a home-manager ci
+  - [x] .inputrc what to do with it? Its just for bash so leave it as is
+  - [x] zsh? Fish!
   - [x] Add tmux tpm plugins
     - [x] Remove tmp plugin folder on local ci
   - [x] Remove scripts framework
