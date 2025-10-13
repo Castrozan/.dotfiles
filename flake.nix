@@ -21,6 +21,10 @@
     catppuccin-bat.flake = false;
     tui-notifier.url = "github:castrozan/tui-notifier/1.0.1";
     readItNow-rc.url = "github:castrozan/readItNow-rc/1.1.0";
+    caelestia-shell = {
+      url = "github:caelestia-dots/shell/v1.3.1";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   # Outputs are used to define apps and dotfiles configuration for different systems and users
@@ -100,7 +104,7 @@
               ./hosts/dellg15
               ./users/${username}/nixos.nix
               home-manager.nixosModules.home-manager
-              (import ./users/${username}/nixos-home-config.nix)
+              ./users/${username}/nixos-home-config.nix
             ];
           };
         };
