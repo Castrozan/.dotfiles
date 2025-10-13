@@ -34,6 +34,7 @@
       lazydocker
       nixd
       nixpkgs-fmt
+      nixfmt-rfc-style
       nix-prefetch-github
       nodePackages.prettier
       terraform
