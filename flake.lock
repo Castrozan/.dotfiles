@@ -1,5 +1,52 @@
 {
   "nodes": {
+    "caelestia-cli": {
+      "inputs": {
+        "caelestia-shell": [
+          "caelestia-shell"
+        ],
+        "nixpkgs": [
+          "caelestia-shell",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1760147156,
+        "narHash": "sha256-ad+1gnp7Lm7jVSzqvGjMiwnA0P61dFZmp6HcRMXicWY=",
+        "owner": "caelestia-dots",
+        "repo": "cli",
+        "rev": "e9668d58f51e935094e50090b99301df8344f590",
+        "type": "github"
+      },
+      "original": {
+        "owner": "caelestia-dots",
+        "repo": "cli",
+        "type": "github"
+      }
+    },
+    "caelestia-shell": {
+      "inputs": {
+        "caelestia-cli": "caelestia-cli",
+        "nixpkgs": [
+          "nixpkgs"
+        ],
+        "quickshell": "quickshell"
+      },
+      "locked": {
+        "lastModified": 1758680848,
+        "narHash": "sha256-3eZJYkUwEUJXm/D3MfvRdxza+dLMHRe77dPTrpP21zM=",
+        "owner": "caelestia-dots",
+        "repo": "shell",
+        "rev": "1466adc629b00aa1484d146b4416c50c8b281570",
+        "type": "github"
+      },
+      "original": {
+        "owner": "caelestia-dots",
+        "ref": "v1.3.1",
+        "repo": "shell",
+        "type": "github"
+      }
+    },
     "catppuccin-bat": {
       "flake": false,
       "locked": {
@@ -135,6 +182,27 @@
         "type": "github"
       }
     },
+    "quickshell": {
+      "inputs": {
+        "nixpkgs": [
+          "caelestia-shell",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1760228179,
+        "narHash": "sha256-4Z6k7lv3Zcgk3K+4h60LpqB9wCkR+utkYERU735U068=",
+        "ref": "refs/heads/master",
+        "rev": "c9d3ffb6043c5bf3f3009202bad7e0e5132c4a25",
+        "revCount": 693,
+        "type": "git",
+        "url": "https://git.outfoxxed.me/outfoxxed/quickshell"
+      },
+      "original": {
+        "type": "git",
+        "url": "https://git.outfoxxed.me/outfoxxed/quickshell"
+      }
+    },
     "readItNow-rc": {
       "inputs": {
         "nixpkgs": "nixpkgs_2"
@@ -156,6 +224,7 @@
     },
     "root": {
       "inputs": {
+        "caelestia-shell": "caelestia-shell",
         "catppuccin-bat": "catppuccin-bat",
         "flake-utils": "flake-utils",
         "home-manager": "home-manager",
