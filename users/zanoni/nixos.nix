@@ -45,9 +45,10 @@ in
   # nix.nixPath = lib.mkForce ["/etc/nix/inputs"];
   # # https://github.com/NixOS/nix/issues/9574
   # nix.settings.nix-path = lib.mkForce "nixpkgs=/etc/nix/inputs/nixpkgs";
-  environment.variables = {
-    NIX_PATH = lib.mkDefault "nixpkgs=/nix/var/nix/profiles/per-user/root/channels/nixos";
-  };
+  # Removed NIX_PATH pointing to non-existent channels since we're using flakes
+  # environment.variables = {
+  #   NIX_PATH = lib.mkDefault "nixpkgs=/nix/var/nix/profiles/per-user/root/channels/nixos";
+  # };
 
   # Allows running uncompiled binaries from npm, pip and other packages
   programs.nix-ld.enable = true;
@@ -60,4 +61,7 @@ in
 
   # Enable Flatpak
   services.flatpak.enable = true;
+
+  # Disable command-not-found since we're using flakes
+  programs.command-not-found.enable = false;
 }
