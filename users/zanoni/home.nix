@@ -21,5 +21,6 @@
     ../../home/modules/vesktop.nix
     ../../home/modules/lazygit.nix
     ../../home/modules/flameshot.nix
+    ../../home/modules/vial.nix
   ];
 }
