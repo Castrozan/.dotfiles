@@ -83,7 +83,7 @@ in
 
     "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom4" = {
       name = "workbench";
-      binding = "<Super>w";
+      binding = "<Super><Shift>w";
       command = "bash -c 'cursor $HOME/workbench'";
     };
 
