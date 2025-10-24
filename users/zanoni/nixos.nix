@@ -14,6 +14,7 @@ in
     ../../nixos/modules/input-pkgs.nix
     ../../nixos/modules/steam.nix
     ../../nixos/modules/whisper-cpp.nix
+    ../../nixos/modules/media-streaming
   ];
 
   users.users.zanoni = {
