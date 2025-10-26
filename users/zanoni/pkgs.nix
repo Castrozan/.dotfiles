@@ -128,7 +128,6 @@
       claude-code
       # openshot-qt
       devenv
-      direnv
       gemini-cli
       vscode
     ]);
