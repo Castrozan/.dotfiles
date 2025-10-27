@@ -76,6 +76,13 @@
       wireguard-go
       wireguard-tools
 
+      # javascript
+      nodejs
+      pnpm
+      yarn
+      bun
+      deno
+
       # Applications
       obs-studio
       google-chrome
