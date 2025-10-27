@@ -9,6 +9,5 @@
     mplus-outline-fonts.githubRelease
     dina-font
     proggyfonts
-    #nerdfonts
-  ];
+  ] ++ builtins.filter lib.attrsets.isDerivation (builtins.attrValues pkgs.nerd-fonts);
 }
