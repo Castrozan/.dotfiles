@@ -34,6 +34,7 @@ in
   # More hyprland configuration in home/hyprland.nix
   programs.hyprland = {
     enable = true;
+    xwayland.enable = true;
   };
 
   # Enable fish globally so it's registered in /etc/shells and available as a login shell
