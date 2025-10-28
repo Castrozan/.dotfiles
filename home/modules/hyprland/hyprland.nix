@@ -4,20 +4,24 @@
   home.file.".config/waybar".source = ../../../.config/waybar;
 
   home.packages = with pkgs; [
-    swaylock-effects
-    swww
-    xclip
+    # Wayland tools
     wl-clipboard
-    gnome-tweaks
-    playerctl
-    pamixer
+    
+    # Wallpaper
+    hyprpaper
+    
+    # Notifications
     mako
     libnotify
-    glib
-    dunst
-
-    waybar
+    
+    # Lock screen
     hyprlock
-    hyprpaper
+    
+    # Media & volume
+    playerctl
+    pamixer
+    
+    # Status bar
+    waybar
   ];
 }
