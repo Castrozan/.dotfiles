@@ -5,9 +5,9 @@
     (code-cursor.overrideAttrs (
       old:
       let
-        version = "2.0.34";
-        buildId = "45fd70f3fe72037444ba35c9e51ce86a1977ac11";
-        sha256 = "sha256-x51N2BttMkfKwH4/Uxn/ZNFVPZbaNdsZm8BFFIMmxBM=";
+        version = "2.0.69";
+        buildId = "63fcac100bd5d5749f2a98aa47d65f6eca61db39";
+        sha256 = "sha256-dwhYqX3/VtutxDSDPoHicM8D/sUvkWRnOjrSOBPiV+s=";
       in
       {
         version = version;
