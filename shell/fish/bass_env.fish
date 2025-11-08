@@ -17,6 +17,11 @@ function __load_bash_env
   fish_add_path ~/.local/bin
   fish_add_path ~/.pyenv/bin
   fish_add_path $PNPM_HOME
+
+  # Set Obsidian vault path if it exists
+  if test -d ~/vault
+    set -gx OBSIDIAN_HOME ~/vault
+  end
 end
 
 __load_bash_env
