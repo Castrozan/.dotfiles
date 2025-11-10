@@ -7,6 +7,7 @@
 
     ./home/git.nix
     ./home/ssh.nix
+    ./home/asoundrc.nix
 
     ../../home/modules/clipse.nix
     ../../home/modules/cursor.nix
