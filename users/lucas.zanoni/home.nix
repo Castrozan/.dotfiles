@@ -22,5 +22,6 @@
     ../../home/modules/readItNow.nix
     ../../home/modules/sdkman.nix
     ../../home/modules/vial.nix
+    ../../home/modules/vscode
   ];
 }
