@@ -18,6 +18,7 @@
       delta
       discord
       docker-compose
+      fastfetch
       flameshot
       fzf
       gh
