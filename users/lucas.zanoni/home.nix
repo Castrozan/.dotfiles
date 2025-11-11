@@ -24,5 +24,6 @@
     ../../home/modules/sdkman.nix
     ../../home/modules/vial.nix
     ../../home/modules/vscode
+    ../../home/modules/cbonsai.nix
   ];
 }

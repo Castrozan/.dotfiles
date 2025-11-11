@@ -12,7 +12,6 @@
       bash-completion
       bat
       brave
-      cbonsai
       clipse
       curl
       delta
