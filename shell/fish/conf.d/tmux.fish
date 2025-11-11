@@ -10,7 +10,10 @@ function __start_tmux
     tmux send-keys -t screensaver.1 'pipes_screensaver' Enter
     if command -v cmatrix > /dev/null
       tmux split-window -v -t screensaver
-      tmux send-keys -t screensaver.2 'sleep 1; cmatrix' Enter
+      tmux send-keys -t screensaver.2 'sleep 1; cmatrix -U "🎄,⭐,🎁,🔔" -F 10' Enter
+      tmux select-pane -t 1
+    else
+      tmux select-pane -t 1
     end
   end
 

@@ -89,14 +89,16 @@ _start_screensaver_tmux_session() {
                 split-window -h \; \
                 send-keys 'pipes_screensaver' C-m \; \
                 split-window -v \; \
-                send-keys 'sleep 1; cmatrix -U "🎄,⭐,🎁,🔔" -F 10' C-m
+                send-keys 'sleep 1; cmatrix -U "🎄,⭐,🎁,🔔" -F 10' C-m \; \
+                select-pane -t 1
         else
             # Start bonsai and pipes as screensaver
             tmux new-session -d -s screensaver \; \
                 rename-window 'screensaver' \; \
                 send-keys 'bonsai_screensaver' C-m \; \
                 split-window -h \; \
-                send-keys 'pipes_screensaver' C-m
+                send-keys 'pipes_screensaver' C-m \; \
+                select-pane -t 1
         fi
     fi
 }
