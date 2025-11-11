@@ -25,5 +25,6 @@
     ../../home/modules/vial.nix
     ../../home/modules/vscode
     ../../home/modules/cbonsai.nix
+    ../../home/modules/cmatrix.nix
   ];
 }
