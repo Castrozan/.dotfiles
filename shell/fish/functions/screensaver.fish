@@ -15,5 +15,5 @@ end
 
 # Function for cbonsai as screensaver
 function bonsai_screensaver
-    bonsai -l -i -b 1 -c mWmW,wMwM,mMw -M 2 --life 35
+    bonsai -l -i -b 1 -c mWmW,wMwM,mMw -M 2 --life 35 -o "🎄,⭐,🎁,🔔" -f 60
 end
