@@ -23,6 +23,7 @@
     readItNow-rc.url = "github:castrozan/readItNow-rc/1.1.0";
     cbonsai.url = "github:castrozan/cbonsai";
     cmatrix.url = "github:castrozan/cmatrix";
+    tuisvn.url = "github:castrozan/tuisvn";
   };
 
   # Outputs are used to define apps and dotfiles configuration for different systems and users
