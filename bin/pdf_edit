@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+
+pdf-edit() {
+    # Check if container exists
+    if ! docker ps -a --format '{{.Names}}' | grep -q '^bentopdf$'; then
+        # Container doesn't exist, create it
+        docker run -d --name bentopdf --restart unless-stopped -p 8765:8080 bentopdf/bentopdf:latest
+    else
+        # Container exists, check if it's running
+        if ! docker ps --format '{{.Names}}' | grep -q '^bentopdf$'; then
+            # Container is stopped, start it
+            docker start bentopdf
+        fi
+    fi
+
+    # Wait a moment for the container to be ready
+    sleep 1
+
+    # Open in default browser (handles different OS platforms)
+    case "$(uname -s)" in
+    Darwin) # macOS
+        open http://localhost:8765
+        ;;
+    Linux)
+        xdg-open http://localhost:8765 >/dev/null 2>&1 &
+        ;;
+    MINGW* | CYGWIN* | MSYS*) # Windows
+        start http://localhost:8765
+        ;;
+    esac
+}
+
+pdf-edit "$@"
+
+
