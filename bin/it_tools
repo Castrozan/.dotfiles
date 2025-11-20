@@ -13,6 +13,9 @@ it-tools() {
         fi
     fi
 
+    # Schedule container to stop after 5 minutes
+    (sleep 300 && docker stop it-tools) >/dev/null 2>&1 &
+
     # Wait a moment for the container to be ready
     sleep 1
 
