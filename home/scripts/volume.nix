@@ -1,6 +1,6 @@
 { pkgs, ... }:
 let
-  script = builtins.readFile ../../../bin/volume;
+  script = builtins.readFile ../../bin/volume;
 in
 let
   volume = pkgs.writeShellScriptBin "volume" ''
@@ -8,5 +8,5 @@ let
   '';
 in
 {
-  environment.systemPackages = [ volume ];
+  home.packages = [ volume ];
 }
