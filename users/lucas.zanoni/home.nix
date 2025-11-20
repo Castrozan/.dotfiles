@@ -1,7 +1,5 @@
 {
   imports = [
-    ../../home/core.nix
-
     ./pkgs.nix
     ./scripts
 
@@ -9,6 +7,8 @@
     ./home/ssh.nix
     ./home/asoundrc.nix
 
+    ../../home/core.nix
+    ../../home/scripts
     ../../home/modules/clipse.nix
     ../../home/modules/cursor.nix
     ../../home/modules/flameshot.nix

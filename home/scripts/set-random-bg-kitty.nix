@@ -15,5 +15,5 @@ let
   '';
 in
 {
-  environment.systemPackages = [ set-random-bg-kitty ];
+  home.packages = [ set-random-bg-kitty ];
 }

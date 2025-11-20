@@ -1,10 +1,10 @@
 # Zanoni's Home Manager Configuration
 {
   imports = [
-    ../../home/core.nix
-
     ./home/git.nix
 
+    ../../home/core.nix
+    ../../home/scripts
     ../../home/modules/hyprland
     ../../home/modules/gnome
     ../../home/modules/kitty.nix
