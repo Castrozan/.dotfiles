@@ -26,7 +26,6 @@
       insomnia
       jq
       kubectl
-      lazydocker
       # lens TODO: fix lens, im using the snap version for now
       micronaut
       neofetch
@@ -55,6 +54,7 @@
     ++ (with latest; [
       claude-code
       devenv
+      lazydocker
       # gemini-cli TODO: fix gemini-cli, im using the npm version for now
     ]);
 }
