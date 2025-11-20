@@ -19,5 +19,5 @@ let
 
 in
 {
-  environment.systemPackages = [ on ];
+  home.packages = [ on ];
 }
