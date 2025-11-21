@@ -9,15 +9,15 @@ MSG_FILE="$1"
 STAGED=$(git diff --cached --name-only)
 
 # look for the first occurrence of users/<user>/ or hosts/<host>/
-SCOPE_DIR=$(echo "$STAGED" | grep -m1 -E '^(users|hosts)/[^/]+/' | sed -E 's|^(users|hosts)/([^/]+)/.*|\2|')
+SCOPE_DIR=$(echo "$STAGED" | grep -m1 -E '^(users|hosts)/[^/]+/' | sed -E 's#^(users|hosts)/([^/]+)/.*#\2#')
 
 # if no scope-dir found, skip
 [ -z "$SCOPE_DIR" ] && exit 0
 
 PREFIX="($SCOPE_DIR)"
 
-# don’t double‐up if it's already there
-grep -q "^[^:]+${PREFIX}:" "$MSG_FILE" && exit 0
+# don't double‐up if it's already there
+grep -qE "^[^:]+${PREFIX}:" "$MSG_FILE" && exit 0
 
 # insert prefix before the first colon on the first line
 if sed --version >/dev/null 2>&1; then
