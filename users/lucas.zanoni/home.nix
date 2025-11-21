@@ -9,6 +9,7 @@
 
     ../../home/core.nix
     ../../home/scripts
+    ../../home/modules/bananas.nix
     ../../home/modules/clipse.nix
     ../../home/modules/cursor.nix
     ../../home/modules/flameshot.nix
