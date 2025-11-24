@@ -24,6 +24,7 @@
     cbonsai.url = "github:castrozan/cbonsai";
     cmatrix.url = "github:castrozan/cmatrix";
     tuisvn.url = "github:castrozan/tuisvn";
+    install-nothing.url = "github:castrozan/install-nothing";
   };
 
   # Outputs are used to define apps and dotfiles configuration for different systems and users
