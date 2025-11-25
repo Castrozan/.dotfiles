@@ -40,19 +40,20 @@ _start_screensaver_tmux_session() {
         local first_cmd="${available_commands[0]}"
 
         # Send first command to the initial pane (full pane)
-        tmux send-keys -t screensaver.0 "$first_cmd" C-m
+        # Note: tmux panes are 1-indexed, not 0-indexed
+        tmux send-keys -t screensaver.1 "$first_cmd" C-m
 
         # Split horizontally for remaining commands
         # Each split creates a new pane; use '-' to target the last created pane
         for i in $(seq 1 $((${#available_commands[@]} - 1))); do
-            # Split the first pane (pane 0) horizontally
-            tmux split-window -h -t screensaver.0
+            # Split the first pane (pane 1) horizontally
+            tmux split-window -h -t screensaver.1
             # Send command to the newly created pane (last pane)
             tmux send-keys -t screensaver:- "${available_commands[$i]}" C-m
         done
 
         # Select the first pane
-        tmux select-pane -t screensaver.0
+        tmux select-pane -t screensaver.1
     fi
 }
 
