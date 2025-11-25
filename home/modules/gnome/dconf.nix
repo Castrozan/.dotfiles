@@ -105,10 +105,10 @@ in
       command = kitty-quick-temp-shell-command;
     };
 
-    # TODO: quoteme/whisper-input is broken, need to fix it
+    # Fixed: using forked repository with beepy 1.0.9 fix
     "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0" = {
       binding = "<Alt>a";
-      command = "nix run github:quoteme/whisper-input";
+      command = "nix run github:Castrozan/whisper-input";
       name = "whisper";
     };
 
