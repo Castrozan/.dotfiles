@@ -76,41 +76,7 @@ export EDITOR=cursor
 
 ## END GLOBAL VARIABLES
 
-# Function to start the first tmux session for screensaver
-_start_screensaver_tmux_session() {
-    # Check if the screensaver session exists
-    if ! tmux has-session -t screensaver 2>/dev/null; then
-
-        if command -v cmatrix &>/dev/null; then
-            # Start cmatrix, bonsai and pipes as screensaver
-            tmux new-session -d -s screensaver \; \
-                rename-window 'screensaver' \; \
-                send-keys 'bonsai_screensaver' C-m \; \
-                split-window -h \; \
-                send-keys 'pipes_screensaver' C-m \; \
-                split-window -v \; \
-                send-keys 'sleep 1; cmatrix -U "🎄,⭐,🎁,🔔" -F 10' C-m \; \
-                select-pane -t 1
-        else
-            # Start bonsai and pipes as screensaver
-            tmux new-session -d -s screensaver \; \
-                rename-window 'screensaver' \; \
-                send-keys 'bonsai_screensaver' C-m \; \
-                split-window -h \; \
-                send-keys 'pipes_screensaver' C-m \; \
-                select-pane -t 1
-        fi
-    fi
-}
-
-# Function to start a main tmux session
-_start_main_tmux_session() {
-    # Check if the main session exists
-    if ! tmux has-session -t main 2>/dev/null; then
-        tmux new-session -d -s main -n main
-    fi
-}
-
+# Function to start tmux sessions
 _start_tmux() {
     # Start tmux
     _start_screensaver_tmux_session
@@ -252,4 +218,5 @@ fi
 . $HOME/.dotfiles/shell/bash_aliases.sh
 . $HOME/.dotfiles/shell/zoxide.sh
 . $HOME/.dotfiles/shell/screensaver.sh
+. $HOME/.dotfiles/shell/tmux_main.sh
 . $HOME/.dotfiles/shell/default_directories.sh

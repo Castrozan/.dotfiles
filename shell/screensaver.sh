@@ -1,22 +1,7 @@
 #!/usr/bin/env bash
 
-# Function for cbonsai
-bonsai() {
-    cbonsai "$@"
-}
-
-# Function for pipes.sh
-# shellcheck disable=SC2120
-pipes() {
-    pipes.sh "$@"
-}
-
-# Function for pipes as screensaver
-pipes_screensaver() {
-    pipes
-}
-
-# Function for cbonsai as screensaver
-bonsai_screensaver() {
-    bonsai -l -i -b 1 -c mWmW,wMwM,mMw -M 2 --life 35 -o "🎄,⭐,🎁,🔔" -f 60
-}
+# Source screensaver configuration and core functions
+# shellcheck source=shell/screensaver/config.sh
+source ~/.dotfiles/shell/screensaver/config.sh
+# shellcheck source=shell/screensaver/core.sh
+source ~/.dotfiles/shell/screensaver/core.sh
