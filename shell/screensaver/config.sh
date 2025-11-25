@@ -5,7 +5,7 @@
 # Commands include all arguments - no wrapper functions needed
 SCREENSAVER_COMMANDS=(
     'cbonsai -l -i -b 1 -c mWmW,wMwM,mMw -M 2 --life 35 -o "🎄,⭐,🎁,🔔" -f 60'
-    'pipes.sh'
+    'install-nothing'
     'cmatrix -U "🎄,⭐,🎁,🔔" -F 10'
 )
 
