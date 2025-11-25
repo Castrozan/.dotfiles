@@ -23,7 +23,6 @@ source ~/.dotfiles/shell/fish/conf.d/key_bindings.fish
 
 # Functions
 source ~/.dotfiles/shell/fish/functions/fish_prompt.fish
-source ~/.dotfiles/shell/fish/functions/screensaver.fish
 source ~/.dotfiles/shell/fish/functions/cursor.fish
 source ~/.dotfiles/shell/fish/functions/sdk.fish
 
