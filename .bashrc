@@ -77,11 +77,17 @@ export EDITOR=cursor
 ## END GLOBAL VARIABLES
 
 # Function to start tmux sessions
+# Uses inline sourcing to ensure dependencies are available even if called before files are sourced
 _start_tmux() {
-    # Start tmux
-    _start_screensaver_tmux_session
-    _start_main_tmux_session
-    tmux attach -t screensaver
+    (
+        # shellcheck source=shell/screensaver.sh
+        source ~/.dotfiles/shell/screensaver.sh
+        # shellcheck source=shell/tmux_main.sh
+        source ~/.dotfiles/shell/tmux_main.sh
+        _start_screensaver_tmux_session
+        _start_main_tmux_session
+        tmux attach -t screensaver
+    )
 }
 
 # Open tmux sessions on startup
