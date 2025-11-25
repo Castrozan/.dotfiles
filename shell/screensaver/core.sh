@@ -39,20 +39,32 @@ _start_screensaver_tmux_session() {
     if [ ${#available_commands[@]} -gt 0 ]; then
         local first_cmd="${available_commands[0]}"
 
-        # Send first command to the initial pane (full pane)
+        # Send first command to the initial pane (full pane, left side)
         # Note: tmux panes are 1-indexed, not 0-indexed
         tmux send-keys -t screensaver.1 "$first_cmd" C-m
 
-        # Split horizontally for remaining commands
-        # Each split creates a new pane; use '-' to target the last created pane
-        for i in $(seq 1 $((${#available_commands[@]} - 1))); do
-            # Split the first pane (pane 1) horizontally
+        # For remaining commands, create right side panes
+        # Layout: Left (large) = first command, Right side = remaining commands
+        # If 3 commands: top-right = third, bottom-right = second
+        if [ ${#available_commands[@]} -gt 1 ]; then
+            # Split horizontally to create right side (pane 2)
             tmux split-window -h -t screensaver.1
-            # Send command to the newly created pane (last pane)
-            tmux send-keys -t screensaver:- "${available_commands[$i]}" C-m
-        done
+            
+            # If there are 3 commands: create vertical split on right side
+            if [ ${#available_commands[@]} -gt 2 ]; then
+                # Send third command (cmatrix) to top-right (pane 2)
+                tmux send-keys -t screensaver.2 "${available_commands[2]}" C-m
+                # Split pane 2 vertically to create bottom-right pane (pane 3)
+                tmux split-window -v -t screensaver.2
+                # Send second command (pipes.sh) to the bottom-right pane (pane 3)
+                tmux send-keys -t screensaver.3 "${available_commands[1]}" C-m
+            else
+                # Only 2 commands: second goes to right pane
+                tmux send-keys -t screensaver.2 "${available_commands[1]}" C-m
+            fi
+        fi
 
-        # Select the first pane
+        # Select the first pane (left side, bonsai)
         tmux select-pane -t screensaver.1
     fi
 }
