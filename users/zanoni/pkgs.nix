@@ -99,9 +99,7 @@
       vesktop
 
       # Terminal Eye Candy
-      cbonsai
       pipes
-      cmatrix
 
       vim
       wget
