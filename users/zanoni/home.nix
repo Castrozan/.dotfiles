@@ -22,5 +22,8 @@
     ../../home/modules/lazygit.nix
     ../../home/modules/flameshot.nix
     ../../home/modules/vial.nix
+    ../../home/modules/cbonsai.nix
+    ../../home/modules/cmatrix.nix
+    ../../home/modules/install-nothing.nix
   ];
 }
