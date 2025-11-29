@@ -12,6 +12,7 @@
       bash-completion
       bat
       brave
+      bruno
       clipse
       curl
       delta
