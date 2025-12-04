@@ -56,7 +56,7 @@
     options = lib.mkDefault "--delete-older-than 7d";
   };
 
-  boot.kernel.sysctl."vm.swappiness" = 70;
+  boot.kernel.sysctl."vm.swappiness" = 80;
   swapDevices = [
     {
       device = "/swapfile";
