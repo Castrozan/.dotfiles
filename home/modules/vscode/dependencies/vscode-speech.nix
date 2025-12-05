@@ -2,6 +2,8 @@
 {
   # Ensure ALSA libraries are available for any speech/voice extensions.
   #
+  # arecord -l
+  #
   # Note: some voice-identification or microphone-based tools expect ALSA's
   # default device to be configured in the user's `~/.asoundrc`. If your mic
   # is on ALSA card 0, for example, create `~/.asoundrc` with:
