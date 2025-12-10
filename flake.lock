@@ -171,11 +171,11 @@
         "nixpkgs": "nixpkgs_3"
       },
       "locked": {
-        "lastModified": 1763946011,
-        "narHash": "sha256-VlUKyQMPIafSum4TJraL7qFnjvnJijJiklyvffmS+pg=",
+        "lastModified": 1765388681,
+        "narHash": "sha256-MDBjI3ju/wMqMBybiP2N+szJXolURZdCZ1604Vhr5pY=",
         "owner": "castrozan",
         "repo": "install-nothing",
-        "rev": "9c8e805d6eab12155fbf383ec983d649934768ab",
+        "rev": "58326275527950ab046ed71d90b1b352f675ec2c",
         "type": "github"
       },
       "original": {
