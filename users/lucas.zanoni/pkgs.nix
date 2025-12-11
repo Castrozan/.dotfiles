@@ -24,6 +24,7 @@
       gh
       git
       gnutar
+      go
       insomnia
       jq
       kubectl
