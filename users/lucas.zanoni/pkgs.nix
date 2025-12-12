@@ -36,6 +36,7 @@
       nixfmt-rfc-style
       nodejs
       obsidian
+      ollama
       pipes
       postman
       redisinsight
