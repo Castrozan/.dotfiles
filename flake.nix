@@ -25,6 +25,10 @@
     cmatrix.url = "github:castrozan/cmatrix";
     tuisvn.url = "github:castrozan/tuisvn";
     install-nothing.url = "github:castrozan/install-nothing";
+    the-editor = {
+      url = "github:misterclayt0n/the-editor/a7c589f40fd955d9e84fc059d469618b90b5a92a";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   # Outputs are used to define apps and dotfiles configuration for different systems and users
