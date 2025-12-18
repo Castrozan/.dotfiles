@@ -3,6 +3,9 @@ set fish_greeting
 # Enable autosuggestions
 set -g fish_autosuggestion_enabled 1
 
+# Add cargo bin to PATH
+fish_add_path ~/.cargo/bin
+
 # TODO: this should be sourced from a lucas.zanoni specific file on it's config dir
 # NSS library preload for corporate authentication (required for devenv)
 # Only set for lucas.zanoni user
