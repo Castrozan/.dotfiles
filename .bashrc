@@ -174,6 +174,15 @@ case ":$PATH:" in
 *) export PATH="$PNPM_HOME:$PATH" ;;
 esac
 
+# cargo
+# Add cargo bin to PATH if it exists and is not already in PATH
+if [ -d "$HOME/.cargo/bin" ]; then
+  case ":$PATH:" in
+  *":$HOME/.cargo/bin:"*) ;;
+  *) export PATH="$HOME/.cargo/bin:$PATH" ;;
+  esac
+fi
+
 # fzf
 [ -f $HOME/.fzf.bash ] && . $HOME/.fzf.bash
 
