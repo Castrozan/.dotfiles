@@ -101,7 +101,7 @@
     },
     {
         "key": "ctrl+shift+i",
-        "command": "workbench.action.chat.readChatResponseAloud"
+        "command": "-workbench.action.chat.readChatResponseAloud"
     },
     {
         "key": "ctrl+i",
@@ -135,6 +135,16 @@
     },
     {
         "command": "runCommands",
+        "key": "ctrl+shift+k",
+        "args": {
+            "commands": [
+                "workbench.action.focusSideBar",
+                "workbench.action.increaseViewSize"
+            ]
+        }
+    },
+    {
+        "command": "runCommands",
         "key": "ctrl+shift+j",
         "args": {
             "commands": [
@@ -144,13 +154,72 @@
         }
     },
     {
+        "key": "ctrl+e",
+        "command": "-cursor.toggleAgentWindowIDEUnification",
+        "when": "cursor.agentIdeUnification.featureGate && workbenchState != 'empty'"
+    },
+    {
         "command": "runCommands",
-        "key": "ctrl+shift+k",
+        "key": "ctrl+shift+m",
         "args": {
             "commands": [
-                "workbench.action.focusSideBar",
+                "workbench.action.focusAuxiliaryBar",
                 "workbench.action.increaseViewSize"
             ]
         }
+    },
+    {
+        "command": "runCommands",
+        "key": "ctrl+shift+,",
+        "args": {
+            "commands": [
+                "workbench.action.focusAuxiliaryBar",
+                "workbench.action.decreaseViewSize"
+            ]
+        }
+    },
+    {
+        "key": "ctrl+shift+i",
+        "command": "-workbench.action.toggleDevTools",
+        "when": "isDevelopment"
+    },
+    {
+        "key": "ctrl+shift+i",
+        "command": "-notebook.formatCell",
+        "when": "editorHasDocumentFormattingProvider && editorTextFocus && inCompositeEditor && notebookEditable && !editorReadonly && activeEditor == 'workbench.editor.notebook'"
+    },
+    {
+        "key": "ctrl+shift+i",
+        "command": "-editor.action.formatDocument",
+        "when": "editorHasDocumentFormattingProvider && editorTextFocus && !editorReadonly && !inCompositeEditor"
+    },
+    {
+        "key": "ctrl+shift+i",
+        "command": "-editor.action.formatDocument.none",
+        "when": "editorTextFocus && !editorHasDocumentFormattingProvider && !editorReadonly"
+    },
+    {
+        "key": "ctrl+shift+i",
+        "command": "-notebook.format",
+        "when": "notebookEditable && !editorTextFocus && activeEditor == 'workbench.editor.notebook'"
+    },
+    {
+        "key": "ctrl+shift+i",
+        "command": "-composer.newAgentChat"
+    },
+    {
+        "key": "ctrl+i",
+        "command": "-workbench.action.terminal.chat.start",
+        "when": "chatIsEnabled && terminalChatAgentRegistered && terminalFocusInAny && terminalHasBeenCreated || chatIsEnabled && terminalChatAgentRegistered && terminalFocusInAny && terminalProcessSupported"
+    },
+    {
+        "key": "ctrl+i",
+        "command": "-inlineChat2.stop",
+        "when": "inlineChatHasEditsAgent && inlineChatVisible && chatEdits.requestCount == '0'"
+    },
+    {
+        "key": "ctrl+i",
+        "command": "-search.action.searchWithAI",
+        "when": "hasAIResultProviderKey && searchViewletFocus"
     }
 ]
