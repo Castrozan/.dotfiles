@@ -11,7 +11,7 @@
     ../../home/scripts
     ../../home/modules/bananas.nix
     ../../home/modules/clipse.nix
-    ../../home/modules/cursor.nix
+    ../../home/modules/cursor
     ../../home/modules/flameshot.nix
     ../../home/modules/fish.nix
     ../../home/modules/gnome/dconf.nix

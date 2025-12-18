@@ -1,0 +1,279 @@
+{
+    "editor.formatOnSave": true,
+    "security.workspace.trust.enabled": false,
+    "explorer.confirmDelete": false,
+    "git.openRepositoryInParentFolders": "never",
+    "terminal.integrated.enableMultiLinePasteWarning": "auto",
+    "javascript.updateImportsOnFileMove.enabled": "always",
+    "typescript.updateImportsOnFileMove.enabled": "always",
+    "explorer.confirmDragAndDrop": false,
+    "window.newWindowDimensions": "maximized",
+    "window.openFoldersInNewWindow": "on",
+    "window.restoreWindows": "none",
+    "terminal.integrated.defaultProfile.linux": "tmux",
+    "editor.fontFamily": "Fira Code",
+    "extensions.ignoreRecommendations": true,
+    "workbench.panel.defaultLocation": "left",
+    "workbench.colorCustomizations": {
+        "editorRuler.foreground": "#525170"
+    },
+    "editor.fontSize": 14,
+    "editor.lineHeight": 1.4,
+    "editor.renderLineHighlight": "gutter",
+    "workbench.editor.labelFormat": "default",
+    "workbench.activityBar.location": "default",
+    "explorer.fileNesting.enabled": false,
+    "editor.scrollbar.horizontal": "hidden",
+    "editor.scrollbar.vertical": "hidden",
+    "diffEditor.ignoreTrimWhitespace": false,
+    "window.openFilesInNewWindow": "on",
+    "editor.lightbulb.enabled": "onCode",
+    "bashIde.explainshellEndpoint": "http://localhost:5000",
+    "explorer.confirmPasteNative": false,
+    "window.zoomPerWindow": false,
+    "keyboard.dispatch": "keyCode",
+    "markdown.extension.print.theme": "dark",
+    "window.autoDetectColorScheme": true,
+    "window.confirmSaveUntitledWorkspace": false,
+    "workbench.preferredDarkColorTheme": "GitHub Dark Default",
+    "files.associations": {
+        "*.desktop": "toml"
+    },
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": "always"
+    },
+    "editor.rulers": [
+        80,
+        120
+    ],
+    "nix.serverPath": "nixd",
+    "nix.enableLanguageServer": true,
+    "nix.serverSettings": {
+        "nixd": {
+            "formatting": {
+                "command": [
+                    "nixfmt"
+                ]
+            }
+        }
+    },
+    "[nix]": {
+        "editor.defaultFormatter": "jnoortheen.nix-ide",
+        "editor.insertSpaces": true,
+        "editor.tabSize": 4,
+        "editor.useTabStops": true
+    },
+    "[javascript]": {
+        "editor.defaultFormatter": "vscode.typescript-language-features"
+    },
+    "[python]": {
+        "editor.formatOnType": true
+    },
+    "[json]": {
+        "editor.defaultFormatter": "vscode.json-language-features"
+    },
+    "[html]": {
+        "editor.defaultFormatter": "vscode.html-language-features"
+    },
+    "[typescript]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[dotenv]": {
+        "editor.defaultFormatter": "foxundermoon.shell-format"
+    },
+    "[dockerfile]": {
+        "editor.defaultFormatter": "foxundermoon.shell-format"
+    },
+    "[ignore]": {
+        "editor.defaultFormatter": "foxundermoon.shell-format"
+    },
+    "[properties]": {
+        "editor.defaultFormatter": "foxundermoon.shell-format"
+    },
+    "[jsonc]": {
+        "editor.tabSize": 4,
+        "editor.defaultFormatter": "vscode.json-language-features"
+    },
+    "[markdown]": {
+        "editor.defaultFormatter": "yzhang.markdown-all-in-one"
+    },
+    "cursor.chat.terminalShowHoverHint": false,
+    "cursor.cpp.disabledLanguages": [
+        "plaintext"
+    ],
+    "cSpell.language": "en,pt-br",
+    "cSpell.userWords": [
+        "abouts",
+        "adduser",
+        "alsa",
+        "amdgpu",
+        "Aplicacoes",
+        "appimage",
+        "asoundrc",
+        "AUTOINCREMENT",
+        "avro",
+        "BEGINTOLLID",
+        "betha",
+        "Botpress",
+        "btop",
+        "buson",
+        "cachix",
+        "castrozan",
+        "catppuccin",
+        "Catppuccin",
+        "cbonsai",
+        "ciuser",
+        "claude",
+        "clipse",
+        "cloudflare",
+        "cmatrix",
+        "Cobranca",
+        "Configurator",
+        "coreutils",
+        "cudatoolkit",
+        "darwin",
+        "dconf",
+        "dellg",
+        "deno",
+        "devenv",
+        "dimensao",
+        "direnv",
+        "dooit",
+        "dotfile",
+        "dotfiles",
+        "ENDTOOLID",
+        "explainshell",
+        "fetchurl",
+        "finegrained",
+        "flameshot",
+        "flatpak",
+        "fullpath",
+        "functioncalling",
+        "fuzzel",
+        "gamemode",
+        "gemini",
+        "github",
+        "GITHUB",
+        "gitlab",
+        "glassfish",
+        "Goonah",
+        "htmx",
+        "httpclient",
+        "hyprctl",
+        "hyprland",
+        "hyprlock",
+        "icone",
+        "integracao",
+        "intellij",
+        "jarvis",
+        "jboss",
+        "keybind",
+        "keymap",
+        "killport",
+        "Kocaballi",
+        "KOCABALLI",
+        "lazygit",
+        "libinput",
+        "libnss",
+        "linkedin",
+        "linux",
+        "llms",
+        "Localstack",
+        "mentoria",
+        "Mezzari",
+        "micronaut",
+        "mktemp",
+        "modeset",
+        "modesetting",
+        "neovim",
+        "networkmanager",
+        "nixos",
+        "nixpkgs",
+        "Nord",
+        "notificacoes",
+        "numtide",
+        "nvidia",
+        "nvim",
+        "nvtop",
+        "openai",
+        "openframe",
+        "Parametros",
+        "persistenced",
+        "pipx",
+        "pkgs",
+        "pname",
+        "POSIX",
+        "postgres",
+        "postgresql",
+        "poweroff",
+        "preexec",
+        "Radeon",
+        "Rapp",
+        "RAPP",
+        "rayan's",
+        "readitnow",
+        "researchs",
+        "ripgrep",
+        "satc",
+        "sdkman",
+        "Sdkman",
+        "SDKMAN",
+        "Selecao",
+        "setsid",
+        "specialisation",
+        "stylix",
+        "subcontext",
+        "subcontexto",
+        "Subcontexto",
+        "subcontextos",
+        "subcontexts",
+        "Subcontexts",
+        "substituters",
+        "supabase",
+        "Thyerri",
+        "toplevel",
+        "treesitter",
+        "tuisvn",
+        "tzdata",
+        "uncompiled",
+        "usermod",
+        "usuario",
+        "verificacaoidentidade",
+        "wgnord",
+        "wildfly",
+        "wlogout",
+        "WORKDIR",
+        "worktree",
+        "Xorg",
+        "yazi",
+        "Youtube",
+        "zanoni",
+        "zoxide",
+        "Zoxide"
+    ],
+    "github.copilot.enable": {
+        "plaintext": true,
+        "markdown": true,
+        "scminput": true
+    },
+    "[shellscript]": {
+        "editor.defaultFormatter": "mads-hartmann.bash-ide-vscode"
+    },
+    "cSpell.enabledNotifications": {
+        "Average Word Length too Long": false,
+        "Lines too Long": false,
+        "Maximum Word Length Exceeded": false
+    },
+    "[typescriptreact]": {
+        "editor.defaultFormatter": "vscode.typescript-language-features"
+    },
+    "git.enableSmartCommit": true,
+    "clangd.path": "/home/lucas.zanoni/.config/Cursor/User/globalStorage/llvm-vs-code-extensions.vscode-clangd/install/21.1.0/clangd_21.1.0/bin/clangd",
+    "git.confirmSync": false,
+    "json.schemaDownload.enable": true,
+    "workbench.layoutControl.enabled": false,
+    "cursor.composer.queueMessageDefaultBehavior": "send",
+    "cursor.composer.usageSummaryDisplay": "always",
+    "cursor.composer.shouldChimeAfterChatFinishes": true
+}
