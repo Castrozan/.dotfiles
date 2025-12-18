@@ -5,9 +5,9 @@
     (code-cursor.overrideAttrs (
       old:
       let
-        version = "2.2.20";
-        buildId = "b3573281c4775bfc6bba466bf6563d3d498d1074";
-        sha256 = "sha256-dY42LaaP7CRbqY2tuulJOENa+QUGSL09m07PvxsZCr0=";
+        version = "2.2.36";
+        buildId = "55c9bc11e99cedd1fb93fbb7996abf779c58315f";
+        hash = "t6PJJcTlLVPd3MfJEdMfsbwUMeDBOfAGZiQArGrHzLo=";
       in
       {
         version = version;
@@ -15,7 +15,7 @@
           pname = "code-cursor";
           version = version;
           src = pkgs.fetchurl {
-            sha256 = sha256;
+            sha256 = "sha256-" + hash;
             url =
               "https://downloads.cursor.com/production/"
               + buildId
