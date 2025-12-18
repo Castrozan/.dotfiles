@@ -1,7 +1,6 @@
 { latest, ... }:
 {
   home.packages = with latest; [
-    # code-cursor
     (code-cursor.overrideAttrs (
       old:
       let
