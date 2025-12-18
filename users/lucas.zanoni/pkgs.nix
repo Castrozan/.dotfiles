@@ -22,6 +22,7 @@
       flameshot
       fzf
       gh
+      ghostty
       git
       gnutar
       go
