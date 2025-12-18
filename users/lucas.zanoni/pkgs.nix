@@ -13,6 +13,7 @@
       bat
       brave
       bruno
+      cargo
       clipse
       curl
       delta
@@ -42,6 +43,7 @@
       postman
       redisinsight
       ripgrep-all
+      rustc
       tree
       unzip
       uv
