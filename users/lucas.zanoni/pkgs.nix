@@ -39,6 +39,7 @@
       nodejs
       obsidian
       ollama
+      opencode
       pipes
       postman
       redisinsight

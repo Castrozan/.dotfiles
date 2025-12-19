@@ -70,21 +70,19 @@
       # nix run home-manager/master -- --flake $HOME/.dotfiles/nixos#${username}@${system} switch -b backup
       homeConfigurations =
         let
-          username = "lucas.zanoni";
-          # Real inheritance
-          specialArgs = specialArgsBase // {
-            inherit username;
+          mkHomeConfigFor = username: {
+            "${username}@${system}" = home-manager.lib.homeManagerConfiguration {
+              inherit pkgs;
+
+              extraSpecialArgs = specialArgsBase // {
+                inherit username;
+              };
+
+              modules = [ ./users/${username}/home.nix ];
+            };
           };
         in
-        {
-          "${username}@${system}" = home-manager.lib.homeManagerConfiguration {
-            inherit pkgs;
-
-            extraSpecialArgs = specialArgs;
-
-            modules = [ ./users/${username}/home.nix ];
-          };
-        };
+        (mkHomeConfigFor "lucas.zanoni") // (mkHomeConfigFor "cleber");
 
       # nixosConfigurations.${username} is a NixOS system configuration
       # nixos-rebuild switch --flake ~/.dotfiles/nixos#${username}
