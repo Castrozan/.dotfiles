@@ -70,6 +70,7 @@
       # nix run home-manager/master -- --flake $HOME/.dotfiles/nixos#${username}@${system} switch -b backup
       homeConfigurations =
         let
+          # Function definition
           mkHomeConfigFor = username: {
             "${username}@${system}" = home-manager.lib.homeManagerConfiguration {
               inherit pkgs;
@@ -82,6 +83,7 @@
             };
           };
         in
+        # Function call with arguments
         (mkHomeConfigFor "lucas.zanoni") // (mkHomeConfigFor "cleber");
 
       # nixosConfigurations.${username} is a NixOS system configuration
