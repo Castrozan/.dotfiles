@@ -49,7 +49,7 @@
       unzip
       uv
       vim
-      wl-clipboard
+      # wl-clipboard
       xclip
       yamllint
       yazi
@@ -63,5 +63,6 @@
       devenv
       lazydocker
       # gemini-cli TODO: fix gemini-cli, im using the npm version for now
+      suwayomi-server
     ]);
 }
