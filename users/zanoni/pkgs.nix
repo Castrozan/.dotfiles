@@ -107,6 +107,7 @@
       git
       bash
       bash-completion
+      sqlite
       vlc
       tmux
       usbutils
