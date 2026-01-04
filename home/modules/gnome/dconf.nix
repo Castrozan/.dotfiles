@@ -90,7 +90,7 @@ in
 
     "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom4" = {
       name = "workbench";
-      binding = "<Super><Shift>w";
+      binding = "<Super>w";
       command = "bash -c 'cursor $HOME/workbench'";
     };
 
