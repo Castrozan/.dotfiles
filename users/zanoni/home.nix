@@ -2,6 +2,7 @@
 {
   imports = [
     ./home/git.nix
+    ./home/session-vars.nix
 
     ../../home/core.nix
     ../../home/scripts
