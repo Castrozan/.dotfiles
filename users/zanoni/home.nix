@@ -10,6 +10,7 @@
     ../../home/modules/gnome
     ../../home/modules/kitty.nix
     ../../home/modules/fish.nix
+    ../../home/modules/clipse.nix
     ../../home/modules/vscode
     # ../../home/modules/common.nix
     ../../home/modules/bash.nix
