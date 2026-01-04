@@ -92,6 +92,7 @@
   services.xserver.displayManager.gdm.enable = true;
   services.xserver.desktopManager.gnome.enable = true;
   programs.dconf.enable = true;
+  programs.command-not-found.enable = false;
 
   # Set the display configuration
   # window manager should manage this so no need to set it here
