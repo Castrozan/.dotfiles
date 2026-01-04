@@ -2,6 +2,7 @@
 {
   imports = [
     ./home/git.nix
+    ./home/session-vars.nix
 
     ../../home/core.nix
     ../../home/scripts
@@ -18,6 +19,7 @@
     ../../home/modules/fuzzel.nix
     ../../home/modules/playwright.nix
     ../../home/modules/cursor
+    ../../home/modules/obsidian.nix
     ../../home/modules/vesktop.nix
     ../../home/modules/lazygit.nix
     ../../home/modules/flameshot.nix

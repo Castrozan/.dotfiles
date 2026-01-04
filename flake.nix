@@ -41,6 +41,7 @@
     let
       system = "x86_64-linux"; # linux system architecture
       home-version = "25.05";
+      nixpkgs-version = "25.05";
       # Configure nixpkgs then attribute it to pkgs at the same time
       pkgs = import nixpkgs {
         inherit system;
@@ -58,9 +59,10 @@
       specialArgsBase = {
         # Fake inheritance, this is just composition
         inherit
+          nixpkgs-version
           home-version
-          inputs
           unstable
+          inputs
           latest
           ;
       };
