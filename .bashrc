@@ -70,10 +70,13 @@ xterm* | rxvt*)
 esac
 
 ## BEGIN DEFINE GLOBAL VARIABLES
-
-# Define default editor
-export EDITOR=cursor
-
+# Note: most of the global variables are managed by Home Manager sessionVariables
+# See: users/$USER/home/session-vars.nix
+# Source Home Manager session variables (single source of truth for environment variables)
+if [ -f "$HOME/.nix-profile/etc/profile.d/hm-session-vars.sh" ]; then
+    # shellcheck source=/dev/null
+    . "$HOME/.nix-profile/etc/profile.d/hm-session-vars.sh"
+fi
 ## END GLOBAL VARIABLES
 
 # Function to start tmux sessions
@@ -153,12 +156,6 @@ export NVM_DIR="$HOME/.nvm"
 # Pyenv variables
 export PYENV_ROOT=$HOME/.pyenv
 export PATH="$PYENV_ROOT/bin:$PATH"
-
-# Obsidian
-if [ -d "$HOME/vault" ]; then
-    # Set the path to the Obsidian vault
-    export OBSIDIAN_HOME="$HOME/vault"
-fi
 
 # Sdkman
 export SDKMAN_DIR="$HOME/.sdkman"
