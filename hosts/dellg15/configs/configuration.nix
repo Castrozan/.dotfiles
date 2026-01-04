@@ -2,6 +2,7 @@
   pkgs,
   lib,
   username,
+  nixpkgs-version,
   ...
 }:
 {
@@ -38,6 +39,29 @@
     "flakes"
   ];
 
+  ## BEGIN NixOS rebuild optimizations
+  # 1. Binary caches - huge win for build speed
+  nix.settings.substituters = [
+    "https://cache.nixos.org"
+    "https://nix-community.cachix.org"
+  ];
+  nix.settings.trusted-public-keys = [
+    "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+    "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkQK2jNw1v8Q2xkzX1Zqk="
+  ];
+
+  # 2. Parallelism - use all CPU cores
+  nix.settings.max-jobs = "auto";
+  nix.settings.cores = 0; # use all cores
+
+  # 3. Eval cache - faster repeated rebuilds
+  nix.settings.eval-cache = true;
+
+  # 4. Sandbox and store optimization
+  nix.settings.sandbox = true;
+  nix.settings.auto-optimise-store = true;
+  ## END NixOS rebuild optimizations
+
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
 
@@ -47,7 +71,7 @@
   # this value at the release version of the first install of this system.
   # Before changing this value read the documentation for this option
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
-  system.stateVersion = "25.05"; # Did you read the comment?
+  system.stateVersion = nixpkgs-version; # Did you read the comment?
 
   # Garbage collection
   nix.gc = {
