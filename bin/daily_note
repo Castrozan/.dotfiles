@@ -21,7 +21,7 @@ daily_note() {
         return 1
     fi
 
-    fullpath="$OBSIDIAN_HOME/$filename"
+    fullpath="$OBSIDIAN_HOME/daily-note/$filename"
 
     # Create the file if it doesn't exist
     if [ ! -f "$fullpath" ]; then
