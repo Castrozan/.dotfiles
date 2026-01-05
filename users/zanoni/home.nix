@@ -29,5 +29,6 @@
     ../../home/modules/cmatrix.nix
     ../../home/modules/install-nothing.nix
     ../../home/modules/keyd.nix
+    ../../home/modules/suwayomi-server.nix
   ];
 }
