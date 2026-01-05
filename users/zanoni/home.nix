@@ -28,5 +28,6 @@
     ../../home/modules/cbonsai.nix
     ../../home/modules/cmatrix.nix
     ../../home/modules/install-nothing.nix
+    ../../home/modules/keyd.nix
   ];
 }
