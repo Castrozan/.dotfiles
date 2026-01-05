@@ -15,6 +15,7 @@ in
     ../../nixos/modules/steam.nix
     ../../nixos/modules/whisper-cpp.nix
     ../../nixos/modules/media-streaming
+    ../../nixos/modules/keyd.nix
   ];
 
   users.users.zanoni = {
