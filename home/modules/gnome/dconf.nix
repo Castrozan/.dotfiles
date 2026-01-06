@@ -58,6 +58,12 @@ in
     # "org/gnome/shell/keybindings" = {
     #   switch-to-application-1 = [ ];
     # };
+
+    "org/gnome/shell/keybindings" = {
+      # Disable Super+v for notification list
+      toggle-message-tray = [ ];
+    };
+
     "org/gnome/shell" = {
       # Enable Super+1,2,3... to launch them
       favorite-apps = [
