@@ -5,8 +5,6 @@
   # TODO: check if this is breaking the system
   virtualisation.docker = {
     enable = true;
-    #setSocketVariable = true;
-    #enableNvidia = true; # for nvidia-docker
 
     # start dockerd on boot.
     # This is required for containers which are created with the `--restart=always` flag to work.
@@ -26,7 +24,7 @@
     spice
     spice-gtk
     spice-protocol
-    win-virtio
+    virtio-win
     win-spice
     adwaita-icon-theme
   ];
@@ -37,8 +35,6 @@
       enable = true;
       qemu = {
         swtpm.enable = true;
-        ovmf.enable = true;
-        ovmf.packages = [ pkgs.OVMFFull.fd ];
       };
     };
     spiceUSBRedirection.enable = true;

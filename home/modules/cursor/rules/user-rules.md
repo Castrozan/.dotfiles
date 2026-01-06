@@ -5,6 +5,9 @@ alwaysApply: true
 
 Keep the format to optimize token usage and information density.
 
+Commands
+Use timeouts for commands.
+
 Git
 Use git to check logs before and commit changes for rollback. Follow my commit messages pattern.
 

@@ -7,7 +7,7 @@
 <p align="center">
    <img alt="Stargazers" src="https://img.shields.io/github/stars/castrozan/.dotfiles?style=for-the-badge&logo=starship&color=C9CBFF&logoColor=D9E0EE&labelColor=302D41">
    <a href="https://nixos.org/">
-      <img src="https://img.shields.io/badge/NixOS-25.05-informational.svg?style=for-the-badge&logo=nixos&color=F2CDCD&logoColor=D9E0EE&labelColor=302D41">
+      <img src="https://img.shields.io/badge/NixOS-25.11-informational.svg?style=for-the-badge&logo=nixos&color=F2CDCD&logoColor=D9E0EE&labelColor=302D41">
    </a>
 </p>
 
@@ -127,7 +127,7 @@ curl -L https://nixos.org/nix/install | sh -s -- --daemon
 #### 3. Deploy with Home Manager
 ```bash
 # For the lucas.zanoni configuration (adjust username as needed)
-nix run home-manager/release-25.05 -- --flake .#lucas.zanoni@x86_64-linux switch -b "backup-$(date +%Y-%m-%d-%H-%M-%S)"
+nix run home-manager/release-25.11 -- --flake .#lucas.zanoni@x86_64-linux switch -b "backup-$(date +%Y-%m-%d-%H-%M-%S)"
 ```
 </details>
 
@@ -159,7 +159,7 @@ graph TD
     end
 
     subgraph "External Inputs"
-        Nixpkgs["nixpkgs-25.05"]
+        Nixpkgs["nixpkgs-25.11"]
         Unstable["nixpkgs-unstable"]
         HM["home-manager"]
     end
