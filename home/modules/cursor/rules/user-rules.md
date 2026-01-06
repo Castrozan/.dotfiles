@@ -6,7 +6,7 @@ alwaysApply: true
 Keep the format to optimize token usage and information density.
 
 Git
-Use git to check logs and commit changes for rollback.
+Use git to check logs before and commit changes for rollback. Follow my commit messages pattern.
 
 Research
 Use browser_navigate as default for searches. Use browser tools for web research and documentation.
