@@ -131,7 +131,7 @@ _append_unchecked_todos() {
     for date in "${past_dates[@]}"; do
         local filename
         filename=$(_get_daily_note_file_name "$date")
-        local filepath="$OBSIDIAN_HOME/$filename"
+        local filepath="$OBSIDIAN_HOME/daily-note/$filename"
 
         if [ -f "$filepath" ]; then
             _extract_unchecked_todos "$filepath" >>"$current_note"
