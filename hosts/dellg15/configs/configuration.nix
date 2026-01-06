@@ -64,6 +64,11 @@
 
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
+  # Permit insecure qtwebengine-5.15.19 (required by some Qt5 packages like dbeaver-bin)
+  # TODO: Consider migrating to Qt6-based alternatives when available
+  nixpkgs.config.permittedInsecurePackages = [
+    "qtwebengine-5.15.19"
+  ];
 
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions
@@ -113,8 +118,8 @@
   # Enable the X11 windowing system
   services.xserver.enable = true;
   # Enable the GNOME Desktop Environment
-  services.xserver.displayManager.gdm.enable = true;
-  services.xserver.desktopManager.gnome.enable = true;
+  services.displayManager.gdm.enable = true;
+  services.desktopManager.gnome.enable = true;
   programs.dconf.enable = true;
   programs.command-not-found.enable = false;
 
@@ -172,7 +177,7 @@
     lm_sensors
     i2c-tools
     powertop
-    glxinfo
+    mesa-demos # contains glxinfo
     vulkan-tools
     pciutils
     usbutils
