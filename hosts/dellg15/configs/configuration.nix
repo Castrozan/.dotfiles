@@ -54,10 +54,14 @@
   nix.settings.max-jobs = "auto";
   nix.settings.cores = 0; # use all cores
 
-  # 3. Eval cache - faster repeated rebuilds
+  # 3. Download optimization - increase buffer and parallel downloads
+  nix.settings.download-buffer-size = "104857600"; # 100 MiB (default is 5 MiB)
+  nix.settings.http-connections = 50; # More parallel downloads (default is 1)
+
+  # 4. Eval cache - faster repeated rebuilds
   nix.settings.eval-cache = true;
 
-  # 4. Sandbox and store optimization
+  # 5. Sandbox and store optimization
   nix.settings.sandbox = true;
   nix.settings.auto-optimise-store = true;
   ## END NixOS rebuild optimizations
