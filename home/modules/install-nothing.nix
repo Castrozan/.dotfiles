@@ -1,6 +1,6 @@
 { pkgs, inputs, ... }:
 {
   home.packages = [
-    inputs.install-nothing.packages.${pkgs.system}.default
+    inputs.install-nothing.packages.${pkgs.stdenv.hostPlatform.system}.default
   ];
 }
