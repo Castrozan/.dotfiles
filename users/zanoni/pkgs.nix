@@ -122,7 +122,6 @@
     ])
     ++ (with latest; [
       claude-code
-      # openshot-qt
       devenv
       gemini-cli
       vscode
