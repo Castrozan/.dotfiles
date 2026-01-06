@@ -13,9 +13,9 @@
       alejandra
       awscli2
       azure-cli
-      # dbeaver-bin # Removed: requires insecure qtwebengine-5.15.19
-      # cacert # Removed: may require insecure qtwebengine-5.15.19
-      # cypress # Removed: may require insecure qtwebengine-5.15.19
+      dbeaver-bin
+      cacert
+      cypress
       docker
       gh
       git
@@ -74,7 +74,7 @@
       deno
 
       # Applications
-      # obs-studio # Removed: requires insecure qtwebengine-5.15.19
+      obs-studio
       google-chrome
       discord
       (discord.override {
@@ -84,7 +84,7 @@
       firefox
       flameshot
       obsidian
-      # postman # Removed: requires insecure qtwebengine-5.15.19
+      postman
       scrcpy
       vesktop
 
@@ -98,7 +98,7 @@
       bash
       bash-completion
       sqlite
-      # vlc # Removed: may require insecure qtwebengine-5.15.19
+      vlc
       tmux
       usbutils
       htop
