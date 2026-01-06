@@ -225,4 +225,5 @@ fi
 . $HOME/.dotfiles/shell/zoxide.sh
 . $HOME/.dotfiles/shell/screensaver.sh
 . $HOME/.dotfiles/shell/tmux_main.sh
+. $HOME/.dotfiles/shell/bash_tmux_timing.sh
 . $HOME/.dotfiles/shell/default_directories.sh

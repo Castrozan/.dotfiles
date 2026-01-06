@@ -18,6 +18,7 @@ source ~/.dotfiles/shell/fish/bass_env.fish
 
 # Fish-specific components
 source ~/.dotfiles/shell/fish/conf.d/tmux.fish
+source ~/.dotfiles/shell/fish/conf.d/tmux_timing.fish
 source ~/.dotfiles/shell/fish/conf.d/aliases.fish
 source ~/.dotfiles/shell/fish/conf.d/fzf.fish
 source ~/.dotfiles/shell/fish/conf.d/nvm.fish

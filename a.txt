@@ -1,0 +1,615 @@
+how do i time linux commands on terminal? I was thinking of a line close to the output from tttthe command with a time in secounds and minutes and maybe hours
+
+You have a few good options in Linux, from very simple to very polished, depending on how “close to the output” and how automatic you want it.
+
+1) Built-in time (the classic)
+
+This is the standard way.
+
+time your_command
+
+
+Example:
+
+time nixos-rebuild switch
+
+
+Output (printed after the command finishes):
+
+real    2m14.321s
+user    3m42.118s
+sys     0m28.904s
+
+
+real: wall clock time (what you usually care about)
+
+user and sys: CPU time
+
+If you only want wall time:
+
+/usr/bin/time -f "Elapsed: %E" your_command
+
+
+%E prints [[hh:]mm:]ss
+
+Example:
+
+/usr/bin/time -f "Elapsed: %E" make
+
+2) One-line elapsed time appended at the end (shell-only)
+
+If you want something minimal and always in seconds:
+
+start=$(date +%s)
+your_command
+echo "Elapsed: $(( $(date +%s) - start ))s"
+
+
+This is very portable and works everywhere, but it prints after the output, not inline.
+
+3) Automatic timing for every command (zsh / bash)
+
+If you want every command to show execution time automatically, this is the nicest setup.
+
+Bash
+
+Add to ~/.bashrc:
+
+PROMPT_COMMAND='
+__cmd_end=$(date +%s%N)
+if [[ -n "$__cmd_start" ]]; then
+  delta=$(( (__cmd_end - __cmd_start) / 1000000 ))
+  printf "↳ took %02d:%02d.%03d\n" \
+    $((delta/60000)) $(((delta/1000)%60)) $((delta%1000))
+fi
+__cmd_start=$(date +%s%N)
+'
+
+
+This prints something like:
+
+↳ took 02:14.321
+
+
+Right after the command finishes, before the next prompt.
+
+Zsh (cleaner)
+
+Add to ~/.zshrc:
+
+preexec() { cmd_start=$EPOCHREALTIME }
+precmd() {
+  if [[ -n "$cmd_start" ]]; then
+    elapsed=$(printf "%.3f" "$(echo "$EPOCHREALTIME - $cmd_start" | bc)")
+    echo "↳ took ${elapsed}s"
+  fi
+}
+
+4) Inline timing near output (with ts)
+
+If you want timestamps on each line of output:
+
+your_command | ts '[%H:%M:%S]'
+
+
+Or with elapsed time since start:
+
+your_command | ts '[+%H:%M:%S]'
+
+
+This is useful for long-running commands with streaming output.
+
+Install if needed:
+
+sudo apt install moreutils
+
+Recommendation (TL;DR)
+
+One command: use /usr/bin/time -f "Elapsed: %E"
+
+Long-running, streaming output: ts '[+%H:%M:%S]'
+
+Daily driver, automatic: zsh preexec/precmd hook
+
+If you tell me whether you’re on bash or zsh (I suspect zsh from your setup), I can tailor a drop-in snippet that matches your prompt style and doesn’t break tmux or nix-shells.
+
+i want timing as the command runs, not only at the end
+
+Got it, you want live timing while the command is running, not a summary after it finishes. There are a few solid patterns for this, depending on how intrusive you want it to be.
+
+Option 1: Live elapsed timer line (updates every second)
+
+This shows a running elapsed time counter while the command executes.
+
+your_command &
+pid=$!
+
+start=$(date +%s)
+
+while kill -0 $pid 2>/dev/null; do
+  elapsed=$(( $(date +%s) - start ))
+  printf "\r⏱  running: %02d:%02d:%02d" \
+    $((elapsed/3600)) $(((elapsed/60)%60)) $((elapsed%60))
+  sleep 1
+done
+
+wait $pid
+echo
+
+
+Output example (single updating line):
+
+⏱  running: 00:02:14
+
+
+This does not interfere with command output if the command is mostly quiet. For very noisy commands, see option 3.
+
+Option 2: Timestamp every output line (best for verbose commands)
+
+If the command prints output continuously, this is usually the most practical.
+
+your_command | ts '[+%H:%M:%S]'
+
+
+Example:
+
+[+00:00:01] building package A
+[+00:00:03] linking
+[+00:00:07] done
+
+
+Install:
+
+sudo apt install moreutils
+
+Option 3: Live timer + preserved output (tmux-friendly)
+
+If you want both clean output and a live timer, tmux does this extremely well.
+
+tmux set-option -g status on
+tmux set-option -g status-right "#(date +'%H:%M:%S') | ⏱ #{pane_current_command}"
+
+
+Or simpler: just use tmux’s built-in clock:
+
+Ctrl+b t
+
+
+For elapsed time, tmux plugins like tmux-continuum or tmux-resurrect can display pane runtime.
+
+Option 4: Minimal “watch-style” elapsed clock
+
+This updates independently while the command runs:
+
+SECONDS=0
+your_command &
+pid=$!
+
+while kill -0 $pid 2>/dev/null; do
+  printf "\rElapsed: %02d:%02d:%02d" \
+    $((SECONDS/3600)) $(((SECONDS/60)%60)) $((SECONDS%60))
+  sleep 1
+done
+wait
+echo
+
+
+No date, no external tools.
+
+Best practical combos
+
+Quiet, long tasks (builds, deploys): Option 1 or 4
+
+Verbose tasks (compilers, logs): Option 2
+
+Always-on visibility: tmux status bar
+
+If you want, I can:
+
+Wrap this into a reusable function like rt your_command
+
+Make it zsh-native (no forks, high precision)
+
+Integrate it with tmux so the timer never messes with output
+
+Tell me which shell you’re on (bash or zsh) and whether you want inline, status-line, or per-line timestamps as your default.
+
+tmux has something for this?
+
+Yes. tmux can show timing while a command is running, but it does it via the status line, not inline with the command output. That is actually ideal because it never messes with stdout.
+
+Below are the native tmux ways, from zero-config to polished.
+
+1) Built-in: pane start time (zero config)
+
+Every tmux pane already tracks when it started.
+
+tmux display-message -p '#{pane_start_time}'
+
+
+This shows the start timestamp, not elapsed time, but tmux uses it internally.
+
+2) Show live elapsed time in the status bar (recommended)
+
+You can compute elapsed time from pane_start_time and show it live.
+
+Add this to ~/.tmux.conf:
+
+set -g status-right '#( \
+  start=#{pane_start_time}; \
+  now=$(date +%s); \
+  echo "⏱ $((now - start))s" \
+)'
+
+
+This updates automatically every second.
+
+Result:
+
+⏱ 134s
+
+
+You can format it nicely:
+
+set -g status-right '#( \
+  s=$(( $(date +%s) - #{pane_start_time} )); \
+  printf "⏱ %02d:%02d:%02d" $((s/3600)) $(((s/60)%60)) $((s%60)) \
+)'
+
+3) Per-pane runtime (shows only when a command is running)
+
+If you want this only when something is running, tmux exposes:
+
+#{pane_current_command}
+
+
+Example:
+
+set -g status-right '⏱ #{pane_current_command} | #( \
+  s=$(( $(date +%s) - #{pane_start_time} )); \
+  printf "%02d:%02d:%02d" $((s/3600)) $(((s/60)%60)) $((s%60)) \
+)'
+
+4) One-shot display without config
+
+While a command is running:
+
+Ctrl+b :
+display-message "Elapsed: #(date +%s)"
+
+
+Not very useful, but good to know.
+
+5) Plugins (if you want zero scripting)
+
+These are popular:
+
+tmux-prefix-highlight (shows activity)
+
+tmux-continuum (tracks pane uptime)
+
+tmux-pain-control (less timing-focused)
+
+For pure elapsed-time display, the config above is usually better than plugins.
+
+Recommendation
+
+For your use case (long-running builds, nixos-rebuild, CI-like commands):
+
+Use tmux status-right elapsed time
+
+Leave command output untouched
+
+Works perfectly over SSH and inside Nix shells
+
+If you want, tell me:
+
+do you want per-pane or per-window timing?
+
+do you want it always visible or only when CPU is busy?
+
+I can give you a drop-in .tmux.conf snippet that fits your current tmux theme.
+
+per command being executed in the shell
+
+Short answer: tmux does NOT natively know when a shell command starts or ends.
+tmux only knows about panes, not individual shell commands.
+
+So for per command timing, the correct model is:
+
+shell detects command start/end → tmux displays it
+
+Below is the clean, battle tested solution that gives you live elapsed time per command, shown in tmux’s status line, while the command is running.
+
+How it works (conceptually)
+
+Shell hook (preexec) fires when a command starts
+
+Shell hook (precmd) fires when it ends
+
+Shell writes the start timestamp to an env var
+
+tmux reads that env var and renders elapsed time live
+
+This works perfectly in zsh + tmux (and is what power users do).
+
+Step 1: zsh per command timing hooks
+
+Put this in ~/.zshrc:
+
+preexec() {
+  export TMUX_CMD_START=$EPOCHSECONDS
+}
+
+precmd() {
+  unset TMUX_CMD_START
+}
+
+
+This marks exactly when each command starts and ends.
+
+Step 2: tmux status line (live timer)
+
+Add to ~/.tmux.conf:
+
+set -g status-interval 1
+
+set -g status-right '#{?TMUX_CMD_START,⏱ #( \
+  s=$(( $(date +%s) - ${TMUX_CMD_START} )); \
+  printf "%02d:%02d:%02d" $((s/3600)) $(((s/60)%60)) $((s%60)) \
+),}'
+
+
+What you get while a command runs:
+
+⏱ 00:02:14
+
+
+When the command finishes, the timer disappears automatically.
+
+What this gives you
+
+True per command timing
+
+Updates live
+
+No stdout pollution
+
+tmux safe
+
+Works with long builds, nixos-rebuild, make, etc
+
+Important notes
+
+Requires zsh (bash can do it, but it’s uglier)
+
+Works across SSH sessions
+
+Resets correctly for every command
+
+Multiple panes tracked independently
+
+Optional: show command name too
+
+Replace status-right with:
+
+set -g status-right '#{?TMUX_CMD_START,⏱ #{pane_current_command} #( \
+  s=$(( $(date +%s) - ${TMUX_CMD_START} )); \
+  printf "%02d:%02d:%02d" $((s/3600)) $(((s/60)%60)) $((s%60)) \
+),}'
+
+TL;DR
+
+tmux alone can’t do per command timing
+
+shell hooks + tmux status line = correct solution
+
+this is the cleanest possible setup
+
+If you want the bash version, or a zsh-only prompt (no tmux) variant, say the word and I’ll give you a drop-in config.
+
+i use bash and fish
+
+Perfect. Then here is the correct, clean way to get live per command timing with tmux, specifically for bash and fish, without touching command output.
+
+tmux still cannot detect commands by itself, so the shell must signal tmux.
+
+Below are working, idiomatic solutions for each shell.
+
+tmux side (shared, do this once)
+
+Add to ~/.tmux.conf:
+
+set -g status-interval 1
+
+set -g status-right '#{?TMUX_CMD_START,⏱ #( \
+  s=$(( $(date +%s) - ${TMUX_CMD_START} )); \
+  printf "%02d:%02d:%02d" $((s/3600)) $(((s/60)%60)) $((s%60)) \
+),}'
+
+
+This renders a live elapsed timer while a command is running.
+
+Reload tmux:
+
+tmux source-file ~/.tmux.conf
+
+Bash: per command hooks (recommended)
+
+Bash does not have preexec, but we can emulate it safely.
+
+Add to ~/.bashrc:
+
+__tmux_cmd_start() {
+  export TMUX_CMD_START=$(date +%s)
+}
+
+__tmux_cmd_end() {
+  unset TMUX_CMD_START
+}
+
+# Run before every command
+trap '__tmux_cmd_start' DEBUG
+
+# Run before prompt is shown (command finished)
+PROMPT_COMMAND='__tmux_cmd_end'
+
+Result
+
+Timer appears when command starts
+
+Updates live
+
+Disappears when command finishes
+
+Works in scripts, SSH, nix-shell, etc
+
+Fish: native, very clean
+
+Fish has first-class hooks for this.
+
+Add to ~/.config/fish/config.fish:
+
+function __tmux_cmd_start --on-event fish_preexec
+  set -gx TMUX_CMD_START (date +%s)
+end
+
+function __tmux_cmd_end --on-event fish_prompt
+  set -e TMUX_CMD_START
+end
+
+
+No hacks, no traps.
+
+What you get
+
+True per command timing
+
+Live HH:MM:SS counter
+
+No stdout interference
+
+tmux-native display
+
+Multiple panes tracked independently
+
+Known limitations (honest)
+
+Pipelines count as one command (correct behavior)
+
+Builtins also count (cd, export, etc)
+
+Very fast commands may flash briefly (expected)
+
+Optional improvements
+
+If you want:
+
+milliseconds precision
+
+hide timer for commands < N seconds
+
+show command name
+
+colorize long-running commands
+
+I can extend this with zero runtime cost.
+
+This setup is what people running long builds, Nix, Docker, CI tasks in tmux actually use.
+
+can i put the timing per pane?
+
+Yes. Per pane is the right way, and tmux supports this cleanly.
+
+Instead of a global env var, you store the start time as a pane local tmux option.
+Each pane tracks its own running command independently.
+
+Below is the correct per pane setup for tmux + bash + fish.
+
+1) tmux config (per pane timer)
+
+Add to ~/.tmux.conf:
+
+set -g status-interval 1
+
+set -g status-right '#{?pane_cmd_start,⏱ #( \
+  s=$(( $(date +%s) - #{pane_cmd_start} )); \
+  printf "%02d:%02d:%02d" $((s/3600)) $(((s/60)%60)) $((s%60)) \
+),}'
+
+
+This reads a pane local option called pane_cmd_start.
+
+Reload:
+
+tmux source-file ~/.tmux.conf
+
+2) Bash (per pane, correct way)
+
+Add to ~/.bashrc:
+
+__tmux_cmd_start() {
+  [[ -n "$TMUX" ]] || return
+  tmux set-option -p pane_cmd_start "$(date +%s)" >/dev/null
+}
+
+__tmux_cmd_end() {
+  [[ -n "$TMUX" ]] || return
+  tmux set-option -p -u pane_cmd_start >/dev/null
+}
+
+# before every command
+trap '__tmux_cmd_start' DEBUG
+
+# after command finishes
+PROMPT_COMMAND='__tmux_cmd_end'
+
+
+Each pane now tracks its own command lifecycle.
+
+3) Fish (native and cleaner)
+
+Add to ~/.config/fish/config.fish:
+
+function __tmux_cmd_start --on-event fish_preexec
+  if set -q TMUX
+    tmux set-option -p pane_cmd_start (date +%s) >/dev/null
+  end
+end
+
+function __tmux_cmd_end --on-event fish_prompt
+  if set -q TMUX
+    tmux set-option -p -u pane_cmd_start >/dev/null
+  end
+end
+
+
+Fish does this perfectly without hacks.
+
+What this gives you
+
+True per command
+
+True per pane
+
+Live HH:MM:SS timer
+
+No stdout pollution
+
+Works with splits, SSH, nix-shell, CI, long builds
+
+Each pane runs independently. Split panes, run multiple builds, each shows its own timer.
+
+Optional upgrades (easy)
+
+You can also:
+
+hide timer under 2 seconds
+
+color after N minutes
+
+show command name from #{pane_current_command}
+
+move timer to window status instead of status-right
+
+If you want any of those, say which and I will give you the exact snippet.
