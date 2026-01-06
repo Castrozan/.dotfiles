@@ -13,6 +13,10 @@ if test "$USER" = "lucas.zanoni"
     set -x LD_PRELOAD '/lib/x86_64-linux-gnu/libnss_sss.so.2'
 end
 
+if command -v clipse &>/dev/null
+    clipse --listen
+end
+
 # Portable environment setup
 source ~/.dotfiles/shell/fish/bass_env.fish
 
