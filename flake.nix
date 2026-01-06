@@ -86,7 +86,7 @@
           };
         in
         # Function call with arguments
-        (mkHomeConfigFor "lucas.zanoni") // (mkHomeConfigFor "cleber");
+        (mkHomeConfigFor "lucas.zanoni");
 
       # nixosConfigurations.${username} is a NixOS system configuration
       # nixos-rebuild switch --flake ~/.dotfiles/nixos#${username}
