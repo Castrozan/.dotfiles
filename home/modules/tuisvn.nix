@@ -1,6 +1,6 @@
 { pkgs, inputs, ... }:
 {
   home.packages = [
-    inputs.tuisvn.packages.${pkgs.system}.default
+    inputs.tuisvn.packages.${pkgs.stdenv.hostPlatform.system}.default
   ];
 }
