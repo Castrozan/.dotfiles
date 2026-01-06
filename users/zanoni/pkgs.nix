@@ -53,6 +53,7 @@
       tmux
       unzip
       vim
+      wl-clipboard
       wget
       xclip
       xsel # Required for tmux yank
