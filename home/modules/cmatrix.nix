@@ -1,6 +1,6 @@
 { pkgs, inputs, ... }:
 {
   home.packages = [
-    inputs.cmatrix.packages.${pkgs.system}.default
+    inputs.cmatrix.packages.${pkgs.stdenv.hostPlatform.system}.default
   ];
 }
