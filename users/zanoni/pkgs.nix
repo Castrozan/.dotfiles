@@ -9,22 +9,13 @@
   environment.systemPackages =
     with pkgs;
     [
-      # TCC tools
-      gdrive3
-      #pandoc_3_5
-      haskellPackages.citeproc
-      texlive.combined.scheme-full
-      texliveTeTeX
-      imagemagick
-      # convertall # Removed: may require insecure qtwebengine-5.15.19
-
       # Development Tools
       alejandra
       awscli2
       azure-cli
       # dbeaver-bin # Removed: requires insecure qtwebengine-5.15.19
-      cacert
-      cypress
+      # cacert # Removed: may require insecure qtwebengine-5.15.19
+      # cypress # Removed: may require insecure qtwebengine-5.15.19
       docker
       gh
       git
@@ -36,7 +27,7 @@
       nixpkgs-fmt
       nix-prefetch-github
       nodePackages.prettier
-      terraform
+      # terraform # Removed: its broken on nixpkgs
       tig
 
       # Python and Dependencies
