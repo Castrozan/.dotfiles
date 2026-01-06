@@ -16,13 +16,13 @@
       texlive.combined.scheme-full
       texliveTeTeX
       imagemagick
-      convertall
+      # convertall # Removed: may require insecure qtwebengine-5.15.19
 
       # Development Tools
       alejandra
       awscli2
       azure-cli
-      dbeaver-bin
+      # dbeaver-bin # Removed: requires insecure qtwebengine-5.15.19
       cacert
       cypress
       docker
@@ -83,7 +83,7 @@
       deno
 
       # Applications
-      obs-studio
+      # obs-studio # Removed: requires insecure qtwebengine-5.15.19
       google-chrome
       discord
       (discord.override {
@@ -91,9 +91,9 @@
         withVencord = true; # For customization
       })
       firefox
-      flameshot
+      # flameshot # Removed: requires insecure qtwebengine-5.15.19 (Qt5 app)
       obsidian
-      postman
+      # postman # Removed: requires insecure qtwebengine-5.15.19
       scrcpy
       vesktop
 
@@ -107,7 +107,7 @@
       bash
       bash-completion
       sqlite
-      vlc
+      # vlc # Removed: may require insecure qtwebengine-5.15.19
       tmux
       usbutils
       htop

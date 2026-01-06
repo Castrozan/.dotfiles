@@ -68,11 +68,6 @@
 
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
-  # Permit insecure qtwebengine-5.15.19 (required by some Qt5 packages like dbeaver-bin)
-  # TODO: Consider migrating to Qt6-based alternatives when available
-  nixpkgs.config.permittedInsecurePackages = [
-    "qtwebengine-5.15.19"
-  ];
 
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions
