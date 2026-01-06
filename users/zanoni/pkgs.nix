@@ -82,7 +82,7 @@
         withVencord = true; # For customization
       })
       firefox
-      # flameshot # Removed: requires insecure qtwebengine-5.15.19 (Qt5 app)
+      flameshot
       obsidian
       # postman # Removed: requires insecure qtwebengine-5.15.19
       scrcpy
