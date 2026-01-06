@@ -71,7 +71,6 @@
       zsh
 
       # Network Tools
-      linuxKernel.packages.linux_5_4.wireguard
       wgnord # Note: Should install manually from github.com/phirecc/wgnord
       wireguard-go
       wireguard-tools

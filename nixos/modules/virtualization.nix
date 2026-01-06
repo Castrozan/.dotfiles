@@ -26,7 +26,7 @@
     spice
     spice-gtk
     spice-protocol
-    win-virtio
+    virtio-win
     win-spice
     adwaita-icon-theme
   ];
@@ -37,8 +37,7 @@
       enable = true;
       qemu = {
         swtpm.enable = true;
-        ovmf.enable = true;
-        ovmf.packages = [ pkgs.OVMFFull.fd ];
+        # OVMF is now available by default in NixOS 25.11, no configuration needed
       };
     };
     spiceUSBRedirection.enable = true;
