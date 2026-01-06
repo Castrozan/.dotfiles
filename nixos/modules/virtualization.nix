@@ -5,8 +5,6 @@
   # TODO: check if this is breaking the system
   virtualisation.docker = {
     enable = true;
-    #setSocketVariable = true;
-    #enableNvidia = true; # for nvidia-docker
 
     # start dockerd on boot.
     # This is required for containers which are created with the `--restart=always` flag to work.
@@ -37,7 +35,6 @@
       enable = true;
       qemu = {
         swtpm.enable = true;
-        # OVMF is now available by default in NixOS 25.11, no configuration needed
       };
     };
     spiceUSBRedirection.enable = true;

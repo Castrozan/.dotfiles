@@ -55,7 +55,7 @@
   nix.settings.cores = 0; # use all cores
 
   # 3. Download optimization - increase buffer and parallel downloads
-  nix.settings.download-buffer-size = "104857600"; # 100 MiB (default is 5 MiB)
+  nix.settings.download-buffer-size = "524288000"; # 500 MiB
   nix.settings.http-connections = 50; # More parallel downloads (default is 1)
 
   # 4. Eval cache - faster repeated rebuilds
@@ -176,7 +176,7 @@
     lm_sensors
     i2c-tools
     powertop
-    mesa-demos # contains glxinfo
+    mesa-demos
     vulkan-tools
     pciutils
     usbutils
