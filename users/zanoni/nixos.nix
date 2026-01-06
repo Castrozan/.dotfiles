@@ -12,9 +12,9 @@ in
     ../../nixos/modules/virtualization.nix
     ../../nixos/modules/fonts.nix
     ../../nixos/modules/input-pkgs.nix
-    ../../nixos/modules/steam.nix
-    ../../nixos/modules/whisper-cpp.nix
-    ../../nixos/modules/media-streaming
+    # ../../nixos/modules/steam.nix
+    # ../../nixos/modules/whisper-cpp.nix
+    # ../../nixos/modules/media-streaming
     ../../nixos/modules/keyd.nix
   ];
 
