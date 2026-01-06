@@ -1,0 +1,148 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+RESURRECT_DIR="$HOME/.tmux/resurrect"
+LAST_SYMLINK="$RESURRECT_DIR/last"
+
+# Check if resurrect directory exists
+if [ ! -d "$RESURRECT_DIR" ]; then
+    echo "Error: tmux resurrect directory not found at $RESURRECT_DIR" >&2
+    exit 1
+fi
+
+# Get the restore script path from tmux config (only if tmux is available)
+RESTORE_SCRIPT=""
+if command -v tmux &>/dev/null; then
+    RESTORE_SCRIPT=$(tmux show-options -g @resurrect-restore-script-path 2>/dev/null | awk '{print $2}' || echo "")
+fi
+
+# If we couldn't get it from tmux, try to find it in common locations
+if [ -z "$RESTORE_SCRIPT" ] || [ ! -f "$RESTORE_SCRIPT" ]; then
+    # Try common Nix store pattern or local plugin location
+    if [ -f "$HOME/.tmux/plugins/tmux-resurrect/scripts/restore.sh" ]; then
+        RESTORE_SCRIPT="$HOME/.tmux/plugins/tmux-resurrect/scripts/restore.sh"
+    fi
+fi
+
+# List all backup files with human-readable dates
+list_backups() {
+    cd "$RESURRECT_DIR"
+    for file in tmux_resurrect_*.txt; do
+        if [ -f "$file" ]; then
+            # Extract timestamp from filename (tmux_resurrect_YYYYMMDDTHHMMSS.txt)
+            timestamp=$(echo "$file" | sed 's/tmux_resurrect_\(.*\)\.txt/\1/')
+            # Parse and format date
+            if [[ $timestamp =~ ^([0-9]{4})([0-9]{2})([0-9]{2})T([0-9]{2})([0-9]{2})([0-9]{2})$ ]]; then
+                year=${BASH_REMATCH[1]}
+                month=${BASH_REMATCH[2]}
+                day=${BASH_REMATCH[3]}
+                hour=${BASH_REMATCH[4]}
+                min=${BASH_REMATCH[5]}
+                sec=${BASH_REMATCH[6]}
+                formatted_date=$(date -d "${year}-${month}-${day} ${hour}:${min}:${sec}" '+%Y-%m-%d %H:%M:%S' 2>/dev/null || \
+                    echo "${year}-${month}-${day} ${hour}:${min}:${sec}")
+            else
+                formatted_date="$timestamp"
+            fi
+            
+            # Get file size
+            size=$(du -h "$file" | cut -f1)
+            
+            # Check if this is the current symlink target
+            current_target=$(readlink -f "$LAST_SYMLINK" 2>/dev/null || echo "")
+            if [ "$(readlink -f "$file")" = "$current_target" ]; then
+                echo "[CURRENT] $formatted_date | $size | $file"
+            else
+                echo "$formatted_date | $size | $file"
+            fi
+        fi
+    done | sort -r
+}
+
+# Select backup using fzf
+select_backup() {
+    if ! command -v fzf &>/dev/null; then
+        echo "Error: fzf is required but not installed" >&2
+        exit 1
+    fi
+    
+    # Create a temporary preview script to avoid shell parsing issues
+    PREVIEW_SCRIPT=$(mktemp)
+    cat > "$PREVIEW_SCRIPT" << 'PREVIEW_EOF'
+#!/bin/bash
+line="$1"
+file=$(echo "$line" | awk -F'|' '{print $3}' | xargs)
+echo "File: $file"
+head -20 "$RESURRECT_DIR/$file" 2>/dev/null || echo "Preview not available"
+PREVIEW_EOF
+    chmod +x "$PREVIEW_SCRIPT"
+    export RESURRECT_DIR
+    
+    # Clean up temp file on exit
+    trap "rm -f $PREVIEW_SCRIPT" EXIT
+    
+    selected=$(list_backups | fzf \
+        --height=40% \
+        --layout=reverse \
+        --border \
+        --header="Select tmux resurrect backup to restore (Ctrl+C to cancel)" \
+        --preview="$PREVIEW_SCRIPT \"{}\"" \
+        --preview-window=right:40% \
+        | awk -F'|' '{print $3}' | xargs)
+    
+    if [ -z "$selected" ]; then
+        echo "No backup selected. Exiting."
+        exit 0
+    fi
+    
+    # Clean up the selected filename (remove leading/trailing whitespace)
+    selected=$(echo "$selected" | xargs)
+    
+    # Extract just the filename if full path was selected
+    selected=$(basename "$selected")
+    
+    echo "$selected"
+}
+
+# Main execution
+main() {
+    backup_file=$(select_backup)
+    
+    if [ -z "$backup_file" ]; then
+        exit 0
+    fi
+    
+    backup_path="$RESURRECT_DIR/$backup_file"
+    
+    if [ ! -f "$backup_path" ]; then
+        echo "Error: Backup file not found: $backup_path" >&2
+        exit 1
+    fi
+    
+    # Update symlink
+    echo "Updating symlink to: $backup_file"
+    ln -sf "$backup_file" "$LAST_SYMLINK"
+    
+    # Ask if user wants to restore immediately
+    if [ -n "${TMUX:-}" ] && [ -n "$RESTORE_SCRIPT" ] && [ -f "$RESTORE_SCRIPT" ]; then
+        echo ""
+        read -p "Restore sessions now? (y/N): " -n 1 -r
+        echo ""
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            echo "Restoring tmux sessions..."
+            tmux run-shell "$RESTORE_SCRIPT"
+            echo "Done! Your sessions should be restored."
+        else
+            echo "Symlink updated. Restore manually with: prefix + Ctrl-r"
+        fi
+    elif [ -n "$RESTORE_SCRIPT" ] && [ -f "$RESTORE_SCRIPT" ]; then
+        echo "Symlink updated. Attach to tmux and restore with: prefix + Ctrl-r"
+        echo "Or run: tmux run-shell '$RESTORE_SCRIPT'"
+    else
+        echo "Symlink updated. Attach to tmux and restore with: prefix + Ctrl-r"
+    fi
+}
+
+main "$@"
+
