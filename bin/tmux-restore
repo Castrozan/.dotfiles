@@ -70,11 +70,21 @@ select_backup() {
     # Create a temporary preview script to avoid shell parsing issues
     PREVIEW_SCRIPT=$(mktemp)
     cat > "$PREVIEW_SCRIPT" << 'PREVIEW_EOF'
-#!/bin/bash
-line="$1"
-file=$(echo "$line" | awk -F'|' '{print $3}' | xargs)
-echo "File: $file"
-head -20 "$RESURRECT_DIR/$file" 2>/dev/null || echo "Preview not available"
+#!/usr/bin/env bash
+# Read the line from stdin or first argument
+if [ -n "$1" ]; then
+    line="$1"
+else
+    read -r line
+fi
+# Extract filename from the third column, trim whitespace
+file=$(echo "$line" | awk -F'|' '{print $3}' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+if [ -n "$file" ] && [ -f "$RESURRECT_DIR/$file" ]; then
+    echo "File: $file"
+    head -20 "$RESURRECT_DIR/$file" 2>/dev/null || echo "Preview not available"
+else
+    echo "Preview not available"
+fi
 PREVIEW_EOF
     chmod +x "$PREVIEW_SCRIPT"
     export RESURRECT_DIR
@@ -87,7 +97,7 @@ PREVIEW_EOF
         --layout=reverse \
         --border \
         --header="Select tmux resurrect backup to restore (Ctrl+C to cancel)" \
-        --preview="$PREVIEW_SCRIPT \"{}\"" \
+        --preview="echo {} | $PREVIEW_SCRIPT" \
         --preview-window=right:40% \
         | awk -F'|' '{print $3}' | xargs)
     
