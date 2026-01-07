@@ -25,7 +25,7 @@
     cmatrix.url = "github:castrozan/cmatrix";
     tuisvn.url = "github:castrozan/tuisvn";
     install-nothing.url = "github:castrozan/install-nothing";
-    opencode.url = "github:anomalyco/opencode";
+    opencode.url = "github:anomalyco/opencode/v1.1.6";
   };
 
   # Outputs are used to define apps and dotfiles configuration for different systems and users
