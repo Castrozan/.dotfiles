@@ -116,7 +116,7 @@ in
     "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom2" = {
       name = "greatshot";
       binding = "Print";
-      command = "greatshot";
+      command = "greatshot-capture >/dev/null 2>&1 &";
     };
 
     "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1" = {

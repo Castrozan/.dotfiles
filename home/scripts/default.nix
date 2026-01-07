@@ -1,6 +1,7 @@
 {
   imports = [
     ./daily-note.nix
+    ./greatshot-capture.nix
     ./on.nix
     ./pdf-edit.nix
     ./rebuild.nix

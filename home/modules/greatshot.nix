@@ -1,15 +1,16 @@
 { pkgs, ... }:
 let
   # Custom GreatShot package - Rust-based screenshot tool for GNOME Wayland
+  # Using forked version with GREATSHOT_CAPTURE mode
   greatshot = pkgs.rustPlatform.buildRustPackage rec {
     pname = "greatshot";
     version = "0.1.0";
 
     src = pkgs.fetchFromGitHub {
-      owner = "furqanalishah";
+      owner = "Castrozan";
       repo = "greatshot";
-      rev = "2f23a8d9cf780fe37d7b89f8cede7a520042b72f";
-      sha256 = "sha256-5EwRVKMgGEqmz3mOq++RuJSHtHsXFg46obY45FnEeNs=";
+      rev = "ff7caa6a93c5956363cfc3cd1d9cfbd53b303080"; # Commit with capture mode support (env var)
+      sha256 = "sha256-QA54Vs/wIZo4FoYwYCy21lZ133TFMlNL64V+6gZTNwE=";
     };
 
     cargoLock = {
@@ -29,8 +30,8 @@ let
     ];
 
     meta = with pkgs.lib; {
-      description = "Minimal, fast screenshot + annotation tool for Linux (GNOME Wayland)";
-      homepage = "https://github.com/furqanalishah/greatshot";
+      description = "Minimal, fast screenshot + annotation tool for GNOME Wayland (with --capture flag support)";
+      homepage = "https://github.com/Castrozan/greatshot";
       license = licenses.mit;
       maintainers = [ ];
       platforms = platforms.linux;
