@@ -8,13 +8,13 @@
   # Inputs are used to declare package definitions and modules to fetch from the internet
   inputs = {
     # For stable packages definitions
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-25.05";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-25.11";
     # For packages not yet in nixpkgs
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
     # For latest bleeding edge packages - daily* updated with: $ nix flake update nixpkgs-latest
     nixpkgs-latest.url = "github:nixos/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
-    home-manager.url = "github:nix-community/home-manager/release-25.05";
+    home-manager.url = "github:nix-community/home-manager/release-25.11";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
     catppuccin-bat.url = "github:catppuccin/bat";
@@ -25,6 +25,7 @@
     cmatrix.url = "github:castrozan/cmatrix";
     tuisvn.url = "github:castrozan/tuisvn";
     install-nothing.url = "github:castrozan/install-nothing";
+    opencode.url = "github:anomalyco/opencode/v1.1.6";
   };
 
   # Outputs are used to define apps and dotfiles configuration for different systems and users
@@ -40,8 +41,8 @@
     # let in notation to declare local variables for output scope
     let
       system = "x86_64-linux"; # linux system architecture
-      home-version = "25.05";
-      nixpkgs-version = "25.05";
+      home-version = "25.11";
+      nixpkgs-version = "25.11";
       # Configure nixpkgs then attribute it to pkgs at the same time
       pkgs = import nixpkgs {
         inherit system;
@@ -86,7 +87,7 @@
           };
         in
         # Function call with arguments
-        (mkHomeConfigFor "lucas.zanoni") // (mkHomeConfigFor "cleber");
+        (mkHomeConfigFor "lucas.zanoni");
 
       # nixosConfigurations.${username} is a NixOS system configuration
       # nixos-rebuild switch --flake ~/.dotfiles/nixos#${username}

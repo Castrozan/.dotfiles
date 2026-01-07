@@ -58,18 +58,20 @@ in
     # "org/gnome/shell/keybindings" = {
     #   switch-to-application-1 = [ ];
     # };
+
     "org/gnome/shell/keybindings" = {
       # Disable Super+v for notification list
       toggle-message-tray = [ ];
     };
 
     "org/gnome/shell" = {
+      disable-user-extensions = false;
       # Enable Super+1,2,3... to launch them
       favorite-apps = [
         "brave-browser.desktop"
         "kitty.desktop"
       ];
-      # TODO: This conf do not install the extensions by itself
+      # Extensions are installed via home.packages (see users/*/pkgs.nix)
       enabled-extensions = [
         "default-workspace@mateusrodcosta.com"
         "wsmatrix@martin.zurowietz.de"

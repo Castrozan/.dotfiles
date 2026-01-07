@@ -8,7 +8,7 @@
     themeFile = "Catppuccin-Mocha";
     font = {
       name = "Fira Code";
-      size = 18;
+      size = 16;
       package = pkgs.fira-code;
     };
     settings = {
