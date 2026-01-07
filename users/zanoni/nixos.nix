@@ -49,6 +49,8 @@ in
   # nix.settings.nix-path = lib.mkForce "nixpkgs=/etc/nix/inputs/nixpkgs";
   environment.variables = {
     NIX_PATH = lib.mkDefault "nixpkgs=/nix/var/nix/profiles/per-user/root/channels/nixos";
+    # Force Qt applications to use Wayland
+    QT_QPA_PLATFORM = "wayland";
   };
 
   # Allows running uncompiled binaries from npm, pip and other packages
