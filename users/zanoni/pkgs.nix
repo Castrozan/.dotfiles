@@ -9,15 +9,6 @@
   environment.systemPackages =
     with pkgs;
     [
-      # TCC tools
-      gdrive3
-      #pandoc_3_5
-      haskellPackages.citeproc
-      texlive.combined.scheme-full
-      texliveTeTeX
-      imagemagick
-      convertall
-
       # Development Tools
       alejandra
       awscli2
@@ -36,7 +27,7 @@
       nixpkgs-fmt
       nix-prefetch-github
       nodePackages.prettier
-      terraform
+      # terraform # Removed: its broken on nixpkgs
       tig
 
       # Python and Dependencies
@@ -62,6 +53,7 @@
       tmux
       unzip
       vim
+      wl-clipboard
       wget
       xclip
       xsel # Required for tmux yank
@@ -71,7 +63,6 @@
       zsh
 
       # Network Tools
-      linuxKernel.packages.linux_5_4.wireguard
       wgnord # Note: Should install manually from github.com/phirecc/wgnord
       wireguard-go
       wireguard-tools
@@ -132,7 +123,6 @@
     ])
     ++ (with latest; [
       claude-code
-      # openshot-qt
       devenv
       gemini-cli
       vscode

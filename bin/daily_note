@@ -89,27 +89,96 @@ _is_unchecked_todo() {
     [[ "$line" =~ ^[[:space:]]*-[[:space:]]*\[[[:space:]]*\][[:space:]]+ ]]
 }
 
+# Check if a line contains a checked todo item
+# Args:
+#   $1: line to check
+_is_checked_todo() {
+    local line=$1
+    # Match only lines that start with - [x] or - [X] (allowing for optional spaces)
+    [[ "$line" =~ ^[[:space:]]*-[[:space:]]*\[[[:space:]]*[xX][[:space:]]*\][[:space:]]+ ]]
+}
+
+# Normalize todo content for comparisons (strip checkbox and surrounding spaces)
+# Args:
+#   $1: todo line
+_normalize_todo_content() {
+    local line=$1
+    echo "$line" | sed -E 's/^[[:space:]]*-[[:space:]]*\[[[:space:]]*[xX ]?[[:space:]]*\][[:space:]]*//' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//'
+}
+
+# Extract only unchecked todo lines (no headers)
+# Args:
+#   $1: file path
+_get_unchecked_todos() {
+    local file=$1
+    local in_todo_section=false
+
+    while IFS= read -r line; do
+        if [[ $line == "## TODO"* ]]; then
+            in_todo_section=true
+            continue
+        fi
+
+        # Leave TODO section when another header is reached
+        if $in_todo_section && [[ $line == "## "* ]]; then
+            break
+        fi
+
+        if $in_todo_section && _is_unchecked_todo "$line"; then
+            echo "$line"
+        fi
+    done <"$file"
+}
+
+# Check if a todo content is marked checked in any later note (closer to today)
+# Args:
+#   $1: normalized todo content
+#   $2: current index within past_dates array
+#   $3...: past_dates array values
+_is_todo_checked_in_later_notes() {
+    local search_content=$1
+    local current_index=$2
+    shift 2
+    local dates=("$@")
+
+    # Earlier indices in dates[] are closer to today
+    for ((i = 0; i < current_index; i++)); do
+        local date=${dates[$i]}
+        local filepath
+        filepath="$OBSIDIAN_HOME/daily-note/$(_get_daily_note_file_name "$date")"
+        [ -f "$filepath" ] || continue
+
+        local in_todo_section=false
+        while IFS= read -r line; do
+            if [[ $line == "## TODO"* ]]; then
+                in_todo_section=true
+                continue
+            fi
+
+            if $in_todo_section && [[ $line == "## "* ]]; then
+                break
+            fi
+
+            if $in_todo_section && _is_checked_todo "$line"; then
+                if [[ $(_normalize_todo_content "$line") == "$search_content" ]]; then
+                    return 0
+                fi
+            fi
+        done <"$filepath"
+    done
+
+    return 1
+}
+
 # Extract unchecked todos from a file
 # Args:
 #   $1: file path
 _extract_unchecked_todos() {
     local file=$1
-    local in_todo_section=false
-    local todos=()
-    local filename
+    local filename todos
 
     filename=$(basename "$file")
-
-    while IFS= read -r line; do
-        if [[ $line == "## TODO"* ]]; then
-            in_todo_section=$([[ $line == "## TODO"* ]])
-            continue
-        fi
-
-        if $in_todo_section && _is_unchecked_todo "$line"; then
-            todos+=("$line")
-        fi
-    done <"$file"
+    readarray -t todos < <(_get_unchecked_todos "$file")
 
     if [ ${#todos[@]} -gt 0 ]; then
         echo
@@ -128,13 +197,32 @@ _append_unchecked_todos() {
 
     readarray -t past_dates < <(_get_past_dates "$MAX_DAYS_BACK")
 
-    for date in "${past_dates[@]}"; do
-        local filename
-        filename=$(_get_daily_note_file_name "$date")
-        local filepath="$OBSIDIAN_HOME/$filename"
+    for idx in "${!past_dates[@]}"; do
+        local date=${past_dates[$idx]}
+        local filename filepath todos filtered=()
 
-        if [ -f "$filepath" ]; then
-            _extract_unchecked_todos "$filepath" >>"$current_note"
+        filename=$(_get_daily_note_file_name "$date")
+        filepath="$OBSIDIAN_HOME/daily-note/$filename"
+        [ -f "$filepath" ] || continue
+
+        readarray -t todos < <(_get_unchecked_todos "$filepath")
+
+        for todo_line in "${todos[@]}"; do
+            local content
+            content=$(_normalize_todo_content "$todo_line")
+            if _is_todo_checked_in_later_notes "$content" "$idx" "${past_dates[@]}"; then
+                continue
+            fi
+            filtered+=("$todo_line")
+        done
+
+        if [ ${#filtered[@]} -gt 0 ]; then
+            {
+                echo
+                echo "### $filename"
+                echo
+                printf '%s\n' "${filtered[@]}"
+            } >>"$current_note"
         fi
     done
 }
