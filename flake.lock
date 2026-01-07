@@ -282,6 +282,22 @@
     },
     "nixpkgs_5": {
       "locked": {
+        "lastModified": 1767364772,
+        "narHash": "sha256-fFUnEYMla8b7UKjijLnMe+oVFOz6HjijGGNS1l7dYaQ=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "16c7794d0a28b5a37904d55bcca36003b9109aaa",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixpkgs-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs_6": {
+      "locked": {
         "lastModified": 1755704039,
         "narHash": "sha256-gKlP0LbyJ3qX0KObfIWcp5nbuHSb5EHwIvU6UcNBg2A=",
         "owner": "NixOS",
@@ -296,7 +312,7 @@
         "type": "github"
       }
     },
-    "nixpkgs_6": {
+    "nixpkgs_7": {
       "locked": {
         "lastModified": 1720535198,
         "narHash": "sha256-zwVvxrdIzralnSbcpghA92tWu2DV2lwv89xZc8MTrbg=",
@@ -312,7 +328,7 @@
         "type": "github"
       }
     },
-    "nixpkgs_7": {
+    "nixpkgs_8": {
       "locked": {
         "lastModified": 1762844143,
         "narHash": "sha256-SlybxLZ1/e4T2lb1czEtWVzDCVSTvk9WLwGhmxFmBxI=",
@@ -328,9 +344,27 @@
         "type": "github"
       }
     },
-    "readItNow-rc": {
+    "opencode": {
       "inputs": {
         "nixpkgs": "nixpkgs_5"
+      },
+      "locked": {
+        "lastModified": 1767809230,
+        "narHash": "sha256-gA3sFtQTbekmJ2AAKColKtsUtUAJ9I67dKGjveSifWA=",
+        "owner": "anomalyco",
+        "repo": "opencode",
+        "rev": "9ffaf81fb3c1b89a3e1a1921144824df2a0aecc5",
+        "type": "github"
+      },
+      "original": {
+        "owner": "anomalyco",
+        "repo": "opencode",
+        "type": "github"
+      }
+    },
+    "readItNow-rc": {
+      "inputs": {
+        "nixpkgs": "nixpkgs_6"
       },
       "locked": {
         "lastModified": 1757707883,
@@ -358,6 +392,7 @@
         "nixpkgs": "nixpkgs_4",
         "nixpkgs-latest": "nixpkgs-latest",
         "nixpkgs-unstable": "nixpkgs-unstable",
+        "opencode": "opencode",
         "readItNow-rc": "readItNow-rc",
         "tui-notifier": "tui-notifier",
         "tuisvn": "tuisvn"
@@ -440,7 +475,7 @@
     },
     "tui-notifier": {
       "inputs": {
-        "nixpkgs": "nixpkgs_6"
+        "nixpkgs": "nixpkgs_7"
       },
       "locked": {
         "lastModified": 1755004924,
@@ -460,7 +495,7 @@
     "tuisvn": {
       "inputs": {
         "flake-utils": "flake-utils_5",
-        "nixpkgs": "nixpkgs_7"
+        "nixpkgs": "nixpkgs_8"
       },
       "locked": {
         "lastModified": 1762953472,
