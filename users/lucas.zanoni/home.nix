@@ -11,25 +11,26 @@
     ../../home/core.nix
     ../../home/scripts
     ../../home/modules/bananas.nix
+    ../../home/modules/cbonsai.nix
     ../../home/modules/clipse.nix
+    ../../home/modules/cmatrix.nix
     ../../home/modules/cursor
     ../../home/modules/flameshot.nix
     ../../home/modules/fish.nix
     ../../home/modules/gnome/dconf.nix
     ../../home/modules/k9s.nix
+    ../../home/modules/install-nothing.nix
     ../../home/modules/kitty.nix
     ../../home/modules/lazygit.nix
     ../../home/modules/neovim.nix
-    ../../home/modules/tmux.nix
-    ../../home/modules/tui-notifier.nix
+    ../../home/modules/opencode.nix
     ../../home/modules/readItNow.nix
     ../../home/modules/sdkman.nix
+    ../../home/modules/suwayomi-server.nix
+    ../../home/modules/tmux.nix
+    ../../home/modules/tuisvn.nix
+    ../../home/modules/tui-notifier.nix
     ../../home/modules/vial.nix
     ../../home/modules/vscode
-    ../../home/modules/cbonsai.nix
-    ../../home/modules/cmatrix.nix
-    ../../home/modules/tuisvn.nix
-    ../../home/modules/install-nothing.nix
-    ../../home/modules/suwayomi-server.nix
   ];
 }
