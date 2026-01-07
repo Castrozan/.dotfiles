@@ -65,12 +65,13 @@ in
     };
 
     "org/gnome/shell" = {
+      disable-user-extensions = false;
       # Enable Super+1,2,3... to launch them
       favorite-apps = [
         "brave-browser.desktop"
         "kitty.desktop"
       ];
-      # TODO: This conf do not install the extensions by itself
+      # Extensions are installed via home.packages (see users/*/pkgs.nix)
       enabled-extensions = [
         "default-workspace@mateusrodcosta.com"
         "wsmatrix@martin.zurowietz.de"
