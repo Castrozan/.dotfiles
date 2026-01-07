@@ -22,7 +22,7 @@
     ../../home/modules/obsidian.nix
     ../../home/modules/vesktop.nix
     ../../home/modules/lazygit.nix
-    ../../home/modules/flameshot.nix
+    ../../home/modules/greatshot.nix
     ../../home/modules/vial.nix
     ../../home/modules/cbonsai.nix
     ../../home/modules/cmatrix.nix
