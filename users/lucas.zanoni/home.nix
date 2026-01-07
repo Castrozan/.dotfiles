@@ -33,5 +33,6 @@
     ../../home/modules/tui-notifier.nix
     ../../home/modules/vial.nix
     ../../home/modules/vscode
+    ../../home/modules/zed-editor.nix
   ];
 }
