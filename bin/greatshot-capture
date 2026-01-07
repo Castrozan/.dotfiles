@@ -2,7 +2,33 @@
 # greatshot-capture.sh
 # Launches greatshot with capture mode enabled to automatically start capture selection
 
+#!/usr/bin/env bash
+# greatshot-capture.sh
+# Launches greatshot with capture mode enabled to automatically start capture selection
+
+# Get full environment from systemd user session
+# This ensures GTK settings, XDG paths, and other environment variables are available
+if command -v systemctl &>/dev/null; then
+    # Import all environment variables from systemd user session
+    eval "$(systemctl --user show-environment 2>/dev/null)"
+fi
+
+# Ensure critical environment variables are set even if systemd doesn't have them
+export XDG_DATA_DIRS="${XDG_DATA_DIRS:-/usr/share:/usr/local/share}:$HOME/.nix-profile/share:$HOME/.local/share:/run/current-system/sw/share"
+export XDG_CONFIG_DIRS="${XDG_CONFIG_DIRS:-/etc/xdg}:$HOME/.nix-profile/etc/xdg"
+export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+export PATH="$HOME/.nix-profile/bin:/run/current-system/sw/bin:$PATH"
+
+# Ensure GTK can find themes and settings
+export GTK_DATA_PREFIX="${GTK_DATA_PREFIX:-/run/current-system/sw}"
+export GTK_PATH="${GTK_PATH:-$HOME/.nix-profile/lib/gtk-4.0:/run/current-system/sw/lib/gtk-4.0}"
+
+# Ensure D-Bus session is available (required for GTK apps)
+export DBUS_SESSION_BUS_ADDRESS="${DBUS_SESSION_BUS_ADDRESS:-unix:path=$XDG_RUNTIME_DIR/bus}"
+
 # Launch greatshot with GREATSHOT_CAPTURE environment variable
+# Use nohup to ensure it runs detached and has access to the full environment
 # This will open the app and automatically click the capture button
 # The capture button handler will minimize the window before starting capture
-GREATSHOT_CAPTURE=1 greatshot >/dev/null 2>&1 &
+nohup env GREATSHOT_CAPTURE=1 greatshot >/dev/null 2>&1 &
