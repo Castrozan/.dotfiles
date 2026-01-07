@@ -115,9 +115,9 @@ in
     };
 
     "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom2" = {
-      name = "flameshot";
+      name = "greatshot";
       binding = "Print";
-      command = "flameshot gui";
+      command = "greatshot-capture";
     };
 
     "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1" = {
