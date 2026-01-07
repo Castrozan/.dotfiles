@@ -25,6 +25,9 @@
       gh
       # ghostty TODO: fix ghostty, https://gitlab.gnome.org/GNOME/gtk/-/issues/4950. A wrapper did not work.
       git
+      gnome-shell-extensions
+      gnomeExtensions.default-workspace
+      gnomeExtensions.workspace-matrix
       gnutar
       go
       insomnia
@@ -39,7 +42,6 @@
       nodejs
       obsidian
       ollama
-      opencode
       pipes
       postman
       redisinsight

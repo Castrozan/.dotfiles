@@ -12,8 +12,12 @@ in
 
   programs.git = {
     enable = true;
-    userName = userName;
-    userEmail = userEmail;
+    settings = {
+      user = {
+        name = userName;
+        email = userEmail;
+      };
+    };
   };
 
   home.file.".gitconfig" = {

@@ -1,7 +1,9 @@
 {
   programs.ssh = {
     enable = true;
+    enableDefaultConfig = false;
     matchBlocks = {
+      "*" = { };
       "gitlab.com" = {
         hostname = "gitlab.service.betha.cloud";
         user = "git";
