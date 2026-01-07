@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# greatshot-capture.sh
+# Launches greatshot with capture mode enabled to automatically start capture selection
+
+# Launch greatshot with GREATSHOT_CAPTURE environment variable
+# This will open the app and automatically click the capture button
+# The capture button handler will minimize the window before starting capture
+GREATSHOT_CAPTURE=1 greatshot >/dev/null 2>&1 &
