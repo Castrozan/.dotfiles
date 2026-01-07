@@ -1,7 +1,7 @@
 { pkgs, inputs, ... }:
 {
   home.packages = [
-    inputs.tui-notifier.packages.${pkgs.system}.default
+    inputs.tui-notifier.packages.${pkgs.stdenv.hostPlatform.system}.default
     (pkgs.makeDesktopItem {
       name = "tui-notifier";
       desktopName = "TUI Notifier";
