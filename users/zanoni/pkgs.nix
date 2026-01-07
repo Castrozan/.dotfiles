@@ -83,7 +83,6 @@
         withVencord = true; # For customization
       })
       firefox
-      flameshot
       obsidian
       postman
       scrcpy
