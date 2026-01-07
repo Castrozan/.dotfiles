@@ -16,6 +16,7 @@
     ../../home/modules/cmatrix.nix
     ../../home/modules/cursor
     ../../home/modules/flameshot.nix
+    ../../home/modules/greatshot.nix
     ../../home/modules/fish.nix
     ../../home/modules/gnome/dconf.nix
     ../../home/modules/k9s.nix
@@ -32,5 +33,6 @@
     ../../home/modules/tui-notifier.nix
     ../../home/modules/vial.nix
     ../../home/modules/vscode
+    ../../home/modules/zed-editor.nix
   ];
 }
