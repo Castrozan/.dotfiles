@@ -1,0 +1,90 @@
+{
+    "$schema": "https://opencode.ai/config.json",
+    "theme": "github",
+    "model": "anthropic/claude-sonnet-4-5",
+    "small_model": "anthropic/claude-haiku-4-5",
+    "autoupdate": "notify",
+    "share": "manual",
+    "default_agent": "plan",
+    "instructions": [
+        "/home/lucas.zanoni/.dotfiles/home/modules/cursor/global-user-rules/user-rules.md"
+    ],
+    "keybinds": {
+        "input_newline": "shift+return,ctrl+return,alt+return,ctrl+j"
+    },
+    "provider": {
+        "anthropic": {
+            "options": {
+                "timeout": 600000,
+                "setCacheKey": true
+            }
+        }
+    },
+    "agent": {
+        "nix-helper": {
+            "description": "Helps with Nix and Home Manager tasks dotfiles repo.",
+            "model": "anthropic/claude-haiku-4-5",
+            "prompt": "You are a Nix-focused assistant. Prefer declarative fixes, nix repl snippets, and flake/home-manager workflows. Keep changes minimal and reproducible.",
+            "tools": {
+                "write": true,
+                "edit": true,
+                "bash": false
+            }
+        },
+        "code-reviewer": {
+            "description": "Reviews code for best practices and potential issues",
+            "model": "anthropic/claude-sonnet-4-5",
+            "prompt": "You are a code reviewer. Focus on security, performance, and maintainability.",
+            "tools": {
+                "write": false,
+                "edit": false,
+                "bash": false
+            }
+        }
+    },
+    "command": {
+        "rebuild": {
+            "template": "Run bin/rebuild to apply Home Manager/NixOS config; summarize output and highlight errors.",
+            "description": "Apply dotfiles via Nix",
+            "agent": "build"
+        },
+        "lint": {
+            "template": "Run relevant linters or formatters and summarize any issues with file hints.",
+            "description": "Check linters quickly",
+            "agent": "build",
+            "model": "anthropic/claude-haiku-4-5"
+        }
+    },
+    "permission": {
+        "edit": "ask",
+        "bash": "ask"
+    },
+    "tools": {
+        "write": true,
+        "bash": true
+    },
+    "watcher": {
+        "ignore": [
+            "node_modules/**",
+            "dist/**",
+            ".git/**",
+            "result/**"
+        ]
+    },
+    "compaction": {
+        "auto": true,
+        "prune": true
+    },
+    "tui": {
+        "scroll_acceleration": {
+            "enabled": true
+        },
+        "diff_style": "auto"
+    },
+    "formatter": {
+        "prettier": {
+            "disabled": false
+        }
+    },
+    "plugin": []
+}
