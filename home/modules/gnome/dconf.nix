@@ -53,13 +53,6 @@ in
       workspace-overview-toggle = [ "" ]; # Disable default Super+W keybinding
     };
 
-    # TODO: unbind favorite-apps and configure them manually
-    # so i dont need to favorite apps
-    # Disable favorite-apps keybindings
-    # "org/gnome/shell/keybindings" = {
-    #   switch-to-application-1 = [ ];
-    # };
-
     "org/gnome/shell/keybindings" = {
       # Disable Super+v for notification list
       toggle-message-tray = [ ];
