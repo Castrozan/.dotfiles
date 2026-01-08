@@ -217,6 +217,11 @@ if [ "$USER" = "lucas.zanoni" ]; then
     export LD_PRELOAD='/lib/x86_64-linux-gnu/libnss_sss.so.2'
 fi
 
+# Start clipse listener
+if command -v clipse &>/dev/null; then
+    clipse --listen
+fi
+
 # Files sourced by $HOME/.dotfiles
 . $HOME/.dotfiles/shell/bash_history.sh
 . $HOME/.dotfiles/shell/fzf_catppuccin_theme.sh
