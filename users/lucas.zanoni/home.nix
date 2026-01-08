@@ -12,15 +12,16 @@
     ../../home/scripts
     ../../home/modules/bananas.nix
     ../../home/modules/cbonsai.nix
-    ../../home/modules/clipse.nix
+    # ../../home/modules/clipse.nix # TODO: clipse service is broken
     ../../home/modules/cmatrix.nix
     ../../home/modules/cursor
     ../../home/modules/flameshot.nix
-    ../../home/modules/greatshot.nix
+    # ../../home/modules/greatshot.nix
     ../../home/modules/fish.nix
     ../../home/modules/gnome/dconf.nix
     ../../home/modules/gnome/extension-manager.nix
     ../../home/modules/k9s.nix
+    ../../home/modules/ksnip.nix
     ../../home/modules/install-nothing.nix
     ../../home/modules/kitty.nix
     ../../home/modules/lazygit.nix

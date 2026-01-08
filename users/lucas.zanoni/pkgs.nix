@@ -21,6 +21,7 @@
       docker-compose
       fastfetch
       flameshot
+      ksnip
       fzf
       gh
       # ghostty TODO: fix ghostty, https://gitlab.gnome.org/GNOME/gtk/-/issues/4950. A wrapper did not work.
@@ -52,7 +53,7 @@
       unzip
       uv
       vim
-      # wl-clipboard
+      wl-clipboard
       xclip
       yamllint
       yazi
