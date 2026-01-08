@@ -2,10 +2,6 @@
 # greatshot-capture.sh
 # Launches greatshot with capture mode enabled to automatically start capture selection
 
-#!/usr/bin/env bash
-# greatshot-capture.sh
-# Launches greatshot with capture mode enabled to automatically start capture selection
-
 # Get full environment from systemd user session
 # This ensures GTK settings, XDG paths, and other environment variables are available
 if command -v systemctl &>/dev/null; then
