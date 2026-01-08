@@ -62,6 +62,11 @@ in
     "org/gnome/shell/keybindings" = {
       # Disable Super+v for notification list
       toggle-message-tray = [ ];
+      # Screenshot keybindings - use GNOME's interactive screenshot UI - pipe to ksnip for annotation
+      show-screenshot-ui = [ "Print" ];
+      screenshot = [ ];
+      screenshot-window = [ ];
+      show-screen-recording-ui = [ ];
     };
 
     "org/gnome/shell" = {
@@ -79,15 +84,28 @@ in
     };
 
     "org/gnome/settings-daemon/plugins/media-keys" = {
+      # Disable default GNOME screenshot shortcuts so custom keybindings can work
+      # These defaults take precedence over custom keybindings, so we must disable them first
+      screenshot = [ ];
+      area-screenshot = [ ];
+      window-screenshot = [ ];
+      screencast = [ ];
+
       custom-keybindings = [
         "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/"
         "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1/"
-        "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom2/"
         "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom3/"
         "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom4/"
         "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom5/"
         "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom6/"
+        "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom7/"
       ];
+    };
+
+    "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom7" = {
+      name = "screenshot-annotate";
+      binding = "<Shift>Print";
+      command = "ksnip-annotate";
     };
 
     "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom6" = {
@@ -108,16 +126,12 @@ in
       command = "bash -c 'cursor $HOME/workbench'";
     };
 
+    # custom2
+
     "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom3" = {
       name = "clipse";
       binding = "<Super>v";
       command = "kitty -e clipse";
-    };
-
-    "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom2" = {
-      name = "greatshot";
-      binding = "Print";
-      command = "greatshot-capture";
     };
 
     "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1" = {
