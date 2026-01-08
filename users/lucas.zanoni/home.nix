@@ -19,6 +19,7 @@
     ../../home/modules/greatshot.nix
     ../../home/modules/fish.nix
     ../../home/modules/gnome/dconf.nix
+    ../../home/modules/gnome/extension-manager.nix
     ../../home/modules/k9s.nix
     ../../home/modules/install-nothing.nix
     ../../home/modules/kitty.nix
