@@ -20,6 +20,7 @@ in
       font-hinting = "slight";
       enable-hot-corners = true;
       clock-show-weekday = true;
+      clock-show-seconds = true;
       gtk-theme = "Yaru-viridian-dark";
       icon-theme = "Yaru-viridian";
       color-scheme = "prefer-dark";
@@ -40,6 +41,7 @@ in
 
     "org/gnome/desktop/screensaver" = {
       picture-uri = "file:///home/zanoni/.dotfiles/static/alter-jellyfish-dark.jpg";
+      lock-delay = 0;
     };
 
     "org/gnome/shell/extensions/default-workspace" = {
@@ -50,6 +52,8 @@ in
       num-columns = 7;
       num-rows = 3;
       show-popup = true;
+      show-overview-grid = true;
+      show-workspace-names = false;
       workspace-overview-toggle = [ "" ]; # Disable default Super+W keybinding
     };
 
