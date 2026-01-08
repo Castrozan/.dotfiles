@@ -7,6 +7,7 @@
     ./rebuild.nix
     ./set-random-bg-kitty.nix
     ./tar-unzip2dir.nix
+    ./tmux-lazygit-toggle.nix
     ./volume.nix
   ];
 }
