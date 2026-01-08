@@ -221,5 +221,45 @@
         "key": "ctrl+i",
         "command": "-search.action.searchWithAI",
         "when": "hasAIResultProviderKey && searchViewletFocus"
+    },
+    {
+        "key": "alt+left",
+        "command": "composer.previousChatTab",
+        "when": "composerFocused && !editorTextFocus"
+    },
+    {
+        "key": "ctrl+[",
+        "command": "-composer.previousChatTab",
+        "when": "composerFocused && !editorTextFocus"
+    },
+    {
+        "key": "alt+right",
+        "command": "composer.nextChatTab",
+        "when": "composerFocused && !editorTextFocus"
+    },
+    {
+        "key": "ctrl+]",
+        "command": "-composer.nextChatTab",
+        "when": "composerFocused && !editorTextFocus"
+    },
+    {
+        "key": "ctrl+[",
+        "command": "composer.selectPreviousComposer",
+        "when": "agentsPaneFocused && cursor.agentIdeUnification.enabled && !editorTextFocus || composerFocused && cursor.agentIdeUnification.enabled && !editorTextFocus"
+    },
+    {
+        "key": "ctrl+alt+left",
+        "command": "-composer.selectPreviousComposer",
+        "when": "agentsPaneFocused && cursor.agentIdeUnification.enabled && !editorTextFocus || composerFocused && cursor.agentIdeUnification.enabled && !editorTextFocus"
+    },
+    {
+        "key": "ctrl+]",
+        "command": "composer.selectNextComposer",
+        "when": "agentsPaneFocused && cursor.agentIdeUnification.enabled && !editorTextFocus || composerFocused && cursor.agentIdeUnification.enabled && !editorTextFocus"
+    },
+    {
+        "key": "ctrl+alt+right",
+        "command": "-composer.selectNextComposer",
+        "when": "agentsPaneFocused && cursor.agentIdeUnification.enabled && !editorTextFocus || composerFocused && cursor.agentIdeUnification.enabled && !editorTextFocus"
     }
 ]
