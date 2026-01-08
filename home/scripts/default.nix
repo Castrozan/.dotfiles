@@ -1,6 +1,7 @@
 {
   imports = [
     ./daily-note.nix
+    ./ksnip-annotate.nix
     ./greatshot-capture.nix
     ./on.nix
     ./pdf-edit.nix
