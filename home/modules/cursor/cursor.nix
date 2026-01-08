@@ -4,9 +4,9 @@
     (code-cursor.overrideAttrs (
       old:
       let
-        version = "2.2.43";
-        buildId = "32cfbe848b35d9eb320980195985450f244b303d";
-        hash = "WQPpLexTO9+8ZeQPFhlj/CHEbroW8azBX9Vjpr108a0=";
+        version = "2.3.30";
+        buildId = "d1289018cc3fcc395487f65455e31651734308d7";
+        hash = "0MOAyPJWilqvmsJYz4+q/wvzZ42sUpWDVaKSTJ74fvA=";
       in
       {
         version = version;
