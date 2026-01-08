@@ -50,6 +50,7 @@ in
       num-columns = 7;
       num-rows = 3;
       show-popup = true;
+      workspace-overview-toggle = [ "" ]; # Disable default Super+W keybinding
     };
 
     # TODO: unbind favorite-apps and configure them manually
@@ -94,8 +95,8 @@ in
       custom-keybindings = [
         "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/"
         "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1/"
+        "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom2/"
         "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom3/"
-        "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom4/"
         "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom5/"
         "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom6/"
         "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom7/"
@@ -120,13 +121,11 @@ in
       command = "daily-note";
     };
 
-    "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom4" = {
+    "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom2" = {
       name = "workbench";
       binding = "<Super>w";
       command = "bash -c 'cursor $HOME/workbench'";
     };
-
-    # custom2
 
     "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom3" = {
       name = "clipse";
