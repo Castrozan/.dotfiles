@@ -43,15 +43,16 @@ if [ -n "$LAZYGIT_PANE_ID" ]; then
 else
     PREV_PANE_ID="$CURRENT_PANE_ID"
     PREV_PANE_ZOOMED=$(tmux display-message -p -t "$PREV_PANE_ID" '#{pane_zoomed}')
-    
+
     if ! NEW_PANE_ID=$(tmux split-window -v -c "$GIT_ROOT" -P -F '#{pane_id}' 2>&1); then
         tmux display-message -d 3000 "Error: Failed to create pane: $NEW_PANE_ID"
         exit 1
     fi
-    
+
     tmux select-pane -t "$NEW_PANE_ID" -T "lazygit" 2>/dev/null || exit 1
     tmux resize-pane -Z -t "$NEW_PANE_ID" 2>/dev/null || exit 1
-    
+
+    # TODO: For some reason we cannot maximize the previous pane now.
     if [ "$PREV_PANE_ZOOMED" = "1" ]; then
         CLEANUP_SCRIPT="lazygit; tmux kill-pane -t $NEW_PANE_ID 2>/dev/null; tmux select-pane -t $PREV_PANE_ID 2>/dev/null; tmux resize-pane -Z -t $PREV_PANE_ID 2>/dev/null || true"
     else
