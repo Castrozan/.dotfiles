@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+# Toggle lazygit pane in current tmux window
+# Creates a maximized lazygit pane on demand, destroys it on exit
+
+[ "${DEBUG:-}" = "1" ] && set -x
+set -eu
+
+CURRENT_WINDOW_ID=$(tmux display-message -p '#{window_id}')
+CURRENT_PANE_ID=$(tmux display-message -p '#{pane_id}')
+CURRENT_PANE_PATH=$(tmux display-message -p '#{pane_current_path}')
+
+find_git_root() {
+    local dir="$1"
+    if git_root=$(cd "$dir" && git rev-parse --show-toplevel 2>/dev/null); then
+        echo "$git_root"
+        return 0
+    fi
+    while [ "$dir" != "/" ]; do
+        if [ -d "$dir/.git" ] || [ -f "$dir/.git" ]; then
+            echo "$dir"
+            return 0
+        fi
+        dir=$(dirname "$dir")
+    done
+    return 1
+}
+
+GIT_ROOT=$(find_git_root "$CURRENT_PANE_PATH" 2>/dev/null || true)
+
+if [ -z "$GIT_ROOT" ]; then
+    tmux display-message -d 3000 "Error: Not in a git repository"
+    exit 1
+fi
+
+LAZYGIT_PANE_ID=$(tmux list-panes -t "$CURRENT_WINDOW_ID" -F '#{pane_id} #{pane_title}' 2>/dev/null | \
+    { grep -E '^%[0-9]+ lazygit$' || true; } | \
+    cut -d' ' -f1 | \
+    head -n1)
+
+if [ -n "$LAZYGIT_PANE_ID" ]; then
+    tmux select-pane -t "$LAZYGIT_PANE_ID"
+    tmux resize-pane -Z
+else
+    PREV_PANE_ID="$CURRENT_PANE_ID"
+    PREV_PANE_ZOOMED=$(tmux display-message -p -t "$PREV_PANE_ID" '#{pane_zoomed}')
+    
+    if ! NEW_PANE_ID=$(tmux split-window -v -c "$GIT_ROOT" -P -F '#{pane_id}' 2>&1); then
+        tmux display-message -d 3000 "Error: Failed to create pane: $NEW_PANE_ID"
+        exit 1
+    fi
+    
+    tmux select-pane -t "$NEW_PANE_ID" -T "lazygit" 2>/dev/null || exit 1
+    tmux resize-pane -Z -t "$NEW_PANE_ID" 2>/dev/null || exit 1
+    
+    if [ "$PREV_PANE_ZOOMED" = "1" ]; then
+        CLEANUP_SCRIPT="lazygit; tmux kill-pane -t $NEW_PANE_ID 2>/dev/null; tmux select-pane -t $PREV_PANE_ID 2>/dev/null; tmux resize-pane -Z -t $PREV_PANE_ID 2>/dev/null || true"
+    else
+        CLEANUP_SCRIPT="lazygit; tmux kill-pane -t $NEW_PANE_ID 2>/dev/null; tmux select-pane -t $PREV_PANE_ID 2>/dev/null || true"
+    fi
+    tmux send-keys -t "$NEW_PANE_ID" "$CLEANUP_SCRIPT" Enter 2>/dev/null || exit 1
+fi
+
