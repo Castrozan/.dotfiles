@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+# screenshot-annotate.sh
+# Opens Ksnip with clipboard image for annotation
+# Use this after taking a screenshot with GNOME (which copies to clipboard)
+
+# Get full environment from systemd user session
+if command -v systemctl &>/dev/null; then
+    eval "$(systemctl --user show-environment 2>/dev/null)"
+fi
+
+# Ensure critical environment variables are set
+export XDG_DATA_DIRS="${XDG_DATA_DIRS:-/usr/share:/usr/local/share}:$HOME/.nix-profile/share:$HOME/.local/share:/run/current-system/sw/share"
+export XDG_CONFIG_DIRS="${XDG_CONFIG_DIRS:-/etc/xdg}:$HOME/.nix-profile/etc/xdg"
+export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+export PATH="$HOME/.nix-profile/bin:/run/current-system/sw/bin:$PATH"
+
+# Ensure D-Bus session is available (required for GTK apps)
+export DBUS_SESSION_BUS_ADDRESS="${DBUS_SESSION_BUS_ADDRESS:-unix:path=$XDG_RUNTIME_DIR/bus}"
+
+# Create temp directory for screenshot
+TEMP_DIR="${XDG_RUNTIME_DIR:-/tmp}/screenshot-annotate"
+mkdir -p "$TEMP_DIR"
+TEMP_FILE="$TEMP_DIR/clipboard-$(date +%s).png"
+
+# Try to get image from clipboard and save to temp file
+# Wayland: use wl-paste
+if command -v wl-paste &>/dev/null; then
+    if wl-paste --type image/png > "$TEMP_FILE" 2>/dev/null && [ -s "$TEMP_FILE" ]; then
+        # Successfully got image from clipboard, open in ksnip for editing
+        ksnip --edit "$TEMP_FILE"
+        exit 0
+    fi
+fi
+
+# X11 fallback: use xclip
+if command -v xclip &>/dev/null; then
+    if xclip -selection clipboard -t image/png -o > "$TEMP_FILE" 2>/dev/null && [ -s "$TEMP_FILE" ]; then
+        ksnip --edit "$TEMP_FILE"
+        exit 0
+    fi
+fi
+
+# No image in clipboard - notify and open ksnip with portal (take new screenshot)
+notify-send "Screenshot Annotation" "No image in clipboard. Opening ksnip to take a new screenshot." 2>/dev/null || true
+ksnip --portal
