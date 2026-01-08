@@ -99,7 +99,9 @@ in
     "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom5" = {
       name = "daily-note";
       binding = "<Super>d";
-      command = "daily-note";
+      # Use wrapper script with full path - this ensures the keybinding works
+      # The wrapper script calls daily-note with proper environment
+      command = "bash -c '/home/lucas.zanoni/.dotfiles/.cursor/daily-note-wrapper.sh'";
     };
 
     "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom4" = {
@@ -146,6 +148,8 @@ in
         "<Shift><Alt>Tab"
         "<Shift><Super>Tab"
       ];
+      # Explicitly disable show-desktop to prevent conflict with Super+d custom keybinding
+      show-desktop = [ ];
     };
   };
 }
