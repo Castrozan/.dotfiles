@@ -1,11 +1,7 @@
 { ... }:
 let
-  kitty-quick-temp-shell-command = ''
-    kitty --override remember_window_size=no
-      --override initial_window_width=80c
-      --override initial_window_height=24c
-      --override window_padding_width=10
-      -e tmux new-session
+  wezterm-quick-temp-shell-command = ''
+    wezterm start --initial-rows 24 --initial-cols 80 -- tmux new-session
   '';
 in
 {
@@ -72,7 +68,7 @@ in
       # Enable Super+1,2,3... to launch them
       favorite-apps = [
         "brave-browser.desktop"
-        "kitty.desktop"
+        "wezterm.desktop"
       ];
       # Extensions are installed via home.packages (see users/*/pkgs.nix)
       enabled-extensions = [
@@ -94,7 +90,7 @@ in
         "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1/"
         "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom2/"
         "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom3/"
-        "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom5/"
+        "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom4/"
         "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom6/"
         "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom7/"
       ];
@@ -112,10 +108,11 @@ in
       command = "xdg-open 'obsidian://adv-uri?commandid=obsidian-read-it-later%3Asave-clipboard-to-notice'";
     };
 
-    "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom5" = {
+    # Set OBSIDIAN_HOME env var since gsd-media-keys doesn't have access to session variables
+    "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom4" = {
       name = "daily-note";
       binding = "<Super>d";
-      command = "daily-note";
+      command = "bash -c 'OBSIDIAN_HOME=\"$HOME/vault\" daily-note'";
     };
 
     "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom2" = {
@@ -127,13 +124,13 @@ in
     "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom3" = {
       name = "clipse";
       binding = "<Super>v";
-      command = "kitty -e clipse";
+      command = "wezterm start -- clipse";
     };
 
     "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1" = {
-      name = "kitty-quick-temp-shell";
+      name = "wezterm-quick-temp-shell";
       binding = "<Shift><Alt>2";
-      command = kitty-quick-temp-shell-command;
+      command = wezterm-quick-temp-shell-command;
     };
 
     # Fixed: using forked repository with beepy 1.0.9 fix
@@ -148,6 +145,8 @@ in
       close = [ "<Shift><Control>w" ];
       switch-applications = [ ];
       switch-applications-backward = [ ];
+      # Disable default Super+D (show-desktop) so custom keybinding can work
+      show-desktop = [ ];
       switch-windows = [
         "<Alt>Tab"
         "<Super>Tab"

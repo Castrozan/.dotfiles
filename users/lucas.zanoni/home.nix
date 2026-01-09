@@ -16,7 +16,7 @@
     ../../home/modules/cmatrix.nix
     ../../home/modules/cursor
     ../../home/modules/flameshot.nix
-    # ../../home/modules/greatshot.nix
+    # ../../home/modules/greatshot.nix # Im using gnome native capture with ksnip for annotation for now
     ../../home/modules/fish.nix
     ../../home/modules/gnome/dconf.nix
     ../../home/modules/gnome/extension-manager.nix
@@ -35,6 +35,7 @@
     ../../home/modules/tui-notifier.nix
     ../../home/modules/vial.nix
     ../../home/modules/vscode
+    ../../home/modules/wezterm.nix # https://tmuxai.dev/terminal-compatibility/
     ../../home/modules/zed-editor.nix
   ];
 }
