@@ -108,10 +108,11 @@ in
       command = "xdg-open 'obsidian://adv-uri?commandid=obsidian-read-it-later%3Asave-clipboard-to-notice'";
     };
 
+    # Set OBSIDIAN_HOME env var since gsd-media-keys doesn't have access to session variables
     "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom4" = {
       name = "daily-note";
       binding = "<Super>d";
-      command = "daily-note";
+      command = "bash -c 'OBSIDIAN_HOME=\"$HOME/vault\" daily-note'";
     };
 
     "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom2" = {
