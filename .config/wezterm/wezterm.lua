@@ -61,6 +61,14 @@ local catppuccin_mocha = {
   },
 }
 
+-- Maximize window on startup
+-- Must be called before the return statement
+wezterm.on('gui-startup', function(cmd)
+  local mux = wezterm.mux
+  local _, _, window = mux.spawn_window(cmd or {})
+  window:gui_window():maximize()
+end)
+
 return {
   -- Font configuration
   font = wezterm.font('Fira Code', { weight = 'Regular' }),
