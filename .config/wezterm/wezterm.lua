@@ -62,7 +62,6 @@ local catppuccin_mocha = {
 }
 
 -- Maximize window on startup
--- Must be called before the return statement
 wezterm.on('gui-startup', function(cmd)
   local mux = wezterm.mux
   local _, _, window = mux.spawn_window(cmd or {})
@@ -70,11 +69,9 @@ wezterm.on('gui-startup', function(cmd)
 end)
 
 return {
-  -- Font configuration
   font = wezterm.font('Fira Code', { weight = 'Regular' }),
   font_size = 16,
 
-  -- Color scheme
   color_schemes = {
     ['Catppuccin Mocha'] = catppuccin_mocha,
   },
@@ -87,10 +84,11 @@ return {
     top = 10,
     bottom = 10,
   },
-  window_decorations = 'NONE', -- Hide window decorations (like kitty hide_window_decorations)
+
+  window_decorations = 'NONE',
   window_background_opacity = 1.0,
 
-  -- Background image (scaled to cover, similar to kitty cscaled)
+
   window_background_image = wezterm.config_dir .. '/wallpaper.png',
   window_background_image_hsb = {
     brightness = 1.0,
@@ -98,16 +96,13 @@ return {
     saturation = 1.0,
   },
 
-  -- Shell
   default_prog = { 'fish' },
 
-  -- Tab bar
   enable_tab_bar = true,
   tab_bar_at_bottom = false,
   use_fancy_tab_bar = true,
-  hide_tab_bar_if_only_one_tab = true, -- Hide tab bar when only one tab (cleaner look)
+  hide_tab_bar_if_only_one_tab = true,
 
-  -- Scrollback
   scrollback_lines = 10000,
 
   -- Enable CSI-u (fixterms/kitty) keyboard protocol for proper modifier key handling
