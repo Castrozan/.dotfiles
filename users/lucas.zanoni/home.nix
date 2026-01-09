@@ -24,6 +24,7 @@
     ../../home/modules/ksnip.nix
     ../../home/modules/install-nothing.nix
     ../../home/modules/kitty.nix
+    ../../home/modules/wezterm.nix
     ../../home/modules/lazygit.nix
     ../../home/modules/neovim.nix
     ../../home/modules/opencode.nix
