@@ -40,3 +40,7 @@ As the kitty developer states: kitty and tmux have fundamentally different appro
 **References**:
 - [tmux issue #3335](https://github.com/tmux/tmux/issues/3335) - kitty keyboard protocol support
 - [kitty issue #391](https://github.com/kovidgoyal/kitty/issues/391#issuecomment-638320745) - kitty developer's comment on tmux compatibility
+
+### Alternatives
+
+Since there's no solution, see [tmux-alternatives.md](./tmux-alternatives.md) for terminal emulator and multiplexer alternatives that support Shift+Enter properly.
