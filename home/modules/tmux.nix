@@ -9,7 +9,7 @@ let
     version = "zanoni.v1.0.3";
     src = pkgs.fetchFromGitHub {
       owner = "castrozan";
-      repo = "tmux";
+      repo = "catppuccin-tmux";
       rev = "zanoni.v1.0.3";
       sha256 = "0aYa1LY8BRGkU3Cd1l7dmLnGsFXbbRjmCtInYfiEwTA=";
     };
