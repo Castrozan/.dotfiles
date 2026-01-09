@@ -93,33 +93,29 @@ return {
   -- Shell
   default_prog = { 'fish' },
 
-  -- Window behavior
-  confirm_before_quitting = false,
-  enable_wayland = true,
-
   -- Tab bar
   enable_tab_bar = true,
   tab_bar_at_bottom = false,
   use_fancy_tab_bar = true,
-  hide_tab_bar_if_only_one_tab = false,
+  hide_tab_bar_if_only_one_tab = true, -- Hide tab bar when only one tab (cleaner look)
 
   -- Scrollback
   scrollback_lines = 10000,
 
-  -- Key bindings
---   keys = {
---     -- Enable Shift+Enter to work properly (WezTerm supports this natively)
---     {
---       key = 'Enter',
---       mods = 'SHIFT',
---       action = wezterm.action.SendString('\r'),
---     },
---     {
---       key = 'Enter',
---       mods = 'CTRL',
---       action = wezterm.action.SendString('\r'),
---     },
---   },
+  -- Enable CSI-u (fixterms/kitty) keyboard protocol for proper modifier key handling
+  -- This allows applications to distinguish Shift+Enter from Enter
+  enable_csi_u_key_encoding = true,
+
+  -- Key bindings: send CSI-u escape sequences for modified Enter
+  keys = {
+    -- Shift+Enter: send \x1b[13;2u (CSI u format: ESC [ keycode ; modifiers u)
+    -- 13 = Enter keycode, 2 = Shift modifier
+    { key = 'Enter', mods = 'SHIFT', action = wezterm.action.SendString('\x1b[13;2u') },
+    -- Ctrl+Enter: send \x1b[13;5u (5 = Ctrl modifier)
+    { key = 'Enter', mods = 'CTRL', action = wezterm.action.SendString('\x1b[13;5u') },
+    -- Alt+Enter: send \x1b[13;3u (3 = Alt modifier)
+    { key = 'Enter', mods = 'ALT', action = wezterm.action.SendString('\x1b[13;3u') },
+  },
 
   -- Startup behavior (similar to kitty startup_session)
   -- WezTerm doesn't have exact equivalent, but we can set default working directory

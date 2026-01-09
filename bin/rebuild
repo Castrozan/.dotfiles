@@ -10,19 +10,20 @@ if [ -f /etc/os-release ]; then
         # Not nixos
         # Try methods in order of preference to avoid GitHub rate limits:
 
+        # --impure is required for nixGL (OpenGL support on non-NixOS)
         # Method 1: Use home-manager directly if installed (best - no API calls)
         if command -v home-manager &>/dev/null; then
-            home-manager switch --flake "$HOME/.dotfiles#lucas.zanoni@x86_64-linux" \
+            home-manager switch --impure --flake "$HOME/.dotfiles#lucas.zanoni@x86_64-linux" \
                 -b "backup-$(date +%Y-%m-%d-%H-%M-%S)"
         # Method 2: Use nixpkgs#home-manager (good - uses cache, avoids GitHub API)
-        elif nix run nixpkgs#home-manager -- --flake "$HOME/.dotfiles#lucas.zanoni@x86_64-linux" switch \
+        elif nix run nixpkgs#home-manager -- --impure --flake "$HOME/.dotfiles#lucas.zanoni@x86_64-linux" switch \
             -b "backup-$(date +%Y-%m-%d-%H-%M-%S)" 2>/dev/null; then
             : # Success
         # Method 3: Fallback to GitHub (may hit rate limits - only if above methods fail)
         else
             echo "Warning: Using GitHub source may hit rate limits. Consider installing home-manager:" >&2
             echo "  nix profile install nixpkgs#home-manager" >&2
-            nix run home-manager/master -- --flake "$HOME/.dotfiles#lucas.zanoni@x86_64-linux" switch \
+            nix run home-manager/master -- --impure --flake "$HOME/.dotfiles#lucas.zanoni@x86_64-linux" switch \
                 -b "backup-$(date +%Y-%m-%d-%H-%M-%S)"
         fi
     fi
