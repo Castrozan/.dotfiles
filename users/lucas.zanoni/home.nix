@@ -16,14 +16,13 @@
     ../../home/modules/cmatrix.nix
     ../../home/modules/cursor
     ../../home/modules/flameshot.nix
-    # ../../home/modules/greatshot.nix
+    # ../../home/modules/greatshot.nix # Im using gnome native capture with ksnip for annotation for now
     ../../home/modules/fish.nix
     ../../home/modules/gnome/dconf.nix
     ../../home/modules/gnome/extension-manager.nix
     ../../home/modules/k9s.nix
     ../../home/modules/ksnip.nix
     ../../home/modules/install-nothing.nix
-    ../../home/modules/kitty.nix
     ../../home/modules/wezterm.nix
     ../../home/modules/lazygit.nix
     ../../home/modules/neovim.nix

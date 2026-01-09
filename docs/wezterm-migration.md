@@ -22,38 +22,78 @@ All kitty settings have been ported to WezTerm:
 
 ## New Features Enabled
 
-- ✅ **Shift+Enter support**: WezTerm natively supports CSI-u keyboard protocol
-- ✅ **Extended keys in tmux**: Enabled `extended-keys` and `wezterm*:extkeys` in tmux config
-- ✅ **Better keyboard handling**: No more "unknown key" errors
+- ✅ **Shift+Enter support**: Enabled CSI-u keyboard protocol for proper modifier key handling
+- ✅ **Extended keys in tmux**: Enabled `extended-keys` with CSI-u format and passthrough
+- ✅ **Better keyboard handling**: Applications can now distinguish Shift+Enter from Enter
+
+## Non-NixOS OpenGL Fix
+
+WezTerm requires OpenGL/EGL libraries which aren't available to Nix applications on non-NixOS.
+The solution uses [nixGL](https://github.com/nix-community/nixGL) to wrap WezTerm:
+
+- `nixGLDefault` auto-detects the system's OpenGL implementation
+- Requires `--impure` flag when rebuilding (uses `builtins.currentTime`)
+- Supports both AMD (Mesa) and NVIDIA drivers
 
 ## Files Updated
 
-1. `home/modules/wezterm.nix` - New WezTerm module
+1. `home/modules/wezterm.nix` - WezTerm module with nixGL wrapper for OpenGL support
 2. `.config/wezterm/wezterm.lua` - WezTerm configuration
 3. `users/lucas.zanoni/home.nix` - Switched from kitty to wezterm module
 4. `.config/tmux/settings.conf` - Added extended-keys support for WezTerm
 5. `.config/fuzzel/fuzzel.ini` - Updated terminal from kitty to wezterm
 6. `.config/xdg-terminals.list` - Updated default terminal
+7. `flake.nix` - Added nixGL input for OpenGL support on non-NixOS
+8. `bin/rebuild` - Added `--impure` flag (required for nixGL)
 
-## Testing
+## Shift+Enter Fix
 
-After rebuilding:
+### Problem
+Shift+Enter was not working properly - it would submit prompts instead of adding newlines in applications like opencode.
 
-1. **Test Shift+Enter in tmux**:
+### Solution
+Enabled CSI-u (fixterms/kitty) keyboard protocol in WezTerm and configured explicit key bindings:
+
+1. **WezTerm Configuration** (`.config/wezterm/wezterm.lua`):
+   - `enable_csi_u_key_encoding = true` - Enables CSI-u protocol
+   - Key bindings send proper escape sequences:
+     - Shift+Enter → `\x1b[13;2u`
+     - Ctrl+Enter → `\x1b[13;5u`
+     - Alt+Enter → `\x1b[13;3u`
+
+2. **Tmux Configuration** (`.config/tmux/settings.conf`):
+   - `extended-keys on` - Enable extended key support
+   - `extended-keys-format csi-u` - Use CSI-u format
+   - `allow-passthrough on` - Allow sequences to pass through to applications
+
+### Testing
+
+After rebuilding and restarting WezTerm:
+
+1. **Test outside tmux**:
    ```bash
-   tmux show-key -m
-   # Press Shift+Enter - should show proper sequence
+   cat -v
+   # Press Shift+Enter - should show: ^[[13;2u
    ```
 
-2. **Test in OpenCode**:
-   - Shift+Enter should now work for multi-line input
-   - No more "unknown key" errors
+2. **Test inside tmux** (reload config first):
+   ```bash
+   tmux source-file ~/.config/tmux/tmux.conf
+   cat -v
+   # Press Shift+Enter - should show: ^[[13;2u
+   ```
 
-3. **Verify appearance**:
+3. **Test in OpenCode**:
+   - Type some text, press Shift+Enter
+   - Should add a newline (not submit)
+   - Ctrl+J also works as fallback
+
+4. **Verify appearance**:
    - Font should be Fira Code
    - Colors should match Catppuccin Mocha
    - Wallpaper should be visible
    - Window should have no decorations
+   - Tab bar hidden when only one tab
 
 ## Rollback
 
