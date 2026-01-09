@@ -28,6 +28,11 @@ function __start_tmux
   end
 end
 
+# Wrapper function for bass-translated bash alias compatibility
+function _start_tmux
+  __start_tmux $argv
+end
+
 if status is-interactive && [ "$TERM" != "dumb" ]
   __start_tmux
 end
