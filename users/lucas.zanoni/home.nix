@@ -23,7 +23,7 @@
     ../../home/modules/k9s.nix
     ../../home/modules/ksnip.nix
     ../../home/modules/install-nothing.nix
-    ../../home/modules/wezterm.nix
+    ../../home/modules/kitty.nix
     ../../home/modules/lazygit.nix
     ../../home/modules/neovim.nix
     ../../home/modules/opencode.nix
@@ -35,6 +35,7 @@
     ../../home/modules/tui-notifier.nix
     ../../home/modules/vial.nix
     ../../home/modules/vscode
+    ../../home/modules/wezterm.nix # https://tmuxai.dev/terminal-compatibility/
     ../../home/modules/zed-editor.nix
   ];
 }
