@@ -95,6 +95,7 @@
       wget
       curl
       git
+      ksnip
       bash
       bash-completion
       sqlite
