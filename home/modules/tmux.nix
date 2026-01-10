@@ -38,6 +38,8 @@ in
       ${binds}
     '';
   };
+
+  home.packages = [ pkgs.xsel ];
 }
 
 # Docs:
