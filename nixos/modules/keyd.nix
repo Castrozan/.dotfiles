@@ -1,5 +1,5 @@
 # keyd keyboard remapping daemon configuration
-{ pkgs, ... }:
+{ ... }:
 let
   # Base keyd configuration with layer definitions
   defaultConf = ''
