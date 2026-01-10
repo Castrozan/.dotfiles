@@ -62,10 +62,19 @@ local catppuccin_mocha = {
 }
 
 -- Maximize window on startup
+local mux = wezterm.mux
+
 wezterm.on('gui-startup', function(cmd)
-  local mux = wezterm.mux
-  local _, _, window = mux.spawn_window(cmd or {})
+  local tab, pane, window = mux.spawn_window(cmd or {})
   window:gui_window():maximize()
+end)
+
+-- Maximize window when GUI attaches (handles cases where gui-startup doesn't fire)
+wezterm.on('gui-attached', function(domain)
+  local window = mux.get_active_window()
+  if window then
+    window:gui_window():maximize()
+  end
 end)
 
 return {
@@ -123,4 +132,9 @@ return {
   -- Startup behavior (similar to kitty startup_session)
   -- WezTerm doesn't have exact equivalent, but we can set default working directory
   default_cwd = wezterm.home_dir,
+
+  -- Set very large initial window size to approximate maximized state
+  -- This helps when windows are created in existing instances (where gui-startup doesn't fire)
+  initial_cols = 300,
+  initial_rows = 100,
 }
