@@ -56,7 +56,6 @@
       python312
       scrcpy
       sqlite
-      # terraform # Removed: its broken on nixpkgs
       tig # git log visualizer
       tmux
       unzip
@@ -88,6 +87,7 @@
       alsa-lib.dev
       pkg-config
       supabase-cli
+      terraform # Removed: its broken on nixpkgs
     ])
     ++ (with latest; [
       claude-code
