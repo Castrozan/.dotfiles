@@ -17,7 +17,6 @@
     ../../home/modules/hyprland
     ../../home/modules/ksnip.nix
     ../../home/modules/install-nothing.nix
-    ../../home/modules/keyd.nix
     ../../home/modules/kitty.nix
     ../../home/modules/lazygit.nix
     ../../home/modules/neovim.nix
