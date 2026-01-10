@@ -1,30 +1,31 @@
 #!/usr/bin/env bash
+# This script is used to rebuild the system using the dotfiles flake.
 
-# Detect if we're on NixOS
-if [ -f /etc/os-release ]; then
-    . /etc/os-release
-    if [ "$ID" = "nixos" ]; then
-        # We're on NixOS
-        sudo nixos-rebuild switch --flake $HOME/.dotfiles#"$(whoami)"
+. /etc/os-release
+
+if [ "$ID" = "nixos" ]; then
+    # Set allowUnfree for unfree packages
+    # Use sudo env to preserve only NIXPKGS_ALLOW_UNFREE, not HOME
+    # This avoids the warning about HOME not being owned by root
+    DOTFILES_PATH="$HOME/.dotfiles"
+    USERNAME="$(whoami)"
+    sudo env "NIXPKGS_ALLOW_UNFREE=1" nixos-rebuild switch --impure --flake "$DOTFILES_PATH#$USERNAME"
+else
+    # Try methods in order of preference to avoid GitHub rate limits:
+
+    # Method 1: Use home-manager directly if installed (best - no API calls)
+    if command -v home-manager &>/dev/null; then
+        home-manager switch --impure --flake "$HOME/.dotfiles#lucas.zanoni@x86_64-linux" \
+            -b "backup-$(date +%Y-%m-%d-%H-%M-%S)"
+    # Method 2: Use nixpkgs#home-manager (good - uses cache, avoids GitHub API)
+    elif nix run nixpkgs#home-manager -- --impure --flake "$HOME/.dotfiles#lucas.zanoni@x86_64-linux" switch \
+        -b "backup-$(date +%Y-%m-%d-%H-%M-%S)" 2>/dev/null; then
+        : # Success
     else
-        # Not nixos
-        # Try methods in order of preference to avoid GitHub rate limits:
-
-        # --impure is required for nixGL (OpenGL support on non-NixOS)
-        # Method 1: Use home-manager directly if installed (best - no API calls)
-        if command -v home-manager &>/dev/null; then
-            home-manager switch --impure --flake "$HOME/.dotfiles#lucas.zanoni@x86_64-linux" \
-                -b "backup-$(date +%Y-%m-%d-%H-%M-%S)"
-        # Method 2: Use nixpkgs#home-manager (good - uses cache, avoids GitHub API)
-        elif nix run nixpkgs#home-manager -- --impure --flake "$HOME/.dotfiles#lucas.zanoni@x86_64-linux" switch \
-            -b "backup-$(date +%Y-%m-%d-%H-%M-%S)" 2>/dev/null; then
-            : # Success
         # Method 3: Fallback to GitHub (may hit rate limits - only if above methods fail)
-        else
-            echo "Warning: Using GitHub source may hit rate limits. Consider installing home-manager:" >&2
-            echo "  nix profile install nixpkgs#home-manager" >&2
-            nix run home-manager/master -- --impure --flake "$HOME/.dotfiles#lucas.zanoni@x86_64-linux" switch \
-                -b "backup-$(date +%Y-%m-%d-%H-%M-%S)"
-        fi
+        echo "Warning: Using GitHub source may hit rate limits. Consider installing home-manager:" >&2
+        echo "  nix profile install nixpkgs#home-manager" >&2
+        nix run home-manager/master -- --impure --flake "$HOME/.dotfiles#lucas.zanoni@x86_64-linux" switch \
+            -b "backup-$(date +%Y-%m-%d-%H-%M-%S)"
     fi
-fi 
+fi
