@@ -22,6 +22,7 @@
     ../../home/modules/playwright.nix
     ../../home/modules/cursor
     ../../home/modules/obsidian.nix
+    ../../home/modules/opencode.nix
     ../../home/modules/vesktop.nix
     ../../home/modules/lazygit.nix
     ../../home/modules/greatshot.nix
