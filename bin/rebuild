@@ -5,12 +5,13 @@ if [ -f /etc/os-release ]; then
     . /etc/os-release
     if [ "$ID" = "nixos" ]; then
         # We're on NixOS
-        sudo nixos-rebuild switch --flake $HOME/.dotfiles#"$(whoami)"
+        # Set allowUnfree for nixGL and other unfree packages
+        export NIXPKGS_ALLOW_UNFREE=1
+        sudo -E nixos-rebuild switch --impure --flake $HOME/.dotfiles#"$(whoami)"
     else
         # Not nixos
         # Try methods in order of preference to avoid GitHub rate limits:
 
-        # --impure is required for nixGL (OpenGL support on non-NixOS)
         # Method 1: Use home-manager directly if installed (best - no API calls)
         if command -v home-manager &>/dev/null; then
             home-manager switch --impure --flake "$HOME/.dotfiles#lucas.zanoni@x86_64-linux" \

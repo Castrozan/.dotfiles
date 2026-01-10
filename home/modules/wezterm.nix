@@ -2,6 +2,8 @@
 let
   # nixGLDefault auto-detects the right OpenGL implementation
   # Falls back to nixGLMesa for AMD/Intel or nixGLNvidia for NVIDIA
+  # Note: nixGL follows our nixpkgs (with allowUnfree) in flake.nix
+  # The packages should be built with allowUnfree enabled
   nixGLWrapper = inputs.nixgl.packages.${pkgs.stdenv.hostPlatform.system}.nixGLDefault;
 
   # Wrap wezterm with nixGL for OpenGL support on non-NixOS

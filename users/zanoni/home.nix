@@ -15,6 +15,7 @@
     # ../../home/modules/common.nix
     ../../home/modules/bash.nix
     ../../home/modules/pkgs.nix
+    ../../home/modules/ksnip.nix
     ../../home/modules/neovim.nix
     ../../home/modules/tmux.nix
     ../../home/modules/fuzzel.nix
@@ -30,5 +31,6 @@
     ../../home/modules/install-nothing.nix
     ../../home/modules/keyd.nix
     ../../home/modules/suwayomi-server.nix
+    ../../home/modules/wezterm.nix # https://tmuxai.dev/terminal-compatibility/
   ];
 }
