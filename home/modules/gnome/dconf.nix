@@ -136,7 +136,7 @@ in
     # Fixed: using forked repository with beepy 1.0.9 fix
     "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0" = {
       binding = "<Alt>a";
-      command = "nix run github:Castrozan/whisper-input";
+      command = "whisper-input";
       name = "whisper";
     };
 
