@@ -26,6 +26,7 @@
         withVencord = true; # For customization
       })
       docker
+      fastfetch
       ffmpeg
       firefox
       fzf
