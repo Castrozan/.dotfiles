@@ -52,17 +52,16 @@
       home-version = "25.11";
       nixpkgs-version = "25.11";
       # Configure nixpkgs then attribute it to pkgs at the same time
+      # Note: allowUnfree is set at system level in configuration.nix
+      # These configs are only for standalone home-manager usage
       pkgs = import nixpkgs {
         inherit system;
-        config.allowUnfree = true;
       };
       unstable = import nixpkgs-unstable {
         inherit system;
-        config.allowUnfree = true;
       };
       latest = import nixpkgs-latest {
         inherit system;
-        config.allowUnfree = true;
       };
       # Args for dependency injection
       specialArgsBase = {
