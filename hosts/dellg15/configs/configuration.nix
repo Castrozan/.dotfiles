@@ -65,8 +65,7 @@
   nix.settings.sandbox = true;
   nix.settings.auto-optimise-store = true;
 
-  # 6. Disable man-cache generation during rebuilds (significantly speeds up rebuilds)
-  # You can manually regenerate the cache with: sudo mandb
+  # 6. Disable man-cache generation
   documentation.man.generateCaches = false;
   ## END NixOS rebuild optimizations
 
