@@ -16,6 +16,8 @@ in
     ../../nixos/modules/whisper-cpp.nix
     # ../../nixos/modules/media-streaming # Removed: requires insecure qtwebengine-5.15.19
     ../../nixos/modules/keyd.nix
+    ../../nixos/modules/agenix.nix
+    ../../nixos/modules/tailscale.nix
   ];
 
   users.users.zanoni = {
@@ -62,6 +64,34 @@ in
     curl
   ];
 
-  # Enable Flatpak
   services.flatpak.enable = true;
+
+  services.openssh = {
+    enable = true;
+    settings = {
+      PermitRootLogin = "no";
+      PubkeyAuthentication = true;
+    };
+  };
+
+  networking.firewall = {
+    enable = true;
+    allowedTCPPorts = [ 22 ];
+  };
+
+  users.users.zanoni.openssh.authorizedKeys.keys = [
+    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFqWoL9l50EyBgITnUyUhDuodLCRCMGLowmMcos7DJPo phone@android"
+  ];
+
+  age.identityPaths = lib.mkIf (builtins.pathExists ../../secrets/id_ed25519_phone.age) [
+    "/home/zanoni/.ssh/id_ed25519"
+  ];
+
+  age.secrets = lib.mkIf (builtins.pathExists ../../secrets/id_ed25519_phone.age) {
+    "id_ed25519_phone" = {
+      file = ../../secrets/id_ed25519_phone.age;
+      owner = "zanoni";
+      mode = "600";
+    };
+  };
 }
