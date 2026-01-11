@@ -133,6 +133,8 @@ in
       command = wezterm-quick-temp-shell-command;
     };
 
+    # TODO: gnome keeps asking for remote control to write to the screen
+    # No option to remove this. https://gitlab.gnome.org/GNOME/xdg-desktop-portal-gnome/-/issues/114
     "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0" = {
       binding = "<Alt>a";
       command = "whisper-input";
