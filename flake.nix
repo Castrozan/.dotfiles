@@ -25,6 +25,8 @@
     cmatrix.url = "github:castrozan/cmatrix";
     tuisvn.url = "github:castrozan/tuisvn";
     install-nothing.url = "github:castrozan/install-nothing";
+    whisper-input.url = "github:castrozan/whisper-input/fd4670564454dcac6601a2f75eaa7f12ee09706f";
+    whisper-input.flake = false;
     opencode.url = "github:anomalyco/opencode/v1.1.6";
     zed-editor.url = "github:zed-industries/zed/v0.218.5";
     nixgl.url = "github:nix-community/nixGL";
