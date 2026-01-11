@@ -493,6 +493,7 @@
         "readItNow-rc": "readItNow-rc",
         "tui-notifier": "tui-notifier",
         "tuisvn": "tuisvn",
+        "whisper-input": "whisper-input",
         "zed-editor": "zed-editor"
       }
     },
@@ -642,6 +643,23 @@
       "original": {
         "owner": "castrozan",
         "repo": "tuisvn",
+        "type": "github"
+      }
+    },
+    "whisper-input": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1768107891,
+        "narHash": "sha256-9V3yhInRWd6mYoDUepJ9Tf6rFWhso6uA/i0foQ4OGCI=",
+        "owner": "castrozan",
+        "repo": "whisper-input",
+        "rev": "fd4670564454dcac6601a2f75eaa7f12ee09706f",
+        "type": "github"
+      },
+      "original": {
+        "owner": "castrozan",
+        "repo": "whisper-input",
+        "rev": "fd4670564454dcac6601a2f75eaa7f12ee09706f",
         "type": "github"
       }
     },
