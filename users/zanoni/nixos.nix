@@ -43,12 +43,12 @@ in
   # Enable fish globally so it's registered in /etc/shells and available as a login shell
   programs.fish.enable = true;
 
-  # TODO: review this. Which path configuration is better?
-  # make `nix repl '<nixpkgs>'` use the same nixpkgs as the one used by this flake.
-  # # discard all the default paths, and only use the one from this flake.
-  # nix.nixPath = lib.mkForce ["/etc/nix/inputs"];
-  # # https://github.com/NixOS/nix/issues/9574
-  # nix.settings.nix-path = lib.mkForce "nixpkgs=/etc/nix/inputs/nixpkgs";
+  # NIX_PATH configuration
+  # Decision: Keep default NIX_PATH for compatibility with nix repl and other tools
+  # The commented-out options would force flake-based nixpkgs, but this breaks compatibility
+  # with tools that expect the default channel-based NIX_PATH
+  # For flake-based workflows, use `nix repl '<nixpkgs>'` or import from flake inputs directly
+  # Reference: https://github.com/NixOS/nix/issues/9574
   environment.variables = {
     NIX_PATH = lib.mkDefault "nixpkgs=/nix/var/nix/profiles/per-user/root/channels/nixos";
     # Force Qt applications to use Wayland
