@@ -65,7 +65,12 @@
   nix.settings.sandbox = true;
   nix.settings.auto-optimise-store = true;
 
-  # 6. Disable man-cache generation
+  # 6. Automatic store optimization - runs nix-store --optimise to hard-link identical files
+  # Reduces disk space usage by deduplicating identical files in the store
+  nix.optimise.automatic = true;
+  nix.optimise.dates = [ "03:45" ]; # Run daily at 3:45 AM
+
+  # 7. Disable man-cache generation
   documentation.man.generateCaches = false;
   ## END NixOS rebuild optimizations
 
