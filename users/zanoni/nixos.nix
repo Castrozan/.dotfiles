@@ -18,6 +18,7 @@ in
     ../../nixos/modules/keyd.nix
     ../../nixos/modules/agenix.nix
     ../../nixos/modules/tailscale.nix
+    ../../nixos/modules/man-cache.nix
   ];
 
   users.users.zanoni = {
