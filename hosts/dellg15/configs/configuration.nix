@@ -125,13 +125,6 @@
   programs.dconf.enable = true;
   programs.command-not-found.enable = false;
 
-  # Set the display configuration
-  # window manager should manage this so no need to set it here
-  # services.xserver.displayManager.setupCommands = ''
-  #   ${pkgs.xorg.xrandr}/bin/xrandr --output HDMI-1 --mode 1920x1080 --rate 164.00 --primary
-  #   ${pkgs.xorg.xrandr}/bin/xrandr --output eDP-1  --mode 1920x1080 --rate 120.00 --left-of HDMI-1
-  # '';
-
   # Configure keymap in X11
   services.xserver = {
     xkb.layout = "br";
