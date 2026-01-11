@@ -30,6 +30,7 @@
     opencode.url = "github:anomalyco/opencode/v1.1.6";
     zed-editor.url = "github:zed-industries/zed/v0.218.5";
     nixgl.url = "github:nix-community/nixGL";
+    agenix.url = "github:ryantm/agenix";
   };
 
   # Outputs are used to define apps and dotfiles configuration for different systems and users
