@@ -15,7 +15,6 @@ in
     ../../nixos/modules/steam.nix
     ../../nixos/modules/whisper-cpp.nix
     # ../../nixos/modules/media-streaming # Removed: requires insecure qtwebengine-5.15.19
-    ../../nixos/modules/keyd.nix
     ../../nixos/modules/agenix.nix
     ../../nixos/modules/tailscale.nix
     ../../nixos/modules/man-cache.nix
