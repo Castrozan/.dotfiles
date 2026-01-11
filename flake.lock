@@ -21,22 +21,6 @@
         "type": "github"
       }
     },
-    "catppuccin-bat": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1751237777,
-        "narHash": "sha256-lJapSgRVENTrbmpVyn+UQabC9fpV1G1e+CdlJ090uvg=",
-        "owner": "catppuccin",
-        "repo": "bat",
-        "rev": "6810349b28055dce54076712fc05fc68da4b8ec0",
-        "type": "github"
-      },
-      "original": {
-        "owner": "catppuccin",
-        "repo": "bat",
-        "type": "github"
-      }
-    },
     "cbonsai": {
       "inputs": {
         "flake-utils": "flake-utils",
@@ -560,7 +544,6 @@
     "root": {
       "inputs": {
         "agenix": "agenix",
-        "catppuccin-bat": "catppuccin-bat",
         "cbonsai": "cbonsai",
         "cmatrix": "cmatrix",
         "flake-utils": "flake-utils_3",
