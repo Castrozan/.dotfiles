@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+# Generic script to edit agenix secrets
+# Usage: agenix-edit <secret-name>
+# Example: agenix-edit id_ed25519_phone.age
+
+set -euo pipefail
+
+if [ $# -eq 0 ]; then
+    echo "Error: Secret name required" >&2
+    echo "Usage: agenix-edit <secret-name>" >&2
+    echo "Example: agenix-edit id_ed25519_phone.age" >&2
+    exit 1
+fi
+
+SECRET_NAME="$1"
+DOTFILES_DIR="${HOME}/.dotfiles"
+SECRETS_DIR="${DOTFILES_DIR}/secrets"
+
+if [ ! -d "${SECRETS_DIR}" ]; then
+    echo "Error: Secrets directory not found: ${SECRETS_DIR}" >&2
+    exit 1
+fi
+
+if [ ! -f "${SECRETS_DIR}/secrets.nix" ]; then
+    echo "Error: secrets.nix not found in ${SECRETS_DIR}" >&2
+    exit 1
+fi
+
+if [[ "${SECRET_NAME}" != *.age ]]; then
+    echo "Warning: Secret name should end with .age" >&2
+fi
+
+cd "${SECRETS_DIR}" || {
+    echo "Error: Could not change to ${SECRETS_DIR}" >&2
+    exit 1
+}
+
+if [ ! -f "${SECRET_NAME}" ] && [ ! -f "${SECRETS_DIR}/${SECRET_NAME}" ]; then
+    echo "Note: Secret file ${SECRET_NAME} does not exist yet. It will be created." >&2
+fi
+
+nix run github:ryantm/agenix -- -e "${SECRET_NAME}" "${@:2}"
