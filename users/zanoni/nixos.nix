@@ -9,7 +9,6 @@ in
     ./pkgs.nix
     ../../nixos/modules/virtualization.nix
     ../../nixos/modules/fonts.nix
-    ../../nixos/modules/input-pkgs.nix
     ../../nixos/modules/steam.nix
     ../../nixos/modules/whisper-cpp.nix
     # ../../nixos/modules/media-streaming # Removed: requires insecure qtwebengine-5.15.19
