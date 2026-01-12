@@ -59,8 +59,40 @@ This document outlines the implementation plan for improving the NixOS flake con
   - Rev/commit used for specific pinned versions or when flake parsing is disabled (whisper-input)
   - Branch/default used for actively maintained repos (cbonsai, cmatrix, tuisvn, install-nothing)
 
+### Phase 5: Infrastructure & CI/CD (Next Month)
+
+1. **Set up CI/CD**
+   - Create GitHub Actions workflow for NixOS config validation
+   - Create GitHub Actions workflow for home-manager config validation
+   - Add `nix flake check` validation
+   - Test both configurations in CI
+
+2. **Organize SSH keys**
+   - Move SSH public keys to separate file for better maintainability
+   - Document key management strategy
+
+### Phase 6: Resolve Remaining TODOs (Ongoing)
+
+3. **Implement claude-desktop SHA strategy**
+   - Location: `home/modules/claude-desktop.nix:12`
+   - IM not using claude-desktop, you can remove
+
+
+### Phase 7: Enhancements
+
+1. **Module organization improvements**
+   - Consider subdirectories for large module groups (e.g., `home/modules/editors/`)
+   - Better organization of related modules
+
+3. **Testing**
+   - Add automated testing for critical configurations
+   - Test rollback procedures
+
 ## Status
 
 - [x] Phase 1: Critical Fixes
 - [x] Phase 2: Store Optimization  
 - [x] Phase 4: Code Quality
+- [ ] Phase 5: Infrastructure & CI/CD
+- [ ] Phase 6: Resolve Remaining TODOs
+- [ ] Phase 7: Enhancements
