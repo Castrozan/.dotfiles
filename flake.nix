@@ -17,8 +17,6 @@
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
     # External repos and flakes to be available
-    # Update strategy: Code-first approach - update flake.nix directly when updates are needed
-    # Most repos are castrozan-owned with full control, allowing flexible update strategies
     # Tag-based (stable releases): Use version tags for stable, tested releases
     tui-notifier.url = "github:castrozan/tui-notifier/1.0.1";
     readItNow-rc.url = "github:castrozan/readItNow-rc/1.1.0";
@@ -52,8 +50,6 @@
       home-version = "25.11";
       nixpkgs-version = "25.11";
       # Configure nixpkgs then attribute it to pkgs at the same time
-      # Note: allowUnfree is set at system level in configuration.nix
-      # These configs are only for standalone home-manager usage
       pkgs = import nixpkgs {
         inherit system;
       };
