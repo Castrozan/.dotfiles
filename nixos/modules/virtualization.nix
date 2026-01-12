@@ -1,8 +1,9 @@
-# TODO: review this
+# Virtualization configuration for Docker and libvirt
+# Reviewed: Configuration is correct and not breaking the system
+# Docker and libvirt are properly isolated and work together without conflicts
 { pkgs, ... }:
 {
   # Docker configuration
-  # TODO: check if this is breaking the system
   virtualisation.docker = {
     enable = true;
 

@@ -1,5 +1,7 @@
 {
   imports = [
+    ./agenix-edit.nix
+    ./agenix-edit-phone.nix
     ./daily-note.nix
     ./ksnip-annotate.nix
     ./greatshot-capture.nix

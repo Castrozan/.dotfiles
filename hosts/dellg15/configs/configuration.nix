@@ -47,7 +47,7 @@
   ];
   nix.settings.trusted-public-keys = [
     "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
-    "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkQK2jNw1v8Q2xkzX1Zqk="
+    "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
   ];
 
   # 2. Parallelism - use all CPU cores
@@ -64,6 +64,15 @@
   # 5. Sandbox and store optimization
   nix.settings.sandbox = true;
   nix.settings.auto-optimise-store = true;
+
+  # 6. Automatic store optimization - runs nix-store --optimise to hard-link identical files
+  # Reduces disk space usage by deduplicating identical files in the store
+  # Runs weekly when system is active (systemd timer will run when PC is on)
+  nix.optimise.automatic = true;
+  nix.optimise.dates = [ "weekly" ];
+
+  # 7. Disable man-cache generation
+  documentation.man.generateCaches = false;
   ## END NixOS rebuild optimizations
 
   # Allow unfree packages
@@ -121,13 +130,6 @@
   services.desktopManager.gnome.enable = true;
   programs.dconf.enable = true;
   programs.command-not-found.enable = false;
-
-  # Set the display configuration
-  # window manager should manage this so no need to set it here
-  # services.xserver.displayManager.setupCommands = ''
-  #   ${pkgs.xorg.xrandr}/bin/xrandr --output HDMI-1 --mode 1920x1080 --rate 164.00 --primary
-  #   ${pkgs.xorg.xrandr}/bin/xrandr --output eDP-1  --mode 1920x1080 --rate 120.00 --left-of HDMI-1
-  # '';
 
   # Configure keymap in X11
   services.xserver = {
