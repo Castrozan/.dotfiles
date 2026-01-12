@@ -2,6 +2,7 @@
 { lib, pkgs, ... }:
 let
   bashrc = builtins.readFile ../../.bashrc;
+  sshKeys = import ./ssh-keys.nix;
 in
 {
   imports = [
@@ -74,9 +75,7 @@ in
     allowedTCPPorts = [ 22 ];
   };
 
-  users.users.zanoni.openssh.authorizedKeys.keys = [
-    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFqWoL9l50EyBgITnUyUhDuodLCRCMGLowmMcos7DJPo phone@android"
-  ];
+  users.users.zanoni.openssh.authorizedKeys.keys = sshKeys.authorizedKeys;
 
   age.identityPaths = lib.mkIf (builtins.pathExists ../../secrets/id_ed25519_phone.age) [
     "/home/zanoni/.ssh/id_ed25519"
