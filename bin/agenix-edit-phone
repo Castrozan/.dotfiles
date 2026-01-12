@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Convenience wrapper for editing phone SSH key
+# This is a shortcut for: agenix-edit id_ed25519_phone.age
+
+exec agenix-edit id_ed25519_phone.age "$@"

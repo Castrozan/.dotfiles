@@ -1,9 +1,8 @@
-#
 # NixOS configuration for zanoni
-#
 { lib, pkgs, ... }:
 let
   bashrc = builtins.readFile ../../.bashrc;
+  sshKeys = import ./ssh-keys.nix;
 in
 {
   imports = [
@@ -11,11 +10,12 @@ in
     ./pkgs.nix
     ../../nixos/modules/virtualization.nix
     ../../nixos/modules/fonts.nix
-    ../../nixos/modules/input-pkgs.nix
     ../../nixos/modules/steam.nix
     ../../nixos/modules/whisper-cpp.nix
     # ../../nixos/modules/media-streaming # Removed: requires insecure qtwebengine-5.15.19
-    ../../nixos/modules/keyd.nix
+    ../../nixos/modules/agenix.nix
+    ../../nixos/modules/tailscale.nix
+    ../../nixos/modules/man-cache.nix
   ];
 
   users.users.zanoni = {
@@ -41,12 +41,10 @@ in
   # Enable fish globally so it's registered in /etc/shells and available as a login shell
   programs.fish.enable = true;
 
-  # TODO: review this. Which path configuration is better?
-  # make `nix repl '<nixpkgs>'` use the same nixpkgs as the one used by this flake.
-  # # discard all the default paths, and only use the one from this flake.
-  # nix.nixPath = lib.mkForce ["/etc/nix/inputs"];
-  # # https://github.com/NixOS/nix/issues/9574
-  # nix.settings.nix-path = lib.mkForce "nixpkgs=/etc/nix/inputs/nixpkgs";
+  # NIX_PATH configuration
+  # Decision: Keep default NIX_PATH for compatibility with nix repl and other tools
+  # For flake-based workflows, use `nix repl '<nixpkgs>'` or import from flake inputs directly
+  # Reference: https://github.com/NixOS/nix/issues/9574
   environment.variables = {
     NIX_PATH = lib.mkDefault "nixpkgs=/nix/var/nix/profiles/per-user/root/channels/nixos";
     # Force Qt applications to use Wayland
@@ -62,6 +60,32 @@ in
     curl
   ];
 
-  # Enable Flatpak
   services.flatpak.enable = true;
+
+  services.openssh = {
+    enable = true;
+    settings = {
+      PermitRootLogin = "no";
+      PubkeyAuthentication = true;
+    };
+  };
+
+  networking.firewall = {
+    enable = true;
+    allowedTCPPorts = [ 22 ];
+  };
+
+  users.users.zanoni.openssh.authorizedKeys.keys = sshKeys.authorizedKeys;
+
+  age.identityPaths = lib.mkIf (builtins.pathExists ../../secrets/id_ed25519_phone.age) [
+    "/home/zanoni/.ssh/id_ed25519"
+  ];
+
+  age.secrets = lib.mkIf (builtins.pathExists ../../secrets/id_ed25519_phone.age) {
+    "id_ed25519_phone" = {
+      file = ../../secrets/id_ed25519_phone.age;
+      owner = "zanoni";
+      mode = "600";
+    };
+  };
 }

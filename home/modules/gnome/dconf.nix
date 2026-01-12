@@ -91,6 +91,7 @@ in
         "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom2/"
         "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom3/"
         "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom4/"
+        "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom5/"
         "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom6/"
         "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom7/"
       ];
@@ -100,6 +101,12 @@ in
       name = "screenshot-annotate";
       binding = "<Shift>Print";
       command = "ksnip-annotate";
+    };
+
+    "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom5" = {
+      name = "voxtype-toggle";
+      binding = "<Shift><Alt>a";
+      command = "bash -c 'if pgrep -f \"voxtype record start\" > /dev/null; then voxtype record stop; else voxtype record start; fi'";
     };
 
     "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom6" = {
@@ -133,20 +140,25 @@ in
       command = wezterm-quick-temp-shell-command;
     };
 
-    # Fixed: using forked repository with beepy 1.0.9 fix
+    # TODO: gnome keeps asking for remote control to write to the screen
+    # No option to remove this. https://gitlab.gnome.org/GNOME/xdg-desktop-portal-gnome/-/issues/114
     "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0" = {
       binding = "<Alt>a";
       command = "whisper-input";
       name = "whisper";
     };
 
-    # Window manager keybindings
+    "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom5" = {
+      name = "voxtype-toggle";
+      binding = "<Shift><Alt>a";
+      command = "bash -c 'if pgrep -f \"voxtype record start\" > /dev/null; then voxtype record stop; else voxtype record start; fi'";
+    };
+
     "org/gnome/desktop/wm/keybindings" = {
       close = [ "<Shift><Control>w" ];
       switch-applications = [ ];
       switch-applications-backward = [ ];
-      # Disable default Super+D (show-desktop) so custom keybinding can work
-      show-desktop = [ ];
+      show-desktop = [ ]; # Disable Super+D
       switch-windows = [
         "<Alt>Tab"
         "<Super>Tab"

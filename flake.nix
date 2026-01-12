@@ -13,23 +13,26 @@
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
     # For latest bleeding edge packages - daily* updated with: $ nix flake update nixpkgs-latest
     nixpkgs-latest.url = "github:nixos/nixpkgs/nixos-unstable";
-    flake-utils.url = "github:numtide/flake-utils";
     home-manager.url = "github:nix-community/home-manager/release-25.11";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
-    catppuccin-bat.url = "github:catppuccin/bat";
-    catppuccin-bat.flake = false;
+    # External repos and flakes to be available
+    # Tag-based (stable releases): Use version tags for stable, tested releases
     tui-notifier.url = "github:castrozan/tui-notifier/1.0.1";
     readItNow-rc.url = "github:castrozan/readItNow-rc/1.1.0";
+    opencode.url = "github:anomalyco/opencode/v1.1.6";
+    zed-editor.url = "github:zed-industries/zed/v0.218.5";
+    # Branch/default (actively maintained): Use default branch for actively maintained repos
     cbonsai.url = "github:castrozan/cbonsai";
     cmatrix.url = "github:castrozan/cmatrix";
     tuisvn.url = "github:castrozan/tuisvn";
     install-nothing.url = "github:castrozan/install-nothing";
-    whisper-input.url = "github:castrozan/whisper-input/fd4670564454dcac6601a2f75eaa7f12ee09706f";
-    whisper-input.flake = false;
-    opencode.url = "github:anomalyco/opencode/v1.1.6";
-    zed-editor.url = "github:zed-industries/zed/v0.218.5";
     nixgl.url = "github:nix-community/nixGL";
+    agenix.url = "github:ryantm/agenix";
+    voxtype.url = "github:peteonrails/voxtype";
+    # Rev/commit (pinned versions): Use commit hash for specific pinned versions or when flake parsing is disabled
+    whisper-input.url = "github:castrozan/whisper-input/fd4670564454dcac6601a2f75eaa7f12ee09706f";
+    whisper-input.flake = false; # I only need the raw repo, so don't parse the flake
   };
 
   # Outputs are used to define apps and dotfiles configuration for different systems and users
@@ -48,9 +51,9 @@
       home-version = "25.11";
       nixpkgs-version = "25.11";
       # Configure nixpkgs then attribute it to pkgs at the same time
+      # For standalone home-manager and packages in unstable/latest, we need allowUnfree here
       pkgs = import nixpkgs {
         inherit system;
-        config.allowUnfree = true;
       };
       unstable = import nixpkgs-unstable {
         inherit system;

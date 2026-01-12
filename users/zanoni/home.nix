@@ -2,6 +2,7 @@
 {
   imports = [
     ./home/git.nix
+    ./home/ssh.nix
     ./home/session-vars.nix
 
     ../../home/core.nix
@@ -28,6 +29,7 @@
     ../../home/modules/vesktop.nix
     ../../home/modules/vial.nix
     ../../home/modules/vscode
+    ../../home/modules/voxtype.nix
     ../../home/modules/wezterm.nix # https://tmuxai.dev/terminal-compatibility/
     ../../home/modules/whisper-input
   ];
