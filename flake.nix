@@ -50,14 +50,18 @@
       home-version = "25.11";
       nixpkgs-version = "25.11";
       # Configure nixpkgs then attribute it to pkgs at the same time
+      # Note: allowUnfree is set at system level in configuration.nix for NixOS
+      # For standalone home-manager and packages in unstable/latest (like cursor, terraform), we need allowUnfree here
       pkgs = import nixpkgs {
         inherit system;
       };
       unstable = import nixpkgs-unstable {
         inherit system;
+        config.allowUnfree = true; # Required for terraform and other unfree packages in unstable
       };
       latest = import nixpkgs-latest {
         inherit system;
+        config.allowUnfree = true; # Required for cursor and other unfree packages in latest
       };
       # Args for dependency injection
       specialArgsBase = {
