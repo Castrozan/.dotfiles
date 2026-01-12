@@ -1,5 +1,6 @@
 # SSH public keys for authorized_keys and known_hosts
 # This file centralizes SSH key management for better maintainability
+# Used by both NixOS (nixos.nix) and home-manager (home/ssh.nix) configurations
 let
   # Phone SSH public key (for authorized_keys)
   phoneKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFqWoL9l50EyBgITnUyUhDuodLCRCMGLowmMcos7DJPo phone@android";
