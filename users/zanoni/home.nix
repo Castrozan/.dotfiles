@@ -29,6 +29,7 @@
     ../../home/modules/vesktop.nix
     ../../home/modules/vial.nix
     ../../home/modules/vscode
+    ../../home/modules/voxtype.nix
     ../../home/modules/wezterm.nix # https://tmuxai.dev/terminal-compatibility/
     ../../home/modules/whisper-input
   ];

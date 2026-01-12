@@ -91,6 +91,7 @@ in
         "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom2/"
         "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom3/"
         "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom4/"
+        "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom5/"
         "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom6/"
         "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom7/"
       ];
@@ -100,6 +101,12 @@ in
       name = "screenshot-annotate";
       binding = "<Shift>Print";
       command = "ksnip-annotate";
+    };
+
+    "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom5" = {
+      name = "voxtype-toggle";
+      binding = "<Shift><Alt>a";
+      command = "bash -c 'if pgrep -f \"voxtype record start\" > /dev/null; then voxtype record stop; else voxtype record start; fi'";
     };
 
     "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom6" = {
@@ -139,6 +146,12 @@ in
       binding = "<Alt>a";
       command = "whisper-input";
       name = "whisper";
+    };
+
+    "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom5" = {
+      name = "voxtype-toggle";
+      binding = "<Shift><Alt>a";
+      command = "bash -c 'if pgrep -f \"voxtype record start\" > /dev/null; then voxtype record stop; else voxtype record start; fi'";
     };
 
     "org/gnome/desktop/wm/keybindings" = {

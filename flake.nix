@@ -29,6 +29,7 @@
     install-nothing.url = "github:castrozan/install-nothing";
     nixgl.url = "github:nix-community/nixGL";
     agenix.url = "github:ryantm/agenix";
+    voxtype.url = "github:peteonrails/voxtype";
     # Rev/commit (pinned versions): Use commit hash for specific pinned versions or when flake parsing is disabled
     whisper-input.url = "github:castrozan/whisper-input/fd4670564454dcac6601a2f75eaa7f12ee09706f";
     whisper-input.flake = false; # I only need the raw repo, so don't parse the flake
