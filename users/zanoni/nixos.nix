@@ -2,7 +2,7 @@
 { lib, pkgs, ... }:
 let
   bashrc = builtins.readFile ../../.bashrc;
-  sshKeys = import ./nixos/ssh-keys.nix;
+  sshKeys = import ./ssh-keys.nix;
 in
 {
   imports = [
