@@ -68,36 +68,10 @@ This document outlines the implementation plan for improving the NixOS flake con
    - Run `nix-instantiate` to check home-manager config syntax (no build)
    - Note: Full rebuilds not possible due to GitHub Actions space constraints
 
-2. **Organize SSH keys**
-   - Move SSH public keys to separate file for better maintainability
-   - Document key management strategy
-
-### Phase 6: Resolve Remaining TODOs (Ongoing)
-
-1. **Fix tmux CPU plugin conflict**
-   - Location: `home/modules/tmux.nix:28`
-   - Issue: Conflict between catppuccin theme and CPU plugin
-   - Action: Investigate and resolve plugin compatibility
-
-2. **Fix lazygit config migration**
-   - Location: `home/modules/lazygit.nix:6`
-   - Issue: Config migration failing due to read-only file system
-   - Action: Fix config migration or manual config setup
-
-3. **Fix wlogout suspend lock screen**
-   - Location: `home/modules/hyprland/wlogout.nix:31`
-   - Issue: Suspend not locking screen before suspending
-   - Action: Add lock command before suspend action
-
-4. **Other TODOs from codebase**
-   - Review and resolve remaining TODOs in various modules
-   - Document decisions where appropriate
-
 ## Status
 
 - [x] Phase 1: Critical Fixes
 - [x] Phase 2: Store Optimization  
 - [x] Phase 4: Code Quality
+- [x] Phase 5: Organize SSH keys
 - [ ] Phase 5: Infrastructure & CI/CD
-- [ ] Phase 6: Resolve Remaining TODOs
-- [ ] Phase 7: Enhancements
