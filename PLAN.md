@@ -61,11 +61,12 @@ This document outlines the implementation plan for improving the NixOS flake con
 
 ### Phase 5: Infrastructure & CI/CD (Next Month)
 
-1. **Set up CI/CD**
-   - Create GitHub Actions workflow for NixOS config validation
-   - Create GitHub Actions workflow for home-manager config validation
-   - Add `nix flake check` validation
-   - Test both configurations in CI
+1. **Set up simple CI checks**
+   - GitHub Actions workflow for syntax validation only (no full rebuilds)
+   - Run `nix flake check --no-build` to validate flake structure
+   - Run `nix-instantiate` to check NixOS config syntax (no build)
+   - Run `nix-instantiate` to check home-manager config syntax (no build)
+   - Note: Full rebuilds not possible due to GitHub Actions space constraints
 
 2. **Organize SSH keys**
    - Move SSH public keys to separate file for better maintainability
@@ -73,20 +74,24 @@ This document outlines the implementation plan for improving the NixOS flake con
 
 ### Phase 6: Resolve Remaining TODOs (Ongoing)
 
-3. **Implement claude-desktop SHA strategy**
-   - Location: `home/modules/claude-desktop.nix:12`
-   - IM not using claude-desktop, you can remove
+1. **Fix tmux CPU plugin conflict**
+   - Location: `home/modules/tmux.nix:28`
+   - Issue: Conflict between catppuccin theme and CPU plugin
+   - Action: Investigate and resolve plugin compatibility
 
+2. **Fix lazygit config migration**
+   - Location: `home/modules/lazygit.nix:6`
+   - Issue: Config migration failing due to read-only file system
+   - Action: Fix config migration or manual config setup
 
-### Phase 7: Enhancements
+3. **Fix wlogout suspend lock screen**
+   - Location: `home/modules/hyprland/wlogout.nix:31`
+   - Issue: Suspend not locking screen before suspending
+   - Action: Add lock command before suspend action
 
-1. **Module organization improvements**
-   - Consider subdirectories for large module groups (e.g., `home/modules/editors/`)
-   - Better organization of related modules
-
-3. **Testing**
-   - Add automated testing for critical configurations
-   - Test rollback procedures
+4. **Other TODOs from codebase**
+   - Review and resolve remaining TODOs in various modules
+   - Document decisions where appropriate
 
 ## Status
 
