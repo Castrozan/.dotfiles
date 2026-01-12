@@ -1,7 +1,7 @@
 { lib, ... }:
 let
   phoneSecretExists = builtins.pathExists ../../../secrets/id_ed25519_phone.age;
-  sshKeys = import ../ssh-keys.nix;
+  sshKeys = import ./ssh-keys.nix;
 in
 {
   programs.ssh = {
