@@ -1,6 +1,4 @@
-#
 # NixOS configuration for zanoni
-#
 { lib, pkgs, ... }:
 let
   bashrc = builtins.readFile ../../.bashrc;
@@ -45,8 +43,6 @@ in
 
   # NIX_PATH configuration
   # Decision: Keep default NIX_PATH for compatibility with nix repl and other tools
-  # The commented-out options would force flake-based nixpkgs, but this breaks compatibility
-  # with tools that expect the default channel-based NIX_PATH
   # For flake-based workflows, use `nix repl '<nixpkgs>'` or import from flake inputs directly
   # Reference: https://github.com/NixOS/nix/issues/9574
   environment.variables = {
