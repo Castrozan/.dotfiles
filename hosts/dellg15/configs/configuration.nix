@@ -67,8 +67,9 @@
 
   # 6. Automatic store optimization - runs nix-store --optimise to hard-link identical files
   # Reduces disk space usage by deduplicating identical files in the store
+  # Runs weekly when system is active (systemd timer will run when PC is on)
   nix.optimise.automatic = true;
-  nix.optimise.dates = [ "03:45" ]; # Run daily at 3:45 AM
+  nix.optimise.dates = [ "weekly" ];
 
   # 7. Disable man-cache generation
   documentation.man.generateCaches = false;
