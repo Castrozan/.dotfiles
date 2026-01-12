@@ -1,6 +1,7 @@
 { lib, ... }:
 let
   phoneSecretExists = builtins.pathExists ../../../secrets/id_ed25519_phone.age;
+  sshKeys = import ../ssh-keys.nix;
 in
 {
   programs.ssh = {
@@ -26,9 +27,7 @@ in
   };
 
   home.file.".ssh/known_hosts_phone" = {
-    text = ''
-      [REDACTED_IP]:8022 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOWURbP41AHeoQUC4qpSriTvVKWezdpPMGg1f3Ti7gyd
-    '';
+    text = builtins.concatStringsSep "\n" sshKeys.knownHosts + "\n";
   };
 
   home.activation.mergeKnownHosts = ''
