@@ -45,6 +45,42 @@ This document outlines the implementation plan for improving the NixOS flake con
    - Review commented-out NIX_PATH options in `users/zanoni/nixos.nix:47-52`
    - Determine best approach and document
 
+
+### Phase 5: Infrastructure & CI/CD (Next Month)
+
+1. **Set up CI/CD**
+   - Create NixOS CI configuration (GitHub Actions recommended)
+   - Create home-manager CI configuration
+   - Add `nix flake check --impure` validation for both configs
+   - Test both NixOS and standalone home-manager configs
+   - Reference: TODO.md mentions this as needed
+
+2. **Organize SSH keys**
+   - Move SSH public keys to separate file for better maintainability
+   - Document key management strategy
+   - Location: `users/zanoni/nixos.nix:83-85`
+
+### Phase 6: Application Fixes & Improvements (Ongoing)
+
+1. **Fix tmux CPU plugin**
+   - Resolve conflict between CPU plugin and catppuccin theme
+   - Location: `home/modules/tmux.nix:28`
+   - Issue: CPU plugin conflicts with catppuccin theme configuration
+
+2. **Fix lazygit configuration**
+   - Investigate disabled feature in `home/modules/lazygit.nix:6`
+   - Error suggests read-only file system issue
+   - Re-enable if possible or document why it's disabled
+
+3. **Fix Nix formatting in VSCode**
+   - Configure proper Nix formatting for VSCode
+   - Ensure consistent formatting across codebase
+   - Reference: TODO.md mentions this
+
+4. **Other TODOs from codebase**
+   - Review and resolve remaining TODOs in various files
+   - Document decisions for complex TODOs
+   - Files with TODOs: gnome/dconf.nix, bash_aliases.sh, claude-desktop.nix, hyprland/wlogout.nix, etc.
 ## Completed Items
 
 - ✅ Cursor.nix version handling - confirmed intentional (using pkgs for appimageTools is correct)
