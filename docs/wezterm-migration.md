@@ -31,9 +31,10 @@ All kitty settings have been ported to WezTerm:
 WezTerm requires OpenGL/EGL libraries which aren't available to Nix applications on non-NixOS.
 The solution uses [nixGL](https://github.com/nix-community/nixGL) to wrap WezTerm:
 
-- `nixGLDefault` auto-detects the system's OpenGL implementation
-- Requires `--impure` flag when rebuilding (uses `builtins.currentTime`)
-- Supports both AMD (Mesa) and NVIDIA drivers
+- `nixGLIntel` provides Mesa OpenGL support (Intel/AMD GPUs)
+- Requires `--impure` flag when rebuilding
+- Note: Changed from `nixGLDefault` to `nixGLIntel` to avoid ~3s IFD overhead
+  (nixGLDefault does impure nvidia detection that rebuilds every evaluation)
 
 ## Files Updated
 
