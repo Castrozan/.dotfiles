@@ -14,11 +14,14 @@ else
     # Try methods in order of preference to avoid GitHub rate limits:
 
     # Method 1: Use home-manager directly if installed (best - no API calls)
+    # --no-update-lock-file speeds up eval by skipping lock file freshness check
     if command -v home-manager &>/dev/null; then
-        home-manager switch --impure --flake "$HOME/.dotfiles#lucas.zanoni@x86_64-linux" \
+        home-manager switch --impure --no-update-lock-file \
+            --flake "$HOME/.dotfiles#lucas.zanoni@x86_64-linux" \
             -b "backup-$(date +%Y-%m-%d-%H-%M-%S)"
     # Method 2: Use nixpkgs#home-manager (good - uses cache, avoids GitHub API)
-    elif nix run nixpkgs#home-manager -- --impure --flake "$HOME/.dotfiles#lucas.zanoni@x86_64-linux" switch \
+    elif nix run nixpkgs#home-manager -- --impure --no-update-lock-file \
+        --flake "$HOME/.dotfiles#lucas.zanoni@x86_64-linux" switch \
         -b "backup-$(date +%Y-%m-%d-%H-%M-%S)" 2>/dev/null; then
         : # Success
     else
