@@ -14,6 +14,7 @@
     ../../home/modules/cmatrix.nix
     ../../home/modules/cursor
     ../../home/modules/fish.nix
+    ../../home/modules/fonts.nix
     ../../home/modules/fuzzel.nix
     ../../home/modules/gnome
     ../../home/modules/hyprland
