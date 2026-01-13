@@ -19,6 +19,7 @@
     ../../home/modules/flameshot.nix
     # ../../home/modules/greatshot.nix # Im using gnome native capture with ksnip for annotation for now
     ../../home/modules/fish.nix
+    ../../home/modules/fonts.nix
     ../../home/modules/gnome/dconf.nix
     ../../home/modules/gnome/extension-manager.nix
     ../../home/modules/k9s.nix

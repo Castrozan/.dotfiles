@@ -78,8 +78,12 @@ wezterm.on('gui-attached', function(domain)
 end)
 
 return {
-  font = wezterm.font('Fira Code', { weight = 'Regular' }),
+  font = wezterm.font_with_fallback({
+    'FiraCode Nerd Font',
+    'Fira Code',
+  }),
   font_size = 16,
+  warn_about_missing_glyphs = false,
 
   color_schemes = {
     ['Catppuccin Mocha'] = catppuccin_mocha,
