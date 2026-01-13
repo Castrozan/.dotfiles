@@ -114,6 +114,10 @@ return {
 
   scrollback_lines = 10000,
 
+  -- Enable kitty graphics protocol for inline image/video display
+  -- This allows tools like ani-cli to display video frames in the terminal
+  enable_kitty_graphics = true,
+
   -- Enable CSI-u (fixterms/kitty) keyboard protocol for proper modifier key handling
   -- This allows applications to distinguish Shift+Enter from Enter
   enable_csi_u_key_encoding = true,

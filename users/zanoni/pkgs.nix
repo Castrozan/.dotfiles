@@ -42,6 +42,10 @@
       ksnip
       lazydocker
       lshw
+      mpv
+      mpv-handler
+      mpvc
+      mpv-shim-default-shaders
       neofetch
       nixd
       nix-prefetch-github
