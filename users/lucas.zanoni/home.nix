@@ -12,6 +12,7 @@
     ../../home/scripts
     ../../home/modules/bananas.nix
     ../../home/modules/cbonsai.nix
+    ../../home/modules/claude
     # ../../home/modules/clipse.nix # TODO: clipse service is broken
     ../../home/modules/cmatrix.nix
     ../../home/modules/cursor
