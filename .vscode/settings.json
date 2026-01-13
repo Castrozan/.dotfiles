@@ -1,6 +1,9 @@
 {
     "nix.serverPath": "nixd",
     "nix.enableLanguageServer": true,
+    "nix.hiddenLanguageServerErrors": [
+        "textDocument/definition"
+    ],
     "nix.serverSettings": {
         "nixd": {
             "formatting": {
