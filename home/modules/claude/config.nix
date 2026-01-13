@@ -1,6 +1,7 @@
 { pkgs, ... }:
 let
   claudeGlobalSettings = {
+    installMethod = "native";
     model = "opus";
     spinnerTipsEnabled = false;
     dangerouslySkipPermissions = true;
