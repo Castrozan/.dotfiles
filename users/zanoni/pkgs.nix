@@ -10,6 +10,7 @@
     with pkgs;
     [
       alejandra
+      ani-cli
       awscli2
       bash
       bash-completion

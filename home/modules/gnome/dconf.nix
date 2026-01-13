@@ -148,12 +148,6 @@ in
       name = "whisper";
     };
 
-    "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom5" = {
-      name = "voxtype-toggle";
-      binding = "<Shift><Alt>a";
-      command = "bash -c 'if pgrep -f \"voxtype record start\" > /dev/null; then voxtype record stop; else voxtype record start; fi'";
-    };
-
     "org/gnome/desktop/wm/keybindings" = {
       close = [ "<Shift><Control>w" ];
       switch-applications = [ ];
