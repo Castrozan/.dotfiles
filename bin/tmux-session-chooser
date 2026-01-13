@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# Script to attach to tmux and show session chooser
+# Used by Wezterm keybind Ctrl+Shift+S
+
+if [ -n "$TMUX" ]; then
+    tmux choose-session 2>/dev/null
+    exit 0
+fi
+
+if tmux has-session 2>/dev/null; then
+    exec tmux attach-session -t "main" \; choose-session 2>/dev/null
+else
+    exec tmux 2>/dev/null
+fi
