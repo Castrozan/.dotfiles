@@ -10,6 +10,7 @@
     with pkgs;
     [
       alejandra
+      ani-cli
       awscli2
       bash
       bash-completion
@@ -41,6 +42,10 @@
       ksnip
       lazydocker
       lshw
+      mpv
+      mpv-handler
+      mpvc
+      mpv-shim-default-shaders
       neofetch
       nixd
       nix-prefetch-github
