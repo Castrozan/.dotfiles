@@ -13,10 +13,6 @@ let
     composer = {
       shouldChimeAfterChatFinishes = true;
     };
-    agent = {
-      permissionMode = "allow-all";
-      disallowedTools = [ ];
-    };
   };
 
   claudeDotfilesRules = ''
