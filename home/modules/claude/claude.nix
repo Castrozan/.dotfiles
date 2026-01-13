@@ -8,6 +8,7 @@ let
     spinnerTipsEnabled = false;
     dangerouslySkipPermissions = true;
     permissions = {
+      defaultMode = "bypassPermissions";
       allow = [ "*" ];
       deny = [ ];
     };
