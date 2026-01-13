@@ -11,10 +11,10 @@ let
     let
       nixGLWrapper = inputs.nixgl.packages.${pkgs.stdenv.hostPlatform.system}.nixGLIntel;
       wezterm-gl = pkgs.writeShellScriptBin "wezterm" ''
-        exec ${nixGLWrapper}/bin/nixGL ${pkgs.wezterm}/bin/wezterm "$@"
+        exec ${nixGLWrapper}/bin/nixGLIntel ${pkgs.wezterm}/bin/wezterm "$@"
       '';
       wezterm-gui-gl = pkgs.writeShellScriptBin "wezterm-gui" ''
-        exec ${nixGLWrapper}/bin/nixGL ${pkgs.wezterm}/bin/wezterm-gui "$@"
+        exec ${nixGLWrapper}/bin/nixGLIntel ${pkgs.wezterm}/bin/wezterm-gui "$@"
       '';
       wezterm-wrapped = pkgs.symlinkJoin {
         name = "wezterm-wrapped";
