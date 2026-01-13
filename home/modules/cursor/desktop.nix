@@ -1,20 +1,12 @@
-{ pkgs, ... }:
+{ ... }:
 let
-  cursorIcon = pkgs.stdenv.mkDerivation {
-    name = "cursor-icon";
-    src = ./favicon.ico;
-    dontUnpack = true;
-    installPhase = ''
-      mkdir -p $out
-      cp $src $out/favicon.ico
-    '';
-  };
+  cursorIconPath = ./favicon.ico;
 in
 {
   xdg.desktopEntries.cursor = {
     name = "Cursor";
     exec = "cursor %F";
-    icon = "${cursorIcon}/favicon.ico";
+    icon = "${cursorIconPath}";
     type = "Application";
     categories = [
       "Development"
