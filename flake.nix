@@ -17,12 +17,12 @@
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
     # External repos and flakes to be available
-    # Tag-based (stable releases): Use version tags for stable, tested releases
+    # Tag-based (stable releases)
     tui-notifier.url = "github:castrozan/tui-notifier/1.0.1";
     readItNow-rc.url = "github:castrozan/readItNow-rc/1.1.0";
     opencode.url = "github:anomalyco/opencode/v1.1.6";
     zed-editor.url = "github:zed-industries/zed/v0.218.5";
-    # Branch/default (actively maintained): Use default branch for actively maintained repos
+    # Branch/default (actively maintained)
     cbonsai.url = "github:castrozan/cbonsai";
     cmatrix.url = "github:castrozan/cmatrix";
     tuisvn.url = "github:castrozan/tuisvn";
@@ -30,7 +30,7 @@
     nixgl.url = "github:nix-community/nixGL";
     agenix.url = "github:ryantm/agenix";
     voxtype.url = "github:peteonrails/voxtype";
-    # Rev/commit (pinned versions): Use commit hash for specific pinned versions or when flake parsing is disabled
+    # Rev/commit (pinned versions) for maximum stability
     whisper-input.url = "github:castrozan/whisper-input/fd4670564454dcac6601a2f75eaa7f12ee09706f";
     whisper-input.flake = false; # I only need the raw repo, so don't parse the flake
   };
@@ -51,7 +51,6 @@
       home-version = "25.11";
       nixpkgs-version = "25.11";
       # Configure nixpkgs then attribute it to pkgs at the same time
-      # For standalone home-manager and packages in unstable/latest, we need allowUnfree here
       pkgs = import nixpkgs {
         inherit system;
         config.allowUnfree = true;
@@ -78,7 +77,7 @@
     in
     {
       # homeConfigurations.${username}@${system} is a standalone home manager configuration for any non-nixos systems
-      # nix run home-manager/master -- --flake $HOME/.dotfiles/nixos#${username}@${system} switch -b backup
+      # ./bin/rebuild for how to rebuild
       homeConfigurations =
         let
           # Function definition
@@ -98,7 +97,7 @@
         (mkHomeConfigFor "lucas.zanoni");
 
       # nixosConfigurations.${username} is a NixOS system configuration
-      # nixos-rebuild switch --flake ~/.dotfiles/nixos#${username}
+      # ./bin/rebuild for how to rebuild
       nixosConfigurations =
         let
           username = "zanoni";
