@@ -4,7 +4,8 @@
 
   networking.firewall = {
     # Trust Tailscale and WireGuard interfaces (wgnord uses WireGuard)
-    trustedInterfaces = [ "tailscale0" "wg0" ];
+    # wgnord creates an interface named "wgnord", not "wg0"
+    trustedInterfaces = [ "tailscale0" "wgnord" ];
     checkReversePath = "loose";
   };
 }
