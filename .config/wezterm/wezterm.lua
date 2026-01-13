@@ -79,11 +79,30 @@ end)
 
 return {
   font = wezterm.font_with_fallback({
-    'FiraCode Nerd Font',
-    'Fira Code',
+    { family = 'FiraCode Nerd Font Mono', weight = 'Regular' },
+    { family = 'FiraCode Nerd Font', weight = 'Regular' },
+    { family = 'Fira Code', weight = 'Regular' },
+    'JetBrainsMono Nerd Font',
+    'DejaVu Sans',
+    'Noto Color Emoji',
   }),
   font_size = 16,
   warn_about_missing_glyphs = false,
+  -- Ensure proper rendering of icons and symbols
+  freetype_load_target = 'Light',
+  freetype_render_target = 'HorizontalLcd',
+
+  -- Font rules for bold/italic variants
+  font_rules = {
+    {
+      intensity = 'Bold',
+      font = wezterm.font_with_fallback({
+        { family = 'FiraCode Nerd Font', weight = 'Bold' },
+        { family = 'FiraCode Nerd Font Mono', weight = 'Bold' },
+        { family = 'Fira Code', weight = 'Bold' },
+      }),
+    },
+  },
 
   color_schemes = {
     ['Catppuccin Mocha'] = catppuccin_mocha,
@@ -126,12 +145,11 @@ return {
   -- This allows applications to distinguish Shift+Enter from Enter
   enable_csi_u_key_encoding = true,
 
-  -- Key bindings: send CSI-u escape sequences for modified Enter
+  -- Key bindings
   keys = {
-    -- Shift+Enter: send \x1b[13;2u (CSI u format: ESC [ keycode ; modifiers u)
-    -- 13 = Enter keycode, 2 = Shift modifier
-    { key = 'Enter', mods = 'SHIFT', action = wezterm.action.SendString('\x1b[13;2u') },
-    -- Ctrl+Enter: send \x1b[13;5u (5 = Ctrl modifier)
+    -- Shift+Enter: send newline character for multi-line input
+    { key = 'Enter', mods = 'SHIFT', action = wezterm.action.SendString('\n') },
+    -- Ctrl+Enter: send \x1b[13;5u (5 = Ctrl modifier) for apps that need it
     { key = 'Enter', mods = 'CTRL', action = wezterm.action.SendString('\x1b[13;5u') },
     -- Alt+Enter: send \x1b[13;3u (3 = Alt modifier)
     { key = 'Enter', mods = 'ALT', action = wezterm.action.SendString('\x1b[13;3u') },
