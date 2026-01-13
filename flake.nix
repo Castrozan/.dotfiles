@@ -54,6 +54,7 @@
       # For standalone home-manager and packages in unstable/latest, we need allowUnfree here
       pkgs = import nixpkgs {
         inherit system;
+        config.allowUnfree = true;
       };
       unstable = import nixpkgs-unstable {
         inherit system;

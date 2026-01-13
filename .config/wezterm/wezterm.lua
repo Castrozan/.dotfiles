@@ -131,6 +131,8 @@ return {
     { key = 'Enter', mods = 'CTRL', action = wezterm.action.SendString('\x1b[13;5u') },
     -- Alt+Enter: send \x1b[13;3u (3 = Alt modifier)
     { key = 'Enter', mods = 'ALT', action = wezterm.action.SendString('\x1b[13;3u') },
+    -- Ctrl+Shift+S: open tmux and show session chooser (mimics tmux Leader+S)
+    { key = 's', mods = 'CTRL|SHIFT', action = wezterm.action.SendString(os.getenv('HOME') .. '/.dotfiles/bin/tmux-session-chooser\n') },
   },
 
   -- Startup behavior (similar to kitty startup_session)
