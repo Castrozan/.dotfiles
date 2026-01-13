@@ -9,6 +9,7 @@
     ../../home/scripts
     ../../home/modules/bash.nix
     ../../home/modules/cbonsai.nix
+    ../../home/modules/claude
     ../../home/modules/clipse.nix
     ../../home/modules/cmatrix.nix
     ../../home/modules/cursor
