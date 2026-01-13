@@ -17,7 +17,6 @@
     ../../home/modules/cmatrix.nix
     ../../home/modules/cursor
     ../../home/modules/flameshot.nix
-    # ../../home/modules/greatshot.nix # Im using gnome native capture with ksnip for annotation for now
     ../../home/modules/fish.nix
     ../../home/modules/fonts.nix
     ../../home/modules/gnome/dconf.nix
