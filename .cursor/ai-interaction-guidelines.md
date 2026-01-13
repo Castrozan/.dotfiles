@@ -14,5 +14,8 @@ Keep secrets in secrets/ directory encrypted with agenix. Each .age file gets en
 File Organization
 Scripts in bin/ for executables. Home Manager scripts in home/scripts/. NixOS modules in nixos/modules/. User configs in users/<username>/. Secrets in secrets/ with secrets.nix defining access. Follow existing import patterns.
 
+Scripts
+Raw scripts go in bin/. Create <name>.nix in home/scripts/ or users/<username>/scripts/ following pattern in respective default.nix. Scripts requiring root use sudo wrapper or check EUID in script.
+
 Common Tasks
 Rebuild with ./bin/rebuild. Edit secrets with agenix-edit <secret-name>. Always check config with nix flake check --impure. Add new module by creating in appropriate directory and importing in user config.
