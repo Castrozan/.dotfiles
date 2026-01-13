@@ -38,7 +38,7 @@
     "window.autoDetectColorScheme": true,
     "window.titleBarStyle": "custom",
     "window.confirmSaveUntitledWorkspace": false,
-    "workbench.preferredDarkColorTheme": "Monokai",
+    "workbench.preferredDarkColorTheme": "GitHub Dark Default",
     "files.associations": {
         "*.desktop": "toml"
     },
@@ -286,6 +286,5 @@
     "git.confirmSync": false,
     "git.enableSmartCommit": true,
     "git.blame.editorDecoration.enabled": true,
-    "window.zoomLevel": 3,
     "cursor.composer.shouldChimeAfterChatFinishes": true
 }
