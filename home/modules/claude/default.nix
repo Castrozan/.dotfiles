@@ -1,4 +1,7 @@
 { ... }:
 {
-  imports = [ ./claude.nix ];
+  imports = [
+    ./claude.nix
+    ./config.nix
+  ];
 }

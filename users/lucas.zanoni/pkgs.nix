@@ -63,7 +63,6 @@
     ]
     # Appending to list
     ++ (with latest; [
-      claude-code
       devenv
       lazydocker
       # gemini-cli TODO: fix gemini-cli, im using the npm version for now
