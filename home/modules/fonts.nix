@@ -6,5 +6,7 @@
     (nerd-fonts.fira-code)
     fira-code
     fira-code-symbols
+    noto-fonts-color-emoji
+    symbola
   ];
 }
