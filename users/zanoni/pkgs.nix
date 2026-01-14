@@ -96,7 +96,6 @@
       terraform # Removed: its broken on nixpkgs
     ])
     ++ (with latest; [
-      claude-code
       devenv
       gemini-cli
       vscode
