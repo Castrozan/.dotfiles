@@ -25,6 +25,8 @@ let
 
     ${builtins.readFile ../../../agents/rules/ai-interaction-guidelines.md}
 
+    ${builtins.readFile ../../../agents/rules/claude-code-agents.md}
+
     ${builtins.readFile ../../../agents/rules/gnome-keybinding-debugging.md}
   '';
 in
