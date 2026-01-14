@@ -6,12 +6,12 @@ let
 
   catppuccinZanoni = pkgs.tmuxPlugins.mkTmuxPlugin {
     pluginName = "catppuccin";
-    version = "zanoni.v1.0.3";
+    version = "zanoni.v1.0.5";
     src = pkgs.fetchFromGitHub {
       owner = "castrozan";
       repo = "catppuccin-tmux";
-      rev = "zanoni.v1.0.3";
-      sha256 = "0aYa1LY8BRGkU3Cd1l7dmLnGsFXbbRjmCtInYfiEwTA=";
+      rev = "zanoni.v1.0.5";
+      sha256 = "0yjgkvblbqgqmz8lxk8p1jdli2g8m8sqjlp0svm0vgidx94dr77y";
     };
   };
 in
@@ -24,14 +24,13 @@ in
       pkgs.tmuxPlugins.sensible
       pkgs.tmuxPlugins.yank
       pkgs.tmuxPlugins.resurrect
-      pkgs.tmuxPlugins.cpu
-      # The problem is between this catppuccin and the cpu plugin
       {
+        # Settings must load BEFORE plugin runs (catppuccin uses %if conditionals)
         plugin = catppuccinZanoni;
-        extraConfig = ''
-          ${catppuccinSettings}
-        '';
+        extraConfig = catppuccinSettings;
       }
+      # cpu must run AFTER catppuccin to interpolate #{cpu_percentage} in status-right
+      pkgs.tmuxPlugins.cpu
     ];
     extraConfig = ''
       ${settings}
