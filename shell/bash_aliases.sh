@@ -10,7 +10,6 @@ alias cat='cat'
 alias catt='bat'
 alias cd.='cd ..'
 alias cd..='cd ..'
-alias claude-nix='NIXPKGS_ALLOW_UNFREE=1 nix run github:k3d3/claude-desktop-linux-flake --impure'
 alias code='code . -n'
 . "$HOME/.dotfiles/shell/cursor.sh"
 alias d='lazydocker'
