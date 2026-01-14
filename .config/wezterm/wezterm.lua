@@ -155,6 +155,9 @@ return {
     { key = 'Enter', mods = 'ALT', action = wezterm.action.SendString('\x1b[13;3u') },
     -- Ctrl+Shift+S: open tmux and show session chooser (mimics tmux Leader+S)
     { key = 's', mods = 'CTRL|SHIFT', action = wezterm.action.SendString(os.getenv('HOME') .. '/.dotfiles/bin/tmux-session-chooser\n') },
+    -- Ctrl+Shift+Up/Down: send xterm sequences for tmux copy mode navigation
+    { key = 'UpArrow', mods = 'CTRL|SHIFT', action = wezterm.action.SendString('\x1b[1;6A') },
+    { key = 'DownArrow', mods = 'CTRL|SHIFT', action = wezterm.action.SendString('\x1b[1;6B') },
   },
 
   -- Startup behavior (similar to kitty startup_session)
