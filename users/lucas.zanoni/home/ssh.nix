@@ -4,6 +4,18 @@
     enableDefaultConfig = false;
     matchBlocks = {
       "*" = { };
+      "dellg15" = {
+        hostname = "192.168.7.29";
+        port = 22;
+        user = "zanoni";
+        identityFile = "~/.ssh/id_ed25519";
+      };
+      "dellg15-remote" = {
+        hostname = "100.94.11.81";
+        port = 22;
+        user = "zanoni";
+        identityFile = "~/.ssh/id_ed25519";
+      };
       "gitlab.com" = {
         hostname = "gitlab.service.betha.cloud";
         user = "git";

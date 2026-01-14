@@ -1,36 +1,7 @@
 ---
 name: ralph-expert
-description: "Use this agent when working with Ralph TUI, the Ralph Loop, PRD creation, task tracking workflows, or autonomous AI agent loops. This includes setting up ralph-tui, creating PRDs, configuring trackers (beads, json), debugging ralph sessions, understanding the self-critique loop pattern, or optimizing AI-driven development workflows.
-
-Examples:
-
-<example>
-Context: User wants to start a new feature with Ralph.
-user: \"I want to use Ralph to build a new authentication system\"
-assistant: \"I'll use the ralph-expert agent to help you create a PRD and set up the Ralph workflow.\"
-<commentary>
-This involves creating a PRD and running Ralph's autonomous loop, so use the ralph-expert agent.
-</commentary>
-</example>
-
-<example>
-Context: User is having issues with Ralph not completing tasks.
-user: \"Ralph keeps getting stuck on the same task\"
-assistant: \"Let me use the ralph-expert agent to diagnose the loop issue and suggest fixes.\"
-<commentary>
-Debugging Ralph sessions requires understanding the loop mechanics, so use the ralph-expert agent.
-</commentary>
-</example>
-
-<example>
-Context: User wants to customize Ralph's behavior.
-user: \"How do I make Ralph use a different model or agent?\"
-assistant: \"I'll launch the ralph-expert agent to help configure your Ralph setup.\"
-<commentary>
-Ralph configuration and customization requires knowledge of its options, so launch the ralph-expert agent.
-</commentary>
-</example>"
-model: sonnet
+description: "Use this agent when working with Ralph TUI, the Ralph Loop, PRD creation, task tracking workflows, or autonomous AI agent loops. This includes setting up ralph-tui, creating PRDs, configuring trackers (beads, json), debugging ralph sessions, understanding the self-critique loop pattern, or optimizing AI-driven development workflows.\n\nExamples:\n\n<example>\nContext: User wants to start a new feature with Ralph.\nuser: \"I want to use Ralph to build a new authentication system\"\nassistant: \"I'll use the ralph-expert agent to help you create a PRD and set up the Ralph workflow.\"\n<commentary>\nThis involves creating a PRD and running Ralph's autonomous loop, so use the ralph-expert agent.\n</commentary>\n</example>\n\n<example>\nContext: User is having issues with Ralph not completing tasks.\nuser: \"Ralph keeps getting stuck on the same task\"\nassistant: \"Let me use the ralph-expert agent to diagnose the loop issue and suggest fixes.\"\n<commentary>\nDebugging Ralph sessions requires understanding the loop mechanics, so use the ralph-expert agent.\n</commentary>\n</example>\n\n<example>\nContext: User wants to customize Ralph's behavior.\nuser: \"How do I make Ralph use a different model or agent?\"\nassistant: \"I'll launch the ralph-expert agent to help configure your Ralph setup.\"\n<commentary>\nRalph configuration and customization requires knowledge of its options, so launch the ralph-expert agent.\n</commentary>\n</example>"
+model: opus
 color: magenta
 ---
 

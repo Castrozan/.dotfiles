@@ -17,13 +17,9 @@ in
     after = [ "installPackages" ];
     before = [ ];
     data = ''
-      if [ -d "${sdkmanDir}" ] && [ -s "${sdkmanDir}/bin/sdkman-init.sh" ]; then
-          echo "SDKMAN! already installed."
-      else
-          echo "Installing SDKMAN!..."
-          # Ensure curl and unzip are available even though PATH may not yet include profile bins.
+      if [ ! -d "${sdkmanDir}" ] || [ ! -s "${sdkmanDir}/bin/sdkman-init.sh" ]; then
           export PATH="${pkgs.curl}/bin:${pkgs.unzip}/bin:${pkgs.zip}/bin:${pkgs.gnutar}/bin:$PATH"
-          ${curlBin} -s "https://get.sdkman.io" | bash > /dev/null 2>&1
+          ${curlBin} -s "https://get.sdkman.io" 2>/dev/null | bash > /dev/null 2>&1
       fi
     '';
   };

@@ -13,6 +13,7 @@
     ../../home/modules/bananas.nix
     ../../home/modules/cbonsai.nix
     ../../home/modules/claude
+    ../../home/modules/claudemem.nix
     # ../../home/modules/clipse.nix # TODO: clipse service is broken
     ../../home/modules/cmatrix.nix
     ../../home/modules/cursor
@@ -32,6 +33,7 @@
     ../../home/modules/readItNow.nix
     ../../home/modules/sdkman.nix
     ../../home/modules/suwayomi-server.nix
+    ../../home/modules/tailscale-daemon.nix
     ../../home/modules/tmux.nix
     ../../home/modules/tuisvn.nix
     ../../home/modules/tui-notifier.nix
