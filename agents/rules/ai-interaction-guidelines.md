@@ -19,3 +19,6 @@ Raw scripts go in bin/. Create <name>.nix in home/scripts/ or users/<username>/s
 
 Common Tasks
 Rebuild with ./bin/rebuild. Edit secrets with agenix-edit <secret-name>. Always check config with nix flake check. Add new module by creating in appropriate directory and importing in user config.
+
+AI Workflow
+Home-manager on non-NixOS systems does not require sudo. ALWAYS run `./bin/rebuild` after ANY nix config change to validate. ALWAYS test changes work as expected. ALWAYS commit if rebuild succeeds and changes are verified - do not ask for permission.
