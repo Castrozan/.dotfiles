@@ -32,6 +32,7 @@ You MUST follow these patterns from the project's CLAUDE.md:
 - Scripts go in `bin/` for executables, `home/scripts/` for home-manager scripts
 - NixOS modules in `nixos/modules/`, user configs in `users/<username>/`
 - Always validate with `nix flake check` before suggesting rebuilds
+- Claude Code agents in `agents/subagent/` require single-line quoted YAML description with `\n` escapes
 
 ## Working Methodology
 
