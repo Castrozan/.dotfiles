@@ -32,7 +32,7 @@ WezTerm requires OpenGL/EGL libraries which aren't available to Nix applications
 The solution uses [nixGL](https://github.com/nix-community/nixGL) to wrap WezTerm:
 
 - `nixGLIntel` provides Mesa OpenGL support (Intel/AMD GPUs)
-- Requires `--impure` flag when rebuilding
+- Previously required `--impure` flag (no longer needed - nixGL input is now a flake)
 - Note: Changed from `nixGLDefault` to `nixGLIntel` to avoid ~3s IFD overhead
   (nixGLDefault does impure nvidia detection that rebuilds every evaluation)
 
@@ -45,7 +45,7 @@ The solution uses [nixGL](https://github.com/nix-community/nixGL) to wrap WezTer
 5. `.config/fuzzel/fuzzel.ini` - Updated terminal from kitty to wezterm
 6. `.config/xdg-terminals.list` - Updated default terminal
 7. `flake.nix` - Added nixGL input for OpenGL support on non-NixOS
-8. `bin/rebuild` - Added `--impure` flag (required for nixGL)
+8. `bin/rebuild` - Previously added `--impure` flag (no longer needed)
 
 ## Shift+Enter Fix
 
