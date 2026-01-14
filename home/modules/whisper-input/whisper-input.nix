@@ -1,5 +1,13 @@
-{ pkgs, inputs, ... }:
+{ pkgs, ... }:
 let
+  # Fetch whisper-input source directly
+  whisper-input-src = pkgs.fetchFromGitHub {
+    owner = "castrozan";
+    repo = "whisper-input";
+    rev = "fd4670564454dcac6601a2f75eaa7f12ee09706f";
+    hash = "sha256-9V3yhInRWd6mYoDUepJ9Tf6rFWhso6uA/i0foQ4OGCI=";
+  };
+
   # Process wrapper script with substitutions
   wrapperScript = pkgs.writeScript "whisper-input-wrapper.sh" (
     pkgs.lib.replaceStrings
@@ -19,7 +27,7 @@ let
         "${pkgs.dbus.lib}"
         "${pkgs.stdenv.cc.cc.lib}"
         "${pkgs.glibc}"
-        "${inputs.whisper-input}/src"
+        "${whisper-input-src}/src"
       ]
       (builtins.readFile ./wrapper.sh)
   );

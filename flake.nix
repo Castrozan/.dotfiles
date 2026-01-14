@@ -30,10 +30,6 @@
     nixgl.url = "github:nix-community/nixGL";
     agenix.url = "github:ryantm/agenix";
     voxtype.url = "github:peteonrails/voxtype";
-    # Rev/commit (pinned versions) for maximum stability
-    whisper-input.url = "github:castrozan/whisper-input/fd4670564454dcac6601a2f75eaa7f12ee09706f";
-    whisper-input.flake = false; # I only need the raw repo, so don't parse the flake
-
   };
 
   # Outputs are used to define apps and dotfiles configuration for different systems and users
