@@ -27,6 +27,7 @@
     ../../home/modules/obsidian.nix
     ../../home/modules/opencode.nix
     ../../home/modules/pkgs.nix
+    ../../home/modules/ralph-tui.nix
     ../../home/modules/suwayomi-server.nix
     ../../home/modules/tmux.nix
     ../../home/modules/vesktop.nix
