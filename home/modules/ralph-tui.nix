@@ -6,10 +6,13 @@
   # Ensure bun is available (should be in pkgs.nix)
   home.packages = with pkgs; [ bun ];
 
+  # Add bun global bin to PATH
+  home.sessionPath = [ "$HOME/.bun/bin" ];
+
   # Install ralph-tui globally via bun on activation
   home.activation.installRalphTui = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     export PATH="${pkgs.bun}/bin:$PATH"
-    if ! command -v ralph-tui &> /dev/null; then
+    if [ ! -f "$HOME/.bun/bin/ralph-tui" ]; then
       ${pkgs.bun}/bin/bun install -g ralph-tui 2>/dev/null || true
     fi
   '';
