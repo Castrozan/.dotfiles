@@ -14,7 +14,6 @@ let
     composer = {
       shouldChimeAfterChatFinishes = true;
     };
-    # Claude Code plugins
     plugins = [
       "dvdsgl/claude-canvas"
       "anthropics/skills/document-skills"
