@@ -19,16 +19,9 @@ in
   home.activation.installClaudemem = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     export PATH="${pkgs.nodejs}/bin:$PATH"
     export NPM_CONFIG_PREFIX="$HOME/.npm-global"
-
-    # Create npm global directory if it doesn't exist
     mkdir -p "$HOME/.npm-global/bin"
-
-    # Install claudemem only if not already installed
-    if ! [ -x "$HOME/.npm-global/bin/claude-codemem" ]; then
-      echo "Installing claudemem via npm..."
-      ${npmBin} install -g claude-codemem 2>/dev/null || true
-    else
-      echo "claudemem is already installed."
+    if [ ! -x "$HOME/.npm-global/bin/claude-codemem" ]; then
+      ${npmBin} install -g claude-codemem > /dev/null 2>&1 || true
     fi
   '';
 }
