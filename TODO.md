@@ -3,13 +3,12 @@
 
 - Config
   - [ ] Rice the config with quickshell https://github.com/caelestia-dots/shell
-  - [ ] Tmux cpu is not working
-  - [ ] Fix formatting for nix on vscode
-  - [ ] Configure bonjour https://github.com/victrme/Bonjourr for brave and chrome
   - [ ] Tests
     - [ ] Config Ci
       - [ ] create a nixos ci
       - [ ] create a home-manager ci
+  - [x] Tmux cpu is not working
+  - [x] Fix formatting for nix on vscode
   - [x] .inputrc what to do with it? Its just for bash so leave it as is
   - [x] zsh? Fish!
   - [x] Add tmux tpm plugins
