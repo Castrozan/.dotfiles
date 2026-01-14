@@ -14,7 +14,6 @@ let
     composer = {
       shouldChimeAfterChatFinishes = true;
     };
-    # Claude Code plugins
     plugins = [
       "dvdsgl/claude-canvas"
       "anthropics/skills/document-skills"
@@ -25,6 +24,8 @@ let
     # Claude Code Project Context
 
     ${builtins.readFile ../../../agents/rules/ai-interaction-guidelines.md}
+
+    ${builtins.readFile ../../../agents/rules/claude-code-agents.md}
 
     ${builtins.readFile ../../../agents/rules/gnome-keybinding-debugging.md}
   '';

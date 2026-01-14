@@ -50,6 +50,7 @@
       redisinsight
       ripgrep-all
       rustc
+      tailscale
       tree
       unzip
       uv
