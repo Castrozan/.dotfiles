@@ -570,11 +570,9 @@
         "nixpkgs-unstable": "nixpkgs-unstable",
         "opencode": "opencode",
         "readItNow-rc": "readItNow-rc",
-        "superpowers": "superpowers",
         "tui-notifier": "tui-notifier",
         "tuisvn": "tuisvn",
         "voxtype": "voxtype",
-        "whisper-input": "whisper-input",
         "zed-editor": "zed-editor"
       }
     },
@@ -596,22 +594,6 @@
       "original": {
         "owner": "oxalica",
         "repo": "rust-overlay",
-        "type": "github"
-      }
-    },
-    "superpowers": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1766811332,
-        "narHash": "sha256-0/biMK5A9DwXI/UeouBX2aopkUslzJPiNi+eZFkkzXI=",
-        "owner": "obra",
-        "repo": "superpowers",
-        "rev": "b9e16498b9b6b06defa34cf0d6d345cd2c13ad31",
-        "type": "github"
-      },
-      "original": {
-        "owner": "obra",
-        "repo": "superpowers",
         "type": "github"
       }
     },
@@ -774,23 +756,6 @@
       "original": {
         "owner": "peteonrails",
         "repo": "voxtype",
-        "type": "github"
-      }
-    },
-    "whisper-input": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1768107891,
-        "narHash": "sha256-9V3yhInRWd6mYoDUepJ9Tf6rFWhso6uA/i0foQ4OGCI=",
-        "owner": "castrozan",
-        "repo": "whisper-input",
-        "rev": "fd4670564454dcac6601a2f75eaa7f12ee09706f",
-        "type": "github"
-      },
-      "original": {
-        "owner": "castrozan",
-        "repo": "whisper-input",
-        "rev": "fd4670564454dcac6601a2f75eaa7f12ee09706f",
         "type": "github"
       }
     },

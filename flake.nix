@@ -16,7 +16,7 @@
     home-manager.url = "github:nix-community/home-manager/release-25.11";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
-    # External repos and flakes to be available
+    # External flakes to be available for dependency injection
     # Tag-based (stable releases)
     tui-notifier.url = "github:castrozan/tui-notifier/1.0.1";
     readItNow-rc.url = "github:castrozan/readItNow-rc/1.1.0";
@@ -30,13 +30,6 @@
     nixgl.url = "github:nix-community/nixGL";
     agenix.url = "github:ryantm/agenix";
     voxtype.url = "github:peteonrails/voxtype";
-    # Rev/commit (pinned versions) for maximum stability
-    whisper-input.url = "github:castrozan/whisper-input/fd4670564454dcac6601a2f75eaa7f12ee09706f";
-    whisper-input.flake = false; # I only need the raw repo, so don't parse the flake
-
-    # Claude Code skills and agents
-    superpowers.url = "github:obra/superpowers";
-    superpowers.flake = false; # Raw repo for skills directory
   };
 
   # Outputs are used to define apps and dotfiles configuration for different systems and users

@@ -31,7 +31,7 @@ You MUST follow these patterns from the project's CLAUDE.md:
 - Use conditional configs to allow rebuilds without secret files present
 - Scripts go in `bin/` for executables, `home/scripts/` for home-manager scripts
 - NixOS modules in `nixos/modules/`, user configs in `users/<username>/`
-- Always validate with `nix flake check --impure` before suggesting rebuilds
+- Always validate with `nix flake check` before suggesting rebuilds
 
 ## Working Methodology
 
@@ -43,7 +43,7 @@ You MUST follow these patterns from the project's CLAUDE.md:
 
 4. **Documentation**: Add comments for non-obvious patterns. Option descriptions should explain purpose, not just restate the name.
 
-5. **Testing**: Suggest `nix flake check --impure` and `nix build` commands to verify changes before applying.
+5. **Testing**: Suggest `nix flake check` and `nix build` commands to verify changes before applying.
 
 ## Problem-Solving Approach
 
