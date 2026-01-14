@@ -1,10 +1,16 @@
-{ inputs, lib, ... }:
+{ pkgs, lib, ... }:
 let
   # Local skills directory
   localSkillsDir = ../../../agents/skills;
 
-  # Superpowers skills from flake input
-  superpowersSkillsDir = inputs.superpowers + "/skills";
+  # Superpowers skills fetched directly (not a flake input)
+  superpowersRepo = pkgs.fetchFromGitHub {
+    owner = "obra";
+    repo = "superpowers";
+    rev = "b9e16498b9b6b06defa34cf0d6d345cd2c13ad31";
+    hash = "sha256-0/biMK5A9DwXI/UeouBX2aopkUslzJPiNi+eZFkkzXI=";
+  };
+  superpowersSkillsDir = superpowersRepo + "/skills";
 
   # Get all directories with SKILL.md from a directory
   getSkillDirs = dir:
