@@ -13,6 +13,7 @@
       bat
       brave
       bruno
+      bun
       cargo
       clipse
       curl
