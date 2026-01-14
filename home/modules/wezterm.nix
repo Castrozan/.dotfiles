@@ -3,16 +3,18 @@ let
   isNixOS = builtins.pathExists /etc/NIXOS;
 
   # On non-NixOS we need nixGL to provide OpenGL support
+  # Using nixGLIntel (Mesa) directly instead of nixGLDefault to avoid
+  # impure IFD that rebuilds on every evaluation (~3s overhead)
   weztermPackage = if isNixOS then
     pkgs.wezterm
   else
     let
-      nixGLWrapper = inputs.nixgl.packages.${pkgs.stdenv.hostPlatform.system}.nixGLDefault;
+      nixGLWrapper = inputs.nixgl.packages.${pkgs.stdenv.hostPlatform.system}.nixGLIntel;
       wezterm-gl = pkgs.writeShellScriptBin "wezterm" ''
-        exec ${nixGLWrapper}/bin/nixGL ${pkgs.wezterm}/bin/wezterm "$@"
+        exec ${nixGLWrapper}/bin/nixGLIntel ${pkgs.wezterm}/bin/wezterm "$@"
       '';
       wezterm-gui-gl = pkgs.writeShellScriptBin "wezterm-gui" ''
-        exec ${nixGLWrapper}/bin/nixGL ${pkgs.wezterm}/bin/wezterm-gui "$@"
+        exec ${nixGLWrapper}/bin/nixGLIntel ${pkgs.wezterm}/bin/wezterm-gui "$@"
       '';
       wezterm-wrapped = pkgs.symlinkJoin {
         name = "wezterm-wrapped";

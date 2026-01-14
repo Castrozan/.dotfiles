@@ -1,8 +1,6 @@
 { ... }:
 let
-  wezterm-quick-temp-shell-command = ''
-    wezterm start --initial-rows 24 --initial-cols 80 -- tmux new-session
-  '';
+  wezterm-quick-temp-shell-command = "wezterm start -- tmux new-session";
 in
 {
   # GNOME settings
