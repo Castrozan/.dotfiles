@@ -11,7 +11,9 @@ Agent files in agents/subagent/ are symlinked to ~/.claude/agents/ via home-mana
 ---
 name: agent-name
 description: "First paragraph.\n\nExamples:\n\n<example>\nuser: \"question\"\nassistant: \"response\"\n</example>"
-model: sonnet
+model: opus
 color: magenta
 ---
 ```
+
+Always use `model: opus` for all custom agents. After modifying agent files run `rebuild` then restart Claude Code.
