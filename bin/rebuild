@@ -9,7 +9,8 @@ if [ "$ID" = "nixos" ]; then
     # This avoids the warning about HOME not being owned by root
     DOTFILES_PATH="$HOME/.dotfiles"
     USERNAME="$(whoami)"
-    sudo env "NIXPKGS_ALLOW_UNFREE=1" nixos-rebuild switch --impure --flake "$DOTFILES_PATH#$USERNAME"
+    # Note: Pure evaluation - tested on home-manager only, NixOS testing pending
+    sudo env "NIXPKGS_ALLOW_UNFREE=1" nixos-rebuild switch --flake "$DOTFILES_PATH#$USERNAME"
 else
     # Try methods in order of preference to avoid GitHub rate limits:
 

@@ -18,4 +18,4 @@ Scripts
 Raw scripts go in bin/. Create <name>.nix in home/scripts/ or users/<username>/scripts/ following pattern in respective default.nix. Scripts requiring root use sudo wrapper or check EUID in script.
 
 Common Tasks
-Rebuild with ./bin/rebuild. Edit secrets with agenix-edit <secret-name>. Always check config with nix flake check --impure. Add new module by creating in appropriate directory and importing in user config.
+Rebuild with ./bin/rebuild. Edit secrets with agenix-edit <secret-name>. Always check config with nix flake check. Add new module by creating in appropriate directory and importing in user config.
