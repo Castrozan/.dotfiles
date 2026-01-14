@@ -28,6 +28,7 @@
     ../../home/modules/lazygit.nix
     ../../home/modules/neovim.nix
     ../../home/modules/opencode.nix
+    ../../home/modules/ralph-tui.nix
     ../../home/modules/readItNow.nix
     ../../home/modules/sdkman.nix
     ../../home/modules/suwayomi-server.nix
