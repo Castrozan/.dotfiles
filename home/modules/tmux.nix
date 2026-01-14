@@ -40,7 +40,3 @@ in
 
   home.packages = [ pkgs.xsel ];
 }
-
-# Docs:
-# Shift+Enter and Ctrl+Enter does not work in tmux because
-# tmux doesn't support kitty's CSI-u keyboard protocol (see docs/tmux.md)

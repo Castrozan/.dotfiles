@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+RESURRECT_DIR="$HOME/.tmux/resurrect"
+
+if [[ ! -d "$RESURRECT_DIR" ]]; then
+  echo "No resurrect directory found at $RESURRECT_DIR"
+  exit 1
+fi
+
+cd "$RESURRECT_DIR"
+
+selected=$(ls -t tmux_resurrect_*.txt 2>/dev/null | fzf --height=40% --reverse --prompt="Select backup: ")
+
+if [[ -z "$selected" ]]; then
+  echo "No backup selected"
+  exit 0
+fi
+
+ln -sf "$selected" last
+echo "Switched to: $selected"
+echo "Press prefix + Ctrl-r to restore"
