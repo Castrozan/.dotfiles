@@ -1,7 +1,7 @@
 ---
 name: auditoria-licencas-expert
 description: "Use this agent when working on the Worker de Auditoria de Licenças project. This includes understanding business rules, event flows, SQS consumption patterns, Kafka production, Avro serialization, and implementation details. Use for architecture questions, implementation guidance, and verifying requirements alignment.\n\nExamples:\n\n<example>\nContext: User needs to understand the event flow.\nuser: \"How do license events get to the worker?\"\nassistant: \"I'll use the auditoria-licencas-expert agent to explain the event flow architecture.\"\n<commentary>\nThis requires knowledge of the SNS/SQS FIFO architecture and event sources, so use the expert agent.\n</commentary>\n</example>\n\n<example>\nContext: User is implementing an event handler.\nuser: \"How should I implement the entidade event handler?\"\nassistant: \"Let me use the auditoria-licencas-expert agent to guide the implementation following internal patterns.\"\n<commentary>\nImplementation requires knowledge of bfc-micronaut patterns and internal conventions, so use the expert agent.\n</commentary>\n</example>\n\n<example>\nContext: User needs to understand the audit record format.\nuser: \"What fields should the audit record contain?\"\nassistant: \"I'll use the auditoria-licencas-expert agent to explain the audit record structure and Avro schema requirements.\"\n<commentary>\nAudit record format is defined by business requirements and Kafka integration, so use the expert agent.\n</commentary>\n</example>"
-model: sonnet
+model: opus
 color: yellow
 ---
 
