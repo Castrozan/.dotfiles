@@ -11,6 +11,7 @@
     ./set-random-bg-kitty.nix
     ./tar-unzip2dir.nix
     ./tmux-lazygit-toggle.nix
+    ./tmux-resurrect.nix
     ./volume.nix
   ];
 }
