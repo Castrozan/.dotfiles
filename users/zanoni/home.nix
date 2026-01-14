@@ -10,6 +10,7 @@
     ../../home/modules/bash.nix
     ../../home/modules/cbonsai.nix
     ../../home/modules/claude
+    ../../home/modules/claudemem.nix
     ../../home/modules/clipse.nix
     ../../home/modules/cmatrix.nix
     ../../home/modules/cursor
@@ -27,6 +28,7 @@
     ../../home/modules/obsidian.nix
     ../../home/modules/opencode.nix
     ../../home/modules/pkgs.nix
+    ../../home/modules/ralph-tui.nix
     ../../home/modules/suwayomi-server.nix
     ../../home/modules/tmux.nix
     ../../home/modules/vesktop.nix
