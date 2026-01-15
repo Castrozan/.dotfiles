@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# Enable alias expansion in non-interactive shells (for Claude Code BASH_ENV)
+shopt -s expand_aliases
+
 # Personal aliases
 alias clebr='cd $HOME/.clebr'
 alias bashrc='nvim ~/.bashrc'
