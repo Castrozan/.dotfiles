@@ -5,6 +5,7 @@
     ./daily-note.nix
     ./ksnip-annotate.nix
     ./greatshot-capture.nix
+    ./nix-gc.nix
     ./on.nix
     ./pdf-edit.nix
     ./rebuild.nix
