@@ -27,6 +27,7 @@
     cmatrix.url = "github:castrozan/cmatrix";
     tuisvn.url = "github:castrozan/tuisvn";
     install-nothing.url = "github:castrozan/install-nothing";
+    bad-apple-rs.url = "github:lomirus/bad-apple-rs";
     nixgl.url = "github:nix-community/nixGL";
     agenix.url = "github:ryantm/agenix";
     voxtype.url = "github:peteonrails/voxtype";
