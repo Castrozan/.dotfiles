@@ -20,6 +20,7 @@
     ../../home/modules/flameshot.nix
     ../../home/modules/fish.nix
     ../../home/modules/fonts.nix
+    ../../home/modules/glab.nix
     ../../home/modules/gnome/dconf.nix
     ../../home/modules/gnome/extension-manager.nix
     ../../home/modules/k9s.nix
