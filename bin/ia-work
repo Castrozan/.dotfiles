@@ -1,19 +1,19 @@
 #!/usr/bin/env bash
 # ia-work: Process Obsidian notes with AI instructions
-# Scans vault for notes with ia-work/ework tags and executes AI instructions
+# Scans vault for notes with agent-work tag and passes entire note to AI
 
 set -euo pipefail
 
 # Configuration defaults (can be overridden via environment)
 VAULT_PATH="${IA_WORK_VAULT_PATH:-$HOME/vault}"
-AI_CLI="${IA_WORK_AI_CLI:-claude -p}"
-TAG_NAME="${IA_WORK_TAG:-ia-work}"
+TAG_NAME="${IA_WORK_TAG:-agent-work}"
 HOURS_BACK="${IA_WORK_HOURS:-24}"
 ENSURE_OBSIDIAN="${IA_WORK_ENSURE_OBSIDIAN:-false}"
 DRY_RUN="${IA_WORK_DRY_RUN:-false}"
 VERBOSE="${IA_WORK_VERBOSE:-false}"
-PROCESSED_MARKER="ia-work-processed"
 LOG_DIR="${IA_WORK_LOG_DIR:-$HOME/.local/state/ia-work}"
+HEADLESS="${IA_WORK_HEADLESS:-false}"
+TMUX_SESSION_PREFIX="${IA_WORK_TMUX_PREFIX:-ia-work}"
 
 # Colors for output
 RED='\033[0;31m'
@@ -44,46 +44,34 @@ Scans Obsidian vault for notes with AI work tags and executes instructions.
 
 Options:
     -v, --vault PATH       Vault path (default: \$HOME/vault)
-    -c, --cli COMMAND      AI CLI command (default: claude -p)
-    -t, --tag TAG          Tag to search for (default: ia-work)
+    -t, --tag TAG          Tag to search for (default: agent-work)
     -h, --hours N          Look back N hours (default: 24)
     -o, --obsidian         Ensure Obsidian is running before processing
     -d, --dry-run          Show what would be done without executing
     -V, --verbose          Enable verbose output
+    --headless             Run Claude headlessly (no tmux, just log output)
     --help                 Show this help message
 
 Environment Variables:
     IA_WORK_VAULT_PATH     Same as --vault
-    IA_WORK_AI_CLI         Same as --cli
     IA_WORK_TAG            Same as --tag
     IA_WORK_HOURS          Same as --hours
     IA_WORK_ENSURE_OBSIDIAN Same as --obsidian
     IA_WORK_DRY_RUN        Same as --dry-run
     IA_WORK_VERBOSE        Same as --verbose
     IA_WORK_LOG_DIR        Directory for logs (default: ~/.local/state/ia-work)
+    IA_WORK_HEADLESS       Same as --headless
+    IA_WORK_TMUX_PREFIX    Tmux session prefix (default: ia-work)
 
 Note Format:
-    Notes should have YAML frontmatter with the tag and an instruction section:
-
-    ---
-    tags:
-      - ia-work
-    ---
-
-    # Note Title
-
-    ## AI Instructions
-    Your instructions here...
-    They can span multiple lines.
-    ## End AI Instructions
-
-    Or use inline tags: [[ia-work]]
-    With HTML comments: <!-- AI: instructions here -->
+    Notes should have the tag (e.g., #agent-work) anywhere in the file.
+    The entire note content is passed to the AI.
+    After processing, #agent-work-done tag is added to mark completion.
 
 Examples:
     ia-work --verbose --dry-run
     ia-work --vault ~/notes --tag ework --hours 12
-    IA_WORK_AI_CLI="opencode -p" ia-work
+    ia-work --headless  # Run without tmux
 EOF
 }
 
@@ -92,10 +80,6 @@ while [[ $# -gt 0 ]]; do
     case "$1" in
         -v|--vault)
             VAULT_PATH="$2"
-            shift 2
-            ;;
-        -c|--cli)
-            AI_CLI="$2"
             shift 2
             ;;
         -t|--tag)
@@ -116,6 +100,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         -V|--verbose)
             VERBOSE="true"
+            shift
+            ;;
+        --headless)
+            HEADLESS="true"
             shift
             ;;
         --help)
@@ -168,6 +156,34 @@ ensure_obsidian_running() {
     fi
 }
 
+# Detect tag format used in note and return the done tag format
+get_done_tag() {
+    local file="$1"
+    local content
+    content=$(cat "$file")
+
+    # Check for wikilink format [[tag]]
+    if echo "$content" | grep -qE "\[\[${TAG_NAME}\]\]"; then
+        echo "[[${TAG_NAME}-done]]"
+        return 0
+    fi
+
+    # Check for hashtag format #tag
+    if echo "$content" | grep -qE "#${TAG_NAME}(\s|$)"; then
+        echo "#${TAG_NAME}-done"
+        return 0
+    fi
+
+    # Check YAML frontmatter tags (use hashtag format for done)
+    if echo "$content" | head -50 | grep -qE "^\s*-\s*${TAG_NAME}\s*$"; then
+        echo "#${TAG_NAME}-done"
+        return 0
+    fi
+
+    # Default to hashtag format
+    echo "#${TAG_NAME}-done"
+}
+
 # Check if note has the target tag (YAML frontmatter or inline)
 has_tag() {
     local file="$1"
@@ -199,115 +215,138 @@ has_tag() {
     return 1
 }
 
-# Check if note has already been processed
+# Check if note has already been processed (has done tag)
 is_processed() {
     local file="$1"
     local content
     content=$(cat "$file")
+    local done_tag="${TAG_NAME}-done"
 
-    # Check for processed marker in frontmatter or content
-    if echo "$content" | grep -qE "^\s*-\s*${PROCESSED_MARKER}\s*$"; then
+    # Check for done tag in various formats
+    if echo "$content" | grep -qE "\[\[${done_tag}\]\]"; then
         return 0
     fi
-    if echo "$content" | grep -qE "\[\[${PROCESSED_MARKER}\]\]"; then
+    if echo "$content" | grep -qE "#${done_tag}(\s|$)"; then
         return 0
     fi
-    if echo "$content" | grep -qE "#${PROCESSED_MARKER}(\s|$)"; then
-        return 0
-    fi
-    # Check for HTML comment marker
-    if echo "$content" | grep -qE "<!--\s*${PROCESSED_MARKER}"; then
+    if echo "$content" | head -50 | grep -qE "^\s*-\s*${done_tag}\s*$"; then
         return 0
     fi
 
     return 1
 }
 
-# Extract AI instructions from note
-extract_instructions() {
-    local file="$1"
-    local content
-    content=$(cat "$file")
-    local instructions=""
-
-    # Method 1: ## AI Instructions ... ## End AI Instructions
-    if echo "$content" | grep -qE "^##\s*AI Instructions"; then
-        instructions=$(echo "$content" | sed -n '/^## AI Instructions/,/^## End AI Instructions/p' | \
-                      sed '1d;$d' | sed '/^$/d')
-        if [[ -n "$instructions" ]]; then
-            echo "$instructions"
-            return 0
-        fi
-    fi
-
-    # Method 2: <!-- AI: instructions --> (single or multi-line)
-    instructions=$(echo "$content" | grep -oP '<!--\s*AI:\s*\K.*?(?=\s*-->)' | head -1)
-    if [[ -n "$instructions" ]]; then
-        echo "$instructions"
-        return 0
-    fi
-
-    # Method 3: Multi-line HTML comment <!-- AI: \n instructions \n -->
-    instructions=$(echo "$content" | perl -0777 -ne 'print $1 if /<!--\s*AI:\s*(.*?)\s*-->/s' | head -50)
-    if [[ -n "$instructions" ]]; then
-        echo "$instructions"
-        return 0
-    fi
-
-    # Method 4: Code block with ai-instructions language
-    instructions=$(echo "$content" | sed -n '/^```ai-instructions/,/^```$/p' | sed '1d;$d')
-    if [[ -n "$instructions" ]]; then
-        echo "$instructions"
-        return 0
-    fi
-
-    return 1
-}
-
-# Mark note as processed
+# Mark note as processed by adding done tag
 mark_processed() {
     local file="$1"
-    local timestamp
-    timestamp=$(date '+%Y-%m-%dT%H:%M:%S')
+    local done_tag
+    done_tag=$(get_done_tag "$file")
 
     if [[ "$DRY_RUN" == "true" ]]; then
-        log INFO "[DRY RUN] Would mark $file as processed"
+        log INFO "[DRY RUN] Would add $done_tag to $file"
         return 0
     fi
 
-    # Add processed marker as HTML comment at end of file
+    local content
+    content=$(cat "$file")
+
+    # Insert done tag right after the original tag
+    # For hashtag format: #agent-work -> #agent-work #agent-work-done
+    if echo "$content" | grep -qE "#${TAG_NAME}(\s|$)"; then
+        sed -i "s/#${TAG_NAME}\(\s\|$\)/#${TAG_NAME} ${done_tag}\1/" "$file"
+        log INFO "Added $done_tag to $file"
+        return 0
+    fi
+
+    # For wikilink format: [[agent-work]] -> [[agent-work]] [[agent-work-done]]
+    if echo "$content" | grep -qE "\[\[${TAG_NAME}\]\]"; then
+        sed -i "s/\[\[${TAG_NAME}\]\]/[[${TAG_NAME}]] ${done_tag}/" "$file"
+        log INFO "Added $done_tag to $file"
+        return 0
+    fi
+
+    # For YAML frontmatter, add hashtag at end of first line after frontmatter
+    # This is a fallback - just append to end of file
     echo "" >> "$file"
-    echo "<!-- ${PROCESSED_MARKER}: ${timestamp} -->" >> "$file"
-    log INFO "Marked $file as processed"
+    echo "$done_tag" >> "$file"
+    log INFO "Added $done_tag to $file (appended)"
+}
+
+# Build autonomous mode instructions
+build_prompt() {
+    local note_content="$1"
+    local note_file="$2"
+    local note_name
+    note_name=$(basename "$note_file" .md)
+
+    cat <<EOF
+You are running autonomously without user interaction. Important:
+- You CANNOT ask questions - no one will answer
+- You have FULL permissions to implement changes
+- Make decisions on your own based on the note content
+- Working directory: $(pwd)
+- Note source: $note_file
+
+The following is the complete note content. Understand what needs to be done and execute it:
+
+---
+$note_content
+---
+EOF
 }
 
 # Execute AI instruction
 execute_instruction() {
-    local instruction="$1"
-    local note_file="$2"
+    local note_file="$1"
     local note_name
     note_name=$(basename "$note_file" .md)
     local log_file="${LOG_DIR}/${note_name}-$(date '+%Y%m%d-%H%M%S').log"
+    local session_name="${TMUX_SESSION_PREFIX}-${note_name}-$(date '+%H%M%S')"
+
+    # Read note content
+    local note_content
+    note_content=$(cat "$note_file")
+
+    # Build the prompt
+    local prompt
+    prompt=$(build_prompt "$note_content" "$note_file")
 
     if [[ "$DRY_RUN" == "true" ]]; then
-        log OK "[DRY RUN] Would execute: $AI_CLI \"$instruction\""
+        log OK "[DRY RUN] Would execute claude with note: $note_file"
+        log INFO "Prompt preview (first 500 chars):"
+        echo "$prompt" | head -c 500
+        echo "..."
         return 0
     fi
 
     log OK "Executing AI instruction from: $note_file"
-    log INFO "Instruction: $instruction"
     log INFO "Log file: $log_file"
 
-    # Execute the AI CLI command
-    # shellcheck disable=SC2086
-    if $AI_CLI "$instruction" > "$log_file" 2>&1; then
-        log OK "Successfully executed instruction for: $note_name"
-        return 0
+    if [[ "$HEADLESS" == "true" ]]; then
+        # Headless mode: run claude directly and log output
+        log INFO "Running in headless mode"
+        if claude -p "$prompt" > "$log_file" 2>&1; then
+            log OK "Successfully executed instruction for: $note_name"
+            return 0
+        else
+            local exit_code=$?
+            log ERROR "Failed to execute instruction for: $note_name (exit code: $exit_code)"
+            log ERROR "See log: $log_file"
+            return 1
+        fi
     else
-        local exit_code=$?
-        log ERROR "Failed to execute instruction for: $note_name (exit code: $exit_code)"
-        log ERROR "See log: $log_file"
-        return 1
+        # Interactive mode: run in tmux session user can attach to
+        log INFO "Running in tmux session: $session_name"
+        log OK "Attach with: tmux attach -t $session_name"
+
+        # Create tmux session and run claude
+        # Use script to capture output while still allowing interaction
+        tmux new-session -d -s "$session_name" \
+            "claude -p $(printf '%q' "$prompt") 2>&1 | tee '$log_file'; echo ''; echo 'Claude finished. Press any key to close.'; read -n 1"
+
+        log OK "Tmux session started: $session_name"
+        log INFO "Session will remain open after completion for review"
+        return 0
     fi
 }
 
@@ -319,13 +358,13 @@ process_notes() {
     local notes_failed=0
 
     # Calculate cutoff time
-    local cutoff_seconds=$((HOURS_BACK * 3600))
     local cutoff_time
     cutoff_time=$(date -d "-${HOURS_BACK} hours" '+%Y-%m-%d %H:%M:%S' 2>/dev/null || \
                   date -v-${HOURS_BACK}H '+%Y-%m-%d %H:%M:%S' 2>/dev/null)
 
     log INFO "Scanning vault: $VAULT_PATH"
     log INFO "Looking for tag: $TAG_NAME"
+    log INFO "Skipping tag: ${TAG_NAME}-done"
     log INFO "Modified since: $cutoff_time"
 
     # Find markdown files modified within the time window
@@ -342,27 +381,15 @@ process_notes() {
 
         # Check if already processed
         if is_processed "$file"; then
-            log INFO "  Already processed, skipping"
+            log INFO "  Already processed (has ${TAG_NAME}-done), skipping"
             ((notes_skipped++)) || true
-            continue
-        fi
-
-        # Extract instructions
-        local instructions
-        if ! instructions=$(extract_instructions "$file"); then
-            log WARN "  Has tag but no AI instructions found in: $file"
-            continue
-        fi
-
-        if [[ -z "$instructions" ]]; then
-            log WARN "  Empty instructions in: $file"
             continue
         fi
 
         log OK "Found work item: $(basename "$file")"
 
         # Execute instruction
-        if execute_instruction "$instructions" "$file"; then
+        if execute_instruction "$file"; then
             mark_processed "$file"
             ((notes_processed++)) || true
         else
