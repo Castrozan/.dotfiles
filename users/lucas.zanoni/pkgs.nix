@@ -58,7 +58,6 @@
       wl-clipboard
       xclip
       yamllint
-      yazi
       zip
       zoxide
       zsh
