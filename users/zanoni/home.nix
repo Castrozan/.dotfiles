@@ -45,15 +45,8 @@
   services.ia-work = {
     enable = true;
     vaultPath = "/home/zanoni/vault";
-    aiCli = "claude -p";
-    tagName = "ia-work";
-    hoursBack = 24;
-    ensureObsidian = false;
-    verbose = false;
-    timer = {
-      enable = true;
-      interval = "30min";
-      persistent = true;
-    };
+    tagName = "agent-work";
+    headless = true; # Run headlessly for systemd timer
+    timer.enable = true;
   };
 }
