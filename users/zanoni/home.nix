@@ -20,6 +20,7 @@
     ../../home/modules/fuzzel.nix
     ../../home/modules/gnome
     ../../home/modules/hyprland
+    ../../home/modules/ia-work.nix
     ../../home/modules/ksnip.nix
     ../../home/modules/install-nothing.nix
     ../../home/modules/kitty.nix
@@ -39,4 +40,20 @@
     ../../home/modules/wezterm.nix # https://tmuxai.dev/terminal-compatibility/
     ../../home/modules/whisper-input
   ];
+
+  # ia-work: Process AI instructions from Obsidian notes
+  services.ia-work = {
+    enable = true;
+    vaultPath = "/home/zanoni/vault";
+    aiCli = "claude -p";
+    tagName = "ia-work";
+    hoursBack = 24;
+    ensureObsidian = false;
+    verbose = false;
+    timer = {
+      enable = true;
+      interval = "30min";
+      persistent = true;
+    };
+  };
 }
