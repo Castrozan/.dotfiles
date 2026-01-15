@@ -1,4 +1,7 @@
 function __load_bash_env
+  # Export BASH_ENV for non-interactive bash (Claude Code)
+  set -gx BASH_ENV "$HOME/.dotfiles/shell/bash_aliases.sh"
+
   # Source the most appropriate bashrc if available
   set -l bashrc_path
   if test -f ~/.bashrc

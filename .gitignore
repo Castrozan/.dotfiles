@@ -1,4 +1,7 @@
 
+# git worktrees
+.worktrees/
+
 # symlinks for agent rules management
 CLAUDE.md
 home/modules/cursor/cursor-global-user-rules.md
