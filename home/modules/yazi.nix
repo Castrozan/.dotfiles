@@ -19,6 +19,17 @@
       };
     };
 
+    # Keybindings
+    keymap = {
+      mgr.prepend_keymap = [
+        {
+          on = "?";
+          run = "help";
+          desc = "Open help";
+        }
+      ];
+    };
+
     # Catppuccin Mocha theme
     theme = {
       mgr = {
