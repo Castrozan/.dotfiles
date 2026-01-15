@@ -8,3 +8,9 @@ home/modules/cursor/cursor-global-user-rules.md
 .cursor/ai-interaction-guidelines.md
 .cursor/gnome-keybinding-debugging.md
 .cursor/cursor-global-user-rules.md
+
+# Private configurations (should never be committed)
+# These are kept in ~/.private-config/ outside this repo
+.private-config/
+**/betha-*
+**/private-*
