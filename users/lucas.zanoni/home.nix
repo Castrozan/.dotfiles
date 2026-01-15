@@ -39,6 +39,7 @@
     ../../home/modules/tui-notifier.nix
     ../../home/modules/vial.nix
     ../../home/modules/vscode
+    ../../home/modules/yazi.nix
     ../../home/modules/wezterm.nix # https://tmuxai.dev/terminal-compatibility/
     ../../home/modules/zed-editor.nix
   ];
