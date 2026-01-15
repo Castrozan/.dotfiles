@@ -16,7 +16,11 @@ in
     ../../nixos/modules/agenix.nix
     ../../nixos/modules/tailscale.nix
     ../../nixos/modules/man-cache.nix
+    ../../nixos/modules/lid-switch.nix
   ];
+
+  # Disable lid switch suspend for laptop used as server/with external monitor
+  custom.lidSwitch.disable = true;
 
   users.users.zanoni = {
     isNormalUser = true;
