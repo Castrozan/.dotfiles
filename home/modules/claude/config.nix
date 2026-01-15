@@ -3,6 +3,7 @@ let
   claudeGlobalSettings = {
     installMethod = "native";
     model = "opus";
+    language = "english";
     spinnerTipsEnabled = false;
     dangerouslySkipPermissions = true;
     permissions = {
@@ -42,5 +43,6 @@ in
     BASH_MAX_TIMEOUT_MS = "600000";
     CLAUDE_DANGEROUSLY_DISABLE_SANDBOX = "true";
     CLAUDE_SKIP_PERMISSIONS = "true";
+    BASH_ENV = "$HOME/.dotfiles/shell/bash_aliases.sh";
   };
 }

@@ -1,0 +1,155 @@
+#!/usr/bin/env bash
+# Nix garbage collection script for home-manager and NixOS users
+# Cleans old generations and runs garbage collection
+
+set -euo pipefail
+
+# Nix commands location (for sudo which doesn't have nix in PATH)
+NIX_BIN="/nix/var/nix/profiles/default/bin"
+
+usage() {
+    cat << EOF
+Usage: nix-gc [OPTIONS]
+
+Clean up old Nix generations and run garbage collection.
+
+Options:
+    -a, --all       Clean both user and system store (requires sudo for system)
+    -u, --user      Clean user generations and garbage only (default)
+    -s, --system    Clean system store only (requires sudo)
+    -k, --keep N    Keep N generations (default: 5)
+    -d, --dry-run   Show what would be deleted without deleting
+    -h, --help      Show this help message
+
+Examples:
+    nix-gc              # Clean user generations keeping 5, run user gc
+    nix-gc -a           # Clean user + system store
+    nix-gc -k 3         # Keep only 3 generations
+    nix-gc -d           # Dry run to see what would be deleted
+EOF
+}
+
+# Defaults
+SCOPE="user"
+KEEP_GENERATIONS=5
+DRY_RUN=false
+
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -a|--all)
+            SCOPE="all"
+            shift
+            ;;
+        -u|--user)
+            SCOPE="user"
+            shift
+            ;;
+        -s|--system)
+            SCOPE="system"
+            shift
+            ;;
+        -k|--keep)
+            KEEP_GENERATIONS="$2"
+            shift 2
+            ;;
+        -d|--dry-run)
+            DRY_RUN=true
+            shift
+            ;;
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        *)
+            echo "Unknown option: $1" >&2
+            usage
+            exit 1
+            ;;
+    esac
+done
+
+echo "=== Nix Garbage Collection ==="
+echo ""
+
+# Function to clean home-manager generations
+clean_home_manager() {
+    echo ">> Cleaning home-manager generations (keeping $KEEP_GENERATIONS)..."
+
+    if ! command -v home-manager &>/dev/null; then
+        echo "   home-manager not found, skipping generation cleanup"
+        return
+    fi
+
+    # Get list of generations
+    mapfile -t generations < <(home-manager generations | tail -n +$((KEEP_GENERATIONS + 1)) | awk '{print $5}')
+
+    if [ ${#generations[@]} -eq 0 ]; then
+        echo "   No old generations to remove"
+        return
+    fi
+
+    echo "   Found ${#generations[@]} old generation(s) to remove"
+
+    if [ "$DRY_RUN" = true ]; then
+        echo "   [DRY RUN] Would remove generations:"
+        for gen in "${generations[@]}"; do
+            echo "     - $gen"
+        done
+    else
+        for gen in "${generations[@]}"; do
+            echo "   Removing: $gen"
+            home-manager remove-generations "$gen" 2>/dev/null || true
+        done
+    fi
+    echo ""
+}
+
+# Function to clean user nix store
+clean_user_store() {
+    echo ">> Running user garbage collection..."
+
+    if [ "$DRY_RUN" = true ]; then
+        echo "   [DRY RUN] Would run: nix-collect-garbage"
+        # Show what would be collected
+        nix-store --gc --print-dead 2>/dev/null | wc -l | xargs -I {} echo "   {} dead store paths would be removed"
+    else
+        nix-collect-garbage
+    fi
+    echo ""
+}
+
+# Function to clean system nix store (requires sudo)
+clean_system_store() {
+    echo ">> Running system garbage collection (requires sudo)..."
+
+    if [ "$DRY_RUN" = true ]; then
+        echo "   [DRY RUN] Would run: sudo $NIX_BIN/nix-collect-garbage -d"
+    else
+        # Use full path since sudo doesn't have nix in PATH
+        sudo "$NIX_BIN/nix-collect-garbage" -d
+    fi
+    echo ""
+}
+
+# Execute based on scope
+case $SCOPE in
+    user)
+        clean_home_manager
+        clean_user_store
+        ;;
+    system)
+        clean_system_store
+        ;;
+    all)
+        clean_home_manager
+        clean_user_store
+        clean_system_store
+        ;;
+esac
+
+if [ "$DRY_RUN" = true ]; then
+    echo "=== Dry run complete (no changes made) ==="
+else
+    echo "=== Garbage collection complete ==="
+fi
