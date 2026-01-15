@@ -7,6 +7,7 @@
 
     ../../home/core.nix
     ../../home/scripts
+    ../../home/modules/bad-apple.nix
     ../../home/modules/bash.nix
     ../../home/modules/cbonsai.nix
     ../../home/modules/claude
