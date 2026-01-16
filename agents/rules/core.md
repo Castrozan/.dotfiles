@@ -11,6 +11,10 @@ Commands: Use timeouts. Workflow: Search codebase before coding, read relevant f
 
 Git: Commits are NOT dangerous - do them freely. During development: commit frequently to track progress and help user see what changed. Multiple small commits are better than one giant commit. At end of development: clean up with squash if needed for documentation. Follow existing commit message patterns. Check logs before commits.
 
+Git staging discipline: Always `git add <specific-file>` not `git add -A` or `git add .`. User may work with multiple agents/contexts simultaneously - avoid committing unrelated staged files. For parallel work, prefer /worktrees to isolate contexts.
+
+Instruction coherence: New instructions are not more important than existing ones. Don't add emphasis markers (CRITICAL, IMPORTANT) just because something was added later. The whole document should be cohesive - latest additions integrate, not dominate.
+
 Prompts: Understand contextually. User prompts may contain errors - interpret intent and correct obvious mistakes. Questions: User is senior engineer. When stuck or unsure, ask instead of assuming. User can help diagnose issues.
 
 Code Style: No obvious comments - code should be self-documenting. Comments only for "why", not "what". Follow existing patterns. Iteration: Don't ask permission unless ambiguous or dangerous. Implement first, explain if needed. Show code, not descriptions. Test before presenting.
