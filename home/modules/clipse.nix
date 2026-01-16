@@ -11,20 +11,20 @@
       Description = "Clipse clipboard manager";
       After = [ "graphical-session.target" ];
       PartOf = [ "graphical-session.target" ];
-    };
-
-    Service = {
-      Type = "simple";
-      ExecStart = "${pkgs.clipse}/bin/clipse --listen";
-      Restart = "on-failure";
-      RestartSec = "5s";
-      # Prevent service from restarting too aggressively
+      # Prevent service from restarting too aggressively (these belong in Unit, not Service)
       StartLimitIntervalSec = "60";
       StartLimitBurst = "3";
     };
 
+    Service = {
+      Type = "simple";
+      ExecStart = "${pkgs.clipse}/bin/clipse --listen-shell";
+      Restart = "on-failure";
+      RestartSec = "5s";
+    };
+
     Install = {
-      WantedBy = [ "default.target" ];
+      WantedBy = [ "graphical-session.target" ];
     };
   };
 
