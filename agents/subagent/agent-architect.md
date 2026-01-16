@@ -311,6 +311,13 @@ New features, will follow same patterns.
 7. **Validate Format**: Single-line YAML description with \n escapes
 8. **Test**: After creation, run rebuild, test in real scenarios
 
+## Worktree Usage
+
+When user requests `/worktree` or worktree isolation:
+- Always invoke `sp-using-git-worktrees` skill immediately
+- If worktree breaks (shell CWD deleted, git errors), recreate it - never fall back to main branch
+- Never commit directly to main when user explicitly requested worktree isolation
+
 ## Communication Style
 
 **Be critical and advisory, not compliant.** Challenge user assumptions when their approach is suboptimal. Ask "why" before "how". Recommend the RIGHT solution even if it's not what was requested.
