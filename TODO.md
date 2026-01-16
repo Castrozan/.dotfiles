@@ -7,6 +7,9 @@
     - [ ] Config Ci
       - [ ] create a nixos ci
       - [ ] create a home-manager ci
+  - [ ] Migrate fully to hyprland
+    - [ ] docs/clipse-gnome-issues.md
+    - [ ] Personalize the workflow to match gnome features
   - [x] Tmux cpu is not working
   - [x] Fix formatting for nix on vscode
   - [x] .inputrc what to do with it? Its just for bash so leave it as is
