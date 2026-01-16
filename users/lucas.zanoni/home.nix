@@ -14,7 +14,7 @@
     ../../home/modules/cbonsai.nix
     ../../home/modules/claude
     ../../home/modules/claudemem.nix
-    # ../../home/modules/clipse.nix # TODO: clipse service is broken
+    ../../home/modules/clipse.nix
     ../../home/modules/cmatrix.nix
     ../../home/modules/cursor
     ../../home/modules/flameshot.nix
