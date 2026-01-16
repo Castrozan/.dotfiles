@@ -6,6 +6,7 @@ let
     language = "english";
     spinnerTipsEnabled = false;
     dangerouslySkipPermissions = true;
+    includeCoAuthoredBy = false;
     permissions = {
       defaultMode = "bypassPermissions";
       allow = [ "*" ];
