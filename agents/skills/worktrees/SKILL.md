@@ -233,6 +233,14 @@ Ready to implement auth feature
 - Auto-detect and run project setup
 - Verify clean test baseline
 
+## Session Persistence
+
+When user requests `/worktree` or worktree isolation, maintain it throughout the session. The isolation contract persists until session ends.
+
+**If worktree breaks** (shell CWD deleted, git-crypt issues, errors): Recreate it. Never silently fall back to main branch.
+
+**Never commit to main** when user explicitly requested worktree isolation. The request implies intent to keep main clean.
+
 ## Integration
 
 **Called by:**
