@@ -235,50 +235,95 @@ fi
 # Main variables
 CURRENT_WPM=$WPM
 WORD_INDEX=0
+RESTART=false
 
-# Main reading loop
-while [[ $WORD_INDEX -lt $TOTAL_WORDS ]]; do
-    WORD="${WORDS[$WORD_INDEX]}"
-    CLEAN_WORD=$(clean_word "$WORD")
+# Outer loop allows restart from end screen
+while true; do
+    WORD_INDEX=0
 
-    # Skip empty words
-    if [[ -z "$CLEAN_WORD" ]]; then
+    # Main reading loop
+    while [[ $WORD_INDEX -lt $TOTAL_WORDS ]]; do
+        WORD="${WORDS[$WORD_INDEX]}"
+        CLEAN_WORD=$(clean_word "$WORD")
+
+        # Skip empty words
+        if [[ -z "$CLEAN_WORD" ]]; then
+            ((WORD_INDEX++)) || true
+            continue
+        fi
+
+        # Display the word
+        clear_line
+        format_word "$CLEAN_WORD"
+
+        # Calculate delay intervals
+        INTERVALS=$(calculate_intervals "$CURRENT_WPM")
+
+        # Extra delay for punctuation
+        if [[ "$PAUSE_ON_PUNCTUATION" == "true" ]] && has_punctuation "$CLEAN_WORD"; then
+            INTERVALS=$((INTERVALS * 2))
+        fi
+
+        # Wait while checking for keypresses (0.1s per interval)
+        for ((i=0; i<INTERVALS; i++)); do
+            key=""
+            read -r -n 1 -t 0.1 key || true
+
+            if [[ -n "$key" ]]; then
+                case "$key" in
+                    ' '|p|P)
+                        clear_line
+                        printf "  [PAUSED - ${CURRENT_WPM} WPM - Word %d/%d - Press SPACE to continue]" "$((WORD_INDEX + 1))" "$TOTAL_WORDS"
+                        while true; do
+                            key=""
+                            read -r -n 1 key || true
+                            case "$key" in
+                                ' '|p|P) break ;;
+                                q|Q) cleanup ;;
+                            esac
+                        done
+                        clear_line
+                        format_word "$CLEAN_WORD"
+                        ;;
+                    +|=)
+                        CURRENT_WPM=$((CURRENT_WPM + 50))
+                        [[ $CURRENT_WPM -gt 2000 ]] && CURRENT_WPM=2000
+                        ;;
+                    -|_)
+                        CURRENT_WPM=$((CURRENT_WPM - 50))
+                        [[ $CURRENT_WPM -lt 50 ]] && CURRENT_WPM=50
+                        ;;
+                    r|R)
+                        WORD_INDEX=0
+                        continue 2
+                        ;;
+                    q|Q|$'\e')
+                        cleanup
+                        ;;
+                esac
+            fi
+        done
+
         ((WORD_INDEX++)) || true
-        continue
-    fi
+    done
 
-    # Display the word
+    # Finished - show end screen
     clear_line
-    format_word "$CLEAN_WORD"
+    echo ""
+    echo "Done! Read ${TOTAL_WORDS} words at ~${CURRENT_WPM} WPM"
 
-    # Calculate delay intervals
-    INTERVALS=$(calculate_intervals "$CURRENT_WPM")
-
-    # Extra delay for punctuation
-    if [[ "$PAUSE_ON_PUNCTUATION" == "true" ]] && has_punctuation "$CLEAN_WORD"; then
-        INTERVALS=$((INTERVALS * 2))
-    fi
-
-    # Wait while checking for keypresses (0.1s per interval)
-    for ((i=0; i<INTERVALS; i++)); do
-        key=""
-        read -r -n 1 -t 0.1 key || true
-
-        if [[ -n "$key" ]]; then
+    if [[ "$WAIT_AT_END" == "true" ]]; then
+        echo ""
+        printf "[r] restart | [+/-] speed | [ENTER/q] close"
+        while true; do
+            key=""
+            read -r -n 1 key || true
             case "$key" in
-                ' '|p|P)
-                    clear_line
-                    printf "  [PAUSED - ${CURRENT_WPM} WPM - Word %d/%d - Press SPACE to continue]" "$((WORD_INDEX + 1))" "$TOTAL_WORDS"
-                    while true; do
-                        key=""
-                        read -r -n 1 key || true
-                        case "$key" in
-                            ' '|p|P) break ;;
-                            q|Q) cleanup ;;
-                        esac
-                    done
-                    clear_line
-                    format_word "$CLEAN_WORD"
+                "") break 2 ;;  # Enter - exit completely
+                r|R)
+                    # Clear done message and restart
+                    printf '\033[4A\033[J'  # Move up 4 lines and clear to end
+                    break  # Break to outer loop which restarts reading
                     ;;
                 +|=)
                     CURRENT_WPM=$((CURRENT_WPM + 50))
@@ -288,34 +333,12 @@ while [[ $WORD_INDEX -lt $TOTAL_WORDS ]]; do
                     CURRENT_WPM=$((CURRENT_WPM - 50))
                     [[ $CURRENT_WPM -lt 50 ]] && CURRENT_WPM=50
                     ;;
-                r|R)
-                    WORD_INDEX=0
-                    continue 2
-                    ;;
-                q|Q|$'\e')
-                    cleanup
-                    ;;
+                q|Q) break 2 ;;  # Quit
             esac
-        fi
-    done
-
-    ((WORD_INDEX++)) || true
+        done
+    else
+        break
+    fi
 done
-
-# Finished
-clear_line
-echo ""
-echo "Done! Read ${TOTAL_WORDS} words at ~${CURRENT_WPM} WPM"
-
-# Wait for Enter at end if --wait-end flag is set
-if [[ "$WAIT_AT_END" == "true" ]]; then
-    echo ""
-    printf "Press ENTER to close..."
-    while true; do
-        key=""
-        read -r -n 1 key || true
-        [[ -z "$key" ]] && break
-    done
-fi
 
 show_cursor
