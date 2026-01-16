@@ -1,0 +1,320 @@
+#!/usr/bin/env bash
+# speed-read: RSVP (Rapid Serial Visual Presentation) speed reader
+# Displays text one word at a time with ORP (Optimal Recognition Point) highlighting
+# Based on Spritz-like functionality for terminal
+
+set -euo pipefail
+
+# Default settings
+WPM="${SPEED_READ_WPM:-400}"
+FOCUS_COLOR="${SPEED_READ_FOCUS_COLOR:-1}"  # Red (ANSI 256 color)
+SHOW_POINTER="${SPEED_READ_POINTER:-true}"
+PAUSE_ON_PUNCTUATION="${SPEED_READ_PAUSE_PUNCT:-true}"
+CENTER_WIDTH="${SPEED_READ_WIDTH:-40}"
+
+# Colors
+BOLD='\033[1m'
+DIM='\033[2m'
+RESET='\033[0m'
+
+usage() {
+    cat <<EOF
+Usage: speed-read [OPTIONS] [FILE]
+       echo "text" | speed-read [OPTIONS]
+
+RSVP speed reader with ORP (Optimal Recognition Point) highlighting.
+Reads text one word at a time for faster reading (up to 900+ WPM).
+
+Options:
+    -w, --wpm N         Words per minute (default: 400, range: 100-1500)
+    -c, --color N       ANSI 256 focus color (default: 1/red)
+    -p, --no-pointer    Hide the focus pointer
+    -P, --no-pause      Don't pause on punctuation
+    --help              Show this help message
+
+Keyboard Controls:
+    SPACE / p           Pause/resume
+    q / ESC             Quit
+    + / =               Increase speed by 50 WPM
+    - / _               Decrease speed by 50 WPM
+    r                   Restart from beginning
+
+Environment Variables:
+    SPEED_READ_WPM           Same as --wpm
+    SPEED_READ_FOCUS_COLOR   Same as --color
+    SPEED_READ_POINTER       Show pointer (true/false)
+    SPEED_READ_PAUSE_PUNCT   Pause on punctuation (true/false)
+
+Examples:
+    speed-read document.txt
+    echo "This is a test sentence for speed reading." | speed-read
+    cat article.md | speed-read --wpm 600
+    speed-read --wpm 300 --color 2  # Green focus letter
+
+EOF
+}
+
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -w|--wpm)
+            WPM="$2"
+            shift 2
+            ;;
+        -c|--color)
+            FOCUS_COLOR="$2"
+            shift 2
+            ;;
+        -p|--no-pointer)
+            SHOW_POINTER="false"
+            shift
+            ;;
+        -P|--no-pause)
+            PAUSE_ON_PUNCTUATION="false"
+            shift
+            ;;
+        --help)
+            usage
+            exit 0
+            ;;
+        -*)
+            echo "Unknown option: $1" >&2
+            usage
+            exit 1
+            ;;
+        *)
+            INPUT_FILE="$1"
+            shift
+            ;;
+    esac
+done
+
+# Validate WPM
+if [[ ! "$WPM" =~ ^[0-9]+$ ]] || [[ "$WPM" -lt 50 ]] || [[ "$WPM" -gt 2000 ]]; then
+    echo "Error: WPM must be between 50 and 2000" >&2
+    exit 1
+fi
+
+# Calculate delay in seconds (with decimals)
+calculate_delay() {
+    local wpm="$1"
+    # 60 seconds / WPM = seconds per word
+    # Using bc for floating point
+    echo "scale=4; 60 / $wpm" | bc
+}
+
+# Get ORP (Optimal Recognition Point) position for a word
+# Based on word length, the ORP is typically around 1/3 from the left
+get_orp_position() {
+    local word="$1"
+    local len=${#word}
+
+    case $len in
+        1) echo 0 ;;
+        2|3) echo 1 ;;
+        4|5) echo 1 ;;
+        6|7) echo 2 ;;
+        8|9) echo 2 ;;
+        10|11) echo 3 ;;
+        12|13) echo 3 ;;
+        *) echo $(( (len - 1) / 3 )) ;;
+    esac
+}
+
+# Format word with ORP highlighting
+format_word() {
+    local word="$1"
+    local orp_pos
+    orp_pos=$(get_orp_position "$word")
+    local len=${#word}
+
+    # Calculate padding for center alignment based on ORP
+    local pad_left=$(( (CENTER_WIDTH / 2) - orp_pos ))
+    [[ $pad_left -lt 0 ]] && pad_left=0
+
+    # Build the formatted word
+    local before="${word:0:$orp_pos}"
+    local focus="${word:$orp_pos:1}"
+    local after="${word:$((orp_pos + 1))}"
+
+    # ANSI color for focus letter
+    local focus_colored="\033[38;5;${FOCUS_COLOR}m${BOLD}${focus}${RESET}"
+
+    # Print with padding
+    printf "%${pad_left}s" ""
+    printf "${DIM}%s${RESET}${focus_colored}${DIM}%s${RESET}" "$before" "$after"
+}
+
+# Display pointer line
+display_pointer() {
+    if [[ "$SHOW_POINTER" == "true" ]]; then
+        local pad=$(( CENTER_WIDTH / 2 ))
+        printf "%${pad}s\n" "|"
+    fi
+}
+
+# Check if word ends with punctuation (for pause)
+has_punctuation() {
+    local word="$1"
+    [[ "$word" =~ [.!?,;:—–-]$ ]]
+}
+
+# Clean word of markdown/special characters but keep punctuation for pause detection
+clean_word() {
+    local word="$1"
+    # Remove markdown formatting but keep core word
+    echo "$word" | sed -E 's/^[\*_#\[\]`]+//; s/[\*_#\[\]`]+$//'
+}
+
+# Hide cursor
+hide_cursor() {
+    tput civis 2>/dev/null || printf '\033[?25l'
+}
+
+# Show cursor
+show_cursor() {
+    tput cnorm 2>/dev/null || printf '\033[?25h'
+}
+
+# Clear line
+clear_line() {
+    printf '\r\033[K'
+}
+
+# Handle exit
+cleanup() {
+    show_cursor
+    clear_line
+    echo ""
+    exit 0
+}
+
+trap cleanup EXIT INT TERM
+
+# Read input
+if [[ -n "${INPUT_FILE:-}" ]]; then
+    if [[ ! -f "$INPUT_FILE" ]]; then
+        echo "Error: File not found: $INPUT_FILE" >&2
+        exit 1
+    fi
+    TEXT=$(cat "$INPUT_FILE")
+else
+    # Read from stdin
+    if [[ -t 0 ]]; then
+        echo "Error: No input provided. Pipe text or provide a file." >&2
+        usage
+        exit 1
+    fi
+    TEXT=$(cat)
+fi
+
+# Convert text to array of words
+# shellcheck disable=SC2206
+WORDS=($TEXT)
+TOTAL_WORDS=${#WORDS[@]}
+
+if [[ $TOTAL_WORDS -eq 0 ]]; then
+    echo "Error: No words to display" >&2
+    exit 1
+fi
+
+# Display info header
+echo ""
+echo "Speed Reader - ${WPM} WPM | ${TOTAL_WORDS} words | ~$(( TOTAL_WORDS * 60 / WPM ))s"
+echo "Controls: [SPACE] pause | [+/-] speed | [q] quit | [r] restart"
+echo ""
+
+# Show pointer if enabled
+display_pointer
+
+# Hide cursor for cleaner display
+hide_cursor
+
+# Main display loop
+PAUSED=false
+CURRENT_WPM=$WPM
+WORD_INDEX=0
+
+# Set up non-blocking input
+if [[ -t 0 ]]; then
+    # Save terminal settings
+    SAVED_STTY=$(stty -g)
+    stty -echo -icanon min 0 time 0
+fi
+
+while [[ $WORD_INDEX -lt $TOTAL_WORDS ]]; do
+    # Check for keypress (non-blocking)
+    if read -r -n 1 -t 0.01 key 2>/dev/null; then
+        case "$key" in
+            ' '|p|P)
+                PAUSED=!$PAUSED
+                if $PAUSED; then
+                    clear_line
+                    printf "  [PAUSED - ${CURRENT_WPM} WPM - Word %d/%d - Press SPACE to continue]" "$((WORD_INDEX + 1))" "$TOTAL_WORDS"
+                    # Wait for unpause
+                    while true; do
+                        if read -r -n 1 -t 0.1 key2 2>/dev/null; then
+                            case "$key2" in
+                                ' '|p|P)
+                                    PAUSED=false
+                                    break
+                                    ;;
+                                q|Q|$'\e')
+                                    cleanup
+                                    ;;
+                            esac
+                        fi
+                    done
+                fi
+                ;;
+            +|=)
+                CURRENT_WPM=$((CURRENT_WPM + 50))
+                [[ $CURRENT_WPM -gt 2000 ]] && CURRENT_WPM=2000
+                ;;
+            -|_)
+                CURRENT_WPM=$((CURRENT_WPM - 50))
+                [[ $CURRENT_WPM -lt 50 ]] && CURRENT_WPM=50
+                ;;
+            r|R)
+                WORD_INDEX=0
+                continue
+                ;;
+            q|Q|$'\e')
+                cleanup
+                ;;
+        esac
+    fi
+
+    # Get current word
+    WORD="${WORDS[$WORD_INDEX]}"
+    CLEAN_WORD=$(clean_word "$WORD")
+
+    # Skip empty words
+    if [[ -z "$CLEAN_WORD" ]]; then
+        ((WORD_INDEX++))
+        continue
+    fi
+
+    # Display the word
+    clear_line
+    format_word "$CLEAN_WORD"
+
+    # Calculate delay
+    DELAY=$(calculate_delay "$CURRENT_WPM")
+
+    # Add extra delay for punctuation
+    if [[ "$PAUSE_ON_PUNCTUATION" == "true" ]] && has_punctuation "$CLEAN_WORD"; then
+        DELAY=$(echo "scale=4; $DELAY * 2.5" | bc)
+    fi
+
+    # Wait (using read with timeout for responsiveness)
+    sleep "$DELAY"
+
+    ((WORD_INDEX++))
+done
+
+# Finished
+clear_line
+echo ""
+echo "Done! Read ${TOTAL_WORDS} words at ~${CURRENT_WPM} WPM"
+show_cursor
