@@ -1,34 +1,77 @@
 { pkgs, ... }:
 let
-  # Pre-rendered ASCII frames from BadAppleBash (only ~2MB compressed)
-  # Source: https://github.com/FelipeFMA/BadAppleBash
-  badAppleFrames = pkgs.fetchFromGitHub {
-    owner = "FelipeFMA";
-    repo = "BadAppleBash";
-    rev = "c400b0a";
-    sha256 = "09psdnr6i22cv46zb9mwqqf7bqs4xh88c670fpq7ppmb8a564yv1";
-  };
+  badAppleUrl = "https://www.youtube.com/watch?v=FtutLA63Cp8";
 
-  # Lightweight player: just cat frames with sleep (~2-3% CPU vs 200% with tplay)
+  # Dependencies for frame generation
+  deps = with pkgs; [ yt-dlp ffmpeg chafa coreutils ];
+
   bad-apple-cmd = pkgs.writeShellScriptBin "bad-apple" ''
-    FRAMES_DIR="${badAppleFrames}/frames-ascii"
-    AUDIO_FILE="${badAppleFrames}/bad_apple.mp3"
+    export PATH="${pkgs.lib.makeBinPath deps}:$PATH"
+
+    CACHE_BASE="''${XDG_CACHE_HOME:-$HOME/.cache}/bad-apple"
+    VIDEO_FILE="$CACHE_BASE/video.mp4"
+    AUDIO_FILE="$CACHE_BASE/audio.mp3"
+
+    # Get terminal size for cache key
+    COLS=$(tput cols)
+    LINES=$(tput lines)
+    CACHE_DIR="$CACHE_BASE/frames-''${COLS}x''${LINES}"
+
+    download_video() {
+      echo "Downloading Bad Apple video..."
+      mkdir -p "$CACHE_BASE"
+      yt-dlp -f "bestvideo[height<=480]" -o "$VIDEO_FILE" "${badAppleUrl}"
+      yt-dlp -f "bestaudio" -x --audio-format mp3 -o "$AUDIO_FILE" "${badAppleUrl}"
+    }
+
+    generate_frames() {
+      echo "Generating ASCII frames for ''${COLS}x''${LINES}..."
+      mkdir -p "$CACHE_DIR"
+
+      # Extract frames at 30fps
+      TEMP_DIR=$(mktemp -d)
+      ffmpeg -i "$VIDEO_FILE" -vf "fps=30" "$TEMP_DIR/frame_%04d.png" -hide_banner -loglevel error
+
+      # Convert each frame to ASCII using chafa
+      total=$(ls "$TEMP_DIR"/frame_*.png | wc -l)
+      count=0
+      for img in "$TEMP_DIR"/frame_*.png; do
+        count=$((count + 1))
+        base=$(basename "$img" .png)
+        # chafa with exact terminal size, using block characters for quality
+        chafa -s "''${COLS}x''${LINES}" --symbols block "$img" > "$CACHE_DIR/$base.txt"
+        printf "\rConverting: %d/%d" "$count" "$total"
+      done
+      echo ""
+
+      rm -rf "$TEMP_DIR"
+      echo "Done! Frames cached at $CACHE_DIR"
+    }
 
     play_audio() {
-      if command -v mpv &>/dev/null; then
+      if [ -f "$AUDIO_FILE" ] && command -v mpv &>/dev/null; then
         mpv --no-video "$AUDIO_FILE" &>/dev/null &
         MPV_PID=$!
         trap "kill $MPV_PID 2>/dev/null" EXIT
       fi
     }
 
-    play_audio
+    # Check if we need to download/generate
+    if [ ! -f "$VIDEO_FILE" ]; then
+      download_video
+    fi
 
+    if [ ! -d "$CACHE_DIR" ] || [ -z "$(ls -A "$CACHE_DIR" 2>/dev/null)" ]; then
+      generate_frames
+    fi
+
+    # Play cached frames (~2% CPU)
+    play_audio
     while true; do
-      for f in "$FRAMES_DIR"/out*.txt; do
-        printf '\033[H'  # Move cursor to top-left (faster than clear)
+      for f in "$CACHE_DIR"/frame_*.txt; do
+        printf '\033[H'
         cat "$f"
-        sleep 0.033  # ~30fps
+        sleep 0.033
       done
     done
   '';
