@@ -51,5 +51,5 @@ let
   );
 in
 {
-  home.file = localSkillSymlinks // superpowersSkillSymlinks;
+  home.file = superpowersSkillSymlinks // localSkillSymlinks;
 }
