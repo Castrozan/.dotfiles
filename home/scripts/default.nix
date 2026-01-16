@@ -3,6 +3,7 @@
     ./agenix-edit.nix
     ./agenix-edit-phone.nix
     ./daily-note.nix
+    ./git-crypt-setup.nix
     ./ksnip-annotate.nix
     ./greatshot-capture.nix
     ./nix-gc.nix
@@ -10,6 +11,7 @@
     ./pdf-edit.nix
     ./rebuild.nix
     ./set-random-bg-kitty.nix
+    ./speed-read.nix
     ./tar-unzip2dir.nix
     ./tmux-lazygit-toggle.nix
     ./tmux-resurrect.nix
