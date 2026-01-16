@@ -10,13 +10,16 @@
 
     ../../home/core.nix
     ../../home/scripts
+    ../../home/modules/bad-apple.nix
     ../../home/modules/bananas.nix
     ../../home/modules/cbonsai.nix
+    ../../home/modules/ccost.nix
     ../../home/modules/claude
     ../../home/modules/claudemem.nix
-    # ../../home/modules/clipse.nix # TODO: clipse service is broken
+    #../../home/modules/clipse.nix TODO: clipse service does no work with gnome, migrate docs/clipse-gnome-issues.md
     ../../home/modules/cmatrix.nix
     ../../home/modules/cursor
+    ../../home/modules/devenv.nix
     ../../home/modules/flameshot.nix
     ../../home/modules/fish.nix
     ../../home/modules/fonts.nix
@@ -26,6 +29,7 @@
     ../../home/modules/k9s.nix
     ../../home/modules/ksnip.nix
     ../../home/modules/install-nothing.nix
+    ../../home/modules/ia-work.nix
     ../../home/modules/kitty.nix
     ../../home/modules/lazygit.nix
     ../../home/modules/neovim.nix

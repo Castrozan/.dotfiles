@@ -6,6 +6,7 @@ let
     language = "english";
     spinnerTipsEnabled = false;
     dangerouslySkipPermissions = true;
+    includeCoAuthoredBy = false;
     permissions = {
       defaultMode = "bypassPermissions";
       allow = [ "*" ];
@@ -44,5 +45,19 @@ in
     CLAUDE_DANGEROUSLY_DISABLE_SANDBOX = "true";
     CLAUDE_SKIP_PERMISSIONS = "true";
     BASH_ENV = "$HOME/.dotfiles/shell/bash_aliases.sh";
+  };
+
+  # Patch ~/.claude.json to set installMethod (Claude Code reads from legacy file)
+  home.activation.patchClaudeJson = {
+    after = [ "writeBoundary" ];
+    before = [ ];
+    data = ''
+      CLAUDE_JSON="$HOME/.claude.json"
+      if [ -f "$CLAUDE_JSON" ]; then
+        ${pkgs.jq}/bin/jq '.installMethod = "native"' "$CLAUDE_JSON" > "$CLAUDE_JSON.tmp" && mv "$CLAUDE_JSON.tmp" "$CLAUDE_JSON"
+      else
+        echo '{"installMethod": "native"}' > "$CLAUDE_JSON"
+      fi
+    '';
   };
 }

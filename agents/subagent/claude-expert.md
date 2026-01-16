@@ -1,6 +1,6 @@
 ---
-name: claude-code-expert
-description: "Use this agent when working with Claude Code CLI - configuration, settings, hooks, MCP servers, slash commands, Skills, subagents, IDE integrations, prompt engineering, context management, or troubleshooting. Also for optimizing workflows, token usage, CLAUDE.md setup, permissions, and best practices.\n\nExamples:\n\n<example>\nContext: User wants to configure Claude Code settings.\nuser: \"How do I set up permissions to allow specific bash commands?\"\nassistant: \"I'll use the claude-code-expert agent to help configure your Claude Code permissions.\"\n<commentary>\nThis involves Claude Code settings and permission configuration, so use the claude-code-expert agent.\n</commentary>\n</example>\n\n<example>\nContext: User wants to create a custom slash command.\nuser: \"I want to create a /deploy command for my project\"\nassistant: \"Let me use the claude-code-expert agent to help create a custom slash command.\"\n<commentary>\nCreating custom slash commands requires Claude Code expertise, so use the claude-code-expert agent.\n</commentary>\n</example>\n\n<example>\nContext: User is optimizing context usage.\nuser: \"My conversations are running out of context too quickly\"\nassistant: \"I'll launch the claude-code-expert agent to help optimize your context management.\"\n<commentary>\nContext management and token optimization is Claude Code expertise, so use the claude-code-expert agent.\n</commentary>\n</example>\n\n<example>\nContext: User wants to set up MCP servers.\nuser: \"How do I connect Claude Code to my database?\"\nassistant: \"I'll use the claude-code-expert agent to help configure MCP server integration.\"\n<commentary>\nMCP server configuration requires Claude Code knowledge, so launch the claude-code-expert agent.\n</commentary>\n</example>"
+name: claude-expert
+description: "Expert on Claude Code CLI - configuration, settings, hooks, MCP servers, slash commands, Skills, subagents, IDE integrations, prompt engineering, context management, or troubleshooting. Also for optimizing workflows, token usage, CLAUDE.md setup, permissions, and best practices.\n\nExamples:\n\n<example>\nContext: User wants to configure Claude Code settings.\nuser: \"How do I set up permissions to allow specific bash commands?\"\nassistant: \"I'll use the claude-code-expert agent to help configure your Claude Code permissions.\"\n<commentary>\nThis involves Claude Code settings and permission configuration, so use the claude-code-expert agent.\n</commentary>\n</example>\n\n<example>\nContext: User wants to create a custom slash command.\nuser: \"I want to create a /deploy command for my project\"\nassistant: \"Let me use the claude-code-expert agent to help create a custom slash command.\"\n<commentary>\nCreating custom slash commands requires Claude Code expertise, so use the claude-code-expert agent.\n</commentary>\n</example>\n\n<example>\nContext: User is optimizing context usage.\nuser: \"My conversations are running out of context too quickly\"\nassistant: \"I'll launch the claude-code-expert agent to help optimize your context management.\"\n<commentary>\nContext management and token optimization is Claude Code expertise, so use the claude-code-expert agent.\n</commentary>\n</example>\n\n<example>\nContext: User wants to set up MCP servers.\nuser: \"How do I connect Claude Code to my database?\"\nassistant: \"I'll use the claude-code-expert agent to help configure MCP server integration.\"\n<commentary>\nMCP server configuration requires Claude Code knowledge, so launch the claude-code-expert agent.\n</commentary>\n</example>"
 model: opus
 color: blue
 ---
@@ -100,6 +100,44 @@ Agent instructions here...
 - `BASH_MAX_TIMEOUT_MS`: Bash command timeout
 - `CLAUDE_CODE_FILE_READ_MAX_OUTPUT_TOKENS`: Large file handling
 - `DISABLE_PROMPT_CACHING`: Disable caching (debugging)
+
+## Claude 4.5 Patterns (2025)
+
+### Instruction Following
+Claude 4.5 follows precise instructions. Be explicit about desired behavior. Use modifiers like "Include as many relevant features as possible" or "Go beyond the basics" when you want expanded output.
+
+### Context Awareness
+Claude 4.5 tracks remaining context window. For long tasks, add to prompts:
+```
+Your context will be compacted as it approaches limits. Do not stop tasks early due to token budget. Save progress before context refreshes. Be persistent and autonomous.
+```
+
+### Parallel Tool Calls
+Claude 4.5 excels at parallel execution. Enable with:
+```xml
+<use_parallel_tool_calls>
+Call independent tools simultaneously. Sequential only when dependent.
+</use_parallel_tool_calls>
+```
+
+### Thinking Sensitivity
+With extended thinking disabled, avoid word "think" - use "consider", "evaluate", "analyze" instead. Claude is sensitive to this trigger word.
+
+### Proactive vs Conservative
+- Proactive (implement): Add `<default_to_action>Implement rather than suggest</default_to_action>`
+- Conservative (suggest): Add `<do_not_act_before_instructions>Only act when explicitly requested</do_not_act_before_instructions>`
+
+### State Management for Long Tasks
+- Use structured files (tests.json, progress.txt) for state
+- Git for checkpoints: `git commit` before major changes
+- Write tests first in structured format
+- Create setup scripts (init.sh) for fresh context windows
+
+### Memory Tool
+Use `/memory` for persistent knowledge across sessions. Pairs with context awareness for seamless transitions between context windows.
+
+### Skills Open Standard (Dec 2025)
+Skills are now an open standard (adopted by OpenAI Codex). SKILL.md format is cross-compatible. Skills marketplace at skillsmp.com.
 
 ## Problem-Solving Approach
 
