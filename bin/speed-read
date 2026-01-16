@@ -197,8 +197,12 @@ clear_line() {
 # Handle exit
 cleanup() {
     # Restore tty settings if we changed them
-    if [[ -n "${SAVED_STTY:-}" ]] && [[ -e /dev/tty ]]; then
-        stty "$SAVED_STTY" </dev/tty 2>/dev/null || true
+    if [[ -n "${SAVED_STTY:-}" ]]; then
+        if [[ "${USE_DEV_TTY:-true}" == "true" ]] && [[ -e /dev/tty ]]; then
+            stty "$SAVED_STTY" </dev/tty 2>/dev/null || true
+        else
+            stty "$SAVED_STTY" 2>/dev/null || true
+        fi
     fi
     show_cursor
     clear_line
@@ -252,33 +256,60 @@ PAUSED=false
 CURRENT_WPM=$WPM
 WORD_INDEX=0
 
-# Set up non-blocking input from /dev/tty (not stdin, which may have piped text)
-if [[ -t 1 ]] && [[ -e /dev/tty ]]; then
-    # Save terminal settings
+# Set up non-blocking input
+# Use stdin if it's a tty (file input), otherwise use /dev/tty (piped input)
+if [[ -t 0 ]]; then
+    # stdin is a tty - use it directly
+    SAVED_STTY=$(stty -g)
+    stty -echo -icanon min 0 time 0
+    USE_DEV_TTY=false
+    TTY_AVAILABLE=true
+elif [[ -t 1 ]] && [[ -e /dev/tty ]]; then
+    # stdin is piped but we have /dev/tty
     SAVED_STTY=$(stty -g </dev/tty)
     stty -echo -icanon min 0 time 0 </dev/tty
+    USE_DEV_TTY=true
     TTY_AVAILABLE=true
 else
     TTY_AVAILABLE=false
+    USE_DEV_TTY=false
 fi
+
+# Helper function to read a key
+read_key() {
+    local timeout="${1:-}"
+    if [[ "$USE_DEV_TTY" == "true" ]]; then
+        if [[ -n "$timeout" ]]; then
+            read -r -n 1 -t "$timeout" key </dev/tty 2>/dev/null || true
+        else
+            read -r -n 1 key </dev/tty 2>/dev/null || true
+        fi
+    else
+        if [[ -n "$timeout" ]]; then
+            read -r -n 1 -t "$timeout" key 2>/dev/null || true
+        else
+            read -r -n 1 key 2>/dev/null || true
+        fi
+    fi
+}
 
 # Wait for Enter before starting if --wait flag is set
 if [[ "$WAIT_FOR_START" == "true" ]] && [[ "$TTY_AVAILABLE" == "true" ]]; then
     printf "Press ENTER to start reading..."
     while true; do
-        if read -r -n 1 key </dev/tty 2>/dev/null; then
-            # Enter key produces empty string in raw mode
-            [[ -z "$key" ]] && break
-        fi
+        key=""
+        read_key
+        # Enter key produces empty string in raw mode
+        [[ -z "$key" ]] && break
     done
     clear_line
 fi
 
 while [[ $WORD_INDEX -lt $TOTAL_WORDS ]]; do
-    # Check for keypress (non-blocking) - read from /dev/tty to avoid stdin conflict
+    # Check for keypress (non-blocking)
     key=""
     if [[ "$TTY_AVAILABLE" == "true" ]]; then
-        read -r -n 1 -t 0.01 key </dev/tty 2>/dev/null || true
+        read_key 0.01
     fi
     if [[ -n "$key" ]]; then
         case "$key" in
@@ -289,17 +320,17 @@ while [[ $WORD_INDEX -lt $TOTAL_WORDS ]]; do
                     printf "  [PAUSED - ${CURRENT_WPM} WPM - Word %d/%d - Press SPACE to continue]" "$((WORD_INDEX + 1))" "$TOTAL_WORDS"
                     # Wait for unpause
                     while true; do
-                        if read -r -n 1 -t 0.1 key2 </dev/tty 2>/dev/null; then
-                            case "$key2" in
-                                ' '|p|P)
-                                    PAUSED=false
-                                    break
-                                    ;;
-                                q|Q|$'\e')
-                                    cleanup
-                                    ;;
-                            esac
-                        fi
+                        key=""
+                        read_key 0.1
+                        case "$key" in
+                            ' '|p|P)
+                                PAUSED=false
+                                break
+                                ;;
+                            q|Q|$'\e')
+                                cleanup
+                                ;;
+                        esac
                     done
                 fi
                 ;;
@@ -359,9 +390,9 @@ if [[ "$WAIT_AT_END" == "true" ]] && [[ "$TTY_AVAILABLE" == "true" ]]; then
     echo ""
     printf "Press ENTER to close..."
     while true; do
-        if read -r -n 1 key </dev/tty 2>/dev/null; then
-            [[ -z "$key" ]] && break
-        fi
+        key=""
+        read_key
+        [[ -z "$key" ]] && break
     done
 fi
 
