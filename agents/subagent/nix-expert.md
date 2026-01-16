@@ -42,6 +42,14 @@ You MUST follow these patterns from the project's CLAUDE.md:
 - All configuration with sensible defaults goes inside the module file in `home/modules/`
 - The `home.nix` file should ONLY contain the imports list, nothing else
 
+**Pinning External Flake Packages**:
+- Add pinned flake input in `flake.nix` with version tag (e.g., `devenv.url = "github:cachix/devenv/v1.9.2"`)
+- Create a dedicated module in `home/modules/<name>.nix` that uses `inputs` directly
+- Access package via `inputs.<name>.packages.${pkgs.stdenv.hostPlatform.system}.default`
+- NEVER pass packages through `specialArgsBase` - use `inputs` which is already available
+- Import the module in `users/<username>/home.nix` like any other module
+- Example: `inputs.devenv.packages.${pkgs.stdenv.hostPlatform.system}.devenv`
+
 ## Working Methodology
 
 1. **Understand First**: Before writing code, understand the existing structure. Check imports, existing patterns, and how similar features are implemented.
