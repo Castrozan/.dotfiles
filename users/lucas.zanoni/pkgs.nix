@@ -25,6 +25,8 @@
       ksnip
       fzf
       gh
+      git-crypt
+      glab
       # ghostty TODO: fix ghostty, https://gitlab.gnome.org/GNOME/gtk/-/issues/4950. A wrapper did not work.
       git
       gnome-shell-extensions

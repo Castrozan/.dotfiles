@@ -22,3 +22,6 @@ Rebuild with ./bin/rebuild. Edit secrets with agenix-edit <secret-name>. Always 
 
 AI Workflow
 Home-manager on non-NixOS systems does not require sudo. ALWAYS run `./bin/rebuild` after ANY nix config change to validate. ALWAYS test changes work as expected. ALWAYS commit if rebuild succeeds and changes are verified - do not ask for permission.
+
+Private Files
+Two systems: agenix for secrets (passwords, keys, tokens) in secrets/. git-crypt for private non-secret files (work agents, company skills) in private-config/. Files in private-config/ are encrypted in git, plaintext locally. Never mention the company named after the second letter of the greek alphabet with h between t and a - use generic names for that context only.

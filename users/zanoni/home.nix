@@ -7,6 +7,7 @@
 
     ../../home/core.nix
     ../../home/scripts
+    ../../home/modules/bad-apple.nix
     ../../home/modules/bash.nix
     ../../home/modules/cbonsai.nix
     ../../home/modules/claude
@@ -19,6 +20,7 @@
     ../../home/modules/fuzzel.nix
     ../../home/modules/gnome
     ../../home/modules/hyprland
+    ../../home/modules/ia-work.nix
     ../../home/modules/ksnip.nix
     ../../home/modules/install-nothing.nix
     ../../home/modules/kitty.nix

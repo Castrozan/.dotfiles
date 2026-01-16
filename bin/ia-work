@@ -1,0 +1,441 @@
+#!/usr/bin/env bash
+# ia-work: Process Obsidian notes with AI instructions
+# Scans vault for notes with agent-work tag and passes note to AI
+
+set -euo pipefail
+
+VAULT_PATH="${IA_WORK_VAULT_PATH:-$HOME/vault}"
+TAG_NAME="${IA_WORK_TAG:-agent-work}"
+HOURS_BACK="${IA_WORK_HOURS:-24}"
+ENSURE_OBSIDIAN="${IA_WORK_ENSURE_OBSIDIAN:-false}"
+DRY_RUN="${IA_WORK_DRY_RUN:-false}"
+VERBOSE="${IA_WORK_VERBOSE:-false}"
+LOG_DIR="${IA_WORK_LOG_DIR:-$HOME/.local/state/ia-work}"
+HEADLESS="${IA_WORK_HEADLESS:-false}"
+TMUX_SESSION_PREFIX="${IA_WORK_TMUX_PREFIX:-ia-work}"
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+log() {
+    local level="$1"
+    shift
+    local timestamp
+    timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    case "$level" in
+        INFO)  [[ "$VERBOSE" == "true" ]] && echo -e "${BLUE}[$timestamp]${NC} $*" ;;
+        WARN)  echo -e "${YELLOW}[$timestamp] WARN:${NC} $*" >&2 ;;
+        ERROR) echo -e "${RED}[$timestamp] ERROR:${NC} $*" >&2 ;;
+        OK)    echo -e "${GREEN}[$timestamp]${NC} $*" ;;
+        *)     echo -e "[$timestamp] $*" ;;
+    esac
+}
+
+usage() {
+    cat <<EOF
+Usage: ia-work [OPTIONS]
+
+Scans Obsidian vault for notes with AI work tags and executes instructions.
+
+Options:
+    -v, --vault PATH       Vault path (default: \$HOME/vault)
+    -t, --tag TAG          Tag to search for (default: agent-work)
+    -h, --hours N          Look back N hours (default: 24)
+    -o, --obsidian         Ensure Obsidian is running before processing
+    -d, --dry-run          Show what would be done without executing
+    -V, --verbose          Enable verbose output
+    --headless             Run Claude headlessly (no tmux, just log output)
+    --help                 Show this help message
+
+Environment Variables:
+    IA_WORK_VAULT_PATH     Same as --vault
+    IA_WORK_TAG            Same as --tag
+    IA_WORK_HOURS          Same as --hours
+    IA_WORK_ENSURE_OBSIDIAN Same as --obsidian
+    IA_WORK_DRY_RUN        Same as --dry-run
+    IA_WORK_VERBOSE        Same as --verbose
+    IA_WORK_LOG_DIR        Directory for logs (default: ~/.local/state/ia-work)
+    IA_WORK_HEADLESS       Same as --headless
+    IA_WORK_TMUX_PREFIX    Tmux session prefix (default: ia-work)
+
+Note Format:
+    Notes should have the tag (e.g., #agent-work) anywhere in the file.
+    After processing, #agent-work-done tag is added to mark completion.
+
+Examples:
+    ia-work --verbose --dry-run
+    ia-work --vault ~/notes --tag ework --hours 12
+    ia-work --headless  # Run without tmux
+EOF
+}
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -v|--vault)
+            VAULT_PATH="$2"
+            shift 2
+            ;;
+        -t|--tag)
+            TAG_NAME="$2"
+            shift 2
+            ;;
+        -h|--hours)
+            HOURS_BACK="$2"
+            shift 2
+            ;;
+        -o|--obsidian)
+            ENSURE_OBSIDIAN="true"
+            shift
+            ;;
+        -d|--dry-run)
+            DRY_RUN="true"
+            shift
+            ;;
+        -V|--verbose)
+            VERBOSE="true"
+            shift
+            ;;
+        --headless)
+            HEADLESS="true"
+            shift
+            ;;
+        --help)
+            usage
+            exit 0
+            ;;
+        *)
+            echo "Unknown option: $1" >&2
+            usage
+            exit 1
+            ;;
+    esac
+done
+
+# Ensure log directory exists
+mkdir -p "$LOG_DIR"
+
+ensure_obsidian_running() {
+    if [[ "$ENSURE_OBSIDIAN" != "true" ]]; then
+        return 0
+    fi
+
+    log INFO "Checking if Obsidian is running..."
+
+    if pgrep -x obsidian >/dev/null 2>&1; then
+        log INFO "Obsidian is already running"
+        return 0
+    fi
+
+    log INFO "Starting Obsidian..."
+    if [[ "$DRY_RUN" == "true" ]]; then
+        log INFO "[DRY RUN] Would start Obsidian"
+        return 0
+    fi
+
+    # Start Obsidian in background
+    nohup obsidian >/dev/null 2>&1 &
+
+    # Wait for Obsidian to start and sync (give it time)
+    local wait_time=30
+    log INFO "Waiting ${wait_time}s for Obsidian to start and sync..."
+    sleep "$wait_time"
+
+    if pgrep -x obsidian >/dev/null 2>&1; then
+        log OK "Obsidian started successfully"
+        return 0
+    else
+        log WARN "Obsidian may not have started properly"
+        return 1
+    fi
+}
+
+# Detect tag format used in note and return the done tag format
+get_done_tag() {
+    local file="$1"
+    local content
+    content=$(cat "$file")
+
+    # Check for wikilink format [[tag]]
+    if echo "$content" | grep -qE "\[\[${TAG_NAME}\]\]"; then
+        echo "[[${TAG_NAME}-done]]"
+        return 0
+    fi
+
+    # Check for hashtag format #tag
+    if echo "$content" | grep -qE "#${TAG_NAME}(\s|$)"; then
+        echo "#${TAG_NAME}-done"
+        return 0
+    fi
+
+    # Check YAML frontmatter tags (use hashtag format for done)
+    if echo "$content" | head -50 | grep -qE "^\s*-\s*${TAG_NAME}\s*$"; then
+        echo "#${TAG_NAME}-done"
+        return 0
+    fi
+
+    # Default to hashtag format
+    echo "#${TAG_NAME}-done"
+}
+
+# Check if note has the target tag (YAML frontmatter or inline)
+has_tag() {
+    local file="$1"
+    local content
+    content=$(cat "$file")
+
+    # Check YAML frontmatter tags
+    if echo "$content" | head -50 | grep -qE "^tags:" ; then
+        # Look for tag in YAML list format
+        if echo "$content" | head -50 | grep -qE "^\s*-\s*${TAG_NAME}\s*$"; then
+            return 0
+        fi
+        # Look for tag in YAML array format: tags: [tag1, tag2]
+        if echo "$content" | head -50 | grep -qE "^tags:\s*\[.*${TAG_NAME}"; then
+            return 0
+        fi
+    fi
+
+    # Check inline tags [[tag]]
+    if echo "$content" | grep -qE "\[\[${TAG_NAME}\]\]"; then
+        return 0
+    fi
+
+    # Check hashtag style #tag
+    if echo "$content" | grep -qE "#${TAG_NAME}(\s|$)"; then
+        return 0
+    fi
+
+    return 1
+}
+
+# Check if note has already been processed (has done tag)
+is_processed() {
+    local file="$1"
+    local content
+    content=$(cat "$file")
+    local done_tag="${TAG_NAME}-done"
+
+    # Check for done tag in various formats
+    if echo "$content" | grep -qE "\[\[${done_tag}\]\]"; then
+        return 0
+    fi
+    if echo "$content" | grep -qE "#${done_tag}(\s|$)"; then
+        return 0
+    fi
+    if echo "$content" | head -50 | grep -qE "^\s*-\s*${done_tag}\s*$"; then
+        return 0
+    fi
+
+    return 1
+}
+
+# Mark note as processed by adding done tag
+mark_processed() {
+    local file="$1"
+    local done_tag
+    done_tag=$(get_done_tag "$file")
+
+    if [[ "$DRY_RUN" == "true" ]]; then
+        log INFO "[DRY RUN] Would add $done_tag to $file"
+        return 0
+    fi
+
+    local content
+    content=$(cat "$file")
+
+    # Insert done tag right after the original tag
+    # For hashtag format: #agent-work -> #agent-work #agent-work-done
+    if echo "$content" | grep -qE "#${TAG_NAME}(\s|$)"; then
+        sed -i "s/#${TAG_NAME}\(\s\|$\)/#${TAG_NAME} ${done_tag}\1/" "$file"
+        log INFO "Added $done_tag to $file"
+        return 0
+    fi
+
+    # For wikilink format: [[agent-work]] -> [[agent-work]] [[agent-work-done]]
+    if echo "$content" | grep -qE "\[\[${TAG_NAME}\]\]"; then
+        sed -i "s/\[\[${TAG_NAME}\]\]/[[${TAG_NAME}]] ${done_tag}/" "$file"
+        log INFO "Added $done_tag to $file"
+        return 0
+    fi
+
+    # For YAML frontmatter, add hashtag at end of first line after frontmatter
+    # This is a fallback - just append to end of file
+    echo "" >> "$file"
+    echo "$done_tag" >> "$file"
+    log INFO "Added $done_tag to $file (appended)"
+}
+
+# Build autonomous mode instructions
+build_prompt() {
+    local note_content="$1"
+    local note_file="$2"
+    local note_name
+    note_name=$(basename "$note_file" .md)
+
+    cat <<EOF
+You are running autonomously without user interaction. Important:
+- You CANNOT ask questions - no one will answer
+- You have FULL permissions to implement changes
+- Make decisions on your own based on the note content
+- Working directory: $(pwd)
+- Note source: $note_file
+- Use nix-expert subagent when using nix
+
+Worktree workflow:
+- Run /worktree skill to create isolated worktree before changes
+- Work in worktree to avoid conflicts with main branch
+- Merge when done, resolve conflicts if any
+
+The following is the complete note content. Understand what needs to be done and execute it:
+
+---
+$note_content
+---
+EOF
+}
+
+# Execute AI instruction
+execute_instruction() {
+    local note_file="$1"
+    local note_name
+    note_name=$(basename "$note_file" .md)
+    local log_file="${LOG_DIR}/${note_name}-$(date '+%Y%m%d-%H%M%S').log"
+    # Sanitize session name: replace spaces/special chars with dashes, truncate
+    local sanitized_name
+    sanitized_name=$(echo "$note_name" | tr ' ()[]' '-----' | tr -s '-' | cut -c1-30)
+    local session_name="${TMUX_SESSION_PREFIX}-${sanitized_name}-$(date '+%H%M%S')"
+
+    # Read note content
+    local note_content
+    note_content=$(cat "$note_file")
+
+    # Build the prompt
+    local prompt
+    prompt=$(build_prompt "$note_content" "$note_file")
+
+    if [[ "$DRY_RUN" == "true" ]]; then
+        log OK "[DRY RUN] Would execute claude with note: $note_file"
+        log INFO "Prompt preview (first 500 chars):"
+        echo "$prompt" | head -c 500
+        echo "..."
+        return 0
+    fi
+
+    log OK "Executing AI instruction from: $note_file"
+    log INFO "Log file: $log_file"
+
+    if [[ "$HEADLESS" == "true" ]]; then
+        # Headless mode: run claude directly and log output
+        log INFO "Running in headless mode"
+        if claude -p "$prompt" > "$log_file" 2>&1; then
+            log OK "Successfully executed instruction for: $note_name"
+            return 0
+        else
+            local exit_code=$?
+            log ERROR "Failed to execute instruction for: $note_name (exit code: $exit_code)"
+            log ERROR "See log: $log_file"
+            return 1
+        fi
+    else
+        # Interactive mode: run in tmux session user can attach to
+        log INFO "Running in tmux session: $session_name"
+        log OK "Attach with: tmux attach -t $session_name"
+
+        # Write prompt to temp file to avoid shell escaping issues
+        local prompt_file="${LOG_DIR}/.prompt-$$"
+        echo "$prompt" > "$prompt_file"
+
+        # Create tmux session and run claude with piped input (shows real-time output)
+        tmux new-session -d -s "$session_name" \
+            "cat '$prompt_file' | claude; rm -f '$prompt_file'; echo ''; echo 'Claude finished. Press any key to close.'; read -n 1"
+
+        log OK "Tmux session started: $session_name"
+        log INFO "Session will remain open after completion for review"
+        return 0
+    fi
+}
+
+# Find and process notes
+process_notes() {
+    local notes_found=0
+    local notes_processed=0
+    local notes_skipped=0
+    local notes_failed=0
+
+    # Calculate cutoff time
+    local cutoff_time
+    cutoff_time=$(date -d "-${HOURS_BACK} hours" '+%Y-%m-%d %H:%M:%S' 2>/dev/null || \
+                  date -v-${HOURS_BACK}H '+%Y-%m-%d %H:%M:%S' 2>/dev/null)
+
+    log INFO "Scanning vault: $VAULT_PATH"
+    log INFO "Looking for tag: $TAG_NAME"
+    log INFO "Skipping tag: ${TAG_NAME}-done"
+    log INFO "Modified since: $cutoff_time"
+
+    # Find markdown files modified within the time window
+    while IFS= read -r -d '' file; do
+        ((notes_found++)) || true
+
+        log INFO "Checking: $file"
+
+        # Check for tag
+        if ! has_tag "$file"; then
+            log INFO "  No matching tag, skipping"
+            continue
+        fi
+
+        # Check if already processed
+        if is_processed "$file"; then
+            log INFO "  Already processed (has ${TAG_NAME}-done), skipping"
+            ((notes_skipped++)) || true
+            continue
+        fi
+
+        log OK "Found work item: $(basename "$file")"
+
+        # Execute instruction
+        if execute_instruction "$file"; then
+            mark_processed "$file"
+            ((notes_processed++)) || true
+        else
+            ((notes_failed++)) || true
+        fi
+
+    done < <(find "$VAULT_PATH" -name "*.md" -type f -mmin -$((HOURS_BACK * 60)) -print0 2>/dev/null)
+
+    # Summary
+    echo ""
+    log OK "=== Summary ==="
+    log OK "Notes scanned: $notes_found"
+    log OK "Notes processed: $notes_processed"
+    log OK "Notes skipped (already processed): $notes_skipped"
+    if [[ $notes_failed -gt 0 ]]; then
+        log ERROR "Notes failed: $notes_failed"
+    fi
+
+    return 0
+}
+
+main() {
+    log OK "ia-work starting..."
+
+    # Validate vault exists
+    if [[ ! -d "$VAULT_PATH" ]]; then
+        log ERROR "Vault path does not exist: $VAULT_PATH"
+        exit 1
+    fi
+
+    # Ensure Obsidian is running if requested
+    ensure_obsidian_running
+
+    # Process notes
+    process_notes
+
+    log OK "ia-work complete"
+}
+
+main

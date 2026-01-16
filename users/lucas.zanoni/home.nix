@@ -20,6 +20,7 @@
     ../../home/modules/flameshot.nix
     ../../home/modules/fish.nix
     ../../home/modules/fonts.nix
+    ../../home/modules/glab.nix
     ../../home/modules/gnome/dconf.nix
     ../../home/modules/gnome/extension-manager.nix
     ../../home/modules/k9s.nix
@@ -28,6 +29,7 @@
     ../../home/modules/kitty.nix
     ../../home/modules/lazygit.nix
     ../../home/modules/neovim.nix
+    ../../home/modules/obsidian.nix
     ../../home/modules/opencode.nix
     ../../home/modules/ralph-tui.nix
     ../../home/modules/readItNow.nix

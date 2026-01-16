@@ -1,0 +1,6 @@
+# git-crypt encrypted files
+# Private Claude agents and skills (encrypted with git-crypt)
+private-config/** filter=git-crypt diff=git-crypt
+
+# Keep .gitkeep files unencrypted so git can track empty directories
+private-config/**/.gitkeep !filter !diff
