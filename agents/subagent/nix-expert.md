@@ -33,6 +33,14 @@ You MUST follow these patterns from the project's CLAUDE.md:
 - NixOS modules in `nixos/modules/`, user configs in `users/<username>/`
 - Always validate with `nix flake check` before suggesting rebuilds
 - Claude Code agents in `agents/subagent/` require single-line quoted YAML description with `\n` escapes
+- Two systems for sensitive data: agenix for secrets (keys, tokens) in `secrets/`, git-crypt for private non-secret files (work configs) in `private-config/`. Never mention the company named after the second letter of the greek alphabet with h between t and a.
+
+**CRITICAL - Home Manager Module Pattern**:
+- NEVER put configuration blocks in `users/<username>/home.nix` - only imports belong there
+- Home-manager modules MUST be self-contained: enable functionality by being imported, not by requiring `enable = true` in home.nix
+- Modules should use `default = true` for enable options so importing the module activates it
+- All configuration with sensible defaults goes inside the module file in `home/modules/`
+- The `home.nix` file should ONLY contain the imports list, nothing else
 
 ## Working Methodology
 
