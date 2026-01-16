@@ -11,6 +11,8 @@ FOCUS_COLOR="${SPEED_READ_FOCUS_COLOR:-1}"  # Red (ANSI 256 color)
 SHOW_POINTER="${SPEED_READ_POINTER:-true}"
 PAUSE_ON_PUNCTUATION="${SPEED_READ_PAUSE_PUNCT:-true}"
 CENTER_WIDTH="${SPEED_READ_WIDTH:-40}"
+WAIT_FOR_START="${SPEED_READ_WAIT:-false}"
+WAIT_AT_END="${SPEED_READ_WAIT_END:-false}"
 
 # Colors
 BOLD='\033[1m'
@@ -30,6 +32,8 @@ Options:
     -c, --color N       ANSI 256 focus color (default: 1/red)
     -p, --no-pointer    Hide the focus pointer
     -P, --no-pause      Don't pause on punctuation
+    --wait              Wait for ENTER before starting
+    --wait-end          Wait for ENTER after finishing
     --help              Show this help message
 
 Keyboard Controls:
@@ -71,6 +75,14 @@ while [[ $# -gt 0 ]]; do
             ;;
         -P|--no-pause)
             PAUSE_ON_PUNCTUATION="false"
+            shift
+            ;;
+        --wait)
+            WAIT_FOR_START="true"
+            shift
+            ;;
+        --wait-end)
+            WAIT_AT_END="true"
             shift
             ;;
         --help)
@@ -250,6 +262,18 @@ else
     TTY_AVAILABLE=false
 fi
 
+# Wait for Enter before starting if --wait flag is set
+if [[ "$WAIT_FOR_START" == "true" ]] && [[ "$TTY_AVAILABLE" == "true" ]]; then
+    printf "Press ENTER to start reading..."
+    while true; do
+        if read -r -n 1 key </dev/tty 2>/dev/null; then
+            # Enter key produces empty string in raw mode
+            [[ -z "$key" ]] && break
+        fi
+    done
+    clear_line
+fi
+
 while [[ $WORD_INDEX -lt $TOTAL_WORDS ]]; do
     # Check for keypress (non-blocking) - read from /dev/tty to avoid stdin conflict
     key=""
@@ -329,4 +353,16 @@ done
 clear_line
 echo ""
 echo "Done! Read ${TOTAL_WORDS} words at ~${CURRENT_WPM} WPM"
+
+# Wait for Enter at end if --wait-end flag is set
+if [[ "$WAIT_AT_END" == "true" ]] && [[ "$TTY_AVAILABLE" == "true" ]]; then
+    echo ""
+    printf "Press ENTER to close..."
+    while true; do
+        if read -r -n 1 key </dev/tty 2>/dev/null; then
+            [[ -z "$key" ]] && break
+        fi
+    done
+fi
+
 show_cursor
