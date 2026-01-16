@@ -317,24 +317,27 @@ while true; do
         printf "[r] restart | [+/-] speed | [ENTER/q] close"
         while true; do
             key=""
-            read -r -n 1 key || true
-            case "$key" in
-                "") break 2 ;;  # Enter - exit completely
-                r|R)
-                    # Clear done message and restart
-                    printf '\033[4A\033[J'  # Move up 4 lines and clear to end
-                    break  # Break to outer loop which restarts reading
-                    ;;
-                +|=)
-                    CURRENT_WPM=$((CURRENT_WPM + 50))
-                    [[ $CURRENT_WPM -gt 2000 ]] && CURRENT_WPM=2000
-                    ;;
-                -|_)
-                    CURRENT_WPM=$((CURRENT_WPM - 50))
-                    [[ $CURRENT_WPM -lt 50 ]] && CURRENT_WPM=50
-                    ;;
-                q|Q) break 2 ;;  # Quit
-            esac
+            if read -r -n 1 -t 0.5 key; then
+                # read succeeded - either got a key or Enter (empty)
+                case "$key" in
+                    "") break 2 ;;  # Enter - exit completely
+                    r|R)
+                        # Clear done message and restart
+                        printf '\033[4A\033[J'  # Move up 4 lines and clear to end
+                        break  # Break to outer loop which restarts reading
+                        ;;
+                    +|=)
+                        CURRENT_WPM=$((CURRENT_WPM + 50))
+                        [[ $CURRENT_WPM -gt 2000 ]] && CURRENT_WPM=2000
+                        ;;
+                    -|_)
+                        CURRENT_WPM=$((CURRENT_WPM - 50))
+                        [[ $CURRENT_WPM -lt 50 ]] && CURRENT_WPM=50
+                        ;;
+                    q|Q) break 2 ;;  # Quit
+                esac
+            fi
+            # timeout - just loop again
         done
     else
         break
