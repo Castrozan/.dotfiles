@@ -1,29 +1,28 @@
-{ lib, config, ... }:
+{ lib, ... }:
 let
-  # Private config directory outside the dotfiles repo
-  privateConfigDir = "${config.home.homeDirectory}/.private-config/claude";
-  privateAgentsDir = "${privateConfigDir}/agents";
-  privateSkillsDir = "${privateConfigDir}/skills";
+  # In-repo private config (encrypted with git-crypt)
+  privateConfigDir = ../../../private-config/claude;
+  agentsDir = "${privateConfigDir}/agents";
+  skillsDir = "${privateConfigDir}/skills";
 
-  # Check if private config directories exist
-  privateAgentsDirExists = builtins.pathExists privateAgentsDir;
-  privateSkillsDirExists = builtins.pathExists privateSkillsDir;
+  agentsDirExists = builtins.pathExists agentsDir;
+  skillsDirExists = builtins.pathExists skillsDir;
 
-  # Get agent files if directory exists
+  # Get agent files (filter out .gitkeep)
   privateAgentFiles =
-    if privateAgentsDirExists then
+    if agentsDirExists then
       builtins.filter
-        (name: lib.hasSuffix ".md" name)
-        (builtins.attrNames (builtins.readDir privateAgentsDir))
+        (name: lib.hasSuffix ".md" name && name != ".gitkeep")
+        (builtins.attrNames (builtins.readDir agentsDir))
     else
       [ ];
 
-  # Get skill directories if directory exists (each must have SKILL.md)
+  # Get skill directories (each must have SKILL.md)
   privateSkillDirs =
-    if privateSkillsDirExists then
+    if skillsDirExists then
       builtins.filter
-        (name: builtins.pathExists "${privateSkillsDir}/${name}/SKILL.md")
-        (builtins.attrNames (builtins.readDir privateSkillsDir))
+        (name: name != ".gitkeep" && builtins.pathExists "${skillsDir}/${name}/SKILL.md")
+        (builtins.attrNames (builtins.readDir skillsDir))
     else
       [ ];
 
@@ -31,7 +30,7 @@ let
   privateAgentSymlinks = builtins.listToAttrs (map
     (filename: {
       name = ".claude/agents/${filename}";
-      value = { source = "${privateAgentsDir}/${filename}"; };
+      value = { source = "${agentsDir}/${filename}"; };
     })
     privateAgentFiles);
 
@@ -40,14 +39,13 @@ let
     (dirname: {
       name = ".claude/skills/${dirname}";
       value = {
-        source = "${privateSkillsDir}/${dirname}";
+        source = "${skillsDir}/${dirname}";
         recursive = true;
       };
     })
     privateSkillDirs);
 in
 {
-  # Only create symlinks if private configs exist
-  home.file = lib.mkIf (privateAgentsDirExists || privateSkillsDirExists)
+  home.file = lib.mkIf (agentsDirExists || skillsDirExists)
     (privateAgentSymlinks // privateSkillSymlinks);
 }
