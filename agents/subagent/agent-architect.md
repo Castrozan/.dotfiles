@@ -111,6 +111,11 @@ user-invocable: true  # optional, default true
 ```
 Body: When to Use → Capabilities → Workflow → Examples
 
+**Skill naming**: Short, intuitive names. Use the core concept, not verb phrases.
+- Good: `worktrees`, `debug`, `brainstorm`, `pdf`
+- Bad: `using-git-worktrees`, `systematic-debugging`, `sp-brainstorming`
+- Names are typed by users (`/skillname`) - brevity matters
+
 ### Rule Files (agents/rules/*.md)
 ```yaml
 ---
