@@ -27,9 +27,8 @@ When this skill is invoked, you MUST:
 ```bash
 # Spawn dedicated terminal window for focused reading
 CONTENT="Your text here without punctuation for smoother reading"
-TMPFILE=$(mktemp /tmp/speed-read-XXXXXX.txt)
-echo "$CONTENT" > "$TMPFILE"
-wezterm start --class speed-read-popup -- bash -c "echo 'Press any key to start reading...'; read -n 1; speed-read '$TMPFILE'; rm '$TMPFILE'; read -n 1" &
+echo "$CONTENT" > /tmp/sr-msg.txt
+wezterm --config 'font_size=48' start --class speed-read-popup -- speed-read --wait --wait-end /tmp/sr-msg.txt &
 ```
 
 ## Keyboard Controls (for user reference)
