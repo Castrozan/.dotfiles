@@ -25,7 +25,7 @@ let
   claudeDotfilesRules = ''
     # Claude Code Project Context
 
-    ${builtins.readFile ../../../agents/rules/ai-interaction-guidelines.md}
+    ${builtins.readFile ../../../agents/rules/core.md}
 
     ${builtins.readFile ../../../agents/rules/claude-code-agents.md}
 
