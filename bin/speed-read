@@ -156,7 +156,8 @@ display_pointer() {
 # Check if word ends with punctuation (for pause)
 has_punctuation() {
     local word="$1"
-    [[ "$word" =~ [.!?,;:—–-]$ ]]
+    local punct_pattern='[.!?,;:—–-]$'
+    [[ "$word" =~ $punct_pattern ]]
 }
 
 # Clean word of markdown/special characters but keep punctuation for pause detection

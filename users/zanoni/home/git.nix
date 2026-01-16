@@ -12,6 +12,7 @@ in
 
   programs.git = {
     enable = true;
+    ignores = [ ".claude-context" ];
     settings = {
       user.name = userName;
       user.email = userEmail;
