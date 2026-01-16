@@ -129,7 +129,7 @@ in
     "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom3" = {
       name = "clipse";
       binding = "<Super>v";
-      command = "wezterm start -- clipse";
+      command = "wezterm start -- clipse-tui";
     };
 
     "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1" = {
