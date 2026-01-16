@@ -19,8 +19,9 @@
     Service = {
       Type = "simple";
       ExecStart = "${pkgs.clipse}/bin/clipse --listen-shell";
-      Restart = "on-failure";
-      RestartSec = "5s";
+      # Use "always" because clipse TUI kills the listener when opened
+      Restart = "always";
+      RestartSec = "2s";
     };
 
     Install = {
