@@ -17,8 +17,8 @@ let
       ${pkgs.yt-dlp}/bin/yt-dlp -f "bestvideo[height<=360]" -o "$VIDEO_FILE" "${badAppleUrl}" 2>/dev/null
     fi
 
-    # 6fps + 80 width reduces CPU from ~300% to ~175%
-    exec ${pkgs.tplay}/bin/tplay -l -g -a -f 6 -w 80 -c " .oO@" "$VIDEO_FILE"
+    # 6fps reduces CPU from ~300% to ~200% while auto-scaling to terminal
+    exec ${pkgs.tplay}/bin/tplay -l -g -a -f 6 -c " .oO@" "$VIDEO_FILE"
   '';
 in
 {
