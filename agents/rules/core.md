@@ -7,7 +7,9 @@ Do not change this file unless requested. These rules must be followed without e
 
 ## Agent Behavior
 
-Commands: Use timeouts. Git: Check logs before commits, follow existing commit message patterns. Workflow: Search codebase before coding, read relevant files first, test changes, check linter errors. Files: Check if file contents changed by user before overwriting. Time: Check current date/time before searches and version references.
+Commands: Use timeouts. Workflow: Search codebase before coding, read relevant files first, test changes, check linter errors. Files: Check if file contents changed by user before overwriting. Time: Check current date/time before searches and version references.
+
+Git: Commits are NOT dangerous - do them freely. During development: commit frequently to track progress and help user see what changed. Multiple small commits are better than one giant commit. At end of development: clean up with squash if needed for documentation. Follow existing commit message patterns. Check logs before commits.
 
 Prompts: Understand contextually. User prompts may contain errors - interpret intent and correct obvious mistakes. Questions: User is senior engineer. When stuck or unsure, ask instead of assuming. User can help diagnose issues.
 
