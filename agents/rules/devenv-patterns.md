@@ -29,7 +29,7 @@ Copying Lock Files
 When devenv version causes issues, copy working devenv.lock from another repo: `cp /path/to/working/project/devenv.lock ./devenv.lock`. This pins exact versions. Ensure source project is compatible (same devenv.nix patterns). After copying, run `devenv shell` to verify.
 
 Direnv Integration
-DO NOT USE direnv 
+DO NOT USE direnv. It's unreliable and causes more issues than it solves. Always use `devenv shell` or `devenv shell -- command` directly.
 
 Troubleshooting Workflow
 1. Check error message for clues (secretspec, hash errors, package not found)
@@ -38,6 +38,6 @@ Troubleshooting Workflow
 4. Verify devenv.nix syntax: `nix flake check` or just attempt `devenv shell`
 5. Check devenv version: `devenv version`
 
-Common Errors (generic erros only here)
+Common Errors
 - "command not found" after entering shell - Package not in packages list or PATH issue
 - Direnv not loading - Run `direnv allow`
