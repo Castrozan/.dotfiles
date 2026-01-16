@@ -156,6 +156,41 @@ Make only requested changes. No feature additions or premature abstractions.
 
 ## Context Engineering
 
+### Token Efficiency Principles
+- Front-load critical information
+- Use structured formats (YAML, JSON) over prose for data
+- Remove redundant context between turns
+- Summarize long outputs before including in context
+
+### Context Window Prioritization
+1. System instructions (always retain)
+2. Current task specification
+3. Relevant code/data being processed
+4. Recent conversation turns
+5. Background context (summarize or drop)
+
+### Prompt Pattern Templates
+
+**Task Decomposition**:
+```
+Given: [context]
+Task: [high-level goal]
+Steps:
+1. [subtask with clear output]
+2. [subtask depending on step 1]
+Output: [expected format]
+```
+
+**Few-Shot Examples**:
+```
+Examples:
+Input: X1 -> Output: Y1
+Input: X2 -> Output: Y2
+
+Now process:
+Input: X3 -> Output: ?
+```
+
 ### State Management Layers
 1. **System**: Core identity, always retained
 2. **Task**: Current objective, high priority
@@ -172,6 +207,12 @@ Make only requested changes. No feature additions or premature abstractions.
 - Give sub-agents focused tasks with clean context
 - Return condensed summaries (1,000-2,000 tokens)
 - Prevents context pollution in main agent
+
+### Anti-Patterns to Avoid
+- Repeating full file contents when small edits suffice
+- Including entire conversation history
+- Vague instructions requiring clarification rounds
+- Missing output format specification
 
 ## Agent Description Examples Pattern
 
