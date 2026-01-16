@@ -15,7 +15,7 @@
       bruno
       bun
       cargo
-      # clipse - managed in home/modules/clipse.nix with custom fork
+      clipse
       curl
       delta
       discord
