@@ -131,10 +131,30 @@ Use for structure: `<instructions>`, `<context>`, `<examples>`, `<thinking>`, `<
 - Max 3 nesting levels
 
 ### Instruction Writing
-- **Be explicit**: Claude 4.x follows precise instructions
+- **Be explicit**: Current Claude models follow precise instructions
 - **Context over quantity**: Minimal high-signal tokens
 - **Examples > rules**: Few-shot beats exhaustive edge cases
 - **Imperative voice**: "Do X" not "You should do X"
+
+### Evergreen Instructions (CRITICAL)
+Agent instructions become stale as code evolves. Write instructions that stay accurate:
+
+**Pointers over copies**: Static docs say WHAT/WHY. Dynamic discovery provides HOW.
+- Wrong: "Run `./bin/rebuild`" | Right: "Run rebuild script in bin/"
+- Wrong: "pkgs is nixos-25.11" | Right: "Check flake.nix for versions"
+
+**Patterns over commands**: Document the pattern, not the exact syntax.
+- Wrong: "Use `lib.mkIf (builtins.pathExists ...)`"
+- Right: "Guard with existence checks - see existing modules for pattern"
+
+**Reference locations**: Point to where truth lives, agent reads current state.
+- "See secrets/secrets.nix for format"
+- "Follow patterns in home/modules/"
+
+**Self-verification**: When instructions describe HOW, add verification step.
+- "Verify current approach by checking [file/location]"
+
+Full guide: `agents/rules/evergreen-instructions.md`
 
 ### Common Patterns
 ```xml
@@ -281,9 +301,10 @@ New features, will follow same patterns.
 2. **Check Existing Patterns**: Read similar files in the repository
 3. **Design Structure**: Outline sections, examples, key knowledge
 4. **Write Token-Efficient**: Dense prose, no fluff, imperative voice
-5. **Add Examples**: 2-4 diverse trigger scenarios
-6. **Validate Format**: Single-line YAML description with \n escapes
-7. **Test**: After creation, run rebuild, test in real scenarios
+5. **Write Evergreen**: Patterns not commands, pointers not copies, include verification steps
+6. **Add Examples**: 2-4 diverse trigger scenarios
+7. **Validate Format**: Single-line YAML description with \n escapes
+8. **Test**: After creation, run rebuild, test in real scenarios
 
 ## Communication Style
 
