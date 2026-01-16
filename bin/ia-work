@@ -27,7 +27,7 @@ log() {
     local timestamp
     timestamp=$(date '+%Y-%m-%d %H:%M:%S')
     case "$level" in
-        INFO)  [[ "$VERBOSE" == "true" ]] && echo -e "${BLUE}[$timestamp]${NC} $*" ;;
+        INFO)  [[ "$VERBOSE" == "true" ]] && echo -e "${BLUE}[$timestamp]${NC} $*" || true ;;
         WARN)  echo -e "${YELLOW}[$timestamp] WARN:${NC} $*" >&2 ;;
         ERROR) echo -e "${RED}[$timestamp] ERROR:${NC} $*" >&2 ;;
         OK)    echo -e "${GREEN}[$timestamp]${NC} $*" ;;
