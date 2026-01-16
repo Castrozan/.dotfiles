@@ -306,52 +306,6 @@ if [[ "$WAIT_FOR_START" == "true" ]] && [[ "$TTY_AVAILABLE" == "true" ]]; then
 fi
 
 while [[ $WORD_INDEX -lt $TOTAL_WORDS ]]; do
-    # Check for keypress (non-blocking)
-    key=""
-    if [[ "$TTY_AVAILABLE" == "true" ]]; then
-        read_key 0.01
-    fi
-    if [[ -n "$key" ]]; then
-        case "$key" in
-            ' '|p|P)
-                PAUSED=!$PAUSED
-                if $PAUSED; then
-                    clear_line
-                    printf "  [PAUSED - ${CURRENT_WPM} WPM - Word %d/%d - Press SPACE to continue]" "$((WORD_INDEX + 1))" "$TOTAL_WORDS"
-                    # Wait for unpause
-                    while true; do
-                        key=""
-                        read_key 0.1
-                        case "$key" in
-                            ' '|p|P)
-                                PAUSED=false
-                                break
-                                ;;
-                            q|Q|$'\e')
-                                cleanup
-                                ;;
-                        esac
-                    done
-                fi
-                ;;
-            +|=)
-                CURRENT_WPM=$((CURRENT_WPM + 50))
-                [[ $CURRENT_WPM -gt 2000 ]] && CURRENT_WPM=2000
-                ;;
-            -|_)
-                CURRENT_WPM=$((CURRENT_WPM - 50))
-                [[ $CURRENT_WPM -lt 50 ]] && CURRENT_WPM=50
-                ;;
-            r|R)
-                WORD_INDEX=0
-                continue
-                ;;
-            q|Q|$'\e')
-                cleanup
-                ;;
-        esac
-    fi
-
     # Get current word
     WORD="${WORDS[$WORD_INDEX]}"
     CLEAN_WORD=$(clean_word "$WORD")
@@ -366,7 +320,7 @@ while [[ $WORD_INDEX -lt $TOTAL_WORDS ]]; do
     clear_line
     format_word "$CLEAN_WORD"
 
-    # Calculate delay
+    # Calculate delay in milliseconds for the wait loop
     DELAY=$(calculate_delay "$CURRENT_WPM")
 
     # Add extra delay for punctuation
@@ -374,8 +328,54 @@ while [[ $WORD_INDEX -lt $TOTAL_WORDS ]]; do
         DELAY=$(echo "scale=4; $DELAY * 2.5" | bc)
     fi
 
-    # Wait (using read with timeout for responsiveness)
-    sleep "$DELAY"
+    # Wait while checking for keypresses (check every 0.05s)
+    WAIT_REMAINING="$DELAY"
+    while (( $(echo "$WAIT_REMAINING > 0" | bc -l) )); do
+        key=""
+        if [[ "$TTY_AVAILABLE" == "true" ]]; then
+            read_key 0.05
+        else
+            sleep 0.05
+        fi
+
+        # Handle keypress if detected
+        if [[ -n "$key" ]]; then
+            case "$key" in
+                ' '|p|P)
+                    clear_line
+                    printf "  [PAUSED - ${CURRENT_WPM} WPM - Word %d/%d - Press SPACE to continue]" "$((WORD_INDEX + 1))" "$TOTAL_WORDS"
+                    while true; do
+                        key=""
+                        read_key 0.1
+                        case "$key" in
+                            ' '|p|P) break ;;
+                            q|Q|$'\e') cleanup ;;
+                        esac
+                    done
+                    clear_line
+                    format_word "$CLEAN_WORD"
+                    ;;
+                +|=)
+                    CURRENT_WPM=$((CURRENT_WPM + 50))
+                    [[ $CURRENT_WPM -gt 2000 ]] && CURRENT_WPM=2000
+                    ;;
+                -|_)
+                    CURRENT_WPM=$((CURRENT_WPM - 50))
+                    [[ $CURRENT_WPM -lt 50 ]] && CURRENT_WPM=50
+                    ;;
+                r|R)
+                    WORD_INDEX=0
+                    WAIT_REMAINING=0
+                    continue 2
+                    ;;
+                q|Q|$'\e')
+                    cleanup
+                    ;;
+            esac
+        fi
+
+        WAIT_REMAINING=$(echo "scale=4; $WAIT_REMAINING - 0.05" | bc)
+    done
 
     ((WORD_INDEX++)) || true
 done
