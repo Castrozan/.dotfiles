@@ -1,6 +1,6 @@
 ---
 name: speed-read
-description: Display text using RSVP speed reading. Use when presenting explanations, summaries, or any text the user should read quickly. Launches speed-read script with the provided text.
+description: Display text using RSVP speed reading. Use when presenting explanations, summaries, or any text the user should read quickly. Spawns dedicated terminal window for focused reading.
 ---
 
 # Speed Read Skill
@@ -19,38 +19,37 @@ Use this skill when:
 When this skill is invoked, you MUST:
 
 1. Write the text to display to a temporary file
-2. Execute speed-read with that file
-3. Wait for the user to finish reading
+2. Spawn a dedicated terminal window running speed-read
+3. Inform user to switch to the speed-read window when ready
 
 ## Implementation
 
 ```bash
-# Write content to temp file and run speed-read
-CONTENT="Your text here"
+# Spawn dedicated terminal window for focused reading
+CONTENT="Your text here without punctuation for smoother reading"
 TMPFILE=$(mktemp /tmp/speed-read-XXXXXX.txt)
 echo "$CONTENT" > "$TMPFILE"
-speed-read "$TMPFILE"
-rm "$TMPFILE"
+wezterm start --class speed-read-popup -- bash -c "speed-read '$TMPFILE'; rm '$TMPFILE'; read -n 1" &
 ```
 
 ## Keyboard Controls (for user reference)
 
 - SPACE / p: Pause/resume
 - q / ESC: Quit
-- +/-: Adjust speed
-- r: Restart
+- +/-: Adjust speed by 50 WPM
+- r: Restart from beginning
 
 ## Example Usage
 
 When user says "/speed-read" or you determine speed-read output is appropriate:
 
-1. Prepare the text content (plain text, no markdown formatting)
-2. Use Bash to write to temp file and execute speed-read
-3. Inform user the speed-read session is starting
+1. Prepare the text content (plain text, minimal punctuation)
+2. Use Bash to spawn terminal window with speed-read
+3. Tell user to switch to the speed-read window
 
 ## Notes
 
 - Default speed is 400 WPM, adjustable with --wpm flag
-- Remove markdown formatting from text (speed-read strips basic formatting but plain text works best)
-- Keep text concise - speed-read works best for focused content
-- The script requires a terminal that supports ANSI colors
+- Use plain text without punctuation for smoothest reading flow
+- Spawns separate terminal window so user can focus entirely on reading
+- Window class is speed-read-popup for potential window manager rules
