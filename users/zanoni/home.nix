@@ -40,13 +40,4 @@
     ../../home/modules/wezterm.nix # https://tmuxai.dev/terminal-compatibility/
     ../../home/modules/whisper-input
   ];
-
-  # ia-work: Process AI instructions from Obsidian notes
-  services.ia-work = {
-    enable = true;
-    vaultPath = "/home/zanoni/vault";
-    tagName = "agent-work";
-    headless = true; # Run headlessly for systemd timer
-    timer.enable = true;
-  };
 }

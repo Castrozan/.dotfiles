@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
 # ia-work: Process Obsidian notes with AI instructions
-# Scans vault for notes with agent-work tag and passes entire note to AI
+# Scans vault for notes with agent-work tag and passes note to AI
 
 set -euo pipefail
 
-# Configuration defaults (can be overridden via environment)
 VAULT_PATH="${IA_WORK_VAULT_PATH:-$HOME/vault}"
 TAG_NAME="${IA_WORK_TAG:-agent-work}"
 HOURS_BACK="${IA_WORK_HOURS:-24}"
@@ -65,7 +64,6 @@ Environment Variables:
 
 Note Format:
     Notes should have the tag (e.g., #agent-work) anywhere in the file.
-    The entire note content is passed to the AI.
     After processing, #agent-work-done tag is added to mark completion.
 
 Examples:
@@ -75,7 +73,6 @@ Examples:
 EOF
 }
 
-# Parse command line arguments
 while [[ $# -gt 0 ]]; do
     case "$1" in
         -v|--vault)
@@ -286,6 +283,12 @@ You are running autonomously without user interaction. Important:
 - Make decisions on your own based on the note content
 - Working directory: $(pwd)
 - Note source: $note_file
+- Use nix-expert subagent when using nix
+
+Worktree workflow:
+- Run /worktree skill to create isolated worktree before changes
+- Work in worktree to avoid conflicts with main branch
+- Merge when done, resolve conflicts if any
 
 The following is the complete note content. Understand what needs to be done and execute it:
 
@@ -301,7 +304,10 @@ execute_instruction() {
     local note_name
     note_name=$(basename "$note_file" .md)
     local log_file="${LOG_DIR}/${note_name}-$(date '+%Y%m%d-%H%M%S').log"
-    local session_name="${TMUX_SESSION_PREFIX}-${note_name}-$(date '+%H%M%S')"
+    # Sanitize session name: replace spaces/special chars with dashes, truncate
+    local sanitized_name
+    sanitized_name=$(echo "$note_name" | tr ' ()[]' '-----' | tr -s '-' | cut -c1-30)
+    local session_name="${TMUX_SESSION_PREFIX}-${sanitized_name}-$(date '+%H%M%S')"
 
     # Read note content
     local note_content
@@ -339,10 +345,13 @@ execute_instruction() {
         log INFO "Running in tmux session: $session_name"
         log OK "Attach with: tmux attach -t $session_name"
 
-        # Create tmux session and run claude
-        # Use script to capture output while still allowing interaction
+        # Write prompt to temp file to avoid shell escaping issues
+        local prompt_file="${LOG_DIR}/.prompt-$$"
+        echo "$prompt" > "$prompt_file"
+
+        # Create tmux session and run claude with piped input (shows real-time output)
         tmux new-session -d -s "$session_name" \
-            "claude -p $(printf '%q' "$prompt") 2>&1 | tee '$log_file'; echo ''; echo 'Claude finished. Press any key to close.'; read -n 1"
+            "cat '$prompt_file' | claude; rm -f '$prompt_file'; echo ''; echo 'Claude finished. Press any key to close.'; read -n 1"
 
         log OK "Tmux session started: $session_name"
         log INFO "Session will remain open after completion for review"

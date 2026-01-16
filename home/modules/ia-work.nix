@@ -21,7 +21,11 @@ let
 in
 {
   options.services.ia-work = {
-    enable = lib.mkEnableOption "ia-work AI instruction processor";
+    enable = lib.mkOption {
+      type = lib.types.bool;
+      default = true;
+      description = "Enable ia-work AI instruction processor";
+    };
 
     vaultPath = lib.mkOption {
       type = lib.types.path;
@@ -72,7 +76,11 @@ in
     };
 
     timer = {
-      enable = lib.mkEnableOption "ia-work systemd timer";
+      enable = lib.mkOption {
+        type = lib.types.bool;
+        default = true;
+        description = "Enable ia-work systemd timer";
+      };
 
       interval = lib.mkOption {
         type = lib.types.str;
