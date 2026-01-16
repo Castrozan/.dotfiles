@@ -1,7 +1,7 @@
 { pkgs, ... }:
 let
   # Custom fork of clipse
-  clipse-zanoni = pkgs.buildGoModule rec {
+  clipse-zanoni = pkgs.buildGoModule {
     pname = "clipse";
     version = "zanoni.v1.2.0";
 
@@ -15,7 +15,10 @@ let
     vendorHash = "sha256-NGY8WBPxufHArOzz3MDr6r24xPLYPomWUEVOjlOU6pA=";
     proxyVendor = true;
 
-    buildInputs = with pkgs; [ xorg.libX11 xorg.libXtst ];
+    buildInputs = with pkgs; [
+      xorg.libX11
+      xorg.libXtst
+    ];
     nativeBuildInputs = with pkgs; [ pkg-config ];
 
     tags = [ "wayland" ];
