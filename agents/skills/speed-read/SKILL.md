@@ -29,7 +29,7 @@ When this skill is invoked, you MUST:
 CONTENT="Your text here without punctuation for smoother reading"
 TMPFILE=$(mktemp /tmp/speed-read-XXXXXX.txt)
 echo "$CONTENT" > "$TMPFILE"
-wezterm start --class speed-read-popup -- bash -c "speed-read '$TMPFILE'; rm '$TMPFILE'; read -n 1" &
+wezterm start --class speed-read-popup -- bash -c "echo 'Press any key to start reading...'; read -n 1; speed-read '$TMPFILE'; rm '$TMPFILE'; read -n 1" &
 ```
 
 ## Keyboard Controls (for user reference)
