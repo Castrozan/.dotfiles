@@ -184,6 +184,10 @@ clear_line() {
 
 # Handle exit
 cleanup() {
+    # Restore tty settings if we changed them
+    if [[ -n "${SAVED_STTY:-}" ]] && [[ -e /dev/tty ]]; then
+        stty "$SAVED_STTY" </dev/tty 2>/dev/null || true
+    fi
     show_cursor
     clear_line
     echo ""
@@ -236,16 +240,23 @@ PAUSED=false
 CURRENT_WPM=$WPM
 WORD_INDEX=0
 
-# Set up non-blocking input
-if [[ -t 0 ]]; then
+# Set up non-blocking input from /dev/tty (not stdin, which may have piped text)
+if [[ -t 1 ]] && [[ -e /dev/tty ]]; then
     # Save terminal settings
-    SAVED_STTY=$(stty -g)
-    stty -echo -icanon min 0 time 0
+    SAVED_STTY=$(stty -g </dev/tty)
+    stty -echo -icanon min 0 time 0 </dev/tty
+    TTY_AVAILABLE=true
+else
+    TTY_AVAILABLE=false
 fi
 
 while [[ $WORD_INDEX -lt $TOTAL_WORDS ]]; do
-    # Check for keypress (non-blocking)
-    if read -r -n 1 -t 0.01 key 2>/dev/null; then
+    # Check for keypress (non-blocking) - read from /dev/tty to avoid stdin conflict
+    key=""
+    if [[ "$TTY_AVAILABLE" == "true" ]]; then
+        read -r -n 1 -t 0.01 key </dev/tty 2>/dev/null || true
+    fi
+    if [[ -n "$key" ]]; then
         case "$key" in
             ' '|p|P)
                 PAUSED=!$PAUSED
@@ -254,7 +265,7 @@ while [[ $WORD_INDEX -lt $TOTAL_WORDS ]]; do
                     printf "  [PAUSED - ${CURRENT_WPM} WPM - Word %d/%d - Press SPACE to continue]" "$((WORD_INDEX + 1))" "$TOTAL_WORDS"
                     # Wait for unpause
                     while true; do
-                        if read -r -n 1 -t 0.1 key2 2>/dev/null; then
+                        if read -r -n 1 -t 0.1 key2 </dev/tty 2>/dev/null; then
                             case "$key2" in
                                 ' '|p|P)
                                     PAUSED=false
@@ -292,7 +303,7 @@ while [[ $WORD_INDEX -lt $TOTAL_WORDS ]]; do
 
     # Skip empty words
     if [[ -z "$CLEAN_WORD" ]]; then
-        ((WORD_INDEX++))
+        ((WORD_INDEX++)) || true
         continue
     fi
 
@@ -311,7 +322,7 @@ while [[ $WORD_INDEX -lt $TOTAL_WORDS ]]; do
     # Wait (using read with timeout for responsiveness)
     sleep "$DELAY"
 
-    ((WORD_INDEX++))
+    ((WORD_INDEX++)) || true
 done
 
 # Finished
