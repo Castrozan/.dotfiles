@@ -17,7 +17,12 @@
         identityFile = "~/.ssh/id_ed25519";
       };
       "gitlab.com" = {
-        hostname = "gitlab.service.betha.cloud";
+        hostname = "gitlab.services.betha.cloud";
+        user = "git";
+        identityFile = "~/.ssh/id_ed25519";
+      };
+      "gitlab.services.betha.cloud" = {
+        hostname = "gitlab.services.betha.cloud";
         user = "git";
         identityFile = "~/.ssh/id_ed25519";
       };
