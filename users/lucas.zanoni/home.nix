@@ -18,6 +18,7 @@
     #../../home/modules/clipse.nix TODO: clipse service does no work with gnome, migrate docs/clipse-gnome-issues.md
     ../../home/modules/cmatrix.nix
     ../../home/modules/cursor
+    ../../home/modules/devenv.nix
     ../../home/modules/flameshot.nix
     ../../home/modules/fish.nix
     ../../home/modules/fonts.nix

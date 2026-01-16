@@ -30,6 +30,8 @@
     nixgl.url = "github:nix-community/nixGL";
     agenix.url = "github:ryantm/agenix";
     voxtype.url = "github:peteonrails/voxtype";
+    # Pinned to 1.9.2 - latest version is broken
+    devenv.url = "github:cachix/devenv/v1.9.2";
   };
 
   # Outputs are used to define apps and dotfiles configuration for different systems and users
@@ -60,9 +62,7 @@
         inherit system;
         config.allowUnfree = true;
       };
-      # Args for dependency injection
       specialArgsBase = {
-        # Fake inheritance, this is just composition
         inherit
           nixpkgs-version
           home-version
