@@ -12,9 +12,9 @@
     ../../home/modules/cbonsai.nix
     ../../home/modules/claude
     ../../home/modules/claudemem.nix
-    ../../home/modules/clipse.nix
     ../../home/modules/cmatrix.nix
     ../../home/modules/cursor
+    ../../home/modules/devenv.nix
     ../../home/modules/fish.nix
     ../../home/modules/fonts.nix
     ../../home/modules/fuzzel.nix
