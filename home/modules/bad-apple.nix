@@ -1,29 +1,40 @@
 { pkgs, ... }:
 let
-  badAppleUrl = "https://www.youtube.com/watch?v=FtutLA63Cp8";
+  # Pre-rendered ASCII frames from BadAppleBash (only ~2MB compressed)
+  # Source: https://github.com/FelipeFMA/BadAppleBash
+  badAppleFrames = pkgs.fetchFromGitHub {
+    owner = "FelipeFMA";
+    repo = "BadAppleBash";
+    rev = "c400b0a";
+    sha256 = "09psdnr6i22cv46zb9mwqqf7bqs4xh88c670fpq7ppmb8a564yv1";
+  };
 
-  # tplay wrapper with CPU optimizations:
-  # -f 15: limit to 15fps (original is 30fps, halving reduces CPU ~50%)
-  # -g: grayscale mode (less color processing)
-  # -a: allow frame skip (drops frames if CPU can't keep up)
-  # -c " .oO@": simple 5-char map (faster than default 10-char)
-  # Video capped at 360p to reduce decode overhead
+  # Lightweight player: just cat frames with sleep (~2-3% CPU vs 200% with tplay)
   bad-apple-cmd = pkgs.writeShellScriptBin "bad-apple" ''
-    CACHE_DIR="''${XDG_CACHE_HOME:-$HOME/.cache}/bad-apple"
-    VIDEO_FILE="$CACHE_DIR/bad-apple.mp4"
+    FRAMES_DIR="${badAppleFrames}/frames-ascii"
+    AUDIO_FILE="${badAppleFrames}/bad_apple.mp3"
 
-    if [ ! -f "$VIDEO_FILE" ]; then
-      mkdir -p "$CACHE_DIR"
-      ${pkgs.yt-dlp}/bin/yt-dlp -f "bestvideo[height<=360]" -o "$VIDEO_FILE" "${badAppleUrl}" 2>/dev/null
-    fi
+    play_audio() {
+      if command -v mpv &>/dev/null; then
+        mpv --no-video "$AUDIO_FILE" &>/dev/null &
+        MPV_PID=$!
+        trap "kill $MPV_PID 2>/dev/null" EXIT
+      fi
+    }
 
-    # 6fps reduces CPU from ~300% to ~200% while auto-scaling to terminal
-    exec ${pkgs.tplay}/bin/tplay -l -g -a -f 6 -c " .oO@" "$VIDEO_FILE"
+    play_audio
+
+    while true; do
+      for f in "$FRAMES_DIR"/out*.txt; do
+        printf '\033[H'  # Move cursor to top-left (faster than clear)
+        cat "$f"
+        sleep 0.033  # ~30fps
+      done
+    done
   '';
 in
 {
   home.packages = [
-    pkgs.tplay
     bad-apple-cmd
   ];
 }
