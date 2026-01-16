@@ -136,8 +136,8 @@ Use for structure: `<instructions>`, `<context>`, `<examples>`, `<thinking>`, `<
 - **Examples > rules**: Few-shot beats exhaustive edge cases
 - **Imperative voice**: "Do X" not "You should do X"
 
-### Evergreen Instructions (CRITICAL)
-Agent instructions become stale as code evolves. Write instructions that stay accurate:
+### Evergreen Instructions
+Agent instructions become stale as code evolves. Write instructions that stay accurate.
 
 **Pointers over copies**: Static docs say WHAT/WHY. Dynamic discovery provides HOW.
 - Wrong: "Run `./bin/rebuild`" | Right: "Run rebuild script in bin/"
