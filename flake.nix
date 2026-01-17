@@ -22,6 +22,7 @@
     readItNow-rc.url = "github:castrozan/readItNow-rc/1.1.0";
     opencode.url = "github:anomalyco/opencode/v1.1.6";
     zed-editor.url = "github:zed-industries/zed/v0.218.5";
+    devenv.url = "github:cachix/devenv/v1.9.2";
     # Branch/default (actively maintained)
     cbonsai.url = "github:castrozan/cbonsai";
     cmatrix.url = "github:castrozan/cmatrix";
@@ -30,8 +31,6 @@
     nixgl.url = "github:nix-community/nixGL";
     agenix.url = "github:ryantm/agenix";
     voxtype.url = "github:peteonrails/voxtype";
-    # Pinned to 1.9.2 - latest version is broken
-    devenv.url = "github:cachix/devenv/v1.9.2";
   };
 
   # Outputs are used to define apps and dotfiles configuration for different systems and users
