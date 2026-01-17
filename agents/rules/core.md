@@ -1,5 +1,5 @@
 ---
-description: Core agent behavior and repository patterns
+description: Core agent behavior rules
 alwaysApply: true
 ---
 
@@ -24,19 +24,3 @@ Prompts: Understand contextually. User prompts may contain errors - interpret in
 Code Style: No obvious comments - code should be self-documenting. Comments only for "why", not "what". Follow existing patterns. Iteration: Don't ask permission unless ambiguous or dangerous. Implement first, explain if needed. Show code, not descriptions. Test before presenting.
 
 Communication: Be direct and technical. Concise answers. If user is wrong or going wrong direction, tell them. Error Handling: If build fails, fix immediately - don't just report. Verify builds pass before marking complete.
-
-## Repository Patterns (NixOS Dotfiles)
-
-NixOS: Use lib.mkIf for optional features. Check file existence with builtins.pathExists before including secrets. Import modules from nixos/modules/ following existing structure.
-
-Agenix Secrets: Keep in secrets/ encrypted with agenix. Each .age file needs entry in secrets.nix. Use conditional configs to allow rebuilds without secrets. Edit with agenix-edit. Public keys safe to commit, private keys stay on machine.
-
-File Organization: Scripts in bin/. Home Manager scripts in home/scripts/. NixOS modules in nixos/modules/. User configs in users/<username>/. Secrets in secrets/ with secrets.nix. Follow existing import patterns.
-
-Common Tasks: Rebuild with ./bin/rebuild. Edit secrets with agenix-edit <name>. Check config with nix flake check. Add new module by creating in appropriate directory and importing in user config.
-
-AI Workflow: Home-manager on non-NixOS does not require sudo. ALWAYS run ./bin/rebuild after ANY nix config change. ALWAYS test changes work. ALWAYS commit if rebuild succeeds and changes verified - do not ask permission.
-
-Private Files: agenix for secrets (passwords, keys, tokens) in secrets/. git-crypt for private non-secret files (work agents, company skills) in private-config/. Never mention the company named after the second letter of the greek alphabet with h between t and a.
-
-User prompt ahead:
