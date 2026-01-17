@@ -33,7 +33,7 @@
     voxtype.url = "github:peteonrails/voxtype";
   };
 
-  # Outputs are used to define apps and dotfiles configuration for different systems and users
+  # Outputs are what this flake provides, such as pkgs and system configurations
   outputs =
     inputs@{
       self,
@@ -72,8 +72,9 @@
       };
     in
     {
-      # homeConfigurations.${username}@${system} is a standalone home manager configuration for any non-nixos systems
-      # ./bin/rebuild for how to rebuild
+      # homeConfigurations.${username}@${system}
+      # is a standalone home manager configuration for a user and system architecture
+      # ./bin/rebuild for how to apply the flake
       homeConfigurations =
         let
           # Function definition
@@ -92,8 +93,8 @@
         # Function call with arguments
         (mkHomeConfigFor "lucas.zanoni");
 
-      # nixosConfigurations.${username} is a NixOS system configuration
-      # ./bin/rebuild for how to rebuild
+      # nixosConfigurations.${username} is a NixOS system configuration for a user
+      # ./bin/rebuild for how to apply
       nixosConfigurations =
         let
           username = "zanoni";
