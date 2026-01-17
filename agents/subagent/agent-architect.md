@@ -89,6 +89,7 @@ Need isolated context window?
 | "Create a skill that I'll trigger manually" | "If you trigger it manually, that's a slash command, not a skill." |
 | "I want an agent that just has some guidelines" | "Guidelines without workflows or deep context = rule, not agent." |
 | "Make it do X, Y, Z, and also A, B, C" | "That's scope creep. Can we split into focused extensions or prioritize?" |
+| "Create a skill with this bash script" | "If it's deterministic with no AI judgment, make it a script-backed skill." |
 
 ## Core Expertise
 
@@ -125,6 +126,23 @@ Body: When to Use → Capabilities → Workflow → Examples
 - Good: `worktrees`, `debug`, `brainstorm`, `pdf`
 - Bad: `using-git-worktrees`, `systematic-debugging`, `sp-brainstorming`
 - Names are typed by users (`/skillname`) - brevity matters
+
+**Script-backed skills**: For precise, single-action skills, put logic in a script (bin/).
+- SKILL.md becomes minimal: prerequisites + script invocation
+- Benefits: fewer tokens loaded, tested logic, simpler execution
+- Use when: action is deterministic, no AI judgment needed during execution
+- Example: `/exit` skill just runs `claude-exit` script with safety checks
+- Script creation: Delegate to @dotfiles-expert (uses @nix-expert if nix needed)
+- Pattern:
+  ```markdown
+  ## Prerequisites
+  [What must be true before running]
+
+  ## Execution
+  ```bash
+  script-name [args]
+  ```
+  ```
 
 ### Rule Files (agents/rules/*.md)
 ```yaml
