@@ -6,6 +6,7 @@ globs:
   - "**/SKILL.md"
   - ".claude/**/*.md"
 ---
+<!-- @agent-architect owns this file. Delegate changes, don't edit directly. -->
 
 Agent and skill instructions become stale when code changes. Write instructions that stay accurate by following these principles.
 

@@ -2,8 +2,7 @@
 description: GNOME keybinding debugging guidelines for NixOS with home-manager
 alwaysApply: false
 ---
-
-Do not change this file if not requested or if the change does not follow the pattern that focuses on token usage and information density. Follow these rules when debugging GNOME keybindings.
+<!-- @agent-architect owns this file. Delegate changes, don't edit directly. -->
 
 When custom keybindings don't work in GNOME on NixOS check dconf vs nix config sync. Run `dconf dump /org/gnome/settings-daemon/plugins/media-keys/` and compare with home/modules/gnome/dconf.nix. Custom keybinding slot numbers must match.
 

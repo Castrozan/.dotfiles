@@ -2,6 +2,7 @@
 name: exit
 description: Safely terminate the current Claude Code session. Use when user explicitly asks to end session.
 ---
+<!-- @agent-architect owns this file. Delegate changes, don't edit directly. -->
 
 # Exit Skill
 
