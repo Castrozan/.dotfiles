@@ -20,6 +20,9 @@ let
       "dvdsgl/claude-canvas"
       "anthropics/skills/document-skills"
     ];
+    fileFiltering = {
+      respectGitignore = true;
+    };
   };
 
   claudeDotfilesRules = ''
