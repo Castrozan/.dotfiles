@@ -38,8 +38,8 @@ let
       for img in "$TEMP_DIR"/frame_*.png; do
         count=$((count + 1))
         base=$(basename "$img" .png)
-        # chafa with exact terminal size, using block characters for quality
-        chafa -s "''${COLS}x''${LINES}" --symbols block "$img" > "$CACHE_DIR/$base.txt"
+        # chafa: symbols mode (not sixel), half blocks, 2 colors (b&w) - light on terminal
+        chafa -f symbols -s "''${COLS}x''${LINES}" --symbols half -c 2 "$img" > "$CACHE_DIR/$base.txt"
         printf "\rConverting: %d/%d" "$count" "$total"
       done
       echo ""
