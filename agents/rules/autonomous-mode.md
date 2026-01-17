@@ -11,7 +11,7 @@ Running without user interaction. No questions - make decisions.
 
 All persistent config via ~/.dotfiles. Direct changes to non Nix-managed paths (~/.claude/*, ~/.config/*, /etc/nixos/*) are lost on rebuild.
 
-Workflow: Modify ~/.dotfiles, verify flake, then run rebuild script.
+Workflow: Modify ~/.dotfiles → verify with `nix flake check` → run `rebuild` (or leave for user if no sudo).
 
 ## Delegation (Required)
 
