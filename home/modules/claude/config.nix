@@ -32,58 +32,58 @@ let
     };
 
     # Hooks configuration
-    hooks = {
-      # PreToolUse hooks - run before tool execution
-      PreToolUse = [
-        {
-          # Dangerous command blocker for Bash
-          matcher = "Bash";
-          hooks = [{
-            type = "command";
-            command = "python3 ${hooksPath}/dangerous-command-blocker.py";
-            timeout = 5000;
-          }];
-        }
-        {
-          # Tmux reminder for long-running commands
-          matcher = "Bash";
-          hooks = [{
-            type = "command";
-            command = "python3 ${hooksPath}/tmux-reminder.py";
-            timeout = 3000;
-          }];
-        }
-        {
-          # Git operation reminders
-          matcher = "Bash";
-          hooks = [{
-            type = "command";
-            command = "python3 ${hooksPath}/git-reminder.py";
-            timeout = 5000;
-          }];
-        }
-        {
-          # Sensitive file guard for Edit/Write
-          matcher = "Edit|Write";
-          hooks = [{
-            type = "command";
-            command = "python3 ${hooksPath}/sensitive-file-guard.py";
-            timeout = 3000;
-          }];
-        }
-      ];
+    # hooks = {
+    #   # PreToolUse hooks - run before tool execution
+    #   PreToolUse = [
+    #     {
+    #       # Dangerous command blocker for Bash
+    #       matcher = "Bash";
+    #       hooks = [{
+    #         type = "command";
+    #         command = "python3 ${hooksPath}/dangerous-command-blocker.py";
+    #         timeout = 5000;
+    #       }];
+    #     }
+    #     {
+    #       # Tmux reminder for long-running commands
+    #       matcher = "Bash";
+    #       hooks = [{
+    #         type = "command";
+    #         command = "python3 ${hooksPath}/tmux-reminder.py";
+    #         timeout = 3000;
+    #       }];
+    #     }
+    #     {
+    #       # Git operation reminders
+    #       matcher = "Bash";
+    #       hooks = [{
+    #         type = "command";
+    #         command = "python3 ${hooksPath}/git-reminder.py";
+    #         timeout = 5000;
+    #       }];
+    #     }
+    #     {
+    #       # Sensitive file guard for Edit/Write
+    #       matcher = "Edit|Write";
+    #       hooks = [{
+    #         type = "command";
+    #         command = "python3 ${hooksPath}/sensitive-file-guard.py";
+    #         timeout = 3000;
+    #       }];
+    #     }
+    #   ];
 
-      # UserPromptSubmit hooks - run when user submits a prompt
-      UserPromptSubmit = [
-        {
-          hooks = [{
-            type = "command";
-            command = "python3 ${hooksPath}/context-injector.py";
-            timeout = 5000;
-          }];
-        }
-      ];
-    };
+    #   # UserPromptSubmit hooks - run when user submits a prompt
+    #   UserPromptSubmit = [
+    #     {
+    #       hooks = [{
+    #         type = "command";
+    #         command = "python3 ${hooksPath}/context-injector.py";
+    #         timeout = 5000;
+    #       }];
+    #     }
+    #   ];
+    # };
   };
 
   claudeDotfilesRules = ''
