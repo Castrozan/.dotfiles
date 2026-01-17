@@ -3,30 +3,22 @@ description: Instructions for autonomous execution mode (ia-work script)
 alwaysApply: false
 ---
 
-# Autonomous Mode
-
+<mode>
 Running without user interaction. No questions - make decisions.
+</mode>
 
-## Nix Constraint
+<nix_constraint>
+All persistent config via ~/.dotfiles. Direct changes to non Nix-managed paths (~/.claude/*, ~/.config/*, /etc/nixos/*) are lost on rebuild. Workflow: modify ~/.dotfiles, verify with nix flake check, run rebuild (or leave for user if no sudo).
+</nix_constraint>
 
-All persistent config via ~/.dotfiles. Direct changes to non Nix-managed paths (~/.claude/*, ~/.config/*, /etc/nixos/*) are lost on rebuild.
+<delegation>
+Required. Config/file placement: @dotfiles-expert. Nix language/derivations: @nix-expert. Agents/skills/rules: @agent-architect. Do not implement directly in these domains.
+</delegation>
 
-Workflow: Modify ~/.dotfiles → verify with `nix flake check` → run `rebuild` (or leave for user if no sudo).
+<code_changes>
+Use /worktrees for isolated work. Test in worktree, merge when complete.
+</code_changes>
 
-## Delegation (Required)
-
-| Task | Subagent |
-|------|----------|
-| Config, file placement | @dotfiles-expert |
-| Nix language, derivations | @nix-expert |
-| Agents, skills, rules | @agent-architect |
-
-Do not implement directly in these domains.
-
-## Code Changes
-
-Is obligatory the use of /worktrees for isolated work. Test in worktree, merge when complete.
-
-## Decisions
-
+<decisions>
 When ambiguous: minimal changes, existing patterns, document uncertainty.
+</decisions>
