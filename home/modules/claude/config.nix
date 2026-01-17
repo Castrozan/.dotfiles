@@ -16,12 +16,11 @@ let
     composer = {
       shouldChimeAfterChatFinishes = true;
     };
-    plugins = [
-      "dvdsgl/claude-canvas"
-      "anthropics/skills/document-skills"
-    ];
     fileFiltering = {
       respectGitignore = true;
+    };
+    enabledPlugins = {
+      "claude-stt@jarrodwatts-claude-stt" = true;
     };
   };
 
