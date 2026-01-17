@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# Safely terminate the current Claude Code session
+# Only kills THIS session by using $PPID (parent process)
+
+set -euo pipefail
+
+PARENT_CMD=$(ps -p "$PPID" -o comm= 2>/dev/null || echo "unknown")
+
+if [[ "$PARENT_CMD" != "claude" ]]; then
+    echo "Safety check FAILED: Parent process is '$PARENT_CMD', not 'claude'"
+    echo "This script must be run from within a Claude Code session."
+    echo "Use /exit or Ctrl+D instead."
+    exit 1
+fi
+
+echo "Session PID: $PPID"
+echo "Parent verified as Claude Code process"
+echo "Sending SIGTERM for clean shutdown..."
+
+kill -TERM "$PPID"
