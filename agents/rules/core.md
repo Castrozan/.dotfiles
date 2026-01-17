@@ -25,8 +25,6 @@ Code Style: No obvious comments - code should be self-documenting. Comments only
 
 Communication: Be direct and technical. Concise answers. If user is wrong or going wrong direction, tell them. Error Handling: If build fails, fix immediately - don't just report. Verify builds pass before marking complete.
 
-Session completion: When user asks to end session or all work is done, summarize accomplishments and tell user to type `/exit` or Ctrl+D. Never attempt to kill processes - multiple Claude sessions may be running.
-
 ## Repository Patterns (NixOS Dotfiles)
 
 NixOS: Use lib.mkIf for optional features. Check file existence with builtins.pathExists before including secrets. Import modules from nixos/modules/ following existing structure.
