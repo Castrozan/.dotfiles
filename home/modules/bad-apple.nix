@@ -2,28 +2,82 @@
 let
   badAppleUrl = "https://www.youtube.com/watch?v=FtutLA63Cp8";
 
-  # tplay wrapper with CPU optimizations:
-  # -f 15: limit to 15fps (original is 30fps, halving reduces CPU ~50%)
-  # -g: grayscale mode (less color processing)
-  # -a: allow frame skip (drops frames if CPU can't keep up)
-  # -c " .oO@": simple 5-char map (faster than default 10-char)
-  # Video capped at 360p to reduce decode overhead
-  bad-apple-cmd = pkgs.writeShellScriptBin "bad-apple" ''
-    CACHE_DIR="''${XDG_CACHE_HOME:-$HOME/.cache}/bad-apple"
-    VIDEO_FILE="$CACHE_DIR/bad-apple.mp4"
+  # Dependencies for frame generation
+  deps = with pkgs; [ yt-dlp ffmpeg chafa coreutils ];
 
-    if [ ! -f "$VIDEO_FILE" ]; then
+  bad-apple-cmd = pkgs.writeShellScriptBin "bad-apple" ''
+    export PATH="${pkgs.lib.makeBinPath deps}:$PATH"
+
+    CACHE_BASE="''${XDG_CACHE_HOME:-$HOME/.cache}/bad-apple"
+    VIDEO_FILE="$CACHE_BASE/video.mp4"
+    AUDIO_FILE="$CACHE_BASE/audio.mp3"
+
+    # Get terminal size for cache key
+    COLS=$(tput cols)
+    LINES=$(tput lines)
+    CACHE_DIR="$CACHE_BASE/frames-''${COLS}x''${LINES}"
+
+    download_video() {
+      echo "Downloading Bad Apple video..."
+      mkdir -p "$CACHE_BASE"
+      yt-dlp -f "bestvideo[height<=480]" -o "$VIDEO_FILE" "${badAppleUrl}"
+      yt-dlp -f "bestaudio" -x --audio-format mp3 -o "$AUDIO_FILE" "${badAppleUrl}"
+    }
+
+    generate_frames() {
+      echo "Generating ASCII frames for ''${COLS}x''${LINES}..."
       mkdir -p "$CACHE_DIR"
-      ${pkgs.yt-dlp}/bin/yt-dlp -f "bestvideo[height<=360]" -o "$VIDEO_FILE" "${badAppleUrl}" 2>/dev/null
+
+      # Extract frames at 30fps
+      TEMP_DIR=$(mktemp -d)
+      ffmpeg -i "$VIDEO_FILE" -vf "fps=30" "$TEMP_DIR/frame_%04d.png" -hide_banner -loglevel error
+
+      # Convert each frame to ASCII using chafa
+      total=$(ls "$TEMP_DIR"/frame_*.png | wc -l)
+      count=0
+      for img in "$TEMP_DIR"/frame_*.png; do
+        count=$((count + 1))
+        base=$(basename "$img" .png)
+        # chafa: no colors, block chars only - dark areas stay empty (sparse, light)
+        chafa -f symbols -s "''${COLS}x''${LINES}" --symbols block -c none "$img" > "$CACHE_DIR/$base.txt"
+        printf "\rConverting: %d/%d" "$count" "$total"
+      done
+      echo ""
+
+      rm -rf "$TEMP_DIR"
+      echo "Done! Frames cached at $CACHE_DIR"
+    }
+
+    play_audio() {
+      if [ -f "$AUDIO_FILE" ] && command -v mpv &>/dev/null; then
+        mpv --no-video "$AUDIO_FILE" &>/dev/null &
+        MPV_PID=$!
+        trap "kill $MPV_PID 2>/dev/null" EXIT
+      fi
+    }
+
+    # Check if we need to download/generate
+    if [ ! -f "$VIDEO_FILE" ]; then
+      download_video
     fi
 
-    # 6fps + 80 width reduces CPU from ~300% to ~175%
-    exec ${pkgs.tplay}/bin/tplay -l -g -a -f 6 -w 80 -c " .oO@" "$VIDEO_FILE"
+    if [ ! -d "$CACHE_DIR" ] || [ -z "$(ls -A "$CACHE_DIR" 2>/dev/null)" ]; then
+      generate_frames
+    fi
+
+    # Play cached frames (~2% CPU)
+    play_audio
+    while true; do
+      for f in "$CACHE_DIR"/frame_*.txt; do
+        printf '\033[H'
+        cat "$f"
+        sleep 0.033
+      done
+    done
   '';
 in
 {
   home.packages = [
-    pkgs.tplay
     bad-apple-cmd
   ];
 }

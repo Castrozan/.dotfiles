@@ -2,6 +2,7 @@
 name: pdf
 description: PDF processing and manipulation. Use when user asks to read PDFs, fill PDF forms, extract text/data from PDFs, merge/split PDFs, or convert to/from PDF format.
 ---
+<!-- @agent-architect owns this file. Delegate changes, don't edit directly. -->
 
 # PDF Processing Skill
 

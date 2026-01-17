@@ -43,20 +43,19 @@ _start_screensaver_tmux_session() {
         # Note: tmux panes are 1-indexed, not 0-indexed
         tmux send-keys -t screensaver.1 "$first_cmd" C-m
 
-        # For remaining commands, create right side panes
-        # Layout: Left (large) = first command, Right side = remaining commands
-        # If 3 commands: top-right = third, bottom-right = second
+        local bottom_height="${SCREENSAVER_BOTTOM_HEIGHT:-30}"
+
         if [ ${#available_commands[@]} -gt 1 ]; then
             # Split horizontally to create right side (pane 2)
-            tmux split-window -h -t screensaver.1
-            
+            tmux split-window -t screensaver.1
+
             # If there are 3 commands: create vertical split on right side
             if [ ${#available_commands[@]} -gt 2 ]; then
                 # Send third command (cmatrix) to top-right (pane 2)
                 tmux send-keys -t screensaver.2 "${available_commands[2]}" C-m
                 # Split pane 2 vertically to create bottom-right pane (pane 3)
-                tmux split-window -v -t screensaver.2
-                # Send second command (pipes.sh) to the bottom-right pane (pane 3)
+                tmux split-window -v -p "$bottom_height" -t screensaver.2
+                # Send second command (bad-apple) to the bottom-right pane (pane 3)
                 tmux send-keys -t screensaver.3 "${available_commands[1]}" C-m
             else
                 # Only 2 commands: second goes to right pane

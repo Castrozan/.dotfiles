@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# Safely terminate the current Claude Code session
+# Process hierarchy: claude -> bash -> this script
+# We need to kill claude (grandparent), not bash (parent)
+
+set -euo pipefail
+
+CLAUDE_PID=$(ps -p "$PPID" -o ppid= 2>/dev/null | tr -d ' ')
+CLAUDE_CMD=$(ps -p "$CLAUDE_PID" -o comm= 2>/dev/null || echo "unknown")
+
+if [[ "$CLAUDE_CMD" == "claude" ]]; then
+    echo "Claude PID: $CLAUDE_PID"
+    echo "Sending SIGTERM for clean shutdown..."
+    kill -TERM "$CLAUDE_PID"
+else
+    echo "Safety check FAILED: Expected 'claude' but found '$CLAUDE_CMD' (PID: $CLAUDE_PID)"
+    echo "Use /exit or Ctrl+D instead."
+    exit 1
+fi
