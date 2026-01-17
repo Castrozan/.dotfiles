@@ -7,5 +7,3 @@ CLAUDE.md
 .cursor/
 home/modules/cursor/cursor-global-user-rules.md
 
-# Legacy external private config (outside repo)
-.private-config/
