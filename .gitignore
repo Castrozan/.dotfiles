@@ -2,12 +2,10 @@
 # git worktrees
 .worktrees/
 
-# symlinks for agent rules management
+# Home-manager deployed (source: agents/, run ./bin/rebuild)
 CLAUDE.md
+.cursor/
 home/modules/cursor/cursor-global-user-rules.md
-.cursor/ai-interaction-guidelines.md
-.cursor/gnome-keybinding-debugging.md
-.cursor/cursor-global-user-rules.md
 
 # Legacy external private config (outside repo)
 .private-config/
