@@ -2,6 +2,7 @@
   imports = [
     ./agenix-edit.nix
     ./agenix-edit-phone.nix
+    ./claude-exit.nix
     ./daily-note.nix
     ./git-crypt-setup.nix
     ./ksnip-annotate.nix

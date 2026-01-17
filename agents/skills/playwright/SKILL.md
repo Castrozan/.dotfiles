@@ -2,6 +2,7 @@
 name: playwright
 description: Browser automation with Playwright. Use when user asks to automate web interactions, scrape websites, test web applications, fill web forms, take screenshots, or interact with dynamic web content.
 ---
+<!-- @agent-architect owns this file. Delegate changes, don't edit directly. -->
 
 # Playwright Browser Automation Skill
 

@@ -20,12 +20,15 @@ let
       "dvdsgl/claude-canvas"
       "anthropics/skills/document-skills"
     ];
+    fileFiltering = {
+      respectGitignore = true;
+    };
   };
 
   claudeDotfilesRules = ''
     # Claude Code Project Context
 
-    ${builtins.readFile ../../../agents/rules/ai-interaction-guidelines.md}
+    ${builtins.readFile ../../../agents/rules/core.md}
 
     ${builtins.readFile ../../../agents/rules/claude-code-agents.md}
 

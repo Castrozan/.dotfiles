@@ -2,8 +2,7 @@
 description: Devenv usage patterns for AI agents managing development environments
 alwaysApply: false
 ---
-
-Do not change this file if not requested or if the change does not follow the pattern that focuses on token usage and information density. Follow these rules when working with devenv development environments.
+<!-- @agent-architect owns this file. Delegate changes, don't edit directly. -->
 
 Entering Environment
 Enter development shell with `devenv shell`. This activates all packages, environment variables, and runs enterShell commands. Shell stays active until exit. Use when you need interactive work in the environment.
