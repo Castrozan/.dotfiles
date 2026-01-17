@@ -147,6 +147,8 @@ return {
 
   -- Key bindings
   keys = {
+    -- Disable Quick Select (Ctrl+Shift+Space) so claude-stt can use this hotkey
+    { key = ' ', mods = 'CTRL|SHIFT', action = wezterm.action.DisableDefaultAssignment },
     -- Shift+Enter: send newline character for multi-line input
     { key = 'Enter', mods = 'SHIFT', action = wezterm.action.SendString('\n') },
     -- Ctrl+Enter: send \x1b[13;5u (5 = Ctrl modifier) for apps that need it
