@@ -198,21 +198,70 @@ git-crypt-setup
 
 ## Common Operations
 
-### Rebuild
+### Rebuild Safety (CRITICAL)
+
+**Before ANY rebuild, you MUST:**
+1. **Ask permission first** - Rebuilds are CPU-intensive. Always ask: "Should I run a rebuild to test this?"
+2. **Check if task requires rebuild** - Investigation, diagnosis, and planning tasks do NOT need rebuilds
+3. **Check for running builds** - Run `pgrep -f "nix build\|nix-build\|nixos-rebuild"` first
+4. **Consider the context** - If user asks about a library issue or wants diagnosis, research first
+
+**DO NOT rebuild when:**
+- Task is diagnosis/investigation only
+- User hasn't explicitly approved
+- Another build is already running
+- You're just researching how something works
+
+**Only rebuild when:**
+- User explicitly asks for rebuild
+- User approved your plan that includes rebuild
+- Making changes that REQUIRE verification via rebuild
+
+### Rebuild Command
 ```bash
 ./bin/rebuild
 # Non-NixOS: home-manager switch (no sudo)
 # NixOS: sudo nixos-rebuild switch
 ```
 
-**ALWAYS rebuild after ANY nix change. ALWAYS test. ALWAYS commit if success.**
+**Ask before rebuilding. Diagnosis doesn't need compilation.**
+
+## Git Workflow (MANDATORY)
+
+### Why Staging Matters
+Nix rebuilds read from the git index, not the working tree. **Unstaged files are invisible to nix during rebuild.** If you modify files but don't stage them, the rebuild will use the OLD file contents and fail or produce unexpected results.
+
+### Before Returning to Main Agent
+After making any changes, you MUST:
+
+1. **Stage all changes**: Use `git add <specific-files>` for each file you modified
+   - NEVER use `git add -A` or `git add .` (may stage unrelated files from parallel work)
+   - List each file explicitly
+
+2. **Do NOT commit**: Leave committing to the main agent
+
+3. **Return with commit info**: Provide:
+   - Suggested commit message (conventional commit format)
+   - Brief description of what changed and why
+
+### Example Return Format
+```
+Changes staged:
+- home/modules/foo.nix (new module)
+- users/zanoni/home.nix (added import)
+
+Suggested commit: feat(home): add foo module with bar integration
+
+What changed: Added foo module that configures X for Y. Integrated with existing bar setup by Z.
+```
 
 ### Adding a New Module
 1. Create `home/modules/<name>.nix` with full config
 2. Add import to `users/<username>/home.nix`
-3. Run `./bin/rebuild`
-4. Test the functionality
-5. Commit
+3. Stage changes (`git add` each file)
+4. Run `./bin/rebuild`
+5. Test the functionality
+6. Return with suggested commit message
 
 ### Adding a Package
 - Simple package: Add to `users/<username>/pkgs.nix`
@@ -254,7 +303,9 @@ git-crypt-setup
 | Scripts in random locations | bin/ or home/scripts/ or users/*/scripts/ |
 | Hardcoded usernames | Use `username` from specialArgs |
 | New file without adding import | Always add import after creating module |
-| git commit without rebuild success | ALWAYS rebuild first, ALWAYS test |
+| Rebuild without staging changes | Stage files before rebuild (nix reads git index) |
+| `git add -A` or `git add .` | `git add <specific-file>` for each file |
+| Committing directly | Return suggested commit to main agent |
 
 ## Claude Code Agents/Skills in This Repo
 

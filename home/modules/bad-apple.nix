@@ -10,7 +10,6 @@ let
 
     CACHE_BASE="''${XDG_CACHE_HOME:-$HOME/.cache}/bad-apple"
     VIDEO_FILE="$CACHE_BASE/video.mp4"
-    AUDIO_FILE="$CACHE_BASE/audio.mp3"
 
     # Get terminal size for cache key
     COLS=$(tput cols)
@@ -21,7 +20,6 @@ let
       echo "Downloading Bad Apple video..."
       mkdir -p "$CACHE_BASE"
       yt-dlp -f "bestvideo[height<=480]" -o "$VIDEO_FILE" "${badAppleUrl}"
-      yt-dlp -f "bestaudio" -x --audio-format mp3 -o "$AUDIO_FILE" "${badAppleUrl}"
     }
 
     generate_frames() {
@@ -38,7 +36,7 @@ let
       for img in "$TEMP_DIR"/frame_*.png; do
         count=$((count + 1))
         base=$(basename "$img" .png)
-        # chafa: no colors, block chars only - dark areas stay empty (sparse, light)
+        # chafa: no colors, block chars only
         chafa -f symbols -s "''${COLS}x''${LINES}" --symbols block -c none "$img" > "$CACHE_DIR/$base.txt"
         printf "\rConverting: %d/%d" "$count" "$total"
       done
@@ -46,14 +44,6 @@ let
 
       rm -rf "$TEMP_DIR"
       echo "Done! Frames cached at $CACHE_DIR"
-    }
-
-    play_audio() {
-      if [ -f "$AUDIO_FILE" ] && command -v mpv &>/dev/null; then
-        mpv --no-video "$AUDIO_FILE" &>/dev/null &
-        MPV_PID=$!
-        trap "kill $MPV_PID 2>/dev/null" EXIT
-      fi
     }
 
     # Check if we need to download/generate
@@ -65,8 +55,7 @@ let
       generate_frames
     fi
 
-    # Play cached frames (~2% CPU)
-    play_audio
+    # Play cached frames
     while true; do
       for f in "$CACHE_DIR"/frame_*.txt; do
         printf '\033[H'

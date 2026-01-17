@@ -6,6 +6,5 @@
 SCREENSAVER_COMMANDS=(
     'install-nothing --all --exclude deno'
     'cmatrix'
-    'bad-apple'
+    'sleep 3; bad-apple'
 )
-

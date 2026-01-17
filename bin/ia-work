@@ -13,6 +13,9 @@ VERBOSE="${IA_WORK_VERBOSE:-false}"
 LOG_DIR="${IA_WORK_LOG_DIR:-$HOME/.local/state/ia-work}"
 HEADLESS="${IA_WORK_HEADLESS:-false}"
 TMUX_SESSION_PREFIX="${IA_WORK_TMUX_PREFIX:-ia-work}"
+DOTFILES_DIR="${IA_WORK_DOTFILES:-$HOME/.dotfiles}"
+AUTONOMOUS_RULES="${DOTFILES_DIR}/agents/rules/autonomous-mode.md"
+AUTONOMOUS_RULES_OVERRIDE="${IA_WORK_RULES_FILE:-}"
 
 # Colors for output
 RED='\033[0;31m'
@@ -61,6 +64,18 @@ Environment Variables:
     IA_WORK_LOG_DIR        Directory for logs (default: ~/.local/state/ia-work)
     IA_WORK_HEADLESS       Same as --headless
     IA_WORK_TMUX_PREFIX    Tmux session prefix (default: ia-work)
+    IA_WORK_DOTFILES       Dotfiles directory (default: ~/.dotfiles)
+    IA_WORK_RULES_FILE     Custom autonomous mode instructions file
+
+Instruction Injection:
+    The AI receives instructions from: \$DOTFILES/agents/rules/autonomous-mode.md
+    These instructions establish constraints (NixOS workflow, subagent delegation).
+
+    To customize:
+    - Edit the rules file in your dotfiles repo, or
+    - Set IA_WORK_RULES_FILE to point to a custom instructions file
+
+    The file uses YAML frontmatter (stripped at runtime) and markdown content.
 
 Note Format:
     Notes should have the tag (e.g., #agent-work) anywhere in the file.
@@ -276,21 +291,36 @@ build_prompt() {
     local note_name
     note_name=$(basename "$note_file" .md)
 
+    # Determine which rules file to use (allow override)
+    local rules_file="${AUTONOMOUS_RULES_OVERRIDE:-$AUTONOMOUS_RULES}"
+
+    # Read autonomous instructions (strip YAML frontmatter)
+    local instructions=""
+    if [[ -f "$rules_file" ]]; then
+        # Remove YAML frontmatter (between --- markers at start)
+        instructions=$(sed '1{/^---$/!q;};1,/^---$/d' "$rules_file")
+    else
+        log WARN "Autonomous rules not found: $rules_file"
+        instructions="# Autonomous Mode
+
+Running autonomously. Make decisions without asking questions.
+Use @dotfiles-expert for config changes, @nix-expert for Nix code."
+    fi
+
+    # Output instructions from file
+    echo "$instructions"
+
+    # Dynamic context
     cat <<EOF
-You are running autonomously without user interaction. Important:
-- You CANNOT ask questions - no one will answer
-- You have FULL permissions to implement changes
-- Make decisions on your own based on the note content
-- Working directory: $(pwd)
+
+## Task Context
 - Note source: $note_file
-- Use nix-expert subagent when using nix
+- Note name: $note_name
+- Working directory: $DOTFILES_DIR
 
-Worktree workflow:
-- Run /worktree skill to create isolated worktree before changes
-- Work in worktree to avoid conflicts with main branch
-- Merge when done, resolve conflicts if any
+## Instructions
 
-The following is the complete note content. Understand what needs to be done and execute it:
+Execute the following:
 
 ---
 $note_content

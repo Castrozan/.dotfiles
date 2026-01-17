@@ -81,6 +81,7 @@
       zoxide
       zsh
     ]
+    # Unstable packages
     ++ (with unstable; [
       brave
       cargo
@@ -95,6 +96,7 @@
       supabase-cli
       terraform # Removed: its broken on nixpkgs
     ])
+    # Latest packages
     ++ (with latest; [
       gemini-cli
       vscode
