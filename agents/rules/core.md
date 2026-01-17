@@ -2,8 +2,7 @@
 description: Core agent behavior rules
 alwaysApply: true
 ---
-
-Do not change this file unless requested. These rules must be followed without exception.
+<!-- @agent-architect owns this file. Delegate changes, don't edit directly. -->
 
 ## Agent Behavior
 

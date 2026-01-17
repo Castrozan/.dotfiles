@@ -2,6 +2,7 @@
 name: worktrees
 description: Use when starting feature work that needs isolation from current workspace or before executing implementation plans - creates isolated git worktrees with smart directory selection and safety verification
 ---
+<!-- @agent-architect owns this file. Delegate changes, don't edit directly. -->
 
 # Worktrees
 

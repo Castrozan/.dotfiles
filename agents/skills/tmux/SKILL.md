@@ -2,6 +2,7 @@
 name: tmux
 description: Tmux session and process control. Use when restarting dev servers, checking process output, stopping/starting background processes, or managing services in tmux panes.
 ---
+<!-- @agent-architect owns this file. Delegate changes, don't edit directly. -->
 
 # Tmux Interaction
 
