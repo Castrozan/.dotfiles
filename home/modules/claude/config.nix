@@ -22,11 +22,7 @@ let
       respectGitignore = true;
     };
     enabledPlugins = {
-      # NOTE: claude-stt is disabled because its SessionStart hook fails
-      # when CLAUDE_STT_PYTHON env var is not available. After home-manager
-      # rebuild, user must log out and log back in for environment.d
-      # variables to propagate to the GUI session. Then re-enable this.
-      "claude-stt@jarrodwatts-claude-stt" = false;
+      "claude-stt@jarrodwatts-claude-stt" = true;
       "typescript-lsp@claude-plugins-official" = true;
       "jdtls-lsp@claude-plugins-official" = true;
       # NOTE: some lsps are installed via pkgs in lsp.nix
