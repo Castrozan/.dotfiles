@@ -9,7 +9,7 @@ Do not change this file unless requested. These rules must be followed without e
 
 Commands: Use timeouts. Workflow: Search codebase before coding, read relevant files first, test changes, check linter errors. Files: Check if file contents changed by user before overwriting. Time: Check current date/time before searches and version references.
 
-Agent delegation: When a specialized subagent exists for a domain, delegate to it rather than doing work directly. Subagents have deeper expertise and isolated context. Do work directly only for simple tasks or when no relevant subagent exists. Check agents/subagent/ for available specialists. Only tell agent-architect to change itself only if it is **very explicit** for agent-architect to change itself.
+Agent delegation: When a specialized subagent exists for a domain, delegate to it rather than doing work directly. Subagents have deeper expertise and isolated context. Do work directly only for simple tasks or when no relevant subagent exists. Check agents/subagent/ for available specialists. Only tell agent-architect to change itself only if it is **very explicit** for agent-architect to change itself. Subagents do not maintain context between delegations so provide history context when maintaining a conversation.
 
 Git: Commits are NOT dangerous - do them freely. During development: commit frequently to track progress and help user see what changed. Multiple small commits are better than one giant commit. At end of development: clean up with squash if needed for documentation. Follow existing commit message patterns. Check logs before commits.
 
