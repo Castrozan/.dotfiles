@@ -198,33 +198,80 @@ git-crypt-setup
 
 ## Common Operations
 
-### Rebuild Safety (CRITICAL)
+### Rebuild Decision Logic
 
-**Before ANY rebuild, you MUST:**
-1. **Ask permission first** - Rebuilds are CPU-intensive. Always ask: "Should I run a rebuild to test this?"
-2. **Check if task requires rebuild** - Investigation, diagnosis, and planning tasks do NOT need rebuilds
-3. **Check for running builds** - Run `pgrep -f "nix build\|nix-build\|nixos-rebuild"` first
-4. **Consider the context** - If user asks about a library issue or wants diagnosis, research first
+Rebuilds are CPU-intensive. Know when they're needed - don't ask, decide.
 
-**DO NOT rebuild when:**
-- Task is diagnosis/investigation only
-- User hasn't explicitly approved
-- Another build is already running
-- You're just researching how something works
+**Task type determines rebuild need:**
 
-**Only rebuild when:**
-- User explicitly asks for rebuild
-- User approved your plan that includes rebuild
-- Making changes that REQUIRE verification via rebuild
+| Task Type | Examples | Rebuild? |
+|-----------|----------|----------|
+| Diagnosis | "why doesn't X work", "check status", "what's wrong with" | NO - research only |
+| Investigation | "how does X work", "where is X configured", "show me" | NO - read files only |
+| Implementation | create/modify .nix files | YES - after changes |
+| Explicit request | "rebuild", "test my changes", "apply config" | YES |
 
-### Rebuild Command
+**Diagnosis tasks:** Read configs, check logs, examine errors, trace dependencies. Zero compilation needed. If user asks "why does claude-stt have a library error" - that's diagnosis. Read files, check nix expressions, research the issue. Report findings.
+
+**Implementation tasks:** After modifying any .nix file, rebuild to verify changes work. Stage files first (nix reads git index).
+
+### Rebuild Execution (Context-Aware)
+
+**Step 1: Detect context**
 ```bash
-./bin/rebuild
-# Non-NixOS: home-manager switch (no sudo)
-# NixOS: sudo nixos-rebuild switch
+# Check if running on NixOS
+cat /etc/os-release | grep -q '^ID=nixos'
+```
+- NixOS (`ID=nixos`): Full system rebuild, requires sudo
+- Non-NixOS: Home-manager only, no sudo needed
+
+**Step 2: Always dry-run first**
+```bash
+# Home-manager (non-NixOS)
+home-manager build --flake ~/.dotfiles#lucas.zanoni@x86_64-linux
+
+# NixOS - dry-run doesn't need sudo
+nixos-rebuild dry-run --flake ~/.dotfiles#zanoni
+```
+If dry-run fails, fix errors before attempting actual rebuild.
+
+**Step 3: Execute rebuild based on context**
+
+| Context | Command | Agent Action |
+|---------|---------|--------------|
+| Home-manager only | `home-manager switch --flake ...` | Execute directly - no sudo needed |
+| NixOS | `sudo nixos-rebuild switch --flake ...` | Return to user with instruction |
+
+**NixOS rebuild handling:**
+When on NixOS, after successful dry-run, return control to user:
+```
+Dry-run passed. Ready to apply changes.
+
+Run: ./bin/rebuild
+
+(Requires sudo - returning control to you)
 ```
 
-**Ask before rebuilding. Diagnosis doesn't need compilation.**
+Do NOT attempt sudo commands. Return with clear instruction and let user execute.
+
+**Home-manager rebuild handling:**
+Execute directly - no elevated privileges needed:
+```bash
+home-manager switch --flake ~/.dotfiles#$(whoami)@x86_64-linux \
+    -b "backup-$(date +%Y-%m-%d-%H-%M-%S)"
+```
+
+### Quick Reference
+```bash
+# Detect context
+grep -q '^ID=nixos' /etc/os-release && echo "NixOS" || echo "Home-manager"
+
+# Dry-run (always do first)
+./bin/rebuild --dry-run  # or use commands above
+
+# Actual rebuild
+./bin/rebuild  # handles both contexts automatically
+```
 
 ## Git Workflow (MANDATORY)
 

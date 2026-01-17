@@ -25,7 +25,7 @@ Do not implement directly in these domains.
 
 ## Code Changes
 
-Use /worktrees for isolated work. Test in worktree, merge when complete.
+Is obligatory the use of /worktrees for isolated work. Test in worktree, merge when complete.
 
 ## Decisions
 
