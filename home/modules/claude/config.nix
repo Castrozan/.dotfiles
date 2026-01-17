@@ -1,6 +1,5 @@
 { pkgs, ... }:
 let
-  # Hook scripts directory (relative to home)
   hooksPath = "~/.claude/hooks";
 
   claudeGlobalSettings = {
@@ -26,15 +25,14 @@ let
       "claude-stt@jarrodwatts-claude-stt" = true;
       "typescript-lsp@claude-plugins-official" = true;
       "jdtls-lsp@claude-plugins-official" = true;
-      "nixd-lsp@custom-lsp" = true;
-      "bash-lsp@custom-lsp" = true;
+      # NOTE: some lsps are installed via pkgs in lsp.nix
+      # and work directly without being Claude Code plugins
     };
 
     hooks = {
       # Run before tool execution
       PreToolUse = [
         {
-          # Tmux reminder for long-running commands
           matcher = "Bash";
           hooks = [
             {
@@ -45,7 +43,6 @@ let
           ];
         }
         {
-          # Git operation reminders
           matcher = "Bash";
           hooks = [
             {
