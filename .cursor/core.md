@@ -1,1 +1,0 @@
-/nix/store/8kyl029p1ksnrs3jhrqy6nw4287y5f0k-home-manager-files/.dotfiles/.cursor/core.md
