@@ -40,15 +40,54 @@ let
               command = "python3 ${hooksPath}/tmux-reminder.py";
               timeout = 3000;
             }
-          ];
-        }
-        {
-          matcher = "Bash";
-          hooks = [
+            {
+              type = "command";
+              command = "python3 ${hooksPath}/dangerous-command-guard.py";
+              timeout = 3000;
+            }
             {
               type = "command";
               command = "python3 ${hooksPath}/git-reminder.py";
               timeout = 5000;
+            }
+          ];
+        }
+        {
+          matcher = "Edit|Write";
+          hooks = [
+            {
+              type = "command";
+              command = "python3 ${hooksPath}/sensitive-file-guard.py";
+              timeout = 3000;
+            }
+          ];
+        }
+        {
+          matcher = "Task";
+          hooks = [
+            {
+              type = "command";
+              command = "python3 ${hooksPath}/subagent-context-reminder.py";
+              timeout = 3000;
+            }
+          ];
+        }
+      ];
+
+      # Run after tool execution
+      PostToolUse = [
+        {
+          matcher = "Edit|Write";
+          hooks = [
+            {
+              type = "command";
+              command = "python3 ${hooksPath}/nix-rebuild-reminder.py";
+              timeout = 3000;
+            }
+            {
+              type = "command";
+              command = "python3 ${hooksPath}/auto-format.py";
+              timeout = 15000;
             }
           ];
         }
