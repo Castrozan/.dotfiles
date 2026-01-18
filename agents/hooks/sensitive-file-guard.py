@@ -1,76 +1,59 @@
 #!/usr/bin/env python3
-"""
-Sensitive File Guard Hook
-=========================
-Warns or blocks when editing files that may contain secrets.
-"""
+"""sensitive-file-guard.py - Warn when editing potentially sensitive files."""
 
 import json
 import re
 import sys
-from pathlib import Path
+import os
 
-# Files that should be BLOCKED from editing
-BLOCKED_FILES = [
-    r"\.ssh/.*",
-    r"\.gnupg/.*",
-    r".*\.pem$",
-    r".*\.key$",
-    r"id_rsa",
-    r"id_ed25519",
+# File patterns that often contain secrets or sensitive data
+SENSITIVE_PATTERNS = [
+    (r"\.env($|\.)", "Environment file - may contain API keys and secrets"),
+    (r"\.(pem|key|crt|p12|pfx)$", "Cryptographic key or certificate"),
+    (r"secrets?\.(ya?ml|json|toml|nix)$", "Secrets configuration file"),
+    (r"credentials?\.(ya?ml|json|toml)$", "Credentials file"),
+    (r"\.ssh/(id_|config|known_hosts)", "SSH configuration or keys"),
+    (r"(password|passwd|auth)", "File may contain authentication data"),
+    (r"\.agenix($|/)", "Agenix encrypted secrets"),
+    (r"secrets/.*\.age$", "Age-encrypted secret file"),
+    (r"\.gpg$", "GPG encrypted file"),
+    (r"\.vault$", "HashiCorp Vault file"),
+    (r"(token|jwt|bearer)", "Authentication token file"),
+    (r"\.netrc$", "Network authentication file"),
+    (r"\.authinfo$", "Authentication info file"),
 ]
 
-# Files that should show a WARNING
-WARN_FILES = [
-    r"\.env$",
-    r"\.env\.[^/]+$",
-    r"secrets\.nix$",
-    r"secrets/.*",
-    r"credentials.*",
-    r".*\.secret$",
-    r"config\.json$",  # Often contains API keys
-    r".*password.*",
+# Additional patterns specific to development
+DEV_SENSITIVE_PATTERNS = [
+    (r"config/database\.ya?ml", "Database configuration with credentials"),
+    (r"\.aws/(credentials|config)", "AWS credentials"),
+    (r"\.gcp/", "Google Cloud credentials"),
+    (r"\.kube/config", "Kubernetes cluster credentials"),
+    (r"docker-compose.*\.ya?ml.*environment", "Docker compose with environment secrets"),
+    (r"\.dockercfg", "Docker registry credentials"),
 ]
 
-# Patterns in content that suggest secrets
-SECRET_CONTENT_PATTERNS = [
-    r"(api[_-]?key|apikey)\s*[=:]\s*['\"][^'\"]+['\"]",
-    r"(password|passwd|pwd)\s*[=:]\s*['\"][^'\"]+['\"]",
-    r"(secret|token)\s*[=:]\s*['\"][^'\"]+['\"]",
-    r"(aws_secret|aws_access)",
-    r"-----BEGIN (RSA |OPENSSH |)PRIVATE KEY-----",
-]
+def check_file_content_sensitivity(file_path: str) -> list[str]:
+    """Check if file content contains sensitive patterns."""
+    warnings = []
+    try:
+        # Only read first 1KB to check for patterns
+        with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+            content = f.read(1024).lower()
 
+        sensitive_keywords = [
+            'password', 'secret', 'api_key', 'token', 'private_key',
+            'client_secret', 'auth_token', 'bearer', 'credentials'
+        ]
 
-def check_file(file_path: str) -> tuple[bool, str | None]:
-    """
-    Check if file is sensitive.
-    Returns: (should_block, message)
-    """
-    path = Path(file_path)
-    name = path.name
-    full_path = str(path)
+        found_keywords = [kw for kw in sensitive_keywords if kw in content]
+        if found_keywords:
+            warnings.append(f"Content contains sensitive keywords: {', '.join(found_keywords)}")
 
-    # Check blocked patterns
-    for pattern in BLOCKED_FILES:
-        if re.search(pattern, full_path, re.IGNORECASE):
-            return True, f"BLOCKED: Editing {name} - this file contains sensitive credentials"
+    except (IOError, UnicodeDecodeError):
+        pass
 
-    # Check warning patterns
-    for pattern in WARN_FILES:
-        if re.search(pattern, full_path, re.IGNORECASE):
-            return False, f"WARNING: Editing {name} - ensure no secrets are hardcoded. Use environment variables or agenix."
-
-    return False, None
-
-
-def check_content(content: str) -> str | None:
-    """Check content for secret patterns."""
-    for pattern in SECRET_CONTENT_PATTERNS:
-        if re.search(pattern, content, re.IGNORECASE):
-            return "WARNING: Content appears to contain secrets. Consider using environment variables instead."
-    return None
-
+    return warnings
 
 def main():
     try:
@@ -78,35 +61,34 @@ def main():
     except json.JSONDecodeError:
         sys.exit(1)
 
-    tool_input = data.get("tool_input", {})
-    file_path = tool_input.get("file_path", "")
-    content = tool_input.get("content", "") or tool_input.get("new_string", "")
+    file_path = data.get("tool_input", {}).get("file_path", "")
 
     if not file_path:
         sys.exit(0)
 
-    # Check file path
-    should_block, message = check_file(file_path)
+    warnings = []
 
-    if should_block:
-        print(message, file=sys.stderr)
-        sys.exit(2)
+    # Check filename patterns
+    all_patterns = SENSITIVE_PATTERNS + DEV_SENSITIVE_PATTERNS
+    for pattern, message in all_patterns:
+        if re.search(pattern, file_path, re.IGNORECASE):
+            warnings.append(f"🔒 SENSITIVE FILE: {message}")
+            break
 
-    # Check content for secrets
-    content_warning = check_content(content) if content else None
-
-    # Combine warnings
-    warnings = [m for m in [message, content_warning] if m]
+    # For existing files, also check content
+    if os.path.exists(file_path) and os.path.isfile(file_path):
+        content_warnings = check_file_content_sensitivity(file_path)
+        warnings.extend([f"🔒 {w}" for w in content_warnings])
 
     if warnings:
+        reminder = "\n💡 Remember to review changes before committing and consider using git-crypt or agenix for secrets."
         output = {
             "continue": True,
-            "systemMessage": "\n".join(warnings)
+            "systemMessage": "\n".join(warnings) + reminder
         }
         print(json.dumps(output))
 
     sys.exit(0)
-
 
 if __name__ == "__main__":
     main()
