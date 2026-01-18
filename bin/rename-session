@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+# Rename a Claude Code session in the sessions-index.json
+# Usage: rename-session <project-dir> <new-name> [session-id]
+# If session-id omitted, uses most recently modified session from index
+
+set -euo pipefail
+
+PROJECT_DIR="${1:-}"
+NEW_NAME="${2:-}"
+SESSION_ID="${3:-}"
+
+if [[ -z "$PROJECT_DIR" || -z "$NEW_NAME" ]]; then
+    echo "Usage: rename-session <project-dir> <new-name> [session-id]"
+    echo "  project-dir: Path to project (e.g., /home/user/myproject)"
+    echo "  new-name: Descriptive name for the session"
+    echo "  session-id: Optional. If omitted, renames the most recent session"
+    exit 1
+fi
+
+# Convert project path to Claude's directory format
+# /home/zanoni/.dotfiles -> -home-zanoni--dotfiles
+CLAUDE_PROJECT_DIR="$HOME/.claude/projects/$(echo "$PROJECT_DIR" | sed 's|/|-|g; s|\.|-|g')"
+INDEX_FILE="$CLAUDE_PROJECT_DIR/sessions-index.json"
+
+if [[ ! -f "$INDEX_FILE" ]]; then
+    echo "Error: Sessions index not found: $INDEX_FILE"
+    exit 1
+fi
+
+# If no session ID provided, use the most recently modified from index
+if [[ -z "$SESSION_ID" ]]; then
+    SESSION_ID=$(jq -r '.entries | sort_by(.modified) | reverse | .[0].sessionId // empty' "$INDEX_FILE")
+    if [[ -z "$SESSION_ID" ]]; then
+        echo "Error: No sessions found in index"
+        exit 1
+    fi
+    echo "Using most recent session: $SESSION_ID"
+fi
+
+# Check if session exists in index
+if ! jq -e --arg sid "$SESSION_ID" '.entries[] | select(.sessionId == $sid)' "$INDEX_FILE" >/dev/null 2>&1; then
+    echo "Error: Session not found in index: $SESSION_ID"
+    echo "Note: Active sessions may not appear until they are closed"
+    exit 1
+fi
+
+# Update the firstPrompt using jq --arg for safe string handling
+tmp_file=$(mktemp)
+jq --arg sid "$SESSION_ID" --arg name "$NEW_NAME" \
+    '(.entries[] | select(.sessionId == $sid) | .firstPrompt) = $name' \
+    "$INDEX_FILE" > "$tmp_file"
+mv "$tmp_file" "$INDEX_FILE"
+
+echo "Session renamed successfully!"
+echo "  Name: $NEW_NAME"
+echo "  ID: $SESSION_ID"

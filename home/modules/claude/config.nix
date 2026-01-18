@@ -1,6 +1,5 @@
 { pkgs, ... }:
 let
-  # Hook scripts directory (relative to home)
   hooksPath = "~/.claude/hooks";
 
   claudeGlobalSettings = {
@@ -24,65 +23,78 @@ let
     };
     enabledPlugins = {
       "claude-stt@jarrodwatts-claude-stt" = true;
-      # LSP plugins
       "typescript-lsp@claude-plugins-official" = true;
       "jdtls-lsp@claude-plugins-official" = true;
-      "nixd-lsp@custom-lsp" = true;
-      "bash-lsp@custom-lsp" = true;
+      # NOTE: some lsps are installed via pkgs in lsp.nix
+      # and work directly without being Claude Code plugins
     };
 
-    # Hooks configuration
     hooks = {
-      # PreToolUse hooks - run before tool execution
+      # Run before tool execution
       PreToolUse = [
         {
-          # Dangerous command blocker for Bash
           matcher = "Bash";
-          hooks = [{
-            type = "command";
-            command = "python3 ${hooksPath}/dangerous-command-blocker.py";
-            timeout = 5000;
-          }];
+          hooks = [
+            {
+              type = "command";
+              command = "python3 ${hooksPath}/tmux-reminder.py";
+              timeout = 3000;
+            }
+            {
+              type = "command";
+              command = "python3 ${hooksPath}/dangerous-command-guard.py";
+              timeout = 3000;
+            }
+            {
+              type = "command";
+              command = "python3 ${hooksPath}/git-reminder.py";
+              timeout = 5000;
+            }
+          ];
         }
         {
-          # Tmux reminder for long-running commands
-          matcher = "Bash";
-          hooks = [{
-            type = "command";
-            command = "python3 ${hooksPath}/tmux-reminder.py";
-            timeout = 3000;
-          }];
-        }
-        {
-          # Git operation reminders
-          matcher = "Bash";
-          hooks = [{
-            type = "command";
-            command = "python3 ${hooksPath}/git-reminder.py";
-            timeout = 5000;
-          }];
-        }
-        {
-          # Sensitive file guard for Edit/Write
           matcher = "Edit|Write";
-          hooks = [{
-            type = "command";
-            command = "python3 ${hooksPath}/sensitive-file-guard.py";
-            timeout = 3000;
-          }];
+          hooks = [
+            {
+              type = "command";
+              command = "python3 ${hooksPath}/sensitive-file-guard.py";
+              timeout = 3000;
+            }
+          ];
+        }
+        {
+          matcher = "Task";
+          hooks = [
+            {
+              type = "command";
+              command = "python3 ${hooksPath}/subagent-context-reminder.py";
+              timeout = 3000;
+            }
+          ];
         }
       ];
 
-      # UserPromptSubmit hooks - run when user submits a prompt
-      UserPromptSubmit = [
+      # Run after tool execution
+      PostToolUse = [
         {
-          hooks = [{
-            type = "command";
-            command = "python3 ${hooksPath}/context-injector.py";
-            timeout = 5000;
-          }];
+          matcher = "Edit|Write";
+          hooks = [
+            {
+              type = "command";
+              command = "python3 ${hooksPath}/nix-rebuild-reminder.py";
+              timeout = 3000;
+            }
+            {
+              type = "command";
+              command = "python3 ${hooksPath}/auto-format.py";
+              timeout = 15000;
+            }
+          ];
         }
       ];
+
+      # Run when user submits a prompt
+      UserPromptSubmit = [ ];
     };
   };
 

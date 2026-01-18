@@ -4,250 +4,41 @@ description: Use when starting feature work that needs isolation from current wo
 ---
 <!-- @agent-architect owns this file. Delegate changes, don't edit directly. -->
 
-# Worktrees
-
-## Overview
-
-Git worktrees create isolated workspaces sharing the same repository, allowing work on multiple branches simultaneously without switching.
-
-**Core principle:** Systematic directory selection + safety verification = reliable isolation.
-
-**Announce at start:** "I'm using the using-git-worktrees skill to set up an isolated workspace."
-
-## Directory Selection Process
-
-Follow this priority order:
-
-### 1. Check Existing Directories
-
-```bash
-# Check in priority order
-ls -d .worktrees 2>/dev/null     # Preferred (hidden)
-ls -d worktrees 2>/dev/null      # Alternative
-```
-
-**If found:** Use that directory. If both exist, `.worktrees` wins.
-
-### 2. Check CLAUDE.md
-
-```bash
-grep -i "worktree.*director" CLAUDE.md 2>/dev/null
-```
-
-**If preference specified:** Use it without asking.
-
-### 3. Ask User
-
-If no directory exists and no CLAUDE.md preference:
-
-```
-No worktree directory found. Where should I create worktrees?
-
-1. .worktrees/ (project-local, hidden)
-2. ~/.config/superpowers/worktrees/<project-name>/ (global location)
-
-Which would you prefer?
-```
-
-## Safety Verification
-
-### For Project-Local Directories (.worktrees or worktrees)
-
-**MUST verify directory is ignored before creating worktree:**
-
-```bash
-# Check if directory is ignored (respects local, global, and system gitignore)
-git check-ignore -q .worktrees 2>/dev/null || git check-ignore -q worktrees 2>/dev/null
-```
-
-**If NOT ignored:**
-
-Per Jesse's rule "Fix broken things immediately":
-1. Add appropriate line to .gitignore
-2. Commit the change
-3. Proceed with worktree creation
-
-**Why critical:** Prevents accidentally committing worktree contents to repository.
-
-### For Global Directory (~/.config/superpowers/worktrees)
-
-No .gitignore verification needed - outside project entirely.
-
-## Creation Steps
-
-### 1. Detect Project Name
-
-```bash
-project=$(basename "$(git rev-parse --show-toplevel)")
-```
-
-### 2. Check for git-crypt
-
-```bash
-# Detect if repo uses git-crypt
-uses_git_crypt=false
-if [ -d .git/git-crypt ] || grep -q "filter=git-crypt" .gitattributes 2>/dev/null; then
-  uses_git_crypt=true
-fi
-```
-
-### 3. Create Worktree
-
-```bash
-# Determine full path
-case $LOCATION in
-  .worktrees|worktrees)
-    path="$LOCATION/$BRANCH_NAME"
-    ;;
-  ~/.config/superpowers/worktrees/*)
-    path="~/.config/superpowers/worktrees/$project/$BRANCH_NAME"
-    ;;
-esac
-
-# Create worktree (with special handling for git-crypt repos)
-if $uses_git_crypt; then
-  # git-crypt stores keys in .git/git-crypt/keys/ which worktrees can't find
-  # Use --no-checkout, unlock in worktree, then checkout
-  git worktree add --no-checkout "$path" -b "$BRANCH_NAME"
-  cd "$path"
-  git-crypt unlock
-  git checkout HEAD
-else
-  git worktree add "$path" -b "$BRANCH_NAME"
-  cd "$path"
-fi
-```
-
-### 4. Run Project Setup
-
-Auto-detect and run appropriate setup:
-
-```bash
-# Node.js
-if [ -f package.json ]; then npm install; fi
-
-# Rust
-if [ -f Cargo.toml ]; then cargo build; fi
-
-# Python
-if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-if [ -f pyproject.toml ]; then poetry install; fi
-
-# Go
-if [ -f go.mod ]; then go mod download; fi
-```
-
-### 5. Verify Clean Baseline
-
-Run tests to ensure worktree starts clean:
-
-```bash
-# Examples - use project-appropriate command
-npm test
-cargo test
-pytest
-go test ./...
-```
-
-**If tests fail:** Report failures, ask whether to proceed or investigate.
-
-**If tests pass:** Report ready.
-
-### 6. Report Location
-
-```
-Worktree ready at <full-path>
-Tests passing (<N> tests, 0 failures)
-Ready to implement <feature-name>
-```
-
-## Quick Reference
-
-| Situation | Action |
-|-----------|--------|
-| `.worktrees/` exists | Use it (verify ignored) |
-| `worktrees/` exists | Use it (verify ignored) |
-| Both exist | Use `.worktrees/` |
-| Neither exists | Check CLAUDE.md → Ask user |
-| Directory not ignored | Add to .gitignore + commit |
-| Tests fail during baseline | Report failures + ask |
-| No package.json/Cargo.toml | Skip dependency install |
-| Repo uses git-crypt | Use `--no-checkout`, then unlock, then checkout |
-
-## Common Mistakes
-
-### Skipping ignore verification
-
-- **Problem:** Worktree contents get tracked, pollute git status
-- **Fix:** Always use `git check-ignore` before creating project-local worktree
-
-### Assuming directory location
-
-- **Problem:** Creates inconsistency, violates project conventions
-- **Fix:** Follow priority: existing > CLAUDE.md > ask
-
-### Proceeding with failing tests
-
-- **Problem:** Can't distinguish new bugs from pre-existing issues
-- **Fix:** Report failures, get explicit permission to proceed
-
-### Hardcoding setup commands
-
-- **Problem:** Breaks on projects using different tools
-- **Fix:** Auto-detect from project files (package.json, etc.)
-
-### Creating worktrees in git-crypt repos without unlocking
-
-- **Problem:** Checkout fails because worktree can't find keys in `.git/git-crypt/keys/`
-- **Fix:** Use `--no-checkout`, cd into worktree, run `git-crypt unlock`, then `git checkout HEAD`
-
-## Example Workflow
-
-```
-You: I'm using the using-git-worktrees skill to set up an isolated workspace.
-
-[Check .worktrees/ - exists]
-[Verify ignored - git check-ignore confirms .worktrees/ is ignored]
-[Create worktree: git worktree add .worktrees/auth -b feature/auth]
-[Run npm install]
-[Run npm test - 47 passing]
-
-Worktree ready at /Users/jesse/myproject/.worktrees/auth
-Tests passing (47 tests, 0 failures)
-Ready to implement auth feature
-```
-
-## Red Flags
-
-**Never:**
-- Create worktree without verifying it's ignored (project-local)
-- Skip baseline test verification
-- Proceed with failing tests without asking
-- Assume directory location when ambiguous
-- Skip CLAUDE.md check
-- Create worktree in git-crypt repo without `--no-checkout` + unlock flow
-
-**Always:**
-- Follow directory priority: existing > CLAUDE.md > ask
-- Verify directory is ignored for project-local
-- Check for git-crypt before creating worktree
-- Auto-detect and run project setup
-- Verify clean test baseline
-
-## Session Persistence
-
-When user requests `/worktree` or worktree isolation, maintain it throughout the session. The isolation contract persists until session ends.
-
-**If worktree breaks** (shell CWD deleted, git-crypt issues, errors): Recreate it. Never silently fall back to main branch.
-
-**Never commit to main** when user explicitly requested worktree isolation. The request implies intent to keep main clean.
-
-## Integration
-
-**Called by:**
-- **brainstorming** (Phase 4) - REQUIRED when design is approved and implementation follows
-- Any skill needing isolated workspace
-
-**Pairs with:**
-- **finishing-a-development-branch** - REQUIRED for cleanup after work complete
-- **executing-plans** or **subagent-driven-development** - Work happens in this worktree
+<announcement>
+"I'm using the worktrees skill to set up an isolated workspace."
+</announcement>
+
+<core_principle>
+Git worktrees create isolated workspaces sharing the same repository. Systematic directory selection + safety verification = reliable isolation.
+</core_principle>
+
+<directory_selection>
+Priority order: 1) Check existing: ls -d .worktrees 2>/dev/null then ls -d worktrees 2>/dev/null. If both exist, .worktrees wins. 2) Check CLAUDE.md: grep -i "worktree.*director" CLAUDE.md. 3) Ask user with options: .worktrees/ (project-local, hidden) or ~/.config/superpowers/worktrees/project-name/ (global).
+</directory_selection>
+
+<safety_verification>
+For project-local directories (.worktrees or worktrees), MUST verify ignored before creating: git check-ignore -q .worktrees 2>/dev/null. If NOT ignored: add to .gitignore, commit, then proceed. For global directory (~/.config/superpowers/worktrees): no verification needed.
+</safety_verification>
+
+<creation_workflow>
+1. Detect project: project=$(basename "$(git rev-parse --show-toplevel)")
+2. Check git-crypt: [ -d .git/git-crypt ] || grep -q "filter=git-crypt" .gitattributes
+3. Create worktree:
+   - Standard: git worktree add "$path" -b "$BRANCH_NAME" && cd "$path"
+   - Git-crypt: git worktree add --no-checkout "$path" -b "$BRANCH_NAME" && cd "$path" && git-crypt unlock && git checkout HEAD
+4. Auto-detect setup: package.json -> npm install | Cargo.toml -> cargo build | requirements.txt -> pip install -r | pyproject.toml -> poetry install | go.mod -> go mod download
+5. Run tests for clean baseline. If fail: report and ask. If pass: report ready.
+6. Report: "Worktree ready at full-path. Tests passing (N tests, 0 failures). Ready to implement feature-name."
+</creation_workflow>
+
+<session_persistence>
+Maintain worktree isolation throughout session. If worktree breaks (CWD deleted, git-crypt issues): recreate it, never silently fall back to main. Never commit to main when user requested worktree isolation.
+</session_persistence>
+
+<integration>
+Called by: brainstorming (Phase 4), any skill needing isolation. Pairs with: finishing-a-development-branch (cleanup), executing-plans or subagent-driven-development (work happens here).
+</integration>
+
+<red_flags>
+Never: create project-local worktree without verifying ignored, skip baseline tests, proceed with failing tests without asking, assume directory location, skip CLAUDE.md check, create in git-crypt repo without --no-checkout + unlock flow. Always: follow directory priority, verify ignored for project-local, check git-crypt first, auto-detect setup, verify clean baseline.
+</red_flags>

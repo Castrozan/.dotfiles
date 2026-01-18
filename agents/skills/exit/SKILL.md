@@ -4,25 +4,14 @@ description: Safely terminate the current Claude Code session. Use when user exp
 ---
 <!-- @agent-architect owns this file. Delegate changes, don't edit directly. -->
 
-# Exit Skill
+<prerequisites>
+All tasks complete. Changes committed if applicable. Summarize accomplishments.
+</prerequisites>
 
-Terminate ONLY this Claude session without affecting others.
-
-## Prerequisites
-
-Before running:
-1. All tasks complete
-2. Changes committed (if applicable)
-3. Summarize what was accomplished
-
-## Execution
-
-```bash
+<execution>
 claude-exit
-```
+</execution>
 
-The script verifies parent is 'claude' before sending SIGTERM.
-
-## Fallback
-
-If script fails, tell user to type `/exit` or press `Ctrl+D`.
+<notes>
+Script verifies parent is 'claude' before sending SIGTERM. Fallback: tell user to type /exit or press Ctrl+D.
+</notes>

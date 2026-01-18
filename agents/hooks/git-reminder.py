@@ -67,24 +67,6 @@ def main():
 
     messages = []
 
-    # Check for git commit
-    if re.search(r"^git\s+commit", command):
-        if has_unstaged_changes():
-            messages.append("NOTE: You have unstaged changes that won't be included in this commit.")
-
-    # Check for git merge/rebase
-    if re.search(r"^git\s+(merge|rebase)", command):
-        if has_uncommitted_changes():
-            messages.append("WARNING: You have uncommitted changes. Consider stashing or committing first.")
-        branch = get_current_branch()
-        if branch:
-            messages.append(f"Current branch: {branch}")
-
-    # Check for git checkout/switch
-    if re.search(r"^git\s+(checkout|switch)", command):
-        if has_uncommitted_changes():
-            messages.append("NOTE: You have uncommitted changes. They will carry over to the new branch.")
-
     # Check for git stash pop/apply
     if re.search(r"^git\s+stash\s+(pop|apply)", command):
         if has_uncommitted_changes():

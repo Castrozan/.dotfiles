@@ -1,10 +1,18 @@
-# Claude STT (Speech-to-Text) build dependencies
+# Claude STT (Speech-to-Text) build and runtime dependencies
 #
-# Provides native build dependencies for the claude-stt plugin which installs
-# via pip into a venv. The plugin needs to compile:
-# - evdev (requires linux kernel headers)
-# - sounddevice (requires portaudio)
-# - numpy and other native extensions
+# Provides:
+# 1. Build dependencies for the claude-stt plugin which installs via pip into a venv
+# 2. A Python wrapper script that sets LD_LIBRARY_PATH for native extensions
+# 3. Systemd user session variable CLAUDE_STT_PYTHON pointing to the wrapper
+#
+# The plugin needs native libraries at runtime:
+# - libstdc++.so.6 (numpy, etc.)
+# - libportaudio.so (sounddevice)
+# - libz.so (numpy dependency)
+#
+# On NixOS, GUI apps (like Claude Code) don't inherit shell session variables,
+# so we use systemd.user.sessionVariables to set CLAUDE_STT_PYTHON to a wrapper
+# script that configures LD_LIBRARY_PATH before invoking the venv Python.
 #
 # After rebuild, run the claude-stt setup: /claude-stt:setup
 { pkgs, lib, ... }:
@@ -14,6 +22,7 @@ let
     stdenv.cc.cc.lib  # libstdc++.so.6
     portaudio         # libportaudio.so
     zlib              # libz.so (numpy dependency)
+    alsa-lib          # libasound.so (sounddevice backend)
   ];
 
   runtimeLibPath = lib.makeLibraryPath runtimeLibs;
@@ -35,11 +44,29 @@ let
     gnumake
   ] ++ runtimeLibs;
 
+  # Plugin root path (used by wrapper scripts)
+  pluginRoot = "$HOME/.claude/plugins/cache/jarrodwatts-claude-stt/claude-stt/0.1.0";
+
+  # Python wrapper that sets LD_LIBRARY_PATH for the plugin's venv
+  # This is used by exec.py via CLAUDE_STT_PYTHON environment variable
+  claude-stt-python = pkgs.writeShellScriptBin "claude-stt-python" ''
+    export LD_LIBRARY_PATH="${runtimeLibPath}:''${LD_LIBRARY_PATH:-}"
+
+    VENV_PYTHON="${pluginRoot}/.venv/bin/python"
+
+    if [ -x "$VENV_PYTHON" ]; then
+      exec "$VENV_PYTHON" "$@"
+    else
+      echo "Error: claude-stt venv not found. Run /claude-stt:setup first." >&2
+      exit 1
+    fi
+  '';
+
   # Wrapper script to run claude-stt setup with correct environment
   claude-stt-setup = pkgs.writeShellScriptBin "claude-stt-setup" ''
     set -e
 
-    PLUGIN_ROOT="$HOME/.claude/plugins/cache/jarrodwatts-claude-stt/claude-stt/0.1.0"
+    PLUGIN_ROOT="${pluginRoot}"
 
     if [ ! -d "$PLUGIN_ROOT" ]; then
       echo "Error: claude-stt plugin not found at $PLUGIN_ROOT"
@@ -61,13 +88,15 @@ let
 
     echo ""
     echo "claude-stt setup complete!"
-    echo "Start the daemon with: /claude-stt:start"
+    echo ""
+    echo "IMPORTANT: Log out and log back in (or run: systemctl --user import-environment CLAUDE_STT_PYTHON)"
+    echo "Then start the daemon with: /claude-stt:start"
   '';
 in
 {
-  home.packages = buildDeps ++ [ claude-stt-setup ];
+  home.packages = buildDeps ++ [ claude-stt-setup claude-stt-python ];
 
-  # Environment variables for building native Python extensions
+  # Environment variables for building native Python extensions (shell sessions)
   home.sessionVariables = {
     # Make kernel headers available for evdev compilation
     C_INCLUDE_PATH = "${pkgs.linuxHeaders}/include:${pkgs.portaudio}/include";
@@ -75,5 +104,14 @@ in
     # Runtime library path for native extensions (libstdc++, portaudio, zlib)
     # Required for numpy, sounddevice, and other compiled Python packages
     LD_LIBRARY_PATH = runtimeLibPath;
+
+    # Point claude-stt to use our wrapper Python
+    CLAUDE_STT_PYTHON = "${claude-stt-python}/bin/claude-stt-python";
+  };
+
+  # Set CLAUDE_STT_PYTHON in systemd user session so GUI apps (Claude Code) inherit it
+  # This is critical because GUI apps don't source shell profile scripts
+  systemd.user.sessionVariables = {
+    CLAUDE_STT_PYTHON = "${claude-stt-python}/bin/claude-stt-python";
   };
 }

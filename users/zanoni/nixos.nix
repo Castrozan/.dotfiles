@@ -28,6 +28,7 @@ in
     extraGroups = [
       "networkmanager"
       "wheel"
+      "input"  # Required for claude-stt pynput evdev backend on Wayland
     ];
     shell = pkgs.fish;
   };
