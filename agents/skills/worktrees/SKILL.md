@@ -35,6 +35,24 @@ For project-local directories (.worktrees or worktrees), MUST verify ignored bef
 Maintain worktree isolation throughout session. If worktree breaks (CWD deleted, git-crypt issues): recreate it, never silently fall back to main. Never commit to main when user requested worktree isolation.
 </session_persistence>
 
+<development_workflow>
+After worktree creation, follow complete lifecycle:
+
+1. **Implement**: Write code in isolated worktree. Commit frequently to track progress.
+
+2. **Rebuild**: Run rebuild script if available. If not possible (NixOS on different branch), do dry build: nix build --dry-run or equivalent to verify changes compile.
+
+3. **Test**: Find appropriate testing method - use /tmux skill for services, run unit tests, manual verification. Ensure changes work before proceeding.
+
+4. **Create PR**: Push branch and create PR with gh pr create. Include clear description of changes and test results.
+
+5. **Leave worktree**: Do NOT delete worktree after PR. Keep locally for follow-up work after code review feedback.
+
+6. **Restore main**: cd back to main workspace and rebuild from main branch. System returns to stable state while PR is pending.
+
+This ensures: isolated development, tested changes before PR, stable system after PR creation, worktree available for review iterations.
+</development_workflow>
+
 <integration>
 Called by: brainstorming (Phase 4), any skill needing isolation. Pairs with: finishing-a-development-branch (cleanup), executing-plans or subagent-driven-development (work happens here).
 </integration>
