@@ -20,14 +20,14 @@ After worktree creation, write code in the isolated workspace and commit frequen
 Maintain worktree isolation throughout the session. If the worktree breaks due to deleted CWD or git-crypt issues, recreate it rather than silently falling back to main. Never commit to main when user requested worktree isolation.
 </session_persistence>
 
-<git_crypt_worktree_fix>
-Standard git-crypt unlock fails in worktrees because the symmetric key is not directly available. Export the key from the main repository with `git-crypt export-key /tmp/git-crypt-key`, then unlock the worktree using `git-crypt unlock /tmp/git-crypt-key`, and remove the temporary key file afterward. For new worktrees in git-crypt repos, use `git worktree add --no-checkout` first, then unlock with the exported key before checking out files.
-</git_crypt_worktree_fix>
+<dotfiles_worktrees>
+In ~/.dotfiles repo (uses git-crypt): use `./bin/git-worktree-crypt <branch>` instead of plain `git worktree add`. Creates worktree at `.worktrees/<branch>`.
+</dotfiles_worktrees>
 
 <integration>
 Called by brainstorming (Phase 4) and any skill needing isolation. Pairs with finishing-a-development-branch for cleanup, and executing-plans or subagent-driven-development where the actual work happens.
 </integration>
 
 <red_flags>
-Never create a worktree in a project-local directory that is not gitignored, as this would commit worktree contents to the repository. Never skip running tests before declaring the worktree ready. Never proceed with failing tests without asking the user first. Never assume where worktrees should go without checking for existing directories or CLAUDE.md preferences. Never run standard git-crypt unlock in a worktree, as it requires the exported key workflow described above.
+Never create worktrees in project directories. Never skip tests before declaring ready. In ~/.dotfiles, never use plain `git worktree add` - use `./bin/git-worktree-crypt`.
 </red_flags>

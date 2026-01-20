@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+BRANCH="${1:?Usage: git-worktree-crypt <branch-name>}"
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+WORKTREE_PATH="$REPO_ROOT/.worktrees/$BRANCH"
+
+cd "$REPO_ROOT"
+
+# Create worktree without checkout (avoids triggering filters)
+git worktree add --no-checkout -b "$BRANCH" "$WORKTREE_PATH" main
+
+# Link git-crypt keys to worktree's git dir (enables smudge filter)
+ln -s "$REPO_ROOT/.git/git-crypt" "$REPO_ROOT/.git/worktrees/$BRANCH/git-crypt"
+
+# Checkout files (smudge filter now works via symlink)
+cd "$WORKTREE_PATH"
+git reset --hard HEAD
+
+echo "Worktree ready at $WORKTREE_PATH"
