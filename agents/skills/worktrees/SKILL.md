@@ -20,6 +20,10 @@ After worktree creation, write code in the isolated workspace and commit frequen
 Maintain worktree isolation throughout the session. If the worktree breaks due to deleted CWD or git-crypt issues, recreate it rather than silently falling back to main. Never commit to main when user requested worktree isolation.
 </session_persistence>
 
+<git_crypt_worktree_fix>
+Standard git-crypt unlock fails in worktrees because the symmetric key is not directly available. Export the key from the main repository with `git-crypt export-key /tmp/git-crypt-key`, then unlock the worktree using `git-crypt unlock /tmp/git-crypt-key`, and remove the temporary key file afterward. For new worktrees in git-crypt repos, use `git worktree add --no-checkout` first, then unlock with the exported key before checking out files.
+</git_crypt_worktree_fix>
+
 <integration>
 Called by brainstorming (Phase 4) and any skill needing isolation. Pairs with finishing-a-development-branch for cleanup, and executing-plans or subagent-driven-development where the actual work happens.
 </integration>
