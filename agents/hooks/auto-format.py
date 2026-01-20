@@ -10,8 +10,6 @@ import sys
 FORMATTERS = {
     ".nix": {
         "formatters": [
-            {"cmd": ["nixpkgs-fmt"], "name": "nixpkgs-fmt"},
-            {"cmd": ["alejandra", "--quiet"], "name": "alejandra"},
             {"cmd": ["nixfmt"], "name": "nixfmt"},
         ],
         "timeout": 10

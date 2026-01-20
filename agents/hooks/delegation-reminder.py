@@ -127,11 +127,10 @@ def check_prompt_delegation(prompt: str) -> tuple[str, str] | None:
 def format_delegation_reminder(subagent: str, description: str, context: str) -> str:
     """Format the delegation reminder message."""
     return (
-        f"DELEGATION REMINDER: Consider using @{subagent}\n"
+        f"DELEGATION REMINDER: Stop everything and use @{subagent}\n"
         f"Expertise: {description}\n\n"
-        f"From agents/rules/core.md:\n"
-        f"\"When specialized subagent exists, delegate rather than doing work directly. "
-        f"Subagents have deeper expertise and isolated context.\"\n\n"
+        f"\"The agent is the only one approved to do this job.\"\n\n"
+        f"Send the raw context and user prompt to the agent.\"\n\n"
         f"Context: {context}"
     )
 
