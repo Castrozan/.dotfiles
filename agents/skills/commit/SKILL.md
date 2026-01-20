@@ -18,7 +18,7 @@ Run in parallel to understand current state:
 </context_gathering>
 
 <analysis>
-For each changed file determine: what changed (additions, deletions, modifications), why it matters (feature, bugfix, refactor, docs), scope (module, component, area), and impact (breaking changes, dependencies). If changes are unstaged, ask before staging with explicit file list.
+For each changed file determine: what changed (additions, deletions, modifications), why it matters (feature, bugfix, refactor, docs), scope (module, component, area), and impact (breaking changes, dependencies).
 </analysis>
 
 <commit_types>
@@ -41,30 +41,6 @@ Include when: change is non-obvious, multiple related changes, breaking changes,
 Always use specific files, never git add -A or git add . to avoid staging unrelated parallel work. Verify with git diff --cached --stat.
 </staging>
 
-<commit_format>
-Use HEREDOC for proper formatting:
-git commit -m "$(cat <<'EOF'
-type(scope): subject line here
-
-Body paragraph explaining why this change was made.
-EOF
-)"
-
-Simple commits without body: git commit -m "type(scope): subject line"
-</commit_format>
-
-<verification>
-git log -1 --stat && git status
-</verification>
-
-<interactive_mode>
-No staged changes: show status, list changed files with descriptions, ask what to include, proceed. Message hint provided (/commit fix login bug): use hint to guide message, still analyze changes for accuracy, may override if hint doesn't match actual changes.
-</interactive_mode>
-
-<error_handling>
-No changes: report "Nothing to commit" | Merge conflicts: refuse, ask user to resolve | Large binaries: warn before staging | Secrets (.env, credentials): refuse to stage, warn | Pre-commit hook fails: report error, suggest fixes, create NEW commit (never amend)
-</error_handling>
-
 <red_flags>
-Never: stage unrelated files, use git add -A or git add ., commit secrets, use --amend unless explicitly requested AND safe, skip analyzing actual diff, generate vague messages. Always: read actual diff, match repo commit style, stage files by path, include body for non-trivial changes, verify success.
+Never: stage unrelated files, use git add -A or git add ., commit secrets, skip analyzing actual diff, generate vague messages. Always: read actual diff, match repo commit style, stage files by path, include body for non-trivial changes, verify success.
 </red_flags>
