@@ -25,7 +25,7 @@ fi
 pip install --upgrade pip --quiet
 
 # Install/upgrade dependencies (pip will use wheels when available)
-echo "Installing/updating whisper-input dependencies..."
+# echo "Installing/updating whisper-input dependencies..."
 
 # Install packages that have wheels first
 pip install --quiet \
