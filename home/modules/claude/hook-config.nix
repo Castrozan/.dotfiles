@@ -21,18 +21,8 @@ in {
       hooks = [
         {
           type = "command";
-          command = "${runHook} ${hooksPath}/tmux-reminder.py";
-          timeout = 3000;
-        }
-        {
-          type = "command";
           command = "${runHook} ${hooksPath}/dangerous-command-guard.py";
           timeout = 3000;
-        }
-        {
-          type = "command";
-          command = "${runHook} ${hooksPath}/git-reminder.py";
-          timeout = 5000;
         }
         {
           type = "command";
@@ -41,23 +31,8 @@ in {
         }
         {
           type = "command";
-          command = "${runHook} ${hooksPath}/worktree-reminder.py";
-          timeout = 5000;
-        }
-        {
-          type = "command";
           command = "${runHook} ${hooksPath}/delegation-reminder.py";
           timeout = 5000;
-        }
-      ];
-    }
-    {
-      matcher = "Task";
-      hooks = [
-        {
-          type = "command";
-          command = "${runHook} ${hooksPath}/subagent-context-reminder.py";
-          timeout = 3000;
         }
       ];
     }
