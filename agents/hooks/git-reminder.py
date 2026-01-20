@@ -7,7 +7,6 @@ Warns about uncommitted changes, branch state, etc.
 """
 
 import json
-import os
 import re
 import subprocess
 import sys

@@ -6,7 +6,7 @@ import os
 import subprocess
 import sys
 from datetime import datetime
-
+from typing import Any, Dict
 
 def run_cmd(args: list[str], timeout: int = 5) -> tuple[int, str]:
     """Run a command and return (exit_code, output)."""
@@ -21,14 +21,13 @@ def run_cmd(args: list[str], timeout: int = 5) -> tuple[int, str]:
     except (subprocess.TimeoutExpired, FileNotFoundError):
         return 1, ""
 
-
-def get_git_status() -> dict:
+def get_git_status() -> Dict[str, Any]:
     """Get git repository status."""
     code, _ = run_cmd(["git", "rev-parse", "--is-inside-work-tree"])
     if code != 0:
         return {"is_repo": False}
 
-    status = {"is_repo": True}
+    status: dict[str, Any] = {"is_repo": True}
 
     # Current branch
     code, branch = run_cmd(["git", "branch", "--show-current"])
@@ -152,11 +151,10 @@ def main():
         sections.append("Context: " + ", ".join(context))
 
     # Time-based reminders
-    hour = datetime.now().hour
-    if hour >= 17:
+    now = datetime.now()
+    sections.append(f"Date: {now.strftime('%Y-%m-%d %H:%M')} ({now.strftime('%A')})")
+    if now.hour >= 18:
         sections.append("Note: After hours - avoid risky deployments")
-    elif hour < 9:
-        sections.append("Note: Early hours - consider async work patterns")
 
     if sections:
         output = {

@@ -69,11 +69,6 @@ in {
       hooks = [
         {
           type = "command";
-          command = "${runHook} ${hooksPath}/nix-rebuild-reminder.py";
-          timeout = 3000;
-        }
-        {
-          type = "command";
           command = "${runHook} ${hooksPath}/auto-format.py";
           timeout = 15000;
         }
