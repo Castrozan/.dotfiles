@@ -22,6 +22,7 @@
       respectGitignore = true;
     };
     enabledPlugins = {
+      "claude-stt@jarrodwatts-claude-stt" = true;
       "typescript-lsp@claude-plugins-official" = true;
       "jdtls-lsp@claude-plugins-official" = true;
       # NOTE: some lsps are installed via pkgs in lsp.nix
