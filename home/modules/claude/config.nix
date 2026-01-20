@@ -1,5 +1,6 @@
 {pkgs, ...}: let
   hooksPath = "~/.claude/hooks";
+  runHook = "${hooksPath}/run-hook.sh";
 
   claudeGlobalSettings = {
     installMethod = "native";
@@ -35,7 +36,7 @@
           hooks = [
             {
               type = "command";
-              command = "python3 ${hooksPath}/session-context.py";
+              command = "${runHook} ${hooksPath}/session-context.py";
               timeout = 5000;
             }
           ];
@@ -50,39 +51,44 @@
             # Tmux and timing
             {
               type = "command";
-              command = "python3 ${hooksPath}/tmux-reminder.py";
+              command = "${runHook} ${hooksPath}/tmux-reminder.py";
               timeout = 3000;
             }
             {
               type = "command";
-              command = "python3 ${hooksPath}/command-timing.py";
+              command = "${runHook} ${hooksPath}/command-timing.py";
               timeout = 2000;
             }
             # Safety checks
             {
               type = "command";
-              command = "python3 ${hooksPath}/dangerous-command-guard.py";
+              command = "${runHook} ${hooksPath}/dangerous-command-guard.py";
               timeout = 3000;
             }
             # Git workflow
             {
               type = "command";
-              command = "python3 ${hooksPath}/git-reminder.py";
+              command = "${runHook} ${hooksPath}/git-reminder.py";
               timeout = 5000;
             }
             {
               type = "command";
-              command = "python3 ${hooksPath}/branch-protection.py";
+              command = "${runHook} ${hooksPath}/branch-protection.py";
               timeout = 5000;
             }
             {
               type = "command";
-              command = "python3 ${hooksPath}/worktree-reminder.py";
+              command = "${runHook} ${hooksPath}/worktree-reminder.py";
               timeout = 5000;
             }
             {
               type = "command";
-              command = "python3 ${hooksPath}/delegation-reminder.py";
+              command = "${runHook} ${hooksPath}/test-before-commit.py";
+              timeout = 5000;
+            }
+            {
+              type = "command";
+              command = "${runHook} ${hooksPath}/delegation-reminder.py";
               timeout = 5000;
             }
           ];
@@ -92,7 +98,7 @@
           hooks = [
             {
               type = "command";
-              command = "python3 ${hooksPath}/sensitive-file-guard.py";
+              command = "${runHook} ${hooksPath}/sensitive-file-guard.py";
               timeout = 3000;
             }
           ];
@@ -102,7 +108,7 @@
           hooks = [
             {
               type = "command";
-              command = "python3 ${hooksPath}/subagent-context-reminder.py";
+              command = "${runHook} ${hooksPath}/subagent-context-reminder.py";
               timeout = 3000;
             }
           ];
@@ -116,7 +122,7 @@
           hooks = [
             {
               type = "command";
-              command = "python3 ${hooksPath}/command-timing.py";
+              command = "${runHook} ${hooksPath}/command-timing.py";
               timeout = 2000;
             }
           ];
@@ -126,17 +132,17 @@
           hooks = [
             {
               type = "command";
-              command = "python3 ${hooksPath}/nix-rebuild-reminder.py";
+              command = "${runHook} ${hooksPath}/nix-rebuild-reminder.py";
               timeout = 3000;
             }
             {
               type = "command";
-              command = "python3 ${hooksPath}/auto-format.py";
+              command = "${runHook} ${hooksPath}/auto-format.py";
               timeout = 15000;
             }
             {
               type = "command";
-              command = "python3 ${hooksPath}/lint-on-edit.py";
+              command = "${runHook} ${hooksPath}/lint-on-edit.py";
               timeout = 30000;
             }
           ];
@@ -150,7 +156,7 @@
           hooks = [
             {
               type = "command";
-              command = "python3 ${hooksPath}/delegation-reminder.py";
+              command = "${runHook} ${hooksPath}/delegation-reminder.py";
               timeout = 3000;
             }
           ];
