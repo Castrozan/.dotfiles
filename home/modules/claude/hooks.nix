@@ -13,6 +13,7 @@
       name = ".claude/hooks/${filename}";
       value = {
         source = hooksDir + "/${filename}";
+        executable = lib.hasSuffix ".sh" filename;
       };
     })
     hookFiles);
