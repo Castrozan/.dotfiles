@@ -1,5 +1,4 @@
-{ pkgs, ... }:
-let
+{pkgs, ...}: let
   hooksPath = "~/.claude/hooks";
 
   claudeGlobalSettings = {
@@ -11,8 +10,8 @@ let
     includeCoAuthoredBy = false;
     permissions = {
       defaultMode = "bypassPermissions";
-      allow = [ "*" ];
-      deny = [ ];
+      allow = ["*"];
+      deny = [];
     };
     terminalShowHoverHint = false;
     composer = {
@@ -22,7 +21,6 @@ let
       respectGitignore = true;
     };
     enabledPlugins = {
-      "claude-stt@jarrodwatts-claude-stt" = true;
       "typescript-lsp@claude-plugins-official" = true;
       "jdtls-lsp@claude-plugins-official" = true;
       # NOTE: some lsps are installed via pkgs in lsp.nix
@@ -146,7 +144,7 @@ let
       ];
 
       # Run when user submits a prompt
-      UserPromptSubmit = [ ];
+      UserPromptSubmit = [];
     };
   };
 
@@ -159,8 +157,7 @@ let
 
     ${builtins.readFile ../../../agents/rules/gnome-keybinding-debugging.md}
   '';
-in
-{
+in {
   home.file.".claude/.keep".text = "";
   home.file.".claude/settings.json".text = builtins.toJSON claudeGlobalSettings;
   home.file.".dotfiles/CLAUDE.md".text = claudeDotfilesRules; # add symlink to dotfiles for easy reference
@@ -177,8 +174,8 @@ in
 
   # Patch ~/.claude.json to set installMethod (Claude Code reads from legacy file)
   home.activation.patchClaudeJson = {
-    after = [ "writeBoundary" ];
-    before = [ ];
+    after = ["writeBoundary"];
+    before = [];
     data = ''
       CLAUDE_JSON="$HOME/.claude.json"
       if [ -f "$CLAUDE_JSON" ]; then
