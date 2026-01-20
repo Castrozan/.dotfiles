@@ -1,10 +1,10 @@
-{ lib, ... }:
-let
+{lib, ...}: let
   hooksDir = ../../../agents/hooks;
 
-  # Get all Python hook scripts from the hooks directory
-  hookFiles = builtins.filter
-    (name: lib.hasSuffix ".py" name)
+  # Get all hook scripts from the hooks directory (.py and .sh)
+  hookFiles =
+    builtins.filter
+    (name: lib.hasSuffix ".py" name || lib.hasSuffix ".sh" name)
     (builtins.attrNames (builtins.readDir hooksDir));
 
   # Create home.file entries for each hook script
@@ -26,7 +26,6 @@ let
       text = "";
     };
   };
-in
-{
+in {
   home.file = hookSymlinks // markerFile;
 }
