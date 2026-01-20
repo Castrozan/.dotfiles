@@ -102,7 +102,7 @@ def check_prompt_delegation(prompt: str) -> tuple[str, str] | None:
     prompt_patterns = [
         # dotfiles-expert
         (
-            [r"dotfiles?", r"this\s+repo", r"add.*module", r"create.*module"],
+            [r"dotfiles?", r"add.*module", r"create.*module"],
             "dotfiles-expert",
             "Repository structure, module patterns, rebuild workflow"
         ),
