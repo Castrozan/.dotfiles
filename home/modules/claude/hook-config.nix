@@ -1,7 +1,32 @@
 let
   hooksPath = "~/.claude/hooks";
   runHook = "${hooksPath}/run-hook.sh";
-in {
+
+  # Keywords that trigger delegation-reminder.py
+  delegationMatcher =
+    "(?i)("
+    + builtins.concatStringsSep "|" [
+      "rebuild"
+      "nixos"
+      "home-manager"
+      "flake"
+      "devenv"
+      "agents?/"
+      "SKILL\\.md"
+      "create.*agent"
+      "design.*agent"
+      "write.*skill"
+      "Ralph"
+      "PRD"
+      "dotfiles?"
+      "add.*module"
+      "create.*module"
+      "nix.*(expression|syntax|eval|repl|build)"
+      "how.*nix"
+    ]
+    + ")";
+in
+{
   SessionStart = [
     {
       matcher = ".*";
@@ -21,43 +46,13 @@ in {
       hooks = [
         {
           type = "command";
-          command = "${runHook} ${hooksPath}/tmux-reminder.py";
-          timeout = 3000;
-        }
-        {
-          type = "command";
           command = "${runHook} ${hooksPath}/dangerous-command-guard.py";
           timeout = 3000;
         }
         {
           type = "command";
-          command = "${runHook} ${hooksPath}/git-reminder.py";
-          timeout = 5000;
-        }
-        {
-          type = "command";
           command = "${runHook} ${hooksPath}/branch-protection.py";
           timeout = 5000;
-        }
-        {
-          type = "command";
-          command = "${runHook} ${hooksPath}/worktree-reminder.py";
-          timeout = 5000;
-        }
-        {
-          type = "command";
-          command = "${runHook} ${hooksPath}/delegation-reminder.py";
-          timeout = 5000;
-        }
-      ];
-    }
-    {
-      matcher = "Task";
-      hooks = [
-        {
-          type = "command";
-          command = "${runHook} ${hooksPath}/subagent-context-reminder.py";
-          timeout = 3000;
         }
       ];
     }
@@ -67,11 +62,6 @@ in {
     {
       matcher = "Edit|Write";
       hooks = [
-        {
-          type = "command";
-          command = "${runHook} ${hooksPath}/nix-rebuild-reminder.py";
-          timeout = 3000;
-        }
         {
           type = "command";
           command = "${runHook} ${hooksPath}/auto-format.py";
@@ -88,7 +78,7 @@ in {
 
   UserPromptSubmit = [
     {
-      matcher = ".*";
+      matcher = delegationMatcher;
       hooks = [
         {
           type = "command";

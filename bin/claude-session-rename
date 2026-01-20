@@ -49,9 +49,11 @@ get_first_user_message() {
 
     # Extract first user message content (grep for type:user, then extract message content)
     # The session file is JSONL - each line is a JSON object
+    # Note: message.content can be a string OR an array (for messages with images)
+    # The || true prevents SIGPIPE (exit 141) when head closes pipe early with pipefail
     grep -m1 '"type":"user"' "$session_file" 2>/dev/null | \
-        jq -r '.message.content // empty' 2>/dev/null | \
-        head -c 2000
+        jq -r 'if .message.content | type == "array" then (.message.content[] | select(.type == "text") | .text) else .message.content // empty end' 2>/dev/null | \
+        head -c 2000 || true
 }
 
 # Generate a short name using Claude CLI

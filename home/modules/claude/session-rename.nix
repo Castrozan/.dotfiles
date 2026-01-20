@@ -1,23 +1,30 @@
 # claude-session-rename: Automated session naming for Claude Code
 # Uses Claude CLI to generate short descriptive names for sessions
-{ config, lib, pkgs, ... }:
-
-let
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}: let
   cfg = config.services.claude-session-rename;
 
-  session-rename-script = pkgs.writeShellScriptBin "claude-session-rename"
+  session-rename-script =
+    pkgs.writeShellScriptBin "claude-session-rename"
     (builtins.readFile ../../../bin/claude-session-rename);
 
   session-rename-wrapped = pkgs.writeShellScriptBin "claude-session-rename-service" ''
     export CLAUDE_SESSION_RENAME_MAX_LENGTH="${toString cfg.maxLength}"
     export CLAUDE_SESSION_RENAME_MIN_LENGTH="${toString cfg.minLength}"
-    export CLAUDE_SESSION_RENAME_VERBOSE="${if cfg.verbose then "true" else "false"}"
+    export CLAUDE_SESSION_RENAME_VERBOSE="${
+      if cfg.verbose
+      then "true"
+      else "false"
+    }"
     export CLAUDE_SESSION_RENAME_DRY_RUN="false"
-    export PATH="${lib.makeBinPath [ pkgs.coreutils pkgs.gnugrep pkgs.gnused pkgs.jq pkgs.claude-code ]}:$PATH"
+    export PATH="${lib.makeBinPath [pkgs.coreutils pkgs.gnugrep pkgs.gnused pkgs.jq pkgs.claude-code]}:$PATH"
     exec ${session-rename-script}/bin/claude-session-rename "$@"
   '';
-in
-{
+in {
   options.services.claude-session-rename = {
     enable = lib.mkOption {
       type = lib.types.bool;
@@ -65,7 +72,7 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    home.packages = [ session-rename-wrapped session-rename-script ];
+    home.packages = [session-rename-wrapped session-rename-script];
 
     systemd.user.services.claude-session-rename = {
       Unit = {
@@ -79,7 +86,8 @@ in
           "HOME=${config.home.homeDirectory}"
         ];
         # Allow failures (e.g., network issues, Claude CLI not responding)
-        SuccessExitStatus = "0 1";
+        # 141 = SIGPIPE (can occur if pipe closes early, though script handles this)
+        SuccessExitStatus = "0 1 141";
       };
     };
 
@@ -95,7 +103,7 @@ in
       };
 
       Install = {
-        WantedBy = [ "timers.target" ];
+        WantedBy = ["timers.target"];
       };
     };
   };

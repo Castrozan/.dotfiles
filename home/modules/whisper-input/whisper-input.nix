@@ -4,8 +4,8 @@ let
   whisper-input-src = pkgs.fetchFromGitHub {
     owner = "castrozan";
     repo = "whisper-input";
-    rev = "fd4670564454dcac6601a2f75eaa7f12ee09706f";
-    hash = "sha256-9V3yhInRWd6mYoDUepJ9Tf6rFWhso6uA/i0foQ4OGCI=";
+    rev = "d9e48d2";
+    hash = "sha256-KRPTfKOE3IMEANsOjTf1D2nYNhcxdX15C+EApVgvIvw=";
   };
 
   # Process wrapper script with substitutions
@@ -19,6 +19,8 @@ let
         "@ccLib@"
         "@ffmpeg@"
         "@libnotify@"
+        "@wtype@"
+        "@wlClipboard@"
         "@scriptDir@"
       ]
       [
@@ -29,11 +31,13 @@ let
         "${pkgs.stdenv.cc.cc.lib}"
         "${pkgs.ffmpeg}"
         "${pkgs.libnotify}"
+        "${pkgs.wtype}"
+        "${pkgs.wl-clipboard}"
         "${whisper-input-src}/src"
       ]
       (builtins.readFile ./wrapper.sh)
   );
-  
+
   # Process activation script with substitutions
   activationScript = pkgs.writeText "whisper-input-activation.sh" (
     pkgs.lib.replaceStrings
@@ -55,7 +59,7 @@ let
       ]
       (builtins.readFile ./activation.sh)
   );
-  
+
   # Create the whisper-input package
   whisper-input = pkgs.stdenv.mkDerivation {
     name = "whisper-input";
@@ -70,11 +74,17 @@ let
   };
 in
 {
-  home.packages = [ whisper-input pkgs.xdotool ];
+  home.packages = [
+    whisper-input
+    pkgs.xdotool
+  ];
 
   # Set up whisper-input environment (similar to dooit.nix pattern)
   home.activation.installWhisperInput = {
-    after = [ "writeBoundary" "installPackages" ];
+    after = [
+      "writeBoundary"
+      "installPackages"
+    ];
     before = [ ];
     data = builtins.readFile activationScript;
   };

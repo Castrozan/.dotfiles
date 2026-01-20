@@ -111,6 +111,14 @@ def main():
                 "This preserves feature branch history in the commit graph."
             )
 
+    # Check for stash pop/apply with uncommitted changes
+    if re.search(r"^git\s+stash\s+(pop|apply)", command):
+        code, porcelain = run_git(["status", "--porcelain"])
+        if code == 0 and porcelain:
+            messages.append(
+                "WARNING: You have uncommitted changes. Applying stash may cause conflicts."
+            )
+
     if messages:
         output = {
             "continue": True,

@@ -39,3 +39,7 @@ No obvious comments - code should be self-documenting. Comments only for "why", 
 <communication>
 Be direct and technical. Concise answers. If user is wrong, tell them. If build fails, fix immediately - don't just report. Verify builds pass before marking complete.
 </communication>
+
+<nix>
+After modifying .nix files, run rebuild to apply changes. For quick validation without applying: nix build ~/.dotfiles#homeConfigurations."lucas.zanoni@x86_64-linux".activationPackage --dry-run.
+</nix>

@@ -6,7 +6,7 @@
 export ALSA_PLUGIN_DIR="@alsaPlugins@/lib/alsa-lib"
 
 # Add Nix binaries to PATH (avoid glibc conflicts with system binaries)
-export PATH="@ffmpeg@/bin:@libnotify@/bin:$PATH"
+export PATH="@ffmpeg@/bin:@libnotify@/bin:@wtype@/bin:@wlClipboard@/bin:$PATH"
 
 # Add system libraries needed by PyTorch and other packages (no glibc - breaks system binaries on non-NixOS)
 export LD_LIBRARY_PATH="@alsaPlugins@/lib:@pulseaudio@/lib:@portaudio@/lib:@dbusLib@/lib:@ccLib@/lib:${LD_LIBRARY_PATH:-}"
