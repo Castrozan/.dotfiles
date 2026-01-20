@@ -1,68 +1,69 @@
-{pkgs, ...}: let
+{ pkgs, ... }:
+let
   # Fetch whisper-input source directly
   whisper-input-src = pkgs.fetchFromGitHub {
     owner = "castrozan";
     repo = "whisper-input";
-    rev = "e58fc51";
-    hash = "sha256-PbYRzSbnv2tfCZh283V9XfcmmWFuV3vOSiRdRthm2Q8=";
+    rev = "d9e48d2";
+    hash = "sha256-KRPTfKOE3IMEANsOjTf1D2nYNhcxdX15C+EApVgvIvw=";
   };
 
   # Process wrapper script with substitutions
   wrapperScript = pkgs.writeScript "whisper-input-wrapper.sh" (
     pkgs.lib.replaceStrings
-    [
-      "@alsaPlugins@"
-      "@pulseaudio@"
-      "@portaudio@"
-      "@dbusLib@"
-      "@ccLib@"
-      "@ffmpeg@"
-      "@libnotify@"
-      "@wtype@"
-      "@wlClipboard@"
-      "@scriptDir@"
-    ]
-    [
-      "${pkgs.alsa-plugins}"
-      "${pkgs.pulseaudio}"
-      "${pkgs.portaudio}"
-      "${pkgs.dbus.lib}"
-      "${pkgs.stdenv.cc.cc.lib}"
-      "${pkgs.ffmpeg}"
-      "${pkgs.libnotify}"
-      "${pkgs.wtype}"
-      "${pkgs.wl-clipboard}"
-      "${whisper-input-src}/src"
-    ]
-    (builtins.readFile ./wrapper.sh)
+      [
+        "@alsaPlugins@"
+        "@pulseaudio@"
+        "@portaudio@"
+        "@dbusLib@"
+        "@ccLib@"
+        "@ffmpeg@"
+        "@libnotify@"
+        "@wtype@"
+        "@wlClipboard@"
+        "@scriptDir@"
+      ]
+      [
+        "${pkgs.alsa-plugins}"
+        "${pkgs.pulseaudio}"
+        "${pkgs.portaudio}"
+        "${pkgs.dbus.lib}"
+        "${pkgs.stdenv.cc.cc.lib}"
+        "${pkgs.ffmpeg}"
+        "${pkgs.libnotify}"
+        "${pkgs.wtype}"
+        "${pkgs.wl-clipboard}"
+        "${whisper-input-src}/src"
+      ]
+      (builtins.readFile ./wrapper.sh)
   );
 
   # Process activation script with substitutions
   activationScript = pkgs.writeText "whisper-input-activation.sh" (
     pkgs.lib.replaceStrings
-    [
-      "@pythonBin@"
-      "@portaudio@"
-      "@dbusLib@"
-      "@ccLib@"
-      "@alsaLibDev@"
-      "@alsaLib@"
-    ]
-    [
-      "${pkgs.python311}/bin/python3"
-      "${pkgs.portaudio}"
-      "${pkgs.dbus.lib}"
-      "${pkgs.stdenv.cc.cc.lib}"
-      "${pkgs.alsa-lib.dev}"
-      "${pkgs.alsa-lib}"
-    ]
-    (builtins.readFile ./activation.sh)
+      [
+        "@pythonBin@"
+        "@portaudio@"
+        "@dbusLib@"
+        "@ccLib@"
+        "@alsaLibDev@"
+        "@alsaLib@"
+      ]
+      [
+        "${pkgs.python311}/bin/python3"
+        "${pkgs.portaudio}"
+        "${pkgs.dbus.lib}"
+        "${pkgs.stdenv.cc.cc.lib}"
+        "${pkgs.alsa-lib.dev}"
+        "${pkgs.alsa-lib}"
+      ]
+      (builtins.readFile ./activation.sh)
   );
 
   # Create the whisper-input package
   whisper-input = pkgs.stdenv.mkDerivation {
     name = "whisper-input";
-    buildInputs = [];
+    buildInputs = [ ];
     dontUnpack = true;
     dontBuild = true;
     installPhase = ''
@@ -71,7 +72,8 @@
       chmod +x $out/bin/whisper-input
     '';
   };
-in {
+in
+{
   home.packages = [
     whisper-input
     pkgs.xdotool
@@ -83,7 +85,7 @@ in {
       "writeBoundary"
       "installPackages"
     ];
-    before = [];
+    before = [ ];
     data = builtins.readFile activationScript;
   };
 }
