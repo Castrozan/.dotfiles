@@ -97,13 +97,11 @@ in
   home.packages = buildDeps ++ [ claude-stt-setup claude-stt-python ];
 
   # Environment variables for building native Python extensions (shell sessions)
+  # NOTE: Do NOT set LD_LIBRARY_PATH globally - it breaks system binaries on non-NixOS
+  # The wrapper scripts (claude-stt-python, claude-stt-setup) set it internally
   home.sessionVariables = {
     # Make kernel headers available for evdev compilation
     C_INCLUDE_PATH = "${pkgs.linuxHeaders}/include:${pkgs.portaudio}/include";
-
-    # Runtime library path for native extensions (libstdc++, portaudio, zlib)
-    # Required for numpy, sounddevice, and other compiled Python packages
-    LD_LIBRARY_PATH = runtimeLibPath;
 
     # Point claude-stt to use our wrapper Python
     CLAUDE_STT_PYTHON = "${claude-stt-python}/bin/claude-stt-python";
