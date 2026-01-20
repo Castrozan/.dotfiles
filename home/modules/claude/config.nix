@@ -30,11 +30,26 @@ let
     };
 
     hooks = {
+      # Run at session start
+      SessionStart = [
+        {
+          matcher = ".*";
+          hooks = [
+            {
+              type = "command";
+              command = "python3 ${hooksPath}/session-context.py";
+              timeout = 5000;
+            }
+          ];
+        }
+      ];
+
       # Run before tool execution
       PreToolUse = [
         {
           matcher = "Bash";
           hooks = [
+            # Tmux and timing
             {
               type = "command";
               command = "python3 ${hooksPath}/tmux-reminder.py";
@@ -42,12 +57,34 @@ let
             }
             {
               type = "command";
+              command = "python3 ${hooksPath}/command-timing.py";
+              timeout = 2000;
+            }
+            # Safety checks
+            {
+              type = "command";
               command = "python3 ${hooksPath}/dangerous-command-guard.py";
               timeout = 3000;
             }
+            # Git workflow
             {
               type = "command";
               command = "python3 ${hooksPath}/git-reminder.py";
+              timeout = 5000;
+            }
+            {
+              type = "command";
+              command = "python3 ${hooksPath}/branch-protection.py";
+              timeout = 5000;
+            }
+            {
+              type = "command";
+              command = "python3 ${hooksPath}/worktree-reminder.py";
+              timeout = 5000;
+            }
+            {
+              type = "command";
+              command = "python3 ${hooksPath}/test-before-commit.py";
               timeout = 5000;
             }
           ];
@@ -77,6 +114,16 @@ let
       # Run after tool execution
       PostToolUse = [
         {
+          matcher = "Bash";
+          hooks = [
+            {
+              type = "command";
+              command = "python3 ${hooksPath}/command-timing.py";
+              timeout = 2000;
+            }
+          ];
+        }
+        {
           matcher = "Edit|Write";
           hooks = [
             {
@@ -88,6 +135,11 @@ let
               type = "command";
               command = "python3 ${hooksPath}/auto-format.py";
               timeout = 15000;
+            }
+            {
+              type = "command";
+              command = "python3 ${hooksPath}/lint-on-edit.py";
+              timeout = 30000;
             }
           ];
         }
