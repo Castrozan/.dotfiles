@@ -4,7 +4,8 @@
 
 python_bin="@pythonBin@"
 VENV_DIR="$HOME/.local/share/whisper-input/venv"
-export LD_LIBRARY_PATH="@portaudio@/lib:@dbusLib@/lib:@ccLib@/lib:@glibc@/lib:${LD_LIBRARY_PATH:-}"
+# No glibc - it breaks system binaries on non-NixOS (and Nix binaries have RPATH)
+export LD_LIBRARY_PATH="@portaudio@/lib:@dbusLib@/lib:@ccLib@/lib:${LD_LIBRARY_PATH:-}"
 export PKG_CONFIG_PATH="@portaudio@/lib/pkgconfig:${PKG_CONFIG_PATH:-}"
 export C_INCLUDE_PATH="@portaudio@/include:${C_INCLUDE_PATH:-}"
 export LIBRARY_PATH="@portaudio@/lib:${LIBRARY_PATH:-}"
@@ -74,4 +75,4 @@ if ! python -c "import pyaudio" 2>/dev/null; then
 fi
 
 # dbus-python is optional and may fail, install it last
-pip install --quiet dbus-python || echo "Warning: dbus-python installation failed (may not be needed)"
+# pip install --quiet dbus-python || echo "Warning: dbus-python installation failed (may not be needed)"
