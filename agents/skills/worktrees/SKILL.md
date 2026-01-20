@@ -29,5 +29,5 @@ Called by brainstorming (Phase 4) and any skill needing isolation. Pairs with fi
 </integration>
 
 <red_flags>
-Never create a project-local worktree without verifying it is ignored, skip baseline tests, proceed with failing tests without asking, assume directory location, skip CLAUDE.md check, or create in a git-crypt repo without the no-checkout plus unlock flow. Always follow directory priority, verify ignored for project-local, check git-crypt first, auto-detect setup, and verify clean baseline.
+Never create a worktree in a project-local directory that is not gitignored, as this would commit worktree contents to the repository. Never skip running tests before declaring the worktree ready. Never proceed with failing tests without asking the user first. Never assume where worktrees should go without checking for existing directories or CLAUDE.md preferences. Never run standard git-crypt unlock in a worktree, as it requires the exported key workflow described above.
 </red_flags>
