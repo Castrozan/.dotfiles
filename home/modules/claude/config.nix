@@ -1,5 +1,5 @@
 {pkgs, ...}: let
-  hooksConfig = import ./hooks.nix;
+  hooksConfig = import ./hook-config.nix;
 
   claudeGlobalSettings = {
     installMethod = "native";
