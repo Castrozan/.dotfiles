@@ -82,7 +82,7 @@
             }
             {
               type = "command";
-              command = "python3 ${hooksPath}/test-before-commit.py";
+              command = "python3 ${hooksPath}/delegation-reminder.py";
               timeout = 5000;
             }
           ];
@@ -144,7 +144,18 @@
       ];
 
       # Run when user submits a prompt
-      UserPromptSubmit = [];
+      UserPromptSubmit = [
+        {
+          matcher = ".*";
+          hooks = [
+            {
+              type = "command";
+              command = "python3 ${hooksPath}/delegation-reminder.py";
+              timeout = 3000;
+            }
+          ];
+        }
+      ];
     };
   };
 
