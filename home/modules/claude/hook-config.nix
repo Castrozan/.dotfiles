@@ -1,7 +1,32 @@
 let
   hooksPath = "~/.claude/hooks";
   runHook = "${hooksPath}/run-hook.sh";
-in {
+
+  # Keywords that trigger delegation-reminder.py
+  delegationMatcher =
+    "(?i)("
+    + builtins.concatStringsSep "|" [
+      "rebuild"
+      "nixos"
+      "home-manager"
+      "flake"
+      "devenv"
+      "agents?/"
+      "SKILL\\.md"
+      "create.*agent"
+      "design.*agent"
+      "write.*skill"
+      "Ralph"
+      "PRD"
+      "dotfiles?"
+      "add.*module"
+      "create.*module"
+      "nix.*(expression|syntax|eval|repl|build)"
+      "how.*nix"
+    ]
+    + ")";
+in
+{
   SessionStart = [
     {
       matcher = ".*";
@@ -29,11 +54,6 @@ in {
           command = "${runHook} ${hooksPath}/branch-protection.py";
           timeout = 5000;
         }
-        {
-          type = "command";
-          command = "${runHook} ${hooksPath}/delegation-reminder.py";
-          timeout = 5000;
-        }
       ];
     }
   ];
@@ -58,7 +78,7 @@ in {
 
   UserPromptSubmit = [
     {
-      matcher = ".*";
+      matcher = delegationMatcher;
       hooks = [
         {
           type = "command";
