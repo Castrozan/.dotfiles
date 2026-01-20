@@ -57,13 +57,24 @@ get_first_user_message() {
 # Generate a short name using Claude CLI
 generate_name() {
     local content="$1"
-    local prompt="Generate a short, descriptive title (max ${MAX_NAME_LENGTH} chars) for this Claude Code session.
-The title should capture the main task/topic being discussed.
-Return ONLY the title, no quotes, no explanation, no punctuation at the end.
-If it's in Portuguese, keep the title in Portuguese.
+    local prompt="You are a title generator. Output ONLY a short title, nothing else.
 
-Session content:
-${content}"
+INPUT:
+${content}
+
+OUTPUT FORMAT: Just the title (3-7 words max). No explanations. No markdown. No quotes.
+
+BAD outputs (DO NOT DO THIS):
+- 'Perfect! I've created...' (conversational)
+- '## Summary...' (markdown)
+- 'Here is the title: ...' (explanation)
+
+GOOD outputs:
+- Configurar hooks no Claude Code
+- Fix login redirect bug
+- Serviço auto-rename sessões
+
+YOUR TITLE:"
 
     local result
     if ! result=$(claude -p "$prompt" --model claude-sonnet-4-20250514 2>/dev/null); then
@@ -71,8 +82,20 @@ ${content}"
         return 1
     fi
 
-    # Trim whitespace and ensure max length
-    result=$(echo "$result" | tr -d '\n' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | head -c "$MAX_NAME_LENGTH")
+    # Clean up result: remove markdown, conversational prefixes, trim whitespace
+    result=$(echo "$result" | \
+        tr -d '\n' | \
+        sed 's/^#\+[[:space:]]*//g' | \
+        sed 's/^\*\+[[:space:]]*//g' | \
+        sed 's/^Summary[[:space:]]*[:：-]*[[:space:]]*//i' | \
+        sed 's/^Title[[:space:]]*[:：-]*[[:space:]]*//i' | \
+        sed 's/^Perfect![[:space:]]*//i' | \
+        sed 's/^Great![[:space:]]*//i' | \
+        sed 's/^Here is[^:]*:[[:space:]]*//i' | \
+        sed "s/^I've [^:]*:[[:space:]]*//i" | \
+        sed "s/^['\"\`]//;s/['\"\`]$//" | \
+        sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | \
+        head -c "$MAX_NAME_LENGTH")
 
     if [[ -z "$result" ]]; then
         log "Empty result from Claude"
