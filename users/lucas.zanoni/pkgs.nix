@@ -3,10 +3,8 @@
   pkgs,
   latest,
   ...
-}:
-{
-  home.packages =
-    with pkgs;
+}: {
+  home.packages = with pkgs;
     [
       alejandra
       bash-completion
@@ -58,6 +56,7 @@
       uv
       vim
       wl-clipboard
+      wtype
       xclip
       yamllint
       zip
