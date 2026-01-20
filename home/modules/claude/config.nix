@@ -1,6 +1,5 @@
 {pkgs, ...}: let
-  hooksPath = "~/.claude/hooks";
-  runHook = "${hooksPath}/run-hook.sh";
+  hooksConfig = import ./hooks.nix;
 
   claudeGlobalSettings = {
     installMethod = "native";
@@ -28,141 +27,7 @@
       # and work directly without being Claude Code plugins
     };
 
-    hooks = {
-      # Run at session start
-      SessionStart = [
-        {
-          matcher = ".*";
-          hooks = [
-            {
-              type = "command";
-              command = "${runHook} ${hooksPath}/session-context.py";
-              timeout = 5000;
-            }
-          ];
-        }
-      ];
-
-      # Run before tool execution
-      PreToolUse = [
-        {
-          matcher = "Bash";
-          hooks = [
-            # Tmux and timing
-            {
-              type = "command";
-              command = "${runHook} ${hooksPath}/tmux-reminder.py";
-              timeout = 3000;
-            }
-            {
-              type = "command";
-              command = "${runHook} ${hooksPath}/command-timing.py";
-              timeout = 2000;
-            }
-            # Safety checks
-            {
-              type = "command";
-              command = "${runHook} ${hooksPath}/dangerous-command-guard.py";
-              timeout = 3000;
-            }
-            # Git workflow
-            {
-              type = "command";
-              command = "${runHook} ${hooksPath}/git-reminder.py";
-              timeout = 5000;
-            }
-            {
-              type = "command";
-              command = "${runHook} ${hooksPath}/branch-protection.py";
-              timeout = 5000;
-            }
-            {
-              type = "command";
-              command = "${runHook} ${hooksPath}/worktree-reminder.py";
-              timeout = 5000;
-            }
-            {
-              type = "command";
-              command = "${runHook} ${hooksPath}/test-before-commit.py";
-              timeout = 5000;
-            }
-            {
-              type = "command";
-              command = "${runHook} ${hooksPath}/delegation-reminder.py";
-              timeout = 5000;
-            }
-          ];
-        }
-        {
-          matcher = "Edit|Write";
-          hooks = [
-            {
-              type = "command";
-              command = "${runHook} ${hooksPath}/sensitive-file-guard.py";
-              timeout = 3000;
-            }
-          ];
-        }
-        {
-          matcher = "Task";
-          hooks = [
-            {
-              type = "command";
-              command = "${runHook} ${hooksPath}/subagent-context-reminder.py";
-              timeout = 3000;
-            }
-          ];
-        }
-      ];
-
-      # Run after tool execution
-      PostToolUse = [
-        {
-          matcher = "Bash";
-          hooks = [
-            {
-              type = "command";
-              command = "${runHook} ${hooksPath}/command-timing.py";
-              timeout = 2000;
-            }
-          ];
-        }
-        {
-          matcher = "Edit|Write";
-          hooks = [
-            {
-              type = "command";
-              command = "${runHook} ${hooksPath}/nix-rebuild-reminder.py";
-              timeout = 3000;
-            }
-            {
-              type = "command";
-              command = "${runHook} ${hooksPath}/auto-format.py";
-              timeout = 15000;
-            }
-            {
-              type = "command";
-              command = "${runHook} ${hooksPath}/lint-on-edit.py";
-              timeout = 30000;
-            }
-          ];
-        }
-      ];
-
-      # Run when user submits a prompt
-      UserPromptSubmit = [
-        {
-          matcher = ".*";
-          hooks = [
-            {
-              type = "command";
-              command = "${runHook} ${hooksPath}/delegation-reminder.py";
-              timeout = 3000;
-            }
-          ];
-        }
-      ];
-    };
+    hooks = hooksConfig;
   };
 
   claudeDotfilesRules = ''
@@ -177,7 +42,7 @@
 in {
   home.file.".claude/.keep".text = "";
   home.file.".claude/settings.json".text = builtins.toJSON claudeGlobalSettings;
-  home.file.".dotfiles/CLAUDE.md".text = claudeDotfilesRules; # add symlink to dotfiles for easy reference
+  home.file.".dotfiles/CLAUDE.md".text = claudeDotfilesRules;
 
   home.sessionVariables = {
     CLAUDE_CODE_SHELL = "${pkgs.bash}/bin/bash";
