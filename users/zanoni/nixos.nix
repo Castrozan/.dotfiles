@@ -1,10 +1,12 @@
 # NixOS configuration for zanoni
-{ lib, pkgs, ... }:
-let
+{
+  lib,
+  pkgs,
+  ...
+}: let
   bashrc = builtins.readFile ../../.bashrc;
   sshKeys = import ./ssh-keys.nix;
-in
-{
+in {
   imports = [
     ./scripts
     ./pkgs.nix
@@ -28,7 +30,6 @@ in
     extraGroups = [
       "networkmanager"
       "wheel"
-      "input"  # Required for claude-stt pynput evdev backend on Wayland
     ];
     shell = pkgs.fish;
   };
@@ -77,7 +78,7 @@ in
 
   networking.firewall = {
     enable = true;
-    allowedTCPPorts = [ 22 ];
+    allowedTCPPorts = [22];
   };
 
   users.users.zanoni.openssh.authorizedKeys.keys = sshKeys.authorizedKeys;

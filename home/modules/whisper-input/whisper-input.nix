@@ -17,7 +17,8 @@ let
         "@portaudio@"
         "@dbusLib@"
         "@ccLib@"
-        "@glibc@"
+        "@ffmpeg@"
+        "@libnotify@"
         "@scriptDir@"
       ]
       [
@@ -26,7 +27,8 @@ let
         "${pkgs.portaudio}"
         "${pkgs.dbus.lib}"
         "${pkgs.stdenv.cc.cc.lib}"
-        "${pkgs.glibc}"
+        "${pkgs.ffmpeg}"
+        "${pkgs.libnotify}"
         "${whisper-input-src}/src"
       ]
       (builtins.readFile ./wrapper.sh)
@@ -40,7 +42,6 @@ let
         "@portaudio@"
         "@dbusLib@"
         "@ccLib@"
-        "@glibc@"
         "@alsaLibDev@"
         "@alsaLib@"
       ]
@@ -49,7 +50,6 @@ let
         "${pkgs.portaudio}"
         "${pkgs.dbus.lib}"
         "${pkgs.stdenv.cc.cc.lib}"
-        "${pkgs.glibc}"
         "${pkgs.alsa-lib.dev}"
         "${pkgs.alsa-lib}"
       ]

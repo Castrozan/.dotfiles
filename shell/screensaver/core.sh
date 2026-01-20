@@ -37,7 +37,7 @@ _start_screensaver_tmux_session() {
         # Note: tmux panes are 1-indexed, not 0-indexed
         tmux send-keys -t screensaver.1 "$first_cmd" C-m
 
-        local bottom_height="${SCREENSAVER_BOTTOM_HEIGHT:-20}"
+        local bottom_height="${SCREENSAVER_BOTTOM_HEIGHT:-15}"
 
         if [ ${#available_commands[@]} -gt 1 ]; then
             # Split horizontally to create right side (pane 2)

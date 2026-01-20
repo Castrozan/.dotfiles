@@ -1,6 +1,5 @@
-{ pkgs, ... }:
-let
-  hooksPath = "~/.claude/hooks";
+{pkgs, ...}: let
+  hooksConfig = import ./hook-config.nix;
 
   claudeGlobalSettings = {
     installMethod = "native";
@@ -11,8 +10,8 @@ let
     includeCoAuthoredBy = false;
     permissions = {
       defaultMode = "bypassPermissions";
-      allow = [ "*" ];
-      deny = [ ];
+      allow = ["*"];
+      deny = [];
     };
     terminalShowHoverHint = false;
     composer = {
@@ -22,80 +21,13 @@ let
       respectGitignore = true;
     };
     enabledPlugins = {
-      "claude-stt@jarrodwatts-claude-stt" = true;
       "typescript-lsp@claude-plugins-official" = true;
       "jdtls-lsp@claude-plugins-official" = true;
       # NOTE: some lsps are installed via pkgs in lsp.nix
       # and work directly without being Claude Code plugins
     };
 
-    hooks = {
-      # Run before tool execution
-      PreToolUse = [
-        {
-          matcher = "Bash";
-          hooks = [
-            {
-              type = "command";
-              command = "python3 ${hooksPath}/tmux-reminder.py";
-              timeout = 3000;
-            }
-            {
-              type = "command";
-              command = "python3 ${hooksPath}/dangerous-command-guard.py";
-              timeout = 3000;
-            }
-            {
-              type = "command";
-              command = "python3 ${hooksPath}/git-reminder.py";
-              timeout = 5000;
-            }
-          ];
-        }
-        {
-          matcher = "Edit|Write";
-          hooks = [
-            {
-              type = "command";
-              command = "python3 ${hooksPath}/sensitive-file-guard.py";
-              timeout = 3000;
-            }
-          ];
-        }
-        {
-          matcher = "Task";
-          hooks = [
-            {
-              type = "command";
-              command = "python3 ${hooksPath}/subagent-context-reminder.py";
-              timeout = 3000;
-            }
-          ];
-        }
-      ];
-
-      # Run after tool execution
-      PostToolUse = [
-        {
-          matcher = "Edit|Write";
-          hooks = [
-            {
-              type = "command";
-              command = "python3 ${hooksPath}/nix-rebuild-reminder.py";
-              timeout = 3000;
-            }
-            {
-              type = "command";
-              command = "python3 ${hooksPath}/auto-format.py";
-              timeout = 15000;
-            }
-          ];
-        }
-      ];
-
-      # Run when user submits a prompt
-      UserPromptSubmit = [ ];
-    };
+    hooks = hooksConfig;
   };
 
   claudeDotfilesRules = ''
@@ -107,11 +39,10 @@ let
 
     ${builtins.readFile ../../../agents/rules/gnome-keybinding-debugging.md}
   '';
-in
-{
+in {
   home.file.".claude/.keep".text = "";
   home.file.".claude/settings.json".text = builtins.toJSON claudeGlobalSettings;
-  home.file.".dotfiles/CLAUDE.md".text = claudeDotfilesRules; # add symlink to dotfiles for easy reference
+  home.file.".dotfiles/CLAUDE.md".text = claudeDotfilesRules;
 
   home.sessionVariables = {
     CLAUDE_CODE_SHELL = "${pkgs.bash}/bin/bash";
@@ -125,8 +56,8 @@ in
 
   # Patch ~/.claude.json to set installMethod (Claude Code reads from legacy file)
   home.activation.patchClaudeJson = {
-    after = [ "writeBoundary" ];
-    before = [ ];
+    after = ["writeBoundary"];
+    before = [];
     data = ''
       CLAUDE_JSON="$HOME/.claude.json"
       if [ -f "$CLAUDE_JSON" ]; then

@@ -5,8 +5,11 @@
 # Set up ALSA/PulseAudio environment
 export ALSA_PLUGIN_DIR="@alsaPlugins@/lib/alsa-lib"
 
-# Add system libraries needed by PyTorch and other packages
-export LD_LIBRARY_PATH="@alsaPlugins@/lib:@pulseaudio@/lib:@portaudio@/lib:@dbusLib@/lib:@ccLib@/lib:@glibc@/lib:${LD_LIBRARY_PATH:-}"
+# Add Nix binaries to PATH (avoid glibc conflicts with system binaries)
+export PATH="@ffmpeg@/bin:@libnotify@/bin:$PATH"
+
+# Add system libraries needed by PyTorch and other packages (no glibc - breaks system binaries on non-NixOS)
+export LD_LIBRARY_PATH="@alsaPlugins@/lib:@pulseaudio@/lib:@portaudio@/lib:@dbusLib@/lib:@ccLib@/lib:${LD_LIBRARY_PATH:-}"
 
 # Use venv managed by home-manager activation
 VENV_DIR="$HOME/.local/share/whisper-input/venv"

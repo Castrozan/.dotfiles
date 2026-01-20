@@ -47,6 +47,7 @@
     ../../home/modules/vscode
     ../../home/modules/yazi.nix
     ../../home/modules/wezterm.nix # https://tmuxai.dev/terminal-compatibility/
+    ../../home/modules/whisper-input
     ../../home/modules/zed-editor.nix
   ];
 }

@@ -1,5 +1,4 @@
-{ ... }:
-{
+{...}: {
   imports = [
     ./claude.nix
     ./config.nix
@@ -9,7 +8,6 @@
     ./lsp.nix # LSP binaries for Claude Code
     ./mcp.nix
     ./private.nix # Private/sensitive configs from ~/.private-config/claude/
-    ./stt.nix # Build dependencies for claude-stt plugin
     ./session-rename.nix # Automatic session naming service
   ];
 }
