@@ -32,7 +32,7 @@ Memory-safe checks that avoid full Nix builds:
 | Script tests | `bats` | Done |
 | Script coverage | `kcov` | Done |
 | Nix module coverage | `nix-coverage.sh` | Done |
-| Agent behavior evals | Claude API | TODO |
+| Agent behavior evals | `agent-eval` | Done |
 
 ## Implementation Progress
 
@@ -45,6 +45,7 @@ Memory-safe checks that avoid full Nix builds:
 - [x] Agent YAML validation (`tests/validate-agents.sh`)
 - [x] Script coverage (`tests/coverage.sh` - requires kcov)
 - [x] Nix module coverage (`tests/nix-coverage.sh`)
+- [x] Agent behavior evals (`agent-eval`, `tests/agents/`)
 
 ## Known Issues
 
@@ -61,3 +62,35 @@ Avoid duplication between push and PR:
 - Run on `push` to main
 - Run on `pull_request` targeting main
 - Skip redundant runs using `concurrency` groups
+
+## Agent Evals
+
+Test that Claude agents follow instructions correctly. Uses Claude API (costs money).
+
+**Workflow:** `.github/workflows/agent-evals.yml`
+
+**Smart triggering** - Only runs when these paths change:
+- `agents/**`
+- `home/modules/claude/**`
+- `tests/agents/**`
+
+**Test categories:**
+- `core_rules`: Delegation, git rules, safety
+- `subagents`: Agent-specific behavior
+- `hooks`: Hook functionality (requires Claude Code session)
+- `skills`: Skill execution
+
+**Cost control:**
+- Default model: haiku ($0.25/1M input)
+- Max cost per run: $1.00
+- Smoke test on PRs, full evals on main only
+
+**Local usage:**
+```bash
+agent-eval --smoke          # Quick sanity check
+agent-eval --dry-run        # Show what would run
+agent-eval --category core_rules
+agent-eval --test delegates_to_subagent
+```
+
+Requires: `ANTHROPIC_API_KEY` environment variable
