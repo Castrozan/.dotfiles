@@ -1,14 +1,11 @@
 # Agent Evaluation Test Cases
-# Run with: ./tests/agents/run-evals.py
+# Run with: agent-eval (after rebuild)
 #
-# Cost control:
-# - Only runs when agents/ or home/modules/claude/ changes
-# - Uses haiku for quick checks, sonnet for complex tasks
-# - Each test has max_turns limit
+# Uses Claude Max subscription via CLI - no API costs!
+# Run manually when changing agents/ or home/modules/claude/
 
 settings:
-  default_model: haiku  # cheaper for most tests
-  max_cost_per_run: 1.00  # USD, abort if exceeded
+  default_model: haiku  # faster for most tests
   timeout_seconds: 120
 
 # Test categories

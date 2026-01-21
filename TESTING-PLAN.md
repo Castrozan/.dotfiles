@@ -65,32 +65,28 @@ Avoid duplication between push and PR:
 
 ## Agent Evals
 
-Test that Claude agents follow instructions correctly. Uses Claude API (costs money).
+Test that Claude agents follow instructions correctly. Uses Claude Max subscription via CLI - **no API costs!**
 
-**Workflow:** `.github/workflows/agent-evals.yml`
+**Location:** `tests/agents/`
+**Runner:** `agent-eval` command (available after rebuild)
 
-**Smart triggering** - Only runs when these paths change:
+**Local only** - Run manually when changing:
 - `agents/**`
 - `home/modules/claude/**`
-- `tests/agents/**`
 
 **Test categories:**
 - `core_rules`: Delegation, git rules, safety
 - `subagents`: Agent-specific behavior
-- `hooks`: Hook functionality (requires Claude Code session)
-- `skills`: Skill execution
+- `hooks`: Hook functionality (placeholder)
+- `skills`: Skill execution (placeholder)
 
-**Cost control:**
-- Default model: haiku ($0.25/1M input)
-- Max cost per run: $1.00
-- Smoke test on PRs, full evals on main only
-
-**Local usage:**
+**Usage:**
 ```bash
-agent-eval --smoke          # Quick sanity check
+agent-eval --smoke          # Quick sanity check (~5s)
 agent-eval --dry-run        # Show what would run
 agent-eval --category core_rules
 agent-eval --test delegates_to_subagent
+agent-eval                  # Run all tests
 ```
 
-Requires: `ANTHROPIC_API_KEY` environment variable
+**Requirements:** Claude Code CLI installed (via `rebuild`)

@@ -1,7 +1,6 @@
 { pkgs, ... }:
 let
   pythonEnv = pkgs.python3.withPackages (ps: [
-    ps.anthropic
     ps.pyyaml
   ]);
 
