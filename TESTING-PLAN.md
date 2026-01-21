@@ -36,10 +36,20 @@ Memory-safe checks that avoid full Nix builds:
 
 - [x] Planning complete
 - [x] Minimal GitHub Actions workflow (`.github/workflows/ci.yml`)
+- [ ] **Fix flake eval in CI** (blocked by local-only paths - antipattern)
 - [ ] Flake checks (linting derivations in flake.nix)
 - [ ] Benchmark scripts
 - [ ] Script tests (bats)
 - [ ] Agent YAML validation
+
+## Known Issues
+
+### Flake not evaluable in CI
+The flake currently can't be fully evaluated in CI due to local-only paths:
+- `/nix/store/...-claude` referenced by home/modules/claude
+- Possibly agenix secrets expecting local keys
+
+This is an antipattern. The flake should evaluate anywhere without requiring local state.
 
 ## GitHub Actions Strategy
 
