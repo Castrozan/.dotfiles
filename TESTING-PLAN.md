@@ -27,8 +27,8 @@ Memory-safe checks that avoid full Nix builds:
 | Component | Tool | Status |
 |-----------|------|--------|
 | Full rebuilds | `nix build`, `home-manager switch` | - |
-| Rebuild benchmarks | Custom script | TODO |
-| Shell startup | `hyperfine` | TODO |
+| Rebuild benchmarks | `benchmark-rebuild` | Done |
+| Shell startup | `benchmark-shell` | Done |
 | Script tests | `bats` | TODO |
 | Agent behavior evals | Claude API | TODO |
 
@@ -38,9 +38,9 @@ Memory-safe checks that avoid full Nix builds:
 - [x] Minimal GitHub Actions workflow (`.github/workflows/ci.yml`)
 - [ ] **Fix flake eval in CI** (blocked by local-only paths - antipattern)
 - [ ] Flake checks (linting derivations in flake.nix)
-- [ ] Benchmark scripts
+- [x] Benchmark scripts (`benchmark-rebuild`, `benchmark-shell`)
 - [ ] Script tests (bats)
-- [ ] Agent YAML validation
+- [x] Agent YAML validation (`tests/validate-agents.sh`)
 
 ## Known Issues
 
