@@ -4,6 +4,10 @@
 
 Testing strategy to maintain code quality when working with AI assistants.
 
+## Original Request
+
+> I think we've got to configure some kind of CI or even if we use Github actions. Just make sure we are keeping the same quality when it comes to code linting and when it comes to rebuild speed and when it comes to the minimum packages that we expect and the minimum users that we expect for the flake. So I want you to figure out how can we build a test suite for the dotfiles repo? Just to make sure when we work on the dotfiles through AI, we can make sure the AI keeps a high level of code quality when working with this repository. I want code linting, rebuild speed benchmark, shell loading speed, and tests for most of the scripts that we have, also im thinking of tests for the agent instructions, maybe testing if agents like claude, with the instructions we have set for the repo will follow the minimum of instructions. How can we set this up? I would like to have all of this on github actions, but ive tried sometime ago and the containers dont have enough memory to run nix rebuilds or memory demanding jobs
+
 ## CI (GitHub Actions) - Lightweight
 
 Memory-safe checks that avoid full Nix builds:
@@ -31,8 +35,8 @@ Memory-safe checks that avoid full Nix builds:
 ## Implementation Progress
 
 - [x] Planning complete
-- [ ] Minimal GitHub Actions workflow
-- [ ] Flake checks (linting derivations)
+- [x] Minimal GitHub Actions workflow (`.github/workflows/ci.yml`)
+- [ ] Flake checks (linting derivations in flake.nix)
 - [ ] Benchmark scripts
 - [ ] Script tests (bats)
 - [ ] Agent YAML validation
