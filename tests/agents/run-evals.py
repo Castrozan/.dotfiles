@@ -2,7 +2,7 @@
 """
 Agent Evaluation Runner (Claude Max/CLI version)
 
-Runs tests defined in eval-config.yaml using Claude Code CLI.
+Runs tests defined in config/ directory using Claude Code CLI.
 Uses your Claude Max subscription - no API costs!
 
 Usage:
@@ -11,10 +11,10 @@ Usage:
     ./run-evals.py --category core_rules
     ./run-evals.py --test delegates_to_subagent
     ./run-evals.py --dry-run          # Show what would run
+    ./run-evals.py --list             # List available categories
 """
 
 import argparse
-import json
 import subprocess
 import sys
 import time
@@ -35,8 +35,38 @@ class TestResult:
 
 
 def load_config(config_path: Path) -> dict:
+    """Load config from directory or single file."""
+    if config_path.is_dir():
+        return load_config_from_dir(config_path)
     with open(config_path) as f:
         return yaml.safe_load(f)
+
+
+def load_config_from_dir(config_dir: Path) -> dict:
+    """Load config from multiple YAML files in a directory."""
+    config = {"settings": {}, "tests": {}, "smoke_test": None}
+
+    # Load settings first
+    settings_file = config_dir / "settings.yaml"
+    if settings_file.exists():
+        with open(settings_file) as f:
+            data = yaml.safe_load(f)
+            config["settings"] = data.get("settings", {})
+            if "smoke_test" in data:
+                config["smoke_test"] = data["smoke_test"]
+
+    # Load category files (any yaml file except settings.yaml)
+    for yaml_file in sorted(config_dir.glob("*.yaml")):
+        if yaml_file.name == "settings.yaml":
+            continue
+
+        category_name = yaml_file.stem  # e.g., "core_rules" from "core_rules.yaml"
+        with open(yaml_file) as f:
+            data = yaml.safe_load(f)
+            if data and "tests" in data:
+                config["tests"][category_name] = data["tests"]
+
+    return config
 
 
 def check_assertions(output: str, assertions: dict) -> list[str]:
@@ -250,14 +280,33 @@ def print_results(results: list[TestResult]) -> bool:
     return failed == 0
 
 
+def list_categories(config: dict) -> None:
+    """List available test categories."""
+    print("Available test categories:")
+    for cat_name, tests in config.get("tests", {}).items():
+        print(f"  {cat_name} ({len(tests)} tests)")
+        for test in tests:
+            print(f"    - {test['name']}")
+    if config.get("smoke_test"):
+        print("  smoke_test (1 test)")
+        print(f"    - {config['smoke_test']['name']}")
+
+
 def main():
     parser = argparse.ArgumentParser(description="Run agent evaluations (Claude Max/CLI)")
     parser.add_argument("--smoke", action="store_true", help="Run smoke test only")
     parser.add_argument("--category", help="Run tests in specific category")
     parser.add_argument("--test", help="Run specific test by name")
     parser.add_argument("--dry-run", action="store_true", help="Show what would run")
-    parser.add_argument("--config", default=Path(__file__).parent / "eval-config.yaml")
+    parser.add_argument("--list", action="store_true", help="List available categories and tests")
+    parser.add_argument("--config", default=Path(__file__).parent / "config")
     args = parser.parse_args()
+
+    config = load_config(Path(args.config))
+
+    if args.list:
+        list_categories(config)
+        sys.exit(0)
 
     # Check for claude CLI
     if not args.dry_run:
@@ -266,8 +315,6 @@ def main():
             print("Error: claude CLI not found")
             print("Run 'rebuild' to install Claude Code")
             sys.exit(1)
-
-    config = load_config(args.config)
 
     print("🧪 Running agent evaluations (Claude Max - no API cost)...")
     if args.dry_run:
