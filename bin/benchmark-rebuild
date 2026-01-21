@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 # Benchmark rebuild times for dotfiles
-# Usage: benchmark-rebuild [eval|dry-run|build|all|report]
+# Usage: benchmark-rebuild [eval|dry-run|build|all|report] [config]
+#
+# Config options:
+#   home       - Standalone home-manager (lucas.zanoni@x86_64-linux)
+#   nixos      - NixOS configuration (zanoni)
+#   auto       - Auto-detect based on current system (default)
 
 set -euo pipefail
 
@@ -12,8 +17,39 @@ mkdir -p "$RESULTS_DIR"
 
 # Initialize CSV if needed
 if [[ ! -f "$RESULTS_FILE" ]]; then
-    echo "timestamp,type,duration_seconds,commit" > "$RESULTS_FILE"
+    echo "timestamp,type,config,duration_seconds,commit" > "$RESULTS_FILE"
 fi
+
+# Detect configuration type
+detect_config() {
+    if [[ -d /etc/nixos ]] && grep -q "zanoni" /etc/hostname 2>/dev/null; then
+        echo "nixos"
+    else
+        echo "home"
+    fi
+}
+
+# Get flake output based on config type
+get_flake_output() {
+    local config_type="$1"
+    case "$config_type" in
+        home)
+            echo "homeConfigurations.\"lucas.zanoni@x86_64-linux\".activationPackage"
+            ;;
+        nixos)
+            echo "nixosConfigurations.zanoni.config.system.build.toplevel"
+            ;;
+        *)
+            echo "homeConfigurations.\"lucas.zanoni@x86_64-linux\".activationPackage"
+            ;;
+    esac
+}
+
+CONFIG_TYPE="${2:-auto}"
+if [[ "$CONFIG_TYPE" == "auto" ]]; then
+    CONFIG_TYPE=$(detect_config)
+fi
+FLAKE_OUTPUT=$(get_flake_output "$CONFIG_TYPE")
 
 benchmark() {
     local type="$1"
@@ -21,7 +57,7 @@ benchmark() {
     local commit
     commit=$(git -C "$DOTFILES" rev-parse --short HEAD 2>/dev/null || echo "unknown")
 
-    echo "Benchmarking: $type"
+    echo "Benchmarking: $type ($CONFIG_TYPE)"
     local start end duration
     start=$(date +%s.%N)
 
@@ -30,7 +66,7 @@ benchmark() {
     end=$(date +%s.%N)
     duration=$(echo "$end - $start" | bc)
 
-    echo "$(date -Iseconds),$type,$duration,$commit" >> "$RESULTS_FILE"
+    echo "$(date -Iseconds),$type,$CONFIG_TYPE,$duration,$commit" >> "$RESULTS_FILE"
     printf "  Duration: %.2fs\n" "$duration"
 }
 
@@ -39,24 +75,36 @@ case "${1:-all}" in
         benchmark "eval" "nix flake check $DOTFILES --no-build"
         ;;
     dry-run)
-        benchmark "dry-run" "nix build $DOTFILES#homeConfigurations.\"lucas.zanoni@x86_64-linux\".activationPackage --dry-run"
+        benchmark "dry-run" "nix build $DOTFILES#$FLAKE_OUTPUT --dry-run"
         ;;
     build)
-        benchmark "build" "nix build $DOTFILES#homeConfigurations.\"lucas.zanoni@x86_64-linux\".activationPackage"
+        benchmark "build" "nix build $DOTFILES#$FLAKE_OUTPUT"
         ;;
     all)
         benchmark "eval" "nix flake check $DOTFILES --no-build"
-        benchmark "dry-run" "nix build $DOTFILES#homeConfigurations.\"lucas.zanoni@x86_64-linux\".activationPackage --dry-run"
+        benchmark "dry-run" "nix build $DOTFILES#$FLAKE_OUTPUT --dry-run"
         ;;
     report)
         echo "=== Recent Benchmark Results ==="
         tail -20 "$RESULTS_FILE" | column -t -s,
         echo ""
         echo "=== Averages by Type ==="
-        awk -F, 'NR>1 {sum[$2]+=$3; count[$2]++} END {for(t in sum) printf "%s: %.2fs avg (%d runs)\n", t, sum[t]/count[t], count[t]}' "$RESULTS_FILE"
+        awk -F, 'NR>1 {sum[$2","$3]+=$4; count[$2","$3]++} END {for(t in sum) printf "%s: %.2fs avg (%d runs)\n", t, sum[t]/count[t], count[t]}' "$RESULTS_FILE"
         ;;
     *)
-        echo "Usage: benchmark-rebuild [eval|dry-run|build|all|report]"
+        echo "Usage: benchmark-rebuild [eval|dry-run|build|all|report] [config]"
+        echo ""
+        echo "Commands:"
+        echo "  eval     - Benchmark flake evaluation only"
+        echo "  dry-run  - Benchmark dry-run build"
+        echo "  build    - Benchmark full build"
+        echo "  all      - Run eval and dry-run (default)"
+        echo "  report   - Show benchmark history"
+        echo ""
+        echo "Configs:"
+        echo "  home     - Standalone home-manager (lucas.zanoni)"
+        echo "  nixos    - NixOS configuration (zanoni)"
+        echo "  auto     - Auto-detect (default)"
         exit 1
         ;;
 esac
