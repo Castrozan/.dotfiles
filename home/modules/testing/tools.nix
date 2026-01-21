@@ -23,9 +23,12 @@ let
 in
 {
   home.packages = [
-    pkgs.bats
-    pkgs.kcov
     dotfiles-test
     dotfiles-coverage
+    pkgs.bats
+    pkgs.kcov
+    pkgs.deadnix
+    pkgs.statix
+    pkgs.nixfmt
   ];
 }
