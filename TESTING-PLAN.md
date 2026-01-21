@@ -30,6 +30,8 @@ Memory-safe checks that avoid full Nix builds:
 | Rebuild benchmarks | `benchmark-rebuild` | Done |
 | Shell startup | `benchmark-shell` | Done |
 | Script tests | `bats` | Done |
+| Script coverage | `kcov` | Done |
+| Nix module coverage | `nix-coverage.sh` | Done |
 | Agent behavior evals | Claude API | TODO |
 
 ## Implementation Progress
@@ -41,6 +43,8 @@ Memory-safe checks that avoid full Nix builds:
 - [x] Benchmark scripts (`benchmark-rebuild`, `benchmark-shell`)
 - [x] Script tests (bats - `tests/scripts/*.bats`)
 - [x] Agent YAML validation (`tests/validate-agents.sh`)
+- [x] Script coverage (`tests/coverage.sh` - requires kcov)
+- [x] Nix module coverage (`tests/nix-coverage.sh`)
 
 ## Known Issues
 
