@@ -108,17 +108,7 @@ def run_test(test: dict, settings: dict, dry_run: bool = False) -> TestResult:
     """Run a single test using Claude CLI."""
     name = test["name"]
     model = test.get("model", settings.get("default_model", "haiku"))
-    prompt = test["prompt"]
     timeout = settings.get("timeout_seconds", 120)
-
-    if dry_run:
-        return TestResult(
-            name=name,
-            passed=True,
-            duration=0,
-            output="[DRY RUN]",
-            assertions_failed=[],
-        )
 
     # Skip hook tests (need special handling)
     if test.get("type") == "hook_test":
@@ -127,6 +117,27 @@ def run_test(test: dict, settings: dict, dry_run: bool = False) -> TestResult:
             passed=True,
             duration=0,
             output="[SKIP] Hook tests require interactive session",
+            assertions_failed=[],
+        )
+
+    # Get prompt (required for non-hook tests)
+    prompt = test.get("prompt")
+    if not prompt:
+        return TestResult(
+            name=name,
+            passed=False,
+            duration=0,
+            output="",
+            assertions_failed=[],
+            error="Test missing 'prompt' field",
+        )
+
+    if dry_run:
+        return TestResult(
+            name=name,
+            passed=True,
+            duration=0,
+            output="[DRY RUN]",
             assertions_failed=[],
         )
 
