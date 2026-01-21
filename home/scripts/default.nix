@@ -2,6 +2,8 @@
   imports = [
     ./agenix-edit.nix
     ./agenix-edit-phone.nix
+    ./benchmark-rebuild.nix
+    ./benchmark-shell.nix
     ./claude-exit.nix
     ./daily-note.nix
     ./git-crypt-setup.nix
