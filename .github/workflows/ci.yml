@@ -69,3 +69,25 @@ jobs:
         run: |
           chmod +x bin/*
           nix shell nixpkgs#bats --command bats tests/scripts/
+
+  # Optional: Run with coverage (slower, ~30s extra)
+  coverage:
+    name: Coverage
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: cachix/install-nix-action@v30
+
+      - name: Run tests with coverage
+        run: |
+          chmod +x bin/*
+          nix shell nixpkgs#kcov nixpkgs#bats nixpkgs#bc --command ./tests/coverage.sh --ci
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: tests/coverage/
+          retention-days: 7
