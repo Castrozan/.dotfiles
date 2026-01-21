@@ -29,7 +29,7 @@ Memory-safe checks that avoid full Nix builds:
 | Full rebuilds | `nix build`, `home-manager switch` | - |
 | Rebuild benchmarks | `benchmark-rebuild` | Done |
 | Shell startup | `benchmark-shell` | Done |
-| Script tests | `bats` | TODO |
+| Script tests | `bats` | Done |
 | Agent behavior evals | Claude API | TODO |
 
 ## Implementation Progress
@@ -39,7 +39,7 @@ Memory-safe checks that avoid full Nix builds:
 - [ ] **Fix flake eval in CI** (blocked by local-only paths - antipattern)
 - [ ] Flake checks (linting derivations in flake.nix)
 - [x] Benchmark scripts (`benchmark-rebuild`, `benchmark-shell`)
-- [ ] Script tests (bats)
+- [x] Script tests (bats - `tests/scripts/*.bats`)
 - [x] Agent YAML validation (`tests/validate-agents.sh`)
 
 ## Known Issues

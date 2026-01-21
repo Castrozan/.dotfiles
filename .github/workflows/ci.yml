@@ -56,3 +56,16 @@ jobs:
 
       - name: Validate agent YAML frontmatter
         run: ./tests/validate-agents.sh agents/subagent
+
+  script-tests:
+    name: Script Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: cachix/install-nix-action@v30
+
+      - name: Run bats tests
+        run: |
+          chmod +x bin/*
+          nix shell nixpkgs#bats --command bats tests/scripts/
