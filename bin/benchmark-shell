@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# Benchmark shell startup time
+# Usage: benchmark-shell [iterations] [shell]
+
+set -euo pipefail
+
+ITERATIONS=${1:-10}
+SHELL_CMD=${2:-zsh}
+
+RESULTS_DIR="${HOME}/.local/share/dotfiles-benchmarks"
+RESULTS_FILE="${RESULTS_DIR}/shell-times.csv"
+
+mkdir -p "$RESULTS_DIR"
+
+# Initialize CSV if needed
+if [[ ! -f "$RESULTS_FILE" ]]; then
+    echo "timestamp,shell,avg_seconds,iterations" > "$RESULTS_FILE"
+fi
+
+echo "Benchmarking $SHELL_CMD startup ($ITERATIONS iterations)..."
+
+TIMES=()
+for i in $(seq 1 "$ITERATIONS"); do
+    T=$({ TIMEFORMAT='%R'; time $SHELL_CMD -i -c exit; } 2>&1)
+    TIMES+=("$T")
+    echo -n "."
+done
+echo ""
+
+# Calculate average
+SUM=$(printf '%s\n' "${TIMES[@]}" | awk '{sum+=$1} END {print sum}')
+AVG=$(echo "$SUM / $ITERATIONS" | bc -l)
+
+# Save result
+echo "$(date -Iseconds),$SHELL_CMD,$AVG,$ITERATIONS" >> "$RESULTS_FILE"
+
+printf "Average: %.3fs\n" "$AVG"
+echo "Individual times: ${TIMES[*]}"
+echo "Results saved to $RESULTS_FILE"

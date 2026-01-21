@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+# Benchmark rebuild times for dotfiles
+# Usage: benchmark-rebuild [eval|dry-run|build|all|report]
+
+set -euo pipefail
+
+RESULTS_DIR="${HOME}/.local/share/dotfiles-benchmarks"
+RESULTS_FILE="${RESULTS_DIR}/rebuild-times.csv"
+DOTFILES="${HOME}/.dotfiles"
+
+mkdir -p "$RESULTS_DIR"
+
+# Initialize CSV if needed
+if [[ ! -f "$RESULTS_FILE" ]]; then
+    echo "timestamp,type,duration_seconds,commit" > "$RESULTS_FILE"
+fi
+
+benchmark() {
+    local type="$1"
+    local cmd="$2"
+    local commit
+    commit=$(git -C "$DOTFILES" rev-parse --short HEAD 2>/dev/null || echo "unknown")
+
+    echo "Benchmarking: $type"
+    local start end duration
+    start=$(date +%s.%N)
+
+    eval "$cmd" > /dev/null 2>&1 || true
+
+    end=$(date +%s.%N)
+    duration=$(echo "$end - $start" | bc)
+
+    echo "$(date -Iseconds),$type,$duration,$commit" >> "$RESULTS_FILE"
+    printf "  Duration: %.2fs\n" "$duration"
+}
+
+case "${1:-all}" in
+    eval)
+        benchmark "eval" "nix flake check $DOTFILES --no-build"
+        ;;
+    dry-run)
+        benchmark "dry-run" "nix build $DOTFILES#homeConfigurations.\"lucas.zanoni@x86_64-linux\".activationPackage --dry-run"
+        ;;
+    build)
+        benchmark "build" "nix build $DOTFILES#homeConfigurations.\"lucas.zanoni@x86_64-linux\".activationPackage"
+        ;;
+    all)
+        benchmark "eval" "nix flake check $DOTFILES --no-build"
+        benchmark "dry-run" "nix build $DOTFILES#homeConfigurations.\"lucas.zanoni@x86_64-linux\".activationPackage --dry-run"
+        ;;
+    report)
+        echo "=== Recent Benchmark Results ==="
+        tail -20 "$RESULTS_FILE" | column -t -s,
+        echo ""
+        echo "=== Averages by Type ==="
+        awk -F, 'NR>1 {sum[$2]+=$3; count[$2]++} END {for(t in sum) printf "%s: %.2fs avg (%d runs)\n", t, sum[t]/count[t], count[t]}' "$RESULTS_FILE"
+        ;;
+    *)
+        echo "Usage: benchmark-rebuild [eval|dry-run|build|all|report]"
+        exit 1
+        ;;
+esac
