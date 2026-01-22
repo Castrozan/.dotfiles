@@ -24,6 +24,7 @@
     zed-editor.url = "github:zed-industries/zed/v0.218.5";
     devenv.url = "github:cachix/devenv/v1.9.2";
     # Branch/default (actively maintained)
+    omarchy-nix.url = "github:henrysipp/omarchy-nix";
     cbonsai.url = "github:castrozan/cbonsai";
     cmatrix.url = "github:castrozan/cmatrix";
     tuisvn.url = "github:castrozan/tuisvn";
