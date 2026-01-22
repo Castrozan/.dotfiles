@@ -3,7 +3,6 @@
 * {
   background-color: #1e1e2e;
   color: #cdd6f4;
-
   border: none;
   border-radius: 0;
   min-height: 0;
@@ -24,31 +23,25 @@ window#waybar {
 }
 
 #workspaces button {
-  all: initial;
-  color: #cdd6f4;
-  background-color: transparent;
-  padding: 2px 8px;
-  margin: 2px 1.5px;
-  min-width: 9px;
-  font-family: 'JetBrainsMono Nerd Font';
-  font-size: 12px;
+  padding: 0 6px;
+  margin: 0 2px;
+  color: #6c7086;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
 }
 
 #workspaces button.active {
-  all: unset;
-  color: #1e1e2e;
-  background-color: #89b4fa;
-  padding: 2px 8px;
-  margin: 2px 1.5px;
-  min-width: 9px;
-  border-radius: 4px;
-  font-family: 'JetBrainsMono Nerd Font';
-  font-size: 12px;
-  font-weight: bold;
+  color: #cdd6f4;
+  border-bottom: 2px solid #89b4fa;
 }
 
 #workspaces button.empty {
-  opacity: 0.5;
+  color: #45475a;
+}
+
+#workspaces button:hover {
+  color: #cdd6f4;
 }
 
 #image {
