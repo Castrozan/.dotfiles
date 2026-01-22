@@ -32,12 +32,7 @@ window#waybar {
   border-radius: 4px;
 }
 
-#workspaces button.persistent {
-  color: @dim;
-}
-
-#workspaces button.occupied,
-#workspaces button:not(.empty):not(.persistent) {
+#workspaces button:not(.empty) {
   color: @foreground;
 }
 
