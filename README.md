@@ -5,6 +5,12 @@
 </p>
 
 <p align="center">
+   <a href="https://github.com/Castrozan/.dotfiles/actions/workflows/ci.yml">
+      <img alt="CI" src="https://img.shields.io/github/actions/workflow/status/castrozan/.dotfiles/ci.yml?style=for-the-badge&logo=github-actions&color=A6E3A1&logoColor=D9E0EE&labelColor=302D41&label=CI">
+   </a>
+   <a href="https://castrozan.github.io/.dotfiles/">
+      <img alt="Coverage" src="https://img.shields.io/badge/Coverage-Report-informational.svg?style=for-the-badge&logo=codecov&color=89B4FA&logoColor=D9E0EE&labelColor=302D41">
+   </a>
    <img alt="Stargazers" src="https://img.shields.io/github/stars/castrozan/.dotfiles?style=for-the-badge&logo=starship&color=C9CBFF&logoColor=D9E0EE&labelColor=302D41">
    <a href="https://nixos.org/">
       <img src="https://img.shields.io/badge/NixOS-25.11-informational.svg?style=for-the-badge&logo=nixos&color=F2CDCD&logoColor=D9E0EE&labelColor=302D41">
