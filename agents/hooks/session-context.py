@@ -3,6 +3,7 @@
 
 import json
 import os
+import platform
 import subprocess
 import sys
 from datetime import datetime
@@ -85,6 +86,28 @@ def check_project_context() -> list[str]:
     return context_files
 
 
+def get_system_info() -> Dict[str, str]:
+    """Get user and OS information."""
+    info = {}
+
+    info["user"] = os.environ.get("USER", "unknown")
+
+    try:
+        release = platform.freedesktop_os_release()
+        info["distro"] = release.get("PRETTY_NAME", release.get("NAME", "unknown"))
+    except (OSError, AttributeError):
+        if os.path.exists("/etc/os-release"):
+            with open("/etc/os-release") as f:
+                for line in f:
+                    if line.startswith("PRETTY_NAME="):
+                        info["distro"] = line.split("=", 1)[1].strip().strip('"')
+                        break
+                    elif line.startswith("NAME=") and "distro" not in info:
+                        info["distro"] = line.split("=", 1)[1].strip().strip('"')
+
+    return info
+
+
 def check_environment() -> dict:
     """Check development environment status."""
     env = {}
@@ -149,6 +172,16 @@ def main():
     context = check_project_context()
     if context:
         sections.append("Context: " + ", ".join(context))
+
+    # System info
+    sys_info = get_system_info()
+    sys_parts = []
+    if sys_info.get("user"):
+        sys_parts.append(f"User: {sys_info['user']}")
+    if sys_info.get("distro"):
+        sys_parts.append(f"OS: {sys_info['distro']}")
+    if sys_parts:
+        sections.append(" | ".join(sys_parts))
 
     # Time-based reminders
     now = datetime.now()

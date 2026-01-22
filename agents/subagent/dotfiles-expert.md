@@ -77,16 +77,10 @@ Stage files first - nix reads git index, not working tree.
 </rebuild_decision>
 
 <rebuild_execution>
-Detect context: grep -q '^ID=nixos' /etc/os-release
-
-Always dry-run first:
-Home-manager: home-manager build --flake ~/.dotfiles#lucas.zanoni@x86_64-linux
-NixOS: nixos-rebuild dry-run --flake ~/.dotfiles#zanoni
-
-If dry-run fails: fix errors before actual rebuild.
-
-Home-manager: execute directly (no sudo): home-manager switch --flake ... -b "backup-$(date +%Y-%m-%d-%H-%M-%S)"
-NixOS: return to user with instruction "Run: ./bin/rebuild" - do NOT attempt sudo.
+Detect context of the system you are rebuilding, NixOs, Ubuntu, etc. Understand .bin/rebuild script that is the default command. Always dry-run first to make sure flake is correct.
+NixOS: "cd ~/.dotfiles && nix build .#nixosConfigurations.zanoni.config.system.build.toplevel --dry-run"
+On Home-manager standalone systems, execute directly (no sudo) the rebuild command.
+On NixOS ask the user to run the rebuild and after that continue with the testing.
 </rebuild_execution>
 
 <git_workflow>
@@ -96,7 +90,7 @@ Nix rebuilds read from git index. Unstaged files invisible during rebuild. After
 <package_channels>
 pkgs: stable (check flake.nix for version)
 unstable: nixos-unstable
-latest: same as unstable, updated with nix flake update nixpkgs-latest
+latest: same as unstable, updated with nix flake update nixpkgs-latest but done daily.
 </package_channels>
 
 <anti_patterns>

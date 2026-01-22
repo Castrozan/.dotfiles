@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Hook wrapper - runs hooks gracefully, failing without blocking Claude
 # Exit codes: 0=success, 1=non-blocking failure (continues), 2=blocking (stops tool)
 

@@ -10,6 +10,7 @@
     ../../home/modules/bad-apple.nix
     ../../home/modules/bash.nix
     ../../home/modules/cbonsai.nix
+    ../../home/modules/ccost.nix
     ../../home/modules/claude
     ../../home/modules/claudemem.nix
     ../../home/modules/cmatrix.nix
