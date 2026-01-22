@@ -40,6 +40,8 @@ window#waybar {
 
 #workspaces button.active {
   color: @accent;
+  font-weight: 900;
+  font-size: 13px;
   border-bottom: 2px solid @accent;
 }
 
