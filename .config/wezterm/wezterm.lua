@@ -130,10 +130,8 @@ return {
 
   default_prog = { 'fish' },
 
-  enable_tab_bar = true,
-  tab_bar_at_bottom = false,
-  use_fancy_tab_bar = true,
   hide_tab_bar_if_only_one_tab = true,
+  enable_tab_bar = false,
 
   scrollback_lines = 10000,
 
