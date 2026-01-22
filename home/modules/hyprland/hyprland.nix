@@ -1,20 +1,14 @@
 { pkgs, ... }:
 {
-  imports = [ ./omarchy-scripts.nix ];
+  imports = [
+    ./omarchy-scripts.nix
+    ../fuzzel.nix
+  ];
 
   home = {
     file = {
       ".config/hypr".source = ../../../.config/hypr;
       ".config/waybar".source = ../../../.config/waybar;
-
-      # Walker config - symlink individual files so walker can create its own files
-      ".config/walker/config.toml".source = ../../../.config/walker/config.toml;
-      ".config/walker/themes/omarchy-default.css".source =
-        ../../../.config/walker/themes/omarchy-default.css;
-      ".config/walker/themes/omarchy-default.toml".source =
-        ../../../.config/walker/themes/omarchy-default.toml;
-      ".config/walker/themes/omarchy-default.xml".source =
-        ../../../.config/walker/themes/omarchy-default.xml;
 
       # Omarchy theme system - symlink read-only parts, let 'current' be runtime-writable
       ".config/omarchy/themes".source = ../../../.config/omarchy/themes;
@@ -54,10 +48,6 @@
 
       # OSD for volume/brightness (omarchy feature)
       swayosd
-
-      # App launcher
-      fuzzel
-      walker
 
       # Emoji picker
       bemoji
