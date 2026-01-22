@@ -8,8 +8,12 @@
   # Walker config - symlink individual files so walker can create its own files
   home.file.".config/walker/config.toml".source = ../../../.config/walker/config.toml;
   home.file.".config/walker/plugins".source = ../../../.config/walker/plugins;
-  home.file.".config/walker/themes/omarchy-default".source =
-    ../../../.config/walker/themes/omarchy-default;
+  home.file.".config/walker/themes/omarchy-default.css".source =
+    ../../../.config/walker/themes/omarchy-default.css;
+  home.file.".config/walker/themes/omarchy-default.toml".source =
+    ../../../.config/walker/themes/omarchy-default.toml;
+  home.file.".config/walker/themes/omarchy-default.xml".source =
+    ../../../.config/walker/themes/omarchy-default.xml;
 
   # Omarchy theme system - symlink read-only parts, let 'current' be runtime-writable
   home.file.".config/omarchy/themes".source = ../../../.config/omarchy/themes;
