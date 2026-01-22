@@ -2,97 +2,101 @@
 {
   imports = [ ./omarchy-scripts.nix ];
 
-  home.file.".config/hypr".source = ../../../.config/hypr;
-  home.file.".config/waybar".source = ../../../.config/waybar;
+  home = {
+    file = {
+      ".config/hypr".source = ../../../.config/hypr;
+      ".config/waybar".source = ../../../.config/waybar;
 
-  # Walker config - symlink individual files so walker can create its own files
-  home.file.".config/walker/config.toml".source = ../../../.config/walker/config.toml;
-  home.file.".config/walker/themes/omarchy-default.css".source =
-    ../../../.config/walker/themes/omarchy-default.css;
-  home.file.".config/walker/themes/omarchy-default.toml".source =
-    ../../../.config/walker/themes/omarchy-default.toml;
-  home.file.".config/walker/themes/omarchy-default.xml".source =
-    ../../../.config/walker/themes/omarchy-default.xml;
+      # Walker config - symlink individual files so walker can create its own files
+      ".config/walker/config.toml".source = ../../../.config/walker/config.toml;
+      ".config/walker/themes/omarchy-default.css".source =
+        ../../../.config/walker/themes/omarchy-default.css;
+      ".config/walker/themes/omarchy-default.toml".source =
+        ../../../.config/walker/themes/omarchy-default.toml;
+      ".config/walker/themes/omarchy-default.xml".source =
+        ../../../.config/walker/themes/omarchy-default.xml;
 
-  # Omarchy theme system - symlink read-only parts, let 'current' be runtime-writable
-  home.file.".config/omarchy/themes".source = ../../../.config/omarchy/themes;
-  home.file.".config/omarchy/themed".source = ../../../.config/omarchy/themed;
+      # Omarchy theme system - symlink read-only parts, let 'current' be runtime-writable
+      ".config/omarchy/themes".source = ../../../.config/omarchy/themes;
+      ".config/omarchy/themed".source = ../../../.config/omarchy/themed;
+    };
 
-  # Initialize omarchy theme directory structure
-  home.activation.initOmarchyTheme = ''
-    mkdir -p $HOME/.config/omarchy/current/theme
-    mkdir -p $HOME/.config/omarchy/user-themes
-    mkdir -p $HOME/.config/omarchy/backgrounds
-    touch $HOME/.config/omarchy/current/theme/hyprland.conf
-  '';
+    # Initialize omarchy theme directory structure
+    activation.initOmarchyTheme = ''
+      mkdir -p $HOME/.config/omarchy/current/theme
+      mkdir -p $HOME/.config/omarchy/user-themes
+      mkdir -p $HOME/.config/omarchy/backgrounds
+      touch $HOME/.config/omarchy/current/theme/hyprland.conf
+    '';
 
-  home.packages = with pkgs; [
-    # Wayland tools
-    wl-clipboard
+    packages = with pkgs; [
+      # Wayland tools
+      wl-clipboard
 
-    # Wallpaper
-    hyprpaper
-    swaybg
+      # Wallpaper
+      hyprpaper
+      swaybg
 
-    # Notifications
-    mako
-    libnotify
+      # Notifications
+      mako
+      libnotify
 
-    # Lock screen and idle
-    hyprlock
-    hypridle
+      # Lock screen and idle
+      hyprlock
+      hypridle
 
-    # Media & volume
-    playerctl
-    pamixer
+      # Media & volume
+      playerctl
+      pamixer
 
-    # Status bar
-    waybar
+      # Status bar
+      waybar
 
-    # OSD for volume/brightness (omarchy feature)
-    swayosd
+      # OSD for volume/brightness (omarchy feature)
+      swayosd
 
-    # App launcher
-    fuzzel
-    walker
+      # App launcher
+      fuzzel
+      walker
 
-    # Emoji picker
-    bemoji
+      # Emoji picker
+      bemoji
 
-    # YAML/JSON processing (for theme templates)
-    yq-go
+      # YAML/JSON processing (for theme templates)
+      yq-go
 
-    # Screenshot tools
-    hyprshot
-    grim
-    slurp
-    satty
+      # Screenshot tools
+      hyprshot
+      grim
+      slurp
+      satty
 
-    # Screen recording
-    wf-recorder
+      # Screen recording
+      wf-recorder
 
-    # Clipboard history
-    cliphist
+      # Clipboard history
+      cliphist
 
-    # Color picker
-    hyprpicker
+      # Color picker
+      hyprpicker
 
-    # JSON processing (for hyprctl scripts)
-    jq
+      # JSON processing (for hyprctl scripts)
+      jq
 
-    # Logout menu
-    wlogout
+      # Logout menu
+      wlogout
 
-    # Polkit agent
-    polkit_gnome
+      # Polkit agent
+      polkit_gnome
 
-    # Calculator
-    gnome-calculator
+      # Calculator
+      gnome-calculator
 
-    # Bluetooth manager
-    blueman
+      # Bluetooth manager
+      blueman
 
-    # Audio control
-    pavucontrol
-  ];
+      # Audio control
+      pavucontrol
+    ];
+  };
 }

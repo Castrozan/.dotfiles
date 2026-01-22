@@ -1,6 +1,6 @@
 { pkgs, ... }:
 let
-  vscode = pkgs.vscode.overrideAttrs (old: rec {
+  vscode = pkgs.vscode.overrideAttrs (_: rec {
     version = "1.105.1";
     src = pkgs.fetchurl {
       name = "VSCode_${version}_linux-x64.tar.gz";
