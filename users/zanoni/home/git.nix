@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, lib, ... }:
 let
   gitconfig = builtins.readFile ../../../.gitconfig;
   userName = "Castrozan";
@@ -14,8 +14,8 @@ in
     enable = true;
     ignores = [ ".claude-context" ];
     settings = {
-      user.name = userName;
-      user.email = userEmail;
+      user.name = lib.mkForce userName;
+      user.email = lib.mkForce userEmail;
     };
   };
 
