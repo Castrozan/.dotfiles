@@ -123,7 +123,7 @@ return {
 
   window_background_image = wezterm.config_dir .. '/wallpaper.png',
   window_background_image_hsb = {
-    brightness = 0.15,
+    brightness = 0.4,
     hue = 1.0,
     saturation = 1.0,
   },
