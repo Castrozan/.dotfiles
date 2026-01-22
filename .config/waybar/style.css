@@ -25,14 +25,14 @@ window#waybar {
 #workspaces button {
   padding: 0 6px;
   margin: 0 2px;
-  color: #6c7086;
+  color: #cdd6f4;
   background: transparent;
   border: none;
   border-radius: 4px;
 }
 
 #workspaces button.active {
-  color: #cdd6f4;
+  color: #89b4fa;
   border-bottom: 2px solid #89b4fa;
 }
 
