@@ -25,16 +25,16 @@ jobs:
 
       - uses: DeterminateSystems/magic-nix-cache-action@v8
 
-      - name: statix (warnings only)
-        run: nix run nixpkgs#statix -- check . --ignore 'result*' || true
+      - name: statix
+        run: nix run nixpkgs#statix -- check . --ignore 'result*'
 
       - name: deadnix
-        run: nix run nixpkgs#deadnix -- . || true
+        run: nix run nixpkgs#deadnix -- .
 
       - name: nixfmt
         run: |
           find . -name '*.nix' -not -path './result*' \
-            -exec nix run nixpkgs#nixfmt-rfc-style -- --check {} + || true
+            -exec nix run nixpkgs#nixfmt-rfc-style -- --check {} +
 
       - name: Flake metadata (syntax check)
         run: nix flake metadata

@@ -17,7 +17,7 @@ in
     phoneKey
     workPcKey
   ];
-  
+
   # Known hosts entries for SSH client
   knownHosts = [
     phoneKnownHost

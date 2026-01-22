@@ -1,4 +1,4 @@
-{ ... }:
+_:
 let
   cursorIconPath = ./favicon.ico;
 in

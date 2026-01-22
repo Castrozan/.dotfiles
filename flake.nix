@@ -37,7 +37,6 @@
   # Outputs are what this flake provides, such as pkgs and system configurations
   outputs =
     inputs@{
-      self,
       nixpkgs,
       nixpkgs-unstable,
       nixpkgs-latest,
@@ -92,7 +91,7 @@
           };
         in
         # Function call with arguments
-        (mkHomeConfigFor "lucas.zanoni");
+        mkHomeConfigFor "lucas.zanoni";
 
       # nixosConfigurations.${username} is a NixOS system configuration for a user
       # ./bin/rebuild for how to apply

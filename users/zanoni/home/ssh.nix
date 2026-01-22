@@ -10,7 +10,8 @@ in
 
     matchBlocks = {
       "*" = { };
-    } // lib.optionalAttrs phoneSecretExists {
+    }
+    // lib.optionalAttrs phoneSecretExists {
       "phone" = {
         hostname = "REDACTED_IP";
         user = "u0_a431";

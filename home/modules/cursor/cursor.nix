@@ -1,18 +1,18 @@
-{ latest, ... }:
+{ latest, pkgs, ... }:
 {
   home.packages = with latest; [
     (code-cursor.overrideAttrs (
-      old:
+      _:
       let
         version = "2.3.30";
         buildId = "d1289018cc3fcc395487f65455e31651734308d7";
         hash = "0MOAyPJWilqvmsJYz4+q/wvzZ42sUpWDVaKSTJ74fvA=";
       in
       {
-        version = version;
+        inherit version;
         src = pkgs.appimageTools.extract {
           pname = "code-cursor";
-          version = version;
+          inherit version;
           src = pkgs.fetchurl {
             sha256 = "sha256-" + hash;
             url =

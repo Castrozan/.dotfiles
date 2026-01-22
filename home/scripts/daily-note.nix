@@ -2,8 +2,7 @@
 { pkgs, ... }:
 let
   script = builtins.readFile ../../bin/daily_note;
-in
-let
+
   daily-note = pkgs.writeShellScriptBin "daily-note" ''
     ${script}
   '';
