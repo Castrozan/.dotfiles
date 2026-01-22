@@ -1,8 +1,9 @@
-/* Omarchy-style minimal waybar with Catppuccin colors */
+/* Import theme colors */
+@import url("file:///home/zanoni/.config/omarchy/current/theme/waybar.css");
 
 * {
-  background-color: #1e1e2e;
-  color: #cdd6f4;
+  background-color: @background;
+  color: @foreground;
   border: none;
   border-radius: 0;
   min-height: 0;
@@ -11,7 +12,7 @@
 }
 
 window#waybar {
-  background-color: #1e1e2e;
+  background-color: @background;
 }
 
 .modules-left {
@@ -25,28 +26,28 @@ window#waybar {
 #workspaces button {
   padding: 0 6px;
   margin: 0 2px;
-  color: #585b70;
+  color: @dim;
   background: transparent;
   border: none;
   border-radius: 4px;
 }
 
 #workspaces button.persistent {
-  color: #585b70;
+  color: @dim;
 }
 
 #workspaces button.occupied,
 #workspaces button:not(.empty):not(.persistent) {
-  color: #cdd6f4;
+  color: @foreground;
 }
 
 #workspaces button.active {
-  color: #89b4fa;
-  border-bottom: 2px solid #89b4fa;
+  color: @accent;
+  border-bottom: 2px solid @accent;
 }
 
 #workspaces button:hover {
-  color: #cdd6f4;
+  color: @foreground;
 }
 
 #image {
@@ -79,8 +80,8 @@ window#waybar {
 }
 
 tooltip {
-  background-color: #1e1e2e;
-  border: 1px solid #45475a;
+  background-color: @background;
+  border: 1px solid @surface;
   padding: 2px;
 }
 
