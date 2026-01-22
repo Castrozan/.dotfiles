@@ -39,14 +39,8 @@ jobs:
       - name: Flake metadata (syntax check)
         run: nix flake metadata
 
-      # TODO: Fix flake to be evaluable in CI (currently fails due to local-only paths)
-      # The flake references paths that only exist locally:
-      # - /nix/store/...-claude (from home/modules/claude)
-      # - Possibly agenix secrets expecting local keys
-      # This is an antipattern - flake should eval anywhere.
-      # Uncomment once fixed:
-      # - name: Eval flake outputs
-      #   run: nix flake check --no-build --show-trace
+      - name: Eval flake outputs
+        run: nix flake check --no-build --show-trace
 
   validate-agents:
     name: Validate Agents
