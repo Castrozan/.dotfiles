@@ -120,6 +120,7 @@ in
           "outline"
           "word-count"
           "file-recovery"
+          "sync"
         ];
         force = true;
       };
