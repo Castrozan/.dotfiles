@@ -333,10 +333,12 @@ execute_instruction() {
     local note_file="$1"
     local note_name
     note_name=$(basename "$note_file" .md)
+    # shellcheck disable=SC2155
     local log_file="${LOG_DIR}/${note_name}-$(date '+%Y%m%d-%H%M%S').log"
     # Sanitize session name: replace spaces/special chars with dashes, truncate
     local sanitized_name
     sanitized_name=$(echo "$note_name" | tr ' ()[]' '-----' | tr -s '-' | cut -c1-30)
+    # shellcheck disable=SC2155
     local session_name="${TMUX_SESSION_PREFIX}-${sanitized_name}-$(date '+%H%M%S')"
 
     # Read note content
@@ -378,21 +380,12 @@ execute_instruction() {
         local prompt_file="${LOG_DIR}/.prompt-$$"
         echo "$prompt" > "$prompt_file"
 
-        # Determine tmux socket path - use XDG_RUNTIME_DIR if available (main user session)
-        # This ensures ia-work sessions appear in the user's main tmux server
-        local tmux_socket
-        if [[ -n "${XDG_RUNTIME_DIR:-}" ]]; then
-            tmux_socket="${XDG_RUNTIME_DIR}/tmux-$(id -u)/default"
-        else
-            tmux_socket="/tmp/tmux-$(id -u)/default"
-        fi
-
-        # Create tmux session using explicit socket path
-        tmux -S "$tmux_socket" new-session -d -s "$session_name" \
+        # Create tmux session
+        tmux new-session -d -s "$session_name" \
             "cat '$prompt_file' | claude; rm -f '$prompt_file'; echo ''; echo 'Claude finished. Press any key to close.'; read -n 1"
 
         log OK "Tmux session started: $session_name"
-        log INFO "Attach with: tmux -S '$tmux_socket' attach -t $session_name"
+        log INFO "Attach with: tmux attach -t $session_name"
         return 0
     fi
 }

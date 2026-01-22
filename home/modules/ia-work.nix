@@ -122,6 +122,7 @@ in
         ExecStart = "${ia-work-wrapped}/bin/ia-work-service";
         Environment = [
           "HOME=${config.home.homeDirectory}"
+          "TMUX_TMPDIR=%t"
           "PATH=${
             lib.makeBinPath [
               pkgs.coreutils

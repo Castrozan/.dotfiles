@@ -1,8 +1,6 @@
 _:
 let
-  # Use explicit socket path to ensure all tmux commands use the same server
-  # XDG_RUNTIME_DIR/tmux-$UID/default is the standard location for user sessions
-  wezterm-quick-temp-shell-command = "wezterm start -- bash -c 'tmux -S \"$XDG_RUNTIME_DIR/tmux-$(id -u)/default\" new-session'";
+  wezterm-quick-temp-shell-command = "wezterm start -- tmux new-session";
 in
 {
   # GNOME settings
