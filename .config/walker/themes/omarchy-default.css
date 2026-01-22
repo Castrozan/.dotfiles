@@ -1,4 +1,5 @@
-@import "../../../../../../../.config/omarchy/current/theme/walker.css";
+/* Import theme colors - use file:// URI for absolute path */
+@import url("file:///home/zanoni/.config/omarchy/current/theme/walker.css");
 
 * {
   all: unset;
