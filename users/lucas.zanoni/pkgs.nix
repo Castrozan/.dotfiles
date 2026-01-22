@@ -36,6 +36,7 @@
       gnomeExtensions.workspace-matrix
       gnutar
       go
+      hyprland
       insomnia
       jq
       kubectl
