@@ -69,9 +69,40 @@ jobs:
           chmod +x bin/*
           nix shell nixpkgs#bats --command bats tests/scripts/
 
-  # Optional: Run with coverage (slower, ~30s extra)
+  # Coverage: runs on main push, deploys to GitHub Pages
   coverage:
     name: Coverage
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: cachix/install-nix-action@v30
+
+      - name: Run tests with coverage
+        run: |
+          chmod +x bin/*
+          nix shell nixpkgs#kcov nixpkgs#bats nixpkgs#bc --command ./tests/coverage.sh --ci
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: tests/coverage/
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  # Coverage for PRs (artifact only, no deploy)
+  coverage-pr:
+    name: Coverage (PR)
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
     steps:
