@@ -3,12 +3,15 @@
   pkgs,
   latest,
   ...
-}: {
-  home.packages = with pkgs;
+}:
+{
+  home.packages =
+    with pkgs;
     [
       alejandra
       bash-completion
       bat
+      bats
       brave
       bruno
       bun

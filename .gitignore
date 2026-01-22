@@ -6,3 +6,6 @@
 CLAUDE.md
 .cursor/
 home/modules/cursor/cursor-global-user-rules.md
+
+# Test coverage output
+tests/coverage/
