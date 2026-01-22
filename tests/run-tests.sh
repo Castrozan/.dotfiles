@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+# Run all tests
+# Usage: ./tests/run-tests.sh [--ci] [--coverage]
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CI_MODE=false
+COVERAGE_MODE=false
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --ci) CI_MODE=true; shift ;;
+        --coverage) COVERAGE_MODE=true; shift ;;
+        *) echo "Unknown option: $1"; exit 1 ;;
+    esac
+done
+
+echo "=== Running Tests ==="
+echo ""
+
+# Agent validation
+echo "--- Agent Validation ---"
+"$SCRIPT_DIR/validate-agents.sh" "$SCRIPT_DIR/../agents/subagent"
+echo ""
+
+# Script tests (bats) - with or without coverage
+if [[ "$COVERAGE_MODE" == "true" ]]; then
+    if command -v kcov &> /dev/null && command -v bats &> /dev/null; then
+        echo "--- Script Tests with Coverage ---"
+        "$SCRIPT_DIR/coverage.sh"
+    else
+        echo "WARN: kcov or bats not installed, skipping coverage"
+        echo "      Install with: nix shell nixpkgs#kcov nixpkgs#bats"
+    fi
+elif command -v bats &> /dev/null; then
+    echo "--- Script Tests (bats) ---"
+    bats "$SCRIPT_DIR/scripts/"
+else
+    if [[ "$CI_MODE" == "true" ]]; then
+        echo "SKIP: bats not installed"
+    else
+        echo "WARN: bats not installed, skipping script tests"
+        echo "      Install with: nix shell nixpkgs#bats"
+    fi
+fi
+
+echo ""
+echo "=== All Tests Complete ==="

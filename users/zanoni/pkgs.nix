@@ -14,6 +14,7 @@
       awscli2
       bash
       bash-completion
+      bats
       bun
       btop
       cacert

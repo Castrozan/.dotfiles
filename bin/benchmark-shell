@@ -1,0 +1,81 @@
+#!/usr/bin/env bash
+# Benchmark shell startup time
+# Usage: benchmark-shell [iterations] [shell|all]
+#
+# Examples:
+#   benchmark-shell           # Test bash and fish (10 iterations each)
+#   benchmark-shell 5         # Test bash and fish (5 iterations each)
+#   benchmark-shell 10 bash   # Test only bash (10 iterations)
+#   benchmark-shell 10 all    # Test bash, fish, and zsh
+
+set -euo pipefail
+
+ITERATIONS=${1:-10}
+SHELL_ARG=${2:-}
+
+RESULTS_DIR="${HOME}/.local/share/dotfiles-benchmarks"
+RESULTS_FILE="${RESULTS_DIR}/shell-times.csv"
+
+mkdir -p "$RESULTS_DIR"
+
+# Initialize CSV if needed
+if [[ ! -f "$RESULTS_FILE" ]]; then
+    echo "timestamp,shell,avg_seconds,iterations" > "$RESULTS_FILE"
+fi
+
+benchmark_shell() {
+    local shell_cmd="$1"
+
+    # Check if shell is available
+    if ! command -v "$shell_cmd" &>/dev/null; then
+        echo "Skipping $shell_cmd (not installed)"
+        return
+    fi
+
+    echo "Benchmarking $shell_cmd startup ($ITERATIONS iterations)..."
+
+    local times=()
+    for _ in $(seq 1 "$ITERATIONS"); do
+        local t
+        t=$({ TIMEFORMAT='%R'; time $shell_cmd -i -c exit; } 2>&1)
+        times+=("$t")
+        echo -n "."
+    done
+    echo ""
+
+    # Calculate average
+    local sum avg
+    sum=$(printf '%s\n' "${times[@]}" | awk '{sum+=$1} END {print sum}')
+    avg=$(echo "$sum / $ITERATIONS" | bc -l)
+
+    # Save result
+    echo "$(date -Iseconds),$shell_cmd,$avg,$ITERATIONS" >> "$RESULTS_FILE"
+
+    printf "  Average: %.3fs\n" "$avg"
+    echo "  Individual times: ${times[*]}"
+    echo ""
+}
+
+# Determine which shells to test
+if [[ -n "$SHELL_ARG" ]]; then
+    case "$SHELL_ARG" in
+        all)
+            SHELLS=(bash fish zsh)
+            ;;
+        *)
+            SHELLS=("$SHELL_ARG")
+            ;;
+    esac
+else
+    # Default: test bash and fish (user's priority shells)
+    SHELLS=(bash fish)
+fi
+
+echo "=== Shell Startup Benchmark ==="
+echo ""
+
+for shell in "${SHELLS[@]}"; do
+    benchmark_shell "$shell"
+done
+
+echo "Results saved to $RESULTS_FILE"
