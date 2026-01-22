@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+THEME_PATH="$HOME/.config/omarchy/current/theme"
+
+if [[ -f "$THEME_PATH/light.mode" ]]; then
+  gsettings set org.gnome.desktop.interface color-scheme 'prefer-light'
+else
+  gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
+fi
+
+if [[ -f "$THEME_PATH/icons.theme" ]]; then
+  ICON_THEME=$(cat "$THEME_PATH/icons.theme")
+  gsettings set org.gnome.desktop.interface icon-theme "$ICON_THEME"
+fi

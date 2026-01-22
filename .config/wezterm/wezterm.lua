@@ -1,13 +1,10 @@
 -- WezTerm configuration
--- Ported from kitty config to match existing setup
 
 local wezterm = require 'wezterm'
 
--- Catppuccin Mocha color scheme
 local catppuccin_mocha = {
   -- Basic colors
   foreground = '#CDD6F4',
-  background = '#1E1E2E',
   cursor_bg = '#F5E0DC',
   cursor_fg = '#1E1E2E',
   selection_bg = '#F5E0DC',
@@ -34,36 +31,10 @@ local catppuccin_mocha = {
     '#94E2D5', -- cyan
     '#A6ADC8', -- white
   },
-
-  -- Tab bar colors
-  tab_bar = {
-    background = '#11111B',
-    active_tab = {
-      bg_color = '#CBA6F7',
-      fg_color = '#11111B',
-    },
-    inactive_tab = {
-      bg_color = '#181825',
-      fg_color = '#CDD6F4',
-    },
-    inactive_tab_hover = {
-      bg_color = '#181825',
-      fg_color = '#CDD6F4',
-    },
-    new_tab = {
-      bg_color = '#11111B',
-      fg_color = '#CDD6F4',
-    },
-    new_tab_hover = {
-      bg_color = '#181825',
-      fg_color = '#CDD6F4',
-    },
-  },
 }
 
 -- Maximize window on startup
 local mux = wezterm.mux
-
 wezterm.on('gui-startup', function(cmd)
   local tab, pane, window = mux.spawn_window(cmd or {})
   window:gui_window():maximize()
@@ -87,12 +58,6 @@ return {
     'Noto Color Emoji',
   }),
   font_size = 16,
-  warn_about_missing_glyphs = false,
-  -- Ensure proper rendering of icons and symbols
-  freetype_load_target = 'Light',
-  freetype_render_target = 'HorizontalLcd',
-
-  -- Font rules for bold/italic variants
   font_rules = {
     {
       intensity = 'Bold',
@@ -103,12 +68,12 @@ return {
       }),
     },
   },
-
+  
   color_schemes = {
     ['Catppuccin Mocha'] = catppuccin_mocha,
   },
   color_scheme = 'Catppuccin Mocha',
-
+  
   -- Window configuration
   window_padding = {
     left = 10,
@@ -116,26 +81,19 @@ return {
     top = 10,
     bottom = 10,
   },
-
+  
   window_decorations = 'NONE',
-  window_background_opacity = 1.0,
-
-
-  window_background_image = wezterm.config_dir .. '/wallpaper.png',
-  window_background_image_hsb = {
-    brightness = 1.0,
-    hue = 1.0,
-    saturation = 1.0,
-  },
-
-  default_prog = { 'fish' },
-
-  enable_tab_bar = true,
-  tab_bar_at_bottom = false,
-  use_fancy_tab_bar = true,
+  window_background_opacity = 0.7,
+  text_background_opacity = 0.3,
+  enable_tab_bar = false,
   hide_tab_bar_if_only_one_tab = true,
-
+  
+  warn_about_missing_glyphs = false,
+  -- Ensure proper rendering of icons and symbols
+  freetype_load_target = 'Light',
+  freetype_render_target = 'HorizontalLcd',
   scrollback_lines = 10000,
+  default_prog = { 'fish' },
 
   -- Enable kitty graphics protocol for inline image/video display
   -- This allows tools like ani-cli to display video frames in the terminal
@@ -145,7 +103,6 @@ return {
   -- This allows applications to distinguish Shift+Enter from Enter
   enable_csi_u_key_encoding = true,
 
-  -- Key bindings
   keys = {
     -- Shift+Enter: send newline character for multi-line input
     { key = 'Enter', mods = 'SHIFT', action = wezterm.action.SendString('\n') },
@@ -160,8 +117,6 @@ return {
     { key = 'DownArrow', mods = 'CTRL|SHIFT', action = wezterm.action.SendString('\x1b[1;6B') },
   },
 
-  -- Startup behavior (similar to kitty startup_session)
-  -- WezTerm doesn't have exact equivalent, but we can set default working directory
   default_cwd = wezterm.home_dir,
 
   -- Set very large initial window size to approximate maximized state

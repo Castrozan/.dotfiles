@@ -31,6 +31,7 @@
     nixgl.url = "github:nix-community/nixGL";
     agenix.url = "github:ryantm/agenix";
     voxtype.url = "github:peteonrails/voxtype";
+    hyprland.url = "github:hyprwm/Hyprland/v0.53.0";
   };
 
   # Outputs are what this flake provides, such as pkgs and system configurations

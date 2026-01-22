@@ -2,11 +2,14 @@
 {
   lib,
   pkgs,
+  inputs,
   ...
-}: let
+}:
+let
   bashrc = builtins.readFile ../../.bashrc;
   sshKeys = import ./ssh-keys.nix;
-in {
+in
+{
   imports = [
     ./scripts
     ./pkgs.nix
@@ -42,6 +45,9 @@ in {
   programs.hyprland = {
     enable = true;
     xwayland.enable = true;
+    package = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
+    portalPackage =
+      inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland;
   };
 
   # Enable fish globally so it's registered in /etc/shells and available as a login shell
@@ -78,7 +84,7 @@ in {
 
   networking.firewall = {
     enable = true;
-    allowedTCPPorts = [22];
+    allowedTCPPorts = [ 22 ];
   };
 
   users.users.zanoni.openssh.authorizedKeys.keys = sshKeys.authorizedKeys;
