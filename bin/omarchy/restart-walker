@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+pkill -x walker
+setsid walker --gapplication-service >/dev/null 2>&1 &

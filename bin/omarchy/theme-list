@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+USER_THEMES_PATH="$HOME/.config/omarchy/user-themes"
+OMARCHY_THEMES_PATH="$HOME/.config/omarchy/themes"
+
+{
+  find -L "$USER_THEMES_PATH" -mindepth 1 -maxdepth 1 -type d -printf '%f\n' 2>/dev/null
+  find -L "$OMARCHY_THEMES_PATH" -mindepth 1 -maxdepth 1 -type d -printf '%f\n' 2>/dev/null
+} | sort -u | while read -r name; do
+  echo "$name" | sed -E 's/(^|-)([a-z])/\1\u\2/g; s/-/ /g'
+done
