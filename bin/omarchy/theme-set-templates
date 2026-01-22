@@ -33,10 +33,7 @@ if [[ -f $COLORS_FILE ]]; then
   for tpl in "$USER_TEMPLATES_DIR"/*.tpl "$TEMPLATES_DIR"/*.tpl; do
     filename=$(basename "$tpl" .tpl)
     output_path="$NEXT_THEME_DIR/$filename"
-
-    if [[ ! -f $output_path ]]; then
-      sed -f "$sed_script" "$tpl" > "$output_path"
-    fi
+    sed -f "$sed_script" "$tpl" > "$output_path"
   done
 
   rm "$sed_script"
