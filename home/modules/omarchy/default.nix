@@ -64,6 +64,7 @@ in
     mako # notification daemon
     clipse # clipboard manager
     wl-clipboard # clipboard tools
+    blueberry # bluetooth manager for waybar click handler
   ];
 
   # Override waybar on-click commands that use ghostty
