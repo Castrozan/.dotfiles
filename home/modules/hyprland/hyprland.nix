@@ -6,22 +6,65 @@
   home.packages = with pkgs; [
     # Wayland tools
     wl-clipboard
-    
+
     # Wallpaper
     hyprpaper
-    
+
     # Notifications
     mako
     libnotify
-    
-    # Lock screen
+
+    # Lock screen and idle
     hyprlock
-    
+    hypridle
+
     # Media & volume
     playerctl
     pamixer
-    
+
     # Status bar
     waybar
+
+    # OSD for volume/brightness (omarchy feature)
+    swayosd
+
+    # App launcher
+    fuzzel
+
+    # Emoji picker
+    bemoji
+
+    # Screenshot tools
+    hyprshot
+    grim
+    slurp
+    satty
+
+    # Screen recording
+    wf-recorder
+
+    # Clipboard history
+    cliphist
+
+    # Color picker
+    hyprpicker
+
+    # JSON processing (for hyprctl scripts)
+    jq
+
+    # Logout menu
+    wlogout
+
+    # Polkit agent
+    polkit_gnome
+
+    # Calculator
+    gnome-calculator
+
+    # Bluetooth manager
+    blueman
+
+    # Audio control
+    pavucontrol
   ];
 }
