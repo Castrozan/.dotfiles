@@ -7,7 +7,6 @@
 
   # Walker config - symlink individual files so walker can create its own files
   home.file.".config/walker/config.toml".source = ../../../.config/walker/config.toml;
-  home.file.".config/walker/plugins".source = ../../../.config/walker/plugins;
   home.file.".config/walker/themes/omarchy-default.css".source =
     ../../../.config/walker/themes/omarchy-default.css;
   home.file.".config/walker/themes/omarchy-default.toml".source =
