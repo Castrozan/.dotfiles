@@ -1,4 +1,4 @@
-{ ... }:
+{ lib, ... }:
 let
   wezterm-quick-temp-shell-command = "wezterm start -- tmux new-session";
 in
@@ -15,7 +15,7 @@ in
       enable-hot-corners = true;
       clock-show-weekday = true;
       clock-show-seconds = true;
-      gtk-theme = "Yaru-viridian-dark";
+      gtk-theme = lib.mkForce "Yaru-viridian-dark";
       icon-theme = "Yaru-viridian";
       color-scheme = "prefer-dark";
       cursor-theme = "Adwaita";
