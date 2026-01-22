@@ -25,19 +25,24 @@ window#waybar {
 #workspaces button {
   padding: 0 6px;
   margin: 0 2px;
-  color: #cdd6f4;
+  color: #585b70;
   background: transparent;
   border: none;
   border-radius: 4px;
 }
 
+#workspaces button.persistent {
+  color: #585b70;
+}
+
+#workspaces button.occupied,
+#workspaces button:not(.empty):not(.persistent) {
+  color: #cdd6f4;
+}
+
 #workspaces button.active {
   color: #89b4fa;
   border-bottom: 2px solid #89b4fa;
-}
-
-#workspaces button.empty {
-  color: #45475a;
 }
 
 #workspaces button:hover {
