@@ -26,6 +26,7 @@ window#waybar {
 #workspaces button {
   all: initial;
   color: #cdd6f4;
+  background-color: transparent;
   padding: 0 6px;
   margin: 0 1.5px;
   min-width: 9px;
@@ -34,9 +35,15 @@ window#waybar {
 }
 
 #workspaces button.active {
+  all: unset;
   color: #1e1e2e;
   background-color: #89b4fa;
+  padding: 0 6px;
+  margin: 0 1.5px;
+  min-width: 9px;
   border-radius: 4px;
+  font-family: 'JetBrainsMono Nerd Font';
+  font-size: 12px;
 }
 
 #workspaces button.empty {
