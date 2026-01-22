@@ -22,14 +22,15 @@ in
 
     # Exclude packages we already have configured elsewhere
     exclude_packages = with pkgs; [
-      ghostty # Using kitty instead
+      ghostty # Using wezterm instead
+      kitty # Using wezterm instead
       chromium # Using brave instead
     ];
   };
 
   # Override default applications to use our preferred apps
   wayland.windowManager.hyprland.settings = {
-    "$terminal" = lib.mkForce "kitty";
+    "$terminal" = lib.mkForce "wezterm";
     "$browser" = lib.mkForce "brave";
     "$fileManager" = lib.mkForce "nautilus --new-window";
 
