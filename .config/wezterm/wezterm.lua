@@ -147,8 +147,8 @@ return {
 
   -- Key bindings
   keys = {
-    -- Shift+Enter: send newline character for multi-line input
-    { key = 'Enter', mods = 'SHIFT', action = wezterm.action.SendString('\n') },
+    -- Shift+Enter: send CSI-u sequence \x1b[13;2u (2 = Shift modifier) for multi-line input
+    { key = 'Enter', mods = 'SHIFT', action = wezterm.action.SendString('\x1b[13;2u') },
     -- Ctrl+Enter: send \x1b[13;5u (5 = Ctrl modifier) for apps that need it
     { key = 'Enter', mods = 'CTRL', action = wezterm.action.SendString('\x1b[13;5u') },
     -- Alt+Enter: send \x1b[13;3u (3 = Alt modifier)
