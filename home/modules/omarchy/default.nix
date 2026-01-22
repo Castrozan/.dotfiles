@@ -5,9 +5,6 @@
   inputs,
   ...
 }:
-let
-  system = pkgs.stdenv.hostPlatform.system;
-in
 {
   imports = [
     inputs.omarchy-nix.homeManagerModules.default
