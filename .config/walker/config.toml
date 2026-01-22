@@ -1,6 +1,6 @@
 force_keyboard_focus = true
 selection_wrap = true
-theme = "omarchy-default"
+theme = "default"
 hide_action_hints = true
 
 [placeholders]
