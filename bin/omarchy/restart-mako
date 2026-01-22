@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+pkill -x mako
+setsid mako >/dev/null 2>&1 &

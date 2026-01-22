@@ -1,7 +1,27 @@
 { pkgs, ... }:
 {
+  imports = [ ./omarchy-scripts.nix ];
+
   home.file.".config/hypr".source = ../../../.config/hypr;
   home.file.".config/waybar".source = ../../../.config/waybar;
+
+  # Walker config - symlink individual files so walker can create its own files
+  home.file.".config/walker/config.toml".source = ../../../.config/walker/config.toml;
+  home.file.".config/walker/plugins".source = ../../../.config/walker/plugins;
+  home.file.".config/walker/themes/omarchy-default".source =
+    ../../../.config/walker/themes/omarchy-default;
+
+  # Omarchy theme system - symlink read-only parts, let 'current' be runtime-writable
+  home.file.".config/omarchy/themes".source = ../../../.config/omarchy/themes;
+  home.file.".config/omarchy/themed".source = ../../../.config/omarchy/themed;
+
+  # Initialize omarchy theme directory structure
+  home.activation.initOmarchyTheme = ''
+    mkdir -p $HOME/.config/omarchy/current/theme
+    mkdir -p $HOME/.config/omarchy/user-themes
+    mkdir -p $HOME/.config/omarchy/backgrounds
+    touch $HOME/.config/omarchy/current/theme/hyprland.conf
+  '';
 
   home.packages = with pkgs; [
     # Wayland tools
@@ -9,6 +29,7 @@
 
     # Wallpaper
     hyprpaper
+    swaybg
 
     # Notifications
     mako
@@ -30,9 +51,13 @@
 
     # App launcher
     fuzzel
+    walker
 
     # Emoji picker
     bemoji
+
+    # YAML/JSON processing (for theme templates)
+    yq-go
 
     # Screenshot tools
     hyprshot
