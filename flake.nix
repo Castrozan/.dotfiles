@@ -111,6 +111,7 @@
             modules = [
               ./hosts/dellg15
               ./users/${username}/nixos.nix
+              ./nixos/modules/omarchy # Provides osConfig.omarchy for home-manager
               home-manager.nixosModules.home-manager
               (import ./users/${username}/nixos-home-config.nix)
             ];
