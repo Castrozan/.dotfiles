@@ -38,5 +38,23 @@ in
     input = {
       sensitivity = lib.mkForce (-0.3);
     };
+
+    # Override autostart - remove commands that require packages not installed
+    # (omarchy-nix expects nixosModule to be imported for these packages)
+    exec-once = lib.mkForce [
+      "mako" # notifications
+      "clipse -listen" # clipboard (without wl-clip-persist)
+    ];
+
+    exec = lib.mkForce [
+      "pkill -SIGUSR2 waybar || waybar"
+    ];
   };
+
+  # Add packages that omarchy autostart needs but aren't in homeManagerModule
+  home.packages = with pkgs; [
+    mako # notification daemon
+    clipse # clipboard manager
+    wl-clipboard # clipboard tools
+  ];
 }
