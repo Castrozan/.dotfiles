@@ -3,10 +3,12 @@
   lib,
   pkgs,
   ...
-}: let
+}:
+let
   bashrc = builtins.readFile ../../.bashrc;
   sshKeys = import ./ssh-keys.nix;
-in {
+in
+{
   imports = [
     ./scripts
     ./pkgs.nix
@@ -23,6 +25,15 @@ in {
 
   # Disable lid switch suspend for laptop used as server/with external monitor
   custom.lidSwitch.disable = true;
+
+  # Omarchy configuration (required by omarchy-nix homeManagerModule)
+  omarchy = {
+    full_name = "Lucas Zanoni";
+    email_address = "lucas@zanoni.dev";
+    theme = "tokyo-night";
+    scale = 1;
+    monitors = [ "HDMI-A-1" ];
+  };
 
   users.users.zanoni = {
     isNormalUser = true;
@@ -78,7 +89,7 @@ in {
 
   networking.firewall = {
     enable = true;
-    allowedTCPPorts = [22];
+    allowedTCPPorts = [ 22 ];
   };
 
   users.users.zanoni.openssh.authorizedKeys.keys = sshKeys.authorizedKeys;
