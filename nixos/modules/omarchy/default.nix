@@ -74,10 +74,6 @@
     };
   };
 
-  # Provide default values for the options
-  # These will be overridden by the home-manager module's omarchy config
-  config.omarchy = {
-    full_name = lib.mkDefault "User";
-    email_address = lib.mkDefault "user@example.com";
-  };
+  # Don't set any config values here - let the home-manager module handle them.
+  # The NixOS module only provides the option definitions.
 }

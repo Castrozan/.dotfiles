@@ -69,14 +69,6 @@ wezterm.on('gui-startup', function(cmd)
   window:gui_window():maximize()
 end)
 
--- Maximize window when GUI attaches (handles cases where gui-startup doesn't fire)
-wezterm.on('gui-attached', function(domain)
-  local window = mux.get_active_window()
-  if window then
-    window:gui_window():maximize()
-  end
-end)
-
 return {
   font = wezterm.font_with_fallback({
     { family = 'FiraCode Nerd Font Mono', weight = 'Regular' },

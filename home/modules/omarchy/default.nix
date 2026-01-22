@@ -14,18 +14,21 @@ in
   ];
 
   omarchy = {
-    full_name = "Lucas Zanoni";
-    email_address = "lucas@zanoni.dev";
-    theme = "catppuccin";
-    scale = 1;
-    monitors = [ "HDMI-A-1" ];
+    full_name = lib.mkForce "Lucas Zanoni";
+    email_address = lib.mkForce "lucas@zanoni.dev";
+    theme = lib.mkForce "tokyo-night"; # catppuccin-macchiato is incomplete in omarchy-nix
+    scale = lib.mkForce 1;
+    monitors = lib.mkForce [ "HDMI-A-1" ];
 
     # Exclude packages we already have configured elsewhere
-    exclude_packages = with pkgs; [
-      ghostty # Using wezterm instead
-      kitty # Using wezterm instead
-      chromium # Using brave instead
-    ];
+    exclude_packages = lib.mkForce (
+      with pkgs;
+      [
+        ghostty # Using wezterm instead
+        kitty # Using wezterm instead
+        chromium # Using brave instead
+      ]
+    );
   };
 
   # Override default applications to use our preferred apps
