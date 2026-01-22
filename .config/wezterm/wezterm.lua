@@ -3,9 +3,6 @@
 
 local wezterm = require 'wezterm'
 
--- Detect Wayland vs X11 for different Shift+Enter handling
-local is_wayland = os.getenv('WAYLAND_DISPLAY') ~= nil
-
 -- Catppuccin Mocha color scheme
 local catppuccin_mocha = {
   -- Basic colors
@@ -150,8 +147,8 @@ return {
 
   -- Key bindings
   keys = {
-    -- Shift+Enter: CSI-u sequence on Wayland (Hyprland), raw newline on X11 (GNOME)
-    { key = 'Enter', mods = 'SHIFT', action = wezterm.action.SendString(is_wayland and '\x1b[13;2u' or '\n') },
+    -- Shift+Enter: send CSI-u sequence for multi-line input in apps like Claude Code
+    { key = 'Enter', mods = 'SHIFT', action = wezterm.action.SendString('\x1b[13;2u') },
     -- Ctrl+Enter: send \x1b[13;5u (5 = Ctrl modifier) for apps that need it
     { key = 'Enter', mods = 'CTRL', action = wezterm.action.SendString('\x1b[13;5u') },
     -- Alt+Enter: send \x1b[13;3u (3 = Alt modifier)
