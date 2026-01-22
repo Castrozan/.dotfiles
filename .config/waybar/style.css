@@ -26,14 +26,16 @@ window#waybar {
 #workspaces button {
   padding: 0 6px;
   margin: 0 2px;
-  color: @dim;
+  color: @foreground;
+  font-weight: bold;
   background: transparent;
   border: none;
   border-radius: 4px;
 }
 
-#workspaces button:not(.empty) {
-  color: @foreground;
+#workspaces button.empty {
+  color: @dim;
+  font-weight: normal;
 }
 
 #workspaces button.active {
