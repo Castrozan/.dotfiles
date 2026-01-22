@@ -3,6 +3,9 @@
 
 local wezterm = require 'wezterm'
 
+-- Detect Hyprland for different Shift+Enter handling
+local is_hyprland = os.getenv('HYPRLAND_INSTANCE_SIGNATURE') ~= nil
+
 -- Catppuccin Mocha color scheme
 local catppuccin_mocha = {
   -- Basic colors
@@ -147,8 +150,8 @@ return {
 
   -- Key bindings
   keys = {
-    -- Shift+Enter: send CSI-u sequence for multi-line input in apps like Claude Code
-    { key = 'Enter', mods = 'SHIFT', action = wezterm.action.SendString('\x1b[13;2u') },
+    -- Shift+Enter: CSI-u sequence on Hyprland, raw newline on GNOME
+    { key = 'Enter', mods = 'SHIFT', action = wezterm.action.SendString(is_hyprland and '\x1b[13;2u' or '\n') },
     -- Ctrl+Enter: send \x1b[13;5u (5 = Ctrl modifier) for apps that need it
     { key = 'Enter', mods = 'CTRL', action = wezterm.action.SendString('\x1b[13;5u') },
     -- Alt+Enter: send \x1b[13;3u (3 = Alt modifier)
