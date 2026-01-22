@@ -20,7 +20,7 @@
     ../../home/modules/fonts.nix
     ../../home/modules/fuzzel.nix
     ../../home/modules/gnome
-    ../../home/modules/hyprland
+    ../../home/modules/omarchy
     ../../home/modules/ia-work.nix
     ../../home/modules/ksnip.nix
     ../../home/modules/install-nothing.nix
