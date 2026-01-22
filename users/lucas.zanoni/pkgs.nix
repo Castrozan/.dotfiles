@@ -20,7 +20,10 @@
       curl
       delta
       docker-compose
+      dust
+      eza
       fastfetch
+      fd
       flameshot
       fzf
       gh
@@ -55,6 +58,7 @@
       ripgrep-all
       rustc
       tailscale
+      tealdeer
       tree
       unzip
       uv

@@ -10,6 +10,7 @@
 
     ../../home/core.nix
     ../../home/scripts
+    ../../home/modules/atuin.nix
     ../../home/modules/bad-apple.nix
     ../../home/modules/bananas.nix
     ../../home/modules/cbonsai.nix
