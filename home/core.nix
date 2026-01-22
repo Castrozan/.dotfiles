@@ -1,7 +1,7 @@
-{ username, home-version, ... }: # Dependecy injection
+{ username, home-version, ... }: # Dependency injection
 {
   home = {
-    username = username;
+    inherit username;
     homeDirectory = "/home/${username}";
     stateVersion = home-version;
   };

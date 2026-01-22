@@ -1,4 +1,4 @@
-{ pkgs, config, ... }:
+{ config, ... }:
 let
   glabConfigDir = "${config.home.homeDirectory}/.config/glab-cli";
   glabConfigFile = "${glabConfigDir}/config.yml";
@@ -41,28 +41,28 @@ in
     after = [ "writeBoundary" ];
     before = [ ];
     data = ''
-      # Create config directory if it doesn't exist
-      if [ ! -d "${glabConfigDir}" ]; then
-        mkdir -p "${glabConfigDir}"
-      fi
+            # Create config directory if it doesn't exist
+            if [ ! -d "${glabConfigDir}" ]; then
+              mkdir -p "${glabConfigDir}"
+            fi
 
-      # Remove symlink if it exists (from previous xdg.configFile management)
-      if [ -L "${glabConfigFile}" ]; then
-        rm "${glabConfigFile}"
-        echo "Removed old glab config symlink"
-      fi
+            # Remove symlink if it exists (from previous xdg.configFile management)
+            if [ -L "${glabConfigFile}" ]; then
+              rm "${glabConfigFile}"
+              echo "Removed old glab config symlink"
+            fi
 
-      # Only create config if it doesn't exist (preserve user tokens)
-      if [ ! -f "${glabConfigFile}" ]; then
-        cat > "${glabConfigFile}" << 'GLAB_CONFIG_EOF'
-${initialConfig}
-GLAB_CONFIG_EOF
-        chmod 600 "${glabConfigFile}"
-        echo "Created glab config at ${glabConfigFile}"
-      else
-        # Ensure correct permissions even if file exists
-        chmod 600 "${glabConfigFile}" 2>/dev/null || true
-      fi
+            # Only create config if it doesn't exist (preserve user tokens)
+            if [ ! -f "${glabConfigFile}" ]; then
+              cat > "${glabConfigFile}" << 'GLAB_CONFIG_EOF'
+      ${initialConfig}
+      GLAB_CONFIG_EOF
+              chmod 600 "${glabConfigFile}"
+              echo "Created glab config at ${glabConfigFile}"
+            else
+              # Ensure correct permissions even if file exists
+              chmod 600 "${glabConfigFile}" 2>/dev/null || true
+            fi
     '';
   };
 }

@@ -1,5 +1,4 @@
-_:
-{
+_: {
   # Ksnip configuration - screenshot annotation tool
   # xdg.configFile."ksnip/ksnip.conf".text = ''
   #   [Application]

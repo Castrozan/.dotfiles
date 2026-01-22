@@ -1,5 +1,4 @@
-_:
-{
+_: {
   # Replicate the desktop entry to ~/.local/share/applications/
   # so GNOME can reliably find it
   xdg.desktopEntries."com.mattjakeman.ExtensionManager" = {

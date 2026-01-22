@@ -1,23 +1,19 @@
 { pkgs, ... }:
 {
-  home.packages = with pkgs; [
-    python311Packages.pipx
-  ];
+  home = {
+    packages = with pkgs; [ python311Packages.pipx ];
 
-  # Ensure pipx bin directory is in PATH
-  home.sessionPath = [
-    "$HOME/.local/bin"
-  ];
+    # Ensure pipx bin directory is in PATH
+    sessionPath = [ "$HOME/.local/bin" ];
 
-  # Configure pipx environment variables
-  home.sessionVariables = {
-    PIPX_HOME = "$HOME/.local/pipx";
-    PIPX_BIN_DIR = "$HOME/.local/bin";
-  };
+    # Configure pipx environment variables
+    sessionVariables = {
+      PIPX_HOME = "$HOME/.local/pipx";
+      PIPX_BIN_DIR = "$HOME/.local/bin";
+    };
 
-  # Set up pipx directories
-  home.activation = {
-    pipxSetup = {
+    # Set up pipx directories
+    activation.pipxSetup = {
       after = [
         "writeBoundary"
         "installPackages"

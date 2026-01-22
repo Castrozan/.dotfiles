@@ -1,5 +1,4 @@
-_:
-{
+_: {
   # Configure mpv for WezTerm kitty graphics protocol
   # ani-cli uses mpv to play videos in the terminal
   # With enable_kitty_graphics=true in wezterm.lua and vo=kitty here,

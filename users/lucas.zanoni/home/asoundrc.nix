@@ -1,5 +1,4 @@
-_:
-{
+_: {
   # Ensure ALSA libraries are available for any speech/voice extensions.
   #
   # arecord -l # list available audio devices

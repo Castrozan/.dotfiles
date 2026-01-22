@@ -1,6 +1,11 @@
 # ia-work: Automated AI work processing from Obsidian notes
 # Scans vault for notes with agent-work tag and passes entire note to AI
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 let
   cfg = config.services.ia-work;
@@ -97,7 +102,10 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    home.packages = [ ia-work-wrapped ia-work-script ];
+    home.packages = [
+      ia-work-wrapped
+      ia-work-script
+    ];
 
     home.activation.ia-work-log-dir = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
       mkdir -p "${cfg.logDir}"
@@ -114,7 +122,15 @@ in
         ExecStart = "${ia-work-wrapped}/bin/ia-work-service";
         Environment = [
           "HOME=${config.home.homeDirectory}"
-          "PATH=${lib.makeBinPath [ pkgs.coreutils pkgs.gnugrep pkgs.gnused pkgs.findutils pkgs.tmux ]}"
+          "PATH=${
+            lib.makeBinPath [
+              pkgs.coreutils
+              pkgs.gnugrep
+              pkgs.gnused
+              pkgs.findutils
+              pkgs.tmux
+            ]
+          }"
         ];
         SuccessExitStatus = "0 1";
       };

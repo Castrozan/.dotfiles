@@ -1,6 +1,5 @@
 # Custom libinput quirks configuration for Dell G15 5515 touchpad
-_:
-{
+_: {
   # Create local directory for libinput quirks
   environment.etc."libinput/local-overrides.quirks".text = ''
     [Dell G15 5515 Touchpad]

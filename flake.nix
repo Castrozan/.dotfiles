@@ -37,7 +37,6 @@
   # Outputs are what this flake provides, such as pkgs and system configurations
   outputs =
     inputs@{
-      self,
       nixpkgs,
       nixpkgs-unstable,
       nixpkgs-latest,

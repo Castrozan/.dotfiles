@@ -1,5 +1,4 @@
-_:
-{
+_: {
   home.sessionVariables = {
     OBSIDIAN_HOME = "$HOME/vault";
     EDITOR = "cursor";
@@ -8,4 +7,3 @@ _:
     TERM = "xterm-kitty";
   };
 }
-

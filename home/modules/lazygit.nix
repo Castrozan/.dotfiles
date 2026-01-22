@@ -1,5 +1,4 @@
-_:
-{
+_: {
   programs.lazygit = {
     enable = true;
 
@@ -8,7 +7,7 @@ _:
     # The following changes were made:
     # - Moved git.paging object to git.pagers array
     # 2026/01/06 02:21:17 While attempting to write back migrated user config to /home/zanoni/.config/lazygit/config.yml, an error occurred: open /home/zanoni/.config/lazygit/config.yml: read-only file system
-    # settings = { 
+    # settings = {
     #   git = {
     #     paging = {
     #       colorArg = "always";

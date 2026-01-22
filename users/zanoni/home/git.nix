@@ -5,10 +5,27 @@ let
   userEmail = "castro.lucas290@gmail.com";
 in
 {
-  home.packages = with pkgs; [
-    gh
-    delta
-  ];
+  home = {
+    packages = with pkgs; [
+      gh
+      delta
+    ];
+
+    file = {
+      ".gitconfig".text = ''
+        ${gitconfig}
+
+        [user]
+          name  = ${userName}
+          email = ${userEmail}
+      '';
+
+      ".githooks/commit-msg" = {
+        source = ../../../.githooks/dotfiles-user-commit.sh;
+        executable = true;
+      };
+    };
+  };
 
   programs.git = {
     enable = true;
@@ -17,20 +34,5 @@ in
       user.name = userName;
       user.email = userEmail;
     };
-  };
-
-  home.file.".gitconfig" = {
-    text = ''
-      ${gitconfig}
-
-      [user]
-        name  = ${userName}
-        email = ${userEmail}
-    '';
-  };
-
-  home.file.".githooks/commit-msg" = {
-    source = ../../../.githooks/dotfiles-user-commit.sh;
-    executable = true;
   };
 }

@@ -1,8 +1,8 @@
-{ latest, ... }:
+{ latest, pkgs, ... }:
 {
   home.packages = with latest; [
     (code-cursor.overrideAttrs (
-      old:
+      _:
       let
         version = "2.3.30";
         buildId = "d1289018cc3fcc395487f65455e31651734308d7";
