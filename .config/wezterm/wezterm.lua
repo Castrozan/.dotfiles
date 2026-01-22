@@ -119,11 +119,11 @@ return {
 
   window_decorations = 'NONE',
   window_background_opacity = 1.0,
-
+  text_background_opacity = 0.3,
 
   window_background_image = wezterm.config_dir .. '/wallpaper.png',
   window_background_image_hsb = {
-    brightness = 0.1,
+    brightness = 0.15,
     hue = 1.0,
     saturation = 1.0,
   },
