@@ -1,4 +1,4 @@
-{ ... }:
+_:
 let
   wezterm-quick-temp-shell-command = "wezterm start -- tmux new-session";
 in

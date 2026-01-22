@@ -1,6 +1,4 @@
-{
-  ...
-}:
+_:
 {
   home.sessionVariables = {
     OBSIDIAN_HOME = "$HOME/vault";

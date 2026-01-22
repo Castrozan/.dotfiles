@@ -9,10 +9,10 @@
         hash = "0MOAyPJWilqvmsJYz4+q/wvzZ42sUpWDVaKSTJ74fvA=";
       in
       {
-        version = version;
+        inherit version;
         src = pkgs.appimageTools.extract {
           pname = "code-cursor";
-          version = version;
+          inherit version;
           src = pkgs.fetchurl {
             sha256 = "sha256-" + hash;
             url =

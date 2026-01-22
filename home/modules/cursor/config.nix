@@ -1,4 +1,4 @@
-{ ... }:
+_:
 {
   # global rules for easy of management
   # Should change here and copy paste to cursor config manually

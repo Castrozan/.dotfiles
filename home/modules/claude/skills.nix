@@ -1,4 +1,4 @@
-{ ... }:
+_:
 let
   # Local skills directory (use path type for pathExists)
   localSkillsDir = ../../../agents/skills;

@@ -12,9 +12,14 @@
     ../scripts
   ];
 
-  # Bootloader
-  boot.loader.systemd-boot.enable = true;
-  boot.loader.efi.canTouchEfiVariables = true;
+  # Bootloader and kernel
+  boot = {
+    loader = {
+      systemd-boot.enable = true;
+      efi.canTouchEfiVariables = true;
+    };
+    kernel.sysctl."vm.swappiness" = 80;
+  };
 
   # Override filesystem configuration with labels for resilience
   # This prevents UUID mismatch issues during GPT corruption recovery
@@ -29,54 +34,72 @@
     "/boot" = {
       device = "/dev/disk/by-label/NIXOS_BOOT";
       fsType = "vfat";
-      options = [ "fmask=0022" "dmask=0022" ];
+      options = [
+        "fmask=0022"
+        "dmask=0022"
+      ];
     };
   };
 
-  # Enable experimental features
-  nix.settings.experimental-features = [
-    "nix-command"
-    "flakes"
-  ];
+  # Nix configuration
+  nix = {
+    settings = {
+      # Enable experimental features
+      experimental-features = [
+        "nix-command"
+        "flakes"
+      ];
 
-  ## BEGIN NixOS rebuild optimizations
-  # 1. Binary caches - huge win for build speed
-  nix.settings.substituters = [
-    "https://cache.nixos.org"
-    "https://nix-community.cachix.org"
-  ];
-  nix.settings.trusted-public-keys = [
-    "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
-    "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
-  ];
+      # Binary caches - huge win for build speed
+      substituters = [
+        "https://cache.nixos.org"
+        "https://nix-community.cachix.org"
+      ];
+      trusted-public-keys = [
+        "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+        "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+      ];
 
-  # 2. Parallelism - use all CPU cores
-  nix.settings.max-jobs = "auto";
-  nix.settings.cores = 0; # use all cores
+      # Parallelism - use all CPU cores
+      max-jobs = "auto";
+      cores = 0; # use all cores
 
-  # 3. Download optimization - increase buffer and parallel downloads
-  nix.settings.download-buffer-size = "524288000"; # 500 MiB
-  nix.settings.http-connections = 50; # More parallel downloads (default is 1)
+      # Download optimization - increase buffer and parallel downloads
+      download-buffer-size = "524288000"; # 500 MiB
+      http-connections = 50; # More parallel downloads (default is 1)
 
-  # 4. Eval cache - faster repeated rebuilds
-  nix.settings.eval-cache = true;
+      # Eval cache - faster repeated rebuilds
+      eval-cache = true;
 
-  # 5. Sandbox and store optimization
-  nix.settings.sandbox = true;
-  nix.settings.auto-optimise-store = true;
+      # Sandbox and store optimization
+      sandbox = true;
+      auto-optimise-store = true;
 
-  # 6. Automatic store optimization - runs nix-store --optimise to hard-link identical files
-  # Reduces disk space usage by deduplicating identical files in the store
-  # Runs weekly when system is active (systemd timer will run when PC is on)
-  nix.optimise.automatic = true;
-  nix.optimise.dates = [ "weekly" ];
+      # Allow the user to run nix commands
+      trusted-users = [ username ];
+    };
 
-  # 7. Disable man-cache generation
-  documentation.man.generateCaches = false;
-  ## END NixOS rebuild optimizations
+    # Automatic store optimization - runs nix-store --optimise to hard-link identical files
+    # Reduces disk space usage by deduplicating identical files in the store
+    # Runs weekly when system is active (systemd timer will run when PC is on)
+    optimise = {
+      automatic = true;
+      dates = [ "weekly" ];
+    };
+
+    # Garbage collection
+    gc = {
+      automatic = lib.mkDefault true;
+      dates = lib.mkDefault "weekly";
+      options = lib.mkDefault "--delete-older-than 7d";
+    };
+  };
 
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
+
+  # Disable man-cache generation
+  documentation.man.generateCaches = false;
 
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions
@@ -86,14 +109,6 @@
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
   system.stateVersion = nixpkgs-version; # Did you read the comment?
 
-  # Garbage collection
-  nix.gc = {
-    automatic = lib.mkDefault true;
-    dates = lib.mkDefault "weekly";
-    options = lib.mkDefault "--delete-older-than 7d";
-  };
-
-  boot.kernel.sysctl."vm.swappiness" = 80;
   swapDevices = [
     {
       device = "/swapfile";
@@ -101,76 +116,90 @@
     }
   ];
 
-  # Define your hostname
-  networking.hostName = "nixos";
+  # Networking
+  networking = {
+    hostName = "nixos";
+    networkmanager.enable = true;
+  };
 
-  # Allow the user to run nix commands
-  nix.settings.trusted-users = [ username ];
-
-  networking.networkmanager.enable = true;
   time.timeZone = "America/Sao_Paulo";
-  # Select internationalization properties.
-  i18n.defaultLocale = "en_US.UTF-8";
-  i18n.extraLocaleSettings = {
-    LC_ADDRESS = "pt_BR.UTF-8";
-    LC_IDENTIFICATION = "pt_BR.UTF-8";
-    LC_MEASUREMENT = "pt_BR.UTF-8";
-    LC_MONETARY = "pt_BR.UTF-8";
-    LC_NAME = "pt_BR.UTF-8";
-    LC_NUMERIC = "pt_BR.UTF-8";
-    LC_PAPER = "pt_BR.UTF-8";
-    LC_TELEPHONE = "pt_BR.UTF-8";
-    LC_TIME = "pt_BR.UTF-8";
+
+  # Internationalization
+  i18n = {
+    defaultLocale = "en_US.UTF-8";
+    extraLocaleSettings = {
+      LC_ADDRESS = "pt_BR.UTF-8";
+      LC_IDENTIFICATION = "pt_BR.UTF-8";
+      LC_MEASUREMENT = "pt_BR.UTF-8";
+      LC_MONETARY = "pt_BR.UTF-8";
+      LC_NAME = "pt_BR.UTF-8";
+      LC_NUMERIC = "pt_BR.UTF-8";
+      LC_PAPER = "pt_BR.UTF-8";
+      LC_TELEPHONE = "pt_BR.UTF-8";
+      LC_TIME = "pt_BR.UTF-8";
+    };
   };
 
-  # Enable the X11 windowing system
-  services.xserver.enable = true;
-  # Enable the GNOME Desktop Environment
-  services.displayManager.gdm.enable = true;
-  services.desktopManager.gnome.enable = true;
-  programs.dconf.enable = true;
-  programs.command-not-found.enable = false;
-
-  # Configure keymap in X11
-  services.xserver = {
-    xkb.layout = "br";
-    xkb.variant = "nodeadkeys";
+  # Programs
+  programs = {
+    dconf.enable = true;
+    command-not-found.enable = false;
   };
 
-  # Configure console keymap
+  # Console keymap
   console.keyMap = "br-abnt2";
 
-  services.printing.enable = true;
-
-  # Enable sound with pipewire
-  services.pulseaudio.enable = false;
+  # Security
   security.rtkit.enable = true;
-  services.pipewire = {
-    enable = true;
-    alsa.enable = true;
-    alsa.support32Bit = true;
-    pulse.enable = true;
-  };
 
-  # Enable touchpad support
-  services.libinput.enable = true;
+  # Services
+  services = {
+    # X11 and GNOME
+    xserver = {
+      enable = true;
+      xkb = {
+        layout = "br";
+        variant = "nodeadkeys";
+      };
+    };
+    displayManager.gdm.enable = true;
+    desktopManager.gnome.enable = true;
 
-  # Dell G15 5515 touchpad configuration
-  # Custom udev rules
-  services.udev.extraRules = builtins.readFile ./udev-rules/99-dell-g15-touchpad.rules;
-  # Touchpad configuration
-  services.libinput.touchpad = {
-    accelSpeed = "0.6";
-    accelProfile = "adaptive";
-    naturalScrolling = false;
-    tapping = true;
-    clickMethod = "clickfinger";
-    disableWhileTyping = true;
-    additionalOptions = ''
-      Option "PalmDetection" "1"
-      Option "TappingDragLock" "1"
-      Option "Sensitivity" "0.8"
-    '';
+    # Printing
+    printing.enable = true;
+
+    # Sound with pipewire
+    pulseaudio.enable = false;
+    pipewire = {
+      enable = true;
+      alsa = {
+        enable = true;
+        support32Bit = true;
+      };
+      pulse.enable = true;
+    };
+
+    # Touchpad support
+    libinput = {
+      enable = true;
+      # Dell G15 5515 touchpad configuration
+      touchpad = {
+        accelSpeed = "0.6";
+        accelProfile = "adaptive";
+        naturalScrolling = false;
+        tapping = true;
+        clickMethod = "clickfinger";
+        disableWhileTyping = true;
+        additionalOptions = ''
+          Option "PalmDetection" "1"
+          Option "TappingDragLock" "1"
+          Option "Sensitivity" "0.8"
+        '';
+      };
+    };
+
+    # Custom udev rules for Dell G15 5515 touchpad
+    udev.extraRules = builtins.readFile ./udev-rules/99-dell-g15-touchpad.rules;
   };
 
   # Additional packages for hardware monitoring and management

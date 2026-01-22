@@ -1,4 +1,4 @@
-{ ... }:
+_:
 {
   # Replicate the desktop entry to ~/.local/share/applications/
   # so GNOME can reliably find it

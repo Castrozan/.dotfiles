@@ -92,7 +92,7 @@
           };
         in
         # Function call with arguments
-        (mkHomeConfigFor "lucas.zanoni");
+        mkHomeConfigFor "lucas.zanoni";
 
       # nixosConfigurations.${username} is a NixOS system configuration for a user
       # ./bin/rebuild for how to apply

@@ -1,8 +1,7 @@
 { pkgs, ... }:
 let
   script = builtins.readFile ../../bin/pdf_edit;
-in
-let
+
   pdf-edit = pkgs.writeShellScriptBin "pdf-edit" ''
     ${script}
   '';

@@ -1,4 +1,4 @@
-{ ... }:
+_:
 {
   # Ensure ALSA libraries are available for any speech/voice extensions.
   #

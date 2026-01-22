@@ -1,4 +1,4 @@
-{ ... }:
+_:
 
 let
   # bashrc = builtins.readFile ../../../.bashrc;

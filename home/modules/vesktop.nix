@@ -1,4 +1,4 @@
-{ ... }:
+_:
 {
   # Vesktop (Discord) configuration - simplified to essential theme settings
   home.file.".config/vesktop/settings/settings.json".text = builtins.toJSON {
