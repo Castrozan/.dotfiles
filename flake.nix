@@ -32,12 +32,15 @@
     agenix.url = "github:ryantm/agenix";
     voxtype.url = "github:peteonrails/voxtype";
     hyprland.url = "github:hyprwm/Hyprland/v0.53.0";
+    hyprland-plugins = {
+      url = "github:hyprwm/hyprland-plugins/v0.53.0";
+      inputs.hyprland.follows = "hyprland";
+    };
   };
 
   # Outputs are what this flake provides, such as pkgs and system configurations
   outputs =
     inputs@{
-      self,
       nixpkgs,
       nixpkgs-unstable,
       nixpkgs-latest,
@@ -92,7 +95,7 @@
           };
         in
         # Function call with arguments
-        (mkHomeConfigFor "lucas.zanoni");
+        mkHomeConfigFor "lucas.zanoni";
 
       # nixosConfigurations.${username} is a NixOS system configuration for a user
       # ./bin/rebuild for how to apply

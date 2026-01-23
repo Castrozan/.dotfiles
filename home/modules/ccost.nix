@@ -11,7 +11,7 @@ let
 
     src = pkgs.fetchurl {
       url = "https://github.com/carlosarraes/ccost/releases/download/v${version}/ccost-linux-x86_64";
-      sha256 = sha256;
+      inherit sha256;
     };
 
     nativeBuildInputs = [ pkgs.autoPatchelfHook ];

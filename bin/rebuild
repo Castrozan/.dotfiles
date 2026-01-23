@@ -1,6 +1,13 @@
 #!/usr/bin/env bash
 # This script is used to rebuild the system using the dotfiles flake.
 
+# Ensure nix is in PATH (needed for non-NixOS systems)
+if ! command -v nix &>/dev/null; then
+    if [ -f /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]; then
+        . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
+    fi
+fi
+
 . /etc/os-release
 
 if [ "$ID" = "nixos" ]; then

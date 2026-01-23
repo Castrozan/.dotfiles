@@ -1,10 +1,13 @@
-{ ... }:
+_:
 let
   mcpConfig = {
     mcpServers = {
       claudemem = {
         command = "npx";
-        args = [ "claude-codemem" "serve" ];
+        args = [
+          "claude-codemem"
+          "serve"
+        ];
       };
 
     };

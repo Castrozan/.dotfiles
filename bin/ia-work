@@ -333,10 +333,12 @@ execute_instruction() {
     local note_file="$1"
     local note_name
     note_name=$(basename "$note_file" .md)
+    # shellcheck disable=SC2155
     local log_file="${LOG_DIR}/${note_name}-$(date '+%Y%m%d-%H%M%S').log"
     # Sanitize session name: replace spaces/special chars with dashes, truncate
     local sanitized_name
     sanitized_name=$(echo "$note_name" | tr ' ()[]' '-----' | tr -s '-' | cut -c1-30)
+    # shellcheck disable=SC2155
     local session_name="${TMUX_SESSION_PREFIX}-${sanitized_name}-$(date '+%H%M%S')"
 
     # Read note content
@@ -373,18 +375,17 @@ execute_instruction() {
     else
         # Interactive mode: run in tmux session user can attach to
         log INFO "Running in tmux session: $session_name"
-        log OK "Attach with: tmux attach -t $session_name"
 
         # Write prompt to temp file to avoid shell escaping issues
         local prompt_file="${LOG_DIR}/.prompt-$$"
         echo "$prompt" > "$prompt_file"
 
-        # Create tmux session and run claude with piped input (shows real-time output)
+        # Create tmux session
         tmux new-session -d -s "$session_name" \
             "cat '$prompt_file' | claude; rm -f '$prompt_file'; echo ''; echo 'Claude finished. Press any key to close.'; read -n 1"
 
         log OK "Tmux session started: $session_name"
-        log INFO "Session will remain open after completion for review"
+        log INFO "Attach with: tmux attach -t $session_name"
         return 0
     fi
 }

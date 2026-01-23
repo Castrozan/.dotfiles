@@ -1,7 +1,15 @@
 { pkgs, ... }:
 let
   # Fetch plugin files from GitHub releases
-  mkPlugin = { owner, repo, version, mainHash, manifestHash, stylesHash ? null }:
+  mkPlugin =
+    {
+      owner,
+      repo,
+      version,
+      mainHash,
+      manifestHash,
+      stylesHash ? null,
+    }:
     pkgs.stdenv.mkDerivation {
       pname = "obsidian-plugin-${repo}";
       inherit version;
@@ -17,10 +25,14 @@ let
         sha256 = manifestHash;
       };
 
-      stylesCss = if stylesHash != null then builtins.fetchurl {
-        url = "https://github.com/${owner}/${repo}/releases/download/${version}/styles.css";
-        sha256 = stylesHash;
-      } else null;
+      stylesCss =
+        if stylesHash != null then
+          builtins.fetchurl {
+            url = "https://github.com/${owner}/${repo}/releases/download/${version}/styles.css";
+            sha256 = stylesHash;
+          }
+        else
+          null;
 
       installPhase = ''
         runHook preInstall
@@ -71,41 +83,76 @@ let
 in
 {
   # Install plugin directories to ~/vault/.obsidian/plugins/
-  home.file = builtins.listToAttrs (map (name: {
-    name = "vault/.obsidian/plugins/${name}";
-    value = { source = plugins.${name}; force = true; };
-  }) pluginNames) // {
-    # JSON configs - force = true ensures Obsidian overwrites are replaced on rebuild
-    "vault/.obsidian/community-plugins.json" = {
-      text = builtins.toJSON pluginNames;
-      force = true;
-    };
-
-    "vault/.obsidian/core-plugins.json" = {
-      text = builtins.toJSON [
-        "file-explorer" "global-search" "switcher" "graph" "backlink" "canvas"
-        "outgoing-link" "tag-pane" "page-preview" "daily-notes" "templates"
-        "note-composer" "command-palette" "editor-status" "bookmarks" "outline"
-        "word-count" "file-recovery"
-      ];
-      force = true;
-    };
-
-    "vault/.obsidian/appearance.json" = {
-      text = builtins.toJSON {
-        accentColor = "";
-        textFontFamily = "FiraCode Nerd Font Mono";
-        theme = "obsidian";
+  home.file =
+    builtins.listToAttrs (
+      map (name: {
+        name = "vault/.obsidian/plugins/${name}";
+        value = {
+          source = plugins.${name};
+          force = true;
+        };
+      }) pluginNames
+    )
+    // {
+      # JSON configs - force = true ensures Obsidian overwrites are replaced on rebuild
+      "vault/.obsidian/community-plugins.json" = {
+        text = builtins.toJSON pluginNames;
+        force = true;
       };
-      force = true;
-    };
 
-    "vault/.obsidian/hotkeys.json" = {
-      text = builtins.toJSON {
-        "file-explorer:reveal-active-file" = [{ modifiers = [ "Mod" "Shift" ]; key = "E"; }];
-        "obsidian-read-it-later:save-clipboard-to-notice" = [{ modifiers = [ "Mod" ]; key = "R"; }];
+      "vault/.obsidian/core-plugins.json" = {
+        text = builtins.toJSON [
+          "file-explorer"
+          "global-search"
+          "switcher"
+          "graph"
+          "backlink"
+          "canvas"
+          "outgoing-link"
+          "tag-pane"
+          "page-preview"
+          "daily-notes"
+          "templates"
+          "note-composer"
+          "command-palette"
+          "editor-status"
+          "bookmarks"
+          "outline"
+          "word-count"
+          "file-recovery"
+          "sync"
+        ];
+        force = true;
       };
-      force = true;
+
+      "vault/.obsidian/appearance.json" = {
+        text = builtins.toJSON {
+          accentColor = "";
+          textFontFamily = "FiraCode Nerd Font Mono";
+          theme = "obsidian";
+        };
+        force = true;
+      };
+
+      "vault/.obsidian/hotkeys.json" = {
+        text = builtins.toJSON {
+          "file-explorer:reveal-active-file" = [
+            {
+              modifiers = [
+                "Mod"
+                "Shift"
+              ];
+              key = "E";
+            }
+          ];
+          "obsidian-read-it-later:save-clipboard-to-notice" = [
+            {
+              modifiers = [ "Mod" ];
+              key = "R";
+            }
+          ];
+        };
+        force = true;
+      };
     };
-  };
 }
