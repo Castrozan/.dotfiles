@@ -9,6 +9,7 @@
     ./lsp.nix # LSP binaries for Claude Code
     ./mcp.nix
     ./private.nix # Private/sensitive configs from ~/.private-config/claude/
-    ./session-rename.nix # Automatic session naming service
+    # ./session-rename.nix # Automatic session naming service
+    # ./rename-session.nix
   ];
 }
