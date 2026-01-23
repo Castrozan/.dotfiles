@@ -2,6 +2,7 @@
 let
   isNixOS = builtins.pathExists /etc/NIXOS;
   hyprlandFlake = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
+  hyprlockFlake = inputs.hyprlock.packages.${pkgs.stdenv.hostPlatform.system}.hyprlock;
 
   # On non-NixOS we need nixGL to provide GPU driver compatibility
   # Hyprland crashes without this due to GBM/Mesa mismatch
@@ -66,6 +67,7 @@ in
 
     packages = [
       hyprlandPackage
+      hyprlockFlake
     ]
     ++ (with pkgs; [
       # Wayland tools
@@ -80,7 +82,6 @@ in
       libnotify
 
       # Lock screen and idle
-      hyprlock
       hypridle
 
       # Media & volume
