@@ -43,6 +43,9 @@ let
 in
 {
   home = {
+    # TODO: add ../../../agents/rules/core.md to global claude rules
+    # TODO: add the other rules under agents/rules to claude global rules?
+    # Which ones should be global vs per-project vs per-agent vs per-session?
     file = {
       ".claude/.keep".text = "";
       ".claude/settings.json".text = builtins.toJSON claudeGlobalSettings;
