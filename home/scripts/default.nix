@@ -11,7 +11,6 @@
     ./on.nix
     ./pdf-edit.nix
     ./rebuild.nix
-    ./rename-session.nix
     ./set-random-bg-kitty.nix
     ./speed-read.nix
     ./tar-unzip2dir.nix
