@@ -1,5 +1,3 @@
-# claudemem - memory/context persistence for Claude Code
-# https://github.com/anthropics/claude-codemem
 { pkgs, lib, ... }:
 let
   npmBin = "${pkgs.nodejs}/bin/npm";
@@ -12,6 +10,9 @@ in
     sessionPath = [ "$HOME/.npm-global/bin" ];
 
     # Configure npm to use a user-local directory for global installs
+    # TODO: Remove this, nvm error on bash startup:
+    # nvm is not compatible with the "NPM_CONFIG_PREFIX" environment variable: currently set to "/home/lucas.zanoni/.npm-global"
+    # Run `unset NPM_CONFIG_PREFIX` to unset it.
     sessionVariables = {
       NPM_CONFIG_PREFIX = "$HOME/.npm-global";
     };
