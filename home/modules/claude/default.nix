@@ -6,9 +6,10 @@
     ./agents.nix
     ./skills.nix
     ./hooks.nix
-    ./lsp.nix # LSP binaries for Claude Code
+    ./lsp.nix
     ./mcp.nix
-    ./private.nix # Private/sensitive configs from ~/.private-config/claude/
+    ./private.nix
+    # TODO: these both waste too much usage of claude code subscription
     # ./session-rename.nix # Automatic session naming service
     # ./rename-session.nix
   ];
