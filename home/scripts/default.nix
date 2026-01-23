@@ -7,6 +7,7 @@
     ./git-crypt-setup.nix
     ./ksnip-annotate.nix
     ./greatshot-capture.nix
+    ./git-fzf.nix
     ./nix-gc.nix
     ./on.nix
     ./pdf-edit.nix
