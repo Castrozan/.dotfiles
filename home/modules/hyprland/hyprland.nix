@@ -1,4 +1,36 @@
-{ pkgs, ... }:
+{ pkgs, inputs, ... }:
+let
+  isNixOS = builtins.pathExists /etc/NIXOS;
+
+  # On non-NixOS we need nixGL to provide GPU driver compatibility
+  # Hyprland crashes without this due to GBM/Mesa mismatch
+  hyprlandPackage =
+    if isNixOS then
+      pkgs.hyprland
+    else
+      let
+        nixGLWrapper = inputs.nixgl.packages.${pkgs.stdenv.hostPlatform.system}.nixGLIntel;
+        hyprland-gl = pkgs.writeShellScriptBin "Hyprland" ''
+          exec ${nixGLWrapper}/bin/nixGLIntel ${pkgs.hyprland}/bin/Hyprland "$@"
+        '';
+        hyprland-lowercase-gl = pkgs.writeShellScriptBin "hyprland" ''
+          exec ${nixGLWrapper}/bin/nixGLIntel ${pkgs.hyprland}/bin/Hyprland "$@"
+        '';
+        hyprctl-gl = pkgs.writeShellScriptBin "hyprctl" ''
+          exec ${pkgs.hyprland}/bin/hyprctl "$@"
+        '';
+        hyprland-wrapped = pkgs.symlinkJoin {
+          name = "hyprland-wrapped";
+          paths = [
+            hyprland-gl
+            hyprland-lowercase-gl
+            hyprctl-gl
+            pkgs.hyprland
+          ];
+        };
+      in
+      hyprland-wrapped;
+in
 {
   imports = [
     ./omarchy-scripts.nix
@@ -23,7 +55,10 @@
       touch $HOME/.config/omarchy/current/theme/hyprland.conf
     '';
 
-    packages = with pkgs; [
+    packages = [
+      hyprlandPackage
+    ]
+    ++ (with pkgs; [
       # Wayland tools
       wl-clipboard
 
@@ -87,6 +122,6 @@
 
       # Audio control
       pavucontrol
-    ];
+    ]);
   };
 }
