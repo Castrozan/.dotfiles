@@ -39,7 +39,6 @@ fi
 
 # Install pynput using evdev-binary (pre-built wheel, avoids source build)
 if ! python -c "import pynput" 2>/dev/null; then
-  echo "Installing pynput..."
   # First install evdev-binary (pre-built wheel, no compilation needed)
   pip install --quiet evdev-binary 2>/dev/null || echo "Warning: evdev-binary installation failed"
   # Then install pynput without dependencies (we already have evdev-binary)
