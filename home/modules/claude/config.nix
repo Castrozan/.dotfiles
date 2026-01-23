@@ -59,8 +59,7 @@ in
       BASH_ENV = "$HOME/.dotfiles/shell/bash_aliases.sh";
     };
 
-    # Patch ~/.claude.json to set installMethod (Claude Code reads from legacy file)
-    activation.patchClaudeJson = {
+    activation.patchClaudeJsonInstallMethod = {
       after = [ "writeBoundary" ];
       before = [ ];
       data = ''
