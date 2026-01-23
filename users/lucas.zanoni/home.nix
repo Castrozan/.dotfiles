@@ -40,6 +40,7 @@
     ../../home/modules/ralph-tui.nix
     ../../home/modules/readItNow.nix
     ../../home/modules/sdkman.nix
+    ../../home/modules/sourcebot
     ../../home/modules/suwayomi-server.nix
     ../../home/modules/tailscale-daemon.nix
     ../../home/modules/tmux.nix
