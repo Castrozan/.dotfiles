@@ -42,14 +42,11 @@ in
     before = [ ];
     data = ''
             # Create config directory if it doesn't exist
-            if [ ! -d "${glabConfigDir}" ]; then
-              mkdir -p "${glabConfigDir}"
-            fi
+            mkdir -p "${glabConfigDir}"
 
             # Remove symlink if it exists (from previous xdg.configFile management)
             if [ -L "${glabConfigFile}" ]; then
               rm "${glabConfigFile}"
-              echo "Removed old glab config symlink"
             fi
 
             # Only create config if it doesn't exist (preserve user tokens)
