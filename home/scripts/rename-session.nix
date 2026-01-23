@@ -2,8 +2,7 @@
 { pkgs, ... }:
 let
   script = builtins.readFile ../../bin/rename-session;
-in
-let
+
   rename-session = pkgs.writeShellScriptBin "rename-session" ''
     export PATH="${pkgs.jq}/bin:$PATH"
     ${script}

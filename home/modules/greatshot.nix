@@ -40,4 +40,3 @@ in
 {
   home.packages = [ greatshot ];
 }
-

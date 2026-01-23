@@ -3,7 +3,12 @@ let
   badAppleUrl = "https://www.youtube.com/watch?v=FtutLA63Cp8";
 
   # Dependencies for frame generation
-  deps = with pkgs; [ yt-dlp ffmpeg chafa coreutils ];
+  deps = with pkgs; [
+    yt-dlp
+    ffmpeg
+    chafa
+    coreutils
+  ];
 
   bad-apple-cmd = pkgs.writeShellScriptBin "bad-apple" ''
     export PATH="${pkgs.lib.makeBinPath deps}:$PATH"

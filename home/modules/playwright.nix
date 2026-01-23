@@ -9,7 +9,7 @@
   };
 
   home.packages = with pkgs; [
-      playwright-driver
-      playwright-driver.browsers
-    ];
+    playwright-driver
+    playwright-driver.browsers
+  ];
 }

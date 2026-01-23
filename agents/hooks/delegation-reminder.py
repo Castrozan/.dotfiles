@@ -98,25 +98,7 @@ def check_prompt_delegation(prompt: str) -> tuple[str, str] | None:
     """Check if user prompt mentions topics that warrant delegation."""
     prompt_lower = prompt.lower()
 
-    # Additional prompt-specific patterns
-    prompt_patterns = [
-        # dotfiles-expert
-        (
-            [r"dotfiles?", r"add.*module", r"create.*module"],
-            "dotfiles-expert",
-            "Repository structure, module patterns, rebuild workflow"
-        ),
-        # nix-expert
-        (
-            [r"nix\s+expression", r"nix\s+syntax", r"how.*nix.*work"],
-            "nix-expert",
-            "Nix language, expressions, evaluation"
-        ),
-    ]
-
-    all_patterns = DELEGATION_MAPPINGS + prompt_patterns
-
-    for patterns, subagent, description in all_patterns:
+    for patterns, subagent, description in DELEGATION_MAPPINGS:
         for pattern in patterns:
             if re.search(pattern, prompt_lower, re.IGNORECASE):
                 return subagent, description
@@ -124,14 +106,13 @@ def check_prompt_delegation(prompt: str) -> tuple[str, str] | None:
     return None
 
 
-def format_delegation_reminder(subagent: str, description: str, context: str) -> str:
+def format_delegation_reminder(subagent: str, description: str) -> str:
     """Format the delegation reminder message."""
     return (
         f"DELEGATION REMINDER: Stop everything and use @{subagent}\n"
         f"Expertise: {description}\n\n"
         f"\"The agent is the only one approved to do this job.\"\n\n"
         f"Send the raw context and user prompt to the agent.\"\n\n"
-        f"Context: {context}"
     )
 
 
@@ -154,7 +135,7 @@ def main():
         if result:
             subagent, description = result
             message = format_delegation_reminder(
-                subagent, description, f"Command: {command[:100]}"
+                subagent, description
             )
             output = {"continue": True, "systemMessage": message}
             print(json.dumps(output))
@@ -167,7 +148,7 @@ def main():
         if result:
             subagent, description = result
             message = format_delegation_reminder(
-                subagent, description, f"Prompt mentions: {subagent}-related topics"
+                subagent, description
             )
             output = {"continue": True, "systemMessage": message}
             print(json.dumps(output))

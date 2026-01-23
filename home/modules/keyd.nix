@@ -6,7 +6,7 @@ let
     #!${pkgs.python3}/bin/python3
     import sys
     import os
-    
+
     # Try to find keyd-application-mapper script
     keyd_share = "${pkgs.keyd}/share"
     script_paths = [
@@ -14,11 +14,11 @@ let
       "${pkgs.keyd}/share/keyd/keyd-application-mapper",
       "${pkgs.keyd}/libexec/keyd-application-mapper",
     ]
-    
+
     for path in script_paths:
         if os.path.exists(path):
             os.execv(path, sys.argv)
-    
+
     # If not found, try to run it as a command (might be in PATH)
     os.execvp("keyd-application-mapper", sys.argv)
   '';
@@ -69,4 +69,3 @@ in
   # Enable the service to start automatically
   systemd.user.startServices = "sd-switch";
 }
-

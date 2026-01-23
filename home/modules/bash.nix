@@ -1,9 +1,4 @@
-{ ... }:
-
-let
-  # bashrc = builtins.readFile ../../../.bashrc;
-in
-{
+_: {
   # Global Bash configuration
   # TODO: this is not working for some reason
   # environment.etc."bashrc".text = bashrc;

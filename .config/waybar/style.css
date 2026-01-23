@@ -1,5 +1,5 @@
-/* Import theme colors */
-@import url("file:///home/zanoni/.config/omarchy/current/theme/waybar.css");
+/* Import theme colors - fallback to empty if theme not set */
+@import url("waybar-theme.css");
 
 * {
   background-color: @background;

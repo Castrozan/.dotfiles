@@ -83,7 +83,7 @@ return {
   },
   
   window_decorations = 'NONE',
-  window_background_opacity = 0.7,
+  window_background_opacity = 0.8,
   text_background_opacity = 0.3,
   enable_tab_bar = false,
   hide_tab_bar_if_only_one_tab = true,
@@ -94,7 +94,8 @@ return {
   freetype_render_target = 'HorizontalLcd',
   scrollback_lines = 10000,
   default_prog = { 'fish' },
-
+  default_cwd = wezterm.home_dir,
+  
   -- Enable kitty graphics protocol for inline image/video display
   -- This allows tools like ani-cli to display video frames in the terminal
   enable_kitty_graphics = true,
@@ -116,8 +117,6 @@ return {
     { key = 'UpArrow', mods = 'CTRL|SHIFT', action = wezterm.action.SendString('\x1b[1;6A') },
     { key = 'DownArrow', mods = 'CTRL|SHIFT', action = wezterm.action.SendString('\x1b[1;6B') },
   },
-
-  default_cwd = wezterm.home_dir,
 
   -- Set very large initial window size to approximate maximized state
   -- This helps when windows are created in existing instances (where gui-startup doesn't fire)

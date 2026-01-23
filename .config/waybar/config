@@ -26,7 +26,7 @@
     }
   },
   "image": {
-    "path": "/home/zanoni/.config/waybar/nix.svg",
+    "path": "~/.config/waybar/nix.svg",
     "size": 16,
     "on-click": "fuzzel",
     "on-click-right": "wezterm",

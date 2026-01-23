@@ -3,12 +3,15 @@
   pkgs,
   latest,
   ...
-}: {
-  home.packages = with pkgs;
+}:
+{
+  home.packages =
+    with pkgs;
     [
       alejandra
       bash-completion
       bat
+      bats
       brave
       bruno
       bun
@@ -20,7 +23,6 @@
       docker-compose
       fastfetch
       flameshot
-      ksnip
       fzf
       gh
       git-crypt
@@ -33,9 +35,11 @@
       gnomeExtensions.workspace-matrix
       gnutar
       go
+      google-chrome
       insomnia
       jq
       kubectl
+      ksnip
       # lens TODO: fix lens, im using the snap version for now
       micronaut
       neofetch

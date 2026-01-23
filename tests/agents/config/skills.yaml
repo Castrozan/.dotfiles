@@ -1,0 +1,14 @@
+# Skill Tests
+# Tests for Claude Code skills
+
+tests:
+  - name: commit_skill_works
+    description: "/commit skill generates proper commit"
+    skill: commit
+    prompt: "I added a new feature"
+    model: sonnet  # needs reasoning
+    max_turns: 5
+    assertions:
+      tool_called: Bash
+      output_contains:
+        - "git commit"

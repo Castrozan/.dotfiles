@@ -35,50 +35,57 @@ in
       "wheel"
     ];
     shell = pkgs.fish;
+    openssh.authorizedKeys.keys = sshKeys.authorizedKeys;
   };
 
   # Global Bash configuration
   # TODO: this is workaround from home/packages/bash.nix
-  environment.etc."bashrc".text = bashrc;
-
-  # More hyprland configuration in home/hyprland.nix
-  programs.hyprland = {
-    enable = true;
-    xwayland.enable = true;
-    package = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
-    portalPackage =
-      inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland;
+  environment = {
+    etc."bashrc".text = bashrc;
+    # NIX_PATH configuration
+    # Decision: Keep default NIX_PATH for compatibility with nix repl and other tools
+    # For flake-based workflows, use `nix repl '<nixpkgs>'` or import from flake inputs directly
+    # Reference: https://github.com/NixOS/nix/issues/9574
+    variables = {
+      NIX_PATH = lib.mkDefault "nixpkgs=/nix/var/nix/profiles/per-user/root/channels/nixos";
+      # Force Qt applications to use Wayland
+      QT_QPA_PLATFORM = "wayland";
+    };
   };
 
-  # Enable fish globally so it's registered in /etc/shells and available as a login shell
-  programs.fish.enable = true;
-
-  # NIX_PATH configuration
-  # Decision: Keep default NIX_PATH for compatibility with nix repl and other tools
-  # For flake-based workflows, use `nix repl '<nixpkgs>'` or import from flake inputs directly
-  # Reference: https://github.com/NixOS/nix/issues/9574
-  environment.variables = {
-    NIX_PATH = lib.mkDefault "nixpkgs=/nix/var/nix/profiles/per-user/root/channels/nixos";
-    # Force Qt applications to use Wayland
-    QT_QPA_PLATFORM = "wayland";
+  # Programs
+  programs = {
+    # More hyprland configuration in home/hyprland.nix
+    hyprland = {
+      enable = true;
+      xwayland.enable = true;
+      package = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
+      portalPackage =
+        inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland;
+    };
+    # Enable fish globally so it's registered in /etc/shells and available as a login shell
+    fish.enable = true;
+    # Allows running uncompiled binaries from npm, pip and other packages
+    nix-ld = {
+      enable = true;
+      libraries = with pkgs; [
+        stdenv.cc.cc
+        zlib
+        openssl
+        curl
+      ];
+    };
   };
 
-  # Allows running uncompiled binaries from npm, pip and other packages
-  programs.nix-ld.enable = true;
-  programs.nix-ld.libraries = with pkgs; [
-    stdenv.cc.cc
-    zlib
-    openssl
-    curl
-  ];
-
-  services.flatpak.enable = true;
-
-  services.openssh = {
-    enable = true;
-    settings = {
-      PermitRootLogin = "no";
-      PubkeyAuthentication = true;
+  # Services
+  services = {
+    flatpak.enable = true;
+    openssh = {
+      enable = true;
+      settings = {
+        PermitRootLogin = "no";
+        PubkeyAuthentication = true;
+      };
     };
   };
 
@@ -87,17 +94,16 @@ in
     allowedTCPPorts = [ 22 ];
   };
 
-  users.users.zanoni.openssh.authorizedKeys.keys = sshKeys.authorizedKeys;
-
-  age.identityPaths = lib.mkIf (builtins.pathExists ../../secrets/id_ed25519_phone.age) [
-    "/home/zanoni/.ssh/id_ed25519"
-  ];
-
-  age.secrets = lib.mkIf (builtins.pathExists ../../secrets/id_ed25519_phone.age) {
-    "id_ed25519_phone" = {
-      file = ../../secrets/id_ed25519_phone.age;
-      owner = "zanoni";
-      mode = "600";
+  age = {
+    identityPaths = lib.mkIf (builtins.pathExists ../../secrets/id_ed25519_phone.age) [
+      "/home/zanoni/.ssh/id_ed25519"
+    ];
+    secrets = lib.mkIf (builtins.pathExists ../../secrets/id_ed25519_phone.age) {
+      "id_ed25519_phone" = {
+        file = ../../secrets/id_ed25519_phone.age;
+        owner = "zanoni";
+        mode = "600";
+      };
     };
   };
 }

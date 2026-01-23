@@ -1,0 +1,25 @@
+# Subagent Tests
+# Tests for specialized subagent behavior
+
+tests:
+  - name: dotfiles_expert_knows_structure
+    description: "dotfiles-expert knows the repo structure"
+    agent: dotfiles-expert
+    prompt: "Where should I put a new home-manager module?"
+    model: haiku
+    max_turns: 3
+    assertions:
+      output_contains:
+        - "home/modules"
+
+  - name: nix_expert_explains_concepts
+    description: "nix-expert can explain Nix concepts"
+    agent: nix-expert
+    prompt: "What is a Nix overlay?"
+    model: haiku
+    max_turns: 2
+    assertions:
+      output_contains_any:
+        - "overlay"
+        - "package"
+        - "override"

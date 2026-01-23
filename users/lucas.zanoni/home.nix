@@ -26,11 +26,12 @@
     ../../home/modules/glab.nix
     ../../home/modules/gnome/dconf.nix
     ../../home/modules/gnome/extension-manager.nix
-    ../../home/modules/k9s.nix
-    ../../home/modules/ksnip.nix
-    ../../home/modules/install-nothing.nix
+    ../../home/modules/hyprland
     ../../home/modules/ia-work.nix
+    ../../home/modules/install-nothing.nix
+    ../../home/modules/k9s.nix
     ../../home/modules/kitty.nix
+    ../../home/modules/ksnip.nix
     ../../home/modules/lazygit.nix
     ../../home/modules/neovim.nix
     ../../home/modules/obsidian.nix
@@ -49,5 +50,6 @@
     ../../home/modules/wezterm.nix # https://tmuxai.dev/terminal-compatibility/
     ../../home/modules/whisper-input
     ../../home/modules/zed-editor.nix
+    ../../home/modules/testing
   ];
 }

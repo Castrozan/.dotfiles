@@ -7,10 +7,10 @@ in
   home.packages = [
     (pkgs.appimageTools.wrapType2 {
       pname = "bananas";
-      version = version;
+      inherit version;
       src = pkgs.fetchurl {
         url = "https://github.com/mistweaverco/bananas/releases/download/v${version}/bananas_x86_64.AppImage";
-        sha256 = sha256;
+        inherit sha256;
       };
     })
   ];

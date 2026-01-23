@@ -1,0 +1,123 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Nix Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: cachix/install-nix-action@v30
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
+
+      - uses: DeterminateSystems/magic-nix-cache-action@v8
+
+      - name: statix
+        run: nix run nixpkgs#statix -- check . --ignore 'result*'
+
+      - name: deadnix
+        run: nix run nixpkgs#deadnix -- .
+
+      - name: nixfmt
+        run: |
+          find . -name '*.nix' -not -path './result*' \
+            -exec nix run nixpkgs#nixfmt-rfc-style -- --check {} +
+
+      - name: Flake metadata (syntax check)
+        run: nix flake metadata
+
+      # Full flake check requires building derivations (writeShellScript, etc.)
+      # which is memory-intensive. We check what we can without building:
+      - name: Eval flake structure
+        run: |
+          # Check flake outputs exist and are the right type
+          nix eval .#homeConfigurations --apply 'x: builtins.attrNames x' --json
+          nix eval .#nixosConfigurations --apply 'x: builtins.attrNames x' --json
+
+  validate-agents:
+    name: Validate Agents
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate agent YAML frontmatter
+        run: ./tests/validate-agents.sh agents/subagent
+
+  script-tests:
+    name: Script Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: cachix/install-nix-action@v30
+
+      - name: Run bats tests
+        run: |
+          chmod +x bin/*
+          nix shell nixpkgs#bats --command bats tests/scripts/
+
+  # Coverage: runs on main push, deploys to GitHub Pages
+  coverage:
+    name: Coverage
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: cachix/install-nix-action@v30
+
+      - name: Run tests with coverage
+        run: |
+          chmod +x bin/*
+          nix shell nixpkgs#kcov nixpkgs#bats nixpkgs#bc --command ./tests/coverage.sh --ci
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: tests/coverage/
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  # Coverage for PRs (artifact only, no deploy)
+  coverage-pr:
+    name: Coverage (PR)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: cachix/install-nix-action@v30
+
+      - name: Run tests with coverage
+        run: |
+          chmod +x bin/*
+          nix shell nixpkgs#kcov nixpkgs#bats nixpkgs#bc --command ./tests/coverage.sh --ci
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: tests/coverage/
+          retention-days: 7

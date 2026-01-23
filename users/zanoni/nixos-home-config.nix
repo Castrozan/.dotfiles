@@ -1,12 +1,14 @@
 # Zanoni's Home Manager Configuration
 { username, specialArgs, ... }:
 {
-  home-manager.useGlobalPkgs = true;
-  home-manager.useUserPackages = true;
-  home-manager.backupFileExtension = "backup";
+  home-manager = {
+    useGlobalPkgs = true;
+    useUserPackages = true;
+    backupFileExtension = "backup";
 
-  home-manager.extraSpecialArgs = specialArgs // {
-    inherit username;
+    extraSpecialArgs = specialArgs // {
+      inherit username;
+    };
+    users.${username} = import ./home.nix;
   };
-  home-manager.users.${username} = import ./home.nix;
 }

@@ -11,7 +11,7 @@ let
 
     src = pkgs.fetchurl {
       url = "${bucket}/${version}/${platform}/claude";
-      sha256 = sha256;
+      inherit sha256;
     };
 
     nativeBuildInputs = [ pkgs.autoPatchelfHook ];

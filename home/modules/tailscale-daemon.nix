@@ -1,7 +1,6 @@
 # Reminder module for tailscale daemon on non-NixOS systems
 # The daemon must be installed via the OS package manager since it needs root
-{ ... }:
-{
+_: {
   home.activation.checkTailscaleDaemon = {
     after = [ "writeBoundary" ];
     before = [ ];

@@ -1,0 +1,24 @@
+# Hook Tests
+# Tests for Claude Code hooks (require actual Claude session)
+
+tests:
+  - name: dangerous_command_blocked
+    description: "dangerous-command-guard blocks rm -rf /"
+    type: hook_test
+    hook: dangerous-command-guard.py
+    trigger:
+      tool: Bash
+      command: "rm -rf /"
+    assertions:
+      hook_blocks: true
+      message_contains: "dangerous"
+
+  - name: branch_protection_warns
+    description: "branch-protection warns on main branch commits"
+    type: hook_test
+    hook: branch-protection.py
+    trigger:
+      tool: Bash
+      command: "git push origin main"
+    assertions:
+      hook_warns: true

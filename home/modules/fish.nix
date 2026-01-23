@@ -10,7 +10,7 @@ in
   programs.fish = {
     enable = true;
     package = pkgs.fish;
-    interactiveShellInit = ''${shellInit}'';
+    interactiveShellInit = "${shellInit}";
     plugins = [
       {
         name = "bass";
