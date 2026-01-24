@@ -5,7 +5,7 @@ menu() {
   local options="$2"
   local lines="${3:-5}"
 
-  echo -e "$options" | fuzzel --dmenu --width 30 --lines "$lines" --prompt "$prompt> " 2>/dev/null
+  echo -e "$options" | omarchy-fuzzel --dmenu --width 30 --lines "$lines" --prompt "$prompt> " 2>/dev/null
 }
 
 get_power_status() {

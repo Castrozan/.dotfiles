@@ -1,5 +1,5 @@
-/* Import theme colors - fallback to empty if theme not set */
-@import url("waybar-theme.css");
+/* Import theme colors from omarchy theme system */
+@import url("@HOME@/.config/omarchy/current/theme/waybar.css");
 
 * {
   background-color: @background;

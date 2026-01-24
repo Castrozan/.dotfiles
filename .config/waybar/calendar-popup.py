@@ -4,6 +4,27 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk
 import subprocess
 import json
+import os
+try:
+    import tomllib
+except ImportError:
+    import tomli as tomllib
+
+def load_theme_colors():
+    colors_path = os.path.expanduser("~/.config/omarchy/current/theme/colors.toml")
+    defaults = {
+        "background": "#1e1e2e",
+        "foreground": "#cdd6f4",
+        "color4": "#89b4fa",
+        "color6": "#94e2d5",
+        "color8": "#6c7086",
+    }
+    try:
+        with open(colors_path, "rb") as f:
+            colors = tomllib.load(f)
+            return {**defaults, **colors}
+    except:
+        return defaults
 
 class CalendarWindow(Gtk.Window):
     def __init__(self):
@@ -30,53 +51,63 @@ class CalendarWindow(Gtk.Window):
         # Close on escape
         self.connect("key-press-event", self.on_key_press)
 
+        # Load theme colors
+        c = load_theme_colors()
+
         # Style
-        css = b"""
-        window {
-            background-color: #1e1e2e;
+        css = f"""
+        window {{
+            background-color: {c['background']};
             border-radius: 12px;
             border: none;
-        }
-        calendar {
-            background-color: #1e1e2e;
-            color: #cdd6f4;
+        }}
+        calendar {{
+            background-color: {c['background']};
+            color: {c['foreground']};
             font-size: 18px;
             padding: 12px;
             border: none;
-        }
-        calendar.header {
+        }}
+        calendar.header {{
             border: none;
-            background-color: #1e1e2e;
-        }
-        calendar:selected {
-            background-color: #94e2d5;
-            color: #1e1e2e;
-        }
-        calendar.header {
-            color: #cdd6f4;
+            background-color: {c['background']};
+        }}
+        calendar:selected {{
+            background-color: {c['accent']};
+            color: {c['background']};
+        }}
+        calendar.header {{
+            color: {c['foreground']};
             font-weight: bold;
             font-size: 20px;
-        }
-        calendar.button {
-            color: #89b4fa;
-        }
-        calendar:indeterminate {
-            color: #6c7086;
-        }
-        button.close {
-            background-color: #94e2d5;
+        }}
+        calendar.button {{
+            color: {c['color4']};
+        }}
+        calendar:indeterminate {{
+            color: {c['color8']};
+        }}
+        button.close {{
+            background: {c['accent']};
+            background-color: {c['accent']};
+            background-image: none;
             border: none;
             border-radius: 6px;
-            color: #1e1e2e;
-            padding: 2px 8px;
+            color: {c['background']};
+            padding: 4px 10px;
             min-width: 0;
             min-height: 0;
             font-weight: bold;
-        }
-        button.close:hover {
-            background-color: #89b4fa;
-        }
-        """
+        }}
+        button.close label {{
+            color: {c['background']};
+        }}
+        button.close:hover {{
+            background: {c['color4']};
+            background-color: {c['color4']};
+            background-image: none;
+        }}
+        """.encode()
         style_provider = Gtk.CssProvider()
         style_provider.load_from_data(css)
         Gtk.StyleContext.add_provider_for_screen(

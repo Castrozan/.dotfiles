@@ -35,8 +35,8 @@ def main():
             output = {
                 "continue": True,
                 "systemMessage": (
-                    f"🔄 REBUILD: {description}\n"
-                    "This will apply Nix configuration changes to the system."
+                    f"REBUILD: {description}. "
+                    "This will apply Nix configuration changes. Use /rebuild skill for guidance."
                 )
             }
             print(json.dumps(output))

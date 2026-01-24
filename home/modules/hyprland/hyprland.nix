@@ -1,4 +1,9 @@
-{ pkgs, inputs, ... }:
+{
+  pkgs,
+  inputs,
+  config,
+  ...
+}:
 let
   isNixOS = builtins.pathExists /etc/NIXOS;
   hyprlandFlake = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
@@ -49,7 +54,17 @@ in
 
     file = {
       ".config/hypr".source = ../../../.config/hypr;
-      ".config/waybar".source = ../../../.config/waybar;
+
+      # Waybar config - individual files so we can template style.css
+      ".config/waybar/config".source = ../../../.config/waybar/config;
+      ".config/waybar/nix.svg".source = ../../../.config/waybar/nix.svg;
+      ".config/waybar/calendar-popup.py".source = ../../../.config/waybar/calendar-popup.py;
+      ".config/waybar/calendar-toggle.sh".source = ../../../.config/waybar/calendar-toggle.sh;
+      ".config/waybar/waybar-theme.css".source = ../../../.config/waybar/waybar-theme.css;
+      # style.css with dynamic home directory path
+      ".config/waybar/style.css".text =
+        builtins.replaceStrings [ "@HOME@" ] [ config.home.homeDirectory ]
+          (builtins.readFile ../../../.config/waybar/style.css.in);
 
       # Omarchy theme system - symlink read-only parts, let 'current' be runtime-writable
       ".config/omarchy/themes".source = ../../../.config/omarchy/themes;
