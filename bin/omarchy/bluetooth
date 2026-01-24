@@ -3,10 +3,9 @@
 menu() {
   local prompt="$1"
   local options="$2"
-  local extra_args="$3"
+  local lines="${3:-5}"
 
-  read -r -a args <<<"$extra_args"
-  echo -e "$options" | fuzzel --dmenu --width 40 --lines 12 --prompt "$prompt> " "${args[@]}" 2>/dev/null
+  echo -e "$options" | fuzzel --dmenu --width 30 --lines "$lines" --prompt "$prompt> " 2>/dev/null
 }
 
 get_power_status() {
@@ -62,14 +61,14 @@ scan_devices() {
   fi
 
   local selection
-  selection=$(menu "Found Devices" "$devices" "--width 350")
+  selection=$(menu "Found Devices" "$devices" 8)
 
   if [[ -n "$selection" ]]; then
     local mac name
     mac=$(echo "$selection" | awk '{print $1}')
     name=$(echo "$selection" | cut -d' ' -f2-)
 
-    case $(menu "Pair $name" "󰂱  Pair & Connect\n  Cancel") in
+    case $(menu "Pair $name" "󰂱  Pair & Connect\n  Cancel" 2) in
       *Pair*)
         notify-send -t 2000 "Bluetooth" "Pairing with $name..."
         bluetoothctl pair "$mac" && bluetoothctl connect "$mac"
@@ -109,7 +108,7 @@ show_paired_devices() {
   formatted="${formatted%\\n}"
 
   local selection
-  selection=$(menu "Paired Devices" "$formatted" "--width 400")
+  selection=$(menu "Paired Devices" "$formatted" 6)
 
   if [[ -n "$selection" ]]; then
     local mac
@@ -118,7 +117,7 @@ show_paired_devices() {
     name=$(echo "$selection" | sed 's/^[^ ]* *//' | sed "s/ ($mac)//")
 
     if is_device_connected "$mac"; then
-      case $(menu "$name" "󰂲  Disconnect\n  Remove\n  Cancel") in
+      case $(menu "$name" "󰂲  Disconnect\n  Remove\n  Cancel" 3) in
         *Disconnect*)
           bluetoothctl disconnect "$mac"
           notify-send -t 2000 "Bluetooth" "Disconnected from $name"
@@ -129,7 +128,7 @@ show_paired_devices() {
           ;;
       esac
     else
-      case $(menu "$name" "󰂱  Connect\n  Remove\n  Cancel") in
+      case $(menu "$name" "󰂱  Connect\n  Remove\n  Cancel" 3) in
         *Connect*)
           notify-send -t 2000 "Bluetooth" "Connecting to $name..."
           if bluetoothctl connect "$mac"; then
@@ -170,7 +169,7 @@ show_main_menu() {
 
   local options="󰂱  Paired Devices$connected_text\n󰂰  Scan for Devices\n$power_icon  $power_text\n󰒓  Open Settings"
 
-  case $(menu "Bluetooth" "$options") in
+  case $(menu "Bluetooth" "$options" 4) in
     *Paired*) show_paired_devices ;;
     *Scan*) scan_devices ;;
     *Power*) toggle_power; show_main_menu ;;
