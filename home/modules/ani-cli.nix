@@ -3,7 +3,13 @@
   ...
 }:
 {
-  home.packages = [ pkgs.ani-cli ];
+  home.packages = with pkgs; [
+    ani-cli
+    mpv
+    mpv-handler
+    mpvc
+    mpv-shim-default-shaders
+  ];
 
   # mpv configuration for ani-cli terminal video playback
   # ani-cli uses mpv to play videos. With vo=kitty and WezTerm's
