@@ -1,6 +1,6 @@
 ---
 name: worktrees
-description: Use when starting feature work that needs isolation from current workspace or before executing implementation plans - creates isolated git worktrees with smart directory selection and safety verification and use remote repository for pr mr and review workflow.
+description: Use when starting feature work that needs isolation from current workspace or before executing implementation plans - creates isolated git worktrees with smart directory selection and safety verification
 ---
 <!-- @agent-architect owns this file. Delegate changes, don't edit directly. -->
 
@@ -12,29 +12,57 @@ description: Use when starting feature work that needs isolation from current wo
 Git worktrees create isolated workspaces sharing the same repository. Systematic directory selection combined with safety verification ensures reliable isolation.
 </core_principle>
 
-<worktree_creation>
-Standard repos: git worktree add -b <branch> .worktrees/<branch> main
-Cleanup failed attempt: git worktree prune && rm -rf .git/worktrees/<basename> && git branch -D <branch>
-List worktrees: git worktree list
-Remove worktree: git worktree remove .worktrees/<branch>
-</worktree_creation>
+<worktree_location>
+Create worktrees in `.worktree/<branch>` inside the project directory. This keeps worktrees local to each project and easy to find.
 
-<dotfiles_worktrees>
-In ~/.dotfiles repo (uses git-crypt): use `./bin/git-worktree-crypt <branch>` instead of plain `git worktree add`. Creates worktree at `.worktrees/<branch>`. Supports branch names with slashes (feat/xyz). The script handles git-crypt key symlinks automatically.
-</dotfiles_worktrees>
+For ~/.dotfiles repo specifically: use `./bin/git-worktree-crypt <branch>` which creates at `.worktrees/<branch>` (note the 's' - this script predates the convention).
+
+For other projects:
+```bash
+git worktree add .worktree/<branch-name> -b <branch-name>
+```
+</worktree_location>
 
 <development_workflow>
-After worktree creation, write code in the isolated workspace and commit frequently to track progress. Run the rebuild script if available, otherwise do a dry build to verify changes compile. Test using appropriate methods before proceeding. Push and create a PR with clear description and test results. Keep the worktree locally for follow-up work after code review, then return to main workspace and rebuild from main branch so the system returns to stable state while PR is pending.
+After worktree creation:
+
+1. **Implement**: Write code in the isolated workspace following project rules and git best practices
+2. **Commit frequently**: Commit at every major change to track progress (multiple small commits beat one giant commit)
+3. **Test**:
+   - For ~/.dotfiles: use /rebuild skill to verify changes
+   - For other projects: run appropriate test commands (test suite, linter, build)
+4. **Push and create PR/MR**: Push to remote, create PR (GitHub) or MR (GitLab) with clear description and test results
+5. **Monitor CI**: Check that CI pipeline passes
+6. **Share link**: Provide the PR/MR URL to user
+7. **Iterate**: Use /pr-iteration skill for code review handling
+8. **Return to main**: Go back to main workspace and rebuild from main branch so system returns to stable state while PR is pending
 </development_workflow>
 
 <session_persistence>
 Maintain worktree isolation throughout the session. If the worktree breaks due to deleted CWD or git-crypt issues, recreate it rather than silently falling back to main. Never commit to main when user requested worktree isolation.
 </session_persistence>
 
+<pr_workflow>
+After implementation and testing pass, run PR commands from the main repo directory (not the worktree) to avoid git detection issues:
+
+```bash
+# From main repo, specify --head for the worktree branch
+cd /path/to/repo && gh pr create --head <branch-name> --title "..." --body "..."
+# Or for GitLab
+cd /path/to/repo && glab mr create --head <branch-name> --title "..." --description "..."
+```
+
+Monitor CI with:
+- GitHub: `gh pr checks <number>`
+- GitLab: `glab ci status`
+
+After PR/MR created, answer with the link and continue with /pr-iteration skill for handling reviews.
+</pr_workflow>
+
 <integration>
-Called by brainstorming (Phase 4) and any skill needing isolation. Pairs with finishing-a-development-branch for cleanup, and executing-plans or subagent-driven-development where the actual work happens.
+Called by brainstorming (Phase 4) and any skill needing isolation. Pairs with /rebuild for testing, /commit for frequent commits, /pr-iteration for code review handling.
 </integration>
 
 <red_flags>
-Never create worktrees in project directories. Never skip tests before declaring ready. In ~/.dotfiles, never use plain `git worktree add` - use `./bin/git-worktree-crypt`.
+Never skip tests before declaring ready. Never commit to main when worktree isolation was requested. In ~/.dotfiles, never use plain `git worktree add` - use `./bin/git-worktree-crypt`. Avoid branch names with `/` as they create nested directories.
 </red_flags>
