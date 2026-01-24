@@ -53,5 +53,6 @@
     ../../home/modules/whisper-input
     ../../home/modules/zed-editor.nix
     ../../home/modules/testing
+    ../../home/modules/ani-cli.nix
   ];
 }

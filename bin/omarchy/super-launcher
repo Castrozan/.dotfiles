@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+# GNOME-like super key behavior: unmaximize window if maximized, then launch fuzzel
+# If fuzzel is cancelled (Esc/Super), restore maximize state
+# Skips if Super+Tab window switcher (hyprshell) is active
+
+# Capture window address at start
+window_before=$(hyprctl activewindow -j | jq -r '.address')
+
+# Poll to detect hyprshell switcher or window change (handles Super+Tab)
+for _ in 1 2 3 4 5; do
+    sleep 0.04
+    # Skip if hyprshell layer is visible (window switcher open)
+    hyprctl layers -j | grep -q "hyprshell" && exit 0
+    # Skip if window focus changed (switched via hyprshell)
+    window_now=$(hyprctl activewindow -j | jq -r '.address')
+    [[ "$window_before" != "$window_now" ]] && exit 0
+done
+
+activewindow=$(hyprctl activewindow -j)
+fullscreen=$(echo "$activewindow" | jq -r '.fullscreen')
+address=$(echo "$activewindow" | jq -r '.address')
+
+was_maximized=false
+if [[ "$fullscreen" == "1" ]]; then
+    was_maximized=true
+    hyprctl dispatch fullscreen 1
+fi
+
+# Get window count before fuzzel
+windows_before=$(hyprctl clients -j | jq 'length')
+
+fuzzel
+
+# Small delay to let any launched app create its window
+sleep 0.15
+
+# Get window count after fuzzel
+windows_after=$(hyprctl clients -j | jq 'length')
+
+# If no new window was created and original was maximized, restore it
+if [[ "$was_maximized" == "true" && "$windows_after" -le "$windows_before" ]]; then
+    hyprctl dispatch focuswindow "address:$address"
+    hyprctl dispatch fullscreen 1
+fi
