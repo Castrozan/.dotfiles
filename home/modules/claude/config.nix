@@ -1,6 +1,7 @@
 { pkgs, ... }:
 let
   hooksConfig = import ./hook-config.nix;
+  pluginsConfig = import ./plugins.nix { inherit pkgs; };
 
   claudeGlobalSettings = {
     installMethod = "native";
@@ -21,12 +22,7 @@ let
     fileFiltering = {
       respectGitignore = true;
     };
-    enabledPlugins = {
-      "typescript-lsp@claude-plugins-official" = true;
-      "jdtls-lsp@claude-plugins-official" = true;
-      # NOTE: some lsps are installed via pkgs in lsp.nix
-      # and work directly without being Claude Code plugins
-    };
+    inherit (pluginsConfig) enabledPlugins;
 
     hooks = hooksConfig;
   };
@@ -43,6 +39,7 @@ let
 in
 {
   home = {
+    inherit (pluginsConfig) packages;
     # TODO: add ../../../agents/rules/core.md to global claude rules
     # TODO: add the other rules under agents/rules to claude global rules?
     # Which ones should be global vs per-project vs per-agent vs per-session?
