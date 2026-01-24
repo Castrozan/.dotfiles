@@ -29,7 +29,7 @@ fi
 # Get window count before fuzzel
 windows_before=$(hyprctl clients -j | jq 'length')
 
-fuzzel
+omarchy-fuzzel
 
 # Small delay to let any launched app create its window
 sleep 0.15
