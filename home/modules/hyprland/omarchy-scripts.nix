@@ -15,6 +15,7 @@ in
     (mkScript "omarchy-restart-hyprctl" ../../../bin/omarchy/restart-hyprctl)
     (mkScript "omarchy-restart-mako" ../../../bin/omarchy/restart-mako)
     (mkScript "omarchy-menu" ../../../bin/omarchy/menu)
+    (mkScript "omarchy-fuzzel" ../../../bin/omarchy/fuzzel)
     (mkScript "omarchy-super-launcher" ../../../bin/omarchy/super-launcher)
     (mkScript "omarchy-bluetooth" ../../../bin/omarchy/bluetooth)
     (mkScript "omarchy-close-window-cycle" ../../../bin/omarchy/close-window-cycle)

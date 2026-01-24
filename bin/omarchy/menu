@@ -30,7 +30,7 @@ menu() {
     fi
   fi
 
-  echo -e "$options" | fuzzel --dmenu --width 30 --lines 10 --prompt "$prompt> " 2>/dev/null
+  echo -e "$options" | omarchy-fuzzel --dmenu --width 30 --lines 10 --prompt "$prompt> " 2>/dev/null
 }
 
 show_theme_menu() {
@@ -65,7 +65,7 @@ show_main_menu() {
 
 go_to_menu() {
   case "${1,,}" in
-  *apps*) fuzzel ;;
+  *apps*) omarchy-fuzzel ;;
   *style*) show_style_menu ;;
   *theme*) show_theme_menu ;;
   *system*) show_system_menu ;;

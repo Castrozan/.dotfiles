@@ -1,4 +1,9 @@
-{ pkgs, inputs, ... }:
+{
+  pkgs,
+  inputs,
+  config,
+  ...
+}:
 {
   imports = [ inputs.hyprshell.homeModules.hyprshell ];
 
@@ -11,6 +16,11 @@
       enable = true;
       target = "hyprland-session.target";
     };
+
+    # Use dynamic theme CSS from omarchy theme system via @import
+    styleFile = ''
+      @import url("${config.home.homeDirectory}/.config/omarchy/current/theme/hyprshell.css");
+    '';
 
     settings = {
       windows = {

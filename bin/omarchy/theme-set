@@ -42,6 +42,11 @@ omarchy-restart-swayosd
 omarchy-restart-hyprctl
 omarchy-restart-mako
 
+# Restart hyprshell if running (reloads CSS)
+if pgrep -x hyprshell >/dev/null; then
+  systemctl --user restart hyprshell.service 2>/dev/null || true
+fi
+
 omarchy-theme-set-gnome
 
 notify-send "Theme changed" "$THEME_NAME" -t 2000
