@@ -87,3 +87,26 @@ tooltip {
 #clock {
   margin-left: 8.75px;
 }
+
+#calendar {
+  background-color: @background;
+  color: @foreground;
+  border-radius: 8px;
+  padding: 6px;
+}
+
+#calendar.header {
+  color: @accent;
+  font-weight: bold;
+}
+
+#calendar.weekday {
+  color: @primary;
+}
+
+#calendar.today {
+  color: @background;
+  background-color: @accent;
+  font-weight: bold;
+  border-radius: 4px;
+}
