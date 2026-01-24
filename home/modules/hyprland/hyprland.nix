@@ -126,6 +126,9 @@ in
       # Calculator
       gnome-calculator
 
+      # Calendar popup for waybar
+      yad
+
       # Bluetooth manager
       blueman
 
