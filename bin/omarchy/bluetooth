@@ -1,0 +1,184 @@
+#!/usr/bin/env bash
+
+menu() {
+  local prompt="$1"
+  local options="$2"
+  local lines="${3:-5}"
+
+  echo -e "$options" | fuzzel --dmenu --width 30 --lines "$lines" --prompt "$prompt> " 2>/dev/null
+}
+
+get_power_status() {
+  bluetoothctl show 2>/dev/null | grep -q "Powered: yes" && echo "on" || echo "off"
+}
+
+get_paired_devices() {
+  bluetoothctl paired-devices 2>/dev/null | sed 's/Device //'
+}
+
+is_device_connected() {
+  local mac="$1"
+  bluetoothctl info "$mac" 2>/dev/null | grep -q "Connected: yes"
+}
+
+get_connected_devices() {
+  local devices connected=""
+  devices=$(bluetoothctl paired-devices 2>/dev/null | sed 's/Device //')
+  while IFS= read -r line; do
+    [[ -z "$line" ]] && continue
+    local mac
+    mac=$(echo "$line" | awk '{print $1}')
+    if is_device_connected "$mac"; then
+      connected+="$line\n"
+    fi
+  done <<<"$devices"
+  echo -e "${connected%\\n}"
+}
+
+toggle_power() {
+  if [[ "$(get_power_status)" == "on" ]]; then
+    bluetoothctl power off
+    notify-send -t 2000 "Bluetooth" "Powered off"
+  else
+    bluetoothctl power on
+    notify-send -t 2000 "Bluetooth" "Powered on"
+  fi
+}
+
+scan_devices() {
+  notify-send -t 3000 "Bluetooth" "Scanning for devices..."
+  bluetoothctl --timeout 5 scan on &>/dev/null &
+
+  sleep 5
+
+  local devices
+  devices=$(bluetoothctl devices 2>/dev/null | sed 's/Device //')
+
+  if [[ -z "$devices" ]]; then
+    notify-send -t 2000 "Bluetooth" "No devices found"
+    show_main_menu
+    return
+  fi
+
+  local selection
+  selection=$(menu "Found Devices" "$devices" 8)
+
+  if [[ -n "$selection" ]]; then
+    local mac name
+    mac=$(echo "$selection" | awk '{print $1}')
+    name=$(echo "$selection" | cut -d' ' -f2-)
+
+    case $(menu "Pair $name" "󰂱  Pair & Connect\n  Cancel" 2) in
+      *Pair*)
+        notify-send -t 2000 "Bluetooth" "Pairing with $name..."
+        bluetoothctl pair "$mac" && bluetoothctl connect "$mac"
+        if [[ $? -eq 0 ]]; then
+          notify-send -t 2000 "Bluetooth" "Connected to $name"
+        else
+          notify-send -t 2000 "Bluetooth" "Failed to connect to $name"
+        fi
+        ;;
+    esac
+  fi
+
+  show_main_menu
+}
+
+show_paired_devices() {
+  local devices
+  devices=$(get_paired_devices)
+
+  if [[ -z "$devices" ]]; then
+    notify-send -t 2000 "Bluetooth" "No paired devices"
+    show_main_menu
+    return
+  fi
+
+  local formatted=""
+  while IFS= read -r line; do
+    local mac name
+    mac=$(echo "$line" | awk '{print $1}')
+    name=$(echo "$line" | cut -d' ' -f2-)
+    if is_device_connected "$mac"; then
+      formatted+="󰂱  $name ($mac)\n"
+    else
+      formatted+="󰂲  $name ($mac)\n"
+    fi
+  done <<<"$devices"
+  formatted="${formatted%\\n}"
+
+  local selection
+  selection=$(menu "Paired Devices" "$formatted" 6)
+
+  if [[ -n "$selection" ]]; then
+    local mac
+    mac=$(echo "$selection" | grep -oE '([0-9A-F]{2}:){5}[0-9A-F]{2}')
+    local name
+    name=$(echo "$selection" | sed 's/^[^ ]* *//' | sed "s/ ($mac)//")
+
+    if is_device_connected "$mac"; then
+      case $(menu "$name" "󰂲  Disconnect\n  Remove\n  Cancel" 3) in
+        *Disconnect*)
+          bluetoothctl disconnect "$mac"
+          notify-send -t 2000 "Bluetooth" "Disconnected from $name"
+          ;;
+        *Remove*)
+          bluetoothctl remove "$mac"
+          notify-send -t 2000 "Bluetooth" "Removed $name"
+          ;;
+      esac
+    else
+      case $(menu "$name" "󰂱  Connect\n  Remove\n  Cancel" 3) in
+        *Connect*)
+          notify-send -t 2000 "Bluetooth" "Connecting to $name..."
+          if bluetoothctl connect "$mac"; then
+            notify-send -t 2000 "Bluetooth" "Connected to $name"
+          else
+            notify-send -t 2000 "Bluetooth" "Failed to connect"
+          fi
+          ;;
+        *Remove*)
+          bluetoothctl remove "$mac"
+          notify-send -t 2000 "Bluetooth" "Removed $name"
+          ;;
+      esac
+    fi
+  fi
+
+  show_main_menu
+}
+
+show_main_menu() {
+  local power_status power_icon power_text
+  power_status=$(get_power_status)
+
+  if [[ "$power_status" == "on" ]]; then
+    power_icon="󰂯"
+    power_text="Power Off"
+  else
+    power_icon="󰂲"
+    power_text="Power On"
+  fi
+
+  local connected
+  connected=$(get_connected_devices | wc -l)
+  local connected_text=""
+  if [[ "$connected" -gt 0 ]]; then
+    connected_text=" ($connected connected)"
+  fi
+
+  local options="󰂱  Paired Devices$connected_text\n󰂰  Scan for Devices\n$power_icon  $power_text\n󰒓  Open Settings"
+
+  case $(menu "Bluetooth" "$options" 4) in
+    *Paired*) show_paired_devices ;;
+    *Scan*) scan_devices ;;
+    *Power*) toggle_power; show_main_menu ;;
+    *Settings*) blueman-manager & ;;
+  esac
+}
+
+if [[ "$1" == "--full" ]]; then
+  blueman-manager &
+else
+  show_main_menu
+fi
