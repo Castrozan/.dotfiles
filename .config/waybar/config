@@ -42,7 +42,7 @@
     "format": "{:%d %b %a  %H:%M}",
     "tooltip": true,
     "tooltip-format": "<tt><big>{calendar}</big></tt>",
-    "on-click": "bash -c 'w=$(hyprctl monitors -j | jq \".[0].width\"); yad --calendar --undecorated --fixed --no-buttons --skip-taskbar --on-top --width=400 --height=300 --fontname=\"JetBrainsMono Nerd Font 14\" --posx=$((($w - 400) / 2)) --posy=40'",
+    "on-click": "python3 ~/.config/waybar/calendar-popup.py",
     "calendar": {
       "mode": "month",
       "mode-mon-col": 3,
