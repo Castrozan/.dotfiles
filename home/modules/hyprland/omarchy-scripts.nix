@@ -18,5 +18,6 @@ in
     (mkScript "omarchy-super-launcher" ../../../bin/omarchy/super-launcher)
     (mkScript "omarchy-bluetooth" ../../../bin/omarchy/bluetooth)
     (mkScript "omarchy-close-window-cycle" ../../../bin/omarchy/close-window-cycle)
+    (mkScript "omarchy-show-desktop" ../../../bin/omarchy/show-desktop)
   ];
 }
