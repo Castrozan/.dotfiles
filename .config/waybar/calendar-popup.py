@@ -17,7 +17,7 @@ class CalendarWindow(Gtk.Window):
         except:
             screen_width = 1920
 
-        width, height = 500, 350
+        width, height = 540, 350
 
         self.set_default_size(width, height)
         self.set_decorated(False)
@@ -64,15 +64,17 @@ class CalendarWindow(Gtk.Window):
             color: #6c7086;
         }
         button.close {
-            background-color: transparent;
+            background-color: #94e2d5;
             border: none;
-            color: #6c7086;
-            padding: 4px 8px;
+            border-radius: 6px;
+            color: #1e1e2e;
+            padding: 2px 8px;
             min-width: 0;
             min-height: 0;
+            font-weight: bold;
         }
         button.close:hover {
-            color: #f38ba8;
+            background-color: #89b4fa;
         }
         """
         style_provider = Gtk.CssProvider()
@@ -86,14 +88,23 @@ class CalendarWindow(Gtk.Window):
         # Main container
         vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
 
-        # Header with close button
+        # Header row with close button at far right
         header = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-        header.set_halign(Gtk.Align.END)
+        header.set_margin_top(8)
+        header.set_margin_end(10)
+
+        # Spacer to push close button to the right
+        spacer = Gtk.Box()
+        spacer.set_hexpand(True)
+        header.pack_start(spacer, True, True, 0)
+
+        # Close button
         close_btn = Gtk.Button(label="✕")
         close_btn.get_style_context().add_class("close")
         close_btn.connect("clicked", lambda x: Gtk.main_quit())
-        header.pack_end(close_btn, False, False, 8)
-        vbox.pack_start(header, False, False, 4)
+        header.pack_end(close_btn, False, False, 0)
+
+        vbox.pack_start(header, False, False, 0)
 
         # Calendar
         calendar = Gtk.Calendar()

@@ -42,7 +42,7 @@
     "format": "{:%d %b %a  %H:%M}",
     "tooltip": true,
     "tooltip-format": "<tt><big>{calendar}</big></tt>",
-    "on-click": "python3 ~/.config/waybar/calendar-popup.py",
+    "on-click": "~/.config/waybar/calendar-toggle.sh",
     "calendar": {
       "mode": "month",
       "mode-mon-col": 3,
