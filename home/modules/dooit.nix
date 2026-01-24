@@ -21,12 +21,10 @@ in
         exit 0
       fi
 
-      # Install dooit only if it is not yet installed.
-      if ! "$pipx_bin" list | grep -qE "\bdooit\b"; then
+      # Install dooit only if it is not yet installed (silent when already present).
+      if ! "$pipx_bin" list 2>/dev/null | grep -qE "\bdooit\b"; then
         echo "Installing dooit via pipx..."
         "$pipx_bin" install dooit
-      else
-        echo "dooit is already installed via pipx."
       fi
     '';
   };

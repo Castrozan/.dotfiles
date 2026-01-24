@@ -110,11 +110,13 @@ clean_user_store() {
     echo ">> Running user garbage collection..."
 
     if [ "$DRY_RUN" = true ]; then
-        echo "   [DRY RUN] Would run: nix-collect-garbage"
-        # Show what would be collected
-        nix-store --gc --print-dead 2>/dev/null | wc -l | xargs -I {} echo "   {} dead store paths would be removed"
+        if grep -q '^ID=nixos$' /etc/os-release; then
+            echo "   [DRY RUN] Would run: nix-collect-garbage"
+            nix-store --gc --print-dead 2>/dev/null | wc -l | xargs -I {} echo "   {} dead store paths would be removed"
+        fi
+        echo "   [DRY RUN] No dry run support for non-NixOS systems for user gc"
     else
-        nix-collect-garbage
+        "$NIX_BIN/nix-collect-garbage"
     fi
     echo ""
 }
