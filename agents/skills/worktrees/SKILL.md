@@ -43,9 +43,14 @@ Maintain worktree isolation throughout the session. If the worktree breaks due t
 </session_persistence>
 
 <pr_workflow>
-After implementation and testing pass:
-- GitHub: `gh pr create --title "..." --body "..."`
-- GitLab: `glab mr create --title "..." --description "..."`
+After implementation and testing pass, run PR commands from the main repo directory (not the worktree) to avoid git detection issues:
+
+```bash
+# From main repo, specify --head for the worktree branch
+cd /path/to/repo && gh pr create --head <branch-name> --title "..." --body "..."
+# Or for GitLab
+cd /path/to/repo && glab mr create --head <branch-name> --title "..." --description "..."
+```
 
 Monitor CI with:
 - GitHub: `gh pr checks <number>`
