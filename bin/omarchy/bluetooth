@@ -14,16 +14,26 @@ get_power_status() {
 }
 
 get_paired_devices() {
-  bluetoothctl devices Paired 2>/dev/null | sed 's/Device //'
-}
-
-get_connected_devices() {
-  bluetoothctl devices Connected 2>/dev/null | sed 's/Device //'
+  bluetoothctl paired-devices 2>/dev/null | sed 's/Device //'
 }
 
 is_device_connected() {
   local mac="$1"
   bluetoothctl info "$mac" 2>/dev/null | grep -q "Connected: yes"
+}
+
+get_connected_devices() {
+  local devices connected=""
+  devices=$(bluetoothctl paired-devices 2>/dev/null | sed 's/Device //')
+  while IFS= read -r line; do
+    [[ -z "$line" ]] && continue
+    local mac
+    mac=$(echo "$line" | awk '{print $1}')
+    if is_device_connected "$mac"; then
+      connected+="$line\n"
+    fi
+  done <<<"$devices"
+  echo -e "${connected%\\n}"
 }
 
 toggle_power() {
