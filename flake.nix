@@ -36,6 +36,10 @@
       url = "github:hyprwm/hyprland-plugins/v0.53.0";
       inputs.hyprland.follows = "hyprland";
     };
+    hyprshell = {
+      url = "github:H3rmt/hyprshell/hyprshell-release";
+      inputs.hyprland.follows = "hyprland";
+    };
   };
 
   # Outputs are what this flake provides, such as pkgs and system configurations
