@@ -16,5 +16,6 @@ in
     (mkScript "omarchy-restart-mako" ../../../bin/omarchy/restart-mako)
     (mkScript "omarchy-menu" ../../../bin/omarchy/menu)
     (mkScript "omarchy-super-launcher" ../../../bin/omarchy/super-launcher)
+    (mkScript "omarchy-show-desktop" ../../../bin/omarchy/show-desktop)
   ];
 }
