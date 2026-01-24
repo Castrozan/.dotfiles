@@ -7,11 +7,11 @@
     ./git-crypt-setup.nix
     ./ksnip-annotate.nix
     ./greatshot-capture.nix
+    ./git-fzf.nix
     ./nix-gc.nix
     ./on.nix
     ./pdf-edit.nix
     ./rebuild.nix
-    ./rename-session.nix
     ./set-random-bg-kitty.nix
     ./speed-read.nix
     ./tar-unzip2dir.nix
