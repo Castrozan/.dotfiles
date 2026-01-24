@@ -81,7 +81,9 @@ window#waybar {
 tooltip {
   background-color: @background;
   border: 1px solid @surface;
-  padding: 2px;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 14px;
 }
 
 #clock {

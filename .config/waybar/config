@@ -41,7 +41,8 @@
   "clock": {
     "format": "{:%d %b %a  %H:%M}",
     "tooltip": true,
-    "tooltip-format": "<tt><small>{calendar}</small></tt>",
+    "tooltip-format": "<tt><big>{calendar}</big></tt>",
+    "on-click": "yad --calendar --undecorated --fixed --close-on-unfocus --no-buttons --posx=860 --posy=40",
     "calendar": {
       "mode": "month",
       "mode-mon-col": 3,
