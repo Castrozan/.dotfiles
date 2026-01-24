@@ -21,7 +21,7 @@ in
       '';
 
       ".githooks/commit-msg" = {
-        source = ../../../.githooks/dotfiles-user-commit.sh;
+        source = ../../../.githooks/scope-commit.sh;
         executable = true;
       };
     };
