@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# GNOME-like super key behavior: unmaximize window if maximized, then launch fuzzel
+# If fuzzel is cancelled (Esc/Super), restore maximize state
+
+activewindow=$(hyprctl activewindow -j)
+fullscreen=$(echo "$activewindow" | jq -r '.fullscreen')
+address=$(echo "$activewindow" | jq -r '.address')
+
+was_maximized=false
+if [[ "$fullscreen" == "1" ]]; then
+    was_maximized=true
+    hyprctl dispatch fullscreen 1
+fi
+
+# Get window count before fuzzel
+windows_before=$(hyprctl clients -j | jq 'length')
+
+fuzzel
+
+# Small delay to let any launched app create its window
+sleep 0.15
+
+# Get window count after fuzzel
+windows_after=$(hyprctl clients -j | jq 'length')
+
+# If no new window was created and original was maximized, restore it
+if [[ "$was_maximized" == "true" && "$windows_after" -le "$windows_before" ]]; then
+    hyprctl dispatch focuswindow "address:$address"
+    hyprctl dispatch fullscreen 1
+fi
