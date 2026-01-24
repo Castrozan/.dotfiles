@@ -9,6 +9,8 @@ description: Use when starting feature work that needs isolation from current wo
 </announcement>
 
 <workflow>
+Before creating a worktree, update main branch: `git fetch origin && git checkout main && git pull`. This ensures new branches start from the latest code.
+
 Git worktrees create isolated workspaces sharing the same repository. Create worktrees in `.worktree/<branch>` inside the project directory using `git worktree add .worktree/<branch> -b <branch>`. For ~/.dotfiles repo use `./bin/git-worktree-crypt <branch>` instead (creates at `.worktrees/<branch>`, uses git-crypt). Avoid branch names with `/` as they create nested directories.
 
 After worktree creation, implement changes following project rules and commit frequently at every major change. Test before proceeding: use /rebuild for ~/.dotfiles, appropriate test commands for other projects. Push to remote and create PR/MR with clear description and test results. Run PR commands from main repo directory (not worktree) to avoid git detection issues: `cd /path/to/repo && gh pr create --head <branch> --title "..." --body "..."`. Monitor CI with `gh pr checks <number>` or `glab ci status`. Share the PR/MR link and continue with /pr-iteration for code review handling.
