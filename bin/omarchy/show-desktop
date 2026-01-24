@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# Toggle show desktop: moves all windows to/from a special workspace
+# Tracks state per workspace to support multi-monitor setups
+
+STATE_DIR="${XDG_RUNTIME_DIR:-/tmp}/hyprland-show-desktop"
+mkdir -p "$STATE_DIR"
+
+current_workspace=$(hyprctl monitors -j | jq -r '.[] | select(.focused) | .activeWorkspace.id')
+state_file="$STATE_DIR/ws-$current_workspace"
+
+if [[ -f "$state_file" ]]; then
+    # Desktop is showing, restore windows
+    while IFS= read -r addr; do
+        hyprctl dispatch movetoworkspacesilent "$current_workspace,address:$addr"
+    done < "$state_file"
+    rm -f "$state_file"
+else
+    # Hide all windows to special workspace
+    windows=$(hyprctl clients -j | jq -r --argjson ws "$current_workspace" '.[] | select(.workspace.id == $ws) | .address')
+    if [[ -n "$windows" ]]; then
+        echo "$windows" > "$state_file"
+        echo "$windows" | while IFS= read -r addr; do
+            hyprctl dispatch movetoworkspacesilent "special:desktop,address:$addr"
+        done
+    fi
+fi
