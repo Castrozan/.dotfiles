@@ -3,6 +3,7 @@ let
   isNixOS = builtins.pathExists /etc/NIXOS;
   hyprlandFlake = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
   hyprlockFlake = inputs.hyprlock.packages.${pkgs.stdenv.hostPlatform.system}.hyprlock;
+  nixGLWrapper = inputs.nixgl.packages.${pkgs.stdenv.hostPlatform.system}.nixGLIntel;
 
   # On non-NixOS we need nixGL to provide GPU driver compatibility
   # Hyprland crashes without this due to GBM/Mesa mismatch
@@ -11,7 +12,6 @@ let
       hyprlandFlake
     else
       let
-        nixGLWrapper = inputs.nixgl.packages.${pkgs.stdenv.hostPlatform.system}.nixGLIntel;
         hyprland-gl = pkgs.writeShellScriptBin "Hyprland" ''
           exec ${nixGLWrapper}/bin/nixGLIntel ${hyprlandFlake}/bin/Hyprland "$@"
         '';
@@ -32,6 +32,24 @@ let
         };
       in
       hyprland-wrapped;
+
+  # Hyprlock also needs nixGL on non-NixOS for screenshot capture
+  hyprlockPackage =
+    if isNixOS then
+      hyprlockFlake
+    else
+      let
+        hyprlock-gl = pkgs.writeShellScriptBin "hyprlock" ''
+          exec ${nixGLWrapper}/bin/nixGLIntel ${hyprlockFlake}/bin/hyprlock "$@"
+        '';
+      in
+      pkgs.symlinkJoin {
+        name = "hyprlock-wrapped";
+        paths = [
+          hyprlock-gl
+          hyprlockFlake
+        ];
+      };
 in
 {
   imports = [
@@ -67,7 +85,7 @@ in
 
     packages = [
       hyprlandPackage
-      hyprlockFlake
+      hyprlockPackage
     ]
     ++ (with pkgs; [
       # Wayland tools
