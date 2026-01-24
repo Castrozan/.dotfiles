@@ -41,7 +41,8 @@ For multiple items: fix: address PR feedback - use consistent naming, add error 
 
 <responding_to_comments>
 Reply to comment: gh api repos/{owner}/{repo}/pulls/{number}/comments/{comment_id}/replies -f body="Done in [commit]"
-Resolve thread (if maintainer): done via web UI or specific API calls
+Resolve thread: gh api graphql -f query='mutation { resolveReviewThread(input: {threadId: "PRRT_xxx"}) { thread { isResolved } } }'
+Get thread IDs: gh api graphql -f query='query { repository(owner: "{owner}", name: "{repo}") { pullRequest(number: {number}) { reviewThreads(first: 50) { nodes { id isResolved comments(first: 1) { nodes { body } } } } } } }'
 General reply: gh pr comment [number] --body "Addressed feedback in latest commits"
 </responding_to_comments>
 
