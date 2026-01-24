@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# Close window and cycle to previous window in focus history
+# Maintains maximized state since it's workspace-level in Hyprland
+
+current=$(hyprctl activewindow -j)
+current_addr=$(echo "$current" | jq -r '.address')
+current_ws=$(echo "$current" | jq -r '.workspace.id')
+
+# Find previous window in focus history on same workspace
+# focusHistoryID 0 = current, 1 = previous, etc.
+prev_addr=$(hyprctl clients -j | jq -r --arg ws "$current_ws" '
+  [.[] | select(.workspace.id == ($ws | tonumber))] |
+  sort_by(.focusHistoryID) |
+  .[1].address // empty
+')
+
+# Close current window
+hyprctl dispatch killactive
+
+# Focus previous if exists (maximize state is workspace-level, so it persists)
+if [[ -n "$prev_addr" && "$prev_addr" != "null" ]]; then
+  hyprctl dispatch focuswindow "address:$prev_addr"
+fi
