@@ -23,7 +23,5 @@
     hwdec=no
     cache=yes
     cache-secs=60
-    vo-kitty-cols=80
-    vo-kitty-rows=24
   '';
 }
