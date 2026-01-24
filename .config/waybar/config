@@ -81,7 +81,8 @@
     "format-connected": "󰂱",
     "format-no-controller": "",
     "tooltip-format": "Devices connected: {num_connections}",
-    "on-click": "blueman-manager"
+    "on-click": "omarchy-bluetooth",
+    "on-click-right": "omarchy-bluetooth --full"
   },
   "pulseaudio": {
     "format": "{icon}",
