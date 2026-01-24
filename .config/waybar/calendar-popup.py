@@ -63,6 +63,17 @@ class CalendarWindow(Gtk.Window):
         calendar:indeterminate {
             color: #6c7086;
         }
+        button.close {
+            background-color: transparent;
+            border: none;
+            color: #6c7086;
+            padding: 4px 8px;
+            min-width: 0;
+            min-height: 0;
+        }
+        button.close:hover {
+            color: #f38ba8;
+        }
         """
         style_provider = Gtk.CssProvider()
         style_provider.load_from_data(css)
@@ -72,12 +83,26 @@ class CalendarWindow(Gtk.Window):
             Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
         )
 
+        # Main container
+        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+
+        # Header with close button
+        header = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        header.set_halign(Gtk.Align.END)
+        close_btn = Gtk.Button(label="✕")
+        close_btn.get_style_context().add_class("close")
+        close_btn.connect("clicked", lambda x: Gtk.main_quit())
+        header.pack_end(close_btn, False, False, 8)
+        vbox.pack_start(header, False, False, 4)
+
+        # Calendar
         calendar = Gtk.Calendar()
         calendar.set_property("show-heading", True)
         calendar.set_property("show-day-names", True)
         calendar.set_property("show-week-numbers", False)
+        vbox.pack_start(calendar, True, True, 0)
 
-        self.add(calendar)
+        self.add(vbox)
 
     def on_key_press(self, widget, event):
         if event.keyval == Gdk.KEY_Escape:
