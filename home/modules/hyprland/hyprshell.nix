@@ -4,8 +4,27 @@
   config,
   ...
 }:
+let
+  waitForHyprland = pkgs.writeShellScript "wait-for-hyprland" ''
+    for i in $(seq 1 50); do
+      if hyprctl monitors &>/dev/null; then
+        exit 0
+      fi
+      sleep 0.2
+    done
+    echo "Hyprland not ready after 10s, starting anyway"
+  '';
+in
 {
   imports = [ inputs.hyprshell.homeModules.hyprshell ];
+
+  # Override systemd service to wait for Hyprland IPC
+  systemd.user.services.hyprshell = {
+    Service = {
+      ExecStartPre = "${waitForHyprland}";
+      RestartSec = 2;
+    };
+  };
 
   programs.hyprshell = {
     enable = true;
