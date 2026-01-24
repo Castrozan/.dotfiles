@@ -63,6 +63,7 @@
       wl-clipboard
       wtype
       xclip
+      xvfb-run
       yamllint
       zip
       zoxide
