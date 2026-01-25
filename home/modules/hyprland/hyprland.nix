@@ -8,6 +8,25 @@ let
   isNixOS = builtins.pathExists /etc/NIXOS;
   hyprlandFlake = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
 
+  # Python environment for calendar-popup.py (GTK3 popup widget)
+  calendarPythonEnv = pkgs.python3.withPackages (ps: [
+    ps.pygobject3
+  ]);
+
+  # Calendar popup wrapper that uses the correct Python environment
+  calendar-popup = pkgs.writeShellScriptBin "calendar-popup" ''
+    exec ${calendarPythonEnv}/bin/python3 ~/.config/waybar/calendar-popup.py "$@"
+  '';
+
+  # Calendar toggle script - close if open, open if closed
+  calendar-toggle = pkgs.writeShellScriptBin "calendar-toggle" ''
+    if ${pkgs.procps}/bin/pkill -f "calendar-popup.py"; then
+        exit 0
+    else
+        ${calendar-popup}/bin/calendar-popup &
+    fi
+  '';
+
   # On non-NixOS we need nixGL to provide GPU driver compatibility
   # Hyprland crashes without this due to GBM/Mesa mismatch
   hyprlandPackage =
@@ -59,7 +78,6 @@ in
       ".config/waybar/config".source = ../../../.config/waybar/config;
       ".config/waybar/nix.svg".source = ../../../.config/waybar/nix.svg;
       ".config/waybar/calendar-popup.py".source = ../../../.config/waybar/calendar-popup.py;
-      ".config/waybar/calendar-toggle.sh".source = ../../../.config/waybar/calendar-toggle.sh;
       ".config/waybar/waybar-theme.css".source = ../../../.config/waybar/waybar-theme.css;
       # style.css with dynamic home directory path
       ".config/waybar/style.css".text =
@@ -81,6 +99,7 @@ in
 
     packages = [
       hyprlandPackage
+      calendar-toggle
     ]
     ++ (with pkgs; [
       # Wayland tools
