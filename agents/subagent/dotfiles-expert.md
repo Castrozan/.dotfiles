@@ -38,21 +38,8 @@ private-config/ - git-crypt encrypted (work agents, company skills)
 agents/ - AI agent instructions .md files (symlinked to Ai tools configs)
 </directory_organization>
 
-<module_patterns>
-Home-manager module (home/modules/name.nix):
-{ pkgs, ... }: { home.packages = [ pkgs.something ]; programs.something = { enable = true; }; }
-Self-contained, no enable option needed. Importing enables it.
-
-NixOS module with options (nixos/modules/name.nix):
-{ config, lib, ... }: let cfg = config.custom.name; in { options.custom.name = { enable = lib.mkEnableOption "description"; }; config = lib.mkIf cfg.enable { }; }
-
-Pinned external flake: 1) Add to flake.nix inputs with version tag. 2) Create module using inputs.toolname.packages.${pkgs.stdenv.hostPlatform.system}.default. 3) Import in home.nix. Never config apps on home.nix just import. Never pass packages through specialArgsBase - use inputs directly.
-
-Conditional secrets: age.secrets = lib.mkIf (builtins.pathExists ../../secrets/secret-name.age) { "secret-name" = { file = ...; owner = "username"; mode = "600"; }; }
-</module_patterns>
-
 <rebuild_execution>
-Use the /rebuild skill. Detect context of the system you are rebuilding, NixOs, Ubuntu, etc. Understand .bin/rebuild script that is the default command. Always dry-run first to make sure flake is correct.
+You should always rebuild or dry building before finishing your job. Use the /rebuild skill. Detect context of the system you are rebuilding, NixOs, Ubuntu, etc. Understand .bin/rebuild script that is the default command. Always dry-run first to make sure flake is correct.
 On NixOS you may not have direct sudo access. In that case dry build and, inform the user to run the rebuild command with sudo.
 On Home-manager standalone systems, execute directly (no sudo) the rebuild command.
 </rebuild_execution>
