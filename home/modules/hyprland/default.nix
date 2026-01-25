@@ -5,7 +5,7 @@
     ./omarchy.nix
     ./packages.nix
     ./waybar.nix
-    ./hyprexpo.nix
+    # ./hyprexpo.nix
     ./hyprshell.nix
     ./wlogout.nix
     ../fuzzel.nix
