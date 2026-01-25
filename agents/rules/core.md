@@ -17,7 +17,7 @@ When specialized subagent exists, delegate rather than doing work directly. Suba
 </delegation>
 
 <git>
-Commits are not dangerous - do them freely. During development: commit at every major change and before answering user to track progress. Multiple small commits beat one giant commit. At end: clean up with squash if needed. Follow existing commit patterns. Check logs before commits. Staging: always git add specific-file, never git add -A or git add . (user may have parallel work). For parallel work, prefer /worktrees.
+Commits are not dangerous - do them freely. You should always commit and use git to revert changes, do not remove code for reverting changes. During development: commit at every major change and before answering user to track progress. Multiple small commits beat one giant commit. At end: clean up with squash if needed. Follow existing commit patterns. Check logs before commits. Staging: always git add specific-file, never git add -A or git add . (user may have parallel work). For parallel work, prefer /worktrees.
 </git>
 
 <instructions>
