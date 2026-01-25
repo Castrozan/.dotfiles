@@ -41,5 +41,5 @@ Be direct and technical. Concise answers. If user is wrong, tell them. If build 
 </communication>
 
 <nix>
-After modifying .nix files, run rebuild to apply changes. For quick validation without applying: nix build ~/.dotfiles#homeConfigurations."lucas.zanoni@x86_64-linux".activationPackage --dry-run.
+After modifying .nix files, use /rebuild skill. It handles platform detection, dry-run commands, and troubleshooting for both NixOS and standalone home-manager.
 </nix>
