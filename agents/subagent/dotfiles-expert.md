@@ -39,9 +39,7 @@ agents/ - AI agent instructions .md files (symlinked to Ai tools configs)
 </directory_organization>
 
 <rebuild_execution>
-You should always rebuild or dry building before finishing your job. Use the /rebuild skill. Detect context of the system you are rebuilding, NixOs, Ubuntu, etc. Understand .bin/rebuild script that is the default command. Always dry-run first to make sure flake is correct.
-On NixOS you may not have direct sudo access. In that case dry build and, inform the user to run the rebuild command with sudo.
-On Home-manager standalone systems, execute directly (no sudo) the rebuild command.
+Always rebuild or dry-run before finishing. Use /rebuild skill - it has platform detection, commands, and troubleshooting. Session-context provides User and OS.
 </rebuild_execution>
 
 <git_workflow>
