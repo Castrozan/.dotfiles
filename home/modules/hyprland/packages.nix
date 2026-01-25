@@ -32,7 +32,7 @@ let
 in
 {
   home = {
-    file.".config/hypr".source = ../../../.config/hypr;
+    # file.".config/hypr".source = ../../../.config/hypr;
 
     packages = [
       hyprlandPackage
@@ -50,15 +50,15 @@ in
       libnotify
 
       # Lock screen and idle
-      hyprlock
-      hypridle
+      # hyprlock
+      # hypridle
 
       # Media & volume
       playerctl
       pamixer
 
       # OSD for volume/brightness
-      swayosd
+      # swayosd
 
       # Emoji picker
       bemoji
@@ -70,7 +70,7 @@ in
       satty
 
       # Screen recording
-      wf-recorder
+      # wf-recorder
 
       # Clipboard history
       cliphist
@@ -82,7 +82,7 @@ in
       jq
 
       # Logout menu
-      wlogout
+      # wlogout
 
       # Polkit agent
       polkit_gnome
@@ -91,7 +91,7 @@ in
       gnome-calculator
 
       # Calendar popup helper
-      yad
+      # yad
 
       # Bluetooth manager
       blueman
