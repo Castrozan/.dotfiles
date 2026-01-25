@@ -62,7 +62,7 @@
   environment.sessionVariables = {
     LIBVA_DRIVER_NAME = "nvidia";
     __GLX_VENDOR_LIBRARY_NAME = "nvidia";
-    GBM_BACKEND = "nvidia-drm";
+    # GBM_BACKEND = "nvidia-drm";  # Breaks multi-GPU setups (AMD iGPU + NVIDIA dGPU)
     NVD_BACKEND = "direct";
   };
 }
