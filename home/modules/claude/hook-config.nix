@@ -54,6 +54,11 @@ in
           command = "${runHook} ${hooksPath}/branch-protection.py";
           timeout = 5000;
         }
+        {
+          type = "command";
+          command = "${runHook} ${hooksPath}/rebuild-notify.py";
+          timeout = 3000;
+        }
       ];
     }
   ];

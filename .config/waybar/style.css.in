@@ -1,0 +1,114 @@
+/* Import theme colors from omarchy theme system */
+@import url("@HOME@/.config/omarchy/current/theme/waybar.css");
+
+* {
+  background-color: @background;
+  color: @foreground;
+  border: none;
+  border-radius: 0;
+  min-height: 0;
+  font-family: 'JetBrainsMono Nerd Font';
+  font-size: 12px;
+}
+
+window#waybar {
+  background-color: @background;
+}
+
+.modules-left {
+  margin-left: 8px;
+}
+
+.modules-right {
+  margin-right: 8px;
+}
+
+#workspaces button {
+  padding: 0 6px;
+  margin: 0 2px;
+  color: @foreground;
+  font-weight: bold;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+}
+
+#workspaces button.empty {
+  color: @dim;
+  font-weight: normal;
+}
+
+#workspaces button.active {
+  color: @accent;
+  font-weight: 900;
+  font-size: 13px;
+  border-bottom: 2px solid @accent;
+}
+
+#workspaces button:hover {
+  color: @foreground;
+}
+
+#image {
+  margin: 0 8px;
+}
+
+#cpu,
+#battery,
+#pulseaudio,
+#network,
+#bluetooth {
+  min-width: 12px;
+  margin: 0 7.5px;
+}
+
+#tray {
+  margin-right: 16px;
+}
+
+#bluetooth {
+  margin-right: 17px;
+}
+
+#network {
+  margin-right: 13px;
+}
+
+#custom-expand-icon {
+  margin-right: 18px;
+}
+
+tooltip {
+  background-color: @background;
+  border: 1px solid @surface;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 14px;
+}
+
+#clock {
+  margin-left: 8.75px;
+}
+
+#calendar {
+  background-color: @background;
+  color: @foreground;
+  border-radius: 8px;
+  padding: 6px;
+}
+
+#calendar.header {
+  color: @accent;
+  font-weight: bold;
+}
+
+#calendar.weekday {
+  color: @primary;
+}
+
+#calendar.today {
+  color: @background;
+  background-color: @accent;
+  font-weight: bold;
+  border-radius: 4px;
+}

@@ -36,9 +36,11 @@
     ../../home/modules/neovim.nix
     ../../home/modules/obsidian.nix
     ../../home/modules/opencode.nix
+    ../../home/modules/openfortivpn
     ../../home/modules/ralph-tui.nix
     ../../home/modules/readItNow.nix
     ../../home/modules/sdkman.nix
+    ../../home/modules/sourcebot
     ../../home/modules/suwayomi-server.nix
     ../../home/modules/tailscale-daemon.nix
     ../../home/modules/tmux.nix
@@ -51,5 +53,6 @@
     ../../home/modules/whisper-input
     ../../home/modules/zed-editor.nix
     ../../home/modules/testing
+    ../../home/modules/ani-cli.nix
   ];
 }

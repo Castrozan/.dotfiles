@@ -23,7 +23,6 @@
       docker-compose
       fastfetch
       flameshot
-      ksnip
       fzf
       gh
       git-crypt
@@ -36,9 +35,12 @@
       gnomeExtensions.workspace-matrix
       gnutar
       go
+      google-chrome
       insomnia
+      (jetbrains.idea.override { vmopts = "-Dawt.toolkit.name=WLToolkit"; })
       jq
       kubectl
+      ksnip
       # lens TODO: fix lens, im using the snap version for now
       micronaut
       neofetch
