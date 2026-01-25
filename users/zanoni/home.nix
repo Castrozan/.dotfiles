@@ -26,7 +26,7 @@
     ../../home/modules/install-nothing.nix
     ../../home/modules/kitty.nix
     ../../home/modules/lazygit.nix
-    ../../home/modules/mpv.nix
+    ../../home/modules/ani-cli.nix
     ../../home/modules/neovim.nix
     ../../home/modules/obsidian.nix
     ../../home/modules/opencode.nix
