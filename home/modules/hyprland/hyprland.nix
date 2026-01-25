@@ -4,10 +4,10 @@ let
   hyprlandFlake = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
 
   # On non-NixOS we need nixGL to provide GPU driver compatibility
-  # Hyprland crashes without this due to GBM/Mesa mismatch
-  hyprlandPackage =
+  # On NixOS, Hyprland is installed via programs.hyprland.enable in nixos.nix
+  hyprlandPackages =
     if isNixOS then
-      hyprlandFlake
+      [ ] # NixOS provides Hyprland via system config users/user/nixos.nix
     else
       let
         nixGLWrapper = inputs.nixgl.packages.${pkgs.stdenv.hostPlatform.system}.nixGLIntel;
@@ -30,7 +30,7 @@ let
           ];
         };
       in
-      hyprland-wrapped;
+      [ hyprland-wrapped ];
 in
 {
   imports = [
@@ -56,73 +56,72 @@ in
       touch $HOME/.config/omarchy/current/theme/hyprland.conf
     '';
 
-    packages = [
-      hyprlandPackage
-    ]
-    ++ (with pkgs; [
-      # Wayland tools
-      wl-clipboard
+    packages =
+      hyprlandPackages
+      ++ (with pkgs; [
+        # Wayland tools
+        wl-clipboard
 
-      # Wallpaper
-      hyprpaper
-      swaybg
+        # Wallpaper
+        hyprpaper
+        swaybg
 
-      # Notifications
-      mako
-      libnotify
+        # Notifications
+        mako
+        libnotify
 
-      # Lock screen and idle
-      hyprlock
-      hypridle
+        # Lock screen and idle
+        hyprlock
+        hypridle
 
-      # Media & volume
-      playerctl
-      pamixer
+        # Media & volume
+        playerctl
+        pamixer
 
-      # Status bar
-      waybar
+        # Status bar
+        waybar
 
-      # OSD for volume/brightness (omarchy feature)
-      swayosd
+        # OSD for volume/brightness (omarchy feature)
+        swayosd
 
-      # Emoji picker
-      bemoji
+        # Emoji picker
+        bemoji
 
-      # YAML/JSON processing (for theme templates)
-      yq-go
+        # YAML/JSON processing (for theme templates)
+        yq-go
 
-      # Screenshot tools
-      hyprshot
-      grim
-      slurp
-      satty
+        # Screenshot tools
+        hyprshot
+        grim
+        slurp
+        satty
 
-      # Screen recording
-      wf-recorder
+        # Screen recording
+        wf-recorder
 
-      # Clipboard history
-      cliphist
+        # Clipboard history
+        cliphist
 
-      # Color picker
-      hyprpicker
+        # Color picker
+        hyprpicker
 
-      # JSON processing (for hyprctl scripts)
-      jq
+        # JSON processing (for hyprctl scripts)
+        jq
 
-      # Logout menu
-      wlogout
+        # Logout menu
+        wlogout
 
-      # Polkit agent
-      polkit_gnome
+        # Polkit agent
+        polkit_gnome
 
-      # Calculator
-      gnome-calculator
+        # Calculator
+        gnome-calculator
 
-      # Bluetooth manager
-      blueman
+        # Bluetooth manager
+        blueman
 
-      # Audio control
-      pavucontrol
-    ]);
+        # Audio control
+        pavucontrol
+      ]);
   };
 }
