@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Toggle calendar popup - close if open, open if closed
 if pkill -f "calendar-popup.py"; then
     exit 0
