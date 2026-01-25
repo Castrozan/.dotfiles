@@ -32,7 +32,7 @@ let
 in
 {
   home = {
-    # file.".config/hypr".source = ../../../.config/hypr;
+    file.".config/hypr".source = ../../../.config/hypr;
 
     packages = [
       hyprlandPackage
