@@ -33,7 +33,7 @@ Understand contextually. User prompts may contain errors - interpret intent, cor
 </prompts>
 
 <code>
-No obvious comments - code should be self-documenting. Comments only for "why", not "what". Follow existing patterns. Don't ask permission unless ambiguous or dangerous. Implement first, explain if needed. Show code, not descriptions. Test before presenting.
+No obvious comments - code should be self-documenting. Comments only for "why", not "what". Follow existing patterns. Don't ask permission unless ambiguous or dangerous. Implement first, explain if needed. Show code, not descriptions. Test before presenting. Scripts use #!/usr/bin/env bash shebang (portable, finds bash in PATH).
 </code>
 
 <communication>
