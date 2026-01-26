@@ -1,0 +1,134 @@
+#!/usr/bin/env bash
+# Daemon that handles window swaps in maximize mode
+# When focus changes in maximize mode:
+# - Move previous window to special workspace
+# - Maximize newly focused window
+
+STATE_DIR="/tmp/hypr-maximize-mode"
+SOCKET="$XDG_RUNTIME_DIR/hypr/$HYPRLAND_INSTANCE_SIGNATURE/.socket2.sock"
+
+get_active_workspace() {
+  hyprctl activeworkspace -j | jq -r '.id'
+}
+
+is_maximize_mode() {
+  local ws="$1"
+  [[ -f "$STATE_DIR/$ws" ]]
+}
+
+get_current_tracked() {
+  local ws="$1"
+  local file="$STATE_DIR/${ws}_current"
+  [[ -f "$file" ]] && cat "$file"
+}
+
+set_current_tracked() {
+  local ws="$1"
+  local addr="$2"
+  echo "$addr" > "$STATE_DIR/${ws}_current"
+}
+
+is_window_in_rotation() {
+  local ws="$1"
+  local addr="$2"
+  local state_file="$STATE_DIR/$ws"
+  [[ -f "$state_file" ]] && grep -q "^${addr}$" "$state_file"
+}
+
+handle_activewindow() {
+  local window_class="$1"
+  local window_title="$2"
+
+  # Get current workspace and active window
+  local ws
+  ws=$(get_active_workspace)
+
+  if ! is_maximize_mode "$ws"; then
+    return
+  fi
+
+  local new_addr
+  new_addr=$(hyprctl activewindow -j | jq -r '.address // empty')
+
+  if [[ -z "$new_addr" ]]; then
+    return
+  fi
+
+  # Get previously tracked window
+  local prev_addr
+  prev_addr=$(get_current_tracked "$ws")
+
+  # If same window, nothing to do
+  if [[ "$new_addr" == "$prev_addr" ]]; then
+    return
+  fi
+
+  # Check if new window is part of the rotation
+  if ! is_window_in_rotation "$ws" "$new_addr"; then
+    # New window not in rotation - might be a new window or from different workspace
+    # Add it to rotation
+    echo "$new_addr" >> "$STATE_DIR/$ws"
+  fi
+
+  # Move previous window to special workspace (if it exists and is valid)
+  if [[ -n "$prev_addr" ]]; then
+    local prev_exists
+    prev_exists=$(hyprctl clients -j | jq -r --arg addr "$prev_addr" \
+      '.[] | select(.address == $addr) | .address')
+
+    if [[ -n "$prev_exists" ]]; then
+      # Check if prev window is still on the main workspace (not already in special)
+      local prev_ws
+      prev_ws=$(hyprctl clients -j | jq -r --arg addr "$prev_addr" \
+        '.[] | select(.address == $addr) | .workspace.name')
+
+      if [[ "$prev_ws" != special:max_* ]]; then
+        hyprctl dispatch movetoworkspacesilent "special:max_${ws}_${prev_addr#0x},address:$prev_addr"
+      fi
+    fi
+  fi
+
+  # Update tracked current window
+  set_current_tracked "$ws" "$new_addr"
+
+  # Maximize the new window
+  local fullscreen
+  fullscreen=$(hyprctl activewindow -j | jq -r '.fullscreen // 0')
+  if [[ "$fullscreen" != "1" ]]; then
+    hyprctl dispatch fullscreen 1
+  fi
+}
+
+handle_closewindow() {
+  local addr="$1"
+
+  # Clean up closed windows from state files
+  for state_file in "$STATE_DIR"/*; do
+    [[ -f "$state_file" ]] || continue
+    [[ "$state_file" == *_current ]] && continue
+
+    if grep -q "^0x${addr}$" "$state_file" 2>/dev/null; then
+      grep -v "^0x${addr}$" "$state_file" > "$state_file.tmp" && mv "$state_file.tmp" "$state_file"
+    fi
+  done
+}
+
+# Main event loop
+mkdir -p "$STATE_DIR"
+
+while IFS= read -r line; do
+  event="${line%%>>*}"
+  data="${line#*>>}"
+
+  case "$event" in
+    activewindow)
+      # data format: class,title
+      IFS=',' read -r class title <<< "$data"
+      handle_activewindow "$class" "$title"
+      ;;
+    closewindow)
+      # data format: address (without 0x prefix)
+      handle_closewindow "$data"
+      ;;
+  esac
+done < <(nc -U "$SOCKET")
