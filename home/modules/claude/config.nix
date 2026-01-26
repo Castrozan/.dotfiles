@@ -36,17 +36,22 @@ let
 
     ${builtins.readFile ../../../agents/rules/gnome-keybinding-debugging.md}
   '';
+  claudeGlobalRules = ''
+    ${builtins.readFile ../../../agents/rules/core.md}
+
+    ${builtins.readFile ../../../agents/rules/devenv-patterns.md}
+
+    ${builtins.readFile ../../../agents/rules/evergreen-instructions.md}
+  '';
 in
 {
   home = {
     inherit (pluginsConfig) packages;
-    # TODO: add ../../../agents/rules/core.md to global claude rules
-    # TODO: add the other rules under agents/rules to claude global rules?
-    # Which ones should be global vs per-project vs per-agent vs per-session?
     file = {
       ".claude/.keep".text = "";
       ".claude/settings.json".text = builtins.toJSON claudeGlobalSettings;
       ".dotfiles/CLAUDE.md".text = claudeDotfilesRules;
+      ".claude/CLAUDE.md".text = claudeGlobalRules;
     };
 
     sessionVariables = {
