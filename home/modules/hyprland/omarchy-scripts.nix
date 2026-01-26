@@ -20,5 +20,6 @@ in
     (mkScript "omarchy-bluetooth" ../../../bin/omarchy/bluetooth)
     (mkScript "omarchy-close-window-cycle" ../../../bin/omarchy/close-window-cycle)
     (mkScript "omarchy-show-desktop" ../../../bin/omarchy/show-desktop)
+    (mkScript "omarchy-maximize-focus-daemon" ../../../bin/omarchy/maximize-focus-daemon)
   ];
 }
