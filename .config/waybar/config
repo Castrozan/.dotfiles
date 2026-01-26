@@ -28,7 +28,7 @@
   "image": {
     "path": "~/.config/waybar/nix.svg",
     "size": 16,
-    "on-click": "fuzzel",
+    "on-click": "omarchy-super-launcher",
     "on-click-right": "wezterm",
     "tooltip": false
   },

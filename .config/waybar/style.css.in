@@ -16,7 +16,7 @@ window#waybar {
 }
 
 .modules-left {
-  margin-left: 8px;
+  margin-left: 0;
 }
 
 .modules-right {
@@ -50,7 +50,9 @@ window#waybar {
 }
 
 #image {
-  margin: 0 8px;
+  margin: 0;
+  margin-right: 8px;
+  padding-left: 12px;
 }
 
 #cpu,
