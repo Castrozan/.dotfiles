@@ -10,6 +10,7 @@
     ./nvidia.nix
     ./libinput-quirks.nix
     ../scripts
+    ../../../nixos/modules/xdg-portal.nix
   ];
 
   # Bootloader and kernel
@@ -151,6 +152,9 @@
 
   # Security
   security.rtkit.enable = true;
+
+  # XDG Portal for screen sharing (Hyprland + GNOME coexistence)
+  custom.xdgPortal.enable = true;
 
   # Services
   services = {
