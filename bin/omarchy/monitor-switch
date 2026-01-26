@@ -3,15 +3,35 @@
 # When external monitor is connected: disable built-in
 # When external monitor is disconnected: enable built-in
 
-CONFIG="${XDG_CONFIG_HOME:-$HOME/.config}/hypr/user/monitor-switch.conf"
+CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/omarchy"
+CONFIG="$CONFIG_DIR/monitor-switch.conf"
 
 # Defaults (can be overridden by config file)
 EXTERNAL="HDMI-A-1"
 INTERNAL="eDP-1"
-INTERNAL_MODE="1920x1080@120"
+INTERNAL_MODE="preferred"
 
-# Source config if it exists
-[[ -f "$CONFIG" ]] && source "$CONFIG"
+# Create config with defaults if it doesn't exist
+if [[ ! -f "$CONFIG" ]]; then
+  mkdir -p "$CONFIG_DIR"
+  cat > "$CONFIG" << 'CONF'
+# Monitor switch daemon configuration
+# Edit this file to match your machine's monitors
+
+# External monitor name (check with: hyprctl monitors all)
+EXTERNAL="HDMI-A-1"
+
+# Internal/built-in monitor name
+INTERNAL="eDP-1"
+
+# Mode for internal monitor when external is disconnected
+# Format: WIDTHxHEIGHT@REFRESH (e.g., 1920x1080@120) or "preferred"
+INTERNAL_MODE="preferred"
+CONF
+fi
+
+# Source config
+source "$CONFIG"
 
 SOCKET="$XDG_RUNTIME_DIR/hypr/$HYPRLAND_INSTANCE_SIGNATURE/.socket2.sock"
 
