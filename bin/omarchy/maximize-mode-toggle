@@ -1,23 +1,24 @@
 #!/usr/bin/env bash
 # Toggle maximize mode for current workspace
-# Enter: move windows to special workspaces, switch to maximize submap
-# Exit: bring windows back, switch to normal submap
+# Each window gets its own special workspace (always alone = always full size)
 
 STATE_DIR="/tmp/hypr-maximize-mode"
 mkdir -p "$STATE_DIR"
 
-get_active_workspace() {
+get_workspace_id() {
   hyprctl activeworkspace -j | jq -r '.id'
+}
+
+get_workspace_name() {
+  hyprctl activeworkspace -j | jq -r '.name'
 }
 
 get_active_address() {
   hyprctl activewindow -j | jq -r '.address // empty'
 }
 
-get_workspace_windows() {
-  local ws="$1"
-  hyprctl clients -j | jq -r --arg ws "$ws" \
-    '.[] | select(.workspace.id == ($ws | tonumber)) | .address'
+get_active_ws_name() {
+  hyprctl activewindow -j | jq -r '.workspace.name // empty'
 }
 
 enter_maximize_mode() {
@@ -25,8 +26,10 @@ enter_maximize_mode() {
   local focused="$2"
   local state_file="$STATE_DIR/$ws"
 
+  # Get all windows on this workspace
   local windows
-  windows=$(get_workspace_windows "$ws")
+  windows=$(hyprctl clients -j | jq -r --arg ws "$ws" \
+    '.[] | select(.workspace.id == ($ws | tonumber)) | .address')
   [[ -z "$windows" ]] && return 1
 
   local count
@@ -36,71 +39,80 @@ enter_maximize_mode() {
     return 0
   fi
 
-  # Save state
-  {
-    echo "$ws"
-    echo "$windows"
-  } > "$state_file"
-  echo "$focused" > "$STATE_DIR/${ws}_current"
+  # Save original workspace
+  echo "$ws" > "$state_file"
 
-  # Move all OTHER windows to special workspaces (focused stays for now)
+  # Disable hyprshell
+  systemctl --user stop hyprshell 2>/dev/null || true
+
+  # Move each window to its own special workspace
   while IFS= read -r addr; do
-    if [[ "$addr" != "$focused" && -n "$addr" ]]; then
-      hyprctl dispatch movetoworkspacesilent "special:max_${ws}_${addr#0x},address:$addr"
-    fi
+    [[ -n "$addr" ]] && hyprctl dispatch movetoworkspacesilent "special:max_${ws}_${addr#0x},address:$addr"
   done <<< "$windows"
 
-  # Now move focused to its special workspace and toggle it visible
-  hyprctl dispatch movetoworkspacesilent "special:max_${ws}_${focused#0x},address:$focused"
+  # Show the focused window's special workspace
   hyprctl dispatch togglespecialworkspace "max_${ws}_${focused#0x}"
 
-  # Switch to maximize submap (uses our switcher instead of hyprshell)
+  # Add TAB binding and switch to submap
+  hyprctl keyword submap maximize
+  hyprctl keyword bind "SUPER, TAB, exec, omarchy-maximize-mode-switcher"
+  hyprctl keyword submap reset
   hyprctl dispatch submap maximize
 }
 
 exit_maximize_mode() {
-  local ws="$1"
-  local state_file="$STATE_DIR/$ws"
-  [[ -f "$state_file" ]] || return 1
+  local orig_ws="$1"
+  local state_file="$STATE_DIR/$orig_ws"
 
-  local orig_ws
-  orig_ws=$(head -1 "$state_file")
-
-  # Switch back to normal submap first
+  # Reset submap first
   hyprctl dispatch submap reset
 
-  # Bring all windows back from special workspaces
-  hyprctl clients -j | jq -r --arg ws "$orig_ws" \
-    '.[] | select(.workspace.name | startswith("special:max_\($ws)_")) | .address' | \
+  # Find all windows in special workspaces for this workspace and bring them back
+  local prefix="special:max_${orig_ws}_"
+  hyprctl clients -j | jq -r --arg prefix "$prefix" \
+    '.[] | select(.workspace.name | startswith($prefix)) | .address' | \
   while IFS= read -r addr; do
     [[ -n "$addr" ]] && hyprctl dispatch movetoworkspace "$orig_ws,address:$addr"
   done
 
-  # Switch to original workspace
+  # Go to original workspace
   hyprctl dispatch workspace "$orig_ws"
 
-  rm -f "$state_file" "$STATE_DIR/${ws}_current"
-}
+  # Re-enable hyprshell
+  systemctl --user start hyprshell 2>/dev/null || true
 
-is_maximize_mode() {
-  [[ -f "$STATE_DIR/$1" ]]
+  rm -f "$state_file"
 }
 
 # Main
-ws=$(get_active_workspace)
+ws_name=$(get_workspace_name)
+ws_id=$(get_workspace_id)
+focused=$(get_active_address)
+active_ws=$(get_active_ws_name)
 
-# Handle being on a special workspace
-if [[ "$ws" == special:max_* ]]; then
-  orig_ws=$(echo "$ws" | sed 's/special:max_\([0-9]*\)_.*/\1/')
+# If on a special:max_* workspace, exit maximize mode
+if [[ "$active_ws" == special:max_* ]]; then
+  orig_ws=$(echo "$active_ws" | sed 's/special:max_\([0-9]*\)_.*/\1/')
   exit_maximize_mode "$orig_ws"
   exit 0
 fi
 
-focused=$(get_active_address)
-[[ -z "$ws" || -z "$focused" ]] && exit 1
+# If no focus but maximize mode is active, try to recover
+if [[ -z "$focused" ]] && [[ -f "$STATE_DIR/$ws_id" ]]; then
+  # Find a special workspace and toggle it
+  first_special=$(hyprctl clients -j | jq -r --arg ws "$ws_id" \
+    '.[] | select(.workspace.name | startswith("special:max_\($ws)_")) | .workspace.name' | head -1)
+  if [[ -n "$first_special" ]]; then
+    suffix="${first_special#special:}"
+    hyprctl dispatch togglespecialworkspace "$suffix"
+  fi
+  exit 0
+fi
 
-if is_maximize_mode "$ws"; then
-  exit_maximize_mode "$ws"
+[[ -z "$ws_id" || -z "$focused" ]] && exit 1
+
+if [[ -f "$STATE_DIR/$ws_id" ]]; then
+  exit_maximize_mode "$ws_id"
 else
-  enter_maximize_mode "$ws" "$focused"
+  enter_maximize_mode "$ws_id" "$focused"
 fi
