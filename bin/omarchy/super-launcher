@@ -1,8 +1,29 @@
 #!/usr/bin/env bash
-# Launcher with maximize state handling: unmaximize window if maximized, launch fuzzel
-# Super+Q toggles: if fuzzel running, close it and restore maximize state
+# Hot corner launcher with maximize state handling
+#
+# Behavior:
+# - With maximized window: unmaximize, show fuzzel, maximize whatever gets focus
+# - Click tiled window: that window becomes maximized
+# - Launch app: new app becomes maximized
+# - ESC/cancel: restore original maximized window
+# - Toggle (hot corner again): restore original maximized window
 
-# If fuzzel is already running, kill it and let original process handle restore
+STATE_DIR="/tmp"
+WORKSPACE_ID=$(hyprctl activewindow -j | jq -r '.workspace.id // "default"')
+STATE_FILE="$STATE_DIR/hot-corner-state-$WORKSPACE_ID"
+
+save_state() {
+    local address="$1"
+    local was_maximized="$2"
+    echo "$address $was_maximized" > "$STATE_FILE"
+}
+
+clear_state() {
+    rm -f "$STATE_FILE"
+}
+
+# If fuzzel is already running, kill it (toggle behavior)
+# The original launcher process will handle restoration
 if pgrep -x fuzzel > /dev/null; then
     pkill -x fuzzel
     exit 0
@@ -10,7 +31,7 @@ fi
 
 activewindow=$(hyprctl activewindow -j)
 fullscreen=$(echo "$activewindow" | jq -r '.fullscreen')
-address=$(echo "$activewindow" | jq -r '.address')
+original_address=$(echo "$activewindow" | jq -r '.address')
 
 was_maximized=false
 if [[ "$fullscreen" == "1" ]]; then
@@ -18,19 +39,45 @@ if [[ "$fullscreen" == "1" ]]; then
     hyprctl dispatch fullscreen 1
 fi
 
+# Save state for potential restoration
+save_state "$original_address" "$was_maximized"
+
 # Get window count before fuzzel
 windows_before=$(hyprctl clients -j | jq 'length')
 
+# Launch fuzzel and wait for it to exit
 omarchy-fuzzel
+fuzzel_exit=$?
 
-# Small delay to let any launched app create its window
+# Small delay to let window state settle (app launches can take time)
 sleep 0.15
 
-# Get window count after fuzzel
+# Get current state after fuzzel exits
 windows_after=$(hyprctl clients -j | jq 'length')
+current_window=$(hyprctl activewindow -j)
+current_address=$(echo "$current_window" | jq -r '.address')
+current_fullscreen=$(echo "$current_window" | jq -r '.fullscreen')
 
-# If no new window was created and original was maximized, restore it
-if [[ "$was_maximized" == "true" && "$windows_after" -le "$windows_before" ]]; then
-    hyprctl dispatch focuswindow "address:$address"
+# Clear state file
+clear_state
+
+# Determine what happened and respond appropriately
+if [[ "$windows_after" -gt "$windows_before" ]]; then
+    # New window was created (app launched from fuzzel)
+    # Always maximize the new window
     hyprctl dispatch fullscreen 1
+elif [[ "$was_maximized" == "true" ]]; then
+    # Original was maximized - handle restore or switch
+    if [[ "$current_address" != "$original_address" && "$current_address" != "null" && -n "$current_address" ]]; then
+        # User clicked a different window - maximize that one
+        if [[ "$current_fullscreen" != "1" ]]; then
+            hyprctl dispatch fullscreen 1
+        fi
+    else
+        # ESC pressed or toggle - restore original maximized state
+        hyprctl dispatch focuswindow "address:$original_address"
+        sleep 0.05
+        hyprctl dispatch fullscreen 1
+    fi
 fi
+# If was_maximized=false and no new window: do nothing (stay in tiled view)
