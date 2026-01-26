@@ -1,0 +1,99 @@
+#!/usr/bin/env bash
+# Cycle to next window in maximize mode
+# Only operates when maximize mode is active
+
+STATE_DIR="/tmp/hypr-maximize-mode"
+
+get_active_workspace() {
+  hyprctl activeworkspace -j | jq -r '.id'
+}
+
+get_active_address() {
+  hyprctl activewindow -j | jq -r '.address // empty'
+}
+
+is_maximize_mode() {
+  local ws="$1"
+  [[ -f "$STATE_DIR/$ws" ]]
+}
+
+swap_to_next() {
+  local ws="$1"
+  local state_file="$STATE_DIR/$ws"
+  local current="$2"
+
+  # Read rotation list into array
+  local -a rotation
+  mapfile -t rotation < "$state_file"
+
+  local count=${#rotation[@]}
+  if [[ "$count" -lt 2 ]]; then
+    return 1
+  fi
+
+  # Find current window's index in rotation
+  local current_idx=-1
+  for i in "${!rotation[@]}"; do
+    if [[ "${rotation[$i]}" == "$current" ]]; then
+      current_idx=$i
+      break
+    fi
+  done
+
+  if [[ "$current_idx" -lt 0 ]]; then
+    # Current window not in rotation - might be a new window
+    # Add it to rotation and continue
+    echo "$current" >> "$state_file"
+    current_idx=$count
+    ((count++))
+  fi
+
+  # Get next window (circular)
+  local next_idx=$(( (current_idx + 1) % count ))
+  local next="${rotation[$next_idx]}"
+
+  # Verify next window still exists
+  local next_exists
+  next_exists=$(hyprctl clients -j | jq -r --arg addr "$next" \
+    '.[] | select(.address == $addr) | .address')
+
+  if [[ -z "$next_exists" ]]; then
+    # Window no longer exists, remove from rotation and try again
+    local -a new_rotation
+    for addr in "${rotation[@]}"; do
+      if [[ "$addr" != "$next" ]]; then
+        new_rotation+=("$addr")
+      fi
+    done
+    printf '%s\n' "${new_rotation[@]}" > "$state_file"
+    # Recursive call with cleaned rotation
+    swap_to_next "$ws" "$current"
+    return
+  fi
+
+  # Perform the swap:
+  # 1. Move current to special workspace
+  hyprctl dispatch movetoworkspacesilent "special:max_${ws}_${current#0x},address:$current"
+
+  # 2. Bring next to main workspace with focus (triggers render)
+  hyprctl dispatch movetoworkspace "$ws,address:$next"
+}
+
+# Main
+ws=$(get_active_workspace)
+current=$(get_active_address)
+
+if [[ -z "$ws" ]]; then
+  exit 1
+fi
+
+if ! is_maximize_mode "$ws"; then
+  # Not in maximize mode - exit and let other handlers (hyprshell) work
+  exit 0
+fi
+
+if [[ -z "$current" ]]; then
+  exit 1
+fi
+
+swap_to_next "$ws" "$current"
