@@ -28,8 +28,11 @@ cp -rL --no-preserve=mode "$THEME_PATH/"* "$NEXT_THEME_PATH/" 2>/dev/null
 
 omarchy-theme-set-templates
 
-rm -rf "$CURRENT_THEME_PATH"
+OLD_THEME_PATH="$HOME/.config/omarchy/current/old-theme"
+rm -rf "$OLD_THEME_PATH"
+mv "$CURRENT_THEME_PATH" "$OLD_THEME_PATH" 2>/dev/null || true
 mv "$NEXT_THEME_PATH" "$CURRENT_THEME_PATH"
+rm -rf "$OLD_THEME_PATH"
 
 echo "$THEME_NAME" > "$HOME/.config/omarchy/current/theme.name"
 
