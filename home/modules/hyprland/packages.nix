@@ -1,7 +1,6 @@
 { pkgs, inputs, ... }:
 let
-  xdg-desktop-portal-hyprland =
-    inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland;
+  inherit (inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}) xdg-desktop-portal-hyprland;
 in
 {
   home = {
