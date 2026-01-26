@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# Daemon that switches between external and built-in monitors
+# When external monitor is connected: disable built-in
+# When external monitor is disconnected: enable built-in
+
+EXTERNAL="HDMI-A-1"
+INTERNAL="eDP-1"
+INTERNAL_MODE="1920x1080@120"
+
+SOCKET="$XDG_RUNTIME_DIR/hypr/$HYPRLAND_INSTANCE_SIGNATURE/.socket2.sock"
+
+is_monitor_connected() {
+  hyprctl monitors -j | jq -e --arg name "$1" '.[] | select(.name == $name)' >/dev/null 2>&1
+}
+
+apply_config() {
+  if is_monitor_connected "$EXTERNAL"; then
+    hyprctl keyword monitor "$INTERNAL,disable"
+  else
+    hyprctl keyword monitor "$INTERNAL,$INTERNAL_MODE,auto,1"
+  fi
+}
+
+# Apply initial configuration
+apply_config
+
+# Listen for monitor events
+while IFS= read -r line; do
+  event="${line%%>>*}"
+  case "$event" in
+    monitoradded|monitorremoved)
+      sleep 0.2
+      apply_config
+      ;;
+  esac
+done < <(nc -U "$SOCKET")
