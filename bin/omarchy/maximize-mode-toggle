@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Toggle maximize mode for current workspace
-# Enter: move all other windows to special workspaces, keep focused visible
+# Enter: track mode, maximize current window (don't move others yet - daemon handles swaps)
 # Exit: bring all windows back from special workspaces
 
 STATE_DIR="/tmp/hypr-maximize-mode"
@@ -18,12 +18,6 @@ get_workspace_windows() {
   local ws="$1"
   hyprctl clients -j | jq -r --arg ws "$ws" \
     '.[] | select(.workspace.id == ($ws | tonumber)) | .address'
-}
-
-get_special_max_windows() {
-  local ws="$1"
-  hyprctl clients -j | jq -r --arg ws "$ws" \
-    '.[] | select(.workspace.name | startswith("special:max_\($ws)_")) | .address'
 }
 
 enter_maximize_mode() {
@@ -48,20 +42,17 @@ enter_maximize_mode() {
     return 0
   fi
 
-  # Write rotation list (focused window first)
-  echo "$focused" > "$state_file"
+  # Write state: first line is workspace, rest are window addresses
+  # Format: ws_id on line 1, then all window addresses
+  {
+    echo "$ws"
+    echo "$windows"
+  } > "$state_file"
 
-  # Move all OTHER windows to special workspaces
-  while IFS= read -r addr; do
-    if [[ "$addr" != "$focused" && -n "$addr" ]]; then
-      echo "$addr" >> "$state_file"
-      hyprctl dispatch movetoworkspacesilent "special:max_${ws}_${addr#0x},address:$addr"
-    fi
-  done <<< "$windows"
+  # Also write current focused window to a separate file for daemon to track
+  echo "$focused" > "$STATE_DIR/${ws}_current"
 
-  # Ensure focused window is maximized (alone on workspace = full size)
-  # Small delay to let moves complete
-  sleep 0.05
+  # Maximize current window
   hyprctl dispatch fullscreen 1
 }
 
@@ -85,19 +76,15 @@ exit_maximize_mode() {
   fi
 
   # Bring all windows back from special workspaces
+  hyprctl clients -j | jq -r --arg ws "$ws" \
+    '.[] | select(.workspace.name | startswith("special:max_\($ws)_")) | .address' | \
   while IFS= read -r addr; do
     if [[ -n "$addr" ]]; then
-      # Check if window is in a special workspace
-      local win_ws
-      win_ws=$(hyprctl clients -j | jq -r --arg addr "$addr" \
-        '.[] | select(.address == $addr) | .workspace.name')
-      if [[ "$win_ws" == special:max_* ]]; then
-        hyprctl dispatch movetoworkspace "$ws,address:$addr"
-      fi
+      hyprctl dispatch movetoworkspace "$ws,address:$addr"
     fi
-  done < "$state_file"
+  done
 
-  rm -f "$state_file"
+  rm -f "$state_file" "$STATE_DIR/${ws}_current"
 }
 
 is_maximize_mode() {
