@@ -1,15 +1,9 @@
-{ pkgs, inputs, ... }:
-let
-  hyprlandFlake = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
-in
+{ pkgs, ... }:
 {
   home = {
     file.".config/hypr".source = ../../../.config/hypr;
 
-    packages = [
-      hyprlandFlake
-    ]
-    ++ (with pkgs; [
+    packages = with pkgs; [
       # Wayland tools
       wl-clipboard
 
@@ -70,6 +64,6 @@ in
 
       # Audio control
       pavucontrol
-    ]);
+    ];
   };
 }
