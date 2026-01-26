@@ -4,6 +4,7 @@
 
 # Home-manager deployed (source: agents/, run ./bin/rebuild)
 CLAUDE.md
+AGENTS.md
 .cursor/
 home/modules/cursor/cursor-global-user-rules.md
 
