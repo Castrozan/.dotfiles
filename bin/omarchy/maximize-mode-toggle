@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Toggle maximize mode for current workspace
-# Enter: move each window to its own special workspace (always maximized)
-# Exit: bring all windows back to original workspace
+# Enter: track mode, maximize current window (daemon handles swaps on focus change)
+# Exit: bring all windows back, un-maximize
 
 STATE_DIR="/tmp/hypr-maximize-mode"
 mkdir -p "$STATE_DIR"
@@ -36,17 +36,17 @@ enter_maximize_mode() {
     return 0
   fi
 
-  # Save original workspace and windows
-  echo "$ws" > "$state_file"
-  echo "$windows" >> "$state_file"
+  # Save state: workspace and all window addresses
+  {
+    echo "$ws"
+    echo "$windows"
+  } > "$state_file"
 
-  # Move ALL windows (including focused) to their own special workspaces
-  while IFS= read -r addr; do
-    [[ -n "$addr" ]] && hyprctl dispatch movetoworkspacesilent "special:max_${ws}_${addr#0x},address:$addr"
-  done <<< "$windows"
+  # Track current focused window for daemon
+  echo "$focused" > "$STATE_DIR/${ws}_current"
 
-  # Switch to focused window's special workspace
-  hyprctl dispatch togglespecialworkspace "max_${ws}_${focused#0x}"
+  # Maximize current window
+  hyprctl dispatch fullscreen 1
 }
 
 exit_maximize_mode() {
@@ -54,21 +54,23 @@ exit_maximize_mode() {
   local state_file="$STATE_DIR/$ws"
   [[ -f "$state_file" ]] || return 1
 
-  # Read original workspace from first line
+  # Read original workspace
   local orig_ws
   orig_ws=$(head -1 "$state_file")
 
   # Bring all windows back from special workspaces
-  hyprctl clients -j | jq -r --arg ws "$ws" \
+  hyprctl clients -j | jq -r --arg ws "$orig_ws" \
     '.[] | select(.workspace.name | startswith("special:max_\($ws)_")) | .address' | \
   while IFS= read -r addr; do
     [[ -n "$addr" ]] && hyprctl dispatch movetoworkspace "$orig_ws,address:$addr"
   done
 
-  # Switch back to original workspace
-  hyprctl dispatch workspace "$orig_ws"
+  # Un-maximize current window
+  local fullscreen
+  fullscreen=$(hyprctl activewindow -j | jq -r '.fullscreen // 0')
+  [[ "$fullscreen" == "1" ]] && hyprctl dispatch fullscreen 1
 
-  rm -f "$state_file"
+  rm -f "$state_file" "$STATE_DIR/${ws}_current"
 }
 
 is_maximize_mode() {
@@ -78,9 +80,8 @@ is_maximize_mode() {
 # Main
 ws=$(get_active_workspace)
 
-# Handle being on a special workspace (already in maximize mode)
+# Handle being on a special workspace
 if [[ "$ws" == special:max_* ]]; then
-  # Extract original workspace from special workspace name
   orig_ws=$(echo "$ws" | sed 's/special:max_\([0-9]*\)_.*/\1/')
   exit_maximize_mode "$orig_ws"
   exit 0
