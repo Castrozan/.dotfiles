@@ -34,6 +34,7 @@ EOFCONFIG
         -v "$DATA_DIR:/data" \
         -e CONFIG_PATH=/data/config.json \
         -e SOURCEBOT_TELEMETRY_DISABLED=true \
+        ${GITLAB_TOKEN:+-e GITLAB_TOKEN="$GITLAB_TOKEN"} \
         "$IMAGE"
       echo "Sourcebot created and started at http://localhost:$PORT"
     fi
