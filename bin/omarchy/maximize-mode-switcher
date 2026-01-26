@@ -77,6 +77,9 @@ swap_to_next() {
 
   # 2. Bring next to main workspace with focus (triggers render)
   hyprctl dispatch movetoworkspace "$ws,address:$next"
+
+  # 3. Explicit focus to ensure render
+  hyprctl dispatch focuswindow "address:$next"
 }
 
 # Main
