@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Toggle maximize mode for current workspace
-# Enter: track mode, maximize current window (daemon handles swaps on focus change)
-# Exit: bring all windows back, un-maximize
+# Enter: move windows to special workspaces, switch to maximize submap
+# Exit: bring windows back, switch to normal submap
 
 STATE_DIR="/tmp/hypr-maximize-mode"
 mkdir -p "$STATE_DIR"
@@ -36,17 +36,26 @@ enter_maximize_mode() {
     return 0
   fi
 
-  # Save state: workspace and all window addresses
+  # Save state
   {
     echo "$ws"
     echo "$windows"
   } > "$state_file"
-
-  # Track current focused window for daemon
   echo "$focused" > "$STATE_DIR/${ws}_current"
 
-  # Maximize current window
-  hyprctl dispatch fullscreen 1
+  # Move all OTHER windows to special workspaces (focused stays for now)
+  while IFS= read -r addr; do
+    if [[ "$addr" != "$focused" && -n "$addr" ]]; then
+      hyprctl dispatch movetoworkspacesilent "special:max_${ws}_${addr#0x},address:$addr"
+    fi
+  done <<< "$windows"
+
+  # Now move focused to its special workspace and toggle it visible
+  hyprctl dispatch movetoworkspacesilent "special:max_${ws}_${focused#0x},address:$focused"
+  hyprctl dispatch togglespecialworkspace "max_${ws}_${focused#0x}"
+
+  # Switch to maximize submap (uses our switcher instead of hyprshell)
+  hyprctl dispatch submap maximize
 }
 
 exit_maximize_mode() {
@@ -54,9 +63,11 @@ exit_maximize_mode() {
   local state_file="$STATE_DIR/$ws"
   [[ -f "$state_file" ]] || return 1
 
-  # Read original workspace
   local orig_ws
   orig_ws=$(head -1 "$state_file")
+
+  # Switch back to normal submap first
+  hyprctl dispatch submap reset
 
   # Bring all windows back from special workspaces
   hyprctl clients -j | jq -r --arg ws "$orig_ws" \
@@ -65,10 +76,8 @@ exit_maximize_mode() {
     [[ -n "$addr" ]] && hyprctl dispatch movetoworkspace "$orig_ws,address:$addr"
   done
 
-  # Un-maximize current window
-  local fullscreen
-  fullscreen=$(hyprctl activewindow -j | jq -r '.fullscreen // 0')
-  [[ "$fullscreen" == "1" ]] && hyprctl dispatch fullscreen 1
+  # Switch to original workspace
+  hyprctl dispatch workspace "$orig_ws"
 
   rm -f "$state_file" "$STATE_DIR/${ws}_current"
 }
