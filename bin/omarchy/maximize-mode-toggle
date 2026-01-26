@@ -1,0 +1,120 @@
+#!/usr/bin/env bash
+# Toggle maximize mode for current workspace
+# Enter: move all other windows to special workspaces, keep focused visible
+# Exit: bring all windows back from special workspaces
+
+STATE_DIR="/tmp/hypr-maximize-mode"
+mkdir -p "$STATE_DIR"
+
+get_active_workspace() {
+  hyprctl activeworkspace -j | jq -r '.id'
+}
+
+get_active_address() {
+  hyprctl activewindow -j | jq -r '.address // empty'
+}
+
+get_workspace_windows() {
+  local ws="$1"
+  hyprctl clients -j | jq -r --arg ws "$ws" \
+    '.[] | select(.workspace.id == ($ws | tonumber)) | .address'
+}
+
+get_special_max_windows() {
+  local ws="$1"
+  hyprctl clients -j | jq -r --arg ws "$ws" \
+    '.[] | select(.workspace.name | startswith("special:max_\($ws)_")) | .address'
+}
+
+enter_maximize_mode() {
+  local ws="$1"
+  local focused="$2"
+  local state_file="$STATE_DIR/$ws"
+
+  # Get all windows on this workspace
+  local windows
+  windows=$(get_workspace_windows "$ws")
+
+  if [[ -z "$windows" ]]; then
+    return 1
+  fi
+
+  # Count windows - need at least 2 for maximize mode to make sense
+  local count
+  count=$(echo "$windows" | wc -l)
+  if [[ "$count" -lt 2 ]]; then
+    # Single window - just toggle normal fullscreen
+    hyprctl dispatch fullscreen 1
+    return 0
+  fi
+
+  # Write rotation list (focused window first)
+  echo "$focused" > "$state_file"
+
+  # Move all OTHER windows to special workspaces
+  while IFS= read -r addr; do
+    if [[ "$addr" != "$focused" && -n "$addr" ]]; then
+      echo "$addr" >> "$state_file"
+      hyprctl dispatch movetoworkspacesilent "special:max_${ws}_${addr#0x},address:$addr"
+    fi
+  done <<< "$windows"
+
+  # Ensure focused window is maximized (alone on workspace = full size)
+  # Small delay to let moves complete
+  sleep 0.05
+  hyprctl dispatch fullscreen 1
+}
+
+exit_maximize_mode() {
+  local ws="$1"
+  local state_file="$STATE_DIR/$ws"
+
+  if [[ ! -f "$state_file" ]]; then
+    return 1
+  fi
+
+  # Un-maximize current window first
+  local current
+  current=$(get_active_address)
+  if [[ -n "$current" ]]; then
+    local fullscreen
+    fullscreen=$(hyprctl activewindow -j | jq -r '.fullscreen // 0')
+    if [[ "$fullscreen" == "1" ]]; then
+      hyprctl dispatch fullscreen 1
+    fi
+  fi
+
+  # Bring all windows back from special workspaces
+  while IFS= read -r addr; do
+    if [[ -n "$addr" ]]; then
+      # Check if window is in a special workspace
+      local win_ws
+      win_ws=$(hyprctl clients -j | jq -r --arg addr "$addr" \
+        '.[] | select(.address == $addr) | .workspace.name')
+      if [[ "$win_ws" == special:max_* ]]; then
+        hyprctl dispatch movetoworkspace "$ws,address:$addr"
+      fi
+    fi
+  done < "$state_file"
+
+  rm -f "$state_file"
+}
+
+is_maximize_mode() {
+  local ws="$1"
+  [[ -f "$STATE_DIR/$ws" ]]
+}
+
+# Main
+ws=$(get_active_workspace)
+focused=$(get_active_address)
+
+if [[ -z "$ws" || -z "$focused" ]]; then
+  exit 1
+fi
+
+if is_maximize_mode "$ws"; then
+  exit_maximize_mode "$ws"
+else
+  enter_maximize_mode "$ws" "$focused"
+fi
