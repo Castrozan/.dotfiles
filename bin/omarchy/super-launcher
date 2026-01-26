@@ -1,13 +1,6 @@
 #!/usr/bin/env bash
 # GNOME-like super key behavior: unmaximize window if maximized, then launch fuzzel
 # If fuzzel is cancelled (Esc/Super), restore maximize state
-# Skips if Super+Tab window switcher (hyprshell) is active
-
-# Check at release time: if hyprshell layer is visible, exit immediately
-# This is more reliable than polling at start - by release time, switcher is definitely visible
-if hyprctl layers -j | grep -q '"hyprshell"'; then
-    exit 0
-fi
 
 activewindow=$(hyprctl activewindow -j)
 fullscreen=$(echo "$activewindow" | jq -r '.fullscreen')

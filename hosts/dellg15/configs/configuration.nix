@@ -9,6 +9,7 @@
   imports = [
     ./nvidia.nix
     ./libinput-quirks.nix
+    ./super-key.nix
     ../scripts
   ];
 
