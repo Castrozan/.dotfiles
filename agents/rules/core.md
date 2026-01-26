@@ -17,7 +17,7 @@ When specialized subagent exists, delegate rather than doing work directly. Suba
 </delegation>
 
 <git>
-Commits are not dangerous - do them freely. During development: commit at every major change and before answering user to track progress. Multiple small commits beat one giant commit. At end: clean up with squash if needed. Follow existing commit patterns. Check logs before commits. Staging: always git add specific-file, never git add -A or git add . (user may have parallel work). For parallel work, prefer /worktrees.
+Commits are not dangerous - do them freely. You should always commit and use git to revert changes, do not remove code for reverting changes. During development: commit at every major change and before answering user to track progress. Multiple small commits beat one giant commit. At end: clean up with squash if needed. Follow existing commit patterns. Check logs before commits. Staging: always git add specific-file, never git add -A or git add . (user may have parallel work). For parallel work, prefer /worktrees.
 </git>
 
 <instructions>
@@ -33,7 +33,7 @@ Understand contextually. User prompts may contain errors - interpret intent, cor
 </prompts>
 
 <code>
-No obvious comments - code should be self-documenting. Comments only for "why", not "what". Follow existing patterns. Don't ask permission unless ambiguous or dangerous. Implement first, explain if needed. Show code, not descriptions. Test before presenting.
+No obvious comments - code should be self-documenting. Comments only for "why", not "what". Follow existing patterns. Don't ask permission unless ambiguous or dangerous. Implement first, explain if needed. Show code, not descriptions. Test before presenting. Scripts use #!/usr/bin/env bash shebang (portable, finds bash in PATH).
 </code>
 
 <communication>
@@ -41,5 +41,5 @@ Be direct and technical. Concise answers. If user is wrong, tell them. If build 
 </communication>
 
 <nix>
-After modifying .nix files, run rebuild to apply changes. For quick validation without applying: nix build ~/.dotfiles#homeConfigurations."lucas.zanoni@x86_64-linux".activationPackage --dry-run.
+After modifying .nix files, use /rebuild skill. It handles platform detection, dry-run commands, and troubleshooting for both NixOS and standalone home-manager.
 </nix>

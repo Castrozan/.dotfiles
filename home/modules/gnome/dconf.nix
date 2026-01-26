@@ -18,7 +18,7 @@ in
       gtk-theme = "Yaru-viridian-dark";
       icon-theme = "Yaru-viridian";
       color-scheme = "prefer-dark";
-      cursor-theme = "Adwaita";
+      # cursor-theme = "Adwaita";
       cursor-size = 24;
       show-battery-percentage = true;
     };

@@ -18,11 +18,13 @@ in
 {
   imports = [ inputs.hyprshell.homeModules.hyprshell ];
 
-  # Override systemd service to wait for Hyprland IPC
+  # Override systemd service to wait for Hyprland IPC and fix NixOS rendering
   systemd.user.services.hyprshell = {
     Service = {
       ExecStartPre = "${waitForHyprland}";
       RestartSec = 2;
+      # Cairo renderer fixes invisible windows on NixOS
+      Environment = [ "GSK_RENDERER=cairo" ];
     };
   };
 
@@ -36,9 +38,22 @@ in
       target = "hyprland-session.target";
     };
 
-    # Use dynamic theme CSS from omarchy theme system via @import
+    # Base styling with theme colors imported from omarchy
     styleFile = ''
+      /* Default styling variables */
+      * {
+          --border-radius: 12px;
+          --border-size: 3px;
+          --border-style: solid;
+          --window-padding: 8px;
+      }
+
+      /* Import theme colors from omarchy (overrides defaults) */
       @import url("${config.home.homeDirectory}/.config/omarchy/current/theme/hyprshell.css");
+
+      .monitor {
+          border: none;
+      }
     '';
 
     settings = {

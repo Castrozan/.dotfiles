@@ -20,13 +20,13 @@
     ../../home/modules/fonts.nix
     ../../home/modules/fuzzel.nix
     ../../home/modules/gnome
-    ../../home/modules/hyprland
+    ../../home/modules/hyprland/nixos.nix
     ../../home/modules/ia-work.nix
     ../../home/modules/ksnip.nix
     ../../home/modules/install-nothing.nix
     ../../home/modules/kitty.nix
     ../../home/modules/lazygit.nix
-    ../../home/modules/mpv.nix
+    ../../home/modules/ani-cli.nix
     ../../home/modules/neovim.nix
     ../../home/modules/obsidian.nix
     ../../home/modules/opencode.nix
