@@ -1,26 +1,37 @@
 #!/usr/bin/env bash
 # Switch between windows in maximize mode
-# Each window is in its own special workspace - swap by toggling workspaces
+# Each window is in its own special workspace - toggle between them
 
 STATE_DIR="/tmp/hypr-maximize-mode"
 
-# Get current special workspace name
-current_ws=$(hyprctl activeworkspace -j | jq -r '.name // empty')
+# Get current window's workspace (from active window, not activeworkspace)
+current_addr=$(hyprctl activewindow -j | jq -r '.address // empty')
+current_ws=$(hyprctl activewindow -j | jq -r '.workspace.name // empty')
 
 # Must be on a special:max_* workspace
 if [[ "$current_ws" != special:max_* ]]; then
+  # Try to recover - find state file and toggle first special workspace
+  for state_file in "$STATE_DIR"/*; do
+    [[ -f "$state_file" ]] || continue
+    orig_ws=$(cat "$state_file")
+    first_special=$(hyprctl clients -j | jq -r --arg prefix "special:max_${orig_ws}_" \
+      '.[] | select(.workspace.name | startswith($prefix)) | .workspace.name' | head -1)
+    if [[ -n "$first_special" ]]; then
+      suffix="${first_special#special:}"
+      hyprctl dispatch togglespecialworkspace "$suffix"
+    fi
+    exit 0
+  done
   exit 0
 fi
 
-# Extract original workspace ID from special workspace name
+# Extract original workspace ID
 orig_ws=$(echo "$current_ws" | sed 's/special:max_\([0-9]*\)_.*/\1/')
 
-# Get current window address
-current_addr=$(hyprctl activewindow -j | jq -r '.address // empty')
-
-# Get all windows in maximize mode rotation for this workspace
-readarray -t all_windows < <(hyprctl clients -j | jq -r --arg ws "$orig_ws" '
-  [.[] | select(.workspace.name | startswith("special:max_\($ws)_"))] |
+# Get all windows in maximize mode for this workspace
+prefix="special:max_${orig_ws}_"
+readarray -t all_windows < <(hyprctl clients -j | jq -r --arg prefix "$prefix" '
+  [.[] | select(.workspace.name | startswith($prefix))] |
   sort_by(.focusHistoryID) | .[].address
 ')
 
@@ -42,14 +53,16 @@ done
 next_idx=$(( (current_idx + 1) % ${#all_windows[@]} ))
 next_addr="${all_windows[$next_idx]}"
 
-# Get next window's special workspace name
+# Get next window's workspace
 next_ws=$(hyprctl clients -j | jq -r --arg addr "$next_addr" \
   '.[] | select(.address == $addr) | .workspace.name')
 
-# Hide current special workspace, show next
-# Extract the special workspace suffix (after special:)
+# Toggle: hide current, show next
 current_suffix="${current_ws#special:}"
 next_suffix="${next_ws#special:}"
 
 hyprctl dispatch togglespecialworkspace "$current_suffix"
 hyprctl dispatch togglespecialworkspace "$next_suffix"
+
+# Ensure focus
+hyprctl dispatch focuswindow "address:$next_addr"
