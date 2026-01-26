@@ -1,8 +1,15 @@
+# Shared Hyprland modules - does NOT include Hyprland binary
+# Import via nixos.nix or standalone.nix instead
 {
   imports = [
-    ./hyprland.nix
+    ./packages.nix
+    ./calendar.nix
+    ./cursor.nix
+    ./omarchy.nix
+    ./waybar.nix
     ./hyprexpo.nix
     ./hyprshell.nix
     ./wlogout.nix
+    ../fuzzel.nix
   ];
 }

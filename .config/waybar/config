@@ -42,7 +42,7 @@
     "format": "{:%d %b %a  %H:%M}",
     "tooltip": true,
     "tooltip-format": "<tt><big>{calendar}</big></tt>",
-    "on-click": "~/.config/waybar/calendar-toggle.sh",
+    "on-click": "calendar-toggle",
     "calendar": {
       "mode": "month",
       "mode-mon-col": 3,

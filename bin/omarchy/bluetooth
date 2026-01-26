@@ -13,7 +13,7 @@ get_power_status() {
 }
 
 get_paired_devices() {
-  bluetoothctl paired-devices 2>/dev/null | sed 's/Device //'
+  bluetoothctl devices Paired 2>/dev/null | sed 's/\x1b\[[0-9;]*m//g; s/Device //' | grep -E '^[0-9A-Fa-f]{2}:' | awk '!seen[$1]++'
 }
 
 is_device_connected() {
@@ -23,7 +23,7 @@ is_device_connected() {
 
 get_connected_devices() {
   local devices connected=""
-  devices=$(bluetoothctl paired-devices 2>/dev/null | sed 's/Device //')
+  devices=$(bluetoothctl devices Paired 2>/dev/null | sed 's/\x1b\[[0-9;]*m//g; s/Device //' | grep -E '^[0-9A-Fa-f]{2}:' | awk '!seen[$1]++')
   while IFS= read -r line; do
     [[ -z "$line" ]] && continue
     local mac
@@ -52,7 +52,7 @@ scan_devices() {
   sleep 5
 
   local devices
-  devices=$(bluetoothctl devices 2>/dev/null | sed 's/Device //')
+  devices=$(bluetoothctl devices 2>/dev/null | sed 's/\x1b\[[0-9;]*m//g; s/Device //' | grep -E '^[0-9A-Fa-f]{2}:' | awk '!seen[$1]++')
 
   if [[ -z "$devices" ]]; then
     notify-send -t 2000 "Bluetooth" "No devices found"
@@ -71,8 +71,9 @@ scan_devices() {
     case $(menu "Pair $name" "󰂱  Pair & Connect\n  Cancel" 2) in
       *Pair*)
         notify-send -t 2000 "Bluetooth" "Pairing with $name..."
-        bluetoothctl pair "$mac" && bluetoothctl connect "$mac"
-        if [[ $? -eq 0 ]]; then
+        bluetoothctl pair "$mac" 2>/dev/null
+        sleep 1
+        if bluetoothctl connect "$mac" 2>/dev/null; then
           notify-send -t 2000 "Bluetooth" "Connected to $name"
         else
           notify-send -t 2000 "Bluetooth" "Failed to connect to $name"
@@ -112,34 +113,44 @@ show_paired_devices() {
 
   if [[ -n "$selection" ]]; then
     local mac
-    mac=$(echo "$selection" | grep -oE '([0-9A-F]{2}:){5}[0-9A-F]{2}')
+    mac=$(echo "$selection" | grep -oEi '([0-9A-F]{2}:){5}[0-9A-F]{2}')
     local name
     name=$(echo "$selection" | sed 's/^[^ ]* *//' | sed "s/ ($mac)//")
 
     if is_device_connected "$mac"; then
       case $(menu "$name" "󰂲  Disconnect\n  Remove\n  Cancel" 3) in
         *Disconnect*)
-          bluetoothctl disconnect "$mac"
-          notify-send -t 2000 "Bluetooth" "Disconnected from $name"
+          if bluetoothctl disconnect "$mac" 2>/dev/null; then
+            notify-send -t 2000 "Bluetooth" "Disconnected from $name"
+          else
+            notify-send -t 2000 "Bluetooth" "Failed to disconnect"
+          fi
           ;;
         *Remove*)
-          bluetoothctl remove "$mac"
-          notify-send -t 2000 "Bluetooth" "Removed $name"
+          bluetoothctl disconnect "$mac" 2>/dev/null
+          if bluetoothctl remove "$mac" 2>/dev/null; then
+            notify-send -t 2000 "Bluetooth" "Removed $name"
+          else
+            notify-send -t 2000 "Bluetooth" "Failed to remove $name"
+          fi
           ;;
       esac
     else
       case $(menu "$name" "󰂱  Connect\n  Remove\n  Cancel" 3) in
         *Connect*)
           notify-send -t 2000 "Bluetooth" "Connecting to $name..."
-          if bluetoothctl connect "$mac"; then
+          if bluetoothctl connect "$mac" 2>/dev/null; then
             notify-send -t 2000 "Bluetooth" "Connected to $name"
           else
             notify-send -t 2000 "Bluetooth" "Failed to connect"
           fi
           ;;
         *Remove*)
-          bluetoothctl remove "$mac"
-          notify-send -t 2000 "Bluetooth" "Removed $name"
+          if bluetoothctl remove "$mac" 2>/dev/null; then
+            notify-send -t 2000 "Bluetooth" "Removed $name"
+          else
+            notify-send -t 2000 "Bluetooth" "Failed to remove $name"
+          fi
           ;;
       esac
     fi
@@ -161,7 +172,7 @@ show_main_menu() {
   fi
 
   local connected
-  connected=$(get_connected_devices | wc -l)
+  connected=$(get_connected_devices | grep -c .)
   local connected_text=""
   if [[ "$connected" -gt 0 ]]; then
     connected_text=" ($connected connected)"
