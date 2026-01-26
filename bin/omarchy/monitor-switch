@@ -3,9 +3,15 @@
 # When external monitor is connected: disable built-in
 # When external monitor is disconnected: enable built-in
 
+CONFIG="${XDG_CONFIG_HOME:-$HOME/.config}/hypr/user/monitor-switch.conf"
+
+# Defaults (can be overridden by config file)
 EXTERNAL="HDMI-A-1"
 INTERNAL="eDP-1"
 INTERNAL_MODE="1920x1080@120"
+
+# Source config if it exists
+[[ -f "$CONFIG" ]] && source "$CONFIG"
 
 SOCKET="$XDG_RUNTIME_DIR/hypr/$HYPRLAND_INSTANCE_SIGNATURE/.socket2.sock"
 
