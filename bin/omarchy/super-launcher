@@ -3,18 +3,11 @@
 # If fuzzel is cancelled (Esc/Super), restore maximize state
 # Skips if Super+Tab window switcher (hyprshell) is active
 
-# Capture window address at start
-window_before=$(hyprctl activewindow -j | jq -r '.address')
-
-# Poll to detect hyprshell switcher or window change (handles Super+Tab)
-for _ in 1 2 3 4 5 6 7 8; do
-    sleep 0.03
-    # Skip if hyprshell layer is visible (window switcher open)
-    hyprctl layers -j | grep -q "hyprshell" && exit 0
-    # Skip if window focus changed (switched via hyprshell)
-    window_now=$(hyprctl activewindow -j | jq -r '.address')
-    [[ "$window_before" != "$window_now" ]] && exit 0
-done
+# Check at release time: if hyprshell layer is visible, exit immediately
+# This is more reliable than polling at start - by release time, switcher is definitely visible
+if hyprctl layers -j | grep -q '"hyprshell"'; then
+    exit 0
+fi
 
 activewindow=$(hyprctl activewindow -j)
 fullscreen=$(echo "$activewindow" | jq -r '.fullscreen')
