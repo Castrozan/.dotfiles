@@ -1,6 +1,7 @@
 { pkgs, ... }:
 let
-  mongodbCompassFlags = "--ozone-platform=x11 --disable-gpu";
+  # XWayland is broken (GLIBC mismatch), use native Wayland with GPU disabled
+  mongodbCompassFlags = "--disable-gpu";
 in
 {
   home.packages = [ pkgs.mongodb-compass ];
