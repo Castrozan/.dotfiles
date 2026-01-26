@@ -1,6 +1,6 @@
 {
   imports = [
-    ./hyprland.nix
+    ./packages.nix
     ./hyprexpo.nix
     ./hyprshell.nix
     ./cursor.nix
