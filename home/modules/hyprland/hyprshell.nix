@@ -62,13 +62,14 @@ in
         scale = 8.5;
         items_per_row = 5;
 
-        # Super+Tab window switcher (current workspace only)
+        # Super+Tab window switcher
+        # Note: filter_by removed to show windows from special workspaces (maximize mode)
         switch = {
           enable = true;
           key = "Tab";
           modifier = "super";
-          filter_by = [ "current_workspace" ];
-          switch_workspaces = false;
+          # filter_by = [ "current_workspace" ];  # Disabled for maximize mode
+          switch_workspaces = true; # Switch to window's workspace when selected
         };
       };
     };

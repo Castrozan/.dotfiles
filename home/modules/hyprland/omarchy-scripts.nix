@@ -22,6 +22,5 @@ in
     (mkScript "omarchy-show-desktop" ../../../bin/omarchy/show-desktop)
     (mkScript "omarchy-maximize-focus-daemon" ../../../bin/omarchy/maximize-focus-daemon)
     (mkScript "omarchy-maximize-mode-toggle" ../../../bin/omarchy/maximize-mode-toggle)
-    (mkScript "omarchy-maximize-mode-daemon" ../../../bin/omarchy/maximize-mode-daemon)
   ];
 }
