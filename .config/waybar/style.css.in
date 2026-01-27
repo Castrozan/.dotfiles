@@ -46,7 +46,7 @@ window#waybar {
 #custom-ws5.empty,
 #custom-ws6.empty,
 #custom-ws7.empty {
-  color: @dim;
+  color: @surface;
   font-weight: normal;
 }
 
