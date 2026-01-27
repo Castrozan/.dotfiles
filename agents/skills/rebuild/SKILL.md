@@ -67,3 +67,8 @@ Unfree package error: Check NIXPKGS_ALLOW_UNFREE=1 is set (bin/rebuild does this
 Rate limit errors: Install home-manager locally: `nix profile install nixpkgs#home-manager`.
 Wrong user config: Check session-context User field matches flake configuration name.
 </troubleshooting>
+
+<post_rebuild>
+After rebuild, verify changes applied. Test it and check services are running, dotfiles updated, packages installed as expected.
+If issues arise, review rebuild output for errors. Re-run dry-run to catch config problems.
+</post_rebuild>
