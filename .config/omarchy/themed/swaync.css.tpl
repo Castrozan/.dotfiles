@@ -1,4 +1,9 @@
-/* SwayNC Style - Clean minimal design */
+@define-color foreground {{ foreground }};
+@define-color background {{ background }};
+@define-color accent {{ accent }};
+@define-color dim {{ color8 }};
+@define-color surface {{ selection_background }};
+@define-color error {{ color1 }};
 
 * {
   font-family: "JetBrainsMono Nerd Font", monospace;
@@ -6,80 +11,75 @@
   font-size: 14px;
 }
 
-/* Control Center */
 .control-center {
-  background: alpha(@theme_bg_color, 0.9);
+  background: alpha(@background, 0.9);
   border-radius: 12px;
-  border: 1px solid alpha(@theme_fg_color, 0.1);
+  border: 1px solid alpha(@foreground, 0.1);
   margin: 10px;
   padding: 10px;
 }
 
-/* Control Center - Title */
 .control-center .widget-title {
-  color: @theme_fg_color;
+  color: @foreground;
   font-size: 1.2em;
   font-weight: bold;
   margin: 8px;
 }
 
 .control-center .widget-title > button {
-  background: alpha(@theme_fg_color, 0.1);
+  background: alpha(@foreground, 0.1);
   border-radius: 8px;
   border: none;
   padding: 6px 12px;
-  color: @theme_fg_color;
+  color: @foreground;
 }
 
 .control-center .widget-title > button:hover {
-  background: alpha(@theme_fg_color, 0.2);
+  background: alpha(@foreground, 0.2);
 }
 
-/* Control Center - DND */
 .control-center .widget-dnd {
   margin: 8px;
   padding: 4px;
 }
 
 .control-center .widget-dnd > switch {
-  background: alpha(@theme_fg_color, 0.1);
+  background: alpha(@foreground, 0.1);
   border-radius: 12px;
 }
 
 .control-center .widget-dnd > switch:checked {
-  background: @theme_selected_bg_color;
+  background: @accent;
 }
 
 .control-center .widget-dnd > switch slider {
-  background: @theme_fg_color;
+  background: @foreground;
   border-radius: 50%;
 }
 
-/* Notifications in Control Center */
 .control-center .notification-row {
   margin: 4px 0;
 }
 
 .control-center .notification-row .notification {
-  background: alpha(@theme_fg_color, 0.05);
+  background: alpha(@foreground, 0.05);
   border-radius: 10px;
   padding: 8px;
   margin: 2px 0;
 }
 
 .control-center .notification-row .notification:hover {
-  background: alpha(@theme_fg_color, 0.1);
+  background: alpha(@foreground, 0.1);
 }
 
-/* Popup Notifications */
 .notification-window {
   background: transparent;
 }
 
 .notification {
-  background: alpha(@theme_bg_color, 0.95);
+  background: alpha(@background, 0.95);
   border-radius: 12px;
-  border: 1px solid alpha(@theme_fg_color, 0.1);
+  border: 1px solid alpha(@foreground, 0.1);
   padding: 12px;
   margin: 6px 10px;
 }
@@ -89,18 +89,18 @@
 }
 
 .notification .summary {
-  color: @theme_fg_color;
+  color: @foreground;
   font-weight: bold;
   font-size: 1em;
 }
 
 .notification .body {
-  color: alpha(@theme_fg_color, 0.8);
+  color: alpha(@foreground, 0.8);
   font-size: 0.9em;
 }
 
 .notification .time {
-  color: alpha(@theme_fg_color, 0.5);
+  color: @dim;
   font-size: 0.8em;
 }
 
@@ -110,21 +110,20 @@
 }
 
 .notification .notification-action {
-  background: alpha(@theme_fg_color, 0.1);
+  background: alpha(@foreground, 0.1);
   border-radius: 6px;
   border: none;
   padding: 4px 8px;
   margin: 2px;
-  color: @theme_fg_color;
+  color: @foreground;
 }
 
 .notification .notification-action:hover {
-  background: alpha(@theme_fg_color, 0.2);
+  background: alpha(@foreground, 0.2);
 }
 
-/* Close button */
 .notification .close-button {
-  background: alpha(@error_color, 0.2);
+  background: alpha(@error, 0.2);
   border-radius: 50%;
   border: none;
   min-width: 24px;
@@ -133,26 +132,23 @@
 }
 
 .notification .close-button:hover {
-  background: @error_color;
+  background: @error;
 }
 
-/* Critical notifications */
 .notification.critical {
-  border: 1px solid @error_color;
+  border: 1px solid @error;
 }
 
 .notification.critical .summary {
-  color: @error_color;
+  color: @error;
 }
 
-/* Low priority */
 .notification.low {
   opacity: 0.8;
 }
 
-/* MPRIS widget */
 .control-center .widget-mpris {
-  background: alpha(@theme_fg_color, 0.05);
+  background: alpha(@foreground, 0.05);
   border-radius: 10px;
   padding: 10px;
   margin: 8px;
@@ -169,11 +165,11 @@
 
 .control-center .widget-mpris .widget-mpris-subtitle {
   font-size: 0.9em;
-  color: alpha(@theme_fg_color, 0.7);
+  color: @dim;
 }
 
 .control-center .widget-mpris > box > button {
-  background: alpha(@theme_fg_color, 0.1);
+  background: alpha(@foreground, 0.1);
   border-radius: 50%;
   border: none;
   min-width: 36px;
@@ -181,19 +177,13 @@
 }
 
 .control-center .widget-mpris > box > button:hover {
-  background: alpha(@theme_fg_color, 0.2);
-}
-
-/* Empty placeholder */
-.control-center .notification-group-headers {
-  margin: 8px;
+  background: alpha(@foreground, 0.2);
 }
 
 .blank-window {
   background: transparent;
 }
 
-/* Remove list artifacts */
 list, listview, row {
   background: transparent;
   box-shadow: none;
