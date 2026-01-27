@@ -63,6 +63,17 @@ window#waybar {
   border-bottom: 2px solid @accent;
 }
 
+#custom-ws1.occupied,
+#custom-ws2.occupied,
+#custom-ws3.occupied,
+#custom-ws4.occupied,
+#custom-ws5.occupied,
+#custom-ws6.occupied,
+#custom-ws7.occupied {
+  color: #ffffff;
+  font-size: 14px;
+}
+
 #custom-ws1:hover,
 #custom-ws2:hover,
 #custom-ws3:hover,

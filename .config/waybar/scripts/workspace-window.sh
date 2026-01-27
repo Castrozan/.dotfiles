@@ -26,11 +26,15 @@ if [[ "${mode}" == "click" ]]; then
   exit 0
 fi
 
-exists=$(hyprctl workspaces -j | jq -r --argjson target "${target}" 'map(.id) | index($target) != null')
+workspace_json=$(hyprctl workspaces -j)
+exists=$(printf '%s' "${workspace_json}" | jq -r --argjson target "${target}" 'map(.id) | index($target) != null')
+windows=$(printf '%s' "${workspace_json}" | jq -r --argjson target "${target}" 'map(select(.id == $target) | .windows) | .[0] // 0')
 
 class="workspace"
 if [[ "${active_workspace}" -eq "${target}" ]]; then
   class="workspace active"
+elif [[ "${windows}" -gt 0 ]]; then
+  class="workspace occupied"
 elif [[ "${exists}" != "true" ]]; then
   class="workspace empty"
 fi
