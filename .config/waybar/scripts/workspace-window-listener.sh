@@ -46,7 +46,7 @@ if [[ "${1:-}" == "--once" ]]; then
   exit 0
 fi
 
-socat -u "UNIX-CONNECT:/tmp/hypr/${HYPRLAND_INSTANCE_SIGNATURE}/.socket2.sock" - \
+socat -u "UNIX-CONNECT:${XDG_RUNTIME_DIR}/hypr/${HYPRLAND_INSTANCE_SIGNATURE}/.socket2.sock" - \
   | while read -r _; do
     render
   done
