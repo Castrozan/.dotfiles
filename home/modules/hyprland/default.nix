@@ -7,7 +7,6 @@
     ./cursor.nix
     ./omarchy.nix
     ./waybar.nix
-    ./hyprexpo.nix
     ./hyprshell.nix
     ./wlogout.nix
     ./swayosd.nix

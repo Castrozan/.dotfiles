@@ -32,10 +32,6 @@
     agenix.url = "github:ryantm/agenix";
     voxtype.url = "github:peteonrails/voxtype";
     hyprland.url = "github:hyprwm/Hyprland/v0.53.0";
-    hyprland-plugins = {
-      url = "github:hyprwm/hyprland-plugins/v0.53.0";
-      inputs.hyprland.follows = "hyprland";
-    };
     hyprshell = {
       url = "github:H3rmt/hyprshell/hyprshell-release";
       inputs.hyprland.follows = "hyprland";
