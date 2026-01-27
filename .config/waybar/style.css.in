@@ -31,7 +31,7 @@ window#waybar {
 #custom-ws6,
 #custom-ws7 {
   padding: 0 6px;
-  margin: 0 2px;
+  margin: 0 5px;
   color: @foreground;
   font-weight: bold;
   background: transparent;
@@ -57,10 +57,10 @@ window#waybar {
 #custom-ws5.active,
 #custom-ws6.active,
 #custom-ws7.active {
-  color: @accent;
+  color: #ffffff;
   font-weight: 900;
   font-size: 13px;
-  border-bottom: 2px solid @accent;
+  border-bottom: 4px solid @accent;
 }
 
 #custom-ws1.occupied,
@@ -71,7 +71,6 @@ window#waybar {
 #custom-ws6.occupied,
 #custom-ws7.occupied {
   color: #ffffff;
-  font-size: 14px;
 }
 
 #custom-ws1:hover,
@@ -81,7 +80,7 @@ window#waybar {
 #custom-ws5:hover,
 #custom-ws6:hover,
 #custom-ws7:hover {
-  color: @foreground;
+  color: @accent;
 }
 
 #image {
