@@ -1,6 +1,14 @@
-_: {
+{ pkgs, ... }:
+{
   programs.lazygit = {
     enable = true;
+
+    settings = {
+      os = {
+        # Run commands in an interactive shell to load aliases
+        shell = "${pkgs.fish}/bin/fish -i -c";
+      };
+    };
 
     # TODO: this is not working, so we're disabling it for now
     # The user config file /home/zanoni/.config/lazygit/config.yml must be migrated. Attempting to do this automatically.

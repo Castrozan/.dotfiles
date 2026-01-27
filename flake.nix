@@ -20,7 +20,7 @@
     # Tag-based (stable releases)
     tui-notifier.url = "github:castrozan/tui-notifier/1.0.1";
     readItNow-rc.url = "github:castrozan/readItNow-rc/1.1.0";
-    opencode.url = "github:anomalyco/opencode/v1.1.6";
+    opencode.url = "github:anomalyco/opencode/v1.1.36";
     zed-editor.url = "github:zed-industries/zed/v0.218.5";
     devenv.url = "github:cachix/devenv/v1.9.2";
     # Branch/default (actively maintained)
