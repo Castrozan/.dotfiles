@@ -18,8 +18,14 @@ in
 {
   imports = [ inputs.hyprshell.homeModules.hyprshell ];
 
-  # Override systemd service to wait for Hyprland IPC and fix NixOS rendering
+  # Override upstream hyprshell service for compatibility
   systemd.user.services.hyprshell = {
+    Unit = {
+      # mkForce required to override upstream module's PartOf
+      # Prevents service stopping during home-manager reload
+      PartOf = pkgs.lib.mkForce [ ];
+      ConditionEnvironment = "WAYLAND_DISPLAY";
+    };
     Service = {
       ExecStartPre = "${waitForHyprland}";
       RestartSec = 2;

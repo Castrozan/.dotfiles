@@ -4,8 +4,8 @@
     Unit = {
       Description = "SwayOSD notification daemon";
       Documentation = "https://github.com/ErikReider/SwayOSD";
-      PartOf = [ "graphical-session.target" ];
       After = [ "graphical-session.target" ];
+      ConditionEnvironment = "WAYLAND_DISPLAY";
     };
 
     Service = {
