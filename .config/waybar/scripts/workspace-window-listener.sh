@@ -6,6 +6,8 @@ state_file="${state_dir}/workspace-window.json"
 
 mkdir -p "${state_dir}"
 
+printf '{"text":""}\n'
+
 render() {
   local active_workspace start target workspace_json exists windows class slot
 
