@@ -1,11 +1,3 @@
 #!/usr/bin/env bash
-# Restart swaync notification center and wait for D-Bus service
-systemctl --user restart swaync
-
-# Wait for notification service to be ready (max 3 seconds)
-for i in {1..30}; do
-  if dbus-send --session --dest=org.freedesktop.DBus --type=method_call --print-reply /org/freedesktop/DBus org.freedesktop.DBus.NameHasOwner string:org.freedesktop.Notifications 2>/dev/null | grep -q "true"; then
-    break
-  fi
-  sleep 0.1
-done
+# Reload swaync CSS for theme changes (no full restart needed)
+swaync-client --reload-css 2>/dev/null || true
