@@ -5,6 +5,7 @@ in
 {
   home = {
     file.".config/hypr".source = ../../../.config/hypr;
+    file.".config/mako".source = ../../../.config/mako;
 
     packages = with pkgs; [
       xdg-desktop-portal
