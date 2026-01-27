@@ -27,7 +27,8 @@
     "exec": "~/.config/waybar/scripts/workspace-window-listener.sh",
     "exec-if": "command -v hyprctl >/dev/null 2>&1 && command -v jq >/dev/null 2>&1 && command -v socat >/dev/null 2>&1",
     "restart-interval": 0,
-    "return-type": "json"
+    "return-type": "json",
+    "format": ""
   },
   "custom/ws1": {
     "return-type": "json",
