@@ -5,7 +5,7 @@ in
 {
   home = {
     file.".config/hypr".source = ../../../.config/hypr;
-    file.".config/mako".source = ../../../.config/mako;
+    file.".config/swaync".source = ../../../.config/swaync;
 
     packages = with pkgs; [
       xdg-desktop-portal
@@ -15,7 +15,6 @@ in
       wl-clipboard
       hyprpaper
       swaybg
-      mako
       libnotify
       hyprlock
       hypridle

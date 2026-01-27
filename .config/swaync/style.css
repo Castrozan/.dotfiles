@@ -1,0 +1,200 @@
+/* SwayNC Style - Clean minimal design */
+
+* {
+  font-family: "JetBrainsMono Nerd Font", monospace;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+/* Control Center */
+.control-center {
+  background: alpha(@theme_bg_color, 0.9);
+  border-radius: 12px;
+  border: 1px solid alpha(@theme_fg_color, 0.1);
+  margin: 10px;
+  padding: 10px;
+}
+
+/* Control Center - Title */
+.control-center .widget-title {
+  color: @theme_fg_color;
+  font-size: 1.2em;
+  font-weight: bold;
+  margin: 8px;
+}
+
+.control-center .widget-title > button {
+  background: alpha(@theme_fg_color, 0.1);
+  border-radius: 8px;
+  border: none;
+  padding: 6px 12px;
+  color: @theme_fg_color;
+}
+
+.control-center .widget-title > button:hover {
+  background: alpha(@theme_fg_color, 0.2);
+}
+
+/* Control Center - DND */
+.control-center .widget-dnd {
+  margin: 8px;
+  padding: 4px;
+}
+
+.control-center .widget-dnd > switch {
+  background: alpha(@theme_fg_color, 0.1);
+  border-radius: 12px;
+}
+
+.control-center .widget-dnd > switch:checked {
+  background: @theme_selected_bg_color;
+}
+
+.control-center .widget-dnd > switch slider {
+  background: @theme_fg_color;
+  border-radius: 50%;
+}
+
+/* Notifications in Control Center */
+.control-center .notification-row {
+  margin: 4px 0;
+}
+
+.control-center .notification-row .notification {
+  background: alpha(@theme_fg_color, 0.05);
+  border-radius: 10px;
+  padding: 8px;
+  margin: 2px 0;
+}
+
+.control-center .notification-row .notification:hover {
+  background: alpha(@theme_fg_color, 0.1);
+}
+
+/* Popup Notifications */
+.notification-window {
+  background: transparent;
+}
+
+.notification {
+  background: alpha(@theme_bg_color, 0.95);
+  border-radius: 12px;
+  border: 1px solid alpha(@theme_fg_color, 0.1);
+  padding: 12px;
+  margin: 6px 10px;
+}
+
+.notification .notification-content {
+  margin: 4px;
+}
+
+.notification .summary {
+  color: @theme_fg_color;
+  font-weight: bold;
+  font-size: 1em;
+}
+
+.notification .body {
+  color: alpha(@theme_fg_color, 0.8);
+  font-size: 0.9em;
+}
+
+.notification .time {
+  color: alpha(@theme_fg_color, 0.5);
+  font-size: 0.8em;
+}
+
+.notification .image {
+  border-radius: 8px;
+  margin-right: 10px;
+}
+
+.notification .notification-action {
+  background: alpha(@theme_fg_color, 0.1);
+  border-radius: 6px;
+  border: none;
+  padding: 4px 8px;
+  margin: 2px;
+  color: @theme_fg_color;
+}
+
+.notification .notification-action:hover {
+  background: alpha(@theme_fg_color, 0.2);
+}
+
+/* Close button */
+.notification .close-button {
+  background: alpha(@error_color, 0.2);
+  border-radius: 50%;
+  border: none;
+  min-width: 24px;
+  min-height: 24px;
+  padding: 0;
+}
+
+.notification .close-button:hover {
+  background: @error_color;
+}
+
+/* Critical notifications */
+.notification.critical {
+  border: 1px solid @error_color;
+}
+
+.notification.critical .summary {
+  color: @error_color;
+}
+
+/* Low priority */
+.notification.low {
+  opacity: 0.8;
+}
+
+/* MPRIS widget */
+.control-center .widget-mpris {
+  background: alpha(@theme_fg_color, 0.05);
+  border-radius: 10px;
+  padding: 10px;
+  margin: 8px;
+}
+
+.control-center .widget-mpris .widget-mpris-player {
+  padding: 6px;
+}
+
+.control-center .widget-mpris .widget-mpris-title {
+  font-weight: bold;
+  font-size: 1em;
+}
+
+.control-center .widget-mpris .widget-mpris-subtitle {
+  font-size: 0.9em;
+  color: alpha(@theme_fg_color, 0.7);
+}
+
+.control-center .widget-mpris > box > button {
+  background: alpha(@theme_fg_color, 0.1);
+  border-radius: 50%;
+  border: none;
+  min-width: 36px;
+  min-height: 36px;
+}
+
+.control-center .widget-mpris > box > button:hover {
+  background: alpha(@theme_fg_color, 0.2);
+}
+
+/* Empty placeholder */
+.control-center .notification-group-headers {
+  margin: 8px;
+}
+
+.blank-window {
+  background: transparent;
+}
+
+/* Remove list artifacts */
+list, listview, row {
+  background: transparent;
+  box-shadow: none;
+}

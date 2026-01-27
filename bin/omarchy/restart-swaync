@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# Restart swaync notification center
+systemctl --user restart swaync
