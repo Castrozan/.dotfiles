@@ -23,54 +23,67 @@
     "cpu",
     "battery"
   ],
+  "custom/workspace-listener": {
+    "exec": "~/.config/waybar/scripts/workspace-window-listener.sh",
+    "exec-if": "command -v hyprctl >/dev/null 2>&1 && command -v jq >/dev/null 2>&1 && command -v socat >/dev/null 2>&1",
+    "restart-interval": 0,
+    "return-type": "json"
+  },
   "custom/ws1": {
     "return-type": "json",
-    "interval": 1,
+    "interval": 0.2,
     "exec-if": "command -v hyprctl >/dev/null 2>&1 && command -v jq >/dev/null 2>&1",
     "exec": "~/.config/waybar/scripts/workspace-window.sh 1",
-    "on-click": "~/.config/waybar/scripts/workspace-window.sh --click 1"
+    "on-click": "~/.config/waybar/scripts/workspace-window.sh --click 1",
+    "signal": 8
   },
   "custom/ws2": {
     "return-type": "json",
-    "interval": 1,
+    "interval": 0.2,
     "exec-if": "command -v hyprctl >/dev/null 2>&1 && command -v jq >/dev/null 2>&1",
     "exec": "~/.config/waybar/scripts/workspace-window.sh 2",
-    "on-click": "~/.config/waybar/scripts/workspace-window.sh --click 2"
+    "on-click": "~/.config/waybar/scripts/workspace-window.sh --click 2",
+    "signal": 8
   },
   "custom/ws3": {
     "return-type": "json",
-    "interval": 1,
+    "interval": 0.2,
     "exec-if": "command -v hyprctl >/dev/null 2>&1 && command -v jq >/dev/null 2>&1",
     "exec": "~/.config/waybar/scripts/workspace-window.sh 3",
-    "on-click": "~/.config/waybar/scripts/workspace-window.sh --click 3"
+    "on-click": "~/.config/waybar/scripts/workspace-window.sh --click 3",
+    "signal": 8
   },
   "custom/ws4": {
     "return-type": "json",
-    "interval": 1,
+    "interval": 0.2,
     "exec-if": "command -v hyprctl >/dev/null 2>&1 && command -v jq >/dev/null 2>&1",
     "exec": "~/.config/waybar/scripts/workspace-window.sh 4",
-    "on-click": "~/.config/waybar/scripts/workspace-window.sh --click 4"
+    "on-click": "~/.config/waybar/scripts/workspace-window.sh --click 4",
+    "signal": 8
   },
   "custom/ws5": {
     "return-type": "json",
-    "interval": 1,
+    "interval": 0.2,
     "exec-if": "command -v hyprctl >/dev/null 2>&1 && command -v jq >/dev/null 2>&1",
     "exec": "~/.config/waybar/scripts/workspace-window.sh 5",
-    "on-click": "~/.config/waybar/scripts/workspace-window.sh --click 5"
+    "on-click": "~/.config/waybar/scripts/workspace-window.sh --click 5",
+    "signal": 8
   },
   "custom/ws6": {
     "return-type": "json",
-    "interval": 1,
+    "interval": 0.2,
     "exec-if": "command -v hyprctl >/dev/null 2>&1 && command -v jq >/dev/null 2>&1",
     "exec": "~/.config/waybar/scripts/workspace-window.sh 6",
-    "on-click": "~/.config/waybar/scripts/workspace-window.sh --click 6"
+    "on-click": "~/.config/waybar/scripts/workspace-window.sh --click 6",
+    "signal": 8
   },
   "custom/ws7": {
     "return-type": "json",
-    "interval": 1,
+    "interval": 0.2,
     "exec-if": "command -v hyprctl >/dev/null 2>&1 && command -v jq >/dev/null 2>&1",
     "exec": "~/.config/waybar/scripts/workspace-window.sh 7",
-    "on-click": "~/.config/waybar/scripts/workspace-window.sh --click 7"
+    "on-click": "~/.config/waybar/scripts/workspace-window.sh --click 7",
+    "signal": 8
   },
   "image": {
     "path": "~/.config/waybar/nix.svg",
