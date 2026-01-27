@@ -17,6 +17,7 @@
     ./tar-unzip2dir.nix
     ./tmux-lazygit-toggle.nix
     ./tmux-resurrect.nix
+    ./tmux-refresh-hyprland-env.nix
     ./volume.nix
   ];
 }
