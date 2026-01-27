@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# Show notification history in fuzzel, restore selected one
+
+history=$(makoctl history | grep -E "^Notification|App name:" | paste - - | sed 's/Notification [0-9]*: //' | sed 's/\s*App name: / - /')
+
+if [[ -z "$history" ]]; then
+    notify-send "No notifications" "History is empty"
+    exit 0
+fi
+
+selected=$(echo "$history" | fuzzel --dmenu --prompt="Notifications: ")
+
+if [[ -n "$selected" ]]; then
+    makoctl restore
+fi
