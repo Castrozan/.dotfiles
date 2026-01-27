@@ -1,3 +1,16 @@
 #!/usr/bin/env bash
+# Apply theme colors dynamically without hyprctl reload
+# Uses keyword commands which are safer than full reload
 
-hyprctl reload >/dev/null
+THEME_CONF="$HOME/.config/omarchy/current/theme/hyprland.conf"
+
+[[ ! -f "$THEME_CONF" ]] && exit 0
+
+# Extract border color from theme config
+color=$(grep -oP 'rgb\([^)]+\)' "$THEME_CONF" | head -1)
+[[ -z "$color" ]] && exit 0
+
+# Apply colors one at a time with error suppression
+# These are safe operations that don't affect window state
+hyprctl keyword general:col.active_border "$color" >/dev/null 2>&1 || true
+hyprctl keyword group:col.border_active "$color" >/dev/null 2>&1 || true

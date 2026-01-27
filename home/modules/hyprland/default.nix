@@ -12,7 +12,7 @@
     ./swayosd.nix
     ./waybar-service.nix
     ./hypridle-service.nix
-    ./mako-service.nix
+    ./swaync-service.nix
     ../fuzzel.nix
   ];
 }
