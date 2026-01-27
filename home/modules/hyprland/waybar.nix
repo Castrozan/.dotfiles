@@ -20,6 +20,11 @@
         );
         force = true;
       };
+      ".config/waybar/scripts/workspace-window.sh" = {
+        source = ../../../.config/waybar/scripts/workspace-window.sh;
+        executable = true;
+        force = true;
+      };
     };
 
     packages = with pkgs; [ waybar ];

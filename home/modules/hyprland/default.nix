@@ -10,6 +10,7 @@
     ./hyprexpo.nix
     ./hyprshell.nix
     ./wlogout.nix
+    ./swayosd.nix
     ../fuzzel.nix
   ];
 }
