@@ -43,7 +43,7 @@ if pgrep -x waybar >/dev/null; then
 fi
 omarchy-restart-swayosd
 omarchy-restart-hyprctl
-omarchy-restart-mako
+omarchy-restart-swaync
 
 # Restart hyprshell if running (reloads CSS)
 if pgrep -f hyprshell >/dev/null; then
