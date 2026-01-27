@@ -51,10 +51,8 @@ omarchy-restart-hyprctl
 # SwayOSD and swaync: skip restart to avoid crashes
 # Users can restart session for full theme application
 
-# Restart hyprshell if running (reloads CSS)
-if pgrep -f hyprshell >/dev/null; then
-  systemctl --user restart hyprshell.service 2>/dev/null || true
-fi
+# Hyprshell auto-reloads CSS via file watcher (css reload listener)
+# Avoid restart which causes "Broken pipe" crashes
 
 omarchy-theme-set-gnome
 
