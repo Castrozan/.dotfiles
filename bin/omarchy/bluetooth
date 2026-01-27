@@ -13,7 +13,7 @@ get_power_status() {
 }
 
 get_paired_devices() {
-  bluetoothctl devices Paired 2>/dev/null | sed 's/\x1b\[[0-9;]*m//g; s/Device //' | grep -E '^[0-9A-Fa-f]{2}:' | awk '!seen[$1]++'
+  bluetoothctl paired-devices 2>/dev/null | sed 's/\x1b\[[0-9;]*m//g; s/Device //' | grep -E '^[0-9A-Fa-f]{2}:' | awk '!seen[$1]++'
 }
 
 is_device_connected() {
@@ -23,7 +23,7 @@ is_device_connected() {
 
 get_connected_devices() {
   local devices connected=""
-  devices=$(bluetoothctl devices Paired 2>/dev/null | sed 's/\x1b\[[0-9;]*m//g; s/Device //' | grep -E '^[0-9A-Fa-f]{2}:' | awk '!seen[$1]++')
+  devices=$(bluetoothctl paired-devices 2>/dev/null | sed 's/\x1b\[[0-9;]*m//g; s/Device //' | grep -E '^[0-9A-Fa-f]{2}:' | awk '!seen[$1]++')
   while IFS= read -r line; do
     [[ -z "$line" ]] && continue
     local mac
