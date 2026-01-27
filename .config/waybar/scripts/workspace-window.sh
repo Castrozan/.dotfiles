@@ -30,13 +30,13 @@ workspace_json=$(hyprctl workspaces -j)
 exists=$(printf '%s' "${workspace_json}" | jq -r --argjson target "${target}" 'map(.id) | index($target) != null')
 windows=$(printf '%s' "${workspace_json}" | jq -r --argjson target "${target}" 'map(select(.id == $target) | .windows) | .[0] // 0')
 
-class="workspace"
+class=""
 if [[ "${active_workspace}" -eq "${target}" ]]; then
-  class="workspace active"
+  class="active"
 elif [[ "${windows}" -gt 0 ]]; then
-  class="workspace occupied"
+  class="occupied"
 elif [[ "${exists}" != "true" ]]; then
-  class="workspace empty"
+  class="empty"
 fi
 
 printf '{"text":"%s","class":"%s"}\n' "${target}" "${class}"
