@@ -38,12 +38,18 @@ echo "$THEME_NAME" > "$HOME/.config/omarchy/current/theme.name"
 
 omarchy-theme-bg-next
 
-if pgrep -x waybar >/dev/null; then
-  omarchy-restart-waybar
-fi
-omarchy-restart-swayosd
+# Reload components for theme change
+# Keep it minimal - only reload what's strictly necessary
+
+# Apply Hyprland border colors (safe, just keyword changes)
 omarchy-restart-hyprctl
-omarchy-restart-mako
+
+# Waybar auto-reloads CSS via file watcher (reload_style_on_change: true)
+# Only signal if we need full config reload
+# pkill -USR2 waybar 2>/dev/null || true
+
+# SwayOSD and swaync: skip restart to avoid crashes
+# Users can restart session for full theme application
 
 # Restart hyprshell if running (reloads CSS)
 if pgrep -f hyprshell >/dev/null; then
