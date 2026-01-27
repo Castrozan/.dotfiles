@@ -10,6 +10,9 @@
     ./hyprshell.nix
     ./wlogout.nix
     ./swayosd.nix
+    ./waybar-service.nix
+    ./hypridle-service.nix
+    ./mako-service.nix
     ../fuzzel.nix
   ];
 }
