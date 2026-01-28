@@ -25,6 +25,11 @@
         executable = true;
         force = true;
       };
+      ".config/waybar/scripts/nmtui-themed.sh" = {
+        source = ../../../.config/waybar/scripts/nmtui-themed.sh;
+        executable = true;
+        force = true;
+      };
     };
 
     packages = with pkgs; [ waybar ];
