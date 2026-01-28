@@ -1,7 +1,7 @@
 { pkgs, ... }:
 let
-  # XWayland is broken (GLIBC mismatch), use native Wayland with GPU disabled
-  mongodbCompassFlags = "--disable-gpu";
+  # Electron Wayland/Hyprland flags for native rendering
+  mongodbCompassFlags = "--ozone-platform-hint=auto --enable-features=WaylandWindowDecorations";
 in
 {
   home.packages = [ pkgs.mongodb-compass ];

@@ -1,0 +1,240 @@
+#!/usr/bin/env bash
+
+menu() {
+  local prompt="$1"
+  local options="$2"
+  local lines="${3:-5}"
+
+  echo -e "$options" | omarchy-fuzzel --dmenu --width 40 --lines "$lines" --prompt "$prompt> " 2>/dev/null
+}
+
+get_active_connection() {
+  nmcli -t -f NAME,TYPE,DEVICE connection show --active 2>/dev/null | grep -v '^lo' | head -1
+}
+
+get_wifi_status() {
+  nmcli radio wifi 2>/dev/null
+}
+
+get_wifi_networks() {
+  nmcli -t -f SSID,SIGNAL,SECURITY,IN-USE device wifi list --rescan no 2>/dev/null | \
+    awk -F: '!seen[$1]++ && $1!=""' | sort -t: -k2 -rn
+}
+
+rescan_wifi() {
+  nmcli device wifi rescan 2>/dev/null
+  sleep 2
+}
+
+connect_wifi() {
+  local ssid="$1"
+
+  if nmcli -t -f NAME connection show 2>/dev/null | grep -qx "$ssid"; then
+    if nmcli connection up "$ssid" 2>/dev/null; then
+      notify-send -t 2000 "Network" "Connected to $ssid"
+    else
+      notify-send -t 2000 "Network" "Failed to connect to $ssid"
+    fi
+  else
+    local password
+    password=$(echo "" | omarchy-fuzzel --dmenu --width 30 --lines 0 --prompt "Password for $ssid> " 2>/dev/null)
+    if [[ -n "$password" ]]; then
+      if nmcli device wifi connect "$ssid" password "$password" 2>/dev/null; then
+        notify-send -t 2000 "Network" "Connected to $ssid"
+      else
+        notify-send -t 2000 "Network" "Failed to connect to $ssid"
+      fi
+    fi
+  fi
+}
+
+show_wifi_networks() {
+  notify-send -t 2000 "Network" "Scanning for networks..."
+  rescan_wifi
+
+  local networks
+  networks=$(get_wifi_networks)
+
+  if [[ -z "$networks" ]]; then
+    notify-send -t 2000 "Network" "No WiFi networks found"
+    show_main_menu
+    return
+  fi
+
+  local formatted=""
+  while IFS=: read -r ssid signal security in_use; do
+    [[ -z "$ssid" ]] && continue
+    local icon
+    if [[ "$in_use" == "*" ]]; then
+      icon="󰤨"
+    elif (( signal >= 75 )); then
+      icon="󰤥"
+    elif (( signal >= 50 )); then
+      icon="󰤢"
+    elif (( signal >= 25 )); then
+      icon="󰤟"
+    else
+      icon="󰤯"
+    fi
+
+    local lock=""
+    [[ -n "$security" && "$security" != "--" ]] && lock="󰌾 "
+
+    if [[ "$in_use" == "*" ]]; then
+      formatted+="$icon  $ssid  ${lock}${signal}% (connected)\n"
+    else
+      formatted+="$icon  $ssid  ${lock}${signal}%\n"
+    fi
+  done <<<"$networks"
+  formatted="${formatted%\\n}"
+
+  local count
+  count=$(echo -e "$formatted" | wc -l)
+  local lines=$((count > 10 ? 10 : count))
+
+  local selection
+  selection=$(menu "WiFi Networks" "$formatted" "$lines")
+
+  if [[ -n "$selection" ]]; then
+    local ssid
+    ssid=$(echo "$selection" | sed 's/^[^ ]* *//' | sed 's/  .*//')
+
+    if echo "$selection" | grep -q "(connected)"; then
+      case $(menu "$ssid" "󰤮  Disconnect\n  Cancel" 2) in
+        *Disconnect*)
+          if nmcli connection down "$ssid" 2>/dev/null; then
+            notify-send -t 2000 "Network" "Disconnected from $ssid"
+          fi
+          ;;
+      esac
+    else
+      connect_wifi "$ssid"
+    fi
+  fi
+
+  show_main_menu
+}
+
+show_connections() {
+  local connections
+  connections=$(nmcli -t -f NAME,TYPE connection show 2>/dev/null | grep -v '^lo')
+
+  if [[ -z "$connections" ]]; then
+    notify-send -t 2000 "Network" "No saved connections"
+    show_main_menu
+    return
+  fi
+
+  local formatted=""
+  local active
+  active=$(nmcli -t -f NAME connection show --active 2>/dev/null)
+
+  while IFS=: read -r name type; do
+    [[ -z "$name" ]] && continue
+    local icon
+    case "$type" in
+      *wireless*) icon="󰤨" ;;
+      *ethernet*) icon="󰀂" ;;
+      *vpn*) icon="󰖂" ;;
+      *) icon="󰛳" ;;
+    esac
+
+    if echo "$active" | grep -qx "$name"; then
+      formatted+="$icon  $name (active)\n"
+    else
+      formatted+="$icon  $name\n"
+    fi
+  done <<<"$connections"
+  formatted="${formatted%\\n}"
+
+  local count
+  count=$(echo -e "$formatted" | wc -l)
+  local lines=$((count > 8 ? 8 : count))
+
+  local selection
+  selection=$(menu "Connections" "$formatted" "$lines")
+
+  if [[ -n "$selection" ]]; then
+    local name
+    name=$(echo "$selection" | sed 's/^[^ ]* *//' | sed 's/ (active)$//')
+
+    if echo "$selection" | grep -q "(active)"; then
+      case $(menu "$name" "󰤮  Disconnect\n  Delete\n  Cancel" 3) in
+        *Disconnect*)
+          if nmcli connection down "$name" 2>/dev/null; then
+            notify-send -t 2000 "Network" "Disconnected from $name"
+          fi
+          ;;
+        *Delete*)
+          if nmcli connection delete "$name" 2>/dev/null; then
+            notify-send -t 2000 "Network" "Deleted $name"
+          fi
+          ;;
+      esac
+    else
+      case $(menu "$name" "󰤨  Connect\n  Delete\n  Cancel" 3) in
+        *Connect*)
+          if nmcli connection up "$name" 2>/dev/null; then
+            notify-send -t 2000 "Network" "Connected to $name"
+          else
+            notify-send -t 2000 "Network" "Failed to connect to $name"
+          fi
+          ;;
+        *Delete*)
+          if nmcli connection delete "$name" 2>/dev/null; then
+            notify-send -t 2000 "Network" "Deleted $name"
+          fi
+          ;;
+      esac
+    fi
+  fi
+
+  show_main_menu
+}
+
+toggle_wifi() {
+  if [[ "$(get_wifi_status)" == "enabled" ]]; then
+    nmcli radio wifi off
+    notify-send -t 2000 "Network" "WiFi disabled"
+  else
+    nmcli radio wifi on
+    notify-send -t 2000 "Network" "WiFi enabled"
+  fi
+}
+
+show_main_menu() {
+  local wifi_status wifi_icon wifi_text
+  wifi_status=$(get_wifi_status)
+
+  if [[ "$wifi_status" == "enabled" ]]; then
+    wifi_icon="󰤨"
+    wifi_text="Disable WiFi"
+  else
+    wifi_icon="󰤮"
+    wifi_text="Enable WiFi"
+  fi
+
+  local active
+  active=$(get_active_connection)
+  local active_text=""
+  if [[ -n "$active" ]]; then
+    local name
+    name=$(echo "$active" | cut -d: -f1)
+    active_text=" ($name)"
+  fi
+
+  local options="󰤢  WiFi Networks$active_text\n󰛳  Saved Connections\n$wifi_icon  $wifi_text\n󰒓  Open Settings"
+
+  case $(menu "Network" "$options" 4) in
+    *WiFi\ Networks*) show_wifi_networks ;;
+    *Saved*) show_connections ;;
+    *WiFi*) toggle_wifi; show_main_menu ;;
+    *Settings*) nm-connection-editor & ;;
+  esac
+}
+
+if [[ "$1" == "--full" ]]; then
+  nm-connection-editor &
+else
+  show_main_menu
+fi

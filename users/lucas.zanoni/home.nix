@@ -10,6 +10,7 @@
 
     ../../home/core.nix
     ../../home/scripts
+    ../../home/modules/atuin.nix
     ../../home/modules/bad-apple.nix
     ../../home/modules/bananas.nix
     ../../home/modules/cbonsai.nix
@@ -33,10 +34,11 @@
     ../../home/modules/kitty.nix
     ../../home/modules/ksnip.nix
     ../../home/modules/lazygit.nix
-    #../../home/modules/mongodb-compass.nix # TODO: crashes hyprland session occasionally
+    ../../home/modules/mongodb-compass.nix
     ../../home/modules/neovim.nix
     ../../home/modules/obsidian.nix
     ../../home/modules/opencode
+    ../../home/modules/opencode/private.nix
     ../../home/modules/openfortivpn
     ../../home/modules/ralph-tui.nix
     ../../home/modules/readItNow.nix
@@ -49,6 +51,7 @@
     ../../home/modules/tui-notifier.nix
     ../../home/modules/vial.nix
     ../../home/modules/vscode
+    ../../home/modules/vesktop.nix
     ../../home/modules/yazi.nix
     ../../home/modules/wezterm.nix # https://tmuxai.dev/terminal-compatibility/
     ../../home/modules/whisper-input
