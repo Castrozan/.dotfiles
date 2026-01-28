@@ -26,6 +26,12 @@ rescan_wifi() {
   sleep 2
 }
 
+is_enterprise() {
+  local ssid="$1"
+  nmcli -t -f SSID,SECURITY device wifi list --rescan no 2>/dev/null | \
+    grep -q "^${ssid}:.*802\.1X"
+}
+
 connect_wifi() {
   local ssid="$1"
 
@@ -33,6 +39,27 @@ connect_wifi() {
     if nmcli connection up "$ssid" 2>/dev/null; then
       notify-send -t 2000 "Network" "Connected to $ssid"
     else
+      notify-send -t 2000 "Network" "Failed to connect to $ssid"
+    fi
+  elif is_enterprise "$ssid"; then
+    local identity
+    identity=$(echo "" | omarchy-fuzzel --dmenu --width 30 --lines 0 --prompt "Username for $ssid> " 2>/dev/null)
+    [[ -z "$identity" ]] && return
+
+    local password
+    password=$(echo "" | omarchy-fuzzel --dmenu --width 30 --lines 0 --prompt "Password for $ssid> " 2>/dev/null)
+    [[ -z "$password" ]] && return
+
+    if nmcli connection add type wifi con-name "$ssid" ssid "$ssid" \
+        wifi-sec.key-mgmt wpa-eap \
+        802-1x.eap peap \
+        802-1x.phase2-auth mschapv2 \
+        802-1x.identity "$identity" \
+        802-1x.password "$password" 2>/dev/null && \
+       nmcli connection up "$ssid" 2>/dev/null; then
+      notify-send -t 2000 "Network" "Connected to $ssid"
+    else
+      nmcli connection delete "$ssid" 2>/dev/null
       notify-send -t 2000 "Network" "Failed to connect to $ssid"
     fi
   else
