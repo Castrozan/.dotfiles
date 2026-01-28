@@ -23,9 +23,15 @@ window#waybar {
   margin-right: 8px;
 }
 
-#workspaces button {
+#custom-ws1,
+#custom-ws2,
+#custom-ws3,
+#custom-ws4,
+#custom-ws5,
+#custom-ws6,
+#custom-ws7 {
   padding: 0 6px;
-  margin: 0 2px;
+  margin: 0 5px;
   color: @foreground;
   font-weight: bold;
   background: transparent;
@@ -33,20 +39,48 @@ window#waybar {
   border-radius: 4px;
 }
 
-#workspaces button.empty {
-  color: @dim;
+#custom-ws1.empty,
+#custom-ws2.empty,
+#custom-ws3.empty,
+#custom-ws4.empty,
+#custom-ws5.empty,
+#custom-ws6.empty,
+#custom-ws7.empty {
+  color: @surface;
   font-weight: normal;
 }
 
-#workspaces button.active {
+#custom-ws1.active,
+#custom-ws2.active,
+#custom-ws3.active,
+#custom-ws4.active,
+#custom-ws5.active,
+#custom-ws6.active,
+#custom-ws7.active {
   color: @accent;
   font-weight: 900;
   font-size: 13px;
-  border-bottom: 2px solid @accent;
+  border-bottom: 4px solid @accent;
 }
 
-#workspaces button:hover {
-  color: @foreground;
+#custom-ws1.occupied,
+#custom-ws2.occupied,
+#custom-ws3.occupied,
+#custom-ws4.occupied,
+#custom-ws5.occupied,
+#custom-ws6.occupied,
+#custom-ws7.occupied {
+  color: @accent;
+}
+
+#custom-ws1:hover,
+#custom-ws2:hover,
+#custom-ws3:hover,
+#custom-ws4:hover,
+#custom-ws5:hover,
+#custom-ws6:hover,
+#custom-ws7:hover {
+  color: @dimmed;
 }
 
 #image {

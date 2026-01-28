@@ -665,37 +665,6 @@
         "type": "github"
       }
     },
-    "hyprland-plugins": {
-      "inputs": {
-        "hyprland": [
-          "hyprland"
-        ],
-        "nixpkgs": [
-          "hyprland-plugins",
-          "hyprland",
-          "nixpkgs"
-        ],
-        "systems": [
-          "hyprland-plugins",
-          "hyprland",
-          "systems"
-        ]
-      },
-      "locked": {
-        "lastModified": 1767020608,
-        "narHash": "sha256-BSRT1Uu1ot4WfMfZc6KW0nwpmt2xl9wpUqmH/JoMTfk=",
-        "owner": "hyprwm",
-        "repo": "hyprland-plugins",
-        "rev": "d7b67e8f4ba8ebeee4ce899348fcee6291512169",
-        "type": "github"
-      },
-      "original": {
-        "owner": "hyprwm",
-        "ref": "v0.53.0",
-        "repo": "hyprland-plugins",
-        "type": "github"
-      }
-    },
     "hyprland-protocols": {
       "inputs": {
         "nixpkgs": [
@@ -1034,11 +1003,11 @@
     },
     "nixpkgs_10": {
       "locked": {
-        "lastModified": 1767364772,
-        "narHash": "sha256-fFUnEYMla8b7UKjijLnMe+oVFOz6HjijGGNS1l7dYaQ=",
+        "lastModified": 1768393167,
+        "narHash": "sha256-n2063BRjHde6DqAz2zavhOOiLUwA3qXt7jQYHyETjX8=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "16c7794d0a28b5a37904d55bcca36003b9109aaa",
+        "rev": "2f594d5af95d4fdac67fba60376ec11e482041cb",
         "type": "github"
       },
       "original": {
@@ -1257,16 +1226,16 @@
         "nixpkgs": "nixpkgs_10"
       },
       "locked": {
-        "lastModified": 1767803912,
-        "narHash": "sha256-CXABHBk+stVF57+5oGkuMRFJpwA6qb7AMpkFVWfs38c=",
+        "lastModified": 1769362166,
+        "narHash": "sha256-ovFGFI2dSZLKSeuanRZg9cNvMCxYnS3UbtaCKls5BYQ=",
         "owner": "anomalyco",
         "repo": "opencode",
-        "rev": "184834da980cb50c442a192b88397d634901abe2",
+        "rev": "056186225b6648cd5244d2cb0b05622b95343dc6",
         "type": "github"
       },
       "original": {
         "owner": "anomalyco",
-        "ref": "v1.1.6",
+        "ref": "v1.1.36",
         "repo": "opencode",
         "type": "github"
       }
@@ -1321,7 +1290,6 @@
         "devenv": "devenv",
         "home-manager": "home-manager_2",
         "hyprland": "hyprland",
-        "hyprland-plugins": "hyprland-plugins",
         "hyprshell": "hyprshell",
         "install-nothing": "install-nothing",
         "nixgl": "nixgl",

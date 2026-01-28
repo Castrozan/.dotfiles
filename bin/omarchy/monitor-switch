@@ -39,11 +39,21 @@ is_monitor_connected() {
   hyprctl monitors -j | jq -e --arg name "$1" '.[] | select(.name == $name)' >/dev/null 2>&1
 }
 
+is_monitor_disabled() {
+  hyprctl monitors all -j | jq -e --arg name "$1" '.[] | select(.name == $name and .disabled == true)' >/dev/null 2>&1
+}
+
 apply_config() {
   if is_monitor_connected "$EXTERNAL"; then
-    hyprctl keyword monitor "$INTERNAL,disable"
+    # Only disable internal if it's not already disabled
+    if ! is_monitor_disabled "$INTERNAL"; then
+      hyprctl keyword monitor "$INTERNAL,disable"
+    fi
   else
-    hyprctl keyword monitor "$INTERNAL,$INTERNAL_MODE,auto,1"
+    # Only enable internal if it's currently disabled
+    if is_monitor_disabled "$INTERNAL"; then
+      hyprctl keyword monitor "$INTERNAL,$INTERNAL_MODE,auto,1"
+    fi
   fi
 }
 

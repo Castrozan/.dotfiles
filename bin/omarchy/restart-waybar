@@ -1,4 +1,12 @@
 #!/usr/bin/env bash
+# Reload waybar for theme changes
+# Waybar has "reload_style_on_change": true, so it auto-reloads CSS
+# We just need to send SIGUSR2 to trigger a full reload if needed
 
-pkill -x waybar
-setsid waybar >/dev/null 2>&1 &
+if systemctl --user is-active --quiet waybar; then
+  # SIGUSR2 triggers full reload (config + style)
+  # Only needed if config changed, CSS auto-reloads
+  pkill -USR2 waybar 2>/dev/null || true
+else
+  systemctl --user start waybar
+fi

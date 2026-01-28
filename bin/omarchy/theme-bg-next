@@ -10,7 +10,8 @@ TOTAL=${#BACKGROUNDS[@]}
 
 if [[ $TOTAL -eq 0 ]]; then
   notify-send "No background was found for theme" -t 2000
-  pkill -x swaybg
+  pkill -9 swaybg 2>/dev/null || true
+  sleep 0.3
   setsid swaybg --color '#000000' >/dev/null 2>&1 &
 else
   if [[ -L "$CURRENT_BACKGROUND_LINK" ]]; then
@@ -36,6 +37,7 @@ else
 
   ln -nsf "$NEW_BACKGROUND" "$CURRENT_BACKGROUND_LINK"
 
-  pkill -x swaybg
+  pkill -9 swaybg 2>/dev/null || true
+  sleep 0.3
   setsid swaybg -i "$CURRENT_BACKGROUND_LINK" -m fill >/dev/null 2>&1 &
 fi

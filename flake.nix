@@ -20,7 +20,7 @@
     # Tag-based (stable releases)
     tui-notifier.url = "github:castrozan/tui-notifier/1.0.1";
     readItNow-rc.url = "github:castrozan/readItNow-rc/1.1.0";
-    opencode.url = "github:anomalyco/opencode/v1.1.6";
+    opencode.url = "github:anomalyco/opencode/v1.1.36";
     zed-editor.url = "github:zed-industries/zed/v0.218.5";
     devenv.url = "github:cachix/devenv/v1.9.2";
     # Branch/default (actively maintained)
@@ -32,10 +32,6 @@
     agenix.url = "github:ryantm/agenix";
     voxtype.url = "github:peteonrails/voxtype";
     hyprland.url = "github:hyprwm/Hyprland/v0.53.0";
-    hyprland-plugins = {
-      url = "github:hyprwm/hyprland-plugins/v0.53.0";
-      inputs.hyprland.follows = "hyprland";
-    };
     hyprshell = {
       url = "github:H3rmt/hyprshell/hyprshell-release";
       inputs.hyprland.follows = "hyprland";

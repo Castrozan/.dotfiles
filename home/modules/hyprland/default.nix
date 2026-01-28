@@ -1,5 +1,16 @@
 # Shared Hyprland modules - does NOT include Hyprland binary
 # Import via nixos.nix or standalone.nix instead
+{ lib, pkgs, ... }:
+let
+  systemctl = "${pkgs.systemd}/bin/systemctl";
+  graphicalServices = [
+    "waybar.service"
+    "swaync.service"
+    "hyprshell.service"
+    "swayosd.service"
+    "hypridle.service"
+  ];
+in
 {
   imports = [
     ./packages.nix
@@ -7,9 +18,21 @@
     ./cursor.nix
     ./omarchy.nix
     ./waybar.nix
-    ./hyprexpo.nix
     ./hyprshell.nix
     ./wlogout.nix
+    ./swayosd.nix
+    ./waybar-service.nix
+    ./hypridle-service.nix
+    ./swaync-service.nix
     ../fuzzel.nix
   ];
+
+  # Start graphical services after systemd reload
+  # This ensures services restart after home-manager switch
+  home.activation.startGraphicalServices = lib.hm.dag.entryAfter [ "reloadSystemd" ] ''
+    HYPR_DIR="/run/user/$(id -u)/hypr"
+    if [ -d "$HYPR_DIR" ] && [ "$(ls -A "$HYPR_DIR" 2>/dev/null)" ]; then
+      $DRY_RUN_CMD ${systemctl} --user start ${lib.concatStringsSep " " graphicalServices} || true
+    fi
+  '';
 }

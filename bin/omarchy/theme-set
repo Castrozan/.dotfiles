@@ -38,17 +38,20 @@ echo "$THEME_NAME" > "$HOME/.config/omarchy/current/theme.name"
 
 omarchy-theme-bg-next
 
-if pgrep -x waybar >/dev/null; then
-  omarchy-restart-waybar
-fi
-omarchy-restart-swayosd
-omarchy-restart-hyprctl
-omarchy-restart-mako
+# Reload components for theme change
+# Keep it minimal - only reload what's strictly necessary
 
-# Restart hyprshell if running (reloads CSS)
-if pgrep -f hyprshell >/dev/null; then
-  systemctl --user restart hyprshell.service 2>/dev/null || true
-fi
+# Apply Hyprland border colors (safe, just keyword changes)
+omarchy-restart-hyprctl
+
+# Restart waybar to reload CSS (SIGUSR2 doesn't re-fetch @imports)
+systemctl --user restart waybar 2>/dev/null || true
+
+# Reload swaync CSS (has --reload-css option, no restart needed)
+swaync-client -rs 2>/dev/null || true
+
+# Hyprshell auto-reloads CSS via file watcher (css reload listener)
+# Avoid restart which causes "Broken pipe" crashes
 
 omarchy-theme-set-gnome
 

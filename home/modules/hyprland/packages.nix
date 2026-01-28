@@ -1,11 +1,17 @@
 { pkgs, inputs, ... }:
 let
-  xdg-desktop-portal-hyprland =
-    inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland;
+  hyprlandPkgs = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system};
+  inherit (hyprlandPkgs) xdg-desktop-portal-hyprland;
+
+  # Override hyprshot to use correct hyprland version (nixpkgs bundles old hyprctl)
+  hyprshot-fixed = pkgs.hyprshot.override {
+    hyprland = hyprlandPkgs.hyprland;
+  };
 in
 {
   home = {
     file.".config/hypr".source = ../../../.config/hypr;
+    file.".config/swaync".source = ../../../.config/swaync;
 
     packages = with pkgs; [
       xdg-desktop-portal
@@ -15,7 +21,6 @@ in
       wl-clipboard
       hyprpaper
       swaybg
-      mako
       libnotify
       hyprlock
       hypridle
@@ -23,7 +28,7 @@ in
       pamixer
       swayosd
       bemoji
-      hyprshot
+      hyprshot-fixed
       grim
       slurp
       satty

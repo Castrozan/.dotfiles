@@ -1,4 +1,9 @@
 function __load_bash_env
+  # Source nix-daemon for Nix package manager
+  if test -f /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.fish
+    source /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.fish
+  end
+
   # Export BASH_ENV for non-interactive bash (Claude Code)
   set -gx BASH_ENV "$HOME/.dotfiles/shell/bash_aliases.sh"
 

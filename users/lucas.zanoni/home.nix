@@ -33,9 +33,10 @@
     ../../home/modules/kitty.nix
     ../../home/modules/ksnip.nix
     ../../home/modules/lazygit.nix
+    #../../home/modules/mongodb-compass.nix # TODO: crashes hyprland session occasionally
     ../../home/modules/neovim.nix
     ../../home/modules/obsidian.nix
-    ../../home/modules/opencode.nix
+    ../../home/modules/opencode
     ../../home/modules/openfortivpn
     ../../home/modules/ralph-tui.nix
     ../../home/modules/readItNow.nix
