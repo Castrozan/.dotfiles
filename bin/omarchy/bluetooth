@@ -21,6 +21,38 @@ is_device_connected() {
   bluetoothctl info "$mac" 2>/dev/null | grep -q "Connected: yes"
 }
 
+get_bt_card() {
+  local mac="$1"
+  echo "bluez_card.${mac//:/_}"
+}
+
+get_active_profile() {
+  local card
+  card=$(get_bt_card "$1")
+  pactl list cards 2>/dev/null | awk -v card="$card" '
+    $0 ~ "Name: " card { found=1 }
+    found && /Active Profile:/ { print $NF; exit }
+  '
+}
+
+toggle_profile() {
+  local mac="$1" name="$2"
+  local card profile_label
+  card=$(get_bt_card "$mac")
+  local active
+  active=$(get_active_profile "$mac")
+
+  if [[ "$active" == "a2dp_sink" ]]; then
+    pactl set-card-profile "$card" handsfree_head_unit
+    profile_label="HFP (mic enabled)"
+  else
+    pactl set-card-profile "$card" a2dp_sink
+    profile_label="A2DP (high quality)"
+  fi
+
+  notify-send -t 2000 "Bluetooth" "$name → $profile_label"
+}
+
 get_connected_devices() {
   local devices connected=""
   devices=$(bluetoothctl paired-devices 2>/dev/null | sed 's/\x1b\[[0-9;]*m//g; s/Device //' | grep -E '^[0-9A-Fa-f]{2}:' | awk '!seen[$1]++')
@@ -118,7 +150,18 @@ show_paired_devices() {
     name=$(echo "$selection" | sed 's/^[^ ]* *//' | sed "s/ ($mac)//")
 
     if is_device_connected "$mac"; then
-      case $(menu "$name" "󰂲  Disconnect\n  Remove\n  Cancel" 3) in
+      local active_profile profile_toggle
+      active_profile=$(get_active_profile "$mac")
+      if [[ "$active_profile" == "a2dp_sink" ]]; then
+        profile_toggle="󰍬  Switch to HFP (mic)"
+      else
+        profile_toggle="󰎈  Switch to A2DP (quality)"
+      fi
+
+      case $(menu "$name" "$profile_toggle\n󰂲  Disconnect\n  Remove\n  Cancel" 4) in
+        *Switch*)
+          toggle_profile "$mac" "$name"
+          ;;
         *Disconnect*)
           if bluetoothctl disconnect "$mac" 2>/dev/null; then
             notify-send -t 2000 "Bluetooth" "Disconnected from $name"
