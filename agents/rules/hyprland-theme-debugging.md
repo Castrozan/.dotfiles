@@ -176,8 +176,19 @@ touch ~/.config/waybar/style.css  # Permission denied
 2. Update background (kill old swaybg with -9, delay, start new)
 3. Apply Hyprland colors via `hyprctl keyword` (safe, no reload)
 4. Restart waybar (needed for @import CSS)
-5. Let hyprshell/swayosd auto-reload via file watchers
-6. Update GNOME settings (gsettings)
+5. Reload swaync CSS via `swaync-client -rs` (no restart needed)
+6. Let hyprshell auto-reload via file watcher
+7. Update GNOME settings (gsettings)
+
+### Component Reload Methods
+| Component | Method | Command |
+|-----------|--------|---------|
+| Waybar | Restart service | `systemctl --user restart waybar` |
+| SwayNC | Client reload | `swaync-client -rs` |
+| Hyprshell | File watcher | Auto-reloads CSS |
+| SwayOSD | No reload | Needs service restart (risky) |
+| Hyprland | Keyword | `hyprctl keyword general:col.active_border` |
+| swaybg | Replace process | `pkill -9 swaybg && swaybg ...` |
 
 ### systemd Service Dependencies
 ```nix
