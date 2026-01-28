@@ -44,17 +44,14 @@ omarchy-theme-bg-next
 # Apply Hyprland border colors (safe, just keyword changes)
 omarchy-restart-hyprctl
 
-# Waybar auto-reloads CSS via file watcher (reload_style_on_change: true)
-# Only signal if we need full config reload
-# pkill -USR2 waybar 2>/dev/null || true
+# Restart waybar to reload CSS (SIGUSR2 doesn't re-fetch @imports)
+systemctl --user restart waybar 2>/dev/null || true
 
-# SwayOSD and swaync: skip restart to avoid crashes
-# Users can restart session for full theme application
+# Reload swaync CSS (has --reload-css option, no restart needed)
+swaync-client -rs 2>/dev/null || true
 
-# Restart hyprshell if running (reloads CSS)
-if pgrep -f hyprshell >/dev/null; then
-  systemctl --user restart hyprshell.service 2>/dev/null || true
-fi
+# Hyprshell auto-reloads CSS via file watcher (css reload listener)
+# Avoid restart which causes "Broken pipe" crashes
 
 omarchy-theme-set-gnome
 

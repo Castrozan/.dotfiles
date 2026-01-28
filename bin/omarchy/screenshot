@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+# Simple screenshot tool using grim/slurp with correct Hyprland version
+# Replaces hyprshot which bundles incompatible hyprctl version
+
+set -e
+
+SAVEDIR="${XDG_PICTURES_DIR:-$HOME/Pictures}/Screenshots"
+FILENAME="$(date +%Y-%m-%d-%H%M%S)_screenshot.png"
+SAVE_PATH="$SAVEDIR/$FILENAME"
+
+mode="${1:-region}"
+
+mkdir -p "$SAVEDIR"
+
+case "$mode" in
+  region)
+    geometry=$(slurp -d) || exit 0
+    grim -g "$geometry" "$SAVE_PATH"
+    ;;
+  window)
+    # Get window geometry using system hyprctl
+    geometry=$(hyprctl activewindow -j | jq -r '"\(.at[0]),\(.at[1]) \(.size[0])x\(.size[1])"')
+    if [[ -z "$geometry" || "$geometry" == "null" ]]; then
+      notify-send "Screenshot" "No active window" -t 2000
+      exit 1
+    fi
+    grim -g "$geometry" "$SAVE_PATH"
+    ;;
+  output|monitor)
+    # Get current monitor
+    geometry=$(hyprctl monitors -j | jq -r '.[] | select(.focused) | "\(.x),\(.y) \(.width)x\(.height)"')
+    grim -g "$geometry" "$SAVE_PATH"
+    ;;
+  screen)
+    # Full screen (all monitors)
+    grim "$SAVE_PATH"
+    ;;
+  *)
+    echo "Usage: screenshot [region|window|output|screen]"
+    exit 1
+    ;;
+esac
+
+# Copy to clipboard
+wl-copy < "$SAVE_PATH"
+
+notify-send "Screenshot saved" "$SAVE_PATH" -i "$SAVE_PATH" -t 3000
