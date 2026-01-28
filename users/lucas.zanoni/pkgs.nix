@@ -36,7 +36,7 @@
       go
       google-chrome
       insomnia
-      (jetbrains.idea.override { vmopts = "-Dawt.toolkit.name=WLToolkit"; })
+      (jetbrains.idea-ultimate.override { vmopts = "-Dawt.toolkit.name=WLToolkit"; })
       jq
       kubectl
       ksnip
