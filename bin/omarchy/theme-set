@@ -47,8 +47,8 @@ omarchy-restart-hyprctl
 # Restart waybar to reload CSS (SIGUSR2 doesn't re-fetch @imports)
 systemctl --user restart waybar 2>/dev/null || true
 
-# SwayOSD and swaync: skip restart to avoid crashes
-# Users can restart session for full theme application
+# Reload swaync CSS (has --reload-css option, no restart needed)
+swaync-client -rs 2>/dev/null || true
 
 # Hyprshell auto-reloads CSS via file watcher (css reload listener)
 # Avoid restart which causes "Broken pipe" crashes
