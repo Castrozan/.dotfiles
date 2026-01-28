@@ -1,6 +1,12 @@
 { pkgs, inputs, ... }:
 let
-  inherit (inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}) xdg-desktop-portal-hyprland;
+  hyprlandPkgs = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system};
+  inherit (hyprlandPkgs) xdg-desktop-portal-hyprland;
+
+  # Override hyprshot to use correct hyprland version (nixpkgs bundles old hyprctl)
+  hyprshot-fixed = pkgs.hyprshot.override {
+    hyprland = hyprlandPkgs.hyprland;
+  };
 in
 {
   home = {
@@ -22,7 +28,7 @@ in
       pamixer
       swayosd
       bemoji
-      hyprshot
+      hyprshot-fixed
       grim
       slurp
       satty
