@@ -13,36 +13,40 @@ in
     file.".config/hypr".source = ../../../.config/hypr;
     file.".config/swaync".source = ../../../.config/swaync;
 
-    packages = with pkgs; [
-      xdg-desktop-portal
-      xdg-desktop-portal-hyprland
-      xdg-desktop-portal-gtk
+    packages =
+      with pkgs;
+      [
+        xdg-desktop-portal
+        xdg-desktop-portal-gtk
 
-      wl-clipboard
-      hyprpaper
-      swaybg
-      libnotify
-      hyprlock
-      hypridle
-      playerctl
-      pamixer
-      swayosd
-      bemoji
-      hyprshot-fixed
-      grim
-      slurp
-      satty
-      wf-recorder
-      cliphist
-      hyprpicker
-      jq
-      wlogout
-      polkit_gnome
-      gnome-calculator
-      yad
-      blueman
-      pavucontrol
-    ];
+        wl-clipboard
+        hyprpaper
+        swaybg
+        libnotify
+        hyprlock
+        hypridle
+        playerctl
+        pamixer
+        swayosd
+        bemoji
+        hyprshot-fixed
+        grim
+        slurp
+        satty
+        wf-recorder
+        cliphist
+        hyprpicker
+        jq
+        wlogout
+        polkit_gnome
+        gnome-calculator
+        yad
+        blueman
+        pavucontrol
+      ]
+      ++ [
+        xdg-desktop-portal-hyprland
+      ];
   };
 
   xdg.configFile."xdg-desktop-portal/hyprland-portals.conf".text = ''
