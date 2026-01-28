@@ -218,7 +218,13 @@ exec service-binary
 
 ## Lessons Learned
 
-1. **Multiple daemon instances cause DRM conflicts** - Always verify single instance with `pgrep -c`
+1. **Stale HYPRLAND_INSTANCE_SIGNATURE after crash/logout** - If hyprctl commands fail with "Couldn't connect to socket", check if there are multiple Hyprland instances:
+   ```bash
+   ls /run/user/$(id -u)/hypr/
+   ```
+   If multiple exist, terminal has stale env var. Fix: restart terminal or update var manually.
+
+2. **Multiple daemon instances cause DRM conflicts** - Always verify single instance with `pgrep -c`
 
 2. **SIGUSR2 doesn't re-fetch CSS @imports** - Waybar needs full restart for theme changes
 
@@ -233,3 +239,10 @@ exec service-binary
 7. **PartOf= in systemd causes reload issues** - Services stop when target reloads
 
 8. **hyprctl keyword is safer than hyprctl reload** - Keyword changes specific values, reload can cause disruption
+
+9. **nixpkgs hyprshot bundles old hyprland** - Override with flake version:
+   ```nix
+   hyprshot-fixed = pkgs.hyprshot.override {
+     hyprland = inputs.hyprland.packages.${pkgs.system}.hyprland;
+   };
+   ```
