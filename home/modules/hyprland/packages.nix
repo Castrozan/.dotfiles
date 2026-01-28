@@ -36,6 +36,7 @@ in
       cliphist
       hyprpicker
       jq
+      socat
       wlogout
       polkit_gnome
       gnome-calculator
