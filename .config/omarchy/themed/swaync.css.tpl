@@ -41,6 +41,11 @@
 .control-center .widget-dnd {
   margin: 8px;
   padding: 4px;
+  color: @foreground;
+}
+
+.control-center .widget-dnd > label {
+  color: @foreground;
 }
 
 .control-center .widget-dnd > switch {

@@ -5,7 +5,7 @@ let
 
   # Override hyprshot to use correct hyprland version (nixpkgs bundles old hyprctl)
   hyprshot-fixed = pkgs.hyprshot.override {
-    hyprland = hyprlandPkgs.hyprland;
+    inherit (hyprlandPkgs) hyprland;
   };
 in
 {
