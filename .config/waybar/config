@@ -119,7 +119,7 @@
     "tooltip-format-ethernet": "⇣{bandwidthDownBytes}  ⇡{bandwidthUpBytes}",
     "tooltip-format-disconnected": "Disconnected",
     "interval": 3,
-    "on-click": "wezterm --config window_background_opacity=1.0 --config text_background_opacity=1.0 -e ~/.config/waybar/scripts/nmtui-themed.sh"
+    "on-click": "wezterm -e nmtui"
   },
   "battery": {
     "format": "{capacity}% {icon}",
