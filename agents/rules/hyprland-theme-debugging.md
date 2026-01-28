@@ -218,11 +218,9 @@ exec service-binary
 
 ## Lessons Learned
 
-1. **Stale HYPRLAND_INSTANCE_SIGNATURE after crash/logout** - If hyprctl commands fail with "Couldn't connect to socket", check if there are multiple Hyprland instances:
-   ```bash
-   ls /run/user/$(id -u)/hypr/
-   ```
-   If multiple exist, terminal has stale env var. Fix: restart terminal or update var manually.
+1. **Stale HYPRLAND_INSTANCE_SIGNATURE after crash/logout** - If hyprctl commands fail with "Couldn't connect to socket", terminal has stale env var. Socket files persist after crash (not cleaned up by systemd).
+
+   **tmux/resurrect solution:** `shell/fish/conf.d/hyprland-env.fish` tests actual hyprctl connectivity and updates to working instance on shell start. Also `update-environment` in tmux settings includes Wayland vars.
 
 2. **Multiple daemon instances cause DRM conflicts** - Always verify single instance with `pgrep -c`
 
