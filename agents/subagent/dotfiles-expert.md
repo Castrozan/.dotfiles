@@ -62,6 +62,10 @@ Delegate: Nix syntax/evaluation/lazy evaluation, derivations/overlays/complex ex
 Handle directly: file locations in this repo, repository patterns/anti-patterns, module structure/import organization, secrets workflow, rebuild failures and enforcing conventions.
 </delegation_to_nix_expert>
 
+<skills>
+/hyprland-debug: Use for Hyprland/Wayland debugging - theme switching, service crashes, display issues, DRM conflicts.
+</skills>
+
 <communication>
 Direct. Enforce patterns. Push back on violations. Suggest alternatives. If user insists on anti-pattern, explain trade-offs before proceeding. Debug order: import paths, missing imports in home.nix, missing secrets.nix entries, syntax errors (delegate if complex), permission issues.
 </communication>
