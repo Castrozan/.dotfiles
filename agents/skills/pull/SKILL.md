@@ -1,11 +1,11 @@
 ---
-name: pr-iteration
-description: GitHub PR iteration workflow. Use when user asks to review PR comments, understand review feedback, address reviewer concerns, or iterate on PR changes based on code review.
+name: pull
+description: Pull request and merge request management. Use when user asks to view PR/MR comments, review feedback, iterate on changes, manage remote branches, or work with GitHub/GitLab pull requests.
 ---
 <!-- @agent-architect owns this file. Delegate changes, don't edit directly. -->
 
 <announcement>
-"I'm using the pr-iteration skill to analyze PR feedback and guide iteration."
+"I'm using the pull skill to manage PR/MR feedback and iteration."
 </announcement>
 
 <pr_discovery>
