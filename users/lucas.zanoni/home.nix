@@ -37,6 +37,7 @@
     ../../home/modules/neovim.nix
     ../../home/modules/obsidian.nix
     ../../home/modules/opencode
+    ../../home/modules/opencode/private.nix
     ../../home/modules/openfortivpn
     ../../home/modules/ralph-tui.nix
     ../../home/modules/readItNow.nix
