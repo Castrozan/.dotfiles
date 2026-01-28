@@ -119,7 +119,7 @@
     "tooltip-format-ethernet": "⇣{bandwidthDownBytes}  ⇡{bandwidthUpBytes}",
     "tooltip-format-disconnected": "Disconnected",
     "interval": 3,
-    "on-click": "wezterm -e nmtui"
+    "on-click": "omarchy-network"
   },
   "battery": {
     "format": "{capacity}% {icon}",

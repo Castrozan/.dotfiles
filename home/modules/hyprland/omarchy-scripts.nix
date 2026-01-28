@@ -24,5 +24,6 @@ in
     (mkScript "omarchy-monitor-switch" ../../../bin/omarchy/monitor-switch)
     (mkScript "omarchy-summon-brave" ../../../bin/omarchy/summon-brave)
     (mkScript "omarchy-screenshot" ../../../bin/omarchy/screenshot)
+    (mkScript "omarchy-network" ../../../bin/omarchy/network)
   ];
 }

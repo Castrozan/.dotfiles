@@ -6,6 +6,5 @@
     ./agents.nix
     ./skills.nix
     ./rules.nix
-    ./private.nix
   ];
 }
