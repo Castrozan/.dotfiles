@@ -4,8 +4,8 @@
     Unit = {
       Description = "Hyprland idle daemon";
       Documentation = "https://github.com/hyprwm/hypridle";
-      PartOf = [ "graphical-session.target" ];
       After = [ "graphical-session.target" ];
+      ConditionEnvironment = "WAYLAND_DISPLAY";
     };
 
     Service = {

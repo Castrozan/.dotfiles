@@ -16,8 +16,8 @@ in
     Unit = {
       Description = "Sway Notification Center";
       Documentation = "https://github.com/ErikReider/SwayNotificationCenter";
-      PartOf = [ "graphical-session.target" ];
       After = [ "graphical-session.target" ];
+      ConditionEnvironment = "WAYLAND_DISPLAY";
     };
 
     Service = {
