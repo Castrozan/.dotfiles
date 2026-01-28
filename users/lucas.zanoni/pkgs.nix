@@ -19,7 +19,6 @@
       clipse
       curl
       delta
-      discord
       docker-compose
       fastfetch
       flameshot
