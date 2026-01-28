@@ -5,25 +5,28 @@
     Forget everything you know about nix, this is just a framework to configure apps and dotfiles.
   '';
 
-  # Inputs are used to declare package definitions and modules to fetch from the internet
   inputs = {
-    # For stable packages definitions
+    # Core
     nixpkgs.url = "github:nixos/nixpkgs/nixos-25.11";
-    # For packages not yet in nixpkgs
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
-    # For latest bleeding edge packages - daily* updated with: $ nix flake update nixpkgs-latest
     nixpkgs-latest.url = "github:nixos/nixpkgs/nixos-unstable";
-    home-manager.url = "github:nix-community/home-manager/release-25.11";
-    home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
-    # External flakes to be available for dependency injection
-    # Tag-based (stable releases)
+    # Flake framework
+    flake-parts.url = "github:hercules-ci/flake-parts";
+
+    home-manager = {
+      url = "github:nix-community/home-manager/release-25.11";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    # External flakes - Tag-based (stable releases)
     tui-notifier.url = "github:castrozan/tui-notifier/1.0.1";
     readItNow-rc.url = "github:castrozan/readItNow-rc/1.1.0";
     opencode.url = "github:anomalyco/opencode/v1.1.36";
     zed-editor.url = "github:zed-industries/zed/v0.218.5";
     devenv.url = "github:cachix/devenv/v1.9.2";
-    # Branch/default (actively maintained)
+
+    # External flakes - Branch/default (actively maintained)
     cbonsai.url = "github:castrozan/cbonsai";
     cmatrix.url = "github:castrozan/cmatrix";
     tuisvn.url = "github:castrozan/tuisvn";
@@ -38,86 +41,92 @@
     };
   };
 
-  # Outputs are what this flake provides, such as pkgs and system configurations
   outputs =
     inputs@{
+      flake-parts,
       nixpkgs,
-      nixpkgs-unstable,
-      nixpkgs-latest,
       home-manager,
       ...
     }:
-    # let in notation to declare local variables for output scope
     let
-      system = "x86_64-linux"; # linux system architecture
+      # Shared configuration
+      system = "x86_64-linux";
       home-version = "25.11";
       nixpkgs-version = "25.11";
-      # Configure nixpkgs then attribute it to pkgs at the same time
-      pkgs = import nixpkgs {
-        inherit system;
-        config.allowUnfree = true;
-      };
-      unstable = import nixpkgs-unstable {
-        inherit system;
-        config.allowUnfree = true;
-      };
-      latest = import nixpkgs-latest {
-        inherit system;
-        config.allowUnfree = true;
-      };
+
+      mkPkgs =
+        nixpkgs:
+        import nixpkgs {
+          inherit system;
+          config.allowUnfree = true;
+        };
+
+      pkgs = mkPkgs nixpkgs;
+      unstable = mkPkgs inputs.nixpkgs-unstable;
+      latest = mkPkgs inputs.nixpkgs-latest;
+
       specialArgsBase = {
         inherit
-          nixpkgs-version
-          home-version
-          unstable
           inputs
+          unstable
           latest
+          home-version
+          nixpkgs-version
           ;
       };
-    in
-    {
-      # homeConfigurations.${username}@${system}
-      # is a standalone home manager configuration for a user and system architecture
-      # ./bin/rebuild for how to apply the flake
-      homeConfigurations =
-        let
-          # Function definition
-          mkHomeConfigFor = username: {
-            "${username}@${system}" = home-manager.lib.homeManagerConfiguration {
-              inherit pkgs;
 
-              extraSpecialArgs = specialArgsBase // {
-                inherit username;
-              };
-
-              modules = [ ./users/${username}/home.nix ];
-            };
+      # Helper to create home-manager configuration
+      mkHomeConfig =
+        username:
+        home-manager.lib.homeManagerConfiguration {
+          inherit pkgs;
+          extraSpecialArgs = specialArgsBase // {
+            inherit username;
           };
-        in
-        # Function call with arguments
-        mkHomeConfigFor "lucas.zanoni";
+          modules = [
+            ./configurations/home/${username}.nix
+          ];
+        };
 
-      # nixosConfigurations.${username} is a NixOS system configuration for a user
-      # ./bin/rebuild for how to apply
-      nixosConfigurations =
-        let
-          username = "zanoni";
+      # Helper to create NixOS configuration
+      mkNixosConfig =
+        { hostname, username }:
+        nixpkgs.lib.nixosSystem {
+          inherit system;
           specialArgs = specialArgsBase // {
             inherit username;
           };
-        in
-        {
-          "${username}" = nixpkgs.lib.nixosSystem {
-            inherit specialArgs;
-            inherit system;
+          modules = [
+            ./configurations/nixos/${hostname}.nix
+            home-manager.nixosModules.home-manager
+            {
+              home-manager = {
+                useGlobalPkgs = true;
+                useUserPackages = true;
+                backupFileExtension = "backup";
+                extraSpecialArgs = specialArgsBase // {
+                  inherit username;
+                };
+                users.${username} = import ./configurations/home/${username}.nix;
+              };
+            }
+          ];
+        };
+    in
+    flake-parts.lib.mkFlake { inherit inputs; } {
+      systems = [ "x86_64-linux" ];
 
-            modules = [
-              ./hosts/dellg15
-              ./users/${username}/nixos.nix
-              home-manager.nixosModules.home-manager
-              (import ./users/${username}/nixos-home-config.nix)
-            ];
+      flake = {
+        homeConfigurations = {
+          "lucas.zanoni@${system}" = mkHomeConfig "lucas.zanoni";
+        };
+
+        nixosConfigurations = {
+          zanoni = mkNixosConfig {
+            hostname = "zanoni";
+            username = "zanoni";
           };
         };
+      };
     };
 }

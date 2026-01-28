@@ -8,7 +8,6 @@
     ./home/asoundrc.nix
     ./home/session-vars.nix
 
-    ../../home/core.nix
     ../../home/scripts
     ../../home/modules/atuin.nix
     ../../home/modules/bad-apple.nix
