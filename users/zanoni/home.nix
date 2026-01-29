@@ -12,6 +12,7 @@
     ../../home/modules/cbonsai.nix
     ../../home/modules/ccost.nix
     ../../home/modules/clawdbot.nix
+    ../../home/modules/hey-cleber.nix
     ../../home/modules/claude
     ../../home/modules/claudemem.nix
     ../../home/modules/cmatrix.nix

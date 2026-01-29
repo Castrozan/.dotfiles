@@ -56,6 +56,10 @@ in
 
   # Programs
   programs = {
+    # Screen locker - needs NixOS-level enable for DRM/PAM permissions
+    hyprlock.enable = true;
+    # NOTE: programs.hyprlock pulls in hypridle. We don't want auto-lock,
+    # so hypridle.service is masked via ~/.config/systemd/user/hypridle.service -> /dev/null
     # More hyprland configuration in home/hyprland.nix
     hyprland = {
       enable = true;
@@ -104,12 +108,20 @@ in
     identityPaths = lib.mkIf (builtins.pathExists ../../secrets/id_ed25519_phone.age) [
       "/home/zanoni/.ssh/id_ed25519"
     ];
-    secrets = lib.mkIf (builtins.pathExists ../../secrets/id_ed25519_phone.age) {
-      "id_ed25519_phone" = {
-        file = ../../secrets/id_ed25519_phone.age;
-        owner = "zanoni";
-        mode = "600";
+    secrets =
+      lib.mkIf (builtins.pathExists ../../secrets/id_ed25519_phone.age) {
+        "id_ed25519_phone" = {
+          file = ../../secrets/id_ed25519_phone.age;
+          owner = "zanoni";
+          mode = "600";
+        };
+      }
+      // lib.optionalAttrs (builtins.pathExists ../../secrets/clawdbot-gateway-token.age) {
+        "clawdbot-gateway-token" = {
+          file = ../../secrets/clawdbot-gateway-token.age;
+          owner = "zanoni";
+          mode = "400";
+        };
       };
-    };
   };
 }

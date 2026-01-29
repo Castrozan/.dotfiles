@@ -3,4 +3,5 @@ let
 in
 {
   "id_ed25519_phone.age".publicKeys = [ personal_key ];
+  "clawdbot-gateway-token.age".publicKeys = [ personal_key ];
 }
