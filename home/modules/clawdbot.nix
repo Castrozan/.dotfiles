@@ -1,7 +1,7 @@
 # clawdbot - Personal AI assistant
 # https://github.com/moltbot/moltbot
 # https://clawd.bot
-{ pkgs, ... }:
+{ pkgs, lib, ... }:
 let
   nodejs = pkgs.nodejs_22;
 
@@ -24,10 +24,69 @@ let
       exec "$HOME/.local/bin/clawdbot" "$@"
     fi
   '';
+
+  # Layer 1: Nix-managed workspace files (read-only symlinks)
+  clawdbotDir = ../../agents/clawdbot;
+  clawdbotFiles = builtins.filter (name: lib.hasSuffix ".md" name) (
+    builtins.attrNames (builtins.readDir clawdbotDir)
+  );
+  workspaceSymlinks = builtins.listToAttrs (
+    map (filename: {
+      name = "clawd/.nix/${filename}";
+      value = {
+        source = clawdbotDir + "/${filename}";
+      };
+    }) clawdbotFiles
+  );
+
+  # Shared rules (from agents/rules/*.md)
+  rulesDir = ../../agents/rules;
+  rulesFiles = builtins.filter (name: lib.hasSuffix ".md" name) (
+    builtins.attrNames (builtins.readDir rulesDir)
+  );
+  rulesSymlinks = builtins.listToAttrs (
+    map (filename: {
+      name = "clawd/.nix/rules/${filename}";
+      value = {
+        source = rulesDir + "/${filename}";
+      };
+    }) rulesFiles
+  );
+
+  # Shared skills (from agents/skills/*/SKILL.md)
+  skillsDir = ../../agents/skills;
+  skillDirs = builtins.filter (name:
+    (builtins.readDir skillsDir).${name} == "directory"
+  ) (builtins.attrNames (builtins.readDir skillsDir));
+  skillsSymlinks = builtins.listToAttrs (
+    map (dirname: {
+      name = "clawd/.nix/skills/${dirname}/SKILL.md";
+      value = {
+        source = skillsDir + "/${dirname}/SKILL.md";
+      };
+    }) skillDirs
+  );
+
+  # Shared subagents (from agents/subagent/*.md)
+  subagentDir = ../../agents/subagent;
+  subagentFiles = builtins.filter (name: lib.hasSuffix ".md" name) (
+    builtins.attrNames (builtins.readDir subagentDir)
+  );
+  subagentSymlinks = builtins.listToAttrs (
+    map (filename: {
+      name = "clawd/.nix/subagents/${filename}";
+      value = {
+        source = subagentDir + "/${filename}";
+      };
+    }) subagentFiles
+  );
 in
 {
-  home.packages = [
-    clawdbot
-    nodejs
-  ];
+  home = {
+    packages = [
+      clawdbot
+      nodejs
+    ];
+    file = workspaceSymlinks // rulesSymlinks // skillsSymlinks // subagentSymlinks;
+  };
 }

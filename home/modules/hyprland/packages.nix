@@ -24,7 +24,7 @@ in
         swaybg
         libnotify
         hyprlock
-        hypridle
+
         playerctl
         pamixer
         swayosd
