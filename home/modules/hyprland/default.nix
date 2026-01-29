@@ -8,7 +8,7 @@ let
     "swaync.service"
     "hyprshell.service"
     "swayosd.service"
-    "hypridle.service"
+
   ];
 in
 {
@@ -22,7 +22,7 @@ in
     ./wlogout.nix
     ./swayosd.nix
     ./waybar-service.nix
-    ./hypridle-service.nix
+
     ./swaync-service.nix
     ../fuzzel.nix
   ];

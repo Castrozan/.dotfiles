@@ -22,6 +22,7 @@ in
     ../../nixos/modules/tailscale.nix
     ../../nixos/modules/man-cache.nix
     ../../nixos/modules/lid-switch.nix
+    ../../nixos/modules/sudo.nix
   ];
 
   # Disable lid switch suspend for laptop used as server/with external monitor
