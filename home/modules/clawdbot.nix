@@ -1,7 +1,7 @@
 # clawdbot - Personal AI assistant
 # https://github.com/moltbot/moltbot
 # https://clawd.bot
-{ pkgs, ... }:
+{ pkgs, lib, ... }:
 let
   nodejs = pkgs.nodejs_22;
 
@@ -24,10 +24,27 @@ let
       exec "$HOME/.local/bin/clawdbot" "$@"
     fi
   '';
+
+  # Layer 1: Nix-managed workspace files (read-only symlinks)
+  clawdbotDir = ../../agents/clawdbot;
+  clawdbotFiles = builtins.filter (name: lib.hasSuffix ".md" name) (
+    builtins.attrNames (builtins.readDir clawdbotDir)
+  );
+  workspaceSymlinks = builtins.listToAttrs (
+    map (filename: {
+      name = "clawd/.nix/${filename}";
+      value = {
+        source = clawdbotDir + "/${filename}";
+      };
+    }) clawdbotFiles
+  );
 in
 {
-  home.packages = [
-    clawdbot
-    nodejs
-  ];
+  home = {
+    packages = [
+      clawdbot
+      nodejs
+    ];
+    file = workspaceSymlinks;
+  };
 }
