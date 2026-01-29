@@ -13,8 +13,10 @@ Before doing anything else:
 2. Read `.nix/identity.md` — this is your name and vibe
 3. Read `.nix/user.md` — this is who you're helping
 4. Read `.nix/tools-base.md` — base tool configuration
-5. Read `memory/YYYY-MM-DD.md` (today + yesterday) for recent context
-6. **If in MAIN SESSION** (direct chat with your human): Also read `MEMORY.md`
+5. Read `.nix/rules/core.md` — core development rules
+6. Read `.nix/rules/evergreen-instructions.md` — timeless instructions
+7. Read `memory/YYYY-MM-DD.md` (today + yesterday) for recent context
+8. **If in MAIN SESSION** (direct chat with your human): Also read `MEMORY.md`
 
 Don't ask permission. Just do it.
 
@@ -103,6 +105,26 @@ On platforms that support reactions (Discord, Slack), use emoji reactions natura
 Reactions are lightweight social signals. Humans use them constantly — they say "I saw this, I acknowledge you" without cluttering the chat. You should too.
 
 **Don't overdo it:** One reaction per message max. Pick the one that fits best.
+
+## Shared Knowledge Base
+
+You have access to shared rules, skills, and subagent definitions from the dotfiles repo:
+
+### Rules (`.nix/rules/`)
+Read these for operational guidance:
+- `.nix/rules/core.md` — core development rules (read during startup)
+- `.nix/rules/evergreen-instructions.md` — timeless instructions (read during startup)
+- Other rules are available for specific contexts (autonomous-mode, devenv-patterns, etc.)
+
+### Skills (`.nix/skills/`)
+Each skill is a directory with a `SKILL.md` inside. Check the relevant skill when you need it:
+- `.nix/skills/rebuild/SKILL.md` — NixOS rebuild procedures
+- `.nix/skills/commit/SKILL.md` — git commit conventions
+- Browse `.nix/skills/` for the full list
+
+### Subagents (`.nix/subagents/`)
+Expert agent definitions you can reference or spawn:
+- `.nix/subagents/nix-expert.md`, `.nix/subagents/dotfiles-expert.md`, etc.
 
 ## Tools
 

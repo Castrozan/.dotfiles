@@ -38,6 +38,48 @@ let
       };
     }) clawdbotFiles
   );
+
+  # Shared rules (from agents/rules/*.md)
+  rulesDir = ../../agents/rules;
+  rulesFiles = builtins.filter (name: lib.hasSuffix ".md" name) (
+    builtins.attrNames (builtins.readDir rulesDir)
+  );
+  rulesSymlinks = builtins.listToAttrs (
+    map (filename: {
+      name = "clawd/.nix/rules/${filename}";
+      value = {
+        source = rulesDir + "/${filename}";
+      };
+    }) rulesFiles
+  );
+
+  # Shared skills (from agents/skills/*/SKILL.md)
+  skillsDir = ../../agents/skills;
+  skillDirs = builtins.filter (name:
+    (builtins.readDir skillsDir).${name} == "directory"
+  ) (builtins.attrNames (builtins.readDir skillsDir));
+  skillsSymlinks = builtins.listToAttrs (
+    map (dirname: {
+      name = "clawd/.nix/skills/${dirname}/SKILL.md";
+      value = {
+        source = skillsDir + "/${dirname}/SKILL.md";
+      };
+    }) skillDirs
+  );
+
+  # Shared subagents (from agents/subagent/*.md)
+  subagentDir = ../../agents/subagent;
+  subagentFiles = builtins.filter (name: lib.hasSuffix ".md" name) (
+    builtins.attrNames (builtins.readDir subagentDir)
+  );
+  subagentSymlinks = builtins.listToAttrs (
+    map (filename: {
+      name = "clawd/.nix/subagents/${filename}";
+      value = {
+        source = subagentDir + "/${filename}";
+      };
+    }) subagentFiles
+  );
 in
 {
   home = {
@@ -45,6 +87,6 @@ in
       clawdbot
       nodejs
     ];
-    file = workspaceSymlinks;
+    file = workspaceSymlinks // rulesSymlinks // skillsSymlinks // subagentSymlinks;
   };
 }
