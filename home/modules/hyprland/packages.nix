@@ -23,7 +23,7 @@ in
         hyprpaper
         swaybg
         libnotify
-        hyprlock
+        # hyprlock — installed via programs.hyprlock.enable in NixOS for DRM/PAM perms
 
         playerctl
         pamixer

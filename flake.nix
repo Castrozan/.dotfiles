@@ -30,6 +30,7 @@
     install-nothing.url = "github:castrozan/install-nothing";
     nixgl.url = "github:nix-community/nixGL";
     agenix.url = "github:ryantm/agenix";
+    hey-cleber.url = "github:castrozan/hey-cleber/v2.0.0";
     voxtype.url = "github:peteonrails/voxtype";
     hyprland.url = "github:hyprwm/Hyprland/v0.53.0";
     hyprshell = {

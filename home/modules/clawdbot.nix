@@ -55,9 +55,9 @@ let
 
   # Shared skills (from agents/skills/*/SKILL.md)
   skillsDir = ../../agents/skills;
-  skillDirs = builtins.filter (name:
-    (builtins.readDir skillsDir).${name} == "directory"
-  ) (builtins.attrNames (builtins.readDir skillsDir));
+  skillDirs = builtins.filter (name: (builtins.readDir skillsDir).${name} == "directory") (
+    builtins.attrNames (builtins.readDir skillsDir)
+  );
   skillsSymlinks = builtins.listToAttrs (
     map (dirname: {
       name = "clawd/.nix/skills/${dirname}/SKILL.md";

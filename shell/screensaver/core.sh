@@ -14,6 +14,25 @@ _check_command_available() {
     return 1
 }
 
+# Wait for a tmux pane's shell to be ready (showing a prompt)
+_wait_for_pane_ready() {
+    local pane="$1"
+    local max_attempts=30  # 3 seconds max
+    local attempt=0
+
+    while [ $attempt -lt $max_attempts ]; do
+        # Check if the pane has a shell prompt (cursor at end of line with $)
+        local content
+        content=$(tmux capture-pane -t "$pane" -p 2>/dev/null | grep -c '\$')
+        if [ "$content" -gt 0 ]; then
+            return 0
+        fi
+        sleep 0.1
+        attempt=$((attempt + 1))
+    done
+    return 1
+}
+
 _start_screensaver_tmux_session() {
     if tmux has-session -t screensaver 2>/dev/null; then
         return 0
@@ -32,11 +51,6 @@ _start_screensaver_tmux_session() {
 
     if [ ${#available_commands[@]} -gt 0 ]; then
         local first_cmd="${available_commands[0]}"
-
-        # Send first command to the initial pane (full pane, left side)
-        # Note: tmux panes are 1-indexed, not 0-indexed
-        tmux send-keys -t screensaver.1 "$first_cmd" C-m
-
         local bottom_height="${SCREENSAVER_BOTTOM_HEIGHT:-15}"
 
         if [ ${#available_commands[@]} -gt 1 ]; then
@@ -45,21 +59,27 @@ _start_screensaver_tmux_session() {
 
             # If there are 3 commands: create vertical split on right side
             if [ ${#available_commands[@]} -gt 2 ]; then
-                # Send third command to pane 2
-                tmux send-keys -t screensaver.2 "${available_commands[2]}" C-m
-
                 # Split pane 2 vertically to create bottom-right pane (pane 3)
                 tmux split-window -v -p "$bottom_height" -t screensaver.2
-                # Send second command to pane 3
-                tmux send-keys -t screensaver.3 "${available_commands[1]}" C-m
-            else
-                # Send third command to pane 2
-                tmux send-keys -t screensaver.2 "${available_commands[1]}" C-m
             fi
+        fi
+
+        # Wait for all panes to be ready, then send commands
+        _wait_for_pane_ready "screensaver.1"
+        tmux send-keys -t screensaver.1 "$first_cmd" C-m
+
+        if [ ${#available_commands[@]} -gt 2 ]; then
+            _wait_for_pane_ready "screensaver.2"
+            tmux send-keys -t screensaver.2 "${available_commands[2]}" C-m
+
+            _wait_for_pane_ready "screensaver.3"
+            tmux send-keys -t screensaver.3 "${available_commands[1]}" C-m
+        elif [ ${#available_commands[@]} -gt 1 ]; then
+            _wait_for_pane_ready "screensaver.2"
+            tmux send-keys -t screensaver.2 "${available_commands[1]}" C-m
         fi
 
         # Focus back to the first pane
         tmux select-pane -t screensaver.1
     fi
 }
-
