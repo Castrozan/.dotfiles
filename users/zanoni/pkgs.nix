@@ -28,7 +28,10 @@
         withVencord = true; # For customization
       })
       docker
+      dust
+      eza
       fastfetch
+      fd
       ffmpeg
       firefox
       fzf
@@ -64,6 +67,7 @@
       scrcpy
       sqlite
       tig # git log visualizer
+      tealdeer
       tmux
       unzip
       usbutils

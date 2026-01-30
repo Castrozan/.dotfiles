@@ -19,6 +19,7 @@ in
         xdg-desktop-portal
         xdg-desktop-portal-gtk
 
+        xwayland
         wl-clipboard
         hyprpaper
         swaybg

@@ -7,8 +7,10 @@
 
     ../../home/core.nix
     ../../home/scripts
+    ../../home/modules/atuin.nix
     ../../home/modules/bad-apple.nix
     ../../home/modules/bash.nix
+    ../../home/modules/bluetui.nix
     ../../home/modules/cbonsai.nix
     ../../home/modules/ccost.nix
     ../../home/modules/clawdbot.nix
@@ -42,6 +44,7 @@
     ../../home/modules/voxtype.nix
     ../../home/modules/wezterm.nix # https://tmuxai.dev/terminal-compatibility/
     ../../home/modules/whisper-input
+    ../../home/modules/systemd-manager-tui.nix
     ../../home/modules/testing
   ];
 }
