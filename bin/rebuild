@@ -18,6 +18,25 @@ if [ "$ID" = "nixos" ]; then
     USERNAME="$(whoami)"
     # Note: Pure evaluation - tested on home-manager only, NixOS testing pending
     sudo env "NIXPKGS_ALLOW_UNFREE=1" nixos-rebuild switch --flake "$DOTFILES_PATH#$USERNAME"
+
+    # Post-rebuild: reload running environment
+    # 1. Reload Hyprland config (keybinds, window rules, env vars, etc.)
+    if command -v hyprctl &>/dev/null && hyprctl monitors &>/dev/null 2>&1; then
+        echo ":: Reloading Hyprland..."
+        hyprctl reload
+
+        # 2. Restart graphical user services (waybar, swaync, etc.)
+        echo ":: Restarting graphical services..."
+        systemctl --user daemon-reload
+        systemctl --user restart waybar.service swaync.service swayosd.service 2>/dev/null || true
+
+        # 3. Re-apply theme colors
+        if command -v omarchy-restart-hyprctl &>/dev/null; then
+            omarchy-restart-hyprctl
+        fi
+
+        echo ":: Environment fully refreshed."
+    fi
 else
     # Standalone home-manager for non-NixOS systems
     # Detect architecture and build config name dynamically
