@@ -1,36 +1,38 @@
-# clawdbot - Personal AI assistant
-# https://github.com/moltbot/moltbot
-# https://clawd.bot
+# OpenClaw (formerly Clawdbot/Moltbot) - Personal AI assistant
+# https://github.com/openclaw/openclaw
+# https://openclaw.ai
 { pkgs, lib, ... }:
 let
   nodejs = pkgs.nodejs_22;
 
-  clawdbot = pkgs.writeShellScriptBin "clawdbot" ''
+  # OpenClaw wrapper — prefers npm-global install, falls back to installer
+  openclaw = pkgs.writeShellScriptBin "openclaw" ''
     export PATH="${nodejs}/bin:$PATH"
     export NPM_CONFIG_PREFIX="$HOME/.npm-global"
-    CLAWDBOT_DIR="$HOME/.clawdbot"
-    NPM_BIN="$HOME/.npm-global/bin/clawdbot"
-
-    if [ ! -d "$CLAWDBOT_DIR" ]; then
-      echo "Installing clawdbot..."
-      ${pkgs.curl}/bin/curl -fsSL https://molt.bot/install.sh | ${pkgs.bash}/bin/bash
-    fi
+    OPENCLAW_DIR="$HOME/.openclaw"
+    NPM_BIN="$HOME/.npm-global/bin/openclaw"
+    LEGACY_NPM_BIN="$HOME/.npm-global/bin/clawdbot"
 
     if [ -x "$NPM_BIN" ]; then
       exec "$NPM_BIN" "$@"
-    elif [ -x "$HOME/.local/bin/clawdbot" ]; then
-      exec "$HOME/.local/bin/clawdbot" "$@"
-    elif [ -x "$CLAWDBOT_DIR/moltbot.mjs" ]; then
-      exec ${nodejs}/bin/node "$CLAWDBOT_DIR/moltbot.mjs" "$@"
+    elif [ -x "$LEGACY_NPM_BIN" ]; then
+      exec "$LEGACY_NPM_BIN" "$@"
+    elif [ -x "$OPENCLAW_DIR/openclaw.mjs" ]; then
+      exec ${nodejs}/bin/node "$OPENCLAW_DIR/openclaw.mjs" "$@"
     else
-      echo "clawdbot not found. Running installer..."
-      ${pkgs.curl}/bin/curl -fsSL https://molt.bot/install.sh | ${pkgs.bash}/bin/bash
+      echo "OpenClaw not found. Running installer..."
+      ${pkgs.curl}/bin/curl -fsSL https://openclaw.ai/install.sh | ${pkgs.bash}/bin/bash
       if [ -x "$NPM_BIN" ]; then
         exec "$NPM_BIN" "$@"
       else
-        exec "$HOME/.local/bin/clawdbot" "$@"
+        exec "$HOME/.local/bin/openclaw" "$@"
       fi
     fi
+  '';
+
+  # Backwards compatibility: clawdbot → openclaw
+  clawdbot = pkgs.writeShellScriptBin "clawdbot" ''
+    exec ${openclaw}/bin/openclaw "$@"
   '';
 
   # Layer 1: Nix-managed workspace files (read-only symlinks)
@@ -92,7 +94,8 @@ in
 {
   home = {
     packages = [
-      clawdbot
+      openclaw
+      clawdbot # backwards compat shim
       nodejs
     ];
     file = workspaceSymlinks // rulesSymlinks // skillsSymlinks // subagentSymlinks;
