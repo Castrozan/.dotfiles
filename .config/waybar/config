@@ -147,8 +147,8 @@
     "format-connected": "󰂱",
     "format-no-controller": "",
     "tooltip-format": "Devices connected: {num_connections}",
-    "on-click": "omarchy-bluetooth",
-    "on-click-right": "omarchy-bluetooth --full"
+    "on-click": "wezterm start -- bluetui",
+    "on-click-right": "wezterm start -- bluetui"
   },
   "pulseaudio": {
     "format": "{icon}",

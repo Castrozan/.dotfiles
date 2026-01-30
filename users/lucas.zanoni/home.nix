@@ -13,6 +13,7 @@
     ../../home/modules/atuin.nix
     ../../home/modules/bad-apple.nix
     ../../home/modules/bananas.nix
+    ../../home/modules/bluetui.nix
     ../../home/modules/cbonsai.nix
     ../../home/modules/ccost.nix
     ../../home/modules/claude
@@ -49,6 +50,7 @@
     ../../home/modules/tmux.nix
     ../../home/modules/tuisvn.nix
     ../../home/modules/tui-notifier.nix
+    ../../home/modules/systemd-manager-tui.nix
     ../../home/modules/vial.nix
     ../../home/modules/vscode
     ../../home/modules/vesktop.nix

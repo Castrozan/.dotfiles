@@ -7,21 +7,29 @@ let
 
   clawdbot = pkgs.writeShellScriptBin "clawdbot" ''
     export PATH="${nodejs}/bin:$PATH"
+    export NPM_CONFIG_PREFIX="$HOME/.npm-global"
     CLAWDBOT_DIR="$HOME/.clawdbot"
+    NPM_BIN="$HOME/.npm-global/bin/clawdbot"
 
     if [ ! -d "$CLAWDBOT_DIR" ]; then
       echo "Installing clawdbot..."
       ${pkgs.curl}/bin/curl -fsSL https://molt.bot/install.sh | ${pkgs.bash}/bin/bash
     fi
 
-    if [ -x "$HOME/.local/bin/clawdbot" ]; then
+    if [ -x "$NPM_BIN" ]; then
+      exec "$NPM_BIN" "$@"
+    elif [ -x "$HOME/.local/bin/clawdbot" ]; then
       exec "$HOME/.local/bin/clawdbot" "$@"
     elif [ -x "$CLAWDBOT_DIR/moltbot.mjs" ]; then
       exec ${nodejs}/bin/node "$CLAWDBOT_DIR/moltbot.mjs" "$@"
     else
       echo "clawdbot not found. Running installer..."
       ${pkgs.curl}/bin/curl -fsSL https://molt.bot/install.sh | ${pkgs.bash}/bin/bash
-      exec "$HOME/.local/bin/clawdbot" "$@"
+      if [ -x "$NPM_BIN" ]; then
+        exec "$NPM_BIN" "$@"
+      else
+        exec "$HOME/.local/bin/clawdbot" "$@"
+      fi
     fi
   '';
 

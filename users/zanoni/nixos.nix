@@ -105,23 +105,20 @@ in
   };
 
   age = {
-    identityPaths = lib.mkIf (builtins.pathExists ../../secrets/id_ed25519_phone.age) [
+    identityPaths = [
       "/home/zanoni/.ssh/id_ed25519"
     ];
-    secrets =
-      lib.mkIf (builtins.pathExists ../../secrets/id_ed25519_phone.age) {
-        "id_ed25519_phone" = {
-          file = ../../secrets/id_ed25519_phone.age;
-          owner = "zanoni";
-          mode = "600";
-        };
-      }
-      // lib.optionalAttrs (builtins.pathExists ../../secrets/clawdbot-gateway-token.age) {
-        "clawdbot-gateway-token" = {
-          file = ../../secrets/clawdbot-gateway-token.age;
-          owner = "zanoni";
-          mode = "400";
-        };
+    secrets = {
+      "id_ed25519_phone" = {
+        file = ../../secrets/id_ed25519_phone.age;
+        owner = "zanoni";
+        mode = "600";
       };
+      "clawdbot-gateway-token" = {
+        file = ../../secrets/clawdbot-gateway-token.age;
+        owner = "zanoni";
+        mode = "400";
+      };
+    };
   };
 }

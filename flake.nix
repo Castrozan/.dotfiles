@@ -19,18 +19,21 @@
     # External flakes to be available for dependency injection
     # Tag-based (stable releases)
     tui-notifier.url = "github:castrozan/tui-notifier/1.0.1";
+    systemd-manager-tui.url = "github:matheus-git/systemd-manager-tui";
+    systemd-manager-tui.inputs.nixpkgs.follows = "nixpkgs";
     readItNow-rc.url = "github:castrozan/readItNow-rc/1.1.0";
     opencode.url = "github:anomalyco/opencode/v1.1.36";
     zed-editor.url = "github:zed-industries/zed/v0.218.5";
     devenv.url = "github:cachix/devenv/v1.9.2";
     # Branch/default (actively maintained)
+    bluetui.url = "github:castrozan/bluetui/v0.9.1";
     cbonsai.url = "github:castrozan/cbonsai";
     cmatrix.url = "github:castrozan/cmatrix";
     tuisvn.url = "github:castrozan/tuisvn";
     install-nothing.url = "github:castrozan/install-nothing";
     nixgl.url = "github:nix-community/nixGL";
     agenix.url = "github:ryantm/agenix";
-    hey-cleber.url = "github:castrozan/hey-cleber/v2.0.0";
+    hey-cleber.url = "github:castrozan/hey-cleber/v2.0.1";
     voxtype.url = "github:peteonrails/voxtype";
     hyprland.url = "github:hyprwm/Hyprland/v0.53.0";
     hyprshell = {
