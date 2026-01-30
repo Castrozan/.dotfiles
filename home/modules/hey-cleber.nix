@@ -1,21 +1,21 @@
-# Hey Cleber — Always-on voice assistant for Clawdbot
+# Hey Clever — Always-on voice assistant for Clawdbot
 # https://github.com/castrozan/hey-cleber
 { inputs, pkgs, ... }:
 {
-  imports = [ inputs.hey-cleber.homeManagerModules.hey-cleber ];
+  imports = [ inputs.hey-cleber.homeManagerModules.hey-clever ];
 
-  services.hey-cleber = {
+  services.hey-clever = {
     enable = true;
     keywords = [
+      "clever"
+      "klever"
       "cleber"
       "kleber"
-      "clever"
       "cleaver"
-      "clebert"
+      "clevert"
       "kleiber"
       "klebber"
       "cleyber"
-      "klever"
     ];
     gatewayUrl = "http://localhost:18789";
     whisperBin = "${pkgs.openai-whisper}/bin/whisper";
@@ -23,5 +23,5 @@
   };
 
   # Load gateway token from agenix-decrypted secret (not hardcoded)
-  systemd.user.services.hey-cleber.Service.EnvironmentFile = "/run/agenix/clawdbot-gateway-token";
+  systemd.user.services.hey-clever.Service.EnvironmentFile = "/run/agenix/clawdbot-gateway-token";
 }
