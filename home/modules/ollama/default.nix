@@ -1,3 +1,6 @@
-{ pkgs, ... }:
-
-import ./ollama.nix { inherit pkgs; }
+{ ... }:
+{
+  imports = [
+    ./ollama.nix
+  ];
+}
