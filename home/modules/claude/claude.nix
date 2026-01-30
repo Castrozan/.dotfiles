@@ -1,8 +1,8 @@
 { pkgs, ... }:
 let
-  version = "2.1.20";
+  version = "2.1.25";
   platform = "linux-x64";
-  sha256 = "+dNpj1N4pIbbLU7qXID5XCzrQQ+86p/8VwO1qslXT8w=";
+  sha256 = "aWE18OzK96QHAWiEUUaDP6T8k6YZH+Amp1F69NLhT+w=";
   bucket = "https://storage.googleapis.com/claude-code-dist-86c565f3-f756-42ad-8dfa-d59b1c096819/claude-code-releases";
 
   claude-code-unwrapped = pkgs.stdenv.mkDerivation {
