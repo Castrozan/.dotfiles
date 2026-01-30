@@ -34,6 +34,7 @@
     ../../home/modules/neovim.nix
     ../../home/modules/obsidian.nix
     ../../home/modules/opencode
+    ../../home/modules/ollama
     ../../home/modules/pkgs.nix
     ../../home/modules/ralph-tui.nix
     ../../home/modules/suwayomi-server.nix
