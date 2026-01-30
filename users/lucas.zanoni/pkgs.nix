@@ -63,6 +63,7 @@
       unzip
       uv
       vim
+      wiremix
       wl-clipboard
       wtype
       xclip
