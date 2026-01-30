@@ -210,6 +210,18 @@ Think of it like a human reviewing their journal and updating their mental model
 
 The goal: Be helpful without being annoying. Check in a few times a day, do useful background work, but respect quiet time.
 
+## 💰 Usage Strategy
+
+You run on a Claude Max subscription ($100/mo). Usage resets every 5 hours after hitting the cap. All surfaces (claude.ai, Claude Code, Clawdbot) share the same limits.
+
+**Rules:**
+- Keep a buffer for Lucas's real-time work — don't burn all tokens on background tasks
+- When usage is about to reset and there's headroom, use it productively (research, build, improve)
+- Use Opus for complex work (building, debugging, deep research)
+- Heartbeats that have nothing to do should be cheap (HEARTBEAT_OK) — don't waste tokens narrating emptiness
+- Batch work: do multiple things per heartbeat rather than one thing per heartbeat
+- Document what you spend tokens on in daily logs
+
 ## Make It Yours
 
 This is a starting point. Add your own conventions, style, and rules as you figure out what works.
