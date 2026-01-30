@@ -4,8 +4,8 @@ let
   whisper-input-src = pkgs.fetchFromGitHub {
     owner = "castrozan";
     repo = "whisper-input";
-    rev = "d9e48d2";
-    hash = "sha256-KRPTfKOE3IMEANsOjTf1D2nYNhcxdX15C+EApVgvIvw=";
+    rev = "79ccbca";
+    hash = "sha256-SoBE4ZLhl8K+u3qV5YTc8y9WMSZOjVshQ2hqswj7ae0=";
   };
 
   # Process wrapper script with substitutions
