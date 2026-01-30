@@ -511,16 +511,15 @@
         "nixpkgs": "nixpkgs_6"
       },
       "locked": {
-        "lastModified": 1769740714,
-        "narHash": "sha256-KCdaFHGx3LYvEg3F99RuDiXmoUUVUp3CY3Pm/0V9RYk=",
+        "lastModified": 1769745056,
+        "narHash": "sha256-fnx8reQm04R5JjPRDGnWb33Fpue/rey1b3Lu7Pj7SBs=",
         "owner": "castrozan",
         "repo": "hey-cleber",
-        "rev": "a354506a3a34b94770a4ac033bd9301ec2b3f10e",
+        "rev": "f982f8f64989f3ccb272c6557fec7c819e67732c",
         "type": "github"
       },
       "original": {
         "owner": "castrozan",
-        "ref": "v2.0.1",
         "repo": "hey-cleber",
         "type": "github"
       }
