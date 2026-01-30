@@ -6,5 +6,6 @@
     playerctl
     pulsemixer
     tree
+    wiremix
   ];
 }
