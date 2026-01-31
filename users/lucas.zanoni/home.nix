@@ -16,7 +16,7 @@
     ../../home/modules/bluetui.nix
     ../../home/modules/cbonsai.nix
     ../../home/modules/ccost.nix
-    ../../home/modules/clawdbot
+    ../../home/modules/openclaw
     ../../home/modules/claude
     ../../home/modules/claudemem.nix
     #../../home/modules/clipse.nix TODO: clipse service does no work with gnome, migrate docs/clipse-gnome-issues.md
