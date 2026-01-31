@@ -21,6 +21,7 @@ let
     "IDENTITY.md" = "identity.md";
     "USER.md" = "user.md";
     "AGENTS.md" = "agents.md";
+    "GRID.md" = "grid.md";
   };
   rootSymlinks = lib.mapAttrs' (rootName: srcName: {
     name = "clawd/${rootName}";
@@ -70,7 +71,25 @@ let
       };
     }) subagentFiles
   );
+
+  # Agent grid (grid.md as Project Context + shared scripts)
+  gridSymlinks = {
+    "clawd/GRID.md" = { source = clawdbotDir + "/grid.md"; };
+  };
+
+  scriptsDir = ../../../agents/scripts;
+  scriptFiles = builtins.filter (name: lib.hasSuffix ".sh" name) (
+    builtins.attrNames (builtins.readDir scriptsDir)
+  );
+  scriptsSymlinks = builtins.listToAttrs (
+    map (filename: {
+      name = "clawd/scripts/${filename}";
+      value = {
+        source = scriptsDir + "/${filename}";
+      };
+    }) scriptFiles
+  );
 in
 {
-  home.file = workspaceSymlinks // rootSymlinks // rulesSymlinks // skillsSymlinks // subagentSymlinks;
+  home.file = workspaceSymlinks // rootSymlinks // rulesSymlinks // skillsSymlinks // subagentSymlinks // gridSymlinks // scriptsSymlinks;
 }
