@@ -1,6 +1,6 @@
 { pkgs, ... }:
 let
-  lib = pkgs.lib;
+  inherit (pkgs) lib;
   version = "0.15.2";
 
   ollama = pkgs.stdenv.mkDerivation {
