@@ -119,6 +119,16 @@ in
         owner = "zanoni";
         mode = "400";
       };
+      "telegram-bot-token" = {
+        file = ../../secrets/telegram-bot-token.age;
+        owner = "zanoni";
+        mode = "400";
+      };
+      "nvidia-api-key" = {
+        file = ../../secrets/nvidia-api-key.age;
+        owner = "zanoni";
+        mode = "400";
+      };
     };
   };
 }

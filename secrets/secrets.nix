@@ -4,4 +4,6 @@ in
 {
   "id_ed25519_phone.age".publicKeys = [ personal_key ];
   "clawdbot-gateway-token.age".publicKeys = [ personal_key ];
+  "telegram-bot-token.age".publicKeys = [ personal_key ];
+  "nvidia-api-key.age".publicKeys = [ personal_key ];
 }

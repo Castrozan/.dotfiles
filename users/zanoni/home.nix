@@ -13,7 +13,7 @@
     ../../home/modules/bluetui.nix
     ../../home/modules/cbonsai.nix
     ../../home/modules/ccost.nix
-    ../../home/modules/clawdbot.nix
+    ../../home/modules/clawdbot
     ../../home/modules/hey-cleber.nix
     ../../home/modules/claude
     ../../home/modules/claudemem.nix
@@ -34,7 +34,7 @@
     ../../home/modules/neovim.nix
     ../../home/modules/obsidian.nix
     ../../home/modules/opencode
-    ../../home/modules/ollama
+    # ../../home/modules/ollama  # TEMP: disabled — corrupted download in nix store, re-enable after nix-collect-garbage
     ../../home/modules/pkgs.nix
     ../../home/modules/ralph-tui.nix
     ../../home/modules/suwayomi-server.nix
