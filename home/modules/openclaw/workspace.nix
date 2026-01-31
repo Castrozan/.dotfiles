@@ -73,7 +73,9 @@ let
 
   # Agent grid (grid.md as Project Context + shared scripts)
   gridSymlinks = {
-    "clawd/GRID.md" = { source = agentDir + "/grid.md"; };
+    "clawd/GRID.md" = {
+      source = agentDir + "/grid.md";
+    };
   };
 
   scriptsDir = ../../../agents/scripts;
@@ -90,5 +92,12 @@ let
   );
 in
 {
-  home.file = workspaceSymlinks // rootSymlinks // rulesSymlinks // skillsSymlinks // subagentSymlinks // gridSymlinks // scriptsSymlinks;
+  home.file =
+    workspaceSymlinks
+    // rootSymlinks
+    // rulesSymlinks
+    // skillsSymlinks
+    // subagentSymlinks
+    // gridSymlinks
+    // scriptsSymlinks;
 }

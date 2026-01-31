@@ -5,7 +5,7 @@
 # Bun is required (provided by Nix).
 { pkgs, ... }:
 let
-  bun = pkgs.bun;
+  inherit (pkgs) bun;
   prefix = "$HOME/.local/share/qmd";
 
   qmd = pkgs.writeShellScriptBin "qmd" ''
@@ -26,5 +26,8 @@ let
   '';
 in
 {
-  home.packages = [ qmd bun ];
+  home.packages = [
+    qmd
+    bun
+  ];
 }
