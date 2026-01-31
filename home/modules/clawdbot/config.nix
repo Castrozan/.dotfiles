@@ -1,7 +1,15 @@
-# OpenClaw base config JSON — browser, auth, agents, gateway, tools, hooks, skills, plugins
+# OpenClaw base config JSON — Nix-managed settings
+# Keys defined here ALWAYS win over runtime config on rebuild.
+# Runtime-only keys (added via config.patch) are preserved.
 { ... }:
 let
-  clawdbotBaseConfig = {
+  openclawBaseConfig = {
+    env = {
+      shellEnv = {
+        enabled = true;
+      };
+    };
+
     browser = {
       executablePath = "/run/current-system/sw/bin/brave";
       defaultProfile = "brave";
@@ -26,8 +34,6 @@ let
       };
     };
 
-    model = "anthropic/claude-opus-4-5";
-
     agents = {
       defaults = {
         model = {
@@ -36,6 +42,9 @@ let
         models = {
           "anthropic/claude-opus-4-5" = {
             alias = "opus";
+          };
+          "anthropic/claude-sonnet-4-5" = {
+            alias = "sonnet";
           };
         };
         workspace = "/home/zanoni/clawd";
@@ -99,6 +108,10 @@ let
       };
     };
 
+    messages = {
+      ackReactionScope = "group-mentions";
+    };
+
     commands = {
       native = "auto";
       nativeSkills = "auto";
@@ -124,12 +137,46 @@ let
       };
     };
 
+    channels = {
+      whatsapp = {
+        dmPolicy = "allowlist";
+        selfChatMode = true;
+        allowFrom = [ "+48999768269" ];
+        groupPolicy = "open";
+        mediaMaxMb = 50;
+        groups = {
+          "*" = {
+            requireMention = true;
+          };
+        };
+        debounceMs = 0;
+      };
+      telegram = {
+        enabled = true;
+        dmPolicy = "allowlist";
+        tokenFile = "/run/agenix/telegram-bot-token";
+        groups = {
+          "*" = {
+            requireMention = true;
+          };
+        };
+        allowFrom = [
+          "8128478854" # Lucas
+        ];
+        groupPolicy = "open";
+        streamMode = "partial";
+        reactionNotifications = "all";
+        reactionLevel = "minimal";
+      };
+    };
+
     gateway = {
       port = 18789;
       mode = "local";
       bind = "loopback";
       auth = {
         mode = "token";
+        # Token read from agenix at runtime; this is a fallback
         token = "REDACTED_TOKEN";
       };
       tailscale = {
@@ -164,5 +211,6 @@ let
   };
 in
 {
-  home.file.".clawdbot/clawdbot.base.json".text = builtins.toJSON clawdbotBaseConfig;
+  # Write base config to ~/.openclaw/ (new canonical path)
+  home.file.".openclaw/openclaw.base.json".text = builtins.toJSON openclawBaseConfig;
 }
