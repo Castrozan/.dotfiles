@@ -14,11 +14,6 @@ in
     }
     // lib.optionalAttrs workpcSecretExists {
       "workpc" = {
-        hostname = "192.168.7.24";
-        user = "lucas.zanoni";
-        identityFile = "/run/agenix/id_ed25519_workpc";
-      };
-      "workpc-remote" = {
         hostname = "REDACTED_IP_2";
         user = "lucas.zanoni";
         identityFile = "/run/agenix/id_ed25519_workpc";
@@ -27,12 +22,6 @@ in
     // lib.optionalAttrs phoneSecretExists {
       "phone" = {
         hostname = "REDACTED_IP";
-        user = "u0_a431";
-        port = 8022; # Termux uses port 8022
-        identityFile = "/run/agenix/id_ed25519_phone";
-      };
-      "phone-remote" = {
-        hostname = "REDACTED_IP"; # Phone's Tailscale IP
         user = "u0_a431";
         port = 8022;
         identityFile = "/run/agenix/id_ed25519_phone";
