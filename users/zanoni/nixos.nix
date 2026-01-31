@@ -119,6 +119,11 @@ in
         owner = "zanoni";
         mode = "400";
       };
+      "telegram-bot-token" = {
+        file = ../../secrets/telegram-bot-token.age;
+        owner = "zanoni";
+        mode = "400";
+      };
     };
   };
 }

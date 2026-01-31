@@ -146,7 +146,7 @@ let
       telegram = {
         enabled = true;
         dmPolicy = "allowlist";
-        botToken = "8372535078:AAFkGjEUAuzF9NqGPyir3-PxgLL2FJ8bzxQ";
+        # botToken managed at runtime via ~/.clawdbot/clawdbot.json (secret - do not commit)
         groups = {
           "*" = {
             requireMention = true;
