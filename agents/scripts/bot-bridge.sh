@@ -65,8 +65,7 @@ send_api() {
   curl -s --max-time 120 -X POST "http://${HOST}:${PORT}/v1/chat/completions" \
     -H "Authorization: Bearer ${TOKEN}" \
     -H "Content-Type: application/json" \
-    -H "x-openclaw-agent-id: main" \
-    -H "x-openclaw-session-key: agent:main:default" \
+    -H "x-openclaw-session-key: agent:main:main" \
     -d "{
       \"model\": \"anthropic/claude-opus-4-5\",
       \"messages\": [{\"role\": \"user\", \"content\": ${json_msg}}]
@@ -89,8 +88,7 @@ send_api_async() {
   curl -s --max-time 5 -X POST "http://${HOST}:${PORT}/v1/chat/completions" \
     -H "Authorization: Bearer ${TOKEN}" \
     -H "Content-Type: application/json" \
-    -H "x-openclaw-agent-id: main" \
-    -H "x-openclaw-session-key: agent:main:default" \
+    -H "x-openclaw-session-key: agent:main:main" \
     -d "{
       \"model\": \"anthropic/claude-opus-4-5\",
       \"messages\": [{\"role\": \"user\", \"content\": ${json_msg}}],

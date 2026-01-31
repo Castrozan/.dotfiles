@@ -35,7 +35,9 @@ Use the `bot-bridge.sh` script to send messages to other agents:
 
 ### Routing to Main Session
 
-The bot-bridge script includes `x-openclaw-session-key: agent:main:default` header in all API calls. This routes messages to the target agent's **main session** (same session as Telegram DMs), not a new stateless session.
+The bot-bridge script includes `x-openclaw-session-key: agent:main:main` header in all API calls. This routes messages to the target agent's **main session** (same session as Telegram DMs), not a new stateless session.
+
+**Session key format**: `agent:<agentId>:<mainKey>` — for DMs with default `dmScope: "main"`, the key is `agent:main:main`. Using `agent:main:default` creates a SEPARATE session that doesn't share context with Telegram.
 
 **Critical**: Without this header, each bridge call would create a disconnected session with no memory or context sharing.
 
@@ -75,7 +77,7 @@ This sends directly to Lucas via Telegram, bypassing the HTTP bridge.
 
 - **Transport**: HTTP API over Tailscale mesh network
 - **Authentication**: Bearer tokens (stored in `~/.openclaw/grid-tokens/<agent>.token`)
-- **Session routing**: `user` field in API calls ensures main session targeting
+- **Session routing**: `x-openclaw-session-key: agent:main:main` header routes to Telegram DM session
 - **Model**: All agents use Claude Opus 4.5 via OpenClaw gateway
 
 ## Extensibility
