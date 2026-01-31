@@ -10,6 +10,16 @@ in
 
     matchBlocks = {
       "*" = { };
+      "workpc" = {
+        hostname = "192.168.7.24";
+        user = "lucas.zanoni";
+        identityFile = "~/.ssh/id_ed25519";
+      };
+      "workpc-remote" = {
+        hostname = "REDACTED_IP_2";
+        user = "lucas.zanoni";
+        identityFile = "~/.ssh/id_ed25519";
+      };
     }
     // lib.optionalAttrs phoneSecretExists {
       "phone" = {
