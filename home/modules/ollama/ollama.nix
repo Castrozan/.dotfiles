@@ -34,7 +34,7 @@ let
       runHook postInstall
     '';
 
-    meta = with lib; {
+    meta = {
       description = "Get up and running with large language models locally";
       homepage = "https://github.com/ollama/ollama";
       changelog = "https://github.com/ollama/ollama/releases/tag/v${version}";
