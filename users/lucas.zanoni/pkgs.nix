@@ -39,7 +39,7 @@
       go
       google-chrome
       insomnia
-      jetbrains.idea-ultimate
+      jetbrains.idea
       jq
       kubectl
       ksnip
