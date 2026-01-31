@@ -5,6 +5,204 @@
 let
   nodejs = pkgs.nodejs_22;
 
+  # Nix-managed core OpenClaw config (runtime fields are merged in activation)
+  clawdbotBaseConfig = {
+    browser = {
+      executablePath = "/run/current-system/sw/bin/brave";
+      defaultProfile = "brave";
+      profiles = {
+        brave = {
+          cdpUrl = "http://127.0.0.1:9222";
+          color = "#FB542B";
+        };
+        clawd = {
+          cdpPort = 18800;
+          color = "#FF4500";
+        };
+      };
+    };
+
+    auth = {
+      profiles = {
+        "anthropic:default" = {
+          provider = "anthropic";
+          mode = "token";
+        };
+      };
+    };
+
+    model = "anthropic/claude-opus-4-5";
+
+    agents = {
+      defaults = {
+        model = {
+          primary = "anthropic/claude-opus-4-5";
+        };
+        models = {
+          "anthropic/claude-opus-4-5" = {
+            alias = "opus";
+          };
+        };
+        workspace = "/home/zanoni/clawd";
+        compaction = {
+          mode = "safeguard";
+        };
+        heartbeat = {
+          every = "15m";
+          target = "telegram";
+          to = "8128478854";
+        };
+        maxConcurrent = 4;
+        subagents = {
+          maxConcurrent = 8;
+        };
+      };
+    };
+
+    tools = {
+      media = {
+        audio = {
+          enabled = true;
+          maxBytes = 20971520;
+          language = "pt";
+          models = [
+            {
+              type = "cli";
+              command = "/run/current-system/sw/bin/whisper";
+              args = [
+                "{{MediaPath}}"
+                "--language"
+                "pt"
+                "--model"
+                "small"
+                "--output_format"
+                "txt"
+                "--output_dir"
+                "/tmp/whisper-out"
+              ];
+            }
+          ];
+        };
+      };
+      elevated = {
+        enabled = true;
+        allowFrom = {
+          whatsapp = [ "+554899768269" ];
+          telegram = [ "8128478854" ];
+        };
+      };
+      exec = {
+        host = "gateway";
+        security = "full";
+        ask = "off";
+        pathPrepend = [
+          "/run/wrappers/bin"
+          "/run/current-system/sw/bin"
+          "/etc/profiles/per-user/zanoni/bin"
+          "/home/zanoni/.nix-profile/bin"
+        ];
+      };
+    };
+
+    commands = {
+      native = "auto";
+      nativeSkills = "auto";
+      bash = true;
+      config = true;
+      restart = true;
+    };
+
+    hooks = {
+      internal = {
+        enabled = true;
+        entries = {
+          "boot-md" = {
+            enabled = true;
+          };
+          "session-memory" = {
+            enabled = true;
+          };
+          "command-logger" = {
+            enabled = true;
+          };
+        };
+      };
+    };
+
+    channels = {
+      whatsapp = {
+        dmPolicy = "allowlist";
+        selfChatMode = true;
+        allowFrom = [ "+48999768269" ];
+        groupPolicy = "open";
+        mediaMaxMb = 50;
+        groups = {
+          "*" = {
+            requireMention = true;
+          };
+        };
+        debounceMs = 0;
+      };
+      telegram = {
+        enabled = true;
+        dmPolicy = "allowlist";
+        botToken = "8372535078:AAFkGjEUAuzF9NqGPyir3-PxgLL2FJ8bzxQ";
+        groups = {
+          "*" = {
+            requireMention = true;
+          };
+        };
+        allowFrom = [
+          "8128478854"
+          "6716764001"
+          "*"
+        ];
+        groupPolicy = "open";
+        streamMode = "partial";
+        reactionNotifications = "all";
+        reactionLevel = "minimal";
+      };
+    };
+
+    gateway = {
+      port = 18789;
+      mode = "local";
+      bind = "loopback";
+      auth = {
+        mode = "token";
+        token = "REDACTED_TOKEN";
+      };
+      tailscale = {
+        mode = "off";
+        resetOnExit = false;
+      };
+      http = {
+        endpoints = {
+          chatCompletions = {
+            enabled = true;
+          };
+        };
+      };
+    };
+
+    skills = {
+      install = {
+        nodeManager = "npm";
+      };
+    };
+
+    plugins = {
+      entries = {
+        whatsapp = {
+          enabled = true;
+        };
+        telegram = {
+          enabled = true;
+        };
+      };
+    };
+  };
+
   # OpenClaw wrapper — prefers npm-global install, falls back to installer
   openclaw = pkgs.writeShellScriptBin "openclaw" ''
     export PATH="${nodejs}/bin:$PATH"
@@ -98,6 +296,23 @@ in
       clawdbot # backwards compat shim
       nodejs
     ];
-    file = workspaceSymlinks // rulesSymlinks // skillsSymlinks // subagentSymlinks;
+    file = workspaceSymlinks // rulesSymlinks // skillsSymlinks // subagentSymlinks // {
+      ".clawdbot/clawdbot.base.json".text = builtins.toJSON clawdbotBaseConfig;
+    };
+
+    activation.mergeClawdbotConfig = {
+      after = [ "writeBoundary" ];
+      before = [ ];
+      data = ''
+        BASE="$HOME/.clawdbot/clawdbot.base.json"
+        RUNTIME="$HOME/.clawdbot/clawdbot.json"
+        mkdir -p "$HOME/.clawdbot"
+        if [ -f "$RUNTIME" ]; then
+          ${pkgs.jq}/bin/jq -s '.[1] * .[0]' "$RUNTIME" "$BASE" > "$RUNTIME.tmp" && mv "$RUNTIME.tmp" "$RUNTIME"
+        else
+          cp "$BASE" "$RUNTIME"
+        fi
+      '';
+    };
   };
 }
