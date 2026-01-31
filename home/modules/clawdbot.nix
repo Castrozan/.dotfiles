@@ -146,16 +146,15 @@ let
       telegram = {
         enabled = true;
         dmPolicy = "allowlist";
-        # botToken managed at runtime via ~/.clawdbot/clawdbot.json (secret - do not commit)
+        tokenFile = "/run/agenix/telegram-bot-token";
         groups = {
           "*" = {
             requireMention = true;
           };
         };
         allowFrom = [
-          "8128478854"
-          "6716764001"
-          "*"
+          "8128478854"  # Lucas
+          "6716764001"  # Joel
         ];
         groupPolicy = "open";
         streamMode = "partial";
@@ -247,6 +246,21 @@ let
     }) clawdbotFiles
   );
 
+  # Files that OpenClaw reads as "Project Context" from workspace root
+  # These are symlinked at ~/clawd/ so they're version-controlled but readable by OpenClaw
+  nixManagedRootFiles = {
+    "SOUL.md" = "soul.md";
+    "IDENTITY.md" = "identity.md";
+    "USER.md" = "user.md";
+    "AGENTS.md" = "agents.md";
+  };
+  rootSymlinks = lib.mapAttrs' (rootName: srcName: {
+    name = "clawd/${rootName}";
+    value = {
+      source = clawdbotDir + "/${srcName}";
+    };
+  }) nixManagedRootFiles;
+
   # Shared rules (from agents/rules/*.md)
   rulesDir = ../../agents/rules;
   rulesFiles = builtins.filter (name: lib.hasSuffix ".md" name) (
@@ -296,7 +310,7 @@ in
       clawdbot # backwards compat shim
       nodejs
     ];
-    file = workspaceSymlinks // rulesSymlinks // skillsSymlinks // subagentSymlinks // {
+    file = workspaceSymlinks // rootSymlinks // rulesSymlinks // skillsSymlinks // subagentSymlinks // {
       ".clawdbot/clawdbot.base.json".text = builtins.toJSON clawdbotBaseConfig;
     };
 
