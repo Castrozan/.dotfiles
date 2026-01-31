@@ -129,6 +129,11 @@ in
         owner = "zanoni";
         mode = "400";
       };
+      "id_ed25519_workpc" = {
+        file = ../../secrets/id_ed25519_workpc.age;
+        owner = "zanoni";
+        mode = "600";
+      };
     };
   };
 }
