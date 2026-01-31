@@ -156,6 +156,15 @@ let
         dmPolicy = "allowlist";
         tokenFile = "/run/agenix/telegram-bot-token";
         groups = {
+          # Armada Lucas — both bots talk freely
+          "-1003768595045" = {
+            requireMention = false;
+            allowFrom = [
+              "8128478854"   # Lucas
+              "8523821709"   # Romário bot
+            ];
+          };
+          # All other groups — only respond when @mentioned
           "*" = {
             requireMention = true;
             allowFrom = [
