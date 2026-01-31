@@ -162,7 +162,6 @@ let
         };
         allowFrom = [
           "8128478854" # Lucas
-          "6716764001" # Joel
         ];
         groupPolicy = "open";
         streamMode = "partial";
