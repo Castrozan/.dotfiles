@@ -26,8 +26,7 @@ let
 
       # Extract the binary
       mkdir -p $out/bin
-      ${pkgs.zstd}/bin/zstd -d $src -o ollama.tar
-      tar -xzf ollama.tar -C $out/bin --strip-components=1 bin/ollama
+      ${pkgs.zstd}/bin/zstd -d $src | ${pkgs.gnutar}/bin/tar -xzf - -C $out/bin --strip-components=1 bin/ollama
 
       # Make executable
       chmod +x $out/bin/ollama
