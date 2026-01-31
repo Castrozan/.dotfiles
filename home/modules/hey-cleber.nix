@@ -23,5 +23,5 @@
   };
 
   # Load gateway token from agenix-decrypted secret (not hardcoded)
-  systemd.user.services.hey-clever.Service.EnvironmentFile = "/run/agenix/clawdbot-gateway-token";
+  systemd.user.services.hey-clever.Service.EnvironmentFile = "/run/agenix/openclaw-gateway-token";
 }
