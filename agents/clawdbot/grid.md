@@ -35,9 +35,9 @@ Use the `bot-bridge.sh` script to send messages to other agents:
 
 ### Routing to Main Session
 
-The bot-bridge script includes `"user": "8128478854"` in all API calls. This is Lucas's Telegram ID and ensures messages route to the target agent's **main session** (same session Lucas talks to via Telegram), not a new stateless session.
+The bot-bridge script includes `x-openclaw-session-key: agent:main:default` header in all API calls. This routes messages to the target agent's **main session** (same session as Telegram DMs), not a new stateless session.
 
-**Critical**: Without the `user` field, each bridge call would create a disconnected session with no memory or context sharing.
+**Critical**: Without this header, each bridge call would create a disconnected session with no memory or context sharing.
 
 ### Armada Lucas Relay
 
