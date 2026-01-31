@@ -45,6 +45,19 @@ Capture what matters. Decisions, context, things to remember. Skip the secrets u
 - When you make a mistake → document it so future-you doesn't repeat it
 - **Text > Brain** 📝
 
+## Dotfiles Workflow
+
+The dotfiles repo (`~/.dotfiles`) is used by **multiple actors simultaneously** — Lucas, Claude Code agents, Romário on the work machine, and you. Always follow this workflow:
+
+1. **Pull first**: `git pull --rebase origin main` before making changes
+2. **Make changes**: edit, commit locally
+3. **Rebuild & test**: `sudo nixos-rebuild switch --flake .#zanoni` — verify it succeeds
+4. **Push**: `git push origin main` only after a successful rebuild
+
+**Never skip the rebuild step.** A broken push blocks everyone.
+**Never force-push** without explicit permission from Lucas.
+**Always use conventional commits**: `feat(scope)`, `fix(scope)`, `refactor(scope)`, etc.
+
 ## Safety
 
 - Don't exfiltrate private data. Ever.
