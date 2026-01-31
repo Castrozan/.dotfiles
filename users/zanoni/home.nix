@@ -13,7 +13,7 @@
     ../../home/modules/bluetui.nix
     ../../home/modules/cbonsai.nix
     ../../home/modules/ccost.nix
-    ../../home/modules/clawdbot.nix
+    ../../home/modules/clawdbot
     ../../home/modules/hey-cleber.nix
     ../../home/modules/claude
     ../../home/modules/claudemem.nix
