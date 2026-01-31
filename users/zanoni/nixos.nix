@@ -114,8 +114,8 @@ in
         owner = "zanoni";
         mode = "600";
       };
-      "clawdbot-gateway-token" = {
-        file = ../../secrets/clawdbot-gateway-token.age;
+      "openclaw-gateway-token" = {
+        file = ../../secrets/openclaw-gateway-token.age;
         owner = "zanoni";
         mode = "400";
       };

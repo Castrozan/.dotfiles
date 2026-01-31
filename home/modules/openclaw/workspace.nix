@@ -2,17 +2,17 @@
 { lib, ... }:
 let
   # Layer 1: Nix-managed workspace files (read-only symlinks)
-  clawdbotDir = ../../../agents/clawdbot;
-  clawdbotFiles = builtins.filter (name: lib.hasSuffix ".md" name) (
-    builtins.attrNames (builtins.readDir clawdbotDir)
+  agentDir = ../../../agents/openclaw;
+  agentFiles = builtins.filter (name: lib.hasSuffix ".md" name) (
+    builtins.attrNames (builtins.readDir agentDir)
   );
   workspaceSymlinks = builtins.listToAttrs (
     map (filename: {
       name = "clawd/.nix/${filename}";
       value = {
-        source = clawdbotDir + "/${filename}";
+        source = agentDir + "/${filename}";
       };
-    }) clawdbotFiles
+    }) agentFiles
   );
 
   # Files that OpenClaw reads as "Project Context" from workspace root
@@ -25,7 +25,7 @@ let
   rootSymlinks = lib.mapAttrs' (rootName: srcName: {
     name = "clawd/${rootName}";
     value = {
-      source = clawdbotDir + "/${srcName}";
+      source = agentDir + "/${srcName}";
     };
   }) nixManagedRootFiles;
 
@@ -73,7 +73,7 @@ let
 
   # Agent grid (grid.md as Project Context + shared scripts)
   gridSymlinks = {
-    "clawd/GRID.md" = { source = clawdbotDir + "/grid.md"; };
+    "clawd/GRID.md" = { source = agentDir + "/grid.md"; };
   };
 
   scriptsDir = ../../../agents/scripts;
