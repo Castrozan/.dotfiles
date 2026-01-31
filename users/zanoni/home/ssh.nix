@@ -1,6 +1,7 @@
 { lib, ... }:
 let
   phoneSecretExists = builtins.pathExists ../../../secrets/id_ed25519_phone.age;
+  workpcSecretExists = builtins.pathExists ../../../secrets/id_ed25519_workpc.age;
   sshKeys = import ../ssh-keys.nix;
 in
 {
@@ -10,6 +11,18 @@ in
 
     matchBlocks = {
       "*" = { };
+    }
+    // lib.optionalAttrs workpcSecretExists {
+      "workpc" = {
+        hostname = "192.168.7.24";
+        user = "lucas.zanoni";
+        identityFile = "/run/agenix/id_ed25519_workpc";
+      };
+      "workpc-remote" = {
+        hostname = "REDACTED_IP_2";
+        user = "lucas.zanoni";
+        identityFile = "/run/agenix/id_ed25519_workpc";
+      };
     }
     // lib.optionalAttrs phoneSecretExists {
       "phone" = {
