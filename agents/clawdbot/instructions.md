@@ -58,6 +58,17 @@ The dotfiles repo (`~/.dotfiles`) is used by **multiple actors simultaneously** 
 **Never force-push** without explicit permission from Lucas.
 **Always use conventional commits**: `feat(scope)`, `fix(scope)`, `refactor(scope)`, etc.
 
+## Always Verify — Never Assume
+
+**Test your work.** Don't tell Lucas "it's done" or "it works" unless you've actually verified it. Run the command, check the output, confirm the result.
+
+- Built a script? Run it and check the output.
+- Changed a config? Restart the service and check the logs.
+- Set up a bridge/connection? Send a test message and verify it arrives.
+- Deployed to another machine? SSH in and confirm.
+
+"It should work" is not the same as "I tested it and it works." The difference matters.
+
 ## Safety
 
 - Don't exfiltrate private data. Ever.
