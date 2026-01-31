@@ -1,34 +1,28 @@
-# OpenClaw package installation — wrapper scripts and nodejs
+# OpenClaw package — pinned version, npm install into Nix-managed prefix
+#
+# Version bumps: change `version` and rebuild.
+# The wrapper auto-installs if missing or outdated.
+# --ignore-scripts skips node-llama-cpp cmake build (unused).
 { pkgs, ... }:
 let
   nodejs = pkgs.nodejs_22;
+  version = "2026.1.30";
+  prefix = "$HOME/.local/share/openclaw-npm";
 
-  # OpenClaw wrapper — prefers npm-global install, falls back to installer
   openclaw = pkgs.writeShellScriptBin "openclaw" ''
-    export PATH="${nodejs}/bin:$PATH"
-    export NPM_CONFIG_PREFIX="$HOME/.npm-global"
-    OPENCLAW_DIR="$HOME/.openclaw"
-    NPM_BIN="$HOME/.npm-global/bin/openclaw"
-    LEGACY_NPM_BIN="$HOME/.npm-global/bin/clawdbot"
+    export PATH="${nodejs}/bin:''${PATH:+:$PATH}"
+    export NPM_CONFIG_PREFIX="${prefix}"
+    BIN="${prefix}/bin/openclaw"
 
-    if [ -x "$NPM_BIN" ]; then
-      exec "$NPM_BIN" "$@"
-    elif [ -x "$LEGACY_NPM_BIN" ]; then
-      exec "$LEGACY_NPM_BIN" "$@"
-    elif [ -x "$OPENCLAW_DIR/openclaw.mjs" ]; then
-      exec ${nodejs}/bin/node "$OPENCLAW_DIR/openclaw.mjs" "$@"
-    else
-      echo "OpenClaw not found. Running installer..."
-      ${pkgs.curl}/bin/curl -fsSL https://openclaw.ai/install.sh | ${pkgs.bash}/bin/bash
-      if [ -x "$NPM_BIN" ]; then
-        exec "$NPM_BIN" "$@"
-      else
-        exec "$HOME/.local/bin/openclaw" "$@"
-      fi
+    if [ ! -x "$BIN" ] || [ "$("$BIN" --version 2>/dev/null)" != "${version}" ]; then
+      echo "[nix] Installing OpenClaw ${version}..." >&2
+      ${nodejs}/bin/npm install -g "openclaw@${version}" \
+        --prefix "${prefix}" --ignore-scripts >&2
     fi
+
+    exec "$BIN" "$@"
   '';
 
-  # Backwards compatibility: clawdbot → openclaw
   clawdbot = pkgs.writeShellScriptBin "clawdbot" ''
     exec ${openclaw}/bin/openclaw "$@"
   '';
@@ -36,7 +30,7 @@ in
 {
   home.packages = [
     openclaw
-    clawdbot # backwards compat shim
+    clawdbot
     nodejs
   ];
 }
