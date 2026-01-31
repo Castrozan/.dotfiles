@@ -18,7 +18,6 @@ declare -A GRID_HOSTS=(
 
 # Telegram relay config
 ARMADA_LUCAS_GROUP="REDACTED_GROUP_ID"
-OWNER_USER_ID="8128478854"
 
 if [ -z "$TARGET" ] || [ -z "$MESSAGE" ]; then
   echo "Usage: $0 <agent-name> \"message\" [sync|async]" >&2
@@ -67,9 +66,9 @@ send_api() {
     -H "Authorization: Bearer ${TOKEN}" \
     -H "Content-Type: application/json" \
     -H "x-openclaw-agent-id: main" \
+    -H "x-openclaw-session-key: agent:main:default" \
     -d "{
       \"model\": \"anthropic/claude-opus-4-5\",
-      \"user\": \"${OWNER_USER_ID}\",
       \"messages\": [{\"role\": \"user\", \"content\": ${json_msg}}]
     }" | python3 -c "
 import json,sys
@@ -91,9 +90,9 @@ send_api_async() {
     -H "Authorization: Bearer ${TOKEN}" \
     -H "Content-Type: application/json" \
     -H "x-openclaw-agent-id: main" \
+    -H "x-openclaw-session-key: agent:main:default" \
     -d "{
       \"model\": \"anthropic/claude-opus-4-5\",
-      \"user\": \"${OWNER_USER_ID}\",
       \"messages\": [{\"role\": \"user\", \"content\": ${json_msg}}],
       \"stream\": true
     }" > /dev/null 2>&1 &
