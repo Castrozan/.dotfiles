@@ -21,7 +21,6 @@ let
     "IDENTITY.md" = "identity.md";
     "USER.md" = "user.md";
     "AGENTS.md" = "agents.md";
-    "GRID.md" = "grid.md";
   };
   rootSymlinks = lib.mapAttrs' (rootName: srcName: {
     name = "clawd/${rootName}";
