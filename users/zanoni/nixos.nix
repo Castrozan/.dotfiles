@@ -124,6 +124,11 @@ in
         owner = "zanoni";
         mode = "400";
       };
+      "nvidia-api-key" = {
+        file = ../../secrets/nvidia-api-key.age;
+        owner = "zanoni";
+        mode = "400";
+      };
     };
   };
 }
