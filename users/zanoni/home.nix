@@ -14,6 +14,7 @@
     ../../home/modules/cbonsai.nix
     ../../home/modules/ccost.nix
     ../../home/modules/openclaw
+    ../../home/modules/qmd.nix
     ../../home/modules/hey-cleber.nix
     ../../home/modules/claude
     ../../home/modules/claudemem.nix
