@@ -33,14 +33,18 @@ HOST_PORT="${GRID_HOSTS[$TARGET]}"
 HOST="${HOST_PORT%%:*}"
 PORT="${HOST_PORT##*:}"
 
-# Read token from file
-TOKEN_FILE="$HOME/.openclaw/grid-tokens/${TARGET}.token"
-if [ ! -f "$TOKEN_FILE" ]; then
-  echo "Token file not found: $TOKEN_FILE" >&2
-  echo "Create it: echo 'your-token' > $TOKEN_FILE && chmod 400 $TOKEN_FILE" >&2
+# Read token: prefer agenix path, fall back to legacy location
+AGENIX_TOKEN="/run/agenix/grid-token-${TARGET}"
+LEGACY_TOKEN="$HOME/.openclaw/grid-tokens/${TARGET}.token"
+
+if [ -f "$AGENIX_TOKEN" ]; then
+  TOKEN=$(cat "$AGENIX_TOKEN" | tr -d '[:space:]')
+elif [ -f "$LEGACY_TOKEN" ]; then
+  TOKEN=$(cat "$LEGACY_TOKEN" | tr -d '[:space:]')
+else
+  echo "Token not found: $AGENIX_TOKEN or $LEGACY_TOKEN" >&2
   exit 1
 fi
-TOKEN=$(cat "$TOKEN_FILE" | tr -d '[:space:]')
 
 # Escape message for JSON
 json_escape() {

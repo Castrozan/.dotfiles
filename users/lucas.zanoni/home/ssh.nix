@@ -5,14 +5,7 @@
     matchBlocks = {
       "*" = { };
       "dellg15" = {
-        hostname = "192.168.7.29";
-        port = 22;
-        user = "zanoni";
-        identityFile = "~/.ssh/id_ed25519";
-      };
-      "dellg15-remote" = {
         hostname = "REDACTED_IP_1";
-        port = 22;
         user = "zanoni";
         identityFile = "~/.ssh/id_ed25519";
       };
