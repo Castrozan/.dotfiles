@@ -134,6 +134,16 @@ in
         owner = "zanoni";
         mode = "600";
       };
+      "grid-token-romario" = {
+        file = ../../secrets/grid-token-romario.age;
+        owner = "zanoni";
+        mode = "400";
+      };
+      "grid-token-cleber" = {
+        file = ../../secrets/grid-token-cleber.age;
+        owner = "zanoni";
+        mode = "400";
+      };
     };
   };
 }

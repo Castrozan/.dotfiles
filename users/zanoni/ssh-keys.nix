@@ -8,12 +8,11 @@ let
   # Work PC SSH public key (for authorized_keys)
   workPcKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPdOdWOmB7IhmU70+VwgUJ40MHCOwhhrDBn6rq/Fskq/";
 
-  # Phone known_hosts entry (for SSH client)
-  phoneKnownHost = "[192.168.7.8]:8022 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOWURbP41AHeoQUC4qpSriTvVKWezdpPMGg1f3Ti7gyd";
+  # Phone known_hosts entry (Tailscale IP)
+  phoneKnownHost = "[100.79.224.17]:8022 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOWURbP41AHeoQUC4qpSriTvVKWezdpPMGg1f3Ti7gyd";
 
-  # Work PC known_hosts entries (LAN + Tailscale)
-  workPcKnownHost = "192.168.7.24 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPctlyhhY3Tf6RS/qs4aMUK/cIiZFG804XJFbd0ooWP/";
-  workPcKnownHostRemote = "100.127.240.60 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPctlyhhY3Tf6RS/qs4aMUK/cIiZFG804XJFbd0ooWP/";
+  # Work PC known_hosts entry (Tailscale IP)
+  workPcKnownHost = "100.127.240.60 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPctlyhhY3Tf6RS/qs4aMUK/cIiZFG804XJFbd0ooWP/";
 in
 {
   # List of all authorized SSH public keys
@@ -26,6 +25,5 @@ in
   knownHosts = [
     phoneKnownHost
     workPcKnownHost
-    workPcKnownHostRemote
   ];
 }

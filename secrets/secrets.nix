@@ -7,4 +7,6 @@ in
   "telegram-bot-token.age".publicKeys = [ personal_key ];
   "nvidia-api-key.age".publicKeys = [ personal_key ];
   "id_ed25519_workpc.age".publicKeys = [ personal_key ];
+  "grid-token-romario.age".publicKeys = [ personal_key ];
+  "grid-token-cleber.age".publicKeys = [ personal_key ];
 }
