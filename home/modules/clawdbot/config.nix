@@ -158,12 +158,20 @@ let
         groups = {
           "*" = {
             requireMention = true;
+            allowFrom = [
+              "8128478854"   # Lucas
+              "REDACTED_BOT_ID_2"   # Romário bot
+            ];
           };
         };
         allowFrom = [
           "8128478854" # Lucas
         ];
-        groupPolicy = "open";
+        groupAllowFrom = [
+          "8128478854"   # Lucas
+          "REDACTED_BOT_ID_2"   # Romário bot
+        ];
+        groupPolicy = "allowlist";
         streamMode = "partial";
         reactionNotifications = "all";
         reactionLevel = "minimal";
