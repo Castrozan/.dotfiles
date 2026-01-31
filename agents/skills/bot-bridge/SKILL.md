@@ -7,26 +7,42 @@ description: Cross-gateway bot-to-bot communication between Cleber and Romário 
 
 Talk to the other bot via HTTP API over Tailscale, with messages relayed to the Armada Lucas Telegram group so Lucas has full visibility.
 
-## Quick Usage
+## Async Mode (Default — Use This)
+
+Fire-and-forget. Send the message, relay to Armada Lucas, return immediately. The other bot receives the message and is instructed to reply back using THEIR bridge script, creating an async conversation.
 
 ```bash
-# Single message (1 round)
-~/scripts/bot-bridge.sh romario "Hey, what are you working on?"
+# Cleber asking Romário:
+~/clawd/scripts/bot-bridge.sh romario "Hey, what are you working on?"
 
-# Multi-round conversation (5 back-and-forth exchanges)
-~/scripts/bot-bridge.sh romario "Let's discuss the openclaw-aplicacoes project" 5
+# Romário asking Cleber:
+~/romario/scripts/bot-bridge.sh cleber "Hey, can you check something for me?"
 ```
 
-The `scripts/` path is relative to your workspace (`~/clawd/scripts/` for Cleber, `~/romario/scripts/` for Romário).
+**Why async?** The other bot may use tool calls (exec, browser, etc.) that take minutes. A synchronous call would time out waiting. Async lets each bot work at their own pace and reply when ready.
 
-## How It Works
+**Flow:**
+1. Your message is relayed to Armada Lucas (via your Telegram bot)
+2. Message is sent to the other bot's API (fire-and-forget)
+3. The other bot processes it, then calls THEIR bridge script to reply
+4. Their reply is relayed to Armada Lucas (via their Telegram bot)
+5. You receive the reply in your session and can respond again
 
-1. Asker sends their message → relayed to Armada Lucas group via their own Telegram bot
-2. Message sent to the other bot's `/v1/chat/completions` API over Tailscale
-3. Response received → relayed to Armada Lucas group via the answerer's Telegram bot
-4. For multi-round: roles swap each round, response becomes the next message
+**When you receive a message via the bridge, ALWAYS reply using the bridge script** so the conversation stays visible in Armada Lucas.
 
-Each bot sends messages to the group **as themselves** — Cleber messages come from @cleber_zanoni_bot, Romário messages from @romario_zanoni_bot. Lucas sees the full conversation.
+## Sync Mode (Short Messages Only)
+
+For quick exchanges where neither bot needs to run tools. Has a 120s timeout.
+
+```bash
+# Single sync exchange
+~/scripts/bot-bridge.sh romario "Quick question: what port are you on?" --sync
+
+# Multi-round sync (5 rounds)
+~/scripts/bot-bridge.sh romario "Let's brainstorm" --sync 5
+```
+
+⚠️ Only use sync for simple text replies. If the other bot needs to run commands, use async.
 
 ## Network Details
 
@@ -37,28 +53,15 @@ Each bot sends messages to the group **as themselves** — Cleber messages come 
 
 Both gateways use `bind: tailnet` with token auth.
 
-## Direct API Call (without script)
-
-```bash
-curl -s -X POST http://<target-ip>:<port>/v1/chat/completions \
-  -H "Authorization: Bearer <token>" \
-  -H "Content-Type: application/json" \
-  -H "x-clawdbot-agent-id: main" \
-  -d '{"model":"anthropic/claude-opus-4-5","messages":[{"role":"user","content":"your message"}]}'
-```
-
 ## When Lucas Says "Talk to Each Other"
 
-Run the bridge script with multiple rounds. Pick a topic from context or ask Lucas. Example:
-
-```bash
-~/scripts/bot-bridge.sh romario "Lucas wants us to discuss X. What do you think?" 5
-```
-
-Messages are tagged with sender identity (`[Message from Cleber 🤖]`) so the receiving bot knows who's talking.
+1. Pick a topic from context or ask Lucas
+2. Run async bridge: `~/scripts/bot-bridge.sh <target> "message"`
+3. When the other bot replies via bridge, continue the conversation the same way
+4. All messages appear in Armada Lucas for Lucas to follow
 
 ## Armada Lucas Group
 
 - Group ID: `-1003768595045`
 - Both bots relay via Telegram Bot API (`sendMessage`)
-- `requireMention: false` — bots can talk freely in this group
+- `requireMention: false` — bots talk freely in this group
