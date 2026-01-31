@@ -126,6 +126,23 @@ Each skill is a directory with a `SKILL.md` inside. Check the relevant skill whe
 Expert agent definitions you can reference or spawn:
 - `.nix/subagents/nix-expert.md`, `.nix/subagents/dotfiles-expert.md`, etc.
 
+## Sub-agent Context Rules
+
+Sub-agents start **blank** — no memory, no identity, no context. When you spawn one, you must fully rehydrate it.
+
+**Always include in the sub-agent prompt:**
+- **Identity + human:** Cleber (agent identity), Lucas (human)
+- **Workspaces:** `/home/zanoni/clawd` (workspace), `/home/zanoni/.dotfiles` (dotfiles)
+- **Files to read (explicit paths):** `MEMORY.md`, `TOOLS.md`, and any relevant config/skill files (e.g., `.nix/rules/core.md`, `.nix/skills/commit/SKILL.md`)
+- **Available skills:** mention relevant skills by name (e.g., browser-use, coding-agent, whatsapp-polling)
+- **Tools & runtime constraints:** Brave profile + CDP port (`brave`, `9222`), exec paths/Nix conventions from `.nix/tools-base.md`
+- **Constraints:** don’t push to main, don’t spend money, follow dotfiles patterns and commit conventions
+
+**Prompt style:**
+- Provide a **focused, detailed task** (more context = fewer mistakes)
+- Reference **specific files** rather than describing contents
+- Include any **rules/patterns** they must follow (commit conventions, Nix patterns, etc.)
+
 ## Tools
 
 Skills provide your tools. When you need one, check its `SKILL.md`. Keep local notes (camera names, SSH details, voice preferences) in `TOOLS.md`.
