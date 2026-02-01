@@ -1,27 +1,27 @@
 { config, ... }:
 let
-  ws = config.openclaw.workspace;
-  sharedSkillsDir = ../../../agents/skills;
+  workspacePath = config.openclaw.workspacePath;
+  agentSkillsPath = ../../../agents/skills;
 
-  skillDirNames = builtins.filter (name: (builtins.readDir sharedSkillsDir).${name} == "directory") (
-    builtins.attrNames (builtins.readDir sharedSkillsDir)
+  skillDirNames = builtins.filter (name: (builtins.readDir agentSkillsPath).${name} == "directory") (
+    builtins.attrNames (builtins.readDir agentSkillsPath)
   );
 
-  workspaceSkillEntries = builtins.listToAttrs (
+  skills = builtins.listToAttrs (
     builtins.concatMap (
       dirname:
       let
-        skillDir = sharedSkillsDir + "/${dirname}";
+        skillDir = agentSkillsPath + "/${dirname}";
         entries = builtins.readDir skillDir;
         files = builtins.filter (name: entries.${name} == "regular") (builtins.attrNames entries);
       in
       map (file: {
-        name = "${ws}/skills/${dirname}/${file}";
+        name = "${workspacePath}/skills/${dirname}/${file}";
         value.text = builtins.readFile (skillDir + "/${file}");
       }) files
     ) skillDirNames
   );
 in
 {
-  home.file = workspaceSkillEntries;
+  home.file = skills;
 }
