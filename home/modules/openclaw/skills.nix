@@ -17,7 +17,7 @@ let
       in
       map (file: {
         name = "${openclaw.workspacePath}/skills/${dirname}/${file}";
-        value.text = openclaw.templateFile (skillDir + "/${file}");
+        value.text = openclaw.substituteAgentConfig (skillDir + "/${file}");
       }) regularFiles
     ) skillDirectories
   );

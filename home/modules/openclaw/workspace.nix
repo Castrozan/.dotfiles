@@ -11,7 +11,7 @@ let
   workspaceFiles = builtins.listToAttrs (
     map (filename: {
       name = "${openclaw.workspacePath}/${filename}";
-      value.text = openclaw.templateFile (workspaceSourcePath + "/${filename}");
+      value.text = openclaw.substituteAgentConfig (workspaceSourcePath + "/${filename}");
     }) filenames
   );
 in

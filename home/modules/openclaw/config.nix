@@ -49,14 +49,14 @@ in
       description = "Default model ID for this agent";
     };
 
-    templateFile = lib.mkOption {
+    substituteAgentConfig = lib.mkOption {
       type = lib.types.functionTo lib.types.str;
       internal = true;
-      description = "Reads a file and replaces @placeholder@ tokens with agent config values";
+      description = "Reads a file and substitutes @placeholder@ tokens with agent config values";
     };
   };
 
-  config.openclaw.templateFile =
+  config.openclaw.substituteAgentConfig =
     let
       placeholders = [
         "@agentName@"

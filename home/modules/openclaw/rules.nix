@@ -8,7 +8,7 @@ let
   ruleFiles = builtins.listToAttrs (
     map (filename: {
       name = "${openclaw.workspacePath}/rules/${filename}";
-      value.text = openclaw.templateFile (rulesSourcePath + "/${filename}");
+      value.text = openclaw.substituteAgentConfig (rulesSourcePath + "/${filename}");
     }) filenames
   );
 in

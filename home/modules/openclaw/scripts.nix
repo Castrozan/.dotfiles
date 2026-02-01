@@ -11,7 +11,7 @@ let
     map (filename: {
       name = "${openclaw.workspacePath}/scripts/${filename}";
       value = {
-        text = openclaw.templateFile (scriptsSourcePath + "/${filename}");
+        text = openclaw.substituteAgentConfig (scriptsSourcePath + "/${filename}");
         executable = true;
       };
     }) filenames
