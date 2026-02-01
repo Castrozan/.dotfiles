@@ -1,15 +1,15 @@
 { config, ... }:
 let
   workspacePath = config.openclaw.workspacePath;
-  agentRulesDirectory = ../../../agents/rules;
+  rulesPath = ../../../agents/rules;
 
-  ruleFileNames = (builtins.attrNames (builtins.readDir agentRulesDirectory));
+  filenames = (builtins.attrNames (builtins.readDir rulesPath));
 
   rules = builtins.listToAttrs (
     map (filename: {
       name = "${workspacePath}/rules/${filename}";
-      value.text = builtins.readFile (agentRulesDirectory + "/${filename}");
-    }) ruleFileNames
+      value.text = builtins.readFile (rulesPath + "/${filename}");
+    }) filenames
   );
 in
 {

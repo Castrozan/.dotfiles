@@ -1,19 +1,19 @@
 { lib, config, ... }:
 let
-  ws = config.openclaw.workspace;
-  sharedScriptsDir = ../../../agents/scripts;
+  workspacePath = config.openclaw.workspacePath;
+  agentScriptsPath = ../../../agents/scripts;
 
-  scriptFiles = builtins.filter (
-    name: lib.hasSuffix ".sh" name || lib.hasSuffix ".py" name
-  ) (builtins.attrNames (builtins.readDir sharedScriptsDir));
+  scriptFilenames = builtins.filter (name: lib.hasSuffix ".sh" name || lib.hasSuffix ".py" name) (
+    builtins.attrNames (builtins.readDir agentScriptsPath)
+  );
 
-  scriptsSymlinks = builtins.listToAttrs (
+  scripts = builtins.listToAttrs (
     map (filename: {
-      name = "${ws}/scripts/${filename}";
-      value.source = sharedScriptsDir + "/${filename}";
-    }) scriptFiles
+      name = "${workspacePath}/scripts/${filename}";
+      value.source = agentScriptsPath + "/${filename}";
+    }) scriptFilenames
   );
 in
 {
-  home.file = scriptsSymlinks;
+  home.file = scripts;
 }
