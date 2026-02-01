@@ -4,13 +4,13 @@
   ...
 }:
 let
-  cfg = config.openclaw;
+  openclaw = config.openclaw;
 in
 {
   options.openclaw = {
     agent = lib.mkOption {
       type = lib.types.str;
-      description = "Agent identity name (e.g. cleber, romario)";
+      description = "Agent identity name";
     };
 
     agentEmoji = lib.mkOption {
@@ -49,42 +49,43 @@ in
       description = "Default model ID for this agent";
     };
 
-    # Computed values derived from config, available for templates
-    substitutions = lib.mkOption {
-      type = lib.types.listOf (lib.types.listOf lib.types.str);
+    templateFile = lib.mkOption {
+      type = lib.types.functionTo lib.types.str;
       internal = true;
-      description = "Pair of [placeholders, replacements] for builtins.replaceStrings";
+      description = "Reads a file and replaces @placeholder@ tokens with agent config values";
     };
   };
 
-  config.openclaw.substitutions = [
-    [
-      "@agentName@"
-      "@agentEmoji@"
-      "@agentRole@"
-      "@userName@"
-      "@workspacePath@"
-      "@gatewayPort@"
-      "@model@"
-      "@homePath@"
-      "@username@"
-      "@ttsVoice@"
-      "@ttsVoiceAlt@"
-      "@ttsEngine@"
-    ]
-    [
-      cfg.agent
-      cfg.agentEmoji
-      cfg.agentRole
-      cfg.userName
-      cfg.workspacePath
-      (toString cfg.gatewayPort)
-      cfg.model
-      config.home.homeDirectory
-      config.home.username
-      cfg.tts.voice
-      cfg.tts.voiceAlt
-      cfg.tts.engine
-    ]
-  ];
+  config.openclaw.templateFile =
+    let
+      placeholders = [
+        "@agentName@"
+        "@agentEmoji@"
+        "@agentRole@"
+        "@userName@"
+        "@workspacePath@"
+        "@gatewayPort@"
+        "@model@"
+        "@homePath@"
+        "@username@"
+        "@ttsVoice@"
+        "@ttsVoiceAlt@"
+        "@ttsEngine@"
+      ];
+      values = [
+        openclaw.agent
+        openclaw.agentEmoji
+        openclaw.agentRole
+        openclaw.userName
+        openclaw.workspacePath
+        (toString openclaw.gatewayPort)
+        openclaw.model
+        config.home.homeDirectory
+        config.home.username
+        openclaw.tts.voice
+        openclaw.tts.voiceAlt
+        openclaw.tts.engine
+      ];
+    in
+    path: builtins.replaceStrings placeholders values (builtins.readFile path);
 }

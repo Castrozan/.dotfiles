@@ -3,22 +3,18 @@
   ...
 }:
 let
-  cfg = config.openclaw;
-  workspacePath = cfg.workspacePath;
-  workspaceInstructionsPath = ../../../agents/openclaw/workspace;
-  subs = cfg.substitutions;
+  openclaw = config.openclaw;
+  workspaceSourcePath = ../../../agents/openclaw/workspace;
 
-  filenames = (builtins.attrNames (builtins.readDir workspaceInstructionsPath));
+  filenames = builtins.attrNames (builtins.readDir workspaceSourcePath);
 
-  files = builtins.listToAttrs (
+  workspaceFiles = builtins.listToAttrs (
     map (filename: {
-      name = "${workspacePath}/${filename}";
-      value.text = builtins.replaceStrings (builtins.elemAt subs 0) (builtins.elemAt subs 1) (
-        builtins.readFile (workspaceInstructionsPath + "/${filename}")
-      );
+      name = "${openclaw.workspacePath}/${filename}";
+      value.text = openclaw.templateFile (workspaceSourcePath + "/${filename}");
     }) filenames
   );
 in
 {
-  home.file = files;
+  home.file = workspaceFiles;
 }

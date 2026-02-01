@@ -1,6 +1,6 @@
 { lib, config, ... }:
 let
-  cfg = config.openclaw.tts;
+  tts = config.openclaw.tts;
 in
 {
   options.openclaw.tts = {
@@ -25,9 +25,9 @@ in
 
   config.home.file."${config.openclaw.workspacePath}/tts.json" = {
     text = builtins.toJSON {
-      engine = cfg.engine;
-      voice = cfg.voice;
-      voiceAlt = cfg.voiceAlt;
+      engine = tts.engine;
+      voice = tts.voice;
+      voiceAlt = tts.voiceAlt;
     };
   };
 }
