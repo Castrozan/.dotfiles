@@ -8,13 +8,33 @@ User says: "night shift", "work through the night", "autonomous mode", "keep wor
 ## Architecture
 
 ```
-Cron (every 20min) → systemEvent → Main Session (Orchestrator)
-  → Read state file, pick next task
-  → sessions_spawn sub-agent with focused instructions
-  → Sub-agent works, writes output file, reports back
-  → Orchestrator decides: spawn another? write to memory? done?
-  → Back to idle (zero cost until next cron)
+Two cron strategies (mix and match):
+
+A) Orchestrator pattern (main session):
+   Cron (every 20min) → systemEvent → Main Session (Orchestrator)
+     → Read state file, pick next task
+     → sessions_spawn sub-agent with focused instructions
+     → Sub-agent works, writes output file, reports back
+     → Orchestrator decides: spawn another? write to memory? done?
+     → Back to idle (zero cost until next cron)
+
+B) Direct isolated cron jobs (no orchestrator needed):
+   Cron → agentTurn (isolated session, can use Sonnet for cheap research)
+     → Fresh session, focused prompt, auto-delivers results
+     → Posts summary to main session
+     → Optional: deliver to Telegram directly
 ```
+
+### Cron Execution Modes
+- **Main session (systemEvent)**: Orchestrator pattern. Good for coordination.
+  - Uses `sessionTarget: "main"`, `payload.kind: "systemEvent"`
+  - Agent wakes in main session with full context
+- **Isolated session (agentTurn)**: Independent worker. Good for focused tasks.
+  - Uses `sessionTarget: "isolated"`, `payload.kind: "agentTurn"`
+  - Fresh session each run (no context bloat)
+  - Supports `model` override (use Sonnet for research, Opus for complex work)
+  - Supports `deliver: true` to send output directly to Telegram
+  - Auto-posts summary to main session
 
 ### Why Sub-Agents
 - Main session stays lean (no bloated context)

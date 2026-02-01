@@ -87,6 +87,40 @@ home.activation.patchOpenclawConfig = lib.hm.dag.entryAfter ["writeBoundary"] ''
 
 ---
 
+## Research Findings (2026-01-31)
+
+### Cursor: Scaling Long-Running Autonomous Coding
+- **Source**: cursor.com/blog/scaling-agents
+- Ran hundreds of agents for weeks, built a browser from scratch (1M LoC)
+- Key insight: flat agent coordination fails — agents become risk-averse
+- **Planner-Worker pattern works**: planners create tasks, workers grind, judge evaluates
+- GPT-5.2 better than Opus 4.5 for extended autonomous work (fewer shortcuts)
+- **Takeaway for us**: Our orchestrator→sub-agent design is validated. Consider planner sub-agent for complex nights.
+
+### AGENTS.md Impact on AI Coding Agents (Academic Paper)
+- **Source**: arxiv.org/html/2601.20404 (Jan 2026)
+- AGENTS.md files reduce runtime by 29% and output tokens by 17%
+- 60,000+ repos now use AGENTS.md format
+- **Takeaway**: Our AGENTS.md is solid. Sub-agent spawns should include focused AGENTS.md-style instructions.
+
+### OpenClaw Cron: Isolated agentTurn
+- **Source**: docs.openclaw.ai/automation/cron-jobs
+- Cron supports `sessionTarget: "isolated"` with `agentTurn` payload
+- Each run gets fresh session (no context carry-over)
+- Supports model/thinking overrides per job (Sonnet for cheap, Opus for complex)
+- Auto-delivers to Telegram with `deliver: true`
+- **Takeaway**: Use isolated cron jobs for research tasks (cheaper, focused). Main session only for orchestration.
+
+### Token Burn Warning (GitHub Issue #1594)
+- Even "no-op" cron runs consume tokens
+- Never run big output tools in main session
+- **Takeaway**: HEARTBEAT_OK is cheap but not free. Isolated cron jobs are better than heartbeat for scheduled work.
+
+### Brave Search Rate Limit
+- Free tier: 1 request/second, 2000 queries/month
+- We hit 429 rate limit during parallel searches
+- **Takeaway**: Add 1.5s delay between web_search calls, or upgrade plan
+
 ## Research Capability Improvements
 - [x] **Configure Brave Search API key** — done, working
 - [ ] **Use `jq`/`yq` for JSON state management** — surgical updates instead of full file rewrites
