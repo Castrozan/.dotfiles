@@ -11,6 +11,7 @@
     ./libinput-quirks.nix
     ../scripts
     ../../../nixos/modules/xdg-portal.nix
+    ../../../nixos/modules/openclaw-watchdog.nix
   ];
 
   # Bootloader and kernel
@@ -204,6 +205,14 @@
 
     # Custom udev rules for Dell G15 5515 touchpad
     udev.extraRules = builtins.readFile ./udev-rules/99-dell-g15-touchpad.rules;
+
+    # OpenClaw gateway watchdog
+    openclaw-watchdog = {
+      enable = true;
+      interval = 30;
+      gatewayPort = 18789;
+      user = username;
+    };
   };
 
   # Additional packages for hardware monitoring and management
