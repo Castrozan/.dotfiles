@@ -7,6 +7,7 @@ let
     "IDENTITY.md" = "identity.md";
     "USER.md" = "user.md";
     "AGENTS.md" = "agents.md";
+    "AI-TOOLS.md" = "ai-tools.md";
   };
 
   rootContextSymlinks = lib.mapAttrs' (rootName: srcName: {

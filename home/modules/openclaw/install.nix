@@ -28,5 +28,6 @@ in
   home.packages = [
     openclaw
     nodejs
+    pkgs.moreutils
   ];
 }
