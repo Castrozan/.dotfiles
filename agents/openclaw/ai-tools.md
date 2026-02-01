@@ -105,10 +105,20 @@ git commit -m "feat: add night shift skill"
 
 ## Web Research
 
-**Prefer `web_search` + `web_fetch`** over browser automation when possible.
-- `web_search`: structured results, fast, cheap (needs Brave API key)
-- `web_fetch`: extract readable content from URL, no JS execution
-- Browser: only for dynamic sites (X/Twitter), authenticated pages, or complex interactions
+**Priority order** (fastest/cheapest first):
+1. `web_search` — Brave Search API, structured results (rate limit: 1 req/sec, 2K/month free)
+2. `web_fetch` — HTTP GET + readability extraction, no JS. Good when you know the URL.
+3. **Jina Reader** — `web_fetch("https://r.jina.ai/URL")` — better extraction than raw web_fetch, free tier.
+4. Browser — only for dynamic sites (X/Twitter), authenticated pages, or complex interactions.
+
+**Rate limit handling:** Brave free tier is 1 req/sec. Add 2s delays between sequential
+`web_search` calls. If rate limited, fall back to Jina or web_fetch.
+
+**Jina Reader** (free, no API key for page reading):
+```
+web_fetch("https://r.jina.ai/https://example.com")  # Extract any page as clean markdown
+```
+Note: Jina Search (`s.jina.ai`) requires an API key. Page reading (`r.jina.ai`) is free.
 
 **When using browser:**
 - Light mode (single tab) for browser-use/Playwright

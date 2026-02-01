@@ -39,16 +39,40 @@ B) Direct isolated cron jobs (no orchestrator needed):
 ### Why Sub-Agents
 - Main session stays lean (no bloated context)
 - Each task gets fresh context window
-- Parallel work possible (spawn multiple, 4 max)
+- Parallel work possible (spawn multiple, 4 max via sessions_spawn, 8 max concurrent)
 - Failures are isolated — one bad task doesn't kill the night
+- **Token efficiency**: sub-agents with trimmed context use ~17% fewer tokens (proven by research)
 
-### Orchestrator Role (Main Session)
+### Model Strategy (Cost Optimization)
+- **Opus**: Orchestrator (main session), complex analysis, implementation decisions
+- **Sonnet**: Research tasks, web scraping, file processing, routine work
+- Set per-job with `model` override in cron or `sessions_spawn`
+- Cursor found different models excel at different roles — match model to task
+
+### Orchestrator Role — Planner-Worker Pattern
+Based on Cursor's battle-tested findings (hundreds of agents, weeks of autonomous work):
+- **Planner** (main session/Opus): Reads state, creates focused tasks, assigns to workers
+- **Workers** (sub-agents/Sonnet): Grind on assigned task, zero inter-worker coordination
+- **No QA bottleneck**: Workers report directly back, planner synthesizes
+- **Prompts > architecture**: Well-crafted sub-agent prompts matter more than complex coordination
+- Filesystem IS the shared state — task files + output files in `memory/night-shift/`
+
+Orchestrator responsibilities:
 - Reads task rotation from state file
-- Crafts specific prompts for each sub-agent
+- Crafts specific, focused prompts for each sub-agent (minimal context, clear objective)
 - Spawns sub-agents with necessary tools and constraints available on the workspace
 - Reviews sub-agent output when they report back
 - Decides follow-up actions (more research? implementation? just save?)
 - Compiles morning summary at the end
+
+### Sub-Agent Prompt Guidelines
+Keep sub-agent prompts **focused and minimal** to reduce token usage:
+- One clear objective per spawn
+- List specific tools to use
+- Specify exact output file path and format
+- Include search queries when relevant (saves the agent planning time)
+- Do NOT include full workspace context (TOOLS.md, etc.) — they inherit tools automatically
+- Add 2s delays between web_search calls (Brave rate limit: 1 req/sec)
 
 ## Activation Sequence
 
@@ -95,7 +119,8 @@ The task queue lives in state.json. Each task has:
 
 ### Research Tasks
 Sub-agent gets: topic, search strategy, output format.
-Tools: `web_search`, `web_fetch`, optionally `browser` for dynamic sites.
+Tools (priority order): `web_search` (Brave), `web_fetch`, Jina Reader (`r.jina.ai/URL`), `browser` (last resort).
+Model: **Sonnet** (cheap, sufficient for research).
 Output: markdown file with structured findings.
 
 ```
