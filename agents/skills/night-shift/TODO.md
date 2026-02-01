@@ -23,6 +23,77 @@ Items to implement or improve for the night shift skill.
 - [ ] Obsidian ReadItLater vault — process unread items, extract knowledge
 - [ ] Compile morning summary
 
+---
+
+## Nix-Managed openclaw.json (Configuration as Code)
+
+Goal: manage as many `openclaw.json` fields as possible via Nix, using a Home Manager activation script with `jq` to patch the runtime config on each rebuild. The config stays at `~/.openclaw/openclaw.json` (OpenClaw owns it), but Nix ensures critical fields are always correct.
+
+### Fields to Nix-Manage
+
+| Field | Current Value | Nix Source |
+|-------|--------------|------------|
+| `agents.defaults.workspace` | `/home/zanoni/clawd` | Derive from home.homeDirectory |
+| `channels.telegram.tokenFile` | `/run/agenix/telegram-bot-token` | agenix secret path |
+| `tools.web.search.apiKey` | hardcoded in JSON | Read from `/run/agenix/brave-api-key` |
+| `tools.media.audio.models[0].command` | `/home/zanoni/clawd/scripts/faster-whisper.sh` | Derive from scripts symlink path |
+| `tools.media.audio.models[0].args` | Whisper model config | Define in Nix (model, format, output dir) |
+| `tools.exec.pathPrepend` | Hardcoded Nix store paths | Derive from actual Nix profile paths |
+| `gateway.port` | `18789` | Nix option |
+| `gateway.bind` | `tailnet` | Nix option |
+| `gateway.auth.token` | Hardcoded | Read from `/run/agenix/openclaw-gateway-token` |
+
+### Implementation Approach
+
+**Home Manager activation script** that runs on each rebuild:
+```nix
+# Pseudocode — actual implementation TBD
+home.activation.patchOpenclawConfig = lib.hm.dag.entryAfter ["writeBoundary"] ''
+  CONFIG="$HOME/.openclaw/openclaw.json"
+  if [ -f "$CONFIG" ]; then
+    ${pkgs.jq}/bin/jq '
+      .agents.defaults.workspace = "/home/zanoni/clawd" |
+      .channels.telegram.tokenFile = "/run/agenix/telegram-bot-token" |
+      .tools.web.search.apiKey = (input | rtrimstr("\n")) |
+      .tools.media.audio.models[0].command = "/home/zanoni/clawd/scripts/faster-whisper.sh" |
+      .gateway.auth.token = (input | rtrimstr("\n"))
+    ' "$CONFIG" \
+      /run/agenix/brave-api-key \
+      /run/agenix/openclaw-gateway-token \
+    | ${pkgs.moreutils}/bin/sponge "$CONFIG"
+  fi
+'';
+```
+
+### Benefits
+- **Secrets never in git** — API keys read from agenix at activation time
+- **Paths always correct** — Nix store paths update automatically on rebuild
+- **Single source of truth** — Nix defines what matters, OpenClaw owns the rest
+- **Non-destructive** — jq patches only specific fields, preserves runtime changes
+
+### Risks & Mitigations
+- **OpenClaw wizard could overwrite** — activation runs after wizard; test ordering
+- **Race condition** — gateway could be running during activation; may need restart after patch
+- **Array mutations** — jq array updates are fragile; use `setpath` for nested arrays
+
+### Steps to Implement
+- [ ] Create `~/.dotfiles/home/modules/openclaw/activation.nix` with jq patch script
+- [ ] Define Nix options for configurable fields (workspace, port, bind, whisper model)
+- [ ] Read secrets from agenix paths in activation script
+- [ ] Test: rebuild → verify openclaw.json has correct values
+- [ ] Test: gateway restart picks up patched config
+- [ ] Add to default.nix imports
+- [ ] Remove hardcoded secrets from openclaw.json (gateway token, brave key)
+
+---
+
+## Research Capability Improvements
+- [x] **Configure Brave Search API key** — done, working
+- [ ] **Use `jq`/`yq` for JSON state management** — surgical updates instead of full file rewrites
+- [ ] **Build X/Twitter reader script** — `web_fetch` doesn't work on X (dynamic), need dedicated tool
+- [ ] **Browser-use optimization** — light mode only, minimize tab count, close after use
+- [ ] **Cache research results** — avoid re-fetching same URLs across sub-agents
+
 ## Skill Improvements (Future)
 
 ### Sub-Agent Templates
