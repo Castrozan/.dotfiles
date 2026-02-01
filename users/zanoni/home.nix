@@ -1,8 +1,14 @@
 # Zanoni's Home Manager Configuration — Cleber 🤖
 {
-  openclaw.tts = {
-    voice = "en-GB-RyanNeural"; # British accent — Cleber's identity
-    voiceAlt = "pt-BR-AntonioNeural"; # Portuguese fallback
+  openclaw = {
+    agent = "cleber";
+    agentEmoji = "🤖";
+    agentRole = "home/personal — NixOS, home automation, overnight work";
+    gatewayPort = 18789;
+    tts = {
+      voice = "en-GB-RyanNeural";
+      voiceAlt = "pt-BR-AntonioNeural";
+    };
   };
 
   imports = [
@@ -20,7 +26,7 @@
     ../../home/modules/ccost.nix
     ../../home/modules/openclaw
     ../../home/modules/qmd.nix
-    ../../home/modules/hey-cleber.nix
+
     ../../home/modules/claude
     ../../home/modules/claudemem.nix
     ../../home/modules/cmatrix.nix

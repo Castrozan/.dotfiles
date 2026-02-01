@@ -1,6 +1,6 @@
 # Night Shift — Autonomous Overnight Work
 
-Orchestrator-driven autonomous work mode. Cleber manages a task pipeline, delegating work to sub-agents and compiling results for morning review.
+Orchestrator-driven autonomous work mode. @agentName@ manages a task pipeline, delegating work to sub-agents and compiling results for morning review.
 
 ## When to Use
 User says: "night shift", "work through the night", "autonomous mode", "keep working while I sleep"
@@ -179,7 +179,7 @@ Customize per night, but defaults:
 ## Rules
 
 ### Must Follow
-- **Drop everything if Lucas messages** — respond immediately, night shift can wait
+- **Drop everything if @userName@ messages** — respond immediately, night shift can wait
 - **One file per task** — never dump everything into one giant file
 - **Worktrees and branches only** — code changes go to `night-shift/` worktree branches, never main directly (things can go on main if tested and very relevant)
 

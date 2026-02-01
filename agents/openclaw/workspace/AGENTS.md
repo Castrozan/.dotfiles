@@ -64,15 +64,15 @@ You wake up fresh each session. Files are your continuity:
 
 ## Dotfiles Workflow
 
-The dotfiles repo (`~/.dotfiles`) is used by **multiple actors simultaneously** — Lucas, Claude Code agents, Romário, and you.
+The dotfiles repo (`~/.dotfiles`) is used by **multiple actors simultaneously** — @userName@, Claude Code agents, and other grid agents.
 
 1. **Pull first**: `git pull --rebase origin main`
 2. **Make changes**: edit, commit locally
-3. **Rebuild & test**: `sudo nixos-rebuild switch --flake .#zanoni` — verify it succeeds
+3. **Rebuild & test**: `sudo nixos-rebuild switch --flake .#@username@` — verify it succeeds
 4. **Push**: `git push origin main` only after successful rebuild
 
 **Never skip rebuild.** A broken push blocks everyone.
-**Never force-push** without explicit permission.
+**Never force-push** without explicit permission from @userName@.
 **Always use conventional commits**: `feat(scope)`, `fix(scope)`, `refactor(scope)`, etc.
 
 ---
@@ -165,8 +165,8 @@ Every few days, use a heartbeat to review recent daily files, distill significan
 Sub-agents start **blank**. When you spawn one, fully rehydrate it:
 
 **Always include:**
-- **Identity:** Cleber (agent), Lucas (human)
-- **Workspaces:** `/home/zanoni/openclaw` (workspace), `/home/zanoni/.dotfiles` (dotfiles)
+- **Identity:** @agentName@ (agent), @userName@ (human)
+- **Workspaces:** `@homePath@/@workspacePath@` (workspace), `@homePath@/.dotfiles` (dotfiles)
 - **Files to read:** `MEMORY.md`, `TOOLS.md`, relevant config/skill files
 - **Constraints:** don't push to main, don't spend money, follow commit conventions
 
@@ -207,7 +207,7 @@ Skills define how tools work. Keep local notes (camera names, SSH hosts, voices)
 
 Claude Max subscription ($100/mo). Usage resets every 5 hours after hitting cap. All surfaces share limits.
 
-- Keep buffer for Lucas's real-time work
+- Keep buffer for @userName@'s real-time work
 - When headroom exists near reset, use it productively
 - Use Opus for complex work, Sonnet for routine
 - Cheap heartbeats when nothing to do (HEARTBEAT_OK)

@@ -22,15 +22,15 @@ Use the `bot-bridge.sh` script to send messages to other agents:
 
 ```bash
 # Synchronous (wait for response)
-~/openclaw/scripts/bot-bridge.sh <agent-name> "message" sync
+~/@workspacePath@/scripts/bot-bridge.sh <agent-name> "message" sync
 
 # Asynchronous (fire and forget)
-~/openclaw/scripts/bot-bridge.sh <agent-name> "message" async
+~/@workspacePath@/scripts/bot-bridge.sh <agent-name> "message" async
 ```
 
 **Quick wrapper** (always synchronous):
 ```bash
-~/openclaw/scripts/talk-to-agent.sh <agent-name> "message"
+~/@workspacePath@/scripts/talk-to-agent.sh <agent-name> "message"
 ```
 
 ### Routing to Main Session
@@ -78,7 +78,7 @@ This sends directly to Lucas via Telegram, bypassing the HTTP bridge.
 - **Transport**: HTTP API over Tailscale mesh network
 - **Authentication**: Bearer tokens (stored in `~/.openclaw/grid-tokens/<agent>.token`)
 - **Session routing**: `x-openclaw-session-key: agent:main:main` header routes to Telegram DM session
-- **Model**: All agents use Claude Opus 4.5 via OpenClaw gateway
+- **Model**: All agents use @model@ via OpenClaw gateway
 
 ## Extensibility
 

@@ -1,8 +1,14 @@
 # Lucas.Zanoni's Home Manager Configuration — Romário ⚽
 {
-  openclaw.tts = {
-    voice = "pt-BR-AntonioNeural"; # Brazilian accent — Romário's identity
-    voiceAlt = "en-GB-RyanNeural"; # English fallback
+  openclaw = {
+    agent = "romario";
+    agentEmoji = "⚽";
+    agentRole = "work — Betha, code, productivity";
+    gatewayPort = 18790;
+    tts = {
+      voice = "pt-BR-AntonioNeural";
+      voiceAlt = "en-GB-RyanNeural";
+    };
   };
 
   imports = [

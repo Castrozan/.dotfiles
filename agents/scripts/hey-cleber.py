@@ -39,11 +39,8 @@ import sounddevice as sd
 # Configuration
 # ---------------------------------------------------------------------------
 
-GATEWAY_URL = os.environ.get("CLAWDBOT_GATEWAY_URL", "http://localhost:18789")
-GATEWAY_TOKEN = os.environ.get(
-    "CLAWDBOT_GATEWAY_TOKEN",
-    "REDACTED_TOKEN",
-)
+GATEWAY_URL = os.environ.get("CLAWDBOT_GATEWAY_URL", "http://localhost:@gatewayPort@")
+GATEWAY_TOKEN = os.environ.get("CLAWDBOT_GATEWAY_TOKEN", "")
 
 SAMPLE_RATE = 16000  # 16 kHz mono
 CHANNELS = 1
@@ -66,12 +63,11 @@ MIN_KEYWORD_SPEECH_SEC = 0.3 # Minimum speech to bother checking
 
 # Default keywords and phonetic variants
 DEFAULT_KEYWORDS = [
-    "cleber", "kleber", "clever", "cleaver", "clebert", "cleber's",
-    "kleiber", "klebber", "cleyber", "klever",
+    "@agentName@",
 ]
 
 # Ensure PipeWire access
-os.environ.setdefault("XDG_RUNTIME_DIR", "/run/user/1000")
+os.environ.setdefault("XDG_RUNTIME_DIR", f"/run/user/{os.getuid()}")
 
 log = logging.getLogger("hey-cleber")
 
@@ -336,8 +332,8 @@ def send_to_clawdbot(message: str) -> str:
         "x-clawdbot-agent-id": "main",
     }
     payload = {
-        "model": "clawdbot:main",
-        "user": "voice-cleber",
+        "model": "@model@",
+        "user": "voice-@agentName@",
         "messages": [
             {
                 "role": "user",
@@ -375,7 +371,7 @@ def tts_and_play(text: str, audio_q: queue.Queue | None = None,
             [
                 sys.executable, "-m", "edge_tts",
                 "--text", text,
-                "--voice", "en-US-GuyNeural",
+                "--voice", "@ttsVoice@",
                 "--write-media", mp3_path,
             ],
             capture_output=True,

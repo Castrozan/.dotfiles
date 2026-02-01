@@ -19,10 +19,10 @@ echo
 
 # 1. OpenClaw Gateway
 echo -e "${BOLD}Gateway${NC}"
-if curl -sf http://localhost:18789/health >/dev/null 2>&1; then
-  ok "OpenClaw gateway responding (localhost:18789)"
-elif curl -sf http://REDACTED_IP_1:18789/health >/dev/null 2>&1; then
-  ok "OpenClaw gateway responding (tailscale:18789)"
+if curl -sf http://localhost:@gatewayPort@/health >/dev/null 2>&1; then
+  ok "OpenClaw gateway responding (localhost:@gatewayPort@)"
+elif curl -sf http://REDACTED_IP_1:@gatewayPort@/health >/dev/null 2>&1; then
+  ok "OpenClaw gateway responding (tailscale:@gatewayPort@)"
 elif pgrep -f "openclaw" >/dev/null 2>&1; then
   ok "OpenClaw gateway process running (health endpoint unreachable)"
 else
@@ -39,7 +39,7 @@ fi
 
 # 3. Key services
 echo -e "${BOLD}Services${NC}"
-for svc in hey-cleber; do
+for svc in hey-@agentName@; do
   if systemctl --user is-active "$svc" >/dev/null 2>&1; then
     ok "$svc: active"
   else
@@ -105,8 +105,8 @@ ok "Uptime: $UPTIME"
 ok "Load: $LOAD"
 
 # 9. Git status (workspace)
-echo -e "${BOLD}Git (~/clawd)${NC}"
-cd ~/clawd 2>/dev/null && {
+echo -e "${BOLD}Git (~/@workspacePath@)${NC}"
+cd ~/@workspacePath@ 2>/dev/null && {
   BRANCH=$(git branch --show-current 2>/dev/null || echo "unknown")
   DIRTY=$(git status --porcelain 2>/dev/null | wc -l)
   if [ "$DIRTY" -eq 0 ]; then

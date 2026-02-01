@@ -1,7 +1,9 @@
 { config, ... }:
 let
-  workspacePath = config.openclaw.workspacePath;
+  cfg = config.openclaw;
+  workspacePath = cfg.workspacePath;
   skillsPath = ../../../agents/skills;
+  subs = cfg.substitutions;
 
   filenames = builtins.filter (name: (builtins.readDir skillsPath).${name} == "directory") (
     builtins.attrNames (builtins.readDir skillsPath)
@@ -17,7 +19,9 @@ let
       in
       map (file: {
         name = "${workspacePath}/skills/${dirname}/${file}";
-        value.text = builtins.readFile (skillDir + "/${file}");
+        value.text = builtins.replaceStrings (builtins.elemAt subs 0) (builtins.elemAt subs 1) (
+          builtins.readFile (skillDir + "/${file}")
+        );
       }) files
     ) filenames
   );

@@ -1,7 +1,9 @@
 { lib, config, ... }:
 let
-  workspacePath = config.openclaw.workspacePath;
+  cfg = config.openclaw;
+  workspacePath = cfg.workspacePath;
   scriptsPath = ../../../agents/scripts;
+  subs = cfg.substitutions;
 
   filenames = builtins.filter (name: lib.hasSuffix ".sh" name || lib.hasSuffix ".py" name) (
     builtins.attrNames (builtins.readDir scriptsPath)
@@ -10,7 +12,12 @@ let
   scripts = builtins.listToAttrs (
     map (filename: {
       name = "${workspacePath}/scripts/${filename}";
-      value.source = scriptsPath + "/${filename}";
+      value = {
+        text = builtins.replaceStrings (builtins.elemAt subs 0) (builtins.elemAt subs 1) (
+          builtins.readFile (scriptsPath + "/${filename}")
+        );
+        executable = true;
+      };
     }) filenames
   );
 in
