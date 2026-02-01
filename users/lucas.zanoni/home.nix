@@ -1,16 +1,5 @@
 # Lucas.Zanoni's Home Manager Configuration — Romário ⚽
 {
-  openclaw = {
-    agent = "romario";
-    agentEmoji = "⚽";
-    agentRole = "work — Betha, code, productivity";
-    gatewayPort = 18790;
-    tts = {
-      voice = "pt-BR-AntonioNeural";
-      voiceAlt = "en-GB-RyanNeural";
-    };
-  };
-
   imports = [
     ./pkgs.nix
     ./scripts
@@ -19,6 +8,7 @@
     ./home/ssh.nix
     ./home/asoundrc.nix
     ./home/session-vars.nix
+    ./home/openclaw.nix
 
     ../../home/core.nix
     ../../home/scripts

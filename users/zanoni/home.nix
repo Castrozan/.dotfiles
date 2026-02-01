@@ -1,20 +1,10 @@
 # Zanoni's Home Manager Configuration — Cleber 🤖
 {
-  openclaw = {
-    agent = "cleber";
-    agentEmoji = "🤖";
-    agentRole = "home/personal — NixOS, home automation, overnight work";
-    gatewayPort = 18789;
-    tts = {
-      voice = "en-GB-RyanNeural";
-      voiceAlt = "pt-BR-AntonioNeural";
-    };
-  };
-
   imports = [
     ./home/git.nix
     ./home/ssh.nix
     ./home/session-vars.nix
+    ./home/openclaw.nix
 
     ../../home/core.nix
     ../../home/scripts
