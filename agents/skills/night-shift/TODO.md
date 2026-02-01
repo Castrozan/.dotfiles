@@ -128,6 +128,22 @@ home.activation.patchOpenclawConfig = lib.hm.dag.entryAfter ["writeBoundary"] ''
 - [ ] **Browser-use optimization** — light mode only, minimize tab count, close after use
 - [ ] **Cache research results** — avoid re-fetching same URLs across sub-agents
 
+## Research Capability Improvements (High Priority)
+
+### Search & Discovery
+- [ ] Activate twikit auth — need Twitter credentials to unlock X search (venv at `~/.local/share/twikit-venv/`)
+- [ ] Brave Search rate limiting — implement 1req/sec throttle in research sub-agents
+- [ ] Add Tavily as fallback search (1K free/month) when Brave is rate-limited
+- [ ] Build `site:x.com` Brave Search wrapper for auth-free X content discovery
+- [ ] Evaluate Jina Reader (`r.jina.ai/URL`) for extracting X thread content
+
+### Architecture (from research)
+- [ ] Implement judge agent — evaluates sub-agent output quality before accepting
+- [ ] Narrow sub-agent scopes — each agent does ONE thing (search, synthesize, build, audit)
+- [ ] Structured task queue (JSON) instead of simple rotation — priority, dependencies, retry
+- [ ] Add cycle evaluation — after N tasks, assess what worked and adjust priorities
+- [ ] Parallel worker spawning for independent research tasks
+
 ## Skill Improvements (Future)
 
 ### Sub-Agent Templates

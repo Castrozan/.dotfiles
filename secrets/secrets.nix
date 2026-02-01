@@ -10,4 +10,5 @@ in
   "grid-token-romario.age".publicKeys = [ personal_key ];
   "grid-token-cleber.age".publicKeys = [ personal_key ];
   "brave-api-key.age".publicKeys = [ personal_key ];
+  "tavily-api-key.age".publicKeys = [ personal_key ];
 }

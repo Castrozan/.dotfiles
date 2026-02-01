@@ -149,6 +149,11 @@ in
         owner = "zanoni";
         mode = "400";
       };
+      "tavily-api-key" = {
+        file = ../../secrets/tavily-api-key.age;
+        owner = "zanoni";
+        mode = "400";
+      };
     };
   };
 }
