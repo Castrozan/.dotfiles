@@ -1,5 +1,10 @@
-# Zanoni's Home Manager Configuration
+# Zanoni's Home Manager Configuration — Cleber 🤖
 {
+  openclaw.tts = {
+    voice = "en-GB-RyanNeural"; # British accent — Cleber's identity
+    voiceAlt = "pt-BR-AntonioNeural"; # Portuguese fallback
+  };
+
   imports = [
     ./home/git.nix
     ./home/ssh.nix

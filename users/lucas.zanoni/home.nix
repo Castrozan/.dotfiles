@@ -1,4 +1,10 @@
+# Lucas.Zanoni's Home Manager Configuration — Romário ⚽
 {
+  openclaw.tts = {
+    voice = "pt-BR-AntonioNeural"; # Brazilian accent — Romário's identity
+    voiceAlt = "en-GB-RyanNeural"; # English fallback
+  };
+
   imports = [
     ./pkgs.nix
     ./scripts

@@ -7,14 +7,19 @@ description: Speak to the user via PC speakers or send voice messages. Use when 
 
 ## Voice Profiles
 
-Each agent has a distinct voice so the user can tell them apart:
+Each agent has a distinct voice configured via Nix (`openclaw.tts` option in home.nix).
 
 | Agent   | Voice                    | Accent   | Style              |
 |---------|--------------------------|----------|---------------------|
 | Cleber  | `en-GB-RyanNeural`       | British  | Calm, professional  |
 | Romário | `pt-BR-AntonioNeural`    | Brazilian| Direct, casual      |
 
-Configure via the `--voice` flag or `EDGE_TTS_VOICE` env var.
+**Config file**: `~/.nix/tts.json` (Nix-managed, read-only)
+```json
+{"engine":"edge-tts","voice":"en-GB-RyanNeural","voiceAlt":"pt-BR-AntonioNeural"}
+```
+
+Read your voice config: `cat ~/clawd/.nix/tts.json | jq -r .voice`
 Default TTS engine: `edge-tts` (Microsoft Edge, free, no API key).
 
 ## When to Speak

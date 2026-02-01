@@ -8,5 +8,6 @@
     ./skills.nix
     ./subagents.nix
     ./grid.nix
+    ./tts.nix
   ];
 }
