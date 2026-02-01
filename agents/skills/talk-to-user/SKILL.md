@@ -16,7 +16,7 @@ Each agent has a distinct voice configured via Nix (`openclaw.tts` option in hom
 
 **Config file**: `~/@workspacePath@/tts.json` (Nix-managed, read-only)
 ```json
-{"engine":"@ttsEngine@","voice":"@ttsVoice@","voiceAlt":"@ttsVoiceAlt@"}
+{"engine":"@ttsEngine@","voice":"@ttsVoice@"}
 ```
 
 Read your voice config: `cat ~/@workspacePath@/tts.json | jq -r .voice`

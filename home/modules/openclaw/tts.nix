@@ -10,12 +10,6 @@ in
       description = "Default edge-tts voice for this agent";
     };
 
-    voiceAlt = lib.mkOption {
-      type = lib.types.str;
-      default = "";
-      description = "Alternative voice for secondary language";
-    };
-
     engine = lib.mkOption {
       type = lib.types.str;
       default = "edge-tts";
@@ -27,7 +21,6 @@ in
     text = builtins.toJSON {
       engine = tts.engine;
       voice = tts.voice;
-      voiceAlt = tts.voiceAlt;
     };
   };
 }

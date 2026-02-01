@@ -69,7 +69,6 @@ in
         "@homePath@"
         "@username@"
         "@ttsVoice@"
-        "@ttsVoiceAlt@"
         "@ttsEngine@"
       ];
       values = [
@@ -83,7 +82,6 @@ in
         config.home.homeDirectory
         config.home.username
         openclaw.tts.voice
-        openclaw.tts.voiceAlt
         openclaw.tts.engine
       ];
     in
