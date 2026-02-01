@@ -117,10 +117,25 @@ git commit -m "feat: add night shift skill"
 
 ## TTS / Audio Output
 
-**Use `tts` tool** → returns MP3 path, then play with mpv:
+**Use `tts` tool** → returns MP3 path, then play with mpv.
+
+**CRITICAL: Always use `background: true`** for mpv playback. Without it, the exec
+timeout kills the process before audio finishes (SIGKILL).
+
 ```bash
-XDG_RUNTIME_DIR=/run/user/1000 mpv --no-video --ao=pipewire /path/to/voice.mp3
+# Correct — background mode, plays to completion
+exec(command="XDG_RUNTIME_DIR=/run/user/1000 mpv --no-video --ao=pipewire /path/to/voice.mp3", background=true)
 ```
+
+**Full TTS flow:**
+1. Generate: `tts(text="...")` → returns `MEDIA:/tmp/tts-xxx/voice-xxx.mp3`
+2. Unmute: `XDG_RUNTIME_DIR=/run/user/1000 wpctl set-mute @DEFAULT_AUDIO_SINK@ 0`
+3. Volume: `XDG_RUNTIME_DIR=/run/user/1000 wpctl set-volume @DEFAULT_AUDIO_SINK@ 0.7`
+4. Play: `exec(command="XDG_RUNTIME_DIR=/run/user/1000 mpv --no-video --ao=pipewire <file>", background=true)`
+
+**Do NOT:**
+- Pass explicit `timeout` shorter than audio duration
+- Use `yieldMs` with short values — let it background immediately
 
 If music is playing, lower Brave volume first (see TOOLS.md for stream IDs).
 
