@@ -1,8 +1,8 @@
 { ... }:
 {
   imports = [
+    ./workspace.nix
     ./install.nix
-    ./context.nix
     ./rules.nix
     ./skills.nix
     ./subagents.nix
