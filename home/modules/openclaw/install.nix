@@ -1,7 +1,3 @@
-# OpenClaw package — pinned version, npm install into Nix-managed prefix
-#
-# Version bumps: change `version` and rebuild.
-# The wrapper auto-installs if missing or outdated.
 # --ignore-scripts skips node-llama-cpp cmake build (unused).
 { pkgs, ... }:
 let
