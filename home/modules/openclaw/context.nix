@@ -1,5 +1,6 @@
-{ lib, ... }:
+{ lib, config, ... }:
 let
+  cfg = config.openclaw;
   agentDir = ../../../agents/openclaw;
 
   rootFiles = {
@@ -15,12 +16,16 @@ let
   };
 
   contextFiles = lib.mapAttrs' (rootName: srcName: {
-    name = "clawd/${rootName}";
-    value = {
-      text = builtins.readFile (agentDir + "/${srcName}");
-    };
+    name = "${cfg.workspace}/${rootName}";
+    value.text = builtins.readFile (agentDir + "/${srcName}");
   }) rootFiles;
 in
 {
-  home.file = contextFiles;
+  options.openclaw.workspace = lib.mkOption {
+    type = lib.types.str;
+    default = "openclaw";
+    description = "Workspace directory name relative to home";
+  };
+
+  config.home.file = contextFiles;
 }

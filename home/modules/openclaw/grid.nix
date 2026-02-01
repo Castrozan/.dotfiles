@@ -1,5 +1,6 @@
-{ lib, ... }:
+{ lib, config, ... }:
 let
+  ws = config.openclaw.workspace;
   sharedScriptsDir = ../../../agents/scripts;
 
   scriptFiles = builtins.filter (
@@ -8,10 +9,8 @@ let
 
   scriptsSymlinks = builtins.listToAttrs (
     map (filename: {
-      name = "clawd/scripts/${filename}";
-      value = {
-        source = sharedScriptsDir + "/${filename}";
-      };
+      name = "${ws}/scripts/${filename}";
+      value.source = sharedScriptsDir + "/${filename}";
     }) scriptFiles
   );
 in

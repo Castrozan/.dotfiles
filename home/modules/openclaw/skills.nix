@@ -1,5 +1,6 @@
-{ lib, ... }:
+{ lib, config, ... }:
 let
+  ws = config.openclaw.workspace;
   sharedSkillsDir = ../../../agents/skills;
 
   skillDirNames = builtins.filter (
@@ -15,7 +16,7 @@ let
         files = builtins.filter (name: entries.${name} == "regular") (builtins.attrNames entries);
       in
       map (file: {
-        name = "clawd/skills/${dirname}/${file}";
+        name = "${ws}/skills/${dirname}/${file}";
         value.text = builtins.readFile (skillDir + "/${file}");
       }) files
     ) skillDirNames

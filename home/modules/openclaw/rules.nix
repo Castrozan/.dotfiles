@@ -1,5 +1,6 @@
-{ lib, ... }:
+{ lib, config, ... }:
 let
+  ws = config.openclaw.workspace;
   sharedRulesDir = ../../../agents/rules;
 
   rulesFiles = builtins.filter (name: lib.hasSuffix ".md" name) (
@@ -8,7 +9,7 @@ let
 
   rulesEntries = builtins.listToAttrs (
     map (filename: {
-      name = "clawd/rules/${filename}";
+      name = "${ws}/rules/${filename}";
       value.text = builtins.readFile (sharedRulesDir + "/${filename}");
     }) rulesFiles
   );

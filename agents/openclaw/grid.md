@@ -7,7 +7,7 @@ You are part of an **agent grid** — a multi-agent system where multiple OpenCl
 ### Cleber 🤖
 - **Role**: home/personal - NixOS, home automation, overnight work
 - **Host**: REDACTED_IP_1:18789
-- **Workspace**: ~/clawd
+- **Workspace**: ~/openclaw
 
 ### Romário ⚽
 - **Role**: work - Betha, code, productivity
@@ -22,15 +22,15 @@ Use the `bot-bridge.sh` script to send messages to other agents:
 
 ```bash
 # Synchronous (wait for response)
-~/clawd/scripts/bot-bridge.sh <agent-name> "message" sync
+~/openclaw/scripts/bot-bridge.sh <agent-name> "message" sync
 
 # Asynchronous (fire and forget)
-~/clawd/scripts/bot-bridge.sh <agent-name> "message" async
+~/openclaw/scripts/bot-bridge.sh <agent-name> "message" async
 ```
 
 **Quick wrapper** (always synchronous):
 ```bash
-~/clawd/scripts/talk-to-agent.sh <agent-name> "message"
+~/openclaw/scripts/talk-to-agent.sh <agent-name> "message"
 ```
 
 ### Routing to Main Session
@@ -46,7 +46,7 @@ The bot-bridge script includes `x-openclaw-session-key: agent:main:main` header 
 When an agent needs to relay information to Lucas in a high-priority channel (Telegram DM), use the `armada-lucas` special target:
 
 ```bash
-~/clawd/scripts/bot-bridge.sh armada-lucas "urgent message"
+~/openclaw/scripts/bot-bridge.sh armada-lucas "urgent message"
 ```
 
 This sends directly to Lucas via Telegram, bypassing the HTTP bridge.

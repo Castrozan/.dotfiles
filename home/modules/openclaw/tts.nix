@@ -23,7 +23,7 @@ in
     };
   };
 
-  config.home.file."clawd/tts.json" = {
+  config.home.file."${config.openclaw.workspace}/tts.json" = {
     text = builtins.toJSON {
       engine = cfg.engine;
       voice = cfg.voice;

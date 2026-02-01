@@ -156,7 +156,7 @@ Sub-agents start **blank** — no memory, no identity, no context. When you spaw
 
 **Always include in the sub-agent prompt:**
 - **Identity + human:** Cleber (agent identity), Lucas (human)
-- **Workspaces:** `/home/zanoni/clawd` (workspace), `/home/zanoni/.dotfiles` (dotfiles)
+- **Workspaces:** `/home/zanoni/openclaw` (workspace), `/home/zanoni/.dotfiles` (dotfiles)
 - **Files to read (explicit paths):** `MEMORY.md`, `TOOLS.md`, and any relevant config/skill files (e.g., `rules/core.md`, `skills/commit/SKILL.md`)
 - **Available skills:** mention relevant skills by name (e.g., browser-use, coding-agent, whatsapp-polling)
 - **Tools & runtime constraints:** Brave profile + CDP port (`brave`, `9222`), exec paths/Nix conventions from `TOOLS-BASE.md`
