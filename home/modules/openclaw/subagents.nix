@@ -6,15 +6,13 @@ let
     builtins.attrNames (builtins.readDir sharedSubagentDir)
   );
 
-  subagentSymlinks = builtins.listToAttrs (
+  subagentEntries = builtins.listToAttrs (
     map (filename: {
-      name = "clawd/.nix/subagents/${filename}";
-      value = {
-        source = sharedSubagentDir + "/${filename}";
-      };
+      name = "clawd/subagents/${filename}";
+      value.text = builtins.readFile (sharedSubagentDir + "/${filename}");
     }) subagentFiles
   );
 in
 {
-  home.file = subagentSymlinks;
+  home.file = subagentEntries;
 }

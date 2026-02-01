@@ -6,15 +6,13 @@ let
     builtins.attrNames (builtins.readDir sharedRulesDir)
   );
 
-  rulesSymlinks = builtins.listToAttrs (
+  rulesEntries = builtins.listToAttrs (
     map (filename: {
-      name = "clawd/.nix/rules/${filename}";
-      value = {
-        source = sharedRulesDir + "/${filename}";
-      };
+      name = "clawd/rules/${filename}";
+      value.text = builtins.readFile (sharedRulesDir + "/${filename}");
     }) rulesFiles
   );
 in
 {
-  home.file = rulesSymlinks;
+  home.file = rulesEntries;
 }

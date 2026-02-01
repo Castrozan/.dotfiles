@@ -9,12 +9,12 @@ If `BOOTSTRAP.md` exists, that's your birth certificate. Follow it, figure out w
 ## Every Session
 
 Before doing anything else:
-1. Read `.nix/soul.md` — this is who you are
-2. Read `.nix/identity.md` — this is your name and vibe
-3. Read `.nix/user.md` — this is who you're helping
-4. Read `.nix/tools-base.md` — base tool configuration
-5. Read `.nix/rules/core.md` — core development rules
-6. Read `.nix/rules/evergreen-instructions.md` — timeless instructions
+1. Read `SOUL.md` — this is who you are
+2. Read `IDENTITY.md` — this is your name and vibe
+3. Read `USER.md` — this is who you're helping
+4. Read `TOOLS-BASE.md` — base tool configuration
+5. Read `rules/core.md` — core development rules
+6. Read `rules/evergreen-instructions.md` — timeless instructions
 7. Read `memory/YYYY-MM-DD.md` (today + yesterday) for recent context
 8. **If in MAIN SESSION** (direct chat with your human): Also read `MEMORY.md`
 
@@ -134,21 +134,21 @@ Reactions are lightweight social signals. Humans use them constantly — they sa
 
 You have access to shared rules, skills, and subagent definitions from the dotfiles repo:
 
-### Rules (`.nix/rules/`)
+### Rules (`rules/`)
 Read these for operational guidance:
-- `.nix/rules/core.md` — core development rules (read during startup)
-- `.nix/rules/evergreen-instructions.md` — timeless instructions (read during startup)
+- `rules/core.md` — core development rules (read during startup)
+- `rules/evergreen-instructions.md` — timeless instructions (read during startup)
 - Other rules are available for specific contexts (autonomous-mode, devenv-patterns, etc.)
 
-### Skills (`.nix/skills/`)
+### Skills (`skills/`)
 Each skill is a directory with a `SKILL.md` inside. Check the relevant skill when you need it:
-- `.nix/skills/rebuild/SKILL.md` — NixOS rebuild procedures
-- `.nix/skills/commit/SKILL.md` — git commit conventions
-- Browse `.nix/skills/` for the full list
+- `skills/rebuild/SKILL.md` — NixOS rebuild procedures
+- `skills/commit/SKILL.md` — git commit conventions
+- Browse `skills/` for the full list
 
-### Subagents (`.nix/subagents/`)
+### Subagents (`subagents/`)
 Expert agent definitions you can reference or spawn:
-- `.nix/subagents/nix-expert.md`, `.nix/subagents/dotfiles-expert.md`, etc.
+- `subagents/nix-expert.md`, `subagents/dotfiles-expert.md`, etc.
 
 ## Sub-agent Context Rules
 
@@ -157,9 +157,9 @@ Sub-agents start **blank** — no memory, no identity, no context. When you spaw
 **Always include in the sub-agent prompt:**
 - **Identity + human:** Cleber (agent identity), Lucas (human)
 - **Workspaces:** `/home/zanoni/clawd` (workspace), `/home/zanoni/.dotfiles` (dotfiles)
-- **Files to read (explicit paths):** `MEMORY.md`, `TOOLS.md`, and any relevant config/skill files (e.g., `.nix/rules/core.md`, `.nix/skills/commit/SKILL.md`)
+- **Files to read (explicit paths):** `MEMORY.md`, `TOOLS.md`, and any relevant config/skill files (e.g., `rules/core.md`, `skills/commit/SKILL.md`)
 - **Available skills:** mention relevant skills by name (e.g., browser-use, coding-agent, whatsapp-polling)
-- **Tools & runtime constraints:** Brave profile + CDP port (`brave`, `9222`), exec paths/Nix conventions from `.nix/tools-base.md`
+- **Tools & runtime constraints:** Brave profile + CDP port (`brave`, `9222`), exec paths/Nix conventions from `TOOLS-BASE.md`
 - **Constraints:** don’t push to main, don’t spend money, follow dotfiles patterns and commit conventions
 
 **Prompt style:**

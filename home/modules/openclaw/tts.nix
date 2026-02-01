@@ -23,7 +23,7 @@ in
     };
   };
 
-  config.home.file."clawd/.nix/tts.json" = {
+  config.home.file."clawd/tts.json" = {
     text = builtins.toJSON {
       engine = cfg.engine;
       voice = cfg.voice;

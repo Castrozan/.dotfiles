@@ -6,16 +6,7 @@ let
     name: (builtins.readDir sharedSkillsDir).${name} == "directory"
   ) (builtins.attrNames (builtins.readDir sharedSkillsDir));
 
-  # Symlink SKILL.md to .nix/skills/ (read-only reference)
-  nixSkillSymlinks = builtins.listToAttrs (
-    map (dirname: {
-      name = "clawd/.nix/skills/${dirname}/SKILL.md";
-      value.source = sharedSkillsDir + "/${dirname}/SKILL.md";
-    }) skillDirNames
-  );
-
-  # Symlink SKILL.md to skills/ (workspace-visible)
-  workspaceSkillSymlinks = builtins.listToAttrs (
+  workspaceSkillEntries = builtins.listToAttrs (
     builtins.concatMap (
       dirname:
       let
@@ -25,11 +16,11 @@ let
       in
       map (file: {
         name = "clawd/skills/${dirname}/${file}";
-        value.source = skillDir + "/${file}";
+        value.text = builtins.readFile (skillDir + "/${file}");
       }) files
     ) skillDirNames
   );
 in
 {
-  home.file = nixSkillSymlinks // workspaceSkillSymlinks;
+  home.file = workspaceSkillEntries;
 }
