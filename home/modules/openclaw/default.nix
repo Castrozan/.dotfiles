@@ -7,6 +7,5 @@
     ./skills.nix
     ./grid.nix
     ./tts.nix
-    ./writable.nix
   ];
 }
