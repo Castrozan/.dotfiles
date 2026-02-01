@@ -144,6 +144,11 @@ in
         owner = "zanoni";
         mode = "400";
       };
+      "brave-api-key" = {
+        file = ../../secrets/brave-api-key.age;
+        owner = "zanoni";
+        mode = "400";
+      };
     };
   };
 }
