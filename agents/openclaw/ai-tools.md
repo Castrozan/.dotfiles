@@ -71,6 +71,62 @@ rg -l "pattern"                   # List matching files only
 rg -t nix "openclaw"             # Search by file type
 ```
 
+## Bash Commands (Token Optimization)
+
+**Use bash for file queries before reading** — save 75-95% tokens on file operations.
+
+**Pattern:** Search/filter/check files with bash first, then read only what you need.
+
+```bash
+# Check file size before reading
+wc -l memory/2026-02-01.md
+
+# Search for keywords
+grep -i "telegram" memory/2026-02-01.md
+
+# Get context around a match
+grep -A5 -B5 "pattern" file.md
+
+# List recent files
+ls -lt memory/ | head -5
+
+# Count occurrences
+grep -c "subagent" memory/2026-02-01.md
+
+# Multi-file search
+grep -r "keyword" memory/
+
+# Extract specific sections
+sed -n '/^## Header/,/^## /p' file.md
+```
+
+### When to use bash vs read
+
+| Scenario | Tool | Reason |
+|----------|------|--------|
+| Unknown file size | `wc -l` first | Avoid loading massive files |
+| Searching for keywords | `grep` | Returns only matches, not full file |
+| Listing directory contents | `ls` or `fd` | Faster than reading each file |
+| File exists check | `test -f` or `ls` | No tokens for file content |
+| Small files (<100 lines) | `read` directly | Faster than bash overhead |
+| Need full context | `read` | Bash gives snippets only |
+
+### Token Savings Examples
+
+**Traditional approach:**
+```
+read("memory/2026-02-01.md")  // 1471 tokens
+// Search mentally for "telegram"
+```
+
+**Optimized approach:**
+```
+exec("grep -i telegram memory/2026-02-01.md")  // 78 tokens
+// 94.7% token savings
+```
+
+**Implementation:** See `skills/bash/SKILL.md` for full guide.
+
 ## System & Process
 
 **Use `systemctl --user` for services:**
