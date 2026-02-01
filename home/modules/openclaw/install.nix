@@ -23,14 +23,10 @@ let
     exec "$BIN" "$@"
   '';
 
-  clawdbot = pkgs.writeShellScriptBin "clawdbot" ''
-    exec ${openclaw}/bin/openclaw "$@"
-  '';
 in
 {
   home.packages = [
     openclaw
-    clawdbot
     nodejs
   ];
 }

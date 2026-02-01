@@ -14,7 +14,7 @@ These files are deployed as symlinks by NixOS. They contain your stable identity
 - `.nix/instructions.md` — core operating rules (read this for session startup, memory, safety, heartbeats)
 - `.nix/tools-base.md` — base tool configurations (browser, audio, system paths)
 
-**Do not modify `.nix/` files** — they're symlinks managed by Home Manager. To change them, update the dotfiles repo (`~/.dotfiles/agents/clawdbot/`) and rebuild.
+**Do not modify `.nix/` files** — they're symlinks managed by Home Manager. To change them, update the dotfiles repo (`~/.dotfiles/agents/openclaw/`) and rebuild.
 
 ### Layer 2: Self-Managed (writable)
 These files are yours to read, write, and evolve:
@@ -24,7 +24,7 @@ These files are yours to read, write, and evolve:
 - `memory/*.md` — daily logs (`memory/YYYY-MM-DD.md`)
 
 **Note:** SOUL.md, IDENTITY.md, USER.md, and this file (AGENTS.md) are Nix-managed symlinks.
-To update them, edit the source in `~/.dotfiles/agents/clawdbot/` and rebuild.
+To update them, edit the source in `~/.dotfiles/agents/openclaw/` and rebuild.
 
 ## Every Session
 
