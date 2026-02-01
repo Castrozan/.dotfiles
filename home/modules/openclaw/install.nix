@@ -1,5 +1,4 @@
 # --ignore-scripts skips node-llama-cpp cmake build (unused).
-# --ignore-scripts skips node-llama-cpp cmake build (unused).
 { pkgs, ... }:
 let
   nodejs = pkgs.nodejs_22;

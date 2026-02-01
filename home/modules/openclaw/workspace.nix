@@ -4,26 +4,24 @@
   ...
 }:
 let
-  ws = config.openclaw.workspace;
-  agentDir = ../../../agents/openclaw;
+  workspacePath = config.openclaw.workspace;
+  wsInstructionsPath = ../../../agents/openclaw/workspace;
 
-  mdFiles = builtins.filter (name: lib.hasSuffix ".md" name) (
-    builtins.attrNames (builtins.readDir agentDir)
-  );
+  filenames = (builtins.attrNames (builtins.readDir wsInstructionsPath));
 
-  contextFiles = builtins.listToAttrs (
+  files = builtins.listToAttrs (
     map (filename: {
-      name = "${ws}/${filename}";
-      value.text = builtins.readFile (agentDir + "/${filename}");
-    }) mdFiles
+      name = "${workspacePath}/${filename}";
+      value.text = builtins.readFile (wsInstructionsPath + "/${filename}");
+    }) filenames
   );
 in
 {
   options.openclaw.workspace = lib.mkOption {
     type = lib.types.str;
     default = "openclaw";
-    description = "Workspace directory name relative to home";
+    description = "Workspace directory path relative to home";
   };
 
-  config.home.file = contextFiles;
+  home.file = files;
 }
