@@ -9,8 +9,6 @@ let
     "USER.md" = "user.md";
     "AGENTS.md" = "agents.md";
     "AI-TOOLS.md" = "ai-tools.md";
-    "INSTRUCTIONS.md" = "instructions.md";
-    "TOOLS-BASE.md" = "tools-base.md";
     "TODO.md" = "TODO.md";
     "GRID.md" = "grid.md";
   };
