@@ -1,8 +1,4 @@
 { pkgs, ... }:
-let
-  # Electron Wayland/Hyprland flags for native rendering
-  mongodbCompassFlags = "--ozone-platform-hint=auto --enable-features=WaylandWindowDecorations";
-in
 {
   home.packages = [ pkgs.mongodb-compass ];
 
@@ -10,7 +6,7 @@ in
     name = "MongoDB Compass";
     genericName = "MongoDB GUI";
     comment = "The official GUI for MongoDB";
-    exec = "mongodb-compass ${mongodbCompassFlags} %U";
+    exec = "mongodb-compass %U";
     icon = "mongodb-compass";
     terminal = false;
     type = "Application";
