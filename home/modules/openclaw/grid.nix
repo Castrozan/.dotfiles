@@ -9,9 +9,9 @@ let
     };
   };
 
-  scriptFiles = builtins.filter (name: lib.hasSuffix ".sh" name) (
-    builtins.attrNames (builtins.readDir sharedScriptsDir)
-  );
+  scriptFiles = builtins.filter (
+    name: lib.hasSuffix ".sh" name || lib.hasSuffix ".py" name
+  ) (builtins.attrNames (builtins.readDir sharedScriptsDir));
 
   scriptsSymlinks = builtins.listToAttrs (
     map (filename: {

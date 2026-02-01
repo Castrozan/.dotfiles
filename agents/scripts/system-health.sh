@@ -1,0 +1,132 @@
+#!/usr/bin/env bash
+# system-health.sh — Quick system health check for night shift / heartbeats
+# Covers: gateway, services, disk, network, git status, temperatures
+set -euo pipefail
+
+BOLD='\033[1m'
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+YELLOW='\033[0;33m'
+NC='\033[0m'
+
+ok() { echo -e "  ${GREEN}✓${NC} $1"; }
+warn() { echo -e "  ${YELLOW}⚠${NC} $1"; }
+fail() { echo -e "  ${RED}✗${NC} $1"; }
+
+echo -e "${BOLD}━━━ System Health Check ━━━${NC}"
+echo -e "  $(date '+%Y-%m-%d %H:%M:%S %Z')"
+echo
+
+# 1. OpenClaw Gateway
+echo -e "${BOLD}Gateway${NC}"
+if curl -sf http://localhost:18789/health >/dev/null 2>&1; then
+  ok "OpenClaw gateway responding (localhost:18789)"
+elif curl -sf http://REDACTED_IP_1:18789/health >/dev/null 2>&1; then
+  ok "OpenClaw gateway responding (tailscale:18789)"
+elif pgrep -f "openclaw" >/dev/null 2>&1; then
+  ok "OpenClaw gateway process running (health endpoint unreachable)"
+else
+  fail "OpenClaw gateway not responding"
+fi
+
+# 2. Romário's gateway
+echo -e "${BOLD}Romário${NC}"
+if curl -sf --connect-timeout 3 http://REDACTED_IP_2:18790/health >/dev/null 2>&1; then
+  ok "Romário gateway responding (port 18790)"
+else
+  warn "Romário gateway unreachable (work machine may be off)"
+fi
+
+# 3. Key services
+echo -e "${BOLD}Services${NC}"
+for svc in hey-cleber; do
+  if systemctl --user is-active "$svc" >/dev/null 2>&1; then
+    ok "$svc: active"
+  else
+    warn "$svc: inactive"
+  fi
+done
+
+# 4. Brave browser (CDP)
+if curl -sf http://localhost:9222/json/version >/dev/null 2>&1; then
+  ok "Brave CDP: running (port 9222)"
+else
+  warn "Brave CDP: not available"
+fi
+
+# 5. Disk usage
+echo -e "${BOLD}Disk${NC}"
+DISK_PCT=$(df -h / | awk 'NR==2{print $5}' | tr -d '%')
+DISK_AVAIL=$(df -h / | awk 'NR==2{print $4}')
+if [ "$DISK_PCT" -lt 80 ]; then
+  ok "Root: ${DISK_PCT}% used (${DISK_AVAIL} free)"
+elif [ "$DISK_PCT" -lt 90 ]; then
+  warn "Root: ${DISK_PCT}% used (${DISK_AVAIL} free)"
+else
+  fail "Root: ${DISK_PCT}% used (${DISK_AVAIL} free) — CRITICAL"
+fi
+
+HOME_PCT=$(df -h /home | awk 'NR==2{print $5}' | tr -d '%')
+HOME_AVAIL=$(df -h /home | awk 'NR==2{print $4}')
+if [ "$HOME_PCT" -lt 80 ]; then
+  ok "Home: ${HOME_PCT}% used (${HOME_AVAIL} free)"
+elif [ "$HOME_PCT" -lt 90 ]; then
+  warn "Home: ${HOME_PCT}% used (${HOME_AVAIL} free)"
+else
+  fail "Home: ${HOME_PCT}% used (${HOME_AVAIL} free) — CRITICAL"
+fi
+
+# 6. Memory
+echo -e "${BOLD}Memory${NC}"
+MEM_INFO=$(free -h | awk 'NR==2{printf "%s/%s (%.0f%%)", $3, $2, $3/$2*100}')
+ok "RAM: $MEM_INFO"
+
+# 7. Temperatures (if available)
+if command -v sensors >/dev/null 2>&1; then
+  echo -e "${BOLD}Temps${NC}"
+  CPU_TEMP=$(sensors 2>/dev/null | grep -i 'Package\|Tctl\|Core 0' | head -1 | grep -oP '\+\K[0-9.]+' | head -1)
+  if [ -n "$CPU_TEMP" ]; then
+    TEMP_INT=${CPU_TEMP%.*}
+    if [ "$TEMP_INT" -lt 70 ]; then
+      ok "CPU: ${CPU_TEMP}°C"
+    elif [ "$TEMP_INT" -lt 85 ]; then
+      warn "CPU: ${CPU_TEMP}°C (warm)"
+    else
+      fail "CPU: ${CPU_TEMP}°C (HOT)"
+    fi
+  fi
+fi
+
+# 8. Uptime & load
+echo -e "${BOLD}System${NC}"
+UPTIME=$(uptime -p 2>/dev/null | head -1 || echo "unknown")
+LOAD=$(cut -d' ' -f1-3 /proc/loadavg)
+ok "Uptime: $UPTIME"
+ok "Load: $LOAD"
+
+# 9. Git status (workspace)
+echo -e "${BOLD}Git (~/clawd)${NC}"
+cd ~/clawd 2>/dev/null && {
+  BRANCH=$(git branch --show-current 2>/dev/null || echo "unknown")
+  DIRTY=$(git status --porcelain 2>/dev/null | wc -l)
+  if [ "$DIRTY" -eq 0 ]; then
+    ok "Branch: $BRANCH (clean)"
+  else
+    warn "Branch: $BRANCH ($DIRTY uncommitted changes)"
+  fi
+}
+
+# 10. Git status (dotfiles)
+echo -e "${BOLD}Git (~/.dotfiles)${NC}"
+cd ~/.dotfiles 2>/dev/null && {
+  BRANCH=$(git branch --show-current 2>/dev/null || echo "unknown")
+  DIRTY=$(git status --porcelain 2>/dev/null | wc -l)
+  if [ "$DIRTY" -eq 0 ]; then
+    ok "Branch: $BRANCH (clean)"
+  else
+    warn "Branch: $BRANCH ($DIRTY uncommitted changes)"
+  fi
+}
+
+echo
+echo -e "${BOLD}━━━ Done ━━━${NC}"
