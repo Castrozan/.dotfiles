@@ -19,12 +19,13 @@ Cron (every 20min) → systemEvent → Main Session (Orchestrator)
 ### Why Sub-Agents
 - Main session stays lean (no bloated context)
 - Each task gets fresh context window
-- Parallel work possible (spawn multiple)
+- Parallel work possible (spawn multiple, 4 max)
 - Failures are isolated — one bad task doesn't kill the night
 
 ### Orchestrator Role (Main Session)
 - Reads task rotation from state file
 - Crafts specific prompts for each sub-agent
+- Spawns sub-agents with necessary tools and constraints available on the workspace
 - Reviews sub-agent output when they report back
 - Decides follow-up actions (more research? implementation? just save?)
 - Compiles morning summary at the end
@@ -55,9 +56,10 @@ Write `memory/night-shift/state.json`:
 
 ### 3. Set Up Cron
 One cron job — systemEvent to main session, every 20 minutes:
+If previous task still running, do them both by spawning another sub-agent.
 ```
 schedule: { kind: "every", everyMs: 1200000 }
-payload: { kind: "systemEvent", text: "Night shift: execute next task from the rotation. Read memory/night-shift/state.json, pick the next pending task, spawn a sub-agent for it. If all tasks done, compile summary and remove this cron." }
+payload: { kind: "systemEvent", text: "Night shift: execute next task from the rotation. Read memory/night-shift/state.json, pick the next pending task, spawn a sub-agent for it." }
 sessionTarget: "main"
 ```
 
@@ -82,22 +84,16 @@ Sub-agent prompt template:
 Fetch top 3-5 results. Write structured report to [OUTPUT_FILE].
 Format: TL;DR, Key Findings (bullets), Notable Projects/Tools,
 Action Items, Sources. Be thorough but concise."
+Instruction files: Follow these guidelines [RULE_FILE_X], [RULE_FILE_Y], [CONDUCT_GUIDELINES_Z], [CONSTRAINTS]
 ```
-
-### Security Assessment Tasks
-Sub-agent gets: scope, what to check.
-Tools: `exec` (system commands), `read` (config files).
-Output: markdown security report.
 
 ### Build Tasks
 Sub-agent gets: what to build, constraints, branch name.
-Tools: `exec`, `read`, `write`, `edit`.
-Rules: always create branch (`night-shift/YYYY-MM-DD-topic`), never push to main.
+Rules: always create branch (`night-shift/YYYY-MM-DD-topic`), never push to main, follow the instructions of [RULE_FILE_X], [RULE_FILE_Y], [CONDUCT_GUIDELINES_Z], [CONSTRAINTS].
 
 ### Processing Tasks (ReadItLater, Vault)
-Sub-agent gets: directory to scan, processing rules.
-Tools: `read`, `write`, `exec` (for file listing).
-Output: digest file + processed item tags.
+Sub-agent gets: Descriptive task based on the note to process. Why the note matters, how to extract value.
+Output: digest file + processed item tags. Suggestion for next steps if relevant.
 
 ### Analysis Tasks
 Sub-agent reviews previous task outputs, synthesizes patterns, identifies opportunities.
@@ -126,42 +122,34 @@ Each output file is self-contained — readable on its own without context.
 
 Customize per night, but defaults:
 
-1. **AI Agent Trading & Crypto** — How agents trade on exchanges, DeFi, Polymarket. Tools, frameworks, risks.
-2. **Security Assessment** — SSH, Tailscale, exposed ports, firewall, secrets management. Our two machines.
+1. **Obsidian Vault / ReadItLater** — Process saved items, extract knowledge, organize.
+2. **Efficiency** — Better ways to browse X, read pages, reduce token usage, faster workflows.
 3. **TTS/STT Solutions** — Best voice interaction for AI agents. Edge-TTS alternatives, Whisper improvements, real-time voice.
+3. **New Skills & Tools** — GitHub trending, aitmpl.com, new Claude Code capabilities, useful CLI tools.
 4. **Multi-Agent / Swarms** — How to orchestrate many agents. Claude Code swarms, OpenClaw multi-instance, agent communication.
-5. **New Skills & Tools** — GitHub trending, aitmpl.com, new Claude Code capabilities, useful CLI tools.
-6. **Efficiency** — Better ways to browse X, read pages, reduce token usage, faster workflows.
-7. **Virtual Presence** — Google Meet bots, webcam avatars, screen recording + transcription pipelines.
-8. **Obsidian Vault / ReadItLater** — Process saved items, extract knowledge, organize.
+5. **Virtual Presence** — Google Meet bots, webcam avatars, screen recording + transcription pipelines.
+6. **AI Agent Trading & Crypto** — How agents trade on exchanges, DeFi, Polymarket. Tools, frameworks, risks.
+7. **Security Assessment** — SSH, Tailscale, exposed ports, firewall, secrets management. Our two machines.
 
 ## Rules
 
 ### Must Follow
 - **Drop everything if Lucas messages** — respond immediately, night shift can wait
 - **One file per task** — never dump everything into one giant file
-- **Never join platforms** — don't sign up for anything (social networks, AI platforms, trading sites)
-- **Never spend money** — no purchases, subscriptions, or paid APIs without asking
-- **Branches only** — code changes go to `night-shift/` branches, never main
-- **Don't push to main** — ever
+- **Worktrees and branches only** — code changes go to `night-shift/` worktree branches, never main directly (things can go on main if tested and very relevant)
 
 ### Should Follow
 - Rotate task categories — don't do 3 research tasks in a row if a build is ready
-- Keep sub-agent prompts focused — one clear objective per spawn
+- Keep sub-agent prompts focused — one clear objective per spawn - multiple spawns if needed until task is done
 - Log progress to state.json after each task
-- If a task fails, mark it and move on — don't retry more than once
+- If a task fails many times, mark it and move on
 - Prefer `web_search` + `web_fetch` over browser when possible (faster, cheaper)
 - Use browser only for dynamic sites (X/Twitter, authenticated pages)
-
-### Efficiency
-- Sub-agents should be concise — no filler, no "Great question!", just results
-- Use `web_search` with specific queries, not broad ones
-- Fetch only the most relevant 3-5 pages per topic
-- If a page is too long, use `maxChars` to truncate
+- Use the user profile so to have access to saved passwords, cookies, etc. (you have permission and sub-agents as well)
 
 ## Morning Summary
 
-When all tasks complete (or when Lucas wakes up), compile `summary.md`:
+When User wakes up or tells you to stop, compile `summary.md`:
 
 ```markdown
 # 🌅 Night Shift Report — [Date]
@@ -197,9 +185,7 @@ Deliver via Telegram message (short version) + full file for review.
 ## Deactivation
 
 Night shift ends when:
-1. Lucas says to stop
-2. All tasks complete and summary is delivered
-3. Morning time reached (configurable, default 7am)
+1. User says to stop
 
 On deactivation:
 1. Compile summary.md if not done
@@ -207,3 +193,4 @@ On deactivation:
 3. Update state.json status to "completed"
 4. Send morning summary via Telegram
 5. Update HEARTBEAT.md (remove night shift tasks)
+6. Review what was done, what to improve, and fix any issues
