@@ -6,7 +6,7 @@
     ./workspace.nix
     ./rules.nix
     ./skills.nix
-    ./grid.nix
+    ./scripts.nix
     ./tts.nix
   ];
 }
