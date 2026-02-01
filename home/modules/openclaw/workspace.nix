@@ -4,7 +4,7 @@
   ...
 }:
 let
-  workspacePath = config.openclaw.workspace;
+  workspacePath = config.openclaw.workspacePath;
   wsInstructionsPath = ../../../agents/openclaw/workspace;
 
   filenames = (builtins.attrNames (builtins.readDir wsInstructionsPath));
@@ -17,7 +17,7 @@ let
   );
 in
 {
-  options.openclaw.workspace = lib.mkOption {
+  options.openclaw.workspacePath = lib.mkOption {
     type = lib.types.str;
     default = "openclaw";
     description = "Workspace directory path relative to home";

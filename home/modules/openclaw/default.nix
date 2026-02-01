@@ -1,8 +1,8 @@
 { ... }:
 {
   imports = [
-    ./workspace.nix
     ./install.nix
+    ./workspace.nix
     ./rules.nix
     ./skills.nix
     ./grid.nix

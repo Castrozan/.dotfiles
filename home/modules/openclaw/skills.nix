@@ -1,11 +1,11 @@
-{ lib, config, ... }:
+{ config, ... }:
 let
   ws = config.openclaw.workspace;
   sharedSkillsDir = ../../../agents/skills;
 
-  skillDirNames = builtins.filter (
-    name: (builtins.readDir sharedSkillsDir).${name} == "directory"
-  ) (builtins.attrNames (builtins.readDir sharedSkillsDir));
+  skillDirNames = builtins.filter (name: (builtins.readDir sharedSkillsDir).${name} == "directory") (
+    builtins.attrNames (builtins.readDir sharedSkillsDir)
+  );
 
   workspaceSkillEntries = builtins.listToAttrs (
     builtins.concatMap (

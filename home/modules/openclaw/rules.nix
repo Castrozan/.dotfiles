@@ -1,19 +1,17 @@
-{ lib, config, ... }:
+{ config, ... }:
 let
-  ws = config.openclaw.workspace;
-  sharedRulesDir = ../../../agents/rules;
+  workspacePath = config.openclaw.workspacePath;
+  agentRulesDirectory = ../../../agents/rules;
 
-  rulesFiles = builtins.filter (name: lib.hasSuffix ".md" name) (
-    builtins.attrNames (builtins.readDir sharedRulesDir)
-  );
+  ruleFileNames = (builtins.attrNames (builtins.readDir agentRulesDirectory));
 
-  rulesEntries = builtins.listToAttrs (
+  rules = builtins.listToAttrs (
     map (filename: {
-      name = "${ws}/rules/${filename}";
-      value.text = builtins.readFile (sharedRulesDir + "/${filename}");
-    }) rulesFiles
+      name = "${workspacePath}/rules/${filename}";
+      value.text = builtins.readFile (agentRulesDirectory + "/${filename}");
+    }) ruleFileNames
   );
 in
 {
-  home.file = rulesEntries;
+  home.file = rules;
 }
