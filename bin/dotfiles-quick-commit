@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# Quick-commit all changes in dotfiles + private-config submodule
+DOTFILES="$HOME/.dotfiles"
+SUB="$DOTFILES/private-config"
+MSG="wip: $(date +%Y-%m-%d\ %H:%M)"
+committed=""
+
+# Submodule first (so parent can track new submodule commit)
+if [ -d "$SUB/.git" ] && git -C "$SUB" status --porcelain | grep -q .; then
+    git -C "$SUB" add -A
+    git -C "$SUB" commit -m "$MSG" --no-verify
+    git -C "$SUB" push 2>/dev/null &
+    committed="private-config"
+fi
+
+# Main repo
+if git -C "$DOTFILES" status --porcelain | grep -q .; then
+    git -C "$DOTFILES" add -A
+    git -C "$DOTFILES" commit -m "$MSG" --no-verify
+    git -C "$DOTFILES" push 2>/dev/null &
+    committed="${committed:+$committed + }dotfiles"
+fi
+
+if [ -n "$committed" ]; then
+    echo "✓ committed: $committed"
+else
+    echo "nothing to commit"
+fi
