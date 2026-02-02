@@ -21,13 +21,10 @@ File: `workspace-refactoring-step-3.md`
 
 Explored BOOT.md automation, bootstrap hooks, memory search (hybrid BM25+vector), memory flush before compaction, bootstrapMaxChars config, subagent minimal mode, per-agent overrides, and rules/ directory. Confirmed rules/ is not an OpenClaw concept. Key conclusions: merge AI-TOOLS.md into AGENTS.md (~13KB total, under 20K limit), keep GRID.md as on-demand reference, enable memory flush and memory search in config separately.
 
-### Step 4: Community Research
-Search the internet for how other OpenClaw/AI-agent users structure their workspaces. Look at:
-- OpenClaw Discord/community posts
-- GitHub repos with openclaw workspace configs
-- X/Twitter posts about agent workspace optimization
-- Blog posts about prompt engineering for persistent agents
-Extract patterns and ideas that could improve our setup.
+### Step 4: Community Research (DONE)
+File: `workspace-refactoring-step-4.md`
+
+Researched GitHub Blog (2,500+ repo analysis), APIYI token optimization guide, X/Twitter posts, OpenClaw docs, and prior night shift research. Key findings: commands should go early in AGENTS.md (agents reference them most), tool patterns must be in injected files (our AI-TOOLS.md content is invisible), community uses Always/Ask/Never boundary framework, session hygiene (reset after heavy work, subagent isolation) saves 40-50% tokens. Confirmed: merge AI-TOOLS.md into AGENTS.md with tools section early, delete INSTRUCTIONS.md and TOOLS-BASE.md.
 
 ### Step 5: Final Consolidated Plan
 Synthesize steps 1-4 into a single implementation plan with exact file changes. Account for:
