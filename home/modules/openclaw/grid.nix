@@ -5,6 +5,8 @@
 }:
 let
   gridData = import ../../../agents/grid.nix;
+  telegramIdsPath = ../../../private-config/telegram-ids.nix;
+  telegramIds = if builtins.pathExists telegramIdsPath then import telegramIdsPath else { };
 
   # Generate GRID.md members section (metadata only, no network details)
   gridMembersEntries = lib.concatStringsSep "\n\n" (
@@ -26,5 +28,10 @@ in
 
   config.openclaw.gridPlaceholders = {
     "@GRID_MEMBERS@" = gridMembersEntries;
+  }
+  // lib.optionalAttrs (telegramIds != { }) {
+    "@cleberBotId@" = telegramIds.cleberBotId or "";
+    "@romarioBotId@" = telegramIds.romarioBotId or "";
+    "@armadaLucasGroupId@" = telegramIds.armadaLucasGroupId or "";
   };
 }
