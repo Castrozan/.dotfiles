@@ -12,6 +12,7 @@
 let
   inherit (config) openclaw;
   homeDir = config.home.homeDirectory;
+  isNixOS = builtins.pathExists /etc/NIXOS;
 in
 {
   config = {
@@ -27,9 +28,10 @@ in
       ".gateway.port" = openclaw.gatewayPort;
     };
 
-    openclaw.secretPatches = lib.mkOptionDefault {
+    # agenix secrets only available on NixOS — skip on standalone Home Manager
+    openclaw.secretPatches = lib.mkIf isNixOS (lib.mkOptionDefault {
       ".gateway.auth.token" = "/run/agenix/openclaw-gateway-token";
       ".tools.web.search.apiKey" = "/run/agenix/brave-api-key";
-    };
+    });
   };
 }
