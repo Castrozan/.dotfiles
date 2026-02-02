@@ -10,5 +10,8 @@
 .cursor/
 home/modules/cursor/cursor-global-user-rules.md
 
+# Nix build output
+result
+
 # Test coverage output
 tests/coverage/
