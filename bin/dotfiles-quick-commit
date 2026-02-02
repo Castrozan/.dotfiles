@@ -13,7 +13,8 @@ if [ -d "$SUB/.git" ] && git -C "$SUB" status --porcelain | grep -q .; then
     committed="private-config"
 fi
 
-# Main repo
+# Stage submodule pointer + any other changes in main repo
+git -C "$DOTFILES" add private-config 2>/dev/null
 if git -C "$DOTFILES" status --porcelain | grep -q .; then
     git -C "$DOTFILES" add -A
     git -C "$DOTFILES" commit -m "$MSG" --no-verify
@@ -22,7 +23,7 @@ if git -C "$DOTFILES" status --porcelain | grep -q .; then
 fi
 
 if [ -n "$committed" ]; then
-    echo "✓ committed: $committed"
+    echo "committed: $committed"
 else
     echo "nothing to commit"
 fi
