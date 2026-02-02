@@ -1,6 +1,6 @@
 { config, ... }:
 let
-  openclaw = config.openclaw;
+  inherit (config) openclaw;
   skillsSourcePath = ../../../agents/skills;
 
   # Private skills live in private-config/openclaw/skills/

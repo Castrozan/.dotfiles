@@ -1,6 +1,6 @@
 { lib, config, ... }:
 let
-  openclaw = config.openclaw;
+  inherit (config) openclaw;
   mainWorkspace = "${config.home.homeDirectory}/${openclaw.workspacePath}";
   directories = [
     "memory"

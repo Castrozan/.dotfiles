@@ -1,6 +1,6 @@
 { config, ... }:
 let
-  openclaw = config.openclaw;
+  inherit (config) openclaw;
   rulesSourcePath = ../../../agents/rules;
 
   filenames = builtins.attrNames (builtins.readDir rulesSourcePath);

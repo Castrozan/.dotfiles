@@ -10,7 +10,7 @@
 # Engine details: see config-patch.nix.
 { config, lib, ... }:
 let
-  openclaw = config.openclaw;
+  inherit (config) openclaw;
   homeDir = config.home.homeDirectory;
 in
 {

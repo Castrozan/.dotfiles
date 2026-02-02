@@ -4,7 +4,7 @@
   ...
 }:
 let
-  openclaw = config.openclaw;
+  inherit (config) openclaw;
   privateDir = ../../../private-config/openclaw;
   workspaceDir = privateDir + "/workspace";
   skillsDir = privateDir + "/skills";

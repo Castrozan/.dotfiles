@@ -10,7 +10,7 @@
   ...
 }:
 let
-  openclaw = config.openclaw;
+  inherit (config) openclaw;
   homeDir = config.home.homeDirectory;
 
   pathToArgName = path: lib.replaceStrings [ "." ] [ "_" ] (lib.removePrefix "." path);

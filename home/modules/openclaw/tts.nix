@@ -1,7 +1,7 @@
 { lib, config, ... }:
 let
-  openclaw = config.openclaw;
-  tts = openclaw.tts;
+  inherit (config) openclaw;
+  inherit (openclaw) tts;
 in
 {
   options.openclaw.tts = {
@@ -20,8 +20,8 @@ in
 
   config.home.file = openclaw.deployToWorkspace {
     "tts.json".text = builtins.toJSON {
-      engine = tts.engine;
-      voice = tts.voice;
+      inherit (tts) engine;
+      inherit (tts) voice;
     };
   };
 }

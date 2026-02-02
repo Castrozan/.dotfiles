@@ -1,5 +1,4 @@
 {
-  config,
   lib,
   ...
 }:
@@ -8,7 +7,7 @@ let
   telegramIdsPath = ../../../private-config/telegram-ids.nix;
   telegramIds = if builtins.pathExists telegramIdsPath then import telegramIdsPath else { };
 
-  # Generate GRID.md members section (metadata only, no network details)
+  # Generate GRID.md members section
   gridMembersEntries = lib.concatStringsSep "\n\n" (
     lib.mapAttrsToList (
       name: agent:

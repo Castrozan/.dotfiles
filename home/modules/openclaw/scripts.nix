@@ -1,6 +1,6 @@
 { lib, config, ... }:
 let
-  openclaw = config.openclaw;
+  inherit (config) openclaw;
   scriptsSourcePath = ../../../agents/scripts;
 
   filenames = builtins.filter (name: lib.hasSuffix ".sh" name || lib.hasSuffix ".py" name) (

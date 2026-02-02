@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
@@ -33,7 +38,7 @@ in
       description = "OpenClaw Gateway Watchdog";
       wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
-      
+
       serviceConfig = {
         Type = "simple";
         User = cfg.user;

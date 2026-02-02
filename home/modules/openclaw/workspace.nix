@@ -3,7 +3,7 @@
   ...
 }:
 let
-  openclaw = config.openclaw;
+  inherit (config) openclaw;
   workspaceSourcePath = ../../../agents/openclaw/workspace;
 
   # Private files (USER.md, IDENTITY.md, SOUL.md) live in private-config/openclaw/

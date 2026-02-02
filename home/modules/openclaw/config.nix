@@ -4,7 +4,7 @@
   ...
 }:
 let
-  openclaw = config.openclaw;
+  inherit (config) openclaw;
 in
 {
   options.openclaw = {
