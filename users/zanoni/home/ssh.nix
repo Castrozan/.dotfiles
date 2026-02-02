@@ -3,6 +3,9 @@ let
   phoneSecretExists = builtins.pathExists ../../../secrets/id_ed25519_phone.age;
   workpcSecretExists = builtins.pathExists ../../../secrets/id_ed25519_workpc.age;
   sshKeys = import ../ssh-keys.nix;
+  sshHostsPath = ../../../private-config/ssh-hosts.nix;
+  sshHostsExist = builtins.pathExists sshHostsPath;
+  sshHosts = if sshHostsExist then import sshHostsPath else { };
 in
 {
   programs.ssh = {
@@ -12,16 +15,16 @@ in
     matchBlocks = {
       "*" = { };
     }
-    // lib.optionalAttrs workpcSecretExists {
+    // lib.optionalAttrs (workpcSecretExists && sshHosts ? workpc) {
       "workpc" = {
-        hostname = "REDACTED_IP";
+        hostname = sshHosts.workpc;
         user = "lucas.zanoni";
         identityFile = "/run/agenix/id_ed25519_workpc";
       };
     }
-    // lib.optionalAttrs phoneSecretExists {
+    // lib.optionalAttrs (phoneSecretExists && sshHosts ? phone) {
       "phone" = {
-        hostname = "REDACTED_IP";
+        hostname = sshHosts.phone;
         user = "u0_a431";
         port = 8022;
         identityFile = "/run/agenix/id_ed25519_phone";
