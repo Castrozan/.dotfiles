@@ -29,7 +29,6 @@ in
       ".agents.defaults.model.fallbacks" = [
         "anthropic/claude-sonnet-4-5"
         "anthropic/claude-haiku-4-5"
-        "openrouter/auto"
       ];
       ".agents.defaults.models" = {
         "anthropic/claude-opus-4-5" = {
@@ -41,17 +40,10 @@ in
         "anthropic/claude-sonnet-4-5" = {
           alias = "sonnet";
         };
-        "openrouter/auto" = {
-          alias = "auto";
-        };
       };
       ".auth.profiles" = {
         "anthropic:default" = {
           provider = "anthropic";
-          mode = "token";
-        };
-        "openrouter:default" = {
-          provider = "openrouter";
           mode = "token";
         };
       };
