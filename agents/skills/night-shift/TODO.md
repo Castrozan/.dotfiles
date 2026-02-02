@@ -5,7 +5,7 @@ Items to implement or improve for the night shift skill.
 ## Tonight's Task Queue (2026-01-31)
 
 ### Priority 0 — Implementation (Lucas requested)
-- [ ] **Claude Code control via tmux/exec** — Cleber should start, monitor, and control Claude Code CLI sessions. Research pipe mode (`claude -p`), tmux sessions, pty exec. Build a skill or integrate with existing coding-agent skill. Test and validate end-to-end.
+- [ ] **Claude Code control via tmux/exec** — Clever should start, monitor, and control Claude Code CLI sessions. Research pipe mode (`claude -p`), tmux sessions, pty exec. Build a skill or integrate with existing coding-agent skill. Test and validate end-to-end.
 
 ### Priority 1 — Research
 - [ ] X/Twitter: AI trading & crypto agents — how are agents trading? Platforms, DeFi, Polymarket bots
@@ -20,7 +20,7 @@ Items to implement or improve for the night shift skill.
 
 ### Priority 3 — Design & Planning
 - [ ] Google Meet integration — virtual presence (avatar → webcam pipe, screen recording, audio transcription)
-- [ ] Agent communication protocol — better bridge between Cleber ↔ Romário, swarm coordination
+- [ ] Agent communication protocol — better bridge between Clever ↔ Robson, swarm coordination
 
 ### Priority 4 — Processing
 - [ ] Obsidian ReadItLater vault — process unread items, extract knowledge

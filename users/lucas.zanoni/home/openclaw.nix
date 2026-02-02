@@ -1,6 +1,6 @@
 {
   openclaw = {
-    agent = "romario";
+    agent = "robson";
     agentEmoji = "⚽";
     agentRole = "work — Betha, code, productivity";
     gatewayPort = 18790;

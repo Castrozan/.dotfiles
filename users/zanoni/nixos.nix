@@ -134,13 +134,13 @@ in
         owner = "zanoni";
         mode = "600";
       };
-      "grid-token-romario" = {
-        file = ../../secrets/grid-token-romario.age;
+      "grid-token-robson" = {
+        file = ../../secrets/grid-token-robson.age;
         owner = "zanoni";
         mode = "400";
       };
-      "grid-token-cleber" = {
-        file = ../../secrets/grid-token-cleber.age;
+      "grid-token-clever" = {
+        file = ../../secrets/grid-token-clever.age;
         owner = "zanoni";
         mode = "400";
       };

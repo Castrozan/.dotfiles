@@ -11,8 +11,8 @@ Each agent has a distinct voice configured via Nix (`openclaw.tts` option in hom
 
 | Agent   | Voice                    | Accent   | Style              |
 |---------|--------------------------|----------|---------------------|
-| Cleber  | `en-GB-RyanNeural`       | British  | Calm, professional  |
-| Romário | `pt-BR-AntonioNeural`    | Brazilian| Direct, casual      |
+| Clever  | `en-GB-RyanNeural`       | British  | Calm, professional  |
+| Robson  | `pt-BR-AntonioNeural`    | Brazilian| Direct, casual      |
 
 **Config file**: `~/@workspacePath@/tts.json` (Nix-managed, read-only)
 ```json

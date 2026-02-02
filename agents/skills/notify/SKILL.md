@@ -25,8 +25,8 @@ Send real system-level push notifications to Lucas's Android phone. These show u
 
 | Route          | Topic                        |
 |----------------|------------------------------|
-| Cleber → Lucas | `cleber-lucas-2f2ea57a`      |
-| Romário → Lucas| `romario-lucas-I9rbtKUd`     |
+| Clever → Lucas | `cleber-lucas-2f2ea57a`      |
+| Robson → Lucas | `romario-lucas-I9rbtKUd`      |
 
 ## Send a Notification
 

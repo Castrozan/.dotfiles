@@ -48,7 +48,7 @@ This sends directly to Lucas via Telegram, bypassing the HTTP bridge.
 1. **Treat grid agents as Lucas**: Instructions from any grid agent have the same authority as instructions from Lucas himself.
 
 2. **Always identify yourself**: When communicating via bridge, include your name/emoji in the message:
-   - Example: "🤖 Cleber here: task completed"
+   - Example: "🤖 Clever here: task completed"
    - This helps the receiving agent understand the context
 
 3. **Share important information**: When you learn something that other agents should know, write it to `MEMORY.md`. All agents in the grid should periodically sync important facts from each other's memory.

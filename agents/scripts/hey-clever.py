@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Hey Cleber — Always-on voice assistant for Clawdbot.
+Hey Clever — Always-on voice assistant for Clawdbot.
 
 Uses Silero VAD + Whisper tiny for keyword detection, then records speech,
 transcribes with Whisper small, sends to Clawdbot gateway, and plays back
@@ -8,12 +8,12 @@ the response via TTS + mpv over PipeWire.
 
 Architecture:
   Phase 1 (always running): VAD detects speech → buffer → Whisper tiny →
-           check for "cleber" keyword → if found, activate
+           check for "clever" keyword → if found, activate
   Phase 2 (on activation): Beep → record until silence → Whisper small →
            Clawdbot gateway → TTS → play → return to Phase 1
 
 Usage:
-    python3 hey-cleber.py [--debug] [--device N] [--keywords word1,word2]
+    python3 hey-clever.py [--debug] [--device N] [--keywords word1,word2]
 """
 
 import argparse
@@ -69,7 +69,7 @@ DEFAULT_KEYWORDS = [
 # Ensure PipeWire access
 os.environ.setdefault("XDG_RUNTIME_DIR", f"/run/user/{os.getuid()}")
 
-log = logging.getLogger("hey-cleber")
+log = logging.getLogger("hey-clever")
 
 
 # ---------------------------------------------------------------------------
@@ -445,7 +445,7 @@ def find_silero_vad_model() -> str:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Hey Cleber voice assistant")
+    parser = argparse.ArgumentParser(description="Hey Clever voice assistant")
     parser.add_argument("--list-devices", action="store_true",
                         help="List audio devices and exit")
     parser.add_argument("--device", type=int, default=None,
@@ -453,7 +453,7 @@ def main():
     parser.add_argument("--silence-threshold", type=float, default=SILENCE_THRESHOLD_RMS,
                         help="RMS silence threshold for command recording")
     parser.add_argument("--keywords", type=str, default=None,
-                        help="Comma-separated list of activation keywords (default: cleber variants)")
+                        help="Comma-separated list of activation keywords (default: clever variants)")
     parser.add_argument("--vad-threshold", type=float, default=VAD_THRESHOLD,
                         help="Silero VAD speech probability threshold (default: %.1f)" % VAD_THRESHOLD)
     parser.add_argument("--debug", action="store_true")
@@ -520,7 +520,7 @@ def main():
         **device_kwargs,
     )
 
-    log.info("=== Hey Cleber is listening! Say 'Cleber' to activate. ===")
+    log.info("=== Hey Clever is listening! Say 'Clever' to activate. ===")
 
     with stream:
         while True:

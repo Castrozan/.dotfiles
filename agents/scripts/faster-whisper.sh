@@ -31,7 +31,7 @@ fi
 export HOME="${HOME:-@homePath@}"
 export LD_LIBRARY_PATH="/nix/store/xm08aqdd7pxcdhm0ak6aqb1v7hw5q6ri-gcc-14.3.0-lib/lib:/nix/store/yil5gzi7sxmx5jn90883daa4rj03bf8b-home-manager-path/lib"
 
-VENV_DIR="${HOME}/.local/share/hey-cleber-venv"
+VENV_DIR="${HOME}/.local/share/hey-clever-venv"
 export PATH="${VENV_DIR}/bin:${PATH}"
 export VIRTUAL_ENV="${VENV_DIR}"
 

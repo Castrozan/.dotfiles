@@ -29,8 +29,8 @@ in
     "@GRID_MEMBERS@" = gridMembersEntries;
   }
   // lib.optionalAttrs (telegramIds != { }) {
-    "@cleberBotId@" = telegramIds.cleberBotId or "";
-    "@romarioBotId@" = telegramIds.romarioBotId or "";
+    "@cleverBotId@" = telegramIds.cleverBotId or "";
+    "@robsonBotId@" = telegramIds.robsonBotId or "";
     "@armadaLucasGroupId@" = telegramIds.armadaLucasGroupId or "";
   };
 }

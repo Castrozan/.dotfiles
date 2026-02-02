@@ -1,4 +1,4 @@
-# Zanoni's Home Manager Configuration — Cleber 🤖
+# Zanoni's Home Manager Configuration — Clever 🤖
 {
   imports = [
     ./home/git.nix

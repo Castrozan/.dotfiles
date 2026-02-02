@@ -230,12 +230,12 @@ Generate a summary like:
 ✅ Nix Store: 45GB, 1,234 paths
 ⚠️  Generations: 47 (consider cleanup — keep last 10)
 ⚠️  Last rebuild: 3 days ago
-❌ Hey Cleber: disabled (needs agenix secret deployment)
+❌ Hey Clever: disabled (needs agenix secret deployment)
 
 Recommendations:
 1. Run `sudo nix-collect-garbage --delete-older-than 7d` to free ~8GB
 2. Run `sudo nixos-rebuild switch --flake ~/.dotfiles` to deploy pending changes
-3. Re-enable hey-cleber after rebuild
+3. Re-enable hey-clever after rebuild
 ```
 
 ## Integration Notes

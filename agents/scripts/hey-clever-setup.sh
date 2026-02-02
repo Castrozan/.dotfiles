@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# Setup script for Hey Cleber voice assistant
+# Setup script for Hey Clever voice assistant
 # Creates the Python venv with all dependencies
 
 set -euo pipefail
 
-VENV_DIR="${HOME}/.local/share/hey-cleber-venv"
+VENV_DIR="${HOME}/.local/share/hey-clever-venv"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-echo "=== Hey Cleber Setup ==="
+echo "=== Hey Clever Setup ==="
 echo ""
 
 # Step 1: Create venv
@@ -50,15 +50,15 @@ print('Available models:', list(m.models.keys()))
 echo ""
 echo "Installing systemd user service..."
 mkdir -p "${HOME}/.config/systemd/user"
-cat > "${HOME}/.config/systemd/user/hey-cleber.service" << EOF
+cat > "${HOME}/.config/systemd/user/hey-clever.service" << EOF
 [Unit]
-Description=Hey Cleber Voice Assistant
+Description=Hey Clever Voice Assistant
 After=pipewire.service pipewire-pulse.service
 Wants=pipewire.service
 
 [Service]
 Type=simple
-ExecStart=/bin/bash -c 'export CLAWDBOT_GATEWAY_TOKEN=\$(cat /run/agenix/openclaw-gateway-token); exec ${VENV_DIR}/bin/python3 ${SCRIPT_DIR}/hey-cleber.py --wake-word hey_jarvis --threshold 0.5'
+ExecStart=/bin/bash -c 'export CLAWDBOT_GATEWAY_TOKEN=\$(cat /run/agenix/openclaw-gateway-token); exec ${VENV_DIR}/bin/python3 ${SCRIPT_DIR}/hey-clever.py --wake-word hey_jarvis --threshold 0.5'
 Restart=on-failure
 RestartSec=5
 Environment=XDG_RUNTIME_DIR=/run/user/1000
@@ -73,7 +73,7 @@ Environment=LD_LIBRARY_PATH=/nix/store/xm08aqdd7pxcdhm0ak6aqb1v7hw5q6ri-gcc-14.3
 # Logging
 StandardOutput=journal
 StandardError=journal
-SyslogIdentifier=hey-cleber
+SyslogIdentifier=hey-clever
 
 [Install]
 WantedBy=default.target
@@ -81,15 +81,15 @@ EOF
 
 systemctl --user daemon-reload
 echo "Service installed. Commands:"
-echo "  systemctl --user start hey-cleber     # Start"
-echo "  systemctl --user stop hey-cleber      # Stop"
-echo "  systemctl --user enable hey-cleber    # Auto-start on login"
-echo "  journalctl --user -u hey-cleber -f    # View logs"
+echo "  systemctl --user start hey-clever     # Start"
+echo "  systemctl --user stop hey-clever      # Stop"
+echo "  systemctl --user enable hey-clever    # Auto-start on login"
+echo "  journalctl --user -u hey-clever -f    # View logs"
 
 echo ""
 echo "=== Setup complete! ==="
 echo ""
 echo "Quick test:"
 echo "  source $VENV_DIR/bin/activate"
-echo "  python3 ${SCRIPT_DIR}/hey-cleber.py --list-devices"
-echo "  python3 ${SCRIPT_DIR}/hey-cleber.py --debug"
+echo "  python3 ${SCRIPT_DIR}/hey-clever.py --list-devices"
+echo "  python3 ${SCRIPT_DIR}/hey-clever.py --debug"

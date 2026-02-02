@@ -9,12 +9,12 @@
 # 4. Run nixos-rebuild to deploy the updated grid config to all agents
 {
   agents = {
-    cleber = {
+    clever = {
       emoji = "🤖";
       role = "home/personal - NixOS, home automation, overnight work";
       workspace = "~/openclaw";
     };
-    romario = {
+    robson = {
       emoji = "⚽";
       role = "work - Betha, code, productivity";
       workspace = "~/romario";
