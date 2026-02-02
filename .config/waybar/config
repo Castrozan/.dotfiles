@@ -17,6 +17,7 @@
   "modules-center": ["clock"],
   "modules-right": [
     "group/tray-expander",
+    "custom/notification-sound",
     "bluetooth",
     "network",
     "pulseaudio",
@@ -161,6 +162,12 @@
       "headphone": "",
       "default": ["", "", ""]
     }
+  },
+  "custom/notification-sound": {
+    "return-type": "json",
+    "interval": 3,
+    "exec": "if [ ! -f \"$HOME/.cache/notification-mute\" ]; then echo '{\"text\": \"󰂚\", \"tooltip\": \"Notification sounds: ON\", \"class\": \"on\"}'; else echo '{\"text\": \"󰂛\", \"tooltip\": \"Notification sounds: OFF\", \"class\": \"muted\"}'; fi",
+    "on-click": "if [ -f \"$HOME/.cache/notification-mute\" ]; then rm \"$HOME/.cache/notification-mute\"; else touch \"$HOME/.cache/notification-mute\"; fi"
   },
   "group/tray-expander": {
     "orientation": "inherit",

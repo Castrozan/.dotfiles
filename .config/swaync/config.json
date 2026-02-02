@@ -26,6 +26,12 @@
   "hide-on-clear": true,
   "hide-on-action": true,
   "script-fail-notify": false,
+  "scripts": {
+    "notification-sound": {
+      "exec": "~/.config/swaync/scripts/notification-sound.sh",
+      "app-name": ".*"
+    }
+  },
   "widgets": [
     "title",
     "dnd",

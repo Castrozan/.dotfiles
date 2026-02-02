@@ -11,7 +11,6 @@ in
 {
   home = {
     file.".config/hypr".source = ../../../.config/hypr;
-    file.".config/swaync".source = ../../../.config/swaync;
 
     packages =
       with pkgs;
@@ -48,6 +47,15 @@ in
       ++ [
         xdg-desktop-portal-hyprland
       ];
+  };
+
+  xdg.configFile."swaync/config.json" = {
+    source = ../../../.config/swaync/config.json;
+  };
+
+  xdg.configFile."swaync/scripts/notification-sound.sh" = {
+    source = ../../../.config/swaync/scripts/notification-sound.sh;
+    executable = true;
   };
 
   xdg.configFile."xdg-desktop-portal/hyprland-portals.conf".text = ''

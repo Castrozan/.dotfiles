@@ -93,9 +93,18 @@ window#waybar {
 #battery,
 #pulseaudio,
 #network,
-#bluetooth {
+#bluetooth,
+#custom-notification-sound {
   min-width: 12px;
   margin: 0 7.5px;
+}
+
+#custom-notification-sound.on {
+  color: @foreground;
+}
+
+#custom-notification-sound.muted {
+  color: @warning;
 }
 
 #tray {
