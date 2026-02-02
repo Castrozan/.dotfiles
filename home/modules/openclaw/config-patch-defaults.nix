@@ -25,12 +25,10 @@ in
         }
       ];
       ".agents.defaults.workspace" = "${homeDir}/${openclaw.workspacePath}";
-      ".agents.defaults.heartbeat.model" = "moonshotai/kimi-k2.5";
+      ".agents.defaults.heartbeat.model" = "anthropic/claude-sonnet-4-5";
       ".agents.defaults.model.fallbacks" = [
         "anthropic/claude-sonnet-4-5"
-        "moonshotai/kimi-k2.5"
         "anthropic/claude-haiku-4-5"
-        "openrouter/auto"
       ];
       ".agents.defaults.models" = {
         "anthropic/claude-opus-4-5" = {
@@ -42,20 +40,10 @@ in
         "anthropic/claude-sonnet-4-5" = {
           alias = "sonnet";
         };
-        "moonshotai/kimi-k2.5" = {
-          alias = "kimi";
-        };
-        "openrouter/auto" = {
-          alias = "auto";
-        };
       };
       ".auth.profiles" = {
         "anthropic:default" = {
           provider = "anthropic";
-          mode = "token";
-        };
-        "openrouter:default" = {
-          provider = "openrouter";
           mode = "token";
         };
       };

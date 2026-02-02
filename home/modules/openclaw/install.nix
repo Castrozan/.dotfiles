@@ -24,5 +24,6 @@ in
     openclaw
     nodejs
     pkgs.moreutils
+    pkgs.python3Packages.edge-tts
   ];
 }
