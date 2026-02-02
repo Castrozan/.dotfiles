@@ -12,4 +12,6 @@ in
   "brave-api-key.age".publicKeys = [ personal_key ];
   "tavily-api-key.age".publicKeys = [ personal_key ];
   "grid-hosts.age".publicKeys = [ personal_key ];
+  "ssh-hosts.age".publicKeys = [ personal_key ];
+  "telegram-ids.age".publicKeys = [ personal_key ];
 }

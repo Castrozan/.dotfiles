@@ -159,6 +159,16 @@ in
         owner = "zanoni";
         mode = "400";
       };
+      "ssh-hosts" = {
+        file = ../../secrets/ssh-hosts.age;
+        owner = "zanoni";
+        mode = "400";
+      };
+      "telegram-ids" = {
+        file = ../../secrets/telegram-ids.age;
+        owner = "zanoni";
+        mode = "400";
+      };
     };
   };
 }
