@@ -1,13 +1,13 @@
 {
   lib,
+  pkgs,
+  config,
   ...
 }:
 let
   gridData = import ../../../agents/grid.nix;
-  telegramIdsPath = ../../../private-config/telegram-ids.nix;
-  telegramIds = if builtins.pathExists telegramIdsPath then import telegramIdsPath else { };
+  inherit (config) openclaw;
 
-  # Generate GRID.md members section
   gridMembersEntries = lib.concatStringsSep "\n\n" (
     lib.mapAttrsToList (
       name: agent:
@@ -17,6 +17,23 @@ let
       "### ${capitalName} ${agent.emoji}\n- **Role**: ${agent.role}\n- **Workspace**: ${agent.workspace}"
     ) gridData.agents
   );
+
+  telegramIdsSecretExists = builtins.pathExists ../../../secrets/telegram-ids.age;
+
+  substituteScript = pkgs.writeShellScript "substitute-telegram-ids" ''
+    set -euo pipefail
+    IDS="/run/agenix/telegram-ids"
+    WORKSPACE="${config.home.homeDirectory}/${openclaw.workspacePath}"
+
+    [ -f "$IDS" ] || exit 0
+    [ -d "$WORKSPACE" ] || exit 0
+
+    while IFS='=' read -r key value; do
+      [ -n "$key" ] || continue
+      ${pkgs.findutils}/bin/find "$WORKSPACE" -name "*.md" \
+        -exec ${pkgs.gnused}/bin/sed -i "s/@''${key}@/''${value}/g" {} +
+    done < "$IDS"
+  '';
 in
 {
   options.openclaw.gridPlaceholders = lib.mkOption {
@@ -25,12 +42,16 @@ in
     description = "Grid-derived placeholder values for substituteAgentConfig";
   };
 
-  config.openclaw.gridPlaceholders = {
-    "@GRID_MEMBERS@" = gridMembersEntries;
-  }
-  // lib.optionalAttrs (telegramIds != { }) {
-    "@cleverBotId@" = telegramIds.cleverBotId or "";
-    "@robsonBotId@" = telegramIds.robsonBotId or "";
-    "@armadaLucasGroupId@" = telegramIds.armadaLucasGroupId or "";
+  config = {
+    openclaw.gridPlaceholders = {
+      "@GRID_MEMBERS@" = gridMembersEntries;
+    };
+
+    # Telegram IDs are agenix secrets — substitute at activation time
+    home.activation.substituteTelegramIds = lib.mkIf telegramIdsSecretExists (
+      lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+        run ${substituteScript}
+      ''
+    );
   };
 }
