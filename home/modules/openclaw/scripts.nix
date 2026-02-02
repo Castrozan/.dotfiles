@@ -7,9 +7,9 @@ let
     builtins.attrNames (builtins.readDir scriptsSourcePath)
   );
 
-  scriptFiles = builtins.listToAttrs (
+  files = builtins.listToAttrs (
     map (filename: {
-      name = "${openclaw.workspacePath}/scripts/${filename}";
+      name = "scripts/${filename}";
       value = {
         text = openclaw.substituteAgentConfig (scriptsSourcePath + "/${filename}");
         executable = true;
@@ -18,5 +18,5 @@ let
   );
 in
 {
-  home.file = scriptFiles;
+  home.file = openclaw.deployToBoth files;
 }

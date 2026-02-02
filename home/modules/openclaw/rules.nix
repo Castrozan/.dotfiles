@@ -5,13 +5,13 @@ let
 
   filenames = builtins.attrNames (builtins.readDir rulesSourcePath);
 
-  ruleFiles = builtins.listToAttrs (
+  files = builtins.listToAttrs (
     map (filename: {
-      name = "${openclaw.workspacePath}/rules/${filename}";
+      name = "rules/${filename}";
       value.text = openclaw.substituteAgentConfig (rulesSourcePath + "/${filename}");
     }) filenames
   );
 in
 {
-  home.file = ruleFiles;
+  home.file = openclaw.deployToBoth files;
 }

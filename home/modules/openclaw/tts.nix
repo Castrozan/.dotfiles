@@ -1,6 +1,7 @@
 { lib, config, ... }:
 let
-  tts = config.openclaw.tts;
+  openclaw = config.openclaw;
+  tts = openclaw.tts;
 in
 {
   options.openclaw.tts = {
@@ -17,8 +18,8 @@ in
     };
   };
 
-  config.home.file."${config.openclaw.workspacePath}/tts.json" = {
-    text = builtins.toJSON {
+  config.home.file = openclaw.deployToBoth {
+    "tts.json".text = builtins.toJSON {
       engine = tts.engine;
       voice = tts.voice;
     };
