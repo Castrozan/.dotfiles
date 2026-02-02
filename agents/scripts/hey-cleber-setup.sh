@@ -58,13 +58,12 @@ Wants=pipewire.service
 
 [Service]
 Type=simple
-ExecStart=${VENV_DIR}/bin/python3 ${SCRIPT_DIR}/hey-cleber.py --wake-word hey_jarvis --threshold 0.5
+ExecStart=/bin/bash -c 'export CLAWDBOT_GATEWAY_TOKEN=\$(cat /run/agenix/openclaw-gateway-token); exec ${VENV_DIR}/bin/python3 ${SCRIPT_DIR}/hey-cleber.py --wake-word hey_jarvis --threshold 0.5'
 Restart=on-failure
 RestartSec=5
 Environment=XDG_RUNTIME_DIR=/run/user/1000
 Environment=HOME=/home/zanoni
-Environment=CLAWDBOT_GATEWAY_URL=http://localhost:18789
-Environment=CLAWDBOT_GATEWAY_TOKEN=REDACTED_TOKEN
+Environment=CLAWDBOT_GATEWAY_URL=http://localhost:@gatewayPort@
 Environment=WHISPER_BIN=/run/current-system/sw/bin/whisper
 Environment=MPV_BIN=/run/current-system/sw/bin/mpv
 Environment=PATH=/run/current-system/sw/bin:/etc/profiles/per-user/zanoni/bin:/usr/bin:/bin
