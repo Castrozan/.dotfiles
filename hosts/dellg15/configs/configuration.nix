@@ -21,6 +21,13 @@
       efi.canTouchEfiVariables = true;
     };
     kernel.sysctl."vm.swappiness" = 80;
+
+    # Virtual camera support (v4l2loopback)
+    extraModulePackages = [ pkgs.linuxPackages.v4l2loopback ];
+    kernelModules = [ "v4l2loopback" ];
+    extraModprobeConfig = ''
+      options v4l2loopback devices=1 video_nr=10 card_label="Avatar Cam" exclusive_caps=1
+    '';
   };
 
   # Override filesystem configuration with labels for resilience
@@ -224,5 +231,8 @@
     vulkan-tools
     pciutils
     usbutils
+    v4l-utils  # Virtual camera utilities
+    ffmpeg-full  # For video pipeline
+    pulseaudio  # For pactl command (PipeWire compatibility)
   ];
 }
