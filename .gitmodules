@@ -1,0 +1,3 @@
+[submodule "private-config"]
+	path = private-config
+	url = git@github.com:Castrozan/dotfiles-private.git
