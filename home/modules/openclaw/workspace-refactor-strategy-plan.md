@@ -11,13 +11,15 @@ File: `workspace-refactoring-step-1.md`
 
 Cataloged all 8 nix-managed workspace files, identified overlaps between AGENTS.md/INSTRUCTIONS.md (80% duplicate), and TOOLS-BASE.md/AI-TOOLS.md (100% duplicate). Mapped each section and decided keep/drop/merge.
 
-### Step 2: Cross-Reference with OpenClaw Source
+### Step 2: Cross-Reference with OpenClaw Source (DONE)
 File: `workspace-refactoring-step-2.md`
 
-Read the OpenClaw source code (`~/repo/openclaw`) to understand exactly how workspace files are loaded, which files are auto-injected, and what the official templates look like. Adapt the step 1 plan to align with how OpenClaw actually works rather than how we assumed it works.
+Read the OpenClaw source code (`~/repo/openclaw`) to understand exactly how workspace files are loaded, which files are auto-injected, and what the official templates look like. Key finding: OpenClaw hardcodes 8 bootstrap files. Our INSTRUCTIONS.md, AI-TOOLS.md, TOOLS-BASE.md, GRID.md are never injected. AGENTS.md falsely claims AI-TOOLS.md is injected, so the bot skips reading it — losing all tool patterns.
 
-### Step 3: Read OpenClaw Source for Advanced Patterns
-Look deeper into the OpenClaw codebase for features we're not using that could replace our custom files — memory search, compaction hooks, BOOT.md, bootstrap hooks, etc. Identify opportunities.
+### Step 3: Read OpenClaw Source for Advanced Patterns (DONE)
+File: `workspace-refactoring-step-3.md`
+
+Explored BOOT.md automation, bootstrap hooks, memory search (hybrid BM25+vector), memory flush before compaction, bootstrapMaxChars config, subagent minimal mode, per-agent overrides, and rules/ directory. Confirmed rules/ is not an OpenClaw concept. Key conclusions: merge AI-TOOLS.md into AGENTS.md (~13KB total, under 20K limit), keep GRID.md as on-demand reference, enable memory flush and memory search in config separately.
 
 ### Step 4: Community Research
 Search the internet for how other OpenClaw/AI-agent users structure their workspaces. Look at:
