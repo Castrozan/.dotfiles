@@ -1,21 +1,8 @@
-# Post-rebuild overlay for openclaw.json.
+# Patch engine for openclaw.json — reads configPatches and secretPatches
+# options, generates a jq filter + shell script, and applies them on rebuild.
 #
-# openclaw.json is app-managed — the gateway, `openclaw configure`, and
-# `doctor --fix` all do full JSON overwrites. That means inline $include
-# directives or env-var references don't survive. Instead, on every nix
-# rebuild an activation script:
-#
-#   1. Reads the current openclaw.json (preserving everything the app wrote)
-#   2. Applies declarative patches via jq (agents.list, workspace, port, …)
-#   3. Injects secrets from agenix (gateway token, API keys)
-#   4. Writes back atomically via sponge
-#
-# The app can freely modify the config between rebuilds. Next rebuild
-# re-pins our fields. Adding/removing a pinned field = one line in the
-# configPatches or secretPatches attrset.
-#
-# See configPatches (plain nix values) and secretPatches (agenix file paths)
-# options below for the declarative interface.
+# How it works: see config-patch-defaults.nix for context.
+# What gets patched: see config-patch-defaults.nix for declarations.
 {
   lib,
   pkgs,
@@ -28,7 +15,6 @@ let
 
   pathToArgName = path: lib.replaceStrings [ "." ] [ "_" ] (lib.removePrefix "." path);
 
-  # Split ".foo.bar" into ["foo" "bar"] for lib.setAttrByPath
   pathToSegments = path: lib.filter (s: s != "") (lib.splitString "." path);
 
   # Build nested attrset from flat jq-path patches (for seed JSON)
@@ -45,7 +31,6 @@ let
   hasValues = openclaw.configPatches != { };
   hasSecrets = openclaw.secretPatches != { };
 
-  # Build the jq patch script as a file to avoid quoting issues in '' strings
   valueFiltersList = lib.mapAttrsToList (
     path: _: "${path} = $" + pathToArgName path
   ) openclaw.configPatches;
@@ -60,10 +45,8 @@ let
 
   jqFilter = lib.concatStringsSep " | " (valueFiltersList ++ secretFiltersList);
 
-  # Write the jq filter to a file (avoids shell/nix quoting)
   jqFilterFile = pkgs.writeText "openclaw-patch.jq" jqFilter;
 
-  # Build --argjson/--arg flags for value patches
   valueArgsList = lib.mapAttrsToList (
     path: val:
     let
@@ -90,7 +73,6 @@ let
       ]
   ) openclaw.configPatches;
 
-  # Build --rawfile flags for secret patches
   secretArgsList = lib.mapAttrsToList (path: file: [
     "--rawfile"
     (pathToArgName path)
@@ -99,8 +81,6 @@ let
 
   allArgsList = valueArgsList ++ secretArgsList;
 
-  # Write args to a file, one per line (jq supports reading args from command line)
-  # Instead, build the full jq invocation as a script
   patchScript = pkgs.writeShellScript "openclaw-config-patch" ''
     set -euo pipefail
     CONFIG="${homeDir}/.openclaw/openclaw.json"
@@ -144,23 +124,6 @@ in
   };
 
   config = {
-    openclaw.configPatches = lib.mkOptionDefault {
-      ".agents.list" = [
-        {
-          id = openclaw.agent;
-          default = true;
-          workspace = "${homeDir}/${openclaw.workspacePath}";
-        }
-      ];
-      ".agents.defaults.workspace" = "${homeDir}/${openclaw.workspacePath}";
-      ".gateway.port" = openclaw.gatewayPort;
-    };
-
-    openclaw.secretPatches = lib.mkOptionDefault {
-      ".gateway.auth.token" = "/run/agenix/openclaw-gateway-token";
-      ".tools.web.search.apiKey" = "/run/agenix/brave-api-key";
-    };
-
     home.file.".openclaw/nix-overlay.json".text = overlayJson;
 
     home.activation.openclawConfigPatch = lib.mkIf (hasValues || hasSecrets) (

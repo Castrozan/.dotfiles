@@ -4,6 +4,7 @@
     ./install.nix
     ./config.nix
     ./config-patch.nix
+    ./config-patch-defaults.nix
     ./workspace.nix
     ./directories.nix
     ./rules.nix
