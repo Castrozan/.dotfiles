@@ -5,7 +5,7 @@
     matchBlocks = {
       "*" = { };
       "dellg15" = {
-        hostname = "REDACTED_IP_1";
+        hostname = "REDACTED_IP";
         user = "zanoni";
         identityFile = "~/.ssh/id_ed25519";
       };

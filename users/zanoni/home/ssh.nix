@@ -14,7 +14,7 @@ in
     }
     // lib.optionalAttrs workpcSecretExists {
       "workpc" = {
-        hostname = "REDACTED_IP_2";
+        hostname = "REDACTED_IP";
         user = "lucas.zanoni";
         identityFile = "/run/agenix/id_ed25519_workpc";
       };

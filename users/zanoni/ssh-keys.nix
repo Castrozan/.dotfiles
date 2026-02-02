@@ -12,7 +12,7 @@ let
   phoneKnownHost = "[REDACTED_IP]:8022 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOWURbP41AHeoQUC4qpSriTvVKWezdpPMGg1f3Ti7gyd";
 
   # Work PC known_hosts entry (Tailscale IP)
-  workPcKnownHost = "REDACTED_IP_2 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPctlyhhY3Tf6RS/qs4aMUK/cIiZFG804XJFbd0ooWP/";
+  workPcKnownHost = "REDACTED_IP ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPctlyhhY3Tf6RS/qs4aMUK/cIiZFG804XJFbd0ooWP/";
 in
 {
   # List of all authorized SSH public keys
