@@ -8,6 +8,12 @@ if ! command -v nix &>/dev/null; then
     fi
 fi
 
+# Ensure submodules are initialized (private-config)
+DOTFILES_DIR="${HOME}/.dotfiles"
+if [ -f "$DOTFILES_DIR/.gitmodules" ]; then
+    git -C "$DOTFILES_DIR" submodule update --init --recursive 2>/dev/null || true
+fi
+
 . /etc/os-release
 
 if [ "$ID" = "nixos" ]; then
@@ -16,8 +22,7 @@ if [ "$ID" = "nixos" ]; then
     # This avoids the warning about HOME not being owned by root
     DOTFILES_PATH="$HOME/.dotfiles"
     USERNAME="$(whoami)"
-    # Note: Pure evaluation - tested on home-manager only, NixOS testing pending
-    sudo env "NIXPKGS_ALLOW_UNFREE=1" nixos-rebuild switch --flake "$DOTFILES_PATH#$USERNAME"
+    sudo env "NIXPKGS_ALLOW_UNFREE=1" nixos-rebuild switch --flake "git+file://$DOTFILES_PATH?submodules=1#$USERNAME"
 
     # Post-rebuild: reload running environment
     # 1. Reload Hyprland config (keybinds, window rules, env vars, etc.)
@@ -48,22 +53,23 @@ else
         *) SYSTEM="${ARCH}-linux" ;;
     esac
     CONFIG="${USERNAME}@${SYSTEM}"
+    FLAKE="git+file://$HOME/.dotfiles?submodules=1#$CONFIG"
 
     # Try methods in order of preference to avoid GitHub rate limits:
 
     # Method 1: Use home-manager directly if installed (best - no API calls)
     if command -v home-manager &>/dev/null; then
-        home-manager switch --flake "$HOME/.dotfiles#$CONFIG" \
+        home-manager switch --flake "$FLAKE" \
             -b "backup-$(date +%Y-%m-%d-%H-%M-%S)"
     # Method 2: Use nixpkgs#home-manager (good - uses cache, avoids GitHub API)
-    elif nix run nixpkgs#home-manager -- --flake "$HOME/.dotfiles#$CONFIG" switch \
+    elif nix run nixpkgs#home-manager -- --flake "$FLAKE" switch \
         -b "backup-$(date +%Y-%m-%d-%H-%M-%S)" 2>/dev/null; then
         : # Success
     else
         # Method 3: Fallback to GitHub (may hit rate limits - only if above methods fail)
         echo "Warning: Using GitHub source may hit rate limits. Consider installing home-manager:" >&2
         echo "  nix profile install nixpkgs#home-manager" >&2
-        nix run home-manager/master -- --flake "$HOME/.dotfiles#$CONFIG" switch \
+        nix run home-manager/master -- --flake "$FLAKE" switch \
             -b "backup-$(date +%Y-%m-%d-%H-%M-%S)"
     fi
 fi
