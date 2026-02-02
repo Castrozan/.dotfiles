@@ -6,7 +6,15 @@ let
   openclaw = config.openclaw;
   workspaceSourcePath = ../../../agents/openclaw/workspace;
 
-  filenames = builtins.attrNames (builtins.readDir workspaceSourcePath);
+  # Private files (USER.md, IDENTITY.md, SOUL.md) live in private-config/openclaw/
+  excludedFiles = [
+    "USER.md"
+    "IDENTITY.md"
+    "SOUL.md"
+  ];
+  filenames = builtins.filter (name: !builtins.elem name excludedFiles) (
+    builtins.attrNames (builtins.readDir workspaceSourcePath)
+  );
 
   files = builtins.listToAttrs (
     map (filename: {

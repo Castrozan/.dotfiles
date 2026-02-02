@@ -3,8 +3,15 @@ let
   openclaw = config.openclaw;
   skillsSourcePath = ../../../agents/skills;
 
+  # Private skills live in private-config/openclaw/skills/
+  excludedSkills = [
+    "bot-bridge"
+    "whatsapp-polling"
+    "openclaw-medicine"
+  ];
   skillDirectories = builtins.filter (
-    name: (builtins.readDir skillsSourcePath).${name} == "directory"
+    name:
+    (builtins.readDir skillsSourcePath).${name} == "directory" && !builtins.elem name excludedSkills
   ) (builtins.attrNames (builtins.readDir skillsSourcePath));
 
   files = builtins.listToAttrs (
