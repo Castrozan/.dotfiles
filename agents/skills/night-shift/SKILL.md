@@ -55,7 +55,7 @@ Based on Cursor's battle-tested findings (hundreds of agents, weeks of autonomou
 - **Workers** (sub-agents/Sonnet): Grind on assigned task, zero inter-worker coordination
 - **No QA bottleneck**: Workers report directly back, planner synthesizes
 - **Prompts > architecture**: Well-crafted sub-agent prompts matter more than complex coordination
-- Filesystem IS the shared state — task files + output files in `memory/night-shift/`
+- Filesystem IS the shared state — task files + output files in `projects/night-shift-YYYY-MM-DD/`
 
 Orchestrator responsibilities:
 - Reads task rotation from state file
@@ -78,11 +78,11 @@ Keep sub-agent prompts **focused and minimal** to reduce token usage:
 
 ### 1. Create Output Directory
 ```bash
-mkdir -p memory/night-shift/YYYY-MM-DD/
+mkdir -p projects/night-shift-YYYY-MM-DD/
 ```
 
 ### 2. Initialize State File
-Write `memory/night-shift/state.json`:
+Write `projects/night-shift-YYYY-MM-DD/state.json`:
 ```json
 {
   "date": "2026-01-31",
@@ -103,7 +103,7 @@ One cron job — systemEvent to main session, every 20 minutes:
 If previous task still running, do them both by spawning another sub-agent.
 ```
 schedule: { kind: "every", everyMs: 1200000 }
-payload: { kind: "systemEvent", text: "Night shift: execute next task from the rotation. Read memory/night-shift/state.json, pick the next pending task, spawn a sub-agent for it." }
+payload: { kind: "systemEvent", text: "Night shift: execute next task from the rotation. Read projects/night-shift-YYYY-MM-DD/state.json, pick the next pending task, spawn a sub-agent for it." }
 sessionTarget: "main"
 ```
 
@@ -147,13 +147,13 @@ Used after research rounds to decide what to build or investigate further.
 ## Output Structure
 
 ```
-memory/night-shift/YYYY-MM-DD/
+projects/night-shift-YYYY-MM-DD/
 ├── 00-plan.md                    # Task list and goals for the night
 ├── 01-[task-name].md             # Individual task outputs
 ├── 02-[task-name].md
 ├── ...
 ├── summary.md                    # Compiled morning summary
-└── state.json                    # Symlink to active state (optional)
+└── state.json                    # Night shift state
 ```
 
 Each output file is self-contained — readable on its own without context.
@@ -182,6 +182,7 @@ Customize per night, but defaults:
 - **Drop everything if @userName@ messages** — respond immediately, night shift can wait
 - **One file per task** — never dump everything into one giant file
 - **Worktrees and branches only** — code changes go to `night-shift/` worktree branches, never main directly (things can go on main if tested and very relevant)
+- **Follow `AGENTS.md` workspace structure** — all output goes in `projects/`, not `memory/`
 
 ### Should Follow
 - Rotate task categories — don't do 3 research tasks in a row if a build is ready

@@ -20,25 +20,28 @@ Since your identity and instructions are already in context, startup is minimal:
 
 That's it. Don't read files listed above — they're already loaded.
 
-## Workspace Layout
+## Workspace Structure
 
-Flat structure — root or logical dirs.
+### Nix-Managed (read-only — edit in `~/.dotfiles/agents/openclaw/` and rebuild)
+- Identity: `SOUL.md`, `IDENTITY.md`, `USER.md`
+- Instructions: `AGENTS.md`, `INSTRUCTIONS.md`
+- Tools: `AI-TOOLS.md`, `TOOLS-BASE.md`, `tts.json`
+- Grid: `GRID.md`
+- `rules/`, `skills/`, `scripts/`
 
-### Nix-Managed (edit `~/.dotfiles/agents/openclaw/` and rebuild)
-- `SOUL.md`, `IDENTITY.md`, `USER.md` — identity
-- `AGENTS.md` — this file (operating instructions)
-- `AI-TOOLS.md` — tool patterns & base config
-- `tts.json` — TTS voice config
-- `rules/` — development rules
-- `skills/` — skill definitions
-- `subagents/` — subagent profiles
-- `scripts/` — shared scripts
-
-### Self-Managed (writable)
+### Agent-Managed (writable)
 - `MEMORY.md` — curated long-term memory
 - `TOOLS.md` — operational notes, runtime discoveries
 - `HEARTBEAT.md` — current heartbeat tasks
-- `memory/*.md` — daily logs (`memory/YYYY-MM-DD.md`)
+- `memory/` — daily logs and heartbeat state only
+
+### Where to Put Work
+
+All work goes in `projects/<name>/`. This includes code, experiments, research, and any task that produces files. Each project is self-contained — dependencies, docs, and artifacts stay inside the project directory.
+
+Don't create directories at workspace root. Don't install packages at workspace root.
+
+If a project is done or abandoned, delete it. Summarize useful findings in `MEMORY.md` or `memory/YYYY-MM-DD.md` first.
 
 ---
 
