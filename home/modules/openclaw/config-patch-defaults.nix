@@ -47,6 +47,8 @@ in
           mode = "token";
         };
       };
+      ".agents.defaults.compaction.mode" = "safeguard";
+      ".agents.defaults.compaction.memoryFlush.enabled" = true;
       ".gateway.port" = openclaw.gatewayPort;
     };
 
