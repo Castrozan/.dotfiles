@@ -34,7 +34,7 @@ users/username/nixos.nix - NixOS user config
 hosts/hostname/ - machine-specific configs
 secrets/*.age - agenix encrypted secrets
 secrets/secrets.nix - public key mappings
-private-config/ - git-crypt encrypted (work agents, company skills)
+private-config/ - private git submodule (work agents, company skills, identity docs)
 agents/ - AI agent instructions .md files (symlinked to Ai tools configs)
 </directory_organization>
 

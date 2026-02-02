@@ -1,3 +1,2 @@
-# git-crypt: DO NOT encrypt private-config/ — Nix flakes copy files
-# from git object store without running smudge filters, so encrypted
-# files cause evaluation failures. Use agenix for runtime secrets instead.
+# private-config/ is a git submodule (Castrozan/dotfiles-private)
+# Secrets (IPs, bot IDs) use agenix instead — see secrets/*.age
