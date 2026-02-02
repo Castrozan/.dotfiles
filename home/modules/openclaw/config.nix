@@ -37,12 +37,6 @@ in
       description = "Workspace directory path relative to home";
     };
 
-    gatewayWorkspacePath = lib.mkOption {
-      type = lib.types.str;
-      internal = true;
-      description = "Gateway's per-agent workspace path relative to home";
-    };
-
     gatewayPort = lib.mkOption {
       type = lib.types.port;
       default = 18789;
@@ -61,17 +55,14 @@ in
       description = "Reads a file and substitutes @placeholder@ tokens with agent config values";
     };
 
-    # Deploy a set of files to both workspace paths
-    deployToBoth = lib.mkOption {
+    deployToWorkspace = lib.mkOption {
       type = lib.types.functionTo (lib.types.attrsOf lib.types.anything);
       internal = true;
-      description = "Takes an attrset of {relative-path = value} and deploys to both workspace locations";
+      description = "Takes an attrset of {relative-path = value} and deploys to the workspace";
     };
   };
 
   config.openclaw = {
-    gatewayWorkspacePath = ".openclaw/workspace-${openclaw.agent}";
-
     substituteAgentConfig =
       let
         placeholders = [
@@ -103,17 +94,11 @@ in
       in
       path: builtins.replaceStrings placeholders values (builtins.readFile path);
 
-    # Helper: given { "subpath/file" = { text = "..."; }; }, produce home.file entries for both paths
-    deployToBoth =
+    deployToWorkspace =
       files:
-      let
-        mkEntries =
-          prefix:
-          lib.mapAttrs' (name: value: {
-            name = "${prefix}/${name}";
-            inherit value;
-          }) files;
-      in
-      (mkEntries openclaw.workspacePath) // (mkEntries openclaw.gatewayWorkspacePath);
+      lib.mapAttrs' (name: value: {
+        name = "${openclaw.workspacePath}/${name}";
+        inherit value;
+      }) files;
   };
 }

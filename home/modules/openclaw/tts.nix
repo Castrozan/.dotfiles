@@ -18,7 +18,7 @@ in
     };
   };
 
-  config.home.file = openclaw.deployToBoth {
+  config.home.file = openclaw.deployToWorkspace {
     "tts.json".text = builtins.toJSON {
       engine = tts.engine;
       voice = tts.voice;

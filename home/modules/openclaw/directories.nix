@@ -2,7 +2,6 @@
 let
   openclaw = config.openclaw;
   mainWorkspace = "${config.home.homeDirectory}/${openclaw.workspacePath}";
-  gatewayWorkspace = "${config.home.homeDirectory}/${openclaw.gatewayWorkspacePath}";
   directories = [
     "memory"
     "projects"
@@ -12,6 +11,5 @@ in
 {
   home.activation.openclawDirectories = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     ${mkDirs mainWorkspace}
-    ${mkDirs gatewayWorkspace}
   '';
 }

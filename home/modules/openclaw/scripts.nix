@@ -18,5 +18,5 @@ let
   );
 in
 {
-  home.file = openclaw.deployToBoth files;
+  home.file = openclaw.deployToWorkspace files;
 }
