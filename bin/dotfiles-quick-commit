@@ -6,7 +6,7 @@ MSG="wip: $(date +%Y-%m-%d\ %H:%M)"
 committed=""
 
 # Submodule first (so parent can track new submodule commit)
-if [ -d "$SUB/.git" ] && git -C "$SUB" status --porcelain | grep -q .; then
+if [ -e "$SUB/.git" ] && git -C "$SUB" status --porcelain | grep -q .; then
     git -C "$SUB" add -A
     git -C "$SUB" commit -m "$MSG" --no-verify
     git -C "$SUB" push 2>/dev/null &
