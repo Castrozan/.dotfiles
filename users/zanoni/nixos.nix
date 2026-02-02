@@ -154,6 +154,11 @@ in
         owner = "zanoni";
         mode = "400";
       };
+      "grid-hosts" = {
+        file = ../../secrets/grid-hosts.age;
+        owner = "zanoni";
+        mode = "400";
+      };
     };
   };
 }

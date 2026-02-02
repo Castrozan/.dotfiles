@@ -1,24 +1,21 @@
 # Agent Grid Configuration
-# This file defines all agents in the OpenClaw multi-agent system.
-# Agents communicate via HTTP API over Tailscale.
+# This file defines agent metadata for the OpenClaw multi-agent system.
+# Network identifiers (host:port) are stored in agenix at /run/agenix/grid-hosts.
 #
 # To add a new agent:
 # 1. Add an entry to the agents attribute set below
-# 2. Create a token file at ~/.openclaw/grid-tokens/<agent-name>.token
-# 3. Run nixos-rebuild to deploy the updated grid.md to all agents
+# 2. Add host:port to the grid-hosts agenix secret
+# 3. Create a token file at ~/.openclaw/grid-tokens/<agent-name>.token
+# 4. Run nixos-rebuild to deploy the updated grid config to all agents
 {
   agents = {
     cleber = {
       emoji = "🤖";
-      host = "REDACTED_IP_1";
-      port = 18789;
       role = "home/personal - NixOS, home automation, overnight work";
       workspace = "~/openclaw";
     };
     romario = {
       emoji = "⚽";
-      host = "REDACTED_IP_2";
-      port = 18790;
       role = "work - Betha, code, productivity";
       workspace = "~/romario";
     };

@@ -27,8 +27,23 @@ else
   fail "OpenClaw gateway not responding"
 fi
 
-# 2. Remote agent gateways — generated from agents/grid.nix
-@GRID_HEALTH_CHECKS@
+# 2. Remote agent gateways — read from agenix at runtime
+GRID_HOSTS_FILE="/run/agenix/grid-hosts"
+if [ -f "$GRID_HOSTS_FILE" ]; then
+  for AGENT in $(jq -r 'keys[]' "$GRID_HOSTS_FILE"); do
+    HOST_PORT=$(jq -r --arg a "$AGENT" '.[$a]' "$GRID_HOSTS_FILE")
+    AGENT_CAP="$(echo "${AGENT:0:1}" | tr '[:lower:]' '[:upper:]')${AGENT:1}"
+    PORT="${HOST_PORT##*:}"
+    echo -e "${BOLD}${AGENT_CAP}${NC}"
+    if curl -sf --connect-timeout 3 "http://${HOST_PORT}/health" >/dev/null 2>&1; then
+      ok "${AGENT_CAP} gateway responding (port ${PORT})"
+    else
+      warn "${AGENT_CAP} gateway unreachable (machine may be off)"
+    fi
+  done
+else
+  warn "Grid hosts file not found: $GRID_HOSTS_FILE"
+fi
 
 # 3. Key services
 echo -e "${BOLD}Services${NC}"

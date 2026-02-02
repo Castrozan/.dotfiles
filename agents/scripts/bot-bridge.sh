@@ -11,22 +11,28 @@ set -euo pipefail
 TARGET="${1:-}"
 MESSAGE="${2:-}"
 
-# Grid agent registry (host:port) — generated from agents/grid.nix
-@GRID_HOSTS@
+# Grid agent registry — read from agenix secret at runtime
+GRID_HOSTS_FILE="/run/agenix/grid-hosts"
+if [ ! -f "$GRID_HOSTS_FILE" ]; then
+  echo "Grid hosts file not found: $GRID_HOSTS_FILE" >&2
+  exit 1
+fi
 
 if [ -z "$TARGET" ] || [ -z "$MESSAGE" ]; then
+  AGENTS=$(jq -r 'keys | join(", ")' "$GRID_HOSTS_FILE")
   echo "Usage: $0 <agent-name> \"message\"" >&2
-  echo "Available agents: ${!GRID_HOSTS[*]}" >&2
+  echo "Available agents: $AGENTS" >&2
   exit 1
 fi
 
-if [ -z "${GRID_HOSTS[$TARGET]+x}" ]; then
+HOST_PORT=$(jq -r --arg t "$TARGET" '.[$t] // empty' "$GRID_HOSTS_FILE")
+if [ -z "$HOST_PORT" ]; then
+  AGENTS=$(jq -r 'keys | join(", ")' "$GRID_HOSTS_FILE")
   echo "Unknown agent: $TARGET" >&2
-  echo "Available agents: ${!GRID_HOSTS[*]}" >&2
+  echo "Available agents: $AGENTS" >&2
   exit 1
 fi
 
-HOST_PORT="${GRID_HOSTS[$TARGET]}"
 HOST="${HOST_PORT%%:*}"
 PORT="${HOST_PORT##*:}"
 

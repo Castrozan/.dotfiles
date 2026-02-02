@@ -11,4 +11,5 @@ in
   "grid-token-cleber.age".publicKeys = [ personal_key ];
   "brave-api-key.age".publicKeys = [ personal_key ];
   "tavily-api-key.age".publicKeys = [ personal_key ];
+  "grid-hosts.age".publicKeys = [ personal_key ];
 }
