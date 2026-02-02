@@ -8,90 +8,107 @@ let
   openclaw = config.openclaw;
   homeDir = config.home.homeDirectory;
 
-  # Sanitize jq path ".foo.bar" → "foo_bar" for use as --arg name
   pathToArgName = path: lib.replaceStrings [ "." ] [ "_" ] (lib.removePrefix "." path);
 
-  # Generate --arg/--argjson flags for value patches
-  valueArgs = lib.concatStringsSep " " (
-    lib.mapAttrsToList (
-      path: val:
-      let
-        argName = pathToArgName path;
-        json = builtins.toJSON val;
-      in
-      if builtins.isInt val || builtins.isBool val then
-        "--argjson ${argName} '${json}'"
-      else if builtins.isList val || builtins.isAttrs val then
-        "--argjson ${argName} '${json}'"
-      else
-        "--arg ${argName} ${lib.escapeShellArg (toString val)}"
-    ) openclaw.configPatches
-  );
+  # Split ".foo.bar" into ["foo" "bar"] for lib.setAttrByPath
+  pathToSegments = path: lib.filter (s: s != "") (lib.splitString "." path);
 
-  # Generate jq filter segments for value patches
-  valueFilters = lib.concatStringsSep " | " (
-    lib.mapAttrsToList (
-      path: _:
-      let
-        argName = pathToArgName path;
-      in
-      "${path} = $${argName}"
-    ) openclaw.configPatches
-  );
+  # Build nested attrset from flat jq-path patches (for seed JSON)
+  overlayNested = lib.foldlAttrs (
+    acc: path: val:
+    lib.recursiveUpdate acc (lib.setAttrByPath (pathToSegments path) val)
+  ) { } openclaw.configPatches;
 
-  # Generate --rawfile flags for secret patches
-  secretArgs = lib.concatStringsSep " " (
-    lib.mapAttrsToList (
-      path: file:
-      let
-        argName = pathToArgName path;
-      in
-      "--rawfile ${argName} ${file}"
-    ) openclaw.secretPatches
-  );
+  overlayJson = builtins.toJSON overlayNested;
 
-  # Generate jq filter segments for secret patches
-  secretFilters = lib.concatStringsSep " | " (
-    lib.mapAttrsToList (
-      path: _:
-      let
-        argName = pathToArgName path;
-      in
-      "${path} = ($${argName} | rtrimstr(\"\\n\"))"
-    ) openclaw.secretPatches
-  );
+  jq = "${pkgs.jq}/bin/jq";
+  sponge = "${pkgs.moreutils}/bin/sponge";
 
   hasValues = openclaw.configPatches != { };
   hasSecrets = openclaw.secretPatches != { };
 
-  allArgs = lib.concatStringsSep " " (
-    lib.filter (s: s != "") [
-      valueArgs
-      secretArgs
-    ]
-  );
-  allFilters = lib.concatStringsSep " | " (
-    lib.filter (s: s != "") [
-      valueFilters
-      secretFilters
-    ]
-  );
-
-  # Build the overlay JSON from value patches only (secrets can't be in static files)
-  overlayData = lib.mapAttrs' (
-    path: val:
-    let
-      # Convert ".agents.list" → nested attrset path
-      segments = lib.filter (s: s != "") (lib.splitString "." path);
-    in
-    {
-      name = builtins.head segments;
-      value = val;
-    }
+  # Build the jq patch script as a file to avoid quoting issues in '' strings
+  valueFiltersList = lib.mapAttrsToList (
+    path: _: "${path} = $" + pathToArgName path
   ) openclaw.configPatches;
 
-  jq = "${pkgs.jq}/bin/jq";
-  sponge = "${pkgs.moreutils}/bin/sponge";
+  secretFiltersList = lib.mapAttrsToList (
+    path: _:
+    let
+      argName = pathToArgName path;
+    in
+    "${path} = ($" + argName + " | rtrimstr(\"\\n\"))"
+  ) openclaw.secretPatches;
+
+  jqFilter = lib.concatStringsSep " | " (valueFiltersList ++ secretFiltersList);
+
+  # Write the jq filter to a file (avoids shell/nix quoting)
+  jqFilterFile = pkgs.writeText "openclaw-patch.jq" jqFilter;
+
+  # Build --argjson/--arg flags for value patches
+  valueArgsList = lib.mapAttrsToList (
+    path: val:
+    let
+      argName = pathToArgName path;
+      json = builtins.toJSON val;
+    in
+    if builtins.isInt val || builtins.isBool val then
+      [
+        "--argjson"
+        argName
+        json
+      ]
+    else if builtins.isList val || builtins.isAttrs val then
+      [
+        "--argjson"
+        argName
+        json
+      ]
+    else
+      [
+        "--arg"
+        argName
+        (toString val)
+      ]
+  ) openclaw.configPatches;
+
+  # Build --rawfile flags for secret patches
+  secretArgsList = lib.mapAttrsToList (path: file: [
+    "--rawfile"
+    (pathToArgName path)
+    file
+  ]) openclaw.secretPatches;
+
+  allArgsList = valueArgsList ++ secretArgsList;
+
+  # Write args to a file, one per line (jq supports reading args from command line)
+  # Instead, build the full jq invocation as a script
+  patchScript = pkgs.writeShellScript "openclaw-config-patch" ''
+    set -euo pipefail
+    CONFIG="${homeDir}/.openclaw/openclaw.json"
+    OVERLAY="${homeDir}/.openclaw/nix-overlay.json"
+
+    if [ ! -f "$CONFIG" ]; then
+      mkdir -p "${homeDir}/.openclaw"
+      cp "$OVERLAY" "$CONFIG"
+      exit 0
+    fi
+
+    if ! ${jq} empty "$CONFIG" 2>/dev/null; then
+      cp "$CONFIG" "$CONFIG.nix-backup"
+      cp "$OVERLAY" "$CONFIG"
+      exit 0
+    fi
+
+    ${jq} \
+      ${
+        lib.concatMapStringsSep " \\\n      " (
+          args: lib.concatMapStringsSep " " lib.escapeShellArg args
+        ) allArgsList
+      } \
+      -f ${jqFilterFile} \
+      "$CONFIG" | ${sponge} "$CONFIG"
+  '';
 in
 {
   options.openclaw = {
@@ -108,8 +125,8 @@ in
     };
   };
 
-  config = lib.mkIf (hasValues || hasSecrets) {
-    openclaw.configPatches = {
+  config = {
+    openclaw.configPatches = lib.mkOptionDefault {
       ".agents.list" = [
         {
           id = openclaw.agent;
@@ -121,32 +138,17 @@ in
       ".gateway.port" = openclaw.gatewayPort;
     };
 
-    openclaw.secretPatches = {
+    openclaw.secretPatches = lib.mkOptionDefault {
       ".gateway.auth.token" = "/run/agenix/openclaw-gateway-token";
       ".tools.web.search.apiKey" = "/run/agenix/brave-api-key";
     };
 
-    # Deploy overlay JSON for debugging and seed
-    home.file.".openclaw/nix-overlay.json".text = builtins.toJSON overlayData;
+    home.file.".openclaw/nix-overlay.json".text = overlayJson;
 
-    # Activation script: patch openclaw.json after home-manager writes files
-    home.activation.openclawConfigPatch = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-      CONFIG="${homeDir}/.openclaw/openclaw.json"
-      OVERLAY="${homeDir}/.openclaw/nix-overlay.json"
-
-      if [ ! -f "$CONFIG" ]; then
-        mkdir -p "${homeDir}/.openclaw"
-        cp "$OVERLAY" "$CONFIG"
-        exit 0
-      fi
-
-      if ! ${jq} empty "$CONFIG" 2>/dev/null; then
-        cp "$CONFIG" "$CONFIG.nix-backup"
-        cp "$OVERLAY" "$CONFIG"
-        exit 0
-      fi
-
-      ${jq} ${allArgs} '${allFilters}' "$CONFIG" | ${sponge} "$CONFIG"
-    '';
+    home.activation.openclawConfigPatch = lib.mkIf (hasValues || hasSecrets) (
+      lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+        run ${patchScript}
+      ''
+    );
   };
 }
