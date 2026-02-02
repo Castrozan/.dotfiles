@@ -114,27 +114,31 @@ ok "Load: $LOAD"
 
 # 9. Git status (workspace)
 echo -e "${BOLD}Git (~/@workspacePath@)${NC}"
-cd ~/@workspacePath@ 2>/dev/null && {
-  BRANCH=$(git branch --show-current 2>/dev/null || echo "unknown")
-  DIRTY=$(git status --porcelain 2>/dev/null | wc -l)
+if git -C ~/@workspacePath@ rev-parse --git-dir >/dev/null 2>&1; then
+  BRANCH=$(git -C ~/@workspacePath@ branch --show-current 2>/dev/null || echo "unknown")
+  DIRTY=$(git -C ~/@workspacePath@ status --porcelain 2>/dev/null | wc -l)
   if [ "$DIRTY" -eq 0 ]; then
     ok "Branch: $BRANCH (clean)"
   else
     warn "Branch: $BRANCH ($DIRTY uncommitted changes)"
   fi
-}
+else
+  warn "Not a git repo"
+fi
 
 # 10. Git status (dotfiles)
 echo -e "${BOLD}Git (~/.dotfiles)${NC}"
-cd ~/.dotfiles 2>/dev/null && {
-  BRANCH=$(git branch --show-current 2>/dev/null || echo "unknown")
-  DIRTY=$(git status --porcelain 2>/dev/null | wc -l)
+if git -C ~/.dotfiles rev-parse --git-dir >/dev/null 2>&1; then
+  BRANCH=$(git -C ~/.dotfiles branch --show-current 2>/dev/null || echo "unknown")
+  DIRTY=$(git -C ~/.dotfiles status --porcelain 2>/dev/null | wc -l)
   if [ "$DIRTY" -eq 0 ]; then
     ok "Branch: $BRANCH (clean)"
   else
     warn "Branch: $BRANCH ($DIRTY uncommitted changes)"
   fi
-}
+else
+  warn "Not a git repo"
+fi
 
 echo
 echo -e "${BOLD}━━━ Done ━━━${NC}"
