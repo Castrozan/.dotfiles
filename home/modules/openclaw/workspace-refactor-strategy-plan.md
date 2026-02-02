@@ -26,11 +26,10 @@ File: `workspace-refactoring-step-4.md`
 
 Researched GitHub Blog (2,500+ repo analysis), APIYI token optimization guide, X/Twitter posts, OpenClaw docs, and prior night shift research. Key findings: commands should go early in AGENTS.md (agents reference them most), tool patterns must be in injected files (our AI-TOOLS.md content is invisible), community uses Always/Ask/Never boundary framework, session hygiene (reset after heavy work, subagent isolation) saves 40-50% tokens. Confirmed: merge AI-TOOLS.md into AGENTS.md with tools section early, delete INSTRUCTIONS.md and TOOLS-BASE.md.
 
-### Step 5: Final Consolidated Plan
-Synthesize steps 1-4 into a single implementation plan with exact file changes. Account for:
-- OpenClaw's actual bootstrap file list
-- Community best practices
-- Our specific needs (multi-agent grid, nix-managed, template substitution)
+### Step 5: Final Consolidated Plan (DONE)
+File: `workspace-refactoring-step-5.md`
+
+Synthesized steps 1-4 into exact file changes. Wrote new AGENTS.md with merged AI-TOOLS.md content following "commands first" structure. Deleted INSTRUCTIONS.md, TOOLS-BASE.md, AI-TOOLS.md. Removed stale date from SOUL.md. 8 files → 5 files, ~35KB → ~18KB.
 
 ### Step 6: Implementation
 Execute the plan: edit dotfiles, rebuild, verify, commit.
