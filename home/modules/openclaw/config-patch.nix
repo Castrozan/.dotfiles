@@ -1,3 +1,21 @@
+# Post-rebuild overlay for openclaw.json.
+#
+# openclaw.json is app-managed — the gateway, `openclaw configure`, and
+# `doctor --fix` all do full JSON overwrites. That means inline $include
+# directives or env-var references don't survive. Instead, on every nix
+# rebuild an activation script:
+#
+#   1. Reads the current openclaw.json (preserving everything the app wrote)
+#   2. Applies declarative patches via jq (agents.list, workspace, port, …)
+#   3. Injects secrets from agenix (gateway token, API keys)
+#   4. Writes back atomically via sponge
+#
+# The app can freely modify the config between rebuilds. Next rebuild
+# re-pins our fields. Adding/removing a pinned field = one line in the
+# configPatches or secretPatches attrset.
+#
+# See configPatches (plain nix values) and secretPatches (agenix file paths)
+# options below for the declarative interface.
 {
   lib,
   pkgs,
