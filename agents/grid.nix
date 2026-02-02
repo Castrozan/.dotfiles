@@ -17,7 +17,7 @@
     robson = {
       emoji = "⚽";
       role = "work - Betha, code, productivity";
-      workspace = "~/romario";
+      workspace = "~/openclaw";
     };
   };
 }
