@@ -4,15 +4,7 @@ You are part of an **agent grid** — a multi-agent system where multiple OpenCl
 
 ## Grid Members
 
-### Cleber 🤖
-- **Role**: home/personal - NixOS, home automation, overnight work
-- **Host**: REDACTED_IP_1:18789
-- **Workspace**: ~/openclaw
-
-### Romário ⚽
-- **Role**: work - Betha, code, productivity
-- **Host**: REDACTED_IP_2:18790
-- **Workspace**: ~/romario
+@GRID_MEMBERS@
 
 ## Communication
 

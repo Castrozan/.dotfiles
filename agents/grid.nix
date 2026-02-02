@@ -13,7 +13,7 @@
       host = "REDACTED_IP_1";
       port = 18789;
       role = "home/personal - NixOS, home automation, overnight work";
-      workspace = "~/clawd";
+      workspace = "~/openclaw";
     };
     romario = {
       emoji = "⚽";

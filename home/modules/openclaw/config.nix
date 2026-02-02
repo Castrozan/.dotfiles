@@ -65,7 +65,7 @@ in
   config.openclaw = {
     substituteAgentConfig =
       let
-        placeholders = [
+        basePlaceholders = [
           "@agentName@"
           "@agentEmoji@"
           "@agentRole@"
@@ -78,7 +78,7 @@ in
           "@ttsVoice@"
           "@ttsEngine@"
         ];
-        values = [
+        baseValues = [
           openclaw.agent
           openclaw.agentEmoji
           openclaw.agentRole
@@ -91,6 +91,10 @@ in
           openclaw.tts.voice
           openclaw.tts.engine
         ];
+        gridNames = builtins.attrNames openclaw.gridPlaceholders;
+        gridValues = map (name: openclaw.gridPlaceholders.${name}) gridNames;
+        placeholders = basePlaceholders ++ gridNames;
+        values = baseValues ++ gridValues;
       in
       path: builtins.replaceStrings placeholders values (builtins.readFile path);
 

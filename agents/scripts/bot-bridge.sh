@@ -11,11 +11,8 @@ set -euo pipefail
 TARGET="${1:-}"
 MESSAGE="${2:-}"
 
-# Grid agent registry (host:port)
-declare -A GRID_HOSTS=(
-  [cleber]="REDACTED_IP_1:18789"
-  [romario]="REDACTED_IP_2:18790"
-)
+# Grid agent registry (host:port) — generated from agents/grid.nix
+@GRID_HOSTS@
 
 if [ -z "$TARGET" ] || [ -z "$MESSAGE" ]; then
   echo "Usage: $0 <agent-name> \"message\"" >&2

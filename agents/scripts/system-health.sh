@@ -17,25 +17,18 @@ echo -e "${BOLD}━━━ System Health Check ━━━${NC}"
 echo -e "  $(date '+%Y-%m-%d %H:%M:%S %Z')"
 echo
 
-# 1. OpenClaw Gateway
+# 1. OpenClaw Gateway (local)
 echo -e "${BOLD}Gateway${NC}"
 if curl -sf http://localhost:@gatewayPort@/health >/dev/null 2>&1; then
   ok "OpenClaw gateway responding (localhost:@gatewayPort@)"
-elif curl -sf http://REDACTED_IP_1:@gatewayPort@/health >/dev/null 2>&1; then
-  ok "OpenClaw gateway responding (tailscale:@gatewayPort@)"
 elif pgrep -f "openclaw" >/dev/null 2>&1; then
   ok "OpenClaw gateway process running (health endpoint unreachable)"
 else
   fail "OpenClaw gateway not responding"
 fi
 
-# 2. Romário's gateway
-echo -e "${BOLD}Romário${NC}"
-if curl -sf --connect-timeout 3 http://REDACTED_IP_2:18790/health >/dev/null 2>&1; then
-  ok "Romário gateway responding (port 18790)"
-else
-  warn "Romário gateway unreachable (work machine may be off)"
-fi
+# 2. Remote agent gateways — generated from agents/grid.nix
+@GRID_HEALTH_CHECKS@
 
 # 3. Key services
 echo -e "${BOLD}Services${NC}"
