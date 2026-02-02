@@ -1,5 +1,6 @@
 {
   config,
+  lib,
   ...
 }:
 let
@@ -8,13 +9,22 @@ let
 
   filenames = builtins.attrNames (builtins.readDir workspaceSourcePath);
 
-  workspaceFiles = builtins.listToAttrs (
-    map (filename: {
-      name = "${openclaw.workspacePath}/${filename}";
-      value.text = openclaw.substituteAgentConfig (workspaceSourcePath + "/${filename}");
-    }) filenames
-  );
+  mkWorkspaceFiles =
+    destDir:
+    builtins.listToAttrs (
+      map (filename: {
+        name = "${destDir}/${filename}";
+        value.text = openclaw.substituteAgentConfig (workspaceSourcePath + "/${filename}");
+      }) filenames
+    );
+
+  # Deploy to the main workspace path (~/openclaw/)
+  mainWorkspace = mkWorkspaceFiles openclaw.workspacePath;
+
+  # Deploy to the gateway's per-agent workspace (~/.openclaw/workspace-{agent}/)
+  # OpenClaw resolves non-default agents to ~/.openclaw/workspace-{id}/
+  gatewayWorkspace = mkWorkspaceFiles ".openclaw/workspace-${openclaw.agent}";
 in
 {
-  home.file = workspaceFiles;
+  home.file = mainWorkspace // gatewayWorkspace;
 }
