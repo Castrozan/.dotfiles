@@ -174,7 +174,7 @@ Sub-agents start **blank**. When you spawn one, fully rehydrate it:
 **Always include:**
 - **Identity:** @agentName@ (agent), @userName@ (human)
 - **Workspaces:** `@homePath@/@workspacePath@` (workspace), `@homePath@/.dotfiles` (dotfiles)
-- **Files to read:** `MEMORY.md`, `TOOLS.md`, relevant config/skill files
+- **Files to read:** All root `.md` files in workspace first (AGENTS.md, SOUL.md, etc.), then task-specific files
 - **Constraints:** don't push to main, don't spend money, follow commit conventions
 
 **Prompt style:** Focused detailed task, reference specific files, include relevant rules/patterns. More context = fewer mistakes.
