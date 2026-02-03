@@ -133,6 +133,7 @@ elif [ ! -e /dev/video10 ]; then
     echo -e "  ${YELLOW}⚠${NC}  /dev/video10 not found (v4l2loopback not loaded), skipping"
 else
     cd "$AVATAR_DIR/control-server"
+    NODE_PATH="$AVATAR_DIR/control-server/node_modules" \
     nohup node virtual-camera.js --fps 15 --width 1280 --height 720 > "$LOG_DIR/avatar-virtual-camera.log" 2>&1 &
     CAMERA_PID=$!
     sleep 2
