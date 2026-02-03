@@ -4,16 +4,20 @@
 # Usage:
 #   avatar-speak.sh "Hello world"
 #   avatar-speak.sh "I'm excited!" happy
+#   avatar-speak.sh "Hello Meet!" neutral mic
 #
 # Arguments:
 #   $1 - Text to speak (required)
 #   $2 - Emotion (optional, default: neutral)
 #        Valid: neutral, happy, sad, angry, relaxed, surprised
+#   $3 - Output (optional, default: speakers)
+#        speakers = room audio, mic = virtual mic (Meet), both = both
 
 set -euo pipefail
 
-TEXT="${1:?Usage: avatar-speak.sh 'text' [emotion]}"
+TEXT="${1:?Usage: avatar-speak.sh 'text' [emotion] [output]}"
 EMOTION="${2:-neutral}"
+OUTPUT="${3:-speakers}"
 
 case "$EMOTION" in
   neutral|happy|sad|angry|relaxed|surprised)
@@ -21,6 +25,16 @@ case "$EMOTION" in
   *)
     echo "Error: Invalid emotion '$EMOTION'" >&2
     echo "Valid emotions: neutral, happy, sad, angry, relaxed, surprised" >&2
+    exit 1
+    ;;
+esac
+
+case "$OUTPUT" in
+  speakers|mic|both)
+    ;;
+  *)
+    echo "Error: Invalid output '$OUTPUT'" >&2
+    echo "Valid outputs: speakers (room), mic (Meet), both" >&2
     exit 1
     ;;
 esac
@@ -58,7 +72,8 @@ ws.on('open', () => {
     ws.send(JSON.stringify({
       type: 'speak',
       text: process.argv[1],
-      emotion: process.argv[2]
+      emotion: process.argv[2],
+      output: process.argv[3]
     }));
   }, 500);
 });
@@ -81,4 +96,4 @@ ws.on('message', (data) => {
     }, waitTime);
   }
 });
-" "$TEXT" "$EMOTION"
+" "$TEXT" "$EMOTION" "$OUTPUT"
