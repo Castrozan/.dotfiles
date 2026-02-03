@@ -18,7 +18,6 @@
     ../../home/modules/qmd.nix
 
     ../../home/modules/claude
-    ../../home/modules/claudemem.nix
     ../../home/modules/cmatrix.nix
     ../../home/modules/cursor
     ../../home/modules/devenv.nix
