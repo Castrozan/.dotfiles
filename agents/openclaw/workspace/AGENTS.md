@@ -86,6 +86,9 @@ That's it. Don't read files listed above — they're already loaded.
 
 ### Where to Put Work
 
+<!-- TODO: Migrate projects/ outside workspace (e.g., ~/projects/) to keep workspace clean.
+     Update this section to point to external projects directory once migrated. -->
+
 All work goes in `projects/<name>/`. This includes code, experiments, research, and any task that produces files. Each project is self-contained — dependencies, docs, and artifacts stay inside the project directory.
 
 Don't create directories at workspace root. Don't install packages at workspace root.
