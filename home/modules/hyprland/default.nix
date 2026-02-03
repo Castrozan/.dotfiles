@@ -21,6 +21,7 @@ in
     ./hyprshell.nix
     ./wlogout.nix
     ./swayosd.nix
+    ./wayland-electron.nix
     ./waybar-service.nix
 
     ./swaync-service.nix
