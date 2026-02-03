@@ -1,13 +1,12 @@
 # Zanoni's Home Manager Configuration
 { username, specialArgs, ... }:
-let
-  timestamp = builtins.toString builtins.currentTime;
-in
 {
   home-manager = {
     useGlobalPkgs = true;
     useUserPackages = true;
-    backupFileExtension = "bkp-${timestamp}";
+    # Use static extension + overwrite to prevent backup file accumulation
+    backupFileExtension = "backup";
+    overwriteBackup = true;
 
     extraSpecialArgs = specialArgs // {
       inherit username;
