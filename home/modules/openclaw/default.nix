@@ -13,5 +13,6 @@
     ./skills.nix
     ./scripts.nix
     ./tts.nix
+    ./avatar.nix
   ];
 }
