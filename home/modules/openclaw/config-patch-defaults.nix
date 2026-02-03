@@ -25,26 +25,38 @@ in
         }
       ];
       ".agents.defaults.workspace" = "${homeDir}/${openclaw.workspacePath}";
-      ".agents.defaults.heartbeat.model" = "anthropic/claude-sonnet-4-5";
+      ".agents.defaults.model.primary" = "openai-codex/gpt-5.2-codex";
+      ".agents.defaults.heartbeat.model" = "openai-codex/gpt-5.1-codex-mini";
+      ".agents.defaults.subagents.model" = "openai-codex/gpt-5.1-codex";
       ".agents.defaults.model.fallbacks" = [
         "anthropic/claude-sonnet-4-5"
-        "anthropic/claude-haiku-4-5"
+        "anthropic/claude-opus-4-5"
       ];
       ".agents.defaults.models" = {
         "anthropic/claude-opus-4-5" = {
           alias = "opus";
         };
-        "anthropic/claude-haiku-4-5" = {
-          alias = "haiku";
-        };
         "anthropic/claude-sonnet-4-5" = {
           alias = "sonnet";
+        };
+        "openai-codex/gpt-5.2-codex" = {
+          alias = "gpt-5.2-codex";
+        };
+        "openai-codex/gpt-5.1-codex" = {
+          alias = "gpt-5.1-codex";
+        };
+        "openai-codex/gpt-5.1-codex-mini" = {
+          alias = "gpt-5.1-codex-mini";
         };
       };
       ".auth.profiles" = {
         "anthropic:default" = {
           provider = "anthropic";
           mode = "token";
+        };
+        "openai-codex:default" = {
+          provider = "openai-codex";
+          mode = "oauth";
         };
       };
       ".agents.defaults.compaction.mode" = "safeguard";
