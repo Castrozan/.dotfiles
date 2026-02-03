@@ -49,6 +49,17 @@ in
       description = "Default model ID for this agent";
     };
 
+    # TODO: Implement skills list option
+    # This should be a list of skill names (from agents/skills/) that get:
+    # 1. Deployed to workspace/skills/
+    # 2. Substituted into @agentSkills@ placeholder in IDENTITY.md
+    # Example: skills = [ "avatar" "commit" "browser-use" ];
+    skills = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [ ];
+      description = "List of skill names to enable for this agent (from agents/skills/)";
+    };
+
     substituteAgentConfig = lib.mkOption {
       type = lib.types.functionTo lib.types.str;
       internal = true;
@@ -65,6 +76,13 @@ in
   config.openclaw = {
     substituteAgentConfig =
       let
+        # Format skills list for display (e.g., "avatar, commit, browser-use")
+        skillsDisplay =
+          if openclaw.skills == [ ] then
+            "*(configured via Nix — see skills/ directory)*"
+          else
+            builtins.concatStringsSep ", " openclaw.skills;
+
         basePlaceholders = [
           "@agentName@"
           "@agentEmoji@"
@@ -77,6 +95,7 @@ in
           "@username@"
           "@ttsVoice@"
           "@ttsEngine@"
+          "@agentSkills@"
         ];
         baseValues = [
           openclaw.agent
@@ -90,6 +109,7 @@ in
           config.home.username
           openclaw.tts.voice
           openclaw.tts.engine
+          skillsDisplay
         ];
         gridNames = builtins.attrNames openclaw.gridPlaceholders;
         gridValues = map (name: openclaw.gridPlaceholders.${name}) gridNames;
