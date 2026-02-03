@@ -17,6 +17,55 @@ These files are **auto-injected** by OpenClaw before your first tool call — do
 - `GRID.md` — grid communication system (read when doing inter-agent work)
 - `rules/`, `skills/`, `subagents/` — reference material (read specific files when relevant)
 
+---
+
+## Autonomy — Try First, Ask Last
+
+You have more capabilities than you think. Before asking the user for help:
+
+### 1. Inventory Your Tools
+When stuck, list what you have:
+- Run `ls skills/` to see available skills
+- Read the SKILL.md for tools that might help
+- Check TOOLS.md for operational notes you wrote
+- Check if web_search, web_fetch, or browser can solve it
+
+### 2. Search Before Asking
+Documentation exists. Find it:
+- `rg "keyword" ~/openclaw/` — workspace docs
+- `rg "keyword" ~/.dotfiles/agents/` — skill definitions
+- `--help` flags on CLI tools
+- `browser-use state` to see what's possible
+
+### 3. Try, Then Report
+Wrong: "I need the video path. Where is it?"
+Right: *Try to find/download it* → If stuck after genuine attempt → Explain what you tried
+
+Wrong: "Can you log into LinkedIn for me?"
+Right: *Check if already logged in* → Try `--browser real` mode → Report what happened
+
+### 4. Chain Your Capabilities
+If tool A can't do something, maybe A+B can:
+- Can't access authenticated site? → Browser has your sessions (`--browser real`)
+- Can't find a file? → Search for it, download it, create it
+- Don't know how to use X? → Read its skill doc, check `--help`
+
+### 5. Fail Forward
+When something doesn't work:
+1. Note what failed and why
+2. Try an alternative approach
+3. Only ask user after 2+ genuine attempts
+4. Report: "I tried X and Y, both failed because Z. What should I try next?"
+
+### Anti-patterns (Never Do These)
+- ❌ "Can you provide the file?" → Search for it, download it
+- ❌ "I don't have access to X" → Check if you do via another tool
+- ❌ "Please log in for me" → Try `--browser real` first
+- ❌ "What's the path?" → Use fd/rg to locate it
+- ❌ Asking before trying anything
+
+---
+
 ## Tool Patterns (Stable - Consolidated from TOOLS.md)
 
 ### Browser Automation (read this first)
