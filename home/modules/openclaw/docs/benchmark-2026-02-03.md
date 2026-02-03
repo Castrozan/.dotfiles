@@ -47,7 +47,7 @@ Compare four OpenClaw models (Opus 4.5, Sonnet 4.5, GPT-5.2-codex, Kimi k2.5) on
 - **Budget mode:** Kimi k2.5 via NVIDIA NIM
 
 ## How the “model-benchmark” Skill Works
-**Location:** `~/.dotfiles/agents/skills/model-benchmark/SKILL.md`
+**Location:** `~/.dotfiles/agents/skills/model-benchmark/SKILL.md` ([link](https://github.com/Castrozan/.dotfiles/blob/main/agents/skills/model-benchmark/SKILL.md))
 
 The skill standardizes the benchmark to keep models comparable:
 - Provides a fixed **task template** (the journal log analyzer) so each model solves the same problem.
