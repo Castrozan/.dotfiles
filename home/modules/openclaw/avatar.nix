@@ -91,9 +91,11 @@ in
           lib.makeBinPath [
             pkgs.python3Packages.edge-tts
             pkgs.nodejs_22
+            pkgs.ffmpeg
           ]
         }:/run/current-system/sw/bin"
         "NODE_PATH=${avatarDir}/control-server/node_modules"
+        "XDG_RUNTIME_DIR=/run/user/1000"
       ];
     };
   };
