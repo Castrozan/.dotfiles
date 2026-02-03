@@ -1,3 +1,6 @@
+# TODO: Make GRID.md fully dynamic — generate complete agent definitions
+# (name, emoji, role, workspace, capabilities) for all agents the current
+# workspace agent has access to. Currently just substitutes @GRID_MEMBERS@.
 {
   lib,
   pkgs,
