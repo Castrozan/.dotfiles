@@ -44,27 +44,38 @@ wait_for_port() {
     fi
 }
 
-# Step 1: Set up virtual audio devices
-echo -e "${YELLOW}[1/4]${NC} Setting up virtual audio devices..."
-
-if XDG_RUNTIME_DIR=/run/user/1000 pactl list sinks short | grep -q "AvatarSpeaker"; then
-    echo -e "  ${GREEN}✓${NC} Virtual audio sink already exists"
-else
-    echo -n "  Creating virtual audio sink (AvatarSpeaker)..."
-    if XDG_RUNTIME_DIR=/run/user/1000 pactl load-module module-null-sink \
-        sink_name=AvatarSpeaker \
-        sink_properties=device.description="Avatar_Speaker" > /dev/null 2>&1; then
-        echo -e " ${GREEN}OK${NC}"
+ensure_sink() {
+    local name=$1
+    local desc=$2
+    if XDG_RUNTIME_DIR=/run/user/1000 pactl list sinks short | grep -q "$name"; then
+        echo -e "  ${GREEN}✓${NC} $name already exists"
     else
-        echo -e " ${RED}FAILED${NC}"
-        echo -e "  ${YELLOW}⚠${NC}  Virtual audio is optional for testing"
+        echo -n "  Creating $name..."
+        if XDG_RUNTIME_DIR=/run/user/1000 pactl load-module module-null-sink \
+            sink_name="$name" \
+            sink_properties=device.description="$desc" > /dev/null 2>&1; then
+            echo -e " ${GREEN}OK${NC}"
+        else
+            echo -e " ${RED}FAILED${NC}"
+        fi
     fi
-fi
+}
+
+# Step 1: Set up virtual audio devices
+echo -e "${YELLOW}[1/5]${NC} Setting up virtual audio devices..."
+
+ensure_sink "AvatarSpeaker" "Avatar_Speaker"
+ensure_sink "AvatarMic" "Avatar_Microphone"
+
+# Set AvatarMic.monitor as default source so Meet auto-selects it
+XDG_RUNTIME_DIR=/run/user/1000 pactl set-default-source AvatarMic.monitor 2>/dev/null && \
+    echo -e "  ${GREEN}✓${NC} AvatarMic.monitor set as default mic" || \
+    echo -e "  ${YELLOW}⚠${NC}  Could not set default source"
 
 echo ""
 
 # Step 2: Start Control Server via systemd
-echo -e "${YELLOW}[2/4]${NC} Starting Avatar Control Server..."
+echo -e "${YELLOW}[2/5]${NC} Starting Avatar Control Server..."
 
 if systemctl --user is-active --quiet avatar-control-server; then
     echo -e "  ${YELLOW}⚠${NC}  Control server is already running"
@@ -91,7 +102,7 @@ fi
 echo ""
 
 # Step 3: Start Avatar Renderer
-echo -e "${YELLOW}[3/4]${NC} Starting Avatar Renderer..."
+echo -e "${YELLOW}[3/5]${NC} Starting Avatar Renderer..."
 
 if is_running "avatar/renderer.*next"; then
     echo -e "  ${YELLOW}⚠${NC}  Renderer is already running"
@@ -113,8 +124,32 @@ fi
 
 echo ""
 
-# Step 4: Health Check
-echo -e "${YELLOW}[4/4]${NC} Running health checks..."
+# Step 4: Start Virtual Camera (requires v4l2loopback + CDP browser)
+echo -e "${YELLOW}[4/5]${NC} Starting Virtual Camera..."
+
+if is_running "virtual-camera.js"; then
+    echo -e "  ${YELLOW}⚠${NC}  Virtual camera is already running"
+elif [ ! -e /dev/video10 ]; then
+    echo -e "  ${YELLOW}⚠${NC}  /dev/video10 not found (v4l2loopback not loaded), skipping"
+else
+    cd "$AVATAR_DIR/control-server"
+    nohup node virtual-camera.js --fps 15 --width 1280 --height 720 > "$LOG_DIR/avatar-virtual-camera.log" 2>&1 &
+    CAMERA_PID=$!
+    sleep 2
+    if kill -0 "$CAMERA_PID" 2>/dev/null; then
+        echo -e "  ${GREEN}✓${NC} Virtual camera started (PID: $CAMERA_PID)"
+        echo -e "    Device: /dev/video10"
+        echo -e "    Log: $LOG_DIR/avatar-virtual-camera.log"
+    else
+        echo -e "  ${YELLOW}⚠${NC}  Virtual camera failed to start (CDP browser may not be running)"
+        echo -e "    Check: $LOG_DIR/avatar-virtual-camera.log"
+    fi
+fi
+
+echo ""
+
+# Step 5: Health Check
+echo -e "${YELLOW}[5/5]${NC} Running health checks..."
 
 echo -n "  Control server health endpoint..."
 if curl -sf http://localhost:8766/health > /dev/null 2>&1; then
@@ -130,6 +165,13 @@ else
     echo -e " ${RED}FAILED${NC}"
 fi
 
+echo -n "  Virtual camera device..."
+if [ -e /dev/video10 ]; then
+    echo -e " ${GREEN}OK${NC}"
+else
+    echo -e " ${YELLOW}SKIP${NC}"
+fi
+
 echo ""
 echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo -e "${GREEN}   ✓ Avatar System Ready!${NC}"
@@ -139,6 +181,13 @@ echo -e "${BLUE}Services:${NC}"
 echo -e "  • Control Server:  ws://localhost:8765"
 echo -e "  • HTTP API:        http://localhost:8766"
 echo -e "  • Avatar Renderer: http://localhost:3000"
+echo -e "  • Virtual Mic:     AvatarMic.monitor (default source)"
+echo -e "  • Virtual Camera:  /dev/video10"
+echo ""
+echo -e "${BLUE}Speak:${NC}"
+echo -e "  avatar-speak.sh \"Hello\" neutral speakers   # room audio"
+echo -e "  avatar-speak.sh \"Hello\" neutral mic        # Meet mic"
+echo -e "  avatar-speak.sh \"Hello\" neutral both       # both"
 echo ""
 echo -e "${BLUE}Stop:${NC}"
 echo -e "  ~/openclaw/scripts/stop-avatar.sh"
