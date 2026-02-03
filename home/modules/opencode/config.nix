@@ -1,10 +1,6 @@
 _:
 let
   globalRules = ''
-    ${builtins.readFile ../../../agents/rules/core.md}
-
-    ${builtins.readFile ../../../agents/rules/devenv-patterns.md}
-
     ${builtins.readFile ../../../agents/rules/evergreen-instructions.md}
   '';
 
