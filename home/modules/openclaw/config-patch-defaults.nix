@@ -48,6 +48,20 @@ in
         "openai-codex/gpt-5.1-codex-mini" = {
           alias = "gpt-5.1-codex-mini";
         };
+        "nvidia/moonshotai/kimi-k2.5" = {
+          alias = "kimi";
+        };
+      };
+      ".models.mode" = "merge";
+      ".models.providers.nvidia" = {
+        baseUrl = "https://integrate.api.nvidia.com/v1";
+        api = "openai-completions";
+        models = [
+          {
+            id = "moonshotai/kimi-k2.5";
+            name = "Kimi K2.5 (NVIDIA NIM)";
+          }
+        ];
       };
       ".auth.profiles" = {
         "anthropic:default" = {
@@ -69,6 +83,7 @@ in
       lib.mkOptionDefault {
         ".gateway.auth.token" = "/run/agenix/openclaw-gateway-token";
         ".tools.web.search.apiKey" = "/run/agenix/brave-api-key";
+        ".models.providers.nvidia.apiKey" = "/run/agenix/nvidia-api-key";
       }
     );
   };
