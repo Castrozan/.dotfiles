@@ -29,7 +29,8 @@ in
       ".agents.defaults.heartbeat.model" = "openai-codex/gpt-5.1-codex-mini";
       ".agents.defaults.subagents.model" = "openai-codex/gpt-5.1-codex";
       ".agents.defaults.model.fallbacks" = [
-        "anthropic/claude-sonnet-4-5"
+        "openai-codex/gpt-5.2-codex"
+        "openai-codex/gpt-5.1-codex"
         "anthropic/claude-opus-4-5"
       ];
       ".agents.defaults.models" = {
