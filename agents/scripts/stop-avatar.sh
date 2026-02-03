@@ -44,6 +44,17 @@ remove_sink() {
     fi
 }
 
+# Remove remapped source first (depends on AvatarMic)
+remove_module() {
+    local name=$1
+    MODULE_ID=$(XDG_RUNTIME_DIR=/run/user/1000 pactl list short modules 2>/dev/null | grep "$name" | awk '{print $1}')
+    if [[ -n "$MODULE_ID" ]]; then
+        XDG_RUNTIME_DIR=/run/user/1000 pactl unload-module "$MODULE_ID"
+        echo "  $name removed"
+    fi
+}
+
+remove_module "AvatarMicSource"
 remove_sink "AvatarSpeaker"
 remove_sink "AvatarMic"
 

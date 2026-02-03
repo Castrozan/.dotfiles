@@ -65,11 +65,26 @@ ensure_sink() {
 echo -e "${YELLOW}[1/5]${NC} Setting up virtual audio devices..."
 
 ensure_sink "AvatarSpeaker" "Avatar_Speaker"
-ensure_sink "AvatarMic" "Avatar_Microphone"
+ensure_sink "AvatarMic" "Avatar_Mic_Sink"
 
-# Set AvatarMic.monitor as default source so Meet auto-selects it
-XDG_RUNTIME_DIR=/run/user/1000 pactl set-default-source AvatarMic.monitor 2>/dev/null && \
-    echo -e "  ${GREEN}✓${NC} AvatarMic.monitor set as default mic" || \
+# Create a remapped source so Chrome/Meet lists it as a proper microphone
+if XDG_RUNTIME_DIR=/run/user/1000 pactl list sources short | grep -q "AvatarMicSource"; then
+    echo -e "  ${GREEN}✓${NC} AvatarMicSource already exists"
+else
+    echo -n "  Creating AvatarMicSource (remapped source for Chrome)..."
+    if XDG_RUNTIME_DIR=/run/user/1000 pactl load-module module-remap-source \
+        source_name=AvatarMicSource \
+        master=AvatarMic.monitor \
+        source_properties=device.description="Avatar_Microphone" > /dev/null 2>&1; then
+        echo -e " ${GREEN}OK${NC}"
+    else
+        echo -e " ${RED}FAILED${NC}"
+    fi
+fi
+
+# Set remapped source as default so Meet auto-selects it
+XDG_RUNTIME_DIR=/run/user/1000 pactl set-default-source AvatarMicSource 2>/dev/null && \
+    echo -e "  ${GREEN}✓${NC} AvatarMicSource set as default mic" || \
     echo -e "  ${YELLOW}⚠${NC}  Could not set default source"
 
 echo ""
@@ -182,7 +197,7 @@ echo -e "${BLUE}Services:${NC}"
 echo -e "  • Control Server:  ws://localhost:8765"
 echo -e "  • HTTP API:        http://localhost:8766"
 echo -e "  • Avatar Renderer: http://localhost:3000"
-echo -e "  • Virtual Mic:     AvatarMic.monitor (default source)"
+echo -e "  • Virtual Mic:     Avatar_Microphone (AvatarMicSource)"
 echo -e "  • Virtual Camera:  /dev/video10"
 echo ""
 echo -e "${BLUE}Speak:${NC}"
