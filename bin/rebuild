@@ -22,7 +22,8 @@ if [ "$ID" = "nixos" ]; then
     # This avoids the warning about HOME not being owned by root
     DOTFILES_PATH="$HOME/.dotfiles"
     USERNAME="$(whoami)"
-    sudo env "NIXPKGS_ALLOW_UNFREE=1" nixos-rebuild switch --flake "git+file://$DOTFILES_PATH?submodules=1#$USERNAME"
+
+    sudo env "NIXPKGS_ALLOW_UNFREE=1" nixos-rebuild switch --flake "git+file://$DOTFILES_PATH?submodules=1#$USERNAME" --impure
 
     # Post-rebuild: reload running environment
     # 1. Reload Hyprland config (keybinds, window rules, env vars, etc.)
