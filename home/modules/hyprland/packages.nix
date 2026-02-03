@@ -49,20 +49,22 @@ in
       ];
   };
 
-  xdg.configFile."swaync/config.json" = {
-    source = ../../../.config/swaync/config.json;
-  };
+  xdg.configFile = {
+    "swaync/config.json" = {
+      source = ../../../.config/swaync/config.json;
+    };
 
-  xdg.configFile."swaync/scripts/notification-sound.sh" = {
-    source = ../../../.config/swaync/scripts/notification-sound.sh;
-    executable = true;
-  };
+    "swaync/scripts/notification-sound.sh" = {
+      source = ../../../.config/swaync/scripts/notification-sound.sh;
+      executable = true;
+    };
 
-  xdg.configFile."xdg-desktop-portal/hyprland-portals.conf".text = ''
-    [preferred]
-    default=hyprland;gtk
-    org.freedesktop.impl.portal.Screenshot=hyprland
-    org.freedesktop.impl.portal.ScreenCast=hyprland
-    org.freedesktop.impl.portal.Inhibit=none
-  '';
+    "xdg-desktop-portal/hyprland-portals.conf".text = ''
+      [preferred]
+      default=hyprland;gtk
+      org.freedesktop.impl.portal.Screenshot=hyprland
+      org.freedesktop.impl.portal.ScreenCast=hyprland
+      org.freedesktop.impl.portal.Inhibit=none
+    '';
+  };
 }
