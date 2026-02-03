@@ -89,14 +89,19 @@ let
     if [ ! -f "$CONFIG" ]; then
       mkdir -p "${homeDir}/.openclaw"
       cp "$OVERLAY" "$CONFIG"
+      echo "[openclaw-config-patch] Created config from overlay"
       exit 0
     fi
 
     if ! ${jq} empty "$CONFIG" 2>/dev/null; then
       cp "$CONFIG" "$CONFIG.nix-backup"
       cp "$OVERLAY" "$CONFIG"
+      echo "[openclaw-config-patch] Replaced invalid config with overlay"
       exit 0
     fi
+
+    # Capture hash before patch
+    HASH_BEFORE=$(${pkgs.coreutils}/bin/sha256sum "$CONFIG" | cut -d' ' -f1)
 
     ${jq} \
       ${
@@ -106,6 +111,25 @@ let
       } \
       -f ${jqFilterFile} \
       "$CONFIG" | ${sponge} "$CONFIG"
+
+    # Capture hash after patch
+    HASH_AFTER=$(${pkgs.coreutils}/bin/sha256sum "$CONFIG" | cut -d' ' -f1)
+
+    if [ "$HASH_BEFORE" != "$HASH_AFTER" ]; then
+      echo "[openclaw-config-patch] Config patched (hash changed)"
+      # Ensure file is synced to disk before signaling
+      sync
+      # Restart gateway service to pick up new config
+      # Using systemctl ensures proper service lifecycle (vs raw SIGUSR1)
+      # Set XDG_RUNTIME_DIR for user service access from system activation context
+      export XDG_RUNTIME_DIR="''${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+      if ${pkgs.systemd}/bin/systemctl --user is-active openclaw-gateway.service >/dev/null 2>&1; then
+        ${pkgs.systemd}/bin/systemctl --user restart openclaw-gateway.service || true
+        echo "[openclaw-config-patch] Restarted openclaw-gateway.service"
+      fi
+    else
+      echo "[openclaw-config-patch] Config unchanged"
+    fi
   '';
 in
 {
