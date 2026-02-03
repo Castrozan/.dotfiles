@@ -14,4 +14,5 @@ in
   "grid-hosts.age".publicKeys = [ personal_key ];
   "ssh-hosts.age".publicKeys = [ personal_key ];
   "telegram-ids.age".publicKeys = [ personal_key ];
+  "kilo-api-key.age".publicKeys = [ personal_key ];
 }
