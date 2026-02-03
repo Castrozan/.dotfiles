@@ -14,7 +14,7 @@
           context = "global";
           description = "Quick-commit dotfiles + private-config submodule";
           command = ''dotfiles-quick-commit'';
-          showOutput = true;
+          output = "popup";
         }
       ];
     };
