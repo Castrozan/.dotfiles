@@ -1,4 +1,4 @@
-{ lib, config, ... }:
+{ config, ... }:
 let
   inherit (config) openclaw;
   skillsSourcePath = ../../../agents/skills;
