@@ -19,6 +19,8 @@ These files are **auto-injected** by OpenClaw before your first tool call — do
 
 ## Tool Patterns (Stable)
 
+For specialized tools (TTS, avatar, browser automation, PDF, etc.), see `skills/` directory.
+
 ### JSON/YAML
 ```bash
 jq '.field' file.json                    # Read
