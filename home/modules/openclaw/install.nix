@@ -18,12 +18,18 @@ let
 
     exec "$BIN" "$@"
   '';
+
+  browserUse = pkgs.writeShellScriptBin "browser-use" ''
+    exec ${pkgs.uv}/bin/uvx browser-use[cli] "$@"
+  '';
 in
 {
   home.packages = [
     openclaw
+    browserUse
     nodejs
     pkgs.moreutils
+    pkgs.uv
     pkgs.python3Packages.edge-tts
   ];
 }
