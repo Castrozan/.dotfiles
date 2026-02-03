@@ -54,6 +54,7 @@
       ollama
       pipes
       postman
+      postgresql
       redisinsight
       ripgrep-all
       rustc
