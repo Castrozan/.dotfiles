@@ -15,8 +15,8 @@ else
 fi
 
 # Stop renderer (Next.js dev server)
-if pgrep -f 'next-server' > /dev/null 2>&1; then
-    pkill -f 'next-server'
+if pgrep -f 'avatar/renderer.*next' > /dev/null 2>&1; then
+    pkill -f 'avatar/renderer.*next'
     echo "  Renderer stopped"
 else
     echo "  Renderer was not running"

@@ -154,6 +154,7 @@
   programs = {
     dconf.enable = true;
     command-not-found.enable = false;
+    ssh.enableAskPassword = false;
   };
 
   # Console keymap

@@ -93,7 +93,7 @@ echo ""
 # Step 3: Start Avatar Renderer
 echo -e "${YELLOW}[3/4]${NC} Starting Avatar Renderer..."
 
-if is_running "next-server.*3000"; then
+if is_running "avatar/renderer.*next"; then
     echo -e "  ${YELLOW}⚠${NC}  Renderer is already running"
 else
     cd "$AVATAR_DIR/renderer"
