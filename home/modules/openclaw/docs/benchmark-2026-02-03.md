@@ -56,3 +56,25 @@ The skill standardizes the benchmark to keep models comparable:
 - Stores outputs in a predictable directory layout under `~/openclaw/projects/model-benchmark-YYYY-MM-DD/`.
 
 This ensures every run is reproducible, and results can be compared directly without changing the prompt or evaluation criteria.
+
+## Methodology Considerations / Potential Inconsistencies
+- **Single task only**: One prompt (log analyzer) can overweight styles (verbosity vs concision) and under-sample other capabilities (refactoring, tests, complex architecture).
+- **Non-normalized output size**: Lines-of-code penalizes concise models and may reward verbosity without necessarily improving correctness.
+- **Wall time includes queue/overhead**: Latency varies by provider, region, time-of-day, and queueing; not strictly model speed.
+- **Prompt fatigue / temperature variance**: If defaults differ (temperature/top_p), output style and length can diverge.
+- **Tool-call asymmetry**: Some models used tool calls; others didn’t. That can bias time and correctness.
+- **py_compile is necessary but weak**: It validates syntax, not runtime behavior or edge-case handling.
+- **Cost rates assumed static**: Pricing can change; the table is a snapshot, not guaranteed current.
+
+## Analysis of the Methodology
+- **Strengths**: Same prompt, same constraints, same artifacts; reproducible; easy to rerun.
+- **Weaknesses**: Too narrow; measurement is mostly latency + output size + subjective verdicts; no functional test suite.
+
+## TODOs to Improve Benchmark Quality
+- **Add 3–5 task categories**: data pipeline, web API, refactor, bugfix, CLI, and performance task.
+- **Add deterministic evaluation**: unit tests / fixtures + lint + type check; score pass/fail.
+- **Normalize latency**: run each model 3–5 times; report median/p95.
+- **Lock decoding params**: temperature/top_p/max_tokens fixed across providers where possible.
+- **Add rubric**: correctness, readability, structure, error handling, and testability scored separately.
+- **Add size metrics**: tokens in/out instead of lines-of-code.
+- **Separate provider latency**: measure network latency independently to decouple model speed.
