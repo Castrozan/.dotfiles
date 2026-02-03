@@ -207,31 +207,58 @@ async function handleAgentCommand(message, ws) {
   }
 }
 
-// Play audio to a PulseAudio sink via ffmpeg (fire-and-forget)
+// Play audio to a PulseAudio sink via ffmpeg→paplay (fire-and-forget)
+// ffmpeg -f pulse doesn't flow through PipeWire null-sink monitors;
+// piping WAV into paplay uses the native PulseAudio API which works.
 function playToSink(audioPath, sinkName) {
+  const env = {
+    ...process.env,
+    XDG_RUNTIME_DIR: `/run/user/${process.getuid()}`,
+  };
+
   const ffmpeg = spawn(
     "ffmpeg",
-    ["-y", "-i", audioPath, "-f", "pulse", sinkName],
-    {
-      stdio: ["ignore", "ignore", "pipe"],
-      env: { ...process.env, XDG_RUNTIME_DIR: `/run/user/${process.getuid()}` },
-    },
+    [
+      "-y",
+      "-i",
+      audioPath,
+      "-f",
+      "s16le",
+      "-ar",
+      "48000",
+      "-ac",
+      "2",
+      "pipe:1",
+    ],
+    { stdio: ["ignore", "pipe", "pipe"], env },
+  );
+
+  const paplay = spawn(
+    "paplay",
+    ["--device", sinkName, "--raw", "--rate", "48000", "--channels", "2"],
+    { stdio: [ffmpeg.stdout, "ignore", "pipe"], env },
   );
 
   ffmpeg.stderr.on("data", (data) => {
     const line = data.toString().trim();
     if (line.includes("error") || line.includes("Error")) {
-      console.error(`🔊 Audio playback error (${sinkName}): ${line}`);
+      console.error(`🔊 Audio decode error (${sinkName}): ${line}`);
     }
+  });
+
+  paplay.stderr.on("data", (data) => {
+    console.error(`🔊 paplay error (${sinkName}): ${data.toString().trim()}`);
+  });
+
+  paplay.on("close", (code) => {
+    console.log(`🔊 paplay finished (${sinkName}), exit code: ${code}`);
   });
 
   ffmpeg.on("close", (code) => {
-    if (code !== 0) {
-      console.warn(`🔊 ffmpeg exited with code ${code} for sink ${sinkName}`);
-    }
+    console.log(`🔊 ffmpeg decode finished (${sinkName}), exit code: ${code}`);
   });
 
-  return ffmpeg;
+  return paplay;
 }
 
 // Handle speak command
