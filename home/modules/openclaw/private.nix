@@ -4,10 +4,12 @@
   ...
 }:
 let
-  # Force rebuild trigger: update this timestamp when submodule changes aren't detected
-  # Last updated: 2026-02-03T03:25
   inherit (config) openclaw;
-  privateDir = ../../../private-config/openclaw;
+  homeDir = config.home.homeDirectory;
+  
+  # Use absolute paths to bypass flake's git tree tracking
+  # Requires --impure flag for rebuild
+  privateDir = /. + homeDir + "/.dotfiles/private-config/openclaw";
   workspaceDir = privateDir + "/workspace";
   skillsDir = privateDir + "/skills";
 
