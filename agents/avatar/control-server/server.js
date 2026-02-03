@@ -9,7 +9,7 @@
 const WebSocket = require("ws");
 const express = require("express");
 const http = require("http");
-const { exec } = require("child_process");
+const { exec, spawn } = require("child_process");
 const { promisify } = require("util");
 const fs = require("fs").promises;
 const path = require("path");
@@ -22,7 +22,7 @@ const CONFIG = {
   HTTP_PORT: 8766,
   TTS_VOICE: "@ttsVoice@",
   TTS_DIR: "/tmp/clever-avatar-tts",
-  AUDIO_DEVICE: "Clever_TTS_Output",
+  SPEAKER_SINK: "default",
 };
 
 // State machine
@@ -207,9 +207,41 @@ async function handleAgentCommand(message, ws) {
   }
 }
 
+// Play audio to a PulseAudio sink via ffmpeg (fire-and-forget)
+function playToSink(audioPath, sinkName) {
+  const ffmpeg = spawn(
+    "ffmpeg",
+    ["-y", "-i", audioPath, "-f", "pulse", sinkName],
+    {
+      stdio: ["ignore", "ignore", "pipe"],
+      env: { ...process.env, XDG_RUNTIME_DIR: `/run/user/${process.getuid()}` },
+    },
+  );
+
+  ffmpeg.stderr.on("data", (data) => {
+    const line = data.toString().trim();
+    if (line.includes("error") || line.includes("Error")) {
+      console.error(`🔊 Audio playback error (${sinkName}): ${line}`);
+    }
+  });
+
+  ffmpeg.on("close", (code) => {
+    if (code !== 0) {
+      console.warn(`🔊 ffmpeg exited with code ${code} for sink ${sinkName}`);
+    }
+  });
+
+  return ffmpeg;
+}
+
 // Handle speak command
 async function handleSpeak(command, ws) {
-  const { text, emotion = "neutral", id = Date.now().toString() } = command;
+  const {
+    text,
+    emotion = "neutral",
+    output = "speakers",
+    id = Date.now().toString(),
+  } = command;
 
   if (!text) {
     sendError(ws, "Missing required field: text");
@@ -225,12 +257,21 @@ async function handleSpeak(command, ws) {
     // Generate TTS
     const tts = await generateTTS(text, id);
 
-    // Send to renderer
+    // Play audio to chosen output sink(s)
+    const sinks = [];
+    if (output === "mic" || output === "both") sinks.push("AvatarMic");
+    if (output === "speakers" || output === "both")
+      sinks.push(CONFIG.SPEAKER_SINK);
+    for (const sink of sinks) {
+      playToSink(tts.audioPath, sink);
+    }
+    console.log(`🔊 Playing audio to: ${sinks.join(", ")}`);
+
+    // Send lip sync data to renderer (visual only, no audioUrl)
     if (clients.renderer) {
       const rendererCommand = {
         type: "startSpeaking",
         id,
-        audioUrl: tts.audioUrl,
         timing: tts.timing,
         emotion,
         text,
@@ -247,6 +288,7 @@ async function handleSpeak(command, ws) {
       type: "speakAck",
       id,
       duration: tts.duration,
+      output,
       status: "started",
     });
 
@@ -260,7 +302,7 @@ async function handleSpeak(command, ws) {
         }
       },
       (tts.duration + 0.5) * 1000,
-    ); // Add 500ms buffer
+    );
   } catch (err) {
     state.current = STATES.IDLE;
     state.speaking = false;
@@ -554,7 +596,10 @@ async function main() {
   console.log('   Renderer: Send { type: "identify", role: "renderer" }');
   console.log("");
   console.log("📋 Agent Commands:");
-  console.log('   { type: "speak", text: "Hello", emotion: "happy" }');
+  console.log(
+    '   { type: "speak", text: "Hello", emotion: "happy", output: "mic" }',
+  );
+  console.log('   output: "speakers" (room) | "mic" (Meet) | "both"');
   console.log(
     '   { type: "setExpression", name: "surprised", intensity: 0.8 }',
   );
