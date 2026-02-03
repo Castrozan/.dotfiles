@@ -154,11 +154,6 @@ in
         owner = "zanoni";
         mode = "400";
       };
-      "kilo-api-key" = {
-        file = ../../secrets/kilo-api-key.age;
-        owner = "zanoni";
-        mode = "400";
-      };
       "grid-hosts" = {
         file = ../../secrets/grid-hosts.age;
         owner = "zanoni";

@@ -18,7 +18,6 @@
     ../../home/modules/qmd.nix
 
     ../../home/modules/claude
-    ../../home/modules/kilo
     ../../home/modules/cmatrix.nix
     ../../home/modules/cursor
     ../../home/modules/devenv.nix
