@@ -25,11 +25,11 @@ in
         }
       ];
       ".agents.defaults.workspace" = "${homeDir}/${openclaw.workspacePath}";
-      ".agents.defaults.model.primary" = "nvidia/moonshotai/kimi-k2.5";
+      ".agents.defaults.model.primary" = "openai-codex/gpt-5.2-codex";
       ".agents.defaults.heartbeat.model" = "openai-codex/gpt-5.1-codex-mini";
       ".agents.defaults.subagents.model" = "openai-codex/gpt-5.1-codex";
       ".agents.defaults.model.fallbacks" = [
-        "openai-codex/gpt-5.2-codex"
+        "nvidia/moonshotai/kimi-k2.5"
         "openai-codex/gpt-5.1-codex"
         "anthropic/claude-opus-4-5"
       ];
