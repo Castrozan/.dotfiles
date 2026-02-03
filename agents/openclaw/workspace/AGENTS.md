@@ -17,6 +17,45 @@ These files are **auto-injected** by OpenClaw before your first tool call — do
 
 **This file is nix-managed (read-only).** Write runtime discoveries and learned tips to `TOOLS.md` instead.
 
+## Tool Patterns (Stable)
+
+### JSON/YAML
+```bash
+jq '.field' file.json                    # Read
+jq '.field = "value"' f.json | sponge f.json  # Update
+yq -i '.field = "value"' file.yaml       # YAML in-place
+```
+
+### File Search
+```bash
+fd "pattern" /path        # Find by name
+rg "pattern" /path        # Search content
+wc -l file.md             # Check size before reading
+grep -A5 "pattern" file   # Context around match
+```
+
+### Web Research (priority order)
+1. `web_search` — Brave API
+2. `web_fetch` — HTTP + readability
+3. `web_fetch("https://r.jina.ai/URL")` — Jina Reader
+4. Browser — dynamic sites only
+
+### Git
+```bash
+git add specific-file.nix  # Never git add -A
+# Dotfiles: pull → rebuild → push
+```
+
+### NixOS
+```bash
+/run/wrappers/bin/sudo nixos-rebuild switch --flake ~/.dotfiles#@username@
+```
+
+### Base System
+- **Browser**: `brave` (CDP 9222) / `openclaw` (CDP 18800)
+- **Paths**: sudo at `/run/wrappers/bin`, packages at `/run/current-system/sw/bin`
+- **Vault**: `@homePath@/vault/`
+
 ## Every Session
 
 Since identity and instructions are already in context, startup is minimal:
