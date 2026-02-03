@@ -24,7 +24,10 @@ let
   workspaceEntries = builtins.listToAttrs (
     map (filename: {
       name = filename;
-      value.text = openclaw.substituteAgentConfig (workspaceDir + "/${filename}");
+      value = {
+        text = openclaw.substituteAgentConfig (workspaceDir + "/${filename}");
+        force = true;
+      };
     }) privateWorkspaceFiles
   );
 
@@ -47,7 +50,10 @@ let
       in
       map (file: {
         name = "skills/${dirname}/${file}";
-        value.text = openclaw.substituteAgentConfig (skillDir + "/${file}");
+        value = {
+          text = openclaw.substituteAgentConfig (skillDir + "/${file}");
+          force = true;
+        };
       }) regularFiles
     ) privateSkillDirs
   );
