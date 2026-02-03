@@ -294,7 +294,7 @@ async function handleSpeak(command, ws) {
     }
     console.log(`🔊 Playing audio to: ${sinks.join(", ")}`);
 
-    // Send lip sync data to renderer (visual only, no audioUrl)
+    // Send lip sync data to renderer (includes audioUrl for lip sync animation)
     if (clients.renderer) {
       const rendererCommand = {
         type: "startSpeaking",
@@ -302,6 +302,7 @@ async function handleSpeak(command, ws) {
         timing: tts.timing,
         emotion,
         text,
+        audioUrl: `/audio/${id}/voice.mp3`,
       };
 
       clients.renderer.send(JSON.stringify(rendererCommand));
