@@ -1,11 +1,13 @@
 # OpenClaw Model Benchmark — 2026-02-03
 
+**Permalink:** https://github.com/Castrozan/.dotfiles/blob/main/home/modules/openclaw/docs/benchmark-2026-02-03.md
+
 ## Goal
 Compare four OpenClaw models (Opus 4.5, Sonnet 4.5, GPT-5.2-codex, Kimi k2.5) on the same engineering task to measure speed, output quality, and reliability.
 
 ## Test Procedure
 1. Created a dedicated project directory:
-   `~/openclaw/projects/model-benchmark-2026-02-03/`
+   `~/openclaw/projects/model-benchmark-2026-02-03/` (archive: [docs/benchmarks/model-benchmark-2026-02-03](https://github.com/Castrozan/.dotfiles/tree/main/home/modules/openclaw/docs/benchmarks/model-benchmark-2026-02-03))
 2. Ran **the same task prompt** against four separate model sessions (Opus, Sonnet, Codex, Kimi).
 3. Each model was required to:
    - Write a complete Python script at `log_analyzer.py`
@@ -25,6 +27,10 @@ Compare four OpenClaw models (Opus 4.5, Sonnet 4.5, GPT-5.2-codex, Kimi k2.5) on
    - Tool calls used
 5. Final outputs were saved under:
    `~/openclaw/projects/model-benchmark-2026-02-03/{opus,sonnet,codex,kimi}/log_analyzer.py`
+   - [Opus log_analyzer.py](https://github.com/Castrozan/.dotfiles/blob/main/home/modules/openclaw/docs/benchmarks/model-benchmark-2026-02-03/opus/log_analyzer.py)
+   - [Sonnet log_analyzer.py](https://github.com/Castrozan/.dotfiles/blob/main/home/modules/openclaw/docs/benchmarks/model-benchmark-2026-02-03/sonnet/log_analyzer.py)
+   - [Codex log_analyzer.py](https://github.com/Castrozan/.dotfiles/blob/main/home/modules/openclaw/docs/benchmarks/model-benchmark-2026-02-03/codex/log_analyzer.py)
+   - [Kimi log_analyzer.py](https://github.com/Castrozan/.dotfiles/blob/main/home/modules/openclaw/docs/benchmarks/model-benchmark-2026-02-03/kimi/log_analyzer.py)
 
 ## Results
 | Model | Cost per 1M (In/Out) | Time | Lines | Verdict | Ref. Fonte |
