@@ -38,6 +38,26 @@ wc -l file.md             # Check size before reading
 grep -A5 "pattern" file   # Context around match
 ```
 
+### Large File Handling
+**Always check size before reading unknown files.** One bloated read can waste more tokens than the entire rest of the session.
+
+```bash
+# Check size first
+wc -l largefile.md                    # Line count
+head -100 largefile.md                # Preview start
+tail -50 largefile.md                 # Preview end
+
+# Read specific sections
+sed -n '100,200p' largefile.md        # Lines 100-200
+read tool with offset/limit           # Built-in pagination
+
+# Search instead of reading
+grep -n "pattern" largefile.md        # Find with line numbers
+rg -C3 "pattern" largefile.md         # Context around matches
+```
+
+**Rule of thumb:** If a file might be >500 lines, check first. If >1000 lines, never read it whole — search or paginate.
+
 ### Web Research (priority order)
 1. `web_search` — Brave API
 2. `web_fetch` — HTTP + readability
