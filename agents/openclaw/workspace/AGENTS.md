@@ -19,6 +19,12 @@ These files are **auto-injected** by OpenClaw before your first tool call — do
 
 ## Tool Patterns (Stable - Consolidated from TOOLS.md)
 
+### Browser Automation (read this first)
+- Primary: **OpenClaw managed browser** via `browser` tool.
+- If a site is blocked by authwall: use **Google/SSO** in managed browser, then retry.
+- For complex automation guidance, read: `skills/browser-use/SKILL.md` (browser-use CLI) and `skills/playwright/SKILL.md`.
+- For avatar demos: check `skills/avatar/SKILL.md` for browser/meeting notes.
+
 For specialized tools (TTS, avatar, browser automation, PDF, etc.), see `skills/` directory.
 
 **Tell the user as a big warning if any tool here is not working properly.**
