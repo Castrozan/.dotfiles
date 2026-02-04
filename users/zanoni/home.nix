@@ -40,7 +40,6 @@
     # ../../home/modules/ollama  # TEMP: disabled — corrupted download in nix store, re-enable after nix-collect-garbage
     ../../home/modules/pkgs.nix
     ../../home/modules/ralph-tui.nix
-    ../../home/modules/readeck
     ../../home/modules/suwayomi-server.nix
     ../../home/modules/tmux.nix
     ../../home/modules/vesktop.nix

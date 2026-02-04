@@ -77,6 +77,26 @@ in
       ".agents.defaults.compaction.mode" = "safeguard";
       ".agents.defaults.compaction.memoryFlush.enabled" = true;
       ".gateway.port" = openclaw.gatewayPort;
+
+      # Telegram account for clever agent
+      ".channels.telegram.accounts.clever" = {
+        name = "Clever";
+        enabled = true;
+        dmPolicy = "pairing";
+        groupPolicy = "allowlist";
+        streamMode = "partial";
+      };
+
+      # Bind clever agent to clever telegram account
+      ".bindings" = [
+        {
+          agentId = "clever";
+          match = {
+            channel = "telegram";
+            accountId = "clever";
+          };
+        }
+      ];
     };
 
     # agenix secrets only available on NixOS — skip on standalone Home Manager
@@ -85,6 +105,7 @@ in
         ".gateway.auth.token" = "/run/agenix/openclaw-gateway-token";
         ".tools.web.search.apiKey" = "/run/agenix/brave-api-key";
         ".models.providers.nvidia.apiKey" = "/run/agenix/nvidia-api-key";
+        ".channels.telegram.accounts.clever.botToken" = "/run/agenix/telegram-bot-token-clever";
       }
     );
   };

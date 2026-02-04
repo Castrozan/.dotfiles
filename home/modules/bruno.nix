@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, lib, ... }:
 {
   home.packages = [ pkgs.bruno ];
 
@@ -27,7 +27,7 @@
   };
 
   # Ensure collections directory exists
-  home.activation.createBrunoCollections = pkgs.lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+  home.activation.createBrunoCollections = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     run mkdir -p /home/zanoni/vault/bruno-collections
   '';
 }
