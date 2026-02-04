@@ -59,46 +59,48 @@ let
       { };
 in
 {
-  home.file = deployFiles;
+  home = {
+    file = deployFiles;
+    activation = {
+      avatarRenderer = lib.mkIf (openclaw.defaultAgent != null) (
+        lib.hm.dag.entryAfter [ "linkGeneration" ] ''
+          RENDERER_DIR="${avatarDir}/renderer"
+          RENDERER_MARKER="${avatarDir}/renderer/.nix-source-rev"
+          EXPECTED_REV="${rendererSrc}"
 
-  home.activation.avatarRenderer = lib.mkIf (openclaw.defaultAgent != null) (
-    lib.hm.dag.entryAfter [ "linkGeneration" ] ''
-      RENDERER_DIR="${avatarDir}/renderer"
-      RENDERER_MARKER="${avatarDir}/renderer/.nix-source-rev"
-      EXPECTED_REV="${rendererSrc}"
+          if [ ! -d "$RENDERER_DIR" ] || [ ! -f "$RENDERER_MARKER" ] || [ "$(cat "$RENDERER_MARKER" 2>/dev/null)" != "$EXPECTED_REV" ]; then
+            echo "Deploying avatar renderer from nix store..."
+            rm -rf "$RENDERER_DIR"
+            mkdir -p "$RENDERER_DIR"
+            cp -rT "$EXPECTED_REV" "$RENDERER_DIR"
+            chmod -R u+w "$RENDERER_DIR"
+            echo "$EXPECTED_REV" > "$RENDERER_MARKER"
+            echo "Installing renderer npm dependencies..."
+            cd "$RENDERER_DIR" && ${pkgs.nodejs_22}/bin/npm install 2>&1 || true
+          fi
 
-      if [ ! -d "$RENDERER_DIR" ] || [ ! -f "$RENDERER_MARKER" ] || [ "$(cat "$RENDERER_MARKER" 2>/dev/null)" != "$EXPECTED_REV" ]; then
-        echo "Deploying avatar renderer from nix store..."
-        rm -rf "$RENDERER_DIR"
-        mkdir -p "$RENDERER_DIR"
-        cp -rT "$EXPECTED_REV" "$RENDERER_DIR"
-        chmod -R u+w "$RENDERER_DIR"
-        echo "$EXPECTED_REV" > "$RENDERER_MARKER"
-        echo "Installing renderer npm dependencies..."
-        cd "$RENDERER_DIR" && ${pkgs.nodejs_22}/bin/npm install 2>&1 || true
-      fi
-
-      if [ -d "$RENDERER_DIR" ] && [ ! -d "$RENDERER_DIR/node_modules" ]; then
-        echo "Installing renderer npm dependencies..."
-        cd "$RENDERER_DIR" && ${pkgs.nodejs_22}/bin/npm install 2>&1 || true
-      fi
-    ''
-  );
-
-  home.activation.avatarControlServerDeps = lib.mkIf (openclaw.defaultAgent != null) (
-    lib.hm.dag.entryAfter [ "linkGeneration" ] ''
-      CONTROL_DIR="${avatarDir}/control-server"
-      if [ -d "$CONTROL_DIR" ] && [ -f "$CONTROL_DIR/package-lock.json" ]; then
-        LOCK_HASH=$(sha256sum "$CONTROL_DIR/package-lock.json" | cut -d' ' -f1)
-        MARKER="$CONTROL_DIR/.npm-ci-hash"
-        if [ ! -d "$CONTROL_DIR/node_modules" ] || [ ! -f "$MARKER" ] || [ "$(cat "$MARKER" 2>/dev/null)" != "$LOCK_HASH" ]; then
-          echo "Installing control server npm dependencies..."
-          cd "$CONTROL_DIR" && ${pkgs.nodejs_22}/bin/npm ci --production 2>&1 || true
-          echo "$LOCK_HASH" > "$MARKER"
-        fi
-      fi
-    ''
-  );
+          if [ -d "$RENDERER_DIR" ] && [ ! -d "$RENDERER_DIR/node_modules" ]; then
+            echo "Installing renderer npm dependencies..."
+            cd "$RENDERER_DIR" && ${pkgs.nodejs_22}/bin/npm install 2>&1 || true
+          fi
+        ''
+      );
+      avatarControlServerDeps = lib.mkIf (openclaw.defaultAgent != null) (
+        lib.hm.dag.entryAfter [ "linkGeneration" ] ''
+          CONTROL_DIR="${avatarDir}/control-server"
+          if [ -d "$CONTROL_DIR" ] && [ -f "$CONTROL_DIR/package-lock.json" ]; then
+            LOCK_HASH=$(sha256sum "$CONTROL_DIR/package-lock.json" | cut -d' ' -f1)
+            MARKER="$CONTROL_DIR/.npm-ci-hash"
+            if [ ! -d "$CONTROL_DIR/node_modules" ] || [ ! -f "$MARKER" ] || [ "$(cat "$MARKER" 2>/dev/null)" != "$LOCK_HASH" ]; then
+              echo "Installing control server npm dependencies..."
+              cd "$CONTROL_DIR" && ${pkgs.nodejs_22}/bin/npm ci --production 2>&1 || true
+              echo "$LOCK_HASH" > "$MARKER"
+            fi
+          fi
+        ''
+      );
+    };
+  };
 
   systemd.user.services.avatar-control-server = lib.mkIf (openclaw.defaultAgent != null) {
     Unit.Description = "Avatar Control Server";

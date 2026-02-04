@@ -1,5 +1,4 @@
-{ ... }:
-{
+_: {
   # Disable nixpkgs wrapper flag injection — env vars handle Wayland
   # without triggering Electron's "not in known options" warnings
   home.sessionVariables.NIXOS_OZONE_WL = "";
