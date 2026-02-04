@@ -5,6 +5,7 @@ in
   "id_ed25519_phone.age".publicKeys = [ personal_key ];
   "openclaw-gateway-token.age".publicKeys = [ personal_key ];
   "telegram-bot-token.age".publicKeys = [ personal_key ];
+  "telegram-bot-token-jenny.age".publicKeys = [ personal_key ];
   "nvidia-api-key.age".publicKeys = [ personal_key ];
   "id_ed25519_workpc.age".publicKeys = [ personal_key ];
   "grid-token-robson.age".publicKeys = [ personal_key ];
