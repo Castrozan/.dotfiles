@@ -15,4 +15,6 @@ in
   "ssh-hosts.age".publicKeys = [ personal_key ];
   "telegram-ids.age".publicKeys = [ personal_key ];
   "telegram-bot-token-clever.age".publicKeys = [ personal_key ];
+  "telegram-bot-token-robson.age".publicKeys = [ personal_key ];
+  "telegram-bot-token-jenny.age".publicKeys = [ personal_key ];
 }

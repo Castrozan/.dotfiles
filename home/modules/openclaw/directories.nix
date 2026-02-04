@@ -1,15 +1,31 @@
-{ lib, config, ... }:
+{
+  lib,
+  config,
+  ...
+}:
 let
   inherit (config) openclaw;
-  mainWorkspace = "${config.home.homeDirectory}/${openclaw.workspacePath}";
+  homeDir = config.home.homeDirectory;
+
   directories = [
     "memory"
     "projects"
   ];
-  mkDirs = base: lib.concatMapStringsSep "\n" (dir: "mkdir -p \"${base}/${dir}\"") directories;
+
+  # Generate mkdir commands for all enabled agents' workspaces
+  mkDirsScript = lib.concatStringsSep "\n" (
+    lib.concatMap (
+      agentName:
+      let
+        agent = openclaw.agents.${agentName};
+        base = "${homeDir}/${agent.workspace}";
+      in
+      map (dir: "mkdir -p \"${base}/${dir}\"") directories
+    ) (lib.attrNames openclaw.enabledAgents)
+  );
 in
 {
   home.activation.openclawDirectories = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    ${mkDirs mainWorkspace}
+    ${mkDirsScript}
   '';
 }

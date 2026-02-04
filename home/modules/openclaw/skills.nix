@@ -1,4 +1,8 @@
-{ config, ... }:
+{
+  lib,
+  config,
+  ...
+}:
 let
   inherit (config) openclaw;
   skillsSourcePath = ../../../agents/skills;
@@ -16,7 +20,7 @@ let
 
   # Collect files from a directory, recursing one level into subdirectories
   collectFiles =
-    basePath: prefix:
+    agentName: basePath: prefix:
     let
       entries = builtins.readDir basePath;
       names = builtins.attrNames entries;
@@ -25,7 +29,7 @@ let
     in
     (map (file: {
       name = "${prefix}/${file}";
-      value.text = openclaw.substituteAgentConfig (basePath + "/${file}");
+      value.text = openclaw.substituteAgentConfig agentName (basePath + "/${file}");
     }) regularFiles)
     ++ (builtins.concatMap (
       subdir:
@@ -36,16 +40,24 @@ let
       in
       map (file: {
         name = "${prefix}/${subdir}/${file}";
-        value.text = openclaw.substituteAgentConfig (subPath + "/${file}");
+        value.text = openclaw.substituteAgentConfig agentName (subPath + "/${file}");
       }) subFiles
     ) subDirs);
 
-  files = builtins.listToAttrs (
-    builtins.concatMap (
-      dirname: collectFiles (skillsSourcePath + "/${dirname}") "skills/${dirname}"
-    ) skillDirectories
-  );
+  # Generate skills files for a specific agent
+  mkAgentFiles =
+    agentName:
+    builtins.listToAttrs (
+      builtins.concatMap (
+        dirname: collectFiles agentName (skillsSourcePath + "/${dirname}") "skills/${dirname}"
+      ) skillDirectories
+    );
+
+  # Deploy to all enabled agents
+  allFiles = lib.foldl' (
+    acc: agentName: acc // (openclaw.deployToWorkspace agentName (mkAgentFiles agentName))
+  ) { } (lib.attrNames openclaw.enabledAgents);
 in
 {
-  home.file = openclaw.deployToWorkspace files;
+  home.file = allFiles;
 }

@@ -1,4 +1,8 @@
-{ lib, config, ... }:
+{
+  lib,
+  config,
+  ...
+}:
 let
   inherit (config) openclaw;
   scriptsSourcePath = ../../../agents/scripts;
@@ -7,16 +11,24 @@ let
     builtins.attrNames (builtins.readDir scriptsSourcePath)
   );
 
-  files = builtins.listToAttrs (
-    map (filename: {
-      name = "scripts/${filename}";
-      value = {
-        text = openclaw.substituteAgentConfig (scriptsSourcePath + "/${filename}");
-        executable = true;
-      };
-    }) filenames
-  );
+  # Generate scripts files for a specific agent
+  mkAgentFiles =
+    agentName:
+    builtins.listToAttrs (
+      map (filename: {
+        name = "scripts/${filename}";
+        value = {
+          text = openclaw.substituteAgentConfig agentName (scriptsSourcePath + "/${filename}");
+          executable = true;
+        };
+      }) filenames
+    );
+
+  # Deploy to all enabled agents
+  allFiles = lib.foldl' (
+    acc: agentName: acc // (openclaw.deployToWorkspace agentName (mkAgentFiles agentName))
+  ) { } (lib.attrNames openclaw.enabledAgents);
 in
 {
-  home.file = openclaw.deployToWorkspace files;
+  home.file = allFiles;
 }
