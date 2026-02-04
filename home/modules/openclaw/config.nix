@@ -5,24 +5,99 @@
 }:
 let
   inherit (config) openclaw;
+
+  # Agent submodule type
+  agentModule = lib.types.submodule {
+    options = {
+      enable = lib.mkEnableOption "agent";
+
+      isDefault = lib.mkOption {
+        type = lib.types.bool;
+        default = false;
+        description = "Whether this is the default agent for the gateway";
+      };
+
+      emoji = lib.mkOption {
+        type = lib.types.str;
+        default = "";
+        description = "Agent emoji identifier";
+      };
+
+      role = lib.mkOption {
+        type = lib.types.str;
+        default = "";
+        description = "Agent role description";
+      };
+
+      model = lib.mkOption {
+        type = lib.types.submodule {
+          options = {
+            primary = lib.mkOption {
+              type = lib.types.str;
+              default = "nvidia/moonshotai/kimi-k2.5";
+              description = "Primary model ID for this agent";
+            };
+            fallbacks = lib.mkOption {
+              type = lib.types.listOf lib.types.str;
+              default = [ ];
+              description = "Fallback model IDs";
+            };
+          };
+        };
+        default = { };
+        description = "Model configuration for this agent";
+      };
+
+      workspace = lib.mkOption {
+        type = lib.types.str;
+        description = "Workspace directory path relative to home";
+      };
+
+      skills = lib.mkOption {
+        type = lib.types.listOf lib.types.str;
+        default = [ ];
+        description = "List of skill names to enable for this agent";
+      };
+
+      tts = lib.mkOption {
+        type = lib.types.submodule {
+          options = {
+            voice = lib.mkOption {
+              type = lib.types.str;
+              default = "en-US-GuyNeural";
+              description = "Edge-tts voice for this agent";
+            };
+            engine = lib.mkOption {
+              type = lib.types.str;
+              default = "edge-tts";
+              description = "TTS engine to use";
+            };
+          };
+        };
+        default = { };
+        description = "TTS configuration for this agent";
+      };
+    };
+  };
+
+  # Get enabled agents as attrset
+  enabledAgents = lib.filterAttrs (_: a: a.enable) openclaw.agents;
+
+  # Find the default agent (first one marked isDefault, or first enabled)
+  defaultAgentName =
+    let
+      defaultOnes = lib.filterAttrs (_: a: a.isDefault) enabledAgents;
+      firstDefault = lib.head (lib.attrNames defaultOnes);
+      firstEnabled = lib.head (lib.attrNames enabledAgents);
+    in
+    if defaultOnes != { } then firstDefault else firstEnabled;
 in
 {
   options.openclaw = {
-    agent = lib.mkOption {
-      type = lib.types.str;
-      description = "Agent identity name";
-    };
-
-    agentEmoji = lib.mkOption {
-      type = lib.types.str;
-      default = "";
-      description = "Agent emoji identifier";
-    };
-
-    agentRole = lib.mkOption {
-      type = lib.types.str;
-      default = "";
-      description = "Agent role description";
+    agents = lib.mkOption {
+      type = lib.types.attrsOf agentModule;
+      default = { };
+      description = "Agent configurations";
     };
 
     userName = lib.mkOption {
@@ -31,57 +106,64 @@ in
       description = "Human user's first name";
     };
 
-    workspacePath = lib.mkOption {
-      type = lib.types.str;
-      default = "openclaw";
-      description = "Workspace directory path relative to home";
-    };
-
     gatewayPort = lib.mkOption {
       type = lib.types.port;
       default = 18789;
       description = "Local OpenClaw gateway port";
     };
 
-    model = lib.mkOption {
-      type = lib.types.str;
-      default = "anthropic/claude-opus-4-5";
-      description = "Default model ID for this agent";
-    };
-
-    # TODO: Implement skills list option
-    # This should be a list of skill names (from agents/skills/) that get:
-    # 1. Deployed to workspace/skills/
-    # 2. Substituted into @agentSkills@ placeholder in IDENTITY.md
-    # Example: skills = [ "avatar" "commit" "browser-use" ];
-    skills = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
-      default = [ ];
-      description = "List of skill names to enable for this agent (from agents/skills/)";
-    };
-
-    substituteAgentConfig = lib.mkOption {
-      type = lib.types.functionTo lib.types.str;
+    # Derived values (internal)
+    enabledAgents = lib.mkOption {
+      type = lib.types.attrsOf agentModule;
       internal = true;
-      description = "Reads a file and substitutes @placeholder@ tokens with agent config values";
+      readOnly = true;
+      description = "Computed list of enabled agents";
+    };
+
+    defaultAgent = lib.mkOption {
+      type = lib.types.nullOr lib.types.str;
+      internal = true;
+      readOnly = true;
+      description = "Name of the default agent";
+    };
+
+    # Internal helper functions
+    substituteAgentConfig = lib.mkOption {
+      type = lib.types.functionTo (lib.types.functionTo lib.types.str);
+      internal = true;
+      description = "Reads a file and substitutes @placeholder@ tokens for a specific agent";
     };
 
     deployToWorkspace = lib.mkOption {
+      type = lib.types.functionTo (lib.types.functionTo (lib.types.attrsOf lib.types.anything));
+      internal = true;
+      description = "Takes an agent name and attrset of {relative-path = value} and deploys to the agent's workspace";
+    };
+
+    deployToAllWorkspaces = lib.mkOption {
       type = lib.types.functionTo (lib.types.attrsOf lib.types.anything);
       internal = true;
-      description = "Takes an attrset of {relative-path = value} and deploys to the workspace";
+      description = "Takes an attrset of {relative-path = value} and deploys to all enabled agent workspaces";
     };
   };
 
   config.openclaw = {
+    inherit enabledAgents;
+    defaultAgent = defaultAgentName;
+
+    # substituteAgentConfig takes agent name, then file path
     substituteAgentConfig =
+      agentName: path:
       let
-        # Format skills list for display (e.g., "avatar, commit, browser-use")
+        agent = openclaw.agents.${agentName};
+        homeDir = config.home.homeDirectory;
+
+        # Format skills list for display
         skillsDisplay =
-          if openclaw.skills == [ ] then
+          if agent.skills == [ ] then
             "*(configured via Nix — see skills/ directory)*"
           else
-            builtins.concatStringsSep ", " openclaw.skills;
+            builtins.concatStringsSep ", " agent.skills;
 
         basePlaceholders = [
           "@agentName@"
@@ -98,17 +180,17 @@ in
           "@agentSkills@"
         ];
         baseValues = [
-          openclaw.agent
-          openclaw.agentEmoji
-          openclaw.agentRole
+          agentName
+          agent.emoji
+          agent.role
           openclaw.userName
-          openclaw.workspacePath
+          agent.workspace
           (toString openclaw.gatewayPort)
-          openclaw.model
-          config.home.homeDirectory
+          agent.model.primary
+          homeDir
           config.home.username
-          openclaw.tts.voice
-          openclaw.tts.engine
+          agent.tts.voice
+          agent.tts.engine
           skillsDisplay
         ];
         gridNames = builtins.attrNames openclaw.gridPlaceholders;
@@ -116,13 +198,24 @@ in
         placeholders = basePlaceholders ++ gridNames;
         values = baseValues ++ gridValues;
       in
-      path: builtins.replaceStrings placeholders values (builtins.readFile path);
+      builtins.replaceStrings placeholders values (builtins.readFile path);
 
+    # deployToWorkspace takes agent name, then files attrset
     deployToWorkspace =
-      files:
+      agentName: files:
+      let
+        agent = openclaw.agents.${agentName};
+      in
       lib.mapAttrs' (name: value: {
-        name = "${openclaw.workspacePath}/${name}";
+        name = "${agent.workspace}/${name}";
         inherit value;
       }) files;
+
+    # deployToAllWorkspaces deploys same files to all enabled agents
+    deployToAllWorkspaces =
+      files:
+      lib.foldl' (acc: agentName: acc // (openclaw.deployToWorkspace agentName files)) { } (
+        lib.attrNames enabledAgents
+      );
   };
 }

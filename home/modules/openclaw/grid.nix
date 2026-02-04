@@ -10,6 +10,7 @@
 let
   gridData = import ../../../agents/grid.nix;
   inherit (config) openclaw;
+  homeDir = config.home.homeDirectory;
 
   gridMembersEntries = lib.concatStringsSep "\n\n" (
     lib.mapAttrsToList (
@@ -23,19 +24,27 @@ let
 
   telegramIdsSecretExists = builtins.pathExists ../../../secrets/telegram-ids.age;
 
+  # Generate substitute script that handles all enabled agents' workspaces
+  workspacePaths = lib.concatStringsSep " " (
+    map (agentName: "\"${homeDir}/${openclaw.agents.${agentName}.workspace}\"") (
+      lib.attrNames openclaw.enabledAgents
+    )
+  );
+
   substituteScript = pkgs.writeShellScript "substitute-telegram-ids" ''
     set -euo pipefail
     IDS="/run/agenix/telegram-ids"
-    WORKSPACE="${config.home.homeDirectory}/${openclaw.workspacePath}"
 
     [ -f "$IDS" ] || exit 0
-    [ -d "$WORKSPACE" ] || exit 0
 
-    while IFS='=' read -r key value; do
-      [ -n "$key" ] || continue
-      ${pkgs.findutils}/bin/find "$WORKSPACE" -name "*.md" \
-        -exec ${pkgs.gnused}/bin/sed -i "s/@''${key}@/''${value}/g" {} +
-    done < "$IDS"
+    for WORKSPACE in ${workspacePaths}; do
+      [ -d "$WORKSPACE" ] || continue
+      while IFS='=' read -r key value; do
+        [ -n "$key" ] || continue
+        ${pkgs.findutils}/bin/find "$WORKSPACE" -name "*.md" \
+          -exec ${pkgs.gnused}/bin/sed -i "s/@''${key}@/''${value}/g" {} +
+      done < "$IDS"
+    done
   '';
 in
 {

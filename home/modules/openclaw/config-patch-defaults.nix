@@ -13,24 +13,39 @@ let
   inherit (config) openclaw;
   homeDir = config.home.homeDirectory;
   isNixOS = builtins.pathExists /etc/NIXOS;
+
+  # Generate agents list from enabled agents
+  agentsList = lib.mapAttrsToList (
+    name: agent:
+    {
+      id = name;
+      workspace = "${homeDir}/${agent.workspace}";
+      model = {
+        primary = agent.model.primary;
+      }
+      // lib.optionalAttrs (agent.model.fallbacks != [ ]) { fallbacks = agent.model.fallbacks; };
+    }
+    // lib.optionalAttrs (name == openclaw.defaultAgent) { default = true; }
+  ) openclaw.enabledAgents;
+
+  # Default workspace for agents.defaults (use default agent's workspace)
+  defaultWorkspace =
+    if openclaw.defaultAgent != null then
+      "${homeDir}/${openclaw.agents.${openclaw.defaultAgent}.workspace}"
+    else
+      "${homeDir}/openclaw";
 in
 {
   config = {
     openclaw.configPatches = lib.mkOptionDefault {
-      ".agents.list" = [
-        {
-          id = openclaw.agent;
-          default = true;
-          workspace = "${homeDir}/${openclaw.workspacePath}";
-        }
-      ];
-      ".agents.defaults.workspace" = "${homeDir}/${openclaw.workspacePath}";
+      ".agents.list" = agentsList;
+      ".agents.defaults.workspace" = defaultWorkspace;
       ".agents.defaults.model.primary" = "openai-codex/gpt-5.2-codex";
       ".agents.defaults.heartbeat.model" = "openai-codex/gpt-5.1-codex-mini";
-      ".agents.defaults.subagents.model" = "openai-codex/gpt-5.1-codex";
+      ".agents.defaults.subagents.model" = "openai-codex/gpt-5.2-codex";
       ".agents.defaults.model.fallbacks" = [
         "nvidia/moonshotai/kimi-k2.5"
-        "openai-codex/gpt-5.1-codex"
+        "openai-codex/gpt-5.2-codex"
         "anthropic/claude-opus-4-5"
       ];
       ".agents.defaults.models" = {

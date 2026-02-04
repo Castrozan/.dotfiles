@@ -33,7 +33,6 @@
     ../../home/modules/gnome/dconf.nix
     ../../home/modules/gnome/extension-manager.nix
     ../../home/modules/hyprland/standalone.nix
-    ../../home/modules/ia-work.nix
     ../../home/modules/install-nothing.nix
     ../../home/modules/k9s.nix
     ../../home/modules/kitty.nix

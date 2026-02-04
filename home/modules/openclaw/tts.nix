@@ -1,27 +1,26 @@
-{ lib, config, ... }:
+{
+  lib,
+  config,
+  ...
+}:
 let
   inherit (config) openclaw;
-  inherit (openclaw) tts;
+
+  # Generate tts.json for each enabled agent
+  allFiles = lib.foldl' (
+    acc: agentName:
+    let
+      agent = openclaw.agents.${agentName};
+    in
+    acc
+    // (openclaw.deployToWorkspace agentName {
+      "tts.json".text = builtins.toJSON {
+        inherit (agent.tts) engine;
+        inherit (agent.tts) voice;
+      };
+    })
+  ) { } (lib.attrNames openclaw.enabledAgents);
 in
 {
-  options.openclaw.tts = {
-    voice = lib.mkOption {
-      type = lib.types.str;
-      default = "en-US-GuyNeural";
-      description = "Default edge-tts voice for this agent";
-    };
-
-    engine = lib.mkOption {
-      type = lib.types.str;
-      default = "edge-tts";
-      description = "TTS engine to use";
-    };
-  };
-
-  config.home.file = openclaw.deployToWorkspace {
-    "tts.json".text = builtins.toJSON {
-      inherit (tts) engine;
-      inherit (tts) voice;
-    };
-  };
+  home.file = allFiles;
 }
