@@ -4,8 +4,7 @@ let
 in
 {
   # Allow unfree packages (Spotify)
-  nixpkgs.config.allowUnfreePredicate = pkg:
-    builtins.elem (pkgs.lib.getName pkg) [ "spotify" ];
+  nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (pkgs.lib.getName pkg) [ "spotify" ];
 
   # Import the home-manager module for spicetify-nix
   imports = [ inputs.spicetify-nix.homeManagerModules.default ];

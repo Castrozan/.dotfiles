@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 let
   cfg = config.programs.ccost;
@@ -23,7 +28,7 @@ in
     };
 
     # Configuration file
-    xdg.configFile."ccost/config.toml".text = lib.generators.toINI {} {
+    xdg.configFile."ccost/config.toml".text = lib.generators.toINI { } {
       general = {
         claude_projects_path = "~/.claude/projects";
         cost_mode = "auto";

@@ -13,7 +13,7 @@
           key = "I";
           context = "global";
           description = "Quick-commit dotfiles + private-config submodule";
-          command = ''dotfiles-quick-commit'';
+          command = "dotfiles-quick-commit";
           output = "popup";
         }
       ];
