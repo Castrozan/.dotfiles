@@ -6,7 +6,7 @@
 let
   inherit (config) openclaw;
   homeDir = config.home.homeDirectory;
-  
+
   # Use absolute paths to bypass flake's git tree tracking
   # Requires --impure flag for rebuild
   privateDir = /. + homeDir + "/.dotfiles/private-config/openclaw";
@@ -16,7 +16,7 @@ let
   workspaceDirExists = builtins.pathExists workspaceDir;
   skillsDirExists = builtins.pathExists skillsDir;
 
-  # Deploy workspace files (USER.md, IDENTITY.md, SOUL.md) with substitution
+  # Get list of private workspace files (USER.md, IDENTITY.md, SOUL.md)
   privateWorkspaceFiles =
     if workspaceDirExists then
       builtins.filter (name: lib.hasSuffix ".md" name) (
@@ -25,17 +25,7 @@ let
     else
       [ ];
 
-  workspaceEntries = builtins.listToAttrs (
-    map (filename: {
-      name = filename;
-      value = {
-        text = openclaw.substituteAgentConfig (workspaceDir + "/${filename}");
-        force = true;
-      };
-    }) privateWorkspaceFiles
-  );
-
-  # Deploy private skills (each directory with a SKILL.md)
+  # Get list of private skill directories
   privateSkillDirs =
     if skillsDirExists then
       builtins.filter (name: builtins.pathExists (skillsDir + "/${name}/SKILL.md")) (
@@ -44,26 +34,49 @@ let
     else
       [ ];
 
-  skillEntries = builtins.listToAttrs (
-    builtins.concatMap (
-      dirname:
-      let
-        skillDir = skillsDir + "/${dirname}";
-        entries = builtins.readDir skillDir;
-        regularFiles = builtins.filter (name: entries.${name} == "regular") (builtins.attrNames entries);
-      in
-      map (file: {
-        name = "skills/${dirname}/${file}";
+  # Generate workspace entries for a specific agent
+  mkAgentWorkspaceEntries =
+    agentName:
+    builtins.listToAttrs (
+      map (filename: {
+        name = filename;
         value = {
-          text = openclaw.substituteAgentConfig (skillDir + "/${file}");
+          text = openclaw.substituteAgentConfig agentName (workspaceDir + "/${filename}");
           force = true;
         };
-      }) regularFiles
-    ) privateSkillDirs
-  );
+      }) privateWorkspaceFiles
+    );
+
+  # Generate skill entries for a specific agent
+  mkAgentSkillEntries =
+    agentName:
+    builtins.listToAttrs (
+      builtins.concatMap (
+        dirname:
+        let
+          skillDir = skillsDir + "/${dirname}";
+          entries = builtins.readDir skillDir;
+          regularFiles = builtins.filter (name: entries.${name} == "regular") (builtins.attrNames entries);
+        in
+        map (file: {
+          name = "skills/${dirname}/${file}";
+          value = {
+            text = openclaw.substituteAgentConfig agentName (skillDir + "/${file}");
+            force = true;
+          };
+        }) regularFiles
+      ) privateSkillDirs
+    );
+
+  # Deploy to all enabled agents
+  allFiles = lib.foldl' (
+    acc: agentName:
+    let
+      entries = mkAgentWorkspaceEntries agentName // mkAgentSkillEntries agentName;
+    in
+    acc // (openclaw.deployToWorkspace agentName entries)
+  ) { } (lib.attrNames openclaw.enabledAgents);
 in
 {
-  home.file = lib.mkIf (workspaceDirExists || skillsDirExists) (
-    openclaw.deployToWorkspace (workspaceEntries // skillEntries)
-  );
+  home.file = lib.mkIf (workspaceDirExists || skillsDirExists) allFiles;
 }
