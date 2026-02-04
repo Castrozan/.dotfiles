@@ -8,7 +8,7 @@
         isDefault = true;
         emoji = "⚽";
         role = "work — Betha, code, productivity";
-        model.primary = "nvidia/moonshotai/kimi-k2.5";
+        model.primary = "anthropic/claude-sonnet-4-5";
         workspace = "openclaw/robson";
         tts.voice = "pt-BR-AntonioNeural";
         telegram.enable = true;
