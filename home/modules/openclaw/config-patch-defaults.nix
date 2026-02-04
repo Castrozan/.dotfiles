@@ -94,13 +94,20 @@ in
       ".gateway.port" = openclaw.gatewayPort;
     };
 
-    # agenix secrets only available on NixOS — skip on standalone Home Manager
-    openclaw.secretPatches = lib.mkIf isNixOS (
-      lib.mkOptionDefault {
-        ".gateway.auth.token" = "/run/agenix/openclaw-gateway-token";
-        ".tools.web.search.apiKey" = "/run/agenix/brave-api-key";
-        ".models.providers.nvidia.apiKey" = "/run/agenix/nvidia-api-key";
-      }
+    # Secrets: NixOS uses /run/agenix/, standalone Home Manager uses ~/.openclaw/secrets/
+    openclaw.secretPatches = lib.mkOptionDefault (
+      if isNixOS then
+        {
+          ".gateway.auth.token" = "/run/agenix/openclaw-gateway-token";
+          ".tools.web.search.apiKey" = "/run/agenix/brave-api-key";
+          ".models.providers.nvidia.apiKey" = "/run/agenix/nvidia-api-key";
+        }
+      else
+        {
+          ".gateway.auth.token" = "${homeDir}/.openclaw/secrets/openclaw-gateway-token";
+          ".tools.web.search.apiKey" = "${homeDir}/.openclaw/secrets/brave-api-key";
+          ".models.providers.nvidia.apiKey" = "${homeDir}/.openclaw/secrets/nvidia-api-key";
+        }
     );
   };
 }
