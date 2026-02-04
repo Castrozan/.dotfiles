@@ -27,7 +27,7 @@
     ../../home/modules/fuzzel.nix
     ../../home/modules/gnome
     ../../home/modules/hyprland/nixos.nix
-    ../../home/modules/ia-work.nix
+    # ../../home/modules/ia-work.nix
     ../../home/modules/ksnip.nix
     ../../home/modules/install-nothing.nix
     ../../home/modules/media/spicetify.nix
