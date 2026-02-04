@@ -12,6 +12,7 @@
     ../../home/modules/bad-apple.nix
     ../../home/modules/bash.nix
     ../../home/modules/bluetui.nix
+    ../../home/modules/bruno.nix
     ../../home/modules/cbonsai.nix
     ../../home/modules/ccost.nix
     ../../home/modules/openclaw
@@ -39,6 +40,7 @@
     # ../../home/modules/ollama  # TEMP: disabled — corrupted download in nix store, re-enable after nix-collect-garbage
     ../../home/modules/pkgs.nix
     ../../home/modules/ralph-tui.nix
+    ../../home/modules/readeck
     ../../home/modules/suwayomi-server.nix
     ../../home/modules/tmux.nix
     ../../home/modules/vesktop.nix
