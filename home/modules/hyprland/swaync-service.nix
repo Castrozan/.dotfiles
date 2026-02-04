@@ -25,6 +25,11 @@ in
       ExecStart = "${swayncStart}";
       Restart = "always";
       RestartSec = "1s";
+      # Isolate GIO modules to prevent loading incompatible system libraries
+      # Fixes CPU spin from GLIBC version mismatch with gvfs/dconf modules
+      Environment = [
+        "GIO_MODULE_DIR=${pkgs.glib-networking}/lib/gio/modules"
+      ];
     };
 
     Install = {
