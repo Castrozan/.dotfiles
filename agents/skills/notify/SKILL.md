@@ -1,73 +1,77 @@
----
-name: notify
-description: Send push notifications to Lucas's phone via ntfy.sh. Use for system alerts, urgent notifications, critical errors, or anything that needs to reach Lucas even when away from PC.
----
+# notify/skill.md — ntfy.sh Push Notifications
 
-# Push Notifications via ntfy.sh
+Push notifications to your phone via ntfy.sh.
 
-Send real system-level push notifications to Lucas's Android phone. These show up in the notification shade even when the phone is locked, and can bypass Do Not Disturb.
-
-## When to Use
-
-- **System alerts**: Gateway down, service crashed, disk full, security issue
-- **Urgent updates**: Something needs Lucas's attention NOW
-- **Task completion**: Long-running job finished, build done
-- **Away-from-PC**: When Lucas isn't at the computer and Telegram might be missed
-
-## When NOT to Use
-
-- Routine messages — use Telegram instead
-- Status updates that can wait — use Telegram
-- Anything that needs a conversation — use Telegram
-- Never send passwords, tokens, or sensitive data via ntfy (public server)
-
-## Topics
-
-| Route          | Topic                        |
-|----------------|------------------------------|
-| Clever → Lucas | `cleber-lucas-2f2ea57a`      |
-| Robson → Lucas | `romario-lucas-I9rbtKUd`      |
-
-## Send a Notification
+## Quick Send
 
 ```bash
-curl -s \
-  -H "Title: Your Title" \
-  -H "Priority: default" \
-  -H "Tags: robot" \
-  -d "Your message body" \
-  ntfy.sh/cleber-lucas-2f2ea57a
+# Basic message
+curl -H "Title: Alert" -d "Your message here" ntfy.sh/cleber-lucas-2f2ea57a
+
+# With priority (1-5, default: 3)
+curl -H "Title: Important" -H "Priority: high" -d "High priority alert" ntfy.sh/cleber-lucas-2f2ea57a
+
+# With click action
+curl -H "Title: Deploy Done" -H "Click: https://github.com/Castrozan/.dotfiles/actions" -d "Build succeeded" ntfy.sh/cleber-lucas-2f2ea57a
 ```
 
 ## Priority Levels
 
-| Level     | Behavior                              |
-|-----------|---------------------------------------|
-| `min`     | No sound, no vibration               |
-| `low`     | No sound                             |
-| `default` | Normal notification                  |
-| `high`    | Prominent notification               |
-| `urgent`  | **Bypasses Do Not Disturb**          |
+| Priority | Level    | Behavior                          |
+|----------|----------|-----------------------------------|
+| 1        | min      | No sound/vibration                |
+| 2        | low      | No sound/vibration                |
+| 3        | default  | Default notification sound        |
+| 4        | high     | Bypasses DND (max once/15 min)    |
+| 5        | urgent   | Urgent sound until acknowledged   |
 
-Use `urgent` sparingly — only for things that truly can't wait.
+Set with `-H "Priority: high"` or `-H "X-Priority: 4"`.
 
-## Advanced Features
+## Advanced Headers
 
 ```bash
-# With click action (opens URL when tapped)
-curl -H "Title: PR Merged" -H "Click: https://github.com/..." -d "Your PR was merged" ntfy.sh/TOPIC
+# Action buttons
+curl \
+  -H "Title: Approval Needed" \
+  -H "Actions: http, Approve, https://api.example.com/approve, clear=true" \
+  -H "Actions: http, Decline, https://api.example.com/decline, clear=true" \
+  -d "Deploy production?" \
+  ntfy.sh/cleber-lucas-2f2ea57a
 
-# With emoji tags
-curl -H "Tags: warning,skull" -d "Disk is 95% full" ntfy.sh/TOPIC
+# Tags/emoji
+curl -H "Tags: warning" -H "Title: Warning" -d "Disk space low" ntfy.sh/cleber-lucas-2f2ea57a
 
-# With action buttons
-curl -H "Actions: view, Open Dashboard, https://dashboard.example.com" -d "Alert" ntfy.sh/TOPIC
+# Markdown formatting
+curl -H "Markdown: yes" -d "**Bold** and *italic*" ntfy.sh/cleber-lucas-2f2ea57a
 ```
 
-## Rules
+## Integration Examples
 
-- **Telegram first, ntfy for critical.** Don't spam notifications.
-- **Include context.** "Gateway crashed" not just "Error".
-- **Use appropriate priority.** Most things are `default` or `high`. Reserve `urgent` for emergencies.
-- **Keep it brief.** Phone notifications are small — lead with the key info.
-- **Never send secrets.** ntfy.sh is a public server. No tokens, passwords, or private data.
+### On Error
+```bash
+cmd || curl -H "Title: Error" -H "Priority: high" -d "$(hostname): cmd failed" ntfy.sh/cleber-lucas-2f2ea57a
+```
+
+### After Long Task
+```bash
+./long-task.sh && curl -H "Title: Done" -d "Task finished at $(date)" ntfy.sh/cleber-lucas-2f2ea57a
+```
+
+### Daily Summary (from script)
+```bash
+#!/bin/bash
+MSG="System OK | $(df -h / | awk 'NR==2{print $5}') used | $(uptime -p)"
+curl -H "Title: Daily Summary" -d "$MSG" ntfy.sh/cleber-lucas-2f2ea57a
+```
+
+## Security
+
+- **Topic is a password**: `cleber-lucas-2f2ea57a` — anyone with it can send you notifications
+- Keep it random/obscured (not guessable)
+- Never commit to public repos
+- Use env vars for topics in scripts
+
+## Reference
+
+- Dashboard: https://ntfy.sh/cleber-lucas-2f2ea57a
+- Docs: https://docs.ntfy.sh/

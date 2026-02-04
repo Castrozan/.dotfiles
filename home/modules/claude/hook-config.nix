@@ -59,6 +59,11 @@ in
           command = "${runHook} ${hooksPath}/rebuild-notify.py";
           timeout = 3000;
         }
+        {
+          type = "command";
+          command = "${runHook} ${hooksPath}/tmux-reminder.py";
+          timeout = 3000;
+        }
       ];
     }
   ];
@@ -76,6 +81,11 @@ in
           type = "command";
           command = "${runHook} ${hooksPath}/lint-on-edit.py";
           timeout = 30000;
+        }
+        {
+          type = "command";
+          command = "${runHook} ${hooksPath}/nix-rebuild-trigger.py";
+          timeout = 3000;
         }
       ];
     }
