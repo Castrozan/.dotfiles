@@ -29,6 +29,7 @@
     ../../home/modules/ia-work.nix
     ../../home/modules/ksnip.nix
     ../../home/modules/install-nothing.nix
+    ../../home/modules/media/spicetify.nix
     ../../home/modules/kitty.nix
     ../../home/modules/lazygit.nix
     ../../home/modules/ani-cli.nix
