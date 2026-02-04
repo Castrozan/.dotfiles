@@ -62,11 +62,11 @@ let
     ".agents.list" = agentsList;
     ".agents.defaults.workspace" = defaultWorkspace;
     ".agents.defaults.model.primary" = "nvidia/moonshotai/kimi-k2.5";
-    ".agents.defaults.heartbeat.model" = "openai-codex/gpt-5.1-codex-mini";
+    ".agents.defaults.heartbeat.model" = "anthropic/claude-sonnet-4-5";
     ".agents.defaults.subagents.model" = "nvidia/moonshotai/kimi-k2.5";
     ".agents.defaults.model.fallbacks" = [
       "nvidia/moonshotai/kimi-k2.5"
-      "openai-codex/gpt-5.2-codex"
+      "anthropic/claude-sonnet-4-5"
       "anthropic/claude-opus-4-5"
     ];
     ".agents.defaults.models" = {
@@ -75,15 +75,6 @@ let
       };
       "anthropic/claude-sonnet-4-5" = {
         alias = "sonnet";
-      };
-      "openai-codex/gpt-5.2-codex" = {
-        alias = "gpt-5.2-codex";
-      };
-      "openai-codex/gpt-5.1-codex" = {
-        alias = "gpt-5.1-codex";
-      };
-      "openai-codex/gpt-5.1-codex-mini" = {
-        alias = "gpt-5.1-codex-mini";
       };
       "nvidia/moonshotai/kimi-k2.5" = {
         alias = "kimi";
