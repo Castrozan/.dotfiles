@@ -22,6 +22,15 @@
         tts.voice = "en-US-JennyNeural";
         telegram.enable = true;
       };
+      monster = {
+        enable = true;
+        emoji = "👾";
+        role = "creative assistant, brainstorming, fun tasks";
+        model.primary = "anthropic/claude-sonnet-4-5";
+        workspace = "openclaw/monster";
+        tts.voice = "en-US-GuyNeural";
+        telegram.enable = true;
+      };
     };
   };
 }

@@ -5,11 +5,9 @@
 }:
 let
   inherit (config) openclaw;
-  homeDir = config.home.homeDirectory;
 
-  # Use absolute paths to bypass flake's git tree tracking
-  # Requires --impure flag for rebuild
-  privateDir = /. + homeDir + "/.dotfiles/private-config/openclaw";
+  # Use relative paths within the flake - private-config is a git submodule
+  privateDir = ../../../private-config/openclaw;
   workspaceDir = privateDir + "/workspace";
   skillsDir = privateDir + "/skills";
 
