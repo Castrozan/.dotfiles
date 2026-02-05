@@ -50,14 +50,8 @@ in
   };
 
   xdg.configFile = {
-    "swaync/config.json" = {
-      source = ../../../.config/swaync/config.json;
-    };
-
-    "swaync/scripts/notification-sound.sh" = {
-      source = ../../../.config/swaync/scripts/notification-sound.sh;
-      executable = true;
-    };
+    # Legacy swaync configs kept for reference/backup
+    # Mako config is generated from template in omarchy/themed/mako.conf.tpl
 
     "xdg-desktop-portal/hyprland-portals.conf".text = ''
       [preferred]

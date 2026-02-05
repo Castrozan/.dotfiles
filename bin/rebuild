@@ -31,10 +31,10 @@ if [ "$ID" = "nixos" ]; then
         echo ":: Reloading Hyprland..."
         hyprctl reload
 
-        # 2. Restart graphical user services (waybar, swaync, etc.)
+        # 2. Restart graphical user services (waybar, mako, etc.)
         echo ":: Restarting graphical services..."
         systemctl --user daemon-reload
-        systemctl --user restart waybar.service swaync.service swayosd.service 2>/dev/null || true
+        systemctl --user restart waybar.service mako.service swayosd.service 2>/dev/null || true
 
         # 3. Re-apply theme colors
         if command -v omarchy-restart-hyprctl &>/dev/null; then

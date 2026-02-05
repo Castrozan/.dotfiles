@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# Reload mako for theme changes
+makoctl reload 2>/dev/null || systemctl --user restart mako 2>/dev/null || true

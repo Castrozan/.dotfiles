@@ -5,7 +5,7 @@ let
   systemctl = "${pkgs.systemd}/bin/systemctl";
   graphicalServices = [
     "waybar.service"
-    "swaync.service"
+    "mako.service"
     "hyprshell.service"
     "swayosd.service"
 
@@ -24,7 +24,7 @@ in
     ./wayland-electron.nix
     ./waybar-service.nix
 
-    ./swaync-service.nix
+    ./mako-service.nix
     ../fuzzel.nix
   ];
 

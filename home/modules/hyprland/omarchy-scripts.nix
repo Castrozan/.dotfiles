@@ -14,6 +14,7 @@ in
     (mkScript "omarchy-restart-swayosd" ../../../bin/omarchy/restart-swayosd)
     (mkScript "omarchy-restart-hyprctl" ../../../bin/omarchy/restart-hyprctl)
     (mkScript "omarchy-restart-swaync" ../../../bin/omarchy/restart-swaync)
+    (mkScript "omarchy-restart-mako" ../../../bin/omarchy/restart-mako)
     (mkScript "omarchy-menu" ../../../bin/omarchy/menu)
     (mkScript "omarchy-fuzzel" ../../../bin/omarchy/fuzzel)
     (mkScript "omarchy-super-launcher" ../../../bin/omarchy/super-launcher)
