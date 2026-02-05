@@ -42,6 +42,13 @@ agents/ - AI agent instructions .md files (symlinked to Ai tools configs)
 Always rebuild or dry-run before finishing. Use /rebuild skill - it has platform detection, commands, and troubleshooting. Session-context provides User and OS.
 </rebuild_execution>
 
+<codex_configuration>
+Codex CLI baseline is Nix-managed. Truth lives in:
+- home modules: home/modules/codex/* (global ~/.codex/config.toml patching, rules, skills)
+- repo overrides: .codex/config.toml (project-layer settings when running inside this repo)
+If Codex behavior seems "ignored", verify the merged layers by checking both files and any per-project entries under [projects."..."] in ~/.codex/config.toml.
+</codex_configuration>
+
 <git_workflow>
 Stage files first - nix rebuilds read from git index. Unstaged files invisible during rebuild. After changes: git add specific-file for each modified file. NEVER git add -A or git add . Parallel work is going on the repo. Always commit at every change and at the end.
 </git_workflow>

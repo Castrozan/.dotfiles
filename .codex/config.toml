@@ -1,0 +1,23 @@
+# Project-level Codex defaults for this dotfiles repo.
+# This file is loaded automatically by Codex when you run it inside this repo.
+#
+# Keep this focused on repo-specific safety/workflow. Global preferences live in
+# ~/.codex/config.toml (managed via home/modules/codex/*).
+
+approval_policy = "on-failure"
+sandbox_mode = "workspace-write"
+web_search = "disabled"
+
+[sandbox_workspace_write]
+exclude_slash_tmp = true
+exclude_tmpdir_env_var = true
+network_access = false
+
+[tools]
+web_search = false
+view_image = true
+
+[profiles.deep]
+model_reasoning_effort = "high"
+model_verbosity = "high"
+

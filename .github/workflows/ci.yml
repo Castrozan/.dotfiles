@@ -55,6 +55,21 @@ jobs:
       - name: Validate agent YAML frontmatter
         run: ./tests/validate-agents.sh agents/subagent
 
+  validate-codex:
+    name: Validate Codex Config
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate .codex/config.toml parses
+        run: |
+          python3 - <<'PY'
+          import tomllib
+          with open(".codex/config.toml", "rb") as f:
+            tomllib.load(f)
+          print("OK: .codex/config.toml")
+          PY
+
   script-tests:
     name: Script Tests
     runs-on: ubuntu-latest

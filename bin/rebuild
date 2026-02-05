@@ -14,6 +14,16 @@ if [ -f "$DOTFILES_DIR/.gitmodules" ]; then
     git -C "$DOTFILES_DIR" submodule update --init --recursive 2>/dev/null || true
 fi
 
+# Rebuild uses a git-based flake URL (`git+file://...`), which does NOT reliably
+# include uncommitted changes. Warn early to avoid "why didn't my change apply?"
+if git -C "$DOTFILES_DIR" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    if ! git -C "$DOTFILES_DIR" diff --quiet || ! git -C "$DOTFILES_DIR" diff --cached --quiet; then
+        echo "Warning: $DOTFILES_DIR has uncommitted changes." >&2
+        echo "  This rebuild uses git-based flake URLs; commit/stage changes if they must be included." >&2
+        echo "  Run: git -C \"$DOTFILES_DIR\" status" >&2
+    fi
+fi
+
 . /etc/os-release
 
 if [ "$ID" = "nixos" ]; then
