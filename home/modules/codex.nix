@@ -2,8 +2,8 @@
 # https://github.com/openai/codex
 { pkgs, ... }:
 let
-  version = "0.94.0";
-  sha256 = "1qnxwn2vpahp839d749vhcaq7m7bvp9ssa4insh0wilkq01mzw1a";
+  version = "0.98.0";
+  sha256 = "smZ5dxFkFVdRZRs6Z/v7SLZove/TUsGhVssDU4NJDUA=";
 
   codex = pkgs.stdenv.mkDerivation {
     pname = "codex";
@@ -21,6 +21,7 @@ let
     buildInputs = [
       pkgs.stdenv.cc.cc.lib
       pkgs.openssl
+      pkgs.libcap
     ];
 
     dontStrip = true;
