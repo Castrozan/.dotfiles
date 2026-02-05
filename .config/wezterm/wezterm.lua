@@ -5,7 +5,7 @@ local wezterm = require 'wezterm'
 local catppuccin_mocha = {
   -- Basic colors
   foreground = '#CDD6F4',
-  background = '#000000',
+  background = '#0F0D0E',
   cursor_bg = '#F5E0DC',
   cursor_fg = '#1E1E2E',
   selection_bg = '#F5E0DC',
@@ -13,7 +13,7 @@ local catppuccin_mocha = {
 
   -- 16 terminal colors
   ansi = {
-    '#6C7086', -- black
+    '#9399B2', -- black
     '#F38BA8', -- red
     '#A6E3A1', -- green
     '#F9E2AF', -- yellow
@@ -23,7 +23,7 @@ local catppuccin_mocha = {
     '#BAC2DE', -- white
   },
   brights = {
-    '#7F849C', -- black
+    '#A6ADC8', -- black
     '#F38BA8', -- red
     '#A6E3A1', -- green
     '#F9E2AF', -- yellow
@@ -82,10 +82,16 @@ return {
     top = 10,
     bottom = 10,
   },
+
+  window_background_gradient = {
+    orientation = 'Vertical',
+    colors = { '#0F0D0E', '#0A0A0A' },
+    interpolation = 'Linear',
+  },
   
   window_decorations = 'NONE',
   window_background_opacity = 0.7,
-  text_background_opacity = 0.3,
+  text_background_opacity = 0.45,
   enable_tab_bar = false,
   hide_tab_bar_if_only_one_tab = true,
   
