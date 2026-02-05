@@ -61,9 +61,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: cachix/install-nix-action@v30
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+
       - name: Validate .codex/config.toml parses
         run: |
-          python3 - <<'PY'
+          nix shell nixpkgs#python311 --command python - <<'PY'
           import tomllib
           with open(".codex/config.toml", "rb") as f:
             tomllib.load(f)
