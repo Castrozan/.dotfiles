@@ -23,7 +23,20 @@ border-color={{ foreground }}1a
 # Progress bar
 progress-color=over {{ accent }}
 
-# Urgency levels
+# Behavior (MUST be before [criteria] sections!)
+default-timeout=15000
+ignore-timeout=0
+
+# Interaction
+on-button-left=dismiss
+on-button-middle=none
+on-button-right=dismiss-all
+on-touch=dismiss
+
+# Grouping
+group-by=app-name
+
+# Urgency-specific overrides (sections below override global settings)
 [urgency=low]
 border-color={{ foreground }}1a
 background-color={{ background }}cc
@@ -38,17 +51,4 @@ text-color={{ foreground }}
 border-color={{ color1 }}
 background-color={{ background }}f2
 text-color={{ color1 }}
-
-# Behavior
-default-timeout=5000
-ignore-timeout=0
-# max-visible can only be set per output/anchor, not globally
-
-# Interaction
-on-button-left=dismiss
-on-button-middle=none
-on-button-right=dismiss-all
-on-touch=dismiss
-
-# Grouping
-group-by=app-name
+default-timeout=0
