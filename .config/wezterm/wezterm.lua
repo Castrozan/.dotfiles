@@ -5,6 +5,7 @@ local wezterm = require 'wezterm'
 local catppuccin_mocha = {
   -- Basic colors
   foreground = '#CDD6F4',
+  background = '#1E1E2E',
   cursor_bg = '#F5E0DC',
   cursor_fg = '#1E1E2E',
   selection_bg = '#F5E0DC',
@@ -12,7 +13,7 @@ local catppuccin_mocha = {
 
   -- 16 terminal colors
   ansi = {
-    '#45475A', -- black
+    '#6C7086', -- black
     '#F38BA8', -- red
     '#A6E3A1', -- green
     '#F9E2AF', -- yellow
@@ -22,7 +23,7 @@ local catppuccin_mocha = {
     '#BAC2DE', -- white
   },
   brights = {
-    '#585B70', -- black
+    '#7F849C', -- black
     '#F38BA8', -- red
     '#A6E3A1', -- green
     '#F9E2AF', -- yellow
