@@ -5,7 +5,7 @@ local wezterm = require 'wezterm'
 local catppuccin_mocha = {
   -- Basic colors
   foreground = '#CDD6F4',
-  background = '#1E1E2E',
+  background = '#000000',
   cursor_bg = '#F5E0DC',
   cursor_fg = '#1E1E2E',
   selection_bg = '#F5E0DC',
