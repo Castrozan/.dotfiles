@@ -61,6 +61,7 @@ data["model_reasoning_summary"] = data.get("model_reasoning_summary") or "auto"
 data["model_auto_compact_token_limit"] = data.get("model_auto_compact_token_limit") or 60000
 data["model_context_window"] = data.get("model_context_window") or 120000
 data["web_search"] = data.get("web_search") or "cached"
+data["suppress_unstable_features_warning"] = True
 
 data["developer_instructions"] = data.get("developer_instructions") or (
     "Operate pragmatically: keep diffs small, verify with fast checks, and prefer repo-local truth "
@@ -71,7 +72,6 @@ analytics = ensure_table(data, "analytics")
 analytics["enabled"] = False
 
 tools = ensure_table(data, "tools")
-tools.setdefault("web_search", True)
 tools.setdefault("view_image", True)
 
 sandbox_ww = ensure_table(data, "sandbox_workspace_write")

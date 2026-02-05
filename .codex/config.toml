@@ -14,10 +14,8 @@ exclude_tmpdir_env_var = true
 network_access = false
 
 [tools]
-web_search = false
 view_image = true
 
 [profiles.deep]
 model_reasoning_effort = "high"
 model_verbosity = "high"
-
