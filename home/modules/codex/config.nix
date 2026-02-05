@@ -72,6 +72,9 @@ analytics = ensure_table(data, "analytics")
 analytics["enabled"] = False
 
 tools = ensure_table(data, "tools")
+# `[tools].web_search` is deprecated; use top-level `web_search` instead.
+if "web_search" in tools:
+    del tools["web_search"]
 tools.setdefault("view_image", True)
 
 sandbox_ww = ensure_table(data, "sandbox_workspace_write")
