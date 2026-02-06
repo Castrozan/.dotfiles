@@ -61,11 +61,12 @@ let
   basePatches = {
     ".agents.list" = agentsList;
     ".agents.defaults.workspace" = defaultWorkspace;
-    ".agents.defaults.model.primary" = "nvidia/moonshotai/kimi-k2.5";
-    ".agents.defaults.heartbeat.model" = "anthropic/claude-sonnet-4-5";
-    ".agents.defaults.subagents.model" = "nvidia/moonshotai/kimi-k2.5";
+    ".agents.defaults.model.primary" = "openai-codex/gpt-5.3-codex";
+    ".agents.defaults.heartbeat.model" = "nvidia/moonshotai/kimi-k2.5";
+    ".agents.defaults.subagents.model" = "openai-codex/gpt-5.2-codex";
     ".agents.defaults.model.fallbacks" = [
       "nvidia/moonshotai/kimi-k2.5"
+      "openai-codex/gpt-5.3-codex"
       "anthropic/claude-sonnet-4-5"
       "anthropic/claude-opus-4-5"
     ];

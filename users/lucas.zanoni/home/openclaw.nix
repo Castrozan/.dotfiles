@@ -8,7 +8,7 @@
         isDefault = true;
         emoji = "⚽";
         role = "work — Betha, code, productivity";
-        model.primary = "anthropic/claude-sonnet-4-5";
+        model.primary = "openai-codex/gpt-5.3-codex";
         workspace = "openclaw/robson";
         tts.voice = "pt-BR-AntonioNeural";
         telegram.enable = true;
@@ -17,7 +17,7 @@
         enable = true;
         emoji = "🎀";
         role = "personal assistant, reminders, scheduling";
-        model.primary = "anthropic/claude-sonnet-4-5";
+        model.primary = "openai-codex/gpt-5.3-codex";
         workspace = "openclaw/jenny";
         tts.voice = "en-US-JennyNeural";
         telegram.enable = true;
@@ -26,7 +26,7 @@
         enable = true;
         emoji = "👾";
         role = "creative assistant, brainstorming, fun tasks";
-        model.primary = "anthropic/claude-sonnet-4-5";
+        model.primary = "openai-codex/gpt-5.3-codex";
         workspace = "openclaw/monster";
         tts.voice = "en-US-GuyNeural";
         telegram.enable = true;
