@@ -28,10 +28,10 @@ default-timeout=15000
 ignore-timeout=0
 
 # Interaction
-on-button-left=dismiss
-on-button-middle=none
-on-button-right=dismiss-all
-on-touch=dismiss
+on-button-left=invoke-default-action
+on-button-middle=dismiss-all
+on-button-right=dismiss
+on-touch=invoke-default-action
 
 # Grouping
 group-by=app-name
