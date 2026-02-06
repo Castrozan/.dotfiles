@@ -35,8 +35,18 @@ case "$mode" in
     # Full screen (all monitors)
     grim "$SAVE_PATH"
     ;;
+  annotate)
+    geometry=$(slurp -d) || exit 0
+    grim -g "$geometry" "$SAVE_PATH"
+    annotated_path="${SAVE_PATH%.png}_annotated.png"
+    # Satty is interactive; configure Enter to save+copy+exit by default.
+    satty -f "$SAVE_PATH" -o "$annotated_path" --actions-on-enter save-to-file,save-to-clipboard,exit --actions-on-escape exit
+    if [[ -f "$annotated_path" ]]; then
+      SAVE_PATH="$annotated_path"
+    fi
+    ;;
   *)
-    echo "Usage: screenshot [region|window|output|screen]"
+    echo "Usage: screenshot [region|window|output|screen|annotate]"
     exit 1
     ;;
 esac
