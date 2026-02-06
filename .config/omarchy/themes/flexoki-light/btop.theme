@@ -1,5 +1,5 @@
 # Main bg
-theme[main_bg]="#FFFCF0"
+theme[main_bg]=""
 
 # Main text color
 theme[main_fg]="#100F0F"

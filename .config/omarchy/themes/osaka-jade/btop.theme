@@ -1,5 +1,5 @@
 # Main background
-theme[main_bg]="#111c18"
+theme[main_bg]=""
 
 # Main text color
 theme[main_fg]="#F7E8B2"
@@ -84,4 +84,3 @@ theme[upload_end]="#549E6A"
 theme[process_start]="#72CFA3"
 theme[process_mid]="#D0D494"
 theme[process_end]="#DB9F9C"
-

@@ -2,7 +2,7 @@
 #Reconfigured from monokai theme
 
 # Main background, empty for terminal default, need to be empty if you want transparent background
-theme[main_bg]="#2c2421"
+theme[main_bg]=""
 
 # Main text color
 theme[main_fg]="#e6d9db"
@@ -79,4 +79,3 @@ theme[download_end]="#c5c6f0"
 theme[upload_start]="#3d2f2a"
 theme[upload_mid]="#fd6a85"
 theme[upload_end]="#feb5c7"
-
