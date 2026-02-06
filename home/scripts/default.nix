@@ -17,6 +17,7 @@
     ./speed-read.nix
     ./tar-unzip2dir.nix
     ./tmux-lazygit-toggle.nix
+    ./tmux-btop-toggle.nix
     ./tmux-resurrect.nix
     ./volume.nix
   ];
