@@ -53,7 +53,8 @@ def ensure_table(root, key):
 data["model"] = "gpt-5.3-codex"
 data["review_model"] = data.get("review_model") or "gpt-5.3-codex"
 data["profile"] = data.get("profile") or "fast"
-data["approval_policy"] = "on-failure"
+# Never prompt for approvals; rely on sandboxing + rules + writable_roots.
+data["approval_policy"] = "never"
 data["sandbox_mode"] = "workspace-write"
 data["model_reasoning_effort"] = data.get("model_reasoning_effort") or "medium"
 data["model_verbosity"] = data.get("model_verbosity") or "medium"
