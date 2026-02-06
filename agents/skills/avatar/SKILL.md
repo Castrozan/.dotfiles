@@ -28,6 +28,23 @@ neutral (default, eyes open), happy, sad, angry, relaxed, surprised
 
 Use neutral by default. happy closes the eyes (anime smile) — only use for genuine excitement.
 
+## Mid-Speech Emotion Changes
+
+Change emotions mid-sentence for more natural conversations using `avatar-speak-multi.sh`:
+
+```bash
+~/openclaw/scripts/avatar-speak-multi.sh \
+  "happy:Hi, I'm Clever!" \
+  "neutral:I work with Lucas on daily tasks." \
+  "surprised:Wait, what's happening?" \
+  "relaxed:Let me think about this." \
+  "happy:Done! I'm ready to help."
+```
+
+Format: `"emotion:text"` where emotion is one of: happy, neutral, surprised, relaxed, sad, angry
+
+Each segment is spoken sequentially with its emotion, creating natural emotional flow.
+
 ## Infrastructure
 
 When avatar system is started, these are always available:
