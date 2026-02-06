@@ -45,14 +45,19 @@ is_monitor_disabled() {
 
 apply_config() {
   if is_monitor_connected "$EXTERNAL"; then
-    # Only disable internal if it's not already disabled
+    # Apply changes atomically to reduce transient states that can reshuffle
+    # workspaces/windows (common during config reloads).
     if ! is_monitor_disabled "$INTERNAL"; then
-      hyprctl keyword monitor "$INTERNAL,disable"
+      hyprctl --batch \
+        "keyword monitor $EXTERNAL,preferred,auto,1; keyword monitor $INTERNAL,disable" \
+        >/dev/null 2>&1 || true
     fi
   else
-    # Only enable internal if it's currently disabled
+    # Ensure we always have a display when undocking.
     if is_monitor_disabled "$INTERNAL"; then
-      hyprctl keyword monitor "$INTERNAL,$INTERNAL_MODE,auto,1"
+      hyprctl --batch \
+        "keyword monitor $INTERNAL,$INTERNAL_MODE,auto,1" \
+        >/dev/null 2>&1 || true
     fi
   fi
 }
@@ -65,7 +70,8 @@ while IFS= read -r line; do
   event="${line%%>>*}"
   case "$event" in
     monitoradded|monitorremoved)
-      sleep 0.2
+      # Give Hyprland a moment to settle the monitor list.
+      sleep 0.3
       apply_config
       ;;
   esac
