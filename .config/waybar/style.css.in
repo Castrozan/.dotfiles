@@ -2,7 +2,7 @@
 @import url("@HOME@/.config/omarchy/current/theme/waybar.css");
 
 * {
-  background-color: @background;
+  background-color: transparent;
   color: @foreground;
   border: none;
   border-radius: 0;
@@ -12,7 +12,7 @@
 }
 
 window#waybar {
-  background-color: @background;
+  background-color: alpha(@background, 0.85);
 }
 
 .modules-left {
@@ -124,7 +124,7 @@ window#waybar {
 }
 
 tooltip {
-  background-color: @background;
+  background-color: alpha(@background, 0.92);
   border: 1px solid @surface;
   border-radius: 8px;
   padding: 8px 12px;
@@ -136,7 +136,7 @@ tooltip {
 }
 
 #calendar {
-  background-color: @background;
+  background-color: alpha(@background, 0.92);
   color: @foreground;
   border-radius: 8px;
   padding: 6px;
