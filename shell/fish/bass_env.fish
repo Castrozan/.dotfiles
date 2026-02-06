@@ -7,16 +7,12 @@ function __load_bash_env
   # Export BASH_ENV for non-interactive bash (Claude Code)
   set -gx BASH_ENV "$HOME/.dotfiles/shell/bash_aliases.sh"
 
-  # Source the most appropriate bashrc if available
-  set -l bashrc_path
-  if test -f ~/.bashrc
-    set bashrc_path ~/.bashrc
-  else if test -f /etc/bashrc
-    set bashrc_path /etc/bashrc
-  end
-
-  if test -n "$bashrc_path"; and type -q bass
-    bass source $bashrc_path
+  # Keep fish startup fast by importing a shared, fast-to-source bash env file.
+  # Single source-of-truth pattern:
+  # - bash: source this from ~/.bashrc (and keep ~/.bashrc lean)
+  # - fish: import it via bass
+  if type -q bass
+    bass source "$HOME/.dotfiles/shell/bash_env.sh"
   end
 
   # TODO: move this to appropriate place

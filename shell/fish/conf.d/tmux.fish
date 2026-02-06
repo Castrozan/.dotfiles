@@ -13,13 +13,6 @@ function __start_tmux
         _start_screensaver_tmux_session 2>/dev/null || true
         _start_main_tmux_session 2>/dev/null || true
       ' &
-
-      # Wait for screensaver session to be created (max 3 seconds)
-      set -l count 0
-      while not tmux has-session -t screensaver 2>/dev/null; and test $count -lt 30
-        sleep 0.1
-        set count (math $count + 1)
-      end
     end
   end
 

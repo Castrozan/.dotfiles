@@ -14,7 +14,11 @@ if test "$USER" = "lucas.zanoni"
 end
 
 if command -v clipse &>/dev/null
-    clipse --listen
+    # clipse --listen is long-running; background it so shell startup is not blocked.
+    if not pgrep -x clipse >/dev/null 2>&1
+        nohup clipse --listen >/dev/null 2>&1 &
+        disown
+    end
 end
 
 # Portable environment setup
@@ -24,13 +28,11 @@ source ~/.dotfiles/shell/fish/bass_env.fish
 source ~/.dotfiles/shell/fish/conf.d/tmux.fish
 source ~/.dotfiles/shell/fish/conf.d/aliases.fish
 source ~/.dotfiles/shell/fish/conf.d/fzf.fish
-source ~/.dotfiles/shell/fish/conf.d/nvm.fish
 source ~/.dotfiles/shell/fish/conf.d/default_directories.fish
 source ~/.dotfiles/shell/fish/conf.d/key_bindings.fish
 
 # Functions
 source ~/.dotfiles/shell/fish/functions/fish_prompt.fish
 source ~/.dotfiles/shell/fish/functions/cursor.fish
-source ~/.dotfiles/shell/fish/functions/sdk.fish
 
 zoxide init fish | source
