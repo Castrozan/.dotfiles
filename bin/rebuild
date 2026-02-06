@@ -189,7 +189,12 @@ _reload_hyprland() {
 
   echo ":: Restarting graphical services..."
   systemctl --user daemon-reload
-  systemctl --user restart waybar.service 2>/dev/null || true
+  # Avoid a full restart (can steal focus). SIGUSR2 triggers waybar reload.
+  if systemctl --user is-active --quiet waybar 2>/dev/null; then
+    pkill -USR2 waybar 2>/dev/null || true
+  else
+    systemctl --user start waybar.service 2>/dev/null || true
+  fi
 
   if command -v omarchy-restart-hyprctl >/dev/null 2>&1; then
     omarchy-restart-hyprctl
