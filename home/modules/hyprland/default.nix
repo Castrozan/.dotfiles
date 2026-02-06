@@ -6,6 +6,7 @@ let
   graphicalServices = [
     "waybar.service"
     "mako.service"
+    "xdg-desktop-portal-hyprland.service"
     "hyprshell.service"
     "swayosd.service"
 
@@ -25,6 +26,7 @@ in
     ./waybar-service.nix
 
     ./mako-service.nix
+    ./xdg-desktop-portal-hyprland-service.nix
     ../fuzzel.nix
   ];
 
