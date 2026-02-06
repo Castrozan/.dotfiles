@@ -18,7 +18,7 @@
     ../../home/modules/bluetui.nix
     ../../home/modules/cbonsai.nix
     ../../home/modules/ccost.nix
-    ../../home/modules/codex.nix
+    ../../home/modules/codex
     ../../home/modules/openclaw
     ../../home/modules/qmd.nix
     ../../home/modules/claude
