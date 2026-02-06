@@ -2,7 +2,7 @@
 # By: philikarus
 
 # Main bg
-theme[main_bg]="#1f1f28"
+theme[main_bg]=""
 
 # Main text color
 theme[main_fg]="#dcd7ba"
