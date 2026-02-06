@@ -26,6 +26,7 @@ in
     ./waybar-service.nix
 
     ./mako-service.nix
+    ../satty.nix
     ./xdg-desktop-portal-hyprland-service.nix
     ../fuzzel.nix
   ];

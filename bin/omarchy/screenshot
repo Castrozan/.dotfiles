@@ -7,6 +7,7 @@ set -e
 SAVEDIR="${XDG_PICTURES_DIR:-$HOME/Pictures}/Screenshots"
 FILENAME="$(date +%Y-%m-%d-%H%M%S)_screenshot.png"
 SAVE_PATH="$SAVEDIR/$FILENAME"
+SHOULD_COPY=true
 
 mode="${1:-region}"
 
@@ -36,11 +37,12 @@ case "$mode" in
     grim "$SAVE_PATH"
     ;;
   annotate)
+    SHOULD_COPY=false  
     geometry=$(slurp -d) || exit 0
     grim -g "$geometry" "$SAVE_PATH"
     annotated_path="${SAVE_PATH%.png}_annotated.png"
-    # Satty is interactive; configure Enter to save+copy+exit by default.
-    satty -f "$SAVE_PATH" -o "$annotated_path" --actions-on-enter save-to-file,save-to-clipboard,exit --actions-on-escape exit
+    satty -f "$SAVE_PATH" -o "$annotated_path"
+
     if [[ -f "$annotated_path" ]]; then
       SAVE_PATH="$annotated_path"
     fi
@@ -51,7 +53,8 @@ case "$mode" in
     ;;
 esac
 
-# Copy to clipboard
-wl-copy < "$SAVE_PATH"
+if [[ "$SHOULD_COPY" == true ]]; then
+  wl-copy < "$SAVE_PATH"
 
-notify-send "Screenshot saved" "$SAVE_PATH" -i "$SAVE_PATH" -t 3000
+  notify-send "Screenshot saved" "$SAVE_PATH" -i "$SAVE_PATH" -t 3000
+fi
