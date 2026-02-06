@@ -42,7 +42,7 @@ let
     exec ${codex-unwrapped}/bin/codex \
       --model "gpt-5.3-codex" \
       --sandbox "workspace-write" \
-      --ask-for-approval "on-failure" \
+      --ask-for-approval "never" \
       "$@"
   '';
 in
@@ -50,4 +50,3 @@ in
   home.packages = [ codex ];
   home.file.".local/bin/codex".source = "${codex}/bin/codex";
 }
-
