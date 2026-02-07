@@ -1,7 +1,6 @@
 [general]
 # Start Satty in fullscreen mode
-fullscreen = true
-#fullscreen = false
+fullscreen = false
 # since 0.20.1, this can be written like below. Current is just the current screen, all is all screens. This may depend on the compositor.
 #fullscreen = "all"
 #fullscreen = "current-screen"
@@ -19,12 +18,12 @@ corner-roundness = 12
 # Select the tool on startup [possible values: pointer, crop, line, arrow, rectangle, text, marker, blur, brush]
 initial-tool = "arrow"
 # Configure the command to be called on copy, for example `wl-copy`
-# copy-command = "wl-copy"
+copy-command = "wl-copy"
 # Increase or decrease the size of the annotations
 annotation-size-factor = 2
 # Filename to use for saving action. Omit to disable saving to file. Might contain format specifiers: https://docs.rs/chrono/latest/chrono/format/strftime/index.html
 # starting with 0.20.0, can contain leading tilde (~) for home directory
-output-filename = "/tmp/test-%Y-%m-%d_%H:%M:%S.png"
+output-filename = "~/Pictures/Screenshots/%Y-%m-%d_%H:%M:%S_annotated.png"
 # After copying the screenshot, save it to a file as well
 save-after-copy = false
 # Hide toolbars by default
