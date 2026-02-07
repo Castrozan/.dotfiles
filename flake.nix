@@ -36,6 +36,10 @@
 
     voxtype.url = "github:peteonrails/voxtype";
     hyprland.url = "github:hyprwm/Hyprland/v0.53.0";
+    hyprland-preview-share-picker = {
+      url = "github:WhySoBad/hyprland-preview-share-picker";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     hyprshell = {
       url = "github:H3rmt/hyprshell/hyprshell-release";
       inputs.hyprland.follows = "hyprland";
