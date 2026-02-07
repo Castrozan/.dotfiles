@@ -57,6 +57,12 @@ if [[ -f "$BTOP_CONF" && -f "$BTOP_THEME" ]]; then
   sed -i 's|^theme_background = .*|theme_background = False|' "$BTOP_CONF"
 fi
 
+# Update clipse theme
+CLIPSE_THEME="$CURRENT_THEME_PATH/clipse.json"
+if [[ -f "$CLIPSE_THEME" ]]; then
+  cp "$CLIPSE_THEME" "$HOME/.config/clipse/custom_theme.json"
+fi
+
 # Hyprshell auto-reloads CSS via file watcher (css reload listener)
 
 hypr-theme-set-gnome
