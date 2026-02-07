@@ -46,7 +46,7 @@ save_state "$original_address" "$was_maximized"
 windows_before=$(hyprctl clients -j | jq 'length')
 
 # Launch fuzzel and wait for it to exit
-omarchy-fuzzel
+hypr-fuzzel
 fuzzel_exit=$?
 
 # Small delay to let window state settle (app launches can take time)

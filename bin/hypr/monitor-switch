@@ -3,7 +3,7 @@
 # When external monitor is connected: disable built-in
 # When external monitor is disconnected: enable built-in
 
-CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/omarchy"
+CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/hypr-theme"
 CONFIG="$CONFIG_DIR/monitor-switch.conf"
 
 # Defaults (can be overridden by config file)

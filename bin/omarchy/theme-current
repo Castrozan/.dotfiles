@@ -1,3 +1,0 @@
-#!/usr/bin/env bash
-
-cat "$HOME/.config/omarchy/current/theme.name" 2>/dev/null || echo "none"

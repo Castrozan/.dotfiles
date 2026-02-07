@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+cat "$HOME/.config/hypr-theme/current/theme.name" 2>/dev/null || echo "none"

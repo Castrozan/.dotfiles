@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-TEMPLATES_DIR="$HOME/.config/omarchy/themed"
-USER_TEMPLATES_DIR="$HOME/.config/omarchy/user-themed"
-NEXT_THEME_DIR="$HOME/.config/omarchy/current/next-theme"
+TEMPLATES_DIR="$HOME/.config/hypr/templates"
+USER_TEMPLATES_DIR="$HOME/.config/hypr-theme/user-templates"
+NEXT_THEME_DIR="$HOME/.config/hypr-theme/current/next-theme"
 COLORS_FILE="$NEXT_THEME_DIR/colors.toml"
 
 hex_to_rgb() {

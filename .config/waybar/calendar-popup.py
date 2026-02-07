@@ -11,7 +11,7 @@ except ImportError:
     import tomli as tomllib
 
 def load_theme_colors():
-    colors_path = os.path.expanduser("~/.config/omarchy/current/theme/colors.toml")
+    colors_path = os.path.expanduser("~/.config/hypr-theme/current/theme/colors.toml")
     defaults = {
         "background": "#1e1e2e",
         "foreground": "#cdd6f4",

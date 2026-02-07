@@ -196,8 +196,8 @@ _reload_hyprland() {
     systemctl --user start waybar.service 2>/dev/null || true
   fi
 
-  if command -v omarchy-restart-hyprctl >/dev/null 2>&1; then
-    omarchy-restart-hyprctl
+  if command -v hypr-restart-hyprctl >/dev/null 2>&1; then
+    hypr-restart-hyprctl
   fi
 
   echo ":: Environment fully refreshed."

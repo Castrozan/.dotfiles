@@ -38,7 +38,7 @@ let
     # Set GIO_MODULE_DIR to prevent loading incompatible system GIO modules
     export GIO_MODULE_DIR="${gioModuleDir}"
 
-    THEME_CSS="$HOME/.config/omarchy/current/theme/swaync.css"
+    THEME_CSS="$HOME/.config/hypr-theme/current/theme/swaync.css"
     if [[ -f "$THEME_CSS" ]]; then
       exec ${wrappedSwaync}/bin/swaync --style "$THEME_CSS"
     else
