@@ -1,0 +1,88 @@
+#!/usr/bin/env bash
+# Debug Hyprland jank during `hyprctl reload`.
+#
+# Writes a timestamped log to /tmp (or $XDG_RUNTIME_DIR if set) containing:
+# - monitors/workspaces/activewindow snapshots (JSON)
+# - socket2 event stream around the reload
+#
+# Usage:
+#   hypr-reload-debug
+#
+# Then inspect the printed log path and search for:
+#   monitoradded, monitorremoved, focusedmon, workspace, activewindow
+
+set -Eeuo pipefail
+
+if ! command -v hyprctl >/dev/null 2>&1; then
+  echo "Error: hyprctl not found." >&2
+  exit 1
+fi
+
+if ! command -v jq >/dev/null 2>&1; then
+  echo "Error: jq not found (required for JSON snapshots)." >&2
+  exit 1
+fi
+
+if [ -z "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]; then
+  echo "Error: HYPRLAND_INSTANCE_SIGNATURE not set. Run inside Hyprland." >&2
+  exit 1
+fi
+
+base_dir="${XDG_RUNTIME_DIR:-/tmp}"
+ts="$(date +%Y-%m-%d-%H-%M-%S)"
+log="${base_dir}/hypr-reload-debug-${ts}.log"
+sock2="${base_dir}/hypr/${HYPRLAND_INSTANCE_SIGNATURE}/.socket2.sock"
+
+{
+  echo "== hypr-reload-debug =="
+  echo "time: ${ts}"
+  echo "socket2: ${sock2}"
+  echo
+} >"$log"
+
+snapshot() {
+  local label=$1
+  {
+    echo "== SNAPSHOT: ${label} =="
+    echo "-- activewindow"
+    hyprctl activewindow -j 2>/dev/null | jq -c .
+    echo "-- activeworkspace"
+    hyprctl activeworkspace -j 2>/dev/null | jq -c .
+    echo "-- monitors"
+    hyprctl monitors -j 2>/dev/null | jq -c .
+    echo "-- workspaces"
+    hyprctl workspaces -j 2>/dev/null | jq -c .
+    echo
+  } >>"$log"
+}
+
+snapshot "before"
+
+echo "== EVENTS (socket2) =="${'\n'} >>"$log"
+if [ ! -S "$sock2" ]; then
+  echo "Warning: socket2 not found: $sock2" >>"$log"
+else
+  # Start listener and keep its PID to stop after reload.
+  # Use stdbuf so events are flushed immediately.
+  (stdbuf -oL -eL nc -U "$sock2" >>"$log") &
+  events_pid=$!
+  trap 'kill "$events_pid" 2>/dev/null || true' EXIT
+fi
+
+{
+  echo "== ACTION: hyprctl reload =="
+  date
+} >>"$log"
+
+hyprctl reload >>"$log" 2>&1 || true
+
+# Give Hyprland a moment to emit events after reload.
+sleep 1
+
+snapshot "after"
+
+if [ -n "${events_pid:-}" ]; then
+  kill "$events_pid" 2>/dev/null || true
+fi
+
+echo "Wrote: $log"
