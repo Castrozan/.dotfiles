@@ -1,7 +1,18 @@
-_:
+{ pkgs, ... }:
 let
+  chromePath = "${pkgs.google-chrome}/bin/google-chrome-stable";
   mcpConfig = {
-    mcpServers = { };
+    mcpServers = {
+      playwright = {
+        command = "npx";
+        args = [
+          "@playwright/mcp@latest"
+          "--headless"
+          "--executable-path"
+          chromePath
+        ];
+      };
+    };
   };
 in
 {

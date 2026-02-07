@@ -1,87 +1,69 @@
 ---
 name: playwright-mcp
-description: Playwright MCP server provides AI-driven browser automation with snapshot-based control. Faster and more reliable than traditional Playwright automation due to incremental snapshot approach.
-status: experimental
+description: "Playwright MCP server provides AI-driven browser automation with snapshot-based control. Faster and more reliable than traditional Playwright automation due to incremental snapshot approach."
 ---
-<!-- @agent-architect owns this file. Delegate changes, don't edit directly. -->
 
-<!-- TODO: Browser automation needs a definitive consolidated approach.
-     Test all 3 tools (browser-use, playwright, playwright-mcp), pick the fastest/most reliable,
-     consolidate into one canonical skill. Track: which works best for OpenClaw's use case
-     (auth sites, form filling, scraping). -->
+# Browser Automation (Playwright MCP)
 
-<capabilities>
-Browser automation via MCP (Model Context Protocol) with snapshot-based state management. Navigate pages, click elements, fill forms, take screenshots, and extract data. Incremental snapshots make it faster and more reliable than traditional automation.
-</capabilities>
+The canonical browser automation tool for OpenClaw. Uses Playwright's MCP server with snapshot-based DOM interaction.
 
-<architecture>
-Playwright MCP is an MCP server exposing browser automation through the Model Context Protocol via stdio. Key advantage: **Snapshot-based** approach takes incremental DOM snapshots instead of full page state, significantly faster for AI-driven automation.
+## Core Workflow
 
-Tools provided: page navigation (goto, goBack, goForward, reload), element interaction (click, fill, hover, select), screenshots/snapshots, JavaScript evaluation, network/console monitoring.
-</architecture>
+1. **Navigate**: `browser_navigate` to URL
+2. **Snapshot**: `browser_snapshot` — returns YAML DOM tree with `ref=` IDs
+3. **Interact**: `browser_click ref=e6`, `browser_type ref=e5 text="..."`, `browser_fill_form`
+4. **Verify**: `browser_snapshot` again or `browser_take_screenshot`
+5. **Close**: `browser_close` when done
 
-<configuration>
-## MCP Server Configuration
+## Snapshot Format
 
-```json
-{
-  "mcpServers": {
-    "playwright": {
-      "command": "playwright-mcp",
-      "args": ["--headless", "--browser", "chromium", "--snapshot-mode", "incremental"]
-    }
-  }
-}
+Snapshots return an accessible YAML tree. Each interactive element has a `ref=` ID:
+
+```yaml
+- heading "Example Domain" [level=1] [ref=e3]
+- paragraph [ref=e4]: Some text here.
+- paragraph [ref=e5]:
+  - link "Learn more" [ref=e6] [cursor=pointer]:
+    - /url: https://example.com/more
+- textbox "Email:" [ref=e7]
+- button "Submit" [ref=e8]
 ```
 
-## Key Options
+Use the `ref` value when calling `browser_click`, `browser_type`, etc.
 
-- `--browser <browser>`: chrome, firefox, webkit, msedge
-- `--headless`: Run headless (no visible window)
-- `--device <device>`: Emulate device (e.g., "iPhone 15")
-- `--snapshot-mode <mode>`: incremental, full, or none
-- `--caps <caps>`: Enable vision, pdf, devtools capabilities
-- `--save-trace`: Save Playwright trace for debugging
-- `--user-data-dir <path>`: Persistent browser profile
-- `--storage-state <path>`: Load saved auth state
-</configuration>
+## Available Tools
 
-<integration>
-## OpenClaw Integration Status
+| Tool | Description |
+|------|-------------|
+| `browser_navigate` | Navigate to URL |
+| `browser_navigate_back` | Go back in history |
+| `browser_snapshot` | DOM tree with ref IDs (use for actions) |
+| `browser_take_screenshot` | Visual screenshot (can't act on it) |
+| `browser_click` | Click element by ref |
+| `browser_type` | Type into element by ref |
+| `browser_fill_form` | Fill multiple form fields at once |
+| `browser_select_option` | Select dropdown option |
+| `browser_hover` | Hover over element |
+| `browser_drag` | Drag and drop between elements |
+| `browser_press_key` | Press keyboard key |
+| `browser_file_upload` | Upload files |
+| `browser_evaluate` | Execute JavaScript |
+| `browser_run_code` | Run Playwright code snippet |
+| `browser_tabs` | List, create, close, or select tabs |
+| `browser_wait_for` | Wait for text/condition |
+| `browser_handle_dialog` | Handle alert/confirm/prompt |
+| `browser_console_messages` | Get console output |
+| `browser_network_requests` | Get network requests |
+| `browser_resize` | Resize viewport |
+| `browser_close` | Close the page |
 
-**Current Status**: Installed and functional as standalone. Direct OpenClaw integration pending.
+## NixOS Notes
 
-**Workarounds**:
-1. Spawn playwright-mcp subprocess, communicate via stdio
-2. Use traditional Playwright library (see `skills/playwright/SKILL.md`)
-3. Use OpenClaw's built-in `browser` tool for simpler automation
-</integration>
+On NixOS, system Chrome is at a non-standard path. The MCP server is configured with `--executable-path` pointing to `google-chrome-stable` from the system profile. This is handled by the MCP config in `home/modules/claude/mcp.nix`.
 
-<practices>
-- Use `--snapshot-mode incremental` for performance (default)
-- Enable `--headless` for production, disable for debugging
-- Save `--storage-state` to persist auth across sessions
-- Use `--save-trace` for debugging failed automation
-- Prefer test IDs over CSS selectors for stability
-</practices>
+## Debugging
 
-<debugging>
-## Troubleshooting
-
-```bash
-# Check installation
-playwright-mcp --version && npx playwright install --dry-run chromium
-
-# Debug: run headed with trace
-playwright-mcp --headless=false --save-trace --output-dir ./debug
-
-# View saved traces
-npx playwright show-trace trace.zip
-```
-</debugging>
-
-<references>
-- Playwright docs: https://playwright.dev
-- MCP spec: https://modelcontextprotocol.io/
-- NPM: https://www.npmjs.com/package/@playwright/mcp
-</references>
+- Run headed (remove `--headless`) to see the browser
+- Use `--save-trace` to capture Playwright traces
+- Use `browser_console_messages` and `browser_network_requests` for debugging
+- If browser not found: check `--executable-path` in MCP config

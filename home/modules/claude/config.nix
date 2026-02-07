@@ -32,6 +32,7 @@ let
 
     ${builtins.readFile ../../../agents/rules/claude-code-agents.md}
   '';
+
   claudeGlobalRules = ''
     ${builtins.readFile ../../../agents/rules/evergreen-instructions.md}
   '';
