@@ -22,7 +22,6 @@
       curl
       dbeaver-bin
       deno
-      discord
       (discord.override {
         withOpenASAR = true;
         withVencord = true; # For customization
@@ -50,7 +49,6 @@
       mpv-handler
       mpvc
       mpv-shim-default-shaders
-      neofetch
       nixd
       nix-prefetch-github
       nixpkgs-fmt

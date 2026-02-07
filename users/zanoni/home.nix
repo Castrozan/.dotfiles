@@ -10,7 +10,6 @@
     ../../home/scripts
     ../../home/modules/atuin.nix
     ../../home/modules/bad-apple.nix
-    ../../home/modules/bash.nix
     ../../home/modules/bluetui.nix
     ../../home/modules/bruno.nix
     ../../home/modules/cbonsai.nix
@@ -27,8 +26,6 @@
     ../../home/modules/fuzzel.nix
     ../../home/modules/gnome
     ../../home/modules/hyprland/nixos.nix
-    # ../../home/modules/ia-work.nix
-    ../../home/modules/ksnip.nix
     ../../home/modules/install-nothing.nix
     ../../home/modules/media/spicetify.nix
     ../../home/modules/kitty.nix

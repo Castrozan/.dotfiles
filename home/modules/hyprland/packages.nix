@@ -25,14 +25,12 @@ in
         libnotify
         # hyprlock — installed via programs.hyprlock.enable in NixOS for DRM/PAM perms
 
-        playerctl
         pamixer
         swayosd
         bemoji
         hyprshot-fixed
         grim
         slurp
-        satty
         wf-recorder
         cliphist
         hyprpicker
@@ -42,7 +40,6 @@ in
         gnome-calculator
         yad
         blueman
-        pavucontrol
       ]
       ++ [
         xdg-desktop-portal-hyprland
