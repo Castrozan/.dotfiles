@@ -7,13 +7,13 @@ fullscreen = true
 #fullscreen = "current-screen"
 # resize initially (0.20.1)
 #resize = { mode="smart" }
-resize = { mode = "size", width=2000, height=800 }
-# try to have the window float (0.20.1). This may depend on the compositor.
-floating-hack = true
-# Exit directly after copy/save action. 0.20.1: Does not apply to save as
-early-exit = true
-# Exit directly after save as (0.20.1)
-early-exit-save-as = true
+# resize = { mode = "size", width=2000, height=800 }
+# # try to have the window float (0.20.1). This may depend on the compositor.
+# floating-hack = true
+# # Exit directly after copy/save action. 0.20.1: Does not apply to save as
+# early-exit = true
+# # Exit directly after save as (0.20.1)
+# early-exit-save-as = true
 # Draw corners of rectangles round if the value is greater than 0 (0 disables rounded corners)
 corner-roundness = 12
 # Select the tool on startup [possible values: pointer, crop, line, arrow, rectangle, text, marker, blur, brush]
@@ -89,17 +89,17 @@ style = "Regular"
 # specify fallback fonts (0.20.1)
 # Please note, there is no default setting for these and the fonts listed below
 # are not shipped with Satty but need to be available on the system.
-fallback = [
-    "Noto Sans CJK JP",
-    "Noto Sans CJK SC",
-    "Noto Sans CJK TC",
-    "Noto Sans CJK KR",
-    "Noto Serif CJK JP",
-    "Noto Serif JP",
-    "IPAGothic",
-    "IPAexGothic",
-    "Source Han Sans"
-]
+# fallback = [
+#     "Noto Sans CJK JP",
+#     "Noto Sans CJK SC",
+#     "Noto Sans CJK TC",
+#     "Noto Sans CJK KR",
+#     "Noto Serif CJK JP",
+#     "Noto Serif JP",
+#     "IPAGothic",
+#     "IPAexGothic",
+#     "Source Han Sans"
+# ]
 
 # Custom colours for the colour palette
 [color-palette]
