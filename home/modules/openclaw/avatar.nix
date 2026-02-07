@@ -60,6 +60,9 @@ let
 in
 {
   home = {
+    packages = lib.mkIf (openclaw.defaultAgent != null) [
+      pkgs.python3Packages.edge-tts
+    ];
     file = deployFiles;
     activation = {
       avatarRenderer = lib.mkIf (openclaw.defaultAgent != null) (

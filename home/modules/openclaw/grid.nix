@@ -1,6 +1,3 @@
-# TODO: Make GRID.md fully dynamic — generate complete agent definitions
-# (name, emoji, role, workspace, capabilities) for all agents the current
-# workspace agent has access to. Currently just substitutes @GRID_MEMBERS@.
 {
   lib,
   pkgs,
@@ -8,23 +5,18 @@
   ...
 }:
 let
-  gridData = import ../../../agents/grid.nix;
   inherit (config) openclaw;
   homeDir = config.home.homeDirectory;
+
+  capitalize = s: lib.toUpper (lib.substring 0 1 s) + lib.substring 1 (-1) s;
 
   gridMembersEntries = lib.concatStringsSep "\n\n" (
     lib.mapAttrsToList (
       name: agent:
-      let
-        capitalName = lib.toUpper (lib.substring 0 1 name) + lib.substring 1 (-1) name;
-      in
-      "### ${capitalName} ${agent.emoji}\n- **Role**: ${agent.role}\n- **Workspace**: ${agent.workspace}"
-    ) gridData.agents
+      "### ${capitalize name} ${agent.emoji}\n- **Role**: ${agent.role}\n- **Workspace**: ~/${agent.workspace}"
+    ) openclaw.enabledAgents
   );
 
-  telegramIdsSecretExists = builtins.pathExists ../../../secrets/telegram-ids.age;
-
-  # Generate substitute script that handles all enabled agents' workspaces
   workspacePaths = lib.concatStringsSep " " (
     map (agentName: "\"${homeDir}/${openclaw.agents.${agentName}.workspace}\"") (
       lib.attrNames openclaw.enabledAgents
@@ -46,6 +38,8 @@ let
       done < "$IDS"
     done
   '';
+
+  telegramIdsSecretExists = builtins.pathExists ../../../secrets/telegram-ids.age;
 in
 {
   options.openclaw.gridPlaceholders = lib.mkOption {

@@ -109,6 +109,7 @@ let
     ".agents.defaults.compaction.mode" = "safeguard";
     ".agents.defaults.compaction.memoryFlush.enabled" = true;
     ".gateway.port" = openclaw.gatewayPort;
+    ".gateway.mode" = "local";
   };
 
   # Telegram patches - per-account so we don't override existing settings

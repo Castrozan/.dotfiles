@@ -28,8 +28,6 @@ in
     openclaw
     browserUse
     nodejs
-    pkgs.moreutils
     pkgs.uv
-    pkgs.python3Packages.edge-tts
   ];
 }
