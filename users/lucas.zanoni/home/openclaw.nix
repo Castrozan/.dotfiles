@@ -17,7 +17,7 @@
         enable = true;
         emoji = "🎀";
         role = "personal assistant, reminders, scheduling";
-        model.primary = "openai-codex/gpt-5.3-codex";
+        model.primary = "nvidia/moonshotai/kimi-k2.5";
         workspace = "openclaw/jenny";
         tts.voice = "en-US-JennyNeural";
         telegram.enable = true;
@@ -26,7 +26,7 @@
         enable = true;
         emoji = "👾";
         role = "creative assistant, brainstorming, fun tasks";
-        model.primary = "openai-codex/gpt-5.3-codex";
+        model.primary = "nvidia/moonshotai/kimi-k2.5";
         workspace = "openclaw/monster";
         tts.voice = "en-US-GuyNeural";
         telegram.enable = true;
