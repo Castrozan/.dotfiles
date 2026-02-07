@@ -6,7 +6,7 @@ set -e
 SAVEDIR="${XDG_PICTURES_DIR:-$HOME/Pictures}/Screenshots"
 FILENAME="$(date +%Y-%m-%d-%H%M%S)_screenshot.png"
 SAVE_PATH="$SAVEDIR/$FILENAME"
-SHOULD_COPY=true
+SHOULD_COPY_WITH_WL_COPY=true
 
 mode="${1:-region}"
 
@@ -36,6 +36,10 @@ case "$mode" in
     grim "$SAVE_PATH"
     ;;
   annotate)
+    leave_satty_to_copy_annotated_image() {
+      SHOULD_COPY_WITH_WL_COPY=false
+    }
+    leave_satty_to_copy_annotated_image
     geometry=$(slurp -d) || exit 0
     grim -g "$geometry" "$SAVE_PATH"
     annotated_path="${SAVE_PATH%.png}_annotated.png"
@@ -51,7 +55,7 @@ case "$mode" in
     ;;
 esac
 
-if [[ "$SHOULD_COPY" == true ]]; then
+if [[ "$SHOULD_COPY_WITH_WL_COPY" == true ]]; then
   wl-copy < "$SAVE_PATH"
 
   notify-send "Screenshot saved" "$SAVE_PATH" -i "$SAVE_PATH" -t 3000
