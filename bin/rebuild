@@ -1,18 +1,7 @@
 #!/usr/bin/env bash
-# rebuild.sh
-#
-# Rebuild system configuration from ~/.dotfiles flake, then (optionally) reload Hyprland.
-#
-# Behaviors:
-# - Works on NixOS (nixos-rebuild) and non-NixOS (home-manager standalone).
-# - Tries to avoid GitHub rate limits by preferring local home-manager, then nixpkgs#home-manager, then GitHub master.
-# - Initializes submodules if ~/.dotfiles has .gitmodules.
-# - Attempts to source nix-daemon env if `nix` is not on PATH (common on non-NixOS).
-# - Reloads Hyprland only if hyprctl is available and appears to be usable.
 
 set -Eeuo pipefail
 
-# Constants
 readonly DOTFILES_DIR="${HOME}/.dotfiles"
 readonly BACKUP_PREFIX="backup"
 readonly NIXOS_ALLOW_UNFREE="NIXPKGS_ALLOW_UNFREE=1"
@@ -22,19 +11,18 @@ main() {
   _reload_hyprland || true
 }
 
-# Rebuild system depending on distro
 _rebuild_system() {
   echo ":: Rebuilding system configuration using dotfiles..."
 
-  _ensure_nix_in_path || {
+  _ensure_nix_in_path_or_source_daemon_profile || {
     echo "Error: nix is not available in PATH and nix-daemon profile was not found." >&2
     return 1
   }
 
-  _ensure_dotfiles_dir || return 1
-  _ensure_submodules_initialized "$DOTFILES_DIR" || true
+  _ensure_dotfiles_dir_exists || return 1
+  _init_git_submodules_if_present "$DOTFILES_DIR" || true
 
-  _load_os_release || return 1
+  _source_os_release || return 1
 
   if _is_nixos; then
     _rebuild_nixos
@@ -43,8 +31,7 @@ _rebuild_system() {
   fi
 }
 
-# Ensure nix is available. Source nix-daemon profile if needed.
-_ensure_nix_in_path() {
+_ensure_nix_in_path_or_source_daemon_profile() {
   if command -v nix >/dev/null 2>&1; then
     return 0
   fi
@@ -58,27 +45,21 @@ _ensure_nix_in_path() {
   command -v nix >/dev/null 2>&1
 }
 
-_ensure_dotfiles_dir() {
+_ensure_dotfiles_dir_exists() {
   if [ ! -d "$DOTFILES_DIR" ]; then
     echo "Error: dotfiles directory not found at: $DOTFILES_DIR" >&2
     return 1
   fi
-  return 0
 }
 
-# Initialize submodules if .gitmodules exists
-# Args:
-#   $1: dotfiles directory
-_ensure_submodules_initialized() {
+_init_git_submodules_if_present() {
   local dir=$1
-
   if [ -f "$dir/.gitmodules" ]; then
     git -C "$dir" submodule update --init --recursive 2>/dev/null || true
   fi
 }
 
-# Load /etc/os-release
-_load_os_release() {
+_source_os_release() {
   if [ ! -f /etc/os-release ]; then
     echo "Error: /etc/os-release not found. Cannot detect OS." >&2
     return 1
@@ -86,7 +67,6 @@ _load_os_release() {
 
   # shellcheck disable=SC1091
   . /etc/os-release
-  return 0
 }
 
 _is_nixos() {
@@ -101,23 +81,21 @@ _rebuild_nixos() {
   echo ":: Detected NixOS. Running nixos-rebuild switch..."
   echo ":: Flake: ${dotfiles_path}#${username}"
 
-  # Preserve only NIXPKGS_ALLOW_UNFREE and avoid HOME ownership warnings.
   sudo env "$NIXOS_ALLOW_UNFREE" nixos-rebuild switch --flake "${dotfiles_path}#${username}"
 }
 
 _rebuild_home_manager() {
   local config
-  config="$(_get_hm_config_name)"
+  config="$(_build_home_manager_config_name)"
 
   echo ":: Detected non-NixOS. Running home-manager switch..."
   echo ":: Flake: ${DOTFILES_DIR}#${config}"
 
-  _hm_switch "$config"
+  _hm_switch_with_rate_limit_fallback "$config"
 }
 
-# Build config name like: user@x86_64-linux
-_get_hm_config_name() {
-  local username system arch
+_build_home_manager_config_name() {
+  local username arch system
   username="$(whoami)"
   arch="$(uname -m)"
 
@@ -130,84 +108,36 @@ _get_hm_config_name() {
   echo "${username}@${system}"
 }
 
-# Switch home-manager using preferred methods to avoid GitHub rate limits
-# Args:
-#   $1: config name
-_hm_switch() {
+_hm_switch_with_rate_limit_fallback() {
   local config=$1
   local backup
   backup="$(_backup_name)"
 
   if command -v home-manager >/dev/null 2>&1; then
-    _hm_switch_with_binary "$config" "$backup"
+    home-manager switch --flake "${DOTFILES_DIR}#${config}" -b "$backup"
     return 0
   fi
 
-  if _hm_switch_with_nixpkgs_run "$config" "$backup"; then
+  if nix run nixpkgs#home-manager -- switch --flake "${DOTFILES_DIR}#${config}" -b "$backup" 2>/dev/null; then
     return 0
   fi
 
-  _hm_switch_with_github_master "$config" "$backup"
+  echo "Warning: Falling back to GitHub source may hit rate limits." >&2
+  echo "Tip: Install home-manager to avoid this:" >&2
+  echo "  nix profile install nixpkgs#home-manager" >&2
+
+  nix run home-manager/master -- switch --flake "${DOTFILES_DIR}#${config}" -b "$backup"
 }
 
 _backup_name() {
   printf '%s-%s\n' "$BACKUP_PREFIX" "$(date +%Y-%m-%d-%H-%M-%S)"
 }
 
-_hm_switch_with_binary() {
-  local config=$1 backup=$2
-  home-manager switch --flake "${DOTFILES_DIR}#${config}" -b "$backup"
-}
-
-_hm_switch_with_nixpkgs_run() {
-  local config=$1 backup=$2
-
-  # Avoid stderr noise if it fails (for example due to channels, config, etc.)
-  nix run nixpkgs#home-manager -- \
-    switch --flake "${DOTFILES_DIR}#${config}" -b "$backup" 2>/dev/null
-}
-
-_hm_switch_with_github_master() {
-  local config=$1 backup=$2
-
-  echo "Warning: Falling back to GitHub source may hit rate limits." >&2
-  echo "Tip: Install home-manager to avoid this:" >&2
-  echo "  nix profile install nixpkgs#home-manager" >&2
-
-  nix run home-manager/master -- \
-    switch --flake "${DOTFILES_DIR}#${config}" -b "$backup"
-}
-
-# Reload Hyprland if it looks available. Non-fatal.
 _reload_hyprland() {
-  if ! _hyprctl_is_usable; then
-    return 1
-  fi
-
+  command -v hypr-restart-hyprctl >/dev/null 2>&1 || return 0
   echo ":: Reloading Hyprland..."
-  hyprctl reload
-
-  echo ":: Restarting graphical services..."
-  systemctl --user daemon-reload
-  # Avoid a full restart (can steal focus). SIGUSR2 triggers waybar reload.
-  if systemctl --user is-active --quiet waybar 2>/dev/null; then
-    pkill -USR2 waybar 2>/dev/null || true
-  else
-    systemctl --user start waybar.service 2>/dev/null || true
-  fi
-
-  if command -v hypr-restart-hyprctl >/dev/null 2>&1; then
-    hypr-restart-hyprctl
-  fi
-
+  hypr-restart-hyprctl
   echo ":: Environment fully refreshed."
-  return 0
-}
-
-# hyprctl usability check
-_hyprctl_is_usable() {
-  command -v hyprctl >/dev/null 2>&1 || return 1
-  hyprctl monitors >/dev/null 2>&1
 }
 
 main "$@"

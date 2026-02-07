@@ -14,6 +14,7 @@
     ../../home/modules/bruno.nix
     ../../home/modules/cbonsai.nix
     ../../home/modules/ccost.nix
+    ../../home/modules/clipse.nix
     ../../home/modules/openclaw
     ../../home/modules/qmd.nix
 
