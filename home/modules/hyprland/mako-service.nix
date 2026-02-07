@@ -8,9 +8,14 @@ let
       exec ${pkgs.mako}/bin/mako
     fi
   '';
+
+  makoctl-without-dbus-activation = pkgs.runCommand "makoctl-without-dbus-activation" { } ''
+    mkdir -p $out/bin
+    ln -s ${pkgs.mako}/bin/makoctl $out/bin/makoctl
+  '';
 in
 {
-  home.packages = [ pkgs.mako ];
+  home.packages = [ makoctl-without-dbus-activation ];
 
   systemd.user.services.mako = {
     Unit = {
