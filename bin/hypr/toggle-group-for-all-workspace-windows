@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+main() {
+  if _all_tiled_windows_are_in_single_group; then
+    _dissolve_active_group
+  else
+    _group_all_tiled_windows_on_active_workspace_and_maximize
+  fi
+}
+
+_all_tiled_windows_are_in_single_group() {
+  local ws
+  ws=$(hyprctl activeworkspace -j | jq -r '.id')
+  hyprctl clients -j | jq -e --argjson ws "$ws" '
+    [.[] | select(.workspace.id == $ws and .floating == false)] |
+    length as $total |
+    $total > 0 and (map(.grouped | length) | max) == $total
+  ' >/dev/null 2>&1
+}
+
+_dissolve_active_group() {
+  hyprctl dispatch togglegroup
+}
+
+_get_tiled_window_addresses_on_active_workspace() {
+  local ws
+  ws=$(hyprctl activeworkspace -j | jq -r '.id')
+  hyprctl clients -j | jq -r --argjson ws "$ws" \
+    '.[] | select(.workspace.id == $ws and .floating == false) | .address'
+}
+
+_group_all_tiled_windows_on_active_workspace_and_maximize() {
+  local addrs=()
+  while IFS= read -r addr; do
+    [[ -z "$addr" ]] && continue
+    addrs+=("$addr")
+  done < <(_get_tiled_window_addresses_on_active_workspace)
+
+  [[ ${#addrs[@]} -eq 0 ]] && return
+
+  local batch="dispatch focuswindow address:${addrs[0]}; dispatch moveoutofgroup; dispatch togglegroup; dispatch lockactivegroup unlock; "
+
+  for ((i=1; i<${#addrs[@]}; i++)); do
+    batch+="dispatch focuswindow address:${addrs[$i]}; dispatch moveoutofgroup; dispatch moveintogroup l; dispatch moveintogroup r; dispatch moveintogroup u; dispatch moveintogroup d; "
+  done
+
+  batch+="dispatch fullscreen 1"
+  hyprctl --batch "$batch"
+}
+
+main
