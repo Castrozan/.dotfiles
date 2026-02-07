@@ -8,7 +8,7 @@
         isDefault = true;
         emoji = "⚽";
         role = "work — Betha, code, productivity";
-        model.primary = "openai-codex/gpt-5.3-codex";
+        model.primary = "anthropic/claude-sonnet-4-5";
         workspace = "openclaw/robson";
         tts.voice = "pt-BR-AntonioNeural";
         telegram.enable = true;
@@ -29,6 +29,15 @@
         model.primary = "openai-codex/gpt-5.3-codex";
         workspace = "openclaw/monster";
         tts.voice = "en-US-GuyNeural";
+        telegram.enable = true;
+      };
+      silver = {
+        enable = true;
+        emoji = "🪙";
+        role = "research & analysis — technical deep dives, documentation, investigation";
+        model.primary = "nvidia/moonshotai/kimi-k2.5";
+        workspace = "openclaw/silver";
+        tts.voice = "pt-BR-FranciscaNeural";
         telegram.enable = true;
       };
     };
