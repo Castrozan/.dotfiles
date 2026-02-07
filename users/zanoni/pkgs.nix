@@ -85,7 +85,7 @@
     ]
     # Unstable packages
     ++ (with unstable; [
-      brave
+      (brave.override { commandLineArgs = "--remote-debugging-port=19222"; })
       cargo
       gcc
       rustc
