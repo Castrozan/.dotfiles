@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
-# Daemon that switches between external and built-in monitors
-# When external monitor is connected: disable built-in
-# When external monitor is disconnected: enable built-in
+# Daemon that prefers the external monitor when connected.
+#
+# Important: Disabling/enabling monitors causes Hyprland to reshuffle workspaces
+# and can steal focus during `hyprctl reload`. To keep reload stable, we avoid
+# disabling monitors and instead only ensure the internal panel is enabled when
+# undocked.
 
 CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/omarchy"
 CONFIG="$CONFIG_DIR/monitor-switch.conf"
@@ -45,13 +48,9 @@ is_monitor_disabled() {
 
 apply_config() {
   if is_monitor_connected "$EXTERNAL"; then
-    # Apply changes atomically to reduce transient states that can reshuffle
-    # workspaces/windows (common during config reloads).
-    if ! is_monitor_disabled "$INTERNAL"; then
-      hyprctl --batch \
-        "keyword monitor $EXTERNAL,preferred,auto,1; keyword monitor $INTERNAL,disable" \
-        >/dev/null 2>&1 || true
-    fi
+    # External connected: do nothing. Monitor layout is handled by Hyprland
+    # config, and keeping the internal enabled avoids workspace reshuffles.
+    :
   else
     # Ensure we always have a display when undocking.
     if is_monitor_disabled "$INTERNAL"; then

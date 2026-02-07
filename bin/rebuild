@@ -184,8 +184,17 @@ _reload_hyprland() {
     return 1
   fi
 
-  echo ":: Reloading Hyprland..."
-  hyprctl reload
+  # `hyprctl reload` re-applies monitor config and frequently causes workspace
+  # reshuffles and focus loss. Default to a "safe refresh" (services/theme only).
+  #
+  # If you explicitly want a full Hyprland reload, run:
+  #   RELOAD_HYPRLAND=1 rebuild
+  if [ "${RELOAD_HYPRLAND:-0}" = "1" ]; then
+    echo ":: Reloading Hyprland (RELOAD_HYPRLAND=1)..."
+    hyprctl reload
+  else
+    echo ":: Skipping hyprctl reload (set RELOAD_HYPRLAND=1 to force it)..."
+  fi
 
   echo ":: Restarting graphical services..."
   systemctl --user daemon-reload
