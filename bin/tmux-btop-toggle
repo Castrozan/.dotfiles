@@ -34,9 +34,9 @@ tmux select-pane -t "$NEW_PANE_ID" -T "btop" 2>/dev/null || exit 1
 tmux resize-pane -Z -t "$NEW_PANE_ID" 2>/dev/null || exit 1
 
 if [ "$PREV_PANE_ZOOMED" = "1" ]; then
-    CLEANUP_SCRIPT="btop; tmux kill-pane -t $NEW_PANE_ID 2>/dev/null; tmux select-pane -t $PREV_PANE_ID 2>/dev/null; tmux resize-pane -Z -t $PREV_PANE_ID 2>/dev/null || true"
+    CLEANUP_SCRIPT="btop; tmux kill-pane -t $NEW_PANE_ID 2>/dev/null && sleep 0.1 && tmux select-pane -t $PREV_PANE_ID 2>/dev/null && tmux resize-pane -Z -t $PREV_PANE_ID 2>/dev/null || true"
 else
-    CLEANUP_SCRIPT="btop; tmux kill-pane -t $NEW_PANE_ID 2>/dev/null; tmux select-pane -t $PREV_PANE_ID 2>/dev/null || true"
+    CLEANUP_SCRIPT="btop; tmux kill-pane -t $NEW_PANE_ID 2>/dev/null && tmux select-pane -t $PREV_PANE_ID 2>/dev/null || true"
 fi
 
 tmux send-keys -t "$NEW_PANE_ID" "$CLEANUP_SCRIPT" Enter 2>/dev/null || exit 1
