@@ -175,6 +175,29 @@ in
       internal = true;
       description = "Takes an attrset of {relative-path = value} and deploys to all enabled agent workspaces";
     };
+
+    deployDir = lib.mkOption {
+      type = lib.types.functionTo (lib.types.attrsOf lib.types.anything);
+      internal = true;
+      description = ''
+        Deploy files from a directory to all enabled agent workspaces.
+        Returns home.file attrset. Options:
+          src        - source directory path (required)
+          prefix     - path prefix in workspace (e.g. "rules")
+          filter     - function (name -> type -> bool) to filter entries
+          exclude    - list of filenames to skip
+          executable - set executable bit on deployed files
+          force      - force overwrite existing files
+          substitute - apply @placeholder@ template substitution (default true)
+          recurse    - treat src entries as directories, collect files from each
+      '';
+    };
+
+    deployGenerated = lib.mkOption {
+      type = lib.types.functionTo (lib.types.attrsOf lib.types.anything);
+      internal = true;
+      description = "Deploy programmatically generated files. Takes (agentName -> agent -> files attrset) function.";
+    };
   };
 
   config.openclaw = {
@@ -247,5 +270,99 @@ in
       lib.foldl' (acc: agentName: acc // (openclaw.deployToWorkspace agentName files)) { } (
         lib.attrNames enabledAgents
       );
+
+    # deployDir: read files from a directory, substitute, deploy to all agents
+    deployDir =
+      {
+        src,
+        prefix ? "",
+        filter ? (_: _: true),
+        exclude ? [ ],
+        executable ? false,
+        force ? false,
+        substitute ? true,
+        recurse ? false,
+      }:
+      let
+        entries = builtins.readDir src;
+        pfx = if prefix == "" then "" else "${prefix}/";
+
+        mkFileEntry =
+          agentName: filePath:
+          (
+            if substitute then
+              { text = openclaw.substituteAgentConfig agentName filePath; }
+            else
+              { source = filePath; }
+          )
+          // lib.optionalAttrs executable { executable = true; }
+          // lib.optionalAttrs force { force = true; };
+
+        # Collect files from a directory, recursing one level into subdirectories
+        collectDirFiles =
+          agentName: basePath: dirPrefix:
+          let
+            dirEntries = builtins.readDir basePath;
+            names = builtins.attrNames dirEntries;
+            regularFiles = builtins.filter (n: dirEntries.${n} == "regular") names;
+            subDirs = builtins.filter (n: dirEntries.${n} == "directory") names;
+          in
+          (map (f: {
+            name = "${dirPrefix}${f}";
+            value = mkFileEntry agentName (basePath + "/${f}");
+          }) regularFiles)
+          ++ builtins.concatMap (
+            d:
+            let
+              subPath = basePath + "/${d}";
+              subEntries = builtins.readDir subPath;
+              subFiles = builtins.filter (n: subEntries.${n} == "regular") (builtins.attrNames subEntries);
+            in
+            map (f: {
+              name = "${dirPrefix}${d}/${f}";
+              value = mkFileEntry agentName (subPath + "/${f}");
+            }) subFiles
+          ) subDirs;
+
+        mkAgentFiles =
+          agentName:
+          if recurse then
+            # Recurse mode: each qualifying entry in src is a directory to process
+            let
+              dirs = builtins.filter (
+                n: entries.${n} == "directory" && !builtins.elem n exclude && filter n "directory"
+              ) (builtins.attrNames entries);
+            in
+            builtins.listToAttrs (
+              builtins.concatMap (d: collectDirFiles agentName (src + "/${d}") "${pfx}${d}/") dirs
+            )
+          else
+            # Flat mode: process regular files in src directly
+            let
+              files = builtins.filter (
+                n: entries.${n} == "regular" && !builtins.elem n exclude && filter n "regular"
+              ) (builtins.attrNames entries);
+            in
+            builtins.listToAttrs (
+              map (f: {
+                name = "${pfx}${f}";
+                value = mkFileEntry agentName (src + "/${f}");
+              }) files
+            );
+      in
+      lib.foldl' (
+        acc: agentName: acc // (openclaw.deployToWorkspace agentName (mkAgentFiles agentName))
+      ) { } (lib.attrNames enabledAgents);
+
+    # deployGenerated: deploy programmatically generated files to all agents
+    deployGenerated =
+      mkFiles:
+      lib.foldl' (
+        acc: agentName:
+        let
+          agent = openclaw.agents.${agentName};
+        in
+        acc // (openclaw.deployToWorkspace agentName (mkFiles agentName agent))
+      ) { } (lib.attrNames enabledAgents);
   };
 }

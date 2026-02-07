@@ -86,7 +86,7 @@ let
     CONFIG="${homeDir}/.openclaw/openclaw.json"
     OVERLAY="${homeDir}/.openclaw/nix-overlay.json"
 
-    if [ ! -f "$CONFIG" ]; then
+    if [ ! -f "$CONFIG" ] || [ ! -s "$CONFIG" ]; then
       mkdir -p "${homeDir}/.openclaw"
       cp "$OVERLAY" "$CONFIG"
       echo "[openclaw-config-patch] Created config from overlay"

@@ -1,1 +1,13 @@
-{ ... }: { imports = [ ./install.nix ./config.nix ./grid.nix ./private.nix ./config-patch.nix ./config-patch-defaults.nix ./workspace.nix ./directories.nix ./rules.nix ./skills.nix ./scripts.nix ./tts.nix ./avatar.nix ./playwright.nix ]; }
+{ ... }:
+{
+  imports = [
+    ./config.nix
+    ./deploy.nix
+    ./grid.nix
+    ./config-patch.nix
+    ./config-patch-defaults.nix
+    ./directories.nix
+    ./install.nix
+    ./avatar.nix
+  ];
+}
