@@ -15,6 +15,7 @@ _detach_move_merge_into_destination_group_and_maximize() {
 
   if [[ "$MODE" == "silent" ]]; then
     cmds+="; dispatch workspace previous"
+    cmds+="; dispatch fullscreenstate 1 0"
   fi
 
   hyprctl --batch "$cmds"
