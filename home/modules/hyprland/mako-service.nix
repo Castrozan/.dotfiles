@@ -1,7 +1,7 @@
 { pkgs, ... }:
 let
   makoStart = pkgs.writeShellScript "mako-start" ''
-    THEME_CONFIG="$HOME/.config/omarchy/current/theme/mako.conf"
+    THEME_CONFIG="$HOME/.config/hypr-theme/current/theme/mako.conf"
     if [[ -f "$THEME_CONFIG" ]]; then
       exec ${pkgs.mako}/bin/mako -c "$THEME_CONFIG"
     else

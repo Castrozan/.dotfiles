@@ -50,8 +50,7 @@ in
   };
 
   xdg.configFile = {
-    # Legacy swaync configs kept for reference/backup
-    # Mako config is generated from template in omarchy/themed/mako.conf.tpl
+    # Mako config is generated from template in .config/hypr/templates/mako.conf.tpl
 
     "xdg-desktop-portal/hyprland-portals.conf".text = ''
       [preferred]

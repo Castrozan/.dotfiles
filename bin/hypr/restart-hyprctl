@@ -2,7 +2,7 @@
 # Apply theme colors dynamically without hyprctl reload
 # Uses keyword commands which are safer than full reload
 
-THEME_CONF="$HOME/.config/omarchy/current/theme/hyprland.conf"
+THEME_CONF="$HOME/.config/hypr-theme/current/theme/hyprland.conf"
 
 [[ ! -f "$THEME_CONF" ]] && exit 0
 

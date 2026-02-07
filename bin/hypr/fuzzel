@@ -2,8 +2,8 @@
 # Wrapper for fuzzel that merges base config with theme colors
 
 BASE_CONFIG="$HOME/.config/fuzzel/fuzzel.ini"
-THEME_COLORS="$HOME/.config/omarchy/current/theme/fuzzel.ini"
-MERGED_CONFIG="$HOME/.cache/omarchy/fuzzel-merged.ini"
+THEME_COLORS="$HOME/.config/hypr-theme/current/theme/fuzzel.ini"
+MERGED_CONFIG="$HOME/.cache/hypr-theme/fuzzel-merged.ini"
 
 mkdir -p "$(dirname "$MERGED_CONFIG")"
 

@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 # Simple screenshot tool using grim/slurp with correct Hyprland version
-# Replaces hyprshot which bundles incompatible hyprctl version
 
 set -e
 
@@ -37,7 +36,7 @@ case "$mode" in
     grim "$SAVE_PATH"
     ;;
   annotate)
-    SHOULD_COPY=false  
+    SHOULD_COPY=false
     geometry=$(slurp -d) || exit 0
     grim -g "$geometry" "$SAVE_PATH"
     annotated_path="${SAVE_PATH%.png}_annotated.png"

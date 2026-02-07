@@ -5,7 +5,7 @@ menu() {
   local options="$2"
   local lines="${3:-5}"
 
-  echo -e "$options" | omarchy-fuzzel --dmenu --width 40 --lines "$lines" --prompt "$prompt> " 2>/dev/null
+  echo -e "$options" | hypr-fuzzel --dmenu --width 40 --lines "$lines" --prompt "$prompt> " 2>/dev/null
 }
 
 get_active_connection() {
@@ -43,11 +43,11 @@ connect_wifi() {
     fi
   elif is_enterprise "$ssid"; then
     local identity
-    identity=$(echo "" | omarchy-fuzzel --dmenu --width 30 --lines 0 --prompt "Username for $ssid> " 2>/dev/null)
+    identity=$(echo "" | hypr-fuzzel --dmenu --width 30 --lines 0 --prompt "Username for $ssid> " 2>/dev/null)
     [[ -z "$identity" ]] && return
 
     local password
-    password=$(echo "" | omarchy-fuzzel --dmenu --width 30 --lines 0 --prompt "Password for $ssid> " 2>/dev/null)
+    password=$(echo "" | hypr-fuzzel --dmenu --width 30 --lines 0 --prompt "Password for $ssid> " 2>/dev/null)
     [[ -z "$password" ]] && return
 
     if nmcli connection add type wifi con-name "$ssid" ssid "$ssid" \
@@ -64,7 +64,7 @@ connect_wifi() {
     fi
   else
     local password
-    password=$(echo "" | omarchy-fuzzel --dmenu --width 30 --lines 0 --prompt "Password for $ssid> " 2>/dev/null)
+    password=$(echo "" | hypr-fuzzel --dmenu --width 30 --lines 0 --prompt "Password for $ssid> " 2>/dev/null)
     if [[ -n "$password" ]]; then
       if nmcli device wifi connect "$ssid" password "$password" 2>/dev/null; then
         notify-send -t 2000 "Network" "Connected to $ssid"

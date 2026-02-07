@@ -17,7 +17,7 @@ in
     ./packages.nix
     ./calendar.nix
     ./cursor.nix
-    ./omarchy.nix
+    ./themes.nix
     ./waybar.nix
     ./hyprshell.nix
     ./wlogout.nix

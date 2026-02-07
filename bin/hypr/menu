@@ -30,22 +30,22 @@ menu() {
     fi
   fi
 
-  echo -e "$options" | omarchy-fuzzel --dmenu --width 30 --lines 10 --prompt "$prompt> " 2>/dev/null
+  echo -e "$options" | hypr-fuzzel --dmenu --width 30 --lines 10 --prompt "$prompt> " 2>/dev/null
 }
 
 show_theme_menu() {
-  theme=$(menu "Theme" "$(omarchy-theme-list)" "--width 350" "$(omarchy-theme-current)")
+  theme=$(menu "Theme" "$(hypr-theme-list)" "--width 350" "$(hypr-theme-current)")
   if [[ -z "$theme" ]]; then
     back_to show_style_menu
   else
-    omarchy-theme-set "$theme"
+    hypr-theme-set "$theme"
   fi
 }
 
 show_style_menu() {
   case $(menu "Style" "󰸌  Theme\n  Background") in
   *Theme*) show_theme_menu ;;
-  *Background*) omarchy-theme-bg-next ;;
+  *Background*) hypr-theme-bg-next ;;
   *) show_main_menu ;;
   esac
 }
@@ -65,7 +65,7 @@ show_main_menu() {
 
 go_to_menu() {
   case "${1,,}" in
-  *apps*) omarchy-fuzzel ;;
+  *apps*) hypr-fuzzel ;;
   *style*) show_style_menu ;;
   *theme*) show_theme_menu ;;
   *system*) show_system_menu ;;

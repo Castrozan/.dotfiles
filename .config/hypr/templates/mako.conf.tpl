@@ -1,5 +1,5 @@
 # Mako notification daemon configuration
-# Theme-integrated via omarchy
+# Theme-integrated via hypr-theme-set
 
 # Font
 font=JetBrainsMono Nerd Font 12

@@ -44,7 +44,6 @@ in
       target = "hyprland-session.target";
     };
 
-    # Base styling with theme colors imported from omarchy
     styleFile = ''
       /* Default styling variables */
       * {
@@ -54,8 +53,8 @@ in
           --window-padding: 8px;
       }
 
-      /* Import theme colors from omarchy (overrides defaults) */
-      @import url("${config.home.homeDirectory}/.config/omarchy/current/theme/hyprshell.css");
+      /* Import theme colors (overrides defaults) */
+      @import url("${config.home.homeDirectory}/.config/hypr-theme/current/theme/hyprshell.css");
 
       .monitor {
           border: none;

@@ -1,5 +1,5 @@
-/* Import theme colors from omarchy theme system */
-@import url("@HOME@/.config/omarchy/current/theme/waybar.css");
+/* Import theme colors */
+@import url("@HOME@/.config/hypr-theme/current/theme/waybar.css");
 
 * {
   background-color: transparent;

@@ -76,7 +76,7 @@
   "image": {
     "path": "~/.config/waybar/nix.svg",
     "size": 16,
-    "on-click": "omarchy-super-launcher",
+    "on-click": "hypr-super-launcher",
     "on-click-right": "wezterm",
     "tooltip": false
   },
@@ -120,7 +120,7 @@
     "tooltip-format-ethernet": "⇣{bandwidthDownBytes}  ⇡{bandwidthUpBytes}",
     "tooltip-format-disconnected": "Disconnected",
     "interval": 3,
-    "on-click": "omarchy-network"
+    "on-click": "hypr-network"
   },
   "battery": {
     "format": "{capacity}% {icon}",

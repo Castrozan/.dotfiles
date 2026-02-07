@@ -1,21 +1,21 @@
 #!/usr/bin/env bash
 
 if [[ -z $1 ]]; then
-  echo "Usage: omarchy-theme-set <theme-name>"
+  echo "Usage: hypr-theme-set <theme-name>"
   exit 1
 fi
 
-CURRENT_THEME_PATH="$HOME/.config/omarchy/current/theme"
-NEXT_THEME_PATH="$HOME/.config/omarchy/current/next-theme"
-USER_THEMES_PATH="$HOME/.config/omarchy/user-themes"
-OMARCHY_THEMES_PATH="$HOME/.config/omarchy/themes"
+CURRENT_THEME_PATH="$HOME/.config/hypr-theme/current/theme"
+NEXT_THEME_PATH="$HOME/.config/hypr-theme/current/next-theme"
+USER_THEMES_PATH="$HOME/.config/hypr-theme/user-themes"
+HYPR_THEMES_PATH="$HOME/.config/hypr/themes"
 
 THEME_NAME=$(echo "$1" | sed -E 's/<[^>]+>//g' | tr '[:upper:]' '[:lower:]' | tr ' ' '-')
 
 if [[ -e "$USER_THEMES_PATH/$THEME_NAME" ]]; then
   THEME_PATH="$USER_THEMES_PATH/$THEME_NAME"
-elif [[ -e "$OMARCHY_THEMES_PATH/$THEME_NAME" ]]; then
-  THEME_PATH="$OMARCHY_THEMES_PATH/$THEME_NAME"
+elif [[ -e "$HYPR_THEMES_PATH/$THEME_NAME" ]]; then
+  THEME_PATH="$HYPR_THEMES_PATH/$THEME_NAME"
 else
   echo "Theme '$THEME_NAME' does not exist"
   exit 1
@@ -26,23 +26,22 @@ mkdir -p "$NEXT_THEME_PATH"
 
 cp -rL --no-preserve=mode "$THEME_PATH/"* "$NEXT_THEME_PATH/" 2>/dev/null
 
-omarchy-theme-set-templates
+hypr-theme-set-templates
 
-OLD_THEME_PATH="$HOME/.config/omarchy/current/old-theme"
+OLD_THEME_PATH="$HOME/.config/hypr-theme/current/old-theme"
 rm -rf "$OLD_THEME_PATH"
 mv "$CURRENT_THEME_PATH" "$OLD_THEME_PATH" 2>/dev/null || true
 mv "$NEXT_THEME_PATH" "$CURRENT_THEME_PATH"
 rm -rf "$OLD_THEME_PATH"
 
-echo "$THEME_NAME" > "$HOME/.config/omarchy/current/theme.name"
+echo "$THEME_NAME" > "$HOME/.config/hypr-theme/current/theme.name"
 
-omarchy-theme-bg-next
+hypr-theme-bg-next
 
 # Reload components for theme change
-# Keep it minimal - only reload what's strictly necessary
 
 # Apply Hyprland border colors (safe, just keyword changes)
-omarchy-restart-hyprctl
+hypr-restart-hyprctl
 
 # Restart waybar to reload CSS (SIGUSR2 doesn't re-fetch @imports)
 systemctl --user restart waybar 2>/dev/null || true
@@ -50,12 +49,8 @@ systemctl --user restart waybar 2>/dev/null || true
 # Reload mako config (reload command doesn't require restart)
 makoctl reload 2>/dev/null || true
 
-# Legacy: reload swaync if still installed
-# swaync-client -rs 2>/dev/null || true
-
 # Hyprshell auto-reloads CSS via file watcher (css reload listener)
-# Avoid restart which causes "Broken pipe" crashes
 
-omarchy-theme-set-gnome
+hypr-theme-set-gnome
 
 notify-send "Theme changed" "$THEME_NAME" -t 2000
