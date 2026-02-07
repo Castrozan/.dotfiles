@@ -1,37 +1,61 @@
 #!/usr/bin/env bash
-# Toggle show desktop: moves all windows to/from a special workspace
-# Tracks state per workspace to support multi-monitor setups
+set -Eeuo pipefail
 
-STATE_DIR="${XDG_RUNTIME_DIR:-/tmp}/hyprland-show-desktop"
+readonly STATE_DIR="${XDG_RUNTIME_DIR:-/tmp}/hyprland-show-desktop"
 mkdir -p "$STATE_DIR"
 
-current_workspace=$(hyprctl monitors -j | jq -r '.[] | select(.focused) | .activeWorkspace.id')
-state_file="$STATE_DIR/ws-$current_workspace"
-focus_file="$STATE_DIR/focus-$current_workspace"
+main() {
+  local current_ws
+  current_ws=$(hyprctl monitors -j | jq -r '.[] | select(.focused) | .activeWorkspace.id')
 
-if [[ -f "$state_file" ]]; then
-    # Desktop is showing, restore windows
-    while IFS= read -r addr; do
-        hyprctl dispatch movetoworkspacesilent "$current_workspace,address:$addr"
-    done < "$state_file"
+  local state_file="$STATE_DIR/ws-$current_ws"
+  local focus_file="$STATE_DIR/focus-$current_ws"
 
-    # Restore focus to previously active window
-    if [[ -f "$focus_file" ]]; then
-        hyprctl dispatch focuswindow "address:$(cat "$focus_file")"
-        rm -f "$focus_file"
-    fi
-    rm -f "$state_file"
-else
-    # Save currently focused window
-    active_window=$(hyprctl activewindow -j | jq -r '.address')
+  if [[ -f "$state_file" ]]; then
+    _restore_hidden_windows_and_maximize "$current_ws" "$state_file" "$focus_file"
+  else
+    _hide_all_workspace_windows_to_special_desktop "$current_ws" "$state_file" "$focus_file"
+  fi
+}
 
-    # Hide all windows to special workspace
-    windows=$(hyprctl clients -j | jq -r --argjson ws "$current_workspace" '.[] | select(.workspace.id == $ws) | .address')
-    if [[ -n "$windows" ]]; then
-        [[ "$active_window" != "null" ]] && echo "$active_window" > "$focus_file"
-        echo "$windows" > "$state_file"
-        echo "$windows" | while IFS= read -r addr; do
-            hyprctl dispatch movetoworkspacesilent "special:desktop,address:$addr"
-        done
-    fi
-fi
+_hide_all_workspace_windows_to_special_desktop() {
+  local ws=$1 state_file=$2 focus_file=$3
+
+  local active_window
+  active_window=$(hyprctl activewindow -j | jq -r '.address')
+
+  local windows
+  windows=$(hyprctl clients -j | jq -r --argjson ws "$ws" '.[] | select(.workspace.id == $ws) | .address')
+  [[ -z "$windows" ]] && return
+
+  [[ "$active_window" != "null" ]] && echo "$active_window" > "$focus_file"
+  echo "$windows" > "$state_file"
+
+  echo "$windows" | while IFS= read -r addr; do
+    hyprctl dispatch movetoworkspacesilent "special:desktop,address:$addr"
+  done
+}
+
+_restore_hidden_windows_and_maximize() {
+  local ws=$1 state_file=$2 focus_file=$3
+
+  local move_batch=""
+  while IFS= read -r addr; do
+    move_batch+="dispatch movetoworkspacesilent $ws,address:$addr; "
+  done < "$state_file"
+  hyprctl --batch "${move_batch%; }"
+
+  sleep 0.05
+
+  local focus_batch=""
+  if [[ -f "$focus_file" ]]; then
+    focus_batch+="dispatch focuswindow address:$(cat "$focus_file"); "
+    rm -f "$focus_file"
+  fi
+  focus_batch+="dispatch fullscreen 1"
+  hyprctl --batch "$focus_batch"
+
+  rm -f "$state_file"
+}
+
+main
