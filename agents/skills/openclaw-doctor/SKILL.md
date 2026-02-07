@@ -9,138 +9,113 @@ description: Diagnose and fix OpenClaw gateway issues. Use when Telegram bots ar
 </announcement>
 
 <diagnosis_order>
-1. Check gateway service status and recent logs
-2. Verify telegram providers are starting (look for "[telegram] [name] starting provider")
-3. Check for 401 Unauthorized errors (invalid/revoked bot token)
-4. Check for stale update-offset files (from recreated bots)
-5. Verify config has correct account entries and bindings
-6. Test bot token directly with Telegram API
+1. Gateway status: `openclaw status` or `systemctl --user status openclaw-gateway`
+2. Config exists and valid: `cat ~/.openclaw/openclaw.json` then `gateway(action=config.get)`
+3. Logs: `journalctl --user -u openclaw-gateway -n 30 --no-pager`
+4. Check for: `[telegram]` startup, `No API key found`, `Config invalid`, `ECONNREFUSED`, `401 Unauthorized`
+5. Auth profile: `cat ~/.openclaw/agents/main/agent/auth-profiles.json`
+6. Test bot token: `curl -s "https://api.telegram.org/bot<TOKEN>/getMe" | jq .`
+7. Telegram state files: `ls -la ~/.openclaw/telegram/`
 </diagnosis_order>
 
-<config_locations>
-Gateway config: ~/.openclaw/openclaw.json
-Telegram state: ~/.openclaw/telegram/update-offset-*.json
-Bot token file (legacy): ~/.openclaw/telegram-bot-token
-Service: systemctl --user status openclaw-gateway
-Logs: journalctl --user -u openclaw-gateway
-</config_locations>
+<config_architecture>
+OpenClaw config is a single JSON file at `~/.openclaw/openclaw.json` — the source of truth.
+
+**Do not** manage it via Nix activation scripts or merge strategies — this causes override bugs. Let openclaw manage its own config locally. Nix should only manage: workspace symlinks (identity/rules/skills) and package installation.
+
+**Port mismatch**: gateway port in config (`gateway.port`) vs systemd service env (`OPENCLAW_GATEWAY_PORT`) can diverge — these must match.
+</config_architecture>
 
 <telegram_config_structure>
-Agents need THREE things to work on Telegram:
-1. Agent definition in agents.list (id, model, workspace)
-2. Telegram account in channels.telegram.accounts (name, enabled, botToken)
+Agents need THREE things for Telegram:
+1. Agent definition in `agents.list` (id, model, workspace)
+2. Telegram account in `channels.telegram.accounts` (name, enabled, botToken)
 3. Binding connecting agent to telegram account (agentId, match.channel, match.accountId)
 
-Example working config:
-```json
-"agents": {
-  "list": [
-    { "id": "robson", "workspace": "/home/user/openclaw/robson" }
-  ]
-},
-"bindings": [
-  { "agentId": "robson", "match": { "channel": "telegram", "accountId": "robson" }}
-],
-"channels": {
-  "telegram": {
-    "accounts": {
-      "robson": {
-        "name": "Robson",
-        "enabled": true,
-        "botToken": "123456789:AAxxxxxxxxxxxxxxxxxxxxxxxxx",
-        "dmPolicy": "pairing",
-        "groupPolicy": "allowlist",
-        "streamMode": "partial"
-      }
-    }
-  }
-}
-```
+Token storage: Never put inline in config. Use `tokenFile` pointing to a file (`chmod 600`).
 </telegram_config_structure>
 
 <common_issues>
 
 ## Bot not responding (401 Unauthorized)
-Cause: Token was revoked or bot was deleted/recreated in BotFather.
+Token revoked or bot deleted/recreated in BotFather.
 Fix: Get new token from BotFather, update botToken in config, restart gateway.
 
 ## Bot recreated with same name
-Cause: New bot has different ID, old update-offset file has stale state.
-Fix: Delete ~/.openclaw/telegram/update-offset-AGENTNAME.json and restart gateway.
+New bot has different ID, old update-offset file has stale state.
+Fix: `rm ~/.openclaw/telegram/update-offset-AGENT.json` and restart gateway.
 
 ## Missing telegram provider in logs
-Cause: Account missing "enabled: true" or no botToken configured.
+Account missing `enabled: true` or no botToken configured.
 Fix: Add explicit account entry with enabled: true and botToken.
 
 ## Agent bound to wrong bot
-Cause: "default" account uses tokenFile, not agent-specific token.
+"default" account uses tokenFile, not agent-specific token.
 Fix: Create explicit account for each agent with own botToken.
 
+## Channels not starting after restart
+Check `plugins.entries.telegram.enabled` and `channels.telegram.enabled` are both `true`.
+After config changes: SIGUSR1 or service restart. Delete stale offset files if switching bots.
+
 ## setMyCommands failed (400: BOT_COMMANDS_TOO_MUCH)
-Cause: Too many slash commands registered with Telegram.
-Status: Non-critical warning, bot still works.
+Non-critical warning, bot still works.
+
+## Missing auth profile
+`~/.openclaw/agents/main/agent/auth-profiles.json` must exist with valid provider token.
+
+## No config file
+Write fresh `openclaw.json` with: `channels`, `gateway` (port, auth), `agents`, `plugins`.
+Use `gateway(action=config.patch)` for local, or write directly via SSH for remote.
 
 </common_issues>
 
-<diagnostic_commands>
+<multi_bot_setup>
+## Multi-Bot Setup (shared groups)
+
+When multiple bots share Telegram groups:
+- Each bot's `groupAllowFrom` must include the other bot's ID
+- `groups.*` entries need both IDs in `allowFrom`
+- Shared group: `requireMention: false` for bot-to-bot chat
+- Bot IDs come from agenix secrets (substituted at activation time)
+</multi_bot_setup>
+
+<remote_management>
+## Remote Instance Management (via SSH)
+
 ```bash
-# Check gateway status
-systemctl --user status openclaw-gateway
-
-# Check which telegram providers started
-journalctl --user -u openclaw-gateway --since "5 minutes ago" | grep -E "telegram.*starting"
-
-# Check for errors
-journalctl --user -u openclaw-gateway --since "5 minutes ago" | grep -iE "(error|fail|401|403)"
-
-# Test bot token directly
-curl -s "https://api.telegram.org/bot<TOKEN>/getMe" | jq .
-
-# Check telegram state files
-ls -la ~/.openclaw/telegram/
-
-# Read config accounts
-cat ~/.openclaw/openclaw.json | jq '.channels.telegram.accounts'
-
-# Read bindings
-cat ~/.openclaw/openclaw.json | jq '.bindings'
+ssh user@host "export PATH=\$HOME/.npm-global/bin:\$PATH; openclaw status"
+ssh user@host "journalctl --user -u openclaw-gateway -n 30 --no-pager"
+ssh user@host "systemctl --user restart openclaw-gateway"
 ```
-</diagnostic_commands>
+
+Verify channels start after restart by checking logs for `[telegram] starting provider`.
+</remote_management>
 
 <fix_procedures>
 
-## Add new telegram bot for agent
+## Add new telegram bot
 1. Create bot in BotFather: /newbot
-2. Copy the token
-3. Edit ~/.openclaw/openclaw.json:
-   - Add account entry in channels.telegram.accounts
-   - Add binding in bindings array
-4. Restart: systemctl --user restart openclaw-gateway
-5. Verify: journalctl --user -u openclaw-gateway | grep "starting provider"
+2. Copy token, store in file (chmod 600)
+3. Edit config: add account + binding
+4. Restart: `systemctl --user restart openclaw-gateway`
+5. Verify: logs show "starting provider (@botname)"
 
 ## Reset bot after recreation
-1. Delete stale offset: rm ~/.openclaw/telegram/update-offset-AGENT.json
-2. Update token in config if needed
-3. Restart: systemctl --user restart openclaw-gateway
+1. `rm ~/.openclaw/telegram/update-offset-AGENT.json`
+2. Update token if needed
+3. Restart gateway
 
-## Update bot token
-1. Edit ~/.openclaw/openclaw.json
-2. Find channels.telegram.accounts.AGENT.botToken
-3. Replace with new token
-4. Gateway may hot-reload, or restart manually
+## Retrieve lost bot token
+1. BotFather → `/mybots` → select bot → "API Token"
+2. Or search BotFather history for "Use this token to access the HTTP API"
+3. Token format: `<bot-id>:<alphanumeric-string>`
 
 </fix_procedures>
 
 <verification>
 After any fix:
-1. Check logs for "starting provider (@botname)" without errors
-2. Test bot token: curl "https://api.telegram.org/bot<TOKEN>/getMe"
+1. Logs show "starting provider (@botname)" without errors
+2. Token test: `curl "https://api.telegram.org/bot<TOKEN>/getMe"`
 3. Send test message to bot
-4. Verify message appears in logs
+4. Message appears in logs
 </verification>
-
-<related_files>
-Gateway service definition: home-manager module (systemd user service)
-Agent workspaces: ~/openclaw/<agent-name>/
-Skills deployment: ~/openclaw/<agent-name>/skills/
-</related_files>

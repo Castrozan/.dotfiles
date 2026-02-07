@@ -34,7 +34,7 @@ Create `skills/morning-brief/preferences.md` to customize sections:
 # Morning Brief Preferences
 
 ## Sections (in order)
-1. weather - Location: Criciúma, SC, Brazil
+1. weather - Location: from USER.md (check user's profile for city)
 2. calendar - Source: Google Calendar (if available)
 3. news - Topics: AI, NixOS, developer tools, crypto
 4. tasks - Source: MEMORY.md todos, HEARTBEAT.md pending items
@@ -60,7 +60,7 @@ When triggered (by cron or manually):
 ### Step 1: Gather Data
 Run these in parallel where possible:
 
-1. **Weather**: Web search `"weather [location] today"` or fetch from weather API
+1. **Weather**: Web search `"weather [location from USER.md] today"` or fetch from weather API
 2. **Calendar**: Check Google Calendar MCP or browser automation (if configured)
 3. **News**: 
    - Fetch Hacker News front page (`https://news.ycombinator.com`)
@@ -145,7 +145,7 @@ Default is daily, but can be set to:
 > ☀️ Good morning! Here's your brief for Thursday, Jan 30:
 > 
 > 🌤️ WEATHER
-> Criciúma: 24°C, partly cloudy. High 29° / Low 19°
+> [City]: 24°C, partly cloudy. High 29° / Low 19°
 > 
 > 📰 HEADLINES
 > • Microsoft forced me to switch to Linux — massive HN thread (1700pts)

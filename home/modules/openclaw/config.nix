@@ -142,6 +142,12 @@ in
       description = "Local OpenClaw gateway port";
     };
 
+    notifyTopic = lib.mkOption {
+      type = lib.types.str;
+      default = "";
+      description = "ntfy.sh topic ID for push notifications";
+    };
+
     # Derived values (internal)
     enabledAgents = lib.mkOption {
       type = lib.types.attrsOf agentModule;
@@ -231,6 +237,7 @@ in
           "@ttsVoice@"
           "@ttsEngine@"
           "@agentSkills@"
+          "@notifyTopic@"
         ];
         baseValues = [
           agentName
@@ -245,6 +252,7 @@ in
           agent.tts.voice
           agent.tts.engine
           skillsDisplay
+          openclaw.notifyTopic
         ];
         gridNames = builtins.attrNames openclaw.gridPlaceholders;
         gridValues = map (name: openclaw.gridPlaceholders.${name}) gridNames;
@@ -277,6 +285,10 @@ in
         src,
         prefix ? "",
         filter ? (_: _: true),
+        filterForAgent ? (
+          _: _: _:
+          true
+        ),
         exclude ? [ ],
         executable ? false,
         force ? false,
@@ -330,7 +342,11 @@ in
             # Recurse mode: each qualifying entry in src is a directory to process
             let
               dirs = builtins.filter (
-                n: entries.${n} == "directory" && !builtins.elem n exclude && filter n "directory"
+                n:
+                entries.${n} == "directory"
+                && !builtins.elem n exclude
+                && filter n "directory"
+                && filterForAgent agentName n "directory"
               ) (builtins.attrNames entries);
             in
             builtins.listToAttrs (
@@ -340,7 +356,11 @@ in
             # Flat mode: process regular files in src directly
             let
               files = builtins.filter (
-                n: entries.${n} == "regular" && !builtins.elem n exclude && filter n "regular"
+                n:
+                entries.${n} == "regular"
+                && !builtins.elem n exclude
+                && filter n "regular"
+                && filterForAgent agentName n "regular"
               ) (builtins.attrNames entries);
             in
             builtins.listToAttrs (

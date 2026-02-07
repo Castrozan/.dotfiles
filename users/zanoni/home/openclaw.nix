@@ -2,6 +2,7 @@
   openclaw = {
     userName = "Lucas";
     gatewayPort = 18789;
+    notifyTopic = "cleber-lucas-2f2ea57a";
     agents = {
       clever = {
         enable = true;
