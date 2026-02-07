@@ -1,69 +1,69 @@
 ---
 name: playwright-mcp
-description: "Playwright MCP server provides AI-driven browser automation with snapshot-based control. Faster and more reliable than traditional Playwright automation due to incremental snapshot approach."
+description: "Browser automation with persistent Chrome. Primary: pw CLI (~400ms/cmd). Fallback: Playwright MCP server via Claude Code MCP integration."
 ---
 
-# Browser Automation (Playwright MCP)
+# Browser Automation
 
-The canonical browser automation tool for OpenClaw. Uses Playwright's MCP server with snapshot-based DOM interaction.
+## pw CLI (Primary — ~400ms per command)
 
-## Core Workflow
+Persistent Chrome + Playwright library. Browser stays alive between commands.
 
-1. **Navigate**: `browser_navigate` to URL
-2. **Snapshot**: `browser_snapshot` — returns YAML DOM tree with `ref=` IDs
-3. **Interact**: `browser_click ref=e6`, `browser_type ref=e5 text="..."`, `browser_fill_form`
-4. **Verify**: `browser_snapshot` again or `browser_take_screenshot`
-5. **Close**: `browser_close` when done
+### Workflow
 
-## Snapshot Format
-
-Snapshots return an accessible YAML tree. Each interactive element has a `ref=` ID:
-
-```yaml
-- heading "Example Domain" [level=1] [ref=e3]
-- paragraph [ref=e4]: Some text here.
-- paragraph [ref=e5]:
-  - link "Learn more" [ref=e6] [cursor=pointer]:
-    - /url: https://example.com/more
-- textbox "Email:" [ref=e7]
-- button "Submit" [ref=e8]
+```bash
+pw open https://example.com     # Navigate (auto-starts Chrome)
+pw elements                     # Interactive elements with [index]
+pw click 3                      # Click by index
+pw snap                         # Accessibility tree (YAML)
+pw fill "input[name=q]" hello   # Fill form field
+pw screenshot                   # Save screenshot
+pw close                        # Kill browser
 ```
 
-Use the `ref` value when calling `browser_click`, `browser_type`, etc.
+### Commands
 
-## Available Tools
+| Command | Description |
+|---------|-------------|
+| `pw open <url> [--new]` | Navigate (--new = new tab) |
+| `pw elements` | Interactive elements with `[index]` — use with `click` |
+| `pw snap` | Accessibility tree (semantic YAML) |
+| `pw text` | Full page text content |
+| `pw click <index\|selector>` | Click element by index or CSS selector |
+| `pw click-text <text>` | Click by visible text |
+| `pw fill <selector> <value>` | Fill input field |
+| `pw type <selector> <value>` | Type into field (keystroke by keystroke) |
+| `pw select <selector> <value>` | Select dropdown option |
+| `pw press <key>` | Press keyboard key (Enter, Tab, etc.) |
+| `pw screenshot [path] [--full]` | Screenshot (default: /tmp/pw-screenshot.png) |
+| `pw eval <js>` | Evaluate JavaScript, print result |
+| `pw html` | Full page HTML |
+| `pw scroll <up\|down> [px]` | Scroll page |
+| `pw back` / `pw forward` | Navigation history |
+| `pw wait <selector>` | Wait for element to appear |
+| `pw wait --text <text>` | Wait for text to appear |
+| `pw tabs` | List open tabs |
+| `pw tab <n>` | Switch to tab |
+| `pw status` | Check if browser is running |
+| `pw close` | Kill browser |
 
-| Tool | Description |
-|------|-------------|
-| `browser_navigate` | Navigate to URL |
-| `browser_navigate_back` | Go back in history |
-| `browser_snapshot` | DOM tree with ref IDs (use for actions) |
-| `browser_take_screenshot` | Visual screenshot (can't act on it) |
-| `browser_click` | Click element by ref |
-| `browser_type` | Type into element by ref |
-| `browser_fill_form` | Fill multiple form fields at once |
-| `browser_select_option` | Select dropdown option |
-| `browser_hover` | Hover over element |
-| `browser_drag` | Drag and drop between elements |
-| `browser_press_key` | Press keyboard key |
-| `browser_file_upload` | Upload files |
-| `browser_evaluate` | Execute JavaScript |
-| `browser_run_code` | Run Playwright code snippet |
-| `browser_tabs` | List, create, close, or select tabs |
-| `browser_wait_for` | Wait for text/condition |
-| `browser_handle_dialog` | Handle alert/confirm/prompt |
-| `browser_console_messages` | Get console output |
-| `browser_network_requests` | Get network requests |
-| `browser_resize` | Resize viewport |
-| `browser_close` | Close the page |
+### Element Interaction Pattern
 
-## NixOS Notes
+```bash
+pw elements                      # See: [0] <a -> /about> About  [1] <button #submit> Go
+pw click 0                       # Click "About" link by index
+pw fill "input[name=email]" x    # Fill by CSS selector
+pw click "#submit"               # Click by CSS selector
+```
 
-On NixOS, system Chrome is at a non-standard path. The MCP server is configured with `--executable-path` pointing to `google-chrome-stable` from the system profile. This is handled by the MCP config in `home/modules/claude/mcp.nix`.
+### Performance
 
-## Debugging
+- Cold start (Chrome launch): ~1s
+- Each command after: ~400ms (350ms Node.js load + 50ms CDP + operation)
+- Operations themselves: 2-50ms
 
-- Run headed (remove `--headless`) to see the browser
-- Use `--save-trace` to capture Playwright traces
-- Use `browser_console_messages` and `browser_network_requests` for debugging
-- If browser not found: check `--executable-path` in MCP config
+## Playwright MCP (Fallback)
+
+Configured as Claude Code MCP server in `home/modules/claude/mcp.nix`. Uses the same Playwright library but communicates via MCP protocol. Slightly slower per operation (~200ms overhead) but integrated directly into Claude Code's tool system.
+
+Available as MCP tools: `browser_navigate`, `browser_snapshot`, `browser_click`, `browser_fill_form`, `browser_take_screenshot`, etc.
