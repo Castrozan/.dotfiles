@@ -36,11 +36,10 @@ case "$mode" in
     grim "$SAVE_PATH"
     ;;
   annotate)
-    SHOULD_COPY=false
     geometry=$(slurp -d) || exit 0
     grim -g "$geometry" "$SAVE_PATH"
     annotated_path="${SAVE_PATH%.png}_annotated.png"
-    satty -f "$SAVE_PATH" -o "$annotated_path"
+    satty -f "$SAVE_PATH" -o "$annotated_path" || true
 
     if [[ -f "$annotated_path" ]]; then
       SAVE_PATH="$annotated_path"
