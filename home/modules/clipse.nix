@@ -3,16 +3,16 @@ let
   # Custom fork of clipse
   clipse-zanoni = pkgs.buildGoModule {
     pname = "clipse";
-    version = "zanoni.v1.2.0";
+    version = "zanoni.v1.2.1";
 
     src = pkgs.fetchFromGitHub {
       owner = "castrozan";
       repo = "clipse";
-      rev = "73c6642206f7a1d1f4ac31f344f2851f9f6de0e6";
-      sha256 = "02jpaav63h3c99d4f7zb7xi6zvbihggk66a9czdbfwxfa84c32zn";
+      rev = "427b0f383a6ca5beb7f7948a059ba88908f07be0";
+      sha256 = "sha256-H4MnDmdakMNKfYRPbQwPAUz6Ta912DSQyY+PPWWgDrY=";
     };
 
-    vendorHash = "sha256-NGY8WBPxufHArOzz3MDr6r24xPLYPomWUEVOjlOU6pA=";
+    vendorHash = "sha256-LxwST4Zjxq6Fwc47VeOdv19J3g/DHZ7Fywp2ZvVR06I=";
     proxyVendor = true;
 
     buildInputs = with pkgs; [

@@ -18,7 +18,6 @@
       bun
       btop
       cacert
-      clipse
       curl
       dbeaver-bin
       deno
