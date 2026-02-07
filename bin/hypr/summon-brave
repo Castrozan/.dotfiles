@@ -1,34 +1,41 @@
 #!/usr/bin/env bash
-# Summon Brave browser to current workspace
+set -Eeuo pipefail
 
-CLASS="brave-browser"
+readonly CLASS="brave-browser"
 
-current_ws=$(hyprctl activeworkspace -j | jq -r '.id')
+main() {
+  local current_ws window_json
+  current_ws=$(hyprctl activeworkspace -j | jq -r '.id')
+  window_json=$(_find_window_by_class "$CLASS")
 
-brave_window=$(hyprctl clients -j | jq -r --arg class "$CLASS" '
-  .[] | select(.class == $class) | {address, workspace: .workspace.id, fullscreen}
-' | jq -s 'first // empty')
-
-if [[ -z "$brave_window" || "$brave_window" == "null" ]]; then
+  if [[ -z "$window_json" || "$window_json" == "null" ]]; then
     exec brave
-fi
+  fi
 
-address=$(echo "$brave_window" | jq -r '.address')
-source_ws=$(echo "$brave_window" | jq -r '.workspace')
-was_fullscreen=$(echo "$brave_window" | jq -r '.fullscreen')
+  local address source_ws
+  address=$(echo "$window_json" | jq -r '.address')
+  source_ws=$(echo "$window_json" | jq -r '.workspace')
 
-if [[ "$source_ws" == "$current_ws" ]]; then
+  if [[ "$source_ws" == "$current_ws" ]]; then
     hyprctl dispatch focuswindow "address:$address"
-    exit 0
-fi
+    return
+  fi
 
-hyprctl dispatch movetoworkspace "$current_ws,address:$address"
+  _detach_move_merge_into_current_group_and_maximize "$address" "$current_ws"
+}
 
-# Restore fullscreen only if it was lost during move (fullscreen 1 is a toggle)
-if [[ "$was_fullscreen" == "1" ]]; then
-    sleep 0.05
-    current_fullscreen=$(hyprctl clients -j | jq -r --arg addr "$address" '.[] | select(.address == $addr) | .fullscreen')
-    if [[ "$current_fullscreen" != "1" ]]; then
-        hyprctl dispatch fullscreen 1
-    fi
-fi
+_find_window_by_class() {
+  hyprctl clients -j | jq -r --arg class "$1" '
+    [.[] | select(.class == $class)] | first // empty |
+    {address, workspace: .workspace.id}
+  '
+}
+
+_detach_move_merge_into_current_group_and_maximize() {
+  local address=$1 target_ws=$2
+
+  hyprctl --batch \
+    "dispatch focuswindow address:$address; dispatch moveoutofgroup; dispatch movetoworkspace $target_ws; dispatch moveintogroup l; dispatch moveintogroup r; dispatch moveintogroup u; dispatch moveintogroup d; dispatch fullscreen 1"
+}
+
+main

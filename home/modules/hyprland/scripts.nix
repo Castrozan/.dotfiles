@@ -23,6 +23,7 @@ in
     (mkScript "hypr-maximize-focus-daemon" ../../../bin/hypr/maximize-focus-daemon)
     (mkScript "hypr-monitor-switch" ../../../bin/hypr/monitor-switch)
     (mkScript "hypr-summon-brave" ../../../bin/hypr/summon-brave)
+    (mkScript "hypr-detach-from-group-and-move-to-workspace" ../../../bin/hypr/detach-from-group-and-move-to-workspace)
     (mkScript "hypr-screenshot" ../../../bin/hypr/screenshot)
     (mkScript "hypr-network" ../../../bin/hypr/network)
   ];
