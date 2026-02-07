@@ -34,6 +34,10 @@ in
       prefix = "scripts";
       filter = name: _: lib.hasSuffix ".sh" name || lib.hasSuffix ".py" name;
       executable = true;
+      # hey-clever scripts only deploy to the default agent
+      filterForAgent =
+        agentName: name: _:
+        if lib.hasPrefix "hey-clever" name then agentName == openclaw.defaultAgent else true;
     }
 
     # Skills (each subdirectory is a skill with files inside)
@@ -43,9 +47,14 @@ in
       exclude = [
         "bot-bridge"
         "whatsapp-polling"
-        "openclaw-medicine"
       ];
       recurse = true;
+      filterForAgent =
+        agentName: name: _:
+        let
+          agent = openclaw.agents.${agentName};
+        in
+        agent.skills == [ ] || builtins.elem name agent.skills;
     }
 
     # TTS config (generated per-agent, not from files)
