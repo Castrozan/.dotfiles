@@ -20,6 +20,10 @@ flake.nix
   nixosConfigurations."zanoni" (full NixOS system)
 </architecture>
 
+<nixos_detection>
+`isNixOS` boolean injected from flake.nix via specialArgs (NixOS) / extraSpecialArgs (standalone home-manager). NixOS configs get `true`, standalone gets `false`. Modules consume it as function argument: `{ isNixOS, ... }:`. Use `lib.mkIf isNixOS` for NixOS-conditional config. NEVER use `builtins.pathExists /etc/NIXOS` - broken in pure flake evaluation.
+</nixos_detection>
+
 <directory_organization>
 bin/ - standalone scripts (system-wide, executable)
 home/core.nix - shared home-manager core
@@ -61,7 +65,7 @@ DO NOT UPDATE THE FLAKES MANUALLY unless user specifically requests it.
 </package_channels>
 
 <anti_patterns>
-Reject: config in home.nix (goes in module), packages via specialArgsBase (use inputs), secrets without pathExists guard, scripts in random locations, hardcoded usernames, new file without import, rebuild without staging, git add -A, committing directly.
+Reject: config in home.nix (goes in module), packages via specialArgsBase (use inputs), secrets without pathExists guard, scripts in random locations, hardcoded usernames, new file without import, rebuild without staging, git add -A, committing directly, builtins.pathExists /etc/NIXOS for NixOS detection (use isNixOS specialArg).
 </anti_patterns>
 
 <delegation_to_nix_expert>

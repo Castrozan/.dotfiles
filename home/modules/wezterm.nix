@@ -1,7 +1,10 @@
-{ pkgs, inputs, ... }:
+{
+  pkgs,
+  inputs,
+  isNixOS,
+  ...
+}:
 let
-  isNixOS = builtins.pathExists /etc/NIXOS;
-
   # On non-NixOS we need nixGL to provide OpenGL support
   # Using nixGLIntel (Mesa) directly instead of nixGLDefault to avoid
   # impure IFD that rebuilds on every evaluation (~3s overhead)
