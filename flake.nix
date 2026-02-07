@@ -94,6 +94,7 @@
 
               extraSpecialArgs = specialArgsBase // {
                 inherit username;
+                isNixOS = false;
               };
 
               modules = [ ./users/${username}/home.nix ];
@@ -110,6 +111,7 @@
           username = "zanoni";
           specialArgs = specialArgsBase // {
             inherit username;
+            isNixOS = true;
           };
         in
         {

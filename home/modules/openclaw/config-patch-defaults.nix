@@ -8,11 +8,15 @@
 #
 # Add/remove a pinned field = add/remove one line here.
 # Engine details: see config-patch.nix.
-{ config, lib, ... }:
+{
+  config,
+  lib,
+  isNixOS,
+  ...
+}:
 let
   inherit (config) openclaw;
   homeDir = config.home.homeDirectory;
-  isNixOS = builtins.pathExists /etc/NIXOS;
 
   # Generate agents list from enabled agents
   agentsList = lib.mapAttrsToList (
