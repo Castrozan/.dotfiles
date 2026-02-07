@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+readonly MODE="${1:?usage: hypr-detach-from-group-and-move-to-workspace <silent|follow> <workspace>}"
+readonly TARGET_WS="${2:?usage: hypr-detach-from-group-and-move-to-workspace <silent|follow> <workspace>}"
+
+_detach_move_merge_into_destination_group_and_maximize() {
+  local cmds="dispatch moveoutofgroup"
+  cmds+="; dispatch movetoworkspace $TARGET_WS"
+  cmds+="; dispatch moveintogroup l"
+  cmds+="; dispatch moveintogroup r"
+  cmds+="; dispatch moveintogroup u"
+  cmds+="; dispatch moveintogroup d"
+  cmds+="; dispatch fullscreen 1"
+
+  if [[ "$MODE" == "silent" ]]; then
+    cmds+="; dispatch workspace previous"
+  fi
+
+  hyprctl --batch "$cmds"
+}
+
+main() {
+  _detach_move_merge_into_destination_group_and_maximize
+}
+
+main
