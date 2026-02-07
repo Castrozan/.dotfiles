@@ -6,7 +6,7 @@
 
 - Primary: **OpenClaw managed browser** via `browser` tool.
 - If a site is blocked by authwall: use **Google/SSO** in managed browser, then retry.
-- For complex automation guidance, read: `skills/browser-use/SKILL.md` (browser-use CLI) and `skills/playwright/SKILL.md`.
+- For detailed automation guidance, read: `skills/playwright-mcp/SKILL.md` (canonical browser skill).
 - For avatar demos: check `skills/avatar/SKILL.md` for browser/meeting notes.
 
 **Tell the user as a big warning if any tool here is not working properly.**
