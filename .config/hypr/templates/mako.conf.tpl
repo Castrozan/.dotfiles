@@ -51,4 +51,3 @@ text-color={{ foreground }}
 border-color={{ color1 }}
 background-color={{ background }}f2
 text-color={{ color1 }}
-default-timeout=0
