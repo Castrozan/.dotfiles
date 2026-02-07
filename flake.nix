@@ -40,8 +40,6 @@
       url = "github:H3rmt/hyprshell/hyprshell-release";
       inputs.hyprland.follows = "hyprland";
     };
-    spicetify-nix.url = "github:Gerg-L/spicetify-nix";
-    spicetify-nix.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   # Outputs are what this flake provides, such as pkgs and system configurations
