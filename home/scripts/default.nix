@@ -5,7 +5,6 @@
     ./claude-exit.nix
     ./daily-note.nix
     ./dotfiles-quick-commit.nix
-    ./git-crypt-setup.nix
     ./ksnip-annotate.nix
     ./greatshot-capture.nix
     ./git-fzf.nix

@@ -1,3 +1,0 @@
-#!/usr/bin/env bash
-# Reload swaync CSS for theme changes (no full restart needed)
-swaync-client --reload-css 2>/dev/null || true

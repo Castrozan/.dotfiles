@@ -33,17 +33,14 @@
     ../../home/modules/gnome/dconf.nix
     ../../home/modules/gnome/extension-manager.nix
     ../../home/modules/hyprland/standalone.nix
-    # ../../home/modules/ia-work.nix
     ../../home/modules/install-nothing.nix
     ../../home/modules/k9s.nix
     ../../home/modules/kitty.nix
-    ../../home/modules/ksnip.nix
     ../../home/modules/lazygit.nix
     ../../home/modules/mongodb-compass.nix
     ../../home/modules/neovim.nix
     ../../home/modules/obsidian.nix
     ../../home/modules/opencode
-    ../../home/modules/opencode/opencode.nix
     ../../home/modules/opencode/private.nix
     ../../home/modules/openfortivpn
     ../../home/modules/ralph-tui.nix

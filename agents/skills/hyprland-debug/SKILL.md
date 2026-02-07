@@ -41,7 +41,6 @@ PartOf= for Wayland services: Causes services to stop during home-manager reload
 <service_reload_methods>
 Check bin/hypr/ scripts for current implementations. General patterns:
 - hyprctl keyword: Safe for Hyprland config changes without reload
-- swaync-client -rs: CSS reload without service restart
 - File watchers: Many services auto-reload on file change
 - Full restart: Only when other methods don't work
 </service_reload_methods>

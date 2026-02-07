@@ -13,7 +13,6 @@ in
     (mkScript "hypr-restart-waybar" ../../../bin/hypr/restart-waybar)
     (mkScript "hypr-restart-swayosd" ../../../bin/hypr/restart-swayosd)
     (mkScript "hypr-restart-hyprctl" ../../../bin/hypr/restart-hyprctl)
-    (mkScript "hypr-restart-swaync" ../../../bin/hypr/restart-swaync)
     (mkScript "hypr-restart-mako" ../../../bin/hypr/restart-mako)
     (mkScript "hypr-menu" ../../../bin/hypr/menu)
     (mkScript "hypr-fuzzel" ../../../bin/hypr/fuzzel)
