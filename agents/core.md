@@ -17,7 +17,7 @@ Commits are not dangerous - do them freely. During development: commit at every 
 </git>
 
 <testing>
-IMPORTANT!!!!!! Test before presenting. Never present something you haven't tested. DO NOT WASTE USER TIME WITH UNTESTED CODE. If you don't have time to test, don't implement - ask user for help or delegate to subagent. If you can't test due to environment limitations, explain to user and ask for help or delegation.
+Commit then test. Every change gets committed and tested by you before presenting to the user. Do not ask the user to test - test it yourself. Never present untested code. If you can't test due to environment limitations, explain and ask for help.
 </testing>
 
 <commands>
@@ -25,7 +25,7 @@ Use timeouts. Search codebase before coding. Read relevant files first. Always t
 </commands>
 
 <delegation>
-When specialized subagent exists, delegate rather than doing work directly. Work directly only for simple tasks so you're able to maintain user interaction.
+When specialized skill exists, delegate rather than doing work directly. Work directly only for simple tasks so you're able to maintain user interaction.
 </delegation>
 
 <instructions>
