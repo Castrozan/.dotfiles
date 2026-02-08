@@ -1,96 +1,85 @@
 ---
 name: avatar
-description: Control the VTuber avatar system — speak through it with lip sync, change expressions, manage the avatar renderer and control server. Use when interacting with the avatar, making it speak, changing expressions, or troubleshooting avatar connection issues.
+description: "Control the VTuber avatar — speak with lip sync, change expressions, route audio to speakers or Meet. Use when making the avatar speak, changing emotions, or troubleshooting avatar issues."
 ---
 
 # Avatar — VTuber Control
 
-## Quick Start
+## Start / Stop
 
-- Start system: ~/openclaw/scripts/start-avatar.sh
-- Stop system: ~/openclaw/scripts/stop-avatar.sh
-- Check health: curl -s http://localhost:8766/health
+```bash
+systemctl --user start avatar-control-server   # Start control server
+systemctl --user stop avatar-control-server    # Stop
+systemctl --user status avatar-control-server  # Check
+curl -s http://localhost:8766/health           # Health check
+```
+
+Renderer (visual): `cd ~/openclaw/avatar/renderer && npm run dev` (serves on port 3000)
 
 ## Speaking
 
-~/openclaw/scripts/avatar-speak.sh "text" [emotion] [output]
+```bash
+avatar-speak.sh "Hello world"                    # Default: neutral, speakers
+avatar-speak.sh "I'm excited!" happy             # With emotion
+avatar-speak.sh "Hello Meet!" neutral mic        # To virtual mic (calls)
+avatar-speak.sh "Everyone hears" happy both      # Speakers + mic
+```
 
-Output controls where audio plays:
-- speakers — default system sink, people in the room hear it
-- mic — AvatarMic sink, people in Meet/calls hear it
-- both — both simultaneously
-
-Default output is speakers.
-
-## Emotions
-
-neutral (default, eyes open), happy, sad, angry, relaxed, surprised
-
-Use neutral by default. happy closes the eyes (anime smile) — only use for genuine excitement.
-
-## Mid-Speech Emotion Changes
-
-Change emotions mid-sentence for more natural conversations using `avatar-speak-multi.sh`:
+### Multi-Segment (emotion changes mid-speech)
 
 ```bash
-~/openclaw/scripts/avatar-speak-multi.sh \
+avatar-speak-multi.sh \
   "happy:Hi, I'm Clever!" \
   "neutral:I work with Lucas on daily tasks." \
   "surprised:Wait, what's happening?" \
-  "relaxed:Let me think about this." \
-  "happy:Done! I'm ready to help."
+  "relaxed:Let me think about this."
 ```
 
-Format: `"emotion:text"` where emotion is one of: happy, neutral, surprised, relaxed, sad, angry
+Format: `"emotion:text"` — segments play sequentially with emotion transitions.
 
-Each segment is spoken sequentially with its emotion, creating natural emotional flow.
+Append `mic` or `both` as last arg to change output target.
 
-## Infrastructure
+## Emotions
 
-When avatar system is started, these are always available:
-- Virtual mic: AvatarMic.monitor (set as default source for Meet)
-- Virtual camera: /dev/video10 (captures renderer via CDP)
-- Virtual speaker sink: AvatarSpeaker (available for routing)
+`neutral` (default), `happy`, `sad`, `angry`, `relaxed`, `surprised`
 
-The bot chooses per-speak where audio goes. Virtual mic and camera are always-on pipes.
+Use `neutral` by default. `happy` closes eyes (anime smile) — only for genuine excitement.
 
-## Service Control
+## Audio Output
 
-systemctl --user {start|stop|status|restart} avatar-control-server
-Renderer: cd ~/openclaw/avatar/renderer && npm run dev
+| Target | Where audio plays | Use case |
+|--------|------------------|----------|
+| `speakers` | Default system sink | People in room hear it |
+| `mic` | AvatarMic virtual sink | People in Meet/calls hear it |
+| `both` | Both simultaneously | Room + call |
 
 ## WebSocket API (Advanced)
 
-Port 8765 — must send identify first:
-{ type: "identify", role: "agent", name: "@agentName@" }
+Port 8765. Must send identify first, wait ~1s before commands:
 
-Commands after identify:
-- speak: { type: "speak", text: "Hello", emotion: "neutral", output: "mic" }
-- setExpression: { type: "setExpression", name: "happy", intensity: 1 }
-- setIdle: { type: "setIdle", mode: "breathing" }
-- getStatus: { type: "getStatus" }
+```json
+{ "type": "identify", "role": "agent", "name": "@agentName@" }
+{ "type": "speak", "text": "Hello", "emotion": "neutral", "output": "mic" }
+{ "type": "setExpression", "name": "happy", "intensity": 1 }
+{ "type": "setIdle", "mode": "breathing" }
+{ "type": "getStatus" }
+```
 
-Wait ~1s after identify before sending commands.
-Wait for speakAck duration + 2s buffer before closing WebSocket.
-
-See server.js in ~/openclaw/avatar/control-server/ for full protocol.
+Wait for `speakAck` duration + 2s buffer before closing WebSocket.
 
 ## Ports
 
-- 8765: WebSocket (control)
-- 8766: HTTP (audio serving + health)
-- 3000: Renderer (browser, visual only)
-- /dev/video10: Virtual camera
-
-## Audio Flow
-
-Agent sends speak with output target -> control server runs edge-tts -> generates MP3 -> ffmpeg plays to chosen PulseAudio sink(s) -> renderer gets lip sync data only (visual animation, no browser audio).
+| Port | Service |
+|------|---------|
+| 8765 | WebSocket control |
+| 8766 | HTTP (audio serving + health) |
+| 3000 | Renderer (browser) |
+| /dev/video10 | Virtual camera |
 
 ## Troubleshooting
 
-- "Control Server Disconnected" in browser: check systemctl --user status avatar-control-server
-- No audio in Meet: verify AvatarMic sink exists (pactl list sinks short | grep AvatarMic), check output is "mic" or "both"
-- No audio in room: check output is "speakers" or "both", check default system sink volume
-- Speak command hangs: must send identify before any other command
-- Virtual camera not in Meet: restart Meet after starting avatar (Chrome enumerates devices at join time)
-- Renderer won't start: check ~/openclaw/avatar/renderer/node_modules exists, run npm install if needed
+- **No audio in Meet**: Check `pactl list sinks short | grep AvatarMic`, use output `mic` or `both`
+- **No audio in room**: Check output is `speakers` or `both`, check system volume
+- **Speak hangs**: Must send `identify` before any other WebSocket command
+- **Virtual camera not in Meet**: Restart Meet (Chrome enumerates devices at join)
+- **Renderer won't start**: Run `npm install` in `~/openclaw/avatar/renderer/`
