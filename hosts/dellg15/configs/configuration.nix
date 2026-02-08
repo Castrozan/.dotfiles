@@ -21,7 +21,7 @@
       systemd-boot.enable = true;
       efi.canTouchEfiVariables = true;
     };
-    kernel.sysctl."vm.swappiness" = 80;
+    kernel.sysctl."vm.swappiness" = 150;
 
     # Virtual camera support (v4l2loopback)
     extraModulePackages = [ config.boot.kernelPackages.v4l2loopback ];
@@ -121,12 +121,25 @@
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
   system.stateVersion = nixpkgs-version; # Did you read the comment?
 
+  zramSwap = {
+    enable = true;
+    memoryPercent = 50;
+    algorithm = "zstd";
+  };
+
   swapDevices = [
     {
       device = "/swapfile";
-      size = 8192; # 8 GiB
+      size = 4096;
     }
   ];
+
+  services.earlyoom = {
+    enable = true;
+    freeMemThreshold = 5;
+    freeSwapThreshold = 10;
+    enableNotifications = true;
+  };
 
   # Networking
   networking = {
