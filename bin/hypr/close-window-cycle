@@ -6,12 +6,11 @@ current=$(hyprctl activewindow -j)
 current_addr=$(echo "$current" | jq -r '.address')
 current_ws=$(echo "$current" | jq -r '.workspace.id')
 
-# Find previous window in focus history on same workspace
-# focusHistoryID 0 = current, 1 = previous, etc.
-prev_addr=$(hyprctl clients -j | jq -r --arg ws "$current_ws" '
-  [.[] | select(.workspace.id == ($ws | tonumber))] |
+# Find previous window in focus history on same workspace (excluding current)
+prev_addr=$(hyprctl clients -j | jq -r --arg ws "$current_ws" --arg addr "$current_addr" '
+  [.[] | select(.workspace.id == ($ws | tonumber) and .address != $addr)] |
   sort_by(.focusHistoryID) |
-  .[1].address // empty
+  .[0].address // empty
 ')
 
 # Close current window
