@@ -1,10 +1,12 @@
 { pkgs, ... }:
 let
-  pwJs = pkgs.writeText "pw.js" (builtins.readFile ../../agents/skills/browser/scripts/pw.js);
+  pwDaemonJs = pkgs.writeText "pw-daemon.js" (
+    builtins.readFile ../../agents/skills/browser/scripts/pw-daemon.js
+  );
   pwScript = builtins.readFile ../../agents/skills/browser/scripts/pw.sh;
 
   pw = pkgs.writeShellScriptBin "pw" ''
-    export PW_JS="${pwJs}"
+    export PW_DAEMON_JS="${pwDaemonJs}"
     ${pwScript}
   '';
 in

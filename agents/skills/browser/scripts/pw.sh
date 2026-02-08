@@ -1,15 +1,13 @@
 #!/usr/bin/env bash
-# pw — Fast persistent browser automation (Playwright + CDP)
-# Sessions persist in ~/.local/share/pw-browser/.
 set -euo pipefail
 
 PW_PORT="${PW_PORT:-9222}"
+PW_DAEMON_PORT="$((PW_PORT + 1))"
 PW_CACHE="${XDG_CACHE_HOME:-$HOME/.cache}/pw-cli"
 PW_DATA="${PW_BROWSER_DATA:-$HOME/.local/share/pw-browser}"
 PW_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PW_JS="${PW_JS:-$PW_SCRIPT_DIR/pw.js}"
+PW_DAEMON_JS="${PW_DAEMON_JS:-$PW_SCRIPT_DIR/pw-daemon.js}"
 
-# Shared Chrome flags for all launch modes
 CHROME_FLAGS=(
   --remote-debugging-port="$PW_PORT"
   --user-data-dir="$PW_DATA"
@@ -30,6 +28,38 @@ CHROME_FLAGS=(
 
 find_browser() {
   command -v chromium 2>/dev/null || command -v google-chrome-stable 2>/dev/null || command -v brave 2>/dev/null || echo ""
+}
+
+send_command() {
+  local commandName="$1"
+  shift
+  local argsJson="[]"
+  if [ $# -gt 0 ]; then
+    argsJson=$(printf '%s\n' "$@" | jq -R . | jq -s .)
+  fi
+  local response
+  local httpCode
+  response=$(curl -sf -o - -w "\n%{http_code}" -X POST "http://127.0.0.1:$PW_DAEMON_PORT" \
+    -H "Content-Type: application/json" \
+    -d "{\"cmd\":$(echo "$commandName" | jq -R .),\"args\":$argsJson}" 2>/dev/null) || {
+    echo "Error: daemon not responding" >&2
+    return 1
+  }
+  httpCode=$(echo "$response" | tail -1)
+  local body
+  body=$(echo "$response" | sed '$d')
+  if [ "$httpCode" = "200" ]; then
+    [ -n "$body" ] && echo "$body"
+    return 0
+  else
+    echo "Error: $body" >&2
+    return 1
+  fi
+}
+
+daemon_alive() {
+  curl -sf -X POST "http://127.0.0.1:$PW_DAEMON_PORT" \
+    -d '{"cmd":"ping","args":[]}' >/dev/null 2>&1
 }
 
 case "${1:-help}" in
@@ -60,12 +90,13 @@ pw — browser automation (headless by default)
   tabs                            List open tabs
   tab <n>                         Switch to tab by index
   status                          Check if browser is running
-  close                           Kill browser
+  close                           Kill browser and daemon
 HELP
     exit 0
     ;;
 
   close)
+    pkill -f "pw-daemon.js" 2>/dev/null || true
     pkill -f "remote-debugging-port=$PW_PORT.*user-data-dir=$PW_DATA" 2>/dev/null \
       && echo "Agent browser closed." \
       || echo "No agent browser running."
@@ -75,17 +106,17 @@ HELP
   status)
     echo -n "Agent browser (port $PW_PORT): "
     curl -sf "http://127.0.0.1:$PW_PORT/json/version" >/dev/null 2>&1 && echo "ready" || echo "not running"
+    echo -n "Daemon (port $PW_DAEMON_PORT): "
+    daemon_alive && echo "ready" || echo "not running"
     exit 0
     ;;
 esac
 
-# Detect --headed flag anywhere in args
 PW_HEADED="${PW_HEADED:-false}"
 if [[ " ${*} " == *" --headed "* ]]; then
   PW_HEADED="true"
 fi
 
-# Auto-install playwright in cache dir (one-time)
 if [ ! -d "$PW_CACHE/node_modules/playwright" ]; then
   echo "Installing playwright (one-time)..." >&2
   mkdir -p "$PW_CACHE"
@@ -120,9 +151,23 @@ if ! curl -sf "http://127.0.0.1:$PW_PORT/json/version" >/dev/null 2>&1; then
 elif [ "$PW_HEADED" = "true" ]; then
   BROWSER_PID=$(pgrep -f "remote-debugging-port=$PW_PORT.*user-data-dir=" 2>/dev/null | head -1)
   if [ -n "$BROWSER_PID" ] && tr '\0' ' ' < "/proc/$BROWSER_PID/cmdline" 2>/dev/null | grep -q headless; then
+    pkill -f "pw-daemon.js" 2>/dev/null || true
     pkill -f "remote-debugging-port=$PW_PORT.*user-data-dir=$PW_DATA" 2>/dev/null || true
     sleep 0.5
     launch_browser
+  fi
+fi
+
+if ! daemon_alive; then
+  pkill -f "pw-daemon.js" 2>/dev/null || true
+  NODE_PATH="$PW_CACHE/node_modules" PW_PORT="$PW_PORT" node "$PW_DAEMON_JS" >/dev/null 2>&1 &
+  for _ in $(seq 1 30); do
+    daemon_alive && break
+    sleep 0.1
+  done
+  if ! daemon_alive; then
+    echo "Error: Failed to start pw daemon" >&2
+    exit 1
   fi
 fi
 
@@ -132,4 +177,4 @@ for arg in "$@"; do
   FILTERED_ARGS+=("$arg")
 done
 
-NODE_PATH="$PW_CACHE/node_modules" PW_PORT="$PW_PORT" exec node "$PW_JS" "${FILTERED_ARGS[@]}"
+send_command "${FILTERED_ARGS[@]}"
