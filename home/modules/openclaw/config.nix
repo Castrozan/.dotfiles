@@ -238,6 +238,7 @@ in
           "@ttsEngine@"
           "@agentSkills@"
           "@notifyTopic@"
+          "@CORE_RULES@"
         ];
         baseValues = [
           agentName
@@ -253,6 +254,7 @@ in
           agent.tts.engine
           skillsDisplay
           openclaw.notifyTopic
+          (builtins.readFile ../../../agents/rules/core.md)
         ];
         gridNames = builtins.attrNames openclaw.gridPlaceholders;
         gridValues = map (name: openclaw.gridPlaceholders.${name}) gridNames;

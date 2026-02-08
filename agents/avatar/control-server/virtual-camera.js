@@ -154,8 +154,37 @@ async function startCapture() {
     return id;
   }
 
-  ws.on("open", () => {
+  function sendAndWait(method, params = {}) {
+    return new Promise((resolve) => {
+      const id = send(method, params);
+      const handler = (raw) => {
+        try {
+          const msg = JSON.parse(raw);
+          if (msg.id === id) {
+            ws.removeListener("message", handler);
+            resolve(msg.result);
+          }
+        } catch {}
+      };
+      ws.on("message", handler);
+    });
+  }
+
+  ws.on("open", async () => {
     console.log("✅ Connected to CDP");
+
+    // Dismiss ChatVRM "About" modal if present
+    const dismissResult = await sendAndWait("Runtime.evaluate", {
+      expression: `(() => {
+        const btn = Array.from(document.querySelectorAll("button")).find(b => b.textContent.trim() === "Start");
+        if (btn) { btn.click(); return "dismissed"; }
+        return "no modal";
+      })()`,
+    });
+    const modalStatus = dismissResult?.result?.value || "unknown";
+    console.log(`📋 ChatVRM modal: ${modalStatus}`);
+    if (modalStatus === "dismissed")
+      await new Promise((r) => setTimeout(r, 1000));
 
     // Start screencast
     send("Page.startScreencast", {
