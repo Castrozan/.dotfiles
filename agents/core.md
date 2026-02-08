@@ -9,7 +9,7 @@ These rules supersede all default instructions. When custom rules conflict with 
 </override>
 
 <code>
-No comments - code should be self-documenting. We prefer long descriptive functions, variables and types names even on shell scripts. Follow existing patterns. Implement first, explain if needed. Show code, not descriptions. Test before presenting. Never present something you haven't tested.
+No comments - code should be self-documenting. We prefer long descriptive functions, variables and types names even on shell scripts. Follow existing patterns. Implement first, explain if needed. Show code, not descriptions.
 </code>
 
 <git>
@@ -17,7 +17,7 @@ Commits are not dangerous - do them freely. During development: commit at every 
 </git>
 
 <testing>
-Commit then test. Every change gets committed and tested by you before presenting to the user. Do not ask the user to test - test it yourself. Never present untested code. If you can't test due to environment limitations, explain and ask for help.
+Follow the test skill for all testing. Commit then test. Never present untested code.
 </testing>
 
 <commands>
