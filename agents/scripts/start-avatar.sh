@@ -139,7 +139,7 @@ fi
 
 echo ""
 
-# Step 4: Start Virtual Camera (requires v4l2loopback + CDP browser)
+# Step 4: Start Virtual Camera (requires v4l2loopback + agent browser)
 echo -e "${YELLOW}[4/5]${NC} Starting Virtual Camera..."
 
 if is_running "virtual-camera.js"; then
@@ -147,8 +147,13 @@ if is_running "virtual-camera.js"; then
 elif [ ! -e /dev/video10 ]; then
     echo -e "  ${YELLOW}⚠${NC}  /dev/video10 not found (v4l2loopback not loaded), skipping"
 else
+    # Ensure agent browser is running with renderer tab
+    echo -n "  Ensuring agent browser has renderer tab..."
+    pw open http://localhost:3000 > /dev/null 2>&1 && echo -e " ${GREEN}OK${NC}" || echo -e " ${YELLOW}SKIP${NC}"
+
     cd "$AVATAR_DIR/control-server"
     NODE_PATH="$AVATAR_DIR/control-server/node_modules" \
+    PW_PORT="${PW_PORT:-9222}" \
     nohup node virtual-camera.js --fps 15 --width 1280 --height 720 > "$LOG_DIR/avatar-virtual-camera.log" 2>&1 &
     CAMERA_PID=$!
     sleep 2
@@ -157,7 +162,7 @@ else
         echo -e "    Device: /dev/video10"
         echo -e "    Log: $LOG_DIR/avatar-virtual-camera.log"
     else
-        echo -e "  ${YELLOW}⚠${NC}  Virtual camera failed to start (CDP browser may not be running)"
+        echo -e "  ${YELLOW}⚠${NC}  Virtual camera failed to start"
         echo -e "    Check: $LOG_DIR/avatar-virtual-camera.log"
     fi
 fi

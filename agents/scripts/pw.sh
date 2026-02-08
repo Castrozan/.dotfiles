@@ -8,6 +8,20 @@ PW_CACHE="${XDG_CACHE_HOME:-$HOME/.cache}/pw-cli"
 PW_DATA="${PW_BROWSER_DATA:-$HOME/.local/share/pw-browser}"
 PW_JS="${PW_JS:-$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../skills/playwright-mcp/pw.js}"
 
+# Shared Chrome flags for all launch modes
+CHROME_FLAGS=(
+  --remote-debugging-port="$PW_PORT"
+  --user-data-dir="$PW_DATA"
+  --no-first-run
+  --no-default-browser-check
+  --disable-extensions
+  --disable-sync
+  --use-fake-ui-for-media-stream
+  --autoplay-policy=no-user-gesture-required
+  --disable-background-timer-throttling
+  --disable-backgrounding-occluded-windows
+)
+
 find_browser() {
   command -v brave 2>/dev/null || command -v google-chrome-stable 2>/dev/null || command -v chromium 2>/dev/null || echo ""
 }
@@ -80,14 +94,7 @@ if [ "${1:-}" = "open" ] && [[ " ${*} " == *" --headed "* ]]; then
   mkdir -p "$PW_DATA"
   echo "Opening headed browser..."
   echo "Close the browser window when done."
-  "$BROWSER" \
-    --remote-debugging-port="$PW_PORT" \
-    --user-data-dir="$PW_DATA" \
-    --no-first-run \
-    --no-default-browser-check \
-    --disable-extensions \
-    --disable-sync \
-    "${URL:-about:blank}" 2>/dev/null
+  "$BROWSER" "${CHROME_FLAGS[@]}" "${URL:-about:blank}" 2>/dev/null
   echo "Session saved."
   exit 0
 fi
@@ -108,15 +115,7 @@ if ! curl -sf "http://127.0.0.1:$PW_PORT/json/version" >/dev/null 2>&1; then
     exit 1
   fi
   mkdir -p "$PW_DATA"
-  "$BROWSER" \
-    --headless=new \
-    --remote-debugging-port="$PW_PORT" \
-    --user-data-dir="$PW_DATA" \
-    --no-first-run \
-    --no-default-browser-check \
-    --disable-extensions \
-    --disable-sync \
-    >/dev/null 2>&1 &
+  "$BROWSER" --headless=new "${CHROME_FLAGS[@]}" >/dev/null 2>&1 &
 
   for _ in $(seq 1 20); do
     curl -sf "http://127.0.0.1:$PW_PORT/json/version" >/dev/null 2>&1 && break

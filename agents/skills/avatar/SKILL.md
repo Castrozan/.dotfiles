@@ -7,14 +7,20 @@ description: "Control the VTuber avatar — speak with lip sync, change expressi
 
 ## Start / Stop
 
+`start-avatar.sh` is the single entry point — it starts all 5 services in order:
+
+1. **Virtual audio** — AvatarSpeaker + AvatarMic PulseAudio sinks
+2. **Control server** — WebSocket (8765) + HTTP (8766) via systemd
+3. **Renderer** — ChatVRM on http://localhost:3000
+4. **Virtual camera** — CDP screencast from renderer to /dev/video10
+5. **Health checks** — verifies all services
+
 ```bash
-systemctl --user start avatar-control-server   # Start control server
-systemctl --user stop avatar-control-server    # Stop
-systemctl --user status avatar-control-server  # Check
-curl -s http://localhost:8766/health           # Health check
+start-avatar.sh          # Start everything
+stop-avatar.sh           # Stop everything
 ```
 
-Renderer (visual): `cd ~/openclaw/avatar/renderer && npm run dev` (serves on port 3000)
+To see the renderer visually: `pw open http://localhost:3000 --headed`
 
 ## Speaking
 
