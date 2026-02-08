@@ -1,38 +1,66 @@
 #!/usr/bin/env bash
 # pw — Fast persistent browser automation (Playwright + CDP)
-# Uses a dedicated agent browser profile (lightweight, no extensions).
 # Sessions persist in ~/.local/share/pw-browser/.
-# Headless by default. Use --headed for manual login.
 set -euo pipefail
 
 PW_PORT="${PW_PORT:-9222}"
 PW_CACHE="${XDG_CACHE_HOME:-$HOME/.cache}/pw-cli"
 PW_DATA="${PW_BROWSER_DATA:-$HOME/.local/share/pw-browser}"
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PW_JS="$SCRIPT_DIR/../skills/playwright-mcp/pw.js"
-
-# Handle close — kill the agent browser
-if [ "${1:-}" = "close" ]; then
-  pkill -f "remote-debugging-port=$PW_PORT.*user-data-dir=$PW_DATA" 2>/dev/null \
-    && echo "Agent browser closed." \
-    || echo "No agent browser running."
-  exit 0
-fi
-
-# Handle status
-if [ "${1:-}" = "status" ]; then
-  echo -n "Agent browser (port $PW_PORT): "
-  curl -sf "http://127.0.0.1:$PW_PORT/json/version" >/dev/null 2>&1 && echo "ready" || echo "not running"
-  exit 0
-fi
+PW_JS="${PW_JS:-$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../skills/playwright-mcp/pw.js}"
 
 find_browser() {
   command -v brave 2>/dev/null || command -v google-chrome-stable 2>/dev/null || command -v chromium 2>/dev/null || echo ""
 }
 
+case "${1:-help}" in
+  help|-h|--help)
+    cat <<'HELP'
+pw — browser automation (headless by default)
+
+  open <url> [--new] [--headed]   Navigate (--new=new tab, --headed=visible window)
+  back                            Go back in history
+  forward                         Go forward in history
+  scroll <up|down> [px]           Scroll page (default 500px)
+  snap                            Accessibility tree (semantic YAML)
+  elements                        Interactive elements with [index]
+  text                            Full page text content
+  html                            Full page HTML
+  url                             Current URL
+  title                           Page title
+  click <index|selector>          Click element by index or CSS selector
+  click-text <text>               Click element by visible text
+  fill <selector> <value>         Fill input field
+  type <selector> <value>         Type into field (keystroke by keystroke)
+  select <selector> <value>       Select dropdown option
+  press <key>                     Press keyboard key (Enter, Tab, etc.)
+  screenshot [path] [--full]      Screenshot (default: /tmp/pw-screenshot.png)
+  eval <js>                       Evaluate JavaScript expression
+  wait <selector>                 Wait for element to appear
+  wait --text <text>              Wait for text to appear
+  tabs                            List open tabs
+  tab <n>                         Switch to tab by index
+  status                          Check if browser is running
+  close                           Kill browser
+HELP
+    exit 0
+    ;;
+
+  close)
+    pkill -f "remote-debugging-port=$PW_PORT.*user-data-dir=$PW_DATA" 2>/dev/null \
+      && echo "Agent browser closed." \
+      || echo "No agent browser running."
+    exit 0
+    ;;
+
+  status)
+    echo -n "Agent browser (port $PW_PORT): "
+    curl -sf "http://127.0.0.1:$PW_PORT/json/version" >/dev/null 2>&1 && echo "ready" || echo "not running"
+    exit 0
+    ;;
+esac
+
 # Handle open --headed: stop headless, launch visible browser, block until closed
 if [ "${1:-}" = "open" ] && [[ " ${*} " == *" --headed "* ]]; then
-  # Stop running headless browser if any
   if curl -sf "http://127.0.0.1:$PW_PORT/json/version" >/dev/null 2>&1; then
     echo "Stopping headless browser..."
     pkill -f "remote-debugging-port=$PW_PORT.*user-data-dir=$PW_DATA" 2>/dev/null || true
@@ -43,7 +71,6 @@ if [ "${1:-}" = "open" ] && [[ " ${*} " == *" --headed "* ]]; then
     echo "Error: No browser found in PATH" >&2
     exit 1
   fi
-  # Extract URL (skip "open", "--headed", "--new")
   URL=""
   for arg in "${@:2}"; do
     [[ "$arg" == "--headed" || "$arg" == "--new" ]] && continue
@@ -52,7 +79,6 @@ if [ "${1:-}" = "open" ] && [[ " ${*} " == *" --headed "* ]]; then
   done
   mkdir -p "$PW_DATA"
   echo "Opening headed browser..."
-  echo "Profile: $PW_DATA"
   echo "Close the browser window when done."
   "$BROWSER" \
     --remote-debugging-port="$PW_PORT" \

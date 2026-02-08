@@ -19,5 +19,6 @@
     ./tmux-btop-toggle.nix
     ./tmux-resurrect.nix
     ./volume.nix
+    ./pw.nix
   ];
 }

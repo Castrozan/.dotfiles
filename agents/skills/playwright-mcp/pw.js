@@ -1,6 +1,4 @@
 // pw.js — Fast persistent browser automation via Playwright + CDP
-// Usage: NODE_PATH=... node pw.js <command> [args...]
-// Connects to a running Chrome instance via remote debugging port.
 // Chrome lifecycle managed by pw.sh wrapper.
 
 const { chromium } = require("playwright");
@@ -9,9 +7,9 @@ const PW_PORT = process.env.PW_PORT || "9222";
 async function main() {
   const [cmd, ...args] = process.argv.slice(2);
 
-  if (!cmd || cmd === "help") {
-    printHelp();
-    return;
+  if (!cmd) {
+    console.error("No command. Run: pw help");
+    process.exit(1);
   }
 
   let browser;
@@ -296,8 +294,7 @@ async function main() {
       }
 
       default:
-        console.error(`Unknown: ${cmd}`);
-        printHelp();
+        console.error(`Unknown command: ${cmd}. Run: pw help`);
         process.exit(1);
     }
   } catch (e) {
@@ -322,30 +319,6 @@ function need(page) {
     console.error("No page open. Run: pw open <url>");
     process.exit(1);
   }
-}
-
-function printHelp() {
-  console.log(`pw - Fast browser automation
-
-Navigation:  open <url> [--new] [--headed]  back  forward  scroll <up|down> [px]
-Inspect:     snap        accessibility tree
-             elements    interactive elements with [index]
-             text        page text content
-             html        page HTML
-             url         current URL
-             title       page title
-Interact:    click <index|selector>
-             click-text <visible text>
-             fill <selector> <value>
-             type <selector> <value>
-             select <selector> <value>
-             press <key>
-Utility:     screenshot [path] [--full]
-             eval <js expression>
-             wait <selector|--text "text">
-Tabs:        tabs        list open tabs
-             tab <n>     switch to tab
-Browser:     close       (handled by pw.sh)`);
 }
 
 main();

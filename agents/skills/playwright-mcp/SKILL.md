@@ -7,19 +7,17 @@ description: "Browser automation with persistent agent browser. Primary: pw CLI 
 
 ## Setup (one-time)
 
-The agent browser uses a dedicated profile (`~/.local/share/pw-browser/`). By default it runs headless. Use `--headed` when the user needs to see or interact with the browser (e.g. scanning QR codes, solving CAPTCHAs, logging into sites, or watching what the agent does):
+The agent browser uses a dedicated profile (`~/.local/share/pw-browser/`), but the user probably already set up the accounts and browser so you can use, but sometimes for **one time setups only**, you can ask the user to open the browser in headed mode. Examples:
 
 ```bash
 pw open https://web.whatsapp.com --headed   # User scans QR code
-pw open https://accounts.google.com --headed # User completes OAuth flow
-pw open https://example.com --headed         # User watches/interacts while agent works
 ```
 
-This auto-stops any running headless instance, opens a visible window, and blocks until the user closes it. Sessions persist across reboots.
+Sessions persist across reboots. So no need to ask user before checking if you don't already have it all set up.
 
 ## pw CLI (Primary — ~400ms per command)
 
-Persistent browser + Playwright library. Browser stays alive between commands.
+Persistent browser. Browser stays alive between commands.
 
 ### Workflow
 
@@ -35,29 +33,7 @@ pw close                        # Kill agent browser
 
 ### Commands
 
-| Command | Description |
-|---------|-------------|
-| `pw open <url> [--new] [--headed]` | Navigate (--new = new tab, --headed = visible window) |
-| `pw elements` | Interactive elements with `[index]` — use with `click` |
-| `pw snap` | Accessibility tree (semantic YAML) |
-| `pw text` | Full page text content |
-| `pw click <index\|selector>` | Click element by index or CSS selector |
-| `pw click-text <text>` | Click by visible text |
-| `pw fill <selector> <value>` | Fill input field |
-| `pw type <selector> <value>` | Type into field (keystroke by keystroke) |
-| `pw select <selector> <value>` | Select dropdown option |
-| `pw press <key>` | Press keyboard key (Enter, Tab, etc.) |
-| `pw screenshot [path] [--full]` | Screenshot (default: /tmp/pw-screenshot.png) |
-| `pw eval <js>` | Evaluate JavaScript, print result |
-| `pw html` | Full page HTML |
-| `pw scroll <up\|down> [px]` | Scroll page |
-| `pw back` / `pw forward` | Navigation history |
-| `pw wait <selector>` | Wait for element to appear |
-| `pw wait --text <text>` | Wait for text to appear |
-| `pw tabs` | List open tabs |
-| `pw tab <n>` | Switch to tab |
-| `pw status` | Check if browser is running |
-| `pw close` | Kill agent browser |
+`pw help`: Show help information
 
 ### Element Interaction Pattern
 
