@@ -1,45 +1,55 @@
 #!/usr/bin/env bash
 # pw — Fast persistent browser automation (Playwright + CDP)
-# Default: connects to user's Brave (always has --remote-debugging-port=19222).
-# --chrome: forces a separate headless Chrome instance (port 19223).
+# Uses a dedicated agent browser profile (lightweight, no extensions).
+# User logs in once (WhatsApp etc.), sessions persist in ~/.local/share/pw-browser/.
+# The agent browser auto-launches on port 9222 when needed.
 set -euo pipefail
 
-# --chrome flag: use headless Chrome instead of Brave
-USE_CHROME=false
-if [ "${1:-}" = "--chrome" ]; then
-  USE_CHROME=true
-  shift
-fi
-
-BRAVE_PORT=19222
-CHROME_PORT=19223
-
-if [ "$USE_CHROME" = true ]; then
-  PW_PORT="$CHROME_PORT"
-else
-  PW_PORT="${PW_PORT:-$BRAVE_PORT}"
-fi
-
+PW_PORT="${PW_PORT:-9222}"
 PW_CACHE="${XDG_CACHE_HOME:-$HOME/.cache}/pw-cli"
+PW_DATA="${PW_BROWSER_DATA:-$HOME/.local/share/pw-browser}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PW_JS="$SCRIPT_DIR/../skills/playwright-mcp/pw.js"
 
-# Handle close
+# Handle close — kill the agent browser
 if [ "${1:-}" = "close" ]; then
-  if [ "$USE_CHROME" = true ]; then
-    pkill -f "headless.*remote-debugging-port=$CHROME_PORT" 2>/dev/null && echo "Headless Chrome closed." || echo "No headless Chrome running."
-  else
-    echo "Brave stays running (it's your main browser). Use --chrome close to kill headless."
-  fi
+  pkill -f "remote-debugging-port=$PW_PORT.*user-data-dir=$PW_DATA" 2>/dev/null \
+    && echo "Agent browser closed." \
+    || echo "No agent browser running."
   exit 0
 fi
 
 # Handle status
 if [ "${1:-}" = "status" ]; then
-  echo -n "Brave (port $BRAVE_PORT): "
-  curl -sf "http://127.0.0.1:$BRAVE_PORT/json/version" >/dev/null 2>&1 && echo "ready" || echo "not running"
-  echo -n "Chrome (port $CHROME_PORT): "
-  curl -sf "http://127.0.0.1:$CHROME_PORT/json/version" >/dev/null 2>&1 && echo "ready" || echo "not running"
+  echo -n "Agent browser (port $PW_PORT): "
+  curl -sf "http://127.0.0.1:$PW_PORT/json/version" >/dev/null 2>&1 && echo "ready" || echo "not running"
+  exit 0
+fi
+
+# Handle login — launch headed so user can log in to sites
+if [ "${1:-}" = "login" ]; then
+  if curl -sf "http://127.0.0.1:$PW_PORT/json/version" >/dev/null 2>&1; then
+    echo "Agent browser already running. Close it first: pw close"
+    exit 1
+  fi
+  BROWSER="$(command -v brave 2>/dev/null || command -v google-chrome-stable 2>/dev/null || command -v chromium 2>/dev/null || echo "")"
+  if [ -z "$BROWSER" ]; then
+    echo "Error: No browser found in PATH" >&2
+    exit 1
+  fi
+  mkdir -p "$PW_DATA"
+  echo "Launching agent browser in headed mode for login..."
+  echo "Profile: $PW_DATA"
+  echo "Log in to any sites you need, then close the browser."
+  "$BROWSER" \
+    --remote-debugging-port="$PW_PORT" \
+    --user-data-dir="$PW_DATA" \
+    --no-first-run \
+    --no-default-browser-check \
+    --disable-extensions \
+    --disable-sync \
+    "${2:-about:blank}" 2>/dev/null
+  echo "Login session saved."
   exit 0
 fi
 
@@ -51,39 +61,31 @@ if [ ! -d "$PW_CACHE/node_modules/playwright" ]; then
   echo "Done." >&2
 fi
 
-# Ensure browser is available on the target port
+# Auto-launch agent browser (headless) if not running
 if ! curl -sf "http://127.0.0.1:$PW_PORT/json/version" >/dev/null 2>&1; then
-  if [ "$USE_CHROME" = true ] || [ "$PW_PORT" = "$CHROME_PORT" ]; then
-    # Launch headless Chrome
-    CHROME="$(command -v google-chrome-stable 2>/dev/null || command -v chromium 2>/dev/null || echo "")"
-    if [ -z "$CHROME" ]; then
-      echo "Error: No Chrome/Chromium found in PATH" >&2
-      exit 1
-    fi
-    PW_DATA="/tmp/pw-chrome-data"
-    mkdir -p "$PW_DATA"
-    "$CHROME" \
-      --headless=new \
-      --remote-debugging-port="$CHROME_PORT" \
-      --user-data-dir="$PW_DATA" \
-      --no-first-run \
-      --no-default-browser-check \
-      --disable-background-networking \
-      --disable-extensions \
-      --disable-sync \
-      >/dev/null 2>&1 &
-
-    for _ in $(seq 1 20); do
-      curl -sf "http://127.0.0.1:$CHROME_PORT/json/version" >/dev/null 2>&1 && break
-      sleep 0.2
-    done
-  else
-    echo "Error: Brave not running on port $PW_PORT. Start Brave or use: pw --chrome <cmd>" >&2
+  BROWSER="$(command -v brave 2>/dev/null || command -v google-chrome-stable 2>/dev/null || command -v chromium 2>/dev/null || echo "")"
+  if [ -z "$BROWSER" ]; then
+    echo "Error: No browser found in PATH" >&2
     exit 1
   fi
+  mkdir -p "$PW_DATA"
+  "$BROWSER" \
+    --headless=new \
+    --remote-debugging-port="$PW_PORT" \
+    --user-data-dir="$PW_DATA" \
+    --no-first-run \
+    --no-default-browser-check \
+    --disable-extensions \
+    --disable-sync \
+    >/dev/null 2>&1 &
+
+  for _ in $(seq 1 20); do
+    curl -sf "http://127.0.0.1:$PW_PORT/json/version" >/dev/null 2>&1 && break
+    sleep 0.2
+  done
 
   if ! curl -sf "http://127.0.0.1:$PW_PORT/json/version" >/dev/null 2>&1; then
-    echo "Error: Failed to start browser on port $PW_PORT" >&2
+    echo "Error: Failed to start agent browser on port $PW_PORT" >&2
     exit 1
   fi
 fi
