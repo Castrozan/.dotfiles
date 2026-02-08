@@ -306,12 +306,14 @@ async function main() {
 }
 
 function getActivePage(browser) {
-  const contexts = browser.contexts();
-  for (const ctx of contexts) {
-    const pages = ctx.pages();
-    if (pages.length > 0) return pages[pages.length - 1];
+  const allPages = browser.contexts().flatMap((c) => c.pages());
+  if (allPages.length === 0) return null;
+  const urlMatch = process.env.PW_TAB_URL;
+  if (urlMatch) {
+    const match = allPages.find((p) => p.url().includes(urlMatch));
+    if (match) return match;
   }
-  return null;
+  return allPages[allPages.length - 1];
 }
 
 function need(page) {

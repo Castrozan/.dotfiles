@@ -1,5 +1,5 @@
 ---
-name: playwright-mcp
+name: browser
 description: "Browser automation with persistent agent browser. Primary: pw CLI (~400ms/cmd). Fallback: Playwright MCP server via Claude Code MCP integration."
 ---
 

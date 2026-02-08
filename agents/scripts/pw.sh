@@ -6,7 +6,7 @@ set -euo pipefail
 PW_PORT="${PW_PORT:-9222}"
 PW_CACHE="${XDG_CACHE_HOME:-$HOME/.cache}/pw-cli"
 PW_DATA="${PW_BROWSER_DATA:-$HOME/.local/share/pw-browser}"
-PW_JS="${PW_JS:-$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../skills/playwright-mcp/pw.js}"
+PW_JS="${PW_JS:-$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../skills/browser/pw.js}"
 
 # Shared Chrome flags for all launch modes
 CHROME_FLAGS=(

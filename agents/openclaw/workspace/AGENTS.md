@@ -1,19 +1,8 @@
 # AGENTS.md — Operating Instructions
 
-**This file is nix-managed (read-only).**
+## Skills are your superpowers always check before asking.
 
-This folder is home. Everything you need to operate is here or auto-injected into your context.
-
-## Crucial Files
-
-Read on-demand when needed:
-- `GRID.md` — grid communication system - read when doing inter-agent work
-- `TOOLS-REFERENCE.md` — tool syntax: JSON, file search, web research, git, NixOS, browser
-- `HEARTBEAT-GUIDE.md` — heartbeat system, proactive checks, memory maintenance
-- `GROUP-CHAT.md` — group chat when-to-speak rules
-- `DELEGATION.md` — sub-agent spawning and rehydration
-- `DOTFILES-WORKFLOW.md` — dotfiles pull/edit/rebuild/push workflow
-- `skills/`, `scripts/` — specific capabilities with instructions and examples. Quick check before doing something, asking user or trying new things.
+- `skills/` — specific capabilities with instructions and examples. Quick check before doing something, asking user or trying new things.
 
 ---
 
@@ -28,14 +17,36 @@ You have more capabilities than you think. Before asking the user:
 
 ---
 
-## Workspace Structure
+## Use this tools instead of the basic ones.
 
-### Nix-Managed (read-only — edit in `~/.dotfiles/agents/openclaw/` and rebuild)
-- Identity: `SOUL.md`, `IDENTITY.md`, `USER.md`
-- Instructions: `AGENTS.md` (this file), reference guides
-- Grid: `GRID.md`
-- Config: `tts.json`
-- `skills/`, `scripts/`
+**Tell the user if any tool here is not working properly.**
+
+```bash
+jq '.field' file.json                    # Read
+jq '.field = "value"' f.json | sponge f.json  # Update
+yq -i '.field = "value"' file.yaml       # YAML in-place
+
+fd "pattern" /path        # Find by name
+rg "pattern" /path        # Search content
+wc -l file.md             # Check size before reading
+grep -A5 "pattern" file   # Context around match
+
+**Always check size before reading possible big files.**
+
+wc -l largefile.md                    # Line count
+head -100 largefile.md                # Preview start
+tail -50 largefile.md                 # Preview end
+sed -n '100,200p' largefile.md        # Lines 100-200
+grep -n "pattern" largefile.md        # Find with line numbers
+rg -C3 "pattern" largefile.md        # Context around matches
+
+1. `web_search` — Brave API
+3. `web_fetch("https://r.jina.ai/URL")` — for AI content extraction on .md
+2. `web_fetch` — Standard fetch for raw HTML, JSON, etc. Use with parsing tools like `jq` or `yq`.
+4. Browser skill
+```
+
+---
 
 ### Where to Put Work
 
@@ -47,9 +58,33 @@ If not instructed, all work goes in `projects/`. Each project is self-contained 
 
 Token efficiency saves real money. Context window accumulation is responsible for 40-50% of token consumption.
 
-- **Reset sessions after heavy work.** Start fresh for the next task rather than carrying bloated context, use `/compact`.
-- **Use subagents for heavy output.** File searches, large reads, diagnostics — run in a subagent so output doesn't bloat your main context.
-- **Batch work per heartbeat.** Do multiple checks in one turn rather than one check per turn.
+- Use `/compact` after heavy work so you start fresh for the next task.
+- Use subagents for most of your work. File searches, large reads, diagnostics.
+
+---
+
+## Sub-agent Delegation
+
+Sub-agents start **blank**. When you spawn one, fully rehydrate it:
+
+**Always include:**
+Identity: @agentName@ (agent), @userName@ (human)
+Workspaces: `@homePath@/@workspacePath@` (workspace), `@homePath@/.dotfiles` (dotfiles)
+Files to read: All root `.md` files in workspace first (AGENTS.md, SOUL.md, etc.), then task-specific files
+Prompt style: Create a plan file for the task and pass the path to agent. Focused detailed task, reference specific files, include relevant rules/patterns. More context = fewer mistakes.
+
+---
+
+## Dotfiles Workflow
+
+The dotfiles repo (`~/.dotfiles`) is used by **multiple actors simultaneously** — @userName@, Claude Code agents, and other grid agents.
+
+1. **Pull first**: `git pull --rebase origin main`
+2. **Code conduct**: follow conventions and always read dotfiles-expert on /agents and AGENTS.md
+3. **Code quality**: lint, format, test with the ci.yaml workflow
+4. **Rebuild & test**: with the rebuild skill — verify it succeeds - **ALWAYS TEST EVERYTHING YOU IMPLEMENT**
+5. **Always use conventional commits**: `feat(scope)`, `fix(scope)`, `refactor(scope)`, etc.
+6. **Push**: `git push origin main` only after successful rebuild
 
 ---
 
@@ -62,3 +97,4 @@ Token efficiency saves real money. Context window accumulation is responsible fo
 
 ## Core Rules
 
+@CORE_RULES@
