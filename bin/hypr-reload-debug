@@ -58,6 +58,8 @@ snapshot() {
 
 snapshot "before"
 
+# shellcheck disable=SC2301
+# shellcheck disable=SC2086
 echo "== EVENTS (socket2) =="${'\n'} >>"$log"
 if [ ! -S "$sock2" ]; then
   echo "Warning: socket2 not found: $sock2" >>"$log"

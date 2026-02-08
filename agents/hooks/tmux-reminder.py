@@ -8,22 +8,7 @@ import sys
 
 # Commands that typically take a long time to run
 LONG_RUNNING_PATTERNS = [
-    (r"^npm\s+(install|ci|build|run build)", "npm operations can take minutes"),
-    (r"^yarn\s+(install|build)", "yarn operations can take minutes"),
-    (r"^pnpm\s+(install|build)", "pnpm operations can take minutes"),
-    (r"^cargo\s+(build|test|clippy)", "cargo builds can be slow"),
-    (r"^pytest\s+", "test suites can run for a long time"),
-    (r"^make\s+", "make builds can take a while"),
-    (r"^cmake\s+", "cmake configuration can be slow"),
-    (r"^docker\s+(build|pull|push)", "docker operations can be slow"),
-    (r"^nix\s+(build|develop|flake)", "nix builds can take a long time"),
-    (r"^nixos-rebuild\s+", "nixos-rebuild can take several minutes"),
-    (r"^home-manager\s+switch", "home-manager switch can take a while"),
-    (r"^\./bin/rebuild", "rebuild script can take several minutes"),
-    (r"^pip\s+install", "pip installs can be slow"),
     (r"^bundle\s+install", "bundle install can take a while"),
-    (r"^mvn\s+(clean|compile|package|install)", "maven builds are typically slow"),
-    (r"^gradle\s+", "gradle builds can be slow"),
     (r"^ffmpeg\s+", "ffmpeg encoding can take a long time"),
     (r"^rsync\s+", "rsync transfers can be lengthy"),
     (r"^wget\s+.*-r", "recursive downloads can take hours"),
