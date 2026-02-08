@@ -63,9 +63,10 @@ clear_state
 
 # Determine what happened and respond appropriately
 if [[ "$windows_after" -gt "$windows_before" ]]; then
-    # New window was created (app launched from fuzzel)
-    # Always maximize the new window
-    hyprctl dispatch fullscreen 1
+    current_floating=$(echo "$current_window" | jq -r '.floating')
+    if [[ "$current_floating" != "true" ]]; then
+        hyprctl dispatch fullscreen 1
+    fi
 elif [[ "$was_maximized" == "true" ]]; then
     # Original was maximized - handle restore or switch
     if [[ "$current_address" != "$original_address" && "$current_address" != "null" && -n "$current_address" ]]; then
