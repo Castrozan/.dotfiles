@@ -104,8 +104,15 @@
               { "device.name" = "~bluez_card.*"; }
             ];
             actions.update-props = {
-              "bluez5.auto-connect" = "[\"a2dp_sink\", \"a2dp_source\"]";
-              "bluez5.codecs" = "[\"aac\", \"sbc_xq\", \"sbc\"]";
+              "bluez5.auto-connect" = [
+                "a2dp_sink"
+                "a2dp_source"
+              ];
+              "bluez5.codecs" = [
+                "aac"
+                "sbc_xq"
+                "sbc"
+              ];
             };
           }
         ];
