@@ -21,7 +21,6 @@ in
     (mkScript "hypr-close-window-cycle" ../../../bin/hypr/close-window-cycle)
     (mkScript "hypr-show-desktop" ../../../bin/hypr/show-desktop)
     (mkScript "hypr-maximize-focus-daemon" ../../../bin/hypr/maximize-focus-daemon)
-    (mkScript "hypr-monitor-switch" ../../../bin/hypr/monitor-switch)
     (mkScript "hypr-summon-brave" ../../../bin/hypr/summon-brave)
     (mkScript "hypr-detach-from-group-and-move-to-workspace" ../../../bin/hypr/detach-from-group-and-move-to-workspace)
     (mkScript "hypr-toggle-group-for-all-workspace-windows" ../../../bin/hypr/toggle-group-for-all-workspace-windows)
