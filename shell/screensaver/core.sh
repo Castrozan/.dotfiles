@@ -34,10 +34,6 @@ _wait_for_pane_ready() {
 }
 
 _start_screensaver_tmux_session() {
-    if tmux has-session -t screensaver 2>/dev/null; then
-        return 0
-    fi
-
     # Filter available commands
     local available_commands=()
     for cmd in "${SCREENSAVER_COMMANDS[@]}"; do
@@ -46,21 +42,21 @@ _start_screensaver_tmux_session() {
         fi
     done
 
-    # Create screensaver session
-    tmux new-session -d -s screensaver -n screensaver
+    # Create screensaver session (fails atomically if session already exists)
+    if ! tmux new-session -d -s screensaver -n screensaver 2>/dev/null; then
+        return 0
+    fi
 
     if [ ${#available_commands[@]} -gt 0 ]; then
         local first_cmd="${available_commands[0]}"
-        local bottom_height="${SCREENSAVER_BOTTOM_HEIGHT:-15}"
 
         if [ ${#available_commands[@]} -gt 1 ]; then
-            # Split horizontally to create right side (pane 2)
-            tmux split-window -h -t screensaver.1
+            # Split horizontally: right pane (pane 2) gets 60% width for visual commands
+            tmux split-window -h -p 60 -t screensaver.1
 
-            # If there are 3 commands: create vertical split on right side
             if [ ${#available_commands[@]} -gt 2 ]; then
-                # Split pane 2 vertically to create bottom-right pane (pane 3)
-                tmux split-window -v -p "$bottom_height" -t screensaver.2
+                # Split left pane vertically: bottom-left (pane 3) gets 50% height
+                tmux split-window -v -p 50 -t screensaver.1
             fi
         fi
 
@@ -69,11 +65,12 @@ _start_screensaver_tmux_session() {
         tmux send-keys -t screensaver.1 "$first_cmd" C-m
 
         if [ ${#available_commands[@]} -gt 2 ]; then
+            # Pane 2 = left-bottom (positional index), pane 3 = right full-height
             _wait_for_pane_ready "screensaver.2"
-            tmux send-keys -t screensaver.2 "${available_commands[2]}" C-m
+            tmux send-keys -t screensaver.2 "${available_commands[1]}" C-m
 
             _wait_for_pane_ready "screensaver.3"
-            tmux send-keys -t screensaver.3 "${available_commands[1]}" C-m
+            tmux send-keys -t screensaver.3 "${available_commands[2]}" C-m
         elif [ ${#available_commands[@]} -gt 1 ]; then
             _wait_for_pane_ready "screensaver.2"
             tmux send-keys -t screensaver.2 "${available_commands[1]}" C-m

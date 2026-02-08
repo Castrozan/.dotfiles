@@ -8,6 +8,7 @@
 }:
 {
   imports = [
+    ./audio.nix
     ./nvidia.nix
     ./libinput-quirks.nix
     ../scripts
@@ -175,9 +176,6 @@
   # Console keymap
   console.keyMap = "br-abnt2";
 
-  # Security
-  security.rtkit.enable = true;
-
   # XDG Portal for screen sharing (Hyprland + GNOME coexistence)
   custom.xdgPortal.enable = true;
 
@@ -196,17 +194,6 @@
 
     # Printing
     printing.enable = true;
-
-    # Sound with pipewire
-    pulseaudio.enable = false;
-    pipewire = {
-      enable = true;
-      alsa = {
-        enable = true;
-        support32Bit = true;
-      };
-      pulse.enable = true;
-    };
 
     # Touchpad support
     libinput = {
@@ -250,6 +237,5 @@
     usbutils
     v4l-utils # Virtual camera utilities
     ffmpeg-full # For video pipeline
-    pulseaudio # For pactl command (PipeWire compatibility)
   ];
 }

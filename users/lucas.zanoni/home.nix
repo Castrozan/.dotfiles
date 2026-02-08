@@ -6,7 +6,6 @@
 
     ./home/git.nix
     ./home/ssh.nix
-    ./home/asoundrc.nix
     ./home/session-vars.nix
     ./home/openclaw.nix
 
