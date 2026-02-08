@@ -17,6 +17,7 @@
     ./tar-unzip2dir.nix
     ./tmux-lazygit-toggle.nix
     ./tmux-btop-toggle.nix
+    ./tmux-editor-toggle.nix
     ./tmux-resurrect.nix
     ./volume.nix
     ./pw.nix
