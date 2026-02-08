@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Usage tracker — shows Claude Code subscription usage stats
-# Run: bash ~/@workspacePath@/scripts/usage-tracker.sh
+# Run: bash ~/@workspacePath@/skills/usage-tracker/scripts/usage-tracker.sh
 
 CCOST=~/.local/bin/ccost
 

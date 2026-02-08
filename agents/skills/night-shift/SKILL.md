@@ -70,7 +70,7 @@ Keep prompts **focused and minimal**:
 ### Delegation to Other Grid Agents
 For tasks outside your role (work stuff → Robson), use bot-bridge:
 ```bash
-~/openclaw/scripts/bot-bridge.sh robson "Night shift task: [description]. Write output to ~/openclaw/projects/night-shift-YYYY-MM-DD/[filename].md"
+~/openclaw/skills/agent-grid/scripts/bot-bridge.sh robson "Night shift task: [description]. Write output to ~/openclaw/projects/night-shift-YYYY-MM-DD/[filename].md"
 ```
 Send all Robson tasks at the START of the night, not sequentially. He works in parallel too.
 

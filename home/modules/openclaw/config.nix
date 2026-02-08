@@ -254,7 +254,7 @@ in
           agent.tts.engine
           skillsDisplay
           openclaw.notifyTopic
-          (builtins.readFile ../../../agents/rules/core.md)
+          (builtins.readFile ../../../agents/core.md)
         ];
         gridNames = builtins.attrNames openclaw.gridPlaceholders;
         gridValues = map (name: openclaw.gridPlaceholders.${name}) gridNames;

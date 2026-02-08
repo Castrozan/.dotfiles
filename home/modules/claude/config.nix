@@ -30,11 +30,11 @@ let
   claudeDotfilesRules = ''
     # Claude Code Project Context
 
-    ${builtins.readFile ../../../agents/rules/core.md}
+    ${builtins.readFile ../../../agents/core.md}
   '';
 
   claudeGlobalRules = ''
-    ${builtins.readFile ../../../agents/rules/core.md}
+    ${builtins.readFile ../../../agents/core.md}
   '';
 in
 {

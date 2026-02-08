@@ -16,7 +16,7 @@ let
       "openclaw";
 
   avatarDir = "${homeDir}/${defaultAgentWorkspace}/avatar";
-  controlServerSource = ../../../agents/avatar/control-server;
+  controlServerSource = ../../../agents/skills/avatar/control-server;
 
   controlServerFiles = [
     "server.js"

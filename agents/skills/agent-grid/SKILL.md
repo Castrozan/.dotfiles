@@ -12,10 +12,10 @@ Talk to other agents via bot-bridge:
 
 ```bash
 # Synchronous (wait for response)
-~/@workspacePath@/scripts/bot-bridge.sh <agent-name> "message" sync
+~/@workspacePath@/skills/agent-grid/scripts/bot-bridge.sh <agent-name> "message" sync
 
 # Async (fire and forget)
-~/@workspacePath@/scripts/bot-bridge.sh <agent-name> "message" async
+~/@workspacePath@/skills/agent-grid/scripts/bot-bridge.sh <agent-name> "message" async
 ```
 
 Messages route to target agent's **main session** (same as their Telegram DMs).

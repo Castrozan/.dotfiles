@@ -3,7 +3,7 @@ let
   opencodeRules = ''
     # OpenCode Project Context
 
-    ${builtins.readFile ../../../agents/rules/core.md}
+    ${builtins.readFile ../../../agents/core.md}
   '';
 in
 {

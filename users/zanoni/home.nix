@@ -19,6 +19,7 @@
     ../../home/modules/qmd.nix
 
     ../../home/modules/claude
+    ../../home/modules/codex
     ../../home/modules/cmatrix.nix
     ../../home/modules/cursor
     ../../home/modules/devenv.nix
