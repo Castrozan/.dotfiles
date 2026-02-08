@@ -1,4 +1,4 @@
-bass source ~/.dotfiles/shell/bash_aliases.sh
+bass source ~/.dotfiles/shell/aliases.sh
 
 if test -f ~/.dotfiles/.shell_env_vars
   source ~/.dotfiles/.shell_env_vars

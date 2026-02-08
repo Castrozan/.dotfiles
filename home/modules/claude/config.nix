@@ -54,7 +54,7 @@ in
       BASH_MAX_TIMEOUT_MS = "600000";
       CLAUDE_DANGEROUSLY_DISABLE_SANDBOX = "true";
       CLAUDE_SKIP_PERMISSIONS = "true";
-      BASH_ENV = "$HOME/.dotfiles/shell/bash_aliases.sh";
+      BASH_ENV = "$HOME/.dotfiles/shell/aliases.sh";
     };
 
     activation.patchClaudeJsonInstallMethod = {

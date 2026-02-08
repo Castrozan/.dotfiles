@@ -26,7 +26,7 @@ source ~/.dotfiles/shell/fish/bass_env.fish
 
 # Fish-specific components
 source ~/.dotfiles/shell/fish/conf.d/tmux.fish
-source ~/.dotfiles/shell/fish/conf.d/aliases.fish
+source ~/.dotfiles/shell/fish/conf.d/fish_aliases.fish
 source ~/.dotfiles/shell/fish/conf.d/fzf.fish
 source ~/.dotfiles/shell/fish/conf.d/default_directories.fish
 source ~/.dotfiles/shell/fish/conf.d/key_bindings.fish

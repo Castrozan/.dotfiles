@@ -5,7 +5,7 @@ function __load_bash_env
   end
 
   # Export BASH_ENV for non-interactive bash (Claude Code)
-  set -gx BASH_ENV "$HOME/.dotfiles/shell/bash_aliases.sh"
+  set -gx BASH_ENV "$HOME/.dotfiles/shell/aliases.sh"
 
   # Keep fish startup fast by importing a shared, fast-to-source bash env file.
   # Single source-of-truth pattern:

@@ -109,7 +109,7 @@ if [ -f ~/.dotfiles/shell/screensaver.sh ]; then
 fi
 
 # Source additional shell configurations (similar to bashrc)
-[ -f ~/.dotfiles/shell/bash_aliases.sh ] && source ~/.dotfiles/shell/bash_aliases.sh
+[ -f ~/.dotfiles/shell/aliases.sh ] && source ~/.dotfiles/shell/aliases.sh
 [ -f ~/.dotfiles/shell/zoxide.sh ] && source ~/.dotfiles/shell/zoxide.sh
 [ -f ~/.dotfiles/shell/default_directories.sh ] && source ~/.dotfiles/shell/default_directories.sh
 

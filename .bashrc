@@ -215,7 +215,7 @@ fi
 . $HOME/.dotfiles/shell/bash_history.sh
 . $HOME/.dotfiles/shell/fzf_catppuccin_theme.sh
 . $HOME/.dotfiles/shell/fzf_bash_history.sh
-. $HOME/.dotfiles/shell/bash_aliases.sh
+. $HOME/.dotfiles/shell/aliases.sh
 . $HOME/.dotfiles/shell/zoxide.sh
 . $HOME/.dotfiles/shell/screensaver.sh
 . $HOME/.dotfiles/shell/tmux_main.sh
