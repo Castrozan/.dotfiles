@@ -23,7 +23,7 @@ CHROME_FLAGS=(
 )
 
 find_browser() {
-  command -v brave 2>/dev/null || command -v google-chrome-stable 2>/dev/null || command -v chromium 2>/dev/null || echo ""
+  command -v chromium 2>/dev/null || command -v google-chrome-stable 2>/dev/null || command -v brave 2>/dev/null || echo ""
 }
 
 case "${1:-help}" in

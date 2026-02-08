@@ -35,6 +35,7 @@
       fzf
       gh
       git
+      chromium
       google-chrome
       gnumake
       htop

@@ -1,6 +1,6 @@
 { pkgs, ... }:
 let
-  chromePath = "${pkgs.google-chrome}/bin/google-chrome-stable";
+  chromePath = "${pkgs.chromium}/bin/chromium";
   mcpConfig = {
     mcpServers = {
       playwright = {
