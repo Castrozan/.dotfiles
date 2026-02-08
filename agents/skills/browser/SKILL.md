@@ -5,15 +5,26 @@ description: "Browser automation with persistent agent browser. Primary: pw CLI 
 
 # Browser Automation
 
-## Setup (one-time)
+## Setup
 
-The agent browser uses a dedicated profile (`~/.local/share/pw-browser/`), but the user probably already set up the accounts and browser so you can use, but sometimes for **one time setups only**, you can ask the user to open the browser in headed mode. Examples:
+The agent browser uses Chromium with a dedicated profile (`~/.local/share/pw-browser/`). The browser launches with AI-friendly flags: notifications disabled, no translate prompts, no password manager popups, English locale for consistent element labels.
+
+Sessions and logins persist across reboots and across headless/headed mode switches.
+
+### Logged-in Sites
+
+The user has already logged into these sites (use directly, no setup needed):
+- **x.com** — full feed access
+- **Google/YouTube** — `pw open https://accounts.google.com --headed` if not yet done
+
+### One-time Login (when needed)
+
+For sites requiring manual auth (QR codes, 2FA), ask the user to log in via headed mode:
 
 ```bash
 pw open https://web.whatsapp.com --headed   # User scans QR code
+pw open https://github.com/login --headed   # User enters credentials
 ```
-
-Sessions persist across reboots. So no need to ask user before checking if you don't already have it all set up.
 
 ## pw CLI (Primary — ~400ms per command)
 
@@ -43,6 +54,42 @@ pw click 0                       # Click "About" link by index
 pw fill "input[name=email]" x    # Fill by CSS selector
 pw click "#submit"               # Click by CSS selector
 ```
+
+### Headed Mode (visible browser)
+
+Use `--headed` to launch a visible browser window while retaining full CDP control. The user sees the browser on screen while you operate it programmatically.
+
+```bash
+pw open https://x.com/home --headed   # Launches visible Chromium + CDP control
+pw elements                            # Works normally against the visible window
+pw click 5                             # User watches the click happen
+pw open https://youtube.com            # Navigate — same window, user sees it
+```
+
+If a headless browser is already running, `--headed` restarts it in visible mode automatically. The `PW_HEADED=true` env var also works.
+
+### Example: Multi-site Navigation
+
+```bash
+# Open x.com, find and click the first post
+pw open https://x.com/home --headed
+sleep 2                                          # Wait for feed to load
+pw elements | grep "article\|status/"            # Find post links
+pw click 41                                      # Click post by index
+
+# Navigate to YouTube, click first video
+pw open https://www.youtube.com
+sleep 1                                          # Wait for thumbnails
+pw elements | grep "<a.*watch" | head -5         # Find video links
+pw click 103                                     # Click video by index
+```
+
+### Tips
+
+- Use `pw snap` for semantic page understanding, `pw elements` for clickable targets
+- `pw eval "document.querySelector('selector')?.click()"` bypasses Playwright actionability checks when elements are behind overlays
+- `pw scroll down 800` to load more content on infinite-scroll pages
+- `sleep 1-2` after navigation on JS-heavy sites (x.com, YouTube) before querying elements
 
 ### Performance
 
