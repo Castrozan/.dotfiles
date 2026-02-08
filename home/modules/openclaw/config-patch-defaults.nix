@@ -63,6 +63,11 @@ let
   }) telegramEnabledAgents;
   # Base config patches
   basePatches = {
+    ".tools.exec.pathPrepend" = [
+      "${homeDir}/openclaw/scripts"
+      "/run/current-system/sw/bin"
+      "/etc/profiles/per-user/${config.home.username}/bin"
+    ];
     ".agents.list" = agentsList;
     ".agents.defaults.workspace" = defaultWorkspace;
     ".agents.defaults.model.primary" = "nvidia/moonshotai/kimi-k2.5";
