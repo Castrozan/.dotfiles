@@ -7,13 +7,13 @@ description: "Browser automation with persistent agent browser. Primary: pw CLI 
 
 ## Setup (one-time)
 
-The agent browser uses a dedicated profile (`~/.local/share/pw-browser/`) — no extensions, no interference with user's daily browser. Log in to sites once:
+The agent browser uses a dedicated profile (`~/.local/share/pw-browser/`), but the user probably already set up the accounts and browser so you can use, but sometimes for **one time setups only**, you can ask the user to use the browser directly using the `pw` tool on headed mode. For example, to log into WhatsApp Web:
 
 ```bash
-pw login https://web.whatsapp.com   # Opens headed browser, log in, then close
+pw login https://web.whatsapp.com 
 ```
 
-Sessions persist across reboots. After login, agents use `pw` commands and the browser runs headless automatically.
+Sessions persist across reboots. So no need to ask user before checking if you don't already have it all set up.
 
 ## pw CLI (Primary — ~400ms per command)
 
@@ -73,7 +73,7 @@ pw click "#submit"               # Click by CSS selector
 - Each command after: ~400ms (350ms Node.js load + 50ms CDP + operation)
 - Operations themselves: 2-50ms
 
-## Playwright MCP (Fallback)
+## Playwright MCP (Fallback only — ~200ms overhead)
 
 Configured as Claude Code MCP server. Uses the same Playwright library but communicates via MCP protocol. Slightly slower per operation (~200ms overhead) but integrated directly into Claude Code's tool system.
 
