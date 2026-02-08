@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
-# Daemon that maintains maximized state when windows self-close
-# When a maximized window closes, the newly focused window gets maximized
 
 SOCKET="$XDG_RUNTIME_DIR/hypr/$HYPRLAND_INSTANCE_SIGNATURE/.socket2.sock"
 
@@ -43,13 +41,22 @@ remove_workspace() {
   maximized_workspaces=("${new_array[@]}")
 }
 
+previous_focused_addr=""
+current_focused_addr=""
+
 handle_event() {
   local event="$1"
   local data="$2"
 
   case "$event" in
+    activewindowv2)
+      local new_addr="0x$data"
+      if [[ "$new_addr" != "$current_focused_addr" ]]; then
+        previous_focused_addr="$current_focused_addr"
+        current_focused_addr="$new_addr"
+      fi
+      ;;
     fullscreen)
-      # fullscreen>>0 or fullscreen>>1 (1 = maximized mode entered)
       if [[ "$data" == "1" ]]; then
         local ws
         ws=$(get_active_workspace)
@@ -57,42 +64,42 @@ handle_event() {
       fi
       ;;
     closewindow)
-      # Small delay to let Hyprland update focus
-      sleep 0.05
+      local closed_addr="0x$data"
+      if [[ "$closed_addr" == "$current_focused_addr" && -n "$previous_focused_addr" ]]; then
+        hyprctl dispatch focuswindow "address:$previous_focused_addr"
+        current_focused_addr="$previous_focused_addr"
+        previous_focused_addr=""
+      elif [[ "$closed_addr" == "$previous_focused_addr" ]]; then
+        previous_focused_addr=""
+      fi
+      sleep 0.03
       local ws
       ws=$(get_active_workspace)
       if [[ -n "$ws" ]] && is_workspace_tracked "$ws"; then
         local current_fullscreen
         current_fullscreen=$(get_active_fullscreen)
-        # If workspace was tracked as maximized but current window isn't maximized
         if [[ "$current_fullscreen" != "1" ]]; then
-          # Check if there's still a window to maximize
           local window_count
           window_count=$(hyprctl clients -j 2>/dev/null | jq --arg ws "$ws" '[.[] | select(.workspace.id == ($ws | tonumber))] | length')
           if [[ "$window_count" -gt 0 ]]; then
             hyprctl dispatch fullscreen 1
           else
-            # No windows left, stop tracking
             remove_workspace "$ws"
           fi
         fi
       fi
       ;;
-    workspace)
-      # When switching workspaces, we don't need to do anything special
-      # The tracking persists
-      ;;
   esac
 }
 
-# Initial scan: track workspaces that already have maximized windows
 while IFS= read -r ws_id; do
   if [[ "$(get_workspace_hasfullscreen "$ws_id")" == "true" ]]; then
     add_workspace "$ws_id"
   fi
 done < <(hyprctl workspaces -j | jq -r '.[].id')
 
-# Listen for events
+current_focused_addr=$(hyprctl activewindow -j 2>/dev/null | jq -r '.address // empty')
+
 while IFS= read -r line; do
   event="${line%%>>*}"
   data="${line#*>>}"
