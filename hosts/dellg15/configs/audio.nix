@@ -61,17 +61,8 @@
         ];
       };
 
-      "50-realtek-priority" = {
+      "50-realtek-source-priority" = {
         "monitor.alsa.rules" = [
-          {
-            matches = [
-              { "node.name" = "~alsa_output.pci-0000_05_00.6.*"; }
-            ];
-            actions.update-props = {
-              "priority.driver" = 2000;
-              "priority.session" = 2000;
-            };
-          }
           {
             matches = [
               { "node.name" = "~alsa_input.pci-0000_05_00.6.*"; }
@@ -81,17 +72,13 @@
               "priority.session" = 2000;
             };
           }
-        ];
-      };
-
-      "50-default-source" = {
-        "monitor.alsa.rules" = [
           {
             matches = [
               { "node.name" = "alsa_input.pci-0000_05_00.6.HiFi__Mic1__source"; }
             ];
             actions.update-props = {
-              "priority.session" = 3000;
+              "priority.driver" = 2500;
+              "priority.session" = 2500;
             };
           }
         ];
