@@ -1,84 +1,208 @@
 #!/usr/bin/env bash
-# Hot corner launcher with maximize state handling
-#
-# Behavior:
-# - With maximized window: unmaximize, show fuzzel, maximize whatever gets focus
-# - Click tiled window: that window becomes maximized
-# - Launch app: new app becomes maximized
-# - ESC/cancel: restore original maximized window
-# - Toggle (hot corner again): restore original maximized window
+set -Eeuo pipefail
 
-STATE_DIR="/tmp"
-WORKSPACE_ID=$(hyprctl activewindow -j | jq -r '.workspace.id // "default"')
-STATE_FILE="$STATE_DIR/hot-corner-state-$WORKSPACE_ID"
+readonly STATE_DIR="/tmp"
+readonly FUZZEL_SETTLE_DELAY=0.15
+readonly FOCUS_SETTLE_DELAY=0.05
 
-save_state() {
-    local address="$1"
-    local was_maximized="$2"
-    echo "$address $was_maximized" > "$STATE_FILE"
-}
-
-clear_state() {
-    rm -f "$STATE_FILE"
-}
-
-# If fuzzel is already running, kill it (toggle behavior)
-# The original launcher process will handle restoration
-if pgrep -x fuzzel > /dev/null; then
-    pkill -x fuzzel
+main() {
+  if _is_fuzzel_running; then
+    _kill_fuzzel
     exit 0
-fi
+  fi
 
-activewindow=$(hyprctl activewindow -j)
-fullscreen=$(echo "$activewindow" | jq -r '.fullscreen')
-original_address=$(echo "$activewindow" | jq -r '.address')
+  local active_window_json workspace_id
+  active_window_json=$(hyprctl activewindow -j)
+  workspace_id=$(_workspace_id_from "$active_window_json")
 
-was_maximized=false
-if [[ "$fullscreen" == "1" ]]; then
-    was_maximized=true
+  if [[ -z "$workspace_id" ]]; then
+    hypr-fuzzel || true
+    return
+  fi
+
+  local original_address was_maximized
+  original_address=$(_address_from "$active_window_json")
+  was_maximized=$(_check_if_maximized "$active_window_json")
+
+  local saved_groups
+  saved_groups=$(_save_workspace_groups "$workspace_id")
+  _unmaximize_if_needed "$was_maximized"
+  _dissolve_all_workspace_groups "$workspace_id"
+  _refocus_if_valid "$original_address"
+  _persist_launcher_state "$workspace_id" "$original_address" "$was_maximized"
+
+  local windows_before
+  windows_before=$(_total_client_count)
+
+  hypr-fuzzel || true
+  sleep "$FUZZEL_SETTLE_DELAY"
+
+  local windows_after post_fuzzel_address
+  windows_after=$(_total_client_count)
+  post_fuzzel_address=$(_address_from "$(hyprctl activewindow -j)")
+
+  _clear_launcher_state "$workspace_id"
+  _restore_workspace_groups "$saved_groups"
+  _refocus_if_valid "$post_fuzzel_address"
+
+  _apply_post_fuzzel_maximize "$windows_before" "$windows_after" \
+    "$was_maximized" "$original_address" "$post_fuzzel_address"
+}
+
+_workspace_id_from() {
+  echo "$1" | jq -r '.workspace.id // empty'
+}
+
+_address_from() {
+  echo "$1" | jq -r '.address'
+}
+
+_check_if_maximized() {
+  local fullscreen
+  fullscreen=$(echo "$1" | jq -r '.fullscreen')
+  [[ "$fullscreen" == "1" ]] && echo "true" || echo "false"
+}
+
+_is_fuzzel_running() {
+  pgrep -x fuzzel > /dev/null
+}
+
+_kill_fuzzel() {
+  pkill -x fuzzel
+}
+
+_persist_launcher_state() {
+  local workspace_id=$1 address=$2 was_maximized=$3
+  echo "$address $was_maximized" > "$STATE_DIR/hot-corner-state-$workspace_id"
+}
+
+_clear_launcher_state() {
+  rm -f "$STATE_DIR/hot-corner-state-$1"
+}
+
+_unmaximize_if_needed() {
+  if [[ "$1" == "true" ]]; then
     hyprctl dispatch fullscreen 1
-fi
+  fi
+}
 
-# Save state for potential restoration
-save_state "$original_address" "$was_maximized"
+_total_client_count() {
+  hyprctl clients -j | jq 'length'
+}
 
-# Get window count before fuzzel
-windows_before=$(hyprctl clients -j | jq 'length')
+_refocus_if_valid() {
+  local address=$1
+  if [[ -n "$address" && "$address" != "null" ]]; then
+    hyprctl dispatch focuswindow "address:$address"
+    sleep "$FOCUS_SETTLE_DELAY"
+  fi
+}
 
-# Launch fuzzel and wait for it to exit
-hypr-fuzzel
-fuzzel_exit=$?
+_save_workspace_groups() {
+  local workspace_id=$1
+  hyprctl clients -j | jq -r --argjson ws "$workspace_id" '
+    [.[] | select(.workspace.id == $ws and (.grouped | length) > 0)] |
+    group_by(.grouped | sort) |
+    .[] | [.[].address] | join(" ")
+  '
+}
 
-# Small delay to let window state settle (app launches can take time)
-sleep 0.15
+_dissolve_all_workspace_groups() {
+  local workspace_id=$1
+  local group_leaders
+  group_leaders=$(hyprctl clients -j | jq -r --argjson ws "$workspace_id" '
+    [.[] | select(.workspace.id == $ws and (.grouped | length) > 0)] |
+    group_by(.grouped | sort) |
+    .[] | .[0].address
+  ')
 
-# Get current state after fuzzel exits
-windows_after=$(hyprctl clients -j | jq 'length')
-current_window=$(hyprctl activewindow -j)
-current_address=$(echo "$current_window" | jq -r '.address')
-current_fullscreen=$(echo "$current_window" | jq -r '.fullscreen')
+  if [[ -z "$group_leaders" ]]; then
+    return 0
+  fi
 
-# Clear state file
-clear_state
-
-# Determine what happened and respond appropriately
-if [[ "$windows_after" -gt "$windows_before" ]]; then
-    current_floating=$(echo "$current_window" | jq -r '.floating')
-    if [[ "$current_floating" != "true" ]]; then
-        hyprctl dispatch fullscreen 1
+  local batch=""
+  while IFS= read -r addr; do
+    if [[ -n "$addr" ]]; then
+      batch+="dispatch focuswindow address:$addr; dispatch togglegroup; "
     fi
-elif [[ "$was_maximized" == "true" ]]; then
-    # Original was maximized - handle restore or switch
-    if [[ "$current_address" != "$original_address" && "$current_address" != "null" && -n "$current_address" ]]; then
-        # User clicked a different window - maximize that one
-        if [[ "$current_fullscreen" != "1" ]]; then
-            hyprctl dispatch fullscreen 1
-        fi
+  done <<< "$group_leaders"
+
+  if [[ -n "$batch" ]]; then
+    hyprctl --batch "$batch"
+  fi
+}
+
+_restore_workspace_groups() {
+  local saved_groups=$1
+  if [[ -z "$saved_groups" ]]; then
+    return 0
+  fi
+
+  while IFS= read -r group_line; do
+    if [[ -n "$group_line" ]]; then
+      _restore_single_group "$group_line"
+    fi
+  done <<< "$saved_groups"
+}
+
+_restore_single_group() {
+  local -a addresses
+  read -ra addresses <<< "$1"
+
+  if [[ ${#addresses[@]} -lt 2 ]]; then
+    return 0
+  fi
+
+  local batch="dispatch focuswindow address:${addresses[0]}; dispatch togglegroup; dispatch lockactivegroup unlock; "
+
+  for ((i=1; i<${#addresses[@]}; i++)); do
+    batch+="dispatch focuswindow address:${addresses[$i]}; "
+    batch+="dispatch moveintogroup l; dispatch moveintogroup r; dispatch moveintogroup u; dispatch moveintogroup d; "
+  done
+
+  hyprctl --batch "$batch"
+}
+
+_apply_post_fuzzel_maximize() {
+  local windows_before=$1 windows_after=$2
+  local was_maximized=$3 original_address=$4 post_fuzzel_address=$5
+
+  if [[ "$windows_after" -gt "$windows_before" ]]; then
+    _maximize_if_tiled
+  elif [[ "$was_maximized" == "true" ]]; then
+    if _focus_changed_to_different_window "$original_address" "$post_fuzzel_address"; then
+      _maximize_if_not_already
     else
-        # ESC pressed or toggle - restore original maximized state
-        hyprctl dispatch focuswindow "address:$original_address"
-        sleep 0.05
-        hyprctl dispatch fullscreen 1
+      _restore_original_maximized "$original_address"
     fi
-fi
-# If was_maximized=false and no new window: do nothing (stay in tiled view)
+  fi
+}
+
+_maximize_if_tiled() {
+  local floating
+  floating=$(hyprctl activewindow -j | jq -r '.floating')
+  if [[ "$floating" != "true" ]]; then
+    hyprctl dispatch fullscreen 1
+  fi
+}
+
+_maximize_if_not_already() {
+  local fullscreen
+  fullscreen=$(hyprctl activewindow -j | jq -r '.fullscreen')
+  if [[ "$fullscreen" != "1" ]]; then
+    hyprctl dispatch fullscreen 1
+  fi
+}
+
+_focus_changed_to_different_window() {
+  local original=$1 current=$2
+  [[ "$current" != "$original" && "$current" != "null" && -n "$current" ]]
+}
+
+_restore_original_maximized() {
+  hyprctl dispatch focuswindow "address:$1"
+  sleep "$FOCUS_SETTLE_DELAY"
+  hyprctl dispatch fullscreen 1
+}
+
+main "$@"
