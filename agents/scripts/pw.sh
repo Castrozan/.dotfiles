@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # pw — Fast persistent browser automation (Playwright + CDP)
 # Uses a dedicated agent browser profile (lightweight, no extensions).
-# User logs in once (WhatsApp etc.), sessions persist in ~/.local/share/pw-browser/.
-# The agent browser auto-launches on port 9222 when needed.
+# Sessions persist in ~/.local/share/pw-browser/.
+# Headless by default. Use --headed for manual login.
 set -euo pipefail
 
 PW_PORT="${PW_PORT:-9222}"
@@ -26,21 +26,34 @@ if [ "${1:-}" = "status" ]; then
   exit 0
 fi
 
-# Handle login — launch headed so user can log in to sites
-if [ "${1:-}" = "login" ]; then
+find_browser() {
+  command -v brave 2>/dev/null || command -v google-chrome-stable 2>/dev/null || command -v chromium 2>/dev/null || echo ""
+}
+
+# Handle open --headed: stop headless, launch visible browser, block until closed
+if [ "${1:-}" = "open" ] && [[ " ${*} " == *" --headed "* ]]; then
+  # Stop running headless browser if any
   if curl -sf "http://127.0.0.1:$PW_PORT/json/version" >/dev/null 2>&1; then
-    echo "Agent browser already running. Close it first: pw close"
-    exit 1
+    echo "Stopping headless browser..."
+    pkill -f "remote-debugging-port=$PW_PORT.*user-data-dir=$PW_DATA" 2>/dev/null || true
+    sleep 0.5
   fi
-  BROWSER="$(command -v brave 2>/dev/null || command -v google-chrome-stable 2>/dev/null || command -v chromium 2>/dev/null || echo "")"
+  BROWSER="$(find_browser)"
   if [ -z "$BROWSER" ]; then
     echo "Error: No browser found in PATH" >&2
     exit 1
   fi
+  # Extract URL (skip "open", "--headed", "--new")
+  URL=""
+  for arg in "${@:2}"; do
+    [[ "$arg" == "--headed" || "$arg" == "--new" ]] && continue
+    URL="$arg"
+    break
+  done
   mkdir -p "$PW_DATA"
-  echo "Launching agent browser in headed mode for login..."
+  echo "Opening headed browser..."
   echo "Profile: $PW_DATA"
-  echo "Log in to any sites you need, then close the browser."
+  echo "Close the browser window when done."
   "$BROWSER" \
     --remote-debugging-port="$PW_PORT" \
     --user-data-dir="$PW_DATA" \
@@ -48,8 +61,8 @@ if [ "${1:-}" = "login" ]; then
     --no-default-browser-check \
     --disable-extensions \
     --disable-sync \
-    "${2:-about:blank}" 2>/dev/null
-  echo "Login session saved."
+    "${URL:-about:blank}" 2>/dev/null
+  echo "Session saved."
   exit 0
 fi
 
@@ -63,7 +76,7 @@ fi
 
 # Auto-launch agent browser (headless) if not running
 if ! curl -sf "http://127.0.0.1:$PW_PORT/json/version" >/dev/null 2>&1; then
-  BROWSER="$(command -v brave 2>/dev/null || command -v google-chrome-stable 2>/dev/null || command -v chromium 2>/dev/null || echo "")"
+  BROWSER="$(find_browser)"
   if [ -z "$BROWSER" ]; then
     echo "Error: No browser found in PATH" >&2
     exit 1

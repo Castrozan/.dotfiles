@@ -7,13 +7,15 @@ description: "Browser automation with persistent agent browser. Primary: pw CLI 
 
 ## Setup (one-time)
 
-The agent browser uses a dedicated profile (`~/.local/share/pw-browser/`), but the user probably already set up the accounts and browser so you can use, but sometimes for **one time setups only**, you can ask the user to use the browser directly using the `pw` tool on headed mode. For example, to log into WhatsApp Web:
+The agent browser uses a dedicated profile (`~/.local/share/pw-browser/`), but the user probably already set up the accounts and browser so you can use, but sometimes for **one time setups only**, you can ask the user to open the browser in headed mode. Examples:
 
 ```bash
-pw login https://web.whatsapp.com 
+pw open https://web.whatsapp.com --headed   # User scans QR code, then closes browser
+pw open https://accounts.google.com --headed # User logs into Google, then closes browser
+pw open https://github.com/login --headed    # User logs into GitHub, then closes browser
 ```
 
-Sessions persist across reboots. So no need to ask user before checking if you don't already have it all set up.
+This auto-stops the headless browser, opens a visible window for the user to log in manually, and saves the session. Sessions persist across reboots. So no need to ask user before checking if you don't already have it all set up.
 
 ## pw CLI (Primary — ~400ms per command)
 
@@ -35,8 +37,7 @@ pw close                        # Kill agent browser
 
 | Command | Description |
 |---------|-------------|
-| `pw login [url]` | Launch headed browser for manual login |
-| `pw open <url> [--new]` | Navigate (--new = new tab) |
+| `pw open <url> [--new] [--headed]` | Navigate (--new = new tab, --headed = visible window) |
 | `pw elements` | Interactive elements with `[index]` — use with `click` |
 | `pw snap` | Accessibility tree (semantic YAML) |
 | `pw text` | Full page text content |
