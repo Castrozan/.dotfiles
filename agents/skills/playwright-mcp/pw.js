@@ -327,7 +327,7 @@ function need(page) {
 function printHelp() {
   console.log(`pw - Fast browser automation
 
-Navigation:  open <url> [--new]  back  forward  scroll <up|down> [px]
+Navigation:  open <url> [--new] [--headed]  back  forward  scroll <up|down> [px]
 Inspect:     snap        accessibility tree
              elements    interactive elements with [index]
              text        page text content
