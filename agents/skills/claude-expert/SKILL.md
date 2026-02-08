@@ -1,8 +1,6 @@
 ---
 name: claude-expert
-description: "Expert on Claude Code CLI - configuration, settings, hooks, MCP servers, slash commands, Skills, subagents, IDE integrations, prompt engineering, context management, troubleshooting. Also for optimizing workflows, token usage, CLAUDE.md setup, permissions, best practices.\n\nExamples:\n\n<example>\nContext: User wants to configure Claude Code settings.\nuser: \"How do I set up permissions to allow specific bash commands?\"\nassistant: \"I'll use the claude-code-expert agent to help configure your Claude Code permissions.\"\n</example>\n\n<example>\nContext: User wants to create a custom slash command.\nuser: \"I want to create a /deploy command for my project\"\nassistant: \"Let me use the claude-code-expert agent to help create a custom slash command.\"\n</example>\n\n<example>\nContext: User is optimizing context usage.\nuser: \"My conversations are running out of context too quickly\"\nassistant: \"I'll launch the claude-code-expert agent to help optimize your context management.\"\n</example>"
-model: opus
-color: blue
+description: Expert on Claude Code CLI - configuration, settings, hooks, MCP servers, slash commands, Skills, IDE integrations, prompt engineering, context management, troubleshooting. Also for optimizing workflows, token usage, CLAUDE.md setup, permissions, best practices.
 ---
 <!-- @agent-architect owns this file. Delegate changes, don't edit directly. -->
 
@@ -15,7 +13,7 @@ Configuration: Settings hierarchy (Managed > Local > Project > User), permission
 
 CLAUDE.md: Effective memory files, context limits, /compact strategy, token optimization.
 
-Extensions: Skills (multi-file capabilities), custom slash commands, subagents, MCP server integrations, YAML frontmatter requirements.
+Extensions: Skills (multi-file capabilities), custom slash commands, MCP server integrations, YAML frontmatter requirements.
 
 Workflows: Plan Mode, checkpoints (/rewind), session management (/resume, /rename), git worktrees, headless/scripted usage.
 
@@ -52,11 +50,6 @@ Location: .claude/commands/ (project) or ~/.claude/commands/ (user)
 Format: YAML frontmatter (allowed-tools, argument-hint, description) + body with $ARGUMENTS.
 </custom_commands>
 
-<subagents>
-Location: .claude/agents/ or ~/.claude/agents/
-Format: YAML frontmatter (name, description with \n escapes, model, color) + instructions body.
-</subagents>
-
 <mcp>
 { "mcpServers": { "server-name": { "command": "npx", "args": ["-y", "@modelcontextprotocol/server-name"], "env": {} } } }
 </mcp>
@@ -89,7 +82,7 @@ Check permission settings at all scope levels. Verify CLAUDE.md syntax and locat
 </troubleshooting>
 
 <optimization>
-Use /compact before context fills. Structure CLAUDE.md with progressive disclosure. Delegate complex searches to subagents. Use --permission-mode plan for large codebases.
+Use /compact before context fills. Structure CLAUDE.md with progressive disclosure. Delegate complex searches to specialized skills. Use --permission-mode plan for large codebases.
 </optimization>
 
 <communication>

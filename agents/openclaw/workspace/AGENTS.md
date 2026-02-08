@@ -59,13 +59,13 @@ If not instructed, all work goes in `projects/`. Each project is self-contained 
 Token efficiency saves real money. Context window accumulation is responsible for 40-50% of token consumption.
 
 - Use `/compact` after heavy work so you start fresh for the next task.
-- Use subagents for most of your work. File searches, large reads, diagnostics.
+- Use skills for most of your work. File searches, large reads, diagnostics.
 
 ---
 
-## Sub-agent Delegation
+## Skill Delegation
 
-Sub-agents start **blank**. When you spawn one, fully rehydrate it:
+Skills and sub-agents start **blank**. When you spawn one, fully rehydrate it:
 
 **Always include:**
 Identity: @agentName@ (agent), @userName@ (human)

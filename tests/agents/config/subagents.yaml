@@ -1,5 +1,5 @@
-# Subagent Tests
-# Tests for specialized subagent behavior
+# Skill Tests
+# Tests for specialized skill behavior
 
 tests:
   - name: dotfiles_expert_knows_structure

@@ -1,8 +1,6 @@
 ---
 name: ralph-expert
-description: "Use when working with Ralph TUI, the Ralph Loop, PRD creation, task tracking workflows, or autonomous AI agent loops. Includes setup, PRD creation, tracker configuration, debugging sessions, understanding self-critique loop pattern, optimizing AI-driven workflows.\n\nExamples:\n\n<example>\nContext: User wants to start a new feature with Ralph.\nuser: \"I want to use Ralph to build a new authentication system\"\nassistant: \"I'll use the ralph-expert agent to help you create a PRD and set up the Ralph workflow.\"\n</example>\n\n<example>\nContext: User is having issues with Ralph.\nuser: \"Ralph keeps getting stuck on the same task\"\nassistant: \"Let me use the ralph-expert agent to diagnose the loop issue and suggest fixes.\"\n</example>\n\n<example>\nContext: User wants to customize Ralph.\nuser: \"How do I make Ralph use a different model or agent?\"\nassistant: \"I'll launch the ralph-expert agent to help configure your Ralph setup.\"\n</example>"
-model: opus
-color: magenta
+description: Use when working with Ralph TUI, the Ralph Loop, PRD creation, task tracking workflows, or autonomous AI agent loops. Includes setup, PRD creation, tracker configuration, debugging sessions, understanding self-critique loop pattern, optimizing AI-driven workflows.
 ---
 <!-- @agent-architect owns this file. Delegate changes, don't edit directly. -->
 

@@ -1,8 +1,6 @@
 ---
 name: nix-expert
-description: "Nix language and ecosystem expert. Use for: writing/debugging Nix expressions, lazy evaluation and fixed-points, derivations and overlays, module system internals (mkIf, mkMerge, types), flake design, ecosystem tools (devenv, direnv, cachix, agenix). For THIS dotfiles repository, use @dotfiles-expert instead (it delegates here for Nix questions).\n\nExamples:\n\n<example>\nContext: User needs help writing a Nix expression.\nuser: \"How do I write an overlay that overrides a package's version?\"\nassistant: \"I'll use the nix-expert agent to explain overlay patterns and write the expression.\"\n</example>\n\n<example>\nContext: User is debugging Nix evaluation.\nuser: \"I'm getting infinite recursion when evaluating my module\"\nassistant: \"Let me use the nix-expert agent to diagnose this evaluation issue.\"\n</example>\n\n<example>\nContext: User wants to set up devenv.\nuser: \"I want to create a devenv for my Python project with PostgreSQL\"\nassistant: \"I'll launch the nix-expert agent to help you set up a proper devenv configuration.\"\n</example>"
-model: opus
-color: cyan
+description: "Nix language and ecosystem expert. Use for: writing/debugging Nix expressions, lazy evaluation and fixed-points, derivations and overlays, module system internals (mkIf, mkMerge, types), flake design, ecosystem tools (devenv, direnv, cachix, agenix). For THIS dotfiles repository, use @dotfiles-expert instead (it delegates here for Nix questions)."
 ---
 <!-- @agent-architect owns this file. Delegate changes, don't edit directly. -->
 
@@ -23,7 +21,7 @@ Ecosystem Tools: devenv, direnv, nix-direnv, cachix, agenix, sops-nix.
 </expertise>
 
 <relationship>
-This agent provides Nix language and ecosystem expertise. @dotfiles-expert handles repository-specific patterns for THIS dotfiles repo.
+This skill provides Nix language and ecosystem expertise. @dotfiles-expert handles repository-specific patterns for THIS dotfiles repo.
 
 Invoked directly: Answer Nix questions, write Nix code, debug Nix issues.
 Invoked by dotfiles-expert: Providing Nix expertise for repository work. Follow context about where code goes, focus on writing correct idiomatic Nix.

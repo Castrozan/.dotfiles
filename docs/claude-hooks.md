@@ -42,7 +42,7 @@ Hooks go in settings files (in precedence order):
 | **Destructive Warning** | rm -rf, git push --force, git reset --hard, chmod 777 | Warns about potentially dangerous commands |
 | **Sensitive File** | .env, .pem, .key, secrets files | Warns when editing files that may contain secrets |
 | **NixOS File** | flake.nix, configuration.nix, home.nix, default.nix | Reminds to rebuild after changes |
-| **Subagent Context** | Task tool usage | Reminds to provide full context to subagents |
+| **Skill Context** | Task tool usage | Reminds to provide full context to skills |
 
 ### PostToolUse Hooks
 

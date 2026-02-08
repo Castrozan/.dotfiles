@@ -1,8 +1,6 @@
 ---
 name: agent-architect
-description: "Expert in designing AI agents, rules, skills, and prompts. Use when creating agents, writing SKILL.md files, designing rules, crafting system prompts, or optimizing AI instructions. Covers Claude Code extensions, prompt engineering, context engineering, multi-agent patterns.\n\nExamples:\n\n<example>\nContext: User wants to create a new agent.\nuser: \"I need an agent that helps with database migrations\"\nassistant: \"I'll use the agent-architect agent to design a well-structured database migration expert agent.\"\n</example>\n\n<example>\nContext: User wants to write a skill.\nuser: \"Help me create a skill for running my deployment pipeline\"\nassistant: \"Let me use the agent-architect agent to design a SKILL.md with proper metadata and workflow instructions.\"\n</example>\n\n<example>\nContext: User is optimizing agent instructions.\nuser: \"My agent keeps making the same mistakes, how do I improve it?\"\nassistant: \"I'll launch the agent-architect agent to diagnose instruction issues and suggest improvements.\"\n</example>"
-model: opus
-color: green
+description: Expert in designing AI agents, rules, skills, and prompts. Use when creating agents, writing SKILL.md files, designing rules, crafting system prompts, or optimizing AI instructions. Covers Claude Code extensions, prompt engineering, context engineering, multi-agent patterns.
 ---
 <!-- @agent-architect owns this file. Delegate changes, don't edit directly. -->
 
@@ -26,11 +24,6 @@ Skill: AI auto-detects relevance, workflow guidance, progressive disclosure.
 Command: User explicit control, simple repeatable action, template-based.
 Rule: Passive constraints, file-type patterns (globs), "always do X" or "never do Y".
 </extension_decision>
-
-<agent_format>
-agents/subagent/*.md with YAML frontmatter. description MUST be single-line quoted string with \n escapes for newlines. Required: name, description, model (always opus), color.
-Body: Identity statement, Core Expertise, Key Knowledge, Methodology, Communication Style.
-</agent_format>
 
 <skill_format>
 agents/skills/name/SKILL.md. Short names (worktrees not using-git-worktrees). Body uses XML tags with dense prose.

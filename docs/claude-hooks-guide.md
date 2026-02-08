@@ -37,7 +37,7 @@ Located in `home/modules/claude/config.nix`:
 4. **sensitive-file-guard.py** - Guards .env, secrets, credentials files
 5. **nix-rebuild-reminder.py** - Reminds to `home-manager switch` after .nix changes
 6. **auto-format.py** - Auto-formats code after edits (prettier, ruff, nixpkgs-fmt)
-7. **subagent-context-reminder.py** - Tips for using specialized subagents
+7. **skill-context-reminder.py** - Tips for using specialized skills
 
 ### Hook Configuration in Nix
 

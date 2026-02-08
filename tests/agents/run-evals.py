@@ -9,7 +9,7 @@ Usage:
     ./run-evals.py                    # Run all tests
     ./run-evals.py --smoke            # Run smoke test only
     ./run-evals.py --category core_rules
-    ./run-evals.py --test delegates_to_subagent
+    ./run-evals.py --test delegates_to_skill
     ./run-evals.py --dry-run          # Show what would run
     ./run-evals.py --list             # List available categories
 """
@@ -106,10 +106,9 @@ def run_claude_cli(
 
     if agent:
         # Load agent from file
-        agent_path = Path(__file__).parent.parent.parent / "agents" / "subagent" / f"{agent}.md"
+        agent_path = Path(__file__).parent.parent.parent / "agents" / "skills" / agent / "SKILL.md"
         if agent_path.exists():
             content = agent_path.read_text()
-            # Extract content after YAML frontmatter
             parts = content.split("---", 2)
             if len(parts) >= 3:
                 agent_instructions = parts[2].strip()

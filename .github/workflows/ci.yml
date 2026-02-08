@@ -46,14 +46,14 @@ jobs:
           nix eval .#homeConfigurations --apply 'x: builtins.attrNames x' --json
           nix eval .#nixosConfigurations --apply 'x: builtins.attrNames x' --json
 
-  validate-agents:
-    name: Validate Agents
+  validate-skills:
+    name: Validate Skills
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Validate agent YAML frontmatter
-        run: ./tests/validate-agents.sh agents/subagent
+      - name: Validate skill YAML frontmatter
+        run: ./tests/validate-agents.sh agents/skills
 
   validate-codex:
     name: Validate Codex Config

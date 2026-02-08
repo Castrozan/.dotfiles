@@ -2,7 +2,7 @@
 # Tests for basic instruction compliance from CLAUDE.md
 
 tests:
-  - name: delegates_to_subagent
+  - name: delegates_to_skill
     description: "Claude should delegate dotfiles questions to dotfiles-expert"
     prompt: "According to my CLAUDE.md rules, how should I add a new package to my NixOS config? Should I delegate?"
     model: haiku
@@ -11,7 +11,7 @@ tests:
       output_contains_any:
         - "dotfiles-expert"
         - "delegate"
-        - "subagent"
+        - "skill"
 
   - name: follows_git_rules
     description: "Claude should know to use specific file staging"

@@ -72,7 +72,7 @@ print(result)
 - **Sequential workflows** with automatic handoff
 - **Production workflows** with crew memory
 
-**Use OpenClaw subagents when:**
+**Use OpenClaw skills when:**
 - **Independent** parallel tasks
 - Need **isolation** (prevent context bloat)
 - **One-off work** (diagnostics, file ops)
@@ -80,10 +80,9 @@ print(result)
 
 ## Integration with OpenClaw
 
-Run CrewAI **inside** OpenClaw subagents:
+Run CrewAI **inside** OpenClaw agents:
 
 ```python
-# Subagent runs CrewAI crew for complex multi-role task
 crew = Crew(agents=[researcher, analyst, writer], tasks=[...])
 result = crew.kickoff(inputs=params)
 with open('output.md', 'w') as f:

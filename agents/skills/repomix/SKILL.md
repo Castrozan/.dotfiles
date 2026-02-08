@@ -84,10 +84,9 @@ npx repomix ~/projects/myapp --output /tmp/myapp-context.md
 
 ### With coding agents
 ```bash
-# Generate context for subagent work
 npx repomix /home/zanoni/.dotfiles --output /tmp/dotfiles-context.md
 
-# In subagent spawn prompt:
+# In agent prompt:
 # "Read /tmp/dotfiles-context.md for full codebase context, then [task]"
 ```
 

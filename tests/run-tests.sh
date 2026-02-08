@@ -19,9 +19,9 @@ done
 echo "=== Running Tests ==="
 echo ""
 
-# Agent validation
-echo "--- Agent Validation ---"
-"$SCRIPT_DIR/validate-agents.sh" "$SCRIPT_DIR/../agents/subagent"
+# Skill validation
+echo "--- Skill Validation ---"
+"$SCRIPT_DIR/validate-agents.sh" "$SCRIPT_DIR/../agents/skills"
 echo ""
 
 # Script tests (bats) - with or without coverage

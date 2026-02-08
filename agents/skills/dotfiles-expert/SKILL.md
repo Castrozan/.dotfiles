@@ -1,8 +1,6 @@
 ---
 name: dotfiles-expert
-description: "Expert on THIS specific NixOS dotfiles repository. Use when: adding modules, modifying user configs, managing secrets, understanding file organization, debugging rebuilds, or unsure where something belongs."
-model: opus
-color: green
+description: Expert on THIS specific NixOS dotfiles repository. Use when adding modules, modifying user configs, managing secrets, understanding file organization, debugging rebuilds, or unsure where something belongs.
 ---
 <!-- @agent-architect owns this file. Delegate changes, don't edit directly. -->
 
@@ -39,7 +37,7 @@ hosts/hostname/ - machine-specific configs
 secrets/*.age - agenix encrypted secrets
 secrets/secrets.nix - public key mappings
 private-config/ - private git submodule (work agents, company skills, identity docs)
-agents/ - AI agent instructions .md files (symlinked to Ai tools configs)
+agents/ - AI agent instructions .md files (symlinked to AI tools configs)
 </directory_organization>
 
 <rebuild_execution>

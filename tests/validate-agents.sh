@@ -1,65 +1,60 @@
 #!/usr/bin/env bash
-# Validate agent YAML frontmatter structure
-# Checks: required fields, model=opus, single-line description
+# Validate skill YAML frontmatter structure
+# Checks skills with YAML frontmatter for required fields (name, description)
+# Skills without YAML frontmatter are valid (markdown-only format)
 
 set -euo pipefail
 
-AGENTS_DIR="${1:-agents/subagent}"
+SKILLS_DIR="${1:-agents/skills}"
 ERRORS=0
+CHECKED=0
+SKIPPED=0
 
-validate_agent() {
-    local agent="$1"
-    local name
-    name=$(basename "$agent")
+validate_skill() {
+    local skillFile="$1"
+    local skillName
+    skillName=$(basename "$(dirname "$skillFile")")
 
-    # Check YAML frontmatter exists
-    if ! head -1 "$agent" | grep -q "^---$"; then
-        echo "ERROR: $name missing YAML frontmatter"
-        ((ERRORS++))
+    # Skip skills without YAML frontmatter (markdown-only is valid)
+    if ! head -1 "$skillFile" | grep -q "^---$"; then
+        echo "SKIP: $skillName (no YAML frontmatter)"
+        SKIPPED=$((SKIPPED + 1))
         return
     fi
 
+    CHECKED=$((CHECKED + 1))
+
     # Extract YAML (between first two ---)
     local yaml
-    yaml=$(sed -n '2,/^---$/p' "$agent" | head -n -1)
+    yaml=$(sed -n '2,/^---$/p' "$skillFile" | head -n -1)
 
     # Check required fields
-    for field in name description model color; do
+    for field in name description; do
         if ! echo "$yaml" | grep -q "^$field:"; then
-            echo "ERROR: $name missing required field: $field"
-            ((ERRORS++))
+            echo "ERROR: $skillName missing required field: $field"
+            ERRORS=$((ERRORS + 1))
         fi
     done
 
-    # Check model is opus
-    if ! echo "$yaml" | grep -q "^model: opus"; then
-        echo "ERROR: $name has non-opus model (should be 'model: opus')"
-        ((ERRORS++))
+    if [[ $ERRORS -eq 0 ]] || ! echo "$yaml" | grep -q "^name:\|^description:"; then
+        echo "OK: $skillName"
     fi
-
-    # Check description is single-line quoted (starts with " and ends with ")
-    local desc_line
-    desc_line=$(echo "$yaml" | grep "^description:")
-    if ! echo "$desc_line" | grep -qE '^description: ".*"$'; then
-        echo "WARN: $name description may not be single-line quoted (required for Claude Code)"
-    fi
-
-    echo "OK: $name"
 }
 
-echo "Validating agents in $AGENTS_DIR..."
+echo "Validating skills in $SKILLS_DIR..."
 echo ""
 
-for agent in "$AGENTS_DIR"/*.md; do
-    if [[ -f "$agent" ]]; then
-        validate_agent "$agent"
+for skillFile in "$SKILLS_DIR"/*/SKILL.md; do
+    if [[ -f "$skillFile" ]]; then
+        validate_skill "$skillFile"
     fi
 done
 
 echo ""
+echo "Checked: $CHECKED, Skipped: $SKIPPED"
 if [[ $ERRORS -gt 0 ]]; then
     echo "FAILED: $ERRORS errors found"
     exit 1
 else
-    echo "PASSED: All agents valid"
+    echo "PASSED: All validated skills OK"
 fi
