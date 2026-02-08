@@ -4,7 +4,7 @@
 // Chrome lifecycle managed by pw.sh wrapper.
 
 const { chromium } = require("playwright");
-const PW_PORT = process.env.PW_PORT || "19222";
+const PW_PORT = process.env.PW_PORT || "9222";
 
 async function main() {
   const [cmd, ...args] = process.argv.slice(2);
