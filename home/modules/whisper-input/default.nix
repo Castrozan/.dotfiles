@@ -1,5 +1,0 @@
-{
-  imports = [
-    ./whisper-input.nix
-  ];
-}

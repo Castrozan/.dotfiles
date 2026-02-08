@@ -163,6 +163,21 @@
     },
     "crane_2": {
       "locked": {
+        "lastModified": 1758758545,
+        "narHash": "sha256-NU5WaEdfwF6i8faJ2Yh+jcK9vVFrofLcwlD/mP65JrI=",
+        "owner": "ipetkov",
+        "repo": "crane",
+        "rev": "95d528a5f54eaba0d12102249ce42f4d01f4e364",
+        "type": "github"
+      },
+      "original": {
+        "owner": "ipetkov",
+        "repo": "crane",
+        "type": "github"
+      }
+    },
+    "crane_3": {
+      "locked": {
         "lastModified": 1762538466,
         "narHash": "sha256-8zrIPl6J+wLm9MH5ksHcW7BUHo7jSNOu0/hA0ohOOaM=",
         "owner": "ipetkov",
@@ -1139,6 +1154,22 @@
     },
     "nixpkgs_16": {
       "locked": {
+        "lastModified": 1759036355,
+        "narHash": "sha256-0m27AKv6ka+q270dw48KflE0LwQYrO7Fm4/2//KCVWg=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "e9f00bd893984bc8ce46c895c3bf7cac95331127",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs_17": {
+      "locked": {
         "lastModified": 315532800,
         "narHash": "sha256-5CwQ80ucRHiqVbMEEbTFnjz70/axSJ0aliyzSaFSkmY=",
         "rev": "f6b44b2401525650256b977063dbcf830f762369",
@@ -1359,6 +1390,7 @@
         "tui-notifier": "tui-notifier",
         "tuisvn": "tuisvn",
         "voxtype": "voxtype",
+        "whisp-away": "whisp-away",
         "zed-editor": "zed-editor"
       }
     },
@@ -1616,6 +1648,25 @@
         "type": "github"
       }
     },
+    "whisp-away": {
+      "inputs": {
+        "crane": "crane_2",
+        "nixpkgs": "nixpkgs_16"
+      },
+      "locked": {
+        "lastModified": 1768913025,
+        "narHash": "sha256-nL4A3iKmhUmORgVem3gGcGP8fwAzvV4PsgfjJgVw/TA=",
+        "owner": "madjinn",
+        "repo": "whisp-away",
+        "rev": "c1561e2418ee13e98a43c276165fc783b34eaede",
+        "type": "github"
+      },
+      "original": {
+        "owner": "madjinn",
+        "repo": "whisp-away",
+        "type": "github"
+      }
+    },
     "xdph": {
       "inputs": {
         "hyprland-protocols": [
@@ -1659,9 +1710,9 @@
     },
     "zed-editor": {
       "inputs": {
-        "crane": "crane_2",
+        "crane": "crane_3",
         "flake-compat": "flake-compat_3",
-        "nixpkgs": "nixpkgs_16",
+        "nixpkgs": "nixpkgs_17",
         "rust-overlay": "rust-overlay_2"
       },
       "locked": {

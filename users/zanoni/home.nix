@@ -45,7 +45,7 @@
     ../../home/modules/vscode
     ../../home/modules/voxtype.nix
     ../../home/modules/wezterm.nix # https://tmuxai.dev/terminal-compatibility/
-    ../../home/modules/whisper-input
+    ../../home/modules/whisp-away.nix
     ../../home/modules/systemd-manager-tui.nix
     ../../home/modules/testing
   ];

@@ -142,8 +142,8 @@ in
     # No option to remove this. https://gitlab.gnome.org/GNOME/xdg-desktop-portal-gnome/-/issues/114
     "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0" = {
       binding = "<Alt>a";
-      command = "whisper-input";
-      name = "whisper";
+      command = "whisp-away start";
+      name = "whisp-away";
     };
 
     "org/gnome/desktop/wm/keybindings" = {

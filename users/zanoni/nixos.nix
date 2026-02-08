@@ -16,7 +16,6 @@ in
     ../../nixos/modules/virtualization.nix
     ../../nixos/modules/fonts.nix
     ../../nixos/modules/steam.nix
-    ../../nixos/modules/whisper-cpp.nix
     # ../../nixos/modules/media-streaming # Removed: requires insecure qtwebengine-5.15.19
     ../../nixos/modules/agenix.nix
     ../../nixos/modules/tailscale.nix

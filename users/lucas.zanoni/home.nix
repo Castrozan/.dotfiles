@@ -56,7 +56,7 @@
     ../../home/modules/vesktop.nix
     ../../home/modules/yazi.nix
     ../../home/modules/wezterm.nix # https://tmuxai.dev/terminal-compatibility/
-    ../../home/modules/whisper-input
+    ../../home/modules/whisp-away.nix
     ../../home/modules/zed-editor.nix
     ../../home/modules/testing
     ../../home/modules/ani-cli.nix
