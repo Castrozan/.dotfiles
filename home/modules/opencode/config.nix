@@ -1,7 +1,7 @@
 _:
 let
   globalRules = ''
-    ${builtins.readFile ../../../agents/rules/evergreen-instructions.md}
+    ${builtins.readFile ../../../agents/rules/core.md}
   '';
 
   opencodeGlobalSettings = {

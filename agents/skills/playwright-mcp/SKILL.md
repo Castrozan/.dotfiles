@@ -7,15 +7,15 @@ description: "Browser automation with persistent agent browser. Primary: pw CLI 
 
 ## Setup (one-time)
 
-The agent browser uses a dedicated profile (`~/.local/share/pw-browser/`), but the user probably already set up the accounts and browser so you can use, but sometimes for **one time setups only**, you can ask the user to open the browser in headed mode. Examples:
+The agent browser uses a dedicated profile (`~/.local/share/pw-browser/`). By default it runs headless. Use `--headed` when the user needs to see or interact with the browser (e.g. scanning QR codes, solving CAPTCHAs, logging into sites, or watching what the agent does):
 
 ```bash
-pw open https://web.whatsapp.com --headed   # User scans QR code, then closes browser
-pw open https://accounts.google.com --headed # User logs into Google, then closes browser
-pw open https://github.com/login --headed    # User logs into GitHub, then closes browser
+pw open https://web.whatsapp.com --headed   # User scans QR code
+pw open https://accounts.google.com --headed # User completes OAuth flow
+pw open https://example.com --headed         # User watches/interacts while agent works
 ```
 
-This auto-stops the headless browser, opens a visible window for the user to log in manually, and saves the session. Sessions persist across reboots. So no need to ask user before checking if you don't already have it all set up.
+This auto-stops any running headless instance, opens a visible window, and blocks until the user closes it. Sessions persist across reboots.
 
 ## pw CLI (Primary — ~400ms per command)
 
