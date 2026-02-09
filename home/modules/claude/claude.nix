@@ -32,9 +32,12 @@ let
   '';
 in
 {
-  home.packages = [ claude-code ];
-  home.file.".local/bin/claude".source = "${claude-code}/bin/claude";
-
-  home.file.".claude/skills/aplicacoes-atendimento-triage".source =
-    config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/repo/aplicacoes-atendimento-triage";
+  home = {
+    packages = [ claude-code ];
+    file = {
+      ".local/bin/claude".source = "${claude-code}/bin/claude";
+      ".claude/skills/aplicacoes-atendimento-triage".source =
+        config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/repo/aplicacoes-atendimento-triage";
+    };
+  };
 }
