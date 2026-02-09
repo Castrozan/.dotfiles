@@ -228,6 +228,16 @@ let
       }
 
       _process_command() {
+        set +e
+        _process_command_inner "$@"
+        local exitCode=$?
+        set -e
+        if [[ "$exitCode" -ne 0 ]]; then
+          echo "hey-bot: background command failed with exit code $exitCode"
+        fi
+      }
+
+      _process_command_inner() {
         local commandText="$1"
         commandText=$(echo "$commandText" | sed 's/^ *//;s/ *$//;s/  */ /g')
 
@@ -255,7 +265,8 @@ let
         local recentTranscription
         recentTranscription=$(tail -20 "$(_get_log_file)" 2>/dev/null || echo "")
 
-        curl -s --max-time 120 "$GATEWAY_URL/v1/chat/completions" \
+        local rawResponse
+        rawResponse=$(curl -s --max-time 120 "$GATEWAY_URL/v1/chat/completions" \
           -H "Content-Type: application/json" \
           -H "Authorization: Bearer $GATEWAY_TOKEN" \
           -H "x-clawdbot-agent-id: $AGENT_ID" \
@@ -271,7 +282,22 @@ let
                 role: "user",
                 content: ("[Voice input from microphone transcription. Respond concisely for TTS playback. Match spoken language (English or Portuguese). If the transcription is nonsensical, garbled, or clearly not directed at you, respond with exactly IGNORE and nothing else.]\n\n[Recent ambient transcription for context:]\n" + $context + "\n\n[Command:]\n" + $text)
               }]
-            }')" | jq -r '.choices[0].message.content // "Sorry, I could not process that."'
+            }')" || true)
+
+        if [[ -z "$rawResponse" ]]; then
+          echo "Sorry, I could not reach the gateway."
+          return
+        fi
+
+        local parsedContent
+        parsedContent=$(echo "$rawResponse" | jq -r '.choices[0].message.content // empty' 2>/dev/null || true)
+
+        if [[ -n "$parsedContent" ]]; then
+          echo "$parsedContent"
+        else
+          echo "hey-bot: gateway raw response: $(echo "$rawResponse" | head -c 300)" >&2
+          echo "Sorry, I could not process that."
+        fi
       }
 
       _speak_response() {
