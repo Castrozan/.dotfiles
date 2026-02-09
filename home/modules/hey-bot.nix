@@ -24,6 +24,7 @@ let
     text = ''
       WHISPER_MODEL="${cfg.whisperModel}"
       KEYWORDS_PATTERN="${keywordsPattern}"
+      WHISPER_PROMPT="Voice assistant keywords: ${builtins.concatStringsSep ", " cfg.keywords}. Transcribing ambient speech in English and Portuguese."
       GATEWAY_URL="${cfg.gatewayUrl}"
       GATEWAY_TOKEN_FILE="${cfg.gatewayTokenFile}"
       AGENT_ID="${cfg.agentId}"
@@ -68,7 +69,7 @@ let
         fi
 
         TRANSCRIBED_TEXT=$(whisper-cli -m "$WHISPER_MODEL" -f "$CHUNK_FILE" -nt -np -l auto --suppress-nst \
-          2>/dev/null \
+          --prompt "$WHISPER_PROMPT" 2>/dev/null \
           | tr '\n' ' ' | sed 's/^ *//;s/ *$//;s/  */ /g' \
           | sed 's/\[BLANK_AUDIO\]//g; s/\[silence\]//gi; s/\[Music\]//gi; s/(humming)//gi; s/(singing)//gi' \
           | sed 's/^ *//;s/ *$//')
@@ -95,10 +96,10 @@ let
         notify-send "Hey Bot" "Listening..." 2>/dev/null || true
 
         COMMAND_FILE=$(mktemp /tmp/hey-bot-cmd-XXXXXX.wav)
-        rec -q "$COMMAND_FILE" rate 16k channels 1 \
-          silence 1 0.2 2% 1 2.0 2% trim 0 30 2>/dev/null || { rm -f "$COMMAND_FILE"; continue; }
+        rec -q "$COMMAND_FILE" rate 16k channels 1 trim 0 15 2>/dev/null || { rm -f "$COMMAND_FILE"; continue; }
 
-        COMMAND_TEXT=$(whisper-cli -m "$WHISPER_MODEL" -f "$COMMAND_FILE" -nt -np -l auto --suppress-nst 2>/dev/null \
+        COMMAND_TEXT=$(whisper-cli -m "$WHISPER_MODEL" -f "$COMMAND_FILE" -nt -np -l auto --suppress-nst \
+          --prompt "$WHISPER_PROMPT" 2>/dev/null \
           | tr '\n' ' ' | sed 's/^ *//;s/ *$//;s/  */ /g' | sed 's/\[BLANK_AUDIO\]//g' | sed 's/^ *//;s/ *$//')
         rm -f "$COMMAND_FILE"
 
