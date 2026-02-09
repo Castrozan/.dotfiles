@@ -16,7 +16,6 @@
       bruno
       bun
       cargo
-      clipse
       curl
       delta
       docker-compose

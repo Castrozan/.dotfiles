@@ -26,7 +26,7 @@
     ../../home/modules/openclaw
     ../../home/modules/qmd.nix
     ../../home/modules/claude
-    #../../home/modules/clipse.nix TODO: clipse service does no work with gnome, migrate docs/clipse-gnome-issues.md
+    ../../home/modules/clipse.nix
     ../../home/modules/cmatrix.nix
     ../../home/modules/cursor
     ../../home/modules/devenv.nix
