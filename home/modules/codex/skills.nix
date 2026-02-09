@@ -2,7 +2,9 @@
 let
   skillsDir = ../../../agents/skills;
   entries = builtins.readDir skillsDir;
-  skillNames = builtins.attrNames (lib.filterAttrs (n: t: t == "directory" && n != ".system") entries);
+  skillNames = builtins.attrNames (
+    lib.filterAttrs (n: t: t == "directory" && n != ".system") entries
+  );
 
   skillLinks = builtins.listToAttrs (
     map (name: {
@@ -17,4 +19,3 @@ in
 {
   home.file = skillLinks;
 }
-

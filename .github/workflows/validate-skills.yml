@@ -1,0 +1,26 @@
+name: Validate Skills
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "agents/skills/**"
+      - "tests/validate-agents.sh"
+  pull_request:
+    branches: [main]
+    paths:
+      - "agents/skills/**"
+      - "tests/validate-agents.sh"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+
+jobs:
+  validate-skills:
+    name: Validate Skills
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate skill YAML frontmatter
+        run: ./tests/validate-agents.sh agents/skills

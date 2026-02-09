@@ -10,4 +10,3 @@ in
 {
   home.packages = [ tmux-btop-toggle ];
 }
-

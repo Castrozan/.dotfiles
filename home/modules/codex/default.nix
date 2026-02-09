@@ -7,4 +7,3 @@
     ./skills.nix
   ];
 }
-

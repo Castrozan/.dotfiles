@@ -9,7 +9,7 @@ let
   hyprlandPkgs = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system};
   inherit (hyprlandPkgs) xdg-desktop-portal-hyprland;
 
-  nixGLIntel = inputs.nixgl.packages.${pkgs.stdenv.hostPlatform.system}.nixGLIntel;
+  inherit (inputs.nixgl.packages.${pkgs.stdenv.hostPlatform.system}) nixGLIntel;
 
   xdphExecStart =
     if isNixOS then
