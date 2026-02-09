@@ -63,21 +63,30 @@ let
 
         rec -q "$CHUNK_FILE" rate 16k channels 1 trim 0 8 2>/dev/null || { rm -f "$CHUNK_FILE"; continue; }
 
+        MAX_AMPLITUDE=$(sox "$CHUNK_FILE" -n stat 2>&1 | awk '/Maximum amplitude/ {print $3}')
+        if [[ -z "$MAX_AMPLITUDE" ]] || awk "BEGIN {exit !($MAX_AMPLITUDE < 0.02)}"; then
+          rm -f "$CHUNK_FILE"
+          continue
+        fi
+
         PROMPT_ARGS=()
         if [[ -n "$PREVIOUS_TRANSCRIPTION" ]]; then
           PROMPT_ARGS=(--prompt "$PREVIOUS_TRANSCRIPTION")
         fi
 
-        TRANSCRIBED_TEXT=$(whisper-cli -m "$WHISPER_MODEL" -f "$CHUNK_FILE" -nt -np -l en \
+        TRANSCRIBED_TEXT=$(whisper-cli -m "$WHISPER_MODEL" -f "$CHUNK_FILE" -nt -np -l en --suppress-nst \
           "''${PROMPT_ARGS[@]}" 2>/dev/null \
-          | tr '\n' ' ' | sed 's/^ *//;s/ *$//;s/  */ /g' | sed 's/\[BLANK_AUDIO\]//g' | sed 's/^ *//;s/ *$//')
+          | tr '\n' ' ' | sed 's/^ *//;s/ *$//;s/  */ /g' \
+          | sed 's/\[BLANK_AUDIO\]//g; s/\[silence\]//gi; s/\[Music\]//gi; s/(humming)//gi; s/(singing)//gi' \
+          | sed 's/^ *//;s/ *$//')
         rm -f "$CHUNK_FILE"
 
-        PREVIOUS_TRANSCRIPTION="$TRANSCRIBED_TEXT"
-
         if [[ -z "$TRANSCRIBED_TEXT" ]]; then
+          PREVIOUS_TRANSCRIPTION=""
           continue
         fi
+
+        PREVIOUS_TRANSCRIPTION="$TRANSCRIBED_TEXT"
 
         log_transcription "$TRANSCRIBED_TEXT"
 
