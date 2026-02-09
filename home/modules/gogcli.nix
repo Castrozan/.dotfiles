@@ -6,7 +6,7 @@ let
 
     src = pkgs.fetchurl {
       url = "https://github.com/steipete/gogcli/releases/download/v0.9.0/gogcli_0.9.0_linux_amd64.tar.gz";
-      sha256 = "0lwn3mf3s6k4h0qazglrfc1jkrh9zfa4a1z0c3xyb2m4kjjla410";
+      sha256 = "sha256-KCGfSldHizw41bM8/LAPU6WUN4S5bDtH5t2HezhMWhM=";
     };
 
     sourceRoot = ".";
