@@ -56,8 +56,6 @@ let
 
       echo "hey-bot: listening for keywords matching: $KEYWORDS_PATTERN"
 
-      PREVIOUS_TRANSCRIPTION=""
-
       while true; do
         CHUNK_FILE=$(mktemp /tmp/hey-bot-XXXXXX.wav)
 
@@ -69,24 +67,16 @@ let
           continue
         fi
 
-        PROMPT_ARGS=()
-        if [[ -n "$PREVIOUS_TRANSCRIPTION" ]]; then
-          PROMPT_ARGS=(--prompt "$PREVIOUS_TRANSCRIPTION")
-        fi
-
-        TRANSCRIBED_TEXT=$(whisper-cli -m "$WHISPER_MODEL" -f "$CHUNK_FILE" -nt -np -l en --suppress-nst \
-          "''${PROMPT_ARGS[@]}" 2>/dev/null \
+        TRANSCRIBED_TEXT=$(whisper-cli -m "$WHISPER_MODEL" -f "$CHUNK_FILE" -nt -np -l auto --suppress-nst \
+          2>/dev/null \
           | tr '\n' ' ' | sed 's/^ *//;s/ *$//;s/  */ /g' \
           | sed 's/\[BLANK_AUDIO\]//g; s/\[silence\]//gi; s/\[Music\]//gi; s/(humming)//gi; s/(singing)//gi' \
           | sed 's/^ *//;s/ *$//')
         rm -f "$CHUNK_FILE"
 
         if [[ -z "$TRANSCRIBED_TEXT" ]]; then
-          PREVIOUS_TRANSCRIPTION=""
           continue
         fi
-
-        PREVIOUS_TRANSCRIPTION="$TRANSCRIBED_TEXT"
 
         log_transcription "$TRANSCRIBED_TEXT"
 
@@ -242,7 +232,7 @@ in
 
     whisperModel = lib.mkOption {
       type = lib.types.str;
-      default = "${config.home.homeDirectory}/.cache/whisper-cpp/models/ggml-base.en.bin";
+      default = "${config.home.homeDirectory}/.cache/whisper-cpp/models/ggml-base.bin";
     };
 
     transcriptionDir = lib.mkOption {
