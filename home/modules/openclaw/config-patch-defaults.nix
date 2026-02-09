@@ -110,6 +110,7 @@ let
     ".agents.defaults.compaction.memoryFlush.enabled" = true;
     ".gateway.port" = openclaw.gatewayPort;
     ".gateway.mode" = "local";
+    ".gateway.http.endpoints.chatCompletions.enabled" = true;
   };
 
   # Telegram patches - per-account so we don't override existing settings
