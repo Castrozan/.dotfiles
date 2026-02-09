@@ -20,6 +20,7 @@ let
       jq
       libnotify
       pipewire
+      perl
     ];
     text = ''
       readonly WHISPER_MODEL="${cfg.whisperModel}"
@@ -33,8 +34,8 @@ let
       readonly MAX_LOG_SIZE=${toString cfg.maxLogFileSize}
       readonly CHUNK_DURATION=6
       readonly STEP_INTERVAL=4
-      readonly COMMAND_MAX_CHUNKS=8
-      readonly COMMAND_SILENCE_END=2
+      readonly COMMAND_MAX_CHUNKS=15
+      readonly COMMAND_SILENCE_END=3
       readonly FOLLOWUP_WINDOW_CHUNKS=5
       readonly ENERGY_THRESHOLD=0.02
 
@@ -46,6 +47,7 @@ let
       FOLLOWUP_ACTIVE=false
       FOLLOWUP_CHUNKS_REMAINING=0
       FOLLOWUP_FLAG_FILE="/tmp/hey-bot-followup-$$"
+      WAIT_CONTEXT_FILE="/tmp/hey-bot-wait-context-$$"
       PREV_CHUNK=""
       PREV_REC_PID=""
       GATEWAY_TOKEN=""
@@ -66,7 +68,7 @@ let
 
       _cleanup() {
         jobs -p 2>/dev/null | xargs -r kill 2>/dev/null || true
-        rm -f "$FOLLOWUP_FLAG_FILE"
+        rm -f "$FOLLOWUP_FLAG_FILE" "$WAIT_CONTEXT_FILE"
       }
 
       _recording_loop() {
@@ -140,10 +142,31 @@ let
 
       _transcribe_chunk() {
         local chunkFile="$1"
-        whisper-cli -m "$WHISPER_MODEL" -f "$chunkFile" -nt -np -l auto --suppress-nst 2>/dev/null \
+        local rawTranscription
+        rawTranscription=$(whisper-cli -m "$WHISPER_MODEL" -f "$chunkFile" -nt -np -l auto --suppress-nst 2>/dev/null \
           | tr '\n' ' ' | sed 's/^ *//;s/ *$//;s/  */ /g' \
           | sed 's/\[BLANK_AUDIO\]//g; s/\[silence\]//gi; s/\[Music\]//gi; s/(humming)//gi; s/(singing)//gi' \
-          | sed 's/^ *//;s/ *$//'
+          | sed 's/^ *//;s/ *$//')
+
+        if _is_non_latin_hallucination "$rawTranscription"; then
+          echo ""
+        else
+          echo "$rawTranscription"
+        fi
+      }
+
+      _is_non_latin_hallucination() {
+        local text="$1"
+        [[ -z "$text" ]] && return 1
+        echo "$text" | perl -CSD -e '
+          use utf8;
+          my $line = <STDIN>;
+          chomp $line;
+          my $total = length($line);
+          exit 1 if $total == 0;
+          my $nonLatin = () = $line =~ /[^\p{Latin}\p{Common}\p{Inherited}]/g;
+          exit($nonLatin > $total * 0.3 ? 0 : 1);
+        '
       }
 
       _check_followup_signal() {
@@ -180,7 +203,7 @@ let
 
         FOLLOWUP_CHUNKS_REMAINING=$((FOLLOWUP_CHUNKS_REMAINING - 1))
 
-        if [[ -n "$transcription" ]] && [[ "$wordCount" -ge 2 ]]; then
+        if [[ -n "$transcription" ]] && [[ "$wordCount" -ge 4 ]]; then
           echo "hey-bot: follow-up detected"
           FOLLOWUP_ACTIVE=false
           FOLLOWUP_CHUNKS_REMAINING=0
@@ -208,7 +231,16 @@ let
         COMMAND_BUFFER=""
         COMMAND_SILENT_COUNT=0
         COMMAND_CHUNK_COUNT=0
-        KEYWORD_PHRASE="$transcription"
+
+        if [[ -f "$WAIT_CONTEXT_FILE" ]]; then
+          local waitContext
+          waitContext=$(cat "$WAIT_CONTEXT_FILE")
+          rm -f "$WAIT_CONTEXT_FILE"
+          KEYWORD_PHRASE="$waitContext $transcription"
+          echo "hey-bot: prepending wait context: '$waitContext'"
+        else
+          KEYWORD_PHRASE="$transcription"
+        fi
       }
 
       _dispatch_command() {
@@ -256,6 +288,13 @@ let
           return
         fi
 
+        if [[ "$responseText" == "WAIT" ]]; then
+          echo "hey-bot: mid-sentence detected, waiting for continuation"
+          echo "$commandText" > "$WAIT_CONTEXT_FILE"
+          touch "$FOLLOWUP_FLAG_FILE"
+          return
+        fi
+
         _speak_response "$responseText"
         touch "$FOLLOWUP_FLAG_FILE"
       }
@@ -280,7 +319,7 @@ let
               user: ("voice-" + $agent),
               messages: [{
                 role: "user",
-                content: ("[Voice input from microphone transcription. Respond concisely for TTS playback. Match spoken language (English or Portuguese). If the transcription is nonsensical, garbled, or clearly not directed at you, respond with exactly IGNORE and nothing else.]\n\n[Recent ambient transcription for context:]\n" + $context + "\n\n[Command:]\n" + $text)
+                content: ("[Voice input from microphone transcription. Rules: (1) Respond concisely for TTS playback, max 3 sentences. (2) Match spoken language (English or Portuguese). (3) Never include file paths, code blocks, URLs, or technical formatting. (4) If the transcription is nonsensical, garbled, or clearly not directed at you, respond with exactly IGNORE and nothing else. (5) If the transcription appears cut mid-sentence or the user seems to still be speaking, respond with exactly WAIT and nothing else.]\n\n[Recent ambient transcription for context:]\n" + $context + "\n\n[Command:]\n" + $text)
               }]
             }')" || true)
 
