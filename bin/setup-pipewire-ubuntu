@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+echo "Installing PipeWire packages..."
+sudo apt install -y \
+  pipewire-pulse \
+  wireplumber \
+  libspa-0.2-bluetooth \
+  pipewire-audio-client-libraries
+
+echo "Removing old session manager..."
+sudo apt remove -y pipewire-media-session || true
+
+echo "Disabling PulseAudio..."
+systemctl --user disable pulseaudio.socket pulseaudio.service
+systemctl --user mask pulseaudio
+
+echo "Enabling PipeWire..."
+systemctl --user enable pipewire.socket pipewire-pulse.socket wireplumber.service
+systemctl --user start pipewire pipewire-pulse wireplumber
+
+echo "Done. Verify with: pactl info | grep 'Server Name'"
