@@ -60,5 +60,6 @@
     ../../home/modules/zed-editor.nix
     ../../home/modules/testing
     ../../home/modules/ani-cli.nix
+    ../../home/modules/audio
   ];
 }
