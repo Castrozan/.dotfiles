@@ -24,7 +24,7 @@ let
     text = ''
       WHISPER_MODEL="${cfg.whisperModel}"
       KEYWORDS_PATTERN="${keywordsPattern}"
-      WHISPER_PROMPT="Voice assistant keywords: ${builtins.concatStringsSep ", " cfg.keywords}. Transcribing ambient speech in English and Portuguese."
+      WHISPER_PROMPT="${builtins.concatStringsSep ", " cfg.keywords}"
       GATEWAY_URL="${cfg.gatewayUrl}"
       GATEWAY_TOKEN_FILE="${cfg.gatewayTokenFile}"
       AGENT_ID="${cfg.agentId}"
@@ -117,7 +117,7 @@ let
         log_transcription "[COMMAND] $COMMAND_TEXT"
         notify-send "Hey Bot" "$COMMAND_TEXT" 2>/dev/null || true
 
-        LOG_FILE=$(get_log_file)
+        RECENT_TRANSCRIPTION=$(tail -20 "$(get_log_file)" 2>/dev/null || echo "")
 
         RESPONSE_TEXT=$(curl -s --max-time 120 "$GATEWAY_URL/v1/chat/completions" \
           -H "Content-Type: application/json" \
@@ -127,25 +127,29 @@ let
             --arg text "$COMMAND_TEXT" \
             --arg model "$MODEL" \
             --arg agent "$AGENT_ID" \
-            --arg logfile "$LOG_FILE" \
+            --arg context "$RECENT_TRANSCRIPTION" \
             '{
               model: $model,
               user: ("voice-" + $agent),
               messages: [{
                 role: "user",
-                content: ("[Voice input — respond concisely for TTS playback. Match spoken language (English or Portuguese). Ambient transcription log: " + $logfile + "]\n\n" + $text)
+                content: ("[Voice input from microphone transcription. Respond concisely for TTS playback. Match spoken language (English or Portuguese). If the transcription is nonsensical, garbled, or clearly not directed at you, respond with exactly IGNORE and nothing else.]\n\n[Recent ambient transcription for context:]\n" + $context + "\n\n[Command:]\n" + $text)
               }]
             }')" | jq -r '.choices[0].message.content // "Sorry, I could not process that."')
 
         echo "hey-bot: response: '$(echo "$RESPONSE_TEXT" | head -c 200)'"
         log_transcription "[RESPONSE] $RESPONSE_TEXT"
 
-        TTS_FILE=$(mktemp /tmp/hey-bot-tts-XXXXXX.mp3)
-        if edge-tts --text "$RESPONSE_TEXT" --voice "$TTS_VOICE" --write-media "$TTS_FILE" 2>/dev/null; then
-          wpctl set-mute @DEFAULT_AUDIO_SINK@ 0 2>/dev/null || true
-          mpv --no-video --ao=pipewire "$TTS_FILE" 2>/dev/null || true
+        if [[ "$RESPONSE_TEXT" == "IGNORE" ]]; then
+          echo "hey-bot: nonsensical input, skipping TTS"
+        else
+          TTS_FILE=$(mktemp /tmp/hey-bot-tts-XXXXXX.mp3)
+          if edge-tts --text "$RESPONSE_TEXT" --voice "$TTS_VOICE" --write-media "$TTS_FILE" 2>/dev/null; then
+            wpctl set-mute @DEFAULT_AUDIO_SINK@ 0 2>/dev/null || true
+            mpv --no-video --ao=pipewire "$TTS_FILE" 2>/dev/null || true
+          fi
+          rm -f "$TTS_FILE"
         fi
-        rm -f "$TTS_FILE"
 
         echo "hey-bot: ready for next keyword"
       done
