@@ -62,6 +62,18 @@ Get from current repo: gh repo view --json owner,name --jq '"\(.owner.login)/\(.
 Or parse from remote: git remote get-url origin | sed 's/.*github.com[:/]\(.*\)\.git/\1/'
 </owner_repo_detection>
 
+<gitlab_mr_management>
+For GitLab repositories (detected by remote URL containing "gitlab"), use `glab` CLI instead of `gh`.
+
+MR discovery: glab mr list | glab mr view [number]
+Create MR: glab mr create --title "title" --description "body" --target-branch master
+Approve/merge: glab mr approve [number] | glab mr merge [number]
+Comments: glab mr note list [number] | glab mr note [number] -m "comment"
+CI status: glab ci status | glab ci list | glab ci view [job-id] | glab ci retry
+
+Detection: check `git remote get-url origin` — if it contains "gitlab", use glab; if "github", use gh.
+</gitlab_mr_management>
+
 <red_flags>
 Never dismiss reviews without addressing concerns. Always verify CI passes before requesting re-review. Don't mark conversations resolved without actually fixing the issue.
 </red_flags>
