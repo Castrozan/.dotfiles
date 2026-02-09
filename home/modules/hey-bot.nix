@@ -139,6 +139,26 @@ let
     '';
   };
 
+  heyBotLog = pkgs.writeShellApplication {
+    name = "hey-bot-log";
+    text = ''
+      TRANSCRIPTION_DIR="${cfg.transcriptionDir}"
+
+      latestLogFile=$(find "$TRANSCRIPTION_DIR" -maxdepth 1 -name '*.log' -printf '%T@ %p\n' 2>/dev/null | sort -rn | head -1 | cut -d' ' -f2-)
+
+      if [[ -z "''${latestLogFile:-}" ]]; then
+        echo "No transcription logs found in $TRANSCRIPTION_DIR"
+        exit 1
+      fi
+
+      if [[ "''${1:-}" == "-f" ]]; then
+        tail -f "$latestLogFile"
+      else
+        cat "$latestLogFile"
+      fi
+    '';
+  };
+
   heyBotPushToTalk = pkgs.writeShellApplication {
     name = "hey-bot-ptt";
     runtimeInputs = with pkgs; [
@@ -250,6 +270,7 @@ in
     home.packages = [
       heyBotDaemon
       heyBotPushToTalk
+      heyBotLog
     ];
 
     systemd.user.services.hey-bot = {
