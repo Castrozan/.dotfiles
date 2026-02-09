@@ -100,6 +100,7 @@
                 "sbc_xq"
                 "sbc"
               ];
+              "bluez5.autoswitch-to-headset-profile" = false;
             };
           }
         ];
