@@ -56,14 +56,24 @@ let
 
       echo "hey-bot: listening for keywords matching: $KEYWORDS_PATTERN"
 
+      PREVIOUS_TRANSCRIPTION=""
+
       while true; do
         CHUNK_FILE=$(mktemp /tmp/hey-bot-XXXXXX.wav)
 
-        rec -q "$CHUNK_FILE" rate 16k channels 1 trim 0 5 2>/dev/null || { rm -f "$CHUNK_FILE"; continue; }
+        rec -q "$CHUNK_FILE" rate 16k channels 1 trim 0 8 2>/dev/null || { rm -f "$CHUNK_FILE"; continue; }
 
-        TRANSCRIBED_TEXT=$(whisper-cli -m "$WHISPER_MODEL" -f "$CHUNK_FILE" -nt -np -bo 1 -bs 1 -l en 2>/dev/null \
+        PROMPT_ARGS=()
+        if [[ -n "$PREVIOUS_TRANSCRIPTION" ]]; then
+          PROMPT_ARGS=(--prompt "$PREVIOUS_TRANSCRIPTION")
+        fi
+
+        TRANSCRIBED_TEXT=$(whisper-cli -m "$WHISPER_MODEL" -f "$CHUNK_FILE" -nt -np -l en \
+          "''${PROMPT_ARGS[@]}" 2>/dev/null \
           | tr '\n' ' ' | sed 's/^ *//;s/ *$//;s/  */ /g' | sed 's/\[BLANK_AUDIO\]//g' | sed 's/^ *//;s/ *$//')
         rm -f "$CHUNK_FILE"
+
+        PREVIOUS_TRANSCRIPTION="$TRANSCRIBED_TEXT"
 
         if [[ -z "$TRANSCRIBED_TEXT" ]]; then
           continue
