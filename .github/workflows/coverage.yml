@@ -3,14 +3,8 @@ name: Coverage
 on:
   push:
     branches: [main]
-    paths:
-      - "bin/**"
-      - "tests/**"
   pull_request:
     branches: [main]
-    paths:
-      - "bin/**"
-      - "tests/**"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

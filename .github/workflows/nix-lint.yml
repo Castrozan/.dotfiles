@@ -3,14 +3,8 @@ name: Nix Lint
 on:
   push:
     branches: [main]
-    paths:
-      - "**.nix"
-      - "flake.lock"
   pull_request:
     branches: [main]
-    paths:
-      - "**.nix"
-      - "flake.lock"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

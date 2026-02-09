@@ -3,14 +3,8 @@ name: Validate Skills
 on:
   push:
     branches: [main]
-    paths:
-      - "agents/skills/**"
-      - "tests/validate-agents.sh"
   pull_request:
     branches: [main]
-    paths:
-      - "agents/skills/**"
-      - "tests/validate-agents.sh"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

@@ -3,14 +3,8 @@ name: Script Tests
 on:
   push:
     branches: [main]
-    paths:
-      - "bin/**"
-      - "tests/scripts/**"
   pull_request:
     branches: [main]
-    paths:
-      - "bin/**"
-      - "tests/scripts/**"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
