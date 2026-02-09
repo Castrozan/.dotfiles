@@ -62,8 +62,8 @@
     ../../home/modules/yazi.nix
     ../../home/modules/wezterm.nix # https://tmuxai.dev/terminal-compatibility/
     ../../home/modules/whisp-away.nix
-    ../../home/modules/hey-bot.nix
-    ./home/hey-bot.nix
+    # ../../home/modules/hey-bot.nix
+    # ./home/hey-bot.nix
     ../../home/modules/zed-editor.nix
     ../../home/modules/testing
     ../../home/modules/ani-cli.nix
