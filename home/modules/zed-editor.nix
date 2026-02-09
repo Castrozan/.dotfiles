@@ -1,6 +1,6 @@
-{ pkgs, inputs, ... }:
+{ unstable, ... }:
 {
   home.packages = [
-    inputs.zed-editor.packages.${pkgs.stdenv.hostPlatform.system}.default
+    unstable.zed-editor
   ];
 }
