@@ -46,7 +46,7 @@ alias source-shell='source ~/.bashrc'
 alias t='tmux attach -t screensaver 2>/dev/null || _start_tmux'
 alias todo='cd $HOME/vault'
 alias vial='Vial'
-alias workbench='cd $HOME/workbench || cursor $HOME/workbench'
+alias workbench='cd $HOME/workbench || $EDITOR $HOME/workbench'
 alias y='yazi'
 # TODO: fix vivaldi, it should not be running as flatpak
 alias vivaldi="flatpak run com.vivaldi.Vivaldi"

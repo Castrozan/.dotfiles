@@ -123,7 +123,7 @@ in
     "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom2" = {
       name = "workbench";
       binding = "<Super>w";
-      command = "bash -c 'cursor $HOME/workbench'";
+      command = "bash -c '$EDITOR $HOME/workbench'";
     };
 
     "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom3" = {
