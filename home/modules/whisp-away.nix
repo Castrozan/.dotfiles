@@ -18,7 +18,7 @@ let
   nixVulkanWrapper = inputs.nixgl.packages.${pkgs.stdenv.hostPlatform.system}.nixVulkanIntel;
 
   whisp-away-vulkan = pkgs.writeShellScriptBin "whisp-away" ''
-    exec ${nixVulkanWrapper}/bin/nixVulkanIntel ${whisp-awayPackage}/bin/whisp-away "$@"
+    exec ${nixVulkanWrapper}/bin/nixVulkanIntel ${whisp-awayPackage}/bin/whisp-away "$@" 2> >(grep -v "^Warning, nixVulkanIntel" >&2)
   '';
 
   whisp-away-wrapped = pkgs.symlinkJoin {
