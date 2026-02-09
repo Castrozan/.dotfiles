@@ -33,13 +33,19 @@ let
       readonly MAX_LOG_SIZE=${toString cfg.maxLogFileSize}
       readonly CHUNK_DURATION=6
       readonly STEP_INTERVAL=4
-      readonly COMMAND_COLLECTION_CHUNKS=3
+      readonly COMMAND_MAX_CHUNKS=8
+      readonly COMMAND_SILENCE_END=2
+      readonly FOLLOWUP_WINDOW_CHUNKS=5
       readonly ENERGY_THRESHOLD=0.02
 
       COMMAND_MODE=false
-      COMMAND_CHUNKS_REMAINING=0
       COMMAND_BUFFER=""
       KEYWORD_PHRASE=""
+      COMMAND_SILENT_COUNT=0
+      COMMAND_CHUNK_COUNT=0
+      FOLLOWUP_ACTIVE=false
+      FOLLOWUP_CHUNKS_REMAINING=0
+      FOLLOWUP_FLAG_FILE="/tmp/hey-bot-followup-$$"
       PREV_CHUNK=""
       PREV_REC_PID=""
       GATEWAY_TOKEN=""
@@ -47,7 +53,7 @@ let
       main() {
         mkdir -p "$TRANSCRIPTION_DIR"
         _load_gateway_token
-        trap '_cleanup_background_jobs' EXIT
+        trap '_cleanup' EXIT
         echo "hey-bot: listening for keywords matching: $KEYWORDS_PATTERN"
         _recording_loop
       }
@@ -58,8 +64,9 @@ let
         fi
       }
 
-      _cleanup_background_jobs() {
+      _cleanup() {
         jobs -p 2>/dev/null | xargs -r kill 2>/dev/null || true
+        rm -f "$FOLLOWUP_FLAG_FILE"
       }
 
       _recording_loop() {
@@ -91,36 +98,34 @@ let
 
       _process_chunk() {
         local chunkFile="$1"
+        local transcription=""
 
-        if ! _chunk_has_audio "$chunkFile"; then
-          rm -f "$chunkFile"
-          _count_command_chunk_if_active
-          return
+        if _chunk_has_audio "$chunkFile"; then
+          transcription=$(_transcribe_chunk "$chunkFile")
         fi
-
-        local transcription
-        transcription=$(_transcribe_chunk "$chunkFile")
         rm -f "$chunkFile"
 
-        if [[ -z "$transcription" ]]; then
-          _count_command_chunk_if_active
-          return
+        local wordCount=0
+        if [[ -n "$transcription" ]]; then
+          wordCount=$(echo "$transcription" | wc -w)
+          if [[ "$wordCount" -ge 3 ]]; then
+            _log_transcription "$transcription"
+          fi
         fi
 
-        local wordCount
-        wordCount=$(echo "$transcription" | wc -w)
-
-        if [[ "$wordCount" -ge 3 ]]; then
-          _log_transcription "$transcription"
-        fi
+        _check_followup_signal
 
         if [[ "$COMMAND_MODE" == "true" ]]; then
-          COMMAND_BUFFER="$COMMAND_BUFFER $transcription"
-          _finish_command_chunk
+          _handle_command_chunk "$transcription"
           return
         fi
 
-        if echo "$transcription" | grep -qiE "$KEYWORDS_PATTERN"; then
+        if [[ "$FOLLOWUP_ACTIVE" == "true" ]]; then
+          _handle_followup_chunk "$transcription" "$wordCount"
+          return
+        fi
+
+        if [[ -n "$transcription" ]] && echo "$transcription" | grep -qiE "$KEYWORDS_PATTERN"; then
           _activate_command_mode "$transcription" "$wordCount"
           return
         fi
@@ -141,9 +146,51 @@ let
           | sed 's/^ *//;s/ *$//'
       }
 
-      _count_command_chunk_if_active() {
-        if [[ "$COMMAND_MODE" == "true" ]]; then
-          _finish_command_chunk
+      _check_followup_signal() {
+        if [[ -f "$FOLLOWUP_FLAG_FILE" ]]; then
+          rm -f "$FOLLOWUP_FLAG_FILE"
+          if [[ "$COMMAND_MODE" != "true" ]]; then
+            FOLLOWUP_ACTIVE=true
+            FOLLOWUP_CHUNKS_REMAINING=$FOLLOWUP_WINDOW_CHUNKS
+            echo "hey-bot: follow-up window active"
+          fi
+        fi
+      }
+
+      _handle_command_chunk() {
+        local transcription="$1"
+
+        COMMAND_CHUNK_COUNT=$((COMMAND_CHUNK_COUNT + 1))
+
+        if [[ -n "$transcription" ]]; then
+          COMMAND_BUFFER="$COMMAND_BUFFER $transcription"
+          COMMAND_SILENT_COUNT=0
+        else
+          COMMAND_SILENT_COUNT=$((COMMAND_SILENT_COUNT + 1))
+        fi
+
+        if [[ "$COMMAND_SILENT_COUNT" -ge "$COMMAND_SILENCE_END" ]] || [[ "$COMMAND_CHUNK_COUNT" -ge "$COMMAND_MAX_CHUNKS" ]]; then
+          _dispatch_command
+        fi
+      }
+
+      _handle_followup_chunk() {
+        local transcription="$1"
+        local wordCount="$2"
+
+        FOLLOWUP_CHUNKS_REMAINING=$((FOLLOWUP_CHUNKS_REMAINING - 1))
+
+        if [[ -n "$transcription" ]] && [[ "$wordCount" -ge 2 ]]; then
+          echo "hey-bot: follow-up detected"
+          FOLLOWUP_ACTIVE=false
+          FOLLOWUP_CHUNKS_REMAINING=0
+          _activate_command_mode "$transcription" "$wordCount"
+          return
+        fi
+
+        if [[ "$FOLLOWUP_CHUNKS_REMAINING" -le 0 ]]; then
+          FOLLOWUP_ACTIVE=false
+          echo "hey-bot: follow-up window expired"
         fi
       }
 
@@ -158,26 +205,26 @@ let
         notify-send "Hey Bot" "Listening..." 2>/dev/null || true
 
         COMMAND_MODE=true
-        COMMAND_CHUNKS_REMAINING=$COMMAND_COLLECTION_CHUNKS
-        KEYWORD_PHRASE="$transcription"
         COMMAND_BUFFER=""
+        COMMAND_SILENT_COUNT=0
+        COMMAND_CHUNK_COUNT=0
+        KEYWORD_PHRASE="$transcription"
       }
 
-      _finish_command_chunk() {
-        COMMAND_CHUNKS_REMAINING=$((COMMAND_CHUNKS_REMAINING - 1))
-        if [[ "$COMMAND_CHUNKS_REMAINING" -le 0 ]]; then
-          COMMAND_MODE=false
-          if [[ -n "$COMMAND_BUFFER" ]]; then
-            local fullCommand="$KEYWORD_PHRASE $COMMAND_BUFFER"
-            fullCommand=$(echo "$fullCommand" | sed 's/^ *//;s/ *$//;s/  */ /g')
-            echo "hey-bot: sending command to gateway in background"
-            _process_command "$fullCommand" &
-          else
-            echo "hey-bot: empty command, returning to listening"
-          fi
-          COMMAND_BUFFER=""
-          KEYWORD_PHRASE=""
+      _dispatch_command() {
+        COMMAND_MODE=false
+        if [[ -n "$COMMAND_BUFFER" ]]; then
+          local fullCommand="$KEYWORD_PHRASE $COMMAND_BUFFER"
+          fullCommand=$(echo "$fullCommand" | sed 's/^ *//;s/ *$//;s/  */ /g')
+          echo "hey-bot: sending command to gateway in background"
+          _process_command "$fullCommand" &
+        else
+          echo "hey-bot: empty command, returning to listening"
         fi
+        COMMAND_BUFFER=""
+        KEYWORD_PHRASE=""
+        COMMAND_SILENT_COUNT=0
+        COMMAND_CHUNK_COUNT=0
       }
 
       _process_command() {
@@ -200,6 +247,7 @@ let
         fi
 
         _speak_response "$responseText"
+        touch "$FOLLOWUP_FLAG_FILE"
       }
 
       _send_to_gateway() {
