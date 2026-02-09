@@ -78,11 +78,18 @@ let
           continue
         fi
 
+        WORD_COUNT=$(echo "$TRANSCRIBED_TEXT" | wc -w)
+        if [[ "$WORD_COUNT" -lt 3 ]]; then
+          continue
+        fi
+
         log_transcription "$TRANSCRIBED_TEXT"
 
         if ! echo "$TRANSCRIBED_TEXT" | grep -qiE "$KEYWORDS_PATTERN"; then
           continue
         fi
+
+        KEYWORD_CONTEXT="$TRANSCRIBED_TEXT"
 
         echo "hey-bot: keyword detected in: '$TRANSCRIBED_TEXT'"
         notify-send "Hey Bot" "Listening..." 2>/dev/null || true
@@ -91,9 +98,14 @@ let
         rec -q "$COMMAND_FILE" rate 16k channels 1 \
           silence 1 0.2 2% 1 2.0 2% trim 0 30 2>/dev/null || { rm -f "$COMMAND_FILE"; continue; }
 
-        COMMAND_TEXT=$(whisper-cli -m "$WHISPER_MODEL" -f "$COMMAND_FILE" -nt -np -l en 2>/dev/null \
+        COMMAND_TEXT=$(whisper-cli -m "$WHISPER_MODEL" -f "$COMMAND_FILE" -nt -np -l auto --suppress-nst 2>/dev/null \
           | tr '\n' ' ' | sed 's/^ *//;s/ *$//;s/  */ /g' | sed 's/\[BLANK_AUDIO\]//g' | sed 's/^ *//;s/ *$//')
         rm -f "$COMMAND_FILE"
+
+        if [[ -n "$KEYWORD_CONTEXT" ]]; then
+          COMMAND_TEXT="$KEYWORD_CONTEXT $COMMAND_TEXT"
+          COMMAND_TEXT=$(echo "$COMMAND_TEXT" | sed 's/^ *//;s/ *$//;s/  */ /g')
+        fi
 
         if [[ -z "$COMMAND_TEXT" ]]; then
           echo "hey-bot: empty command, returning to listening"
