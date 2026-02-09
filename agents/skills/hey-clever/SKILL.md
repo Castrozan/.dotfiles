@@ -1,49 +1,21 @@
 ---
 name: hey-clever
-description: Always-on voice assistant with keyword detection, Whisper transcription, and TTS response. Use when setting up, starting, or troubleshooting the voice assistant.
+description: Push-to-talk voice assistant. Uses whisp-away for transcription, sends to OpenClaw gateway, plays TTS response. Triggered via Hyprland keybind.
 ---
 
-# Hey Clever -- Always-On Voice Assistant
+# Hey Clever -- Push-to-Talk Voice Assistant
 
-Listens for a keyword ("Clever"), records the spoken command, transcribes with Whisper, sends to the OpenClaw gateway, and plays back the TTS response.
+Press keybind to record, release to transcribe (whisp-away), send to gateway, and play TTS response.
 
-## Architecture
+## Keybind (Hyprland)
+
+Hold `SUPER ALT, C` to record, release to process:
 
 ```
-Phase 1 (always running): Silero VAD -> buffer -> Whisper tiny -> keyword check
-Phase 2 (on activation): Beep -> record until silence -> Whisper small -> gateway -> TTS -> play
+bindd = SUPER ALT, C, Hey Clever start, exec, whisp-away start
+bindrd = SUPER ALT, C, Hey Clever stop, exec, ~/openclaw/skills/hey-clever/scripts/hey-clever.sh
 ```
 
-## Scripts
+## Script
 
-### `hey-clever.py`
-Main voice assistant loop. Requires a Python venv with dependencies.
-
-```bash
-python3 scripts/hey-clever.py --debug          # Run with debug logging
-python3 scripts/hey-clever.py --list-devices   # List audio devices
-python3 scripts/hey-clever.py --device 3       # Use specific input device
-```
-
-### `hey-clever-setup.sh`
-One-time setup: creates venv, installs dependencies, installs systemd service.
-
-```bash
-bash scripts/hey-clever-setup.sh
-```
-
-### `faster-whisper.sh`
-Standalone Whisper transcription wrapper for media files.
-
-```bash
-scripts/faster-whisper.sh input.wav --model small --output_dir /tmp/whisper-out
-```
-
-## Systemd Service
-
-```bash
-systemctl --user start hey-clever
-systemctl --user stop hey-clever
-systemctl --user enable hey-clever
-journalctl --user -u hey-clever -f
-```
+`scripts/hey-clever.sh` — stops whisp-away recording, reads transcription from clipboard, sends to gateway, plays TTS via edge-tts + mpv.
