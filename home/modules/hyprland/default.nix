@@ -31,6 +31,8 @@ in
     ../fuzzel.nix
   ];
 
+  xdg.configFile."hypr-host/monitors.conf".text = lib.mkDefault "";
+
   # Start graphical services after systemd reload
   # This ensures services restart after home-manager switch
   home.activation.startGraphicalServices = lib.hm.dag.entryAfter [ "reloadSystemd" ] ''

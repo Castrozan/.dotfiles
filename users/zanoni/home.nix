@@ -1,5 +1,10 @@
 # Zanoni's Home Manager Configuration — Clever 🤖
 {
+  xdg.configFile."hypr-host/monitors.conf".text = ''
+    monitor = HDMI-A-1, 1920x1080@120, auto, 1, bitdepth, 10
+    monitor = eDP-1, disable
+  '';
+
   imports = [
     ./home/git.nix
     ./home/ssh.nix
