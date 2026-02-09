@@ -235,7 +235,7 @@ Generate a summary like:
 Recommendations:
 1. Run `sudo nix-collect-garbage --delete-older-than 7d` to free ~8GB
 2. Run `sudo nixos-rebuild switch --flake ~/.dotfiles` to deploy pending changes
-3. Re-enable hey-clever after rebuild
+3. Re-enable hey-bot after rebuild
 ```
 
 ## Integration Notes

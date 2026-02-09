@@ -31,6 +31,7 @@
     ../../home/modules/install-nothing.nix
     ../../home/modules/kitty.nix
     ../../home/modules/lazygit.nix
+    ../../home/modules/mcporter.nix
     ../../home/modules/ani-cli.nix
     ../../home/modules/neovim.nix
     ../../home/modules/obsidian.nix
@@ -46,6 +47,8 @@
     ../../home/modules/voxtype.nix
     ../../home/modules/wezterm.nix # https://tmuxai.dev/terminal-compatibility/
     ../../home/modules/whisp-away.nix
+    ../../home/modules/hey-bot.nix
+    ./home/hey-bot.nix
     ../../home/modules/systemd-manager-tui.nix
     ../../home/modules/testing
   ];

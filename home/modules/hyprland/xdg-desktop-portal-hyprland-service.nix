@@ -1,5 +1,6 @@
 {
   pkgs,
+  lib,
   inputs,
   isNixOS,
   ...
@@ -33,6 +34,27 @@ in
       Type = "dbus";
       BusName = "org.freedesktop.impl.portal.desktop.hyprland";
       ExecStart = xdphExecStart;
+      Restart = "on-failure";
+      RestartSec = "1s";
+    };
+
+    Install = {
+      WantedBy = [ "graphical-session.target" ];
+    };
+  };
+
+  systemd.user.services.xdg-desktop-portal = lib.mkIf (!isNixOS) {
+    Unit = {
+      Description = "Portal service (Nix)";
+      After = [ "graphical-session.target" ];
+      PartOf = [ "graphical-session.target" ];
+      ConditionEnvironment = "WAYLAND_DISPLAY";
+    };
+
+    Service = {
+      Type = "dbus";
+      BusName = "org.freedesktop.portal.Desktop";
+      ExecStart = "${pkgs.xdg-desktop-portal}/libexec/xdg-desktop-portal";
       Restart = "on-failure";
       RestartSec = "1s";
     };
