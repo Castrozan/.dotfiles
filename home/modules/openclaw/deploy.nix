@@ -67,5 +67,12 @@ in
         filter = name: _: builtins.pathExists (privateDir + "/skills/${name}/SKILL.md");
         force = true;
       }
-    );
+    )
+
+    # External skill: aplicacoes-atendimento-triage (lucas.zanoni private, symlinked live)
+    // openclaw.deployToAllWorkspaces {
+      "skills/aplicacoes-atendimento-triage" = {
+        source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/repo/aplicacoes-atendimento-triage";
+      };
+    };
 }
