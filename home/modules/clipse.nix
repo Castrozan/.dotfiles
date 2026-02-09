@@ -8,7 +8,7 @@ let
     src = pkgs.fetchFromGitHub {
       owner = "castrozan";
       repo = "clipse";
-      rev = "4e715434d2e96d96ab4b47e6a1cbfbe11b00eaff";
+      rev = "4e71543da3cedbd9f4ac94b67b42175872fe31f6";
       sha256 = "sha256-ccg72mrueM3dJoOJVJsi6Q65+YaMmlnpD8zBvvnibuA=";
     };
 
