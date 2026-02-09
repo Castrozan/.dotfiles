@@ -64,5 +64,19 @@ lib.mkIf (!isNixOS) {
         },
       })
     '';
+
+    "wireplumber/bluetooth.lua.d/51-bluetooth-sink-priority.lua".text = ''
+      table.insert(bluez_monitor.rules, {
+        matches = {
+          {
+            { "node.name", "matches", "bluez_output.*" },
+          },
+        },
+        apply_properties = {
+          ["priority.driver"] = 3000,
+          ["priority.session"] = 3000,
+        },
+      })
+    '';
   };
 }

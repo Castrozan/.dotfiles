@@ -105,6 +105,20 @@
           }
         ];
       };
+
+      "51-bluetooth-sink-priority" = {
+        "monitor.bluez.rules" = [
+          {
+            matches = [
+              { "node.name" = "~bluez_output.*"; }
+            ];
+            actions.update-props = {
+              "priority.driver" = 3000;
+              "priority.session" = 3000;
+            };
+          }
+        ];
+      };
     };
   };
 

@@ -51,6 +51,7 @@
       nodejs
       obsidian
       ollama
+      playerctl
       pipes
       postman
       postgresql
