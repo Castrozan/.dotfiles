@@ -8,8 +8,8 @@ let
     src = pkgs.fetchFromGitHub {
       owner = "castrozan";
       repo = "clipse";
-      rev = "4e71543da3cedbd9f4ac94b67b42175872fe31f6";
-      sha256 = "sha256-ccg72mrueM3dJoOJVJsi6Q65+YaMmlnpD8zBvvnibuA=";
+      rev = "17f87cea18fdf5b388893153426e5bbb2b379982";
+      sha256 = "sha256-pzBNBEgvZBhRA3fjWHA3RfY7g8/mVMdAW11CM/5rgiI=";
     };
 
     vendorHash = "sha256-LxwST4Zjxq6Fwc47VeOdv19J3g/DHZ7Fywp2ZvVR06I=";
