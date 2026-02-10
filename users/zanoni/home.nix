@@ -53,6 +53,7 @@
     ../../home/modules/wezterm.nix # https://tmuxai.dev/terminal-compatibility/
     ../../home/modules/whisp-away.nix
     ../../home/modules/hey-bot.nix
+    ../../home/modules/hey-bot-test.nix
     ./home/hey-bot.nix
     ../../home/modules/systemd-manager-tui.nix
     ../../home/modules/testing
