@@ -81,11 +81,9 @@ else
         echo -e " ${RED}FAILED${NC}"
     fi
 fi
-
-# Set remapped source as default so Meet auto-selects it
-XDG_RUNTIME_DIR=/run/user/1000 pactl set-default-source AvatarMicSource 2>/dev/null && \
-    echo -e "  ${GREEN}✓${NC} AvatarMicSource set as default mic" || \
-    echo -e "  ${YELLOW}⚠${NC}  Could not set default source"
+# Do NOT change system default mic - keep real mic as default for web apps
+# AvatarMicSource is available but not default (use CDP for Meet selection)
+echo -e " ${GREEN}✓${NC} AvatarMicSource available (system default unchanged)"
 
 echo ""
 

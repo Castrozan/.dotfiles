@@ -24,8 +24,10 @@ avatar-speak.sh "Your response here" neutral speakers
 ```
 
 **Microphone setup:**
-- Default source should be laptop internal mic (NOT AvatarMicSource)
-- If feedback loop occurs: `pactl set-default-source alsa_input.pci-0000_05_00.6.HiFi__Mic1__source`
+- System default: laptop internal mic (`alsa_input.pci-0000_05_00.6.HiFi__Mic1__source`)
+- Avatar does NOT change system default mic automatically
+- `AvatarMicSource` is available but not default — select in Meet/calls when needed
+- To restore real mic: `pactl set-default-source alsa_input.pci-0000_05_00.6.HiFi__Mic1__source`
 
 ## Start / Stop
 
