@@ -9,7 +9,7 @@
         isDefault = true;
         emoji = "🤖";
         role = "home/personal — NixOS, home automation, overnight work";
-        model.primary = "anthropic/claude-sonnet-4-5";
+        model.primary = "anthropic/claude-opus-4-5";
         workspace = "openclaw";
         tts.voice = "en-US-JennyNeural";
         telegram.enable = true;
