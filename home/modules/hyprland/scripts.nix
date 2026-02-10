@@ -31,5 +31,6 @@ in
     (mkScript "hypr-toggle-monitors" ../../../bin/hypr/toggle-monitors)
     (mkScript "hypr-monitor-hotplug-daemon" ../../../bin/hypr/monitor-hotplug-daemon)
     (mkScript "hypr-notification-sound-toggle" ../../../bin/hypr/notification-sound-toggle)
+    (mkScript "hypr-summon-chrome-global" ../../../bin/hypr/summon-chrome-global)
   ];
 }
