@@ -70,16 +70,16 @@ let
     ];
     ".agents.list" = agentsList;
     ".agents.defaults.workspace" = defaultWorkspace;
-    ".agents.defaults.model.primary" = "nvidia/moonshotai/kimi-k2.5";
-    ".agents.defaults.heartbeat.model" = "nvidia/moonshotai/kimi-k2.5";
-    ".agents.defaults.subagents.model" = "nvidia/moonshotai/kimi-k2.5";
+    ".agents.defaults.model.primary" = "anthropic/claude-opus-4-6";
+    ".agents.defaults.heartbeat.model" = "anthropic/claude-opus-4-6";
+    ".agents.defaults.subagents.model" = "anthropic/claude-opus-4-6";
     ".agents.defaults.model.fallbacks" = [
       "nvidia/moonshotai/kimi-k2.5"
       "anthropic/claude-sonnet-4-5"
-      "anthropic/claude-opus-4-5"
+      "anthropic/claude-opus-4-6"
     ];
     ".agents.defaults.models" = {
-      "anthropic/claude-opus-4-5" = {
+      "anthropic/claude-opus-4-6" = {
         alias = "opus";
       };
       "anthropic/claude-sonnet-4-5" = {
