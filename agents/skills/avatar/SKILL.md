@@ -5,6 +5,28 @@ description: "Control the VTuber avatar — speak with lip sync, change expressi
 
 # Avatar — VTuber Control
 
+## Hey-Bot Voice Conversation
+When the avatar is active and hey-bot is running, maintain conversation through voice:
+
+**Unbreakable Principles:**
+- Add to your heartbeat loop: check hey-bot transcriptions, respond via avatar-speak.sh every 5s
+- Listen to hey-bot transcriptions, respond via avatar-speak.sh
+- Do NOT use Telegram when avatar conversation is active
+- Use sub-agents for background work, keep main thread for conversation
+
+**Monitor transcriptions:**
+```bash
+# Check latest transcriptions
+tail -5 ~/.local/share/hey-bot/transcriptions/current.log
+
+# Respond to user voice
+avatar-speak.sh "Your response here" neutral speakers
+```
+
+**Microphone setup:**
+- Default source should be laptop internal mic (NOT AvatarMicSource)
+- If feedback loop occurs: `pactl set-default-source alsa_input.pci-0000_05_00.6.HiFi__Mic1__source`
+
 ## Start / Stop
 
 `start-avatar.sh` is the single entry point — it starts all 5 services in order:
@@ -84,6 +106,7 @@ Wait for `speakAck` duration + 2s buffer before closing WebSocket.
 
 ## Troubleshooting
 
+- **Duplicate voice heard**: Browser renderer plays audio for lip-sync while mpv plays to speakers; expected behavior
 - **No audio in Meet**: Check `pactl list sinks short | grep AvatarMic`, use output `mic` or `both`
 - **No audio in room**: Check output is `speakers` or `both`, check system volume
 - **Speak hangs**: Must send `identify` before any other WebSocket command
