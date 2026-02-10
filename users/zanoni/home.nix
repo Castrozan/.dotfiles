@@ -1,4 +1,3 @@
-# Zanoni's Home Manager Configuration — Clever 🤖
 {
   imports = [
     ./home/git.nix
@@ -37,7 +36,6 @@
     ../../home/modules/neovim.nix
     ../../home/modules/obsidian.nix
     ../../home/modules/opencode
-    # ../../home/modules/ollama  # TEMP: disabled — corrupted download in nix store, re-enable after nix-collect-garbage
     ../../home/modules/pkgs.nix
     ../../home/modules/ralph-tui.nix
     ../../home/modules/suwayomi-server.nix
