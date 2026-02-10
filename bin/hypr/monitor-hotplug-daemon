@@ -19,6 +19,16 @@ _debounced_restart_waybar() {
   RESTART_PID=$!
 }
 
+_check_initial_state() {
+  local has_external
+  has_external=$(hyprctl monitors all -j | jq -r '.[].name' | grep -Ev '^eDP' | head -1 || true)
+  if [[ -z "$has_external" ]]; then
+    _write_override_and_reload "monitor = eDP-1, preferred, auto, 1"
+  fi
+}
+
+_check_initial_state
+
 handle_event() {
   local event="$1"
   local monitor_name="$2"
