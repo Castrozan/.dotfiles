@@ -179,11 +179,7 @@ _apply_post_fuzzel_maximize() {
 }
 
 _maximize_if_tiled() {
-  local floating
-  floating=$(hyprctl activewindow -j | jq -r '.floating')
-  if [[ "$floating" != "true" ]]; then
-    hyprctl dispatch fullscreen 1
-  fi
+  hyprctl dispatch fullscreen 1
 }
 
 _maximize_if_not_already() {
