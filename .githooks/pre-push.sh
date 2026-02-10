@@ -5,6 +5,9 @@ set -euo pipefail
 [ "${SKIP_HOOKS:-0}" = "1" ] && exit 0
 
 REPO_ROOT=$(git rev-parse --show-toplevel)
+
+[[ "$(basename "$REPO_ROOT")" != ".dotfiles" ]] && exit 0
+
 cd "$REPO_ROOT"
 
 run_check() {
