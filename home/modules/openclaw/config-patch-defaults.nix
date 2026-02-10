@@ -108,6 +108,9 @@ let
     };
     ".agents.defaults.compaction.mode" = "safeguard";
     ".agents.defaults.compaction.memoryFlush.enabled" = true;
+    ".agents.defaults.memorySearch.enabled" = true;
+    ".agents.defaults.memorySearch.provider" = "local";
+    ".agents.defaults.memorySearch.local.modelPath" = "hf:gpustack/bge-m3-GGUF/bge-m3-Q8_0.gguf";
     ".gateway.port" = openclaw.gatewayPort;
     ".gateway.mode" = "local";
     ".gateway.http.endpoints.chatCompletions.enabled" = true;
