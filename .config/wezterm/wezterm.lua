@@ -111,6 +111,16 @@ return {
   -- This allows applications to distinguish Shift+Enter from Enter
   enable_csi_u_key_encoding = true,
 
+  bypass_mouse_reporting_modifiers = 'CTRL',
+
+  mouse_bindings = {
+    {
+      event = { Up = { streak = 1, button = 'Left' } },
+      mods = 'CTRL',
+      action = wezterm.action.OpenLinkAtMouseCursor,
+    },
+  },
+
   keys = {
     -- Shift+Enter: send newline character for multi-line input
     { key = 'Enter', mods = 'SHIFT', action = wezterm.action.SendString('\n') },
