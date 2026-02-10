@@ -19,10 +19,10 @@ Nix reads from git index, not working tree. Stage all modified files before rebu
 </prerequisite>
 
 <simple_rebuild>
-Primary method: `./bin/rebuild` (or `~/bin/rebuild`).
+Primary method: `~/.dotfiles/bin/rebuild`
 Auto-detects platform and user dynamically. Sources nix-daemon.sh if needed. Handles backup naming.
 
-NixOS: Runs `sudo nixos-rebuild switch --flake ~/.dotfiles#$(whoami)`
+NixOS: Runs `nixos-rebuild switch --flake ~/.dotfiles#$(whoami)`
 Non-NixOS: Runs `home-manager switch --flake ~/.dotfiles#$(whoami)@$(arch)-linux`
 </simple_rebuild>
 
@@ -42,28 +42,25 @@ Dry-run catches syntax errors, missing imports, and evaluation failures without 
 </dry_run>
 
 <platform_difference>
-NixOS: Full system rebuild with `sudo nixos-rebuild switch --flake`. Requires sudo. Affects system services, kernel, boot. Home-manager is integrated as a module.
+NixOS: Full system rebuild with `nixos-rebuild switch --flake`. Affects system services, kernel, boot. Home-manager is integrated as a module.
 
-Home-manager standalone: User-level only with `home-manager switch --flake`. No sudo needed. Affects user packages, dotfiles, services.
+Home-manager standalone: User-level only with `home-manager switch --flake`. Affects user packages, dotfiles, services.
 
-Detection: Check `/etc/os-release` for `ID=nixos`, or use OS from session-context. The bin/rebuild script handles this automatically.
+Detection: Check `/etc/os-release` for `ID=nixos`, or use OS from session-context. The ~/.dotfiles/bin/rebuild script handles this automatically.
 </platform_difference>
 
 <workflow>
 1. Make .nix file changes
 2. Stage changed files: `git add path/to/changed.nix`
 3. Dry-run to validate: use command from <dry_run> with correct username
-4. If dry-run passes, apply: `./bin/rebuild`
+4. If dry-run passes, apply: `rebuild`
 5. Verify changes took effect
-
-On NixOS: May need to ask user to run rebuild (requires sudo).
-On home-manager standalone: Execute directly, no sudo needed.
 </workflow>
 
 <troubleshooting>
 Build fails with import error: Check file exists and is staged (`git status`).
 Attribute not found: Verify module is imported in appropriate home.nix or configuration.nix. Check flake has matching config for username.
-Unfree package error: Check NIXPKGS_ALLOW_UNFREE=1 is set (bin/rebuild does this).
+Unfree package error: Check NIXPKGS_ALLOW_UNFREE=1 is set (rebuild does this).
 Rate limit errors: Install home-manager locally: `nix profile install nixpkgs#home-manager`.
 Wrong user config: Check session-context User field matches flake configuration name.
 </troubleshooting>
