@@ -166,8 +166,8 @@
   "custom/notification-sound": {
     "return-type": "json",
     "interval": 3,
-    "exec": "if [ ! -f \"$HOME/.cache/notification-mute\" ]; then echo '{\"text\": \"󰂚\", \"tooltip\": \"Notification sounds: ON\", \"class\": \"on\"}'; else echo '{\"text\": \"󰂛\", \"tooltip\": \"Notification sounds: OFF\", \"class\": \"muted\"}'; fi",
-    "on-click": "if [ -f \"$HOME/.cache/notification-mute\" ]; then rm \"$HOME/.cache/notification-mute\"; else touch \"$HOME/.cache/notification-mute\"; fi"
+    "exec": "if [ \"$(gsettings get org.gnome.desktop.sound event-sounds)\" = 'true' ]; then echo '{\"text\": \"󰂚\", \"tooltip\": \"Notification sounds: ON\", \"class\": \"on\"}'; else echo '{\"text\": \"󰂛\", \"tooltip\": \"Notification sounds: OFF\", \"class\": \"muted\"}'; fi",
+    "on-click": "if [ \"$(gsettings get org.gnome.desktop.sound event-sounds)\" = 'true' ]; then gsettings set org.gnome.desktop.sound event-sounds false; else gsettings set org.gnome.desktop.sound event-sounds true; fi"
   },
   "group/tray-expander": {
     "orientation": "inherit",
