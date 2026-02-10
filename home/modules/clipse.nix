@@ -66,8 +66,8 @@ in
     };
     imageDisplay = {
       type = "kitty";
-      scaleX = 9;
-      scaleY = 9;
+      scaleX = 25;
+      scaleY = 25;
       heightCut = 2;
     };
   };
