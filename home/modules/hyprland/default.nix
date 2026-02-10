@@ -25,6 +25,7 @@ in
     ./wayland-electron.nix
     ./waybar-service.nix
 
+    ./wlr-which-key.nix
     ./mako-service.nix
     ../satty.nix
     ./xdg-desktop-portal-hyprland-service.nix
