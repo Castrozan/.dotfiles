@@ -12,12 +12,12 @@ When the avatar is active and hey-bot is running, maintain conversation through 
 - Create a cron job (every 20s) to check hey-bot transcriptions and respond via avatar-speak.sh
 - Listen to hey-bot transcriptions, respond via avatar-speak.sh
 - Do NOT use Telegram when avatar conversation is active
-- Use sub-agents for background work, keep main thread for conversation
+- **ALWAYS** use sub-agents for background work, keep main thread for conversation
 
 **Monitor transcriptions:**
 ```bash
 # Check latest transcriptions
-tail -5 ~/.local/share/hey-bot/transcriptions/current.log
+tail -20 ~/.local/share/hey-bot/transcriptions/current.log
 
 # Respond to user voice
 avatar-speak.sh "Your response here" neutral speakers
