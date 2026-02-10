@@ -77,7 +77,12 @@ main() {
   fi
 
   if [[ -z "$external_monitor" ]]; then
-    notify-send -t 2000 "Monitor Toggle" "No external monitor connected"
+    if ! echo "$active_names" | grep -qx "$internal_monitor"; then
+      hyprctl keyword monitor "$(_enabled_config_for_monitor "$internal_monitor")"
+      notify-send -t 2000 "Monitor" "Built-in only"
+    else
+      notify-send -t 2000 "Monitor Toggle" "No external monitor connected"
+    fi
     return 0
   fi
 
