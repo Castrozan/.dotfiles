@@ -319,7 +319,7 @@ let
               user: ("voice-" + $agent),
               messages: [{
                 role: "user",
-                content: ("[Voice input from microphone transcription. Rules: (1) Respond concisely for TTS playback, max 3 sentences. (2) Match spoken language (English or Portuguese). (3) Never include file paths, code blocks, URLs, or technical formatting. (4) If the transcription is nonsensical, garbled, or clearly not directed at you, respond with exactly IGNORE and nothing else. (5) If the transcription appears cut mid-sentence or the user seems to still be speaking, respond with exactly WAIT and nothing else.]\n\n[Recent ambient transcription for context:]\n" + $context + "\n\n[Command:]\n" + $text)
+                content: ("[Voice input from microphone transcription. Rules: (1) Respond concisely for TTS playback, max 3 sentences. (2) Match spoken language (English or Portuguese). (3) Never include file paths, code blocks, URLs, or technical formatting. (4) If the transcription is nonsensical, garbled, or clearly not directed at you, respond with exactly IGNORE and nothing else. (5) If the transcription appears cut mid-sentence or the user seems to still be speaking, respond with exactly WAIT and nothing else. (6) If the transcription appears to be your OWN previous TTS response being re-transcribed by the microphone (recognizable by phrases like "There are two hey-bot modes" or "push-to-talk mode" or "daemon mode" or similar content you just spoke), respond with exactly IGNORE and nothing else — this prevents feedback loops when using speakers.]\n\n[Recent ambient transcription for context:]\n" + $context + "\n\n[Command:]\n" + $text)
               }]
             }')" || true)
 

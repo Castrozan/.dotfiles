@@ -14,10 +14,19 @@ When the avatar is active and hey-bot is running, maintain conversation through 
 - Do NOT use Telegram when avatar conversation is active
 - **ALWAYS** use sub-agents for background work, keep main thread for conversation
 
-**Monitor transcriptions:**
+**Monitor transcriptions (IMPORTANT - Two Modes):**
+
+Hey-bot has two modes — check the **right** source:
+
 ```bash
-# Check latest transcriptions
-tail -20 ~/.local/share/hey-bot/transcriptions/current.log
+# Mode 1: Daemon mode (wake word "Hey Clever/Hey Bot")
+# → Logs to file, check with:
+tail -30 ~/.local/share/hey-bot/transcriptions/current.log
+
+# Mode 2: Push-to-Talk (whisp-away)
+# → NO LOG FILE — sends directly to gateway!
+# The whisp-away daemon processes PTT and responds via TTS instantly.
+# For avatar mode, should only monitor gateway.
 
 # Respond to user voice
 avatar-speak.sh "Your response here" neutral speakers
@@ -28,6 +37,19 @@ avatar-speak.sh "Your response here" neutral speakers
 - Avatar does NOT change system default mic automatically
 - `AvatarMicSource` is available but not default — select in Meet/calls when needed
 - To restore real mic: `pactl set-default-source alsa_input.pci-0000_05_00.6.HiFi__Mic1__source`
+
+**Voice Feedback Loop Prevention:**
+When using speakers (not headphones), the microphone may pick up the avatar's TTS responses, causing:
+1. You ask a question → transcribed to log
+2. I respond via avatar speakers → picked up by mic
+3. My response gets transcribed as "user input"
+4. I respond again → infinite loop
+
+**Mitigation:** The hey-bot gateway prompt includes Rule (6): If the transcription appears to be the model's own previous TTS response being re-transcribed, respond with exactly `IGNORE` and nothing else. This should filter out these feedback loops automatically. If the feedback loop persists:
+- Use headphones instead of speakers
+- Move microphone away from speakers
+- Increase ENERGY_THRESHOLD to filter quieter audio
+- Switch to push-to-talk mode for more control
 
 ## Start / Stop
 
