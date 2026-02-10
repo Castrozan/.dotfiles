@@ -9,10 +9,14 @@ _write_override_and_reload() {
   hyprctl reload >/dev/null 2>&1
 }
 
-_restart_bar_and_shell() {
-  sleep 1
-  systemctl --user restart waybar.service 2>/dev/null || true
-  systemctl --user restart hyprshell.service 2>/dev/null || true
+RESTART_PID=""
+
+_debounced_restart_waybar() {
+  if [[ -n "$RESTART_PID" ]] && kill -0 "$RESTART_PID" 2>/dev/null; then
+    kill "$RESTART_PID" 2>/dev/null || true
+  fi
+  (sleep 2 && systemctl --user restart waybar.service 2>/dev/null || true) &
+  RESTART_PID=$!
 }
 
 handle_event() {
@@ -23,12 +27,12 @@ handle_event() {
     monitorremoved)
       [[ "$monitor_name" == eDP* ]] && return
       _write_override_and_reload "monitor = eDP-1, preferred, auto, 1"
-      _restart_bar_and_shell &
+      _debounced_restart_waybar
       ;;
     monitoradded)
       [[ "$monitor_name" == eDP* ]] && return
       _write_override_and_reload ""
-      _restart_bar_and_shell &
+      _debounced_restart_waybar
       ;;
   esac
 }
