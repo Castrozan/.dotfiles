@@ -167,7 +167,7 @@
     "return-type": "json",
     "interval": 3,
     "exec": "if [ \"$(gsettings get org.gnome.desktop.sound event-sounds)\" = 'true' ]; then echo '{\"text\": \"󰂚\", \"tooltip\": \"Notification sounds: ON\", \"class\": \"on\"}'; else echo '{\"text\": \"󰂛\", \"tooltip\": \"Notification sounds: OFF\", \"class\": \"muted\"}'; fi",
-    "on-click": "if [ \"$(gsettings get org.gnome.desktop.sound event-sounds)\" = 'true' ]; then gsettings set org.gnome.desktop.sound event-sounds false; else gsettings set org.gnome.desktop.sound event-sounds true; fi"
+    "on-click": "if [ \"$(gsettings get org.gnome.desktop.sound event-sounds)\" = 'true' ]; then gsettings set org.gnome.desktop.sound event-sounds false && makoctl set-mode do-not-disturb; else gsettings set org.gnome.desktop.sound event-sounds true && makoctl set-mode default; fi"
   },
   "group/tray-expander": {
     "orientation": "inherit",
