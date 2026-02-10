@@ -11,31 +11,6 @@ lib.mkIf (!isNixOS) {
       };
     };
 
-    "pipewire/pipewire.conf.d/30-echo-cancel.conf".text = builtins.toJSON {
-      "context.modules" = [
-        {
-          name = "libpipewire-module-echo-cancel";
-          args = {
-            "library.name" = "aec/libspa-aec-webrtc";
-            "node.name" = "Echo Cancel Source";
-            "node.description" = "Echo Cancel Source";
-            "audio.rate" = 48000;
-            "audio.channels" = 1;
-            "source.props" = {
-              "node.name" = "echo-cancel-source";
-              "media.class" = "Audio/Source";
-              "audio.position" = [ "MONO" ];
-            };
-            "sink.props" = {
-              "node.name" = "echo-cancel-sink";
-              "media.class" = "Audio/Sink";
-              "audio.position" = [ "MONO" ];
-            };
-          };
-        }
-      ];
-    };
-
     "wireplumber/main.lua.d/50-disable-bt-autoswitch.lua".text = ''
       table.insert(alsa_monitor.rules, {
         matches = {
