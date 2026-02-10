@@ -166,8 +166,8 @@
   "custom/notification-sound": {
     "return-type": "json",
     "interval": 3,
-    "exec": "if [ \"$(gsettings get org.gnome.desktop.sound event-sounds)\" = 'true' ]; then echo '{\"text\": \"󰂚\", \"tooltip\": \"Notification sounds: ON\", \"class\": \"on\"}'; else echo '{\"text\": \"󰂛\", \"tooltip\": \"Notification sounds: OFF\", \"class\": \"muted\"}'; fi",
-    "on-click": "if [ \"$(gsettings get org.gnome.desktop.sound event-sounds)\" = 'true' ]; then gsettings set org.gnome.desktop.sound event-sounds false && makoctl set-mode do-not-disturb; else gsettings set org.gnome.desktop.sound event-sounds true && makoctl set-mode default; fi"
+    "exec": "hypr-notification-sound-toggle status",
+    "on-click": "hypr-notification-sound-toggle toggle"
   },
   "group/tray-expander": {
     "orientation": "inherit",

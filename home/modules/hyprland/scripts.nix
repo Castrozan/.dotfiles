@@ -27,5 +27,6 @@ in
     (mkScript "hypr-screenshot" ../../../bin/hypr/screenshot)
     (mkScript "hypr-network" ../../../bin/hypr/network)
     (mkScript "hypr-toggle-monitors" ../../../bin/hypr/toggle-monitors)
+    (mkScript "hypr-notification-sound-toggle" ../../../bin/hypr/notification-sound-toggle)
   ];
 }
