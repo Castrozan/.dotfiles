@@ -124,6 +124,31 @@ let
 in
 {
   options.openclaw = {
+    defaults = lib.mkOption {
+      type = lib.types.submodule {
+        options.model = lib.mkOption {
+          type = lib.types.submodule {
+            options = {
+              primary = lib.mkOption {
+                type = lib.types.str;
+                default = "nvidia/moonshotai/kimi-k2.5";
+              };
+              heartbeat = lib.mkOption {
+                type = lib.types.str;
+                default = "nvidia/moonshotai/kimi-k2.5";
+              };
+              subagents = lib.mkOption {
+                type = lib.types.str;
+                default = "nvidia/moonshotai/kimi-k2.5";
+              };
+            };
+          };
+          default = { };
+        };
+      };
+      default = { };
+    };
+
     agents = lib.mkOption {
       type = lib.types.attrsOf agentModule;
       default = { };
