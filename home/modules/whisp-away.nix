@@ -37,14 +37,14 @@ in
   xdg.configFile."whisp-away/config.json".text = builtins.toJSON {
     default_model = defaultModel;
     default_backend = defaultBackend;
-    use_clipboard = false;
+    use_clipboard = true;
   };
 
   home.sessionVariables = {
     WA_WHISPER_MODEL = defaultModel;
     WA_WHISPER_BACKEND = defaultBackend;
     WA_WHISPER_SOCKET = "/tmp/whisp-away-daemon.sock";
-    WA_USE_CLIPBOARD = "false";
+    WA_USE_CLIPBOARD = "true";
   };
 
   systemd.user.tmpfiles.rules = [
