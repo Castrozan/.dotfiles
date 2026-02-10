@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+closedWindowsHistoryFile="${XDG_RUNTIME_DIR:-/tmp}/hypr-closed-windows-history"
+
+[[ ! -s "$closedWindowsHistoryFile" ]] && exit 0
+
+lastEntry=$(tail -n 1 "$closedWindowsHistoryFile")
+launchCommand=$(echo "$lastEntry" | jq -r '.cmd')
+targetWorkspace=$(echo "$lastEntry" | jq -r '.workspace')
+
+[[ -z "$launchCommand" || "$launchCommand" == "null" ]] && exit 1
+
+sed -i '$ d' "$closedWindowsHistoryFile"
+
+hyprctl dispatch exec "[workspace $targetWorkspace silent] $launchCommand"

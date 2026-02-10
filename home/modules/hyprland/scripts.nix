@@ -19,6 +19,8 @@ in
     (mkScript "hypr-super-launcher" ../../../bin/hypr/super-launcher)
     (mkScript "hypr-bluetooth" ../../../bin/hypr/bluetooth)
     (mkScript "hypr-close-window-cycle" ../../../bin/hypr/close-window-cycle)
+    (mkScript "hypr-reopen-window" ../../../bin/hypr/reopen-window)
+    (mkScript "hypr-reopen-window-picker" ../../../bin/hypr/reopen-window-picker)
     (mkScript "hypr-show-desktop" ../../../bin/hypr/show-desktop)
     (mkScript "hypr-maximize-focus-daemon" ../../../bin/hypr/maximize-focus-daemon)
     (mkScript "hypr-summon-brave" ../../../bin/hypr/summon-brave)

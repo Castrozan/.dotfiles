@@ -1,22 +1,35 @@
 #!/usr/bin/env bash
-# Close window and cycle to previous window in focus history
-# Maintains maximized state since it's workspace-level in Hyprland
+
+closedWindowsHistoryFile="${XDG_RUNTIME_DIR:-/tmp}/hypr-closed-windows-history"
 
 current=$(hyprctl activewindow -j)
 current_addr=$(echo "$current" | jq -r '.address')
 current_ws=$(echo "$current" | jq -r '.workspace.id')
+current_class=$(echo "$current" | jq -r '.class')
+current_title=$(echo "$current" | jq -r '.title')
+current_pid=$(echo "$current" | jq -r '.pid')
 
-# Find previous window in focus history on same workspace (excluding current)
+launchCommand=""
+if [[ -n "$current_pid" && "$current_pid" != "null" && -f "/proc/$current_pid/cmdline" ]]; then
+  launchCommand=$(tr '\0' ' ' < "/proc/$current_pid/cmdline" | sed 's/ $//')
+fi
+
+if [[ -n "$launchCommand" && -n "$current_class" && "$current_class" != "null" ]]; then
+  jq -nc --arg cmd "$launchCommand" --arg class "$current_class" \
+         --argjson ws "$current_ws" --arg title "$current_title" \
+         '{cmd:$cmd,class:$class,workspace:$ws,title:$title}' >> "$closedWindowsHistoryFile"
+  tail -n 10 "$closedWindowsHistoryFile" > "${closedWindowsHistoryFile}.tmp"
+  mv "${closedWindowsHistoryFile}.tmp" "$closedWindowsHistoryFile"
+fi
+
 prev_addr=$(hyprctl clients -j | jq -r --arg ws "$current_ws" --arg addr "$current_addr" '
   [.[] | select(.workspace.id == ($ws | tonumber) and .address != $addr)] |
   sort_by(.focusHistoryID) |
   .[0].address // empty
 ')
 
-# Close current window
 hyprctl dispatch killactive
 
-# Focus previous if exists (maximize state is workspace-level, so it persists)
 if [[ -n "$prev_addr" && "$prev_addr" != "null" ]]; then
   hyprctl dispatch focuswindow "address:$prev_addr"
 fi

@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+
+closedWindowsHistoryFile="${XDG_RUNTIME_DIR:-/tmp}/hypr-closed-windows-history"
+
+[[ ! -s "$closedWindowsHistoryFile" ]] && exit 0
+
+declare -a displayLines
+declare -a jsonLines
+
+while IFS= read -r line; do
+  entryClass=$(echo "$line" | jq -r '.class')
+  entryTitle=$(echo "$line" | jq -r '.title')
+  entryWorkspace=$(echo "$line" | jq -r '.workspace')
+  displayLines+=("$entryClass - $entryTitle (workspace $entryWorkspace)")
+  jsonLines+=("$line")
+done < "$closedWindowsHistoryFile"
+
+fuzzelInput=""
+for ((i=${#displayLines[@]}-1; i>=0; i--)); do
+  fuzzelInput+="${displayLines[$i]}"$'\n'
+done
+
+selectedDisplay=$(echo -n "$fuzzelInput" | hypr-fuzzel --dmenu --prompt "Reopen: ")
+[[ -z "$selectedDisplay" ]] && exit 0
+
+for ((i=${#displayLines[@]}-1; i>=0; i--)); do
+  if [[ "${displayLines[$i]}" == "$selectedDisplay" ]]; then
+    launchCommand=$(echo "${jsonLines[$i]}" | jq -r '.cmd')
+    targetWorkspace=$(echo "${jsonLines[$i]}" | jq -r '.workspace')
+    selectedLineNumber=$((i + 1))
+    break
+  fi
+done
+
+[[ -z "$launchCommand" || "$launchCommand" == "null" ]] && exit 1
+
+sed -i "${selectedLineNumber}d" "$closedWindowsHistoryFile"
+
+hyprctl dispatch exec "[workspace $targetWorkspace silent] $launchCommand"
