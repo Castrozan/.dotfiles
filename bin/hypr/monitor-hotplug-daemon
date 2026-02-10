@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+readonly SOCKET="$XDG_RUNTIME_DIR/hypr/$HYPRLAND_INSTANCE_SIGNATURE/.socket2.sock"
+readonly MONITORS_CONF="${XDG_CONFIG_HOME:-$HOME/.config}/hypr-host/monitors.conf"
+
+_enabled_config_for_monitor() {
+  local name=$1
+  local line
+  line=$(grep -E "^\s*monitor\s*=\s*${name}\s*," "$MONITORS_CONF" | grep -v "disable" | head -1 || true)
+  if [[ -n "$line" ]]; then
+    echo "$line" | sed 's/^[[:space:]]*monitor[[:space:]]*=[[:space:]]*//'
+  else
+    echo "${name}, preferred, auto, 1"
+  fi
+}
+
+_restart_bar_and_shell() {
+  sleep 1
+  systemctl --user restart waybar.service 2>/dev/null || true
+  systemctl --user restart hyprshell.service 2>/dev/null || true
+}
+
+handle_event() {
+  local event="$1"
+  local monitor_name="$2"
+
+  case "$event" in
+    monitorremoved)
+      [[ "$monitor_name" == eDP* ]] && return
+      local internal
+      internal=$(hyprctl monitors all -j | jq -r '.[].name' | grep -E '^eDP' | head -1 || true)
+      if [[ -n "$internal" ]]; then
+        hyprctl keyword monitor "$(_enabled_config_for_monitor "$internal")"
+      fi
+      _restart_bar_and_shell &
+      ;;
+    monitoradded)
+      [[ "$monitor_name" == eDP* ]] && return
+      _restart_bar_and_shell &
+      ;;
+  esac
+}
+
+while IFS= read -r line; do
+  event="${line%%>>*}"
+  data="${line#*>>}"
+  handle_event "$event" "$data"
+done < <(nc -U "$SOCKET")
