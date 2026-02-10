@@ -34,6 +34,10 @@ in
 
   xdg.configFile."hypr-host/monitors.conf".text = lib.mkDefault "";
 
+  home.activation.ensureMonitorOverrideFile = lib.hm.dag.entryBefore [ "writeBoundary" ] ''
+    touch "$HOME/.cache/hypr-monitors-override.conf"
+  '';
+
   # Start graphical services after systemd reload
   # This ensures services restart after home-manager switch
   home.activation.startGraphicalServices = lib.hm.dag.entryAfter [ "reloadSystemd" ] ''
