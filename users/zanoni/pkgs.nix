@@ -73,6 +73,7 @@
       vim
       vlc
       wget
+      whisper-cpp
       wgnord # Note: Should install manually from github.com/phirecc/wgnord
       wireguard-go
       wireguard-tools

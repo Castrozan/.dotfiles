@@ -63,6 +63,7 @@
       unzip
       uv
       vim
+      whisper-cpp
       wiremix
       wl-clipboard
       wtype
