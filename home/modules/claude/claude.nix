@@ -38,6 +38,10 @@ in
       ".local/bin/claude".source = "${claude-code}/bin/claude";
       ".claude/skills/aplicacoes-atendimento-triage".source =
         config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/repo/aplicacoes-atendimento-triage";
+      ".claude/skills/sourcebot" = {
+        source = ../sourcebot/skill;
+        recursive = true;
+      };
     };
   };
 }

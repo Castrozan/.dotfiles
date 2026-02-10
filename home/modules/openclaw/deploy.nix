@@ -74,5 +74,12 @@ in
       "skills/aplicacoes-atendimento-triage" = {
         source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/repo/aplicacoes-atendimento-triage";
       };
+    }
+
+    // openclaw.deployToAllWorkspaces {
+      "skills/sourcebot" = {
+        source = ../sourcebot/skill;
+        recursive = true;
+      };
     };
 }
