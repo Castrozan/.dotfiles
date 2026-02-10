@@ -2,11 +2,65 @@
 set -Eeuo pipefail
 
 readonly NOTIFICATION_SOUNDS_MUTE_FLAG="$HOME/.cache/notification-sounds-muted"
+readonly NOTIFICATION_SOUND_MONITOR_PID_FILE="$HOME/.cache/notification-sound-monitor.pid"
 readonly NOTIFICATION_SOUND_DAEMON_PID_FILE="$HOME/.cache/notification-sound-daemon.pid"
 readonly NOTIFICATION_SOUND_FILE="/usr/share/sounds/freedesktop/stereo/message-new-instant.oga"
 
 is_notification_sounds_muted() {
   [[ -f "$NOTIFICATION_SOUNDS_MUTE_FLAG" ]]
+}
+
+is_notification_sound_monitor_running() {
+  [[ -f "$NOTIFICATION_SOUND_MONITOR_PID_FILE" ]] && kill -0 "$(cat "$NOTIFICATION_SOUND_MONITOR_PID_FILE")" 2>/dev/null
+}
+
+mute_notification_sink_inputs() {
+  pactl list sink-inputs 2>/dev/null | awk '
+    /^Sink Input #/ { idx = substr($3, 2) }
+    /media\.role = "(event|notification|alert)"/ { print idx }
+    /application\.name = ".*[Cc]anberra.*"/ { print idx }
+  ' | sort -u | while read -r sinkInputIndex; do
+    pactl set-sink-input-mute "$sinkInputIndex" 1 2>/dev/null || true
+  done
+}
+
+start_notification_sound_monitor() {
+  stop_notification_sound_monitor
+
+  local muteFlagPath="$NOTIFICATION_SOUNDS_MUTE_FLAG"
+  bash -c '
+    trap "exit 0" TERM HUP
+    pactl subscribe 2>/dev/null | while read -r subscribeEvent; do
+      if [[ "$subscribeEvent" == *"'"'"'new'"'"' on sink-input"* ]] && [[ -f "'"$muteFlagPath"'" ]]; then
+        newSinkInputIndex=$(echo "$subscribeEvent" | grep -oP "#\K\d+" || true)
+        [[ -z "$newSinkInputIndex" ]] && continue
+        sleep 0.05
+        sinkInputProperties=$(pactl list sink-inputs 2>/dev/null | sed -n "/^Sink Input #${newSinkInputIndex}$/,/^Sink Input #/p" || true)
+        if echo "$sinkInputProperties" | grep -qiE "media\.role = \"(event|notification|alert)\"" || \
+           echo "$sinkInputProperties" | grep -qiE "application\.name = \".*[Cc]anberra\""; then
+          pactl set-sink-input-mute "$newSinkInputIndex" 1 2>/dev/null || true
+        fi
+      fi
+    done
+  ' &
+  echo $! > "$NOTIFICATION_SOUND_MONITOR_PID_FILE"
+  disown
+}
+
+stop_notification_sound_monitor() {
+  if [[ -f "$NOTIFICATION_SOUND_MONITOR_PID_FILE" ]]; then
+    local monitorPid
+    monitorPid=$(cat "$NOTIFICATION_SOUND_MONITOR_PID_FILE")
+    pkill -P "$monitorPid" 2>/dev/null || true
+    kill "$monitorPid" 2>/dev/null || true
+    rm -f "$NOTIFICATION_SOUND_MONITOR_PID_FILE"
+  fi
+}
+
+ensure_notification_sound_monitor_running() {
+  if is_notification_sounds_muted && ! is_notification_sound_monitor_running; then
+    start_notification_sound_monitor
+  fi
 }
 
 is_notification_sound_daemon_running() {
@@ -49,13 +103,17 @@ ensure_notification_sound_daemon_running() {
 toggle_notification_sounds() {
   if is_notification_sounds_muted; then
     rm -f "$NOTIFICATION_SOUNDS_MUTE_FLAG"
+    stop_notification_sound_monitor
   else
     touch "$NOTIFICATION_SOUNDS_MUTE_FLAG"
+    mute_notification_sink_inputs
+    start_notification_sound_monitor
   fi
 }
 
 notification_sound_status() {
   ensure_notification_sound_daemon_running
+  ensure_notification_sound_monitor_running
   if is_notification_sounds_muted; then
     echo '{"text":"󰂛","tooltip":"Notification sounds: OFF","class":"muted"}'
   else
