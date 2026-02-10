@@ -1,0 +1,93 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+readonly MONITORS_CONF="${XDG_CONFIG_HOME:-$HOME/.config}/hypr-host/monitors.conf"
+
+_monitor_names_from_config() {
+  sed -n 's/^[[:space:]]*monitor[[:space:]]*=[[:space:]]*\([^,]*\).*/\1/p' "$MONITORS_CONF" | tr -d ' ' | sort -u
+}
+
+_enabled_config_for_monitor() {
+  local name=$1
+  local line
+  line=$(grep -E "^\s*monitor\s*=\s*${name}\s*," "$MONITORS_CONF" | grep -v "disable" | head -1 || true)
+  if [[ -n "$line" ]]; then
+    echo "$line" | sed 's/^[[:space:]]*monitor[[:space:]]*=[[:space:]]*//'
+  else
+    echo "${name}, preferred, auto, 1"
+  fi
+}
+
+_detect_current_mode() {
+  local active_names=$1 internal=$2 external=$3
+  local has_internal=false has_external=false
+
+  if echo "$active_names" | grep -qx "$internal"; then
+    has_internal=true
+  fi
+  if echo "$active_names" | grep -qx "$external"; then
+    has_external=true
+  fi
+
+  if $has_internal && $has_external; then
+    echo "extended"
+  elif $has_external; then
+    echo "external"
+  else
+    echo "internal"
+  fi
+}
+
+_apply_mode() {
+  local mode=$1 internal=$2 external=$3
+  case "$mode" in
+    external)
+      hyprctl keyword monitor "$(_enabled_config_for_monitor "$external")"
+      hyprctl keyword monitor "${internal}, disable"
+      ;;
+    extended)
+      hyprctl keyword monitor "$(_enabled_config_for_monitor "$external")"
+      hyprctl keyword monitor "$(_enabled_config_for_monitor "$internal")"
+      ;;
+    internal)
+      hyprctl keyword monitor "$(_enabled_config_for_monitor "$internal")"
+      hyprctl keyword monitor "${external}, disable"
+      ;;
+  esac
+}
+
+main() {
+  local active_names
+  active_names=$(hyprctl monitors -j | jq -r '.[].name')
+
+  local internal_monitor external_monitor
+  internal_monitor=$(echo "$active_names" | grep -E '^eDP' | head -1 || true)
+  external_monitor=$(echo "$active_names" | grep -Ev '^eDP' | head -1 || true)
+
+  if [[ -z "$internal_monitor" ]]; then
+    internal_monitor=$(_monitor_names_from_config | grep -E '^eDP' | head -1 || true)
+  fi
+  if [[ -z "$external_monitor" ]]; then
+    external_monitor=$(_monitor_names_from_config | grep -Ev '^eDP' | head -1 || true)
+  fi
+
+  if [[ -z "$internal_monitor" || -z "$external_monitor" ]]; then
+    notify-send -t 2000 "Monitor Toggle" "Need both internal and external monitors configured"
+    return 1
+  fi
+
+  local current_mode next_mode label
+  current_mode=$(_detect_current_mode "$active_names" "$internal_monitor" "$external_monitor")
+
+  case "$current_mode" in
+    external) next_mode="extended";  label="Extended" ;;
+    extended) next_mode="internal";  label="Built-in only" ;;
+    internal) next_mode="external";  label="External only" ;;
+    *)        next_mode="external";  label="External only" ;;
+  esac
+
+  _apply_mode "$next_mode" "$internal_monitor" "$external_monitor"
+  notify-send -t 2000 "Monitor" "$label"
+}
+
+main

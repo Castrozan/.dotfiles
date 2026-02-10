@@ -26,5 +26,6 @@ in
     (mkScript "hypr-toggle-group-for-all-workspace-windows" ../../../bin/hypr/toggle-group-for-all-workspace-windows)
     (mkScript "hypr-screenshot" ../../../bin/hypr/screenshot)
     (mkScript "hypr-network" ../../../bin/hypr/network)
+    (mkScript "hypr-toggle-monitors" ../../../bin/hypr/toggle-monitors)
   ];
 }
