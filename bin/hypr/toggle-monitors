@@ -60,20 +60,25 @@ main() {
   local active_names
   active_names=$(hyprctl monitors -j | jq -r '.[].name')
 
+  local all_connected_names
+  all_connected_names=$(hyprctl monitors all -j | jq -r '.[].name')
+
   local internal_monitor external_monitor
-  internal_monitor=$(echo "$active_names" | grep -E '^eDP' | head -1 || true)
-  external_monitor=$(echo "$active_names" | grep -Ev '^eDP' | head -1 || true)
+  internal_monitor=$(echo "$all_connected_names" | grep -E '^eDP' | head -1 || true)
+  external_monitor=$(echo "$all_connected_names" | grep -Ev '^eDP' | head -1 || true)
 
   if [[ -z "$internal_monitor" ]]; then
     internal_monitor=$(_monitor_names_from_config | grep -E '^eDP' | head -1 || true)
   fi
-  if [[ -z "$external_monitor" ]]; then
-    external_monitor=$(_monitor_names_from_config | grep -Ev '^eDP' | head -1 || true)
+
+  if [[ -z "$internal_monitor" ]]; then
+    notify-send -t 2000 "Monitor Toggle" "No internal monitor found"
+    return 1
   fi
 
-  if [[ -z "$internal_monitor" || -z "$external_monitor" ]]; then
-    notify-send -t 2000 "Monitor Toggle" "Need both internal and external monitors configured"
-    return 1
+  if [[ -z "$external_monitor" ]]; then
+    notify-send -t 2000 "Monitor Toggle" "No external monitor connected"
+    return 0
   fi
 
   local current_mode next_mode label
