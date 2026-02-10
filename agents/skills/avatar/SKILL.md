@@ -9,7 +9,7 @@ description: "Control the VTuber avatar — speak with lip sync, change expressi
 When the avatar is active and hey-bot is running, maintain conversation through voice:
 
 **Unbreakable Principles:**
-- Add to your heartbeat loop: check hey-bot transcriptions, respond via avatar-speak.sh every 5s
+- Create a cron job (every 20s) to check hey-bot transcriptions and respond via avatar-speak.sh
 - Listen to hey-bot transcriptions, respond via avatar-speak.sh
 - Do NOT use Telegram when avatar conversation is active
 - Use sub-agents for background work, keep main thread for conversation
