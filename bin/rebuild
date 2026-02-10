@@ -81,7 +81,7 @@ _rebuild_nixos() {
   echo ":: Detected NixOS. Running nixos-rebuild switch..."
   echo ":: Flake: ${dotfiles_path}#${username}"
 
-  env "$NIXOS_ALLOW_UNFREE" nixos-rebuild switch --flake "${dotfiles_path}#${username}"
+  sudo env "$NIXOS_ALLOW_UNFREE" nixos-rebuild switch --flake "${dotfiles_path}#${username}"
 }
 
 _rebuild_home_manager() {
