@@ -2,17 +2,11 @@
 set -Eeuo pipefail
 
 readonly SOCKET="$XDG_RUNTIME_DIR/hypr/$HYPRLAND_INSTANCE_SIGNATURE/.socket2.sock"
-readonly MONITORS_CONF="${XDG_CONFIG_HOME:-$HOME/.config}/hypr-host/monitors.conf"
+readonly OVERRIDE_FILE="${HOME}/.cache/hypr-monitors-override.conf"
 
-_enabled_config_for_monitor() {
-  local name=$1
-  local line
-  line=$(grep -E "^\s*monitor\s*=\s*${name}\s*," "$MONITORS_CONF" | grep -v "disable" | head -1 || true)
-  if [[ -n "$line" ]]; then
-    echo "$line" | sed 's/^[[:space:]]*monitor[[:space:]]*=[[:space:]]*//'
-  else
-    echo "${name}, preferred, auto, 1"
-  fi
+_write_override_and_reload() {
+  echo "$1" > "$OVERRIDE_FILE"
+  hyprctl reload >/dev/null 2>&1
 }
 
 _restart_bar_and_shell() {
@@ -28,15 +22,12 @@ handle_event() {
   case "$event" in
     monitorremoved)
       [[ "$monitor_name" == eDP* ]] && return
-      local internal
-      internal=$(hyprctl monitors all -j | jq -r '.[].name' | grep -E '^eDP' | head -1 || true)
-      if [[ -n "$internal" ]]; then
-        hyprctl keyword monitor "$(_enabled_config_for_monitor "$internal")"
-      fi
+      _write_override_and_reload "monitor = eDP-1, preferred, auto, 1"
       _restart_bar_and_shell &
       ;;
     monitoradded)
       [[ "$monitor_name" == eDP* ]] && return
+      _write_override_and_reload ""
       _restart_bar_and_shell &
       ;;
   esac
