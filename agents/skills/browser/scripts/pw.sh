@@ -1,6 +1,19 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Ensure display env vars are set for headed mode (needed when run from systemd)
+if [[ -z "${WAYLAND_DISPLAY:-}" ]] && [[ -d "/run/user/${UID:-1000}" ]]; then
+  for candidate in wayland-1 wayland-0; do
+    if [[ -e "/run/user/${UID:-1000}/${candidate}" ]]; then
+      export WAYLAND_DISPLAY="$candidate"
+      break
+    fi
+  done
+fi
+if [[ -z "${DISPLAY:-}" ]]; then
+  export DISPLAY=":0"
+fi
+
 PW_PORT="${PW_PORT:-9222}"
 PW_DAEMON_PORT="$((PW_PORT + 1))"
 PW_CACHE="${XDG_CACHE_HOME:-$HOME/.cache}/pw-cli"
