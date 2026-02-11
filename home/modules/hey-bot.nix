@@ -393,6 +393,27 @@ let
     '';
   };
 
+  heyBotToggle = pkgs.writeShellApplication {
+    name = "hey-bot-toggle";
+    runtimeInputs = with pkgs; [
+      systemd
+      libnotify
+    ];
+    text = ''
+      readonly SERVICE_NAME="hey-bot.service"
+
+      if systemctl --user is-active --quiet "$SERVICE_NAME"; then
+        systemctl --user stop "$SERVICE_NAME"
+        notify-send "Hey Bot" "Disabled" 2>/dev/null || true
+        echo "hey-bot: disabled"
+      else
+        systemctl --user start "$SERVICE_NAME"
+        notify-send "Hey Bot" "Enabled" 2>/dev/null || true
+        echo "hey-bot: enabled"
+      fi
+    '';
+  };
+
   heyBotPushToTalk = pkgs.writeShellApplication {
     name = "hey-bot-ptt";
     runtimeInputs = with pkgs; [
@@ -505,6 +526,7 @@ in
       heyBotDaemon
       heyBotPushToTalk
       heyBotLog
+      heyBotToggle
     ];
 
     systemd.user.services.hey-bot = {
