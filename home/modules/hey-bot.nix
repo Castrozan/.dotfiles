@@ -127,6 +127,10 @@ let
           return
         fi
 
+        if [[ -f /tmp/hey-bot-keywords-disabled ]]; then
+          return
+        fi
+
         if [[ -n "$transcription" ]] && echo "$transcription" | grep -qiE "$KEYWORDS_PATTERN"; then
           _activate_command_mode "$transcription" "$wordCount"
           return

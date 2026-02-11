@@ -58,4 +58,6 @@ remove_module "AvatarMicSource"
 remove_sink "AvatarSpeaker"
 remove_sink "AvatarMic"
 
+# Re-enable hey-bot keyword detection
+rm -f /tmp/hey-bot-keywords-disabled
 echo "Avatar system stopped."

@@ -193,6 +193,8 @@ fi
 
 echo ""
 echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+# Disable hey-bot keyword detection while avatar is active (prevents feedback loops)
+touch /tmp/hey-bot-keywords-disabled
 echo -e "${GREEN}   ✓ Avatar System Ready!${NC}"
 echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
