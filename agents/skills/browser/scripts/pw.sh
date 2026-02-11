@@ -13,6 +13,10 @@ fi
 if [[ -z "${DISPLAY:-}" ]]; then
   export DISPLAY=":0"
 fi
+# Chromium Nix wrapper needs NIXOS_OZONE_WL=1 to enable Wayland flags
+if [[ -n "${WAYLAND_DISPLAY:-}" ]] && [[ -z "${NIXOS_OZONE_WL:-}" ]]; then
+  export NIXOS_OZONE_WL=1
+fi
 
 PW_PORT="${PW_PORT:-9222}"
 PW_DAEMON_PORT="$((PW_PORT + 1))"
