@@ -1,10 +1,10 @@
-{ pkgs, ... }:
+{ pkgs, latest, ... }:
 let
-  badAppleUrl = "https://www.youtube.com/watch?v=FtutLA63Cp8";
+  badAppleUrl = "https://www.youtube.com/watch?v=U_zWBOV_bng";
 
   # Dependencies for frame generation
   deps = with pkgs; [
-    yt-dlp
+    latest.yt-dlp
     ffmpeg
     chafa
     coreutils
