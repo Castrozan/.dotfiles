@@ -147,7 +147,7 @@ elif [ ! -e /dev/video10 ]; then
 else
     # Ensure agent browser is running with renderer tab
     echo -n "  Ensuring agent browser has renderer tab..."
-    pw open http://localhost:3000 > /dev/null 2>&1 && echo -e " ${GREEN}OK${NC}" || echo -e " ${YELLOW}SKIP${NC}"
+    pw open http://localhost:3000 --headed > /dev/null 2>&1 && echo -e " ${GREEN}OK${NC}" || echo -e " ${YELLOW}SKIP${NC}"
 
     cd "$AVATAR_DIR/control-server"
     NODE_PATH="$AVATAR_DIR/control-server/node_modules" \
