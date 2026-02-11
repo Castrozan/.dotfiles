@@ -145,8 +145,15 @@ if is_running "virtual-camera.js"; then
 elif [ ! -e /dev/video10 ]; then
     echo -e "  ${YELLOW}⚠${NC}  /dev/video10 not found (v4l2loopback not loaded), skipping"
 else
-    # Ensure agent browser is running with renderer tab
-    echo -n "  Ensuring agent browser has renderer tab..."
+    # Kill stale headless browser if running (must restart headed for visible avatar)
+    if pgrep -f "remote-debugging-port=9222" > /dev/null 2>&1; then
+        pkill -f 'pw-daemon.js' 2>/dev/null || true
+        pkill -f 'remote-debugging-port=9222' 2>/dev/null || true
+        sleep 2
+    fi
+
+    # Start agent browser headed with renderer tab
+    echo -n "  Starting agent browser (headed)..."
     pw open http://localhost:3000 --headed > /dev/null 2>&1 && echo -e " ${GREEN}OK${NC}" || echo -e " ${YELLOW}SKIP${NC}"
 
     cd "$AVATAR_DIR/control-server"

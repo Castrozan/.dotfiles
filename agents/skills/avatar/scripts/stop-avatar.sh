@@ -58,6 +58,15 @@ remove_module "AvatarMicSource"
 remove_sink "AvatarSpeaker"
 remove_sink "AvatarMic"
 
+# Stop agent browser (prevents stale headless instance on next start)
+if pgrep -f 'remote-debugging-port=9222' > /dev/null 2>&1; then
+    pkill -f 'pw-daemon.js' 2>/dev/null || true
+    pkill -f 'remote-debugging-port=9222' 2>/dev/null || true
+    echo "  Agent browser stopped"
+else
+    echo "  Agent browser was not running"
+fi
+
 # Re-enable hey-bot keyword detection
 rm -f /tmp/hey-bot-keywords-disabled
 echo "Avatar system stopped."
