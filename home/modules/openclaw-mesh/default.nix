@@ -30,9 +30,11 @@ let
     }) cfg.gridAgents;
 
     connections = {
-      sshHost = cfg.connections.sshHost;
-      sshUser = cfg.connections.sshUser;
-      connectTimeoutSecs = cfg.connections.connectTimeoutSecs;
+      inherit (cfg.connections)
+        sshHost
+        sshUser
+        connectTimeoutSecs
+        ;
     };
 
     colors = {
