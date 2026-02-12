@@ -2,7 +2,7 @@
 selector = { fg = "Black", bg = "LightCyan", add_modifier = "BOLD" }
 node_title = { add_modifier = "BOLD" }
 
-[char-sets.default]
+[char_sets.default]
 selector_top = "▌"
 selector_middle = "▌"
 selector_bottom = "▌"
