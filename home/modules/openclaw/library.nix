@@ -1,4 +1,4 @@
-{ ... }:
+{ lib, ... }:
 {
   imports = [
     ./config.nix
@@ -8,4 +8,6 @@
     ./install.nix
     ./gateway-service.nix
   ];
+
+  _module.args.isNixOS = lib.mkDefault false;
 }
