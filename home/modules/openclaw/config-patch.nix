@@ -89,6 +89,7 @@ let
     if [ ! -f "$CONFIG" ] || [ ! -s "$CONFIG" ]; then
       mkdir -p "${homeDir}/.openclaw"
       cp "$OVERLAY" "$CONFIG"
+      chmod 600 "$CONFIG"
       echo "[openclaw-config-patch] Created config from overlay"
       exit 0
     fi
@@ -96,6 +97,7 @@ let
     if ! ${jq} empty "$CONFIG" 2>/dev/null; then
       cp "$CONFIG" "$CONFIG.nix-backup"
       cp "$OVERLAY" "$CONFIG"
+      chmod 600 "$CONFIG"
       echo "[openclaw-config-patch] Replaced invalid config with overlay"
       exit 0
     fi
