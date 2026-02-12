@@ -1,5 +1,39 @@
-{ lib, isNixOS, ... }:
+{
+  lib,
+  isNixOS,
+  pkgs,
+  ...
+}:
 lib.mkIf (!isNixOS) {
+  systemd.user.services.bluetooth-audio-autoswitch = {
+    Unit = {
+      Description = "Auto-switch default audio sink to Bluetooth on connect";
+      After = [ "pipewire-pulse.service" ];
+    };
+    Service = {
+      ExecStart =
+        let
+          script = pkgs.writeShellScript "bluetooth-audio-autoswitch" ''
+            ${pkgs.pulseaudio}/bin/pactl subscribe | while read -r line; do
+              if echo "$line" | ${pkgs.gnugrep}/bin/grep -q "'new' on sink"; then
+                sink_index=$(echo "$line" | ${pkgs.gnugrep}/bin/grep -oP '#\K\d+')
+                sink_name=$(${pkgs.pulseaudio}/bin/pactl list sinks short | ${pkgs.gawk}/bin/awk -v idx="$sink_index" '$1 == idx { print $2 }')
+                if [[ "$sink_name" == bluez_output.* ]]; then
+                  ${pkgs.pulseaudio}/bin/pactl set-default-sink "$sink_name"
+                fi
+              fi
+            done
+          '';
+        in
+        "${script}";
+      Restart = "always";
+      RestartSec = 5;
+    };
+    Install = {
+      WantedBy = [ "pipewire-pulse.service" ];
+    };
+  };
+
   xdg.configFile = {
     "pipewire/pipewire.conf.d/10-clock-rate.conf".text = builtins.toJSON {
       "context.properties" = {
@@ -54,36 +88,5 @@ lib.mkIf (!isNixOS) {
       })
     '';
 
-    "wireplumber/main.lua.d/90-bluetooth-autoswitch-default.lua".text = ''
-      local nodes_om = ObjectManager {
-        Interest {
-          type = "node",
-          Constraint { "media.class", "=", "Audio/Sink" },
-        }
-      }
-
-      local default_metadata_om = ObjectManager {
-        Interest {
-          type = "metadata",
-          Constraint { "metadata.name", "=", "default" },
-        }
-      }
-
-      nodes_om:connect("object-added", function(_, node)
-        local name = node.properties["node.name"]
-        if not name or not string.find(name, "^bluez_output%.") then
-          return
-        end
-
-        local metadata = default_metadata_om:lookup()
-        if metadata then
-          metadata:set(0, "default.configured.audio.sink", "Spa:String:JSON",
-            '{ "name": "' .. name .. '" }')
-        end
-      end)
-
-      nodes_om:activate()
-      default_metadata_om:activate()
-    '';
   };
 }
