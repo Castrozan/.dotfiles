@@ -29,7 +29,7 @@
     ../../home/modules/gnome
     ../../home/modules/hyprland/nixos.nix
     ../../home/modules/install-nothing.nix
-    ../../home/modules/openclaw-mesh.nix
+    ../../home/modules/openclaw-mesh
     ../../home/modules/kitty.nix
     ../../home/modules/lazygit.nix
     ../../home/modules/mcporter.nix

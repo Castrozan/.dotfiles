@@ -34,7 +34,7 @@
     ../../home/modules/gnome/extension-manager.nix
     ../../home/modules/hyprland/standalone.nix
     ../../home/modules/install-nothing.nix
-    ../../home/modules/openclaw-mesh.nix
+    ../../home/modules/openclaw-mesh
     ../../home/modules/k9s.nix
     ../../home/modules/kitty.nix
     ../../home/modules/lazygit.nix

@@ -1,4 +1,31 @@
 {
+  openclaw.mesh = {
+    connections.sshHost = "100.127.240.60";
+    connections.sshUser = "lucas.zanoni";
+    gridAgents = [
+      {
+        id = "robson";
+        emoji = "⚽";
+        model = "sonnet-4.5";
+      }
+      {
+        id = "jenny";
+        emoji = "🎀";
+        model = "kimi-k2.5";
+      }
+      {
+        id = "monster";
+        emoji = "👾";
+        model = "kimi-k2.5";
+      }
+      {
+        id = "silver";
+        emoji = "🪙";
+        model = "kimi-k2.5";
+      }
+    ];
+  };
+
   openclaw = {
     userName = "Lucas";
     gatewayPort = 18790;
