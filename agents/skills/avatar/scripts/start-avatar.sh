@@ -4,7 +4,7 @@
 
 set -e
 
-AVATAR_DIR="@homePath@/@workspacePath@/avatar"
+AVATAR_DIR="@homePath@/@workspacePath@/skills/avatar"
 LOG_DIR="/tmp/clever-avatar-logs"
 
 GREEN='\033[0;32m'
@@ -117,7 +117,7 @@ echo ""
 # Step 3: Start Avatar Renderer
 echo -e "${YELLOW}[3/5]${NC} Starting Avatar Renderer..."
 
-if is_running "avatar/renderer.*next"; then
+if is_running "skills/avatar/renderer.*next"; then
     echo -e "  ${YELLOW}⚠${NC}  Renderer is already running"
 else
     cd "$AVATAR_DIR/renderer"

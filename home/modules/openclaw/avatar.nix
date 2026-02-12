@@ -15,7 +15,7 @@ let
     else
       "openclaw";
 
-  avatarDir = "${homeDir}/${defaultAgentWorkspace}/avatar";
+  avatarDir = "${homeDir}/${defaultAgentWorkspace}/skills/avatar";
   controlServerSource = ../../../agents/skills/avatar/control-server;
 
   controlServerFiles = [
@@ -38,7 +38,7 @@ let
     agentName:
     builtins.listToAttrs (
       map (filename: {
-        name = "avatar/control-server/${filename}";
+        name = "skills/avatar/control-server/${filename}";
         value =
           if lib.hasSuffix ".sh" filename then
             {
