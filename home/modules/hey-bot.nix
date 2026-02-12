@@ -540,9 +540,6 @@ in
         Restart = "on-failure";
         RestartSec = 5;
       };
-      Install = {
-        WantedBy = [ "default.target" ];
-      };
     };
   };
 }
