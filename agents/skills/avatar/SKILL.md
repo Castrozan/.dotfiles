@@ -68,4 +68,4 @@ When avatar is active with hey-bot daemon:
 - **No audio in Meet**: `pactl list sinks short | grep AvatarMic`, use output `mic`
 - **Speak hangs**: Control server must be running (`curl localhost:8766/health`)
 - **Virtual camera not in Meet**: Restart Meet (Chrome enumerates at join)
-- **Renderer won't start**: `npm install` in `~/openclaw/avatar/renderer/`
+- **Renderer won't start**: `npm install` in `~/openclaw/skills/avatar/renderer/`
