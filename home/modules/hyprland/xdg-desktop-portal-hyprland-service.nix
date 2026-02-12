@@ -11,6 +11,8 @@ let
 
   inherit (inputs.nixgl.packages.${pkgs.stdenv.hostPlatform.system}) nixGLIntel;
 
+  systemPipewireLibPath = "/usr/lib/x86_64-linux-gnu";
+
   xdphExecStart =
     if isNixOS then
       "${xdg-desktop-portal-hyprland}/libexec/xdg-desktop-portal-hyprland"
@@ -34,8 +36,11 @@ in
       Type = "dbus";
       BusName = "org.freedesktop.impl.portal.desktop.hyprland";
       ExecStart = xdphExecStart;
-      Restart = "on-failure";
+      Restart = "always";
       RestartSec = "1s";
+    }
+    // lib.optionalAttrs (!isNixOS) {
+      Environment = "LD_PRELOAD=${systemPipewireLibPath}/libpipewire-0.3.so.0";
     };
 
     Install = {
