@@ -173,6 +173,12 @@ in
       description = "ntfy.sh topic ID for push notifications";
     };
 
+    coreRulesContent = lib.mkOption {
+      type = lib.types.lines;
+      default = "";
+      description = "Content for @CORE_RULES@ placeholder in template substitution";
+    };
+
     # Derived values (internal)
     enabledAgents = lib.mkOption {
       type = lib.types.attrsOf agentModule;
@@ -279,7 +285,7 @@ in
           agent.tts.engine
           skillsDisplay
           openclaw.notifyTopic
-          (builtins.readFile ../../../agents/core.md)
+          openclaw.coreRulesContent
         ];
         gridNames = builtins.attrNames openclaw.gridPlaceholders;
         gridValues = map (name: openclaw.gridPlaceholders.${name}) gridNames;

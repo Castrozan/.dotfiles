@@ -29,6 +29,7 @@
   openclaw = {
     userName = "Lucas";
     gatewayPort = 18790;
+    coreRulesContent = builtins.readFile ../../../agents/core.md;
     agents = {
       robson = {
         enable = true;

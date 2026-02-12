@@ -81,6 +81,19 @@
       };
     in
     {
+      homeManagerModules = {
+        openclaw = ./home/modules/openclaw/library.nix;
+        claude-code = ./home/modules/claude/claude.nix;
+        codex = ./home/modules/codex/package.nix;
+        default = {
+          imports = [
+            ./home/modules/openclaw/library.nix
+            ./home/modules/claude/claude.nix
+            ./home/modules/codex/package.nix
+          ];
+        };
+      };
+
       # homeConfigurations.${username}@${system}
       # is a standalone home manager configuration for a user and system architecture
       # ./bin/rebuild for how to apply the flake

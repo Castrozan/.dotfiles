@@ -11,7 +11,7 @@
 {
   config,
   lib,
-  isNixOS,
+  isNixOS ? false,
   ...
 }:
 let
