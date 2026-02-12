@@ -19,7 +19,7 @@
     video-sync=display-resample
     interpolation=no
     tscale=oversample
-    ao=pipewire
+    ao=pulse
     hwdec=no
     cache=yes
     cache-secs=60
