@@ -23,6 +23,7 @@
     ../../home/modules/claude
     ../../home/modules/clipse.nix
     ../../home/modules/cmatrix.nix
+    ../../home/modules/chrome-global.nix
     ../../home/modules/cursor
     ../../home/modules/devenv.nix
     ../../home/modules/flameshot.nix

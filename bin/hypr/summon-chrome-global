@@ -3,6 +3,11 @@ set -Eeuo pipefail
 
 readonly CHROME_GLOBAL_CLASS="chrome-global"
 readonly CHROME_GLOBAL_DATA_DIR="$HOME/.config/chrome-global"
+readonly CHROME_GLOBAL_FLAGS=(
+  --user-data-dir="$CHROME_GLOBAL_DATA_DIR"
+  --class="$CHROME_GLOBAL_CLASS"
+  --enable-features=UseNativeNotifications
+)
 readonly CHROME_GLOBAL_URLS=(
   "chrome://newtab"
   "https://mail.google.com/chat/u/0/#chat/home"
@@ -57,14 +62,12 @@ _launch_chrome_global() {
   if _chrome_global_has_never_been_launched; then
     touch "$CHROME_GLOBAL_DATA_DIR/.initialized"
     exec google-chrome-stable \
-      --user-data-dir="$CHROME_GLOBAL_DATA_DIR" \
-      --class="$CHROME_GLOBAL_CLASS" \
+      "${CHROME_GLOBAL_FLAGS[@]}" \
       "${CHROME_GLOBAL_URLS[@]}"
   fi
 
   exec google-chrome-stable \
-    --user-data-dir="$CHROME_GLOBAL_DATA_DIR" \
-    --class="$CHROME_GLOBAL_CLASS"
+    "${CHROME_GLOBAL_FLAGS[@]}"
 }
 
 _chrome_global_has_never_been_launched() {
