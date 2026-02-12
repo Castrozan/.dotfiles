@@ -8,7 +8,6 @@ let
   inherit (config) openclaw;
   homeDir = config.home.homeDirectory;
 
-  # Avatar is shared infrastructure - deploy to default agent's workspace
   defaultAgentWorkspace =
     if openclaw.defaultAgent != null then
       openclaw.agents.${openclaw.defaultAgent}.workspace
@@ -16,6 +15,14 @@ let
       "openclaw";
 
   avatarDir = "${homeDir}/${defaultAgentWorkspace}/skills/avatar";
+
+  agentsWithAvatar = lib.filterAttrs (
+    name: agent: agent.enable && (agent.skills == [ ] || builtins.elem "avatar" agent.skills)
+  ) openclaw.agents;
+
+  nonDefaultAvatarAgents = lib.filterAttrs (
+    name: _: openclaw.defaultAgent != null && name != openclaw.defaultAgent
+  ) agentsWithAvatar;
 
   rendererSrc = pkgs.fetchFromGitHub {
     owner = "Castrozan";
@@ -53,6 +60,17 @@ in
             echo "Installing renderer npm dependencies..."
             cd "$RENDERER_DIR" && ${pkgs.nodejs_22}/bin/npm install 2>&1 || true
           fi
+
+          ${lib.concatStringsSep "\n" (
+            lib.mapAttrsToList (name: agent: ''
+              AGENT_RENDERER="${homeDir}/${agent.workspace}/skills/avatar/renderer"
+              if [ ! -e "$AGENT_RENDERER" ]; then
+                mkdir -p "$(dirname "$AGENT_RENDERER")"
+                ln -sfn "$RENDERER_DIR" "$AGENT_RENDERER"
+                echo "Symlinked avatar renderer for ${name}"
+              fi
+            '') nonDefaultAvatarAgents
+          )}
         ''
       );
       avatarControlServerDeps = lib.mkIf (openclaw.defaultAgent != null) (
@@ -67,6 +85,16 @@ in
               echo "$LOCK_HASH" > "$MARKER"
             fi
           fi
+
+          ${lib.concatStringsSep "\n" (
+            lib.mapAttrsToList (name: agent: ''
+              AGENT_CONTROL_MODULES="${homeDir}/${agent.workspace}/skills/avatar/control-server/node_modules"
+              if [ ! -e "$AGENT_CONTROL_MODULES" ] && [ -d "$CONTROL_DIR/node_modules" ]; then
+                ln -sfn "$CONTROL_DIR/node_modules" "$AGENT_CONTROL_MODULES"
+                echo "Symlinked avatar control-server node_modules for ${name}"
+              fi
+            '') nonDefaultAvatarAgents
+          )}
         ''
       );
     };
