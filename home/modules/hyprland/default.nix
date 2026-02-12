@@ -28,6 +28,7 @@ in
     ./wlr-which-key.nix
     ./mako-service.nix
     ../satty.nix
+    ../wiremix.nix
     ./xdg-desktop-portal-hyprland-service.nix
     ../fuzzel.nix
   ];
