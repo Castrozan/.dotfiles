@@ -16,15 +16,6 @@ let
       "openclaw";
 
   avatarDir = "${homeDir}/${defaultAgentWorkspace}/skills/avatar";
-  controlServerSource = ../../../agents/skills/avatar/control-server;
-
-  controlServerFiles = [
-    "server.js"
-    "package.json"
-    "package-lock.json"
-    "virtual-camera.js"
-    "virtual-mic.sh"
-  ];
 
   rendererSrc = pkgs.fetchFromGitHub {
     owner = "Castrozan";
@@ -33,37 +24,13 @@ let
     hash = "sha256-BZbFrX1aRGwW7RZ5iZ5HQCLwhOit/lYvIH+NeO644yo=";
   };
 
-  # Generate deploy files for default agent
-  mkDeployFiles =
-    agentName:
-    builtins.listToAttrs (
-      map (filename: {
-        name = "skills/avatar/control-server/${filename}";
-        value =
-          if lib.hasSuffix ".sh" filename then
-            {
-              text = openclaw.substituteAgentConfig agentName (controlServerSource + "/${filename}");
-              executable = true;
-            }
-          else if filename == "server.js" then
-            { text = openclaw.substituteAgentConfig agentName (controlServerSource + "/${filename}"); }
-          else
-            { source = controlServerSource + "/${filename}"; };
-      }) controlServerFiles
-    );
-
-  deployFiles =
-    if openclaw.defaultAgent != null then
-      openclaw.deployToWorkspace openclaw.defaultAgent (mkDeployFiles openclaw.defaultAgent)
-    else
-      { };
 in
 {
   home = {
     packages = lib.mkIf (openclaw.defaultAgent != null) [
       pkgs.python3Packages.edge-tts
     ];
-    file = deployFiles;
+    file = { };
     activation = {
       avatarRenderer = lib.mkIf (openclaw.defaultAgent != null) (
         lib.hm.dag.entryAfter [ "linkGeneration" ] ''
