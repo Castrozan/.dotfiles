@@ -208,7 +208,7 @@ graph TD
 ├── home/                # Home Manager shared modules
 ├── hosts/               # NixOS hosts configuration
 ├── nixos/               # NixOS shared system modules
-├── shell/               # Shell configurations (bash, fish, zsh)
+├── shell/               # Shell configurations (bash, fish)
 ├── users/               # User-specific configurations
 │   ├── lucas.zanoni/    # Home Manager standalone config (Ubuntu/non-NixOS)
 │   └── zanoni/          # Full NixOS system config

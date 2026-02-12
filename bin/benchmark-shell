@@ -6,7 +6,7 @@
 #   benchmark-shell           # Test bash and fish (10 iterations each)
 #   benchmark-shell 5         # Test bash and fish (5 iterations each)
 #   benchmark-shell 10 bash   # Test only bash (10 iterations)
-#   benchmark-shell 10 all    # Test bash, fish, and zsh
+#   benchmark-shell 10 all    # Test bash and fish
 
 set -euo pipefail
 
@@ -60,7 +60,7 @@ benchmark_shell() {
 if [[ -n "$SHELL_ARG" ]]; then
     case "$SHELL_ARG" in
         all)
-            SHELLS=(bash fish zsh)
+            SHELLS=(bash fish)
             ;;
         *)
             SHELLS=("$SHELL_ARG")

@@ -83,7 +83,6 @@
       yarn
       zip
       zoxide
-      zsh
     ]
     # Unstable packages
     ++ (with unstable; [

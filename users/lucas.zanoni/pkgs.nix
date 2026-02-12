@@ -71,7 +71,6 @@
       yamllint
       zip
       zoxide
-      zsh
     ]
     # Appending to list
     ++ (with latest; [
