@@ -5,28 +5,28 @@ description: "Control the VTuber avatar — speak with lip sync, change expressi
 
 # Avatar — VTuber Control
 
-Scripts are at `~/openclaw/skills/avatar/scripts/`.
+Scripts are at `@homePath@/@workspacePath@/skills/avatar/scripts/`.
 
 ## Quick Start
 
 ```bash
-~/openclaw/skills/avatar/scripts/start-avatar.sh    # Start all services (opens visible browser)
-~/openclaw/skills/avatar/scripts/stop-avatar.sh      # Stop everything
+@homePath@/@workspacePath@/skills/avatar/scripts/start-avatar.sh    # Start all services (opens visible browser)
+@homePath@/@workspacePath@/skills/avatar/scripts/stop-avatar.sh      # Stop everything
 ```
 
 ## Speaking
 
 ```bash
-~/openclaw/skills/avatar/scripts/avatar-speak.sh "Hello world"                    # neutral, speakers
-~/openclaw/skills/avatar/scripts/avatar-speak.sh "I'm excited!" happy             # with emotion
-~/openclaw/skills/avatar/scripts/avatar-speak.sh "Hello Meet!" neutral mic        # virtual mic (calls)
-~/openclaw/skills/avatar/scripts/avatar-speak.sh "Everyone hears" happy both      # speakers + mic
+@homePath@/@workspacePath@/skills/avatar/scripts/avatar-speak.sh "Hello world"                    # neutral, speakers
+@homePath@/@workspacePath@/skills/avatar/scripts/avatar-speak.sh "I'm excited!" happy             # with emotion
+@homePath@/@workspacePath@/skills/avatar/scripts/avatar-speak.sh "Hello Meet!" neutral mic        # virtual mic (calls)
+@homePath@/@workspacePath@/skills/avatar/scripts/avatar-speak.sh "Everyone hears" happy both      # speakers + mic
 ```
 
 ### Multi-Segment
 
 ```bash
-~/openclaw/skills/avatar/scripts/avatar-speak-multi.sh \
+@homePath@/@workspacePath@/skills/avatar/scripts/avatar-speak-multi.sh \
   "happy:Hi, I'm Clever!" \
   "neutral:Let me think about this."
 ```
@@ -60,7 +60,7 @@ When avatar is active with hey-bot daemon:
 | 8765 | WebSocket control |
 | 8766 | HTTP (audio + health) |
 | 3000 | Renderer (browser) |
-| /dev/video10 | Virtual camera |
+| /dev/video* | Virtual camera (auto-detected) |
 
 ## Troubleshooting
 
@@ -68,4 +68,4 @@ When avatar is active with hey-bot daemon:
 - **No audio in Meet**: `pactl list sinks short | grep AvatarMic`, use output `mic`
 - **Speak hangs**: Control server must be running (`curl localhost:8766/health`)
 - **Virtual camera not in Meet**: Restart Meet (Chrome enumerates at join)
-- **Renderer won't start**: `npm install` in `~/openclaw/skills/avatar/renderer/`
+- **Renderer won't start**: `npm install` in `@homePath@/@workspacePath@/skills/avatar/renderer/`

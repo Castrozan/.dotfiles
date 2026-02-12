@@ -89,7 +89,7 @@ in
           ]
         }:/run/current-system/sw/bin"
         "NODE_PATH=${avatarDir}/control-server/node_modules"
-        "XDG_RUNTIME_DIR=/run/user/1000"
+        "XDG_RUNTIME_DIR=/run/user/%U"
       ];
     };
   };

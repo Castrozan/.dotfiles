@@ -4,6 +4,9 @@
 
 set -e
 
+XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+export XDG_RUNTIME_DIR
+
 AVATAR_DIR="@homePath@/@workspacePath@/skills/avatar"
 LOG_DIR="/tmp/clever-avatar-logs"
 
@@ -23,6 +26,21 @@ echo ""
 is_running() {
     pgrep -f "$1" > /dev/null 2>&1
 }
+
+detect_v4l2_device() {
+    for sysdir in /sys/class/video4linux/video*; do
+        [ -d "$sysdir" ] || continue
+        local deviceName
+        deviceName=$(cat "$sysdir/name" 2>/dev/null || true)
+        if echo "$deviceName" | grep -qi -e "avatar" -e "v4l2loopback"; then
+            echo "/dev/$(basename "$sysdir")"
+            return
+        fi
+    done
+    echo "/dev/video10"
+}
+
+V4L2_DEVICE=$(detect_v4l2_device)
 
 wait_for_port() {
     local port=$1
@@ -47,11 +65,11 @@ wait_for_port() {
 ensure_sink() {
     local name=$1
     local desc=$2
-    if XDG_RUNTIME_DIR=/run/user/1000 pactl list sinks short | grep -q "$name"; then
+    if pactl list sinks short | grep -q "$name"; then
         echo -e "  ${GREEN}✓${NC} $name already exists"
     else
         echo -n "  Creating $name..."
-        if XDG_RUNTIME_DIR=/run/user/1000 pactl load-module module-null-sink \
+        if pactl load-module module-null-sink \
             sink_name="$name" \
             sink_properties=device.description="$desc" > /dev/null 2>&1; then
             echo -e " ${GREEN}OK${NC}"
@@ -68,11 +86,11 @@ ensure_sink "AvatarSpeaker" "Avatar_Speaker"
 ensure_sink "AvatarMic" "Avatar_Mic_Sink"
 
 # Create a remapped source so Chrome/Meet lists it as a proper microphone
-if XDG_RUNTIME_DIR=/run/user/1000 pactl list sources short | grep -q "AvatarMicSource"; then
+if pactl list sources short | grep -q "AvatarMicSource"; then
     echo -e "  ${GREEN}✓${NC} AvatarMicSource already exists"
 else
     echo -n "  Creating AvatarMicSource (remapped source for Chrome)..."
-    if XDG_RUNTIME_DIR=/run/user/1000 pactl load-module module-remap-source \
+    if pactl load-module module-remap-source \
         source_name=AvatarMicSource \
         master=AvatarMic.monitor \
         source_properties=device.description="Avatar_Microphone" > /dev/null 2>&1; then
@@ -135,36 +153,36 @@ else
     fi
 fi
 
+# Kill stale headless browser if running (must restart headed for visible avatar)
+if pgrep -f "remote-debugging-port=9222" > /dev/null 2>&1; then
+    pkill -f 'pw-daemon.js' 2>/dev/null || true
+    pkill -f 'remote-debugging-port=9222' 2>/dev/null || true
+    sleep 2
+fi
+
+echo -n "  Starting agent browser (headed)..."
+pw open http://localhost:3000 --headed > /dev/null 2>&1 && echo -e " ${GREEN}OK${NC}" || echo -e " ${YELLOW}SKIP${NC}"
+
 echo ""
 
-# Step 4: Start Virtual Camera (requires v4l2loopback + agent browser)
+# Step 4: Start Virtual Camera (requires v4l2loopback)
 echo -e "${YELLOW}[4/5]${NC} Starting Virtual Camera..."
 
 if is_running "virtual-camera.js"; then
     echo -e "  ${YELLOW}⚠${NC}  Virtual camera is already running"
-elif [ ! -e /dev/video10 ]; then
-    echo -e "  ${YELLOW}⚠${NC}  /dev/video10 not found (v4l2loopback not loaded), skipping"
+elif [ ! -e "$V4L2_DEVICE" ]; then
+    echo -e "  ${YELLOW}⚠${NC}  $V4L2_DEVICE not found (v4l2loopback not loaded), skipping"
 else
-    # Kill stale headless browser if running (must restart headed for visible avatar)
-    if pgrep -f "remote-debugging-port=9222" > /dev/null 2>&1; then
-        pkill -f 'pw-daemon.js' 2>/dev/null || true
-        pkill -f 'remote-debugging-port=9222' 2>/dev/null || true
-        sleep 2
-    fi
-
-    # Start agent browser headed with renderer tab
-    echo -n "  Starting agent browser (headed)..."
-    pw open http://localhost:3000 --headed > /dev/null 2>&1 && echo -e " ${GREEN}OK${NC}" || echo -e " ${YELLOW}SKIP${NC}"
-
     cd "$AVATAR_DIR/control-server"
     NODE_PATH="$AVATAR_DIR/control-server/node_modules" \
     PW_PORT="${PW_PORT:-9222}" \
+    V4L2_DEVICE="$V4L2_DEVICE" \
     nohup node virtual-camera.js --fps 15 --width 1280 --height 720 > "$LOG_DIR/avatar-virtual-camera.log" 2>&1 &
     CAMERA_PID=$!
     sleep 2
     if kill -0 "$CAMERA_PID" 2>/dev/null; then
         echo -e "  ${GREEN}✓${NC} Virtual camera started (PID: $CAMERA_PID)"
-        echo -e "    Device: /dev/video10"
+        echo -e "    Device: $V4L2_DEVICE"
         echo -e "    Log: $LOG_DIR/avatar-virtual-camera.log"
     else
         echo -e "  ${YELLOW}⚠${NC}  Virtual camera failed to start"
@@ -192,7 +210,7 @@ else
 fi
 
 echo -n "  Virtual camera device..."
-if [ -e /dev/video10 ]; then
+if [ -e "$V4L2_DEVICE" ]; then
     echo -e " ${GREEN}OK${NC}"
 else
     echo -e " ${YELLOW}SKIP${NC}"
@@ -210,7 +228,7 @@ echo -e "  • Control Server:  ws://localhost:8765"
 echo -e "  • HTTP API:        http://localhost:8766"
 echo -e "  • Avatar Renderer: http://localhost:3000"
 echo -e "  • Virtual Mic:     Avatar_Microphone (AvatarMicSource)"
-echo -e "  • Virtual Camera:  /dev/video10"
+echo -e "  • Virtual Camera:  $V4L2_DEVICE"
 echo ""
 echo -e "${BLUE}Speak:${NC}"
 echo -e "  avatar-speak.sh \"Hello\" neutral speakers   # room audio"
@@ -218,5 +236,5 @@ echo -e "  avatar-speak.sh \"Hello\" neutral mic        # Meet mic"
 echo -e "  avatar-speak.sh \"Hello\" neutral both       # both"
 echo ""
 echo -e "${BLUE}Stop:${NC}"
-echo -e "  ~/openclaw/skills/avatar/scripts/stop-avatar.sh"
+echo -e "  $AVATAR_DIR/scripts/stop-avatar.sh"
 echo ""

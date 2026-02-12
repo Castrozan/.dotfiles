@@ -13,9 +13,22 @@
 
 set -euo pipefail
 
+detect_v4l2_device() {
+    for sysdir in /sys/class/video4linux/video*; do
+        [ -d "$sysdir" ] || continue
+        local deviceName
+        deviceName=$(cat "$sysdir/name" 2>/dev/null || true)
+        if echo "$deviceName" | grep -qi -e "avatar" -e "v4l2loopback"; then
+            echo "/dev/$(basename "$sysdir")"
+            return
+        fi
+    done
+    echo "/dev/video10"
+}
+
 VIDEO_SIZE="1280x720"
 FPS="20"
-V4L2_DEVICE="/dev/video10"
+V4L2_DEVICE="$(detect_v4l2_device)"
 DISPLAY_NUM=":0"
 AUTO_DETECT=true
 MANUAL_X=""

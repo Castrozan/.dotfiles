@@ -4,7 +4,8 @@
 #
 # Usage: ./virtual-mic.sh [start|stop|status]
 
-export XDG_RUNTIME_DIR=/run/user/1000
+XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+export XDG_RUNTIME_DIR
 
 ACTION="${1:-start}"
 

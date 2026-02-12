@@ -4,6 +4,9 @@
 
 set -euo pipefail
 
+XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+export XDG_RUNTIME_DIR
+
 echo "Stopping Avatar System..."
 
 # Stop virtual camera
@@ -33,10 +36,10 @@ fi
 # Clean up virtual audio devices
 remove_sink() {
     local name=$1
-    if XDG_RUNTIME_DIR=/run/user/1000 pactl list sinks short 2>/dev/null | grep -q "$name"; then
-        MODULE_ID=$(XDG_RUNTIME_DIR=/run/user/1000 pactl list short modules | grep "$name" | awk '{print $1}')
+    if pactl list sinks short 2>/dev/null | grep -q "$name"; then
+        MODULE_ID=$(pactl list short modules | grep "$name" | awk '{print $1}')
         if [[ -n "$MODULE_ID" ]]; then
-            XDG_RUNTIME_DIR=/run/user/1000 pactl unload-module "$MODULE_ID"
+            pactl unload-module "$MODULE_ID"
             echo "  $name sink removed"
         fi
     else
@@ -47,9 +50,9 @@ remove_sink() {
 # Remove remapped source first (depends on AvatarMic)
 remove_module() {
     local name=$1
-    MODULE_ID=$(XDG_RUNTIME_DIR=/run/user/1000 pactl list short modules 2>/dev/null | grep "$name" | awk '{print $1}')
+    MODULE_ID=$(pactl list short modules 2>/dev/null | grep "$name" | awk '{print $1}')
     if [[ -n "$MODULE_ID" ]]; then
-        XDG_RUNTIME_DIR=/run/user/1000 pactl unload-module "$MODULE_ID"
+        pactl unload-module "$MODULE_ID"
         echo "  $name removed"
     fi
 }

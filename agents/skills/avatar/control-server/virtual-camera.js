@@ -13,7 +13,7 @@ const WebSocket = require("ws");
 
 const CONFIG = {
   CDP_PORT: parseInt(process.env.PW_PORT || "9222"),
-  V4L2_DEVICE: "/dev/video10",
+  V4L2_DEVICE: process.env.V4L2_DEVICE || "/dev/video10",
   FPS: parseInt(process.argv.find((_, i, a) => a[i - 1] === "--fps") || "15"),
   WIDTH: parseInt(
     process.argv.find((_, i, a) => a[i - 1] === "--width") || "1280",
