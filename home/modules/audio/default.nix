@@ -53,5 +53,37 @@ lib.mkIf (!isNixOS) {
         },
       })
     '';
+
+    "wireplumber/main.lua.d/90-bluetooth-autoswitch-default.lua".text = ''
+      local nodes_om = ObjectManager {
+        Interest {
+          type = "node",
+          Constraint { "media.class", "=", "Audio/Sink" },
+        }
+      }
+
+      local default_metadata_om = ObjectManager {
+        Interest {
+          type = "metadata",
+          Constraint { "metadata.name", "=", "default" },
+        }
+      }
+
+      nodes_om:connect("object-added", function(_, node)
+        local name = node.properties["node.name"]
+        if not name or not string.find(name, "^bluez_output%.") then
+          return
+        end
+
+        local metadata = default_metadata_om:lookup()
+        if metadata then
+          metadata:set(0, "default.configured.audio.sink", "Spa:String:JSON",
+            '{ "name": "' .. name .. '" }')
+        end
+      end)
+
+      nodes_om:activate()
+      default_metadata_om:activate()
+    '';
   };
 }
