@@ -103,57 +103,19 @@ source $ZSH/oh-my-zsh.sh
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
-# Source bash functions and configurations for tmux management
-if [ -f ~/.dotfiles/shell/screensaver.sh ]; then
-    source ~/.dotfiles/shell/screensaver.sh
-fi
-
-# Source additional shell configurations (similar to bashrc)
+# Source shell configurations
 [ -f ~/.dotfiles/shell/aliases.sh ] && source ~/.dotfiles/shell/aliases.sh
 [ -f ~/.dotfiles/shell/zoxide.sh ] && source ~/.dotfiles/shell/zoxide.sh
 [ -f ~/.dotfiles/shell/default_directories.sh ] && source ~/.dotfiles/shell/default_directories.sh
-
-# Function to start the first tmux session for screensaver
-_start_screensaver_tmux_session() {
-    # Check if the screensaver session exists
-    if ! tmux has-session -t screensaver 2>/dev/null; then
-
-        if command -v cmatrix &>/dev/null; then
-            # Start cmatrix, bonsai and pipes as screensaver
-            tmux new-session -d -s screensaver \; \
-                rename-window 'screensaver' \; \
-                send-keys 'bonsai_screensaver' C-m \; \
-                split-window -h \; \
-                send-keys 'pipes_screensaver' C-m \; \
-                split-window -v \; \
-                send-keys 'sleep 1; cmatrix' C-m
-        else
-            # Start bonsai and pipes as screensaver
-            tmux new-session -d -s screensaver \; \
-                rename-window 'screensaver' \; \
-                send-keys 'bonsai_screensaver' C-m \; \
-                split-window -h \; \
-                send-keys 'pipes_screensaver' C-m
-        fi
-    fi
-}
-
-# Function to start a main tmux session
-_start_main_tmux_session() {
-    # Check if the main session exists
-    if ! tmux has-session -t main 2>/dev/null; then
-        tmux new-session -d -s main -n main
-    fi
-}
+[ -f ~/.dotfiles/shell/screensaver.sh ] && source ~/.dotfiles/shell/screensaver.sh
+[ -f ~/.dotfiles/shell/tmux_main.sh ] && source ~/.dotfiles/shell/tmux_main.sh
 
 _start_tmux() {
-    # Start tmux
     _start_screensaver_tmux_session
     _start_main_tmux_session
     tmux attach -t screensaver
 }
 
-# Open tmux sessions on startup - prevent when running from Cursor
 if command -v tmux &>/dev/null &&
     [ -n "$PS1" ] &&
     [[ ! "$TERM" =~ screen ]] &&
