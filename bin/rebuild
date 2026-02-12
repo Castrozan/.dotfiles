@@ -81,7 +81,7 @@ _rebuild_nixos() {
   echo ":: Detected NixOS. Running nixos-rebuild switch..."
   echo ":: Flake: ${dotfiles_path}#${username}"
 
-  sudo env "$NIXOS_ALLOW_UNFREE" nixos-rebuild switch --flake "${dotfiles_path}#${username}"
+  sudo env "$NIXOS_ALLOW_UNFREE" nixos-rebuild switch --flake "${dotfiles_path}?submodules=1#${username}"
 }
 
 _rebuild_home_manager() {
@@ -113,12 +113,14 @@ _hm_switch_with_rate_limit_fallback() {
   local backup
   backup="$(_backup_name)"
 
+  local flake_ref="${DOTFILES_DIR}?submodules=1#${config}"
+
   if command -v home-manager >/dev/null 2>&1; then
-    home-manager switch --flake "${DOTFILES_DIR}#${config}" -b "$backup"
+    home-manager switch --flake "$flake_ref" -b "$backup"
     return 0
   fi
 
-  if nix run nixpkgs#home-manager -- switch --flake "${DOTFILES_DIR}#${config}" -b "$backup" 2>/dev/null; then
+  if nix run nixpkgs#home-manager -- switch --flake "$flake_ref" -b "$backup" 2>/dev/null; then
     return 0
   fi
 
@@ -126,7 +128,7 @@ _hm_switch_with_rate_limit_fallback() {
   echo "Tip: Install home-manager to avoid this:" >&2
   echo "  nix profile install nixpkgs#home-manager" >&2
 
-  nix run home-manager/master -- switch --flake "${DOTFILES_DIR}#${config}" -b "$backup"
+  nix run home-manager/master -- switch --flake "$flake_ref" -b "$backup"
 }
 
 _backup_name() {

@@ -40,6 +40,15 @@
         tts.voice = "pt-BR-FranciscaNeural";
         telegram.enable = true;
       };
+      golden = {
+        enable = true;
+        emoji = "🌟";
+        role = "research & discovery — deep dives, analysis, long-form thinking";
+        model.primary = "nvidia/moonshotai/kimi-k2.5";
+        workspace = "openclaw/golden";
+        tts.voice = "en-US-AriaNeural";
+        telegram.enable = true;
+      };
     };
   };
 }
