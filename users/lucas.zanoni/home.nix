@@ -64,5 +64,7 @@
     ../../home/modules/testing
     ../../home/modules/ani-cli.nix
     ../../home/modules/audio
+    ../../home/modules/hey-bot.nix
+    ./home/hey-bot.nix
   ];
 }
