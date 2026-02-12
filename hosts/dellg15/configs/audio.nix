@@ -1,4 +1,7 @@
 { pkgs, ... }:
+let
+  btPolicy = import ../../../home/modules/audio/bluetooth-policy.nix;
+in
 {
   security.rtkit.enable = true;
 
@@ -22,29 +25,41 @@
     pulse.enable = true;
     jack.enable = true;
 
-    extraConfig.pipewire."30-echo-cancel" = {
-      "context.modules" = [
-        {
-          name = "libpipewire-module-echo-cancel";
-          args = {
-            "library.name" = "aec/libspa-aec-webrtc";
-            "node.name" = "Echo Cancel Source";
-            "node.description" = "Echo Cancel Source";
-            "audio.rate" = 48000;
-            "audio.channels" = 1;
-            "source.props" = {
-              "node.name" = "echo-cancel-source";
-              "media.class" = "Audio/Source";
-              "audio.position" = [ "MONO" ];
+    extraConfig.pipewire = {
+      "10-clock-rate" = {
+        "context.properties" = {
+          "default.clock.rate" = 48000;
+          "default.clock.allowed-rates" = [
+            44100
+            48000
+          ];
+        };
+      };
+
+      "30-echo-cancel" = {
+        "context.modules" = [
+          {
+            name = "libpipewire-module-echo-cancel";
+            args = {
+              "library.name" = "aec/libspa-aec-webrtc";
+              "node.name" = "Echo Cancel Source";
+              "node.description" = "Echo Cancel Source";
+              "audio.rate" = 48000;
+              "audio.channels" = 1;
+              "source.props" = {
+                "node.name" = "echo-cancel-source";
+                "media.class" = "Audio/Source";
+                "audio.position" = [ "MONO" ];
+              };
+              "sink.props" = {
+                "node.name" = "echo-cancel-sink";
+                "media.class" = "Audio/Sink";
+                "audio.position" = [ "MONO" ];
+              };
             };
-            "sink.props" = {
-              "node.name" = "echo-cancel-sink";
-              "media.class" = "Audio/Sink";
-              "audio.position" = [ "MONO" ];
-            };
-          };
-        }
-      ];
+          }
+        ];
+      };
     };
 
     wireplumber.extraConfig = {
@@ -68,8 +83,8 @@
               { "node.name" = "~alsa_input.pci-0000_05_00.6.*"; }
             ];
             actions.update-props = {
-              "priority.driver" = 2000;
-              "priority.session" = 2000;
+              "priority.driver" = btPolicy.inputPriority;
+              "priority.session" = btPolicy.inputPriority;
             };
           }
           {
@@ -91,16 +106,9 @@
               { "device.name" = "~bluez_card.*"; }
             ];
             actions.update-props = {
-              "bluez5.auto-connect" = [
-                "a2dp_sink"
-                "a2dp_source"
-              ];
-              "bluez5.codecs" = [
-                "aac"
-                "sbc_xq"
-                "sbc"
-              ];
-              "bluez5.autoswitch-to-headset-profile" = false;
+              "bluez5.auto-connect" = btPolicy.autoConnect;
+              "bluez5.codecs" = btPolicy.codecs;
+              "bluez5.autoswitch-to-headset-profile" = btPolicy.autoswitchToHeadsetProfile;
             };
           }
         ];
@@ -113,8 +121,8 @@
               { "node.name" = "~bluez_output.*"; }
             ];
             actions.update-props = {
-              "priority.driver" = 3000;
-              "priority.session" = 3000;
+              "priority.driver" = btPolicy.sinkPriority;
+              "priority.session" = btPolicy.sinkPriority;
             };
           }
         ];

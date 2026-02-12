@@ -47,6 +47,7 @@
     ../../home/modules/voxtype.nix
     ../../home/modules/wezterm.nix # https://tmuxai.dev/terminal-compatibility/
     ../../home/modules/whisp-away.nix
+    ../../home/modules/audio
     ../../home/modules/hey-bot.nix
     ../../home/modules/hey-bot-test.nix
     ./home/hey-bot.nix

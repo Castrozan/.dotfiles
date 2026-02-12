@@ -1,10 +1,23 @@
+# Audio policy:
+# - PipeWire is the audio server on all platforms.
+# - Nix apps must use PulseAudio protocol (ao=pulse), never ao=pipewire.
+#   Nix's libpipewire version mismatches Ubuntu's system pipewire (ABI break = silence).
+#   PulseAudio protocol is version-independent — pipewire-pulse bridges it.
+# - bluetooth-policy.nix is the single source of truth for BT values,
+#   consumed by both Ubuntu (WirePlumber 0.4 Lua) and NixOS (WirePlumber 0.5 conf).
+# - WirePlumber config format is platform-specific and cannot be unified:
+#   Ubuntu uses Lua via xdg.configFile, NixOS uses declarative conf via wireplumber.extraConfig.
+# - The BT autoswitch service is cross-platform (pactl speaks PulseAudio protocol).
 {
   lib,
   isNixOS,
   pkgs,
   ...
 }:
-lib.mkIf (!isNixOS) {
+let
+  btPolicy = import ./bluetooth-policy.nix;
+in
+{
   systemd.user.services.bluetooth-audio-autoswitch = {
     Unit = {
       Description = "Auto-switch default audio sink to Bluetooth on connect";
@@ -34,7 +47,7 @@ lib.mkIf (!isNixOS) {
     };
   };
 
-  xdg.configFile = {
+  xdg.configFile = lib.mkIf (!isNixOS) {
     "pipewire/pipewire.conf.d/10-clock-rate.conf".text = builtins.toJSON {
       "context.properties" = {
         "default.clock.rate" = 48000;
@@ -53,8 +66,8 @@ lib.mkIf (!isNixOS) {
           },
         },
         apply_properties = {
-          ["priority.driver"] = 2000,
-          ["priority.session"] = 2000,
+          ["priority.driver"] = ${toString btPolicy.inputPriority},
+          ["priority.session"] = ${toString btPolicy.inputPriority},
         },
       })
     '';
@@ -67,9 +80,11 @@ lib.mkIf (!isNixOS) {
           },
         },
         apply_properties = {
-          ["bluez5.auto-connect"] = { "a2dp_sink", "a2dp_source" },
-          ["bluez5.codecs"] = { "aac", "sbc_xq", "sbc" },
-          ["bluez5.autoswitch-to-headset-profile"] = false,
+          ["bluez5.auto-connect"] = { ${
+            lib.concatMapStringsSep ", " (c: ''"${c}"'') btPolicy.autoConnect
+          } },
+          ["bluez5.codecs"] = { ${lib.concatMapStringsSep ", " (c: ''"${c}"'') btPolicy.codecs} },
+          ["bluez5.autoswitch-to-headset-profile"] = ${lib.boolToString btPolicy.autoswitchToHeadsetProfile},
         },
       })
     '';
@@ -82,11 +97,10 @@ lib.mkIf (!isNixOS) {
           },
         },
         apply_properties = {
-          ["priority.driver"] = 3000,
-          ["priority.session"] = 3000,
+          ["priority.driver"] = ${toString btPolicy.sinkPriority},
+          ["priority.session"] = ${toString btPolicy.sinkPriority},
         },
       })
     '';
-
   };
 }

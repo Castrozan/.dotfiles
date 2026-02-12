@@ -35,4 +35,4 @@ trap 'rm -f "$TMPFILE"' EXIT
 edge-tts --text "$RESPONSE" --voice "$TTS_VOICE" --write-media "$TMPFILE" 2>/dev/null
 
 wpctl set-mute @DEFAULT_AUDIO_SINK@ 0 2>/dev/null || true
-mpv --no-video --ao=pipewire "$TMPFILE" 2>/dev/null
+mpv --no-video --ao=pulse "$TMPFILE" 2>/dev/null

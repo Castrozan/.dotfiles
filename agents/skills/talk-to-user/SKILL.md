@@ -56,7 +56,7 @@ XDG_RUNTIME_DIR=/run/user/1000 wpctl set-mute @DEFAULT_AUDIO_SINK@ 0
 XDG_RUNTIME_DIR=/run/user/1000 wpctl set-volume @DEFAULT_AUDIO_SINK@ 0.8
 
 # 3. Play — MUST use background: true (exec has 10s timeout, audio is longer)
-exec(command="XDG_RUNTIME_DIR=/run/user/1000 mpv --no-video --ao=pipewire <file>.mp3", background=true, yieldMs=20000)
+exec(command="XDG_RUNTIME_DIR=/run/user/1000 mpv --no-video --ao=pulse <file>.mp3", background=true, yieldMs=20000)
 ```
 
 ### If Music is Playing

@@ -19,7 +19,7 @@ let
       curl
       jq
       libnotify
-      pipewire
+      wireplumber
       perl
     ];
     text = ''
@@ -349,7 +349,7 @@ let
         ttsFile=$(mktemp /tmp/hey-bot-tts-XXXXXX.mp3)
         if edge-tts --text "$responseText" --voice "$TTS_VOICE" --write-media "$ttsFile" 2>/dev/null; then
           wpctl set-mute @DEFAULT_AUDIO_SINK@ 0 2>/dev/null || true
-          mpv --no-video --ao=pipewire "$ttsFile" 2>/dev/null || true
+          mpv --no-video --ao=pulse "$ttsFile" 2>/dev/null || true
         fi
         rm -f "$ttsFile"
       }
@@ -422,7 +422,7 @@ let
       curl
       jq
       libnotify
-      pipewire
+      wireplumber
       wl-clipboard
     ];
     text = ''
@@ -466,7 +466,7 @@ let
 
       if edge-tts --text "$RESPONSE_TEXT" --voice "$TTS_VOICE" --write-media "$TTS_FILE" 2>/dev/null; then
         wpctl set-mute @DEFAULT_AUDIO_SINK@ 0 2>/dev/null || true
-        mpv --no-video --ao=pipewire "$TTS_FILE" 2>/dev/null || true
+        mpv --no-video --ao=pulse "$TTS_FILE" 2>/dev/null || true
       fi
     '';
   };
