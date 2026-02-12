@@ -42,12 +42,6 @@ let
   telegramIdsSecretExists = builtins.pathExists ../../../secrets/telegram-ids.age;
 in
 {
-  options.openclaw.gridPlaceholders = lib.mkOption {
-    type = lib.types.attrsOf lib.types.str;
-    internal = true;
-    description = "Grid-derived placeholder values for substituteAgentConfig";
-  };
-
   config = {
     openclaw.gridPlaceholders = {
       "@GRID_MEMBERS@" = gridMembersEntries;

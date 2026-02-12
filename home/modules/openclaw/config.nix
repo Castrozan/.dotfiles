@@ -235,6 +235,13 @@ in
       internal = true;
       description = "Deploy programmatically generated files. Takes (agentName -> agent -> files attrset) function.";
     };
+
+    gridPlaceholders = lib.mkOption {
+      type = lib.types.attrsOf lib.types.str;
+      default = { };
+      internal = true;
+      description = "Grid-derived placeholder values for substituteAgentConfig";
+    };
   };
 
   config.openclaw = {
