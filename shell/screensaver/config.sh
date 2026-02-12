@@ -1,7 +1,19 @@
 #!/usr/bin/env bash
 
-# List of commands to run in screensaver (in order)
-# First command gets 80% left pane, remaining split vertically on the right 20%
+# Screensaver tmux session layout:
+#
+# ┌──────────────────────┬───────────┐
+# │                      │  cmatrix  │
+# │    openclaw-mesh     │  (pane 2) │
+# │      (pane 1)        ├───────────┤
+# │       80%            │ bad-apple │
+# │                      │  (pane 3) │
+# └──────────────────────┴───────────┘
+#
+# Pane 1 (left, 80% width):        openclaw-mesh
+# Pane 2 (top-right, 20% width):   cmatrix
+# Pane 3 (bottom-right, 50% height of right column): bad-apple
+#
 # shellcheck disable=SC2034
 SCREENSAVER_COMMANDS=(
     'openclaw-mesh'
