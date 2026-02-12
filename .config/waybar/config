@@ -26,50 +26,36 @@
   ],
   "custom/ws1": {
     "return-type": "json",
-    "interval": 1,
-    "exec-if": "command -v hyprctl >/dev/null 2>&1 && command -v jq >/dev/null 2>&1",
     "exec": "~/.config/waybar/scripts/workspace-window.sh 1",
     "on-click": "~/.config/waybar/scripts/workspace-window.sh --click 1"
   },
   "custom/ws2": {
     "return-type": "json",
-    "interval": 1,
-    "exec-if": "command -v hyprctl >/dev/null 2>&1 && command -v jq >/dev/null 2>&1",
     "exec": "~/.config/waybar/scripts/workspace-window.sh 2",
     "on-click": "~/.config/waybar/scripts/workspace-window.sh --click 2"
   },
   "custom/ws3": {
     "return-type": "json",
-    "interval": 1,
-    "exec-if": "command -v hyprctl >/dev/null 2>&1 && command -v jq >/dev/null 2>&1",
     "exec": "~/.config/waybar/scripts/workspace-window.sh 3",
     "on-click": "~/.config/waybar/scripts/workspace-window.sh --click 3"
   },
   "custom/ws4": {
     "return-type": "json",
-    "interval": 1,
-    "exec-if": "command -v hyprctl >/dev/null 2>&1 && command -v jq >/dev/null 2>&1",
     "exec": "~/.config/waybar/scripts/workspace-window.sh 4",
     "on-click": "~/.config/waybar/scripts/workspace-window.sh --click 4"
   },
   "custom/ws5": {
     "return-type": "json",
-    "interval": 1,
-    "exec-if": "command -v hyprctl >/dev/null 2>&1 && command -v jq >/dev/null 2>&1",
     "exec": "~/.config/waybar/scripts/workspace-window.sh 5",
     "on-click": "~/.config/waybar/scripts/workspace-window.sh --click 5"
   },
   "custom/ws6": {
     "return-type": "json",
-    "interval": 1,
-    "exec-if": "command -v hyprctl >/dev/null 2>&1 && command -v jq >/dev/null 2>&1",
     "exec": "~/.config/waybar/scripts/workspace-window.sh 6",
     "on-click": "~/.config/waybar/scripts/workspace-window.sh --click 6"
   },
   "custom/ws7": {
     "return-type": "json",
-    "interval": 1,
-    "exec-if": "command -v hyprctl >/dev/null 2>&1 && command -v jq >/dev/null 2>&1",
     "exec": "~/.config/waybar/scripts/workspace-window.sh 7",
     "on-click": "~/.config/waybar/scripts/workspace-window.sh --click 7"
   },
@@ -119,7 +105,7 @@
     "tooltip-format-wifi": "{essid} ({frequency} GHz)\n⇣{bandwidthDownBytes}  ⇡{bandwidthUpBytes}",
     "tooltip-format-ethernet": "⇣{bandwidthDownBytes}  ⇡{bandwidthUpBytes}",
     "tooltip-format-disconnected": "Disconnected",
-    "interval": 3,
+    "interval": 10,
     "on-click": "hypr-network"
   },
   "battery": {

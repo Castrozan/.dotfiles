@@ -13,30 +13,49 @@ if [[ -z "${slot}" || ! "${slot}" =~ ^[1-7]$ ]]; then
   exit 1
 fi
 
-active_workspace=$(hyprctl activeworkspace -j | jq -r '.id // empty')
-if [[ -z "${active_workspace}" ]]; then
-  exit 1
-fi
-
-start=$(( ((active_workspace - 1) / 7) * 7 + 1 ))
-target=$(( start + slot - 1 ))
-
 if [[ "${mode}" == "click" ]]; then
-  hyprctl dispatch workspace "${target}" >/dev/null
+  activeWorkspace=$(hyprctl activeworkspace -j | jq -r '.id // empty')
+  if [[ -z "${activeWorkspace}" ]]; then
+    exit 1
+  fi
+  pageStart=$(( ((activeWorkspace - 1) / 7) * 7 + 1 ))
+  targetWorkspace=$(( pageStart + slot - 1 ))
+  hyprctl dispatch workspace "${targetWorkspace}" >/dev/null
   exit 0
 fi
 
-workspace_json=$(hyprctl workspaces -j)
-exists=$(printf '%s' "${workspace_json}" | jq -r --argjson target "${target}" 'map(.id) | index($target) != null')
-windows=$(printf '%s' "${workspace_json}" | jq -r --argjson target "${target}" 'map(select(.id == $target) | .windows) | .[0] // 0')
+computeAndOutput() {
+  local activeWorkspace
+  activeWorkspace=$(hyprctl activeworkspace -j | jq -r '.id // empty') || return
+  [[ -z "${activeWorkspace}" ]] && return
 
-class=""
-if [[ "${active_workspace}" -eq "${target}" ]]; then
-  class="active"
-elif [[ "${windows}" -gt 0 ]]; then
-  class="occupied"
-elif [[ "${exists}" != "true" ]]; then
-  class="empty"
-fi
+  local pageStart=$(( ((activeWorkspace - 1) / 7) * 7 + 1 ))
+  local targetWorkspace=$(( pageStart + slot - 1 ))
 
-printf '{"text":"%s","class":"%s"}\n' "${target}" "${class}"
+  local workspacesJson
+  workspacesJson=$(hyprctl workspaces -j) || return
+  local windowCount
+  windowCount=$(printf '%s' "${workspacesJson}" | jq -r --argjson t "${targetWorkspace}" '[.[] | select(.id == $t) | .windows][0] // 0')
+
+  local cssClass=""
+  if (( activeWorkspace == targetWorkspace )); then
+    cssClass="active"
+  elif (( windowCount > 0 )); then
+    cssClass="occupied"
+  else
+    cssClass="empty"
+  fi
+
+  printf '{"text":"%s","class":"%s"}\n' "${targetWorkspace}" "${cssClass}"
+}
+
+computeAndOutput
+
+socketPath="${XDG_RUNTIME_DIR}/hypr/${HYPRLAND_INSTANCE_SIGNATURE}/.socket2.sock"
+nc -U "${socketPath}" 2>/dev/null | while IFS= read -r event; do
+  case "${event}" in
+    workspace*|movewindow*|createworkspace*|destroyworkspace*|focusedmon*)
+      computeAndOutput
+      ;;
+  esac
+done
