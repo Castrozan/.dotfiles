@@ -86,6 +86,7 @@ in
             pkgs.python3Packages.edge-tts
             pkgs.nodejs_22
             pkgs.ffmpeg
+            pkgs.pulseaudio
           ]
         }:/run/current-system/sw/bin"
         "NODE_PATH=${avatarDir}/control-server/node_modules"
