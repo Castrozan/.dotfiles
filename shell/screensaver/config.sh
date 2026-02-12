@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
 # List of commands to run in screensaver (in order)
-# First command gets full pane, subsequent commands split horizontally
+# First command gets 80% left pane, remaining split vertically on the right 20%
 # shellcheck disable=SC2034
 SCREENSAVER_COMMANDS=(
-    'install-nothing --all --exclude deno'
+    'openclaw-mesh'
     'cmatrix'
     'sleep 3; bad-apple'
 )

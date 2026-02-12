@@ -30,6 +30,7 @@
     cmatrix.url = "github:castrozan/cmatrix";
     tuisvn.url = "github:castrozan/tuisvn";
     install-nothing.url = "github:castrozan/install-nothing";
+    openclaw-mesh.url = "github:castrozan/openclaw-mesh";
     nixgl.url = "github:nix-community/nixGL";
     agenix.url = "github:ryantm/agenix";
 
