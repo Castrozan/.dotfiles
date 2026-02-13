@@ -133,11 +133,11 @@
         "nixpkgs": "nixpkgs_4"
       },
       "locked": {
-        "lastModified": 1762823024,
-        "narHash": "sha256-HFlHATqYarKfSbhwJud8Ja3S6LIXZqSo/MpEalwsGZs=",
+        "lastModified": 1770952951,
+        "narHash": "sha256-FNkpqOAM3JmpjQ+HD7S2ERuT4f56auhZKq1FwoO+EVg=",
         "owner": "castrozan",
         "repo": "cmatrix",
-        "rev": "8d66f9c8fdde35a4e18a5148b64a41ba386f8264",
+        "rev": "4824780b10e35dfb07203c42793dac7cf4039368",
         "type": "github"
       },
       "original": {
