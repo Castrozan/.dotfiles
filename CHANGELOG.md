@@ -999,6 +999,7 @@ All notable changes to this dotfiles repository are documented here.
 - Update changelog ([d9a3c5b](https://github.com/Castrozan/.dotfiles/commit/d9a3c5b2dd2784725ae13386bde99d8e8f57da99))
 - Update changelog ([a07f54c](https://github.com/Castrozan/.dotfiles/commit/a07f54c1200eafa57b5dc4aae71887ba35794bdf))
 - Update changelog ([fec8b1a](https://github.com/Castrozan/.dotfiles/commit/fec8b1a85501ca897add3696a0e88655c8bb51de))
+- Update changelog ([1e70aa3](https://github.com/Castrozan/.dotfiles/commit/1e70aa33a7fbc2184856fd66e547456acb983fed))
 
 ### Performance
 
@@ -1122,6 +1123,7 @@ All notable changes to this dotfiles repository are documented here.
 - Fmt ([f3e2b1b](https://github.com/Castrozan/.dotfiles/commit/f3e2b1bc0058e26945bd04d5c7e55653323999a9))
 - Nixfmt ([816e592](https://github.com/Castrozan/.dotfiles/commit/816e59263219b68b67cf51cb9066f9de0bc08f50))
 - *(openclaw)* Fix statix W04 warnings — use inherit instead of assignment ([e5a5613](https://github.com/Castrozan/.dotfiles/commit/e5a5613e7867c926abaca1aa6dd01607ad4e47b3))
+- *(openclaw)* Use inherit for home config attrs per statix ([873403a](https://github.com/Castrozan/.dotfiles/commit/873403abd45647039832406c5632e38ec860aee0))
 
 ### Testing
 
