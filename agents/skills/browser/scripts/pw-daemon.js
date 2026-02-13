@@ -1,5 +1,5 @@
 const http = require("http");
-const { chromium } = require("playwright");
+const { chromium } = require("playwright-core");
 
 const PW_PORT = process.env.PW_PORT || "9222";
 const DAEMON_PORT = parseInt(PW_PORT) + 1;

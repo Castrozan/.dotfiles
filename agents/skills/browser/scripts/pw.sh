@@ -134,12 +134,7 @@ if [[ " ${*} " == *" --headed "* ]]; then
   PW_HEADED="true"
 fi
 
-if [ ! -d "$PW_CACHE/node_modules/playwright" ]; then
-  echo "Installing playwright (one-time)..." >&2
-  mkdir -p "$PW_CACHE"
-  npm install --prefix "$PW_CACHE" --silent playwright 2>/dev/null
-  echo "Done." >&2
-fi
+PW_NODE_MODULES="${PW_NODE_MODULES:-$PW_CACHE/node_modules}"
 
 launch_browser() {
   BROWSER="$(find_browser)"
@@ -177,7 +172,7 @@ fi
 
 if ! daemon_alive; then
   pkill -f "pw-daemon.js" 2>/dev/null || true
-  NODE_PATH="$PW_CACHE/node_modules" PW_PORT="$PW_PORT" node "$PW_DAEMON_JS" >/dev/null 2>&1 &
+  NODE_PATH="$PW_NODE_MODULES" PW_PORT="$PW_PORT" node "$PW_DAEMON_JS" >/dev/null 2>&1 &
   for _ in $(seq 1 30); do
     daemon_alive && break
     sleep 0.1
