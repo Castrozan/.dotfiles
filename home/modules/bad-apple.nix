@@ -1,8 +1,16 @@
 { pkgs, latest, ... }:
 let
-  badAppleUrl = "https://www.youtube.com/watch?v=CqaAs_3azSs";
+  videoUrls = [
+    "https://www.youtube.com/watch?v=FtutLA63Cp8" # Bad Apple!! - Touhou (pure B&W silhouette)
+    "https://www.youtube.com/watch?v=CqaAs_3azSs" # Lorn - ANVIL (B&W cyberpunk animation)
+    "https://www.youtube.com/watch?v=lX44CAz-JhU" # SIAMÉS - The Wolf (B&W with red accents)
+    "https://www.youtube.com/watch?v=djV11Xbc914" # a-ha - Take On Me (pencil sketch rotoscope)
+    "https://www.youtube.com/watch?v=OBk3ynRbtsw" # Ryan Woodward - Thought of You (B&W dance)
+    "https://www.youtube.com/watch?v=I03xFqbxUp8" # Thom Yorke - Last I Heard (hand-illustrated B&W)
+  ];
 
-  # Dependencies for frame generation
+  videoUrlsStr = builtins.concatStringsSep "\n" (map (url: "\"${url}\"") videoUrls);
+
   deps = with pkgs; [
     latest.yt-dlp
     ffmpeg
@@ -14,11 +22,16 @@ let
   bad-apple-cmd = pkgs.writeShellScriptBin "bad-apple" ''
     export PATH="${pkgs.lib.makeBinPath deps}:$PATH"
 
-    CACHE_BASE="''${XDG_CACHE_HOME:-$HOME/.cache}/bad-apple"
+    VIDEO_URLS=(
+    ${videoUrlsStr}
+    )
+    SELECTED_INDEX=$((RANDOM % ''${#VIDEO_URLS[@]}))
+    SELECTED_URL="''${VIDEO_URLS[$SELECTED_INDEX]}"
+    VIDEO_ID=$(echo "$SELECTED_URL" | gawk -F'[=&]' '{print $2}')
+
+    CACHE_BASE="''${XDG_CACHE_HOME:-$HOME/.cache}/bad-apple/$VIDEO_ID"
     VIDEO_FILE="$CACHE_BASE/video.mp4"
 
-    # WezTerm tends to drive higher GPU usage when the terminal is repainted at
-    # high FPS. Defaults are conservative only when running under WezTerm.
     IS_WEZTERM=0
     if [ -n "''${WEZTERM_PANE:-}" ]; then
       IS_WEZTERM=1
@@ -73,10 +86,10 @@ let
     CACHE_DIR="$CACHE_BASE/frames-''${RENDER_COLS}x''${RENDER_LINES}-fps''${FPS}-delta1-braille"
 
     download_video() {
-      echo "Downloading Bad Apple video..."
+      echo "Downloading video ($VIDEO_ID)..."
       mkdir -p "$CACHE_BASE"
-      yt-dlp -f "bestvideo[height<=480]" -o "$VIDEO_FILE" "${badAppleUrl}" || \
-        yt-dlp -f "18/best[height<=480]" -o "$VIDEO_FILE" "${badAppleUrl}"
+      yt-dlp -f "bestvideo[height<=480]" -o "$VIDEO_FILE" "$SELECTED_URL" || \
+        yt-dlp -f "18/best[height<=480]" -o "$VIDEO_FILE" "$SELECTED_URL"
     }
 
     generate_frames() {
@@ -133,25 +146,12 @@ let
       echo "Done! Frames cached at $CACHE_DIR"
     }
 
-    URL_MARKER="$CACHE_BASE/source-url"
-    CACHED_URL=""
-    if [ -f "$URL_MARKER" ]; then
-      CACHED_URL=$(cat "$URL_MARKER")
-    fi
-
-    if [ "$CACHED_URL" != "${badAppleUrl}" ]; then
-      echo "Source URL changed, clearing cache..."
-      rm -rf "$CACHE_BASE"
-    fi
-
     if [ ! -f "$VIDEO_FILE" ]; then
       download_video
       if [ ! -f "$VIDEO_FILE" ]; then
         echo "Download failed. Exiting."
         exit 1
       fi
-      mkdir -p "$CACHE_BASE"
-      echo "${badAppleUrl}" > "$URL_MARKER"
     fi
 
     if [ ! -d "$CACHE_DIR" ] || [ -z "$(ls -A "$CACHE_DIR" 2>/dev/null)" ]; then
