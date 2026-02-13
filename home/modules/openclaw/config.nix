@@ -34,7 +34,7 @@ let
           options = {
             primary = lib.mkOption {
               type = lib.types.str;
-              default = "nvidia/moonshotai/kimi-k2.5";
+              default = "anthropic/claude-opus-4-6";
               description = "Primary model ID for this agent";
             };
             fallbacks = lib.mkOption {
@@ -131,15 +131,15 @@ in
             options = {
               primary = lib.mkOption {
                 type = lib.types.str;
-                default = "nvidia/moonshotai/kimi-k2.5";
+                default = "anthropic/claude-opus-4-6";
               };
               heartbeat = lib.mkOption {
                 type = lib.types.str;
-                default = "nvidia/moonshotai/kimi-k2.5";
+                default = "openai-codex/gpt-5.1-codex-mini";
               };
               subagents = lib.mkOption {
                 type = lib.types.str;
-                default = "nvidia/moonshotai/kimi-k2.5";
+                default = "anthropic/claude-opus-4-6";
               };
             };
           };

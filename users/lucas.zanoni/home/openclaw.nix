@@ -6,22 +6,22 @@
       {
         id = "robson";
         emoji = "⚽";
-        model = "sonnet-4.5";
+        model = "opus-4.6";
       }
       {
         id = "jenny";
         emoji = "🎀";
-        model = "kimi-k2.5";
+        model = "opus-4.6";
       }
       {
         id = "monster";
         emoji = "👾";
-        model = "kimi-k2.5";
+        model = "opus-4.6";
       }
       {
         id = "silver";
         emoji = "🪙";
-        model = "kimi-k2.5";
+        model = "opus-4.6";
       }
     ];
   };
@@ -36,7 +36,6 @@
         isDefault = true;
         emoji = "⚽";
         role = "work — Betha, code, productivity";
-        model.primary = "anthropic/claude-sonnet-4-5";
         workspace = "openclaw/robson";
         tts.voice = "pt-BR-AntonioNeural";
         telegram.enable = true;
@@ -45,7 +44,6 @@
         enable = true;
         emoji = "🎀";
         role = "personal assistant, reminders, scheduling";
-        model.primary = "nvidia/moonshotai/kimi-k2.5";
         workspace = "openclaw/jenny";
         tts.voice = "en-US-JennyNeural";
         telegram.enable = true;
@@ -54,7 +52,6 @@
         enable = true;
         emoji = "👾";
         role = "creative assistant, brainstorming, fun tasks";
-        model.primary = "nvidia/moonshotai/kimi-k2.5";
         workspace = "openclaw/monster";
         tts.voice = "en-US-GuyNeural";
         telegram.enable = true;
@@ -63,7 +60,6 @@
         enable = true;
         emoji = "🪙";
         role = "research & analysis — technical deep dives, documentation, investigation";
-        model.primary = "nvidia/moonshotai/kimi-k2.5";
         workspace = "openclaw/silver";
         tts.voice = "pt-BR-FranciscaNeural";
         telegram.enable = true;
@@ -72,7 +68,6 @@
         enable = true;
         emoji = "🌟";
         role = "research & discovery — deep dives, analysis, long-form thinking";
-        model.primary = "nvidia/moonshotai/kimi-k2.5";
         workspace = "openclaw/golden";
         tts.voice = "en-US-AriaNeural";
         telegram.enable = true;

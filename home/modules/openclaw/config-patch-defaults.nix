@@ -74,9 +74,8 @@ let
     ".agents.defaults.heartbeat.model" = openclaw.defaults.model.heartbeat;
     ".agents.defaults.subagents.model" = openclaw.defaults.model.subagents;
     ".agents.defaults.model.fallbacks" = [
-      "nvidia/moonshotai/kimi-k2.5"
       "anthropic/claude-sonnet-4-5"
-      "anthropic/claude-opus-4-6"
+      "openai-codex/gpt-5.1-codex-mini"
     ];
     ".agents.defaults.models" = {
       "anthropic/claude-opus-4-6" = {
@@ -85,25 +84,19 @@ let
       "anthropic/claude-sonnet-4-5" = {
         alias = "sonnet";
       };
-      "nvidia/moonshotai/kimi-k2.5" = {
-        alias = "kimi";
+      "openai-codex/gpt-5.1-codex-mini" = {
+        alias = "codex-mini";
       };
     };
     ".models.mode" = "merge";
-    ".models.providers.nvidia" = {
-      baseUrl = "https://integrate.api.nvidia.com/v1";
-      api = "openai-completions";
-      models = [
-        {
-          id = "moonshotai/kimi-k2.5";
-          name = "Kimi K2.5 (NVIDIA NIM)";
-        }
-      ];
-    };
     ".auth.profiles" = {
       "anthropic:default" = {
         provider = "anthropic";
         mode = "token";
+      };
+      "openai-codex:default" = {
+        provider = "openai-codex";
+        mode = "oauth";
       };
     };
     ".agents.defaults.compaction.mode" = "safeguard";
@@ -144,13 +137,11 @@ in
             {
               ".gateway.auth.token" = "/run/agenix/openclaw-gateway-token";
               ".tools.web.search.apiKey" = "/run/agenix/brave-api-key";
-              ".models.providers.nvidia.apiKey" = "/run/agenix/nvidia-api-key";
             }
           else
             {
               ".gateway.auth.token" = "${homeDir}/.openclaw/secrets/openclaw-gateway-token";
               ".tools.web.search.apiKey" = "${homeDir}/.openclaw/secrets/brave-api-key";
-              ".models.providers.nvidia.apiKey" = "${homeDir}/.openclaw/secrets/nvidia-api-key";
             };
 
         # Generate bot token secrets for telegram-enabled agents
