@@ -1,6 +1,6 @@
 { pkgs, latest, ... }:
 let
-  badAppleUrl = "https://www.youtube.com/watch?v=U_zWBOV_bng";
+  badAppleUrl = "https://www.youtube.com/watch?v=6riDJMI-Y8U";
 
   # Dependencies for frame generation
   deps = with pkgs; [
@@ -75,7 +75,8 @@ let
     download_video() {
       echo "Downloading Bad Apple video..."
       mkdir -p "$CACHE_BASE"
-      yt-dlp -f "bestvideo[height<=480]" -o "$VIDEO_FILE" "${badAppleUrl}"
+      yt-dlp -f "bestvideo[height<=480]" -o "$VIDEO_FILE" "${badAppleUrl}" || \
+        yt-dlp -f "18/best[height<=480]" -o "$VIDEO_FILE" "${badAppleUrl}"
     }
 
     generate_frames() {
@@ -132,9 +133,25 @@ let
       echo "Done! Frames cached at $CACHE_DIR"
     }
 
-    # Check if we need to download/generate
+    URL_MARKER="$CACHE_BASE/source-url"
+    CACHED_URL=""
+    if [ -f "$URL_MARKER" ]; then
+      CACHED_URL=$(cat "$URL_MARKER")
+    fi
+
+    if [ "$CACHED_URL" != "${badAppleUrl}" ]; then
+      echo "Source URL changed, clearing cache..."
+      rm -rf "$CACHE_BASE"
+    fi
+
     if [ ! -f "$VIDEO_FILE" ]; then
       download_video
+      if [ ! -f "$VIDEO_FILE" ]; then
+        echo "Download failed. Exiting."
+        exit 1
+      fi
+      mkdir -p "$CACHE_BASE"
+      echo "${badAppleUrl}" > "$URL_MARKER"
     fi
 
     if [ ! -d "$CACHE_DIR" ] || [ -z "$(ls -A "$CACHE_DIR" 2>/dev/null)" ]; then
