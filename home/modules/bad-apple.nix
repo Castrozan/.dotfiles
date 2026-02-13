@@ -1,6 +1,6 @@
 { pkgs, latest, ... }:
 let
-  badAppleUrl = "https://www.youtube.com/watch?v=6riDJMI-Y8U";
+  badAppleUrl = "https://www.youtube.com/watch?v=CqaAs_3azSs";
 
   # Dependencies for frame generation
   deps = with pkgs; [
@@ -70,7 +70,7 @@ let
     fi
 
     # Cache depends on render size + fps + delta format.
-    CACHE_DIR="$CACHE_BASE/frames-''${RENDER_COLS}x''${RENDER_LINES}-fps''${FPS}-delta1"
+    CACHE_DIR="$CACHE_BASE/frames-''${RENDER_COLS}x''${RENDER_LINES}-fps''${FPS}-delta1-braille"
 
     download_video() {
       echo "Downloading Bad Apple video..."
@@ -99,7 +99,7 @@ let
         count=$((count + 1))
         base=$(basename "$img" .png)
         # chafa: no colors, block chars only (deterministic output).
-        chafa -f symbols -s "''${RENDER_COLS}x''${RENDER_LINES}" --symbols block -c none "$img" > "$curr_txt"
+        chafa -f symbols -s "''${RENDER_COLS}x''${RENDER_LINES}" --symbols braille -c none "$img" > "$curr_txt"
 
         if [ "''${first}" -eq 1 ]; then
           # First frame: paint everything.
