@@ -31,6 +31,7 @@
     tuisvn.url = "github:castrozan/tuisvn";
     install-nothing.url = "github:castrozan/install-nothing";
     openclaw-mesh.url = "github:castrozan/openclaw-mesh";
+    lazygit.url = "github:Castrozan/lazygit";
     nixgl.url = "github:nix-community/nixGL";
     agenix.url = "github:ryantm/agenix";
 
