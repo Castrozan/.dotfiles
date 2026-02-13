@@ -84,6 +84,9 @@ let
       "anthropic/claude-sonnet-4-5" = {
         alias = "sonnet";
       };
+      "openai-codex/gpt-5.3-codex" = {
+        alias = "codex";
+      };
       "openai-codex/gpt-5.1-codex-mini" = {
         alias = "codex-mini";
       };
