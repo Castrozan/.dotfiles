@@ -6,8 +6,20 @@
 }:
 let
   inherit (config) openclaw;
+  homeDir = config.home.homeDirectory;
+  username = config.home.username;
   nodejs = pkgs.nodejs_22;
   prefix = "$HOME/.local/share/openclaw-npm";
+
+  nixSystemPaths = lib.concatStringsSep ":" [
+    "${nodejs}/bin"
+    "${pkgs.git}/bin"
+    "/run/current-system/sw/bin"
+    "/etc/profiles/per-user/${username}/bin"
+    "${homeDir}/.nix-profile/bin"
+    "/usr/bin"
+    "/bin"
+  ];
 
   gatewayScript = pkgs.writeShellScript "openclaw-gateway" ''
     export PATH="${nodejs}/bin:''${PATH:+:$PATH}"
@@ -38,7 +50,7 @@ in
         Restart = "on-failure";
         RestartSec = "10s";
         Environment = [
-          "PATH=${nodejs}/bin:/usr/bin:/bin"
+          "PATH=${nixSystemPaths}"
           "NODE_ENV=production"
           "OPENCLAW_NIX_MODE=1"
         ];

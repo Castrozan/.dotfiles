@@ -9,6 +9,7 @@
 
     userName = "Lucas";
     gatewayPort = 18789;
+    gatewayService.enable = true;
     notifyTopic = "cleber-lucas-2f2ea57a";
     defaults.model = {
       primary = "anthropic/claude-opus-4-6";
