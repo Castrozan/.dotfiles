@@ -121,6 +121,15 @@ menu:
   - key: w
     desc: Window
     submenu:
+      - key: t
+        desc: Toggle tile/group
+        cmd: hypr-toggle-group-for-all-workspace-windows
+      - key: d
+        desc: Show desktop
+        cmd: hypr-show-desktop
+      - key: g
+        desc: Detach from group
+        cmd: hyprctl dispatch moveoutofgroup
       - key: s
         desc: Toggle split
         cmd: hyprctl dispatch togglesplit
@@ -130,18 +139,12 @@ menu:
       - key: o
         desc: Pop out (float+pin)
         cmd: hyprctl dispatch togglefloating && hyprctl dispatch pin
-      - key: t
-        desc: Tiled fullscreen
-        cmd: hyprctl dispatch fullscreenstate 0 2
       - key: f
         desc: True fullscreen
         cmd: hyprctl dispatch fullscreen 0
       - key: m
-        desc: Full maximize
-        cmd: hyprctl dispatch fullscreen 0
-      - key: g
-        desc: Ungroup
-        cmd: hyprctl dispatch moveoutofgroup
+        desc: Maximize
+        cmd: hyprctl dispatch fullscreen 1
       - key: a
         desc: Toggle opacity
         cmd: hyprctl dispatch setprop "address:$(hyprctl activewindow -j | jq -r '.address')" opaque toggle
