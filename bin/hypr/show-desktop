@@ -31,9 +31,24 @@ _hide_all_workspace_windows_to_special_desktop() {
   [[ "$active_window" != "null" ]] && echo "$active_window" > "$focus_file"
   echo "$windows" > "$state_file"
 
-  echo "$windows" | while IFS= read -r addr; do
-    hyprctl dispatch movetoworkspacesilent "special:desktop,address:$addr"
-  done
+  _dissolve_groups_on_workspace "$ws"
+
+  local hide_batch=""
+  while IFS= read -r addr; do
+    hide_batch+="dispatch movetoworkspacesilent special:desktop,address:$addr; "
+  done <<< "$windows"
+  hyprctl --batch "${hide_batch%; }"
+}
+
+_dissolve_groups_on_workspace() {
+  local ws=$1
+  local grouped_window
+  grouped_window=$(hyprctl clients -j | jq -r --argjson ws "$ws" '
+    [.[] | select(.workspace.id == $ws and .floating == false and (.grouped | length) > 1)] | .[0].address // empty
+  ')
+  if [[ -n "$grouped_window" ]]; then
+    hyprctl --batch "dispatch focuswindow address:$grouped_window; dispatch togglegroup"
+  fi
 }
 
 _restore_hidden_windows_and_maximize() {
@@ -45,17 +60,31 @@ _restore_hidden_windows_and_maximize() {
   done < "$state_file"
   hyprctl --batch "${move_batch%; }"
 
-  sleep 0.05
+  sleep 0.5
 
-  local focus_batch=""
   if [[ -f "$focus_file" ]]; then
-    focus_batch+="dispatch focuswindow address:$(cat "$focus_file"); "
+    hyprctl dispatch focuswindow "address:$(cat "$focus_file")"
     rm -f "$focus_file"
   fi
-  focus_batch+="dispatch fullscreen 1"
-  hyprctl --batch "$focus_batch"
 
   rm -f "$state_file"
+
+  _regroup_workspace_windows
+}
+
+_regroup_workspace_windows() {
+  local ws
+  ws=$(hyprctl activeworkspace -j | jq -r '.id')
+  local all_grouped
+  all_grouped=$(hyprctl clients -j | jq -e --argjson ws "$ws" '
+    [.[] | select(.workspace.id == $ws and .floating == false)] |
+    length as $total |
+    $total > 0 and (map(.grouped | length) | max) == $total
+  ' 2>/dev/null && echo true || echo false)
+
+  if [[ "$all_grouped" != "true" ]]; then
+    hypr-toggle-group-for-all-workspace-windows
+  fi
 }
 
 main

@@ -1,204 +1,44 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-readonly STATE_DIR="/tmp"
 readonly FUZZEL_SETTLE_DELAY=0.15
-readonly FOCUS_SETTLE_DELAY=0.05
 
 main() {
   if _is_fuzzel_running; then
-    _kill_fuzzel
+    pkill -x fuzzel
     exit 0
   fi
 
-  local active_window_json workspace_id
-  active_window_json=$(hyprctl activewindow -j)
-  workspace_id=$(_workspace_id_from "$active_window_json")
-
-  if [[ -z "$workspace_id" ]]; then
-    hypr-fuzzel || true
-    return
-  fi
-
-  local original_address was_maximized
-  original_address=$(_address_from "$active_window_json")
-  was_maximized=$(_check_if_maximized "$active_window_json")
-
-  local saved_groups
-  saved_groups=$(_save_workspace_groups "$workspace_id")
-  _unmaximize_if_needed "$was_maximized"
-  _dissolve_all_workspace_groups "$workspace_id"
-  _refocus_if_valid "$original_address"
-  _persist_launcher_state "$workspace_id" "$original_address" "$was_maximized"
-
-  local windows_before
-  windows_before=$(_total_client_count)
-
+  _ensure_workspace_is_tiled
   hypr-fuzzel || true
   sleep "$FUZZEL_SETTLE_DELAY"
-
-  local windows_after post_fuzzel_address
-  windows_after=$(_total_client_count)
-  post_fuzzel_address=$(_address_from "$(hyprctl activewindow -j)")
-
-  _clear_launcher_state "$workspace_id"
-  _restore_workspace_groups "$saved_groups"
-  _refocus_if_valid "$post_fuzzel_address"
-
-  _apply_post_fuzzel_maximize "$windows_before" "$windows_after" \
-    "$was_maximized" "$original_address" "$post_fuzzel_address"
-}
-
-_workspace_id_from() {
-  echo "$1" | jq -r '.workspace.id // empty'
-}
-
-_address_from() {
-  echo "$1" | jq -r '.address'
-}
-
-_check_if_maximized() {
-  local fullscreen
-  fullscreen=$(echo "$1" | jq -r '.fullscreen')
-  [[ "$fullscreen" == "1" ]] && echo "true" || echo "false"
+  _ensure_workspace_is_grouped
 }
 
 _is_fuzzel_running() {
   pgrep -x fuzzel > /dev/null
 }
 
-_kill_fuzzel() {
-  pkill -x fuzzel
-}
-
-_persist_launcher_state() {
-  local workspace_id=$1 address=$2 was_maximized=$3
-  echo "$address $was_maximized" > "$STATE_DIR/hot-corner-state-$workspace_id"
-}
-
-_clear_launcher_state() {
-  rm -f "$STATE_DIR/hot-corner-state-$1"
-}
-
-_unmaximize_if_needed() {
-  if [[ "$1" == "true" ]]; then
-    hyprctl dispatch fullscreen 1
+_ensure_workspace_is_tiled() {
+  if _all_tiled_windows_are_in_single_group; then
+    hypr-toggle-group-for-all-workspace-windows
   fi
 }
 
-_total_client_count() {
-  hyprctl clients -j | jq 'length'
-}
-
-_refocus_if_valid() {
-  local address=$1
-  if [[ -n "$address" && "$address" != "null" ]]; then
-    hyprctl dispatch focuswindow "address:$address"
-    sleep "$FOCUS_SETTLE_DELAY"
+_ensure_workspace_is_grouped() {
+  if ! _all_tiled_windows_are_in_single_group; then
+    hypr-toggle-group-for-all-workspace-windows
   fi
 }
 
-_save_workspace_groups() {
-  local workspace_id=$1
-  hyprctl clients -j | jq -r --argjson ws "$workspace_id" '
-    [.[] | select(.workspace.id == $ws and (.grouped | length) > 0)] |
-    group_by(.grouped | sort) |
-    .[] | [.[].address] | join(" ")
-  '
-}
-
-_dissolve_all_workspace_groups() {
-  local workspace_id=$1
-  local group_leaders
-  group_leaders=$(hyprctl clients -j | jq -r --argjson ws "$workspace_id" '
-    [.[] | select(.workspace.id == $ws and (.grouped | length) > 0)] |
-    group_by(.grouped | sort) |
-    .[] | .[0].address
-  ')
-
-  if [[ -z "$group_leaders" ]]; then
-    return 0
-  fi
-
-  local batch=""
-  while IFS= read -r addr; do
-    if [[ -n "$addr" ]]; then
-      batch+="dispatch focuswindow address:$addr; dispatch togglegroup; "
-    fi
-  done <<< "$group_leaders"
-
-  if [[ -n "$batch" ]]; then
-    hyprctl --batch "$batch"
-  fi
-}
-
-_restore_workspace_groups() {
-  local saved_groups=$1
-  if [[ -z "$saved_groups" ]]; then
-    return 0
-  fi
-
-  while IFS= read -r group_line; do
-    if [[ -n "$group_line" ]]; then
-      _restore_single_group "$group_line"
-    fi
-  done <<< "$saved_groups"
-}
-
-_restore_single_group() {
-  local -a addresses
-  read -ra addresses <<< "$1"
-
-  if [[ ${#addresses[@]} -lt 2 ]]; then
-    return 0
-  fi
-
-  local batch="dispatch focuswindow address:${addresses[0]}; dispatch togglegroup; dispatch lockactivegroup unlock; "
-
-  for ((i=1; i<${#addresses[@]}; i++)); do
-    batch+="dispatch focuswindow address:${addresses[$i]}; "
-    batch+="dispatch moveintogroup l; dispatch moveintogroup r; dispatch moveintogroup u; dispatch moveintogroup d; "
-  done
-
-  hyprctl --batch "$batch"
-}
-
-_apply_post_fuzzel_maximize() {
-  local windows_before=$1 windows_after=$2
-  local was_maximized=$3 original_address=$4 post_fuzzel_address=$5
-
-  if [[ "$windows_after" -gt "$windows_before" ]]; then
-    _maximize_if_tiled
-  elif [[ "$was_maximized" == "true" ]]; then
-    if _focus_changed_to_different_window "$original_address" "$post_fuzzel_address"; then
-      _maximize_if_not_already
-    else
-      _restore_original_maximized "$original_address"
-    fi
-  fi
-}
-
-_maximize_if_tiled() {
-  hyprctl dispatch fullscreen 1
-}
-
-_maximize_if_not_already() {
-  local fullscreen
-  fullscreen=$(hyprctl activewindow -j | jq -r '.fullscreen')
-  if [[ "$fullscreen" != "1" ]]; then
-    hyprctl dispatch fullscreen 1
-  fi
-}
-
-_focus_changed_to_different_window() {
-  local original=$1 current=$2
-  [[ "$current" != "$original" && "$current" != "null" && -n "$current" ]]
-}
-
-_restore_original_maximized() {
-  hyprctl dispatch focuswindow "address:$1"
-  sleep "$FOCUS_SETTLE_DELAY"
-  hyprctl dispatch fullscreen 1
+_all_tiled_windows_are_in_single_group() {
+  local ws
+  ws=$(hyprctl activeworkspace -j | jq -r '.id')
+  hyprctl clients -j | jq -e --argjson ws "$ws" '
+    [.[] | select(.workspace.id == $ws and .floating == false)] |
+    length as $total |
+    $total > 0 and (map(.grouped | length) | max) == $total
+  ' >/dev/null 2>&1
 }
 
 main "$@"
