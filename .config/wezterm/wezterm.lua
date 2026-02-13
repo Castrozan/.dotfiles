@@ -139,4 +139,6 @@ return {
   -- This helps when windows are created in existing instances (where gui-startup doesn't fire)
   initial_cols = 300,
   initial_rows = 100,
+
+  window_close_confirmation = 'NeverPrompt',
 }
