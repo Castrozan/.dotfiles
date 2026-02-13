@@ -12,6 +12,10 @@
       "cleyber"
       "golden"
       "goulden"
+      "jarvis"
+      "jarves"
+      "jarvus"
+      "jervis"
     ];
     gatewayUrl = "http://localhost:18789";
     agentId = "main";

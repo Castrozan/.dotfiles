@@ -17,6 +17,10 @@
       "silva"
       "sylver"
       "silber"
+      "jarvis"
+      "jarves"
+      "jarvus"
+      "jervis"
     ];
     gatewayUrl = "http://localhost:18790";
     agentId = "main";
