@@ -312,6 +312,8 @@ All notable changes to this dotfiles repository are documented here.
 - *(bad-apple)* Invalidate cache when source URL changes ([8808859](https://github.com/Castrozan/.dotfiles/commit/8808859a260f53ceecd328c493bdcd64a84ae872))
 - *(wlr)* Clipboard sc to use clipse ([aa9a681](https://github.com/Castrozan/.dotfiles/commit/aa9a6819052beea433eb272f821f9eed5639ae02))
 - *(openclaw)* Strip absolute sessionFile paths on rebuild ([4fc2cd6](https://github.com/Castrozan/.dotfiles/commit/4fc2cd62a276e5670966b614f336b1ea782d6536))
+- *(browser)* Use nix playwright-core instead of npm install fallback ([1ce8315](https://github.com/Castrozan/.dotfiles/commit/1ce8315e7daadc98067a9647b46901cedac97443))
+- *(openclaw)* Run session path fix before every gateway start ([f2471c6](https://github.com/Castrozan/.dotfiles/commit/f2471c6bf5ed12a7f88042f0f3193fe7a7cd5297))
 
 ### CI/CD
 
@@ -420,6 +422,7 @@ All notable changes to this dotfiles repository are documented here.
 - *(avatar)* Update to mention cron jobs instead of heartbeat ([828e689](https://github.com/Castrozan/.dotfiles/commit/828e689d93f15f88f6779399599bd61c7a8e6653))
 - *(screensaver)* Document pane layout in config ([643deba](https://github.com/Castrozan/.dotfiles/commit/643deba7cc208932042aa967b17f088378e7e8f1))
 - *(screensaver)* Update showcase screenshot ([a223ff7](https://github.com/Castrozan/.dotfiles/commit/a223ff7142108e7ab300189e2aa3b724c59190d3))
+- *(openclaw)* Document OPENCLAW_NIX_MODE capabilities ([6e4ea5c](https://github.com/Castrozan/.dotfiles/commit/6e4ea5ccdd9b915ac6ba5f83c1b8da8115468433))
 
 ### Features
 
@@ -917,6 +920,7 @@ All notable changes to this dotfiles repository are documented here.
 - *(bad-apple)* Randomize video from curated B&W collection ([2a4708e](https://github.com/Castrozan/.dotfiles/commit/2a4708e26b7878097e094a0e3638e94dddd80683))
 - *(wezterm)* Set max_fps to 120 to match monitor refresh rate ([78f5f98](https://github.com/Castrozan/.dotfiles/commit/78f5f982a42411eda1ec4ecdf7205db9814c4153))
 - *(openclaw)* Add gpt-5.3-codex model alias ([cc11bf8](https://github.com/Castrozan/.dotfiles/commit/cc11bf81985941038cae8d835cabaf35548f8b02))
+- *(lazygit)* Use fork with word navigation in text inputs ([b023486](https://github.com/Castrozan/.dotfiles/commit/b0234864ca14907dfea96b22f2a8980d492616ea))
 
 ### Miscellaneous
 
@@ -991,6 +995,7 @@ All notable changes to this dotfiles repository are documented here.
 - *(openclaw)* Bump version to 2026.2.12 ([f5d3e7e](https://github.com/Castrozan/.dotfiles/commit/f5d3e7efd7cab1ab505963b71a16f61ec7925ad5))
 - Generate initial changelog with git-cliff ([42f745d](https://github.com/Castrozan/.dotfiles/commit/42f745d320f0abd6710f06bdc80670033d14b0d6))
 - Update changelog ([3fb7dd0](https://github.com/Castrozan/.dotfiles/commit/3fb7dd0548232d8e3c57e829bf2cf014d15eb7ed))
+- Update changelog ([4a9a01a](https://github.com/Castrozan/.dotfiles/commit/4a9a01aabee0606d4c9799f8c6262452632afc85))
 
 ### Performance
 
@@ -1218,6 +1223,7 @@ All notable changes to this dotfiles repository are documented here.
 - Restore openclaw rules.nix import ([b442f26](https://github.com/Castrozan/.dotfiles/commit/b442f267541b905d1a55c87651950ed97a97dad5))
 - Remove hyprland-preview-share-picker (broken upstream) ([69545d1](https://github.com/Castrozan/.dotfiles/commit/69545d176bede06403312a17e1d0b2b48b24cf30))
 - *(rebuild)* Restore sudo, needed for profile activation ([f5d0b04](https://github.com/Castrozan/.dotfiles/commit/f5d0b047f5584d34dd328e324ef15e6e42468998))
+- *(openclaw)* Downgrade to 2026.2.9, remove session path workarounds ([2bbe2e2](https://github.com/Castrozan/.dotfiles/commit/2bbe2e279cf7bb10fcf35e0062e80cef22de6baa))
 
 ### Rules
 
