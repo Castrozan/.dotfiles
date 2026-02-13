@@ -2,7 +2,7 @@
 { pkgs, ... }:
 let
   nodejs = pkgs.nodejs_22;
-  version = "2026.2.9";
+  version = "2026.2.12";
   prefix = "$HOME/.local/share/openclaw-npm";
 
   openclaw = pkgs.writeShellScriptBin "openclaw" ''
