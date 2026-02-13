@@ -996,6 +996,7 @@ All notable changes to this dotfiles repository are documented here.
 - Generate initial changelog with git-cliff ([42f745d](https://github.com/Castrozan/.dotfiles/commit/42f745d320f0abd6710f06bdc80670033d14b0d6))
 - Update changelog ([3fb7dd0](https://github.com/Castrozan/.dotfiles/commit/3fb7dd0548232d8e3c57e829bf2cf014d15eb7ed))
 - Update changelog ([4a9a01a](https://github.com/Castrozan/.dotfiles/commit/4a9a01aabee0606d4c9799f8c6262452632afc85))
+- Update changelog ([d9a3c5b](https://github.com/Castrozan/.dotfiles/commit/d9a3c5b2dd2784725ae13386bde99d8e8f57da99))
 
 ### Performance
 
