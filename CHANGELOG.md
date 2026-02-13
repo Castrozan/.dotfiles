@@ -310,6 +310,7 @@ All notable changes to this dotfiles repository are documented here.
 - *(waybar)* Empty ws to be more visible ([282cb1f](https://github.com/Castrozan/.dotfiles/commit/282cb1fd5ef39d22166b1ab927e000063a11b51e))
 - *(screensaver)* Remove stale zsh overrides, use shared implementation ([d09ec9b](https://github.com/Castrozan/.dotfiles/commit/d09ec9b2a9ba7975aa43d0ffd7e7a31f87426b70))
 - *(bad-apple)* Invalidate cache when source URL changes ([8808859](https://github.com/Castrozan/.dotfiles/commit/8808859a260f53ceecd328c493bdcd64a84ae872))
+- *(wlr)* Clipboard sc to use clipse ([aa9a681](https://github.com/Castrozan/.dotfiles/commit/aa9a6819052beea433eb272f821f9eed5639ae02))
 
 ### CI/CD
 
@@ -913,6 +914,7 @@ All notable changes to this dotfiles repository are documented here.
 - *(hyprland)* Add toggle-group and show-desktop to which-key menu ([9e896d6](https://github.com/Castrozan/.dotfiles/commit/9e896d6b969b69c022ce5f65671261a06335544a))
 - *(bad-apple)* Use braille characters for higher resolution rendering ([1eb7f93](https://github.com/Castrozan/.dotfiles/commit/1eb7f93a8650585bac18aa194054007b9494cf70))
 - *(bad-apple)* Randomize video from curated B&W collection ([2a4708e](https://github.com/Castrozan/.dotfiles/commit/2a4708e26b7878097e094a0e3638e94dddd80683))
+- *(wezterm)* Set max_fps to 120 to match monitor refresh rate ([78f5f98](https://github.com/Castrozan/.dotfiles/commit/78f5f982a42411eda1ec4ecdf7205db9814c4153))
 
 ### Miscellaneous
 
@@ -985,6 +987,7 @@ All notable changes to this dotfiles repository are documented here.
 - Upgrade claude-code 2.1.39, openclaw 2026.2.9 ([dd942bb](https://github.com/Castrozan/.dotfiles/commit/dd942bb266c9921c39e9a484bc128fa67e4f7d11))
 - Cmatrix version ([9196e7d](https://github.com/Castrozan/.dotfiles/commit/9196e7dd1f2d06ac2f91da90f1abf6736b1845c6))
 - *(openclaw)* Bump version to 2026.2.12 ([f5d3e7e](https://github.com/Castrozan/.dotfiles/commit/f5d3e7efd7cab1ab505963b71a16f61ec7925ad5))
+- Generate initial changelog with git-cliff ([42f745d](https://github.com/Castrozan/.dotfiles/commit/42f745d320f0abd6710f06bdc80670033d14b0d6))
 
 ### Performance
 
