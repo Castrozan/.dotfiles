@@ -6,8 +6,8 @@
 }:
 let
   inherit (config) openclaw;
-  homeDir = config.home.homeDirectory;
-  username = config.home.username;
+  inherit (config.home) homeDirectory username;
+  homeDir = homeDirectory;
   nodejs = pkgs.nodejs_22;
   prefix = "$HOME/.local/share/openclaw-npm";
 
