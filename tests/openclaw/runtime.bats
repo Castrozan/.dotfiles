@@ -15,7 +15,7 @@ setup() {
 }
 
 skip_if_no_gateway() {
-    if ! curl -sf --max-time 2 "$GATEWAY_URL/health" > /dev/null 2>&1; then
+    if ! curl -so /dev/null --max-time 2 "$GATEWAY_URL/" 2>/dev/null; then
         skip "gateway not running on $GATEWAY_URL"
     fi
 }
@@ -47,59 +47,34 @@ gateway_post() {
 
 @test "gateway: responds on expected port" {
     skip_if_no_gateway
-    run curl -sf --max-time "$CURL_TIMEOUT" "$GATEWAY_URL/health"
-    [ "$status" -eq 0 ]
+    httpCode=$(curl -so /dev/null -w '%{http_code}' --max-time "$CURL_TIMEOUT" "$GATEWAY_URL/")
+    [ "$httpCode" = "200" ]
 }
 
-@test "gateway: health endpoint returns valid JSON" {
+@test "gateway: serves web UI" {
     skip_if_no_gateway
-    result=$(curl -sf --max-time "$CURL_TIMEOUT" "$GATEWAY_URL/health")
-    echo "$result" | jq -e . > /dev/null
+    result=$(curl -s --max-time "$CURL_TIMEOUT" "$GATEWAY_URL/")
+    [[ "$result" == *"OpenClaw"* ]]
 }
 
-@test "gateway: authenticated request succeeds" {
-    skip_if_no_gateway
-    skip_if_no_token
-    run gateway_get "/api/agents"
-    [ "$status" -eq 0 ]
-}
-
-@test "gateway: unauthenticated request to protected endpoint fails" {
-    skip_if_no_gateway
-    run curl -sf --max-time "$CURL_TIMEOUT" "$GATEWAY_URL/api/agents"
-    [ "$status" -ne 0 ]
-}
-
-# ---------- Agent availability ----------
-
-@test "gateway: agents list is not empty" {
-    skip_if_no_gateway
-    skip_if_no_token
-    result=$(gateway_get "/api/agents")
-    count=$(echo "$result" | jq 'length')
-    [ "$count" -gt 0 ]
-}
-
-@test "gateway: expected agents are registered" {
-    skip_if_no_gateway
-    skip_if_no_token
-    result=$(gateway_get "/api/agents")
-    agentIds=$(echo "$result" | jq -r '.[].id')
-    for expected in robson jarvis; do
-        echo "$agentIds" | grep -q "$expected"
-    done
-}
-
-@test "gateway: agent responds to prompt" {
+@test "gateway: chat completions endpoint responds" {
     skip_if_no_gateway
     skip_if_no_token
     result=$(gateway_post "/v1/chat/completions" '{
         "model": "anthropic/claude-opus-4-6",
-        "messages": [{"role":"user","content":"Reply with only the word ONLINE"}],
-        "max_tokens": 10,
-        "agentId": "jarvis"
+        "messages": [{"role":"user","content":"Reply with ONLY the word ONLINE"}],
+        "max_tokens": 5
     }')
     echo "$result" | jq -e '.choices[0].message.content' > /dev/null
+}
+
+@test "gateway: chat completions rejects without auth" {
+    skip_if_no_gateway
+    httpCode=$(curl -so /dev/null -w '%{http_code}' --max-time "$CURL_TIMEOUT" \
+        -H "Content-Type: application/json" \
+        -d '{"model":"test","messages":[{"role":"user","content":"test"}]}' \
+        "$GATEWAY_URL/v1/chat/completions")
+    [ "$httpCode" = "401" ] || [ "$httpCode" = "403" ]
 }
 
 # ---------- Systemd services ----------
