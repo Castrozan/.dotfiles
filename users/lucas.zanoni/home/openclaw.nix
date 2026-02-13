@@ -1,39 +1,39 @@
 {
-  openclaw.memorySync = {
-    enable = true;
-    remoteHost = "dellg15";
-    remoteUser = "zanoni";
-    agents = [ "jarvis" ];
-  };
-
-  openclaw.mesh = {
-    connections.sshHost = "100.127.240.60";
-    connections.sshUser = "lucas.zanoni";
-    gridAgents = [
-      {
-        id = "robson";
-        emoji = "⚽";
-        model = "opus-4.6";
-      }
-      {
-        id = "jenny";
-        emoji = "🎀";
-        model = "opus-4.6";
-      }
-      {
-        id = "monster";
-        emoji = "👾";
-        model = "opus-4.6";
-      }
-      {
-        id = "silver";
-        emoji = "🪙";
-        model = "opus-4.6";
-      }
-    ];
-  };
-
   openclaw = {
+    memorySync = {
+      enable = true;
+      remoteHost = "dellg15";
+      remoteUser = "zanoni";
+      agents = [ "jarvis" ];
+    };
+
+    mesh = {
+      connections.sshHost = "100.127.240.60";
+      connections.sshUser = "lucas.zanoni";
+      gridAgents = [
+        {
+          id = "robson";
+          emoji = "⚽";
+          model = "opus-4.6";
+        }
+        {
+          id = "jenny";
+          emoji = "🎀";
+          model = "opus-4.6";
+        }
+        {
+          id = "monster";
+          emoji = "👾";
+          model = "opus-4.6";
+        }
+        {
+          id = "silver";
+          emoji = "🪙";
+          model = "opus-4.6";
+        }
+      ];
+    };
+
     userName = "Lucas";
     gatewayPort = 18790;
     gatewayService.enable = true;

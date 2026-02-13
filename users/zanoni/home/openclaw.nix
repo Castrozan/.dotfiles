@@ -1,12 +1,12 @@
 {
-  openclaw.memorySync = {
-    enable = true;
-    remoteHost = "workpc";
-    remoteUser = "lucas.zanoni";
-    agents = [ "jarvis" ];
-  };
-
   openclaw = {
+    memorySync = {
+      enable = true;
+      remoteHost = "workpc";
+      remoteUser = "lucas.zanoni";
+      agents = [ "jarvis" ];
+    };
+
     userName = "Lucas";
     gatewayPort = 18789;
     notifyTopic = "cleber-lucas-2f2ea57a";
