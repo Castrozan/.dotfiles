@@ -311,6 +311,7 @@ All notable changes to this dotfiles repository are documented here.
 - *(screensaver)* Remove stale zsh overrides, use shared implementation ([d09ec9b](https://github.com/Castrozan/.dotfiles/commit/d09ec9b2a9ba7975aa43d0ffd7e7a31f87426b70))
 - *(bad-apple)* Invalidate cache when source URL changes ([8808859](https://github.com/Castrozan/.dotfiles/commit/8808859a260f53ceecd328c493bdcd64a84ae872))
 - *(wlr)* Clipboard sc to use clipse ([aa9a681](https://github.com/Castrozan/.dotfiles/commit/aa9a6819052beea433eb272f821f9eed5639ae02))
+- *(openclaw)* Strip absolute sessionFile paths on rebuild ([4fc2cd6](https://github.com/Castrozan/.dotfiles/commit/4fc2cd62a276e5670966b614f336b1ea782d6536))
 
 ### CI/CD
 
@@ -915,6 +916,7 @@ All notable changes to this dotfiles repository are documented here.
 - *(bad-apple)* Use braille characters for higher resolution rendering ([1eb7f93](https://github.com/Castrozan/.dotfiles/commit/1eb7f93a8650585bac18aa194054007b9494cf70))
 - *(bad-apple)* Randomize video from curated B&W collection ([2a4708e](https://github.com/Castrozan/.dotfiles/commit/2a4708e26b7878097e094a0e3638e94dddd80683))
 - *(wezterm)* Set max_fps to 120 to match monitor refresh rate ([78f5f98](https://github.com/Castrozan/.dotfiles/commit/78f5f982a42411eda1ec4ecdf7205db9814c4153))
+- *(openclaw)* Add gpt-5.3-codex model alias ([cc11bf8](https://github.com/Castrozan/.dotfiles/commit/cc11bf81985941038cae8d835cabaf35548f8b02))
 
 ### Miscellaneous
 
@@ -988,6 +990,7 @@ All notable changes to this dotfiles repository are documented here.
 - Cmatrix version ([9196e7d](https://github.com/Castrozan/.dotfiles/commit/9196e7dd1f2d06ac2f91da90f1abf6736b1845c6))
 - *(openclaw)* Bump version to 2026.2.12 ([f5d3e7e](https://github.com/Castrozan/.dotfiles/commit/f5d3e7efd7cab1ab505963b71a16f61ec7925ad5))
 - Generate initial changelog with git-cliff ([42f745d](https://github.com/Castrozan/.dotfiles/commit/42f745d320f0abd6710f06bdc80670033d14b0d6))
+- Update changelog ([3fb7dd0](https://github.com/Castrozan/.dotfiles/commit/3fb7dd0548232d8e3c57e829bf2cf014d15eb7ed))
 
 ### Performance
 
