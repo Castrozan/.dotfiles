@@ -168,4 +168,4 @@ menu:
 
   - key: v
     desc: Clipboard history
-    cmd: cliphist list | fuzzel --dmenu | cliphist decode | wl-copy
+    cmd: wezterm start -- clipse
