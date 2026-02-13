@@ -18,6 +18,15 @@ run_check() {
   echo ""
 }
 
+echo "==> changelog"
+if nix run nixpkgs#git-cliff -- --output CHANGELOG.md 2>/dev/null; then
+  if ! git diff --quiet CHANGELOG.md 2>/dev/null; then
+    git add CHANGELOG.md
+    git commit -m "chore: update changelog"
+  fi
+fi
+echo ""
+
 run_check "statix" \
   nix run nixpkgs#statix -- check . --ignore 'result*'
 
