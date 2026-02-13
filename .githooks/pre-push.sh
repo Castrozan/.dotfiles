@@ -42,4 +42,7 @@ run_check "validate-agents" \
 run_check "bats" \
   nix shell nixpkgs#bats --command bats tests/scripts/
 
+run_check "openclaw-eval" \
+  nix shell nixpkgs#bats --command bats tests/openclaw/eval.bats
+
 echo "All pre-push checks passed."
