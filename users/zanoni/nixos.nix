@@ -178,6 +178,11 @@ in
         owner = "zanoni";
         mode = "400";
       };
+      "telegram-bot-token-jarvis" = {
+        file = ../../secrets/telegram-bot-token-jarvis.age;
+        owner = "zanoni";
+        mode = "400";
+      };
     };
   };
 }

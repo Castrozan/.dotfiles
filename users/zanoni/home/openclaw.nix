@@ -1,4 +1,11 @@
 {
+  openclaw.memorySync = {
+    enable = true;
+    remoteHost = "workpc";
+    remoteUser = "lucas.zanoni";
+    agents = [ "jarvis" ];
+  };
+
   openclaw = {
     userName = "Lucas";
     gatewayPort = 18789;
@@ -54,6 +61,16 @@
         workspace = "openclaw/golden";
         tts.voice = "en-US-AriaNeural";
         telegram.enable = true;
+      };
+      jarvis = {
+        enable = true;
+        emoji = "🔵";
+        role = "J.A.R.V.I.S. — Just A Rather Very Intelligent System. Personal AI butler in the style of Tony Stark's JARVIS. British wit, impeccable manners, anticipates needs before spoken. Addresses Lucas as 'sir'. Manages all systems with understated competence.";
+        model.primary = "anthropic/claude-opus-4-6";
+        workspace = "openclaw/jarvis";
+        tts.voice = "en-GB-RyanNeural";
+        telegram.enable = true;
+        telegram.botName = "Jarvis";
       };
     };
   };

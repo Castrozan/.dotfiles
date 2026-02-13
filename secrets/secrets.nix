@@ -25,4 +25,5 @@ in
   "telegram-bot-token-monster.age".publicKeys = all_keys;
   "telegram-bot-token-golden.age".publicKeys = all_keys;
   "telegram-bot-token-silver.age".publicKeys = all_keys;
+  "telegram-bot-token-jarvis.age".publicKeys = all_keys;
 }
