@@ -997,6 +997,7 @@ All notable changes to this dotfiles repository are documented here.
 - Update changelog ([3fb7dd0](https://github.com/Castrozan/.dotfiles/commit/3fb7dd0548232d8e3c57e829bf2cf014d15eb7ed))
 - Update changelog ([4a9a01a](https://github.com/Castrozan/.dotfiles/commit/4a9a01aabee0606d4c9799f8c6262452632afc85))
 - Update changelog ([d9a3c5b](https://github.com/Castrozan/.dotfiles/commit/d9a3c5b2dd2784725ae13386bde99d8e8f57da99))
+- Update changelog ([a07f54c](https://github.com/Castrozan/.dotfiles/commit/a07f54c1200eafa57b5dc4aae71887ba35794bdf))
 
 ### Performance
 
@@ -1184,6 +1185,10 @@ All notable changes to this dotfiles repository are documented here.
 - Hardware config ([f4b31ee](https://github.com/Castrozan/.dotfiles/commit/f4b31ee574b481ab78e4f5200978769b03cf5cda))
 - Disble for unused variable on file ([7e0d8fd](https://github.com/Castrozan/.dotfiles/commit/7e0d8fd9fb5afecba36cdb257443ca5e5390b0ae))
 
+### Linty
+
+- Remove pkgs from the arguments of the directories module, since it is not used there. ([13dbfed](https://github.com/Castrozan/.dotfiles/commit/13dbfed130b45997dd1b5af80317962291bb7f5e))
+
 ### Merge
 
 - *(lucas.zanoni)* Update dotfiles ([a0d8158](https://github.com/Castrozan/.dotfiles/commit/a0d8158e43833ae4bd670767892f9f798a8a0e54))
@@ -1240,6 +1245,10 @@ All notable changes to this dotfiles repository are documented here.
 - Fix lens ([84ed625](https://github.com/Castrozan/.dotfiles/commit/84ed625adf84814203ea46d6fd244ba4163a6291))
 - Vivaldi ([014d2ac](https://github.com/Castrozan/.dotfiles/commit/014d2acd275632bc1e6f8f91902380777de5b6ae))
 - Vivaldi ([9f2efa9](https://github.com/Castrozan/.dotfiles/commit/9f2efa97583aeacd548d401835b44fc5e463c473))
+
+### Todos
+
+- AI nix modules to be more complete and test them on a vm. ([403ff4d](https://github.com/Castrozan/.dotfiles/commit/403ff4d9f13000667c2817357d4a931f224db88b))
 
 ### Try
 
