@@ -8,6 +8,7 @@ let
   openclaw = pkgs.writeShellScriptBin "openclaw" ''
     export PATH="${nodejs}/bin:''${PATH:+:$PATH}"
     export NPM_CONFIG_PREFIX="${prefix}"
+    export OPENCLAW_NIX_MODE=1
     BIN="${prefix}/bin/openclaw"
 
     if [ ! -x "$BIN" ] || [ "$("$BIN" --version 2>/dev/null)" != "${version}" ]; then

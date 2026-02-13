@@ -40,6 +40,7 @@ in
         Environment = [
           "PATH=${nodejs}/bin:/usr/bin:/bin"
           "NODE_ENV=production"
+          "OPENCLAW_NIX_MODE=1"
         ];
       };
 
