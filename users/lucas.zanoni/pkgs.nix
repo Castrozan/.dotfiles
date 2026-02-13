@@ -57,6 +57,7 @@
       redisinsight
       ripgrep-all
       rustc
+      shellcheck
       tailscale
       tealdeer
       tree
