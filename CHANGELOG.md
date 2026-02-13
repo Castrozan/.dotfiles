@@ -998,6 +998,7 @@ All notable changes to this dotfiles repository are documented here.
 - Update changelog ([4a9a01a](https://github.com/Castrozan/.dotfiles/commit/4a9a01aabee0606d4c9799f8c6262452632afc85))
 - Update changelog ([d9a3c5b](https://github.com/Castrozan/.dotfiles/commit/d9a3c5b2dd2784725ae13386bde99d8e8f57da99))
 - Update changelog ([a07f54c](https://github.com/Castrozan/.dotfiles/commit/a07f54c1200eafa57b5dc4aae71887ba35794bdf))
+- Update changelog ([fec8b1a](https://github.com/Castrozan/.dotfiles/commit/fec8b1a85501ca897add3696a0e88655c8bb51de))
 
 ### Performance
 
