@@ -89,6 +89,7 @@ return {
     interpolation = 'Linear',
   },
   
+  max_fps = 120,
   window_decorations = 'NONE',
   window_background_opacity = 0.6,
   text_background_opacity = 0.45,
