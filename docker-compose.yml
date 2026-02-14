@@ -1,0 +1,7 @@
+services:
+  test-modules-eval:
+    build:
+      context: .
+      dockerfile: tests/Dockerfile
+    image: dotfiles-test:eval
+    profiles: ["eval", "modules"]
