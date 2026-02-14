@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+direction="${1:-next}"
+
+activeWindowIsGrouped() {
+  local groupedCount
+  groupedCount=$(hyprctl activewindow -j | jq '.grouped | length')
+  [[ "$groupedCount" -gt 1 ]]
+}
+
+if activeWindowIsGrouped; then
+  if [[ "$direction" == "prev" ]]; then
+    hyprctl dispatch changegroupactive b
+  else
+    hyprctl dispatch changegroupactive f
+  fi
+else
+  if [[ "$direction" == "prev" ]]; then
+    hyprctl dispatch cyclenext prev
+  else
+    hyprctl dispatch cyclenext
+  fi
+fi
+
+hyprctl dispatch bringactivetotop

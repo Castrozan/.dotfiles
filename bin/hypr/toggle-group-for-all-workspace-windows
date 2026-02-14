@@ -49,8 +49,6 @@ _group_all_tiled_windows_on_active_workspace_and_maximize() {
     return
   fi
 
-  _suppress_cursor_warps
-  trap _restore_cursor_warps EXIT
 
   _ensure_first_window_has_target_group "${addrs[0]}"
 
@@ -63,8 +61,6 @@ _group_all_tiled_windows_on_active_workspace_and_maximize() {
 
   hyprctl dispatch fullscreen 1
 
-  _restore_cursor_warps
-  trap - EXIT
 }
 
 _retry_ungrouped_windows() {
@@ -112,14 +108,6 @@ _dissolve_and_move_into_target_group() {
   else
     hyprctl --batch "dispatch focuswindow address:$addr; dispatch moveoutofgroup; dispatch moveintogroup l; dispatch moveintogroup r; dispatch moveintogroup u; dispatch moveintogroup d"
   fi
-}
-
-_suppress_cursor_warps() {
-  hyprctl keyword cursor:no_warps true >/dev/null 2>&1
-}
-
-_restore_cursor_warps() {
-  hyprctl keyword cursor:no_warps false >/dev/null 2>&1
 }
 
 main

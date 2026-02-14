@@ -28,6 +28,7 @@ in
     (mkScript "hypr-toggle-group-for-all-workspace-windows" ../../../bin/hypr/toggle-group-for-all-workspace-windows)
     (mkScript "hypr-screenshot" ../../../bin/hypr/screenshot)
     (mkScript "hypr-network" ../../../bin/hypr/network)
+    (mkScript "hypr-alt-tab" ../../../bin/hypr/alt-tab)
     (mkScript "hypr-toggle-monitors" ../../../bin/hypr/toggle-monitors)
     (mkScript "hypr-monitor-hotplug-daemon" ../../../bin/hypr/monitor-hotplug-daemon)
     (mkScript "hypr-notification-sound-toggle" ../../../bin/hypr/notification-sound-toggle)
