@@ -16,6 +16,7 @@ main() {
 
   _run_skill_validation
   _run_script_tests
+  _run_module_eval_tests
   _run_openclaw_eval_tests
   _run_openclaw_runtime_tests
 
@@ -61,6 +62,18 @@ _run_script_tests_with_coverage() {
     echo "WARN: kcov or bats not installed, skipping coverage"
     echo "      Install with: nix shell nixpkgs#kcov nixpkgs#bats"
   fi
+}
+
+_run_module_eval_tests() {
+  if command -v nix &>/dev/null && command -v bats &>/dev/null; then
+    echo "--- Module Evaluation Tests (bats + nix eval) ---"
+    bats "$SCRIPT_DIR/modules/eval.bats"
+  elif [[ "$ciMode" == "true" ]]; then
+    echo "SKIP: nix or bats not installed for module eval tests"
+  else
+    echo "WARN: nix or bats not installed, skipping module eval tests"
+  fi
+  echo ""
 }
 
 _run_openclaw_eval_tests() {
