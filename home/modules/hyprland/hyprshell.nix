@@ -75,13 +75,6 @@ in
           switch_workspaces = false;
         };
 
-        switch_2 = {
-          enable = true;
-          key = "Tab";
-          modifier = "alt";
-          filter_by = [ "current_workspace" ];
-          switch_workspaces = false;
-        };
       };
     };
   };
