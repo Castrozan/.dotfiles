@@ -122,10 +122,15 @@ let
   defaultAgentName =
     let
       defaultOnes = lib.filterAttrs (_: a: a.isDefault) enabledAgents;
-      firstDefault = lib.head (lib.attrNames defaultOnes);
-      firstEnabled = lib.head (lib.attrNames enabledAgents);
+      defaultNames = lib.attrNames defaultOnes;
+      enabledNames = lib.attrNames enabledAgents;
     in
-    if defaultOnes != { } then firstDefault else firstEnabled;
+    if defaultNames != [ ] then
+      lib.head defaultNames
+    else if enabledNames != [ ] then
+      lib.head enabledNames
+    else
+      null;
 in
 {
   options.openclaw = {
