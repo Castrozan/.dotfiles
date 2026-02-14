@@ -67,11 +67,18 @@ in
         scale = 8.5;
         items_per_row = 5;
 
-        # Super+Tab window switcher (current workspace only)
         switch = {
           enable = true;
           key = "Tab";
           modifier = "super";
+          filter_by = [ "current_workspace" ];
+          switch_workspaces = false;
+        };
+
+        switch_2 = {
+          enable = true;
+          key = "Tab";
+          modifier = "alt";
           filter_by = [ "current_workspace" ];
           switch_workspaces = false;
         };
