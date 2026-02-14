@@ -52,6 +52,8 @@
     ../../home/modules/hey-bot.nix
     ../../home/modules/hey-bot-test.nix
     ./home/hey-bot.nix
+    ../../home/modules/voice-pipeline.nix
+    ./home/voice-pipeline.nix
     ../../home/modules/systemd-manager-tui.nix
     ../../home/modules/testing
   ];

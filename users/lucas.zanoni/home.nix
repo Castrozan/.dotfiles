@@ -67,5 +67,7 @@
     ../../home/modules/audio
     ../../home/modules/hey-bot.nix
     ./home/hey-bot.nix
+    ../../home/modules/voice-pipeline.nix
+    ./home/voice-pipeline.nix
   ];
 }

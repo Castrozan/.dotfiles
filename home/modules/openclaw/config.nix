@@ -72,6 +72,11 @@ let
               default = "edge-tts";
               description = "TTS engine to use";
             };
+            openaiVoice = lib.mkOption {
+              type = lib.types.str;
+              default = "onyx";
+              description = "OpenAI TTS voice for voice-pipeline";
+            };
           };
         };
         default = { };
