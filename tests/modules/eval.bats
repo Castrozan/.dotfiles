@@ -4,6 +4,12 @@ setup() {
     REPO_DIR="$(cd "$BATS_TEST_DIRNAME/../.." && pwd)"
 }
 
+setup_file() {
+    local repoDir
+    repoDir="$(cd "$(dirname "$BATS_TEST_FILENAME")/../.." && pwd)"
+    nix eval --expr "builtins.getFlake (toString $repoDir)" --impure > /dev/null 2>&1 || true
+}
+
 homeManagerModuleConfig() {
     local moduleName="$1"
     local nixExpr="$2"
@@ -20,7 +26,7 @@ homeManagerModuleConfig() {
           ];
         }).config;
       in '"$nixExpr"'
-    ' --impure --json 2>&1
+    ' --impure --json 2>/dev/null | tail -n1
 }
 
 homeManagerModuleConfigWithAgents() {
@@ -47,7 +53,7 @@ homeManagerModuleConfigWithAgents() {
           ];
         }).config;
       in '"$nixExpr"'
-    ' --impure --json 2>&1
+    ' --impure --json 2>/dev/null | tail -n1
 }
 
 # ---------- Importability ----------
