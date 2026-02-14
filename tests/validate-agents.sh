@@ -1,60 +1,59 @@
 #!/usr/bin/env bash
-# Validate skill YAML frontmatter structure
-# Checks skills with YAML frontmatter for required fields (name, description)
-# Skills without YAML frontmatter are valid (markdown-only format)
 
-set -euo pipefail
+set -Eeuo pipefail
 
-SKILLS_DIR="${1:-agents/skills}"
-ERRORS=0
-CHECKED=0
-SKIPPED=0
+readonly SKILLS_DIR="${1:-agents/skills}"
 
-validate_skill() {
-    local skillFile="$1"
-    local skillName
-    skillName=$(basename "$(dirname "$skillFile")")
+main() {
+  local errorCount=0
+  local checkedCount=0
+  local skippedCount=0
 
-    # Skip skills without YAML frontmatter (markdown-only is valid)
-    if ! head -1 "$skillFile" | grep -q "^---$"; then
-        echo "SKIP: $skillName (no YAML frontmatter)"
-        SKIPPED=$((SKIPPED + 1))
-        return
-    fi
+  echo "Validating skills in $SKILLS_DIR..."
+  echo ""
 
-    CHECKED=$((CHECKED + 1))
+  for skillFile in "$SKILLS_DIR"/*/SKILL.md; do
+    [[ -f "$skillFile" ]] || continue
+    _validate_skill "$skillFile"
+  done
 
-    # Extract YAML (between first two ---)
-    local yaml
-    yaml=$(sed -n '2,/^---$/p' "$skillFile" | head -n -1)
+  echo ""
+  echo "Checked: $checkedCount, Skipped: $skippedCount"
 
-    # Check required fields
-    for field in name description; do
-        if ! echo "$yaml" | grep -q "^$field:"; then
-            echo "ERROR: $skillName missing required field: $field"
-            ERRORS=$((ERRORS + 1))
-        fi
-    done
+  if [[ $errorCount -gt 0 ]]; then
+    echo "FAILED: $errorCount errors found"
+    exit 1
+  fi
 
-    if [[ $ERRORS -eq 0 ]] || ! echo "$yaml" | grep -q "^name:\|^description:"; then
-        echo "OK: $skillName"
-    fi
+  echo "PASSED: All validated skills OK"
 }
 
-echo "Validating skills in $SKILLS_DIR..."
-echo ""
+_validate_skill() {
+  local skillFile="$1"
+  local skillName
+  skillName=$(basename "$(dirname "$skillFile")")
 
-for skillFile in "$SKILLS_DIR"/*/SKILL.md; do
-    if [[ -f "$skillFile" ]]; then
-        validate_skill "$skillFile"
+  if ! head -1 "$skillFile" | grep -q "^---$"; then
+    echo "SKIP: $skillName (no YAML frontmatter)"
+    skippedCount=$((skippedCount + 1))
+    return
+  fi
+
+  checkedCount=$((checkedCount + 1))
+
+  local yaml
+  yaml=$(sed -n '2,/^---$/p' "$skillFile" | head -n -1)
+
+  local hasError=false
+  for field in name description; do
+    if ! echo "$yaml" | grep -q "^$field:"; then
+      echo "ERROR: $skillName missing required field: $field"
+      errorCount=$((errorCount + 1))
+      hasError=true
     fi
-done
+  done
 
-echo ""
-echo "Checked: $CHECKED, Skipped: $SKIPPED"
-if [[ $ERRORS -gt 0 ]]; then
-    echo "FAILED: $ERRORS errors found"
-    exit 1
-else
-    echo "PASSED: All validated skills OK"
-fi
+  [[ "$hasError" == "false" ]] && echo "OK: $skillName"
+}
+
+main "$@"
