@@ -1,0 +1,20 @@
+name: tests
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  quick-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate agent skills
+        run: ./tests/validate-agents.sh agents/skills
+
+      - name: Install bats
+        run: sudo apt-get install -y bats
+
+      - name: Run script tests
+        run: bats tests/scripts/

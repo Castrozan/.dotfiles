@@ -42,7 +42,21 @@ run_check "validate-agents" \
 run_check "bats" \
   nix shell nixpkgs#bats --command bats tests/scripts/
 
-run_check "openclaw-eval" \
-  nix shell nixpkgs#bats --command bats tests/openclaw/eval.bats
+openclawChangedPaths="home/modules/openclaw users/zanoni/home/openclaw users/lucas.zanoni/home/openclaw tests/openclaw"
+openclawFilesChanged=false
+for changedPath in $openclawChangedPaths; do
+  if git diff --name-only origin/main...HEAD | grep -q "^$changedPath"; then
+    openclawFilesChanged=true
+    break
+  fi
+done
+
+if [ "$openclawFilesChanged" = true ]; then
+  run_check "openclaw-eval" \
+    nix shell nixpkgs#bats --command bats tests/openclaw/eval.bats
+else
+  echo "==> openclaw-eval (skipped — no openclaw changes)"
+  echo ""
+fi
 
 echo "All pre-push checks passed."
