@@ -3,5 +3,6 @@ services:
     build:
       context: .
       dockerfile: tests/Dockerfile
+      network: host
     image: dotfiles-test:eval
     profiles: ["eval", "modules"]

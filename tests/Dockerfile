@@ -15,10 +15,9 @@ ENV PATH="/nix/var/nix/profiles/default/bin:${PATH}"
 WORKDIR /dotfiles
 COPY . .
 
-RUN git config --global user.email "test@test.com" \
+RUN rm -rf .git \
+    && git config --global user.email "test@test.com" \
     && git config --global user.name "Test" \
     && git init -q && git add -A && git commit -q -m "test snapshot"
-
-RUN nix flake update --accept-flake-config
 
 CMD ["bats", "tests/modules/eval.bats"]
