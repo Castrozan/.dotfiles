@@ -35,6 +35,7 @@
     nixgl.url = "github:nix-community/nixGL";
     agenix.url = "github:ryantm/agenix";
 
+    voice-pipeline.url = "github:castrozan/voice-pipeline";
     voxtype.url = "github:peteonrails/voxtype";
     whisp-away.url = "github:madjinn/whisp-away";
     hyprland.url = "github:hyprwm/Hyprland/f68ac7ef7589e1536d438f7fbfb3ad987538fe0f";

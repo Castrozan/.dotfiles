@@ -1,6 +1,8 @@
+{ config, ... }:
 {
   services.voice-pipeline = {
     enable = true;
+    gatewayUrl = "http://localhost:${toString config.openclaw.gatewayPort}";
     defaultAgent = "jarvis";
     wakeWords = [
       "jarvis"

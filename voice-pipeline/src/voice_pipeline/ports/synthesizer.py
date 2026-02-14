@@ -1,6 +1,0 @@
-from typing import Protocol, AsyncIterator
-
-
-class SynthesizerPort(Protocol):
-    async def synthesize(self, text: str, voice: str) -> AsyncIterator[bytes]: ...
-    async def cancel(self) -> None: ...

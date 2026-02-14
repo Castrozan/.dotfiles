@@ -1,6 +1,0 @@
-from typing import Protocol
-
-
-class VadPort(Protocol):
-    def process_frame(self, audio_frame: bytes) -> float: ...
-    def reset(self) -> None: ...

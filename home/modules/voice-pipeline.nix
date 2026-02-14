@@ -1,7 +1,8 @@
-{ pkgs, ... }:
+{ pkgs, inputs, ... }:
 {
-  imports = [
-    ../../voice-pipeline/nix/package.nix
-    ../../voice-pipeline/nix/module.nix
+  imports = [ inputs.voice-pipeline.homeManagerModules.default ];
+
+  home.packages = [
+    inputs.voice-pipeline.packages.${pkgs.stdenv.hostPlatform.system}.default
   ];
 }

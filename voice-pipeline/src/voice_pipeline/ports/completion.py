@@ -1,6 +1,0 @@
-from typing import Protocol, AsyncIterator
-
-
-class CompletionPort(Protocol):
-    async def stream(self, messages: list[dict[str, str]], agent: str) -> AsyncIterator[str]: ...
-    async def cancel(self) -> None: ...
