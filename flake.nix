@@ -129,17 +129,15 @@
           };
         };
 
-      # TODO: this dont apply the full config, only specific parts.
-      # TODO: test this on vm and manual test it.
       homeManagerModules = {
-        openclaw = ./home/modules/openclaw/library.nix;
-        claude-code = ./home/modules/claude/claude.nix;
-        codex = ./home/modules/codex/package.nix;
+        openclaw = ./home/modules/openclaw;
+        claude-code = ./home/modules/claude;
+        codex = ./home/modules/codex;
         default = {
           imports = [
-            ./home/modules/openclaw/library.nix
-            ./home/modules/claude/claude.nix
-            ./home/modules/codex/package.nix
+            ./home/modules/openclaw
+            ./home/modules/claude
+            ./home/modules/codex
           ];
         };
       };
