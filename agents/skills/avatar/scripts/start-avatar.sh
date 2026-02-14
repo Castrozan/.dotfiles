@@ -139,7 +139,7 @@ if is_running "skills/avatar/renderer.*next"; then
     echo -e "  ${YELLOW}⚠${NC}  Renderer is already running"
 else
     cd "$AVATAR_DIR/renderer"
-    nohup npm run dev > "$LOG_DIR/avatar-renderer.log" 2>&1 &
+    nohup env NODE_ENV=development npm run dev > "$LOG_DIR/avatar-renderer.log" 2>&1 &
     RENDERER_PID=$!
     echo -e "  ${GREEN}✓${NC} Avatar renderer started (PID: $RENDERER_PID)"
     echo -e "    Log: $LOG_DIR/avatar-renderer.log"
