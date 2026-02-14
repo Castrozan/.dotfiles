@@ -53,12 +53,12 @@ in
             chmod -R u+w "$RENDERER_DIR"
             echo "$EXPECTED_REV" > "$RENDERER_MARKER"
             echo "Installing renderer npm dependencies..."
-            cd "$RENDERER_DIR" && ${pkgs.nodejs_22}/bin/npm install 2>&1 || true
+            cd "$RENDERER_DIR" && ${pkgs.nodejs_22}/bin/npm install --legacy-peer-deps 2>&1 || true
           fi
 
           if [ -d "$RENDERER_DIR" ] && [ ! -d "$RENDERER_DIR/node_modules" ]; then
             echo "Installing renderer npm dependencies..."
-            cd "$RENDERER_DIR" && ${pkgs.nodejs_22}/bin/npm install 2>&1 || true
+            cd "$RENDERER_DIR" && ${pkgs.nodejs_22}/bin/npm install --legacy-peer-deps 2>&1 || true
           fi
 
           ${lib.concatStringsSep "\n" (
