@@ -28,4 +28,6 @@ in
   "telegram-bot-token-jarvis.age".publicKeys = all_keys;
   "deepgram-api-key.age".publicKeys = all_keys;
   "openai-api-key.age".publicKeys = all_keys;
+  "betha-credentials.age".publicKeys = all_keys;
+  "skill-atendimento-env.age".publicKeys = all_keys;
 }
