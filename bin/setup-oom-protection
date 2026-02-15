@@ -4,10 +4,17 @@ set -Eeuo pipefail
 
 readonly EARLYOOM_CONFIG_PATH="/etc/default/earlyoom"
 readonly ZRAMSWAP_CONFIG_PATH="/etc/default/zramswap"
+readonly EARLYOOM_SIGTERM_MEMORY_PERCENT=10
+readonly EARLYOOM_SIGTERM_SWAP_PERCENT=15
+readonly EARLYOOM_SIGKILL_MEMORY_PERCENT=5
+readonly EARLYOOM_SIGKILL_SWAP_PERCENT=5
+readonly ZRAM_COMPRESSION_ALGORITHM="zstd"
+readonly ZRAM_MEMORY_PERCENT=50
+readonly ZRAM_PRIORITY=100
+readonly SWAPPINESS_VALUE=150
 
 main() {
   echo "=== OOM & Freeze Protection Setup ==="
-  echo "Mirrors NixOS dellg15 protections for non-NixOS Ubuntu workstations"
   echo ""
 
   _update_package_lists
@@ -18,9 +25,9 @@ main() {
   echo ""
   echo "=== Done ==="
   echo "Protections active:"
-  echo "  - earlyoom: SIGTERM at 10% free mem, SIGKILL at 5%"
-  echo "  - zram: compressed swap using 50% of RAM (~16GB effective)"
-  echo "  - swappiness=150: aggressively uses zram before OOM"
+  echo "  - earlyoom: SIGTERM at ${EARLYOOM_SIGTERM_MEMORY_PERCENT}% free mem, SIGKILL at ${EARLYOOM_SIGKILL_MEMORY_PERCENT}%"
+  echo "  - zram: ${ZRAM_COMPRESSION_ALGORITHM} compressed swap using ${ZRAM_MEMORY_PERCENT}% of RAM"
+  echo "  - swappiness=${SWAPPINESS_VALUE}: aggressively uses zram before OOM"
   echo ""
   echo "Verify with:"
   echo "  systemctl status earlyoom"
@@ -29,17 +36,16 @@ main() {
 }
 
 _update_package_lists() {
-  echo "[0/4] Updating package lists..."
+  echo "[1/4] Updating package lists..."
   sudo apt-get update -qq
 }
 
 _install_and_configure_earlyoom() {
-  echo "[1/4] Installing earlyoom..."
+  echo "[2/4] Installing and configuring earlyoom..."
   sudo apt-get install -y -qq earlyoom
 
-  echo "[2/4] Configuring earlyoom (SIGTERM at 10% free mem, SIGKILL at 5%)..."
-  sudo tee "$EARLYOOM_CONFIG_PATH" > /dev/null <<'CONF'
-EARLYOOM_ARGS="-m 10 -s 15 -M 5 -S 5 -r 3600 --avoid '(^|/)(init|Xorg|Xwayland|sshd|systemd)$' --prefer '(^|/)(nix|nix-build|cc1plus|rustc|node|java|chrome_crashpad|claude)$' -n"
+  sudo tee "$EARLYOOM_CONFIG_PATH" > /dev/null <<CONF
+EARLYOOM_ARGS="-m ${EARLYOOM_SIGTERM_MEMORY_PERCENT} -s ${EARLYOOM_SIGTERM_SWAP_PERCENT} -M ${EARLYOOM_SIGKILL_MEMORY_PERCENT} -S ${EARLYOOM_SIGKILL_SWAP_PERCENT} -r 3600 --avoid '(^|/)(init|Xorg|Xwayland|sshd|systemd)\$' --prefer '(^|/)(nix|nix-build|cc1plus|rustc|node|java|chrome_crashpad|claude)\$' -n"
 CONF
 
   _activate_service earlyoom
@@ -49,18 +55,18 @@ _install_and_configure_zram() {
   echo "[3/4] Configuring zram..."
   sudo apt-get install -y -qq zram-tools
 
-  sudo tee "$ZRAMSWAP_CONFIG_PATH" > /dev/null <<'CONF'
-ALGO=zstd
-PERCENT=50
-PRIORITY=100
+  sudo tee "$ZRAMSWAP_CONFIG_PATH" > /dev/null <<CONF
+ALGO=${ZRAM_COMPRESSION_ALGORITHM}
+PERCENT=${ZRAM_MEMORY_PERCENT}
+PRIORITY=${ZRAM_PRIORITY}
 CONF
 
   _activate_service zramswap
 }
 
 _set_swappiness() {
-  echo "[4/4] Setting vm.swappiness to 150 (prefer zram over OOM)..."
-  _apply_sysctl vm.swappiness 150
+  echo "[4/4] Setting vm.swappiness to ${SWAPPINESS_VALUE}..."
+  _apply_sysctl vm.swappiness "$SWAPPINESS_VALUE"
 }
 
 _activate_service() {
