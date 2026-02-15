@@ -78,7 +78,6 @@
         role = "research & discovery — deep dives, analysis, long-form thinking";
         workspace = "openclaw/golden";
         tts.voice = "en-US-AriaNeural";
-        telegram.enable = true;
       };
       jarvis = {
         enable = true;
