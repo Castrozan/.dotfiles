@@ -15,13 +15,15 @@
   # ani-cli uses mpv to play videos. With vo=kitty and WezTerm's
   # enable_kitty_graphics=true, video frames display inline in terminal.
   home.file.".config/mpv/mpv.conf".text = ''
-    vo=kitty
+    vo=gpu
     video-sync=display-resample
-    interpolation=no
+    display-fps-override=120
+    interpolation=yes
     tscale=oversample
     ao=pulse
-    hwdec=no
+    hwdec=auto-safe
     cache=yes
     cache-secs=60
+    audio-buffer=0.2
   '';
 }
