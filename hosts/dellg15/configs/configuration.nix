@@ -73,9 +73,8 @@
         "hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc="
       ];
 
-      # Parallelism - use all CPU cores
-      max-jobs = "auto";
-      cores = 0; # use all cores
+      max-jobs = 6;
+      cores = 2;
 
       # Download optimization - increase buffer and parallel downloads
       download-buffer-size = "524288000"; # 500 MiB
@@ -92,9 +91,10 @@
       trusted-users = [ username ];
     };
 
-    # Automatic store optimization - runs nix-store --optimise to hard-link identical files
-    # Reduces disk space usage by deduplicating identical files in the store
-    # Runs weekly when system is active (systemd timer will run when PC is on)
+    daemonCPUSchedPolicy = "batch";
+    daemonIOSchedClass = "idle";
+    daemonIOSchedPriority = 4;
+
     optimise = {
       automatic = true;
       dates = [ "weekly" ];
