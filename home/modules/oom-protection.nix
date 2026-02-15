@@ -12,6 +12,7 @@ in
     elif command -v earlyoom >/dev/null 2>&1 \
       && grep -q "ALGO=zstd" /etc/default/zramswap 2>/dev/null \
       && grep -q "PERCENT=50" /etc/default/zramswap 2>/dev/null \
+      && grep -q "\-m 10" /etc/default/earlyoom 2>/dev/null \
       && [ "$(sysctl -n vm.swappiness 2>/dev/null)" = "150" ]; then
       $VERBOSE_ECHO "OOM protection already configured"
     else

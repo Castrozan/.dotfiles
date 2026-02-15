@@ -18,7 +18,7 @@ main() {
   echo ""
   echo "=== Done ==="
   echo "Protections active:"
-  echo "  - earlyoom: kills runaway processes at 5% free memory"
+  echo "  - earlyoom: SIGTERM at 10% free mem, SIGKILL at 5%"
   echo "  - zram: compressed swap using 50% of RAM (~16GB effective)"
   echo "  - swappiness=150: aggressively uses zram before OOM"
   echo ""
@@ -37,9 +37,9 @@ _install_and_configure_earlyoom() {
   echo "[1/4] Installing earlyoom..."
   sudo apt-get install -y -qq earlyoom
 
-  echo "[2/4] Configuring earlyoom (kill at 5% free mem, 10% free swap)..."
+  echo "[2/4] Configuring earlyoom (SIGTERM at 10% free mem, SIGKILL at 5%)..."
   sudo tee "$EARLYOOM_CONFIG_PATH" > /dev/null <<'CONF'
-EARLYOOM_ARGS="-m 5 -s 10 -r 3600 --avoid '(^|/)(init|Xorg|Xwayland|sshd|systemd)$' --prefer '(^|/)(nix-build|cc1plus|rustc|node|java|chrome_crashpad)$' -n"
+EARLYOOM_ARGS="-m 10 -s 15 -M 5 -S 5 -r 3600 --avoid '(^|/)(init|Xorg|Xwayland|sshd|systemd)$' --prefer '(^|/)(nix|nix-build|cc1plus|rustc|node|java|chrome_crashpad|claude)$' -n"
 CONF
 
   _activate_service earlyoom

@@ -137,9 +137,19 @@
 
   services.earlyoom = {
     enable = true;
-    freeMemThreshold = 5;
-    freeSwapThreshold = 10;
+    freeMemThreshold = 10;
+    freeSwapThreshold = 15;
+    freeMemKillThreshold = 5;
+    freeSwapKillThreshold = 5;
     enableNotifications = true;
+    extraArgs = [
+      "-r"
+      "3600"
+      "--avoid"
+      "(^|/)(init|Xorg|Xwayland|sshd|systemd)$"
+      "--prefer"
+      "(^|/)(nix|nix-build|cc1plus|rustc|node|java|chrome_crashpad|claude)$"
+    ];
   };
 
   # Networking
