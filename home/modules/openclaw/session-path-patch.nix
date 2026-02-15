@@ -1,3 +1,15 @@
+# Workaround for openclaw/openclaw#15565 (v2026.2.12)
+#
+# resolvePathWithinSessionsDir rejects absolute sessionFile paths when the
+# agentId used to resolve the sessions directory differs from the owning agent.
+# This breaks multi-agent Telegram setups, renamed agents, and any case where
+# session entries cross agent boundaries.
+#
+# The patch adds a basename fallback: when an absolute path fails containment,
+# extract just the filename (uuid.jsonl) and resolve it within the current
+# agent's sessions dir. The original error is preserved as final fallback.
+#
+# Remove this module once upstream ships a fix.
 { pkgs, lib, ... }:
 let
   nodejs = pkgs.nodejs_22;
