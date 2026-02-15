@@ -328,6 +328,7 @@ All notable changes to this dotfiles repository are documented here.
 - *(test)* Fix grep patterns matching variable expressions in bats ([bd60635](https://github.com/Castrozan/.dotfiles/commit/bd6063584814eab28d576a23fdbf7798bc24d51d))
 - *(test)* Use -- separator in grep to handle patterns starting with - ([4375a56](https://github.com/Castrozan/.dotfiles/commit/4375a5625804cd4d7f25e6b1d80a2cf9456604b6))
 - *(test)* Update openclaw tests for single-machine agent topology ([298eb89](https://github.com/Castrozan/.dotfiles/commit/298eb899bf4a1e02d921c45bd9249bd33d814954))
+- *(openclaw)* Remove unused bindings flagged by deadnix ([de86f50](https://github.com/Castrozan/.dotfiles/commit/de86f509944e15f9220db3e6563fd79ec9b8271e))
 
 ### CI/CD
 
@@ -1044,6 +1045,7 @@ All notable changes to this dotfiles repository are documented here.
 - Update changelog ([767a518](https://github.com/Castrozan/.dotfiles/commit/767a518b5cfec1062024b300cdf65925c1e3f280))
 - Update changelog ([609a340](https://github.com/Castrozan/.dotfiles/commit/609a34009095cbefe0d6d6dc554076367d68b5a8))
 - Update changelog ([87b1378](https://github.com/Castrozan/.dotfiles/commit/87b1378247a2063fb749389ab021811335ae4e00))
+- Update changelog ([4d4de52](https://github.com/Castrozan/.dotfiles/commit/4d4de527c40fbdf4d29b0da1d96e135ab40bc278))
 
 ### Performance
 
