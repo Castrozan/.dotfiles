@@ -47,6 +47,10 @@ Reference locations: Point to where truth lives, agent reads current state.
 Self-verification: Add "Verify current approach by checking [file/location]".
 </evergreen_instructions>
 
+<instructions>
+New instructions are not more important than existing ones. Don't add emphasis markers (CRITICAL, IMPORTANT) for later additions. AI instructions should be cohesive - latest additions integrate, not dominate.
+</instructions>
+
 <context_engineering>
 Front-load critical information. Structured formats (YAML, JSON) over prose for data. Remove redundant context between turns. Summarize long outputs.
 
