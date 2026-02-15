@@ -55,6 +55,7 @@
       pipes
       postman
       postgresql
+      quickemu
       redisinsight
       ripgrep-all
       rustc
