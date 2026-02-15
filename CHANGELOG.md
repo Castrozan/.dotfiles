@@ -315,6 +315,13 @@ All notable changes to this dotfiles repository are documented here.
 - *(browser)* Use nix playwright-core instead of npm install fallback ([1ce8315](https://github.com/Castrozan/.dotfiles/commit/1ce8315e7daadc98067a9647b46901cedac97443))
 - *(openclaw)* Run session path fix before every gateway start ([f2471c6](https://github.com/Castrozan/.dotfiles/commit/f2471c6bf5ed12a7f88042f0f3193fe7a7cd5297))
 - *(avatar)* Set NODE_ENV=development for renderer, use legacy-peer-deps ([86d2937](https://github.com/Castrozan/.dotfiles/commit/86d29372e875d8f7398bc5546043d3213fe3fc5c))
+- *(hyprland)* Stop cursor warping on focus change, add alt-tab switcher ([b48511b](https://github.com/Castrozan/.dotfiles/commit/b48511b96c873e44843035b86007a61cc31bf31f))
+- *(hyprland)* Restore alt-tab cyclenext, remove non-functional switch_2 ([a88e09a](https://github.com/Castrozan/.dotfiles/commit/a88e09a5c8bfcc13b44fdac8d1341fecc328590e))
+- *(hyprland)* Smart alt-tab for grouped windows ([314f628](https://github.com/Castrozan/.dotfiles/commit/314f62825310d505e557f297672c254999670f9c))
+- *(flake)* Point homeManagerModules to full module directories ([aa198c4](https://github.com/Castrozan/.dotfiles/commit/aa198c4203f9e36d36a3e58623ee1270a81fd8f9))
+- *(openclaw)* Handle empty agents list in defaultAgent ([4780084](https://github.com/Castrozan/.dotfiles/commit/47800843a207d1a5d03f11489c4a4614c9d003b8))
+- *(docker)* Add network host to build for DNS resolution ([0787b3d](https://github.com/Castrozan/.dotfiles/commit/0787b3da889f90fb129f816208fd694f82a4cb50))
+- *(test)* Remove stderr merge to prevent nix warnings in test output ([5415283](https://github.com/Castrozan/.dotfiles/commit/54152838cd7f6e818fd5039a7dcf51821b5b624f))
 
 ### CI/CD
 
@@ -924,6 +931,14 @@ All notable changes to this dotfiles repository are documented here.
 - *(openclaw)* Add gpt-5.3-codex model alias ([cc11bf8](https://github.com/Castrozan/.dotfiles/commit/cc11bf81985941038cae8d835cabaf35548f8b02))
 - *(lazygit)* Use fork with word navigation in text inputs ([b023486](https://github.com/Castrozan/.dotfiles/commit/b0234864ca14907dfea96b22f2a8980d492616ea))
 - *(agent)* Add avatars for agents ([70d85c5](https://github.com/Castrozan/.dotfiles/commit/70d85c582a12dde7c97145aa66537a7d50f6817b))
+- Summarize module for youtube/video summarization ([f0391ab](https://github.com/Castrozan/.dotfiles/commit/f0391abe2b128ddc45e4608aa87b88e6090ebba5))
+- *(voice-pipeline)* Add real-time conversational voice pipeline ([bbcb4ec](https://github.com/Castrozan/.dotfiles/commit/bbcb4ecb8480a3a9bb11a4c587f39c9d251ce235))
+- *(voice-pipeline)* Add Nix packaging with uv venv pattern ([eeb72cc](https://github.com/Castrozan/.dotfiles/commit/eeb72ccdb5b5fd869f0c3e07b011d2f825865b71))
+- *(audio)* Add PipeWire echo cancellation for non-NixOS ([6017f89](https://github.com/Castrozan/.dotfiles/commit/6017f89dc07e07c1cd14275d7fe18bebe5796295))
+- *(audio)* Add echo cancellation, update voice-pipeline (PIPEWIRE_NODE) ([e5905c1](https://github.com/Castrozan/.dotfiles/commit/e5905c1353eb16b513ee4ecd4ae3845a5b04393f))
+- Add quickemu to virtualization packages ([c81a88f](https://github.com/Castrozan/.dotfiles/commit/c81a88f2e794c992499b2dbbcac6cb010041fa5c))
+- *(lucas.zanoni)* Add quickemu to home-manager packages ([4247bc6](https://github.com/Castrozan/.dotfiles/commit/4247bc6a1b5f76a0eb8b654a103b55186da277f9))
+- *(claude)* Upgrade claude-code to 2.1.42 ([9d658a3](https://github.com/Castrozan/.dotfiles/commit/9d658a3f378aeddbd2b6a72789eb5a8dc23f3579))
 
 ### Miscellaneous
 
@@ -1005,6 +1020,12 @@ All notable changes to this dotfiles repository are documented here.
 - Update changelog ([1e70aa3](https://github.com/Castrozan/.dotfiles/commit/1e70aa33a7fbc2184856fd66e547456acb983fed))
 - Update changelog ([de277b3](https://github.com/Castrozan/.dotfiles/commit/de277b3c9a596f29a7efeb1d255e061bbd565690))
 - Update changelog ([2c30178](https://github.com/Castrozan/.dotfiles/commit/2c301787c1ce2e7a057274082dad3d033ce3c50d))
+- Update changelog ([687876d](https://github.com/Castrozan/.dotfiles/commit/687876d3b5c8569e4707a17f267e017a66860f4e))
+- *(voice-pipeline)* Add .gitignore, remove cached pycache ([26484ea](https://github.com/Castrozan/.dotfiles/commit/26484eab6206a8fb20983742c6f489f956734fec))
+- *(secrets)* Add encrypted openai-api-key ([0938c27](https://github.com/Castrozan/.dotfiles/commit/0938c273e7a3b7d04b7707a0ee2cef3004fb3b1d))
+- *(secrets)* Add encrypted deepgram-api-key ([5552a50](https://github.com/Castrozan/.dotfiles/commit/5552a50cd47d3fdc0935ed6a166f74800f3f7720))
+- Update voice-pipeline flake lock ([af9338c](https://github.com/Castrozan/.dotfiles/commit/af9338c0df011ac1cc0b47229cb8bdb2c2899a29))
+- Add Makefile targets and integrate module tests into runner ([5918230](https://github.com/Castrozan/.dotfiles/commit/5918230217599d9b68b7d9cd49d9cacb174969b0))
 
 ### Performance
 
@@ -1143,6 +1164,8 @@ All notable changes to this dotfiles repository are documented here.
 - Fix ([04cc51b](https://github.com/Castrozan/.dotfiles/commit/04cc51b437c79e2818a643edb56bc3db476c8cbd))
 - Code cursor and gh ([042bbf1](https://github.com/Castrozan/.dotfiles/commit/042bbf18178b1e68ca6fa0d753bd016687687039))
 - *(openclaw)* Comprehensive nix eval and runtime test suite ([34600c6](https://github.com/Castrozan/.dotfiles/commit/34600c64a5b06b3a491f7455af97bef757045e6d))
+- *(voice-pipeline)* Add test environment with audio generators and adapter fakes ([360a4a3](https://github.com/Castrozan/.dotfiles/commit/360a4a3e666372799d267ba26764de53162258af))
+- *(modules)* Add BATS eval tests for homeManagerModules ([bb6f750](https://github.com/Castrozan/.dotfiles/commit/bb6f750cec4dd4c7c9cf0eaf365f5c07e6d10731))
 
 ### Bump
 
@@ -1178,6 +1201,10 @@ All notable changes to this dotfiles repository are documented here.
 - *(lucas.zanoni)* Drop missing codex module import ([e3d90d0](https://github.com/Castrozan/.dotfiles/commit/e3d90d0a483efe1c3826601b81a1ea1d54d6dbfc))
 - *(lucas.zanoni)* Enable codex module ([92c3e53](https://github.com/Castrozan/.dotfiles/commit/92c3e539907c29c93cbbee50f7bce658f1098be7))
 - Add xdg-desktop-portal-hyprland user service ([35e0732](https://github.com/Castrozan/.dotfiles/commit/35e07327c1578ee31dfefaaa034eda4814648b68))
+
+### Infra
+
+- *(test)* Add Docker container for module eval tests ([3d8451f](https://github.com/Castrozan/.dotfiles/commit/3d8451f212743a24bd82e3d252b89219e654b1ed))
 
 ### Lint
 
