@@ -8,6 +8,7 @@
 
     ../../home/core.nix
     ../../home/scripts
+    ../../home/modules/agenix.nix
     ../../home/modules/atuin.nix
     ../../home/modules/bad-apple.nix
     ../../home/modules/bluetui.nix
