@@ -9,6 +9,7 @@ let
     language = "english";
     spinnerTipsEnabled = false;
     dangerouslySkipPermissions = true;
+    skipDangerousModePermissionPrompt = true;
     includeCoAuthoredBy = false;
     permissions = {
       defaultMode = "bypassPermissions";
