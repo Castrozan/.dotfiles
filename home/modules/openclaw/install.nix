@@ -1,8 +1,7 @@
-# --ignore-scripts skips node-llama-cpp cmake build (unused).
-{ pkgs, ... }:
+{ pkgs, config, ... }:
 let
   nodejs = pkgs.nodejs_22;
-  version = "2026.2.9";
+  version = "2026.2.12";
   prefix = "$HOME/.local/share/openclaw-npm";
 
   openclaw = pkgs.writeShellScriptBin "openclaw" ''
@@ -15,6 +14,7 @@ let
       echo "[nix] Installing OpenClaw ${version}..." >&2
       ${nodejs}/bin/npm install -g "openclaw@${version}" \
         --prefix "${prefix}" --ignore-scripts >&2
+      ${config.openclaw.sessionPathPatchScript}
     fi
 
     exec "$BIN" "$@"
