@@ -40,6 +40,10 @@ Before trying to use complex and uncommon tools, or if user ask you to do someth
 Follow ~/.dotfiles/bin/rebuild as canonical example. Shell scripts use: set -Eeuo pipefail, readonly constants at top, main() entry point called at bottom, private helper functions prefixed with underscore. Clean error handling with early returns and meaningful messages to stderr.
 </scripts>
 
+<documentation>
+Never write documentation that goes stale — no directory trees, no file lists, no structure snapshots. Follow the documentation skill for how to write and maintain docs.
+</documentation>
+
 <prompts>
 Understand contextually. User prompts may contain errors - interpret intent, correct obvious mistakes. User is senior engineer. When stuck or unsure, ask instead of assuming.
 </prompts>
