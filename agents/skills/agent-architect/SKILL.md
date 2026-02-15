@@ -36,6 +36,7 @@ Instructions become stale. Write instructions that stay accurate.
 Pointers over copies: "Run rebuild script in bin directory" not "Run ./bin/rebuild".
 Patterns over commands: Document patterns, not exact syntax.
 Reference locations: Point to where truth lives, agent reads current state.
+No hardcoded paths: Skills run across repositories. Reference things by purpose ("the openclaw home-manager module in the dotfiles") not by path ("home/modules/openclaw/").
 </evergreen_instructions>
 
 <instructions>

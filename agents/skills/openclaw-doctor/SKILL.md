@@ -1,12 +1,16 @@
 ---
 name: openclaw-doctor
-description: Diagnose and fix OpenClaw gateway issues. Use when Telegram bots aren't responding, agents fail to start, or gateway behaves unexpectedly.
+description: Diagnose and fix OpenClaw gateway issues. Use when Telegram bots aren't responding, agents fail to start, gateway behaves unexpectedly, or when checking gateway health, service status, or reading gateway logs. Do NOT use for general openclaw CLI usage or agent configuration — use the openclaw skill instead.
 ---
 <!-- @agent-architect owns this file. Delegate changes, don't edit directly. -->
 
 <announcement>
 "I'm using the openclaw-doctor skill to diagnose gateway/telegram issues."
 </announcement>
+
+<gateway_service>
+The gateway runs as a systemd user service. Use `openclaw status` for a dashboard view of gateway reachability. The `--deep` flag probes each connected channel. The `openclaw health` command returns a quick programmatic health check. Gateway logs are available through journalctl for the `openclaw-gateway` user unit.
+</gateway_service>
 
 <diagnosis_order>
 1. Gateway status: `openclaw status` or `systemctl --user status openclaw-gateway`
