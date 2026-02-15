@@ -27,7 +27,7 @@ assert_strict_mode() {
 
 assert_contains() {
     local pattern="$1"
-    run grep -E "$pattern" "$(script_under_test)"
+    run grep -E -- "$pattern" "$(script_under_test)"
     [ "$status" -eq 0 ]
 }
 
@@ -43,8 +43,8 @@ assert_line_order() {
     local script
     script="$(script_under_test)"
     local firstLine secondLine
-    firstLine=$(grep -n -m1 "$firstPattern" "$script" | cut -d: -f1)
-    secondLine=$(grep -n -m1 "$secondPattern" "$script" | cut -d: -f1)
+    firstLine=$(grep -n -m1 -- "$firstPattern" "$script" | cut -d: -f1)
+    secondLine=$(grep -n -m1 -- "$secondPattern" "$script" | cut -d: -f1)
     [ -n "$firstLine" ] && [ -n "$secondLine" ] && [ "$firstLine" -lt "$secondLine" ]
 }
 
