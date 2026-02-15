@@ -25,4 +25,5 @@ in
 
   # Fish conf.d scripts
   xdg.configFile."fish/conf.d/hyprland-env.fish".source = ../../shell/fish/conf.d/hyprland-env.fish;
+  xdg.configFile."fish/conf.d/betha-secrets.fish".source = ../../shell/fish/conf.d/betha-secrets.fish;
 }
