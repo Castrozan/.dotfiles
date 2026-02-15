@@ -24,8 +24,8 @@ teardown() {
     assert_passes_shellcheck
 }
 
-@test "uses strict mode" {
-    assert_strict_mode
+@test "uses strict error handling" {
+    assert_uses_strict_error_handling
 }
 
 @test "shows usage when no file provided" {
@@ -47,7 +47,7 @@ teardown() {
     [ -f "test/source/file.txt" ]
 }
 
-@test "errors if output directory exists" {
+@test "errors if output directory already exists" {
     mkdir test
     assert_fails_with "already exists" test.tar.gz
 }

@@ -1,89 +1,89 @@
 #!/usr/bin/env bash
 
-BIN_DIR="$BATS_TEST_DIRNAME/../../bin"
+readonly DOTFILES_BIN_DIRECTORY="$BATS_TEST_DIRNAME/../../bin"
 
-script_under_test() {
-    local scriptName="${BATS_TEST_FILENAME##*/}"
-    scriptName="${scriptName%.bats}"
-    echo "$BIN_DIR/$scriptName"
+_resolve_script_under_test() {
+    local testFileName="${BATS_TEST_FILENAME##*/}"
+    testFileName="${testFileName%.bats}"
+    echo "$DOTFILES_BIN_DIRECTORY/$testFileName"
 }
 
-run_script() {
-    run "$(script_under_test)" "$@"
+run_script_under_test() {
+    run "$(_resolve_script_under_test)" "$@"
 }
 
 assert_is_executable() {
-    [ -x "$(script_under_test)" ]
+    [ -x "$(_resolve_script_under_test)" ]
 }
 
 assert_passes_shellcheck() {
     if ! command -v shellcheck &>/dev/null; then
         skip "shellcheck not installed"
     fi
-    run shellcheck "$(script_under_test)"
+    run shellcheck "$(_resolve_script_under_test)"
     [ "$status" -eq 0 ]
 }
 
-assert_strict_mode() {
-    run head -5 "$(script_under_test)"
+assert_uses_strict_error_handling() {
+    run head -5 "$(_resolve_script_under_test)"
     [[ "$output" == *"set -euo pipefail"* ]]
 }
 
 assert_fails_with() {
-    local expectedPattern="$1"
+    local expectedOutputPattern="$1"
     shift
-    run_script "$@"
+    run_script_under_test "$@"
     [ "$status" -ne 0 ]
-    [[ "$output" == *"$expectedPattern"* ]]
+    [[ "$output" == *"$expectedOutputPattern"* ]]
 }
 
 assert_succeeds_with() {
-    local expectedPattern="$1"
+    local expectedOutputPattern="$1"
     shift
-    run_script "$@"
+    run_script_under_test "$@"
     [ "$status" -eq 0 ]
-    [[ "$output" == *"$expectedPattern"* ]]
+    [[ "$output" == *"$expectedOutputPattern"* ]]
 }
 
-assert_contains() {
+assert_script_source_matches() {
     local pattern="$1"
-    run grep -E -- "$pattern" "$(script_under_test)"
+    run grep -E -- "$pattern" "$(_resolve_script_under_test)"
     [ "$status" -eq 0 ]
 }
 
-assert_contains_all() {
+assert_script_source_matches_all() {
     for pattern in "$@"; do
-        assert_contains "$pattern"
+        assert_script_source_matches "$pattern"
     done
 }
 
-assert_line_order() {
+assert_pattern_appears_before() {
     local firstPattern="$1"
     local secondPattern="$2"
-    local script
-    script="$(script_under_test)"
-    local firstLine secondLine
-    firstLine=$(grep -n -m1 -- "$firstPattern" "$script" | cut -d: -f1)
-    secondLine=$(grep -n -m1 -- "$secondPattern" "$script" | cut -d: -f1)
-    [ -n "$firstLine" ] && [ -n "$secondLine" ] && [ "$firstLine" -lt "$secondLine" ]
+    local scriptPath
+    scriptPath="$(_resolve_script_under_test)"
+    local firstLineNumber secondLineNumber
+    firstLineNumber=$(grep -n -m1 -- "$firstPattern" "$scriptPath" | cut -d: -f1)
+    secondLineNumber=$(grep -n -m1 -- "$secondPattern" "$scriptPath" | cut -d: -f1)
+    [ -n "$firstLineNumber" ] && [ -n "$secondLineNumber" ] && [ "$firstLineNumber" -lt "$secondLineNumber" ]
 }
 
 assert_installs_apt_packages() {
-    for pkg in "$@"; do
-        assert_contains "apt-get install.*$pkg"
+    for packageName in "$@"; do
+        assert_script_source_matches "apt-get install.*$packageName"
     done
 }
 
-assert_writes_config() {
-    local configPath="$1"
+assert_writes_config_to_path() {
+    local configFilePath="$1"
     shift
-    assert_contains "$configPath"
-    for value in "$@"; do
-        assert_contains "$value"
+    assert_script_source_matches "$configFilePath"
+    for expectedValue in "$@"; do
+        assert_script_source_matches "$expectedValue"
     done
 }
 
-assert_activates_service() {
+assert_activates_systemd_service() {
     local serviceName="$1"
-    assert_contains "activate_service.*$serviceName|systemctl.*enable.*$serviceName"
+    assert_script_source_matches "activate_service.*$serviceName|systemctl.*enable.*$serviceName"
 }

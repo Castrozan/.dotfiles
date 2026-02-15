@@ -10,12 +10,12 @@ load '../helpers/bash-script-assertions'
     assert_passes_shellcheck
 }
 
-@test "uses strict mode" {
-    assert_strict_mode
+@test "uses strict error handling" {
+    assert_uses_strict_error_handling
 }
 
 @test "updates apt before installing" {
-    assert_line_order "apt-get update" "apt-get install"
+    assert_pattern_appears_before "apt-get update" "apt-get install"
 }
 
 @test "installs earlyoom and zram-tools" {
@@ -23,26 +23,26 @@ load '../helpers/bash-script-assertions'
 }
 
 @test "configures earlyoom at 5% memory 10% swap" {
-    assert_contains_all "EARLYOOM_ARGS" "-m 5" "-s 10"
+    assert_script_source_matches_all "EARLYOOM_ARGS" "-m 5" "-s 10"
 }
 
 @test "configures zram with zstd at 50% RAM" {
-    assert_writes_config "/etc/default/zramswap" "ALGO=zstd" "PERCENT=50"
+    assert_writes_config_to_path "/etc/default/zramswap" "ALGO=zstd" "PERCENT=50"
 }
 
 @test "sets vm.swappiness to 150" {
-    assert_contains "vm.swappiness.*150"
+    assert_script_source_matches "vm.swappiness.*150"
 }
 
-@test "persists sysctl config" {
-    assert_contains "sysctl.d/99-"
+@test "persists sysctl config to disk" {
+    assert_script_source_matches "sysctl.d/99-"
 }
 
 @test "activates earlyoom and zramswap services" {
-    assert_activates_service earlyoom
-    assert_activates_service zramswap
+    assert_activates_systemd_service earlyoom
+    assert_activates_systemd_service zramswap
 }
 
 @test "handles missing systemctl gracefully" {
-    assert_contains "command -v systemctl"
+    assert_script_source_matches "command -v systemctl"
 }

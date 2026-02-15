@@ -1,91 +1,96 @@
 #!/usr/bin/env bash
-# Check Nix module coverage - identifies unused .nix files
-# Usage: ./tests/nix-coverage.sh
 
-set -euo pipefail
+set -Eeuo pipefail
 
-REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+readonly REPOSITORY_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-echo "=== Nix Module Coverage ==="
-echo ""
-echo "Checking which .nix files are imported by the flake..."
-echo ""
+main() {
+  echo "=== Nix Module Coverage ==="
+  echo ""
 
-# Get all .nix files in the repo (excluding result symlinks)
-ALL_NIX_FILES=$(find "$REPO_DIR" -name "*.nix" -not -path "*/result/*" -not -path "*/.git/*" | sort)
-TOTAL_FILES=$(echo "$ALL_NIX_FILES" | wc -l)
+  local allNixFiles
+  allNixFiles=$(_find_all_nix_files)
+  local totalFileCount
+  totalFileCount=$(echo "$allNixFiles" | wc -l)
 
-# Get files that are actually evaluated by the flake
-# This uses nix-store --query to find runtime dependencies
-echo "Building dependency graph (this may take a moment)..."
+  _print_files_by_directory "$allNixFiles"
+  _print_summary "$totalFileCount"
+  _find_and_print_orphaned_files "$allNixFiles"
 
-IMPORTED_FILES=$(
-    nix path-info --derivation "$REPO_DIR#homeConfigurations.lucas.zanoni@x86_64-linux.activationPackage" 2>/dev/null |
+  echo ""
+  echo "Note: Nix is declarative - 'coverage' means module usage, not line execution."
+  echo "For function-level testing, consider nix-unit."
+}
+
+_find_all_nix_files() {
+  find "$REPOSITORY_DIR" -name "*.nix" -not -path "*/result/*" -not -path "*/.git/*" | sort
+}
+
+_try_resolve_imported_files_via_nix_derivation() {
+  echo "Building dependency graph (this may take a moment)..."
+  nix path-info --derivation "$REPOSITORY_DIR#homeConfigurations.lucas.zanoni@x86_64-linux.activationPackage" 2>/dev/null |
     xargs nix derivation show 2>/dev/null |
-    grep -oP '"'"$REPO_DIR"'/[^"]+\.nix"' |
+    grep -oP '"'"$REPOSITORY_DIR"'/[^"]+\.nix"' |
     tr -d '"' |
     sort -u
-) || IMPORTED_FILES=""
+}
 
-# If that didn't work, use a simpler heuristic - check what's imported
-if [[ -z "$IMPORTED_FILES" ]]; then
-    echo "Using import analysis instead..."
-    IMPORTED_FILES=$(
-        # Find all files mentioned in imports
-        grep -rh "import \./\|imports = \[" "$REPO_DIR" --include="*.nix" 2>/dev/null |
-        grep -oP '\./[a-zA-Z0-9_/-]+\.nix|\./[a-zA-Z0-9_/-]+(?=/default\.nix)' |
-        sort -u
-    ) || true
-fi
+_resolve_imported_files_via_grep_heuristic() {
+  echo "Using import analysis instead..."
+  grep -rh "import \./\|imports = \[" "$REPOSITORY_DIR" --include="*.nix" 2>/dev/null |
+    grep -oP '\./[a-zA-Z0-9_/-]+\.nix|\./[a-zA-Z0-9_/-]+(?=/default\.nix)' |
+    sort -u
+}
 
-echo ""
-echo "=== Files by Directory ==="
+_print_files_by_directory() {
+  local allNixFiles="$1"
+  echo "=== Files by Directory ==="
+  echo "$allNixFiles" | while read -r nixFile; do
+    dirname "$nixFile" | sed "s|$REPOSITORY_DIR/||"
+  done | sort | uniq -c | sort -rn | head -20
+}
 
-# Group files by directory and show counts
-echo "$ALL_NIX_FILES" | while read -r file; do
-    dir=$(dirname "$file" | sed "s|$REPO_DIR/||")
-    echo "$dir"
-done | sort | uniq -c | sort -rn | head -20
+_print_summary() {
+  local totalFileCount="$1"
+  echo ""
+  echo "=== Summary ==="
+  echo "Total .nix files: $totalFileCount"
+}
 
-echo ""
-echo "=== Summary ==="
-echo "Total .nix files: $TOTAL_FILES"
+_find_and_print_orphaned_files() {
+  local allNixFiles="$1"
+  local orphanedFiles=()
 
-# Check for obviously unused patterns
-echo ""
-echo "=== Potential Issues ==="
+  echo ""
+  echo "=== Potential Issues ==="
 
-# Check for .nix files not in any imports list
-ORPHANS=()
-for file in $ALL_NIX_FILES; do
-    basename=$(basename "$file")
-    dirname=$(dirname "$file")
+  for nixFile in $allNixFiles; do
+    local fileName directoryName
+    fileName=$(basename "$nixFile")
+    directoryName=$(dirname "$nixFile")
 
-    # Skip flake.nix, default.nix at root
-    [[ "$basename" == "flake.nix" ]] && continue
-    [[ "$file" == "$REPO_DIR/default.nix" ]] && continue
+    [[ "$fileName" == "flake.nix" ]] && continue
+    [[ "$nixFile" == "$REPOSITORY_DIR/default.nix" ]] && continue
 
-    # Check if this file is imported somewhere
-    # default.nix can be imported via directory path
-    if [[ "$basename" == "default.nix" ]]; then
-        parent_dir=$(basename "$dirname")
-        if ! grep -rq "$parent_dir\|$parent_dir/" "$REPO_DIR" --include="*.nix" 2>/dev/null; then
-            ORPHANS+=("$file")
-        fi
-    elif ! grep -rq "$basename" "$REPO_DIR" --include="*.nix" 2>/dev/null; then
-        ORPHANS+=("$file")
+    if [[ "$fileName" == "default.nix" ]]; then
+      local parentDirectoryName
+      parentDirectoryName=$(basename "$directoryName")
+      if ! grep -rq "$parentDirectoryName\|$parentDirectoryName/" "$REPOSITORY_DIR" --include="*.nix" 2>/dev/null; then
+        orphanedFiles+=("$nixFile")
+      fi
+    elif ! grep -rq "$fileName" "$REPOSITORY_DIR" --include="*.nix" 2>/dev/null; then
+      orphanedFiles+=("$nixFile")
     fi
-done
+  done
 
-if [[ ${#ORPHANS[@]} -gt 0 ]]; then
+  if [[ ${#orphanedFiles[@]} -gt 0 ]]; then
     echo "Potentially unused files (not found in imports):"
-    for f in "${ORPHANS[@]}"; do
-        echo "  - ${f#$REPO_DIR/}"
+    for orphanedFile in "${orphanedFiles[@]}"; do
+      echo "  - ${orphanedFile#"$REPOSITORY_DIR/"}"
     done
-else
+  else
     echo "All .nix files appear to be imported."
-fi
+  fi
+}
 
-echo ""
-echo "Note: Nix is declarative - 'coverage' means module usage, not line execution."
-echo "For function-level testing, consider nix-unit."
+main "$@"

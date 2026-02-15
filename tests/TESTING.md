@@ -87,13 +87,13 @@ load '../helpers/bash-script-assertions'
 |---|---|
 | `assert_is_executable` | +x permission bit |
 | `assert_passes_shellcheck` | shellcheck passes (skips if not installed) |
-| `assert_strict_mode` | `set -euo pipefail` in first 5 lines |
+| `assert_uses_strict_error_handling` | `set -euo pipefail` in first 5 lines |
 
 **Behavioral** — test script execution:
 
 | Assertion | Usage |
 |---|---|
-| `run_script [args...]` | Run script under test, sets `$status` and `$output` |
+| `run_script_under_test [args...]` | Run script under test, sets `$status` and `$output` |
 | `assert_fails_with "pattern" [args...]` | Exits non-zero, output contains pattern |
 | `assert_succeeds_with "pattern" [args...]` | Exits zero, output contains pattern |
 
@@ -101,12 +101,12 @@ load '../helpers/bash-script-assertions'
 
 | Assertion | Usage |
 |---|---|
-| `assert_contains "regex"` | Script source matches regex |
-| `assert_contains_all "a" "b" "c"` | Script source matches all regexes |
-| `assert_line_order "first" "second"` | First pattern appears before second |
+| `assert_script_source_matches "regex"` | Script source matches regex |
+| `assert_script_source_matches_all "a" "b" "c"` | Script source matches all regexes |
+| `assert_pattern_appears_before "first" "second"` | First pattern appears before second |
 | `assert_installs_apt_packages pkg1 pkg2` | `apt-get install` lines for each package |
-| `assert_writes_config "/path" "val1" "val2"` | Config path and values in source |
-| `assert_activates_service name` | `activate_service` or `systemctl enable` for service |
+| `assert_writes_config_to_path "/path" "val1" "val2"` | Config path and values in source |
+| `assert_activates_systemd_service name` | `activate_service` or `systemctl enable` for service |
 
 ### Example: behavioral test
 
@@ -134,17 +134,17 @@ load '../helpers/bash-script-assertions'
 
 load '../helpers/bash-script-assertions'
 
-@test "is executable"     { assert_is_executable; }
-@test "passes shellcheck" { assert_passes_shellcheck; }
-@test "uses strict mode"  { assert_strict_mode; }
+@test "is executable"              { assert_is_executable; }
+@test "passes shellcheck"          { assert_passes_shellcheck; }
+@test "uses strict error handling"  { assert_uses_strict_error_handling; }
 
 @test "installs required packages" {
     assert_installs_apt_packages foo bar
 }
 
 @test "configures service" {
-    assert_writes_config "/etc/foo.conf" "KEY=value"
-    assert_activates_service foo
+    assert_writes_config_to_path "/etc/foo.conf" "KEY=value"
+    assert_activates_systemd_service foo
 }
 ```
 
@@ -172,4 +172,5 @@ teardown() {
 5. **Docker for e2e.** Run `docker run --rm --privileged dotfiles-test bash -c 'bin/setup-foo'` to verify setup scripts actually install and configure correctly on Ubuntu.
 6. **No external test libraries.** `tests/helpers/bash-script-assertions.bash` covers common assertions. Avoid adding bats-assert/bats-file/bats-mock unless a concrete need arises.
 7. **Shellcheck is mandatory.** All bash scripts must pass shellcheck. The `assert_passes_shellcheck` assertion handles environments where shellcheck isn't installed by skipping.
-8. **Names mean things.** Test directories mirror source directories. File and function names describe what they test, not how.
+8. **Names mean things.** Test directories mirror source directories. File and function names describe what they test, not how. Follow `agents/core.md` naming and script conventions.
+9. **Canonical script pattern.** All shell scripts under `tests/` follow the same pattern as `bin/rebuild`: `set -Eeuo pipefail`, `readonly` constants, `main()` at bottom, `_` prefixed private functions, no comments.
