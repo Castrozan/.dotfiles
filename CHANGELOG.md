@@ -324,6 +324,9 @@ All notable changes to this dotfiles repository are documented here.
 - *(test)* Remove stderr merge to prevent nix warnings in test output ([5415283](https://github.com/Castrozan/.dotfiles/commit/54152838cd7f6e818fd5039a7dcf51821b5b624f))
 - *(tmux)* New windows inherit current pane path ([c5ebab4](https://github.com/Castrozan/.dotfiles/commit/c5ebab4ef877be4154144ff56650b47c0ce326fb))
 - *(claude)* Skip bypass permissions confirmation prompt ([8644c12](https://github.com/Castrozan/.dotfiles/commit/8644c124da0d4939ea5adccca6cdf474a65e6430))
+- *(bin)* Handle missing systemctl/sysctl in setup-oom-protection ([684f1f6](https://github.com/Castrozan/.dotfiles/commit/684f1f6ed5a059fa935d0d280e4d1678679cd44f))
+- *(test)* Fix grep patterns matching variable expressions in bats ([bd60635](https://github.com/Castrozan/.dotfiles/commit/bd6063584814eab28d576a23fdbf7798bc24d51d))
+- *(test)* Use -- separator in grep to handle patterns starting with - ([4375a56](https://github.com/Castrozan/.dotfiles/commit/4375a5625804cd4d7f25e6b1d80a2cf9456604b6))
 
 ### CI/CD
 
@@ -434,6 +437,7 @@ All notable changes to this dotfiles repository are documented here.
 - *(screensaver)* Update showcase screenshot ([a223ff7](https://github.com/Castrozan/.dotfiles/commit/a223ff7142108e7ab300189e2aa3b724c59190d3))
 - *(openclaw)* Document OPENCLAW_NIX_MODE capabilities ([6e4ea5c](https://github.com/Castrozan/.dotfiles/commit/6e4ea5ccdd9b915ac6ba5f83c1b8da8115468433))
 - *(avatar)* Add voice conversation mode cron setup instructions ([2ea2603](https://github.com/Castrozan/.dotfiles/commit/2ea260350a644df6136c4944540ac04e7ae47b03))
+- *(openclaw)* Document session path patch context and removal criteria ([4176cc1](https://github.com/Castrozan/.dotfiles/commit/4176cc1f396c274f2e4c942de30ed9231d5c1548))
 
 ### Features
 
@@ -941,6 +945,11 @@ All notable changes to this dotfiles repository are documented here.
 - Add quickemu to virtualization packages ([c81a88f](https://github.com/Castrozan/.dotfiles/commit/c81a88f2e794c992499b2dbbcac6cb010041fa5c))
 - *(lucas.zanoni)* Add quickemu to home-manager packages ([4247bc6](https://github.com/Castrozan/.dotfiles/commit/4247bc6a1b5f76a0eb8b654a103b55186da277f9))
 - *(claude)* Upgrade claude-code to 2.1.42 ([9d658a3](https://github.com/Castrozan/.dotfiles/commit/9d658a3f378aeddbd2b6a72789eb5a8dc23f3579))
+- *(openclaw)* Upgrade to 2026.2.12 with session path patch plan ([17b45fd](https://github.com/Castrozan/.dotfiles/commit/17b45fd0a3eda234973a554c7b8aab06ec8f8e37))
+- *(bin)* Add OOM/freeze protection setup for non-NixOS workstations ([e499ec7](https://github.com/Castrozan/.dotfiles/commit/e499ec7b048de4ec6c7f8c9885ad3a24c3074c2c))
+- *(agents)* Add naming, design, and scripts policies to core instructions ([b575c07](https://github.com/Castrozan/.dotfiles/commit/b575c075bde68df2850e6446680d9180ccefc42d))
+- *(agents)* Add documentation policy to core instructions ([15810f2](https://github.com/Castrozan/.dotfiles/commit/15810f23f0a6c023aec8962fba7fb533e0d2f7d7))
+- *(agents)* Add documentation skill with evergreen policies ([8b8422e](https://github.com/Castrozan/.dotfiles/commit/8b8422e887b2d7ad34d244aeb3174cdcc3f8ccac))
 
 ### Miscellaneous
 
@@ -1029,6 +1038,7 @@ All notable changes to this dotfiles repository are documented here.
 - Update voice-pipeline flake lock ([af9338c](https://github.com/Castrozan/.dotfiles/commit/af9338c0df011ac1cc0b47229cb8bdb2c2899a29))
 - Add Makefile targets and integrate module tests into runner ([5918230](https://github.com/Castrozan/.dotfiles/commit/5918230217599d9b68b7d9cd49d9cacb174969b0))
 - Update changelog ([767a518](https://github.com/Castrozan/.dotfiles/commit/767a518b5cfec1062024b300cdf65925c1e3f280))
+- Update changelog ([609a340](https://github.com/Castrozan/.dotfiles/commit/609a34009095cbefe0d6d6dc554076367d68b5a8))
 
 ### Performance
 
@@ -1145,6 +1155,11 @@ All notable changes to this dotfiles repository are documented here.
 - *(avatar)* Move avatar infrastructure paths into skills/avatar/ ([1ee431c](https://github.com/Castrozan/.dotfiles/commit/1ee431cfc4a7297de2adecbb624bdfa18beba30d))
 - Flake export of hm modules ([80e30b7](https://github.com/Castrozan/.dotfiles/commit/80e30b74f3972c3d213c7c7aed50bf78211caa9b))
 - *(lucas.zanoni)* Remove zsh entirely ([9629892](https://github.com/Castrozan/.dotfiles/commit/962989218f45ce127422664a5284549db73bff6f))
+- *(test)* Extract shared bats helper for script tests ([0f5a2b7](https://github.com/Castrozan/.dotfiles/commit/0f5a2b71892b30dd43e8d907559ff6837296cf53))
+- *(test)* Unify all script tests on shared helper pattern ([607dd32](https://github.com/Castrozan/.dotfiles/commit/607dd3298c8dab7a3f904330b9478d24a38e9562))
+- *(test)* Rename tests for descriptive, obvious naming ([0935367](https://github.com/Castrozan/.dotfiles/commit/09353674ad4aa0921be257a7ad16701d02fcc888))
+- *(test)* Apply core.md conventions across all test files ([9782978](https://github.com/Castrozan/.dotfiles/commit/9782978c9a53100f5593f0476d49197e20cb9109))
+- *(agents)* Rename docs skill, slim agent-architect, tighten core ([b3704e7](https://github.com/Castrozan/.dotfiles/commit/b3704e7470c5901a49dee19a5f006d9782c848f8))
 
 ### Styling
 
@@ -1169,6 +1184,7 @@ All notable changes to this dotfiles repository are documented here.
 - *(openclaw)* Comprehensive nix eval and runtime test suite ([34600c6](https://github.com/Castrozan/.dotfiles/commit/34600c64a5b06b3a491f7455af97bef757045e6d))
 - *(voice-pipeline)* Add test environment with audio generators and adapter fakes ([360a4a3](https://github.com/Castrozan/.dotfiles/commit/360a4a3e666372799d267ba26764de53162258af))
 - *(modules)* Add BATS eval tests for homeManagerModules ([bb6f750](https://github.com/Castrozan/.dotfiles/commit/bb6f750cec4dd4c7c9cf0eaf365f5c07e6d10731))
+- *(bin)* Add bats tests for setup-oom-protection script ([1f8e8e1](https://github.com/Castrozan/.dotfiles/commit/1f8e8e19f532e3f66096907192683a241c9c89ef))
 
 ### Bump
 
