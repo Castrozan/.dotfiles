@@ -322,6 +322,8 @@ All notable changes to this dotfiles repository are documented here.
 - *(openclaw)* Handle empty agents list in defaultAgent ([4780084](https://github.com/Castrozan/.dotfiles/commit/47800843a207d1a5d03f11489c4a4614c9d003b8))
 - *(docker)* Add network host to build for DNS resolution ([0787b3d](https://github.com/Castrozan/.dotfiles/commit/0787b3da889f90fb129f816208fd694f82a4cb50))
 - *(test)* Remove stderr merge to prevent nix warnings in test output ([5415283](https://github.com/Castrozan/.dotfiles/commit/54152838cd7f6e818fd5039a7dcf51821b5b624f))
+- *(tmux)* New windows inherit current pane path ([c5ebab4](https://github.com/Castrozan/.dotfiles/commit/c5ebab4ef877be4154144ff56650b47c0ce326fb))
+- *(claude)* Skip bypass permissions confirmation prompt ([8644c12](https://github.com/Castrozan/.dotfiles/commit/8644c124da0d4939ea5adccca6cdf474a65e6430))
 
 ### CI/CD
 
@@ -1026,6 +1028,7 @@ All notable changes to this dotfiles repository are documented here.
 - *(secrets)* Add encrypted deepgram-api-key ([5552a50](https://github.com/Castrozan/.dotfiles/commit/5552a50cd47d3fdc0935ed6a166f74800f3f7720))
 - Update voice-pipeline flake lock ([af9338c](https://github.com/Castrozan/.dotfiles/commit/af9338c0df011ac1cc0b47229cb8bdb2c2899a29))
 - Add Makefile targets and integrate module tests into runner ([5918230](https://github.com/Castrozan/.dotfiles/commit/5918230217599d9b68b7d9cd49d9cacb174969b0))
+- Update changelog ([767a518](https://github.com/Castrozan/.dotfiles/commit/767a518b5cfec1062024b300cdf65925c1e3f280))
 
 ### Performance
 
