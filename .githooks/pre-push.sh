@@ -16,8 +16,8 @@ main() {
   _run_check "deadnix" nix run nixpkgs#deadnix -- .
   _run_check "nixfmt" bash -c "find . -name '*.nix' -not -path './result*' -not -path './.worktrees/*' -exec nix run nixpkgs#nixfmt-rfc-style -- --check {} +"
   _run_check "validate-skill-frontmatter" ./tests/validate-skill-frontmatter.sh agents/skills
-  _run_check "bats" nix shell nixpkgs#bats --command bats tests/bin-scripts/
-  _run_openclaw_eval_if_changed
+  _run_quick_bats_tests
+  _remind_nix_tests_if_openclaw_changed
 
   echo "All pre-push checks passed."
 }
@@ -41,12 +41,21 @@ _update_changelog() {
   echo ""
 }
 
-_run_openclaw_eval_if_changed() {
+_run_quick_bats_tests() {
+  echo "==> bats (quick)"
+  local testFiles=()
+  for testFile in tests/bin-scripts/*.bats; do
+    [[ "$(basename "$testFile")" == *-docker.bats ]] && continue
+    testFiles+=("$testFile")
+  done
+  nix shell nixpkgs#bats --command bats "${testFiles[@]}"
+  echo ""
+}
+
+_remind_nix_tests_if_openclaw_changed() {
   if _openclaw_files_changed; then
-    _run_check "openclaw-eval" \
-      nix shell nixpkgs#bats --command bats tests/openclaw/nix-config.bats
-  else
-    echo "==> openclaw-eval (skipped — no openclaw changes)"
+    echo ""
+    echo "NOTE: OpenClaw files changed. Run 'tests/run-all.sh --nix' to verify nix eval tests."
     echo ""
   fi
 }
