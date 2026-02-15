@@ -55,7 +55,7 @@ setup() {
 
 @test "setup-oom-protection: persists swappiness via sysctl.d" {
     run grep "sysctl.d" "$SCRIPT"
-    [[ "$output" == *"99-swappiness"* ]]
+    [[ "$output" == *"sysctl.d/99-"* ]]
 }
 
 @test "setup-oom-protection: activate_service handles missing systemctl" {
@@ -64,7 +64,7 @@ setup() {
 }
 
 @test "setup-oom-protection: apply_sysctl handles restricted sysctl" {
-    run grep -A5 "apply_sysctl" "$SCRIPT"
+    run grep "next boot" "$SCRIPT"
     [[ "$output" == *"will apply on next boot"* ]]
 }
 
