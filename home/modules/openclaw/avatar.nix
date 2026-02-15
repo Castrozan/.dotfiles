@@ -17,7 +17,7 @@ let
   avatarDir = "${homeDir}/${defaultAgentWorkspace}/skills/avatar";
 
   agentsWithAvatar = lib.filterAttrs (
-    name: agent: agent.enable && (agent.skills == [ ] || builtins.elem "avatar" agent.skills)
+    _name: agent: agent.enable && (agent.skills == [ ] || builtins.elem "avatar" agent.skills)
   ) openclaw.agents;
 
   nonDefaultAvatarAgents = lib.filterAttrs (

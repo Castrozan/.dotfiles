@@ -12,7 +12,6 @@
 # Remove this module once upstream ships a fix.
 { pkgs, lib, ... }:
 let
-  nodejs = pkgs.nodejs_22;
   npmPrefix = "$HOME/.local/share/openclaw-npm";
   openclawDistDir = "${npmPrefix}/lib/node_modules/openclaw/dist";
 
