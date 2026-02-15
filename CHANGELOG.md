@@ -950,6 +950,8 @@ All notable changes to this dotfiles repository are documented here.
 - *(agents)* Add naming, design, and scripts policies to core instructions ([b575c07](https://github.com/Castrozan/.dotfiles/commit/b575c075bde68df2850e6446680d9180ccefc42d))
 - *(agents)* Add documentation policy to core instructions ([15810f2](https://github.com/Castrozan/.dotfiles/commit/15810f23f0a6c023aec8962fba7fb533e0d2f7d7))
 - *(agents)* Add documentation skill with evergreen policies ([8b8422e](https://github.com/Castrozan/.dotfiles/commit/8b8422e887b2d7ad34d244aeb3174cdcc3f8ccac))
+- *(skills)* Add general openclaw skill with discovery-first approach ([2aa1287](https://github.com/Castrozan/.dotfiles/commit/2aa12872dad03aece22cc700ee725a4886264523))
+- *(home)* Add OOM protection activation module ([7c8c94c](https://github.com/Castrozan/.dotfiles/commit/7c8c94cbbac4cd562b4165be18b86e47a0d28b23))
 
 ### Miscellaneous
 
@@ -1039,6 +1041,7 @@ All notable changes to this dotfiles repository are documented here.
 - Add Makefile targets and integrate module tests into runner ([5918230](https://github.com/Castrozan/.dotfiles/commit/5918230217599d9b68b7d9cd49d9cacb174969b0))
 - Update changelog ([767a518](https://github.com/Castrozan/.dotfiles/commit/767a518b5cfec1062024b300cdf65925c1e3f280))
 - Update changelog ([609a340](https://github.com/Castrozan/.dotfiles/commit/609a34009095cbefe0d6d6dc554076367d68b5a8))
+- Update changelog ([87b1378](https://github.com/Castrozan/.dotfiles/commit/87b1378247a2063fb749389ab021811335ae4e00))
 
 ### Performance
 
@@ -1160,6 +1163,8 @@ All notable changes to this dotfiles repository are documented here.
 - *(test)* Rename tests for descriptive, obvious naming ([0935367](https://github.com/Castrozan/.dotfiles/commit/09353674ad4aa0921be257a7ad16701d02fcc888))
 - *(test)* Apply core.md conventions across all test files ([9782978](https://github.com/Castrozan/.dotfiles/commit/9782978c9a53100f5593f0476d49197e20cb9109))
 - *(agents)* Rename docs skill, slim agent-architect, tighten core ([b3704e7](https://github.com/Castrozan/.dotfiles/commit/b3704e7470c5901a49dee19a5f006d9782c848f8))
+- *(agents)* Improve skill descriptions for better discovery ([3eba07c](https://github.com/Castrozan/.dotfiles/commit/3eba07c2d2880eae1e9e69d6ed0720cacab26ee8))
+- *(agents)* Portable paths, openclaw skill boundaries ([f218891](https://github.com/Castrozan/.dotfiles/commit/f21889156ee5d4ae589ae7df39c5e3feb947418d))
 
 ### Styling
 
