@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+echo "=== OOM & Freeze Protection Setup ==="
+echo "Mirrors NixOS dellg15 protections for non-NixOS Ubuntu workstations"
+echo ""
+
+echo "[1/4] Installing earlyoom..."
+sudo apt install -y earlyoom
+
+echo "[2/4] Configuring earlyoom (kill at 5% free mem, 10% free swap)..."
+sudo tee /etc/default/earlyoom > /dev/null <<'CONF'
+EARLYOOM_ARGS="-m 5 -s 10 -r 3600 --avoid '(^|/)(init|Xorg|Xwayland|sshd|systemd)$' --prefer '(^|/)(nix-build|cc1plus|rustc|node|java|chrome_crashpad)$' -n"
+CONF
+
+sudo systemctl enable --now earlyoom
+echo "  earlyoom active: $(systemctl is-active earlyoom)"
+
+echo "[3/4] Configuring zram..."
+sudo apt install -y zram-tools
+
+sudo tee /etc/default/zramswap > /dev/null <<'CONF'
+ALGO=zstd
+PERCENT=50
+PRIORITY=100
+CONF
+
+sudo systemctl enable --now zramswap
+echo "  zram devices:"
+zramctl 2>/dev/null || echo "  (will be active after reboot)"
+
+echo "[4/4] Setting vm.swappiness to 150 (prefer zram over OOM)..."
+sudo sysctl -w vm.swappiness=150
+echo "vm.swappiness=150" | sudo tee /etc/sysctl.d/99-swappiness.conf > /dev/null
+
+echo ""
+echo "=== Done ==="
+echo "Protections active:"
+echo "  - earlyoom: kills runaway processes at 5% free memory"
+echo "  - zram: compressed swap using 50% of RAM (~16GB effective)"
+echo "  - swappiness=150: aggressively uses zram before OOM"
+echo ""
+echo "Verify with:"
+echo "  systemctl status earlyoom"
+echo "  zramctl"
+echo "  sysctl vm.swappiness"
