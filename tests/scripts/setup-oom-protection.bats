@@ -22,7 +22,7 @@ setup() {
 }
 
 @test "setup-oom-protection: installs earlyoom package" {
-    run grep -c "apt install.*earlyoom" "$SCRIPT"
+    run grep -c "apt-get install.*earlyoom" "$SCRIPT"
     [ "$output" -ge 1 ]
 }
 
@@ -32,13 +32,13 @@ setup() {
     [[ "$output" == *"-s 10"* ]]
 }
 
-@test "setup-oom-protection: enables earlyoom service" {
-    run grep "systemctl enable" "$SCRIPT"
+@test "setup-oom-protection: activates earlyoom via activate_service" {
+    run grep "activate_service" "$SCRIPT"
     [[ "$output" == *"earlyoom"* ]]
 }
 
 @test "setup-oom-protection: installs zram-tools" {
-    run grep -c "apt install.*zram-tools" "$SCRIPT"
+    run grep -c "apt-get install.*zram-tools" "$SCRIPT"
     [ "$output" -ge 1 ]
 }
 
@@ -55,5 +55,22 @@ setup() {
 
 @test "setup-oom-protection: persists swappiness via sysctl.d" {
     run grep "sysctl.d" "$SCRIPT"
-    [[ "$output" == *"99-swappiness.conf"* ]]
+    [[ "$output" == *"99-swappiness"* ]]
+}
+
+@test "setup-oom-protection: activate_service handles missing systemctl" {
+    run grep -A3 "activate_service" "$SCRIPT"
+    [[ "$output" == *"command -v systemctl"* ]]
+}
+
+@test "setup-oom-protection: apply_sysctl handles restricted sysctl" {
+    run grep -A5 "apply_sysctl" "$SCRIPT"
+    [[ "$output" == *"will apply on next boot"* ]]
+}
+
+@test "setup-oom-protection: runs apt-get update before installs" {
+    local updateLine installLine
+    updateLine=$(grep -n "apt-get update" "$SCRIPT" | head -1 | cut -d: -f1)
+    installLine=$(grep -n "apt-get install" "$SCRIPT" | head -1 | cut -d: -f1)
+    [ "$updateLine" -lt "$installLine" ]
 }
