@@ -1,6 +1,6 @@
 ---
 name: prompt-engineering
-description: Writing agent/skill instructions that stay accurate as code evolves
+description: Write agent and skill instructions that stay accurate as code evolves. Use when crafting system prompts, writing SKILL.md descriptions, designing agent rules, or improving instruction quality. Also use when instructions feel stale, vague, or are being ignored by the model.
 ---
 <!-- @agent-architect owns this file. Delegate changes, don't edit directly. -->
 

@@ -1,6 +1,6 @@
 ---
 name: claude-code-agents
-description: Claude Code custom agent YAML format requirements
+description: Create custom Claude Code agents in YAML format. Use when building new agents, defining agent configurations, or setting up agent YAML files with tools, permissions, and model specifications.
 alwaysApply: false
 ---
 <!-- @agent-architect owns this file. Delegate changes, don't edit directly. -->

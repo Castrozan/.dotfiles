@@ -1,6 +1,6 @@
 ---
 name: hey-clever
-description: Push-to-talk voice assistant. Uses whisp-away for transcription, sends to OpenClaw gateway, plays TTS response. Triggered via Hyprland keybind.
+description: Push-to-talk voice assistant with speech-to-text and TTS. Use when configuring the hey-clever voice keybind, debugging voice transcription, or troubleshooting the whisp-away to OpenClaw gateway pipeline.
 ---
 
 # Hey Clever -- Push-to-Talk Voice Assistant

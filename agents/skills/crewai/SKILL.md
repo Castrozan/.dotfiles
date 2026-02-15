@@ -1,6 +1,6 @@
 ---
 name: crewai
-description: Multi-agent framework for production workflows. Use when multiple specialized agents need shared context and automatic task handoff (researcher + writer, analyst + coder).
+description: Multi-agent framework for production workflows with CrewAI. Use when orchestrating multiple specialized agents that need shared context and automatic task handoff. Also use when building agent pipelines, crew-based automation, or coordinating researcher + writer or analyst + coder patterns.
 ---
 
 # CrewAI - Multi-Agent Framework

@@ -1,6 +1,6 @@
 ---
 name: claude-code-oneshot
-description: Run Claude Code for deep coding sessions - one-shot execution, no back-and-forth. Use for complex tasks with lots of context that are straightforward to verify.
+description: Run Claude Code as a one-shot autonomous coding session with no back-and-forth. Use when delegating complex tasks that need deep focus, large context, or long-running execution. Also use when spawning a subagent for refactoring, migration, or implementation work that is straightforward to verify.
 metadata:
   openclaw:
     emoji: "⚡"

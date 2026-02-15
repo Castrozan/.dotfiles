@@ -1,6 +1,6 @@
 ---
 name: worktrees
-description: Use when starting feature work that needs isolation from current workspace or before executing implementation plans - creates isolated git worktrees with smart directory selection and safety verification
+description: Create isolated git worktrees for parallel development. Use when starting feature work that needs isolation from current workspace, working on multiple branches simultaneously, or before executing implementation plans that should not affect the main workspace.
 ---
 <!-- @agent-architect owns this file. Delegate changes, don't edit directly. -->
 

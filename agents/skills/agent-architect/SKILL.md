@@ -18,9 +18,13 @@ Scripts: User explicit control, simple repeatable action, template-based.
 </extension_decision>
 
 <skill_format>
-agents/skills/name/SKILL.md. Short and easy detectable names to make them be used more frequently (e.g. worktrees not using-git-worktrees). Body uses XML tags with dense prose.
+agents/skills/name/SKILL.md. Short names for easy discovery (e.g. worktrees not using-git-worktrees). Body uses XML tags with dense prose.
 Script-backed skills: For deterministic single-action skills, logic in skill-name/scripts/script-A.sh. SKILL.md becomes minimal: prerequisites + path + script invocation example.
 </skill_format>
+
+<skill_discovery>
+Description drives discovery — models read it semantically to match user intent. Name is just the invocation identifier. Write descriptions as: one-sentence purpose + "Use when..." with natural user phrasings as trigger scenarios. Embed synonyms in prose, not as keyword lists. Add "Do NOT use for..." boundaries when similar skills exist. Keep descriptions under 150 words. All trigger information goes in the description, not the body — the body only loads after selection.
+</skill_discovery>
 
 <prompt_engineering>
 XML tags for structure. Descriptive and long tag names. Reference tags in instructions.

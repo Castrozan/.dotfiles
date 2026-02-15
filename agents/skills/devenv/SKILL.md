@@ -1,6 +1,6 @@
 ---
 name: devenv
-description: Devenv usage patterns for AI agents managing development environments
+description: Manage Nix-based development environments with devenv. Use when creating, configuring, or debugging devenv shells, adding packages or services to devenv.nix, or setting up project-specific dev environments with processes, databases, or language toolchains.
 ---
 <!-- @agent-architect owns this file. Delegate changes, don't edit directly. -->
 

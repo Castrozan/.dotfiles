@@ -1,6 +1,6 @@
 ---
 name: avatar
-description: "Control the VTuber avatar — speak with lip sync, change expressions, route audio to speakers or Meet."
+description: Control the VTuber avatar with lip sync and expressions. Use when user asks to speak through the avatar, change facial expressions, route audio to speakers or Google Meet, or animate the character during presentations or streams.
 ---
 
 # Avatar — VTuber Control

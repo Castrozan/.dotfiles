@@ -1,6 +1,6 @@
 ---
 name: browser
-description: "Browser automation with persistent agent browser. Primary: pw CLI (~400ms/cmd). Fallback: Playwright MCP server via Claude Code MCP integration."
+description: Browser automation with persistent agent browser. Use when user asks to open a webpage, scrape content, fill forms, click buttons, take screenshots, test a web UI, or automate any browser interaction. Also use when navigating authenticated web apps or testing frontend changes.
 ---
 
 # Browser Automation

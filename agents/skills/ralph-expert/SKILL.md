@@ -1,6 +1,6 @@
 ---
 name: ralph-expert
-description: Use when working with Ralph TUI, the Ralph Loop, PRD creation, task tracking workflows, or autonomous AI agent loops. Includes setup, PRD creation, tracker configuration, debugging sessions, understanding self-critique loop pattern, optimizing AI-driven workflows.
+description: Expert on Ralph TUI and the Ralph Loop autonomous agent pattern. Use when creating PRDs, configuring task trackers, running autonomous coding loops, debugging Ralph sessions, or understanding the self-critique loop pattern for AI-driven workflows.
 ---
 <!-- @agent-architect owns this file. Delegate changes, don't edit directly. -->
 
