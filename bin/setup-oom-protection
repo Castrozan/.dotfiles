@@ -1,65 +1,86 @@
 #!/usr/bin/env bash
-set -euo pipefail
 
-activate_service() {
-    local serviceName="$1"
-    if command -v systemctl &>/dev/null; then
-        sudo systemctl enable --now "$serviceName"
-        echo "  $serviceName active: $(systemctl is-active "$serviceName")"
-    else
-        echo "  systemctl not found, $serviceName will activate on next boot"
-    fi
+set -Eeuo pipefail
+
+readonly EARLYOOM_CONFIG_PATH="/etc/default/earlyoom"
+readonly ZRAMSWAP_CONFIG_PATH="/etc/default/zramswap"
+
+main() {
+  echo "=== OOM & Freeze Protection Setup ==="
+  echo "Mirrors NixOS dellg15 protections for non-NixOS Ubuntu workstations"
+  echo ""
+
+  _update_package_lists
+  _install_and_configure_earlyoom
+  _install_and_configure_zram
+  _set_swappiness
+
+  echo ""
+  echo "=== Done ==="
+  echo "Protections active:"
+  echo "  - earlyoom: kills runaway processes at 5% free memory"
+  echo "  - zram: compressed swap using 50% of RAM (~16GB effective)"
+  echo "  - swappiness=150: aggressively uses zram before OOM"
+  echo ""
+  echo "Verify with:"
+  echo "  systemctl status earlyoom"
+  echo "  zramctl"
+  echo "  sysctl vm.swappiness"
 }
 
-apply_sysctl() {
-    local key="$1" value="$2"
-    echo "$key=$value" | sudo tee "/etc/sysctl.d/99-${key##*.}.conf" > /dev/null
-    if sudo sysctl -w "$key=$value" 2>/dev/null; then
-        echo "  $key=$value (applied live)"
-    else
-        echo "  $key=$value (will apply on next boot)"
-    fi
+_update_package_lists() {
+  echo "[0/4] Updating package lists..."
+  sudo apt-get update -qq
 }
 
-echo "=== OOM & Freeze Protection Setup ==="
-echo "Mirrors NixOS dellg15 protections for non-NixOS Ubuntu workstations"
-echo ""
+_install_and_configure_earlyoom() {
+  echo "[1/4] Installing earlyoom..."
+  sudo apt-get install -y -qq earlyoom
 
-echo "[0/4] Updating package lists..."
-sudo apt-get update -qq
-
-echo "[1/4] Installing earlyoom..."
-sudo apt-get install -y -qq earlyoom
-
-echo "[2/4] Configuring earlyoom (kill at 5% free mem, 10% free swap)..."
-sudo tee /etc/default/earlyoom > /dev/null <<'CONF'
+  echo "[2/4] Configuring earlyoom (kill at 5% free mem, 10% free swap)..."
+  sudo tee "$EARLYOOM_CONFIG_PATH" > /dev/null <<'CONF'
 EARLYOOM_ARGS="-m 5 -s 10 -r 3600 --avoid '(^|/)(init|Xorg|Xwayland|sshd|systemd)$' --prefer '(^|/)(nix-build|cc1plus|rustc|node|java|chrome_crashpad)$' -n"
 CONF
 
-activate_service earlyoom
+  _activate_service earlyoom
+}
 
-echo "[3/4] Configuring zram..."
-sudo apt-get install -y -qq zram-tools
+_install_and_configure_zram() {
+  echo "[3/4] Configuring zram..."
+  sudo apt-get install -y -qq zram-tools
 
-sudo tee /etc/default/zramswap > /dev/null <<'CONF'
+  sudo tee "$ZRAMSWAP_CONFIG_PATH" > /dev/null <<'CONF'
 ALGO=zstd
 PERCENT=50
 PRIORITY=100
 CONF
 
-activate_service zramswap
+  _activate_service zramswap
+}
 
-echo "[4/4] Setting vm.swappiness to 150 (prefer zram over OOM)..."
-apply_sysctl vm.swappiness 150
+_set_swappiness() {
+  echo "[4/4] Setting vm.swappiness to 150 (prefer zram over OOM)..."
+  _apply_sysctl vm.swappiness 150
+}
 
-echo ""
-echo "=== Done ==="
-echo "Protections active:"
-echo "  - earlyoom: kills runaway processes at 5% free memory"
-echo "  - zram: compressed swap using 50% of RAM (~16GB effective)"
-echo "  - swappiness=150: aggressively uses zram before OOM"
-echo ""
-echo "Verify with:"
-echo "  systemctl status earlyoom"
-echo "  zramctl"
-echo "  sysctl vm.swappiness"
+_activate_service() {
+  local service_name="$1"
+  if command -v systemctl &>/dev/null; then
+    sudo systemctl enable --now "$service_name"
+    echo "  $service_name active: $(systemctl is-active "$service_name")"
+  else
+    echo "  systemctl not found, $service_name will activate on next boot"
+  fi
+}
+
+_apply_sysctl() {
+  local key="$1" value="$2"
+  echo "$key=$value" | sudo tee "/etc/sysctl.d/99-${key##*.}.conf" > /dev/null
+  if sudo sysctl -w "$key=$value" 2>/dev/null; then
+    echo "  $key=$value (applied live)"
+  else
+    echo "  $key=$value (will apply on next boot)"
+  fi
+}
+
+main "$@"

@@ -26,7 +26,7 @@ assert_passes_shellcheck() {
 
 assert_uses_strict_error_handling() {
     run head -5 "$(_resolve_script_under_test)"
-    [[ "$output" == *"set -euo pipefail"* ]]
+    [[ "$output" == *"set -Eeuo pipefail"* ]] || [[ "$output" == *"set -euo pipefail"* ]]
 }
 
 assert_fails_with() {
