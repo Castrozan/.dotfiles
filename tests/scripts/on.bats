@@ -1,12 +1,15 @@
 #!/usr/bin/env bats
-# Tests for on script (obsidian note creator)
 
-setup() {
-    SCRIPT="$BATS_TEST_DIRNAME/../../bin/on"
+load '../helpers/script'
+
+@test "is executable" {
+    assert_is_executable
 }
 
-@test "on: errors when no filename provided" {
-    run "$SCRIPT"
-    [ "$status" -eq 1 ]
-    [[ "$output" == *"file name must be set"* ]]
+@test "passes shellcheck" {
+    assert_passes_shellcheck
+}
+
+@test "errors when no filename provided" {
+    assert_fails_with "file name must be set"
 }

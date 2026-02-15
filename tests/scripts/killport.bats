@@ -1,18 +1,19 @@
 #!/usr/bin/env bats
-# Tests for killport script
 
-setup() {
-    SCRIPT="$BATS_TEST_DIRNAME/../../bin/killport"
+load '../helpers/script'
+
+@test "is executable" {
+    assert_is_executable
 }
 
-@test "killport: shows usage when no port provided" {
-    run "$SCRIPT"
-    [ "$status" -eq 1 ]
-    [[ "$output" == *"Usage:"* ]]
+@test "passes shellcheck" {
+    assert_passes_shellcheck
 }
 
-@test "killport: reports when no process found on unused port" {
-    run "$SCRIPT" 59999
-    [ "$status" -eq 1 ]
-    [[ "$output" == *"No process found"* ]]
+@test "shows usage when no port provided" {
+    assert_fails_with "Usage:"
+}
+
+@test "reports when no process found on unused port" {
+    assert_fails_with "No process found" 59999
 }

@@ -8,6 +8,10 @@ script_under_test() {
     echo "$BIN_DIR/$scriptName"
 }
 
+run_script() {
+    run "$(script_under_test)" "$@"
+}
+
 assert_is_executable() {
     [ -x "$(script_under_test)" ]
 }
@@ -23,6 +27,22 @@ assert_passes_shellcheck() {
 assert_strict_mode() {
     run head -5 "$(script_under_test)"
     [[ "$output" == *"set -euo pipefail"* ]]
+}
+
+assert_fails_with() {
+    local expectedPattern="$1"
+    shift
+    run_script "$@"
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"$expectedPattern"* ]]
+}
+
+assert_succeeds_with() {
+    local expectedPattern="$1"
+    shift
+    run_script "$@"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"$expectedPattern"* ]]
 }
 
 assert_contains() {

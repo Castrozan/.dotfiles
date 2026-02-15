@@ -1,12 +1,11 @@
 #!/usr/bin/env bats
-# Tests for tar-unzip2dir script
+
+load '../helpers/script'
 
 setup() {
-    SCRIPT="$BATS_TEST_DIRNAME/../../bin/tar-unzip2dir"
     TEST_DIR=$(mktemp -d)
-    cd "$TEST_DIR"
+    cd "$TEST_DIR" || return 1
 
-    # Create test archive
     mkdir -p source
     echo "test content" > source/file.txt
     tar -czf test.tar.gz source
@@ -17,36 +16,38 @@ teardown() {
     rm -rf "$TEST_DIR"
 }
 
-@test "tar-unzip2dir: shows usage when no file provided" {
-    run "$SCRIPT"
-    [ "$status" -eq 1 ]
-    [[ "$output" == *"Usage:"* ]]
+@test "is executable" {
+    assert_is_executable
 }
 
-@test "tar-unzip2dir: errors on non-existent file" {
-    run "$SCRIPT" nonexistent.tar.gz
-    [ "$status" -eq 1 ]
-    [[ "$output" == *"not found"* ]]
+@test "passes shellcheck" {
+    assert_passes_shellcheck
 }
 
-@test "tar-unzip2dir: errors on wrong file type" {
+@test "uses strict mode" {
+    assert_strict_mode
+}
+
+@test "shows usage when no file provided" {
+    assert_fails_with "Usage:"
+}
+
+@test "errors on non-existent file" {
+    assert_fails_with "not found" nonexistent.tar.gz
+}
+
+@test "errors on wrong file type" {
     touch wrongtype.zip
-    run "$SCRIPT" wrongtype.zip
-    [ "$status" -eq 1 ]
-    [[ "$output" == *".tar.gz or .tgz"* ]]
+    assert_fails_with ".tar.gz or .tgz" wrongtype.zip
 }
 
-@test "tar-unzip2dir: extracts to named directory" {
-    run "$SCRIPT" test.tar.gz
-    [ "$status" -eq 0 ]
+@test "extracts to named directory" {
+    assert_succeeds_with "Success" test.tar.gz
     [ -d "test" ]
     [ -f "test/source/file.txt" ]
-    [[ "$output" == *"Success"* ]]
 }
 
-@test "tar-unzip2dir: errors if output directory exists" {
+@test "errors if output directory exists" {
     mkdir test
-    run "$SCRIPT" test.tar.gz
-    [ "$status" -eq 1 ]
-    [[ "$output" == *"already exists"* ]]
+    assert_fails_with "already exists" test.tar.gz
 }
