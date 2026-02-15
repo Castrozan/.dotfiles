@@ -6,12 +6,12 @@
 # │                      │  cmatrix  │
 # │    openclaw-mesh     │  (pane 2) │
 # │      (pane 1)        ├───────────┤
-# │       80%            │ bad-apple │
+# │       70%            │ bad-apple │
 # │                      │  (pane 3) │
 # └──────────────────────┴───────────┘
 #
-# Pane 1 (left, 80% width):        openclaw-mesh
-# Pane 2 (top-right, 20% width):   cmatrix
+# Pane 1 (left, 70% width):        openclaw-mesh
+# Pane 2 (top-right, 30% width):   cmatrix
 # Pane 3 (bottom-right, 50% height of right column): bad-apple
 #
 # shellcheck disable=SC2034

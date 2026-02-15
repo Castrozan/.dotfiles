@@ -51,8 +51,8 @@ _start_screensaver_tmux_session() {
         local first_cmd="${available_commands[0]}"
 
         if [ ${#available_commands[@]} -gt 1 ]; then
-            # Split horizontally: right pane (pane 2) gets 20% width
-            tmux split-window -h -p 20 -t screensaver.1
+            # Split horizontally: right pane (pane 2) gets 30% width
+            tmux split-window -h -p 30 -t screensaver.1
 
             if [ ${#available_commands[@]} -gt 2 ]; then
                 # Split right pane vertically: bottom-right (pane 3) gets 50% height
