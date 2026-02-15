@@ -327,6 +327,7 @@ All notable changes to this dotfiles repository are documented here.
 - *(bin)* Handle missing systemctl/sysctl in setup-oom-protection ([684f1f6](https://github.com/Castrozan/.dotfiles/commit/684f1f6ed5a059fa935d0d280e4d1678679cd44f))
 - *(test)* Fix grep patterns matching variable expressions in bats ([bd60635](https://github.com/Castrozan/.dotfiles/commit/bd6063584814eab28d576a23fdbf7798bc24d51d))
 - *(test)* Use -- separator in grep to handle patterns starting with - ([4375a56](https://github.com/Castrozan/.dotfiles/commit/4375a5625804cd4d7f25e6b1d80a2cf9456604b6))
+- *(test)* Update openclaw tests for single-machine agent topology ([298eb89](https://github.com/Castrozan/.dotfiles/commit/298eb899bf4a1e02d921c45bd9249bd33d814954))
 
 ### CI/CD
 
@@ -952,6 +953,7 @@ All notable changes to this dotfiles repository are documented here.
 - *(agents)* Add documentation skill with evergreen policies ([8b8422e](https://github.com/Castrozan/.dotfiles/commit/8b8422e887b2d7ad34d244aeb3174cdcc3f8ccac))
 - *(skills)* Add general openclaw skill with discovery-first approach ([2aa1287](https://github.com/Castrozan/.dotfiles/commit/2aa12872dad03aece22cc700ee725a4886264523))
 - *(home)* Add OOM protection activation module ([7c8c94c](https://github.com/Castrozan/.dotfiles/commit/7c8c94cbbac4cd562b4165be18b86e47a0d28b23))
+- *(home)* Add OOM protection activation module ([d158576](https://github.com/Castrozan/.dotfiles/commit/d1585761fd25fecc1fcc8ddb0b32d320539753d6))
 
 ### Miscellaneous
 
