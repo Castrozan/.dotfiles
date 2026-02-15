@@ -1,61 +1,47 @@
 # Testing
 
+## Tiers
+
+Tests are organized in tiers by speed and tool requirements. The `tests/run-all.sh` script is the canonical entry point for all tiers.
+
+| Tier | Content | Time | Flag |
+|---|---|---|---|
+| Quick | skill frontmatter + pure bash bats (excludes `*-docker.bats`) | ~3s | `--quick` (default) |
+| Nix | home-manager + openclaw nix eval tests | ~120s | `--nix` (includes quick) |
+| Docker | `*-docker.bats` integration tests | ~60s | `--docker` |
+| Runtime | live-services.bats (needs running gateway) | variable | `--runtime` |
+
+Additional modes: `--all` runs quick + nix + docker. `--coverage` runs quick tests through kcov. `--ci` runs quick with CI-appropriate skip messages.
+
 ## Run
 
 ```bash
-tests/run-all.sh                                    # everything
-tests/run-all.sh --coverage                         # with kcov coverage
-tests/run-all.sh --runtime                          # include live service tests
-bats tests/bin-scripts/                             # bin/ script tests only
-bats tests/bin-scripts/killport.bats                # single file
-docker build -t dotfiles-test -f tests/Dockerfile . # in Docker
-docker run --rm dotfiles-test bats tests/bin-scripts/
+tests/run-all.sh                    # quick tier (default)
+tests/run-all.sh --nix              # quick + nix eval tests
+tests/run-all.sh --docker           # docker integration tests only
+tests/run-all.sh --all              # everything except runtime
+tests/run-all.sh --coverage         # quick tests with kcov coverage
+tests/run-all.sh --runtime          # openclaw live service tests
+bats tests/bin-scripts/foo.bats     # single test file
 ```
 
-## Structure
+Each tier auto-detects tool availability (bats, nix, docker, kcov) and skips gracefully with a message when tools are missing.
 
-```
-tests/
-├── run-all.sh                          # entrypoint: runs all test categories
-├── Dockerfile                          # Ubuntu 24.04 + Nix test environment
-├── bash-coverage.sh                    # kcov coverage for bin/ scripts
-├── nix-coverage.sh                     # unused .nix file detection
-├── validate-skill-frontmatter.sh       # YAML frontmatter validation for skills
-├── TESTING.md
-│
-├── helpers/
-│   └── bash-script-assertions.bash     # shared bats assertions for bin/ tests
-│
-├── bin-scripts/                        # tests for bin/ shell scripts
-│   ├── killport.bats
-│   ├── on.bats
-│   ├── setup-oom-protection.bats
-│   └── tar-unzip2dir.bats
-│
-├── nix-modules/                        # tests home-manager module evaluation
-│   └── home-manager.bats
-│
-├── openclaw/                           # openclaw-specific tests
-│   ├── nix-config.bats                 # nix configuration for both machines
-│   └── live-services.bats              # running gateway, systemd, deployed files
-│
-├── agent-evals/                        # AI agent behavior evaluation (python)
-│   ├── run-evals.py
-│   └── config/
-│
-└── coverage/                           # generated coverage output
-```
+## Docker Test Naming Convention
+
+Files matching `*-docker.bats` are docker integration tests. They require docker, run inside containers, and are excluded from the quick tier, pre-push hook, CI, and kcov coverage. When adding a new docker integration test, name it `<script>-docker.bats` and it will automatically be routed to the docker tier.
 
 ## Test Categories
 
-| Category | Location | Requires | CI |
-|---|---|---|---|
-| Bin scripts | `tests/bin-scripts/*.bats` | bats | yes |
-| Home manager modules | `tests/nix-modules/home-manager.bats` | bats, nix | Docker |
-| OpenClaw nix config | `tests/openclaw/nix-config.bats` | bats, nix | Docker |
-| OpenClaw live services | `tests/openclaw/live-services.bats` | bats, running services | opt-in (`--runtime`) |
-| Skill frontmatter | `tests/validate-skill-frontmatter.sh` | bash | yes |
-| Agent evals | `tests/agent-evals/` | claude cli | manual |
+| Category | Location | Requires |
+|---|---|---|
+| Bin scripts | `tests/bin-scripts/*.bats` (excluding `*-docker.bats`) | bats |
+| Docker integration | `tests/bin-scripts/*-docker.bats` | bats, docker |
+| Home manager modules | `tests/nix-modules/home-manager.bats` | bats, nix |
+| OpenClaw nix config | `tests/openclaw/nix-config.bats` | bats, nix |
+| OpenClaw live services | `tests/openclaw/live-services.bats` | bats, running services |
+| Skill frontmatter | `tests/validate-skill-frontmatter.sh` | bash |
+| Agent evals | `tests/agent-evals/` | claude cli |
 
 ## Writing Bin Script Tests
 
@@ -169,7 +155,7 @@ teardown() {
 2. **Test filename = script name.** `bin/foo` → `tests/bin-scripts/foo.bats`. The helper auto-resolves the path.
 3. **Static over execution for setup scripts.** Scripts requiring sudo/root are tested via content analysis, not execution. Verify configs, packages, and service activation are declared correctly.
 4. **Behavioral tests for CLI scripts.** Scripts that take user input should test error paths (missing args, bad input) and success paths.
-5. **Docker for e2e.** Run `docker run --rm --privileged dotfiles-test bash -c 'bin/setup-foo'` to verify setup scripts actually install and configure correctly on Ubuntu.
+5. **Docker for e2e.** Name docker integration test files `*-docker.bats` so they are automatically excluded from the quick tier. Run `docker run --rm --privileged dotfiles-test bash -c 'bin/setup-foo'` to verify setup scripts actually install and configure correctly on Ubuntu.
 6. **No external test libraries.** `tests/helpers/bash-script-assertions.bash` covers common assertions. Avoid adding bats-assert/bats-file/bats-mock unless a concrete need arises.
 7. **Shellcheck is mandatory.** All bash scripts must pass shellcheck. The `assert_passes_shellcheck` assertion handles environments where shellcheck isn't installed by skipping.
 8. **Names mean things.** Test directories mirror source directories. File and function names describe what they test, not how. Follow `agents/core.md` naming and script conventions.

@@ -25,7 +25,16 @@ Before presenting results to the user, stop and verify completeness:
 </pre_delivery>
 
 <what_to_test>
-Match testing to the project. Nix files: dry-run build, then full rebuild. Application code: unit tests, integration tests, linter. Config files: validation commands specific to the tool. Shell scripts: shellcheck, then execute with safe inputs. If the project has a test runner, use it. If it has a linter, run it. Check for existing CI configuration and replicate locally what CI would run.
+Use `tests/run-all.sh` as the canonical test entry point. It has tiered modes:
+
+- `tests/run-all.sh` (no args = `--quick`): skill frontmatter + non-docker bats tests (~3s). Run this for fast feedback after any change.
+- `tests/run-all.sh --nix`: quick + home-manager and openclaw nix eval tests (~120s). Run this when touching nix files.
+- `tests/run-all.sh --docker`: docker integration tests only (~60s). Run when touching setup scripts that have `*-docker.bats` tests.
+- `tests/run-all.sh --all`: quick + nix + docker — comprehensive pre-delivery verification.
+- `tests/run-all.sh --coverage`: quick tests through kcov for coverage reports.
+- `tests/run-all.sh --runtime`: openclaw live service tests (needs running gateway).
+
+The runner auto-detects available tools (bats, nix, docker, kcov) and skips tiers gracefully when tools are missing. For this dotfiles repo, the default workflow is: quick after every change, `--nix` when touching `.nix` files, `--all` before delivery.
 </what_to_test>
 
 <test_failures>
