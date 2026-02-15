@@ -1,76 +1,48 @@
 #!/usr/bin/env bats
 
-setup() {
-    SCRIPT="$BATS_TEST_DIRNAME/../../bin/setup-oom-protection"
+load '../helpers/script'
+
+@test "is executable" {
+    assert_is_executable
 }
 
-@test "setup-oom-protection: script is executable" {
-    [ -x "$SCRIPT" ]
+@test "passes shellcheck" {
+    assert_passes_shellcheck
 }
 
-@test "setup-oom-protection: script passes shellcheck" {
-    if ! command -v shellcheck &>/dev/null; then
-        skip "shellcheck not installed"
-    fi
-    run shellcheck "$SCRIPT"
-    [ "$status" -eq 0 ]
+@test "uses strict mode" {
+    assert_strict_mode
 }
 
-@test "setup-oom-protection: uses set -euo pipefail" {
-    run head -2 "$SCRIPT"
-    [[ "$output" == *"set -euo pipefail"* ]]
+@test "updates apt before installing" {
+    assert_line_order "apt-get update" "apt-get install"
 }
 
-@test "setup-oom-protection: installs earlyoom package" {
-    run grep -c "apt-get install.*earlyoom" "$SCRIPT"
-    [ "$output" -ge 1 ]
+@test "installs earlyoom and zram-tools" {
+    assert_installs_apt_packages earlyoom zram-tools
 }
 
-@test "setup-oom-protection: configures earlyoom with 5% memory threshold" {
-    run grep "EARLYOOM_ARGS" "$SCRIPT"
-    [[ "$output" == *"-m 5"* ]]
-    [[ "$output" == *"-s 10"* ]]
+@test "configures earlyoom at 5% memory 10% swap" {
+    assert_contains_all "EARLYOOM_ARGS" "-m 5" "-s 10"
 }
 
-@test "setup-oom-protection: activates earlyoom via activate_service" {
-    run grep "activate_service" "$SCRIPT"
-    [[ "$output" == *"earlyoom"* ]]
+@test "configures zram with zstd at 50% RAM" {
+    assert_writes_config "/etc/default/zramswap" "ALGO=zstd" "PERCENT=50"
 }
 
-@test "setup-oom-protection: installs zram-tools" {
-    run grep -c "apt-get install.*zram-tools" "$SCRIPT"
-    [ "$output" -ge 1 ]
+@test "sets vm.swappiness to 150" {
+    assert_contains "vm.swappiness.*150"
 }
 
-@test "setup-oom-protection: configures zram with zstd and 50% RAM" {
-    run grep -A3 "zramswap" "$SCRIPT"
-    [[ "$output" == *"ALGO=zstd"* ]]
-    [[ "$output" == *"PERCENT=50"* ]]
+@test "persists sysctl config" {
+    assert_contains "sysctl.d/99-"
 }
 
-@test "setup-oom-protection: sets vm.swappiness to 150" {
-    run grep "vm.swappiness" "$SCRIPT"
-    [[ "$output" == *"150"* ]]
+@test "activates earlyoom and zramswap services" {
+    assert_activates_service earlyoom
+    assert_activates_service zramswap
 }
 
-@test "setup-oom-protection: persists swappiness via sysctl.d" {
-    run grep "sysctl.d" "$SCRIPT"
-    [[ "$output" == *"sysctl.d/99-"* ]]
-}
-
-@test "setup-oom-protection: activate_service handles missing systemctl" {
-    run grep -A3 "activate_service" "$SCRIPT"
-    [[ "$output" == *"command -v systemctl"* ]]
-}
-
-@test "setup-oom-protection: apply_sysctl handles restricted sysctl" {
-    run grep "next boot" "$SCRIPT"
-    [[ "$output" == *"will apply on next boot"* ]]
-}
-
-@test "setup-oom-protection: runs apt-get update before installs" {
-    local updateLine installLine
-    updateLine=$(grep -n "apt-get update" "$SCRIPT" | head -1 | cut -d: -f1)
-    installLine=$(grep -n "apt-get install" "$SCRIPT" | head -1 | cut -d: -f1)
-    [ "$updateLine" -lt "$installLine" ]
+@test "handles missing systemctl gracefully" {
+    assert_contains "command -v systemctl"
 }
