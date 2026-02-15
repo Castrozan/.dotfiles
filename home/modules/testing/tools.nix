@@ -8,7 +8,7 @@ let
         pkgs.bc
       ]
     }:$PATH"
-    exec ~/.dotfiles/tests/run-tests.sh "$@"
+    exec ~/.dotfiles/tests/run-all.sh "$@"
   '';
   dotfiles-coverage = pkgs.writeShellScriptBin "dotfiles-coverage" ''
     export PATH="${
@@ -18,7 +18,7 @@ let
         pkgs.bc
       ]
     }:$PATH"
-    exec ~/.dotfiles/tests/coverage.sh "$@"
+    exec ~/.dotfiles/tests/bash-coverage.sh "$@"
   '';
 in
 {

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Generate test coverage for shell scripts using kcov
-# Usage: ./tests/coverage.sh [--html] [--ci]
+# Usage: ./tests/bash-coverage.sh [--html] [--ci]
 #
 # Requires: kcov (nix shell nixpkgs#kcov)
 # Output: tests/coverage/ directory with HTML reports and cobertura.xml
@@ -47,7 +47,7 @@ kcov \
     --bash-dont-parse-binary-dir \
     --include-pattern="$REPO_DIR/bin/" \
     "$COVERAGE_DIR" \
-    bats "$SCRIPT_DIR/scripts/"
+    bats "$SCRIPT_DIR/bin-scripts/"
 
 echo ""
 echo "=== Coverage Summary ==="

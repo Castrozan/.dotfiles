@@ -20,4 +20,4 @@ RUN rm -rf .git \
     && git config --global user.name "Test" \
     && git init -q && git add -A && git commit -q -m "test snapshot"
 
-CMD ["bats", "tests/modules/eval.bats"]
+CMD ["bats", "tests/nix-modules/home-manager.bats"]

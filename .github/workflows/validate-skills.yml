@@ -17,4 +17,4 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Validate skill YAML frontmatter
-        run: ./tests/validate-agents.sh agents/skills
+        run: ./tests/validate-skill-frontmatter.sh agents/skills

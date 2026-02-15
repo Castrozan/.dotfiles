@@ -10,11 +10,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Validate agent skills
-        run: ./tests/validate-agents.sh agents/skills
+      - name: Validate skill frontmatter
+        run: ./tests/validate-skill-frontmatter.sh agents/skills
 
       - name: Install bats
         run: sudo apt-get install -y bats
 
-      - name: Run script tests
-        run: bats tests/scripts/
+      - name: Run bin script tests
+        run: bats tests/bin-scripts/

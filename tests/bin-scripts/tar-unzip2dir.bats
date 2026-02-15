@@ -1,6 +1,6 @@
 #!/usr/bin/env bats
 
-load '../helpers/script'
+load '../helpers/bash-script-assertions'
 
 setup() {
     TEST_DIR=$(mktemp -d)

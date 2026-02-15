@@ -21,4 +21,4 @@ jobs:
       - name: Run bats tests
         run: |
           chmod +x bin/*
-          nix shell nixpkgs#bats --command bats tests/scripts/
+          nix shell nixpkgs#bats --command bats tests/bin-scripts/

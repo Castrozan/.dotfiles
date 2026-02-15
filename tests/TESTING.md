@@ -3,47 +3,72 @@
 ## Run
 
 ```bash
-# All tests
-tests/run-tests.sh
+tests/run-all.sh                                    # everything
+tests/run-all.sh --coverage                         # with kcov coverage
+tests/run-all.sh --runtime                          # include live service tests
+bats tests/bin-scripts/                             # bin/ script tests only
+bats tests/bin-scripts/killport.bats                # single file
+docker build -t dotfiles-test -f tests/Dockerfile . # in Docker
+docker run --rm dotfiles-test bats tests/bin-scripts/
+```
 
-# Script tests only
-bats tests/scripts/
+## Structure
 
-# Single test file
-bats tests/scripts/killport.bats
-
-# In Docker (Ubuntu 24.04 + Nix)
-docker build -t dotfiles-test -f tests/Dockerfile .
-docker run --rm dotfiles-test
-docker run --rm dotfiles-test bats tests/scripts/
-
-# With coverage
-tests/run-tests.sh --coverage
+```
+tests/
+├── run-all.sh                          # entrypoint: runs all test categories
+├── Dockerfile                          # Ubuntu 24.04 + Nix test environment
+├── bash-coverage.sh                    # kcov coverage for bin/ scripts
+├── nix-coverage.sh                     # unused .nix file detection
+├── validate-skill-frontmatter.sh       # YAML frontmatter validation for skills
+├── TESTING.md
+│
+├── helpers/
+│   └── bash-script-assertions.bash     # shared bats assertions for bin/ tests
+│
+├── bin-scripts/                        # tests for bin/ shell scripts
+│   ├── killport.bats
+│   ├── on.bats
+│   ├── setup-oom-protection.bats
+│   └── tar-unzip2dir.bats
+│
+├── nix-modules/                        # tests home-manager module evaluation
+│   └── home-manager.bats
+│
+├── openclaw/                           # openclaw-specific tests
+│   ├── nix-config.bats                 # nix configuration for both machines
+│   └── live-services.bats              # running gateway, systemd, deployed files
+│
+├── agent-evals/                        # AI agent behavior evaluation (python)
+│   ├── run-evals.py
+│   └── config/
+│
+└── coverage/                           # generated coverage output
 ```
 
 ## Test Categories
 
-| Category | Location | Requires | Runs in CI |
+| Category | Location | Requires | CI |
 |---|---|---|---|
-| Script (bin/) | `tests/scripts/*.bats` | bats | yes |
-| Nix modules | `tests/modules/eval.bats` | bats, nix | yes |
-| OpenClaw eval | `tests/openclaw/eval.bats` | bats, nix | yes |
-| OpenClaw runtime | `tests/openclaw/runtime.bats` | bats, running services | opt-in (`--runtime`) |
-| Skill validation | `tests/validate-agents.sh` | bash | yes |
-| Agent evals | `tests/agents/` | claude cli | manual |
+| Bin scripts | `tests/bin-scripts/*.bats` | bats | yes |
+| Home manager modules | `tests/nix-modules/home-manager.bats` | bats, nix | Docker |
+| OpenClaw nix config | `tests/openclaw/nix-config.bats` | bats, nix | Docker |
+| OpenClaw live services | `tests/openclaw/live-services.bats` | bats, running services | opt-in (`--runtime`) |
+| Skill frontmatter | `tests/validate-skill-frontmatter.sh` | bash | yes |
+| Agent evals | `tests/agent-evals/` | claude cli | manual |
 
-## Writing Script Tests
+## Writing Bin Script Tests
 
-Test filename must match script name: `bin/foo` → `tests/scripts/foo.bats`.
+Test filename must match script name: `bin/foo` → `tests/bin-scripts/foo.bats`.
 
-The shared helper at `tests/helpers/script.bash` auto-resolves the script path from the test filename.
+The shared helper at `tests/helpers/bash-script-assertions.bash` auto-resolves the script path from the test filename.
 
 ### Minimal template
 
 ```bash
 #!/usr/bin/env bats
 
-load '../helpers/script'
+load '../helpers/bash-script-assertions'
 
 @test "is executable" {
     assert_is_executable
@@ -88,7 +113,7 @@ load '../helpers/script'
 ```bash
 #!/usr/bin/env bats
 
-load '../helpers/script'
+load '../helpers/bash-script-assertions'
 
 @test "is executable"     { assert_is_executable; }
 @test "passes shellcheck" { assert_passes_shellcheck; }
@@ -107,7 +132,7 @@ load '../helpers/script'
 ```bash
 #!/usr/bin/env bats
 
-load '../helpers/script'
+load '../helpers/bash-script-assertions'
 
 @test "is executable"     { assert_is_executable; }
 @test "passes shellcheck" { assert_passes_shellcheck; }
@@ -141,9 +166,10 @@ teardown() {
 ## Policies
 
 1. **Every `bin/` script gets a test file.** At minimum: `assert_is_executable` + `assert_passes_shellcheck`.
-2. **Test filename = script name.** `bin/foo` → `tests/scripts/foo.bats`. The helper auto-resolves the path.
+2. **Test filename = script name.** `bin/foo` → `tests/bin-scripts/foo.bats`. The helper auto-resolves the path.
 3. **Static over execution for setup scripts.** Scripts requiring sudo/root are tested via content analysis, not execution. Verify configs, packages, and service activation are declared correctly.
 4. **Behavioral tests for CLI scripts.** Scripts that take user input should test error paths (missing args, bad input) and success paths.
 5. **Docker for e2e.** Run `docker run --rm --privileged dotfiles-test bash -c 'bin/setup-foo'` to verify setup scripts actually install and configure correctly on Ubuntu.
-6. **No external test libraries.** `tests/helpers/script.bash` covers common assertions. Avoid adding bats-assert/bats-file/bats-mock unless a concrete need arises.
+6. **No external test libraries.** `tests/helpers/bash-script-assertions.bash` covers common assertions. Avoid adding bats-assert/bats-file/bats-mock unless a concrete need arises.
 7. **Shellcheck is mandatory.** All bash scripts must pass shellcheck. The `assert_passes_shellcheck` assertion handles environments where shellcheck isn't installed by skipping.
+8. **Names mean things.** Test directories mirror source directories. File and function names describe what they test, not how.

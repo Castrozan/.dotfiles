@@ -6,7 +6,7 @@ let
 
   agent-eval = pkgs.writeShellScriptBin "agent-eval" ''
     export PATH="${pkgs.lib.makeBinPath [ pythonEnv ]}:$PATH"
-    exec ${pythonEnv}/bin/python3 ~/.dotfiles/tests/agents/run-evals.py "$@"
+    exec ${pythonEnv}/bin/python3 ~/.dotfiles/tests/agent-evals/run-evals.py "$@"
   '';
 in
 {
