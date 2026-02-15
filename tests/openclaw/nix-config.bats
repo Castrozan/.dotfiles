@@ -38,9 +38,9 @@ nix_eval_json_apply() {
 
 # ---------- Agent configuration (workpc) ----------
 
-@test "workpc: enabled agents include robson jenny monster silver golden jarvis" {
+@test "workpc: enabled agents include robson jenny monster silver" {
     result=$(nix_eval_json_apply "$WORKPC_OC.enabledAgents" 'x: builtins.attrNames x')
-    for agent in robson jenny monster silver golden jarvis; do
+    for agent in robson jenny monster silver; do
         echo "$result" | jq -e "index(\"$agent\")" > /dev/null
     done
 }
@@ -48,26 +48,6 @@ nix_eval_json_apply() {
 @test "workpc: default agent is robson" {
     result=$(nix_eval_json "$WORKPC_OC.defaultAgent")
     [ "$result" = '"robson"' ]
-}
-
-@test "workpc: jarvis has correct workspace" {
-    result=$(nix_eval_json "$WORKPC_OC.agents.jarvis.workspace")
-    [ "$result" = '"openclaw/jarvis"' ]
-}
-
-@test "workpc: jarvis has correct model" {
-    result=$(nix_eval_json "$WORKPC_OC.agents.jarvis.model.primary")
-    [ "$result" = '"anthropic/claude-opus-4-6"' ]
-}
-
-@test "workpc: jarvis telegram is disabled" {
-    result=$(nix_eval_json "$WORKPC_OC.agents.jarvis.telegram.enable")
-    [ "$result" = "false" ]
-}
-
-@test "workpc: jarvis has correct TTS voice" {
-    result=$(nix_eval_json "$WORKPC_OC.agents.jarvis.tts.voice")
-    [ "$result" = '"en-GB-RyanNeural"' ]
 }
 
 @test "workpc: robson is marked as default" {
@@ -113,7 +93,7 @@ nix_eval_json_apply() {
 
 @test "workpc: agents list patch has all enabled agents" {
     result=$(nix_eval_json_apply "$WORKPC_OC.configPatches.\".agents.list\"" 'x: map (a: a.id) x')
-    for agent in robson jenny monster silver golden jarvis; do
+    for agent in robson jenny monster silver; do
         echo "$result" | jq -e "index(\"$agent\")" > /dev/null
     done
 }
@@ -126,13 +106,13 @@ nix_eval_json_apply() {
 
 @test "workpc: agents list has correct workspace paths" {
     result=$(nix_eval_json_apply "$WORKPC_OC.configPatches.\".agents.list\"" \
-        'x: builtins.filter (a: a.id == "jarvis") x')
-    echo "$result" | jq -e '.[0].workspace == "/home/lucas.zanoni/openclaw/jarvis"' > /dev/null
+        'x: builtins.filter (a: a.id == "robson") x')
+    echo "$result" | jq -e '.[0].workspace == "/home/lucas.zanoni/openclaw/robson"' > /dev/null
 }
 
-@test "workpc: telegram accounts include robson jenny monster silver golden" {
+@test "workpc: telegram accounts include robson jenny monster silver" {
     result=$(nix_eval_json_apply "$WORKPC_OC.configPatches" 'builtins.attrNames')
-    for agent in robson jenny monster silver golden; do
+    for agent in robson jenny monster silver; do
         echo "$result" | jq -e "index(\".channels.telegram.accounts.$agent\")" > /dev/null
     done
 }
@@ -146,7 +126,7 @@ nix_eval_json_apply() {
 @test "workpc: bindings exist for telegram-enabled agents" {
     result=$(nix_eval_json_apply "$WORKPC_OC.configPatches.\".bindings\"" \
         'x: map (b: b.agentId) x')
-    for agent in robson jenny monster silver golden; do
+    for agent in robson jenny monster silver; do
         echo "$result" | jq -e "index(\"$agent\")" > /dev/null
     done
 }
@@ -211,7 +191,7 @@ nix_eval_json_apply() {
 
 @test "workpc: telegram bot token secrets for enabled telegram agents" {
     result=$(nix_eval_json_apply "$WORKPC_OC.secretPatches" 'builtins.attrNames')
-    for agent in robson jenny monster silver golden; do
+    for agent in robson jenny monster silver; do
         echo "$result" | jq -e "index(\".channels.telegram.accounts.$agent.botToken\")" > /dev/null
     done
 }
@@ -362,41 +342,16 @@ nix_eval_json_apply() {
 }
 
 @test "agent: default skills list is empty" {
-    result=$(nix_eval_json "$WORKPC_OC.agents.jarvis.skills")
+    result=$(nix_eval_json "$WORKPC_OC.agents.jenny.skills")
     [ "$result" = "[]" ]
 }
 
 @test "agent: default fallbacks list is empty" {
-    result=$(nix_eval_json "$WORKPC_OC.agents.jarvis.model.fallbacks")
+    result=$(nix_eval_json "$WORKPC_OC.agents.jenny.model.fallbacks")
     [ "$result" = "[]" ]
 }
 
 # ---------- Cross-config consistency ----------
-
-@test "both: jarvis exists on both machines" {
-    workpc=$(nix_eval_json "$WORKPC_OC.agents.jarvis.enable")
-    nixos=$(nix_eval_json "$NIXOS_OC.agents.jarvis.enable")
-    [ "$workpc" = "true" ]
-    [ "$nixos" = "true" ]
-}
-
-@test "both: jarvis has same workspace on both machines" {
-    workpc=$(nix_eval_json "$WORKPC_OC.agents.jarvis.workspace")
-    nixos=$(nix_eval_json "$NIXOS_OC.agents.jarvis.workspace")
-    [ "$workpc" = "$nixos" ]
-}
-
-@test "both: jarvis has same model on both machines" {
-    workpc=$(nix_eval_json "$WORKPC_OC.agents.jarvis.model.primary")
-    nixos=$(nix_eval_json "$NIXOS_OC.agents.jarvis.model.primary")
-    [ "$workpc" = "$nixos" ]
-}
-
-@test "both: jarvis has same TTS voice on both machines" {
-    workpc=$(nix_eval_json "$WORKPC_OC.agents.jarvis.tts.voice")
-    nixos=$(nix_eval_json "$NIXOS_OC.agents.jarvis.tts.voice")
-    [ "$workpc" = "$nixos" ]
-}
 
 @test "both: memory sync is bidirectional (jarvis on both)" {
     workpc=$(nix_eval_json "$WORKPC_OC.memorySync.agents")
@@ -405,9 +360,9 @@ nix_eval_json_apply() {
     echo "$nixos" | jq -e 'index("jarvis")' > /dev/null
 }
 
-@test "both: telegram only on nixos for jarvis" {
-    workpc=$(nix_eval_json "$WORKPC_OC.agents.jarvis.telegram.enable")
-    nixos=$(nix_eval_json "$NIXOS_OC.agents.jarvis.telegram.enable")
-    [ "$workpc" = "false" ]
+@test "both: jarvis only declared on nixos" {
+    nixos=$(nix_eval_json "$NIXOS_OC.agents.jarvis.enable")
     [ "$nixos" = "true" ]
+    run nix_eval_json "$WORKPC_OC.agents.jarvis.enable"
+    [ "$status" -ne 0 ]
 }
