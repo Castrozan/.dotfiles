@@ -11,7 +11,6 @@ readonly REPO_ROOT=$(git rev-parse --show-toplevel)
 cd "$REPO_ROOT"
 
 main() {
-  _update_changelog
   _run_check "statix" nix run nixpkgs#statix -- check . --ignore 'result*'
   _run_check "deadnix" nix run nixpkgs#deadnix -- .
   _run_check "nixfmt" bash -c "find . -name '*.nix' -not -path './result*' -not -path './.worktrees/*' -exec nix run nixpkgs#nixfmt-rfc-style -- --check {} +"
@@ -27,17 +26,6 @@ _run_check() {
   shift
   echo "==> $checkName"
   "$@"
-  echo ""
-}
-
-_update_changelog() {
-  echo "==> changelog"
-  if nix run nixpkgs#git-cliff -- --output CHANGELOG.md 2>/dev/null; then
-    if ! git diff --quiet CHANGELOG.md 2>/dev/null; then
-      git add CHANGELOG.md
-      git commit -m "chore: update changelog"
-    fi
-  fi
   echo ""
 }
 
