@@ -22,16 +22,22 @@ load '../helpers/bash-script-assertions'
     assert_installs_apt_packages earlyoom zram-tools
 }
 
-@test "configures earlyoom at 5% memory 10% swap" {
-    assert_script_source_matches_all "EARLYOOM_ARGS" "-m 5" "-s 10"
+@test "configures earlyoom SIGTERM at 10% memory and SIGKILL at 5%" {
+    assert_script_source_matches "EARLYOOM_SIGTERM_MEMORY_PERCENT=10"
+    assert_script_source_matches "EARLYOOM_SIGTERM_SWAP_PERCENT=15"
+    assert_script_source_matches "EARLYOOM_SIGKILL_MEMORY_PERCENT=5"
+    assert_script_source_matches "EARLYOOM_SIGKILL_SWAP_PERCENT=5"
 }
 
 @test "configures zram with zstd at 50% RAM" {
-    assert_writes_config_to_path "/etc/default/zramswap" "ALGO=zstd" "PERCENT=50"
+    assert_script_source_matches "ZRAM_COMPRESSION_ALGORITHM=.zstd."
+    assert_script_source_matches "ZRAM_MEMORY_PERCENT=50"
+    assert_writes_config_to_path "/etc/default/zramswap"
 }
 
 @test "sets vm.swappiness to 150" {
-    assert_script_source_matches "vm.swappiness.*150"
+    assert_script_source_matches "SWAPPINESS_VALUE=150"
+    assert_script_source_matches "vm.swappiness"
 }
 
 @test "persists sysctl config to disk" {
@@ -45,4 +51,12 @@ load '../helpers/bash-script-assertions'
 
 @test "handles missing systemctl gracefully" {
     assert_script_source_matches "command -v systemctl"
+}
+
+@test "prefers killing nix and claude processes" {
+    assert_script_source_matches_all "--prefer" "nix" "claude"
+}
+
+@test "avoids killing critical system processes" {
+    assert_script_source_matches_all "--avoid" "init" "sshd" "systemd"
 }
