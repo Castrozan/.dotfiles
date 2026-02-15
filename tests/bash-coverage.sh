@@ -43,14 +43,25 @@ _clean_previous_coverage() {
   mkdir -p "$COVERAGE_OUTPUT_DIR"
 }
 
+_collect_quick_bats_test_files() {
+  local testFiles=()
+  for testFile in "$SCRIPT_DIR"/bin-scripts/*.bats; do
+    [[ "$(basename "$testFile")" == *-docker.bats ]] && continue
+    testFiles+=("$testFile")
+  done
+  printf '%s\n' "${testFiles[@]}"
+}
+
 _run_bats_through_kcov() {
   echo "=== Running tests with coverage ==="
   echo ""
+  local testFiles
+  testFiles=$(_collect_quick_bats_test_files)
   kcov \
     --bash-dont-parse-binary-dir \
     --include-pattern="$REPOSITORY_DIR/bin/" \
     "$COVERAGE_OUTPUT_DIR" \
-    bats "$SCRIPT_DIR/bin-scripts/"
+    bats $testFiles
 }
 
 _print_coverage_summary() {
