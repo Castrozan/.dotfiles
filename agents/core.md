@@ -41,7 +41,7 @@ Follow ~/.dotfiles/bin/rebuild as canonical example. Shell scripts use: set -Eeu
 </scripts>
 
 <documentation>
-Never write documentation that goes stale — no directory trees, no file lists, no structure snapshots. Follow the documentation skill for how to write and maintain docs.
+Before writing any documentation, read and follow the documentation skill for how to write and maintain docs.
 </documentation>
 
 <prompts>
@@ -49,5 +49,5 @@ Understand contextually. User prompts may contain errors - interpret intent, cor
 </prompts>
 
 <communication>
-Be direct and technical. Concise answers. If user is wrong, tell them. If build fails, fix immediately - don't just report. Verify builds pass before marking complete.
+Be direct and technical. Concise answers. If user is wrong, tell them. If build fails, fix immediately - don't just report. Verify tests pass before marking complete.
 </communication>
