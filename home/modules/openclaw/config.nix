@@ -86,7 +86,7 @@ let
       telegram = lib.mkOption {
         type = lib.types.submodule {
           options = {
-            enable = lib.mkEnableOption "telegram integration for this agent";
+            enable = lib.mkEnableOption "telegram polling for this agent (only one machine may poll a given bot token)";
             botName = lib.mkOption {
               type = lib.types.nullOr lib.types.str;
               default = null;
@@ -162,7 +162,7 @@ in
     agents = lib.mkOption {
       type = lib.types.attrsOf agentModule;
       default = { };
-      description = "Agent configurations";
+      description = "Agent configurations. Each agent must be declared on exactly one machine — Telegram bot tokens support only one polling instance. Use memorySync to share agent memory across machines without duplicating declarations.";
     };
 
     userName = lib.mkOption {

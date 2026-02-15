@@ -9,7 +9,14 @@ let
   homeDir = config.home.homeDirectory;
   cfg = openclaw.memorySync;
 
-  syncScript = pkgs.writeShellScript "jarvis-memory-sync" ''
+  agentWorkspacePath =
+    agentName:
+    if builtins.hasAttr agentName openclaw.agents then
+      openclaw.agents.${agentName}.workspace
+    else
+      "openclaw/${agentName}";
+
+  syncScript = pkgs.writeShellScript "openclaw-memory-sync" ''
     set -euo pipefail
 
     REMOTE_HOST="${cfg.remoteHost}"
@@ -18,18 +25,18 @@ let
     ${lib.concatMapStringsSep "\n" (
       agentName:
       let
-        agent = openclaw.agents.${agentName};
-        localMemory = "${homeDir}/${agent.workspace}/memory/";
-        remoteMemory = "${cfg.remoteUser}@${cfg.remoteHost}:$REMOTE_HOME/${agent.workspace}/memory/";
+        workspace = agentWorkspacePath agentName;
+        localMemoryDir = "${homeDir}/${workspace}/memory/";
+        remoteMemoryDir = "${cfg.remoteUser}@${cfg.remoteHost}:$REMOTE_HOME/${workspace}/memory/";
       in
       ''
-        mkdir -p "${localMemory}"
+        mkdir -p "${localMemoryDir}"
 
-        if ! ${pkgs.openssh}/bin/ssh -o ConnectTimeout=5 -o BatchMode=yes "${cfg.remoteHost}" "mkdir -p '$REMOTE_HOME/${agent.workspace}/memory'" 2>/dev/null; then
+        if ! ${pkgs.openssh}/bin/ssh -o ConnectTimeout=5 -o BatchMode=yes "${cfg.remoteHost}" "mkdir -p '$REMOTE_HOME/${workspace}/memory'" 2>/dev/null; then
           echo "[memory-sync] ${agentName}: remote ${cfg.remoteHost} unreachable, skipping"
         else
-          ${pkgs.rsync}/bin/rsync -az --update --timeout=10 "${localMemory}" "${remoteMemory}" 2>/dev/null || true
-          ${pkgs.rsync}/bin/rsync -az --update --timeout=10 "${remoteMemory}" "${localMemory}" 2>/dev/null || true
+          ${pkgs.rsync}/bin/rsync -az --update --timeout=10 "${localMemoryDir}" "${remoteMemoryDir}" 2>/dev/null || true
+          ${pkgs.rsync}/bin/rsync -az --update --timeout=10 "${remoteMemoryDir}" "${localMemoryDir}" 2>/dev/null || true
           echo "[memory-sync] ${agentName}: synced with ${cfg.remoteHost}"
         fi
       ''
@@ -53,7 +60,7 @@ in
     agents = lib.mkOption {
       type = lib.types.listOf lib.types.str;
       default = [ ];
-      description = "Agent names whose memory directories to sync";
+      description = "Agent names whose memory directories to sync. Agents need not be declared locally — uses openclaw/<name> as workspace fallback for remote-only agents.";
     };
 
     interval = lib.mkOption {
