@@ -7,8 +7,17 @@ let
     builtins.readFile ../../agents/skills/youtube/scripts/youtube-cli.py
   );
 
+  youtubeCliSetupSource = pkgs.writeText "youtube-cli-setup.sh" (
+    builtins.readFile ../../agents/skills/youtube/scripts/youtube-cli-setup.sh
+  );
+
   youtubeCli = pkgs.writeShellScriptBin "youtube-cli" ''
     set -euo pipefail
+
+    # Special command: setup OAuth credentials
+    if [ "''${1:-}" = "setup" ]; then
+      exec ${pkgs.bash}/bin/bash "${youtubeCliSetupSource}"
+    fi
 
     VENV="${virtualenvPath}"
 
