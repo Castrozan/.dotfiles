@@ -23,6 +23,9 @@ let
   };
 
   secretsWithoutEnvironmentVariables = [
+    "x-username"
+    "x-email"
+    "x-password"
   ];
 
   allSecretNames =

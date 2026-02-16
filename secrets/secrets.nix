@@ -35,4 +35,7 @@ in
   "grafana-password.age".publicKeys = all_keys;
   "metabase-api-key.age".publicKeys = all_keys;
   "wiki-token.age".publicKeys = all_keys;
+  "x-username.age".publicKeys = all_keys;
+  "x-email.age".publicKeys = all_keys;
+  "x-password.age".publicKeys = all_keys;
 }

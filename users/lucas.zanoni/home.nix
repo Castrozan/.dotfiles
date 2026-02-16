@@ -53,6 +53,7 @@
     ../../home/modules/summarize.nix
     ../../home/modules/suwayomi-server.nix
     ../../home/modules/tailscale-daemon.nix
+    ../../home/modules/twscrape.nix
     ../../home/modules/tmux.nix
     ../../home/modules/tuisvn.nix
     ../../home/modules/tui-notifier.nix
