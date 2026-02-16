@@ -15,6 +15,7 @@ in
   "grid-token-robson.age".publicKeys = all_keys;
   "grid-token-clever.age".publicKeys = all_keys;
   "brave-api-key.age".publicKeys = all_keys;
+  "gemini-api-key.age".publicKeys = all_keys;
   "tavily-api-key.age".publicKeys = all_keys;
   "grid-hosts.age".publicKeys = all_keys;
   "ssh-hosts.age".publicKeys = all_keys;

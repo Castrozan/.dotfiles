@@ -104,9 +104,35 @@ let
     };
     ".agents.defaults.compaction.mode" = "safeguard";
     ".agents.defaults.compaction.memoryFlush.enabled" = true;
+    # Memory search: Gemini embeddings with local BGE-M3 fallback
     ".agents.defaults.memorySearch.enabled" = true;
-    ".agents.defaults.memorySearch.provider" = "local";
+    ".agents.defaults.memorySearch.provider" = "gemini";
+    ".agents.defaults.memorySearch.model" = "gemini-embedding-001";
+    ".agents.defaults.memorySearch.fallback" = "local";
     ".agents.defaults.memorySearch.local.modelPath" = "hf:gpustack/bge-m3-GGUF/bge-m3-Q8_0.gguf";
+    ".agents.defaults.memorySearch.sources" = [
+      "memory"
+      "sessions"
+    ];
+    ".agents.defaults.memorySearch.experimental.sessionMemory" = true;
+    ".agents.defaults.memorySearch.query.maxResults" = 8;
+    ".agents.defaults.memorySearch.query.hybrid.enabled" = true;
+    ".agents.defaults.memorySearch.query.hybrid.vectorWeight" = 0.7;
+    ".agents.defaults.memorySearch.query.hybrid.textWeight" = 0.3;
+    ".agents.defaults.memorySearch.query.hybrid.candidateMultiplier" = 4;
+    ".agents.defaults.memorySearch.cache.enabled" = true;
+    ".agents.defaults.memorySearch.cache.maxEntries" = 50000;
+
+    # QMD backend: BM25 + vectors + reranking
+    ".memory.backend" = "qmd";
+    ".memory.citations" = "auto";
+    ".memory.qmd.includeDefaultMemory" = true;
+    ".memory.qmd.sessions.enabled" = true;
+    ".memory.qmd.sessions.retentionDays" = 30;
+    ".memory.qmd.update.interval" = "5m";
+    ".memory.qmd.update.debounceMs" = 15000;
+    ".memory.qmd.limits.maxResults" = 8;
+    ".memory.qmd.limits.timeoutMs" = 5000;
     ".gateway.port" = openclaw.gatewayPort;
     ".gateway.mode" = "local";
     ".gateway.http.endpoints.chatCompletions.enabled" = true;
@@ -140,11 +166,13 @@ in
             {
               ".gateway.auth.token" = "/run/agenix/openclaw-gateway-token";
               ".tools.web.search.apiKey" = "/run/agenix/brave-api-key";
+              ".agents.defaults.memorySearch.remote.apiKey" = "/run/agenix/gemini-api-key";
             }
           else
             {
               ".gateway.auth.token" = "${homeDir}/.openclaw/secrets/openclaw-gateway-token";
               ".tools.web.search.apiKey" = "${homeDir}/.openclaw/secrets/brave-api-key";
+              ".agents.defaults.memorySearch.remote.apiKey" = "${homeDir}/.openclaw/secrets/gemini-api-key";
             };
 
         # Generate bot token secrets for telegram-enabled agents

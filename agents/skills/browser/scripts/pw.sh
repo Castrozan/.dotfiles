@@ -27,6 +27,7 @@ PW_DAEMON_JS="${PW_DAEMON_JS:-$PW_SCRIPT_DIR/pw-daemon.js}"
 
 CHROME_FLAGS=(
   --remote-debugging-port="$PW_PORT"
+  --remote-allow-origins="*"
   --user-data-dir="$PW_DATA"
   --no-first-run
   --no-default-browser-check
@@ -40,11 +41,18 @@ CHROME_FLAGS=(
   --disable-translate
   --password-store=basic
   --disable-features=PasswordLeakDetection
+  --disable-gpu
   --lang=en-US
 )
+PW_BROWSER_LOG="$PW_CACHE/browser.log"
 
 find_browser() {
-  command -v chromium 2>/dev/null || command -v google-chrome-stable 2>/dev/null || command -v brave 2>/dev/null || echo ""
+  command -v chromium 2>/dev/null \
+    || command -v google-chrome-stable 2>/dev/null \
+    || command -v chromium-browser 2>/dev/null \
+    || command -v google-chrome 2>/dev/null \
+    || command -v brave 2>/dev/null \
+    || echo ""
 }
 
 send_command() {
@@ -139,21 +147,28 @@ PW_NODE_MODULES="${PW_NODE_MODULES:-$PW_CACHE/node_modules}"
 launch_browser() {
   BROWSER="$(find_browser)"
   if [ -z "$BROWSER" ]; then
-    echo "Error: No browser found in PATH" >&2
+    echo "Error: No browser found in PATH (searched: chromium, google-chrome-stable, brave)" >&2
+    echo "Available browsers:" >&2
+    for browserBinaryName in chromium google-chrome-stable brave chromium-browser google-chrome; do
+      command -v "$browserBinaryName" 2>/dev/null && echo "  $(command -v "$browserBinaryName")" >&2
+    done
     exit 1
   fi
-  mkdir -p "$PW_DATA"
+  mkdir -p "$PW_DATA" "$PW_CACHE"
+  echo "Launching browser: $BROWSER (headed=$PW_HEADED)" > "$PW_BROWSER_LOG"
   if [ "$PW_HEADED" = "true" ]; then
-    "$BROWSER" "${CHROME_FLAGS[@]}" "about:blank" >/dev/null 2>&1 &
+    "$BROWSER" "${CHROME_FLAGS[@]}" "about:blank" >> "$PW_BROWSER_LOG" 2>&1 &
   else
-    "$BROWSER" --headless=new "${CHROME_FLAGS[@]}" >/dev/null 2>&1 &
+    "$BROWSER" --headless=new "${CHROME_FLAGS[@]}" >> "$PW_BROWSER_LOG" 2>&1 &
   fi
   for _ in $(seq 1 20); do
     curl -sf "http://127.0.0.1:$PW_PORT/json/version" >/dev/null 2>&1 && break
     sleep 0.2
   done
   if ! curl -sf "http://127.0.0.1:$PW_PORT/json/version" >/dev/null 2>&1; then
-    echo "Error: Failed to start agent browser on port $PW_PORT" >&2
+    echo "Error: Browser failed to start on port $PW_PORT" >&2
+    echo "Browser log (last 10 lines):" >&2
+    tail -10 "$PW_BROWSER_LOG" 2>/dev/null >&2
     exit 1
   fi
 }
