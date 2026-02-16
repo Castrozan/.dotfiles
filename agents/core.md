@@ -28,6 +28,10 @@ Commits are not dangerous - do them freely. During development: commit at every 
 Follow the test skill for all testing. Commit then test. Never present untested code.
 </testing>
 
+<formatting>
+After editing code files, run formatters and linters. Python: `ruff format file.py && ruff check --select=E,F,W file.py`. Nix: `nixfmt file.nix`. Shell: `shfmt -w file.sh && shellcheck file.sh`. Fix any issues before continuing.
+</formatting>
+
 <commands>
 Use timeouts. Search codebase before coding. Read relevant files first. Always test changes. Check linter errors. Check current date/time before searches and version references.
 </commands>
