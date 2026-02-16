@@ -181,17 +181,23 @@ async def command_user_tweets(args):
 async def command_tweet(args):
     """Get a single tweet by ID."""
     client = await get_client()
-    tweet = await client.get_tweet_by_id(args.tweet_id)
-    output_json(serialize_tweet(tweet))
+    try:
+        tweet = await client.get_tweet_by_id(args.tweet_id)
+        output_json(serialize_tweet(tweet))
+    except (KeyError, AttributeError) as error:
+        output_json({"error": f"Failed to fetch tweet {args.tweet_id}: {error}", "tweet_id": args.tweet_id})
 
 
 async def command_replies(args):
     """Get replies to a tweet."""
     client = await get_client()
-    tweet = await client.get_tweet_by_id(args.tweet_id)
-    replies = await tweet.get_replies()
-    results = [serialize_tweet(reply) for reply in replies]
-    output_json(results)
+    try:
+        tweet = await client.get_tweet_by_id(args.tweet_id)
+        replies = await tweet.get_replies()
+        results = [serialize_tweet(reply) for reply in replies[:args.limit]]
+        output_json(results)
+    except (KeyError, AttributeError) as error:
+        output_json({"error": f"Failed to fetch replies for {args.tweet_id}: {error}", "tweet_id": args.tweet_id})
 
 
 async def command_trends(args):
@@ -204,10 +210,13 @@ async def command_trends(args):
 async def command_followers(args):
     """Get user's followers."""
     client = await get_client()
-    user = await client.get_user_by_screen_name(args.username)
-    followers = await client.get_user_followers(user.id, count=args.limit)
-    results = [serialize_user(follower) for follower in followers]
-    output_json(results)
+    try:
+        user = await client.get_user_by_screen_name(args.username)
+        followers = await client.get_user_followers(user.id, count=args.limit)
+        results = [serialize_user(follower) for follower in followers]
+        output_json(results)
+    except Exception as error:
+        output_json({"error": f"Failed to fetch followers for {args.username}: {error}", "username": args.username})
 
 
 async def command_following(args):
@@ -314,6 +323,7 @@ def main():
     # replies
     replies_parser = subparsers.add_parser("replies", help="Get tweet replies")
     replies_parser.add_argument("tweet_id", help="Tweet ID")
+    replies_parser.add_argument("-n", "--limit", type=int, default=20)
 
     # trends
     subparsers.add_parser("trends", help="Get trending topics")
