@@ -9,7 +9,8 @@ let
 
     VENV="${virtualenvPath}"
 
-    if [ ! -f "$VENV/bin/openclaw-dash" ] || ! "$VENV/bin/pip" show openclaw-dash 2>/dev/null | grep -q "${version}"; then
+    INSTALLED_DASH_VERSION=$("$VENV/bin/pip" show openclaw-dash 2>/dev/null | grep -oP 'Version: \K.*' || echo "none")
+    if [ ! -f "$VENV/bin/openclaw-dash" ] || [ "$INSTALLED_DASH_VERSION" != "${version}" ]; then
       echo "[nix] Installing openclaw-dash ${version}..." >&2
       ${python}/bin/python -m venv "$VENV" 2>/dev/null || true
       "$VENV/bin/pip" install --quiet --upgrade \
