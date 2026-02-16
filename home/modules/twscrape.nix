@@ -19,7 +19,8 @@ let
 
     VENV="${virtualenvPath}"
 
-    if [ ! -f "$VENV/bin/python" ] || ! "$VENV/bin/pip" show twikit 2>/dev/null | grep -q "${twikitVersion}"; then
+    INSTALLED_TWIKIT_VERSION=$("$VENV/bin/pip" show twikit 2>/dev/null | grep -oP 'Version: \K.*' || echo "none")
+    if [ ! -f "$VENV/bin/python" ] || [ "$INSTALLED_TWIKIT_VERSION" != "${twikitVersion}" ]; then
       echo "[nix] Installing twikit ${twikitVersion}..." >&2
       ${python}/bin/python -m venv "$VENV" 2>/dev/null || true
       "$VENV/bin/pip" install --quiet --upgrade "twikit==${twikitVersion}" >&2
