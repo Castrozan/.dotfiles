@@ -15,16 +15,6 @@ LINTERS = {
             "name": "ruff",
             "parse": lambda out: [l for l in out.split("\n") if l.strip() and not l.startswith("Found")]
         },
-        {
-            "cmd": ["flake8", "--select=E,F,W"],
-            "name": "flake8",
-            "parse": lambda out: out.strip().split("\n") if out.strip() else []
-        },
-        {
-            "cmd": ["mypy", "--no-error-summary"],
-            "name": "mypy",
-            "parse": lambda out: [l for l in out.split("\n") if ": error:" in l or ": warning:" in l]
-        },
     ],
     ".js": [
         {

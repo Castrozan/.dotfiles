@@ -57,6 +57,7 @@
       quickemu
       redisinsight
       ripgrep-all
+      ruff
       rustc
       shellcheck
       tailscale

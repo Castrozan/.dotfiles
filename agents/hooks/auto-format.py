@@ -16,7 +16,6 @@ FORMATTERS = {
     },
     ".py": {
         "formatters": [
-            {"cmd": ["black", "--quiet"], "name": "black"},
             {"cmd": ["ruff", "format", "--quiet"], "name": "ruff"},
         ],
         "timeout": 10
