@@ -43,6 +43,7 @@
     ../../home/modules/mongodb-compass.nix
     ../../home/modules/neovim.nix
     ../../home/modules/obsidian.nix
+    ../../home/modules/openclaw-dash.nix
     ../../home/modules/oom-protection.nix
     ../../home/modules/opencode
     ../../home/modules/opencode/private.nix
