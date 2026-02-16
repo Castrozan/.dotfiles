@@ -16,10 +16,20 @@ in
       "jenny"
     ];
     model = "anthropic/claude-sonnet-4-5";
+    ttsEngine = "edge-tts";
     agents = {
-      jarvis.openaiVoice = "onyx";
-      robson.openaiVoice = "echo";
-      jenny.openaiVoice = "nova";
+      jarvis = {
+        openaiVoice = "onyx";
+        edgeTtsVoice = "en-GB-RyanNeural";
+      };
+      robson = {
+        openaiVoice = "echo";
+        edgeTtsVoice = "pt-BR-AntonioNeural";
+      };
+      jenny = {
+        openaiVoice = "nova";
+        edgeTtsVoice = "en-US-JennyNeural";
+      };
     };
   };
 }
