@@ -155,27 +155,36 @@ async def command_search(args):
     client = await get_client()
     product_map = {"latest": "Latest", "top": "Top", "media": "Media"}
     product = product_map.get(args.product, "Latest")
-    tweets = await client.search_tweet(args.query, product, count=args.limit)
-    results = [serialize_tweet(tweet) for tweet in tweets]
-    output_json(results)
+    try:
+        tweets = await client.search_tweet(args.query, product, count=args.limit)
+        results = [serialize_tweet(tweet) for tweet in tweets]
+        output_json(results)
+    except Exception as error:
+        output_json({"error": f"Search failed for '{args.query}': {error}", "query": args.query})
 
 
 async def command_user(args):
     """Get user profile by username."""
     client = await get_client()
-    user = await client.get_user_by_screen_name(args.username)
-    output_json(serialize_user(user))
+    try:
+        user = await client.get_user_by_screen_name(args.username)
+        output_json(serialize_user(user))
+    except Exception as error:
+        output_json({"error": f"Failed to fetch user {args.username}: {error}", "username": args.username})
 
 
 async def command_user_tweets(args):
     """Get tweets from a user."""
     client = await get_client()
-    user = await client.get_user_by_screen_name(args.username)
-    tweet_type_map = {"tweets": "Tweets", "replies": "Replies", "media": "Media", "likes": "Likes"}
-    tweet_type = tweet_type_map.get(args.type, "Tweets")
-    tweets = await client.get_user_tweets(user.id, tweet_type, count=args.limit)
-    results = [serialize_tweet(tweet) for tweet in tweets]
-    output_json(results)
+    try:
+        user = await client.get_user_by_screen_name(args.username)
+        tweet_type_map = {"tweets": "Tweets", "replies": "Replies", "media": "Media", "likes": "Likes"}
+        tweet_type = tweet_type_map.get(args.type, "Tweets")
+        tweets = await client.get_user_tweets(user.id, tweet_type, count=args.limit)
+        results = [serialize_tweet(tweet) for tweet in tweets]
+        output_json(results)
+    except Exception as error:
+        output_json({"error": f"Failed to fetch tweets for {args.username}: {error}", "username": args.username})
 
 
 async def command_tweet(args):
@@ -222,61 +231,85 @@ async def command_followers(args):
 async def command_following(args):
     """Get who a user follows."""
     client = await get_client()
-    user = await client.get_user_by_screen_name(args.username)
-    following = await client.get_user_following(user.id, count=args.limit)
-    results = [serialize_user(u) for u in following]
-    output_json(results)
+    try:
+        user = await client.get_user_by_screen_name(args.username)
+        following = await client.get_user_following(user.id, count=args.limit)
+        results = [serialize_user(u) for u in following]
+        output_json(results)
+    except Exception as error:
+        output_json({"error": f"Failed to fetch following for {args.username}: {error}", "username": args.username})
 
 
 async def command_post(args):
     """Create a tweet."""
     client = await get_client()
-    tweet = await client.create_tweet(text=args.text, reply_to=args.reply_to)
-    output_json(serialize_tweet(tweet))
+    try:
+        tweet = await client.create_tweet(text=args.text, reply_to=args.reply_to)
+        output_json(serialize_tweet(tweet))
+    except Exception as error:
+        output_json({"error": f"Failed to post tweet: {error}"})
 
 
 async def command_like(args):
     """Like a tweet."""
     client = await get_client()
-    await client.favorite_tweet(args.tweet_id)
-    output_json({"status": "liked", "tweet_id": args.tweet_id})
+    try:
+        await client.favorite_tweet(args.tweet_id)
+        output_json({"status": "liked", "tweet_id": args.tweet_id})
+    except Exception as error:
+        output_json({"error": f"Failed to like tweet {args.tweet_id}: {error}", "tweet_id": args.tweet_id})
 
 
 async def command_retweet(args):
     """Retweet a tweet."""
     client = await get_client()
-    await client.retweet(args.tweet_id)
-    output_json({"status": "retweeted", "tweet_id": args.tweet_id})
+    try:
+        await client.retweet(args.tweet_id)
+        output_json({"status": "retweeted", "tweet_id": args.tweet_id})
+    except Exception as error:
+        output_json({"error": f"Failed to retweet {args.tweet_id}: {error}", "tweet_id": args.tweet_id})
 
 
 async def command_bookmark(args):
     """Bookmark a tweet."""
     client = await get_client()
-    await client.create_bookmark(args.tweet_id)
-    output_json({"status": "bookmarked", "tweet_id": args.tweet_id})
+    try:
+        await client.create_bookmark(args.tweet_id)
+        output_json({"status": "bookmarked", "tweet_id": args.tweet_id})
+    except Exception as error:
+        output_json({"error": f"Failed to bookmark tweet {args.tweet_id}: {error}", "tweet_id": args.tweet_id})
 
 
 async def command_bookmarks(args):
     """Get bookmarked tweets."""
     client = await get_client()
-    bookmarks = await client.get_bookmarks(count=args.limit)
-    results = [serialize_tweet(tweet) for tweet in bookmarks]
-    output_json(results)
+    try:
+        bookmarks = await client.get_bookmarks(count=args.limit)
+        results = [serialize_tweet(tweet) for tweet in bookmarks]
+        output_json(results)
+    except Exception as error:
+        output_json({"error": f"Failed to fetch bookmarks: {error}"})
 
 
 async def command_dm(args):
     """Send a direct message."""
     client = await get_client()
-    await client.send_dm(args.user_id, args.text)
-    output_json({"status": "sent", "user_id": args.user_id})
+    try:
+        await client.send_dm(args.user_id, args.text)
+        output_json({"status": "sent", "user_id": args.user_id})
+    except Exception as error:
+        output_json({"error": f"Failed to send DM to {args.user_id}: {error}", "user_id": args.user_id})
 
 
 async def command_timeline(args):
     """Get home timeline."""
     client = await get_client()
-    tweets = await client.get_timeline(count=args.limit)
-    results = [serialize_tweet(tweet) for tweet in tweets]
-    output_json(results)
+    try:
+        tweets = await client.get_timeline(count=args.limit)
+        results = [serialize_tweet(tweet) for tweet in tweets]
+        output_json(results)
+    except Exception as error:
+        output_json({"error": f"Failed to fetch timeline: {error}"})
 
 
 async def command_whoami(args):
