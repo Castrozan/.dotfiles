@@ -1,5 +1,5 @@
 ---
-name: twscrape
+name: twikit
 description: Scrape X/Twitter posts, profiles, search results, followers, and trends. Use when user asks to find tweets, check Twitter profiles, search X, monitor accounts, or extract Twitter data.
 ---
 

@@ -7,11 +7,11 @@ let
   cookiesPath = "$HOME/.config/twikit/cookies.json";
 
   twikitCliSource = pkgs.writeText "twikit-cli.py" (
-    builtins.readFile ../../agents/skills/twscrape/scripts/twikit-cli.py
+    builtins.readFile ../../agents/skills/twikit/scripts/twikit-cli.py
   );
 
   extractXCookiesSource = pkgs.writeText "extract-x-cookies.py" (
-    builtins.readFile ../../agents/skills/twscrape/scripts/extract-x-cookies.py
+    builtins.readFile ../../agents/skills/twikit/scripts/extract-x-cookies.py
   );
 
   twikitCli = pkgs.writeShellScriptBin "twikit-cli" ''
