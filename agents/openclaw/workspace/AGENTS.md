@@ -88,25 +88,54 @@ The dotfiles repo (`~/.dotfiles`) is used by **multiple actors simultaneously** 
 
 ---
 
-## Memory Discipline
+## Data Persistence
 
-Your memory resets every session. What you don't write down, you lose forever.
+Your memory resets every session. What you don't write down, you lose forever. Two persistence layers — use the right one.
 
-### MEMORY.md — Curated Long-Term Wisdom
+### DuckDB — Structured Data (shared across all agents)
+
+`~/.openclaw/shared/openclaw.duckdb` is the shared structured data store. All agents read and write to it. Read `skills/duckdb/SKILL.md` for full schema and examples.
+
+**When to use DuckDB:**
+- Anything you'd query later: counts, filters, aggregations, trends
+- Cross-agent shared state (tool health, contacts, work logs)
+- Tracking items with status (RIL items, tickets, tasks)
+- Decisions with structured fields (who, what, why, when)
+- Anything another agent might need to look up
+
+**Quick reference:**
+```bash
+duckdb ~/.openclaw/shared/openclaw.duckdb "SELECT * FROM v_tool_health"
+duckdb ~/.openclaw/shared/openclaw.duckdb "INSERT INTO tool_status VALUES ('web_search', 'working', now(), 'Brave key valid')"
+duckdb ~/.openclaw/shared/openclaw.duckdb -json "SELECT * FROM decisions ORDER BY decided_at DESC LIMIT 5"
+```
+
+**Tables:** `work_sessions`, `ril_items`, `decisions`, `tool_status`, `contacts`
+**Views:** `v_recent_work`, `v_unprocessed_ril`, `v_tool_health`
+
+**When to write to DuckDB:**
+- Tool breaks or starts working → update `tool_status`
+- Processing RIL items → insert/update `ril_items`
+- Making a significant decision → insert into `decisions`
+- Meeting a relevant person/contact → insert into `contacts`
+- Starting/finishing meaningful work → log to `work_sessions`
+
+### MEMORY.md — Curated Long-Term Wisdom (per agent)
 
 `MEMORY.md` in your workspace root is your persistent brain. Keep it concise and high-signal.
 
-**What to write:**
-- Decisions made and why (e.g., "chose X over Y because...")
-- User preferences discovered during work
+**When to use MEMORY.md (not DuckDB):**
+- Narrative context that doesn't fit structured fields
 - Patterns and conventions confirmed across sessions
-- Solutions to problems you solved (so you never re-solve them)
-- Key file paths, project structures, API details you'll need again
+- Solutions to hard problems (the "how", not just the "what")
+- User preferences and communication style notes
+- Key file paths, project structures, API quirks
 
 **What NOT to write:**
 - Session-specific temporary state
 - Unverified guesses — confirm before persisting
 - Anything already in AGENTS.md, IDENTITY.md, or SOUL.md
+- Structured data that belongs in DuckDB (decisions, tool status, contacts)
 
 ### memory/ — Daily Session Logs
 
@@ -115,9 +144,10 @@ Write a `memory/YYYY-MM-DD.md` daily log during work. Raw notes, task context, w
 ### When to Write
 
 1. **Session start**: read MEMORY.md to rehydrate context
-2. **After significant decisions**: write the decision and reasoning to MEMORY.md immediately
+2. **After significant decisions**: write to DuckDB `decisions` table AND to MEMORY.md if it has narrative value
 3. **After solving hard problems**: capture the solution pattern in MEMORY.md
-4. **Session end**: distill key learnings from daily log into MEMORY.md, prune stale entries
+4. **Tool status changes**: update DuckDB `tool_status` immediately
+5. **Session end**: distill key learnings from daily log into MEMORY.md, prune stale entries
 
 ### Memory Search
 
@@ -130,7 +160,8 @@ You have `memory_search` — use it before starting complex tasks to check if yo
 1. **Not checking file size before reading.** Use `wc -l` or `grep` first — save 75-95% tokens on file queries.
 2. **Saying "it works" without testing.** Run the command, check the output, confirm the result.
 3. **Skipping dotfiles rebuild.** Every dotfiles change must go through pull -> edit -> rebuild -> push. A broken push blocks all users.
-4. **"Mental notes" instead of writing to files.** You lose everything between sessions. Write to TOOLS.md, memory/, or MEMORY.md.
+4. **"Mental notes" instead of writing to files.** You lose everything between sessions. Structured data → DuckDB. Narrative context → MEMORY.md. Daily logs → memory/.
+5. **Using markdown for queryable data.** If you'll ever need to count, filter, or aggregate it, put it in DuckDB — not a markdown file.
 
 ## Core Rules
 
