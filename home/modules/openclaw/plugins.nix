@@ -35,7 +35,7 @@ let
 in
 {
   config = {
-    openclaw.configPatches = {
+    openclaw.configPatches = lib.mkOptionDefault {
       ".plugins.entries.openclaw-mcp-adapter.enabled" = true;
       ".plugins.entries.openclaw-mcp-adapter.config" = {
         servers = mcpServers;
