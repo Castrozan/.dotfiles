@@ -21,14 +21,17 @@ in
       jarvis = {
         openaiVoice = "onyx";
         edgeTtsVoice = "en-GB-RyanNeural";
+        language = "English";
       };
       robson = {
         openaiVoice = "echo";
         edgeTtsVoice = "pt-BR-AntonioNeural";
+        language = "Portuguese";
       };
       jenny = {
         openaiVoice = "nova";
         edgeTtsVoice = "en-US-JennyNeural";
+        language = "English";
       };
     };
   };
