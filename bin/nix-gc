@@ -81,8 +81,15 @@ clean_home_manager() {
         return
     fi
 
-    # Get list of generations
-    mapfile -t generations < <(home-manager generations | tail -n +$((KEEP_GENERATIONS + 1)) | awk '{print $5}')
+    mapfile -t all_generation_ids < <(home-manager generations | grep -oP '(?<=: id )\d+')
+    local total_generations=${#all_generation_ids[@]}
+    local count_to_remove=$((total_generations - KEEP_GENERATIONS))
+
+    if [ "$count_to_remove" -le 0 ]; then
+        local generations=()
+    else
+        local generations=("${all_generation_ids[@]:0:$count_to_remove}")
+    fi
 
     if [ ${#generations[@]} -eq 0 ]; then
         echo "   No old generations to remove"
