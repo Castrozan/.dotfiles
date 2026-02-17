@@ -21,7 +21,20 @@ let
 
   mcporterServerConfig = {
     mcpServers = {
+      # Connects to the pw-browser instance (port 9222) for authenticated access.
+      # Start the browser first: `pw open https://example.com`
+      # Falls back gracefully if browser isn't running.
       chrome-devtools = {
+        command = "${nodejs}/bin/npx";
+        args = [
+          "chrome-devtools-mcp@latest"
+          "--browser-url=http://127.0.0.1:9222"
+          "--usageStatistics"
+          "false"
+        ];
+      };
+      # Standalone headless Chromium for when pw-browser isn't needed.
+      chrome-devtools-isolated = {
         command = "${nodejs}/bin/npx";
         args = [
           "chrome-devtools-mcp@latest"
@@ -30,9 +43,7 @@ let
           "${pkgs.chromium}/bin/chromium"
           "--usageStatistics"
           "false"
-          "--user-data-dir"
-          "${config.home.homeDirectory}/.local/share/pw-browser"
-          "--chrome-arg=--password-store=basic"
+          "--isolated"
         ];
       };
     };
