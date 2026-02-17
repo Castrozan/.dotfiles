@@ -45,8 +45,8 @@ _run_in_privileged_container() {
     run _run_in_privileged_container \
         "$SCRIPT_PATH_INSIDE_CONTAINER && cat $EARLYOOM_CONFIG_PATH"
     [ "$status" -eq 0 ]
-    [[ "$output" == *"-m 5"* ]]
-    [[ "$output" == *"-s 10"* ]]
+    [[ "$output" == *"-m 10"* ]]
+    [[ "$output" == *"-s 15"* ]]
 }
 
 @test "zramswap config written correctly" {
