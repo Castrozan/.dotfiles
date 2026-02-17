@@ -38,6 +38,7 @@ in
     browserUse
     nodejs
     pkgs.uv
+    pkgs.moreutils
   ];
 
   home.activation.installOpenclawViaNpm = config.lib.dag.entryAfter [ "writeBoundary" ] ''

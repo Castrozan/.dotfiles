@@ -104,7 +104,7 @@ let
             };
             streamMode = lib.mkOption {
               type = lib.types.str;
-              default = "partial";
+              default = "off";
               description = "Message streaming mode";
             };
           };
