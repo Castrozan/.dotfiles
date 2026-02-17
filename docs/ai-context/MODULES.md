@@ -433,9 +433,7 @@ agents/skills/avatar/scripts/
   stop-avatar.sh         — Stop avatar control server
 
 agents/skills/browser/scripts/
-  pw.sh                  — Playwright CLI entry point
-  pw.js                  — Playwright automation script
-  pw-daemon.js           — Persistent Playwright daemon
+  (legacy pw scripts — replaced by pinchtab)
 
 agents/skills/hey-clever/scripts/
   hey-clever.sh          — Push-to-talk voice assistant launcher

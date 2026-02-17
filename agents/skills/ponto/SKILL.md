@@ -12,16 +12,17 @@ Lucas works Mon-Fri on escala 4741: 08:00–12:00 / 13:30–17:30. The four dail
 </schedule>
 
 <prerequisites>
-- `pw` CLI available (Playwright browser automation from dotfiles)
+- `pinchtab` running (browser automation — launches Chrome on port 9222)
 - Browser launched in headed mode with Senior platform session active
-- User must be logged into platform.senior.com.br (session persists in pw browser profile)
+- User must be logged into platform.senior.com.br (session persists in `~/.pinchtab/chrome-profile/`)
 </prerequisites>
 
 <workflow>
-1. Open the Senior ponto page in headed mode via `pw open <url> --headed`
-2. Wait for the iframe to load (look for "DIAS APURADOS" table)
-3. Run the fill script targeting missing weekdays
-4. Verify results via screenshot or the list script
+1. Start pinchtab in headed mode: `BRIDGE_HEADLESS=false pinchtab`
+2. Navigate to the Senior ponto page via pinchtab API
+3. Wait for the iframe to load (look for "DIAS APURADOS" table)
+4. Run the fill script targeting missing weekdays
+5. Verify results via screenshot or the list script
 
 The ponto page URL (bookmarked as Favoritos):
 ```
@@ -30,7 +31,7 @@ https://platform.senior.com.br/senior-x/#/Favoritos/0/res:%2F%2Fsenior.com.br%2F
 </workflow>
 
 <scripts>
-All scripts require the pw browser running on CDP port 9222. They connect via `playwright-core` using the Nix store path for the pw node_modules.
+All scripts require pinchtab's Chrome running on CDP port 9222. They connect via `playwright-core` to the running instance.
 
 **ponto-list.js** — List all days and their current status (filled vs pending).
 ```bash
@@ -50,12 +51,9 @@ Each day goes through: click "Inserir marcações" → click "Inserir previstas"
 - If a day fails, retry individually with `ponto-fill.js DD/MM`
 - If the "Inserir previstas" button is missing, a dialog overlay may be blocking — the script handles the "Acerto retroativo" confirmation automatically
 - If the browser session expired, reopen the Senior platform URL in headed mode and log in manually
-- The iframe is cross-origin so `pw elements`/`pw snap` won't see inside it — the scripts use Playwright frame detection by title ("Meus acertos de ponto")
+- The iframe is cross-origin so pinchtab's snapshot won't see inside it — the scripts use Playwright frame detection by title ("Meus acertos de ponto")
 </troubleshooting>
 
 <playwright-core-path>
-Scripts resolve playwright-core from the pw CLI's Nix store path. Read the `PW_NODE_MODULES` env var from the pw wrapper script to find it dynamically:
-```bash
-PW_MODULES=$(grep PW_NODE_MODULES "$(which pw)" | head -1 | cut -d'"' -f2)
-```
+Scripts resolve playwright-core from the Nix store. The playwright driver is available via the browser skill's default.nix derivation.
 </playwright-core-path>

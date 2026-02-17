@@ -21,8 +21,8 @@ let
 
   mcporterServerConfig = {
     mcpServers = {
-      # Connects to the pw-browser instance (port 9222) for authenticated access.
-      # Start the browser first: `pw open https://example.com`
+      # Connects to pinchtab's Chrome instance (port 9222) for authenticated access.
+      # Start the browser first: `pinchtab` (runs headless by default)
       # Falls back gracefully if browser isn't running.
       chrome-devtools = {
         command = "${nodejs}/bin/npx";

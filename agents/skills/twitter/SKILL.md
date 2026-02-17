@@ -75,7 +75,7 @@ Direct X/Twitter scraper via cookie-based auth. Free, returns raw JSON, supports
 twikit-cli extract-cookies
 ```
 
-Reads cookies from `~/.local/share/pw-browser/` and saves to `~/.config/twikit/cookies.json`. Re-run if cookies expire.
+Reads cookies from `~/.pinchtab/chrome-profile/` and saves to `~/.config/twikit/cookies.json`. Re-run if cookies expire.
 
 ### Read Operations
 

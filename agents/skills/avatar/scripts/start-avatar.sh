@@ -155,13 +155,15 @@ fi
 
 # Kill stale headless browser if running (must restart headed for visible avatar)
 if pgrep -f "remote-debugging-port=9222" > /dev/null 2>&1; then
-    pkill -f 'pw-daemon.js' 2>/dev/null || true
+    pkill -f 'pinchtab' 2>/dev/null || true
     pkill -f 'remote-debugging-port=9222' 2>/dev/null || true
     sleep 2
 fi
 
 echo -n "  Starting agent browser (headed)..."
-pw open http://localhost:3000 --headed > /dev/null 2>&1 && echo -e " ${GREEN}OK${NC}" || echo -e " ${YELLOW}SKIP${NC}"
+BRIDGE_HEADLESS=false pinchtab > /dev/null 2>&1 &
+sleep 2
+curl -s -X POST http://localhost:9867/navigate -H "Content-Type: application/json" -d '{"url":"http://localhost:3000"}' > /dev/null 2>&1 && echo -e " ${GREEN}OK${NC}" || echo -e " ${YELLOW}SKIP${NC}"
 
 echo ""
 

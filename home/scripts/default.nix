@@ -22,6 +22,5 @@
     ./brightness.nix
     ./volume.nix
     ./pinchtab.nix
-    ./pw.nix
   ];
 }
