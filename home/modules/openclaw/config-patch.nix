@@ -103,6 +103,12 @@ let
     CONFIG="${homeDir}/.openclaw/openclaw.json"
     OVERLAY="${homeDir}/.openclaw/nix-overlay.json"
 
+    export XDG_RUNTIME_DIR="''${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+    if ${pkgs.systemd}/bin/systemctl --user is-enabled agenix.service >/dev/null 2>&1; then
+      ${pkgs.systemd}/bin/systemctl --user daemon-reload
+      ${pkgs.systemd}/bin/systemctl --user restart agenix.service 2>/dev/null || true
+    fi
+
     if [ ! -f "$CONFIG" ] || [ ! -s "$CONFIG" ]; then
       mkdir -p "${homeDir}/.openclaw"
       cp "$OVERLAY" "$CONFIG"

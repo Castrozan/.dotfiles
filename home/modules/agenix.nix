@@ -23,6 +23,9 @@ let
   };
 
   secretsWithoutEnvironmentVariables = [
+    "brave-api-key"
+    "gemini-api-key"
+    "openclaw-gateway-token"
     "x-username"
     "x-email"
     "x-password"

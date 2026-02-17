@@ -158,23 +158,15 @@ in
   config = {
     openclaw.configPatches = lib.mkOptionDefault (basePatches // telegramPatches);
 
-    # Secrets: NixOS uses /run/agenix/, standalone Home Manager uses ~/.openclaw/secrets/
-    # Generate telegram bot token secret patches for each telegram-enabled agent
     openclaw.secretPatches =
       let
-        baseSecrets =
-          if isNixOS then
-            {
-              ".gateway.auth.token" = "/run/agenix/openclaw-gateway-token";
-              ".tools.web.search.apiKey" = "/run/agenix/brave-api-key";
-              ".agents.defaults.memorySearch.remote.apiKey" = "/run/agenix/gemini-api-key";
-            }
-          else
-            {
-              ".gateway.auth.token" = "${homeDir}/.openclaw/secrets/openclaw-gateway-token";
-              ".tools.web.search.apiKey" = "${homeDir}/.openclaw/secrets/brave-api-key";
-              ".agents.defaults.memorySearch.remote.apiKey" = "${homeDir}/.openclaw/secrets/gemini-api-key";
-            };
+        agenixSecretsDir = if isNixOS then "/run/agenix" else "${homeDir}/.secrets";
+
+        baseSecrets = {
+          ".gateway.auth.token" = "${agenixSecretsDir}/openclaw-gateway-token";
+          ".tools.web.search.apiKey" = "${agenixSecretsDir}/brave-api-key";
+          ".agents.defaults.memorySearch.remote.apiKey" = "${agenixSecretsDir}/gemini-api-key";
+        };
 
         # Generate bot token secrets for telegram-enabled agents
         telegramSecrets =
