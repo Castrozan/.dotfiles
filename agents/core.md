@@ -48,6 +48,10 @@ Follow ~/.dotfiles/bin/rebuild as canonical example. Shell scripts use: set -Eeu
 Before writing any documentation, read and follow the documentation skill for how to write and maintain docs.
 </documentation>
 
+<ai-context-docs>
+Pre-generated codebase documentation lives in `docs/ai-context/`. Read `docs/ai-context/INDEX.md` before exploring source code — it maps the entire repository. After significant structural changes (new modules, directory reorg, large refactors), regenerate with `codewiki` skill. Do not regenerate for minor changes.
+</ai-context-docs>
+
 <prompts>
 Understand contextually. User prompts may contain errors - interpret intent, correct obvious mistakes. User is senior engineer. When stuck or unsure, ask instead of assuming.
 </prompts>

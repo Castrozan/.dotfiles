@@ -240,6 +240,25 @@ config.options.xdg.desktopEntries.description
 ```
 ---
 
+## 🤖 AI Context Documentation
+
+Pre-generated, AI-consumable codebase documentation lives in [`docs/ai-context/`](docs/ai-context/INDEX.md). These docs are designed for AI agents to quickly understand the repository without reading all source files.
+
+```bash
+# Full regeneration (all doc types)
+~/openclaw/monster/projects/codewiki/generate.sh ~/.dotfiles
+
+# Partial — only specific areas
+~/openclaw/monster/projects/codewiki/generate.sh --focus architecture,modules ~/.dotfiles
+
+# Auto-detect from git diff
+~/openclaw/monster/projects/codewiki/generate.sh --diff ~/.dotfiles
+```
+
+Regenerate after large refactors, new modules, or directory reorganization. Minor changes don't need regeneration.
+
+---
+
 ## 🔗 Inspiration & Credits
 
 This setup is inspired by and borrows from:
