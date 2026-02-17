@@ -88,6 +88,7 @@ twikit-cli user-tweets elonmusk -n 10
 twikit-cli user-tweets elonmusk -t replies -n 10
 twikit-cli tweet 1234567890
 twikit-cli replies 1234567890
+twikit-cli thread 1234567890
 twikit-cli timeline -n 20
 twikit-cli trends
 twikit-cli bookmarks -n 20

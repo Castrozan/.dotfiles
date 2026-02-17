@@ -24,6 +24,10 @@ let
       echo "[nix] Installing twikit ${twikitVersion}..." >&2
       ${python}/bin/python -m venv "$VENV" 2>/dev/null || true
       "$VENV/bin/pip" install --quiet --upgrade "twikit==${twikitVersion}" >&2
+      TWIKIT_CLIENT="$VENV/lib/python3.12/site-packages/twikit/client/client.py"
+      if [ -f "$TWIKIT_CLIENT" ]; then
+        ${pkgs.gnused}/bin/sed -i "s/\['itemContent'\]\['value'\]/['value']/g" "$TWIKIT_CLIENT"
+      fi
     fi
 
     export TWIKIT_COOKIES_PATH="${twikitCookiesPath}"

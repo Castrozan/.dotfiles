@@ -13,7 +13,11 @@ import sys
 import os
 from pathlib import Path
 
-COOKIES_PATH = Path(os.environ.get("TWIKIT_COOKIES_PATH", str(Path.home() / ".config" / "twikit" / "cookies.json")))
+COOKIES_PATH = Path(
+    os.environ.get(
+        "TWIKIT_COOKIES_PATH", str(Path.home() / ".config" / "twikit" / "cookies.json")
+    )
+)
 USERNAME_FILE = os.environ.get("TWIKIT_USERNAME_FILE", "")
 EMAIL_FILE = os.environ.get("TWIKIT_EMAIL_FILE", "")
 PASSWORD_FILE = os.environ.get("TWIKIT_PASSWORD_FILE", "")
@@ -41,7 +45,9 @@ def serialize_tweet(tweet):
         "retweet_count": tweet.retweet_count,
         "reply_count": tweet.reply_count,
         "view_count": tweet.view_count,
-        "url": f"https://x.com/{tweet.user.screen_name}/status/{tweet.id}" if tweet.user else None,
+        "url": f"https://x.com/{tweet.user.screen_name}/status/{tweet.id}"
+        if tweet.user
+        else None,
     }
 
 
@@ -82,12 +88,16 @@ async def get_client():
 
     if not all([username, email, password]):
         print(
-            json.dumps({"error": "No cookies and no credentials found. Run: twikit-cli login"}),
+            json.dumps(
+                {"error": "No cookies and no credentials found. Run: twikit-cli login"}
+            ),
             file=sys.stderr,
         )
         sys.exit(1)
 
-    print(f"[twikit-cli] No cookies found. Logging in as {username}...", file=sys.stderr)
+    print(
+        f"[twikit-cli] No cookies found. Logging in as {username}...", file=sys.stderr
+    )
 
     COOKIES_PATH.parent.mkdir(parents=True, exist_ok=True)
 
@@ -160,7 +170,9 @@ async def command_search(args):
         results = [serialize_tweet(tweet) for tweet in tweets]
         output_json(results)
     except Exception as error:
-        output_json({"error": f"Search failed for '{args.query}': {error}", "query": args.query})
+        output_json(
+            {"error": f"Search failed for '{args.query}': {error}", "query": args.query}
+        )
 
 
 async def command_user(args):
@@ -170,7 +182,12 @@ async def command_user(args):
         user = await client.get_user_by_screen_name(args.username)
         output_json(serialize_user(user))
     except Exception as error:
-        output_json({"error": f"Failed to fetch user {args.username}: {error}", "username": args.username})
+        output_json(
+            {
+                "error": f"Failed to fetch user {args.username}: {error}",
+                "username": args.username,
+            }
+        )
 
 
 async def command_user_tweets(args):
@@ -178,13 +195,23 @@ async def command_user_tweets(args):
     client = await get_client()
     try:
         user = await client.get_user_by_screen_name(args.username)
-        tweet_type_map = {"tweets": "Tweets", "replies": "Replies", "media": "Media", "likes": "Likes"}
+        tweet_type_map = {
+            "tweets": "Tweets",
+            "replies": "Replies",
+            "media": "Media",
+            "likes": "Likes",
+        }
         tweet_type = tweet_type_map.get(args.type, "Tweets")
         tweets = await client.get_user_tweets(user.id, tweet_type, count=args.limit)
         results = [serialize_tweet(tweet) for tweet in tweets]
         output_json(results)
     except Exception as error:
-        output_json({"error": f"Failed to fetch tweets for {args.username}: {error}", "username": args.username})
+        output_json(
+            {
+                "error": f"Failed to fetch tweets for {args.username}: {error}",
+                "username": args.username,
+            }
+        )
 
 
 async def command_tweet(args):
@@ -194,7 +221,12 @@ async def command_tweet(args):
         tweet = await client.get_tweet_by_id(args.tweet_id)
         output_json(serialize_tweet(tweet))
     except (KeyError, AttributeError) as error:
-        output_json({"error": f"Failed to fetch tweet {args.tweet_id}: {error}", "tweet_id": args.tweet_id})
+        output_json(
+            {
+                "error": f"Failed to fetch tweet {args.tweet_id}: {error}",
+                "tweet_id": args.tweet_id,
+            }
+        )
 
 
 async def command_replies(args):
@@ -202,11 +234,41 @@ async def command_replies(args):
     client = await get_client()
     try:
         tweet = await client.get_tweet_by_id(args.tweet_id)
-        replies = await tweet.get_replies()
-        results = [serialize_tweet(reply) for reply in replies[:args.limit]]
-        output_json(results)
+        reply_tweets = []
+        for reply_group in tweet.replies:
+            reply_tweets.append(serialize_tweet(reply_group))
+            if hasattr(reply_group, "replies") and reply_group.replies:
+                for nested_reply in reply_group.replies:
+                    reply_tweets.append(serialize_tweet(nested_reply))
+        output_json(reply_tweets[: args.limit])
     except (KeyError, AttributeError) as error:
-        output_json({"error": f"Failed to fetch replies for {args.tweet_id}: {error}", "tweet_id": args.tweet_id})
+        output_json(
+            {
+                "error": f"Failed to fetch replies for {args.tweet_id}: {error}",
+                "tweet_id": args.tweet_id,
+            }
+        )
+
+
+async def command_thread(args):
+    """Get a tweet's self-thread (author's continuation)."""
+    client = await get_client()
+    try:
+        tweet = await client.get_tweet_by_id(args.tweet_id)
+        thread_tweets = [serialize_tweet(tweet)]
+        if hasattr(tweet, "thread") and tweet.thread:
+            for thread_tweet in tweet.thread:
+                serialized = serialize_tweet(thread_tweet)
+                if serialized["id"] != tweet.id:
+                    thread_tweets.append(serialized)
+        output_json(thread_tweets)
+    except (KeyError, AttributeError) as error:
+        output_json(
+            {
+                "error": f"Failed to fetch thread for {args.tweet_id}: {error}",
+                "tweet_id": args.tweet_id,
+            }
+        )
 
 
 async def command_trends(args):
@@ -225,7 +287,12 @@ async def command_followers(args):
         results = [serialize_user(follower) for follower in followers]
         output_json(results)
     except Exception as error:
-        output_json({"error": f"Failed to fetch followers for {args.username}: {error}", "username": args.username})
+        output_json(
+            {
+                "error": f"Failed to fetch followers for {args.username}: {error}",
+                "username": args.username,
+            }
+        )
 
 
 async def command_following(args):
@@ -237,7 +304,12 @@ async def command_following(args):
         results = [serialize_user(u) for u in following]
         output_json(results)
     except Exception as error:
-        output_json({"error": f"Failed to fetch following for {args.username}: {error}", "username": args.username})
+        output_json(
+            {
+                "error": f"Failed to fetch following for {args.username}: {error}",
+                "username": args.username,
+            }
+        )
 
 
 async def command_post(args):
@@ -257,7 +329,12 @@ async def command_like(args):
         await client.favorite_tweet(args.tweet_id)
         output_json({"status": "liked", "tweet_id": args.tweet_id})
     except Exception as error:
-        output_json({"error": f"Failed to like tweet {args.tweet_id}: {error}", "tweet_id": args.tweet_id})
+        output_json(
+            {
+                "error": f"Failed to like tweet {args.tweet_id}: {error}",
+                "tweet_id": args.tweet_id,
+            }
+        )
 
 
 async def command_retweet(args):
@@ -267,7 +344,12 @@ async def command_retweet(args):
         await client.retweet(args.tweet_id)
         output_json({"status": "retweeted", "tweet_id": args.tweet_id})
     except Exception as error:
-        output_json({"error": f"Failed to retweet {args.tweet_id}: {error}", "tweet_id": args.tweet_id})
+        output_json(
+            {
+                "error": f"Failed to retweet {args.tweet_id}: {error}",
+                "tweet_id": args.tweet_id,
+            }
+        )
 
 
 async def command_bookmark(args):
@@ -277,7 +359,12 @@ async def command_bookmark(args):
         await client.create_bookmark(args.tweet_id)
         output_json({"status": "bookmarked", "tweet_id": args.tweet_id})
     except Exception as error:
-        output_json({"error": f"Failed to bookmark tweet {args.tweet_id}: {error}", "tweet_id": args.tweet_id})
+        output_json(
+            {
+                "error": f"Failed to bookmark tweet {args.tweet_id}: {error}",
+                "tweet_id": args.tweet_id,
+            }
+        )
 
 
 async def command_bookmarks(args):
@@ -298,7 +385,12 @@ async def command_dm(args):
         await client.send_dm(args.user_id, args.text)
         output_json({"status": "sent", "user_id": args.user_id})
     except Exception as error:
-        output_json({"error": f"Failed to send DM to {args.user_id}: {error}", "user_id": args.user_id})
+        output_json(
+            {
+                "error": f"Failed to send DM to {args.user_id}: {error}",
+                "user_id": args.user_id,
+            }
+        )
 
 
 async def command_timeline(args):
@@ -327,7 +419,9 @@ def main():
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     # login
-    login_parser = subparsers.add_parser("login", help="Login (auto from secrets or interactive)")
+    login_parser = subparsers.add_parser(
+        "login", help="Login (auto from secrets or interactive)"
+    )
     login_parser.add_argument("--totp", help="TOTP secret for 2FA")
 
     # whoami
@@ -336,8 +430,12 @@ def main():
     # search
     search_parser = subparsers.add_parser("search", help="Search tweets")
     search_parser.add_argument("query", help="Search query")
-    search_parser.add_argument("-n", "--limit", type=int, default=20, help="Max results")
-    search_parser.add_argument("-p", "--product", choices=["latest", "top", "media"], default="latest")
+    search_parser.add_argument(
+        "-n", "--limit", type=int, default=20, help="Max results"
+    )
+    search_parser.add_argument(
+        "-p", "--product", choices=["latest", "top", "media"], default="latest"
+    )
 
     # user
     user_parser = subparsers.add_parser("user", help="Get user profile")
@@ -347,7 +445,12 @@ def main():
     user_tweets_parser = subparsers.add_parser("user-tweets", help="Get user tweets")
     user_tweets_parser.add_argument("username", help="X username")
     user_tweets_parser.add_argument("-n", "--limit", type=int, default=20)
-    user_tweets_parser.add_argument("-t", "--type", choices=["tweets", "replies", "media", "likes"], default="tweets")
+    user_tweets_parser.add_argument(
+        "-t",
+        "--type",
+        choices=["tweets", "replies", "media", "likes"],
+        default="tweets",
+    )
 
     # tweet
     tweet_parser = subparsers.add_parser("tweet", help="Get tweet by ID")
@@ -357,6 +460,10 @@ def main():
     replies_parser = subparsers.add_parser("replies", help="Get tweet replies")
     replies_parser.add_argument("tweet_id", help="Tweet ID")
     replies_parser.add_argument("-n", "--limit", type=int, default=20)
+
+    # thread
+    thread_parser = subparsers.add_parser("thread", help="Get tweet self-thread")
+    thread_parser.add_argument("tweet_id", help="Tweet ID (first tweet in thread)")
 
     # trends
     subparsers.add_parser("trends", help="Get trending topics")
@@ -411,6 +518,7 @@ def main():
         "user-tweets": command_user_tweets,
         "tweet": command_tweet,
         "replies": command_replies,
+        "thread": command_thread,
         "trends": command_trends,
         "timeline": command_timeline,
         "followers": command_followers,

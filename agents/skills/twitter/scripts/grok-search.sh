@@ -147,7 +147,7 @@ main() {
   request_body=$(_build_request_body "$query" "$model" "$tool_json" "$x_only" "$web_only")
 
   local response
-  response=$(curl -s "$XAI_API_ENDPOINT" \
+  response=$(curl -s --max-time 60 "$XAI_API_ENDPOINT" \
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer $api_key" \
     -d "$request_body")
