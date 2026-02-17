@@ -104,7 +104,6 @@ let
     };
     ".agents.defaults.compaction.mode" = "safeguard";
     ".agents.defaults.compaction.memoryFlush.enabled" = true;
-    # Memory search: Gemini embeddings with local BGE-M3 fallback
     ".agents.defaults.memorySearch.enabled" = true;
     ".agents.defaults.memorySearch.provider" = "gemini";
     ".agents.defaults.memorySearch.model" = "gemini-embedding-001";
