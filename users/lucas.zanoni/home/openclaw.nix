@@ -4,7 +4,6 @@
       enable = true;
       remoteHost = "dellg15";
       remoteUser = "zanoni";
-      agents = [ "jarvis" ];
     };
 
     mesh = {

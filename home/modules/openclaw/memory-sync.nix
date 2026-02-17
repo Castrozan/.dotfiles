@@ -16,29 +16,56 @@ let
     else
       "openclaw/${agentName}";
 
+  rsync = "${pkgs.rsync}/bin/rsync";
+  ssh = "${pkgs.openssh}/bin/ssh";
+
   syncScript = pkgs.writeShellScript "openclaw-memory-sync" ''
     set -euo pipefail
 
-    REMOTE_HOST="${cfg.remoteHost}"
-    REMOTE_HOME="/home/${cfg.remoteUser}"
+    readonly REMOTE_HOST="${cfg.remoteHost}"
+    readonly REMOTE_USER="${cfg.remoteUser}"
+    readonly REMOTE_HOME="/home/$REMOTE_USER"
+    readonly HOSTNAME="$(hostname)"
+
+    _check_remote_reachable() {
+      ${ssh} -o ConnectTimeout=5 -o BatchMode=yes "$REMOTE_HOST" "true" 2>/dev/null
+    }
+
+    _ensure_remote_directory() {
+      local remote_path="$1"
+      ${ssh} -o ConnectTimeout=5 -o BatchMode=yes "$REMOTE_HOST" "mkdir -p '$remote_path'" 2>/dev/null
+    }
+
+    _sync_agent_memory() {
+      local agent_name="$1"
+      local local_dir="$2"
+      local remote_dir="$3"
+
+      local local_push_count
+      local_push_count=$(${rsync} -az --update --itemize-changes --timeout=10 "$local_dir" "$remote_dir" 2>/dev/null | grep -c '^>' || true)
+
+      local remote_pull_count
+      remote_pull_count=$(${rsync} -az --update --itemize-changes --timeout=10 "$remote_dir" "$local_dir" 2>/dev/null | grep -c '^>' || true)
+
+      echo "[memory-sync] $agent_name: pushed=$local_push_count pulled=$remote_pull_count"
+    }
+
+    if ! _check_remote_reachable; then
+      echo "[memory-sync] $REMOTE_HOST unreachable, skipping all agents"
+      exit 0
+    fi
 
     ${lib.concatMapStringsSep "\n" (
       agentName:
       let
         workspace = agentWorkspacePath agentName;
         localMemoryDir = "${homeDir}/${workspace}/memory/";
-        remoteMemoryDir = "${cfg.remoteUser}@${cfg.remoteHost}:$REMOTE_HOME/${workspace}/memory/";
+        remoteMemoryDir = "$REMOTE_USER@$REMOTE_HOST:$REMOTE_HOME/${workspace}/memory/";
       in
       ''
         mkdir -p "${localMemoryDir}"
-
-        if ! ${pkgs.openssh}/bin/ssh -o ConnectTimeout=5 -o BatchMode=yes "${cfg.remoteHost}" "mkdir -p '$REMOTE_HOME/${workspace}/memory'" 2>/dev/null; then
-          echo "[memory-sync] ${agentName}: remote ${cfg.remoteHost} unreachable, skipping"
-        else
-          ${pkgs.rsync}/bin/rsync -az --update --timeout=10 "${localMemoryDir}" "${remoteMemoryDir}" 2>/dev/null || true
-          ${pkgs.rsync}/bin/rsync -az --update --timeout=10 "${remoteMemoryDir}" "${localMemoryDir}" 2>/dev/null || true
-          echo "[memory-sync] ${agentName}: synced with ${cfg.remoteHost}"
-        fi
+        _ensure_remote_directory "$REMOTE_HOME/${workspace}/memory"
+        _sync_agent_memory "${agentName}" "${localMemoryDir}" "${remoteMemoryDir}"
       ''
     ) cfg.agents}
   '';
@@ -59,8 +86,8 @@ in
 
     agents = lib.mkOption {
       type = lib.types.listOf lib.types.str;
-      default = [ ];
-      description = "Agent names whose memory directories to sync. Agents need not be declared locally — uses openclaw/<name> as workspace fallback for remote-only agents.";
+      default = lib.attrNames openclaw.enabledAgents;
+      description = "Agent names whose memory directories to sync. Defaults to all enabled agents.";
     };
 
     interval = lib.mkOption {
