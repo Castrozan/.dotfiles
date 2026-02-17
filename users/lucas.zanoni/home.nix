@@ -54,7 +54,7 @@
     ../../home/modules/summarize.nix
     ../../home/modules/suwayomi-server.nix
     ../../home/modules/tailscale-daemon.nix
-    ../../home/modules/twikit.nix
+    ../../home/modules/twitter.nix
     ../../home/modules/youtube.nix
     ../../home/modules/tmux.nix
     ../../home/modules/tuisvn.nix
