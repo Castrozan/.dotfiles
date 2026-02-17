@@ -19,6 +19,7 @@
     ./tmux-btop-toggle.nix
     ./tmux-editor-toggle.nix
     ./tmux-resurrect.nix
+    ./brightness.nix
     ./volume.nix
     ./pw.nix
   ];
