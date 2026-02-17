@@ -63,6 +63,7 @@ let
   }) telegramEnabledAgents;
   # Base config patches
   basePatches = {
+    ".tools.allow" = [ "group:plugins" ];
     ".tools.exec.pathPrepend" = [
       "${homeDir}/openclaw/scripts"
       "/run/current-system/sw/bin"

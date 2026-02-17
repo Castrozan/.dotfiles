@@ -1456,11 +1456,11 @@
         "nixpkgs": "nixpkgs_13"
       },
       "locked": {
-        "lastModified": 1771136559,
-        "narHash": "sha256-avqMTVmz7J9Cz2OrVj/yznwoNV+GPjULovJL5nMzHDo=",
+        "lastModified": 1771299619,
+        "narHash": "sha256-EuX20qDL7fCV8+eM/ELwAPbSkL6z7aCLq/Zz8TejtEY=",
         "owner": "castrozan",
         "repo": "openclaw-mesh",
-        "rev": "9c26ba47313f81beac3ff6541687d6d7ef430f6d",
+        "rev": "41d9f3e3a6423fc50d981707160474a2314b97c8",
         "type": "github"
       },
       "original": {
