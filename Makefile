@@ -1,17 +1,29 @@
-.PHONY: all test test-modules test-openclaw test-docker build shell clean env_vars help
+.PHONY: all test test-quick test-nix test-modules test-openclaw test-docker test-runtime test-all build shell clean env_vars help
 
 all:
 
-test: test-modules test-openclaw
+test: test-nix
+
+test-quick:
+	tests/run-all.sh --quick
+
+test-nix:
+	tests/run-all.sh --nix
 
 test-modules:
-	bats tests/modules/eval.bats
+	bats tests/nix-modules/home-manager.bats
 
 test-openclaw:
-	bats tests/openclaw/eval.bats
+	bats tests/openclaw/nix-config.bats
 
 test-docker:
-	docker compose --profile modules up --build --abort-on-container-exit
+	tests/run-all.sh --docker
+
+test-runtime:
+	tests/run-all.sh --runtime
+
+test-all:
+	tests/run-all.sh --all
 
 build:
 	docker compose --profile modules build
@@ -27,10 +39,14 @@ env_vars:
 
 help:
 	@echo "Available targets:"
-	@echo "  make test           - Run all local tests (modules + openclaw)"
-	@echo "  make test-modules   - Run homeManagerModules eval tests"
-	@echo "  make test-openclaw  - Run openclaw eval tests"
-	@echo "  make test-docker    - Run module tests in Docker container"
+	@echo "  make test           - Run nix tests: quick + modules + openclaw (default)"
+	@echo "  make test-quick     - Run quick tests only (skill validation + bin scripts)"
+	@echo "  make test-nix       - Run quick + nix eval tests"
+	@echo "  make test-modules   - Run homeManagerModules eval tests only"
+	@echo "  make test-openclaw  - Run openclaw nix config tests only"
+	@echo "  make test-docker    - Run docker integration tests"
+	@echo "  make test-runtime   - Run openclaw live service tests"
+	@echo "  make test-all       - Run quick + nix + docker tests"
 	@echo "  make build          - Build Docker test container"
 	@echo "  make shell          - Open shell in test container"
 	@echo "  make clean          - Remove Docker test images and volumes"
