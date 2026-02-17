@@ -15,32 +15,6 @@ in
       "robson"
       "jenny"
     ];
-    wakeWordAlternatives = {
-      jarvis = [
-        "jarvus"
-        "jarves"
-        "jervis"
-        "gervis"
-        "jarvas"
-      ];
-      robson = [
-        "rabson"
-        "robsen"
-        "robeson"
-        "robs"
-        "robsun"
-        "rabs"
-        "robinson"
-        "robzon"
-      ];
-      jenny = [
-        "jeni"
-        "jeny"
-        "jenni"
-        "jennie"
-        "genie"
-      ];
-    };
     model = "anthropic/claude-sonnet-4-5";
     ttsEngine = "edge-tts";
     agents = {
