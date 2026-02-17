@@ -145,7 +145,7 @@ in
               };
               heartbeat = lib.mkOption {
                 type = lib.types.str;
-                default = "openai-codex/gpt-5.1-codex-mini";
+                default = "openai-codex/gpt-5.3-codex";
               };
               subagents = lib.mkOption {
                 type = lib.types.str;

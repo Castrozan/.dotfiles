@@ -74,8 +74,8 @@ let
     ".agents.defaults.heartbeat.model" = openclaw.defaults.model.heartbeat;
     ".agents.defaults.subagents.model" = openclaw.defaults.model.subagents;
     ".agents.defaults.model.fallbacks" = [
+      "openai-codex/gpt-5.3-codex"
       "anthropic/claude-sonnet-4-5"
-      "openai-codex/gpt-5.1-codex-mini"
     ];
     ".agents.defaults.models" = {
       "anthropic/claude-opus-4-6" = {
@@ -86,9 +86,6 @@ let
       };
       "openai-codex/gpt-5.3-codex" = {
         alias = "codex";
-      };
-      "openai-codex/gpt-5.1-codex-mini" = {
-        alias = "codex-mini";
       };
     };
     ".models.mode" = "merge";
