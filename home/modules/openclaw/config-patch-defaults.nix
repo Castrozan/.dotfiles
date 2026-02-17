@@ -99,6 +99,7 @@ let
         mode = "oauth";
       };
     };
+    ".agents.defaults.timeoutSeconds" = 300;
     ".agents.defaults.compaction.mode" = "safeguard";
     ".agents.defaults.compaction.memoryFlush.enabled" = true;
     ".agents.defaults.memorySearch.enabled" = true;
