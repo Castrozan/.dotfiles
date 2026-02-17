@@ -118,7 +118,7 @@ Never work around pw failures by launching browser binaries directly, connecting
 
 ## Chrome DevTools MCP (Frontend Development & Fallback)
 
-Configured as Claude Code MCP server via `chrome-devtools-mcp`. Connects to Chrome via CDP and exposes DevTools capabilities that `pw` does not cover.
+Connects to Chrome via CDP and exposes DevTools capabilities that `pw` does not cover.
 
 ### When to Use
 
@@ -132,24 +132,29 @@ Use **Chrome DevTools MCP** when you need:
 - **CSS coverage** — identify unused CSS rules
 - **Frontend debugging** — anything you'd normally do in the Chrome DevTools panels
 
+### How to Call
+
+**Claude Code** uses the MCP server natively (configured in `~/.claude/mcp.json`).
+
+**OpenClaw agents** use `mcporter` to call the same MCP tools via CLI:
+
+```bash
+mcporter list chrome-devtools              # List available tools
+mcporter list chrome-devtools --schema     # List tools with full docs
+mcporter call chrome-devtools.take_screenshot
+mcporter call chrome-devtools.navigate url=https://example.com
+mcporter call chrome-devtools.click uid=element-123
+mcporter call chrome-devtools.evaluate_javascript expression="document.title"
+mcporter call chrome-devtools.emulate_device deviceName="iPhone 14"
+mcporter call chrome-devtools.get_network_requests
+```
+
 ### Available Tool Categories
 
 - **Network** — monitor requests, intercept traffic, check response headers
 - **Performance** — capture traces, analyze rendering, measure load times
 - **Emulation** — device simulation, geolocation, network throttling
 - **Core browser** — navigate, screenshot, evaluate JS, interact with elements
-
-### Connection Modes
-
-The MCP server can connect to `pw`'s browser instance (same CDP port 9222) or launch its own:
-
-```bash
-# Standalone (default config — launches its own headless Chrome)
-# Already configured in ~/.claude/mcp.json
-
-# Connect to pw's running browser
-chrome-devtools-mcp --browserUrl http://127.0.0.1:9222
-```
 
 ### Tips
 
