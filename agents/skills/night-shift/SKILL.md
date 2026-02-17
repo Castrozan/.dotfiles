@@ -131,7 +131,7 @@ When an announce message arrives:
 
 ### Research Tasks
 Model: **Sonnet** (cheap, sufficient).
-Tools: `web_search` → `web_fetch` → Jina Reader (`r.jina.ai/URL`) → `browser` (last resort).
+Tools: `web_search` → `web_fetch` → markdown.new (`markdown.new/URL`) → `browser` (last resort).
 Output: markdown file with TL;DR, Key Findings, Action Items, Sources.
 
 ### Build Tasks

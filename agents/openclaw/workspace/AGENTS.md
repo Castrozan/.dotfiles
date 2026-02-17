@@ -41,7 +41,7 @@ grep -n "pattern" largefile.md        # Find with line numbers
 rg -C3 "pattern" largefile.md        # Context around matches
 
 1. `web_search` — Brave API
-3. `web_fetch("https://r.jina.ai/URL")` — for AI content extraction on .md
+3. `web_fetch("https://markdown.new/URL")` — for AI content extraction (Cloudflare, faster & cleaner than Jina)
 2. `web_fetch` — Standard fetch for raw HTML, JSON, etc. Use with parsing tools like `jq` or `yq`.
 4. Browser skill
 ```
