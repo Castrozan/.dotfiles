@@ -9,6 +9,7 @@
     ./session-path-patch.nix
     ./gateway-service.nix
     ./memory-sync.nix
+    ./plugins.nix
   ];
 
   _module.args.isNixOS = lib.mkDefault false;
