@@ -142,11 +142,11 @@ Use **Chrome DevTools MCP** when you need:
 mcporter list chrome-devtools              # List available tools
 mcporter list chrome-devtools --schema     # List tools with full docs
 mcporter call chrome-devtools.take_screenshot
-mcporter call chrome-devtools.navigate url=https://example.com
+mcporter call chrome-devtools.navigate_page type=url url=https://example.com
 mcporter call chrome-devtools.click uid=element-123
-mcporter call chrome-devtools.evaluate_javascript expression="document.title"
-mcporter call chrome-devtools.emulate_device deviceName="iPhone 14"
-mcporter call chrome-devtools.get_network_requests
+mcporter call chrome-devtools.evaluate_script function="() => document.title"
+mcporter call chrome-devtools.emulate colorScheme=dark
+mcporter call chrome-devtools.list_network_requests
 ```
 
 ### Available Tool Categories
