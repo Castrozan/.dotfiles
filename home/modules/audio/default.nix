@@ -77,6 +77,8 @@ in
               "node.name" = "echo-cancel-sink";
               "media.class" = "Audio/Sink";
               "audio.position" = [ "MONO" ];
+              "priority.session" = 0;
+              "priority.driver" = 0;
             };
           };
         }
