@@ -11,13 +11,31 @@
 # skill docs from the system prompt and shell out via `mcporter call`. This works
 # for ALL agents because skills are file-based, not runtime-registered.
 #
-# MCP server config: auto-discovered from ~/.claude/mcp.json (shared with Claude Code).
-# Usage: `mcporter call chrome-devtools.take_screenshot filePath:/tmp/shot.png`
-# Daemon: `mcporter daemon start` keeps servers warm between calls.
+# mcporter auto-imports servers from ~/.claude/mcp.json but we override
+# chrome-devtools with --isolated so it doesn't collide with Claude Code's
+# own chromium instance (both use the same chrome-profile directory).
 { pkgs, config, ... }:
 let
   nodejs = pkgs.nodejs_22;
   mcporterNpmPrefix = "$HOME/.local/share/mcporter-npm";
+
+  mcporterServerConfig = {
+    servers = {
+      chrome-devtools = {
+        transport = "stdio";
+        command = "${nodejs}/bin/npx";
+        args = [
+          "chrome-devtools-mcp@latest"
+          "--headless"
+          "--executablePath"
+          "${pkgs.chromium}/bin/chromium"
+          "--usageStatistics"
+          "false"
+          "--isolated"
+        ];
+      };
+    };
+  };
 
   installMcporterViaNpm = pkgs.writeShellScript "mcporter-install" ''
     set -euo pipefail
@@ -38,6 +56,8 @@ let
 in
 {
   home.packages = [ nodejs ];
+
+  home.file.".mcporter/mcporter.json".text = builtins.toJSON mcporterServerConfig;
 
   home.activation.installMcporterViaNpm = config.lib.dag.entryAfter [ "writeBoundary" ] ''
     run ${installMcporterViaNpm}
