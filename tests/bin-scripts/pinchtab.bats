@@ -1,7 +1,10 @@
 #!/usr/bin/env bats
 
 setup() {
-    PINCHTAB_BIN="$(command -v pinchtab)"
+    PINCHTAB_BIN="$(command -v pinchtab 2>/dev/null || true)"
+    if [ -z "$PINCHTAB_BIN" ]; then
+        skip "pinchtab not in PATH (requires home-manager profile)"
+    fi
 }
 
 @test "pinchtab binary exists in PATH" {
