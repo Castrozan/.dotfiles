@@ -19,6 +19,7 @@
       curl
       delta
       docker-compose
+      duckdb
       dust
       eza
       fastfetch
