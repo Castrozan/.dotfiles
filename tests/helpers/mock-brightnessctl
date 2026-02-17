@@ -51,7 +51,7 @@ _set_brightness() {
 case "${1:-}" in
 -m)
 	local_pct=$(_get_percentage)
-	echo "backlight,intel_backlight,/sys/class/backlight/intel_backlight,$(_get_current),${local_pct}%"
+	echo "backlight,intel_backlight,$(_get_current),${local_pct}%"
 	;;
 set)
 	_set_brightness "${2:-50%}"
