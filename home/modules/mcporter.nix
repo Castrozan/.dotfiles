@@ -20,9 +20,8 @@ let
   mcporterNpmPrefix = "$HOME/.local/share/mcporter-npm";
 
   mcporterServerConfig = {
-    servers = {
+    mcpServers = {
       chrome-devtools = {
-        transport = "stdio";
         command = "${nodejs}/bin/npx";
         args = [
           "chrome-devtools-mcp@latest"
