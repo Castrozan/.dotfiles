@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+readonly BRIGHTNESS_STEP_NORMAL=10
+readonly BRIGHTNESS_STEP_PRECISE=1
+readonly NOTIFICATION_TIMEOUT=1000
+readonly NOTIFICATION_TAG="brightness"
+
+main() {
+	case "${1:-}" in
+	--inc) _change_brightness "+${BRIGHTNESS_STEP_NORMAL}%" ;;
+	--dec) _change_brightness "${BRIGHTNESS_STEP_NORMAL}%-" ;;
+	--inc-precise) _change_brightness "+${BRIGHTNESS_STEP_PRECISE}%" ;;
+	--dec-precise) _change_brightness "${BRIGHTNESS_STEP_PRECISE}%-" ;;
+	--get) _get_brightness_percentage ;;
+	*) _get_brightness_percentage ;;
+	esac
+}
+
+_get_brightness_percentage() {
+	brightnessctl -m | cut -d, -f4 | tr -d '%'
+}
+
+_get_brightness_icon_name() {
+	local current_brightness=$1
+
+	if [[ "$current_brightness" -le 20 ]]; then
+		echo "display-brightness-low-symbolic"
+	elif [[ "$current_brightness" -le 60 ]]; then
+		echo "display-brightness-medium-symbolic"
+	else
+		echo "display-brightness-symbolic"
+	fi
+}
+
+_change_brightness() {
+	local adjustment=$1
+	brightnessctl set "$adjustment" >/dev/null
+
+	local current_brightness icon_name
+	current_brightness=$(_get_brightness_percentage)
+	icon_name=$(_get_brightness_icon_name "$current_brightness")
+
+	notify-send \
+		-t "$NOTIFICATION_TIMEOUT" \
+		-h "int:value:${current_brightness}" \
+		-h "string:x-canonical-private-synchronous:${NOTIFICATION_TAG}" \
+		-u low \
+		-i "$icon_name" \
+		"Brightness: ${current_brightness}%"
+}
+
+main "$@"
