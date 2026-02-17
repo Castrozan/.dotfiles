@@ -19,6 +19,15 @@ The `openclaw agent` command sends a message to an agent through the gateway and
 For diagnosis and troubleshooting beyond basic health, use the openclaw-doctor skill instead.
 </gateway_and_service_health>
 
+<reading_agent_chat_history>
+To read an agent's chat history, use the script at `agents/skills/openclaw/scripts/read-agent-chat.sh`. It reads session JSONL files from `~/.openclaw/agents/<agent>/sessions/`. Run with `--help` for all options. Examples:
+- `bash agents/skills/openclaw/scripts/read-agent-chat.sh silver` — latest chat, last 50 messages
+- `bash agents/skills/openclaw/scripts/read-agent-chat.sh silver --list` — list all sessions
+- `bash agents/skills/openclaw/scripts/read-agent-chat.sh silver --limit 20` — last 20 messages
+- `bash agents/skills/openclaw/scripts/read-agent-chat.sh silver --session UUID` — specific session
+- `bash agents/skills/openclaw/scripts/read-agent-chat.sh silver --tools` — include tool calls
+</reading_agent_chat_history>
+
 <nix_managed_installation>
 OpenClaw is installed and configured through Nix home-manager modules. Search the dotfiles repository for the openclaw home-manager module to find installation, agent config, gateway service, and session patch modules. Each agent must be declared on exactly one machine since Telegram bot tokens support only a single polling instance. Use the dotfiles-expert or nix-expert skills for modifying these modules.
 </nix_managed_installation>
