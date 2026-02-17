@@ -6,10 +6,11 @@
 { pkgs, ... }:
 let
   inherit (pkgs) bun;
+  nodejs = pkgs.nodejs_22;
   prefix = "$HOME/.local/share/qmd";
 
   qmd = pkgs.writeShellScriptBin "qmd" ''
-    export PATH="${bun}/bin:${pkgs.sqlite.out}/bin:''${PATH:+:$PATH}"
+    export PATH="${nodejs}/bin:${bun}/bin:${pkgs.sqlite.out}/bin:''${PATH:+:$PATH}"
     export LD_LIBRARY_PATH="${pkgs.sqlite.out}/lib:''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
     QMD_DIR="${prefix}"
     QMD_BIN="$QMD_DIR/node_modules/.bin/qmd"
