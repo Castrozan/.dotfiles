@@ -6,7 +6,7 @@ let
 
   installOpenclawViaNpm = pkgs.writeShellScript "openclaw-install" ''
     set -euo pipefail
-    export PATH="${nodejs}/bin:''${PATH:+:$PATH}"
+    export PATH="${nodejs}/bin:${pkgs.git}/bin:''${PATH:+:$PATH}"
     export NPM_CONFIG_PREFIX="${npmPrefix}"
     BIN="${npmPrefix}/bin/openclaw"
 
