@@ -30,12 +30,23 @@ let
         "--usageStatistics"
         "false"
       ];
+      env = {
+        PATH = "${nodePath}:/usr/bin:/bin";
+      };
     }
   ];
 in
 {
   config = {
     openclaw.configPatches = lib.mkOptionDefault {
+      ".plugins.allow" = [
+        "openclaw-mcp-adapter"
+        "telegram"
+        "memory-core"
+        "device-pair"
+        "phone-control"
+        "talk-voice"
+      ];
       ".plugins.entries.openclaw-mcp-adapter.enabled" = true;
       ".plugins.entries.openclaw-mcp-adapter.config" = {
         servers = mcpServers;

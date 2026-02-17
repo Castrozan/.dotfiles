@@ -47,8 +47,8 @@ in
       Service = {
         Type = "simple";
         ExecStart = "${gatewayScript}";
-        Restart = "on-failure";
-        RestartSec = "10s";
+        Restart = "always";
+        RestartSec = "5s";
         Environment = [
           "PATH=${nixSystemPaths}"
           "NODE_ENV=production"
