@@ -16,5 +16,8 @@ result
 # Test coverage output
 tests/coverage/
 
+# Test status tracking (local-only pass/fail records)
+.test-status/
+
 # Ruff cache
 .ruff_cache/

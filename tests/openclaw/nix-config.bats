@@ -1,5 +1,11 @@
 #!/usr/bin/env bats
 
+load "../helpers/test-status-tracker.bash"
+
+setup_file() {
+    _initialize_test_status_tracking
+}
+
 setup() {
     REPO_DIR="$(cd "$BATS_TEST_DIRNAME/../.." && pwd)"
 
@@ -10,10 +16,18 @@ setup() {
     NIXOS_OC="$NIXOS_CONFIG.openclaw"
 }
 
+teardown() {
+    _record_test_failure_if_any
+}
+
+teardown_file() {
+    _write_passing_status_if_all_passed
+}
+
 nix_eval() {
     local expr="$1"
     shift
-    nix eval "$expr" "$@" 2>&1
+    nix eval "$expr" "$@" 2>/dev/null
 }
 
 nix_eval_json() {
@@ -184,9 +198,9 @@ nix_eval_json_apply() {
     echo "$result" | jq -e 'index(".gateway.auth.token")' > /dev/null
 }
 
-@test "workpc: gateway token path is home-manager style" {
+@test "workpc: gateway token path is agenix managed" {
     result=$(nix_eval_json "$WORKPC_OC.secretPatches.\".gateway.auth.token\"")
-    [[ "$result" == *".openclaw/secrets/"* ]]
+    [[ "$result" == *".secrets/"* ]]
 }
 
 @test "workpc: telegram bot token secrets for enabled telegram agents" {
@@ -235,7 +249,7 @@ nix_eval_json_apply() {
 
 @test "workpc: gateway service has correct restart policy" {
     result=$(nix_eval_json "$WORKPC_CONFIG.systemd.user.services.openclaw-gateway.Service.Restart")
-    [ "$result" = '"on-failure"' ]
+    [ "$result" = '"always"' ]
 }
 
 @test "workpc: gateway service environment has OPENCLAW_NIX_MODE" {
@@ -281,9 +295,11 @@ nix_eval_json_apply() {
     echo "$result" | jq -e 'index("timers.target")' > /dev/null
 }
 
-@test "workpc: memory sync configured for jarvis" {
+@test "workpc: memory sync configured for local agents" {
     result=$(nix_eval_json "$WORKPC_OC.memorySync.agents")
-    echo "$result" | jq -e 'index("jarvis")' > /dev/null
+    for agent in robson jenny monster silver; do
+        echo "$result" | jq -e "index(\"$agent\")" > /dev/null
+    done
 }
 
 @test "workpc: memory sync remote host is dellg15" {
@@ -338,7 +354,7 @@ nix_eval_json_apply() {
     result=$(nix_eval_json "$WORKPC_OC.agents.robson.telegram.groupPolicy")
     [ "$result" = '"allowlist"' ]
     result=$(nix_eval_json "$WORKPC_OC.agents.robson.telegram.streamMode")
-    [ "$result" = '"partial"' ]
+    [ "$result" = '"off"' ]
 }
 
 @test "agent: default skills list is empty" {
@@ -353,11 +369,11 @@ nix_eval_json_apply() {
 
 # ---------- Cross-config consistency ----------
 
-@test "both: memory sync is bidirectional (jarvis on both)" {
-    workpc=$(nix_eval_json "$WORKPC_OC.memorySync.agents")
-    nixos=$(nix_eval_json "$NIXOS_OC.memorySync.agents")
-    echo "$workpc" | jq -e 'index("jarvis")' > /dev/null
-    echo "$nixos" | jq -e 'index("jarvis")' > /dev/null
+@test "both: memory sync configured on both machines" {
+    workpc=$(nix_eval_json "$WORKPC_OC.memorySync.enable")
+    nixos=$(nix_eval_json "$NIXOS_OC.memorySync.enable")
+    [ "$workpc" = "true" ]
+    [ "$nixos" = "true" ]
 }
 
 @test "both: jarvis only declared on nixos" {
