@@ -15,3 +15,6 @@ result
 
 # Test coverage output
 tests/coverage/
+
+# Ruff cache
+.ruff_cache/
