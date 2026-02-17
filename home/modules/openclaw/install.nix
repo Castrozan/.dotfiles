@@ -18,7 +18,6 @@ let
     echo "[openclaw-install] Installing OpenClaw ${version}..."
     ${nodejs}/bin/npm install -g "openclaw@${version}" \
       --prefix "${npmPrefix}" --ignore-scripts
-    ${config.openclaw.sessionPathPatchScript}
     echo "[openclaw-install] Done"
   '';
 
