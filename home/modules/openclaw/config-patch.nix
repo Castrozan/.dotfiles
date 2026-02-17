@@ -13,9 +13,28 @@ let
   inherit (config) openclaw;
   homeDir = config.home.homeDirectory;
 
-  pathToArgName = path: lib.replaceStrings [ "." ] [ "_" ] (lib.removePrefix "." path);
+  pathToArgName =
+    path:
+    lib.replaceStrings
+      [
+        "."
+        "-"
+      ]
+      [
+        "_"
+        "_"
+      ]
+      (lib.removePrefix "." path);
 
   pathToSegments = path: lib.filter (s: s != "") (lib.splitString "." path);
+
+  segmentNeedsQuoting = segment: builtins.match "[a-zA-Z_][a-zA-Z0-9_]*" segment == null;
+
+  quoteJqSegment =
+    segment: if segmentNeedsQuoting segment then ".\"${segment}\"" else ".${segment}";
+
+  pathToJqPath =
+    path: lib.concatStrings (map quoteJqSegment (pathToSegments path));
 
   # Build nested attrset from flat jq-path patches (for seed JSON)
   overlayNested = lib.foldlAttrs (
@@ -32,7 +51,7 @@ let
   hasSecrets = openclaw.secretPatches != { };
 
   valueFiltersList = lib.mapAttrsToList (
-    path: _: "${path} = $" + pathToArgName path
+    path: _: "${pathToJqPath path} = $${pathToArgName path}"
   ) openclaw.configPatches;
 
   secretFiltersList = lib.mapAttrsToList (
@@ -40,7 +59,7 @@ let
     let
       argName = pathToArgName path;
     in
-    "${path} = ($" + argName + " | rtrimstr(\"\\n\"))"
+    "${pathToJqPath path} = ($${argName} | rtrimstr(\"\\n\"))"
   ) openclaw.secretPatches;
 
   jqFilter = lib.concatStringsSep " | " (valueFiltersList ++ secretFiltersList);
