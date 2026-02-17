@@ -12,8 +12,8 @@
 # for ALL agents because skills are file-based, not runtime-registered.
 #
 # mcporter auto-imports servers from ~/.claude/mcp.json but we override
-# chrome-devtools with --isolated so it doesn't collide with Claude Code's
-# own chromium instance (both use the same chrome-profile directory).
+# chrome-devtools to use the pw-browser persistent profile so agents get
+# authenticated access to logged-in sites (GitHub, GitLab, Betha, Google).
 { pkgs, config, ... }:
 let
   nodejs = pkgs.nodejs_22;
@@ -30,7 +30,8 @@ let
           "${pkgs.chromium}/bin/chromium"
           "--usageStatistics"
           "false"
-          "--isolated"
+          "--user-data-dir"
+          "${config.home.homeDirectory}/.local/share/pw-browser"
         ];
       };
     };
