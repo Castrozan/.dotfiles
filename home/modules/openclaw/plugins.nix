@@ -3,60 +3,22 @@
 # Plugins are installed via `openclaw plugins install` (npm registry).
 # This module pins their config in openclaw.json so rebuilds don't lose it.
 # Add new plugins: declare in openclaw.plugins option, add config patches below.
-{
-  config,
-  lib,
-  pkgs,
-  ...
-}:
-let
-  homeDir = config.home.homeDirectory;
-  nodePath = "${pkgs.nodejs_22}/bin";
-  chromePath = "${pkgs.chromium}/bin/chromium";
-
-  mcpAdapterInstallPath = "${homeDir}/.openclaw/extensions/openclaw-mcp-adapter";
-
-  mcpServers = [
-    {
-      name = "chrome-devtools";
-      transport = "stdio";
-      command = "${nodePath}/npx";
-      args = [
-        "chrome-devtools-mcp@latest"
-        "--headless"
-        "--executablePath"
-        chromePath
-        "--usageStatistics"
-        "false"
-      ];
-      env = {
-        PATH = "${nodePath}:/usr/bin:/bin";
-      };
-    }
-  ];
-in
+#
+# MCP tools: use mcporter (see home/modules/mcporter.nix), NOT openclaw-mcp-adapter.
+# The adapter plugin only injects tools into the default agent's session due to
+# a gateway architecture constraint (androidStern/openclaw-mcp-adapter#6).
+# mcporter uses file-based SKILL.md registration which works for ALL agents.
+{ lib, ... }:
 {
   config = {
     openclaw.configPatches = lib.mkOptionDefault {
       ".plugins.allow" = [
-        "openclaw-mcp-adapter"
         "telegram"
         "memory-core"
         "device-pair"
         "phone-control"
         "talk-voice"
       ];
-      ".plugins.entries.openclaw-mcp-adapter.enabled" = true;
-      ".plugins.entries.openclaw-mcp-adapter.config" = {
-        servers = mcpServers;
-        toolPrefix = true;
-      };
-      ".plugins.installs.openclaw-mcp-adapter" = {
-        source = "npm";
-        spec = "openclaw-mcp-adapter";
-        installPath = mcpAdapterInstallPath;
-        version = "0.1.1";
-      };
     };
   };
 }
