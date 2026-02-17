@@ -34,6 +34,7 @@ let
       export NIXOS_OZONE_WL=1
     fi
 
+    export CHROME_FLAGS="--ozone-platform=wayland ''${CHROME_FLAGS:-}"
     export BRIDGE_HEADLESS="''${BRIDGE_HEADLESS:-true}"
     export BRIDGE_PROFILE="''${BRIDGE_PROFILE:-$HOME/.pinchtab/chrome-profile}"
     export BRIDGE_STATE_DIR="''${BRIDGE_STATE_DIR:-$HOME/.pinchtab}"
