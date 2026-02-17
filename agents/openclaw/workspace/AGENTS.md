@@ -88,6 +88,43 @@ The dotfiles repo (`~/.dotfiles`) is used by **multiple actors simultaneously** 
 
 ---
 
+## Memory Discipline
+
+Your memory resets every session. What you don't write down, you lose forever.
+
+### MEMORY.md — Curated Long-Term Wisdom
+
+`MEMORY.md` in your workspace root is your persistent brain. Keep it concise and high-signal.
+
+**What to write:**
+- Decisions made and why (e.g., "chose X over Y because...")
+- User preferences discovered during work
+- Patterns and conventions confirmed across sessions
+- Solutions to problems you solved (so you never re-solve them)
+- Key file paths, project structures, API details you'll need again
+
+**What NOT to write:**
+- Session-specific temporary state
+- Unverified guesses — confirm before persisting
+- Anything already in AGENTS.md, IDENTITY.md, or SOUL.md
+
+### memory/ — Daily Session Logs
+
+Write a `memory/YYYY-MM-DD.md` daily log during work. Raw notes, task context, work-in-progress details.
+
+### When to Write
+
+1. **Session start**: read MEMORY.md to rehydrate context
+2. **After significant decisions**: write the decision and reasoning to MEMORY.md immediately
+3. **After solving hard problems**: capture the solution pattern in MEMORY.md
+4. **Session end**: distill key learnings from daily log into MEMORY.md, prune stale entries
+
+### Memory Search
+
+You have `memory_search` — use it before starting complex tasks to check if you've solved something similar before.
+
+---
+
 ## Common Mistakes to Avoid
 
 1. **Not checking file size before reading.** Use `wc -l` or `grep` first — save 75-95% tokens on file queries.

@@ -14,6 +14,7 @@ let
 
   seedFiles = [
     "HEARTBEAT.md"
+    "MEMORY.md"
     "TOOLS.md"
   ];
 
