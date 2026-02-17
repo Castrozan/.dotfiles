@@ -36,6 +36,11 @@ let
     };
   };
 
+  mcporterWrapper = pkgs.writeShellScriptBin "mcporter" ''
+    export PATH="${nodejs}/bin:''${PATH:+:$PATH}"
+    exec "${mcporterNpmPrefix}/lib/node_modules/mcporter/dist/cli.js" "$@"
+  '';
+
   installMcporterViaNpm = pkgs.writeShellScript "mcporter-install" ''
     set -euo pipefail
     export PATH="${nodejs}/bin:''${PATH:+:$PATH}"
@@ -55,14 +60,15 @@ let
 in
 {
   home = {
-    packages = [ nodejs ];
+    packages = [
+      nodejs
+      mcporterWrapper
+    ];
 
     file.".mcporter/mcporter.json".text = builtins.toJSON mcporterServerConfig;
 
     activation.installMcporterViaNpm = config.lib.dag.entryAfter [ "writeBoundary" ] ''
       run ${installMcporterViaNpm}
     '';
-
-    sessionPath = [ "${mcporterNpmPrefix}/bin" ];
   };
 }

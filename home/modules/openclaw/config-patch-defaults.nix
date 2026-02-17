@@ -65,7 +65,6 @@ let
   basePatches = {
     ".tools.exec.pathPrepend" = [
       "${homeDir}/openclaw/scripts"
-      "${homeDir}/.local/share/mcporter-npm/bin"
       "/run/current-system/sw/bin"
       "/etc/profiles/per-user/${config.home.username}/bin"
     ];
