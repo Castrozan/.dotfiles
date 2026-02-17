@@ -5,159 +5,196 @@ description: Use when user asks to open a webpage, scrape content, fill forms, c
 
 # Browser Automation
 
-## Setup
+Two browser tools available. **Pinchtab is primary** — faster, cheaper, more reliable. Use pw as fallback only.
 
-The agent browser uses Chromium with a dedicated profile (`~/.local/share/pw-browser/`). The browser launches with AI-friendly flags: notifications disabled, no translate prompts, no password manager popups, English locale for consistent element labels.
+## Pinchtab (Primary — HTTP API)
 
-Sessions and logins persist across reboots and across headless/headed mode switches.
+Standalone Go binary. Plain HTTP API at `localhost:9867`. Any agent, any language, even curl.
 
-### Logged-in Sites
+### Starting the Server
 
-The user has already logged into most of these sites in the browser profile, so try accessing them first to confirm:
-- **Google/YouTube/...** — `pw open https://accounts.google.com --headed` if not yet done
-
-### One-time Login (when needed)
-
-For sites requiring manual auth (QR codes, 2FA), ask the user to log in via headed mode:
+Pinchtab runs as a background process. Start it before use:
 
 ```bash
-pw open https://web.whatsapp.com --headed   # User scans QR code
-pw open https://github.com/login --headed   # User enters credentials
+pinchtab &    # Headless by default (Nix wrapper handles env vars)
+sleep 3       # Wait for Chrome to initialize
+curl -s http://localhost:9867/health   # Verify: {"status":"ok"}
 ```
 
-## pw CLI (Primary — ~400ms per command)
+To stop: `pkill -f pinchtab`
 
-Persistent browser. Browser stays alive between commands.
-
-### Workflow
+### Core Workflow
 
 ```bash
-pw open https://example.com     # Navigate (auto-starts headless browser)
+# Navigate
+curl -s -X POST http://localhost:9867/navigate \
+  -H "Content-Type: application/json" \
+  -d '{"url":"https://example.com"}'
+
+# Read page content (~800 tokens for a typical page)
+curl -s http://localhost:9867/text | jq -r '.text'
+
+# Get interactive elements (buttons, links, inputs) with refs
+curl -s "http://localhost:9867/snapshot?filter=interactive&format=compact"
+
+# Click element by ref
+curl -s -X POST http://localhost:9867/action \
+  -H "Content-Type: application/json" \
+  -d '{"kind":"click","ref":"e5"}'
+
+# Type into input
+curl -s -X POST http://localhost:9867/action \
+  -H "Content-Type: application/json" \
+  -d '{"kind":"type","ref":"e3","text":"search query"}'
+
+# List open tabs
+curl -s http://localhost:9867/tabs
+
+# Screenshot
+curl -s "http://localhost:9867/screenshot" > /tmp/screenshot.jpg
+```
+
+### Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/health` | Server status |
+| `GET` | `/tabs` | List open tabs |
+| `GET` | `/text` | Readable page text (cheapest — ~800 tokens) |
+| `GET` | `/snapshot` | Accessibility tree with refs |
+| `GET` | `/screenshot` | JPEG screenshot |
+| `POST` | `/navigate` | Go to URL: `{"url":"..."}` |
+| `POST` | `/action` | Interact: click, type, fill, press, hover, select, scroll |
+| `POST` | `/evaluate` | Execute JavaScript |
+| `POST` | `/tab` | Open/close tabs |
+
+### Snapshot Filters (save tokens)
+
+```bash
+# Interactive elements only — buttons, links, inputs (~75% fewer tokens)
+curl -s "http://localhost:9867/snapshot?filter=interactive&format=compact"
+
+# Scoped to a section
+curl -s "http://localhost:9867/snapshot?selector=main&format=compact"
+
+# Only changes since last snapshot
+curl -s "http://localhost:9867/snapshot?diff=true&format=compact"
+
+# Limit tree depth
+curl -s "http://localhost:9867/snapshot?depth=3&format=compact"
+```
+
+### Action Types
+
+```json
+{"kind":"click","ref":"e5"}
+{"kind":"type","ref":"e3","text":"hello"}
+{"kind":"fill","ref":"e3","text":"hello"}
+{"kind":"press","key":"Enter"}
+{"kind":"hover","ref":"e5"}
+{"kind":"select","ref":"e7","values":["option1"]}
+{"kind":"scroll","direction":"down","amount":500}
+{"kind":"focus","ref":"e3"}
+```
+
+### Token Efficiency
+
+| Method | Typical Tokens | Use When |
+|--------|---------------|----------|
+| `/text` | ~800 | Reading content only |
+| `?filter=interactive` | ~3,600 | Need to click/type |
+| Full snapshot | ~10,000 | Need page structure |
+| Screenshot | ~2,000 | Visual verification |
+
+**Always use `/text` first** when you only need to read. Use `?filter=interactive` when you need to act. Full snapshot only when structure matters.
+
+### Session Persistence
+
+Cookies and auth persist in `~/.pinchtab/chrome-profile/` across restarts. Log in once (headed mode), stay logged in forever.
+
+### One-Time Login (Manual — Headed Mode)
+
+Headed mode requires display access. User must run from their terminal:
+
+```bash
+BRIDGE_HEADLESS=false pinchtab
+# Then navigate to sites and log in via the visible Chrome window
+# Ctrl+C when done — cookies are saved to ~/.pinchtab/chrome-profile/
+```
+
+Or programmatic login (headless):
+
+```bash
+# Navigate to login page
+curl -s -X POST http://localhost:9867/navigate -d '{"url":"https://site.com/login"}'
+# Fill credentials
+curl -s -X POST http://localhost:9867/action -d '{"kind":"fill","ref":"e3","text":"user@email.com"}'
+curl -s -X POST http://localhost:9867/action -d '{"kind":"fill","ref":"e5","text":"password"}'
+curl -s -X POST http://localhost:9867/action -d '{"kind":"click","ref":"e7"}'
+```
+
+### Stealth Mode
+
+Pinchtab patches `navigator.webdriver` and spoofs User-Agent by default. For aggressive bot detection:
+
+```bash
+BRIDGE_STEALTH=full pinchtab   # Canvas/WebGL/font spoofing
+```
+
+## pw CLI (Fallback)
+
+Playwright-based browser with Node.js daemon. Persistent browser at `~/.local/share/pw-browser/`.
+
+```bash
+pw open https://example.com     # Navigate
+pw text                         # Page text
 pw elements                     # Interactive elements with [index]
 pw click 3                      # Click by index
-pw snap                         # Accessibility tree (YAML)
-pw fill "input[name=q]" hello   # Fill form field
+pw snap                         # Accessibility tree
 pw screenshot                   # Save screenshot
-pw close                        # Kill agent browser
+pw close                        # Kill browser
 ```
 
-### Commands
+### When to Use pw Instead of Pinchtab
 
-`pw help`: Show help information
+- Pinchtab server isn't running and you need a quick one-off command
+- You need Playwright-specific features (actionability checks, auto-waiting)
+- Pinchtab is broken/unavailable
 
-### Element Interaction Pattern
+### pw Headed Mode (for manual login)
 
 ```bash
-pw elements                      # See: [0] <a -> /about> About  [1] <button #submit> Go
-pw click 0                       # Click "About" link by index
-pw fill "input[name=email]" x    # Fill by CSS selector
-pw click "#submit"               # Click by CSS selector
+pw open https://site.com/login --headed   # Visible browser for user to log in
 ```
 
-### Headed Mode (visible browser)
+## Chrome DevTools MCP (Frontend Development)
 
-Use `--headed` to launch a visible browser window while retaining full CDP control. The user sees the browser on screen while you operate it programmatically.
-
-```bash
-pw open https://x.com/home --headed   # Launches visible Chromium + CDP control
-pw elements                            # Works normally against the visible window
-pw click 5                             # User watches the click happen
-pw open https://youtube.com            # Navigate — same window, user sees it
-```
-
-If a headless browser is already running, `--headed` restarts it in visible mode automatically. The `PW_HEADED=true` env var also works.
-
-### Example: Multi-site Navigation
-
-```bash
-# Open x.com, find and click the first post
-pw open https://x.com/home --headed
-sleep 2                                          # Wait for feed to load
-pw elements | grep "article\|status/"            # Find post links
-pw click 41                                      # Click post by index
-
-# Navigate to YouTube, click first video
-pw open https://www.youtube.com
-sleep 1                                          # Wait for thumbnails
-pw elements | grep "<a.*watch" | head -5         # Find video links
-pw click 103                                     # Click video by index
-```
-
-### Tips
-
-- Use `pw snap` for semantic page understanding, `pw elements` for clickable targets
-- `pw eval "document.querySelector('selector')?.click()"` bypasses Playwright actionability checks when elements are behind overlays
-- `pw scroll down 800` to load more content on infinite-scroll pages
-- `sleep 1-2` after navigation on JS-heavy sites (x.com, YouTube) before querying elements
-
-### Performance
-
-- Cold start (browser launch): ~1s
-- Each command after: ~400ms (350ms Node.js load + 50ms CDP + operation)
-- Operations themselves: 2-50ms
-
-## Troubleshooting
-
-When `pw` fails, diagnose with these steps in order:
-
-1. Run `pw status` to check if browser and daemon are alive
-2. Run `pw close` then retry the original command (kills stale processes)
-3. Check browser log at `~/.cache/pw-cli/browser.log` for crash details
-4. Kill orphan processes: `pkill -f remote-debugging-port=9222; pkill -f pw-daemon.js`
-5. If the error mentions "No browser found in PATH", install chromium via nix (`nix-env -iA nixpkgs.chromium` or add to home-manager config)
-
-Common errors and fixes:
-- **"daemon not responding"** → daemon crashed or never started. Run `pw close` and retry.
-- **"No page open"** → run `pw open <url>` before other commands.
-- **"Failed to start agent browser"** → browser binary crashes on launch. Check `~/.cache/pw-cli/browser.log` for details. Port conflict is another cause — check if something else uses port 9222.
-- **Headed mode fails** → display server not available. Verify DISPLAY or WAYLAND_DISPLAY environment variables are set.
-
-<boundaries>
-Never work around pw failures by launching browser binaries directly, connecting to CDP ports manually, using xdotool, or writing custom websocket/HTTP scripts. The pw tool manages its own browser lifecycle. If pw cannot start the browser, the fix is in pw's configuration or the system environment — not in bypassing pw. Follow the troubleshooting steps above, check the browser log, fix the underlying issue (missing binary, port conflict, display env), and retry.
-</boundaries>
-
-## Chrome DevTools MCP (Frontend Development & Fallback)
-
-Connects to Chrome via CDP and exposes DevTools capabilities that `pw` does not cover.
-
-### When to Use
-
-Use `pw` (above) for **most browser automation**: navigation, clicking, filling forms, screenshots, accessibility snapshots. It's faster and simpler.
-
-Use **Chrome DevTools MCP** when you need:
-- **Network monitoring** — inspect requests, responses, headers, timing waterfall
-- **Performance profiling** — runtime performance traces, Core Web Vitals, CrUX field data
-- **Device/network emulation** — simulate mobile viewports, slow 3G, offline mode
-- **Console access** — read console logs, warnings, errors from the page
-- **CSS coverage** — identify unused CSS rules
-- **Frontend debugging** — anything you'd normally do in the Chrome DevTools panels
-
-### How to Call
-
-**Claude Code** uses the MCP server natively (configured in `~/.claude/mcp.json`).
-
-**OpenClaw agents** use `mcporter` to call the same MCP tools via CLI:
+For network monitoring, performance profiling, and device emulation — use `mcporter`:
 
 ```bash
 mcporter list chrome-devtools              # List available tools
-mcporter list chrome-devtools --schema     # List tools with full docs
-mcporter call chrome-devtools.take_screenshot
 mcporter call chrome-devtools.navigate_page type=url url=https://example.com
-mcporter call chrome-devtools.click uid=element-123
-mcporter call chrome-devtools.evaluate_script function="() => document.title"
-mcporter call chrome-devtools.emulate colorScheme=dark
 mcporter call chrome-devtools.list_network_requests
+mcporter call chrome-devtools.take_screenshot
 ```
 
-### Available Tool Categories
+## Troubleshooting
 
-- **Network** — monitor requests, intercept traffic, check response headers
-- **Performance** — capture traces, analyze rendering, measure load times
-- **Emulation** — device simulation, geolocation, network throttling
-- **Core browser** — navigate, screenshot, evaluate JS, interact with elements
+**Pinchtab won't start:**
+1. Check port: `curl -s http://localhost:9867/health`
+2. Kill stale: `pkill -f pinchtab; pkill -f "\.pinchtab/chrome-profile"`
+3. Check logs: pinchtab prints to stderr
+4. Clear stale locks: `rm -f ~/.pinchtab/chrome-profile/Singleton*`
 
-### Tips
+**pw daemon won't start:**
+1. `pw status` — check browser and daemon
+2. `pw close` — kill everything, retry
+3. Check `~/.cache/pw-cli/browser.log`
+4. `pkill -f "pw-daemon.js"; pkill -f "remote-debugging-port=9222"`
 
-- For simple automation (click, fill, navigate), prefer `pw` — it's faster
-- For debugging frontend issues, network analysis, or performance profiling, use the MCP tools
-- Both tools can share the same Chrome profile at `~/.local/share/pw-browser/`
+**Headed mode fails (both tools):**
+Display access required. Run from a user terminal with WAYLAND_DISPLAY/DISPLAY set, not from agent shell.
+
+<boundaries>
+Never work around browser tool failures by launching browser binaries directly, connecting to CDP ports manually, using xdotool, or writing custom websocket/HTTP scripts. Use pinchtab or pw. If both fail, diagnose the underlying issue (port conflict, stale process, missing binary).
+</boundaries>
