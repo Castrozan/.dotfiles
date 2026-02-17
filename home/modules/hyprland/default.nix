@@ -8,8 +8,6 @@ let
     "mako.service"
     "xdg-desktop-portal-hyprland.service"
     "hyprshell.service"
-    "swayosd.service"
-
   ];
 in
 {
@@ -21,7 +19,6 @@ in
     ./waybar.nix
     ./hyprshell.nix
     ./wlogout.nix
-    ./swayosd.nix
     ./wayland-electron.nix
     ./waybar-service.nix
 

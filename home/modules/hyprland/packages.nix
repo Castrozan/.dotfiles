@@ -26,7 +26,6 @@ in
         # hyprlock — installed via programs.hyprlock.enable in NixOS for DRM/PAM perms
 
         pamixer
-        swayosd
         bemoji
         hyprshot-fixed
         grim
