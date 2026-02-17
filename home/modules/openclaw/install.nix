@@ -2,22 +2,31 @@
 let
   nodejs = pkgs.nodejs_22;
   version = "2026.2.15";
-  prefix = "$HOME/.local/share/openclaw-npm";
+  npmPrefix = "$HOME/.local/share/openclaw-npm";
 
-  openclaw = pkgs.writeShellScriptBin "openclaw" ''
+  installOpenclawViaNpm = pkgs.writeShellScript "openclaw-install" ''
+    set -euo pipefail
     export PATH="${nodejs}/bin:''${PATH:+:$PATH}"
-    export NPM_CONFIG_PREFIX="${prefix}"
-    export OPENCLAW_NIX_MODE=1
-    BIN="${prefix}/bin/openclaw"
+    export NPM_CONFIG_PREFIX="${npmPrefix}"
+    BIN="${npmPrefix}/bin/openclaw"
 
-    if [ ! -x "$BIN" ] || [ "$("$BIN" --version 2>/dev/null)" != "${version}" ]; then
-      echo "[nix] Installing OpenClaw ${version}..." >&2
-      ${nodejs}/bin/npm install -g "openclaw@${version}" \
-        --prefix "${prefix}" --ignore-scripts >&2
-      ${config.openclaw.sessionPathPatchScript}
+    if [ -x "$BIN" ] && [ "$("$BIN" --version 2>/dev/null)" = "${version}" ]; then
+      echo "[openclaw-install] Already at ${version}, skipping"
+      exit 0
     fi
 
-    exec "$BIN" "$@"
+    echo "[openclaw-install] Installing OpenClaw ${version}..."
+    ${nodejs}/bin/npm install -g "openclaw@${version}" \
+      --prefix "${npmPrefix}" --ignore-scripts
+    ${config.openclaw.sessionPathPatchScript}
+    echo "[openclaw-install] Done"
+  '';
+
+  openclawWrapper = pkgs.writeShellScriptBin "openclaw" ''
+    export PATH="${nodejs}/bin:''${PATH:+:$PATH}"
+    export NPM_CONFIG_PREFIX="${npmPrefix}"
+    export OPENCLAW_NIX_MODE=1
+    exec "${npmPrefix}/bin/openclaw" "$@"
   '';
 
   browserUse = pkgs.writeShellScriptBin "browser-use" ''
@@ -26,9 +35,13 @@ let
 in
 {
   home.packages = [
-    openclaw
+    openclawWrapper
     browserUse
     nodejs
     pkgs.uv
   ];
+
+  home.activation.installOpenclawViaNpm = config.lib.dag.entryAfter [ "writeBoundary" ] ''
+    run ${installOpenclawViaNpm}
+  '';
 }
