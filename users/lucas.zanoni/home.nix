@@ -40,6 +40,7 @@
     ../../home/modules/k9s.nix
     ../../home/modules/kitty.nix
     ../../home/modules/lazygit.nix
+    ../../home/modules/mcporter.nix
     ../../home/modules/mongodb-compass.nix
     ../../home/modules/neovim.nix
     ../../home/modules/obsidian.nix
