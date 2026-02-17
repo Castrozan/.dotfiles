@@ -53,7 +53,7 @@ let
       argName = pathToArgName path;
       json = builtins.toJSON val;
     in
-    if builtins.isInt val || builtins.isBool val then
+    if builtins.isInt val || builtins.isFloat val || builtins.isBool val then
       [
         "--argjson"
         argName
