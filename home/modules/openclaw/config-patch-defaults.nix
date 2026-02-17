@@ -135,6 +135,7 @@ let
     ".gateway.port" = openclaw.gatewayPort;
     ".gateway.mode" = "local";
     ".gateway.http.endpoints.chatCompletions.enabled" = true;
+    ".channels.telegram.commands.nativeSkills" = false;
   };
 
   # Telegram patches - per-account so we don't override existing settings

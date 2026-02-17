@@ -2,11 +2,11 @@
 let
   gogcli = pkgs.stdenv.mkDerivation {
     pname = "gogcli";
-    version = "0.9.0";
+    version = "0.11.0";
 
     src = pkgs.fetchurl {
-      url = "https://github.com/steipete/gogcli/releases/download/v0.9.0/gogcli_0.9.0_linux_amd64.tar.gz";
-      sha256 = "sha256-KCGfSldHizw41bM8/LAPU6WUN4S5bDtH5t2HezhMWhM=";
+      url = "https://github.com/steipete/gogcli/releases/download/v0.11.0/gogcli_0.11.0_linux_amd64.tar.gz";
+      sha256 = "sha256-ypi6VuKczTcT/nv4Nf3KAK4bl83LewvF45Pn7bQInIQ=";
     };
 
     sourceRoot = ".";
