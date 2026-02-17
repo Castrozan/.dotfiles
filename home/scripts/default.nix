@@ -21,6 +21,7 @@
     ./tmux-resurrect.nix
     ./brightness.nix
     ./volume.nix
+    ./pinchtab.nix
     ./pw.nix
   ];
 }
