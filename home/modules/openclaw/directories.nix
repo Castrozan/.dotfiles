@@ -41,10 +41,24 @@ let
     ) (lib.attrNames openclaw.enabledAgents)
   );
 
+  removeGatewayBackupFiles = lib.concatStringsSep "\n" (
+    map (
+      agentName:
+      let
+        agent = openclaw.agents.${agentName};
+        base = "${homeDir}/${agent.workspace}";
+      in
+      ''
+        find "${base}" -maxdepth 1 -name "*.backup-*" -type f -delete 2>/dev/null || true
+      ''
+    ) (lib.attrNames openclaw.enabledAgents)
+  );
+
 in
 {
   home.activation.openclawDirectories = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     ${mkDirsScript}
     ${mkSeedFilesScript}
+    ${removeGatewayBackupFiles}
   '';
 }
