@@ -54,13 +54,15 @@ let
   '';
 in
 {
-  home.packages = [ nodejs ];
+  home = {
+    packages = [ nodejs ];
 
-  home.file.".mcporter/mcporter.json".text = builtins.toJSON mcporterServerConfig;
+    file.".mcporter/mcporter.json".text = builtins.toJSON mcporterServerConfig;
 
-  home.activation.installMcporterViaNpm = config.lib.dag.entryAfter [ "writeBoundary" ] ''
-    run ${installMcporterViaNpm}
-  '';
+    activation.installMcporterViaNpm = config.lib.dag.entryAfter [ "writeBoundary" ] ''
+      run ${installMcporterViaNpm}
+    '';
 
-  home.sessionPath = [ "${mcporterNpmPrefix}/bin" ];
+    sessionPath = [ "${mcporterNpmPrefix}/bin" ];
+  };
 }
