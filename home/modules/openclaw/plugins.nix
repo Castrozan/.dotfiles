@@ -10,7 +10,6 @@
   ...
 }:
 let
-  inherit (config) openclaw;
   homeDir = config.home.homeDirectory;
   nodePath = "${pkgs.nodejs_22}/bin";
   chromePath = "${pkgs.chromium}/bin/chromium";
