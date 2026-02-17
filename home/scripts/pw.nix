@@ -10,6 +10,7 @@ let
   pw = pkgs.writeShellScriptBin "pw" ''
     export PW_DAEMON_JS="${pwDaemonJs}"
     export PW_NODE_MODULES="${browserSkill.playwrightNodeModules}/node_modules"
+    export PATH="${pkgs.nodejs_22}/bin:$PATH"
     ${pwScript}
   '';
 in
