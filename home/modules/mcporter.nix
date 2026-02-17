@@ -32,6 +32,7 @@ let
           "false"
           "--user-data-dir"
           "${config.home.homeDirectory}/.local/share/pw-browser"
+          "--chrome-arg=--password-store=basic"
         ];
       };
     };
