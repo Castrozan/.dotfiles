@@ -1,0 +1,195 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+readonly STATE_DIR="${MOCK_PACTL_STATE_DIR:-/tmp/mock-pactl}"
+mkdir -p "$STATE_DIR"
+
+_ensure_sink_state() {
+	local sink_name=$1
+	local state_file="$STATE_DIR/sink-${sink_name}"
+	if [[ ! -f "$state_file" ]]; then
+		echo "volume=50 mute=no" >"$state_file"
+	fi
+}
+
+_ensure_source_state() {
+	local source_name=$1
+	local state_file="$STATE_DIR/source-${source_name}"
+	if [[ ! -f "$state_file" ]]; then
+		echo "volume=50 mute=no" >"$state_file"
+	fi
+}
+
+_resolve_sink_name() {
+	local name=$1
+	if [[ "$name" == "@DEFAULT_SINK@" ]]; then
+		cat "$STATE_DIR/default-sink" 2>/dev/null || echo "alsa_output.mock.analog-stereo"
+	else
+		echo "$name"
+	fi
+}
+
+_resolve_source_name() {
+	local name=$1
+	if [[ "$name" == "@DEFAULT_SOURCE@" ]]; then
+		cat "$STATE_DIR/default-source" 2>/dev/null || echo "alsa_input.mock.analog-stereo"
+	else
+		echo "$name"
+	fi
+}
+
+_get_sink_volume() {
+	local sink_name
+	sink_name=$(_resolve_sink_name "$1")
+	_ensure_sink_state "$sink_name"
+	local vol
+	vol=$(grep -oP 'volume=\K\d+' "$STATE_DIR/sink-${sink_name}")
+	echo "Volume: front-left: ${vol}% / front-right: ${vol}%"
+}
+
+_set_sink_volume() {
+	local sink_name adjustment
+	sink_name=$(_resolve_sink_name "$1")
+	adjustment=$2
+	_ensure_sink_state "$sink_name"
+	local state_file="$STATE_DIR/sink-${sink_name}"
+	local current_volume
+	current_volume=$(grep -oP 'volume=\K\d+' "$state_file")
+	local mute_state
+	mute_state=$(grep -oP 'mute=\K\w+' "$state_file")
+
+	local new_volume=$current_volume
+	local matched_step
+	if [[ "$adjustment" =~ ^\+([0-9]+)% ]]; then
+		matched_step="${BASH_REMATCH[1]}"
+		new_volume=$((current_volume + matched_step))
+	elif [[ "$adjustment" =~ ^\-([0-9]+)% ]]; then
+		matched_step="${BASH_REMATCH[1]}"
+		new_volume=$((current_volume - matched_step))
+	fi
+
+	((new_volume < 0)) && new_volume=0
+	((new_volume > 150)) && new_volume=150
+
+	echo "volume=${new_volume} mute=${mute_state}" >"$state_file"
+}
+
+_get_sink_mute() {
+	local sink_name
+	sink_name=$(_resolve_sink_name "$1")
+	_ensure_sink_state "$sink_name"
+	local mute_state
+	mute_state=$(grep -oP 'mute=\K\w+' "$STATE_DIR/sink-${sink_name}")
+	echo "Mute: $mute_state"
+}
+
+_set_sink_mute() {
+	local sink_name action
+	sink_name=$(_resolve_sink_name "$1")
+	action=$2
+	_ensure_sink_state "$sink_name"
+	local state_file="$STATE_DIR/sink-${sink_name}"
+	local current_volume
+	current_volume=$(grep -oP 'volume=\K\d+' "$state_file")
+	local current_mute
+	current_mute=$(grep -oP 'mute=\K\w+' "$state_file")
+
+	local new_mute=$current_mute
+	case "$action" in
+	toggle) [[ "$current_mute" == "yes" ]] && new_mute="no" || new_mute="yes" ;;
+	1 | yes) new_mute="yes" ;;
+	0 | no) new_mute="no" ;;
+	esac
+
+	echo "volume=${current_volume} mute=${new_mute}" >"$state_file"
+}
+
+_get_source_volume() {
+	local source_name
+	source_name=$(_resolve_source_name "$1")
+	_ensure_source_state "$source_name"
+	local vol
+	vol=$(grep -oP 'volume=\K\d+' "$STATE_DIR/source-${source_name}")
+	echo "Volume: front-left: ${vol}% / front-right: ${vol}%"
+}
+
+_set_source_volume() {
+	local source_name adjustment
+	source_name=$(_resolve_source_name "$1")
+	adjustment=$2
+	_ensure_source_state "$source_name"
+	local state_file="$STATE_DIR/source-${source_name}"
+	local current_volume
+	current_volume=$(grep -oP 'volume=\K\d+' "$state_file")
+	local mute_state
+	mute_state=$(grep -oP 'mute=\K\w+' "$state_file")
+
+	local new_volume=$current_volume
+	local matched_step
+	if [[ "$adjustment" =~ ^\+([0-9]+)% ]]; then
+		matched_step="${BASH_REMATCH[1]}"
+		new_volume=$((current_volume + matched_step))
+	elif [[ "$adjustment" =~ ^\-([0-9]+)% ]]; then
+		matched_step="${BASH_REMATCH[1]}"
+		new_volume=$((current_volume - matched_step))
+	fi
+
+	((new_volume < 0)) && new_volume=0
+	((new_volume > 150)) && new_volume=150
+
+	echo "volume=${new_volume} mute=${mute_state}" >"$state_file"
+}
+
+_get_source_mute() {
+	local source_name
+	source_name=$(_resolve_source_name "$1")
+	_ensure_source_state "$source_name"
+	local mute_state
+	mute_state=$(grep -oP 'mute=\K\w+' "$STATE_DIR/source-${source_name}")
+	echo "Mute: $mute_state"
+}
+
+_set_source_mute() {
+	local source_name action
+	source_name=$(_resolve_source_name "$1")
+	action=$2
+	_ensure_source_state "$source_name"
+	local state_file="$STATE_DIR/source-${source_name}"
+	local current_volume
+	current_volume=$(grep -oP 'volume=\K\d+' "$state_file")
+	local current_mute
+	current_mute=$(grep -oP 'mute=\K\w+' "$state_file")
+
+	local new_mute=$current_mute
+	case "$action" in
+	toggle) [[ "$current_mute" == "yes" ]] && new_mute="no" || new_mute="yes" ;;
+	1 | yes) new_mute="yes" ;;
+	0 | no) new_mute="no" ;;
+	esac
+
+	echo "volume=${current_volume} mute=${new_mute}" >"$state_file"
+}
+
+_list_sinks_short() {
+	cat "$STATE_DIR/sinks-short" 2>/dev/null || echo "55	alsa_output.mock.analog-stereo	PipeWire	s32le 2ch 48000Hz	RUNNING"
+}
+
+case "${1:-}" in
+list)
+	shift
+	case "${1:-}" in
+	sinks)
+		shift
+		[[ "${1:-}" == "short" ]] && _list_sinks_short
+		;;
+	esac
+	;;
+get-sink-volume) _get_sink_volume "${2:-@DEFAULT_SINK@}" ;;
+set-sink-volume) _set_sink_volume "${2:-@DEFAULT_SINK@}" "${3:-+0%}" ;;
+get-sink-mute) _get_sink_mute "${2:-@DEFAULT_SINK@}" ;;
+set-sink-mute) _set_sink_mute "${2:-@DEFAULT_SINK@}" "${3:-toggle}" ;;
+get-source-volume) _get_source_volume "${2:-@DEFAULT_SOURCE@}" ;;
+set-source-volume) _set_source_volume "${2:-@DEFAULT_SOURCE@}" "${3:-+0%}" ;;
+get-source-mute) _get_source_mute "${2:-@DEFAULT_SOURCE@}" ;;
+set-source-mute) _set_source_mute "${2:-@DEFAULT_SOURCE@}" "${3:-toggle}" ;;
+esac

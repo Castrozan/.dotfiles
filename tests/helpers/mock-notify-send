@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+readonly NOTIFICATION_LOG="${MOCK_NOTIFY_SEND_LOG:-/tmp/mock-notify-send.log}"
+echo "$*" >>"$NOTIFICATION_LOG"

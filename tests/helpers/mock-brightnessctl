@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+readonly STATE_FILE="${MOCK_BRIGHTNESSCTL_STATE:-/tmp/mock-brightnessctl-state}"
+readonly MAX_BRIGHTNESS=1000
+
+_ensure_state() {
+	if [[ ! -f "$STATE_FILE" ]]; then
+		echo "500" >"$STATE_FILE"
+	fi
+}
+
+_get_current() {
+	_ensure_state
+	cat "$STATE_FILE"
+}
+
+_get_percentage() {
+	local current max_val
+	current=$(_get_current)
+	max_val=$MAX_BRIGHTNESS
+	echo "$((current * 100 / max_val))"
+}
+
+_set_brightness() {
+	local adjustment=$1
+	_ensure_state
+	local current
+	current=$(_get_current)
+
+	local new_brightness=$current
+	local matched_value
+	if [[ "$adjustment" =~ ^\+([0-9]+)% ]]; then
+		matched_value="${BASH_REMATCH[1]}"
+		local delta=$((MAX_BRIGHTNESS * matched_value / 100))
+		new_brightness=$((current + delta))
+	elif [[ "$adjustment" =~ ^([0-9]+)%\- ]]; then
+		matched_value="${BASH_REMATCH[1]}"
+		local delta=$((MAX_BRIGHTNESS * matched_value / 100))
+		new_brightness=$((current - delta))
+	elif [[ "$adjustment" =~ ^([0-9]+)$ ]]; then
+		new_brightness=$adjustment
+	fi
+
+	((new_brightness < 1)) && new_brightness=1
+	((new_brightness > MAX_BRIGHTNESS)) && new_brightness=$MAX_BRIGHTNESS
+
+	echo "$new_brightness" >"$STATE_FILE"
+}
+
+case "${1:-}" in
+-m)
+	local_pct=$(_get_percentage)
+	echo "backlight,intel_backlight,/sys/class/backlight/intel_backlight,$(_get_current),${local_pct}%"
+	;;
+set)
+	_set_brightness "${2:-50%}"
+	;;
+get)
+	_get_current
+	;;
+*)
+	local_pct=$(_get_percentage)
+	echo "Current brightness: $(_get_current) (${local_pct}%)"
+	;;
+esac
