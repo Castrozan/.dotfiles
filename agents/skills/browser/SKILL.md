@@ -116,8 +116,43 @@ Common errors and fixes:
 Never work around pw failures by launching browser binaries directly, connecting to CDP ports manually, using xdotool, or writing custom websocket/HTTP scripts. The pw tool manages its own browser lifecycle. If pw cannot start the browser, the fix is in pw's configuration or the system environment — not in bypassing pw. Follow the troubleshooting steps above, check the browser log, fix the underlying issue (missing binary, port conflict, display env), and retry.
 </boundaries>
 
-## Playwright MCP (Fallback only — ~200ms overhead)
+## Chrome DevTools MCP (Frontend Development & Fallback)
 
-Configured as Claude Code MCP server. Uses the same Playwright library but communicates via MCP protocol. Slightly slower per operation (~200ms overhead) but integrated directly into Claude Code's tool system.
+Configured as Claude Code MCP server via `chrome-devtools-mcp`. Connects to Chrome via CDP and exposes DevTools capabilities that `pw` does not cover.
 
-Available as MCP tools: `browser_navigate`, `browser_snapshot`, `browser_click`, `browser_fill_form`, `browser_take_screenshot`, etc.
+### When to Use
+
+Use `pw` (above) for **most browser automation**: navigation, clicking, filling forms, screenshots, accessibility snapshots. It's faster and simpler.
+
+Use **Chrome DevTools MCP** when you need:
+- **Network monitoring** — inspect requests, responses, headers, timing waterfall
+- **Performance profiling** — runtime performance traces, Core Web Vitals, CrUX field data
+- **Device/network emulation** — simulate mobile viewports, slow 3G, offline mode
+- **Console access** — read console logs, warnings, errors from the page
+- **CSS coverage** — identify unused CSS rules
+- **Frontend debugging** — anything you'd normally do in the Chrome DevTools panels
+
+### Available Tool Categories
+
+- **Network** — monitor requests, intercept traffic, check response headers
+- **Performance** — capture traces, analyze rendering, measure load times
+- **Emulation** — device simulation, geolocation, network throttling
+- **Core browser** — navigate, screenshot, evaluate JS, interact with elements
+
+### Connection Modes
+
+The MCP server can connect to `pw`'s browser instance (same CDP port 9222) or launch its own:
+
+```bash
+# Standalone (default config — launches its own headless Chrome)
+# Already configured in ~/.claude/mcp.json
+
+# Connect to pw's running browser
+chrome-devtools-mcp --browserUrl http://127.0.0.1:9222
+```
+
+### Tips
+
+- For simple automation (click, fill, navigate), prefer `pw` — it's faster
+- For debugging frontend issues, network analysis, or performance profiling, use the MCP tools
+- Both tools can share the same Chrome profile at `~/.local/share/pw-browser/`

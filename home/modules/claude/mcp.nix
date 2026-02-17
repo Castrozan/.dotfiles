@@ -1,15 +1,18 @@
 { pkgs, ... }:
 let
+  nodePath = "${pkgs.nodejs_22}/bin";
   chromePath = "${pkgs.chromium}/bin/chromium";
   mcpConfig = {
     mcpServers = {
-      playwright = {
-        command = "npx";
+      chrome-devtools = {
+        command = "${nodePath}/npx";
         args = [
-          "@playwright/mcp@latest"
+          "chrome-devtools-mcp@latest"
           "--headless"
-          "--executable-path"
+          "--executablePath"
           chromePath
+          "--usageStatistics"
+          "false"
         ];
       };
     };
