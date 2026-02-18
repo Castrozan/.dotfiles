@@ -382,3 +382,36 @@ nix_eval_json_apply() {
     run nix_eval_json "$WORKPC_OC.agents.jarvis.enable"
     [ "$status" -ne 0 ]
 }
+
+# ---------- Plugin configuration ----------
+
+@test "workpc: plugins allow list includes hindsight-openclaw" {
+    result=$(nix_eval_json "$WORKPC_OC.configPatches.\".plugins.allow\"")
+    echo "$result" | jq -e 'index("hindsight-openclaw")' > /dev/null
+}
+
+@test "workpc: plugins memory slot is hindsight-openclaw" {
+    result=$(nix_eval_json "$WORKPC_OC.configPatches.\".plugins.slots.memory\"")
+    [ "$result" = '"hindsight-openclaw"' ]
+}
+
+@test "workpc: hindsight plugin is enabled with gemini provider" {
+    result=$(nix_eval_json "$WORKPC_OC.configPatches.\".plugins.entries.hindsight-openclaw\"")
+    echo "$result" | jq -e '.enabled == true' > /dev/null
+    echo "$result" | jq -e '.config.llmProvider == "gemini"' > /dev/null
+}
+
+@test "workpc: memory-core plugin is disabled" {
+    result=$(nix_eval_json "$WORKPC_OC.configPatches.\".plugins.entries.memory-core\"")
+    echo "$result" | jq -e '.enabled == false' > /dev/null
+}
+
+@test "workpc: plugins allow list includes discord" {
+    result=$(nix_eval_json "$WORKPC_OC.configPatches.\".plugins.allow\"")
+    echo "$result" | jq -e 'index("discord")' > /dev/null
+}
+
+@test "workpc: memory backend is qmd" {
+    result=$(nix_eval_json "$WORKPC_OC.configPatches.\".memory.backend\"")
+    [ "$result" = '"qmd"' ]
+}

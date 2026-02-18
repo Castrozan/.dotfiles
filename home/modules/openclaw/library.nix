@@ -9,6 +9,7 @@
     ./gateway-service.nix
     ./memory-sync.nix
     ./plugins.nix
+    ./hindsight-fixups.nix
   ];
 
   _module.args.isNixOS = lib.mkDefault false;

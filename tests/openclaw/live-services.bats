@@ -194,3 +194,63 @@ gateway_post() {
         [ -d "$HOME/$agent_workspace/skills" ]
     done
 }
+
+# ---------- Hindsight memory plugin ----------
+
+skip_if_no_hindsight_daemon() {
+    if ! curl -so /dev/null --max-time 2 "http://127.0.0.1:9077/health" 2>/dev/null; then
+        skip "hindsight daemon not running on port 9077"
+    fi
+}
+
+@test "plugins: hindsight-openclaw is memory slot" {
+    result=$(jq -r '.plugins.slots.memory' "$HOME/.openclaw/openclaw.json")
+    [ "$result" = "hindsight-openclaw" ]
+}
+
+@test "plugins: memory-core is disabled" {
+    result=$(jq -r '.plugins.entries["memory-core"].enabled' "$HOME/.openclaw/openclaw.json")
+    [ "$result" = "false" ]
+}
+
+@test "plugins: hindsight daemon is healthy" {
+    skip_if_no_hindsight_daemon
+    result=$(curl -sf --max-time 5 "http://127.0.0.1:9077/health")
+    echo "$result" | jq -e '.status == "healthy"' > /dev/null
+}
+
+@test "plugins: hindsight binary is functional" {
+    [ -f "$HOME/.local/bin/hindsight" ]
+    run "$HOME/.local/bin/hindsight" --version
+    [ "$status" -eq 0 ]
+    [[ "$output" == hindsight* ]]
+}
+
+@test "plugins: pgvector is glibc compatible" {
+    vectorSo=$(find "$HOME/.pg0/installation" -name "vector.so" 2>/dev/null | head -1)
+    if [ -z "$vectorSo" ]; then
+        skip "no pg0 vector.so found"
+    fi
+    run bash -c "strings '$vectorSo' | grep -E 'GLIBC_2\.(3[89]|[4-9][0-9])'"
+    [ "$status" -ne 0 ]
+}
+
+@test "plugins: hindsight client.js uses HTTP retain" {
+    clientJs="$HOME/.openclaw/extensions/hindsight-openclaw/dist/client.js"
+    if [ ! -f "$clientJs" ]; then
+        skip "hindsight extension not installed"
+    fi
+    grep -q "HINDSIGHT_DAEMON_BASE_URL" "$clientJs"
+}
+
+# ---------- QMD memory backend ----------
+
+@test "memory: qmd backend is configured" {
+    result=$(jq -r '.memory.backend' "$HOME/.openclaw/openclaw.json")
+    [ "$result" = "qmd" ]
+}
+
+@test "memory: qmd data directory exists for agents" {
+    qmdDirCount=$(find "$HOME/.openclaw/agents" -maxdepth 2 -type d -name "qmd" 2>/dev/null | wc -l)
+    [ "$qmdDirCount" -gt 0 ]
+}

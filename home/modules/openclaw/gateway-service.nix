@@ -21,9 +21,16 @@ let
     "/bin"
   ];
 
+  secretsDirectory = "${homeDir}/.secrets";
+
   gatewayScript = pkgs.writeShellScript "openclaw-gateway" ''
     export PATH="${nodejs}/bin:''${PATH:+:$PATH}"
     export NPM_CONFIG_PREFIX="${prefix}"
+
+    if [ -f "${secretsDirectory}/gemini-api-key" ]; then
+      GEMINI_API_KEY="$(cat "${secretsDirectory}/gemini-api-key")"
+      export GEMINI_API_KEY
+    fi
 
     OPENCLAW_BIN="${prefix}/bin/openclaw"
     if [ ! -x "$OPENCLAW_BIN" ]; then
