@@ -5,7 +5,7 @@ description: Use when user asks to open a webpage, scrape content, fill forms, c
 
 # Browser Automation
 
-Two browser tools available. **Pinchtab is primary** — faster, cheaper, more reliable. Use pw as fallback only.
+Two browser tools available. **Pinchtab is primary** — HTTP API for navigation, scraping, interaction. **mcporter chrome-devtools** for DevTools-level access (network monitoring, performance profiling).
 
 ## Pinchtab (Primary — HTTP API)
 
@@ -157,32 +157,6 @@ Pinchtab patches `navigator.webdriver` and spoofs User-Agent by default. For agg
 BRIDGE_STEALTH=full pinchtab   # Canvas/WebGL/font spoofing
 ```
 
-## pw CLI (Fallback)
-
-Playwright-based browser with Node.js daemon. Persistent browser at `~/.local/share/pw-browser/`.
-
-```bash
-pw open https://example.com     # Navigate
-pw text                         # Page text
-pw elements                     # Interactive elements with [index]
-pw click 3                      # Click by index
-pw snap                         # Accessibility tree
-pw screenshot                   # Save screenshot
-pw close                        # Kill browser
-```
-
-### When to Use pw Instead of Pinchtab
-
-- Pinchtab server isn't running and you need a quick one-off command
-- You need Playwright-specific features (actionability checks, auto-waiting)
-- Pinchtab is broken/unavailable
-
-### pw Headed Mode (for manual login)
-
-```bash
-pw open https://site.com/login --headed   # Visible browser for user to log in
-```
-
 ## Chrome DevTools MCP (Frontend Development)
 
 For network monitoring, performance profiling, and device emulation — use `mcporter`:
@@ -202,15 +176,9 @@ mcporter call chrome-devtools.take_screenshot
 3. Check logs: pinchtab prints to stderr
 4. Clear stale locks: `rm -f ~/.pinchtab/chrome-profile/Singleton*`
 
-**pw daemon won't start:**
-1. `pw status` — check browser and daemon
-2. `pw close` — kill everything, retry
-3. Check `~/.cache/pw-cli/browser.log`
-4. `pkill -f "pw-daemon.js"; pkill -f "remote-debugging-port=9222"`
-
-**Headed mode fails (both tools):**
+**Headed mode fails:**
 Display access required. Run from a user terminal with WAYLAND_DISPLAY/DISPLAY set, not from agent shell.
 
 <boundaries>
-Never work around browser tool failures by launching browser binaries directly, connecting to CDP ports manually, using xdotool, or writing custom websocket/HTTP scripts. Use pinchtab or pw. If both fail, diagnose the underlying issue (port conflict, stale process, missing binary).
+Never work around browser tool failures by launching browser binaries directly, connecting to CDP ports manually, using xdotool, or writing custom websocket/HTTP scripts. Use pinchtab or mcporter. If both fail, diagnose the underlying issue (port conflict, stale process, missing binary).
 </boundaries>

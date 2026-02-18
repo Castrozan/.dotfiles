@@ -17,7 +17,7 @@ scripts/system-health.sh
 
 1. OpenClaw gateway (local + remote agents via grid-hosts)
 2. Key systemd user services
-3. Brave CDP availability
+3. Pinchtab CDP availability
 4. Disk usage (root + home)
 5. Memory usage
 6. CPU temperatures

@@ -177,7 +177,7 @@ elif [ ! -e "$V4L2_DEVICE" ]; then
 else
     cd "$AVATAR_DIR/control-server"
     NODE_PATH="$AVATAR_DIR/control-server/node_modules" \
-    PW_PORT="${PW_PORT:-9222}" \
+    CDP_PORT="${CDP_PORT:-9222}" \
     V4L2_DEVICE="$V4L2_DEVICE" \
     nohup node virtual-camera.js --fps 15 --width 1280 --height 720 > "$LOG_DIR/avatar-virtual-camera.log" 2>&1 &
     CAMERA_PID=$!

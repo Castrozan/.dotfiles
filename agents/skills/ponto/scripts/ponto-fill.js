@@ -1,4 +1,4 @@
-import { connectToBrowser, findPontoFrame } from './playwright-resolver.js';
+import { connectToBrowser, findPontoFrame } from './cdp-browser.js';
 
 async function dismissRetroativoConfirmationDialog(frame, page) {
   await page.waitForTimeout(1000);

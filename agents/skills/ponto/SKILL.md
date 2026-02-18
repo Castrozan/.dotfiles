@@ -31,7 +31,7 @@ https://platform.senior.com.br/senior-x/#/Favoritos/0/res:%2F%2Fsenior.com.br%2F
 </workflow>
 
 <scripts>
-All scripts require pinchtab's Chrome running on CDP port 9222. They connect via `playwright-core` to the running instance.
+All scripts require pinchtab's Chrome running on CDP port 9222. They connect via raw CDP WebSocket (no external dependencies).
 
 **ponto-list.js** — List all days and their current status (filled vs pending).
 ```bash
@@ -54,6 +54,6 @@ Each day goes through: click "Inserir marcações" → click "Inserir previstas"
 - The iframe is cross-origin so pinchtab's snapshot won't see inside it — the scripts use Playwright frame detection by title ("Meus acertos de ponto")
 </troubleshooting>
 
-<playwright-core-path>
-Scripts resolve playwright-core from the Nix store. The playwright driver is available via the browser skill's default.nix derivation.
-</playwright-core-path>
+<cdp-browser>
+Scripts use `cdp-browser.js` — a zero-dependency CDP client using Node 22 built-in WebSocket. Connects to pinchtab's Chrome on port 9222, walks cross-origin iframe execution contexts to find the ponto frame by document title.
+</cdp-browser>

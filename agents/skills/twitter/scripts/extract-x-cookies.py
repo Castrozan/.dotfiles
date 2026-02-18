@@ -14,14 +14,16 @@ import tempfile
 from pathlib import Path
 
 BROWSER_COOKIE_PATHS = [
-    Path.home() / ".local/share/pw-browser/Default/Cookies",
+    Path.home() / ".pinchtab/chrome-profile/Default/Cookies",
     Path.home() / ".config/BraveSoftware/Brave-Browser/Default/Cookies",
     Path.home() / ".config/google-chrome/Default/Cookies",
     Path.home() / ".config/chromium/Default/Cookies",
 ]
 
 TWIKIT_COOKIES_PATH = Path(
-    os.environ.get("TWIKIT_COOKIES_PATH", str(Path.home() / ".config" / "twikit" / "cookies.json"))
+    os.environ.get(
+        "TWIKIT_COOKIES_PATH", str(Path.home() / ".config" / "twikit" / "cookies.json")
+    )
 )
 
 REQUIRED_COOKIE_NAMES = ["auth_token", "ct0"]
@@ -69,7 +71,14 @@ def main():
     database_path = find_browser_cookies_database()
 
     if not database_path:
-        print(json.dumps({"error": "No browser cookies database found", "searched": [str(p) for p in BROWSER_COOKIE_PATHS]}))
+        print(
+            json.dumps(
+                {
+                    "error": "No browser cookies database found",
+                    "searched": [str(p) for p in BROWSER_COOKIE_PATHS],
+                }
+            )
+        )
         sys.exit(1)
 
     print(f"Reading cookies from: {database_path}", file=sys.stderr)
@@ -79,10 +88,12 @@ def main():
     missing_cookies = [name for name in REQUIRED_COOKIE_NAMES if name not in cookies]
     if missing_cookies:
         print(
-            json.dumps({
-                "error": f"Missing required cookies: {missing_cookies}. Are you logged into X in the browser?",
-                "found_cookies": list(cookies.keys()),
-            })
+            json.dumps(
+                {
+                    "error": f"Missing required cookies: {missing_cookies}. Are you logged into X in the browser?",
+                    "found_cookies": list(cookies.keys()),
+                }
+            )
         )
         sys.exit(1)
 
@@ -91,7 +102,15 @@ def main():
     os.chmod(str(TWIKIT_COOKIES_PATH), 0o600)
 
     print(f"Exported {len(cookies)} cookies to {TWIKIT_COOKIES_PATH}", file=sys.stderr)
-    print(json.dumps({"status": "ok", "cookies_count": len(cookies), "path": str(TWIKIT_COOKIES_PATH)}))
+    print(
+        json.dumps(
+            {
+                "status": "ok",
+                "cookies_count": len(cookies),
+                "path": str(TWIKIT_COOKIES_PATH),
+            }
+        )
+    )
 
 
 if __name__ == "__main__":

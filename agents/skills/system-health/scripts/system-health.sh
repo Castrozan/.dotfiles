@@ -55,11 +55,11 @@ for svc in hey-@agentName@; do
   fi
 done
 
-# 4. Brave browser (CDP)
+# 4. Pinchtab browser (CDP)
 if curl -sf http://localhost:9222/json/version >/dev/null 2>&1; then
-  ok "Brave CDP: running (port 9222)"
+  ok "Pinchtab CDP: running (port 9222)"
 else
-  warn "Brave CDP: not available"
+  warn "Pinchtab CDP: not available"
 fi
 
 # 5. Disk usage
