@@ -129,7 +129,7 @@ let
     ".memory.qmd.includeDefaultMemory" = true;
     ".memory.qmd.sessions.enabled" = true;
     ".memory.qmd.sessions.retentionDays" = 30;
-    ".memory.qmd.update.interval" = "5m";
+    ".memory.qmd.update.interval" = "30m";
     ".memory.qmd.update.debounceMs" = 15000;
     ".memory.qmd.limits.maxResults" = 8;
     ".memory.qmd.limits.timeoutMs" = 5000;

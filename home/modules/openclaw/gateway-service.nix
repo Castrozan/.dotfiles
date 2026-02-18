@@ -49,6 +49,9 @@ in
         ExecStart = "${gatewayScript}";
         Restart = "always";
         RestartSec = "5s";
+        CPUQuota = "150%";
+        MemoryMax = "2G";
+        OOMScoreAdjust = -500;
         Environment = [
           "PATH=${nixSystemPaths}"
           "NODE_ENV=production"
