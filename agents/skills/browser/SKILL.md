@@ -50,9 +50,25 @@ curl -s -X POST http://localhost:9867/action \
 # List open tabs
 curl -s http://localhost:9867/tabs
 
-# Screenshot
-curl -s "http://localhost:9867/screenshot" > /tmp/screenshot.jpg
+# Screenshot (ALWAYS validate before reading — errors poison context)
+curl -sf "http://localhost:9867/screenshot" -o /tmp/screenshot.jpg \
+  && file /tmp/screenshot.jpg | grep -q "JPEG\|PNG\|image" \
+  || { echo "Screenshot failed:"; cat /tmp/screenshot.jpg 2>/dev/null; rm -f /tmp/screenshot.jpg; }
 ```
+
+<screenshot-safety>
+NEVER read a screenshot file without validating it first. Pinchtab returns JSON error responses on failure (timeouts, crashes). If you save that JSON as `.jpg` and read it as an image, the API rejects it with "Could not process image" — and the broken image is now stuck in your conversation context. Every subsequent message fails. The session is unrecoverable.
+
+Always use `-sf` (fail on HTTP errors) and validate with `file` before reading:
+```bash
+curl -sf "http://localhost:9867/screenshot" -o /tmp/screenshot.jpg \
+  && file /tmp/screenshot.jpg | grep -q "JPEG\|PNG\|image" \
+  || { echo "Screenshot failed:"; cat /tmp/screenshot.jpg 2>/dev/null; rm -f /tmp/screenshot.jpg; }
+# Only read /tmp/screenshot.jpg if the above succeeded
+```
+
+If you already read a bad image and see "Could not process image" errors — stop. The session is bricked. Start a new one.
+</screenshot-safety>
 
 ### Endpoints
 
