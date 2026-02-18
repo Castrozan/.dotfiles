@@ -27,33 +27,6 @@
         tts.voice = "en-US-JennyNeural";
         telegram.enable = true;
         discord.enable = true;
-        skills = [
-          "avatar"
-          "bash"
-          "bot-bridge"
-          "browser"
-          "claude-code-oneshot"
-          "commit"
-          "context7"
-          "dotfiles-expert"
-          "hey-clever"
-          "hn"
-          "model-switch"
-          "nix-expert"
-          "openclaw-doctor"
-          "pdf"
-          "pull"
-          "rebuild"
-          "repomix"
-          "sourcebot"
-          "summarize"
-          "system-health"
-          "talk-to-user"
-          "test"
-          "tmux"
-          "worktrees"
-          "yahoo-finance"
-        ];
       };
       golden = {
         enable = true;
