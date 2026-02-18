@@ -183,6 +183,11 @@ in
         owner = "zanoni";
         mode = "400";
       };
+      "gemini-api-key" = {
+        file = ../../secrets/gemini-api-key.age;
+        owner = "zanoni";
+        mode = "400";
+      };
       "discord-bot-token-clever" = {
         file = ../../secrets/discord-bot-token-clever.age;
         owner = "zanoni";
