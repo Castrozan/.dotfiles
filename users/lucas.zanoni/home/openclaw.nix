@@ -28,7 +28,7 @@
         {
           id = "silver";
           emoji = "🪙";
-          model = "sonnet-4.6";
+          model = "opus-4.6";
         }
       ];
     };
