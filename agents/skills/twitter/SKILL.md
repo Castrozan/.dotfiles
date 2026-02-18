@@ -1,6 +1,6 @@
 ---
 name: twitter
-description: Interact with X/Twitter — search, read profiles, post, and monitor. Routes between twikit (free scraper, raw data, write ops) and Grok Search (reliable API, synthesized answers, combined web+X). Use when user asks about tweets, Twitter trends, X profiles, posting, or anything X/Twitter related.
+description: Scrape X/Twitter posts, profiles, search results, followers, and trends. Use when user shares x.com or twitter.com URLs, asks to find tweets, check Twitter/X profiles, search X, monitor accounts, post tweets, or extract Twitter data.
 ---
 
 # X/Twitter
