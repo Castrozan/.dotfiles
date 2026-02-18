@@ -10,6 +10,8 @@ description: Diagnose and fix OpenClaw gateway issues. Use when Telegram bots ar
 
 <gateway_service>
 The gateway runs as a systemd user service. Use `openclaw status` for a dashboard view of gateway reachability. The `--deep` flag probes each connected channel. The `openclaw health` command returns a quick programmatic health check. Gateway logs are available through journalctl for the `openclaw-gateway` user unit.
+
+NEVER run `openclaw doctor --non-interactive` — it overwrites config and breaks things.
 </gateway_service>
 
 <diagnosis_order>

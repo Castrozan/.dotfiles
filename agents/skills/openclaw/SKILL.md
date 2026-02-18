@@ -17,6 +17,8 @@ The `openclaw agent` command sends a message to an agent through the gateway and
 
 <gateway_and_service_health>
 For diagnosis and troubleshooting beyond basic health, use the openclaw-doctor skill instead.
+
+NEVER run `openclaw doctor --non-interactive` — it overwrites config and breaks things.
 </gateway_and_service_health>
 
 <reading_agent_chat_history>
