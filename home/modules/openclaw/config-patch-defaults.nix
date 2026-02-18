@@ -221,15 +221,16 @@ in
             }) telegramEnabledAgents;
 
         # Generate bot token secrets for discord-enabled agents
+        # Discord uses "token" not "botToken" (botToken is Telegram-only)
         discordSecrets =
           if isNixOS then
             lib.mapAttrs' (name: _: {
-              name = ".channels.discord.accounts.${name}.botToken";
+              name = ".channels.discord.accounts.${name}.token";
               value = "/run/agenix/discord-bot-token-${name}";
             }) discordEnabledAgents
           else
             lib.mapAttrs' (name: _: {
-              name = ".channels.discord.accounts.${name}.botToken";
+              name = ".channels.discord.accounts.${name}.token";
               value = "${homeDir}/.openclaw/secrets/discord-bot-token-${name}";
             }) discordEnabledAgents;
       in
