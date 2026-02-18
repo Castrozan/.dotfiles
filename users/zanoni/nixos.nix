@@ -183,6 +183,21 @@ in
         owner = "zanoni";
         mode = "400";
       };
+      "discord-bot-token-clever" = {
+        file = ../../secrets/discord-bot-token-clever.age;
+        owner = "zanoni";
+        mode = "400";
+      };
+      "discord-bot-token-golden" = {
+        file = ../../secrets/discord-bot-token-golden.age;
+        owner = "zanoni";
+        mode = "400";
+      };
+      "discord-bot-token-jarvis" = {
+        file = ../../secrets/discord-bot-token-jarvis.age;
+        owner = "zanoni";
+        mode = "400";
+      };
     };
   };
 }

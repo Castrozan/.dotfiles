@@ -28,6 +28,12 @@ in
   "telegram-bot-token-silver.age".publicKeys = all_keys;
   "telegram-bot-token-jarvis.age".publicKeys = all_keys;
   "discord-bot-token-robson.age".publicKeys = all_keys;
+  "discord-bot-token-jenny.age".publicKeys = all_keys;
+  "discord-bot-token-monster.age".publicKeys = all_keys;
+  "discord-bot-token-silver.age".publicKeys = all_keys;
+  "discord-bot-token-clever.age".publicKeys = all_keys;
+  "discord-bot-token-golden.age".publicKeys = all_keys;
+  "discord-bot-token-jarvis.age".publicKeys = all_keys;
   "deepgram-api-key.age".publicKeys = all_keys;
   "openai-api-key.age".publicKeys = all_keys;
   "betha-email.age".publicKeys = all_keys;

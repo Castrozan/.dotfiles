@@ -26,6 +26,7 @@
         workspace = "openclaw";
         tts.voice = "en-US-JennyNeural";
         telegram.enable = true;
+        discord.enable = true;
         skills = [
           "avatar"
           "bash"
@@ -62,6 +63,7 @@
         workspace = "openclaw/golden";
         tts.voice = "en-US-AriaNeural";
         telegram.enable = true;
+        discord.enable = true;
       };
       jarvis = {
         enable = true;
@@ -71,6 +73,7 @@
         workspace = "openclaw/jarvis";
         tts.voice = "en-GB-RyanNeural";
         telegram.enable = true;
+        discord.enable = true;
         telegram.botName = "Jarvis";
       };
     };

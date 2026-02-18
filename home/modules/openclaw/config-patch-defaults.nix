@@ -139,31 +139,27 @@ let
     ".channels.telegram.commands.nativeSkills" = false;
   };
 
-  # Discord patches - single token config (routes to default agent)
+  # Discord patches - per-account, mirrors telegram pattern
   hasDiscord = discordEnabledAgents != { };
-  firstDiscordAgent = if hasDiscord then lib.head (lib.attrNames discordEnabledAgents) else null;
-  discordConfig =
-    if firstDiscordAgent != null then
-      let
-        agent = discordEnabledAgents.${firstDiscordAgent};
-      in
-      {
-        enabled = true;
-        inherit (agent.discord) dmPolicy groupPolicy;
-      }
-    else
-      null;
-  discordPatches =
-    if hasDiscord then
-      { ".channels.discord" = discordConfig; }
-    else
-      { };
+
+  discordAccounts = lib.mapAttrs (name: agent: {
+    name = if agent.telegram.botName != null then agent.telegram.botName else capitalize name;
+    enabled = true;
+    inherit (agent.discord) dmPolicy groupPolicy;
+  }) discordEnabledAgents;
+
+  discordBindings = lib.mapAttrsToList (name: _: {
+    agentId = name;
+    match = {
+      channel = "discord";
+      accountId = name;
+    };
+  }) discordEnabledAgents;
 
   # Telegram patches - per-account so we don't override existing settings
   telegramPatches =
     let
       hasTelegram = telegramAccounts != { };
-      # Generate individual account patches
       accountPatches = lib.foldl' (
         acc: name:
         acc
@@ -172,11 +168,34 @@ let
         }
       ) { } (lib.attrNames telegramAccounts);
     in
-    if hasTelegram then accountPatches // { ".bindings" = telegramBindings; } else { };
+    if hasTelegram then accountPatches else { };
+
+  # Discord patches - per-account so we don't override existing settings
+  discordPatches =
+    let
+      accountPatches = lib.foldl' (
+        acc: name:
+        acc
+        // {
+          ".channels.discord.accounts.${name}" = discordAccounts.${name};
+        }
+      ) { } (lib.attrNames discordAccounts);
+    in
+    if hasDiscord then
+      {
+        ".channels.discord.enabled" = true;
+      }
+      // accountPatches
+    else
+      { };
+
+  combinedChannelBindings = telegramBindings ++ discordBindings;
 in
 {
   config = {
-    openclaw.configPatches = lib.mkOptionDefault (basePatches // telegramPatches // discordPatches);
+    openclaw.configPatches = lib.mkOptionDefault (
+      basePatches // telegramPatches // discordPatches // { ".bindings" = combinedChannelBindings; }
+    );
 
     openclaw.secretPatches =
       let
@@ -201,20 +220,18 @@ in
               value = "${homeDir}/.openclaw/secrets/telegram-bot-token-${name}";
             }) telegramEnabledAgents;
 
-        # Discord bot token secret (single token for the first discord-enabled agent)
+        # Generate bot token secrets for discord-enabled agents
         discordSecrets =
-          if hasDiscord then
-            let
-              agentName = firstDiscordAgent;
-              secretPath =
-                if isNixOS then
-                  "/run/agenix/discord-bot-token-${agentName}"
-                else
-                  "${homeDir}/.openclaw/secrets/discord-bot-token-${agentName}";
-            in
-            { ".channels.discord.token" = secretPath; }
+          if isNixOS then
+            lib.mapAttrs' (name: _: {
+              name = ".channels.discord.accounts.${name}.botToken";
+              value = "/run/agenix/discord-bot-token-${name}";
+            }) discordEnabledAgents
           else
-            { };
+            lib.mapAttrs' (name: _: {
+              name = ".channels.discord.accounts.${name}.botToken";
+              value = "${homeDir}/.openclaw/secrets/discord-bot-token-${name}";
+            }) discordEnabledAgents;
       in
       lib.mkOptionDefault (baseSecrets // telegramSecrets // discordSecrets);
   };
