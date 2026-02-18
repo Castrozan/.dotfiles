@@ -204,4 +204,30 @@ for arg in "$@"; do
   FILTERED_ARGS+=("$arg")
 done
 
-send_command "${FILTERED_ARGS[@]}"
+validate_screenshot_is_real_image() {
+  local screenshotFilePath="$1"
+  if [[ ! -f "$screenshotFilePath" ]]; then
+    echo "Error: Screenshot file not created at $screenshotFilePath" >&2
+    return 1
+  fi
+  local fileTypeDescription
+  fileTypeDescription="$(file -b "$screenshotFilePath" 2>/dev/null)"
+  if ! echo "$fileTypeDescription" | grep -qi "image\|JPEG\|PNG\|bitmap"; then
+    echo "Error: Screenshot is not a valid image ($fileTypeDescription)" >&2
+    echo "File content (first 200 bytes):" >&2
+    head -c 200 "$screenshotFilePath" >&2
+    echo >&2
+    rm -f "$screenshotFilePath"
+    return 1
+  fi
+}
+
+if [[ "${FILTERED_ARGS[0]}" == "screenshot" ]]; then
+  screenshotOutputPath="${FILTERED_ARGS[1]:-}"
+  [[ "$screenshotOutputPath" == "--full" ]] && screenshotOutputPath="${FILTERED_ARGS[2]:-}"
+  screenshotOutputPath="${screenshotOutputPath:-/tmp/pw-screenshot.png}"
+  send_command "${FILTERED_ARGS[@]}"
+  validate_screenshot_is_real_image "$screenshotOutputPath"
+else
+  send_command "${FILTERED_ARGS[@]}"
+fi

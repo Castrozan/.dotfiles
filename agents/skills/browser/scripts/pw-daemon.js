@@ -193,6 +193,18 @@ async function handleCommand(cmd, args) {
       const p =
         args.filter((a) => a !== "--full")[0] || "/tmp/pw-screenshot.png";
       await page.screenshot({ path: p, fullPage: args.includes("--full") });
+      const fs = require("fs");
+      const screenshotBuffer = fs.readFileSync(p);
+      const isPng =
+        screenshotBuffer[0] === 0x89 && screenshotBuffer[1] === 0x50;
+      const isJpeg =
+        screenshotBuffer[0] === 0xff && screenshotBuffer[1] === 0xd8;
+      if (!isPng && !isJpeg) {
+        fs.unlinkSync(p);
+        throw new Error(
+          "Screenshot produced invalid image file (not PNG/JPEG)",
+        );
+      }
       log(p);
       break;
     }
