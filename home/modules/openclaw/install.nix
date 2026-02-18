@@ -1,7 +1,7 @@
 { pkgs, config, ... }:
 let
   nodejs = pkgs.nodejs_22;
-  version = "2026.2.15";
+  version = "2026.2.17";
   npmPrefix = "$HOME/.local/share/openclaw-npm";
 
   installOpenclawViaNpm = pkgs.writeShellScript "openclaw-install" ''
@@ -17,7 +17,7 @@ let
 
     echo "[openclaw-install] Installing OpenClaw ${version}..."
     ${nodejs}/bin/npm install -g "openclaw@${version}" \
-      --prefix "${npmPrefix}" --ignore-scripts
+      --prefix "${npmPrefix}"
     echo "[openclaw-install] Done"
   '';
 
