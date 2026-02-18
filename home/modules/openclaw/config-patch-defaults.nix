@@ -42,6 +42,9 @@ let
   # Get agents with telegram enabled
   telegramEnabledAgents = lib.filterAttrs (_: a: a.telegram.enable) openclaw.enabledAgents;
 
+  # Get agents with discord enabled
+  discordEnabledAgents = lib.filterAttrs (_: a: a.discord.enable) openclaw.enabledAgents;
+
   # Capitalize first letter helper
   capitalize = s: lib.toUpper (lib.substring 0 1 s) + lib.substring 1 (-1) s;
 
@@ -136,6 +139,26 @@ let
     ".channels.telegram.commands.nativeSkills" = false;
   };
 
+  # Discord patches - single token config (routes to default agent)
+  hasDiscord = discordEnabledAgents != { };
+  firstDiscordAgent = if hasDiscord then lib.head (lib.attrNames discordEnabledAgents) else null;
+  discordConfig =
+    if firstDiscordAgent != null then
+      let
+        agent = discordEnabledAgents.${firstDiscordAgent};
+      in
+      {
+        enabled = true;
+        inherit (agent.discord) dmPolicy groupPolicy;
+      }
+    else
+      null;
+  discordPatches =
+    if hasDiscord then
+      { ".channels.discord" = discordConfig; }
+    else
+      { };
+
   # Telegram patches - per-account so we don't override existing settings
   telegramPatches =
     let
@@ -153,7 +176,7 @@ let
 in
 {
   config = {
-    openclaw.configPatches = lib.mkOptionDefault (basePatches // telegramPatches);
+    openclaw.configPatches = lib.mkOptionDefault (basePatches // telegramPatches // discordPatches);
 
     openclaw.secretPatches =
       let
@@ -177,7 +200,22 @@ in
               name = ".channels.telegram.accounts.${name}.botToken";
               value = "${homeDir}/.openclaw/secrets/telegram-bot-token-${name}";
             }) telegramEnabledAgents;
+
+        # Discord bot token secret (single token for the first discord-enabled agent)
+        discordSecrets =
+          if hasDiscord then
+            let
+              agentName = firstDiscordAgent;
+              secretPath =
+                if isNixOS then
+                  "/run/agenix/discord-bot-token-${agentName}"
+                else
+                  "${homeDir}/.openclaw/secrets/discord-bot-token-${agentName}";
+            in
+            { ".channels.discord.token" = secretPath; }
+          else
+            { };
       in
-      lib.mkOptionDefault (baseSecrets // telegramSecrets);
+      lib.mkOptionDefault (baseSecrets // telegramSecrets // discordSecrets);
   };
 }

@@ -46,6 +46,7 @@
         workspace = "openclaw/robson";
         tts.voice = "pt-BR-AntonioNeural";
         telegram.enable = true;
+        discord.enable = true;
       };
       jenny = {
         enable = true;

@@ -112,6 +112,26 @@ let
         default = { };
         description = "Telegram bot configuration for this agent";
       };
+
+      discord = lib.mkOption {
+        type = lib.types.submodule {
+          options = {
+            enable = lib.mkEnableOption "discord bot for this agent (token stored via agenix)";
+            dmPolicy = lib.mkOption {
+              type = lib.types.str;
+              default = "pairing";
+              description = "Direct message policy";
+            };
+            groupPolicy = lib.mkOption {
+              type = lib.types.str;
+              default = "open";
+              description = "Guild message policy";
+            };
+          };
+        };
+        default = { };
+        description = "Discord bot configuration for this agent";
+      };
     };
   };
 
