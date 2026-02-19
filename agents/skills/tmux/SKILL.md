@@ -38,7 +38,7 @@ List panes in window: `t list-panes -t "session:window" -F "#{pane_index}: #{pan
 </discovery>
 
 <targeting>
-Format: `session:window.pane` (pane is 0-indexed). Window can be name or index. If single pane, `.0` is optional. Session name must match exactly.
+Format: `session:window.pane`. Window can be name or index. Session name must match exactly. Pane index depends on `pane-base-index` tmux option — always check with `t list-panes` before targeting. Do not assume index starts at 0.
 </targeting>
 
 <commands>
