@@ -5,45 +5,62 @@ description: Tmux session and process control. Use when restarting dev servers, 
 <!-- @agent-architect owns this file. Delegate changes, don't edit directly. -->
 
 <socket>
-The tmux socket path depends on TMUX_TMPDIR. Hyprland sets TMUX_TMPDIR=$XDG_RUNTIME_DIR, placing the socket at /run/user/$UID/tmux-$UID/default instead of the default /tmp/tmux-$UID/default. If TMUX_TMPDIR is set in the agent environment (via env.vars in openclaw.json), bare tmux commands work. If not, detect and use the correct socket:
+Hyprland sets TMUX_TMPDIR=$XDG_RUNTIME_DIR, placing the socket at /run/user/$UID/tmux-$UID/default. Bare tmux commands use /tmp and will fail silently with "no server running" even when sessions exist.
 
-Detect socket: TMUX_SOCKET=$(find /run/user/$(id -u)/tmux-$(id -u) /tmp/tmux-$(id -u) -name default -type s 2>/dev/null | head -1)
-Use explicit socket: tmux -S "$TMUX_SOCKET" list-sessions
+Detect socket once and bind a short alias for the entire script:
 
-If bare `tmux list-sessions` returns "no server running" but sessions exist, the socket path is wrong. Try the /run/user/ path.
+```sh
+TMUX_SOCKET=$(find /run/user/$(id -u)/tmux-$(id -u) /tmp/tmux-$(id -u) -name default -type s 2>/dev/null | head -1)
+t() { tmux -S "$TMUX_SOCKET" "$@"; }
+```
+
+Every command in the script then uses `t` instead of `tmux`. Never split socket detection and usage across separate bash invocations — the variable won't survive.
 </socket>
 
-<discovery>
-List all windows: tmux list-windows -a
-Output format: session:window: window_name (n panes) [geometry] [flags]
+<session_creation>
+After `new-session -d`, the session exists but is not yet fully ready. Rename-window and send-keys on it immediately will fail with "can't find session". Always verify before operating:
 
-List panes in window: tmux list-panes -t "session:window" -F "#{pane_index}: #{pane_current_command} - #{pane_current_path}"
+```sh
+t new-session -d -s "session-name" -n "first-window-name"
+t list-sessions | grep -q "session-name" || { echo "session creation failed" >&2; exit 1; }
+t new-window -t "session-name" -n "second-window-name"
+t new-window -t "session-name" -n "third-window-name"
+```
+
+Use `-n` on `new-session` to name the first window at creation — it avoids a separate rename-window call that can race.
+</session_creation>
+
+<discovery>
+List all windows: `t list-windows -a`
+Output format: `session:window: window_name (n panes) [geometry] [flags]`
+
+List panes in window: `t list-panes -t "session:window" -F "#{pane_index}: #{pane_current_command} - #{pane_current_path}"`
 </discovery>
 
 <targeting>
-Format: session:window.pane (pane is 0-indexed). Window can be name or index. If single pane, .0 optional. Session name must match exactly.
+Format: `session:window.pane` (pane is 0-indexed). Window can be name or index. If single pane, `.0` is optional. Session name must match exactly.
 </targeting>
 
 <commands>
-Send command: tmux send-keys -t "session:window.pane" "command" Enter
-Stop process: tmux send-keys -t "session:window.pane" C-c (no Enter after C-c)
-Capture output: tmux capture-pane -t "session:window.pane" -p
-With scrollback: tmux capture-pane -t target -p -S -50 | tail -30
+Send command: `t send-keys -t "session:window.pane" "command" Enter`
+Stop process: `t send-keys -t "session:window.pane" C-c` (no Enter after C-c)
+Capture output: `t capture-pane -t "session:window.pane" -p`
+With scrollback: `t capture-pane -t target -p -S -50 | tail -30`
 </commands>
 
 <dev_server_restart>
-1. Find pane: tmux list-windows -a
-2. Identify process: tmux list-panes -t "session:window" -F "#{pane_index}: #{pane_current_command}"
-3. Stop: tmux send-keys -t target C-c
+1. Find pane: `t list-windows -a`
+2. Identify process: `t list-panes -t "session:window" -F "#{pane_index}: #{pane_current_command}"`
+3. Stop: `t send-keys -t target C-c`
 4. Verify stopped via capture
-5. Start: tmux send-keys -t target "yarn start" Enter
-6. Verify started via capture after delay
+5. Start: `t send-keys -t target "yarn start" Enter`
+6. Verify started via capture after brief delay
 </dev_server_restart>
 
 <error_recovery>
-Command not executing: verify target exists with list-windows/list-panes. Process not stopping: try multiple C-c sends. Output garbled: use -J flag for join lines. Socket wrong: if "no server running" appears, check TMUX_TMPDIR or use -S with the /run/user/ socket path.
+"can't find session" after new-session: race condition — verify with list-sessions before operating on it. "no server running": socket path wrong — use the /run/user/ path. Command not executing: verify target exists first. Process not stopping: send C-c multiple times. Output garbled: use -J flag.
 </error_recovery>
 
 <practices>
-Always verify target pane before sending. Capture output before and after operations. Use delay between stop and start. Check pane current_command to confirm state. Never assume pane state.
+Always verify target pane before sending. Capture output before and after operations. Check pane_current_command to confirm state. Never assume pane state. Never split socket detection and usage across bash invocations.
 </practices>
