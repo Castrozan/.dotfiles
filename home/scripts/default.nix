@@ -22,5 +22,7 @@
     ./brightness.nix
     ./volume.nix
     ./pinchtab.nix
+    ./pinchtab-ensure-running.nix
+    ./pinchtab-screenshot.nix
   ];
 }
