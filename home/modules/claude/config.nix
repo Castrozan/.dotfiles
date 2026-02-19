@@ -23,8 +23,6 @@ let
     fileFiltering = {
       respectGitignore = true;
     };
-    inherit (pluginsConfig) enabledPlugins;
-
     hooks = hooksConfig;
   };
 
