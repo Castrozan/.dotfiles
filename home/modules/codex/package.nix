@@ -22,6 +22,7 @@ let
       pkgs.stdenv.cc.cc.lib
       pkgs.openssl
       pkgs.libcap
+      pkgs.zlib
     ];
 
     dontStrip = true;
