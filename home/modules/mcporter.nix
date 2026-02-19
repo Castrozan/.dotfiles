@@ -70,14 +70,11 @@ let
     BIN="${mcporterNpmPrefix}/bin/mcporter"
 
     if [ -x "$BIN" ]; then
-      echo "[mcporter-install] Already installed, skipping"
       exit 0
     fi
 
-    echo "[mcporter-install] Installing mcporter..."
     ${nodejs}/bin/npm install -g "mcporter@latest" \
       --prefix "${mcporterNpmPrefix}" --no-audit --no-fund --loglevel=error
-    echo "[mcporter-install] Done"
   '';
 in
 {

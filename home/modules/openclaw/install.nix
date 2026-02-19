@@ -12,14 +12,11 @@ let
     BIN="${npmPrefix}/bin/openclaw"
 
     if [ -x "$BIN" ] && [ "$("$BIN" --version 2>/dev/null)" = "${version}" ]; then
-      echo "[openclaw-install] Already at ${version}, skipping"
       exit 0
     fi
 
-    echo "[openclaw-install] Installing OpenClaw ${version}..."
     ${nodejs}/bin/npm install -g "openclaw@${version}" \
       --prefix "${npmPrefix}"
-    echo "[openclaw-install] Done"
   '';
 
   openclawWrapper = pkgs.writeShellScriptBin "openclaw" ''
