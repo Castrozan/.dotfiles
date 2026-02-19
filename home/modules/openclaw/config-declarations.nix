@@ -104,8 +104,21 @@ let
     };
     ".agents.defaults.timeoutSeconds" = 300;
     ".agents.defaults.compaction.mode" = "safeguard";
-    ".agents.defaults.compaction.memoryFlush.enabled" = false;
-    ".agents.defaults.memorySearch.enabled" = false;
+    ".agents.defaults.compaction.memoryFlush.enabled" = true;
+    ".agents.defaults.memorySearch.enabled" = true;
+    ".agents.defaults.memorySearch.provider" = "openai";
+    ".agents.defaults.memorySearch.model" = "text-embedding-3-small";
+    ".agents.defaults.memorySearch.fallback" = "none";
+    ".agents.defaults.memorySearch.sources" = [
+      "memory"
+      "sessions"
+    ];
+    ".agents.defaults.memorySearch.experimental.sessionMemory" = true;
+    ".agents.defaults.memorySearch.query.maxResults" = 8;
+    ".agents.defaults.memorySearch.query.hybrid.enabled" = true;
+    ".agents.defaults.memorySearch.query.hybrid.vectorWeight" = 0.7;
+    ".agents.defaults.memorySearch.query.hybrid.textWeight" = 0.3;
+    ".agents.defaults.memorySearch.cache.enabled" = true;
     ".gateway.port" = openclaw.gatewayPort;
     ".gateway.mode" = "local";
     ".gateway.http.endpoints.chatCompletions.enabled" = true;
@@ -179,6 +192,7 @@ in
         baseSecrets = {
           ".gateway.auth.token" = "${agenixSecretsDir}/openclaw-gateway-token";
           ".tools.web.search.apiKey" = "${agenixSecretsDir}/brave-api-key";
+          ".agents.defaults.memorySearch.remote.apiKey" = "${agenixSecretsDir}/openai-api-key";
         };
 
         # Generate bot token secrets for telegram-enabled agents

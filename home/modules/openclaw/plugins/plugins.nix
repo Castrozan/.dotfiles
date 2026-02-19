@@ -4,8 +4,6 @@
     openclaw.configDeletes = [
       ".memory"
       ".plugins.entries.hindsight-openclaw"
-      ".plugins.entries.memory-core"
-      ".plugins.slots.memory"
     ];
 
     openclaw.configPatches = lib.mkOptionDefault {
@@ -15,7 +13,14 @@
         "phone-control"
         "talk-voice"
         "discord"
+        "memory-core"
       ];
+
+      ".plugins.slots.memory" = "memory-core";
+
+      ".plugins.entries.memory-core" = {
+        enabled = true;
+      };
 
       ".plugins.installs" = { };
     };
