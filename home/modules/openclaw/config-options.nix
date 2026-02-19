@@ -124,7 +124,7 @@ let
             };
             groupPolicy = lib.mkOption {
               type = lib.types.str;
-              default = "open";
+              default = "allowlist";
               description = "Guild message policy";
             };
           };

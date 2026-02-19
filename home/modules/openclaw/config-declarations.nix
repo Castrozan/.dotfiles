@@ -157,6 +157,8 @@ let
     if hasDiscord then
       {
         ".channels.discord.enabled" = true;
+        ".channels.discord.groupPolicy" = "allowlist";
+        ".channels.discord.dmPolicy" = "pairing";
       }
       // accountPatches
     else

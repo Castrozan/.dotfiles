@@ -23,20 +23,6 @@ let
 
   secretsDirectory = "${homeDir}/.secrets";
 
-  patchFastmcpStatelessHttpBeforeGatewayStart = pkgs.writeShellScript "patch-fastmcp-before-gateway" ''
-    set -euo pipefail
-    patchCount=0
-    while IFS= read -r mcpPy; do
-      if ${pkgs.gnugrep}/bin/grep -q 'stateless_http=True' "$mcpPy" 2>/dev/null; then
-        ${pkgs.gnused}/bin/sed -i 's/FastMCP("hindsight-mcp-server", stateless_http=True)/FastMCP("hindsight-mcp-server")/' "$mcpPy"
-        patchCount=$((patchCount + 1))
-      fi
-    done < <(${pkgs.findutils}/bin/find "${homeDir}/.cache/uv" -name "mcp.py" -path "*hindsight_api/api*" 2>/dev/null)
-    if [ "$patchCount" -gt 0 ]; then
-      echo "[gateway-pre] Patched FastMCP stateless_http kwarg in $patchCount file(s)"
-    fi
-  '';
-
   gatewayScript = pkgs.writeShellScript "openclaw-gateway" ''
     export PATH="${nodejs}/bin:''${PATH:+:$PATH}"
     export NPM_CONFIG_PREFIX="${prefix}"
@@ -67,7 +53,6 @@ in
 
       Service = {
         Type = "simple";
-        ExecStartPre = "${patchFastmcpStatelessHttpBeforeGatewayStart}";
         ExecStart = "${gatewayScript}";
         Restart = "always";
         RestartSec = "5s";

@@ -3,6 +3,8 @@
   config = {
     openclaw.configDeletes = [
       ".memory"
+      ".plugins.entries.hindsight-openclaw"
+      ".plugins.entries.memory-core"
       ".plugins.slots.memory"
     ];
 
@@ -14,14 +16,6 @@
         "talk-voice"
         "discord"
       ];
-
-      ".plugins.entries.hindsight-openclaw" = {
-        enabled = false;
-      };
-
-      ".plugins.entries.memory-core" = {
-        enabled = false;
-      };
 
       ".plugins.installs" = { };
     };
