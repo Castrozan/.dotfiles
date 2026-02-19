@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+readonly PINCHTAB_BASE_URL="http://localhost:9867"
+
+main() {
+	if _is_pinchtab_already_running; then
+		echo "pinchtab already running"
+		exit 0
+	fi
+
+	_remove_stale_chrome_lock_files
+	echo "starting pinchtab (this process blocks — use run_in_background)"
+	exec env BRIDGE_NO_RESTORE=true pinchtab "$@"
+}
+
+_is_pinchtab_already_running() {
+	curl -sf --max-time 2 "${PINCHTAB_BASE_URL}/health" >/dev/null 2>&1
+}
+
+_remove_stale_chrome_lock_files() {
+	rm -f ~/.pinchtab/chrome-profile/Singleton* 2>/dev/null || true
+}
+
+main "$@"

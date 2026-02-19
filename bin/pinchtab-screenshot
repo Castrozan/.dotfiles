@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+readonly PINCHTAB_BASE_URL="http://localhost:9867"
+readonly DEFAULT_OUTPUT_PATH="/tmp/screenshot.jpg"
+
+main() {
+	local output_path="${1:-$DEFAULT_OUTPUT_PATH}"
+
+	_ensure_pinchtab_is_running
+	_capture_and_decode_screenshot "$output_path"
+	_validate_screenshot_is_image "$output_path"
+
+	echo "$output_path"
+}
+
+_ensure_pinchtab_is_running() {
+	if ! curl -sf --max-time 2 "${PINCHTAB_BASE_URL}/health" >/dev/null 2>&1; then
+		echo "Error: pinchtab is not running at ${PINCHTAB_BASE_URL}" >&2
+		return 1
+	fi
+}
+
+_capture_and_decode_screenshot() {
+	local output_path="$1"
+	local raw_json_response
+	raw_json_response=$(curl -sf --max-time 15 "${PINCHTAB_BASE_URL}/screenshot") || {
+		echo "Error: screenshot request failed" >&2
+		return 1
+	}
+
+	echo "$raw_json_response" | python3 -c "
+import sys, json, base64
+response = json.load(sys.stdin)
+sys.stdout.buffer.write(base64.b64decode(response['base64']))
+" >"$output_path" || {
+		echo "Error: failed to decode base64 screenshot" >&2
+		rm -f "$output_path"
+		return 1
+	}
+}
+
+_validate_screenshot_is_image() {
+	local output_path="$1"
+	if ! file "$output_path" | grep -q "JPEG\|PNG\|image"; then
+		echo "Error: output is not a valid image" >&2
+		rm -f "$output_path"
+		return 1
+	fi
+}
+
+main "$@"

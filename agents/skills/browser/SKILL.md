@@ -5,36 +5,40 @@ description: Use when user asks to open a webpage, scrape content, fill forms, c
 
 # Browser Automation
 
-Two browser tools available. **Pinchtab is primary** — HTTP API for navigation, scraping, interaction. **mcporter chrome-devtools** for DevTools-level access (network monitoring, performance profiling).
+Pinchtab provides headless Chrome via HTTP API at `localhost:9867`. Helper scripts in `bin/` handle startup and screenshots.
 
-## Pinchtab (Primary — HTTP API)
-
-Standalone Go binary. Plain HTTP API at `localhost:9867`. Any agent, any language, even curl.
-
-### Starting the Server
-
-Pinchtab runs as a background process. Start it before use:
+<startup>
+Start pinchtab before any browser operations. The startup script is idempotent — safe to call repeatedly.
 
 ```bash
-pinchtab &    # Headless by default (Nix wrapper handles env vars)
-sleep 3       # Wait for Chrome to initialize
-curl -s http://localhost:9867/health   # Verify: {"status":"ok"}
+# MUST use run_in_background:true — Claude's shell sandbox kills foreground long-lived processes
+pinchtab-ensure-running    # Bash tool with run_in_background: true, timeout: 120000
 ```
 
-To stop: `pkill -f pinchtab`
-
-### Core Workflow
+Then health-check in a separate call:
 
 ```bash
-# Navigate
+sleep 4 && curl -sf --max-time 3 http://localhost:9867/health
+```
+
+If `pinchtab-ensure-running` is not in PATH, use the full path at `~/.dotfiles/bin/pinchtab-ensure-running`.
+
+To stop: `pkill -f pinchtab`
+</startup>
+
+<workflow>
+Pattern: navigate, read or snapshot, then act.
+
+```bash
+# Navigate to a URL
 curl -s -X POST http://localhost:9867/navigate \
   -H "Content-Type: application/json" \
   -d '{"url":"https://example.com"}'
 
-# Read page content (~800 tokens for a typical page)
-curl -s http://localhost:9867/text | jq -r '.text'
+# Read page text (~800 tokens, cheapest option)
+curl -s http://localhost:9867/text | python3 -c "import sys,json; print(json.load(sys.stdin).get('text',''))"
 
-# Get interactive elements (buttons, links, inputs) with refs
+# Get interactive elements with refs for clicking/typing
 curl -s "http://localhost:9867/snapshot?filter=interactive&format=compact"
 
 # Click element by ref
@@ -45,52 +49,53 @@ curl -s -X POST http://localhost:9867/action \
 # Type into input
 curl -s -X POST http://localhost:9867/action \
   -H "Content-Type: application/json" \
-  -d '{"kind":"type","ref":"e3","text":"search query"}'
+  -d '{"kind":"fill","ref":"e3","text":"search query"}'
 
-# List open tabs
-curl -s http://localhost:9867/tabs
+# Press a key
+curl -s -X POST http://localhost:9867/action \
+  -H "Content-Type: application/json" \
+  -d '{"kind":"press","key":"Enter"}'
 
-# Screenshot (ALWAYS validate before reading — errors poison context)
-curl -sf "http://localhost:9867/screenshot" -o /tmp/screenshot.jpg \
-  && file /tmp/screenshot.jpg | grep -q "JPEG\|PNG\|image" \
-  || { echo "Screenshot failed:"; cat /tmp/screenshot.jpg 2>/dev/null; rm -f /tmp/screenshot.jpg; }
+# Execute JavaScript
+curl -s -X POST http://localhost:9867/evaluate \
+  -H "Content-Type: application/json" \
+  -d '{"expression":"document.title"}'
 ```
+</workflow>
 
-<screenshot-safety>
-NEVER read a screenshot file without validating it first. Pinchtab returns JSON error responses on failure (timeouts, crashes). If you save that JSON as `.jpg` and read it as an image, the API rejects it with "Could not process image" — and the broken image is now stuck in your conversation context. Every subsequent message fails. The session is unrecoverable.
+<screenshots>
+The `/screenshot` endpoint returns base64 JSON, not raw image bytes. Use the helper script to decode and validate:
 
-Always use `-sf` (fail on HTTP errors) and validate with `file` before reading:
 ```bash
-curl -sf "http://localhost:9867/screenshot" -o /tmp/screenshot.jpg \
-  && file /tmp/screenshot.jpg | grep -q "JPEG\|PNG\|image" \
-  || { echo "Screenshot failed:"; cat /tmp/screenshot.jpg 2>/dev/null; rm -f /tmp/screenshot.jpg; }
-# Only read /tmp/screenshot.jpg if the above succeeded
+pinchtab-screenshot /tmp/screenshot.jpg
+# Then use Read tool on /tmp/screenshot.jpg
 ```
 
-If you already read a bad image and see "Could not process image" errors — stop. The session is bricked. Start a new one.
-</screenshot-safety>
+If not in PATH, use `~/.dotfiles/bin/pinchtab-screenshot`.
 
-### Endpoints
+Never read a screenshot file without validating it first. If the API returns an error and you read the JSON as an image, the conversation context is poisoned — every subsequent image read fails. The session becomes unrecoverable.
+</screenshots>
 
+<endpoints>
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | `GET` | `/health` | Server status |
 | `GET` | `/tabs` | List open tabs |
-| `GET` | `/text` | Readable page text (cheapest — ~800 tokens) |
-| `GET` | `/snapshot` | Accessibility tree with refs |
-| `GET` | `/screenshot` | JPEG screenshot |
+| `GET` | `/text` | Readable page text (cheapest) |
+| `GET` | `/snapshot` | Accessibility tree with element refs |
+| `GET` | `/screenshot` | Base64 JSON screenshot (use helper script) |
 | `POST` | `/navigate` | Go to URL: `{"url":"..."}` |
-| `POST` | `/action` | Interact: click, type, fill, press, hover, select, scroll |
-| `POST` | `/evaluate` | Execute JavaScript |
-| `POST` | `/tab` | Open/close tabs |
+| `POST` | `/action` | Interact: click, fill, type, press, hover, select, scroll, focus |
+| `POST` | `/evaluate` | Execute JavaScript: `{"expression":"..."}` |
+| `POST` | `/tab` | Manage tabs: `{"action":"new","url":"..."}` or `{"action":"close","id":"..."}` |
+</endpoints>
 
-### Snapshot Filters (save tokens)
-
+<snapshot-filters>
 ```bash
-# Interactive elements only — buttons, links, inputs (~75% fewer tokens)
+# Interactive elements only (~75% fewer tokens)
 curl -s "http://localhost:9867/snapshot?filter=interactive&format=compact"
 
-# Scoped to a section
+# Scoped to a CSS selector
 curl -s "http://localhost:9867/snapshot?selector=main&format=compact"
 
 # Only changes since last snapshot
@@ -99,13 +104,13 @@ curl -s "http://localhost:9867/snapshot?diff=true&format=compact"
 # Limit tree depth
 curl -s "http://localhost:9867/snapshot?depth=3&format=compact"
 ```
+</snapshot-filters>
 
-### Action Types
-
+<actions>
 ```json
 {"kind":"click","ref":"e5"}
-{"kind":"type","ref":"e3","text":"hello"}
 {"kind":"fill","ref":"e3","text":"hello"}
+{"kind":"type","ref":"e3","text":"hello"}
 {"kind":"press","key":"Enter"}
 {"kind":"hover","ref":"e5"}
 {"kind":"select","ref":"e7","values":["option1"]}
@@ -113,8 +118,10 @@ curl -s "http://localhost:9867/snapshot?depth=3&format=compact"
 {"kind":"focus","ref":"e3"}
 ```
 
-### Token Efficiency
+Use `fill` to replace input content. Use `type` to append characters.
+</actions>
 
+<token-efficiency>
 | Method | Typical Tokens | Use When |
 |--------|---------------|----------|
 | `/text` | ~800 | Reading content only |
@@ -122,63 +129,99 @@ curl -s "http://localhost:9867/snapshot?depth=3&format=compact"
 | Full snapshot | ~10,000 | Need page structure |
 | Screenshot | ~2,000 | Visual verification |
 
-**Always use `/text` first** when you only need to read. Use `?filter=interactive` when you need to act. Full snapshot only when structure matters.
+Always use `/text` first when you only need to read. Use `?filter=interactive` when you need to act.
+</token-efficiency>
 
-### Session Persistence
+<tabs>
+Tab API supports only `new` and `close`. There is no tab activation — navigate within the current active tab.
 
-Cookies and auth persist in `~/.pinchtab/chrome-profile/` across restarts. Log in once (headed mode), stay logged in forever.
+```bash
+# Open new tab
+curl -s -X POST http://localhost:9867/tab \
+  -H "Content-Type: application/json" \
+  -d '{"action":"new","url":"https://example.com"}'
 
-### One-Time Login (Manual — Headed Mode)
+# Close tab by ID
+curl -s -X POST http://localhost:9867/tab \
+  -H "Content-Type: application/json" \
+  -d '{"action":"close","id":"TAB_ID"}'
 
-Headed mode requires display access. User must run from their terminal:
+# List tabs
+curl -s http://localhost:9867/tabs
+```
+
+The startup script uses `BRIDGE_NO_RESTORE=true` to prevent old tabs from polluting the session.
+</tabs>
+
+<session-persistence>
+Cookies and auth persist in `~/.pinchtab/chrome-profile/` across restarts. Log in once, stay logged in.
+
+For manual login (user must run from their terminal with display access):
 
 ```bash
 BRIDGE_HEADLESS=false pinchtab
-# Then navigate to sites and log in via the visible Chrome window
-# Ctrl+C when done — cookies are saved to ~/.pinchtab/chrome-profile/
 ```
 
-Or programmatic login (headless):
+Navigate to sites, log in via the visible Chrome window, then Ctrl+C. Cookies are saved.
+</session-persistence>
+
+<stealth>
+Pinchtab patches `navigator.webdriver` and spoofs User-Agent by default (stealth=light). For aggressive bot detection:
 
 ```bash
-# Navigate to login page
-curl -s -X POST http://localhost:9867/navigate -d '{"url":"https://site.com/login"}'
-# Fill credentials
-curl -s -X POST http://localhost:9867/action -d '{"kind":"fill","ref":"e3","text":"user@email.com"}'
-curl -s -X POST http://localhost:9867/action -d '{"kind":"fill","ref":"e5","text":"password"}'
-curl -s -X POST http://localhost:9867/action -d '{"kind":"click","ref":"e7"}'
+BRIDGE_STEALTH=full pinchtab
 ```
+</stealth>
 
-### Stealth Mode
+<environment-variables>
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `BRIDGE_HEADLESS` | `true` | Run Chrome in headless mode |
+| `BRIDGE_PORT` | `9867` | HTTP API port |
+| `BRIDGE_STEALTH` | `light` | Stealth level: `light` or `full` |
+| `BRIDGE_NO_RESTORE` | `false` | Skip restoring tabs from previous session |
+| `BRIDGE_NO_ANIMATIONS` | — | Disable CSS animations |
+| `BRIDGE_BLOCK_IMAGES` | — | Block image loading |
+| `BRIDGE_BLOCK_MEDIA` | — | Block media loading |
+| `BRIDGE_NAV_TIMEOUT` | — | Navigation timeout |
+| `BRIDGE_TIMEOUT` | — | General timeout |
+| `BRIDGE_TIMEZONE` | — | Override timezone |
+| `BRIDGE_TOKEN` | — | Auth token for API access |
+| `BRIDGE_CHROME_VERSION` | — | Spoof Chrome version |
+</environment-variables>
 
-Pinchtab patches `navigator.webdriver` and spoofs User-Agent by default. For aggressive bot detection:
+<cdp-access>
+Pinchtab launches Chrome with a random CDP (Chrome DevTools Protocol) port. To find it:
 
 ```bash
-BRIDGE_STEALTH=full pinchtab   # Canvas/WebGL/font spoofing
+ss -tlnp | grep chromium | grep -o '127\.0\.0\.1:[0-9]*' | head -1
 ```
 
-## Chrome DevTools MCP (Frontend Development)
-
-For network monitoring, performance profiling, and device emulation — use `mcporter`:
+Verify with:
 
 ```bash
-mcporter list chrome-devtools              # List available tools
-mcporter call chrome-devtools.navigate_page type=url url=https://example.com
-mcporter call chrome-devtools.list_network_requests
-mcporter call chrome-devtools.take_screenshot
+curl -s http://127.0.0.1:PORT/json/version
 ```
 
-## Troubleshooting
+This provides direct CDP WebSocket access for advanced use cases (network interception, performance profiling).
 
-**Pinchtab won't start:**
-1. Check port: `curl -s http://localhost:9867/health`
-2. Kill stale: `pkill -f pinchtab; pkill -f "\.pinchtab/chrome-profile"`
-3. Check logs: pinchtab prints to stderr
-4. Clear stale locks: `rm -f ~/.pinchtab/chrome-profile/Singleton*`
+The mcporter chrome-devtools MCP is currently broken — its `npx chrome-devtools-mcp@latest` command hangs on network fetch. Use direct CDP HTTP/WebSocket as a workaround.
+</cdp-access>
 
-**Headed mode fails:**
-Display access required. Run from a user terminal with WAYLAND_DISPLAY/DISPLAY set, not from agent shell.
+<troubleshooting>
+Pinchtab won't start:
+1. Check if already running: `curl -s http://localhost:9867/health`
+2. Kill stale processes: `pkill -f pinchtab`
+3. Clear Chrome lock files: `rm -f ~/.pinchtab/chrome-profile/Singleton*`
+4. Check logs at `/tmp/pinchtab.log`
+
+Exit code 144 from Bash tool:
+This is normal — Claude's shell sandbox sends SIGUSR1 to long-running processes. Pinchtab may still be running. Always health-check separately.
+
+Screenshot returns JSON not image:
+Use `pinchtab-screenshot` helper. The `/screenshot` endpoint returns `{"base64":"...","format":"jpeg"}`, not raw bytes.
+</troubleshooting>
 
 <boundaries>
-Never work around browser tool failures by launching browser binaries directly, connecting to CDP ports manually, using xdotool, or writing custom websocket/HTTP scripts. Use pinchtab or mcporter. If both fail, diagnose the underlying issue (port conflict, stale process, missing binary).
+Never work around browser tool failures by launching browser binaries directly, connecting to CDP ports manually, using xdotool, or writing custom websocket/HTTP scripts. Use pinchtab and the helper scripts. If pinchtab fails, diagnose the underlying issue (port conflict, stale process, missing binary).
 </boundaries>
