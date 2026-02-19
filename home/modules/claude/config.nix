@@ -56,7 +56,7 @@ in
       CLAUDE_DANGEROUSLY_DISABLE_SANDBOX = "true";
       CLAUDE_SKIP_PERMISSIONS = "true";
       BASH_ENV = "$HOME/.dotfiles/shell/aliases.sh";
-      CLAUDE_AUTOCOMPACT_PCT_OVERRIDE = "90";
+      CLAUDE_AUTOCOMPACT_PCT_OVERRIDE = "60";
     };
 
     activation.patchClaudeJsonInstallMethod = {
