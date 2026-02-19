@@ -77,15 +77,15 @@ let
     ".agents.defaults.heartbeat.model" = openclaw.defaults.model.heartbeat;
     ".agents.defaults.subagents.model" = openclaw.defaults.model.subagents;
     ".agents.defaults.model.fallbacks" = [
+      "anthropic/claude-opus-4-6"
       "openai-codex/gpt-5.3-codex"
-      "anthropic/claude-sonnet-4-5"
     ];
     ".agents.defaults.models" = {
+      "anthropic/claude-sonnet-4-6" = {
+        alias = "sonnet";
+      };
       "anthropic/claude-opus-4-6" = {
         alias = "opus";
-      };
-      "anthropic/claude-sonnet-4-5" = {
-        alias = "sonnet";
       };
       "openai-codex/gpt-5.3-codex" = {
         alias = "codex";

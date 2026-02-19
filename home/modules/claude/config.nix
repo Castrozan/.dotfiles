@@ -5,7 +5,7 @@ let
 
   claudeGlobalSettings = {
     installMethod = "native";
-    model = "opus";
+    model = "sonnet";
     language = "english";
     spinnerTipsEnabled = false;
     dangerouslySkipPermissions = true;

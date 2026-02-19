@@ -34,7 +34,7 @@ let
           options = {
             primary = lib.mkOption {
               type = lib.types.str;
-              default = "anthropic/claude-opus-4-6";
+              default = "anthropic/claude-sonnet-4-6";
               description = "Primary model ID for this agent";
             };
             fallbacks = lib.mkOption {
@@ -161,7 +161,7 @@ in
             options = {
               primary = lib.mkOption {
                 type = lib.types.str;
-                default = "anthropic/claude-opus-4-6";
+                default = "anthropic/claude-sonnet-4-6";
               };
               heartbeat = lib.mkOption {
                 type = lib.types.str;
@@ -169,7 +169,7 @@ in
               };
               subagents = lib.mkOption {
                 type = lib.types.str;
-                default = "anthropic/claude-opus-4-6";
+                default = "anthropic/claude-sonnet-4-6";
               };
             };
           };
