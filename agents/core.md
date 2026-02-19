@@ -33,7 +33,7 @@ After editing code files, run formatters and linters. Python: `ruff format file.
 </formatting>
 
 <commands>
-Use timeouts. Search codebase before coding. Read relevant files first. Always test changes. Check linter errors. Check current date/time before searches and version references.
+Use timeouts. Search codebase before coding. Read relevant files first. Always test changes. Check linter errors. Check current date/time before searches and version references. When doing research about IA, focus on latest 6 months only, most breakthroughs and useful information is recent.
 </commands>
 
 <skill-discovery>

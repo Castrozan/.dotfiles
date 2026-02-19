@@ -3,9 +3,9 @@ name: browser
 description: Use when user asks to open a webpage, scrape content, fill forms, click buttons, take screenshots, test a web UI, or automate any browser interaction. Also use when navigating authenticated web apps or testing frontend changes.
 ---
 
-# Browser Automation
-
-Headless Chrome via HTTP API at `localhost:9867`. Two helper scripts handle startup and screenshots.
+<overview>
+Headless Chrome via HTTP API at localhost:9867. Two helper scripts handle startup and screenshots.
+</overview>
 
 <startup>
 Run `pinchtab-ensure-running` with `run_in_background: true` and `timeout: 120000`. It is idempotent — exits immediately if already running, otherwise starts pinchtab and blocks.

@@ -1,96 +1,22 @@
 ---
 name: claude-code-oneshot
 description: Run Claude Code as a one-shot autonomous coding session with no back-and-forth. Use when delegating complex tasks that need deep focus, large context, or long-running execution. Also use when spawning a subagent for refactoring, migration, or implementation work that is straightforward to verify.
-metadata:
-  openclaw:
-    emoji: "⚡"
-    requires:
-      anyBins: ["claude"]
 ---
 
-# Claude Code One-Shot
+<when_to_use>
+Complex refactoring or feature implementation with clear success criteria. Tasks that would bloat your current context. Parallel execution across worktrees. Anything where tests or script output can verify the result.
+</when_to_use>
 
-For deep coding sessions that need lots of context and are straightforward to test. One-shot execution — no questions, no help, just results.
+<execution>
+Run claude --print "detailed task" --dangerously-skip-permissions for one-shot mode. The --print flag runs the task and exits. Be explicit in prompts — tell it exactly what to do and what not to do. Include phrases like "No questions, just implement it" to prevent clarification requests.
 
-## When to Use
+For longer tasks, run in background with PTY via exec pty:true background:true and monitor with process action:log/poll.
+</execution>
 
-- Complex refactoring or feature implementation
-- Tasks with clear success criteria (tests pass, script runs, etc.)
-- Delegating work that would bloat your context
-- Parallel task execution across worktrees
+<parallel_worktrees>
+Create worktrees for independent tasks, run Claude Code in each concurrently. Each needs a git repo to operate. Wait for all to complete, then verify results.
+</parallel_worktrees>
 
-## Basic Usage
-
-```bash
-# One-shot task (exits when done)
-claude --print "Your detailed task here" --dangerously-skip-permissions
-
-# In a specific directory
-cd /path/to/project && claude --print "Build X" --dangerously-skip-permissions
-```
-
-## Key Flags
-
-| Flag | Purpose |
-|------|---------|
-| `--print "prompt"` | One-shot mode, exits when complete |
-| `--dangerously-skip-permissions` | Auto-approve all file/command operations |
-
-## Prompt Style
-
-Be explicit. Tell it exactly what to do and NOT to do:
-
-```bash
-claude --print "Create fizzbuzz.sh that prints FizzBuzz 1-30. Make it executable. ONE SHOT - no questions, just implement it." --dangerously-skip-permissions
-```
-
-Key phrases:
-- "No questions, just do it"
-- "ONE SHOT"
-- "Do NOT ask for clarification"
-
-## Background Execution
-
-For longer tasks, run in background with PTY:
-
-```bash
-# Start in background
-exec pty:true background:true workdir:~/project command:"claude --print 'Build a REST API for todos' --dangerously-skip-permissions"
-
-# Monitor progress
-process action:log sessionId:XXX
-
-# Check completion
-process action:poll sessionId:XXX
-```
-
-## Parallel Tasks with Worktrees
-
-For multiple independent tasks:
-
-```bash
-# Create worktrees
-git worktree add -b feat/auth /tmp/auth-work main
-git worktree add -b feat/api /tmp/api-work main
-
-# Run Claude Code in each (parallel)
-cd /tmp/auth-work && claude --print "Implement OAuth2 login" --dangerously-skip-permissions &
-cd /tmp/api-work && claude --print "Add REST endpoints for users" --dangerously-skip-permissions &
-
-# Wait for both
-wait
-```
-
-## NixOS Note
-
-Claude Code may generate `#!/bin/bash` shebangs. Fix with:
-```bash
-sed -i '1s|#!/bin/bash|#!/usr/bin/env bash|' script.sh
-```
-
-## Rules
-
-1. **Verify results** — run the code, check the tests, confirm it works
-2. **Clear prompts** — ambiguity leads to questions or wrong output
-3. **Isolated workspaces** — don't run in your main project directory for risky tasks
-4. **Git init required** — Claude Code needs a git repo to operate
+<verification>
+Always verify results — run the code, check tests, confirm it works. Clear prompts prevent ambiguity. Use isolated workspaces for risky tasks. Claude Code may generate #!/bin/bash shebangs on NixOS — fix with sed to #!/usr/bin/env bash.
+</verification>

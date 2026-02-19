@@ -3,147 +3,30 @@ name: twitter
 description: Scrape X/Twitter posts, profiles, search results, followers, and trends. Use when user shares x.com or twitter.com URLs, asks to find tweets, check Twitter/X profiles, search X, monitor accounts, post tweets, or extract Twitter data.
 ---
 
-# X/Twitter
+<tool_selection>
+Two backends. Default to Grok Search for search and analysis tasks. Use twikit-cli for raw JSON data, write operations (post, reply, like, retweet, DM), and personal account access (timeline, bookmarks, followers). When twikit breaks or cookies expire, fall back to Grok Search.
+</tool_selection>
 
-Unified skill for all X/Twitter interactions. Two backends, each with strengths.
+<grok_search>
+Searches X and the web via xAI Responses API. Returns synthesized answers with citations. Only grok-4 family models support server-side search.
 
-## Decision Table
+grok-search "query" for combined X+web search. Add --x-only for X-only, --web-only for web-only, --allowed-domains for domain filtering, --raw for full JSON. Costs ~$0.05-0.20 per search. API key configured via openclaw models auth or XAI_API_KEY env var.
+</grok_search>
 
-| Task | Tool | Why |
-|------|------|-----|
-| Search tweets / trending topics | **Grok Search** | Reliable, synthesized, includes web context |
-| Raw tweet data as JSON | **twikit-cli** | Structured data with IDs, counts, URLs |
-| Post / reply / like / retweet | **twikit-cli** | Only tool with write access |
-| User profile details | **twikit-cli** | Raw JSON with follower counts, bio |
-| "What are people saying about X" | **Grok Search** | Synthesized analysis with citations |
-| Timeline / bookmarks / followers | **twikit-cli** | Personal account data |
-| Combined web + X research | **Grok Search** | Searches both in one call |
-| Twikit broken / cookies expired | **Grok Search** | Fallback, always works |
+<twikit_cli>
+Direct scraper via cookie-based auth. Free, returns raw JSON, supports write operations.
 
-**Default**: Use Grok Search for search/analysis. Use twikit-cli for raw data, write operations, and personal account access.
+Setup: twikit-cli extract-cookies (reads from ~/.pinchtab/chrome-profile/, re-run if cookies expire).
 
----
+Read: search "query" -n N [-p top], user USERNAME, user-tweets USERNAME -n N [-t replies], tweet ID, replies ID, thread ID, timeline -n N, trends, bookmarks -n N, followers/following USERNAME -n N.
 
-## Grok Search (xAI Responses API)
+Write: post "text" [--reply-to ID], like ID, retweet ID, bookmark ID, dm USER_ID "text".
 
-Searches X/Twitter and the web via xAI's Grok model with live search. Returns synthesized answers with citations. Requires xAI API key (configured in auth-profiles).
+Output is JSON arrays with id, text, created_at, user, favorite_count, retweet_count, view_count, url.
 
-**Only grok-4 family models support server-side search.** Uses `/v1/responses` endpoint (not `/v1/chat/completions`).
+Files: cookies at ~/.config/twikit/cookies.json, credentials at ~/.secrets/x-{username,email,password} (agenix-managed), venv at ~/.local/share/twikit-venv/.
+</twikit_cli>
 
-### Usage
-
-```bash
-grok-search "What's trending about NixOS on Twitter?"
-grok-search --x-only "OpenClaw latest updates"
-grok-search --web-only "Claude Code tutorials"
-grok-search --allowed-domains "github.com,x.com" "AI agents"
-grok-search --raw "query" | jq '.output'
-```
-
-### Options
-
-| Flag | Description |
-|------|-------------|
-| `--x-only` | Focus only on X/Twitter posts |
-| `--web-only` | Focus only on web results |
-| `--allowed-domains d1,d2` | Restrict to specific domains (max 5) |
-| `--excluded-domains d1,d2` | Exclude specific domains (max 5) |
-| `--model <model>` | Override model (default: grok-4-latest) |
-| `--raw` | Output full JSON response |
-
-### Cost
-
-~$0.05-0.20 per search (grok-4 token pricing). Use for high-value queries, not bulk scraping.
-
-### Setup
-
-API key configured via:
-```bash
-openclaw models auth paste-token --provider xai
-```
-Or set `XAI_API_KEY` environment variable.
-
----
-
-## twikit-cli (Scraper)
-
-Direct X/Twitter scraper via cookie-based auth. Free, returns raw JSON, supports write operations.
-
-### Setup
-
-```bash
-twikit-cli extract-cookies
-```
-
-Reads cookies from `~/.pinchtab/chrome-profile/` and saves to `~/.config/twikit/cookies.json`. Re-run if cookies expire.
-
-### Read Operations
-
-```bash
-twikit-cli search "AI agents" -n 10
-twikit-cli search "NixOS" -n 5 -p top
-twikit-cli search "from:elonmusk AI" -n 10
-twikit-cli user elonmusk
-twikit-cli user-tweets elonmusk -n 10
-twikit-cli user-tweets elonmusk -t replies -n 10
-twikit-cli tweet 1234567890
-twikit-cli replies 1234567890
-twikit-cli thread 1234567890
-twikit-cli timeline -n 20
-twikit-cli trends
-twikit-cli bookmarks -n 20
-twikit-cli followers username -n 20
-twikit-cli following username -n 20
-```
-
-### Write Operations
-
-```bash
-twikit-cli post "Hello from the terminal"
-twikit-cli post "Reply text" --reply-to 1234567890
-twikit-cli like 1234567890
-twikit-cli retweet 1234567890
-twikit-cli bookmark 1234567890
-twikit-cli dm USER_ID "Hello there"
-```
-
-### Output Format
-
-JSON arrays/objects:
-```json
-[{
-  "id": "123",
-  "text": "Tweet content",
-  "created_at": "2026-02-16T10:00:00",
-  "user": {"id": "456", "name": "Name", "username": "handle"},
-  "favorite_count": 42,
-  "retweet_count": 7,
-  "reply_count": 3,
-  "view_count": 1200,
-  "url": "https://x.com/handle/status/123"
-}]
-```
-
-### Agent Patterns
-
-```bash
-twikit-cli search "query" -n 5 | jq '.[] | {user: .user.username, text: .text}'
-twikit-cli user username | jq '.followers_count'
-```
-
-### Files
-
-- **Cookies:** `~/.config/twikit/cookies.json`
-- **Credentials:** `~/.secrets/x-{username,email,password}` (agenix-managed)
-- **Venv:** `~/.local/share/twikit-venv/`
-
----
-
-## Troubleshooting
-
-| Problem | Solution |
-|---------|----------|
-| twikit cookies expired | `twikit-cli extract-cookies` |
-| twikit broken (X API change) | Use `grok-search` as fallback |
-| Grok returns no results | Check API key, ensure grok-4 model |
-| "model not supported" error | Grok search requires grok-4 family only |
+<troubleshooting>
+Cookies expired: twikit-cli extract-cookies. Twikit broken (X API change): use grok-search as fallback. Grok returns no results: check API key, ensure grok-4 model. "model not supported" error: Grok search requires grok-4 family only.
+</troubleshooting>
