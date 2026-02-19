@@ -242,15 +242,3 @@ skip_if_no_hindsight_daemon() {
     fi
     grep -q "HINDSIGHT_DAEMON_BASE_URL" "$clientJs"
 }
-
-# ---------- QMD memory backend ----------
-
-@test "memory: qmd backend is configured" {
-    result=$(jq -r '.memory.backend' "$HOME/.openclaw/openclaw.json")
-    [ "$result" = "qmd" ]
-}
-
-@test "memory: qmd data directory exists for agents" {
-    qmdDirCount=$(find "$HOME/.openclaw/agents" -maxdepth 2 -type d -name "qmd" 2>/dev/null | wc -l)
-    [ "$qmdDirCount" -gt 0 ]
-}

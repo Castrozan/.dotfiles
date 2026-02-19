@@ -1,9 +1,9 @@
 { ... }:
 {
   imports = [
-    ./library.nix
+    ./orchestrator.nix
     ./deploy.nix
-    ./grid.nix
-    ./avatar.nix
+    ./plugins/grid.nix
+    ./skills/avatar.nix
   ];
 }

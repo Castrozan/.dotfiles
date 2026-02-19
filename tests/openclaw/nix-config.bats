@@ -395,10 +395,10 @@ nix_eval_json_apply() {
     [ "$result" = '"hindsight-openclaw"' ]
 }
 
-@test "workpc: hindsight plugin is enabled with gemini provider" {
+@test "workpc: hindsight plugin is enabled with claude-code provider" {
     result=$(nix_eval_json "$WORKPC_OC.configPatches.\".plugins.entries.hindsight-openclaw\"")
     echo "$result" | jq -e '.enabled == true' > /dev/null
-    echo "$result" | jq -e '.config.llmProvider == "gemini"' > /dev/null
+    echo "$result" | jq -e '.config.llmProvider == "claude-code"' > /dev/null
 }
 
 @test "workpc: memory-core plugin is disabled" {
@@ -409,9 +409,4 @@ nix_eval_json_apply() {
 @test "workpc: plugins allow list includes discord" {
     result=$(nix_eval_json "$WORKPC_OC.configPatches.\".plugins.allow\"")
     echo "$result" | jq -e 'index("discord")' > /dev/null
-}
-
-@test "workpc: memory backend is qmd" {
-    result=$(nix_eval_json "$WORKPC_OC.configPatches.\".memory.backend\"")
-    [ "$result" = '"qmd"' ]
 }

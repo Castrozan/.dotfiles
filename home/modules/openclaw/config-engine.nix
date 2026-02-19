@@ -1,8 +1,8 @@
 # Patch engine for openclaw.json — reads configPatches and secretPatches
 # options, generates a jq filter + shell script, and applies them on rebuild.
 #
-# How it works: see config-patch-defaults.nix for context.
-# What gets patched: see config-patch-defaults.nix for declarations.
+# How it works: see config-declarations.nix for context.
+# What gets patched: see config-declarations.nix for declarations.
 {
   lib,
   pkgs,
@@ -47,6 +47,9 @@ let
 
   hasValues = openclaw.configPatches != { };
   hasSecrets = openclaw.secretPatches != { };
+  hasDeletes = openclaw.configDeletes != [ ];
+
+  deleteFiltersList = map (path: "del(${pathToJqPath path})") openclaw.configDeletes;
 
   valueFiltersList = lib.mapAttrsToList (
     path: _: "${pathToJqPath path} = $" + pathToArgName path
@@ -60,7 +63,7 @@ let
     "${pathToJqPath path} = ($" + argName + " | rtrimstr(\"\\n\"))"
   ) openclaw.secretPatches;
 
-  jqFilter = lib.concatStringsSep " | " (valueFiltersList ++ secretFiltersList);
+  jqFilter = lib.concatStringsSep " | " (deleteFiltersList ++ valueFiltersList ++ secretFiltersList);
 
   jqFilterFile = pkgs.writeText "openclaw-patch.jq" jqFilter;
 
@@ -159,6 +162,12 @@ let
 in
 {
   options.openclaw = {
+    configDeletes = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [ ];
+      description = "jq-paths to delete from openclaw.json on every rebuild (runs before patches)";
+    };
+
     configPatches = lib.mkOption {
       type = lib.types.attrsOf lib.types.anything;
       default = { };
@@ -175,7 +184,7 @@ in
   config = {
     home.file.".openclaw/nix-overlay.json".text = overlayJson;
 
-    home.activation.openclawConfigPatch = lib.mkIf (hasValues || hasSecrets) (
+    home.activation.openclawConfigPatch = lib.mkIf (hasValues || hasSecrets || hasDeletes) (
       lib.hm.dag.entryAfter [ "writeBoundary" ] ''
         run ${patchScript}
       ''

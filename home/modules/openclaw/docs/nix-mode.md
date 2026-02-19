@@ -7,7 +7,7 @@ Nix-managed environment. Detection is strict: `env.OPENCLAW_NIX_MODE === "1"`.
 
 - **install.nix** — `export OPENCLAW_NIX_MODE=1` in the wrapper script, so
   every `openclaw` CLI invocation (including `doctor`) gets it.
-- **gateway-service.nix** — `Environment` in the systemd unit, so the gateway
+- **systemd-service.nix** — `Environment` in the systemd unit, so the gateway
   daemon process gets it directly.
 
 ## What it does

@@ -2,12 +2,12 @@
 #
 # openclaw.json is app-managed — the gateway, `openclaw configure`, and
 # `doctor --fix` all do full JSON overwrites, destroying any inline
-# directives. On every nix rebuild, the engine in config-patch.nix applies
+# directives. On every nix rebuild, the engine in config-engine.nix applies
 # these patches via jq, then writes back atomically. The app can freely
 # modify the config between rebuilds; next rebuild re-pins our fields.
 #
 # Add/remove a pinned field = add/remove one line here.
-# Engine details: see config-patch.nix.
+# Engine details: see config-engine.nix.
 {
   config,
   lib,
@@ -104,35 +104,8 @@ let
     };
     ".agents.defaults.timeoutSeconds" = 300;
     ".agents.defaults.compaction.mode" = "safeguard";
-    ".agents.defaults.compaction.memoryFlush.enabled" = true;
-    ".agents.defaults.memorySearch.enabled" = true;
-    ".agents.defaults.memorySearch.provider" = "gemini";
-    ".agents.defaults.memorySearch.model" = "gemini-embedding-001";
-    ".agents.defaults.memorySearch.fallback" = "local";
-    ".agents.defaults.memorySearch.local.modelPath" = "hf:gpustack/bge-m3-GGUF/bge-m3-Q8_0.gguf";
-    ".agents.defaults.memorySearch.sources" = [
-      "memory"
-      "sessions"
-    ];
-    ".agents.defaults.memorySearch.experimental.sessionMemory" = true;
-    ".agents.defaults.memorySearch.query.maxResults" = 8;
-    ".agents.defaults.memorySearch.query.hybrid.enabled" = true;
-    ".agents.defaults.memorySearch.query.hybrid.vectorWeight" = 0.7;
-    ".agents.defaults.memorySearch.query.hybrid.textWeight" = 0.3;
-    ".agents.defaults.memorySearch.query.hybrid.candidateMultiplier" = 4;
-    ".agents.defaults.memorySearch.cache.enabled" = true;
-    ".agents.defaults.memorySearch.cache.maxEntries" = 50000;
-
-    # QMD backend: BM25 + vectors + reranking
-    ".memory.backend" = "qmd";
-    ".memory.citations" = "auto";
-    ".memory.qmd.includeDefaultMemory" = true;
-    ".memory.qmd.sessions.enabled" = true;
-    ".memory.qmd.sessions.retentionDays" = 30;
-    ".memory.qmd.update.interval" = "30m";
-    ".memory.qmd.update.debounceMs" = 15000;
-    ".memory.qmd.limits.maxResults" = 8;
-    ".memory.qmd.limits.timeoutMs" = 5000;
+    ".agents.defaults.compaction.memoryFlush.enabled" = false;
+    ".agents.defaults.memorySearch.enabled" = false;
     ".gateway.port" = openclaw.gatewayPort;
     ".gateway.mode" = "local";
     ".gateway.http.endpoints.chatCompletions.enabled" = true;
@@ -204,7 +177,6 @@ in
         baseSecrets = {
           ".gateway.auth.token" = "${agenixSecretsDir}/openclaw-gateway-token";
           ".tools.web.search.apiKey" = "${agenixSecretsDir}/brave-api-key";
-          ".agents.defaults.memorySearch.remote.apiKey" = "${agenixSecretsDir}/gemini-api-key";
         };
 
         # Generate bot token secrets for telegram-enabled agents

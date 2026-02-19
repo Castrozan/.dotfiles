@@ -20,7 +20,6 @@
     ../../home/modules/ccost.nix
     ../../home/modules/codex
     ../../home/modules/openclaw
-    ../../home/modules/qmd.nix
     ../../home/modules/claude
     ../../home/modules/clipse.nix
     ../../home/modules/cmatrix.nix

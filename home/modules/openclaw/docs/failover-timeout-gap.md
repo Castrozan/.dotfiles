@@ -6,7 +6,7 @@ The missing config key is `agents.defaults.model.timeoutSeconds`: a deadline for
 
 ## Workaround
 
-We set `agents.defaults.timeoutSeconds` to 300 in `config-patch-defaults.nix`. This halves the worst-case hang (from 10 min to 5 min) but still wastes the entire turn when the primary hangs. The fallback only activates on the _next_ message, after the provider enters cooldown.
+We set `agents.defaults.timeoutSeconds` to 300 in `config-declarations.nix`. This halves the worst-case hang (from 10 min to 5 min) but still wastes the entire turn when the primary hangs. The fallback only activates on the _next_ message, after the provider enters cooldown.
 
 ## Upstream references
 

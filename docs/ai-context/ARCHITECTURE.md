@@ -215,7 +215,7 @@ secrets/*.age (age-encrypted files)
 | `users/zanoni/nixos.nix` | Full NixOS system configuration entry |
 | `home/modules/claude/config.nix` | Claude Code global settings JSON |
 | `home/modules/claude/hook-config.nix` | Hook routing rules (event → script) |
-| `home/modules/openclaw/config.nix` | OpenClaw agent definitions and options |
+| `home/modules/openclaw/config-options.nix` | OpenClaw agent definitions and options |
 | `hosts/dellg15/configs/configuration.nix` | NixOS system-level options |
 | `secrets/secrets.nix` | agenix secret key → public key mapping |
 | `.config/hypr/hyprland.conf` | Hyprland compositor config (sources conf.d/) |

@@ -3,6 +3,7 @@ let
   nodejs = pkgs.nodejs_22;
   version = "2026.2.17";
   npmPrefix = "$HOME/.local/share/openclaw-npm";
+  secretsDirectory = "${config.home.homeDirectory}/.secrets";
 
   installOpenclawViaNpm = pkgs.writeShellScript "openclaw-install" ''
     set -euo pipefail
@@ -25,6 +26,11 @@ let
     export PATH="${nodejs}/bin:''${PATH:+:$PATH}"
     export NPM_CONFIG_PREFIX="${npmPrefix}"
     export OPENCLAW_NIX_MODE=1
+    unset CLAUDECODE
+    if [ -f "${secretsDirectory}/gemini-api-key" ]; then
+      GEMINI_API_KEY="$(cat "${secretsDirectory}/gemini-api-key")"
+      export GEMINI_API_KEY
+    fi
     exec "${npmPrefix}/bin/openclaw" "$@"
   '';
 
