@@ -2,8 +2,8 @@
 # https://github.com/openai/codex
 { pkgs, ... }:
 let
-  version = "0.98.0";
-  sha256 = "smZ5dxFkFVdRZRs6Z/v7SLZove/TUsGhVssDU4NJDUA=";
+  version = "0.104.0";
+  sha256 = "UvbMt86+HWYg+GdgdqzEzeEFQ6btDszqYlSY3nrhf4g=";
 
   codex-unwrapped = pkgs.stdenv.mkDerivation {
     pname = "codex";
