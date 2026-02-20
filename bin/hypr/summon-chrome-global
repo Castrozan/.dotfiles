@@ -39,11 +39,11 @@ main() {
   _detach_move_merge_into_current_group_and_maximize "$window_address" "$current_workspace_id"
 }
 
-readonly CHROME_GLOBAL_TITLE_PATTERN="ᓚᘏᗢ|Chat|GitLab|Calendar|agenda|RapidBoard|Bonjourr"
+readonly CHROME_GLOBAL_TITLE_PATTERN="ᓚᘏᗢ|Chat|Calendar|agenda"
 
 _find_chrome_global_main_window() {
   hyprctl clients -j | jq -r --arg class "$CHROME_GLOBAL_CLASS" --arg pattern "$CHROME_GLOBAL_TITLE_PATTERN" '
-    [.[] | select(.class == $class) | select(.title | test($pattern; "i"))]
+    [.[] | select(.class == $class) | select(.floating == false) | select(.title | test($pattern; "i"))]
     | first // empty
     | {address, workspace: .workspace.id}
   '
