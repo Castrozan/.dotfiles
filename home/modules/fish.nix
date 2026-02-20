@@ -5,6 +5,7 @@ in
 {
   home.packages = with pkgs; [
     fishPlugins.bass
+    carapace
   ];
 
   programs.fish = {
@@ -20,7 +21,24 @@ in
         name = "fzf-fish";
         src = pkgs.fishPlugins.fzf-fish;
       }
+      {
+        name = "autopair";
+        src = pkgs.fishPlugins.autopair;
+      }
+      {
+        name = "sponge";
+        src = pkgs.fishPlugins.sponge;
+      }
+      {
+        name = "puffer";
+        src = pkgs.fishPlugins.puffer;
+      }
     ];
+  };
+
+  programs.carapace = {
+    enable = true;
+    enableFishIntegration = true;
   };
 
   # Fish conf.d scripts

@@ -1,7 +1,19 @@
 set fish_greeting
 
-# Enable autosuggestions
+# Enhanced autosuggestions configuration
 set -g fish_autosuggestion_enabled 1
+set -g fish_autosuggestion_accept_on_space 0
+set -g fish_autosuggestion_accept_on_tab 0
+
+# Use command history and valid file paths for suggestions
+set -g fish_autosuggestion_strategy history match_previous
+
+# Faster completions with paging
+set -g fish_complete_inline_descriptions yes
+set -g fish_pager_color_completion normal
+set -g fish_pager_color_description 555 yellow
+set -g fish_pager_color_prefix cyan --underline
+set -g fish_pager_color_progress cyan
 
 # Add cargo bin to PATH
 fish_add_path ~/.cargo/bin
