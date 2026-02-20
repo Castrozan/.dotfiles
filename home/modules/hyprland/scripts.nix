@@ -1,6 +1,24 @@
 { pkgs, ... }:
 let
-  mkScript = name: file: pkgs.writeShellScriptBin name (builtins.readFile file);
+  mkScript =
+    name: file:
+    pkgs.writeShellScriptBin name ''
+      export PATH="${
+        pkgs.lib.makeBinPath (
+          with pkgs;
+          [
+            pulseaudio
+            coreutils
+            gnugrep
+            gnused
+            gawk
+            util-linux
+            procps
+          ]
+        )
+      }:/usr/bin:$PATH"
+      ${builtins.readFile file}
+    '';
 in
 {
   home.packages = [
@@ -31,6 +49,7 @@ in
     (mkScript "hypr-toggle-monitors" ../../../bin/hypr/toggle-monitors)
     (mkScript "hypr-monitor-hotplug-daemon" ../../../bin/hypr/monitor-hotplug-daemon)
     (mkScript "hypr-notification-sound-toggle" ../../../bin/hypr/notification-sound-toggle)
+    (mkScript "hypr-microphone-toggle" ../../../bin/hypr/microphone-toggle)
     (mkScript "hypr-summon-chrome-global" ../../../bin/hypr/summon-chrome-global)
   ];
 }

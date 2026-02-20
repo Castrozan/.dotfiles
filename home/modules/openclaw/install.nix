@@ -16,7 +16,8 @@ let
     fi
 
     ${nodejs}/bin/npm install -g "openclaw@${version}" \
-      --prefix "${npmPrefix}"
+      --prefix "${npmPrefix}" \
+      --ignore-scripts
   '';
 
   openclawWrapper = pkgs.writeShellScriptBin "openclaw" ''

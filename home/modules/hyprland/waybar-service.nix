@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, config, ... }:
 {
   systemd.user.services.waybar = {
     Unit = {
@@ -13,6 +13,7 @@
       ExecStart = "${pkgs.waybar}/bin/waybar";
       Restart = "always";
       RestartSec = "1s";
+      Environment = "PATH=${config.home.profileDirectory}/bin:/run/current-system/sw/bin:/usr/bin:/bin";
     };
 
     Install = {

@@ -94,7 +94,8 @@ window#waybar {
 #pulseaudio,
 #network,
 #bluetooth,
-#custom-notification-sound {
+#custom-notification-sound,
+#custom-microphone {
   min-width: 12px;
   margin: 0 7.5px;
 }
@@ -104,6 +105,14 @@ window#waybar {
 }
 
 #custom-notification-sound.muted {
+  color: @warning;
+}
+
+#custom-microphone.unmuted {
+  color: @foreground;
+}
+
+#custom-microphone.muted {
   color: @warning;
 }
 

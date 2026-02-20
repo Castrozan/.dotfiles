@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+readonly MIC_SOURCE_NAME="echo-cancel-source"
+
+_get_mute_status() {
+  pactl get-source-mute "${MIC_SOURCE_NAME}" | grep -q "yes" && echo "muted" || echo "unmuted"
+}
+
+_get_volume() {
+  pactl get-source-volume "${MIC_SOURCE_NAME}" | head -n1 | awk '{print $5}' | sed 's/%//'
+}
+
+_output_json() {
+  local status
+  status="$(_get_mute_status)"
+  local volume
+  volume="$(_get_volume)"
+  
+  if [[ "${status}" == "muted" ]]; then
+    echo '{"text":"󰖁","tooltip":"Microphone MUTED","class":"muted"}'
+  else
+    echo '{"text":"󰍰","tooltip":"Microphone unmuted ('"${volume}"'%)","class":"unmuted"}'
+  fi
+}
+
+_toggle() {
+  pactl set-source-mute "${MIC_SOURCE_NAME}" toggle
+  pkill -RTMIN+8 waybar 2>/dev/null || true
+}
+
+main() {
+  case "${1:-status}" in
+    status)
+      _output_json
+      ;;
+    toggle)
+      _toggle
+      ;;
+    *)
+      echo "Usage: $0 {status|toggle}" >&2
+      exit 1
+      ;;
+  esac
+}
+
+main "$@"
