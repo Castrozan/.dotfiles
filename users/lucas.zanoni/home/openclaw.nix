@@ -44,6 +44,7 @@
         emoji = "⚽";
         role = "work — Betha, code, productivity";
         workspace = "openclaw/robson";
+        model.primary = "openai-codex/gpt-5.3-codex";
         tts.voice = "pt-BR-AntonioNeural";
         telegram.enable = true;
         discord.enable = true;
@@ -53,6 +54,7 @@
         emoji = "🎀";
         role = "personal assistant, reminders, scheduling";
         workspace = "openclaw/jenny";
+        model.primary = "openai-codex/gpt-5.3-codex";
         tts.voice = "en-US-JennyNeural";
         telegram.enable = true;
         discord.enable = true;
@@ -62,6 +64,7 @@
         emoji = "👾";
         role = "creative assistant, brainstorming, fun tasks";
         workspace = "openclaw/monster";
+        model.primary = "openai-codex/gpt-5.3-codex";
         tts.voice = "en-US-GuyNeural";
         telegram.enable = true;
         discord.enable = true;
@@ -71,6 +74,7 @@
         emoji = "🪙";
         role = "research & analysis — technical deep dives, documentation, investigation";
         workspace = "openclaw/silver";
+        model.primary = "openai-codex/gpt-5.3-codex";
         tts.voice = "pt-BR-FranciscaNeural";
         telegram.enable = true;
         discord.enable = true;

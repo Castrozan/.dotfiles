@@ -22,7 +22,7 @@
     systemd-manager-tui.url = "github:matheus-git/systemd-manager-tui";
     systemd-manager-tui.inputs.nixpkgs.follows = "nixpkgs";
     readItNow-rc.url = "github:castrozan/readItNow-rc/1.1.0";
-    opencode.url = "github:anomalyco/opencode/v1.1.36";
+    opencode.url = "github:anomalyco/opencode/v1.2.10";
     devenv.url = "github:cachix/devenv/v1.11.2";
     # Branch/default (actively maintained)
     bluetui.url = "github:castrozan/bluetui/v0.9.1";
