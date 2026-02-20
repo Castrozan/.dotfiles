@@ -106,8 +106,8 @@ let
     ".agents.defaults.compaction.mode" = "safeguard";
     ".agents.defaults.compaction.memoryFlush.enabled" = true;
     ".agents.defaults.memorySearch.enabled" = true;
-    ".agents.defaults.memorySearch.provider" = "openai";
-    ".agents.defaults.memorySearch.model" = "text-embedding-3-small";
+    ".agents.defaults.memorySearch.provider" = "gemini";
+    ".agents.defaults.memorySearch.model" = "gemini-embedding-001";
     ".agents.defaults.memorySearch.fallback" = "none";
     ".agents.defaults.memorySearch.sources" = [
       "memory"
@@ -192,7 +192,7 @@ in
         baseSecrets = {
           ".gateway.auth.token" = "${agenixSecretsDir}/openclaw-gateway-token";
           ".tools.web.search.apiKey" = "${agenixSecretsDir}/brave-api-key";
-          ".agents.defaults.memorySearch.remote.apiKey" = "${agenixSecretsDir}/openai-api-key";
+          ".agents.defaults.memorySearch.remote.apiKey" = "${agenixSecretsDir}/gemini-api-key";
         };
 
         # Generate bot token secrets for telegram-enabled agents
