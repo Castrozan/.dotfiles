@@ -11,9 +11,10 @@
     mpv-shim-default-shaders
   ];
 
-  # mpv configuration for ani-cli terminal video playback
-  # ani-cli uses mpv to play videos. With vo=kitty and WezTerm's
-  # enable_kitty_graphics=true, video frames display inline in terminal.
+  programs.fish.shellAliases = {
+    ani-cli = "ani-cli --no-detach";
+  };
+
   home.file.".config/mpv/mpv.conf".text = ''
     vo=gpu
     video-sync=display-resample

@@ -103,7 +103,7 @@
     preview_separator_color = "208,208,208"
 
     [mpv]
-    args = ""
+    args = "--no-detach --vo=gpu --video-sync=display-resample --display-fps-override=120 --interpolation=yes --tscale=oversample --ao=pulse --hwdec=auto-safe --cache=yes --cache-secs=60 --audio-buffer=0.2"
     pre_args = ""
 
     [vlc]
