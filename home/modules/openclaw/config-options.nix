@@ -315,7 +315,7 @@ in
           openclaw.userName
           agent.workspace
           (toString openclaw.gatewayPort)
-          agent.model.primary
+          (if agent.model.primary != null then agent.model.primary else openclaw.defaults.model.primary)
           homeDir
           config.home.username
           agent.tts.voice
