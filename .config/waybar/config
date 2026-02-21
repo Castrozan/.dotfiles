@@ -6,6 +6,7 @@
   "height": 26,
   "modules-left": [],
   "modules-center": [
+    "image",
     "clock",
     "custom/ws1",
     "custom/ws2",
