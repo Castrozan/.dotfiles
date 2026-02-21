@@ -12,7 +12,7 @@
     gatewayService.enable = true;
     notifyTopic = "cleber-lucas-2f2ea57a";
     defaults.model = {
-      primary = "openai-codex/gpt-5.3-codex";
+      primary = "anthropic/claude-opus-4-6";
       heartbeat = "openai-codex/gpt-5.3-codex";
       subagents = "openai-codex/gpt-5.3-codex";
     };
@@ -22,7 +22,6 @@
         isDefault = true;
         emoji = "🤖";
         role = "home/personal — NixOS, home automation, overnight work";
-        model.primary = "openai-codex/gpt-5.3-codex";
         workspace = "openclaw";
         tts.voice = "en-US-JennyNeural";
         telegram.enable = true;
@@ -42,7 +41,6 @@
         enable = true;
         emoji = "🔵";
         role = "J.A.R.V.I.S. — Just A Rather Very Intelligent System. Personal AI butler in the style of Tony Stark's JARVIS. British wit, impeccable manners, anticipates needs before spoken. Addresses Lucas as 'sir'. Manages all systems with understated competence.";
-        model.primary = "openai-codex/gpt-5.3-codex";
         workspace = "openclaw/jarvis";
         tts.voice = "en-GB-RyanNeural";
         telegram.enable = true;

@@ -28,7 +28,7 @@
         {
           id = "silver";
           emoji = "🪙";
-          model = "opus-4.6";
+          model = "kimi-k2.5";
         }
       ];
     };
@@ -37,6 +37,11 @@
     gatewayPort = 18790;
     gatewayService.enable = true;
     coreRulesContent = builtins.readFile ../../../agents/core.md;
+    defaults.model = {
+      primary = "anthropic/claude-opus-4-6";
+      heartbeat = "openai-codex/gpt-5.3-codex";
+      subagents = "openai-codex/gpt-5.3-codex";
+    };
     agents = {
       robson = {
         enable = true;
@@ -44,7 +49,6 @@
         emoji = "⚽";
         role = "work — Betha, code, productivity";
         workspace = "openclaw/robson";
-        model.primary = "openai-codex/gpt-5.3-codex";
         tts.voice = "pt-BR-AntonioNeural";
         telegram.enable = true;
         discord.enable = true;
@@ -54,7 +58,6 @@
         emoji = "🎀";
         role = "personal assistant, reminders, scheduling";
         workspace = "openclaw/jenny";
-        model.primary = "openai-codex/gpt-5.3-codex";
         tts.voice = "en-US-JennyNeural";
         telegram.enable = true;
         discord.enable = true;
@@ -64,7 +67,6 @@
         emoji = "👾";
         role = "creative assistant, brainstorming, fun tasks";
         workspace = "openclaw/monster";
-        model.primary = "openai-codex/gpt-5.3-codex";
         tts.voice = "en-US-GuyNeural";
         telegram.enable = true;
         discord.enable = true;
@@ -73,8 +75,8 @@
         enable = true;
         emoji = "🪙";
         role = "research & analysis — technical deep dives, documentation, investigation";
+        model.primary = "nvidia/moonshotai/kimi-k2.5";
         workspace = "openclaw/silver";
-        model.primary = "openai-codex/gpt-5.3-codex";
         tts.voice = "pt-BR-FranciscaNeural";
         telegram.enable = true;
         discord.enable = true;
