@@ -21,3 +21,5 @@ tests/coverage/
 
 # Ruff cache
 .ruff_cache/
+
+.cache/
