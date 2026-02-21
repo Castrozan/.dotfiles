@@ -1,14 +1,23 @@
 #!/usr/bin/env python3
+import locale
+import os
+
+locale.setlocale(locale.LC_ALL, "en_US.UTF-8")
+os.environ["LC_ALL"] = "en_US.UTF-8"
+os.environ["LANG"] = "en_US.UTF-8"
+
 import gi
-gi.require_version('Gtk', '3.0')
+
+gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, Gdk
 import subprocess
 import json
-import os
+
 try:
     import tomllib
 except ImportError:
     import tomli as tomllib
+
 
 def load_theme_colors():
     colors_path = os.path.expanduser("~/.config/hypr-theme/current/theme/colors.toml")
@@ -26,15 +35,18 @@ def load_theme_colors():
     except:
         return defaults
 
+
 class CalendarWindow(Gtk.Window):
     def __init__(self):
         super().__init__(title="Calendar")
 
         # Get monitor width for centering
         try:
-            result = subprocess.run(['hyprctl', 'monitors', '-j'], capture_output=True, text=True)
+            result = subprocess.run(
+                ["hyprctl", "monitors", "-j"], capture_output=True, text=True
+            )
             monitors = json.loads(result.stdout)
-            screen_width = monitors[0]['width']
+            screen_width = monitors[0]["width"]
         except:
             screen_width = 1920
 
@@ -57,54 +69,54 @@ class CalendarWindow(Gtk.Window):
         # Style
         css = f"""
         window {{
-            background-color: {c['background']};
+            background-color: {c["background"]};
             border-radius: 12px;
             border: none;
         }}
         calendar {{
-            background-color: {c['background']};
-            color: {c['foreground']};
+            background-color: {c["background"]};
+            color: {c["foreground"]};
             font-size: 18px;
             padding: 12px;
             border: none;
         }}
         calendar.header {{
             border: none;
-            background-color: {c['background']};
+            background-color: {c["background"]};
         }}
         calendar:selected {{
-            background-color: {c['accent']};
-            color: {c['background']};
+            background-color: {c["accent"]};
+            color: {c["background"]};
         }}
         calendar.header {{
-            color: {c['foreground']};
+            color: {c["foreground"]};
             font-weight: bold;
             font-size: 20px;
         }}
         calendar.button {{
-            color: {c['color4']};
+            color: {c["color4"]};
         }}
         calendar:indeterminate {{
-            color: {c['color8']};
+            color: {c["color8"]};
         }}
         button.close {{
-            background: {c['accent']};
-            background-color: {c['accent']};
+            background: {c["accent"]};
+            background-color: {c["accent"]};
             background-image: none;
             border: none;
             border-radius: 6px;
-            color: {c['background']};
+            color: {c["background"]};
             padding: 4px 10px;
             min-width: 0;
             min-height: 0;
             font-weight: bold;
         }}
         button.close label {{
-            color: {c['background']};
+            color: {c["background"]};
         }}
         button.close:hover {{
-            background: {c['color4']};
-            background-color: {c['color4']};
+            background: {c["color4"]};
+            background-color: {c["color4"]};
             background-image: none;
         }}
         """.encode()
@@ -113,7 +125,7 @@ class CalendarWindow(Gtk.Window):
         Gtk.StyleContext.add_provider_for_screen(
             Gdk.Screen.get_default(),
             style_provider,
-            Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+            Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION,
         )
 
         # Main container
@@ -149,6 +161,7 @@ class CalendarWindow(Gtk.Window):
     def on_key_press(self, widget, event):
         if event.keyval == Gdk.KEY_Escape:
             Gtk.main_quit()
+
 
 win = CalendarWindow()
 win.connect("destroy", Gtk.main_quit)

@@ -29,6 +29,7 @@ let
       let
         wrapper = pkgs.writeScript "calendar-popup-unwrapped" ''
           #!${pkgs.bash}/bin/bash
+          export LOCALE_ARCHIVE="${pkgs.glibcLocales}/lib/locale/locale-archive"
           exec ${pythonEnv}/bin/python3 @out@/share/calendar-popup/calendar-popup.py "$@"
         '';
       in
