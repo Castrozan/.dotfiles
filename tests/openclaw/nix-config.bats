@@ -236,7 +236,7 @@ nix_eval_json_apply() {
 @test "workpc: model aliases include opus sonnet codex" {
     result=$(nix_eval_json_apply "$WORKPC_OC.configPatches.\".agents.defaults.models\"" 'builtins.attrNames')
     echo "$result" | jq -e 'index("anthropic/claude-opus-4-6")' > /dev/null
-    echo "$result" | jq -e 'index("anthropic/claude-sonnet-4-5")' > /dev/null
+    echo "$result" | jq -e 'index("anthropic/claude-sonnet-4-6")' > /dev/null
     echo "$result" | jq -e 'index("openai-codex/gpt-5.3-codex")' > /dev/null
 }
 
