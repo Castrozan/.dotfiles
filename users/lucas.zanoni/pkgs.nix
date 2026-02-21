@@ -49,6 +49,7 @@
       nixd
       nixfmt-rfc-style
       nodejs
+      nodePackages.prettier
       obsidian
       ollama
       playerctl
