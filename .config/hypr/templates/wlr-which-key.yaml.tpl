@@ -160,7 +160,7 @@ menu:
         cmd: hypr-menu theme
       - key: w
         desc: Toggle waybar
-        cmd: pkill waybar || waybar
+        cmd: systemctl --user is-active --quiet waybar && systemctl --user stop waybar || systemctl --user start waybar
 
   - key: l
     desc: Lock

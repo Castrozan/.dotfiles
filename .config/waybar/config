@@ -4,27 +4,23 @@
   "position": "top",
   "spacing": 0,
   "height": 26,
-  "modules-left": [
-    "image",
+  "modules-left": [],
+  "modules-center": [
+    "clock",
     "custom/ws1",
     "custom/ws2",
     "custom/ws3",
     "custom/ws4",
     "custom/ws5",
     "custom/ws6",
-    "custom/ws7"
-  ],
-  "modules-center": ["clock"],
-  "modules-right": [
-    "group/tray-expander",
+    "custom/ws7",
     "custom/notification-sound",
     "custom/microphone",
     "bluetooth",
     "network",
-    "pulseaudio",
-    "cpu",
     "battery"
   ],
+  "modules-right": [],
   "custom/ws1": {
     "return-type": "json",
     "exec": "~/.config/waybar/scripts/workspace-window.sh 1",

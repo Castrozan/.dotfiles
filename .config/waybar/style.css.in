@@ -12,15 +12,14 @@
 }
 
 window#waybar {
+  background-color: transparent;
+}
+
+.modules-center {
   background-color: alpha(@background, 0.85);
-}
-
-.modules-left {
-  margin-left: 0;
-}
-
-.modules-right {
-  margin-right: 8px;
+  border-radius: 999px;
+  padding: 0 8px;
+  margin-top: 4px;
 }
 
 #custom-ws1,
@@ -30,13 +29,14 @@ window#waybar {
 #custom-ws5,
 #custom-ws6,
 #custom-ws7 {
-  padding: 0 6px;
-  margin: 0 5px;
+  padding: 1px 8px;
+  margin: 3px 2px;
   color: @foreground;
   font-weight: bold;
   background: transparent;
   border: none;
-  border-radius: 4px;
+  border-radius: 999px;
+  min-width: 18px;
 }
 
 #custom-ws1.empty,
@@ -57,10 +57,9 @@ window#waybar {
 #custom-ws5.active,
 #custom-ws6.active,
 #custom-ws7.active {
-  color: @accent;
-  font-weight: 900;
-  font-size: 13px;
-  border-bottom: 4px solid @accent;
+  color: @background;
+  background-color: @accent;
+  font-weight: bold;
 }
 
 #custom-ws1.occupied,
@@ -89,11 +88,9 @@ window#waybar {
   padding-left: 12px;
 }
 
-#cpu,
 #battery,
-#pulseaudio,
-#network,
 #bluetooth,
+#network,
 #custom-notification-sound,
 #custom-microphone {
   min-width: 12px;
@@ -116,20 +113,8 @@ window#waybar {
   color: @warning;
 }
 
-#tray {
-  margin-right: 16px;
-}
-
-#bluetooth {
-  margin-right: 17px;
-}
-
 #network {
   margin-right: 13px;
-}
-
-#custom-expand-icon {
-  margin-right: 18px;
 }
 
 tooltip {
@@ -141,7 +126,8 @@ tooltip {
 }
 
 #clock {
-  margin-left: 8.75px;
+  margin-right: 10px;
+  font-weight: bold;
 }
 
 #calendar {
