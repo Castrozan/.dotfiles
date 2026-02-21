@@ -33,9 +33,9 @@ let
         type = lib.types.submodule {
           options = {
             primary = lib.mkOption {
-              type = lib.types.str;
-              default = "anthropic/claude-sonnet-4-6";
-              description = "Primary model ID for this agent";
+              type = lib.types.nullOr lib.types.str;
+              default = null;
+              description = "Primary model ID for this agent, or null to inherit openclaw.defaults.model.primary";
             };
             fallbacks = lib.mkOption {
               type = lib.types.listOf lib.types.str;

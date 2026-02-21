@@ -24,10 +24,9 @@ let
     {
       id = name;
       workspace = "${homeDir}/${agent.workspace}";
-      model = {
-        inherit (agent.model) primary;
-      }
-      // lib.optionalAttrs (agent.model.fallbacks != [ ]) { inherit (agent.model) fallbacks; };
+      model =
+        lib.optionalAttrs (agent.model.primary != null) { inherit (agent.model) primary; }
+        // lib.optionalAttrs (agent.model.fallbacks != [ ]) { inherit (agent.model) fallbacks; };
     }
     // lib.optionalAttrs (name == openclaw.defaultAgent) { default = true; }
   ) openclaw.enabledAgents;

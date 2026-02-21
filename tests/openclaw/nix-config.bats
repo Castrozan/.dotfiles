@@ -338,9 +338,14 @@ nix_eval_json_apply() {
 
 # ---------- Agent defaults ----------
 
-@test "agent: default model is opus when not specified" {
+@test "agent: model.primary is null when not explicitly set (inherits defaults)" {
     result=$(nix_eval_json "$WORKPC_OC.agents.robson.model.primary")
-    [ "$result" = '"anthropic/claude-opus-4-6"' ]
+    [ "$result" = "null" ]
+}
+
+@test "agent: silver model.primary is kimi when explicitly set" {
+    result=$(nix_eval_json "$WORKPC_OC.agents.silver.model.primary")
+    [ "$result" = '"nvidia/moonshotai/kimi-k2.5"' ]
 }
 
 @test "agent: default TTS engine is edge-tts" {
@@ -385,25 +390,24 @@ nix_eval_json_apply() {
 
 # ---------- Plugin configuration ----------
 
-@test "workpc: plugins allow list includes hindsight-openclaw" {
+@test "workpc: plugins allow list includes memory-core" {
     result=$(nix_eval_json "$WORKPC_OC.configPatches.\".plugins.allow\"")
-    echo "$result" | jq -e 'index("hindsight-openclaw")' > /dev/null
+    echo "$result" | jq -e 'index("memory-core")' > /dev/null
 }
 
-@test "workpc: plugins memory slot is hindsight-openclaw" {
+@test "workpc: plugins memory slot is memory-core" {
     result=$(nix_eval_json "$WORKPC_OC.configPatches.\".plugins.slots.memory\"")
-    [ "$result" = '"hindsight-openclaw"' ]
+    [ "$result" = '"memory-core"' ]
 }
 
-@test "workpc: hindsight plugin is enabled with claude-code provider" {
-    result=$(nix_eval_json "$WORKPC_OC.configPatches.\".plugins.entries.hindsight-openclaw\"")
-    echo "$result" | jq -e '.enabled == true' > /dev/null
-    echo "$result" | jq -e '.config.llmProvider == "claude-code"' > /dev/null
-}
-
-@test "workpc: memory-core plugin is disabled" {
+@test "workpc: memory-core plugin is enabled" {
     result=$(nix_eval_json "$WORKPC_OC.configPatches.\".plugins.entries.memory-core\"")
-    echo "$result" | jq -e '.enabled == false' > /dev/null
+    echo "$result" | jq -e '.enabled == true' > /dev/null
+}
+
+@test "workpc: hindsight-openclaw is in configDeletes" {
+    result=$(nix_eval_json "$WORKPC_OC.configDeletes")
+    echo "$result" | jq -e 'index(".plugins.entries.hindsight-openclaw")' > /dev/null
 }
 
 @test "workpc: plugins allow list includes discord" {
