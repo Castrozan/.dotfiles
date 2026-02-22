@@ -78,7 +78,7 @@ let
     ".agents.defaults.model.fallbacks" = [
       "anthropic/claude-opus-4-6"
       "openai-codex/gpt-5.3-codex"
-      "nvidia/moonshotai/kimi-k2.5"
+      "nvidia/deepseek-ai/deepseek-v3.2"
     ];
     ".agents.defaults.models" = {
       "anthropic/claude-sonnet-4-6" = {
@@ -100,6 +100,10 @@ let
       {
         id = "moonshotai/kimi-k2.5";
         name = "Kimi K2.5";
+      }
+      {
+        id = "deepseek-ai/deepseek-v3.2";
+        name = "DeepSeek V3.2";
       }
     ];
     ".models.providers.openai.baseUrl" = "https://api.openai.com/v1";
