@@ -163,10 +163,6 @@ let
 
     if [ "$HASH_BEFORE" != "$HASH_AFTER" ]; then
       sync
-      export XDG_RUNTIME_DIR="''${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
-      if ${pkgs.systemd}/bin/systemctl --user is-active openclaw-gateway.service >/dev/null 2>&1; then
-        ${pkgs.systemd}/bin/systemctl --user restart openclaw-gateway.service || true
-      fi
     fi
   '';
 in
