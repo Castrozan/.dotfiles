@@ -31,7 +31,7 @@
         enable = true;
         emoji = "🌟";
         role = "research & discovery — deep dives, analysis, long-form thinking";
-        model.primary = "nvidia/moonshotai/kimi-k2.5";
+        model.primary = "nvidia/meta/llama-3.3-70b-instruct";
         workspace = "openclaw/golden";
         tts.voice = "en-US-AriaNeural";
         telegram.enable = true;
