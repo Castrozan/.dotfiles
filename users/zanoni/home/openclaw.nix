@@ -31,6 +31,7 @@
         enable = true;
         emoji = "🌟";
         role = "research & discovery — deep dives, analysis, long-form thinking";
+        model.primary = "anthropic/claude-sonnet-4-6";
         workspace = "openclaw/golden";
         tts.voice = "en-US-AriaNeural";
         telegram.enable = true;

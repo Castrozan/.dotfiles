@@ -64,6 +64,7 @@
         enable = true;
         emoji = "🎀";
         role = "personal assistant, reminders, scheduling";
+        model.primary = "anthropic/claude-sonnet-4-6";
         workspace = "openclaw/jenny";
         tts.voice = "en-US-JennyNeural";
         telegram.enable = true;
@@ -76,6 +77,7 @@
         enable = true;
         emoji = "👾";
         role = "creative assistant, brainstorming, fun tasks";
+        model.primary = "anthropic/claude-sonnet-4-6";
         workspace = "openclaw/monster";
         tts.voice = "en-US-GuyNeural";
         telegram.enable = true;
