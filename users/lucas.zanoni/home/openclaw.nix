@@ -1,9 +1,25 @@
 { config, ... }:
+let
+  opusModel = "anthropic/claude-opus-4-6";
+  sonnetModel = "anthropic/claude-sonnet-4-6";
+  codexModel = "openai-codex/gpt-5.3-codex";
+
+  robsonModelPrimary = opusModel;
+  jennyModelPrimary = sonnetModel;
+  monsterModelPrimary = sonnetModel;
+  silverModelPrimary = sonnetModel;
+
+  lucasDiscordUserId = "284143065877184512";
+  robsonDiscordGuildId = "998625197802410094";
+  robsonDiscordTextChannelId = "998625197802410097";
+  robsonDiscordVoiceChannelId = "998625197802410098";
+  robsonTtsVoice = "pt-BR-AntonioNeural";
+in
 {
   openclaw = {
     configPatches = {
-      ".channels.discord.accounts.robson.allowFrom" = [ "284143065877184512" ];
-      ".channels.discord.accounts.robson.guilds.998625197802410094.users" = [ "284143065877184512" ];
+      ".channels.discord.accounts.robson.allowFrom" = [ lucasDiscordUserId ];
+      ".channels.discord.accounts.robson.guilds.${robsonDiscordGuildId}.users" = [ lucasDiscordUserId ];
     };
 
     memorySync = {
@@ -19,22 +35,22 @@
         {
           id = "robson";
           emoji = "⚽";
-          model = "opus-4.6";
+          model = robsonModelPrimary;
         }
         {
           id = "jenny";
           emoji = "🎀";
-          model = "opus-4.6";
+          model = jennyModelPrimary;
         }
         {
           id = "monster";
           emoji = "👾";
-          model = "opus-4.6";
+          model = monsterModelPrimary;
         }
         {
           id = "silver";
           emoji = "🪙";
-          model = "opus-4.6";
+          model = silverModelPrimary;
         }
       ];
     };
@@ -44,9 +60,9 @@
     gatewayService.enable = true;
     coreRulesContent = builtins.readFile ../../../agents/core.md;
     defaults.model = {
-      primary = "anthropic/claude-opus-4-6";
-      heartbeat = "openai-codex/gpt-5.3-codex";
-      subagents = "openai-codex/gpt-5.3-codex";
+      primary = opusModel;
+      heartbeat = codexModel;
+      subagents = codexModel;
     };
     agents = {
       robson = {
@@ -54,13 +70,14 @@
         isDefault = true;
         emoji = "⚽";
         role = "work — Betha, code, productivity";
+        model.primary = robsonModelPrimary;
         workspace = "openclaw/robson";
-        tts.voice = "pt-BR-AntonioNeural";
+        tts.voice = robsonTtsVoice;
         telegram.enable = true;
         discord = {
           enable = true;
           voice.enable = true;
-          guilds."998625197802410094" = {
+          guilds."${robsonDiscordGuildId}" = {
             slug = "anotacao";
             requireMention = true;
           };
@@ -69,8 +86,8 @@
       jenny = {
         enable = true;
         emoji = "🎀";
-        role = "personal assistant, reminders, scheduling";
-        model.primary = "anthropic/claude-sonnet-4-6";
+        role = "full-stack personal agent — coding, monitoring, automation, scheduling";
+        model.primary = jennyModelPrimary;
         workspace = "openclaw/jenny";
         tts.voice = "en-US-JennyNeural";
         telegram.enable = true;
@@ -83,7 +100,7 @@
         enable = true;
         emoji = "👾";
         role = "creative assistant, brainstorming, fun tasks";
-        model.primary = "anthropic/claude-sonnet-4-6";
+        model.primary = monsterModelPrimary;
         workspace = "openclaw/monster";
         tts.voice = "en-US-GuyNeural";
         telegram.enable = true;
@@ -96,7 +113,7 @@
         enable = true;
         emoji = "🪙";
         role = "research & analysis — technical deep dives, documentation, investigation";
-        model.primary = "anthropic/claude-sonnet-4-6";
+        model.primary = silverModelPrimary;
         workspace = "openclaw/silver";
         tts.voice = "pt-BR-FranciscaNeural";
         telegram.enable = true;
@@ -125,11 +142,11 @@
       Restart = "always";
       RestartSec = 3;
       Environment = [
-        "NODE_PATH=/home/lucas.zanoni/.local/share/openclaw-npm/lib/node_modules"
-        "DISCORD_VC_GUILD_ID=998625197802410094"
-        "DISCORD_VC_TEXT_CHANNEL_ID=998625197802410097"
-        "DISCORD_VC_CHANNEL_ID=998625197802410098"
-        "DISCORD_VC_TTS_VOICE=pt-BR-AntonioNeural"
+        "NODE_PATH=${config.home.homeDirectory}/.local/share/openclaw-npm/lib/node_modules"
+        "DISCORD_VC_GUILD_ID=${robsonDiscordGuildId}"
+        "DISCORD_VC_TEXT_CHANNEL_ID=${robsonDiscordTextChannelId}"
+        "DISCORD_VC_CHANNEL_ID=${robsonDiscordVoiceChannelId}"
+        "DISCORD_VC_TTS_VOICE=${robsonTtsVoice}"
       ];
     };
     Install.WantedBy = [ "default.target" ];
