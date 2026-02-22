@@ -8,7 +8,7 @@
     "sbc_xq"
     "sbc"
   ];
-  autoswitchToHeadsetProfile = false;
+  autoswitchToHeadsetProfile = true;
   sinkPriority = 3000;
   inputPriority = 2000;
 }
