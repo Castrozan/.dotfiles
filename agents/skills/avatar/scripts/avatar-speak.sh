@@ -40,6 +40,11 @@ case "$OUTPUT" in
 esac
 
 SERVER_DIR="@homePath@/@workspacePath@/skills/avatar/control-server"
+TTS_JSON="@homePath@/@workspacePath@/tts.json"
+VOICE=""
+if [[ -f "$TTS_JSON" ]]; then
+  VOICE=$(node -e "try{console.log(JSON.parse(require('fs').readFileSync('$TTS_JSON','utf8')).voice||'')}catch(e){}" 2>/dev/null)
+fi
 
 if [[ ! -d "$SERVER_DIR" ]]; then
   echo "Error: Control server directory not found: $SERVER_DIR" >&2
@@ -73,7 +78,8 @@ ws.on('open', () => {
       type: 'speak',
       text: process.argv[1],
       emotion: process.argv[2],
-      output: process.argv[3]
+      output: process.argv[3],
+      voice: process.argv[4] || undefined
     }));
   }, 500);
 });
@@ -96,4 +102,4 @@ ws.on('message', (data) => {
     }, waitTime);
   }
 });
-" "$TEXT" "$EMOTION" "$OUTPUT"
+" "$TEXT" "$EMOTION" "$OUTPUT" "$VOICE"

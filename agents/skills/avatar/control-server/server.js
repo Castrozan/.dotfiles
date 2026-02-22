@@ -61,7 +61,7 @@ async function initTTSDirectory() {
 }
 
 // Generate TTS audio with edge-tts
-async function generateTTS(text, outputId) {
+async function generateTTS(text, outputId, voiceOverride = null) {
   const outputDir = path.join(CONFIG.TTS_DIR, outputId);
   const audioPath = path.join(outputDir, "voice.mp3");
   const timingPath = path.join(outputDir, "timing.json");
@@ -73,7 +73,7 @@ async function generateTTS(text, outputId) {
     // Generate TTS with timing data
     const command =
       `edge-tts --text "${text.replace(/"/g, '\\"')}" ` +
-      `--voice ${CONFIG.TTS_VOICE} ` +
+      `--voice ${voiceOverride || CONFIG.TTS_VOICE} ` +
       `--rate +0% ` +
       `--write-media ${audioPath} ` +
       `--write-subtitles ${timingPath}`;
@@ -267,6 +267,7 @@ async function handleSpeak(command, ws) {
     text,
     emotion = "neutral",
     output = "speakers",
+    voice = null,
     id = Date.now().toString(),
   } = command;
 
@@ -282,7 +283,7 @@ async function handleSpeak(command, ws) {
 
   try {
     // Generate TTS
-    const tts = await generateTTS(text, id);
+    const tts = await generateTTS(text, id, voice);
 
     // Play audio to chosen output sink(s)
     const sinks = [];
