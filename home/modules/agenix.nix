@@ -31,6 +31,21 @@ let
     "x-username"
     "x-email"
     "x-password"
+    # Bot tokens for openclaw agents (telegram + discord)
+    "telegram-bot-token-jarvis"
+    "telegram-bot-token-golden"
+    "telegram-bot-token-clever"
+    "telegram-bot-token-robson"
+    "telegram-bot-token-jenny"
+    "telegram-bot-token-monster"
+    "telegram-bot-token-silver"
+    "discord-bot-token-jarvis"
+    "discord-bot-token-golden"
+    "discord-bot-token-clever"
+    "discord-bot-token-robson"
+    "discord-bot-token-jenny"
+    "discord-bot-token-monster"
+    "discord-bot-token-silver"
   ];
 
   allSecretNames =

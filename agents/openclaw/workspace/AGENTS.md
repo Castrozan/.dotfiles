@@ -155,6 +155,26 @@ You have `memory_search` — use it before starting complex tasks to check if yo
 
 ---
 
+## Long-Running Commands
+
+Never let a long command block your turn and cause a timeout. Timeouts kill your run and require human intervention.
+
+**Rules:**
+1. **Always background long commands** — `nix build`, `nixos-rebuild`, `git push`, `npm install`, any command that might take >30s.
+2. Use `exec` with `background: true` or high `yieldMs` (e.g., 30000+) for these commands.
+3. After backgrounding, use `process(action=poll, timeout=<ms>)` to check status — but don't rapid-poll. Use reasonable timeouts (10-30s).
+4. If a command is truly fire-and-forget, background it and check later.
+5. **Never assume a command will be fast.** Network operations, builds, and package managers are unpredictable.
+
+**Example pattern for nix rebuild:**
+```
+exec(command="~/.dotfiles/bin/rebuild", background=true, yieldMs=60000)
+# ... then poll with reasonable timeout
+process(action=poll, sessionId=<id>, timeout=30000)
+```
+
+---
+
 ## Common Mistakes to Avoid
 
 1. **Not checking file size before reading.** Use `wc -l` or `grep` first — save 75-95% tokens on file queries.

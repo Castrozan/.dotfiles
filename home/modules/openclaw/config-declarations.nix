@@ -11,7 +11,7 @@
 {
   config,
   lib,
-  isNixOS,
+  isNixOS, # kept in scope from specialArgs but no longer used here
   ...
 }:
 let
@@ -101,7 +101,7 @@ let
         mode = "oauth";
       };
     };
-    ".agents.defaults.timeoutSeconds" = 300;
+    ".agents.defaults.timeoutSeconds" = 600;
     ".agents.defaults.compaction.mode" = "safeguard";
     ".agents.defaults.compaction.memoryFlush.enabled" = true;
     ".agents.defaults.memorySearch.enabled" = true;
@@ -118,6 +118,8 @@ let
     ".agents.defaults.memorySearch.query.hybrid.vectorWeight" = 0.7;
     ".agents.defaults.memorySearch.query.hybrid.textWeight" = 0.3;
     ".agents.defaults.memorySearch.cache.enabled" = true;
+    ".tools.exec.timeoutSec" = 1800;
+    ".tools.exec.notifyOnExit" = true;
     ".gateway.port" = openclaw.gatewayPort;
     ".gateway.mode" = "local";
     ".gateway.http.endpoints.chatCompletions.enabled" = true;
@@ -228,45 +230,33 @@ in
       basePatches // telegramPatches // discordPatches // { ".bindings" = combinedChannelBindings; }
     );
 
+    # All secrets use home-manager agenix paths (~/.secrets/).
+    # System-level agenix (/run/agenix/) is not used for openclaw secrets.
     openclaw.secretPatches =
       let
-        agenixSecretsDir = if isNixOS then "/run/agenix" else "${homeDir}/.secrets";
+        secretsDir = "${homeDir}/.secrets";
 
         baseSecrets = {
-          ".gateway.auth.token" = "${agenixSecretsDir}/openclaw-gateway-token";
-          ".tools.web.search.apiKey" = "${agenixSecretsDir}/brave-api-key";
-          ".agents.defaults.memorySearch.remote.apiKey" = "${agenixSecretsDir}/openai-api-key";
-          ".models.providers.openai.apiKey" = "${agenixSecretsDir}/openai-api-key";
-          ".models.providers.google.apiKey" = "${agenixSecretsDir}/gemini-api-key";
-          ".models.providers.nvidia.apiKey" = "${agenixSecretsDir}/nvidia-api-key";
+          ".gateway.auth.token" = "${secretsDir}/openclaw-gateway-token";
+          ".tools.web.search.apiKey" = "${secretsDir}/brave-api-key";
+          ".agents.defaults.memorySearch.remote.apiKey" = "${secretsDir}/openai-api-key";
+          ".models.providers.openai.apiKey" = "${secretsDir}/openai-api-key";
+          ".models.providers.google.apiKey" = "${secretsDir}/gemini-api-key";
+          ".models.providers.nvidia.apiKey" = "${secretsDir}/nvidia-api-key";
         };
 
         # Generate bot token secrets for telegram-enabled agents
-        telegramSecrets =
-          if isNixOS then
-            lib.mapAttrs' (name: _: {
-              name = ".channels.telegram.accounts.${name}.botToken";
-              value = "/run/agenix/telegram-bot-token-${name}";
-            }) telegramEnabledAgents
-          else
-            lib.mapAttrs' (name: _: {
-              name = ".channels.telegram.accounts.${name}.botToken";
-              value = "${homeDir}/.openclaw/secrets/telegram-bot-token-${name}";
-            }) telegramEnabledAgents;
+        telegramSecrets = lib.mapAttrs' (name: _: {
+          name = ".channels.telegram.accounts.${name}.botToken";
+          value = "${secretsDir}/telegram-bot-token-${name}";
+        }) telegramEnabledAgents;
 
         # Generate bot token secrets for discord-enabled agents
         # Discord uses "token" not "botToken" (botToken is Telegram-only)
-        discordSecrets =
-          if isNixOS then
-            lib.mapAttrs' (name: _: {
-              name = ".channels.discord.accounts.${name}.token";
-              value = "/run/agenix/discord-bot-token-${name}";
-            }) discordEnabledAgents
-          else
-            lib.mapAttrs' (name: _: {
-              name = ".channels.discord.accounts.${name}.token";
-              value = "${homeDir}/.openclaw/secrets/discord-bot-token-${name}";
-            }) discordEnabledAgents;
+        discordSecrets = lib.mapAttrs' (name: _: {
+          name = ".channels.discord.accounts.${name}.token";
+          value = "${secretsDir}/discord-bot-token-${name}";
+        }) discordEnabledAgents;
       in
       lib.mkOptionDefault (baseSecrets // telegramSecrets // discordSecrets);
   };

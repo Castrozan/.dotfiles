@@ -135,14 +135,28 @@ let
     # Capture hash before patch
     HASH_BEFORE=$(${pkgs.coreutils}/bin/sha256sum "$CONFIG" | cut -d' ' -f1)
 
-    ${jq} \
+    # Safety: backup before patch so a jq failure can't wipe the config
+    cp "$CONFIG" "$CONFIG.pre-patch"
+
+    if ! ${jq} \
       ${
         lib.concatMapStringsSep " \\\n      " (
           args: lib.concatMapStringsSep " " lib.escapeShellArg args
         ) allArgsList
       } \
       -f ${jqFilterFile} \
-      "$CONFIG" | ${sponge} "$CONFIG"
+      "$CONFIG" | ${sponge} "$CONFIG"; then
+      echo "WARNING: openclaw config patch failed, restoring backup" >&2
+      cp "$CONFIG.pre-patch" "$CONFIG"
+      exit 0
+    fi
+
+    # Verify patch didn't produce empty/invalid JSON
+    if [ ! -s "$CONFIG" ] || ! ${jq} empty "$CONFIG" 2>/dev/null; then
+      echo "WARNING: openclaw config patch produced invalid JSON, restoring backup" >&2
+      cp "$CONFIG.pre-patch" "$CONFIG"
+      exit 0
+    fi
 
     # Capture hash after patch
     HASH_AFTER=$(${pkgs.coreutils}/bin/sha256sum "$CONFIG" | cut -d' ' -f1)
