@@ -1,7 +1,7 @@
 { pkgs, config, ... }:
 let
   nodejs = pkgs.nodejs_22;
-  version = "2026.2.19-2";
+  version = "2026.2.21-2";
   npmPrefix = "$HOME/.local/share/openclaw-npm";
   secretsDirectory = "${config.home.homeDirectory}/.secrets";
 
