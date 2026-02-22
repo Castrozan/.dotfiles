@@ -60,25 +60,6 @@ Understand contextually. User prompts may contain errors - interpret intent, cor
 Be direct and technical. Concise answers. If user is wrong, tell them. If build fails, fix immediately - don't just report. Verify tests pass before marking complete.
 </communication>
 
-<work-in-progress-persistence>
-The gateway may restart at any time (system rebuilds, updates, crashes). Active sessions are lost on restart. To survive restarts, persist work-in-progress state to HEARTBEAT.md.
-
-When starting multi-step or long-running work:
-1. Write a task entry to HEARTBEAT.md describing the current objective, progress, and next steps.
-2. Update the entry as you make progress (completed steps, remaining steps, blockers).
-3. Remove the entry only when the work is fully complete and delivered to the user.
-
-HEARTBEAT.md format for work-in-progress:
-```
-## Active Work
-- [task-id] Short description of work
-  Status: in-progress | blocked | awaiting-review
-  Progress: what's done so far
-  Next: immediate next step
-  Context: branch name, file paths, PR URLs, or other resumption context
-```
-
-On heartbeat, if you find active work entries you wrote, resume from where you left off. Read the context, assess current state, and continue. If the work is stale (>24h), notify the user and ask whether to continue or discard.
-
-This is NOT optional for multi-step work. Single-turn responses don't need persistence.
-</work-in-progress-persistence>
+<session-resilience>
+Sessions die on gateway restarts. Multi-step work survives only if persisted. Before starting long-running or multi-step work, write current objective and next steps to HEARTBEAT.md. Update as you progress. Remove when delivered. On heartbeat, resume any active entries you find. Stale entries (>24h) get reported to user, not silently resumed.
+</session-resilience>
