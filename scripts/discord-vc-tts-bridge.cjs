@@ -3,6 +3,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { spawn } = require('child_process');
+const https = require('https');
 const homeDirectory = os.homedir();
 
 const { Client, GatewayIntentBits } = require('discord.js');
@@ -34,14 +35,35 @@ function synthesizeSpeechToFile(textToSpeak, outputFilePath) {
   });
 }
 
+function downloadFile(url, destinationPath) {
+  return new Promise((resolve, reject) => {
+    const fileStream = fs.createWriteStream(destinationPath);
+    https.get(url, (response) => {
+      if (response.statusCode !== 200) {
+        reject(new Error(`download failed: ${response.statusCode}`));
+        return;
+      }
+      response.pipe(fileStream);
+      fileStream.on('finish', () => {
+        fileStream.close(resolve);
+      });
+    }).on('error', reject);
+  });
+}
+
+async function playAudioFileInVoiceChannel(audioFilePath) {
+  if (!voiceConnection) return;
+  const audioResource = createAudioResource(audioFilePath);
+  audioPlayer.play(audioResource);
+  await entersState(audioPlayer, AudioPlayerStatus.Playing, 5000).catch(() => {});
+  await entersState(audioPlayer, AudioPlayerStatus.Idle, 120000).catch(() => {});
+}
+
 async function playTextInVoiceChannel(textToSpeak) {
   if (!voiceConnection || !textToSpeak.trim()) return;
   const tempAudioPath = path.join('/tmp', `discord-vc-bridge-${Date.now()}-${Math.random().toString(36).slice(2)}.mp3`);
   await synthesizeSpeechToFile(textToSpeak.slice(0, 1200), tempAudioPath);
-  const audioResource = createAudioResource(tempAudioPath);
-  audioPlayer.play(audioResource);
-  await entersState(audioPlayer, AudioPlayerStatus.Playing, 5000).catch(() => {});
-  await entersState(audioPlayer, AudioPlayerStatus.Idle, 120000).catch(() => {});
+  await playAudioFileInVoiceChannel(tempAudioPath);
   fs.unlink(tempAudioPath, () => {});
 }
 
@@ -92,6 +114,18 @@ discordClient.on('messageCreate', (discordMessage) => {
   if (discordMessage.author.id !== discordClient.user.id) return;
   if (discordMessage.guildId !== guildId) return;
   if (discordMessage.channelId !== textChannelId) return;
+
+  const firstAttachment = discordMessage.attachments && typeof discordMessage.attachments.first === 'function' ? discordMessage.attachments.first() : null;
+  if (firstAttachment && typeof firstAttachment.url === 'string' && String(firstAttachment.contentType || '').startsWith('audio/')) {
+    appendPlaybackTask(async () => {
+      const tempAudioPath = path.join('/tmp', `discord-vc-bridge-attachment-${Date.now()}-${Math.random().toString(36).slice(2)}.mp3`);
+      await downloadFile(firstAttachment.url, tempAudioPath);
+      await playAudioFileInVoiceChannel(tempAudioPath);
+      fs.unlink(tempAudioPath, () => {});
+    });
+    return;
+  }
+
   const textContent = (discordMessage.content || '').trim();
   if (!textContent) return;
   appendPlaybackTask(async () => {
