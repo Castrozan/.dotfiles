@@ -135,6 +135,7 @@ let
     ".tools.exec.notifyOnExit" = true;
     ".gateway.port" = openclaw.gatewayPort;
     ".gateway.mode" = "local";
+    ".gateway.reload.mode" = "hybrid";
     ".gateway.http.endpoints.chatCompletions.enabled" = true;
     ".channels.telegram.commands.nativeSkills" = false;
   };
