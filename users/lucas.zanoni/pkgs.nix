@@ -38,6 +38,9 @@
       go
       google-chrome
       insomnia
+      i2p
+      i2pd
+      i2pd-tools
       jetbrains.idea
       jq
       kubectl
