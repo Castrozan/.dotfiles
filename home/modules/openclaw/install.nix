@@ -4,6 +4,7 @@ let
   version = "2026.2.21-2";
   discordVoiceDavePackageVersion = "0.1.9";
   discordJsPackageVersion = "14.22.1";
+  discordVoicePackageVersion = "0.19.0";
   npmPrefix = "$HOME/.local/share/openclaw-npm";
   secretsDirectory = "${config.home.homeDirectory}/.secrets";
 
@@ -14,6 +15,7 @@ let
     OPENCLAW_BIN="${npmPrefix}/bin/openclaw"
     DAVE_PACKAGE_JSON="${npmPrefix}/lib/node_modules/@snazzah/davey/package.json"
     DISCORD_JS_PACKAGE_JSON="${npmPrefix}/lib/node_modules/discord.js/package.json"
+    DISCORD_VOICE_PACKAGE_JSON="${npmPrefix}/lib/node_modules/@discordjs/voice/package.json"
 
     OPENCLAW_READY=false
     if [ -x "$OPENCLAW_BIN" ] && [ "$("$OPENCLAW_BIN" --version 2>/dev/null)" = "${version}" ]; then
@@ -30,11 +32,16 @@ let
       DISCORD_JS_READY=true
     fi
 
-    if [ "$OPENCLAW_READY" = true ] && [ "$DAVEY_READY" = true ] && [ "$DISCORD_JS_READY" = true ]; then
+    DISCORD_VOICE_READY=false
+    if [ -f "$DISCORD_VOICE_PACKAGE_JSON" ] && grep -q '"version": "${discordVoicePackageVersion}"' "$DISCORD_VOICE_PACKAGE_JSON"; then
+      DISCORD_VOICE_READY=true
+    fi
+
+    if [ "$OPENCLAW_READY" = true ] && [ "$DAVEY_READY" = true ] && [ "$DISCORD_JS_READY" = true ] && [ "$DISCORD_VOICE_READY" = true ]; then
       exit 0
     fi
 
-    ${nodejs}/bin/npm install -g "openclaw@${version}" "@snazzah/davey@${discordVoiceDavePackageVersion}" "discord.js@${discordJsPackageVersion}" \
+    ${nodejs}/bin/npm install -g "openclaw@${version}" "@snazzah/davey@${discordVoiceDavePackageVersion}" "discord.js@${discordJsPackageVersion}" "@discordjs/voice@${discordVoicePackageVersion}" \
       --prefix "${npmPrefix}" \
       --ignore-scripts \
       --registry "https://registry.npmjs.org/"
