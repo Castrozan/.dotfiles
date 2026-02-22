@@ -32,6 +32,16 @@ let
       export GEMINI_API_KEY
     fi
 
+    if [ -f "${secretsDirectory}/openai-api-key" ]; then
+      OPENAI_API_KEY="$(cat "${secretsDirectory}/openai-api-key")"
+      export OPENAI_API_KEY
+    fi
+
+    if [ -f "${secretsDirectory}/nvidia-api-key" ]; then
+      NVIDIA_API_KEY="$(cat "${secretsDirectory}/nvidia-api-key")"
+      export NVIDIA_API_KEY
+    fi
+
     OPENCLAW_BIN="${prefix}/bin/openclaw"
     if [ ! -x "$OPENCLAW_BIN" ]; then
       echo "OpenClaw not installed yet. Run 'openclaw --version' first to trigger auto-install."
