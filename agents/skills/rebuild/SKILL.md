@@ -24,6 +24,16 @@ Auto-detects platform and user dynamically. Sources nix-daemon.sh if needed. Han
 
 NixOS: Runs `nixos-rebuild switch --flake ~/.dotfiles#$(whoami)`
 Non-NixOS: Runs `home-manager switch --flake ~/.dotfiles#$(whoami)@$(arch)-linux`
+
+IMPORTANT: Run rebuild in the background with short poll intervals. Never use process poll with timeout > 60000ms. A hung npm install or nix build can block for minutes — a single 300s poll eats the entire agent timeout budget and bricks the session.
+
+```
+exec "rebuild 2>&1" timeout:600 yieldMs:10000 background:true
+# Then poll in short intervals:
+process action:poll sessionId:ID timeout:60000
+```
+
+The rebuild output is verbose (nix derivations, activation steps). Do NOT let it accumulate in your context — use background execution and only check the final exit code + last few lines.
 </simple_rebuild>
 
 <nix_not_found>
