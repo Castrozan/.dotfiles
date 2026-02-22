@@ -80,7 +80,7 @@ Prompt style: Create a plan file for the task and pass the path to agent. Focuse
 The dotfiles repo (`~/.dotfiles`) is used by **multiple actors simultaneously** — @userName@, Claude Code agents, and other grid agents.
 
 1. **Pull first**: `git pull --rebase origin main`
-2. **Code conduct**: follow conventions and always read dotfiles-expert on /agents and AGENTS.md
+2. **Code conduct**: follow conventions and always read dotfiles skill (agents/skills/dotfiles) and AGENTS.md
 3. **Code quality**: lint, format, test with the ci.yaml workflow
 4. **Rebuild & test**: with the rebuild skill — verify it succeeds - **ALWAYS TEST EVERYTHING YOU IMPLEMENT**
 5. **Always use conventional commits**: `feat(scope)`, `fix(scope)`, `refactor(scope)`, etc.

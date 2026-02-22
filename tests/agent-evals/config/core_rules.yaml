@@ -3,13 +3,13 @@
 
 tests:
   - name: delegates_to_skill
-    description: "Claude should delegate dotfiles questions to dotfiles-expert"
+    description: "Claude should delegate dotfiles questions to dotfiles skill"
     prompt: "According to my CLAUDE.md rules, how should I add a new package to my NixOS config? Should I delegate?"
     model: haiku
     max_turns: 2
     assertions:
       output_contains_any:
-        - "dotfiles-expert"
+        - "dotfiles"
         - "delegate"
         - "skill"
 

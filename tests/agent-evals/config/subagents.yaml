@@ -3,8 +3,8 @@
 
 tests:
   - name: dotfiles_expert_knows_structure
-    description: "dotfiles-expert knows the repo structure"
-    agent: dotfiles-expert
+    description: "dotfiles knows the repo structure"
+    agent: dotfiles
     prompt: "Where should I put a new home-manager module?"
     model: haiku
     max_turns: 3

@@ -379,7 +379,7 @@ All skills live in `agents/skills/`. Each has a `SKILL.md` defining its name, de
 | daily-note | `agents/skills/daily-note/` | Manage Obsidian daily notes and TODO tracking |
 | devenv | `agents/skills/devenv/` | Nix-based development environments with devenv |
 | docs | `agents/skills/docs/` | Documentation policies and standards |
-| dotfiles-expert | `agents/skills/dotfiles-expert/` | Expert on this NixOS dotfiles repository |
+| dotfiles | `agents/skills/dotfiles/` | Expert on this NixOS dotfiles repository |
 | duckdb | `agents/skills/duckdb/` | Query and manage the shared DuckDB persistent data store |
 | exit | `agents/skills/exit/` | Safely terminate the current Claude Code session |
 | hey-clever | `agents/skills/hey-clever/` | Push-to-talk voice assistant (whisp-away → OpenClaw pipeline) |
