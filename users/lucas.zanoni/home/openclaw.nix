@@ -67,7 +67,10 @@
         workspace = "openclaw/jenny";
         tts.voice = "en-US-JennyNeural";
         telegram.enable = true;
-        discord.enable = true;
+        discord = {
+          enable = true;
+          voice.enable = true;
+        };
       };
       monster = {
         enable = true;
@@ -76,7 +79,10 @@
         workspace = "openclaw/monster";
         tts.voice = "en-US-GuyNeural";
         telegram.enable = true;
-        discord.enable = true;
+        discord = {
+          enable = true;
+          voice.enable = true;
+        };
       };
       silver = {
         enable = true;
@@ -86,7 +92,10 @@
         workspace = "openclaw/silver";
         tts.voice = "pt-BR-FranciscaNeural";
         telegram.enable = true;
-        discord.enable = true;
+        discord = {
+          enable = true;
+          voice.enable = true;
+        };
       };
     };
   };
