@@ -154,30 +154,56 @@ else
 fi
 
 # Kill stale headless browser if running (must restart headed for visible avatar)
-if pgrep -f "remote-debugging-port=9222" > /dev/null 2>&1; then
+if pgrep -f "remote-debugging-port" > /dev/null 2>&1 && \
+   pgrep -f "pinchtab" > /dev/null 2>&1; then
     pkill -f 'pinchtab' 2>/dev/null || true
-    pkill -f 'remote-debugging-port=9222' 2>/dev/null || true
-    sleep 2
+    sleep 1
+    # Kill any leftover chromium spawned by pinchtab
+    pgrep -f "remote-debugging-port" > /dev/null 2>&1 && \
+        pkill -f 'remote-debugging-port' 2>/dev/null || true
+    sleep 1
 fi
 
 echo -n "  Starting agent browser (headed)..."
 BRIDGE_HEADLESS=false pinchtab > /dev/null 2>&1 &
-sleep 2
-curl -s -X POST http://localhost:9867/navigate -H "Content-Type: application/json" -d '{"url":"http://localhost:3000"}' > /dev/null 2>&1 && echo -e " ${GREEN}OK${NC}" || echo -e " ${YELLOW}SKIP${NC}"
+sleep 3
+
+# Discover Chrome's actual CDP port (pinchtab assigns it dynamically)
+discover_cdp_port() {
+    ss -tlnp 2>/dev/null \
+        | grep -E 'chromium|chrome' \
+        | grep -o '127\.0\.0\.1:[0-9]*' \
+        | head -1 \
+        | cut -d: -f2
+}
+
+DISCOVERED_CDP_PORT=$(discover_cdp_port)
+if [ -n "$DISCOVERED_CDP_PORT" ]; then
+    echo -e " ${GREEN}OK${NC} (CDP port: $DISCOVERED_CDP_PORT)"
+else
+    echo -e " ${YELLOW}SKIP${NC} (no CDP port found)"
+fi
+
+curl -s -X POST http://localhost:9867/navigate -H "Content-Type: application/json" -d '{"url":"http://localhost:3000"}' > /dev/null 2>&1 || true
 
 echo ""
 
 # Step 4: Start Virtual Camera (requires v4l2loopback)
 echo -e "${YELLOW}[4/5]${NC} Starting Virtual Camera..."
 
+# Use discovered CDP port, fall back to env, then 9222
+CDP_PORT="${CDP_PORT:-${DISCOVERED_CDP_PORT:-9222}}"
+
 if is_running "virtual-camera.js"; then
     echo -e "  ${YELLOW}⚠${NC}  Virtual camera is already running"
 elif [ ! -e "$V4L2_DEVICE" ]; then
     echo -e "  ${YELLOW}⚠${NC}  $V4L2_DEVICE not found (v4l2loopback not loaded), skipping"
+elif [ -z "$DISCOVERED_CDP_PORT" ]; then
+    echo -e "  ${YELLOW}⚠${NC}  No Chrome CDP port discovered, skipping virtual camera"
 else
     cd "$AVATAR_DIR/control-server"
     NODE_PATH="$AVATAR_DIR/control-server/node_modules" \
-    CDP_PORT="${CDP_PORT:-9222}" \
+    CDP_PORT="$CDP_PORT" \
     V4L2_DEVICE="$V4L2_DEVICE" \
     nohup node virtual-camera.js --fps 15 --width 1280 --height 720 > "$LOG_DIR/avatar-virtual-camera.log" 2>&1 &
     CAMERA_PID=$!
