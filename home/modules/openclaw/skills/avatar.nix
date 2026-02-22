@@ -27,8 +27,8 @@ let
   rendererSrc = pkgs.fetchFromGitHub {
     owner = "Castrozan";
     repo = "ChatVRM";
-    rev = "27980c893afae4ca3b5f451d9edf19c1bc37ac26";
-    hash = "sha256-BZbFrX1aRGwW7RZ5iZ5HQCLwhOit/lYvIH+NeO644yo=";
+    rev = "90cfc391796d38d0d9e43ece238c78b931b3cebd";
+    hash = "sha256-aqRuL9hoghKw0MgT5JWRFls3dM8i8WVr2yt4MhLznKE=";
   };
 
 in
