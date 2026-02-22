@@ -1859,11 +1859,11 @@
         "nixpkgs": "nixpkgs_19"
       },
       "locked": {
-        "lastModified": 1771361772,
-        "narHash": "sha256-6WnOGEgMakzcI3aauuyxyXvF0wN1WTOwVzmwUxuKPEA=",
+        "lastModified": 1771724735,
+        "narHash": "sha256-rbTdDi6bj1uwOeLpLAImWqXpqQ6aATNykg0vIsZPyA4=",
         "owner": "castrozan",
         "repo": "voice-pipeline",
-        "rev": "d50b5e4a9ffdcfe1fdce10da1c32330ad870dcab",
+        "rev": "ea23f7782c00b94d3ca66ce4483d2f27c1b72b3c",
         "type": "github"
       },
       "original": {
