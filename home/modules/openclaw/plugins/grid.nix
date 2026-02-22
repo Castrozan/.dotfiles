@@ -25,7 +25,7 @@ let
 
   substituteScript = pkgs.writeShellScript "substitute-telegram-ids" ''
     set -euo pipefail
-    IDS="/run/agenix/telegram-ids"
+    IDS="${homeDir}/.secrets/telegram-ids"
 
     [ -f "$IDS" ] || exit 0
 

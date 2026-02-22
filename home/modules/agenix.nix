@@ -29,6 +29,7 @@ let
     "nvidia-api-key"
     "openai-api-key"
     "openclaw-gateway-token"
+    "telegram-ids"
     "x-username"
     "x-email"
     "x-password"

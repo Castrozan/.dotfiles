@@ -487,7 +487,7 @@ in
 
     gatewayTokenFile = lib.mkOption {
       type = lib.types.str;
-      default = "/run/agenix/openclaw-gateway-token";
+      default = "${config.home.homeDirectory}/.secrets/openclaw-gateway-token";
     };
 
     agentId = lib.mkOption {
