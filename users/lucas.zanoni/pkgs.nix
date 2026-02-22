@@ -54,6 +54,7 @@
       nodejs
       nodePackages.prettier
       obsidian
+      obs-studio
       ollama
       playerctl
       pipes
