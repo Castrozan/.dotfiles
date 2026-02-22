@@ -2,7 +2,6 @@
 name: test
 description: Testing methodology and verification workflow. Use when implementing, fixing, or modifying any code. Defines the test-first, test-after, and pre-delivery verification protocol.
 ---
-<!-- @agent-architect owns this file. Delegate changes, don't edit directly. -->
 
 <philosophy>
 You own testing. Never delegate testing to the user. Never present untested code. Never skip tests because "it's a small change." Every change gets tested by you before the user sees it. If you can't test due to environment limitations, explain the constraint and ask for help.

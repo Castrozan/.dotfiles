@@ -2,7 +2,6 @@
 name: pull
 description: Pull request and merge request management. Use when user asks to view PR/MR comments, review feedback, iterate on changes, manage remote branches, or work with GitHub/GitLab pull requests.
 ---
-<!-- @agent-architect owns this file. Delegate changes, don't edit directly. -->
 
 <announcement>
 "I'm using the pull skill to manage PR/MR feedback and iteration."

@@ -2,7 +2,6 @@
 name: tmux
 description: Tmux session and process control. Use when restarting dev servers, checking process output, stopping/starting background processes, or managing services in tmux panes.
 ---
-<!-- @agent-architect owns this file. Delegate changes, don't edit directly. -->
 
 <socket>
 Hyprland sets TMUX_TMPDIR=$XDG_RUNTIME_DIR, placing the socket at /run/user/$UID/tmux-$UID/default. Bare tmux commands use /tmp and will fail silently with "no server running" even when sessions exist.

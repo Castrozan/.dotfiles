@@ -2,7 +2,6 @@
 name: context7
 description: Fetch up-to-date library documentation from Context7. Use when user needs current docs for libraries, frameworks, or APIs that may have changed since training cutoff.
 ---
-<!-- @agent-architect owns this file. Delegate changes, don't edit directly. -->
 
 <usage>
 Args format: `library query` where library is the name to search and query describes what docs to fetch.

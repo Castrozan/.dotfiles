@@ -2,7 +2,6 @@
 name: rebuild
 description: Apply Nix configuration changes. Use when modifying .nix files, after flake updates, or when user asks to rebuild/apply dotfiles changes.
 ---
-<!-- @agent-architect owns this file. Delegate changes, don't edit directly. -->
 
 <announcement>
 "I'm using the rebuild skill to apply configuration changes."

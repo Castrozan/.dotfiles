@@ -2,7 +2,6 @@
 name: hyprland-debug
 description: Debug Hyprland/Wayland issues. Use when theme switching fails, windows disappear, services crash, or displays malfunction.
 ---
-<!-- @agent-architect owns this file. Delegate changes, don't edit directly. -->
 
 <announcement>
 "I'm using the hyprland-debug skill to diagnose Wayland/Hyprland issues."

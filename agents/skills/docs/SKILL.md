@@ -2,7 +2,6 @@
 name: docs
 description: Documentation policies and standards. Use when creating, updating, or reviewing any documentation — READMEs, TESTING.md, inline docs, file headers, or doc-related PRs.
 ---
-<!-- @agent-architect owns this file. Delegate changes, don't edit directly. -->
 
 <principle>
 Code documents itself through naming. Documentation exists only for what naming cannot express: architecture decisions, onboarding context, external integration details, and cross-cutting concerns that span multiple files.

@@ -2,7 +2,6 @@
 name: commit
 description: Create high-quality git commits with conventional format, meaningful descriptions, and analysis of changes. Use when user asks to commit, stage changes, or prepare a commit message.
 ---
-<!-- @agent-architect owns this file. Delegate changes, don't edit directly. -->
 
 <announcement>
 "I'm using the commit skill to analyze changes and create a commit."
