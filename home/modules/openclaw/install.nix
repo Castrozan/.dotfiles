@@ -2,6 +2,7 @@
 let
   nodejs = pkgs.nodejs_22;
   version = "2026.2.21-2";
+  discordVoiceDavePackageVersion = "0.1.9";
   npmPrefix = "$HOME/.local/share/openclaw-npm";
   secretsDirectory = "${config.home.homeDirectory}/.secrets";
 
@@ -9,13 +10,24 @@ let
     set -euo pipefail
     export PATH="${nodejs}/bin:${pkgs.git}/bin:''${PATH:+:$PATH}"
     export NPM_CONFIG_PREFIX="${npmPrefix}"
-    BIN="${npmPrefix}/bin/openclaw"
+    OPENCLAW_BIN="${npmPrefix}/bin/openclaw"
+    DAVE_PACKAGE_JSON="${npmPrefix}/lib/node_modules/@snazzah/davey/package.json"
 
-    if [ -x "$BIN" ] && [ "$("$BIN" --version 2>/dev/null)" = "${version}" ]; then
+    OPENCLAW_READY=false
+    if [ -x "$OPENCLAW_BIN" ] && [ "$("$OPENCLAW_BIN" --version 2>/dev/null)" = "${version}" ]; then
+      OPENCLAW_READY=true
+    fi
+
+    DAVEY_READY=false
+    if [ -f "$DAVE_PACKAGE_JSON" ] && grep -q '"version": "${discordVoiceDavePackageVersion}"' "$DAVE_PACKAGE_JSON"; then
+      DAVEY_READY=true
+    fi
+
+    if [ "$OPENCLAW_READY" = true ] && [ "$DAVEY_READY" = true ]; then
       exit 0
     fi
 
-    ${nodejs}/bin/npm install -g "openclaw@${version}" \
+    ${nodejs}/bin/npm install -g "openclaw@${version}" "@snazzah/davey@${discordVoiceDavePackageVersion}" \
       --prefix "${npmPrefix}" \
       --ignore-scripts \
       --registry "https://registry.npmjs.org/"
