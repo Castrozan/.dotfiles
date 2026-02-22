@@ -28,7 +28,7 @@
         {
           id = "silver";
           emoji = "🪙";
-          model = "llama-3.3-70b";
+          model = "opus-4.6";
         }
       ];
     };
@@ -88,7 +88,7 @@
         enable = true;
         emoji = "🪙";
         role = "research & analysis — technical deep dives, documentation, investigation";
-        model.primary = "nvidia/meta/llama-3.3-70b-instruct";
+        model.primary = "anthropic/claude-sonnet-4-6";
         workspace = "openclaw/silver";
         tts.voice = "pt-BR-FranciscaNeural";
         telegram.enable = true;
