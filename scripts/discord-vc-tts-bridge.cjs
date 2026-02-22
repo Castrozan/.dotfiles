@@ -74,9 +74,18 @@ async function connectBotToVoiceChannel() {
   });
 }
 
-discordClient.once('ready', async () => {
-  await connectBotToVoiceChannel();
+discordClient.once('clientReady', async () => {
+  try {
+    await connectBotToVoiceChannel();
+  } catch {
+    setTimeout(() => {
+      connectBotToVoiceChannel().catch(() => {});
+    }, 3000);
+  }
 });
+
+discordClient.on('error', () => {});
+process.on('unhandledRejection', () => {});
 
 discordClient.on('messageCreate', (discordMessage) => {
   if (!discordClient.user) return;
