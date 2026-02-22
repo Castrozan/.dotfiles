@@ -24,6 +24,7 @@ let
 
   secretsWithoutEnvironmentVariables = [
     "brave-api-key"
+    "deepgram-api-key"
     "gemini-api-key"
     "nvidia-api-key"
     "openai-api-key"
