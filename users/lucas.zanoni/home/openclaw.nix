@@ -1,5 +1,10 @@
 {
   openclaw = {
+    configPatches = {
+      ".channels.discord.accounts.robson.allowFrom" = [ "284143065877184512" ];
+      ".channels.discord.accounts.robson.guilds.998625197802410094.users" = [ "284143065877184512" ];
+    };
+
     memorySync = {
       enable = true;
       remoteHost = "dellg15";
