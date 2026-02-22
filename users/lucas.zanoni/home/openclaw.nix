@@ -51,7 +51,14 @@
         workspace = "openclaw/robson";
         tts.voice = "pt-BR-AntonioNeural";
         telegram.enable = true;
-        discord.enable = true;
+        discord = {
+          enable = true;
+          voice.enable = true;
+          guilds."998625197802410094" = {
+            slug = "anotacao";
+            requireMention = true;
+          };
+        };
       };
       jenny = {
         enable = true;

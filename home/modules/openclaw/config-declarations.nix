@@ -130,8 +130,50 @@ let
   discordAccounts = lib.mapAttrs (name: agent: {
     name = if agent.telegram.botName != null then agent.telegram.botName else capitalize name;
     enabled = true;
-    inherit (agent.discord) dmPolicy groupPolicy;
+    inherit (agent.discord) dmPolicy groupPolicy streamMode;
   }) discordEnabledAgents;
+
+  # Generate per-account voice patches
+  discordVoicePatches = lib.foldl' (
+    acc: name:
+    let
+      agent = discordEnabledAgents.${name};
+    in
+    if agent.discord.voice.enable then
+      acc // { ".channels.discord.accounts.${name}.voice.enabled" = true; }
+    else
+      acc
+  ) { } (lib.attrNames discordEnabledAgents);
+
+  # Generate per-account guild patches
+  discordGuildPatches = lib.foldl' (
+    acc: name:
+    let
+      agent = discordEnabledAgents.${name};
+      guildEntries = lib.mapAttrs' (
+        guildId: guildCfg:
+        let
+          channelEntries = lib.mapAttrs (
+            _: chCfg:
+            {
+              inherit (chCfg) allow;
+            }
+            // lib.optionalAttrs (chCfg.requireMention != null) { inherit (chCfg) requireMention; }
+          ) guildCfg.channels;
+          guildValue = {
+            inherit (guildCfg) requireMention;
+          }
+          // lib.optionalAttrs (guildCfg.slug != null) { inherit (guildCfg) slug; }
+          // lib.optionalAttrs (guildCfg.channels != { }) { channels = channelEntries; };
+        in
+        {
+          name = ".channels.discord.accounts.${name}.guilds.${guildId}";
+          value = guildValue;
+        }
+      ) agent.discord.guilds;
+    in
+    acc // guildEntries
+  ) { } (lib.attrNames discordEnabledAgents);
 
   discordBindings = lib.mapAttrsToList (name: _: {
     agentId = name;
@@ -173,6 +215,8 @@ let
         ".channels.discord.dmPolicy" = "pairing";
       }
       // accountPatches
+      // discordVoicePatches
+      // discordGuildPatches
     else
       { };
 

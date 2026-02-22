@@ -127,6 +127,60 @@ let
               default = "allowlist";
               description = "Guild message policy";
             };
+            streamMode = lib.mkOption {
+              type = lib.types.str;
+              default = "off";
+              description = "Live preview streaming mode (partial|block|off)";
+            };
+            voice = lib.mkOption {
+              type = lib.types.submodule {
+                options = {
+                  enable = lib.mkEnableOption "voice channel support for this discord bot";
+                };
+              };
+              default = { };
+              description = "Discord voice channel configuration";
+            };
+            guilds = lib.mkOption {
+              type = lib.types.attrsOf (
+                lib.types.submodule {
+                  options = {
+                    slug = lib.mkOption {
+                      type = lib.types.nullOr lib.types.str;
+                      default = null;
+                      description = "Human-readable guild slug";
+                    };
+                    requireMention = lib.mkOption {
+                      type = lib.types.bool;
+                      default = true;
+                      description = "Require @mention to respond in guild channels";
+                    };
+                    channels = lib.mkOption {
+                      type = lib.types.attrsOf (
+                        lib.types.submodule {
+                          options = {
+                            allow = lib.mkOption {
+                              type = lib.types.bool;
+                              default = true;
+                              description = "Allow this channel";
+                            };
+                            requireMention = lib.mkOption {
+                              type = lib.types.nullOr lib.types.bool;
+                              default = null;
+                              description = "Override guild-level requireMention for this channel";
+                            };
+                          };
+                        }
+                      );
+                      default = { };
+                      description = "Per-channel configuration keyed by channel ID";
+                    };
+                  };
+                }
+              );
+              default = { };
+              description = "Per-guild configuration keyed by guild ID";
+            };
           };
         };
         default = { };
