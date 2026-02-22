@@ -78,6 +78,7 @@ let
     ".agents.defaults.model.fallbacks" = [
       "anthropic/claude-opus-4-6"
       "openai-codex/gpt-5.3-codex"
+      "nvidia/moonshotai/kimi-k2.5"
     ];
     ".agents.defaults.models" = {
       "anthropic/claude-sonnet-4-6" = {
@@ -91,6 +92,18 @@ let
       };
     };
     ".models.mode" = "merge";
+    ".models.providers.google.baseUrl" = "https://generativelanguage.googleapis.com/v1beta";
+    ".models.providers.google.models" = [ ];
+    ".models.providers.nvidia.baseUrl" = "https://integrate.api.nvidia.com/v1";
+    ".models.providers.nvidia.api" = "openai-completions";
+    ".models.providers.nvidia.models" = [
+      {
+        id = "moonshotai/kimi-k2.5";
+        name = "Kimi K2.5";
+      }
+    ];
+    ".models.providers.openai.baseUrl" = "https://api.openai.com/v1";
+    ".models.providers.openai.models" = [ ];
     ".auth.profiles" = {
       "anthropic:default" = {
         provider = "anthropic";
@@ -259,5 +272,6 @@ in
         }) discordEnabledAgents;
       in
       lib.mkOptionDefault (baseSecrets // telegramSecrets // discordSecrets);
+
   };
 }
