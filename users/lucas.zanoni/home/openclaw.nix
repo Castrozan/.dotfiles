@@ -1,3 +1,4 @@
+{ config, ... }:
 {
   openclaw = {
     configPatches = {
@@ -105,5 +106,31 @@
         };
       };
     };
+  };
+
+  systemd.user.services.discord-vc-tts-bridge = {
+    Unit = {
+      Description = "Discord VC TTS bridge for robson";
+      After = [
+        "openclaw-gateway.service"
+        "network-online.target"
+      ];
+      Wants = [
+        "openclaw-gateway.service"
+        "network-online.target"
+      ];
+    };
+    Service = {
+      ExecStart = "${config.home.homeDirectory}/.dotfiles/scripts/discord-vc-tts-bridge.cjs";
+      Restart = "always";
+      RestartSec = 3;
+      Environment = [
+        "DISCORD_VC_GUILD_ID=998625197802410094"
+        "DISCORD_VC_TEXT_CHANNEL_ID=998625197802410097"
+        "DISCORD_VC_CHANNEL_ID=998625197802410098"
+        "DISCORD_VC_TTS_VOICE=pt-BR-AntonioNeural"
+      ];
+    };
+    Install.WantedBy = [ "default.target" ];
   };
 }
