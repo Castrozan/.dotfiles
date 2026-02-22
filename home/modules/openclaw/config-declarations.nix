@@ -11,7 +11,7 @@
 {
   config,
   lib,
-  isNixOS, # kept in scope from specialArgs but no longer used here
+  # isNixOS available from specialArgs but not needed here
   ...
 }:
 let
