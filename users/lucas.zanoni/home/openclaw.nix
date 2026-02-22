@@ -28,7 +28,7 @@
         {
           id = "silver";
           emoji = "🪙";
-          model = "deepseek-v3.2";
+          model = "llama-3.3-70b";
         }
       ];
     };
@@ -82,7 +82,7 @@
         enable = true;
         emoji = "🪙";
         role = "research & analysis — technical deep dives, documentation, investigation";
-        model.primary = "nvidia/deepseek-ai/deepseek-v3.2";
+        model.primary = "nvidia/meta/llama-3.3-70b-instruct";
         workspace = "openclaw/silver";
         tts.voice = "pt-BR-FranciscaNeural";
         telegram.enable = true;

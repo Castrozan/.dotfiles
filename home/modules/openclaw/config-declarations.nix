@@ -78,7 +78,7 @@ let
     ".agents.defaults.model.fallbacks" = [
       "anthropic/claude-opus-4-6"
       "openai-codex/gpt-5.3-codex"
-      "nvidia/deepseek-ai/deepseek-v3.2"
+      "nvidia/meta/llama-3.3-70b-instruct"
     ];
     ".agents.defaults.models" = {
       "anthropic/claude-sonnet-4-6" = {
@@ -104,6 +104,10 @@ let
       {
         id = "deepseek-ai/deepseek-v3.2";
         name = "DeepSeek V3.2";
+      }
+      {
+        id = "meta/llama-3.3-70b-instruct";
+        name = "Llama 3.3 70B";
       }
     ];
     ".models.providers.openai.baseUrl" = "https://api.openai.com/v1";
