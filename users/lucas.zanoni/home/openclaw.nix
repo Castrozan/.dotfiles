@@ -125,6 +125,7 @@
       Restart = "always";
       RestartSec = 3;
       Environment = [
+        "NODE_PATH=/home/lucas.zanoni/.local/share/openclaw-npm/lib/node_modules"
         "DISCORD_VC_GUILD_ID=998625197802410094"
         "DISCORD_VC_TEXT_CHANNEL_ID=998625197802410097"
         "DISCORD_VC_CHANNEL_ID=998625197802410098"

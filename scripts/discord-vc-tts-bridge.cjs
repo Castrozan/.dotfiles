@@ -3,14 +3,10 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { spawn } = require('child_process');
-const { createRequire } = require('module');
-
 const homeDirectory = os.homedir();
-const openclawPackagePath = path.join(homeDirectory, '.local/share/openclaw-npm/lib/node_modules/openclaw/package.json');
-const requireFromOpenclaw = createRequire(openclawPackagePath);
 
-const { Client, GatewayIntentBits } = requireFromOpenclaw('discord.js');
-const { joinVoiceChannel, entersState, VoiceConnectionStatus, createAudioPlayer, createAudioResource, AudioPlayerStatus } = requireFromOpenclaw('@discordjs/voice');
+const { Client, GatewayIntentBits } = require('discord.js');
+const { joinVoiceChannel, entersState, VoiceConnectionStatus, createAudioPlayer, createAudioResource, AudioPlayerStatus } = require('@discordjs/voice');
 
 const discordBotToken = fs.readFileSync(path.join(homeDirectory, '.openclaw/secrets/discord-bot-token-robson'), 'utf8').trim();
 const guildId = process.env.DISCORD_VC_GUILD_ID || '998625197802410094';
