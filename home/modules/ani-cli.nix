@@ -18,13 +18,11 @@
   home.file.".config/mpv/mpv.conf".text = ''
     vo=kitty
     video-sync=display-resample
-    display-fps-override=120
-    interpolation=yes
+    interpolation=no
     tscale=oversample
     ao=pulse
-    hwdec=auto-safe
+    hwdec=no
     cache=yes
     cache-secs=60
-    audio-buffer=0.2
   '';
 }
