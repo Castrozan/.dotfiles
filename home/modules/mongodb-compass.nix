@@ -5,23 +5,12 @@
   ...
 }:
 let
-  mongodbCompassPackage =
-    if isNixOS then
-      pkgs.mongodb-compass
-    else
-      let
-        nixGLWrapper = inputs.nixgl.packages.${pkgs.stdenv.hostPlatform.system}.nixGLIntel;
-        mongodbCompassWithNixGL = pkgs.writeShellScriptBin "mongodb-compass" ''
-          exec ${nixGLWrapper}/bin/nixGLIntel ${pkgs.mongodb-compass}/bin/mongodb-compass "$@"
-        '';
-      in
-      pkgs.symlinkJoin {
-        name = "mongodb-compass-wrapped";
-        paths = [
-          mongodbCompassWithNixGL
-          pkgs.mongodb-compass
-        ];
-      };
+  nixglWrap = import ../../lib/nixgl-wrap.nix { inherit pkgs inputs isNixOS; };
+
+  mongodbCompassPackage = nixglWrap.wrapWithNixGLIntel {
+    package = pkgs.mongodb-compass;
+    binaries = [ "mongodb-compass" ];
+  };
 in
 {
   home.packages = [ mongodbCompassPackage ];
