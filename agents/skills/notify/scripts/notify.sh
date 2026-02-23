@@ -18,11 +18,11 @@ cleanup() { rm -f "$AUDIO_FILE"; }
 trap cleanup EXIT
 
 edge-tts --voice "en-US-GuyNeural" --text "$MESSAGE" --write-media "$AUDIO_FILE" 2>/dev/null
-wpctl set-mute @DEFAULT_AUDIO_SINK@ 0 2>/dev/null || true
-mpv --no-video --ao=pulse "$AUDIO_FILE" &>/dev/null
+wpctl set-mute @DEFAULT_AUDIO_SINK@ 0 &>/dev/null || true
+mpv --no-video --ao=pulse "$AUDIO_FILE" &>/dev/null || true
 
 DBUS_SESSION_BUS_ADDRESS="unix:path=${XDG_RUNTIME_DIR}/bus" \
-    notify-send -a "Claude Code" "Claude Code" "$MESSAGE" 2>/dev/null || true
+    notify-send -a "Claude Code" "Claude Code" "$MESSAGE" &>/dev/null || true
 
 if [ "$SEND_MOBILE" = true ]; then
     NTFY_TOPIC="${NTFY_TOPIC:-@notifyTopic@}"
