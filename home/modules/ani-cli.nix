@@ -1,14 +1,24 @@
 {
   pkgs,
+  inputs,
+  isNixOS,
   ...
 }:
+let
+  nixglWrap = import ../../lib/nixgl-wrap.nix { inherit pkgs inputs isNixOS; };
+
+  mpvPackage = nixglWrap.wrapWithNixGLIntel {
+    package = pkgs.mpv;
+    binaries = [ "mpv" ];
+  };
+in
 {
-  home.packages = with pkgs; [
-    ani-cli
-    mpv
-    mpv-handler
-    mpvc
-    mpv-shim-default-shaders
+  home.packages = [
+    pkgs.ani-cli
+    mpvPackage
+    pkgs.mpv-handler
+    pkgs.mpvc
+    pkgs.mpv-shim-default-shaders
   ];
 
   programs.fish.shellAliases = {

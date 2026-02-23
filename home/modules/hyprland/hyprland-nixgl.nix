@@ -13,8 +13,10 @@ let
     binaries = [ "Hyprland" ];
   };
 
+  nixGLWrapper = inputs.nixgl.packages.${pkgs.stdenv.hostPlatform.system}.nixGLIntel;
+
   hyprlandLowercaseAlias = pkgs.writeShellScriptBin "hyprland" ''
-    exec ${hyprlandFlake}/bin/Hyprland "$@"
+    exec ${nixGLWrapper}/bin/nixGLIntel ${hyprlandFlake}/bin/Hyprland "$@"
   '';
 
   hyprlandWithAliases = pkgs.symlinkJoin {
