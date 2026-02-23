@@ -16,7 +16,7 @@
   };
 
   home.file.".config/mpv/mpv.conf".text = ''
-    vo=gpu
+    vo=kitty
     video-sync=display-resample
     display-fps-override=120
     interpolation=yes
