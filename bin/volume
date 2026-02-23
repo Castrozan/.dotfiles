@@ -27,10 +27,10 @@ main() {
 }
 
 _find_active_sink_name_or_default() {
-	local running_sink
-	running_sink=$(pactl list sinks short | awk '$7 == "RUNNING" { print $2; exit }')
-	if [[ -n "$running_sink" ]]; then
-		echo "$running_sink"
+	local running_hardware_sink
+	running_hardware_sink=$(pactl list sinks short | awk '$7 == "RUNNING" && $2 !~ /^echo-cancel/ { print $2; exit }')
+	if [[ -n "$running_hardware_sink" ]]; then
+		echo "$running_hardware_sink"
 	else
 		echo "@DEFAULT_SINK@"
 	fi
