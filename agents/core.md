@@ -64,5 +64,5 @@ Sessions die on gateway restarts. Multi-step work survives only if persisted. Be
 </session-resilience>
 
 <notify>
-After completing substantial work, use the notify skill: scripts/notify.sh "brief summary of what was done". Add --mobile if the user may be away from the PC. Skip for quick answers and back-and-forth chat.
+After substantial work, run: scripts/notify.sh "what was done"
 </notify>
