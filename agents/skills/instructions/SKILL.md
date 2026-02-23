@@ -50,3 +50,13 @@ When instructions describe HOW: include "Verify current approach by checking [sp
 <cohesion>
 New instructions are not more important than existing ones. No emphasis markers (CRITICAL, IMPORTANT) for later additions. Instructions should be cohesive — latest additions integrate, not dominate.
 </cohesion>
+
+<skill_authoring_preflight>
+Before writing any SKILL.md, answer these questions. If any answer is "yes", revise before committing:
+
+- Does the body repeat what the frontmatter description already says? Remove it.
+- Does any section belong to a different skill's responsibility? Tool skills document their own API only — workflow composition belongs in workflow skills.
+- Are there hardcoded file paths, tokens, or environment-specific values that will go stale? Generalize to patterns or point to where the truth lives.
+- Would a dense two-line prose replace a verbose example block without losing clarity? Prefer density.
+- Does any content exist only because raw research data was fresh in context? Strip research artifacts — write from synthesized patterns, not from raw dumps.
+</skill_authoring_preflight>
