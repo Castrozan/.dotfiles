@@ -62,3 +62,7 @@ Be direct and technical. Concise answers. If user is wrong, tell them. If build 
 <session-resilience>
 Sessions die on gateway restarts. Multi-step work survives only if persisted. Before starting long-running or multi-step work, write current objective and next steps to HEARTBEAT.md. Update as you progress. Remove when delivered. On heartbeat, resume any active entries you find. Stale entries (>24h) get reported to user, not silently resumed.
 </session-resilience>
+
+<notify>
+After completing substantial work, use the notify skill: scripts/notify.sh "brief summary of what was done". Add --mobile if the user may be away from the PC. Skip for quick answers and back-and-forth chat.
+</notify>
