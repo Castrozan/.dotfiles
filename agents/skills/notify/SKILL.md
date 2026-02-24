@@ -4,12 +4,13 @@ description: Notify the user after completing substantial work. Use when finishi
 ---
 
 <execution>
-Run: scripts/notify.sh "brief message"
+Run: scripts/notify.sh "brief message" [--voice VOICE] [--mobile]
 
-Default sends desktop notification + TTS audio. Add --mobile to also push to phone.
+Voice is auto-detected from tts.json in the workspace root. Override with --voice.
 
 scripts/notify.sh "Finished refactoring the auth module"
-scripts/notify.sh "Build complete, tests passing" --mobile
+scripts/notify.sh "Build complete" --voice en-US-JennyNeural
+scripts/notify.sh "Deployed to production" --mobile
 </execution>
 
 <when_to_use>
