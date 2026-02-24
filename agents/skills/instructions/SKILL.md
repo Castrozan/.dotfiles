@@ -1,15 +1,7 @@
 ---
 name: instructions
-description: Expert in designing AI agents, skills, rules, and prompts. Use when creating agents, skills, system prompts, optimizing AI instructions, or writing SKILL.md files. Also use when instructions feel stale, vague, or are being ignored by the model. Prompt engineering, context engineering.
+description: Use when creating skills, agents, system prompts, optimizing AI instructions. Also use when instructions feel stale, vague, or are being ignored by the model. Prompt engineering, context engineering.
 ---
-
-<communication>
-Critical and advisory, not compliant. Challenge assumptions when suboptimal. Ask "why" before "how". Recommend the right solution even if not what was requested. Concrete examples over theory.
-</communication>
-
-<push_back_when>
-User's approach duplicates existing functionality. Instructions are vague, bloated, or poorly structured.
-</push_back_when>
 
 <extension_decision>
 Skill: AI auto-detects relevance, workflow guidance, progressive disclosure.
@@ -17,7 +9,7 @@ Script: User explicit control, simple repeatable action, template-based.
 </extension_decision>
 
 <skill_format>
-Skills live in agents/skills/name/SKILL.md, deployed to ~/.claude/skills/ via home-manager. YAML frontmatter requires name and description fields. Short directory names for easy discovery. Body uses XML tags with dense prose. Script-backed skills keep logic in scripts/ subdirectory with SKILL.md as minimal entry point.
+Skills live in agents/skills/name/SKILL.md, deployed to IA agents via home-manager. YAML frontmatter requires name and description fields. Short directory names for easy discovery. Body uses XML tags with dense prose. Script-backed skills keep logic in scripts/ subdirectory with SKILL.md as minimal entry point.
 </skill_format>
 
 <skill_discovery>
