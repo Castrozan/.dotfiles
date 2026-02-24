@@ -40,7 +40,6 @@
       i2p
       i2pd
       i2pd-tools
-      jetbrains.idea
       jq
       kubectl
       # lens TODO: fix lens, im using the snap version for now

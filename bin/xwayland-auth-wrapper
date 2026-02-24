@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+export PATH="@EXTRA_PATH@:$PATH"
+
+readonly XWAYLAND_AUTH_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+readonly XWAYLAND_AUTH_FILE="${XWAYLAND_AUTH_DIR}/xwayland-auth"
+
+_generate_xauthority_file() {
+	local display_number="${1#:}"
+	local hostname
+	hostname="$(hostname)"
+	local cookie
+	cookie="$(openssl rand -hex 16)"
+
+	rm -f "$XWAYLAND_AUTH_FILE"
+
+	xauth -f "$XWAYLAND_AUTH_FILE" add "${hostname}/unix:${display_number}" MIT-MAGIC-COOKIE-1 "$cookie"
+}
+
+_extract_display_name_from_arguments() {
+	for arg in "$@"; do
+		if [[ "$arg" =~ ^:[0-9]+$ ]]; then
+			echo "$arg"
+			return 0
+		fi
+	done
+	echo ":0"
+}
+
+_propagate_xauthority_to_user_session() {
+	if command -v systemctl >/dev/null 2>&1; then
+		systemctl --user set-environment XAUTHORITY="$XWAYLAND_AUTH_FILE" 2>/dev/null || true
+	fi
+
+	if command -v dbus-update-activation-environment >/dev/null 2>&1; then
+		dbus-update-activation-environment --systemd XAUTHORITY="$XWAYLAND_AUTH_FILE" 2>/dev/null || true
+	fi
+}
+
+main() {
+	local display_name
+	display_name="$(_extract_display_name_from_arguments "$@")"
+
+	_generate_xauthority_file "$display_name"
+	_propagate_xauthority_to_user_session
+
+	exec @REAL_XWAYLAND@ -auth "$XWAYLAND_AUTH_FILE" "$@"
+}
+
+main "$@"
