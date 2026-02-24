@@ -17,6 +17,7 @@ Available: neutral (default), happy, sad, angry, relaxed, surprised.
 
 <audio_output>
 speakers: system sink for room audio. mic: AvatarMic virtual sink for Meet/calls. both: speakers + mic simultaneously.
+discord-vc: Route audio to Discord voice channel via the VC bridge. See `skills/discord/SKILL.md` for setup. Start the bridge first, then send messages to the text channel — they play as audio in VC.
 </audio_output>
 
 <voice_conversation_mode>

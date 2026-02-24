@@ -1,5 +1,11 @@
-{ config, ... }:
+{ config, pkgs, ... }:
 let
+  discordVcBridgeSource = pkgs.fetchFromGitHub {
+    owner = "Castrozan";
+    repo = "discord-vc-bridge";
+    rev = "6b8f8d2ee1e7480076dd6557f0a1e1b59368a731";
+    hash = "sha256-XY8ez56fFOnkgZhYQTkMkdZ/eJJad4ajPAVgGOquPyQ=";
+  };
   opusModel = "anthropic/claude-opus-4-6";
   sonnetModel = "anthropic/claude-sonnet-4-6";
   codexModel = "openai-codex/gpt-5.3-codex";
@@ -138,7 +144,7 @@ in
       ];
     };
     Service = {
-      ExecStart = "${config.home.homeDirectory}/.dotfiles/scripts/discord-vc-tts-bridge.cjs";
+      ExecStart = "${discordVcBridgeSource}/index.cjs";
       Restart = "always";
       RestartSec = 3;
       Environment = [
@@ -149,6 +155,6 @@ in
         "DISCORD_VC_TTS_VOICE=${robsonTtsVoice}"
       ];
     };
-    Install.WantedBy = [ "default.target" ];
+    Install.WantedBy = [ ];
   };
 }
