@@ -48,6 +48,24 @@ in
   };
 
   xdg.configFile = lib.mkIf (!isNixOS) {
+    "pipewire/pipewire.conf.d/05-realtime-scheduling.conf".text = builtins.toJSON {
+      "context.modules" = [
+        {
+          name = "libpipewire-module-rt";
+          args = {
+            "nice.level" = -11;
+            "rt.prio" = 88;
+            "rt.time.soft" = 2000000;
+            "rt.time.hard" = 2000000;
+          };
+          flags = [
+            "ifexists"
+            "nofail"
+          ];
+        }
+      ];
+    };
+
     "pipewire/pipewire.conf.d/10-clock-rate.conf".text = builtins.toJSON {
       "context.properties" = {
         "default.clock.rate" = 48000;
