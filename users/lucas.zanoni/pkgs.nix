@@ -24,7 +24,6 @@
       eza
       fastfetch
       fd
-      flameshot
       fzf
       gh
       glab
@@ -41,10 +40,8 @@
       i2p
       i2pd
       i2pd-tools
-      jetbrains.idea
       jq
       kubectl
-      ksnip
       # lens TODO: fix lens, im using the snap version for now
       micronaut
       neofetch
@@ -54,7 +51,6 @@
       nodejs
       nodePackages.prettier
       obsidian
-      obs-studio
       ollama
       playerctl
       pipes

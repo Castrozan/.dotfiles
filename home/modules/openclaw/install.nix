@@ -45,6 +45,8 @@ let
       --prefix "${npmPrefix}" \
       --ignore-scripts \
       --registry "https://registry.npmjs.org/"
+
+    ${nodejs}/bin/node "${config.home.homeDirectory}/.dotfiles/scripts/openclaw-voice-playback-patch.js"
   '';
 
   openclawWrapper = pkgs.writeShellScriptBin "openclaw" ''

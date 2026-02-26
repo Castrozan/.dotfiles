@@ -37,13 +37,16 @@
     ../../home/modules/gnome/extension-manager.nix
     ../../home/modules/hyprland/standalone.nix
     ../../home/modules/install-nothing.nix
+    ../../home/modules/jetbrains-idea.nix
     ../../home/modules/openclaw-mesh
     ../../home/modules/k9s.nix
     ../../home/modules/kitty.nix
+    ../../home/modules/ksnip.nix
     ../../home/modules/lazygit.nix
     ../../home/modules/mcporter.nix
     ../../home/modules/mongodb-compass.nix
     ../../home/modules/neovim.nix
+    ../../home/modules/obs-studio.nix
     ../../home/modules/obsidian.nix
     ../../home/modules/crabwalk.nix
     ../../home/modules/oom-protection.nix

@@ -1,21 +1,28 @@
 ---
 name: notify
-description: Push notifications to phone via ntfy.sh. Use when sending alerts, completion notices, error reports, or status updates to the user's mobile device.
+description: Notify the user after completing substantial work. Use when finishing long tasks, implementations, or background operations. Plays audio and shows a desktop notification by default.
 ---
 
-<sending>
-Send via curl to ntfy.sh/@notifyTopic@. Set Title header for the notification title and the message as the request body. Add Priority header (1=min, 2=low, 3=default, 4=high bypasses DND, 5=urgent until acknowledged). Add Click header for tap-to-open URL. Use Markdown: yes header for formatted messages.
-</sending>
+<execution>
+Run: scripts/notify.sh "brief message" [--voice VOICE] [--mobile]
 
-<action_buttons>
-Add interactive buttons with the Actions header: "http, Label, https://url, clear=true". Multiple actions separated by semicolons.
-</action_buttons>
+Voice is auto-detected from tts.json in the workspace root. Override with --voice.
 
-<patterns>
-On error: cmd || curl -H "Title: Error" -H "Priority: high" -d "$(hostname): cmd failed" ntfy.sh/@notifyTopic@
-After long task: ./task.sh && curl -H "Title: Done" -d "Task finished at $(date)" ntfy.sh/@notifyTopic@
-</patterns>
+scripts/notify.sh "Finished refactoring the auth module"
+scripts/notify.sh "Build complete" --voice en-US-JennyNeural
+scripts/notify.sh "Deployed to production" --mobile
+</execution>
 
-<security>
-Topic is a password — anyone with it can send notifications. Never commit to public repos. Use env vars for topics in scripts.
-</security>
+<when_to_use>
+After completing substantial work: file edits, implementations, long commands, multi-step tasks.
+Skip for: quick answers, explanations, back-and-forth chat.
+</when_to_use>
+
+<channels>
+Desktop (default): TTS via edge-tts (en-US-GuyNeural) + notify-send popup
+Mobile (--mobile flag): ntfy.sh push notification, bypasses DND at priority 4+
+</channels>
+
+<mobile>
+Send directly via curl to ntfy.sh/@notifyTopic@. Set Title header for notification title, message as body. Priority: 1=min, 2=low, 3=default, 4=high (bypasses DND), 5=urgent.
+</mobile>

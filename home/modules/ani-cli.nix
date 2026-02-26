@@ -1,14 +1,24 @@
 {
   pkgs,
+  inputs,
+  isNixOS,
   ...
 }:
+let
+  nixglWrap = import ../../lib/nixgl-wrap.nix { inherit pkgs inputs isNixOS; };
+
+  mpvPackage = nixglWrap.wrapWithNixGLIntel {
+    package = pkgs.mpv;
+    binaries = [ "mpv" ];
+  };
+in
 {
-  home.packages = with pkgs; [
-    ani-cli
-    mpv
-    mpv-handler
-    mpvc
-    mpv-shim-default-shaders
+  home.packages = [
+    pkgs.ani-cli
+    mpvPackage
+    pkgs.mpv-handler
+    pkgs.mpvc
+    pkgs.mpv-shim-default-shaders
   ];
 
   programs.fish.shellAliases = {
@@ -16,15 +26,13 @@
   };
 
   home.file.".config/mpv/mpv.conf".text = ''
-    vo=gpu
+    vo=kitty
     video-sync=display-resample
-    display-fps-override=120
-    interpolation=yes
+    interpolation=no
     tscale=oversample
     ao=pulse
-    hwdec=auto-safe
+    hwdec=no
     cache=yes
     cache-secs=60
-    audio-buffer=0.2
   '';
 }

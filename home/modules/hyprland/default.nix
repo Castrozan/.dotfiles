@@ -20,7 +20,6 @@ in
     ./hyprshell.nix
     ./wlogout.nix
     ./wayland-electron.nix
-    ./onlyoffice-desktopeditors-bridge.nix
     ./waybar-service.nix
 
     ./wlr-which-key.nix

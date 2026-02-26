@@ -9,6 +9,8 @@ let
   };
 in
 {
+  imports = [ ./xwayland-with-auth.nix ];
+
   home = {
     file.".config/hypr".source = ../../../.config/hypr;
 
@@ -18,7 +20,6 @@ in
         xdg-desktop-portal
         xdg-desktop-portal-gtk
 
-        xwayland
         wl-clipboard
         hyprpaper
         swaybg

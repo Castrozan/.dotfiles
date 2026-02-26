@@ -1,10 +1,24 @@
-{ pkgs, ... }:
+{
+  pkgs,
+  inputs,
+  isNixOS,
+  ...
+}:
+let
+  nixglWrap = import ../../lib/nixgl-wrap.nix { inherit pkgs inputs isNixOS; };
+
+  kittyPackage = nixglWrap.wrapWithNixGLIntel {
+    package = pkgs.kitty;
+    binaries = [ "kitty" ];
+  };
+in
 {
   home.file.".config/kitty/startup.conf".source = ../../.config/kitty/startup.conf;
   home.file.".config/kitty/wallpaper.png".source = ../../static/wallpaper.png;
 
   programs.kitty = {
     enable = true;
+    package = kittyPackage;
     themeFile = "Catppuccin-Mocha";
     font = {
       name = "Fira Code";
@@ -27,7 +41,3 @@
     };
   };
 }
-
-# Docs:
-# Shift+Enter and Ctrl+Enter does not work in tmux because
-# tmux doesn't support kitty's CSI-u keyboard protocol (see docs/tmux.md)
