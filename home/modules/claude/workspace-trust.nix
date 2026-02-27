@@ -13,7 +13,7 @@ let
     "$HOME/.dotfiles"
   ];
 
-  trustDirectoryJqFilter = ''.projects[$path].hasTrustDialogAccepted = true'';
+  trustDirectoryJqFilter = ".projects[$path].hasTrustDialogAccepted = true";
 
   trustChildrenScript = builtins.concatStringsSep "\n" (
     map (dir: ''
