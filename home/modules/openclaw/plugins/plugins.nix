@@ -1,4 +1,4 @@
-{ lib, ... }:
+{ ... }:
 {
   config = {
     openclaw.configDeletes = [
@@ -6,7 +6,7 @@
       ".plugins.entries.hindsight-openclaw"
     ];
 
-    openclaw.configPatches = lib.mkOptionDefault {
+    openclaw.configPatches = {
       ".plugins.allow" = [
         "telegram"
         "device-pair"

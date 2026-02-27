@@ -248,9 +248,8 @@ let
 in
 {
   config = {
-    openclaw.configPatches = lib.mkOptionDefault (
-      basePatches // telegramPatches // discordPatches // { ".bindings" = combinedChannelBindings; }
-    );
+    openclaw.configPatches =
+      basePatches // telegramPatches // discordPatches // { ".bindings" = combinedChannelBindings; };
 
     # All secrets use home-manager agenix paths (~/.secrets/).
     # System-level agenix (/run/agenix/) is not used for openclaw secrets.
