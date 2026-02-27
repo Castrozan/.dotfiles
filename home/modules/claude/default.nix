@@ -7,5 +7,6 @@
     ./hooks.nix
     ./mcp.nix
     ./private.nix
+    ./workspace-trust.nix
   ];
 }
