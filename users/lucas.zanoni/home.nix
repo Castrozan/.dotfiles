@@ -47,6 +47,7 @@
     ../../home/modules/obs-studio.nix
     ../../home/modules/obsidian.nix
     ../../home/modules/crabwalk.nix
+    ../../home/modules/network-optimization.nix
     ../../home/modules/oom-protection.nix
     ../../home/modules/opencode
     ../../home/modules/opencode/private.nix

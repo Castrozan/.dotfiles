@@ -1,0 +1,138 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+readonly WIFI_INTERFACE="wlp0s20f3"
+readonly NETWORKMANAGER_WIFI_POWERSAVE_CONFIG_PATH="/etc/NetworkManager/conf.d/wifi-powersave-off.conf"
+readonly SYSCTL_NETWORK_CONFIG_PATH="/etc/sysctl.d/99-network-optimization.conf"
+readonly RESOLVED_DNS_CONFIG_DIR="/etc/systemd/resolved.conf.d"
+readonly RESOLVED_DNS_CONFIG_PATH="${RESOLVED_DNS_CONFIG_DIR}/dns-optimization.conf"
+
+readonly TCP_BUFFER_MAX=16777216
+readonly TCP_BUFFER_DEFAULT=1048576
+readonly TCP_BUFFER_MIN=4096
+readonly TCP_CONGESTION_CONTROL="bbr"
+readonly TCP_QUEUE_DISCIPLINE="fq"
+readonly TCP_FAST_OPEN_CLIENT_AND_SERVER=3
+readonly NETDEV_MAX_BACKLOG=16384
+
+readonly DNS_PRIMARY="1.1.1.1#cloudflare-dns.com"
+readonly DNS_FALLBACK="1.0.0.1#cloudflare-dns.com"
+
+main() {
+	echo "=== Network Optimization Setup ==="
+	echo ""
+
+	_initialize_sysctl_config_file
+	_disable_wifi_power_management
+	_configure_tcp_buffer_sizes
+	_enable_bbr_congestion_control
+	_enable_tcp_fast_open
+	_disable_tcp_slow_start_after_idle
+	_enable_tcp_mtu_probing
+	_increase_netdev_backlog_queue
+	_apply_all_sysctl_settings
+	_configure_dns_over_tls
+
+	echo ""
+	echo "=== Done ==="
+	echo "Optimizations active:"
+	echo "  - WiFi power management: off"
+	echo "  - TCP buffers: ${TCP_BUFFER_MAX} bytes max"
+	echo "  - Congestion control: ${TCP_CONGESTION_CONTROL}"
+	echo "  - TCP Fast Open: client + server"
+	echo "  - DNS: Cloudflare DNS-over-TLS"
+	echo ""
+	echo "Verify with:"
+	echo "  sysctl net.ipv4.tcp_congestion_control"
+	echo "  sysctl net.core.rmem_max"
+	echo "  iwconfig ${WIFI_INTERFACE} | grep Power"
+	echo "  resolvectl status"
+}
+
+_initialize_sysctl_config_file() {
+	sudo mkdir -p "$(dirname "$SYSCTL_NETWORK_CONFIG_PATH")"
+	sudo truncate -s 0 "$SYSCTL_NETWORK_CONFIG_PATH" 2>/dev/null || sudo touch "$SYSCTL_NETWORK_CONFIG_PATH"
+}
+
+_disable_wifi_power_management() {
+	echo "[1/8] Disabling WiFi power management..."
+
+	if command -v iwconfig &>/dev/null; then
+		sudo iwconfig "$WIFI_INTERFACE" power off 2>/dev/null || true
+		echo "  Power management disabled (live)"
+	fi
+
+	sudo mkdir -p "$(dirname "$NETWORKMANAGER_WIFI_POWERSAVE_CONFIG_PATH")"
+	sudo tee "$NETWORKMANAGER_WIFI_POWERSAVE_CONFIG_PATH" >/dev/null <<CONF
+[connection]
+wifi.powersave = 2
+CONF
+	echo "  Persistent config written to ${NETWORKMANAGER_WIFI_POWERSAVE_CONFIG_PATH}"
+}
+
+_configure_tcp_buffer_sizes() {
+	echo "[2/8] Configuring TCP buffer sizes..."
+	_write_sysctl_line "net.core.rmem_max = ${TCP_BUFFER_MAX}"
+	_write_sysctl_line "net.core.wmem_max = ${TCP_BUFFER_MAX}"
+	_write_sysctl_line "net.core.rmem_default = ${TCP_BUFFER_DEFAULT}"
+	_write_sysctl_line "net.core.wmem_default = ${TCP_BUFFER_DEFAULT}"
+	_write_sysctl_line "net.ipv4.tcp_rmem = ${TCP_BUFFER_MIN} ${TCP_BUFFER_DEFAULT} ${TCP_BUFFER_MAX}"
+	_write_sysctl_line "net.ipv4.tcp_wmem = ${TCP_BUFFER_MIN} ${TCP_BUFFER_DEFAULT} ${TCP_BUFFER_MAX}"
+}
+
+_enable_bbr_congestion_control() {
+	echo "[3/8] Enabling BBR congestion control..."
+	_write_sysctl_line "net.core.default_qdisc = ${TCP_QUEUE_DISCIPLINE}"
+	_write_sysctl_line "net.ipv4.tcp_congestion_control = ${TCP_CONGESTION_CONTROL}"
+}
+
+_enable_tcp_fast_open() {
+	echo "[4/8] Enabling TCP Fast Open (client + server)..."
+	_write_sysctl_line "net.ipv4.tcp_fastopen = ${TCP_FAST_OPEN_CLIENT_AND_SERVER}"
+}
+
+_disable_tcp_slow_start_after_idle() {
+	echo "[5/8] Disabling TCP slow start after idle..."
+	_write_sysctl_line "net.ipv4.tcp_slow_start_after_idle = 0"
+}
+
+_enable_tcp_mtu_probing() {
+	echo "[6/8] Enabling TCP MTU probing..."
+	_write_sysctl_line "net.ipv4.tcp_mtu_probing = 1"
+}
+
+_increase_netdev_backlog_queue() {
+	echo "[7/8] Increasing network device backlog queue..."
+	_write_sysctl_line "net.core.netdev_max_backlog = ${NETDEV_MAX_BACKLOG}"
+}
+
+_apply_all_sysctl_settings() {
+	echo "  Applying all sysctl settings..."
+	sudo sysctl -e -p "$SYSCTL_NETWORK_CONFIG_PATH"
+}
+
+_configure_dns_over_tls() {
+	echo "[8/8] Configuring Cloudflare DNS-over-TLS..."
+
+	sudo mkdir -p "$RESOLVED_DNS_CONFIG_DIR"
+	sudo tee "$RESOLVED_DNS_CONFIG_PATH" >/dev/null <<CONF
+[Resolve]
+DNS=${DNS_PRIMARY} ${DNS_FALLBACK}
+DNSOverTLS=yes
+CONF
+
+	if command -v systemctl &>/dev/null; then
+		sudo systemctl restart systemd-resolved
+		echo "  systemd-resolved restarted with DNS-over-TLS"
+	else
+		echo "  Config written, will apply on next boot"
+	fi
+}
+
+_write_sysctl_line() {
+	local setting="$1"
+	echo "$setting" | sudo tee -a "$SYSCTL_NETWORK_CONFIG_PATH" >/dev/null
+}
+
+main "$@"
