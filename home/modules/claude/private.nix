@@ -1,6 +1,6 @@
 { lib, ... }:
 let
-  # In-repo private config (encrypted with git-crypt)
+  # Private config from git submodule (private-config/claude)
   # Use path type (not string) for pathExists to avoid premature store path creation
   privateConfigDir = ../../../private-config/claude;
   agentsDir = privateConfigDir + "/agents";
