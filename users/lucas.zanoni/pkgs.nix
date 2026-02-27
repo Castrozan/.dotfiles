@@ -44,6 +44,7 @@
       kubectl
       # lens TODO: fix lens, im using the snap version for now
       micronaut
+      mongosh
       neofetch
       # nix # leave the manually installed version
       nixd
