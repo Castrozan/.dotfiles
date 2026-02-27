@@ -4,80 +4,82 @@ set -Eeuo pipefail
 readonly CHROME_GLOBAL_CLASS="chrome-global"
 readonly CHROME_GLOBAL_DATA_DIR="$HOME/.config/chrome-global"
 readonly CHROME_GLOBAL_FLAGS=(
-	--user-data-dir="$CHROME_GLOBAL_DATA_DIR"
-	--class="$CHROME_GLOBAL_CLASS"
-	--enable-features=UseNativeNotifications
+  --user-data-dir="$CHROME_GLOBAL_DATA_DIR"
+  --class="$CHROME_GLOBAL_CLASS"
+  --enable-features=UseNativeNotifications
 )
 readonly CHROME_GLOBAL_URLS=(
-	"chrome://newtab"
-	"https://mail.google.com/chat/u/0/#chat/home"
-	"https://desenv.betha.com.br/secure/RapidBoard.jspa?rapidView=514&selectedIssue=AP-9448"
-	"https://gitlab.services.betha.cloud/"
-	"https://calendar.google.com/calendar/u/0/r/week/2026/2/11"
-	"chrome://newtab"
+  "chrome://newtab"
+  "https://mail.google.com/chat/u/0/#chat/home"
+  "https://desenv.betha.com.br/secure/RapidBoard.jspa?rapidView=514&selectedIssue=AP-9448"
+  "https://gitlab.services.betha.cloud/"
+  "https://calendar.google.com/calendar/u/0/r/week/2026/2/11"
+  "chrome://newtab"
 )
 
 main() {
-	local current_workspace_id window_json
-	current_workspace_id=$(hyprctl activeworkspace -j | jq -r '.id')
-	window_json=$(_find_chrome_global_main_window)
+  local current_workspace_id window_json
+  current_workspace_id=$(hyprctl activeworkspace -j | jq -r '.id')
+  window_json=$(_find_chrome_global_main_window)
 
-	if [[ -z "$window_json" || "$window_json" == "null" ]]; then
-		_launch_chrome_global
-		return
-	fi
+  if [[ -z "$window_json" || "$window_json" == "null" ]]; then
+    _launch_chrome_global
+    return
+  fi
 
-	local window_address source_workspace_id
-	window_address=$(echo "$window_json" | jq -r '.address')
-	source_workspace_id=$(echo "$window_json" | jq -r '.workspace')
+  local window_address source_workspace_id
+  window_address=$(echo "$window_json" | jq -r '.address')
+  source_workspace_id=$(echo "$window_json" | jq -r '.workspace')
 
-	if [[ "$source_workspace_id" == "$current_workspace_id" ]]; then
-		hyprctl dispatch focuswindow "address:$window_address"
-		return
-	fi
+  if [[ "$source_workspace_id" == "$current_workspace_id" ]]; then
+    hyprctl dispatch focuswindow "address:$window_address"
+    return
+  fi
 
-	_detach_move_merge_into_current_group_and_maximize "$window_address" "$current_workspace_id"
+  _detach_move_merge_into_current_group_and_maximize "$window_address" "$current_workspace_id"
 }
 
+readonly CHROME_GLOBAL_TITLE_PATTERN="ᓚᘏᗢ|Chat|Calendar|agenda"
+
 _find_chrome_global_main_window() {
-	hyprctl clients -j | jq -r --arg class "$CHROME_GLOBAL_CLASS" '
-    [.[] | select(.class == $class) | select(.floating == false)]
+  hyprctl clients -j | jq -r --arg class "$CHROME_GLOBAL_CLASS" --arg pattern "$CHROME_GLOBAL_TITLE_PATTERN" '
+    [.[] | select(.class == $class) | select(.floating == false) | select(.title | test($pattern; "i"))]
     | first // empty
     | {address, workspace: .workspace.id}
   '
 }
 
 _detach_move_merge_into_current_group_and_maximize() {
-	local address=$1 target_workspace_id=$2
+  local address=$1 target_workspace_id=$2
 
-	hyprctl --batch \
-		"dispatch focuswindow address:$address; dispatch moveoutofgroup; dispatch movetoworkspace $target_workspace_id; dispatch moveintogroup l; dispatch moveintogroup r; dispatch moveintogroup u; dispatch moveintogroup d; dispatch fullscreen 1"
+  hyprctl --batch \
+    "dispatch focuswindow address:$address; dispatch moveoutofgroup; dispatch movetoworkspace $target_workspace_id; dispatch moveintogroup l; dispatch moveintogroup r; dispatch moveintogroup u; dispatch moveintogroup d; dispatch fullscreen 1"
 }
 
 _launch_chrome_global() {
-	_initialize_chrome_global_profile_if_needed
+  _initialize_chrome_global_profile_if_needed
 
-	if _chrome_global_has_never_been_launched; then
-		touch "$CHROME_GLOBAL_DATA_DIR/.initialized"
-		exec google-chrome-stable \
-			"${CHROME_GLOBAL_FLAGS[@]}" \
-			"${CHROME_GLOBAL_URLS[@]}"
-	fi
+  if _chrome_global_has_never_been_launched; then
+    touch "$CHROME_GLOBAL_DATA_DIR/.initialized"
+    exec google-chrome-stable \
+      "${CHROME_GLOBAL_FLAGS[@]}" \
+      "${CHROME_GLOBAL_URLS[@]}"
+  fi
 
-	exec google-chrome-stable \
-		"${CHROME_GLOBAL_FLAGS[@]}"
+  exec google-chrome-stable \
+    "${CHROME_GLOBAL_FLAGS[@]}"
 }
 
 _chrome_global_has_never_been_launched() {
-	[[ ! -f "$CHROME_GLOBAL_DATA_DIR/.initialized" ]]
+  [[ ! -f "$CHROME_GLOBAL_DATA_DIR/.initialized" ]]
 }
 
 _initialize_chrome_global_profile_if_needed() {
-	[[ -d "$CHROME_GLOBAL_DATA_DIR/Default" ]] && return
+  [[ -d "$CHROME_GLOBAL_DATA_DIR/Default" ]] && return
 
-	mkdir -p "$CHROME_GLOBAL_DATA_DIR/Default"
+  mkdir -p "$CHROME_GLOBAL_DATA_DIR/Default"
 
-	cat >"$CHROME_GLOBAL_DATA_DIR/Default/Preferences" <<'EOF'
+  cat > "$CHROME_GLOBAL_DATA_DIR/Default/Preferences" << 'EOF'
 {
   "session": {
     "restore_on_startup": 1
