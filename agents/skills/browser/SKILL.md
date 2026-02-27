@@ -3,21 +3,27 @@ name: browser
 description: Use when user asks to open a webpage, scrape content, fill forms, click buttons, take screenshots, test a web UI, or automate any browser interaction. Also use when navigating authenticated web apps or testing frontend changes.
 ---
 
-<overview>
-Headless Chrome via HTTP API at localhost:9867. Two helper scripts handle startup and screenshots.
-</overview>
+<helper-scripts>
+Always prefer these over raw commands — they handle edge cases and are idempotent.
+
+- `pinchtab-ensure-running` — start headless pinchtab if not already running. Idempotent. Use with `run_in_background: true`.
+- `pinchtab-switch-mode [headless|headed]` — kill existing instance, clear locks, relaunch in specified mode. Use with `run_in_background: true`.
+- `pinchtab-screenshot [output-path]` — capture screenshot, decode base64, validate image. Default path: `/tmp/screenshot.jpg`. Then Read the output file. Never call the `/screenshot` API directly with curl.
+</helper-scripts>
 
 <startup>
-Run `pinchtab-ensure-running` with `run_in_background: true` and `timeout: 120000`. It is idempotent — exits immediately if already running, otherwise starts pinchtab and blocks.
+Pinchtab runs Chrome behind an HTTP API at localhost:9867. Two modes: headless (default) and headed (user sees the browser window). Use headed mode when the user needs to see or interact with the browser — login flows, verification codes, CAPTCHAs, or when user explicitly asks to open a page visibly. You can launch either mode yourself.
 
-Then health-check in a separate Bash call:
+Headless startup: run `pinchtab-ensure-running` with `run_in_background: true` and `timeout: 120000`. It is idempotent — exits if already running. Then health-check separately: `sleep 4 && curl -sf --max-time 3 http://localhost:9867/health`.
 
-```bash
-sleep 4 && curl -sf --max-time 3 http://localhost:9867/health
-```
+Headed startup or mode switch: run `pinchtab-switch-mode headed` with `run_in_background: true`. It kills any existing instance, clears locks, and launches in headed mode. Then health-check separately: `sleep 5 && curl -sf --max-time 3 http://localhost:9867/health`. Switch back with `pinchtab-switch-mode headless`.
 
-Exit code 144 from the Bash tool is normal (shell sandbox signal). Health-check separately to confirm.
+Cookies persist in `~/.pinchtab/chrome-profile/` across restarts and mode switches. After user logs in via headed mode, switch back to headless — the session carries over.
 </startup>
+
+<sandbox-behavior>
+The Bash tool sandbox sends SIGUSR2 to background processes, producing exit code 144. This is normal and expected — not an error. Never interpret exit code 144 as a failure. The only reliable way to check pinchtab status is the health endpoint. Run each step as a separate Bash call — never chain pinchtab commands with `&&` or `;`, as exit code 144 from one command aborts the chain.
+</sandbox-behavior>
 
 <core-pattern>
 Navigate, then read or snapshot, then act.
@@ -41,10 +47,6 @@ curl -s -X POST http://localhost:9867/evaluate -H "Content-Type: application/jso
 Prefer `/text` (~800 tokens) when only reading. Use `?filter=interactive` (~3,600 tokens) when you need to act. Full snapshot (~10,000 tokens) only when page structure matters.
 </core-pattern>
 
-<screenshots>
-Run `pinchtab-screenshot /tmp/screenshot.jpg`, then Read the file. The script decodes base64 and validates the image. Never call `/screenshot` directly with curl — it returns JSON, not bytes. Reading invalid JSON as an image poisons the conversation permanently.
-</screenshots>
-
 <action-reference>
 ```json
 {"kind":"click","ref":"e5"}
@@ -62,12 +64,10 @@ Run `pinchtab-screenshot /tmp/screenshot.jpg`, then Read the file. The script de
 
 <tabs-and-sessions>
 Tab API supports `new` and `close` only — no tab activation. Navigate within the active tab.
-
-Cookies persist in `~/.pinchtab/chrome-profile/` across restarts. For manual login, user runs `BRIDGE_HEADLESS=false pinchtab` from their terminal.
 </tabs-and-sessions>
 
 <troubleshooting>
 Pinchtab won't start: kill stale processes (`pkill -f pinchtab`), clear locks (`rm -f ~/.pinchtab/chrome-profile/Singleton*`), check `/tmp/pinchtab.log`.
 
-Bot detection / CAPTCHA: try `BRIDGE_STEALTH=full` env var on startup. Pinchtab patches `navigator.webdriver` by default but some sites need full canvas/WebGL spoofing.
+Bot detection / CAPTCHA: set `BRIDGE_STEALTH=full` env var on startup. Pinchtab patches `navigator.webdriver` by default but some sites need full canvas/WebGL spoofing.
 </troubleshooting>

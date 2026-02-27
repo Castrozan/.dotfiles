@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+readonly PINCHTAB_BASE_URL="http://localhost:9867"
+
+main() {
+	local target_mode="${1:-headless}"
+
+	_validate_target_mode "$target_mode"
+	_stop_existing_pinchtab_instance
+	_remove_stale_chrome_lock_files
+
+	if [[ "$target_mode" == "headed" ]]; then
+		echo "starting pinchtab in headed mode (this process blocks — use run_in_background)"
+		exec env BRIDGE_HEADLESS=false BRIDGE_NO_RESTORE=true pinchtab
+	else
+		echo "starting pinchtab in headless mode (this process blocks — use run_in_background)"
+		exec env BRIDGE_NO_RESTORE=true pinchtab
+	fi
+}
+
+_validate_target_mode() {
+	local target_mode="$1"
+	if [[ "$target_mode" != "headless" && "$target_mode" != "headed" ]]; then
+		echo "Usage: pinchtab-switch-mode [headless|headed]" >&2
+		echo "  headless  (default) — no browser window visible" >&2
+		echo "  headed    — browser window visible for user interaction" >&2
+		return 1
+	fi
+}
+
+_stop_existing_pinchtab_instance() {
+	curl -sf --max-time 2 -X POST "${PINCHTAB_BASE_URL}/shutdown" >/dev/null 2>&1 || true
+	sleep 2
+}
+
+_remove_stale_chrome_lock_files() {
+	rm -f ~/.pinchtab/chrome-profile/Singleton* 2>/dev/null || true
+}
+
+main "$@"

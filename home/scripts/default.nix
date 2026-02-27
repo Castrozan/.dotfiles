@@ -24,5 +24,6 @@
     ./pinchtab.nix
     ./pinchtab-ensure-running.nix
     ./pinchtab-screenshot.nix
+    ./pinchtab-switch-mode.nix
   ];
 }
