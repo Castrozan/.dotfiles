@@ -34,7 +34,7 @@ main() {
 	source_workspace_id=$(echo "$window_json" | jq -r '.workspace')
 
 	if [[ "$source_workspace_id" == "$current_workspace_id" ]]; then
-		hyprctl dispatch focuswindow "address:$window_address"
+		hyprctl dispatch focuswindow "address:$window_address" >/dev/null
 		return
 	fi
 
@@ -45,19 +45,28 @@ _find_chrome_global_main_window() {
 	local window_json
 
 	window_json=$(_find_chrome_global_window_by_hyprland_tag)
-	if [[ -n "$window_json" && "$window_json" != "null" ]]; then
+	if _found_valid_window "$window_json"; then
 		echo "$window_json"
 		return
 	fi
 
 	window_json=$(_find_chrome_global_window_by_title_pattern)
-	if [[ -n "$window_json" && "$window_json" != "null" ]]; then
-		local address
-		address=$(echo "$window_json" | jq -r '.address')
-		_tag_window_as_chrome_global_main "$address"
+	if _found_valid_window "$window_json"; then
+		_tag_window_as_chrome_global_main "$(echo "$window_json" | jq -r '.address')"
 		echo "$window_json"
 		return
 	fi
+
+	window_json=$(_find_chrome_global_window_by_initial_title)
+	if _found_valid_window "$window_json"; then
+		_tag_window_as_chrome_global_main "$(echo "$window_json" | jq -r '.address')"
+		echo "$window_json"
+		return
+	fi
+}
+
+_found_valid_window() {
+	[[ -n "$1" && "$1" != "null" ]]
 }
 
 _find_chrome_global_window_by_hyprland_tag() {
@@ -76,16 +85,24 @@ _find_chrome_global_window_by_title_pattern() {
   '
 }
 
+_find_chrome_global_window_by_initial_title() {
+	hyprctl clients -j | jq -r --arg class "$CHROME_GLOBAL_CLASS" --arg pattern "$CHROME_GLOBAL_TITLE_FALLBACK_PATTERN" '
+    [.[] | select(.class == $class) | select(.floating == false) | select(.initialTitle | test($pattern; "i"))]
+    | first // empty
+    | {address, workspace: .workspace.id}
+  '
+}
+
 _tag_window_as_chrome_global_main() {
 	local address=$1
-	hyprctl dispatch tagwindow "+$CHROME_GLOBAL_HYPRLAND_TAG" "address:$address"
+	hyprctl dispatch tagwindow "+$CHROME_GLOBAL_HYPRLAND_TAG" "address:$address" >/dev/null
 }
 
 _detach_move_merge_into_current_group_and_maximize() {
 	local address=$1 target_workspace_id=$2
 
 	hyprctl --batch \
-		"dispatch focuswindow address:$address; dispatch moveoutofgroup; dispatch movetoworkspace $target_workspace_id; dispatch moveintogroup l; dispatch moveintogroup r; dispatch moveintogroup u; dispatch moveintogroup d; dispatch fullscreen 1"
+		"dispatch focuswindow address:$address; dispatch moveoutofgroup; dispatch movetoworkspace $target_workspace_id; dispatch moveintogroup l; dispatch moveintogroup r; dispatch moveintogroup u; dispatch moveintogroup d; dispatch fullscreen 1" >/dev/null
 }
 
 _launch_chrome_global() {
