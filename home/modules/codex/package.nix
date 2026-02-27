@@ -1,43 +1,23 @@
-# codex - OpenAI's CLI coding agent
-# https://github.com/openai/codex
 { pkgs, ... }:
 let
-  version = "0.104.0";
-  sha256 = "UvbMt86+HWYg+GdgdqzEzeEFQ6btDszqYlSY3nrhf4g=";
+  fetchPrebuiltBinary = import ../../../lib/fetch-prebuilt-binary.nix { inherit pkgs; };
 
-  codex-unwrapped = pkgs.stdenv.mkDerivation {
+  version = "0.104.0";
+
+  codex-unwrapped = fetchPrebuiltBinary {
     pname = "codex";
     inherit version;
-
-    src = pkgs.fetchurl {
-      url = "https://github.com/openai/codex/releases/download/rust-v${version}/codex-x86_64-unknown-linux-gnu.tar.gz";
-      inherit sha256;
-    };
-
-    nativeBuildInputs = [
-      pkgs.autoPatchelfHook
-      pkgs.gnutar
+    url = "https://github.com/openai/codex/releases/download/rust-v${version}/codex-x86_64-unknown-linux-gnu.tar.gz";
+    sha256 = "UvbMt86+HWYg+GdgdqzEzeEFQ6btDszqYlSY3nrhf4g=";
+    binaryName = "codex";
+    archiveBinaryPath = "codex-x86_64-unknown-linux-gnu";
+    buildInputs = with pkgs; [
+      openssl
+      libcap
+      zlib
     ];
-    buildInputs = [
-      pkgs.stdenv.cc.cc.lib
-      pkgs.openssl
-      pkgs.libcap
-      pkgs.zlib
-    ];
-
-    dontStrip = true;
-
-    unpackPhase = ''
-      tar -xzf $src
-    '';
-
-    installPhase = ''
-      install -Dm755 codex-x86_64-unknown-linux-gnu $out/bin/codex
-    '';
   };
 
-  # Wrapper: pins sane defaults without fighting Codex's app-managed config.toml.
-  # Users can override any value via normal CLI flags.
   codex = pkgs.writeShellScriptBin "codex" ''
     export NPM_CONFIG_PREFIX="/nonexistent"
     exec ${codex-unwrapped}/bin/codex \

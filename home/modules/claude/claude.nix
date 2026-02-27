@@ -1,28 +1,17 @@
 { pkgs, config, ... }:
 let
+  fetchPrebuiltBinary = import ../../../lib/fetch-prebuilt-binary.nix { inherit pkgs; };
+
   version = "2.1.62";
   platform = "linux-x64";
-  sha256 = "1vBybLjpS3owwkOWRSm6kTXmQsQNITTKCfX4RQcUcbQ=";
   bucket = "https://storage.googleapis.com/claude-code-dist-86c565f3-f756-42ad-8dfa-d59b1c096819/claude-code-releases";
 
-  claude-code-unwrapped = pkgs.stdenv.mkDerivation {
+  claude-code-unwrapped = fetchPrebuiltBinary {
     pname = "claude-code-unwrapped";
     inherit version;
-
-    src = pkgs.fetchurl {
-      url = "${bucket}/${version}/${platform}/claude";
-      inherit sha256;
-    };
-
-    nativeBuildInputs = [ pkgs.autoPatchelfHook ];
-    buildInputs = [ pkgs.stdenv.cc.cc.lib ];
-
-    dontUnpack = true;
-    dontStrip = true;
-
-    installPhase = ''
-      install -Dm755 $src $out/bin/claude
-    '';
+    url = "${bucket}/${version}/${platform}/claude";
+    sha256 = "1vBybLjpS3owwkOWRSm6kTXmQsQNITTKCfX4RQcUcbQ=";
+    binaryName = "claude";
   };
 
   claude-code = pkgs.writeShellScriptBin "claude" ''
