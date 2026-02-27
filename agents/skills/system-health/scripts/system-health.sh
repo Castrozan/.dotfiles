@@ -55,11 +55,11 @@ for svc in hey-@agentName@; do
   fi
 done
 
-# 4. Pinchtab browser (CDP)
-if curl -sf http://localhost:9222/json/version >/dev/null 2>&1; then
-  ok "Pinchtab CDP: running (port 9222)"
+# 4. Pinchtab browser
+if curl -sf --max-time 2 http://localhost:9867/health >/dev/null 2>&1; then
+  ok "Pinchtab: running (port 9867)"
 else
-  warn "Pinchtab CDP: not available"
+  warn "Pinchtab: not available"
 fi
 
 # 5. Disk usage

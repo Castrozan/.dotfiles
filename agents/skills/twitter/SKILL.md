@@ -16,7 +16,7 @@ grok-search "query" for combined X+web search. Add --x-only for X-only, --web-on
 <twikit_cli>
 Direct scraper via cookie-based auth. Free, returns raw JSON, supports write operations.
 
-Setup: twikit-cli extract-cookies (reads from ~/.pinchtab/chrome-profile/, re-run if cookies expire).
+Setup: twikit-cli extract-cookies (reads from pinchtab's Chrome profile — see browser skill for details, re-run if cookies expire).
 
 Read: search "query" -n N [-p top], user USERNAME, user-tweets USERNAME -n N [-t replies], tweet ID, replies ID, thread ID, timeline -n N, trends, bookmarks -n N, followers/following USERNAME -n N.
 

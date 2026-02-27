@@ -8,11 +8,11 @@ Mon-Fri escala 4741: 08:00–12:00 / 13:30–17:30. Four daily punches: 08:00, 1
 </schedule>
 
 <prerequisites>
-Pinchtab running (browser automation on Chrome port 9222). Browser launched in headed mode with Senior platform session active. User must be logged into platform.senior.com.br (session persists in ~/.pinchtab/chrome-profile/).
+Pinchtab in headed mode (use `pinchtab-switch-mode headed` — see browser skill for details). User must be logged into platform.senior.com.br (session persists across mode switches).
 </prerequisites>
 
 <workflow>
-1. Start pinchtab in headed mode: BRIDGE_HEADLESS=false pinchtab
+1. Switch to headed mode via `pinchtab-switch-mode headed`
 2. Navigate to Senior ponto page via pinchtab API (bookmarked in Favoritos)
 3. Wait for iframe to load (look for "DIAS APURADOS" table)
 4. Run the fill script targeting missing weekdays
@@ -20,7 +20,7 @@ Pinchtab running (browser automation on Chrome port 9222). Browser launched in h
 </workflow>
 
 <scripts>
-All scripts require pinchtab's Chrome on CDP port 9222. They connect via raw CDP WebSocket using cdp-browser.js (zero-dependency Node 22 built-in WebSocket).
+Scripts connect to pinchtab's Chrome via raw CDP WebSocket using cdp-browser.js (zero-dependency Node 22 built-in WebSocket).
 
 ponto-list.js: List all days and their current status (filled vs pending).
 ponto-fill.js all: Fill all pending weekdays.

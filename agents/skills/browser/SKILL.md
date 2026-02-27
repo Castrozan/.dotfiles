@@ -67,7 +67,7 @@ Tab API supports `new` and `close` only — no tab activation. Navigate within t
 </tabs-and-sessions>
 
 <troubleshooting>
-Pinchtab won't start: kill stale processes (`pkill -f pinchtab`), clear locks (`rm -f ~/.pinchtab/chrome-profile/Singleton*`), check `/tmp/pinchtab.log`.
+Pinchtab won't start: graceful shutdown (`curl -sf --max-time 2 -X POST http://localhost:9867/shutdown`), clear locks (`rm -f ~/.pinchtab/chrome-profile/Singleton*`), check `/tmp/pinchtab.log`. Last resort only: `pkill -f pinchtab`.
 
 Bot detection / CAPTCHA: set `BRIDGE_STEALTH=full` env var on startup. Pinchtab patches `navigator.webdriver` by default but some sites need full canvas/WebGL spoofing.
 </troubleshooting>

@@ -61,10 +61,9 @@ remove_module "AvatarMicSource"
 remove_sink "AvatarSpeaker"
 remove_sink "AvatarMic"
 
-# Stop agent browser (prevents stale headless instance on next start)
-if pgrep -f 'remote-debugging-port=9222' > /dev/null 2>&1; then
-    pkill -f 'pinchtab' 2>/dev/null || true
-    pkill -f 'remote-debugging-port=9222' 2>/dev/null || true
+if curl -sf --max-time 2 http://localhost:9867/health >/dev/null 2>&1; then
+    curl -sf --max-time 2 -X POST http://localhost:9867/shutdown >/dev/null 2>&1 || true
+    sleep 2
     echo "  Agent browser stopped"
 else
     echo "  Agent browser was not running"

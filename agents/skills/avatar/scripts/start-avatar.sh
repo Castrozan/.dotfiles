@@ -153,18 +153,10 @@ else
     fi
 fi
 
-# Kill stale headless browser if running (must restart headed for visible avatar)
-if pgrep -f "remote-debugging-port" > /dev/null 2>&1 && \
-   pgrep -f "pinchtab" > /dev/null 2>&1; then
-    pkill -f 'pinchtab' 2>/dev/null || true
-    sleep 1
-    # Kill any leftover chromium spawned by pinchtab
-    pgrep -f "remote-debugging-port" > /dev/null 2>&1 && \
-        pkill -f 'remote-debugging-port' 2>/dev/null || true
-    sleep 1
-fi
-
-echo -n "  Starting agent browser (headed)..."
+echo -n "  Switching pinchtab to headed mode..."
+curl -sf --max-time 2 -X POST http://localhost:9867/shutdown >/dev/null 2>&1 || true
+sleep 2
+rm -f ~/.pinchtab/chrome-profile/Singleton* 2>/dev/null || true
 BRIDGE_HEADLESS=false pinchtab > /dev/null 2>&1 &
 sleep 3
 
