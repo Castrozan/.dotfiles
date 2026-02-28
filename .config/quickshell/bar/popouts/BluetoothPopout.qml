@@ -27,30 +27,28 @@ ColumnLayout {
         stdout: SplitParser {
             splitMarker: ""
             onRead: data => {
-                const dataWithoutAnsiEscapeCodes = data.replace(/\x1b\[[0-9;]*[a-zA-Z]/g, "");
-                bluetoothPopoutRoot.adapterPowered = dataWithoutAnsiEscapeCodes.indexOf("Powered: yes") !== -1;
+                bluetoothPopoutRoot.adapterPowered = data.indexOf("Powered: yes") !== -1;
             }
         }
     }
 
     Process {
         id: fetchConnectedDevicesProcess
-        command: ["bluetoothctl", "devices", "Connected"]
+        command: ["bash", "-c", "bluetoothctl devices | while read -r _ mac name; do bluetoothctl info \"$mac\" 2>/dev/null | grep -q 'Connected: yes' && echo \"$mac $name\"; done"]
         running: false
         stdout: SplitParser {
             splitMarker: ""
             onRead: data => {
-                const dataWithoutAnsiEscapeCodes = data.replace(/\x1b\[[0-9;]*[a-zA-Z]/g, "");
-                let lines = dataWithoutAnsiEscapeCodes.trim().split("\n");
+                let lines = data.trim().split("\n");
                 let devices = [];
                 for (let i = 0; i < lines.length; i++) {
                     let line = lines[i].trim();
                     if (line === "") continue;
                     let parts = line.split(" ");
-                    if (parts.length >= 3) {
+                    if (parts.length >= 2) {
                         devices.push({
-                            mac: parts[1],
-                            name: parts.slice(2).join(" ")
+                            mac: parts[0],
+                            name: parts.slice(1).join(" ")
                         });
                     }
                 }
