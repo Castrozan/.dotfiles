@@ -72,6 +72,22 @@ window#waybar {
   color: @accent;
 }
 
+#custom-ws4.empty {
+  color: @warning;
+  font-weight: normal;
+}
+
+#custom-ws4.occupied {
+  color: @warning;
+  font-weight: bold;
+}
+
+#custom-ws4.active {
+  color: @background;
+  background-color: @warning;
+  font-weight: bold;
+}
+
 #custom-ws1:hover,
 #custom-ws2:hover,
 #custom-ws3:hover,

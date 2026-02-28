@@ -35,3 +35,78 @@ setup() {
     run head -5 "$PINCHTAB_BIN"
     [[ "$output" == *"set -euo pipefail"* ]]
 }
+
+@test "pinchtab-navigate-and-snapshot binary exists in PATH" {
+    run command -v pinchtab-navigate-and-snapshot
+    [ "$status" -eq 0 ]
+}
+
+@test "pinchtab-navigate-and-snapshot uses strict error handling" {
+    local script_bin
+    script_bin="$(command -v pinchtab-navigate-and-snapshot)"
+    run head -5 "$script_bin"
+    [[ "$output" == *"set -Eeuo pipefail"* ]]
+}
+
+@test "pinchtab-navigate-and-snapshot calls navigate and snapshot endpoints" {
+    local script_bin
+    script_bin="$(command -v pinchtab-navigate-and-snapshot)"
+    run grep -q '/navigate' "$script_bin"
+    [ "$status" -eq 0 ]
+    run grep -q '/snapshot' "$script_bin"
+    [ "$status" -eq 0 ]
+}
+
+@test "pinchtab-act-and-snapshot binary exists in PATH" {
+    run command -v pinchtab-act-and-snapshot
+    [ "$status" -eq 0 ]
+}
+
+@test "pinchtab-act-and-snapshot uses strict error handling" {
+    local script_bin
+    script_bin="$(command -v pinchtab-act-and-snapshot)"
+    run head -5 "$script_bin"
+    [[ "$output" == *"set -Eeuo pipefail"* ]]
+}
+
+@test "pinchtab-act-and-snapshot calls action and snapshot endpoints" {
+    local script_bin
+    script_bin="$(command -v pinchtab-act-and-snapshot)"
+    run grep -q '/action' "$script_bin"
+    [ "$status" -eq 0 ]
+    run grep -q '/snapshot' "$script_bin"
+    [ "$status" -eq 0 ]
+}
+
+@test "pinchtab-act-and-snapshot defaults to diff snapshot" {
+    local script_bin
+    script_bin="$(command -v pinchtab-act-and-snapshot)"
+    run grep -q 'diff=true' "$script_bin"
+    [ "$status" -eq 0 ]
+}
+
+@test "pinchtab-fill-react-form binary exists in PATH" {
+    run command -v pinchtab-fill-react-form
+    [ "$status" -eq 0 ]
+}
+
+@test "pinchtab-fill-react-form uses strict error handling" {
+    local script_bin
+    script_bin="$(command -v pinchtab-fill-react-form)"
+    run head -5 "$script_bin"
+    [[ "$output" == *"set -Eeuo pipefail"* ]]
+}
+
+@test "pinchtab-fill-react-form calls evaluate endpoint" {
+    local script_bin
+    script_bin="$(command -v pinchtab-fill-react-form)"
+    run grep -q '/evaluate' "$script_bin"
+    [ "$status" -eq 0 ]
+}
+
+@test "pinchtab-fill-react-form handles React native value setter" {
+    local script_bin
+    script_bin="$(command -v pinchtab-fill-react-form)"
+    run grep -q 'nativeInputValueSetter' "$script_bin"
+    [ "$status" -eq 0 ]
+}

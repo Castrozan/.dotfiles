@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+readonly PINCHTAB_BASE_URL="http://localhost:9867"
+readonly DEFAULT_SNAPSHOT_QUERY_PARAMS="diff=true&format=compact"
+readonly MAX_STABILIZATION_WAIT_SECONDS=5
+readonly STABILIZATION_POLL_INTERVAL_SECONDS="0.3"
+
+main() {
+	local action_json_payload="$1"
+	local snapshot_query_params="${2:-$DEFAULT_SNAPSHOT_QUERY_PARAMS}"
+
+	_ensure_pinchtab_is_running
+	_execute_action "$action_json_payload"
+	_wait_until_page_stabilizes
+	_capture_diff_snapshot "$snapshot_query_params"
+}
+
+_ensure_pinchtab_is_running() {
+	if ! curl -sf --max-time 2 "${PINCHTAB_BASE_URL}/health" >/dev/null 2>&1; then
+		echo "Error: pinchtab is not running at ${PINCHTAB_BASE_URL}" >&2
+		return 1
+	fi
+}
+
+_execute_action() {
+	local action_json_payload="$1"
+	curl -sf --max-time 10 -X POST "${PINCHTAB_BASE_URL}/action" \
+		-H "Content-Type: application/json" \
+		-d "$action_json_payload" >/dev/null || {
+		echo "Error: action execution failed" >&2
+		return 1
+	}
+}
+
+_wait_until_page_stabilizes() {
+	local elapsed_seconds=0
+	local previous_snapshot=""
+	local current_snapshot=""
+
+	sleep "$STABILIZATION_POLL_INTERVAL_SECONDS"
+
+	while (($(echo "$elapsed_seconds < $MAX_STABILIZATION_WAIT_SECONDS" | bc -l))); do
+		current_snapshot=$(curl -sf --max-time 10 "${PINCHTAB_BASE_URL}/snapshot?diff=true&format=compact" 2>/dev/null || echo "")
+
+		if [[ -n "$previous_snapshot" && "$current_snapshot" == "$previous_snapshot" ]]; then
+			return 0
+		fi
+
+		previous_snapshot="$current_snapshot"
+		sleep "$STABILIZATION_POLL_INTERVAL_SECONDS"
+		elapsed_seconds=$(echo "$elapsed_seconds + $STABILIZATION_POLL_INTERVAL_SECONDS" | bc -l)
+	done
+}
+
+_capture_diff_snapshot() {
+	local snapshot_query_params="$1"
+	curl -sf --max-time 15 "${PINCHTAB_BASE_URL}/snapshot?${snapshot_query_params}" || {
+		echo "Error: diff snapshot capture failed" >&2
+		return 1
+	}
+}
+
+main "$@"

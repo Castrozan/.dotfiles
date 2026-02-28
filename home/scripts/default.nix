@@ -25,5 +25,8 @@
     ./pinchtab-ensure-running.nix
     ./pinchtab-screenshot.nix
     ./pinchtab-switch-mode.nix
+    ./pinchtab-navigate-and-snapshot.nix
+    ./pinchtab-act-and-snapshot.nix
+    ./pinchtab-fill-react-form.nix
   ];
 }
