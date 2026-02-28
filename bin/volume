@@ -5,9 +5,6 @@ set -Eeuo pipefail
 readonly VOLUME_ICONS_DIR="$HOME/.config/scripts/icons"
 readonly VOLUME_STEP_NORMAL=5
 readonly VOLUME_STEP_PRECISE=1
-readonly NOTIFICATION_TIMEOUT=1000
-readonly NOTIFICATION_TAG="volume"
-readonly NOTIFICATION_TAG_MIC="microphone"
 
 main() {
 	case "${1:-}" in
@@ -68,7 +65,7 @@ _increase_volume() {
 	local sink_name
 	sink_name=$(_find_active_sink_name_or_default)
 	pactl set-sink-volume "$sink_name" "+${step}%"
-	_send_volume_notification
+	_send_volume_osd
 }
 
 _decrease_volume() {
@@ -76,7 +73,7 @@ _decrease_volume() {
 	local sink_name
 	sink_name=$(_find_active_sink_name_or_default)
 	pactl set-sink-volume "$sink_name" "-${step}%"
-	_send_volume_notification
+	_send_volume_osd
 }
 
 _toggle_mute() {
@@ -85,56 +82,44 @@ _toggle_mute() {
 	pactl set-sink-mute "$sink_name" toggle
 
 	if _is_sink_muted; then
-		_send_notification "$NOTIFICATION_TAG" "$VOLUME_ICONS_DIR/volume-mute.png" "Volume Muted" 0
+		quickshell-osd-send mute true
 	else
-		_send_volume_notification
+		_send_volume_osd
 	fi
 }
 
-_send_volume_notification() {
-	local current_volume icon
+_send_volume_osd() {
+	local current_volume
 	current_volume=$(_get_volume_for_active_sink)
-	icon=$(_get_volume_icon_for_active_sink)
-	_send_notification "$NOTIFICATION_TAG" "$icon" "Volume: ${current_volume}%" "$current_volume"
+	quickshell-osd-send volume "$current_volume"
 }
 
 _increase_microphone_volume() {
 	local step=$1
 	pactl set-source-volume @DEFAULT_SOURCE@ "+${step}%"
-	_send_microphone_notification
+	_send_microphone_osd
 }
 
 _decrease_microphone_volume() {
 	local step=$1
 	pactl set-source-volume @DEFAULT_SOURCE@ "-${step}%"
-	_send_microphone_notification
+	_send_microphone_osd
 }
 
 _toggle_microphone_mute() {
 	pactl set-source-mute @DEFAULT_SOURCE@ toggle
 
 	if pactl get-source-mute @DEFAULT_SOURCE@ | grep -q "yes"; then
-		_send_notification "$NOTIFICATION_TAG_MIC" "microphone-sensitivity-muted-symbolic" "Microphone Muted" 0
+		quickshell-osd-send mic-mute true
 	else
-		_send_microphone_notification
+		_send_microphone_osd
 	fi
 }
 
-_send_microphone_notification() {
+_send_microphone_osd() {
 	local current_volume
 	current_volume=$(pactl get-source-volume @DEFAULT_SOURCE@ | grep -oP '\d+%' | head -1 | tr -d '%')
-	_send_notification "$NOTIFICATION_TAG_MIC" "microphone-sensitivity-high-symbolic" "Microphone: ${current_volume}%" "$current_volume"
-}
-
-_send_notification() {
-	local tag=$1 icon=$2 message=$3 value=$4
-	notify-send \
-		-t "$NOTIFICATION_TIMEOUT" \
-		-h "int:value:${value}" \
-		-h "string:x-canonical-private-synchronous:${tag}" \
-		-u low \
-		-i "$icon" \
-		"$message"
+	quickshell-osd-send mic "$current_volume"
 }
 
 main "$@"

@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+readonly OSD_SOCKET_PATH="/tmp/quickshell-osd.sock"
+
+main() {
+	local osd_type="${1:-}"
+	local osd_value="${2:-}"
+
+	case "$osd_type" in
+	volume) _send_osd_message "volume" "$osd_value" false ;;
+	brightness) _send_osd_message "brightness" "$osd_value" false ;;
+	mute) _send_osd_mute_message "volume" "$osd_value" ;;
+	mic) _send_osd_message "mic" "$osd_value" false ;;
+	mic-mute) _send_osd_mute_message "mic" "$osd_value" ;;
+	*)
+		echo "Usage: quickshell-osd-send {volume|brightness|mute|mic|mic-mute} <value>" >&2
+		return 1
+		;;
+	esac
+}
+
+_send_osd_message() {
+	local type=$1 value=$2 muted=$3
+	_write_json_to_socket "{\"type\":\"${type}\",\"value\":${value},\"muted\":${muted}}"
+}
+
+_send_osd_mute_message() {
+	local type=$1 muted_state=$2
+	_write_json_to_socket "{\"type\":\"${type}\",\"value\":0,\"muted\":${muted_state}}"
+}
+
+_write_json_to_socket() {
+	local json_payload=$1
+
+	if [[ ! -S "$OSD_SOCKET_PATH" ]]; then
+		return 0
+	fi
+
+	echo "$json_payload" | socat - "UNIX-CONNECT:${OSD_SOCKET_PATH}" 2>/dev/null || true
+}
+
+main "$@"

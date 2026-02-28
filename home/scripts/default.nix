@@ -21,6 +21,7 @@
     ./tmux-resurrect.nix
     ./brightness.nix
     ./volume.nix
+    ./quickshell-osd-send.nix
     ./pinchtab.nix
     ./pinchtab-ensure-running.nix
     ./pinchtab-screenshot.nix

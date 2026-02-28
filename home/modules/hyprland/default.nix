@@ -8,6 +8,7 @@ let
     "mako.service"
     "xdg-desktop-portal-hyprland.service"
     "hyprshell.service"
+    "quickshell-osd.service"
   ];
 in
 {
@@ -24,6 +25,7 @@ in
 
     ./wlr-which-key.nix
     ./mako-service.nix
+    ./quickshell-osd.nix
     ../satty.nix
     ../wiremix.nix
     ./xdg-desktop-portal-hyprland-service.nix
