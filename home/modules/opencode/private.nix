@@ -2,7 +2,6 @@
 let
   inherit (import ./lib.nix) colorNameToHex processAgentFile;
 
-  # Private config from git submodule (private-config/claude)
   privateConfigDir = ../../../private-config/claude;
   agentsDir = privateConfigDir + "/agents";
   skillsDir = privateConfigDir + "/skills";

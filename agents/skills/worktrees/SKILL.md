@@ -10,7 +10,7 @@ description: Create isolated git worktrees for parallel development. Use when st
 <workflow>
 Before creating a worktree, update main branch: `git fetch origin && git checkout main && git pull`. This ensures new branches start from the latest code.
 
-Claude Code has built-in worktree support. Use `claude --worktree <name>` or `-w <name>` to start a session in an isolated worktree at `.claude/worktrees/<name>/`. Subagents can use `isolation: "worktree"` in their definition to run in a temporary worktree that auto-cleans if no changes are made. Avoid branch names with `/` as they create nested directories.
+Git worktrees create isolated workspaces sharing the same repository. Create worktrees in `.worktrees/<branch>` inside the project directory using `git worktree add .worktrees/<branch> -b <branch>`. Avoid branch names with `/` as they create nested directories.
 
 Before finishing your implementation use /rebuild skill to rebuild or test the rebuild in the worktree changes. If your implementation works, and you rebuilt and tested or manually tested, continue to PR creation.
 

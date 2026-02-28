@@ -1,7 +1,6 @@
 
-# git worktrees (legacy custom path and built-in claude code path)
+# git worktrees
 .worktrees/
-.claude/worktrees/
 
 # Home-manager deployed (source: agents/, run ./bin/rebuild)
 /CLAUDE.md
