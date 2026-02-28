@@ -1,0 +1,78 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+readonly PINCHTAB_BASE_URL="http://localhost:9867"
+
+main() {
+	local field_specs_json="$1"
+
+	_ensure_pinchtab_is_running
+
+	local javascript_expression
+	javascript_expression=$(_build_fill_all_fields_expression "$field_specs_json")
+
+	curl -sf --max-time 15 -X POST "${PINCHTAB_BASE_URL}/evaluate" \
+		-H "Content-Type: application/json" \
+		-d "{\"expression\":${javascript_expression}}" 2>/dev/null | python3 -c "
+import json, sys
+response = json.load(sys.stdin)
+print(response.get('result', json.dumps({'success': False, 'error': 'no result'})))
+" 2>/dev/null || echo '{"success":false,"error":"evaluate failed"}'
+}
+
+_ensure_pinchtab_is_running() {
+	if ! curl -sf --max-time 2 "${PINCHTAB_BASE_URL}/health" >/dev/null 2>&1; then
+		echo "Error: pinchtab is not running at ${PINCHTAB_BASE_URL}" >&2
+		return 1
+	fi
+}
+
+_build_fill_all_fields_expression() {
+	local field_specs_json="$1"
+
+	python3 -c "
+import json, sys
+
+field_specs = json.loads(sys.argv[1])
+
+js_code = '''(function() {
+  var specs = __SPECS__;
+  var results = [];
+  for (var i = 0; i < specs.length; i++) {
+    var spec = specs[i];
+    var el = document.querySelector(spec.selector);
+    if (!el) {
+      results.push({selector: spec.selector, success: false, error: 'element not found'});
+      continue;
+    }
+    var fieldType = spec.type || 'text';
+    if (fieldType === 'checkbox' || fieldType === 'radio') {
+      var shouldBeChecked = spec.value === 'true' || spec.value === true;
+      if (el.checked !== shouldBeChecked) el.click();
+      results.push({selector: spec.selector, success: true, type: fieldType, checked: el.checked});
+    } else {
+      el.focus();
+      var proto = el.tagName === 'TEXTAREA'
+        ? window.HTMLTextAreaElement.prototype
+        : window.HTMLInputElement.prototype;
+      var descriptor = Object.getOwnPropertyDescriptor(proto, 'value');
+      if (descriptor && descriptor.set) {
+        descriptor.set.call(el, spec.value);
+      } else {
+        el.value = spec.value;
+      }
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+      results.push({selector: spec.selector, success: true, type: 'text'});
+    }
+  }
+  return JSON.stringify(results);
+})()'''
+
+js_code = js_code.replace('__SPECS__', json.dumps(field_specs))
+print(json.dumps(js_code))
+" "$field_specs_json"
+}
+
+main "$@"

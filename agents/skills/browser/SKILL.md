@@ -61,6 +61,11 @@ curl -s -X POST http://localhost:9867/evaluate -H "Content-Type: application/jso
 pinchtab-act-and-snapshot '{"kind":"click","ref":"e5"}' "filter=interactive&format=compact"
 ```
 
+`pinchtab-navigate-and-snapshot` calls `/navigate` which reloads the page — any filled form data is lost. To re-discover elements without losing form state, use `pinchtab-act-and-snapshot` with `filter=interactive`:
+```bash
+pinchtab-act-and-snapshot '{"kind":"scroll","direction":"down","amount":0}' "filter=interactive&format=compact"
+```
+
 Fall back to raw curl only when you need fine-grained control that helpers don't cover.
 </interaction-pattern>
 
@@ -82,16 +87,17 @@ The `eN` ref is what you pass as `"ref"` in action payloads. Element types match
 Action JSON payloads for `pinchtab-act-and-snapshot`:
 ```json
 {"kind":"click","ref":"e5"}
-{"kind":"fill","ref":"e3","text":"hello"}
-{"kind":"type","ref":"e3","text":"hello"}
 {"kind":"press","key":"Enter"}
 {"kind":"hover","ref":"e5"}
-{"kind":"select","ref":"e7","values":["option1"]}
 {"kind":"scroll","direction":"down","amount":500}
 {"kind":"focus","ref":"e3"}
 ```
 
-`fill` replaces input content. `type` appends characters. Snapshot query params: `filter=interactive`, `selector=CSS`, `diff=true`, `depth=N`, `format=compact`.
+`click` works reliably for links, buttons, and navigation. `press` sends keyboard keys. `hover` triggers tooltips and menus.
+
+**Unreliable actions** — `fill`, `type`, and `select` silently fail or throw errors on most forms (both SPA and plain HTML). `click` on checkbox/radio refs does not toggle state. Do not use these for form input — use `pinchtab-fill-form` instead (see `<form-filling>`).
+
+Snapshot query params: `filter=interactive`, `selector=CSS`, `diff=true`, `depth=N`, `format=compact`.
 </actions>
 
 <observation-strategy>
@@ -108,33 +114,46 @@ Choose the cheapest observation that answers your question:
 Default flow: navigate with interactive filter to discover elements → act with diff to see changes → escalate to interactive filter again only when diff shows new elements appeared. Use `/text` when verifying content. Screenshot only for visual confirmation.
 </observation-strategy>
 
-<react-and-framework-forms>
-React, Ant Design, and MUI components intercept native DOM events. Standard `fill` and `click` actions silently fail — the value appears set but framework state doesn't update, so submitting sends stale data.
+<form-filling>
+The `fill`, `type`, and `select` ref-based actions are unreliable on both SPA frameworks and plain HTML forms. `click` on checkbox/radio refs does not toggle state. Always use `pinchtab-fill-form` for any form input — it works universally via JavaScript evaluate.
 
-**Detection**: look for class names `ant-select`, `ant-input`, `ant-picker`, `MuiInput`, `MuiSelect`, `rc-select`, or `data-reactroot` attributes in the snapshot or page source.
-
-**Solution**: use `pinchtab-fill-react-form` which takes CSS selectors (not `eN` refs):
+`pinchtab-fill-form` takes a JSON array of field specs with **CSS selectors** (not `eN` refs):
 ```bash
-pinchtab-fill-react-form '[
-  {"selector":"#email","value":"user@example.com"},
-  {"selector":"#password","value":"secret123"},
-  {"selector":".ant-select","value":"Administrator","type":"select"}
+pinchtab-fill-form '[
+  {"selector":"input[name=email]","value":"user@example.com"},
+  {"selector":"textarea","value":"Hello world"},
+  {"selector":"input[value=medium]","value":"true","type":"radio"},
+  {"selector":"input[value=bacon]","value":"true","type":"checkbox"}
 ]'
 ```
 Output:
 ```json
-[{"selector":"#email","success":true,"type":"text"},{"selector":"#password","success":true,"type":"text"},{"selector":".ant-select","success":true,"type":"select","value":"Administrator"}]
+[{"selector":"input[name=email]","success":true,"type":"text"},{"selector":"textarea","success":true,"type":"text"},{"selector":"input[value=medium]","success":true,"type":"radio","checked":true},{"selector":"input[value=bacon]","success":true,"type":"checkbox","checked":true}]
 ```
 
-Field types: `text` (default) uses React's native value setter + synthetic input/change events. `select` opens the Ant Design dropdown via mousedown and clicks the matching option by text.
+Field types: `text` (default) — works on `<input>` and `<textarea>`, uses native value setter + synthetic events. `checkbox`/`radio` — calls `element.click()` to toggle state.
 
-**Important**: `pinchtab-fill-react-form` uses **CSS selectors** (like `#id`, `.class`, `input[name="x"]`), not snapshot `eN` refs. To find the right selector, use evaluate: `curl -s -X POST http://localhost:9867/evaluate -H "Content-Type: application/json" -d '{"expression":"document.querySelector(\"input\")?.id"}'`
+For custom select dropdowns (Ant Design, MUI, etc.), use direct evaluate — each framework has different DOM structure:
+```bash
+curl -s -X POST http://localhost:9867/evaluate -H "Content-Type: application/json" -d '{"expression":"(function(){ document.querySelector(\".ant-select-selector\").dispatchEvent(new MouseEvent(\"mousedown\",{bubbles:true})); return \"opened\"; })()"}'
+```
 
-Never retry `fill`/`click` on React components. If the first attempt doesn't stick, switch to `pinchtab-fill-react-form` or direct evaluate immediately.
-</react-and-framework-forms>
+To find CSS selectors for elements, use evaluate:
+```bash
+curl -s -X POST http://localhost:9867/evaluate -H "Content-Type: application/json" -d '{"expression":"JSON.stringify(Array.from(document.querySelectorAll(\"input\")).map(e=>({type:e.type,name:e.name,id:e.id})))"}'
+```
+
+**Search forms**: skip the form entirely — navigate directly with query params in the URL:
+```bash
+pinchtab-navigate-and-snapshot "https://en.wikipedia.org/w/index.php?search=Nix+package+manager"
+pinchtab-navigate-and-snapshot "https://github.com/search?q=nixpkgs&type=repositories"
+```
+
+Never use `fill`/`type`/`select` ref actions for form input. If `pinchtab-fill-form` fails on a field, fall back to direct evaluate with custom JavaScript.
+</form-filling>
 
 <token-budgeting>
-Plan interaction sequences before executing. Batch form fills with `pinchtab-fill-react-form` instead of one-field-at-a-time. After clicking, use diff — don't re-snapshot the entire page. Skip observation entirely for predictable outcomes (closing modals, pressing Enter). For 3+ actions with known outcomes, chain acts then observe once at the end. Use `/text` endpoint instead of snapshot when verifying content appeared.
+Plan interaction sequences before executing. Batch form fills with `pinchtab-fill-form` instead of one-field-at-a-time. After clicking, use diff — don't re-snapshot the entire page. Skip observation entirely for predictable outcomes (closing modals, pressing Enter). For 3+ actions with known outcomes, chain acts then observe once at the end. Use `/text` endpoint instead of snapshot when verifying content appeared.
 </token-budgeting>
 
 <complex-automation>
@@ -142,7 +161,7 @@ For sequences exceeding 10 browser actions, write a dedicated JavaScript script 
 </complex-automation>
 
 <workflow-example>
-Complete example: navigate to a site, search, click a result.
+Complete example: navigate to a site, click links, read content.
 
 ```bash
 # 1. Ensure pinchtab is running (separate call, run_in_background: true)
@@ -152,27 +171,27 @@ pinchtab-ensure-running
 sleep 4 && curl -sf --max-time 3 http://localhost:9867/health
 
 # 3. Navigate — get interactive elements
-pinchtab-navigate-and-snapshot "https://en.wikipedia.org"
-# Output: e3:button "Search" ...
+pinchtab-navigate-and-snapshot "https://example.com"
+# Output: e0:link "Learn more"
 
-# 4. Click search
-pinchtab-act-and-snapshot '{"kind":"click","ref":"e3"}'
-# Output: diff showing search page loaded, new elements
+# 4. Click a link and see what changed
+pinchtab-act-and-snapshot '{"kind":"click","ref":"e0"}'
+# Output: {"title":"Example Domains","url":"https://www.iana.org/help/example-domains",...}
 
-# 5. Re-snapshot to find the search input ref
-pinchtab-act-and-snapshot '{"kind":"click","ref":"e3"}' "filter=interactive&format=compact"
-# Output: e16:searchbox "Search Wikipedia" ...
-
-# 6. Fill search box and submit
-pinchtab-act-and-snapshot '{"kind":"fill","ref":"e16","text":"Nix package manager"}'
-pinchtab-act-and-snapshot '{"kind":"press","key":"Enter"}' "filter=interactive&format=compact"
-# Output: search results with clickable links
-
-# 7. Read text content instead of full snapshot
+# 5. Read text content (cheaper than snapshot)
 curl -s http://localhost:9867/text | python3 -c "import sys,json; print(json.load(sys.stdin).get('text',''))"
 ```
 
-Each numbered step is ONE Bash tool call. Total: 7 calls for a full search workflow.
+For search workflows, skip SPA forms — navigate directly with query params:
+```bash
+# Search Wikipedia (SPA search forms eat fill actions)
+pinchtab-navigate-and-snapshot "https://en.wikipedia.org/w/index.php?search=Nix+package+manager"
+
+# Search GitHub
+pinchtab-navigate-and-snapshot "https://github.com/search?q=nixpkgs&type=repositories"
+```
+
+Each numbered step is ONE Bash tool call. Total: 5 calls for a navigate + click + read workflow.
 </workflow-example>
 
 <troubleshooting>

@@ -85,28 +85,50 @@ setup() {
     [ "$status" -eq 0 ]
 }
 
-@test "pinchtab-fill-react-form binary exists in PATH" {
-    run command -v pinchtab-fill-react-form
+@test "pinchtab-fill-form binary exists in PATH" {
+    run command -v pinchtab-fill-form
     [ "$status" -eq 0 ]
 }
 
-@test "pinchtab-fill-react-form uses strict error handling" {
+@test "pinchtab-fill-form uses strict error handling" {
     local script_bin
-    script_bin="$(command -v pinchtab-fill-react-form)"
+    script_bin="$(command -v pinchtab-fill-form)"
     run head -5 "$script_bin"
     [[ "$output" == *"set -Eeuo pipefail"* ]]
 }
 
-@test "pinchtab-fill-react-form calls evaluate endpoint" {
+@test "pinchtab-fill-form calls evaluate endpoint" {
     local script_bin
-    script_bin="$(command -v pinchtab-fill-react-form)"
+    script_bin="$(command -v pinchtab-fill-form)"
     run grep -q '/evaluate' "$script_bin"
     [ "$status" -eq 0 ]
 }
 
-@test "pinchtab-fill-react-form handles React native value setter" {
+@test "pinchtab-fill-form handles native value setter for React compatibility" {
     local script_bin
-    script_bin="$(command -v pinchtab-fill-react-form)"
-    run grep -q 'nativeInputValueSetter' "$script_bin"
+    script_bin="$(command -v pinchtab-fill-form)"
+    run grep -q 'nativeValueSetter\|getOwnPropertyDescriptor' "$script_bin"
     [ "$status" -eq 0 ]
+}
+
+@test "pinchtab-fill-form detects textarea elements for correct prototype" {
+    local script_bin
+    script_bin="$(command -v pinchtab-fill-form)"
+    run grep -q 'HTMLTextAreaElement' "$script_bin"
+    [ "$status" -eq 0 ]
+}
+
+@test "pinchtab-fill-form handles checkbox and radio via element click" {
+    local script_bin
+    script_bin="$(command -v pinchtab-fill-form)"
+    run grep -q 'el.click()' "$script_bin"
+    [ "$status" -eq 0 ]
+}
+
+@test "pinchtab-fill-form processes all fields in single evaluate call" {
+    local script_bin
+    script_bin="$(command -v pinchtab-fill-form)"
+    local evaluate_count
+    evaluate_count=$(grep -c '/evaluate' "$script_bin")
+    [ "$evaluate_count" -eq 1 ]
 }

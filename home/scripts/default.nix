@@ -27,6 +27,6 @@
     ./pinchtab-switch-mode.nix
     ./pinchtab-navigate-and-snapshot.nix
     ./pinchtab-act-and-snapshot.nix
-    ./pinchtab-fill-react-form.nix
+    ./pinchtab-fill-form.nix
   ];
 }
