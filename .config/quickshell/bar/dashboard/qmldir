@@ -1,0 +1,9 @@
+module dashboard
+
+singleton Colours 1.0 Colours.qml
+singleton Appearance 1.0 Appearance.qml
+singleton DashboardConfig 1.0 DashboardConfig.qml
+
+DashboardWrapper 1.0 DashboardWrapper.qml
+DashboardContent 1.0 DashboardContent.qml
+DashboardTabs 1.0 DashboardTabs.qml

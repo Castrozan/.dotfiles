@@ -16,6 +16,7 @@
       bruno
       bun
       cargo
+      cava
       curl
       delta
       docker-compose

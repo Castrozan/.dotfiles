@@ -1,0 +1,10 @@
+module dashboard.components
+Anim 1.0 Anim.qml
+CAnim 1.0 CAnim.qml
+StyledRect 1.0 StyledRect.qml
+StyledText 1.0 StyledText.qml
+StyledClippingRect 1.0 StyledClippingRect.qml
+MaterialIcon 1.0 MaterialIcon.qml
+StateLayer 1.0 StateLayer.qml
+IconButton 1.0 IconButton.qml
+StyledSlider 1.0 StyledSlider.qml

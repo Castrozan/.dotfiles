@@ -12,6 +12,10 @@ ShapePath {
     required property real extensionHeight
     required property real extensionWidth
 
+    required property real dashboardX
+    required property real dashboardWidth
+    required property real dashboardHeight
+
     readonly property real stripThickness: barWidth / 3
 
     readonly property real innerCornerRadius: Math.min(junctionRadius, stripThickness)
@@ -53,6 +57,13 @@ ShapePath {
     readonly property real bottomEdgeTargetX: bottomFullyMerged ? (extensionRight - extensionCornerArcRadius) : (barWidth + effectiveBottomLeftBarCornerRadius)
     readonly property real topEdgeTargetX: topFullyMerged ? (extensionRight - extensionCornerArcRadius) : (barWidth + effectiveTopLeftBarCornerRadius)
 
+    readonly property bool hasDashboard: dashboardHeight > 0
+    readonly property real dashboardBottomEdge: stripThickness + dashboardHeight
+    readonly property real dashboardRightEdge: dashboardX + dashboardWidth
+    readonly property real dashboardCornerArcRadius: Math.min(junctionRadius, dashboardWidth / 2, dashboardHeight / 2)
+    readonly property real dashboardLeftJunctionArcRadius: Math.min(junctionRadius, dashboardHeight, Math.max(0, dashboardX - topEdgeTargetX))
+    readonly property real dashboardRightJunctionArcRadius: Math.min(junctionRadius, dashboardHeight, Math.max(0, (screenWidth - stripThickness - innerCornerRadius) - dashboardRightEdge))
+
     fillColor: "transparent"
     strokeColor: ThemeColors.accent
     strokeWidth: 2
@@ -61,6 +72,58 @@ ShapePath {
 
     startX: topEdgeTargetX
     startY: stripThickness
+
+    PathLine {
+        x: barInternalBorderRoot.dashboardX - barInternalBorderRoot.dashboardLeftJunctionArcRadius
+        y: barInternalBorderRoot.stripThickness
+    }
+
+    PathArc {
+        x: barInternalBorderRoot.dashboardX
+        y: barInternalBorderRoot.stripThickness + barInternalBorderRoot.dashboardLeftJunctionArcRadius
+        radiusX: barInternalBorderRoot.dashboardLeftJunctionArcRadius
+        radiusY: barInternalBorderRoot.dashboardLeftJunctionArcRadius
+        direction: PathArc.Clockwise
+    }
+
+    PathLine {
+        x: barInternalBorderRoot.dashboardX
+        y: barInternalBorderRoot.dashboardBottomEdge - barInternalBorderRoot.dashboardCornerArcRadius
+    }
+
+    PathArc {
+        x: barInternalBorderRoot.dashboardX + barInternalBorderRoot.dashboardCornerArcRadius
+        y: barInternalBorderRoot.dashboardBottomEdge
+        radiusX: barInternalBorderRoot.dashboardCornerArcRadius
+        radiusY: barInternalBorderRoot.dashboardCornerArcRadius
+        direction: PathArc.Counterclockwise
+    }
+
+    PathLine {
+        x: barInternalBorderRoot.dashboardRightEdge - barInternalBorderRoot.dashboardCornerArcRadius
+        y: barInternalBorderRoot.dashboardBottomEdge
+    }
+
+    PathArc {
+        x: barInternalBorderRoot.dashboardRightEdge
+        y: barInternalBorderRoot.dashboardBottomEdge - barInternalBorderRoot.dashboardCornerArcRadius
+        radiusX: barInternalBorderRoot.dashboardCornerArcRadius
+        radiusY: barInternalBorderRoot.dashboardCornerArcRadius
+        direction: PathArc.Counterclockwise
+    }
+
+    PathLine {
+        x: barInternalBorderRoot.dashboardRightEdge
+        y: barInternalBorderRoot.stripThickness + barInternalBorderRoot.dashboardRightJunctionArcRadius
+    }
+
+    PathArc {
+        x: barInternalBorderRoot.dashboardRightEdge + barInternalBorderRoot.dashboardRightJunctionArcRadius
+        y: barInternalBorderRoot.stripThickness
+        radiusX: barInternalBorderRoot.dashboardRightJunctionArcRadius
+        radiusY: barInternalBorderRoot.dashboardRightJunctionArcRadius
+        direction: PathArc.Clockwise
+    }
 
     PathLine {
         x: barInternalBorderRoot.screenWidth - barInternalBorderRoot.stripThickness - barInternalBorderRoot.innerCornerRadius
@@ -111,7 +174,7 @@ ShapePath {
         y: barInternalBorderRoot.clampedExtensionBottomEdge
         radiusX: barInternalBorderRoot.effectiveBottomJunctionArcRadius
         radiusY: barInternalBorderRoot.effectiveBottomJunctionArcRadius
-        direction: barInternalBorderRoot.bottomCornerMerged ? PathArc.Counterclockwise : PathArc.Clockwise
+        direction: barInternalBorderRoot.bottomCornerMerged ? PathArc.Clockwise : PathArc.Counterclockwise
     }
 
     PathLine {

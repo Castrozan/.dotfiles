@@ -12,6 +12,10 @@ ShapePath {
     required property real extensionHeight
     required property real extensionWidth
 
+    required property real dashboardX
+    required property real dashboardWidth
+    required property real dashboardHeight
+
     readonly property real stripThickness: barWidth / 3
 
     readonly property real innerCornerRadius: Math.min(junctionRadius, stripThickness)
@@ -53,6 +57,13 @@ ShapePath {
     readonly property real bottomEdgeTargetX: bottomFullyMerged ? (extensionRight - extensionCornerArcRadius) : (barWidth + effectiveBottomLeftBarCornerRadius)
     readonly property real topEdgeTargetX: topFullyMerged ? (extensionRight - extensionCornerArcRadius) : (barWidth + effectiveTopLeftBarCornerRadius)
 
+    readonly property bool hasDashboard: dashboardHeight > 0
+    readonly property real dashboardBottomEdge: stripThickness + dashboardHeight
+    readonly property real dashboardRightEdge: dashboardX + dashboardWidth
+    readonly property real dashboardCornerArcRadius: Math.min(junctionRadius, dashboardWidth / 2, dashboardHeight / 2)
+    readonly property real dashboardLeftJunctionArcRadius: Math.min(junctionRadius, dashboardHeight, Math.max(0, dashboardX - topEdgeTargetX))
+    readonly property real dashboardRightJunctionArcRadius: Math.min(junctionRadius, dashboardHeight, Math.max(0, (screenWidth - stripThickness - innerCornerRadius) - dashboardRightEdge))
+
     fillColor: ThemeColors.background
     strokeWidth: -1
 
@@ -82,6 +93,58 @@ ShapePath {
     PathMove {
         x: shapePathRoot.topEdgeTargetX
         y: shapePathRoot.stripThickness
+    }
+
+    PathLine {
+        x: shapePathRoot.dashboardX - shapePathRoot.dashboardLeftJunctionArcRadius
+        y: shapePathRoot.stripThickness
+    }
+
+    PathArc {
+        x: shapePathRoot.dashboardX
+        y: shapePathRoot.stripThickness + shapePathRoot.dashboardLeftJunctionArcRadius
+        radiusX: shapePathRoot.dashboardLeftJunctionArcRadius
+        radiusY: shapePathRoot.dashboardLeftJunctionArcRadius
+        direction: PathArc.Clockwise
+    }
+
+    PathLine {
+        x: shapePathRoot.dashboardX
+        y: shapePathRoot.dashboardBottomEdge - shapePathRoot.dashboardCornerArcRadius
+    }
+
+    PathArc {
+        x: shapePathRoot.dashboardX + shapePathRoot.dashboardCornerArcRadius
+        y: shapePathRoot.dashboardBottomEdge
+        radiusX: shapePathRoot.dashboardCornerArcRadius
+        radiusY: shapePathRoot.dashboardCornerArcRadius
+        direction: PathArc.Counterclockwise
+    }
+
+    PathLine {
+        x: shapePathRoot.dashboardRightEdge - shapePathRoot.dashboardCornerArcRadius
+        y: shapePathRoot.dashboardBottomEdge
+    }
+
+    PathArc {
+        x: shapePathRoot.dashboardRightEdge
+        y: shapePathRoot.dashboardBottomEdge - shapePathRoot.dashboardCornerArcRadius
+        radiusX: shapePathRoot.dashboardCornerArcRadius
+        radiusY: shapePathRoot.dashboardCornerArcRadius
+        direction: PathArc.Counterclockwise
+    }
+
+    PathLine {
+        x: shapePathRoot.dashboardRightEdge
+        y: shapePathRoot.stripThickness + shapePathRoot.dashboardRightJunctionArcRadius
+    }
+
+    PathArc {
+        x: shapePathRoot.dashboardRightEdge + shapePathRoot.dashboardRightJunctionArcRadius
+        y: shapePathRoot.stripThickness
+        radiusX: shapePathRoot.dashboardRightJunctionArcRadius
+        radiusY: shapePathRoot.dashboardRightJunctionArcRadius
+        direction: PathArc.Clockwise
     }
 
     PathLine {
@@ -133,7 +196,7 @@ ShapePath {
         y: shapePathRoot.clampedExtensionBottomEdge
         radiusX: shapePathRoot.effectiveBottomJunctionArcRadius
         radiusY: shapePathRoot.effectiveBottomJunctionArcRadius
-        direction: shapePathRoot.bottomCornerMerged ? PathArc.Counterclockwise : PathArc.Clockwise
+        direction: shapePathRoot.bottomCornerMerged ? PathArc.Clockwise : PathArc.Counterclockwise
     }
 
     PathLine {
