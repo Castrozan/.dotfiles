@@ -63,6 +63,7 @@
       ruff
       rustc
       shellcheck
+      shfmt
       tailscale
       tealdeer
       tree

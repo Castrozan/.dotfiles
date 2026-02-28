@@ -63,6 +63,8 @@
       postman
       python312
       scrcpy
+      shellcheck
+      shfmt
       sqlite
       tig # git log visualizer
       tealdeer
