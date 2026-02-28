@@ -25,6 +25,11 @@
         executable = true;
         force = true;
       };
+      ".config/waybar/scripts/workspace-coordinator.sh" = {
+        source = ../../../.config/waybar/scripts/workspace-coordinator.sh;
+        executable = true;
+        force = true;
+      };
     };
 
     packages = with pkgs; [ waybar ];

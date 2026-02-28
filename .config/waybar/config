@@ -24,38 +24,45 @@
   "modules-right": [],
   "custom/ws1": {
     "return-type": "json",
-    "exec": "~/.config/waybar/scripts/workspace-window.sh 1",
-    "on-click": "~/.config/waybar/scripts/workspace-window.sh --click 1"
+    "exec": "tail -f -n 1 /tmp/waybar-ws1",
+    "on-click": "~/.config/waybar/scripts/workspace-window.sh 1",
+    "restart-interval": 2
   },
   "custom/ws2": {
     "return-type": "json",
-    "exec": "~/.config/waybar/scripts/workspace-window.sh 2",
-    "on-click": "~/.config/waybar/scripts/workspace-window.sh --click 2"
+    "exec": "tail -f -n 1 /tmp/waybar-ws2",
+    "on-click": "~/.config/waybar/scripts/workspace-window.sh 2",
+    "restart-interval": 2
   },
   "custom/ws3": {
     "return-type": "json",
-    "exec": "~/.config/waybar/scripts/workspace-window.sh 3",
-    "on-click": "~/.config/waybar/scripts/workspace-window.sh --click 3"
+    "exec": "tail -f -n 1 /tmp/waybar-ws3",
+    "on-click": "~/.config/waybar/scripts/workspace-window.sh 3",
+    "restart-interval": 2
   },
   "custom/ws4": {
     "return-type": "json",
-    "exec": "~/.config/waybar/scripts/workspace-window.sh 4",
-    "on-click": "~/.config/waybar/scripts/workspace-window.sh --click 4"
+    "exec": "tail -f -n 1 /tmp/waybar-ws4",
+    "on-click": "~/.config/waybar/scripts/workspace-window.sh 4",
+    "restart-interval": 2
   },
   "custom/ws5": {
     "return-type": "json",
-    "exec": "~/.config/waybar/scripts/workspace-window.sh 5",
-    "on-click": "~/.config/waybar/scripts/workspace-window.sh --click 5"
+    "exec": "tail -f -n 1 /tmp/waybar-ws5",
+    "on-click": "~/.config/waybar/scripts/workspace-window.sh 5",
+    "restart-interval": 2
   },
   "custom/ws6": {
     "return-type": "json",
-    "exec": "~/.config/waybar/scripts/workspace-window.sh 6",
-    "on-click": "~/.config/waybar/scripts/workspace-window.sh --click 6"
+    "exec": "tail -f -n 1 /tmp/waybar-ws6",
+    "on-click": "~/.config/waybar/scripts/workspace-window.sh 6",
+    "restart-interval": 2
   },
   "custom/ws7": {
     "return-type": "json",
-    "exec": "~/.config/waybar/scripts/workspace-window.sh 7",
-    "on-click": "~/.config/waybar/scripts/workspace-window.sh --click 7"
+    "exec": "tail -f -n 1 /tmp/waybar-ws7",
+    "on-click": "~/.config/waybar/scripts/workspace-window.sh 7",
+    "restart-interval": 2
   },
   "custom/launcher": {
     "format": "",
