@@ -1,0 +1,9 @@
+LauncherButton 1.0 LauncherButton.qml
+WorkspacesModule 1.0 WorkspacesModule.qml
+WorkspaceIndicator 1.0 WorkspaceIndicator.qml
+ActiveWindowModule 1.0 ActiveWindowModule.qml
+TrayModule 1.0 TrayModule.qml
+ClockModule 1.0 ClockModule.qml
+StatusIconsModule 1.0 StatusIconsModule.qml
+StatusIcon 1.0 StatusIcon.qml
+PowerButton 1.0 PowerButton.qml

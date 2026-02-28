@@ -26,7 +26,6 @@ _output_json() {
 
 _toggle() {
   pactl set-source-mute "${MIC_SOURCE_NAME}" toggle
-  pkill -RTMIN+8 waybar 2>/dev/null || true
 }
 
 main() {

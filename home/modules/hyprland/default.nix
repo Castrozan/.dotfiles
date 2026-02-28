@@ -4,7 +4,7 @@
 let
   systemctl = "${pkgs.systemd}/bin/systemctl";
   graphicalServices = [
-    "waybar.service"
+    "quickshell-bar.service"
     "mako.service"
     "xdg-desktop-portal-hyprland.service"
     "quickshell-osd.service"
@@ -14,13 +14,11 @@ in
 {
   imports = [
     ./packages.nix
-    ./calendar.nix
     ./cursor.nix
     ./themes.nix
-    ./waybar.nix
     ./wlogout.nix
     ./wayland-electron.nix
-    ./waybar-service.nix
+    ./quickshell-bar.nix
 
     ./wlr-which-key.nix
     ./mako-service.nix

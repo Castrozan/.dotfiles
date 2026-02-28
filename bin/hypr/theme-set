@@ -43,8 +43,8 @@ hypr-theme-bg-next
 # Apply Hyprland border colors (safe, just keyword changes)
 hypr-restart-hyprctl
 
-# Restart waybar to reload CSS (SIGUSR2 doesn't re-fetch @imports)
-systemctl --user restart waybar 2>/dev/null || true
+# Restart quickshell-bar to pick up new theme colors
+systemctl --user restart quickshell-bar 2>/dev/null || true
 
 # Reload mako config (reload command doesn't require restart)
 makoctl reload 2>/dev/null || true

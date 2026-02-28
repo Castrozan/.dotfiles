@@ -1,0 +1,6 @@
+PopoutWrapper 1.0 PopoutWrapper.qml
+PopoutContent 1.0 PopoutContent.qml
+NetworkPopout 1.0 NetworkPopout.qml
+BluetoothPopout 1.0 BluetoothPopout.qml
+BatteryPopout 1.0 BatteryPopout.qml
+TrayMenuPopout 1.0 TrayMenuPopout.qml
