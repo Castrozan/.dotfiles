@@ -9,7 +9,6 @@ let
     "xdg-desktop-portal-hyprland.service"
     "quickshell-osd.service"
     "quickshell-switcher.service"
-    "quickshell-dashboard.service"
   ];
 in
 {
@@ -25,7 +24,6 @@ in
     ./mako-service.nix
     ./quickshell-osd.nix
     ./quickshell-switcher.nix
-    ./quickshell-dashboard.nix
     ../satty.nix
     ../wiremix.nix
     ./xdg-desktop-portal-hyprland-service.nix

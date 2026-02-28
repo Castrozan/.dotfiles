@@ -1,8 +1,10 @@
 import Quickshell
+import Quickshell.Io
 import Quickshell.Wayland
 import QtQuick
 import QtQuick.Shapes
 import "popouts"
+import "dashboard"
 
 Scope {
     id: drawersRoot
@@ -22,6 +24,8 @@ Scope {
             property string popoutCurrentName: ""
             property real popoutCenterY: 0
             property bool popoutHovered: false
+            property bool dashboardVisible: false
+            property bool dashboardHovered: false
 
             readonly property bool hasActivePopout: popoutCurrentName !== ""
             readonly property int shapeJunctionRadius: 36
@@ -42,6 +46,18 @@ Scope {
                 }
             }
 
+            function toggleDashboard(): void {
+                dashboardVisible = !dashboardVisible;
+            }
+
+            IpcHandler {
+                target: "dashboard"
+
+                function toggle(): void {
+                    screenScope.toggleDashboard();
+                }
+            }
+
             PanelWindow {
                 id: drawersWindow
 
@@ -57,7 +73,7 @@ Scope {
                 exclusionMode: ExclusionMode.Ignore
                 WlrLayershell.layer: WlrLayer.Top
                 WlrLayershell.namespace: "quickshell-bar"
-                WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
+                WlrLayershell.keyboardFocus: screenScope.dashboardVisible ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
 
                 color: "transparent"
                 surfaceFormat.opaque: false
@@ -97,6 +113,13 @@ Scope {
                             width: popoutWrapper.visible ? popoutWrapper.width : 0
                             height: popoutWrapper.visible ? popoutWrapper.height + screenScope.shapeJunctionRadius * 2 : 0
                             intersection: Intersection.Subtract
+                        },
+                        Region {
+                            x: dashboardWrapper.x
+                            y: dashboardWrapper.visible ? dashboardWrapper.y : 0
+                            width: dashboardWrapper.visible ? dashboardWrapper.width : 0
+                            height: dashboardWrapper.visible ? dashboardWrapper.height : 0
+                            intersection: Intersection.Subtract
                         }
                     ]
                 }
@@ -117,6 +140,13 @@ Scope {
                         extensionWidth: screenScope.animatedExtensionWidth
                     }
 
+                    DashboardBackgroundShape {
+                        dashboardX: dashboardWrapper.x
+                        dashboardY: dashboardWrapper.y
+                        dashboardWidth: dashboardWrapper.width
+                        dashboardHeight: dashboardWrapper.height
+                        dashboardVisible: dashboardWrapper.visible
+                    }
                 }
 
                 Shape {
@@ -132,6 +162,14 @@ Scope {
                         extensionY: popoutWrapper.y
                         extensionHeight: popoutWrapper.hasContent ? popoutWrapper.height : 0
                         extensionWidth: screenScope.animatedExtensionWidth
+                    }
+
+                    DashboardBorderShape {
+                        dashboardX: dashboardWrapper.x
+                        dashboardY: dashboardWrapper.y
+                        dashboardWidth: dashboardWrapper.width
+                        dashboardHeight: dashboardWrapper.height
+                        dashboardVisible: dashboardWrapper.visible
                     }
                 }
 
@@ -158,6 +196,57 @@ Scope {
                     screenScope: screenScope
                 }
 
+                MouseArea {
+                    id: topStripDashboardHoverTrigger
+
+                    readonly property real topStripHeight: barTotalWidth / 3
+                    readonly property real triggerWidth: drawersWindow.width - barTotalWidth * 2
+
+                    x: barTotalWidth + (drawersWindow.width - barTotalWidth - triggerWidth) / 2
+                    y: 0
+                    z: 3
+                    width: triggerWidth
+                    height: topStripHeight
+
+                    hoverEnabled: true
+                    acceptedButtons: Qt.NoButton
+
+                    onContainsMouseChanged: {
+                        if (containsMouse) {
+                            dashboardHideTimer.stop();
+                            screenScope.dashboardVisible = true;
+                        } else if (!screenScope.dashboardHovered) {
+                            dashboardHideTimer.restart();
+                        }
+                    }
+                }
+
+                DashboardWrapper {
+                    id: dashboardWrapper
+
+                    x: barTotalWidth + (drawersWindow.width - barTotalWidth - width) / 2
+                    y: barTotalWidth / 3
+                    z: 2
+
+                    dashboardVisible: screenScope.dashboardVisible
+
+                    MouseArea {
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        acceptedButtons: Qt.NoButton
+
+                        onContainsMouseChanged: {
+                            screenScope.dashboardHovered = containsMouse;
+                            if (containsMouse) {
+                                dashboardHideTimer.stop();
+                            } else if (!topStripDashboardHoverTrigger.containsMouse) {
+                                dashboardHideTimer.restart();
+                            }
+                        }
+                    }
+                }
+
+
                 PopoutWrapper {
                     id: popoutWrapper
                     x: barTotalWidth
@@ -176,12 +265,35 @@ Scope {
                     }
                 }
 
+                MouseArea {
+                    id: dashboardDismissArea
+
+                    anchors.fill: parent
+                    visible: screenScope.dashboardVisible
+                    z: 1
+
+                    onClicked: screenScope.dashboardVisible = false
+
+                    Keys.onEscapePressed: screenScope.dashboardVisible = false
+                    focus: screenScope.dashboardVisible
+                }
+
                 Timer {
                     id: popoutHideTimer
                     interval: 450
                     onTriggered: {
                         if (!screenScope.popoutHovered && !interactions.isOverBar && !barWrapper.barItem.hasHoveredPopoutIcon) {
                             screenScope.popoutCurrentName = "";
+                        }
+                    }
+                }
+
+                Timer {
+                    id: dashboardHideTimer
+                    interval: 450
+                    onTriggered: {
+                        if (!screenScope.dashboardHovered && !topStripDashboardHoverTrigger.containsMouse) {
+                            screenScope.dashboardVisible = false;
                         }
                     }
                 }

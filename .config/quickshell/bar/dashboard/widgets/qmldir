@@ -1,0 +1,9 @@
+module dashboard.widgets
+UserWidget 1.0 UserWidget.qml
+CalendarWidget 1.0 CalendarWidget.qml
+DateTimeWidget 1.0 DateTimeWidget.qml
+WeatherWidget 1.0 WeatherWidget.qml
+ResourcesWidget 1.0 ResourcesWidget.qml
+MediaWidget 1.0 MediaWidget.qml
+SeekSlider 1.0 SeekSlider.qml
+PlayerSourceBadge 1.0 PlayerSourceBadge.qml

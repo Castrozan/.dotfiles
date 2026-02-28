@@ -8,5 +8,6 @@
     fira-code-symbols
     noto-fonts-color-emoji
     symbola
+    material-symbols
   ];
 }

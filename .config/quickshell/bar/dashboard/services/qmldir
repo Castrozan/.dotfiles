@@ -1,0 +1,7 @@
+module dashboard.services
+singleton PlayersService 1.0 PlayersService.qml
+singleton TimeService 1.0 TimeService.qml
+singleton WeatherService 1.0 WeatherService.qml
+singleton SystemUsageService 1.0 SystemUsageService.qml
+singleton NetworkUsageService 1.0 NetworkUsageService.qml
+singleton SysInfoService 1.0 SysInfoService.qml
