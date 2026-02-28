@@ -10,7 +10,7 @@ ColumnLayout {
 
     spacing: 2
 
-    readonly property bool hasHoveredPopoutIcon: statusIconsModule.hasHoveredPopoutIcon
+    readonly property bool hasHoveredPopoutIcon: mprisHoverZone.isHovered || statusIconsModule.hasHoveredPopoutIcon
     property var statusIconPositions: ({})
 
     function checkPopout(mouseY: real): void {
@@ -45,6 +45,26 @@ ColumnLayout {
         let positions = statusIconPositions;
         positions[name] = { top: top, bottom: bottom };
         statusIconPositions = positions;
+    }
+
+    Item {
+        id: mprisHoverZone
+        Layout.alignment: Qt.AlignHCenter
+        Layout.preferredWidth: 40
+        Layout.preferredHeight: 20
+
+        readonly property bool isHovered: mprisHoverMouseArea.containsMouse
+
+        MouseArea {
+            id: mprisHoverMouseArea
+            anchors.fill: parent
+            hoverEnabled: true
+            onContainsMouseChanged: {
+                if (containsMouse) {
+                    barRoot.screenScope.showPopout("mpris", barRoot.height / 3);
+                }
+            }
+        }
     }
 
     Modules.LauncherButton {

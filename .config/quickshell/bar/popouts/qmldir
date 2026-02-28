@@ -4,3 +4,6 @@ NetworkPopout 1.0 NetworkPopout.qml
 BluetoothPopout 1.0 BluetoothPopout.qml
 BatteryPopout 1.0 BatteryPopout.qml
 TrayMenuPopout 1.0 TrayMenuPopout.qml
+PopoutBorderShape 1.0 PopoutBorderShape.qml
+MprisPopout 1.0 MprisPopout.qml
+MprisPopoutControlButton 1.0 MprisPopoutControlButton.qml

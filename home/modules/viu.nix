@@ -103,7 +103,7 @@
     preview_separator_color = "208,208,208"
 
     [mpv]
-    args = "--vo=kitty,--video-sync=display-resample,--interpolation=no,--tscale=oversample,--ao=pulse,--hwdec=no,--cache=yes,--cache-secs=60"
+    args = "--vo=kitty,--vo-kitty-use-shm=yes,--video-sync=display-resample,--interpolation=no,--tscale=oversample,--ao=pulse,--hwdec=vaapi,--cache=yes,--cache-secs=60,--vf=scale=-2:720"
     pre_args = ""
 
     [vlc]

@@ -27,7 +27,8 @@ ColumnLayout {
         stdout: SplitParser {
             splitMarker: ""
             onRead: data => {
-                bluetoothPopoutRoot.adapterPowered = data.indexOf("Powered: yes") !== -1;
+                const dataWithoutAnsiEscapeCodes = data.replace(/\x1b\[[0-9;]*[a-zA-Z]/g, "");
+                bluetoothPopoutRoot.adapterPowered = dataWithoutAnsiEscapeCodes.indexOf("Powered: yes") !== -1;
             }
         }
     }
@@ -39,7 +40,8 @@ ColumnLayout {
         stdout: SplitParser {
             splitMarker: ""
             onRead: data => {
-                let lines = data.trim().split("\n");
+                const dataWithoutAnsiEscapeCodes = data.replace(/\x1b\[[0-9;]*[a-zA-Z]/g, "");
+                let lines = dataWithoutAnsiEscapeCodes.trim().split("\n");
                 let devices = [];
                 for (let i = 0; i < lines.length; i++) {
                     let line = lines[i].trim();

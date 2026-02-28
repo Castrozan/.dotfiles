@@ -23,6 +23,7 @@ Item {
         if (currentName === "network") return networkPopout.implicitHeight + 32;
         if (currentName === "bluetooth") return bluetoothPopout.implicitHeight + 32;
         if (currentName === "battery") return batteryPopout.implicitHeight + 32;
+        if (currentName === "mpris") return mprisPopout.implicitHeight + 32;
         if (isTrayMenu && trayMenuLoader.item) return trayMenuLoader.item.implicitHeight + 32;
         if (isTrayMenu) return 100;
         return 0;
@@ -36,7 +37,7 @@ Item {
 
         opacity: visible ? 1 : 0
         Behavior on opacity {
-            NumberAnimation { duration: 150 }
+            NumberAnimation { duration: 250 }
         }
     }
 
@@ -48,7 +49,7 @@ Item {
 
         opacity: visible ? 1 : 0
         Behavior on opacity {
-            NumberAnimation { duration: 150 }
+            NumberAnimation { duration: 250 }
         }
     }
 
@@ -57,6 +58,18 @@ Item {
         anchors.fill: parent
         visible: popoutContentRoot.currentName === "battery"
         active: popoutContentRoot.currentName === "battery"
+
+        opacity: visible ? 1 : 0
+        Behavior on opacity {
+            NumberAnimation { duration: 250 }
+        }
+    }
+
+    MprisPopout {
+        id: mprisPopout
+        anchors.fill: parent
+        visible: popoutContentRoot.currentName === "mpris"
+        active: popoutContentRoot.currentName === "mpris"
 
         opacity: visible ? 1 : 0
         Behavior on opacity {
@@ -78,7 +91,7 @@ Item {
 
         opacity: visible ? 1 : 0
         Behavior on opacity {
-            NumberAnimation { duration: 150 }
+            NumberAnimation { duration: 250 }
         }
     }
 

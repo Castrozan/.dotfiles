@@ -33,6 +33,26 @@ ShapePath {
     readonly property real extensionCornerArcRadius: Math.min(junctionRadius, extensionWidth, extensionHeight / 2)
     readonly property real extensionRight: barWidth + extensionWidth
 
+    readonly property bool bottomCornerMerged: hasExtension && (extensionBottomEdge + junctionRadius >= barRightEdgeEndY)
+    readonly property bool topCornerMerged: hasExtension && (extensionTopEdge - junctionRadius <= barRightEdgeStartY)
+
+    readonly property real mergedBottomArcRadius: Math.max(0, (barHeight - stripThickness) - extensionBottomEdge)
+    readonly property real mergedTopArcRadius: Math.max(0, extensionTopEdge - stripThickness)
+
+    readonly property bool bottomFullyMerged: bottomCornerMerged && mergedBottomArcRadius <= 0
+    readonly property bool topFullyMerged: topCornerMerged && mergedTopArcRadius <= 0
+
+    readonly property real clampedExtensionBottomEdge: bottomCornerMerged ? Math.min(extensionBottomEdge, barHeight - stripThickness) : extensionBottomEdge
+    readonly property real clampedExtensionTopEdge: topCornerMerged ? Math.max(extensionTopEdge, stripThickness) : extensionTopEdge
+
+    readonly property real effectiveBottomLeftBarCornerRadius: bottomCornerMerged ? 0 : innerCornerRadius
+    readonly property real effectiveTopLeftBarCornerRadius: topCornerMerged ? 0 : innerCornerRadius
+    readonly property real effectiveBottomJunctionArcRadius: bottomCornerMerged ? mergedBottomArcRadius : bottomJunctionArcRadius
+    readonly property real effectiveTopJunctionArcRadius: topCornerMerged ? mergedTopArcRadius : topJunctionArcRadius
+
+    readonly property real bottomEdgeTargetX: bottomFullyMerged ? (extensionRight - extensionCornerArcRadius) : (barWidth + effectiveBottomLeftBarCornerRadius)
+    readonly property real topEdgeTargetX: topFullyMerged ? (extensionRight - extensionCornerArcRadius) : (barWidth + effectiveTopLeftBarCornerRadius)
+
     fillColor: ThemeColors.background
     strokeWidth: -1
 
@@ -60,7 +80,7 @@ ShapePath {
     }
 
     PathMove {
-        x: shapePathRoot.barWidth + shapePathRoot.innerCornerRadius
+        x: shapePathRoot.topEdgeTargetX
         y: shapePathRoot.stripThickness
     }
 
@@ -91,39 +111,39 @@ ShapePath {
     }
 
     PathLine {
-        x: shapePathRoot.barWidth + shapePathRoot.innerCornerRadius
+        x: shapePathRoot.bottomEdgeTargetX
         y: shapePathRoot.barHeight - shapePathRoot.stripThickness
     }
 
     PathArc {
-        x: shapePathRoot.barWidth
-        y: shapePathRoot.barHeight - shapePathRoot.stripThickness - shapePathRoot.innerCornerRadius
-        radiusX: shapePathRoot.innerCornerRadius
-        radiusY: shapePathRoot.innerCornerRadius
+        x: shapePathRoot.bottomFullyMerged ? shapePathRoot.bottomEdgeTargetX : shapePathRoot.barWidth
+        y: shapePathRoot.bottomFullyMerged ? shapePathRoot.clampedExtensionBottomEdge : (shapePathRoot.barHeight - shapePathRoot.stripThickness - shapePathRoot.effectiveBottomLeftBarCornerRadius)
+        radiusX: shapePathRoot.effectiveBottomLeftBarCornerRadius
+        radiusY: shapePathRoot.effectiveBottomLeftBarCornerRadius
         direction: PathArc.Clockwise
     }
 
     PathLine {
-        x: shapePathRoot.barWidth
-        y: shapePathRoot.extensionBottomEdge + shapePathRoot.bottomJunctionArcRadius
+        x: shapePathRoot.bottomFullyMerged ? shapePathRoot.bottomEdgeTargetX : shapePathRoot.barWidth
+        y: shapePathRoot.clampedExtensionBottomEdge + shapePathRoot.effectiveBottomJunctionArcRadius
     }
 
     PathArc {
-        x: shapePathRoot.barWidth + shapePathRoot.bottomJunctionArcRadius
-        y: shapePathRoot.extensionBottomEdge
-        radiusX: shapePathRoot.bottomJunctionArcRadius
-        radiusY: shapePathRoot.bottomJunctionArcRadius
-        direction: PathArc.Clockwise
+        x: shapePathRoot.bottomFullyMerged ? shapePathRoot.bottomEdgeTargetX : (shapePathRoot.barWidth + shapePathRoot.effectiveBottomJunctionArcRadius)
+        y: shapePathRoot.clampedExtensionBottomEdge
+        radiusX: shapePathRoot.effectiveBottomJunctionArcRadius
+        radiusY: shapePathRoot.effectiveBottomJunctionArcRadius
+        direction: shapePathRoot.bottomCornerMerged ? PathArc.Counterclockwise : PathArc.Clockwise
     }
 
     PathLine {
         x: shapePathRoot.extensionRight - shapePathRoot.extensionCornerArcRadius
-        y: shapePathRoot.extensionBottomEdge
+        y: shapePathRoot.clampedExtensionBottomEdge
     }
 
     PathArc {
         x: shapePathRoot.extensionRight
-        y: shapePathRoot.extensionBottomEdge - shapePathRoot.extensionCornerArcRadius
+        y: shapePathRoot.clampedExtensionBottomEdge - shapePathRoot.extensionCornerArcRadius
         radiusX: shapePathRoot.extensionCornerArcRadius
         radiusY: shapePathRoot.extensionCornerArcRadius
         direction: PathArc.Counterclockwise
@@ -131,40 +151,40 @@ ShapePath {
 
     PathLine {
         x: shapePathRoot.extensionRight
-        y: shapePathRoot.extensionTopEdge + shapePathRoot.extensionCornerArcRadius
+        y: shapePathRoot.clampedExtensionTopEdge + shapePathRoot.extensionCornerArcRadius
     }
 
     PathArc {
         x: shapePathRoot.extensionRight - shapePathRoot.extensionCornerArcRadius
-        y: shapePathRoot.extensionTopEdge
+        y: shapePathRoot.clampedExtensionTopEdge
         radiusX: shapePathRoot.extensionCornerArcRadius
         radiusY: shapePathRoot.extensionCornerArcRadius
         direction: PathArc.Counterclockwise
     }
 
     PathLine {
-        x: shapePathRoot.barWidth + shapePathRoot.topJunctionArcRadius
-        y: shapePathRoot.extensionTopEdge
+        x: shapePathRoot.topFullyMerged ? shapePathRoot.topEdgeTargetX : (shapePathRoot.barWidth + shapePathRoot.effectiveTopJunctionArcRadius)
+        y: shapePathRoot.clampedExtensionTopEdge
     }
 
     PathArc {
-        x: shapePathRoot.barWidth
-        y: shapePathRoot.extensionTopEdge - shapePathRoot.topJunctionArcRadius
-        radiusX: shapePathRoot.topJunctionArcRadius
-        radiusY: shapePathRoot.topJunctionArcRadius
+        x: shapePathRoot.topFullyMerged ? shapePathRoot.topEdgeTargetX : shapePathRoot.barWidth
+        y: shapePathRoot.topFullyMerged ? shapePathRoot.clampedExtensionTopEdge : (shapePathRoot.clampedExtensionTopEdge - shapePathRoot.effectiveTopJunctionArcRadius)
+        radiusX: shapePathRoot.effectiveTopJunctionArcRadius
+        radiusY: shapePathRoot.effectiveTopJunctionArcRadius
         direction: PathArc.Clockwise
     }
 
     PathLine {
-        x: shapePathRoot.barWidth
-        y: shapePathRoot.stripThickness + shapePathRoot.innerCornerRadius
+        x: shapePathRoot.topFullyMerged ? shapePathRoot.topEdgeTargetX : shapePathRoot.barWidth
+        y: shapePathRoot.stripThickness + shapePathRoot.effectiveTopLeftBarCornerRadius
     }
 
     PathArc {
-        x: shapePathRoot.barWidth + shapePathRoot.innerCornerRadius
+        x: shapePathRoot.topEdgeTargetX
         y: shapePathRoot.stripThickness
-        radiusX: shapePathRoot.innerCornerRadius
-        radiusY: shapePathRoot.innerCornerRadius
+        radiusX: shapePathRoot.effectiveTopLeftBarCornerRadius
+        radiusY: shapePathRoot.effectiveTopLeftBarCornerRadius
         direction: PathArc.Clockwise
     }
 }

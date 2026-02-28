@@ -28,7 +28,7 @@ Scope {
 
             property real animatedExtensionWidth: hasActivePopout ? popoutWrapper.popoutWidth : 0
             Behavior on animatedExtensionWidth {
-                NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
+                NumberAnimation { duration: 350; easing.type: Easing.OutCubic }
             }
 
             function showPopout(name: string, centerY: real): void {
@@ -116,6 +116,23 @@ Scope {
                         extensionHeight: popoutWrapper.hasContent ? popoutWrapper.height : 0
                         extensionWidth: screenScope.animatedExtensionWidth
                     }
+
+                }
+
+                Shape {
+                    anchors.fill: parent
+                    z: 1
+                    preferredRendererType: Shape.CurveRenderer
+
+                    BarInternalBorderShape {
+                        barWidth: barTotalWidth
+                        barHeight: drawersWindow.height
+                        screenWidth: drawersWindow.width
+                        junctionRadius: screenScope.shapeJunctionRadius
+                        extensionY: popoutWrapper.y
+                        extensionHeight: popoutWrapper.hasContent ? popoutWrapper.height : 0
+                        extensionWidth: screenScope.animatedExtensionWidth
+                    }
                 }
 
                 Interactions {
@@ -147,6 +164,7 @@ Scope {
                     currentName: screenScope.popoutCurrentName
                     currentCenterY: screenScope.popoutCenterY
                     screenHeight: drawersWindow.height
+                    barWidth: barTotalWidth
 
                     onContainsMouseChanged: {
                         screenScope.popoutHovered = containsMouse;
@@ -160,7 +178,7 @@ Scope {
 
                 Timer {
                     id: popoutHideTimer
-                    interval: 300
+                    interval: 450
                     onTriggered: {
                         if (!screenScope.popoutHovered && !interactions.isOverBar && !barWrapper.barItem.hasHoveredPopoutIcon) {
                             screenScope.popoutCurrentName = "";
