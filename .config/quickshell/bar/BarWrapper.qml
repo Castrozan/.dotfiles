@@ -1,13 +1,11 @@
 import QtQuick
 
-Rectangle {
+Item {
     id: barWrapperRoot
 
     required property var screenScope
 
     property alias barItem: barContent
-
-    color: ThemeColors.background
 
     Bar {
         id: barContent

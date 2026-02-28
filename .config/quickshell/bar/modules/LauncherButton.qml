@@ -10,8 +10,8 @@ Rectangle {
 
     Text {
         anchors.centerIn: parent
-        text: ""
-        font.pixelSize: 20
+        text: "󱄅"
+        font.pixelSize: 30
         font.family: "JetBrainsMono Nerd Font"
         color: ThemeColors.accent
     }

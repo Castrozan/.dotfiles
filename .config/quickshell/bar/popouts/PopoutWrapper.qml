@@ -24,41 +24,6 @@ Item {
         NumberAnimation { duration: 150; easing.type: Easing.OutCubic }
     }
 
-    Rectangle {
-        id: popoutOuterBorder
-        anchors.fill: parent
-        radius: 24
-        color: ThemeColors.primary
-        visible: popoutWrapperRoot.hasContent
-
-        Rectangle {
-            anchors.left: parent.left
-            anchors.top: parent.top
-            anchors.bottom: parent.bottom
-            width: 24
-            color: ThemeColors.primary
-        }
-
-        Rectangle {
-            id: popoutInnerFill
-            anchors.fill: parent
-            anchors.topMargin: 1
-            anchors.rightMargin: 1
-            anchors.bottomMargin: 1
-            anchors.leftMargin: 0
-            radius: 23
-            color: ThemeColors.background
-
-            Rectangle {
-                anchors.left: parent.left
-                anchors.top: parent.top
-                anchors.bottom: parent.bottom
-                width: 23
-                color: ThemeColors.background
-            }
-        }
-    }
-
     MouseArea {
         id: popoutMouseArea
         anchors.fill: parent

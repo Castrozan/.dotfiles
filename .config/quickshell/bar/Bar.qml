@@ -61,11 +61,6 @@ ColumnLayout {
 
     Item {
         Layout.fillHeight: true
-        Layout.preferredWidth: 40
-
-        Modules.ActiveWindowModule {
-            anchors.fill: parent
-        }
     }
 
     Modules.TrayModule {

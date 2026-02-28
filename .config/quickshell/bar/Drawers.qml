@@ -1,6 +1,7 @@
 import Quickshell
 import Quickshell.Wayland
 import QtQuick
+import QtQuick.Shapes
 import "popouts"
 
 Scope {
@@ -23,7 +24,12 @@ Scope {
             property bool popoutHovered: false
 
             readonly property bool hasActivePopout: popoutCurrentName !== ""
-            readonly property int junctionCornerSize: 36
+            readonly property int shapeJunctionRadius: 36
+
+            property real animatedExtensionWidth: hasActivePopout ? popoutWrapper.popoutWidth : 0
+            Behavior on animatedExtensionWidth {
+                NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
+            }
 
             function showPopout(name: string, centerY: real): void {
                 popoutCurrentName = name;
@@ -65,13 +71,51 @@ Scope {
 
                     regions: [
                         Region {
+                            x: barTotalWidth
+                            y: 0
+                            width: drawersWindow.width - barTotalWidth
+                            height: barTotalWidth / 3
+                            intersection: Intersection.Subtract
+                        },
+                        Region {
+                            x: barTotalWidth
+                            y: drawersWindow.height - barTotalWidth / 3
+                            width: drawersWindow.width - barTotalWidth
+                            height: barTotalWidth / 3
+                            intersection: Intersection.Subtract
+                        },
+                        Region {
+                            x: drawersWindow.width - barTotalWidth / 3
+                            y: barTotalWidth / 3
+                            width: barTotalWidth / 3
+                            height: drawersWindow.height - barTotalWidth * 2 / 3
+                            intersection: Intersection.Subtract
+                        },
+                        Region {
                             x: popoutWrapper.x
-                            y: popoutWrapper.visible ? popoutWrapper.y - screenScope.junctionCornerSize : 0
+                            y: popoutWrapper.visible ? popoutWrapper.y - screenScope.shapeJunctionRadius : 0
                             width: popoutWrapper.visible ? popoutWrapper.width : 0
-                            height: popoutWrapper.visible ? popoutWrapper.height + screenScope.junctionCornerSize * 2 : 0
+                            height: popoutWrapper.visible ? popoutWrapper.height + screenScope.shapeJunctionRadius * 2 : 0
                             intersection: Intersection.Subtract
                         }
                     ]
+                }
+
+                Shape {
+                    id: barBackgroundShape
+                    anchors.fill: parent
+                    z: 0
+                    preferredRendererType: Shape.CurveRenderer
+
+                    BarBackgroundShape {
+                        barWidth: barTotalWidth
+                        barHeight: drawersWindow.height
+                        screenWidth: drawersWindow.width
+                        junctionRadius: screenScope.shapeJunctionRadius
+                        extensionY: popoutWrapper.y
+                        extensionHeight: popoutWrapper.hasContent ? popoutWrapper.height : 0
+                        extensionWidth: screenScope.animatedExtensionWidth
+                    }
                 }
 
                 Interactions {
@@ -111,71 +155,6 @@ Scope {
                         } else {
                             popoutHideTimer.stop();
                         }
-                    }
-                }
-
-                Rectangle {
-                    id: barRightBorderAbovePopout
-                    x: barTotalWidth - 1
-                    y: 0
-                    width: 1
-                    height: popoutWrapper.visible ? Math.max(0, popoutWrapper.y - screenScope.junctionCornerSize) : drawersWindow.height
-                    color: ThemeColors.primary
-                    z: 10
-                }
-
-                Rectangle {
-                    id: barRightBorderBelowPopout
-                    visible: popoutWrapper.visible
-                    x: barTotalWidth - 1
-                    y: popoutWrapper.y + popoutWrapper.height + screenScope.junctionCornerSize
-                    width: 1
-                    height: Math.max(0, drawersWindow.height - (popoutWrapper.y + popoutWrapper.height + screenScope.junctionCornerSize))
-                    color: ThemeColors.primary
-                    z: 10
-                }
-
-                Item {
-                    id: topJunctionConcaveCorner
-                    visible: popoutWrapper.visible
-                    x: barTotalWidth - 1
-                    y: popoutWrapper.y - screenScope.junctionCornerSize
-                    width: screenScope.junctionCornerSize + 1
-                    height: screenScope.junctionCornerSize + 1
-                    clip: true
-                    z: 10
-
-                    Rectangle {
-                        x: 0
-                        y: -screenScope.junctionCornerSize
-                        width: screenScope.junctionCornerSize * 2
-                        height: screenScope.junctionCornerSize * 2
-                        radius: screenScope.junctionCornerSize
-                        color: ThemeColors.background
-                        border.color: ThemeColors.primary
-                        border.width: 1
-                    }
-                }
-
-                Item {
-                    id: bottomJunctionConcaveCorner
-                    visible: popoutWrapper.visible
-                    x: barTotalWidth - 1
-                    y: popoutWrapper.y + popoutWrapper.height
-                    width: screenScope.junctionCornerSize + 1
-                    height: screenScope.junctionCornerSize + 1
-                    clip: true
-                    z: 10
-
-                    Rectangle {
-                        x: 0
-                        y: 0
-                        width: screenScope.junctionCornerSize * 2
-                        height: screenScope.junctionCornerSize * 2
-                        radius: screenScope.junctionCornerSize
-                        color: ThemeColors.background
-                        border.color: ThemeColors.primary
-                        border.width: 1
                     }
                 }
 
