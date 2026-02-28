@@ -40,10 +40,6 @@
     voxtype.url = "github:peteonrails/voxtype";
     whisp-away.url = "github:madjinn/whisp-away";
     hyprland.url = "github:hyprwm/Hyprland/f68ac7ef7589e1536d438f7fbfb3ad987538fe0f";
-    hyprshell = {
-      url = "github:H3rmt/hyprshell/hyprshell-release";
-      inputs.hyprland.follows = "hyprland";
-    };
   };
 
   # Outputs are what this flake provides, such as pkgs and system configurations

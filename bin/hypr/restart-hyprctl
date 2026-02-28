@@ -1,87 +1,87 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-readonly SCREENCOPY_SERVICES=(hyprshell.service)
+readonly SCREENCOPY_SERVICES=()
 readonly THEME_CONF="$HOME/.config/hypr-theme/current/theme/hyprland.conf"
 
 main() {
-  _ensure_hyprctl_connected || exit 0
-  _reload_hyprland_with_screencopy_services_paused
-  _reload_graphical_services_after_daemon_reload
-  _apply_theme_border_colors_from_config
+	_ensure_hyprctl_connected || exit 0
+	_reload_hyprland_with_screencopy_services_paused
+	_reload_graphical_services_after_daemon_reload
+	_apply_theme_border_colors_from_config
 }
 
 _ensure_hyprctl_connected() {
-  command -v hyprctl >/dev/null 2>&1 || return 1
-  hyprctl monitors >/dev/null 2>&1 && return 0
-  _find_live_hyprland_socket
+	command -v hyprctl >/dev/null 2>&1 || return 1
+	hyprctl monitors >/dev/null 2>&1 && return 0
+	_find_live_hyprland_socket
 }
 
 _find_live_hyprland_socket() {
-  # shellcheck disable=SC2155
-  local hypr_dir="/run/user/$(id -u)/hypr"
-  [ -d "$hypr_dir" ] || return 1
+	# shellcheck disable=SC2155
+	local hypr_dir="/run/user/$(id -u)/hypr"
+	[ -d "$hypr_dir" ] || return 1
 
-  local candidate sig
-  for candidate in "$hypr_dir"/*/; do
-    sig="${candidate#"$hypr_dir/"}"
-    sig="${sig%/}"
-    if HYPRLAND_INSTANCE_SIGNATURE="$sig" hyprctl monitors >/dev/null 2>&1; then
-      export HYPRLAND_INSTANCE_SIGNATURE="$sig"
-      return 0
-    fi
-  done
-  return 1
+	local candidate sig
+	for candidate in "$hypr_dir"/*/; do
+		sig="${candidate#"$hypr_dir/"}"
+		sig="${sig%/}"
+		if HYPRLAND_INSTANCE_SIGNATURE="$sig" hyprctl monitors >/dev/null 2>&1; then
+			export HYPRLAND_INSTANCE_SIGNATURE="$sig"
+			return 0
+		fi
+	done
+	return 1
 }
 
 _reload_hyprland_with_screencopy_services_paused() {
-  # shellcheck disable=SC2034
-  local stopped_services=()
-  _stop_active_screencopy_services stopped_services
-  hyprctl reload
-  _restart_previously_stopped_services stopped_services
+	# shellcheck disable=SC2034
+	local stopped_services=()
+	_stop_active_screencopy_services stopped_services
+	hyprctl reload
+	_restart_previously_stopped_services stopped_services
 }
 
 _stop_active_screencopy_services() {
-  local -n _stopped=$1
-  local svc
-  for svc in "${SCREENCOPY_SERVICES[@]}"; do
-    if systemctl --user is-active --quiet "$svc" 2>/dev/null; then
-      systemctl --user stop "$svc" 2>/dev/null || true
-      _stopped+=("$svc")
-    fi
-  done
-  [ ${#_stopped[@]} -gt 0 ] && sleep 0.3
+	local -n _stopped=$1
+	local svc
+	for svc in "${SCREENCOPY_SERVICES[@]}"; do
+		if systemctl --user is-active --quiet "$svc" 2>/dev/null; then
+			systemctl --user stop "$svc" 2>/dev/null || true
+			_stopped+=("$svc")
+		fi
+	done
+	[ ${#_stopped[@]} -gt 0 ] && sleep 0.3
 }
 
 _restart_previously_stopped_services() {
-  local -n _to_start=$1
-  [ ${#_to_start[@]} -gt 0 ] || return 0
-  sleep 0.5
-  local svc
-  for svc in "${_to_start[@]}"; do
-    systemctl --user start "$svc" 2>/dev/null || true
-  done
+	local -n _to_start=$1
+	[ ${#_to_start[@]} -gt 0 ] || return 0
+	sleep 0.5
+	local svc
+	for svc in "${_to_start[@]}"; do
+		systemctl --user start "$svc" 2>/dev/null || true
+	done
 }
 
 _reload_graphical_services_after_daemon_reload() {
-  systemctl --user daemon-reload
-  if systemctl --user is-active --quiet waybar 2>/dev/null; then
-    pkill -USR2 waybar 2>/dev/null || true
-  else
-    systemctl --user start waybar.service 2>/dev/null || true
-  fi
+	systemctl --user daemon-reload
+	if systemctl --user is-active --quiet waybar 2>/dev/null; then
+		pkill -USR2 waybar 2>/dev/null || true
+	else
+		systemctl --user start waybar.service 2>/dev/null || true
+	fi
 }
 
 _apply_theme_border_colors_from_config() {
-  [ -f "$THEME_CONF" ] || return 0
+	[ -f "$THEME_CONF" ] || return 0
 
-  local color
-  color=$(grep -oP 'rgb\([^)]+\)' "$THEME_CONF" | head -1)
-  [ -n "$color" ] || return 0
+	local color
+	color=$(grep -oP 'rgb\([^)]+\)' "$THEME_CONF" | head -1)
+	[ -n "$color" ] || return 0
 
-  hyprctl keyword general:col.active_border "$color" >/dev/null 2>&1 || true
-  hyprctl keyword group:col.border_active "$color" >/dev/null 2>&1 || true
+	hyprctl keyword general:col.active_border "$color" >/dev/null 2>&1 || true
+	hyprctl keyword group:col.border_active "$color" >/dev/null 2>&1 || true
 }
 
 main "$@"

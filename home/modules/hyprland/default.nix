@@ -7,8 +7,8 @@ let
     "waybar.service"
     "mako.service"
     "xdg-desktop-portal-hyprland.service"
-    "hyprshell.service"
     "quickshell-osd.service"
+    "quickshell-switcher.service"
   ];
 in
 {
@@ -18,7 +18,6 @@ in
     ./cursor.nix
     ./themes.nix
     ./waybar.nix
-    ./hyprshell.nix
     ./wlogout.nix
     ./wayland-electron.nix
     ./waybar-service.nix
@@ -26,6 +25,7 @@ in
     ./wlr-which-key.nix
     ./mako-service.nix
     ./quickshell-osd.nix
+    ./quickshell-switcher.nix
     ../satty.nix
     ../wiremix.nix
     ./xdg-desktop-portal-hyprland-service.nix
