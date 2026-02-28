@@ -18,11 +18,8 @@ load '../helpers/bash-script-assertions'
     assert_script_source_matches "brightnessctl"
 }
 
-@test "sends mako-compatible notifications" {
-    assert_script_source_matches_all \
-        "x-canonical-private-synchronous" \
-        "int:value:" \
-        "notify-send"
+@test "sends quickshell osd notifications" {
+    assert_script_source_matches "quickshell-osd-send"
 }
 
 @test "supports all required cli flags" {
@@ -42,13 +39,11 @@ load '../helpers/bash-script-assertions'
 @test "uses readonly constants" {
     assert_script_source_matches_all \
         "readonly BRIGHTNESS_STEP_NORMAL" \
-        "readonly BRIGHTNESS_STEP_PRECISE" \
-        "readonly NOTIFICATION_TIMEOUT"
+        "readonly BRIGHTNESS_STEP_PRECISE"
 }
 
 @test "private helpers prefixed with underscore" {
     assert_script_source_matches_all \
         "_change_brightness" \
-        "_get_brightness_percentage" \
-        "_get_brightness_icon_name"
+        "_get_brightness_percentage"
 }
