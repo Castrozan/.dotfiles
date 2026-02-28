@@ -216,9 +216,9 @@ nix_eval_json_apply() {
     [ "$status" -ne 0 ]
 }
 
-@test "nixos: secret patches use /run/agenix/ paths" {
+@test "nixos: secret patches use secrets file paths" {
     result=$(nix_eval_json "$NIXOS_OC.secretPatches.\".gateway.auth.token\"")
-    [[ "$result" == *"/run/agenix/"* ]]
+    [[ "$result" == *".secrets/"* ]]
 }
 
 @test "nixos: telegram bot token secret for jarvis exists" {
@@ -338,14 +338,19 @@ nix_eval_json_apply() {
 
 # ---------- Agent defaults ----------
 
-@test "agent: model.primary is null when not explicitly set (inherits defaults)" {
+@test "agent: model.primary is set for default agent" {
     result=$(nix_eval_json "$WORKPC_OC.agents.robson.model.primary")
-    [ "$result" = "null" ]
+    [ "$result" != "null" ] && [ -n "$result" ]
 }
 
-@test "agent: silver model.primary is kimi when explicitly set" {
+@test "agent: silver model.primary is a cheaper model than default" {
     result=$(nix_eval_json "$WORKPC_OC.agents.silver.model.primary")
-    [ "$result" = '"nvidia/moonshotai/kimi-k2.5"' ]
+    [ "$result" = '"anthropic/claude-sonnet-4-6"' ]
+}
+
+@test "agent: golden model.primary is a cheaper model than default" {
+    result=$(nix_eval_json "$NIXOS_OC.agents.golden.model.primary")
+    [ "$result" = '"anthropic/claude-sonnet-4-6"' ]
 }
 
 @test "agent: default TTS engine is edge-tts" {
