@@ -100,6 +100,7 @@ Item {
                 Loader {
                     id: tabPane0
                     active: true
+                    asynchronous: dashboardContentRoot.currentTabIndex !== 0
                     Layout.alignment: Qt.AlignTop
                     sourceComponent: DashboardTab {}
                 }
@@ -107,6 +108,7 @@ Item {
                 Loader {
                     id: tabPane1
                     active: true
+                    asynchronous: dashboardContentRoot.currentTabIndex !== 1
                     Layout.alignment: Qt.AlignTop
                     sourceComponent: MediaTab {}
                 }
@@ -114,6 +116,7 @@ Item {
                 Loader {
                     id: tabPane2
                     active: true
+                    asynchronous: dashboardContentRoot.currentTabIndex !== 2
                     Layout.alignment: Qt.AlignTop
                     sourceComponent: PerformanceTab {}
                 }
@@ -121,6 +124,7 @@ Item {
                 Loader {
                     id: tabPane3
                     active: true
+                    asynchronous: dashboardContentRoot.currentTabIndex !== 3
                     Layout.alignment: Qt.AlignTop
                     sourceComponent: WeatherTab {}
                 }

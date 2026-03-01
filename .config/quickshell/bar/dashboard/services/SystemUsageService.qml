@@ -38,6 +38,15 @@ Singleton {
     property real previousCpuTotal
 
     property int refCount
+    property bool gpuDetectionStarted: false
+
+    onRefCountChanged: {
+        if (refCount > 0 && !gpuDetectionStarted) {
+            gpuDetectionStarted = true;
+            gpuNameDetectionProcess.running = true;
+            gpuTypeDetectionProcess.running = true;
+        }
+    }
 
     function cleanCpuName(rawName: string): string {
         return rawName.replace(/\(R\)/gi, "").replace(/\(TM\)/gi, "").replace(/CPU/gi, "").replace(/\d+th Gen /gi, "").replace(/\d+nd Gen /gi, "").replace(/\d+rd Gen /gi, "").replace(/\d+st Gen /gi, "").replace(/Core /gi, "").replace(/Processor/gi, "").replace(/\s+/g, " ").trim();
@@ -189,7 +198,7 @@ Singleton {
     Process {
         id: gpuNameDetectionProcess
 
-        running: true
+        running: false
         command: ["sh", "-c", "nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null || lspci 2>/dev/null | grep -i 'vga\\|3d\\|display' | head -1"]
         stdout: SplitParser {
             splitMarker: ""
@@ -217,7 +226,7 @@ Singleton {
     Process {
         id: gpuTypeDetectionProcess
 
-        running: true
+        running: false
         command: ["sh", "-c", "if command -v nvidia-smi >/dev/null 2>&1 && nvidia-smi -L >/dev/null 2>&1; then echo NVIDIA; elif ls /sys/class/drm/card*/device/gpu_busy_percent 2>/dev/null | grep -q .; then echo GENERIC; else echo NONE; fi"]
         stdout: SplitParser {
             splitMarker: ""

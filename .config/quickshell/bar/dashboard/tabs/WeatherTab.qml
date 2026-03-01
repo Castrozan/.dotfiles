@@ -12,8 +12,6 @@ Item {
     implicitWidth: weatherLayout.implicitWidth > 800 ? weatherLayout.implicitWidth : 840
     implicitHeight: weatherLayout.implicitHeight
 
-    Component.onCompleted: WeatherService.reload()
-
     ColumnLayout {
         id: weatherLayout
 
