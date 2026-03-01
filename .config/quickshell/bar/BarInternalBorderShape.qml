@@ -68,6 +68,45 @@ ShapePath {
     readonly property real dashboardLeftJunctionArcRadius: Math.min(junctionRadius, dashboardHeight, Math.max(0, dashboardX - topEdgeTargetX))
     readonly property real dashboardRightJunctionArcRadius: Math.min(junctionRadius, dashboardHeight, Math.max(0, (screenWidth - stripThickness - innerCornerRadius) - dashboardRightEdge))
 
+    required property real rightPanelY
+    required property real rightPanelWidth
+    required property real rightPanelHeight
+
+    readonly property bool hasRightPanel: rightPanelWidth > 0 && rightPanelHeight > 0
+    readonly property real rightStripLeftEdge: screenWidth - stripThickness
+    readonly property real rightPanelLeftEdge: rightStripLeftEdge - rightPanelWidth
+    readonly property real rightPanelTopEdge: rightPanelY
+    readonly property real rightPanelBottomEdge: rightPanelY + rightPanelHeight
+
+    readonly property real rightStripTopCornerStartY: stripThickness + innerCornerRadius
+    readonly property real rightStripBottomCornerStartY: barHeight - stripThickness - innerCornerRadius
+
+    readonly property real rightPanelTopJunctionAvailableSpace: Math.max(0, rightPanelTopEdge - rightStripTopCornerStartY)
+    readonly property real rightPanelBottomJunctionAvailableSpace: Math.max(0, rightStripBottomCornerStartY - rightPanelBottomEdge)
+
+    readonly property real rightPanelTopJunctionArcRadius: hasRightPanel ? Math.min(junctionRadius, rightPanelWidth, rightPanelTopJunctionAvailableSpace) : 0
+    readonly property real rightPanelBottomJunctionArcRadius: hasRightPanel ? Math.min(junctionRadius, rightPanelWidth, rightPanelBottomJunctionAvailableSpace) : 0
+
+    readonly property real rightPanelCornerArcRadius: hasRightPanel ? Math.min(junctionRadius, rightPanelWidth, rightPanelHeight / 2) : 0
+
+    readonly property bool rightPanelTopCornerMerged: hasRightPanel && (rightPanelTopEdge - junctionRadius <= rightStripTopCornerStartY)
+    readonly property bool rightPanelBottomCornerMerged: hasRightPanel && (rightPanelBottomEdge + junctionRadius >= rightStripBottomCornerStartY)
+
+    readonly property real rightPanelMergedTopArcRadius: Math.max(0, rightPanelTopEdge - stripThickness)
+    readonly property real rightPanelMergedBottomArcRadius: Math.max(0, (barHeight - stripThickness) - rightPanelBottomEdge)
+
+    readonly property bool rightPanelTopFullyMerged: rightPanelTopCornerMerged && rightPanelMergedTopArcRadius <= 0
+    readonly property bool rightPanelBottomFullyMerged: rightPanelBottomCornerMerged && rightPanelMergedBottomArcRadius <= 0
+
+    readonly property real effectiveRightPanelTopJunctionArcRadius: rightPanelTopCornerMerged ? rightPanelMergedTopArcRadius : rightPanelTopJunctionArcRadius
+    readonly property real effectiveRightPanelBottomJunctionArcRadius: rightPanelBottomCornerMerged ? rightPanelMergedBottomArcRadius : rightPanelBottomJunctionArcRadius
+
+    readonly property real effectiveRightTopInnerCornerRadius: rightPanelTopCornerMerged ? 0 : innerCornerRadius
+    readonly property real effectiveRightBottomInnerCornerRadius: rightPanelBottomCornerMerged ? 0 : innerCornerRadius
+
+    readonly property real clampedRightPanelTopEdge: rightPanelTopCornerMerged ? Math.max(rightPanelTopEdge, stripThickness) : rightPanelTopEdge
+    readonly property real clampedRightPanelBottomEdge: rightPanelBottomCornerMerged ? Math.min(rightPanelBottomEdge, barHeight - stripThickness) : rightPanelBottomEdge
+
     readonly property bool hasLauncher: launcherHeight > 0
     readonly property real launcherTopEdge: barHeight - stripThickness - launcherHeight
     readonly property real launcherRightEdge: launcherX + launcherWidth
@@ -137,28 +176,80 @@ ShapePath {
     }
 
     PathLine {
-        x: barInternalBorderRoot.screenWidth - barInternalBorderRoot.stripThickness - barInternalBorderRoot.innerCornerRadius
+        x: barInternalBorderRoot.screenWidth - barInternalBorderRoot.stripThickness - barInternalBorderRoot.effectiveRightTopInnerCornerRadius
         y: barInternalBorderRoot.stripThickness
     }
 
     PathArc {
-        x: barInternalBorderRoot.screenWidth - barInternalBorderRoot.stripThickness
-        y: barInternalBorderRoot.stripThickness + barInternalBorderRoot.innerCornerRadius
-        radiusX: barInternalBorderRoot.innerCornerRadius
-        radiusY: barInternalBorderRoot.innerCornerRadius
+        x: barInternalBorderRoot.rightPanelTopFullyMerged ? (barInternalBorderRoot.screenWidth - barInternalBorderRoot.stripThickness - barInternalBorderRoot.effectiveRightTopInnerCornerRadius) : (barInternalBorderRoot.screenWidth - barInternalBorderRoot.stripThickness)
+        y: barInternalBorderRoot.rightPanelTopFullyMerged ? barInternalBorderRoot.clampedRightPanelTopEdge : (barInternalBorderRoot.stripThickness + barInternalBorderRoot.effectiveRightTopInnerCornerRadius)
+        radiusX: barInternalBorderRoot.effectiveRightTopInnerCornerRadius
+        radiusY: barInternalBorderRoot.effectiveRightTopInnerCornerRadius
         direction: PathArc.Clockwise
     }
 
     PathLine {
-        x: barInternalBorderRoot.screenWidth - barInternalBorderRoot.stripThickness
-        y: barInternalBorderRoot.barHeight - barInternalBorderRoot.stripThickness - barInternalBorderRoot.innerCornerRadius
+        x: barInternalBorderRoot.rightPanelTopFullyMerged ? (barInternalBorderRoot.screenWidth - barInternalBorderRoot.stripThickness - barInternalBorderRoot.effectiveRightTopInnerCornerRadius) : (barInternalBorderRoot.screenWidth - barInternalBorderRoot.stripThickness)
+        y: barInternalBorderRoot.hasRightPanel ? (barInternalBorderRoot.clampedRightPanelTopEdge - barInternalBorderRoot.effectiveRightPanelTopJunctionArcRadius) : (barInternalBorderRoot.barHeight - barInternalBorderRoot.stripThickness - barInternalBorderRoot.effectiveRightBottomInnerCornerRadius)
     }
 
     PathArc {
-        x: barInternalBorderRoot.screenWidth - barInternalBorderRoot.stripThickness - barInternalBorderRoot.innerCornerRadius
+        x: barInternalBorderRoot.hasRightPanel ? (barInternalBorderRoot.rightPanelTopFullyMerged ? (barInternalBorderRoot.screenWidth - barInternalBorderRoot.stripThickness - barInternalBorderRoot.effectiveRightTopInnerCornerRadius) : (barInternalBorderRoot.screenWidth - barInternalBorderRoot.stripThickness - barInternalBorderRoot.effectiveRightPanelTopJunctionArcRadius)) : (barInternalBorderRoot.screenWidth - barInternalBorderRoot.stripThickness)
+        y: barInternalBorderRoot.hasRightPanel ? barInternalBorderRoot.clampedRightPanelTopEdge : (barInternalBorderRoot.barHeight - barInternalBorderRoot.stripThickness - barInternalBorderRoot.effectiveRightBottomInnerCornerRadius)
+        radiusX: barInternalBorderRoot.hasRightPanel ? barInternalBorderRoot.effectiveRightPanelTopJunctionArcRadius : 0
+        radiusY: barInternalBorderRoot.hasRightPanel ? barInternalBorderRoot.effectiveRightPanelTopJunctionArcRadius : 0
+        direction: barInternalBorderRoot.rightPanelTopCornerMerged ? PathArc.Clockwise : PathArc.Counterclockwise
+    }
+
+    PathLine {
+        x: barInternalBorderRoot.hasRightPanel ? (barInternalBorderRoot.rightPanelLeftEdge + barInternalBorderRoot.rightPanelCornerArcRadius) : (barInternalBorderRoot.screenWidth - barInternalBorderRoot.stripThickness)
+        y: barInternalBorderRoot.hasRightPanel ? barInternalBorderRoot.clampedRightPanelTopEdge : (barInternalBorderRoot.barHeight - barInternalBorderRoot.stripThickness - barInternalBorderRoot.effectiveRightBottomInnerCornerRadius)
+    }
+
+    PathArc {
+        x: barInternalBorderRoot.hasRightPanel ? barInternalBorderRoot.rightPanelLeftEdge : (barInternalBorderRoot.screenWidth - barInternalBorderRoot.stripThickness)
+        y: barInternalBorderRoot.hasRightPanel ? (barInternalBorderRoot.clampedRightPanelTopEdge + barInternalBorderRoot.rightPanelCornerArcRadius) : (barInternalBorderRoot.barHeight - barInternalBorderRoot.stripThickness - barInternalBorderRoot.effectiveRightBottomInnerCornerRadius)
+        radiusX: barInternalBorderRoot.hasRightPanel ? barInternalBorderRoot.rightPanelCornerArcRadius : 0
+        radiusY: barInternalBorderRoot.hasRightPanel ? barInternalBorderRoot.rightPanelCornerArcRadius : 0
+        direction: PathArc.Clockwise
+    }
+
+    PathLine {
+        x: barInternalBorderRoot.hasRightPanel ? barInternalBorderRoot.rightPanelLeftEdge : (barInternalBorderRoot.screenWidth - barInternalBorderRoot.stripThickness)
+        y: barInternalBorderRoot.hasRightPanel ? (barInternalBorderRoot.clampedRightPanelBottomEdge - barInternalBorderRoot.rightPanelCornerArcRadius) : (barInternalBorderRoot.barHeight - barInternalBorderRoot.stripThickness - barInternalBorderRoot.effectiveRightBottomInnerCornerRadius)
+    }
+
+    PathArc {
+        x: barInternalBorderRoot.hasRightPanel ? (barInternalBorderRoot.rightPanelLeftEdge + barInternalBorderRoot.rightPanelCornerArcRadius) : (barInternalBorderRoot.screenWidth - barInternalBorderRoot.stripThickness)
+        y: barInternalBorderRoot.hasRightPanel ? barInternalBorderRoot.clampedRightPanelBottomEdge : (barInternalBorderRoot.barHeight - barInternalBorderRoot.stripThickness - barInternalBorderRoot.effectiveRightBottomInnerCornerRadius)
+        radiusX: barInternalBorderRoot.hasRightPanel ? barInternalBorderRoot.rightPanelCornerArcRadius : 0
+        radiusY: barInternalBorderRoot.hasRightPanel ? barInternalBorderRoot.rightPanelCornerArcRadius : 0
+        direction: PathArc.Clockwise
+    }
+
+    PathLine {
+        x: barInternalBorderRoot.hasRightPanel ? (barInternalBorderRoot.rightPanelBottomFullyMerged ? (barInternalBorderRoot.screenWidth - barInternalBorderRoot.stripThickness - barInternalBorderRoot.effectiveRightBottomInnerCornerRadius) : (barInternalBorderRoot.screenWidth - barInternalBorderRoot.stripThickness - barInternalBorderRoot.effectiveRightPanelBottomJunctionArcRadius)) : (barInternalBorderRoot.screenWidth - barInternalBorderRoot.stripThickness)
+        y: barInternalBorderRoot.hasRightPanel ? barInternalBorderRoot.clampedRightPanelBottomEdge : (barInternalBorderRoot.barHeight - barInternalBorderRoot.stripThickness - barInternalBorderRoot.effectiveRightBottomInnerCornerRadius)
+    }
+
+    PathArc {
+        x: barInternalBorderRoot.rightPanelBottomFullyMerged ? (barInternalBorderRoot.screenWidth - barInternalBorderRoot.stripThickness - barInternalBorderRoot.effectiveRightBottomInnerCornerRadius) : (barInternalBorderRoot.screenWidth - barInternalBorderRoot.stripThickness)
+        y: barInternalBorderRoot.hasRightPanel ? (barInternalBorderRoot.clampedRightPanelBottomEdge + barInternalBorderRoot.effectiveRightPanelBottomJunctionArcRadius) : (barInternalBorderRoot.barHeight - barInternalBorderRoot.stripThickness - barInternalBorderRoot.effectiveRightBottomInnerCornerRadius)
+        radiusX: barInternalBorderRoot.hasRightPanel ? barInternalBorderRoot.effectiveRightPanelBottomJunctionArcRadius : 0
+        radiusY: barInternalBorderRoot.hasRightPanel ? barInternalBorderRoot.effectiveRightPanelBottomJunctionArcRadius : 0
+        direction: barInternalBorderRoot.rightPanelBottomCornerMerged ? PathArc.Clockwise : PathArc.Counterclockwise
+    }
+
+    PathLine {
+        x: barInternalBorderRoot.rightPanelBottomFullyMerged ? (barInternalBorderRoot.screenWidth - barInternalBorderRoot.stripThickness - barInternalBorderRoot.effectiveRightBottomInnerCornerRadius) : (barInternalBorderRoot.screenWidth - barInternalBorderRoot.stripThickness)
+        y: barInternalBorderRoot.barHeight - barInternalBorderRoot.stripThickness - barInternalBorderRoot.effectiveRightBottomInnerCornerRadius
+    }
+
+    PathArc {
+        x: barInternalBorderRoot.screenWidth - barInternalBorderRoot.stripThickness - barInternalBorderRoot.effectiveRightBottomInnerCornerRadius
         y: barInternalBorderRoot.barHeight - barInternalBorderRoot.stripThickness
-        radiusX: barInternalBorderRoot.innerCornerRadius
-        radiusY: barInternalBorderRoot.innerCornerRadius
+        radiusX: barInternalBorderRoot.effectiveRightBottomInnerCornerRadius
+        radiusY: barInternalBorderRoot.effectiveRightBottomInnerCornerRadius
         direction: PathArc.Clockwise
     }
 

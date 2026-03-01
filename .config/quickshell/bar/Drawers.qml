@@ -227,6 +227,9 @@ Scope {
                         launcherX: launcherWrapper.x
                         launcherWidth: launcherWrapper.visible ? launcherWrapper.width : 0
                         launcherHeight: launcherWrapper.visible ? launcherWrapper.height : 0
+                        rightPanelY: sessionWrapper.visible ? sessionWrapper.y : 0
+                        rightPanelWidth: sessionWrapper.visible ? sessionWrapper.width : 0
+                        rightPanelHeight: sessionWrapper.visible ? sessionWrapper.height : 0
                     }
                 }
 
@@ -246,6 +249,9 @@ Scope {
                         dashboardX: dashboardWrapper.x
                         dashboardWidth: dashboardWrapper.visible ? dashboardWrapper.width : 0
                         dashboardHeight: dashboardWrapper.visible ? dashboardWrapper.height : 0
+                        rightPanelY: sessionWrapper.visible ? sessionWrapper.y : 0
+                        rightPanelWidth: sessionWrapper.visible ? sessionWrapper.width : 0
+                        rightPanelHeight: sessionWrapper.visible ? sessionWrapper.height : 0
                         launcherX: launcherWrapper.x
                         launcherWidth: launcherWrapper.visible ? launcherWrapper.width : 0
                         launcherHeight: launcherWrapper.visible ? launcherWrapper.height : 0
