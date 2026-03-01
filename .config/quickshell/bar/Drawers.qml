@@ -50,11 +50,50 @@ Scope {
                 dashboardVisible = !dashboardVisible;
             }
 
+            function showPopoutByName(name: string): void {
+                let positions = barWrapper.barItem.statusIconPositions;
+                let iconPos = positions[name];
+                let centerY;
+                if (iconPos) {
+                    let barItem = barWrapper.barItem;
+                    let sceneTop = barItem.mapToItem(null, 0, iconPos.top).y;
+                    let sceneBottom = barItem.mapToItem(null, 0, iconPos.bottom).y;
+                    centerY = (sceneTop + sceneBottom) / 2;
+                } else {
+                    centerY = drawersWindow.height / 2;
+                }
+                showPopout(name, centerY);
+            }
+
+            function togglePopout(name: string): void {
+                if (popoutCurrentName === name) {
+                    popoutCurrentName = "";
+                    return;
+                }
+                showPopoutByName(name);
+            }
+
             IpcHandler {
                 target: "dashboard"
 
                 function toggle(): void {
                     screenScope.toggleDashboard();
+                }
+            }
+
+            IpcHandler {
+                target: "popout"
+
+                function toggle(name: string): void {
+                    screenScope.togglePopout(name);
+                }
+
+                function show(name: string): void {
+                    screenScope.showPopoutByName(name);
+                }
+
+                function hide(): void {
+                    screenScope.popoutCurrentName = "";
                 }
             }
 
@@ -138,14 +177,9 @@ Scope {
                         extensionY: popoutWrapper.y
                         extensionHeight: popoutWrapper.hasContent ? popoutWrapper.height : 0
                         extensionWidth: screenScope.animatedExtensionWidth
-                    }
-
-                    DashboardBackgroundShape {
                         dashboardX: dashboardWrapper.x
-                        dashboardY: dashboardWrapper.y
-                        dashboardWidth: dashboardWrapper.width
-                        dashboardHeight: dashboardWrapper.height
-                        dashboardVisible: dashboardWrapper.visible
+                        dashboardWidth: dashboardWrapper.visible ? dashboardWrapper.width : 0
+                        dashboardHeight: dashboardWrapper.visible ? dashboardWrapper.height : 0
                     }
                 }
 
@@ -162,14 +196,9 @@ Scope {
                         extensionY: popoutWrapper.y
                         extensionHeight: popoutWrapper.hasContent ? popoutWrapper.height : 0
                         extensionWidth: screenScope.animatedExtensionWidth
-                    }
-
-                    DashboardBorderShape {
                         dashboardX: dashboardWrapper.x
-                        dashboardY: dashboardWrapper.y
-                        dashboardWidth: dashboardWrapper.width
-                        dashboardHeight: dashboardWrapper.height
-                        dashboardVisible: dashboardWrapper.visible
+                        dashboardWidth: dashboardWrapper.visible ? dashboardWrapper.width : 0
+                        dashboardHeight: dashboardWrapper.visible ? dashboardWrapper.height : 0
                     }
                 }
 

@@ -7,7 +7,6 @@ import ".."
 import Quickshell.Services.Mpris
 import QtQuick
 import QtQuick.Layouts
-
 Item {
     id: mediaTabRoot
 
@@ -15,6 +14,8 @@ Item {
         const activePlayer = PlayersService.active;
         return activePlayer?.length ? activePlayer.position / activePlayer.length : 0;
     }
+
+    readonly property bool isCurrentlyPlaying: PlayersService.active?.isPlaying ?? false
 
     function formatDuration(lengthSeconds: int): string {
         if (lengthSeconds < 0)
@@ -29,7 +30,7 @@ Item {
         return `${mins}:${secs}`;
     }
 
-    implicitWidth: 290
+    implicitWidth: cavaVisualiserContainer.implicitWidth + Appearance.spacing.normal + detailsColumn.implicitWidth + Appearance.spacing.normal + bongoCatContainer.implicitWidth
     implicitHeight: 320
 
     Behavior on playerProgress {
@@ -39,44 +40,83 @@ Item {
     }
 
     Timer {
-        running: PlayersService.active?.isPlaying ?? false
+        running: mediaTabRoot.isCurrentlyPlaying
         interval: DashboardConfig.mediaUpdateInterval
         triggeredOnStart: true
         repeat: true
         onTriggered: PlayersService.active?.positionChanged()
     }
 
-    StyledClippingRect {
-        id: coverArtContainer
+    Item {
+        id: cavaVisualiserContainer
 
+        anchors.left: parent.left
         anchors.verticalCenter: parent.verticalCenter
 
-        implicitWidth: DashboardConfig.sizes.mediaCoverArtSize
-        implicitHeight: DashboardConfig.sizes.mediaCoverArtSize
+        implicitWidth: 180
+        implicitHeight: 280
 
-        color: Colours.tPalette.m3surfaceContainerHigh
-        radius: Infinity
+        Component.onCompleted: CavaService.refCount++
+        Component.onDestruction: CavaService.refCount--
 
-        MaterialIcon {
-            anchors.centerIn: parent
-            grade: 200
-            text: "art_track"
-            color: Colours.palette.m3onSurfaceVariant
-            font.pointSize: (parent.width * 0.4) || 1
-        }
+        Row {
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: parent.height * 0.1
+            anchors.horizontalCenter: parent.horizontalCenter
 
-        Image {
-            anchors.fill: parent
-            source: PlayersService.active?.trackArtUrl ?? ""
-            asynchronous: true
-            fillMode: Image.PreserveAspectCrop
-            sourceSize.width: width
-            sourceSize.height: height
+            height: parent.height * 0.8
+            spacing: 2
+
+            Repeater {
+                model: CavaService.barCount
+
+                Rectangle {
+                    id: cavaBar
+
+                    required property int index
+
+                    readonly property real barValue: {
+                        const currentValues = CavaService.values;
+                        return (currentValues && index < currentValues.length) ? currentValues[index] : 0;
+                    }
+
+                    width: (cavaVisualiserContainer.implicitWidth - (CavaService.barCount - 1) * 2) / CavaService.barCount
+                    height: Math.max(2, barValue * parent.height)
+                    anchors.bottom: parent.bottom
+                    radius: width / 2
+                    color: Colours.palette.m3primary
+                    opacity: 0.5 + barValue * 0.5
+
+                    Behavior on height {
+                        Anim {
+                            duration: Appearance.anim.durations.small
+                        }
+                    }
+
+                    Behavior on opacity {
+                        Anim {
+                            duration: Appearance.anim.durations.small
+                        }
+                    }
+
+                    Behavior on color {
+                        CAnim {}
+                    }
+                }
+            }
         }
     }
 
     ColumnLayout {
         id: detailsColumn
+
+        readonly property int detailsColumnWidth: 220
+
+        anchors.left: cavaVisualiserContainer.right
+        anchors.leftMargin: Appearance.spacing.normal
+        anchors.verticalCenter: parent.verticalCenter
+
+        implicitWidth: detailsColumnWidth
         spacing: Appearance.spacing.small
 
         StyledText {
@@ -154,8 +194,8 @@ Item {
         StyledSlider {
             id: seekSlider
 
+            Layout.fillWidth: true
             enabled: !!PlayersService.active
-            implicitWidth: 280
             implicitHeight: Appearance.padding.normal * 3
 
             onMoved: {
@@ -237,6 +277,30 @@ Item {
                 disabled: !PlayersService.active?.canQuit
                 onClicked: PlayersService.active?.quit()
             }
+        }
+    }
+
+    Item {
+        id: bongoCatContainer
+
+        anchors.left: detailsColumn.right
+        anchors.leftMargin: Appearance.spacing.normal
+        anchors.verticalCenter: parent.verticalCenter
+
+        implicitWidth: cavaVisualiserContainer.implicitWidth
+        implicitHeight: cavaVisualiserContainer.implicitHeight
+
+        AnimatedImage {
+            anchors.centerIn: parent
+
+            width: parent.width * 0.75
+            height: parent.height * 0.75
+
+            playing: mediaTabRoot.isCurrentlyPlaying
+            speed: DashboardConfig.bongoCatGifSpeed
+            source: Qt.resolvedUrl("../../assets/bongocat.gif")
+            asynchronous: true
+            fillMode: AnimatedImage.PreserveAspectFit
         }
     }
 

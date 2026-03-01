@@ -17,13 +17,16 @@ Singleton {
         readonly property int mediaWidth: 160
         readonly property int mediaProgressThickness: 4
         readonly property int mediaProgressSweep: 300
-        readonly property int mediaVisualiserSize: 30
+        readonly property int mediaVisualiserSize: 40
         readonly property int dateTimeWidth: 80
         readonly property int infoWidth: 200
         readonly property int infoIconSize: 20
         readonly property int resourceProgessThickness: 6
         readonly property int tabIndicatorSpacing: 5
+        readonly property int visualiserBarCount: 30
     }
+
+    readonly property real bongoCatGifSpeed: 1.5
 
     readonly property var performance: QtObject {
         readonly property bool showCpu: true

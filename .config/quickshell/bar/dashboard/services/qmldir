@@ -5,3 +5,4 @@ singleton WeatherService 1.0 WeatherService.qml
 singleton SystemUsageService 1.0 SystemUsageService.qml
 singleton NetworkUsageService 1.0 NetworkUsageService.qml
 singleton SysInfoService 1.0 SysInfoService.qml
+singleton CavaService 1.0 CavaService.qml
