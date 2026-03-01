@@ -3,8 +3,10 @@ pragma ComponentBehavior: Bound
 import Quickshell.Io
 import "../dashboard/components"
 import "../dashboard"
+import "../dashboard/services"
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Shapes
 
 Item {
     id: osdContentRoot
@@ -13,7 +15,11 @@ Item {
     property int osdValue: 0
     property bool osdMuted: false
 
+    readonly property bool isVolumeWithNoMusicPlaying: osdType === "volume" && !(PlayersService.active?.isPlaying ?? false)
+
     signal interactionKeepAlive()
+
+    readonly property real junctionArcRadius: 12
 
     implicitWidth: 56
     implicitHeight: osdSliderColumn.implicitHeight + Appearance.padding.large * 2
@@ -38,6 +44,70 @@ Item {
         id: setValueProcess
     }
 
+    Shape {
+        x: 0
+        y: -osdContentRoot.junctionArcRadius
+        width: osdContentRoot.width
+        height: osdContentRoot.height + osdContentRoot.junctionArcRadius * 2
+        preferredRendererType: Shape.CurveRenderer
+
+        ShapePath {
+            fillColor: Colours.palette.m3surfaceContainer
+            strokeColor: Colours.palette.m3primary
+            strokeWidth: 2
+            capStyle: ShapePath.FlatCap
+
+            readonly property real cornerRadius: Appearance.rounding.normal
+            readonly property real junctionRadius: osdContentRoot.junctionArcRadius
+            readonly property real panelTop: junctionRadius
+            readonly property real panelBottom: osdContentRoot.height + junctionRadius
+
+            startX: osdContentRoot.width
+            startY: 0
+
+            PathArc {
+                x: osdContentRoot.width - osdContentRoot.junctionArcRadius
+                y: osdContentRoot.junctionArcRadius
+                radiusX: osdContentRoot.junctionArcRadius
+                radiusY: osdContentRoot.junctionArcRadius
+                direction: PathArc.Clockwise
+            }
+
+            PathLine { x: Appearance.rounding.normal; y: osdContentRoot.junctionArcRadius }
+
+            PathArc {
+                x: 0
+                y: osdContentRoot.junctionArcRadius + Appearance.rounding.normal
+                radiusX: Appearance.rounding.normal
+                radiusY: Appearance.rounding.normal
+                direction: PathArc.Counterclockwise
+            }
+
+            PathLine { x: 0; y: osdContentRoot.height + osdContentRoot.junctionArcRadius - Appearance.rounding.normal }
+
+            PathArc {
+                x: Appearance.rounding.normal
+                y: osdContentRoot.height + osdContentRoot.junctionArcRadius
+                radiusX: Appearance.rounding.normal
+                radiusY: Appearance.rounding.normal
+                direction: PathArc.Counterclockwise
+            }
+
+            PathLine {
+                x: osdContentRoot.width - osdContentRoot.junctionArcRadius
+                y: osdContentRoot.height + osdContentRoot.junctionArcRadius
+            }
+
+            PathArc {
+                x: osdContentRoot.width
+                y: osdContentRoot.height + osdContentRoot.junctionArcRadius * 2
+                radiusX: osdContentRoot.junctionArcRadius
+                radiusY: osdContentRoot.junctionArcRadius
+                direction: PathArc.Clockwise
+            }
+        }
+    }
+
     ColumnLayout {
         id: osdSliderColumn
 
@@ -51,7 +121,7 @@ Item {
                 if (osdContentRoot.osdType === "mic") return osdContentRoot.osdMuted ? "mic_off" : "mic";
                 return osdContentRoot.osdMuted ? "volume_off" : "volume_up";
             }
-            color: osdContentRoot.osdMuted ? Colours.palette.m3error : Colours.palette.m3primary
+            color: osdContentRoot.osdMuted ? Colours.palette.m3error : osdContentRoot.isVolumeWithNoMusicPlaying ? Colours.palette.m3secondary : Colours.palette.m3primary
             font.pointSize: Appearance.font.size.extraLarge
         }
 
@@ -79,7 +149,7 @@ Item {
                 readonly property real clampedFraction: Math.min(osdContentRoot.osdValue / 100.0, 1.0)
 
                 height: parent.height * (osdContentRoot.osdMuted ? 0 : clampedFraction)
-                color: osdContentRoot.osdMuted ? Colours.palette.m3error : osdContentRoot.osdValue > 100 ? Colours.palette.m3error : Colours.palette.m3primary
+                color: osdContentRoot.osdMuted ? Colours.palette.m3error : osdContentRoot.osdValue > 100 ? Colours.palette.m3error : osdContentRoot.isVolumeWithNoMusicPlaying ? Colours.palette.m3secondary : Colours.palette.m3primary
                 radius: Appearance.rounding.full
 
                 Behavior on height {

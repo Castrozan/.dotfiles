@@ -255,9 +255,9 @@ Scope {
                         },
                         Region {
                             x: osdWrapper.visible ? osdWrapper.x : 0
-                            y: osdWrapper.visible ? osdWrapper.y : 0
+                            y: osdWrapper.visible ? osdWrapper.y - 12 : 0
                             width: osdWrapper.visible ? osdWrapper.width : 0
-                            height: osdWrapper.visible ? osdWrapper.height : 0
+                            height: osdWrapper.visible ? osdWrapper.height + 24 : 0
                             intersection: Intersection.Subtract
                         },
                         Region {

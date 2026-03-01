@@ -16,6 +16,7 @@ main() {
 	--toggle-mic) _toggle_microphone_mute ;;
 	--mic-inc) _increase_microphone_volume "$VOLUME_STEP_NORMAL" ;;
 	--mic-dec) _decrease_microphone_volume "$VOLUME_STEP_NORMAL" ;;
+	--send-osd) _send_volume_osd ;;
 	--get) _get_volume_for_active_sink ;;
 	--get-icon) _get_volume_icon_for_active_sink ;;
 	--get-mic-icon) echo "$VOLUME_ICONS_DIR/microphone.png" ;;
