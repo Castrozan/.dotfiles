@@ -50,6 +50,7 @@ Item {
     readonly property int visibleItemCount: Math.min(currentResults.length, LauncherConfig.maxVisibleItems)
 
     signal itemActivated
+    signal autoCompleteRequested(string text)
 
     function activateCurrentItem(): void {
         if (currentResults.length === 0)
@@ -65,7 +66,7 @@ Item {
             break;
         case LauncherResultsList.Actions:
             if (item.autoCompleteText) {
-                searchText = item.autoCompleteText;
+                autoCompleteRequested(item.autoCompleteText);
             } else if (item.command) {
                 executeActionProcess.command = ["bash", "-c", item.command];
                 executeActionProcess.running = true;
@@ -103,7 +104,7 @@ Item {
     }
 
     implicitHeight: currentMode === LauncherResultsList.Wallpapers
-        ? Math.max(wallpapersFlickable.implicitHeight, LauncherConfig.itemHeight)
+        ? Math.max(wallpapersListView.implicitHeight, LauncherConfig.itemHeight)
         : Math.max(verticalListView.implicitHeight, LauncherConfig.itemHeight)
 
     ListView {
@@ -179,38 +180,33 @@ Item {
         }
     }
 
-    Flickable {
-        id: wallpapersFlickable
+    ListView {
+        id: wallpapersListView
 
         anchors.fill: parent
         visible: launcherResultsListRoot.currentMode === LauncherResultsList.Wallpapers
 
-        contentWidth: wallpapersRow.implicitWidth
-        contentHeight: height
-        flickableDirection: Flickable.HorizontalFlick
+        orientation: ListView.Horizontal
+        spacing: Appearance.spacing.small
         clip: true
 
         implicitHeight: LauncherConfig.wallpaperThumbnailSize
 
-        Row {
-            id: wallpapersRow
-            spacing: Appearance.spacing.small
+        model: launcherResultsListRoot.wallpaperResults
+        currentIndex: launcherResultsListRoot.currentIndex
 
-            Repeater {
-                model: launcherResultsListRoot.wallpaperResults
+        delegate: LauncherWallpaperItem {
+            required property var modelData
+            required property int index
 
-                LauncherWallpaperItem {
-                    required property var modelData
-                    required property int index
+            height: wallpapersListView.height
 
-                    wallpaperData: modelData
-                    isCurrentWallpaper: modelData.path === LauncherWallpapersService.currentWallpaperPath
-                    isCurrentItem: index === launcherResultsListRoot.currentIndex
-                    onActivated: {
-                        launcherResultsListRoot.currentIndex = index;
-                        launcherResultsListRoot.activateCurrentItem();
-                    }
-                }
+            wallpaperData: modelData
+            isCurrentWallpaper: modelData.path === LauncherWallpapersService.currentWallpaperPath
+            isCurrentItem: index === launcherResultsListRoot.currentIndex
+            onActivated: {
+                launcherResultsListRoot.currentIndex = index;
+                launcherResultsListRoot.activateCurrentItem();
             }
         }
     }

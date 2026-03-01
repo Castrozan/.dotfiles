@@ -1,5 +1,7 @@
 { pkgs, ... }:
 {
+  home.packages = [ pkgs.quickshell ];
+
   xdg.configFile."quickshell/bar" = {
     source = ../../../.config/quickshell/bar;
     recursive = true;

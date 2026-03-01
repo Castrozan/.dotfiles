@@ -24,6 +24,8 @@ Singleton {
         readonly property color m3outline: ThemeColors.dim
         readonly property color m3outlineVariant: Qt.alpha(ThemeColors.dim, 0.3)
         readonly property color m3error: ThemeColors.error
+        readonly property color m3errorContainer: Qt.alpha(ThemeColors.error, 0.2)
+        readonly property color m3onErrorContainer: ThemeColors.error
         readonly property color m3scrim: Qt.alpha("#000000", 0.35)
     }
 

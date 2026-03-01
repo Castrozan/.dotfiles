@@ -32,6 +32,11 @@ Scope {
             property bool launcherHovered: false
             property bool sessionVisible: false
             property bool sessionHovered: false
+            property bool utilitiesVisible: false
+            property bool utilitiesHovered: false
+            property bool osdVisible: false
+            property bool sidebarVisible: false
+            property bool sidebarHovered: false
 
             readonly property bool hasActivePopout: popoutCurrentName !== ""
             readonly property int shapeJunctionRadius: 36
@@ -62,6 +67,14 @@ Scope {
 
             function toggleSession(): void {
                 sessionVisible = !sessionVisible;
+            }
+
+            function toggleUtilities(): void {
+                utilitiesVisible = !utilitiesVisible;
+            }
+
+            function toggleSidebar(): void {
+                sidebarVisible = !sidebarVisible;
             }
 
             function showPopoutByName(name: string): void {
@@ -112,6 +125,35 @@ Scope {
             }
 
             IpcHandler {
+                target: "utilities"
+
+                function toggle(): void {
+                    screenScope.toggleUtilities();
+                }
+            }
+
+            IpcHandler {
+                target: "sidebar"
+
+                function toggle(): void {
+                    screenScope.toggleSidebar();
+                }
+            }
+
+            IpcHandler {
+                target: "osd"
+
+                function show(): void {
+                    screenScope.osdVisible = true;
+                    osdAutoHideTimer.restart();
+                }
+
+                function hide(): void {
+                    screenScope.osdVisible = false;
+                }
+            }
+
+            IpcHandler {
                 target: "popout"
 
                 function toggle(name: string): void {
@@ -142,7 +184,7 @@ Scope {
                 exclusionMode: ExclusionMode.Ignore
                 WlrLayershell.layer: WlrLayer.Top
                 WlrLayershell.namespace: "quickshell-bar"
-                WlrLayershell.keyboardFocus: (screenScope.dashboardVisible || screenScope.launcherVisible || screenScope.sessionVisible) ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
+                WlrLayershell.keyboardFocus: (screenScope.dashboardVisible || screenScope.launcherVisible || screenScope.sessionVisible || screenScope.utilitiesVisible || screenScope.sidebarVisible) ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
 
                 color: "transparent"
                 surfaceFormat.opaque: false
@@ -203,8 +245,54 @@ Scope {
                             width: sessionWrapper.visible ? sessionWrapper.width : 0
                             height: sessionWrapper.visible ? sessionWrapper.height : 0
                             intersection: Intersection.Subtract
+                        },
+                        Region {
+                            x: utilitiesWrapper.visible ? utilitiesWrapper.x : 0
+                            y: utilitiesWrapper.visible ? utilitiesWrapper.y : 0
+                            width: utilitiesWrapper.visible ? utilitiesWrapper.width : 0
+                            height: utilitiesWrapper.visible ? utilitiesWrapper.height : 0
+                            intersection: Intersection.Subtract
+                        },
+                        Region {
+                            x: osdWrapper.visible ? osdWrapper.x : 0
+                            y: osdWrapper.visible ? osdWrapper.y : 0
+                            width: osdWrapper.visible ? osdWrapper.width : 0
+                            height: osdWrapper.visible ? osdWrapper.height : 0
+                            intersection: Intersection.Subtract
+                        },
+                        Region {
+                            x: sidebarWrapper.visible ? sidebarWrapper.x : 0
+                            y: sidebarWrapper.visible ? sidebarWrapper.y : 0
+                            width: sidebarWrapper.visible ? sidebarWrapper.width : 0
+                            height: sidebarWrapper.visible ? sidebarWrapper.height : 0
+                            intersection: Intersection.Subtract
                         }
                     ]
+                }
+
+                QtObject {
+                    id: aggregatedRightPanelGeometry
+
+                    readonly property bool hasSession: sessionWrapper.visible && sessionWrapper.width > 0
+                    readonly property bool hasSidebar: sidebarWrapper.visible && sidebarWrapper.width > 0
+                    readonly property bool hasUtilities: utilitiesWrapper.visible && utilitiesWrapper.height > 0
+                    readonly property bool hasAnyRightPanel: hasSession || hasSidebar || hasUtilities
+
+                    readonly property real sessionTop: hasSession ? sessionWrapper.y : 99999
+                    readonly property real sessionBottom: hasSession ? sessionWrapper.y + sessionWrapper.height : 0
+                    readonly property real sidebarTop: hasSidebar ? sidebarWrapper.y : 99999
+                    readonly property real sidebarBottom: hasSidebar ? sidebarWrapper.y + sidebarWrapper.height : 0
+                    readonly property real utilitiesTop: hasUtilities ? utilitiesWrapper.y : 99999
+                    readonly property real utilitiesBottom: hasUtilities ? utilitiesWrapper.y + utilitiesWrapper.height : 0
+
+                    readonly property real aggregatedY: hasAnyRightPanel ? Math.min(sessionTop, sidebarTop, utilitiesTop) : 0
+                    readonly property real aggregatedBottom: hasAnyRightPanel ? Math.max(sessionBottom, sidebarBottom, utilitiesBottom) : 0
+                    readonly property real aggregatedHeight: hasAnyRightPanel ? aggregatedBottom - aggregatedY : 0
+                    readonly property real aggregatedWidth: hasAnyRightPanel ? Math.max(
+                        hasSession ? sessionWrapper.width + sidebarWrapper.width : 0,
+                        hasSidebar ? sidebarWrapper.width : 0,
+                        hasUtilities ? utilitiesWrapper.width : 0
+                    ) : 0
                 }
 
                 Shape {
@@ -227,9 +315,9 @@ Scope {
                         launcherX: launcherWrapper.x
                         launcherWidth: launcherWrapper.visible ? launcherWrapper.width : 0
                         launcherHeight: launcherWrapper.visible ? launcherWrapper.height : 0
-                        rightPanelY: sessionWrapper.visible ? sessionWrapper.y : 0
-                        rightPanelWidth: sessionWrapper.visible ? sessionWrapper.width : 0
-                        rightPanelHeight: sessionWrapper.visible ? sessionWrapper.height : 0
+                        rightPanelY: aggregatedRightPanelGeometry.aggregatedY
+                        rightPanelWidth: aggregatedRightPanelGeometry.aggregatedWidth
+                        rightPanelHeight: aggregatedRightPanelGeometry.aggregatedHeight
                     }
                 }
 
@@ -249,9 +337,9 @@ Scope {
                         dashboardX: dashboardWrapper.x
                         dashboardWidth: dashboardWrapper.visible ? dashboardWrapper.width : 0
                         dashboardHeight: dashboardWrapper.visible ? dashboardWrapper.height : 0
-                        rightPanelY: sessionWrapper.visible ? sessionWrapper.y : 0
-                        rightPanelWidth: sessionWrapper.visible ? sessionWrapper.width : 0
-                        rightPanelHeight: sessionWrapper.visible ? sessionWrapper.height : 0
+                        rightPanelY: aggregatedRightPanelGeometry.aggregatedY
+                        rightPanelWidth: aggregatedRightPanelGeometry.aggregatedWidth
+                        rightPanelHeight: aggregatedRightPanelGeometry.aggregatedHeight
                         launcherX: launcherWrapper.x
                         launcherWidth: launcherWrapper.visible ? launcherWrapper.width : 0
                         launcherHeight: launcherWrapper.visible ? launcherWrapper.height : 0
@@ -368,6 +456,8 @@ Scope {
 
                     launcherVisible: screenScope.launcherVisible
 
+                    Keys.onEscapePressed: screenScope.launcherVisible = false
+
                     MouseArea {
                         anchors.fill: parent
                         hoverEnabled: true
@@ -387,7 +477,7 @@ Scope {
                 SessionWrapper {
                     id: sessionWrapper
 
-                    x: drawersWindow.width - barTotalWidth / 3 - width
+                    x: drawersWindow.width - barTotalWidth / 3 - sidebarWrapper.width - width
                     y: (drawersWindow.height - height) / 2
                     z: 2
 
@@ -402,8 +492,172 @@ Scope {
                             screenScope.sessionHovered = containsMouse;
                             if (containsMouse) {
                                 sessionHideTimer.stop();
-                            } else {
+                            } else if (!rightStripSessionHoverTrigger.containsMouse) {
                                 sessionHideTimer.restart();
+                            }
+                        }
+                    }
+                }
+
+                MouseArea {
+                    id: rightStripSidebarHoverTrigger
+
+                    readonly property real rightStripWidth: barTotalWidth / 3
+                    readonly property real rightStripInnerTop: barTotalWidth / 3
+                    readonly property real rightStripInnerHeight: drawersWindow.height - barTotalWidth * 2 / 3
+                    readonly property real zoneHeight: rightStripInnerHeight / 3
+
+                    x: drawersWindow.width - rightStripWidth
+                    y: rightStripInnerTop
+                    z: 3
+                    width: rightStripWidth
+                    height: zoneHeight
+
+                    hoverEnabled: true
+                    acceptedButtons: Qt.NoButton
+
+                    onContainsMouseChanged: {
+                        if (containsMouse) {
+                            sidebarHideTimer.stop();
+                            sidebarShowDelayTimer.restart();
+                        } else {
+                            sidebarShowDelayTimer.stop();
+                            if (!screenScope.sidebarHovered)
+                                sidebarHideTimer.restart();
+                        }
+                    }
+                }
+
+                MouseArea {
+                    id: rightStripOsdHoverTrigger
+
+                    x: drawersWindow.width - rightStripSidebarHoverTrigger.rightStripWidth
+                    y: rightStripSidebarHoverTrigger.rightStripInnerTop + rightStripSidebarHoverTrigger.zoneHeight
+                    z: 3
+                    width: rightStripSidebarHoverTrigger.rightStripWidth
+                    height: rightStripSidebarHoverTrigger.zoneHeight
+
+                    hoverEnabled: true
+                    acceptedButtons: Qt.NoButton
+
+                    property bool osdHovered: false
+
+                    onContainsMouseChanged: {
+                        if (containsMouse) {
+                            osdHideTimer.stop();
+                            osdShowDelayTimer.restart();
+                        } else {
+                            osdShowDelayTimer.stop();
+                            if (!osdHovered)
+                                osdHideTimer.restart();
+                        }
+                    }
+                }
+
+                MouseArea {
+                    id: rightStripSessionHoverTrigger
+
+                    x: drawersWindow.width - rightStripSidebarHoverTrigger.rightStripWidth
+                    y: rightStripSidebarHoverTrigger.rightStripInnerTop + rightStripSidebarHoverTrigger.zoneHeight * 2
+                    z: 3
+                    width: rightStripSidebarHoverTrigger.rightStripWidth
+                    height: rightStripSidebarHoverTrigger.zoneHeight
+
+                    hoverEnabled: true
+                    acceptedButtons: Qt.NoButton
+
+                    onContainsMouseChanged: {
+                        if (containsMouse) {
+                            sessionHideTimer.stop();
+                            sessionShowDelayTimer.restart();
+                        } else {
+                            sessionShowDelayTimer.stop();
+                            if (!screenScope.sessionHovered)
+                                sessionHideTimer.restart();
+                        }
+                    }
+                }
+
+                UtilitiesWrapper {
+                    id: utilitiesWrapper
+
+                    x: drawersWindow.width - barTotalWidth / 3 - width
+                    y: drawersWindow.height - barTotalWidth / 3 - height
+                    z: 2
+
+                    utilitiesVisible: screenScope.utilitiesVisible
+
+                    MouseArea {
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        acceptedButtons: Qt.NoButton
+
+                        onContainsMouseChanged: {
+                            screenScope.utilitiesHovered = containsMouse;
+                            if (containsMouse) {
+                                utilitiesHideTimer.stop();
+                            } else {
+                                utilitiesHideTimer.restart();
+                            }
+                        }
+                    }
+                }
+
+                SidebarWrapper {
+                    id: sidebarWrapper
+
+                    readonly property real sidebarTopEdge: barTotalWidth / 3
+                    readonly property real sidebarBottomEdge: drawersWindow.height - barTotalWidth / 3 - utilitiesWrapper.height
+
+                    x: drawersWindow.width - barTotalWidth / 3 - width
+                    y: sidebarTopEdge
+                    z: 2
+                    height: sidebarBottomEdge - sidebarTopEdge
+
+                    sidebarVisible: screenScope.sidebarVisible
+
+                    MouseArea {
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        acceptedButtons: Qt.NoButton
+
+                        onContainsMouseChanged: {
+                            screenScope.sidebarHovered = containsMouse;
+                            if (containsMouse) {
+                                sidebarHideTimer.stop();
+                            } else if (!rightStripSidebarHoverTrigger.containsMouse) {
+                                sidebarHideTimer.restart();
+                            }
+                        }
+                    }
+                }
+
+                OsdWrapper {
+                    id: osdWrapper
+
+                    x: drawersWindow.width - barTotalWidth / 3 - sidebarWrapper.width - sessionWrapper.width - width
+                    y: (drawersWindow.height - height) / 2
+                    z: 2
+
+                    osdVisible: screenScope.osdVisible
+
+                    onOsdMessageReceived: {
+                        screenScope.osdVisible = true;
+                        osdAutoHideTimer.restart();
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        acceptedButtons: Qt.NoButton
+
+                        onContainsMouseChanged: {
+                            rightStripOsdHoverTrigger.osdHovered = containsMouse;
+                            if (containsMouse) {
+                                osdHideTimer.stop();
+                                osdAutoHideTimer.stop();
+                            } else if (!rightStripOsdHoverTrigger.containsMouse) {
+                                osdHideTimer.restart();
                             }
                         }
                     }
@@ -431,21 +685,25 @@ Scope {
                     id: drawersDismissArea
 
                     anchors.fill: parent
-                    visible: screenScope.dashboardVisible || screenScope.launcherVisible || screenScope.sessionVisible
+                    visible: screenScope.dashboardVisible || screenScope.launcherVisible || screenScope.sessionVisible || screenScope.utilitiesVisible || screenScope.sidebarVisible
                     z: 1
 
                     onClicked: {
                         screenScope.dashboardVisible = false;
                         screenScope.launcherVisible = false;
                         screenScope.sessionVisible = false;
+                        screenScope.utilitiesVisible = false;
+                        screenScope.sidebarVisible = false;
                     }
 
                     Keys.onEscapePressed: {
                         screenScope.dashboardVisible = false;
                         screenScope.launcherVisible = false;
                         screenScope.sessionVisible = false;
+                        screenScope.utilitiesVisible = false;
+                        screenScope.sidebarVisible = false;
                     }
-                    focus: screenScope.dashboardVisible || screenScope.launcherVisible || screenScope.sessionVisible
+                    focus: screenScope.dashboardVisible || screenScope.launcherVisible || screenScope.sessionVisible || screenScope.utilitiesVisible || screenScope.sidebarVisible
                 }
 
                 Timer {
@@ -488,13 +746,76 @@ Scope {
                 }
 
                 Timer {
+                    id: sessionShowDelayTimer
+                    interval: 200
+                    onTriggered: {
+                        if (rightStripSessionHoverTrigger.containsMouse)
+                            screenScope.sessionVisible = true;
+                    }
+                }
+
+                Timer {
                     id: sessionHideTimer
                     interval: 450
                     onTriggered: {
-                        if (!screenScope.sessionHovered) {
+                        if (!screenScope.sessionHovered && !rightStripSessionHoverTrigger.containsMouse) {
                             screenScope.sessionVisible = false;
                         }
                     }
+                }
+
+                Timer {
+                    id: utilitiesHideTimer
+                    interval: 450
+                    onTriggered: {
+                        if (!screenScope.utilitiesHovered) {
+                            screenScope.utilitiesVisible = false;
+                        }
+                    }
+                }
+
+                Timer {
+                    id: sidebarShowDelayTimer
+                    interval: 200
+                    onTriggered: {
+                        if (rightStripSidebarHoverTrigger.containsMouse)
+                            screenScope.sidebarVisible = true;
+                    }
+                }
+
+                Timer {
+                    id: sidebarHideTimer
+                    interval: 450
+                    onTriggered: {
+                        if (!screenScope.sidebarHovered && !rightStripSidebarHoverTrigger.containsMouse) {
+                            screenScope.sidebarVisible = false;
+                        }
+                    }
+                }
+
+                Timer {
+                    id: osdShowDelayTimer
+                    interval: 200
+                    onTriggered: {
+                        if (rightStripOsdHoverTrigger.containsMouse)
+                            screenScope.osdVisible = true;
+                    }
+                }
+
+                Timer {
+                    id: osdHideTimer
+                    interval: 450
+                    onTriggered: {
+                        if (!rightStripOsdHoverTrigger.osdHovered && !rightStripOsdHoverTrigger.containsMouse) {
+                            screenScope.osdVisible = false;
+                        }
+                    }
+                }
+
+                Timer {
+                    id: osdAutoHideTimer
+                    interval: 2000
+                    onTriggered: screenScope.osdVisible = false
                 }
             }
 

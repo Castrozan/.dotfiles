@@ -62,7 +62,7 @@ StyledRect {
         anchors.verticalCenter: parent.verticalCenter
 
         visible: searchTextInput.text.length === 0 && !searchTextInput.activeFocus
-        text: "Search apps or type > for actions"
+        text: "Search apps or type : for actions"
         color: Colours.palette.m3onSurfaceVariant
         font.pointSize: Appearance.font.size.large
     }
@@ -87,7 +87,13 @@ StyledRect {
     onLauncherVisibleChanged: {
         if (launcherVisible) {
             searchTextInput.text = "";
-            searchTextInput.forceActiveFocus();
+            focusDelayTimer.restart();
         }
+    }
+
+    Timer {
+        id: focusDelayTimer
+        interval: 50
+        onTriggered: searchTextInput.forceActiveFocus()
     }
 }

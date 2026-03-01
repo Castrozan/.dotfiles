@@ -31,6 +31,7 @@ Item {
             searchText: searchBar.searchText
 
             onItemActivated: launcherContentRoot.launcherVisible = false
+            onAutoCompleteRequested: text => searchBar.searchText = text
         }
 
         LauncherSearchBar {
@@ -46,8 +47,6 @@ Item {
             Keys.onDownPressed: resultsList.moveSelectionDown()
         }
     }
-
-    Keys.onEscapePressed: launcherContentRoot.launcherVisible = false
 
     Keys.forwardTo: [searchBar]
 }

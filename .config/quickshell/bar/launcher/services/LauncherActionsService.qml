@@ -11,13 +11,13 @@ Singleton {
             name: "Scheme",
             description: "Browse and switch color schemes",
             icon: "palette",
-            autoCompleteText: ">scheme "
+            autoCompleteText: ":scheme "
         },
         {
             name: "Wallpaper",
             description: "Browse and set wallpapers",
             icon: "wallpaper",
-            autoCompleteText: ">wallpaper "
+            autoCompleteText: ":wallpaper "
         },
         {
             name: "Next Wallpaper",

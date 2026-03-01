@@ -2,3 +2,10 @@ module panels
 
 SessionWrapper 1.0 SessionWrapper.qml
 SessionContent 1.0 SessionContent.qml
+UtilitiesWrapper 1.0 UtilitiesWrapper.qml
+UtilitiesContent 1.0 UtilitiesContent.qml
+OsdWrapper 1.0 OsdWrapper.qml
+OsdContent 1.0 OsdContent.qml
+SidebarWrapper 1.0 SidebarWrapper.qml
+SidebarContent 1.0 SidebarContent.qml
+SidebarNotificationItem 1.0 SidebarNotificationItem.qml

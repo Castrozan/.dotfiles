@@ -6,14 +6,11 @@ import "../dashboard"
 import QtQuick
 import QtQuick.Layouts
 
-StyledRect {
+Item {
     id: sessionContentRoot
 
     implicitWidth: sessionButtonsColumn.implicitWidth + Appearance.padding.large * 2
     implicitHeight: sessionButtonsColumn.implicitHeight + Appearance.padding.large * 2
-
-    color: Colours.palette.m3surfaceContainer
-    radius: Appearance.rounding.large
 
     ColumnLayout {
         id: sessionButtonsColumn

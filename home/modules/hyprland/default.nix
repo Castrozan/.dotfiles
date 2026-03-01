@@ -7,7 +7,6 @@ let
     "quickshell-bar.service"
     "mako.service"
     "xdg-desktop-portal-hyprland.service"
-    "quickshell-osd.service"
     "quickshell-switcher.service"
   ];
 in
@@ -22,7 +21,6 @@ in
 
     ./wlr-which-key.nix
     ./mako-service.nix
-    ./quickshell-osd.nix
     ./quickshell-switcher.nix
     ../satty.nix
     ../wiremix.nix
