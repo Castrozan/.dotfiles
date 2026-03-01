@@ -16,13 +16,13 @@ qmldir files register types for cross-directory imports. Missing entries produce
 </silent_failure_traps>
 
 <service_lifecycle>
-Config directories are nix-managed symlinks. After changes: use the rebuild skill to regenerate symlinks, then restart the service via systemctl. Never manually kill or start quickshell processes. Editing existing files only needs restart (symlink target is the repo). Adding new files or directories needs rebuild first — the file exists in the repo but quickshell reads from the store path which doesn't include it yet.
+Config directories are nix-managed symlinks. After changes: use the rebuild skill to regenerate symlinks, then restart the service via systemctl. Never use pkill on quickshell processes.
 
 Discover IPC targets dynamically with `qs ipc -c bar show`. Call with `qs ipc -c bar call TARGET FUNCTION [ARGS]`. Use IPC to trigger UI states for testing — more reliable than mouse simulation.
 </service_lifecycle>
 
 <visual_verification>
-After visual changes: restart, wait 2 seconds, trigger UI state via IPC if needed, screenshot with the screenshot script in bin/hypr/, read the file to inspect. Prefer IPC show commands over hover simulation for popouts.
+After visual changes: restart, wait 2 seconds, trigger UI state via IPC if needed, screenshot with grim, read the file to inspect. Prefer IPC show commands over hover simulation for popouts.
 </visual_verification>
 
 <debugging>
