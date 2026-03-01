@@ -218,7 +218,7 @@ Singleton {
         id: gpuTypeDetectionProcess
 
         running: true
-        command: ["sh", "-c", "if command -v nvidia-smi &>/dev/null && nvidia-smi -L &>/dev/null; then echo NVIDIA; elif ls /sys/class/drm/card*/device/gpu_busy_percent 2>/dev/null | grep -q .; then echo GENERIC; else echo NONE; fi"]
+        command: ["sh", "-c", "if command -v nvidia-smi >/dev/null 2>&1 && nvidia-smi -L >/dev/null 2>&1; then echo NVIDIA; elif ls /sys/class/drm/card*/device/gpu_busy_percent 2>/dev/null | grep -q .; then echo GENERIC; else echo NONE; fi"]
         stdout: SplitParser {
             splitMarker: ""
             onRead: data => systemUsageServiceRoot.autoDetectedGpuType = data.trim()

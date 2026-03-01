@@ -29,11 +29,8 @@ Item {
         return `${mins}:${secs}`;
     }
 
-    readonly property real contentTotalWidth: coverArtContainer.implicitWidth + contentSpacing + detailsColumn.implicitWidth
-    readonly property real contentSpacing: Appearance.spacing.normal + Appearance.spacing.small
-
-    implicitWidth: contentTotalWidth + Appearance.padding.large * 2
-    implicitHeight: Math.max(coverArtContainer.implicitHeight, detailsColumn.implicitHeight) + Appearance.padding.large * 2
+    implicitWidth: 290
+    implicitHeight: 320
 
     Behavior on playerProgress {
         Anim {
@@ -53,7 +50,6 @@ Item {
         id: coverArtContainer
 
         anchors.verticalCenter: parent.verticalCenter
-        x: (parent.width - mediaTabRoot.contentTotalWidth) / 2
 
         implicitWidth: DashboardConfig.sizes.mediaCoverArtSize
         implicitHeight: DashboardConfig.sizes.mediaCoverArtSize
@@ -81,11 +77,6 @@ Item {
 
     ColumnLayout {
         id: detailsColumn
-
-        anchors.verticalCenter: parent.verticalCenter
-        anchors.left: coverArtContainer.right
-        anchors.leftMargin: mediaTabRoot.contentSpacing
-
         spacing: Appearance.spacing.small
 
         StyledText {

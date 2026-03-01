@@ -17,7 +17,8 @@ Item {
     ColumnLayout {
         id: weatherLayout
 
-        anchors.fill: parent
+        anchors.left: parent.left
+        anchors.right: parent.right
         spacing: Appearance.spacing.smaller
 
         RowLayout {
@@ -141,64 +142,72 @@ Item {
             color: Colours.palette.m3onSurface
         }
 
-        RowLayout {
+        Item {
             Layout.fillWidth: true
-            spacing: Appearance.spacing.smaller
+            implicitHeight: forecastRowLayout.implicitHeight
 
-            Repeater {
-                id: forecastRepeater
+            RowLayout {
+                id: forecastRowLayout
 
-                model: WeatherService.forecast
+                anchors.left: parent.left
+                anchors.right: parent.right
+                spacing: Appearance.spacing.smaller
 
-                StyledRect {
-                    id: forecastDayItem
+                Repeater {
+                    id: forecastRepeater
 
-                    required property int index
-                    required property var modelData
+                    model: WeatherService.forecast
 
-                    Layout.fillWidth: true
-                    implicitHeight: forecastDayColumn.implicitHeight + Appearance.padding.normal * 2
+                    StyledRect {
+                        id: forecastDayItem
 
-                    radius: Appearance.rounding.normal
-                    color: Colours.tPalette.m3surfaceContainer
+                        required property int index
+                        required property var modelData
 
-                    ColumnLayout {
-                        id: forecastDayColumn
+                        Layout.fillWidth: true
+                        implicitHeight: forecastDayColumn.implicitHeight + Appearance.padding.normal * 2
 
-                        anchors.centerIn: parent
-                        spacing: Appearance.spacing.small
+                        radius: Appearance.rounding.normal
+                        color: Colours.tPalette.m3surfaceContainer
 
-                        StyledText {
-                            Layout.alignment: Qt.AlignHCenter
-                            text: forecastDayItem.index === 0 ? "Today" : new Date(forecastDayItem.modelData.date).toLocaleDateString(Qt.locale(), "ddd")
-                            font.pointSize: Appearance.font.size.normal
-                            font.weight: 600
-                            color: Colours.palette.m3primary
-                        }
+                        ColumnLayout {
+                            id: forecastDayColumn
 
-                        StyledText {
-                            Layout.topMargin: -Appearance.spacing.small / 2
-                            Layout.alignment: Qt.AlignHCenter
-                            text: new Date(forecastDayItem.modelData.date).toLocaleDateString(Qt.locale(), "MMM d")
-                            font.pointSize: Appearance.font.size.small
-                            opacity: 0.7
-                            color: Colours.palette.m3onSurfaceVariant
-                        }
+                            anchors.centerIn: parent
+                            spacing: Appearance.spacing.small
 
-                        MaterialIcon {
-                            Layout.alignment: Qt.AlignHCenter
-                            text: forecastDayItem.modelData.icon
-                            font.pointSize: Appearance.font.size.extraLarge
-                            color: Colours.palette.m3secondary
-                        }
+                            StyledText {
+                                Layout.alignment: Qt.AlignHCenter
+                                text: forecastDayItem.index === 0 ? "Today" : new Date(forecastDayItem.modelData.date).toLocaleDateString(Qt.locale(), "ddd")
+                                font.pointSize: Appearance.font.size.normal
+                                font.weight: 600
+                                color: Colours.palette.m3primary
+                            }
 
-                        StyledText {
-                            Layout.alignment: Qt.AlignHCenter
-                            text: DashboardConfig.useFahrenheit
-                                ? forecastDayItem.modelData.maxTempF + "\u00B0 / " + forecastDayItem.modelData.minTempF + "\u00B0"
-                                : forecastDayItem.modelData.maxTempC + "\u00B0 / " + forecastDayItem.modelData.minTempC + "\u00B0"
-                            font.weight: 600
-                            color: Colours.palette.m3tertiary
+                            StyledText {
+                                Layout.topMargin: -Appearance.spacing.small / 2
+                                Layout.alignment: Qt.AlignHCenter
+                                text: new Date(forecastDayItem.modelData.date).toLocaleDateString(Qt.locale(), "MMM d")
+                                font.pointSize: Appearance.font.size.small
+                                opacity: 0.7
+                                color: Colours.palette.m3onSurfaceVariant
+                            }
+
+                            MaterialIcon {
+                                Layout.alignment: Qt.AlignHCenter
+                                text: forecastDayItem.modelData.icon
+                                font.pointSize: Appearance.font.size.extraLarge
+                                color: Colours.palette.m3secondary
+                            }
+
+                            StyledText {
+                                Layout.alignment: Qt.AlignHCenter
+                                text: DashboardConfig.useFahrenheit
+                                    ? forecastDayItem.modelData.maxTempF + "\u00B0 / " + forecastDayItem.modelData.minTempF + "\u00B0"
+                                    : forecastDayItem.modelData.maxTempC + "\u00B0 / " + forecastDayItem.modelData.minTempC + "\u00B0"
+                                font.weight: 600
+                                color: Colours.palette.m3tertiary
+                            }
                         }
                     }
                 }

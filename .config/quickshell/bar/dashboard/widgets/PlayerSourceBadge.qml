@@ -9,9 +9,6 @@ import QtQuick
 StyledRect {
     id: playerSourceBadgeRoot
 
-    implicitWidth: badgeRow.implicitWidth + Appearance.padding.normal * 2
-    implicitHeight: badgeRow.implicitHeight + Appearance.padding.small * 2
-
     radius: Appearance.rounding.full
     color: Colours.palette.m3surfaceContainer
 

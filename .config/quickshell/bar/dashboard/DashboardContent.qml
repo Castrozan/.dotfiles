@@ -57,7 +57,7 @@ Item {
 
             contentX: currentTabItem.x
             contentWidth: tabsRow.implicitWidth
-            contentHeight: tabsRow.implicitHeight
+            contentHeight: height
 
             onContentXChanged: {
                 if (!moving)
@@ -85,29 +85,29 @@ Item {
 
                 Loader {
                     id: tabPane0
-                    Layout.fillHeight: true
                     active: true
+                    Layout.alignment: Qt.AlignTop
                     sourceComponent: DashboardTab {}
                 }
 
                 Loader {
                     id: tabPane1
-                    Layout.fillHeight: true
                     active: true
+                    Layout.alignment: Qt.AlignTop
                     sourceComponent: MediaTab {}
                 }
 
                 Loader {
                     id: tabPane2
-                    Layout.fillHeight: true
                     active: true
+                    Layout.alignment: Qt.AlignTop
                     sourceComponent: PerformanceTab {}
                 }
 
                 Loader {
                     id: tabPane3
-                    Layout.fillHeight: true
                     active: true
+                    Layout.alignment: Qt.AlignTop
                     sourceComponent: WeatherTab {}
                 }
             }

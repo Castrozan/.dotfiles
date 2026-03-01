@@ -11,29 +11,20 @@ import Quickshell.Services.UPower
 Item {
     id: performanceTabRoot
 
-    readonly property int performanceMinWidth: 500
-
     function formatTemperatureDisplay(temperatureCelsius: real): string {
         return `${Math.ceil(DashboardConfig.useFahrenheitPerformance ? temperatureCelsius * 1.8 + 32 : temperatureCelsius)}\u00B0${DashboardConfig.useFahrenheitPerformance ? "F" : "C"}`;
     }
 
     implicitWidth: 800
-    implicitHeight: 400
+    implicitHeight: performanceContentRow.implicitHeight
 
     StyledRect {
         id: noWidgetsPlaceholder
 
-        anchors.centerIn: parent
-        width: 400
-        height: 100
-        radius: Appearance.rounding.large
         color: Colours.tPalette.m3surfaceContainer
         visible: !DashboardConfig.performance.showCpu && !(DashboardConfig.performance.showGpu && SystemUsageService.gpuType !== "NONE") && !DashboardConfig.performance.showMemory && !DashboardConfig.performance.showStorage && !DashboardConfig.performance.showNetwork && !(UPower.displayDevice.isLaptopBattery && DashboardConfig.performance.showBattery)
 
         ColumnLayout {
-            anchors.centerIn: parent
-            spacing: Appearance.spacing.normal
-
             MaterialIcon {
                 Layout.alignment: Qt.AlignHCenter
                 text: "tune"
@@ -70,8 +61,6 @@ Item {
 
         ColumnLayout {
             id: performanceMainColumn
-
-            Layout.fillWidth: true
             spacing: Appearance.spacing.normal
 
             RowLayout {
@@ -194,7 +183,6 @@ Item {
 
         StyledRect {
             anchors.left: parent.left
-            anchors.top: parent.top
             anchors.bottom: parent.bottom
             width: parent.width * performanceProgressBarRoot.animatedValue
             color: performanceProgressBarRoot.foregroundColor
@@ -208,7 +196,7 @@ Item {
         }
     }
 
-    component PerformanceHeroCard: StyledClippingRect {
+    component PerformanceHeroCard: StyledRect {
         id: performanceHeroCardRoot
 
         property string iconName
@@ -227,6 +215,7 @@ Item {
 
         color: Colours.tPalette.m3surfaceContainer
         radius: Appearance.rounding.large
+        clip: true
         Component.onCompleted: {
             animatedUsage = usage;
             animatedTemperature = temperatureProgress;
@@ -236,17 +225,14 @@ Item {
 
         StyledRect {
             anchors.left: parent.left
-            anchors.top: parent.top
             anchors.bottom: parent.bottom
             width: parent.width * performanceHeroCardRoot.animatedUsage
             color: Qt.alpha(performanceHeroCardRoot.accentColor, 0.15)
         }
 
         ColumnLayout {
-            anchors.fill: parent
             anchors.leftMargin: Appearance.padding.large
             anchors.rightMargin: Appearance.padding.large
-            anchors.topMargin: Appearance.padding.normal
             anchors.bottomMargin: Appearance.padding.normal
             spacing: Appearance.spacing.small
 
@@ -257,8 +243,6 @@ Item {
             }
 
             RowLayout {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
                 spacing: Appearance.spacing.normal
 
                 Column {
