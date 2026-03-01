@@ -1,0 +1,8 @@
+module launcher
+
+singleton LauncherConfig 1.0 LauncherConfig.qml
+
+LauncherWrapper 1.0 LauncherWrapper.qml
+LauncherContent 1.0 LauncherContent.qml
+LauncherSearchBar 1.0 LauncherSearchBar.qml
+LauncherResultsList 1.0 LauncherResultsList.qml

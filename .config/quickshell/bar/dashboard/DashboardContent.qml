@@ -9,7 +9,7 @@ import QtQuick.Layouts
 Item {
     id: dashboardContentRoot
 
-    property int currentTabIndex: 1
+    property int currentTabIndex: 0
     readonly property real nonAnimatedWidth: tabsFlickable.implicitWidth + flickableWrapper.anchors.margins * 2
     readonly property real nonAnimatedHeight: dashboardTabsBar.implicitHeight + dashboardTabsBar.anchors.topMargin + tabsFlickable.implicitHeight + flickableWrapper.anchors.margins * 2
 

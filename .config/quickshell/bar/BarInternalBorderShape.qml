@@ -16,6 +16,10 @@ ShapePath {
     required property real dashboardWidth
     required property real dashboardHeight
 
+    required property real launcherX
+    required property real launcherWidth
+    required property real launcherHeight
+
     readonly property real stripThickness: barWidth / 3
 
     readonly property real innerCornerRadius: Math.min(junctionRadius, stripThickness)
@@ -63,6 +67,13 @@ ShapePath {
     readonly property real dashboardCornerArcRadius: Math.min(junctionRadius, dashboardWidth / 2, dashboardHeight / 2)
     readonly property real dashboardLeftJunctionArcRadius: Math.min(junctionRadius, dashboardHeight, Math.max(0, dashboardX - topEdgeTargetX))
     readonly property real dashboardRightJunctionArcRadius: Math.min(junctionRadius, dashboardHeight, Math.max(0, (screenWidth - stripThickness - innerCornerRadius) - dashboardRightEdge))
+
+    readonly property bool hasLauncher: launcherHeight > 0
+    readonly property real launcherTopEdge: barHeight - stripThickness - launcherHeight
+    readonly property real launcherRightEdge: launcherX + launcherWidth
+    readonly property real launcherCornerArcRadius: Math.min(junctionRadius, launcherWidth / 2, launcherHeight / 2)
+    readonly property real launcherLeftJunctionArcRadius: Math.min(junctionRadius, launcherHeight, Math.max(0, launcherX - bottomEdgeTargetX))
+    readonly property real launcherRightJunctionArcRadius: Math.min(junctionRadius, launcherHeight, Math.max(0, (screenWidth - stripThickness - innerCornerRadius) - launcherRightEdge))
 
     fillColor: "transparent"
     strokeColor: ThemeColors.accent
@@ -148,6 +159,58 @@ ShapePath {
         y: barInternalBorderRoot.barHeight - barInternalBorderRoot.stripThickness
         radiusX: barInternalBorderRoot.innerCornerRadius
         radiusY: barInternalBorderRoot.innerCornerRadius
+        direction: PathArc.Clockwise
+    }
+
+    PathLine {
+        x: barInternalBorderRoot.launcherRightEdge + barInternalBorderRoot.launcherRightJunctionArcRadius
+        y: barInternalBorderRoot.barHeight - barInternalBorderRoot.stripThickness
+    }
+
+    PathArc {
+        x: barInternalBorderRoot.launcherRightEdge
+        y: barInternalBorderRoot.barHeight - barInternalBorderRoot.stripThickness - barInternalBorderRoot.launcherRightJunctionArcRadius
+        radiusX: barInternalBorderRoot.launcherRightJunctionArcRadius
+        radiusY: barInternalBorderRoot.launcherRightJunctionArcRadius
+        direction: PathArc.Clockwise
+    }
+
+    PathLine {
+        x: barInternalBorderRoot.launcherRightEdge
+        y: barInternalBorderRoot.launcherTopEdge + barInternalBorderRoot.launcherCornerArcRadius
+    }
+
+    PathArc {
+        x: barInternalBorderRoot.launcherRightEdge - barInternalBorderRoot.launcherCornerArcRadius
+        y: barInternalBorderRoot.launcherTopEdge
+        radiusX: barInternalBorderRoot.launcherCornerArcRadius
+        radiusY: barInternalBorderRoot.launcherCornerArcRadius
+        direction: PathArc.Counterclockwise
+    }
+
+    PathLine {
+        x: barInternalBorderRoot.launcherX + barInternalBorderRoot.launcherCornerArcRadius
+        y: barInternalBorderRoot.launcherTopEdge
+    }
+
+    PathArc {
+        x: barInternalBorderRoot.launcherX
+        y: barInternalBorderRoot.launcherTopEdge + barInternalBorderRoot.launcherCornerArcRadius
+        radiusX: barInternalBorderRoot.launcherCornerArcRadius
+        radiusY: barInternalBorderRoot.launcherCornerArcRadius
+        direction: PathArc.Counterclockwise
+    }
+
+    PathLine {
+        x: barInternalBorderRoot.launcherX
+        y: barInternalBorderRoot.barHeight - barInternalBorderRoot.stripThickness - barInternalBorderRoot.launcherLeftJunctionArcRadius
+    }
+
+    PathArc {
+        x: barInternalBorderRoot.launcherX - barInternalBorderRoot.launcherLeftJunctionArcRadius
+        y: barInternalBorderRoot.barHeight - barInternalBorderRoot.stripThickness
+        radiusX: barInternalBorderRoot.launcherLeftJunctionArcRadius
+        radiusY: barInternalBorderRoot.launcherLeftJunctionArcRadius
         direction: PathArc.Clockwise
     }
 

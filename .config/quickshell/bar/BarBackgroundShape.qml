@@ -16,6 +16,10 @@ ShapePath {
     required property real dashboardWidth
     required property real dashboardHeight
 
+    required property real launcherX
+    required property real launcherWidth
+    required property real launcherHeight
+
     readonly property real stripThickness: barWidth / 3
 
     readonly property real innerCornerRadius: Math.min(junctionRadius, stripThickness)
@@ -63,6 +67,13 @@ ShapePath {
     readonly property real dashboardCornerArcRadius: Math.min(junctionRadius, dashboardWidth / 2, dashboardHeight / 2)
     readonly property real dashboardLeftJunctionArcRadius: Math.min(junctionRadius, dashboardHeight, Math.max(0, dashboardX - topEdgeTargetX))
     readonly property real dashboardRightJunctionArcRadius: Math.min(junctionRadius, dashboardHeight, Math.max(0, (screenWidth - stripThickness - innerCornerRadius) - dashboardRightEdge))
+
+    readonly property bool hasLauncher: launcherHeight > 0
+    readonly property real launcherTopEdge: barHeight - stripThickness - launcherHeight
+    readonly property real launcherRightEdge: launcherX + launcherWidth
+    readonly property real launcherCornerArcRadius: Math.min(junctionRadius, launcherWidth / 2, launcherHeight / 2)
+    readonly property real launcherLeftJunctionArcRadius: Math.min(junctionRadius, launcherHeight, Math.max(0, launcherX - bottomEdgeTargetX))
+    readonly property real launcherRightJunctionArcRadius: Math.min(junctionRadius, launcherHeight, Math.max(0, (screenWidth - stripThickness - innerCornerRadius) - launcherRightEdge))
 
     fillColor: ThemeColors.background
     strokeWidth: -1
@@ -170,6 +181,58 @@ ShapePath {
         y: shapePathRoot.barHeight - shapePathRoot.stripThickness
         radiusX: shapePathRoot.innerCornerRadius
         radiusY: shapePathRoot.innerCornerRadius
+        direction: PathArc.Clockwise
+    }
+
+    PathLine {
+        x: shapePathRoot.launcherRightEdge + shapePathRoot.launcherRightJunctionArcRadius
+        y: shapePathRoot.barHeight - shapePathRoot.stripThickness
+    }
+
+    PathArc {
+        x: shapePathRoot.launcherRightEdge
+        y: shapePathRoot.barHeight - shapePathRoot.stripThickness - shapePathRoot.launcherRightJunctionArcRadius
+        radiusX: shapePathRoot.launcherRightJunctionArcRadius
+        radiusY: shapePathRoot.launcherRightJunctionArcRadius
+        direction: PathArc.Clockwise
+    }
+
+    PathLine {
+        x: shapePathRoot.launcherRightEdge
+        y: shapePathRoot.launcherTopEdge + shapePathRoot.launcherCornerArcRadius
+    }
+
+    PathArc {
+        x: shapePathRoot.launcherRightEdge - shapePathRoot.launcherCornerArcRadius
+        y: shapePathRoot.launcherTopEdge
+        radiusX: shapePathRoot.launcherCornerArcRadius
+        radiusY: shapePathRoot.launcherCornerArcRadius
+        direction: PathArc.Counterclockwise
+    }
+
+    PathLine {
+        x: shapePathRoot.launcherX + shapePathRoot.launcherCornerArcRadius
+        y: shapePathRoot.launcherTopEdge
+    }
+
+    PathArc {
+        x: shapePathRoot.launcherX
+        y: shapePathRoot.launcherTopEdge + shapePathRoot.launcherCornerArcRadius
+        radiusX: shapePathRoot.launcherCornerArcRadius
+        radiusY: shapePathRoot.launcherCornerArcRadius
+        direction: PathArc.Counterclockwise
+    }
+
+    PathLine {
+        x: shapePathRoot.launcherX
+        y: shapePathRoot.barHeight - shapePathRoot.stripThickness - shapePathRoot.launcherLeftJunctionArcRadius
+    }
+
+    PathArc {
+        x: shapePathRoot.launcherX - shapePathRoot.launcherLeftJunctionArcRadius
+        y: shapePathRoot.barHeight - shapePathRoot.stripThickness
+        radiusX: shapePathRoot.launcherLeftJunctionArcRadius
+        radiusY: shapePathRoot.launcherLeftJunctionArcRadius
         direction: PathArc.Clockwise
     }
 

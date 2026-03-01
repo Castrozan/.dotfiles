@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+CURRENT_BACKGROUND_LINK="$HOME/.config/hypr-theme/current/background"
+
+if [[ ! -L "$CURRENT_BACKGROUND_LINK" ]]; then
+  notify-send "No background symlink found" -t 2000
+  exit 1
+fi
+
+RESOLVED_BACKGROUND=$(readlink -f "$CURRENT_BACKGROUND_LINK")
+
+if [[ ! -f "$RESOLVED_BACKGROUND" ]]; then
+  notify-send "Background file not found: $RESOLVED_BACKGROUND" -t 2000
+  exit 1
+fi
+
+pkill -9 swaybg 2>/dev/null || true
+sleep 0.3
+setsid swaybg -i "$CURRENT_BACKGROUND_LINK" -m fill >/dev/null 2>&1 &

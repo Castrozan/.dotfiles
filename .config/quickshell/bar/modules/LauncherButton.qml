@@ -5,6 +5,8 @@ import ".."
 Rectangle {
     id: launcherButtonRoot
 
+    required property var screenScope
+
     radius: 8
     color: "transparent"
 
@@ -25,15 +27,9 @@ Rectangle {
             if (mouse.button === Qt.RightButton) {
                 launchTerminalProcess.running = true;
             } else {
-                launchSuperLauncherProcess.running = true;
+                launcherButtonRoot.screenScope.toggleLauncher();
             }
         }
-    }
-
-    Process {
-        id: launchSuperLauncherProcess
-        command: ["hypr-super-launcher"]
-        running: false
     }
 
     Process {

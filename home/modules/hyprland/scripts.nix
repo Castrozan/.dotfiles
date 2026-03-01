@@ -24,6 +24,7 @@ in
   home.packages = [
     (mkScript "hypr-theme-set" ../../../bin/hypr/theme-set)
     (mkScript "hypr-theme-set-templates" ../../../bin/hypr/theme-set-templates)
+    (mkScript "hypr-theme-bg-apply" ../../../bin/hypr/theme-bg-apply)
     (mkScript "hypr-theme-bg-next" ../../../bin/hypr/theme-bg-next)
     (mkScript "hypr-theme-list" ../../../bin/hypr/theme-list)
     (mkScript "hypr-theme-current" ../../../bin/hypr/theme-current)

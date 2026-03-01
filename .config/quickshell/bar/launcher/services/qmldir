@@ -1,0 +1,6 @@
+module launcher.services
+
+singleton LauncherAppsService 1.0 LauncherAppsService.qml
+singleton LauncherActionsService 1.0 LauncherActionsService.qml
+singleton LauncherThemesService 1.0 LauncherThemesService.qml
+singleton LauncherWallpapersService 1.0 LauncherWallpapersService.qml

@@ -36,8 +36,5 @@ else
   fi
 
   ln -nsf "$NEW_BACKGROUND" "$CURRENT_BACKGROUND_LINK"
-
-  pkill -9 swaybg 2>/dev/null || true
-  sleep 0.3
-  setsid swaybg -i "$CURRENT_BACKGROUND_LINK" -m fill >/dev/null 2>&1 &
+  hypr-theme-bg-apply
 fi
