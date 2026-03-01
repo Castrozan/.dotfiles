@@ -12,7 +12,7 @@ A single QML `Shape` element draws the bar background + any active popout extens
   ╭────╮              ╭────╮
   │    │              │    │
   │    │              │    ╰──────────────────╮
-  │    │              │     extension content  │
+  │    │              │     extension content │
   │    │              │    ╭──────────────────╯
   │    │              │    │
   ╰────╯              ╰────╯
@@ -29,8 +29,8 @@ The path traces clockwise from top-left:
    │    │
    │    │C
    │    ╰──────╮D
-   │            │
-   │            │
+   │           │
+   │           │
    │    ╭──────╯E
    │    │F
    │    │
@@ -75,7 +75,7 @@ When hovering the media icon, the bar extends:
   ╭────╮
   │    │
   │    ╰──────────────────────────────────╮
-  │ 󰎆   ▶  Song Title – Artist           │
+  │ 󰎆   ▶  Song Title – Artist            │
   │      feishin          ◄◄  ❚❚  ►►      │
   │    ╭──────────────────────────────────╯
   │    │
