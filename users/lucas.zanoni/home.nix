@@ -11,6 +11,8 @@
 
     ../../home/core.nix
     ../../home/scripts
+    ../../home/modules/nix-path-bootstrap.nix
+
     ../../home/modules/agenix.nix
     ../../home/modules/atuin.nix
     ../../home/modules/bad-apple.nix
