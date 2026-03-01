@@ -271,9 +271,11 @@ Scope {
                     onContainsMouseChanged: {
                         if (containsMouse) {
                             dashboardHideTimer.stop();
-                            screenScope.dashboardVisible = true;
-                        } else if (!screenScope.dashboardHovered) {
-                            dashboardHideTimer.restart();
+                            dashboardShowDelayTimer.restart();
+                        } else {
+                            dashboardShowDelayTimer.stop();
+                            if (!screenScope.dashboardHovered)
+                                dashboardHideTimer.restart();
                         }
                     }
                 }
@@ -398,6 +400,15 @@ Scope {
                         if (!screenScope.popoutHovered && !interactions.isOverBar && !barWrapper.barItem.hasHoveredPopoutIcon) {
                             screenScope.popoutCurrentName = "";
                         }
+                    }
+                }
+
+                Timer {
+                    id: dashboardShowDelayTimer
+                    interval: 200
+                    onTriggered: {
+                        if (topStripDashboardHoverTrigger.containsMouse)
+                            screenScope.dashboardVisible = true;
                     }
                 }
 
