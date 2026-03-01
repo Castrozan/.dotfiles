@@ -18,6 +18,10 @@ Description drives discovery — models read it semantically to match user inten
 
 <writing_instructions>
 XML tags for structure with descriptive long tag names. Dense prose in imperative voice ("Do X" not "You should do X"). Context over quantity — minimal high-signal tokens. Only add what the model doesn't already know. Challenge each piece: "Does this paragraph justify its token cost?"
+
+Never explain what code does — the model can read it. Document what the model cannot infer: non-obvious constraints, traps where code compiles but behaves wrong, reasons behind surprising design choices, which things must stay in sync and why. If a fact is discoverable by reading the source file, it does not belong in instructions.
+
+A stale instruction is worse than no instruction. When instructions describe code structure that later changes, the model follows the instruction over what it reads, producing confident wrong behavior. Every specific detail is a future liability. Write about forces and constraints, not about current implementation.
 </writing_instructions>
 
 <evergreen_instructions>
@@ -51,4 +55,5 @@ Before writing any SKILL.md, answer these questions. If any answer is "yes", rev
 - Are there hardcoded file paths, tokens, or environment-specific values that will go stale? Generalize to patterns or point to where the truth lives.
 - Would a dense two-line prose replace a verbose example block without losing clarity? Prefer density.
 - Does any content exist only because raw research data was fresh in context? Strip research artifacts — write from synthesized patterns, not from raw dumps.
+- Does any section explain what code does? Remove it — the model reads code. Only keep what the model cannot infer: traps, non-obvious constraints, sync requirements, and "whys".
 </skill_authoring_preflight>
