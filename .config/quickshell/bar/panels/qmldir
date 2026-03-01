@@ -1,0 +1,4 @@
+module panels
+
+SessionWrapper 1.0 SessionWrapper.qml
+SessionContent 1.0 SessionContent.qml

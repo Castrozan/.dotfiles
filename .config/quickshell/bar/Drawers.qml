@@ -6,6 +6,7 @@ import QtQuick.Shapes
 import "popouts"
 import "dashboard"
 import "launcher"
+import "panels"
 
 Scope {
     id: drawersRoot
@@ -29,6 +30,8 @@ Scope {
             property bool dashboardHovered: false
             property bool launcherVisible: false
             property bool launcherHovered: false
+            property bool sessionVisible: false
+            property bool sessionHovered: false
 
             readonly property bool hasActivePopout: popoutCurrentName !== ""
             readonly property int shapeJunctionRadius: 36
@@ -55,6 +58,10 @@ Scope {
 
             function toggleLauncher(): void {
                 launcherVisible = !launcherVisible;
+            }
+
+            function toggleSession(): void {
+                sessionVisible = !sessionVisible;
             }
 
             function showPopoutByName(name: string): void {
@@ -97,6 +104,14 @@ Scope {
             }
 
             IpcHandler {
+                target: "session"
+
+                function toggle(): void {
+                    screenScope.toggleSession();
+                }
+            }
+
+            IpcHandler {
                 target: "popout"
 
                 function toggle(name: string): void {
@@ -127,7 +142,7 @@ Scope {
                 exclusionMode: ExclusionMode.Ignore
                 WlrLayershell.layer: WlrLayer.Top
                 WlrLayershell.namespace: "quickshell-bar"
-                WlrLayershell.keyboardFocus: (screenScope.dashboardVisible || screenScope.launcherVisible) ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
+                WlrLayershell.keyboardFocus: (screenScope.dashboardVisible || screenScope.launcherVisible || screenScope.sessionVisible) ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
 
                 color: "transparent"
                 surfaceFormat.opaque: false
@@ -180,6 +195,13 @@ Scope {
                             y: launcherWrapper.visible ? launcherWrapper.y : 0
                             width: launcherWrapper.visible ? launcherWrapper.width : 0
                             height: launcherWrapper.visible ? launcherWrapper.height : 0
+                            intersection: Intersection.Subtract
+                        },
+                        Region {
+                            x: sessionWrapper.visible ? sessionWrapper.x : 0
+                            y: sessionWrapper.visible ? sessionWrapper.y : 0
+                            width: sessionWrapper.visible ? sessionWrapper.width : 0
+                            height: sessionWrapper.visible ? sessionWrapper.height : 0
                             intersection: Intersection.Subtract
                         }
                     ]
@@ -356,6 +378,31 @@ Scope {
                     }
                 }
 
+                SessionWrapper {
+                    id: sessionWrapper
+
+                    x: drawersWindow.width - barTotalWidth / 3 - width
+                    y: (drawersWindow.height - height) / 2
+                    z: 2
+
+                    sessionVisible: screenScope.sessionVisible
+
+                    MouseArea {
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        acceptedButtons: Qt.NoButton
+
+                        onContainsMouseChanged: {
+                            screenScope.sessionHovered = containsMouse;
+                            if (containsMouse) {
+                                sessionHideTimer.stop();
+                            } else {
+                                sessionHideTimer.restart();
+                            }
+                        }
+                    }
+                }
+
                 PopoutWrapper {
                     id: popoutWrapper
                     x: barTotalWidth
@@ -378,19 +425,21 @@ Scope {
                     id: drawersDismissArea
 
                     anchors.fill: parent
-                    visible: screenScope.dashboardVisible || screenScope.launcherVisible
+                    visible: screenScope.dashboardVisible || screenScope.launcherVisible || screenScope.sessionVisible
                     z: 1
 
                     onClicked: {
                         screenScope.dashboardVisible = false;
                         screenScope.launcherVisible = false;
+                        screenScope.sessionVisible = false;
                     }
 
                     Keys.onEscapePressed: {
                         screenScope.dashboardVisible = false;
                         screenScope.launcherVisible = false;
+                        screenScope.sessionVisible = false;
                     }
-                    focus: screenScope.dashboardVisible || screenScope.launcherVisible
+                    focus: screenScope.dashboardVisible || screenScope.launcherVisible || screenScope.sessionVisible
                 }
 
                 Timer {
@@ -428,6 +477,16 @@ Scope {
                     onTriggered: {
                         if (!screenScope.launcherHovered && !bottomStripLauncherHoverTrigger.containsMouse) {
                             screenScope.launcherVisible = false;
+                        }
+                    }
+                }
+
+                Timer {
+                    id: sessionHideTimer
+                    interval: 450
+                    onTriggered: {
+                        if (!screenScope.sessionHovered) {
+                            screenScope.sessionVisible = false;
                         }
                     }
                 }
