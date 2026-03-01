@@ -51,6 +51,7 @@ ColumnLayout {
         Layout.alignment: Qt.AlignHCenter
         Layout.preferredWidth: 40
         Layout.preferredHeight: 40
+        screenScope: barRoot.screenScope
     }
 
     Modules.WorkspacesModule {

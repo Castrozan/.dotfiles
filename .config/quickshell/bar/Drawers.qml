@@ -5,6 +5,7 @@ import QtQuick
 import QtQuick.Shapes
 import "popouts"
 import "dashboard"
+import "launcher"
 
 Scope {
     id: drawersRoot
@@ -26,6 +27,8 @@ Scope {
             property bool popoutHovered: false
             property bool dashboardVisible: false
             property bool dashboardHovered: false
+            property bool launcherVisible: false
+            property bool launcherHovered: false
 
             readonly property bool hasActivePopout: popoutCurrentName !== ""
             readonly property int shapeJunctionRadius: 36
@@ -48,6 +51,10 @@ Scope {
 
             function toggleDashboard(): void {
                 dashboardVisible = !dashboardVisible;
+            }
+
+            function toggleLauncher(): void {
+                launcherVisible = !launcherVisible;
             }
 
             function showPopoutByName(name: string): void {
@@ -82,6 +89,14 @@ Scope {
             }
 
             IpcHandler {
+                target: "launcher"
+
+                function toggle(): void {
+                    screenScope.toggleLauncher();
+                }
+            }
+
+            IpcHandler {
                 target: "popout"
 
                 function toggle(name: string): void {
@@ -112,7 +127,7 @@ Scope {
                 exclusionMode: ExclusionMode.Ignore
                 WlrLayershell.layer: WlrLayer.Top
                 WlrLayershell.namespace: "quickshell-bar"
-                WlrLayershell.keyboardFocus: screenScope.dashboardVisible ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
+                WlrLayershell.keyboardFocus: (screenScope.dashboardVisible || screenScope.launcherVisible) ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
 
                 color: "transparent"
                 surfaceFormat.opaque: false
@@ -159,6 +174,13 @@ Scope {
                             width: dashboardWrapper.visible ? dashboardWrapper.width : 0
                             height: dashboardWrapper.visible ? dashboardWrapper.height : 0
                             intersection: Intersection.Subtract
+                        },
+                        Region {
+                            x: launcherWrapper.x
+                            y: launcherWrapper.visible ? launcherWrapper.y : 0
+                            width: launcherWrapper.visible ? launcherWrapper.width : 0
+                            height: launcherWrapper.visible ? launcherWrapper.height : 0
+                            intersection: Intersection.Subtract
                         }
                     ]
                 }
@@ -180,6 +202,9 @@ Scope {
                         dashboardX: dashboardWrapper.x
                         dashboardWidth: dashboardWrapper.visible ? dashboardWrapper.width : 0
                         dashboardHeight: dashboardWrapper.visible ? dashboardWrapper.height : 0
+                        launcherX: launcherWrapper.x
+                        launcherWidth: launcherWrapper.visible ? launcherWrapper.width : 0
+                        launcherHeight: launcherWrapper.visible ? launcherWrapper.height : 0
                     }
                 }
 
@@ -199,6 +224,9 @@ Scope {
                         dashboardX: dashboardWrapper.x
                         dashboardWidth: dashboardWrapper.visible ? dashboardWrapper.width : 0
                         dashboardHeight: dashboardWrapper.visible ? dashboardWrapper.height : 0
+                        launcherX: launcherWrapper.x
+                        launcherWidth: launcherWrapper.visible ? launcherWrapper.width : 0
+                        launcherHeight: launcherWrapper.visible ? launcherWrapper.height : 0
                     }
                 }
 
@@ -276,6 +304,56 @@ Scope {
                 }
 
 
+                MouseArea {
+                    id: bottomStripLauncherHoverTrigger
+
+                    readonly property real bottomStripHeight: barTotalWidth / 3
+                    readonly property real triggerWidth: drawersWindow.width - barTotalWidth * 2
+
+                    x: barTotalWidth + (drawersWindow.width - barTotalWidth - triggerWidth) / 2
+                    y: drawersWindow.height - bottomStripHeight
+                    z: 3
+                    width: triggerWidth
+                    height: bottomStripHeight
+
+                    hoverEnabled: true
+                    acceptedButtons: Qt.NoButton
+
+                    onContainsMouseChanged: {
+                        if (containsMouse) {
+                            launcherHideTimer.stop();
+                            screenScope.launcherVisible = true;
+                        } else if (!screenScope.launcherHovered) {
+                            launcherHideTimer.restart();
+                        }
+                    }
+                }
+
+                LauncherWrapper {
+                    id: launcherWrapper
+
+                    x: barTotalWidth + (drawersWindow.width - barTotalWidth - width) / 2
+                    y: drawersWindow.height - barTotalWidth / 3 - height
+                    z: 2
+
+                    launcherVisible: screenScope.launcherVisible
+
+                    MouseArea {
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        acceptedButtons: Qt.NoButton
+
+                        onContainsMouseChanged: {
+                            screenScope.launcherHovered = containsMouse;
+                            if (containsMouse) {
+                                launcherHideTimer.stop();
+                            } else if (!bottomStripLauncherHoverTrigger.containsMouse) {
+                                launcherHideTimer.restart();
+                            }
+                        }
+                    }
+                }
+
                 PopoutWrapper {
                     id: popoutWrapper
                     x: barTotalWidth
@@ -295,16 +373,22 @@ Scope {
                 }
 
                 MouseArea {
-                    id: dashboardDismissArea
+                    id: drawersDismissArea
 
                     anchors.fill: parent
-                    visible: screenScope.dashboardVisible
+                    visible: screenScope.dashboardVisible || screenScope.launcherVisible
                     z: 1
 
-                    onClicked: screenScope.dashboardVisible = false
+                    onClicked: {
+                        screenScope.dashboardVisible = false;
+                        screenScope.launcherVisible = false;
+                    }
 
-                    Keys.onEscapePressed: screenScope.dashboardVisible = false
-                    focus: screenScope.dashboardVisible
+                    Keys.onEscapePressed: {
+                        screenScope.dashboardVisible = false;
+                        screenScope.launcherVisible = false;
+                    }
+                    focus: screenScope.dashboardVisible || screenScope.launcherVisible
                 }
 
                 Timer {
@@ -323,6 +407,16 @@ Scope {
                     onTriggered: {
                         if (!screenScope.dashboardHovered && !topStripDashboardHoverTrigger.containsMouse) {
                             screenScope.dashboardVisible = false;
+                        }
+                    }
+                }
+
+                Timer {
+                    id: launcherHideTimer
+                    interval: 450
+                    onTriggered: {
+                        if (!screenScope.launcherHovered && !bottomStripLauncherHoverTrigger.containsMouse) {
+                            screenScope.launcherVisible = false;
                         }
                     }
                 }
