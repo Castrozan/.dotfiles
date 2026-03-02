@@ -220,7 +220,7 @@ ShapePath {
         y: shapePathRoot.hasRightPanel ? shapePathRoot.clampedRightPanelTopEdge : (shapePathRoot.barHeight - shapePathRoot.stripThickness - shapePathRoot.effectiveRightBottomInnerCornerRadius)
         radiusX: shapePathRoot.hasRightPanel ? shapePathRoot.effectiveRightPanelTopJunctionArcRadius : 0
         radiusY: shapePathRoot.hasRightPanel ? shapePathRoot.effectiveRightPanelTopJunctionArcRadius : 0
-        direction: PathArc.Counterclockwise
+        direction: PathArc.Clockwise
     }
 
     PathLine {

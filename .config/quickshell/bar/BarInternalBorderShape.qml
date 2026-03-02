@@ -198,7 +198,7 @@ ShapePath {
         y: barInternalBorderRoot.hasRightPanel ? barInternalBorderRoot.clampedRightPanelTopEdge : (barInternalBorderRoot.barHeight - barInternalBorderRoot.stripThickness - barInternalBorderRoot.effectiveRightBottomInnerCornerRadius)
         radiusX: barInternalBorderRoot.hasRightPanel ? barInternalBorderRoot.effectiveRightPanelTopJunctionArcRadius : 0
         radiusY: barInternalBorderRoot.hasRightPanel ? barInternalBorderRoot.effectiveRightPanelTopJunctionArcRadius : 0
-        direction: PathArc.Counterclockwise
+        direction: PathArc.Clockwise
     }
 
     PathLine {
