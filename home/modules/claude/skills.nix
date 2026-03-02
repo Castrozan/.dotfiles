@@ -1,4 +1,4 @@
-_:
+{ config, ... }:
 let
   dotfilesSkillsDir = ../../../agents/skills;
 
@@ -37,7 +37,13 @@ let
       ${coreAgentBodyWithoutFrontmatter}
     '';
   };
+
+  liveAplicacoesAtendimentoTriageSkillLink = {
+    ".claude/skills/aplicacoes-atendimento-triage".source =
+      config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/repo/aplicacoes-atendimento-triage";
+  };
 in
 {
-  home.file = globalClaudeSkills // coreSkillFromAgentInstructions;
+  home.file =
+    globalClaudeSkills // coreSkillFromAgentInstructions // liveAplicacoesAtendimentoTriageSkillLink;
 }

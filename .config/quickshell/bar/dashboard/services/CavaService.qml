@@ -17,15 +17,16 @@ Singleton {
         id: cavaProcess
 
         running: cavaServiceRoot.refCount > 0
-        command: ["cava", "-p", Qt.resolvedUrl("../../assets/cava-bar.conf").toString().replace("file://", "")]
+        command: [Qt.resolvedUrl("../../scripts/runDashboardCavaWithPreferredPulseMonitorSource.sh").toString().replace("file://", "")]
 
         stdout: SplitParser {
+            splitMarker: "\n"
             onRead: data => {
                 const rawValues = data.trim().split(";").filter(s => s !== "");
-                if (rawValues.length === 0)
+                if (rawValues.length !== cavaServiceRoot.barCount)
                     return;
 
-                const normalizedValues = rawValues.map(v => Math.min(1.0, parseInt(v, 10) / 100));
+                const normalizedValues = rawValues.map(v => Math.max(0, Math.min(1.0, (parseInt(v, 10) || 0) / 100)));
                 cavaServiceRoot.values = normalizedValues;
             }
         }

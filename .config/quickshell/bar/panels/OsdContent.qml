@@ -6,8 +6,6 @@ import "../dashboard"
 import "../dashboard/services"
 import QtQuick
 import QtQuick.Layouts
-import QtQuick.Shapes
-
 Item {
     id: osdContentRoot
 
@@ -18,8 +16,6 @@ Item {
     readonly property bool isVolumeWithNoMusicPlaying: osdType === "volume" && !(PlayersService.active?.isPlaying ?? false)
 
     signal interactionKeepAlive()
-
-    readonly property real junctionArcRadius: 12
 
     implicitWidth: 56
     implicitHeight: osdSliderColumn.implicitHeight + Appearance.padding.large * 2
@@ -42,70 +38,6 @@ Item {
 
     Process {
         id: setValueProcess
-    }
-
-    Shape {
-        x: 0
-        y: -osdContentRoot.junctionArcRadius
-        width: osdContentRoot.width
-        height: osdContentRoot.height + osdContentRoot.junctionArcRadius * 2
-        preferredRendererType: Shape.CurveRenderer
-
-        ShapePath {
-            fillColor: Colours.palette.m3surfaceContainer
-            strokeColor: Colours.palette.m3primary
-            strokeWidth: 2
-            capStyle: ShapePath.FlatCap
-
-            readonly property real cornerRadius: Appearance.rounding.normal
-            readonly property real junctionRadius: osdContentRoot.junctionArcRadius
-            readonly property real panelTop: junctionRadius
-            readonly property real panelBottom: osdContentRoot.height + junctionRadius
-
-            startX: osdContentRoot.width
-            startY: 0
-
-            PathArc {
-                x: osdContentRoot.width - osdContentRoot.junctionArcRadius
-                y: osdContentRoot.junctionArcRadius
-                radiusX: osdContentRoot.junctionArcRadius
-                radiusY: osdContentRoot.junctionArcRadius
-                direction: PathArc.Clockwise
-            }
-
-            PathLine { x: Appearance.rounding.normal; y: osdContentRoot.junctionArcRadius }
-
-            PathArc {
-                x: 0
-                y: osdContentRoot.junctionArcRadius + Appearance.rounding.normal
-                radiusX: Appearance.rounding.normal
-                radiusY: Appearance.rounding.normal
-                direction: PathArc.Counterclockwise
-            }
-
-            PathLine { x: 0; y: osdContentRoot.height + osdContentRoot.junctionArcRadius - Appearance.rounding.normal }
-
-            PathArc {
-                x: Appearance.rounding.normal
-                y: osdContentRoot.height + osdContentRoot.junctionArcRadius
-                radiusX: Appearance.rounding.normal
-                radiusY: Appearance.rounding.normal
-                direction: PathArc.Counterclockwise
-            }
-
-            PathLine {
-                x: osdContentRoot.width - osdContentRoot.junctionArcRadius
-                y: osdContentRoot.height + osdContentRoot.junctionArcRadius
-            }
-
-            PathArc {
-                x: osdContentRoot.width
-                y: osdContentRoot.height + osdContentRoot.junctionArcRadius * 2
-                radiusX: osdContentRoot.junctionArcRadius
-                radiusY: osdContentRoot.junctionArcRadius
-                direction: PathArc.Clockwise
-            }
-        }
     }
 
     ColumnLayout {

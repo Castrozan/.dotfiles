@@ -11,6 +11,8 @@ Item {
 
     property bool launcherVisible: false
 
+    signal launcherCloseRequested()
+
     implicitWidth: LauncherConfig.contentWidth + Appearance.padding.large * 2
     implicitHeight: resultsList.implicitHeight + Appearance.spacing.normal + LauncherConfig.searchBarHeight + Appearance.padding.large * 2
 
@@ -30,7 +32,7 @@ Item {
 
             searchText: searchBar.searchText
 
-            onItemActivated: launcherContentRoot.launcherVisible = false
+            onItemActivated: launcherContentRoot.launcherCloseRequested()
             onAutoCompleteRequested: text => searchBar.searchText = text
         }
 

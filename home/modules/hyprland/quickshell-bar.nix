@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ config, pkgs, ... }:
 {
   home.packages = [ pkgs.quickshell ];
 
@@ -16,7 +16,7 @@
 
     Service = {
       Type = "simple";
-      ExecStart = "${pkgs.quickshell}/bin/quickshell -c bar";
+      ExecStart = "${pkgs.quickshell}/bin/quickshell --path ${config.home.homeDirectory}/.dotfiles/.config/quickshell/bar";
       Environment = [ "QT_QUICK_BACKEND=software" ];
       Restart = "always";
       RestartSec = "1s";

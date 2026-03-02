@@ -13,13 +13,14 @@ Item {
     property int osdValue: 0
     property bool osdMuted: false
     property bool hasReceivedSocketMessage: false
+    property real visibleProgress: 0
 
     signal osdMessageReceived()
 
-    visible: width > 0
-    width: implicitWidth
+    visible: osdVisible || visibleProgress > 0
+    width: visible ? implicitWidth : 0
     height: implicitHeight
-    implicitWidth: 0
+    implicitWidth: osdContentLoader.implicitWidth
     implicitHeight: osdContentLoader.implicitHeight
     clip: true
 
@@ -96,7 +97,7 @@ Item {
         when: osdWrapperRoot.osdVisible
 
         PropertyChanges {
-            osdWrapperRoot.implicitWidth: osdContentLoader.implicitWidth
+            osdWrapperRoot.visibleProgress: 1
         }
     }
 
@@ -107,7 +108,7 @@ Item {
 
             Anim {
                 target: osdWrapperRoot
-                property: "implicitWidth"
+                property: "visibleProgress"
                 duration: Appearance.anim.durations.expressiveDefaultSpatial
                 easing.bezierCurve: Appearance.anim.curves.expressiveDefaultSpatial
             }
@@ -118,7 +119,7 @@ Item {
 
             Anim {
                 target: osdWrapperRoot
-                property: "implicitWidth"
+                property: "visibleProgress"
                 easing.bezierCurve: Appearance.anim.curves.emphasized
             }
         }
@@ -127,8 +128,9 @@ Item {
     Loader {
         id: osdContentLoader
 
-        anchors.right: parent.right
         anchors.verticalCenter: parent.verticalCenter
+        x: osdWrapperRoot.width * (1 - osdWrapperRoot.visibleProgress)
+        opacity: osdWrapperRoot.visibleProgress
 
         active: osdWrapperRoot.osdVisible || osdWrapperRoot.visible
 

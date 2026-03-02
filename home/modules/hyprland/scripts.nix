@@ -35,6 +35,8 @@ in
     (mkScript "hypr-menu" ../../../bin/hypr/menu)
     (mkScript "hypr-fuzzel" ../../../bin/hypr/fuzzel)
     (mkScript "hypr-super-launcher" ../../../bin/hypr/super-launcher)
+    (mkScript "hypr-ensure-workspace-tiled" ../../../bin/hypr/ensure-workspace-tiled)
+    (mkScript "hypr-ensure-workspace-grouped" ../../../bin/hypr/ensure-workspace-grouped)
     (mkScript "hypr-bluetooth" ../../../bin/hypr/bluetooth)
     (mkScript "hypr-close-window-cycle" ../../../bin/hypr/close-window-cycle)
     (mkScript "hypr-reopen-window" ../../../bin/hypr/reopen-window)

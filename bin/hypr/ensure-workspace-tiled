@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+main() {
+  if _all_tiled_windows_are_in_single_group; then
+    hypr-toggle-group-for-all-workspace-windows
+  fi
+}
+
+_all_tiled_windows_are_in_single_group() {
+  local active_workspace_id
+  active_workspace_id=$(hyprctl activeworkspace -j | jq -r '.id')
+  hyprctl clients -j | jq -e --argjson ws "$active_workspace_id" '
+    [.[] | select(.workspace.id == $ws and .floating == false)] |
+    length as $total |
+    $total > 0 and (map(.grouped | length) | max) == $total
+  ' >/dev/null 2>&1
+}
+
+main "$@"

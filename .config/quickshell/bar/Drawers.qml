@@ -65,6 +65,26 @@ Scope {
                 launcherVisible = !launcherVisible;
             }
 
+            onLauncherVisibleChanged: {
+                if (launcherVisible) {
+                    ensureWorkspaceIsTiledProcess.running = true;
+                } else {
+                    ensureWorkspaceIsGroupedProcess.running = true;
+                }
+            }
+
+            Process {
+                id: ensureWorkspaceIsTiledProcess
+                command: ["hypr-ensure-workspace-tiled"]
+                running: false
+            }
+
+            Process {
+                id: ensureWorkspaceIsGroupedProcess
+                command: ["hypr-ensure-workspace-grouped"]
+                running: false
+            }
+
             function toggleSession(): void {
                 sessionVisible = !sessionVisible;
             }
@@ -255,9 +275,9 @@ Scope {
                         },
                         Region {
                             x: osdWrapper.visible ? osdWrapper.x : 0
-                            y: osdWrapper.visible ? osdWrapper.y - 12 : 0
+                            y: osdWrapper.visible ? osdWrapper.y : 0
                             width: osdWrapper.visible ? osdWrapper.width : 0
-                            height: osdWrapper.visible ? osdWrapper.height + 24 : 0
+                            height: osdWrapper.visible ? osdWrapper.height : 0
                             intersection: Intersection.Subtract
                         },
                         Region {
@@ -276,7 +296,8 @@ Scope {
                     readonly property bool hasSession: sessionWrapper.visible && sessionWrapper.width > 0
                     readonly property bool hasSidebar: sidebarWrapper.visible && sidebarWrapper.width > 0
                     readonly property bool hasUtilities: utilitiesWrapper.visible && utilitiesWrapper.height > 0
-                    readonly property bool hasAnyRightPanel: hasSession || hasSidebar || hasUtilities
+                    readonly property bool hasOsd: osdWrapper.visible && osdWrapper.width > 0
+                    readonly property bool hasAnyRightPanel: hasSession || hasSidebar || hasUtilities || hasOsd
 
                     readonly property real sessionTop: hasSession ? sessionWrapper.y : 99999
                     readonly property real sessionBottom: hasSession ? sessionWrapper.y + sessionWrapper.height : 0
@@ -284,14 +305,17 @@ Scope {
                     readonly property real sidebarBottom: hasSidebar ? sidebarWrapper.y + sidebarWrapper.height : 0
                     readonly property real utilitiesTop: hasUtilities ? utilitiesWrapper.y : 99999
                     readonly property real utilitiesBottom: hasUtilities ? utilitiesWrapper.y + utilitiesWrapper.height : 0
+                    readonly property real osdTop: hasOsd ? osdWrapper.y : 99999
+                    readonly property real osdBottom: hasOsd ? osdWrapper.y + osdWrapper.height : 0
 
-                    readonly property real aggregatedY: hasAnyRightPanel ? Math.min(sessionTop, sidebarTop, utilitiesTop) : 0
-                    readonly property real aggregatedBottom: hasAnyRightPanel ? Math.max(sessionBottom, sidebarBottom, utilitiesBottom) : 0
+                    readonly property real aggregatedY: hasAnyRightPanel ? Math.min(sessionTop, sidebarTop, utilitiesTop, osdTop) : 0
+                    readonly property real aggregatedBottom: hasAnyRightPanel ? Math.max(sessionBottom, sidebarBottom, utilitiesBottom, osdBottom) : 0
                     readonly property real aggregatedHeight: hasAnyRightPanel ? aggregatedBottom - aggregatedY : 0
                     readonly property real aggregatedWidth: hasAnyRightPanel ? Math.max(
                         hasSession ? sessionWrapper.width + sidebarWrapper.width : 0,
                         hasSidebar ? sidebarWrapper.width : 0,
-                        hasUtilities ? utilitiesWrapper.width : 0
+                        hasUtilities ? utilitiesWrapper.width : 0,
+                        hasOsd ? osdWrapper.width + (hasSession ? sessionWrapper.width : 0) + (hasSidebar ? sidebarWrapper.width : 0) : 0
                     ) : 0
                 }
 
@@ -456,6 +480,7 @@ Scope {
 
                     launcherVisible: screenScope.launcherVisible
 
+                    onLauncherCloseRequested: screenScope.launcherVisible = false
                     Keys.onEscapePressed: screenScope.launcherVisible = false
 
                     MouseArea {

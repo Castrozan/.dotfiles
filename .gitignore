@@ -11,7 +11,7 @@
 home/modules/cursor/cursor-global-user-rules.md
 
 # Nix build output
-result
+result/
 
 # Test coverage output
 tests/coverage/
@@ -23,3 +23,5 @@ tests/coverage/
 .ruff_cache/
 
 .cache/
+/.config/cava/
+/.config/pulse/

@@ -1,4 +1,4 @@
-{ lib, ... }:
+{ lib, config, ... }:
 let
   skillsDir = ../../../agents/skills;
   entries = builtins.readDir skillsDir;
@@ -15,7 +15,12 @@ let
       };
     }) skillNames
   );
+
+  liveAplicacoesAtendimentoTriageSkillLink = {
+    ".codex/skills/aplicacoes-atendimento-triage".source =
+      config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/repo/aplicacoes-atendimento-triage";
+  };
 in
 {
-  home.file = skillLinks;
+  home.file = skillLinks // liveAplicacoesAtendimentoTriageSkillLink;
 }

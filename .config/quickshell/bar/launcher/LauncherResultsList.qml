@@ -52,6 +52,52 @@ Item {
     signal itemActivated
     signal autoCompleteRequested(string text)
 
+    function _quoteShellArgument(commandArgument: string): string {
+        return `'${commandArgument.replace(/'/g, `'\"'\"'`)}'`;
+    }
+
+    function _joinShellArguments(commandArguments: list<string>): string {
+        return commandArguments.map(commandArgument => _quoteShellArgument(commandArgument)).join(" ");
+    }
+
+    function _buildDesktopEntryDetachedLaunchCommand(desktopEntry: var): string {
+        let desktopEntryCommand = desktopEntry.command.length > 0
+            ? _joinShellArguments(desktopEntry.command)
+            : desktopEntry.execString;
+
+        if (desktopEntry.runInTerminal) {
+            let terminalCommand = ["wezterm", "start"];
+
+            if (desktopEntry.workingDirectory.length > 0) {
+                terminalCommand.push("--cwd");
+                terminalCommand.push(desktopEntry.workingDirectory);
+            }
+
+            terminalCommand.push("--");
+
+            if (desktopEntry.command.length > 0) {
+                terminalCommand = terminalCommand.concat(desktopEntry.command);
+            } else {
+                terminalCommand.push("sh");
+                terminalCommand.push("-lc");
+                terminalCommand.push(desktopEntry.execString);
+            }
+
+            return _joinShellArguments(terminalCommand);
+        }
+
+        if (desktopEntry.workingDirectory.length > 0) {
+            return `cd ${_quoteShellArgument(desktopEntry.workingDirectory)} && ${desktopEntryCommand}`;
+        }
+
+        return desktopEntryCommand;
+    }
+
+    function _runDetachedCommand(detachedCommand: string): void {
+        executeDetachedCommandProcess.command = ["hyprctl", "dispatch", "exec", detachedCommand];
+        executeDetachedCommandProcess.running = true;
+    }
+
     function activateCurrentItem(): void {
         if (currentResults.length === 0)
             return;
@@ -61,15 +107,14 @@ Item {
 
         switch (currentMode) {
         case LauncherResultsList.Apps:
-            item.execute();
+            _runDetachedCommand(_buildDesktopEntryDetachedLaunchCommand(item));
             itemActivated();
             break;
         case LauncherResultsList.Actions:
             if (item.autoCompleteText) {
                 autoCompleteRequested(item.autoCompleteText);
             } else if (item.command) {
-                executeActionProcess.command = ["bash", "-c", item.command];
-                executeActionProcess.running = true;
+                _runDetachedCommand(item.command);
                 itemActivated();
             }
             break;
@@ -212,7 +257,7 @@ Item {
     }
 
     Process {
-        id: executeActionProcess
+        id: executeDetachedCommandProcess
         running: false
     }
 }

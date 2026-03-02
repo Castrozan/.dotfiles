@@ -34,7 +34,7 @@ Rectangle {
 
     Process {
         id: launchTerminalProcess
-        command: ["wezterm"]
+        command: ["hyprctl", "dispatch", "exec", "wezterm"]
         running: false
     }
 }

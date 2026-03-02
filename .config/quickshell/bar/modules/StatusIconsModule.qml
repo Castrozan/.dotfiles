@@ -234,7 +234,7 @@ ColumnLayout {
 
         Process {
             id: launchBluetoothProcess
-            command: ["wezterm", "start", "--", "bluetui"]
+            command: ["hyprctl", "dispatch", "exec", "wezterm start -- bluetui"]
             running: false
         }
 

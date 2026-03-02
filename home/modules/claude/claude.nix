@@ -1,4 +1,4 @@
-{ pkgs, config, ... }:
+{ pkgs, ... }:
 let
   fetchPrebuiltBinary = import ../../../lib/fetch-prebuilt-binary.nix { inherit pkgs; };
 
@@ -23,10 +23,6 @@ in
 {
   home = {
     packages = [ claude-code ];
-    file = {
-      ".local/bin/claude".source = "${claude-code}/bin/claude";
-      ".claude/skills/aplicacoes-atendimento-triage".source =
-        config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/repo/aplicacoes-atendimento-triage";
-    };
+    file.".local/bin/claude".source = "${claude-code}/bin/claude";
   };
 }

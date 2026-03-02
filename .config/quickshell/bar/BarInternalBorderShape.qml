@@ -84,10 +84,10 @@ ShapePath {
     readonly property real rightPanelTopJunctionAvailableSpace: Math.max(0, rightPanelTopEdge - rightStripTopCornerStartY)
     readonly property real rightPanelBottomJunctionAvailableSpace: Math.max(0, rightStripBottomCornerStartY - rightPanelBottomEdge)
 
-    readonly property real rightPanelTopJunctionArcRadius: hasRightPanel ? Math.min(junctionRadius, rightPanelWidth, rightPanelTopJunctionAvailableSpace) : 0
-    readonly property real rightPanelBottomJunctionArcRadius: hasRightPanel ? Math.min(junctionRadius, rightPanelWidth, rightPanelBottomJunctionAvailableSpace) : 0
+    readonly property real rightPanelTopJunctionArcRadius: hasRightPanel ? Math.min(junctionRadius, rightPanelWidth / 2, rightPanelTopJunctionAvailableSpace) : 0
+    readonly property real rightPanelBottomJunctionArcRadius: hasRightPanel ? Math.min(junctionRadius, rightPanelWidth / 2, rightPanelBottomJunctionAvailableSpace) : 0
 
-    readonly property real rightPanelCornerArcRadius: hasRightPanel ? Math.min(junctionRadius, rightPanelWidth, rightPanelHeight / 2) : 0
+    readonly property real rightPanelCornerArcRadius: hasRightPanel ? Math.min(junctionRadius, rightPanelWidth / 2, rightPanelHeight / 2) : 0
 
     readonly property bool rightPanelTopCornerMerged: hasRightPanel && (rightPanelTopEdge - junctionRadius <= rightStripTopCornerStartY)
     readonly property bool rightPanelBottomCornerMerged: hasRightPanel && (rightPanelBottomEdge + junctionRadius >= rightStripBottomCornerStartY)
@@ -224,7 +224,7 @@ ShapePath {
         y: barInternalBorderRoot.hasRightPanel ? barInternalBorderRoot.clampedRightPanelBottomEdge : (barInternalBorderRoot.barHeight - barInternalBorderRoot.stripThickness - barInternalBorderRoot.effectiveRightBottomInnerCornerRadius)
         radiusX: barInternalBorderRoot.hasRightPanel ? barInternalBorderRoot.rightPanelCornerArcRadius : 0
         radiusY: barInternalBorderRoot.hasRightPanel ? barInternalBorderRoot.rightPanelCornerArcRadius : 0
-        direction: PathArc.Clockwise
+        direction: PathArc.Counterclockwise
     }
 
     PathLine {
