@@ -2,13 +2,13 @@
 let
   fetchPrebuiltBinary = import ../../../lib/fetch-prebuilt-binary.nix { inherit pkgs; };
 
-  version = "0.104.0";
+  version = "0.106.0";
 
   codex-unwrapped = fetchPrebuiltBinary {
     pname = "codex";
     inherit version;
     url = "https://github.com/openai/codex/releases/download/rust-v${version}/codex-x86_64-unknown-linux-gnu.tar.gz";
-    sha256 = "UvbMt86+HWYg+GdgdqzEzeEFQ6btDszqYlSY3nrhf4g=";
+    sha256 = "sqFOv4uPug0mVLsoH8TYHiWzVHrZMhTmIe2NqESm0QE=";
     binaryName = "codex";
     archiveBinaryPath = "codex-x86_64-unknown-linux-gnu";
     buildInputs = with pkgs; [
