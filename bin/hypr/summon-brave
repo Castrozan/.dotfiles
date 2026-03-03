@@ -1,41 +1,34 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-readonly CLASS="brave-browser"
+readonly BRAVE_WINDOW_CLASS="brave-browser"
 
 main() {
-  local current_ws window_json
-  current_ws=$(hyprctl activeworkspace -j | jq -r '.id')
-  window_json=$(_find_window_by_class "$CLASS")
+	local current_workspace_id window_json
+	current_workspace_id=$(hyprctl activeworkspace -j | jq -r '.id')
+	window_json=$(_find_window_by_class "$BRAVE_WINDOW_CLASS")
 
-  if [[ -z "$window_json" || "$window_json" == "null" ]]; then
-    exec brave
-  fi
+	if [[ -z "$window_json" || "$window_json" == "null" ]]; then
+		exec brave
+	fi
 
-  local address source_ws
-  address=$(echo "$window_json" | jq -r '.address')
-  source_ws=$(echo "$window_json" | jq -r '.workspace')
+	local address source_workspace_id
+	address=$(echo "$window_json" | jq -r '.address')
+	source_workspace_id=$(echo "$window_json" | jq -r '.workspace')
 
-  if [[ "$source_ws" == "$current_ws" ]]; then
-    hyprctl dispatch focuswindow "address:$address"
-    return
-  fi
+	if [[ "$source_workspace_id" == "$current_workspace_id" ]]; then
+		hyprctl dispatch focuswindow "address:$address"
+		return
+	fi
 
-  _detach_move_merge_into_current_group_and_maximize "$address" "$current_ws"
+	hypr-detach-from-group-and-move-to-workspace follow "$current_workspace_id" "$address"
 }
 
 _find_window_by_class() {
-  hyprctl clients -j | jq -r --arg class "$1" '
+	hyprctl clients -j | jq -r --arg class "$1" '
     [.[] | select(.class == $class)] | first // empty |
     {address, workspace: .workspace.id}
   '
-}
-
-_detach_move_merge_into_current_group_and_maximize() {
-  local address=$1 target_ws=$2
-
-  hyprctl --batch \
-    "dispatch focuswindow address:$address; dispatch moveoutofgroup; dispatch movetoworkspace $target_ws; dispatch moveintogroup l; dispatch moveintogroup r; dispatch moveintogroup u; dispatch moveintogroup d; dispatch fullscreen 1 set"
 }
 
 main

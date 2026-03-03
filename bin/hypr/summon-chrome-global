@@ -38,7 +38,7 @@ main() {
 		return
 	fi
 
-	_detach_move_merge_into_current_group_and_maximize "$window_address" "$current_workspace_id"
+	hypr-detach-from-group-and-move-to-workspace follow "$current_workspace_id" "$window_address"
 }
 
 _find_chrome_global_main_window() {
@@ -96,13 +96,6 @@ _find_chrome_global_window_by_initial_title() {
 _tag_window_as_chrome_global_main() {
 	local address=$1
 	hyprctl dispatch tagwindow "+$CHROME_GLOBAL_HYPRLAND_TAG" "address:$address" >/dev/null
-}
-
-_detach_move_merge_into_current_group_and_maximize() {
-	local address=$1 target_workspace_id=$2
-
-	hyprctl --batch \
-		"dispatch focuswindow address:$address; dispatch moveoutofgroup; dispatch movetoworkspace $target_workspace_id; dispatch moveintogroup l; dispatch moveintogroup r; dispatch moveintogroup u; dispatch moveintogroup d; dispatch fullscreen 1 set" >/dev/null
 }
 
 _launch_chrome_global() {
