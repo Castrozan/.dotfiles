@@ -65,20 +65,20 @@ let
       return 0
     }
 
-    _validate_channel_accounts_running() {
+    _validate_channel_accounts_healthy() {
       local health_json="$1"
       local channel_name="$2"
 
-      local not_running
-      not_running=$(echo "$health_json" | ${jq} -r --arg ch "$channel_name" '
+      local unhealthy_accounts
+      unhealthy_accounts=$(echo "$health_json" | ${jq} -r --arg ch "$channel_name" '
         .channels[$ch].accounts // {} | to_entries
-        | map(select(.value.running != true))
+        | map(select(.value.probe.ok != true))
         | map(.key)
         | join(", ")
       ' 2>/dev/null || echo "")
 
-      if [ -n "$not_running" ]; then
-        _log "UNHEALTHY: $channel_name accounts not running: $not_running"
+      if [ -n "$unhealthy_accounts" ]; then
+        _log "UNHEALTHY: $channel_name accounts failed probe: $unhealthy_accounts"
         return 1
       fi
       return 0
@@ -112,7 +112,7 @@ let
 
       local channel_name
       for channel_name in $(echo "$health_json" | ${jq} -r '.channelOrder[]' 2>/dev/null); do
-        if ! _validate_channel_accounts_running "$health_json" "$channel_name"; then
+        if ! _validate_channel_accounts_healthy "$health_json" "$channel_name"; then
           is_healthy=false
         fi
       done
