@@ -40,10 +40,11 @@ setup() {
     [ "$layout" = "dwindle" ]
 }
 
-@test "hyprctl: no config errors in systeminfo" {
-    result=$(hyprctl systeminfo)
-    configErrorCount=$(echo "$result" | grep -ci 'config error' || true)
-    [ "$configErrorCount" -eq 0 ]
+@test "hyprctl: no config errors" {
+    run hyprctl configerrors -j
+    [ "$status" -eq 0 ]
+    errorCount=$(echo "$output" | jq '[.[] | select(. != "")] | length')
+    [ "$errorCount" -eq 0 ]
 }
 
 @test "systemd: quickshell-bar service is active" {
