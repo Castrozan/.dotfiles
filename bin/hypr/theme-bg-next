@@ -12,7 +12,7 @@ if [[ $TOTAL -eq 0 ]]; then
   notify-send "No background was found for theme" -t 2000
   pkill -9 swaybg 2>/dev/null || true
   sleep 0.3
-  setsid swaybg --color '#000000' >/dev/null 2>&1 &
+  hyprctl dispatch exec "swaybg --color '#000000'"
 else
   if [[ -L "$CURRENT_BACKGROUND_LINK" ]]; then
     CURRENT_BACKGROUND=$(readlink "$CURRENT_BACKGROUND_LINK")

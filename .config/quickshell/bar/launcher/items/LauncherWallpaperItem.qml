@@ -43,7 +43,7 @@ StyledClippingRect {
                 color: "transparent"
                 border.width: launcherWallpaperItemRoot.isCurrentWallpaper ? 2 : 0
                 border.color: Colours.palette.m3primary
-                radius: parent.radius
+                radius: Appearance.rounding.small
             }
         }
 

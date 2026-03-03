@@ -16,4 +16,4 @@ fi
 
 pkill -9 swaybg 2>/dev/null || true
 sleep 0.3
-setsid swaybg -i "$CURRENT_BACKGROUND_LINK" -m fill >/dev/null 2>&1 &
+hyprctl dispatch exec "swaybg -i '$CURRENT_BACKGROUND_LINK' -m fill"

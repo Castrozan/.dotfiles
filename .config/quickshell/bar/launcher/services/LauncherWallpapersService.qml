@@ -36,40 +36,41 @@ Singleton {
 
     Process {
         id: listWallpapersProcess
-        command: ["find", "-L",
-            `${Quickshell.env("HOME")}/.config/hypr-theme/user-themes`,
-            `${Quickshell.env("HOME")}/.config/hypr/themes`,
-            "-path", "*/backgrounds/*",
-            "-type", "f",
-            "(", "-iname", "*.jpg",
-            "-o", "-iname", "*.jpeg",
-            "-o", "-iname", "*.png",
-            "-o", "-iname", "*.webp", ")"]
+        command: ["bash", "-c", "find -L \"$HOME/.config/hypr-theme/user-themes\" \"$HOME/.config/hypr/themes\" -path '*/backgrounds/*' -type f \\( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.webp' \\)"]
         running: true
 
-        property var wallpaperBuffer: []
+        property string stdoutBuffer: ""
 
         stdout: SplitParser {
             onRead: data => {
-                let trimmedPath = data.trim();
-                if (trimmedPath.length === 0)
-                    return;
-                let lastSlashIndex = trimmedPath.lastIndexOf("/");
-                let fileName = lastSlashIndex >= 0 ? trimmedPath.substring(lastSlashIndex + 1) : trimmedPath;
-                listWallpapersProcess.wallpaperBuffer.push({
-                    name: fileName,
-                    path: trimmedPath
-                });
+                listWallpapersProcess.stdoutBuffer += data + "\n";
             }
         }
 
         onRunningChanged: {
-            if (!running && wallpaperBuffer.length > 0) {
-                wallpaperBuffer.sort((wallpaperA, wallpaperB) => wallpaperA.name.localeCompare(wallpaperB.name));
-                launcherWallpapersServiceRoot.availableWallpapers = wallpaperBuffer;
-                wallpaperBuffer = [];
+            if (!running && stdoutBuffer.length > 0) {
+                launcherWallpapersServiceRoot.parseWallpaperListOutput(stdoutBuffer);
+                stdoutBuffer = "";
             }
         }
+    }
+
+    function parseWallpaperListOutput(output: string): void {
+        let wallpapers = [];
+        let lines = output.split("\n");
+        for (let i = 0; i < lines.length; i++) {
+            let trimmedPath = lines[i].trim();
+            if (trimmedPath.length === 0)
+                continue;
+            let lastSlashIndex = trimmedPath.lastIndexOf("/");
+            let fileName = lastSlashIndex >= 0 ? trimmedPath.substring(lastSlashIndex + 1) : trimmedPath;
+            wallpapers.push({
+                name: fileName,
+                path: trimmedPath
+            });
+        }
+        wallpapers.sort((wallpaperA, wallpaperB) => wallpaperA.name.localeCompare(wallpaperB.name));
+        availableWallpapers = wallpapers;
     }
 
     Process {
@@ -95,7 +96,7 @@ Singleton {
 
     function reloadWallpaperList(): void {
         availableWallpapers = [];
-        listWallpapersProcess.wallpaperBuffer = [];
+        listWallpapersProcess.stdoutBuffer = "";
         listWallpapersProcess.running = true;
     }
 }
