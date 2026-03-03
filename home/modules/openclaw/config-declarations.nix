@@ -76,7 +76,6 @@ let
     ".agents.defaults.heartbeat.model" = openclaw.defaults.model.heartbeat;
     ".agents.defaults.subagents.model" = openclaw.defaults.model.subagents;
     ".agents.defaults.model.fallbacks" = [
-      "anthropic/claude-opus-4-6"
       "openai-codex/gpt-5.3-codex"
       "nvidia/meta/llama-3.3-70b-instruct"
     ];
