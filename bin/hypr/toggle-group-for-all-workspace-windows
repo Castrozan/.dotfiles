@@ -45,7 +45,7 @@ _group_all_tiled_windows_on_active_workspace_and_maximize() {
   [[ ${#addrs[@]} -eq 0 ]] && return
 
   if [[ ${#addrs[@]} -eq 1 ]]; then
-    hyprctl --batch "dispatch focuswindow address:${addrs[0]}; dispatch fullscreen 1"
+    hyprctl --batch "dispatch focuswindow address:${addrs[0]}; dispatch fullscreen 1 set"
     return
   fi
 
@@ -59,7 +59,7 @@ _group_all_tiled_windows_on_active_workspace_and_maximize() {
 
   _retry_ungrouped_windows "${addrs[@]}"
 
-  hyprctl dispatch fullscreen 1
+  hyprctl dispatch fullscreen 1 set
 
 }
 

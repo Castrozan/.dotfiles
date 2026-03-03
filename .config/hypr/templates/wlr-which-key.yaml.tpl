@@ -144,7 +144,7 @@ menu:
         cmd: hyprctl dispatch fullscreen 0
       - key: m
         desc: Maximize
-        cmd: hyprctl dispatch fullscreen 1
+        cmd: hyprctl dispatch fullscreen 1 set
       - key: a
         desc: Toggle opacity
         cmd: hyprctl dispatch setprop "address:$(hyprctl activewindow -j | jq -r '.address')" opaque toggle

@@ -82,7 +82,7 @@ handle_event() {
           local window_count
           window_count=$(hyprctl clients -j 2>/dev/null | jq --arg ws "$ws" '[.[] | select(.workspace.id == ($ws | tonumber))] | length')
           if [[ "$window_count" -gt 0 ]]; then
-            hyprctl dispatch fullscreen 1
+            hyprctl dispatch fullscreen 1 set
           else
             remove_workspace "$ws"
           fi

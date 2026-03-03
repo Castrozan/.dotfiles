@@ -35,7 +35,7 @@ _detach_move_merge_into_current_group_and_maximize() {
   local address=$1 target_ws=$2
 
   hyprctl --batch \
-    "dispatch focuswindow address:$address; dispatch moveoutofgroup; dispatch movetoworkspace $target_ws; dispatch moveintogroup l; dispatch moveintogroup r; dispatch moveintogroup u; dispatch moveintogroup d; dispatch fullscreen 1"
+    "dispatch focuswindow address:$address; dispatch moveoutofgroup; dispatch movetoworkspace $target_ws; dispatch moveintogroup l; dispatch moveintogroup r; dispatch moveintogroup u; dispatch moveintogroup d; dispatch fullscreen 1 set"
 }
 
 main
