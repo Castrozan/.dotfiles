@@ -608,7 +608,7 @@ Scope {
 
                     x: drawersWindow.width - barTotalWidth / 3 - width
                     y: drawersWindow.height - barTotalWidth / 3 - height
-                    z: 2
+                    z: 3
 
                     utilitiesVisible: screenScope.utilitiesVisible
 
@@ -632,7 +632,7 @@ Scope {
                     id: sidebarWrapper
 
                     readonly property real sidebarTopEdge: barTotalWidth / 3
-                    readonly property real sidebarBottomEdge: drawersWindow.height - barTotalWidth / 3 - utilitiesWrapper.height
+                    readonly property real sidebarBottomEdge: drawersWindow.height - barTotalWidth / 3
 
                     x: drawersWindow.width - barTotalWidth / 3 - width
                     y: sidebarTopEdge
@@ -640,6 +640,7 @@ Scope {
                     height: sidebarBottomEdge - sidebarTopEdge
 
                     sidebarVisible: screenScope.sidebarVisible
+                    contentAvailableHeight: sidebarBottomEdge - sidebarTopEdge - utilitiesWrapper.height
 
                     MouseArea {
                         anchors.fill: parent

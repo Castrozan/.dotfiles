@@ -8,6 +8,7 @@ Item {
     id: sidebarWrapperRoot
 
     property bool sidebarVisible: false
+    property real contentAvailableHeight: height
 
     visible: width > 0
     width: implicitWidth
@@ -58,7 +59,7 @@ Item {
         active: sidebarWrapperRoot.sidebarVisible || sidebarWrapperRoot.visible
 
         sourceComponent: SidebarContent {
-            availableHeight: sidebarWrapperRoot.height
+            availableHeight: sidebarWrapperRoot.contentAvailableHeight
         }
     }
 }
