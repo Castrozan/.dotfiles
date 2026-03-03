@@ -15,14 +15,14 @@ main() {
 }
 
 _detectPreferredPulseMonitorSourceName() {
-	local firstRunningNonEchoCancelSinkMonitorSourceName
+	local firstRunningSinkMonitorSourceName
 	local firstActiveSinkInputMonitorSourceName
-	local firstAvailableNonEchoCancelMonitorSourceName
+	local firstAvailableMonitorSourceName
 	local defaultSinkMonitorSourceName
 
-	firstRunningNonEchoCancelSinkMonitorSourceName="$(_findFirstRunningNonEchoCancelSinkMonitorSourceName)"
-	if [ -n "$firstRunningNonEchoCancelSinkMonitorSourceName" ]; then
-		printf '%s\n' "$firstRunningNonEchoCancelSinkMonitorSourceName"
+	firstRunningSinkMonitorSourceName="$(_findFirstRunningSinkMonitorSourceName)"
+	if [ -n "$firstRunningSinkMonitorSourceName" ]; then
+		printf '%s\n' "$firstRunningSinkMonitorSourceName"
 		return 0
 	fi
 
@@ -32,9 +32,9 @@ _detectPreferredPulseMonitorSourceName() {
 		return 0
 	fi
 
-	firstAvailableNonEchoCancelMonitorSourceName="$(_findFirstAvailableNonEchoCancelMonitorSourceName)"
-	if [ -n "$firstAvailableNonEchoCancelMonitorSourceName" ]; then
-		printf '%s\n' "$firstAvailableNonEchoCancelMonitorSourceName"
+	firstAvailableMonitorSourceName="$(_findFirstAvailableMonitorSourceName)"
+	if [ -n "$firstAvailableMonitorSourceName" ]; then
+		printf '%s\n' "$firstAvailableMonitorSourceName"
 		return 0
 	fi
 
@@ -47,8 +47,8 @@ _detectPreferredPulseMonitorSourceName() {
 	printf 'auto\n'
 }
 
-_findFirstRunningNonEchoCancelSinkMonitorSourceName() {
-	_listShortPulseSinks | awk '$2 !~ /echo-cancel/ && $NF == "RUNNING" { print $2 ".monitor"; exit }'
+_findFirstRunningSinkMonitorSourceName() {
+	_listShortPulseSinks | awk '$NF == "RUNNING" { print $2 ".monitor"; exit }'
 }
 
 _findFirstActiveSinkInputMonitorSourceName() {
@@ -59,11 +59,11 @@ _findFirstActiveSinkInputMonitorSourceName() {
 		return 0
 	fi
 
-	_listShortPulseSinks | awk -v preferredSinkIdentifier="$preferredSinkIdentifier" '$1 == preferredSinkIdentifier && $2 !~ /echo-cancel/ { print $2 ".monitor"; exit }'
+	_listShortPulseSinks | awk -v preferredSinkIdentifier="$preferredSinkIdentifier" '$1 == preferredSinkIdentifier { print $2 ".monitor"; exit }'
 }
 
-_findFirstAvailableNonEchoCancelMonitorSourceName() {
-	_listShortPulseSources | awk '$2 ~ /\.monitor$/ && $2 !~ /echo-cancel/ { print $2; exit }'
+_findFirstAvailableMonitorSourceName() {
+	_listShortPulseSources | awk '$2 ~ /\.monitor$/ { print $2; exit }'
 }
 
 _buildDefaultSinkMonitorSourceName() {

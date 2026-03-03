@@ -36,33 +36,22 @@ in
         };
       };
 
-      "30-echo-cancel" = {
-        "context.modules" = [
+    };
+
+    wireplumber.extraConfig = {
+      "40-stream-defaults" = {
+        "stream.rules" = [
           {
-            name = "libpipewire-module-echo-cancel";
-            args = {
-              "library.name" = "aec/libspa-aec-webrtc";
-              "node.name" = "Echo Cancel Source";
-              "node.description" = "Echo Cancel Source";
-              "audio.rate" = 48000;
-              "audio.channels" = 1;
-              "source.props" = {
-                "node.name" = "echo-cancel-source";
-                "media.class" = "Audio/Source";
-                "audio.position" = [ "MONO" ];
-              };
-              "sink.props" = {
-                "node.name" = "echo-cancel-sink";
-                "media.class" = "Audio/Sink";
-                "audio.position" = [ "MONO" ];
-              };
+            matches = [
+              { "node.name" = "~*"; }
+            ];
+            actions.update-props = {
+              "stream.restore-target" = btPolicy.restoreStreamTarget;
             };
           }
         ];
       };
-    };
 
-    wireplumber.extraConfig = {
       "50-disable-acp-card" = {
         "monitor.alsa.rules" = [
           {

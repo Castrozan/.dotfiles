@@ -1,0 +1,70 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+readonly AUDIO_OUTPUT_ICONS_DIR="$HOME/.config/scripts/icons"
+
+main() {
+	local all_hardware_sink_names current_default_sink_name next_sink_name
+	all_hardware_sink_names=$(_list_all_hardware_sink_names)
+	current_default_sink_name=$(pactl get-default-sink)
+	next_sink_name=$(_find_next_sink_in_cycle "$all_hardware_sink_names" "$current_default_sink_name")
+
+	pactl set-default-sink "$next_sink_name"
+	_move_all_playing_streams_to_sink "$next_sink_name"
+	_send_sink_switch_notification "$next_sink_name"
+}
+
+_list_all_hardware_sink_names() {
+	pactl list sinks short | awk '$2 !~ /\.monitor$/ { print $2 }'
+}
+
+_find_next_sink_in_cycle() {
+	local sink_list=$1
+	local current_sink=$2
+
+	local total_sinks current_index next_index
+	total_sinks=$(echo "$sink_list" | wc -l)
+
+	current_index=$(echo "$sink_list" | grep -n "^${current_sink}$" | cut -d: -f1 || echo "0")
+
+	if [[ "$current_index" -eq 0 ]] || [[ "$current_index" -ge "$total_sinks" ]]; then
+		next_index=1
+	else
+		next_index=$((current_index + 1))
+	fi
+
+	echo "$sink_list" | sed -n "${next_index}p"
+}
+
+_move_all_playing_streams_to_sink() {
+	local target_sink_name=$1
+
+	local target_sink_index
+	target_sink_index=$(pactl list sinks short | awk -v name="$target_sink_name" '$2 == name { print $1 }')
+
+	pactl list sink-inputs short | awk '{ print $1 }' | while read -r stream_index; do
+		pactl move-sink-input "$stream_index" "$target_sink_index" 2>/dev/null || true
+	done
+}
+
+_send_sink_switch_notification() {
+	local sink_name=$1
+	local human_readable_description
+	human_readable_description=$(_get_sink_human_readable_description "$sink_name")
+
+	notify-send -t 3000 \
+		-i "$AUDIO_OUTPUT_ICONS_DIR/volume-high.png" \
+		"Audio Output" \
+		"$human_readable_description"
+}
+
+_get_sink_human_readable_description() {
+	local sink_name=$1
+	pactl list sinks | awk -v name="$sink_name" '
+		/Name:/ { found = ($2 == name) }
+		found && /Description:/ { sub(/.*Description: /, ""); print; exit }
+	'
+}
+
+main "$@"

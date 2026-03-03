@@ -134,13 +134,27 @@ _run_volume_in_container() {
     [[ "$output" == *"volume=45"* ]]
 }
 
-@test "targets running sink when available" {
+@test "prefers running default sink over other running sinks" {
     run _run_volume_in_container "
-        echo '38	echo-cancel-sink	PipeWire	float32le 1ch 48000Hz	IDLE' > /tmp/mock-pactl/sinks-short
-        echo '55	alsa_output.hardware.analog-stereo	PipeWire	s32le 2ch 48000Hz	RUNNING' >> /tmp/mock-pactl/sinks-short
-        echo 'echo-cancel-sink' > /tmp/mock-pactl/default-sink
-        echo 'volume=30 mute=no' > /tmp/mock-pactl/sink-echo-cancel-sink
+        echo '55	alsa_output.hardware.analog-stereo	PipeWire	s32le 2ch 48000Hz	RUNNING' > /tmp/mock-pactl/sinks-short
+        echo '100	bluez_output.XX_XX.a2dp-sink	PipeWire	s16le 2ch 48000Hz	RUNNING' >> /tmp/mock-pactl/sinks-short
+        echo 'bluez_output.XX_XX.a2dp-sink' > /tmp/mock-pactl/default-sink
         echo 'volume=70 mute=no' > /tmp/mock-pactl/sink-alsa_output.hardware.analog-stereo
+        echo 'volume=60 mute=no' > /tmp/mock-pactl/sink-bluez_output.XX_XX.a2dp-sink
+
+        $VOLUME_SCRIPT --get
+    "
+    [ "$status" -eq 0 ]
+    [[ "$output" == "60" ]]
+}
+
+@test "falls back to running sink when default is not running" {
+    run _run_volume_in_container "
+        echo '55	alsa_output.hardware.analog-stereo	PipeWire	s32le 2ch 48000Hz	RUNNING' > /tmp/mock-pactl/sinks-short
+        echo '100	bluez_output.XX_XX.a2dp-sink	PipeWire	s16le 2ch 48000Hz	IDLE' >> /tmp/mock-pactl/sinks-short
+        echo 'bluez_output.XX_XX.a2dp-sink' > /tmp/mock-pactl/default-sink
+        echo 'volume=70 mute=no' > /tmp/mock-pactl/sink-alsa_output.hardware.analog-stereo
+        echo 'volume=60 mute=no' > /tmp/mock-pactl/sink-bluez_output.XX_XX.a2dp-sink
 
         $VOLUME_SCRIPT --get
     "
@@ -150,10 +164,8 @@ _run_volume_in_container() {
 
 @test "falls back to default sink when none running" {
     run _run_volume_in_container "
-        echo '38	echo-cancel-sink	PipeWire	float32le 1ch 48000Hz	IDLE' > /tmp/mock-pactl/sinks-short
-        echo '55	alsa_output.hardware.analog-stereo	PipeWire	s32le 2ch 48000Hz	IDLE' >> /tmp/mock-pactl/sinks-short
+        echo '55	alsa_output.hardware.analog-stereo	PipeWire	s32le 2ch 48000Hz	IDLE' > /tmp/mock-pactl/sinks-short
         echo 'alsa_output.hardware.analog-stereo' > /tmp/mock-pactl/default-sink
-        echo 'volume=30 mute=no' > /tmp/mock-pactl/sink-echo-cancel-sink
         echo 'volume=42 mute=no' > /tmp/mock-pactl/sink-alsa_output.hardware.analog-stereo
 
         $VOLUME_SCRIPT --get

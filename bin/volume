@@ -25,8 +25,19 @@ main() {
 }
 
 _find_active_sink_name_or_default() {
+	local default_sink_name
+	default_sink_name=$(pactl get-default-sink)
+
+	local default_sink_is_running
+	default_sink_is_running=$(pactl list sinks short | awk -v name="$default_sink_name" '$2 == name && $7 == "RUNNING" { print "yes"; exit }')
+
+	if [[ "$default_sink_is_running" == "yes" ]]; then
+		echo "$default_sink_name"
+		return
+	fi
+
 	local running_hardware_sink
-	running_hardware_sink=$(pactl list sinks short | awk '$7 == "RUNNING" && $2 !~ /^echo-cancel/ { print $2; exit }')
+	running_hardware_sink=$(pactl list sinks short | awk '$7 == "RUNNING" { print $2; exit }')
 	if [[ -n "$running_hardware_sink" ]]; then
 		echo "$running_hardware_sink"
 	else

@@ -11,4 +11,5 @@
   autoswitchToHeadsetProfile = true;
   sinkPriority = 3000;
   inputPriority = 2000;
+  restoreStreamTarget = false;
 }

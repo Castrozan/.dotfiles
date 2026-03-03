@@ -20,12 +20,20 @@ in
 {
   systemd.user.services.bluetooth-audio-autoswitch = {
     Unit = {
-      Description = "Auto-switch default audio sink to Bluetooth on connect";
+      Description = "Auto-switch audio sink on Bluetooth connect/disconnect";
       After = [ "pipewire-pulse.service" ];
     };
     Service = {
       ExecStart =
         let
+          moveAllStreamsToDefaultSink = pkgs.writeShellScript "move-all-streams-to-default-sink" ''
+            default_sink_index=$(${pkgs.pulseaudio}/bin/pactl list sinks short | ${pkgs.gawk}/bin/awk -v name="$(${pkgs.pulseaudio}/bin/pactl get-default-sink)" '$2 == name { print $1 }')
+            [ -z "$default_sink_index" ] && exit 0
+            ${pkgs.pulseaudio}/bin/pactl list sink-inputs short | ${pkgs.gawk}/bin/awk '{ print $1 }' | while read -r stream_index; do
+              ${pkgs.pulseaudio}/bin/pactl move-sink-input "$stream_index" "$default_sink_index" 2>/dev/null || true
+            done
+          '';
+
           script = pkgs.writeShellScript "bluetooth-audio-autoswitch" ''
             ${pkgs.pulseaudio}/bin/pactl subscribe | while read -r line; do
               if echo "$line" | ${pkgs.gnugrep}/bin/grep -q "'new' on sink"; then
@@ -33,7 +41,12 @@ in
                 sink_name=$(${pkgs.pulseaudio}/bin/pactl list sinks short | ${pkgs.gawk}/bin/awk -v idx="$sink_index" '$1 == idx { print $2 }')
                 if [[ "$sink_name" == bluez_output.* ]]; then
                   ${pkgs.pulseaudio}/bin/pactl set-default-sink "$sink_name"
+                  sleep 0.5
+                  ${moveAllStreamsToDefaultSink}
                 fi
+              elif echo "$line" | ${pkgs.gnugrep}/bin/grep -q "'remove' on sink"; then
+                sleep 0.5
+                ${moveAllStreamsToDefaultSink}
               fi
             done
           '';
@@ -76,33 +89,6 @@ in
       };
     };
 
-    "pipewire/pipewire.conf.d/30-echo-cancel.conf".text = builtins.toJSON {
-      "context.modules" = [
-        {
-          name = "libpipewire-module-echo-cancel";
-          args = {
-            "library.name" = "aec/libspa-aec-webrtc";
-            "node.name" = "Echo Cancel Source";
-            "node.description" = "Echo Cancel Source";
-            "audio.rate" = 48000;
-            "audio.channels" = 1;
-            "source.props" = {
-              "node.name" = "echo-cancel-source";
-              "media.class" = "Audio/Source";
-              "audio.position" = [ "MONO" ];
-            };
-            "sink.props" = {
-              "node.name" = "echo-cancel-sink";
-              "media.class" = "Audio/Sink";
-              "audio.position" = [ "MONO" ];
-              "priority.session" = 0;
-              "priority.driver" = 0;
-            };
-          };
-        }
-      ];
-    };
-
     "wireplumber/main.lua.d/50-disable-bt-autoswitch.lua".text = ''
       table.insert(alsa_monitor.rules, {
         matches = {
@@ -115,6 +101,10 @@ in
           ["priority.session"] = ${toString btPolicy.inputPriority},
         },
       })
+    '';
+
+    "wireplumber/main.lua.d/41-disable-stream-restore-target.lua".text = ''
+      stream_defaults.properties["restore-target"] = ${lib.boolToString btPolicy.restoreStreamTarget}
     '';
 
     "wireplumber/bluetooth.lua.d/50-bluetooth-codec-preference.lua".text = ''
