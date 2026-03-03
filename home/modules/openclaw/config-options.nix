@@ -132,6 +132,11 @@ let
               default = "off";
               description = "Live preview streaming mode (partial|block|off)";
             };
+            allowFrom = lib.mkOption {
+              type = lib.types.listOf lib.types.str;
+              default = [ ];
+              description = "Discord user IDs allowed to DM this bot (used with dmPolicy=pairing)";
+            };
             voice = lib.mkOption {
               type = lib.types.submodule {
                 options = {

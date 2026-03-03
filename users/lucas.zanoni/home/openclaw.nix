@@ -24,7 +24,6 @@ in
 {
   openclaw = {
     configPatches = {
-      ".channels.discord.accounts.robson.allowFrom" = [ lucasDiscordUserId ];
       ".channels.discord.accounts.robson.guilds.${robsonDiscordGuildId}.users" = [ lucasDiscordUserId ];
     };
 
@@ -84,6 +83,7 @@ in
         discord = {
           enable = true;
           voice.enable = true;
+          allowFrom = [ lucasDiscordUserId ];
           guilds."${robsonDiscordGuildId}" = {
             slug = "anotacao";
             requireMention = true;
@@ -101,6 +101,7 @@ in
         discord = {
           enable = true;
           voice.enable = true;
+          allowFrom = [ lucasDiscordUserId ];
         };
       };
       monster = {
@@ -114,6 +115,7 @@ in
         discord = {
           enable = true;
           voice.enable = true;
+          allowFrom = [ lucasDiscordUserId ];
         };
       };
       silver = {
@@ -127,6 +129,7 @@ in
         discord = {
           enable = true;
           voice.enable = true;
+          allowFrom = [ lucasDiscordUserId ];
         };
       };
     };

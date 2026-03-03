@@ -151,11 +151,15 @@ let
   # Discord patches - per-account, mirrors telegram pattern
   hasDiscord = discordEnabledAgents != { };
 
-  discordAccounts = lib.mapAttrs (name: agent: {
-    name = if agent.telegram.botName != null then agent.telegram.botName else capitalize name;
-    enabled = true;
-    inherit (agent.discord) dmPolicy groupPolicy streamMode;
-  }) discordEnabledAgents;
+  discordAccounts = lib.mapAttrs (
+    name: agent:
+    {
+      name = if agent.telegram.botName != null then agent.telegram.botName else capitalize name;
+      enabled = true;
+      inherit (agent.discord) dmPolicy groupPolicy streamMode;
+    }
+    // lib.optionalAttrs (agent.discord.allowFrom != [ ]) { inherit (agent.discord) allowFrom; }
+  ) discordEnabledAgents;
 
   # Generate per-account voice patches
   discordVoicePatches = lib.foldl' (
