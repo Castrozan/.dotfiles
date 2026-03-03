@@ -74,7 +74,6 @@
     ../../home/modules/testing
     ../../home/modules/ani-cli.nix
     ../../home/modules/viu.nix
-    ../../home/modules/yt-x.nix
     ../../home/modules/audio
     ../../home/modules/hey-bot.nix
     ./home/hey-bot.nix
