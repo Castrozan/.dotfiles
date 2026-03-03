@@ -34,6 +34,7 @@
     ../../home/modules/mcporter.nix
     ../../home/modules/ani-cli.nix
     ../../home/modules/viu.nix
+    ../../home/modules/yt-x.nix
     ../../home/modules/neovim.nix
     ../../home/modules/obsidian.nix
     ../../home/modules/opencode
