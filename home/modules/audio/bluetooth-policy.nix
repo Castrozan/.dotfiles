@@ -11,5 +11,6 @@
   autoswitchToHeadsetProfile = true;
   sinkPriority = 3000;
   inputPriority = 2000;
+  laptopMicPriority = 3500;
   restoreStreamTarget = false;
 }

@@ -97,8 +97,8 @@ in
           },
         },
         apply_properties = {
-          ["priority.driver"] = ${toString btPolicy.inputPriority},
-          ["priority.session"] = ${toString btPolicy.inputPriority},
+          ["priority.driver"] = ${toString btPolicy.laptopMicPriority},
+          ["priority.session"] = ${toString btPolicy.laptopMicPriority},
         },
       })
     '';

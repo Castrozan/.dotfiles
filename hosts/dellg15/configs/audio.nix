@@ -72,8 +72,8 @@ in
               { "node.name" = "~alsa_input.pci-0000_05_00.6.*"; }
             ];
             actions.update-props = {
-              "priority.driver" = btPolicy.inputPriority;
-              "priority.session" = btPolicy.inputPriority;
+              "priority.driver" = btPolicy.laptopMicPriority;
+              "priority.session" = btPolicy.laptopMicPriority;
             };
           }
           {
@@ -81,8 +81,8 @@ in
               { "node.name" = "alsa_input.pci-0000_05_00.6.HiFi__Mic1__source"; }
             ];
             actions.update-props = {
-              "priority.driver" = 2500;
-              "priority.session" = 2500;
+              "priority.driver" = btPolicy.laptopMicPriority + 100;
+              "priority.session" = btPolicy.laptopMicPriority + 100;
             };
           }
         ];
