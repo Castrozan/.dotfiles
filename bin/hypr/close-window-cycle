@@ -1,35 +1,56 @@
 #!/usr/bin/env bash
+set -Eeuo pipefail
 
-closedWindowsHistoryFile="${XDG_RUNTIME_DIR:-/tmp}/hypr-closed-windows-history"
+readonly CLOSED_WINDOWS_HISTORY_FILE="${XDG_RUNTIME_DIR:-/tmp}/hypr-closed-windows-history"
+readonly MAX_HISTORY_ENTRIES=10
 
-current=$(hyprctl activewindow -j)
-current_addr=$(echo "$current" | jq -r '.address')
-current_ws=$(echo "$current" | jq -r '.workspace.id')
-current_class=$(echo "$current" | jq -r '.class')
-current_title=$(echo "$current" | jq -r '.title')
-current_pid=$(echo "$current" | jq -r '.pid')
+main() {
+	local active_window_json
+	active_window_json=$(hyprctl activewindow -j)
 
-launchCommand=""
-if [[ -n "$current_pid" && "$current_pid" != "null" && -f "/proc/$current_pid/cmdline" ]]; then
-  launchCommand=$(tr '\0' ' ' < "/proc/$current_pid/cmdline" | sed 's/ $//')
-fi
+	local active_address active_workspace_id active_class active_title active_pid
+	active_address=$(echo "$active_window_json" | jq -r '.address')
+	active_workspace_id=$(echo "$active_window_json" | jq -r '.workspace.id')
+	active_class=$(echo "$active_window_json" | jq -r '.class')
+	active_title=$(echo "$active_window_json" | jq -r '.title')
+	active_pid=$(echo "$active_window_json" | jq -r '.pid')
 
-if [[ -n "$launchCommand" && -n "$current_class" && "$current_class" != "null" ]]; then
-  jq -nc --arg cmd "$launchCommand" --arg class "$current_class" \
-         --argjson ws "$current_ws" --arg title "$current_title" \
-         '{cmd:$cmd,class:$class,workspace:$ws,title:$title}' >> "$closedWindowsHistoryFile"
-  tail -n 10 "$closedWindowsHistoryFile" > "${closedWindowsHistoryFile}.tmp"
-  mv "${closedWindowsHistoryFile}.tmp" "$closedWindowsHistoryFile"
-fi
+	_save_window_to_history "$active_pid" "$active_class" "$active_workspace_id" "$active_title"
 
-prev_addr=$(hyprctl clients -j | jq -r --arg ws "$current_ws" --arg addr "$current_addr" '
-  [.[] | select(.workspace.id == ($ws | tonumber) and .address != $addr)] |
-  sort_by(.focusHistoryID) |
-  .[0].address // empty
-')
+	local previous_window_address
+	previous_window_address=$(_find_previous_window_on_workspace "$active_workspace_id" "$active_address")
 
-hyprctl dispatch killactive
+	hyprctl dispatch killactive
 
-if [[ -n "$prev_addr" && "$prev_addr" != "null" ]]; then
-  hyprctl dispatch focuswindow "address:$prev_addr"
-fi
+	if [[ -n "$previous_window_address" && "$previous_window_address" != "null" ]]; then
+		hyprctl dispatch focuswindow "address:$previous_window_address"
+	fi
+}
+
+_save_window_to_history() {
+	local pid=$1 class=$2 workspace_id=$3 title=$4
+
+	local launch_command=""
+	if [[ -n "$pid" && "$pid" != "null" && -f "/proc/$pid/cmdline" ]]; then
+		launch_command=$(tr '\0' ' ' <"/proc/$pid/cmdline" | sed 's/ $//')
+	fi
+
+	if [[ -n "$launch_command" && -n "$class" && "$class" != "null" ]]; then
+		jq -nc --arg cmd "$launch_command" --arg class "$class" \
+			--argjson ws "$workspace_id" --arg title "$title" \
+			'{cmd:$cmd,class:$class,workspace:$ws,title:$title}' >>"$CLOSED_WINDOWS_HISTORY_FILE"
+		tail -n "$MAX_HISTORY_ENTRIES" "$CLOSED_WINDOWS_HISTORY_FILE" >"${CLOSED_WINDOWS_HISTORY_FILE}.tmp"
+		mv "${CLOSED_WINDOWS_HISTORY_FILE}.tmp" "$CLOSED_WINDOWS_HISTORY_FILE"
+	fi
+}
+
+_find_previous_window_on_workspace() {
+	local workspace_id=$1 current_address=$2
+	hyprctl clients -j | jq -r --arg ws "$workspace_id" --arg addr "$current_address" '
+    [.[] | select(.workspace.id == ($ws | tonumber) and .address != $addr)] |
+    sort_by(.focusHistoryID) |
+    .[0].address // empty
+  '
+}
+
+main
