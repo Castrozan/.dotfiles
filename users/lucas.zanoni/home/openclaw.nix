@@ -64,6 +64,7 @@ in
     userName = "Lucas";
     gatewayPort = 18790;
     gatewayService.enable = true;
+    healthCheck.enable = true;
     coreRulesContent = builtins.readFile ../../../agents/core.md;
     defaults.model = {
       primary = opusModel;

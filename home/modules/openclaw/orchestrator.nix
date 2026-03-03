@@ -7,6 +7,7 @@
     ./workspace-dirs.nix
     ./install.nix
     ./systemd-service.nix
+    ./health-check.nix
     ./plugins/memory-sync.nix
     ./plugins/plugins.nix
   ];

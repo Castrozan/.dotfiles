@@ -1,7 +1,7 @@
 { pkgs, config, ... }:
 let
   nodejs = pkgs.nodejs_22;
-  version = "2026.2.21-2";
+  version = "2026.3.2";
   discordVoiceDavePackageVersion = "0.1.9";
   discordJsPackageVersion = "14.22.1";
   discordVoicePackageVersion = "0.19.0";
