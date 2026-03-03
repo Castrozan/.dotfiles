@@ -17,10 +17,9 @@ Each junction is a PathLine followed by a PathArc. The PathLine positions the ar
 Panels hang from the inner edge of a horizontal strip. Dashboard hangs downward from the top strip; launcher hangs upward from the bottom strip. The path travels horizontally along the strip inner edge, enters the panel via a junction, traces the panel perimeter, and exits via another junction.
 
 ```
-    strip inner edge ──────────────────
-                  ╭──────────╮
-                  │  panel   │
-                  ╰──────────╯
+    strip inner edge ─────╮          ╭─────
+                          │  panel   │
+                          ╰──────────╯
 ```
 
 Entry junction: PathLine to `(panelX - radius, stripY)`, arc to `(panelX, stripY + radius)`, CW.
@@ -50,7 +49,7 @@ The left extension hangs rightward from the left vertical strip inner edge. The 
 ```
     strip │
           ╰────╮
-          panel │
+          panel│
           ╭────╯
     strip │
 ```
