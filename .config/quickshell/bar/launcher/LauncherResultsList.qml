@@ -107,6 +107,7 @@ Item {
 
         switch (currentMode) {
         case LauncherResultsList.Apps:
+            LauncherAppsService.recordAppLaunch(item);
             _runDetachedCommand(_buildDesktopEntryDetachedLaunchCommand(item));
             itemActivated();
             break;
