@@ -46,6 +46,7 @@
     ../../home/modules/neovim.nix
     ../../home/modules/obs-studio.nix
     ../../home/modules/obsidian.nix
+    ../../home/modules/obsidian-headless-sync.nix
     ../../home/modules/crabwalk.nix
     ../../home/modules/network-optimization.nix
     ../../home/modules/lid-switch-ignore.nix

@@ -46,4 +46,6 @@ in
   "x-username.age".publicKeys = all_keys;
   "x-email.age".publicKeys = all_keys;
   "x-password.age".publicKeys = all_keys;
+  "obsidian-headless-auth-token.age".publicKeys = all_keys;
+  "obsidian-headless-sync-config.age".publicKeys = all_keys;
 }

@@ -48,6 +48,8 @@ let
     "discord-bot-token-jenny"
     "discord-bot-token-monster"
     "discord-bot-token-silver"
+    "obsidian-headless-auth-token"
+    "obsidian-headless-sync-config"
   ];
 
   allSecretNames =
