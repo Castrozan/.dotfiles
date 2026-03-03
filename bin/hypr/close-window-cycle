@@ -22,8 +22,12 @@ main() {
 
 	hyprctl dispatch killactive
 
+	sleep 0.05
+
 	if [[ -n "$previous_window_address" && "$previous_window_address" != "null" ]]; then
-		hyprctl dispatch focuswindow "address:$previous_window_address"
+		hyprctl --batch "dispatch focuswindow address:$previous_window_address; dispatch fullscreen 1 set"
+	else
+		hyprctl dispatch fullscreen 1 set
 	fi
 }
 
