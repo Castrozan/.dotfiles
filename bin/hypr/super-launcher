@@ -4,41 +4,19 @@ set -Eeuo pipefail
 readonly FUZZEL_SETTLE_DELAY=0.15
 
 main() {
-  if _is_fuzzel_running; then
-    pkill -x fuzzel
-    exit 0
-  fi
+	if _is_fuzzel_running; then
+		pkill -x fuzzel
+		exit 0
+	fi
 
-  _ensure_workspace_is_tiled
-  hypr-fuzzel || true
-  sleep "$FUZZEL_SETTLE_DELAY"
-  _ensure_workspace_is_grouped
+	hypr-ensure-workspace-tiled
+	hypr-fuzzel || true
+	sleep "$FUZZEL_SETTLE_DELAY"
+	hypr-ensure-workspace-grouped
 }
 
 _is_fuzzel_running() {
-  pgrep -x fuzzel > /dev/null
-}
-
-_ensure_workspace_is_tiled() {
-  if _all_tiled_windows_are_in_single_group; then
-    hypr-toggle-group-for-all-workspace-windows
-  fi
-}
-
-_ensure_workspace_is_grouped() {
-  if ! _all_tiled_windows_are_in_single_group; then
-    hypr-toggle-group-for-all-workspace-windows
-  fi
-}
-
-_all_tiled_windows_are_in_single_group() {
-  local ws
-  ws=$(hyprctl activeworkspace -j | jq -r '.id')
-  hyprctl clients -j | jq -e --argjson ws "$ws" '
-    [.[] | select(.workspace.id == $ws and .floating == false)] |
-    length as $total |
-    $total > 0 and (map(.grouped | length) | max) == $total
-  ' >/dev/null 2>&1
+	pgrep -x fuzzel >/dev/null
 }
 
 main "$@"

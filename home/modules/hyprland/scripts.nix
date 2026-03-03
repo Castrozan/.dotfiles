@@ -35,7 +35,7 @@ in
     (mkScript "hypr-super-launcher" ../../../bin/hypr/super-launcher)
     (mkScript "hypr-ensure-workspace-tiled" ../../../bin/hypr/ensure-workspace-tiled)
     (mkScript "hypr-ensure-workspace-grouped" ../../../bin/hypr/ensure-workspace-grouped)
-
+    (mkScript "hypr-all-tiled-windows-are-in-single-group" ../../../bin/hypr/all-tiled-windows-are-in-single-group)
     (mkScript "hypr-close-window-cycle" ../../../bin/hypr/close-window-cycle)
     (mkScript "hypr-reopen-window" ../../../bin/hypr/reopen-window)
     (mkScript "hypr-reopen-window-picker" ../../../bin/hypr/reopen-window-picker)
