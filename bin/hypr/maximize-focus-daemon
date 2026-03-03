@@ -1,107 +1,159 @@
 #!/usr/bin/env bash
+set -Eeuo pipefail
 
-SOCKET="$XDG_RUNTIME_DIR/hypr/$HYPRLAND_INSTANCE_SIGNATURE/.socket2.sock"
-
-get_active_fullscreen() {
-  hyprctl activewindow -j 2>/dev/null | jq -r '.fullscreen // 0'
-}
-
-get_workspace_hasfullscreen() {
-  local ws_id="$1"
-  hyprctl workspaces -j 2>/dev/null | jq -r --arg ws "$ws_id" '.[] | select(.id == ($ws | tonumber)) | .hasfullscreen'
-}
-
-get_active_workspace() {
-  hyprctl activewindow -j 2>/dev/null | jq -r '.workspace.id // empty'
-}
+readonly HYPRLAND_EVENT_SOCKET="$XDG_RUNTIME_DIR/hypr/$HYPRLAND_INSTANCE_SIGNATURE/.socket2.sock"
+readonly RECONNECT_INITIAL_DELAY_SECONDS=1
+readonly RECONNECT_MAX_DELAY_SECONDS=30
 
 maximized_workspaces=()
+previous_focused_address=""
+current_focused_address=""
 
-is_workspace_tracked() {
-  local ws="$1"
-  for tracked in "${maximized_workspaces[@]}"; do
-    [[ "$tracked" == "$ws" ]] && return 0
-  done
-  return 1
+_get_active_window_fullscreen_state() {
+	hyprctl activewindow -j 2>/dev/null | jq -r '.fullscreen // 0'
 }
 
-add_workspace() {
-  local ws="$1"
-  if ! is_workspace_tracked "$ws"; then
-    maximized_workspaces+=("$ws")
-  fi
+_get_workspace_has_fullscreen_window() {
+	local workspace_id="$1"
+	hyprctl workspaces -j 2>/dev/null | jq -r --arg ws "$workspace_id" '.[] | select(.id == ($ws | tonumber)) | .hasfullscreen'
 }
 
-remove_workspace() {
-  local ws="$1"
-  local new_array=()
-  for tracked in "${maximized_workspaces[@]}"; do
-    [[ "$tracked" != "$ws" ]] && new_array+=("$tracked")
-  done
-  maximized_workspaces=("${new_array[@]}")
+_get_active_workspace_id() {
+	hyprctl activewindow -j 2>/dev/null | jq -r '.workspace.id // empty'
 }
 
-previous_focused_addr=""
-current_focused_addr=""
-
-handle_event() {
-  local event="$1"
-  local data="$2"
-
-  case "$event" in
-    activewindowv2)
-      local new_addr="0x$data"
-      if [[ "$new_addr" != "$current_focused_addr" ]]; then
-        previous_focused_addr="$current_focused_addr"
-        current_focused_addr="$new_addr"
-      fi
-      ;;
-    fullscreen)
-      if [[ "$data" == "1" ]]; then
-        local ws
-        ws=$(get_active_workspace)
-        [[ -n "$ws" ]] && add_workspace "$ws"
-      fi
-      ;;
-    closewindow)
-      local closed_addr="0x$data"
-      if [[ "$closed_addr" == "$current_focused_addr" && -n "$previous_focused_addr" ]]; then
-        hyprctl dispatch focuswindow "address:$previous_focused_addr"
-        current_focused_addr="$previous_focused_addr"
-        previous_focused_addr=""
-      elif [[ "$closed_addr" == "$previous_focused_addr" ]]; then
-        previous_focused_addr=""
-      fi
-      sleep 0.03
-      local ws
-      ws=$(get_active_workspace)
-      if [[ -n "$ws" ]] && is_workspace_tracked "$ws"; then
-        local current_fullscreen
-        current_fullscreen=$(get_active_fullscreen)
-        if [[ "$current_fullscreen" != "1" ]]; then
-          local window_count
-          window_count=$(hyprctl clients -j 2>/dev/null | jq --arg ws "$ws" '[.[] | select(.workspace.id == ($ws | tonumber))] | length')
-          if [[ "$window_count" -gt 0 ]]; then
-            hyprctl dispatch fullscreen 1 set
-          else
-            remove_workspace "$ws"
-          fi
-        fi
-      fi
-      ;;
-  esac
+_is_workspace_tracked_as_maximized() {
+	local workspace_id="$1"
+	for tracked in "${maximized_workspaces[@]}"; do
+		[[ "$tracked" == "$workspace_id" ]] && return 0
+	done
+	return 1
 }
 
-while IFS= read -r ws_id; do
-  if [[ "$(get_workspace_hasfullscreen "$ws_id")" == "true" ]]; then
-    add_workspace "$ws_id"
-  fi
-done < <(hyprctl workspaces -j | jq -r '.[].id')
+_add_workspace_to_maximized_tracking() {
+	local workspace_id="$1"
+	if ! _is_workspace_tracked_as_maximized "$workspace_id"; then
+		maximized_workspaces+=("$workspace_id")
+	fi
+}
 
-current_focused_addr=$(hyprctl activewindow -j 2>/dev/null | jq -r '.address // empty')
+_remove_workspace_from_maximized_tracking() {
+	local workspace_id="$1"
+	local filtered_workspaces=()
+	for tracked in "${maximized_workspaces[@]}"; do
+		[[ "$tracked" != "$workspace_id" ]] && filtered_workspaces+=("$tracked")
+	done
+	maximized_workspaces=("${filtered_workspaces[@]}")
+}
 
-while IFS= read -r line; do
-  event="${line%%>>*}"
-  data="${line#*>>}"
-  handle_event "$event" "$data"
-done < <(nc -U "$SOCKET")
+_handle_active_window_changed_event() {
+	local window_address="0x$1"
+	if [[ "$window_address" != "$current_focused_address" ]]; then
+		previous_focused_address="$current_focused_address"
+		current_focused_address="$window_address"
+	fi
+}
+
+_handle_fullscreen_event() {
+	local fullscreen_state="$1"
+	if [[ "$fullscreen_state" == "1" ]]; then
+		local workspace_id
+		workspace_id=$(_get_active_workspace_id)
+		[[ -n "$workspace_id" ]] && _add_workspace_to_maximized_tracking "$workspace_id"
+	fi
+}
+
+_handle_close_window_event() {
+	local closed_address="0x$1"
+
+	if [[ "$closed_address" == "$current_focused_address" && -n "$previous_focused_address" ]]; then
+		hyprctl dispatch focuswindow "address:$previous_focused_address"
+		current_focused_address="$previous_focused_address"
+		previous_focused_address=""
+	elif [[ "$closed_address" == "$previous_focused_address" ]]; then
+		previous_focused_address=""
+	fi
+
+	sleep 0.03
+
+	local workspace_id
+	workspace_id=$(_get_active_workspace_id)
+	if [[ -n "$workspace_id" ]] && _is_workspace_tracked_as_maximized "$workspace_id"; then
+		local current_fullscreen_state
+		current_fullscreen_state=$(_get_active_window_fullscreen_state)
+		if [[ "$current_fullscreen_state" != "1" ]]; then
+			local window_count
+			window_count=$(hyprctl clients -j 2>/dev/null | jq --arg ws "$workspace_id" '[.[] | select(.workspace.id == ($ws | tonumber))] | length')
+			if [[ "$window_count" -gt 0 ]]; then
+				hyprctl dispatch fullscreen 1 set
+			else
+				_remove_workspace_from_maximized_tracking "$workspace_id"
+			fi
+		fi
+	fi
+}
+
+_handle_hyprland_event() {
+	local event="$1"
+	local data="$2"
+
+	case "$event" in
+	activewindowv2) _handle_active_window_changed_event "$data" ;;
+	fullscreen) _handle_fullscreen_event "$data" ;;
+	closewindow) _handle_close_window_event "$data" ;;
+	esac
+}
+
+_initialize_maximized_workspace_tracking() {
+	maximized_workspaces=()
+	while IFS= read -r workspace_id; do
+		if [[ "$(_get_workspace_has_fullscreen_window "$workspace_id")" == "true" ]]; then
+			_add_workspace_to_maximized_tracking "$workspace_id"
+		fi
+	done < <(hyprctl workspaces -j | jq -r '.[].id')
+}
+
+_initialize_focused_window_tracking() {
+	current_focused_address=$(hyprctl activewindow -j 2>/dev/null | jq -r '.address // empty')
+	previous_focused_address=""
+}
+
+_read_and_dispatch_hyprland_events() {
+	while IFS= read -r line; do
+		local event="${line%%>>*}"
+		local data="${line#*>>}"
+		_handle_hyprland_event "$event" "$data"
+	done < <(nc -U "$HYPRLAND_EVENT_SOCKET")
+}
+
+_wait_for_hyprland_socket() {
+	local delay_seconds="$1"
+	while [[ ! -S "$HYPRLAND_EVENT_SOCKET" ]]; do
+		sleep "$delay_seconds"
+	done
+}
+
+_connect_and_process_events_with_reconnect() {
+	local reconnect_delay_seconds="$RECONNECT_INITIAL_DELAY_SECONDS"
+
+	while true; do
+		_initialize_maximized_workspace_tracking
+		_initialize_focused_window_tracking
+		_read_and_dispatch_hyprland_events
+
+		_wait_for_hyprland_socket "$reconnect_delay_seconds"
+
+		if [[ "$reconnect_delay_seconds" -lt "$RECONNECT_MAX_DELAY_SECONDS" ]]; then
+			reconnect_delay_seconds=$((reconnect_delay_seconds * 2))
+			if [[ "$reconnect_delay_seconds" -gt "$RECONNECT_MAX_DELAY_SECONDS" ]]; then
+				reconnect_delay_seconds="$RECONNECT_MAX_DELAY_SECONDS"
+			fi
+		fi
+	done
+}
+
+main() {
+	_connect_and_process_events_with_reconnect
+}
+
+main
