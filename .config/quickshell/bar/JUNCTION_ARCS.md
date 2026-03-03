@@ -66,7 +66,17 @@ Junction and corner arc radii must not exceed half the panel width. Without clam
 
 ## Corner Merging
 
-When a panel extends close enough to the strip's own rounded corner (within `junctionRadius` distance), the junction arc and strip corner merge. The junction radius collapses toward zero and the panel edge clamps to the strip boundary. Properties like `topCornerMerged` and `rightPanelTopFullyMerged` control this transition. Merged corners hide arc direction bugs because a zero-radius arc is invisible regardless of direction. The left extension bottom junction flips from CCW to CW when merged, collapsing into the strip corner's own clockwise arc.
+When a panel extends close enough to the strip's own rounded corner (within `junctionRadius` distance), the junction arc and strip corner merge. This is a three-state transition:
+
+**Normal** — panel edge is more than `junctionRadius` from the strip corner. Standard junction arc with full radius. The bar's inner corner radius remains intact.
+
+**Partially merged** (`cornerMerged = true`) — panel edge + `junctionRadius` reaches the strip corner. The bar's inner corner radius collapses to 0 (corner disappears). The junction arc radius transitions to `mergedArcRadius` — the remaining gap between panel edge and strip boundary — which shrinks as the panel extends further. The left extension bottom junction flips from CCW to CW at this point.
+
+**Fully merged** (`fullyMerged = true`) — panel edge reaches the strip boundary (`mergedArcRadius <= 0`). Junction arc radius = 0, the arc disappears entirely. The panel edge IS the strip boundary. For the left extension, `bottomEdgeTargetX` jumps to `extensionRight - cornerArcRadius`, so the bottom strip now starts at the popout's far-right edge.
+
+Properties like `topCornerMerged` / `rightPanelTopFullyMerged` control this transition. Merged corners hide arc direction bugs because a zero-radius arc is invisible regardless of direction.
+
+The right panel aggregate (sidebar/notifications, session, utilities, OSD) is typically fully merged on both top and bottom. The sidebar spans from `stripThickness` to `screenHeight - stripThickness - utilitiesHeight`, and utilities fills the remaining gap to `screenHeight - stripThickness`. The aggregate bounding box covers the entire strip height, so both `rightPanelMergedTopArcRadius` and `rightPanelMergedBottomArcRadius` are 0.
 
 ## Aggregate Right Panel Geometry
 
