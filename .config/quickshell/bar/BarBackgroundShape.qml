@@ -212,7 +212,7 @@ ShapePath {
 
     PathLine {
         x: shapePathRoot.rightPanelTopFullyMerged ? (shapePathRoot.screenWidth - shapePathRoot.stripThickness - shapePathRoot.effectiveRightTopInnerCornerRadius) : (shapePathRoot.screenWidth - shapePathRoot.stripThickness)
-        y: shapePathRoot.hasRightPanel ? (shapePathRoot.clampedRightPanelTopEdge + shapePathRoot.effectiveRightPanelTopJunctionArcRadius) : (shapePathRoot.barHeight - shapePathRoot.stripThickness - shapePathRoot.effectiveRightBottomInnerCornerRadius)
+        y: shapePathRoot.hasRightPanel ? (shapePathRoot.clampedRightPanelTopEdge - shapePathRoot.effectiveRightPanelTopJunctionArcRadius) : (shapePathRoot.barHeight - shapePathRoot.stripThickness - shapePathRoot.effectiveRightBottomInnerCornerRadius)
     }
 
     PathArc {
@@ -220,7 +220,7 @@ ShapePath {
         y: shapePathRoot.hasRightPanel ? shapePathRoot.clampedRightPanelTopEdge : (shapePathRoot.barHeight - shapePathRoot.stripThickness - shapePathRoot.effectiveRightBottomInnerCornerRadius)
         radiusX: shapePathRoot.hasRightPanel ? shapePathRoot.effectiveRightPanelTopJunctionArcRadius : 0
         radiusY: shapePathRoot.hasRightPanel ? shapePathRoot.effectiveRightPanelTopJunctionArcRadius : 0
-        direction: PathArc.Counterclockwise
+        direction: PathArc.Clockwise
     }
 
     PathLine {

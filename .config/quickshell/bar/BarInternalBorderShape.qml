@@ -190,7 +190,7 @@ ShapePath {
 
     PathLine {
         x: barInternalBorderRoot.rightPanelTopFullyMerged ? (barInternalBorderRoot.screenWidth - barInternalBorderRoot.stripThickness - barInternalBorderRoot.effectiveRightTopInnerCornerRadius) : (barInternalBorderRoot.screenWidth - barInternalBorderRoot.stripThickness)
-        y: barInternalBorderRoot.hasRightPanel ? (barInternalBorderRoot.clampedRightPanelTopEdge + barInternalBorderRoot.effectiveRightPanelTopJunctionArcRadius) : (barInternalBorderRoot.barHeight - barInternalBorderRoot.stripThickness - barInternalBorderRoot.effectiveRightBottomInnerCornerRadius)
+        y: barInternalBorderRoot.hasRightPanel ? (barInternalBorderRoot.clampedRightPanelTopEdge - barInternalBorderRoot.effectiveRightPanelTopJunctionArcRadius) : (barInternalBorderRoot.barHeight - barInternalBorderRoot.stripThickness - barInternalBorderRoot.effectiveRightBottomInnerCornerRadius)
     }
 
     PathArc {
@@ -198,7 +198,7 @@ ShapePath {
         y: barInternalBorderRoot.hasRightPanel ? barInternalBorderRoot.clampedRightPanelTopEdge : (barInternalBorderRoot.barHeight - barInternalBorderRoot.stripThickness - barInternalBorderRoot.effectiveRightBottomInnerCornerRadius)
         radiusX: barInternalBorderRoot.hasRightPanel ? barInternalBorderRoot.effectiveRightPanelTopJunctionArcRadius : 0
         radiusY: barInternalBorderRoot.hasRightPanel ? barInternalBorderRoot.effectiveRightPanelTopJunctionArcRadius : 0
-        direction: PathArc.Counterclockwise
+        direction: PathArc.Clockwise
     }
 
     PathLine {
