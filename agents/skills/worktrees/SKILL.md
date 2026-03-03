@@ -10,16 +10,11 @@ description: Create isolated git worktrees for parallel development. Use when st
 <worktree_creation>
 Before creating a worktree, update main branch: `git fetch origin && git checkout main && git pull`. This ensures new branches start from the latest code. Avoid branch names with `/` as they create nested directories.
 
-For git-crypt repositories like ~/.dotfiles, use the dedicated script:
 ```bash
-./bin/git-worktree-crypt <branch-name>
+git worktree add .worktrees/<branch-name> -b <branch-name>
 ```
-This handles disabling git-crypt filters during checkout and symlinking encryption keys into the worktree. Never use plain `git worktree add` in git-crypt repos — it will fail with smudge filter errors.
 
-For standard repositories:
-```bash
-git worktree add .worktrees/<branch> -b <branch>
-```
+Worktrees live at `.worktrees/<branch>` inside the project directory and are gitignored.
 </worktree_creation>
 
 <development_workflow>
@@ -42,9 +37,9 @@ Monitor CI with `gh pr checks <number>` or `glab ci status`.
 </pr_creation>
 
 <session_persistence>
-Maintain worktree isolation throughout the session. If worktree breaks due to deleted CWD or git-crypt issues, recreate rather than falling back to main. Never commit to main when worktree isolation was requested.
+Maintain worktree isolation throughout the session. If worktree breaks due to deleted CWD, recreate rather than falling back to main. Never commit to main when worktree isolation was requested. Keep worktree locally for follow-up work after PR is pending review.
 </session_persistence>
 
 <red_flags>
-Never skip tests before declaring ready. Never commit to main when worktree isolation was requested. In git-crypt repos like ~/.dotfiles, never use plain `git worktree add` — use `./bin/git-worktree-crypt`. Never create worktrees in directories that are not gitignored. Avoid branch names with `/` as they create nested directories.
+Never skip tests before declaring ready. Never commit to main when worktree isolation was requested. Never create worktrees in directories that are not gitignored. Avoid branch names with `/` as they create nested directories.
 </red_flags>
