@@ -36,13 +36,8 @@ setup() {
 
 @test "hyprctl: dwindle layout is active" {
     result=$(hyprctl activeworkspace -j)
-    layout=$(echo "$result" | jq -r '.lastLayoutName // empty')
-    if [ -n "$layout" ]; then
-        [ "$layout" = "dwindle" ]
-    else
-        configLayout=$(hyprctl getoption general:layout -j | jq -r '.str')
-        [ "$configLayout" = "dwindle" ]
-    fi
+    layout=$(echo "$result" | jq -r '.tiledLayout')
+    [ "$layout" = "dwindle" ]
 }
 
 @test "hyprctl: no config errors in systeminfo" {
