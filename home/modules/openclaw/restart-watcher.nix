@@ -12,115 +12,35 @@ let
   curl = "${pkgs.curl}/bin/curl";
   systemctl = "systemctl";
 
-  restartWatcherScript = pkgs.writeShellScript "openclaw-restart-watcher" ''
-    set -Eeuo pipefail
+  restartWatcherScript = pkgs.writeShellScript "openclaw-restart-watcher" (
+    ''
+      set -Eeuo pipefail
 
-    export PATH="${nodejs}/bin:''${PATH:+:$PATH}"
-    export NPM_CONFIG_PREFIX="${npmPrefix}"
-    export OPENCLAW_NIX_MODE=1
+      export PATH="${nodejs}/bin:''${PATH:+:$PATH}"
+      export NPM_CONFIG_PREFIX="${npmPrefix}"
+      export OPENCLAW_NIX_MODE=1
 
-    readonly OPENCLAW_BIN="${npmPrefix}/bin/openclaw"
-    readonly GATEWAY_SERVICE="openclaw-gateway.service"
-    readonly GATEWAY_PORT="${toString openclaw.gatewayPort}"
-    readonly HEALTH_POLL_INTERVAL_SECONDS=${toString cfg.healthPollIntervalSeconds}
-    readonly HEALTH_POLL_MAX_ATTEMPTS=${toString cfg.healthPollMaxAttempts}
-    readonly SYSTEM_EVENT_TEXT="Gateway restarted after SIGUSR1. Check HEARTBEAT.md for interrupted tasks and resume any active entries you find."
+      readonly OPENCLAW_BIN="${npmPrefix}/bin/openclaw"
+      readonly GATEWAY_SERVICE="openclaw-gateway.service"
+      readonly GATEWAY_PORT="${toString openclaw.gatewayPort}"
+      readonly HEALTH_POLL_INTERVAL_SECONDS=${toString cfg.healthPollIntervalSeconds}
+      readonly HEALTH_POLL_MAX_ATTEMPTS=${toString cfg.healthPollMaxAttempts}
+      readonly POLL_INTERVAL_SECONDS=${toString cfg.pollIntervalSeconds}
+      readonly SYSTEM_EVENT_TEXT="Gateway restarted after SIGUSR1. Check HEARTBEAT.md for interrupted tasks and resume any active entries you find."
+      readonly CURL_BIN="${curl}"
+      readonly SYSTEMCTL_CMD="${systemctl}"
 
-    _log() {
-      echo "[restart-watcher] $(date -Iseconds) $*"
-    }
+    ''
+    + builtins.readFile ./restart-watcher/log.sh
+    + builtins.readFile ./restart-watcher/health-check.sh
+    + builtins.readFile ./restart-watcher/gateway-service.sh
+    + builtins.readFile ./restart-watcher/resume-event.sh
+    + builtins.readFile ./restart-watcher/watch-loop.sh
+    + ''
 
-    _wait_for_gateway_healthy() {
-      local attempt=0
-      while [ "$attempt" -lt "$HEALTH_POLL_MAX_ATTEMPTS" ]; do
-        if ${curl} -sf "http://localhost:''${GATEWAY_PORT}/health" > /dev/null 2>&1; then
-          return 0
-        fi
-        attempt=$((attempt + 1))
-        sleep "$HEALTH_POLL_INTERVAL_SECONDS"
-      done
-      return 1
-    }
-
-    _send_resume_event() {
-      _log "sending system event to wake agents"
-      "$OPENCLAW_BIN" system event \
-        --mode now \
-        --text "$SYSTEM_EVENT_TEXT" \
-        --timeout 30000 2>&1 || _log "system event failed (gateway may not be ready)"
-    }
-
-    _handle_gateway_restart() {
-      _log "gateway restart detected, waiting for healthy status"
-
-      if _wait_for_gateway_healthy; then
-        _log "gateway is healthy, triggering agent resume"
-        _send_resume_event
-      else
-        _log "gateway did not become healthy after $HEALTH_POLL_MAX_ATTEMPTS attempts"
-      fi
-    }
-
-    _get_gateway_active_enter_timestamp() {
-      ${systemctl} --user show "$GATEWAY_SERVICE" \
-        --property=ActiveEnterTimestamp --value 2>/dev/null || echo ""
-    }
-
-    _wait_for_gateway_service() {
-      _log "waiting for $GATEWAY_SERVICE to become active"
-      while true; do
-        if ${systemctl} --user is-active "$GATEWAY_SERVICE" > /dev/null 2>&1; then
-          _log "$GATEWAY_SERVICE is active"
-          return 0
-        fi
-        sleep ${toString cfg.pollIntervalSeconds}
-      done
-    }
-
-    _send_startup_resume_event() {
-      _log "watcher started with gateway already running, sending resume event"
-      _handle_gateway_restart
-    }
-
-    _watch_for_restarts() {
-      _log "watching $GATEWAY_SERVICE for restart events"
-
-      _wait_for_gateway_service
-      _send_startup_resume_event
-
-      local previous_active_enter_timestamp=""
-      previous_active_enter_timestamp=$(_get_gateway_active_enter_timestamp)
-
-      while true; do
-        sleep ${toString cfg.pollIntervalSeconds}
-
-        local current_active_enter_timestamp
-        current_active_enter_timestamp=$(_get_gateway_active_enter_timestamp)
-
-        if [ -z "$current_active_enter_timestamp" ]; then
-          _log "gateway is down, waiting for restart"
-          previous_active_enter_timestamp=""
-          continue
-        fi
-
-        if [ "$current_active_enter_timestamp" != "$previous_active_enter_timestamp" ] \
-          && [ -n "$previous_active_enter_timestamp" ]; then
-          _handle_gateway_restart
-        elif [ -z "$previous_active_enter_timestamp" ] && [ -n "$current_active_enter_timestamp" ]; then
-          _log "gateway came back up after being down"
-          _handle_gateway_restart
-        fi
-
-        previous_active_enter_timestamp="$current_active_enter_timestamp"
-      done
-    }
-
-    main() {
-      _watch_for_restarts
-    }
-
-    main
-  '';
+      main
+    ''
+  );
 in
 {
   options.openclaw.restartWatcher = {
