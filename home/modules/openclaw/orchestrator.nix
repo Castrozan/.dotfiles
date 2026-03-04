@@ -9,6 +9,7 @@
     ./systemd-service.nix
     ./health-check.nix
     ./restart-watcher.nix
+    ./timeout-recovery.nix
     ./ensure-services-after-rebuild.nix
     ./plugins/memory-sync.nix
     ./plugins/plugins.nix

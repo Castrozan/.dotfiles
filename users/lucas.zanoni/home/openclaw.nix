@@ -26,12 +26,16 @@ in
     configPatches = {
       ".channels.discord.accounts.robson.guilds.${robsonDiscordGuildId}.users" = [ lucasDiscordUserId ];
 
-      # Prompt cache retention — must match contextPruning.ttl (1h)
-      # Default is "short" (5m) which mismatches the 1h pruning window,
-      # causing expensive full re-caches on idle sessions (5m–1h gap).
-      # Measured savings: 79% cost reduction, 99% cache hit rate on real sessions.
       ".agents.defaults.models.\"${opusModel}\".params.cacheRetention" = "long";
       ".agents.defaults.models.\"${sonnetModel}\".params.cacheRetention" = "long";
+
+      ".session.reset.mode" = "daily";
+      ".session.reset.atHour" = 4;
+      ".session.reset.idleMinutes" = 120;
+
+      ".agents.defaults.contextTokens" = 150000;
+      ".agents.defaults.contextPruning.softTrimRatio" = 0.3;
+      ".agents.defaults.contextPruning.hardClearRatio" = 0.5;
     };
 
     memorySync = {
@@ -71,7 +75,10 @@ in
     gatewayPort = 18790;
     gatewayService.enable = true;
     healthCheck.enable = true;
+    healthCheck.interval = "5min";
+    healthCheck.gracePeriodSeconds = 180;
     restartWatcher.enable = true;
+    timeoutRecovery.enable = true;
     coreRulesContent = builtins.readFile ../../../agents/core.md;
     defaults.model = {
       primary = opusModel;

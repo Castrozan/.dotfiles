@@ -17,6 +17,18 @@ in
     gatewayPort = 18789;
     gatewayService.enable = true;
     restartWatcher.enable = true;
+    timeoutRecovery.enable = true;
+    healthCheck.enable = true;
+    healthCheck.interval = "5min";
+    healthCheck.gracePeriodSeconds = 180;
+    configPatches = {
+      ".session.reset.mode" = "daily";
+      ".session.reset.atHour" = 4;
+      ".session.reset.idleMinutes" = 120;
+      ".agents.defaults.contextTokens" = 150000;
+      ".agents.defaults.contextPruning.softTrimRatio" = 0.3;
+      ".agents.defaults.contextPruning.hardClearRatio" = 0.5;
+    };
     notifyTopic = "cleber-lucas-2f2ea57a";
     defaults.model = {
       primary = "anthropic/claude-opus-4-6";

@@ -13,24 +13,47 @@ let
   inherit (config) openclaw;
   homeDir = config.home.homeDirectory;
 
-  pathToArgName =
+  stripSurroundingQuotes =
+    segment:
+    let
+      len = builtins.stringLength segment;
+      startsWithQuote = builtins.substring 0 1 segment == "\"";
+      endsWithQuote = builtins.substring (len - 1) 1 segment == "\"";
+    in
+    if len >= 2 && startsWithQuote && endsWithQuote then
+      builtins.substring 1 (len - 2) segment
+    else
+      segment;
+
+  sanitizeForJqArgName =
     path:
     lib.replaceStrings
       [
         "."
         "-"
+        "/"
+        "\""
       ]
       [
+        "_"
+        "_"
         "_"
         "_"
       ]
       (lib.removePrefix "." path);
 
+  pathToArgName = sanitizeForJqArgName;
+
   pathToSegments = path: lib.filter (s: s != "") (lib.splitString "." path);
 
   segmentNeedsQuoting = segment: builtins.match "[a-zA-Z_][a-zA-Z0-9_]*" segment == null;
 
-  quoteJqSegment = segment: if segmentNeedsQuoting segment then ".\"${segment}\"" else ".${segment}";
+  quoteJqSegment =
+    segment:
+    let
+      unquoted = stripSurroundingQuotes segment;
+    in
+    if segmentNeedsQuoting unquoted then ".\"${unquoted}\"" else ".${unquoted}";
 
   pathToJqPath = path: lib.concatStrings (map quoteJqSegment (pathToSegments path));
 

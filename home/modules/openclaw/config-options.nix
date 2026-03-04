@@ -94,8 +94,8 @@ let
             };
             dmPolicy = lib.mkOption {
               type = lib.types.str;
-              default = "allowlist";
-              description = "Direct message policy";
+              default = "pairing";
+              description = "Direct message policy (pairing requires DM handshake, allowlist requires allowFrom)";
             };
             groupPolicy = lib.mkOption {
               type = lib.types.str;
