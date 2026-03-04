@@ -43,6 +43,10 @@ in
 {
   home.packages = [ pkgs.passepartui ];
 
+  programs.fish.shellAliases = {
+    pa = "passepartui";
+  };
+
   programs.password-store = {
     enable = true;
     package = pkgs.pass-wayland.withExtensions (exts: [ exts.pass-otp ]);
