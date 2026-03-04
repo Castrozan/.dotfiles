@@ -16,13 +16,7 @@ let
       exit 0
     fi
 
-    EXISTING_KEY_COUNT=$(${pkgs.gnupg}/bin/gpg --list-secret-keys 2>/dev/null | grep -c "^sec" || true)
-
-    if [ "$EXISTING_KEY_COUNT" -gt 0 ]; then
-      exit 0
-    fi
-
-    ${pkgs.gnupg}/bin/gpg --batch --import "$GPG_PRIVATE_KEY_FILE" 2>/dev/null
+    ${pkgs.gnupg}/bin/gpg --batch --import "$GPG_PRIVATE_KEY_FILE" 2>/dev/null || true
 
     KEY_FINGERPRINT=$(${pkgs.gnupg}/bin/gpg --list-secret-keys --with-colons 2>/dev/null \
       | grep "^fpr" \
