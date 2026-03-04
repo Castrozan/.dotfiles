@@ -93,6 +93,24 @@ _handle_close_window_event() {
 	fi
 }
 
+_handle_open_window_event() {
+	local event_data="$1"
+	local window_address="0x${event_data%%,*}"
+	local remaining="${event_data#*,}"
+	local workspace_id="${remaining%%,*}"
+
+	[[ -z "$workspace_id" ]] && return
+	_is_workspace_tracked_as_maximized "$workspace_id" || return
+
+	sleep 0.05
+
+	local active_workspace_id
+	active_workspace_id=$(_get_active_workspace_id)
+	[[ "$workspace_id" != "$active_workspace_id" ]] && return
+
+	hyprctl --batch "dispatch focuswindow address:$window_address ; dispatch fullscreen 1 set"
+}
+
 _handle_hyprland_event() {
 	local event="$1"
 	local data="$2"
@@ -101,6 +119,7 @@ _handle_hyprland_event() {
 	activewindowv2) _handle_active_window_changed_event "$data" ;;
 	fullscreen) _handle_fullscreen_event "$data" ;;
 	closewindow) _handle_close_window_event "$data" ;;
+	openwindow) _handle_open_window_event "$data" ;;
 	esac
 }
 
