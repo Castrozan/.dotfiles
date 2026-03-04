@@ -48,18 +48,6 @@ Item {
             hasReceivedSocketMessage = false;
     }
 
-    SocketServer {
-        active: true
-        path: "/tmp/quickshell-osd.sock"
-
-        handler: Socket {
-            parser: SplitParser {
-                splitMarker: "\n"
-                onRead: message => osdWrapperRoot.handleOsdMessage(message)
-            }
-        }
-    }
-
     Process {
         id: queryCurrentVolumeProcess
         command: ["volume", "--get"]

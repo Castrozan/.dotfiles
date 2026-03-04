@@ -11,6 +11,20 @@ import "panels"
 Scope {
     id: drawersRoot
 
+    signal osdSocketMessageReceived(string message)
+
+    SocketServer {
+        active: true
+        path: "/tmp/quickshell-osd.sock"
+
+        handler: Socket {
+            parser: SplitParser {
+                splitMarker: "\n"
+                onRead: message => drawersRoot.osdSocketMessageReceived(message)
+            }
+        }
+    }
+
     Variants {
         model: Quickshell.screens
 
@@ -170,6 +184,13 @@ Scope {
 
                 function hide(): void {
                     screenScope.osdVisible = false;
+                }
+            }
+
+            Connections {
+                target: drawersRoot
+                function onOsdSocketMessageReceived(message: string): void {
+                    osdWrapper.handleOsdMessage(message);
                 }
             }
 
