@@ -253,7 +253,7 @@ let
       {
         ".channels.discord.enabled" = true;
         ".channels.discord.groupPolicy" = "allowlist";
-        ".channels.discord.dmPolicy" = "pairing";
+        ".channels.discord.dmPolicy" = "allowlist";
       }
       // accountPatches
       // discordVoicePatches

@@ -1,3 +1,6 @@
+let
+  lucasDiscordUserId = "284143065877184512";
+in
 {
   openclaw = {
     memorySync = {
@@ -26,7 +29,10 @@
         workspace = "openclaw";
         tts.voice = "en-US-JennyNeural";
         telegram.enable = true;
-        discord.enable = true;
+        discord = {
+          enable = true;
+          allowFrom = [ lucasDiscordUserId ];
+        };
       };
       golden = {
         enable = true;
@@ -36,7 +42,10 @@
         workspace = "openclaw/golden";
         tts.voice = "en-US-AriaNeural";
         telegram.enable = true;
-        discord.enable = true;
+        discord = {
+          enable = true;
+          allowFrom = [ lucasDiscordUserId ];
+        };
       };
       jarvis = {
         enable = true;
@@ -45,7 +54,10 @@
         workspace = "openclaw/jarvis";
         tts.voice = "en-GB-RyanNeural";
         telegram.enable = true;
-        discord.enable = true;
+        discord = {
+          enable = true;
+          allowFrom = [ lucasDiscordUserId ];
+        };
         telegram.botName = "Jarvis";
       };
     };

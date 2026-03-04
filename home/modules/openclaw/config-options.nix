@@ -94,7 +94,7 @@ let
             };
             dmPolicy = lib.mkOption {
               type = lib.types.str;
-              default = "pairing";
+              default = "allowlist";
               description = "Direct message policy";
             };
             groupPolicy = lib.mkOption {
@@ -119,7 +119,7 @@ let
             enable = lib.mkEnableOption "discord bot for this agent (token stored via agenix)";
             dmPolicy = lib.mkOption {
               type = lib.types.str;
-              default = "pairing";
+              default = "allowlist";
               description = "Direct message policy";
             };
             groupPolicy = lib.mkOption {
