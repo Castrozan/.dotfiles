@@ -15,8 +15,20 @@ Toggleable assistant mode through OpenClaw cron jobs. Each job **speaks through 
 - All jobs use `--announce --channel discord --to <discord_dm_channel_id>` for delivery.
   - The `--to` flag is **required** — isolated sessions cannot auto-discover the delivery target.
   - Get Lucas's Discord DM channel ID from the current session's inbound metadata (`chat_id` field).
-- The agent payload should instruct to **speak via TTS through speakers only**. Discord delivery is handled by the `--announce` flag automatically — do NOT instruct the agent to send a Discord message manually.
+- Discord delivery is handled by the `--announce` flag automatically — do NOT instruct the agent to send a Discord message manually.
 - Address Lucas as "sir" in JARVIS style. Keep spoken parts brief (1-2 sentences).
+
+## CRITICAL: Audio Playback in Isolated Sessions
+
+Isolated cron sessions CAN play audio through speakers, but the payload MUST include **explicit step-by-step instructions** for TTS + audio playback. The agent must:
+
+1. Use the `tts` tool to generate speech
+2. Run `exec` with `background: true` and `yieldMs: 20000`:
+   ```bash
+   export XDG_RUNTIME_DIR=/run/user/1000 && wpctl set-mute @DEFAULT_AUDIO_SINK@ 0 && wpctl set-volume @DEFAULT_AUDIO_SINK@ 0.7 && mpv --no-video --ao=pulse <path_from_tts> 2>/dev/null
+   ```
+
+**Without explicit exec instructions, agents will hallucinate that they played audio.** Always include "Do NOT skip the exec step. Do NOT just claim you played audio." in the payload.
 
 ## Enable assistant mode
 
