@@ -17,7 +17,7 @@ let
       };
       scrapling-fetch = {
         command = "/home/lucas.zanoni/.local/bin/scrapling-mcp";
-        args = [];
+        args = [ ];
       };
     };
   };
