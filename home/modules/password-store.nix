@@ -5,7 +5,7 @@
   ...
 }:
 let
-  passwordStoreDirectory = "${config.home.homeDirectory}/.password-store";
+  passwordStoreDirectory = "${config.home.homeDirectory}/.dotfiles/password-store";
 
   nixSystemPaths = lib.concatStringsSep ":" [
     "${pkgs.pass-wayland}/bin"

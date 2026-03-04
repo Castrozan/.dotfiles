@@ -1,3 +1,6 @@
 [submodule "private-config"]
 	path = private-config
 	url = git@github.com:Castrozan/dotfiles-private.git
+[submodule "password-store"]
+	path = password-store
+	url = git@github.com:Castrozan/password-store.git
