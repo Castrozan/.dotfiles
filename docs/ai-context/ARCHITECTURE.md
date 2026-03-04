@@ -308,7 +308,7 @@ Each theme directory contains `colors.toml` (color palette), `neovim.lua`, `btop
 Agents are defined as Nix attrset options with `enable`, `model`, `workspace`, `skills`, `telegram`, `tts`. The openclaw gateway service exposes a WebSocket bus. Agents connect as clients; the gateway routes messages between Telegram bots and AI model backends.
 
 ### Private Config (home/modules/claude/private.nix)
-Optional `private-config/claude/agents/` and `private-config/claude/skills/` directories (encrypted with git-crypt) are auto-discovered and symlinked alongside public skills/agents. The module gracefully skips if the directory does not exist.
+Optional `private-config/claude/agents/` and `private-config/claude/skills/` directories (private git submodule) are auto-discovered and symlinked alongside public skills/agents. The module gracefully skips if the directory does not exist.
 
 ### No Comments Convention
 All code is self-documenting through long, descriptive names. Functions, variables, files, and directories use full descriptive identifiers. Comments appear only where logic cannot be expressed through naming.

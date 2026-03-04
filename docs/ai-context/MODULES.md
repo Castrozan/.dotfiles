@@ -93,7 +93,7 @@ graph TD
     agenix_module["home/modules/agenix.nix"]
     audio_module["home/modules/audio/\n(default + bluetooth-policy)"]
     agents_dir["agents/\n(core.md, hooks/, skills/)"]
-    private_config["private-config/claude/\n(git-crypted, optional)"]
+    private_config["private-config/claude/\n(private submodule, optional)"]
 
     flake --> nixpkgs
     flake --> hm
