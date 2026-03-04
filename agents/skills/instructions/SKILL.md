@@ -13,7 +13,7 @@ Skills live in agents/skills/name/SKILL.md, deployed to IA agents via home-manag
 </skill_format>
 
 <skill_discovery>
-Description drives discovery — models read it semantically to match user intent. Name is just the invocation identifier. Write descriptions as: one-sentence purpose + "Use when..." with natural user phrasings as trigger scenarios. Embed synonyms in prose, not as keyword lists. Add "Do NOT use for..." boundaries when similar skills exist. Keep descriptions under 150 words. All trigger information goes in the description, not the body.
+Description drives discovery — models match semantically, so embed synonyms in prose. Every skill description is injected into every agent session; each word is a shared token tax across all interactions. Cap at 2 sentences, ~30 words. Add "Do NOT use for..." only where a sibling skill creates real confusion. All trigger information goes in the description, not the body.
 </skill_discovery>
 
 <writing_instructions>
@@ -50,6 +50,7 @@ New instructions are not more important than existing ones. No emphasis markers 
 <skill_authoring_preflight>
 Before writing any SKILL.md, answer these questions. If any answer is "yes", revise before committing:
 
+- Is the description over 2 sentences or ~30 words? Cut it — every skill's description loads in every agent session.
 - Does the body repeat what the frontmatter description already says? Remove it.
 - Does any section belong to a different skill's responsibility? Tool skills document their own API only — workflow composition belongs in workflow skills.
 - Are there hardcoded file paths, tokens, or environment-specific values that will go stale? Generalize to patterns or point to where the truth lives.
