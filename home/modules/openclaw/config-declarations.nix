@@ -121,6 +121,7 @@ let
         mode = "oauth";
       };
     };
+    ".session.scope" = "global";
     ".agents.defaults.timeoutSeconds" = 600;
     ".agents.defaults.compaction.mode" = "safeguard";
     ".agents.defaults.compaction.memoryFlush.enabled" = true;

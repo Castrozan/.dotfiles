@@ -8,6 +8,7 @@
     ./install.nix
     ./systemd-service.nix
     ./health-check.nix
+    ./restart-watcher.nix
     ./plugins/memory-sync.nix
     ./plugins/plugins.nix
   ];

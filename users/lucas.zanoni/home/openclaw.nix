@@ -64,6 +64,7 @@ in
     gatewayPort = 18790;
     gatewayService.enable = true;
     healthCheck.enable = true;
+    restartWatcher.enable = true;
     coreRulesContent = builtins.readFile ../../../agents/core.md;
     defaults.model = {
       primary = opusModel;
