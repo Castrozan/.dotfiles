@@ -4,6 +4,14 @@
 
 Multi-agent platform running across Telegram and Discord, managed declaratively through Nix. The gateway runs as a systemd user service. Agent declarations, channel bindings, model config, and secrets are all Nix-managed — the app can modify `openclaw.json` between rebuilds but next rebuild re-pins declared fields.
 
+## ⚠️ Never Run `openclaw doctor --fix`
+
+The OpenClaw config is fully Nix-managed. `openclaw doctor --fix` overwrites `openclaw.json` with its own defaults and breaks the Nix-declared state. **Never run it on any machine.**
+
+If doctor reports config issues:
+- Fix them in the dotfiles (`users/*/home/openclaw.nix` or the module) and rebuild
+- For live runtime changes: use `openclaw gateway config.patch` (or the `gateway` tool in agents), then pin the change in Nix
+
 ## Nix Mode
 
 `OPENCLAW_NIX_MODE=1` tells OpenClaw it runs under external config management. Set in `install.nix` (wrapper script) for CLI and in `systemd-service.nix` (Environment) for the daemon. It disables update checks, blocks service install/uninstall commands, skips wizard lifecycle management, and prevents `openclaw doctor` from overwriting the Nix-managed systemd unit. Without this flag, doctor replaces the unit with a stale hardcoded version that triggers `npm install` on every gateway restart.
