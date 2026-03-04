@@ -25,6 +25,13 @@ in
   openclaw = {
     configPatches = {
       ".channels.discord.accounts.robson.guilds.${robsonDiscordGuildId}.users" = [ lucasDiscordUserId ];
+
+      # Prompt cache retention — must match contextPruning.ttl (1h)
+      # Default is "short" (5m) which mismatches the 1h pruning window,
+      # causing expensive full re-caches on idle sessions (5m–1h gap).
+      # Measured savings: 79% cost reduction, 99% cache hit rate on real sessions.
+      ".agents.defaults.models.\"${opusModel}\".params.cacheRetention" = "long";
+      ".agents.defaults.models.\"${sonnetModel}\".params.cacheRetention" = "long";
     };
 
     memorySync = {

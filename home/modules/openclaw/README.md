@@ -36,6 +36,32 @@ The fallback chain must cross providers. Same provider as both primary and first
 
 Provider config requires `baseUrl` (string) and `models` (array of `{id, name}`). Non-built-in providers need `api: "openai-completions"`. `models.mode = "merge"` overlays on built-in models.json. `memorySearch` has its own separate apiKey/provider/model config.
 
+## Prompt Caching
+
+Anthropic prompt caching is active by default for API key auth. OpenClaw auto-applies `cacheRetention: "short"` (5 minutes) unless overridden. We explicitly set `cacheRetention: "long"` (1 hour) for Sonnet and Opus in `openclaw.nix`:
+
+```nix
+".agents.defaults.models.\"anthropic/claude-sonnet-4-6\"".params.cacheRetention = "long";
+".agents.defaults.models.\"anthropic/claude-opus-4-6\"".params.cacheRetention = "long";
+```
+
+**Why this matters:** `contextPruning.ttl` is set to `1h`, which must match `cacheRetention` — if they're mismatched (5m cache vs 1h prune), the cache expires long before pruning runs, causing expensive full re-caches on every idle session. With matching `long` retention: cache lasts 1h, pruning runs at the 1h boundary to trim accumulated tool results before the next re-cache write.
+
+**Observed results** (measured on a real 142-turn session):
+
+| Metric | Value |
+|--------|-------|
+| Cache hit rate | 99% (141/142 turns) |
+| Cache read tokens | 9,645,034 |
+| Uncached input tokens | 170 |
+| Cost with cache | $6.83 |
+| Cost without cache | $32.21 |
+| **Savings** | **79%** |
+
+Caching only works with API key auth (`mode: "token"`). Subscription/OAuth auth (`mode: "oauth"`) does not support prompt caching — Anthropic does not honor cache headers for subscription credentials.
+
+`cacheRetention: "long"` requires the `extended-cache-ttl-2025-04-11` Anthropic beta flag, which OpenClaw includes automatically in all API requests.
+
 ## Discord
 
 OpenClaw always requests `GatewayIntents.MessageContent`. If not enabled in Discord Developer Portal under Bot > Privileged Gateway Intents, the gateway crashes with fatal error 4014 and crash-loops. Must be enabled per bot application — no config-side workaround.
