@@ -9,6 +9,7 @@ Scope {
     id: switcherRoot
 
     property bool overlayVisible: false
+    property bool confirmRequestedBeforeOverlayReady: false
     property int selectedIndex: 0
     property var windowList: []
 
@@ -91,6 +92,7 @@ Scope {
     }
 
     function openSwitcher(): void {
+        confirmRequestedBeforeOverlayReady = false;
         Hyprland.refreshToplevels();
         fetchClientsProcess.running = true;
     }
@@ -98,6 +100,14 @@ Scope {
     function finishOpenSwitcher(): void {
         if (windowList.length === 0)
             return;
+
+        if (confirmRequestedBeforeOverlayReady) {
+            confirmRequestedBeforeOverlayReady = false;
+            let indexToFocus = windowList.length > 1 ? 1 : 0;
+            let selectedAddress = windowList[indexToFocus].address;
+            Hyprland.dispatch(`focuswindow address:0x${selectedAddress}`);
+            return;
+        }
 
         selectedIndex = windowList.length > 1 ? 1 : 0;
         overlayVisible = true;
@@ -128,7 +138,10 @@ Scope {
     }
 
     function confirmSelection(): void {
-        if (!overlayVisible) return;
+        if (!overlayVisible) {
+            confirmRequestedBeforeOverlayReady = true;
+            return;
+        }
 
         if (windowList.length > 0 && selectedIndex < windowList.length) {
             let selectedAddress = windowList[selectedIndex].address;
