@@ -5,6 +5,12 @@
   ...
 }:
 let
+  passepartuiWithTransparentTheme = pkgs.passepartui.overrideAttrs {
+    postPatch = ''
+      cp ${./passepartui-transparent-theme.rs} src/theme.rs
+    '';
+  };
+
   passwordStoreDirectory = "${config.home.homeDirectory}/.dotfiles/password-store";
 
   nixSystemPaths = lib.concatStringsSep ":" [
@@ -41,11 +47,11 @@ let
   '';
 in
 {
-  home.packages = [ pkgs.passepartui ];
+  home.packages = [ passepartuiWithTransparentTheme ];
 
-  home.sessionVariables = {
-    PASSWORD_STORE_DIR = passwordStoreDirectory;
-  };
+  programs.fish.shellInit = ''
+    set -gx PASSWORD_STORE_DIR "${passwordStoreDirectory}"
+  '';
 
   programs.fish.shellAliases = {
     pa = "passepartui";
