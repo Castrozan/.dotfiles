@@ -84,23 +84,25 @@ let
   '';
 in
 {
-  home.packages = [
-    obsidianHeadlessWrapper
-  ];
+  home = {
+    packages = [
+      obsidianHeadlessWrapper
+    ];
 
-  home.activation.installObsidianHeadlessViaNpm = config.lib.dag.entryAfter [ "writeBoundary" ] ''
-    run ${installObsidianHeadlessViaNpm}
-  '';
+    activation.installObsidianHeadlessViaNpm = config.lib.dag.entryAfter [ "writeBoundary" ] ''
+      run ${installObsidianHeadlessViaNpm}
+    '';
 
-  home.activation.placeObsidianHeadlessSecrets =
-    config.lib.dag.entryAfter
-      [
-        "writeBoundary"
-        "agenix"
-      ]
-      ''
-        run ${placeObsidianHeadlessSecrets}
-      '';
+    activation.placeObsidianHeadlessSecrets =
+      config.lib.dag.entryAfter
+        [
+          "writeBoundary"
+          "agenix"
+        ]
+        ''
+          run ${placeObsidianHeadlessSecrets}
+        '';
+  };
 
   systemd.user.services.obsidian-headless-sync = {
     Unit = {
