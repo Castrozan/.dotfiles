@@ -9,6 +9,8 @@ let
   opusModel = "anthropic/claude-opus-4-6";
   sonnetModel = "anthropic/claude-sonnet-4-6";
   codexModel = "openai-codex/gpt-5.3-codex";
+  glmModel = "ollama/glm4";
+  llamaModel = "ollama/llama3.2";
 
   robsonModelPrimary = opusModel;
   jennyModelPrimary = sonnetModel;
@@ -25,6 +27,30 @@ in
   openclaw = {
     configPatches = {
       ".channels.discord.accounts.robson.guilds.${robsonDiscordGuildId}.users" = [ lucasDiscordUserId ];
+
+      # Ollama — local inference provider
+      ".models.providers.ollama" = {
+        baseUrl = "http://localhost:11434";
+        api = "ollama";
+        models = [
+          {
+            id = "glm4";
+            name = "GLM-4 (local)";
+            contextWindow = 131072;
+            maxTokens = 8192;
+          }
+          {
+            id = "llama3.2";
+            name = "Llama 3.2 (local)";
+            contextWindow = 131072;
+            maxTokens = 8192;
+          }
+        ];
+      };
+
+      # Model aliases for quick /model switching
+      ".agents.defaults.models.\"${glmModel}\"".alias = "glm";
+      ".agents.defaults.models.\"${llamaModel}\"".alias = "llama";
     };
 
     memorySync = {
