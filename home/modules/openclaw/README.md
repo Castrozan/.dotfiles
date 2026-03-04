@@ -2,36 +2,36 @@
 
 # OpenClaw
 
-This instance runs 4 agents (robson, jenny, monster, silver) across Telegram and Discord channels, managed declaratively through Nix at `home/modules/openclaw/`. The gateway runs as a systemd user service.
+Multi-agent platform running across Telegram and Discord, managed declaratively through Nix. The gateway runs as a systemd user service. Agent declarations, channel bindings, model config, and secrets are all Nix-managed — the app can modify `openclaw.json` between rebuilds but next rebuild re-pins declared fields.
+
+## Nix Mode
+
+`OPENCLAW_NIX_MODE=1` tells OpenClaw it runs under external config management. Set in `install.nix` (wrapper script) for CLI and in `systemd-service.nix` (Environment) for the daemon. It disables update checks, blocks service install/uninstall commands, skips wizard lifecycle management, and prevents `openclaw doctor` from overwriting the Nix-managed systemd unit. Without this flag, doctor replaces the unit with a stale hardcoded version that triggers `npm install` on every gateway restart.
+
+## Patch Engine
+
+`config-declarations.nix` declares patches as jq-path to value pairs. `config-engine.nix` applies them via jq on every rebuild, writing atomically. The engine uses jq `=` assignment (full object replacement), not merge — any field not declared in the Nix module gets wiped on rebuild if nested under a declared parent object. This is why per-agent options like `allowFrom` need their own Nix module option rather than relying on local config edits surviving rebuilds. Secret patches inject agenix-decrypted files at `~/.secrets/`.
 
 ## Gateway Restart
 
-SIGUSR1 always triggers a full process restart via supervisor exit — there is no config knob to make it hot-reload. The `gateway.reload.mode` setting (`hybrid`, `hot`, `restart`, `off`) controls only config file change detection, not SIGUSR1 behavior. Active sessions and WebSocket connections are destroyed; sessions persist to disk but in-flight tool calls and streaming responses are lost.
+SIGUSR1 always triggers a full process restart via supervisor exit — no config knob exists for hot-reload. The `gateway.reload.mode` setting controls only config file change detection, not SIGUSR1 behavior. Active sessions are destroyed; they persist to disk but in-flight tool calls and streaming responses are lost.
 
-The gateway drains pending work before exiting: queue items, pending replies, and active embedded runs. The drain timeout is hardcoded at 30 seconds with 500ms poll interval and a 30-second cooldown between restarts. Multiple SIGUSR1 signals coalesce into one restart.
+The gateway drains pending work before exiting (queue items, pending replies, active embedded runs). The drain timeout is hardcoded at 30 seconds with a 30-second cooldown between restarts. Multiple SIGUSR1 signals coalesce.
 
-Agents using the browser tool spawn chromium child processes that become orphans on gateway exit. The systemd service uses `KillMode = "control-group"` so SIGTERM reaches all cgroup processes (not just main), and `TimeoutStopSec = "10s"` since the gateway already handles its own 30s drain internally. Previously `KillMode = "mixed"` + `TimeoutStopSec = "45s"` caused 30-45 second stuck `deactivating` states waiting for chromium orphans that never received SIGTERM.
+Agents using the browser tool spawn chromium child processes that become orphans on gateway exit. The systemd service uses `KillMode = "control-group"` so SIGTERM reaches all cgroup processes and `TimeoutStopSec = "10s"` since the gateway handles its own drain internally. Without this, chromium orphans cause 30-45 second stuck `deactivating` states.
 
-SIGUSR1 restart requires authorization via the gateway tool or `commands.restart = true`. Unauthorized signals are ignored.
+## Model Failover
+
+No per-LLM-request timeout exists. The only timeout is `agents.defaults.timeoutSeconds` which covers the entire agent turn. When the primary provider hangs silently (no fast 429), the request consumes the full turn budget and the fallback chain never executes. The fallback only activates on the next message after the provider enters cooldown. The missing upstream config is `agents.defaults.model.timeoutSeconds` — a per-request deadline independent of the turn timeout.
+
+The fallback chain must cross providers. Same provider as both primary and first fallback is useless during rate limits — both fail together. NVIDIA NIM free tier models are not viable as primaries: DeepSeek V3.2 outputs raw JSON content blocks, Llama 3.3 70B rejects parallel tool calls, Kimi K2.5 intermittently hangs. Keep NVIDIA models only in the fallback chain.
+
+Provider config requires `baseUrl` (string) and `models` (array of `{id, name}`). Non-built-in providers need `api: "openai-completions"`. `models.mode = "merge"` overlays on built-in models.json. `memorySearch` has its own separate apiKey/provider/model config.
 
 ## Discord
 
-OpenClaw always requests `GatewayIntents.MessageContent`. If not enabled in Discord Developer Portal under Bot > Privileged Gateway Intents, the gateway crashes with fatal error 4014 and crash-loops. This must be enabled per bot application — no config-side workaround exists.
+OpenClaw always requests `GatewayIntents.MessageContent`. If not enabled in Discord Developer Portal under Bot > Privileged Gateway Intents, the gateway crashes with fatal error 4014 and crash-loops. Must be enabled per bot application — no config-side workaround.
 
-Voice connections require the `@snazzah/davey` npm package. Without it, joining a voice channel crashes the entire gateway. The `voice.enable = true` config is dangerous until this dependency is installed.
+Voice connections require the `@snazzah/davey` npm package. Without it, joining a voice channel crashes the entire gateway.
 
-`dmPolicy: "pairing"` means bots silently ignore DMs from unpaired users — they appear online but don't respond. Users must send `/pair` first. The `allowFrom` list in the Nix module persists paired user IDs across rebuilds (without it, the jq patch engine's full-object replacement wipes locally-added pairings).
-
-## Model Providers
-
-NVIDIA NIM free tier models are not viable as agent primaries. DeepSeek V3.2 outputs raw JSON content blocks instead of plain text. Llama 3.3 70B rejects parallel tool calls. Kimi K2.5 intermittently hangs. Keep NVIDIA models only in the fallback chain, never as primary.
-
-The fallback chain must cross providers — having the same provider as both primary and first fallback is useless during rate limits (e.g., Anthropic primary with Anthropic fallback both fail together).
-
-Provider config requires `baseUrl` (string) and `models` (array of `{id, name}`). Non-built-in providers need `api: "openai-completions"`. `models.mode = "merge"` overlays on the built-in models.json. `memorySearch` has its own separate apiKey/provider/model config.
-
-## Nix Config Architecture
-
-`config-declarations.nix` declares all patches as jq-path to value pairs. `config-engine.nix` applies them via jq on every rebuild, writing atomically. The app can freely modify `openclaw.json` between rebuilds; next rebuild re-pins declared fields. Secret patches use home-manager agenix paths at `~/.secrets/`.
-
-The patch engine uses jq `=` assignment (full object replacement), not merge. Any field not declared in the Nix module gets wiped on rebuild if it's nested under a declared parent object. This is why `allowFrom` for Discord needed its own module option rather than relying on local config edits.
+`dmPolicy: "pairing"` means bots silently ignore DMs from unpaired users — they appear online but don't respond. Users must send `/pair` first.
