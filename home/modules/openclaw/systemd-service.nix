@@ -65,7 +65,9 @@ in
         Type = "simple";
         ExecStart = "${gatewayScript}";
         Restart = "always";
-        RestartSec = "5s";
+        RestartSec = "2s";
+        TimeoutStopSec = "45s";
+        KillMode = "mixed";
         CPUQuota = "150%";
         MemoryMax = "2G";
         OOMScoreAdjust = -500;
