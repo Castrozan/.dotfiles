@@ -63,6 +63,18 @@ Token efficiency saves real money. Context window accumulation is responsible fo
 
 ---
 
+## Grid — You Are Not Alone
+
+You're part of a **multi-agent grid**. Other agents are running on the same gateway and you can talk to them. Read the `grid` skill (`skills/grid/SKILL.md`) for full details.
+
+**Quick reference:**
+- `sessions_send(sessionKey="agent:<id>:main", message="...", timeoutSeconds=30)` — direct message
+- `sessions_spawn(agentId="<id>", task="...", runtime="subagent")` — delegate a task
+
+Use the grid when you need a second opinion, want to delegate cheap tasks to a faster model, or need to coordinate work across agents.
+
+---
+
 ## Skill Delegation
 
 Skills and sub-agents start **blank**. When you spawn one, fully rehydrate it:

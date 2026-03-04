@@ -156,9 +156,21 @@ let
     # Inter-agent communication: all agents can talk to each other
     ".tools.agentToAgent.enabled" = true;
     ".tools.agentToAgent.allow" = allAgentNames;
-    ".tools.agentToAgent.maxPingPongTurns" = 10;
+    # ".tools.agentToAgent.maxPingPongTurns" removed — no longer a valid key
     # Full session visibility so agents can see each other's sessions
     ".tools.sessions.visibility" = "all";
+
+    # ACP — enabled for manual use via /acp, dispatch disabled (no auto-routing)
+    ".acp.enabled" = true;
+    ".acp.dispatch.enabled" = false;
+    ".acp.defaultAgent" = "claude-code";
+
+    # Audio echo — send transcript confirmation before agent responds to voice messages
+    ".tools.media.audio.echoTranscript" = true;
+    ".tools.media.audio.echoFormat" = "text";
+
+    # Heartbeat light context — only inject HEARTBEAT.md for heartbeat runs (saves tokens)
+    ".agents.defaults.heartbeat.lightContext" = true;
   };
 
   # Discord patches - per-account, mirrors telegram pattern
@@ -253,7 +265,7 @@ let
       {
         ".channels.discord.enabled" = true;
         ".channels.discord.groupPolicy" = "allowlist";
-        ".channels.discord.dmPolicy" = "allowlist";
+        ".channels.discord.dmPolicy" = "pairing";
       }
       // accountPatches
       // discordVoicePatches

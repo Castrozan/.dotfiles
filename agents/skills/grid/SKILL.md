@@ -1,6 +1,6 @@
 ---
 name: grid
-description: Coordinate with sibling agents on the OpenClaw grid. Use when you need help from another agent, want to delegate a task, check on a teammate, or need a capability you don't have. Also use when the user asks you to talk to, message, or coordinate with another agent.
+description: Coordinate with sibling agents on the OpenClaw grid (jarvis, clever, golden, robson, jenny, monster, silver). Use when you need help from another agent, want to delegate a task, check on a teammate, or need a capability you don't have. Also use when the user asks you to talk to, message, ping, or coordinate with another agent. Covers sessions_send, sessions_spawn, and inter-agent communication.
 ---
 
 # Grid — Inter-Agent Communication
