@@ -43,6 +43,10 @@ in
 {
   home.packages = [ pkgs.passepartui ];
 
+  home.sessionVariables = {
+    PASSWORD_STORE_DIR = passwordStoreDirectory;
+  };
+
   programs.fish.shellAliases = {
     pa = "passepartui";
   };
