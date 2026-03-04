@@ -77,10 +77,16 @@ let
       done
     }
 
+    _send_startup_resume_event() {
+      _log "watcher started with gateway already running, sending resume event"
+      _handle_gateway_restart
+    }
+
     _watch_for_restarts() {
       _log "watching $GATEWAY_SERVICE for restart events"
 
       _wait_for_gateway_service
+      _send_startup_resume_event
 
       local previous_active_enter_timestamp=""
       previous_active_enter_timestamp=$(_get_gateway_active_enter_timestamp)
