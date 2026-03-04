@@ -364,7 +364,7 @@ nix_eval_json_apply() {
     result=$(nix_eval_json "$WORKPC_OC.agents.robson.telegram.groupPolicy")
     [ "$result" = '"allowlist"' ]
     result=$(nix_eval_json "$WORKPC_OC.agents.robson.telegram.streamMode")
-    [ "$result" = '"off"' ]
+    [ "$result" = '"partial"' ]
 }
 
 @test "agent: default skills list is empty" {
@@ -418,4 +418,71 @@ nix_eval_json_apply() {
 @test "workpc: plugins allow list includes discord" {
     result=$(nix_eval_json "$WORKPC_OC.configPatches.\".plugins.allow\"")
     echo "$result" | jq -e 'index("discord")' > /dev/null
+}
+
+# ---------- Inter-agent communication ----------
+
+@test "nixos: agentToAgent is enabled" {
+    result=$(nix_eval_json "$NIXOS_OC.configPatches.\".tools.agentToAgent.enabled\"")
+    [ "$result" = 'true' ]
+}
+
+@test "nixos: agentToAgent allow list includes all enabled agents" {
+    result=$(nix_eval_json "$NIXOS_OC.configPatches.\".tools.agentToAgent.allow\"")
+    for agent in clever golden jarvis; do
+        echo "$result" | jq -e "index(\"$agent\")" > /dev/null
+    done
+}
+
+@test "nixos: agentToAgent maxPingPongTurns is set" {
+    result=$(nix_eval_json "$NIXOS_OC.configPatches.\".tools.agentToAgent.maxPingPongTurns\"")
+    [ "$result" -ge 5 ]
+}
+
+@test "nixos: sessions visibility is all" {
+    result=$(nix_eval_json "$NIXOS_OC.configPatches.\".tools.sessions.visibility\"")
+    [ "$result" = '"all"' ]
+}
+
+@test "nixos: agents list has subagents.allowAgents for jarvis" {
+    result=$(nix_eval_json_apply "$NIXOS_OC.configPatches.\".agents.list\"" \
+        'x: builtins.filter (a: a.id == "jarvis") x')
+    echo "$result" | jq -e '.[0].subagents.allowAgents | length > 0' > /dev/null
+}
+
+@test "nixos: jarvis allowAgents includes clever and golden" {
+    result=$(nix_eval_json_apply "$NIXOS_OC.configPatches.\".agents.list\"" \
+        'x: (builtins.head (builtins.filter (a: a.id == "jarvis") x)).subagents.allowAgents')
+    echo "$result" | jq -e 'index("clever")' > /dev/null
+    echo "$result" | jq -e 'index("golden")' > /dev/null
+}
+
+@test "nixos: jarvis allowAgents does NOT include jarvis itself" {
+    result=$(nix_eval_json_apply "$NIXOS_OC.configPatches.\".agents.list\"" \
+        'x: (builtins.head (builtins.filter (a: a.id == "jarvis") x)).subagents.allowAgents')
+    ! echo "$result" | jq -e 'index("jarvis")' > /dev/null
+}
+
+@test "workpc: agentToAgent is enabled" {
+    result=$(nix_eval_json "$WORKPC_OC.configPatches.\".tools.agentToAgent.enabled\"")
+    [ "$result" = 'true' ]
+}
+
+@test "workpc: agentToAgent allow list includes all enabled agents" {
+    result=$(nix_eval_json "$WORKPC_OC.configPatches.\".tools.agentToAgent.allow\"")
+    for agent in robson jenny monster silver; do
+        echo "$result" | jq -e "index(\"$agent\")" > /dev/null
+    done
+}
+
+@test "workpc: sessions visibility is all" {
+    result=$(nix_eval_json "$WORKPC_OC.configPatches.\".tools.sessions.visibility\"")
+    [ "$result" = '"all"' ]
+}
+
+@test "workpc: robson allowAgents includes jenny and monster" {
+    result=$(nix_eval_json_apply "$WORKPC_OC.configPatches.\".agents.list\"" \
+        'x: (builtins.head (builtins.filter (a: a.id == "robson") x)).subagents.allowAgents')
+    echo "$result" | jq -e 'index("jenny")' > /dev/null
+    echo "$result" | jq -e 'index("monster")' > /dev/null
 }

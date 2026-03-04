@@ -19,6 +19,9 @@ let
   homeDir = config.home.homeDirectory;
 
   # Generate agents list from enabled agents
+  # All enabled agent names — used for inter-agent trust (agentToAgent, allowAgents)
+  allAgentNames = lib.attrNames openclaw.enabledAgents;
+
   agentsList = lib.mapAttrsToList (
     name: agent:
     {
@@ -27,6 +30,10 @@ let
       model =
         lib.optionalAttrs (agent.model.primary != null) { inherit (agent.model) primary; }
         // lib.optionalAttrs (agent.model.fallbacks != [ ]) { inherit (agent.model) fallbacks; };
+      # Allow every agent to spawn tasks on every other agent
+      subagents = {
+        allowAgents = lib.filter (n: n != name) allAgentNames;
+      };
     }
     // lib.optionalAttrs (name == openclaw.defaultAgent) { default = true; }
   ) openclaw.enabledAgents;
@@ -146,6 +153,12 @@ let
     ".gateway.reload.mode" = "hybrid";
     ".gateway.http.endpoints.chatCompletions.enabled" = true;
     ".channels.telegram.commands.nativeSkills" = false;
+    # Inter-agent communication: all agents can talk to each other
+    ".tools.agentToAgent.enabled" = true;
+    ".tools.agentToAgent.allow" = allAgentNames;
+    ".tools.agentToAgent.maxPingPongTurns" = 10;
+    # Full session visibility so agents can see each other's sessions
+    ".tools.sessions.visibility" = "all";
   };
 
   # Discord patches - per-account, mirrors telegram pattern
