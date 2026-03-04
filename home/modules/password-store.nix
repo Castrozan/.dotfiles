@@ -49,21 +49,23 @@ in
 {
   home.packages = [ passepartuiWithTransparentTheme ];
 
-  programs.fish.shellInit = ''
-    set -gx PASSWORD_STORE_DIR "${passwordStoreDirectory}"
-  '';
+  programs = {
+    fish.shellInit = ''
+      set -gx PASSWORD_STORE_DIR "${passwordStoreDirectory}"
+    '';
 
-  programs.fish.shellAliases = {
-    pa = "passepartui";
-  };
+    fish.shellAliases = {
+      pa = "passepartui";
+    };
 
-  programs.password-store = {
-    enable = true;
-    package = pkgs.pass-wayland.withExtensions (exts: [ exts.pass-otp ]);
-    settings = {
-      PASSWORD_STORE_DIR = passwordStoreDirectory;
-      PASSWORD_STORE_CLIP_TIME = "45";
-      PASSWORD_STORE_GENERATED_LENGTH = "32";
+    password-store = {
+      enable = true;
+      package = pkgs.pass-wayland.withExtensions (exts: [ exts.pass-otp ]);
+      settings = {
+        PASSWORD_STORE_DIR = passwordStoreDirectory;
+        PASSWORD_STORE_CLIP_TIME = "45";
+        PASSWORD_STORE_GENERATED_LENGTH = "32";
+      };
     };
   };
 
