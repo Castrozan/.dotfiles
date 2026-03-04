@@ -104,8 +104,8 @@ let
             };
             streamMode = lib.mkOption {
               type = lib.types.str;
-              default = "off";
-              description = "Message streaming mode";
+              default = "partial";
+              description = "Message streaming mode (partial|block|off)";
             };
           };
         };
@@ -129,7 +129,7 @@ let
             };
             streamMode = lib.mkOption {
               type = lib.types.str;
-              default = "off";
+              default = "partial";
               description = "Live preview streaming mode (partial|block|off)";
             };
             allowFrom = lib.mkOption {

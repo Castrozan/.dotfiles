@@ -15,6 +15,10 @@ let
           "false"
         ];
       };
+      scrapling-fetch = {
+        command = "/home/lucas.zanoni/.local/bin/scrapling-mcp";
+        args = [];
+      };
     };
   };
 in
