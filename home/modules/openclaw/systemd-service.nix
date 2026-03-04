@@ -26,6 +26,7 @@ let
   gatewayScript = pkgs.writeShellScript "openclaw-gateway" ''
     export PATH="${nodejs}/bin:''${PATH:+:$PATH}"
     export NPM_CONFIG_PREFIX="${prefix}"
+    export NPM_CONFIG_REGISTRY="https://registry.npmjs.org/"
 
     if [ -f "${secretsDirectory}/gemini-api-key" ]; then
       GEMINI_API_KEY="$(cat "${secretsDirectory}/gemini-api-key")"

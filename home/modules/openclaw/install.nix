@@ -52,6 +52,7 @@ let
   openclawWrapper = pkgs.writeShellScriptBin "openclaw" ''
     export PATH="${nodejs}/bin:''${PATH:+:$PATH}"
     export NPM_CONFIG_PREFIX="${npmPrefix}"
+    export NPM_CONFIG_REGISTRY="https://registry.npmjs.org/"
     export OPENCLAW_NIX_MODE=1
     unset CLAUDECODE
     if [ -f "${secretsDirectory}/gemini-api-key" ]; then
