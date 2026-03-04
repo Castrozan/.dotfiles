@@ -50,6 +50,7 @@ let
     "discord-bot-token-silver"
     "obsidian-headless-auth-token"
     "obsidian-headless-sync-config"
+    "gpg-private-key"
   ];
 
   allSecretNames =
