@@ -4,6 +4,8 @@ set -Eeuo pipefail
 readonly HYPRLAND_EVENT_SOCKET="$XDG_RUNTIME_DIR/hypr/$HYPRLAND_INSTANCE_SIGNATURE/.socket2.sock"
 readonly RECONNECT_INITIAL_DELAY_SECONDS=1
 readonly RECONNECT_MAX_DELAY_SECONDS=30
+readonly OPENED_WINDOW_WORKSPACE_LOOKUP_ATTEMPTS=5
+readonly OPENED_WINDOW_WORKSPACE_LOOKUP_DELAY_SECONDS=0.03
 
 maximized_workspaces=()
 previous_focused_address=""
@@ -20,6 +22,30 @@ _get_workspace_has_fullscreen_window() {
 
 _get_active_workspace_id() {
 	hyprctl activewindow -j 2>/dev/null | jq -r '.workspace.id // empty'
+}
+
+_get_window_workspace_id_by_address() {
+	local window_address="$1"
+	hyprctl clients -j 2>/dev/null | jq -r --arg window_address "$window_address" '.[] | select(.address == $window_address) | .workspace.id // empty' | head -n 1
+}
+
+_get_opened_window_workspace_id() {
+	local window_address="$1"
+	local attempt_number=1
+
+	while [[ "$attempt_number" -le "$OPENED_WINDOW_WORKSPACE_LOOKUP_ATTEMPTS" ]]; do
+		local window_workspace_id
+		window_workspace_id=$(_get_window_workspace_id_by_address "$window_address")
+		if [[ -n "$window_workspace_id" ]]; then
+			printf '%s\n' "$window_workspace_id"
+			return 0
+		fi
+
+		sleep "$OPENED_WINDOW_WORKSPACE_LOOKUP_DELAY_SECONDS"
+		attempt_number=$((attempt_number + 1))
+	done
+
+	return 1
 }
 
 _is_workspace_tracked_as_maximized() {
@@ -96,13 +122,10 @@ _handle_close_window_event() {
 _handle_open_window_event() {
 	local event_data="$1"
 	local window_address="0x${event_data%%,*}"
-	local remaining="${event_data#*,}"
-	local workspace_id="${remaining%%,*}"
+	local workspace_id
 
-	[[ -z "$workspace_id" ]] && return
+	workspace_id=$(_get_opened_window_workspace_id "$window_address") || return
 	_is_workspace_tracked_as_maximized "$workspace_id" || return
-
-	sleep 0.05
 
 	local active_workspace_id
 	active_workspace_id=$(_get_active_workspace_id)
