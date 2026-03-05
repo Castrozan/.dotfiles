@@ -7,6 +7,8 @@
 let
   secretsDirectory = "${config.home.homeDirectory}/.secrets";
 
+  identityKeyPath = "${config.home.homeDirectory}/.ssh/id_ed25519";
+
   makeSecret = name: {
     file = ../../secrets/${name}.age;
     path = "${secretsDirectory}/${name}";
@@ -74,7 +76,7 @@ in
   imports = [ inputs.agenix.homeManagerModules.default ];
 
   age = {
-    identityPaths = [ "${config.home.homeDirectory}/.ssh/id_ed25519" ];
+    identityPaths = [ identityKeyPath ];
     secrets = builtins.listToAttrs (
       map (name: {
         inherit name;
