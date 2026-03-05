@@ -33,6 +33,7 @@ in
     (mkScript "hypr-menu" ../../../bin/hypr/menu)
     (mkScript "hypr-fuzzel" ../../../bin/hypr/fuzzel)
     (mkScript "hypr-super-launcher" ../../../bin/hypr/super-launcher)
+    (mkScript "hypr-launch-clipse-with-workspace-group-restoration" ../../../bin/hypr/launch-clipse-with-workspace-group-restoration)
     (mkScript "hypr-ensure-workspace-tiled" ../../../bin/hypr/ensure-workspace-tiled)
     (mkScript "hypr-ensure-workspace-grouped" ../../../bin/hypr/ensure-workspace-grouped)
     (mkScript "hypr-all-tiled-windows-are-in-single-group" ../../../bin/hypr/all-tiled-windows-are-in-single-group)

@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+readonly CLIPSE_EXIT_SETTLE_DELAY_SECONDS=0.15
+
+main() {
+	local launch_workspace_id
+	launch_workspace_id=$(_get_active_workspace_id)
+
+	local workspace_started_grouped="false"
+	if _active_workspace_is_grouped; then
+		workspace_started_grouped="true"
+		hypr-ensure-workspace-tiled
+	fi
+
+	local clipse_exit_code=0
+	_launch_clipse_window_and_wait_for_exit || clipse_exit_code=$?
+
+	if _workspace_grouping_should_be_restored "$workspace_started_grouped" "$launch_workspace_id"; then
+		sleep "$CLIPSE_EXIT_SETTLE_DELAY_SECONDS"
+		hypr-ensure-workspace-grouped
+	fi
+
+	return "$clipse_exit_code"
+}
+
+_get_active_workspace_id() {
+	hyprctl activeworkspace -j | jq -r '.id // empty'
+}
+
+_active_workspace_is_grouped() {
+	hypr-all-tiled-windows-are-in-single-group
+}
+
+_workspace_grouping_should_be_restored() {
+	local workspace_started_grouped="$1"
+	local launch_workspace_id="$2"
+
+	[[ "$workspace_started_grouped" == "true" ]] || return 1
+	[[ -n "$launch_workspace_id" ]] || return 1
+	[[ "$(_get_active_workspace_id)" == "$launch_workspace_id" ]]
+}
+
+_launch_clipse_window_and_wait_for_exit() {
+	wezterm start --always-new-process -- clipse
+}
+
+main "$@"
