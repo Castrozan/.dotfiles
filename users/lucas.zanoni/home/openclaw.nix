@@ -74,9 +74,11 @@ in
     userName = "Lucas";
     gatewayPort = 18790;
     gatewayService.enable = true;
-    healthCheck.enable = true;
-    healthCheck.interval = "5min";
-    healthCheck.gracePeriodSeconds = 180;
+    healthCheck = {
+      enable = true;
+      interval = "5min";
+      gracePeriodSeconds = 180;
+    };
     restartWatcher.enable = true;
     timeoutRecovery.enable = true;
     coreRulesContent = builtins.readFile ../../../agents/core.md;

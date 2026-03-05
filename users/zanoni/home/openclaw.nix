@@ -18,9 +18,11 @@ in
     gatewayService.enable = true;
     restartWatcher.enable = true;
     timeoutRecovery.enable = true;
-    healthCheck.enable = true;
-    healthCheck.interval = "5min";
-    healthCheck.gracePeriodSeconds = 180;
+    healthCheck = {
+      enable = true;
+      interval = "5min";
+      gracePeriodSeconds = 180;
+    };
     configPatches = {
       ".session.reset.mode" = "daily";
       ".session.reset.atHour" = 4;
