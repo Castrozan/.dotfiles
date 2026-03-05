@@ -5,50 +5,38 @@ readonly SOCKET="$XDG_RUNTIME_DIR/hypr/$HYPRLAND_INSTANCE_SIGNATURE/.socket2.soc
 readonly OVERRIDE_FILE="${HOME}/.cache/hypr-monitors-override.conf"
 
 _write_override_and_reload() {
-  echo "$1" > "$OVERRIDE_FILE"
-  hyprctl reload >/dev/null 2>&1
-}
-
-RESTART_PID=""
-
-_debounced_restart_waybar() {
-  if [[ -n "$RESTART_PID" ]] && kill -0 "$RESTART_PID" 2>/dev/null; then
-    kill "$RESTART_PID" 2>/dev/null || true
-  fi
-  (sleep 2 && systemctl --user restart waybar.service 2>/dev/null || true) &
-  RESTART_PID=$!
+	echo "$1" >"$OVERRIDE_FILE"
+	hyprctl reload >/dev/null 2>&1
 }
 
 _check_initial_state() {
-  local has_external
-  has_external=$(hyprctl monitors all -j | jq -r '.[].name' | grep -Ev '^eDP' | head -1 || true)
-  if [[ -z "$has_external" ]]; then
-    _write_override_and_reload "monitor = eDP-1, preferred, auto, 1"
-  fi
+	local has_external
+	has_external=$(hyprctl monitors all -j | jq -r '.[].name' | grep -Ev '^eDP' | head -1 || true)
+	if [[ -z "$has_external" ]]; then
+		_write_override_and_reload "monitor = eDP-1, preferred, auto, 1"
+	fi
 }
 
 _check_initial_state
 
 handle_event() {
-  local event="$1"
-  local monitor_name="$2"
+	local event="$1"
+	local monitor_name="$2"
 
-  case "$event" in
-    monitorremoved)
-      [[ "$monitor_name" == eDP* ]] && return
-      _write_override_and_reload "monitor = eDP-1, preferred, auto, 1"
-      _debounced_restart_waybar
-      ;;
-    monitoradded)
-      [[ "$monitor_name" == eDP* ]] && return
-      _write_override_and_reload ""
-      _debounced_restart_waybar
-      ;;
-  esac
+	case "$event" in
+	monitorremoved)
+		[[ "$monitor_name" == eDP* ]] && return
+		_write_override_and_reload "monitor = eDP-1, preferred, auto, 1"
+		;;
+	monitoradded)
+		[[ "$monitor_name" == eDP* ]] && return
+		_write_override_and_reload ""
+		;;
+	esac
 }
 
 while IFS= read -r line; do
-  event="${line%%>>*}"
-  data="${line#*>>}"
-  handle_event "$event" "$data"
+	event="${line%%>>*}"
+	data="${line#*>>}"
+	handle_event "$event" "$data"
 done < <(nc -U "$SOCKET")

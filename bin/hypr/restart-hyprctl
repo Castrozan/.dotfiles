@@ -7,7 +7,6 @@ readonly THEME_CONF="$HOME/.config/hypr-theme/current/theme/hyprland.conf"
 main() {
 	_ensure_hyprctl_connected || exit 0
 	_reload_hyprland_with_screencopy_services_paused
-	_reload_graphical_services_after_daemon_reload
 	_apply_theme_border_colors_from_config
 }
 
@@ -62,15 +61,6 @@ _restart_previously_stopped_services() {
 	for svc in "${_to_start[@]}"; do
 		systemctl --user start "$svc" 2>/dev/null || true
 	done
-}
-
-_reload_graphical_services_after_daemon_reload() {
-	systemctl --user daemon-reload
-	if systemctl --user is-active --quiet waybar 2>/dev/null; then
-		pkill -USR2 waybar 2>/dev/null || true
-	else
-		systemctl --user start waybar.service 2>/dev/null || true
-	fi
 }
 
 _apply_theme_border_colors_from_config() {

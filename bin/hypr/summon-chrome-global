@@ -4,7 +4,7 @@ set -Eeuo pipefail
 readonly CHROME_GLOBAL_CLASS="chrome-global"
 readonly CHROME_GLOBAL_DATA_DIR="$HOME/.config/chrome-global"
 readonly CHROME_GLOBAL_HYPRLAND_TAG="chrome-global-main-window"
-readonly CHROME_GLOBAL_TITLE_FALLBACK_PATTERN="Chat|Calendar|agenda|ᓚᘏᗢ"
+readonly CHROME_GLOBAL_TITLE_FALLBACK_PATTERN="Chat|agenda|ᓚᘏᗢ"
 readonly CHROME_GLOBAL_FLAGS=(
 	--user-data-dir="$CHROME_GLOBAL_DATA_DIR"
 	--class="$CHROME_GLOBAL_CLASS"
@@ -15,7 +15,6 @@ readonly CHROME_GLOBAL_URLS=(
 	"https://mail.google.com/chat/u/0/#chat/home"
 	"https://desenv.betha.com.br/secure/RapidBoard.jspa?rapidView=514&selectedIssue=AP-9448"
 	"https://gitlab.services.betha.cloud/"
-	"https://calendar.google.com/calendar/u/0/r/week/2026/2/11"
 	"chrome://newtab"
 )
 

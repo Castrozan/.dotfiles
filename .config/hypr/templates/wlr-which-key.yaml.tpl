@@ -84,9 +84,6 @@ menu:
       - key: r
         desc: Read it later
         cmd: xdg-open 'obsidian://adv-uri?commandid=obsidian-read-it-later%3Asave-clipboard-to-notice'
-      - key: y
-        desc: Calendar
-        cmd: ~/.config/waybar/calendar-toggle.sh
       - key: t
         desc: Tmux session
         cmd: wezterm start -- tmux new-session
@@ -158,9 +155,6 @@ menu:
       - key: t
         desc: Theme menu
         cmd: hypr-menu theme
-      - key: w
-        desc: Toggle waybar
-        cmd: systemctl --user is-active --quiet waybar && systemctl --user stop waybar || systemctl --user start waybar
 
   - key: l
     desc: Lock

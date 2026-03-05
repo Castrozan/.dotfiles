@@ -9,7 +9,7 @@
 
   systemd.user.services.quickshell-bar = {
     Unit = {
-      Description = "Quickshell vertical bar replacing waybar";
+      Description = "Quickshell vertical bar";
       After = [ "graphical-session.target" ];
       ConditionEnvironment = "WAYLAND_DISPLAY";
     };
