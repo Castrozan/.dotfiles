@@ -21,7 +21,7 @@ let
   codex = pkgs.writeShellScriptBin "codex" ''
     export NPM_CONFIG_PREFIX="/nonexistent"
     exec ${codex-unwrapped}/bin/codex \
-      --model "gpt-5.3-codex" \
+      --model "gpt-5.4" \
       --sandbox "workspace-write" \
       --ask-for-approval "never" \
       "$@"

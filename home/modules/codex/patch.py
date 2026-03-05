@@ -2,8 +2,12 @@ import os
 import pathlib
 import tomllib
 
+codex_default_model = os.environ.get("CODEX_DEFAULT_MODEL", "gpt-5.4")
+
 BASELINE = {
     "approval_policy": "never",
+    "model": codex_default_model,
+    "review_model": codex_default_model,
     "sandbox_mode": "workspace-write",
     "web_search": "cached",
     "sandbox_workspace_write": {
@@ -15,7 +19,11 @@ BASELINE = {
         "view_image": True,
     },
     "profiles": {
+        "fast": {
+            "model": codex_default_model,
+        },
         "deep": {
+            "model": codex_default_model,
             "model_reasoning_effort": "high",
             "model_verbosity": "high",
         },
@@ -84,7 +92,14 @@ def emit_table_header(parts):
     return "[" + ".".join(out) + "]"
 
 
-NESTED_TABLES = {"projects", "profiles", "features", "analytics", "sandbox_workspace_write", "tools"}
+NESTED_TABLES = {
+    "projects",
+    "profiles",
+    "features",
+    "analytics",
+    "sandbox_workspace_write",
+    "tools",
+}
 
 lines = []
 
