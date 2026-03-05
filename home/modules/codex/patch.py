@@ -8,7 +8,7 @@ BASELINE = {
     "approval_policy": "never",
     "model": codex_default_model,
     "review_model": codex_default_model,
-    "sandbox_mode": "workspace-write",
+    "sandbox_mode": "danger-full-access",
     "web_search": "cached",
     "sandbox_workspace_write": {
         "exclude_slash_tmp": False,
