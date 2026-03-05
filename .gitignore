@@ -19,6 +19,9 @@ tests/coverage/
 # Test status tracking (local-only pass/fail records)
 .test-status/
 
+# Node
+node_modules/
+
 # Ruff cache
 .ruff_cache/
 
