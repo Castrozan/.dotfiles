@@ -19,6 +19,11 @@ Item {
         spacing: Appearance.spacing.small
 
         SessionActionButton {
+            iconName: "fullscreen"
+            command: ["hyprctl", "dispatch", "fullscreen", "0"]
+        }
+
+        SessionActionButton {
             iconName: "lock"
             command: ["loginctl", "lock-session"]
         }
@@ -47,7 +52,10 @@ Item {
     }
 
     component SessionActionButton: IconButton {
+        id: sessionActionButtonRoot
+
         required property var command
+        property string iconName
 
         Layout.alignment: Qt.AlignHCenter
 
@@ -57,13 +65,11 @@ Item {
         implicitWidth: 48
         implicitHeight: 48
 
-        property string iconName
-
         font.pointSize: Appearance.font.size.extraLarge
 
         Process {
             id: sessionActionProcess
-            command: parent.command
+            command: sessionActionButtonRoot.command
             running: false
         }
 

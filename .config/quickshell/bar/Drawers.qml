@@ -1,4 +1,5 @@
 import Quickshell
+import Quickshell.Hyprland
 import Quickshell.Io
 import Quickshell.Wayland
 import QtQuick
@@ -52,7 +53,35 @@ Scope {
             property bool sidebarVisible: false
             property bool sidebarHovered: false
 
+            property bool activeWorkspaceHasFullscreenWindow: false
             readonly property bool hasActivePopout: popoutCurrentName !== ""
+
+            Process {
+                id: activeWorkspaceFullscreenQueryProcess
+                command: ["bash", "-c", "wsid=$(hyprctl activeworkspace -j | jq '.id'); hyprctl clients -j | jq --argjson ws \"$wsid\" 'any(.[]; .workspace.id == $ws and .fullscreen == 2)'"]
+                stdout: SplitParser {
+                    splitMarker: ""
+                    onRead: data => {
+                        screenScope.activeWorkspaceHasFullscreenWindow = data.trim() === "true";
+                    }
+                }
+            }
+
+            Timer {
+                id: activeWorkspaceFullscreenPollTimer
+                interval: 500
+                running: true
+                repeat: true
+                triggeredOnStart: true
+                onTriggered: activeWorkspaceFullscreenQueryProcess.running = true
+            }
+
+            Connections {
+                target: Hyprland
+                function onFocusedWorkspaceChanged() {
+                    activeWorkspaceFullscreenQueryProcess.running = true;
+                }
+            }
             readonly property int shapeJunctionRadius: 36
 
             property real animatedExtensionWidth: hasActivePopout ? popoutWrapper.popoutWidth : 0
@@ -223,7 +252,7 @@ Scope {
                 }
 
                 exclusionMode: ExclusionMode.Ignore
-                WlrLayershell.layer: WlrLayer.Top
+                WlrLayershell.layer: screenScope.activeWorkspaceHasFullscreenWindow ? WlrLayer.Background : WlrLayer.Top
                 WlrLayershell.namespace: "quickshell-bar"
                 WlrLayershell.keyboardFocus: (screenScope.dashboardVisible || screenScope.launcherVisible || screenScope.sessionVisible || screenScope.utilitiesVisible || screenScope.sidebarVisible) ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
 

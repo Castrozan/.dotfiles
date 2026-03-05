@@ -317,6 +317,7 @@ Item {
                     nightLightEnableProcess.running = true;
             }
         }
+
     }
 
     component UtilityToggleButton: IconButton {
