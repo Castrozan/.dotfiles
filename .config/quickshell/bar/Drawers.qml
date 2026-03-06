@@ -81,9 +81,6 @@ Scope {
                 function onFocusedWorkspaceChanged() {
                     activeWorkspaceFullscreenQueryProcess.running = true;
                 }
-                function onFocusedToplevelChanged() {
-                    activeWorkspaceFullscreenQueryProcess.running = true;
-                }
             }
             readonly property int shapeJunctionRadius: 36
 
