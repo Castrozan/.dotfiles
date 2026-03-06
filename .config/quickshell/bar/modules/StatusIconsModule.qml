@@ -69,7 +69,7 @@ ColumnLayout {
         }
 
         Timer {
-            interval: 3000
+            interval: 10000
             running: true
             repeat: true
             triggeredOnStart: true
@@ -113,7 +113,7 @@ ColumnLayout {
         }
 
         Timer {
-            interval: 3000
+            interval: 10000
             running: true
             repeat: true
             triggeredOnStart: true
@@ -201,7 +201,7 @@ ColumnLayout {
         }
 
         Timer {
-            interval: 5000
+            interval: 15000
             running: true
             repeat: true
             triggeredOnStart: true
@@ -263,7 +263,7 @@ ColumnLayout {
         }
 
         Timer {
-            interval: 5000
+            interval: 15000
             running: true
             repeat: true
             triggeredOnStart: true
@@ -299,38 +299,30 @@ ColumnLayout {
             return ThemeColors.foreground;
         }
 
-        Process {
-            id: batteryCapacityProcess
-            command: ["cat", "/sys/class/power_supply/BAT0/capacity"]
-            running: false
-            stdout: SplitParser {
-                splitMarker: ""
-                onRead: data => {
-                    batteryIcon.batteryCapacity = parseInt(data.trim()) || 0;
-                }
+        FileView {
+            id: batteryCapacityFileView
+            path: "/sys/class/power_supply/BAT0/capacity"
+            onLoaded: {
+                batteryIcon.batteryCapacity = parseInt(text().trim()) || 0;
             }
         }
 
-        Process {
-            id: batteryStatusProcess
-            command: ["cat", "/sys/class/power_supply/BAT0/status"]
-            running: false
-            stdout: SplitParser {
-                splitMarker: ""
-                onRead: data => {
-                    batteryIcon.batteryStatus = data.trim();
-                }
+        FileView {
+            id: batteryStatusFileView
+            path: "/sys/class/power_supply/BAT0/status"
+            onLoaded: {
+                batteryIcon.batteryStatus = text().trim();
             }
         }
 
         Timer {
-            interval: 5000
+            interval: 30000
             running: true
             repeat: true
             triggeredOnStart: true
             onTriggered: {
-                batteryCapacityProcess.running = true;
-                batteryStatusProcess.running = true;
+                batteryCapacityFileView.reload();
+                batteryStatusFileView.reload();
             }
         }
     }

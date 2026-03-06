@@ -34,7 +34,7 @@ Singleton {
     Timer {
         running: true
         repeat: true
-        interval: 15000
+        interval: 60000
         onTriggered: uptimeFileView.reload()
     }
 

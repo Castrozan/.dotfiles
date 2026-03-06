@@ -69,7 +69,7 @@ Scope {
 
             Timer {
                 id: activeWorkspaceFullscreenPollTimer
-                interval: 500
+                interval: 5000
                 running: true
                 repeat: true
                 triggeredOnStart: true
@@ -79,6 +79,9 @@ Scope {
             Connections {
                 target: Hyprland
                 function onFocusedWorkspaceChanged() {
+                    activeWorkspaceFullscreenQueryProcess.running = true;
+                }
+                function onFocusedToplevelChanged() {
                     activeWorkspaceFullscreenQueryProcess.running = true;
                 }
             }

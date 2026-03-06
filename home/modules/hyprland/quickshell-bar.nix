@@ -17,7 +17,6 @@
     Service = {
       Type = "simple";
       ExecStart = "${pkgs.quickshell}/bin/quickshell --path ${config.home.homeDirectory}/.dotfiles/.config/quickshell/bar";
-      Environment = [ "QT_QUICK_BACKEND=software" ];
       Restart = "always";
       RestartSec = "1s";
     };
