@@ -31,7 +31,7 @@
       fastfetch
       fd
       ffmpeg
-      firefox
+
       fzf
       gh
       git

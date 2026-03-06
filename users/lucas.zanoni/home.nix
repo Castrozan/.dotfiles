@@ -26,6 +26,7 @@
     ../../home/modules/clipse.nix
     ../../home/modules/cmatrix.nix
     ../../home/modules/chrome-global.nix
+    ../../home/modules/firefox.nix
     ../../home/modules/cursor
     ../../home/modules/devenv.nix
     ../../home/modules/flameshot.nix
