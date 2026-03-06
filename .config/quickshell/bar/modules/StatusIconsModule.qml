@@ -68,13 +68,7 @@ ColumnLayout {
             onExited: notificationSoundStatusProcess.running = true
         }
 
-        Timer {
-            interval: 10000
-            running: true
-            repeat: true
-            triggeredOnStart: true
-            onTriggered: notificationSoundStatusProcess.running = true
-        }
+        Component.onCompleted: notificationSoundStatusProcess.running = true
     }
 
     StatusIcon {
@@ -112,13 +106,7 @@ ColumnLayout {
             onExited: microphoneStatusProcess.running = true
         }
 
-        Timer {
-            interval: 10000
-            running: true
-            repeat: true
-            triggeredOnStart: true
-            onTriggered: microphoneStatusProcess.running = true
-        }
+        Component.onCompleted: microphoneStatusProcess.running = true
     }
 
     StatusIcon {

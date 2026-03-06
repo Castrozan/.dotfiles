@@ -1,4 +1,5 @@
 import Quickshell.Hyprland
+import Quickshell.Io
 import QtQuick
 import QtQuick.Layouts
 import ".."
@@ -28,10 +29,24 @@ ColumnLayout {
 
     Component.onCompleted: _refreshOccupiedWorkspaces()
 
-    Timer {
-        interval: 5000
+    Process {
+        id: hyprlandWindowEventMonitorProcess
+        command: ["hyprctl", "events"]
         running: true
-        repeat: true
+        stdout: SplitParser {
+            splitMarker: "\n"
+            onRead: data => {
+                if (data.startsWith("openwindow>>") || data.startsWith("closewindow>>") || data.startsWith("movewindow>>")) {
+                    windowLayoutChangeDebounceTimer.restart();
+                }
+            }
+        }
+        onExited: running = true
+    }
+
+    Timer {
+        id: windowLayoutChangeDebounceTimer
+        interval: 100
         onTriggered: workspacesModuleRoot._refreshOccupiedWorkspaces()
     }
 

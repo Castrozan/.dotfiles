@@ -13,6 +13,25 @@ Scope {
     id: drawersRoot
 
     signal osdSocketMessageReceived(string message)
+    signal hyprlandFullscreenEventReceived()
+    signal hyprlandWindowLayoutEventReceived()
+
+    Process {
+        id: hyprlandEventMonitorProcess
+        command: ["hyprctl", "events"]
+        running: true
+        stdout: SplitParser {
+            splitMarker: "\n"
+            onRead: data => {
+                if (data.startsWith("fullscreen>>")) {
+                    drawersRoot.hyprlandFullscreenEventReceived();
+                } else if (data.startsWith("openwindow>>") || data.startsWith("closewindow>>") || data.startsWith("movewindow>>")) {
+                    drawersRoot.hyprlandWindowLayoutEventReceived();
+                }
+            }
+        }
+        onExited: running = true
+    }
 
     SocketServer {
         active: true
@@ -58,27 +77,33 @@ Scope {
 
             Process {
                 id: activeWorkspaceFullscreenQueryProcess
-                command: ["bash", "-c", "wsid=$(hyprctl activeworkspace -j | jq '.id'); hyprctl clients -j | jq --argjson ws \"$wsid\" 'any(.[]; .workspace.id == $ws and .fullscreen == 2)'"]
+                command: ["hyprctl", "clients", "-j"]
                 stdout: SplitParser {
                     splitMarker: ""
                     onRead: data => {
-                        screenScope.activeWorkspaceHasFullscreenWindow = data.trim() === "true";
+                        try {
+                            let clients = JSON.parse(data);
+                            let wsId = Hyprland.focusedWorkspace ? Hyprland.focusedWorkspace.id : -1;
+                            screenScope.activeWorkspaceHasFullscreenWindow = clients.some(c => c.workspace.id === wsId && c.fullscreen === 2);
+                        } catch (e) {
+                            screenScope.activeWorkspaceHasFullscreenWindow = false;
+                        }
                     }
                 }
             }
 
-            Timer {
-                id: activeWorkspaceFullscreenPollTimer
-                interval: 5000
-                running: true
-                repeat: true
-                triggeredOnStart: true
-                onTriggered: activeWorkspaceFullscreenQueryProcess.running = true
-            }
+            Component.onCompleted: activeWorkspaceFullscreenQueryProcess.running = true
 
             Connections {
                 target: Hyprland
                 function onFocusedWorkspaceChanged() {
+                    activeWorkspaceFullscreenQueryProcess.running = true;
+                }
+            }
+
+            Connections {
+                target: drawersRoot
+                function onHyprlandFullscreenEventReceived() {
                     activeWorkspaceFullscreenQueryProcess.running = true;
                 }
             }
