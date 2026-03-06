@@ -499,7 +499,7 @@ Scope {
                 MouseArea {
                     id: bottomStripLauncherHoverTrigger
 
-                    readonly property real bottomStripHeight: barTotalWidth / 3
+                    readonly property real bottomStripHeight: 2
                     readonly property real triggerWidth: drawersWindow.width - barTotalWidth * 2
 
                     x: barTotalWidth + (drawersWindow.width - barTotalWidth - triggerWidth) / 2
