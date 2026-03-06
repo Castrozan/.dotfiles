@@ -58,7 +58,7 @@ Item {
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottom: parent.bottom
 
-        active: launcherWrapperRoot.launcherVisible || launcherWrapperRoot.visible
+        active: true
 
         sourceComponent: LauncherContent {
             launcherVisible: launcherWrapperRoot.launcherVisible

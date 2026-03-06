@@ -56,7 +56,7 @@ Item {
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottom: parent.bottom
 
-        active: dashboardWrapperRoot.dashboardVisible || dashboardWrapperRoot.visible
+        active: true
 
         sourceComponent: DashboardContent {}
     }
