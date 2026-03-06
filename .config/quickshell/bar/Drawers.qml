@@ -16,9 +16,11 @@ Scope {
     signal hyprlandFullscreenEventReceived()
     signal hyprlandWindowLayoutEventReceived()
 
+    readonly property string hyprlandSocket2Path: Quickshell.env("XDG_RUNTIME_DIR") + "/hypr/" + Quickshell.env("HYPRLAND_INSTANCE_SIGNATURE") + "/.socket2.sock"
+
     Process {
         id: hyprlandEventMonitorProcess
-        command: ["hyprctl", "events"]
+        command: ["nc", "-U", drawersRoot.hyprlandSocket2Path]
         running: true
         stdout: SplitParser {
             splitMarker: "\n"

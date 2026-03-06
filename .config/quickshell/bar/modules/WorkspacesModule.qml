@@ -1,3 +1,4 @@
+import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Io
 import QtQuick
@@ -29,9 +30,11 @@ ColumnLayout {
 
     Component.onCompleted: _refreshOccupiedWorkspaces()
 
+    readonly property string hyprlandSocket2Path: Quickshell.env("XDG_RUNTIME_DIR") + "/hypr/" + Quickshell.env("HYPRLAND_INSTANCE_SIGNATURE") + "/.socket2.sock"
+
     Process {
         id: hyprlandWindowEventMonitorProcess
-        command: ["hyprctl", "events"]
+        command: ["nc", "-U", hyprlandSocket2Path]
         running: true
         stdout: SplitParser {
             splitMarker: "\n"
