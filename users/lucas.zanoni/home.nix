@@ -54,6 +54,7 @@
     ../../home/modules/network-optimization.nix
     ../../home/modules/lid-switch-ignore.nix
     ../../home/modules/oom-protection.nix
+    ../../home/modules/ubuntu-system-tuning.nix
     ../../home/modules/opencode
     ../../home/modules/opencode/private.nix
     ../../home/modules/openfortivpn
