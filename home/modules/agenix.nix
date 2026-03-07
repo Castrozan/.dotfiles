@@ -53,6 +53,7 @@ let
     "obsidian-headless-auth-token"
     "obsidian-headless-sync-config"
     "gpg-private-key"
+    "viu-auth"
   ];
 
   allSecretNames =

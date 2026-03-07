@@ -1,8 +1,37 @@
-{ pkgs, inputs, ... }:
+{
+  pkgs,
+  inputs,
+  config,
+  ...
+}:
+let
+  secretsDirectory = "${config.home.homeDirectory}/.secrets";
+  viuConfigDirectory = "${config.home.homeDirectory}/.config/viu";
+
+  placeViuAnilistAuthToken = pkgs.writeShellScript "viu-place-anilist-auth" ''
+    set -euo pipefail
+    VIU_AUTH_SECRET="${secretsDirectory}/viu-auth"
+    if [ -f "$VIU_AUTH_SECRET" ]; then
+      mkdir -p "${viuConfigDirectory}"
+      cp "$VIU_AUTH_SECRET" "${viuConfigDirectory}/auth.json"
+      chmod 600 "${viuConfigDirectory}/auth.json"
+    fi
+  '';
+in
 {
   home.packages = [
     inputs.viu.packages.${pkgs.stdenv.hostPlatform.system}.default
   ];
+
+  home.activation.placeViuAnilistAuthToken =
+    config.lib.dag.entryAfter
+      [
+        "writeBoundary"
+        "agenix"
+      ]
+      ''
+        run ${placeViuAnilistAuthToken}
+      '';
 
   home.file.".config/viu/config.toml".text = ''
     [general]

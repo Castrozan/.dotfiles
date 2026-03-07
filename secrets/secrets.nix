@@ -49,4 +49,5 @@ in
   "obsidian-headless-auth-token.age".publicKeys = all_keys;
   "obsidian-headless-sync-config.age".publicKeys = all_keys;
   "gpg-private-key.age".publicKeys = all_keys;
+  "viu-auth.age".publicKeys = all_keys;
 }
