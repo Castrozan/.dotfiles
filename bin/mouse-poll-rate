@@ -102,7 +102,7 @@ _send_and_receive_atk_command() {
 	local packet_hex=("$@")
 
 	python3 -c "
-import os, select, sys
+import os, select, sys, time
 fd = os.open('$hidraw_path', os.O_RDWR | os.O_NONBLOCK)
 try:
     while True:
@@ -113,12 +113,19 @@ try:
     cmd = bytes([$(printf '0x%s, ' "${packet_hex[@]}")])
     os.write(fd, cmd)
 
-    ready, _, _ = select.select([fd], [], [], 3.0)
-    if ready:
-        resp = os.read(fd, 64)
-        print(resp.hex(' '))
-    else:
-        sys.exit(1)
+    deadline = time.monotonic() + 3.0
+    while time.monotonic() < deadline:
+        ready, _, _ = select.select([fd], [], [], 0.1)
+        if not ready: continue
+        try:
+            while True:
+                resp = os.read(fd, 64)
+                if len(resp) >= 2 and resp[0] == 0x08 and resp[1] in (0x07, 0x08):
+                    print(resp.hex(' '))
+                    sys.exit(0)
+        except BlockingIOError:
+            pass
+    sys.exit(1)
 finally:
     os.close(fd)
 "
