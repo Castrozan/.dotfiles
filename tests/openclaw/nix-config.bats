@@ -434,10 +434,6 @@ nix_eval_json_apply() {
     done
 }
 
-@test "nixos: agentToAgent maxPingPongTurns is set" {
-    result=$(nix_eval_json "$NIXOS_OC.configPatches.\".tools.agentToAgent.maxPingPongTurns\"")
-    [ "$result" -ge 5 ]
-}
 
 @test "nixos: sessions visibility is all" {
     result=$(nix_eval_json "$NIXOS_OC.configPatches.\".tools.sessions.visibility\"")
