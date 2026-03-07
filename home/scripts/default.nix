@@ -30,5 +30,6 @@
     ./pinchtab-navigate-and-snapshot.nix
     ./pinchtab-act-and-snapshot.nix
     ./pinchtab-fill-form.nix
+    ./mouse-poll-rate.nix
   ];
 }
