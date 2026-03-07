@@ -3,6 +3,7 @@
 set -Eeuo pipefail
 
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 main() {
 	local selectedMode="quick"
@@ -77,8 +78,8 @@ _run_quick_tier() {
 }
 
 _run_nix_tier() {
-	_run_home_manager_module_tests
-	_run_openclaw_nix_config_tests
+	_run_home_manager_integration_tests
+	_run_domain_nix_tests
 }
 
 _run_docker_tier() {
@@ -86,8 +87,7 @@ _run_docker_tier() {
 }
 
 _run_runtime_tier() {
-	_run_openclaw_live_service_tests
-	_run_hyprland_runtime_tests
+	_run_domain_runtime_tests
 }
 
 _run_coverage_tier() {
@@ -142,33 +142,74 @@ _run_quick_bats_tests_ci() {
 	echo ""
 }
 
-_run_home_manager_module_tests() {
+_run_home_manager_integration_tests() {
 	if ! command -v nix &>/dev/null; then
-		echo "WARN: nix not installed, skipping home manager module tests" >&2
+		echo "WARN: nix not installed, skipping home manager integration tests" >&2
 		return 0
 	fi
 	if ! command -v bats &>/dev/null; then
-		echo "WARN: bats not installed, skipping home manager module tests" >&2
+		echo "WARN: bats not installed, skipping home manager integration tests" >&2
 		return 0
 	fi
 
-	echo "--- Home Manager Module Tests (nix eval) ---"
+	echo "--- Home Manager Integration Tests (nix eval) ---"
 	bats "$SCRIPT_DIR/nix-modules/home-manager.bats"
 	echo ""
 }
 
-_run_openclaw_nix_config_tests() {
+_is_runtime_test_file() {
+	local filename
+	filename="$(basename "$1")"
+	[[ "$filename" == "runtime.bats" || "$filename" == "live-services.bats" ]]
+}
+
+_run_domain_nix_tests() {
 	if ! command -v nix &>/dev/null; then
-		echo "WARN: nix not installed, skipping openclaw nix config tests" >&2
+		echo "WARN: nix not installed, skipping domain nix tests" >&2
 		return 0
 	fi
 	if ! command -v bats &>/dev/null; then
-		echo "WARN: bats not installed, skipping openclaw nix config tests" >&2
+		echo "WARN: bats not installed, skipping domain nix tests" >&2
 		return 0
 	fi
 
-	echo "--- OpenClaw Nix Config Tests (nix eval) ---"
-	bats "$SCRIPT_DIR/openclaw/nix-config.bats"
+	local domainTestFiles=()
+	for testFile in "$REPO_DIR"/home/modules/*/tests/*.bats; do
+		[[ -f "$testFile" ]] || continue
+		_is_runtime_test_file "$testFile" && continue
+		domainTestFiles+=("$testFile")
+	done
+
+	if [[ ${#domainTestFiles[@]} -eq 0 ]]; then
+		echo "No domain nix test files found"
+		return 0
+	fi
+
+	echo "--- Domain Nix Tests (home/modules/*/tests/) ---"
+	bats "${domainTestFiles[@]}"
+	echo ""
+}
+
+_run_domain_runtime_tests() {
+	if ! command -v bats &>/dev/null; then
+		echo "WARN: bats not installed, skipping domain runtime tests" >&2
+		return 0
+	fi
+
+	local runtimeTestFiles=()
+	for testFile in "$REPO_DIR"/home/modules/*/tests/*.bats; do
+		[[ -f "$testFile" ]] || continue
+		_is_runtime_test_file "$testFile" || continue
+		runtimeTestFiles+=("$testFile")
+	done
+
+	if [[ ${#runtimeTestFiles[@]} -eq 0 ]]; then
+		echo "No domain runtime test files found"
+		return 0
+	fi
+
+	echo "--- Domain Runtime Tests (home/modules/*/tests/) ---"
+	bats "${runtimeTestFiles[@]}"
 	echo ""
 }
 
@@ -194,28 +235,6 @@ _run_docker_integration_tests() {
 	fi
 
 	bats "${dockerTestFiles[@]}"
-	echo ""
-}
-
-_run_openclaw_live_service_tests() {
-	if ! command -v bats &>/dev/null; then
-		echo "WARN: bats not installed, skipping live service tests" >&2
-		return 0
-	fi
-
-	echo "--- OpenClaw Live Service Tests ---"
-	bats "$SCRIPT_DIR/openclaw/live-services.bats"
-	echo ""
-}
-
-_run_hyprland_runtime_tests() {
-	if ! command -v bats &>/dev/null; then
-		echo "WARN: bats not installed, skipping hyprland runtime tests" >&2
-		return 0
-	fi
-
-	echo "--- Hyprland Runtime Tests ---"
-	bats "$SCRIPT_DIR/hyprland/runtime.bats"
 	echo ""
 }
 

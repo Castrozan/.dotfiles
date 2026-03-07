@@ -1,13 +1,14 @@
 #!/usr/bin/env bats
 
-load "../helpers/test-status-tracker.bash"
-
 setup_file() {
+    REPO_DIR="$(cd "$BATS_TEST_DIRNAME" && git rev-parse --show-toplevel)"
+    load "$REPO_DIR/tests/helpers/test-status-tracker.bash"
     _initialize_test_status_tracking
 }
 
 setup() {
-    REPO_DIR="$(cd "$BATS_TEST_DIRNAME/../.." && pwd)"
+    REPO_DIR="$(cd "$BATS_TEST_DIRNAME" && git rev-parse --show-toplevel)"
+    load "$REPO_DIR/tests/helpers/test-status-tracker.bash"
 
     WORKPC_CONFIG='.#homeConfigurations."lucas.zanoni@x86_64-linux".config'
     NIXOS_CONFIG='.#nixosConfigurations.zanoni.config.home-manager.users.zanoni'

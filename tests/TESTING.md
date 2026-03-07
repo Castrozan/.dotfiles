@@ -7,9 +7,9 @@ Tests are organized in tiers by speed and tool requirements. The `tests/run-all.
 | Tier | Content | Time | Flag |
 |---|---|---|---|
 | Quick | skill frontmatter + pure bash bats (excludes `*-docker.bats`) | ~3s | `--quick` (default) |
-| Nix | home-manager + openclaw nix eval tests | ~120s | `--nix` (includes quick) |
+| Nix | home-manager integration + domain nix tests (`home/modules/*/tests/`) | ~120s | `--nix` (includes quick) |
 | Docker | `*-docker.bats` integration tests | ~60s | `--docker` |
-| Runtime | live-services.bats (needs running gateway) | variable | `--runtime` |
+| Runtime | domain runtime tests (`runtime.bats`, `live-services.bats`) | variable | `--runtime` |
 
 Additional modes: `--all` runs quick + nix + docker. `--coverage` runs quick tests through kcov. `--ci` runs quick with CI-appropriate skip messages.
 
@@ -21,7 +21,7 @@ tests/run-all.sh --nix              # quick + nix eval tests
 tests/run-all.sh --docker           # docker integration tests only
 tests/run-all.sh --all              # everything except runtime
 tests/run-all.sh --coverage         # quick tests with kcov coverage
-tests/run-all.sh --runtime          # openclaw live service tests
+tests/run-all.sh --runtime          # domain runtime tests
 bats tests/bin-scripts/foo.bats     # single test file
 ```
 
@@ -37,11 +37,17 @@ Files matching `*-docker.bats` are docker integration tests. They require docker
 |---|---|---|
 | Bin scripts | `tests/bin-scripts/*.bats` (excluding `*-docker.bats`) | bats |
 | Docker integration | `tests/bin-scripts/*-docker.bats` | bats, docker |
-| Home manager modules | `tests/nix-modules/home-manager.bats` | bats, nix |
-| OpenClaw nix config | `tests/openclaw/nix-config.bats` | bats, nix |
-| OpenClaw live services | `tests/openclaw/live-services.bats` | bats, running services |
+| Home manager integration | `tests/nix-modules/home-manager.bats` | bats, nix |
+| Domain nix tests | `home/modules/*/tests/*.bats` (excluding runtime) | bats, nix |
+| Domain runtime tests | `home/modules/*/tests/runtime.bats`, `live-services.bats` | bats, running services |
 | Skill frontmatter | `tests/validate-skill-frontmatter.sh` | bash |
 | Agent evals | `tests/agent-evals/` | claude cli |
+
+## Co-located Domain Tests
+
+Domain-specific tests live alongside their modules in `home/modules/<domain>/tests/`. The test runner discovers them dynamically via `home/modules/*/tests/*.bats`. Tier routing uses filename convention: `runtime.bats` and `live-services.bats` go to the runtime tier, everything else to the nix tier.
+
+Domain tests resolve the repo root with `git rev-parse --show-toplevel` and load shared helpers from `tests/helpers/`. Cross-cutting integration tests that span multiple modules stay in `tests/`.
 
 ## Writing Bin Script Tests
 
