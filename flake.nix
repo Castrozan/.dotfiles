@@ -35,7 +35,7 @@
     nixgl.url = "github:nix-community/nixGL";
     agenix.url = "github:ryantm/agenix";
 
-    viu.url = "github:viu-media/viu";
+    viu.url = "github:Castrozan/viu";
     voice-pipeline.url = "github:castrozan/voice-pipeline";
     voxtype.url = "github:peteonrails/voxtype";
     whisp-away.url = "github:madjinn/whisp-away";

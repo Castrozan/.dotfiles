@@ -1742,15 +1742,15 @@
         "nixpkgs": "nixpkgs_17"
       },
       "locked": {
-        "lastModified": 1769797369,
-        "narHash": "sha256-fnFuFnNZdly14hcnQP9CY3gPcFyYVE7xa19jt64jtvA=",
-        "owner": "viu-media",
+        "lastModified": 1772902816,
+        "narHash": "sha256-GNX/sSaDn8DvCG5vFL+ubNl0l/yhAXyHKqqheKuGNuU=",
+        "owner": "Castrozan",
         "repo": "viu",
-        "rev": "70e1445650252c742b3e2c5c3b35981dbc3c31a8",
+        "rev": "a7e75ae543faeab4fdd1ccd71fae5baa8106b086",
         "type": "github"
       },
       "original": {
-        "owner": "viu-media",
+        "owner": "Castrozan",
         "repo": "viu",
         "type": "github"
       }
