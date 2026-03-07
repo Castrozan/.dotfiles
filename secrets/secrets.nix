@@ -50,4 +50,5 @@ in
   "obsidian-headless-sync-config.age".publicKeys = all_keys;
   "gpg-private-key.age".publicKeys = all_keys;
   "viu-auth.age".publicKeys = all_keys;
+  "wifi-psk-zanoni.age".publicKeys = all_keys;
 }

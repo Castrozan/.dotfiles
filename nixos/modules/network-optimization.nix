@@ -1,4 +1,4 @@
-{ lib, ... }:
+{ config, ... }:
 {
   boot = {
     kernelModules = [ "tcp_bbr" ];
@@ -22,5 +22,25 @@
     };
   };
 
-  networking.networkmanager.wifi.powersave = false;
+  networking.networkmanager = {
+    wifi.powersave = false;
+    ensureProfiles = {
+      environmentFiles = [ config.age.secrets.wifi-psk-zanoni.path ];
+      profiles.zanoni-5ghz = {
+        connection = {
+          id = "Zanoni";
+          type = "wifi";
+        };
+        wifi = {
+          ssid = "Zanoni";
+          band = "a";
+          mode = "infrastructure";
+        };
+        wifi-security = {
+          key-mgmt = "wpa-psk";
+          psk = "$WIFI_PSK_ZANONI";
+        };
+      };
+    };
+  };
 }

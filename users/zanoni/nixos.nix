@@ -204,6 +204,10 @@ in
         owner = "zanoni";
         mode = "400";
       };
+      "wifi-psk-zanoni" = {
+        file = ../../secrets/wifi-psk-zanoni.age;
+        mode = "400";
+      };
     };
   };
 }
