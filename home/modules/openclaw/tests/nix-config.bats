@@ -4,17 +4,13 @@ setup_file() {
     REPO_DIR="$(cd "$BATS_TEST_DIRNAME" && git rev-parse --show-toplevel)"
     load "$REPO_DIR/tests/helpers/test-status-tracker.bash"
     _initialize_test_status_tracking
+    _evaluate_all_openclaw_test_data
 }
 
 setup() {
     REPO_DIR="$(cd "$BATS_TEST_DIRNAME" && git rev-parse --show-toplevel)"
     load "$REPO_DIR/tests/helpers/test-status-tracker.bash"
-
-    WORKPC_CONFIG='.#homeConfigurations."lucas.zanoni@x86_64-linux".config'
-    NIXOS_CONFIG='.#nixosConfigurations.zanoni.config.home-manager.users.zanoni'
-
-    WORKPC_OC="$WORKPC_CONFIG.openclaw"
-    NIXOS_OC="$NIXOS_CONFIG.openclaw"
+    ALL_CONFIG="$BATS_FILE_TMPDIR/all-config.json"
 }
 
 teardown() {
@@ -25,217 +21,243 @@ teardown_file() {
     _write_passing_status_if_all_passed
 }
 
-nix_eval() {
-    local expr="$1"
-    shift
-    nix eval "$expr" "$@" 2>/dev/null
-}
+_evaluate_all_openclaw_test_data() {
+    nix eval --impure --json --expr '
+      let
+        flake = builtins.getFlake (toString '"$REPO_DIR"');
+        workpcCfg = flake.homeConfigurations."lucas.zanoni@x86_64-linux".config;
+        nixosCfg = flake.nixosConfigurations.zanoni.config.home-manager.users.zanoni;
+        workpcOc = workpcCfg.openclaw;
+        nixosOc = nixosCfg.openclaw;
+      in {
+        workpc = {
+          enabledAgents = builtins.attrNames workpcOc.enabledAgents;
+          defaultAgent = workpcOc.defaultAgent;
+          configPatches = workpcOc.configPatches;
+          secretPatches = workpcOc.secretPatches;
+          configDeletes = workpcOc.configDeletes;
+          memorySync = { inherit (workpcOc.memorySync) enable agents remoteHost; };
+          agents = {
+            robson = {
+              isDefault = workpcOc.agents.robson.isDefault;
+              modelPrimary = workpcOc.agents.robson.model.primary;
+              ttsEngine = workpcOc.agents.robson.tts.engine;
+              telegramDmPolicy = workpcOc.agents.robson.telegram.dmPolicy;
+              telegramGroupPolicy = workpcOc.agents.robson.telegram.groupPolicy;
+              telegramStreamMode = workpcOc.agents.robson.telegram.streamMode;
+            };
+            silver = { modelPrimary = workpcOc.agents.silver.model.primary; };
+            jenny = {
+              skills = workpcOc.agents.jenny.skills;
+              modelFallbacks = workpcOc.agents.jenny.model.fallbacks;
+            };
+            hasJarvis = workpcOc.agents ? jarvis;
+          };
+          systemd = {
+            serviceNames = builtins.attrNames workpcCfg.systemd.user.services;
+            timerNames = builtins.attrNames workpcCfg.systemd.user.timers;
+            gatewayRestart = workpcCfg.systemd.user.services.openclaw-gateway.Service.Restart;
+            gatewayEnvironment = workpcCfg.systemd.user.services.openclaw-gateway.Service.Environment;
+            gatewayWantedBy = workpcCfg.systemd.user.services.openclaw-gateway.Install.WantedBy;
+            memorySyncType = workpcCfg.systemd.user.services.openclaw-memory-sync.Service.Type;
+            memorySyncTimerWantedBy = workpcCfg.systemd.user.timers.openclaw-memory-sync.Install.WantedBy;
+          };
+          overlayExists = builtins.hasAttr ".openclaw/nix-overlay.json" workpcCfg.home.file;
+          overlayContent = builtins.fromJSON workpcCfg.home.file.".openclaw/nix-overlay.json".text;
+        };
+        nixos = {
+          enabledAgents = builtins.attrNames nixosOc.enabledAgents;
+          defaultAgent = nixosOc.defaultAgent;
+          configPatches = nixosOc.configPatches;
+          secretPatches = nixosOc.secretPatches;
+          memorySync = { inherit (nixosOc.memorySync) enable remoteHost; };
+          agents = {
+            clever = { isDefault = nixosOc.agents.clever.isDefault; };
+            golden = { modelPrimary = nixosOc.agents.golden.model.primary; };
+            jarvis = {
+              enable = nixosOc.agents.jarvis.enable;
+              telegramEnable = nixosOc.agents.jarvis.telegram.enable;
+              telegramBotName = nixosOc.agents.jarvis.telegram.botName;
+            };
+          };
+        };
+      }
+    ' 2>/dev/null > "$BATS_FILE_TMPDIR/all-config.json"
 
-nix_eval_json() {
-    nix_eval "$1" --json "${@:2}"
-}
-
-nix_eval_json_apply() {
-    nix_eval "$1" --json --apply "$2" "${@:3}"
+    [ -s "$BATS_FILE_TMPDIR/all-config.json" ] || {
+        echo "Failed to evaluate openclaw test data" >&2
+        return 1
+    }
 }
 
 # ---------- Flake evaluation ----------
 
 @test "flake: homeConfiguration evaluates without errors" {
-    run nix_eval_json_apply "$WORKPC_OC.enabledAgents" 'x: builtins.attrNames x'
-    [ "$status" -eq 0 ]
+    jq -e '.workpc.enabledAgents | length > 0' "$ALL_CONFIG" > /dev/null
 }
 
 @test "flake: nixosConfiguration evaluates without errors" {
-    run nix_eval_json_apply "$NIXOS_OC.enabledAgents" 'x: builtins.attrNames x'
-    [ "$status" -eq 0 ]
+    jq -e '.nixos.enabledAgents | length > 0' "$ALL_CONFIG" > /dev/null
 }
 
 # ---------- Agent configuration (workpc) ----------
 
 @test "workpc: enabled agents include robson jenny monster silver" {
-    result=$(nix_eval_json_apply "$WORKPC_OC.enabledAgents" 'x: builtins.attrNames x')
     for agent in robson jenny monster silver; do
-        echo "$result" | jq -e "index(\"$agent\")" > /dev/null
+        jq -e ".workpc.enabledAgents | index(\"$agent\")" "$ALL_CONFIG" > /dev/null
     done
 }
 
 @test "workpc: default agent is robson" {
-    result=$(nix_eval_json "$WORKPC_OC.defaultAgent")
-    [ "$result" = '"robson"' ]
+    [ "$(jq -r '.workpc.defaultAgent' "$ALL_CONFIG")" = "robson" ]
 }
 
 @test "workpc: robson is marked as default" {
-    result=$(nix_eval_json "$WORKPC_OC.agents.robson.isDefault")
-    [ "$result" = "true" ]
+    [ "$(jq '.workpc.agents.robson.isDefault' "$ALL_CONFIG")" = "true" ]
 }
 
 # ---------- Agent configuration (NixOS) ----------
 
 @test "nixos: enabled agents include clever golden jarvis" {
-    result=$(nix_eval_json_apply "$NIXOS_OC.enabledAgents" 'x: builtins.attrNames x')
     for agent in clever golden jarvis; do
-        echo "$result" | jq -e "index(\"$agent\")" > /dev/null
+        jq -e ".nixos.enabledAgents | index(\"$agent\")" "$ALL_CONFIG" > /dev/null
     done
 }
 
 @test "nixos: default agent is clever" {
-    result=$(nix_eval_json "$NIXOS_OC.defaultAgent")
-    [ "$result" = '"clever"' ]
+    [ "$(jq -r '.nixos.defaultAgent' "$ALL_CONFIG")" = "clever" ]
 }
 
 @test "nixos: jarvis telegram is enabled" {
-    result=$(nix_eval_json "$NIXOS_OC.agents.jarvis.telegram.enable")
-    [ "$result" = "true" ]
+    [ "$(jq '.nixos.agents.jarvis.telegramEnable' "$ALL_CONFIG")" = "true" ]
 }
 
 @test "nixos: jarvis telegram bot name is Jarvis" {
-    result=$(nix_eval_json "$NIXOS_OC.agents.jarvis.telegram.botName")
-    [ "$result" = '"Jarvis"' ]
+    [ "$(jq -r '.nixos.agents.jarvis.telegramBotName' "$ALL_CONFIG")" = "Jarvis" ]
 }
 
 @test "nixos: clever is marked as default" {
-    result=$(nix_eval_json "$NIXOS_OC.agents.clever.isDefault")
-    [ "$result" = "true" ]
+    [ "$(jq '.nixos.agents.clever.isDefault' "$ALL_CONFIG")" = "true" ]
 }
 
 # ---------- Config patches (workpc) ----------
 
 @test "workpc: gateway port patch is 18790" {
-    result=$(nix_eval_json "$WORKPC_OC.configPatches.\".gateway.port\"")
-    [ "$result" = "18790" ]
+    [ "$(jq '.workpc.configPatches[".gateway.port"]' "$ALL_CONFIG")" = "18790" ]
 }
 
 @test "workpc: agents list patch has all enabled agents" {
-    result=$(nix_eval_json_apply "$WORKPC_OC.configPatches.\".agents.list\"" 'x: map (a: a.id) x')
+    result=$(jq '[.workpc.configPatches[".agents.list"][] | .id]' "$ALL_CONFIG")
     for agent in robson jenny monster silver; do
         echo "$result" | jq -e "index(\"$agent\")" > /dev/null
     done
 }
 
 @test "workpc: agents list marks robson as default" {
-    result=$(nix_eval_json_apply "$WORKPC_OC.configPatches.\".agents.list\"" \
-        'x: builtins.filter (a: a ? default && a.default) x')
-    echo "$result" | jq -e '.[0].id == "robson"' > /dev/null
+    jq -e '[.workpc.configPatches[".agents.list"][] | select(.default == true)][0].id == "robson"' "$ALL_CONFIG" > /dev/null
 }
 
 @test "workpc: agents list has correct workspace paths" {
-    result=$(nix_eval_json_apply "$WORKPC_OC.configPatches.\".agents.list\"" \
-        'x: builtins.filter (a: a.id == "robson") x')
-    echo "$result" | jq -e '.[0].workspace == "/home/lucas.zanoni/openclaw/robson"' > /dev/null
+    jq -e '[.workpc.configPatches[".agents.list"][] | select(.id == "robson")][0].workspace == "/home/lucas.zanoni/openclaw/robson"' "$ALL_CONFIG" > /dev/null
 }
 
 @test "workpc: telegram accounts include robson jenny monster silver" {
-    result=$(nix_eval_json_apply "$WORKPC_OC.configPatches" 'builtins.attrNames')
+    result=$(jq '.workpc.configPatches | keys' "$ALL_CONFIG")
     for agent in robson jenny monster silver; do
         echo "$result" | jq -e "index(\".channels.telegram.accounts.$agent\")" > /dev/null
     done
 }
 
 @test "workpc: no telegram account for jarvis" {
-    result=$(nix_eval_json_apply "$WORKPC_OC.configPatches" 'builtins.attrNames')
-    run bash -c "echo '$result' | jq -e 'index(\".channels.telegram.accounts.jarvis\")'"
+    run jq -e '.workpc.configPatches | keys | index(".channels.telegram.accounts.jarvis")' "$ALL_CONFIG"
     [ "$status" -ne 0 ]
 }
 
 @test "workpc: bindings exist for telegram-enabled agents" {
-    result=$(nix_eval_json_apply "$WORKPC_OC.configPatches.\".bindings\"" \
-        'x: map (b: b.agentId) x')
+    result=$(jq '[.workpc.configPatches[".bindings"][] | .agentId]' "$ALL_CONFIG")
     for agent in robson jenny monster silver; do
         echo "$result" | jq -e "index(\"$agent\")" > /dev/null
     done
 }
 
 @test "workpc: no binding for jarvis" {
-    result=$(nix_eval_json_apply "$WORKPC_OC.configPatches.\".bindings\"" \
-        'x: map (b: b.agentId) x')
-    run bash -c "echo '$result' | jq -e 'index(\"jarvis\")'"
+    run jq -e '[.workpc.configPatches[".bindings"][] | .agentId] | index("jarvis")' "$ALL_CONFIG"
     [ "$status" -ne 0 ]
 }
 
 @test "workpc: gateway mode is local" {
-    result=$(nix_eval_json "$WORKPC_OC.configPatches.\".gateway.mode\"")
-    [ "$result" = '"local"' ]
+    [ "$(jq -r '.workpc.configPatches[".gateway.mode"]' "$ALL_CONFIG")" = "local" ]
 }
 
 @test "workpc: compaction mode is safeguard" {
-    result=$(nix_eval_json "$WORKPC_OC.configPatches.\".agents.defaults.compaction.mode\"")
-    [ "$result" = '"safeguard"' ]
+    [ "$(jq -r '.workpc.configPatches[".agents.defaults.compaction.mode"]' "$ALL_CONFIG")" = "safeguard" ]
 }
 
 @test "workpc: memory search is enabled" {
-    result=$(nix_eval_json "$WORKPC_OC.configPatches.\".agents.defaults.memorySearch.enabled\"")
-    [ "$result" = "true" ]
+    [ "$(jq '.workpc.configPatches[".agents.defaults.memorySearch.enabled"]' "$ALL_CONFIG")" = "true" ]
 }
 
 # ---------- Config patches (NixOS) ----------
 
 @test "nixos: gateway port patch is 18789" {
-    result=$(nix_eval_json "$NIXOS_OC.configPatches.\".gateway.port\"")
-    [ "$result" = "18789" ]
+    [ "$(jq '.nixos.configPatches[".gateway.port"]' "$ALL_CONFIG")" = "18789" ]
 }
 
 @test "nixos: telegram accounts include clever golden jarvis" {
-    result=$(nix_eval_json_apply "$NIXOS_OC.configPatches" 'builtins.attrNames')
+    result=$(jq '.nixos.configPatches | keys' "$ALL_CONFIG")
     for agent in clever golden jarvis; do
         echo "$result" | jq -e "index(\".channels.telegram.accounts.$agent\")" > /dev/null
     done
 }
 
 @test "nixos: jarvis telegram account name is Jarvis" {
-    result=$(nix_eval_json "$NIXOS_OC.configPatches.\".channels.telegram.accounts.jarvis\"")
-    echo "$result" | jq -e '.name == "Jarvis"' > /dev/null
+    jq -e '.nixos.configPatches[".channels.telegram.accounts.jarvis"].name == "Jarvis"' "$ALL_CONFIG" > /dev/null
 }
 
 @test "nixos: clever telegram account uses default capitalized name" {
-    result=$(nix_eval_json "$NIXOS_OC.configPatches.\".channels.telegram.accounts.clever\"")
-    echo "$result" | jq -e '.name == "Clever"' > /dev/null
+    jq -e '.nixos.configPatches[".channels.telegram.accounts.clever"].name == "Clever"' "$ALL_CONFIG" > /dev/null
 }
 
 # ---------- Secret patches ----------
 
 @test "workpc: secret patches include gateway auth token" {
-    result=$(nix_eval_json_apply "$WORKPC_OC.secretPatches" 'builtins.attrNames')
-    echo "$result" | jq -e 'index(".gateway.auth.token")' > /dev/null
+    jq -e '.workpc.secretPatches | keys | index(".gateway.auth.token")' "$ALL_CONFIG" > /dev/null
 }
 
 @test "workpc: gateway token path is agenix managed" {
-    result=$(nix_eval_json "$WORKPC_OC.secretPatches.\".gateway.auth.token\"")
+    result=$(jq -r '.workpc.secretPatches[".gateway.auth.token"]' "$ALL_CONFIG")
     [[ "$result" == *".secrets/"* ]]
 }
 
 @test "workpc: telegram bot token secrets for enabled telegram agents" {
-    result=$(nix_eval_json_apply "$WORKPC_OC.secretPatches" 'builtins.attrNames')
+    result=$(jq '.workpc.secretPatches | keys' "$ALL_CONFIG")
     for agent in robson jenny monster silver; do
         echo "$result" | jq -e "index(\".channels.telegram.accounts.$agent.botToken\")" > /dev/null
     done
 }
 
 @test "workpc: no telegram bot token secret for jarvis" {
-    result=$(nix_eval_json_apply "$WORKPC_OC.secretPatches" 'builtins.attrNames')
-    run bash -c "echo '$result' | jq -e 'index(\".channels.telegram.accounts.jarvis.botToken\")'"
+    run jq -e '.workpc.secretPatches | keys | index(".channels.telegram.accounts.jarvis.botToken")' "$ALL_CONFIG"
     [ "$status" -ne 0 ]
 }
 
 @test "nixos: secret patches use secrets file paths" {
-    result=$(nix_eval_json "$NIXOS_OC.secretPatches.\".gateway.auth.token\"")
+    result=$(jq -r '.nixos.secretPatches[".gateway.auth.token"]' "$ALL_CONFIG")
     [[ "$result" == *".secrets/"* ]]
 }
 
 @test "nixos: telegram bot token secret for jarvis exists" {
-    result=$(nix_eval_json_apply "$NIXOS_OC.secretPatches" 'builtins.attrNames')
-    echo "$result" | jq -e 'index(".channels.telegram.accounts.jarvis.botToken")' > /dev/null
+    jq -e '.nixos.secretPatches | keys | index(".channels.telegram.accounts.jarvis.botToken")' "$ALL_CONFIG" > /dev/null
 }
 
 # ---------- Default model configuration ----------
 
 @test "workpc: default primary model is opus" {
-    result=$(nix_eval_json "$WORKPC_OC.configPatches.\".agents.defaults.model.primary\"")
-    [ "$result" = '"anthropic/claude-opus-4-6"' ]
+    [ "$(jq -r '.workpc.configPatches[".agents.defaults.model.primary"]' "$ALL_CONFIG")" = "anthropic/claude-opus-4-6" ]
 }
 
 @test "workpc: model aliases include opus sonnet codex" {
-    result=$(nix_eval_json_apply "$WORKPC_OC.configPatches.\".agents.defaults.models\"" 'builtins.attrNames')
+    result=$(jq '.workpc.configPatches[".agents.defaults.models"] | keys' "$ALL_CONFIG")
     echo "$result" | jq -e 'index("anthropic/claude-opus-4-6")' > /dev/null
     echo "$result" | jq -e 'index("anthropic/claude-sonnet-4-6")' > /dev/null
     echo "$result" | jq -e 'index("openai-codex/gpt-5.3-codex")' > /dev/null
@@ -244,242 +266,193 @@ nix_eval_json_apply() {
 # ---------- Gateway service ----------
 
 @test "workpc: gateway service is defined" {
-    result=$(nix_eval_json_apply "$WORKPC_CONFIG.systemd.user.services" 'builtins.attrNames')
-    echo "$result" | jq -e 'index("openclaw-gateway")' > /dev/null
+    jq -e '.workpc.systemd.serviceNames | index("openclaw-gateway")' "$ALL_CONFIG" > /dev/null
 }
 
 @test "workpc: gateway service has correct restart policy" {
-    result=$(nix_eval_json "$WORKPC_CONFIG.systemd.user.services.openclaw-gateway.Service.Restart")
-    [ "$result" = '"always"' ]
+    [ "$(jq -r '.workpc.systemd.gatewayRestart' "$ALL_CONFIG")" = "always" ]
 }
 
 @test "workpc: gateway service environment has OPENCLAW_NIX_MODE" {
-    result=$(nix_eval_json "$WORKPC_CONFIG.systemd.user.services.openclaw-gateway.Service.Environment")
-    echo "$result" | jq -e 'map(select(startswith("OPENCLAW_NIX_MODE"))) | length > 0' > /dev/null
+    jq -e '.workpc.systemd.gatewayEnvironment | map(select(startswith("OPENCLAW_NIX_MODE"))) | length > 0' "$ALL_CONFIG" > /dev/null
 }
 
 @test "workpc: gateway service environment has NODE_ENV=production" {
-    result=$(nix_eval_json "$WORKPC_CONFIG.systemd.user.services.openclaw-gateway.Service.Environment")
-    echo "$result" | jq -e 'index("NODE_ENV=production")' > /dev/null
+    jq -e '.workpc.systemd.gatewayEnvironment | index("NODE_ENV=production")' "$ALL_CONFIG" > /dev/null
 }
 
 @test "workpc: gateway service PATH includes git" {
-    result=$(nix_eval_json "$WORKPC_CONFIG.systemd.user.services.openclaw-gateway.Service.Environment")
-    pathEntry=$(echo "$result" | jq -r '.[] | select(startswith("PATH="))')
+    pathEntry=$(jq -r '.workpc.systemd.gatewayEnvironment[] | select(startswith("PATH="))' "$ALL_CONFIG")
     [[ "$pathEntry" == *"/bin"* ]]
 }
 
 @test "workpc: gateway service wanted by default.target" {
-    result=$(nix_eval_json "$WORKPC_CONFIG.systemd.user.services.openclaw-gateway.Install.WantedBy")
-    echo "$result" | jq -e 'index("default.target")' > /dev/null
+    jq -e '.workpc.systemd.gatewayWantedBy | index("default.target")' "$ALL_CONFIG" > /dev/null
 }
 
 # ---------- Memory sync ----------
 
 @test "workpc: memory sync service is defined" {
-    result=$(nix_eval_json_apply "$WORKPC_CONFIG.systemd.user.services" 'builtins.attrNames')
-    echo "$result" | jq -e 'index("openclaw-memory-sync")' > /dev/null
+    jq -e '.workpc.systemd.serviceNames | index("openclaw-memory-sync")' "$ALL_CONFIG" > /dev/null
 }
 
 @test "workpc: memory sync timer is defined" {
-    result=$(nix_eval_json_apply "$WORKPC_CONFIG.systemd.user.timers" 'builtins.attrNames')
-    echo "$result" | jq -e 'index("openclaw-memory-sync")' > /dev/null
+    jq -e '.workpc.systemd.timerNames | index("openclaw-memory-sync")' "$ALL_CONFIG" > /dev/null
 }
 
 @test "workpc: memory sync service is oneshot" {
-    result=$(nix_eval_json "$WORKPC_CONFIG.systemd.user.services.openclaw-memory-sync.Service.Type")
-    [ "$result" = '"oneshot"' ]
+    [ "$(jq -r '.workpc.systemd.memorySyncType' "$ALL_CONFIG")" = "oneshot" ]
 }
 
 @test "workpc: memory sync timer wanted by timers.target" {
-    result=$(nix_eval_json "$WORKPC_CONFIG.systemd.user.timers.openclaw-memory-sync.Install.WantedBy")
-    echo "$result" | jq -e 'index("timers.target")' > /dev/null
+    jq -e '.workpc.systemd.memorySyncTimerWantedBy | index("timers.target")' "$ALL_CONFIG" > /dev/null
 }
 
 @test "workpc: memory sync configured for local agents" {
-    result=$(nix_eval_json "$WORKPC_OC.memorySync.agents")
+    result=$(jq '.workpc.memorySync.agents' "$ALL_CONFIG")
     for agent in robson jenny monster silver; do
         echo "$result" | jq -e "index(\"$agent\")" > /dev/null
     done
 }
 
 @test "workpc: memory sync remote host is dellg15" {
-    result=$(nix_eval_json "$WORKPC_OC.memorySync.remoteHost")
-    [ "$result" = '"dellg15"' ]
+    [ "$(jq -r '.workpc.memorySync.remoteHost' "$ALL_CONFIG")" = "dellg15" ]
 }
 
 @test "nixos: memory sync remote host is workpc" {
-    result=$(nix_eval_json "$NIXOS_OC.memorySync.remoteHost")
-    [ "$result" = '"workpc"' ]
+    [ "$(jq -r '.nixos.memorySync.remoteHost' "$ALL_CONFIG")" = "workpc" ]
 }
 
 # ---------- Overlay JSON structure ----------
 
 @test "workpc: nix-overlay.json file is generated" {
-    result=$(nix_eval_json_apply "$WORKPC_CONFIG.home.file" \
-        'x: builtins.hasAttr ".openclaw/nix-overlay.json" x')
-    [ "$result" = "true" ]
+    [ "$(jq '.workpc.overlayExists' "$ALL_CONFIG")" = "true" ]
 }
 
 @test "workpc: overlay JSON is valid" {
-    overlay=$(nix_eval_json_apply \
-        "$WORKPC_CONFIG.home.file.\".openclaw/nix-overlay.json\".text" \
-        'x: builtins.fromJSON x')
-    [ "$?" -eq 0 ]
-    echo "$overlay" | jq -e '.agents.list' > /dev/null
+    jq -e '.workpc.overlayContent.agents.list' "$ALL_CONFIG" > /dev/null
 }
 
 @test "workpc: overlay JSON has gateway config" {
-    overlay=$(nix_eval_json_apply \
-        "$WORKPC_CONFIG.home.file.\".openclaw/nix-overlay.json\".text" \
-        'x: builtins.fromJSON x')
-    echo "$overlay" | jq -e '.gateway.port == 18790' > /dev/null
-    echo "$overlay" | jq -e '.gateway.mode == "local"' > /dev/null
+    jq -e '.workpc.overlayContent.gateway.port == 18790' "$ALL_CONFIG" > /dev/null
+    jq -e '.workpc.overlayContent.gateway.mode == "local"' "$ALL_CONFIG" > /dev/null
 }
 
 # ---------- Agent defaults ----------
 
 @test "agent: model.primary is set for default agent" {
-    result=$(nix_eval_json "$WORKPC_OC.agents.robson.model.primary")
+    result=$(jq -r '.workpc.agents.robson.modelPrimary' "$ALL_CONFIG")
     [ "$result" != "null" ] && [ -n "$result" ]
 }
 
 @test "agent: silver model.primary is a cheaper model than default" {
-    result=$(nix_eval_json "$WORKPC_OC.agents.silver.model.primary")
-    [ "$result" = '"anthropic/claude-sonnet-4-6"' ]
+    [ "$(jq -r '.workpc.agents.silver.modelPrimary' "$ALL_CONFIG")" = "anthropic/claude-sonnet-4-6" ]
 }
 
 @test "agent: golden model.primary is a cheaper model than default" {
-    result=$(nix_eval_json "$NIXOS_OC.agents.golden.model.primary")
-    [ "$result" = '"anthropic/claude-sonnet-4-6"' ]
+    [ "$(jq -r '.nixos.agents.golden.modelPrimary' "$ALL_CONFIG")" = "anthropic/claude-sonnet-4-6" ]
 }
 
 @test "agent: default TTS engine is edge-tts" {
-    result=$(nix_eval_json "$WORKPC_OC.agents.robson.tts.engine")
-    [ "$result" = '"edge-tts"' ]
+    [ "$(jq -r '.workpc.agents.robson.ttsEngine' "$ALL_CONFIG")" = "edge-tts" ]
 }
 
 @test "agent: default telegram policies" {
-    result=$(nix_eval_json "$WORKPC_OC.agents.robson.telegram.dmPolicy")
-    [ "$result" = '"pairing"' ]
-    result=$(nix_eval_json "$WORKPC_OC.agents.robson.telegram.groupPolicy")
-    [ "$result" = '"allowlist"' ]
-    result=$(nix_eval_json "$WORKPC_OC.agents.robson.telegram.streamMode")
-    [ "$result" = '"partial"' ]
+    [ "$(jq -r '.workpc.agents.robson.telegramDmPolicy' "$ALL_CONFIG")" = "pairing" ]
+    [ "$(jq -r '.workpc.agents.robson.telegramGroupPolicy' "$ALL_CONFIG")" = "allowlist" ]
+    [ "$(jq -r '.workpc.agents.robson.telegramStreamMode' "$ALL_CONFIG")" = "partial" ]
 }
 
 @test "agent: default skills list is empty" {
-    result=$(nix_eval_json "$WORKPC_OC.agents.jenny.skills")
-    [ "$result" = "[]" ]
+    [ "$(jq '.workpc.agents.jenny.skills' "$ALL_CONFIG")" = "[]" ]
 }
 
 @test "agent: default fallbacks list is empty" {
-    result=$(nix_eval_json "$WORKPC_OC.agents.jenny.model.fallbacks")
-    [ "$result" = "[]" ]
+    [ "$(jq '.workpc.agents.jenny.modelFallbacks' "$ALL_CONFIG")" = "[]" ]
 }
 
 # ---------- Cross-config consistency ----------
 
 @test "both: memory sync configured on both machines" {
-    workpc=$(nix_eval_json "$WORKPC_OC.memorySync.enable")
-    nixos=$(nix_eval_json "$NIXOS_OC.memorySync.enable")
-    [ "$workpc" = "true" ]
-    [ "$nixos" = "true" ]
+    [ "$(jq '.workpc.memorySync.enable' "$ALL_CONFIG")" = "true" ]
+    [ "$(jq '.nixos.memorySync.enable' "$ALL_CONFIG")" = "true" ]
 }
 
 @test "both: jarvis only declared on nixos" {
-    nixos=$(nix_eval_json "$NIXOS_OC.agents.jarvis.enable")
-    [ "$nixos" = "true" ]
-    run nix_eval_json "$WORKPC_OC.agents.jarvis.enable"
-    [ "$status" -ne 0 ]
+    [ "$(jq '.nixos.agents.jarvis.enable' "$ALL_CONFIG")" = "true" ]
+    [ "$(jq '.workpc.agents.hasJarvis' "$ALL_CONFIG")" = "false" ]
 }
 
 # ---------- Plugin configuration ----------
 
 @test "workpc: plugins allow list includes memory-core" {
-    result=$(nix_eval_json "$WORKPC_OC.configPatches.\".plugins.allow\"")
-    echo "$result" | jq -e 'index("memory-core")' > /dev/null
+    jq -e '.workpc.configPatches[".plugins.allow"] | index("memory-core")' "$ALL_CONFIG" > /dev/null
 }
 
 @test "workpc: plugins memory slot is memory-core" {
-    result=$(nix_eval_json "$WORKPC_OC.configPatches.\".plugins.slots.memory\"")
-    [ "$result" = '"memory-core"' ]
+    [ "$(jq -r '.workpc.configPatches[".plugins.slots.memory"]' "$ALL_CONFIG")" = "memory-core" ]
 }
 
 @test "workpc: memory-core plugin is enabled" {
-    result=$(nix_eval_json "$WORKPC_OC.configPatches.\".plugins.entries.memory-core\"")
-    echo "$result" | jq -e '.enabled == true' > /dev/null
+    jq -e '.workpc.configPatches[".plugins.entries.memory-core"].enabled == true' "$ALL_CONFIG" > /dev/null
 }
 
 @test "workpc: hindsight-openclaw is in configDeletes" {
-    result=$(nix_eval_json "$WORKPC_OC.configDeletes")
-    echo "$result" | jq -e 'index(".plugins.entries.hindsight-openclaw")' > /dev/null
+    jq -e '.workpc.configDeletes | index(".plugins.entries.hindsight-openclaw")' "$ALL_CONFIG" > /dev/null
 }
 
 @test "workpc: plugins allow list includes discord" {
-    result=$(nix_eval_json "$WORKPC_OC.configPatches.\".plugins.allow\"")
-    echo "$result" | jq -e 'index("discord")' > /dev/null
+    jq -e '.workpc.configPatches[".plugins.allow"] | index("discord")' "$ALL_CONFIG" > /dev/null
 }
 
 # ---------- Inter-agent communication ----------
 
 @test "nixos: agentToAgent is enabled" {
-    result=$(nix_eval_json "$NIXOS_OC.configPatches.\".tools.agentToAgent.enabled\"")
-    [ "$result" = 'true' ]
+    [ "$(jq '.nixos.configPatches[".tools.agentToAgent.enabled"]' "$ALL_CONFIG")" = "true" ]
 }
 
 @test "nixos: agentToAgent allow list includes all enabled agents" {
-    result=$(nix_eval_json "$NIXOS_OC.configPatches.\".tools.agentToAgent.allow\"")
+    result=$(jq '.nixos.configPatches[".tools.agentToAgent.allow"]' "$ALL_CONFIG")
     for agent in clever golden jarvis; do
         echo "$result" | jq -e "index(\"$agent\")" > /dev/null
     done
 }
 
-
 @test "nixos: sessions visibility is all" {
-    result=$(nix_eval_json "$NIXOS_OC.configPatches.\".tools.sessions.visibility\"")
-    [ "$result" = '"all"' ]
+    [ "$(jq -r '.nixos.configPatches[".tools.sessions.visibility"]' "$ALL_CONFIG")" = "all" ]
 }
 
 @test "nixos: agents list has subagents.allowAgents for jarvis" {
-    result=$(nix_eval_json_apply "$NIXOS_OC.configPatches.\".agents.list\"" \
-        'x: builtins.filter (a: a.id == "jarvis") x')
-    echo "$result" | jq -e '.[0].subagents.allowAgents | length > 0' > /dev/null
+    jq -e '[.nixos.configPatches[".agents.list"][] | select(.id == "jarvis")][0].subagents.allowAgents | length > 0' "$ALL_CONFIG" > /dev/null
 }
 
 @test "nixos: jarvis allowAgents includes clever and golden" {
-    result=$(nix_eval_json_apply "$NIXOS_OC.configPatches.\".agents.list\"" \
-        'x: (builtins.head (builtins.filter (a: a.id == "jarvis") x)).subagents.allowAgents')
+    result=$(jq '[.nixos.configPatches[".agents.list"][] | select(.id == "jarvis")][0].subagents.allowAgents' "$ALL_CONFIG")
     echo "$result" | jq -e 'index("clever")' > /dev/null
     echo "$result" | jq -e 'index("golden")' > /dev/null
 }
 
 @test "nixos: jarvis allowAgents does NOT include jarvis itself" {
-    result=$(nix_eval_json_apply "$NIXOS_OC.configPatches.\".agents.list\"" \
-        'x: (builtins.head (builtins.filter (a: a.id == "jarvis") x)).subagents.allowAgents')
-    ! echo "$result" | jq -e 'index("jarvis")' > /dev/null
+    ! jq -e '[.nixos.configPatches[".agents.list"][] | select(.id == "jarvis")][0].subagents.allowAgents | index("jarvis")' "$ALL_CONFIG" > /dev/null
 }
 
 @test "workpc: agentToAgent is enabled" {
-    result=$(nix_eval_json "$WORKPC_OC.configPatches.\".tools.agentToAgent.enabled\"")
-    [ "$result" = 'true' ]
+    [ "$(jq '.workpc.configPatches[".tools.agentToAgent.enabled"]' "$ALL_CONFIG")" = "true" ]
 }
 
 @test "workpc: agentToAgent allow list includes all enabled agents" {
-    result=$(nix_eval_json "$WORKPC_OC.configPatches.\".tools.agentToAgent.allow\"")
+    result=$(jq '.workpc.configPatches[".tools.agentToAgent.allow"]' "$ALL_CONFIG")
     for agent in robson jenny monster silver; do
         echo "$result" | jq -e "index(\"$agent\")" > /dev/null
     done
 }
 
 @test "workpc: sessions visibility is all" {
-    result=$(nix_eval_json "$WORKPC_OC.configPatches.\".tools.sessions.visibility\"")
-    [ "$result" = '"all"' ]
+    [ "$(jq -r '.workpc.configPatches[".tools.sessions.visibility"]' "$ALL_CONFIG")" = "all" ]
 }
 
 @test "workpc: robson allowAgents includes jenny and monster" {
-    result=$(nix_eval_json_apply "$WORKPC_OC.configPatches.\".agents.list\"" \
-        'x: (builtins.head (builtins.filter (a: a.id == "robson") x)).subagents.allowAgents')
+    result=$(jq '[.workpc.configPatches[".agents.list"][] | select(.id == "robson")][0].subagents.allowAgents' "$ALL_CONFIG")
     echo "$result" | jq -e 'index("jenny")' > /dev/null
     echo "$result" | jq -e 'index("monster")' > /dev/null
 }

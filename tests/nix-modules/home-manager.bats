@@ -1,11 +1,5 @@
 #!/usr/bin/env bats
 
-setup_file() {
-    REPO_DIR="$(cd "$BATS_TEST_DIRNAME" && git rev-parse --show-toplevel)"
-    load "$REPO_DIR/tests/helpers/home-manager-eval.bash"
-    _warm_flake_eval
-}
-
 setup() {
     REPO_DIR="$(cd "$BATS_TEST_DIRNAME" && git rev-parse --show-toplevel)"
     load "$REPO_DIR/tests/helpers/home-manager-eval.bash"

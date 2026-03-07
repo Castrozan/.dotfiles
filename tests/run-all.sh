@@ -78,7 +78,7 @@ _run_quick_tier() {
 }
 
 _run_nix_tier() {
-	_run_home_manager_integration_tests
+	_run_centralized_nix_tests
 	_run_domain_nix_tests
 }
 
@@ -98,6 +98,7 @@ _run_coverage_tier() {
 _run_ci_tier() {
 	_run_skill_frontmatter_validation
 	_run_quick_bats_tests_ci
+	_run_nix_tier
 }
 
 _run_skill_frontmatter_validation() {
@@ -142,18 +143,29 @@ _run_quick_bats_tests_ci() {
 	echo ""
 }
 
-_run_home_manager_integration_tests() {
+_run_centralized_nix_tests() {
 	if ! command -v nix &>/dev/null; then
-		echo "WARN: nix not installed, skipping home manager integration tests" >&2
+		echo "WARN: nix not installed, skipping centralized nix tests" >&2
 		return 0
 	fi
 	if ! command -v bats &>/dev/null; then
-		echo "WARN: bats not installed, skipping home manager integration tests" >&2
+		echo "WARN: bats not installed, skipping centralized nix tests" >&2
 		return 0
 	fi
 
-	echo "--- Home Manager Integration Tests (nix eval) ---"
-	bats "$SCRIPT_DIR/nix-modules/home-manager.bats"
+	local centralizedNixTestFiles=()
+	for testFile in "$SCRIPT_DIR"/nix-modules/*.bats; do
+		[[ -f "$testFile" ]] || continue
+		centralizedNixTestFiles+=("$testFile")
+	done
+
+	if [[ ${#centralizedNixTestFiles[@]} -eq 0 ]]; then
+		echo "No centralized nix test files found"
+		return 0
+	fi
+
+	echo "--- Centralized Nix Tests (tests/nix-modules/) ---"
+	bats "${centralizedNixTestFiles[@]}"
 	echo ""
 }
 
