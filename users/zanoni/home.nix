@@ -8,9 +8,7 @@
 
     ../../home/core.nix
     ../../home/scripts
-    ../../home/modules/agenix.nix
-    ../../home/modules/gpg.nix
-    ../../home/modules/password-store.nix
+    ../../home/modules/security
     ../../home/modules/atuin.nix
     ../../home/modules/bad-apple.nix
     ../../home/modules/bluetui.nix

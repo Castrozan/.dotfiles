@@ -10,7 +10,7 @@ let
   identityKeyPath = "${config.home.homeDirectory}/.ssh/id_ed25519";
 
   makeSecret = name: {
-    file = ../../secrets/${name}.age;
+    file = ../../../secrets/${name}.age;
     path = "${secretsDirectory}/${name}";
   };
 
@@ -35,7 +35,6 @@ let
     "x-username"
     "x-email"
     "x-password"
-    # Bot tokens for openclaw agents (telegram + discord)
     "telegram-bot-token-jarvis"
     "telegram-bot-token-golden"
     "telegram-bot-token-clever"
