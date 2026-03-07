@@ -43,11 +43,19 @@ sys.stdout.buffer.write(base64.b64decode(response['base64']))
 
 _validate_screenshot_is_image() {
 	local output_path="$1"
-	if ! file "$output_path" | grep -q "JPEG\|PNG\|image"; then
+	python3 -c "
+import sys
+with open(sys.argv[1], 'rb') as f:
+    header = f.read(8)
+jpeg_magic = header[:2] == b'\xff\xd8'
+png_magic = header[:8] == b'\x89PNG\r\n\x1a\n'
+if not (jpeg_magic or png_magic):
+    sys.exit(1)
+" "$output_path" || {
 		echo "Error: output is not a valid image" >&2
 		rm -f "$output_path"
 		return 1
-	fi
+	}
 }
 
 main "$@"
