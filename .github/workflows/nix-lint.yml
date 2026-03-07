@@ -38,7 +38,16 @@ jobs:
       - name: Flake metadata (syntax check)
         run: nix flake metadata
 
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc
+          df -h /
+
       - name: Eval flake structure
         run: |
           nix eval .#homeConfigurations --apply 'x: builtins.attrNames x' --json
           nix eval .#nixosConfigurations --apply 'x: builtins.attrNames x' --json
+
+      - name: NixOS assertions (dry eval)
+        run: |
+          nix build .#nixosConfigurations.zanoni.config.system.build.toplevel --dry-run 2>&1
