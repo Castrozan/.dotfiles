@@ -14,6 +14,7 @@
     ../scripts
     ../../../nixos/modules/xdg-portal.nix
     ../../../nixos/modules/openclaw-watchdog.nix
+    ../../../nixos/modules/network-optimization.nix
   ];
 
   # Bootloader and kernel
