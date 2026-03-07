@@ -52,11 +52,27 @@ in
         ];
       };
 
-      "50-disable-acp-card" = {
+      "50-disable-unused-audio-cards" = {
         "monitor.alsa.rules" = [
           {
             matches = [
               { "device.name" = "~alsa_card.pci-0000_05_00.5.*"; }
+            ];
+            actions.update-props = {
+              "device.disabled" = true;
+            };
+          }
+          {
+            matches = [
+              { "device.name" = "alsa_card.pci-0000_01_00.1"; }
+            ];
+            actions.update-props = {
+              "device.disabled" = true;
+            };
+          }
+          {
+            matches = [
+              { "device.name" = "alsa_card.pci-0000_05_00.1"; }
             ];
             actions.update-props = {
               "device.disabled" = true;
