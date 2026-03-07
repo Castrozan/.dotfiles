@@ -22,6 +22,7 @@ in
     ../../nixos/modules/man-cache.nix
     ../../nixos/modules/lid-switch.nix
     ../../nixos/modules/sudo.nix
+    ../../nixos/modules/mouse-8k-polling.nix
   ];
 
   # Disable lid switch suspend for laptop used as server/with external monitor
