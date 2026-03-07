@@ -8,54 +8,64 @@
 
     ../../home/core.nix
     ../../home/scripts
+
     ../../home/modules/security
-    ../../home/modules/atuin.nix
-    ../../home/modules/bad-apple.nix
-    ../../home/modules/bluetui.nix
-    ../../home/modules/bruno.nix
-    ../../home/modules/cbonsai.nix
-    ../../home/modules/ccost.nix
-    ../../home/modules/clipse.nix
-    ../../home/modules/openclaw
+    ../../home/modules/audio
     ../../home/modules/claude
     ../../home/modules/codex
-    ../../home/modules/cmatrix.nix
-    ../../home/modules/cursor
-    ../../home/modules/firefox.nix
-    ../../home/modules/devenv.nix
-    ../../home/modules/fish.nix
-    ../../home/modules/fonts.nix
-    ../../home/modules/fuzzel.nix
     ../../home/modules/gnome
     ../../home/modules/hyprland/nixos.nix
-    ../../home/modules/install-nothing.nix
+    ../../home/modules/openclaw
     ../../home/modules/openclaw-mesh
-    ../../home/modules/kitty.nix
-    ../../home/modules/lazygit.nix
-    ../../home/modules/mcporter.nix
-    ../../home/modules/ani-cli.nix
-    ../../home/modules/viu.nix
-    ../../home/modules/neovim.nix
-    ../../home/modules/obsidian.nix
     ../../home/modules/opencode
+    ../../home/modules/testing
+
+    ../../home/modules/terminal/atuin.nix
+    ../../home/modules/terminal/fish.nix
+    ../../home/modules/terminal/kitty.nix
+    ../../home/modules/terminal/tmux.nix
+    ../../home/modules/terminal/wezterm.nix
+
+    ../../home/modules/editor/cursor
+    ../../home/modules/editor/neovim.nix
+    ../../home/modules/editor/vscode
+
+    ../../home/modules/browser/firefox.nix
+
+    ../../home/modules/desktop/clipse.nix
+    ../../home/modules/desktop/fonts.nix
+    ../../home/modules/desktop/fuzzel.nix
+
+    ../../home/modules/dev/bruno.nix
+    ../../home/modules/dev/ccost.nix
+    ../../home/modules/dev/devenv.nix
+    ../../home/modules/dev/lazygit.nix
+    ../../home/modules/dev/mcporter.nix
+
+    ../../home/modules/media/ani-cli.nix
+    ../../home/modules/media/bad-apple.nix
+    ../../home/modules/media/suwayomi-server.nix
+
+    ../../home/modules/voice/hey-bot.nix
+    ../../home/modules/voice/hey-bot-test.nix
+    ./home/hey-bot.nix
+    ../../home/modules/voice/voice-pipeline.nix
+    ./home/voice-pipeline.nix
+    ../../home/modules/voice/voxtype.nix
+    ../../home/modules/voice/whisp-away.nix
+
+    ../../home/modules/gaming/cbonsai.nix
+    ../../home/modules/gaming/cmatrix.nix
+    ../../home/modules/gaming/install-nothing.nix
+    ../../home/modules/gaming/vesktop.nix
+
+    ../../home/modules/bluetui.nix
+    ../../home/modules/obsidian.nix
     ../../home/modules/pkgs.nix
     ../../home/modules/ralph-tui.nix
     ../../home/modules/summarize.nix
-    ../../home/modules/suwayomi-server.nix
-    ../../home/modules/tmux.nix
-    ../../home/modules/vesktop.nix
-    ../../home/modules/vial.nix
-    ../../home/modules/vscode
-    ../../home/modules/voxtype.nix
-    ../../home/modules/wezterm.nix # https://tmuxai.dev/terminal-compatibility/
-    ../../home/modules/whisp-away.nix
-    ../../home/modules/audio
-    ../../home/modules/hey-bot.nix
-    ../../home/modules/hey-bot-test.nix
-    ./home/hey-bot.nix
-    ../../home/modules/voice-pipeline.nix
-    ./home/voice-pipeline.nix
     ../../home/modules/systemd-manager-tui.nix
-    ../../home/modules/testing
+    ../../home/modules/vial.nix
+    ../../home/modules/viu.nix
   ];
 }

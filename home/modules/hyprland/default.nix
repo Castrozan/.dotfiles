@@ -1,5 +1,3 @@
-# Shared Hyprland modules - does NOT include Hyprland binary
-# Import via nixos.nix or standalone.nix instead
 { lib, pkgs, ... }:
 let
   systemctl = "${pkgs.systemd}/bin/systemctl";
@@ -22,10 +20,10 @@ in
     ./wlr-which-key.nix
     ./mako-service.nix
     ./quickshell-switcher.nix
-    ../satty.nix
+    ../desktop/satty.nix
     ../wiremix.nix
     ./xdg-desktop-portal-hyprland-service.nix
-    ../fuzzel.nix
+    ../desktop/fuzzel.nix
   ];
 
   xdg.configFile."hypr-host/monitors.conf".text = lib.mkDefault "";
@@ -35,8 +33,6 @@ in
     touch "$HOME/.cache/hypr-monitors-override.conf"
   '';
 
-  # Start graphical services after systemd reload
-  # This ensures services restart after home-manager switch
   home.activation.startGraphicalServices = lib.hm.dag.entryAfter [ "reloadSystemd" ] ''
     HYPR_DIR="/run/user/$(id -u)/hypr"
     if [ -d "$HYPR_DIR" ] && [ "$(ls -A "$HYPR_DIR" 2>/dev/null)" ]; then

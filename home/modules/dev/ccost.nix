@@ -1,6 +1,6 @@
 { pkgs, ... }:
 let
-  fetchPrebuiltBinary = import ../../lib/fetch-prebuilt-binary.nix { inherit pkgs; };
+  fetchPrebuiltBinary = import ../../../lib/fetch-prebuilt-binary.nix { inherit pkgs; };
 
   version = "0.2.0";
 

@@ -1,6 +1,6 @@
 { pkgs, ... }:
 let
-  shellInit = builtins.readFile ../../shell/fish/config.fish;
+  shellInit = builtins.readFile ../../../shell/fish/config.fish;
 in
 {
   home.packages = with pkgs; [
@@ -41,7 +41,8 @@ in
     enableFishIntegration = true;
   };
 
-  # Fish conf.d scripts
-  xdg.configFile."fish/conf.d/hyprland-env.fish".source = ../../shell/fish/conf.d/hyprland-env.fish;
-  xdg.configFile."fish/conf.d/betha-secrets.fish".source = ../../shell/fish/conf.d/betha-secrets.fish;
+  xdg.configFile."fish/conf.d/hyprland-env.fish".source =
+    ../../../shell/fish/conf.d/hyprland-env.fish;
+  xdg.configFile."fish/conf.d/betha-secrets.fish".source =
+    ../../../shell/fish/conf.d/betha-secrets.fish;
 }

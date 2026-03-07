@@ -1,8 +1,8 @@
 { pkgs, ... }:
 let
-  settings = builtins.readFile ../../.config/tmux/settings.conf;
-  binds = builtins.readFile ../../.config/tmux/binds.conf;
-  catppuccinSettings = builtins.readFile ../../.config/tmux/catppuccin.conf;
+  settings = builtins.readFile ../../../.config/tmux/settings.conf;
+  binds = builtins.readFile ../../../.config/tmux/binds.conf;
+  catppuccinSettings = builtins.readFile ../../../.config/tmux/catppuccin.conf;
 
   catppuccinZanoni = pkgs.tmuxPlugins.mkTmuxPlugin {
     pluginName = "catppuccin";
@@ -26,11 +26,9 @@ in
       pkgs.tmuxPlugins.yank
       pkgs.tmuxPlugins.resurrect
       {
-        # Settings must load BEFORE plugin runs (catppuccin uses %if conditionals)
         plugin = catppuccinZanoni;
         extraConfig = catppuccinSettings;
       }
-      # cpu must run AFTER catppuccin to interpolate #{cpu_percentage} in status-right
       pkgs.tmuxPlugins.cpu
     ];
     extraConfig = ''

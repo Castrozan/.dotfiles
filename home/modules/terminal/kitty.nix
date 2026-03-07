@@ -5,7 +5,7 @@
   ...
 }:
 let
-  nixglWrap = import ../../lib/nixgl-wrap.nix { inherit pkgs inputs isNixOS; };
+  nixglWrap = import ../../../lib/nixgl-wrap.nix { inherit pkgs inputs isNixOS; };
 
   kittyPackage = nixglWrap.wrapWithNixGLIntel {
     package = pkgs.kitty;
@@ -13,8 +13,8 @@ let
   };
 in
 {
-  home.file.".config/kitty/startup.conf".source = ../../.config/kitty/startup.conf;
-  home.file.".config/kitty/wallpaper.png".source = ../../static/wallpaper.png;
+  home.file.".config/kitty/startup.conf".source = ../../../.config/kitty/startup.conf;
+  home.file.".config/kitty/wallpaper.png".source = ../../../static/wallpaper.png;
 
   programs.kitty = {
     enable = true;
