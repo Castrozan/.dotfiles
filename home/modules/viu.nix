@@ -76,7 +76,7 @@ in
 
     [downloads]
     downloader = "auto"
-    downloads_dir = "/home/lucas.zanoni/Videos/viu"
+    downloads_dir = "${config.home.homeDirectory}/Videos/viu"
     enable_tracking = true
     max_concurrent_downloads = 3
     max_retry_attempts = 2
@@ -139,11 +139,11 @@ in
     args = ""
 
     [media_registry]
-    media_dir = "/home/lucas.zanoni/Videos/viu/.registry"
-    index_dir = "/home/lucas.zanoni/.config/viu"
+    media_dir = "${config.home.homeDirectory}/Videos/viu/.registry"
+    index_dir = "${viuConfigDirectory}"
 
     [sessions]
-    dir = "/home/lucas.zanoni/.config/viu/.sessions"
+    dir = "${viuConfigDirectory}/.sessions"
 
     [worker]
     enabled = true
