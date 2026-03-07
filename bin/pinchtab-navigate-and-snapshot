@@ -4,7 +4,7 @@ set -Eeuo pipefail
 
 readonly PINCHTAB_BASE_URL="http://localhost:9867"
 readonly DEFAULT_SNAPSHOT_QUERY_PARAMS="filter=interactive&format=compact"
-readonly MAX_STABILIZATION_WAIT_SECONDS=15
+readonly MAX_STABILIZATION_WAIT_MILLISECONDS=15000
 readonly STABILIZATION_POLL_INTERVAL_SECONDS="0.3"
 
 main() {
@@ -35,13 +35,14 @@ _navigate_to_url() {
 }
 
 _wait_until_page_stabilizes() {
-	local elapsed_seconds=0
+	local elapsed_milliseconds=0
+	local poll_interval_milliseconds=300
 	local previous_snapshot=""
 	local current_snapshot=""
 
 	sleep 1
 
-	while (($(echo "$elapsed_seconds < $MAX_STABILIZATION_WAIT_SECONDS" | bc -l))); do
+	while ((elapsed_milliseconds < MAX_STABILIZATION_WAIT_MILLISECONDS)); do
 		current_snapshot=$(curl -sf --max-time 10 "${PINCHTAB_BASE_URL}/snapshot?diff=true&format=compact" 2>/dev/null || echo "")
 
 		if [[ -n "$previous_snapshot" && "$current_snapshot" == "$previous_snapshot" ]]; then
@@ -50,7 +51,7 @@ _wait_until_page_stabilizes() {
 
 		previous_snapshot="$current_snapshot"
 		sleep "$STABILIZATION_POLL_INTERVAL_SECONDS"
-		elapsed_seconds=$(echo "$elapsed_seconds + $STABILIZATION_POLL_INTERVAL_SECONDS" | bc -l)
+		elapsed_milliseconds=$((elapsed_milliseconds + poll_interval_milliseconds))
 	done
 }
 
