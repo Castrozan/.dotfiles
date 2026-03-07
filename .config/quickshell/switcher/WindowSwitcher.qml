@@ -93,6 +93,8 @@ Scope {
 
     function openSwitcher(): void {
         confirmRequestedBeforeOverlayReady = false;
+        if (fetchClientsProcess.running)
+            fetchClientsProcess.running = false;
         Hyprland.refreshToplevels();
         fetchClientsProcess.running = true;
     }
@@ -127,6 +129,13 @@ Scope {
         }
     }
 
+    function clampSelectedIndex(): void {
+        if (windowList.length === 0)
+            selectedIndex = 0;
+        else if (selectedIndex >= windowList.length)
+            selectedIndex = windowList.length - 1;
+    }
+
     function selectNextWindow(): void {
         if (windowList.length === 0) return;
         selectedIndex = (selectedIndex + 1) % windowList.length;
@@ -143,16 +152,23 @@ Scope {
             return;
         }
 
+        clampSelectedIndex();
+
         if (windowList.length > 0 && selectedIndex < windowList.length) {
             let selectedAddress = windowList[selectedIndex].address;
             Hyprland.dispatch(`focuswindow address:0x${selectedAddress}`);
         }
 
         overlayVisible = false;
+        windowList = [];
+        selectedIndex = 0;
     }
 
     function cancelSwitcher(): void {
         overlayVisible = false;
+        confirmRequestedBeforeOverlayReady = false;
+        windowList = [];
+        selectedIndex = 0;
     }
 
     IpcHandler {
