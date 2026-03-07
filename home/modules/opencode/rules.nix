@@ -7,6 +7,5 @@ let
   '';
 in
 {
-  # Create AGENTS.md for dotfiles project
   home.file.".dotfiles/AGENTS.md".text = opencodeRules;
 }

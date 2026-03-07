@@ -2,7 +2,6 @@ _: {
   programs.yazi = {
     enable = true;
 
-    # Shell integration (y wrapper that cds after exit)
     enableBashIntegration = true;
     enableFishIntegration = true;
 
@@ -17,20 +16,16 @@ _: {
         show_symlink = true;
       };
 
-      # Configure the which-key popup (shows key sequences)
       which = {
-        sort_by = "key"; # Sort by key for easier scanning
+        sort_by = "key";
         sort_sensitive = false;
         sort_reverse = false;
         sort_translit = false;
       };
     };
 
-    # Keybindings with descriptive labels for the help menu
     keymap = {
-      # Manager layer - main file navigation
       mgr.prepend_keymap = [
-        # === HELP ===
         {
           on = "?";
           run = "help";
@@ -42,7 +37,6 @@ _: {
           desc = "Show keybindings help";
         }
 
-        # === QUICK NAVIGATION ===
         {
           on = [
             "g"
@@ -92,7 +86,6 @@ _: {
           desc = "Go to /tmp";
         }
 
-        # === FILE OPERATIONS (with clear descriptions) ===
         {
           on = "y";
           run = "yank";
@@ -124,7 +117,6 @@ _: {
           desc = "Delete permanently (careful!)";
         }
 
-        # === COPY PATH TO CLIPBOARD ===
         {
           on = [
             "c"
@@ -158,7 +150,6 @@ _: {
           desc = "Copy filename without extension";
         }
 
-        # === SELECTION ===
         {
           on = "<Space>";
           run = [
@@ -188,7 +179,6 @@ _: {
           desc = "Invert selection";
         }
 
-        # === VIEW/FILTER ===
         {
           on = ".";
           run = "hidden toggle";
@@ -215,7 +205,6 @@ _: {
           desc = "Search file contents with ripgrep";
         }
 
-        # === SORTING ===
         {
           on = [
             "o"
@@ -265,7 +254,6 @@ _: {
           desc = "Sort by extension";
         }
 
-        # === TABS ===
         {
           on = "t";
           run = "tab_create --current";
@@ -292,7 +280,6 @@ _: {
           desc = "Switch to next tab";
         }
 
-        # === SHELL INTEGRATION ===
         {
           on = "!";
           run = "shell --interactive";
@@ -315,7 +302,6 @@ _: {
         }
       ];
 
-      # Help layer - navigation within help menu
       help.prepend_keymap = [
         {
           on = "/";
@@ -335,7 +321,6 @@ _: {
       ];
     };
 
-    # Catppuccin Mocha theme
     theme = {
       mgr = {
         cwd = {

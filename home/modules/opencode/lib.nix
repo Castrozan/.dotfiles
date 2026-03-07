@@ -1,8 +1,4 @@
-# Shared utilities for opencode module
 {
-  # Color name to hex mapping (for OpenCode compatibility)
-  # OpenCode expects hex color format (#RRGGBB) in agent frontmatter,
-  # but source agents use color names for Claude compatibility.
   colorNameToHex = {
     red = "#FF0000";
     green = "#00FF00";
@@ -19,7 +15,6 @@
     grey = "#808080";
   };
 
-  # Process agent file: convert color names to hex in frontmatter
   processAgentFile =
     colorMap: content:
     builtins.replaceStrings (map (name: "color: ${name}") (builtins.attrNames colorMap)) (map (

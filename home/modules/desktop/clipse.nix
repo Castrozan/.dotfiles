@@ -1,6 +1,5 @@
 { pkgs, config, ... }:
 let
-  # Custom fork of clipse
   clipse-zanoni = pkgs.buildGoModule {
     pname = "clipse";
     version = "zanoni.v1.2.1";

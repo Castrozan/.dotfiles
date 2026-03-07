@@ -20,8 +20,6 @@ let
       }) files
     );
 
-  # Prevents home-manager from optimizing the hooks directory into a single
-  # symlink to the nix store, which would cause read-only filesystem errors.
   preventDirectoryOptimization = {
     ".claude/hooks/.hm-keep".text = "";
   };

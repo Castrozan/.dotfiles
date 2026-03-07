@@ -17,7 +17,6 @@
     ];
   };
 
-  # Configure default collections location
   xdg.configFile."bruno/preferences.json".text = builtins.toJSON {
     version = "1";
     preferences = {
@@ -26,7 +25,6 @@
     };
   };
 
-  # Ensure collections directory exists
   home.activation.createBrunoCollections = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     run mkdir -p /home/zanoni/vault/bruno-collections
   '';

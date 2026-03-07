@@ -1,19 +1,3 @@
-# mcporter — CLI bridge for MCP (Model Context Protocol) servers.
-#
-# Why mcporter instead of openclaw-mcp-adapter plugin?
-# The adapter registers tools via api.registerTool() at the gateway runtime level.
-# Only the default agent's session sees those tools — non-default agents (jenny,
-# monster, silver) never receive them. This is a gateway core constraint, not a
-# config issue. Both global tools.allow and per-agent tools.allow were tested and
-# confirmed broken for non-default agents (openclaw#11832, adapter#6).
-#
-# mcporter solves this by enabling SKILL.md-based tool invocation: agents read
-# skill docs from the system prompt and shell out via `mcporter call`. This works
-# for ALL agents because skills are file-based, not runtime-registered.
-#
-# mcporter auto-imports servers from ~/.claude/mcp.json but we override
-# chrome-devtools to connect to pinchtab's Chrome instance so agents get
-# authenticated access to logged-in sites (GitHub, GitLab, Betha, Google).
 { pkgs, config, ... }:
 let
   nodejs = pkgs.nodejs_22;

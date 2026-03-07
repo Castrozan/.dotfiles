@@ -1,25 +1,12 @@
-# Declarative patches for openclaw.json.
-#
-# openclaw.json is app-managed — the gateway, `openclaw configure`, and
-# `doctor --fix` all do full JSON overwrites, destroying any inline
-# directives. On every nix rebuild, the engine in config-engine.nix applies
-# these patches via jq, then writes back atomically. The app can freely
-# modify the config between rebuilds; next rebuild re-pins our fields.
-#
-# Add/remove a pinned field = add/remove one line here.
-# Engine details: see config-engine.nix.
 {
   config,
   lib,
-  # isNixOS available from specialArgs but not needed here
   ...
 }:
 let
   inherit (config) openclaw;
   homeDir = config.home.homeDirectory;
 
-  # Generate agents list from enabled agents
-  # All enabled agent names — used for inter-agent trust (agentToAgent, allowAgents)
   allAgentNames = lib.attrNames openclaw.enabledAgents;
 
   agentsList = lib.mapAttrsToList (
@@ -30,7 +17,6 @@ let
       model =
         lib.optionalAttrs (agent.model.primary != null) { inherit (agent.model) primary; }
         // lib.optionalAttrs (agent.model.fallbacks != [ ]) { inherit (agent.model) fallbacks; };
-      # Allow every agent to spawn tasks on every other agent
       subagents = {
         allowAgents = lib.filter (n: n != name) allAgentNames;
       };
@@ -38,31 +24,24 @@ let
     // lib.optionalAttrs (name == openclaw.defaultAgent) { default = true; }
   ) openclaw.enabledAgents;
 
-  # Default workspace for agents.defaults (use default agent's workspace)
   defaultWorkspace =
     if openclaw.defaultAgent != null then
       "${homeDir}/${openclaw.agents.${openclaw.defaultAgent}.workspace}"
     else
       "${homeDir}/openclaw";
 
-  # Get agents with telegram enabled
   telegramEnabledAgents = lib.filterAttrs (_: a: a.telegram.enable) openclaw.enabledAgents;
 
-  # Get agents with discord enabled
   discordEnabledAgents = lib.filterAttrs (_: a: a.discord.enable) openclaw.enabledAgents;
 
-  # Capitalize first letter helper
   capitalize = s: lib.toUpper (lib.substring 0 1 s) + lib.substring 1 (-1) s;
 
-  # Generate telegram accounts for agents with telegram enabled
-  # Note: botToken is handled via secretPatches, not here
   telegramAccounts = lib.mapAttrs (name: agent: {
     name = if agent.telegram.botName != null then agent.telegram.botName else capitalize name;
     enabled = true;
     inherit (agent.telegram) dmPolicy groupPolicy streamMode;
   }) telegramEnabledAgents;
 
-  # Generate bindings for telegram-enabled agents
   telegramBindings = lib.mapAttrsToList (name: _: {
     agentId = name;
     match = {
@@ -70,7 +49,7 @@ let
       accountId = name;
     };
   }) telegramEnabledAgents;
-  # Base config patches
+
   basePatches = {
     ".tools.exec.pathPrepend" = [
       "${homeDir}/openclaw/scripts"
@@ -153,27 +132,20 @@ let
     ".gateway.reload.mode" = "hybrid";
     ".gateway.http.endpoints.chatCompletions.enabled" = true;
     ".channels.telegram.commands.nativeSkills" = false;
-    # Inter-agent communication: all agents can talk to each other
     ".tools.agentToAgent.enabled" = true;
     ".tools.agentToAgent.allow" = allAgentNames;
-    # ".tools.agentToAgent.maxPingPongTurns" removed — no longer a valid key
-    # Full session visibility so agents can see each other's sessions
     ".tools.sessions.visibility" = "all";
 
-    # ACP — enabled for manual use via /acp, dispatch disabled (no auto-routing)
     ".acp.enabled" = true;
     ".acp.dispatch.enabled" = false;
     ".acp.defaultAgent" = "claude-code";
 
-    # Audio echo — send transcript confirmation before agent responds to voice messages
     ".tools.media.audio.echoTranscript" = true;
     ".tools.media.audio.echoFormat" = "text";
 
-    # Heartbeat light context — only inject HEARTBEAT.md for heartbeat runs (saves tokens)
     ".agents.defaults.heartbeat.lightContext" = true;
   };
 
-  # Discord patches - per-account, mirrors telegram pattern
   hasDiscord = discordEnabledAgents != { };
 
   discordAccounts = lib.mapAttrs (
@@ -186,7 +158,6 @@ let
     // lib.optionalAttrs (agent.discord.allowFrom != [ ]) { inherit (agent.discord) allowFrom; }
   ) discordEnabledAgents;
 
-  # Generate per-account voice patches
   discordVoicePatches = lib.foldl' (
     acc: name:
     let
@@ -198,7 +169,6 @@ let
       acc
   ) { } (lib.attrNames discordEnabledAgents);
 
-  # Generate per-account guild patches
   discordGuildPatches = lib.foldl' (
     acc: name:
     let
@@ -236,7 +206,6 @@ let
     };
   }) discordEnabledAgents;
 
-  # Telegram patches - per-account so we don't override existing settings
   telegramPatches =
     let
       hasTelegram = telegramAccounts != { };
@@ -250,7 +219,6 @@ let
     in
     if hasTelegram then accountPatches else { };
 
-  # Discord patches - per-account so we don't override existing settings
   discordPatches =
     let
       accountPatches = lib.foldl' (
@@ -280,8 +248,6 @@ in
     openclaw.configPatches =
       basePatches // telegramPatches // discordPatches // { ".bindings" = combinedChannelBindings; };
 
-    # All secrets use home-manager agenix paths (~/.secrets/).
-    # System-level agenix (/run/agenix/) is not used for openclaw secrets.
     openclaw.secretPatches =
       let
         secretsDir = "${homeDir}/.secrets";
@@ -295,14 +261,11 @@ in
           ".models.providers.nvidia.apiKey" = "${secretsDir}/nvidia-api-key";
         };
 
-        # Generate bot token secrets for telegram-enabled agents
         telegramSecrets = lib.mapAttrs' (name: _: {
           name = ".channels.telegram.accounts.${name}.botToken";
           value = "${secretsDir}/telegram-bot-token-${name}";
         }) telegramEnabledAgents;
 
-        # Generate bot token secrets for discord-enabled agents
-        # Discord uses "token" not "botToken" (botToken is Telegram-only)
         discordSecrets = lib.mapAttrs' (name: _: {
           name = ".channels.discord.accounts.${name}.token";
           value = "${secretsDir}/discord-bot-token-${name}";

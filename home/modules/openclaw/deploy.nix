@@ -12,7 +12,6 @@ let
 in
 {
   home.file =
-    # Workspace root files (RULES.md, CLAUDE.md, etc. — excludes private identity files)
     openclaw.deployDir {
       src = ../../../agents/openclaw/workspace;
       exclude = [
@@ -22,7 +21,6 @@ in
       ];
     }
 
-    # Skills (each subdirectory is a skill with files inside)
     // openclaw.deployDir {
       src = ../../../agents/skills;
       prefix = "skills";
@@ -40,7 +38,6 @@ in
         agent.skills == [ ] || builtins.elem name agent.skills;
     }
 
-    # TTS config (generated per-agent, not from files)
     // openclaw.deployGenerated (
       _agentName: agent: {
         "tts.json".text = builtins.toJSON {
@@ -49,7 +46,6 @@ in
       }
     )
 
-    # Private workspace files (identity, soul — force to override public defaults)
     // lib.optionalAttrs privateWorkspaceExists (
       openclaw.deployDir {
         src = privateDir + "/workspace";
@@ -58,7 +54,6 @@ in
       }
     )
 
-    # Private skills (from git submodule)
     // lib.optionalAttrs privateSkillsExists (
       openclaw.deployDir {
         src = privateDir + "/skills";
@@ -69,7 +64,6 @@ in
       }
     )
 
-    # External skill: aplicacoes-atendimento-triage (lucas.zanoni private, symlinked live)
     // openclaw.deployToAllWorkspaces {
       "skills/aplicacoes-atendimento-triage" = {
         source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/repo/aplicacoes-atendimento-triage";

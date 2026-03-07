@@ -14,7 +14,6 @@ in
             mkdir -p "$CODEX_RULES_DIR"
             touch "$RULES_FILE"
 
-            # Ensure key allow-rules exist without deleting Codex-added ones.
             ${bash}/bin/bash -eu -o pipefail <<'SH'
       rules_file="$HOME/.codex/rules/default.rules"
 

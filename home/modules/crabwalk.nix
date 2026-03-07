@@ -39,7 +39,6 @@ let
       GATEWAY_PORT=$(${pkgs.jq}/bin/jq -r '.gateway.port // 18790' "${gatewayConfigPath}" 2>/dev/null || echo "18790")
     fi
 
-    # Pass gateway args only for start command (not --version, --help, stop, status)
     FIRST_ARG="''${1:-start}"
     if [ "$FIRST_ARG" = "start" ] || [ "$FIRST_ARG" = "-d" ] || [ "$FIRST_ARG" = "--daemon" ]; then
       EXTRA_ARGS=""

@@ -1,5 +1,3 @@
-# openfortivpn - FortiGate VPN client with SAML support
-# Alternative to FortiClient GUI which doesn't work on Hyprland
 { pkgs, ... }:
 let
   vpn-betha = pkgs.stdenv.mkDerivation {

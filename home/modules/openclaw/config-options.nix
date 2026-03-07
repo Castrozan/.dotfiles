@@ -6,7 +6,6 @@
 let
   inherit (config) openclaw;
 
-  # Agent submodule type
   agentModule = lib.types.submodule {
     options = {
       enable = lib.mkEnableOption "agent";
@@ -194,10 +193,8 @@ let
     };
   };
 
-  # Get enabled agents as attrset
   enabledAgents = lib.filterAttrs (_: a: a.enable) openclaw.agents;
 
-  # Find the default agent (first one marked isDefault, or first enabled)
   defaultAgentName =
     let
       defaultOnes = lib.filterAttrs (_: a: a.isDefault) enabledAgents;
@@ -268,7 +265,6 @@ in
       description = "Content for @CORE_RULES@ placeholder in template substitution";
     };
 
-    # Derived values (internal)
     enabledAgents = lib.mkOption {
       type = lib.types.attrsOf agentModule;
       internal = true;
@@ -283,7 +279,6 @@ in
       description = "Name of the default agent";
     };
 
-    # Internal helper functions
     substituteAgentConfig = lib.mkOption {
       type = lib.types.functionTo (lib.types.functionTo lib.types.str);
       internal = true;
@@ -337,14 +332,12 @@ in
     inherit enabledAgents;
     defaultAgent = defaultAgentName;
 
-    # substituteAgentConfig takes agent name, then file path
     substituteAgentConfig =
       agentName: path:
       let
         agent = openclaw.agents.${agentName};
         homeDir = config.home.homeDirectory;
 
-        # Format skills list for display
         skillsDisplay =
           if agent.skills == [ ] then
             "*(configured via Nix — see skills/ directory)*"
@@ -390,7 +383,6 @@ in
       in
       builtins.replaceStrings placeholders values (builtins.readFile path);
 
-    # deployToWorkspace takes agent name, then files attrset
     deployToWorkspace =
       agentName: files:
       let
@@ -401,14 +393,12 @@ in
         inherit value;
       }) files;
 
-    # deployToAllWorkspaces deploys same files to all enabled agents
     deployToAllWorkspaces =
       files:
       lib.foldl' (acc: agentName: acc // (openclaw.deployToWorkspace agentName files)) { } (
         lib.attrNames enabledAgents
       );
 
-    # deployDir: read files from a directory, substitute, deploy to all agents
     deployDir =
       {
         src,
@@ -439,7 +429,6 @@ in
           // lib.optionalAttrs executable { executable = true; }
           // lib.optionalAttrs force { force = true; };
 
-        # Collect files from a directory, recursing one level into subdirectories
         collectDirFiles =
           agentName: basePath: dirPrefix:
           let
@@ -468,7 +457,6 @@ in
         mkAgentFiles =
           agentName:
           if recurse then
-            # Recurse mode: each qualifying entry in src is a directory to process
             let
               dirs = builtins.filter (
                 n:
@@ -482,7 +470,6 @@ in
               builtins.concatMap (d: collectDirFiles agentName (src + "/${d}") "${pfx}${d}/") dirs
             )
           else
-            # Flat mode: process regular files in src directly
             let
               files = builtins.filter (
                 n:
@@ -503,7 +490,6 @@ in
         acc: agentName: acc // (openclaw.deployToWorkspace agentName (mkAgentFiles agentName))
       ) { } (lib.attrNames enabledAgents);
 
-    # deployGenerated: deploy programmatically generated files to all agents
     deployGenerated =
       mkFiles:
       lib.foldl' (

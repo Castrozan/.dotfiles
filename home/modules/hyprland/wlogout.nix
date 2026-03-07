@@ -28,7 +28,6 @@
         text = "Reboot";
         keybind = "R";
       }
-      # TODO: suspend is not locking the screen before suspending
       {
         label = "suspend";
         action = "systemctl suspend";

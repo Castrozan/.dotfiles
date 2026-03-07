@@ -1,12 +1,12 @@
 { pkgs, latest, ... }:
 let
   videoUrls = [
-    "https://www.youtube.com/watch?v=FtutLA63Cp8" # Bad Apple!! - Touhou (pure B&W silhouette)
-    "https://www.youtube.com/watch?v=CqaAs_3azSs" # Lorn - ANVIL (B&W cyberpunk animation)
-    "https://www.youtube.com/watch?v=lX44CAz-JhU" # SIAMÉS - The Wolf (B&W with red accents)
-    "https://www.youtube.com/watch?v=djV11Xbc914" # a-ha - Take On Me (pencil sketch rotoscope)
-    "https://www.youtube.com/watch?v=OBk3ynRbtsw" # Ryan Woodward - Thought of You (B&W dance)
-    "https://www.youtube.com/watch?v=I03xFqbxUp8" # Thom Yorke - Last I Heard (hand-illustrated B&W)
+    "https://www.youtube.com/watch?v=FtutLA63Cp8"
+    "https://www.youtube.com/watch?v=CqaAs_3azSs"
+    "https://www.youtube.com/watch?v=lX44CAz-JhU"
+    "https://www.youtube.com/watch?v=djV11Xbc914"
+    "https://www.youtube.com/watch?v=OBk3ynRbtsw"
+    "https://www.youtube.com/watch?v=I03xFqbxUp8"
   ];
 
   videoUrlsStr = builtins.concatStringsSep "\n" (map (url: "\"${url}\"") videoUrls);
@@ -37,7 +37,6 @@ let
       IS_WEZTERM=1
     fi
 
-    # Playback FPS (also used for extraction, to reduce cached frame count).
     if [ -n "''${BAD_APPLE_FPS:-}" ]; then
       FPS="''${BAD_APPLE_FPS}"
     else
@@ -48,7 +47,6 @@ let
       fi
     fi
 
-    # Get terminal size; optionally cap render size to reduce output volume.
     COLS=$(tput cols)
     LINES=$(tput lines)
 
@@ -82,7 +80,6 @@ let
       RENDER_LINES="''${MAX_LINES}"
     fi
 
-    # Cache depends on render size + fps + delta format.
     CACHE_DIR="$CACHE_BASE/frames-''${RENDER_COLS}x''${RENDER_LINES}-fps''${FPS}-delta1-braille"
 
     download_video() {
@@ -96,13 +93,9 @@ let
       echo "Generating delta frames for ''${RENDER_COLS}x''${RENDER_LINES} at ''${FPS}fps..."
       mkdir -p "$CACHE_DIR"
 
-      # Extract frames at configured FPS to reduce output and cache size.
       TEMP_DIR=$(mktemp -d)
       ffmpeg -i "$VIDEO_FILE" -vf "fps=''${FPS}" "$TEMP_DIR/frame_%04d.png" -hide_banner -loglevel error
 
-      # Convert each frame to ASCII using chafa, then delta-encode by only
-      # emitting changed lines (cursor addressing). This reduces terminal work
-      # substantially and usually lowers WezTerm GPU usage.
       total=$(ls "$TEMP_DIR"/frame_*.png | wc -l)
       count=0
       prev_txt="$TEMP_DIR/prev.txt"
@@ -111,25 +104,20 @@ let
       for img in "$TEMP_DIR"/frame_*.png; do
         count=$((count + 1))
         base=$(basename "$img" .png)
-        # chafa: no colors, block chars only (deterministic output).
         chafa -f symbols -s "''${RENDER_COLS}x''${RENDER_LINES}" --symbols braille -c none "$img" > "$curr_txt"
 
         if [ "''${first}" -eq 1 ]; then
-          # First frame: paint everything.
           { printf '\033[H'; cat "$curr_txt"; } > "$CACHE_DIR/$base.ansi"
           first=0
         else
-          # Subsequent frames: emit only changed lines.
           gawk -v lines="''${RENDER_LINES}" '
             NR==FNR { prev[NR]=$0; next }
             {
               if ($0 != prev[FNR]) {
-                # Clear-to-EOL to avoid leftovers when a line becomes shorter.
                 printf "\033[%d;1H%s\033[K", FNR, $0
               }
             }
             END {
-              # If something went wrong and current has fewer lines, clear the rest.
               for (i=FNR+1; i<=lines; i++) {
                 printf "\033[%d;1H\033[K", i
               }
@@ -158,9 +146,7 @@ let
       generate_frames
     fi
 
-    # Play cached frames
     SLEEP=$(gawk -v fps="''${FPS}" 'BEGIN { if (fps <= 0) fps=30; printf "%.6f", 1.0/fps }')
-    # Hide cursor while animating; restore on exit.
     printf '\033[?25l\033[H\033[2J'
     trap 'printf "\033[?25h\033[0m\033[H\033[2J"; exit' INT TERM
     while true; do

@@ -1,6 +1,5 @@
 { pkgs, ... }:
 let
-  # Fetch plugin files from GitHub releases
   mkPlugin =
     {
       owner,
@@ -82,7 +81,6 @@ let
   pluginNames = builtins.attrNames plugins;
 in
 {
-  # Install plugin directories to ~/vault/.obsidian/plugins/
   home.file =
     builtins.listToAttrs (
       map (name: {
@@ -94,7 +92,6 @@ in
       }) pluginNames
     )
     // {
-      # JSON configs - force = true ensures Obsidian overwrites are replaced on rebuild
       "vault/.obsidian/community-plugins.json" = {
         text = builtins.toJSON pluginNames;
         force = true;

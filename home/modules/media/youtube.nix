@@ -14,7 +14,6 @@ let
   youtubeCli = pkgs.writeShellScriptBin "youtube-cli" ''
     set -euo pipefail
 
-    # Special command: setup OAuth credentials
     if [ "''${1:-}" = "setup" ]; then
       exec ${pkgs.bash}/bin/bash "${youtubeCliSetupSource}"
     fi

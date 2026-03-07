@@ -1,6 +1,3 @@
-# Workaround: no global setting to skip workspace trust dialog yet.
-# Track: https://github.com/anthropics/claude-code/issues/23109
-# When implemented, replace this with a trustedWorkspacePatterns setting.
 { pkgs, ... }:
 let
   trustedParentDirectories = [

@@ -1,13 +1,3 @@
-# Audio policy:
-# - PipeWire is the audio server on all platforms.
-# - Nix apps must use PulseAudio protocol (ao=pulse), never ao=pipewire.
-#   Nix's libpipewire version mismatches Ubuntu's system pipewire (ABI break = silence).
-#   PulseAudio protocol is version-independent — pipewire-pulse bridges it.
-# - bluetooth-policy.nix is the single source of truth for BT values,
-#   consumed by both Ubuntu (WirePlumber 0.4 Lua) and NixOS (WirePlumber 0.5 conf).
-# - WirePlumber config format is platform-specific and cannot be unified:
-#   Ubuntu uses Lua via xdg.configFile, NixOS uses declarative conf via wireplumber.extraConfig.
-# - The BT autoswitch service is cross-platform (pactl speaks PulseAudio protocol).
 {
   lib,
   isNixOS,

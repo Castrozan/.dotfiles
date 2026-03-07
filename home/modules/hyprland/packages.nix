@@ -3,7 +3,6 @@ let
   hyprlandPkgs = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system};
   inherit (hyprlandPkgs) xdg-desktop-portal-hyprland;
 
-  # Override hyprshot to use correct hyprland version (nixpkgs bundles old hyprctl)
   hyprshot-fixed = pkgs.hyprshot.override {
     inherit (hyprlandPkgs) hyprland;
   };
@@ -24,8 +23,6 @@ in
         hyprpaper
         swaybg
         libnotify
-        # hyprlock — installed via programs.hyprlock.enable in NixOS for DRM/PAM perms
-
         pamixer
         bemoji
         hyprshot-fixed
@@ -47,8 +44,6 @@ in
   };
 
   xdg.configFile = {
-    # Mako config is generated from template in .config/hypr/templates/mako.conf.tpl
-
     "xdg-desktop-portal/hyprland-portals.conf".text = ''
       [preferred]
       default=hyprland;gtk

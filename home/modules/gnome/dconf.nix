@@ -3,7 +3,6 @@ let
   wezterm-quick-temp-shell-command = "wezterm start -- tmux new-session";
 in
 {
-  # GNOME settings
   dconf.settings = {
     "org/gnome/desktop/peripherals/mouse" = {
       natural-scroll = false;
@@ -18,7 +17,6 @@ in
       gtk-theme = "Yaru-viridian-dark";
       icon-theme = "Yaru-viridian";
       color-scheme = "prefer-dark";
-      # cursor-theme = "Adwaita";
       cursor-size = 24;
       show-battery-percentage = true;
     };
@@ -26,7 +24,6 @@ in
     "org/gnome/desktop/background" = {
       color-shading-type = "solid";
       picture-options = "zoom";
-      # TODO: the bkg image does not apply itself, need to fix select it on gnome settings
       picture-uri = "file:///home/zanoni/.dotfiles/static/alter-jellyfish-dark.jpg";
       picture-uri-dark = "file:///home/zanoni/.dotfiles/static/alter-jellyfish-dark.jpg";
       primary-color = "#000000000000";
@@ -48,13 +45,11 @@ in
       show-popup = true;
       show-overview-grid = true;
       show-workspace-names = false;
-      workspace-overview-toggle = [ "" ]; # Disable default Super+W keybinding
+      workspace-overview-toggle = [ "" ];
     };
 
     "org/gnome/shell/keybindings" = {
-      # Disable Super+v for notification list
       toggle-message-tray = [ ];
-      # Screenshot keybindings - use GNOME's interactive screenshot UI - pipe to ksnip for annotation
       show-screenshot-ui = [ "Print" ];
       screenshot = [ ];
       screenshot-window = [ ];
@@ -63,12 +58,10 @@ in
 
     "org/gnome/shell" = {
       disable-user-extensions = false;
-      # Enable Super+1,2,3... to launch them
       favorite-apps = [
         "brave-browser.desktop"
         "wezterm.desktop"
       ];
-      # Extensions are installed via home.packages (see users/*/pkgs.nix)
       enabled-extensions = [
         "default-workspace@mateusrodcosta.com"
         "wsmatrix@martin.zurowietz.de"
@@ -76,8 +69,6 @@ in
     };
 
     "org/gnome/settings-daemon/plugins/media-keys" = {
-      # Disable default GNOME screenshot shortcuts so custom keybindings can work
-      # These defaults take precedence over custom keybindings, so we must disable them first
       screenshot = [ ];
       area-screenshot = [ ];
       window-screenshot = [ ];
@@ -113,7 +104,6 @@ in
       command = "xdg-open 'obsidian://adv-uri?commandid=obsidian-read-it-later%3Asave-clipboard-to-notice'";
     };
 
-    # Set OBSIDIAN_HOME env var since gsd-media-keys doesn't have access to session variables
     "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom4" = {
       name = "daily-note";
       binding = "<Super>d";
@@ -138,8 +128,6 @@ in
       command = wezterm-quick-temp-shell-command;
     };
 
-    # TODO: gnome keeps asking for remote control to write to the screen
-    # No option to remove this. https://gitlab.gnome.org/GNOME/xdg-desktop-portal-gnome/-/issues/114
     "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0" = {
       binding = "<Alt>a";
       command = "whisp-away start";
@@ -150,7 +138,7 @@ in
       close = [ "<Shift><Control>w" ];
       switch-applications = [ ];
       switch-applications-backward = [ ];
-      show-desktop = [ ]; # Disable Super+D
+      show-desktop = [ ];
       switch-windows = [
         "<Alt>Tab"
         "<Super>Tab"
