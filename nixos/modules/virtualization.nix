@@ -1,24 +1,24 @@
-# Virtualization configuration for Docker and libvirt
-# Reviewed: Configuration is correct and not breaking the system
-# Docker and libvirt are properly isolated and work together without conflicts
-{ pkgs, ... }:
+{ config, pkgs, ... }:
 {
-  # Docker configuration
+  assertions = [
+    {
+      assertion = config.virtualisation.docker.enableOnBoot;
+      message = "Docker must start on boot — containers created with --restart=always (Portainer, monitoring stacks) require the daemon running at boot to honor restart policies";
+    }
+    {
+      assertion = config.virtualisation.libvirtd.enable;
+      message = "libvirtd must be enabled — QEMU/KVM virtual machines require the libvirt daemon for lifecycle management, network bridging, and storage pool access";
+    }
+  ];
+
   virtualisation.docker = {
     enable = true;
-
-    # start dockerd on boot.
-    # This is required for containers which are created with the `--restart=always` flag to work.
     enableOnBoot = true;
   };
   users.extraGroups.docker.members = [ "zanoni" ];
 
-  # Virt-Manager
-  # From https://github.com/TechsupportOnHold/Nixos-VM
-  # Add user to libvirtd group
   users.users.zanoni.extraGroups = [ "libvirtd" ];
 
-  # Install necessary packages
   environment.systemPackages = with pkgs; [
     virt-manager
     virt-viewer
@@ -31,7 +31,6 @@
     quickemu
   ];
 
-  # Manage the virtualisation services
   virtualisation = {
     libvirtd = {
       enable = true;

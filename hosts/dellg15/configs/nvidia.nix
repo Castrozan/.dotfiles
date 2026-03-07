@@ -4,16 +4,23 @@
   ...
 }:
 {
+  assertions = [
+    {
+      assertion = config.hardware.nvidia.modesetting.enable;
+      message = "NVIDIA modesetting is required — Wayland compositors (Hyprland, GNOME) cannot drive displays without kernel modesetting; without it you get a black screen or forced fallback to Xorg";
+    }
+    {
+      assertion = config.hardware.nvidia.prime.sync.enable;
+      message = "NVIDIA PRIME sync is required — the Dell G15 has an iGPU+dGPU topology where the display is wired through the AMD iGPU; sync mode routes all rendering through the dGPU to avoid tearing and microstutter";
+    }
+    {
+      assertion = config.boot.kernelPackages.kernel.version == pkgs.linuxPackages_6_1.kernel.version;
+      message = "LTS kernel 6.1.x is required — NVIDIA proprietary driver 550.x is only validated against 6.1 LTS; newer kernels cause module build failures or runtime crashes after suspend";
+    }
+  ];
+
   services.xserver.videoDrivers = [ "nvidia" ];
 
-  # Kernel version and NVIDIA-SMI version
-  # uname -r
-  # 6.1.141
-  # nvidia-smi | head -n3
-  # Sun Jun 29 23:05:49 2025
-  # NVIDIA-SMI 550.135
-
-  # Use the LTS kernel (6.1.x) that NVIDIA officially supports.
   boot.kernelPackages = pkgs.linuxPackages_6_1;
 
   hardware.nvidia = {
@@ -30,13 +37,11 @@
     modesetting.enable = true;
     nvidiaSettings = true;
 
-    # Optional power-mgmt flags (kept explicit but off)
     powerManagement = {
       enable = false;
       finegrained = false;
     };
 
-    # PRIME block — keep only if you *really* have an iGPU+dGPU laptop
     prime = {
       sync.enable = true;
       offload.enable = false;
@@ -45,7 +50,6 @@
     };
   };
 
-  # Load modules early
   boot.initrd.kernelModules = [
     "nvidia"
     "nvidia_modeset"
@@ -53,10 +57,8 @@
     "nvidia_drm"
   ];
 
-  # CUDA & tooling
   environment.systemPackages = with pkgs; [
     cudatoolkit
-    # nvtop-nvidia          # uncomment if you want GPU htop
   ];
 
   systemd.services.nvidia-maximum-performance = {

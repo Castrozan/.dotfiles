@@ -7,6 +7,25 @@
   ...
 }:
 {
+  assertions = [
+    {
+      assertion = config.zramSwap.enable;
+      message = "zram swap is required — with only 16GB RAM and heavy Nix builds, zram provides compressed swap in memory that is 3-5x faster than disk swap and prevents OOM kills during parallel compilation";
+    }
+    {
+      assertion = config.services.earlyoom.enable;
+      message = "earlyoom is required — without proactive OOM killing the kernel OOM killer activates too late, freezing the desktop for 30+ seconds before killing a random process instead of the actual memory hog";
+    }
+    {
+      assertion = config.boot.kernel.sysctl."vm.swappiness" >= 100;
+      message = "High swappiness (>=100) is required — with zram enabled, swappiness above 100 tells the kernel to prefer compressing pages into zram over evicting file cache, which keeps build artifacts cached and improves rebuild speed";
+    }
+    {
+      assertion = builtins.elem "flakes" config.nix.settings.experimental-features;
+      message = "Flakes must be enabled — this entire dotfiles repository is structured as a flake; disabling flakes breaks all rebuilds, CI, and development workflows";
+    }
+  ];
+
   imports = [
     ./audio.nix
     ./nvidia.nix
@@ -17,7 +36,6 @@
     ../../../nixos/modules/network-optimization.nix
   ];
 
-  # Bootloader and kernel
   boot = {
     loader = {
       systemd-boot.enable = true;
@@ -25,7 +43,6 @@
     };
     kernel.sysctl."vm.swappiness" = 150;
 
-    # Virtual camera support (v4l2loopback)
     extraModulePackages = [ config.boot.kernelPackages.v4l2loopback ];
     kernelModules = [ "v4l2loopback" ];
     extraModprobeConfig = ''
@@ -33,11 +50,6 @@
     '';
   };
 
-  # Override filesystem configuration with labels for resilience
-  # This prevents UUID mismatch issues during GPT corruption recovery
-  # https://chatgpt.com/share/68e1bfff-f1d0-800e-b971-24f822d1c93b
-  # For new machines: Run `./bin/setup-filesystem-labels` after NixOS installation
-  # to create the required labels, then rebuild with this configuration.
   fileSystems = lib.mkForce {
     "/" = {
       device = "/dev/disk/by-label/nixos-root";
@@ -53,16 +65,13 @@
     };
   };
 
-  # Nix configuration
   nix = {
     settings = {
-      # Enable experimental features
       experimental-features = [
         "nix-command"
         "flakes"
       ];
 
-      # Binary caches - huge win for build speed
       substituters = [
         "https://cache.nixos.org"
         "https://nix-community.cachix.org"
@@ -77,18 +86,14 @@
       max-jobs = 6;
       cores = 2;
 
-      # Download optimization - increase buffer and parallel downloads
-      download-buffer-size = "524288000"; # 500 MiB
-      http-connections = 50; # More parallel downloads (default is 1)
+      download-buffer-size = "524288000";
+      http-connections = 50;
 
-      # Eval cache - faster repeated rebuilds
       eval-cache = true;
 
-      # Sandbox and store optimization
       sandbox = true;
       auto-optimise-store = true;
 
-      # Allow the user to run nix commands
       trusted-users = [ username ];
     };
 
@@ -101,7 +106,6 @@
       dates = [ "weekly" ];
     };
 
-    # Garbage collection
     gc = {
       automatic = lib.mkDefault true;
       dates = lib.mkDefault "weekly";
@@ -109,19 +113,11 @@
     };
   };
 
-  # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
 
-  # Disable man-cache generation
   documentation.man.generateCaches = false;
 
-  # This value determines the NixOS release from which the default
-  # settings for stateful data, like file locations and database versions
-  # on your system were taken. It's perfectly fine and recommended to leave
-  # this value at the release version of the first install of this system.
-  # Before changing this value read the documentation for this option
-  # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
-  system.stateVersion = nixpkgs-version; # Did you read the comment?
+  system.stateVersion = nixpkgs-version;
 
   zramSwap = {
     enable = true;
@@ -153,7 +149,6 @@
     ];
   };
 
-  # Networking
   networking = {
     hostName = "nixos";
     networkmanager.enable = true;
@@ -161,7 +156,6 @@
 
   time.timeZone = "America/Sao_Paulo";
 
-  # Internationalization
   i18n = {
     defaultLocale = "en_US.UTF-8";
     extraLocaleSettings = {
@@ -177,22 +171,17 @@
     };
   };
 
-  # Programs
   programs = {
     dconf.enable = true;
     command-not-found.enable = false;
     ssh.enableAskPassword = false;
   };
 
-  # Console keymap
   console.keyMap = "br-abnt2";
 
-  # XDG Portal for screen sharing (Hyprland + GNOME coexistence)
   custom.xdgPortal.enable = true;
 
-  # Services
   services = {
-    # X11 and GNOME
     xserver = {
       enable = true;
       xkb = {
@@ -203,13 +192,10 @@
     displayManager.gdm.enable = true;
     desktopManager.gnome.enable = true;
 
-    # Printing
     printing.enable = true;
 
-    # Touchpad support
     libinput = {
       enable = true;
-      # Dell G15 5515 touchpad configuration
       touchpad = {
         accelSpeed = "0.6";
         accelProfile = "adaptive";
@@ -225,10 +211,8 @@
       };
     };
 
-    # Custom udev rules for Dell G15 5515 touchpad
     udev.extraRules = builtins.readFile ./udev-rules/99-dell-g15-touchpad.rules;
 
-    # OpenClaw gateway watchdog
     openclaw-watchdog = {
       enable = true;
       interval = 30;
@@ -237,7 +221,6 @@
     };
   };
 
-  # Additional packages for hardware monitoring and management
   environment.systemPackages = with pkgs; [
     lm_sensors
     i2c-tools
@@ -246,7 +229,7 @@
     vulkan-tools
     pciutils
     usbutils
-    v4l-utils # Virtual camera utilities
-    ffmpeg-full # For video pipeline
+    v4l-utils
+    ffmpeg-full
   ];
 }

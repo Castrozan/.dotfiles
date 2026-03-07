@@ -1,8 +1,27 @@
-{ pkgs, ... }:
+{ config, pkgs, ... }:
 let
   btPolicy = import ../../../home/modules/audio/bluetooth-policy.nix;
 in
 {
+  assertions = [
+    {
+      assertion = config.services.pipewire.enable;
+      message = "PipeWire is required — the audio pipeline depends on PipeWire for low-latency mixing, Bluetooth codec negotiation, and JACK compatibility; PulseAudio alone cannot provide these";
+    }
+    {
+      assertion = !config.services.pulseaudio.enable;
+      message = "PulseAudio must be disabled — PipeWire provides its own PulseAudio compatibility layer; running both causes socket conflicts and silent audio routing failures";
+    }
+    {
+      assertion = config.security.rtkit.enable;
+      message = "rtkit is required — PipeWire needs real-time scheduling priority to prevent audio dropouts under CPU load; without rtkit the audio thread runs at normal priority and glitches during builds";
+    }
+    {
+      assertion = config.hardware.bluetooth.enable;
+      message = "Bluetooth must be enabled — the audio pipeline relies on Bluetooth for wireless headset connectivity and WirePlumber codec negotiation (SBC-XQ, AAC, aptX)";
+    }
+  ];
+
   security.rtkit.enable = true;
 
   hardware.bluetooth = {
