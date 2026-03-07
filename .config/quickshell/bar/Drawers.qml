@@ -37,7 +37,7 @@ Scope {
 
     SocketServer {
         active: true
-        path: "/tmp/quickshell-osd.sock"
+        path: Quickshell.env("XDG_RUNTIME_DIR") + "/quickshell-osd.sock"
 
         handler: Socket {
             parser: SplitParser {

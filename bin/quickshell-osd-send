@@ -2,7 +2,7 @@
 
 set -Eeuo pipefail
 
-readonly OSD_SOCKET_PATH="/tmp/quickshell-osd.sock"
+readonly OSD_SOCKET_PATH="${XDG_RUNTIME_DIR:-/tmp}/quickshell-osd.sock"
 
 main() {
 	local osd_type="${1:-}"
