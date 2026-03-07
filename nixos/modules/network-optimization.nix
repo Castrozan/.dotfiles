@@ -10,7 +10,7 @@
       message = "Fair Queue qdisc is required — BBR depends on fq for accurate packet pacing; without it BBR falls back to loss-based behavior identical to CUBIC";
     }
     {
-      assertion = config.networking.networkmanager.wifi.powersave == false;
+      assertion = !config.networking.networkmanager.wifi.powersave;
       message = "WiFi power saving must be disabled — power management causes 100-500ms latency spikes and drops 5GHz DFS channels when the radio sleeps during the mandatory radar detection quiet period";
     }
   ];
