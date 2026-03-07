@@ -1,5 +1,20 @@
-{ config, ... }:
+{ config, lib, ... }:
 {
+  assertions = [
+    {
+      assertion = config.boot.kernel.sysctl."net.ipv4.tcp_congestion_control" == "bbr";
+      message = "BBR congestion control is required — it delivers 2-5x throughput improvement over CUBIC on lossy WiFi links by using delivery rate estimation instead of loss-based backoff";
+    }
+    {
+      assertion = config.boot.kernel.sysctl."net.core.default_qdisc" == "fq";
+      message = "Fair Queue qdisc is required — BBR depends on fq for accurate packet pacing; without it BBR falls back to loss-based behavior identical to CUBIC";
+    }
+    {
+      assertion = config.networking.networkmanager.wifi.powersave == false;
+      message = "WiFi power saving must be disabled — power management causes 100-500ms latency spikes and drops 5GHz DFS channels when the radio sleeps during the mandatory radar detection quiet period";
+    }
+  ];
+
   boot = {
     kernelModules = [ "tcp_bbr" ];
 
