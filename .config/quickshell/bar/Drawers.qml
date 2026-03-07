@@ -135,25 +135,6 @@ Scope {
                 launcherVisible = !launcherVisible;
             }
 
-            onLauncherVisibleChanged: {
-                if (launcherVisible) {
-                    ensureWorkspaceIsTiledProcess.running = true;
-                } else {
-                    ensureWorkspaceIsGroupedProcess.running = true;
-                }
-            }
-
-            Process {
-                id: ensureWorkspaceIsTiledProcess
-                command: ["hypr-ensure-workspace-tiled"]
-                running: false
-            }
-
-            Process {
-                id: ensureWorkspaceIsGroupedProcess
-                command: ["hypr-ensure-workspace-grouped"]
-                running: false
-            }
 
             function toggleSession(): void {
                 sessionVisible = !sessionVisible;
