@@ -59,6 +59,26 @@
     # nvtop-nvidia          # uncomment if you want GPU htop
   ];
 
+  systemd.services.nvidia-maximum-performance = {
+    description = "Lock NVIDIA GPU clocks for maximum desktop performance";
+    after = [ "nvidia-persistenced.service" ];
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      ExecStart = [
+        "${config.hardware.nvidia.package.bin}/bin/nvidia-smi -pm 1"
+        "${config.hardware.nvidia.package.bin}/bin/nvidia-smi -lgc 1500,2100"
+        "${config.hardware.nvidia.package.bin}/bin/nvidia-smi -lmc 6001,6001"
+      ];
+      ExecStop = [
+        "${config.hardware.nvidia.package.bin}/bin/nvidia-smi -rgc"
+        "${config.hardware.nvidia.package.bin}/bin/nvidia-smi -rmc"
+        "${config.hardware.nvidia.package.bin}/bin/nvidia-smi -pm 0"
+      ];
+    };
+  };
+
   environment.sessionVariables = {
     LIBVA_DRIVER_NAME = "nvidia";
     __GLX_VENDOR_LIBRARY_NAME = "nvidia";
