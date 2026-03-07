@@ -51,10 +51,7 @@ in
           if ! ${pkgs.curl}/bin/curl -s -f http://localhost:${toString cfg.gatewayPort}/health > /dev/null 2>&1; then
             echo "[$(date -Iseconds)] Gateway down - running doctor fix..."
             
-            # Run openclaw doctor --fix
             su ${cfg.user} -c 'openclaw doctor --fix' || echo "Doctor fix failed"
-            
-            # Restart gateway
             su ${cfg.user} -c 'openclaw gateway restart' || echo "Restart failed"
             
             echo "[$(date -Iseconds)] Recovery attempted"

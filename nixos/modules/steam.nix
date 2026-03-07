@@ -1,11 +1,10 @@
 { lib, ... }:
 {
-  # From https://nixos.wiki/wiki/Steam
   programs.steam = {
     enable = true;
-    remotePlay.openFirewall = true; # For Steam Remote Play
-    dedicatedServer.openFirewall = true; # For Source Dedicated Server
-    localNetworkGameTransfers.openFirewall = true; # For Steam Local Network Game Transfers
+    remotePlay.openFirewall = true;
+    dedicatedServer.openFirewall = true;
+    localNetworkGameTransfers.openFirewall = true;
   };
 
   nixpkgs.config.allowUnfreePredicate =

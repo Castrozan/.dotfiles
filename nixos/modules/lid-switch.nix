@@ -1,5 +1,3 @@
-# Module to disable lid switch actions (suspend/hibernate)
-# Useful for laptops used as servers or with external monitors
 { config, lib, ... }:
 let
   cfg = config.custom.lidSwitch;
