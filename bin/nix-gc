@@ -4,6 +4,7 @@ set -Eeuo pipefail
 
 readonly DEFAULT_GENERATIONS_TO_KEEP=5
 readonly NIX_DAEMON_PROFILE="/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh"
+readonly HOME_MANAGER_PROFILE_PATH="${HOME}/.local/state/nix/profiles/home-manager"
 
 main() {
 	_ensure_nix_in_path_or_source_daemon_profile || {
@@ -119,43 +120,90 @@ _clean_home_manager_generations() {
 
 	echo ">> Cleaning home-manager generations (keeping $generations_to_keep)..."
 
-	if ! command -v home-manager &>/dev/null; then
-		echo "   home-manager not found, skipping generation cleanup"
-		echo ""
-		return
+	if command -v home-manager &>/dev/null; then
+		_clean_home_manager_generations_via_cli "$generations_to_keep" "$dry_run"
+	elif [ -e "$HOME_MANAGER_PROFILE_PATH" ]; then
+		_clean_home_manager_generations_via_nix_env "$generations_to_keep" "$dry_run"
+	else
+		echo "   No home-manager profile found, skipping generation cleanup"
 	fi
+	echo ""
+}
+
+_clean_home_manager_generations_via_cli() {
+	local generations_to_keep=$1
+	local dry_run=$2
 
 	local all_generation_ids
 	mapfile -t all_generation_ids < <(home-manager generations | grep -oP '(?<=: id )\d+')
 
-	local total_generations=${#all_generation_ids[@]}
-	local count_to_remove=$((total_generations - generations_to_keep))
-
-	local generations_to_remove=()
-	if [ "$count_to_remove" -gt 0 ]; then
-		generations_to_remove=("${all_generation_ids[@]:0:$count_to_remove}")
-	fi
+	local generations_to_remove
+	mapfile -t generations_to_remove < <(_compute_generations_to_remove "$generations_to_keep" "${all_generation_ids[@]}")
 
 	if [ ${#generations_to_remove[@]} -eq 0 ]; then
 		echo "   No old generations to remove"
-		echo ""
 		return
 	fi
 
 	echo "   Found ${#generations_to_remove[@]} old generation(s) to remove"
 
 	if [ "$dry_run" = true ]; then
-		echo "   [DRY RUN] Would remove generations:"
-		for generation_id in "${generations_to_remove[@]}"; do
-			echo "     - $generation_id"
-		done
+		_print_dry_run_generations "${generations_to_remove[@]}"
 	else
 		for generation_id in "${generations_to_remove[@]}"; do
 			echo "   Removing: $generation_id"
 			home-manager remove-generations "$generation_id" 2>/dev/null || true
 		done
 	fi
-	echo ""
+}
+
+_clean_home_manager_generations_via_nix_env() {
+	local generations_to_keep=$1
+	local dry_run=$2
+
+	local all_generation_ids
+	mapfile -t all_generation_ids < <(nix-env --profile "$HOME_MANAGER_PROFILE_PATH" --list-generations | awk '{print $1}')
+
+	local generations_to_remove
+	mapfile -t generations_to_remove < <(_compute_generations_to_remove "$generations_to_keep" "${all_generation_ids[@]}")
+
+	if [ ${#generations_to_remove[@]} -eq 0 ]; then
+		echo "   No old generations to remove"
+		return
+	fi
+
+	echo "   Found ${#generations_to_remove[@]} old generation(s) to remove"
+
+	if [ "$dry_run" = true ]; then
+		_print_dry_run_generations "${generations_to_remove[@]}"
+	else
+		for generation_id in "${generations_to_remove[@]}"; do
+			echo "   Removing: $generation_id"
+			nix-env --profile "$HOME_MANAGER_PROFILE_PATH" --delete-generations "$generation_id" 2>/dev/null || true
+		done
+	fi
+}
+
+_compute_generations_to_remove() {
+	local generations_to_keep=$1
+	shift
+	local all_generation_ids=("$@")
+
+	local total_generations=${#all_generation_ids[@]}
+	local count_to_remove=$((total_generations - generations_to_keep))
+
+	if [ "$count_to_remove" -le 0 ]; then
+		return
+	fi
+
+	printf '%s\n' "${all_generation_ids[@]:0:$count_to_remove}"
+}
+
+_print_dry_run_generations() {
+	echo "   [DRY RUN] Would remove generations:"
+	for generation_id in "$@"; do
+		echo "     - $generation_id"
+	done
 }
 
 _collect_user_garbage() {
