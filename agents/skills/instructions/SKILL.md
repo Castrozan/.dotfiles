@@ -24,6 +24,10 @@ Never explain what code does — the model can read it. Document what the model 
 A stale instruction is worse than no instruction. When instructions describe code structure that later changes, the model follows the instruction over what it reads, producing confident wrong behavior. Every specific detail is a future liability. Write about forces and constraints, not about current implementation.
 </writing_instructions>
 
+<policy_versus_instruction>
+Policies and instructions serve different purposes. An instruction tells agents how to behave during work — formatting rules, commit conventions, tool usage. A policy declares intent, goals, boundaries, and constraints for a domain — what must be true about audio, networking, or security regardless of implementation. Policies never name specific tools, commands, paths, or current state. They define requisites and boundaries in dense prose so that any implementation satisfying the constraints is acceptable. When asked to write a policy, do not produce implementation documentation or reference guides — those are instructions or code, not policy.
+</policy_versus_instruction>
+
 <evergreen_instructions>
 Instructions become stale when code changes. Write instructions that stay accurate without maintenance.
 
