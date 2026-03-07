@@ -5,8 +5,6 @@
   ];
   codecs = [
     "aac"
-    "sbc_xq"
-    "sbc"
   ];
   autoswitchToHeadsetProfile = true;
   sinkPriority = 3000;
