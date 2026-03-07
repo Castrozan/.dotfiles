@@ -5,8 +5,8 @@
 </p>
 
 <p align="center">
-   <a href="https://github.com/Castrozan/.dotfiles/actions/workflows/ci.yml">
-      <img alt="CI" src="https://img.shields.io/github/actions/workflow/status/castrozan/.dotfiles/ci.yml?style=for-the-badge&amp;logo=github-actions&amp;color=A6E3A1&amp;logoColor=D9E0EE&amp;labelColor=302D41&amp;label=CI">
+   <a href="https://github.com/Castrozan/.dotfiles/actions/workflows/tests.yml">
+      <img alt="CI" src="https://img.shields.io/github/actions/workflow/status/castrozan/.dotfiles/tests.yml?style=for-the-badge&amp;logo=github-actions&amp;color=A6E3A1&amp;logoColor=D9E0EE&amp;labelColor=302D41&amp;label=CI">
    </a>
    <a href="https://castrozan.github.io/.dotfiles/">
       <img alt="Coverage" src="https://img.shields.io/badge/Coverage-Report-informational.svg?style=for-the-badge&amp;logo=codecov&amp;color=89B4FA&amp;logoColor=D9E0EE&amp;labelColor=302D41">
