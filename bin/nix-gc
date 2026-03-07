@@ -1,14 +1,81 @@
 #!/usr/bin/env bash
-# Nix garbage collection script for home-manager and NixOS users
-# Cleans old generations and runs garbage collection
 
-set -euo pipefail
+set -Eeuo pipefail
 
-# Nix commands location (for sudo which doesn't have nix in PATH)
-NIX_BIN="/nix/var/nix/profiles/default/bin"
+readonly DEFAULT_GENERATIONS_TO_KEEP=5
+readonly NIX_DAEMON_PROFILE="/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh"
 
-usage() {
-    cat << EOF
+main() {
+	_ensure_nix_in_path_or_source_daemon_profile || {
+		echo "Error: nix is not available in PATH and nix-daemon profile was not found." >&2
+		exit 1
+	}
+
+	local scope="user"
+	local generations_to_keep="$DEFAULT_GENERATIONS_TO_KEEP"
+	local dry_run=false
+
+	while [[ $# -gt 0 ]]; do
+		case $1 in
+		-a | --all)
+			scope="all"
+			shift
+			;;
+		-u | --user)
+			scope="user"
+			shift
+			;;
+		-s | --system)
+			scope="system"
+			shift
+			;;
+		-k | --keep)
+			generations_to_keep="$2"
+			shift 2
+			;;
+		-d | --dry-run)
+			dry_run=true
+			shift
+			;;
+		-h | --help)
+			_print_usage
+			exit 0
+			;;
+		*)
+			echo "Unknown option: $1" >&2
+			_print_usage
+			exit 1
+			;;
+		esac
+	done
+
+	echo "=== Nix Garbage Collection ==="
+	echo ""
+
+	case $scope in
+	user)
+		_clean_home_manager_generations "$generations_to_keep" "$dry_run"
+		_collect_user_garbage "$dry_run"
+		;;
+	system)
+		_collect_system_garbage "$dry_run"
+		;;
+	all)
+		_clean_home_manager_generations "$generations_to_keep" "$dry_run"
+		_collect_user_garbage "$dry_run"
+		_collect_system_garbage "$dry_run"
+		;;
+	esac
+
+	if [ "$dry_run" = true ]; then
+		echo "=== Dry run complete (no changes made) ==="
+	else
+		echo "=== Garbage collection complete ==="
+	fi
+}
+
+_print_usage() {
+	cat <<EOF
 Usage: nix-gc [OPTIONS]
 
 Clean up old Nix generations and run garbage collection.
@@ -17,7 +84,7 @@ Options:
     -a, --all       Clean both user and system store (requires sudo for system)
     -u, --user      Clean user generations and garbage only (default)
     -s, --system    Clean system store only (requires sudo)
-    -k, --keep N    Keep N generations (default: 5)
+    -k, --keep N    Keep N generations (default: $DEFAULT_GENERATIONS_TO_KEEP)
     -d, --dry-run   Show what would be deleted without deleting
     -h, --help      Show this help message
 
@@ -29,136 +96,100 @@ Examples:
 EOF
 }
 
-# Defaults
-SCOPE="user"
-KEEP_GENERATIONS=5
-DRY_RUN=false
+_ensure_nix_in_path_or_source_daemon_profile() {
+	if command -v nix-collect-garbage >/dev/null 2>&1; then
+		return 0
+	fi
 
-# Parse arguments
-while [[ $# -gt 0 ]]; do
-    case $1 in
-        -a|--all)
-            SCOPE="all"
-            shift
-            ;;
-        -u|--user)
-            SCOPE="user"
-            shift
-            ;;
-        -s|--system)
-            SCOPE="system"
-            shift
-            ;;
-        -k|--keep)
-            KEEP_GENERATIONS="$2"
-            shift 2
-            ;;
-        -d|--dry-run)
-            DRY_RUN=true
-            shift
-            ;;
-        -h|--help)
-            usage
-            exit 0
-            ;;
-        *)
-            echo "Unknown option: $1" >&2
-            usage
-            exit 1
-            ;;
-    esac
-done
+	if [ -f "$NIX_DAEMON_PROFILE" ]; then
+		# shellcheck disable=SC1090
+		. "$NIX_DAEMON_PROFILE"
+	fi
 
-echo "=== Nix Garbage Collection ==="
-echo ""
-
-# Function to clean home-manager generations
-clean_home_manager() {
-    echo ">> Cleaning home-manager generations (keeping $KEEP_GENERATIONS)..."
-
-    if ! command -v home-manager &>/dev/null; then
-        echo "   home-manager not found, skipping generation cleanup"
-        return
-    fi
-
-    mapfile -t all_generation_ids < <(home-manager generations | grep -oP '(?<=: id )\d+')
-    local total_generations=${#all_generation_ids[@]}
-    local count_to_remove=$((total_generations - KEEP_GENERATIONS))
-
-    if [ "$count_to_remove" -le 0 ]; then
-        local generations=()
-    else
-        local generations=("${all_generation_ids[@]:0:$count_to_remove}")
-    fi
-
-    if [ ${#generations[@]} -eq 0 ]; then
-        echo "   No old generations to remove"
-        return
-    fi
-
-    echo "   Found ${#generations[@]} old generation(s) to remove"
-
-    if [ "$DRY_RUN" = true ]; then
-        echo "   [DRY RUN] Would remove generations:"
-        for gen in "${generations[@]}"; do
-            echo "     - $gen"
-        done
-    else
-        for gen in "${generations[@]}"; do
-            echo "   Removing: $gen"
-            home-manager remove-generations "$gen" 2>/dev/null || true
-        done
-    fi
-    echo ""
+	command -v nix-collect-garbage >/dev/null 2>&1
 }
 
-# Function to clean user nix store
-clean_user_store() {
-    echo ">> Running user garbage collection..."
-
-    if [ "$DRY_RUN" = true ]; then
-        if grep -q '^ID=nixos$' /etc/os-release; then
-            echo "   [DRY RUN] Would run: nix-collect-garbage"
-            nix-store --gc --print-dead 2>/dev/null | wc -l | xargs -I {} echo "   {} dead store paths would be removed"
-        fi
-        echo "   [DRY RUN] No dry run support for non-NixOS systems for user gc"
-    else
-        "$NIX_BIN/nix-collect-garbage"
-    fi
-    echo ""
+_resolve_nix_collect_garbage_path() {
+	command -v nix-collect-garbage
 }
 
-# Function to clean system nix store (requires sudo)
-clean_system_store() {
-    echo ">> Running system garbage collection (requires sudo)..."
+_clean_home_manager_generations() {
+	local generations_to_keep=$1
+	local dry_run=$2
 
-    if [ "$DRY_RUN" = true ]; then
-        echo "   [DRY RUN] Would run: sudo $NIX_BIN/nix-collect-garbage -d"
-    else
-        # Use full path since sudo doesn't have nix in PATH
-        sudo "$NIX_BIN/nix-collect-garbage" -d
-    fi
-    echo ""
+	echo ">> Cleaning home-manager generations (keeping $generations_to_keep)..."
+
+	if ! command -v home-manager &>/dev/null; then
+		echo "   home-manager not found, skipping generation cleanup"
+		echo ""
+		return
+	fi
+
+	local all_generation_ids
+	mapfile -t all_generation_ids < <(home-manager generations | grep -oP '(?<=: id )\d+')
+
+	local total_generations=${#all_generation_ids[@]}
+	local count_to_remove=$((total_generations - generations_to_keep))
+
+	local generations_to_remove=()
+	if [ "$count_to_remove" -gt 0 ]; then
+		generations_to_remove=("${all_generation_ids[@]:0:$count_to_remove}")
+	fi
+
+	if [ ${#generations_to_remove[@]} -eq 0 ]; then
+		echo "   No old generations to remove"
+		echo ""
+		return
+	fi
+
+	echo "   Found ${#generations_to_remove[@]} old generation(s) to remove"
+
+	if [ "$dry_run" = true ]; then
+		echo "   [DRY RUN] Would remove generations:"
+		for generation_id in "${generations_to_remove[@]}"; do
+			echo "     - $generation_id"
+		done
+	else
+		for generation_id in "${generations_to_remove[@]}"; do
+			echo "   Removing: $generation_id"
+			home-manager remove-generations "$generation_id" 2>/dev/null || true
+		done
+	fi
+	echo ""
 }
 
-# Execute based on scope
-case $SCOPE in
-    user)
-        clean_home_manager
-        clean_user_store
-        ;;
-    system)
-        clean_system_store
-        ;;
-    all)
-        clean_home_manager
-        clean_user_store
-        clean_system_store
-        ;;
-esac
+_collect_user_garbage() {
+	local dry_run=$1
 
-if [ "$DRY_RUN" = true ]; then
-    echo "=== Dry run complete (no changes made) ==="
-else
-    echo "=== Garbage collection complete ==="
-fi
+	echo ">> Running user garbage collection..."
+
+	local nix_collect_garbage_path
+	nix_collect_garbage_path="$(_resolve_nix_collect_garbage_path)" || return 1
+
+	if [ "$dry_run" = true ]; then
+		local dead_paths_count
+		dead_paths_count="$(nix-store --gc --print-dead 2>/dev/null | wc -l)"
+		echo "   [DRY RUN] $dead_paths_count dead store paths would be removed"
+	else
+		"$nix_collect_garbage_path"
+	fi
+	echo ""
+}
+
+_collect_system_garbage() {
+	local dry_run=$1
+
+	echo ">> Running system garbage collection (requires sudo)..."
+
+	local nix_collect_garbage_path
+	nix_collect_garbage_path="$(_resolve_nix_collect_garbage_path)" || return 1
+
+	if [ "$dry_run" = true ]; then
+		echo "   [DRY RUN] Would run: sudo $nix_collect_garbage_path -d"
+	else
+		sudo "$nix_collect_garbage_path" -d
+	fi
+	echo ""
+}
+
+main "$@"
