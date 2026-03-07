@@ -15,7 +15,7 @@
     Service = {
       Type = "simple";
       ExecStart = "${pkgs.quickshell}/bin/quickshell -c switcher";
-      Environment = [ "QT_QUICK_BACKEND=software" ];
+      Environment = [ "QT_QPA_PLATFORM=wayland" ];
       Restart = "always";
       RestartSec = "1s";
     };

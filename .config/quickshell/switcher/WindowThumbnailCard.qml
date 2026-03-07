@@ -55,8 +55,23 @@ Item {
 
                     constraintSize: Qt.size(thumbnailContainer.width, thumbnailContainer.height)
 
-                    Component.onCompleted: captureFrame()
+                    onHasContentChanged: {
+                        if (hasContent)
+                            captureFrame();
+                    }
                 }
+            }
+
+            Image {
+                id: fallbackIcon
+                anchors.centerIn: parent
+                width: 64
+                height: 64
+                source: Quickshell.iconPath(windowClass.toLowerCase(), true)
+                visible: !screencopyLoader.active || (screencopyLoader.item && !screencopyLoader.item.hasContent)
+                sourceSize: Qt.size(64, 64)
+                smooth: true
+                opacity: 0.6
             }
         }
 
