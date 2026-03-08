@@ -17,7 +17,7 @@ in
       $VERBOSE_ECHO "OOM protection already configured"
     else
       echo "Setting up OOM protection (requires sudo)..."
-      sudo "${dotfilesDir}/bin/setup-oom-protection"
+      sudo "${dotfilesDir}/home/modules/system/scripts/setup-oom-protection"
     fi
   '';
 }

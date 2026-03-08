@@ -51,6 +51,8 @@
     ../../home/modules/media/suwayomi-server.nix
     ../../home/modules/media/scripts.nix
 
+    ../../home/modules/system/scripts.nix
+
     ../../home/modules/voice/hey-bot.nix
     ../../home/modules/voice/hey-bot-test.nix
     ./home/hey-bot.nix

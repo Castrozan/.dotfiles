@@ -19,7 +19,7 @@ in
       $VERBOSE_ECHO "Ubuntu system tuning already configured"
     else
       echo "Setting up Ubuntu system tuning (requires sudo)..."
-      sudo "${dotfilesDir}/bin/setup-ubuntu-system-tuning"
+      sudo "${dotfilesDir}/home/modules/system/scripts/setup-ubuntu-system-tuning"
     fi
   '';
 }

@@ -16,7 +16,7 @@ in
       $VERBOSE_ECHO "Lid switch ignore already configured"
     else
       echo "Setting up lid switch ignore (requires sudo)..."
-      sudo "${dotfilesDir}/bin/setup-lid-switch-ignore"
+      sudo "${dotfilesDir}/home/modules/system/scripts/setup-lid-switch-ignore"
     fi
   '';
 }
