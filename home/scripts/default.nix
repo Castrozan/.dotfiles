@@ -1,7 +1,5 @@
 {
   imports = [
-    ./agenix-edit.nix
-    ./agenix-edit-phone.nix
     ./claude-exit.nix
     ./daily-note.nix
     ./dotfiles-quick-commit.nix
