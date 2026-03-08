@@ -21,8 +21,6 @@ let
     inherit self;
   };
 
-  homeManagerModuleChecks = import ./home-manager-modules.nix moduleArgs;
-
   claudeChecks = import ../../home/modules/claude/tests/checks.nix moduleArgs;
   codexChecks = import ../../home/modules/codex/tests/checks.nix moduleArgs;
   openclawChecks = import ../../home/modules/openclaw/tests/checks.nix moduleArgs;
@@ -45,8 +43,7 @@ let
   voiceChecks = import ../../home/modules/voice/tests/checks.nix domainArgs;
   sourcebotChecks = import ../../home/modules/sourcebot/tests/checks.nix domainArgs;
 in
-homeManagerModuleChecks
-// claudeChecks
+claudeChecks
 // codexChecks
 // openclawChecks
 // openclawConfigChecks
