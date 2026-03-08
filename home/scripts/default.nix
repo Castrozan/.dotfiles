@@ -6,13 +6,8 @@
     ./on.nix
     ./pdf-edit.nix
     ./rebuild.nix
-    ./set-random-bg-kitty.nix
     ./speed-read.nix
     ./tar-unzip2dir.nix
-    ./tmux-lazygit-toggle.nix
-    ./tmux-btop-toggle.nix
-    ./tmux-editor-toggle.nix
-    ./tmux-resurrect.nix
     ./brightness.nix
     ./volume.nix
     ./audio-output-switch.nix

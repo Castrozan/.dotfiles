@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+IMAGE_DIR="$HOME/.dotfiles/static/fate"
+
+RANDOM_IMAGE=$(find "$IMAGE_DIR" -type f | shuf -n 1)
+
+kitty @ set-background-image "$RANDOM_IMAGE"

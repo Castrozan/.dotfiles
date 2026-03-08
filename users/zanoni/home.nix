@@ -25,6 +25,7 @@
     ../../home/modules/terminal/kitty.nix
     ../../home/modules/terminal/tmux.nix
     ../../home/modules/terminal/wezterm.nix
+    ../../home/modules/terminal/scripts.nix
 
     ../../home/modules/editor/cursor
     ../../home/modules/editor/neovim.nix
