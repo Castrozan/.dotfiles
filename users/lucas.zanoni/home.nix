@@ -47,6 +47,7 @@
     ../../home/modules/desktop/flameshot.nix
     ../../home/modules/desktop/fonts.nix
     ../../home/modules/desktop/ksnip.nix
+    ../../home/modules/desktop/scripts.nix
 
     ../../home/modules/dev/bruno.nix
     ../../home/modules/dev/ccost.nix

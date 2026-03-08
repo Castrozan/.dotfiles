@@ -35,6 +35,7 @@
     ../../home/modules/desktop/clipse.nix
     ../../home/modules/desktop/fonts.nix
     ../../home/modules/desktop/fuzzel.nix
+    ../../home/modules/desktop/scripts.nix
 
     ../../home/modules/dev/bruno.nix
     ../../home/modules/dev/ccost.nix
