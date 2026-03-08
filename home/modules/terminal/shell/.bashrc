@@ -84,9 +84,9 @@ fi
 _start_tmux() {
     (
         # shellcheck source=shell/screensaver.sh
-        source ~/.dotfiles/shell/screensaver.sh
+        source ~/.dotfiles/home/modules/terminal/shell/screensaver.sh
         # shellcheck source=shell/tmux_main.sh
-        source ~/.dotfiles/shell/tmux_main.sh
+        source ~/.dotfiles/home/modules/terminal/shell/tmux_main.sh
         _start_screensaver_tmux_session
         _start_main_tmux_session
         tmux attach -t screensaver
@@ -212,11 +212,11 @@ if command -v clipse &>/dev/null; then
 fi
 
 # Files sourced by $HOME/.dotfiles
-. $HOME/.dotfiles/shell/bash_history.sh
-. $HOME/.dotfiles/shell/fzf_catppuccin_theme.sh
-. $HOME/.dotfiles/shell/fzf_bash_history.sh
-. $HOME/.dotfiles/shell/aliases.sh
-. $HOME/.dotfiles/shell/zoxide.sh
-. $HOME/.dotfiles/shell/screensaver.sh
-. $HOME/.dotfiles/shell/tmux_main.sh
-. $HOME/.dotfiles/shell/default_directories.sh
+. $HOME/.dotfiles/home/modules/terminal/shell/bash_history.sh
+. $HOME/.dotfiles/home/modules/terminal/shell/fzf_catppuccin_theme.sh
+. $HOME/.dotfiles/home/modules/terminal/shell/fzf_bash_history.sh
+. $HOME/.dotfiles/home/modules/terminal/shell/aliases.sh
+. $HOME/.dotfiles/home/modules/terminal/shell/zoxide.sh
+. $HOME/.dotfiles/home/modules/terminal/shell/screensaver.sh
+. $HOME/.dotfiles/home/modules/terminal/shell/tmux_main.sh
+. $HOME/.dotfiles/home/modules/terminal/shell/default_directories.sh

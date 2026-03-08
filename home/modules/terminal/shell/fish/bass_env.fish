@@ -5,14 +5,14 @@ function __load_bash_env
   end
 
   # Export BASH_ENV for non-interactive bash (Claude Code)
-  set -gx BASH_ENV "$HOME/.dotfiles/shell/aliases.sh"
+  set -gx BASH_ENV "$HOME/.dotfiles/home/modules/terminal/shell/aliases.sh"
 
   # Keep fish startup fast by importing a shared, fast-to-source bash env file.
   # Single source-of-truth pattern:
   # - bash: source this from ~/.bashrc (and keep ~/.bashrc lean)
   # - fish: import it via bass
   if type -q bass
-    bass source "$HOME/.dotfiles/shell/bash_env.sh"
+    bass source "$HOME/.dotfiles/home/modules/terminal/shell/bash_env.sh"
   end
 
   # TODO: move this to appropriate place

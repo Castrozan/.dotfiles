@@ -8,8 +8,8 @@ function __start_tmux
     if type -q bash
       # Use bash directly in background to prevent blocking
       bash -c '
-        source ~/.dotfiles/shell/screensaver.sh 2>/dev/null || true
-        source ~/.dotfiles/shell/tmux_main.sh 2>/dev/null || true
+        source ~/.dotfiles/home/modules/terminal/shell/screensaver.sh 2>/dev/null || true
+        source ~/.dotfiles/home/modules/terminal/shell/tmux_main.sh 2>/dev/null || true
         _start_screensaver_tmux_session 2>/dev/null || true
         _start_main_tmux_session 2>/dev/null || true
       ' &

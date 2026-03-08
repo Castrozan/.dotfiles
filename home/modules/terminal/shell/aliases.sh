@@ -3,7 +3,7 @@
 # Enable alias expansion in non-interactive shells (for Claude Code BASH_ENV)
 shopt -s expand_aliases
 
-. "$HOME/.dotfiles/shell/nix-memory-limit.sh"
+. "$HOME/.dotfiles/home/modules/terminal/shell/nix-memory-limit.sh"
 
 # Personal aliases
 alias clebr='cd $HOME/.clebr'
@@ -23,7 +23,7 @@ alias catt='bat'
 alias cd.='cd ..'
 alias cd..='cd ..'
 alias code='code . -n'
-. "$HOME/.dotfiles/shell/cursor.sh"
+. "$HOME/.dotfiles/home/modules/terminal/shell/cursor.sh"
 alias d='lazydocker'
 alias dotfiles='cd ~/.dotfiles'
 alias g='lazygit'
