@@ -1,7 +1,7 @@
 #!/usr/bin/env bats
 
 readonly DOCKER_IMAGE_TAG="dotfiles-volume-test"
-readonly VOLUME_SCRIPT="/dotfiles/bin/volume"
+readonly VOLUME_SCRIPT="/dotfiles/home/modules/audio/scripts/volume"
 readonly MOCK_SETUP='
     cp /dotfiles/tests/helpers/mocks/mock-pactl /usr/local/bin/pactl
     cp /dotfiles/tests/helpers/mocks/mock-notify-send /usr/local/bin/notify-send

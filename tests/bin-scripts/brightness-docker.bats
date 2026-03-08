@@ -1,7 +1,7 @@
 #!/usr/bin/env bats
 
 readonly DOCKER_IMAGE_TAG="dotfiles-brightness-test"
-readonly BRIGHTNESS_SCRIPT="/dotfiles/bin/brightness"
+readonly BRIGHTNESS_SCRIPT="/dotfiles/home/modules/hyprland/scripts/brightness"
 readonly MOCK_SETUP='
     cp /dotfiles/tests/helpers/mocks/mock-brightnessctl /usr/local/bin/brightnessctl
     cp /dotfiles/tests/helpers/mocks/mock-notify-send /usr/local/bin/notify-send

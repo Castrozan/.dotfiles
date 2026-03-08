@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
-readonly DOTFILES_BIN_DIRECTORY="$BATS_TEST_DIRNAME/../../bin"
+readonly DOTFILES_ROOT_DIRECTORY="$BATS_TEST_DIRNAME/../.."
+readonly DOTFILES_BIN_DIRECTORY="$DOTFILES_ROOT_DIRECTORY/bin"
+readonly DOTFILES_MODULES_DIRECTORY="$DOTFILES_ROOT_DIRECTORY/home/modules"
 
 _resolve_script_under_test() {
 	if [ -n "${SCRIPT_UNDER_TEST:-}" ]; then
@@ -9,7 +11,18 @@ _resolve_script_under_test() {
 	fi
 	local testFileName="${BATS_TEST_FILENAME##*/}"
 	testFileName="${testFileName%.bats}"
-	echo "$DOTFILES_BIN_DIRECTORY/$testFileName"
+	local legacyBinPath="$DOTFILES_BIN_DIRECTORY/$testFileName"
+	if [ -f "$legacyBinPath" ]; then
+		echo "$legacyBinPath"
+		return
+	fi
+	local domainScriptMatch
+	domainScriptMatch=$(find "$DOTFILES_MODULES_DIRECTORY" -path "*/scripts/$testFileName" -type f 2>/dev/null | head -1)
+	if [ -n "$domainScriptMatch" ]; then
+		echo "$domainScriptMatch"
+		return
+	fi
+	echo "$legacyBinPath"
 }
 
 run_script_under_test() {

@@ -1,7 +1,7 @@
 #!/usr/bin/env bats
 
 readonly DOCKER_IMAGE_TAG="dotfiles-oom-test"
-readonly SCRIPT_PATH_INSIDE_CONTAINER="/dotfiles/bin/setup-oom-protection"
+readonly SCRIPT_PATH_INSIDE_CONTAINER="/dotfiles/home/modules/system/scripts/setup-oom-protection"
 readonly EARLYOOM_CONFIG_PATH="/etc/default/earlyoom"
 readonly ZRAMSWAP_CONFIG_PATH="/etc/default/zramswap"
 readonly SWAPPINESS_SYSCTL_PATH="/etc/sysctl.d/99-swappiness.conf"
