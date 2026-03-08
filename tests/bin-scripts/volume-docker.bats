@@ -3,8 +3,8 @@
 readonly DOCKER_IMAGE_TAG="dotfiles-volume-test"
 readonly VOLUME_SCRIPT="/dotfiles/bin/volume"
 readonly MOCK_SETUP='
-    cp /dotfiles/tests/helpers/mock-pactl /usr/local/bin/pactl
-    cp /dotfiles/tests/helpers/mock-notify-send /usr/local/bin/notify-send
+    cp /dotfiles/tests/helpers/mocks/mock-pactl /usr/local/bin/pactl
+    cp /dotfiles/tests/helpers/mocks/mock-notify-send /usr/local/bin/notify-send
     chmod +x /usr/local/bin/pactl /usr/local/bin/notify-send
     export MOCK_PACTL_STATE_DIR=/tmp/mock-pactl
     export MOCK_NOTIFY_SEND_LOG=/tmp/mock-notify-send.log

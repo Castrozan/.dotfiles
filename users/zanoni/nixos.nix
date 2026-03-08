@@ -6,7 +6,7 @@
   ...
 }:
 let
-  bashrc = builtins.readFile ../../.bashrc;
+  bashrc = builtins.readFile ../../shell/.bashrc;
   sshKeys = import ./ssh-keys.nix;
 in
 {

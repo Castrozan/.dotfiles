@@ -21,11 +21,13 @@ assert_passes_shellcheck() {
         skip "shellcheck not installed"
     fi
     run shellcheck "$(_resolve_script_under_test)"
+    # shellcheck disable=SC2154
     [ "$status" -eq 0 ]
 }
 
 assert_uses_strict_error_handling() {
     run head -5 "$(_resolve_script_under_test)"
+    # shellcheck disable=SC2154
     [[ "$output" == *"set -Eeuo pipefail"* ]] || [[ "$output" == *"set -euo pipefail"* ]]
 }
 

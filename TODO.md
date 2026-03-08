@@ -5,9 +5,9 @@ All scripts in `bin/` and `tests/` are currently shell/bash. Migrate to Python f
 ### Priority targets
 
 - `bin/` scripts — stateful system automation (brightness, volume, network tuning)
-- `tests/run-all.sh` — test orchestrator
-- `tests/validate-skill-frontmatter.sh` — YAML validation
-- `tests/bash-coverage.sh` — coverage runner
+- `tests/run.sh` — test orchestrator
+- `agents/evals/validate-skill-frontmatter.sh` — YAML validation
+- `tests/cover/bash-coverage.sh` — coverage runner
 - `tests/helpers/` — shared test utilities
 
 ### Keep as shell

@@ -2,7 +2,7 @@
 
 ## Tiers
 
-Tests are organized in tiers by speed and tool requirements. The `tests/run-all.sh` script is the canonical entry point for all tiers.
+Tests are organized in tiers by speed and tool requirements. The `tests/run.sh` script is the canonical entry point for all tiers.
 
 | Tier | Content | Time | Flag |
 |---|---|---|---|
@@ -16,12 +16,12 @@ Additional modes: `--all` runs quick + nix + docker. `--coverage` runs quick tes
 ## Run
 
 ```bash
-tests/run-all.sh                    # quick tier (default)
-tests/run-all.sh --nix              # quick + nix eval tests
-tests/run-all.sh --docker           # docker integration tests only
-tests/run-all.sh --all              # everything except runtime
-tests/run-all.sh --coverage         # quick tests with kcov coverage
-tests/run-all.sh --runtime          # domain runtime tests
+tests/run.sh                    # quick tier (default)
+tests/run.sh --nix              # quick + nix eval tests
+tests/run.sh --docker           # docker integration tests only
+tests/run.sh --all              # everything except runtime
+tests/run.sh --coverage         # quick tests with kcov coverage
+tests/run.sh --runtime          # domain runtime tests
 bats tests/bin-scripts/foo.bats     # single test file
 ```
 
@@ -40,8 +40,8 @@ Files matching `*-docker.bats` are docker integration tests. They require docker
 | Home manager integration | `tests/nix-modules/home-manager.bats` | bats, nix |
 | Domain nix tests | `home/modules/*/tests/*.bats` (excluding runtime) | bats, nix |
 | Domain runtime tests | `home/modules/*/tests/runtime.bats`, `live-services.bats` | bats, running services |
-| Skill frontmatter | `tests/validate-skill-frontmatter.sh` | bash |
-| Agent evals | `tests/agent-evals/` | claude cli |
+| Skill frontmatter | `agents/evals/validate-skill-frontmatter.sh` | bash |
+| Agent evals | `agents/evals/` | claude cli |
 
 ## Co-located Domain Tests
 

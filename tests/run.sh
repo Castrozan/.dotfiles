@@ -102,7 +102,7 @@ _run_ci_tier() {
 
 _run_skill_frontmatter_validation() {
 	echo "--- Skill Frontmatter Validation ---"
-	"$SCRIPT_DIR/validate-skill-frontmatter.sh" "$SCRIPT_DIR/../agents/skills"
+	"$REPO_DIR/agents/evals/validate-skill-frontmatter.sh" "$REPO_DIR/agents/skills"
 	echo ""
 }
 
@@ -215,7 +215,7 @@ _run_bats_with_coverage() {
 	fi
 
 	echo "--- Bin Script Tests with Coverage ---"
-	"$SCRIPT_DIR/bash-coverage.sh"
+	"$SCRIPT_DIR/cover/bash-coverage.sh"
 	echo ""
 }
 

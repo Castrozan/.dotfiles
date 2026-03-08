@@ -5,10 +5,10 @@ all:
 test: test-nix
 
 test-quick:
-	tests/run-all.sh --quick
+	tests/run.sh --quick
 
 test-nix:
-	tests/run-all.sh --nix
+	tests/run.sh --nix
 
 test-modules:
 	bats tests/nix-modules/home-manager.bats
@@ -17,13 +17,13 @@ test-openclaw:
 	bats tests/openclaw/nix-config.bats
 
 test-docker:
-	tests/run-all.sh --docker
+	tests/run.sh --docker
 
 test-runtime:
-	tests/run-all.sh --runtime
+	tests/run.sh --runtime
 
 test-all:
-	tests/run-all.sh --all
+	tests/run.sh --all
 
 build:
 	docker compose --profile modules build
@@ -35,7 +35,7 @@ clean:
 	docker compose --profile modules down --rmi local --volumes
 
 env_vars:
-	git update-index --skip-worktree .shell_env_vars
+	git update-index --skip-worktree shell/.shell_env_vars
 
 help:
 	@echo "Available targets:"

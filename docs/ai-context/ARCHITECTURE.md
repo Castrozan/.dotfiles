@@ -268,18 +268,18 @@ sudo nixos-rebuild switch --flake ~/.dotfiles#zanoni
 
 | Workflow | Trigger | What it does |
 |---|---|---|
-| `tests.yml` | push/PR to main | `./tests/run-all.sh --ci` (BATS unit tests) |
+| `tests.yml` | push/PR to main | `./tests/run.sh --ci` (BATS unit tests) |
 | `nix-lint.yml` | push/PR to main | statix + deadnix + nixfmt + flake metadata eval |
 | `coverage.yml` | push to main / PR | kcov-instrumented BATS, deploys to GitHub Pages |
 
 ### Tests
 
 ```bash
-tests/run-all.sh           # All tests
+tests/run.sh               # All tests
 tests/bin-scripts/*.bats   # Unit tests for bin/ scripts
 tests/nix-modules/*.bats   # Nix module evaluation tests
 tests/openclaw/*.bats      # OpenClaw integration tests
-tests/agent-evals/         # Claude agent behavior evals (YAML configs)
+agents/evals/              # Claude agent behavior evals (YAML configs)
 ```
 
 ### Docker (for CI module evaluation)

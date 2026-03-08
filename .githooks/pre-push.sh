@@ -14,7 +14,7 @@ main() {
 	_run_check "statix" nix run nixpkgs#statix -- check . --ignore 'result*'
 	_run_check "deadnix" nix run nixpkgs#deadnix -- .
 	_run_check "nixfmt" bash -c "find . -name '*.nix' -not -path './result*' -not -path './.worktrees/*' -exec nix run nixpkgs#nixfmt-rfc-style -- --check {} +"
-	_run_check "validate-skill-frontmatter" ./tests/validate-skill-frontmatter.sh agents/skills
+	_run_check "validate-skill-frontmatter" ./agents/evals/validate-skill-frontmatter.sh agents/skills
 	_run_quick_bats_tests
 	_remind_nix_tests_if_openclaw_changed
 

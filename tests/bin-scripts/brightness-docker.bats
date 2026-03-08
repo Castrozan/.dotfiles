@@ -3,8 +3,8 @@
 readonly DOCKER_IMAGE_TAG="dotfiles-brightness-test"
 readonly BRIGHTNESS_SCRIPT="/dotfiles/bin/brightness"
 readonly MOCK_SETUP='
-    cp /dotfiles/tests/helpers/mock-brightnessctl /usr/local/bin/brightnessctl
-    cp /dotfiles/tests/helpers/mock-notify-send /usr/local/bin/notify-send
+    cp /dotfiles/tests/helpers/mocks/mock-brightnessctl /usr/local/bin/brightnessctl
+    cp /dotfiles/tests/helpers/mocks/mock-notify-send /usr/local/bin/notify-send
     chmod +x /usr/local/bin/brightnessctl /usr/local/bin/notify-send
     export MOCK_BRIGHTNESSCTL_STATE=/tmp/mock-brightnessctl-state
     export MOCK_NOTIFY_SEND_LOG=/tmp/mock-notify-send.log
