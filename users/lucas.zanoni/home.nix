@@ -55,6 +55,7 @@
     ../../home/modules/dev/glab.nix
     ../../home/modules/dev/lazygit.nix
     ../../home/modules/dev/mcporter.nix
+    ../../home/modules/dev/scripts.nix
 
     ../../home/modules/media/ani-cli.nix
     ../../home/modules/media/bad-apple.nix

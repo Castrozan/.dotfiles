@@ -25,7 +25,7 @@
         pager = "delta --paging=never --detect-dark-light always";
         hooksPath = "~/.githooks";
       };
-      alias.fzf = "!~/.dotfiles/bin/git_fzf.sh";
+      alias.fzf = "!git-fzf";
       interactive.diffFilter = "delta --color-only --paging=never --detect-dark-light always";
       delta = {
         navigate = false;

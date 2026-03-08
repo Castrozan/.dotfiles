@@ -2,8 +2,6 @@
   imports = [
     ./claude-exit.nix
     ./daily-note.nix
-    ./dotfiles-quick-commit.nix
-    ./git-fzf.nix
     ./nix-gc.nix
     ./on.nix
     ./pdf-edit.nix
