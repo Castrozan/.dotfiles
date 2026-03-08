@@ -28,13 +28,11 @@ if [[ -f $COLORS_FILE ]]; then
     fi
   done < "$COLORS_FILE"
 
-  shopt -s nullglob
-
-  for tpl in "$USER_TEMPLATES_DIR"/*.tpl "$TEMPLATES_DIR"/*.tpl; do
+  while IFS= read -r tpl; do
     filename=$(basename "$tpl" .tpl)
     output_path="$NEXT_THEME_DIR/$filename"
     sed -f "$sed_script" "$tpl" > "$output_path"
-  done
+  done < <(find "$TEMPLATES_DIR" "$USER_TEMPLATES_DIR" -name "*.tpl" -type f 2>/dev/null)
 
   rm "$sed_script"
 fi
