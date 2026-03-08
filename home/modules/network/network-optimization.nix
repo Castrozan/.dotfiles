@@ -21,7 +21,7 @@ in
       $VERBOSE_ECHO "Network optimization already configured"
     else
       echo "Setting up network optimization (requires sudo)..."
-      sudo "${dotfilesDir}/bin/setup-network-optimization"
+      sudo "${dotfilesDir}/home/modules/network/scripts/setup-network-optimization"
     fi
   '';
 }
