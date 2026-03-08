@@ -73,6 +73,5 @@
     ../../home/modules/media/obsidian.nix
     ../../home/modules/media/summarize.nix
     ../../home/modules/media/viu.nix
-    ../../home/modules/pkgs.nix
   ];
 }

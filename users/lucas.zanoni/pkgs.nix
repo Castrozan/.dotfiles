@@ -37,6 +37,7 @@
       gnutar
       go
       google-chrome
+      imv
       insomnia
       i2p
       i2pd
@@ -55,8 +56,10 @@
       obsidian
       ollama
       playerctl
+      pavucontrol
       pipes
       postman
+      pulsemixer
       postgresql
       quickemu
       redisinsight

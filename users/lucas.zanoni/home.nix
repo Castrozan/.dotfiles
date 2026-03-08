@@ -101,6 +101,5 @@
     ../../home/modules/media/summarize.nix
     ../../home/modules/media/twitter.nix
     ../../home/modules/media/viu.nix
-    ../../home/modules/pkgs.nix
   ];
 }

@@ -39,6 +39,7 @@
       google-chrome
       gnumake
       htop
+      imv
       jq
       just
       k6
@@ -56,11 +57,14 @@
       nodePackages.prettier
       obs-studio
       obsidian
+      pavucontrol
       p7zip
       pipes
+      playerctl
       pnpm
       poetry
       postman
+      pulsemixer
       python312
       scrcpy
       shellcheck
@@ -69,6 +73,7 @@
       tig # git log visualizer
       tealdeer
       tmux
+      tree
       unzip
       usbutils
       vesktop
@@ -77,6 +82,7 @@
       wget
       whisper-cpp
       wgnord # Note: Should install manually from github.com/phirecc/wgnord
+      wiremix
       wireguard-go
       wireguard-tools
       wl-clipboard
