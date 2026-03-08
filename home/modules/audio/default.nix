@@ -8,6 +8,7 @@ let
   btPolicy = import ./bluetooth-policy.nix;
 in
 {
+  imports = [ ./scripts.nix ];
   systemd.user.services.bluetooth-audio-autoswitch = {
     Unit = {
       Description = "Auto-switch audio sink on Bluetooth connect/disconnect";

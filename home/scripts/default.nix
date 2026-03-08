@@ -8,8 +8,6 @@
     ./speed-read.nix
     ./tar-unzip2dir.nix
     ./brightness.nix
-    ./volume.nix
-    ./audio-output-switch.nix
     ./quickshell-osd-send.nix
     ./pinchtab.nix
     ./pinchtab-ensure-running.nix
