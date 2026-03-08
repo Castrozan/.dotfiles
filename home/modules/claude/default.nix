@@ -8,5 +8,6 @@
     ./mcp.nix
     ./private.nix
     ./workspace-trust.nix
+    ./scripts.nix
   ];
 }

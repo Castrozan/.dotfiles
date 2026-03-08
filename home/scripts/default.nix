@@ -1,6 +1,5 @@
 {
   imports = [
-    ./claude-exit.nix
     ./daily-note.nix
     ./nix-gc.nix
     ./on.nix
