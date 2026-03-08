@@ -34,7 +34,7 @@ jobs:
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: tests/coverage/
+          path: tests/cover/coverage/
 
       - name: Deploy to GitHub Pages
         id: deployment
@@ -58,5 +58,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
-          path: tests/coverage/
+          path: tests/cover/coverage/
           retention-days: 7
