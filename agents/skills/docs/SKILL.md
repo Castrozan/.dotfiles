@@ -16,7 +16,7 @@ Directory trees, file lists, or structure snapshots. These go stale the moment s
 </never_write>
 
 <evergreen>
-Documentation must stay accurate without maintenance. Reference patterns, not current state. Point to locations, not copies. Write "tests live in tests/" not a tree of every test file. Write "scripts follow the pattern in ~/.dotfiles/bin/rebuild" not a list of every script. If documentation requires updating every time code changes, it is written wrong.
+Documentation must stay accurate without maintenance. Reference patterns, not current state. Point to locations, not copies. Write "tests live in tests/" not a tree of every test file. Write "scripts follow the pattern in rebuild" not a list of every script. If documentation requires updating every time code changes, it is written wrong.
 </evergreen>
 
 <when_docs_are_needed>

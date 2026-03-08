@@ -10,7 +10,6 @@
     ./home/openclaw.nix
 
     ../../home/core.nix
-    ../../home/scripts
 
     ../../home/modules/security
     ../../home/modules/audio

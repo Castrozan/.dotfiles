@@ -18,7 +18,7 @@ Nix reads from git index, not working tree. Stage all modified files before rebu
 </prerequisite>
 
 <simple_rebuild>
-Primary method: `~/.dotfiles/bin/rebuild`
+Primary method: `rebuild`
 Auto-detects platform and user dynamically. Sources nix-daemon.sh if needed. Handles backup naming.
 
 NixOS: Runs `nixos-rebuild switch --flake ~/.dotfiles#$(whoami)`
@@ -55,7 +55,7 @@ NixOS: Full system rebuild with `nixos-rebuild switch --flake`. Affects system s
 
 Home-manager standalone: User-level only with `home-manager switch --flake`. Affects user packages, dotfiles, services.
 
-Detection: Check `/etc/os-release` for `ID=nixos`, or use OS from session-context. The ~/.dotfiles/bin/rebuild script handles this automatically.
+Detection: Check `/etc/os-release` for `ID=nixos`, or use OS from session-context. The rebuild script handles this automatically.
 </platform_difference>
 
 <workflow>

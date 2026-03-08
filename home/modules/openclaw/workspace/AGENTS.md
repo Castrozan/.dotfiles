@@ -180,7 +180,7 @@ Never let a long command block your turn and cause a timeout. Timeouts kill your
 
 **Example pattern for nix rebuild:**
 ```
-exec(command="~/.dotfiles/bin/rebuild", background=true, yieldMs=60000)
+exec(command="rebuild", background=true, yieldMs=60000)
 # ... then poll with reasonable timeout
 process(action=poll, sessionId=<id>, timeout=30000)
 ```

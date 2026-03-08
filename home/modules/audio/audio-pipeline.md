@@ -39,12 +39,12 @@ WirePlumber's `restore-target` is disabled on both platforms (`bluetooth-policy.
 
 ## Output Switching
 
-The `bin/audio-output-switch` script cycles through available hardware sinks. It lists all non-monitor sinks, finds the current default, advances to the next one in the list, calls `pactl set-default-sink`, and then explicitly moves all playing streams to the new sink. It sends a desktop notification showing the new device's human-readable description. Bound to `SHIFT + XF86AudioStop` in `bindings.conf`.
+The `audio-output-switch` script cycles through available hardware sinks. It lists all non-monitor sinks, finds the current default, advances to the next one in the list, calls `pactl set-default-sink`, and then explicitly moves all playing streams to the new sink. It sends a desktop notification showing the new device's human-readable description. Bound to `SHIFT + XF86AudioStop` in `bindings.conf`.
 
 
 ## Volume Control
 
-The `bin/volume` script is the single entry point for all volume operations. It prefers the default sink when it's RUNNING, then falls back to any running sink, then `@DEFAULT_SINK@`. This matters because when multiple sinks are active (e.g. BT headphones + laptop speakers), the default sink reflects the user's intent (set by the autoswitch service or manual selection). All operations use `pactl`.
+The `volume` script is the single entry point for all volume operations. It prefers the default sink when it's RUNNING, then falls back to any running sink, then `@DEFAULT_SINK@`. This matters because when multiple sinks are active (e.g. BT headphones + laptop speakers), the default sink reflects the user's intent (set by the autoswitch service or manual selection). All operations use `pactl`.
 
 OSD notifications go through a Unix socket at `/tmp/quickshell-osd.sock` as JSON messages. The Quickshell bar's OSD component listens on this socket and renders a vertical slider. Direct drag/scroll on the OSD sends `pactl set-sink-volume` commands.
 

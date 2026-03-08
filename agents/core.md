@@ -40,7 +40,7 @@ Before trying to use complex and uncommon tools, or if user ask you to do someth
 </skill-discovery>
 
 <scripts>
-Follow ~/.dotfiles/bin/rebuild as canonical example. Shell scripts use: set -Eeuo pipefail, readonly constants at top, main() entry point called at bottom, private helper functions prefixed with underscore. Clean error handling with early returns and meaningful messages to stderr.
+Follow ~/.dotfiles/home/modules/system/scripts/rebuild as canonical example. Shell scripts use: set -Eeuo pipefail, readonly constants at top, main() entry point called at bottom, private helper functions prefixed with underscore. Clean error handling with early returns and meaningful messages to stderr.
 </scripts>
 
 <documentation>

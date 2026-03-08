@@ -31,7 +31,7 @@ Policies and instructions serve different purposes. An instruction tells agents 
 <evergreen_instructions>
 Instructions become stale when code changes. Write instructions that stay accurate without maintenance.
 
-Pointers over copies: "Run the rebuild script in bin/" not "Run ./bin/rebuild".
+Pointers over copies: "Run the rebuild script" not "Run ./home/modules/system/scripts/rebuild".
 Patterns over commands: Document patterns, not exact syntax.
 Reference locations: Point to where truth lives, agent reads current state.
 No hardcoded paths: Reference things by purpose, not by path.

@@ -156,7 +156,7 @@ graph TD
 
 ### System Rebuild Flow
 ```
-bin/rebuild
+rebuild
   → detect OS (NixOS vs non-NixOS via /etc/os-release)
   → git submodule update --init
   → NixOS: sudo nixos-rebuild switch --flake ~/.dotfiles#zanoni
@@ -254,10 +254,10 @@ homeManagerModules = {
 
 ```bash
 # Non-NixOS (Ubuntu) — standalone home-manager
-bin/rebuild
+rebuild
 
 # NixOS — full system rebuild
-bin/rebuild  # auto-detects NixOS via /etc/os-release
+rebuild  # auto-detects NixOS via /etc/os-release
 
 # Direct commands (same as what rebuild runs)
 home-manager switch --flake ~/.dotfiles#lucas.zanoni@x86_64-linux

@@ -165,4 +165,4 @@ teardown() {
 6. **No external test libraries.** `tests/helpers/bash-script-assertions.bash` covers common assertions. Avoid adding bats-assert/bats-file/bats-mock unless a concrete need arises.
 7. **Shellcheck is mandatory.** All bash scripts must pass shellcheck. The `assert_passes_shellcheck` assertion handles environments where shellcheck isn't installed by skipping.
 8. **Names mean things.** Test directories mirror source directories. File and function names describe what they test, not how. Follow `agents/core.md` naming and script conventions.
-9. **Canonical script pattern.** All shell scripts under `tests/` follow the same pattern as `bin/rebuild`: `set -Eeuo pipefail`, `readonly` constants, `main()` at bottom, `_` prefixed private functions, no comments.
+9. **Canonical script pattern.** All shell scripts under `tests/` follow the same pattern as `home/modules/system/scripts/rebuild`: `set -Eeuo pipefail`, `readonly` constants, `main()` at bottom, `_` prefixed private functions, no comments.
