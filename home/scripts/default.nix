@@ -7,8 +7,6 @@
     ./rebuild.nix
     ./speed-read.nix
     ./tar-unzip2dir.nix
-    ./brightness.nix
-    ./quickshell-osd-send.nix
     ./pinchtab.nix
     ./pinchtab-ensure-running.nix
     ./pinchtab-screenshot.nix

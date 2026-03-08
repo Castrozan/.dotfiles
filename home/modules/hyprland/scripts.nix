@@ -14,6 +14,8 @@ let
             gawk
             util-linux
             procps
+            brightnessctl
+            socat
           ]
         )
       }:/usr/bin:$PATH"
@@ -52,5 +54,7 @@ in
     (mkScript "hypr-notification-sound-toggle" ./scripts/notification-sound-toggle)
     (mkScript "hypr-microphone-toggle" ./scripts/microphone-toggle)
     (mkScript "hypr-summon-chrome-global" ./scripts/summon-chrome-global)
+    (mkScript "brightness" ./scripts/brightness)
+    (mkScript "quickshell-osd-send" ./scripts/quickshell-osd-send)
   ];
 }
