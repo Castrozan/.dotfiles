@@ -1,0 +1,1 @@
+../agents/evals/validate-skill-frontmatter.sh
