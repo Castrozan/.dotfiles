@@ -7,10 +7,10 @@
     ./workspace-dirs.nix
     ./install.nix
     ./systemd-service.nix
-    ./health-check.nix
-    ./restart-watcher.nix
-    ./timeout-recovery.nix
-    ./ensure-services-after-rebuild.nix
+    ./reliability/health-check.nix
+    ./reliability/restart-watcher/restart-watcher.nix
+    ./reliability/timeout-recovery.nix
+    ./reliability/restart-watcher/ensure-services-after-rebuild.nix
     ./plugins/memory-sync.nix
     ./plugins/plugins.nix
   ];

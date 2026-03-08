@@ -1,6 +1,6 @@
 {
   imports = [
     ./default.nix
-    ./hyprland-nixgl.nix
+    ./alternatives/hyprland-standalone.nix
   ];
 }

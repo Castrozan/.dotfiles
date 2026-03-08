@@ -13,18 +13,21 @@ in
     ./packages.nix
     ./cursor.nix
     ./themes.nix
+    ./scripts.nix
     ./wlogout.nix
     ./wayland-electron.nix
-    ./quickshell-bar.nix
+    ./quickshell/bar.nix
 
     ./wlr-which-key.nix
-    ./mako-service.nix
-    ./quickshell-switcher.nix
+    ./mako.nix
+    ./quickshell/window-switcher.nix
     ../desktop/satty.nix
     ../wiremix.nix
     ./xdg-desktop-portal-hyprland-service.nix
     ../desktop/fuzzel.nix
   ];
+
+  home.file.".config/hypr".source = ../../../.config/hypr;
 
   xdg.configFile."hypr-host/monitors.conf".text = lib.mkDefault "";
   xdg.configFile."hypr-host/input.conf".text = lib.mkDefault "";

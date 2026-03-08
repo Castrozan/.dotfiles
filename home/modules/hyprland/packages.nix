@@ -11,8 +11,6 @@ in
   imports = [ ./xwayland-with-auth.nix ];
 
   home = {
-    file.".config/hypr".source = ../../../.config/hypr;
-
     packages =
       with pkgs;
       [
@@ -32,6 +30,7 @@ in
         cliphist
         hyprpicker
         jq
+        yq-go
         wlogout
         polkit_gnome
         gnome-calculator
@@ -41,15 +40,5 @@ in
       ++ [
         xdg-desktop-portal-hyprland
       ];
-  };
-
-  xdg.configFile = {
-    "xdg-desktop-portal/hyprland-portals.conf".text = ''
-      [preferred]
-      default=hyprland;gtk
-      org.freedesktop.impl.portal.Screenshot=hyprland
-      org.freedesktop.impl.portal.ScreenCast=hyprland
-      org.freedesktop.impl.portal.Inhibit=none
-    '';
   };
 }
