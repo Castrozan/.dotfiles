@@ -3,25 +3,10 @@ name: keyboard
 description: Type text or send key combinations to the focused desktop window. Use when interacting with non-browser applications, filling native UI fields, or triggering OS keyboard shortcuts.
 ---
 
-<execution>
-Run: scripts/keyboard.sh type "text to type"
-Run: scripts/keyboard.sh key "combo"
+<usage>
+Run scripts/keyboard.sh type "text" or scripts/keyboard.sh key "combo". Combos use + separator: ctrl+s, alt+F4, ctrl+shift+t.
+</usage>
 
-scripts/keyboard.sh type "Hello, world!"       # type text into focused window
-scripts/keyboard.sh key "ctrl+s"               # send key combo (save)
-scripts/keyboard.sh key "super"                # single key press
-scripts/keyboard.sh key "alt+F4"               # close window
-scripts/keyboard.sh key "ctrl+shift+t"         # reopen tab
-</execution>
-
-<key_names>
-Modifiers: ctrl, alt, shift, super (logo key). Keys: a-z, 0-9, F1-F12, Return, Escape, Tab, BackSpace, Delete, space, Up, Down, Left, Right, Home, End, Page_Up, Page_Down, Insert, Print. Use wtype key names (XKB keysym names).
-</key_names>
-
-<caution>
-Types into whatever window is currently focused. Verify the correct window has focus before typing sensitive content. Use screenshot skill to confirm visual state before keyboard actions. Never type passwords or secrets into unverified windows.
-</caution>
-
-<environment>
-Wayland-only. Uses wtype. The script auto-sets WAYLAND_DISPLAY and XDG_RUNTIME_DIR if missing.
-</environment>
+<pitfalls>
+Types into whatever window is currently focused — always screenshot first to verify target. Never type secrets into unverified windows. Key names are XKB keysyms — the script normalizes common aliases (ctrl→Control_L, alt→Alt_L, super→Super_L, enter→Return, esc→Escape, backspace→BackSpace) but uncommon keys need exact XKB names. Wayland-only via wtype — will not work in X11 or headless environments. For browser typing, use the browser skill instead (more reliable, targets specific elements).
+</pitfalls>
