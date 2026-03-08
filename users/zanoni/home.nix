@@ -49,6 +49,7 @@
     ../../home/modules/media/ani-cli.nix
     ../../home/modules/media/bad-apple.nix
     ../../home/modules/media/suwayomi-server.nix
+    ../../home/modules/media/scripts.nix
 
     ../../home/modules/voice/hey-bot.nix
     ../../home/modules/voice/hey-bot-test.nix
