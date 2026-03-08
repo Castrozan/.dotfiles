@@ -21,7 +21,7 @@ let
         "${realXwayland}/bin/Xwayland"
         extraPath
       ]
-      (builtins.readFile ./scripts/xwayland-auth-wrapper)
+      (builtins.readFile ./scripts/utilities/xwayland-auth-wrapper)
   );
 
   xwaylandWithAuth = pkgs.symlinkJoin {
