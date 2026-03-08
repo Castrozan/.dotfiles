@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-readonly DOTFILES_ROOT_DIRECTORY="$BATS_TEST_DIRNAME/../.."
+readonly DOTFILES_ROOT_DIRECTORY="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 readonly DOTFILES_BIN_DIRECTORY="$DOTFILES_ROOT_DIRECTORY/bin"
 readonly DOTFILES_MODULES_DIRECTORY="$DOTFILES_ROOT_DIRECTORY/home/modules"
 

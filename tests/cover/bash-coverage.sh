@@ -51,12 +51,7 @@ _clean_previous_coverage() {
 }
 
 _collect_quick_bats_test_files() {
-	local testFiles=()
-	for testFile in "$TESTS_DIR"/bin-scripts/*.bats; do
-		[[ "$(basename "$testFile")" == *-docker.bats ]] && continue
-		testFiles+=("$testFile")
-	done
-	printf '%s\n' "${testFiles[@]}"
+	find "$TESTS_DIR/bin-scripts" -name "*.bats" ! -name "*-docker.bats" -type f | sort
 }
 
 _run_bats_through_kcov() {

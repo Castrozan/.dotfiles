@@ -31,12 +31,9 @@ _run_check() {
 
 _run_quick_bats_tests() {
 	echo "==> bats (quick)"
-	local testFiles=()
-	for testFile in tests/bin-scripts/*.bats; do
-		[[ "$(basename "$testFile")" == *-docker.bats ]] && continue
-		testFiles+=("$testFile")
-	done
-	nix shell nixpkgs#bats --command bats "${testFiles[@]}"
+	local testFiles
+	testFiles=$(find tests/bin-scripts -name "*.bats" ! -name "*-docker.bats" -type f | sort)
+	nix shell nixpkgs#bats --command bats $testFiles
 	echo ""
 }
 

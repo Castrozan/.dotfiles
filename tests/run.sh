@@ -107,12 +107,7 @@ _run_skill_frontmatter_validation() {
 }
 
 _collect_quick_bats_test_files() {
-	local testFiles=()
-	for testFile in "$SCRIPT_DIR"/bin-scripts/*.bats; do
-		[[ "$(basename "$testFile")" == *-docker.bats ]] && continue
-		testFiles+=("$testFile")
-	done
-	printf '%s\n' "${testFiles[@]}"
+	find "$SCRIPT_DIR/bin-scripts" -name "*.bats" ! -name "*-docker.bats" -type f | sort
 }
 
 _run_quick_bats_tests() {
@@ -193,17 +188,15 @@ _run_docker_integration_tests() {
 	fi
 
 	echo "--- Docker Integration Tests ---"
-	local dockerTestFiles=()
-	for testFile in "$SCRIPT_DIR"/bin-scripts/*-docker.bats; do
-		[[ -f "$testFile" ]] && dockerTestFiles+=("$testFile")
-	done
+	local dockerTestFiles
+	dockerTestFiles=$(find "$SCRIPT_DIR/bin-scripts" -name "*-docker.bats" -type f | sort)
 
-	if [[ ${#dockerTestFiles[@]} -eq 0 ]]; then
+	if [[ -z "$dockerTestFiles" ]]; then
 		echo "No docker test files found"
 		return 0
 	fi
 
-	bats "${dockerTestFiles[@]}"
+	bats $dockerTestFiles
 	echo ""
 }
 

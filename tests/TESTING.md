@@ -22,7 +22,7 @@ tests/run.sh --docker           # docker integration tests only
 tests/run.sh --all              # everything except runtime
 tests/run.sh --coverage         # quick tests with kcov coverage
 tests/run.sh --runtime          # domain runtime tests
-bats tests/bin-scripts/foo.bats     # single test file
+bats tests/bin-scripts/system/foo.bats  # single test file
 ```
 
 Each tier auto-detects tool availability (bats, nix, docker, kcov) and skips gracefully with a message when tools are missing.
@@ -35,8 +35,8 @@ Files matching `*-docker.bats` are docker integration tests. They require docker
 
 | Category | Location | Requires |
 |---|---|---|
-| Bin scripts | `tests/bin-scripts/*.bats` (excluding `*-docker.bats`) | bats |
-| Docker integration | `tests/bin-scripts/*-docker.bats` | bats, docker |
+| Bin scripts | `tests/bin-scripts/**/*.bats` (excluding `*-docker.bats`) | bats |
+| Docker integration | `tests/bin-scripts/**/*-docker.bats` | bats, docker |
 | Home manager integration | `tests/nix-modules/home-manager.bats` | bats, nix |
 | Domain nix tests | `home/modules/*/tests/*.bats` (excluding runtime) | bats, nix |
 | Domain runtime tests | `home/modules/*/tests/runtime.bats`, `live-services.bats` | bats, running services |
@@ -51,7 +51,7 @@ Domain tests resolve the repo root with `git rev-parse --show-toplevel` and load
 
 ## Writing Bin Script Tests
 
-Test filename must match script name: `bin/foo` → `tests/bin-scripts/foo.bats`.
+Test filename must match script name: `bin/foo` → `tests/bin-scripts/<domain>/foo.bats`.
 
 The shared helper at `tests/helpers/bash-script-assertions.bash` auto-resolves the script path from the test filename.
 
@@ -60,7 +60,7 @@ The shared helper at `tests/helpers/bash-script-assertions.bash` auto-resolves t
 ```bash
 #!/usr/bin/env bats
 
-load '../helpers/bash-script-assertions'
+load '../../helpers/bash-script-assertions'
 
 @test "is executable" {
     assert_is_executable
@@ -105,7 +105,7 @@ load '../helpers/bash-script-assertions'
 ```bash
 #!/usr/bin/env bats
 
-load '../helpers/bash-script-assertions'
+load '../../helpers/bash-script-assertions'
 
 @test "is executable"     { assert_is_executable; }
 @test "passes shellcheck" { assert_passes_shellcheck; }
@@ -124,7 +124,7 @@ load '../helpers/bash-script-assertions'
 ```bash
 #!/usr/bin/env bats
 
-load '../helpers/bash-script-assertions'
+load '../../helpers/bash-script-assertions'
 
 @test "is executable"              { assert_is_executable; }
 @test "passes shellcheck"          { assert_passes_shellcheck; }
@@ -158,7 +158,7 @@ teardown() {
 ## Policies
 
 1. **Every `bin/` script gets a test file.** At minimum: `assert_is_executable` + `assert_passes_shellcheck`.
-2. **Test filename = script name.** `bin/foo` → `tests/bin-scripts/foo.bats`. The helper auto-resolves the path.
+2. **Test filename = script name.** `bin/foo` → `tests/bin-scripts/<domain>/foo.bats`. The helper auto-resolves the path.
 3. **Static over execution for setup scripts.** Scripts requiring sudo/root are tested via content analysis, not execution. Verify configs, packages, and service activation are declared correctly.
 4. **Behavioral tests for CLI scripts.** Scripts that take user input should test error paths (missing args, bad input) and success paths.
 5. **Docker for e2e.** Name docker integration test files `*-docker.bats` so they are automatically excluded from the quick tier. Run `docker run --rm --privileged dotfiles-test bash -c 'bin/setup-foo'` to verify setup scripts actually install and configure correctly on Ubuntu.
