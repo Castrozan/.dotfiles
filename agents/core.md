@@ -19,6 +19,10 @@ Names replace comments. Functions, variables, files, directories — all names m
 Single Responsibility Principle everywhere. Each function does one thing. Each script has one purpose. Each module solves one problem. When a function grows beyond one responsibility, split it. Prefer many small focused functions over few large ones.
 </design>
 
+<directory-structure>
+Directories hold 5–15 files. Beyond 15, split into subdirectories grouped by cohesion — files that change together and serve one concept belong together. A directory is a cognitive unit; when scanning requires paging through more items than working memory holds, the structure has failed its purpose.
+</directory-structure>
+
 <git>
 Commits are not dangerous - do them freely. During development: commit at every change and before answering user to track progress. Multiple small commits beat one giant commit. At end: clean up with squash. Follow existing commit patterns. Check logs before commits. Staging: always git add specific-file, never git add -A or git add . (user may have parallel work). For parallel work, use git worktree skill.
 </git>

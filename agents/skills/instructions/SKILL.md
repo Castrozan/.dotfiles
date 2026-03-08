@@ -61,4 +61,5 @@ Before writing any SKILL.md, answer these questions. If any answer is "yes", rev
 - Would a dense two-line prose replace a verbose example block without losing clarity? Prefer density.
 - Does any content exist only because raw research data was fresh in context? Strip research artifacts — write from synthesized patterns, not from raw dumps.
 - Does any section explain what code does? Remove it — the model reads code. Only keep what the model cannot infer: traps, non-obvious constraints, sync requirements, and "whys".
+- Does any directory exceed 15 files? Split by cohesion — group files that change together and serve one concept into subdirectories.
 </skill_authoring_preflight>
