@@ -20,7 +20,7 @@
   programs.git = {
     enable = true;
     ignores = [ ".claude-context" ];
-    extraConfig = {
+    settings = {
       core = {
         pager = "delta --paging=never --detect-dark-light always";
         hooksPath = "~/.githooks";

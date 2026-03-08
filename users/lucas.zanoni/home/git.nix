@@ -2,8 +2,8 @@
 {
   imports = [ ../../../home/modules/dev/git.nix ];
 
-  programs.git = {
-    userName = "Lucas de Castro Zanoni";
-    userEmail = "lucas.zanoni@betha.com.br";
+  programs.git.settings.user = {
+    name = "Lucas de Castro Zanoni";
+    email = "lucas.zanoni@betha.com.br";
   };
 }
