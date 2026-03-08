@@ -8,7 +8,7 @@ let
         pkgs.util-linux
       ]
     }:$PATH"
-    ${builtins.readFile ../../../bin/benchmark-rebuild}
+    ${builtins.readFile ./scripts/benchmark-rebuild}
   '';
   benchmark-shell = pkgs.writeShellScriptBin "benchmark-shell" ''
     export PATH="${
@@ -17,7 +17,7 @@ let
         pkgs.gawk
       ]
     }:$PATH"
-    ${builtins.readFile ../../../bin/benchmark-shell}
+    ${builtins.readFile ./scripts/benchmark-shell}
   '';
 in
 {
