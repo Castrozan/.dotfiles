@@ -20,6 +20,16 @@ let
       "${nixGLIntel}/bin/nixGLIntel ${xdg-desktop-portal-hyprland}/libexec/xdg-desktop-portal-hyprland";
 in
 {
+  xdg.configFile = {
+    "xdg-desktop-portal/hyprland-portals.conf".text = ''
+      [preferred]
+      default=hyprland;gtk
+      org.freedesktop.impl.portal.Screenshot=hyprland
+      org.freedesktop.impl.portal.ScreenCast=hyprland
+      org.freedesktop.impl.portal.Inhibit=none
+    '';
+  };
+
   systemd.user.services.xdg-desktop-portal-hyprland = {
     Unit = {
       Description = "XDG Desktop Portal for Hyprland";

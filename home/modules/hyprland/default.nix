@@ -27,19 +27,21 @@ in
     ../desktop/fuzzel.nix
   ];
 
-  home.file.".config/hypr".source = ../../../.config/hypr;
+  home = {
+    file.".config/hypr".source = ../../../.config/hypr;
+
+    activation.ensureMonitorOverrideFile = lib.hm.dag.entryBefore [ "writeBoundary" ] ''
+      touch "$HOME/.cache/hypr-monitors-override.conf"
+    '';
+
+    activation.startGraphicalServices = lib.hm.dag.entryAfter [ "reloadSystemd" ] ''
+      HYPR_DIR="/run/user/$(id -u)/hypr"
+      if [ -d "$HYPR_DIR" ] && [ "$(ls -A "$HYPR_DIR" 2>/dev/null)" ]; then
+        $DRY_RUN_CMD ${systemctl} --user start ${lib.concatStringsSep " " graphicalServices} || true
+      fi
+    '';
+  };
 
   xdg.configFile."hypr-host/monitors.conf".text = lib.mkDefault "";
   xdg.configFile."hypr-host/input.conf".text = lib.mkDefault "";
-
-  home.activation.ensureMonitorOverrideFile = lib.hm.dag.entryBefore [ "writeBoundary" ] ''
-    touch "$HOME/.cache/hypr-monitors-override.conf"
-  '';
-
-  home.activation.startGraphicalServices = lib.hm.dag.entryAfter [ "reloadSystemd" ] ''
-    HYPR_DIR="/run/user/$(id -u)/hypr"
-    if [ -d "$HYPR_DIR" ] && [ "$(ls -A "$HYPR_DIR" 2>/dev/null)" ]; then
-      $DRY_RUN_CMD ${systemctl} --user start ${lib.concatStringsSep " " graphicalServices} || true
-    fi
-  '';
 }

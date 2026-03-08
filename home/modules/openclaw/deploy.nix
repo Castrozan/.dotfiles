@@ -13,7 +13,7 @@ in
 {
   home.file =
     openclaw.deployDir {
-      src = ../../../agents/openclaw/workspace;
+      src = ./workspace;
       exclude = [
         "USER.md"
         "IDENTITY.md"
