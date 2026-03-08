@@ -66,7 +66,7 @@ _run_bats_through_kcov() {
 	testFiles=$(_collect_quick_bats_test_files)
 	kcov \
 		--bash-dont-parse-binary-dir \
-		--include-pattern="$REPOSITORY_DIR/bin/" \
+		--include-pattern="$REPOSITORY_DIR/home/modules/" \
 		"$COVERAGE_OUTPUT_DIR" \
 		bats $testFiles
 }

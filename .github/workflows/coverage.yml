@@ -25,7 +25,7 @@ jobs:
 
       - name: Run tests with coverage
         run: |
-          chmod +x bin/*
+          find home/modules/*/scripts -type f -exec chmod +x {} +
           nix shell nixpkgs#kcov nixpkgs#bats nixpkgs#bc --command ./tests/cover/bash-coverage.sh --ci
 
       - name: Setup Pages
@@ -51,7 +51,7 @@ jobs:
 
       - name: Run tests with coverage
         run: |
-          chmod +x bin/*
+          find home/modules/*/scripts -type f -exec chmod +x {} +
           nix shell nixpkgs#kcov nixpkgs#bats nixpkgs#bc --command ./tests/cover/bash-coverage.sh --ci
 
       - name: Upload coverage report
