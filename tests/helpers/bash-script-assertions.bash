@@ -17,7 +17,7 @@ _resolve_script_under_test() {
 		return
 	fi
 	local domainScriptMatch
-	domainScriptMatch=$(find "$DOTFILES_MODULES_DIRECTORY" -path "*/scripts/$testFileName" -type f 2>/dev/null | head -1)
+	domainScriptMatch=$(find "$DOTFILES_MODULES_DIRECTORY" -type f -name "$testFileName" -path "*/scripts/*" 2>/dev/null | head -1)
 	if [ -n "$domainScriptMatch" ]; then
 		echo "$domainScriptMatch"
 		return
