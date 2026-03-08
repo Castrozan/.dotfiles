@@ -42,6 +42,7 @@
 
     ../../home/modules/browser/chrome-global.nix
     ../../home/modules/browser/firefox.nix
+    ../../home/modules/browser/scripts.nix
 
     ../../home/modules/desktop/bananas.nix
     ../../home/modules/desktop/clipse.nix

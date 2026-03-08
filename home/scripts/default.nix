@@ -7,13 +7,6 @@
     ./rebuild.nix
     ./speed-read.nix
     ./tar-unzip2dir.nix
-    ./pinchtab.nix
-    ./pinchtab-ensure-running.nix
-    ./pinchtab-screenshot.nix
-    ./pinchtab-switch-mode.nix
-    ./pinchtab-navigate-and-snapshot.nix
-    ./pinchtab-act-and-snapshot.nix
-    ./pinchtab-fill-form.nix
     ./mouse-poll-rate.nix
   ];
 }
