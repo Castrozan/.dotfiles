@@ -1,10 +1,8 @@
 { pkgs, ... }:
 let
-  script = builtins.readFile ../../../bin/nord-off;
-
-  nord-off = pkgs.writeShellScriptBin "nord-off" ''
-    ${script}
-  '';
+  nord-off = pkgs.writeShellScriptBin "nord-off" (
+    builtins.readFile ../../../home/modules/network/scripts/nord-off
+  );
 in
 {
   environment.systemPackages = [ nord-off ];
