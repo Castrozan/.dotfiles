@@ -31,20 +31,13 @@ let
   nixosConfigPatches = nixosOc.configPatches;
 
   hasInList = list: item: builtins.elem item list;
-  hasInAttr = set: key: builtins.hasAttr key set;
 
   workpcAgentListIds = map (a: a.id) workpcConfigPatches.".agents.list";
-  nixosAgentListIds = map (a: a.id) nixosConfigPatches.".agents.list";
   workpcConfigPatchKeys = builtins.attrNames workpcConfigPatches;
   nixosConfigPatchKeys = builtins.attrNames nixosConfigPatches;
   workpcSecretPatchKeys = builtins.attrNames workpcOc.secretPatches;
   nixosSecretPatchKeys = builtins.attrNames nixosOc.secretPatches;
   workpcBindingAgentIds = map (b: b.agentId) workpcConfigPatches.".bindings";
-  nixosBindingAgentIds =
-    if builtins.hasAttr ".bindings" nixosConfigPatches then
-      map (b: b.agentId) nixosConfigPatches.".bindings"
-    else
-      [ ];
 
   workpcOverlayContent = builtins.fromJSON workpcCfg.home.file.".openclaw/nix-overlay.json".text;
 
