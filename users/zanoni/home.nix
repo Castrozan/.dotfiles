@@ -66,13 +66,13 @@
     ../../home/modules/gaming/install-nothing.nix
     ../../home/modules/gaming/vesktop.nix
 
-    ../../home/modules/bluetui.nix
-    ../../home/modules/obsidian.nix
+    ../../home/modules/system/bluetui.nix
+    ../../home/modules/system/systemd-manager-tui.nix
+    ../../home/modules/dev/ralph-tui.nix
+    ../../home/modules/desktop/vial.nix
+    ../../home/modules/media/obsidian.nix
+    ../../home/modules/media/summarize.nix
+    ../../home/modules/media/viu.nix
     ../../home/modules/pkgs.nix
-    ../../home/modules/ralph-tui.nix
-    ../../home/modules/summarize.nix
-    ../../home/modules/systemd-manager-tui.nix
-    ../../home/modules/vial.nix
-    ../../home/modules/viu.nix
   ];
 }

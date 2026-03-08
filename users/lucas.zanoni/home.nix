@@ -85,22 +85,22 @@
     ../../home/modules/gaming/install-nothing.nix
     ../../home/modules/gaming/vesktop.nix
 
-    ../../home/modules/bluetui.nix
-    ../../home/modules/crabwalk.nix
-    ../../home/modules/gogcli.nix
-    ../../home/modules/k9s.nix
-    ../../home/modules/mongodb-compass.nix
-    ../../home/modules/obsidian.nix
-    ../../home/modules/obsidian-headless-sync.nix
+    ../../home/modules/system/bluetui.nix
+    ../../home/modules/system/systemd-manager-tui.nix
+    ../../home/modules/dev/crabwalk.nix
+    ../../home/modules/dev/k9s.nix
+    ../../home/modules/dev/mongodb-compass.nix
+    ../../home/modules/dev/ralph-tui.nix
+    ../../home/modules/dev/tuisvn.nix
+    ../../home/modules/gaming/gogcli.nix
+    ../../home/modules/desktop/tui-notifier.nix
+    ../../home/modules/desktop/vial.nix
+    ../../home/modules/media/obsidian.nix
+    ../../home/modules/media/obsidian-headless-sync.nix
+    ../../home/modules/media/readItNow.nix
+    ../../home/modules/media/summarize.nix
+    ../../home/modules/media/twitter.nix
+    ../../home/modules/media/viu.nix
     ../../home/modules/pkgs.nix
-    ../../home/modules/ralph-tui.nix
-    ../../home/modules/readItNow.nix
-    ../../home/modules/summarize.nix
-    ../../home/modules/systemd-manager-tui.nix
-    ../../home/modules/tui-notifier.nix
-    ../../home/modules/tuisvn.nix
-    ../../home/modules/twitter.nix
-    ../../home/modules/vial.nix
-    ../../home/modules/viu.nix
   ];
 }

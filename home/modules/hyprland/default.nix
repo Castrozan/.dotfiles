@@ -22,7 +22,7 @@ in
     ./mako.nix
     ./quickshell/window-switcher.nix
     ../desktop/satty.nix
-    ../wiremix.nix
+    ../audio/wiremix.nix
     ./xdg-desktop-portal-hyprland-service.nix
     ../desktop/fuzzel.nix
   ];
