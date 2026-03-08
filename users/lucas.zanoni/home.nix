@@ -39,6 +39,7 @@
     ../../home/modules/editor/neovim.nix
     ../../home/modules/editor/vscode
     ../../home/modules/editor/zed-editor.nix
+    ../../home/modules/editor/scripts.nix
 
     ../../home/modules/browser/chrome-global.nix
     ../../home/modules/browser/firefox.nix

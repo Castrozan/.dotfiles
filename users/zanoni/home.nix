@@ -30,6 +30,7 @@
     ../../home/modules/editor/cursor
     ../../home/modules/editor/neovim.nix
     ../../home/modules/editor/vscode
+    ../../home/modules/editor/scripts.nix
 
     ../../home/modules/browser/firefox.nix
     ../../home/modules/browser/scripts.nix
