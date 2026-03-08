@@ -107,7 +107,11 @@ _run_skill_frontmatter_validation() {
 }
 
 _collect_quick_bats_test_files() {
-	find "$SCRIPT_DIR/bin-scripts" -name "*.bats" ! -name "*-docker.bats" -type f | sort
+	find "$REPO_DIR/home/modules" -path "*/tests/*.bats" \
+		! -name "*-docker.bats" \
+		! -name "runtime.bats" \
+		! -name "live-services.bats" \
+		-type f | sort
 }
 
 _run_quick_bats_tests() {
@@ -189,7 +193,7 @@ _run_docker_integration_tests() {
 
 	echo "--- Docker Integration Tests ---"
 	local dockerTestFiles
-	dockerTestFiles=$(find "$SCRIPT_DIR/bin-scripts" -name "*-docker.bats" -type f | sort)
+	dockerTestFiles=$(find "$REPO_DIR/home/modules" -path "*/tests/*-docker.bats" -type f | sort)
 
 	if [[ -z "$dockerTestFiles" ]]; then
 		echo "No docker test files found"

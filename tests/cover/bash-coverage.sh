@@ -51,7 +51,11 @@ _clean_previous_coverage() {
 }
 
 _collect_quick_bats_test_files() {
-	find "$TESTS_DIR/bin-scripts" -name "*.bats" ! -name "*-docker.bats" -type f | sort
+	find "$REPOSITORY_DIR/home/modules" -path "*/tests/*.bats" \
+		! -name "*-docker.bats" \
+		! -name "runtime.bats" \
+		! -name "live-services.bats" \
+		-type f | sort
 }
 
 _run_bats_through_kcov() {

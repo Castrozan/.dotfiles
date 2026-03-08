@@ -32,7 +32,7 @@ _run_check() {
 _run_quick_bats_tests() {
 	echo "==> bats (quick)"
 	local testFiles
-	testFiles=$(find tests/bin-scripts -name "*.bats" ! -name "*-docker.bats" -type f | sort)
+	testFiles=$(find home/modules -path "*/tests/*.bats" ! -name "*-docker.bats" ! -name "runtime.bats" ! -name "live-services.bats" -type f | sort)
 	nix shell nixpkgs#bats --command bats $testFiles
 	echo ""
 }
