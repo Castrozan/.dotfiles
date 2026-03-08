@@ -6,6 +6,7 @@ readonly MOCK_SETUP='
     cp /dotfiles/tests/helpers/mocks/mock-brightnessctl /usr/local/bin/brightnessctl
     cp /dotfiles/tests/helpers/mocks/mock-notify-send /usr/local/bin/notify-send
     chmod +x /usr/local/bin/brightnessctl /usr/local/bin/notify-send
+    export PATH="/dotfiles/home/modules/hyprland/scripts:$PATH"
     export MOCK_BRIGHTNESSCTL_STATE=/tmp/mock-brightnessctl-state
     export MOCK_NOTIFY_SEND_LOG=/tmp/mock-notify-send.log
     echo "500" > /tmp/mock-brightnessctl-state

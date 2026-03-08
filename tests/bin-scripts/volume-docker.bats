@@ -6,6 +6,7 @@ readonly MOCK_SETUP='
     cp /dotfiles/tests/helpers/mocks/mock-pactl /usr/local/bin/pactl
     cp /dotfiles/tests/helpers/mocks/mock-notify-send /usr/local/bin/notify-send
     chmod +x /usr/local/bin/pactl /usr/local/bin/notify-send
+    export PATH="/dotfiles/home/modules/hyprland/scripts:$PATH"
     export MOCK_PACTL_STATE_DIR=/tmp/mock-pactl
     export MOCK_NOTIFY_SEND_LOG=/tmp/mock-notify-send.log
     mkdir -p /tmp/mock-pactl
