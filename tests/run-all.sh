@@ -78,8 +78,7 @@ _run_quick_tier() {
 }
 
 _run_nix_tier() {
-	_run_centralized_nix_tests
-	_run_domain_nix_tests
+	_run_nix_flake_checks
 }
 
 _run_docker_tier() {
@@ -143,29 +142,14 @@ _run_quick_bats_tests_ci() {
 	echo ""
 }
 
-_run_centralized_nix_tests() {
+_run_nix_flake_checks() {
 	if ! command -v nix &>/dev/null; then
-		echo "WARN: nix not installed, skipping centralized nix tests" >&2
-		return 0
-	fi
-	if ! command -v bats &>/dev/null; then
-		echo "WARN: bats not installed, skipping centralized nix tests" >&2
+		echo "WARN: nix not installed, skipping nix flake checks" >&2
 		return 0
 	fi
 
-	local centralizedNixTestFiles=()
-	for testFile in "$SCRIPT_DIR"/nix-modules/*.bats; do
-		[[ -f "$testFile" ]] || continue
-		centralizedNixTestFiles+=("$testFile")
-	done
-
-	if [[ ${#centralizedNixTestFiles[@]} -eq 0 ]]; then
-		echo "No centralized nix test files found"
-		return 0
-	fi
-
-	echo "--- Centralized Nix Tests (tests/nix-modules/) ---"
-	bats "${centralizedNixTestFiles[@]}"
+	echo "--- Nix Flake Checks ---"
+	nix flake check --print-build-logs 2>&1
 	echo ""
 }
 
@@ -173,33 +157,6 @@ _is_runtime_test_file() {
 	local filename
 	filename="$(basename "$1")"
 	[[ "$filename" == "runtime.bats" || "$filename" == "live-services.bats" ]]
-}
-
-_run_domain_nix_tests() {
-	if ! command -v nix &>/dev/null; then
-		echo "WARN: nix not installed, skipping domain nix tests" >&2
-		return 0
-	fi
-	if ! command -v bats &>/dev/null; then
-		echo "WARN: bats not installed, skipping domain nix tests" >&2
-		return 0
-	fi
-
-	local domainTestFiles=()
-	for testFile in "$REPO_DIR"/home/modules/*/tests/*.bats; do
-		[[ -f "$testFile" ]] || continue
-		_is_runtime_test_file "$testFile" && continue
-		domainTestFiles+=("$testFile")
-	done
-
-	if [[ ${#domainTestFiles[@]} -eq 0 ]]; then
-		echo "No domain nix test files found"
-		return 0
-	fi
-
-	echo "--- Domain Nix Tests (home/modules/*/tests/) ---"
-	bats "${domainTestFiles[@]}"
-	echo ""
 }
 
 _run_domain_runtime_tests() {

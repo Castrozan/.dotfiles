@@ -45,6 +45,7 @@
   # Outputs are what this flake provides, such as pkgs and system configurations
   outputs =
     inputs@{
+      self,
       nixpkgs,
       nixpkgs-unstable,
       nixpkgs-latest,
@@ -137,6 +138,11 @@
             ./home/modules/codex
           ];
         };
+      };
+
+      checks.${system} = import ./tests/nix-checks {
+        inherit pkgs inputs self;
+        lib = nixpkgs.lib;
       };
     };
 }
