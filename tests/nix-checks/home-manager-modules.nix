@@ -3,9 +3,19 @@
   lib,
   inputs,
   self,
+  nixpkgs-version,
+  home-version,
 }:
 let
-  helpers = import ./helpers.nix { inherit pkgs lib inputs; };
+  helpers = import ./helpers.nix {
+    inherit
+      pkgs
+      lib
+      inputs
+      nixpkgs-version
+      home-version
+      ;
+  };
   inherit (helpers) mkEvalCheck;
 
   mkModuleConfig =
@@ -17,7 +27,7 @@ let
         {
           home.username = "test";
           home.homeDirectory = "/home/test";
-          home.stateVersion = "25.11";
+          home.stateVersion = helpers.stateVersion;
         }
       ];
     }).config;
@@ -31,7 +41,7 @@ let
         {
           home.username = "test";
           home.homeDirectory = "/home/test";
-          home.stateVersion = "25.11";
+          home.stateVersion = helpers.stateVersion;
           openclaw.agents.eval-bot = {
             enable = true;
             workspace = "openclaw/eval-bot";

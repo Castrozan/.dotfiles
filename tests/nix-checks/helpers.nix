@@ -2,6 +2,8 @@
   pkgs,
   lib,
   inputs,
+  nixpkgs-version,
+  home-version,
 }:
 let
   mkEvalCheck =
@@ -36,14 +38,13 @@ let
         };
         isNixOS = false;
         username = "test";
-        nixpkgs-version = "25.11";
-        home-version = "25.11";
+        inherit nixpkgs-version home-version;
       };
       modules = [
         {
           home.username = "test";
           home.homeDirectory = "/home/test";
-          home.stateVersion = "25.11";
+          home.stateVersion = home-version;
         }
       ]
       ++ modules;
@@ -51,4 +52,5 @@ let
 in
 {
   inherit mkEvalCheck mkEvalCheckGroup homeManagerTestConfiguration;
+  stateVersion = home-version;
 }

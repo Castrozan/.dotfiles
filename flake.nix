@@ -127,6 +127,7 @@
           };
         };
 
+      # ADD comment
       homeManagerModules = {
         openclaw = ./home/modules/openclaw;
         claude-code = ./home/modules/claude;
@@ -140,8 +141,15 @@
         };
       };
 
+      # ADD comment
       checks.${system} = import ./tests/nix-checks {
-        inherit pkgs inputs self;
+        inherit
+          pkgs
+          inputs
+          self
+          nixpkgs-version
+          home-version
+          ;
         lib = nixpkgs.lib;
       };
     };

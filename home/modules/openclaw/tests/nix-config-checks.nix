@@ -3,9 +3,19 @@
   lib,
   inputs,
   self,
+  nixpkgs-version,
+  home-version,
 }:
 let
-  helpers = import ../../../../tests/nix-checks/helpers.nix { inherit pkgs lib inputs; };
+  helpers = import ../../../../tests/nix-checks/helpers.nix {
+    inherit
+      pkgs
+      lib
+      inputs
+      nixpkgs-version
+      home-version
+      ;
+  };
   inherit (helpers) mkEvalCheck;
 
   workpcCfg = self.homeConfigurations."lucas.zanoni@x86_64-linux".config;
