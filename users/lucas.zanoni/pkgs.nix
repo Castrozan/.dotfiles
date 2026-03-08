@@ -77,6 +77,7 @@
       wtype
       xclip
       yamllint
+      ydotool
       zip
       zoxide
     ]
