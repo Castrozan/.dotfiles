@@ -42,9 +42,11 @@ let
       };
       modules = [
         {
-          home.username = "test";
-          home.homeDirectory = "/home/test";
-          home.stateVersion = home-version;
+          home = {
+            username = "test";
+            homeDirectory = "/home/test";
+            stateVersion = home-version;
+          };
         }
       ]
       ++ modules;

@@ -150,7 +150,7 @@
           nixpkgs-version
           home-version
           ;
-        lib = nixpkgs.lib;
+        inherit (nixpkgs) lib;
       };
     };
 }

@@ -24,9 +24,11 @@ let
       modules = [
         self.homeManagerModules.codex
         {
-          home.username = "test";
-          home.homeDirectory = "/home/test";
-          home.stateVersion = helpers.stateVersion;
+          home = {
+            username = "test";
+            homeDirectory = "/home/test";
+            inherit (helpers) stateVersion;
+          };
         }
       ];
     }).config;

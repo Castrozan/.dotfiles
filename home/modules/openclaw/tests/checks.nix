@@ -24,9 +24,11 @@ let
       modules = [
         self.homeManagerModules.openclaw
         {
-          home.username = "test";
-          home.homeDirectory = "/home/test";
-          home.stateVersion = helpers.stateVersion;
+          home = {
+            username = "test";
+            homeDirectory = "/home/test";
+            inherit (helpers) stateVersion;
+          };
         }
       ];
     }).config;
@@ -37,9 +39,11 @@ let
       modules = [
         self.homeManagerModules.openclaw
         {
-          home.username = "test";
-          home.homeDirectory = "/home/test";
-          home.stateVersion = helpers.stateVersion;
+          home = {
+            username = "test";
+            homeDirectory = "/home/test";
+            inherit (helpers) stateVersion;
+          };
           openclaw.agents.eval-bot = {
             enable = true;
             workspace = "openclaw/eval-bot";
@@ -60,9 +64,6 @@ in
 
   openclaw-agent-config-evaluates =
     mkEvalCheck "openclaw-agent-config-evaluates"
-      (
-        withAgentCfg.openclaw.agents.eval-bot.enable == true
-        && withAgentCfg.openclaw.defaultAgent == "eval-bot"
-      )
+      (withAgentCfg.openclaw.agents.eval-bot.enable && withAgentCfg.openclaw.defaultAgent == "eval-bot")
       "agent config should evaluate with test agent, defaultAgent=${withAgentCfg.openclaw.defaultAgent}";
 }
