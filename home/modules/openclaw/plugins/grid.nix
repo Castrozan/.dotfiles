@@ -39,7 +39,7 @@ let
     done
   '';
 
-  telegramIdsSecretExists = builtins.pathExists ../../../secrets/telegram-ids.age;
+  telegramIdsSecretExists = builtins.pathExists ../../../secrets/infrastructure/telegram-ids.age;
 in
 {
   config = {

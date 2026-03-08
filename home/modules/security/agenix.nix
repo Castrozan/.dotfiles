@@ -11,48 +11,48 @@ let
 
   makeSecret = name: {
     file = ../../../secrets/${name}.age;
-    path = "${secretsDirectory}/${name}";
+    path = "${secretsDirectory}/${builtins.baseNameOf name}";
   };
 
   secretsWithEnvironmentVariables = {
-    "betha-email" = "BETHA_EMAIL";
-    "betha-password" = "BETHA_PASSWORD";
-    "jira-token" = "JIRA_TOKEN";
-    "elastic-password" = "ELASTIC_PASSWORD";
-    "grafana-password" = "GRAFANA_PASSWORD";
-    "metabase-api-key" = "METABASE_API_KEY";
-    "wiki-token" = "WIKI_TOKEN";
+    "credentials/betha-email" = "BETHA_EMAIL";
+    "credentials/betha-password" = "BETHA_PASSWORD";
+    "credentials/jira-token" = "JIRA_TOKEN";
+    "credentials/elastic-password" = "ELASTIC_PASSWORD";
+    "credentials/grafana-password" = "GRAFANA_PASSWORD";
+    "api-keys/metabase-api-key" = "METABASE_API_KEY";
+    "credentials/wiki-token" = "WIKI_TOKEN";
   };
 
   secretsWithoutEnvironmentVariables = [
-    "brave-api-key"
-    "deepgram-api-key"
-    "gemini-api-key"
-    "nvidia-api-key"
-    "openai-api-key"
-    "openclaw-gateway-token"
-    "telegram-ids"
-    "x-username"
-    "x-email"
-    "x-password"
-    "telegram-bot-token-jarvis"
-    "telegram-bot-token-golden"
-    "telegram-bot-token-clever"
-    "telegram-bot-token-robson"
-    "telegram-bot-token-jenny"
-    "telegram-bot-token-monster"
-    "telegram-bot-token-silver"
-    "discord-bot-token-jarvis"
-    "discord-bot-token-golden"
-    "discord-bot-token-clever"
-    "discord-bot-token-robson"
-    "discord-bot-token-jenny"
-    "discord-bot-token-monster"
-    "discord-bot-token-silver"
-    "obsidian-headless-auth-token"
-    "obsidian-headless-sync-config"
-    "gpg-private-key"
-    "viu-auth"
+    "api-keys/brave-api-key"
+    "api-keys/deepgram-api-key"
+    "api-keys/gemini-api-key"
+    "api-keys/nvidia-api-key"
+    "api-keys/openai-api-key"
+    "api-keys/openclaw-gateway-token"
+    "infrastructure/telegram-ids"
+    "credentials/x-username"
+    "credentials/x-email"
+    "credentials/x-password"
+    "bot-tokens/telegram-bot-token-jarvis"
+    "bot-tokens/telegram-bot-token-golden"
+    "bot-tokens/telegram-bot-token-clever"
+    "bot-tokens/telegram-bot-token-robson"
+    "bot-tokens/telegram-bot-token-jenny"
+    "bot-tokens/telegram-bot-token-monster"
+    "bot-tokens/telegram-bot-token-silver"
+    "bot-tokens/discord-bot-token-jarvis"
+    "bot-tokens/discord-bot-token-golden"
+    "bot-tokens/discord-bot-token-clever"
+    "bot-tokens/discord-bot-token-robson"
+    "bot-tokens/discord-bot-token-jenny"
+    "bot-tokens/discord-bot-token-monster"
+    "bot-tokens/discord-bot-token-silver"
+    "credentials/obsidian-headless-auth-token"
+    "credentials/obsidian-headless-sync-config"
+    "infrastructure/gpg-private-key"
+    "credentials/viu-auth"
   ];
 
   allSecretNames =
@@ -60,7 +60,8 @@ let
 
   exportLines = lib.concatStringsSep "\n" (
     lib.mapAttrsToList (
-      secretName: envVariable: ''${envVariable}="$(cat ${secretsDirectory}/${secretName} 2>/dev/null)"''
+      secretName: envVariable:
+      ''${envVariable}="$(cat ${secretsDirectory}/${builtins.baseNameOf secretName} 2>/dev/null)"''
     ) secretsWithEnvironmentVariables
   );
 

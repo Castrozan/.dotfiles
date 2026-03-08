@@ -1,6 +1,6 @@
 { lib, pkgs, ... }:
 let
-  sshHostsSecretExists = builtins.pathExists ../../../secrets/ssh-hosts.age;
+  sshHostsSecretExists = builtins.pathExists ../../../secrets/infrastructure/ssh-hosts.age;
 
   generateScript = pkgs.writeShellScript "generate-private-ssh-config" ''
     set -euo pipefail

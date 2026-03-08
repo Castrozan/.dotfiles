@@ -110,102 +110,102 @@ in
     ];
     secrets = {
       "id_ed25519_phone" = {
-        file = ../../secrets/id_ed25519_phone.age;
+        file = ../../secrets/infrastructure/id_ed25519_phone.age;
         owner = "zanoni";
         mode = "600";
       };
       "openclaw-gateway-token" = {
-        file = ../../secrets/openclaw-gateway-token.age;
+        file = ../../secrets/api-keys/openclaw-gateway-token.age;
         owner = "zanoni";
         mode = "400";
       };
       "telegram-bot-token" = {
-        file = ../../secrets/telegram-bot-token.age;
+        file = ../../secrets/bot-tokens/telegram-bot-token.age;
         owner = "zanoni";
         mode = "400";
       };
       "nvidia-api-key" = {
-        file = ../../secrets/nvidia-api-key.age;
+        file = ../../secrets/api-keys/nvidia-api-key.age;
         owner = "zanoni";
         mode = "400";
       };
       "id_ed25519_workpc" = {
-        file = ../../secrets/id_ed25519_workpc.age;
+        file = ../../secrets/infrastructure/id_ed25519_workpc.age;
         owner = "zanoni";
         mode = "600";
       };
       "grid-token-robson" = {
-        file = ../../secrets/grid-token-robson.age;
+        file = ../../secrets/api-keys/grid-token-robson.age;
         owner = "zanoni";
         mode = "400";
       };
       "grid-token-clever" = {
-        file = ../../secrets/grid-token-clever.age;
+        file = ../../secrets/api-keys/grid-token-clever.age;
         owner = "zanoni";
         mode = "400";
       };
       "brave-api-key" = {
-        file = ../../secrets/brave-api-key.age;
+        file = ../../secrets/api-keys/brave-api-key.age;
         owner = "zanoni";
         mode = "400";
       };
       "tavily-api-key" = {
-        file = ../../secrets/tavily-api-key.age;
+        file = ../../secrets/api-keys/tavily-api-key.age;
         owner = "zanoni";
         mode = "400";
       };
       "grid-hosts" = {
-        file = ../../secrets/grid-hosts.age;
+        file = ../../secrets/infrastructure/grid-hosts.age;
         owner = "zanoni";
         mode = "400";
       };
       "ssh-hosts" = {
-        file = ../../secrets/ssh-hosts.age;
+        file = ../../secrets/infrastructure/ssh-hosts.age;
         owner = "zanoni";
         mode = "400";
       };
       "telegram-ids" = {
-        file = ../../secrets/telegram-ids.age;
+        file = ../../secrets/infrastructure/telegram-ids.age;
         owner = "zanoni";
         mode = "400";
       };
       "telegram-bot-token-clever" = {
-        file = ../../secrets/telegram-bot-token-clever.age;
+        file = ../../secrets/bot-tokens/telegram-bot-token-clever.age;
         owner = "zanoni";
         mode = "400";
       };
       "telegram-bot-token-golden" = {
-        file = ../../secrets/telegram-bot-token-golden.age;
+        file = ../../secrets/bot-tokens/telegram-bot-token-golden.age;
         owner = "zanoni";
         mode = "400";
       };
       "telegram-bot-token-jarvis" = {
-        file = ../../secrets/telegram-bot-token-jarvis.age;
+        file = ../../secrets/bot-tokens/telegram-bot-token-jarvis.age;
         owner = "zanoni";
         mode = "400";
       };
       "gemini-api-key" = {
-        file = ../../secrets/gemini-api-key.age;
+        file = ../../secrets/api-keys/gemini-api-key.age;
         owner = "zanoni";
         mode = "400";
       };
       "discord-bot-token-clever" = {
-        file = ../../secrets/discord-bot-token-clever.age;
+        file = ../../secrets/bot-tokens/discord-bot-token-clever.age;
         owner = "zanoni";
         mode = "400";
       };
       "discord-bot-token-golden" = {
-        file = ../../secrets/discord-bot-token-golden.age;
+        file = ../../secrets/bot-tokens/discord-bot-token-golden.age;
         owner = "zanoni";
         mode = "400";
       };
       "discord-bot-token-jarvis" = {
-        file = ../../secrets/discord-bot-token-jarvis.age;
+        file = ../../secrets/bot-tokens/discord-bot-token-jarvis.age;
         owner = "zanoni";
         mode = "400";
       };
       "wifi-psk-zanoni" = {
-        file = ../../secrets/wifi-psk-zanoni.age;
+        file = ../../secrets/infrastructure/wifi-psk-zanoni.age;
         mode = "400";
       };
     };

@@ -1,8 +1,8 @@
 { lib, pkgs, ... }:
 let
-  phoneSecretExists = builtins.pathExists ../../../secrets/id_ed25519_phone.age;
-  workpcSecretExists = builtins.pathExists ../../../secrets/id_ed25519_workpc.age;
-  sshHostsSecretExists = builtins.pathExists ../../../secrets/ssh-hosts.age;
+  phoneSecretExists = builtins.pathExists ../../../secrets/infrastructure/id_ed25519_phone.age;
+  workpcSecretExists = builtins.pathExists ../../../secrets/infrastructure/id_ed25519_workpc.age;
+  sshHostsSecretExists = builtins.pathExists ../../../secrets/infrastructure/ssh-hosts.age;
 
   phoneHostKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOWURbP41AHeoQUC4qpSriTvVKWezdpPMGg1f3Ti7gyd";
   workPcHostKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPctlyhhY3Tf6RS/qs4aMUK/cIiZFG804XJFbd0ooWP/";
