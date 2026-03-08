@@ -1,6 +1,6 @@
 { pkgs, ... }:
 let
-  fetchPrebuiltBinary = import ../../lib/fetch-prebuilt-binary.nix { inherit pkgs; };
+  fetchPrebuiltBinary = import ../../../lib/fetch-prebuilt-binary.nix { inherit pkgs; };
 
   k9s = fetchPrebuiltBinary {
     pname = "k9s";
@@ -19,8 +19,8 @@ in
 {
   home = {
     file = {
-      ".config/k9s/config.yaml".source = ../../.config/k9s/config.yaml;
-      ".config/k9s/aliases.yaml".source = ../../.config/k9s/aliases.yaml;
+      ".config/k9s/config.yaml".source = ../../../.config/k9s/config.yaml;
+      ".config/k9s/aliases.yaml".source = ../../../.config/k9s/aliases.yaml;
     };
 
     packages = [ k9s ];

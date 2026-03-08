@@ -1,3 +1,3 @@
 {
-  xdg.configFile."wiremix/wiremix.toml".source = ../../.config/wiremix/wiremix.toml;
+  xdg.configFile."wiremix/wiremix.toml".source = ../../../.config/wiremix/wiremix.toml;
 }

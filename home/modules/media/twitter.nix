@@ -7,11 +7,11 @@ let
   twikitCookiesPath = "$HOME/.config/twikit/cookies.json";
 
   twikitCliSource = pkgs.writeText "twikit-cli.py" (
-    builtins.readFile ../../agents/skills/twitter/scripts/twikit-cli.py
+    builtins.readFile ../../../agents/skills/twitter/scripts/twikit-cli.py
   );
 
   extractXCookiesSource = pkgs.writeText "extract-x-cookies.py" (
-    builtins.readFile ../../agents/skills/twitter/scripts/extract-x-cookies.py
+    builtins.readFile ../../../agents/skills/twitter/scripts/extract-x-cookies.py
   );
 
   twikitCli = pkgs.writeShellScriptBin "twikit-cli" ''
@@ -42,7 +42,7 @@ let
     exec "$VENV/bin/python" "${twikitCliSource}" "$@"
   '';
 
-  grokSearchSource = builtins.readFile ../../agents/skills/twitter/scripts/grok-search.sh;
+  grokSearchSource = builtins.readFile ../../../agents/skills/twitter/scripts/grok-search.sh;
 
   grokSearchCli = pkgs.writeShellScriptBin "grok-search" grokSearchSource;
 in
