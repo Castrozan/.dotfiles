@@ -260,7 +260,7 @@ _show_device_info() {
 	vendor_id=$(cat "$usb_device_path/idVendor" 2>/dev/null || echo "unknown")
 	product_id=$(cat "$usb_device_path/idProduct" 2>/dev/null || echo "unknown")
 	usb_speed=$(cat "$usb_device_path/speed" 2>/dev/null || echo "unknown")
-	usb_version=$(cat "$usb_device_path/version" 2>/dev/null | tr -d ' ' || echo "unknown")
+	usb_version=$(tr -d ' ' < "$usb_device_path/version" 2>/dev/null || echo "unknown")
 
 	echo "Device: $product"
 	echo "USB ID: ${vendor_id}:${product_id}"

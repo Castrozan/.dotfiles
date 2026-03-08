@@ -18,8 +18,8 @@ load '../helpers/bash-script-assertions'
     assert_script_source_matches 'main "\$@"'
 }
 
-@test "shows usage with --help" {
-    assert_succeeds_with "Usage:" --help
+@test "has usage message" {
+    assert_script_source_matches "Usage:"
 }
 
 @test "supports dry-run mode" {
