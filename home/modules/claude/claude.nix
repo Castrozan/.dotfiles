@@ -2,7 +2,7 @@
 let
   fetchPrebuiltBinary = import ../../../lib/fetch-prebuilt-binary.nix { inherit pkgs; };
 
-  version = "2.1.68";
+  version = "2.1.71";
   platform = "linux-x64";
   bucket = "https://storage.googleapis.com/claude-code-dist-86c565f3-f756-42ad-8dfa-d59b1c096819/claude-code-releases";
 
@@ -10,7 +10,7 @@ let
     pname = "claude-code-unwrapped";
     inherit version;
     url = "${bucket}/${version}/${platform}/claude";
-    sha256 = "lpogzEqdluNEkJDtOU7+SEbpIM7F0Sy5zove9eGr5XU=";
+    sha256 = "YQAuX1xBkOmndb2c+Q5X//PwN5+yyO3GU6wJQqNHur0=";
     binaryName = "claude";
   };
 
