@@ -1,4 +1,5 @@
 import Quickshell.Services.SystemTray
+import Qt5Compat.GraphicalEffects
 import QtQuick
 import QtQuick.Layouts
 import ".."
@@ -27,12 +28,21 @@ ColumnLayout {
             color: trayItemMouseArea.containsMouse ? ThemeColors.surfaceTranslucent : "transparent"
 
             Image {
+                id: trayItemIcon
                 anchors.centerIn: parent
                 width: 16
                 height: 16
                 source: trayItemDelegate.modelData.icon ?? ""
                 sourceSize: Qt.size(16, 16)
                 smooth: true
+            }
+
+            Colorize {
+                anchors.fill: trayItemIcon
+                source: trayItemIcon
+                hue: ThemeColors.foreground.hslHue
+                saturation: ThemeColors.foreground.hslSaturation
+                lightness: 0.3
             }
 
             MouseArea {

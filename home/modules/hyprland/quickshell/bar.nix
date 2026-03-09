@@ -17,7 +17,9 @@
     Service = {
       Type = "simple";
       ExecStart = "${pkgs.quickshell}/bin/quickshell --path ${config.home.homeDirectory}/.dotfiles/.config/quickshell/bar";
-      Environment = [ "QT_QUICK_BACKEND=software" ];
+      Environment = [
+        "QML_IMPORT_PATH=${pkgs.qt6Packages.qt5compat}/lib/qt-6/qml"
+      ];
       Restart = "always";
       RestartSec = "1s";
     };

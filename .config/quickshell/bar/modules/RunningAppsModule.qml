@@ -1,6 +1,7 @@
 import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Io
+import Qt5Compat.GraphicalEffects
 import QtQuick
 import QtQuick.Layouts
 import ".."
@@ -155,9 +156,18 @@ ColumnLayout {
                 visible: status === Image.Ready
             }
 
+            Colorize {
+                anchors.fill: runningAppIcon
+                source: runningAppIcon
+                visible: runningAppIcon.visible
+                hue: ThemeColors.foreground.hslHue
+                saturation: ThemeColors.foreground.hslSaturation
+                lightness: 0.3
+            }
+
             Text {
                 anchors.centerIn: parent
-                visible: !runningAppIcon.visible
+                visible: runningAppIcon.status !== Image.Ready
                 text: runningAppDelegate.modelData.windowClass.charAt(0).toUpperCase()
                 font.pixelSize: 14
                 font.bold: true
