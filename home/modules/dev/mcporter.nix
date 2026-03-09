@@ -69,6 +69,12 @@ let
     ${nodejs}/bin/npm install -g "mcporter@latest" \
       --prefix "${mcporterNpmPrefix}" --no-audit --no-fund --loglevel=error
   '';
+
+  restartMcporterDaemon = pkgs.writeShellScript "mcporter-daemon-restart" ''
+    set -euo pipefail
+    export PATH="${nodejs}/bin:''${PATH:+:$PATH}"
+    exec ${nodejs}/bin/node "${mcporterNpmPrefix}/lib/node_modules/mcporter/dist/cli.js" daemon restart
+  '';
 in
 {
   home = {
@@ -82,5 +88,11 @@ in
     activation.installMcporterViaNpm = config.lib.dag.entryAfter [ "writeBoundary" ] ''
       run ${installMcporterViaNpm}
     '';
+
+    activation.restartMcporterDaemonAfterConfigChanges =
+      config.lib.dag.entryAfter [ "installMcporterViaNpm" "linkGeneration" ]
+        ''
+          run ${restartMcporterDaemon}
+        '';
   };
 }
