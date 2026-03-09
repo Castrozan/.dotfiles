@@ -22,7 +22,7 @@ in
         continue
       fi
 
-      staleSymlinksFound=$(find "$scanDirectory" -type l -lname '/nix/store/*' ! -exec test -e {} \; -print 2>/dev/null)
+      staleSymlinksFound=$(find "$scanDirectory" -type l -lname '/nix/store/*' ! -exec test -e {} \; -print 2>/dev/null || true)
 
       if [ -n "$staleSymlinksFound" ]; then
         echo "$staleSymlinksFound" | while IFS= read -r staleSymlink; do
@@ -34,8 +34,8 @@ in
 
     if [ -d "${homeDir}/.config" ]; then
       find "${homeDir}/.config" -maxdepth 1 -type d -name '*.backup-*' 2>/dev/null | while IFS= read -r backupDirectory; do
-        remainingNonDanglingFiles=$(find "$backupDirectory" -not -type l -not -type d -print -quit 2>/dev/null)
-        remainingValidSymlinks=$(find "$backupDirectory" -type l -exec test -e {} \; -print -quit 2>/dev/null)
+        remainingNonDanglingFiles=$(find "$backupDirectory" -not -type l -not -type d -print -quit 2>/dev/null || true)
+        remainingValidSymlinks=$(find "$backupDirectory" -type l -exec test -e {} \; -print -quit 2>/dev/null || true)
 
         if [ -z "$remainingNonDanglingFiles" ] && [ -z "$remainingValidSymlinks" ]; then
           echo "Removing empty backup directory with only dangling symlinks: $backupDirectory" >&2
