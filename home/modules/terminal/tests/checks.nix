@@ -60,10 +60,10 @@ let
     tmuxMainContent
     bashrcContent
   ];
-  startTmuxCallPosition = lib.strings.charLength (
+  startTmuxCallPosition = builtins.stringLength (
     builtins.head (lib.splitString "_start_tmux\n" bashrcWithDependenciesFirst)
   );
-  screensaverFunctionPosition = lib.strings.charLength (
+  screensaverFunctionPosition = builtins.stringLength (
     builtins.head (lib.splitString "_start_screensaver_tmux_session" screensaverContent)
   );
   tmuxFunctionsDefinedBeforeCall = startTmuxCallPosition > screensaverFunctionPosition;
