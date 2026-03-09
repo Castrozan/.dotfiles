@@ -23,7 +23,7 @@ shopt -s checkwinsize
 
 # set variable identifying the chroot you work in (used in the prompt below)
 if [ -z "${debian_chroot:-}" ] && [ -r /etc/debian_chroot ]; then
-    debian_chroot=$(cat /etc/debian_chroot)
+	debian_chroot=$(cat /etc/debian_chroot)
 fi
 
 # set a fancy prompt (non-color, unless we know we "want" color)
@@ -37,26 +37,26 @@ esac
 #force_color_prompt=yes
 
 if [ -n "$force_color_prompt" ]; then
-    if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
-        # We have color support; assume it's compliant with Ecma-48
-        # (ISO/IEC-6429). (Lack of such support is extremely rare, and such
-        # a case would tend to support setf rather than setaf.)
-        color_prompt=yes
-    else
-        color_prompt=
-    fi
+	if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
+		# We have color support; assume it's compliant with Ecma-48
+		# (ISO/IEC-6429). (Lack of such support is extremely rare, and such
+		# a case would tend to support setf rather than setaf.)
+		color_prompt=yes
+	else
+		color_prompt=
+	fi
 fi
 
 # Show current git branch in prompt
 parse_git_branch() {
-    git branch 2>/dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ (\1)/'
+	git branch 2>/dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ (\1)/'
 }
 
 # Define PS1
 if [ "$color_prompt" = yes ]; then
-    PS1="\[\033[01;32m\] \u\[\033[00m\]\[\033[01;34m\] \W\[\033[00m\]\[\033[01;1;38;2;253;200;169m\]\$(parse_git_branch)\[\033[00m\]\$ "
+	PS1="\[\033[01;32m\] \u\[\033[00m\]\[\033[01;34m\] \W\[\033[00m\]\[\033[01;1;38;2;253;200;169m\]\$(parse_git_branch)\[\033[00m\]\$ "
 else
-    PS1="\u@\h:\w\$(parse_git_branch)\$ "
+	PS1="\u@\h:\w\$(parse_git_branch)\$ "
 fi
 
 unset color_prompt force_color_prompt
@@ -64,8 +64,8 @@ unset color_prompt force_color_prompt
 # If this is an xterm set the title to user@host:dir
 case "$TERM" in
 xterm* | rxvt*)
-    PS1="\[\e]0;${debian_chroot:+($debian_chroot)}\u@: \W\a\]$PS1"
-    ;;
+	PS1="\[\e]0;${debian_chroot:+($debian_chroot)}\u@: \W\a\]$PS1"
+	;;
 *) ;;
 esac
 
@@ -74,43 +74,41 @@ esac
 # See: users/$USER/home/session-vars.nix
 # Source Home Manager session variables (single source of truth for environment variables)
 if [ -f "$HOME/.nix-profile/etc/profile.d/hm-session-vars.sh" ]; then
-    # shellcheck source=/dev/null
-    . "$HOME/.nix-profile/etc/profile.d/hm-session-vars.sh"
+	# shellcheck source=/dev/null
+	. "$HOME/.nix-profile/etc/profile.d/hm-session-vars.sh"
 fi
 ## END GLOBAL VARIABLES
 
 # Function to start tmux sessions
 # Uses inline sourcing to ensure dependencies are available even if called before files are sourced
 _start_tmux() {
-    (
-        # shellcheck source=shell/screensaver.sh
-        source ~/.dotfiles/home/modules/terminal/shell/screensaver.sh
-        # shellcheck source=shell/tmux_main.sh
-        source ~/.dotfiles/home/modules/terminal/shell/tmux_main.sh
-        _start_screensaver_tmux_session
-        _start_main_tmux_session
-        tmux attach -t screensaver
-    )
+	(
+		source ~/.dotfiles/home/modules/terminal/shell/screensaver.sh
+		source ~/.dotfiles/home/modules/terminal/shell/tmux_main.sh
+		_start_screensaver_tmux_session
+		_start_main_tmux_session
+		tmux attach -t screensaver
+	)
 }
 
 # Open tmux sessions on startup
-if command -v tmux &>/dev/null && \
-   [ -n "$PS1" ] && \
-   [[ ! "$TERM" =~ screen ]] && \
-   [[ ! "$TERM" =~ tmux ]] && \
-   [ -z "$TMUX" ] && \
-   [[ $(ps -o comm= -p "$PPID") != "cursor" ]]; then
-    _start_tmux
+if command -v tmux &>/dev/null &&
+	[ -n "$PS1" ] &&
+	[[ ! "$TERM" =~ screen ]] &&
+	[[ ! "$TERM" =~ tmux ]] &&
+	[ -z "$TMUX" ] &&
+	[[ $(ps -o comm= -p "$PPID") != "cursor" ]]; then
+	_start_tmux
 fi
 
 # Check if the OS is NixOS
 is_nixos() {
-    grep -q "ID=nixos" /etc/os-release
+	grep -q "ID=nixos" /etc/os-release
 }
 
 # Check if is wsl session
 is_wsl() {
-    [ -f "/proc/sys/fs/binfmt_misc/WSLInterop" ]
+	[ -f "/proc/sys/fs/binfmt_misc/WSLInterop" ]
 }
 
 # Set random background image in Kitty terminal only on NixOS
@@ -124,7 +122,7 @@ is_wsl() {
 
 # Source bash completion
 if [ -f /etc/bash_completion ]; then
-    . /etc/bash_completion
+	. /etc/bash_completion
 fi
 
 # BEGIN EVN VARIABLES
@@ -157,10 +155,10 @@ esac
 # cargo
 # Add cargo bin to PATH if it exists and is not already in PATH
 if [ -d "$HOME/.cargo/bin" ]; then
-  case ":$PATH:" in
-  *":$HOME/.cargo/bin:"*) ;;
-  *) export PATH="$HOME/.cargo/bin:$PATH" ;;
-  esac
+	case ":$PATH:" in
+	*":$HOME/.cargo/bin:"*) ;;
+	*) export PATH="$HOME/.cargo/bin:$PATH" ;;
+	esac
 fi
 
 # fzf
@@ -179,30 +177,30 @@ fi
 # Add brew to PATH
 # TODO: define a better way of setting os specific commands
 if ! is_nixos; then
-    eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+	eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 fi
 
 # Terraform
 # Set autocomplete for terraform
 if ! is_nixos; then
-    complete -C /usr/bin/terraform terraform
+	complete -C /usr/bin/terraform terraform
 fi
 
 # Set the default browser on WSL
 if is_wsl; then
-    export BROWSER='/mnt/c/Users/castr/AppData/Local/BraveSoftware/Brave-Browser/Application/brave.exe'
+	export BROWSER='/mnt/c/Users/castr/AppData/Local/BraveSoftware/Brave-Browser/Application/brave.exe'
 fi
 
 # TODO: this should be sourced from a lucas.zanoni specific file on it's config dir
 # NSS library preload for corporate authentication (required for devenv)
 # Only set for lucas.zanoni user
 if [ "$USER" = "lucas.zanoni" ]; then
-    export LD_PRELOAD='/lib/x86_64-linux-gnu/libnss_sss.so.2'
+	export LD_PRELOAD='/lib/x86_64-linux-gnu/libnss_sss.so.2'
 fi
 
 # Start clipse listener
 if command -v clipse &>/dev/null; then
-    clipse --listen
+	clipse --listen
 fi
 
 # Files sourced by $HOME/.dotfiles

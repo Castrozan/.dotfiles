@@ -203,12 +203,10 @@ graph TD
 .dotfiles/
 ├── .bashrc              # Main shell configuration (i'm using fish with bass)
 ├── .config/             # Application configs (hypr, kitty, tmux, nvim, etc.)
-├── .shell_env_vars      # Local environment variables (git-ignored)
 ├── bin/                 # Custom shell scripts & utilities
 ├── home/                # Home Manager shared modules
 ├── hosts/               # NixOS hosts configuration
 ├── nixos/               # NixOS shared system modules
-├── shell/               # Shell configurations (bash, fish)
 ├── users/               # User-specific configurations
 │   ├── lucas.zanoni/    # Home Manager standalone config (Ubuntu/non-NixOS)
 │   └── zanoni/          # Full NixOS system config

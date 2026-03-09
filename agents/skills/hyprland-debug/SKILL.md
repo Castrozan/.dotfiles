@@ -45,7 +45,7 @@ Check bin/hypr/ scripts for current implementations. General patterns:
 </service_reload_methods>
 
 <stale_session_fix>
-Shell startup script in shell/fish/conf.d/ handles stale HYPRLAND_INSTANCE_SIGNATURE. Tests actual hyprctl connectivity and updates to working instance. tmux update-environment includes Wayland vars.
+Shell startup script in home/modules/terminal/shell/fish/conf.d/ handles stale HYPRLAND_INSTANCE_SIGNATURE. Tests actual hyprctl connectivity and updates to working instance. tmux update-environment includes Wayland vars.
 </stale_session_fix>
 
 <verification>

@@ -63,10 +63,6 @@ A declarative NixOS/home-manager dotfiles repository managing a complete Linux d
 │   ├── hooks/                  # Claude Code event hooks (Python + Shell)
 │   ├── skills/                 # 52 SKILL.md-defined capabilities
 │   └── openclaw/workspace/     # OpenClaw workspace seed files
-├── shell/                      # Shell configuration sources
-│   ├── fish/                   # Fish config.fish + conf.d/ scripts
-│   ├── aliases.sh              # Cross-shell aliases
-│   └── bash_env.sh             # Bash environment variables
 ├── secrets/                    # Age-encrypted secrets (agenix)
 ├── tests/                      # BATS test suites + CI scripts
 │   ├── bin-scripts/            # Tests for bin/ utilities
@@ -187,7 +183,7 @@ Claude Code event (SessionStart | PreToolUse | PostToolUse)
 secrets/*.age (age-encrypted files)
   → agenix decrypts at activation time using SSH key
   → written to ~/.secrets/<name>
-  → shell/fish/conf.d/betha-secrets.fish sources them as env vars
+  → home/modules/terminal/shell/fish/conf.d/betha-secrets.fish sources them as env vars
   → home/modules/agenix.nix generates export script
 ```
 
