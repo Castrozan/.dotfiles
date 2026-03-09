@@ -51,7 +51,6 @@
     ../../home/modules/desktop/ksnip.nix
     ../../home/modules/desktop/scripts.nix
 
-    ../../home/modules/dev/bruno.nix
     ../../home/modules/dev/ccost.nix
     ../../home/modules/dev/devenv.nix
     ../../home/modules/dev/glab.nix

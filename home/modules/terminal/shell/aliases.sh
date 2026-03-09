@@ -9,7 +9,6 @@ shopt -s expand_aliases
 alias clebr='cd $HOME/.clebr'
 alias bashrc='nvim ~/.bashrc'
 alias b='btop'
-alias bruno='bruno > /dev/null 2>&1 & disown'
 alias c='code'
 alias ca='claude'
 alias cl='claude'

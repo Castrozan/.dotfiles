@@ -13,7 +13,6 @@
       bat
       bats
       brave
-      bruno
       bun
       cargo
       cava
