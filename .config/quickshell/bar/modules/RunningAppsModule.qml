@@ -145,12 +145,24 @@ ColumnLayout {
             color: runningAppMouseArea.containsMouse ? ThemeColors.surfaceTranslucent : "transparent"
 
             Image {
+                id: runningAppIcon
                 anchors.centerIn: parent
                 width: 16
                 height: 16
                 source: Quickshell.iconPath(runningAppsModuleRoot._resolveIconName(runningAppDelegate.modelData.windowClass), true)
                 sourceSize: Qt.size(16, 16)
                 smooth: true
+                visible: status === Image.Ready
+            }
+
+            Text {
+                anchors.centerIn: parent
+                visible: !runningAppIcon.visible
+                text: runningAppDelegate.modelData.windowClass.charAt(0).toUpperCase()
+                font.pixelSize: 14
+                font.bold: true
+                font.family: "JetBrainsMono Nerd Font"
+                color: ThemeColors.foreground
             }
 
             Rectangle {
