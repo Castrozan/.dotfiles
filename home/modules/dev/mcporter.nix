@@ -3,9 +3,11 @@ let
   nodejs = pkgs.nodejs_22;
   chromeDevtoolsMcp = pkgs.callPackage ../browser/chrome-devtools-mcp-package.nix { };
   mcporterNpmPrefix = "$HOME/.local/share/mcporter-npm";
+  chromeDevtoolsPortDiscoveryCommandPath = "${pkgs.iproute2}/bin:${pkgs.gnugrep}/bin:${pkgs.coreutils}/bin";
 
   chromeDevtoolsWithCdpDiscovery = pkgs.writeShellScript "chrome-devtools-mcp-discover-cdp" ''
     set -euo pipefail
+    export PATH="${chromeDevtoolsPortDiscoveryCommandPath}"
     CHROME_CDP_PORT=$(ss -tlnp 2>/dev/null \
       | grep -E 'chromium|chrome|brave' \
       | grep -o '127\.0\.0\.1:[0-9]*' \
