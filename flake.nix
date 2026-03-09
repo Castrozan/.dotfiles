@@ -40,6 +40,7 @@
     voxtype.url = "github:peteonrails/voxtype";
     whisp-away.url = "github:madjinn/whisp-away";
     hyprland.url = "github:hyprwm/Hyprland/v0.54.0";
+    google-workspace-cli.url = "github:googleworkspace/cli";
   };
 
   # Outputs are what this flake provides, such as pkgs and system configurations

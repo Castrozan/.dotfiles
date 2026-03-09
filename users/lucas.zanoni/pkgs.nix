@@ -2,6 +2,7 @@
   # Dependency injection
   pkgs,
   latest,
+  inputs,
   ...
 }:
 {
@@ -88,5 +89,8 @@
       lazydocker
       # gemini-cli TODO: fix gemini-cli, im using the npm version for now
       suwayomi-server
-    ]);
+    ])
+    ++ [
+      inputs.google-workspace-cli.packages.x86_64-linux.default
+    ];
 }
