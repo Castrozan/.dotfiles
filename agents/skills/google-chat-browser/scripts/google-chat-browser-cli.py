@@ -92,10 +92,10 @@ def resolve_browser_executable(browser_executable_argument: str | None) -> str:
 
     browser_candidates.extend(
         [
-            "google-chrome-stable",
-            "google-chrome",
             "chromium",
             "chromium-browser",
+            "google-chrome-stable",
+            "google-chrome",
         ]
     )
 
@@ -160,12 +160,14 @@ def close_browser_context(
 
 
 def create_clean_working_page(browser_context: BrowserContext) -> Page:
-    for existing_page in list(browser_context.pages):
-        with contextlib.suppress(Exception):
-            existing_page.close()
-
     working_page = browser_context.new_page()
     working_page.bring_to_front()
+
+    for existing_page in list(browser_context.pages):
+        if existing_page != working_page:
+            with contextlib.suppress(Exception):
+                existing_page.close()
+
     return working_page
 
 
