@@ -58,7 +58,7 @@ alias y='yazi'
 # TODO: fix vivaldi, it should not be running as flatpak
 alias vivaldi="flatpak run com.vivaldi.Vivaldi"
 
-readonly PRIVATE_SHELL_ALIASES="$HOME/.dotfiles/private-config/shell/aliases.sh"
+PRIVATE_SHELL_ALIASES="$HOME/.dotfiles/private-config/shell/aliases.sh"
 # shellcheck disable=SC1090
 if [ -f "$PRIVATE_SHELL_ALIASES" ]; then
 	. "$PRIVATE_SHELL_ALIASES"
