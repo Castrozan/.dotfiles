@@ -52,6 +52,7 @@
     ../../home/modules/media/scripts.nix
 
     ../../home/modules/system/scripts.nix
+    ../../home/modules/system/stale-symlink-cleanup.nix
 
     ../../home/modules/voice/hey-bot.nix
     ../../home/modules/voice/hey-bot-test.nix

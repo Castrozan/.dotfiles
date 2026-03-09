@@ -33,7 +33,7 @@ in
     done
 
     if [ -d "${homeDir}/.config" ]; then
-      find "${homeDir}/.config" -maxdepth 1 -type d -name '.backup-*' 2>/dev/null | while IFS= read -r backupDirectory; do
+      find "${homeDir}/.config" -maxdepth 1 -type d -name '*.backup-*' 2>/dev/null | while IFS= read -r backupDirectory; do
         remainingNonDanglingFiles=$(find "$backupDirectory" -not -type l -not -type d -print -quit 2>/dev/null)
         remainingValidSymlinks=$(find "$backupDirectory" -type l -exec test -e {} \; -print -quit 2>/dev/null)
 
