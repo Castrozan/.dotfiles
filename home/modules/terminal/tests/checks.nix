@@ -25,6 +25,48 @@ let
     ../atuin.nix
     ../yazi.nix
   ];
+
+  fishConfDFiles = [
+    "fish/conf.d/bass-env.fish"
+    "fish/conf.d/tmux.fish"
+    "fish/conf.d/fish-aliases.fish"
+    "fish/conf.d/fzf.fish"
+    "fish/conf.d/default-directories.fish"
+    "fish/conf.d/key-bindings.fish"
+    "fish/conf.d/hyprland-env.fish"
+    "fish/conf.d/betha-secrets.fish"
+  ];
+
+  fishFunctionFiles = [
+    "fish/functions/fish_prompt.fish"
+    "fish/functions/cursor.fish"
+    "fish/functions/nix.fish"
+  ];
+
+  allFishConfDFilesDeployed = builtins.all (f: cfg.xdg.configFile ? "${f}") fishConfDFiles;
+
+  allFishFunctionFilesDeployed = builtins.all (f: cfg.xdg.configFile ? "${f}") fishFunctionFiles;
+
+  fishShellInitHasNoHardcodedSources =
+    !(lib.hasInfix "source ~/.dotfiles/" cfg.programs.fish.interactiveShellInit);
+
+  bashrcContent = builtins.readFile ../shell/.bashrc;
+  bashrcHasNoHardcodedSources = !(lib.hasInfix ". $HOME/.dotfiles/" bashrcContent);
+
+  screensaverContent = builtins.readFile ../shell/screensaver.sh;
+  tmuxMainContent = builtins.readFile ../shell/tmux_main.sh;
+  bashrcWithDependenciesFirst = builtins.concatStringsSep "\n" [
+    screensaverContent
+    tmuxMainContent
+    bashrcContent
+  ];
+  startTmuxCallPosition = lib.strings.charLength (
+    builtins.head (lib.splitString "_start_tmux\n" bashrcWithDependenciesFirst)
+  );
+  screensaverFunctionPosition = lib.strings.charLength (
+    builtins.head (lib.splitString "_start_screensaver_tmux_session" screensaverContent)
+  );
+  tmuxFunctionsDefinedBeforeCall = startTmuxCallPosition > screensaverFunctionPosition;
 in
 {
   domain-terminal-fish-enabled =
@@ -35,6 +77,26 @@ in
   domain-terminal-carapace-enabled =
     mkEvalCheck "domain-terminal-carapace-enabled" cfg.programs.carapace.enable
       "carapace completion should be enabled";
+
+  domain-terminal-fish-conf-d-deployed =
+    mkEvalCheck "domain-terminal-fish-conf-d-deployed" allFishConfDFilesDeployed
+      "all fish conf.d files should be deployed via xdg.configFile";
+
+  domain-terminal-fish-functions-deployed =
+    mkEvalCheck "domain-terminal-fish-functions-deployed" allFishFunctionFilesDeployed
+      "all fish function files should be deployed via xdg.configFile";
+
+  domain-terminal-fish-no-hardcoded-sources =
+    mkEvalCheck "domain-terminal-fish-no-hardcoded-sources" fishShellInitHasNoHardcodedSources
+      "fish interactiveShellInit should not contain hardcoded source ~/.dotfiles/ paths";
+
+  domain-terminal-bash-no-hardcoded-sources =
+    mkEvalCheck "domain-terminal-bash-no-hardcoded-sources" bashrcHasNoHardcodedSources
+      ".bashrc should not contain hardcoded . $HOME/.dotfiles/ source lines";
+
+  domain-terminal-bash-tmux-functions-before-call =
+    mkEvalCheck "domain-terminal-bash-tmux-functions-before-call" tmuxFunctionsDefinedBeforeCall
+      "screensaver/tmux functions must be defined before _start_tmux call in concatenated bashrc";
 
   domain-terminal-kitty-catppuccin =
     mkEvalCheck "domain-terminal-kitty-catppuccin"
