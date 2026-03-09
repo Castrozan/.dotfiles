@@ -1,4 +1,4 @@
-.PHONY: all test test-quick test-nix test-modules test-openclaw test-docker test-runtime test-all build shell clean env_vars help
+.PHONY: all test test-quick test-nix test-modules test-openclaw test-docker test-runtime test-all build shell clean help
 
 all:
 
@@ -34,9 +34,6 @@ shell:
 clean:
 	docker compose --profile modules down --rmi local --volumes
 
-env_vars:
-	git update-index --skip-worktree shell/.shell_env_vars
-
 help:
 	@echo "Available targets:"
 	@echo "  make test           - Run nix tests: quick + modules + openclaw (default)"
@@ -50,4 +47,3 @@ help:
 	@echo "  make build          - Build Docker test container"
 	@echo "  make shell          - Open shell in test container"
 	@echo "  make clean          - Remove Docker test images and volumes"
-	@echo "  make env_vars       - Configure .shell_env_vars file"

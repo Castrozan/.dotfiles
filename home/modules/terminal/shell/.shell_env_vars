@@ -1,3 +1,0 @@
-# Shell env variables that are not tracked by git
-# Set this file with: git update-index --skip-worktree .shell_env_vars
-# vim: ft=sh
