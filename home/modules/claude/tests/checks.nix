@@ -58,4 +58,8 @@ in
   claude-bin-wrapper =
     mkEvalCheck "claude-bin-wrapper" (builtins.hasAttr ".local/bin/claude" cfg.home.file)
       ".local/bin/claude should be in home.file";
+
+  claude-research-skill =
+    mkEvalCheck "claude-research-skill" (builtins.hasAttr ".claude/skills/research" cfg.home.file)
+      "research skill should be deployed for claude";
 }

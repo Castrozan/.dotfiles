@@ -50,4 +50,8 @@ in
   codex-skills-only-deploy-complete-skills = mkEvalCheck "codex-skills-only-deploy-complete-skills" (
     !(builtins.hasAttr ".codex/skills/spawn-claude" cfg.home.file)
   ) "directories without SKILL.md should not be deployed as codex skills";
+
+  codex-research-skill =
+    mkEvalCheck "codex-research-skill" (builtins.hasAttr ".codex/skills/research" cfg.home.file)
+      "research skill should be deployed for codex";
 }
