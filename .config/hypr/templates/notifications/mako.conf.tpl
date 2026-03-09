@@ -24,7 +24,7 @@ border-color={{ foreground }}1a
 progress-color=over {{ accent }}
 
 # Behavior (MUST be before [criteria] sections!)
-default-timeout=60000
+default-timeout=30000
 ignore-timeout=1
 
 # Interaction
