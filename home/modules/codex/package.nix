@@ -24,6 +24,7 @@ let
       --model "gpt-5.4" \
       --sandbox "danger-full-access" \
       --ask-for-approval "never" \
+      --no-alt-screen \
       "$@"
   '';
 in
