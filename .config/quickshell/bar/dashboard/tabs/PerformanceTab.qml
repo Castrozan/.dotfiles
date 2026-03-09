@@ -15,7 +15,7 @@ Item {
         return `${Math.ceil(DashboardConfig.useFahrenheitPerformance ? temperatureCelsius * 1.8 + 32 : temperatureCelsius)}\u00B0${DashboardConfig.useFahrenheitPerformance ? "F" : "C"}`;
     }
 
-    implicitWidth: 800
+    implicitWidth: performanceContentRow.implicitWidth
     implicitHeight: performanceContentRow.implicitHeight
 
     StyledRect {
@@ -225,12 +225,15 @@ Item {
 
         StyledRect {
             anchors.left: parent.left
+            anchors.top: parent.top
             anchors.bottom: parent.bottom
             width: parent.width * performanceHeroCardRoot.animatedUsage
             color: Qt.alpha(performanceHeroCardRoot.accentColor, 0.15)
         }
 
         ColumnLayout {
+            anchors.fill: parent
+            anchors.topMargin: Appearance.padding.large
             anchors.leftMargin: Appearance.padding.large
             anchors.rightMargin: Appearance.padding.large
             anchors.bottomMargin: Appearance.padding.normal
