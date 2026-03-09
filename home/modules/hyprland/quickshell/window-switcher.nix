@@ -1,4 +1,17 @@
-{ pkgs, ... }:
+{
+  pkgs,
+  inputs,
+  isNixOS,
+  ...
+}:
+let
+  nixglWrap = import ../../../../lib/nixgl-wrap.nix { inherit pkgs inputs isNixOS; };
+
+  quickshellPackage = nixglWrap.wrapWithNixGLIntel {
+    package = pkgs.quickshell;
+    binaries = [ "quickshell" ];
+  };
+in
 {
   xdg.configFile."quickshell/switcher" = {
     source = ../../../../.config/quickshell/switcher;
@@ -14,7 +27,7 @@
 
     Service = {
       Type = "simple";
-      ExecStart = "${pkgs.quickshell}/bin/quickshell -c switcher";
+      ExecStart = "${quickshellPackage}/bin/quickshell -c switcher";
       Environment = [ "QT_QPA_PLATFORM=wayland" ];
       Restart = "always";
       RestartSec = "1s";

@@ -1,6 +1,20 @@
-{ config, pkgs, ... }:
 {
-  home.packages = [ pkgs.quickshell ];
+  config,
+  pkgs,
+  inputs,
+  isNixOS,
+  ...
+}:
+let
+  nixglWrap = import ../../../../lib/nixgl-wrap.nix { inherit pkgs inputs isNixOS; };
+
+  quickshellPackage = nixglWrap.wrapWithNixGLIntel {
+    package = pkgs.quickshell;
+    binaries = [ "quickshell" ];
+  };
+in
+{
+  home.packages = [ quickshellPackage ];
 
   xdg.configFile."quickshell/bar" = {
     source = ../../../../.config/quickshell/bar;
@@ -16,9 +30,10 @@
 
     Service = {
       Type = "simple";
-      ExecStart = "${pkgs.quickshell}/bin/quickshell --path ${config.home.homeDirectory}/.dotfiles/.config/quickshell/bar";
+      ExecStart = "${quickshellPackage}/bin/quickshell --path ${config.home.homeDirectory}/.dotfiles/.config/quickshell/bar";
       Environment = [
         "QML_IMPORT_PATH=${pkgs.qt6Packages.qt5compat}/lib/qt-6/qml"
+        "QT_QPA_PLATFORM=wayland"
       ];
       Restart = "always";
       RestartSec = "1s";
