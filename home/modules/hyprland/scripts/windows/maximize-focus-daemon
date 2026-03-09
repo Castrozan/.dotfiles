@@ -72,30 +72,57 @@ _remove_workspace_from_maximized_tracking() {
 	maximized_workspaces=("${filtered_workspaces[@]}")
 }
 
-_minimize_floating_windows_blocking_tiled_focus() {
-	local focused_address="$1"
-	local floating_addresses_to_minimize
-	floating_addresses_to_minimize=$(hyprctl clients -j 2>/dev/null | jq -r \
-		--arg focused "$focused_address" \
-		'
-		(map(select(.address == $focused)) | first) as $active |
-		if ($active == null) or $active.floating then
-			empty
-		else
-			.[] | select(
-				.workspace.id == $active.workspace.id and
-				.floating == true and
-				.pinned == false and
-				.address != $focused
-			) | .address
-		end
-		')
+readonly OFFSCREEN_POSITION="-9999 -9999"
 
-	[[ -z "$floating_addresses_to_minimize" ]] && return
+_get_focused_window_properties() {
+	local focused_address="$1"
+	hyprctl clients -j 2>/dev/null | jq -r \
+		--arg focused "$focused_address" \
+		'(map(select(.address == $focused)) | first) // empty | "\(.floating)\t\(.workspace.id)"'
+}
+
+_get_floating_window_addresses_on_workspace() {
+	local workspace_id="$1"
+	local exclude_address="$2"
+	hyprctl clients -j 2>/dev/null | jq -r \
+		--arg ws "$workspace_id" \
+		--arg exclude "$exclude_address" \
+		'.[] | select(
+			.workspace.id == ($ws | tonumber) and
+			.floating == true and
+			.pinned == false and
+			.address != $exclude
+		) | .address'
+}
+
+_move_floating_windows_offscreen() {
+	local focused_address="$1"
+	local focused_properties
+	focused_properties=$(_get_focused_window_properties "$focused_address")
+	[[ -z "$focused_properties" ]] && return
+
+	local is_floating workspace_id
+	IFS=$'\t' read -r is_floating workspace_id <<< "$focused_properties"
+	[[ "$is_floating" == "true" ]] && return
+
+	local floating_addresses
+	floating_addresses=$(_get_floating_window_addresses_on_workspace "$workspace_id" "$focused_address")
+	[[ -z "$floating_addresses" ]] && return
 
 	while IFS= read -r address; do
-		hyprctl dispatch movetoworkspacesilent "special:minimized,address:$address" 2>/dev/null
-	done <<< "$floating_addresses_to_minimize"
+		hyprctl dispatch movewindowpixel "exact $OFFSCREEN_POSITION,address:$address" 2>/dev/null
+	done <<< "$floating_addresses"
+}
+
+_restore_floating_window_to_center() {
+	local window_address="$1"
+	local is_floating
+	is_floating=$(hyprctl clients -j 2>/dev/null | jq -r \
+		--arg addr "$window_address" \
+		'(map(select(.address == $addr)) | first) // empty | .floating')
+	[[ "$is_floating" != "true" ]] && return
+
+	hyprctl dispatch centerwindow "address:$window_address" 2>/dev/null
 }
 
 _handle_active_window_changed_event() {
@@ -104,7 +131,8 @@ _handle_active_window_changed_event() {
 		previous_focused_address="$current_focused_address"
 		current_focused_address="$window_address"
 	fi
-	_minimize_floating_windows_blocking_tiled_focus "$window_address"
+	_restore_floating_window_to_center "$window_address"
+	_move_floating_windows_offscreen "$window_address"
 }
 
 _handle_fullscreen_event() {

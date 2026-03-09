@@ -47,7 +47,11 @@ load '../../../../tests/helpers/bash-script-assertions'
         "_initialize_focused_window_tracking" \
         "_read_and_dispatch_hyprland_events" \
         "_wait_for_hyprland_socket" \
-        "_connect_and_process_events_with_reconnect"
+        "_connect_and_process_events_with_reconnect" \
+        "_get_focused_window_properties" \
+        "_get_floating_window_addresses_on_workspace" \
+        "_move_floating_windows_offscreen" \
+        "_restore_floating_window_to_center"
 }
 
 @test "handles all required hyprland events" {
@@ -83,29 +87,48 @@ load '../../../../tests/helpers/bash-script-assertions'
     assert_script_source_matches 'dispatch focuswindow.*dispatch fullscreen 1 set'
 }
 
-@test "minimizes floating windows when tiled window gets focus" {
-    assert_script_source_matches "_minimize_floating_windows_blocking_tiled_focus"
-    assert_script_source_matches 'movetoworkspacesilent "special:minimized'
+@test "moves floating windows offscreen when tiled window gets focus" {
+    assert_script_source_matches "_move_floating_windows_offscreen"
+    assert_script_source_matches 'movewindowpixel.*OFFSCREEN_POSITION'
 }
 
-@test "minimize function filters by floating and non-pinned status" {
+@test "offscreen function filters by floating and non-pinned status" {
     assert_script_source_matches '.floating == true'
     assert_script_source_matches '.pinned == false'
 }
 
-@test "minimize function scopes to same workspace as focused window" {
-    assert_script_source_matches '.workspace.id == \$active.workspace.id'
+@test "offscreen function scopes to same workspace" {
+    assert_script_source_matches 'workspace.id == .*ws.*tonumber'
 }
 
-@test "minimize function skips when focused window is floating" {
-    assert_script_source_matches '\$active.floating then'
-    assert_script_source_matches 'empty'
+@test "offscreen function skips when focused window is floating" {
+    assert_script_source_matches 'is_floating.*==.*true.*&& return'
 }
 
-@test "active window change triggers floating window minimization" {
-    assert_pattern_appears_before \
-        "_minimize_floating_windows_blocking_tiled_focus" \
-        "_handle_fullscreen_event"
-    assert_script_source_matches '_handle_active_window_changed_event.*{' || \
-    assert_script_source_matches '_handle_active_window_changed_event()'
+@test "restores floating window to center when it gets focus" {
+    assert_script_source_matches "_restore_floating_window_to_center"
+    assert_script_source_matches "centerwindow"
+}
+
+@test "active window handler restores before hiding" {
+    local script_path
+    script_path="$(_resolve_script_under_test)"
+    local handler_body
+    handler_body=$(sed -n '/_handle_active_window_changed_event()/,/^}/p' "$script_path")
+    local restore_line offscreen_line
+    restore_line=$(echo "$handler_body" | grep -n "_restore_floating_window_to_center" | head -1 | cut -d: -f1)
+    offscreen_line=$(echo "$handler_body" | grep -n "_move_floating_windows_offscreen" | head -1 | cut -d: -f1)
+    [ -n "$restore_line" ] && [ -n "$offscreen_line" ] && [ "$restore_line" -lt "$offscreen_line" ]
+}
+
+@test "uses readonly offscreen position constant" {
+    assert_script_source_matches "readonly OFFSCREEN_POSITION"
+}
+
+@test "floating windows stay on same workspace for alt-tab visibility" {
+    run grep -c "movetoworkspacesilent" "$(_resolve_script_under_test)"
+    [ "$output" -eq 0 ] || {
+        run grep "movetoworkspacesilent.*special:minimized" "$(_resolve_script_under_test)"
+        [ "$status" -ne 0 ]
+    }
 }
