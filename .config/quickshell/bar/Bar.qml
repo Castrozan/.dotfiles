@@ -60,6 +60,15 @@ ColumnLayout {
         Layout.preferredWidth: 40
     }
 
+    Rectangle {
+        Layout.alignment: Qt.AlignHCenter
+        Layout.topMargin: 4
+        Layout.bottomMargin: 4
+        width: 20
+        height: 1
+        color: ThemeColors.dim
+    }
+
     Modules.RunningAppsModule {
         Layout.alignment: Qt.AlignHCenter
         Layout.preferredWidth: 40
@@ -75,9 +84,27 @@ ColumnLayout {
         screenScope: barRoot.screenScope
     }
 
+    Rectangle {
+        Layout.alignment: Qt.AlignHCenter
+        Layout.topMargin: 4
+        Layout.bottomMargin: 4
+        width: 20
+        height: 1
+        color: ThemeColors.dim
+    }
+
     Modules.ClockModule {
         Layout.alignment: Qt.AlignHCenter
         Layout.preferredWidth: 40
+    }
+
+    Rectangle {
+        Layout.alignment: Qt.AlignHCenter
+        Layout.topMargin: 4
+        Layout.bottomMargin: 4
+        width: 20
+        height: 1
+        color: ThemeColors.dim
     }
 
     Modules.StatusIconsModule {
