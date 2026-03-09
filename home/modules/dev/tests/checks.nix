@@ -28,6 +28,7 @@ let
   packageNames = map (p: p.name or p.pname or "unknown") cfg.home.packages;
   hasXdgConfig = name: builtins.hasAttr name cfg.xdg.configFile;
   hasPackageMatching = pattern: builtins.any (n: builtins.match pattern n != null) packageNames;
+  brunoPreferences = builtins.fromJSON cfg.xdg.configFile."bruno/preferences.json".text;
 in
 {
   domain-dev-lazygit-enabled =
@@ -37,6 +38,10 @@ in
   domain-dev-bruno-config =
     mkEvalCheck "domain-dev-bruno-config" (hasXdgConfig "bruno/preferences.json")
       "bruno config should be deployed";
+
+  domain-dev-bruno-default-collection-path = mkEvalCheck "domain-dev-bruno-default-collection-path" (
+    brunoPreferences.preferences.defaultCollectionPath == "/home/test/vault/bruno-collections"
+  ) "bruno default collection path should follow config.home.homeDirectory";
 
   domain-dev-devenv-package =
     mkEvalCheck "domain-dev-devenv-package" (hasPackageMatching ".*devenv.*")

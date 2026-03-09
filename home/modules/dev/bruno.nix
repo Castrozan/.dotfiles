@@ -1,4 +1,12 @@
-{ pkgs, lib, ... }:
+{
+  pkgs,
+  lib,
+  config,
+  ...
+}:
+let
+  brunoCollectionDirectory = "${config.home.homeDirectory}/vault/bruno-collections";
+in
 {
   home.packages = [ pkgs.bruno ];
 
@@ -20,12 +28,12 @@
   xdg.configFile."bruno/preferences.json".text = builtins.toJSON {
     version = "1";
     preferences = {
-      defaultCollectionPath = "/home/zanoni/vault/bruno-collections";
+      defaultCollectionPath = brunoCollectionDirectory;
       theme = "dark";
     };
   };
 
   home.activation.createBrunoCollections = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    run mkdir -p /home/zanoni/vault/bruno-collections
+    run mkdir -p "${brunoCollectionDirectory}"
   '';
 }
