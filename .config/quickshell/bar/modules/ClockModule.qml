@@ -69,8 +69,8 @@ ColumnLayout {
     Text {
         Layout.alignment: Qt.AlignHCenter
         text: clockModuleRoot.currentMonthAbbreviation
-        font.pixelSize: 11
+        font.pixelSize: 12
         font.family: "JetBrainsMono Nerd Font"
-        color: ThemeColors.dim
+        color: ThemeColors.foreground
     }
 }
