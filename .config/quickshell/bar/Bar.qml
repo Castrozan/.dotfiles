@@ -60,6 +60,11 @@ ColumnLayout {
         Layout.preferredWidth: 40
     }
 
+    Modules.RunningAppsModule {
+        Layout.alignment: Qt.AlignHCenter
+        Layout.preferredWidth: 40
+    }
+
     Item {
         Layout.fillHeight: true
     }
