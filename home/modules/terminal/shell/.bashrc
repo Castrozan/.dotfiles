@@ -79,8 +79,6 @@ if [ -f "$HOME/.nix-profile/etc/profile.d/hm-session-vars.sh" ]; then
 fi
 ## END GLOBAL VARIABLES
 
-# Function to start tmux sessions
-# Uses inline sourcing to ensure dependencies are available even if called before files are sourced
 _start_tmux() {
 	(
 		_start_screensaver_tmux_session
