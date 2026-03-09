@@ -54,4 +54,8 @@ in
   codex-research-skill =
     mkEvalCheck "codex-research-skill" (builtins.hasAttr ".codex/skills/research" cfg.home.file)
       "research skill should be deployed for codex";
+
+  codex-core-skill =
+    mkEvalCheck "codex-core-skill" (builtins.hasAttr ".codex/skills/core/SKILL.md" cfg.home.file)
+      "core skill should be generated for codex";
 }
