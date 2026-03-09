@@ -46,4 +46,8 @@ in
   codex-skills-directory =
     mkEvalCheck "codex-skills-directory" (hasFilePrefix ".codex/skills/")
       "skills directory entries should be in home.file";
+
+  codex-skills-only-deploy-complete-skills = mkEvalCheck "codex-skills-only-deploy-complete-skills" (
+    !(builtins.hasAttr ".codex/skills/spawn-claude" cfg.home.file)
+  ) "directories without SKILL.md should not be deployed as codex skills";
 }

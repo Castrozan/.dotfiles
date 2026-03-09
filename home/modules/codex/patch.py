@@ -7,9 +7,22 @@ codex_default_model = os.environ.get("CODEX_DEFAULT_MODEL", "gpt-5.4")
 BASELINE = {
     "approval_policy": "never",
     "model": codex_default_model,
+    "model_reasoning_effort": "medium",
+    "model_reasoning_summary": "auto",
+    "model_verbosity": "medium",
+    "profile": "fast",
     "review_model": codex_default_model,
     "sandbox_mode": "danger-full-access",
+    "suppress_unstable_features_warning": True,
     "web_search": "cached",
+    "analytics": {
+        "enabled": False,
+    },
+    "features": {
+        "apply_patch_freeform": True,
+        "child_agents_md": True,
+        "undo": True,
+    },
     "sandbox_workspace_write": {
         "exclude_slash_tmp": False,
         "exclude_tmpdir_env_var": False,
@@ -21,11 +34,22 @@ BASELINE = {
     "profiles": {
         "fast": {
             "model": codex_default_model,
+            "model_reasoning_effort": "xhigh",
+            "model_reasoning_summary": "none",
+            "model_verbosity": "low",
         },
         "deep": {
             "model": codex_default_model,
             "model_reasoning_effort": "high",
+            "model_reasoning_summary": "concise",
             "model_verbosity": "high",
+        },
+        "web": {
+            "sandbox_mode": "workspace-write",
+            "sandbox_workspace_write": {
+                "network_access": True,
+            },
+            "web_search": "live",
         },
     },
 }

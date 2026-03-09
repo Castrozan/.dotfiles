@@ -1,16 +1,29 @@
 { lib, config, ... }:
 let
-  skillsDir = ../../../agents/skills;
-  entries = builtins.readDir skillsDir;
-  skillNames = builtins.attrNames (
-    lib.filterAttrs (n: t: t == "directory" && n != ".system") entries
-  );
+  dotfilesSkillsDir = ../../../agents/skills;
 
-  skillLinks = builtins.listToAttrs (
+  getSkillNamesFromDir =
+    dir:
+    if builtins.pathExists dir then
+      let
+        directoryEntries = builtins.readDir dir;
+      in
+      builtins.filter (
+        name:
+        directoryEntries.${name} == "directory"
+        && name != ".system"
+        && builtins.pathExists (dir + "/${name}/SKILL.md")
+      ) (builtins.attrNames directoryEntries)
+    else
+      [ ];
+
+  skillNames = getSkillNamesFromDir dotfilesSkillsDir;
+
+  codexSkillLinks = builtins.listToAttrs (
     map (name: {
       name = ".codex/skills/${name}";
       value = {
-        source = "${skillsDir}/${name}";
+        source = "${dotfilesSkillsDir}/${name}";
         recursive = true;
       };
     }) skillNames
@@ -22,5 +35,5 @@ let
   };
 in
 {
-  home.file = skillLinks // liveAplicacoesAtendimentoTriageSkillLink;
+  home.file = codexSkillLinks // liveAplicacoesAtendimentoTriageSkillLink;
 }
