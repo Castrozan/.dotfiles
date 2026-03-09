@@ -1,52 +1,32 @@
 from __future__ import annotations
 
 import argparse
-import contextlib
 import json
-import os
 import re
-import shutil
 import sys
 import time
 import urllib.error
 import urllib.request
 from pathlib import Path
 
-from playwright.sync_api import (
-    BrowserContext,
-    Locator,
-    Page,
-    Playwright,
-    sync_playwright,
-)
-
+pinchtab_base_url = "http://localhost:9867"
 default_google_chat_home_url = "https://chat.google.com/"
-default_browser_profile_directory = (
-    Path.home() / ".local" / "share" / "google-chat-browser-cli" / "chrome-profile"
-)
-default_login_wait_seconds = 600
-default_browser_wait_seconds = 30
-default_viewport_width = 1440
-default_viewport_height = 960
+default_navigation_wait_seconds = 30
+
 google_sign_in_url_pattern = re.compile(
     r"accounts\.google\.com|ServiceLogin", re.IGNORECASE
 )
 google_chat_url_pattern = re.compile(r"^https://chat\.google\.com/", re.IGNORECASE)
-message_composer_label_pattern = re.compile(
+message_composer_snapshot_pattern = re.compile(
     r"send a message|enviar uma mensagem|message to|mensagem para",
     re.IGNORECASE,
 )
-send_button_label_pattern = re.compile(r"send|enviar", re.IGNORECASE)
+send_button_snapshot_pattern = re.compile(r"send|enviar", re.IGNORECASE)
+snapshot_element_ref_pattern = re.compile(r"^(e\d+):")
 
 
 def print_log_message(message: str) -> None:
     print(message, file=sys.stderr)
-
-
-def resolve_profile_directory(profile_directory_argument: str | None) -> Path:
-    if profile_directory_argument:
-        return Path(profile_directory_argument).expanduser()
-    return default_browser_profile_directory
 
 
 def resolve_message_text(
@@ -78,360 +58,338 @@ def create_message_preview(message_text: str, preview_length: int = 80) -> str:
     return f"{single_line_message[:preview_length].rstrip()}..."
 
 
-def resolve_browser_executable(browser_executable_argument: str | None) -> str:
-    browser_candidates: list[str] = []
+def pinchtab_http_request(
+    endpoint: str,
+    method: str = "GET",
+    payload: dict | None = None,
+    timeout: int = 60,
+) -> str:
+    url = f"{pinchtab_base_url}{endpoint}"
+    request_data = json.dumps(payload).encode("utf-8") if payload else None
+    headers = {"Content-Type": "application/json"} if request_data else {}
 
-    if browser_executable_argument:
-        browser_candidates.append(browser_executable_argument)
-
-    environment_browser_executable = os.environ.get(
-        "GOOGLE_CHAT_BROWSER_DEFAULT_EXECUTABLE"
-    )
-    if environment_browser_executable:
-        browser_candidates.append(environment_browser_executable)
-
-    browser_candidates.extend(
-        [
-            "chromium",
-            "chromium-browser",
-            "google-chrome-stable",
-            "google-chrome",
-        ]
+    request = urllib.request.Request(
+        url, data=request_data, headers=headers, method=method
     )
 
-    for browser_candidate in browser_candidates:
-        expanded_candidate_path = Path(browser_candidate).expanduser()
-        if expanded_candidate_path.is_file():
-            return str(expanded_candidate_path)
-
-        discovered_candidate_path = shutil.which(browser_candidate)
-        if discovered_candidate_path:
-            return discovered_candidate_path
-
-    raise RuntimeError(
-        "No Chromium-based browser executable found. Use --browser-executable "
-        "or set GOOGLE_CHAT_BROWSER_DEFAULT_EXECUTABLE"
-    )
-
-
-def ensure_parent_directory_exists(file_path: str | None) -> None:
-    if not file_path:
-        return
-    Path(file_path).expanduser().parent.mkdir(parents=True, exist_ok=True)
-
-
-def start_browser_context(
-    profile_directory: Path,
-    browser_executable: str,
-    headless: bool,
-) -> tuple[Playwright, BrowserContext]:
-    profile_directory.mkdir(parents=True, exist_ok=True)
-
-    playwright = sync_playwright().start()
     try:
-        browser_context = playwright.chromium.launch_persistent_context(
-            str(profile_directory),
-            headless=headless,
-            executable_path=browser_executable,
-            viewport={
-                "width": default_viewport_width,
-                "height": default_viewport_height,
-            },
-            args=[
-                "--disable-dev-shm-usage",
-                "--disable-setuid-sandbox",
-                "--no-default-browser-check",
-                "--no-first-run",
-                "--no-sandbox",
-            ],
-        )
-    except Exception:
-        playwright.stop()
-        raise
-
-    return playwright, browser_context
-
-
-def close_browser_context(
-    playwright: Playwright, browser_context: BrowserContext
-) -> None:
-    browser_context.close()
-    playwright.stop()
-
-
-def create_clean_working_page(browser_context: BrowserContext) -> Page:
-    working_page = browser_context.new_page()
-    working_page.bring_to_front()
-
-    for existing_page in list(browser_context.pages):
-        if existing_page != working_page:
-            with contextlib.suppress(Exception):
-                existing_page.close()
-
-    return working_page
-
-
-def navigate_to_google_chat_destination(
-    page: Page, destination_url: str, wait_seconds: int
-) -> None:
-    print_log_message(f"Opening {destination_url}")
-    page.goto(
-        destination_url, wait_until="domcontentloaded", timeout=wait_seconds * 1000
-    )
-    page.wait_for_timeout(2000)
-
-
-def ensure_google_sign_in_is_not_required(page: Page) -> None:
-    if google_sign_in_url_pattern.search(page.url):
+        with urllib.request.urlopen(request, timeout=timeout) as response:
+            return response.read().decode("utf-8")
+    except urllib.error.HTTPError as error:
+        error_body = error.read().decode("utf-8").strip()
         raise RuntimeError(
-            "Google sign-in is required for this profile. Run `google-chat-browser-cli "
-            "login --headed` first."
+            f"Pinchtab {endpoint} failed (HTTP {error.code}): {error_body}"
+        ) from None
+    except urllib.error.URLError as error:
+        raise RuntimeError(
+            f"Cannot reach pinchtab at {pinchtab_base_url}. "
+            f"Ensure it is running: {error.reason}"
+        ) from None
+
+
+def pinchtab_json_request(
+    endpoint: str,
+    method: str = "GET",
+    payload: dict | None = None,
+    timeout: int = 60,
+) -> dict:
+    response_body = pinchtab_http_request(endpoint, method, payload, timeout)
+    if not response_body.strip():
+        return {}
+    return json.loads(response_body)
+
+
+def ensure_pinchtab_is_healthy() -> None:
+    health = pinchtab_json_request("/health", timeout=5)
+    if health.get("status") != "ok":
+        raise RuntimeError(
+            f"Pinchtab health check returned unexpected status: {health}"
         )
 
 
-def wait_for_google_chat_session(
-    page: Page,
-    wait_seconds: int,
-    allow_google_sign_in_flow: bool = False,
+def navigate_pinchtab_to_url(destination_url: str) -> None:
+    print_log_message(f"Opening {destination_url}")
+    pinchtab_http_request(
+        "/navigate", method="POST", payload={"url": destination_url}, timeout=15
+    )
+
+
+def get_pinchtab_interactive_snapshot() -> str:
+    return pinchtab_http_request(
+        "/snapshot?filter=interactive&format=compact", timeout=15
+    )
+
+
+def get_pinchtab_minimal_snapshot() -> str:
+    return pinchtab_http_request("/snapshot?format=compact&depth=0", timeout=15)
+
+
+def get_pinchtab_diff_snapshot() -> str:
+    return pinchtab_http_request("/snapshot?diff=true&format=compact", timeout=15)
+
+
+def perform_pinchtab_action(action_payload: dict) -> None:
+    pinchtab_http_request("/action", method="POST", payload=action_payload, timeout=10)
+
+
+def evaluate_javascript_in_pinchtab(expression: str) -> str:
+    result = pinchtab_json_request(
+        "/evaluate", method="POST", payload={"expression": expression}, timeout=15
+    )
+    return str(result.get("result", ""))
+
+
+def extract_url_from_snapshot_header(snapshot_text: str) -> str:
+    first_line = snapshot_text.split("\n", 1)[0]
+    parts = first_line.split(" | ")
+    if len(parts) >= 2:
+        return parts[1]
+    return ""
+
+
+def extract_title_from_snapshot_header(snapshot_text: str) -> str:
+    first_line = snapshot_text.split("\n", 1)[0]
+    if first_line.startswith("# "):
+        return first_line.split(" | ", 1)[0][2:]
+    return ""
+
+
+def wait_for_pinchtab_page_to_stabilize(
+    max_wait_seconds: float = 5.0,
 ) -> None:
+    poll_interval = 0.3
+    elapsed = 0.0
+    previous_snapshot = ""
+
+    time.sleep(1)
+
+    while elapsed < max_wait_seconds:
+        current_snapshot = get_pinchtab_diff_snapshot()
+        if previous_snapshot and current_snapshot == previous_snapshot:
+            return
+        previous_snapshot = current_snapshot
+        time.sleep(poll_interval)
+        elapsed += poll_interval
+
+
+def raise_if_google_sign_in_required(current_url: str) -> None:
+    if google_sign_in_url_pattern.search(current_url):
+        raise RuntimeError(
+            "Google sign-in is required. Log in via pinchtab headed mode first:\n"
+            "  pinchtab-switch-mode headed\n"
+            "  pinchtab-navigate-and-snapshot 'https://chat.google.com/'\n"
+            "  # Complete login in the browser window\n"
+            "  pinchtab-switch-mode headless"
+        )
+
+
+def navigate_and_wait_for_google_chat(destination_url: str, wait_seconds: int) -> str:
+    navigate_pinchtab_to_url(destination_url)
+    wait_for_pinchtab_page_to_stabilize()
+
     deadline = time.time() + wait_seconds
 
     while time.time() < deadline:
-        if not allow_google_sign_in_flow:
-            ensure_google_sign_in_is_not_required(page)
+        snapshot_text = get_pinchtab_minimal_snapshot()
+        current_url = extract_url_from_snapshot_header(snapshot_text)
+
         if google_chat_url_pattern.search(
-            page.url
-        ) and not google_sign_in_url_pattern.search(page.url):
-            return
-        page.wait_for_timeout(1000)
+            current_url
+        ) and not google_sign_in_url_pattern.search(current_url):
+            return snapshot_text
 
-    raise RuntimeError("Google Chat session did not become ready before the timeout")
+        raise_if_google_sign_in_required(current_url)
+        time.sleep(1)
 
-
-def select_first_visible_locator(candidate_locators: Locator) -> Locator | None:
-    for locator_index in range(candidate_locators.count()):
-        candidate_locator = candidate_locators.nth(locator_index)
-        if candidate_locator.is_visible():
-            return candidate_locator
-    return None
+    raise RuntimeError("Google Chat did not become ready before the timeout")
 
 
-def find_message_composer(page: Page) -> Locator | None:
-    labeled_message_composer = select_first_visible_locator(
-        page.get_by_role("textbox", name=message_composer_label_pattern)
-    )
-    if labeled_message_composer:
-        return labeled_message_composer
+def find_element_ref_in_snapshot(
+    snapshot_text: str, element_type: str, label_pattern: re.Pattern
+) -> str | None:
+    type_marker = f":{element_type} "
 
-    contenteditable_textboxes = page.locator(
-        'div[contenteditable="true"][role="textbox"][aria-label]'
-    )
-    for locator_index in range(contenteditable_textboxes.count()):
-        candidate_locator = contenteditable_textboxes.nth(locator_index)
-        if not candidate_locator.is_visible():
+    for line in snapshot_text.splitlines():
+        if type_marker not in line:
             continue
 
-        accessible_label = candidate_locator.get_attribute("aria-label") or ""
-        if message_composer_label_pattern.search(accessible_label):
-            return candidate_locator
+        label_start = line.find(type_marker) + len(type_marker)
+        label_text = line[label_start:].strip().strip('"')
+        if label_pattern.search(label_text):
+            ref_match = snapshot_element_ref_pattern.match(line)
+            if ref_match:
+                return ref_match.group(1)
 
     return None
 
 
-def wait_for_message_composer(page: Page, wait_seconds: int) -> Locator:
+def wait_for_message_composer_ref(wait_seconds: int) -> str:
     deadline = time.time() + wait_seconds
 
     while time.time() < deadline:
-        ensure_google_sign_in_is_not_required(page)
-        discovered_message_composer = find_message_composer(page)
-        if discovered_message_composer:
-            return discovered_message_composer
-        page.wait_for_timeout(1000)
+        snapshot_text = get_pinchtab_interactive_snapshot()
+        current_url = extract_url_from_snapshot_header(snapshot_text)
+        raise_if_google_sign_in_required(current_url)
+
+        composer_ref = find_element_ref_in_snapshot(
+            snapshot_text, "textbox", message_composer_snapshot_pattern
+        )
+        if composer_ref:
+            return composer_ref
+        time.sleep(1)
 
     raise RuntimeError(
-        "Message composer not found. Check the target space URL and stored login"
+        "Message composer not found. Check the target space URL and login session"
     )
 
 
-def clear_and_fill_message_composer(
-    page: Page, message_composer: Locator, message_text: str
-) -> None:
-    message_lines = message_text.splitlines() or [""]
-    message_composer.click()
-    page.keyboard.press("ControlOrMeta+A")
-    page.keyboard.press("Backspace")
-
-    for message_line_index, message_line in enumerate(message_lines):
-        if message_line:
-            page.keyboard.insert_text(message_line)
-        if message_line_index < len(message_lines) - 1:
-            page.keyboard.press("Shift+Enter")
-
-
-def find_send_button(page: Page) -> Locator | None:
-    labeled_send_button = select_first_visible_locator(
-        page.get_by_role("button", name=send_button_label_pattern)
+def fill_composer_with_message_via_javascript(message_text: str) -> None:
+    escaped_message_json = json.dumps(message_text)
+    javascript_fill_expression = (
+        "(function() {"
+        "  var composer = document.querySelector("
+        '    \'div[contenteditable="true"][role="textbox"]\''
+        "  );"
+        '  if (!composer) return "composer_not_found";'
+        "  composer.focus();"
+        "  var selection = window.getSelection();"
+        "  var range = document.createRange();"
+        "  range.selectNodeContents(composer);"
+        "  selection.removeAllRanges();"
+        "  selection.addRange(range);"
+        "  document.execCommand('delete');"
+        f"  document.execCommand('insertText', false, {escaped_message_json});"
+        '  return "filled";'
+        "})()"
     )
-    if labeled_send_button:
-        return labeled_send_button
 
-    send_button_candidates = page.locator("button[aria-label]")
-    for locator_index in range(send_button_candidates.count()):
-        candidate_locator = send_button_candidates.nth(locator_index)
-        if not candidate_locator.is_visible():
-            continue
-
-        accessible_label = candidate_locator.get_attribute("aria-label") or ""
-        if send_button_label_pattern.search(accessible_label):
-            return candidate_locator
-
-    return None
+    result = evaluate_javascript_in_pinchtab(javascript_fill_expression)
+    if "composer_not_found" in result:
+        raise RuntimeError("Could not find the message composer element in the DOM")
+    if "filled" not in result:
+        raise RuntimeError(f"Unexpected result from composer fill: {result}")
 
 
-def wait_for_send_button(page: Page, wait_seconds: int) -> Locator:
+def wait_for_send_button_and_click(wait_seconds: int) -> None:
     deadline = time.time() + wait_seconds
 
     while time.time() < deadline:
-        discovered_send_button = find_send_button(page)
-        if discovered_send_button and discovered_send_button.is_enabled():
-            return discovered_send_button
-        page.wait_for_timeout(500)
+        snapshot_text = get_pinchtab_interactive_snapshot()
+        send_ref = find_element_ref_in_snapshot(
+            snapshot_text, "button", send_button_snapshot_pattern
+        )
+        if send_ref:
+            perform_pinchtab_action({"kind": "click", "ref": send_ref})
+            return
+        time.sleep(0.5)
 
     raise RuntimeError("Send button not found or not enabled")
 
 
-def wait_for_message_dispatch(
-    page: Page, message_composer: Locator, wait_seconds: int
-) -> None:
-    message_composer_handle = message_composer.element_handle()
-    if message_composer_handle is None:
-        return
+def wait_for_composer_to_clear(wait_seconds: int) -> None:
+    deadline = time.time() + wait_seconds
 
-    page.wait_for_function(
-        "(element) => !element || !element.isConnected || "
-        "((element.innerText || '').trim() === '')",
-        arg=message_composer_handle,
-        timeout=wait_seconds * 1000,
-    )
+    while time.time() < deadline:
+        result = evaluate_javascript_in_pinchtab(
+            "(function() {"
+            "  var c = document.querySelector("
+            '    \'div[contenteditable="true"][role="textbox"]\''
+            "  );"
+            "  if (!c) return 'gone';"
+            "  return (c.innerText || '').trim() === '' ? 'empty' : 'has_text';"
+            "})()"
+        )
+        if "empty" in result or "gone" in result:
+            return
+        time.sleep(0.5)
 
-
-def maybe_take_screenshot(page: Page, screenshot_path_argument: str | None) -> None:
-    if not screenshot_path_argument:
-        return
-
-    ensure_parent_directory_exists(screenshot_path_argument)
-    page.screenshot(
-        path=str(Path(screenshot_path_argument).expanduser()), full_page=True
-    )
-    print_log_message(f"Saved screenshot to {screenshot_path_argument}")
+    print_log_message("Warning: message dispatch verification timed out")
 
 
 def login_to_google_chat(
-    browser_executable: str,
-    profile_directory: Path,
     destination_url: str,
     wait_seconds: int,
-    screenshot_path_argument: str | None,
 ) -> dict[str, object]:
-    playwright, browser_context = start_browser_context(
-        profile_directory=profile_directory,
-        browser_executable=browser_executable,
-        headless=False,
+    ensure_pinchtab_is_healthy()
+    print_log_message(
+        "Login uses pinchtab's browser session. If not logged in:\n"
+        "  1. Run: pinchtab-switch-mode headed\n"
+        "  2. Complete Google sign-in in the browser window\n"
+        "  3. Run: pinchtab-switch-mode headless"
     )
 
-    try:
-        working_page = create_clean_working_page(browser_context)
-        navigate_to_google_chat_destination(working_page, destination_url, wait_seconds)
-        print_log_message(
-            "Complete the Google sign-in flow in the opened browser window"
-        )
-        wait_for_google_chat_session(
-            working_page,
-            wait_seconds,
-            allow_google_sign_in_flow=True,
-        )
-        maybe_take_screenshot(working_page, screenshot_path_argument)
-        return {
-            "success": True,
-            "mode": "login",
-            "url": working_page.url,
-            "title": working_page.title(),
-            "browser_executable": browser_executable,
-            "profile_directory": str(profile_directory),
-        }
-    finally:
-        close_browser_context(playwright, browser_context)
+    navigate_pinchtab_to_url(destination_url)
+    wait_for_pinchtab_page_to_stabilize()
+
+    snapshot_text = get_pinchtab_minimal_snapshot()
+    current_url = extract_url_from_snapshot_header(snapshot_text)
+    page_title = extract_title_from_snapshot_header(snapshot_text)
+
+    signed_in = bool(
+        google_chat_url_pattern.search(current_url)
+        and not google_sign_in_url_pattern.search(current_url)
+    )
+
+    return {
+        "success": signed_in,
+        "mode": "login",
+        "url": current_url,
+        "title": page_title,
+        "backend": "pinchtab",
+        "signed_in": signed_in,
+    }
 
 
 def get_google_chat_session_status(
-    browser_executable: str,
-    profile_directory: Path,
     wait_seconds: int,
-    screenshot_path_argument: str | None,
 ) -> dict[str, object]:
-    playwright, browser_context = start_browser_context(
-        profile_directory=profile_directory,
-        browser_executable=browser_executable,
-        headless=True,
+    ensure_pinchtab_is_healthy()
+    snapshot_text = navigate_and_wait_for_google_chat(
+        default_google_chat_home_url, wait_seconds
     )
+    current_url = extract_url_from_snapshot_header(snapshot_text)
+    page_title = extract_title_from_snapshot_header(snapshot_text)
 
-    try:
-        working_page = create_clean_working_page(browser_context)
-        navigate_to_google_chat_destination(
-            working_page, default_google_chat_home_url, wait_seconds
-        )
-        wait_for_google_chat_session(working_page, wait_seconds)
-        maybe_take_screenshot(working_page, screenshot_path_argument)
-        return {
-            "success": True,
-            "mode": "session-status",
-            "url": working_page.url,
-            "title": working_page.title(),
-            "browser_executable": browser_executable,
-            "profile_directory": str(profile_directory),
-        }
-    finally:
-        close_browser_context(playwright, browser_context)
+    return {
+        "success": True,
+        "mode": "session-status",
+        "url": current_url,
+        "title": page_title,
+        "backend": "pinchtab",
+    }
 
 
 def send_google_chat_message(
-    browser_executable: str,
-    profile_directory: Path,
     space_url: str,
     message_text: str,
-    headless: bool,
     wait_seconds: int,
-    screenshot_path_argument: str | None,
 ) -> dict[str, object]:
-    playwright, browser_context = start_browser_context(
-        profile_directory=profile_directory,
-        browser_executable=browser_executable,
-        headless=headless,
-    )
+    ensure_pinchtab_is_healthy()
+    navigate_and_wait_for_google_chat(space_url, wait_seconds)
+    composer_ref = wait_for_message_composer_ref(wait_seconds)
+    perform_pinchtab_action({"kind": "click", "ref": composer_ref})
+    time.sleep(0.5)
 
-    try:
-        working_page = create_clean_working_page(browser_context)
-        navigate_to_google_chat_destination(working_page, space_url, wait_seconds)
-        message_composer = wait_for_message_composer(working_page, wait_seconds)
-        clear_and_fill_message_composer(working_page, message_composer, message_text)
-        working_page.wait_for_timeout(300)
-        send_button = wait_for_send_button(working_page, wait_seconds)
-        print_log_message(f"Sending message to {working_page.url}")
-        send_button.click()
-        wait_for_message_dispatch(working_page, message_composer, wait_seconds)
-        maybe_take_screenshot(working_page, screenshot_path_argument)
-        return {
-            "success": True,
-            "mode": "browser",
-            "space_url": working_page.url,
-            "title": working_page.title(),
-            "browser_executable": browser_executable,
-            "profile_directory": str(profile_directory),
-            "message_length": len(message_text),
-            "message_preview": create_message_preview(message_text),
-        }
-    finally:
-        close_browser_context(playwright, browser_context)
+    fill_composer_with_message_via_javascript(message_text)
+    time.sleep(0.3)
+
+    print_log_message("Sending message")
+    wait_for_send_button_and_click(wait_seconds)
+    wait_for_composer_to_clear(wait_seconds)
+
+    snapshot_text = get_pinchtab_minimal_snapshot()
+    current_url = extract_url_from_snapshot_header(snapshot_text)
+    page_title = extract_title_from_snapshot_header(snapshot_text)
+
+    return {
+        "success": True,
+        "mode": "browser",
+        "space_url": current_url,
+        "title": page_title,
+        "backend": "pinchtab",
+        "message_length": len(message_text),
+        "message_preview": create_message_preview(message_text),
+    }
 
 
 def send_google_chat_webhook_message(
@@ -479,127 +437,66 @@ def build_argument_parser() -> argparse.ArgumentParser:
     argument_parser = argparse.ArgumentParser(
         prog="google-chat-browser-cli",
         description=(
-            "Send Google Chat messages through a persistent browser session or webhook."
+            "Send Google Chat messages through pinchtab browser session or webhook."
         ),
     )
     subcommands = argument_parser.add_subparsers(dest="command", required=True)
 
     login_subcommand = subcommands.add_parser(
         "login",
-        help=(
-            "Open a headed browser session and wait for Google Chat login to complete."
-        ),
+        help="Check pinchtab session or show login instructions.",
     )
     login_subcommand.add_argument(
         "--space-url",
         default=default_google_chat_home_url,
-        help="Google Chat URL to open while preparing the persistent session.",
     )
-    login_subcommand.add_argument(
-        "--headed",
-        action="store_true",
-        help="Accepted for compatibility. Login always runs with a visible browser.",
-    )
-    login_subcommand.add_argument(
-        "--profile-dir",
-        help="Persistent browser profile directory.",
-    )
-    login_subcommand.add_argument(
-        "--browser-executable",
-        help="Path or executable name for Chrome/Chromium.",
-    )
+    login_subcommand.add_argument("--headed", action="store_true")
     login_subcommand.add_argument(
         "--wait-seconds",
         type=int,
-        default=default_login_wait_seconds,
-        help="Seconds to wait for the login flow to finish.",
+        default=default_navigation_wait_seconds,
     )
-    login_subcommand.add_argument(
-        "--screenshot",
-        help="Save a screenshot after the session becomes ready.",
-    )
+    login_subcommand.add_argument("--profile-dir")
+    login_subcommand.add_argument("--browser-executable")
+    login_subcommand.add_argument("--screenshot")
 
     session_status_subcommand = subcommands.add_parser(
         "session-status",
-        help="Check whether the stored Google Chat browser session is ready.",
-    )
-    session_status_subcommand.add_argument(
-        "--profile-dir",
-        help="Persistent browser profile directory.",
-    )
-    session_status_subcommand.add_argument(
-        "--browser-executable",
-        help="Path or executable name for Chrome/Chromium.",
+        help="Check whether the pinchtab Google Chat session is ready.",
     )
     session_status_subcommand.add_argument(
         "--wait-seconds",
         type=int,
-        default=default_browser_wait_seconds,
-        help="Seconds to wait for Google Chat to load.",
+        default=default_navigation_wait_seconds,
     )
-    session_status_subcommand.add_argument(
-        "--screenshot",
-        help="Save a screenshot after the session becomes ready.",
-    )
+    session_status_subcommand.add_argument("--profile-dir")
+    session_status_subcommand.add_argument("--browser-executable")
+    session_status_subcommand.add_argument("--screenshot")
 
     send_message_subcommand = subcommands.add_parser(
         "send-message",
-        help="Send a message to a Google Chat space or DM through browser automation.",
+        help="Send a message to a Google Chat space or DM.",
     )
-    send_message_subcommand.add_argument(
-        "--space-url",
-        required=True,
-        help="Full Google Chat URL for the target space or DM.",
-    )
-    send_message_subcommand.add_argument(
-        "--message",
-        help="Inline message text.",
-    )
-    send_message_subcommand.add_argument(
-        "--message-file",
-        help="Read the message from a file path or use - for stdin.",
-    )
-    send_message_subcommand.add_argument(
-        "--profile-dir",
-        help="Persistent browser profile directory.",
-    )
-    send_message_subcommand.add_argument(
-        "--browser-executable",
-        help="Path or executable name for Chrome/Chromium.",
-    )
+    send_message_subcommand.add_argument("--space-url", required=True)
+    send_message_subcommand.add_argument("--message")
+    send_message_subcommand.add_argument("--message-file")
     send_message_subcommand.add_argument(
         "--wait-seconds",
         type=int,
-        default=default_browser_wait_seconds,
-        help="Seconds to wait for Google Chat and the composer.",
+        default=default_navigation_wait_seconds,
     )
-    send_message_subcommand.add_argument(
-        "--headed",
-        action="store_true",
-        help="Run the browser visibly instead of headless.",
-    )
-    send_message_subcommand.add_argument(
-        "--screenshot",
-        help="Save a screenshot after sending the message.",
-    )
+    send_message_subcommand.add_argument("--headed", action="store_true")
+    send_message_subcommand.add_argument("--profile-dir")
+    send_message_subcommand.add_argument("--browser-executable")
+    send_message_subcommand.add_argument("--screenshot")
 
     send_webhook_subcommand = subcommands.add_parser(
         "send-webhook",
         help="Send a message to an existing Google Chat incoming webhook.",
     )
-    send_webhook_subcommand.add_argument(
-        "--webhook-url",
-        required=True,
-        help="Incoming webhook URL for the target Google Chat space.",
-    )
-    send_webhook_subcommand.add_argument(
-        "--message",
-        help="Inline message text.",
-    )
-    send_webhook_subcommand.add_argument(
-        "--message-file",
-        help="Read the message from a file path or use - for stdin.",
-    )
+    send_webhook_subcommand.add_argument("--webhook-url", required=True)
+    send_webhook_subcommand.add_argument("--message")
+    send_webhook_subcommand.add_argument("--message-file")
 
     return argument_parser
 
@@ -607,38 +504,22 @@ def build_argument_parser() -> argparse.ArgumentParser:
 def run_command(parsed_arguments: argparse.Namespace) -> dict[str, object]:
     if parsed_arguments.command == "login":
         return login_to_google_chat(
-            browser_executable=resolve_browser_executable(
-                parsed_arguments.browser_executable
-            ),
-            profile_directory=resolve_profile_directory(parsed_arguments.profile_dir),
             destination_url=parsed_arguments.space_url,
             wait_seconds=parsed_arguments.wait_seconds,
-            screenshot_path_argument=parsed_arguments.screenshot,
         )
 
     if parsed_arguments.command == "session-status":
         return get_google_chat_session_status(
-            browser_executable=resolve_browser_executable(
-                parsed_arguments.browser_executable
-            ),
-            profile_directory=resolve_profile_directory(parsed_arguments.profile_dir),
             wait_seconds=parsed_arguments.wait_seconds,
-            screenshot_path_argument=parsed_arguments.screenshot,
         )
 
     if parsed_arguments.command == "send-message":
         return send_google_chat_message(
-            browser_executable=resolve_browser_executable(
-                parsed_arguments.browser_executable
-            ),
-            profile_directory=resolve_profile_directory(parsed_arguments.profile_dir),
             space_url=parsed_arguments.space_url,
             message_text=resolve_message_text(
                 parsed_arguments.message, parsed_arguments.message_file
             ),
-            headless=not parsed_arguments.headed,
             wait_seconds=parsed_arguments.wait_seconds,
-            screenshot_path_argument=parsed_arguments.screenshot,
         )
 
     if parsed_arguments.command == "send-webhook":

@@ -3,10 +3,6 @@ let
   googleWorkspaceCliPackage =
     inputs.google-workspace-cli.packages.${pkgs.stdenv.hostPlatform.system}.default;
 
-  pythonWithPlaywright = pkgs.python312.withPackages (pythonPackages: [
-    pythonPackages.playwright
-  ]);
-
   googleChatBrowserCliSource = pkgs.writeText "google-chat-browser-cli.py" (
     builtins.readFile ../../../agents/skills/google-chat-browser/scripts/google-chat-browser-cli.py
   );
@@ -14,10 +10,9 @@ let
   googleChatBrowserCli = pkgs.writeShellScriptBin "google-chat-browser-cli" ''
     set -Eeuo pipefail
 
-    readonly python_binary="${pythonWithPlaywright}/bin/python"
+    readonly python_binary="${pkgs.python312}/bin/python"
 
     main() {
-      export PATH="${pkgs.chromium}/bin:$PATH"
       exec "$python_binary" "${googleChatBrowserCliSource}" "$@"
     }
 
