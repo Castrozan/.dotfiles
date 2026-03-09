@@ -15,6 +15,17 @@ ColumnLayout {
     property var firstSeenOrderByClass: ({})
     property int firstSeenOrderNextIndex: 0
 
+    readonly property var windowClassToIconName: ({
+        "code": "vscode",
+        "code - insiders": "vscode-insiders",
+        "cursor": "cursor",
+    })
+
+    function _resolveIconName(windowClass: string): string {
+        let lowerClass = windowClass.toLowerCase();
+        return windowClassToIconName[lowerClass] ?? lowerClass;
+    }
+
     readonly property string hyprlandSocket2Path: Quickshell.env("XDG_RUNTIME_DIR") + "/hypr/" + Quickshell.env("HYPRLAND_INSTANCE_SIGNATURE") + "/.socket2.sock"
 
     Component.onCompleted: _fetchRunningClients()
@@ -137,7 +148,7 @@ ColumnLayout {
                 anchors.centerIn: parent
                 width: 16
                 height: 16
-                source: Quickshell.iconPath(runningAppDelegate.modelData.windowClass.toLowerCase(), true)
+                source: Quickshell.iconPath(runningAppsModuleRoot._resolveIconName(runningAppDelegate.modelData.windowClass), true)
                 sourceSize: Qt.size(16, 16)
                 smooth: true
             }
