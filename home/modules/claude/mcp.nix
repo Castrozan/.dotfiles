@@ -1,13 +1,12 @@
 { pkgs, ... }:
 let
-  nodePath = "${pkgs.nodejs_22}/bin";
+  chromeDevtoolsMcp = pkgs.callPackage ../browser/chrome-devtools-mcp-package.nix { };
   chromePath = "${pkgs.chromium}/bin/chromium";
   mcpConfig = {
     mcpServers = {
       chrome-devtools = {
-        command = "${nodePath}/npx";
+        command = "${chromeDevtoolsMcp}/bin/chrome-devtools-mcp";
         args = [
-          "chrome-devtools-mcp@latest"
           "--headless"
           "--executablePath"
           chromePath

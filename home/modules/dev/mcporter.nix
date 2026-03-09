@@ -1,6 +1,7 @@
 { pkgs, config, ... }:
 let
   nodejs = pkgs.nodejs_22;
+  chromeDevtoolsMcp = pkgs.callPackage ../browser/chrome-devtools-mcp-package.nix { };
   mcporterNpmPrefix = "$HOME/.local/share/mcporter-npm";
 
   chromeDevtoolsWithCdpDiscovery = pkgs.writeShellScript "chrome-devtools-mcp-discover-cdp" ''
@@ -16,8 +17,8 @@ let
       exit 1
     fi
 
-    exec ${nodejs}/bin/npx chrome-devtools-mcp@latest \
-      --browser-url="http://127.0.0.1:''${CHROME_CDP_PORT}" \
+    exec ${chromeDevtoolsMcp}/bin/chrome-devtools-mcp \
+      --browserUrl="http://127.0.0.1:''${CHROME_CDP_PORT}" \
       --usageStatistics false
   '';
 
@@ -33,9 +34,8 @@ let
         args = [ ];
       };
       chrome-devtools-isolated = {
-        command = "${nodejs}/bin/npx";
+        command = "${chromeDevtoolsMcp}/bin/chrome-devtools-mcp";
         args = [
-          "chrome-devtools-mcp@latest"
           "--headless"
           "--executablePath"
           "${pkgs.chromium}/bin/chromium"
