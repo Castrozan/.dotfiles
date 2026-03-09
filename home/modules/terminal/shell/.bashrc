@@ -83,8 +83,6 @@ fi
 # Uses inline sourcing to ensure dependencies are available even if called before files are sourced
 _start_tmux() {
 	(
-		source ~/.dotfiles/home/modules/terminal/shell/screensaver.sh
-		source ~/.dotfiles/home/modules/terminal/shell/tmux_main.sh
 		_start_screensaver_tmux_session
 		_start_main_tmux_session
 		tmux attach -t screensaver
@@ -203,12 +201,3 @@ if command -v clipse &>/dev/null; then
 	clipse --listen
 fi
 
-# Files sourced by $HOME/.dotfiles
-. $HOME/.dotfiles/home/modules/terminal/shell/bash_history.sh
-. $HOME/.dotfiles/home/modules/terminal/shell/fzf_catppuccin_theme.sh
-. $HOME/.dotfiles/home/modules/terminal/shell/fzf_bash_history.sh
-. $HOME/.dotfiles/home/modules/terminal/shell/aliases.sh
-. $HOME/.dotfiles/home/modules/terminal/shell/zoxide.sh
-. $HOME/.dotfiles/home/modules/terminal/shell/screensaver.sh
-. $HOME/.dotfiles/home/modules/terminal/shell/tmux_main.sh
-. $HOME/.dotfiles/home/modules/terminal/shell/default_directories.sh

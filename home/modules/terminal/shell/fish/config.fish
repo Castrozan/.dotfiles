@@ -33,19 +33,4 @@ if command -v clipse &>/dev/null
     end
 end
 
-# Portable environment setup
-source ~/.dotfiles/home/modules/terminal/shell/fish/bass_env.fish
-
-# Fish-specific components
-source ~/.dotfiles/home/modules/terminal/shell/fish/conf.d/tmux.fish
-source ~/.dotfiles/home/modules/terminal/shell/fish/conf.d/fish_aliases.fish
-source ~/.dotfiles/home/modules/terminal/shell/fish/conf.d/fzf.fish
-source ~/.dotfiles/home/modules/terminal/shell/fish/conf.d/default_directories.fish
-source ~/.dotfiles/home/modules/terminal/shell/fish/conf.d/key_bindings.fish
-
-# Functions
-source ~/.dotfiles/home/modules/terminal/shell/fish/functions/fish_prompt.fish
-source ~/.dotfiles/home/modules/terminal/shell/fish/functions/cursor.fish
-source ~/.dotfiles/home/modules/terminal/shell/fish/functions/nix.fish
-
 zoxide init fish | source

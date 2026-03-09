@@ -6,7 +6,17 @@
   ...
 }:
 let
-  bashrc = builtins.readFile ../../home/modules/terminal/shell/.bashrc;
+  bashrc = builtins.concatStringsSep "\n" [
+    (builtins.readFile ../../home/modules/terminal/shell/.bashrc)
+    (builtins.readFile ../../home/modules/terminal/shell/bash_history.sh)
+    (builtins.readFile ../../home/modules/terminal/shell/fzf_catppuccin_theme.sh)
+    (builtins.readFile ../../home/modules/terminal/shell/fzf_bash_history.sh)
+    (builtins.readFile ../../home/modules/terminal/shell/aliases.sh)
+    (builtins.readFile ../../home/modules/terminal/shell/zoxide.sh)
+    (builtins.readFile ../../home/modules/terminal/shell/screensaver.sh)
+    (builtins.readFile ../../home/modules/terminal/shell/tmux_main.sh)
+    (builtins.readFile ../../home/modules/terminal/shell/default_directories.sh)
+  ];
   sshKeys = import ./ssh-keys.nix;
 in
 {
