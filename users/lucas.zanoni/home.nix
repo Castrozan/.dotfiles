@@ -54,6 +54,7 @@
     ../../home/modules/dev/ccost.nix
     ../../home/modules/dev/devenv.nix
     ../../home/modules/dev/glab.nix
+    ../../home/modules/dev/google-workspace-cli.nix
     ../../home/modules/dev/lazygit.nix
     ../../home/modules/dev/mcporter.nix
     ../../home/modules/dev/scripts.nix
