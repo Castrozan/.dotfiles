@@ -72,12 +72,39 @@ _remove_workspace_from_maximized_tracking() {
 	maximized_workspaces=("${filtered_workspaces[@]}")
 }
 
+_minimize_floating_windows_blocking_tiled_focus() {
+	local focused_address="$1"
+	local floating_addresses_to_minimize
+	floating_addresses_to_minimize=$(hyprctl clients -j 2>/dev/null | jq -r \
+		--arg focused "$focused_address" \
+		'
+		(map(select(.address == $focused)) | first) as $active |
+		if ($active == null) or $active.floating then
+			empty
+		else
+			.[] | select(
+				.workspace.id == $active.workspace.id and
+				.floating == true and
+				.pinned == false and
+				.address != $focused
+			) | .address
+		end
+		')
+
+	[[ -z "$floating_addresses_to_minimize" ]] && return
+
+	while IFS= read -r address; do
+		hyprctl dispatch movetoworkspacesilent "special:minimized,address:$address" 2>/dev/null
+	done <<< "$floating_addresses_to_minimize"
+}
+
 _handle_active_window_changed_event() {
 	local window_address="0x$1"
 	if [[ "$window_address" != "$current_focused_address" ]]; then
 		previous_focused_address="$current_focused_address"
 		current_focused_address="$window_address"
 	fi
+	_minimize_floating_windows_blocking_tiled_focus "$window_address"
 }
 
 _handle_fullscreen_event() {
