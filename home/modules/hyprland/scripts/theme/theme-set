@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 if [[ -z $1 ]]; then
-  echo "Usage: hypr-theme-set <theme-name>"
-  exit 1
+	echo "Usage: hypr-theme-set <theme-name>"
+	exit 1
 fi
 
 CURRENT_THEME_PATH="$HOME/.config/hypr-theme/current/theme"
@@ -13,12 +13,12 @@ HYPR_THEMES_PATH="$HOME/.config/hypr/themes"
 THEME_NAME=$(echo "$1" | sed -E 's/<[^>]+>//g' | tr '[:upper:]' '[:lower:]' | tr ' ' '-')
 
 if [[ -e "$USER_THEMES_PATH/$THEME_NAME" ]]; then
-  THEME_PATH="$USER_THEMES_PATH/$THEME_NAME"
+	THEME_PATH="$USER_THEMES_PATH/$THEME_NAME"
 elif [[ -e "$HYPR_THEMES_PATH/$THEME_NAME" ]]; then
-  THEME_PATH="$HYPR_THEMES_PATH/$THEME_NAME"
+	THEME_PATH="$HYPR_THEMES_PATH/$THEME_NAME"
 else
-  echo "Theme '$THEME_NAME' does not exist"
-  exit 1
+	echo "Theme '$THEME_NAME' does not exist"
+	exit 1
 fi
 
 rm -rf "$NEXT_THEME_PATH"
@@ -34,7 +34,12 @@ mv "$CURRENT_THEME_PATH" "$OLD_THEME_PATH" 2>/dev/null || true
 mv "$NEXT_THEME_PATH" "$CURRENT_THEME_PATH"
 rm -rf "$OLD_THEME_PATH"
 
-echo "$THEME_NAME" > "$HOME/.config/hypr-theme/current/theme.name"
+echo "$THEME_NAME" >"$HOME/.config/hypr-theme/current/theme.name"
+
+QUICKSHELL_BAR_THEME_COLORS="$CURRENT_THEME_PATH/quickshell-bar-colors.json"
+if [[ -f "$QUICKSHELL_BAR_THEME_COLORS" ]]; then
+	touch "$QUICKSHELL_BAR_THEME_COLORS"
+fi
 
 hypr-theme-bg-next
 
@@ -45,12 +50,10 @@ makoctl reload 2>/dev/null || true
 BTOP_CONF="$HOME/.config/btop/btop.conf"
 BTOP_THEME="$CURRENT_THEME_PATH/btop.theme"
 if [[ -f "$BTOP_CONF" && -f "$BTOP_THEME" ]]; then
-  sed -i "s|^color_theme = .*|color_theme = \"$BTOP_THEME\"|" "$BTOP_CONF"
-  sed -i 's|^theme_background = .*|theme_background = False|' "$BTOP_CONF"
+	sed -i "s|^color_theme = .*|color_theme = \"$BTOP_THEME\"|" "$BTOP_CONF"
+	sed -i 's|^theme_background = .*|theme_background = False|' "$BTOP_CONF"
 fi
 
 hypr-theme-set-gnome
 
 notify-send "Theme changed" "$THEME_NAME" -t 2000
-
-systemctl --user restart quickshell-bar 2>/dev/null || true
