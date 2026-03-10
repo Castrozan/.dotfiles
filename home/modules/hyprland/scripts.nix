@@ -36,13 +36,13 @@ let
 in
 {
   home.packages = [
-    (mkScript "hypr-theme-set" ./scripts/theme/theme-set)
+    (mkHyprlandPythonScript "hypr-theme-set" ./scripts/theme/theme_set.py)
     (mkHyprlandPythonScript "hypr-theme-set-templates" ./scripts/theme/theme_set_templates.py)
-    (mkScript "hypr-theme-bg-apply" ./scripts/theme/theme-bg-apply)
-    (mkScript "hypr-theme-bg-next" ./scripts/theme/theme-bg-next)
-    (mkScript "hypr-theme-list" ./scripts/theme/theme-list)
-    (mkScript "hypr-theme-current" ./scripts/theme/theme-current)
-    (mkScript "hypr-theme-set-gnome" ./scripts/theme/theme-set-gnome)
+    (mkHyprlandPythonScript "hypr-theme-bg-apply" ./scripts/theme/theme_bg_apply.py)
+    (mkHyprlandPythonScript "hypr-theme-bg-next" ./scripts/theme/theme_bg_next.py)
+    (mkHyprlandPythonScript "hypr-theme-list" ./scripts/theme/theme_list.py)
+    (mkHyprlandPythonScript "hypr-theme-current" ./scripts/theme/theme_current.py)
+    (mkHyprlandPythonScript "hypr-theme-set-gnome" ./scripts/theme/theme_set_gnome.py)
     (mkScript "hypr-restart-hyprctl" ./scripts/utilities/restart-hyprctl)
     (mkScript "hypr-menu" ./scripts/launchers/menu)
     (mkScript "hypr-fuzzel" ./scripts/launchers/fuzzel)
