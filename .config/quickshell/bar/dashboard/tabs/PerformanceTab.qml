@@ -11,6 +11,8 @@ import Quickshell.Services.UPower
 Item {
     id: performanceTabRoot
 
+    property bool dashboardIsActive: false
+
     function formatTemperatureDisplay(temperatureCelsius: real): string {
         return `${Math.ceil(DashboardConfig.useFahrenheitPerformance ? temperatureCelsius * 1.8 + 32 : temperatureCelsius)}\u00B0${DashboardConfig.useFahrenheitPerformance ? "F" : "C"}`;
     }
@@ -56,8 +58,20 @@ Item {
         spacing: Appearance.spacing.normal
         visible: !noWidgetsPlaceholder.visible
 
-        Component.onCompleted: SystemUsageService.refCount++
-        Component.onDestruction: SystemUsageService.refCount--
+        Component.onDestruction: {
+            if (performanceTabRoot.dashboardIsActive)
+                SystemUsageService.refCount--;
+        }
+
+        Connections {
+            target: performanceTabRoot
+            function onDashboardIsActiveChanged() {
+                if (performanceTabRoot.dashboardIsActive)
+                    SystemUsageService.refCount++;
+                else
+                    SystemUsageService.refCount--;
+            }
+        }
 
         ColumnLayout {
             id: performanceMainColumn
@@ -594,8 +608,20 @@ Item {
         radius: Appearance.rounding.large
         clip: true
 
-        Component.onCompleted: NetworkUsageService.refCount++
-        Component.onDestruction: NetworkUsageService.refCount--
+        Component.onDestruction: {
+            if (performanceTabRoot.dashboardIsActive)
+                NetworkUsageService.refCount--;
+        }
+
+        Connections {
+            target: performanceTabRoot
+            function onDashboardIsActiveChanged() {
+                if (performanceTabRoot.dashboardIsActive)
+                    NetworkUsageService.refCount++;
+                else
+                    NetworkUsageService.refCount--;
+            }
+        }
 
         ColumnLayout {
             anchors.fill: parent
@@ -699,7 +725,7 @@ Item {
 
                     Timer {
                         interval: DashboardConfig.resourceUpdateInterval
-                        running: true
+                        running: performanceTabRoot.dashboardIsActive
                         repeat: true
                         onTriggered: networkSparklineCanvas.internalTickCount++
                     }
@@ -709,7 +735,7 @@ Item {
                         to: 1
                         duration: DashboardConfig.resourceUpdateInterval
                         loops: Animation.Infinite
-                        running: true
+                        running: performanceTabRoot.dashboardIsActive
                     }
 
                     Behavior on smoothedMaximum {

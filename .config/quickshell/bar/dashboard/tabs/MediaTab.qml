@@ -10,6 +10,8 @@ import QtQuick.Layouts
 Item {
     id: mediaTabRoot
 
+    property bool dashboardIsActive: false
+
     property real playerProgress: {
         const activePlayer = PlayersService.active;
         return activePlayer?.length ? activePlayer.position / activePlayer.length : 0;
@@ -40,7 +42,7 @@ Item {
     }
 
     Timer {
-        running: mediaTabRoot.isCurrentlyPlaying
+        running: mediaTabRoot.isCurrentlyPlaying && mediaTabRoot.dashboardIsActive
         interval: DashboardConfig.mediaUpdateInterval
         triggeredOnStart: true
         repeat: true
@@ -56,8 +58,20 @@ Item {
         implicitWidth: 180
         implicitHeight: 280
 
-        Component.onCompleted: CavaService.refCount++
-        Component.onDestruction: CavaService.refCount--
+        Component.onDestruction: {
+            if (mediaTabRoot.dashboardIsActive)
+                CavaService.refCount--;
+        }
+
+        Connections {
+            target: mediaTabRoot
+            function onDashboardIsActiveChanged() {
+                if (mediaTabRoot.dashboardIsActive)
+                    CavaService.refCount++;
+                else
+                    CavaService.refCount--;
+            }
+        }
 
         Row {
             anchors.bottom: parent.bottom

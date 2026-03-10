@@ -58,6 +58,8 @@ Item {
 
         active: true
 
-        sourceComponent: DashboardContent {}
+        sourceComponent: DashboardContent {
+            dashboardIsActive: dashboardWrapperRoot.dashboardVisible
+        }
     }
 }

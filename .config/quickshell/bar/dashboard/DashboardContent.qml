@@ -9,6 +9,7 @@ import QtQuick.Layouts
 Item {
     id: dashboardContentRoot
 
+    property bool dashboardIsActive: false
     property int currentTabIndex: 0
     readonly property real nonAnimatedWidth: tabsFlickable.implicitWidth + flickableWrapper.anchors.margins * 2
     readonly property real nonAnimatedHeight: dashboardTabsBar.implicitHeight + dashboardTabsBar.anchors.topMargin + tabsFlickable.implicitHeight + flickableWrapper.anchors.margins * 2
@@ -110,7 +111,9 @@ Item {
                     active: true
                     asynchronous: dashboardContentRoot.currentTabIndex !== 1
                     Layout.alignment: Qt.AlignTop
-                    sourceComponent: MediaTab {}
+                    sourceComponent: MediaTab {
+                        dashboardIsActive: dashboardContentRoot.dashboardIsActive
+                    }
                 }
 
                 Loader {
@@ -118,7 +121,9 @@ Item {
                     active: true
                     asynchronous: dashboardContentRoot.currentTabIndex !== 2
                     Layout.alignment: Qt.AlignTop
-                    sourceComponent: PerformanceTab {}
+                    sourceComponent: PerformanceTab {
+                        dashboardIsActive: dashboardContentRoot.dashboardIsActive
+                    }
                 }
 
                 Loader {
