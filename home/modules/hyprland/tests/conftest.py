@@ -4,11 +4,14 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-WINDOWS_SCRIPTS_DIR = Path(__file__).parent.parent / "scripts" / "windows"
+SCRIPTS_DIR = Path(__file__).parent.parent / "scripts"
+WINDOWS_SCRIPTS_DIR = SCRIPTS_DIR / "windows"
 WINDOWS_LIB_DIR = WINDOWS_SCRIPTS_DIR / "lib"
+HARDWARE_SCRIPTS_DIR = SCRIPTS_DIR / "hardware"
 
 sys.path.insert(0, str(WINDOWS_LIB_DIR))
 sys.path.insert(0, str(WINDOWS_SCRIPTS_DIR))
+sys.path.insert(0, str(HARDWARE_SCRIPTS_DIR))
 
 
 @pytest.fixture
@@ -31,6 +34,7 @@ def hyprctl_response_builder(mock_subprocess_run):
         elif isinstance(response_data, (dict, list)):
             json_output = json.dumps(response_data)
             canned_responses[("hyprctl", subcommand, "-j")] = json_output
+            canned_responses[("hyprctl", subcommand, "all", "-j")] = json_output
             canned_responses[("hyprctl", subcommand)] = json_output
         else:
             canned_responses[("hyprctl", subcommand)] = str(response_data)
