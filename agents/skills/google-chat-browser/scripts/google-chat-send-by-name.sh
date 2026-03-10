@@ -102,10 +102,9 @@ _capture_interactive_snapshot() {
 _find_contact_ref_in_snapshot() {
 	local snapshot_text="$1"
 	local search_name="$2"
-	local lowercase_search_name=""
-	lowercase_search_name=$(echo "$search_name" | tr '[:upper:]' '[:lower:]')
 
-	echo "$snapshot_text" | while IFS= read -r snapshot_line; do
+	local matching_ref=""
+	matching_ref=$(echo "$snapshot_text" | while IFS= read -r snapshot_line; do
 		if [[ "$snapshot_line" != *":link "* ]]; then
 			continue
 		fi
@@ -113,11 +112,31 @@ _find_contact_ref_in_snapshot() {
 		local lowercase_line=""
 		lowercase_line=$(echo "$snapshot_line" | tr '[:upper:]' '[:lower:]')
 
-		if [[ "$lowercase_line" == *"$lowercase_search_name"* && "$lowercase_line" == *"pressione a tecla tab"* ]]; then
+		if [[ "$lowercase_line" != *"pressione a tecla tab"* ]]; then
+			continue
+		fi
+
+		if _all_search_words_match_line "$search_name" "$lowercase_line"; then
 			echo "$snapshot_line" | grep -oP '^e\d+' || true
-			return 0
+			break
+		fi
+	done)
+
+	echo "$matching_ref"
+}
+
+_all_search_words_match_line() {
+	local search_name="$1"
+	local lowercase_line="$2"
+
+	local search_word=""
+	for search_word in $(echo "$search_name" | tr '[:upper:]' '[:lower:]'); do
+		if [[ "$lowercase_line" != *"$search_word"* ]]; then
+			return 1
 		fi
 	done
+
+	return 0
 }
 
 _expand_direct_messages_section() {
