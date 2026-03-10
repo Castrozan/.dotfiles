@@ -19,15 +19,7 @@
 
 Welcome to my dotfiles! This repository contains my desktop environment setup for both **NixOS** and **Ubuntu**. It's built with Nix Flakes and Home Manager.
 
-![screensaver](static/docs/tmux/showcase-screensaver.png)
-
-<!-- ## 🎬 Showcase: Hyprland + Bash/Fish + Kitty + Neovim  -->
-<!-- TODO: add desktop video showcase -->
-<!-- *(More screenshots & videos coming soon!)* -->
-
-<!-- ### Hyprland -->
-<!-- TODO: add screenshots -->
-<!-- *Coming soon! Currently ricing with waybar and fuzzel* -->
+https://github.com/Castrozan/.dotfiles/raw/main/static/docs/showcase-desktop.mp4
 
 ## Desktop Showcase
 
