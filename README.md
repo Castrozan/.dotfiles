@@ -19,7 +19,7 @@
 
 Welcome to my dotfiles! This repository contains my desktop environment setup for both **NixOS** and **Ubuntu**. It's built with Nix Flakes and Home Manager.
 
-https://github.com/user-attachments/assets/2d000eda-f6f7-4125-abdf-fb395ee0229c
+https://github.com/user-attachments/assets/c5959f36-6b7a-450c-a18c-f430d60fcafc
 
 ## Desktop Showcase
 
