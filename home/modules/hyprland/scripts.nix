@@ -1,27 +1,5 @@
 { pkgs, ... }:
 let
-  mkScript =
-    name: file:
-    pkgs.writeShellScriptBin name ''
-      export PATH="${
-        pkgs.lib.makeBinPath (
-          with pkgs;
-          [
-            pulseaudio
-            coreutils
-            gnugrep
-            gnused
-            gawk
-            util-linux
-            procps
-            brightnessctl
-            socat
-          ]
-        )
-      }:/usr/bin:$PATH"
-      ${builtins.readFile file}
-    '';
-
   hyprlandPythonLibraryPath = ./scripts/windows/lib;
 
   mkHyprlandPythonScript = name: file: mkHyprlandPythonScriptWithDeps name file [ ];
@@ -49,17 +27,22 @@ in
     (mkHyprlandPythonScript "hypr-theme-current" ./scripts/theme/theme_current.py)
     (mkHyprlandPythonScript "hypr-theme-set-gnome" ./scripts/theme/theme_set_gnome.py)
     (mkHyprlandPythonScript "hypr-restart-hyprctl" ./scripts/utilities/restart_hyprctl.py)
-    (mkScript "hypr-menu" ./scripts/launchers/menu)
+    (mkHyprlandPythonScript "hypr-menu" ./scripts/launchers/menu.py)
     (mkHyprlandPythonScript "hypr-fuzzel" ./scripts/launchers/fuzzel_launcher.py)
     (mkHyprlandPythonScript "hypr-super-launcher" ./scripts/launchers/super_launcher.py)
     (mkHyprlandPythonScript "hypr-launch-clipse-with-workspace-group-restoration" ./scripts/launchers/launch_clipse_with_workspace_group_restoration.py)
     (mkHyprlandPythonScript "hypr-summon-brave" ./scripts/launchers/summon_brave.py)
     (mkHyprlandPythonScript "hypr-toggle-group-for-all-workspace-windows" ./scripts/windows/toggle_group_for_all_workspace_windows.py)
     (mkHyprlandPythonScript "hypr-screenshot" ./scripts/utilities/screenshot.py)
-    (mkScript "hypr-network" ./scripts/hardware/network)
+    (mkHyprlandPythonScript "hypr-network" ./scripts/hardware/network.py)
     (mkHyprlandPythonScript "hypr-toggle-monitors" ./scripts/hardware/toggle_monitors.py)
     (mkHyprlandPythonScript "hypr-monitor-hotplug-daemon" ./scripts/hardware/monitor_hotplug_daemon.py)
-    (mkScript "hypr-notification-sound-toggle" ./scripts/hardware/notification-sound-toggle)
+    (mkHyprlandPythonScriptWithDeps "hypr-notification-sound-toggle"
+      ./scripts/hardware/notification_sound_toggle.py
+      [
+        pkgs.pulseaudio
+      ]
+    )
     (mkHyprlandPythonScriptWithDeps "hypr-microphone-toggle" ./scripts/hardware/microphone_toggle.py [
       pkgs.pulseaudio
     ])
