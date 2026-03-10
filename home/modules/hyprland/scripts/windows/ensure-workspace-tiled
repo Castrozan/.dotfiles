@@ -1,8 +1,0 @@
-#!/usr/bin/env bash
-set -Eeuo pipefail
-
-main() {
-	hypr-all-tiled-windows-are-in-single-group && hypr-toggle-group-for-all-workspace-windows || true
-}
-
-main "$@"
