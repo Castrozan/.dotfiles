@@ -28,6 +28,15 @@ let
     exec ${pkgs.bash}/bin/bash "${googleChatSendByNameSource}" "$@"
   '';
 
+  googleChatReadHistorySource = ../../../agents/skills/google-chat-browser/scripts/google-chat-read-history.sh;
+
+  googleChatReadHistory = pkgs.writeShellScriptBin "google-chat-read-history" ''
+    set -Eeuo pipefail
+
+    export PATH="${pkgs.python312}/bin:''${PATH:+:$PATH}"
+    exec ${pkgs.bash}/bin/bash "${googleChatReadHistorySource}" "$@"
+  '';
+
   chromeGlobalUrlOpener = pkgs.writeShellScriptBin "google-workspace-cli-open-url-in-chrome-global" ''
     set -Eeuo pipefail
 
@@ -118,6 +127,7 @@ in
   home.packages = [
     googleChatBrowserCli
     googleChatSendByName
+    googleChatReadHistory
     googleWorkspaceCliPackage
     pkgs.google-cloud-sdk
     chromeGlobalUrlOpener
