@@ -37,7 +37,7 @@ in
 {
   home.packages = [
     (mkScript "hypr-theme-set" ./scripts/theme/theme-set)
-    (mkScript "hypr-theme-set-templates" ./scripts/theme/theme-set-templates)
+    (mkHyprlandPythonScript "hypr-theme-set-templates" ./scripts/theme/theme_set_templates.py)
     (mkScript "hypr-theme-bg-apply" ./scripts/theme/theme-bg-apply)
     (mkScript "hypr-theme-bg-next" ./scripts/theme/theme-bg-next)
     (mkScript "hypr-theme-list" ./scripts/theme/theme-list)
@@ -48,7 +48,7 @@ in
     (mkScript "hypr-fuzzel" ./scripts/launchers/fuzzel)
     (mkScript "hypr-super-launcher" ./scripts/launchers/super-launcher)
     (mkScript "hypr-launch-clipse-with-workspace-group-restoration" ./scripts/launchers/launch-clipse-with-workspace-group-restoration)
-    (mkScript "hypr-summon-brave" ./scripts/launchers/summon-brave)
+    (mkHyprlandPythonScript "hypr-summon-brave" ./scripts/launchers/summon_brave.py)
     (mkHyprlandPythonScript "hypr-toggle-group-for-all-workspace-windows" ./scripts/windows/toggle_group_for_all_workspace_windows.py)
     (mkScript "hypr-screenshot" ./scripts/utilities/screenshot)
     (mkScript "hypr-network" ./scripts/hardware/network)
@@ -56,7 +56,7 @@ in
     (mkHyprlandPythonScript "hypr-monitor-hotplug-daemon" ./scripts/hardware/monitor_hotplug_daemon.py)
     (mkScript "hypr-notification-sound-toggle" ./scripts/hardware/notification-sound-toggle)
     (mkScript "hypr-microphone-toggle" ./scripts/hardware/microphone-toggle)
-    (mkScript "hypr-summon-chrome-global" ./scripts/launchers/summon-chrome-global)
+    (mkHyprlandPythonScript "hypr-summon-chrome-global" ./scripts/launchers/summon_chrome_global.py)
     (mkScript "brightness" ./scripts/hardware/brightness)
     (mkScript "quickshell-osd-send" ./scripts/utilities/quickshell-osd-send)
 
