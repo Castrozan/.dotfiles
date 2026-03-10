@@ -18,10 +18,10 @@ MAX_HISTORY_ENTRIES = 10
 
 
 def read_process_cmdline(pid: int) -> str | None:
-    cmdline_path = Path(f"/proc/{pid}/cmdline")
-    if not cmdline_path.exists():
+    try:
+        raw_bytes = Path(f"/proc/{pid}/cmdline").read_bytes()
+    except (FileNotFoundError, ProcessLookupError):
         return None
-    raw_bytes = cmdline_path.read_bytes()
     return raw_bytes.replace(b"\x00", b" ").decode().strip()
 
 
