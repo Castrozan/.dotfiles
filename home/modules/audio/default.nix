@@ -80,6 +80,22 @@ in
       };
     };
 
+    "wireplumber/main.lua.d/45-unmute-headphone-on-node-added.lua".text = ''
+      local headphoneUnmuteObjectManager = ObjectManager {
+        Interest {
+          type = "node",
+          Constraint { "node.name", "=", "alsa_output.pci-0000_00_1f.3.analog-stereo" },
+        }
+      }
+
+      headphoneUnmuteObjectManager:connect("object-added", function (_, node)
+        os.execute("${pkgs.alsa-utils}/bin/amixer -c 0 sset Headphone unmute >/dev/null 2>&1")
+        os.execute("${pkgs.alsa-utils}/bin/amixer -c 0 sset Headphone 100% >/dev/null 2>&1")
+      end)
+
+      headphoneUnmuteObjectManager:activate()
+    '';
+
     "wireplumber/main.lua.d/50-disable-bt-autoswitch.lua".text = ''
       table.insert(alsa_monitor.rules, {
         matches = {
