@@ -139,6 +139,22 @@ class TestHandleOpenWindowEvent:
         state = daemon.DaemonState(maximized_workspace_ids={5})
         daemon.handle_open_window_event(state, "aaa,kitty,Terminal")
 
+    def test_skips_floating_window_on_tracked_workspace(
+        self, mock_subprocess_run, hyprctl_response_builder, sample_hyprland_clients
+    ):
+        hyprctl_response_builder("clients", sample_hyprland_clients)
+        hyprctl_response_builder(
+            "activewindow", {"address": "0xddd", "workspace": {"id": 1}}
+        )
+        state = daemon.DaemonState(maximized_workspace_ids={1})
+        daemon.handle_open_window_event(state, "ddd,pavucontrol,Volume")
+        batch_calls = [
+            c
+            for c in mock_subprocess_run.call_args_list
+            if c[0][0][0] == "hyprctl" and "--batch" in c[0][0]
+        ]
+        assert len(batch_calls) == 0
+
 
 class TestRemaximizeActiveWorkspaceIfNeeded:
     def test_remaximizes_when_tracked_and_not_fullscreen(

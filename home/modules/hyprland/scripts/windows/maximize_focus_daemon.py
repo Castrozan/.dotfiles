@@ -170,6 +170,13 @@ def handle_workspace_changed_event(state: DaemonState, _data: str) -> None:
     remaximize_active_workspace_if_needed(state)
 
 
+def is_window_floating(window_address: str) -> bool:
+    for client in get_all_clients():
+        if client.get("address") == window_address:
+            return client.get("floating", False)
+    return False
+
+
 def handle_open_window_event(state: DaemonState, event_data: str) -> None:
     raw_address = event_data.split(",")[0]
     window_address = f"0x{raw_address}"
@@ -180,6 +187,9 @@ def handle_open_window_event(state: DaemonState, event_data: str) -> None:
 
     active_workspace_id = get_active_workspace_id()
     if workspace_id != active_workspace_id:
+        return
+
+    if is_window_floating(window_address):
         return
 
     run_hyprctl_batch(
