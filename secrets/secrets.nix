@@ -46,6 +46,7 @@ in
   "credentials/obsidian-headless-auth-token.age".publicKeys = all_keys;
   "credentials/obsidian-headless-sync-config.age".publicKeys = all_keys;
   "credentials/viu-auth.age".publicKeys = all_keys;
+  "credentials/home-assistant-token.age".publicKeys = all_keys;
 
   "infrastructure/id_ed25519_phone.age".publicKeys = all_keys;
   "infrastructure/id_ed25519_workpc.age".publicKeys = all_keys;

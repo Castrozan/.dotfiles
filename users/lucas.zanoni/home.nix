@@ -82,6 +82,8 @@
     ./home/voice-pipeline.nix
     ../../home/modules/voice/whisp-away.nix
 
+    ../../home/modules/home-assistant
+
     ../../home/modules/gaming/cbonsai.nix
     ../../home/modules/gaming/cmatrix.nix
     ../../home/modules/gaming/install-nothing.nix

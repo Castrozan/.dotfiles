@@ -53,6 +53,7 @@ let
     "credentials/obsidian-headless-sync-config"
     "infrastructure/gpg-private-key"
     "credentials/viu-auth"
+    "credentials/home-assistant-token"
   ];
 
   allSecretNames =
