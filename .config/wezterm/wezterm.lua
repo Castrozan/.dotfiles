@@ -45,24 +45,10 @@ end)
 
 return {
   font = wezterm.font_with_fallback({
-    { family = 'FiraCode Nerd Font Mono', weight = 'Regular' },
-    { family = 'FiraCode Nerd Font', weight = 'Regular' },
-    { family = 'Fira Code', weight = 'Regular' },
-    'JetBrainsMono Nerd Font',
-    'DejaVu Sans',
+    'FiraCode Nerd Font Mono',
     'Noto Color Emoji',
   }),
   font_size = 16,
-  font_rules = {
-    {
-      intensity = 'Bold',
-      font = wezterm.font_with_fallback({
-        { family = 'FiraCode Nerd Font', weight = 'Bold' },
-        { family = 'FiraCode Nerd Font Mono', weight = 'Bold' },
-        { family = 'Fira Code', weight = 'Bold' },
-      }),
-    },
-  },
 
   color_schemes = {
     ['Catppuccin Mocha'] = catppuccin_mocha,
@@ -84,7 +70,6 @@ return {
 
   warn_about_missing_glyphs = false,
   freetype_load_target = 'Light',
-  freetype_render_target = 'HorizontalLcd',
   scrollback_lines = 10000,
   default_prog = { 'fish' },
   default_cwd = wezterm.home_dir,
