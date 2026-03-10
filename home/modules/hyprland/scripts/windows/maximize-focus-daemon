@@ -147,19 +147,18 @@ _handle_fullscreen_event() {
 _remaximize_active_workspace_if_needed() {
 	local workspace_id
 	workspace_id=$(_get_active_workspace_id)
-	[[ -z "$workspace_id" ]] && return
 
-	_is_workspace_tracked_as_maximized "$workspace_id" || return
-
-	local current_fullscreen_state
-	current_fullscreen_state=$(_get_active_window_fullscreen_state)
-	if [[ "$current_fullscreen_state" != "1" ]]; then
-		local tiled_window_count
-		tiled_window_count=$(hyprctl clients -j 2>/dev/null | jq --arg ws "$workspace_id" '[.[] | select(.workspace.id == ($ws | tonumber) and .floating == false)] | length')
-		if [[ "$tiled_window_count" -gt 0 ]]; then
-			hyprctl dispatch fullscreen 1 set
-		else
-			_remove_workspace_from_maximized_tracking "$workspace_id"
+	if [[ -n "$workspace_id" ]] && _is_workspace_tracked_as_maximized "$workspace_id"; then
+		local current_fullscreen_state
+		current_fullscreen_state=$(_get_active_window_fullscreen_state)
+		if [[ "$current_fullscreen_state" != "1" ]]; then
+			local tiled_window_count
+			tiled_window_count=$(hyprctl clients -j 2>/dev/null | jq --arg ws "$workspace_id" '[.[] | select(.workspace.id == ($ws | tonumber) and .floating == false)] | length')
+			if [[ "$tiled_window_count" -gt 0 ]]; then
+				hyprctl dispatch fullscreen 1 set
+			else
+				_remove_workspace_from_maximized_tracking "$workspace_id"
+			fi
 		fi
 	fi
 }
