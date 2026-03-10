@@ -59,6 +59,10 @@ Delegate: Nix syntax/evaluation/lazy evaluation, derivations/overlays/complex ex
 Handle directly: file locations in this repo, repository patterns/anti-patterns, module structure/import organization, secrets workflow, rebuild failures and enforcing conventions.
 </delegation_to_nix_expert>
 
+<script_migration>
+Bash scripts are being migrated to Python 3.12 as a continuous effort. Python via Nix — no uv, no venv, no pip. Use `pkgs.python312` from nixpkgs. For scripts needing shared libraries, use `mkPythonWindowScript` pattern in scripts.nix: shell wrapper sets PYTHONPATH to lib directory, `exec python3 source.py "$@"`. For external deps, use `pkgs.python3.withPackages`. Tests use pytest alongside bats — pytest for Python scripts, bats for remaining bash. Mock subprocess calls in tests, never real hyprctl. When migrating a script: 1) Write Python version with shared lib imports, 2) Add pytest tests, 3) Update scripts.nix packaging, 4) Delete old bash script, 5) Run full test suite. Priority: scripts with JSON parsing, state management, or complex logic — these benefit most from Python's native capabilities.
+</script_migration>
+
 <relevant_skills>
 /hyprland-debug: Use for Hyprland/Wayland debugging - theme switching, service crashes, display issues, DRM conflicts.
 </relevant_skills>
