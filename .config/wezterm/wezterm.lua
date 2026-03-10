@@ -1,14 +1,31 @@
 local wezterm = require 'wezterm'
 
+local function brightenHexColor(hex, factor)
+  local r = math.min(255, math.floor(tonumber(hex:sub(2, 3), 16) * factor))
+  local g = math.min(255, math.floor(tonumber(hex:sub(4, 5), 16) * factor))
+  local b = math.min(255, math.floor(tonumber(hex:sub(6, 7), 16) * factor))
+  return string.format('#%02X%02X%02X', r, g, b)
+end
+
+local function brightenColorList(colors, factor)
+  local result = {}
+  for i, color in ipairs(colors) do
+    result[i] = brightenHexColor(color, factor)
+  end
+  return result
+end
+
+local compositorOpacityCompensation = 1 / 0.6
+
 local catppuccin_mocha = {
-  foreground = '#CDD6F4',
+  foreground = brightenHexColor('#CDD6F4', compositorOpacityCompensation),
   background = '#0F0D0E',
-  cursor_bg = '#F5E0DC',
+  cursor_bg = brightenHexColor('#F5E0DC', compositorOpacityCompensation),
   cursor_fg = '#1E1E2E',
-  selection_bg = '#F5E0DC',
+  selection_bg = brightenHexColor('#F5E0DC', compositorOpacityCompensation),
   selection_fg = '#1E1E2E',
 
-  ansi = {
+  ansi = brightenColorList({
     '#9399B2',
     '#F38BA8',
     '#A6E3A1',
@@ -17,8 +34,8 @@ local catppuccin_mocha = {
     '#F5C2E7',
     '#94E2D5',
     '#BAC2DE',
-  },
-  brights = {
+  }, compositorOpacityCompensation),
+  brights = brightenColorList({
     '#A6ADC8',
     '#F38BA8',
     '#A6E3A1',
@@ -27,7 +44,7 @@ local catppuccin_mocha = {
     '#F5C2E7',
     '#94E2D5',
     '#A6ADC8',
-  },
+  }, compositorOpacityCompensation),
 }
 
 local mux = wezterm.mux
