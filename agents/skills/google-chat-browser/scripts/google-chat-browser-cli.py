@@ -359,16 +359,102 @@ def get_google_chat_session_status(
     }
 
 
+def detect_image_mime_type_from_path(image_path: Path) -> str:
+    extension_to_mime_type = {
+        ".png": "image/png",
+        ".jpg": "image/jpeg",
+        ".jpeg": "image/jpeg",
+        ".gif": "image/gif",
+        ".webp": "image/webp",
+        ".bmp": "image/bmp",
+    }
+    mime_type = extension_to_mime_type.get(image_path.suffix.lower())
+    if not mime_type:
+        raise RuntimeError(
+            f"Unsupported image format: {image_path.suffix}. "
+            f"Supported: {', '.join(extension_to_mime_type.keys())}"
+        )
+    return mime_type
+
+
+def read_image_as_base64(image_path: Path) -> tuple[str, str]:
+    resolved_path = image_path.expanduser().resolve()
+    if not resolved_path.is_file():
+        raise RuntimeError(f"Image file not found: {resolved_path}")
+
+    mime_type = detect_image_mime_type_from_path(resolved_path)
+    import base64
+
+    image_bytes = resolved_path.read_bytes()
+    base64_encoded = base64.b64encode(image_bytes).decode("ascii")
+    return base64_encoded, mime_type
+
+
+def paste_image_into_composer_via_javascript(image_path: Path) -> None:
+    print_log_message(f"Injecting image into composer: {image_path.name}")
+    base64_data, mime_type = read_image_as_base64(image_path)
+    filename = image_path.name
+
+    javascript_paste_expression = (
+        "(function(){"
+        f'var b64="{base64_data}";'
+        "var raw=atob(b64);"
+        "var arr=new Uint8Array(raw.length);"
+        "for(var i=0;i<raw.length;i++)arr[i]=raw.charCodeAt(i);"
+        f'var blob=new Blob([arr],{{type:"{mime_type}"}});'
+        f'var file=new File([blob],"{filename}",{{type:"{mime_type}"}});'
+        "var dt=new DataTransfer();"
+        "dt.items.add(file);"
+        "var composer=document.querySelector("
+        '\'div[contenteditable="true"][role="textbox"]\''
+        ");"
+        'if(!composer)return"no_composer";'
+        "composer.focus();"
+        'var pe=new ClipboardEvent("paste",{'
+        "bubbles:true,cancelable:true,clipboardData:dt});"
+        "composer.dispatchEvent(pe);"
+        'return"pasted";'
+        "})()"
+    )
+
+    result = evaluate_javascript_in_pinchtab(javascript_paste_expression)
+    if "no_composer" in result:
+        raise RuntimeError("Could not find the message composer element in the DOM")
+    if "pasted" not in result:
+        raise RuntimeError(f"Unexpected result from image paste: {result}")
+
+
+def wait_for_send_button_after_image_paste(wait_seconds: int) -> None:
+    deadline = time.time() + wait_seconds
+
+    while time.time() < deadline:
+        snapshot_text = get_pinchtab_interactive_snapshot()
+        send_ref = find_element_ref_in_snapshot(
+            snapshot_text, "button", send_button_snapshot_pattern
+        )
+        if send_ref:
+            return
+        time.sleep(0.5)
+
+    raise RuntimeError("Send button did not appear after pasting image")
+
+
 def send_google_chat_message(
     space_url: str,
     message_text: str,
     wait_seconds: int,
+    image_path: str | None = None,
 ) -> dict[str, object]:
     ensure_pinchtab_is_healthy()
     navigate_and_wait_for_google_chat(space_url, wait_seconds)
     composer_ref = wait_for_message_composer_ref(wait_seconds)
     perform_pinchtab_action({"kind": "click", "ref": composer_ref})
     time.sleep(0.5)
+
+    if image_path:
+        paste_image_into_composer_via_javascript(Path(image_path))
+        time.sleep(1)
+        wait_for_send_button_after_image_paste(wait_seconds)
 
     fill_composer_with_message_via_javascript(message_text)
     time.sleep(0.3)
@@ -381,7 +467,7 @@ def send_google_chat_message(
     current_url = extract_url_from_snapshot_header(snapshot_text)
     page_title = extract_title_from_snapshot_header(snapshot_text)
 
-    return {
+    result: dict[str, object] = {
         "success": True,
         "mode": "browser",
         "space_url": current_url,
@@ -390,6 +476,51 @@ def send_google_chat_message(
         "message_length": len(message_text),
         "message_preview": create_message_preview(message_text),
     }
+    if image_path:
+        result["image"] = image_path
+    return result
+
+
+def send_google_chat_image(
+    space_url: str,
+    image_path: str,
+    caption_text: str | None,
+    wait_seconds: int,
+) -> dict[str, object]:
+    ensure_pinchtab_is_healthy()
+    navigate_and_wait_for_google_chat(space_url, wait_seconds)
+    composer_ref = wait_for_message_composer_ref(wait_seconds)
+    perform_pinchtab_action({"kind": "click", "ref": composer_ref})
+    time.sleep(0.5)
+
+    paste_image_into_composer_via_javascript(Path(image_path))
+    time.sleep(1)
+    wait_for_send_button_after_image_paste(wait_seconds)
+
+    if caption_text:
+        fill_composer_with_message_via_javascript(caption_text)
+        time.sleep(0.3)
+
+    print_log_message("Sending image")
+    wait_for_send_button_and_click(wait_seconds)
+    time.sleep(1)
+
+    snapshot_text = get_pinchtab_minimal_snapshot()
+    current_url = extract_url_from_snapshot_header(snapshot_text)
+    page_title = extract_title_from_snapshot_header(snapshot_text)
+
+    result: dict[str, object] = {
+        "success": True,
+        "mode": "browser",
+        "space_url": current_url,
+        "title": page_title,
+        "backend": "pinchtab",
+        "image": image_path,
+    }
+    if caption_text:
+        result["caption_length"] = len(caption_text)
+        result["caption_preview"] = create_message_preview(caption_text)
+    return result
 
 
 def send_google_chat_webhook_message(
@@ -480,6 +611,7 @@ def build_argument_parser() -> argparse.ArgumentParser:
     send_message_subcommand.add_argument("--space-url", required=True)
     send_message_subcommand.add_argument("--message")
     send_message_subcommand.add_argument("--message-file")
+    send_message_subcommand.add_argument("--image")
     send_message_subcommand.add_argument(
         "--wait-seconds",
         type=int,
@@ -489,6 +621,19 @@ def build_argument_parser() -> argparse.ArgumentParser:
     send_message_subcommand.add_argument("--profile-dir")
     send_message_subcommand.add_argument("--browser-executable")
     send_message_subcommand.add_argument("--screenshot")
+
+    send_image_subcommand = subcommands.add_parser(
+        "send-image",
+        help="Send an image to a Google Chat space or DM via clipboard paste.",
+    )
+    send_image_subcommand.add_argument("--space-url", required=True)
+    send_image_subcommand.add_argument("--image", required=True)
+    send_image_subcommand.add_argument("--caption")
+    send_image_subcommand.add_argument(
+        "--wait-seconds",
+        type=int,
+        default=default_navigation_wait_seconds,
+    )
 
     send_webhook_subcommand = subcommands.add_parser(
         "send-webhook",
@@ -519,6 +664,15 @@ def run_command(parsed_arguments: argparse.Namespace) -> dict[str, object]:
             message_text=resolve_message_text(
                 parsed_arguments.message, parsed_arguments.message_file
             ),
+            wait_seconds=parsed_arguments.wait_seconds,
+            image_path=getattr(parsed_arguments, "image", None),
+        )
+
+    if parsed_arguments.command == "send-image":
+        return send_google_chat_image(
+            space_url=parsed_arguments.space_url,
+            image_path=parsed_arguments.image,
+            caption_text=parsed_arguments.caption,
             wait_seconds=parsed_arguments.wait_seconds,
         )
 
