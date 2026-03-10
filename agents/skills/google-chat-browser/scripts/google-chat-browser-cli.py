@@ -21,7 +21,9 @@ message_composer_snapshot_pattern = re.compile(
     r"send a message|enviar uma mensagem|message to|mensagem para",
     re.IGNORECASE,
 )
-send_button_snapshot_pattern = re.compile(r"send|enviar", re.IGNORECASE)
+send_button_snapshot_pattern = re.compile(
+    r"^(send|enviar)(\s+(message|mensagem))?$", re.IGNORECASE
+)
 snapshot_element_ref_pattern = re.compile(r"^(e\d+):")
 
 
@@ -205,12 +207,18 @@ def navigate_and_wait_for_google_chat(destination_url: str, wait_seconds: int) -
 
 
 def find_element_ref_in_snapshot(
-    snapshot_text: str, element_type: str, label_pattern: re.Pattern
+    snapshot_text: str,
+    element_type: str,
+    label_pattern: re.Pattern,
+    skip_disabled: bool = False,
 ) -> str | None:
     type_marker = f":{element_type} "
 
     for line in snapshot_text.splitlines():
         if type_marker not in line:
+            continue
+
+        if skip_disabled and line.rstrip().endswith(" -"):
             continue
 
         label_start = line.find(type_marker) + len(type_marker)
@@ -276,7 +284,7 @@ def wait_for_send_button_and_click(wait_seconds: int) -> None:
     while time.time() < deadline:
         snapshot_text = get_pinchtab_interactive_snapshot()
         send_ref = find_element_ref_in_snapshot(
-            snapshot_text, "button", send_button_snapshot_pattern
+            snapshot_text, "button", send_button_snapshot_pattern, skip_disabled=True
         )
         if send_ref:
             perform_pinchtab_action({"kind": "click", "ref": send_ref})
@@ -430,7 +438,7 @@ def wait_for_send_button_after_image_paste(wait_seconds: int) -> None:
     while time.time() < deadline:
         snapshot_text = get_pinchtab_interactive_snapshot()
         send_ref = find_element_ref_in_snapshot(
-            snapshot_text, "button", send_button_snapshot_pattern
+            snapshot_text, "button", send_button_snapshot_pattern, skip_disabled=True
         )
         if send_ref:
             return
