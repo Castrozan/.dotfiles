@@ -57,14 +57,27 @@ def set_background_symlink_and_apply(new_background: Path) -> None:
     subprocess.run(["hypr-theme-bg-apply"])
 
 
+def get_running_swaybg_pids() -> list[str]:
+    result = subprocess.run(["pgrep", "swaybg"], capture_output=True, text=True)
+    if result.returncode != 0:
+        return []
+    return result.stdout.strip().split("\n")
+
+
+def kill_swaybg_pids(pids: list[str]) -> None:
+    for pid in pids:
+        subprocess.run(["kill", "-9", pid], capture_output=True)
+
+
 def show_no_backgrounds_fallback() -> None:
     subprocess.run(["notify-send", "No background was found for theme", "-t", "2000"])
-    subprocess.run(["pkill", "-9", "swaybg"], capture_output=True)
-    time.sleep(0.3)
+    old_pids = get_running_swaybg_pids()
     subprocess.run(
         ["hyprctl", "dispatch", "exec", "swaybg --color '#000000'"],
         capture_output=True,
     )
+    time.sleep(0.3)
+    kill_swaybg_pids(old_pids)
 
 
 def main() -> None:

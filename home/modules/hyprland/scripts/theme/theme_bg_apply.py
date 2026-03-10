@@ -7,6 +7,18 @@ CURRENT_BACKGROUND_LINK = (
 )
 
 
+def get_running_swaybg_pids() -> list[str]:
+    result = subprocess.run(["pgrep", "swaybg"], capture_output=True, text=True)
+    if result.returncode != 0:
+        return []
+    return result.stdout.strip().split("\n")
+
+
+def kill_swaybg_pids(pids: list[str]) -> None:
+    for pid in pids:
+        subprocess.run(["kill", "-9", pid], capture_output=True)
+
+
 def apply_current_background() -> None:
     if not CURRENT_BACKGROUND_LINK.is_symlink():
         subprocess.run(["notify-send", "No background symlink found", "-t", "2000"])
@@ -24,8 +36,7 @@ def apply_current_background() -> None:
         )
         raise SystemExit(1)
 
-    subprocess.run(["pkill", "-9", "swaybg"], capture_output=True)
-    time.sleep(0.3)
+    old_pids = get_running_swaybg_pids()
     subprocess.run(
         [
             "hyprctl",
@@ -35,6 +46,8 @@ def apply_current_background() -> None:
         ],
         capture_output=True,
     )
+    time.sleep(0.3)
+    kill_swaybg_pids(old_pids)
 
 
 def main() -> None:
