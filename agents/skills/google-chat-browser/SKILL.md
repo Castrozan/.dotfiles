@@ -4,22 +4,25 @@ description: Use when user needs to send Google Chat messages without Google Clo
 ---
 
 <overview>
-This skill provides a local Google Chat CLI backed by pinchtab's persistent browser session. It supports browser automation for any space or DM the signed-in session can access, plus direct webhook POSTs for spaces with an incoming webhook URL.
+This skill provides Google Chat messaging backed by pinchtab's persistent browser session. Send messages by recipient name or space URL, or via webhook.
 </overview>
 
 <commands>
-Check whether the pinchtab session has Google Chat access:
-`google-chat-browser-cli session-status`
+Send a message by recipient name (easiest — resolves the DM automatically):
+`google-chat-send-by-name "Vitor Bonfante" "hello from CLI"`
 
-Send to a Google Chat space or DM through browser automation:
-`google-chat-browser-cli send-message --space-url 'https://chat.google.com/u/3/app/chat/AA...' --message 'message text'`
+Send to a known space URL:
+`google-chat-browser-cli send-message --space-url 'https://chat.google.com/app/chat/XXXXX' --message 'message text'`
 
-Send a longer message from a file or stdin:
+Send from a file or stdin:
 `google-chat-browser-cli send-message --space-url URL --message-file /tmp/message.txt`
 `printf 'message text' | google-chat-browser-cli send-message --space-url URL --message-file -`
 
 Send through an existing incoming webhook:
 `google-chat-browser-cli send-webhook --webhook-url 'https://chat.googleapis.com/v1/spaces/...' --message 'message text'`
+
+Check session status:
+`google-chat-browser-cli session-status`
 </commands>
 
 <prerequisites>
@@ -30,11 +33,13 @@ Pinchtab must be running with an active Google Chat session. If not logged in:
 </prerequisites>
 
 <delivery-choice>
-Prefer `send-webhook` when the target space already has an incoming webhook URL. It is simpler and more reliable than browser automation, but it only works for spaces that already have that webhook configured. Use `send-message` for arbitrary rooms, spaces, and DMs visible to the signed-in browser session.
+Prefer `send-webhook` when the target space already has an incoming webhook URL — simpler and more reliable. Use `google-chat-send-by-name` for DMs when you know the person's name. Use `google-chat-browser-cli send-message --space-url` when you already have the URL or need to target a group space.
 </delivery-choice>
 
 <behavior>
-All browser commands use pinchtab's shared session at `http://localhost:9867`. No separate browser profile or Playwright installation is needed. The CLI navigates Google Chat within pinchtab's active tab, fills the message composer via JavaScript, and clicks send.
+All browser commands use pinchtab's shared session at `http://localhost:9867`. No separate browser profile is needed.
 
-All commands print JSON to stdout and operational logs to stderr. Legacy flags (`--profile-dir`, `--browser-executable`, `--headed`, `--screenshot`) are accepted but ignored for backward compatibility.
+`google-chat-send-by-name` navigates to the Google Chat home, finds the matching contact in the sidebar, clicks into their DM, then delegates to `google-chat-browser-cli send-message`. The name match is case-insensitive and partial — "vitor" matches "Vitor Vassoler Bonfante".
+
+All commands print JSON to stdout and operational logs to stderr.
 </behavior>

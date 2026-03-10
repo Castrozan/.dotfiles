@@ -19,6 +19,15 @@ let
     main "$@"
   '';
 
+  googleChatSendByNameSource = ../../../agents/skills/google-chat-browser/scripts/google-chat-send-by-name.sh;
+
+  googleChatSendByName = pkgs.writeShellScriptBin "google-chat-send-by-name" ''
+    set -Eeuo pipefail
+
+    export PATH="${googleChatBrowserCli}/bin:''${PATH:+:$PATH}"
+    exec ${pkgs.bash}/bin/bash "${googleChatSendByNameSource}" "$@"
+  '';
+
   chromeGlobalUrlOpener = pkgs.writeShellScriptBin "google-workspace-cli-open-url-in-chrome-global" ''
     set -Eeuo pipefail
 
@@ -108,6 +117,7 @@ in
 {
   home.packages = [
     googleChatBrowserCli
+    googleChatSendByName
     googleWorkspaceCliPackage
     pkgs.google-cloud-sdk
     chromeGlobalUrlOpener
