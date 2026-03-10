@@ -73,6 +73,7 @@
     ../../home/modules/system/lid-switch-ignore.nix
     ../../home/modules/system/oom-protection.nix
     ../../home/modules/system/stale-symlink-cleanup.nix
+    ../../home/modules/system/scripts.nix
     ../../home/modules/system/ubuntu-system-tuning.nix
 
     ../../home/modules/voice/hey-bot.nix
