@@ -24,12 +24,17 @@ let
 
   hyprlandPythonLibraryPath = ./scripts/windows/lib;
 
-  mkHyprlandPythonScript =
-    name: file:
+  mkHyprlandPythonScript = name: file: mkHyprlandPythonScriptWithDeps name file [ ];
+
+  mkHyprlandPythonScriptWithDeps =
+    name: file: runtimeDeps:
     let
       pythonSource = pkgs.writeText "${name}-source.py" (builtins.readFile file);
+      pathPrefix =
+        if runtimeDeps != [ ] then ''export PATH="${pkgs.lib.makeBinPath runtimeDeps}:$PATH"'' else "";
     in
     pkgs.writeShellScriptBin name ''
+      ${pathPrefix}
       export PYTHONPATH="${hyprlandPythonLibraryPath}:''${PYTHONPATH:-}"
       exec ${pkgs.python312}/bin/python3 ${pythonSource} "$@"
     '';
@@ -45,9 +50,9 @@ in
     (mkHyprlandPythonScript "hypr-theme-set-gnome" ./scripts/theme/theme_set_gnome.py)
     (mkScript "hypr-restart-hyprctl" ./scripts/utilities/restart-hyprctl)
     (mkScript "hypr-menu" ./scripts/launchers/menu)
-    (mkScript "hypr-fuzzel" ./scripts/launchers/fuzzel)
-    (mkScript "hypr-super-launcher" ./scripts/launchers/super-launcher)
-    (mkScript "hypr-launch-clipse-with-workspace-group-restoration" ./scripts/launchers/launch-clipse-with-workspace-group-restoration)
+    (mkHyprlandPythonScript "hypr-fuzzel" ./scripts/launchers/fuzzel_launcher.py)
+    (mkHyprlandPythonScript "hypr-super-launcher" ./scripts/launchers/super_launcher.py)
+    (mkHyprlandPythonScript "hypr-launch-clipse-with-workspace-group-restoration" ./scripts/launchers/launch_clipse_with_workspace_group_restoration.py)
     (mkHyprlandPythonScript "hypr-summon-brave" ./scripts/launchers/summon_brave.py)
     (mkHyprlandPythonScript "hypr-toggle-group-for-all-workspace-windows" ./scripts/windows/toggle_group_for_all_workspace_windows.py)
     (mkScript "hypr-screenshot" ./scripts/utilities/screenshot)
@@ -57,8 +62,10 @@ in
     (mkScript "hypr-notification-sound-toggle" ./scripts/hardware/notification-sound-toggle)
     (mkScript "hypr-microphone-toggle" ./scripts/hardware/microphone-toggle)
     (mkHyprlandPythonScript "hypr-summon-chrome-global" ./scripts/launchers/summon_chrome_global.py)
-    (mkScript "brightness" ./scripts/hardware/brightness)
-    (mkScript "quickshell-osd-send" ./scripts/utilities/quickshell-osd-send)
+    (mkHyprlandPythonScriptWithDeps "brightness" ./scripts/hardware/brightness.py [
+      pkgs.brightnessctl
+    ])
+    (mkHyprlandPythonScript "quickshell-osd-send" ./scripts/utilities/quickshell_osd_send.py)
 
     (mkHyprlandPythonScript "hypr-maximize-focus-daemon" ./scripts/windows/maximize_focus_daemon.py)
     (mkHyprlandPythonScript "hypr-close-window-cycle" ./scripts/windows/close_window_cycle.py)

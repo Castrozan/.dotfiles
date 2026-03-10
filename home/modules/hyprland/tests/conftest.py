@@ -10,12 +10,14 @@ WINDOWS_LIB_DIR = WINDOWS_SCRIPTS_DIR / "lib"
 HARDWARE_SCRIPTS_DIR = SCRIPTS_DIR / "hardware"
 LAUNCHERS_SCRIPTS_DIR = SCRIPTS_DIR / "launchers"
 THEME_SCRIPTS_DIR = SCRIPTS_DIR / "theme"
+UTILITIES_SCRIPTS_DIR = SCRIPTS_DIR / "utilities"
 
 sys.path.insert(0, str(WINDOWS_LIB_DIR))
 sys.path.insert(0, str(WINDOWS_SCRIPTS_DIR))
 sys.path.insert(0, str(HARDWARE_SCRIPTS_DIR))
 sys.path.insert(0, str(LAUNCHERS_SCRIPTS_DIR))
 sys.path.insert(0, str(THEME_SCRIPTS_DIR))
+sys.path.insert(0, str(UTILITIES_SCRIPTS_DIR))
 
 
 @pytest.fixture

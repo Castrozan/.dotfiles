@@ -1,8 +1,0 @@
-#!/usr/bin/env bash
-set -Eeuo pipefail
-
-main() {
-	kitty --class clipse --override startup_session=none --override background_image=none -e clipse
-}
-
-main "$@"
