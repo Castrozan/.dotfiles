@@ -9,6 +9,29 @@ let
 in
 {
   imports = [ ./scripts.nix ];
+  systemd.user.services.unmute-alsa-headphone-on-pipewire-start = {
+    Unit = {
+      Description = "Unmute ALSA headphone switch after PipeWire starts (UCM init.conf mutes it)";
+      After = [ "wireplumber.service" ];
+      Requires = [ "wireplumber.service" ];
+    };
+    Service = {
+      Type = "oneshot";
+      ExecStartPre = "${pkgs.coreutils}/bin/sleep 2";
+      ExecStart =
+        let
+          script = pkgs.writeShellScript "unmute-alsa-headphone" ''
+            ${pkgs.alsa-utils}/bin/amixer -c 0 sset Headphone unmute >/dev/null 2>&1 || true
+            ${pkgs.alsa-utils}/bin/amixer -c 0 sset Headphone 100% >/dev/null 2>&1 || true
+          '';
+        in
+        "${script}";
+    };
+    Install = {
+      WantedBy = [ "wireplumber.service" ];
+    };
+  };
+
   systemd.user.services.bluetooth-audio-autoswitch = {
     Unit = {
       Description = "Auto-switch audio sink on Bluetooth connect/disconnect";
@@ -79,22 +102,6 @@ in
         ];
       };
     };
-
-    "wireplumber/main.lua.d/45-unmute-headphone-on-node-added.lua".text = ''
-      local headphoneUnmuteObjectManager = ObjectManager {
-        Interest {
-          type = "node",
-          Constraint { "node.name", "=", "alsa_output.pci-0000_00_1f.3.analog-stereo" },
-        }
-      }
-
-      headphoneUnmuteObjectManager:connect("object-added", function (_, node)
-        os.execute("${pkgs.alsa-utils}/bin/amixer -c 0 sset Headphone unmute >/dev/null 2>&1")
-        os.execute("${pkgs.alsa-utils}/bin/amixer -c 0 sset Headphone 100% >/dev/null 2>&1")
-      end)
-
-      headphoneUnmuteObjectManager:activate()
-    '';
 
     "wireplumber/main.lua.d/50-disable-bt-autoswitch.lua".text = ''
       table.insert(alsa_monitor.rules, {
