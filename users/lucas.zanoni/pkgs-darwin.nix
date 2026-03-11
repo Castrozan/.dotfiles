@@ -4,6 +4,7 @@
     bat
     brave
     curl
+    karabiner-elements
     delta
     eza
     fd
@@ -15,6 +16,7 @@
     nixfmt-rfc-style
     nodejs
     ripgrep-all
+    ruff
     shellcheck
     shfmt
     tealdeer
