@@ -17,6 +17,7 @@ ColumnLayout {
     property int firstSeenOrderNextIndex: 0
 
     readonly property var windowClassToIconName: ({
+        "chrome-global": "google-chrome",
         "code": "vscode",
         "code - insiders": "vscode-insiders",
         "cursor": "cursor",
