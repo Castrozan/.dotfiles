@@ -81,9 +81,7 @@
       linux = mkPkgsFor linuxSystem;
       darwin = mkPkgsFor darwinSystem;
 
-      pkgs = linux.pkgs;
-      unstable = linux.unstable;
-      latest = linux.latest;
+      inherit (linux) pkgs unstable latest;
 
       specialArgsBase = {
         inherit
@@ -150,8 +148,7 @@
               inputs
               username
               ;
-            unstable = darwin.unstable;
-            latest = darwin.latest;
+            inherit (darwin) unstable latest;
             isNixOS = false;
           };
         in
