@@ -1,6 +1,16 @@
-{ pkgs, inputs, ... }:
+{
+  pkgs,
+  lib,
+  inputs,
+  ...
+}:
 {
   home.packages = [
-    inputs.cmatrix.packages.${pkgs.stdenv.hostPlatform.system}.default
+    (
+      if pkgs.stdenv.hostPlatform.isDarwin then
+        pkgs.cmatrix
+      else
+        inputs.cmatrix.packages.${pkgs.stdenv.hostPlatform.system}.default
+    )
   ];
 }
