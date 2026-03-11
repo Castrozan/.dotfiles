@@ -15,6 +15,7 @@
     nixd
     nixfmt-rfc-style
     nodejs
+    rectangle
     ripgrep-all
     ruff
     shellcheck
