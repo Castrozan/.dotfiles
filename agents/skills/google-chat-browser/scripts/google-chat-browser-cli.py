@@ -25,6 +25,9 @@ send_button_snapshot_pattern = re.compile(
     r"^(send|enviar)(\s+(message|mensagem))?$", re.IGNORECASE
 )
 snapshot_element_ref_pattern = re.compile(r"^(e\d+):")
+sidebar_contact_keyboard_hint = "pressione a tecla tab"
+search_bar_snapshot_pattern = re.compile(r"pesquisar|search", re.IGNORECASE)
+clickable_element_type_markers = [":link ", ":listitem ", ":option ", ":menuitem "]
 
 
 def print_log_message(message: str) -> None:
@@ -312,6 +315,181 @@ def wait_for_composer_to_clear(wait_seconds: int) -> None:
         time.sleep(0.5)
 
     print_log_message("Warning: message dispatch verification timed out")
+
+
+def all_search_words_match_line(search_name: str, lowercase_line: str) -> bool:
+    return all(word in lowercase_line for word in search_name.lower().split())
+
+
+def find_contact_ref_in_sidebar_snapshot(
+    snapshot_text: str, recipient_name: str
+) -> str | None:
+    for line in snapshot_text.splitlines():
+        if ":link " not in line:
+            continue
+        lowercase_line = line.lower()
+        if sidebar_contact_keyboard_hint not in lowercase_line:
+            continue
+        if all_search_words_match_line(recipient_name, lowercase_line):
+            ref_match = snapshot_element_ref_pattern.match(line)
+            if ref_match:
+                return ref_match.group(1)
+    return None
+
+
+def expand_direct_messages_sidebar_section() -> None:
+    snapshot_text = get_pinchtab_interactive_snapshot()
+    expand_pattern = re.compile(r"mostrar tudo.*mensagens diretas", re.IGNORECASE)
+
+    for line in snapshot_text.splitlines():
+        if expand_pattern.search(line):
+            ref_match = snapshot_element_ref_pattern.match(line)
+            if ref_match:
+                perform_pinchtab_action({"kind": "click", "ref": ref_match.group(1)})
+                time.sleep(1)
+                wait_for_pinchtab_page_to_stabilize()
+                return
+
+
+def click_contact_ref_and_extract_direct_message_url(element_ref: str) -> str:
+    perform_pinchtab_action({"kind": "click", "ref": element_ref})
+    time.sleep(1)
+    wait_for_pinchtab_page_to_stabilize()
+
+    snapshot_text = get_pinchtab_minimal_snapshot()
+    current_url = extract_url_from_snapshot_header(snapshot_text)
+
+    if not google_chat_url_pattern.search(current_url):
+        raise RuntimeError("Could not extract DM URL after clicking contact")
+
+    return current_url
+
+
+def fill_focused_input_via_javascript(search_text: str) -> None:
+    escaped_text = json.dumps(search_text)
+    javascript_expression = (
+        "(function(){"
+        "var el = document.activeElement;"
+        "if (!el) return 'no_active_element';"
+        "if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {"
+        "  var setter = Object.getOwnPropertyDescriptor("
+        "    window.HTMLInputElement.prototype, 'value').set;"
+        f"  setter.call(el, {escaped_text});"
+        "  el.dispatchEvent(new Event('input', {bubbles: true}));"
+        "  el.dispatchEvent(new Event('change', {bubbles: true}));"
+        "  return 'filled_input';"
+        "}"
+        "if (el.contentEditable === 'true') {"
+        "  el.focus();"
+        "  document.execCommand('selectAll');"
+        "  document.execCommand('delete');"
+        f"  document.execCommand('insertText', false, {escaped_text});"
+        "  return 'filled_contenteditable';"
+        "}"
+        "return 'unsupported_element:' + el.tagName;"
+        "})()"
+    )
+
+    result = evaluate_javascript_in_pinchtab(javascript_expression)
+    if "filled" not in result:
+        raise RuntimeError(f"Failed to fill search input: {result}")
+
+
+def find_contact_ref_in_search_results(
+    snapshot_text: str, recipient_name: str
+) -> str | None:
+    for line in snapshot_text.splitlines():
+        if not any(marker in line for marker in clickable_element_type_markers):
+            continue
+        lowercase_line = line.lower()
+        if all_search_words_match_line(recipient_name, lowercase_line):
+            ref_match = snapshot_element_ref_pattern.match(line)
+            if ref_match:
+                return ref_match.group(1)
+    return None
+
+
+def find_search_bar_ref_in_snapshot(snapshot_text: str) -> str | None:
+    for element_type in ("combobox", "searchbox", "textbox"):
+        ref = find_element_ref_in_snapshot(
+            snapshot_text, element_type, search_bar_snapshot_pattern
+        )
+        if ref:
+            return ref
+    return None
+
+
+def search_contact_via_search_bar(recipient_name: str, wait_seconds: int) -> str | None:
+    snapshot_text = get_pinchtab_interactive_snapshot()
+    search_ref = find_search_bar_ref_in_snapshot(snapshot_text)
+
+    if not search_ref:
+        print_log_message("Search bar not found in Google Chat")
+        return None
+
+    perform_pinchtab_action({"kind": "click", "ref": search_ref})
+    time.sleep(0.5)
+
+    fill_focused_input_via_javascript(recipient_name)
+    time.sleep(2)
+    wait_for_pinchtab_page_to_stabilize()
+
+    snapshot_text = get_pinchtab_interactive_snapshot()
+    contact_ref = find_contact_ref_in_search_results(snapshot_text, recipient_name)
+
+    if not contact_ref:
+        print_log_message(
+            f"No matching contact in search results for '{recipient_name}'"
+        )
+        perform_pinchtab_action({"kind": "press", "key": "Escape"})
+        return None
+
+    return click_contact_ref_and_extract_direct_message_url(contact_ref)
+
+
+def resolve_contact_direct_message_url(
+    recipient_name: str, wait_seconds: int
+) -> dict[str, object]:
+    ensure_pinchtab_is_healthy()
+    navigate_and_wait_for_google_chat(default_google_chat_home_url, wait_seconds)
+
+    print_log_message(f"Looking for '{recipient_name}' in sidebar")
+    snapshot_text = get_pinchtab_interactive_snapshot()
+    contact_ref = find_contact_ref_in_sidebar_snapshot(snapshot_text, recipient_name)
+
+    if not contact_ref:
+        print_log_message("Expanding direct messages section")
+        expand_direct_messages_sidebar_section()
+        snapshot_text = get_pinchtab_interactive_snapshot()
+        contact_ref = find_contact_ref_in_sidebar_snapshot(
+            snapshot_text, recipient_name
+        )
+
+    if contact_ref:
+        url = click_contact_ref_and_extract_direct_message_url(contact_ref)
+        return {
+            "success": True,
+            "mode": "resolve-contact",
+            "method": "sidebar",
+            "name": recipient_name,
+            "url": url,
+        }
+
+    print_log_message(f"Searching for '{recipient_name}' via search bar")
+    url = search_contact_via_search_bar(recipient_name, wait_seconds)
+
+    if url:
+        return {
+            "success": True,
+            "mode": "resolve-contact",
+            "method": "search",
+            "name": recipient_name,
+            "url": url,
+        }
+
+    raise RuntimeError(
+        f"No contact matching '{recipient_name}' found in sidebar or search"
+    )
 
 
 def login_to_google_chat(
@@ -651,6 +829,17 @@ def build_argument_parser() -> argparse.ArgumentParser:
     send_webhook_subcommand.add_argument("--message")
     send_webhook_subcommand.add_argument("--message-file")
 
+    resolve_contact_subcommand = subcommands.add_parser(
+        "resolve-contact",
+        help="Resolve a contact name to a direct message URL.",
+    )
+    resolve_contact_subcommand.add_argument("--name", required=True)
+    resolve_contact_subcommand.add_argument(
+        "--wait-seconds",
+        type=int,
+        default=default_navigation_wait_seconds,
+    )
+
     return argument_parser
 
 
@@ -690,6 +879,12 @@ def run_command(parsed_arguments: argparse.Namespace) -> dict[str, object]:
             message_text=resolve_message_text(
                 parsed_arguments.message, parsed_arguments.message_file
             ),
+        )
+
+    if parsed_arguments.command == "resolve-contact":
+        return resolve_contact_direct_message_url(
+            recipient_name=parsed_arguments.name,
+            wait_seconds=parsed_arguments.wait_seconds,
         )
 
     raise RuntimeError(f"Unsupported command: {parsed_arguments.command}")

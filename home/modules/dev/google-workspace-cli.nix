@@ -24,7 +24,7 @@ let
   googleChatSendByName = pkgs.writeShellScriptBin "google-chat-send-by-name" ''
     set -Eeuo pipefail
 
-    export PATH="${googleChatBrowserCli}/bin:''${PATH:+:$PATH}"
+    export PATH="${googleChatBrowserCli}/bin:${pkgs.python312}/bin:''${PATH:+:$PATH}"
     exec ${pkgs.bash}/bin/bash "${googleChatSendByNameSource}" "$@"
   '';
 
@@ -33,7 +33,7 @@ let
   googleChatReadHistory = pkgs.writeShellScriptBin "google-chat-read-history" ''
     set -Eeuo pipefail
 
-    export PATH="${pkgs.python312}/bin:''${PATH:+:$PATH}"
+    export PATH="${googleChatBrowserCli}/bin:${pkgs.python312}/bin:''${PATH:+:$PATH}"
     exec ${pkgs.bash}/bin/bash "${googleChatReadHistorySource}" "$@"
   '';
 
