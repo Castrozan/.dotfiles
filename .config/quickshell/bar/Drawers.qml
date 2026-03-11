@@ -700,6 +700,8 @@ Scope {
                     sidebarVisible: screenScope.sidebarVisible
                     contentAvailableHeight: sidebarBottomEdge - sidebarTopEdge - utilitiesWrapper.height
 
+                    onCloseRequested: screenScope.sidebarVisible = false
+
                     MouseArea {
                         anchors.fill: parent
                         hoverEnabled: true

@@ -6,17 +6,102 @@ import "../dashboard"
 import QtQuick
 import QtQuick.Layouts
 
-Item {
+FocusScope {
     id: sidebarContentRoot
 
     property real availableHeight: 400
+    property bool sidebarActive: false
     property var activeNotificationsList: []
     property var historyNotificationsList: []
     property var notificationsList: activeNotificationsList.length > 0 ? activeNotificationsList : historyNotificationsList
     property bool showingHistory: activeNotificationsList.length === 0 && historyNotificationsList.length > 0
+    property int currentFocusedNotificationIndex: -1
+    property int expandedNotificationIndex: -1
+
+    signal closeRequested()
 
     implicitWidth: 300
     implicitHeight: Math.min(sidebarLayout.implicitHeight + Appearance.padding.large * 2, availableHeight)
+
+    onSidebarActiveChanged: {
+        if (sidebarActive) {
+            currentFocusedNotificationIndex = notificationsList.length > 0 ? 0 : -1;
+            expandedNotificationIndex = -1;
+            forceActiveFocus();
+        }
+    }
+
+    onNotificationsListChanged: {
+        if (currentFocusedNotificationIndex >= notificationsList.length)
+            currentFocusedNotificationIndex = notificationsList.length - 1;
+        if (expandedNotificationIndex >= notificationsList.length)
+            expandedNotificationIndex = -1;
+    }
+
+    function moveFocusUp(): void {
+        if (notificationsList.length === 0) return;
+        if (currentFocusedNotificationIndex <= 0)
+            currentFocusedNotificationIndex = notificationsList.length - 1;
+        else
+            currentFocusedNotificationIndex--;
+        ensureFocusedItemVisible();
+    }
+
+    function moveFocusDown(): void {
+        if (notificationsList.length === 0) return;
+        if (currentFocusedNotificationIndex >= notificationsList.length - 1)
+            currentFocusedNotificationIndex = 0;
+        else
+            currentFocusedNotificationIndex++;
+        ensureFocusedItemVisible();
+    }
+
+    function toggleExpandFocusedNotification(): void {
+        if (currentFocusedNotificationIndex < 0 || currentFocusedNotificationIndex >= notificationsList.length) return;
+        expandedNotificationIndex = expandedNotificationIndex === currentFocusedNotificationIndex ? -1 : currentFocusedNotificationIndex;
+    }
+
+    function dismissFocusedNotification(): void {
+        if (currentFocusedNotificationIndex < 0 || currentFocusedNotificationIndex >= notificationsList.length) return;
+        if (showingHistory) return;
+        let notif = notificationsList[currentFocusedNotificationIndex];
+        keyboardDismissProcess.command = ["makoctl", "dismiss", "-n", String(notif.id)];
+        keyboardDismissProcess.running = true;
+    }
+
+    function ensureFocusedItemVisible(): void {
+        let item = notificationItemsRepeater.itemAt(currentFocusedNotificationIndex);
+        if (!item) return;
+        let itemTop = item.y;
+        let itemBottom = item.y + item.height;
+        if (itemTop < notificationsFlickable.contentY)
+            notificationsFlickable.contentY = itemTop;
+        else if (itemBottom > notificationsFlickable.contentY + notificationsFlickable.height)
+            notificationsFlickable.contentY = itemBottom - notificationsFlickable.height;
+    }
+
+    Keys.onPressed: event => {
+        if (event.key === Qt.Key_K || event.key === Qt.Key_Up) {
+            sidebarContentRoot.moveFocusUp();
+            event.accepted = true;
+        } else if (event.key === Qt.Key_J || event.key === Qt.Key_Down) {
+            sidebarContentRoot.moveFocusDown();
+            event.accepted = true;
+        } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+            sidebarContentRoot.toggleExpandFocusedNotification();
+            event.accepted = true;
+        } else if (event.key === Qt.Key_Delete || event.key === Qt.Key_D) {
+            sidebarContentRoot.dismissFocusedNotification();
+            event.accepted = true;
+        } else if (event.key === Qt.Key_Escape) {
+            if (sidebarContentRoot.expandedNotificationIndex >= 0) {
+                sidebarContentRoot.expandedNotificationIndex = -1;
+            } else {
+                sidebarContentRoot.closeRequested();
+            }
+            event.accepted = true;
+        }
+    }
 
     function extractNotificationsFromBusctlJson(jsonOutput: string): var {
         try {
@@ -61,6 +146,14 @@ Item {
             onRead: data => {
                 sidebarContentRoot.historyNotificationsList = sidebarContentRoot.extractNotificationsFromBusctlJson(data);
             }
+        }
+    }
+
+    Process {
+        id: keyboardDismissProcess
+        onRunningChanged: {
+            if (!running)
+                notificationsPollTimer.restart();
         }
     }
 
@@ -158,10 +251,12 @@ Item {
                 spacing: Appearance.spacing.small
 
                 Repeater {
+                    id: notificationItemsRepeater
                     model: sidebarContentRoot.notificationsList
 
                     SidebarNotificationItem {
                         required property var modelData
+                        required property int index
 
                         Layout.fillWidth: true
 
@@ -171,8 +266,14 @@ Item {
                         body: modelData.body
                         urgency: modelData.urgency
                         dismissable: !sidebarContentRoot.showingHistory
+                        focused: index === sidebarContentRoot.currentFocusedNotificationIndex
+                        expanded: index === sidebarContentRoot.expandedNotificationIndex
 
                         onDismissed: notificationsPollTimer.restart()
+                        onClicked: {
+                            sidebarContentRoot.currentFocusedNotificationIndex = index;
+                            sidebarContentRoot.expandedNotificationIndex = sidebarContentRoot.expandedNotificationIndex === index ? -1 : index;
+                        }
                     }
                 }
             }

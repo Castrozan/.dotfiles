@@ -15,14 +15,27 @@ StyledRect {
     required property string body
     required property int urgency
     property bool dismissable: true
+    property bool focused: false
+    property bool expanded: false
 
     signal dismissed()
+    signal clicked()
+
+    function dismiss(): void {
+        dismissNotificationProcess.running = true;
+    }
 
     implicitWidth: 280
     implicitHeight: notificationItemLayout.implicitHeight + Appearance.padding.normal * 2
 
     color: urgency >= 2 ? Colours.palette.m3errorContainer : Colours.palette.m3surfaceContainerHigh
     radius: Appearance.rounding.normal
+    border.width: focused ? 2 : 0
+    border.color: Colours.palette.m3primary
+
+    TapHandler {
+        onTapped: notificationItemRoot.clicked()
+    }
 
     ColumnLayout {
         id: notificationItemLayout
@@ -74,8 +87,8 @@ StyledRect {
             font.bold: true
             color: urgency >= 2 ? Colours.palette.m3onErrorContainer : Colours.palette.m3onSurface
             wrapMode: Text.WordWrap
-            elide: Text.ElideRight
-            maximumLineCount: 2
+            elide: notificationItemRoot.expanded ? Text.ElideNone : Text.ElideRight
+            maximumLineCount: notificationItemRoot.expanded ? 99999 : 2
         }
 
         StyledText {
@@ -85,8 +98,8 @@ StyledRect {
             font.pointSize: Appearance.font.size.smaller
             color: urgency >= 2 ? Colours.palette.m3onErrorContainer : Qt.alpha(Colours.palette.m3onSurface, 0.75)
             wrapMode: Text.WordWrap
-            elide: Text.ElideRight
-            maximumLineCount: 3
+            elide: notificationItemRoot.expanded ? Text.ElideNone : Text.ElideRight
+            maximumLineCount: notificationItemRoot.expanded ? 99999 : 3
         }
     }
 }

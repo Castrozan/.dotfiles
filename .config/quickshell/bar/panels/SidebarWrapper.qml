@@ -10,6 +10,8 @@ Item {
     property bool sidebarVisible: false
     property real contentAvailableHeight: height
 
+    signal closeRequested()
+
     visible: width > 0
     width: implicitWidth
     height: implicitHeight
@@ -60,6 +62,14 @@ Item {
 
         sourceComponent: SidebarContent {
             availableHeight: sidebarWrapperRoot.contentAvailableHeight
+            sidebarActive: sidebarWrapperRoot.sidebarVisible
+        }
+    }
+
+    Connections {
+        target: sidebarContentLoader.item
+        function onCloseRequested(): void {
+            sidebarWrapperRoot.closeRequested();
         }
     }
 }
