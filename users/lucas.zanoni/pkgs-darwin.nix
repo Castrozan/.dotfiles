@@ -5,7 +5,6 @@
     brave
     btop
     curl
-    karabiner-elements
     delta
     eza
     fd
