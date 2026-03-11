@@ -30,7 +30,7 @@ Commits are not dangerous - do them freely. During development: commit at every 
 <testing>
 Follow the test skill for all testing. Commit then test. Never present untested code.
 
-When a bug is reported, do not start by fixing it. First write a test that reproduces the bug and fails. Then use subagents to attempt the fix. A passing test is the proof the bug is resolved.
+When a bug is reported, do not start by fixing it. First write a test that reproduces the bug and fails. A passing test is the proof the bug is resolved.
 </testing>
 
 <formatting>
