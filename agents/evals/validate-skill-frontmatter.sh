@@ -42,7 +42,7 @@ _validate_skill() {
   checkedCount=$((checkedCount + 1))
 
   local yaml
-  yaml=$(sed -n '2,/^---$/p' "$skillFile" | head -n -1)
+  yaml=$(sed -n '2,/^---$/p' "$skillFile" | sed '$d')
 
   local hasError=false
   for field in name description; do
