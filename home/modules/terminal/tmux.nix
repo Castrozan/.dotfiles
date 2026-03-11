@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, lib, ... }:
 let
   settings = builtins.readFile ../../../.config/tmux/settings.conf;
   binds = builtins.readFile ../../../.config/tmux/binds.conf;
@@ -37,5 +37,5 @@ in
     '';
   };
 
-  home.packages = [ pkgs.xsel ];
+  home.packages = lib.optionals pkgs.stdenv.isLinux [ pkgs.xsel ];
 }

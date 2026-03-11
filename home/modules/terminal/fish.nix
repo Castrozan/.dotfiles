@@ -7,7 +7,7 @@ in
   home.activation.registerFishAsValidLoginShell = lib.mkIf pkgs.stdenv.isDarwin (
     lib.hm.dag.entryAfter [ "writeBoundary" ] ''
       if ! grep -qF "${fishBinaryPath}" /etc/shells 2>/dev/null; then
-        echo ":: Adding fish to /etc/shells (requires sudo)..."
+        echo ":: Adding fish to /etc/shells..."
         echo "${fishBinaryPath}" | /usr/bin/sudo tee -a /etc/shells >/dev/null
       fi
 
