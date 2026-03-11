@@ -27,8 +27,14 @@ FocusScope {
         if (sidebarActive) {
             currentFocusedNotificationIndex = notificationsList.length > 0 ? 0 : -1;
             expandedNotificationIndex = -1;
-            forceActiveFocus();
+            focusActivationTimer.restart();
         }
+    }
+
+    Timer {
+        id: focusActivationTimer
+        interval: 50
+        onTriggered: sidebarContentRoot.forceActiveFocus()
     }
 
     onNotificationsListChanged: {

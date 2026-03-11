@@ -789,7 +789,7 @@ Scope {
                         screenScope.utilitiesVisible = false;
                         screenScope.sidebarVisible = false;
                     }
-                    focus: screenScope.dashboardVisible || screenScope.launcherVisible || screenScope.sessionVisible || screenScope.utilitiesVisible || screenScope.sidebarVisible
+                    focus: (screenScope.dashboardVisible || screenScope.launcherVisible || screenScope.sessionVisible || screenScope.utilitiesVisible) && !screenScope.sidebarVisible
                 }
 
                 Timer {
