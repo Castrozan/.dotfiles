@@ -2,33 +2,25 @@
 {
   home.packages = with pkgs; [
     bat
-    bun
     curl
     delta
-    dust
     eza
     fd
     fzf
     gh
     git
-    gnutar
-    go
     jq
     lazygit
     nixd
     nixfmt-rfc-style
     nodejs
-    nodePackages.prettier
-    ollama
     ripgrep-all
-    ruff
     shellcheck
     shfmt
     tealdeer
     tree
     unzip
     vim
-    yamllint
     zip
     zoxide
   ];

@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, lib, ... }:
 let
   shellInit = builtins.readFile ./shell/fish/config.fish;
 in
@@ -18,10 +18,6 @@ in
         src = pkgs.fishPlugins.bass;
       }
       {
-        name = "fzf-fish";
-        src = pkgs.fishPlugins.fzf-fish;
-      }
-      {
         name = "autopair";
         src = pkgs.fishPlugins.autopair;
       }
@@ -32,6 +28,12 @@ in
       {
         name = "puffer";
         src = pkgs.fishPlugins.puffer;
+      }
+    ]
+    ++ lib.optionals (!pkgs.stdenv.isDarwin) [
+      {
+        name = "fzf-fish";
+        src = pkgs.fishPlugins.fzf-fish;
       }
     ];
   };
