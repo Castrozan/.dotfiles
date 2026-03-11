@@ -22,9 +22,14 @@ tests/coverage/
 # Node
 node_modules/
 
+# Python cache
+__pycache__/
+.pytest_cache/
+
 # Ruff cache
 .ruff_cache/
 
 .cache/
+snapshot.json
 /.config/cava/
 /.config/pulse/
