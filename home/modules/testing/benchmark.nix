@@ -1,28 +1,17 @@
 { pkgs, ... }:
 let
-  benchmark-rebuild = pkgs.writeShellScriptBin "benchmark-rebuild" ''
-    export PATH="${
-      pkgs.lib.makeBinPath [
-        pkgs.bc
-        pkgs.gawk
-        pkgs.util-linux
-      ]
-    }:$PATH"
-    ${builtins.readFile ./scripts/benchmark-rebuild}
-  '';
-  benchmark-shell = pkgs.writeShellScriptBin "benchmark-shell" ''
-    export PATH="${
-      pkgs.lib.makeBinPath [
-        pkgs.bc
-        pkgs.gawk
-      ]
-    }:$PATH"
-    ${builtins.readFile ./scripts/benchmark-shell}
-  '';
+  mkTestingPythonScript =
+    name: file:
+    let
+      pythonSource = pkgs.writeText "${name}-source.py" (builtins.readFile file);
+    in
+    pkgs.writeShellScriptBin name ''
+      exec ${pkgs.python312}/bin/python3 ${pythonSource} "$@"
+    '';
 in
 {
   home.packages = [
-    benchmark-rebuild
-    benchmark-shell
+    (mkTestingPythonScript "benchmark-rebuild" ./scripts/benchmark_rebuild.py)
+    (mkTestingPythonScript "benchmark-shell" ./scripts/benchmark_shell.py)
   ];
 }
