@@ -16,7 +16,7 @@
 #
 # shellcheck disable=SC2034
 SCREENSAVER_COMMANDS=(
-    'openclaw-mesh'
-    'cmatrix'
-    'sleep 3; bad-apple'
+	'openclaw-mesh'
+	'cmatrix -b'
+	'sleep 3; bad-apple'
 )
