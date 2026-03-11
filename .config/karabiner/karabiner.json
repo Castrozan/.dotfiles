@@ -60,6 +60,30 @@
             ]
           },
           {
+            "description": "Cmd+D to Show Desktop (Fn+F11)",
+            "manipulators": [
+              {
+                "type": "basic",
+                "from": {
+                  "key_code": "d",
+                  "modifiers": {
+                    "mandatory": [
+                      "command"
+                    ]
+                  }
+                },
+                "to": [
+                  {
+                    "key_code": "f11",
+                    "modifiers": [
+                      "fn"
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
             "description": "Ctrl+W to Close (Cmd+W) except in terminals",
             "manipulators": [
               {
