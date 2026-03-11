@@ -55,6 +55,8 @@ ShapePath {
 
     readonly property real effectiveBottomLeftBarCornerRadius: bottomCornerMerged ? 0 : innerCornerRadius
     readonly property real effectiveTopLeftBarCornerRadius: topCornerMerged ? 0 : innerCornerRadius
+
+    readonly property real cutoutPathStartPointOffset: 3
     readonly property real effectiveBottomJunctionArcRadius: bottomCornerMerged ? mergedBottomArcRadius : bottomJunctionArcRadius
     readonly property real effectiveTopJunctionArcRadius: topCornerMerged ? mergedTopArcRadius : topJunctionArcRadius
 
@@ -141,7 +143,7 @@ ShapePath {
     }
 
     PathMove {
-        x: shapePathRoot.topEdgeTargetX
+        x: shapePathRoot.topEdgeTargetX + shapePathRoot.cutoutPathStartPointOffset
         y: shapePathRoot.stripThickness
     }
 
@@ -403,5 +405,10 @@ ShapePath {
         radiusX: shapePathRoot.effectiveTopLeftBarCornerRadius
         radiusY: shapePathRoot.effectiveTopLeftBarCornerRadius
         direction: PathArc.Clockwise
+    }
+
+    PathLine {
+        x: shapePathRoot.topEdgeTargetX + shapePathRoot.cutoutPathStartPointOffset
+        y: shapePathRoot.stripThickness
     }
 }
