@@ -4,8 +4,6 @@
   ...
 }:
 let
-  mkAudioPythonScript = name: file: mkAudioPythonScriptWithDeps name file [ ];
-
   mkAudioPythonScriptWithDeps =
     name: file: runtimeDeps:
     let
