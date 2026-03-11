@@ -21,6 +21,7 @@
     defaults = {
       ".GlobalPreferences"."com.apple.mouse.scaling" = 3.63;
       NSGlobalDomain.AppleInterfaceStyle = "Dark";
+      NSGlobalDomain."com.apple.swipescrolldirection" = false;
       dock = {
         autohide = true;
         show-recents = false;
