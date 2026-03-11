@@ -90,7 +90,7 @@ _fix_agenix_identity_key_ownership() {
 
 	local current_owner expected_owner
 	if _is_macos; then
-		current_owner="$(stat -f '%Su' "$AGENIX_IDENTITY_KEY")"
+		current_owner="$(/usr/bin/stat -f '%Su' "$AGENIX_IDENTITY_KEY")"
 	else
 		current_owner="$(stat -c '%U' "$AGENIX_IDENTITY_KEY")"
 	fi
