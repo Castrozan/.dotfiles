@@ -28,6 +28,8 @@ _rebuild_system() {
 
 	if _is_nixos; then
 		_rebuild_nixos
+	elif _is_macos; then
+		_rebuild_darwin
 	else
 		_rebuild_home_manager
 	fi
@@ -114,6 +116,16 @@ _rebuild_nixos() {
 	echo ":: Flake: ${dotfiles_path}#${username}"
 
 	sudo env "$NIXOS_ALLOW_UNFREE" nixos-rebuild switch --flake "${dotfiles_path}?submodules=1#${username}"
+}
+
+_rebuild_darwin() {
+	local username
+	username="$(whoami)"
+
+	echo ":: Detected macOS. Running darwin-rebuild switch..."
+	echo ":: Flake: ${DOTFILES_DIR}#${username}"
+
+	darwin-rebuild switch --flake "${DOTFILES_DIR}?submodules=1#${username}"
 }
 
 _rebuild_home_manager() {

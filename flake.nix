@@ -41,6 +41,8 @@
     whisp-away.url = "github:madjinn/whisp-away";
     hyprland.url = "github:hyprwm/Hyprland/v0.54.0";
     google-workspace-cli.url = "github:googleworkspace/cli";
+    nix-darwin.url = "github:LnL7/nix-darwin";
+    nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   # Outputs are what this flake provides, such as pkgs and system configurations
@@ -51,6 +53,7 @@
       nixpkgs-unstable,
       nixpkgs-latest,
       home-manager,
+      nix-darwin,
       ...
     }:
     # let in notation to declare local variables for output scope
@@ -157,7 +160,34 @@
           };
         };
 
-      # ADD comment
+      darwinConfigurations =
+        let
+          username = "lucas.zanoni";
+          specialArgs = {
+            inherit
+              nixpkgs-version
+              home-version
+              inputs
+              username
+              ;
+            unstable = darwin.unstable;
+            latest = darwin.latest;
+            isNixOS = false;
+          };
+        in
+        {
+          "${username}" = nix-darwin.lib.darwinSystem {
+            inherit specialArgs;
+            system = darwinSystem;
+
+            modules = [
+              ./hosts/macbook
+              home-manager.darwinModules.home-manager
+              (import ./users/${username}/darwin-home-config.nix)
+            ];
+          };
+        };
+
       homeManagerModules = {
         openclaw = ./home/modules/openclaw;
         claude-code = ./home/modules/claude;
