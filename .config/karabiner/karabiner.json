@@ -84,6 +84,27 @@
             ]
           },
           {
+            "description": "Print Screen to screenshot region to clipboard (Cmd+Shift+Ctrl+4)",
+            "manipulators": [
+              {
+                "type": "basic",
+                "from": {
+                  "key_code": "print_screen"
+                },
+                "to": [
+                  {
+                    "key_code": "4",
+                    "modifiers": [
+                      "command",
+                      "shift",
+                      "control"
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
             "description": "Ctrl+W to Close (Cmd+W) except in terminals",
             "manipulators": [
               {
