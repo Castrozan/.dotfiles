@@ -26,6 +26,7 @@
     ../../home/modules/editor/vscode/vscode.nix
 
     ../../home/modules/desktop/fonts.nix
+    ../../home/modules/desktop/karabiner.nix
 
     ../../home/modules/dev/git.nix
     ../../home/modules/dev/lazygit.nix
