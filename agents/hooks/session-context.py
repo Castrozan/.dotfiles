@@ -9,18 +9,15 @@ import sys
 from datetime import datetime
 from typing import Any, Dict
 
+
 def run_cmd(args: list[str], timeout: int = 5) -> tuple[int, str]:
     """Run a command and return (exit_code, output)."""
     try:
-        result = subprocess.run(
-            args,
-            capture_output=True,
-            text=True,
-            timeout=timeout
-        )
+        result = subprocess.run(args, capture_output=True, text=True, timeout=timeout)
         return result.returncode, result.stdout.strip()
     except (subprocess.TimeoutExpired, FileNotFoundError):
         return 1, ""
+
 
 def get_git_status() -> Dict[str, Any]:
     """Get git repository status."""
@@ -38,13 +35,15 @@ def get_git_status() -> Dict[str, Any]:
     # Check for uncommitted changes
     code, porcelain = run_cmd(["git", "status", "--porcelain"])
     if code == 0:
-        lines = [l for l in porcelain.split("\n") if l.strip()]
+        lines = [line for line in porcelain.split("\n") if line.strip()]
         status["uncommitted"] = len(lines)
-        status["staged"] = sum(1 for l in lines if l[0] != ' ' and l[0] != '?')
-        status["untracked"] = sum(1 for l in lines if l.startswith('??'))
+        status["staged"] = sum(1 for line in lines if line[0] != " " and line[0] != "?")
+        status["untracked"] = sum(1 for line in lines if line.startswith("??"))
 
     # Check if ahead/behind remote
-    code, ahead_behind = run_cmd(["git", "rev-list", "--left-right", "--count", "@{u}...HEAD"])
+    code, ahead_behind = run_cmd(
+        ["git", "rev-list", "--left-right", "--count", "@{u}...HEAD"]
+    )
     if code == 0:
         parts = ahead_behind.split()
         if len(parts) == 2:
@@ -52,7 +51,9 @@ def get_git_status() -> Dict[str, Any]:
             status["ahead"] = int(parts[1])
 
     # Get last commit info
-    code, last_commit = run_cmd(["git", "log", "-1", "--format=%h %s", "--date=relative"])
+    code, last_commit = run_cmd(
+        ["git", "log", "-1", "--format=%h %s", "--date=relative"]
+    )
     if code == 0:
         status["last_commit"] = last_commit[:60]
 
@@ -79,7 +80,9 @@ def check_project_context() -> list[str]:
             context_files.append(f"{worktree_count} active worktree(s)")
 
     # Check for TODO/FIXME in recent commits
-    code, todos = run_cmd(["git", "log", "-5", "--format=%s", "--grep=TODO\\|FIXME\\|WIP"])
+    code, todos = run_cmd(
+        ["git", "log", "-5", "--format=%s", "--grep=TODO\\|FIXME\\|WIP"]
+    )
     if code == 0 and todos:
         context_files.append("Recent WIP/TODO commits detected")
 
@@ -92,18 +95,27 @@ def get_system_info() -> Dict[str, str]:
 
     info["user"] = os.environ.get("USER", "unknown")
 
-    try:
-        release = platform.freedesktop_os_release()
-        info["distro"] = release.get("PRETTY_NAME", release.get("NAME", "unknown"))
-    except (OSError, AttributeError):
-        if os.path.exists("/etc/os-release"):
-            with open("/etc/os-release") as f:
-                for line in f:
-                    if line.startswith("PRETTY_NAME="):
-                        info["distro"] = line.split("=", 1)[1].strip().strip('"')
-                        break
-                    elif line.startswith("NAME=") and "distro" not in info:
-                        info["distro"] = line.split("=", 1)[1].strip().strip('"')
+    system_name = platform.system()
+    if system_name == "Darwin":
+        macos_version = platform.mac_ver()[0]
+        info["os"] = f"macOS {macos_version}" if macos_version else "macOS"
+    else:
+        try:
+            release = platform.freedesktop_os_release()
+            info["os"] = release.get("PRETTY_NAME", release.get("NAME", "unknown"))
+        except (OSError, AttributeError):
+            if os.path.exists("/etc/os-release"):
+                with open("/etc/os-release") as f:
+                    for os_release_line in f:
+                        if os_release_line.startswith("PRETTY_NAME="):
+                            info["os"] = (
+                                os_release_line.split("=", 1)[1].strip().strip('"')
+                            )
+                            break
+                        elif os_release_line.startswith("NAME=") and "os" not in info:
+                            info["os"] = (
+                                os_release_line.split("=", 1)[1].strip().strip('"')
+                            )
 
     return info
 
@@ -178,8 +190,8 @@ def main():
     sys_parts = []
     if sys_info.get("user"):
         sys_parts.append(f"User: {sys_info['user']}")
-    if sys_info.get("distro"):
-        sys_parts.append(f"OS: {sys_info['distro']}")
+    if sys_info.get("os"):
+        sys_parts.append(f"OS: {sys_info['os']}")
     if sys_parts:
         sections.append(" | ".join(sys_parts))
 
@@ -192,7 +204,10 @@ def main():
     if sections:
         output = {
             "continue": True,
-            "systemMessage": "SESSION CONTEXT:\n" + "\n".join(sections)
+            "hookSpecificOutput": {
+                "hookEventName": "SessionStart",
+                "additionalContext": "SESSION CONTEXT:\n" + "\n".join(sections),
+            },
         }
         print(json.dumps(output))
 
