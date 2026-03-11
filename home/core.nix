@@ -1,10 +1,15 @@
-{ username, home-version, ... }: # Dependency injection
+{
+  pkgs,
+  username,
+  home-version,
+  ...
+}:
 {
   home = {
     inherit username;
-    homeDirectory = "/home/${username}";
+    homeDirectory = if pkgs.stdenv.isDarwin then "/Users/${username}" else "/home/${username}";
     stateVersion = home-version;
   };
-  programs.home-manager.enable = true; # Enable home-manager to manage itself
+  programs.home-manager.enable = true;
   news.display = "silent";
 }

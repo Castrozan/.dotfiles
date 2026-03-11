@@ -62,6 +62,10 @@ _init_git_submodules_if_present() {
 }
 
 _source_os_release() {
+	if _is_macos; then
+		return 0
+	fi
+
 	if [ ! -f /etc/os-release ]; then
 		echo "Error: /etc/os-release not found. Cannot detect OS." >&2
 		return 1
@@ -69,6 +73,10 @@ _source_os_release() {
 
 	# shellcheck disable=SC1091
 	. /etc/os-release
+}
+
+_is_macos() {
+	[ "$(uname -s)" = "Darwin" ]
 }
 
 _is_nixos() {
@@ -79,7 +87,11 @@ _fix_agenix_identity_key_ownership() {
 	[ -f "$AGENIX_IDENTITY_KEY" ] || return 0
 
 	local current_owner expected_owner
-	current_owner="$(stat -c '%U' "$AGENIX_IDENTITY_KEY")"
+	if _is_macos; then
+		current_owner="$(stat -f '%Su' "$AGENIX_IDENTITY_KEY")"
+	else
+		current_owner="$(stat -c '%U' "$AGENIX_IDENTITY_KEY")"
+	fi
 	expected_owner="$(whoami)"
 
 	[ "$current_owner" = "$expected_owner" ] && return 0
@@ -115,14 +127,22 @@ _rebuild_home_manager() {
 }
 
 _build_home_manager_config_name() {
-	local username arch system
+	local username arch kernel system
 	username="$(whoami)"
 	arch="$(uname -m)"
+	kernel="$(uname -s)"
+
+	local os_suffix
+	if [ "$kernel" = "Darwin" ]; then
+		os_suffix="darwin"
+	else
+		os_suffix="linux"
+	fi
 
 	case "$arch" in
-	x86_64) system="x86_64-linux" ;;
-	aarch64) system="aarch64-linux" ;;
-	*) system="${arch}-linux" ;;
+	x86_64) system="x86_64-${os_suffix}" ;;
+	aarch64 | arm64) system="aarch64-${os_suffix}" ;;
+	*) system="${arch}-${os_suffix}" ;;
 	esac
 
 	echo "${username}@${system}"

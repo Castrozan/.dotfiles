@@ -55,22 +55,33 @@
     }:
     # let in notation to declare local variables for output scope
     let
-      system = "x86_64-linux"; # linux system architecture
+      linuxSystem = "x86_64-linux";
+      darwinSystem = "aarch64-darwin";
       home-version = "25.11";
       nixpkgs-version = "25.11";
-      # Configure nixpkgs then attribute it to pkgs at the same time
-      pkgs = import nixpkgs {
-        inherit system;
-        config.allowUnfree = true;
+
+      mkPkgsFor = system: {
+        pkgs = import nixpkgs {
+          inherit system;
+          config.allowUnfree = true;
+        };
+        unstable = import nixpkgs-unstable {
+          inherit system;
+          config.allowUnfree = true;
+        };
+        latest = import nixpkgs-latest {
+          inherit system;
+          config.allowUnfree = true;
+        };
       };
-      unstable = import nixpkgs-unstable {
-        inherit system;
-        config.allowUnfree = true;
-      };
-      latest = import nixpkgs-latest {
-        inherit system;
-        config.allowUnfree = true;
-      };
+
+      linux = mkPkgsFor linuxSystem;
+      darwin = mkPkgsFor darwinSystem;
+
+      pkgs = linux.pkgs;
+      unstable = linux.unstable;
+      latest = linux.latest;
+
       specialArgsBase = {
         inherit
           nixpkgs-version
@@ -87,9 +98,8 @@
       # ./bin/rebuild for how to apply the flake
       homeConfigurations =
         let
-          # Function definition
-          mkHomeConfigFor = username: {
-            "${username}@${system}" = home-manager.lib.homeManagerConfiguration {
+          mkLinuxHomeConfigFor = username: {
+            "${username}@${linuxSystem}" = home-manager.lib.homeManagerConfiguration {
               inherit pkgs;
 
               extraSpecialArgs = specialArgsBase // {
@@ -100,9 +110,28 @@
               modules = [ ./users/${username}/home.nix ];
             };
           };
+
+          mkDarwinHomeConfigFor = username: {
+            "${username}@${darwinSystem}" = home-manager.lib.homeManagerConfiguration {
+              pkgs = darwin.pkgs;
+
+              extraSpecialArgs = {
+                inherit
+                  nixpkgs-version
+                  home-version
+                  inputs
+                  ;
+                unstable = darwin.unstable;
+                latest = darwin.latest;
+                inherit username;
+                isNixOS = false;
+              };
+
+              modules = [ ./users/${username}/home-darwin.nix ];
+            };
+          };
         in
-        # Function call with arguments
-        mkHomeConfigFor "lucas.zanoni";
+        mkLinuxHomeConfigFor "lucas.zanoni" // mkDarwinHomeConfigFor "lucas.zanoni";
 
       # nixosConfigurations.${username} is a NixOS system configuration for a user
       # ./bin/rebuild for how to apply
@@ -117,7 +146,7 @@
         {
           "${username}" = nixpkgs.lib.nixosSystem {
             inherit specialArgs;
-            inherit system;
+            system = linuxSystem;
 
             modules = [
               ./hosts/dellg15
@@ -143,7 +172,7 @@
       };
 
       # ADD comment
-      checks.${system} = import ./tests/nix-checks {
+      checks.${linuxSystem} = import ./tests/nix-checks {
         inherit
           pkgs
           inputs
