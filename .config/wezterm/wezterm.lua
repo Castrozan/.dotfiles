@@ -48,7 +48,7 @@ return {
     'FiraCode Nerd Font Mono',
     'Noto Color Emoji',
   }),
-  font_size = wezterm.target_triple:find('darwin') and 19 or 16,
+  font_size = wezterm.target_triple:find('darwin') and 18 or 16,
 
   color_schemes = {
     ['Catppuccin Mocha'] = catppuccin_mocha,
