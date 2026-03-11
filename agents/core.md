@@ -44,7 +44,7 @@ Before trying to use complex and uncommon tools, or if user ask you to do someth
 </skill-discovery>
 
 <scripts>
-Follow ~/.dotfiles/home/modules/system/scripts/rebuild as canonical example. Shell scripts use: set -Eeuo pipefail, readonly constants at top, main() entry point called at bottom, private helper functions prefixed with underscore. Clean error handling with early returns and meaningful messages to stderr.
+Python 3.12 is the default language for scripts. Use bash only when the script is a thin wrapper gluing shell-native tools (tmux send-keys, fzf preview commands, sysctl/systemctl pipelines, interactive tty reads) where Python would just be subprocess.run() calls with no added logic. If the script parses data, manages state, does math, or has branching logic beyond simple conditionals, it must be Python. Python scripts run via Nix — no uv, no venv, no pip; use `pkgs.python312` wrapped through `writeShellScriptBin` with `exec python3`. Tests use pytest with mocked subprocess calls. Bash scripts that remain follow the rebuild canonical example: set -Eeuo pipefail, readonly constants, main() at bottom, underscore-prefixed helpers, early returns with stderr messages.
 </scripts>
 
 <documentation>
