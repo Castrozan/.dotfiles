@@ -31,5 +31,8 @@
     ../../home/modules/dev/git.nix
     ../../home/modules/dev/lazygit.nix
     ../../home/modules/dev/scripts.nix
+
+    ../../home/modules/media/bad-apple.nix
+    ../../home/modules/gaming/cmatrix.nix
   ];
 }
