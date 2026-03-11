@@ -18,8 +18,22 @@
         }
       ];
     };
-    defaults.".GlobalPreferences"."com.apple.mouse.scaling" = 3.63;
+    defaults = {
+      ".GlobalPreferences"."com.apple.mouse.scaling" = 3.63;
+      NSGlobalDomain.AppleInterfaceStyle = "Dark";
+      dock = {
+        autohide = true;
+        show-recents = false;
+        tilesize = 48;
+        minimize-to-application = true;
+        mru-spaces = false;
+      };
+    };
   };
+
+  system.activationScripts.postActivation.text = ''
+    osascript -e 'tell application "System Events" to tell every desktop to set picture to "/Users/${username}/.dotfiles/static/alter-jellyfish-dark.jpg"'
+  '';
 
   programs.fish.enable = true;
 

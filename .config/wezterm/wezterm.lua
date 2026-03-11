@@ -71,7 +71,7 @@ return {
   warn_about_missing_glyphs = false,
   freetype_load_target = 'Light',
   scrollback_lines = 10000,
-  default_prog = { 'fish' },
+  default_prog = { wezterm.target_triple:find('darwin') and '/run/current-system/sw/bin/fish' or 'fish' },
   default_cwd = wezterm.home_dir,
 
   enable_csi_u_key_encoding = true,
