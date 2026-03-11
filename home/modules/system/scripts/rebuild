@@ -119,13 +119,20 @@ _rebuild_nixos() {
 }
 
 _rebuild_darwin() {
-	local username
-	username="$(whoami)"
+	local darwin_config_name="macbook"
+	local flake_ref="${DOTFILES_DIR}?submodules=1#${darwin_config_name}"
 
 	echo ":: Detected macOS. Running darwin-rebuild switch..."
-	echo ":: Flake: ${DOTFILES_DIR}#${username}"
+	echo ":: Flake: ${flake_ref}"
 
-	darwin-rebuild switch --flake "${DOTFILES_DIR}?submodules=1#${username}"
+	if ! command -v darwin-rebuild >/dev/null 2>&1; then
+		echo ":: darwin-rebuild not found. Bootstrapping nix-darwin..."
+		nix build "${DOTFILES_DIR}?submodules=1#darwinConfigurations.${darwin_config_name}.system"
+		echo ":: Build complete. Activating system (requires sudo)..."
+		sudo ./result/sw/bin/darwin-rebuild switch --flake "$flake_ref"
+	else
+		sudo darwin-rebuild switch --flake "$flake_ref"
+	fi
 }
 
 _rebuild_home_manager() {

@@ -1,24 +1,8 @@
 { pkgs, lib, ... }:
 let
   shellInit = builtins.readFile ./shell/fish/config.fish;
-  fishBinaryPath = "${pkgs.fish}/bin/fish";
 in
 {
-  home.activation.registerFishAsValidLoginShell = lib.mkIf pkgs.stdenv.isDarwin (
-    lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-      if ! grep -qF "${fishBinaryPath}" /etc/shells 2>/dev/null; then
-        echo ":: Adding fish to /etc/shells..."
-        echo "${fishBinaryPath}" | /usr/bin/sudo tee -a /etc/shells >/dev/null
-      fi
-
-      currentLoginShell=$(/usr/bin/dscl . -read /Users/$USER UserShell | /usr/bin/awk '{print $2}')
-      if [ "$currentLoginShell" != "${fishBinaryPath}" ]; then
-        echo ":: Setting fish as default login shell..."
-        /usr/bin/chsh -s "${fishBinaryPath}"
-      fi
-    ''
-  );
-
   home.packages = with pkgs; [
     fishPlugins.bass
     carapace

@@ -41,7 +41,7 @@
     whisp-away.url = "github:madjinn/whisp-away";
     hyprland.url = "github:hyprwm/Hyprland/v0.54.0";
     google-workspace-cli.url = "github:googleworkspace/cli";
-    nix-darwin.url = "github:LnL7/nix-darwin";
+    nix-darwin.url = "github:nix-darwin/nix-darwin/nix-darwin-25.11";
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
   };
 
@@ -113,28 +113,8 @@
               modules = [ ./users/${username}/home.nix ];
             };
           };
-
-          mkDarwinHomeConfigFor = username: {
-            "${username}@${darwinSystem}" = home-manager.lib.homeManagerConfiguration {
-              pkgs = darwin.pkgs;
-
-              extraSpecialArgs = {
-                inherit
-                  nixpkgs-version
-                  home-version
-                  inputs
-                  ;
-                unstable = darwin.unstable;
-                latest = darwin.latest;
-                inherit username;
-                isNixOS = false;
-              };
-
-              modules = [ ./users/${username}/home-darwin.nix ];
-            };
-          };
         in
-        mkLinuxHomeConfigFor "lucas.zanoni" // mkDarwinHomeConfigFor "lucas.zanoni";
+        mkLinuxHomeConfigFor "lucas.zanoni";
 
       # nixosConfigurations.${username} is a NixOS system configuration for a user
       # ./bin/rebuild for how to apply
@@ -176,7 +156,7 @@
           };
         in
         {
-          "${username}" = nix-darwin.lib.darwinSystem {
+          macbook = nix-darwin.lib.darwinSystem {
             inherit specialArgs;
             system = darwinSystem;
 

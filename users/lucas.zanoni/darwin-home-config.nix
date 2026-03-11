@@ -1,4 +1,13 @@
-{ username, specialArgs, ... }:
+{
+  username,
+  nixpkgs-version,
+  home-version,
+  inputs,
+  unstable,
+  latest,
+  isNixOS,
+  ...
+}:
 {
   home-manager = {
     useGlobalPkgs = true;
@@ -6,8 +15,16 @@
     backupFileExtension = "backup";
     overwriteBackup = true;
 
-    extraSpecialArgs = specialArgs // {
-      inherit username;
+    extraSpecialArgs = {
+      inherit
+        nixpkgs-version
+        home-version
+        inputs
+        unstable
+        latest
+        username
+        isNixOS
+        ;
     };
     users.${username} = import ./home-darwin.nix;
   };
