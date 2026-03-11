@@ -9,6 +9,7 @@ Item {
 
     property bool sidebarVisible: false
     property real contentAvailableHeight: height
+    property var hiddenHistoryNotificationIds: ({})
 
     signal closeRequested()
 
@@ -63,6 +64,8 @@ Item {
         sourceComponent: SidebarContent {
             availableHeight: sidebarWrapperRoot.contentAvailableHeight
             sidebarActive: sidebarWrapperRoot.sidebarVisible
+            hiddenHistoryNotificationIds: sidebarWrapperRoot.hiddenHistoryNotificationIds
+            onHiddenHistoryNotificationIdsChanged: sidebarWrapperRoot.hiddenHistoryNotificationIds = hiddenHistoryNotificationIds
         }
     }
 

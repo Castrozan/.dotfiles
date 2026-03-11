@@ -13,8 +13,10 @@ FocusScope {
     property bool sidebarActive: false
     property var activeNotificationsList: []
     property var historyNotificationsList: []
-    property var notificationsList: activeNotificationsList.length > 0 ? activeNotificationsList : historyNotificationsList
-    property bool showingHistory: activeNotificationsList.length === 0 && historyNotificationsList.length > 0
+    property var hiddenHistoryNotificationIds: ({})
+    property var filteredHistoryNotificationsList: historyNotificationsList.filter(n => !hiddenHistoryNotificationIds[n.id])
+    property var notificationsList: activeNotificationsList.length > 0 ? activeNotificationsList : filteredHistoryNotificationsList
+    property bool showingHistory: activeNotificationsList.length === 0 && filteredHistoryNotificationsList.length > 0
     property int currentFocusedNotificationIndex: -1
     property int expandedNotificationIndex: -1
 
@@ -67,12 +69,21 @@ FocusScope {
         expandedNotificationIndex = expandedNotificationIndex === currentFocusedNotificationIndex ? -1 : currentFocusedNotificationIndex;
     }
 
+    function dismissNotificationAtIndex(indexToDismiss: int): void {
+        if (indexToDismiss < 0 || indexToDismiss >= notificationsList.length) return;
+        let notif = notificationsList[indexToDismiss];
+        if (showingHistory) {
+            let updated = Object.assign({}, hiddenHistoryNotificationIds);
+            updated[notif.id] = true;
+            hiddenHistoryNotificationIds = updated;
+        } else {
+            keyboardDismissProcess.command = ["makoctl", "dismiss", "-n", String(notif.id)];
+            keyboardDismissProcess.running = true;
+        }
+    }
+
     function dismissFocusedNotification(): void {
-        if (currentFocusedNotificationIndex < 0 || currentFocusedNotificationIndex >= notificationsList.length) return;
-        if (showingHistory) return;
-        let notif = notificationsList[currentFocusedNotificationIndex];
-        keyboardDismissProcess.command = ["makoctl", "dismiss", "-n", String(notif.id)];
-        keyboardDismissProcess.running = true;
+        dismissNotificationAtIndex(currentFocusedNotificationIndex);
     }
 
     function ensureFocusedItemVisible(): void {
@@ -271,11 +282,13 @@ FocusScope {
                         summary: modelData.summary
                         body: modelData.body
                         urgency: modelData.urgency
-                        dismissable: !sidebarContentRoot.showingHistory
+                        dismissable: true
                         focused: index === sidebarContentRoot.currentFocusedNotificationIndex
                         expanded: index === sidebarContentRoot.expandedNotificationIndex
 
-                        onDismissed: notificationsPollTimer.restart()
+                        onDismissRequested: {
+                            sidebarContentRoot.dismissNotificationAtIndex(index);
+                        }
                         onClicked: {
                             sidebarContentRoot.currentFocusedNotificationIndex = index;
                             sidebarContentRoot.expandedNotificationIndex = sidebarContentRoot.expandedNotificationIndex === index ? -1 : index;

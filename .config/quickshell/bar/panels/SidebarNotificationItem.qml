@@ -18,12 +18,8 @@ StyledRect {
     property bool focused: false
     property bool expanded: false
 
-    signal dismissed()
+    signal dismissRequested()
     signal clicked()
-
-    function dismiss(): void {
-        dismissNotificationProcess.running = true;
-    }
 
     implicitWidth: 280
     implicitHeight: notificationItemLayout.implicitHeight + Appearance.padding.normal * 2
@@ -67,16 +63,7 @@ StyledRect {
                 type: IconButton.Text
                 font.pointSize: Appearance.font.size.small
 
-                Process {
-                    id: dismissNotificationProcess
-                    command: ["makoctl", "dismiss", "-n", String(notificationItemRoot.notificationId)]
-                    onRunningChanged: {
-                        if (!running)
-                            notificationItemRoot.dismissed();
-                    }
-                }
-
-                onClicked: dismissNotificationProcess.running = true
+                onClicked: notificationItemRoot.dismissRequested()
             }
         }
 
