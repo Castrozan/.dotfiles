@@ -2,6 +2,7 @@
 {
   home.packages = with pkgs; [
     bat
+    brave
     curl
     delta
     eza
@@ -10,7 +11,6 @@
     gh
     git
     jq
-    lazygit
     nixd
     nixfmt-rfc-style
     nodejs

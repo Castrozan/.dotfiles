@@ -17,14 +17,18 @@
     ../../home/modules/terminal/atuin.nix
     ../../home/modules/terminal/fish.nix
     ../../home/modules/terminal/kitty.nix
+    ../../home/modules/terminal/scripts.nix
     ../../home/modules/terminal/tmux.nix
     ../../home/modules/terminal/wezterm.nix
     ../../home/modules/terminal/yazi.nix
 
     ../../home/modules/editor/neovim.nix
+    ../../home/modules/editor/vscode/vscode.nix
 
     ../../home/modules/desktop/fonts.nix
 
     ../../home/modules/dev/git.nix
+    ../../home/modules/dev/lazygit.nix
+    ../../home/modules/dev/scripts.nix
   ];
 }

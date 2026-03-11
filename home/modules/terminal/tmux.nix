@@ -32,6 +32,7 @@ in
       pkgs.tmuxPlugins.cpu
     ];
     extraConfig = ''
+      set-environment -g PATH "${pkgs.tmux}/bin:${pkgs.coreutils}/bin:${pkgs.bash}/bin:/etc/profiles/per-user/$USER/bin:$HOME/.nix-profile/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin:/usr/bin:/bin"
       ${settings}
       ${binds}
     '';

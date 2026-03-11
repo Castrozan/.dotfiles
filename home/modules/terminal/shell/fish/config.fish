@@ -18,6 +18,9 @@ set -g fish_pager_color_progress cyan
 # Add cargo bin to PATH
 fish_add_path ~/.cargo/bin
 
+# Add nix-darwin per-user profile to PATH (useUserPackages puts packages here)
+fish_add_path /etc/profiles/per-user/$USER/bin
+
 # TODO: this should be sourced from a lucas.zanoni specific file on it's config dir
 # NSS library preload for corporate authentication (required for devenv)
 # Only set for lucas.zanoni user
