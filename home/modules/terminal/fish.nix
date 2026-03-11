@@ -8,13 +8,13 @@ in
     lib.hm.dag.entryAfter [ "writeBoundary" ] ''
       if ! grep -qF "${fishBinaryPath}" /etc/shells 2>/dev/null; then
         echo ":: Adding fish to /etc/shells (requires sudo)..."
-        echo "${fishBinaryPath}" | sudo tee -a /etc/shells >/dev/null
+        echo "${fishBinaryPath}" | /usr/bin/sudo tee -a /etc/shells >/dev/null
       fi
 
-      currentLoginShell=$(dscl . -read /Users/$USER UserShell | awk '{print $2}')
+      currentLoginShell=$(/usr/bin/dscl . -read /Users/$USER UserShell | /usr/bin/awk '{print $2}')
       if [ "$currentLoginShell" != "${fishBinaryPath}" ]; then
         echo ":: Setting fish as default login shell..."
-        chsh -s "${fishBinaryPath}"
+        /usr/bin/chsh -s "${fishBinaryPath}"
       fi
     ''
   );
