@@ -2,7 +2,7 @@
   imports = [
     ./pkgs-darwin.nix
 
-    ./home/git.nix
+    ./home/git-devpro.nix
     ./home/ssh.nix
     ./home/session-vars.nix
 
