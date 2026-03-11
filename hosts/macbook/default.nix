@@ -18,7 +18,7 @@
         }
       ];
     };
-    defaults.".GlobalPreferences"."com.apple.mouse.scaling" = 3.0;
+    defaults.".GlobalPreferences"."com.apple.mouse.scaling" = 3.63;
   };
 
   programs.fish.enable = true;
