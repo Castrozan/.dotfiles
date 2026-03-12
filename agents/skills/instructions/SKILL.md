@@ -39,6 +39,12 @@ Intent over implementation: What user wants rarely changes, how to accomplish it
 Version independence: Avoid embedding versions, dates, release names.
 </evergreen_instructions>
 
+<hardskill_belongs_in_scripts>
+Scripts and their --help output are the authoritative source for exact commands, flags, and syntax. Skills document what scripts cannot express: silent failure modes, non-obvious ordering constraints, domain boundaries, and which things must stay in sync. If a script's name and --help already tell the agent how to use it, the skill must not repeat that information. When a skill wraps scripts, its body should be traps and boundaries — not a reference card for the scripts' CLI interface.
+
+Exception: genuinely non-obvious hard constraints where wrong syntax silently succeeds. Branch naming formats, socket paths that fail silently, staging rules that cause data loss — these earn their token cost because the agent cannot discover the constraint by running --help or reading source. The test: "would the agent silently produce wrong results without this line?" If no, cut it.
+</hardskill_belongs_in_scripts>
+
 <unavoidable_specifics>
 When exact commands are required: keep in ONE authoritative location, other docs point there. Mark as "verify current command before using".
 </unavoidable_specifics>
