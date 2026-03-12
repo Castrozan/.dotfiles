@@ -3,150 +3,31 @@ name: assistant-cron
 description: Manage persistent assistant behavior via OpenClaw cron jobs. Use when the user asks to enable/disable an autonomous assistant mode, schedule recurring briefings/reminders, or keep background assistant routines running (morning brief, breaks, follow-ups, monitoring tasks).
 ---
 
-# Assistant Cron
+<rules>
+All job names start with `assistant-` (except `daily-pill-reminder`). One job per behavior — easy to enable/disable selectively. All jobs use --session isolated for full tool access. All jobs use --announce --channel discord --to DISCORD_DM_ID for delivery — the --to flag is required since isolated sessions cannot auto-discover the delivery target. Get the DM channel ID from the current session's inbound metadata. Discord delivery is handled by --announce automatically — never instruct the agent to send a Discord message manually. Address Lucas as "sir" in JARVIS style.
+</rules>
 
-Toggleable assistant mode through OpenClaw cron jobs. Each job **speaks through PC speakers** via TTS and the cron delivery system **announces the result to Discord** automatically.
+<audio_playback_trap>
+Isolated cron sessions CAN play audio through speakers, but the payload MUST include explicit step-by-step instructions for TTS + audio playback via exec with background: true. Without explicit exec instructions, agents will hallucinate that they played audio. Always include "Do NOT skip the exec step. Do NOT just claim you played audio." in the payload. Reference the talk-to-user skill for the audio pipeline.
+</audio_playback_trap>
 
-## Rules
+<job_definitions>
+Jobs to create when enabling assistant mode (all America/Sao_Paulo timezone, via jarvis agent):
 
-- All job names start with `assistant-` (except `daily-pill-reminder`).
-- One job per behavior — easy to enable/disable selectively.
-- All jobs use `--session isolated` for full tool access.
-- All jobs use `--announce --channel discord --to <discord_dm_channel_id>` for delivery.
-  - The `--to` flag is **required** — isolated sessions cannot auto-discover the delivery target.
-  - Get Lucas's Discord DM channel ID from the current session's inbound metadata (`chat_id` field).
-- Discord delivery is handled by the `--announce` flag automatically — do NOT instruct the agent to send a Discord message manually.
-- Address Lucas as "sir" in JARVIS style. Keep spoken parts brief (1-2 sentences).
+1. assistant-morning-brief: 0 8 * * * — search web for AI/OpenClaw/Claude news, summarize top 3-5 items, speak brief version via TTS
+2. daily-pill-reminder: 0 9 * * * — one-sentence reminder for B12, vitamin D, creatine
+3. assistant-break-reminder: 30 10,15 * * 1-5 — stretch/hydrate/screen-break nudge, vary wording
+4. assistant-evening-work-wrap: 0 18 * * 1-5 — ask about workday wins/blockers, offer to help wrap up
+5. assistant-late-night-wrap: 30 22 * * * — gentle wind-down nudge, suggest wrapping up
 
-## CRITICAL: Audio Playback in Isolated Sessions
+Use openclaw cron add --help for the exact syntax. Each job needs: --name, --agent jarvis, --cron, --tz, --session isolated, --announce, --channel discord, --to DISCORD_DM_ID, --timeout-seconds, --message with TTS instructions.
+</job_definitions>
 
-Isolated cron sessions CAN play audio through speakers, but the payload MUST include **explicit step-by-step instructions** for TTS + audio playback. The agent must:
+<enable_disable>
+Enable: clean up stale assistant-*/daily-pill-reminder duplicates first (idempotent), create all jobs, verify with openclaw cron list, test one with openclaw cron run.
+Disable: remove all jobs matching assistant-* and daily-pill-* prefixes, confirm none remain.
+</enable_disable>
 
-1. Use the `tts` tool to generate speech
-2. Run `exec` with `background: true` and `yieldMs: 20000`:
-   ```bash
-   export XDG_RUNTIME_DIR=/run/user/1000 && wpctl set-mute @DEFAULT_AUDIO_SINK@ 0 && wpctl set-volume @DEFAULT_AUDIO_SINK@ 0.7 && mpv --no-video --ao=pulse <path_from_tts> 2>/dev/null
-   ```
-
-**Without explicit exec instructions, agents will hallucinate that they played audio.** Always include "Do NOT skip the exec step. Do NOT just claim you played audio." in the payload.
-
-## Enable assistant mode
-
-1. Run `openclaw cron list` — remove any stale `assistant-*` or `daily-pill-reminder` duplicates.
-2. Determine Lucas's Discord DM channel ID (from inbound metadata or ask).
-3. Create all jobs below using `openclaw cron add`, replacing `DISCORD_DM_ID` with the actual ID.
-4. Verify with `openclaw cron list`.
-5. Test one job with `openclaw cron run <id>` to confirm both TTS and Discord delivery work.
-
-## Disable assistant mode
-
-1. `openclaw cron list`
-2. Remove ALL jobs with name prefix `assistant-` AND `daily-pill-reminder`:
-   ```bash
-   openclaw cron list --json | jq -r '.jobs[] | select(.name | test("^(assistant-|daily-pill)")) | .id' | while read id; do openclaw cron rm "$id"; done
-   ```
-3. Confirm no assistant jobs remain with `openclaw cron list`.
-
-## Job Definitions
-
-Replace `DISCORD_DM_ID` with Lucas's actual Discord DM channel ID in all commands below.
-
-### 1) Morning Brief — `assistant-morning-brief`
-
-**Schedule:** `0 8 * * *` (8:00 AM daily, America/Sao_Paulo)
-
-```bash
-openclaw cron add \
-  --name assistant-morning-brief \
-  --agent jarvis \
-  --cron "0 8 * * *" \
-  --tz America/Sao_Paulo \
-  --session isolated \
-  --announce \
-  --channel discord \
-  --to DISCORD_DM_ID \
-  --timeout-seconds 180 \
-  --message "Morning brief for Lucas. Search the web for latest news about: OpenClaw AI, Claude Code, AI agents, and Anthropic. Summarize the top 3-5 most relevant items in a concise morning briefing. Keep it under 300 words. Then speak a shorter spoken version (under 30 seconds) through PC speakers using TTS (read the talk-to-user skill). Address Lucas as 'sir' in JARVIS style. The Discord message is sent automatically by the cron system — do NOT send one manually."
-```
-
-### 2) Daily Pill Reminder — `daily-pill-reminder`
-
-**Schedule:** `0 9 * * *` (9:00 AM daily, America/Sao_Paulo)
-
-```bash
-openclaw cron add \
-  --name daily-pill-reminder \
-  --agent jarvis \
-  --cron "0 9 * * *" \
-  --tz America/Sao_Paulo \
-  --exact \
-  --session isolated \
-  --announce \
-  --channel discord \
-  --to DISCORD_DM_ID \
-  --timeout-seconds 60 \
-  --message "It's 9 AM — time for Lucas's daily supplements (B12, vitamin D, creatine). Speak a one-sentence reminder through PC speakers using TTS (read the talk-to-user skill). Be JARVIS-style, address him as 'sir'. The Discord message is sent automatically by the cron system — do NOT send one manually."
-```
-
-### 3) Break Reminder — `assistant-break-reminder`
-
-**Schedule:** `30 10,15 * * 1-5` (10:30 AM and 3:30 PM weekdays, America/Sao_Paulo)
-
-```bash
-openclaw cron add \
-  --name assistant-break-reminder \
-  --agent jarvis \
-  --cron "30 10,15 * * 1-5" \
-  --tz America/Sao_Paulo \
-  --session isolated \
-  --announce \
-  --channel discord \
-  --to DISCORD_DM_ID \
-  --timeout-seconds 60 \
-  --message "Break reminder for Lucas. Speak a one-sentence reminder through PC speakers using TTS (read the talk-to-user skill) telling him to stretch, hydrate, look away from screens. Vary the wording each time. JARVIS style. The Discord message is sent automatically by the cron system — do NOT send one manually."
-```
-
-### 4) Evening Work Wrap — `assistant-evening-work-wrap`
-
-**Schedule:** `0 18 * * 1-5` (6:00 PM weekdays, America/Sao_Paulo)
-
-```bash
-openclaw cron add \
-  --name assistant-evening-work-wrap \
-  --agent jarvis \
-  --cron "0 18 * * 1-5" \
-  --tz America/Sao_Paulo \
-  --session isolated \
-  --announce \
-  --channel discord \
-  --to DISCORD_DM_ID \
-  --timeout-seconds 90 \
-  --message "Evening work wrap for Lucas. Speak a brief message through PC speakers using TTS (read the talk-to-user skill) asking about his workday — any wins, blockers, or priorities for tomorrow. Offer to help wrap up. JARVIS style, address as 'sir'. Keep spoken part under 15 seconds. The Discord message is sent automatically by the cron system — do NOT send one manually."
-```
-
-### 5) Late Night Wrap — `assistant-late-night-wrap`
-
-**Schedule:** `30 22 * * *` (10:30 PM daily, America/Sao_Paulo)
-
-```bash
-openclaw cron add \
-  --name assistant-late-night-wrap \
-  --agent jarvis \
-  --cron "30 22 * * *" \
-  --tz America/Sao_Paulo \
-  --session isolated \
-  --announce \
-  --channel discord \
-  --to DISCORD_DM_ID \
-  --timeout-seconds 90 \
-  --message "Late night wrap for Lucas — it's 10:30 PM. Speak through PC speakers using TTS (read the talk-to-user skill) gently nudging him to wind down. Suggest wrapping up, jotting down tomorrow's priorities, and preparing for sleep. JARVIS style, address as 'sir'. Keep it warm but firm, two sentences max. The Discord message is sent automatically by the cron system — do NOT send one manually."
-```
-
-## Reliability checks
-
-- After enable, run `openclaw cron list` to verify all 5 jobs exist and are enabled.
-- Test at least one job: `openclaw cron run <id>` — confirm both TTS speaker output and Discord message delivery.
-- Check `openclaw cron runs` for any failures after first scheduled run.
-- If Discord delivery fails with "requires a target": ensure `--to` is set on the job.
-- If TTS fails: check speaker volume and `talk-to-user` skill availability.
-- Enable is idempotent: always clean up existing jobs before creating new ones.
+<reliability>
+After enable, verify all jobs exist. Test at least one job for both TTS and Discord delivery. Check openclaw cron runs for failures after first scheduled run. If Discord delivery fails with "requires a target": --to is missing. If TTS fails: check speaker volume and talk-to-user skill.
+</reliability>
