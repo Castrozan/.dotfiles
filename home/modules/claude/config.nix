@@ -10,7 +10,7 @@ let
       {
         context = "Chat";
         bindings = {
-          "ctrl+z" = "chat:undo";
+          "ctrl+i" = "chat:undo";
         };
       }
     ];
