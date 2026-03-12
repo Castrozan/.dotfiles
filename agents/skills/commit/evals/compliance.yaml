@@ -1,19 +1,19 @@
 tests:
   - name: commit_uses_specific_staging
     skill_path: agents/skills/commit/SKILL.md
-    prompt: "I changed 3 files. How should I stage them for commit?"
+    prompt: "Should I use git add -A to stage all my changes before committing?"
     model: haiku
     assertions:
       output_contains_any:
         - "specific"
         - "git add"
-        - "by name"
         - "individual"
         - "each file"
-      output_not_contains:
-        - "git add -A is"
-        - "use git add ."
-        - "recommend git add -A"
+        - "by name"
+        - "never"
+        - "avoid"
+        - "don't"
+        - "not"
 
   - name: commit_reads_diff_first
     skill_path: agents/skills/commit/SKILL.md
