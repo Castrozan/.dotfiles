@@ -10,6 +10,7 @@
 
     ../../home/modules/agents
 
+    ../../home/modules/claude/claude.nix
     ../../home/modules/claude/config.nix
     ../../home/modules/claude/skills.nix
     ../../home/modules/claude/hooks.nix

@@ -2,15 +2,28 @@
 let
   fetchPrebuiltBinary = import ../../../lib/fetch-prebuilt-binary.nix { inherit pkgs; };
 
-  version = "2.1.71";
-  platform = "linux-x64";
+  version = "2.1.73";
+
   bucket = "https://storage.googleapis.com/claude-code-dist-86c565f3-f756-42ad-8dfa-d59b1c096819/claude-code-releases";
+
+  platformBinaryHashBySystem = {
+    "x86_64-linux" = {
+      platform = "linux-x64";
+      sha256 = "sha256-lgzQ1xoiXzuUa7Sd1cGWJMVYB32c89pOtXA4C0MTW30=";
+    };
+    "aarch64-darwin" = {
+      platform = "darwin-arm64";
+      sha256 = "sha256-XUAvgE3eaZw4JOk/78GY2BpSlHpD5XgobqAc6pwCmnM=";
+    };
+  };
+
+  currentSystem = platformBinaryHashBySystem.${pkgs.stdenv.hostPlatform.system};
 
   claude-code-unwrapped = fetchPrebuiltBinary {
     pname = "claude-code-unwrapped";
     inherit version;
-    url = "${bucket}/${version}/${platform}/claude";
-    sha256 = "YQAuX1xBkOmndb2c+Q5X//PwN5+yyO3GU6wJQqNHur0=";
+    url = "${bucket}/${version}/${currentSystem.platform}/claude";
+    sha256 = currentSystem.sha256;
     binaryName = "claude";
   };
 

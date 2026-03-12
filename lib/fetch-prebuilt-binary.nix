@@ -63,12 +63,11 @@ pkgs.stdenv.mkDerivation {
 
   src = pkgs.fetchurl { inherit url sha256; };
 
-  nativeBuildInputs = [
-    pkgs.autoPatchelfHook
-  ]
-  ++ archiveSpecificNativeBuildInputs
-  ++ nativeBuildInputs;
-  buildInputs = [ pkgs.stdenv.cc.cc.lib ] ++ buildInputs;
+  nativeBuildInputs =
+    pkgs.lib.optionals (!pkgs.stdenv.isDarwin) [ pkgs.autoPatchelfHook ]
+    ++ archiveSpecificNativeBuildInputs
+    ++ nativeBuildInputs;
+  buildInputs = pkgs.lib.optionals (!pkgs.stdenv.isDarwin) [ pkgs.stdenv.cc.cc.lib ] ++ buildInputs;
 
   dontUnpack = !isArchive;
   dontStrip = true;
