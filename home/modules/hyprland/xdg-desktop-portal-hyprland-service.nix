@@ -37,8 +37,12 @@ in
       After = [
         "graphical-session.target"
         "xdg-desktop-portal.service"
+        "pipewire.service"
       ];
-      PartOf = [ "graphical-session.target" ];
+      PartOf = [
+        "graphical-session.target"
+        "pipewire.service"
+      ];
       ConditionEnvironment = "WAYLAND_DISPLAY";
     };
 
@@ -61,8 +65,14 @@ in
   systemd.user.services.xdg-desktop-portal = lib.mkIf (!isNixOS) {
     Unit = {
       Description = "Portal service (Nix)";
-      After = [ "graphical-session.target" ];
-      PartOf = [ "graphical-session.target" ];
+      After = [
+        "graphical-session.target"
+        "pipewire.service"
+      ];
+      PartOf = [
+        "graphical-session.target"
+        "pipewire.service"
+      ];
       ConditionEnvironment = "WAYLAND_DISPLAY";
     };
 
