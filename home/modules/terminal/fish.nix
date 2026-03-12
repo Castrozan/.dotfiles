@@ -46,39 +46,46 @@ let
     + "\n";
 in
 {
-  home.packages = with pkgs; [
-    fishPlugins.bass
-    carapace
-  ];
+  home.packages =
+    with pkgs;
+    [
+      carapace
+    ]
+    ++ lib.optionals (!pkgs.stdenv.isDarwin) [
+      fishPlugins.bass
+    ];
 
   programs.fish = {
     enable = true;
     package = pkgs.fish;
     interactiveShellInit = "${shellInit}";
-    plugins = [
-      {
-        name = "bass";
-        src = pkgs.fishPlugins.bass;
-      }
-      {
-        name = "autopair";
-        src = pkgs.fishPlugins.autopair;
-      }
-      {
-        name = "sponge";
-        src = pkgs.fishPlugins.sponge;
-      }
-      {
-        name = "puffer";
-        src = pkgs.fishPlugins.puffer;
-      }
-    ]
-    ++ lib.optionals (!pkgs.stdenv.isDarwin) [
-      {
-        name = "fzf-fish";
-        src = pkgs.fishPlugins.fzf-fish;
-      }
-    ];
+    plugins =
+      lib.optionals (!pkgs.stdenv.isDarwin) [
+        {
+          name = "bass";
+          src = pkgs.fishPlugins.bass;
+        }
+      ]
+      ++ [
+        {
+          name = "autopair";
+          src = pkgs.fishPlugins.autopair;
+        }
+        {
+          name = "sponge";
+          src = pkgs.fishPlugins.sponge;
+        }
+        {
+          name = "puffer";
+          src = pkgs.fishPlugins.puffer;
+        }
+      ]
+      ++ lib.optionals (!pkgs.stdenv.isDarwin) [
+        {
+          name = "fzf-fish";
+          src = pkgs.fishPlugins.fzf-fish;
+        }
+      ];
   };
 
   programs.zoxide = {
@@ -98,12 +105,14 @@ in
     "fish/conf.d/fzf.fish".source = ./shell/fish/conf.d/fzf.fish;
     "fish/conf.d/default-directories.fish".source = ./shell/fish/conf.d/default_directories.fish;
     "fish/conf.d/key-bindings.fish".source = ./shell/fish/conf.d/key_bindings.fish;
-    "fish/conf.d/hyprland-env.fish".source = ./shell/fish/conf.d/hyprland-env.fish;
-    "fish/conf.d/betha-secrets.fish".source = ./shell/fish/conf.d/betha-secrets.fish;
     "fish/conf.d/private-aliases.fish".source = ./shell/fish/conf.d/private_aliases.fish;
 
     "fish/functions/fish_prompt.fish".source = ./shell/fish/functions/fish_prompt.fish;
     "fish/functions/cursor.fish".source = ./shell/fish/functions/cursor.fish;
     "fish/functions/nix.fish".source = ./shell/fish/functions/nix.fish;
+  }
+  // lib.optionalAttrs (!pkgs.stdenv.isDarwin) {
+    "fish/conf.d/hyprland-env.fish".source = ./shell/fish/conf.d/hyprland-env.fish;
+    "fish/conf.d/betha-secrets.fish".source = ./shell/fish/conf.d/betha-secrets.fish;
   };
 }
