@@ -18,6 +18,8 @@ git worktree add .worktrees/<branch-name> -b <branch-name>
 <traps>
 PR commands must run from the main repo directory, not the worktree — `gh` and `glab` misdetect the repo context inside worktrees. Use `--head <branch>` to target the worktree branch.
 
+Never run `git checkout` or `git switch` in the main repo — the main repo stays on its current branch at all times. All branch work happens exclusively inside the worktree directory. Each worktree is bound to one branch; if you need a different branch, create a new worktree.
+
 If the worktree CWD gets deleted mid-session, recreate the worktree rather than silently falling back to main. Never commit to main when worktree isolation was requested — this is the most common failure mode.
 
 After PR is merged or pending review, return to main workspace and rebuild so the system returns to stable state. Keep the worktree locally for follow-up work during review.
