@@ -14,6 +14,16 @@ in
         }
       ];
     }
+    {
+      matcher = "compact|resume";
+      hooks = [
+        {
+          type = "command";
+          command = "${runHook} ${hooksPath}/deep-work-recovery.py";
+          timeout = 5000;
+        }
+      ];
+    }
   ];
 
   PreToolUse = [
