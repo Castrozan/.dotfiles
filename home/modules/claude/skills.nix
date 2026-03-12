@@ -1,4 +1,4 @@
-{ config, ... }:
+{ config, lib, ... }:
 let
   dotfilesSkillsDir = ../../../agents/skills;
 
@@ -38,12 +38,27 @@ let
     '';
   };
 
-  liveAplicacoesAtendimentoTriageSkillLink = {
-    ".claude/skills/aplicacoes-atendimento-triage".source =
-      config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/repo/aplicacoes-atendimento-triage";
-  };
+  sourceRepoPath = "${config.home.homeDirectory}/repo/aplicacoes-atendimento-triage";
+
+  openclawWorkspacePaths = map (
+    agentName: "${config.home.homeDirectory}/${config.openclaw.agents.${agentName}.workspace}/skills"
+  ) (lib.attrNames config.openclaw.enabledAgents);
+
+  allSkillTargetDirectories = [
+    "${config.home.homeDirectory}/.claude/skills"
+    "${config.home.homeDirectory}/.codex/skills"
+  ]
+  ++ openclawWorkspacePaths;
+
+  copyCommands = lib.concatMapStringsSep "\n" (targetDir: ''
+    rm -rf "${targetDir}/aplicacoes-atendimento-triage"
+    cp -r "${sourceRepoPath}" "${targetDir}/aplicacoes-atendimento-triage"
+  '') allSkillTargetDirectories;
 in
 {
-  home.file =
-    globalClaudeSkills // coreSkillFromAgentInstructions // liveAplicacoesAtendimentoTriageSkillLink;
+  home.file = globalClaudeSkills // coreSkillFromAgentInstructions;
+
+  home.activation.copyAplicacoesAtendimentoTriageSkill = lib.hm.dag.entryAfter [
+    "writeBoundary"
+  ] copyCommands;
 }

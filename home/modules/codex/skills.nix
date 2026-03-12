@@ -44,12 +44,7 @@ let
     '';
   };
 
-  liveAplicacoesAtendimentoTriageSkillLink = {
-    ".codex/skills/aplicacoes-atendimento-triage".source =
-      config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/repo/aplicacoes-atendimento-triage";
-  };
 in
 {
-  home.file =
-    codexSkillLinks // coreSkillFromAgentInstructions // liveAplicacoesAtendimentoTriageSkillLink;
+  home.file = codexSkillLinks // coreSkillFromAgentInstructions;
 }
