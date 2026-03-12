@@ -26,6 +26,7 @@ main() {
 		_run_nix_tier
 		_run_docker_tier
 		;;
+	evals) _run_evals_tier ;;
 	coverage) _run_coverage_tier ;;
 	ci) _run_ci_tier ;;
 	esac
@@ -58,6 +59,10 @@ _parse_arguments() {
 			;;
 		--coverage)
 			selectedMode="coverage"
+			shift
+			;;
+		--evals)
+			selectedMode="evals"
 			shift
 			;;
 		--ci)
@@ -99,6 +104,17 @@ _run_ci_tier() {
 	_run_skill_frontmatter_validation
 	_run_quick_bats_tests_ci
 	_run_nix_tier
+}
+
+_run_evals_tier() {
+	if ! command -v claude &>/dev/null; then
+		echo "SKIP: claude CLI not installed, skipping agent evals" >&2
+		return 0
+	fi
+
+	echo "--- Agent Evals (LLM) ---"
+	"$REPO_DIR/agents/evals/run-evals.py"
+	echo ""
 }
 
 _collect_quick_pytest_test_files() {
