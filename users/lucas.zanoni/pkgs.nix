@@ -8,6 +8,7 @@
   home.packages =
     with pkgs;
     [
+      awscli2
       alejandra
       bash-completion
       bat
