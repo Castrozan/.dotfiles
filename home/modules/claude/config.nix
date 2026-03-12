@@ -97,6 +97,7 @@ in
           else
             cp "$NIX_SOURCE" "$CLAUDE_SETTINGS"
           fi
+          chmod 600 "$CLAUDE_SETTINGS"
         fi
       '';
     };
