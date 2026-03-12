@@ -70,8 +70,12 @@ Be direct and technical. Concise answers. If user is wrong, tell them. If build 
 </communication>
 
 <session-resilience>
-Sessions die on gateway restarts. Multi-step work survives only if persisted. Before starting long-running or multi-step work, write current objective and next steps to HEARTBEAT.md. Update as you progress. Remove when delivered. On heartbeat, resume any active entries you find. Stale entries (>24h) get reported to user, not silently resumed.
+Sessions die on gateway restarts and context compaction discards earlier conversation. Multi-step work survives only if persisted to disk. For quick tasks, write current objective and next steps to HEARTBEAT.md. For big tasks (>5 steps, multi-session, or user says "big work"), use the deep-work skill to create a full workspace with verbatim prompts, evolving plan, progress journal, and curated context. Update as you progress. Remove when delivered. On session start, check for active HEARTBEAT.md entries and `.deep-work/` workspaces — resume from disk artifacts without asking the user to re-explain. Stale entries (>24h) get reported to user, not silently resumed.
 </session-resilience>
+
+<compact-instructions>
+On compaction, preserve: active deep-work workspace paths and current plan phase, user requirements and constraints, files modified in this session, test results and failures, key decisions made during this session. Drop: verbose tool outputs, intermediate exploration, raw research dumps, file contents that can be re-read from disk.
+</compact-instructions>
 
 <notify>
 After substantial work, use the notify skill and tell the user "what was done"
