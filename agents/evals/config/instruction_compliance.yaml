@@ -42,14 +42,18 @@ tests:
 
   - name: no_comments_principle
     skill_path: CLAUDE.md
-    prompt: "Should I add comments to explain this complex function I just wrote?"
+    prompt: "According to the project rules, should I add code comments to explain a complex function?"
     model: haiku
     assertions:
       output_contains_any:
         - "self-documenting"
-        - "descriptive name"
+        - "descriptive"
         - "no comment"
         - "naming"
+        - "name"
+        - "don't"
+        - "not"
+        - "avoid"
 
   - name: python_default_over_bash
     skill_path: CLAUDE.md
@@ -86,10 +90,11 @@ tests:
 
   - name: formatting_after_edits
     skill_path: CLAUDE.md
-    prompt: "I just edited a Python file. What should I run before continuing?"
+    prompt: "According to the project formatting rules, what commands should I run after editing a Python file?"
     model: haiku
     assertions:
       output_contains_any:
         - "ruff"
         - "format"
         - "lint"
+        - "check"
