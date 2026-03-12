@@ -38,6 +38,11 @@ in
     ];
   };
 
+  programs.zoxide = {
+    enable = true;
+    enableFishIntegration = true;
+  };
+
   programs.carapace = {
     enable = true;
     enableFishIntegration = true;

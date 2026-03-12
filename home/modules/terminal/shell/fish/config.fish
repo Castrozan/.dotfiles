@@ -36,4 +36,3 @@ if command -v clipse &>/dev/null
     end
 end
 
-zoxide init fish | source
