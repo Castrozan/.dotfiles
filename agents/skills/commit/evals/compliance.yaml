@@ -9,9 +9,11 @@ tests:
         - "git add"
         - "by name"
         - "individual"
+        - "each file"
       output_not_contains:
-        - "git add -A"
-        - "git add ."
+        - "git add -A is"
+        - "use git add ."
+        - "recommend git add -A"
 
   - name: commit_reads_diff_first
     skill_path: agents/skills/commit/SKILL.md

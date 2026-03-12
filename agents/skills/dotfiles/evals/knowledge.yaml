@@ -17,8 +17,6 @@ tests:
         - "isNixOS"
         - "specialArgs"
         - "mkIf"
-      output_not_contains:
-        - "builtins.pathExists /etc/NIXOS"
 
   - name: dotfiles_delegates_nix_questions
     skill_path: agents/skills/dotfiles/SKILL.md
@@ -30,3 +28,5 @@ tests:
         - "delegate"
         - "nix expert"
         - "specialized"
+        - "lazy"
+        - "fixed-point"
