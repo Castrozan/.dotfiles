@@ -4,13 +4,7 @@ let
 
   bashAliasesFileContent = builtins.readFile ./shell/aliases.sh;
 
-  privateBashAliasesPath = ../../../private-config/shell/aliases.sh;
-  privateBashAliasesFileContent =
-    if builtins.pathExists privateBashAliasesPath then builtins.readFile privateBashAliasesPath else "";
-
-  allBashSourceLines = lib.splitString "\n" (
-    bashAliasesFileContent + "\n" + privateBashAliasesFileContent
-  );
+  allBashSourceLines = lib.splitString "\n" bashAliasesFileContent;
 
   bashAliasLinePattern = "[[:space:]]*alias[[:space:]]+([^=]+)=(.*)";
   bashExportLinePattern = "[[:space:]]*export[[:space:]]+([^=]+)=(.*)";
@@ -106,6 +100,7 @@ in
     "fish/conf.d/key-bindings.fish".source = ./shell/fish/conf.d/key_bindings.fish;
     "fish/conf.d/hyprland-env.fish".source = ./shell/fish/conf.d/hyprland-env.fish;
     "fish/conf.d/betha-secrets.fish".source = ./shell/fish/conf.d/betha-secrets.fish;
+    "fish/conf.d/private-aliases.fish".source = ./shell/fish/conf.d/private_aliases.fish;
 
     "fish/functions/fish_prompt.fish".source = ./shell/fish/functions/fish_prompt.fish;
     "fish/functions/cursor.fish".source = ./shell/fish/functions/cursor.fish;
