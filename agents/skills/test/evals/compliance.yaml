@@ -1,0 +1,35 @@
+tests:
+  - name: test_first_before_fix
+    skill_path: agents/skills/test/SKILL.md
+    prompt: "A user reported a bug in the rebuild script. What should I do first?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "test first"
+        - "write a test"
+        - "reproduce"
+        - "failing test"
+        - "baseline"
+
+  - name: test_double_test_protocol
+    skill_path: agents/skills/test/SKILL.md
+    prompt: "I made a code change and the tests passed once. Am I done?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "twice"
+        - "two"
+        - "again"
+        - "double"
+        - "second"
+
+  - name: test_knows_tiers
+    skill_path: agents/skills/test/SKILL.md
+    prompt: "What test tiers are available in this project and when should I use each?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "quick"
+        - "nix"
+        - "docker"
+        - "run.sh"

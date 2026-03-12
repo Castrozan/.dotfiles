@@ -1,0 +1,36 @@
+tests:
+  - name: commit_uses_specific_staging
+    skill_path: agents/skills/commit/SKILL.md
+    prompt: "I changed 3 files. How should I stage them for commit?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "specific"
+        - "git add"
+        - "by name"
+        - "individual"
+      output_not_contains:
+        - "git add -A"
+        - "git add ."
+
+  - name: commit_reads_diff_first
+    skill_path: agents/skills/commit/SKILL.md
+    prompt: "What information do you need before writing a commit message?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "diff"
+        - "changes"
+        - "status"
+        - "log"
+
+  - name: commit_conventional_format
+    skill_path: agents/skills/commit/SKILL.md
+    prompt: "What format should commit messages follow?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "conventional"
+        - "type"
+        - "scope"
+        - "imperative"

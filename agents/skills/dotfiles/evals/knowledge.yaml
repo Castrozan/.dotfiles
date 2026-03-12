@@ -1,0 +1,32 @@
+tests:
+  - name: dotfiles_directory_structure
+    skill_path: agents/skills/dotfiles/SKILL.md
+    prompt: "Where should I put a new home-manager module in this dotfiles repo?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "home/modules"
+        - "modules"
+
+  - name: dotfiles_isnixos_detection
+    skill_path: agents/skills/dotfiles/SKILL.md
+    prompt: "How do I conditionally enable something only on NixOS in this repo?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "isNixOS"
+        - "specialArgs"
+        - "mkIf"
+      output_not_contains:
+        - "builtins.pathExists /etc/NIXOS"
+
+  - name: dotfiles_delegates_nix_questions
+    skill_path: agents/skills/dotfiles/SKILL.md
+    prompt: "I need help understanding Nix lazy evaluation and fixed-points. Can you explain?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "nix-expert"
+        - "delegate"
+        - "nix expert"
+        - "specialized"
