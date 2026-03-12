@@ -85,6 +85,8 @@ in
         fi
         if [ -f "$NIX_SOURCE" ]; then
           if [ -f "$CLAUDE_SETTINGS" ]; then
+            chmod 600 "$CLAUDE_SETTINGS" 2>/dev/null || true
+            rm -f "$CLAUDE_SETTINGS.pre-patch"
             cp "$CLAUDE_SETTINGS" "$CLAUDE_SETTINGS.pre-patch"
             if ! ${pkgs.jq}/bin/jq -s '.[0] * .[1]' "$CLAUDE_SETTINGS" "$NIX_SOURCE" > "$CLAUDE_SETTINGS.tmp"; then
               cp "$CLAUDE_SETTINGS.pre-patch" "$CLAUDE_SETTINGS"
