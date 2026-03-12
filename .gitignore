@@ -2,6 +2,9 @@
 # git worktrees
 .worktrees/
 
+# Deep-work context workspaces (local-only session artifacts)
+.deep-work/
+
 # Home-manager deployed (source: agents/, run ./bin/rebuild)
 /CLAUDE.md
 /CLAUDE.md.*
