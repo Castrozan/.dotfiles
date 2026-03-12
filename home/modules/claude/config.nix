@@ -80,22 +80,10 @@ in
       data = ''
         CLAUDE_SETTINGS="$HOME/.claude/settings.json"
         NIX_SOURCE="$HOME/.claude/settings.json.nix-source"
-        if [ -L "$CLAUDE_SETTINGS" ]; then
-          rm "$CLAUDE_SETTINGS"
-        fi
         if [ -f "$NIX_SOURCE" ]; then
           if [ -f "$CLAUDE_SETTINGS" ]; then
             chmod 600 "$CLAUDE_SETTINGS" 2>/dev/null || true
-            rm -f "$CLAUDE_SETTINGS.pre-patch"
-            cp "$CLAUDE_SETTINGS" "$CLAUDE_SETTINGS.pre-patch"
-            if ! ${pkgs.jq}/bin/jq -s '.[0] * .[1]' "$CLAUDE_SETTINGS" "$NIX_SOURCE" > "$CLAUDE_SETTINGS.tmp"; then
-              cp "$CLAUDE_SETTINGS.pre-patch" "$CLAUDE_SETTINGS"
-            elif [ ! -s "$CLAUDE_SETTINGS.tmp" ] || ! ${pkgs.jq}/bin/jq empty "$CLAUDE_SETTINGS.tmp" 2>/dev/null; then
-              rm -f "$CLAUDE_SETTINGS.tmp"
-              cp "$CLAUDE_SETTINGS.pre-patch" "$CLAUDE_SETTINGS"
-            else
-              mv "$CLAUDE_SETTINGS.tmp" "$CLAUDE_SETTINGS"
-            fi
+            ${pkgs.jq}/bin/jq -s '.[0] * .[1]' "$CLAUDE_SETTINGS" "$NIX_SOURCE" > "$CLAUDE_SETTINGS.tmp" && mv "$CLAUDE_SETTINGS.tmp" "$CLAUDE_SETTINGS"
           else
             cp "$NIX_SOURCE" "$CLAUDE_SETTINGS"
           fi
