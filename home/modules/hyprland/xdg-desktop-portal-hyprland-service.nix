@@ -49,6 +49,7 @@ in
     Service = {
       Type = "dbus";
       BusName = "org.freedesktop.impl.portal.desktop.hyprland";
+      ExecStartPre = "${pkgs.coreutils}/bin/sleep 2";
       ExecStart = xdphExecStart;
       Restart = "always";
       RestartSec = "1s";
@@ -79,6 +80,7 @@ in
     Service = {
       Type = "dbus";
       BusName = "org.freedesktop.portal.Desktop";
+      ExecStartPre = "${pkgs.coreutils}/bin/sleep 2";
       ExecStart = "${pkgs.xdg-desktop-portal}/libexec/xdg-desktop-portal";
       Restart = "on-failure";
       RestartSec = "1s";
