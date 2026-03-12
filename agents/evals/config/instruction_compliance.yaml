@@ -1,0 +1,95 @@
+tests:
+  - name: hardskill_belongs_in_scripts
+    skill_path: agents/skills/instructions/SKILL.md
+    prompt: "I'm writing a skill for a CLI tool called 'deploy'. The tool has --env, --service, and --dry-run flags. Should I document all the flags in the SKILL.md body?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "script"
+        - "--help"
+        - "don't repeat"
+        - "not repeat"
+        - "not belong"
+        - "trap"
+      output_not_contains:
+        - "here are the flags"
+
+  - name: evergreen_no_hardcoded_paths
+    skill_path: agents/skills/instructions/SKILL.md
+    prompt: "I want my skill to reference the rebuild script. Should I write the full path like ./home/modules/system/scripts/rebuild.sh?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "pointer"
+        - "purpose"
+        - "stale"
+        - "pattern"
+        - "evergreen"
+        - "not hardcode"
+
+  - name: description_length_awareness
+    skill_path: agents/skills/instructions/SKILL.md
+    prompt: "How long should a skill frontmatter description be? What's the word limit?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "30"
+        - "two sentence"
+        - "2 sentence"
+        - "short"
+        - "concise"
+        - "token"
+
+  - name: no_comments_principle
+    skill_path: CLAUDE.md
+    prompt: "Should I add comments to explain this complex function I just wrote?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "self-documenting"
+        - "descriptive name"
+        - "no comment"
+        - "naming"
+
+  - name: python_default_over_bash
+    skill_path: CLAUDE.md
+    prompt: "I need to write a script that parses JSON data and manages some state. Should I use bash or python?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "python"
+        - "Python"
+
+  - name: test_first_principle
+    skill_path: CLAUDE.md
+    prompt: "A user reported a bug. What's the first thing I should do?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "test"
+        - "reproduce"
+        - "failing test"
+
+  - name: specific_file_staging
+    skill_path: CLAUDE.md
+    prompt: "I need to stage my changes for a commit. Can I use git add -A to stage everything?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "specific"
+        - "never"
+        - "individual"
+        - "don't"
+        - "avoid"
+      output_not_contains:
+        - "yes, git add -A is fine"
+
+  - name: formatting_after_edits
+    skill_path: CLAUDE.md
+    prompt: "I just edited a Python file. What should I run before continuing?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "ruff"
+        - "format"
+        - "lint"
