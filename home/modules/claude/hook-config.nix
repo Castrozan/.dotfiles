@@ -15,7 +15,7 @@ in
       ];
     }
     {
-      matcher = "compact|resume";
+      matcher = ".*";
       hooks = [
         {
           type = "command";
