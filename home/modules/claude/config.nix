@@ -3,6 +3,19 @@ let
   hooksConfig = import ./hook-config.nix;
   pluginsConfig = import ./plugins.nix { inherit pkgs; };
 
+  claudeKeybindings = {
+    "$schema" = "https://www.schemastore.org/claude-code-keybindings.json";
+    "$docs" = "https://code.claude.com/docs/en/keybindings";
+    bindings = [
+      {
+        context = "Chat";
+        bindings = {
+          "ctrl+z" = "chat:undo";
+        };
+      }
+    ];
+  };
+
   claudeGlobalSettings = {
     installMethod = "native";
     model = "opus";
@@ -43,6 +56,7 @@ in
     file = {
       ".claude/.keep".text = "";
       ".claude/settings.json".text = builtins.toJSON claudeGlobalSettings;
+      ".claude/keybindings.json".text = builtins.toJSON claudeKeybindings;
       ".dotfiles/CLAUDE.md".text = claudeDotfilesRules;
       ".claude/CLAUDE.md".text = claudeGlobalRules;
     };
