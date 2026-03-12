@@ -40,6 +40,8 @@ let
     hooks = hooksConfig;
   };
 
+  claudeGlobalSettingsJson = builtins.toJSON claudeGlobalSettings;
+
   claudeDotfilesRules = ''
     # Claude Code Project Context
 
@@ -55,7 +57,7 @@ in
     inherit (pluginsConfig) packages;
     file = {
       ".claude/.keep".text = "";
-      ".claude/settings.json".text = builtins.toJSON claudeGlobalSettings;
+      ".claude/settings.json.nix-source".text = claudeGlobalSettingsJson;
       ".claude/keybindings.json".text = builtins.toJSON claudeKeybindings;
       ".dotfiles/CLAUDE.md".text = claudeDotfilesRules;
       ".claude/CLAUDE.md".text = claudeGlobalRules;
@@ -70,6 +72,25 @@ in
       CLAUDE_SKIP_PERMISSIONS = "true";
       BASH_ENV = "$HOME/.dotfiles/home/modules/terminal/shell/aliases.sh";
       CLAUDE_AUTOCOMPACT_PCT_OVERRIDE = "60";
+    };
+
+    activation.seedClaudeSettingsAsMutableFile = {
+      after = [ "writeBoundary" ];
+      before = [ ];
+      data = ''
+        CLAUDE_SETTINGS="$HOME/.claude/settings.json"
+        NIX_SOURCE="$HOME/.claude/settings.json.nix-source"
+        if [ -L "$CLAUDE_SETTINGS" ]; then
+          rm "$CLAUDE_SETTINGS"
+        fi
+        if [ -f "$NIX_SOURCE" ]; then
+          if [ -f "$CLAUDE_SETTINGS" ]; then
+            ${pkgs.jq}/bin/jq -s '.[0] * .[1]' "$NIX_SOURCE" "$CLAUDE_SETTINGS" > "$CLAUDE_SETTINGS.tmp" && mv "$CLAUDE_SETTINGS.tmp" "$CLAUDE_SETTINGS"
+          else
+            cp "$NIX_SOURCE" "$CLAUDE_SETTINGS"
+          fi
+        fi
+      '';
     };
 
     activation.patchClaudeJsonInstallMethod = {

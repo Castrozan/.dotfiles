@@ -39,9 +39,10 @@ let
     prefix: builtins.any (n: builtins.substring 0 (builtins.stringLength prefix) n == prefix) fileNames;
 in
 {
-  claude-settings-json =
-    mkEvalCheck "claude-settings-json" (builtins.hasAttr ".claude/settings.json" cfg.home.file)
-      "settings.json should be in home.file";
+  claude-settings-nix-source =
+    mkEvalCheck "claude-settings-nix-source"
+      (builtins.hasAttr ".claude/settings.json.nix-source" cfg.home.file)
+      "settings.json.nix-source should be in home.file (mutable settings.json is seeded from this)";
 
   claude-hooks-directory =
     mkEvalCheck "claude-hooks-directory" (hasFilePrefix ".claude/hooks/")
