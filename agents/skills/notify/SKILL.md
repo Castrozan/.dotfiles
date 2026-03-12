@@ -4,25 +4,13 @@ description: Notify the user after completing substantial work. Use when finishi
 ---
 
 <execution>
-Run: scripts/notify.sh "brief message" [--voice VOICE] [--mobile]
-
-Voice is auto-detected from tts.json in the workspace root. Override with --voice.
-
-scripts/notify.sh "Finished refactoring the auth module"
-scripts/notify.sh "Build complete" --voice en-US-JennyNeural
-scripts/notify.sh "Deployed to production" --mobile
+Run scripts/notify.sh with a brief message. Voice is auto-detected from tts.json in the workspace root. Use --mobile for push notifications.
 </execution>
 
 <when_to_use>
-After completing substantial work: file edits, implementations, long commands, multi-step tasks.
-Skip for: quick answers, explanations, back-and-forth chat.
+After completing substantial work: file edits, implementations, long commands, multi-step tasks. Skip for: quick answers, explanations, back-and-forth chat.
 </when_to_use>
 
 <channels>
-Desktop (default): TTS via edge-tts (en-US-GuyNeural) + notify-send popup
-Mobile (--mobile flag): ntfy.sh push notification, bypasses DND at priority 4+
+Desktop (default): TTS + notify-send popup. Mobile (--mobile flag): ntfy.sh push notification, bypasses DND at priority 4+.
 </channels>
-
-<mobile>
-Send directly via curl to ntfy.sh/@notifyTopic@. Set Title header for notification title, message as body. Priority: 1=min, 2=low, 3=default, 4=high (bypasses DND), 5=urgent.
-</mobile>
