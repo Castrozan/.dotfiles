@@ -30,6 +30,7 @@
     ./audio.nix
     ./nvidia.nix
     ./libinput-quirks.nix
+    ./keyboard-backlight.nix
     ../scripts
     ../../../nixos/modules/xdg-portal.nix
     ../../../nixos/modules/openclaw-watchdog.nix
