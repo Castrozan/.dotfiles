@@ -4,7 +4,7 @@ let
     exec google-chrome-stable \
       --user-data-dir="$HOME/.config/chrome-global" \
       --class=chrome-global \
-      --enable-features=UseNativeNotifications \
+      --enable-features=UseNativeNotifications,WebRTCPipeWireCapturer \
       "$@"
   '';
 in
