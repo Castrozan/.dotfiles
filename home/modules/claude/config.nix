@@ -85,7 +85,15 @@ in
         fi
         if [ -f "$NIX_SOURCE" ]; then
           if [ -f "$CLAUDE_SETTINGS" ]; then
-            ${pkgs.jq}/bin/jq -s '.[0] * .[1]' "$NIX_SOURCE" "$CLAUDE_SETTINGS" > "$CLAUDE_SETTINGS.tmp" && mv "$CLAUDE_SETTINGS.tmp" "$CLAUDE_SETTINGS"
+            cp "$CLAUDE_SETTINGS" "$CLAUDE_SETTINGS.pre-patch"
+            if ! ${pkgs.jq}/bin/jq -s '.[0] * .[1]' "$CLAUDE_SETTINGS" "$NIX_SOURCE" > "$CLAUDE_SETTINGS.tmp"; then
+              cp "$CLAUDE_SETTINGS.pre-patch" "$CLAUDE_SETTINGS"
+            elif [ ! -s "$CLAUDE_SETTINGS.tmp" ] || ! ${pkgs.jq}/bin/jq empty "$CLAUDE_SETTINGS.tmp" 2>/dev/null; then
+              rm -f "$CLAUDE_SETTINGS.tmp"
+              cp "$CLAUDE_SETTINGS.pre-patch" "$CLAUDE_SETTINGS"
+            else
+              mv "$CLAUDE_SETTINGS.tmp" "$CLAUDE_SETTINGS"
+            fi
           else
             cp "$NIX_SOURCE" "$CLAUDE_SETTINGS"
           fi
