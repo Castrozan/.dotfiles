@@ -23,7 +23,7 @@ let
     pname = "claude-code-unwrapped";
     inherit version;
     url = "${bucket}/${version}/${currentSystem.platform}/claude";
-    sha256 = currentSystem.sha256;
+    inherit (currentSystem) sha256;
     binaryName = "claude";
   };
 

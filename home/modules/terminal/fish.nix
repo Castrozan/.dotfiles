@@ -55,47 +55,49 @@ in
       fishPlugins.bass
     ];
 
-  programs.fish = {
-    enable = true;
-    package = pkgs.fish;
-    interactiveShellInit = "${shellInit}";
-    plugins =
-      lib.optionals (!pkgs.stdenv.isDarwin) [
-        {
-          name = "bass";
-          src = pkgs.fishPlugins.bass;
-        }
-      ]
-      ++ [
-        {
-          name = "autopair";
-          src = pkgs.fishPlugins.autopair;
-        }
-        {
-          name = "sponge";
-          src = pkgs.fishPlugins.sponge;
-        }
-        {
-          name = "puffer";
-          src = pkgs.fishPlugins.puffer;
-        }
-      ]
-      ++ lib.optionals (!pkgs.stdenv.isDarwin) [
-        {
-          name = "fzf-fish";
-          src = pkgs.fishPlugins.fzf-fish;
-        }
-      ];
-  };
+  programs = {
+    fish = {
+      enable = true;
+      package = pkgs.fish;
+      interactiveShellInit = "${shellInit}";
+      plugins =
+        lib.optionals (!pkgs.stdenv.isDarwin) [
+          {
+            name = "bass";
+            src = pkgs.fishPlugins.bass;
+          }
+        ]
+        ++ [
+          {
+            name = "autopair";
+            src = pkgs.fishPlugins.autopair;
+          }
+          {
+            name = "sponge";
+            src = pkgs.fishPlugins.sponge;
+          }
+          {
+            name = "puffer";
+            src = pkgs.fishPlugins.puffer;
+          }
+        ]
+        ++ lib.optionals (!pkgs.stdenv.isDarwin) [
+          {
+            name = "fzf-fish";
+            src = pkgs.fishPlugins.fzf-fish;
+          }
+        ];
+    };
 
-  programs.zoxide = {
-    enable = true;
-    enableFishIntegration = true;
-  };
+    zoxide = {
+      enable = true;
+      enableFishIntegration = true;
+    };
 
-  programs.carapace = {
-    enable = true;
-    enableFishIntegration = true;
+    carapace = {
+      enable = true;
+      enableFishIntegration = true;
+    };
   };
 
   xdg.configFile = {
