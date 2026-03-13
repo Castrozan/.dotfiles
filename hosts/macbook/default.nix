@@ -51,6 +51,14 @@
     };
   };
 
+  homebrew = {
+    enable = true;
+    onActivation.cleanup = "zap";
+    casks = [
+      "brave-browser"
+    ];
+  };
+
   programs.fish.enable = true;
 
   security = {

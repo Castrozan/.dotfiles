@@ -2,7 +2,6 @@
 {
   home.packages = with pkgs; [
     bat
-    brave
     btop
     curl
     delta
