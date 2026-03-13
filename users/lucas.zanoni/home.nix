@@ -11,6 +11,7 @@
 
     ../../home/core.nix
 
+    ../../home/modules/agents
     ../../home/modules/security
     ../../home/modules/audio
     ../../home/modules/claude
