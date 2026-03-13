@@ -6,6 +6,8 @@ from pathlib import Path
 from hyprland_ipc import get_all_monitors, run_hyprctl
 
 OVERRIDE_FILE = Path.home() / ".cache" / "hypr-monitors-override.conf"
+TOGGLE_LOCK_FILE = Path.home() / ".cache" / "hypr-monitors-toggle.lock"
+TOGGLE_LOCK_TIMEOUT_SECONDS = 5
 RECONNECT_INITIAL_DELAY_SECONDS = 1
 RECONNECT_MAX_DELAY_SECONDS = 30
 
@@ -22,14 +24,28 @@ def has_external_monitor_connected() -> bool:
     return any(not m.get("name", "").startswith("eDP") for m in monitors)
 
 
+def is_manual_toggle_in_progress() -> bool:
+    if not TOGGLE_LOCK_FILE.exists():
+        return False
+    try:
+        lock_timestamp = float(TOGGLE_LOCK_FILE.read_text())
+        return (time.time() - lock_timestamp) < TOGGLE_LOCK_TIMEOUT_SECONDS
+    except (ValueError, OSError):
+        return False
+
+
 def handle_monitor_removed(monitor_name: str) -> None:
     if monitor_name.startswith("eDP"):
+        return
+    if is_manual_toggle_in_progress():
         return
     write_override_and_reload("monitor = eDP-1, preferred, auto, 1")
 
 
 def handle_monitor_added(monitor_name: str) -> None:
     if monitor_name.startswith("eDP"):
+        return
+    if is_manual_toggle_in_progress():
         return
     write_override_and_reload("")
 

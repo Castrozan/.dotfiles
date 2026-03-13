@@ -1,6 +1,7 @@
 import os
 import re
 import subprocess
+import time
 from pathlib import Path
 
 from hyprland_ipc import get_all_monitors, run_hyprctl
@@ -11,6 +12,7 @@ MONITORS_CONF = (
     / "monitors.conf"
 )
 OVERRIDE_FILE = Path.home() / ".cache" / "hypr-monitors-override.conf"
+TOGGLE_LOCK_FILE = Path.home() / ".cache" / "hypr-monitors-toggle.lock"
 LID_STATE_FILE = Path("/proc/acpi/button/lid/LID0/state")
 
 
@@ -82,7 +84,12 @@ def build_override_content_for_mode(
     return f"monitor = {config}\nmonitor = {external_monitor}, disable"
 
 
+def write_toggle_lock() -> None:
+    TOGGLE_LOCK_FILE.write_text(str(time.time()))
+
+
 def write_override_and_reload(content: str) -> None:
+    write_toggle_lock()
     OVERRIDE_FILE.write_text(content)
     run_hyprctl("reload")
 
