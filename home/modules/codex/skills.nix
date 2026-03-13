@@ -28,7 +28,6 @@ let
       name = ".codex/skills/${name}";
       value = {
         source = "${dotfilesSkillsDir}/${name}";
-        recursive = true;
       };
     }) skillNames
   );
