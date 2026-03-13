@@ -36,7 +36,7 @@
       gnomeExtensions.workspace-matrix
       gnutar
       go
-      google-chrome
+
       imv
       insomnia
       i2p
