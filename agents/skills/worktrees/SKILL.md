@@ -7,6 +7,10 @@ description: Create isolated git worktrees for parallel development. Use when st
 "I'm using the worktrees skill to set up an isolated workspace."
 </announcement>
 
+<builtin_worktree>
+Claude Code has a built-in `--worktree` flag and EnterWorktree/ExitWorktree tools for simple isolation. Use built-in worktree for quick subagent isolation where you need a throwaway branch. Use this skill's manual workflow when you need persistent worktrees, multiple simultaneous branches, or PR workflows from worktrees.
+</builtin_worktree>
+
 <worktree_creation>
 Fetch latest main before branching. Create worktrees at `.worktrees/<branch>` inside the project directory — this path is gitignored. Avoid branch names containing `/` as they create nested directories that break the convention.
 

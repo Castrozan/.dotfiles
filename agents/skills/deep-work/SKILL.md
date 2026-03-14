@@ -24,8 +24,12 @@ Write to disk at these moments: immediately when receiving a substantial user pr
 </update-cadence>
 
 <recovery>
-On session start or after compaction, if a `.deep-work/` workspace exists with active work, read all workspace files before doing anything else. Reconstruct understanding from: prompts.md for what was asked, plan.md for what's planned, progress.md for what's done, context.md for what was learned. Continue from where progress.md left off. Never ask the user to re-explain what's already captured in prompts.md.
+On session start or after compaction, if a `.deep-work/` workspace exists with active work, read all workspace files before doing anything else. Reconstruct understanding from: prompts.md for what was asked, plan.md for what's planned, progress.md for what's done, context.md for what was learned. Continue from where progress.md left off. Never ask the user to re-explain what's already captured in prompts.md. A PostCompact hook automatically triggers deep-work-recovery on compaction — the recovery script surfaces workspace state into the compacted context.
 </recovery>
+
+<auto_memory_boundary>
+Auto-memory stores persistent facts about the user, project, and feedback across all conversations. Deep-work stores active task state that dies when the task is delivered. Use auto-memory for durable knowledge (user preferences, project constraints, correction patterns). Use deep-work for ephemeral task context (plans, progress, verbatim prompts). They complement each other — auto-memory survives task cleanup, deep-work survives compaction within a task.
+</auto_memory_boundary>
 
 <heartbeat-integration>
 HEARTBEAT.md remains the lightweight signal that work is active. For deep-work tasks, HEARTBEAT.md points to the workspace directory so any agent or session knows where to find full context. HEARTBEAT.md says what and where; the workspace says everything else. Keep HEARTBEAT.md updated with current phase and workspace path.

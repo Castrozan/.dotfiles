@@ -45,9 +45,9 @@ let
   claudeGlobalSettingsJson = builtins.toJSON claudeGlobalSettings;
 
   claudeDotfilesRules = ''
-    # Claude Code Project Context
+    # Dotfiles Repository
 
-    ${builtins.readFile ../../../agents/core.md}
+    Nix-based dotfiles repository managing system and home configurations across NixOS and standalone home-manager hosts. Use /dotfiles skill for repository patterns, directory organization, and anti-patterns. Use /rebuild to apply changes. Use /test for verification. Core behavior instructions are in the global CLAUDE.md — do not duplicate them here.
   '';
 
   claudeGlobalRules = ''
