@@ -38,6 +38,8 @@ let
 
     share = "manual";
 
+    instructions = [ "~/.config/opencode/AGENTS.md" ];
+
     agent = {
       build = {
         mode = "primary";
@@ -95,7 +97,7 @@ in
     file = {
       ".config/opencode/.keep".text = ""; # to keep the directory in git
       ".config/opencode/opencode.json".text = builtins.toJSON opencodeGlobalSettings;
-      # ".config/opencode/AGENTS.md".text = globalRules;
+      ".config/opencode/AGENTS.md".text = globalRules;
     };
 
     sessionVariables = {
