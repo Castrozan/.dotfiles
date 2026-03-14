@@ -95,7 +95,7 @@ in
 {
   home = {
     file = {
-      ".config/opencode/.keep".text = ""; # to keep the directory in git
+      ".config/opencode/.keep".text = "";
       ".config/opencode/opencode.json".text = builtins.toJSON opencodeGlobalSettings;
       ".config/opencode/AGENTS.md".text = globalRules;
     };

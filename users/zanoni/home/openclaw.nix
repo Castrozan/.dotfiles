@@ -18,6 +18,7 @@ in
     gatewayService.enable = true;
     restartWatcher.enable = true;
     timeoutRecovery.enable = true;
+    scheduledBackup.enable = true;
     healthCheck = {
       enable = true;
       interval = "5min";
