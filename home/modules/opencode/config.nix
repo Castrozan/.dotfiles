@@ -46,7 +46,7 @@ in
 
     sessionVariables = {
       OPENCODE_AUTO_UPDATE = "false";
-      OPENCODE_DISABLE_CLAUDE_CODE_SKILLS = "true";
+      OPENCODE_DISABLE_CLAUDE_CODE_SKILLS = "false";
     };
   };
 }
