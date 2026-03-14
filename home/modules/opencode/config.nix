@@ -1,5 +1,8 @@
-_:
+{ pkgs, ... }:
 let
+  chromeDevtoolsMcpPackage = pkgs.callPackage ../browser/chrome-devtools-mcp-package.nix { };
+  chromiumExecutablePath = "${pkgs.chromium}/bin/chromium";
+
   globalRules = ''
     ${builtins.readFile ../../../agents/core.md}
   '';
@@ -66,6 +69,23 @@ let
           edit = "deny";
           write = "deny";
         };
+      };
+    };
+
+    mcp = {
+      chrome-devtools = {
+        command = "${chromeDevtoolsMcpPackage}/bin/chrome-devtools-mcp";
+        args = [
+          "--headless"
+          "--executablePath"
+          chromiumExecutablePath
+          "--usageStatistics"
+          "false"
+        ];
+      };
+      scrapling-fetch = {
+        command = "/home/lucas.zanoni/.local/bin/scrapling-mcp";
+        args = [ ];
       };
     };
   };
