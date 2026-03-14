@@ -50,12 +50,25 @@ let
   ]
   ++ openclawWorkspacePaths;
 
-  copyCommands = lib.concatMapStringsSep "\n" (targetDir: ''
-    rm -rf "${targetDir}/aplicacoes-atendimento-triage"
-    if [ -d "${sourceRepoPath}" ]; then
-      cp -r "${sourceRepoPath}" "${targetDir}/aplicacoes-atendimento-triage"
-    fi
-  '') allSkillTargetDirectories;
+  copyCommands =
+    let
+      getSourceRevisionCommand = "git -C \"${sourceRepoPath}\" rev-parse HEAD 2>/dev/null";
+      getInstalledRevisionCommand =
+        targetDir: "cat \"${targetDir}/aplicacoes-atendimento-triage/.git-rev\" 2>/dev/null";
+    in
+    lib.concatMapStringsSep "\n" (targetDir: ''
+      if [ -d "${sourceRepoPath}" ]; then
+        SOURCE_REV=$(${getSourceRevisionCommand})
+        INSTALLED_REV=$(${getInstalledRevisionCommand targetDir})
+        if [ "$SOURCE_REV" != "$INSTALLED_REV" ]; then
+          rm -rf "${targetDir}/aplicacoes-atendimento-triage"
+          cp -r "${sourceRepoPath}" "${targetDir}/aplicacoes-atendimento-triage"
+          echo "$SOURCE_REV" > "${targetDir}/aplicacoes-atendimento-triage/.git-rev"
+        fi
+      else
+        rm -rf "${targetDir}/aplicacoes-atendimento-triage"
+      fi
+    '') allSkillTargetDirectories;
 in
 {
   home.file = globalClaudeSkills // coreSkillFromAgentInstructions;

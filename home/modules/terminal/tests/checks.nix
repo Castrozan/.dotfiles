@@ -27,12 +27,13 @@ let
   ];
 
   fishConfDFiles = [
-    "fish/conf.d/bass-env.fish"
+    "fish/conf.d/shell-env.fish"
     "fish/conf.d/tmux.fish"
     "fish/conf.d/fish-aliases.fish"
     "fish/conf.d/fzf.fish"
     "fish/conf.d/default-directories.fish"
     "fish/conf.d/key-bindings.fish"
+    "fish/conf.d/private-aliases.fish"
     "fish/conf.d/hyprland-env.fish"
     "fish/conf.d/betha-secrets.fish"
   ];
