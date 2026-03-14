@@ -18,6 +18,10 @@ let
         command = "/home/lucas.zanoni/.local/bin/scrapling-mcp";
         args = [ ];
       };
+      codex = {
+        command = "/home/lucas.zanoni/.local/bin/codex";
+        args = [ "mcp-server" ];
+      };
     };
   };
 in
