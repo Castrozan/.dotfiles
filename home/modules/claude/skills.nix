@@ -52,7 +52,9 @@ let
 
   copyCommands = lib.concatMapStringsSep "\n" (targetDir: ''
     rm -rf "${targetDir}/aplicacoes-atendimento-triage"
-    cp -r "${sourceRepoPath}" "${targetDir}/aplicacoes-atendimento-triage"
+    if [ -d "${sourceRepoPath}" ]; then
+      cp -r "${sourceRepoPath}" "${targetDir}/aplicacoes-atendimento-triage"
+    fi
   '') allSkillTargetDirectories;
 in
 {
