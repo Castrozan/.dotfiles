@@ -139,6 +139,7 @@ let
     ".acp.enabled" = true;
     ".acp.dispatch.enabled" = false;
     ".acp.defaultAgent" = "claude-code";
+    ".acp.provenance" = "meta";
 
     ".tools.media.audio.echoTranscript" = true;
     ".tools.media.audio.echoFormat" = "text";
