@@ -25,6 +25,8 @@ let
     dangerouslySkipPermissions = true;
     skipDangerousModePermissionPrompt = true;
     includeCoAuthoredBy = false;
+    includeGitInstructions = false;
+    showTurnDuration = false;
     permissions = {
       defaultMode = "bypassPermissions";
       allow = [ "*" ];
@@ -72,6 +74,7 @@ in
       CLAUDE_SKIP_PERMISSIONS = "true";
       BASH_ENV = "$HOME/.dotfiles/home/modules/terminal/shell/aliases.sh";
       CLAUDE_AUTOCOMPACT_PCT_OVERRIDE = "60";
+      CLAUDE_CODE_DISABLE_TERMINAL_TITLE = "true";
     };
 
     activation.seedClaudeSettingsAsMutableFile = {
