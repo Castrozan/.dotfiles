@@ -79,13 +79,13 @@ def restart_previously_stopped_services(
         )
 
 
-def reload_hyprland_with_screencopy_services_paused() -> None:
+def reload_hyprland_config_only_with_screencopy_services_paused() -> None:
     stopped = stop_active_screencopy_services()
     if stopped:
         import time
 
         time.sleep(0.3)
-    subprocess.run(["hyprctl", "reload"])
+    subprocess.run(["hyprctl", "reload", "config-only"])
     restart_previously_stopped_services(stopped)
 
 
@@ -112,7 +112,7 @@ def apply_theme_border_colors_from_config() -> None:
 def main() -> None:
     if not ensure_hyprctl_connected():
         return
-    reload_hyprland_with_screencopy_services_paused()
+    reload_hyprland_config_only_with_screencopy_services_paused()
     apply_theme_border_colors_from_config()
 
 
