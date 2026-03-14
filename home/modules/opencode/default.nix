@@ -3,6 +3,6 @@
   imports = [
     ./opencode.nix
     ./config.nix
-    # ./skills.nix
+    ./skills.nix
   ];
 }
