@@ -245,6 +245,10 @@ let
 in
 {
   config = {
+    openclaw.configDeletes = [
+      ".acp.provenance"
+    ];
+
     openclaw.configPatches =
       basePatches // telegramPatches // discordPatches // { ".bindings" = combinedChannelBindings; };
 
