@@ -8,6 +8,7 @@
     ./install.nix
     ./systemd-service.nix
     ./reliability/health-check.nix
+    ./reliability/scheduled-backup.nix
     ./reliability/restart-watcher/restart-watcher.nix
     ./reliability/timeout-recovery.nix
     ./reliability/restart-watcher/ensure-services-after-rebuild.nix
