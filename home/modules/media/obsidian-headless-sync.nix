@@ -61,6 +61,7 @@ let
     chmod 600 "${obsidianHeadlessConfigDirectory}/auth_token"
 
     cp "$SYNC_CONFIG_SECRET" "$SYNC_CONFIG_DIRECTORY/config.json"
+    ${pkgs.gnused}/bin/sed -i 's|"vaultPath": "[^"]*"|"vaultPath": "${vaultPath}"|' "$SYNC_CONFIG_DIRECTORY/config.json"
     chmod 600 "$SYNC_CONFIG_DIRECTORY/config.json"
   '';
 
