@@ -8,7 +8,7 @@ let
     pname = "codex";
     inherit version;
     url = "https://github.com/openai/codex/releases/download/rust-v${version}/codex-x86_64-unknown-linux-gnu.tar.gz";
-    sha256 = "sha256-iZWExmZ0IT9F98GTs49eQOBh3aNitgajXAAO0PPFTtE=";
+    sha256 = "sha256-8YKU1NpnVunlrU3GKzAwt6dalOXlAi87+kohp9PFKuA=";
     binaryName = "codex";
     archiveBinaryPath = "codex-x86_64-unknown-linux-gnu";
     buildInputs = with pkgs; [
