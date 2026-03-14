@@ -196,7 +196,8 @@ _backup_name() {
 
 _reload_hyprland() {
 	command -v hyprctl >/dev/null 2>&1 || return 0
-	local hypr_dir="/run/user/$(id -u)/hypr"
+	local hypr_dir
+	hypr_dir="/run/user/$(id -u)/hypr"
 	[ -d "$hypr_dir" ] && [ "$(ls -A "$hypr_dir" 2>/dev/null)" ] || return 0
 	echo ":: Reloading Hyprland (config-only, no monitor re-apply)..."
 	hyprctl reload config-only

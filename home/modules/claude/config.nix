@@ -48,6 +48,12 @@ let
     # Dotfiles Repository
 
     Nix-based dotfiles repository managing system and home configurations across NixOS and standalone home-manager hosts. Use /dotfiles skill for repository patterns, directory organization, and anti-patterns. Use /rebuild to apply changes. Use /test for verification. Core behavior instructions are in the global CLAUDE.md — do not duplicate them here.
+
+    ## Policies
+
+    ### Compositor reload
+
+    System rebuilds must never cause visual disruption to the running compositor. Configuration reloads that do not involve monitor hardware changes must not re-apply monitor rules, as mode negotiation causes DRM mode switches visible as screen blackouts. Compositor autoreload from config management symlink updates must be suppressed because the config directory symlink changes on every rebuild regardless of content. Only monitor hardware events — plug, unplug, manual toggle — justify full compositor reload with monitor re-application.
   '';
 
   claudeGlobalRules = ''
