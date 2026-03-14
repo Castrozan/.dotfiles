@@ -75,6 +75,8 @@ BASELINE = {
     "model_reasoning_effort": "medium",
     "model_reasoning_summary": "auto",
     "model_verbosity": "medium",
+    "notify": ["notify-send", "--app-name", "Codex"],
+    "personality": "pragmatic",
     "profile": "fast",
     "review_model": codex_default_model,
     "sandbox_mode": "danger-full-access",
@@ -86,6 +88,8 @@ BASELINE = {
     "features": {
         "apply_patch_freeform": True,
         "child_agents_md": True,
+        "hooks": True,
+        "multi_agent": True,
         "undo": True,
     },
     "sandbox_workspace_write": {
