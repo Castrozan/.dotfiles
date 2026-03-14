@@ -46,7 +46,7 @@ let
       --ignore-scripts \
       --registry "https://registry.npmjs.org/"
 
-    ${nodejs}/bin/node "${config.home.homeDirectory}/.dotfiles/home/modules/openclaw/voice/openclaw-voice-playback-patch.js"
+    ${nodejs}/bin/node "${config.home.homeDirectory}/.dotfiles/home/modules/openclaw/voice/openclaw-voice-playback-patch.js" || echo "warning: voice-playback patch failed (openclaw dist structure may have changed)"
   '';
 
   openclawWrapper = pkgs.writeShellScriptBin "openclaw" ''
