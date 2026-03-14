@@ -196,9 +196,9 @@ _backup_name() {
 
 _reload_hyprland() {
 	command -v hypr-restart-hyprctl >/dev/null 2>&1 || return 0
-	echo ":: Reloading Hyprland..."
-	hypr-restart-hyprctl
-	echo ":: Environment fully refreshed."
+	echo ":: Applying Hyprland theme colors..."
+	hypr-apply-theme-colors
+	echo ":: Environment fully refreshed. Run 'hyprctl reload' to apply config changes."
 }
 
 main "$@"

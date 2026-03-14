@@ -27,6 +27,7 @@ in
     (mkHyprlandPythonScript "hypr-theme-current" ./scripts/theme/theme_current.py)
     (mkHyprlandPythonScript "hypr-theme-set-gnome" ./scripts/theme/theme_set_gnome.py)
     (mkHyprlandPythonScript "hypr-restart-hyprctl" ./scripts/utilities/restart_hyprctl.py)
+    (mkHyprlandPythonScript "hypr-apply-theme-colors" ./scripts/utilities/apply_theme_colors.py)
     (mkHyprlandPythonScript "hypr-menu" ./scripts/launchers/menu.py)
     (mkHyprlandPythonScript "hypr-fuzzel" ./scripts/launchers/fuzzel_launcher.py)
     (mkHyprlandPythonScript "hypr-super-launcher" ./scripts/launchers/super_launcher.py)
