@@ -1,0 +1,68 @@
+tests:
+  - name: worktrees_knows_builtin_flag
+    skill_path: agents/skills/worktrees/SKILL.md
+    prompt: "I need to run a quick isolated task. Should I always create a manual worktree, or is there a simpler built-in option?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "built-in"
+        - "--worktree"
+        - "EnterWorktree"
+        - "builtin"
+        - "flag"
+        - "simple"
+
+  - name: deep_work_knows_postcompact
+    skill_path: agents/skills/deep-work/SKILL.md
+    prompt: "What happens to deep-work context when a compaction occurs? Is there any automatic recovery?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "PostCompact"
+        - "hook"
+        - "recovery"
+        - "automatic"
+        - "compaction"
+
+  - name: deep_work_distinguishes_auto_memory
+    skill_path: agents/skills/deep-work/SKILL.md
+    prompt: "When should I use auto-memory versus deep-work? What's the difference?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "persistent"
+        - "ephemeral"
+        - "durable"
+        - "task"
+        - "complement"
+        - "different"
+
+  - name: claude_skill_knows_builtin_agents
+    skill_path: agents/skills/claude/SKILL.md
+    prompt: "I need to spawn a parallel coding session. Should I always use spawn-claude.sh, or is there a simpler alternative?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "Agent tool"
+        - "built-in"
+        - "builtin"
+        - "subagent"
+        - "within the same session"
+        - "simple"
+
+  - name: project_claudemd_no_duplication
+    system_prompt: "You are a configuration auditor. Analyze this CLAUDE.md content and tell me if it duplicates core behavior instructions or if it's properly scoped."
+    prompt: "# Dotfiles Repository\n\nNix-based dotfiles repository managing system and home configurations across NixOS and standalone home-manager hosts. Use /dotfiles skill for repository patterns, directory organization, and anti-patterns. Use /rebuild to apply changes. Use /test for verification. Core behavior instructions are in the global CLAUDE.md — do not duplicate them here."
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "scoped"
+        - "project-specific"
+        - "no duplication"
+        - "not duplicate"
+        - "global"
+        - "lightweight"
+        - "references"
+      output_not_contains:
+        - "missing core instructions"
+        - "should include core"
