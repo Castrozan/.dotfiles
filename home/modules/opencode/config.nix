@@ -34,6 +34,40 @@ let
     };
 
     share = "manual";
+
+    agent = {
+      build = {
+        mode = "primary";
+        description = "Full-access coding agent with all tools enabled";
+      };
+      plan = {
+        mode = "subagent";
+        model = "anthropic/claude-sonnet-4-6";
+        description = "Read-only planning agent for architecture and design";
+        tools = {
+          read = "allow";
+          glob = "allow";
+          grep = "allow";
+          bash = "deny";
+          edit = "deny";
+          write = "deny";
+        };
+      };
+      explore = {
+        mode = "subagent";
+        model = "anthropic/claude-sonnet-4-6";
+        description = "Fast read-only codebase exploration agent";
+        tools = {
+          read = "allow";
+          glob = "allow";
+          grep = "allow";
+          lsp = "allow";
+          bash = "deny";
+          edit = "deny";
+          write = "deny";
+        };
+      };
+    };
   };
 in
 {
