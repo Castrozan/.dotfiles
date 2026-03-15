@@ -67,26 +67,43 @@ let
     fi
   '';
 
-  mcpConfig = {
-    mcpServers = {
-      chrome-devtools = {
-        command = "${chromeDevtoolsMcpAutoconnectWrapper}/bin/chrome-devtools-mcp-autoconnect";
-        args = [ ];
-      };
-      scrapling-fetch = {
-        command = "${homeDir}/.local/bin/scrapling-mcp";
-        args = [ ];
-      };
-      codex = {
-        command = "${homeDir}/.local/bin/codex";
-        args = [ "mcp-server" ];
-      };
+  mcpServersToInject = builtins.toJSON {
+    chrome-devtools = {
+      command = "${chromeDevtoolsMcpAutoconnectWrapper}/bin/chrome-devtools-mcp-autoconnect";
+      args = [ ];
+    };
+    scrapling-fetch = {
+      command = "${homeDir}/.local/bin/scrapling-mcp";
+      args = [ ];
+    };
+    codex = {
+      command = "${homeDir}/.local/bin/codex";
+      args = [ "mcp-server" ];
     };
   };
+
+  injectMcpServersIntoClaudeConfig = pkgs.writeShellScript "inject-mcp-servers" ''
+    set -euo pipefail
+    MCP_FILE="${homeDir}/.claude/mcp.json"
+    SERVERS='${mcpServersToInject}'
+
+    mkdir -p "${homeDir}/.claude"
+
+    if [ -L "$MCP_FILE" ]; then
+      CONTENT=$(cat "$MCP_FILE" 2>/dev/null || echo '{}')
+      rm "$MCP_FILE"
+      echo "$CONTENT" > "$MCP_FILE"
+    fi
+
+    if [ ! -f "$MCP_FILE" ]; then
+      echo '{"mcpServers":{}}' > "$MCP_FILE"
+    fi
+
+    ${pkgs.jq}/bin/jq --argjson servers "$SERVERS" '.mcpServers = (.mcpServers // {}) * $servers' "$MCP_FILE" | ${pkgs.moreutils}/bin/sponge "$MCP_FILE"
+  '';
 in
 {
   home.packages = [ latest.google-chrome ];
-  home.file.".claude/mcp.json".text = builtins.toJSON mcpConfig;
 
   home.file.".config/google-chrome/policies/managed/agent-browser-control.json".text =
     builtins.toJSON
@@ -94,6 +111,10 @@ in
         RemoteDebuggingAllowed = true;
         DeveloperToolsAvailability = 0;
       };
+
+  home.activation.injectMcpServers = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    run ${injectMcpServersIntoClaudeConfig}
+  '';
 
   home.activation.installChromeDevtoolsMcp = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     run ${installChromeDevtoolsMcpViaNpm}
