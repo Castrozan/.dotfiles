@@ -16,7 +16,8 @@ pkgs.stdenvNoCC.mkDerivation {
     mkdir -p "$out/bin" "$out/lib/chrome-devtools-mcp"
     cp -R ./* "$out/lib/chrome-devtools-mcp/"
     makeWrapper ${pkgs.nodejs_22}/bin/node "$out/bin/chrome-devtools-mcp" \
-      --add-flags "$out/lib/chrome-devtools-mcp/build/src/index.js"
+      --add-flags "$out/lib/chrome-devtools-mcp/build/src/index.js" \
+      --set NODE_PATH "$out/lib/chrome-devtools-mcp/node_modules"
     runHook postInstall
   '';
 }
