@@ -8,11 +8,16 @@ Running inside tmux. Commit any pending changes before restarting.
 </prerequisites>
 
 <execution>
-claude-restart
+claude-restart "Continue from where you left off."
 </execution>
 
-<notes>
-Discovers the current session ID from the most recently modified .jsonl file, forks a detached process that waits for claude to die, then sends `claude --resume <session-id>` to the tmux pane. The SessionStart hooks fire on resume, recovering deep-work context automatically.
+<continuation>
+The script accepts an optional first argument as a continuation prompt. When provided, after claude restarts and shows the input prompt, the script automatically types and submits that message. This lets you resume work without waiting for user input.
 
-If not in tmux, falls back to telling the user to manually run `claude --continue`.
+To restart without auto-continuing, call the script with no arguments:
+claude-restart
+</continuation>
+
+<notes>
+Discovers the current session ID from claude's /proc cmdline args (--resume or --session-id). Falls back to `claude --continue` for fresh sessions. Forks a detached process that waits for claude to die, then sends the resume command to the tmux pane. SessionStart hooks fire on resume, recovering deep-work context automatically.
 </notes>

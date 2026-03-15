@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+CONTINUATION_PROMPT="${1:-}"
+
 BASH_TOOL_PID="$PPID"
 CLAUDE_PID=$(ps -p "$BASH_TOOL_PID" -o ppid= 2>/dev/null | tr -d ' ')
 CLAUDE_COMMAND_NAME=$(ps -p "$CLAUDE_PID" -o comm= 2>/dev/null || echo "unknown")
@@ -39,6 +41,18 @@ nohup bash -c "
     while kill -0 $CLAUDE_PID 2>/dev/null; do sleep 0.2; done
     sleep 1
     tmux send-keys -t '$CURRENT_TMUX_PANE' '$RESUME_COMMAND' Enter
+
+    if [[ -n '$CONTINUATION_PROMPT' ]]; then
+        for ATTEMPT in \$(seq 1 60); do
+            PANE_CONTENT=\$(tmux capture-pane -t '$CURRENT_TMUX_PANE' -p -S -5)
+            if echo \"\$PANE_CONTENT\" | grep -q '❯'; then
+                break
+            fi
+            sleep 1
+        done
+        sleep 2
+        tmux send-keys -t '$CURRENT_TMUX_PANE' '$CONTINUATION_PROMPT' Enter
+    fi
 " &>/dev/null &
 disown
 
