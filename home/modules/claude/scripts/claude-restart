@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-BASH_PARENT_PID="$PPID"
-CLAUDE_PID=$(ps -p "$BASH_PARENT_PID" -o ppid= 2>/dev/null | tr -d ' ')
+BASH_TOOL_PID="$PPID"
+CLAUDE_PID=$(ps -p "$BASH_TOOL_PID" -o ppid= 2>/dev/null | tr -d ' ')
 CLAUDE_COMMAND_NAME=$(ps -p "$CLAUDE_PID" -o comm= 2>/dev/null || echo "unknown")
 
 if [[ "$CLAUDE_COMMAND_NAME" != "claude" ]]; then
@@ -18,22 +18,22 @@ if [[ -z "${TMUX:-}" ]]; then
 fi
 
 CURRENT_TMUX_PANE="$TMUX_PANE"
-WORKING_DIRECTORY="$PWD"
 
-PROJECT_SESSIONS_DIRECTORY="$HOME/.claude/projects/${WORKING_DIRECTORY//[\/.]/-}"
-MOST_RECENT_SESSION_JSONL=$(find "$PROJECT_SESSIONS_DIRECTORY" -maxdepth 1 -name '*.jsonl' -printf '%T@ %p\n' 2>/dev/null | sort -rn | head -1 | cut -d' ' -f2-)
-
-if [[ -z "$MOST_RECENT_SESSION_JSONL" ]]; then
-	echo "No session file found in $PROJECT_SESSIONS_DIRECTORY"
-	echo "Use /exit then manually: claude --continue"
-	exit 1
+CLAUDE_CMDLINE=$(tr '\0' ' ' </proc/"$CLAUDE_PID"/cmdline)
+EXTRACTED_SESSION_ID=""
+if [[ "$CLAUDE_CMDLINE" =~ --resume[[:space:]]+([a-f0-9-]+) ]]; then
+	EXTRACTED_SESSION_ID="${BASH_REMATCH[1]}"
+elif [[ "$CLAUDE_CMDLINE" =~ --session-id[[:space:]]+([a-f0-9-]+) ]]; then
+	EXTRACTED_SESSION_ID="${BASH_REMATCH[1]}"
 fi
 
-CURRENT_SESSION_ID=$(basename "$MOST_RECENT_SESSION_JSONL" .jsonl)
-RESUME_COMMAND="claude --resume $CURRENT_SESSION_ID"
+if [[ -n "$EXTRACTED_SESSION_ID" ]]; then
+	RESUME_COMMAND="claude --resume $EXTRACTED_SESSION_ID"
+else
+	RESUME_COMMAND="claude --continue"
+fi
 
-echo "Session: $CURRENT_SESSION_ID"
-echo "Restarting..."
+echo "Restarting with: $RESUME_COMMAND"
 
 nohup bash -c "
     while kill -0 $CLAUDE_PID 2>/dev/null; do sleep 0.2; done
