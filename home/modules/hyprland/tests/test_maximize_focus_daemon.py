@@ -62,6 +62,31 @@ class TestHandleActiveWindowChangedEvent:
         assert state.previous_focused_address == "0xprev"
 
 
+class TestHandleActiveWindowChangedPinnedWindowSurvival:
+    def test_pinned_floating_window_not_moved_offscreen_when_tiled_gets_focus(
+        self, mock_subprocess_run, hyprctl_response_builder, sample_hyprland_clients
+    ):
+        hyprctl_response_builder("clients", sample_hyprland_clients)
+        state = daemon.DaemonState(current_focused_address="0xeee")
+        daemon.handle_active_window_changed_event(state, "aaa")
+        all_offscreen_args = " ".join(
+            str(c) for c in mock_subprocess_run.call_args_list if "movewindowpixel" in str(c)
+        )
+        assert "0xeee" not in all_offscreen_args
+
+    def test_unpinned_floating_window_still_moved_offscreen_when_tiled_gets_focus(
+        self, mock_subprocess_run, hyprctl_response_builder, sample_hyprland_clients
+    ):
+        hyprctl_response_builder("clients", sample_hyprland_clients)
+        state = daemon.DaemonState(current_focused_address="0xddd")
+        daemon.handle_active_window_changed_event(state, "aaa")
+        offscreen_calls = [
+            c for c in mock_subprocess_run.call_args_list if "movewindowpixel" in str(c)
+        ]
+        assert len(offscreen_calls) == 1
+        assert "0xddd" in str(offscreen_calls[0])
+
+
 class TestHandleFullscreenEvent:
     def test_adds_workspace_to_maximized_tracking(self, hyprctl_response_builder):
         hyprctl_response_builder(
@@ -205,6 +230,16 @@ class TestMoveFloatingWindowsOffscreen:
         assert len(offscreen_calls) == 1
         assert "0xddd" in str(offscreen_calls[0])
 
+    def test_never_moves_pinned_floating_windows_offscreen(
+        self, mock_subprocess_run, hyprctl_response_builder, sample_hyprland_clients
+    ):
+        hyprctl_response_builder("clients", sample_hyprland_clients)
+        daemon.move_floating_windows_offscreen("0xaaa")
+        all_offscreen_args = " ".join(
+            str(c) for c in mock_subprocess_run.call_args_list if "movewindowpixel" in str(c)
+        )
+        assert "0xeee" not in all_offscreen_args
+
     def test_skips_when_focused_is_floating(
         self, mock_subprocess_run, hyprctl_response_builder, sample_hyprland_clients
     ):
@@ -223,6 +258,13 @@ class TestCollectFloatingWindowAddresses:
         hyprctl_response_builder("clients", sample_hyprland_clients)
         addresses = daemon.collect_floating_window_addresses_on_workspace(1, "0xaaa")
         assert addresses == ["0xddd"]
+
+    def test_excludes_pinned_floating_windows(
+        self, hyprctl_response_builder, sample_hyprland_clients
+    ):
+        hyprctl_response_builder("clients", sample_hyprland_clients)
+        addresses = daemon.collect_floating_window_addresses_on_workspace(1, "0xaaa")
+        assert "0xeee" not in addresses
 
     def test_excludes_specified_address(
         self, hyprctl_response_builder, sample_hyprland_clients

@@ -113,6 +113,18 @@ def sample_hyprland_clients():
             "grouped": [],
             "focusHistoryID": 3,
         },
+        {
+            "address": "0xeee",
+            "workspace": {"id": 1},
+            "class": "com.gabm.satty",
+            "title": "Satty",
+            "pid": 7890,
+            "floating": True,
+            "pinned": True,
+            "fullscreen": 0,
+            "grouped": [],
+            "focusHistoryID": 4,
+        },
     ]
 
 

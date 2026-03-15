@@ -3,6 +3,9 @@
 # Enable alias expansion in non-interactive shells (for Claude Code BASH_ENV)
 shopt -s expand_aliases
 
+# NixOS setuid wrappers (sudo, ping, etc) — non-login shells miss this
+[[ -d /run/wrappers/bin ]] && [[ ":$PATH:" != *":/run/wrappers/bin:"* ]] && export PATH="/run/wrappers/bin:$PATH"
+
 . "$HOME/.dotfiles/home/modules/terminal/shell/nix-memory-limit.sh"
 
 # Personal aliases

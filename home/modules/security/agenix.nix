@@ -54,6 +54,7 @@ let
     "infrastructure/gpg-private-key"
     "credentials/viu-auth"
     "credentials/home-assistant-token"
+    "credentials/google-totp-secret"
   ];
 
   allSecretNames =

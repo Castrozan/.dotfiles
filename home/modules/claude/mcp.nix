@@ -29,6 +29,13 @@ let
       --registry "https://registry.npmjs.org/"
   '';
 
+  autoAcceptChromeDebuggingDialog = pkgs.writeShellScript "auto-accept-chrome-debugging-dialog" ''
+    sleep 2
+    ${pkgs.hyprland}/bin/hyprctl dispatch focuswindow class:google-chrome 2>/dev/null || true
+    sleep 1
+    ${pkgs.wtype}/bin/wtype -k Tab -k Return 2>/dev/null || true
+  '';
+
   chromeDevtoolsMcpAutoconnectWrapper = pkgs.writeShellScriptBin "chrome-devtools-mcp-autoconnect" ''
     set -euo pipefail
     export PATH="${nodejs}/bin:''${PATH:+:$PATH}"
@@ -43,6 +50,8 @@ let
     CHROME_PORT=$(head -1 "$DEVTOOLS_PORT_FILE")
     CHROME_WS_PATH=$(tail -1 "$DEVTOOLS_PORT_FILE")
     CHROME_WS_URL="ws://127.0.0.1:''${CHROME_PORT}''${CHROME_WS_PATH}"
+
+    ${autoAcceptChromeDebuggingDialog} &
 
     exec "${chromeDevtoolsMcpBinary}" \
       --wsEndpoint "$CHROME_WS_URL" \
@@ -95,7 +104,10 @@ let
   '';
 in
 {
-  home.packages = [ latest.google-chrome ];
+  home.packages = [
+    latest.google-chrome
+    pkgs.wtype
+  ];
 
   home.file.".config/google-chrome/policies/managed/agent-browser-control.json".text =
     builtins.toJSON

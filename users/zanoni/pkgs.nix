@@ -50,6 +50,7 @@
       mpv-handler
       mpvc
       mpv-shim-default-shaders
+      oath-toolkit
       nixd
       nix-prefetch-github
       nixpkgs-fmt
