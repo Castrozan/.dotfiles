@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+BASH_PARENT_PID="$PPID"
+CLAUDE_PID=$(ps -p "$BASH_PARENT_PID" -o ppid= 2>/dev/null | tr -d ' ')
+CLAUDE_COMMAND_NAME=$(ps -p "$CLAUDE_PID" -o comm= 2>/dev/null || echo "unknown")
+
+if [[ "$CLAUDE_COMMAND_NAME" != "claude" ]]; then
+	echo "Safety check FAILED: Expected 'claude' but found '$CLAUDE_COMMAND_NAME' (PID: $CLAUDE_PID)"
+	echo "Use /exit or Ctrl+D instead."
+	exit 1
+fi
+
+if [[ -z "${TMUX:-}" ]]; then
+	echo "Not in tmux — cannot auto-restart."
+	echo "Use /exit then manually: claude --continue"
+	exit 1
+fi
+
+CURRENT_TMUX_PANE="$TMUX_PANE"
+WORKING_DIRECTORY="$PWD"
+
+PROJECT_SESSIONS_DIRECTORY="$HOME/.claude/projects/${WORKING_DIRECTORY//[\/.]/-}"
+MOST_RECENT_SESSION_JSONL=$(find "$PROJECT_SESSIONS_DIRECTORY" -maxdepth 1 -name '*.jsonl' -printf '%T@ %p\n' 2>/dev/null | sort -rn | head -1 | cut -d' ' -f2-)
+
+if [[ -z "$MOST_RECENT_SESSION_JSONL" ]]; then
+	echo "No session file found in $PROJECT_SESSIONS_DIRECTORY"
+	echo "Use /exit then manually: claude --continue"
+	exit 1
+fi
+
+CURRENT_SESSION_ID=$(basename "$MOST_RECENT_SESSION_JSONL" .jsonl)
+RESUME_COMMAND="claude --resume $CURRENT_SESSION_ID"
+
+echo "Session: $CURRENT_SESSION_ID"
+echo "Restarting..."
+
+nohup bash -c "
+    while kill -0 $CLAUDE_PID 2>/dev/null; do sleep 0.2; done
+    sleep 1
+    tmux send-keys -t '$CURRENT_TMUX_PANE' '$RESUME_COMMAND' Enter
+" &>/dev/null &
+disown
+
+kill -TERM "$CLAUDE_PID"
