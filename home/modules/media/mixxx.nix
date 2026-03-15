@@ -109,6 +109,7 @@ in
 {
   home.packages = [
     pkgs.mixxx
+    pkgs.youtube-music
     ytmusicDownload
   ];
 }
