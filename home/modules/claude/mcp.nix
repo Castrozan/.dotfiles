@@ -5,12 +5,15 @@
   ...
 }:
 let
-  chromeDevtoolsMcp = pkgs.callPackage ../browser/chrome-devtools-mcp-package.nix { };
+  nodejs = pkgs.nodejs_22;
   homeDir = config.home.homeDirectory;
   chromeUserDataDirectory = "${homeDir}/.config/google-chrome";
+  chromeDevtoolsMcpVersion = "0.20.0";
 
   chromeDevtoolsMcpAutoconnectWrapper = pkgs.writeShellScriptBin "chrome-devtools-mcp-autoconnect" ''
     set -euo pipefail
+    export PATH="${nodejs}/bin:''${PATH:+:$PATH}"
+
     DEVTOOLS_PORT_FILE="${chromeUserDataDirectory}/DevToolsActivePort"
 
     if [ ! -f "$DEVTOOLS_PORT_FILE" ]; then
@@ -20,9 +23,10 @@ let
 
     CHROME_PORT=$(head -1 "$DEVTOOLS_PORT_FILE")
     CHROME_WS_PATH=$(tail -1 "$DEVTOOLS_PORT_FILE")
+    CHROME_WS_URL="ws://127.0.0.1:''${CHROME_PORT}''${CHROME_WS_PATH}"
 
-    exec ${chromeDevtoolsMcp}/bin/chrome-devtools-mcp \
-      --wsEndpoint "ws://127.0.0.1:''${CHROME_PORT}''${CHROME_WS_PATH}" \
+    exec npx -y "chrome-devtools-mcp@${chromeDevtoolsMcpVersion}" \
+      --wsEndpoint "$CHROME_WS_URL" \
       --usageStatistics false \
       "$@"
   '';
