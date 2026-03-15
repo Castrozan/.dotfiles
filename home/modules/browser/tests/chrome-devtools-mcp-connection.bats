@@ -6,6 +6,12 @@ readonly MCP_BINARY="$HOME/.local/share/chrome-devtools-mcp-npm/bin/chrome-devto
 readonly CHROME_LOCAL_STATE="$CHROME_USER_DATA_DIR/Local State"
 readonly CHROME_POLICY_FILE="$CHROME_USER_DATA_DIR/policies/managed/agent-browser-control.json"
 
+setup() {
+  if [[ "${CI:-}" == "true" ]]; then
+    skip "requires running Chrome with remote debugging"
+  fi
+}
+
 @test "DevToolsActivePort file exists when Chrome is running" {
   [[ -f "$DEVTOOLS_PORT_FILE" ]]
 }

@@ -104,27 +104,29 @@ let
   '';
 in
 {
-  home.packages = [
-    latest.google-chrome
-    pkgs.wtype
-  ];
+  home = {
+    packages = [
+      latest.google-chrome
+      pkgs.wtype
+    ];
 
-  home.file.".config/google-chrome/policies/managed/agent-browser-control.json".text =
-    builtins.toJSON
-      {
-        RemoteDebuggingAllowed = true;
-        DeveloperToolsAvailability = 0;
-      };
+    file.".config/google-chrome/policies/managed/agent-browser-control.json".text = builtins.toJSON {
+      RemoteDebuggingAllowed = true;
+      DeveloperToolsAvailability = 0;
+    };
 
-  home.activation.injectMcpServers = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    run ${injectMcpServersIntoClaudeConfig}
-  '';
+    activation = {
+      injectMcpServers = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+        run ${injectMcpServersIntoClaudeConfig}
+      '';
 
-  home.activation.installChromeDevtoolsMcp = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    run ${installChromeDevtoolsMcpViaNpm}
-  '';
+      installChromeDevtoolsMcp = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+        run ${installChromeDevtoolsMcpViaNpm}
+      '';
 
-  home.activation.enableChromeRemoteDebugging = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    run ${enableChromeRemoteDebuggingToggle}
-  '';
+      enableChromeRemoteDebugging = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+        run ${enableChromeRemoteDebuggingToggle}
+      '';
+    };
+  };
 }

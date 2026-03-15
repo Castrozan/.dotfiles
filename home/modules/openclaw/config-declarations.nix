@@ -257,43 +257,44 @@ let
 in
 {
   config = {
-    openclaw.configDeletes = [
-      ".acp.provenance"
-      ".channels.telegram.accounts.clever.streamMode"
-      ".channels.telegram.accounts.golden.streamMode"
-      ".channels.telegram.accounts.jarvis.streamMode"
-      ".channels.discord.accounts.clever.streamMode"
-      ".channels.discord.accounts.golden.streamMode"
-      ".channels.discord.accounts.jarvis.streamMode"
-    ];
+    openclaw = {
+      configDeletes = [
+        ".acp.provenance"
+        ".channels.telegram.accounts.clever.streamMode"
+        ".channels.telegram.accounts.golden.streamMode"
+        ".channels.telegram.accounts.jarvis.streamMode"
+        ".channels.discord.accounts.clever.streamMode"
+        ".channels.discord.accounts.golden.streamMode"
+        ".channels.discord.accounts.jarvis.streamMode"
+      ];
 
-    openclaw.configPatches =
-      basePatches // telegramPatches // discordPatches // { ".bindings" = combinedChannelBindings; };
+      configPatches =
+        basePatches // telegramPatches // discordPatches // { ".bindings" = combinedChannelBindings; };
 
-    openclaw.secretPatches =
-      let
-        secretsDir = "${homeDir}/.secrets";
+      secretPatches =
+        let
+          secretsDir = "${homeDir}/.secrets";
 
-        baseSecrets = {
-          ".gateway.auth.token" = "${secretsDir}/openclaw-gateway-token";
-          ".tools.web.search.apiKey" = "${secretsDir}/brave-api-key";
-          ".agents.defaults.memorySearch.remote.apiKey" = "${secretsDir}/openai-api-key";
-          ".models.providers.openai.apiKey" = "${secretsDir}/openai-api-key";
-          ".models.providers.google.apiKey" = "${secretsDir}/gemini-api-key";
-          ".models.providers.nvidia.apiKey" = "${secretsDir}/nvidia-api-key";
-        };
+          baseSecrets = {
+            ".gateway.auth.token" = "${secretsDir}/openclaw-gateway-token";
+            ".tools.web.search.apiKey" = "${secretsDir}/brave-api-key";
+            ".agents.defaults.memorySearch.remote.apiKey" = "${secretsDir}/openai-api-key";
+            ".models.providers.openai.apiKey" = "${secretsDir}/openai-api-key";
+            ".models.providers.google.apiKey" = "${secretsDir}/gemini-api-key";
+            ".models.providers.nvidia.apiKey" = "${secretsDir}/nvidia-api-key";
+          };
 
-        telegramSecrets = lib.mapAttrs' (name: _: {
-          name = ".channels.telegram.accounts.${name}.botToken";
-          value = "${secretsDir}/telegram-bot-token-${name}";
-        }) telegramEnabledAgents;
+          telegramSecrets = lib.mapAttrs' (name: _: {
+            name = ".channels.telegram.accounts.${name}.botToken";
+            value = "${secretsDir}/telegram-bot-token-${name}";
+          }) telegramEnabledAgents;
 
-        discordSecrets = lib.mapAttrs' (name: _: {
-          name = ".channels.discord.accounts.${name}.token";
-          value = "${secretsDir}/discord-bot-token-${name}";
-        }) discordEnabledAgents;
-      in
-      lib.mkOptionDefault (baseSecrets // telegramSecrets // discordSecrets);
-
+          discordSecrets = lib.mapAttrs' (name: _: {
+            name = ".channels.discord.accounts.${name}.token";
+            value = "${secretsDir}/discord-bot-token-${name}";
+          }) discordEnabledAgents;
+        in
+        lib.mkOptionDefault (baseSecrets // telegramSecrets // discordSecrets);
+    };
   };
 }
