@@ -144,6 +144,16 @@ let
     ".tools.media.audio.echoFormat" = "text";
 
     ".agents.defaults.heartbeat.lightContext" = true;
+
+    ".browser.enabled" = true;
+    ".browser.defaultProfile" = "openclaw";
+    ".browser.profiles.user" = {
+      driver = "existing-session";
+      attachOnly = true;
+    };
+    ".browser.profiles.openclaw" = {
+      cdpPort = 18800;
+    };
   };
 
   hasDiscord = discordEnabledAgents != { };
