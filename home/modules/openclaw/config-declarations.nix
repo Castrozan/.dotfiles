@@ -39,7 +39,7 @@ let
   telegramAccounts = lib.mapAttrs (name: agent: {
     name = if agent.telegram.botName != null then agent.telegram.botName else capitalize name;
     enabled = true;
-    inherit (agent.telegram) dmPolicy groupPolicy streamMode;
+    inherit (agent.telegram) dmPolicy groupPolicy streaming;
   }) telegramEnabledAgents;
 
   telegramBindings = lib.mapAttrsToList (name: _: {
@@ -150,9 +150,11 @@ let
     ".browser.profiles.user" = {
       driver = "existing-session";
       attachOnly = true;
+      color = "#4285f4";
     };
     ".browser.profiles.openclaw" = {
       cdpPort = 18800;
+      color = "#ea4335";
     };
   };
 
@@ -163,7 +165,7 @@ let
     {
       name = if agent.telegram.botName != null then agent.telegram.botName else capitalize name;
       enabled = true;
-      inherit (agent.discord) dmPolicy groupPolicy streamMode;
+      inherit (agent.discord) dmPolicy groupPolicy streaming;
     }
     // lib.optionalAttrs (agent.discord.allowFrom != [ ]) { inherit (agent.discord) allowFrom; }
   ) discordEnabledAgents;
@@ -257,6 +259,12 @@ in
   config = {
     openclaw.configDeletes = [
       ".acp.provenance"
+      ".channels.telegram.accounts.clever.streamMode"
+      ".channels.telegram.accounts.golden.streamMode"
+      ".channels.telegram.accounts.jarvis.streamMode"
+      ".channels.discord.accounts.clever.streamMode"
+      ".channels.discord.accounts.golden.streamMode"
+      ".channels.discord.accounts.jarvis.streamMode"
     ];
 
     openclaw.configPatches =

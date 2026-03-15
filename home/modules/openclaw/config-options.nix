@@ -101,7 +101,7 @@ let
               default = "allowlist";
               description = "Group message policy";
             };
-            streamMode = lib.mkOption {
+            streaming = lib.mkOption {
               type = lib.types.str;
               default = "partial";
               description = "Message streaming mode (partial|block|off)";
@@ -126,7 +126,7 @@ let
               default = "allowlist";
               description = "Guild message policy";
             };
-            streamMode = lib.mkOption {
+            streaming = lib.mkOption {
               type = lib.types.str;
               default = "partial";
               description = "Live preview streaming mode (partial|block|off)";

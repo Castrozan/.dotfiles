@@ -355,7 +355,7 @@ in
   oc-agent-default-telegram-policies = mkEvalCheck "oc-agent-default-telegram-policies" (
     workpcOc.agents.robson.telegram.dmPolicy == "pairing"
     && workpcOc.agents.robson.telegram.groupPolicy == "allowlist"
-    && workpcOc.agents.robson.telegram.streamMode == "partial"
+    && workpcOc.agents.robson.telegram.streaming == "partial"
   ) "default telegram policies should be pairing/allowlist/partial";
 
   oc-agent-default-skills-empty = mkEvalCheck "oc-agent-default-skills-empty" (
