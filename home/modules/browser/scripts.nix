@@ -1,5 +1,7 @@
 { pkgs, ... }:
 let
+  agentBrowserPackage = pkgs.callPackage ./agent-browser-package.nix { };
+
   pinchtabBinary = pkgs.buildGoModule {
     pname = "pinchtab";
     version = "0.4.0";
@@ -16,6 +18,7 @@ let
 in
 {
   home.packages = [
+    agentBrowserPackage
     (pkgs.writeShellScriptBin "pinchtab" ''
       set -euo pipefail
 
