@@ -1,6 +1,7 @@
 {
   pkgs,
   config,
+  lib,
   latest,
   ...
 }:
@@ -31,6 +32,23 @@ let
       "$@"
   '';
 
+  enableChromeRemoteDebuggingToggle = pkgs.writeShellScript "enable-chrome-remote-debugging" ''
+    set -euo pipefail
+    CHROME_LOCAL_STATE="${chromeUserDataDirectory}/Local State"
+
+    if [ ! -f "$CHROME_LOCAL_STATE" ]; then
+      mkdir -p "${chromeUserDataDirectory}"
+      echo '{"devtools":{"remote_debugging":{"user-enabled":true}}}' > "$CHROME_LOCAL_STATE"
+      exit 0
+    fi
+
+    CURRENT_VALUE=$(${pkgs.jq}/bin/jq -r '.devtools.remote_debugging["user-enabled"] // false' "$CHROME_LOCAL_STATE" 2>/dev/null || echo "false")
+
+    if [ "$CURRENT_VALUE" != "true" ]; then
+      ${pkgs.moreutils}/bin/sponge <(${pkgs.jq}/bin/jq '.devtools.remote_debugging["user-enabled"] = true' "$CHROME_LOCAL_STATE") "$CHROME_LOCAL_STATE"
+    fi
+  '';
+
   mcpConfig = {
     mcpServers = {
       chrome-devtools = {
@@ -51,4 +69,8 @@ in
 {
   home.packages = [ latest.google-chrome ];
   home.file.".claude/mcp.json".text = builtins.toJSON mcpConfig;
+
+  home.activation.enableChromeRemoteDebugging = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    run ${enableChromeRemoteDebuggingToggle}
+  '';
 }
