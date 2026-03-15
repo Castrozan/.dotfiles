@@ -10,6 +10,24 @@ let
   homeDir = config.home.homeDirectory;
   chromeUserDataDirectory = "${homeDir}/.config/google-chrome";
   chromeDevtoolsMcpVersion = "0.20.0";
+  chromeDevtoolsMcpNpmPrefix = "${homeDir}/.local/share/chrome-devtools-mcp-npm";
+  chromeDevtoolsMcpBinary = "${chromeDevtoolsMcpNpmPrefix}/lib/node_modules/chrome-devtools-mcp/build/src/index.js";
+
+  installChromeDevtoolsMcpViaNpm = pkgs.writeShellScript "install-chrome-devtools-mcp" ''
+    set -euo pipefail
+    export PATH="${nodejs}/bin:''${PATH:+:$PATH}"
+    export NPM_CONFIG_PREFIX="${chromeDevtoolsMcpNpmPrefix}"
+
+    PACKAGE_JSON="${chromeDevtoolsMcpNpmPrefix}/lib/node_modules/chrome-devtools-mcp/package.json"
+
+    if [ -f "$PACKAGE_JSON" ] && grep -q '"version": "${chromeDevtoolsMcpVersion}"' "$PACKAGE_JSON"; then
+      exit 0
+    fi
+
+    ${nodejs}/bin/npm install -g "chrome-devtools-mcp@${chromeDevtoolsMcpVersion}" \
+      --prefix "${chromeDevtoolsMcpNpmPrefix}" \
+      --registry "https://registry.npmjs.org/"
+  '';
 
   chromeDevtoolsMcpAutoconnectWrapper = pkgs.writeShellScriptBin "chrome-devtools-mcp-autoconnect" ''
     set -euo pipefail
@@ -26,7 +44,7 @@ let
     CHROME_WS_PATH=$(tail -1 "$DEVTOOLS_PORT_FILE")
     CHROME_WS_URL="ws://127.0.0.1:''${CHROME_PORT}''${CHROME_WS_PATH}"
 
-    exec npx -y "chrome-devtools-mcp@${chromeDevtoolsMcpVersion}" \
+    exec ${nodejs}/bin/node "${chromeDevtoolsMcpBinary}" \
       --wsEndpoint "$CHROME_WS_URL" \
       --usageStatistics false \
       "$@"
@@ -76,6 +94,10 @@ in
         RemoteDebuggingAllowed = true;
         DeveloperToolsAvailability = 0;
       };
+
+  home.activation.installChromeDevtoolsMcp = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    run ${installChromeDevtoolsMcpViaNpm}
+  '';
 
   home.activation.enableChromeRemoteDebugging = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     run ${enableChromeRemoteDebuggingToggle}
