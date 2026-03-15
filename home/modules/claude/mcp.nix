@@ -1,10 +1,19 @@
-{ pkgs, ... }:
+{ pkgs, config, ... }:
 let
   chromeDevtoolsMcp = pkgs.callPackage ../browser/chrome-devtools-mcp-package.nix { };
   chromePath = "${pkgs.chromium}/bin/chromium";
+  homeDir = config.home.homeDirectory;
   mcpConfig = {
     mcpServers = {
-      chrome-devtools = {
+      chrome-devtools-live = {
+        command = "${chromeDevtoolsMcp}/bin/chrome-devtools-mcp";
+        args = [
+          "--autoConnect"
+          "--usageStatistics"
+          "false"
+        ];
+      };
+      chrome-devtools-headless = {
         command = "${chromeDevtoolsMcp}/bin/chrome-devtools-mcp";
         args = [
           "--headless"
@@ -15,11 +24,11 @@ let
         ];
       };
       scrapling-fetch = {
-        command = "/home/lucas.zanoni/.local/bin/scrapling-mcp";
+        command = "${homeDir}/.local/bin/scrapling-mcp";
         args = [ ];
       };
       codex = {
-        command = "/home/lucas.zanoni/.local/bin/codex";
+        command = "${homeDir}/.local/bin/codex";
         args = [ "mcp-server" ];
       };
     };

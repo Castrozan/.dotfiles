@@ -31,11 +31,19 @@ let
 
   mcporterServerConfig = {
     mcpServers = {
-      chrome-devtools = {
+      chrome-devtools-live = {
+        command = "${chromeDevtoolsMcp}/bin/chrome-devtools-mcp";
+        args = [
+          "--autoConnect"
+          "--usageStatistics"
+          "false"
+        ];
+      };
+      chrome-devtools-cdp = {
         command = "${chromeDevtoolsWithCdpDiscovery}";
         args = [ ];
       };
-      chrome-devtools-isolated = {
+      chrome-devtools-headless = {
         command = "${chromeDevtoolsMcp}/bin/chrome-devtools-mcp";
         args = [
           "--headless"

@@ -51,7 +51,15 @@ def build_trusted_project_entries() -> dict[str, dict[str, str]]:
 
 def build_mcp_server_entries() -> dict[str, dict[str, Any]]:
     return {
-        "chrome-devtools": {
+        "chrome-devtools-live": {
+            "command": chrome_devtools_mcp_command,
+            "args": [
+                "--autoConnect",
+                "--usageStatistics",
+                "false",
+            ],
+        },
+        "chrome-devtools-headless": {
             "command": chrome_devtools_mcp_command,
             "args": [
                 "--headless",

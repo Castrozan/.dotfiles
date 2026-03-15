@@ -75,7 +75,15 @@ let
     };
 
     mcp = {
-      chrome-devtools = {
+      chrome-devtools-live = {
+        command = "${chromeDevtoolsMcpPackage}/bin/chrome-devtools-mcp";
+        args = [
+          "--autoConnect"
+          "--usageStatistics"
+          "false"
+        ];
+      };
+      chrome-devtools-headless = {
         command = "${chromeDevtoolsMcpPackage}/bin/chrome-devtools-mcp";
         args = [
           "--headless"

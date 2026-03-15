@@ -1,9 +1,9 @@
 { pkgs }:
 let
-  packageVersion = "0.19.0";
+  packageVersion = "0.20.0";
   packageSource = pkgs.fetchzip {
     url = "https://registry.npmjs.org/chrome-devtools-mcp/-/chrome-devtools-mcp-${packageVersion}.tgz";
-    hash = "sha256-qPm7WYpNjcvPC6PrKWehVKi5R0NwM/KPjPbF01jvUAc=";
+    hash = "sha256-tbi5cmrF1m3uI2fgHg5GgbmKhPaamn2dCeKwS8gRe6w=";
   };
 in
 pkgs.stdenvNoCC.mkDerivation {
