@@ -31,27 +31,12 @@ let
 
   mcporterServerConfig = {
     mcpServers = {
-      chrome-devtools-live = {
+      chrome-devtools = {
         command = "${chromeDevtoolsMcp}/bin/chrome-devtools-mcp";
         args = [
           "--autoConnect"
           "--usageStatistics"
           "false"
-        ];
-      };
-      chrome-devtools-cdp = {
-        command = "${chromeDevtoolsWithCdpDiscovery}";
-        args = [ ];
-      };
-      chrome-devtools-headless = {
-        command = "${chromeDevtoolsMcp}/bin/chrome-devtools-mcp";
-        args = [
-          "--headless"
-          "--executablePath"
-          "${pkgs.chromium}/bin/chromium"
-          "--usageStatistics"
-          "false"
-          "--isolated"
         ];
       };
       scrapling-fetch = {

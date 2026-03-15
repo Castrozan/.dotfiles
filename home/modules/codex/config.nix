@@ -2,6 +2,7 @@
   pkgs,
   lib,
   config,
+  latest,
   ...
 }:
 let
@@ -10,7 +11,7 @@ let
   codexDeveloperInstructions = "Operate pragmatically: keep diffs small, verify with fast checks, and prefer repo-local truth (AGENTS.md, bin/, home/modules/). Use profiles: fast (default), deep, web.";
   chromeDevtoolsMcp = pkgs.callPackage ../browser/chrome-devtools-mcp-package.nix { };
   chromeDevtoolsMcpCommand = "${chromeDevtoolsMcp}/bin/chrome-devtools-mcp";
-  chromiumExecutablePath = "${pkgs.chromium}/bin/chromium";
+  chromiumExecutablePath = "${latest.google-chrome}/bin/google-chrome-stable";
   scraplingFetchMcpCommand = "${config.home.homeDirectory}/.local/bin/scrapling-mcp";
 
   codexHooksConfig = builtins.toJSON {

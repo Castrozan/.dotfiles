@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, latest, ... }:
 let
   agentBrowserPackage = pkgs.callPackage ./agent-browser-package.nix { };
 
@@ -22,7 +22,7 @@ in
     (pkgs.writeShellScriptBin "pinchtab" ''
       set -euo pipefail
 
-      export PATH="${pkgs.chromium}/bin:$PATH"
+      export PATH="${latest.google-chrome}/bin:$PATH"
 
       if [[ -z "''${WAYLAND_DISPLAY:-}" ]] && [[ -d "/run/user/''${UID:-1000}" ]]; then
         for candidate in wayland-1 wayland-0; do
@@ -43,7 +43,7 @@ in
       export BRIDGE_HEADLESS="''${BRIDGE_HEADLESS:-true}"
       export BRIDGE_PROFILE="''${BRIDGE_PROFILE:-$HOME/.pinchtab/chrome-profile}"
       export BRIDGE_STATE_DIR="''${BRIDGE_STATE_DIR:-$HOME/.pinchtab}"
-      export CHROME_BINARY="$(command -v chromium)"
+      export CHROME_BINARY="$(command -v google-chrome-stable)"
 
       exec ${pinchtabBinary}/bin/pinchtab "$@"
     '')

@@ -1,7 +1,7 @@
-{ pkgs, ... }:
+{ pkgs, latest, ... }:
 let
   chromeDevtoolsMcpPackage = pkgs.callPackage ../browser/chrome-devtools-mcp-package.nix { };
-  chromiumExecutablePath = "${pkgs.chromium}/bin/chromium";
+  googleChromeExecutablePath = "${latest.google-chrome}/bin/google-chrome-stable";
 
   globalRules = ''
     ${builtins.readFile ../../../agents/core.md}
@@ -75,20 +75,12 @@ let
     };
 
     mcp = {
-      chrome-devtools-live = {
+      chrome-devtools = {
         command = "${chromeDevtoolsMcpPackage}/bin/chrome-devtools-mcp";
         args = [
           "--autoConnect"
-          "--usageStatistics"
-          "false"
-        ];
-      };
-      chrome-devtools-headless = {
-        command = "${chromeDevtoolsMcpPackage}/bin/chrome-devtools-mcp";
-        args = [
-          "--headless"
           "--executablePath"
-          chromiumExecutablePath
+          googleChromeExecutablePath
           "--usageStatistics"
           "false"
         ];
