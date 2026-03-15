@@ -6,8 +6,19 @@ readonly DOTFILES_DIR="${HOME}/.dotfiles"
 readonly BACKUP_PREFIX="backup"
 readonly NIXOS_ALLOW_UNFREE="NIXPKGS_ALLOW_UNFREE=1"
 readonly AGENIX_IDENTITY_KEY="${HOME}/.ssh/id_ed25519"
+readonly NIXOS_SETUID_WRAPPERS_DIR="/run/wrappers/bin"
+
+_ensure_setuid_wrappers_in_path() {
+	if [ -d "$NIXOS_SETUID_WRAPPERS_DIR" ]; then
+		case ":$PATH:" in
+		*":${NIXOS_SETUID_WRAPPERS_DIR}:"*) ;;
+		*) export PATH="${NIXOS_SETUID_WRAPPERS_DIR}:${PATH}" ;;
+		esac
+	fi
+}
 
 main() {
+	_ensure_setuid_wrappers_in_path
 	_rebuild_system
 	_reload_hyprland || true
 }
