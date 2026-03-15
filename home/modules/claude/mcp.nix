@@ -70,6 +70,13 @@ in
   home.packages = [ latest.google-chrome ];
   home.file.".claude/mcp.json".text = builtins.toJSON mcpConfig;
 
+  home.file.".config/google-chrome/policies/managed/agent-browser-control.json".text =
+    builtins.toJSON
+      {
+        RemoteDebuggingAllowed = true;
+        DeveloperToolsAvailability = 0;
+      };
+
   home.activation.enableChromeRemoteDebugging = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     run ${enableChromeRemoteDebuggingToggle}
   '';
