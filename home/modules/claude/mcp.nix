@@ -11,7 +11,7 @@ let
   chromeUserDataDirectory = "${homeDir}/.config/google-chrome";
   chromeDevtoolsMcpVersion = "0.20.0";
   chromeDevtoolsMcpNpmPrefix = "${homeDir}/.local/share/chrome-devtools-mcp-npm";
-  chromeDevtoolsMcpBinary = "${chromeDevtoolsMcpNpmPrefix}/lib/node_modules/chrome-devtools-mcp/build/src/index.js";
+  chromeDevtoolsMcpBinary = "${chromeDevtoolsMcpNpmPrefix}/bin/chrome-devtools-mcp";
 
   installChromeDevtoolsMcpViaNpm = pkgs.writeShellScript "install-chrome-devtools-mcp" ''
     set -euo pipefail
@@ -44,7 +44,7 @@ let
     CHROME_WS_PATH=$(tail -1 "$DEVTOOLS_PORT_FILE")
     CHROME_WS_URL="ws://127.0.0.1:''${CHROME_PORT}''${CHROME_WS_PATH}"
 
-    exec ${nodejs}/bin/node "${chromeDevtoolsMcpBinary}" \
+    exec "${chromeDevtoolsMcpBinary}" \
       --wsEndpoint "$CHROME_WS_URL" \
       --usageStatistics false \
       "$@"
