@@ -70,7 +70,9 @@ class TestHandleActiveWindowChangedPinnedWindowSurvival:
         state = daemon.DaemonState(current_focused_address="0xeee")
         daemon.handle_active_window_changed_event(state, "aaa")
         all_offscreen_args = " ".join(
-            str(c) for c in mock_subprocess_run.call_args_list if "movewindowpixel" in str(c)
+            str(c)
+            for c in mock_subprocess_run.call_args_list
+            if "movewindowpixel" in str(c)
         )
         assert "0xeee" not in all_offscreen_args
 
@@ -181,6 +183,47 @@ class TestHandleOpenWindowEvent:
         assert len(batch_calls) == 0
 
 
+class TestHandleCloseWindowEventRegroupsRemainingWindows:
+    @patch("maximize_focus_daemon.time.sleep")
+    def test_ensures_remaining_windows_stay_grouped_after_close(
+        self, mock_sleep, mock_subprocess_run, hyprctl_response_builder
+    ):
+        hyprctl_response_builder(
+            "activewindow",
+            {"address": "0xaaa", "workspace": {"id": 1}, "fullscreen": 1},
+        )
+        hyprctl_response_builder("workspaces", [{"id": 1, "hasfullscreen": True}])
+        hyprctl_response_builder(
+            "clients",
+            [
+                {
+                    "address": "0xaaa",
+                    "workspace": {"id": 1},
+                    "floating": False,
+                    "grouped": ["0xaaa", "0xccc"],
+                },
+                {
+                    "address": "0xccc",
+                    "workspace": {"id": 1},
+                    "floating": False,
+                    "grouped": ["0xaaa", "0xccc"],
+                },
+            ],
+        )
+        state = daemon.DaemonState(
+            current_focused_address="0xbbb",
+            previous_focused_address="0xaaa",
+            maximized_workspace_ids={1},
+        )
+
+        with patch.object(
+            daemon,
+            "ensure_remaining_tiled_windows_on_active_workspace_are_grouped",
+        ) as mock_ensure_grouped:
+            daemon.handle_close_window_event(state, "bbb")
+            mock_ensure_grouped.assert_called_once()
+
+
 class TestRemaximizeActiveWorkspaceIfNeeded:
     def test_remaximizes_when_tracked_and_not_fullscreen(
         self, mock_subprocess_run, hyprctl_response_builder, sample_hyprland_clients
@@ -236,7 +279,9 @@ class TestMoveFloatingWindowsOffscreen:
         hyprctl_response_builder("clients", sample_hyprland_clients)
         daemon.move_floating_windows_offscreen("0xaaa")
         all_offscreen_args = " ".join(
-            str(c) for c in mock_subprocess_run.call_args_list if "movewindowpixel" in str(c)
+            str(c)
+            for c in mock_subprocess_run.call_args_list
+            if "movewindowpixel" in str(c)
         )
         assert "0xeee" not in all_offscreen_args
 

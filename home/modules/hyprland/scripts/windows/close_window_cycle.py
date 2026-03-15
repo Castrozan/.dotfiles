@@ -1,5 +1,6 @@
 import json
 import os
+import subprocess
 import sys
 import time
 from pathlib import Path
@@ -76,6 +77,10 @@ def find_previous_window_on_workspace(
     return candidates[0].get("address")
 
 
+def ensure_remaining_tiled_windows_are_grouped_on_active_workspace() -> None:
+    subprocess.run(["hypr-ensure-workspace-grouped"], capture_output=True)
+
+
 def main() -> None:
     active_window = get_active_window()
     if not active_window:
@@ -104,6 +109,8 @@ def main() -> None:
         )
     else:
         run_hyprctl("dispatch", "fullscreen 1 set")
+
+    ensure_remaining_tiled_windows_are_grouped_on_active_workspace()
 
 
 if __name__ == "__main__":

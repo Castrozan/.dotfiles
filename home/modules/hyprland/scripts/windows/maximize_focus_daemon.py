@@ -1,5 +1,6 @@
 import os
 import socket
+import subprocess
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -145,6 +146,10 @@ def handle_fullscreen_event(state: DaemonState, fullscreen_state_str: str) -> No
             state.maximized_workspace_ids.add(workspace_id)
 
 
+def ensure_remaining_tiled_windows_on_active_workspace_are_grouped() -> None:
+    subprocess.run(["hypr-ensure-workspace-grouped"], capture_output=True)
+
+
 def handle_close_window_event(state: DaemonState, raw_address: str) -> None:
     closed_address = f"0x{raw_address}"
 
@@ -163,6 +168,7 @@ def handle_close_window_event(state: DaemonState, raw_address: str) -> None:
 
     time.sleep(0.03)
     remaximize_active_workspace_if_needed(state)
+    ensure_remaining_tiled_windows_on_active_workspace_are_grouped()
 
 
 def handle_workspace_changed_event(state: DaemonState, _data: str) -> None:
