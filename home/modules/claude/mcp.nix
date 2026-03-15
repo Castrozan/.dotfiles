@@ -84,22 +84,14 @@ let
 
   injectMcpServersIntoClaudeConfig = pkgs.writeShellScript "inject-mcp-servers" ''
     set -euo pipefail
-    MCP_FILE="${homeDir}/.claude/mcp.json"
+    CLAUDE_CONFIG="${homeDir}/.claude.json"
     SERVERS='${mcpServersToInject}'
 
-    mkdir -p "${homeDir}/.claude"
-
-    if [ -L "$MCP_FILE" ]; then
-      CONTENT=$(cat "$MCP_FILE" 2>/dev/null || echo '{}')
-      rm "$MCP_FILE"
-      echo "$CONTENT" > "$MCP_FILE"
+    if [ ! -f "$CLAUDE_CONFIG" ]; then
+      echo '{"mcpServers":{}}' > "$CLAUDE_CONFIG"
     fi
 
-    if [ ! -f "$MCP_FILE" ]; then
-      echo '{"mcpServers":{}}' > "$MCP_FILE"
-    fi
-
-    ${pkgs.jq}/bin/jq --argjson servers "$SERVERS" '.mcpServers = (.mcpServers // {}) * $servers' "$MCP_FILE" | ${pkgs.moreutils}/bin/sponge "$MCP_FILE"
+    ${pkgs.jq}/bin/jq --argjson servers "$SERVERS" '.mcpServers = (.mcpServers // {}) * $servers' "$CLAUDE_CONFIG" | ${pkgs.moreutils}/bin/sponge "$CLAUDE_CONFIG"
   '';
 in
 {
