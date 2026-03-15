@@ -1,28 +1,8 @@
 { pkgs, config, ... }:
 let
   nodejs = pkgs.nodejs_22;
-  chromeDevtoolsMcp = pkgs.callPackage ../browser/chrome-devtools-mcp-package.nix { };
   mcporterNpmPrefix = "$HOME/.local/share/mcporter-npm";
-  chromeDevtoolsPortDiscoveryCommandPath = "${pkgs.iproute2}/bin:${pkgs.gnugrep}/bin:${pkgs.coreutils}/bin";
-
-  chromeDevtoolsWithCdpDiscovery = pkgs.writeShellScript "chrome-devtools-mcp-discover-cdp" ''
-    set -euo pipefail
-    export PATH="${chromeDevtoolsPortDiscoveryCommandPath}"
-    CHROME_CDP_PORT=$(ss -tlnp 2>/dev/null \
-      | grep -E 'chromium|chrome|brave' \
-      | grep -o '127\.0\.0\.1:[0-9]*' \
-      | head -1 \
-      | cut -d: -f2)
-
-    if [ -z "''${CHROME_CDP_PORT:-}" ]; then
-      echo "no Chrome CDP port found — is pinchtab running?" >&2
-      exit 1
-    fi
-
-    exec ${chromeDevtoolsMcp}/bin/chrome-devtools-mcp \
-      --browserUrl="http://127.0.0.1:''${CHROME_CDP_PORT}" \
-      --usageStatistics false
-  '';
+  homeDir = config.home.homeDirectory;
 
   scraplingMcp = pkgs.writeShellScript "scrapling-mcp" ''
     export PLAYWRIGHT_BROWSERS_PATH="$HOME/.local/share/scrapling-browsers"
@@ -31,14 +11,6 @@ let
 
   mcporterServerConfig = {
     mcpServers = {
-      chrome-devtools = {
-        command = "${chromeDevtoolsMcp}/bin/chrome-devtools-mcp";
-        args = [
-          "--autoConnect"
-          "--usageStatistics"
-          "false"
-        ];
-      };
       scrapling-fetch = {
         command = "${scraplingMcp}";
         args = [ ];

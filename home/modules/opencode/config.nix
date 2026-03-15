@@ -1,7 +1,5 @@
-{ pkgs, latest, ... }:
+{ pkgs, ... }:
 let
-  chromeDevtoolsMcpPackage = pkgs.callPackage ../browser/chrome-devtools-mcp-package.nix { };
-  googleChromeExecutablePath = "${latest.google-chrome}/bin/google-chrome-stable";
 
   globalRules = ''
     ${builtins.readFile ../../../agents/core.md}
@@ -75,16 +73,6 @@ let
     };
 
     mcp = {
-      chrome-devtools = {
-        command = "${chromeDevtoolsMcpPackage}/bin/chrome-devtools-mcp";
-        args = [
-          "--autoConnect"
-          "--executablePath"
-          googleChromeExecutablePath
-          "--usageStatistics"
-          "false"
-        ];
-      };
       scrapling-fetch = {
         command = "/home/lucas.zanoni/.local/bin/scrapling-mcp";
         args = [ ];
