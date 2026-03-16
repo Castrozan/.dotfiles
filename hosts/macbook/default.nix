@@ -26,6 +26,7 @@
     defaults = {
       ".GlobalPreferences"."com.apple.mouse.scaling" = 3.63;
       CustomUserPreferences.".GlobalPreferences"."com.apple.scrollwheel.scaling" = -1;
+      CustomUserPreferences.NSGlobalDomain.AppleScrollAnimationEnabled = false;
       NSGlobalDomain.AppleInterfaceStyle = "Dark";
       NSGlobalDomain."com.apple.swipescrolldirection" = false;
       dock = {
