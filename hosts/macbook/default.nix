@@ -1,4 +1,9 @@
-{ pkgs, username, ... }:
+{
+  lib,
+  pkgs,
+  username,
+  ...
+}:
 {
   users.users.${username} = {
     name = username;
@@ -59,10 +64,11 @@
     ];
   };
 
-  power.sleep = {
-    computer = "never";
-    display = "never";
-  };
+  system.activationScripts.power.text = lib.mkAfter ''
+    echo "configuring pmset for both battery and AC..." >&2
+    pmset -b sleep 0 displaysleep 0
+    pmset -c sleep 0 displaysleep 0
+  '';
 
   system.defaults.screensaver = {
     askForPassword = false;
