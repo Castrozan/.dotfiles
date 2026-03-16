@@ -59,6 +59,16 @@
     ];
   };
 
+  power.sleep = {
+    computer = "never";
+    display = "never";
+  };
+
+  system.defaults.screensaver = {
+    askForPassword = false;
+    askForPasswordDelay = 0;
+  };
+
   programs.fish.enable = true;
 
   security = {
