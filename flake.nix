@@ -171,7 +171,6 @@
         codex = ./home/modules/codex;
         default = {
           imports = [
-            ./home/modules/openclaw
             ./home/modules/claude
             ./home/modules/codex
           ];

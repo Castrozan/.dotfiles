@@ -20,7 +20,7 @@ let
         source = dotfilesSkillsDir + "/${dirname}";
         recursive = true;
       };
-    }) skillNames
+    }) skillNamesWithoutPlatformExclusions
   );
 
   coreAgentRawContent = builtins.readFile ../../../agents/core.md;
@@ -40,9 +40,21 @@ let
 
   sourceRepoPath = "${config.home.homeDirectory}/repo/aplicacoes-atendimento-triage";
 
-  openclawWorkspacePaths = map (
-    agentName: "${config.home.homeDirectory}/${config.openclaw.agents.${agentName}.workspace}/skills"
-  ) (lib.attrNames config.openclaw.enabledAgents);
+  openclawModuleIsAvailable = builtins.hasAttr "openclaw" config;
+
+  skillNamesWithoutPlatformExclusions =
+    if openclawModuleIsAvailable then
+      skillNames
+    else
+      builtins.filter (name: name != "openclaw") skillNames;
+
+  openclawWorkspacePaths =
+    if openclawModuleIsAvailable then
+      map (
+        agentName: "${config.home.homeDirectory}/${config.openclaw.agents.${agentName}.workspace}/skills"
+      ) (lib.attrNames config.openclaw.enabledAgents)
+    else
+      [ ];
 
   allSkillTargetDirectories = [
     "${config.home.homeDirectory}/.claude/skills"
