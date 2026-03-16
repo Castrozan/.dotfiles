@@ -26,7 +26,9 @@
     defaults = {
       ".GlobalPreferences"."com.apple.mouse.scaling" = 3.63;
       CustomUserPreferences.".GlobalPreferences"."com.apple.scrollwheel.scaling" = -1;
-      CustomUserPreferences.NSGlobalDomain.AppleScrollAnimationEnabled = false;
+      CustomUserPreferences."com.apple.driver.AppleBluetoothMultitouch.mouse"."MouseMomentumScroll" =
+        false;
+      CustomUserPreferences."com.apple.AppleMultitouchMouse"."MouseMomentumScroll" = false;
       NSGlobalDomain.AppleInterfaceStyle = "Dark";
       NSGlobalDomain."com.apple.swipescrolldirection" = false;
       dock = {
