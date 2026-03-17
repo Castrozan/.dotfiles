@@ -35,8 +35,13 @@
       CustomUserPreferences."com.apple.AppleMultitouchMouse"."MouseMomentumScroll" = false;
       NSGlobalDomain.AppleInterfaceStyle = "Dark";
       NSGlobalDomain."com.apple.swipescrolldirection" = false;
+      NSGlobalDomain.NSAutomaticWindowAnimationsEnabled = false;
+      NSGlobalDomain.NSWindowResizeTime = 0.001;
       dock = {
         autohide = true;
+        autohide-delay = 0.0;
+        autohide-time-modifier = 0.0;
+        expose-animation-duration = 0.1;
         show-recents = false;
         tilesize = 48;
         minimize-to-application = true;
