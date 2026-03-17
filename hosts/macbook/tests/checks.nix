@@ -15,7 +15,7 @@ let
   yabaiConfig = import ../yabai.nix;
   skhdConfig = import ../skhd.nix;
 
-  yabai = yabaiConfig.services.yabai;
+  inherit (yabaiConfig.services) yabai;
   yabaiLayout = yabai.config.layout;
   windowManager = yabaiConfig.system.defaults.CustomUserPreferences."com.apple.WindowManager";
   skhdBindings = skhdConfig.services.skhd.skhdConfig;
