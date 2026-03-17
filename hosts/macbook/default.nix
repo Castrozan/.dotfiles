@@ -87,6 +87,7 @@
     enable = true;
     onActivation.cleanup = "zap";
     casks = [
+      "alt-tab"
       "brave-browser"
     ];
   };
