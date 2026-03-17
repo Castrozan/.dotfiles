@@ -1,4 +1,9 @@
-{ config, lib, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 let
   dotfilesSkillsDir = ../../../agents/skills;
 
@@ -64,7 +69,7 @@ let
 
   copyCommands =
     let
-      getSourceRevisionCommand = "git -C \"${sourceRepoPath}\" rev-parse HEAD 2>/dev/null";
+      getSourceRevisionCommand = "${pkgs.git}/bin/git -C \"${sourceRepoPath}\" rev-parse HEAD 2>/dev/null";
       getInstalledRevisionCommand =
         targetDir: "cat \"${targetDir}/aplicacoes-atendimento-triage/.git-rev\" 2>/dev/null";
     in
