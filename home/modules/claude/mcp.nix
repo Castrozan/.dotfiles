@@ -72,7 +72,7 @@ let
     CURRENT_VALUE=$(${pkgs.jq}/bin/jq -r '.devtools.remote_debugging["user-enabled"] // false' "$CHROME_LOCAL_STATE" 2>/dev/null || echo "false")
 
     if [ "$CURRENT_VALUE" != "true" ]; then
-      ${pkgs.moreutils}/bin/sponge <(${pkgs.jq}/bin/jq '.devtools.remote_debugging["user-enabled"] = true' "$CHROME_LOCAL_STATE") "$CHROME_LOCAL_STATE"
+      ${pkgs.jq}/bin/jq '.devtools.remote_debugging["user-enabled"] = true' "$CHROME_LOCAL_STATE" | ${pkgs.moreutils}/bin/sponge "$CHROME_LOCAL_STATE"
     fi
   '';
 
