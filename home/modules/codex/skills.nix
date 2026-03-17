@@ -1,4 +1,4 @@
-{ config, ... }:
+_:
 let
   dotfilesSkillsDir = ../../../agents/skills;
 

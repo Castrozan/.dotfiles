@@ -2,8 +2,6 @@
 let
   nodejs = pkgs.nodejs_22;
   mcporterNpmPrefix = "$HOME/.local/share/mcporter-npm";
-  homeDir = config.home.homeDirectory;
-
   scraplingMcp = pkgs.writeShellScript "scrapling-mcp" ''
     export PLAYWRIGHT_BROWSERS_PATH="$HOME/.local/share/scrapling-browsers"
     exec "$HOME/.local/share/scrapling-venv/bin/python" -m scrapling_fetch_mcp.mcp "$@"
