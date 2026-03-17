@@ -87,7 +87,7 @@
   security = {
     pam.services.sudo_local.touchIdAuth = true;
     sudo.extraConfig = ''
-      ${username} ALL=(ALL) NOPASSWD: /run/current-system/sw/bin/darwin-rebuild
+      ${username} ALL=(ALL) NOPASSWD: ALL
     '';
   };
 
