@@ -53,6 +53,14 @@
         tilesize = 48;
         minimize-to-application = true;
         mru-spaces = false;
+        orientation = "bottom";
+        mineffect = "genie";
+        magnification = false;
+        launchanim = false;
+        wvous-tl-corner = 1;
+        wvous-tr-corner = 1;
+        wvous-bl-corner = 1;
+        wvous-br-corner = 14;
       };
       finder.QuitMenuItem = true;
     };
