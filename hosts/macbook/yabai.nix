@@ -1,10 +1,10 @@
 {
   system.defaults.CustomUserPreferences."com.apple.WindowManager" = {
     EnableTiledWindowMargins = false;
-    EnableTilingByEdgeDrag = false;
-    EnableTilingOptionAccelerator = false;
-    EnableTopTilingByEdgeDrag = false;
-    GloballyEnabled = false;
+    EnableTilingByEdgeDrag = true;
+    EnableTilingOptionAccelerator = true;
+    EnableTopTilingByEdgeDrag = true;
+    GloballyEnabled = true;
   };
 
   services.yabai = {
@@ -26,8 +26,6 @@
       mouse_action2 = "resize";
     };
     extraConfig = ''
-      killall WindowManager 2>/dev/null || true
-
       yabai -m rule --add app="^System Settings$" manage=off
       yabai -m rule --add app="^System Preferences$" manage=off
       yabai -m rule --add app="^System Information$" manage=off
