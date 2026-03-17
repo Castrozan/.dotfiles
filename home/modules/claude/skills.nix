@@ -69,9 +69,9 @@ let
 
   copyCommands =
     let
-      getSourceRevisionCommand = "${pkgs.git}/bin/git -C \"${sourceRepoPath}\" rev-parse HEAD 2>/dev/null";
+      getSourceRevisionCommand = "${pkgs.git}/bin/git -C \"${sourceRepoPath}\" rev-parse HEAD 2>/dev/null || true";
       getInstalledRevisionCommand =
-        targetDir: "cat \"${targetDir}/aplicacoes-atendimento-triage/.git-rev\" 2>/dev/null";
+        targetDir: "cat \"${targetDir}/aplicacoes-atendimento-triage/.git-rev\" 2>/dev/null || true";
     in
     lib.concatMapStringsSep "\n" (targetDir: ''
       if [ -d "${sourceRepoPath}" ]; then
