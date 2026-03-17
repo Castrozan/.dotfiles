@@ -10,7 +10,7 @@
   services.yabai = {
     enable = true;
     config = {
-      layout = "stack";
+      layout = "float";
       top_padding = 0;
       bottom_padding = 21;
       left_padding = 25;
