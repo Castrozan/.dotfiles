@@ -29,14 +29,17 @@
     };
     defaults = {
       ".GlobalPreferences"."com.apple.mouse.scaling" = 3.63;
-      CustomUserPreferences.".GlobalPreferences"."com.apple.scrollwheel.scaling" = -1;
-      CustomUserPreferences."com.apple.driver.AppleBluetoothMultitouch.mouse"."MouseMomentumScroll" =
-        false;
-      CustomUserPreferences."com.apple.AppleMultitouchMouse"."MouseMomentumScroll" = false;
-      NSGlobalDomain.AppleInterfaceStyle = "Dark";
-      NSGlobalDomain."com.apple.swipescrolldirection" = false;
-      NSGlobalDomain.NSAutomaticWindowAnimationsEnabled = false;
-      NSGlobalDomain.NSWindowResizeTime = 0.001;
+      CustomUserPreferences = {
+        ".GlobalPreferences"."com.apple.scrollwheel.scaling" = -1;
+        "com.apple.driver.AppleBluetoothMultitouch.mouse"."MouseMomentumScroll" = false;
+        "com.apple.AppleMultitouchMouse"."MouseMomentumScroll" = false;
+      };
+      NSGlobalDomain = {
+        AppleInterfaceStyle = "Dark";
+        "com.apple.swipescrolldirection" = false;
+        NSAutomaticWindowAnimationsEnabled = false;
+        NSWindowResizeTime = 0.001;
+      };
       dock = {
         autohide = true;
         autohide-delay = 0.0;
