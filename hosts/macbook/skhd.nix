@@ -18,6 +18,8 @@
       cmd + alt - 6 : yabai -m window --space 6
       cmd + alt - 7 : yabai -m window --space 7
 
+      cmd - w : yabai -m window --close
+
       cmd - left : yabai -m window --focus prev || yabai -m window --focus last
       cmd - right : yabai -m window --focus next || yabai -m window --focus first
 
