@@ -21,8 +21,6 @@
       cmd - left : yabai -m window --focus prev || yabai -m window --focus last
       cmd - right : yabai -m window --focus next || yabai -m window --focus first
 
-      cmd - w : kill -9 $(yabai -m query --windows --window | jq -r '.pid')
-
       cmd - up : yabai -m window --focus prev || yabai -m window --focus last
       cmd - down : yabai -m window --focus next || yabai -m window --focus first
     '';

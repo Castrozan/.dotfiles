@@ -4,6 +4,7 @@
     EnableTilingByEdgeDrag = true;
     EnableTilingOptionAccelerator = true;
     EnableTopTilingByEdgeDrag = true;
+    EnableStandardClickToShowDesktop = false;
     GloballyEnabled = true;
   };
 
