@@ -180,17 +180,16 @@ _build_home_manager_config_name() {
 
 _hm_switch_with_rate_limit_fallback() {
 	local config=$1
-	local backup
-	backup="$(_backup_name)"
-
 	local flake_ref="${DOTFILES_DIR}?submodules=1#${config}"
 
+	export HOME_MANAGER_BACKUP_OVERWRITE=1
+
 	if command -v home-manager >/dev/null 2>&1; then
-		home-manager switch --flake "$flake_ref" -b "$backup"
+		home-manager switch --flake "$flake_ref" -b "$BACKUP_PREFIX"
 		return 0
 	fi
 
-	if nix run nixpkgs#home-manager -- switch --flake "$flake_ref" -b "$backup" 2>/dev/null; then
+	if nix run nixpkgs#home-manager -- switch --flake "$flake_ref" -b "$BACKUP_PREFIX" 2>/dev/null; then
 		return 0
 	fi
 
@@ -198,11 +197,7 @@ _hm_switch_with_rate_limit_fallback() {
 	echo "Tip: Install home-manager to avoid this:" >&2
 	echo "  nix profile install nixpkgs#home-manager" >&2
 
-	nix run home-manager/master -- switch --flake "$flake_ref" -b "$backup"
-}
-
-_backup_name() {
-	printf '%s-%s\n' "$BACKUP_PREFIX" "$(date +%Y-%m-%d-%H-%M-%S)"
+	nix run home-manager/master -- switch --flake "$flake_ref" -b "$BACKUP_PREFIX"
 }
 
 _reload_hyprland() {
