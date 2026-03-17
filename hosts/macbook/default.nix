@@ -5,6 +5,10 @@
   ...
 }:
 {
+  imports = [
+    ./yabai.nix
+    ./skhd.nix
+  ];
   users.users.${username} = {
     name = username;
     home = "/Users/${username}";

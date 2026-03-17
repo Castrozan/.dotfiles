@@ -30,7 +30,6 @@
 
     ../../home/modules/desktop/fonts.nix
     ../../home/modules/desktop/karabiner.nix
-    ../../home/modules/desktop/rectangle.nix
     ../../home/modules/desktop/spaceman.nix
 
     ../../home/modules/dev/git.nix
