@@ -33,6 +33,10 @@
         ".GlobalPreferences"."com.apple.scrollwheel.scaling" = -1;
         "com.apple.driver.AppleBluetoothMultitouch.mouse"."MouseMomentumScroll" = false;
         "com.apple.AppleMultitouchMouse"."MouseMomentumScroll" = false;
+        "com.apple.AppleMultitouchTrackpad"."TrackpadFourFingerPinchGesture" = 0;
+        "com.apple.AppleMultitouchTrackpad"."TrackpadFiveFingerPinchGesture" = 0;
+        "com.apple.driver.AppleBluetoothMultitouch.trackpad"."TrackpadFourFingerPinchGesture" = 0;
+        "com.apple.driver.AppleBluetoothMultitouch.trackpad"."TrackpadFiveFingerPinchGesture" = 0;
       };
       NSGlobalDomain = {
         AppleInterfaceStyle = "Dark";
