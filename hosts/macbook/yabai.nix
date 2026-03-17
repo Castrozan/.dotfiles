@@ -1,11 +1,11 @@
 {
   system.defaults.CustomUserPreferences."com.apple.WindowManager" = {
     EnableTiledWindowMargins = false;
-    EnableTilingByEdgeDrag = true;
-    EnableTilingOptionAccelerator = true;
-    EnableTopTilingByEdgeDrag = true;
+    EnableTilingByEdgeDrag = false;
+    EnableTilingOptionAccelerator = false;
+    EnableTopTilingByEdgeDrag = false;
     EnableStandardClickToShowDesktop = false;
-    GloballyEnabled = true;
+    GloballyEnabled = false;
   };
 
   services.yabai = {
