@@ -20,8 +20,7 @@
 
       cmd - w : yabai -m window --close
 
-      cmd - up : yabai -m window --focus prev || yabai -m window --focus last
-      cmd - down : yabai -m window --focus next || yabai -m window --focus first
+
     '';
   };
 }
