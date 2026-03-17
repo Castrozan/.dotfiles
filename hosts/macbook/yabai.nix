@@ -13,8 +13,8 @@
       layout = "stack";
       top_padding = 0;
       bottom_padding = 21;
-      left_padding = 40;
-      right_padding = 40;
+      left_padding = 25;
+      right_padding = 25;
       window_gap = 10;
       auto_balance = "off";
       split_ratio = "0.5";
