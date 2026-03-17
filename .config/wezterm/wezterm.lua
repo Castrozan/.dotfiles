@@ -64,6 +64,7 @@ return {
 
   max_fps = 120,
   window_decorations = 'RESIZE',
+  use_resize_increments = false,
   window_background_opacity = 0.6,
   macos_window_background_blur = 20,
   enable_tab_bar = false,

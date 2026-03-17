@@ -11,10 +11,10 @@
     enable = true;
     config = {
       layout = "stack";
-      top_padding = 4;
-      bottom_padding = 10;
-      left_padding = 10;
-      right_padding = 10;
+      top_padding = 0;
+      bottom_padding = 21;
+      left_padding = 40;
+      right_padding = 40;
       window_gap = 10;
       auto_balance = "off";
       split_ratio = "0.5";
@@ -26,6 +26,8 @@
       mouse_action2 = "resize";
     };
     extraConfig = ''
+      killall WindowManager 2>/dev/null || true
+
       yabai -m rule --add app="^System Settings$" manage=off
       yabai -m rule --add app="^System Preferences$" manage=off
       yabai -m rule --add app="^System Information$" manage=off
