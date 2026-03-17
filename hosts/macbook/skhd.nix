@@ -20,7 +20,7 @@
 
       cmd - w : yabai -m window --close
 
-      cmd - f : display_frame=$(yabai -m query --displays --display | python3 -c "import json,sys; d=json.load(sys.stdin)['frame']; print(f'{d[\"x\"]:.0f} {d[\"y\"]+25:.0f} {d[\"w\"]:.0f} {d[\"h\"]-25:.0f}')"); read x y w h <<< "$display_frame"; osascript -e "tell application \"System Events\" to tell (first process whose frontmost is true) to set {position, size} of window 1 to {{$x, $y}, {$w, $h}}"
+      cmd - f : ~/.dotfiles/hosts/macbook/scripts/maximize-focused-window
 
     '';
   };
