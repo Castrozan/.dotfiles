@@ -18,10 +18,10 @@
     config = {
       layout = "float";
       top_padding = 0;
-      bottom_padding = 21;
-      left_padding = 25;
-      right_padding = 25;
-      window_gap = 10;
+      bottom_padding = 0;
+      left_padding = 0;
+      right_padding = 0;
+      window_gap = 0;
       auto_balance = "off";
       split_ratio = "0.5";
       window_placement = "second_child";

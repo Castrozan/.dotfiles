@@ -30,6 +30,7 @@
     defaults = {
       ".GlobalPreferences"."com.apple.mouse.scaling" = 3.63;
       CustomUserPreferences = {
+        ".GlobalPreferences".AppleActionOnDoubleClick = "None";
         ".GlobalPreferences"."com.apple.scrollwheel.scaling" = -1;
         "com.apple.driver.AppleBluetoothMultitouch.mouse"."MouseMomentumScroll" = false;
         "com.apple.AppleMultitouchMouse"."MouseMomentumScroll" = false;
