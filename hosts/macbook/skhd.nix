@@ -18,6 +18,8 @@
       cmd + alt - 6 : yabai -m window --space 6
       cmd + alt - 7 : yabai -m window --space 7
 
+      alt - space : ~/.dotfiles/hosts/macbook/scripts/application-launcher
+
       cmd - return : /run/current-system/sw/bin/wezterm start
 
       cmd - w : yabai -m window --close
