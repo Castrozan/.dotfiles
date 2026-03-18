@@ -15,24 +15,23 @@
 
   services.yabai = {
     enable = true;
-    config = {
-      layout = "float";
-      top_padding = 0;
-      bottom_padding = 0;
-      left_padding = 0;
-      right_padding = 0;
-      window_gap = 0;
-      auto_balance = "off";
-      split_ratio = "0.5";
-      window_placement = "second_child";
-      focus_follows_mouse = "off";
-      mouse_follows_focus = "off";
-      mouse_modifier = "alt";
-      mouse_action1 = "move";
-      mouse_action2 = "resize";
-    };
     extraConfig = ''
       #!/bin/sh
+      yabai -m config layout float
+      yabai -m config top_padding 0
+      yabai -m config bottom_padding 0
+      yabai -m config left_padding 0
+      yabai -m config right_padding 0
+      yabai -m config window_gap 0
+      yabai -m config auto_balance off
+      yabai -m config split_ratio 0.5
+      yabai -m config window_placement second_child
+      yabai -m config focus_follows_mouse off
+      yabai -m config mouse_follows_focus off
+      yabai -m config mouse_modifier alt
+      yabai -m config mouse_action1 move
+      yabai -m config mouse_action2 resize
+
       yabai -m rule --add app="^Google Chrome$" native-fullscreen=on
       yabai -m rule --add app="^Brave Browser$" native-fullscreen=on
       yabai -m rule --add app="^WezTerm$" native-fullscreen=on
