@@ -1,37 +1,38 @@
 #!/usr/bin/env python3
 
-import json
 import subprocess
 
 
-def get_current_display_frame():
-    result = subprocess.run(
-        ["yabai", "-m", "query", "--displays", "--display"],
-        capture_output=True,
-        text=True,
+def toggle_native_fullscreen_on_focused_window():
+    subprocess.run(
+        [
+            "swift",
+            "-e",
+            """
+import Cocoa
+
+guard let app = NSWorkspace.shared.frontmostApplication else { exit(1) }
+let appRef = AXUIElementCreateApplication(app.processIdentifier)
+
+app.activate(options: [])
+
+var windowsRef: CFTypeRef?
+AXUIElementCopyAttributeValue(appRef, kAXWindowsAttribute as CFString, &windowsRef)
+guard let windows = windowsRef as? [AXUIElement], !windows.isEmpty else { exit(1) }
+let win = windows[0]
+
+var fsRef: CFTypeRef?
+AXUIElementCopyAttributeValue(win, "AXFullScreen" as CFString, &fsRef)
+let isFullscreen = (fsRef as? Bool) ?? false
+let newState = (!isFullscreen) as CFBoolean
+AXUIElementSetAttributeValue(win, "AXFullScreen" as CFString, newState)
+""",
+        ]
     )
-    display = json.loads(result.stdout)
-    return display["frame"]
-
-
-def maximize_frontmost_window_to_display(display_frame):
-    menu_bar_height = 25
-    x = int(display_frame["x"])
-    y = int(display_frame["y"]) + menu_bar_height
-    w = int(display_frame["w"])
-    h = int(display_frame["h"]) - menu_bar_height
-
-    applescript = (
-        'tell application "System Events" to tell '
-        "(first process whose frontmost is true) to set "
-        f"{{position, size}} of window 1 to {{{{{x}, {y}}}, {{{w}, {h}}}}}"
-    )
-    subprocess.run(["osascript", "-e", applescript])
 
 
 def main():
-    display_frame = get_current_display_frame()
-    maximize_frontmost_window_to_display(display_frame)
+    toggle_native_fullscreen_on_focused_window()
 
 
 if __name__ == "__main__":
