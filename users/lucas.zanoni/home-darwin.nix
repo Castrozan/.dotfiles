@@ -32,6 +32,7 @@
     ../../home/modules/desktop/karabiner.nix
     ../../home/modules/desktop/spaceman.nix
 
+    ../../home/modules/dev/devenv.nix
     ../../home/modules/dev/git.nix
     ../../home/modules/dev/lazygit.nix
     ../../home/modules/dev/scripts.nix
