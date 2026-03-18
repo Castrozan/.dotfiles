@@ -8,6 +8,7 @@
   imports = [
     ./yabai.nix
     ./skhd.nix
+    ./workspace-window-switcher.nix
   ];
   users.users.${username} = {
     name = username;

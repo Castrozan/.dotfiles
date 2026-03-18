@@ -54,8 +54,25 @@
             ]
           },
           {
-            "description": "Cmd+Tab to workspace window switcher",
+            "description": "Cmd+Tab/Cmd+Shift+Tab workspace window switcher via daemon",
             "manipulators": [
+              {
+                "type": "basic",
+                "from": {
+                  "key_code": "tab",
+                  "modifiers": {
+                    "mandatory": [
+                      "command",
+                      "shift"
+                    ]
+                  }
+                },
+                "to": [
+                  {
+                    "shell_command": "echo prev | /usr/bin/nc -w 1 -U /tmp/workspace-switcher.sock"
+                  }
+                ]
+              },
               {
                 "type": "basic",
                 "from": {
@@ -68,7 +85,7 @@
                 },
                 "to": [
                   {
-                    "shell_command": "/usr/bin/python3 /Users/lucas.zanoni/.dotfiles/hosts/macbook/scripts/workspace-window-switcher"
+                    "shell_command": "echo next | /usr/bin/nc -w 1 -U /tmp/workspace-switcher.sock"
                   }
                 ]
               }

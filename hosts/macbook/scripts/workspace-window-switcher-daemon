@@ -1,0 +1,547 @@
+#!/usr/bin/env python3
+
+import json
+import os
+import socket
+import subprocess
+import sys
+import threading
+
+import AppKit
+import objc
+from Foundation import NSMakeRect, NSMakePoint, NSMakeSize
+from PyObjCTools import AppHelper
+
+SOCKET_PATH = "/tmp/workspace-switcher.sock"
+CARD_WIDTH = 140
+CARD_HEIGHT = 120
+CARD_ICON_SIZE = 64
+CARD_SPACING = 12
+OVERLAY_PADDING = 16
+OVERLAY_CORNER_RADIUS = 14
+CARD_CORNER_RADIUS = 10
+TITLE_FONT_SIZE = 11
+SELECTION_BORDER_WIDTH = 3
+COMMIT_TIMEOUT_SECONDS = 5.0
+
+
+class AeroSpaceWindowProvider:
+    def __init__(self):
+        self._cached_binary_path = None
+
+    def _resolve_binary_path(self):
+        try:
+            pgrep_result = subprocess.run(
+                ["pgrep", "-x", "AeroSpace"],
+                capture_output=True,
+                text=True,
+                timeout=2,
+            )
+            if pgrep_result.returncode != 0 or not pgrep_result.stdout.strip():
+                return None
+            pid = pgrep_result.stdout.strip().split("\n")[0]
+            lsof_result = subprocess.run(
+                ["lsof", "-p", pid], capture_output=True, text=True, timeout=2
+            )
+            for line in lsof_result.stdout.splitlines():
+                if "MacOS/AeroSpace" in line:
+                    application_path = line.split()[-1]
+                    nix_store_path = application_path.split("/Applications/")[0]
+                    return f"{nix_store_path}/bin/aerospace"
+        except subprocess.TimeoutExpired:
+            pass
+        return None
+
+    def _get_binary_path(self):
+        if self._cached_binary_path is None:
+            self._cached_binary_path = self._resolve_binary_path()
+        return self._cached_binary_path
+
+    def _invalidate_binary_cache(self):
+        self._cached_binary_path = None
+
+    def get_focused_workspace_windows(self):
+        binary_path = self._get_binary_path()
+        if binary_path is None:
+            return []
+        try:
+            result = subprocess.run(
+                [binary_path, "list-windows", "--workspace", "focused", "--json"],
+                capture_output=True,
+                text=True,
+                timeout=2,
+            )
+            if result.returncode != 0:
+                self._invalidate_binary_cache()
+                return []
+            return json.loads(result.stdout)
+        except (subprocess.TimeoutExpired, json.JSONDecodeError):
+            self._invalidate_binary_cache()
+            return []
+
+    def get_focused_window_id(self):
+        binary_path = self._get_binary_path()
+        if binary_path is None:
+            return None
+        try:
+            result = subprocess.run(
+                [binary_path, "list-windows", "--focused", "--json"],
+                capture_output=True,
+                text=True,
+                timeout=2,
+            )
+            if result.returncode != 0:
+                return None
+            windows = json.loads(result.stdout)
+            return windows[0]["window-id"] if windows else None
+        except (subprocess.TimeoutExpired, json.JSONDecodeError):
+            return None
+
+    def focus_window(self, window_id):
+        binary_path = self._get_binary_path()
+        if binary_path is None:
+            return
+        try:
+            subprocess.run(
+                [binary_path, "focus", "--window-id", str(window_id)], timeout=2
+            )
+        except subprocess.TimeoutExpired:
+            pass
+
+
+class AppIconProvider:
+    def __init__(self):
+        self._icon_cache = {}
+
+    def get_icon_for_app_name(self, app_name):
+        if app_name in self._icon_cache:
+            return self._icon_cache[app_name]
+        icon = self._resolve_icon_from_running_applications(app_name)
+        self._icon_cache[app_name] = icon
+        return icon
+
+    def _resolve_icon_from_running_applications(self, app_name):
+        workspace = AppKit.NSWorkspace.sharedWorkspace()
+        for running_application in workspace.runningApplications():
+            if running_application.localizedName() == app_name:
+                icon = running_application.icon()
+                if icon:
+                    return icon
+        return workspace.iconForFileType_("app")
+
+
+class NonActivatingPanel(AppKit.NSPanel):
+    def canBecomeKeyWindow(self):
+        return False
+
+    def canBecomeMainWindow(self):
+        return False
+
+
+class SwitcherOverlayPanel:
+    def __init__(self):
+        self._panel = None
+        self._background_view = None
+        self._card_views_with_borders = []
+        self._icon_provider = AppIconProvider()
+        self._create_floating_panel()
+
+    def _create_floating_panel(self):
+        initial_frame = NSMakeRect(0, 0, 400, 200)
+        style_mask = AppKit.NSWindowStyleMaskBorderless | (1 << 7)
+        self._panel = (
+            NonActivatingPanel.alloc().initWithContentRect_styleMask_backing_defer_(
+                initial_frame,
+                style_mask,
+                AppKit.NSBackingStoreBuffered,
+                False,
+            )
+        )
+        self._panel.setLevel_(25)
+        self._panel.setOpaque_(False)
+        self._panel.setBackgroundColor_(AppKit.NSColor.clearColor())
+        self._panel.setHasShadow_(True)
+        self._panel.setIgnoresMouseEvents_(True)
+        self._panel.setCollectionBehavior_(
+            AppKit.NSWindowCollectionBehaviorCanJoinAllSpaces
+            | AppKit.NSWindowCollectionBehaviorStationary
+        )
+
+    def show_with_windows_and_selection(self, windows, selected_index):
+        self._remove_all_card_views()
+        self._build_overlay_with_cards(windows, selected_index)
+        self._center_on_main_screen()
+        self._panel.orderFrontRegardless()
+
+    def update_selected_index(self, selected_index):
+        for card_index, (card_view, border_view) in enumerate(
+            self._card_views_with_borders
+        ):
+            is_selected = card_index == selected_index
+            self._apply_card_selection_style(card_view, border_view, is_selected)
+
+    def hide(self):
+        self._panel.orderOut_(None)
+        self._remove_all_card_views()
+
+    def _remove_all_card_views(self):
+        if self._background_view:
+            self._background_view.removeFromSuperview()
+            self._background_view = None
+        self._card_views_with_borders = []
+
+    def _build_overlay_with_cards(self, windows, selected_index):
+        card_count = len(windows)
+        total_width = (
+            OVERLAY_PADDING * 2
+            + card_count * CARD_WIDTH
+            + max(0, card_count - 1) * CARD_SPACING
+        )
+        total_height = OVERLAY_PADDING * 2 + CARD_HEIGHT
+
+        panel_frame = NSMakeRect(0, 0, total_width, total_height)
+        self._panel.setFrame_display_(panel_frame, False)
+
+        self._background_view = AppKit.NSVisualEffectView.alloc().initWithFrame_(
+            NSMakeRect(0, 0, total_width, total_height)
+        )
+        self._background_view.setMaterial_(13)
+        self._background_view.setBlendingMode_(0)
+        self._background_view.setState_(1)
+        self._background_view.setWantsLayer_(True)
+        self._background_view.layer().setCornerRadius_(OVERLAY_CORNER_RADIUS)
+        self._background_view.layer().setMasksToBounds_(True)
+        self._panel.contentView().addSubview_(self._background_view)
+
+        for window_index, window_data in enumerate(windows):
+            horizontal_offset = OVERLAY_PADDING + window_index * (
+                CARD_WIDTH + CARD_SPACING
+            )
+            vertical_offset = OVERLAY_PADDING
+            is_selected = window_index == selected_index
+
+            card_view, border_view = self._create_window_card(
+                window_data, horizontal_offset, vertical_offset, is_selected
+            )
+            self._background_view.addSubview_(card_view)
+            self._card_views_with_borders.append((card_view, border_view))
+
+    def _create_window_card(
+        self, window_data, horizontal_offset, vertical_offset, is_selected
+    ):
+        card_frame = NSMakeRect(
+            horizontal_offset, vertical_offset, CARD_WIDTH, CARD_HEIGHT
+        )
+        card_view = AppKit.NSView.alloc().initWithFrame_(card_frame)
+        card_view.setWantsLayer_(True)
+        card_view.layer().setCornerRadius_(CARD_CORNER_RADIUS)
+
+        border_view = AppKit.NSView.alloc().initWithFrame_(
+            NSMakeRect(0, 0, CARD_WIDTH, CARD_HEIGHT)
+        )
+        border_view.setWantsLayer_(True)
+        border_view.layer().setCornerRadius_(CARD_CORNER_RADIUS)
+        border_view.layer().setBorderWidth_(SELECTION_BORDER_WIDTH)
+        card_view.addSubview_(border_view)
+
+        app_name = window_data.get("app-name", "")
+        app_icon = self._icon_provider.get_icon_for_app_name(app_name)
+        icon_horizontal_offset = (CARD_WIDTH - CARD_ICON_SIZE) / 2
+        icon_vertical_offset = CARD_HEIGHT - CARD_ICON_SIZE - 16
+        icon_image_view = AppKit.NSImageView.alloc().initWithFrame_(
+            NSMakeRect(
+                icon_horizontal_offset,
+                icon_vertical_offset,
+                CARD_ICON_SIZE,
+                CARD_ICON_SIZE,
+            )
+        )
+        icon_image_view.setImage_(app_icon)
+        icon_image_view.setImageScaling_(AppKit.NSImageScaleProportionallyUpOrDown)
+        card_view.addSubview_(icon_image_view)
+
+        window_title = window_data.get("window-title", app_name)
+        title_frame = NSMakeRect(6, 4, CARD_WIDTH - 12, 28)
+        title_text_field = AppKit.NSTextField.alloc().initWithFrame_(title_frame)
+        title_text_field.setStringValue_(window_title)
+        title_text_field.setBezeled_(False)
+        title_text_field.setDrawsBackground_(False)
+        title_text_field.setEditable_(False)
+        title_text_field.setSelectable_(False)
+        title_text_field.setAlignment_(AppKit.NSTextAlignmentCenter)
+        title_text_field.setLineBreakMode_(4)
+        title_text_field.setMaximumNumberOfLines_(2)
+        card_view.addSubview_(title_text_field)
+
+        self._apply_card_selection_style(card_view, border_view, is_selected)
+        return card_view, border_view
+
+    def _apply_card_selection_style(self, card_view, border_view, is_selected):
+        if is_selected:
+            card_view.layer().setBackgroundColor_(
+                AppKit.NSColor.controlAccentColor()
+                .colorWithAlphaComponent_(0.2)
+                .CGColor()
+            )
+            border_view.layer().setBorderColor_(
+                AppKit.NSColor.controlAccentColor()
+                .colorWithAlphaComponent_(0.8)
+                .CGColor()
+            )
+        else:
+            card_view.layer().setBackgroundColor_(
+                AppKit.NSColor.whiteColor().colorWithAlphaComponent_(0.05).CGColor()
+            )
+            border_view.layer().setBorderColor_(
+                AppKit.NSColor.clearColor().CGColor()
+            )
+
+        text_alpha = 1.0 if is_selected else 0.6
+        font_weight = (
+            AppKit.NSFontWeightMedium if is_selected else AppKit.NSFontWeightRegular
+        )
+        for subview in card_view.subviews():
+            if isinstance(subview, AppKit.NSTextField):
+                subview.setTextColor_(
+                    AppKit.NSColor.whiteColor().colorWithAlphaComponent_(text_alpha)
+                )
+                subview.setFont_(
+                    AppKit.NSFont.systemFontOfSize_weight_(
+                        TITLE_FONT_SIZE, font_weight
+                    )
+                )
+
+    def _center_on_main_screen(self):
+        screen = AppKit.NSScreen.mainScreen()
+        if screen is None:
+            return
+        screen_frame = screen.frame()
+        panel_frame = self._panel.frame()
+        centered_x = (screen_frame.size.width - panel_frame.size.width) / 2
+        centered_y = (screen_frame.size.height - panel_frame.size.height) / 2
+        self._panel.setFrameOrigin_(NSMakePoint(centered_x, centered_y))
+
+
+class WindowSwitcherStateMachine:
+    def __init__(self, aerospace_provider, overlay_panel):
+        self._aerospace = aerospace_provider
+        self._overlay = overlay_panel
+        self._windows = []
+        self._selected_index = 0
+        self._active = False
+        self._fetching_windows = False
+        self._commit_requested_before_ready = False
+        self._pending_direction_changes = 0
+        self._commit_timeout_timer = None
+
+    @property
+    def is_active(self):
+        return self._active
+
+    def handle_next_command(self):
+        if not self._active:
+            self._begin_activation_with_direction(1)
+            return
+        if self._fetching_windows:
+            self._pending_direction_changes += 1
+            return
+        self._advance_selection_by(1)
+        self._restart_commit_timeout()
+
+    def handle_prev_command(self):
+        if not self._active:
+            self._begin_activation_with_direction(-1)
+            return
+        if self._fetching_windows:
+            self._pending_direction_changes -= 1
+            return
+        self._advance_selection_by(-1)
+        self._restart_commit_timeout()
+
+    def handle_commit_command(self):
+        if not self._active:
+            return
+        if self._fetching_windows:
+            self._commit_requested_before_ready = True
+            return
+        self._cancel_commit_timeout()
+        self._focus_selected_window_and_deactivate()
+
+    def handle_cancel_command(self):
+        if not self._active:
+            return
+        self._cancel_commit_timeout()
+        self._deactivate()
+
+    def _begin_activation_with_direction(self, initial_direction):
+        self._active = True
+        self._fetching_windows = True
+        self._commit_requested_before_ready = False
+        self._pending_direction_changes = initial_direction
+        threading.Thread(
+            target=self._fetch_windows_from_aerospace, daemon=True
+        ).start()
+
+    def _fetch_windows_from_aerospace(self):
+        windows = self._aerospace.get_focused_workspace_windows()
+        focused_window_id = self._aerospace.get_focused_window_id()
+        AppHelper.callAfter(
+            self._on_aerospace_windows_fetched, windows, focused_window_id
+        )
+
+    def _on_aerospace_windows_fetched(self, windows, focused_window_id):
+        self._fetching_windows = False
+
+        if len(windows) <= 1:
+            self._deactivate()
+            return
+
+        focused_windows = [
+            w for w in windows if w["window-id"] == focused_window_id
+        ]
+        non_focused_windows = [
+            w for w in windows if w["window-id"] != focused_window_id
+        ]
+        self._windows = focused_windows + non_focused_windows
+
+        total_direction = self._pending_direction_changes
+        if total_direction > 0:
+            self._selected_index = total_direction % len(self._windows)
+        elif total_direction < 0:
+            self._selected_index = (len(self._windows) + total_direction) % len(
+                self._windows
+            )
+        else:
+            self._selected_index = min(1, len(self._windows) - 1)
+
+        if self._commit_requested_before_ready:
+            self._focus_selected_window_and_deactivate()
+            return
+
+        self._overlay.show_with_windows_and_selection(
+            self._windows, self._selected_index
+        )
+        self._restart_commit_timeout()
+
+    def _advance_selection_by(self, direction):
+        if not self._windows:
+            return
+        self._selected_index = (self._selected_index + direction) % len(self._windows)
+        self._overlay.update_selected_index(self._selected_index)
+
+    def _focus_selected_window_and_deactivate(self):
+        if self._windows and 0 <= self._selected_index < len(self._windows):
+            selected_window = self._windows[self._selected_index]
+            self._aerospace.focus_window(selected_window["window-id"])
+        self._deactivate()
+
+    def _deactivate(self):
+        self._cancel_commit_timeout()
+        self._active = False
+        self._fetching_windows = False
+        self._commit_requested_before_ready = False
+        self._pending_direction_changes = 0
+        self._windows = []
+        self._selected_index = 0
+        self._overlay.hide()
+
+    def _restart_commit_timeout(self):
+        self._cancel_commit_timeout()
+        self._commit_timeout_timer = threading.Timer(
+            COMMIT_TIMEOUT_SECONDS,
+            lambda: AppHelper.callAfter(self.handle_commit_command),
+        )
+        self._commit_timeout_timer.start()
+
+    def _cancel_commit_timeout(self):
+        if self._commit_timeout_timer:
+            self._commit_timeout_timer.cancel()
+            self._commit_timeout_timer = None
+
+
+class CommandSocketServer:
+    def __init__(self, switcher_state):
+        self._switcher_state = switcher_state
+
+    def start_accepting_connections(self):
+        server_thread = threading.Thread(
+            target=self._run_server_loop, daemon=True
+        )
+        server_thread.start()
+
+    def _run_server_loop(self):
+        if os.path.exists(SOCKET_PATH):
+            os.unlink(SOCKET_PATH)
+
+        server_socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        server_socket.bind(SOCKET_PATH)
+        os.chmod(SOCKET_PATH, 0o666)
+        server_socket.listen(5)
+
+        while True:
+            try:
+                client_connection, _ = server_socket.accept()
+                try:
+                    raw_command = client_connection.recv(1024).decode().strip()
+                finally:
+                    client_connection.close()
+                self._dispatch_command_to_main_thread(raw_command)
+            except Exception:
+                pass
+
+    def _dispatch_command_to_main_thread(self, command):
+        command_to_handler = {
+            "next": self._switcher_state.handle_next_command,
+            "prev": self._switcher_state.handle_prev_command,
+            "commit": self._switcher_state.handle_commit_command,
+            "cancel": self._switcher_state.handle_cancel_command,
+        }
+        handler = command_to_handler.get(command)
+        if handler:
+            AppHelper.callAfter(handler)
+
+
+class ModifierKeyReleaseMonitor:
+    def __init__(self, switcher_state):
+        self._switcher_state = switcher_state
+        self._event_monitor = None
+
+    def start_monitoring(self):
+        self._event_monitor = (
+            AppKit.NSEvent.addGlobalMonitorForEventsMatchingMask_handler_(
+                AppKit.NSEventMaskFlagsChanged,
+                self._on_modifier_flags_changed,
+            )
+        )
+
+    def _on_modifier_flags_changed(self, event):
+        if not self._switcher_state.is_active:
+            return
+        command_key_still_held = (
+            event.modifierFlags() & AppKit.NSEventModifierFlagCommand
+        )
+        if not command_key_still_held:
+            AppHelper.callAfter(self._switcher_state.handle_commit_command)
+
+
+def main():
+    application = AppKit.NSApplication.sharedApplication()
+    application.setActivationPolicy_(
+        AppKit.NSApplicationActivationPolicyAccessory
+    )
+
+    aerospace_provider = AeroSpaceWindowProvider()
+    overlay_panel = SwitcherOverlayPanel()
+    switcher_state = WindowSwitcherStateMachine(aerospace_provider, overlay_panel)
+
+    command_server = CommandSocketServer(switcher_state)
+    command_server.start_accepting_connections()
+
+    modifier_monitor = ModifierKeyReleaseMonitor(switcher_state)
+    modifier_monitor.start_monitoring()
+
+    AppHelper.runEventLoop()
+
+
+if __name__ == "__main__":
+    main()
