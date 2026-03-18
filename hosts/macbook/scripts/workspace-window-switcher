@@ -4,6 +4,8 @@ import json
 import subprocess
 import sys
 
+CHOOSE_BINARY = "/etc/profiles/per-user/lucas.zanoni/bin/choose"
+
 
 def find_aerospace_binary():
     result = subprocess.run(
@@ -67,7 +69,7 @@ def show_picker_with_choose(windows, focused_window_id):
     picker_input = "\n".join(display_lines)
 
     result = subprocess.run(
-        ["choose", "-n", str(min(len(ordered_windows), 10)), "-p", "Switch to:"],
+        [CHOOSE_BINARY, "-n", str(min(len(ordered_windows), 10)), "-p", "Switch to:"],
         input=picker_input,
         capture_output=True,
         text=True,
