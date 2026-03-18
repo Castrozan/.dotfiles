@@ -42,9 +42,6 @@
           appsToShow = 0;
           spacesToShow = 1;
           showMinimizedWindows = 2;
-          holdShortcut = {
-            string = "⌘";
-          };
         };
       };
       NSGlobalDomain = {
