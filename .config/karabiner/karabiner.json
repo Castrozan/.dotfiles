@@ -222,6 +222,27 @@
             ]
           },
           {
+            "description": "Cmd+Tab to F20 (intercepted by AeroSpace workspace switcher)",
+            "manipulators": [
+              {
+                "type": "basic",
+                "from": {
+                  "key_code": "tab",
+                  "modifiers": {
+                    "mandatory": [
+                      "command"
+                    ]
+                  }
+                },
+                "to": [
+                  {
+                    "key_code": "f20"
+                  }
+                ]
+              }
+            ]
+          },
+          {
             "description": "Ctrl+W to Close (Cmd+W) except in terminals",
             "manipulators": [
               {
