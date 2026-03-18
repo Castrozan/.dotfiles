@@ -177,10 +177,20 @@
         };
       };
 
-      # ADD comment
       checks.${linuxSystem} = import ./tests/nix-checks {
         inherit
           pkgs
+          inputs
+          self
+          nixpkgs-version
+          home-version
+          ;
+        inherit (nixpkgs) lib;
+      };
+
+      checks.${darwinSystem} = import ./tests/nix-checks/darwin.nix {
+        pkgs = darwin.pkgs;
+        inherit
           inputs
           self
           nixpkgs-version
