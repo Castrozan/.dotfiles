@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """branch-protection.py - Extra warnings for operations on protected branches."""
 
+from __future__ import annotations
+
 import json
 import os
 import re
@@ -12,10 +14,7 @@ def run_git(args: list[str]) -> tuple[int, str]:
     """Run a git command and return (exit_code, output)."""
     try:
         result = subprocess.run(
-            ["git"] + args,
-            capture_output=True,
-            text=True,
-            timeout=5
+            ["git"] + args, capture_output=True, text=True, timeout=5
         )
         return result.returncode, result.stdout.strip()
     except (subprocess.TimeoutExpired, FileNotFoundError):
@@ -36,7 +35,9 @@ def is_protected_branch(branch: str) -> bool:
 
 def get_remote_tracking_info() -> tuple[str | None, bool]:
     """Get remote tracking branch and whether we're ahead/behind."""
-    code, output = run_git(["rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{u}"])
+    code, output = run_git(
+        ["rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{u}"]
+    )
     if code != 0:
         return None, False
 
@@ -80,7 +81,7 @@ def main():
                     f"BLOCKED: Force push to protected branch '{current_branch}' is dangerous.\n"
                     "This can destroy commit history for all collaborators.\n"
                     "If you really need this, use: git push --force-with-lease"
-                )
+                ),
             }
             print(json.dumps(output))
             sys.exit(0)
@@ -122,7 +123,7 @@ def main():
     if messages:
         output = {
             "continue": True,
-            "systemMessage": "GIT SAFETY:\n" + "\n".join(messages)
+            "systemMessage": "GIT SAFETY:\n" + "\n".join(messages),
         }
         print(json.dumps(output))
 
