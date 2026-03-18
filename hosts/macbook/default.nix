@@ -38,6 +38,11 @@
         "com.apple.AppleMultitouchTrackpad"."TrackpadFiveFingerPinchGesture" = 0;
         "com.apple.driver.AppleBluetoothMultitouch.trackpad"."TrackpadFourFingerPinchGesture" = 0;
         "com.apple.driver.AppleBluetoothMultitouch.trackpad"."TrackpadFiveFingerPinchGesture" = 0;
+        "com.lwouis.alt-tab-macos" = {
+          spacesToShow = 1;
+          showMinimizedWindows = 2;
+          hideStatusIcons = true;
+        };
       };
       NSGlobalDomain = {
         AppleInterfaceStyle = "Dark";

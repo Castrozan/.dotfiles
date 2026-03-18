@@ -18,6 +18,8 @@
       cmd + alt - 6 : yabai -m window --space 6
       cmd + alt - 7 : yabai -m window --space 7
 
+      cmd - return : /run/current-system/sw/bin/wezterm start
+
       cmd - w : yabai -m window --close
 
       cmd - f : ~/.dotfiles/hosts/macbook/scripts/maximize-focused-window
