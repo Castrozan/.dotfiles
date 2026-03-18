@@ -19,7 +19,7 @@ ADDITIONAL_PATH_DIRECTORIES = [
 ]
 
 CUSTOM_NEW_WINDOW_COMMANDS = {
-    "WezTerm": ["/run/current-system/sw/bin/wezterm", "start"],
+    "WezTerm": ["/etc/profiles/per-user/lucas.zanoni/bin/wezterm", "start"],
 }
 
 APPLESCRIPT_MAKE_NEW_WINDOW_APPS = {

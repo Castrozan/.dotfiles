@@ -20,7 +20,7 @@
 
       alt - space : ~/.dotfiles/hosts/macbook/scripts/application-launcher
 
-      cmd - return : /run/current-system/sw/bin/wezterm start
+      cmd - return : /etc/profiles/per-user/lucas.zanoni/bin/wezterm start
 
       cmd - w : yabai -m window --close
 
