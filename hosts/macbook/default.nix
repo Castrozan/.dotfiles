@@ -95,6 +95,7 @@
     casks = [
       "alt-tab"
       "brave-browser"
+      "docker"
     ];
   };
 
