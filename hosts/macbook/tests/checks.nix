@@ -16,7 +16,7 @@ let
   skhdConfig = import ../skhd.nix;
 
   inherit (yabaiConfig.services) yabai;
-  yabaiLayout = yabai.config.layout;
+  yabaiUsesFloatLayout = lib.strings.hasInfix "layout float" yabai.extraConfig;
   windowManager = yabaiConfig.system.defaults.CustomUserPreferences."com.apple.WindowManager";
   skhdBindings = skhdConfig.services.skhd.skhdConfig;
 
@@ -29,9 +29,9 @@ in
     mkEvalCheck "macbook-yabai-enabled" yabai.enable
       "yabai window manager should be enabled";
 
-  macbook-yabai-float-layout = mkEvalCheck "macbook-yabai-float-layout" (
-    yabaiLayout == "float"
-  ) "yabai must use float layout to avoid WindowManager resize conflicts";
+  macbook-yabai-float-layout =
+    mkEvalCheck "macbook-yabai-float-layout" yabaiUsesFloatLayout
+      "yabai must use float layout to avoid WindowManager resize conflicts";
 
   macbook-macos-tiling-disabled = mkEvalCheck "macbook-macos-tiling-disabled" (
     !windowManager.GloballyEnabled
