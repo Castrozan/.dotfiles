@@ -18,9 +18,7 @@
       cmd + alt - 6 : yabai -m window --space 6
       cmd + alt - 7 : yabai -m window --space 7
 
-      alt - space : ~/.dotfiles/hosts/macbook/scripts/application-launcher
-
-      cmd - return : /etc/profiles/per-user/lucas.zanoni/bin/wezterm start
+      cmd - q : ~/.dotfiles/hosts/macbook/scripts/application-launcher
 
       cmd - w : yabai -m window --close
 

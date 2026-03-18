@@ -9,60 +9,6 @@
       "complex_modifications": {
         "rules": [
           {
-            "description": "Cmd+W to Quit (Cmd+Q)",
-            "manipulators": [
-              {
-                "type": "basic",
-                "from": {
-                  "key_code": "w",
-                  "modifiers": {
-                    "mandatory": [
-                      "command"
-                    ],
-                    "optional": [
-                      "any"
-                    ]
-                  }
-                },
-                "to": [
-                  {
-                    "key_code": "q",
-                    "modifiers": [
-                      "command"
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "description": "Cmd+Q to Spotlight (Cmd+Space)",
-            "manipulators": [
-              {
-                "type": "basic",
-                "from": {
-                  "key_code": "q",
-                  "modifiers": {
-                    "mandatory": [
-                      "command"
-                    ],
-                    "optional": [
-                      "any"
-                    ]
-                  }
-                },
-                "to": [
-                  {
-                    "key_code": "spacebar",
-                    "modifiers": [
-                      "command"
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
-          {
             "description": "Cmd+D to Show Desktop (Fn+F11)",
             "manipulators": [
               {
