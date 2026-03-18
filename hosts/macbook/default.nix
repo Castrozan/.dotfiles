@@ -28,7 +28,7 @@
       ];
     };
     defaults = {
-      ".GlobalPreferences"."com.apple.mouse.scaling" = 3.63;
+      ".GlobalPreferences"."com.apple.mouse.scaling" = 3.99;
       CustomUserPreferences = {
         ".GlobalPreferences".AppleActionOnDoubleClick = "None";
         ".GlobalPreferences"."com.apple.scrollwheel.scaling" = -1;
