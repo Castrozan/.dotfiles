@@ -6,6 +6,8 @@
     choose-gui
     curl
     delta
+    docker
+    docker-compose
     eza
     fd
     fzf
