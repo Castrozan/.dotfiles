@@ -92,6 +92,43 @@
             ]
           },
           {
+            "description": "Cmd release commits workspace window switcher",
+            "manipulators": [
+              {
+                "type": "basic",
+                "from": {
+                  "key_code": "left_command"
+                },
+                "to": [
+                  {
+                    "key_code": "left_command"
+                  }
+                ],
+                "to_after_key_up": [
+                  {
+                    "shell_command": "[ -f /tmp/workspace-switcher.active ] && echo commit | /usr/bin/nc -w 1 -U /tmp/workspace-switcher.sock"
+                  }
+                ]
+              },
+              {
+                "type": "basic",
+                "from": {
+                  "key_code": "right_command"
+                },
+                "to": [
+                  {
+                    "key_code": "right_command"
+                  }
+                ],
+                "to_after_key_up": [
+                  {
+                    "shell_command": "[ -f /tmp/workspace-switcher.active ] && echo commit | /usr/bin/nc -w 1 -U /tmp/workspace-switcher.sock"
+                  }
+                ]
+              }
+            ]
+          },
+          {
             "description": "Ctrl+W to Close (Cmd+W) except in terminals",
             "manipulators": [
               {

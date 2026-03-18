@@ -6,6 +6,9 @@ import socket
 import subprocess
 import sys
 import threading
+import warnings
+
+warnings.filterwarnings("ignore", message="PyObjCPointer created")
 
 import AppKit
 import objc
@@ -13,6 +16,7 @@ from Foundation import NSMakeRect, NSMakePoint, NSMakeSize
 from PyObjCTools import AppHelper
 
 SOCKET_PATH = "/tmp/workspace-switcher.sock"
+ACTIVE_FLAG_PATH = "/tmp/workspace-switcher.active"
 CARD_WIDTH = 140
 CARD_HEIGHT = 120
 CARD_ICON_SIZE = 64
@@ -22,7 +26,7 @@ OVERLAY_CORNER_RADIUS = 14
 CARD_CORNER_RADIUS = 10
 TITLE_FONT_SIZE = 11
 SELECTION_BORDER_WIDTH = 3
-COMMIT_TIMEOUT_SECONDS = 5.0
+COMMIT_TIMEOUT_SECONDS = 3.0
 
 
 class AeroSpaceWindowProvider:
@@ -373,8 +377,21 @@ class WindowSwitcherStateMachine:
         self._cancel_commit_timeout()
         self._deactivate()
 
+    def _create_active_flag_file(self):
+        try:
+            open(ACTIVE_FLAG_PATH, "w").close()
+        except OSError:
+            pass
+
+    def _remove_active_flag_file(self):
+        try:
+            os.unlink(ACTIVE_FLAG_PATH)
+        except FileNotFoundError:
+            pass
+
     def _begin_activation_with_direction(self, initial_direction):
         self._active = True
+        self._create_active_flag_file()
         self._fetching_windows = True
         self._commit_requested_before_ready = False
         self._pending_direction_changes = initial_direction
@@ -437,6 +454,7 @@ class WindowSwitcherStateMachine:
 
     def _deactivate(self):
         self._cancel_commit_timeout()
+        self._remove_active_flag_file()
         self._active = False
         self._fetching_windows = False
         self._commit_requested_before_ready = False
@@ -524,7 +542,16 @@ class ModifierKeyReleaseMonitor:
             AppHelper.callAfter(self._switcher_state.handle_commit_command)
 
 
+def remove_stale_active_flag_on_startup():
+    try:
+        os.unlink(ACTIVE_FLAG_PATH)
+    except FileNotFoundError:
+        pass
+
+
 def main():
+    remove_stale_active_flag_on_startup()
+
     application = AppKit.NSApplication.sharedApplication()
     application.setActivationPolicy_(
         AppKit.NSApplicationActivationPolicyAccessory
