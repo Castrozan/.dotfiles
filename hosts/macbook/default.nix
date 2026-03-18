@@ -39,8 +39,10 @@
         "com.apple.driver.AppleBluetoothMultitouch.trackpad"."TrackpadFourFingerPinchGesture" = 0;
         "com.apple.driver.AppleBluetoothMultitouch.trackpad"."TrackpadFiveFingerPinchGesture" = 0;
         "com.lwouis.alt-tab-macos" = {
+          appsToShow = 0;
           spacesToShow = 1;
           showMinimizedWindows = 2;
+          holdShortcut = "⌘";
           hideStatusIcons = true;
         };
       };
@@ -118,6 +120,11 @@
       ${username} ALL=(ALL) NOPASSWD: ALL
     '';
   };
+
+  nix.settings.trusted-users = [
+    "root"
+    username
+  ];
 
   nixpkgs = {
     config.allowUnfree = true;
