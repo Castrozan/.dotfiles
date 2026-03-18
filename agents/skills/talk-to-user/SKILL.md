@@ -4,7 +4,7 @@ description: Speak to the user via PC speakers or send voice messages. Use when 
 ---
 
 <voice_config>
-Each agent has a distinct voice configured via Nix (openclaw.tts option). Read voice config from ~/@workspacePath@/tts.json. Default engine: edge-tts (Microsoft Edge, free, no API key).
+Each agent has a distinct voice configured via Nix. Read voice config from ~/@workspacePath@/tts.json. Default engine: edge-tts (Microsoft Edge, free, no API key).
 </voice_config>
 
 <when_to_speak>

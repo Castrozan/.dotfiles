@@ -47,11 +47,18 @@ let
 
   openclawModuleIsAvailable = builtins.hasAttr "openclaw" config;
 
+  skillsThatRequireOpenclawInfrastructure = [
+    "openclaw"
+    "grid"
+    "assistant-cron"
+    "hey-clever"
+  ];
+
   skillNamesWithoutPlatformExclusions =
     if openclawModuleIsAvailable then
       skillNames
     else
-      builtins.filter (name: name != "openclaw") skillNames;
+      builtins.filter (name: !builtins.elem name skillsThatRequireOpenclawInfrastructure) skillNames;
 
   openclawWorkspacePaths =
     if openclawModuleIsAvailable then

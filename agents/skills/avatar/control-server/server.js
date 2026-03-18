@@ -2,7 +2,7 @@
 /**
  * Clever's Avatar Control Server
  *
- * WebSocket coordinator between OpenClaw agent and avatar renderer.
+ * WebSocket coordinator between AI agent and avatar renderer.
  * Manages avatar state, TTS generation, and command forwarding.
  */
 
@@ -46,7 +46,7 @@ const state = {
 
 // Connected clients
 const clients = {
-  agent: null, // Controller (OpenClaw agent)
+  agent: null, // Controller (AI agent)
   renderer: null, // Display (browser avatar)
 };
 

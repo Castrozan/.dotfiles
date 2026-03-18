@@ -8,7 +8,7 @@ Two backends. Default to grok-search for search and analysis tasks — returns s
 </tool_selection>
 
 <auth_traps>
-grok-search: requires grok-4 family models only for server-side search. API key configured via openclaw models auth or XAI_API_KEY env var.
+grok-search: requires grok-4 family models only for server-side search. API key configured via XAI_API_KEY env var or auth-profiles.json.
 
 twikit-cli: cookie-based auth. Run twikit-cli extract-cookies to pull from pinchtab's Chrome profile. Re-run when cookies expire. Credentials managed by agenix.
 </auth_traps>
