@@ -87,7 +87,7 @@ def show_picker_with_choose(windows, focused_window_id):
 
 def main():
     windows = get_workspace_windows()
-    if len(windows) <= 1:
+    if not windows:
         return
 
     focused_window_id = get_focused_window_id()
