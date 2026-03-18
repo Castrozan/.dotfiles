@@ -5,7 +5,6 @@ result/
 secrets/
 private-config/
 .git/
-docs/ai-context/
 agents/skills/*/scripts/
 agents/skills/*/refs/
 tests/

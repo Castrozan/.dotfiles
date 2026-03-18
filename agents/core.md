@@ -57,10 +57,6 @@ Before writing any documentation, read and follow the documentation skill for ho
 Policies express general intent, goals, boundaries, and constraints — never specific implementations or current state. A policy defines what must be true and why, not how to achieve it. Code is one possible implementation of a policy; the policy survives even when the implementation changes entirely. Write policies as dense prose that makes boundaries and requisites clear without prescribing the means. Policies live in CLAUDE.md or as NixOS assertions in the modules they govern. When modifying any domain, check for applicable policies before choosing an implementation. Code must conform to policies, not the other way around.
 </policies>
 
-<ai-context-docs>
-Pre-generated codebase documentation lives in `docs/ai-context/`. Read `docs/ai-context/INDEX.md` before exploring source code — it maps the entire repository. After significant structural changes (new modules, directory reorg, large refactors), regenerate with `codewiki` skill. Do not regenerate for minor changes.
-</ai-context-docs>
-
 <prompts>
 Understand contextually. User prompts may contain errors - interpret intent, correct obvious mistakes. User is senior engineer. When stuck or unsure, ask instead of assuming.
 </prompts>
