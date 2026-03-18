@@ -32,13 +32,6 @@
       yabai -m config mouse_action1 move
       yabai -m config mouse_action2 resize
 
-      yabai -m rule --add app="^Google Chrome$" native-fullscreen=on
-      yabai -m rule --add app="^Brave Browser$" native-fullscreen=on
-      yabai -m rule --add app="^WezTerm$" native-fullscreen=on
-      yabai -m rule --add app="^Code$" native-fullscreen=on
-      yabai -m rule --add app="^Cursor$" native-fullscreen=on
-      yabai -m rule --add app="^Slack$" native-fullscreen=on
-
       yabai -m rule --add app="^System Settings$" manage=off
       yabai -m rule --add app="^System Preferences$" manage=off
       yabai -m rule --add app="^System Information$" manage=off
