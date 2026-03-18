@@ -32,6 +32,7 @@
       mouse_action2 = "resize";
     };
     extraConfig = ''
+      #!/bin/sh
       yabai -m rule --add app="^Google Chrome$" native-fullscreen=on
       yabai -m rule --add app="^Brave Browser$" native-fullscreen=on
       yabai -m rule --add app="^WezTerm$" native-fullscreen=on
