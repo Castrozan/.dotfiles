@@ -14,6 +14,7 @@ CHROME_GLOBAL_FLAGS = [
     f"--user-data-dir={CHROME_GLOBAL_DATA_DIR}",
     f"--class={CHROME_GLOBAL_CLASS}",
     "--enable-features=UseNativeNotifications",
+    "--remote-debugging-port=0",
 ]
 CHROME_GLOBAL_URLS = [
     "chrome://newtab",
