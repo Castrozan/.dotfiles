@@ -1,9 +1,9 @@
 { pkgs }:
 let
-  packageVersion = "0.20.5";
+  packageVersion = "0.21.4";
   nativeBinarySource = pkgs.fetchurl {
     url = "https://github.com/vercel-labs/agent-browser/releases/download/v${packageVersion}/agent-browser-linux-x64";
-    hash = "sha256-4m41PYOJKrLw1aXD8qnnB5PAruaVZhKopr+9uQD7u5w=";
+    hash = "sha256-x0qbmJTccs3UDA7leFScV9pIux+o6tBMqXWmVscx5D4=";
   };
 in
 pkgs.stdenvNoCC.mkDerivation {

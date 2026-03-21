@@ -9,7 +9,7 @@ let
   nodejs = pkgs.nodejs_22;
   homeDir = config.home.homeDirectory;
   chromeUserDataDirectory = "${homeDir}/.config/google-chrome";
-  chromeDevtoolsMcpVersion = "0.20.0";
+  chromeDevtoolsMcpVersion = "0.20.3";
   chromeDevtoolsMcpNpmPrefix = "${homeDir}/.local/share/chrome-devtools-mcp-npm";
   chromeDevtoolsMcpBinary = "${chromeDevtoolsMcpNpmPrefix}/bin/chrome-devtools-mcp";
 
