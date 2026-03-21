@@ -6,7 +6,27 @@
 }:
 let
   homeDir = config.home.homeDirectory;
-  discordChannelEnvFile = "${homeDir}/.claude/channels/discord/.env";
+  secretsDirectory = "${homeDir}/.secrets";
+  discordBotTokenSecretFile = "${secretsDirectory}/discord-bot-token-claude";
+  discordChannelStateDirectory = "${homeDir}/.claude/channels/discord";
+  discordChannelEnvFile = "${discordChannelStateDirectory}/.env";
+
+  injectDiscordBotTokenFromAgenix = pkgs.writeShellScript "inject-claude-discord-bot-token" ''
+    set -euo pipefail
+
+    if [ ! -f "${discordBotTokenSecretFile}" ]; then
+      exit 0
+    fi
+
+    TOKEN="$(cat "${discordBotTokenSecretFile}")"
+    if [ -z "$TOKEN" ]; then
+      exit 0
+    fi
+
+    mkdir -p "${discordChannelStateDirectory}"
+    printf 'DISCORD_BOT_TOKEN=%s\n' "$TOKEN" > "${discordChannelEnvFile}"
+    chmod 600 "${discordChannelEnvFile}"
+  '';
 
   claudeDiscordChannelSessionStarter = pkgs.writeShellScriptBin "claude-discord-channel" ''
     set -euo pipefail
@@ -14,7 +34,7 @@ let
     SESSION_NAME="claude-discord"
 
     if [ ! -f "${discordChannelEnvFile}" ]; then
-      echo "Discord channel not configured. Run: /plugin install discord@claude-plugins-official && /discord:configure <token>" >&2
+      echo "Discord channel not configured. Encrypt bot token to secrets/bot-tokens/discord-bot-token-claude.age" >&2
       exit 1
     fi
 
@@ -57,12 +77,17 @@ in
   home = {
     packages = [ claudeDiscordChannelSessionStarter ];
 
+    activation.injectClaudeDiscordBotToken = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+      run ${injectDiscordBotTokenFromAgenix}
+    '';
+
     activation.updateClaudePluginsMarketplace = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
       run ${updateClaudePluginsMarketplace}
     '';
 
     activation.autostartClaudeDiscordChannel = lib.hm.dag.entryAfter [
       "writeBoundary"
+      "injectClaudeDiscordBotToken"
       "updateClaudePluginsMarketplace"
     ] ''
       run ${claudeDiscordChannelAutostart}
