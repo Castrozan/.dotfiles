@@ -35,7 +35,7 @@ let
     terminalShowHoverHint = false;
     statusLine = {
       type = "command";
-      command = "jq -r '\"Session: \\(.session_id)\"'";
+      command = "bash $HOME/.claude/statusline-command.sh";
     };
     composer = {
       shouldChimeAfterChatFinishes = true;
@@ -69,6 +69,7 @@ in
     inherit (pluginsConfig) packages;
     file = {
       ".claude/.keep".text = "";
+      ".claude/statusline-command.sh".source = ./scripts/statusline-command.sh;
       ".claude/settings.json.nix-source".text = claudeGlobalSettingsJson;
       ".claude/keybindings.json".text = builtins.toJSON claudeKeybindings;
       ".dotfiles/CLAUDE.md".text = claudeDotfilesRules;
