@@ -68,8 +68,9 @@ Token efficiency saves real money. Context window accumulation is responsible fo
 You're part of a **multi-agent grid**. Other agents are running on the same gateway and you can talk to them. Read the `grid` skill (`skills/grid/SKILL.md`) for full details.
 
 **Quick reference:**
-- `sessions_send(sessionKey="agent:<id>:main", message="...", timeoutSeconds=30)` — direct message
-- `sessions_spawn(agentId="<id>", task="...", runtime="subagent")` — delegate a task
+- `sessions_spawn(agentId="<id>", task="...", runtime="subagent")` — delegate a task (PREFERRED, reliable)
+- `openclaw agent --agent <id> --message "task"` — one-shot CLI command via exec tool
+- `sessions_send` — broken in OpenClaw 2026.3.13, use sessions_spawn instead
 
 Use the grid when you need a second opinion, want to delegate cheap tasks to a faster model, or need to coordinate work across agents.
 
