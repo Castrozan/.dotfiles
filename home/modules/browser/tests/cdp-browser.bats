@@ -42,9 +42,9 @@ const frame = new CdpFrame(page.session, ctx.id);
 JSEOF
 }
 
-setup() {
-	if ! curl -sf http://localhost:9867/health >/dev/null 2>&1; then
-		skip "pinchtab not running"
+_skip_unless_chrome_running() {
+	if ! ss -tlnp 2>/dev/null | grep -qE '(chrom|google-chrome)'; then
+		skip "chrome not running with remote debugging"
 	fi
 }
 
@@ -66,6 +66,7 @@ setup() {
 }
 
 @test "auto-discovers chrome CDP port from running process" {
+	_skip_unless_chrome_running
 	run node -e "
         import { connectToBrowser } from '$CDP_BROWSER_MODULE';
         const { browser } = await connectToBrowser();
@@ -77,6 +78,7 @@ setup() {
 }
 
 @test "connectToBrowser returns browser and page with correct API surface" {
+	_skip_unless_chrome_running
 	run node -e "
         import { connectToBrowser } from '$CDP_BROWSER_MODULE';
         const { browser, page } = await connectToBrowser();
@@ -97,6 +99,7 @@ setup() {
 }
 
 @test "page.screenshot produces valid PNG" {
+	_skip_unless_chrome_running
 	local screenshot="/tmp/cdp-test-screenshot-$$.png"
 	run node -e "
         import { connectToBrowser } from '$CDP_BROWSER_MODULE';
@@ -112,6 +115,7 @@ setup() {
 }
 
 @test "page.waitForTimeout delays at least the requested duration" {
+	_skip_unless_chrome_running
 	run node -e "
         import { connectToBrowser } from '$CDP_BROWSER_MODULE';
         const { browser, page } = await connectToBrowser();
@@ -127,6 +131,7 @@ setup() {
 }
 
 @test "frame.evaluate runs javascript and returns values" {
+	_skip_unless_chrome_running
 	run node -e "$(_navigate_to_test_page_and_get_frame)
         const title = await frame.evaluate(() => document.title);
         if (title !== 'CDP Test Page') { console.error('bad title:', title); process.exit(1); }
@@ -140,6 +145,7 @@ setup() {
 }
 
 @test "frame.\$ finds single element and reads textContent" {
+	_skip_unless_chrome_running
 	run node -e "$(_navigate_to_test_page_and_get_frame)
         const h1 = await frame.\$('h1');
         if (!h1) { console.error('h1 not found'); process.exit(1); }
@@ -153,6 +159,7 @@ setup() {
 }
 
 @test "frame.\$ returns null for non-existent selector" {
+	_skip_unless_chrome_running
 	run node -e "$(_navigate_to_test_page_and_get_frame)
         const nope = await frame.\$('#does-not-exist');
         if (nope !== null) { console.error('expected null'); process.exit(1); }
@@ -164,6 +171,7 @@ setup() {
 }
 
 @test "frame.\$\$ returns array of CdpElements" {
+	_skip_unless_chrome_running
 	run node -e "$(_navigate_to_test_page_and_get_frame)
         const fruits = await frame.\$\$('.fruit');
         if (!Array.isArray(fruits) || fruits.length !== 3) {
@@ -182,6 +190,7 @@ setup() {
 }
 
 @test "element.\$ does scoped child query" {
+	_skip_unless_chrome_running
 	run node -e "$(_navigate_to_test_page_and_get_frame)
         const ul = await frame.\$('ul');
         const first = await ul.\$('li:first-child');
@@ -195,6 +204,7 @@ setup() {
 }
 
 @test ":has-text pseudo-selector finds element by text" {
+	_skip_unless_chrome_running
 	run node -e "$(_navigate_to_test_page_and_get_frame)
         const btn = await frame.\$('button:has-text(\"Save\")');
         if (!btn) { console.error('Save not found'); process.exit(1); }
@@ -208,6 +218,7 @@ setup() {
 }
 
 @test ":has-text returns null when text does not match" {
+	_skip_unless_chrome_running
 	run node -e "$(_navigate_to_test_page_and_get_frame)
         const nope = await frame.\$('button:has-text(\"Nonexistent\")');
         if (nope !== null) { console.error('expected null'); process.exit(1); }
@@ -219,6 +230,7 @@ setup() {
 }
 
 @test "comma-separated :has-text selectors find first match" {
+	_skip_unless_chrome_running
 	run node -e "$(_navigate_to_test_page_and_get_frame)
         const el = await frame.\$('button:has-text(\"Cancel\"), button:has-text(\"Save\")');
         if (!el) { console.error('no match'); process.exit(1); }
@@ -234,6 +246,7 @@ setup() {
 }
 
 @test "element.click triggers DOM event handler" {
+	_skip_unless_chrome_running
 	run node -e "$(_navigate_to_test_page_and_get_frame)
         const btn = await frame.\$('#btn1');
         await btn.click();
@@ -248,6 +261,7 @@ setup() {
 }
 
 @test "click on :has-text selected link triggers handler" {
+	_skip_unless_chrome_running
 	run node -e "$(_navigate_to_test_page_and_get_frame)
         const link = await frame.\$('a:has-text(\"More information\")');
         if (!link) { console.error('link not found'); process.exit(1); }
@@ -263,6 +277,7 @@ setup() {
 }
 
 @test "element.\$\$ with :has-text on child scope" {
+	_skip_unless_chrome_running
 	run node -e "$(_navigate_to_test_page_and_get_frame)
         const body = await frame.\$('body');
         const btns = await body.\$\$('button');
@@ -277,6 +292,7 @@ setup() {
 }
 
 @test "screenshot after interaction captures current state" {
+	_skip_unless_chrome_running
 	local screenshot="/tmp/cdp-interaction-screenshot-$$.png"
 	run node -e "$(_navigate_to_test_page_and_get_frame)
         const btn = await frame.\$('#btn1');
@@ -295,6 +311,11 @@ setup() {
 @test "pw CLI is no longer in PATH" {
 	run which pw
 	[[ "$status" -ne 0 ]]
+}
+
+@test "agent-browser package files are removed" {
+	[[ ! -f "$BATS_TEST_DIRNAME/../agent-browser-package.nix" ]]
+	[[ ! -f "$BATS_TEST_DIRNAME/../scripts.nix" ]]
 }
 
 @test "deleted pw and playwright files do not exist" {

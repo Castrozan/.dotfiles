@@ -17,43 +17,74 @@ let
   a2aMcpNpmPrefix = "${homeDir}/.local/share/a2a-mcp-server-npm";
   a2aMcpBinary = "${a2aMcpNpmPrefix}/bin/a2a-mcp-server";
 
-  installA2aMcpViaNpm = pkgs.writeShellScript "install-a2a-mcp-server" ''
-    set -euo pipefail
-    export PATH="${nodejs}/bin:''${PATH:+:$PATH}"
-    export NPM_CONFIG_PREFIX="${a2aMcpNpmPrefix}"
+  installNpmPackageWithRetry =
+    {
+      name,
+      version,
+      prefix,
+      packageJsonSubpath,
+    }:
+    pkgs.writeShellScript "install-${name}" ''
+      set -euo pipefail
+      export PATH="${nodejs}/bin:''${PATH:+:$PATH}"
+      export NPM_CONFIG_PREFIX="${prefix}"
 
-    PACKAGE_JSON="${a2aMcpNpmPrefix}/lib/node_modules/a2a-mcp-server/package.json"
+      PACKAGE_JSON="${prefix}/lib/node_modules/${packageJsonSubpath}/package.json"
 
-    if [ -f "$PACKAGE_JSON" ] && grep -q '"version": "${a2aMcpVersion}"' "$PACKAGE_JSON"; then
-      exit 0
-    fi
+      if [ -f "$PACKAGE_JSON" ] && grep -q '"version": "${version}"' "$PACKAGE_JSON"; then
+        exit 0
+      fi
 
-    ${nodejs}/bin/npm install -g "a2a-mcp-server@${a2aMcpVersion}" \
-      --prefix "${a2aMcpNpmPrefix}" \
-      --registry "https://registry.npmjs.org/"
-  '';
+      install_npm_package() {
+        ${nodejs}/bin/npm install -g "${name}@${version}" \
+          --prefix "${prefix}" \
+          --registry "https://registry.npmjs.org/" \
+          --prefer-offline \
+          --no-audit \
+          --no-fund \
+          2>&1
+      }
 
-  installChromeDevtoolsMcpViaNpm = pkgs.writeShellScript "install-chrome-devtools-mcp" ''
-    set -euo pipefail
-    export PATH="${nodejs}/bin:''${PATH:+:$PATH}"
-    export NPM_CONFIG_PREFIX="${chromeDevtoolsMcpNpmPrefix}"
+      if ! OUTPUT=$(install_npm_package); then
+        echo "npm install ${name}@${version} failed (attempt 1), retrying..." >&2
+        sleep 2
+        if ! OUTPUT=$(install_npm_package); then
+          echo "npm install ${name}@${version} failed after retry: $OUTPUT" >&2
+          exit 1
+        fi
+      fi
+    '';
 
-    PACKAGE_JSON="${chromeDevtoolsMcpNpmPrefix}/lib/node_modules/chrome-devtools-mcp/package.json"
+  installChromeDevtoolsMcpViaNpm = installNpmPackageWithRetry {
+    name = "chrome-devtools-mcp";
+    version = chromeDevtoolsMcpVersion;
+    prefix = chromeDevtoolsMcpNpmPrefix;
+    packageJsonSubpath = "chrome-devtools-mcp";
+  };
 
-    if [ -f "$PACKAGE_JSON" ] && grep -q '"version": "${chromeDevtoolsMcpVersion}"' "$PACKAGE_JSON"; then
-      exit 0
-    fi
-
-    ${nodejs}/bin/npm install -g "chrome-devtools-mcp@${chromeDevtoolsMcpVersion}" \
-      --prefix "${chromeDevtoolsMcpNpmPrefix}" \
-      --registry "https://registry.npmjs.org/"
-  '';
+  installA2aMcpViaNpm = installNpmPackageWithRetry {
+    name = "a2a-mcp-server";
+    version = a2aMcpVersion;
+    prefix = a2aMcpNpmPrefix;
+    packageJsonSubpath = "a2a-mcp-server";
+  };
 
   autoAcceptChromeDebuggingDialog = pkgs.writeShellScript "auto-accept-chrome-debugging-dialog" ''
+    HYPRCTL=$(command -v hyprctl 2>/dev/null || true)
+    WTYPE=$(command -v wtype 2>/dev/null || true)
+
+    if [ -z "$HYPRCTL" ] || [ -z "$WTYPE" ]; then
+      exit 0
+    fi
+
+    if [ -z "''${HYPRLAND_INSTANCE_SIGNATURE:-}" ]; then
+      exit 0
+    fi
+
     sleep 2
-    ${pkgs.hyprland}/bin/hyprctl dispatch focuswindow class:google-chrome 2>/dev/null || true
+    "$HYPRCTL" dispatch focuswindow class:google-chrome 2>/dev/null || true
     sleep 1
-    ${pkgs.wtype}/bin/wtype -k Tab -k Return 2>/dev/null || true
+    "$WTYPE" -k Tab -k Return 2>/dev/null || true
   '';
 
   chromeDevtoolsMcpAutoconnectWrapper = pkgs.writeShellScriptBin "chrome-devtools-mcp-autoconnect" ''
@@ -63,13 +94,27 @@ let
     DEVTOOLS_PORT_FILE="${chromeUserDataDirectory}/DevToolsActivePort"
 
     if [ ! -f "$DEVTOOLS_PORT_FILE" ]; then
-      echo "Chrome not running with remote debugging. Enable at chrome://inspect/#remote-debugging" >&2
+      echo "Chrome not running with remote debugging." >&2
+      echo "Start Chrome and enable at chrome://inspect/#remote-debugging" >&2
+      echo "Or verify enterprise policy RemoteDebuggingAllowed is deployed." >&2
       exit 1
     fi
 
     CHROME_PORT=$(head -1 "$DEVTOOLS_PORT_FILE")
     CHROME_WS_PATH=$(tail -1 "$DEVTOOLS_PORT_FILE")
+
+    if [ -z "$CHROME_PORT" ] || [ -z "$CHROME_WS_PATH" ]; then
+      echo "DevToolsActivePort file is malformed (port=$CHROME_PORT path=$CHROME_WS_PATH)" >&2
+      exit 1
+    fi
+
     CHROME_WS_URL="ws://127.0.0.1:''${CHROME_PORT}''${CHROME_WS_PATH}"
+
+    if ! "${chromeDevtoolsMcpBinary}" --version >/dev/null 2>&1; then
+      echo "chrome-devtools-mcp binary not found at ${chromeDevtoolsMcpBinary}" >&2
+      echo "Run home-manager activation or: npm install -g chrome-devtools-mcp@${chromeDevtoolsMcpVersion} --prefix ${chromeDevtoolsMcpNpmPrefix}" >&2
+      exit 1
+    fi
 
     ${autoAcceptChromeDebuggingDialog} &
 
@@ -134,7 +179,7 @@ in
       pkgs.wtype
     ];
 
-    file.".config/google-chrome/policies/managed/agent-browser-control.json".text = builtins.toJSON {
+    file.".config/google-chrome/policies/managed/chrome-remote-debugging.json".text = builtins.toJSON {
       RemoteDebuggingAllowed = true;
       DeveloperToolsAvailability = 0;
     };

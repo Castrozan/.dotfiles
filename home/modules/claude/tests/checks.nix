@@ -54,7 +54,7 @@ in
 
   claude-chrome-policy =
     mkEvalCheck "claude-chrome-policy"
-      (builtins.hasAttr ".config/google-chrome/policies/managed/agent-browser-control.json" cfg.home.file)
+      (builtins.hasAttr ".config/google-chrome/policies/managed/chrome-remote-debugging.json" cfg.home.file)
       "Chrome enterprise policy for remote debugging should be deployed";
 
   claude-bin-wrapper =
