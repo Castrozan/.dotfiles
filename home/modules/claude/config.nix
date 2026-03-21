@@ -33,6 +33,10 @@ let
       deny = [ ];
     };
     terminalShowHoverHint = false;
+    statusLine = {
+      type = "command";
+      command = "jq -r '\"Session: \\(.session_id)\"'";
+    };
     composer = {
       shouldChimeAfterChatFinishes = true;
     };
