@@ -19,3 +19,5 @@ def import_hyphenated_hook_module(hyphenated_name):
 
 
 import_hyphenated_hook_module("deep-work-recovery")
+import_hyphenated_hook_module("teammate-idle-quality-gate")
+import_hyphenated_hook_module("task-completed-quality-gate")
