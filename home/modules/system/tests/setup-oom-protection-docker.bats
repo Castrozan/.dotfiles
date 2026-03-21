@@ -12,7 +12,7 @@ setup_file() {
     fi
 
     local repositoryRoot
-    repositoryRoot="$(cd "$BATS_TEST_DIRNAME/../.." && pwd)"
+    repositoryRoot="$(cd "$BATS_TEST_DIRNAME/../../../.." && pwd)"
     docker build -t "$DOCKER_IMAGE_TAG" -f "$repositoryRoot/tests/Dockerfile" "$repositoryRoot" >/dev/null 2>&1
 }
 
