@@ -132,7 +132,7 @@ def run_claude_cli(
     system_prompt: str | None = None,
     timeout: int = 120,
 ) -> tuple[str, bool]:
-    cmd = ["claude", "--print", "--model", model]
+    cmd = ["claude", "--print", "--bare", "--model", model]
 
     if system_prompt:
         cmd.extend(["--system-prompt", system_prompt])

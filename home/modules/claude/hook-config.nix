@@ -26,6 +26,19 @@ in
     }
   ];
 
+  StopFailure = [
+    {
+      matcher = ".*";
+      hooks = [
+        {
+          type = "command";
+          command = "notify-send --app-name 'Claude Code' --urgency=critical 'Turn failed' \"$CLAUDE_STOP_REASON\" 2>/dev/null || true";
+          timeout = 3000;
+        }
+      ];
+    }
+  ];
+
   PostCompact = [
     {
       matcher = ".*";

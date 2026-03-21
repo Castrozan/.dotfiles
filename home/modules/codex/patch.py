@@ -96,6 +96,7 @@ BASELINE = {
     "features": {
         "apply_patch_freeform": True,
         "child_agents_md": True,
+        "enable_fanout": True,
         "hooks": True,
         "multi_agent": True,
         "undo": True,

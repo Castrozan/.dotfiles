@@ -26,7 +26,7 @@ let
     skipDangerousModePermissionPrompt = true;
     includeCoAuthoredBy = false;
     includeGitInstructions = false;
-    showTurnDuration = false;
+    showTurnDuration = true;
     permissions = {
       defaultMode = "bypassPermissions";
       allow = [ "*" ];
