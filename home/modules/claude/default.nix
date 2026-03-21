@@ -2,6 +2,7 @@
 {
   imports = [
     ./claude.nix
+    ./channels.nix
     ./config.nix
     ./skills.nix
     ./hooks.nix
