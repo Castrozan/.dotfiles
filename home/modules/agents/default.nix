@@ -1,4 +1,9 @@
-_:
+{
+  pkgs,
+  config,
+  lib,
+  ...
+}:
 let
   dotfilesAgentInstructions = ''
     # Dotfiles Agent Instructions
@@ -7,5 +12,9 @@ let
   '';
 in
 {
+  imports = [
+    ./a2a-mcp.nix
+  ];
+
   home.file.".dotfiles/AGENTS.md".text = dotfilesAgentInstructions;
 }
