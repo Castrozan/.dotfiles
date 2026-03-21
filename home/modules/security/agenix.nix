@@ -49,7 +49,6 @@ let
     "bot-tokens/discord-bot-token-jenny"
     "bot-tokens/discord-bot-token-monster"
     "bot-tokens/discord-bot-token-silver"
-    "bot-tokens/discord-bot-token-claude"
     "credentials/obsidian-headless-auth-token"
     "credentials/obsidian-headless-sync-config"
     "infrastructure/gpg-private-key"
