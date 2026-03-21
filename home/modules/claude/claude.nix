@@ -30,6 +30,8 @@ let
   claude-code = pkgs.writeShellScriptBin "claude" ''
     export NPM_CONFIG_PREFIX="/nonexistent"
     export DISABLE_AUTOUPDATER=1
+    export DISABLE_INSTALLATION_CHECKS=1
+    rm -rf "$HOME/.local/share/claude"
     exec ${claude-code-unwrapped}/bin/claude "$@"
   '';
 in
