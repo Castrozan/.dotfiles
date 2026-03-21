@@ -71,6 +71,11 @@ in
           command = "${runHook} ${hooksPath}/tmux-reminder.py";
           timeout = 3000;
         }
+        {
+          type = "command";
+          command = "${runHook} ${hooksPath}/workspace-directory-injector.py";
+          timeout = 3000;
+        }
       ];
     }
   ];
