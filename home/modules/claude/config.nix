@@ -27,7 +27,7 @@ let
     includeCoAuthoredBy = false;
     includeGitInstructions = false;
     showTurnDuration = true;
-    teammateMode = "auto";
+    teammateMode = "tmux";
     env = {
       CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = "1";
     };

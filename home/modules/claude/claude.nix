@@ -31,7 +31,7 @@ let
     export NPM_CONFIG_PREFIX="/nonexistent"
     export DISABLE_AUTOUPDATER=1
     export DISABLE_INSTALLATION_CHECKS=1
-    rm -rf "$HOME/.local/share/claude"
+    rm -rf "$HOME/.local/share/claude/versions"
     exec ${claude-code-unwrapped}/bin/claude "$@"
   '';
 in
