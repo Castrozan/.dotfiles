@@ -36,7 +36,7 @@ in
     defaults.model = {
       primary = "anthropic/claude-opus-4-6";
       heartbeat = "openai-codex/gpt-5.3-codex";
-      subagents = "openai-codex/gpt-5.3-codex";
+      subagents = "anthropic/claude-sonnet-4-6";
     };
     agents = {
       clever = {
