@@ -1,6 +1,6 @@
 ---
 name: grid
-description: Coordinate with sibling agents on the OpenClaw grid (jarvis, clever, golden, robson, jenny, monster, silver). Use when you need help from another agent, want to delegate a task, check on a teammate, or need a capability you don't have. Also use when the user asks you to talk to, message, ping, or coordinate with another agent. Covers sessions_send, sessions_spawn, and inter-agent communication.
+description: Coordinate with sibling agents on the OpenClaw grid. Use when delegating tasks, messaging teammates, or coordinating across agents. Covers sessions_spawn and inter-agent communication.
 ---
 
 <team>
@@ -13,34 +13,20 @@ description: Coordinate with sibling agents on the OpenClaw grid (jarvis, clever
 This list reflects the current NixOS grid. The work PC grid has: robson, jenny, monster, silver.
 </team>
 
-<communication_methods>
-sessions_spawn (PREFERRED): isolated task on a sibling agent. Reliable, tested, works across all agents. Agent announces completion automatically. Use runtime='subagent'. One-shot tasks only (mode='run' is default). Best for parallel independent work.
+<communication>
+sessions_spawn is the reliable method for agent-to-agent. Delegates a one-shot task to a sibling agent that runs independently and announces completion. The openclaw agent CLI is an alternative for simple one-shot commands via exec.
 
-openclaw agent CLI: one-shot command via exec tool. `openclaw agent --agent <id> --message "task" --json`. Fresh session each time, good for simple requests. Returns structured JSON with result.
-
-sessions_send: synchronous back-and-forth, up to 10 turns. KNOWN BUG in OpenClaw 2026.3.13 — returns "Agent-to-agent messaging denied" even with correct allow config. Use sessions_spawn instead until fixed.
-</communication_methods>
-
-<session_keys>
-Session key format for sessions_send: `agent:<agentId>:main`
-Session key for spawned subagents: `agent:<agentId>:subagent:<uuid>`
-Spawned subagent sessions are cleaned up after completion (mode=run).
-Persistent sessions (mode=session) require thread-capable channel (Discord/Telegram).
-</session_keys>
+sessions_send exists but has a known policy enforcement bug — use sessions_spawn until the gateway version resolves it.
+</communication>
 
 <when_to_delegate>
-Need a cheaper model → golden (sonnet). Need a second opinion → ask a sibling to review. Parallel tasks → spawn on multiple agents. Long-running background work → sessions_spawn with clear task description. Simple one-shot → openclaw agent CLI.
+Cheaper model needed, second opinion wanted, parallel independent tasks, long-running background work. Always include clear task descriptions when spawning — the target agent starts with no context.
 </when_to_delegate>
 
 <rules>
-Always identify yourself when messaging another agent. Don't spam — if an agent times out, try once more then report to the user. Respect each agent's personality and context. Don't intercept or relay user messages unless asked.
+Identify yourself when messaging another agent. If an agent times out, try once more then report to the user. Don't intercept or relay user messages unless asked.
 </rules>
 
-<troubleshooting>
-"Agent-to-agent messaging denied by tools.agentToAgent.allow": known bug in 2026.3.13, sessions_send broken. Use sessions_spawn instead.
-"Session send visibility is restricted": gateway needs restart after config change.
-Timeout: agent may be busy, try again.
-"agentId is not allowed": check subagents.allowAgents in config.
-Model failure on spawn (0 tokens): check defaults.subagents.model — must point to a valid model with active credentials.
-Discord "Unknown Channel": bots can only DM users who have messaged them first.
-</troubleshooting>
+<traps>
+Subagent model must point to valid credentials — expired OAuth tokens cause silent zero-token failures on spawn. Persistent sessions (mode=session) require a thread-capable channel like Discord or Telegram. Spawned subagent sessions are cleaned up after completion and cannot be messaged afterward.
+</traps>
