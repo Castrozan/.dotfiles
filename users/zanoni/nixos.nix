@@ -95,6 +95,15 @@ in
   # Security - gnome-keyring PAM integration for Hyprland
   security.pam.services.gdm.enableGnomeKeyring = true;
 
+  security.pam.loginLimits = [
+    {
+      domain = "zanoni";
+      type = "-";
+      item = "nice";
+      value = "-20";
+    }
+  ];
+
   # Services
   services = {
     # Gnome-keyring for password/secrets storage (used by browsers, etc.)

@@ -35,6 +35,7 @@ in
         "QML_IMPORT_PATH=${pkgs.qt6Packages.qt5compat}/lib/qt-6/qml"
         "QT_QPA_PLATFORM=wayland"
       ];
+      Nice = -5;
       Restart = "always";
       RestartSec = "1s";
     };

@@ -114,6 +114,8 @@
     };
   };
 
+  systemd.services.nix-daemon.serviceConfig.Nice = 19;
+
   nixpkgs.config.allowUnfree = true;
 
   documentation.man.generateCaches = false;
