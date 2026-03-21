@@ -27,6 +27,10 @@ let
     includeCoAuthoredBy = false;
     includeGitInstructions = false;
     showTurnDuration = true;
+    teammateMode = "auto";
+    env = {
+      CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = "1";
+    };
     permissions = {
       defaultMode = "bypassPermissions";
       allow = [ "*" ];
