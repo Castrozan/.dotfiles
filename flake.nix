@@ -189,7 +189,7 @@
       };
 
       checks.${darwinSystem} = import ./tests/nix-checks/darwin.nix {
-        pkgs = darwin.pkgs;
+        inherit (darwin) pkgs;
         inherit
           inputs
           self
