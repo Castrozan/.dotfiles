@@ -26,6 +26,32 @@ in
     }
   ];
 
+  TeammateIdle = [
+    {
+      matcher = ".*";
+      hooks = [
+        {
+          type = "command";
+          command = "${runHook} ${hooksPath}/teammate-idle-quality-gate.py";
+          timeout = 10000;
+        }
+      ];
+    }
+  ];
+
+  TaskCompleted = [
+    {
+      matcher = ".*";
+      hooks = [
+        {
+          type = "command";
+          command = "${runHook} ${hooksPath}/task-completed-quality-gate.py";
+          timeout = 30000;
+        }
+      ];
+    }
+  ];
+
   StopFailure = [
     {
       matcher = ".*";

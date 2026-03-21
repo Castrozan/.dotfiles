@@ -13,6 +13,26 @@ let
   chromeDevtoolsMcpNpmPrefix = "${homeDir}/.local/share/chrome-devtools-mcp-npm";
   chromeDevtoolsMcpBinary = "${chromeDevtoolsMcpNpmPrefix}/bin/chrome-devtools-mcp";
 
+  a2aMcpVersion = "1.0.0";
+  a2aMcpNpmPrefix = "${homeDir}/.local/share/a2a-mcp-server-npm";
+  a2aMcpBinary = "${a2aMcpNpmPrefix}/bin/a2a-mcp-server";
+
+  installA2aMcpViaNpm = pkgs.writeShellScript "install-a2a-mcp-server" ''
+    set -euo pipefail
+    export PATH="${nodejs}/bin:''${PATH:+:$PATH}"
+    export NPM_CONFIG_PREFIX="${a2aMcpNpmPrefix}"
+
+    PACKAGE_JSON="${a2aMcpNpmPrefix}/lib/node_modules/a2a-mcp-server/package.json"
+
+    if [ -f "$PACKAGE_JSON" ] && grep -q '"version": "${a2aMcpVersion}"' "$PACKAGE_JSON"; then
+      exit 0
+    fi
+
+    ${nodejs}/bin/npm install -g "a2a-mcp-server@${a2aMcpVersion}" \
+      --prefix "${a2aMcpNpmPrefix}" \
+      --registry "https://registry.npmjs.org/"
+  '';
+
   installChromeDevtoolsMcpViaNpm = pkgs.writeShellScript "install-chrome-devtools-mcp" ''
     set -euo pipefail
     export PATH="${nodejs}/bin:''${PATH:+:$PATH}"
@@ -89,6 +109,10 @@ let
       command = "${homeDir}/.local/bin/codex";
       args = [ "mcp-server" ];
     };
+    a2a = {
+      command = "${nodejs}/bin/node";
+      args = [ a2aMcpBinary ];
+    };
   };
 
   injectMcpServersIntoClaudeConfig = pkgs.writeShellScript "inject-mcp-servers" ''
@@ -122,6 +146,10 @@ in
 
       installChromeDevtoolsMcp = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
         run ${installChromeDevtoolsMcpViaNpm}
+      '';
+
+      installA2aMcp = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+        run ${installA2aMcpViaNpm}
       '';
 
       enableChromeRemoteDebugging = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
