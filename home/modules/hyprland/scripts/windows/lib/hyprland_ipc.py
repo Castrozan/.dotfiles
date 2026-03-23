@@ -15,7 +15,10 @@ def run_hyprctl_json(*args: str) -> dict | list | None:
     output = run_hyprctl(*args, "-j")
     if not output.strip():
         return None
-    return json.loads(output)
+    try:
+        return json.loads(output)
+    except json.JSONDecodeError:
+        return None
 
 
 def run_hyprctl_batch(commands: str) -> None:

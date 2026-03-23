@@ -18,12 +18,16 @@ in
     Unit = {
       Description = "Hyprland maximize focus daemon";
       After = [ "graphical-session.target" ];
+      PartOf = [ "graphical-session.target" ];
       ConditionEnvironment = "WAYLAND_DISPLAY";
     };
     Service = {
       ExecStart = "${daemonPackage}/bin/hypr-maximize-focus-daemon";
       Restart = "on-failure";
       RestartSec = 2;
+    };
+    Install = {
+      WantedBy = [ "graphical-session.target" ];
     };
   };
 }
