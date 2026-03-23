@@ -21,7 +21,10 @@ def has_external_monitor_connected() -> bool:
     monitors = get_all_monitors(include_disabled=True)
     if not monitors:
         return False
-    return any(not m.get("name", "").startswith("eDP") for m in monitors)
+    return any(
+        not monitor_config.get("name", "").startswith("eDP")
+        for monitor_config in monitors
+    )
 
 
 def is_manual_toggle_in_progress() -> bool:

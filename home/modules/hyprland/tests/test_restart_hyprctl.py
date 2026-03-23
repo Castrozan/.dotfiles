@@ -21,8 +21,10 @@ class TestIsHyprctlConnected:
 
 class TestFindLiveHyprlandSocket:
     def test_returns_false_when_hypr_dir_missing(self, tmp_path):
+        nonexistent = tmp_path / "hypr"
         with patch("restart_hyprctl.os.getuid", return_value=1000):
-            assert restart_hyprctl.find_live_hyprland_socket() is False
+            with patch("restart_hyprctl.Path", return_value=nonexistent):
+                assert restart_hyprctl.find_live_hyprland_socket() is False
 
     def test_returns_false_when_no_valid_socket(self, tmp_path):
         hypr_dir = tmp_path / "hypr"
@@ -74,8 +76,10 @@ class TestReloadHyprlandWithScreencopyServicesPaused:
         ):
             with patch("restart_hyprctl.restart_previously_stopped_services"):
                 with patch("restart_hyprctl.subprocess.run") as mock_run:
-                    restart_hyprctl.reload_hyprland_with_screencopy_services_paused()
-                    mock_run.assert_called_once_with(["hyprctl", "reload"])
+                    restart_hyprctl.reload_hyprland_config_only_with_screencopy_services_paused()
+                    mock_run.assert_called_once_with(
+                        ["hyprctl", "reload", "config-only"]
+                    )
 
 
 class TestApplyThemeBorderColorsFromConfig:
@@ -134,7 +138,7 @@ class TestMain:
             return_value=False,
         ):
             with patch(
-                "restart_hyprctl.reload_hyprland_with_screencopy_services_paused"
+                "restart_hyprctl.reload_hyprland_config_only_with_screencopy_services_paused"
             ) as mock_reload:
                 restart_hyprctl.main()
                 mock_reload.assert_not_called()
@@ -145,7 +149,7 @@ class TestMain:
             return_value=True,
         ):
             with patch(
-                "restart_hyprctl.reload_hyprland_with_screencopy_services_paused"
+                "restart_hyprctl.reload_hyprland_config_only_with_screencopy_services_paused"
             ) as mock_reload:
                 with patch(
                     "restart_hyprctl.apply_theme_border_colors_from_config"

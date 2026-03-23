@@ -224,6 +224,89 @@ class TestHandleCloseWindowEventRegroupsRemainingWindows:
             mock_ensure_grouped.assert_called_once()
 
 
+class TestForceRemaximizeActiveWorkspace:
+    def test_forces_fullscreen_even_when_already_fullscreen(
+        self, mock_subprocess_run, hyprctl_response_builder, sample_hyprland_clients
+    ):
+        hyprctl_response_builder(
+            "activewindow",
+            {"address": "0xaaa", "workspace": {"id": 1}, "fullscreen": 1},
+        )
+        hyprctl_response_builder("clients", sample_hyprland_clients)
+        state = daemon.DaemonState(maximized_workspace_ids={1})
+        daemon.force_remaximize_active_workspace(state)
+        batch_calls = [
+            c
+            for c in mock_subprocess_run.call_args_list
+            if c[0][0][0] == "hyprctl"
+            and "--batch" in c[0][0]
+            and "fullscreen 1 unset" in str(c[0][0])
+            and "fullscreen 1 set" in str(c[0][0])
+        ]
+        assert len(batch_calls) > 0
+
+    def test_removes_tracking_when_no_tiled_windows(self, hyprctl_response_builder):
+        hyprctl_response_builder(
+            "activewindow",
+            {"address": "0xaaa", "workspace": {"id": 1}, "fullscreen": 1},
+        )
+        hyprctl_response_builder("clients", [])
+        state = daemon.DaemonState(maximized_workspace_ids={1})
+        daemon.force_remaximize_active_workspace(state)
+        assert 1 not in state.maximized_workspace_ids
+
+    def test_skips_untracked_workspace(self, hyprctl_response_builder):
+        hyprctl_response_builder(
+            "activewindow",
+            {"address": "0xaaa", "workspace": {"id": 5}, "fullscreen": 1},
+        )
+        state = daemon.DaemonState(maximized_workspace_ids={1})
+        daemon.force_remaximize_active_workspace(state)
+
+
+class TestHandleCloseWindowEventForceRemaximizes:
+    @patch("maximize_focus_daemon.time.sleep")
+    def test_close_event_uses_force_remaximize_not_conditional(
+        self, mock_sleep, mock_subprocess_run, hyprctl_response_builder
+    ):
+        hyprctl_response_builder(
+            "activewindow",
+            {"address": "0xaaa", "workspace": {"id": 1}, "fullscreen": 1},
+        )
+        hyprctl_response_builder("workspaces", [{"id": 1, "hasfullscreen": True}])
+        hyprctl_response_builder(
+            "clients",
+            [
+                {
+                    "address": "0xaaa",
+                    "workspace": {"id": 1},
+                    "floating": False,
+                    "grouped": ["0xaaa"],
+                },
+            ],
+        )
+        state = daemon.DaemonState(
+            current_focused_address="0xbbb",
+            previous_focused_address="0xaaa",
+            maximized_workspace_ids={1},
+        )
+
+        with patch.object(
+            daemon,
+            "ensure_remaining_tiled_windows_on_active_workspace_are_grouped",
+        ):
+            daemon.handle_close_window_event(state, "bbb")
+
+        batch_calls = [
+            c
+            for c in mock_subprocess_run.call_args_list
+            if c[0][0][0] == "hyprctl"
+            and "--batch" in c[0][0]
+            and "fullscreen 1 unset" in str(c[0][0])
+        ]
+        assert len(batch_calls) > 0
+
+
 class TestRemaximizeActiveWorkspaceIfNeeded:
     def test_remaximizes_when_tracked_and_not_fullscreen(
         self, mock_subprocess_run, hyprctl_response_builder, sample_hyprland_clients

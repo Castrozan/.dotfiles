@@ -105,10 +105,13 @@ def main() -> None:
     if previous_window_address:
         run_hyprctl_batch(
             f"dispatch focuswindow address:{previous_window_address};"
+            " dispatch fullscreen 1 unset;"
             " dispatch fullscreen 1 set"
         )
     else:
-        run_hyprctl("dispatch", "fullscreen 1 set")
+        run_hyprctl_batch(
+            "dispatch fullscreen 1 unset ; dispatch fullscreen 1 set"
+        )
 
     ensure_remaining_tiled_windows_are_grouped_on_active_workspace()
 

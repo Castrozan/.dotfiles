@@ -121,10 +121,12 @@ def find_external_monitor(all_monitor_names: list[str]) -> str | None:
 
 def main() -> None:
     active_monitors = get_all_monitors()
-    active_names = [m.get("name", "") for m in active_monitors]
+    active_names = [
+        monitor_config.get("name", "") for monitor_config in active_monitors
+    ]
 
     all_monitors = get_all_monitors(include_disabled=True)
-    all_names = [m.get("name", "") for m in all_monitors]
+    all_names = [monitor_config.get("name", "") for monitor_config in all_monitors]
 
     internal_monitor = find_internal_monitor(all_names)
     external_monitor = find_external_monitor(all_names)

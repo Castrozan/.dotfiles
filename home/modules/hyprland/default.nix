@@ -6,6 +6,7 @@ let
     "mako.service"
     "xdg-desktop-portal-hyprland.service"
     "quickshell-switcher.service"
+    "hypr-maximize-focus-daemon.service"
   ];
 in
 {
@@ -24,6 +25,7 @@ in
     ../desktop/satty.nix
     ../audio/wiremix.nix
     ./xdg-desktop-portal-hyprland-service.nix
+    ./maximize-focus-daemon-service.nix
     ../desktop/fuzzel.nix
   ];
 

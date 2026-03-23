@@ -130,6 +130,26 @@ def remaximize_active_workspace_if_needed(state: DaemonState) -> None:
         state.maximized_workspace_ids.discard(workspace_id)
 
 
+def force_remaximize_active_workspace(state: DaemonState) -> None:
+    workspace_id = get_active_workspace_id()
+    if workspace_id is None or workspace_id not in state.maximized_workspace_ids:
+        return
+
+    tiled_count = sum(
+        1
+        for c in get_all_clients()
+        if c.get("workspace", {}).get("id") == workspace_id
+        and not c.get("floating", False)
+    )
+
+    if tiled_count > 0:
+        run_hyprctl_batch(
+            "dispatch fullscreen 1 unset ; dispatch fullscreen 1 set"
+        )
+    else:
+        state.maximized_workspace_ids.discard(workspace_id)
+
+
 def handle_active_window_changed_event(state: DaemonState, raw_address: str) -> None:
     window_address = f"0x{raw_address}"
     if window_address != state.current_focused_address:
@@ -167,7 +187,7 @@ def handle_close_window_event(state: DaemonState, raw_address: str) -> None:
         state.previous_focused_address = ""
 
     time.sleep(0.03)
-    remaximize_active_workspace_if_needed(state)
+    force_remaximize_active_workspace(state)
     ensure_remaining_tiled_windows_on_active_workspace_are_grouped()
 
 
