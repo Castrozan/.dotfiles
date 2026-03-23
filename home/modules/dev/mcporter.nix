@@ -16,6 +16,23 @@ let
     };
   };
 
+  scraplingVenvPath = "$HOME/.local/share/scrapling-venv";
+
+  installScraplingFetchMcpVenv = pkgs.writeShellScript "scrapling-fetch-mcp-venv-install" ''
+    set -euo pipefail
+    VENV="${scraplingVenvPath}"
+    MARKER="$VENV/.installed-version"
+    DESIRED_VERSION="0.2.0"
+
+    if [ -f "$MARKER" ] && [ "$(cat "$MARKER")" = "$DESIRED_VERSION" ]; then
+      exit 0
+    fi
+
+    ${pkgs.python312}/bin/python3 -m venv "$VENV" --clear
+    "$VENV/bin/pip" install --quiet "scrapling-fetch-mcp==$DESIRED_VERSION"
+    echo "$DESIRED_VERSION" > "$MARKER"
+  '';
+
   mcporterWrapper = pkgs.writeShellScriptBin "mcporter" ''
     export PATH="${nodejs}/bin:''${PATH:+:$PATH}"
     exec "${mcporterNpmPrefix}/lib/node_modules/mcporter/dist/cli.js" "$@"
@@ -38,7 +55,7 @@ let
   restartMcporterDaemon = pkgs.writeShellScript "mcporter-daemon-restart" ''
     set -euo pipefail
     export PATH="${nodejs}/bin:''${PATH:+:$PATH}"
-    exec ${nodejs}/bin/node "${mcporterNpmPrefix}/lib/node_modules/mcporter/dist/cli.js" daemon restart
+    ${nodejs}/bin/node "${mcporterNpmPrefix}/lib/node_modules/mcporter/dist/cli.js" daemon restart || true
   '';
 in
 {
@@ -49,6 +66,10 @@ in
     ];
 
     file.".mcporter/mcporter.json".text = builtins.toJSON mcporterServerConfig;
+
+    activation.installScraplingFetchMcpVenv = config.lib.dag.entryAfter [ "writeBoundary" ] ''
+      run ${installScraplingFetchMcpVenv}
+    '';
 
     activation.installMcporterViaNpm = config.lib.dag.entryAfter [ "writeBoundary" ] ''
       run ${installMcporterViaNpm}
