@@ -19,5 +19,5 @@ claude-restart
 </continuation>
 
 <notes>
-Discovers the current session ID from claude's /proc cmdline args (--resume or --session-id). Falls back to `claude --continue` for fresh sessions. Forks a detached process that waits for claude to die, then sends the resume command to the tmux pane. SessionStart hooks fire on resume, recovering deep-work context automatically.
+Discovers the current session ID from claude's /proc cmdline args (--resume or --session-id). Falls back to finding the most recently modified session jsonl in the project directory. Always uses `claude --resume <id>` — never `--continue`. Forks a detached process that waits for claude to die, then sends the resume command to the tmux pane. SessionStart hooks fire on resume, recovering deep-work context automatically.
 </notes>
