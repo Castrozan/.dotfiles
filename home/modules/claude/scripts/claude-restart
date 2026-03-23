@@ -29,11 +29,21 @@ elif [[ "$CLAUDE_CMDLINE" =~ --session-id[[:space:]]+([a-f0-9-]+) ]]; then
 	EXTRACTED_SESSION_ID="${BASH_REMATCH[1]}"
 fi
 
-if [[ -n "$EXTRACTED_SESSION_ID" ]]; then
-	RESUME_COMMAND="claude --resume $EXTRACTED_SESSION_ID"
-else
-	RESUME_COMMAND="claude --continue"
+if [[ -z "$EXTRACTED_SESSION_ID" ]]; then
+	PROJECT_SESSIONS_DIRECTORY="$HOME/.claude/projects/${PWD//[\/.]/-}"
+	MOST_RECENT_SESSION_JSONL=$(find "$PROJECT_SESSIONS_DIRECTORY" -maxdepth 1 -name '*.jsonl' -printf '%T@ %f\n' 2>/dev/null | sort -rn | head -1 | cut -d' ' -f2-)
+	if [[ -n "$MOST_RECENT_SESSION_JSONL" ]]; then
+		EXTRACTED_SESSION_ID="${MOST_RECENT_SESSION_JSONL%.jsonl}"
+	fi
 fi
+
+if [[ -z "$EXTRACTED_SESSION_ID" ]]; then
+	echo "Could not determine session ID from cmdline or session files."
+	echo "Use /exit then manually: claude --resume <session-id>"
+	exit 1
+fi
+
+RESUME_COMMAND="claude --resume $EXTRACTED_SESSION_ID"
 
 echo "Restarting with: $RESUME_COMMAND"
 

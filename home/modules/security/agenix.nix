@@ -35,6 +35,7 @@ let
     "credentials/x-username"
     "credentials/x-email"
     "credentials/x-password"
+    "credentials/x-cookies"
     "bot-tokens/telegram-bot-token-jarvis"
     "bot-tokens/telegram-bot-token-golden"
     "bot-tokens/telegram-bot-token-clever"
@@ -57,8 +58,11 @@ let
     "credentials/google-totp-secret"
   ];
 
-  allSecretNames =
-    (lib.attrNames secretsWithEnvironmentVariables) ++ secretsWithoutEnvironmentVariables;
+  secretFileExists = name: builtins.pathExists (../../../secrets/${name}.age);
+
+  allSecretNames = builtins.filter secretFileExists (
+    (lib.attrNames secretsWithEnvironmentVariables) ++ secretsWithoutEnvironmentVariables
+  );
 
   exportLines = lib.concatStringsSep "\n" (
     lib.mapAttrsToList (

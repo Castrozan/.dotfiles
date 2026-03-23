@@ -43,6 +43,7 @@ in
   "credentials/x-username.age".publicKeys = all_keys;
   "credentials/x-email.age".publicKeys = all_keys;
   "credentials/x-password.age".publicKeys = all_keys;
+  "credentials/x-cookies.age".publicKeys = all_keys;
   "credentials/obsidian-headless-auth-token.age".publicKeys = all_keys;
   "credentials/obsidian-headless-sync-config.age".publicKeys = all_keys;
   "credentials/viu-auth.age".publicKeys = all_keys;

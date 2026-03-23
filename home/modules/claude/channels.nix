@@ -6,10 +6,22 @@
 }:
 let
   homeDir = config.home.homeDirectory;
+  username = config.home.username;
   secretsDirectory = "${homeDir}/.secrets";
   discordBotTokenSecretFile = "${secretsDirectory}/discord-bot-token-claude";
   discordChannelStateDirectory = "${homeDir}/.claude/channels/discord";
   discordChannelEnvFile = "${discordChannelStateDirectory}/.env";
+  claudeBinary = "${homeDir}/.local/bin/claude";
+  tmuxSessionName = "claude-discord";
+
+  nixSystemPaths = lib.concatStringsSep ":" [
+    "${pkgs.tmux}/bin"
+    "/run/current-system/sw/bin"
+    "/etc/profiles/per-user/${username}/bin"
+    "${homeDir}/.nix-profile/bin"
+    "/usr/bin"
+    "/bin"
+  ];
 
   injectDiscordBotTokenFromAgenix = pkgs.writeShellScript "inject-claude-discord-bot-token" ''
     set -euo pipefail
@@ -28,37 +40,40 @@ let
     chmod 600 "${discordChannelEnvFile}"
   '';
 
-  claudeDiscordChannelSessionStarter = pkgs.writeShellScriptBin "claude-discord-channel" ''
+  claudeDiscordChannelServiceScript = pkgs.writeShellScript "claude-discord-channel-service" ''
     set -euo pipefail
 
-    SESSION_NAME="claude-discord"
+    if [ ! -f "${discordChannelEnvFile}" ]; then
+      echo "Discord channel not configured" >&2
+      exit 1
+    fi
+
+    if ${pkgs.tmux}/bin/tmux has-session -t "${tmuxSessionName}" 2>/dev/null; then
+      ${pkgs.tmux}/bin/tmux kill-session -t "${tmuxSessionName}"
+    fi
+
+    ${pkgs.tmux}/bin/tmux new-session -d -s "${tmuxSessionName}" -n discord \
+      "${claudeBinary} --channels plugin:discord@claude-plugins-official"
+
+    while ${pkgs.tmux}/bin/tmux has-session -t "${tmuxSessionName}" 2>/dev/null; do
+      sleep 10
+    done
+  '';
+
+  claudeDiscordChannelSessionStarter = pkgs.writeShellScriptBin "claude-discord-channel" ''
+    set -euo pipefail
 
     if [ ! -f "${discordChannelEnvFile}" ]; then
       echo "Discord channel not configured. Encrypt bot token to secrets/bot-tokens/discord-bot-token-claude.age" >&2
       exit 1
     fi
 
-    if ${pkgs.tmux}/bin/tmux has-session -t "$SESSION_NAME" 2>/dev/null; then
-      echo "Session $SESSION_NAME already running" >&2
+    if ${pkgs.tmux}/bin/tmux has-session -t "${tmuxSessionName}" 2>/dev/null; then
+      echo "Session ${tmuxSessionName} already running. Attach with: tmux attach -t ${tmuxSessionName}" >&2
       exit 0
     fi
 
-    ${pkgs.tmux}/bin/tmux new-session -d -s "$SESSION_NAME" -n claude-discord \
-      "${homeDir}/.local/bin/claude --channels plugin:discord@claude-plugins-official"
-  '';
-
-  claudeDiscordChannelAutostart = pkgs.writeShellScript "claude-discord-channel-autostart" ''
-    set -euo pipefail
-
-    if [ ! -f "${discordChannelEnvFile}" ]; then
-      exit 0
-    fi
-
-    if ${pkgs.tmux}/bin/tmux has-session -t claude-discord 2>/dev/null; then
-      exit 0
-    fi
-
-    ${claudeDiscordChannelSessionStarter}/bin/claude-discord-channel
+    systemctl --user restart claude-discord-channel.service
   '';
 
   updateClaudePluginsMarketplace = pkgs.writeShellScript "update-claude-plugins-marketplace" ''
@@ -84,13 +99,30 @@ in
     activation.updateClaudePluginsMarketplace = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
       run ${updateClaudePluginsMarketplace}
     '';
+  };
 
-    activation.autostartClaudeDiscordChannel = lib.hm.dag.entryAfter [
-      "writeBoundary"
-      "injectClaudeDiscordBotToken"
-      "updateClaudePluginsMarketplace"
-    ] ''
-      run ${claudeDiscordChannelAutostart}
-    '';
+  systemd.user.services.claude-discord-channel = {
+    Unit = {
+      Description = "Claude Code Discord Channel (persistent tmux session)";
+      After = [ "network.target" ];
+    };
+
+    Service = {
+      Type = "simple";
+      ExecStart = "${claudeDiscordChannelServiceScript}";
+      ExecStop = "-${pkgs.tmux}/bin/tmux kill-session -t ${tmuxSessionName}";
+      Restart = "always";
+      RestartSec = "5s";
+      Environment = [
+        "PATH=${nixSystemPaths}"
+        "HOME=${homeDir}"
+        "TMUX_TMPDIR=/run/user/1000"
+        "XDG_RUNTIME_DIR=/run/user/1000"
+      ];
+    };
+
+    Install = {
+      WantedBy = [ "default.target" ];
+    };
   };
 }
