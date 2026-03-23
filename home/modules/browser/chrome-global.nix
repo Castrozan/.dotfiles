@@ -1,7 +1,7 @@
 { pkgs, ... }:
 let
   chromeGlobalLauncher = pkgs.writeShellScript "chrome-global-launcher" ''
-    exec google-chrome-stable \
+    exec ${pkgs.google-chrome}/bin/google-chrome-stable \
       --user-data-dir="$HOME/.config/chrome-global" \
       --class=chrome-global \
       --enable-features=UseNativeNotifications,WebRTCPipeWireCapturer \
