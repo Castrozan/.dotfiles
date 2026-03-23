@@ -91,6 +91,18 @@ return {
       mods = 'CTRL',
       action = wezterm.action.Nop,
     },
+    {
+      event = { Up = { streak = 1, button = 'Left' } },
+      mods = 'CTRL',
+      action = wezterm.action.OpenLinkAtMouseCursor,
+      mouse_reporting = true,
+    },
+    {
+      event = { Down = { streak = 1, button = 'Left' } },
+      mods = 'CTRL',
+      action = wezterm.action.Nop,
+      mouse_reporting = true,
+    },
   },
 
   keys = {
