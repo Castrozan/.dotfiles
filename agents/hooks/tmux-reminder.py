@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
-"""tmux-reminder.py - Remind to use tmux for long-running commands."""
 
 import json
 import os
 import re
 import sys
 
-# Commands that typically take a long time to run
-LONG_RUNNING_PATTERNS = [
+LONG_RUNNING_COMMAND_PATTERNS = [
     (r"^bundle\s+install", "bundle install can take a while"),
     (r"^ffmpeg\s+", "ffmpeg encoding can take a long time"),
     (r"^rsync\s+", "rsync transfers can be lengthy"),
@@ -16,8 +14,7 @@ LONG_RUNNING_PATTERNS = [
 ]
 
 
-def is_in_tmux() -> bool:
-    """Check if currently running inside tmux."""
+def is_running_inside_tmux() -> bool:
     return bool(os.environ.get("TMUX"))
 
 
@@ -32,20 +29,20 @@ def main():
     if not command:
         sys.exit(0)
 
-    # Skip if already in tmux
-    if is_in_tmux():
+    if is_running_inside_tmux():
         sys.exit(0)
 
-    # Check for long-running patterns
-    for pattern, reason in LONG_RUNNING_PATTERNS:
+    for pattern, reason in LONG_RUNNING_COMMAND_PATTERNS:
         if re.search(pattern, command.strip(), re.IGNORECASE):
             output = {
                 "continue": True,
                 "systemMessage": (
-                    f"💡 TMUX REMINDER: {reason}.\n"
-                    "Consider running in tmux to prevent losing progress if connection drops.\n"
-                    "Start with: tmux new -s build  |  Attach with: tmux attach -t build"
-                )
+                    f"TMUX REMINDER: {reason}.\n"
+                    "Consider running in tmux to prevent "
+                    "losing progress if connection drops.\n"
+                    "Start with: tmux new -s build  |  "
+                    "Attach with: tmux attach -t build"
+                ),
             }
             print(json.dumps(output))
             sys.exit(0)

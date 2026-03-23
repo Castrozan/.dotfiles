@@ -1,17 +1,14 @@
 #!/usr/bin/env python3
-"""nix-rebuild-trigger.py - PostToolUse hook: remind to rebuild after nix file changes."""
 
 import json
 import os
 import sys
 
-# Nix file patterns that typically require a rebuild
-NIX_FILE_PATTERNS = [
+NIX_FILE_EXTENSIONS = [
     ".nix",
 ]
 
-# Paths that indicate system-level nix changes
-SYSTEM_PATHS = [
+PATHS_REQUIRING_SYSTEM_REBUILD = [
     ".dotfiles",
     "/etc/nixos",
     "configuration.nix",
@@ -25,28 +22,25 @@ SYSTEM_PATHS = [
 ]
 
 
-def is_nix_file(path: str) -> bool:
-    """Check if the file is a nix configuration file."""
+def has_nix_file_extension(path: str) -> bool:
     if not path:
         return False
-    
-    # Check extension
-    for pattern in NIX_FILE_PATTERNS:
-        if path.endswith(pattern):
+
+    for extension in NIX_FILE_EXTENSIONS:
+        if path.endswith(extension):
             return True
-    
+
     return False
 
 
-def is_system_config(path: str) -> bool:
-    """Check if this nix file is part of system/home configuration."""
+def is_system_configuration_path(path: str) -> bool:
     if not path:
         return False
-    
-    for system_path in SYSTEM_PATHS:
+
+    for system_path in PATHS_REQUIRING_SYSTEM_REBUILD:
         if system_path in path:
             return True
-    
+
     return False
 
 
@@ -58,43 +52,37 @@ def main():
 
     tool_name = data.get("tool_name", "")
     tool_input = data.get("tool_input", {})
-    tool_output = data.get("tool_output", {})
-    
-    # Only process Edit and Write operations
+
     if tool_name not in ["Edit", "Write"]:
         sys.exit(0)
 
-    # Get the file path from input
     file_path = tool_input.get("file_path", "") or tool_input.get("path", "")
-    
+
     if not file_path:
         sys.exit(0)
 
-    # Check if it's a nix file
-    if not is_nix_file(file_path):
+    if not has_nix_file_extension(file_path):
         sys.exit(0)
 
-    # Check if it's a system configuration file
-    if is_system_config(file_path):
+    if is_system_configuration_path(file_path):
         output = {
             "continue": True,
             "systemMessage": (
-                f"🔧 NIX FILE CHANGED: {os.path.basename(file_path)}\n"
+                f"NIX FILE CHANGED: {os.path.basename(file_path)}\n"
                 "Remember to rebuild to apply changes:\n"
-                "  • System: nixos-rebuild switch --flake .#\n"
-                "  • Home: home-manager switch --flake .#\n"
-                "  • Both: ./bin/rebuild or use the /rebuild skill"
-            )
+                "  - System: nixos-rebuild switch --flake .#\n"
+                "  - Home: home-manager switch --flake .#\n"
+                "  - Both: ./bin/rebuild or use the /rebuild skill"
+            ),
         }
         print(json.dumps(output))
     else:
-        # Generic nix file, lighter reminder
         output = {
             "continue": True,
             "systemMessage": (
-                f"📝 Nix file modified: {os.path.basename(file_path)}\n"
+                f"Nix file modified: {os.path.basename(file_path)}\n"
                 "Run `nix flake check` or rebuild if this affects system config."
-            )
+            ),
         }
         print(json.dumps(output))
 

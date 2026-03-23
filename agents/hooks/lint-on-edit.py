@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-"""lint-on-edit.py - Run linters after file edits and report issues."""
 
 import json
 import os
@@ -7,119 +6,141 @@ import subprocess
 import sys
 
 
-# File type to linter mapping
-LINTERS = {
+LINTER_COMMANDS_BY_FILE_EXTENSION = {
     ".py": [
         {
             "cmd": ["ruff", "check", "--select=E,F,W"],
             "name": "ruff",
-            "parse": lambda out: [l for l in out.split("\n") if l.strip() and not l.startswith("Found")]
+            "parse": lambda out: [
+                line
+                for line in out.split("\n")
+                if line.strip() and not line.startswith("Found")
+            ],
         },
     ],
     ".js": [
         {
             "cmd": ["eslint", "--format=compact"],
             "name": "eslint",
-            "parse": lambda out: [l for l in out.split("\n") if "Error" in l or "Warning" in l][:5]
+            "parse": lambda out: [
+                line for line in out.split("\n") if "Error" in line or "Warning" in line
+            ][:5],
         },
     ],
     ".ts": [
         {
             "cmd": ["eslint", "--format=compact"],
             "name": "eslint",
-            "parse": lambda out: [l for l in out.split("\n") if "Error" in l or "Warning" in l][:5]
+            "parse": lambda out: [
+                line for line in out.split("\n") if "Error" in line or "Warning" in line
+            ][:5],
         },
         {
             "cmd": ["tsc", "--noEmit"],
             "name": "tsc",
-            "parse": lambda out: [l for l in out.split("\n") if "error TS" in l][:5]
+            "parse": lambda out: [
+                line for line in out.split("\n") if "error TS" in line
+            ][:5],
         },
     ],
     ".tsx": [
         {
             "cmd": ["eslint", "--format=compact"],
             "name": "eslint",
-            "parse": lambda out: [l for l in out.split("\n") if "Error" in l or "Warning" in l][:5]
+            "parse": lambda out: [
+                line for line in out.split("\n") if "Error" in line or "Warning" in line
+            ][:5],
         },
     ],
     ".nix": [
         {
             "cmd": ["statix", "check"],
             "name": "statix",
-            "parse": lambda out: [l for l in out.split("\n") if ">" in l or "Warning" in l][:5]
+            "parse": lambda out: [
+                line for line in out.split("\n") if ">" in line or "Warning" in line
+            ][:5],
         },
         {
             "cmd": ["deadnix"],
             "name": "deadnix",
-            "parse": lambda out: [l for l in out.split("\n") if l.strip()][:5]
+            "parse": lambda out: [line for line in out.split("\n") if line.strip()][:5],
         },
     ],
     ".sh": [
         {
             "cmd": ["shellcheck", "--format=gcc"],
             "name": "shellcheck",
-            "parse": lambda out: [l for l in out.split("\n") if "error:" in l.lower() or "warning:" in l.lower()][:5]
+            "parse": lambda out: [
+                line
+                for line in out.split("\n")
+                if "error:" in line.lower() or "warning:" in line.lower()
+            ][:5],
         },
     ],
     ".rs": [
         {
             "cmd": ["cargo", "clippy", "--message-format=short", "-q"],
             "name": "clippy",
-            "parse": lambda out: [l for l in out.split("\n") if "warning:" in l or "error:" in l][:5]
+            "parse": lambda out: [
+                line
+                for line in out.split("\n")
+                if "warning:" in line or "error:" in line
+            ][:5],
         },
     ],
     ".go": [
         {
             "cmd": ["go", "vet"],
             "name": "go vet",
-            "parse": lambda out: out.strip().split("\n")[:5] if out.strip() else []
+            "parse": lambda out: (out.strip().split("\n")[:5] if out.strip() else []),
         },
         {
             "cmd": ["staticcheck"],
             "name": "staticcheck",
-            "parse": lambda out: out.strip().split("\n")[:5] if out.strip() else []
+            "parse": lambda out: (out.strip().split("\n")[:5] if out.strip() else []),
         },
     ],
 }
 
+MAX_FILE_SIZE_BYTES = 500 * 1024
+MAX_ISSUES_PER_LINTER = 3
+MAX_DISPLAYED_ISSUES = 5
 
-def check_linter_available(linter_cmd: list[str]) -> bool:
-    """Check if a linter is available in PATH."""
+
+def is_linter_available_in_path(linter_command: list[str]) -> bool:
     try:
         subprocess.run(
-            [linter_cmd[0], "--version"],
+            [linter_command[0], "--version"],
             capture_output=True,
-            timeout=2
+            timeout=2,
         )
         return True
     except (FileNotFoundError, subprocess.TimeoutExpired):
         try:
             subprocess.run(
-                [linter_cmd[0], "--help"],
+                [linter_command[0], "--help"],
                 capture_output=True,
-                timeout=2
+                timeout=2,
             )
             return True
         except (FileNotFoundError, subprocess.TimeoutExpired):
             return False
 
 
-def run_linter(file_path: str, linter: dict) -> list[str]:
-    """Run a linter and return issues found."""
-    cmd = linter["cmd"] + [file_path]
+def collect_linter_issues_for_file(file_path: str, linter: dict) -> list[str]:
+    command_with_file = linter["cmd"] + [file_path]
 
     try:
         result = subprocess.run(
-            cmd,
+            command_with_file,
             capture_output=True,
             text=True,
             timeout=30,
-            cwd=os.path.dirname(file_path) or "."
+            cwd=os.path.dirname(file_path) or ".",
         )
-        # Linters often return non-zero when issues found
-        output = result.stdout + result.stderr
-        issues = linter["parse"](output)
-        return [issue for issue in issues if issue.strip()]
+        combined_output = result.stdout + result.stderr
+        parsed_issues = linter["parse"](combined_output)
+        return [issue for issue in parsed_issues if issue.strip()]
     except subprocess.TimeoutExpired:
         return []
     except Exception:
@@ -137,47 +158,45 @@ def main():
     if not file_path or not os.path.exists(file_path):
         sys.exit(0)
 
-    # Get file extension
-    _, ext = os.path.splitext(file_path)
-    ext = ext.lower()
+    _, file_extension = os.path.splitext(file_path)
+    file_extension = file_extension.lower()
 
-    if ext not in LINTERS:
+    if file_extension not in LINTER_COMMANDS_BY_FILE_EXTENSION:
         sys.exit(0)
 
-    # Skip if file is too large (> 500KB)
     try:
-        if os.path.getsize(file_path) > 500 * 1024:
+        if os.path.getsize(file_path) > MAX_FILE_SIZE_BYTES:
             sys.exit(0)
     except OSError:
         sys.exit(0)
 
     all_issues = []
-    linters_run = []
+    successfully_run_linter_names = []
 
-    for linter in LINTERS[ext]:
-        if not check_linter_available(linter["cmd"]):
+    for linter in LINTER_COMMANDS_BY_FILE_EXTENSION[file_extension]:
+        if not is_linter_available_in_path(linter["cmd"]):
             continue
 
-        linters_run.append(linter["name"])
-        issues = run_linter(file_path, linter)
+        successfully_run_linter_names.append(linter["name"])
+        issues = collect_linter_issues_for_file(file_path, linter)
         if issues:
-            all_issues.extend(issues[:3])  # Limit per linter
-            break  # Stop after first linter with issues
+            all_issues.extend(issues[:MAX_ISSUES_PER_LINTER])
+            break
 
-    if not linters_run:
-        # No linters available
+    if not successfully_run_linter_names:
         sys.exit(0)
 
     if all_issues:
-        # Truncate and format issues
-        display_issues = all_issues[:5]
-        issue_text = "\n".join(f"  - {issue}" for issue in display_issues)
-        if len(all_issues) > 5:
-            issue_text += f"\n  ... and {len(all_issues) - 5} more"
+        displayed_issues = all_issues[:MAX_DISPLAYED_ISSUES]
+        formatted_issue_text = "\n".join(f"  - {issue}" for issue in displayed_issues)
+        if len(all_issues) > MAX_DISPLAYED_ISSUES:
+            remaining = len(all_issues) - MAX_DISPLAYED_ISSUES
+            formatted_issue_text += f"\n  ... and {remaining} more"
 
+        linter_name = successfully_run_linter_names[0]
         output = {
             "continue": True,
-            "systemMessage": f"LINT ISSUES ({linters_run[0]}):\n{issue_text}"
+            "systemMessage": (f"LINT ISSUES ({linter_name}):\n{formatted_issue_text}"),
         }
         print(json.dumps(output))
 

@@ -1,17 +1,14 @@
 #!/usr/bin/env python3
-"""branch-protection.py - Extra warnings for operations on protected branches."""
 
 from __future__ import annotations
 
 import json
-import os
 import re
 import subprocess
 import sys
 
 
-def run_git(args: list[str]) -> tuple[int, str]:
-    """Run a git command and return (exit_code, output)."""
+def run_git_command(args: list[str]) -> tuple[int, str]:
     try:
         result = subprocess.run(
             ["git"] + args, capture_output=True, text=True, timeout=5
@@ -21,29 +18,33 @@ def run_git(args: list[str]) -> tuple[int, str]:
         return 1, ""
 
 
-def get_current_branch() -> str | None:
-    """Get current git branch name."""
-    code, output = run_git(["branch", "--show-current"])
+def get_current_branch_name() -> str | None:
+    code, output = run_git_command(["branch", "--show-current"])
     return output if code == 0 else None
 
 
 def is_protected_branch(branch: str) -> bool:
-    """Check if branch is protected."""
-    protected = ["main", "master", "production", "prod", "release", "develop"]
-    return branch.lower() in protected
+    protected_branch_names = [
+        "main",
+        "master",
+        "production",
+        "prod",
+        "release",
+        "develop",
+    ]
+    return branch.lower() in protected_branch_names
 
 
-def get_remote_tracking_info() -> tuple[str | None, bool]:
-    """Get remote tracking branch and whether we're ahead/behind."""
-    code, output = run_git(
+def get_remote_tracking_branch_and_ahead_status() -> tuple[str | None, bool]:
+    code, remote_tracking_branch = run_git_command(
         ["rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{u}"]
     )
     if code != 0:
         return None, False
 
-    # Check if ahead of remote
-    code2, ahead = run_git(["rev-list", "--count", "@{u}..HEAD"])
-    return output, (code2 == 0 and int(ahead or "0") > 0)
+    code, commits_ahead_count = run_git_command(["rev-list", "--count", "@{u}..HEAD"])
+    is_ahead_of_remote = code == 0 and int(commits_ahead_count or "0") > 0
+    return remote_tracking_branch, is_ahead_of_remote
 
 
 def main():
@@ -57,13 +58,12 @@ def main():
     if not command or not command.startswith("git"):
         sys.exit(0)
 
-    current_branch = get_current_branch()
+    current_branch = get_current_branch_name()
     if not current_branch:
         sys.exit(0)
 
     messages = []
 
-    # Check for direct commits on protected branch
     if re.search(r"^git\s+commit", command):
         if is_protected_branch(current_branch):
             messages.append(
@@ -71,32 +71,31 @@ def main():
                 "Consider using a feature branch and PR workflow instead."
             )
 
-    # Check for force push attempts
     if re.search(r"^git\s+push.*--force", command):
         if is_protected_branch(current_branch):
-            # Block force push to protected branches
             output = {
                 "continue": True,
                 "systemMessage": (
-                    f"BLOCKED: Force push to protected branch '{current_branch}' is dangerous.\n"
-                    "This can destroy commit history for all collaborators.\n"
-                    "If you really need this, use: git push --force-with-lease"
+                    f"BLOCKED: Force push to protected branch "
+                    f"'{current_branch}' is dangerous.\n"
+                    "This can destroy commit history "
+                    "for all collaborators.\n"
+                    "If you really need this, use: "
+                    "git push --force-with-lease"
                 ),
             }
             print(json.dumps(output))
             sys.exit(0)
 
-    # Check for rebasing protected branch
     if re.search(r"^git\s+rebase", command):
         if is_protected_branch(current_branch):
-            remote_branch, is_ahead = get_remote_tracking_info()
-            if remote_branch and is_ahead:
+            _, is_ahead_of_remote = get_remote_tracking_branch_and_ahead_status()
+            if is_ahead_of_remote:
                 messages.append(
                     f"CAUTION: Rebasing '{current_branch}' while ahead of remote.\n"
                     "This may require force push and affect collaborators."
                 )
 
-    # Check for hard reset on protected branch
     if re.search(r"^git\s+reset\s+--hard", command):
         if is_protected_branch(current_branch):
             messages.append(
@@ -104,7 +103,6 @@ def main():
                 "This discards uncommitted changes permanently."
             )
 
-    # Check for merge without --no-ff on protected branches
     if re.search(r"^git\s+merge\s+(?!.*--no-ff)", command):
         if is_protected_branch(current_branch):
             messages.append(
@@ -112,12 +110,12 @@ def main():
                 "This preserves feature branch history in the commit graph."
             )
 
-    # Check for stash pop/apply with uncommitted changes
     if re.search(r"^git\s+stash\s+(pop|apply)", command):
-        code, porcelain = run_git(["status", "--porcelain"])
-        if code == 0 and porcelain:
+        code, porcelain_output = run_git_command(["status", "--porcelain"])
+        if code == 0 and porcelain_output:
             messages.append(
-                "WARNING: You have uncommitted changes. Applying stash may cause conflicts."
+                "WARNING: You have uncommitted changes. "
+                "Applying stash may cause conflicts."
             )
 
     if messages:
