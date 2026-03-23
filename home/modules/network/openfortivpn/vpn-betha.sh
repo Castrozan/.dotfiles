@@ -71,6 +71,7 @@ case "${1:-}" in
 	;;
 -h | --help)
 	echo "vpn-betha - Connect to Betha VPN via SAML"
+	echo "Host: $VPN_HOST:$VPN_PORT"
 	echo ""
 	echo "Usage:"
 	echo "  vpn-betha                       Connect and detach after tunnel is up"
