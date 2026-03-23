@@ -6,7 +6,7 @@
     ./config.nix
     ./skills.nix
     ./hooks.nix
-    ./mcp.nix
+    ./mcps.nix
     ./private.nix
     ./workspace-trust.nix
     ./scripts.nix

@@ -30,6 +30,7 @@ let
     teammateMode = "tmux";
     env = {
       CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = "1";
+      CLAUDE_ENABLE_STREAM_WATCHDOG = "1";
     };
     permissions = {
       defaultMode = "bypassPermissions";

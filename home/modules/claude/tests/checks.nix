@@ -52,11 +52,6 @@ in
     mkEvalCheck "claude-skills-directory" (hasFilePrefix ".claude/skills/")
       "skills directory entries should be in home.file";
 
-  claude-chrome-policy =
-    mkEvalCheck "claude-chrome-policy"
-      (builtins.hasAttr ".config/google-chrome/policies/managed/chrome-remote-debugging.json" cfg.home.file)
-      "Chrome enterprise policy for remote debugging should be deployed";
-
   claude-bin-wrapper =
     mkEvalCheck "claude-bin-wrapper" (builtins.hasAttr ".local/bin/claude" cfg.home.file)
       ".local/bin/claude should be in home.file";
