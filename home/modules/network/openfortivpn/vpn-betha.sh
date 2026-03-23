@@ -4,12 +4,38 @@
 
 export PATH="@openfortivpn@/bin:@procps@/bin:@coreutils@/bin:@gnugrep@/bin:@xdgUtils@/bin:$PATH"
 
-VPN_HOST="vpn.betha.com.br"
+VPN_HOST_CACHE_FILE="${XDG_CACHE_HOME:-$HOME/.cache}/vpn-betha/host"
+DEFAULT_VPN_HOST="vpn.betha.com.br"
 VPN_PORT="10443"
 LOG_FILE="/tmp/openfortivpn.log"
 OPENFORTIVPN="@openfortivpn@/bin/openfortivpn"
 
+read_vpn_host_from_cache() {
+	if [ -f "$VPN_HOST_CACHE_FILE" ]; then
+		cat "$VPN_HOST_CACHE_FILE"
+	else
+		echo "$DEFAULT_VPN_HOST"
+	fi
+}
+
+save_vpn_host_to_cache() {
+	mkdir -p "$(dirname "$VPN_HOST_CACHE_FILE")"
+	echo "$1" >"$VPN_HOST_CACHE_FILE"
+	echo "VPN host saved: $1"
+}
+
+VPN_HOST="$(read_vpn_host_from_cache)"
+
 case "${1:-}" in
+--set-host)
+	if [ -z "${2:-}" ]; then
+		echo "Current host: $VPN_HOST"
+		echo "Usage: vpn-betha --set-host <hostname>"
+		exit 1
+	fi
+	save_vpn_host_to_cache "$2"
+	exit 0
+	;;
 -s | --status)
 	if pgrep -x openfortivpn >/dev/null; then
 		echo "VPN is connected"
@@ -47,12 +73,13 @@ case "${1:-}" in
 	echo "vpn-betha - Connect to Betha VPN via SAML"
 	echo ""
 	echo "Usage:"
-	echo "  vpn-betha              Connect and detach after tunnel is up"
-	echo "  vpn-betha -a|--attach  Connect in foreground (attached)"
-	echo "  vpn-betha -s|--status  Check connection status"
-	echo "  vpn-betha -d|--disconnect  Disconnect VPN"
-	echo "  vpn-betha -l|--log     Tail the VPN log"
-	echo "  vpn-betha -h|--help    Show this help"
+	echo "  vpn-betha                       Connect and detach after tunnel is up"
+	echo "  vpn-betha -a|--attach           Connect in foreground (attached)"
+	echo "  vpn-betha -s|--status           Check connection status"
+	echo "  vpn-betha -d|--disconnect       Disconnect VPN"
+	echo "  vpn-betha -l|--log              Tail the VPN log"
+	echo "  vpn-betha --set-host <host>     Set VPN host (current: $VPN_HOST)"
+	echo "  vpn-betha -h|--help             Show this help"
 	;;
 *)
 	if pgrep -x openfortivpn >/dev/null; then
