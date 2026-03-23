@@ -114,6 +114,17 @@ in
     mkEvalCheck "domain-terminal-wezterm-enabled" cfg.programs.wezterm.enable
       "wezterm should be enabled";
 
+  domain-terminal-wezterm-ctrl-click-bypass =
+    let
+      weztermConfig = cfg.programs.wezterm.extraConfig;
+      hasBypassMouseReporting = lib.hasInfix "bypass_mouse_reporting_modifiers" weztermConfig;
+      hasOpenLinkAction = lib.hasInfix "OpenLinkAtMouseCursor" weztermConfig;
+      hasNopDownEvent = lib.hasInfix "action = wezterm.action.Nop" weztermConfig;
+    in
+    mkEvalCheck "domain-terminal-wezterm-ctrl-click-bypass"
+      (hasBypassMouseReporting && hasOpenLinkAction && hasNopDownEvent)
+      "wezterm must have bypass_mouse_reporting_modifiers, OpenLinkAtMouseCursor (Up), and Nop (Down) bindings for ctrl+click to work inside tmux";
+
   domain-terminal-atuin-fish = mkEvalCheck "domain-terminal-atuin-fish" (
     cfg.programs.atuin.enable && cfg.programs.atuin.enableFishIntegration
   ) "atuin should be enabled with fish integration";
