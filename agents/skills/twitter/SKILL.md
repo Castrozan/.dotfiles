@@ -4,15 +4,13 @@ description: Scrape X/Twitter posts, profiles, search results, followers, and tr
 ---
 
 <tool_selection>
-Two backends. Default to grok-search for search and analysis tasks — returns synthesized answers with citations (~$0.05-0.20 per search). Use twikit-cli for raw JSON data, write operations (post, reply, like, retweet, DM), and personal account access (timeline, bookmarks, followers). When twikit breaks or cookies expire, fall back to grok-search. Run each tool with --help for available commands and flags.
+Single backend: twikit-cli. Supports search, user profiles, tweets, replies, threads, trends, timeline, followers, following, post, like, retweet, bookmark, DM. Run `twikit-cli --help` for all commands.
 </tool_selection>
 
-<auth_traps>
-grok-search: requires grok-4 family models only for server-side search. API key configured via XAI_API_KEY env var or auth-profiles.json.
-
-twikit-cli: cookie-based auth. Run twikit-cli extract-cookies to pull from pinchtab's Chrome profile. Re-run when cookies expire. Credentials managed by agenix.
-</auth_traps>
+<auth>
+Cookie-based auth extracted from Chrome. Cookies (auth_token, ct0) last ~13 months. Run `twikit-cli extract-cookies` to refresh — decrypts cookies from any Chrome/Chromium profile where user is logged into x.com. No manual steps needed beyond being logged in.
+</auth>
 
 <troubleshooting>
-Cookies expired: twikit-cli extract-cookies. Twikit broken (X API change): use grok-search fallback. Grok returns no results: check API key, ensure grok-4 model. "model not supported": Grok search requires grok-4 family only.
+Auth error or 401: run `twikit-cli extract-cookies`. If that fails with "missing auth_token/ct0", user needs to log into x.com in Chrome first, then re-run extract-cookies. Direct `twikit-cli login` won't work — Cloudflare blocks programmatic login from this IP.
 </troubleshooting>
