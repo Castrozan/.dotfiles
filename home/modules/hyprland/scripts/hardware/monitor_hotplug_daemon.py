@@ -3,7 +3,11 @@ import socket
 import time
 from pathlib import Path
 
-from hyprland_ipc import get_all_monitors, run_hyprctl
+from hyprland_ipc import (
+    get_all_monitors,
+    migrate_workspaces_from_disabled_monitors,
+    run_hyprctl,
+)
 
 OVERRIDE_FILE = Path.home() / ".cache" / "hypr-monitors-override.conf"
 TOGGLE_LOCK_FILE = Path.home() / ".cache" / "hypr-monitors-toggle.lock"
@@ -43,6 +47,7 @@ def handle_monitor_removed(monitor_name: str) -> None:
     if is_manual_toggle_in_progress():
         return
     write_override_and_reload("monitor = eDP-1, preferred, auto, 1")
+    migrate_workspaces_from_disabled_monitors()
 
 
 def handle_monitor_added(monitor_name: str) -> None:
@@ -51,6 +56,7 @@ def handle_monitor_added(monitor_name: str) -> None:
     if is_manual_toggle_in_progress():
         return
     write_override_and_reload("")
+    migrate_workspaces_from_disabled_monitors()
 
 
 def check_initial_state() -> None:

@@ -4,7 +4,11 @@ import subprocess
 import time
 from pathlib import Path
 
-from hyprland_ipc import get_all_monitors, run_hyprctl
+from hyprland_ipc import (
+    get_all_monitors,
+    migrate_workspaces_from_disabled_monitors,
+    run_hyprctl,
+)
 
 MONITORS_CONF = (
     Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config"))
@@ -156,6 +160,7 @@ def main() -> None:
         next_mode, internal_monitor, external_monitor
     )
     write_override_and_reload(override_content)
+    migrate_workspaces_from_disabled_monitors()
     send_notification(label)
 
 
