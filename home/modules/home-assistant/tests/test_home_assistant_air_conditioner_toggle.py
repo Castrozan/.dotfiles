@@ -1,3 +1,6 @@
+import subprocess
+from unittest.mock import MagicMock
+
 import pytest
 
 import home_assistant_air_conditioner_toggle
@@ -98,3 +101,85 @@ class TestMainToggleBehavior:
         home_assistant_air_conditioner_toggle.main()
         turn_off_call = calls[1]
         assert turn_off_call["endpoint"] == "/api/services/climate/turn_off"
+
+
+class TestUnavailableStateRecovery:
+    def test_calls_recovery_when_unavailable(
+        self, mock_toggle_token, mock_toggle_api_request, monkeypatch
+    ):
+        calls, ac_state = mock_toggle_api_request
+        call_count = {"n": 0}
+
+        def stateful_request(token, endpoint, payload=None):
+            calls.append({"token": token, "endpoint": endpoint, "payload": payload})
+            if endpoint.startswith("/api/states/"):
+                call_count["n"] += 1
+                if call_count["n"] == 1:
+                    return {"state": "unavailable"}
+                return {"state": "off"}
+            return None
+
+        monkeypatch.setattr(
+            home_assistant_air_conditioner_toggle,
+            "make_home_assistant_api_request",
+            stateful_request,
+        )
+
+        fake_result = MagicMock()
+        fake_result.returncode = 0
+        monkeypatch.setattr(
+            home_assistant_air_conditioner_toggle.subprocess,
+            "run",
+            lambda *args, **kwargs: fake_result,
+        )
+        monkeypatch.setattr(
+            home_assistant_air_conditioner_toggle.time,
+            "sleep",
+            lambda s: None,
+        )
+
+        home_assistant_air_conditioner_toggle.main()
+
+        turn_on_call = [
+            c for c in calls if c["endpoint"] == "/api/services/climate/turn_on"
+        ]
+        assert len(turn_on_call) == 1
+
+    def test_exits_when_recovery_fails(
+        self, mock_toggle_token, mock_toggle_api_request, monkeypatch
+    ):
+        _, ac_state = mock_toggle_api_request
+        ac_state["state"] = "unavailable"
+
+        fake_result = MagicMock()
+        fake_result.returncode = 1
+        monkeypatch.setattr(
+            home_assistant_air_conditioner_toggle.subprocess,
+            "run",
+            lambda *args, **kwargs: fake_result,
+        )
+
+        with pytest.raises(SystemExit):
+            home_assistant_air_conditioner_toggle.main()
+
+    def test_exits_when_still_unavailable_after_recovery(
+        self, mock_toggle_token, mock_toggle_api_request, monkeypatch
+    ):
+        _, ac_state = mock_toggle_api_request
+        ac_state["state"] = "unavailable"
+
+        fake_result = MagicMock()
+        fake_result.returncode = 0
+        monkeypatch.setattr(
+            home_assistant_air_conditioner_toggle.subprocess,
+            "run",
+            lambda *args, **kwargs: fake_result,
+        )
+        monkeypatch.setattr(
+            home_assistant_air_conditioner_toggle.time,
+            "sleep",
+            lambda s: None,
+        )
+
+        with pytest.raises(SystemExit):
+            home_assistant_air_conditioner_toggle.main()

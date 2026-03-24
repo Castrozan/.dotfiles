@@ -15,5 +15,6 @@ in
     (mkHomeAssistantPythonScript "ha-ac" ./scripts/home_assistant_air_conditioner_control.py)
     (mkHomeAssistantPythonScript "ha-light-scene-cycle" ./scripts/home_assistant_light_scene_cycle.py)
     (mkHomeAssistantPythonScript "ha-ac-toggle" ./scripts/home_assistant_air_conditioner_toggle.py)
+    (mkHomeAssistantPythonScript "ha-ac-recover-ip" ./scripts/home_assistant_air_conditioner_recover_ip.py)
   ];
 }

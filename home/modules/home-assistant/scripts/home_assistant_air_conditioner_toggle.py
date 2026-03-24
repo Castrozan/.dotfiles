@@ -1,5 +1,7 @@
 import json
+import subprocess
 import sys
+import time
 import urllib.request
 from pathlib import Path
 
@@ -49,9 +51,22 @@ def get_current_air_conditioner_state(token: str) -> str:
     return result.get("state", "off")
 
 
-def main() -> None:
-    token = read_home_assistant_token()
-    current_state = get_current_air_conditioner_state(token)
+RECOVERY_WAIT_SECONDS = 3
+
+
+def attempt_air_conditioner_recovery() -> bool:
+    result = subprocess.run(
+        ["ha-ac-recover-ip"],
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        return False
+    time.sleep(RECOVERY_WAIT_SECONDS)
+    return True
+
+
+def toggle_air_conditioner(token: str, current_state: str) -> None:
     if current_state == "off":
         make_home_assistant_api_request(
             token,
@@ -66,6 +81,23 @@ def main() -> None:
             {"entity_id": AIR_CONDITIONER_ENTITY_ID},
         )
         print("air conditioner: off")
+
+
+def main() -> None:
+    token = read_home_assistant_token()
+    current_state = get_current_air_conditioner_state(token)
+
+    if current_state == "unavailable":
+        recovered = attempt_air_conditioner_recovery()
+        if not recovered:
+            print("air conditioner: unavailable", file=sys.stderr)
+            raise SystemExit(1)
+        current_state = get_current_air_conditioner_state(token)
+        if current_state == "unavailable":
+            print("air conditioner: unavailable", file=sys.stderr)
+            raise SystemExit(1)
+
+    toggle_air_conditioner(token, current_state)
 
 
 if __name__ == "__main__":
