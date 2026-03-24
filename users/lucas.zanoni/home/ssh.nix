@@ -22,10 +22,15 @@ let
 
     {
       if [ -n "''${hosts[dellg15]:-}" ]; then
-        printf 'Host dellg15\n'
-        printf '    HostName %s\n' "''${hosts[dellg15]}"
-        printf '    User zanoni\n'
-        printf '    IdentityFile ~/.ssh/id_ed25519\n\n'
+        printf 'Host dellg15
+'
+        printf '    HostName %s
+' "''${hosts[dellg15]}"
+        printf '    User zanoni
+'
+        printf '    IdentityFile ~/.ssh/id_ed25519
+
+'
       fi
     } > "$PRIVATE_HOSTS"
   '';
@@ -52,6 +57,11 @@ in
         hostname = "github.com";
         user = "git";
         identityFile = "~/.ssh/id_rsa";
+      };
+      "git.coates.io" = {
+        hostname = "git.coates.io";
+        user = "git";
+        identityFile = "~/.ssh/id_ed25519_coates";
       };
     };
   };
