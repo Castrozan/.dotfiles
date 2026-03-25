@@ -4,7 +4,7 @@
   ...
 }:
 let
-  homeDirectory = config.home.homeDirectory;
+  inherit (config.home) homeDirectory;
   skillSetsBaseDirectory = "${homeDirectory}/.local/share/claude-skill-sets";
   personalSkillSetDirectory = "${skillSetsBaseDirectory}/personal";
 

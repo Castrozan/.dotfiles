@@ -6,7 +6,7 @@
 }:
 let
   homeDir = config.home.homeDirectory;
-  username = config.home.username;
+  inherit (config.home) username;
   secretsDirectory = "${homeDir}/.secrets";
   discordBotTokenSecretFile = "${secretsDirectory}/discord-bot-token-claude";
   discordChannelStateDirectory = "${homeDir}/.claude/channels/discord";

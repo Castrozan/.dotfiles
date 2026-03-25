@@ -67,18 +67,20 @@ in
 
     file.".mcporter/mcporter.json".text = builtins.toJSON mcporterServerConfig;
 
-    activation.installScraplingFetchMcpVenv = config.lib.dag.entryAfter [ "writeBoundary" ] ''
-      run ${installScraplingFetchMcpVenv}
-    '';
+    activation = {
+      installScraplingFetchMcpVenv = config.lib.dag.entryAfter [ "writeBoundary" ] ''
+        run ${installScraplingFetchMcpVenv}
+      '';
 
-    activation.installMcporterViaNpm = config.lib.dag.entryAfter [ "writeBoundary" ] ''
-      run ${installMcporterViaNpm}
-    '';
+      installMcporterViaNpm = config.lib.dag.entryAfter [ "writeBoundary" ] ''
+        run ${installMcporterViaNpm}
+      '';
 
-    activation.restartMcporterDaemonAfterConfigChanges =
-      config.lib.dag.entryAfter [ "installMcporterViaNpm" "linkGeneration" ]
-        ''
-          run ${restartMcporterDaemon}
-        '';
+      restartMcporterDaemonAfterConfigChanges =
+        config.lib.dag.entryAfter [ "installMcporterViaNpm" "linkGeneration" ]
+          ''
+            run ${restartMcporterDaemon}
+          '';
+    };
   };
 }
