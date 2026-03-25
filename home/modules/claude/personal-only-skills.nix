@@ -1,0 +1,10 @@
+[
+  "comms"
+  "desktop"
+  "home-assistant"
+  "media"
+  "obsidian"
+  "openclaw"
+  "presentation"
+  "quickshell"
+]
