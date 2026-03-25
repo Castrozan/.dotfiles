@@ -14,6 +14,7 @@ let
   jennyModelPrimary = sonnetModel;
   monsterModelPrimary = sonnetModel;
   silverModelPrimary = sonnetModel;
+  rssFeedMonitorModelPrimary = sonnetModel;
 
   lucasDiscordUserId = "284143065877184512";
   robsonDiscordGuildId = "998625197802410094";
@@ -148,6 +149,14 @@ in
           voice.enable = true;
           allowFrom = [ lucasDiscordUserId ];
         };
+      };
+      rss-feed-monitor = {
+        enable = true;
+        emoji = "📡";
+        role = "RSS feed monitoring and aggregation — periodic checks, feed parsing, digest generation";
+        model.primary = rssFeedMonitorModelPrimary;
+        workspace = "openclaw/rss-feed-monitor";
+        telegram.enable = true;
       };
     };
   };
