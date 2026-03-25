@@ -1,0 +1,36 @@
+tests:
+  - name: desktop_routes_to_keyboard
+    agent: desktop
+    prompt: "I need to type some text into a focused application window. Which file in this skill should I read for keyboard input instructions?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "keyboard.md"
+        - "keyboard"
+
+  - name: desktop_routes_to_mouse
+    agent: desktop
+    prompt: "I want to click a specific pixel coordinate on the screen. Which file in this skill covers mouse control?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "mouse.md"
+        - "mouse"
+
+  - name: desktop_routes_to_screenshot
+    agent: desktop
+    prompt: "I need to capture what is currently visible on the display. Which file in this skill has screenshot instructions?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "screenshot.md"
+        - "screenshot"
+
+  - name: desktop_routes_to_clipboard
+    agent: desktop
+    prompt: "I need to read the current contents of the system clipboard. Which file in this skill covers clipboard access?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "clipboard.md"
+        - "clipboard"

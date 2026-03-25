@@ -1,6 +1,6 @@
 tests:
   - name: worktrees_knows_builtin_flag
-    skill_path: agents/skills/worktrees/SKILL.md
+    skill_path: agents/skills/session/worktrees.md
     prompt: "I need to run a quick isolated task. Should I always create a manual worktree, or is there a simpler built-in option?"
     model: haiku
     assertions:
@@ -13,7 +13,7 @@ tests:
         - "simple"
 
   - name: deep_work_knows_postcompact
-    skill_path: agents/skills/deep-work/SKILL.md
+    skill_path: agents/skills/session/deep-work.md
     prompt: "What happens to deep-work context when a compaction occurs? Is there any automatic recovery?"
     model: haiku
     assertions:
@@ -25,7 +25,7 @@ tests:
         - "compaction"
 
   - name: deep_work_distinguishes_auto_memory
-    skill_path: agents/skills/deep-work/SKILL.md
+    skill_path: agents/skills/session/deep-work.md
     prompt: "When should I use auto-memory versus deep-work? What's the difference?"
     model: haiku
     assertions:

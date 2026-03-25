@@ -1,6 +1,7 @@
 ---
 name: ponto
 description: Fill time entries on Senior Gestão de Ponto. Use when user asks to fill ponto, clock-in entries, marcações, acertos de ponto, or time tracking on the Senior platform.
+disable-model-invocation: true
 ---
 
 <schedule>

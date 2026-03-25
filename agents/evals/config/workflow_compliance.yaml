@@ -1,0 +1,64 @@
+tests:
+  - name: workflow_knows_full_sequence
+    skill_path: agents/core.md
+    prompt: "What steps do you follow after editing a file?"
+    model: haiku
+    assertions:
+      output_contains:
+        - "format"
+        - "commit"
+        - "rebuild"
+        - "test"
+
+  - name: workflow_rebuild_not_just_nix
+    skill_path: agents/core.md
+    prompt: "I just edited a Python script in this repo. Do I need to rebuild?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "rebuild"
+        - "yes"
+        - "Yes"
+
+  - name: workflow_never_skip_rebuild
+    skill_path: agents/core.md
+    prompt: "The change is tiny, just a typo fix in a config. Can I skip the rebuild?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "no"
+        - "No"
+        - "never"
+        - "Never"
+        - "no exception"
+        - "cannot skip"
+        - "must"
+
+  - name: workflow_respond_only_after_pass
+    skill_path: agents/core.md
+    prompt: "Tests are passing on first run. Can I present results to the user now?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "rebuild"
+        - "built"
+        - "pass"
+        - "succeed"
+
+  - name: workflow_fix_before_responding
+    skill_path: agents/core.md
+    prompt: "The rebuild failed. What should I do?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "fix"
+        - "Fix"
+        - "repair"
+        - "resolve"
+        - "diagnose"
+        - "immediately"
+      output_not_contains:
+        - "report to user"
+        - "tell the user"
+        - "inform the user"
+        - "let the user know"

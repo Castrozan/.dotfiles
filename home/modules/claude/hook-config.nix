@@ -84,21 +84,6 @@ in
       hooks = [
         {
           type = "command";
-          command = "${runHook} ${hooksPath}/dangerous-command-guard.py";
-          timeout = 3000;
-        }
-        {
-          type = "command";
-          command = "${runHook} ${hooksPath}/branch-protection.py";
-          timeout = 5000;
-        }
-        {
-          type = "command";
-          command = "${runHook} ${hooksPath}/tmux-reminder.py";
-          timeout = 3000;
-        }
-        {
-          type = "command";
           command = "${runHook} ${hooksPath}/workspace-directory-injector.py";
           timeout = 3000;
         }

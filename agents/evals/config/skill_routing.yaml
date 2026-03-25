@@ -1,0 +1,458 @@
+shared_system_prompt: &shared_system_prompt |
+  You are a skill router. Given a user request, respond with the name of the single most appropriate skill to handle it. Respond with ONLY the skill name, nothing else.
+
+  Available skills:
+
+  browser - Use when user asks to open a webpage, scrape content, fill forms, click buttons, take screenshots, test a web UI, or automate any browser interaction. Also use when navigating authenticated web apps or testing frontend changes.
+
+  claude - Delegate work to Claude Code as an interactive session or a one-shot autonomous task. Use when spawning agents, handing off complex implementation, or running parallel coding sessions.
+
+  commit - Create high-quality git commits with conventional format, meaningful descriptions, and analysis of changes. Use when user asks to commit, stage changes, or prepare a commit message.
+
+  comms - Send Google Chat messages, DMs, webhooks. Post and scrape Twitter/X tweets, profiles, trends. Control VTuber avatar lip sync and expressions.
+
+  desktop - Interact with the desktop — type text, send key combos, click/move/scroll/drag mouse, capture screenshots, read/write clipboard. Use for any non-browser GUI automation.
+
+  devenv - Manage Nix-based development environments with devenv. Use when creating, configuring, or debugging devenv shells, adding packages or services to devenv.nix, or setting up project-specific dev environments with processes, databases, or language toolchains.
+
+  docs - Documentation policies and standards. Use when creating, updating, or reviewing any documentation — READMEs, TESTING.md, inline docs, file headers, or doc-related PRs.
+
+  dotfiles - User Nix based dotfiles repository. Use when adding modules, modifying user configs, managing secrets, understanding file organization, debugging rebuilds, or unsure where something belongs.
+
+  home-assistant - Control smart home devices via Home Assistant — lights (ha-light) and air conditioner (ha-ac). Use when user asks to turn on/off lights or AC, change temperature, brightness, fan speed, or check device status.
+
+  instructions - Use when creating skills, agents, system prompts, optimizing AI instructions. Also use when instructions feel stale, vague, or are being ignored by the model. Prompt engineering, context engineering.
+
+  media - Media playback control and YouTube operations — play, pause, volume, next, previous, video search, playlists management.
+
+  nix-expert - Nix language and ecosystem expert. Use for writing/debugging Nix expressions, lazy evaluation and fixed-points, derivations and overlays, module system internals (mkIf, mkMerge, types), flake design, ecosystem tools (devenv, direnv, cachix, agenix). For THIS dotfiles repository, use dotfiles skill instead.
+
+  notify - Notify the user after completing substantial work. Use when finishing long tasks, implementations, or background operations. Plays audio and shows a desktop notification by default.
+
+  obsidian - Manage the Obsidian vault — daily notes, TODO tracking, activity logging, and inbox processing. Use when user mentions daily note, wants to log activity, add/check TODOs, review pending tasks, plan their day, process saved items, or interact with the vault.
+
+  openclaw - OpenClaw multi-agent platform — agents, gateway, grid coordination, A2A protocol, cron jobs, Telegram bots, recurring tasks, inter-agent communication, and external agent protocols.
+
+  phone-status - Remote phone status over SSH. Use when checking phone battery, charging status, uptime, or storage.
+
+  ponto - Fill time entries on Senior Gestão de Ponto. Use when user asks to fill ponto, clock-in entries, marcações, acertos de ponto, or time tracking on the Senior platform.
+
+  quickshell - Implement, debug, and test Quickshell bar/OSD/switcher. Use when modifying QML files, debugging shape paths or rendering, testing IPC calls, or verifying visual changes after edits. Also use when adding new bar modules, popouts, dashboard tabs, or launcher features.
+
+  rebuild - Apply Nix configuration changes. Use when modifying .nix files, after flake updates, or when user asks to rebuild/apply dotfiles changes.
+
+  research - Current-information research and synthesis for tools, vendors, standards, or decisions. Use when the user asks to research, compare, evaluate, verify, or find the latest external information; not for local repo search.
+
+  session - Session lifecycle and context preservation — deep work context management, workspace switching, git worktrees for parallel branches, tmux control for background processes, session restart and exit.
+
+  test - Testing methodology and verification workflow. Use when implementing, fixing, or modifying any code. Defines the test-first, test-after, and pre-delivery verification protocol.
+
+  tldr - Compress agent output to maximum density. Use when responses are too long, over-explained, or when user wants the essential information without filler.
+
+tests:
+  - name: routing_to_desktop_keyboard_typing
+    system_prompt: *shared_system_prompt
+    prompt: "Type 'hello world' into the terminal window"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "desktop"
+
+  - name: routing_to_desktop_screenshot_capture
+    system_prompt: *shared_system_prompt
+    prompt: "Take a screenshot of my current screen"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "desktop"
+      output_not_contains:
+        - "browser"
+
+  - name: routing_to_desktop_clipboard_access
+    system_prompt: *shared_system_prompt
+    prompt: "Copy the selected text to clipboard and paste it into another window"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "desktop"
+
+  - name: routing_to_desktop_mouse_click
+    system_prompt: *shared_system_prompt
+    prompt: "Click on the close button at position 1900,10"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "desktop"
+
+  - name: routing_to_media_playback_control
+    system_prompt: *shared_system_prompt
+    prompt: "Pause the music that's currently playing"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "media"
+      output_not_contains:
+        - "desktop"
+
+  - name: routing_to_media_volume_adjustment
+    system_prompt: *shared_system_prompt
+    prompt: "Turn the volume up to 80%"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "media"
+
+  - name: routing_to_media_youtube_search
+    system_prompt: *shared_system_prompt
+    prompt: "Search YouTube for NixOS tutorials and add the best one to my playlist"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "media"
+      output_not_contains:
+        - "browser"
+        - "research"
+
+  - name: routing_to_media_skip_track
+    system_prompt: *shared_system_prompt
+    prompt: "Skip to the next song"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "media"
+
+  - name: routing_to_openclaw_agent_creation
+    system_prompt: *shared_system_prompt
+    prompt: "Create a new agent on the OpenClaw grid that monitors RSS feeds"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "openclaw"
+      output_not_contains:
+        - "claude"
+
+  - name: routing_to_openclaw_cron_job
+    system_prompt: *shared_system_prompt
+    prompt: "Set up a cron job on the grid to run the cleanup task every hour"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "openclaw"
+
+  - name: routing_to_openclaw_a2a_protocol
+    system_prompt: *shared_system_prompt
+    prompt: "Send an A2A message to the summarizer agent on the platform"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "openclaw"
+
+  - name: routing_to_openclaw_telegram_bot
+    system_prompt: *shared_system_prompt
+    prompt: "Configure the Telegram bot on our multi-agent platform to forward alerts"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "openclaw"
+
+  - name: routing_to_comms_google_chat_message
+    system_prompt: *shared_system_prompt
+    prompt: "Send a message to the team on Google Chat saying the deploy is done"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "comms"
+      output_not_contains:
+        - "browser"
+
+  - name: routing_to_comms_twitter_post
+    system_prompt: *shared_system_prompt
+    prompt: "Post a tweet about the new release on my X account"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "comms"
+      output_not_contains:
+        - "browser"
+
+  - name: routing_to_comms_vtuber_avatar
+    system_prompt: *shared_system_prompt
+    prompt: "Make the VTuber avatar smile and start lip syncing"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "comms"
+
+  - name: routing_to_comms_twitter_scrape
+    system_prompt: *shared_system_prompt
+    prompt: "Scrape the latest tweets from @nixos_org"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "comms"
+
+  - name: routing_to_session_deep_work
+    system_prompt: *shared_system_prompt
+    prompt: "This is a big task, set up a deep work workspace to track progress"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "session"
+
+  - name: routing_to_session_worktree
+    system_prompt: *shared_system_prompt
+    prompt: "Create a git worktree so I can work on a parallel branch"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "session"
+      output_not_contains:
+        - "commit"
+
+  - name: routing_to_session_tmux_control
+    system_prompt: *shared_system_prompt
+    prompt: "Start a background process in a new tmux pane"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "session"
+
+  - name: routing_to_session_restart
+    system_prompt: *shared_system_prompt
+    prompt: "Restart the current session and preserve context"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "session"
+
+  - name: routing_to_browser_web_scraping
+    system_prompt: *shared_system_prompt
+    prompt: "Open the AWS console and check the EC2 instances page"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "browser"
+
+  - name: routing_to_browser_form_filling
+    system_prompt: *shared_system_prompt
+    prompt: "Fill out the login form on https://example.com with my credentials"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "browser"
+
+  - name: routing_to_claude_spawn_agent
+    system_prompt: *shared_system_prompt
+    prompt: "Spawn a parallel agent to refactor the utils module while I work on tests"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "claude"
+      output_not_contains:
+        - "openclaw"
+
+  - name: routing_to_commit_staging
+    system_prompt: *shared_system_prompt
+    prompt: "Stage the changed files and create a commit with a good message"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "commit"
+
+  - name: routing_to_home_assistant_lights
+    system_prompt: *shared_system_prompt
+    prompt: "Turn on the living room lights and set brightness to 50%"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "home-assistant"
+
+  - name: routing_to_home_assistant_ac_control
+    system_prompt: *shared_system_prompt
+    prompt: "Set the air conditioner to 22 degrees and fan speed to high"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "home-assistant"
+
+  - name: routing_to_obsidian_daily_note
+    system_prompt: *shared_system_prompt
+    prompt: "Create today's daily note and add a TODO to review the PR"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "obsidian"
+
+  - name: routing_to_obsidian_todo_tracking
+    system_prompt: *shared_system_prompt
+    prompt: "Show me all pending TODOs in my vault"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "obsidian"
+
+  - name: routing_to_dotfiles_module_addition
+    system_prompt: *shared_system_prompt
+    prompt: "Add a new home-manager module for configuring zathura PDF viewer"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "dotfiles"
+
+  - name: routing_to_nix_expert_expression
+    system_prompt: *shared_system_prompt
+    prompt: "Help me write a Nix overlay that patches the source of a package"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "nix-expert"
+
+  - name: routing_to_rebuild_apply_changes
+    system_prompt: *shared_system_prompt
+    prompt: "Rebuild the system to apply the flake changes"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "rebuild"
+
+  - name: routing_to_test_verification
+    system_prompt: *shared_system_prompt
+    prompt: "Run the test suite to verify the changes pass"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "test"
+
+  - name: routing_to_docs_readme_update
+    system_prompt: *shared_system_prompt
+    prompt: "Update the README to document the new module structure"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "docs"
+
+  - name: routing_to_instructions_skill_creation
+    system_prompt: *shared_system_prompt
+    prompt: "Create a new skill for managing Docker containers with good prompts"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "instructions"
+
+  - name: routing_to_notify_task_completion
+    system_prompt: *shared_system_prompt
+    prompt: "Notify me when the long refactoring task is complete"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "notify"
+
+  - name: routing_to_quickshell_bar_module
+    system_prompt: *shared_system_prompt
+    prompt: "Add a new battery widget to the Quickshell bar"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "quickshell"
+
+  - name: routing_to_research_tool_comparison
+    system_prompt: *shared_system_prompt
+    prompt: "Research the latest Wayland compositors and compare their features"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "research"
+      output_not_contains:
+        - "browser"
+
+  - name: routing_to_tldr_compress_output
+    system_prompt: *shared_system_prompt
+    prompt: "That answer was way too long, give me the short version"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "tldr"
+
+  - name: routing_to_devenv_shell_setup
+    system_prompt: *shared_system_prompt
+    prompt: "Set up a devenv shell with PostgreSQL and Python 3.12 for this project"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "devenv"
+
+  - name: routing_to_phone_status_battery
+    system_prompt: *shared_system_prompt
+    prompt: "Check my phone battery level and charging status"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "phone-status"
+
+  - name: routing_to_ponto_time_tracking
+    system_prompt: *shared_system_prompt
+    prompt: "Fill my ponto entries for this week on Senior"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "ponto"
+
+  - name: routing_ambiguous_nix_dotfiles_vs_nix_expert
+    system_prompt: *shared_system_prompt
+    prompt: "Explain how mkMerge works in the NixOS module system"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "nix-expert"
+      output_not_contains:
+        - "dotfiles"
+
+  - name: routing_ambiguous_browser_vs_desktop_screenshot
+    system_prompt: *shared_system_prompt
+    prompt: "Take a screenshot of my desktop showing all open windows"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "desktop"
+      output_not_contains:
+        - "browser"
+
+  - name: routing_ambiguous_research_vs_browser
+    system_prompt: *shared_system_prompt
+    prompt: "What are the best practices for Nix flake design in 2026?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "research"
+      output_not_contains:
+        - "browser"
+
+  - name: routing_ambiguous_claude_vs_session_parallel_work
+    system_prompt: *shared_system_prompt
+    prompt: "I need two agents working on different parts of the codebase simultaneously"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "claude"
+      output_not_contains:
+        - "session"
+
+  - name: routing_ambiguous_commit_vs_session_worktree
+    system_prompt: *shared_system_prompt
+    prompt: "I want to commit all my staged changes with a conventional commit message"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "commit"
+      output_not_contains:
+        - "session"
+
+  - name: routing_ambiguous_dotfiles_vs_rebuild
+    system_prompt: *shared_system_prompt
+    prompt: "I added a new package to my home.nix, now apply it"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "rebuild"
+      output_not_contains:
+        - "dotfiles"

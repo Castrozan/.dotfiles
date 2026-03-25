@@ -1,11 +1,15 @@
 ---
 name: openclaw
-description: OpenClaw multi-agent platform. Use when working with agents, gateway, channels, config, CLI operations, or diagnosing gateway issues. Also use when Telegram bots aren't responding, agents fail to start, or gateway behaves unexpectedly.
+description: OpenClaw multi-agent platform — agents, gateway, grid coordination, A2A protocol, cron jobs, Telegram bots, recurring tasks, inter-agent communication, and external agent protocols.
 ---
 
 <announcement>
 "I'm using the openclaw skill."
 </announcement>
+
+<subskills>
+For grid coordination and inter-agent communication, read `grid.md`. For A2A protocol with external agents, read `a2a.md`. For cron jobs and recurring assistant tasks, read `assistant-cron.md`.
+</subskills>
 
 <cli>
 OpenClaw is a self-documenting CLI — every command supports --help. Use it as the source of truth for syntax and available options. The read-agent-chat.sh script in this skill's scripts directory reads chat history from session JSONL files.

@@ -14,10 +14,10 @@ let
     else
       "openclaw";
 
-  avatarDir = "${homeDir}/${defaultAgentWorkspace}/skills/avatar";
+  avatarDir = "${homeDir}/${defaultAgentWorkspace}/skills/comms";
 
   agentsWithAvatar = lib.filterAttrs (
-    _name: agent: agent.enable && (agent.skills == [ ] || builtins.elem "avatar" agent.skills)
+    _name: agent: agent.enable && (agent.skills == [ ] || builtins.elem "comms" agent.skills)
   ) openclaw.agents;
 
   nonDefaultAvatarAgents = lib.filterAttrs (
@@ -63,7 +63,7 @@ in
 
           ${lib.concatStringsSep "\n" (
             lib.mapAttrsToList (name: agent: ''
-              AGENT_RENDERER="${homeDir}/${agent.workspace}/skills/avatar/renderer"
+              AGENT_RENDERER="${homeDir}/${agent.workspace}/skills/comms/renderer"
               if [ ! -e "$AGENT_RENDERER" ]; then
                 mkdir -p "$(dirname "$AGENT_RENDERER")"
                 ln -sfn "$RENDERER_DIR" "$AGENT_RENDERER"
@@ -88,7 +88,7 @@ in
 
           ${lib.concatStringsSep "\n" (
             lib.mapAttrsToList (name: agent: ''
-              AGENT_CONTROL_MODULES="${homeDir}/${agent.workspace}/skills/avatar/control-server/node_modules"
+              AGENT_CONTROL_MODULES="${homeDir}/${agent.workspace}/skills/comms/control-server/node_modules"
               if [ ! -e "$AGENT_CONTROL_MODULES" ] && [ -d "$CONTROL_DIR/node_modules" ]; then
                 ln -sfn "$CONTROL_DIR/node_modules" "$AGENT_CONTROL_MODULES"
                 echo "Symlinked avatar control-server node_modules for ${name}"

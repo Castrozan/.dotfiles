@@ -1,6 +1,7 @@
 ---
 name: phone-status
 description: Remote phone status over SSH. Use when checking phone battery, charging status, uptime, or storage.
+disable-model-invocation: true
 ---
 
 <execution>

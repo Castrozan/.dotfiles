@@ -1,0 +1,27 @@
+tests:
+  - name: comms_routes_to_google_chat
+    agent: comms
+    prompt: "I need to send a message to someone on Google Chat. Which file in this skill should I read?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "google-chat.md"
+        - "google-chat"
+
+  - name: comms_routes_to_twitter
+    agent: comms
+    prompt: "I want to post a tweet and check trending topics on Twitter/X. Which file in this skill covers that?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "twitter.md"
+        - "twitter"
+
+  - name: comms_routes_to_avatar
+    agent: comms
+    prompt: "I need to control a VTuber avatar's lip sync and facial expressions. Which file in this skill has avatar instructions?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "avatar.md"
+        - "avatar"
