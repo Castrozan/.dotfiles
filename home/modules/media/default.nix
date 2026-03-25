@@ -5,5 +5,6 @@
     ./obs-studio.nix
     ./suwayomi-server.nix
     ./youtube.nix
+    ./zathura.nix
   ];
 }
