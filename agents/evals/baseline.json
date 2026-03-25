@@ -1,0 +1,157 @@
+{
+  "generated_at": "2026-03-25T02:40:00+00:00",
+  "git_commit": "900531f1",
+  "total_tests": 109,
+  "total_passed": 90,
+  "total_failed": 19,
+  "pass_rate": 0.8257,
+  "categories": {
+    "compliance": {
+      "passed": 17,
+      "failed": 2,
+      "tests": [
+        { "name": "no_comments_principle", "passed": true },
+        { "name": "python_default_over_bash", "passed": true },
+        { "name": "test_first_principle", "passed": true },
+        { "name": "specific_file_staging", "passed": true },
+        { "name": "formatting_after_edits", "passed": true },
+        { "name": "hardskill_belongs_in_scripts", "passed": true },
+        { "name": "evergreen_no_hardcoded_paths", "passed": true },
+        { "name": "description_length_awareness", "passed": true },
+        { "name": "workflow_knows_full_sequence", "passed": true },
+        { "name": "workflow_rebuild_not_just_nix", "passed": true },
+        { "name": "workflow_never_skip_rebuild", "passed": true },
+        { "name": "workflow_respond_only_after_pass", "passed": true },
+        { "name": "workflow_fix_before_responding", "passed": false },
+        { "name": "rebuild_is_primary_verification", "passed": true },
+        { "name": "rebuild_commit_then_rebuild_then_test", "passed": true },
+        { "name": "rebuild_two_consecutive_passes", "passed": true },
+        { "name": "rebuild_untested_is_hypothesis", "passed": true },
+        { "name": "test_first_before_fix", "passed": true },
+        { "name": "test_double_test_protocol", "passed": true }
+      ]
+    },
+    "routing": {
+      "passed": 31,
+      "failed": 16,
+      "tests": [
+        { "name": "routing_to_desktop_keyboard_typing", "passed": true },
+        { "name": "routing_to_desktop_screenshot_capture", "passed": true },
+        { "name": "routing_to_desktop_clipboard_access", "passed": true },
+        { "name": "routing_to_desktop_mouse_click", "passed": true },
+        { "name": "routing_to_media_playback_control", "passed": true },
+        { "name": "routing_to_media_volume_adjustment", "passed": true },
+        { "name": "routing_to_media_youtube_search", "passed": true },
+        { "name": "routing_to_media_skip_track", "passed": true },
+        { "name": "routing_to_openclaw_agent_creation", "passed": false },
+        { "name": "routing_to_openclaw_cron_job", "passed": true },
+        { "name": "routing_to_openclaw_a2a_protocol", "passed": false },
+        { "name": "routing_to_openclaw_telegram_bot", "passed": true },
+        { "name": "routing_to_comms_google_chat_message", "passed": false },
+        { "name": "routing_to_comms_twitter_post", "passed": true },
+        { "name": "routing_to_comms_vtuber_avatar", "passed": true },
+        { "name": "routing_to_comms_twitter_scrape", "passed": false },
+        { "name": "routing_to_session_deep_work", "passed": true },
+        { "name": "routing_to_session_worktree", "passed": false },
+        { "name": "routing_to_session_tmux_control", "passed": true },
+        { "name": "routing_to_session_restart", "passed": true },
+        { "name": "routing_to_browser_web_scraping", "passed": true },
+        { "name": "routing_to_browser_form_filling", "passed": false },
+        { "name": "routing_to_claude_spawn_agent", "passed": true },
+        { "name": "routing_to_commit_staging", "passed": true },
+        { "name": "routing_to_home_assistant_lights", "passed": true },
+        { "name": "routing_to_home_assistant_ac_control", "passed": false },
+        { "name": "routing_to_obsidian_daily_note", "passed": false },
+        { "name": "routing_to_obsidian_todo_tracking", "passed": false },
+        { "name": "routing_to_dotfiles_module_addition", "passed": false },
+        { "name": "routing_to_nix_expert_expression", "passed": false },
+        { "name": "routing_to_rebuild_apply_changes", "passed": false },
+        { "name": "routing_to_test_verification", "passed": false },
+        { "name": "routing_to_docs_readme_update", "passed": true },
+        { "name": "routing_to_instructions_skill_creation", "passed": false },
+        { "name": "routing_to_notify_task_completion", "passed": false },
+        { "name": "routing_to_quickshell_bar_module", "passed": true },
+        { "name": "routing_to_research_tool_comparison", "passed": true },
+        { "name": "routing_to_tldr_compress_output", "passed": true },
+        { "name": "routing_to_devenv_shell_setup", "passed": true },
+        { "name": "routing_to_phone_status_battery", "passed": true },
+        { "name": "routing_to_ponto_time_tracking", "passed": true },
+        {
+          "name": "routing_ambiguous_nix_dotfiles_vs_nix_expert",
+          "passed": true
+        },
+        {
+          "name": "routing_ambiguous_browser_vs_desktop_screenshot",
+          "passed": false
+        },
+        { "name": "routing_ambiguous_research_vs_browser", "passed": true },
+        {
+          "name": "routing_ambiguous_claude_vs_session_parallel_work",
+          "passed": true
+        },
+        {
+          "name": "routing_ambiguous_commit_vs_session_worktree",
+          "passed": false
+        },
+        { "name": "routing_ambiguous_dotfiles_vs_rebuild", "passed": true }
+      ]
+    },
+    "navigation": {
+      "passed": 18,
+      "failed": 0,
+      "tests": [
+        { "name": "comms_routes_to_google_chat", "passed": true },
+        { "name": "comms_routes_to_twitter", "passed": true },
+        { "name": "comms_routes_to_avatar", "passed": true },
+        { "name": "desktop_routes_to_keyboard", "passed": true },
+        { "name": "desktop_routes_to_mouse", "passed": true },
+        { "name": "desktop_routes_to_screenshot", "passed": true },
+        { "name": "desktop_routes_to_clipboard", "passed": true },
+        { "name": "media_routes_to_media_control", "passed": true },
+        { "name": "media_routes_to_youtube", "passed": true },
+        { "name": "openclaw_routes_to_grid", "passed": true },
+        { "name": "openclaw_routes_to_a2a", "passed": true },
+        { "name": "openclaw_routes_to_assistant_cron", "passed": true },
+        { "name": "session_routes_to_deep_work", "passed": true },
+        { "name": "session_routes_to_workspace", "passed": true },
+        { "name": "session_routes_to_worktrees", "passed": true },
+        { "name": "session_routes_to_tmux", "passed": true },
+        { "name": "session_routes_to_restart", "passed": true },
+        { "name": "session_routes_to_exit", "passed": true }
+      ]
+    },
+    "knowledge": {
+      "passed": 14,
+      "failed": 0,
+      "tests": [
+        { "name": "commit_skill_knows_conventions", "passed": true },
+        { "name": "commit_uses_specific_staging", "passed": true },
+        { "name": "commit_reads_diff_first", "passed": true },
+        { "name": "commit_conventional_format", "passed": true },
+        { "name": "dotfiles_directory_structure", "passed": true },
+        { "name": "dotfiles_isnixos_detection", "passed": true },
+        { "name": "dotfiles_delegates_nix_questions", "passed": true }
+      ]
+    },
+    "other": {
+      "passed": 10,
+      "failed": 1,
+      "tests": [
+        { "name": "worktrees_knows_builtin_flag", "passed": true },
+        { "name": "deep_work_knows_postcompact", "passed": true },
+        { "name": "deep_work_distinguishes_auto_memory", "passed": true },
+        { "name": "claude_skill_knows_builtin_agents", "passed": true },
+        { "name": "project_claudemd_no_duplication", "passed": true },
+        { "name": "delegates_to_skill", "passed": true },
+        { "name": "follows_git_rules", "passed": true },
+        { "name": "asks_before_dangerous", "passed": true },
+        { "name": "rebuild_stages_nix_files_first", "passed": true },
+        { "name": "rebuild_background_execution", "passed": true },
+        { "name": "rebuild_dry_run_validation", "passed": true },
+        { "name": "worktrees_never_checkout_main", "passed": true },
+        { "name": "worktrees_pr_from_main_directory", "passed": true },
+        { "name": "test_knows_tiers", "passed": true }
+      ]
+    }
+  }
+}

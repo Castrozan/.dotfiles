@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 
 import argparse
+import json
 import os
 import subprocess
 import sys
 import time
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from pathlib import Path
 
 import yaml
@@ -306,6 +308,148 @@ def list_categories(config: dict) -> None:
         print(f"    - {config['smoke_test']['name']}")
 
 
+BASELINE_PATH = REPO_ROOT / "agents" / "evals" / "baseline.json"
+MAXIMUM_BASELINE_AGE_DAYS = 7
+MINIMUM_PASS_RATE_OVERALL = 0.75
+MINIMUM_PASS_RATE_COMPLIANCE = 0.85
+MAXIMUM_REGRESSION_DROP = 0.05
+
+
+def build_baseline_from_results(results: list[TestResult]) -> dict:
+    categories = {}
+    for result in results:
+        category_name = extract_category_from_test_name(result.name)
+        if category_name not in categories:
+            categories[category_name] = {"passed": 0, "failed": 0, "tests": []}
+        categories[category_name]["tests"].append(
+            {"name": result.name, "passed": result.passed}
+        )
+        if result.passed:
+            categories[category_name]["passed"] += 1
+        else:
+            categories[category_name]["failed"] += 1
+
+    total_passed = sum(1 for r in results if r.passed)
+    total_tests = len(results)
+
+    return {
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "git_commit": get_current_git_commit(),
+        "total_tests": total_tests,
+        "total_passed": total_passed,
+        "total_failed": total_tests - total_passed,
+        "pass_rate": round(total_passed / total_tests, 4) if total_tests > 0 else 0,
+        "categories": categories,
+    }
+
+
+def extract_category_from_test_name(test_name: str) -> str:
+    compliance_prefixes = [
+        "workflow_",
+        "rebuild_",
+        "no_comments_",
+        "python_default_",
+        "test_first_",
+        "specific_file_",
+        "formatting_after_",
+        "hardskill_",
+        "evergreen_",
+        "description_length_",
+    ]
+    if any(test_name.startswith(p) for p in compliance_prefixes):
+        return "compliance"
+    if test_name.startswith("routing_"):
+        return "routing"
+    if "_routes_to_" in test_name:
+        return "navigation"
+    if test_name.startswith("commit_") or test_name.startswith("dotfiles_"):
+        return "knowledge"
+    return "other"
+
+
+def get_current_git_commit() -> str:
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "--short", "HEAD"],
+            capture_output=True,
+            text=True,
+            cwd=REPO_ROOT,
+        )
+        return result.stdout.strip()
+    except Exception:
+        return "unknown"
+
+
+def save_baseline(results: list[TestResult]) -> None:
+    baseline = build_baseline_from_results(results)
+    with open(BASELINE_PATH, "w") as f:
+        json.dump(baseline, f, indent=2)
+    print(f"\nBaseline saved to {BASELINE_PATH}")
+    print(f"  Pass rate: {baseline['pass_rate']:.1%}")
+    print(f"  Tests: {baseline['total_passed']}/{baseline['total_tests']}")
+    print(f"  Commit: {baseline['git_commit']}")
+
+
+def check_baseline_for_regression() -> bool:
+    if not BASELINE_PATH.exists():
+        print("FAIL: No baseline file found at agents/evals/baseline.json")
+        print("  Run 'agent-eval --save-baseline' locally to generate it.")
+        return False
+
+    with open(BASELINE_PATH) as f:
+        baseline = json.load(f)
+
+    failures = []
+
+    generated_at = datetime.fromisoformat(baseline["generated_at"])
+    age_days = (datetime.now(timezone.utc) - generated_at).days
+    if age_days > MAXIMUM_BASELINE_AGE_DAYS:
+        failures.append(
+            f"Baseline is {age_days} days old "
+            f"(max {MAXIMUM_BASELINE_AGE_DAYS}). "
+            f"Re-run 'agent-eval --save-baseline' locally."
+        )
+
+    overall_pass_rate = baseline.get("pass_rate", 0)
+    if overall_pass_rate < MINIMUM_PASS_RATE_OVERALL:
+        failures.append(
+            f"Overall pass rate {overall_pass_rate:.1%} "
+            f"below minimum {MINIMUM_PASS_RATE_OVERALL:.1%}"
+        )
+
+    compliance_category = baseline.get("categories", {}).get("compliance", {})
+    if compliance_category:
+        compliance_total = compliance_category["passed"] + compliance_category["failed"]
+        compliance_rate = (
+            compliance_category["passed"] / compliance_total
+            if compliance_total > 0
+            else 0
+        )
+        if compliance_rate < MINIMUM_PASS_RATE_COMPLIANCE:
+            failures.append(
+                f"Compliance pass rate {compliance_rate:.1%} "
+                f"below minimum {MINIMUM_PASS_RATE_COMPLIANCE:.1%}"
+            )
+
+    print("=" * 60)
+    print("EVAL BASELINE CHECK")
+    print("=" * 60)
+    print(f"  Generated: {baseline['generated_at']}")
+    print(f"  Age: {age_days} days")
+    print(f"  Commit: {baseline.get('git_commit', 'unknown')}")
+    print(f"  Pass rate: {overall_pass_rate:.1%}")
+    print(f"  Tests: {baseline['total_passed']}/{baseline['total_tests']}")
+
+    if failures:
+        print(f"\nFAILED ({len(failures)} issues):")
+        for failure in failures:
+            print(f"  - {failure}")
+        return False
+
+    print("\nPASSED: Baseline meets all thresholds.")
+    return True
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Run agent evaluations (Claude Max/CLI)"
@@ -317,8 +461,22 @@ def main():
     parser.add_argument(
         "--list", action="store_true", help="List available categories and tests"
     )
+    parser.add_argument(
+        "--save-baseline",
+        action="store_true",
+        help="Run all tests and save results as baseline",
+    )
+    parser.add_argument(
+        "--check-baseline",
+        action="store_true",
+        help="Check committed baseline for regression (no claude calls)",
+    )
     parser.add_argument("--config", default=Path(__file__).parent / "config")
     args = parser.parse_args()
+
+    if args.check_baseline:
+        passed = check_baseline_for_regression()
+        sys.exit(0 if passed else 1)
 
     config = load_config(Path(args.config))
 
@@ -346,6 +504,10 @@ def main():
     )
 
     all_passed = print_results(results)
+
+    if args.save_baseline:
+        save_baseline(results)
+
     sys.exit(0 if all_passed else 1)
 
 
