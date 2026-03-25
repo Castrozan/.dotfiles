@@ -64,27 +64,17 @@ def main():
     if not has_nix_file_extension(file_path):
         sys.exit(0)
 
-    if is_system_configuration_path(file_path):
-        output = {
-            "continue": True,
-            "systemMessage": (
-                f"NIX FILE CHANGED: {os.path.basename(file_path)}\n"
-                "Remember to rebuild to apply changes:\n"
-                "  - System: nixos-rebuild switch --flake .#\n"
-                "  - Home: home-manager switch --flake .#\n"
-                "  - Both: ./bin/rebuild or use the /rebuild skill"
-            ),
-        }
-        print(json.dumps(output))
-    else:
-        output = {
-            "continue": True,
-            "systemMessage": (
-                f"Nix file modified: {os.path.basename(file_path)}\n"
-                "Run `nix flake check` or rebuild if this affects system config."
-            ),
-        }
-        print(json.dumps(output))
+    mandatory_rebuild_message = (
+        f"MANDATORY: {os.path.basename(file_path)} changed. "
+        "You MUST stage, commit, and run /rebuild "
+        "before responding to the user. "
+        "Do not skip. Untested nix changes are not changes."
+    )
+    output = {
+        "continue": True,
+        "systemMessage": mandatory_rebuild_message,
+    }
+    print(json.dumps(output))
 
     sys.exit(0)
 

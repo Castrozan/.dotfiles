@@ -21,7 +21,7 @@ let
       ;
   };
 
-  a2aMcp = import ../../../agents/skills/a2a {
+  a2aMcp = import ../../../agents/skills/openclaw/a2a-mcp-default.nix {
     inherit
       pkgs
       nodejs
@@ -29,7 +29,7 @@ let
       ;
   };
 
-  twitterCli = import ../../../agents/skills/twitter {
+  twitterCli = import ../../../agents/skills/comms/twitter-cli.nix {
     inherit
       pkgs
       homeDir

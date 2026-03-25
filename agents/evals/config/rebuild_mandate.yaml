@@ -1,0 +1,41 @@
+tests:
+  - name: rebuild_is_primary_verification
+    skill_path: agents/core.md
+    prompt: "How do I verify a .nix file change is correct?"
+    model: haiku
+    assertions:
+      output_contains:
+        - "rebuild"
+
+  - name: rebuild_commit_then_rebuild_then_test
+    skill_path: agents/core.md
+    prompt: "What is the correct order: test, rebuild, or commit first?"
+    model: haiku
+    assertions:
+      output_contains:
+        - "commit"
+        - "rebuild"
+        - "test"
+
+  - name: rebuild_two_consecutive_passes
+    skill_path: agents/core.md
+    prompt: "How many test passes do I need to confirm stability?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "two"
+        - "Two"
+        - "twice"
+        - "2"
+        - "consecutive"
+
+  - name: rebuild_untested_is_hypothesis
+    skill_path: agents/core.md
+    prompt: "What is an unbuilt, untested change considered to be?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "hypothesis"
+        - "unverified"
+        - "not a change"
+        - "not complete"

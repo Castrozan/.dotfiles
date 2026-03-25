@@ -28,7 +28,7 @@ Commits are not dangerous - do them freely. During development: commit at every 
 </git>
 
 <testing>
-Follow the test skill for all testing. Commit then test. Never present untested code.
+Commit then rebuild then test. Never present code that has not been rebuilt and tested. For .nix files, a successful rebuild IS the primary verification — skipping it means the change is unverified. Run tests/run.sh (--nix when .nix files changed, --all before delivery). Two consecutive passes confirm stability.
 
 When a bug is reported, do not start by fixing it. First write a test that reproduces the bug and fails. A passing test is the proof the bug is resolved.
 </testing>
@@ -72,6 +72,20 @@ Sessions die on gateway restarts and context compaction discards earlier convers
 <compact-instructions>
 On compaction, preserve: active deep-work workspace paths and current plan phase, user requirements and constraints, files modified in this session, test results and failures, key decisions made during this session. Drop: verbose tool outputs, intermediate exploration, raw research dumps, file contents that can be re-read from disk.
 </compact-instructions>
+
+<workflow>
+After editing any file in this repository, execute this sequence before responding to the user. No exceptions. No skipping steps. No presenting results mid-sequence.
+
+1. Format the edited files (nixfmt for .nix, ruff for .py, shfmt+shellcheck for .sh)
+2. Stage each edited file individually with git add (never git add -A)
+3. Commit the change
+4. Rebuild: run /rebuild for any file change in this repo — not just .nix files
+5. Run tests/run.sh (--nix if .nix files were touched, --quick otherwise)
+6. If rebuild or tests fail: fix immediately, repeat from step 1
+7. Only after rebuild succeeds and tests pass: respond to the user
+
+A change that is not rebuilt and live-tested is not a change — it is a hypothesis. Never present hypotheses as completed work.
+</workflow>
 
 <notify>
 After substantial work, use the notify skill and tell the user "what was done"

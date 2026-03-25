@@ -4,7 +4,7 @@ let
     inputs.google-workspace-cli.packages.${pkgs.stdenv.hostPlatform.system}.default;
 
   googleChatBrowserCliSource = pkgs.writeText "google-chat-browser-cli.py" (
-    builtins.readFile ../../../agents/skills/google-chat-browser/scripts/google-chat-browser-cli.py
+    builtins.readFile ../../../agents/skills/comms/scripts/google-chat-browser-cli.py
   );
 
   googleChatBrowserCli = pkgs.writeShellScriptBin "google-chat-browser-cli" ''
@@ -19,7 +19,7 @@ let
     main "$@"
   '';
 
-  googleChatSendByNameSource = ../../../agents/skills/google-chat-browser/scripts/google-chat-send-by-name.sh;
+  googleChatSendByNameSource = ../../../agents/skills/comms/scripts/google-chat-send-by-name.sh;
 
   googleChatSendByName = pkgs.writeShellScriptBin "google-chat-send-by-name" ''
     set -Eeuo pipefail
@@ -28,7 +28,7 @@ let
     exec ${pkgs.bash}/bin/bash "${googleChatSendByNameSource}" "$@"
   '';
 
-  googleChatReadHistorySource = ../../../agents/skills/google-chat-browser/scripts/google-chat-read-history.sh;
+  googleChatReadHistorySource = ../../../agents/skills/comms/scripts/google-chat-read-history.sh;
 
   googleChatReadHistory = pkgs.writeShellScriptBin "google-chat-read-history" ''
     set -Eeuo pipefail

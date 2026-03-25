@@ -4,11 +4,11 @@ let
   virtualenvPath = "$HOME/.local/share/youtube-cli-venv";
 
   youtubeCliSource = pkgs.writeText "youtube-cli.py" (
-    builtins.readFile ../../../agents/skills/youtube/scripts/youtube-cli.py
+    builtins.readFile ../../../agents/skills/media/scripts/youtube-cli.py
   );
 
   youtubeCliSetupSource = pkgs.writeText "youtube-cli-setup.sh" (
-    builtins.readFile ../../../agents/skills/youtube/scripts/youtube-cli-setup.sh
+    builtins.readFile ../../../agents/skills/media/scripts/youtube-cli-setup.sh
   );
 
   youtubeCli = pkgs.writeShellScriptBin "youtube-cli" ''

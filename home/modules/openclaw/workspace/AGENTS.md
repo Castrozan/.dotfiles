@@ -65,7 +65,7 @@ Token efficiency saves real money. Context window accumulation is responsible fo
 
 ## Grid — You Are Not Alone
 
-You're part of a **multi-agent grid**. Other agents are running on the same gateway and you can talk to them. Read the `grid` skill (`skills/grid/SKILL.md`) for full details.
+You're part of a **multi-agent grid**. Other agents are running on the same gateway and you can talk to them. Read the `openclaw` skill's grid subskill (`skills/openclaw/grid.md`) for full details.
 
 **Quick reference:**
 - `sessions_spawn(agentId="<id>", task="...", runtime="subagent")` — delegate a task (PREFERRED, reliable)
