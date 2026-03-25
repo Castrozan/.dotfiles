@@ -12,22 +12,10 @@ Singleton {
     readonly property string usageHistoryFilePath: `${usageHistoryDirectoryPath}/launcher-usage-history.json`
     property var usageHistoryByAppId: ({})
 
-    function _deduplicateByEntryId(entries: list<var>): list<var> {
-        let seenEntryIds = {};
-        let uniqueEntries = [];
-        for (let i = 0; i < entries.length; i++) {
-            if (!seenEntryIds[entries[i].id]) {
-                seenEntryIds[entries[i].id] = true;
-                uniqueEntries.push(entries[i]);
-            }
-        }
-        return uniqueEntries;
-    }
-
     function search(queryText: string): list<var> {
         let results = [];
         let lowerQuery = queryText.toLowerCase();
-        let allApplications = _deduplicateByEntryId(DesktopEntries.applications.values);
+        let allApplications = DesktopEntries.applications.values;
 
         for (let i = 0; i < allApplications.length; i++) {
             let entry = allApplications[i];
@@ -68,7 +56,7 @@ Singleton {
     }
 
     function allApplicationsSorted(): list<var> {
-        let allApplications = _deduplicateByEntryId(DesktopEntries.applications.values);
+        let allApplications = Array.from(DesktopEntries.applications.values);
 
         allApplications.sort((entryA, entryB) => {
             let aLastUsedTimestamp = usageHistoryByAppId[entryA.id] || 0;

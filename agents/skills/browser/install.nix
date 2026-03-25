@@ -1,6 +1,5 @@
 {
   pkgs,
-  homeDir,
   nodejs,
   chromeDevtoolsMcpNpmPrefix,
 }:

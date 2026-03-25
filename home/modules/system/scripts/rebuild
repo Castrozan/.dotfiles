@@ -21,6 +21,7 @@ main() {
 	_ensure_setuid_wrappers_in_path
 	_rebuild_system
 	_reload_hyprland || true
+	_restart_quickshell_services || true
 }
 
 _rebuild_system() {
@@ -198,6 +199,15 @@ _hm_switch_with_rate_limit_fallback() {
 	echo "  nix profile install nixpkgs#home-manager" >&2
 
 	nix run home-manager/master -- switch --flake "$flake_ref" -b "$BACKUP_PREFIX"
+}
+
+_restart_quickshell_services() {
+	command -v systemctl >/dev/null 2>&1 || return 0
+	local quickshell_services
+	quickshell_services="$(systemctl --user list-units --type=service --plain --no-legend 'quickshell-*' 2>/dev/null | awk '{print $1}')"
+	[ -n "$quickshell_services" ] || return 0
+	echo ":: Restarting quickshell services..."
+	echo "$quickshell_services" | xargs systemctl --user restart
 }
 
 _reload_hyprland() {

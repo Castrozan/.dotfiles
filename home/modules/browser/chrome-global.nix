@@ -1,7 +1,7 @@
-{ pkgs, ... }:
+{ pkgs, latest, ... }:
 let
   chromeGlobalLauncher = pkgs.writeShellScript "chrome-global-launcher" ''
-    exec ${pkgs.google-chrome}/bin/google-chrome-stable \
+    exec ${latest.google-chrome}/bin/google-chrome-stable \
       --user-data-dir="$HOME/.config/chrome-global" \
       --class=chrome-global \
       --enable-features=UseNativeNotifications,WebRTCPipeWireCapturer \
@@ -9,6 +9,7 @@ let
   '';
 in
 {
+  home.packages = [ latest.google-chrome ];
 
   xdg.desktopEntries.chrome-global = {
     name = "Chrome";
