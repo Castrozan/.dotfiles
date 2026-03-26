@@ -1,6 +1,8 @@
 local wezterm = require 'wezterm'
 
 local theme_colors_path = os.getenv('HOME') .. '/.config/hypr-theme/current/theme/wezterm-colors.lua'
+wezterm.add_to_config_reload_watch_list(theme_colors_path)
+
 local theme_colors_file = io.open(theme_colors_path, 'r')
 local hypr_theme_colors
 if theme_colors_file then
