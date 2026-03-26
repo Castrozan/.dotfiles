@@ -7,8 +7,8 @@ import QtQuick
 Singleton {
     id: launcherWallpapersServiceRoot
 
-    readonly property string themesBasePath: `${Quickshell.env("HOME")}/.config/hypr-theme`
-    readonly property string currentBackgroundLink: `${themesBasePath}/current/background`
+    readonly property string wallpapersDirectoryPath: `${Quickshell.env("HOME")}/.config/hypr-theme/wallpapers`
+    readonly property string currentBackgroundLink: `${Quickshell.env("HOME")}/.config/hypr-theme/current/background`
     property string currentWallpaperPath: ""
     property list<var> availableWallpapers: []
 
@@ -18,8 +18,8 @@ Singleton {
     }
 
     function setWallpaper(wallpaperPath: string): void {
-        symlinkWallpaperProcess.command = ["ln", "-sf", wallpaperPath, currentBackgroundLink];
-        symlinkWallpaperProcess.running = true;
+        generateAndApplyThemeProcess.command = ["setsid", "hypr-theme-generate-and-apply", wallpaperPath];
+        generateAndApplyThemeProcess.running = true;
     }
 
     Process {
@@ -36,7 +36,7 @@ Singleton {
 
     Process {
         id: listWallpapersProcess
-        command: ["bash", "-c", "find -L \"$HOME/.config/hypr-theme/user-themes\" \"$HOME/.config/hypr/themes\" -path '*/backgrounds/*' -type f \\( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.webp' -o -iname '*.gif' \\)"]
+        command: ["find", launcherWallpapersServiceRoot.wallpapersDirectoryPath, "-maxdepth", "1", "-type", "f", "(", "-iname", "*.jpg", "-o", "-iname", "*.jpeg", "-o", "-iname", "*.png", "-o", "-iname", "*.webp", "-o", "-iname", "*.gif", ")"]
         running: true
 
         property string stdoutBuffer: ""
@@ -74,18 +74,7 @@ Singleton {
     }
 
     Process {
-        id: symlinkWallpaperProcess
-        running: false
-        onRunningChanged: {
-            if (!running) {
-                applyWallpaperProcess.running = true;
-            }
-        }
-    }
-
-    Process {
-        id: applyWallpaperProcess
-        command: ["hypr-theme-bg-apply"]
+        id: generateAndApplyThemeProcess
         running: false
         onRunningChanged: {
             if (!running) {

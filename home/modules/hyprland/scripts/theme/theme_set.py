@@ -9,7 +9,6 @@ from pathlib import Path
 CURRENT_THEME_PATH = Path.home() / ".config" / "hypr-theme" / "current" / "theme"
 NEXT_THEME_PATH = Path.home() / ".config" / "hypr-theme" / "current" / "next-theme"
 USER_THEMES_PATH = Path.home() / ".config" / "hypr-theme" / "user-themes"
-HYPR_THEMES_PATH = Path.home() / ".config" / "hypr" / "themes"
 THEME_NAME_FILE = Path.home() / ".config" / "hypr-theme" / "current" / "theme.name"
 BTOP_CONF = Path.home() / ".config" / "btop" / "btop.conf"
 
@@ -20,10 +19,9 @@ def normalize_theme_name(raw_name: str) -> str:
 
 
 def find_theme_directory(theme_name: str) -> Path | None:
-    for themes_dir in [USER_THEMES_PATH, HYPR_THEMES_PATH]:
-        candidate = themes_dir / theme_name
-        if candidate.exists():
-            return candidate
+    candidate = USER_THEMES_PATH / theme_name
+    if candidate.exists():
+        return candidate
     return None
 
 

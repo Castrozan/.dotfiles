@@ -15,7 +15,6 @@ Item {
     enum Mode {
         Apps,
         Actions,
-        Themes,
         Wallpapers
     }
 
@@ -23,8 +22,6 @@ Item {
     property int currentIndex: 0
 
     readonly property int currentMode: {
-        if (searchText.startsWith(LauncherConfig.themePrefix))
-            return LauncherResultsList.Themes;
         if (searchText.startsWith(LauncherConfig.wallpaperPrefix))
             return LauncherResultsList.Wallpapers;
         if (searchText.startsWith(LauncherConfig.actionPrefix))
@@ -34,9 +31,6 @@ Item {
 
     readonly property var currentResults: {
         switch (currentMode) {
-        case LauncherResultsList.Themes:
-            let themeQuery = searchText.substring(LauncherConfig.themePrefix.length);
-            return themeQuery.length > 0 ? LauncherThemesService.search(themeQuery) : LauncherThemesService.availableThemes;
         case LauncherResultsList.Wallpapers:
             return wallpaperResults;
         case LauncherResultsList.Actions:
@@ -119,10 +113,6 @@ Item {
                 itemActivated();
             }
             break;
-        case LauncherResultsList.Themes:
-            LauncherThemesService.applyTheme(item.name);
-            itemActivated();
-            break;
         case LauncherResultsList.Wallpapers:
             LauncherWallpapersService.setWallpaper(item.path);
             itemActivated();
@@ -183,8 +173,6 @@ Item {
                 switch (launcherResultsListRoot.currentMode) {
                 case LauncherResultsList.Actions:
                     return actionItemComponent;
-                case LauncherResultsList.Themes:
-                    return themeItemComponent;
                 default:
                     return appItemComponent;
                 }
@@ -211,18 +199,7 @@ Item {
                 }
             }
 
-            Component {
-                id: themeItemComponent
-                LauncherThemeItem {
-                    themeData: delegateLoader.modelData
-                    isCurrentTheme: delegateLoader.modelData.name === LauncherThemesService.currentThemeName
-                    isCurrentItem: delegateLoader.index === launcherResultsListRoot.currentIndex
-                    onActivated: {
-                        launcherResultsListRoot.currentIndex = delegateLoader.index;
-                        launcherResultsListRoot.activateCurrentItem();
-                    }
-                }
-            }
+
         }
     }
 

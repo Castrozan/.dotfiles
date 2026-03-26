@@ -1,7 +1,6 @@
 from pathlib import Path
 
 USER_THEMES_PATH = Path.home() / ".config" / "hypr-theme" / "user-themes"
-HYPR_THEMES_PATH = Path.home() / ".config" / "hypr" / "themes"
 
 
 def format_theme_name_for_display(raw_name: str) -> str:
@@ -9,13 +8,9 @@ def format_theme_name_for_display(raw_name: str) -> str:
 
 
 def collect_all_theme_names() -> list[str]:
-    names = set()
-    for themes_dir in [USER_THEMES_PATH, HYPR_THEMES_PATH]:
-        if themes_dir.is_dir():
-            for entry in themes_dir.iterdir():
-                if entry.is_dir():
-                    names.add(entry.name)
-    return sorted(names)
+    if not USER_THEMES_PATH.is_dir():
+        return []
+    return sorted(entry.name for entry in USER_THEMES_PATH.iterdir() if entry.is_dir())
 
 
 def main() -> None:

@@ -10,6 +10,5 @@ Singleton {
     readonly property int itemHeight: 48
     readonly property int wallpaperThumbnailSize: 120
     readonly property string actionPrefix: ":"
-    readonly property string themePrefix: ":scheme "
     readonly property string wallpaperPrefix: ":wallpaper "
 }
