@@ -42,10 +42,8 @@ let
   systemChecks = import ../../home/modules/system/tests/checks.nix domainArgs;
   voiceChecks = import ../../home/modules/voice/tests/checks.nix domainArgs;
   sourcebotChecks = import ../../home/modules/sourcebot/tests/checks.nix domainArgs;
-  macbookChecks = import ../../hosts/macbook/tests/checks.nix domainArgs;
 in
-macbookChecks
-// claudeChecks
+claudeChecks
 // codexChecks
 // openclawChecks
 // openclawConfigChecks

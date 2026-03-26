@@ -40,8 +40,6 @@ _rebuild_system() {
 
 	if _is_nixos; then
 		_rebuild_nixos
-	elif _is_macos; then
-		_rebuild_darwin
 	else
 		_rebuild_home_manager
 	fi
@@ -76,10 +74,6 @@ _init_git_submodules_if_present() {
 }
 
 _source_os_release() {
-	if _is_macos; then
-		return 0
-	fi
-
 	if [ ! -f /etc/os-release ]; then
 		echo "Error: /etc/os-release not found. Cannot detect OS." >&2
 		return 1
@@ -87,10 +81,6 @@ _source_os_release() {
 
 	# shellcheck disable=SC1091
 	. /etc/os-release
-}
-
-_is_macos() {
-	[ "$(uname -s)" = "Darwin" ]
 }
 
 _is_nixos() {
@@ -101,11 +91,7 @@ _fix_agenix_identity_key_ownership() {
 	[ -f "$AGENIX_IDENTITY_KEY" ] || return 0
 
 	local current_owner expected_owner
-	if _is_macos; then
-		current_owner="$(/usr/bin/stat -f '%Su' "$AGENIX_IDENTITY_KEY")"
-	else
-		current_owner="$(stat -c '%U' "$AGENIX_IDENTITY_KEY")"
-	fi
+	current_owner="$(stat -c '%U' "$AGENIX_IDENTITY_KEY")"
 	expected_owner="$(whoami)"
 
 	[ "$current_owner" = "$expected_owner" ] && return 0
@@ -130,23 +116,6 @@ _rebuild_nixos() {
 	sudo env "$NIXOS_ALLOW_UNFREE" nixos-rebuild switch --flake "${dotfiles_path}?submodules=1#${username}"
 }
 
-_rebuild_darwin() {
-	local darwin_config_name="macbook"
-	local flake_ref="${DOTFILES_DIR}?submodules=1#${darwin_config_name}"
-
-	echo ":: Detected macOS. Running darwin-rebuild switch..."
-	echo ":: Flake: ${flake_ref}"
-
-	if ! command -v darwin-rebuild >/dev/null 2>&1; then
-		echo ":: darwin-rebuild not found. Bootstrapping nix-darwin..."
-		nix build "${DOTFILES_DIR}?submodules=1#darwinConfigurations.${darwin_config_name}.system"
-		echo ":: Build complete. Activating system (requires sudo)..."
-		sudo ./result/sw/bin/darwin-rebuild switch --flake "$flake_ref"
-	else
-		sudo darwin-rebuild switch --flake "$flake_ref"
-	fi
-}
-
 _rebuild_home_manager() {
 	local config
 	config="$(_build_home_manager_config_name)"
@@ -158,17 +127,11 @@ _rebuild_home_manager() {
 }
 
 _build_home_manager_config_name() {
-	local username arch kernel system
+	local username arch system
 	username="$(whoami)"
 	arch="$(uname -m)"
-	kernel="$(uname -s)"
 
-	local os_suffix
-	if [ "$kernel" = "Darwin" ]; then
-		os_suffix="darwin"
-	else
-		os_suffix="linux"
-	fi
+	local os_suffix="linux"
 
 	case "$arch" in
 	x86_64) system="x86_64-${os_suffix}" ;;

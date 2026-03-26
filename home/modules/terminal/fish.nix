@@ -46,47 +46,38 @@ let
     + "\n";
 in
 {
-  home.packages =
-    with pkgs;
-    [
-      carapace
-    ]
-    ++ lib.optionals (!pkgs.stdenv.isDarwin) [
-      fishPlugins.bass
-    ];
+  home.packages = with pkgs; [
+    carapace
+    fishPlugins.bass
+  ];
 
   programs = {
     fish = {
       enable = true;
       package = pkgs.fish;
       interactiveShellInit = "${shellInit}";
-      plugins =
-        lib.optionals (!pkgs.stdenv.isDarwin) [
-          {
-            name = "bass";
-            src = pkgs.fishPlugins.bass;
-          }
-        ]
-        ++ [
-          {
-            name = "autopair";
-            src = pkgs.fishPlugins.autopair;
-          }
-          {
-            name = "sponge";
-            src = pkgs.fishPlugins.sponge;
-          }
-          {
-            name = "puffer";
-            src = pkgs.fishPlugins.puffer;
-          }
-        ]
-        ++ lib.optionals (!pkgs.stdenv.isDarwin) [
-          {
-            name = "fzf-fish";
-            src = pkgs.fishPlugins.fzf-fish;
-          }
-        ];
+      plugins = [
+        {
+          name = "bass";
+          src = pkgs.fishPlugins.bass;
+        }
+        {
+          name = "autopair";
+          src = pkgs.fishPlugins.autopair;
+        }
+        {
+          name = "sponge";
+          src = pkgs.fishPlugins.sponge;
+        }
+        {
+          name = "puffer";
+          src = pkgs.fishPlugins.puffer;
+        }
+        {
+          name = "fzf-fish";
+          src = pkgs.fishPlugins.fzf-fish;
+        }
+      ];
     };
 
     zoxide = {
@@ -112,8 +103,7 @@ in
     "fish/functions/fish_prompt.fish".source = ./shell/fish/functions/fish_prompt.fish;
     "fish/functions/cursor.fish".source = ./shell/fish/functions/cursor.fish;
     "fish/functions/nix.fish".source = ./shell/fish/functions/nix.fish;
-  }
-  // lib.optionalAttrs (!pkgs.stdenv.isDarwin) {
+
     "fish/conf.d/hyprland-env.fish".source = ./shell/fish/conf.d/hyprland-env.fish;
     "fish/conf.d/betha-secrets.fish".source = ./shell/fish/conf.d/betha-secrets.fish;
   };

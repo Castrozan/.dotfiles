@@ -183,18 +183,12 @@ _run_quick_bats_tests_ci() {
 _detect_current_system() {
 	local arch
 	arch="$(uname -m)"
-	local os
-	os="$(uname -s)"
 
 	if [[ "$arch" == "arm64" ]]; then
 		arch="aarch64"
 	fi
 
-	if [[ "$os" == "Darwin" ]]; then
-		echo "${arch}-darwin"
-	else
-		echo "${arch}-linux"
-	fi
+	echo "${arch}-linux"
 }
 
 _run_nix_flake_checks() {

@@ -19,13 +19,6 @@ PREFIX="($SCOPE_DIR)"
 # don't double‐up if it's already there
 grep -qE "^[^:]+${PREFIX}:" "$MSG_FILE" && exit 0
 
-# insert prefix before the first colon on the first line
-if sed --version >/dev/null 2>&1; then
-  # GNU sed
-  sed -i -E "1 s/^([^:]+):/\\1${PREFIX}:/1" "$MSG_FILE"
-else
-  # BSD/macOS sed
-  sed -i .bak -E "1 s/^([^:]+):/\\1${PREFIX}:/1" "$MSG_FILE" && rm -f "${MSG_FILE}.bak"
-fi
+sed -i -E "1 s/^([^:]+):/\\1${PREFIX}:/1" "$MSG_FILE"
 
 exit 0

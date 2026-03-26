@@ -48,7 +48,7 @@ return {
     'FiraCode Nerd Font Mono',
     'Noto Color Emoji',
   }),
-  font_size = wezterm.target_triple:find('darwin') and 18 or 16,
+  font_size = 16,
 
   color_schemes = {
     ['Catppuccin Mocha'] = catppuccin_mocha,
@@ -66,14 +66,13 @@ return {
   window_decorations = 'RESIZE',
   use_resize_increments = false,
   window_background_opacity = 0.85,
-  macos_window_background_blur = 20,
   enable_tab_bar = false,
   hide_tab_bar_if_only_one_tab = true,
 
   warn_about_missing_glyphs = false,
   freetype_load_target = 'Light',
   scrollback_lines = 10000,
-  default_prog = { wezterm.target_triple:find('darwin') and '/run/current-system/sw/bin/fish' or 'fish' },
+  default_prog = { 'fish' },
   default_cwd = wezterm.home_dir,
 
   enable_csi_u_key_encoding = true,

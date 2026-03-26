@@ -17,7 +17,7 @@ let
       ]);
   });
 
-  vscodePackage = if pkgs.stdenv.isDarwin then pkgs.vscode else vscodeLinuxPinnedBuild;
+  vscodePackage = vscodeLinuxPinnedBuild;
 in
 {
   home.packages = [

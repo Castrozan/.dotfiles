@@ -41,8 +41,6 @@
     whisp-away.url = "github:madjinn/whisp-away";
     hyprland.url = "github:hyprwm/Hyprland/v0.54.2";
     google-workspace-cli.url = "github:googleworkspace/cli";
-    nix-darwin.url = "github:nix-darwin/nix-darwin/nix-darwin-25.11";
-    nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   # Outputs are what this flake provides, such as pkgs and system configurations
@@ -53,13 +51,11 @@
       nixpkgs-unstable,
       nixpkgs-latest,
       home-manager,
-      nix-darwin,
       ...
     }:
     # let in notation to declare local variables for output scope
     let
       linuxSystem = "x86_64-linux";
-      darwinSystem = "aarch64-darwin";
       home-version = "25.11";
       nixpkgs-version = "25.11";
 
@@ -79,8 +75,6 @@
       };
 
       linux = mkPkgsFor linuxSystem;
-      darwin = mkPkgsFor darwinSystem;
-
       inherit (linux) pkgs unstable latest;
 
       specialArgsBase = {
@@ -138,33 +132,6 @@
           };
         };
 
-      darwinConfigurations =
-        let
-          username = "lucas.zanoni";
-          specialArgs = {
-            inherit
-              nixpkgs-version
-              home-version
-              inputs
-              username
-              ;
-            inherit (darwin) unstable latest;
-            isNixOS = false;
-          };
-        in
-        {
-          macbook = nix-darwin.lib.darwinSystem {
-            inherit specialArgs;
-            system = darwinSystem;
-
-            modules = [
-              ./hosts/macbook
-              home-manager.darwinModules.home-manager
-              (import ./users/${username}/darwin-home-config.nix)
-            ];
-          };
-        };
-
       homeManagerModules = {
         openclaw = ./home/modules/openclaw;
         claude-code = ./home/modules/claude;
@@ -180,17 +147,6 @@
       checks.${linuxSystem} = import ./tests/nix-checks {
         inherit
           pkgs
-          inputs
-          self
-          nixpkgs-version
-          home-version
-          ;
-        inherit (nixpkgs) lib;
-      };
-
-      checks.${darwinSystem} = import ./tests/nix-checks/darwin.nix {
-        inherit (darwin) pkgs;
-        inherit
           inputs
           self
           nixpkgs-version

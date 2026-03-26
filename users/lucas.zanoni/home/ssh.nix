@@ -58,11 +58,6 @@ in
         user = "git";
         identityFile = "~/.ssh/id_rsa";
       };
-      "git.coates.io" = {
-        hostname = "git.coates.io";
-        user = "git";
-        identityFile = "~/.ssh/id_ed25519_coates";
-      };
     };
   };
 

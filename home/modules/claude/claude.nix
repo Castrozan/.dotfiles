@@ -11,10 +11,6 @@ let
       platform = "linux-x64";
       sha256 = "sha256-BH4/VZHWI4sI3ZUYcprDNbDo3xyA/pheXX+9osGPwoE=";
     };
-    "aarch64-darwin" = {
-      platform = "darwin-arm64";
-      sha256 = "sha256-ZCZ3JBnHWOcRRnJVgtZ/HdpCaHxpPIPe+a00IruB6/E=";
-    };
   };
 
   currentSystem = platformBinaryHashBySystem.${pkgs.stdenv.hostPlatform.system};

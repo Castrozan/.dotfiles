@@ -7,7 +7,7 @@
 {
   home = {
     inherit username;
-    homeDirectory = if pkgs.stdenv.isDarwin then "/Users/${username}" else "/home/${username}";
+    homeDirectory = "/home/${username}";
     stateVersion = home-version;
   };
   programs.home-manager.enable = true;
