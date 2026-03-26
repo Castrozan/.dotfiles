@@ -11,7 +11,6 @@ let
   install = import ./install.nix {
     inherit
       pkgs
-      homeDir
       nodejs
       chromeDevtoolsMcpNpmPrefix
       ;
