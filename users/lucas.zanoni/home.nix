@@ -7,7 +7,6 @@
     ./home/hyprland.nix
     ./home/ssh.nix
     ./home/session-vars.nix
-    ./home/openclaw.nix
 
     ../../home/core.nix
 
@@ -19,8 +18,6 @@
     ../../home/modules/gnome/dconf.nix
     ../../home/modules/gnome/extension-manager.nix
     ../../home/modules/hyprland/standalone.nix
-    ../../home/modules/openclaw
-    ../../home/modules/openclaw-mesh
     ../../home/modules/opencode
     ../../home/modules/opencode/private.nix
     ../../home/modules/sourcebot
@@ -76,10 +73,6 @@
     ../../home/modules/system/scripts.nix
     ../../home/modules/system/ubuntu-system-tuning.nix
 
-    ../../home/modules/voice/hey-bot.nix
-    ./home/hey-bot.nix
-    ../../home/modules/voice/voice-pipeline.nix
-    ./home/voice-pipeline.nix
     ../../home/modules/voice/whisp-away.nix
 
     ../../home/modules/home-assistant
