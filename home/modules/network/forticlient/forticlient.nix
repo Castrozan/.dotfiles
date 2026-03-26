@@ -21,7 +21,7 @@ in
         genericName = "VPN Client";
         exec = "forticlient-launch";
         icon = "forticlient";
-        terminal = true;
+        terminal = false;
         type = "Application";
         categories = [
           "Network"

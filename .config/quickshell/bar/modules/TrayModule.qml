@@ -53,11 +53,10 @@ ColumnLayout {
                 cursorShape: Qt.PointingHandCursor
 
                 onClicked: mouse => {
-                    if (mouse.button === Qt.RightButton || trayItemDelegate.modelData.onlyMenu) {
-                        _showTrayMenuPopout();
-                    } else {
+                    if (mouse.button === Qt.LeftButton && !trayItemDelegate.modelData.onlyMenu) {
                         trayItemDelegate.modelData.activate();
                     }
+                    _showTrayMenuPopout();
                 }
 
                 function _showTrayMenuPopout(): void {
