@@ -1,6 +1,8 @@
 #!/usr/bin/env bats
+bats_require_minimum_version 1.5.0
 
 readonly CDP_BROWSER_MODULE="$BATS_TEST_DIRNAME/../../../../agents/skills/ponto/scripts/cdp-browser.js"
+readonly CDP_TEST_PORT=19222
 readonly TEST_PAGE_HTML='<html><head><title>CDP Test Page</title></head><body>
   <h1>Test Heading</h1>
   <p id="greeting">Hello World</p>
@@ -25,6 +27,66 @@ readonly TEST_PAGE_HTML='<html><head><title>CDP Test Page</title></head><body>
   </script>
 </body></html>'
 
+_find_chrome_binary() {
+	command -v google-chrome-stable 2>/dev/null ||
+		command -v chromium 2>/dev/null ||
+		command -v chromium-browser 2>/dev/null ||
+		echo ""
+}
+
+setup_file() {
+	local chrome_binary
+	chrome_binary=$(_find_chrome_binary)
+	if [[ -z "$chrome_binary" ]]; then
+		export CDP_TEST_SKIP_LIVE="no chrome/chromium binary found"
+		return
+	fi
+
+	export CDP_TEST_USER_DATA_DIR
+	CDP_TEST_USER_DATA_DIR=$(mktemp -d /tmp/cdp-test-profile-XXXXXX)
+
+	"$chrome_binary" \
+		--headless=new \
+		--no-sandbox \
+		--disable-gpu \
+		--disable-extensions \
+		--disable-background-networking \
+		--disable-sync \
+		--no-first-run \
+		--no-default-browser-check \
+		--user-data-dir="$CDP_TEST_USER_DATA_DIR" \
+		--remote-debugging-port="$CDP_TEST_PORT" \
+		about:blank &>/dev/null &
+	export CDP_TEST_CHROME_PID=$!
+
+	for _attempt in $(seq 1 30); do
+		if curl -s "http://127.0.0.1:${CDP_TEST_PORT}/json/version" &>/dev/null; then
+			return
+		fi
+		sleep 0.2
+	done
+
+	kill "$CDP_TEST_CHROME_PID" 2>/dev/null || true
+	rm -rf "$CDP_TEST_USER_DATA_DIR"
+	export CDP_TEST_SKIP_LIVE="headless chrome failed to start on port $CDP_TEST_PORT"
+}
+
+teardown_file() {
+	if [[ -n "${CDP_TEST_CHROME_PID:-}" ]]; then
+		kill "$CDP_TEST_CHROME_PID" 2>/dev/null || true
+		wait "$CDP_TEST_CHROME_PID" 2>/dev/null || true
+	fi
+	if [[ -n "${CDP_TEST_USER_DATA_DIR:-}" ]]; then
+		rm -rf "$CDP_TEST_USER_DATA_DIR"
+	fi
+}
+
+_skip_unless_test_chrome_running() {
+	if [[ -n "${CDP_TEST_SKIP_LIVE:-}" ]]; then
+		skip "$CDP_TEST_SKIP_LIVE"
+	fi
+}
+
 _navigate_to_test_page_and_get_frame() {
 	cat <<JSEOF
 import { connectToBrowser, CdpFrame } from '$CDP_BROWSER_MODULE';
@@ -40,12 +102,6 @@ await page.waitForTimeout(300);
 const ctx = [...page.executionContexts.values()][0];
 const frame = new CdpFrame(page.session, ctx.id);
 JSEOF
-}
-
-_skip_unless_chrome_running() {
-	if ! ss -tlnp 2>/dev/null | grep -qE '(chrom|google-chrome)'; then
-		skip "chrome not running with remote debugging"
-	fi
 }
 
 @test "cdp-browser.js exists and is valid javascript" {
@@ -65,9 +121,9 @@ _skip_unless_chrome_running() {
 	[[ "$output" == *"exports ok"* ]]
 }
 
-@test "auto-discovers chrome CDP port from running process" {
-	_skip_unless_chrome_running
-	run node -e "
+@test "connects to isolated headless chrome via CDP_PORT" {
+	_skip_unless_test_chrome_running
+	CDP_PORT="$CDP_TEST_PORT" run node -e "
         import { connectToBrowser } from '$CDP_BROWSER_MODULE';
         const { browser } = await connectToBrowser();
         console.log('connected');
@@ -78,8 +134,8 @@ _skip_unless_chrome_running() {
 }
 
 @test "connectToBrowser returns browser and page with correct API surface" {
-	_skip_unless_chrome_running
-	run node -e "
+	_skip_unless_test_chrome_running
+	CDP_PORT="$CDP_TEST_PORT" run node -e "
         import { connectToBrowser } from '$CDP_BROWSER_MODULE';
         const { browser, page } = await connectToBrowser();
         const checks = [
@@ -99,9 +155,9 @@ _skip_unless_chrome_running() {
 }
 
 @test "page.screenshot produces valid PNG" {
-	_skip_unless_chrome_running
+	_skip_unless_test_chrome_running
 	local screenshot="/tmp/cdp-test-screenshot-$$.png"
-	run node -e "
+	CDP_PORT="$CDP_TEST_PORT" run node -e "
         import { connectToBrowser } from '$CDP_BROWSER_MODULE';
         const { browser, page } = await connectToBrowser();
         await page.screenshot({ path: '$screenshot' });
@@ -115,8 +171,8 @@ _skip_unless_chrome_running() {
 }
 
 @test "page.waitForTimeout delays at least the requested duration" {
-	_skip_unless_chrome_running
-	run node -e "
+	_skip_unless_test_chrome_running
+	CDP_PORT="$CDP_TEST_PORT" run node -e "
         import { connectToBrowser } from '$CDP_BROWSER_MODULE';
         const { browser, page } = await connectToBrowser();
         const t = Date.now();
@@ -131,8 +187,8 @@ _skip_unless_chrome_running() {
 }
 
 @test "frame.evaluate runs javascript and returns values" {
-	_skip_unless_chrome_running
-	run node -e "$(_navigate_to_test_page_and_get_frame)
+	_skip_unless_test_chrome_running
+	CDP_PORT="$CDP_TEST_PORT" run node -e "$(_navigate_to_test_page_and_get_frame)
         const title = await frame.evaluate(() => document.title);
         if (title !== 'CDP Test Page') { console.error('bad title:', title); process.exit(1); }
         const obj = await frame.evaluate(() => ({ count: document.querySelectorAll('li').length }));
@@ -145,8 +201,8 @@ _skip_unless_chrome_running() {
 }
 
 @test "frame.\$ finds single element and reads textContent" {
-	_skip_unless_chrome_running
-	run node -e "$(_navigate_to_test_page_and_get_frame)
+	_skip_unless_test_chrome_running
+	CDP_PORT="$CDP_TEST_PORT" run node -e "$(_navigate_to_test_page_and_get_frame)
         const h1 = await frame.\$('h1');
         if (!h1) { console.error('h1 not found'); process.exit(1); }
         const text = await h1.textContent();
@@ -159,8 +215,8 @@ _skip_unless_chrome_running() {
 }
 
 @test "frame.\$ returns null for non-existent selector" {
-	_skip_unless_chrome_running
-	run node -e "$(_navigate_to_test_page_and_get_frame)
+	_skip_unless_test_chrome_running
+	CDP_PORT="$CDP_TEST_PORT" run node -e "$(_navigate_to_test_page_and_get_frame)
         const nope = await frame.\$('#does-not-exist');
         if (nope !== null) { console.error('expected null'); process.exit(1); }
         console.log('null ok');
@@ -171,8 +227,8 @@ _skip_unless_chrome_running() {
 }
 
 @test "frame.\$\$ returns array of CdpElements" {
-	_skip_unless_chrome_running
-	run node -e "$(_navigate_to_test_page_and_get_frame)
+	_skip_unless_test_chrome_running
+	CDP_PORT="$CDP_TEST_PORT" run node -e "$(_navigate_to_test_page_and_get_frame)
         const fruits = await frame.\$\$('.fruit');
         if (!Array.isArray(fruits) || fruits.length !== 3) {
             console.error('bad fruits:', fruits?.length); process.exit(1);
@@ -190,8 +246,8 @@ _skip_unless_chrome_running() {
 }
 
 @test "element.\$ does scoped child query" {
-	_skip_unless_chrome_running
-	run node -e "$(_navigate_to_test_page_and_get_frame)
+	_skip_unless_test_chrome_running
+	CDP_PORT="$CDP_TEST_PORT" run node -e "$(_navigate_to_test_page_and_get_frame)
         const ul = await frame.\$('ul');
         const first = await ul.\$('li:first-child');
         const text = await first.textContent();
@@ -204,8 +260,8 @@ _skip_unless_chrome_running() {
 }
 
 @test ":has-text pseudo-selector finds element by text" {
-	_skip_unless_chrome_running
-	run node -e "$(_navigate_to_test_page_and_get_frame)
+	_skip_unless_test_chrome_running
+	CDP_PORT="$CDP_TEST_PORT" run node -e "$(_navigate_to_test_page_and_get_frame)
         const btn = await frame.\$('button:has-text(\"Save\")');
         if (!btn) { console.error('Save not found'); process.exit(1); }
         const text = await btn.textContent();
@@ -218,8 +274,8 @@ _skip_unless_chrome_running() {
 }
 
 @test ":has-text returns null when text does not match" {
-	_skip_unless_chrome_running
-	run node -e "$(_navigate_to_test_page_and_get_frame)
+	_skip_unless_test_chrome_running
+	CDP_PORT="$CDP_TEST_PORT" run node -e "$(_navigate_to_test_page_and_get_frame)
         const nope = await frame.\$('button:has-text(\"Nonexistent\")');
         if (nope !== null) { console.error('expected null'); process.exit(1); }
         console.log('no match ok');
@@ -230,8 +286,8 @@ _skip_unless_chrome_running() {
 }
 
 @test "comma-separated :has-text selectors find first match" {
-	_skip_unless_chrome_running
-	run node -e "$(_navigate_to_test_page_and_get_frame)
+	_skip_unless_test_chrome_running
+	CDP_PORT="$CDP_TEST_PORT" run node -e "$(_navigate_to_test_page_and_get_frame)
         const el = await frame.\$('button:has-text(\"Cancel\"), button:has-text(\"Save\")');
         if (!el) { console.error('no match'); process.exit(1); }
         const text = await el.textContent();
@@ -246,8 +302,8 @@ _skip_unless_chrome_running() {
 }
 
 @test "element.click triggers DOM event handler" {
-	_skip_unless_chrome_running
-	run node -e "$(_navigate_to_test_page_and_get_frame)
+	_skip_unless_test_chrome_running
+	CDP_PORT="$CDP_TEST_PORT" run node -e "$(_navigate_to_test_page_and_get_frame)
         const btn = await frame.\$('#btn1');
         await btn.click();
         await page.waitForTimeout(300);
@@ -261,8 +317,8 @@ _skip_unless_chrome_running() {
 }
 
 @test "click on :has-text selected link triggers handler" {
-	_skip_unless_chrome_running
-	run node -e "$(_navigate_to_test_page_and_get_frame)
+	_skip_unless_test_chrome_running
+	CDP_PORT="$CDP_TEST_PORT" run node -e "$(_navigate_to_test_page_and_get_frame)
         const link = await frame.\$('a:has-text(\"More information\")');
         if (!link) { console.error('link not found'); process.exit(1); }
         await link.click();
@@ -277,8 +333,8 @@ _skip_unless_chrome_running() {
 }
 
 @test "element.\$\$ with :has-text on child scope" {
-	_skip_unless_chrome_running
-	run node -e "$(_navigate_to_test_page_and_get_frame)
+	_skip_unless_test_chrome_running
+	CDP_PORT="$CDP_TEST_PORT" run node -e "$(_navigate_to_test_page_and_get_frame)
         const body = await frame.\$('body');
         const btns = await body.\$\$('button');
         if (btns.length !== 3) { console.error('expected 3 buttons:', btns.length); process.exit(1); }
@@ -292,9 +348,9 @@ _skip_unless_chrome_running() {
 }
 
 @test "screenshot after interaction captures current state" {
-	_skip_unless_chrome_running
+	_skip_unless_test_chrome_running
 	local screenshot="/tmp/cdp-interaction-screenshot-$$.png"
-	run node -e "$(_navigate_to_test_page_and_get_frame)
+	CDP_PORT="$CDP_TEST_PORT" run node -e "$(_navigate_to_test_page_and_get_frame)
         const btn = await frame.\$('#btn1');
         await btn.click();
         await page.waitForTimeout(300);
@@ -329,8 +385,8 @@ _skip_unless_chrome_running() {
 
 @test "no stale PW_PORT or playwright-resolver references" {
 	local codebase="$BATS_TEST_DIRNAME/../.."
-	! grep -r --include='*.js' --include='*.sh' --include='*.nix' \
+	run ! grep -r --include='*.js' --include='*.sh' --include='*.nix' \
 		'PW_PORT' "$codebase/agents" "$codebase/home" 2>/dev/null
-	! grep -r --include='*.js' --include='*.sh' --include='*.nix' \
+	run ! grep -r --include='*.js' --include='*.sh' --include='*.nix' \
 		'playwright-resolver' "$codebase/agents" "$codebase/home" 2>/dev/null
 }

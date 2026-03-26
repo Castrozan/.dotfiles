@@ -1,20 +1,25 @@
-import http from 'node:http';
-import { execSync } from 'node:child_process';
-import { writeFileSync } from 'node:fs';
+import http from "node:http";
+import { execSync } from "node:child_process";
+import { writeFileSync } from "node:fs";
 
 let resolvedCdpPort = null;
 
 function discoverChromeDebugPort() {
   if (resolvedCdpPort) return resolvedCdpPort;
 
-  const ssOutput = execSync('ss -tlnp 2>/dev/null', { encoding: 'utf-8' });
+  if (process.env.CDP_PORT) {
+    resolvedCdpPort = parseInt(process.env.CDP_PORT);
+    return resolvedCdpPort;
+  }
+
+  const ssOutput = execSync("ss -tlnp 2>/dev/null", { encoding: "utf-8" });
   const chromiumListeningMatch = ssOutput.match(
     /127\.0\.0\.1:(\d+).*(?:chromium|chrome|brave)/,
   );
 
   if (!chromiumListeningMatch) {
     throw new Error(
-      'could not find Chrome CDP port — is pinchtab running? (no chromium listening on localhost)',
+      "could not find Chrome CDP port — is pinchtab running? (no chromium listening on localhost)",
     );
   }
 
@@ -37,9 +42,9 @@ function cdpHttpGet(path) {
   return new Promise((resolve, reject) => {
     http
       .get(`http://127.0.0.1:${port}${path}`, (res) => {
-        let data = '';
-        res.on('data', (chunk) => (data += chunk));
-        res.on('end', () => {
+        let data = "";
+        res.on("data", (chunk) => (data += chunk));
+        res.on("end", () => {
           try {
             resolve(JSON.parse(data));
           } catch {
@@ -47,7 +52,7 @@ function cdpHttpGet(path) {
           }
         });
       })
-      .on('error', reject);
+      .on("error", reject);
   });
 }
 
@@ -58,9 +63,9 @@ class CdpSession {
     this.pending = new Map();
     this.listeners = new Map();
 
-    ws.addEventListener('message', (event) => {
+    ws.addEventListener("message", (event) => {
       const text =
-        typeof event.data === 'string'
+        typeof event.data === "string"
           ? event.data
           : new TextDecoder().decode(event.data);
       const msg = JSON.parse(text);
@@ -84,9 +89,9 @@ class CdpSession {
   static connect(wsUrl) {
     return new Promise((resolve, reject) => {
       const ws = new WebSocket(wsUrl);
-      ws.addEventListener('open', () => resolve(new CdpSession(ws)));
-      ws.addEventListener('error', () =>
-        reject(new Error('CDP WebSocket connection failed')),
+      ws.addEventListener("open", () => resolve(new CdpSession(ws)));
+      ws.addEventListener("error", () =>
+        reject(new Error("CDP WebSocket connection failed")),
       );
     });
   }
@@ -114,7 +119,7 @@ class CdpSession {
 
 async function extractRemoteArrayElements(session, remoteObject, contextId) {
   if (!remoteObject.objectId) return [];
-  const { result: properties } = await session.call('Runtime.getProperties', {
+  const { result: properties } = await session.call("Runtime.getProperties", {
     objectId: remoteObject.objectId,
     ownProperties: true,
   });
@@ -132,16 +137,16 @@ class CdpElement {
   }
 
   async textContent() {
-    const { result } = await this.session.call('Runtime.callFunctionOn', {
+    const { result } = await this.session.call("Runtime.callFunctionOn", {
       objectId: this.objectId,
-      functionDeclaration: 'function() { return this.textContent; }',
+      functionDeclaration: "function() { return this.textContent; }",
       returnByValue: true,
     });
     return result.value;
   }
 
   async click() {
-    await this.session.call('Runtime.callFunctionOn', {
+    await this.session.call("Runtime.callFunctionOn", {
       objectId: this.objectId,
       functionDeclaration:
         'function() { this.scrollIntoView({block:"center"}); this.click(); }',
@@ -149,18 +154,18 @@ class CdpElement {
   }
 
   async $(selector) {
-    const { result } = await this.session.call('Runtime.callFunctionOn', {
+    const { result } = await this.session.call("Runtime.callFunctionOn", {
       objectId: this.objectId,
       functionDeclaration: `function(sel) { ${QUERY_ELEMENTS_SOURCE} return queryElements(this, sel, true); }`,
       arguments: [{ value: selector }],
       returnByValue: false,
     });
-    if (!result.objectId || result.subtype === 'null') return null;
+    if (!result.objectId || result.subtype === "null") return null;
     return new CdpElement(this.session, result.objectId, this.contextId);
   }
 
   async $$(selector) {
-    const { result } = await this.session.call('Runtime.callFunctionOn', {
+    const { result } = await this.session.call("Runtime.callFunctionOn", {
       objectId: this.objectId,
       functionDeclaration: `function(sel) { ${QUERY_ELEMENTS_SOURCE} return queryElements(this, sel, false); }`,
       arguments: [{ value: selector }],
@@ -178,12 +183,12 @@ class CdpFrame {
 
   async evaluate(functionOrExpression) {
     const expression =
-      typeof functionOrExpression === 'function'
+      typeof functionOrExpression === "function"
         ? `(${functionOrExpression.toString()})()`
         : functionOrExpression;
 
     const { result, exceptionDetails } = await this.session.call(
-      'Runtime.evaluate',
+      "Runtime.evaluate",
       {
         expression,
         contextId: this.contextId,
@@ -193,23 +198,23 @@ class CdpFrame {
     );
 
     if (exceptionDetails) {
-      throw new Error(exceptionDetails.text || 'evaluate failed');
+      throw new Error(exceptionDetails.text || "evaluate failed");
     }
     return result.value;
   }
 
   async $(selector) {
-    const { result } = await this.session.call('Runtime.evaluate', {
+    const { result } = await this.session.call("Runtime.evaluate", {
       expression: `(function() { ${QUERY_ELEMENTS_SOURCE} return queryElements(document, ${JSON.stringify(selector)}, true); })()`,
       contextId: this.contextId,
       returnByValue: false,
     });
-    if (!result.objectId || result.subtype === 'null') return null;
+    if (!result.objectId || result.subtype === "null") return null;
     return new CdpElement(this.session, result.objectId, this.contextId);
   }
 
   async $$(selector) {
-    const { result } = await this.session.call('Runtime.evaluate', {
+    const { result } = await this.session.call("Runtime.evaluate", {
       expression: `(function() { ${QUERY_ELEMENTS_SOURCE} return queryElements(document, ${JSON.stringify(selector)}, false); })()`,
       contextId: this.contextId,
       returnByValue: false,
@@ -229,10 +234,10 @@ class CdpPage {
   }
 
   async screenshot({ path }) {
-    const { data } = await this.session.call('Page.captureScreenshot', {
-      format: 'png',
+    const { data } = await this.session.call("Page.captureScreenshot", {
+      format: "png",
     });
-    writeFileSync(path, Buffer.from(data, 'base64'));
+    writeFileSync(path, Buffer.from(data, "base64"));
   }
 }
 
@@ -247,21 +252,21 @@ class CdpBrowser {
 }
 
 async function connectToBrowser() {
-  const targets = await cdpHttpGet('/json');
-  const pageTarget = targets.find((t) => t.type === 'page');
+  const targets = await cdpHttpGet("/json");
+  const pageTarget = targets.find((t) => t.type === "page");
 
   if (!pageTarget) {
-    throw new Error('no page target found — is pinchtab running?');
+    throw new Error("no page target found — is pinchtab running?");
   }
 
   const session = await CdpSession.connect(pageTarget.webSocketDebuggerUrl);
 
   const executionContexts = new Map();
-  session.on('Runtime.executionContextCreated', ({ context }) => {
+  session.on("Runtime.executionContextCreated", ({ context }) => {
     const frameId = context.auxData?.frameId;
     if (frameId) executionContexts.set(frameId, context);
   });
-  session.on('Runtime.executionContextDestroyed', ({ executionContextId }) => {
+  session.on("Runtime.executionContextDestroyed", ({ executionContextId }) => {
     for (const [frameId, ctx] of executionContexts) {
       if (ctx.id === executionContextId) {
         executionContexts.delete(frameId);
@@ -269,12 +274,12 @@ async function connectToBrowser() {
       }
     }
   });
-  session.on('Runtime.executionContextsCleared', () => {
+  session.on("Runtime.executionContextsCleared", () => {
     executionContexts.clear();
   });
 
-  await session.call('Page.enable');
-  await session.call('Runtime.enable');
+  await session.call("Page.enable");
+  await session.call("Runtime.enable");
   await new Promise((r) => setTimeout(r, 200));
 
   return {
@@ -284,17 +289,17 @@ async function connectToBrowser() {
 }
 
 async function findPontoFrame(page) {
-  const pontoTitlePatterns = ['acertos de ponto', 'gestão do ponto'];
+  const pontoTitlePatterns = ["acertos de ponto", "gestão do ponto"];
 
   for (const [, context] of page.executionContexts) {
     try {
-      const { result } = await page.session.call('Runtime.evaluate', {
-        expression: 'document.title',
+      const { result } = await page.session.call("Runtime.evaluate", {
+        expression: "document.title",
         contextId: context.id,
         returnByValue: true,
       });
 
-      const title = (result.value || '').toLowerCase();
+      const title = (result.value || "").toLowerCase();
       if (pontoTitlePatterns.some((pattern) => title.includes(pattern))) {
         return new CdpFrame(page.session, context.id);
       }
