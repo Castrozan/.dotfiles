@@ -1,4 +1,4 @@
-readonly FORTICLIENT_GUI="/opt/forticlient/gui/FortiClient"
+readonly FORTICLIENT_REAL="/opt/forticlient/gui/FortiClient.real"
 
 main() {
 	local fabricagent_url="${1:-}"
@@ -13,7 +13,7 @@ main() {
 		exit 1
 	fi
 
-	"${FORTICLIENT_GUI}" "${fabricagent_url}" >/dev/null 2>&1
+	"${FORTICLIENT_REAL}" "${fabricagent_url}" >/dev/null 2>&1
 	echo "Auth callback sent to FortiClient."
 }
 
