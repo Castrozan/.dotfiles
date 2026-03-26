@@ -51,12 +51,22 @@ def lighten_color_by_percentage(
     )
 
 
+def pad_color_list_to_eight(
+    colors: list[tuple[int, int, int]],
+) -> list[tuple[int, int, int]]:
+    padded = list(colors)
+    while len(padded) < 8:
+        padded.append(padded[len(padded) % len(colors)])
+    return padded[:8]
+
+
 def build_sixteen_color_palette(
     sorted_colors: list[tuple[int, int, int]],
 ) -> list[tuple[int, int, int]]:
-    palette = list(sorted_colors) + list(sorted_colors)
-    palette[0] = darken_color_by_percentage(sorted_colors[0], 0.2)
-    palette[7] = lighten_color_by_percentage(sorted_colors[7], 0.75)
+    eight_colors = pad_color_list_to_eight(sorted_colors)
+    palette = eight_colors + eight_colors
+    palette[0] = darken_color_by_percentage(eight_colors[0], 0.2)
+    palette[7] = lighten_color_by_percentage(eight_colors[-1], 0.75)
     palette[8] = lighten_color_by_percentage(palette[0], 0.25)
     palette[15] = palette[7]
     return palette
