@@ -35,6 +35,20 @@ in
     mimeType = [ "x-scheme-handler/fabricagent" ];
   };
 
+  xdg.desktopEntries.forticlient = {
+    name = "FortiClient (dpkg)";
+    exec = "forticlient-launch";
+    noDisplay = true;
+    type = "Application";
+  };
+
+  xdg.desktopEntries.forticlient-register = {
+    name = "FortiClient Register (dpkg)";
+    exec = "forticlient-launch";
+    noDisplay = true;
+    type = "Application";
+  };
+
   xdg.mimeApps.defaultApplications = {
     "x-scheme-handler/fabricagent" = "forticlient-auth-handler.desktop";
   };
