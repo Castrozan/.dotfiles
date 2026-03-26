@@ -36,7 +36,7 @@ def make_directory_tree_writable(directory: Path) -> None:
 
 def copy_theme_to_next_theme_directory(theme_directory: Path) -> None:
     force_remove_directory_tree(NEXT_THEME_PATH)
-    shutil.copytree(theme_directory, NEXT_THEME_PATH, symlinks=False)
+    shutil.copytree(theme_directory, NEXT_THEME_PATH, symlinks=True)
     make_directory_tree_writable(NEXT_THEME_PATH)
 
 
