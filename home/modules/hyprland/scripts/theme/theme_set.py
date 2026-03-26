@@ -58,6 +58,22 @@ def rotate_current_theme_with_next() -> None:
     force_remove_directory_tree(old_theme_path)
 
 
+def set_background_symlink_from_current_theme() -> None:
+    backgrounds_directory = CURRENT_THEME_PATH / "backgrounds"
+    if not backgrounds_directory.is_dir():
+        return
+    backgrounds = sorted(
+        entry
+        for entry in backgrounds_directory.iterdir()
+        if entry.is_file() or entry.is_symlink()
+    )
+    if not backgrounds:
+        return
+    background_link = CURRENT_THEME_PATH.parent / "background"
+    background_link.unlink(missing_ok=True)
+    background_link.symlink_to(backgrounds[0])
+
+
 def touch_quickshell_bar_theme_colors_if_present() -> None:
     quickshell_bar_colors = CURRENT_THEME_PATH / "quickshell-bar-colors.json"
     if quickshell_bar_colors.is_file():
@@ -102,7 +118,8 @@ def main() -> None:
     rotate_current_theme_with_next()
     THEME_NAME_FILE.write_text(theme_name + "\n")
     touch_quickshell_bar_theme_colors_if_present()
-    subprocess.run(["hypr-theme-bg-next"])
+    set_background_symlink_from_current_theme()
+    subprocess.run(["hypr-theme-bg-apply"])
     subprocess.run(["hypr-restart-hyprctl"])
     subprocess.run(["makoctl", "reload"], capture_output=True)
     update_btop_theme_in_config()

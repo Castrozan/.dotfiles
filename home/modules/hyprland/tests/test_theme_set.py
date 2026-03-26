@@ -18,33 +18,17 @@ class TestNormalizeThemeName:
 
 
 class TestFindThemeDirectory:
-    def test_finds_in_user_themes_first(self, tmp_path, monkeypatch):
+    def test_finds_in_user_themes(self, tmp_path, monkeypatch):
         user_dir = tmp_path / "user-themes"
-        hypr_dir = tmp_path / "hypr-themes"
         (user_dir / "catppuccin").mkdir(parents=True)
-        (hypr_dir / "catppuccin").mkdir(parents=True)
 
         monkeypatch.setattr(theme_set, "USER_THEMES_PATH", user_dir)
-        monkeypatch.setattr(theme_set, "HYPR_THEMES_PATH", hypr_dir)
 
         result = theme_set.find_theme_directory("catppuccin")
         assert result == user_dir / "catppuccin"
 
-    def test_finds_in_hypr_themes_when_not_in_user(self, tmp_path, monkeypatch):
-        user_dir = tmp_path / "user-themes"
-        hypr_dir = tmp_path / "hypr-themes"
-        user_dir.mkdir()
-        (hypr_dir / "kanagawa").mkdir(parents=True)
-
-        monkeypatch.setattr(theme_set, "USER_THEMES_PATH", user_dir)
-        monkeypatch.setattr(theme_set, "HYPR_THEMES_PATH", hypr_dir)
-
-        result = theme_set.find_theme_directory("kanagawa")
-        assert result == hypr_dir / "kanagawa"
-
     def test_returns_none_when_not_found(self, tmp_path, monkeypatch):
         monkeypatch.setattr(theme_set, "USER_THEMES_PATH", tmp_path / "a")
-        monkeypatch.setattr(theme_set, "HYPR_THEMES_PATH", tmp_path / "b")
 
         assert theme_set.find_theme_directory("nonexistent") is None
 
@@ -115,6 +99,78 @@ class TestRotateCurrentThemeWithNext:
         theme_set.rotate_current_theme_with_next()
 
         assert (current / "file.txt").read_text() == "content"
+
+
+class TestSetBackgroundSymlinkFromCurrentTheme:
+    def test_sets_symlink_to_first_background(self, tmp_path, monkeypatch):
+        theme_path = tmp_path / "current" / "theme"
+        backgrounds_dir = theme_path / "backgrounds"
+        backgrounds_dir.mkdir(parents=True)
+        (backgrounds_dir / "wallpaper.png").touch()
+
+        monkeypatch.setattr(theme_set, "CURRENT_THEME_PATH", theme_path)
+
+        theme_set.set_background_symlink_from_current_theme()
+
+        background_link = tmp_path / "current" / "background"
+        assert background_link.is_symlink()
+        assert background_link.readlink() == backgrounds_dir / "wallpaper.png"
+
+    def test_picks_first_alphabetically_when_multiple(self, tmp_path, monkeypatch):
+        theme_path = tmp_path / "current" / "theme"
+        backgrounds_dir = theme_path / "backgrounds"
+        backgrounds_dir.mkdir(parents=True)
+        (backgrounds_dir / "c.png").touch()
+        (backgrounds_dir / "a.png").touch()
+        (backgrounds_dir / "b.png").touch()
+
+        monkeypatch.setattr(theme_set, "CURRENT_THEME_PATH", theme_path)
+
+        theme_set.set_background_symlink_from_current_theme()
+
+        background_link = tmp_path / "current" / "background"
+        assert background_link.readlink() == backgrounds_dir / "a.png"
+
+    def test_replaces_existing_symlink(self, tmp_path, monkeypatch):
+        theme_path = tmp_path / "current" / "theme"
+        backgrounds_dir = theme_path / "backgrounds"
+        backgrounds_dir.mkdir(parents=True)
+        (backgrounds_dir / "new.png").touch()
+
+        background_link = tmp_path / "current" / "background"
+        old_target = tmp_path / "old.png"
+        old_target.touch()
+        background_link.symlink_to(old_target)
+
+        monkeypatch.setattr(theme_set, "CURRENT_THEME_PATH", theme_path)
+
+        theme_set.set_background_symlink_from_current_theme()
+
+        assert background_link.readlink() == backgrounds_dir / "new.png"
+
+    def test_does_nothing_when_no_backgrounds_directory(self, tmp_path, monkeypatch):
+        theme_path = tmp_path / "current" / "theme"
+        theme_path.mkdir(parents=True)
+
+        monkeypatch.setattr(theme_set, "CURRENT_THEME_PATH", theme_path)
+
+        theme_set.set_background_symlink_from_current_theme()
+
+        background_link = tmp_path / "current" / "background"
+        assert not background_link.exists()
+
+    def test_does_nothing_when_backgrounds_directory_is_empty(
+        self, tmp_path, monkeypatch
+    ):
+        theme_path = tmp_path / "current" / "theme"
+        (theme_path / "backgrounds").mkdir(parents=True)
+
+        monkeypatch.setattr(theme_set, "CURRENT_THEME_PATH", theme_path)
+
+        theme_set.set_background_symlink_from_current_theme()
+
+        background_link = tmp_path / "current" / "background"
+        assert not background_link.exists()
 
 
 class TestTouchQuickshellBarThemeColorsIfPresent:
@@ -203,7 +259,6 @@ class TestMainExitsOnMissingArguments:
     def test_exits_when_theme_not_found(self, tmp_path, monkeypatch):
         monkeypatch.setattr("sys.argv", ["theme_set", "nonexistent"])
         monkeypatch.setattr(theme_set, "USER_THEMES_PATH", tmp_path / "a")
-        monkeypatch.setattr(theme_set, "HYPR_THEMES_PATH", tmp_path / "b")
 
         with pytest.raises(SystemExit):
             theme_set.main()

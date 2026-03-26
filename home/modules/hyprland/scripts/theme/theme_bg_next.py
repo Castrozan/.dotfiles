@@ -1,63 +1,48 @@
 import subprocess
 from pathlib import Path
 
-THEME_NAME_FILE = Path.home() / ".config" / "hypr-theme" / "current" / "theme.name"
+WALLPAPERS_DIRECTORY = Path.home() / ".config" / "hypr-theme" / "wallpapers"
 CURRENT_BACKGROUND_LINK = (
     Path.home() / ".config" / "hypr-theme" / "current" / "background"
 )
 
 
-def read_current_theme_name() -> str:
-    try:
-        return THEME_NAME_FILE.read_text().strip()
-    except FileNotFoundError:
-        return ""
+def collect_sorted_wallpaper_files() -> list[Path]:
+    if not WALLPAPERS_DIRECTORY.is_dir():
+        return []
+
+    wallpapers = []
+    for entry in sorted(WALLPAPERS_DIRECTORY.iterdir()):
+        if entry.is_file() or entry.is_symlink():
+            wallpapers.append(entry)
+
+    return sorted(wallpapers, key=lambda path: str(path))
 
 
-def collect_sorted_background_files(theme_name: str) -> list[Path]:
-    theme_backgrounds_path = (
-        Path.home() / ".config" / "hypr-theme" / "current" / "theme" / "backgrounds"
-    )
-    user_backgrounds_path = (
-        Path.home() / ".config" / "hypr-theme" / "backgrounds" / theme_name
-    )
-
-    backgrounds = []
-    for directory in [user_backgrounds_path, theme_backgrounds_path]:
-        if directory.is_dir():
-            for entry in sorted(directory.iterdir()):
-                if entry.is_file() or entry.is_symlink():
-                    backgrounds.append(entry)
-
-    return sorted(backgrounds, key=lambda p: str(p))
-
-
-def find_current_background_index(backgrounds: list[Path]) -> int:
+def find_current_wallpaper_index(wallpapers: list[Path]) -> int:
     if not CURRENT_BACKGROUND_LINK.is_symlink():
         return -1
-    current_target = str(CURRENT_BACKGROUND_LINK.readlink())
-    for i, background in enumerate(backgrounds):
-        if str(background) == current_target:
-            return i
+    current_target = CURRENT_BACKGROUND_LINK.readlink()
+    for index, wallpaper in enumerate(wallpapers):
+        if wallpaper == current_target:
+            return index
     return -1
 
 
-def select_next_background(backgrounds: list[Path]) -> Path:
-    current_index = find_current_background_index(backgrounds)
+def select_next_wallpaper(wallpapers: list[Path]) -> Path:
+    current_index = find_current_wallpaper_index(wallpapers)
     if current_index == -1:
-        return backgrounds[0]
-    next_index = (current_index + 1) % len(backgrounds)
-    return backgrounds[next_index]
+        return wallpapers[0]
+    next_index = (current_index + 1) % len(wallpapers)
+    return wallpapers[next_index]
 
 
-def set_background_symlink_and_apply(new_background: Path) -> None:
-    CURRENT_BACKGROUND_LINK.unlink(missing_ok=True)
-    CURRENT_BACKGROUND_LINK.symlink_to(new_background)
-    subprocess.run(["hypr-theme-bg-apply"])
+def generate_and_apply_theme_from_wallpaper(wallpaper_path: Path) -> None:
+    subprocess.run(["hypr-theme-generate-and-apply", str(wallpaper_path)])
 
 
-def show_no_backgrounds_fallback() -> None:
-    subprocess.run(["notify-send", "No background was found for theme", "-t", "2000"])
+def show_no_wallpapers_fallback() -> None:
+    subprocess.run(["notify-send", "No wallpapers found", "-t", "2000"])
     subprocess.run(
         ["swww", "clear", "000000"],
         capture_output=True,
@@ -65,15 +50,14 @@ def show_no_backgrounds_fallback() -> None:
 
 
 def main() -> None:
-    theme_name = read_current_theme_name()
-    backgrounds = collect_sorted_background_files(theme_name)
+    wallpapers = collect_sorted_wallpaper_files()
 
-    if not backgrounds:
-        show_no_backgrounds_fallback()
+    if not wallpapers:
+        show_no_wallpapers_fallback()
         return
 
-    next_background = select_next_background(backgrounds)
-    set_background_symlink_and_apply(next_background)
+    next_wallpaper = select_next_wallpaper(wallpapers)
+    generate_and_apply_theme_from_wallpaper(next_wallpaper)
 
 
 if __name__ == "__main__":

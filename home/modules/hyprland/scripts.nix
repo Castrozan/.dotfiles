@@ -37,8 +37,6 @@ in
     (mkHyprlandPythonScript "hypr-theme-set-templates" ./scripts/theme/theme_set_templates.py)
     (mkHyprlandPythonScript "hypr-theme-bg-apply" ./scripts/theme/theme_bg_apply.py)
     (mkHyprlandPythonScript "hypr-theme-bg-next" ./scripts/theme/theme_bg_next.py)
-    (mkHyprlandPythonScript "hypr-theme-list" ./scripts/theme/theme_list.py)
-    (mkHyprlandPythonScript "hypr-theme-current" ./scripts/theme/theme_current.py)
     (mkHyprlandPythonScript "hypr-theme-set-gnome" ./scripts/theme/theme_set_gnome.py)
     (mkHyprlandPythonScriptWithPythonPackages "hypr-theme-generate-from-wallpaper"
       ./scripts/theme/theme_generate_from_wallpaper.py
