@@ -48,7 +48,7 @@ RESUME_COMMAND="claude --resume $EXTRACTED_SESSION_ID"
 echo "Restarting with: $RESUME_COMMAND"
 
 nohup bash -c "
-    sleep 0.5
+    sleep 3
     kill -TERM $CLAUDE_PID 2>/dev/null || true
     while kill -0 $CLAUDE_PID 2>/dev/null; do sleep 0.2; done
     sleep 1
