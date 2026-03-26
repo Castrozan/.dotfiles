@@ -1,6 +1,3 @@
-#!/usr/bin/env bash
-set -Eeuo pipefail
-
 readonly FORTICLIENT_GUI="/opt/forticlient/gui/FortiClient"
 readonly FORTICLIENT_SERVICE="forticlient"
 readonly WAYLAND_FLAGS=(--ozone-platform=wayland --enable-features=UseOzonePlatform)

@@ -63,6 +63,7 @@
     ../../home/modules/media/youtube.nix
     ../../home/modules/media/scripts.nix
 
+    ../../home/modules/network/forticlient
     ../../home/modules/network/network-optimization.nix
     ../../home/modules/network/openfortivpn
     ../../home/modules/network/tailscale-daemon.nix
