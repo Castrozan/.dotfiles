@@ -3,7 +3,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-HYPR_THEMES_PATH = Path.home() / ".config" / "hypr" / "themes"
+HYPR_THEMES_PATH = Path.home() / ".config" / "hypr-theme" / "user-themes"
 
 NEOVIM_KANAGAWA_COLORSCHEME = """\
 return {
