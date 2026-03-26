@@ -1,34 +1,7 @@
 local wezterm = require 'wezterm'
 
-local catppuccin_mocha = {
-  foreground = '#CDD6F4',
-  background = '#0F0D0E',
-  cursor_bg = '#F5E0DC',
-  cursor_fg = '#1E1E2E',
-  selection_bg = '#F5E0DC',
-  selection_fg = '#1E1E2E',
-
-  ansi = {
-    '#9399B2',
-    '#F38BA8',
-    '#A6E3A1',
-    '#F9E2AF',
-    '#89B4FA',
-    '#F5C2E7',
-    '#94E2D5',
-    '#BAC2DE',
-  },
-  brights = {
-    '#A6ADC8',
-    '#F38BA8',
-    '#A6E3A1',
-    '#F9E2AF',
-    '#89B4FA',
-    '#F5C2E7',
-    '#94E2D5',
-    '#A6ADC8',
-  },
-}
+local theme_colors_path = os.getenv('HOME') .. '/.config/hypr-theme/current/theme/wezterm-colors.lua'
+local hypr_theme_colors = dofile(theme_colors_path)
 
 local mux = wezterm.mux
 wezterm.on('gui-startup', function(cmd)
@@ -51,9 +24,9 @@ return {
   font_size = 16,
 
   color_schemes = {
-    ['Catppuccin Mocha'] = catppuccin_mocha,
+    ['HyprTheme'] = hypr_theme_colors,
   },
-  color_scheme = 'Catppuccin Mocha',
+  color_scheme = 'HyprTheme',
 
   window_padding = {
     left = 10,
