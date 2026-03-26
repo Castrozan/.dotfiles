@@ -8,12 +8,6 @@ Singleton {
 
     readonly property list<var> allActions: [
         {
-            name: "Scheme",
-            description: "Browse and switch color schemes",
-            icon: "palette",
-            autoCompleteText: ":scheme "
-        },
-        {
             name: "Wallpaper",
             description: "Browse and set wallpapers",
             icon: "wallpaper",
