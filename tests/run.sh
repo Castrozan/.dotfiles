@@ -149,6 +149,7 @@ _collect_quick_bats_test_files() {
 		! -name "*-docker.bats" \
 		! -name "runtime.bats" \
 		! -name "live-services.bats" \
+		! -name "cdp-browser.bats" \
 		-type f | sort
 }
 
