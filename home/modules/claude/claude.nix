@@ -34,6 +34,9 @@ in
 {
   home = {
     packages = [ claude-code ];
-    file.".local/bin/claude".source = "${claude-code}/bin/claude";
+    file.".local/bin/claude" = {
+      source = "${claude-code}/bin/claude";
+      force = true;
+    };
   };
 }
