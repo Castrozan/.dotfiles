@@ -19,7 +19,7 @@ in
 
         wl-clipboard
         hyprpaper
-        swaybg
+        swww
         libnotify
         pamixer
         bemoji

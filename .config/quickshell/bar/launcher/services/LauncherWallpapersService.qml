@@ -36,7 +36,7 @@ Singleton {
 
     Process {
         id: listWallpapersProcess
-        command: ["bash", "-c", "find -L \"$HOME/.config/hypr-theme/user-themes\" \"$HOME/.config/hypr/themes\" -path '*/backgrounds/*' -type f \\( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.webp' \\)"]
+        command: ["bash", "-c", "find -L \"$HOME/.config/hypr-theme/user-themes\" \"$HOME/.config/hypr/themes\" -path '*/backgrounds/*' -type f \\( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.webp' -o -iname '*.gif' \\)"]
         running: true
 
         property string stdoutBuffer: ""

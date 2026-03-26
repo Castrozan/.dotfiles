@@ -168,13 +168,8 @@ class TestSetBackgroundSymlinkAndApply:
 
 
 class TestShowNoBackgroundsFallback:
-    def test_launches_black_bg_then_kills_old(self):
-        with (
-            patch("theme_bg_next.get_running_swaybg_pids", return_value=["9999"]),
-            patch("theme_bg_next.subprocess.run") as mock_run,
-            patch("theme_bg_next.time.sleep"),
-            patch("theme_bg_next.kill_swaybg_pids") as mock_kill,
-        ):
+    def test_calls_swww_clear_with_black(self):
+        with patch("theme_bg_next.subprocess.run") as mock_run:
             theme_bg_next.show_no_backgrounds_fallback()
 
             assert mock_run.call_count == 2
@@ -182,12 +177,6 @@ class TestShowNoBackgroundsFallback:
                 ["notify-send", "No background was found for theme", "-t", "2000"]
             )
             mock_run.assert_any_call(
-                [
-                    "hyprctl",
-                    "dispatch",
-                    "exec",
-                    "swaybg --color '#000000'",
-                ],
+                ["swww", "clear", "000000"],
                 capture_output=True,
             )
-            mock_kill.assert_called_once_with(["9999"])
