@@ -2,9 +2,24 @@
 let
   dotfilesStaticPath = "${config.home.homeDirectory}/.dotfiles/static";
   wallpaperFiles = [
-    "polunochnie-progulki.gif"
-    "alter-jellyfish.jpg"
     "alter-jellyfish-dark.jpg"
+    "alter-jellyfish.jpg"
+    "catppuccin-latte.png"
+    "catppuccin-waves.png"
+    "catppuccin.png"
+    "ethereal.jpg"
+    "everforest.jpg"
+    "flexoki-light.png"
+    "gruvbox.jpg"
+    "hackerman.jpg"
+    "kanagawa.jpg"
+    "matte-black.jpg"
+    "nord.png"
+    "osaka-jade.jpg"
+    "polunochnie-progulki.gif"
+    "ristretto.jpg"
+    "rose-pine.jpg"
+    "tokyo-night.jpg"
     "wallpaper.png"
   ];
 in

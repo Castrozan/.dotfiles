@@ -36,7 +36,7 @@ Singleton {
 
     Process {
         id: listWallpapersProcess
-        command: ["find", launcherWallpapersServiceRoot.wallpapersDirectoryPath, "-maxdepth", "1", "-type", "f", "(", "-iname", "*.jpg", "-o", "-iname", "*.jpeg", "-o", "-iname", "*.png", "-o", "-iname", "*.webp", "-o", "-iname", "*.gif", ")"]
+        command: ["bash", "-c", `find -L "${launcherWallpapersServiceRoot.wallpapersDirectoryPath}" -maxdepth 1 -type f \\( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.webp' -o -iname '*.gif' \\)`]
         running: true
 
         property string stdoutBuffer: ""
