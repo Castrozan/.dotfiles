@@ -1,7 +1,12 @@
 local wezterm = require 'wezterm'
 
 local theme_colors_path = os.getenv('HOME') .. '/.config/hypr-theme/current/theme/wezterm-colors.lua'
-local hypr_theme_colors = dofile(theme_colors_path)
+local theme_colors_file = io.open(theme_colors_path, 'r')
+local hypr_theme_colors
+if theme_colors_file then
+  theme_colors_file:close()
+  hypr_theme_colors = dofile(theme_colors_path)
+end
 
 local mux = wezterm.mux
 wezterm.on('gui-startup', function(cmd)
