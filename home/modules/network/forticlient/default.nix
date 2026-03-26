@@ -1,0 +1,4 @@
+{ ... }:
+{
+  imports = [ ./forticlient.nix ];
+}
