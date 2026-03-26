@@ -3,7 +3,6 @@
     Unit = {
       Description = "GitHub Actions self-hosted runner for private-gitlab-heatmap-exporter";
       After = [ "network-online.target" ];
-      Wants = [ "network-online.target" ];
     };
 
     Service = {
@@ -12,12 +11,22 @@
       KillMode = "process";
       KillSignal = "SIGTERM";
       TimeoutStopSec = "5min";
-      Restart = "on-failure";
-      RestartSec = 10;
+      RuntimeMaxSec = "45min";
+    };
+  };
+
+  systemd.user.timers.github-actions-runner = {
+    Unit = {
+      Description = "Start GitHub Actions runner before scheduled workflow (11:45 BRT)";
+    };
+
+    Timer = {
+      OnCalendar = "11:45";
+      Persistent = true;
     };
 
     Install = {
-      WantedBy = [ "default.target" ];
+      WantedBy = [ "timers.target" ];
     };
   };
 }
