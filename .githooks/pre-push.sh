@@ -14,9 +14,7 @@ main() {
 	_run_check "statix" nix run nixpkgs#statix -- check . --ignore 'result*'
 	_run_check "deadnix" nix run nixpkgs#deadnix -- .
 	_run_check "nixfmt" bash -c "find . -name '*.nix' -not -path './result*' -not -path './.worktrees/*' -exec nix run nixpkgs#nixfmt-rfc-style -- --check {} +"
-	_run_check "validate-skill-frontmatter" ./agents/evals/validate-skill-frontmatter.sh agents/skills
-	_run_quick_bats_tests
-	_run_quick_pytest_tests
+	_run_check "quick tests" ./tests/run.sh --quick
 	_remind_nix_tests_if_openclaw_changed
 
 	echo "All pre-push checks passed."
@@ -27,35 +25,6 @@ _run_check() {
 	shift
 	echo "==> $checkName"
 	"$@"
-	echo ""
-}
-
-_run_quick_bats_tests() {
-	echo "==> bats (quick)"
-	local testFiles
-	testFiles=$(find home/modules -path "*/tests/*.bats" \
-		! -name "*-docker.bats" \
-		! -name "runtime.bats" \
-		! -name "live-services.bats" \
-		! -name "cdp-browser.bats" \
-		-type f | sort)
-	nix shell nixpkgs#bats --command bats $testFiles
-	echo ""
-}
-
-_run_quick_pytest_tests() {
-	if ! command -v pytest &>/dev/null; then
-		return 0
-	fi
-
-	local testFiles
-	testFiles=$(find home/modules agents/hooks -path "*/tests/test_*.py" -type f 2>/dev/null | sort)
-	if [[ -z "$testFiles" ]]; then
-		return 0
-	fi
-
-	echo "==> pytest (quick)"
-	pytest $testFiles -x -q
 	echo ""
 }
 
