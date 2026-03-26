@@ -6,7 +6,7 @@
 let
   chromeDevtoolsMcpNpmPrefix = "${homeDir}/.local/share/chrome-devtools-mcp-npm";
   chromeDevtoolsMcpBinary = "${chromeDevtoolsMcpNpmPrefix}/bin/chrome-devtools-mcp";
-  devToolsActivePortFile = "${homeDir}/.config/google-chrome/DevToolsActivePort";
+  devToolsActivePortFile = "${homeDir}/.config/chrome-global/DevToolsActivePort";
 
   install = import ./install.nix {
     inherit
