@@ -22,6 +22,7 @@ in
   "bot-tokens/discord-bot-token-jenny.age".publicKeys = all_keys;
   "bot-tokens/discord-bot-token-monster.age".publicKeys = all_keys;
   "bot-tokens/discord-bot-token-silver.age".publicKeys = all_keys;
+  "bot-tokens/discord-bot-token-claude.age".publicKeys = all_keys;
 
   "api-keys/brave-api-key.age".publicKeys = all_keys;
   "api-keys/deepgram-api-key.age".publicKeys = all_keys;
