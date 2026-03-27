@@ -3,6 +3,7 @@ let
   opencodeFromFlakeInput = inputs.opencode.packages.${pkgs.stdenv.hostPlatform.system}.default;
 
   opencodeWithPatchedShebangs = opencodeFromFlakeInput.overrideAttrs (previousAttrs: {
+    nativeBuildInputs = previousAttrs.nativeBuildInputs ++ [ pkgs.nodejs ];
     postConfigure = ''
       ${previousAttrs.postConfigure or ""}
       patchShebangs .
