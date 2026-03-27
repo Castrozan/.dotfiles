@@ -32,8 +32,9 @@ let
       modelFlag = "--model ${agent.model}";
       nameFlag = "--name ${name}";
       promptFlag = "--append-system-prompt 'You are ${name}. Your role: ${agent.role}'";
+      skillDirFlags = lib.concatMapStringsSep " " (dir: "--add-dir ${dir}") agent.skillDirectories;
     in
-    "DISCORD_BOT_TOKEN=\\$(cat ${tokenFile}) ${claudeBinary} ${channelFlag} ${modelFlag} ${nameFlag} ${promptFlag}";
+    "DISCORD_BOT_TOKEN=\\$(cat ${tokenFile}) ${claudeBinary} ${channelFlag} ${modelFlag} ${nameFlag} ${skillDirFlags} ${promptFlag}";
 
   buildTmuxNewWindowCommand =
     name: agent:
@@ -120,6 +121,11 @@ in
             type = lib.types.str;
             default = "sonnet";
             description = "Claude model alias (opus, sonnet, haiku)";
+          };
+          skillDirectories = lib.mkOption {
+            type = lib.types.listOf lib.types.str;
+            default = [ ];
+            description = "Absolute paths to skill directories passed as --add-dir to this agent";
           };
         };
       }
