@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+readonly TARGET_CONNECTION_NAME="Zanoni"
+
+main() {
+	echo "=== Disabling IPv6 on ${TARGET_CONNECTION_NAME} ==="
+	echo ""
+
+	_disable_ipv6_on_connection
+	_reconnect_to_apply
+
+	echo ""
+	echo "=== Done ==="
+	echo "IPv6 disabled on ${TARGET_CONNECTION_NAME}"
+	echo ""
+	echo "Verify with:"
+	echo "  nmcli connection show '${TARGET_CONNECTION_NAME}' | grep ipv6.method"
+}
+
+_disable_ipv6_on_connection() {
+	echo "[1/2] Setting ipv6.method to disabled..."
+	nmcli connection modify "${TARGET_CONNECTION_NAME}" ipv6.method "disabled"
+	echo "  ipv6.method=disabled"
+}
+
+_reconnect_to_apply() {
+	echo "[2/2] Reconnecting to apply changes..."
+	nmcli connection down "${TARGET_CONNECTION_NAME}" && nmcli connection up "${TARGET_CONNECTION_NAME}"
+	echo "  Reconnected successfully"
+}
+
+main "$@"
