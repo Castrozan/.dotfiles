@@ -110,6 +110,13 @@
     };
   };
 
+  systemd.services.nix-daemon.serviceConfig = {
+    MemoryHigh = "60%";
+    MemoryMax = "75%";
+    ManagedOOMMemoryPressure = "kill";
+    ManagedOOMMemoryPressureLimit = "80%";
+  };
+
   nixpkgs.config.allowUnfree = true;
 
   documentation.man.generateCaches = false;
