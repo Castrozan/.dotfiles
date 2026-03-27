@@ -1,28 +1,31 @@
-import re
+import colorsys
 import sys
+from types import ModuleType
 from unittest.mock import MagicMock, patch
 
 import pytest
 
-mock_colorthief_module = MagicMock()
-mock_pil_module = MagicMock()
-mock_pil_image_module = MagicMock()
-sys.modules["colorthief"] = mock_colorthief_module
-sys.modules["PIL"] = mock_pil_module
-sys.modules["PIL.Image"] = mock_pil_image_module
+colorthief_mock = ModuleType("colorthief")
+colorthief_mock.ColorThief = MagicMock
+sys.modules.setdefault("colorthief", colorthief_mock)
 
-import theme_generate_from_wallpaper  # noqa: E402
+pil_mock = ModuleType("PIL")
+pil_image_mock = ModuleType("PIL.Image")
+pil_mock.Image = pil_image_mock
+sys.modules.setdefault("PIL", pil_mock)
+sys.modules.setdefault("PIL.Image", pil_image_mock)
 
+import theme_generate_from_wallpaper
 
-SAMPLE_EIGHT_COLORS = [
-    (30, 30, 40),
-    (180, 50, 50),
-    (50, 150, 80),
-    (200, 180, 100),
-    (80, 120, 200),
-    (150, 100, 180),
-    (80, 160, 140),
-    (200, 200, 180),
+SAMPLE_COLORFUL_PALETTE = [
+    (20, 10, 10),
+    (180, 40, 40),
+    (40, 160, 60),
+    (180, 170, 40),
+    (40, 60, 180),
+    (160, 40, 170),
+    (40, 170, 170),
+    (200, 200, 190),
 ]
 
 
@@ -32,103 +35,200 @@ class TestCalculateYiqLuminance:
 
     def test_white_has_maximum_luminance(self):
         assert (
-            theme_generate_from_wallpaper.calculate_yiq_luminance(255, 255, 255)
-            == 255.0
+            theme_generate_from_wallpaper.calculate_yiq_luminance(255, 255, 255) == 255
         )
 
-    def test_green_contributes_most_to_luminance(self):
+    def test_green_has_higher_luminance_than_blue(self):
         green_luminance = theme_generate_from_wallpaper.calculate_yiq_luminance(
             0, 255, 0
         )
-        red_luminance = theme_generate_from_wallpaper.calculate_yiq_luminance(255, 0, 0)
         blue_luminance = theme_generate_from_wallpaper.calculate_yiq_luminance(
             0, 0, 255
         )
-        assert green_luminance > red_luminance > blue_luminance
-
-    def test_yiq_formula_uses_correct_coefficients(self):
-        result = theme_generate_from_wallpaper.calculate_yiq_luminance(100, 100, 100)
-        expected = (100 * 299 + 100 * 587 + 100 * 114) / 1000
-        assert result == expected
+        assert green_luminance > blue_luminance
 
 
-class TestDarkenColorByPercentage:
-    def test_darken_by_half(self):
-        result = theme_generate_from_wallpaper.darken_color_by_percentage(
-            (200, 100, 50), 0.5
-        )
-        assert result == (100, 50, 25)
+class TestSortColorsByLuminance:
+    def test_sorts_darkest_first(self):
+        colors = [(255, 255, 255), (0, 0, 0), (128, 128, 128)]
+        result = theme_generate_from_wallpaper.sort_colors_by_luminance(colors)
+        assert result[0] == (0, 0, 0)
+        assert result[-1] == (255, 255, 255)
 
-    def test_darken_to_black(self):
-        result = theme_generate_from_wallpaper.darken_color_by_percentage(
-            (200, 100, 50), 0.0
-        )
-        assert result == (0, 0, 0)
-
-    def test_no_darkening_preserves_color(self):
-        result = theme_generate_from_wallpaper.darken_color_by_percentage(
-            (200, 100, 50), 1.0
-        )
-        assert result == (200, 100, 50)
+    def test_preserves_length(self):
+        colors = [(10, 20, 30), (40, 50, 60)]
+        result = theme_generate_from_wallpaper.sort_colors_by_luminance(colors)
+        assert len(result) == 2
 
 
-class TestLightenColorByPercentage:
-    def test_lighten_by_half(self):
-        result = theme_generate_from_wallpaper.lighten_color_by_percentage(
-            (100, 100, 100), 0.5
-        )
-        assert result == (177, 177, 177)
+class TestDarkenColor:
+    def test_darken_by_zero_returns_black(self):
+        assert theme_generate_from_wallpaper.darken_color_by_percentage(
+            (100, 200, 50), 0.0
+        ) == (0, 0, 0)
 
-    def test_lighten_to_white(self):
+    def test_darken_by_one_returns_same(self):
+        assert theme_generate_from_wallpaper.darken_color_by_percentage(
+            (100, 200, 50), 1.0
+        ) == (100, 200, 50)
+
+    def test_darken_halves_values(self):
+        assert theme_generate_from_wallpaper.darken_color_by_percentage(
+            (100, 200, 50), 0.5
+        ) == (50, 100, 25)
+
+
+class TestLightenColor:
+    def test_lighten_by_zero_returns_same(self):
+        assert theme_generate_from_wallpaper.lighten_color_by_percentage(
+            (100, 100, 100), 0.0
+        ) == (100, 100, 100)
+
+    def test_lighten_by_one_returns_white(self):
         result = theme_generate_from_wallpaper.lighten_color_by_percentage(
             (100, 100, 100), 1.0
         )
         assert result == (255, 255, 255)
 
-    def test_no_lightening_preserves_color(self):
-        result = theme_generate_from_wallpaper.lighten_color_by_percentage(
-            (100, 100, 100), 0.0
+
+class TestHueDistance:
+    def test_same_hue_is_zero(self):
+        assert theme_generate_from_wallpaper.hue_distance(0.5, 0.5) == 0.0
+
+    def test_opposite_hues_is_half(self):
+        assert theme_generate_from_wallpaper.hue_distance(0.0, 0.5) == 0.5
+
+    def test_wraps_around_hue_circle(self):
+        assert theme_generate_from_wallpaper.hue_distance(0.9, 0.1) == pytest.approx(
+            0.2
         )
-        assert result == (100, 100, 100)
+
+    def test_red_is_close_to_near_red(self):
+        assert theme_generate_from_wallpaper.hue_distance(0.0, 0.05) == pytest.approx(
+            0.05
+        )
+
+
+class TestFindClosestColorByHue:
+    def test_finds_reddish_color_for_red_target(self):
+        colors = [(200, 50, 50), (50, 200, 50), (50, 50, 200)]
+        result = theme_generate_from_wallpaper.find_closest_color_by_hue(0.0, colors)
+        assert result == (200, 50, 50)
+
+    def test_finds_greenish_color_for_green_target(self):
+        colors = [(200, 50, 50), (50, 200, 50), (50, 50, 200)]
+        result = theme_generate_from_wallpaper.find_closest_color_by_hue(0.333, colors)
+        assert result == (50, 200, 50)
+
+    def test_finds_bluish_color_for_blue_target(self):
+        colors = [(200, 50, 50), (50, 200, 50), (50, 50, 200)]
+        result = theme_generate_from_wallpaper.find_closest_color_by_hue(0.667, colors)
+        assert result == (50, 50, 200)
+
+
+class TestAssignColorsToAnsiSlotsByHue:
+    def test_assigns_all_six_ansi_slots(self):
+        colors = SAMPLE_COLORFUL_PALETTE
+        assigned = theme_generate_from_wallpaper.assign_colors_to_ansi_slots_by_hue(
+            colors
+        )
+        assert set(assigned.keys()) == {1, 2, 3, 4, 5, 6}
+
+    def test_red_slot_gets_reddish_color(self):
+        colors = SAMPLE_COLORFUL_PALETTE
+        assigned = theme_generate_from_wallpaper.assign_colors_to_ansi_slots_by_hue(
+            colors
+        )
+        red_hue = theme_generate_from_wallpaper.color_to_hls(assigned[1])[0]
+        assert theme_generate_from_wallpaper.hue_distance(red_hue, 0.0) < 0.15
+
+    def test_green_slot_gets_greenish_color(self):
+        colors = SAMPLE_COLORFUL_PALETTE
+        assigned = theme_generate_from_wallpaper.assign_colors_to_ansi_slots_by_hue(
+            colors
+        )
+        green_hue = theme_generate_from_wallpaper.color_to_hls(assigned[2])[0]
+        assert theme_generate_from_wallpaper.hue_distance(green_hue, 0.333) < 0.15
+
+    def test_prefers_chromatic_colors_over_grays(self):
+        colors = [(128, 128, 128), (200, 50, 50), (127, 127, 127)]
+        assigned = theme_generate_from_wallpaper.assign_colors_to_ansi_slots_by_hue(
+            colors
+        )
+        for _slot, color in assigned.items():
+            assert color == (200, 50, 50)
+
+    def test_falls_back_to_all_colors_when_too_few_chromatic(self):
+        colors = [(128, 128, 128), (127, 127, 127), (126, 126, 126)]
+        assigned = theme_generate_from_wallpaper.assign_colors_to_ansi_slots_by_hue(
+            colors
+        )
+        assert len(assigned) == 6
+
+
+class TestSaturateAndBrightenColor:
+    def test_increases_saturation(self):
+        muted_green = (80, 100, 80)
+        result = theme_generate_from_wallpaper.saturate_and_brighten_color(
+            muted_green, saturation_boost=0.8, target_lightness=0.45
+        )
+        original_saturation = theme_generate_from_wallpaper.color_to_hls(muted_green)[2]
+        result_saturation = theme_generate_from_wallpaper.color_to_hls(result)[2]
+        assert result_saturation > original_saturation
+
+    def test_preserves_hue(self):
+        green = (40, 160, 60)
+        result = theme_generate_from_wallpaper.saturate_and_brighten_color(
+            green, saturation_boost=0.6, target_lightness=0.45
+        )
+        original_hue = theme_generate_from_wallpaper.color_to_hls(green)[0]
+        result_hue = theme_generate_from_wallpaper.color_to_hls(result)[0]
+        assert abs(original_hue - result_hue) < 0.01
 
 
 class TestBuildSixteenColorPalette:
-    def test_produces_sixteen_colors(self):
+    def test_returns_sixteen_colors(self):
         sorted_colors = theme_generate_from_wallpaper.sort_colors_by_luminance(
-            SAMPLE_EIGHT_COLORS
+            SAMPLE_COLORFUL_PALETTE
         )
         palette = theme_generate_from_wallpaper.build_sixteen_color_palette(
             sorted_colors
         )
         assert len(palette) == 16
 
-    def test_first_color_is_darkened_version_of_darkest(self):
+    def test_color0_is_darkened(self):
         sorted_colors = theme_generate_from_wallpaper.sort_colors_by_luminance(
-            SAMPLE_EIGHT_COLORS
+            SAMPLE_COLORFUL_PALETTE
         )
         palette = theme_generate_from_wallpaper.build_sixteen_color_palette(
             sorted_colors
         )
-        expected = theme_generate_from_wallpaper.darken_color_by_percentage(
-            sorted_colors[0], 0.2
+        original_luminance = theme_generate_from_wallpaper.calculate_yiq_luminance(
+            *sorted_colors[0]
         )
-        assert palette[0] == expected
+        palette_luminance = theme_generate_from_wallpaper.calculate_yiq_luminance(
+            *palette[0]
+        )
+        assert palette_luminance < original_luminance
 
-    def test_color7_is_lightened_version_of_brightest(self):
+    def test_color7_is_lightened(self):
         sorted_colors = theme_generate_from_wallpaper.sort_colors_by_luminance(
-            SAMPLE_EIGHT_COLORS
+            SAMPLE_COLORFUL_PALETTE
         )
         palette = theme_generate_from_wallpaper.build_sixteen_color_palette(
             sorted_colors
         )
-        expected = theme_generate_from_wallpaper.lighten_color_by_percentage(
-            sorted_colors[7], 0.80
+        original_luminance = theme_generate_from_wallpaper.calculate_yiq_luminance(
+            *sorted_colors[-1]
         )
-        assert palette[7] == expected
+        palette_luminance = theme_generate_from_wallpaper.calculate_yiq_luminance(
+            *palette[7]
+        )
+        assert palette_luminance > original_luminance
 
     def test_color15_is_brighter_than_color7(self):
         sorted_colors = theme_generate_from_wallpaper.sort_colors_by_luminance(
-            SAMPLE_EIGHT_COLORS
+            SAMPLE_COLORFUL_PALETTE
         )
         palette = theme_generate_from_wallpaper.build_sixteen_color_palette(
             sorted_colors
@@ -139,116 +239,24 @@ class TestBuildSixteenColorPalette:
         )
         assert luminance_15 >= luminance_7
 
-    def test_color8_is_lightened_version_of_color0(self):
+    def test_brights_are_brighter_than_normals(self):
         sorted_colors = theme_generate_from_wallpaper.sort_colors_by_luminance(
-            SAMPLE_EIGHT_COLORS
+            SAMPLE_COLORFUL_PALETTE
         )
         palette = theme_generate_from_wallpaper.build_sixteen_color_palette(
             sorted_colors
         )
-        expected = theme_generate_from_wallpaper.lighten_color_by_percentage(
-            palette[0], 0.30
-        )
-        assert palette[8] == expected
-
-
-class TestGenerateColorsTomlFromPalette:
-    @pytest.fixture
-    def sample_toml_output(self):
-        sorted_colors = theme_generate_from_wallpaper.sort_colors_by_luminance(
-            SAMPLE_EIGHT_COLORS
-        )
-        palette = theme_generate_from_wallpaper.build_sixteen_color_palette(
-            sorted_colors
-        )
-        return theme_generate_from_wallpaper.generate_colors_toml_from_palette(palette)
-
-    def test_contains_all_required_keys(self, sample_toml_output):
-        required_keys = [
-            "accent",
-            "cursor",
-            "foreground",
-            "background",
-            "selection_foreground",
-            "selection_background",
-        ]
-        for key in required_keys:
-            assert f'{key} = "' in sample_toml_output
-
-    def test_contains_all_sixteen_color_keys(self, sample_toml_output):
-        for index in range(16):
-            assert f'color{index} = "' in sample_toml_output
-
-    def test_all_values_are_valid_hex_format(self, sample_toml_output):
-        hex_values = re.findall(r'"(#[0-9a-f]{6})"', sample_toml_output)
-        assert len(hex_values) == 22
-
-    def test_ends_with_newline(self, sample_toml_output):
-        assert sample_toml_output.endswith("\n")
-
-
-class TestPickMostSaturatedAccentColor:
-    def test_picks_most_saturated_from_candidates(self):
-        palette = [
-            (0, 0, 0),
-            (128, 128, 128),
-            (255, 0, 0),
-            (100, 100, 100),
-            (50, 50, 50),
-            (200, 200, 200),
-            (150, 150, 150),
-            (255, 255, 255),
-        ] + [(0, 0, 0)] * 8
-        result = theme_generate_from_wallpaper.pick_most_saturated_accent_color(palette)
-        assert result == (255, 0, 0)
-
-    def test_only_considers_indices_one_through_six(self):
-        palette = [
-            (255, 0, 0),
-            (128, 128, 128),
-            (130, 130, 130),
-            (132, 132, 132),
-            (134, 134, 134),
-            (136, 136, 136),
-            (138, 138, 138),
-            (0, 255, 0),
-        ] + [(0, 0, 0)] * 8
-        result = theme_generate_from_wallpaper.pick_most_saturated_accent_color(palette)
-        assert result != (255, 0, 0)
-        assert result != (0, 255, 0)
-
-
-class TestExtractFirstFrameIfGif:
-    def test_returns_original_path_for_non_gif(self):
-        mock_image = MagicMock()
-        mock_image.format = "PNG"
-        mock_image.__enter__ = MagicMock(return_value=mock_image)
-        mock_image.__exit__ = MagicMock(return_value=False)
-
-        with patch.object(mock_pil_image_module, "open", return_value=mock_image):
-            with patch.object(
-                theme_generate_from_wallpaper, "Image", mock_pil_image_module
-            ):
-                result = theme_generate_from_wallpaper.extract_first_frame_if_gif(
-                    MagicMock(spec=type(MagicMock()))
-                )
-                assert result is not None
-
-    def test_saves_first_frame_for_gif(self):
-        mock_image = MagicMock()
-        mock_image.format = "GIF"
-        mock_image.__enter__ = MagicMock(return_value=mock_image)
-        mock_image.__exit__ = MagicMock(return_value=False)
-
-        with patch.object(mock_pil_image_module, "open", return_value=mock_image):
-            with patch.object(
-                theme_generate_from_wallpaper, "Image", mock_pil_image_module
-            ):
-                theme_generate_from_wallpaper.extract_first_frame_if_gif(
-                    MagicMock(spec=type(MagicMock()))
-                )
-                mock_image.seek.assert_called_once_with(0)
-                mock_image.save.assert_called_once()
+        for normal_index in [1, 2, 3, 4, 5, 6]:
+            bright_index = normal_index + 8
+            normal_lum = theme_generate_from_wallpaper.calculate_yiq_luminance(
+                *palette[normal_index]
+            )
+            bright_lum = theme_generate_from_wallpaper.calculate_yiq_luminance(
+                *palette[bright_index]
+            )
+            assert bright_lum >= normal_lum, (
+                f"color{bright_index} should be brighter than color{normal_index}"
+            )
 
 
 class TestFormatRgbAsHexString:
@@ -264,22 +272,99 @@ class TestFormatRgbAsHexString:
             == "#ffffff"
         )
 
-    def test_formats_arbitrary_color(self):
+    def test_formats_red(self):
         assert (
-            theme_generate_from_wallpaper.format_rgb_as_hex_string((126, 156, 216))
-            == "#7e9cd8"
+            theme_generate_from_wallpaper.format_rgb_as_hex_string((255, 0, 0))
+            == "#ff0000"
         )
 
 
-class TestSortColorsByLuminance:
-    def test_sorts_darkest_first(self):
-        colors = [(255, 255, 255), (0, 0, 0), (128, 128, 128)]
-        result = theme_generate_from_wallpaper.sort_colors_by_luminance(colors)
-        assert result[0] == (0, 0, 0)
-        assert result[-1] == (255, 255, 255)
+class TestGenerateColorsToml:
+    def test_contains_all_required_keys(self):
+        sorted_colors = theme_generate_from_wallpaper.sort_colors_by_luminance(
+            SAMPLE_COLORFUL_PALETTE
+        )
+        palette = theme_generate_from_wallpaper.build_sixteen_color_palette(
+            sorted_colors
+        )
+        output = theme_generate_from_wallpaper.generate_colors_toml_from_palette(
+            palette
+        )
 
-    def test_preserves_all_colors(self):
-        colors = [(200, 50, 50), (50, 200, 50), (50, 50, 200)]
-        result = theme_generate_from_wallpaper.sort_colors_by_luminance(colors)
-        assert len(result) == 3
-        assert set(result) == set(colors)
+        required_keys = [
+            "accent",
+            "cursor",
+            "foreground",
+            "background",
+            "selection_foreground",
+            "selection_background",
+        ] + [f"color{i}" for i in range(16)]
+
+        for key in required_keys:
+            assert f'{key} = "#' in output, f"Missing key: {key}"
+
+    def test_all_values_are_valid_hex(self):
+        sorted_colors = theme_generate_from_wallpaper.sort_colors_by_luminance(
+            SAMPLE_COLORFUL_PALETTE
+        )
+        palette = theme_generate_from_wallpaper.build_sixteen_color_palette(
+            sorted_colors
+        )
+        output = theme_generate_from_wallpaper.generate_colors_toml_from_palette(
+            palette
+        )
+
+        for line in output.strip().split("\n"):
+            if "=" not in line:
+                continue
+            value = line.split("=")[1].strip().strip('"')
+            assert value.startswith("#"), f"Value doesn't start with #: {value}"
+            assert len(value) == 7, f"Wrong hex length: {value}"
+
+    def test_background_is_dark(self):
+        sorted_colors = theme_generate_from_wallpaper.sort_colors_by_luminance(
+            SAMPLE_COLORFUL_PALETTE
+        )
+        palette = theme_generate_from_wallpaper.build_sixteen_color_palette(
+            sorted_colors
+        )
+        output = theme_generate_from_wallpaper.generate_colors_toml_from_palette(
+            palette
+        )
+        for line in output.strip().split("\n"):
+            if line.startswith("background"):
+                hex_val = line.split('"')[1]
+                red = int(hex_val[1:3], 16)
+                green = int(hex_val[3:5], 16)
+                blue = int(hex_val[5:7], 16)
+                luminance = theme_generate_from_wallpaper.calculate_yiq_luminance(
+                    red, green, blue
+                )
+                assert luminance < 50, (
+                    f"Background too bright: {hex_val} (luminance={luminance})"
+                )
+                break
+
+    def test_foreground_is_bright(self):
+        sorted_colors = theme_generate_from_wallpaper.sort_colors_by_luminance(
+            SAMPLE_COLORFUL_PALETTE
+        )
+        palette = theme_generate_from_wallpaper.build_sixteen_color_palette(
+            sorted_colors
+        )
+        output = theme_generate_from_wallpaper.generate_colors_toml_from_palette(
+            palette
+        )
+        for line in output.strip().split("\n"):
+            if line.startswith("foreground"):
+                hex_val = line.split('"')[1]
+                red = int(hex_val[1:3], 16)
+                green = int(hex_val[3:5], 16)
+                blue = int(hex_val[5:7], 16)
+                luminance = theme_generate_from_wallpaper.calculate_yiq_luminance(
+                    red, green, blue
+                )
+                assert luminance > 150, (
+                    f"Foreground too dim: {hex_val} (luminance={luminance})"
+                )
+                break

@@ -5,6 +5,15 @@ from pathlib import Path
 from colorthief import ColorThief
 from PIL import Image
 
+ANSI_HUE_TARGETS = {
+    1: 0.0,
+    2: 0.333,
+    3: 0.167,
+    4: 0.667,
+    5: 0.833,
+    6: 0.500,
+}
+
 
 def extract_first_frame_if_gif(image_path: Path) -> Path:
     with Image.open(image_path) as image:
@@ -18,7 +27,7 @@ def extract_first_frame_if_gif(image_path: Path) -> Path:
 
 def extract_dominant_colors_from_image(image_path: Path) -> list[tuple[int, int, int]]:
     color_thief = ColorThief(str(image_path))
-    return color_thief.get_palette(color_count=8, quality=1)
+    return color_thief.get_palette(color_count=16, quality=1)
 
 
 def calculate_yiq_luminance(red: int, green: int, blue: int) -> float:
@@ -51,57 +60,74 @@ def lighten_color_by_percentage(
     )
 
 
+def color_to_hls(color: tuple[int, int, int]) -> tuple[float, float, float]:
+    return colorsys.rgb_to_hls(color[0] / 255.0, color[1] / 255.0, color[2] / 255.0)
+
+
+def hls_to_color(
+    hue: float, lightness: float, saturation: float
+) -> tuple[int, int, int]:
+    red, green, blue = colorsys.hls_to_rgb(hue, lightness, saturation)
+    return (int(red * 255), int(green * 255), int(blue * 255))
+
+
+def hue_distance(hue_a: float, hue_b: float) -> float:
+    diff = abs(hue_a - hue_b)
+    return min(diff, 1.0 - diff)
+
+
+def find_closest_color_by_hue(
+    target_hue: float,
+    candidate_colors: list[tuple[int, int, int]],
+) -> tuple[int, int, int]:
+    return min(
+        candidate_colors, key=lambda c: hue_distance(color_to_hls(c)[0], target_hue)
+    )
+
+
 def saturate_and_brighten_color(
     color: tuple[int, int, int],
     saturation_boost: float,
     target_lightness: float,
 ) -> tuple[int, int, int]:
-    red_normalized = color[0] / 255.0
-    green_normalized = color[1] / 255.0
-    blue_normalized = color[2] / 255.0
-    hue, lightness, saturation = colorsys.rgb_to_hls(
-        red_normalized, green_normalized, blue_normalized
-    )
+    hue, lightness, saturation = color_to_hls(color)
     boosted_saturation = min(1.0, saturation + (1.0 - saturation) * saturation_boost)
     adjusted_lightness = lightness + (target_lightness - lightness) * 0.7
-    red_out, green_out, blue_out = colorsys.hls_to_rgb(
-        hue, adjusted_lightness, boosted_saturation
-    )
-    return (
-        int(red_out * 255),
-        int(green_out * 255),
-        int(blue_out * 255),
-    )
+    return hls_to_color(hue, adjusted_lightness, boosted_saturation)
 
 
-def pad_color_list_to_eight(
-    colors: list[tuple[int, int, int]],
-) -> list[tuple[int, int, int]]:
-    padded = list(colors)
-    while len(padded) < 8:
-        padded.append(padded[len(padded) % len(colors)])
-    return padded[:8]
+def assign_colors_to_ansi_slots_by_hue(
+    extracted_colors: list[tuple[int, int, int]],
+) -> dict[int, tuple[int, int, int]]:
+    chromatic_colors = [c for c in extracted_colors if color_to_hls(c)[2] > 0.05]
+    if not chromatic_colors:
+        chromatic_colors = list(extracted_colors)
+
+    assigned = {}
+    for ansi_slot, target_hue in ANSI_HUE_TARGETS.items():
+        assigned[ansi_slot] = find_closest_color_by_hue(target_hue, chromatic_colors)
+
+    return assigned
 
 
 def build_sixteen_color_palette(
     sorted_colors: list[tuple[int, int, int]],
 ) -> list[tuple[int, int, int]]:
-    eight_colors = pad_color_list_to_eight(sorted_colors)
-    palette = eight_colors + eight_colors
+    palette = [sorted_colors[0]] * 16
 
-    palette[0] = darken_color_by_percentage(eight_colors[0], 0.2)
-    palette[7] = lighten_color_by_percentage(eight_colors[-1], 0.80)
+    palette[0] = darken_color_by_percentage(sorted_colors[0], 0.2)
+    palette[7] = lighten_color_by_percentage(sorted_colors[-1], 0.80)
     palette[8] = lighten_color_by_percentage(palette[0], 0.30)
-    palette[15] = lighten_color_by_percentage(eight_colors[-1], 0.90)
+    palette[15] = lighten_color_by_percentage(sorted_colors[-1], 0.90)
 
-    for index in [1, 2, 3, 4, 5, 6]:
-        palette[index] = saturate_and_brighten_color(
-            eight_colors[index], saturation_boost=0.6, target_lightness=0.45
+    hue_assigned = assign_colors_to_ansi_slots_by_hue(sorted_colors)
+
+    for ansi_slot, base_color in hue_assigned.items():
+        palette[ansi_slot] = saturate_and_brighten_color(
+            base_color, saturation_boost=0.6, target_lightness=0.45
         )
-
-    for index in [9, 10, 11, 12, 13, 14]:
-        palette[index] = saturate_and_brighten_color(
-            eight_colors[index - 8], saturation_boost=0.8, target_lightness=0.55
+        palette[ansi_slot + 8] = saturate_and_brighten_color(
+            base_color, saturation_boost=0.8, target_lightness=0.55
         )
 
     return palette
@@ -112,13 +138,7 @@ def format_rgb_as_hex_string(color: tuple[int, int, int]) -> str:
 
 
 def calculate_hls_saturation(color: tuple[int, int, int]) -> float:
-    normalized_red = color[0] / 255.0
-    normalized_green = color[1] / 255.0
-    normalized_blue = color[2] / 255.0
-    _hue, _lightness, saturation = colorsys.rgb_to_hls(
-        normalized_red, normalized_green, normalized_blue
-    )
-    return saturation
+    return color_to_hls(color)[2]
 
 
 def pick_most_saturated_accent_color(
