@@ -80,6 +80,16 @@ def touch_quickshell_bar_theme_colors_if_present() -> None:
         quickshell_bar_colors.touch()
 
 
+def reload_tmux_theme_if_running() -> None:
+    tmux_theme_file = CURRENT_THEME_PATH / "tmux-theme.conf"
+    if not tmux_theme_file.is_file():
+        return
+    subprocess.run(
+        ["tmux", "source-file", str(tmux_theme_file)],
+        capture_output=True,
+    )
+
+
 def update_btop_theme_in_config() -> None:
     btop_theme = CURRENT_THEME_PATH / "btop.theme"
     if not BTOP_CONF.is_file() or not btop_theme.is_file():
@@ -124,6 +134,7 @@ def main() -> None:
     subprocess.run(["makoctl", "reload"], capture_output=True)
     update_btop_theme_in_config()
     subprocess.run(["hypr-theme-set-gnome"])
+    reload_tmux_theme_if_running()
     subprocess.run(["notify-send", "Theme changed", theme_name, "-t", "2000"])
 
 
