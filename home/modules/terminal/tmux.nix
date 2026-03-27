@@ -6,12 +6,12 @@ let
 
   catppuccinZanoni = pkgs.tmuxPlugins.mkTmuxPlugin {
     pluginName = "catppuccin";
-    version = "zanoni.v1.0.5";
+    version = "zanoni.v1.0.6";
     src = pkgs.fetchFromGitHub {
       owner = "castrozan";
       repo = "catppuccin-tmux";
-      rev = "zanoni.v1.0.5";
-      sha256 = "0yjgkvblbqgqmz8lxk8p1jdli2g8m8sqjlp0svm0vgidx94dr77y";
+      rev = "zanoni.v1.0.6";
+      sha256 = "1w49sjcvzblga8cc8pf9cxnksnc9gs9kfdh7nqdg3p39x8mi4xv9";
     };
   };
 in

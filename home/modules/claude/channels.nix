@@ -11,6 +11,7 @@ let
   secretsDirectory = "${homeDir}/.secrets";
   claudeBinary = "${homeDir}/.local/bin/claude";
   tmuxSessionName = "claude-discord";
+  agentWorkspacesBaseDirectory = "${homeDir}/.claude/discord-agents";
   hasAgents = cfg.agents != { };
   agentNames = builtins.attrNames cfg.agents;
   firstAgentName = builtins.head agentNames;
@@ -24,17 +25,87 @@ let
     "/bin"
   ];
 
+  sharedAutonomyInstructions = ''
+    <autonomy>
+    You are an autonomous agent. Act decisively and take initiative.
+
+    Try first, ask last. Before asking Lucas anything:
+    1. Check your available skills — run skill discovery
+    2. Search the codebase with grep/glob
+    3. Read --help on any CLI tool
+    4. Try the most likely approach
+    Only after 2+ genuine attempts, ask for help. Report what you tried, not just "I'm stuck."
+
+    When given a task, do the work. Don't describe what you would do — do it. Don't ask for permission to proceed unless the action is destructive or irreversible. Bias toward action.
+
+    If something fails, note what failed and try an alternative. Iterate until you succeed or exhaust reasonable approaches.
+    </autonomy>
+  '';
+
+  sharedMemoryInstructions = ''
+    <memory>
+    You have persistent memory that survives across sessions. Use it aggressively.
+
+    Save to memory when you learn:
+    - User preferences, communication style, recurring requests
+    - Project context that isn't obvious from code (why decisions were made, constraints)
+    - Solutions to problems you solved (so you don't re-discover them)
+    - Feedback corrections (so you don't repeat mistakes)
+
+    Read your memory at session start. Your memories are your accumulated wisdom — they make you more effective over time. A well-maintained memory transforms you from a stateless tool into a knowledgeable collaborator.
+    </memory>
+  '';
+
+  sharedSessionResilienceInstructions = ''
+    <session-resilience>
+    Sessions can restart at any time. Your conversation history may be lost. Multi-step work survives only if persisted to disk.
+
+    For quick tasks: write current objective and next steps to HEARTBEAT.md in your workspace.
+    For big tasks (>5 steps): create a .deep-work/ workspace with plan, progress journal, and context.
+    On session start: check HEARTBEAT.md and .deep-work/ — resume from disk without asking the user to re-explain.
+    </session-resilience>
+  '';
+
+  sharedCommunicationInstructions = ''
+    <communication>
+    You are talking to users via Discord. Lucas is a senior software engineer. Other users in the guild are his friends or colleagues.
+    Be direct and technical. Concise answers. Use markdown for formatting.
+    If someone is wrong, tell them. If something fails, fix it — don't just report.
+    Respond in the same language the user writes in their message.
+    </communication>
+
+    <discord-channel-behavior>
+    CRITICAL: When a Discord message arrives, ALWAYS respond immediately using the reply tool. Never ask the operator for permission to respond. Never present interactive choices about whether to reply. You are a Discord bot — every message directed at you gets a response. This is non-negotiable.
+
+    Use the reply MCP tool to send your response back to Discord. The user cannot see your terminal output — only messages sent via the reply tool reach them.
+    </discord-channel-behavior>
+  '';
+
+  buildAgentClaudeMarkdownContent = name: agent: ''
+    ${agent.personality}
+
+    ${sharedAutonomyInstructions}
+
+    ${sharedMemoryInstructions}
+
+    ${sharedSessionResilienceInstructions}
+
+    ${sharedCommunicationInstructions}
+  '';
+
+  agentWorkspaceDirectory = name: "${agentWorkspacesBaseDirectory}/${name}";
+
   buildAgentLaunchCommand =
     name: agent:
     let
+      workspace = agentWorkspaceDirectory name;
       tokenFile = "${secretsDirectory}/${agent.botTokenSecretName}";
       channelFlag = "--channels plugin:discord@claude-plugins-official";
       modelFlag = "--model ${agent.model}";
       nameFlag = "--name ${name}";
-      promptFlag = "--append-system-prompt 'You are ${name}. Your role: ${agent.role}'";
       skillDirFlags = lib.concatMapStringsSep " " (dir: "--add-dir ${dir}") agent.skillDirectories;
     in
-    "DISCORD_BOT_TOKEN=\\$(cat ${tokenFile}) ${claudeBinary} ${channelFlag} ${modelFlag} ${nameFlag} ${skillDirFlags} ${promptFlag}";
+    "cd ${workspace} && DISCORD_BOT_TOKEN=\\$(cat ${tokenFile}) ${claudeBinary} ${channelFlag} ${modelFlag} ${nameFlag} ${skillDirFlags}";
 
   buildTmuxNewWindowCommand =
     name: agent:
@@ -92,6 +163,21 @@ let
     ) agentNames
   );
 
+  seedAgentWorkspaces = pkgs.writeShellScript "seed-discord-agent-workspaces" (
+    lib.concatMapStringsSep "\n" (
+      name:
+      let
+        workspace = agentWorkspaceDirectory name;
+      in
+      ''
+        mkdir -p "${workspace}"
+        if [ ! -f "${workspace}/HEARTBEAT.md" ]; then
+          printf '# Heartbeat\n\nNo active work.\n' > "${workspace}/HEARTBEAT.md"
+        fi
+      ''
+    ) agentNames
+  );
+
   updateClaudePluginsMarketplace = pkgs.writeShellScript "update-claude-plugins-marketplace" ''
     set -euo pipefail
     MARKETPLACE_DIR="${homeDir}/.claude/plugins/marketplaces/claude-plugins-official"
@@ -103,6 +189,15 @@ let
     cd "$MARKETPLACE_DIR"
     ${pkgs.git}/bin/git pull --ff-only origin main 2>/dev/null || true
   '';
+
+  agentClaudeMarkdownFiles = lib.listToAttrs (
+    map (name: {
+      name = ".claude/discord-agents/${name}/CLAUDE.md";
+      value = {
+        text = buildAgentClaudeMarkdownContent name cfg.agents.${name};
+      };
+    }) agentNames
+  );
 in
 {
   options.claude.discordChannel.agents = lib.mkOption {
@@ -127,6 +222,10 @@ in
             default = [ ];
             description = "Absolute paths to skill directories passed as --add-dir to this agent";
           };
+          personality = lib.mkOption {
+            type = lib.types.lines;
+            description = "Rich personality and instructions for this agent's CLAUDE.md";
+          };
         };
       }
     );
@@ -145,8 +244,14 @@ in
       home = {
         packages = [ claudeDiscordSessionStarter ];
 
+        file = agentClaudeMarkdownFiles;
+
         activation.injectClaudeDiscordBotTokens = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
           run ${injectAllDiscordBotTokens}
+        '';
+
+        activation.seedDiscordAgentWorkspaces = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+          run ${seedAgentWorkspaces}
         '';
       };
 

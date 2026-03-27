@@ -80,12 +80,26 @@ def touch_quickshell_bar_theme_colors_if_present() -> None:
         quickshell_bar_colors.touch()
 
 
+def find_catppuccin_plugin_run_shell_path() -> str | None:
+    tmux_config = Path.home() / ".config" / "tmux" / "tmux.conf"
+    if not tmux_config.is_file():
+        return None
+    for line in tmux_config.read_text().splitlines():
+        stripped = line.strip()
+        if "catppuccin" in stripped and stripped.startswith("run-shell "):
+            return stripped.removeprefix("run-shell ").strip()
+    return None
+
+
 def reload_tmux_theme_if_running() -> None:
     tmux_theme_file = CURRENT_THEME_PATH / "tmux-theme.conf"
     if not tmux_theme_file.is_file():
         return
+    catppuccin_plugin_path = find_catppuccin_plugin_run_shell_path()
+    if catppuccin_plugin_path is None:
+        return
     subprocess.run(
-        ["tmux", "source-file", str(tmux_theme_file)],
+        ["tmux", "run-shell", catppuccin_plugin_path],
         capture_output=True,
     )
 

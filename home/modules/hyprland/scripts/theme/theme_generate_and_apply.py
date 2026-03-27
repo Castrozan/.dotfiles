@@ -110,12 +110,15 @@ def main() -> None:
 
     theme_name = derive_theme_name_from_image_path(wallpaper_image_path)
     theme_directory = HYPR_THEMES_PATH / theme_name
+    cached_colors_toml = theme_directory / "colors.toml"
 
-    create_theme_directory_structure(theme_directory)
-    colors_toml_content = generate_colors_toml_for_wallpaper(wallpaper_image_path)
-    write_theme_configuration_files(
-        theme_directory, colors_toml_content, wallpaper_image_path
-    )
+    if not cached_colors_toml.is_file():
+        create_theme_directory_structure(theme_directory)
+        colors_toml_content = generate_colors_toml_for_wallpaper(wallpaper_image_path)
+        write_theme_configuration_files(
+            theme_directory, colors_toml_content, wallpaper_image_path
+        )
+
     apply_generated_theme(theme_name)
 
 
