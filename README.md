@@ -210,26 +210,6 @@ graph TD
 
 ---
 
-## How to Explore Nix Options
-
-Explore options for configurations directly from the repl so it is up to date with the rebuild command.
-
-```bash
-nix repl
-```
-
-Then in the REPL:
-```nix
-:lf .#homeConfigurations.lucas.zanoni@x86_64-linux
-builtins.attrNames config.options.xdg.desktopEntries.type.getSubOptions
-```
-
-Or to see option descriptions:
-```nix
-config.options.xdg.desktopEntries.description
-```
----
-
 ## 🔗 Inspiration & Credits
 
 This setup is inspired by and borrows from:
