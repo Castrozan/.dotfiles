@@ -5,8 +5,6 @@ def main() -> None:
     subprocess.run(
         [
             "wezterm",
-            "--config",
-            "window_background_opacity=0.85",
             "start",
             "--class",
             "clipse",
