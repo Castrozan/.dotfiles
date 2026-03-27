@@ -4,14 +4,11 @@ import subprocess
 def main() -> None:
     subprocess.run(
         [
-            "kitty",
+            "wezterm",
+            "start",
             "--class",
             "clipse",
-            "--override",
-            "startup_session=none",
-            "--override",
-            "background_image=none",
-            "-e",
+            "--",
             "clipse",
         ]
     )
