@@ -17,7 +17,7 @@ in
       && [ "$(sysctl -n net.ipv4.tcp_mtu_probing 2>/dev/null)" = "1" ] \
       && [ "$(sysctl -n net.core.netdev_max_backlog 2>/dev/null)" = "16384" ] \
       && grep -q "wifi.powersave = 2" /etc/NetworkManager/conf.d/wifi-powersave-off.conf 2>/dev/null \
-      && grep -q "DNSOverTLS=yes" /etc/systemd/resolved.conf.d/dns-optimization.conf 2>/dev/null; then
+      && grep -q "DNSOverTLS=opportunistic" /etc/systemd/resolved.conf.d/dns-optimization.conf 2>/dev/null; then
       $VERBOSE_ECHO "Network optimization already configured"
     else
       echo "Setting up network optimization (requires sudo)..."

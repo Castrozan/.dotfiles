@@ -82,7 +82,7 @@ _run_in_privileged_container() {
         "$SCRIPT_PATH_INSIDE_CONTAINER && cat $RESOLVED_DNS_CONFIG_PATH"
     [ "$status" -eq 0 ]
     [[ "$output" == *"1.1.1.1#cloudflare-dns.com"* ]]
-    [[ "$output" == *"DNSOverTLS=yes"* ]]
+    [[ "$output" == *"DNSOverTLS=opportunistic"* ]]
 }
 
 @test "idempotent: second run succeeds" {
@@ -98,7 +98,7 @@ _run_in_privileged_container() {
         && [ "$(sysctl -n net.ipv4.tcp_slow_start_after_idle 2>/dev/null)" = "0" ] \
         && [ "$(sysctl -n net.ipv4.tcp_mtu_probing 2>/dev/null)" = "1" ] \
         && grep -q "wifi.powersave = 2" /etc/NetworkManager/conf.d/wifi-powersave-off.conf 2>/dev/null \
-        && grep -q "DNSOverTLS=yes" /etc/systemd/resolved.conf.d/dns-optimization.conf 2>/dev/null'
+        && grep -q "DNSOverTLS=opportunistic" /etc/systemd/resolved.conf.d/dns-optimization.conf 2>/dev/null'
 
     run _run_in_privileged_container \
         "$SCRIPT_PATH_INSIDE_CONTAINER && $activationCheckCondition && echo SKIP_CONFIRMED"

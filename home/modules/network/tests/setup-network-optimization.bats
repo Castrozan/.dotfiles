@@ -62,7 +62,7 @@ load '../../../../tests/helpers/bash-script-assertions'
 @test "configures Cloudflare DNS-over-TLS" {
     assert_script_source_matches "1.1.1.1#cloudflare-dns.com"
     assert_script_source_matches "1.0.0.1#cloudflare-dns.com"
-    assert_script_source_matches "DNSOverTLS=yes"
+    assert_script_source_matches "DNSOverTLS=opportunistic"
 }
 
 @test "writes resolved config to systemd directory" {
