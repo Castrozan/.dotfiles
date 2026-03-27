@@ -100,7 +100,11 @@ in
         if [ -f "$NIX_SOURCE" ]; then
           if [ -f "$CLAUDE_SETTINGS" ]; then
             chmod 600 "$CLAUDE_SETTINGS" 2>/dev/null || true
-            ${pkgs.jq}/bin/jq -s '.[0] * .[1]' "$CLAUDE_SETTINGS" "$NIX_SOURCE" > "$CLAUDE_SETTINGS.tmp" && mv "$CLAUDE_SETTINGS.tmp" "$CLAUDE_SETTINGS"
+            MERGED_SETTINGS=$(${pkgs.jq}/bin/jq -s '.[0] * .[1]' "$CLAUDE_SETTINGS" "$NIX_SOURCE")
+            CURRENT_SETTINGS=$(cat "$CLAUDE_SETTINGS")
+            if [ "$MERGED_SETTINGS" != "$CURRENT_SETTINGS" ]; then
+              echo "$MERGED_SETTINGS" > "$CLAUDE_SETTINGS.tmp" && mv "$CLAUDE_SETTINGS.tmp" "$CLAUDE_SETTINGS"
+            fi
           else
             cp "$NIX_SOURCE" "$CLAUDE_SETTINGS"
           fi
@@ -115,7 +119,11 @@ in
       data = ''
         CLAUDE_JSON="$HOME/.claude.json"
         if [ -f "$CLAUDE_JSON" ]; then
-          ${pkgs.jq}/bin/jq '.installMethod = "native"' "$CLAUDE_JSON" > "$CLAUDE_JSON.tmp" && mv "$CLAUDE_JSON.tmp" "$CLAUDE_JSON"
+          PATCHED_CONTENT=$(${pkgs.jq}/bin/jq '.installMethod = "native"' "$CLAUDE_JSON")
+          CURRENT_CONTENT=$(cat "$CLAUDE_JSON")
+          if [ "$PATCHED_CONTENT" != "$CURRENT_CONTENT" ]; then
+            echo "$PATCHED_CONTENT" > "$CLAUDE_JSON.tmp" && mv "$CLAUDE_JSON.tmp" "$CLAUDE_JSON"
+          fi
         else
           echo '{"installMethod": "native"}' > "$CLAUDE_JSON"
         fi
