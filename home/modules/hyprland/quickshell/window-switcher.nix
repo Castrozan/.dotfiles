@@ -29,7 +29,6 @@ in
       Type = "simple";
       ExecStart = "${quickshellPackage}/bin/quickshell -c switcher";
       Environment = [ "QT_QPA_PLATFORM=wayland" ];
-      Nice = -5;
       Restart = "always";
       RestartSec = "1s";
     };
