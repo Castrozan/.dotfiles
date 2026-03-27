@@ -25,7 +25,6 @@
     readItNow-rc.url = "github:castrozan/readItNow-rc/1.1.0";
     readItNow-rc.inputs.nixpkgs.follows = "nixpkgs";
     opencode.url = "github:anomalyco/opencode/v1.2.27";
-    opencode.inputs.nixpkgs.follows = "nixpkgs";
     devenv.url = "github:cachix/devenv/v1.11.2";
     devenv.inputs.nixpkgs.follows = "nixpkgs";
     # Branch/default (actively maintained)

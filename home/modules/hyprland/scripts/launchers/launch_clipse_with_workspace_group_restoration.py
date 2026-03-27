@@ -6,8 +6,6 @@ def main() -> None:
         [
             "wezterm",
             "start",
-            "--class",
-            "clipse",
             "--",
             "clipse",
         ]

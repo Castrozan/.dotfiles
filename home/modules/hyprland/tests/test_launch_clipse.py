@@ -13,8 +13,6 @@ class TestMain:
                 [
                     "wezterm",
                     "start",
-                    "--class",
-                    "clipse",
                     "--",
                     "clipse",
                 ]
