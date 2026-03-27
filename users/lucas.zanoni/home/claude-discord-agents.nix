@@ -1,5 +1,4 @@
-{ ... }:
-{
+_: {
   claude.discordChannel.agents = {
     robson = {
       botTokenSecretName = "discord-bot-token-robson";
