@@ -5,14 +5,15 @@
   ...
 }:
 let
+  cfg = config.claude.discordChannel;
   homeDir = config.home.homeDirectory;
   inherit (config.home) username;
   secretsDirectory = "${homeDir}/.secrets";
-  discordBotTokenSecretFile = "${secretsDirectory}/discord-bot-token-claude";
-  discordChannelStateDirectory = "${homeDir}/.claude/channels/discord";
-  discordChannelEnvFile = "${discordChannelStateDirectory}/.env";
   claudeBinary = "${homeDir}/.local/bin/claude";
   tmuxSessionName = "claude-discord";
+  hasAgents = cfg.agents != { };
+  agentNames = builtins.attrNames cfg.agents;
+  firstAgentName = builtins.head agentNames;
 
   nixSystemPaths = lib.concatStringsSep ":" [
     "${pkgs.tmux}/bin"
@@ -23,50 +24,42 @@ let
     "/bin"
   ];
 
-  injectDiscordBotTokenFromAgenix = pkgs.writeShellScript "inject-claude-discord-bot-token" ''
+  buildAgentLaunchCommand =
+    name: agent:
+    let
+      tokenFile = "${secretsDirectory}/${agent.botTokenSecretName}";
+      channelFlag = "--channels plugin:discord@claude-plugins-official";
+      modelFlag = "--model ${agent.model}";
+      nameFlag = "--name ${name}";
+      promptFlag = "--append-system-prompt 'You are ${name}. Your role: ${agent.role}'";
+    in
+    "DISCORD_BOT_TOKEN=\\$(cat ${tokenFile}) ${claudeBinary} ${channelFlag} ${modelFlag} ${nameFlag} ${promptFlag}";
+
+  buildTmuxNewWindowCommand =
+    name: agent:
+    ''${pkgs.tmux}/bin/tmux new-window -t "${tmuxSessionName}" -n ${name} "${buildAgentLaunchCommand name agent}"'';
+
+  claudeDiscordAgentsServiceScript = pkgs.writeShellScript "claude-discord-agents-service" ''
     set -euo pipefail
-
-    if [ ! -f "${discordBotTokenSecretFile}" ]; then
-      exit 0
-    fi
-
-    TOKEN="$(cat "${discordBotTokenSecretFile}")"
-    if [ -z "$TOKEN" ]; then
-      exit 0
-    fi
-
-    mkdir -p "${discordChannelStateDirectory}"
-    printf 'DISCORD_BOT_TOKEN=%s\n' "$TOKEN" > "${discordChannelEnvFile}"
-    chmod 600 "${discordChannelEnvFile}"
-  '';
-
-  claudeDiscordChannelServiceScript = pkgs.writeShellScript "claude-discord-channel-service" ''
-    set -euo pipefail
-
-    if [ ! -f "${discordChannelEnvFile}" ]; then
-      echo "Discord channel not configured" >&2
-      exit 1
-    fi
 
     if ${pkgs.tmux}/bin/tmux has-session -t "${tmuxSessionName}" 2>/dev/null; then
       ${pkgs.tmux}/bin/tmux kill-session -t "${tmuxSessionName}"
     fi
 
-    ${pkgs.tmux}/bin/tmux new-session -d -s "${tmuxSessionName}" -n discord \
-      "${claudeBinary} --channels plugin:discord@claude-plugins-official"
+    ${pkgs.tmux}/bin/tmux new-session -d -s "${tmuxSessionName}" -n ${firstAgentName} \
+      "${buildAgentLaunchCommand firstAgentName cfg.agents.${firstAgentName}}"
+
+    ${lib.concatMapStringsSep "\n" (name: buildTmuxNewWindowCommand name cfg.agents.${name}) (
+      builtins.tail agentNames
+    )}
 
     while ${pkgs.tmux}/bin/tmux has-session -t "${tmuxSessionName}" 2>/dev/null; do
       sleep 10
     done
   '';
 
-  claudeDiscordChannelSessionStarter = pkgs.writeShellScriptBin "claude-discord-channel" ''
+  claudeDiscordSessionStarter = pkgs.writeShellScriptBin "claude-discord-channel" ''
     set -euo pipefail
-
-    if [ ! -f "${discordChannelEnvFile}" ]; then
-      echo "Discord channel not configured. Encrypt bot token to secrets/bot-tokens/discord-bot-token-claude.age" >&2
-      exit 1
-    fi
 
     if ${pkgs.tmux}/bin/tmux has-session -t "${tmuxSessionName}" 2>/dev/null; then
       echo "Session ${tmuxSessionName} already running. Attach with: tmux attach -t ${tmuxSessionName}" >&2
@@ -75,6 +68,28 @@ let
 
     systemctl --user restart claude-discord-channel.service
   '';
+
+  injectAllDiscordBotTokens = pkgs.writeShellScript "inject-claude-discord-bot-tokens" (
+    lib.concatMapStringsSep "\n" (
+      name:
+      let
+        agent = cfg.agents.${name};
+        tokenFile = "${secretsDirectory}/${agent.botTokenSecretName}";
+        envDir = "${homeDir}/.claude/channels/discord/${name}";
+        envFile = "${envDir}/.env";
+      in
+      ''
+        if [ -f "${tokenFile}" ]; then
+          TOKEN="$(cat "${tokenFile}")"
+          if [ -n "$TOKEN" ]; then
+            mkdir -p "${envDir}"
+            printf 'DISCORD_BOT_TOKEN=%s\n' "$TOKEN" > "${envFile}"
+            chmod 600 "${envFile}"
+          fi
+        fi
+      ''
+    ) agentNames
+  );
 
   updateClaudePluginsMarketplace = pkgs.writeShellScript "update-claude-plugins-marketplace" ''
     set -euo pipefail
@@ -89,40 +104,70 @@ let
   '';
 in
 {
-  home = {
-    packages = [ claudeDiscordChannelSessionStarter ];
-
-    activation.injectClaudeDiscordBotToken = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-      run ${injectDiscordBotTokenFromAgenix}
-    '';
-
-    activation.updateClaudePluginsMarketplace = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-      run ${updateClaudePluginsMarketplace}
-    '';
+  options.claude.discordChannel.agents = lib.mkOption {
+    type = lib.types.attrsOf (
+      lib.types.submodule {
+        options = {
+          botTokenSecretName = lib.mkOption {
+            type = lib.types.str;
+            description = "Name of the decrypted secret file in ~/.secrets/";
+          };
+          role = lib.mkOption {
+            type = lib.types.str;
+            description = "Agent role description injected as system prompt";
+          };
+          model = lib.mkOption {
+            type = lib.types.str;
+            default = "sonnet";
+            description = "Claude model alias (opus, sonnet, haiku)";
+          };
+        };
+      }
+    );
+    default = { };
+    description = "Discord channel agents — each becomes a tmux window in the claude-discord session";
   };
 
-  systemd.user.services.claude-discord-channel = {
-    Unit = {
-      Description = "Claude Code Discord Channel (persistent tmux session)";
-      After = [ "network.target" ];
-    };
+  config = lib.mkMerge [
+    {
+      home.activation.updateClaudePluginsMarketplace = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+        run ${updateClaudePluginsMarketplace}
+      '';
+    }
 
-    Service = {
-      Type = "simple";
-      ExecStart = "${claudeDiscordChannelServiceScript}";
-      ExecStop = "-${pkgs.tmux}/bin/tmux kill-session -t ${tmuxSessionName}";
-      Restart = "always";
-      RestartSec = "5s";
-      Environment = [
-        "PATH=${nixSystemPaths}"
-        "HOME=${homeDir}"
-        "TMUX_TMPDIR=%t"
-        "XDG_RUNTIME_DIR=%t"
-      ];
-    };
+    (lib.mkIf hasAgents {
+      home = {
+        packages = [ claudeDiscordSessionStarter ];
 
-    Install = {
-      WantedBy = [ "default.target" ];
-    };
-  };
+        activation.injectClaudeDiscordBotTokens = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+          run ${injectAllDiscordBotTokens}
+        '';
+      };
+
+      systemd.user.services.claude-discord-channel = {
+        Unit = {
+          Description = "Claude Code Discord agents (persistent tmux session)";
+          After = [ "network.target" ];
+        };
+
+        Service = {
+          Type = "simple";
+          ExecStart = "${claudeDiscordAgentsServiceScript}";
+          ExecStop = "-${pkgs.tmux}/bin/tmux kill-session -t ${tmuxSessionName}";
+          Restart = "always";
+          RestartSec = "5s";
+          Environment = [
+            "PATH=${nixSystemPaths}"
+            "HOME=${homeDir}"
+            "TMUX_TMPDIR=%t"
+            "XDG_RUNTIME_DIR=%t"
+          ];
+        };
+
+        Install = {
+          WantedBy = [ "default.target" ];
+        };
+      };
+    })
+  ];
 }
