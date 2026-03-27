@@ -116,8 +116,8 @@ in
       Environment = [
         "PATH=${nixSystemPaths}"
         "HOME=${homeDir}"
-        "TMUX_TMPDIR=/run/user/1000"
-        "XDG_RUNTIME_DIR=/run/user/1000"
+        "TMUX_TMPDIR=%t"
+        "XDG_RUNTIME_DIR=%t"
       ];
     };
 

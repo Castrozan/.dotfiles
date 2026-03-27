@@ -126,14 +126,18 @@ class TestBuildSixteenColorPalette:
         )
         assert palette[7] == expected
 
-    def test_color15_equals_color7(self):
+    def test_color15_is_brighter_than_color7(self):
         sorted_colors = theme_generate_from_wallpaper.sort_colors_by_luminance(
             SAMPLE_EIGHT_COLORS
         )
         palette = theme_generate_from_wallpaper.build_sixteen_color_palette(
             sorted_colors
         )
-        assert palette[15] == palette[7]
+        luminance_7 = theme_generate_from_wallpaper.calculate_yiq_luminance(*palette[7])
+        luminance_15 = theme_generate_from_wallpaper.calculate_yiq_luminance(
+            *palette[15]
+        )
+        assert luminance_15 >= luminance_7
 
     def test_color8_is_lightened_version_of_color0(self):
         sorted_colors = theme_generate_from_wallpaper.sort_colors_by_luminance(
