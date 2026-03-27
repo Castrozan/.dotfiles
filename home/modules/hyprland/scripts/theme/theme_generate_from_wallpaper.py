@@ -90,9 +90,9 @@ def build_sixteen_color_palette(
     palette = eight_colors + eight_colors
 
     palette[0] = darken_color_by_percentage(eight_colors[0], 0.2)
-    palette[7] = lighten_color_by_percentage(eight_colors[-1], 0.60)
-    palette[8] = lighten_color_by_percentage(palette[0], 0.25)
-    palette[15] = lighten_color_by_percentage(eight_colors[-1], 0.75)
+    palette[7] = lighten_color_by_percentage(eight_colors[-1], 0.80)
+    palette[8] = lighten_color_by_percentage(palette[0], 0.30)
+    palette[15] = lighten_color_by_percentage(eight_colors[-1], 0.90)
 
     for index in [1, 2, 3, 4, 5, 6]:
         palette[index] = saturate_and_brighten_color(
