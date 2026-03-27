@@ -7,6 +7,7 @@
     ./home/hyprland.nix
     ./home/ssh.nix
     ./home/session-vars.nix
+    ./home/claude-discord-agents.nix
 
     ../../home/core.nix
 
