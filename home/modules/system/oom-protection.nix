@@ -28,6 +28,11 @@ in
     fi
   '';
 
+  xdg.configFile."systemd/user.conf.d/protect-transient-scopes.conf".text = ''
+    [Manager]
+    DefaultOOMPolicy=continue
+  '';
+
   home.activation.setupNixDaemonMemoryLimit = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     PATH="/usr/bin:/usr/sbin:/sbin:$PATH"
 
