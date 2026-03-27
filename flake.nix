@@ -29,7 +29,6 @@
     devenv.inputs.nixpkgs.follows = "nixpkgs";
     # Branch/default (actively maintained)
     bluetui.url = "github:castrozan/bluetui/v0.9.1";
-    bluetui.inputs.nixpkgs.follows = "nixpkgs";
     cbonsai.url = "github:castrozan/cbonsai";
     cbonsai.inputs.nixpkgs.follows = "nixpkgs";
     cmatrix.url = "github:castrozan/cmatrix";
