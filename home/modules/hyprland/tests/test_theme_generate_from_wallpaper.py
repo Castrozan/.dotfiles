@@ -122,7 +122,7 @@ class TestBuildSixteenColorPalette:
             sorted_colors
         )
         expected = theme_generate_from_wallpaper.lighten_color_by_percentage(
-            sorted_colors[7], 0.75
+            sorted_colors[7], 0.60
         )
         assert palette[7] == expected
 

@@ -51,17 +51,21 @@ def lighten_color_by_percentage(
     )
 
 
-def saturate_color(color: tuple[int, int, int], amount: float) -> tuple[int, int, int]:
+def saturate_and_brighten_color(
+    color: tuple[int, int, int],
+    saturation_boost: float,
+    target_lightness: float,
+) -> tuple[int, int, int]:
     red_normalized = color[0] / 255.0
     green_normalized = color[1] / 255.0
     blue_normalized = color[2] / 255.0
     hue, lightness, saturation = colorsys.rgb_to_hls(
         red_normalized, green_normalized, blue_normalized
     )
-    boosted_saturation = min(1.0, saturation + (1.0 - saturation) * amount)
-    boosted_lightness = max(0.25, min(0.65, lightness))
+    boosted_saturation = min(1.0, saturation + (1.0 - saturation) * saturation_boost)
+    adjusted_lightness = lightness + (target_lightness - lightness) * 0.7
     red_out, green_out, blue_out = colorsys.hls_to_rgb(
-        hue, boosted_lightness, boosted_saturation
+        hue, adjusted_lightness, boosted_saturation
     )
     return (
         int(red_out * 255),
@@ -91,10 +95,14 @@ def build_sixteen_color_palette(
     palette[15] = lighten_color_by_percentage(eight_colors[-1], 0.75)
 
     for index in [1, 2, 3, 4, 5, 6]:
-        palette[index] = saturate_color(eight_colors[index], 0.5)
+        palette[index] = saturate_and_brighten_color(
+            eight_colors[index], saturation_boost=0.6, target_lightness=0.45
+        )
 
     for index in [9, 10, 11, 12, 13, 14]:
-        palette[index] = saturate_color(eight_colors[index - 8], 0.7)
+        palette[index] = saturate_and_brighten_color(
+            eight_colors[index - 8], saturation_boost=0.8, target_lightness=0.55
+        )
 
     return palette
 
