@@ -148,7 +148,7 @@ MouseArea {
                 anchors.fill: parent
 
                 spacing: 3
-                locale: Qt.locale()
+                locale: Qt.locale("en_US")
 
                 delegate: Item {
                     id: dayDelegate

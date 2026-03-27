@@ -35,7 +35,7 @@ Item {
                 }
 
                 StyledText {
-                    text: new Date().toLocaleDateString(Qt.locale(), "dddd, MMMM d")
+                    text: new Date().toLocaleDateString(Qt.locale("en_US"), "dddd, MMMM d")
                     font.pointSize: Appearance.font.size.small
                     color: Colours.palette.m3onSurfaceVariant
                 }
@@ -176,7 +176,7 @@ Item {
 
                             StyledText {
                                 Layout.alignment: Qt.AlignHCenter
-                                text: forecastDayItem.index === 0 ? "Today" : new Date(forecastDayItem.modelData.date).toLocaleDateString(Qt.locale(), "ddd")
+                                text: forecastDayItem.index === 0 ? "Today" : new Date(forecastDayItem.modelData.date).toLocaleDateString(Qt.locale("en_US"), "ddd")
                                 font.pointSize: Appearance.font.size.normal
                                 font.weight: 600
                                 color: Colours.palette.m3primary
@@ -185,7 +185,7 @@ Item {
                             StyledText {
                                 Layout.topMargin: -Appearance.spacing.small / 2
                                 Layout.alignment: Qt.AlignHCenter
-                                text: new Date(forecastDayItem.modelData.date).toLocaleDateString(Qt.locale(), "MMM d")
+                                text: new Date(forecastDayItem.modelData.date).toLocaleDateString(Qt.locale("en_US"), "MMM d")
                                 font.pointSize: Appearance.font.size.small
                                 opacity: 0.7
                                 color: Colours.palette.m3onSurfaceVariant
