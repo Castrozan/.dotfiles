@@ -1,0 +1,16 @@
+{
+  "generated_at": "2026-03-27T11:37:19+00:00",
+  "git_commit": "6613f2fb",
+  "config": "home",
+  "threshold_percent": 150,
+  "measurements": {
+    "eval": {
+      "duration_seconds": 1.31,
+      "max_allowed_seconds": 1.965
+    },
+    "rebuild": {
+      "duration_seconds": 14.556,
+      "max_allowed_seconds": 21.834
+    }
+  }
+}
