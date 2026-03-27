@@ -153,12 +153,14 @@ def print_averages_by_type(data_lines: list[str]) -> None:
 
 
 def print_usage() -> None:
-    print("Usage: benchmark-rebuild [eval|dry-run|build|all|report] [config]")
+    print("Usage: benchmark-rebuild <command> [config]")
     print()
     print("Commands:")
     print("  eval     - Benchmark flake evaluation only")
     print("  dry-run  - Benchmark dry-run build")
     print("  build    - Benchmark full build")
+    print("  rebuild  - Benchmark full end-to-end rebuild command")
+    print("  baseline - Run eval + rebuild (for tracking over time)")
     print("  all      - Run eval and dry-run (default)")
     print("  report   - Show benchmark history")
     print()
@@ -186,10 +188,19 @@ def main() -> None:
         "eval": f"nix flake check {dotfiles} --no-build",
         "dry-run": f"nix build {dotfiles}#{flake_output} --dry-run",
         "build": f"nix build {dotfiles}#{flake_output}",
+        "rebuild": "rebuild",
     }
 
     if command == "report":
         print_recent_results(results_file)
+    elif command == "baseline":
+        for benchmark_type in ("eval", "rebuild"):
+            run_and_record_benchmark(
+                benchmark_type,
+                benchmark_commands[benchmark_type],
+                configuration_type,
+                results_file,
+            )
     elif command == "all":
         for benchmark_type in ("eval", "dry-run"):
             run_and_record_benchmark(
