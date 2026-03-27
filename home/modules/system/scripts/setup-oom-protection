@@ -45,7 +45,7 @@ _install_and_configure_earlyoom() {
 	sudo apt-get install -y -qq earlyoom
 
 	sudo tee "$EARLYOOM_CONFIG_PATH" >/dev/null <<CONF
-EARLYOOM_ARGS="-m ${EARLYOOM_SIGTERM_MEMORY_PERCENT} -s ${EARLYOOM_SIGTERM_SWAP_PERCENT} -M ${EARLYOOM_SIGKILL_MEMORY_PERCENT} -S ${EARLYOOM_SIGKILL_SWAP_PERCENT} -r 3600 --avoid '(^|/)(init|Xorg|Xwayland|sshd|systemd|claude)\$' --prefer '(^|/)(nix|nix-build|cc1plus|rustc|node|java|chrome_crashpad)\$' -n"
+EARLYOOM_ARGS="-m ${EARLYOOM_SIGTERM_MEMORY_PERCENT},${EARLYOOM_SIGKILL_MEMORY_PERCENT} -s ${EARLYOOM_SIGTERM_SWAP_PERCENT},${EARLYOOM_SIGKILL_SWAP_PERCENT} -r 3600 --avoid '(^|/)(init|Xorg|Xwayland|sshd|systemd|claude)\$' --prefer '(^|/)(nix|nix-build|cc1plus|rustc|node|java|chrome_crashpad)\$' -n"
 CONF
 
 	_activate_service earlyoom
