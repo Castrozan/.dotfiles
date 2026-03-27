@@ -104,6 +104,18 @@ _run_ci_tier() {
 	_run_skill_frontmatter_validation
 	_run_quick_bats_tests_ci
 	_run_nix_tier
+	_run_rebuild_baseline_check
+}
+
+_run_rebuild_baseline_check() {
+	if ! command -v benchmark-rebuild &>/dev/null; then
+		echo "SKIP: benchmark-rebuild not installed" >&2
+		return 0
+	fi
+
+	echo "--- Rebuild Performance Baseline Check ---"
+	benchmark-rebuild --check-baseline
+	echo ""
 }
 
 _run_evals_tier() {

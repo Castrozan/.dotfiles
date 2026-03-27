@@ -1,3 +1,4 @@
+import json
 from unittest.mock import patch, MagicMock
 
 import benchmark_rebuild
@@ -10,28 +11,21 @@ class TestDetectConfigurationType:
         nixos_dir = tmp_path / "nixos"
         nixos_dir.mkdir()
 
-        with patch("benchmark_rebuild.Path") as mock_path_cls:
-            mock_path_cls.return_value = mock_path_cls
-            mock_path_cls.__truediv__ = lambda self, key: {
-                "hostname": hostname_file,
-                "nixos": nixos_dir,
-            }.get(key, tmp_path / key)
+        real_path = __import__("pathlib").Path
 
-            real_path = __import__("pathlib").Path
+        def path_factory(p):
+            if p == "/etc/hostname":
+                return real_path(hostname_file)
+            if p == "/etc/nixos":
+                return real_path(nixos_dir)
+            return real_path(p)
 
-            def path_factory(p):
-                if p == "/etc/hostname":
-                    return real_path(hostname_file)
-                if p == "/etc/nixos":
-                    return real_path(nixos_dir)
-                return real_path(p)
-
-            with patch(
-                "benchmark_rebuild.Path",
-                side_effect=path_factory,
-            ):
-                result = benchmark_rebuild.detect_configuration_type()
-                assert result == "nixos"
+        with patch(
+            "benchmark_rebuild.Path",
+            side_effect=path_factory,
+        ):
+            result = benchmark_rebuild.detect_configuration_type()
+            assert result == "nixos"
 
     def test_returns_home_when_no_nixos_directory(self):
         with patch(
@@ -117,6 +111,96 @@ class TestInitializeCsvIfNeeded:
         assert results_file.read_text() == "existing data\n"
 
 
+class TestBuildBaselineFromMeasurements:
+    def test_builds_correct_structure(self):
+        with patch(
+            "benchmark_rebuild.get_current_git_short_commit",
+            return_value="abc1234",
+        ):
+            baseline = benchmark_rebuild.build_baseline_from_measurements(
+                {"eval": 10.0, "rebuild": 20.0}, "home"
+            )
+
+        assert baseline["git_commit"] == "abc1234"
+        assert baseline["config"] == "home"
+        assert baseline["threshold_percent"] == 150
+        assert baseline["measurements"]["eval"]["duration_seconds"] == 10.0
+        assert baseline["measurements"]["eval"]["max_allowed_seconds"] == 15.0
+        assert baseline["measurements"]["rebuild"]["duration_seconds"] == 20.0
+        assert baseline["measurements"]["rebuild"]["max_allowed_seconds"] == 30.0
+
+
+class TestCheckBaseline:
+    def test_fails_when_no_baseline_file(self, tmp_path):
+        with (
+            patch(
+                "benchmark_rebuild.BASELINE_PATH",
+                tmp_path / "nonexistent.json",
+            ),
+            patch(
+                "benchmark_rebuild.DOTFILES_DIRECTORY",
+                tmp_path,
+            ),
+        ):
+            assert benchmark_rebuild.check_baseline() is False
+
+    def test_passes_with_valid_baseline(self, tmp_path):
+        baseline_file = tmp_path / "baseline.json"
+        baseline = {
+            "generated_at": "2026-03-27T00:00:00+00:00",
+            "git_commit": "abc1234",
+            "config": "home",
+            "threshold_percent": 150,
+            "measurements": {
+                "eval": {
+                    "duration_seconds": 2.0,
+                    "max_allowed_seconds": 3.0,
+                },
+                "rebuild": {
+                    "duration_seconds": 12.0,
+                    "max_allowed_seconds": 18.0,
+                },
+            },
+        }
+        baseline_file.write_text(json.dumps(baseline))
+
+        with patch("benchmark_rebuild.BASELINE_PATH", baseline_file):
+            assert benchmark_rebuild.check_baseline() is True
+
+    def test_fails_when_baseline_too_old(self, tmp_path):
+        baseline_file = tmp_path / "baseline.json"
+        baseline = {
+            "generated_at": "2025-01-01T00:00:00+00:00",
+            "git_commit": "abc1234",
+            "config": "home",
+            "threshold_percent": 150,
+            "measurements": {
+                "eval": {
+                    "duration_seconds": 2.0,
+                    "max_allowed_seconds": 3.0,
+                },
+            },
+        }
+        baseline_file.write_text(json.dumps(baseline))
+
+        with patch("benchmark_rebuild.BASELINE_PATH", baseline_file):
+            assert benchmark_rebuild.check_baseline() is False
+
+    def test_fails_when_no_measurements(self, tmp_path):
+        baseline_file = tmp_path / "baseline.json"
+        baseline = {
+            "generated_at": "2026-03-27T00:00:00+00:00",
+            "git_commit": "abc1234",
+            "config": "home",
+            "threshold_percent": 150,
+            "measurements": {},
+        }
+        baseline_file.write_text(json.dumps(baseline))
+
+        with patch("benchmark_rebuild.BASELINE_PATH", baseline_file):
+            assert benchmark_rebuild.check_baseline() is False
+
+
 class TestPrintRecentResults:
     def test_prints_results(self, tmp_path, capsys):
         results_file = tmp_path / "results.csv"
@@ -170,6 +254,8 @@ class TestPrintUsage:
         assert "dry-run" in output
         assert "build" in output
         assert "report" in output
+        assert "--save-baseline" in output
+        assert "--check-baseline" in output
 
 
 class TestMain:
@@ -229,3 +315,48 @@ class TestMain:
                             types = [c[0][0] for c in mock_bench.call_args_list]
                             assert "eval" in types
                             assert "dry-run" in types
+
+    def test_check_baseline_exits_zero_on_pass(self, tmp_path):
+        with patch(
+            "benchmark_rebuild.sys.argv",
+            ["cmd", "--check-baseline"],
+        ):
+            with patch(
+                "benchmark_rebuild.check_baseline",
+                return_value=True,
+            ):
+                try:
+                    benchmark_rebuild.main()
+                    assert False, "Should have raised SystemExit"
+                except SystemExit as e:
+                    assert e.code == 0
+
+    def test_check_baseline_exits_one_on_fail(self):
+        with patch(
+            "benchmark_rebuild.sys.argv",
+            ["cmd", "--check-baseline"],
+        ):
+            with patch(
+                "benchmark_rebuild.check_baseline",
+                return_value=False,
+            ):
+                try:
+                    benchmark_rebuild.main()
+                    assert False, "Should have raised SystemExit"
+                except SystemExit as e:
+                    assert e.code == 1
+
+    def test_save_baseline_calls_save(self):
+        with patch(
+            "benchmark_rebuild.sys.argv",
+            ["cmd", "--save-baseline"],
+        ):
+            with patch(
+                "benchmark_rebuild.get_results_file_path",
+                return_value=MagicMock(),
+            ):
+                with patch("benchmark_rebuild.ensure_results_directory_exists"):
+                    with patch("benchmark_rebuild.initialize_csv_if_needed"):
+                        with patch("benchmark_rebuild.save_baseline") as mock_save:
+                            benchmark_rebuild.main()
+                            mock_save.assert_called_once()
