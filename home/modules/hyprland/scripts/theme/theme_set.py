@@ -104,6 +104,13 @@ def reload_tmux_theme_if_running() -> None:
     )
 
 
+def update_clipse_custom_theme() -> None:
+    generated_clipse_theme = CURRENT_THEME_PATH / "clipse.json"
+    clipse_custom_theme = Path.home() / ".config" / "clipse" / "custom_theme.json"
+    if generated_clipse_theme.is_file():
+        shutil.copy2(generated_clipse_theme, clipse_custom_theme)
+
+
 def update_btop_theme_in_config() -> None:
     btop_theme = CURRENT_THEME_PATH / "btop.theme"
     if not BTOP_CONF.is_file() or not btop_theme.is_file():
@@ -147,6 +154,7 @@ def main() -> None:
     subprocess.run(["hypr-restart-hyprctl"])
     subprocess.run(["makoctl", "reload"], capture_output=True)
     update_btop_theme_in_config()
+    update_clipse_custom_theme()
     subprocess.run(["hypr-theme-set-gnome"])
     reload_tmux_theme_if_running()
     subprocess.run(["notify-send", "Theme changed", theme_name, "-t", "2000"])

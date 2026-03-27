@@ -14,6 +14,7 @@ let
     "everforest.jpg"
     "flexoki-light-omarchy.png"
     "flexoki-light.png"
+    "gruvbox-2.jpg"
     "gruvbox.jpg"
     "hackerman-3.jpg"
     "hackerman.jpg"
@@ -21,11 +22,14 @@ let
     "leafy-dawn-omarchy.png"
     "matte-black-hands.jpg"
     "matte-black.jpg"
+    "nord-2.png"
     "nord.png"
     "osaka-jade-2.jpg"
     "osaka-jade-3.jpg"
     "osaka-jade.jpg"
     "polunochnie-progulki.gif"
+    "ristretto-2.jpg"
+    "ristretto-3.jpg"
     "ristretto.jpg"
     "rose-pine.jpg"
     "scenery-pink-lakeside-sunset-lake-landscape-scenic-panorama-7680x3215-144.png"
@@ -43,6 +47,8 @@ in
       mkdir -p $HOME/.config/hypr-theme/backgrounds
       mkdir -p $HOME/.config/hypr-theme/wallpapers
       touch $HOME/.config/hypr-theme/current/theme/hyprland.conf
+
+      find $HOME/.config/hypr-theme/wallpapers -maxdepth 1 -type l ! -exec test -e {} \; -delete
 
       ${builtins.concatStringsSep "\n      " (
         map (
