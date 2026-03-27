@@ -19,28 +19,47 @@
     # External flakes to be available for dependency injection
     # Tag-based (stable releases)
     tui-notifier.url = "github:castrozan/tui-notifier/1.0.1";
+    tui-notifier.inputs.nixpkgs.follows = "nixpkgs";
     systemd-manager-tui.url = "github:matheus-git/systemd-manager-tui";
     systemd-manager-tui.inputs.nixpkgs.follows = "nixpkgs";
     readItNow-rc.url = "github:castrozan/readItNow-rc/1.1.0";
+    readItNow-rc.inputs.nixpkgs.follows = "nixpkgs";
     opencode.url = "github:anomalyco/opencode/v1.2.27";
+    opencode.inputs.nixpkgs.follows = "nixpkgs";
     devenv.url = "github:cachix/devenv/v1.11.2";
+    devenv.inputs.nixpkgs.follows = "nixpkgs";
     # Branch/default (actively maintained)
     bluetui.url = "github:castrozan/bluetui/v0.9.1";
+    bluetui.inputs.nixpkgs.follows = "nixpkgs";
     cbonsai.url = "github:castrozan/cbonsai";
+    cbonsai.inputs.nixpkgs.follows = "nixpkgs";
     cmatrix.url = "github:castrozan/cmatrix";
+    cmatrix.inputs.nixpkgs.follows = "nixpkgs";
     tuisvn.url = "github:castrozan/tuisvn";
+    tuisvn.inputs.nixpkgs.follows = "nixpkgs";
     install-nothing.url = "github:castrozan/install-nothing";
+    install-nothing.inputs.nixpkgs.follows = "nixpkgs";
     openclaw-mesh.url = "github:castrozan/openclaw-mesh";
+    openclaw-mesh.inputs.nixpkgs.follows = "nixpkgs";
     lazygit.url = "github:Castrozan/lazygit";
+    lazygit.inputs.nixpkgs.follows = "nixpkgs";
     nixgl.url = "github:nix-community/nixGL";
+    nixgl.inputs.nixpkgs.follows = "nixpkgs";
     agenix.url = "github:ryantm/agenix";
+    agenix.inputs.nixpkgs.follows = "nixpkgs";
 
     viu.url = "github:Castrozan/viu";
+    viu.inputs.nixpkgs.follows = "nixpkgs";
     voice-pipeline.url = "github:castrozan/voice-pipeline";
+    voice-pipeline.inputs.nixpkgs.follows = "nixpkgs";
     voxtype.url = "github:peteonrails/voxtype";
+    voxtype.inputs.nixpkgs.follows = "nixpkgs";
     whisp-away.url = "github:madjinn/whisp-away";
+    whisp-away.inputs.nixpkgs.follows = "nixpkgs";
     hyprland.url = "github:hyprwm/Hyprland/v0.54.2";
+    hyprland.inputs.nixpkgs.follows = "nixpkgs";
     google-workspace-cli.url = "github:googleworkspace/cli";
+    google-workspace-cli.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   # Outputs are what this flake provides, such as pkgs and system configurations
