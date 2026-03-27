@@ -1,9 +1,16 @@
 { pkgs, inputs, ... }:
 let
-  opencode-unwrapped = inputs.opencode.packages.${pkgs.stdenv.hostPlatform.system}.default;
+  opencodeFromFlakeInput = inputs.opencode.packages.${pkgs.stdenv.hostPlatform.system}.default;
+
+  opencodeWithPatchedShebangs = opencodeFromFlakeInput.overrideAttrs (previousAttrs: {
+    postConfigure = ''
+      ${previousAttrs.postConfigure or ""}
+      patchShebangs .
+    '';
+  });
 
   opencode = pkgs.writeShellScriptBin "opencode" ''
-    exec ${opencode-unwrapped}/bin/opencode "$@" 2> >(grep -v "^INFO" >&2)
+    exec ${opencodeWithPatchedShebangs}/bin/opencode "$@" 2> >(grep -v "^INFO" >&2)
   '';
 in
 {
