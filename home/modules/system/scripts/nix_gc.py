@@ -4,11 +4,12 @@ import subprocess
 import sys
 from pathlib import Path
 
-DEFAULT_GENERATIONS_TO_KEEP = 5
+DEFAULT_GENERATIONS_TO_KEEP = 3
 NIX_DAEMON_PROFILE = Path("/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh")
 HOME_MANAGER_PROFILE_PATH = (
     Path.home() / ".local" / "state" / "nix" / "profiles" / "home-manager"
 )
+SYSTEM_PROFILE_PATH = Path("/nix/var/nix/profiles/system")
 
 
 def ensure_nix_in_path_or_source_daemon_profile() -> bool:
@@ -43,6 +44,68 @@ def compute_generations_to_remove(
     return all_generation_ids[:count_to_remove]
 
 
+def print_dry_run_generations(generations: list[str]) -> None:
+    print("   [DRY RUN] Would remove generations:")
+    for generation_id in generations:
+        print(f"     - {generation_id}")
+
+
+def list_nix_env_generations(profile_path: str, sudo: bool = False) -> list[str]:
+    command = ["nix-env", "--profile", profile_path, "--list-generations"]
+    if sudo:
+        command = ["sudo"] + command
+    result = subprocess.run(command, capture_output=True, text=True)
+    generation_ids = []
+    for line in result.stdout.splitlines():
+        parts = line.split()
+        if parts and parts[0].isdigit():
+            generation_ids.append(parts[0])
+    return generation_ids
+
+
+def delete_nix_env_generations(
+    profile_path: str,
+    generations_to_remove: list[str],
+    sudo: bool = False,
+    dry_run: bool = False,
+) -> None:
+    if dry_run:
+        print_dry_run_generations(generations_to_remove)
+        return
+    for generation_id in generations_to_remove:
+        print(f"   Removing generation {generation_id}")
+        command = [
+            "nix-env",
+            "--profile",
+            profile_path,
+            "--delete-generations",
+            generation_id,
+        ]
+        if sudo:
+            command = ["sudo"] + command
+        subprocess.run(command, capture_output=True)
+
+
+def clean_home_manager_generations(generations_to_keep: int, dry_run: bool) -> None:
+    print(f">> Home-manager generations (keeping {generations_to_keep})...")
+
+    if shutil.which("home-manager"):
+        clean_home_manager_generations_via_cli(generations_to_keep, dry_run)
+    elif HOME_MANAGER_PROFILE_PATH.exists():
+        all_ids = list_nix_env_generations(str(HOME_MANAGER_PROFILE_PATH))
+        to_remove = compute_generations_to_remove(generations_to_keep, all_ids)
+        if not to_remove:
+            print("   Nothing to remove")
+        else:
+            print(f"   Removing {len(to_remove)} generation(s)")
+            delete_nix_env_generations(
+                str(HOME_MANAGER_PROFILE_PATH), to_remove, dry_run=dry_run
+            )
+    else:
+        print("   No home-manager profile found, skipping")
+    print()
+
+
 def clean_home_manager_generations_via_cli(
     generations_to_keep: int, dry_run: bool
 ) -> None:
@@ -62,82 +125,46 @@ def clean_home_manager_generations_via_cli(
     )
 
     if not generations_to_remove:
-        print("   No old generations to remove")
+        print("   Nothing to remove")
         return
 
-    print(f"   Found {len(generations_to_remove)} old generation(s) to remove")
+    print(f"   Removing {len(generations_to_remove)} generation(s)")
 
     if dry_run:
         print_dry_run_generations(generations_to_remove)
     else:
         for generation_id in generations_to_remove:
-            print(f"   Removing: {generation_id}")
+            print(f"   Removing generation {generation_id}")
             subprocess.run(
                 ["home-manager", "remove-generations", generation_id],
                 capture_output=True,
             )
 
 
-def clean_home_manager_generations_via_nix_env(
-    generations_to_keep: int, dry_run: bool
-) -> None:
-    result = subprocess.run(
-        [
-            "nix-env",
-            "--profile",
-            str(HOME_MANAGER_PROFILE_PATH),
-            "--list-generations",
-        ],
-        capture_output=True,
-        text=True,
-    )
-    all_generation_ids = []
-    for line in result.stdout.splitlines():
-        parts = line.split()
-        if parts:
-            all_generation_ids.append(parts[0])
+def clean_system_generations(generations_to_keep: int, dry_run: bool) -> None:
+    print(f">> System generations (keeping {generations_to_keep})...")
 
-    generations_to_remove = compute_generations_to_remove(
-        generations_to_keep, all_generation_ids
-    )
-
-    if not generations_to_remove:
-        print("   No old generations to remove")
+    if not SYSTEM_PROFILE_PATH.exists():
+        print("   No system profile found (not NixOS), skipping")
+        print()
         return
 
-    print(f"   Found {len(generations_to_remove)} old generation(s) to remove")
+    all_ids = list_nix_env_generations(str(SYSTEM_PROFILE_PATH), sudo=True)
+    to_remove = compute_generations_to_remove(generations_to_keep, all_ids)
 
-    if dry_run:
-        print_dry_run_generations(generations_to_remove)
+    if not to_remove:
+        print("   Nothing to remove")
     else:
-        for generation_id in generations_to_remove:
-            print(f"   Removing: {generation_id}")
-            subprocess.run(
-                [
-                    "nix-env",
-                    "--profile",
-                    str(HOME_MANAGER_PROFILE_PATH),
-                    "--delete-generations",
-                    generation_id,
-                ],
-                capture_output=True,
-            )
-
-
-def clean_home_manager_generations(generations_to_keep: int, dry_run: bool) -> None:
-    print(f">> Cleaning home-manager generations (keeping {generations_to_keep})...")
-
-    if shutil.which("home-manager"):
-        clean_home_manager_generations_via_cli(generations_to_keep, dry_run)
-    elif HOME_MANAGER_PROFILE_PATH.exists():
-        clean_home_manager_generations_via_nix_env(generations_to_keep, dry_run)
-    else:
-        print("   No home-manager profile found, skipping generation cleanup")
+        print(f"   Removing {len(to_remove)} generation(s)")
+        delete_nix_env_generations(
+            str(SYSTEM_PROFILE_PATH), to_remove, sudo=True, dry_run=dry_run
+        )
     print()
 
 
-def collect_user_garbage(dry_run: bool) -> None:
-    print(">> Running user garbage collection...")
+def collect_garbage(dry_run: bool, sudo: bool = False) -> None:
+    label = "system" if sudo else "user"
+    print(f">> Collecting {label} garbage...")
 
     nix_gc_path = resolve_nix_collect_garbage_path()
 
@@ -150,19 +177,10 @@ def collect_user_garbage(dry_run: bool) -> None:
         dead_paths_count = len(result.stdout.splitlines())
         print(f"   [DRY RUN] {dead_paths_count} dead store paths would be removed")
     else:
-        subprocess.run([nix_gc_path])
-    print()
-
-
-def collect_system_garbage(dry_run: bool) -> None:
-    print(">> Running system garbage collection (requires sudo)...")
-
-    nix_gc_path = resolve_nix_collect_garbage_path()
-
-    if dry_run:
-        print(f"   [DRY RUN] Would run: sudo {nix_gc_path} -d")
-    else:
-        subprocess.run(["sudo", nix_gc_path, "-d"])
+        command = [nix_gc_path]
+        if sudo:
+            command = ["sudo"] + command
+        subprocess.run(command)
     print()
 
 
@@ -170,34 +188,22 @@ def print_usage() -> None:
     print(
         f"""Usage: nix-gc [OPTIONS]
 
-Clean up old Nix generations and run garbage collection.
+Delete old Nix generations and collect garbage.
 
 Options:
-    -a, --all       Clean both user and system store (requires sudo)
-    -u, --user      Clean user generations and garbage only (default)
-    -s, --system    Clean system store only (requires sudo)
+    -a, --all       Clean user + system (default)
+    -u, --user      Clean user only
+    -s, --system    Clean system only (requires sudo)
     -k, --keep N    Keep N generations (default: {DEFAULT_GENERATIONS_TO_KEEP})
     -d, --dry-run   Show what would be deleted without deleting
-    -h, --help      Show this help message
-
-Examples:
-    nix-gc              # Clean user generations keeping 5, run user gc
-    nix-gc -a           # Clean user + system store
-    nix-gc -k 3         # Keep only 3 generations
-    nix-gc -d           # Dry run to see what would be deleted"""
+    -h, --help      Show this help message"""
     )
-
-
-def print_dry_run_generations(generations: list[str]) -> None:
-    print("   [DRY RUN] Would remove generations:")
-    for generation_id in generations:
-        print(f"     - {generation_id}")
 
 
 def parse_arguments(
     argv: list[str],
 ) -> tuple[str, int, bool]:
-    scope = "user"
+    scope = "all"
     generations_to_keep = DEFAULT_GENERATIONS_TO_KEEP
     dry_run = False
 
@@ -240,19 +246,21 @@ def main() -> None:
 
     scope, generations_to_keep, dry_run = parse_arguments(sys.argv[1:])
 
-    print("=== Nix Garbage Collection ===")
+    print(f"=== Nix GC (keep {generations_to_keep}) ===")
     print()
 
     if scope in ("user", "all"):
         clean_home_manager_generations(generations_to_keep, dry_run)
-        collect_user_garbage(dry_run)
+        collect_garbage(dry_run, sudo=False)
+
     if scope in ("system", "all"):
-        collect_system_garbage(dry_run)
+        clean_system_generations(generations_to_keep, dry_run)
+        collect_garbage(dry_run, sudo=True)
 
     if dry_run:
         print("=== Dry run complete (no changes made) ===")
     else:
-        print("=== Garbage collection complete ===")
+        print("=== Done ===")
 
 
 if __name__ == "__main__":
