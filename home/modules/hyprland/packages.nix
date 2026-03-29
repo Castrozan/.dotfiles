@@ -29,6 +29,7 @@ in
         wf-recorder
         cliphist
         hyprpicker
+        hyprsunset
         jq
         yq-go
         wlogout

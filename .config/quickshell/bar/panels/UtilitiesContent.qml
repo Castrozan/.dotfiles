@@ -274,7 +274,7 @@ Item {
 
             Process {
                 id: nightLightStatusQueryProcess
-                command: ["bash", "-c", "hyprctl -j getoption decoration:screen_shader | grep -q '\"str\": \"\"' && echo inactive || echo active"]
+                command: ["bash", "-c", "pgrep hyprsunset > /dev/null && echo active || echo inactive"]
                 stdout: SplitParser {
                     splitMarker: ""
                     onRead: data => {
@@ -285,16 +285,12 @@ Item {
 
             Process {
                 id: nightLightEnableProcess
-                command: ["hyprctl", "keyword", "decoration:screen_shader", "~/.config/hypr/shaders/nightlight.glsl"]
-                onRunningChanged: {
-                    if (!running)
-                        nightLightStatusPollTimer.restart();
-                }
+                command: ["hyprsunset", "-t", "3500"]
             }
 
             Process {
                 id: nightLightDisableProcess
-                command: ["hyprctl", "keyword", "decoration:screen_shader", ""]
+                command: ["pkill", "hyprsunset"]
                 onRunningChanged: {
                     if (!running)
                         nightLightStatusPollTimer.restart();
