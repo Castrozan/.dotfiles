@@ -1,0 +1,88 @@
+tests:
+  - name: delegation_multi_agent_implementation_prefers_teams
+    skill_path: agents/core.md
+    prompt: "I need to refactor the auth module and update tests in parallel using two agents. How should you delegate this work?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "team"
+        - "Team"
+        - "TeamCreate"
+      output_not_contains:
+        - "just use the Agent tool"
+
+  - name: delegation_coordination_requires_teams
+    skill_path: agents/core.md
+    prompt: "I want agents that can share progress, coordinate on tasks, and track what's done. What's the right approach?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "team"
+        - "Team"
+        - "TeamCreate"
+        - "task list"
+
+  - name: delegation_bare_subagent_acceptable_for_research
+    skill_path: agents/core.md
+    prompt: "I need to quickly look up what pattern the auth module uses. Should you create a Team for this?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "Agent"
+        - "subagent"
+        - "no"
+        - "not necessary"
+        - "overkill"
+        - "quick"
+        - "read-only"
+
+  - name: delegation_multiple_steps_requires_teams
+    skill_path: agents/core.md
+    prompt: "Spawn 3 agents to implement frontend components, backend endpoints, and integration tests. What mechanism should you use?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "team"
+        - "Team"
+        - "TeamCreate"
+
+  - name: delegation_bare_subagent_wrong_for_implementation
+    skill_path: agents/core.md
+    prompt: "According to the delegation rules, can you use a bare Agent subagent (without a team) to implement a new feature across multiple files?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "no"
+        - "not"
+        - "team"
+        - "Team"
+        - "should not"
+        - "must not"
+      output_not_contains:
+        - "yes, a bare subagent is fine"
+
+  - name: delegation_progress_tracking_needs_teams
+    skill_path: agents/core.md
+    prompt: "I want to track the progress of parallel agents working on different parts of a feature. What does the delegation policy say?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "team"
+        - "Team"
+        - "TeamCreate"
+        - "task list"
+        - "shared task"
+
+  - name: delegation_read_only_query_no_team_needed
+    skill_path: agents/core.md
+    prompt: "I just need to search the codebase for all usages of a function. Do I need to create a Team for that?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "no"
+        - "not"
+        - "Agent"
+        - "subagent"
+        - "unnecessary"
+        - "overkill"
+        - "don't need"

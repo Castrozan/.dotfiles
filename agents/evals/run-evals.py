@@ -355,6 +355,7 @@ def extract_category_from_test_name(test_name: str) -> str:
         "hardskill_",
         "evergreen_",
         "description_length_",
+        "delegation_",
     ]
     if any(test_name.startswith(p) for p in compliance_prefixes):
         return "compliance"
