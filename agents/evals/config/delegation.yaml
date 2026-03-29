@@ -86,3 +86,13 @@ tests:
         - "unnecessary"
         - "overkill"
         - "don't need"
+
+  - name: delegation_instruction_changes_require_evals
+    skill_path: agents/core.md
+    prompt: "I just added a new rule to AGENTS.md about how agents should handle errors. According to the workflow, what else must I do before the work is done?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "eval"
+        - "test"
+        - "agent-eval"

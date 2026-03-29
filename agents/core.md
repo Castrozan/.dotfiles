@@ -89,6 +89,8 @@ After editing any file in this repository, execute this sequence before respondi
 7. Only after rebuild succeeds and tests pass: respond to the user
 
 A change that is not rebuilt and live-tested is not a change — it is a hypothesis. Never present hypotheses as completed work.
+
+When editing agent instructions, skills, rules, workflows, or policies (AGENTS.md, core.md, SKILL.md, CLAUDE.md, or any file that shapes agent behavior): write eval tests in agents/evals/config/ that verify the new or changed behavior before considering the work done. Evals are the unit tests for instructions — an untested instruction is as unreliable as untested code. Run the evals with `agent-eval --category <category>` and confirm they pass.
 </workflow>
 
 <notify>
