@@ -60,7 +60,7 @@ Item {
         Flickable {
             id: tabsFlickable
 
-            readonly property list<Item> tabPanes: [tabPane0, tabPane1, tabPane2, tabPane3]
+            readonly property list<Item> tabPanes: [tabPane0, tabPane1, tabPane2, tabPane3, tabPane4]
             readonly property Item currentTabItem: tabPanes[dashboardContentRoot.currentTabIndex]
 
             anchors.fill: parent
@@ -132,6 +132,16 @@ Item {
                     asynchronous: dashboardContentRoot.currentTabIndex !== 3
                     Layout.alignment: Qt.AlignTop
                     sourceComponent: WeatherTab {}
+                }
+
+                Loader {
+                    id: tabPane4
+                    active: true
+                    asynchronous: dashboardContentRoot.currentTabIndex !== 4
+                    Layout.alignment: Qt.AlignTop
+                    sourceComponent: AudioTab {
+                        dashboardIsActive: dashboardContentRoot.dashboardIsActive
+                    }
                 }
             }
 

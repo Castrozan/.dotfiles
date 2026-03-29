@@ -46,6 +46,11 @@ Item {
             iconName: "cloud"
             text: "Weather"
         }
+
+        DashboardTabButton {
+            iconName: "headphones"
+            text: "Audio"
+        }
     }
 
     Item {

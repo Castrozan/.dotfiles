@@ -3,3 +3,4 @@ DashboardTab 1.0 DashboardTab.qml
 MediaTab 1.0 MediaTab.qml
 PerformanceTab 1.0 PerformanceTab.qml
 WeatherTab 1.0 WeatherTab.qml
+AudioTab 1.0 AudioTab.qml

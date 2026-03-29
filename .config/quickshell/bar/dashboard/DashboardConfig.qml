@@ -6,6 +6,7 @@ import QtQuick
 Singleton {
     readonly property int mediaUpdateInterval: 500
     readonly property int resourceUpdateInterval: 3000
+    readonly property int audioUpdateInterval: 3000
 
     readonly property bool useTwelveHourClock: false
     readonly property bool useFahrenheit: false

@@ -20,6 +20,7 @@ ColumnLayout {
 
     function _registerAllIconPositions(): void {
         _registerIconPosition(notificationSoundIcon, "");
+        _registerIconPosition(outputDeviceTypeIcon, "");
         _registerIconPosition(microphoneIcon, "");
         _registerIconPosition(networkIcon, "network");
         _registerIconPosition(bluetoothIcon, "bluetooth");
@@ -69,6 +70,71 @@ ColumnLayout {
         }
 
         Component.onCompleted: notificationSoundStatusProcess.running = true
+    }
+
+    StatusIcon {
+        id: outputDeviceTypeIcon
+        Layout.alignment: Qt.AlignHCenter
+        Layout.preferredWidth: 28
+        Layout.preferredHeight: 28
+
+        property bool isMuted: false
+        property string outputType: "speaker"
+
+        iconText: {
+            if (isMuted) return "󰖁";
+            if (outputType === "bluetooth") return "󰋋";
+            return "󰕾";
+        }
+        iconColor: isMuted ? ThemeColors.warning : ThemeColors.foreground
+
+        onClicked: outputMuteToggleProcess.running = true
+
+        Process {
+            id: outputDefaultSinkProcess
+            command: ["pactl", "get-default-sink"]
+            running: false
+            stdout: SplitParser {
+                splitMarker: ""
+                onRead: data => {
+                    const sinkName = data.trim();
+                    outputDeviceTypeIcon.outputType = sinkName.startsWith("bluez_") ? "bluetooth" : "speaker";
+                }
+            }
+        }
+
+        Process {
+            id: outputMuteStatusProcess
+            command: ["bash", "-c", "pactl get-default-sink | xargs pactl get-sink-mute"]
+            running: false
+            stdout: SplitParser {
+                splitMarker: ""
+                onRead: data => {
+                    outputDeviceTypeIcon.isMuted = data.trim() === "Mute: yes";
+                }
+            }
+        }
+
+        Process {
+            id: outputMuteToggleProcess
+            command: ["pactl", "set-sink-mute", "@DEFAULT_SINK@", "toggle"]
+            running: false
+            onExited: {
+                outputDefaultSinkProcess.running = true;
+                outputMuteStatusProcess.running = true;
+            }
+        }
+
+        Timer {
+            interval: 5000
+            running: true
+            repeat: true
+            triggeredOnStart: true
+            onTriggered: {
+                outputDefaultSinkProcess.running = true;
+                outputMuteStatusProcess.running = true;
+            }
+        }
     }
 
     StatusIcon {
