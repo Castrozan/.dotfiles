@@ -43,7 +43,8 @@ for seg in "${SEGMENTS[@]}"; do
 			exit 1
 			;;
 		esac
-		JS_SEGMENTS="$JS_SEGMENTS    { text: \"$TEXT\", emotion: \"$EMOTION\" },\n"
+		JS_SEGMENTS="${JS_SEGMENTS}    { text: \"$TEXT\", emotion: \"$EMOTION\" },
+"
 	else
 		echo "Invalid format: '$seg' (expected emotion:text)" >&2
 		exit 1

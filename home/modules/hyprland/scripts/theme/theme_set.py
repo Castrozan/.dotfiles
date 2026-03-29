@@ -1,3 +1,4 @@
+import json
 import os
 import re
 import shutil
@@ -11,6 +12,7 @@ NEXT_THEME_PATH = Path.home() / ".config" / "hypr-theme" / "current" / "next-the
 USER_THEMES_PATH = Path.home() / ".config" / "hypr-theme" / "user-themes"
 THEME_NAME_FILE = Path.home() / ".config" / "hypr-theme" / "current" / "theme.name"
 BTOP_CONF = Path.home() / ".config" / "btop" / "btop.conf"
+VSCODE_USER_SETTINGS = Path.home() / ".config" / "Code" / "User" / "settings.json"
 
 
 def normalize_theme_name(raw_name: str) -> str:
@@ -111,6 +113,17 @@ def update_clipse_custom_theme() -> None:
         shutil.copy2(generated_clipse_theme, clipse_custom_theme)
 
 
+def update_vscode_color_customizations() -> None:
+    generated_vscode_colors = CURRENT_THEME_PATH / "vscode-colors.json"
+    if not generated_vscode_colors.is_file() or not VSCODE_USER_SETTINGS.is_file():
+        return
+
+    color_overrides = json.loads(generated_vscode_colors.read_text())
+    vscode_settings = json.loads(VSCODE_USER_SETTINGS.read_text())
+    vscode_settings["workbench.colorCustomizations"] = color_overrides
+    VSCODE_USER_SETTINGS.write_text(json.dumps(vscode_settings, indent=2) + "\n")
+
+
 def update_btop_theme_in_config() -> None:
     btop_theme = CURRENT_THEME_PATH / "btop.theme"
     if not BTOP_CONF.is_file() or not btop_theme.is_file():
@@ -155,6 +168,7 @@ def main() -> None:
     subprocess.run(["makoctl", "reload"], capture_output=True)
     update_btop_theme_in_config()
     update_clipse_custom_theme()
+    update_vscode_color_customizations()
     subprocess.run(["hypr-theme-set-gnome"])
     reload_tmux_theme_if_running()
     subprocess.run(["notify-send", "Theme changed", theme_name, "-t", "2000"])
