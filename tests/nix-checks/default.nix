@@ -42,6 +42,8 @@ let
   systemChecks = import ../../home/modules/system/tests/checks.nix domainArgs;
   voiceChecks = import ../../home/modules/voice/tests/checks.nix domainArgs;
   sourcebotChecks = import ../../home/modules/sourcebot/tests/checks.nix domainArgs;
+
+  dellg15Checks = import ../../hosts/dellg15/tests/checks.nix moduleArgs;
 in
 claudeChecks
 // codexChecks
@@ -63,3 +65,4 @@ claudeChecks
 // systemChecks
 // voiceChecks
 // sourcebotChecks
+// dellg15Checks
