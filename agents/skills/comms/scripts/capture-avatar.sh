@@ -127,7 +127,7 @@ if [[ "$AUTO_DETECT" == true ]]; then
 		CAPTURE_X="0"
 		CAPTURE_Y="0"
 	else
-		WINDOW_ID=$(xdotool search --name "localhost:3000" 2>/dev/null | head -1 || true)
+		WINDOW_ID=$(xdotool search --name "localhost:@avatarRendererPort@" 2>/dev/null | head -1 || true)
 		[[ -z "$WINDOW_ID" ]] && WINDOW_ID=$(xdotool search --name "Avatar" 2>/dev/null | head -1 || true)
 
 		if [[ -z "$WINDOW_ID" ]]; then

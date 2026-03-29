@@ -11,6 +11,9 @@ const http = require("http");
 const { spawn } = require("child_process");
 const WebSocket = require("ws");
 
+const AVATAR_RENDERER_PORT = process.env.AVATAR_RENDERER_PORT || "3000";
+const AVATAR_RENDERER_URL = `http://localhost:${AVATAR_RENDERER_PORT}`;
+
 const CONFIG = {
   CDP_PORT: parseInt(process.env.CDP_PORT || "9222"),
   V4L2_DEVICE: process.env.V4L2_DEVICE || "/dev/video10",
@@ -74,22 +77,27 @@ function cdpPut(path, body) {
 async function getTargetWsUrl() {
   let targets = await cdpGet("/json");
   let chatvrm = targets.find(
-    (t) => t.type === "page" && t.url.includes("localhost:3000"),
+    (t) =>
+      t.type === "page" && t.url.includes(`localhost:${AVATAR_RENDERER_PORT}`),
   );
 
   if (!chatvrm) {
-    console.log("📺 ChatVRM tab not found, opening http://localhost:3000...");
-    await cdpPut("/json/new", { url: "http://localhost:3000" });
+    console.log(`📺 ChatVRM tab not found, opening ${AVATAR_RENDERER_URL}...`);
+    await cdpPut("/json/new", {
+      url: AVATAR_RENDERER_URL,
+    });
     await new Promise((r) => setTimeout(r, 3000));
     targets = await cdpGet("/json");
     chatvrm = targets.find(
-      (t) => t.type === "page" && t.url.includes("localhost:3000"),
+      (t) =>
+        t.type === "page" &&
+        t.url.includes(`localhost:${AVATAR_RENDERER_PORT}`),
     );
   }
 
   if (!chatvrm) {
     throw new Error(
-      "ChatVRM tab not found after auto-open. Is the renderer running on port 3000?",
+      `ChatVRM tab not found after auto-open. Is the renderer running on port ${AVATAR_RENDERER_PORT}?`,
     );
   }
 

@@ -57,7 +57,7 @@ if [[ ! -d "$SERVER_DIR" ]]; then
 	exit 1
 fi
 
-if ! curl -s http://localhost:8766/health >/dev/null 2>&1; then
+if ! curl -s http://localhost:@avatarHttpPort@/health >/dev/null 2>&1; then
 	echo "Error: Control server not running" >&2
 	echo "Start with: systemctl --user start avatar-control-server" >&2
 	exit 1
@@ -69,7 +69,7 @@ const segments = [
 $JS_SEGMENTS];
 const output = '$OUTPUT';
 
-const ws = new WebSocket('ws://localhost:8765');
+const ws = new WebSocket('ws://localhost:@avatarWsPort@');
 
 ws.on('error', (err) => {
   console.error('WebSocket error:', err.message);

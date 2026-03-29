@@ -18,9 +18,9 @@ const execAsync = promisify(exec);
 
 // Configuration
 const CONFIG = {
-  WS_PORT: 8765,
-  HTTP_PORT: 8766,
-  TTS_VOICE: "@ttsVoice@",
+  WS_PORT: parseInt(process.env.AVATAR_WS_PORT || "8765"),
+  HTTP_PORT: parseInt(process.env.AVATAR_HTTP_PORT || "8766"),
+  TTS_VOICE: process.env.AVATAR_TTS_VOICE || "@ttsVoice@",
   TTS_DIR: "/tmp/clever-avatar-tts",
   SPEAKER_SINK: "default",
 };

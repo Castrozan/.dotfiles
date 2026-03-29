@@ -62,46 +62,28 @@ wait_for_port() {
 	fi
 }
 
-ensure_sink() {
+check_persistent_sink() {
 	local name=$1
-	local desc=$2
 	if pactl list sinks short | grep -q "$name"; then
-		echo -e "  ${GREEN}✓${NC} $name already exists"
+		echo -e "  ${GREEN}✓${NC} $name present (PipeWire persistent)"
 	else
-		echo -n "  Creating $name..."
-		if pactl load-module module-null-sink \
-			sink_name="$name" \
-			sink_properties=device.description="$desc" >/dev/null 2>&1; then
-			echo -e " ${GREEN}OK${NC}"
-		else
-			echo -e " ${RED}FAILED${NC}"
-		fi
+		echo -e "  ${RED}✗${NC} $name not found — check PipeWire config"
+		exit 1
 	fi
 }
 
-# Step 1: Set up virtual audio devices
-echo -e "${YELLOW}[1/5]${NC} Setting up virtual audio devices..."
+# Step 1: Verify virtual audio devices (declared in PipeWire config)
+echo -e "${YELLOW}[1/5]${NC} Checking virtual audio devices..."
 
-ensure_sink "AvatarSpeaker" "Avatar_Speaker"
-ensure_sink "AvatarMic" "Avatar_Mic_Sink"
+check_persistent_sink "AvatarSpeaker"
+check_persistent_sink "AvatarMic"
 
-# Create a remapped source so Chrome/Meet lists it as a proper microphone
 if pactl list sources short | grep -q "AvatarMicSource"; then
-	echo -e "  ${GREEN}✓${NC} AvatarMicSource already exists"
+	echo -e "  ${GREEN}✓${NC} AvatarMicSource present (PipeWire persistent)"
 else
-	echo -n "  Creating AvatarMicSource (remapped source for Chrome)..."
-	if pactl load-module module-remap-source \
-		source_name=AvatarMicSource \
-		master=AvatarMic.monitor \
-		source_properties=device.description="Avatar_Microphone" >/dev/null 2>&1; then
-		echo -e " ${GREEN}OK${NC}"
-	else
-		echo -e " ${RED}FAILED${NC}"
-	fi
+	echo -e "  ${RED}✗${NC} AvatarMicSource not found — check PipeWire config"
+	exit 1
 fi
-# Do NOT change system default mic - keep real mic as default for web apps
-# AvatarMicSource is available but not default (use CDP for Meet selection)
-echo -e " ${GREEN}✓${NC} AvatarMicSource available (system default unchanged)"
 
 echo ""
 
@@ -114,16 +96,16 @@ else
 	systemctl --user start avatar-control-server
 	echo -e "  ${GREEN}✓${NC} Control server started (systemd)"
 
-	if wait_for_port 8765; then
-		echo -e "  ${GREEN}✓${NC} WebSocket server ready on port 8765"
+	if wait_for_port @avatarWsPort@; then
+		echo -e "  ${GREEN}✓${NC} WebSocket server ready on port @avatarWsPort@"
 	else
 		echo -e "  ${RED}✗${NC} WebSocket server failed to start"
 		systemctl --user status avatar-control-server --no-pager
 		exit 1
 	fi
 
-	if wait_for_port 8766; then
-		echo -e "  ${GREEN}✓${NC} HTTP server ready on port 8766"
+	if wait_for_port @avatarHttpPort@; then
+		echo -e "  ${GREEN}✓${NC} HTTP server ready on port @avatarHttpPort@"
 	else
 		echo -e "  ${RED}✗${NC} HTTP server failed to start"
 		exit 1
@@ -144,8 +126,8 @@ else
 	echo -e "  ${GREEN}✓${NC} Avatar renderer started (PID: $RENDERER_PID)"
 	echo -e "    Log: $LOG_DIR/avatar-renderer.log"
 
-	if wait_for_port 3000; then
-		echo -e "  ${GREEN}✓${NC} Renderer ready on http://localhost:3000"
+	if wait_for_port @avatarRendererPort@; then
+		echo -e "  ${GREEN}✓${NC} Renderer ready on http://localhost:@avatarRendererPort@"
 	else
 		echo -e "  ${RED}✗${NC} Renderer failed to start"
 		tail -10 "$LOG_DIR/avatar-renderer.log"
@@ -176,7 +158,7 @@ else
 	echo -e " ${YELLOW}SKIP${NC} (no CDP port found)"
 fi
 
-curl -s -X POST http://localhost:9867/navigate -H "Content-Type: application/json" -d '{"url":"http://localhost:3000"}' >/dev/null 2>&1 || true
+curl -s -X POST http://localhost:9867/navigate -H "Content-Type: application/json" -d '{"url":"http://localhost:@avatarRendererPort@"}' >/dev/null 2>&1 || true
 
 echo ""
 
@@ -216,14 +198,14 @@ echo ""
 echo -e "${YELLOW}[5/5]${NC} Running health checks..."
 
 echo -n "  Control server health endpoint..."
-if curl -sf http://localhost:8766/health >/dev/null 2>&1; then
+if curl -sf http://localhost:@avatarHttpPort@/health >/dev/null 2>&1; then
 	echo -e " ${GREEN}OK${NC}"
 else
 	echo -e " ${RED}FAILED${NC}"
 fi
 
 echo -n "  Renderer HTTP endpoint..."
-if curl -sf http://localhost:3000 >/dev/null 2>&1; then
+if curl -sf http://localhost:@avatarRendererPort@ >/dev/null 2>&1; then
 	echo -e " ${GREEN}OK${NC}"
 else
 	echo -e " ${RED}FAILED${NC}"
@@ -244,9 +226,9 @@ echo -e "${GREEN}   ✓ Avatar System Ready!${NC}"
 echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
 echo -e "${BLUE}Services:${NC}"
-echo -e "  • Control Server:  ws://localhost:8765"
-echo -e "  • HTTP API:        http://localhost:8766"
-echo -e "  • Avatar Renderer: http://localhost:3000"
+echo -e "  • Control Server:  ws://localhost:@avatarWsPort@"
+echo -e "  • HTTP API:        http://localhost:@avatarHttpPort@"
+echo -e "  • Avatar Renderer: http://localhost:@avatarRendererPort@"
 echo -e "  • Virtual Mic:     Avatar_Microphone (AvatarMicSource)"
 echo -e "  • Virtual Camera:  $V4L2_DEVICE"
 echo ""

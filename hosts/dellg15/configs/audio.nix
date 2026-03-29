@@ -55,6 +55,41 @@ in
         };
       };
 
+      "20-avatar-virtual-devices" = {
+        "context.objects" = [
+          {
+            factory = "adapter";
+            args = {
+              "factory.name" = "support.null-audio-sink";
+              "node.name" = "AvatarSpeaker";
+              "node.description" = "Avatar Speaker";
+              "media.class" = "Audio/Sink";
+              "audio.position" = "FL,FR";
+            };
+          }
+          {
+            factory = "adapter";
+            args = {
+              "factory.name" = "support.null-audio-sink";
+              "node.name" = "AvatarMic";
+              "node.description" = "Avatar Mic Sink";
+              "media.class" = "Audio/Sink";
+              "audio.position" = "FL,FR";
+            };
+          }
+          {
+            factory = "adapter";
+            args = {
+              "factory.name" = "support.null-audio-sink";
+              "node.name" = "AvatarMicSource";
+              "node.description" = "Avatar Microphone";
+              "media.class" = "Audio/Source/Virtual";
+              "audio.position" = "FL,FR";
+            };
+          }
+        ];
+      };
+
     };
 
     wireplumber.extraConfig = {

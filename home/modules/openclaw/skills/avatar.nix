@@ -31,8 +31,29 @@ let
     hash = "sha256-aqRuL9hoghKw0MgT5JWRFls3dM8i8WVr2yt4MhLznKE=";
   };
 
+  controlServerNodeModules = pkgs.buildNpmPackage {
+    pname = "avatar-control-server-deps";
+    version = "1.0.0";
+    src = ../../../../agents/skills/comms/control-server;
+    npmDepsHash = "sha256-gP9LivOQ+3+CcAbzg/Dt2RfB0p1j4045TABD3vQzu2s=";
+    nodejs = pkgs.nodejs_22;
+    dontNpmBuild = true;
+    installPhase = ''
+      runHook preInstall
+      mkdir -p $out
+      cp -r node_modules $out/
+      runHook postInstall
+    '';
+  };
+
 in
 {
+  openclaw.gridPlaceholders = {
+    "@avatarWsPort@" = "8765";
+    "@avatarHttpPort@" = "8766";
+    "@avatarRendererPort@" = "3000";
+  };
+
   home = {
     packages = lib.mkIf (openclaw.defaultAgent != null) [
       pkgs.python3Packages.edge-tts
@@ -76,22 +97,17 @@ in
       avatarControlServerDeps = lib.mkIf (openclaw.defaultAgent != null) (
         lib.hm.dag.entryAfter [ "linkGeneration" ] ''
           CONTROL_DIR="${avatarDir}/control-server"
-          if [ -d "$CONTROL_DIR" ] && [ -f "$CONTROL_DIR/package-lock.json" ]; then
-            LOCK_HASH=$(sha256sum "$CONTROL_DIR/package-lock.json" | cut -d' ' -f1)
-            MARKER="$CONTROL_DIR/.npm-ci-hash"
-            if [ ! -d "$CONTROL_DIR/node_modules" ] || [ ! -f "$MARKER" ] || [ "$(cat "$MARKER" 2>/dev/null)" != "$LOCK_HASH" ]; then
-              echo "Installing control server npm dependencies..."
-              cd "$CONTROL_DIR" && ${pkgs.nodejs_22}/bin/npm ci --production 2>&1 || true
-              echo "$LOCK_HASH" > "$MARKER"
-            fi
+          if [ -d "$CONTROL_DIR" ]; then
+            rm -rf "$CONTROL_DIR/node_modules"
+            ln -sfn "${controlServerNodeModules}/node_modules" "$CONTROL_DIR/node_modules"
           fi
 
           ${lib.concatStringsSep "\n" (
             lib.mapAttrsToList (name: agent: ''
-              AGENT_CONTROL_MODULES="${homeDir}/${agent.workspace}/skills/comms/control-server/node_modules"
-              if [ ! -e "$AGENT_CONTROL_MODULES" ] && [ -d "$CONTROL_DIR/node_modules" ]; then
-                ln -sfn "$CONTROL_DIR/node_modules" "$AGENT_CONTROL_MODULES"
-                echo "Symlinked avatar control-server node_modules for ${name}"
+              AGENT_CONTROL_DIR="${homeDir}/${agent.workspace}/skills/comms/control-server"
+              if [ -d "$AGENT_CONTROL_DIR" ]; then
+                rm -rf "$AGENT_CONTROL_DIR/node_modules"
+                ln -sfn "${controlServerNodeModules}/node_modules" "$AGENT_CONTROL_DIR/node_modules"
               fi
             '') nonDefaultAvatarAgents
           )}
@@ -117,7 +133,9 @@ in
             pkgs.pulseaudio
           ]
         }:/run/current-system/sw/bin"
-        "NODE_PATH=${avatarDir}/control-server/node_modules"
+        "NODE_PATH=${controlServerNodeModules}/node_modules"
+        "AVATAR_WS_PORT=8765"
+        "AVATAR_HTTP_PORT=8766"
         "XDG_RUNTIME_DIR=/run/user/%U"
       ];
     };

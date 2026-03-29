@@ -49,15 +49,15 @@ if [[ ! -d "$SERVER_DIR" ]]; then
 	exit 1
 fi
 
-if ! curl -s http://localhost:8766/health >/dev/null 2>&1; then
-	echo "Error: Control server not running (port 8766 not responding)" >&2
+if ! curl -s http://localhost:@avatarHttpPort@/health >/dev/null 2>&1; then
+	echo "Error: Control server not running (port @avatarHttpPort@ not responding)" >&2
 	echo "Start it with: systemctl --user start avatar-control-server" >&2
 	exit 1
 fi
 
 cd "$SERVER_DIR" && node -e "
 const WebSocket = require('ws');
-const ws = new WebSocket('ws://localhost:8765');
+const ws = new WebSocket('ws://localhost:@avatarWsPort@');
 
 ws.on('error', (err) => {
   console.error('WebSocket error:', err.message);

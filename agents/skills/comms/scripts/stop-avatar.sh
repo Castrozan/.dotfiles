@@ -33,34 +33,6 @@ else
 	echo "  Renderer was not running"
 fi
 
-# Clean up virtual audio devices
-remove_sink() {
-	local name=$1
-	if pactl list sinks short 2>/dev/null | grep -q "$name"; then
-		MODULE_ID=$(pactl list short modules | grep "$name" | awk '{print $1}')
-		if [[ -n "$MODULE_ID" ]]; then
-			pactl unload-module "$MODULE_ID"
-			echo "  $name sink removed"
-		fi
-	else
-		echo "  No $name sink to remove"
-	fi
-}
-
-# Remove remapped source first (depends on AvatarMic)
-remove_module() {
-	local name=$1
-	MODULE_ID=$(pactl list short modules 2>/dev/null | grep "$name" | awk '{print $1}')
-	if [[ -n "$MODULE_ID" ]]; then
-		pactl unload-module "$MODULE_ID"
-		echo "  $name removed"
-	fi
-}
-
-remove_module "AvatarMicSource"
-remove_sink "AvatarSpeaker"
-remove_sink "AvatarMic"
-
 if curl -sf --max-time 2 http://localhost:9867/health >/dev/null 2>&1; then
 	curl -sf --max-time 2 -X POST http://localhost:9867/shutdown >/dev/null 2>&1 || true
 	sleep 2
