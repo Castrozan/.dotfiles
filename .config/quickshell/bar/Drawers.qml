@@ -487,6 +487,8 @@ Scope {
 
                     dashboardVisible: screenScope.dashboardVisible
 
+                    onCloseRequested: screenScope.dashboardVisible = false
+
                     MouseArea {
                         anchors.fill: parent
                         hoverEnabled: true
@@ -789,7 +791,7 @@ Scope {
                         screenScope.utilitiesVisible = false;
                         screenScope.sidebarVisible = false;
                     }
-                    focus: (screenScope.dashboardVisible || screenScope.launcherVisible || screenScope.sessionVisible || screenScope.utilitiesVisible) && !screenScope.sidebarVisible
+                    focus: (screenScope.launcherVisible || screenScope.sessionVisible || screenScope.utilitiesVisible) && !screenScope.sidebarVisible && !screenScope.dashboardVisible
                 }
 
                 Timer {

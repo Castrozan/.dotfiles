@@ -12,7 +12,7 @@ Item {
 
     property bool dashboardIsActive: false
 
-    implicitWidth: Math.max(520, audioContentColumn.implicitWidth)
+    implicitWidth: Math.max(800, audioContentColumn.implicitWidth)
     implicitHeight: audioContentColumn.implicitHeight
 
     Component.onDestruction: {
@@ -30,13 +30,21 @@ Item {
         }
     }
 
+    function activateKeyboardNavigation(): void {
+        if (outputDevicesRepeater.count > 0)
+            outputDevicesRepeater.itemAt(0).forceActiveFocus();
+        else if (inputDevicesRepeater.count > 0)
+            inputDevicesRepeater.itemAt(0).forceActiveFocus();
+        else if (bluetoothDevicesRepeater.count > 0)
+            bluetoothDevicesRepeater.itemAt(0).forceActiveFocus();
+    }
+
     ColumnLayout {
         id: audioContentColumn
 
         anchors.left: parent.left
         anchors.right: parent.right
         spacing: Appearance.spacing.normal
-        focus: true
 
             AudioSectionHeader {
                 iconName: "volume_up"
@@ -180,39 +188,39 @@ Item {
         clip: true
         focus: true
         implicitHeight: audioDeviceCardLayout.implicitHeight + Appearance.padding.large * 2
-        implicitWidth: 520
+        implicitWidth: 800
 
         border.width: activeFocus ? 2 : 0
         border.color: Colours.palette.m3primary
 
-        Keys.onReturnPressed: {
-            if (isOutputDevice)
-                AudioService.setDefaultSink(deviceName);
-            else
-                AudioService.setDefaultSource(deviceName);
-        }
-
-        Keys.onSpacePressed: {
-            if (isOutputDevice)
-                AudioService.toggleSinkMute(deviceName);
-            else
-                AudioService.toggleSourceMute(deviceName);
-        }
-
-        Keys.onLeftPressed: {
-            const newVolume = Math.max(0, deviceVolume - 5);
-            if (isOutputDevice)
-                AudioService.setSinkVolume(deviceName, newVolume);
-            else
-                AudioService.setSourceVolume(deviceName, newVolume);
-        }
-
-        Keys.onRightPressed: {
-            const newVolume = Math.min(150, deviceVolume + 5);
-            if (isOutputDevice)
-                AudioService.setSinkVolume(deviceName, newVolume);
-            else
-                AudioService.setSourceVolume(deviceName, newVolume);
+        Keys.onPressed: event => {
+            if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+                if (isOutputDevice)
+                    AudioService.setDefaultSink(deviceName);
+                else
+                    AudioService.setDefaultSource(deviceName);
+                event.accepted = true;
+            } else if (event.key === Qt.Key_Space) {
+                if (isOutputDevice)
+                    AudioService.toggleSinkMute(deviceName);
+                else
+                    AudioService.toggleSourceMute(deviceName);
+                event.accepted = true;
+            } else if (event.key === Qt.Key_Left) {
+                const volumeDown = Math.max(0, deviceVolume - 5);
+                if (isOutputDevice)
+                    AudioService.setSinkVolume(deviceName, volumeDown);
+                else
+                    AudioService.setSourceVolume(deviceName, volumeDown);
+                event.accepted = true;
+            } else if (event.key === Qt.Key_Right) {
+                const volumeUp = Math.min(150, deviceVolume + 5);
+                if (isOutputDevice)
+                    AudioService.setSinkVolume(deviceName, volumeUp);
+                else
+                    AudioService.setSourceVolume(deviceName, volumeUp);
+                event.accepted = true;
+            }
         }
 
         StyledRect {
@@ -388,7 +396,7 @@ Item {
         clip: true
         focus: true
         implicitHeight: bluetoothDeviceCardLayout.implicitHeight + Appearance.padding.large * 2
-        implicitWidth: 520
+        implicitWidth: 800
 
         border.width: activeFocus ? 2 : 0
         border.color: Colours.palette.m3primary

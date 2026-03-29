@@ -22,7 +22,6 @@ Item {
         anchors.right: parent.right
         anchors.top: parent.top
 
-        currentIndex: dashboardTabsRoot.currentTabIndex
         background: null
 
         onCurrentIndexChanged: dashboardTabsRoot.currentTabIndex = currentIndex
@@ -51,6 +50,12 @@ Item {
             iconName: "headphones"
             text: "Audio"
         }
+    }
+
+    Binding {
+        target: dashboardTabBar
+        property: "currentIndex"
+        value: dashboardTabsRoot.currentTabIndex
     }
 
     Item {

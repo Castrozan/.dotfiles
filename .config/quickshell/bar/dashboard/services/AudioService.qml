@@ -122,6 +122,7 @@ Singleton {
 
     Process {
         id: volumeActionProcess
+        onExited: audioServiceRoot.refresh()
     }
 
     Process {
@@ -242,7 +243,7 @@ Singleton {
 
     Process {
         id: listPairedDevicesProcess
-        command: ["bash", "-c", "bluetoothctl devices | while read -r _ mac name; do connected=$(bluetoothctl info \"$mac\" 2>/dev/null | grep -c 'Connected: yes'); echo \"$mac|$name|$connected\"; done"]
+        command: ["bash", "-c", "bluetoothctl devices | sort | while read -r _ mac name; do connected=$(bluetoothctl info \"$mac\" 2>/dev/null | grep -c 'Connected: yes'); echo \"$mac|$name|$connected\"; done"]
         stdout: SplitParser {
             splitMarker: ""
             onRead: data => {

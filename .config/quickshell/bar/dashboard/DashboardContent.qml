@@ -11,11 +11,18 @@ Item {
 
     property bool dashboardIsActive: false
     property int currentTabIndex: 0
+    readonly property int tabCount: dashboardTabsBar.tabCount
     readonly property real nonAnimatedWidth: tabsFlickable.implicitWidth + flickableWrapper.anchors.margins * 2
     readonly property real nonAnimatedHeight: dashboardTabsBar.implicitHeight + dashboardTabsBar.anchors.topMargin + tabsFlickable.implicitHeight + flickableWrapper.anchors.margins * 2
 
     implicitWidth: nonAnimatedWidth
     implicitHeight: nonAnimatedHeight
+
+    function activateCurrentTabKeyboardNavigation(): void {
+        const currentPane = tabsFlickable.tabPanes[currentTabIndex];
+        if (currentPane?.item?.activateKeyboardNavigation)
+            currentPane.item.activateKeyboardNavigation();
+    }
 
     Behavior on implicitWidth {
         Anim {
@@ -41,9 +48,14 @@ Item {
         anchors.margins: Appearance.padding.large
 
         nonAnimatedWidth: dashboardContentRoot.nonAnimatedWidth - anchors.margins * 2
-        currentTabIndex: dashboardContentRoot.currentTabIndex
 
         onCurrentTabIndexChanged: dashboardContentRoot.currentTabIndex = currentTabIndex
+    }
+
+    Binding {
+        target: dashboardTabsBar
+        property: "currentTabIndex"
+        value: dashboardContentRoot.currentTabIndex
     }
 
     Item {
