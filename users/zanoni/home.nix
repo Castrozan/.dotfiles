@@ -14,6 +14,7 @@
     ../../home/modules/claude
     ../../home/modules/codex
     ../../home/modules/gnome
+    ../../home/modules/home-assistant
     ../../home/modules/hyprland/nixos.nix
     ../../home/modules/openclaw
     ../../home/modules/openclaw-mesh
