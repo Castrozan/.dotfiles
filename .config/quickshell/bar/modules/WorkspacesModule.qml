@@ -30,6 +30,14 @@ ColumnLayout {
 
     Component.onCompleted: _refreshOccupiedWorkspaces()
 
+    Timer {
+        id: startupWorkspaceRefreshTimer
+        interval: 1500
+        running: true
+        repeat: false
+        onTriggered: workspacesModuleRoot._refreshOccupiedWorkspaces()
+    }
+
     readonly property string hyprlandSocket2Path: Quickshell.env("XDG_RUNTIME_DIR") + "/hypr/" + Quickshell.env("HYPRLAND_INSTANCE_SIGNATURE") + "/.socket2.sock"
 
     Process {

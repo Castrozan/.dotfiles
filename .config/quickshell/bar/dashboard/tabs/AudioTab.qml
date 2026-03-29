@@ -12,8 +12,10 @@ Item {
 
     property bool dashboardIsActive: false
 
+    readonly property int maximumTabHeight: 700
+
     implicitWidth: Math.max(800, audioContentColumn.implicitWidth)
-    implicitHeight: audioContentColumn.implicitHeight
+    implicitHeight: Math.min(maximumTabHeight, audioContentColumn.implicitHeight)
 
     Component.onDestruction: {
         if (audioTabRoot.dashboardIsActive)
@@ -30,6 +32,16 @@ Item {
         }
     }
 
+    function ensureItemVisible(item: var): void {
+        const itemPos = item.mapToItem(audioContentColumn, 0, 0);
+        const itemTop = itemPos.y;
+        const itemBottom = itemTop + item.height;
+        if (itemTop < audioScrollArea.contentY)
+            audioScrollArea.contentY = Math.max(0, itemTop - Appearance.spacing.normal);
+        else if (itemBottom > audioScrollArea.contentY + audioScrollArea.height)
+            audioScrollArea.contentY = Math.min(audioScrollArea.contentHeight - audioScrollArea.height, itemBottom - audioScrollArea.height + Appearance.spacing.normal);
+    }
+
     function activateKeyboardNavigation(): void {
         if (outputDevicesRepeater.count > 0)
             outputDevicesRepeater.itemAt(0).forceActiveFocus();
@@ -39,12 +51,31 @@ Item {
             bluetoothDevicesRepeater.itemAt(0).forceActiveFocus();
     }
 
-    ColumnLayout {
-        id: audioContentColumn
+    Flickable {
+        id: audioScrollArea
 
-        anchors.left: parent.left
-        anchors.right: parent.right
-        spacing: Appearance.spacing.normal
+        anchors.fill: parent
+        contentWidth: width
+        contentHeight: audioContentColumn.implicitHeight
+        flickableDirection: Flickable.VerticalFlick
+        clip: true
+        boundsBehavior: Flickable.StopAtBounds
+
+        Keys.onPressed: event => {
+            if (event.key === Qt.Key_PageDown) {
+                audioScrollArea.contentY = Math.min(audioScrollArea.contentY + 100, audioScrollArea.contentHeight - audioScrollArea.height);
+                event.accepted = true;
+            } else if (event.key === Qt.Key_PageUp) {
+                audioScrollArea.contentY = Math.max(audioScrollArea.contentY - 100, 0);
+                event.accepted = true;
+            }
+        }
+
+        ColumnLayout {
+            id: audioContentColumn
+
+            width: audioScrollArea.width
+            spacing: Appearance.spacing.normal
 
             AudioSectionHeader {
                 iconName: "volume_up"
@@ -147,6 +178,7 @@ Item {
                 }
             }
         }
+    }
 
     component AudioSectionHeader: RowLayout {
         property string iconName
@@ -183,6 +215,27 @@ Item {
         property bool deviceIsDefault: false
         property bool isOutputDevice: true
 
+        property int pendingVolume: -1
+        property real lastClickTimestamp: 0
+        readonly property int displayVolume: pendingVolume >= 0 ? pendingVolume : deviceVolume
+
+        onDeviceVolumeChanged: pendingVolume = -1
+
+        function setAsDefault(): void {
+            if (isOutputDevice)
+                AudioService.setDefaultSink(deviceName);
+            else
+                AudioService.setDefaultSource(deviceName);
+        }
+
+        function adjustVolume(delta: int): void {
+            pendingVolume = Math.max(0, Math.min(150, displayVolume + delta));
+            if (isOutputDevice)
+                AudioService.setSinkVolume(deviceName, pendingVolume);
+            else
+                AudioService.setSourceVolume(deviceName, pendingVolume);
+        }
+
         color: Colours.tPalette.m3surfaceContainer
         radius: Appearance.rounding.large
         clip: true
@@ -193,12 +246,29 @@ Item {
         border.width: activeFocus ? 2 : 0
         border.color: Colours.palette.m3primary
 
+        onActiveFocusChanged: {
+            if (activeFocus)
+                audioTabRoot.ensureItemVisible(audioDeviceCardRoot);
+        }
+
+        StateLayer {
+            color: Colours.palette.m3onSurface
+            showHoverBackground: true
+            function onClicked(): void {
+                audioDeviceCardRoot.forceActiveFocus();
+                const now = Date.now();
+                if (now - audioDeviceCardRoot.lastClickTimestamp < 400) {
+                    audioDeviceCardRoot.setAsDefault();
+                    audioDeviceCardRoot.lastClickTimestamp = 0;
+                } else {
+                    audioDeviceCardRoot.lastClickTimestamp = now;
+                }
+            }
+        }
+
         Keys.onPressed: event => {
             if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
-                if (isOutputDevice)
-                    AudioService.setDefaultSink(deviceName);
-                else
-                    AudioService.setDefaultSource(deviceName);
+                setAsDefault();
                 event.accepted = true;
             } else if (event.key === Qt.Key_Space) {
                 if (isOutputDevice)
@@ -207,18 +277,10 @@ Item {
                     AudioService.toggleSourceMute(deviceName);
                 event.accepted = true;
             } else if (event.key === Qt.Key_Left) {
-                const volumeDown = Math.max(0, deviceVolume - 5);
-                if (isOutputDevice)
-                    AudioService.setSinkVolume(deviceName, volumeDown);
-                else
-                    AudioService.setSourceVolume(deviceName, volumeDown);
+                adjustVolume(-5);
                 event.accepted = true;
             } else if (event.key === Qt.Key_Right) {
-                const volumeUp = Math.min(150, deviceVolume + 5);
-                if (isOutputDevice)
-                    AudioService.setSinkVolume(deviceName, volumeUp);
-                else
-                    AudioService.setSourceVolume(deviceName, volumeUp);
+                adjustVolume(5);
                 event.accepted = true;
             }
         }
@@ -237,7 +299,7 @@ Item {
             anchors.left: parent.left
             anchors.top: parent.top
             anchors.bottom: parent.bottom
-            width: parent.width * (audioDeviceCardRoot.deviceVolume / 150.0)
+            width: parent.width * (audioDeviceCardRoot.displayVolume / 150.0)
             color: Qt.alpha(Colours.palette.m3primary, 0.08)
             visible: !audioDeviceCardRoot.deviceMuted
 
@@ -294,10 +356,10 @@ Item {
                     }
 
                     StyledText {
-                        text: audioDeviceCardRoot.deviceVolume + "%"
+                        text: audioDeviceCardRoot.displayVolume + "%"
                         font.pointSize: Appearance.font.size.small
                         font.weight: Font.Medium
-                        color: audioDeviceCardRoot.deviceMuted ? Colours.palette.m3error : audioDeviceCardRoot.deviceVolume > 100 ? Colours.palette.m3error : Colours.palette.m3onSurfaceVariant
+                        color: audioDeviceCardRoot.deviceMuted ? Colours.palette.m3error : audioDeviceCardRoot.displayVolume > 100 ? Colours.palette.m3error : Colours.palette.m3onSurfaceVariant
                     }
                 }
 
@@ -341,7 +403,7 @@ Item {
                     implicitHeight: Appearance.padding.normal * 2.5
                     from: 0
                     to: 1.5
-                    value: audioDeviceCardRoot.deviceVolume / 100.0
+                    value: audioDeviceCardRoot.displayVolume / 100.0
                     focusPolicy: Qt.NoFocus
 
                     onMoved: {
@@ -351,6 +413,7 @@ Item {
                         else
                             AudioService.setSourceVolume(audioDeviceCardRoot.deviceName, percent);
                     }
+
                 }
             }
 
@@ -372,13 +435,6 @@ Item {
             }
         }
 
-        StateLayer {
-            color: Colours.palette.m3onSurface
-            showHoverBackground: true
-            function onClicked(): void {
-                audioDeviceCardRoot.forceActiveFocus();
-            }
-        }
     }
 
     component BluetoothDeviceCard: StyledRect {
@@ -390,6 +446,7 @@ Item {
 
         readonly property var associatedCard: AudioService.cardForBluetoothMac(deviceMac)
         readonly property bool hasProfiles: associatedCard !== null && associatedCard.profiles.length > 0
+        readonly property bool isPending: AudioService.pendingBluetoothMac === deviceMac
 
         color: Colours.tPalette.m3surfaceContainer
         radius: Appearance.rounding.large
@@ -401,14 +458,31 @@ Item {
         border.width: activeFocus ? 2 : 0
         border.color: Colours.palette.m3primary
 
-        Keys.onReturnPressed: {
+        onActiveFocusChanged: {
+            if (activeFocus)
+                audioTabRoot.ensureItemVisible(bluetoothDeviceCardRoot);
+        }
+
+        function toggleConnection(): void {
+            if (isPending)
+                return;
             if (deviceConnected)
                 AudioService.disconnectDevice(deviceMac);
             else
                 AudioService.connectDevice(deviceMac);
         }
 
-        Keys.onSpacePressed: Keys.onReturnPressed(event)
+        StateLayer {
+            color: Colours.palette.m3onSurface
+            showHoverBackground: true
+            function onClicked(): void {
+                bluetoothDeviceCardRoot.forceActiveFocus();
+                bluetoothDeviceCardRoot.toggleConnection();
+            }
+        }
+
+        Keys.onReturnPressed: toggleConnection()
+        Keys.onSpacePressed: toggleConnection()
 
         StyledRect {
             anchors.left: parent.left
@@ -432,10 +506,17 @@ Item {
                 spacing: Appearance.spacing.normal
 
                 MaterialIcon {
-                    text: bluetoothDeviceCardRoot.deviceConnected ? "bluetooth_connected" : "bluetooth"
+                    text: bluetoothDeviceCardRoot.isPending ? "bluetooth_searching" : bluetoothDeviceCardRoot.deviceConnected ? "bluetooth_connected" : "bluetooth"
                     fill: bluetoothDeviceCardRoot.deviceConnected ? 1 : 0
-                    color: bluetoothDeviceCardRoot.deviceConnected ? Colours.palette.m3primary : Colours.palette.m3onSurfaceVariant
+                    color: bluetoothDeviceCardRoot.isPending ? Colours.palette.m3tertiary : bluetoothDeviceCardRoot.deviceConnected ? Colours.palette.m3primary : Colours.palette.m3onSurfaceVariant
                     font.pointSize: Appearance.font.size.large
+
+                    SequentialAnimation on opacity {
+                        running: bluetoothDeviceCardRoot.isPending
+                        loops: Animation.Infinite
+                        NumberAnimation { from: 1.0; to: 0.3; duration: 600; easing.type: Easing.InOutSine }
+                        NumberAnimation { from: 0.3; to: 1.0; duration: 600; easing.type: Easing.InOutSine }
+                    }
                 }
 
                 ColumnLayout {
@@ -452,26 +533,22 @@ Item {
                     }
 
                     StyledText {
-                        text: bluetoothDeviceCardRoot.deviceConnected ? "Connected" : "Paired"
+                        text: bluetoothDeviceCardRoot.isPending ? (bluetoothDeviceCardRoot.deviceConnected ? "Disconnecting…" : "Connecting…") : bluetoothDeviceCardRoot.deviceConnected ? "Connected" : "Paired"
                         font.pointSize: Appearance.font.size.smaller
-                        color: Colours.palette.m3onSurfaceVariant
+                        color: bluetoothDeviceCardRoot.isPending ? Colours.palette.m3tertiary : Colours.palette.m3onSurfaceVariant
                     }
                 }
 
                 IconButton {
                     type: IconButton.Tonal
-                    icon: bluetoothDeviceCardRoot.deviceConnected ? "link_off" : "link"
+                    icon: bluetoothDeviceCardRoot.isPending ? "hourglass_top" : bluetoothDeviceCardRoot.deviceConnected ? "link_off" : "link"
                     font.pointSize: Appearance.font.size.normal
                     implicitWidth: 36
                     implicitHeight: 36
                     focusPolicy: Qt.NoFocus
+                    enabled: !bluetoothDeviceCardRoot.isPending
 
-                    onClicked: {
-                        if (bluetoothDeviceCardRoot.deviceConnected)
-                            AudioService.disconnectDevice(bluetoothDeviceCardRoot.deviceMac);
-                        else
-                            AudioService.connectDevice(bluetoothDeviceCardRoot.deviceMac);
-                    }
+                    onClicked: bluetoothDeviceCardRoot.toggleConnection()
                 }
             }
 
@@ -496,13 +573,6 @@ Item {
             }
         }
 
-        StateLayer {
-            color: Colours.palette.m3onSurface
-            showHoverBackground: true
-            function onClicked(): void {
-                bluetoothDeviceCardRoot.forceActiveFocus();
-            }
-        }
     }
 
     component AudioProfileChip: StyledRect {

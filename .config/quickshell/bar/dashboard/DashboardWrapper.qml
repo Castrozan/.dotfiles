@@ -33,7 +33,7 @@ Item {
             else
                 dashboardContentLoader.item.currentTabIndex = (dashboardContentLoader.item.currentTabIndex + 1) % dashboardWrapperRoot.tabCount;
             event.accepted = true;
-        } else if (event.key === Qt.Key_Down || event.key === Qt.Key_Up || event.key === Qt.Key_Left || event.key === Qt.Key_Right || event.key === Qt.Key_Return || event.key === Qt.Key_Space) {
+        } else if (event.key === Qt.Key_Down || event.key === Qt.Key_Up || event.key === Qt.Key_Left || event.key === Qt.Key_Right || event.key === Qt.Key_Return || event.key === Qt.Key_Space || event.key === Qt.Key_PageDown || event.key === Qt.Key_PageUp) {
             if (dashboardContentLoader.item?.activateCurrentTabKeyboardNavigation)
                 dashboardContentLoader.item.activateCurrentTabKeyboardNavigation();
             event.accepted = true;

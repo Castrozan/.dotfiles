@@ -17,6 +17,7 @@ Singleton {
     property bool adapterPowered: true
 
     property int refCount: 0
+    property string pendingBluetoothMac: ""
 
     readonly property var defaultSink: {
         for (let i = 0; i < sinks.length; i++)
@@ -54,6 +55,7 @@ Singleton {
         getDefaultSourceProcess.running = true;
         listCardsProcess.running = true;
         listPairedDevicesProcess.running = true;
+        listConnectedDevicesProcess.running = true;
         adapterStateProcess.running = true;
     }
 
@@ -93,11 +95,13 @@ Singleton {
     }
 
     function connectDevice(macAddress: string): void {
+        pendingBluetoothMac = macAddress;
         bluetoothActionProcess.command = ["bluetoothctl", "connect", macAddress];
         bluetoothActionProcess.running = true;
     }
 
     function disconnectDevice(macAddress: string): void {
+        pendingBluetoothMac = macAddress;
         bluetoothActionProcess.command = ["bluetoothctl", "disconnect", macAddress];
         bluetoothActionProcess.running = true;
     }
@@ -122,7 +126,6 @@ Singleton {
 
     Process {
         id: volumeActionProcess
-        onExited: audioServiceRoot.refresh()
     }
 
     Process {
@@ -137,7 +140,10 @@ Singleton {
 
     Process {
         id: bluetoothActionProcess
-        onExited: audioServiceRoot.refresh()
+        onExited: {
+            audioServiceRoot.pendingBluetoothMac = "";
+            audioServiceRoot.refresh();
+        }
     }
 
     Process {
@@ -148,7 +154,7 @@ Singleton {
             onRead: data => {
                 try {
                     const parsed = JSON.parse(data);
-                    audioServiceRoot.sinks = parsed.map(sink => ({
+                    const newSinks = parsed.map(sink => ({
                         index: sink.index,
                         name: sink.name,
                         description: sink.description ?? "",
@@ -158,6 +164,8 @@ Singleton {
                         portType: _extractPortType(sink.ports, sink.active_port),
                         isBluetooth: (sink.name ?? "").startsWith("bluez_")
                     }));
+                    if (!_audioDeviceListsAreEqual(audioServiceRoot.sinks, newSinks))
+                        audioServiceRoot.sinks = newSinks;
                 } catch (e) {}
             }
         }
@@ -171,7 +179,7 @@ Singleton {
             onRead: data => {
                 try {
                     const parsed = JSON.parse(data);
-                    audioServiceRoot.sources = parsed
+                    const newSources = parsed
                         .filter(source => (source.name ?? "").indexOf(".monitor") === -1)
                         .map(source => ({
                             index: source.index,
@@ -183,6 +191,8 @@ Singleton {
                             portType: _extractPortType(source.ports, source.active_port),
                             isBluetooth: (source.name ?? "").startsWith("bluez_")
                         }));
+                    if (!_audioDeviceListsAreEqual(audioServiceRoot.sources, newSources))
+                        audioServiceRoot.sources = newSources;
                 } catch (e) {}
             }
         }
@@ -241,9 +251,23 @@ Singleton {
         }
     }
 
+    property var _pairedDevicesList: []
+    property var _connectedMacs: ({})
+
+    function _mergePairedDevices(): void {
+        const merged = _pairedDevicesList.map(device => ({
+            mac: device.mac,
+            name: device.name,
+            connected: _connectedMacs[device.mac] === true
+        }));
+        merged.sort((a, b) => (b.connected ? 1 : 0) - (a.connected ? 1 : 0));
+        if (merged.length > 0 || pairedDevices.length === 0)
+            pairedDevices = merged;
+    }
+
     Process {
         id: listPairedDevicesProcess
-        command: ["bash", "-c", "bluetoothctl devices | sort | while read -r _ mac name; do connected=$(bluetoothctl info \"$mac\" 2>/dev/null | grep -c 'Connected: yes'); echo \"$mac|$name|$connected\"; done"]
+        command: ["bluetoothctl", "devices"]
         stdout: SplitParser {
             splitMarker: ""
             onRead: data => {
@@ -253,15 +277,35 @@ Singleton {
                     const line = lines[i].trim();
                     if (line === "")
                         continue;
-                    const parts = line.split("|");
+                    const parts = line.split(" ");
                     if (parts.length >= 3)
                         devices.push({
-                            mac: parts[0],
-                            name: parts[1],
-                            connected: parseInt(parts[2]) > 0
+                            mac: parts[1],
+                            name: parts.slice(2).join(" ")
                         });
                 }
-                audioServiceRoot.pairedDevices = devices;
+                devices.sort((a, b) => a.mac.localeCompare(b.mac));
+                audioServiceRoot._pairedDevicesList = devices;
+                audioServiceRoot._mergePairedDevices();
+            }
+        }
+    }
+
+    Process {
+        id: listConnectedDevicesProcess
+        command: ["bluetoothctl", "devices", "Connected"]
+        stdout: SplitParser {
+            splitMarker: ""
+            onRead: data => {
+                const lines = data.trim().split("\n");
+                const macs = {};
+                for (let i = 0; i < lines.length; i++) {
+                    const parts = lines[i].trim().split(" ");
+                    if (parts.length >= 2)
+                        macs[parts[1]] = true;
+                }
+                audioServiceRoot._connectedMacs = macs;
+                audioServiceRoot._mergePairedDevices();
             }
         }
     }
@@ -283,6 +327,18 @@ Singleton {
         repeat: true
         triggeredOnStart: true
         onTriggered: audioServiceRoot.refresh()
+    }
+
+    function _audioDeviceListsAreEqual(oldList: var, newList: var): bool {
+        if (oldList.length !== newList.length)
+            return false;
+        for (let i = 0; i < oldList.length; i++) {
+            const oldItem = oldList[i];
+            const newItem = newList[i];
+            if (oldItem.name !== newItem.name || oldItem.volume !== newItem.volume || oldItem.mute !== newItem.mute || oldItem.state !== newItem.state || oldItem.description !== newItem.description)
+                return false;
+        }
+        return true;
     }
 
     function _extractVolumePercent(volumeObject: var): int {
