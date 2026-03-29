@@ -4,6 +4,7 @@ let
     exec ${latest.google-chrome}/bin/google-chrome-stable \
       --user-data-dir="$HOME/.config/chrome-global" \
       --class=chrome-global \
+      --remote-debugging-port=0 \
       --enable-features=UseNativeNotifications,WebRTCPipeWireCapturer \
       "$@"
   '';

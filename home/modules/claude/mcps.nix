@@ -2,6 +2,7 @@
   pkgs,
   config,
   lib,
+  latest,
   ...
 }:
 let
@@ -19,6 +20,7 @@ let
       nodejs
       homeDir
       ;
+    chromePackage = latest.google-chrome;
   };
 
   a2aMcp = import ../../../agents/skills/openclaw/a2a-mcp-default.nix {
