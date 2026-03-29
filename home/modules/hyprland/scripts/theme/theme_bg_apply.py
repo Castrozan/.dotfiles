@@ -1,3 +1,5 @@
+import os
+import socket
 import subprocess
 from pathlib import Path
 
@@ -6,13 +8,34 @@ CURRENT_BACKGROUND_LINK = (
 )
 
 
+def find_hyprpaper_socket_path() -> Path | None:
+    uid = os.getuid()
+    hypr_runtime_directory = Path(f"/run/user/{uid}/hypr")
+    if not hypr_runtime_directory.is_dir():
+        return None
+    for instance_directory in hypr_runtime_directory.iterdir():
+        socket_path = instance_directory / ".hyprpaper.sock"
+        if socket_path.exists():
+            return socket_path
+    return None
+
+
+def send_hyprpaper_ipc_command(command: str) -> str:
+    socket_path = find_hyprpaper_socket_path()
+    if socket_path is None:
+        return ""
+    hyprpaper_socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    try:
+        hyprpaper_socket.connect(str(socket_path))
+        hyprpaper_socket.send(command.encode())
+        return hyprpaper_socket.recv(8192).decode()
+    finally:
+        hyprpaper_socket.close()
+
+
 def read_currently_loaded_wallpaper_path() -> str | None:
-    result = subprocess.run(
-        ["hyprctl", "hyprpaper", "listloaded"],
-        capture_output=True,
-        text=True,
-    )
-    for line in result.stdout.strip().splitlines():
+    response = send_hyprpaper_ipc_command("listloaded")
+    for line in response.strip().splitlines():
         stripped = line.strip()
         if stripped:
             return stripped
@@ -40,20 +63,11 @@ def apply_current_background() -> None:
 
     wallpaper_path = str(resolved_background)
 
-    subprocess.run(
-        ["hyprctl", "hyprpaper", "preload", wallpaper_path],
-        capture_output=True,
-    )
-    subprocess.run(
-        ["hyprctl", "hyprpaper", "wallpaper", f",{wallpaper_path}"],
-        capture_output=True,
-    )
+    send_hyprpaper_ipc_command(f"preload {wallpaper_path}")
+    send_hyprpaper_ipc_command(f"wallpaper ,{wallpaper_path}")
 
     if previous_wallpaper and previous_wallpaper != wallpaper_path:
-        subprocess.run(
-            ["hyprctl", "hyprpaper", "unload", previous_wallpaper],
-            capture_output=True,
-        )
+        send_hyprpaper_ipc_command(f"unload {previous_wallpaper}")
 
 
 def main() -> None:

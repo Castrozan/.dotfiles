@@ -134,13 +134,10 @@ class TestGenerateAndApplyThemeFromWallpaper:
 class TestShowNoWallpapersFallback:
     def test_sends_notification_and_unloads_all_wallpapers(self):
         with patch("theme_bg_next.subprocess.run") as mock_run:
-            theme_bg_next.show_no_wallpapers_fallback()
+            with patch("theme_bg_next.send_hyprpaper_ipc_command") as mock_ipc:
+                theme_bg_next.show_no_wallpapers_fallback()
 
-            assert mock_run.call_count == 2
-            mock_run.assert_any_call(
-                ["notify-send", "No wallpapers found", "-t", "2000"]
-            )
-            mock_run.assert_any_call(
-                ["hyprctl", "hyprpaper", "unload", "all"],
-                capture_output=True,
-            )
+                mock_run.assert_called_once_with(
+                    ["notify-send", "No wallpapers found", "-t", "2000"]
+                )
+                mock_ipc.assert_called_once_with("unload all")
