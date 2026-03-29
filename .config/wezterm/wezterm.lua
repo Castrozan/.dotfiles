@@ -25,7 +25,7 @@ end)
 
 return {
   font = wezterm.font_with_fallback({
-    'FiraCode Nerd Font Mono',
+    'Monaspace Neon',
     'Noto Color Emoji',
   }),
   font_size = 16,
