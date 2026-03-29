@@ -19,7 +19,7 @@ Runs `claude --print "task" --dangerously-skip-permissions` and exits. No window
 </one_shot>
 
 <builtin_agents>
-Claude Code has built-in Agent tool for launching subagents within the same session — no tmux or separate process needed. Use built-in Agent tool for quick parallel research, exploration, or isolated edits. Use this skill's spawn-claude.sh for persistent interactive sessions, long-running tasks that outlive the parent, or when you need visible tmux windows for monitoring. The built-in Agent supports worktree isolation via `isolation: "worktree"` parameter.
+Claude Code has built-in Agent tool and Teams (TeamCreate). For multi-agent implementation work — anything with multiple steps, coordination, or progress tracking — always create a Team first, then spawn teammates with `team_name` parameter. Teams provide shared task lists, messaging, and visibility. Use bare Agent tool (without team) only for single-purpose read-only queries: quick research, codebase exploration, file search. Never use bare subagents for implementation work. The Agent tool supports worktree isolation via `isolation: "worktree"` parameter — use it for teammates that edit code to avoid conflicts.
 </builtin_agents>
 
 <writing_good_task_files>

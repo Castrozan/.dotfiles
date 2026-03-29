@@ -41,6 +41,10 @@ After editing code files, run formatters and linters. Python: `ruff format file.
 Use timeouts. Search codebase before coding. Read relevant files first. Always test changes. Check linter errors. Check current date/time before searches and version references. When doing research about IA, focus on latest 6 months only, most breakthroughs and useful information is recent.
 </commands>
 
+<delegation>
+When delegating work to multiple agents, use Teams (TeamCreate) — not bare Agent tool subagents. Teams provide shared task lists, inter-agent messaging, and visibility into progress. Plain Agent subagents are fire-and-forget with no coordination; they are only appropriate for single-purpose read-only queries (quick research, codebase exploration, file search) that return a result and terminate. Any work that involves implementation, multiple steps, coordination between agents, or progress tracking must use a Team. When in doubt, create a Team. Fetch the TeamCreate tool schema proactively when planning multi-agent work.
+</delegation>
+
 <skill-discovery>
 Before trying to use complex and uncommon tools, or if user ask you to do something you think you can't look for skills that may help you do it.
 </skill-discovery>
