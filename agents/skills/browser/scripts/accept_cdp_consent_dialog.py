@@ -4,20 +4,23 @@ import subprocess
 import sys
 import time
 
-DELAY_BEFORE_CLICK_SECONDS = 2
+CHROME_GLOBAL_WINDOW_CLASS = "chrome-global"
+INITIAL_DELAY_BEFORE_FIRST_ATTEMPT_SECONDS = 2
+DELAY_BETWEEN_RETRY_ATTEMPTS_SECONDS = 2
+MAX_CONSENT_ACCEPT_ATTEMPTS = 5
 ALLOW_BUTTON_X_OFFSET_FROM_WINDOW_CENTER = 160
 ALLOW_BUTTON_Y_OFFSET_FROM_WINDOW_TOP = 315
 YDOTOOL_SCREEN_COORDINATE_FACTOR = 0.65
 
 
-def get_chrome_window_geometry():
+def get_chrome_global_window_geometry():
     result = subprocess.run(
         ["hyprctl", "clients", "-j"], capture_output=True, text=True
     )
     if result.returncode != 0:
         return None
     for client in json.loads(result.stdout):
-        if client.get("class") == "google-chrome":
+        if client.get("class") == CHROME_GLOBAL_WINDOW_CLASS:
             client_x_position, client_y_position = client["at"]
             client_width, client_height = client["size"]
             return {
@@ -51,16 +54,16 @@ def ensure_ydotoold_is_running():
         time.sleep(0.3)
 
 
-def focus_chrome_window():
+def focus_chrome_global_window():
     subprocess.run(
-        ["hyprctl", "dispatch", "focuswindow", "class:google-chrome"],
+        ["hyprctl", "dispatch", "focuswindow", f"class:{CHROME_GLOBAL_WINDOW_CLASS}"],
         capture_output=True,
     )
     time.sleep(0.3)
 
 
 def click_at_screen_position(screen_x, screen_y):
-    focus_chrome_window()
+    focus_chrome_global_window()
     ydotool_x, ydotool_y = screen_to_ydotool_coordinates(screen_x, screen_y)
     subprocess.run(
         [
@@ -80,17 +83,11 @@ def click_at_screen_position(screen_x, screen_y):
     subprocess.run(["ydotool", "click", "0x80"], capture_output=True)
 
 
-def main():
-    if not os.environ.get("HYPRLAND_INSTANCE_SIGNATURE"):
-        print("No Hyprland session, skipping consent acceptor", file=sys.stderr)
-        return
-
-    time.sleep(DELAY_BEFORE_CLICK_SECONDS)
-
-    window_geometry = get_chrome_window_geometry()
+def attempt_consent_dialog_accept():
+    window_geometry = get_chrome_global_window_geometry()
     if not window_geometry:
-        print("No Chrome window found", file=sys.stderr)
-        return
+        print("No Chrome Global window found", file=sys.stderr)
+        return False
 
     ensure_ydotoold_is_running()
 
@@ -100,6 +97,25 @@ def main():
         file=sys.stderr,
     )
     click_at_screen_position(allow_x, allow_y)
+    return True
+
+
+def main():
+    if not os.environ.get("HYPRLAND_INSTANCE_SIGNATURE"):
+        print("No Hyprland session, skipping consent acceptor", file=sys.stderr)
+        return
+
+    time.sleep(INITIAL_DELAY_BEFORE_FIRST_ATTEMPT_SECONDS)
+
+    for attempt_number in range(1, MAX_CONSENT_ACCEPT_ATTEMPTS + 1):
+        print(
+            f"Consent accept attempt {attempt_number}/{MAX_CONSENT_ACCEPT_ATTEMPTS}",
+            file=sys.stderr,
+        )
+        if attempt_consent_dialog_accept():
+            return
+        if attempt_number < MAX_CONSENT_ACCEPT_ATTEMPTS:
+            time.sleep(DELAY_BETWEEN_RETRY_ATTEMPTS_SECONDS)
 
 
 if __name__ == "__main__":

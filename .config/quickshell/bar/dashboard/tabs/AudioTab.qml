@@ -12,7 +12,7 @@ Item {
 
     property bool dashboardIsActive: false
 
-    implicitWidth: audioContentColumn.implicitWidth
+    implicitWidth: Math.max(520, audioContentColumn.implicitWidth)
     implicitHeight: audioContentColumn.implicitHeight
 
     Component.onDestruction: {
@@ -30,18 +30,13 @@ Item {
         }
     }
 
-    FocusScope {
-        id: audioTabFocusScope
+    ColumnLayout {
+        id: audioContentColumn
 
-        anchors.fill: parent
+        anchors.left: parent.left
+        anchors.right: parent.right
+        spacing: Appearance.spacing.normal
         focus: true
-
-        ColumnLayout {
-            id: audioContentColumn
-
-            anchors.left: parent.left
-            anchors.right: parent.right
-            spacing: Appearance.spacing.normal
 
             AudioSectionHeader {
                 iconName: "volume_up"
@@ -144,7 +139,6 @@ Item {
                 }
             }
         }
-    }
 
     component AudioSectionHeader: RowLayout {
         property string iconName

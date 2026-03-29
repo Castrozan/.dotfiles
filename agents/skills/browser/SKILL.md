@@ -4,11 +4,11 @@ description: Use when user asks to open a webpage, scrape content, fill forms, c
 ---
 
 <how_it_works>
-Chrome DevTools MCP connects to the user's real Google Chrome — real logins, real cookies, no automation detection. Chrome runs normally. The MCP server connects via DevToolsActivePort and a consent dialog ("Allow remote debugging?") appears. A background script auto-accepts it (focus Chrome, Tab to Allow, Enter). Sites see a normal browser, not an automated one.
+Chrome DevTools MCP connects to Chrome Global (class: chrome-global, user-data-dir: ~/.config/chrome-global) via --autoConnect. Chrome must be running with --remote-debugging-port=0 (the summon script handles this). The MCP connects lazily on first tool call — no blocking wait at startup. Sites see a normal browser with real logins and cookies, not an automated one.
 </how_it_works>
 
 <workflow>
-1. `mcp__chrome-devtools__list_pages` — verify connection (auto-launches Chrome if needed)
+1. `mcp__chrome-devtools__list_pages` — verify connection
 2. `mcp__chrome-devtools__navigate_page` — go to URL
 3. `mcp__chrome-devtools__take_snapshot` — see page elements with uid refs
 4. `mcp__chrome-devtools__click` / `mcp__chrome-devtools__fill` — interact using uid from snapshot
@@ -16,13 +16,12 @@ Chrome DevTools MCP connects to the user's real Google Chrome — real logins, r
 </workflow>
 
 <connection_troubleshooting>
-If MCP tools hang or fail:
+If MCP tools fail with "Could not connect to Chrome":
 
-1. **`scripts/verify-cdp-connection.sh`** — check DevToolsActivePort exists and port is listening
-2. **`scripts/ensure-chrome-running.sh`** — launch Chrome normally, clean stale port files
-3. **`scripts/accept-cdp-consent.sh`** — focus Chrome, Tab, Enter to accept the consent dialog
-
-The consent dialog appears each time the MCP server connects. The wrapper auto-accepts it in a background loop (5 attempts). If it fails, run `accept-cdp-consent.sh` manually.
+1. Verify Chrome Global is running: `hyprctl clients -j | jq '.[] | select(.class == "chrome-global")'`
+2. Check DevToolsActivePort exists: `cat ~/.config/chrome-global/DevToolsActivePort`
+3. If no DevToolsActivePort, Chrome was launched without --remote-debugging-port=0. Use SUPER+C (summon script) to relaunch.
+4. If Chrome crashes: check for corrupted Sync Data LevelDB — remove `~/.config/chrome-global/Default/Sync Data/` and relaunch.
 </connection_troubleshooting>
 
 <available_tools>
