@@ -44,7 +44,7 @@ def generate_and_apply_theme_from_wallpaper(wallpaper_path: Path) -> None:
 def show_no_wallpapers_fallback() -> None:
     subprocess.run(["notify-send", "No wallpapers found", "-t", "2000"])
     subprocess.run(
-        ["swww", "clear", "000000"],
+        ["hyprctl", "hyprpaper", "unload", "all"],
         capture_output=True,
     )
 
