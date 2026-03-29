@@ -120,30 +120,43 @@
     home-manager.url = "github:nix-community/home-manager/release-25.11";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
-    # External flakes to be available for dependency injection
-    # Tag-based (stable releases)
+    # Tag-pinned — keep own nixpkgs (incompatible or untested with ours)
     tui-notifier.url = "github:castrozan/tui-notifier/1.0.1";
     systemd-manager-tui.url = "github:matheus-git/systemd-manager-tui";
     systemd-manager-tui.inputs.nixpkgs.follows = "nixpkgs";
     readItNow-rc.url = "github:castrozan/readItNow-rc/1.1.0";
     opencode.url = "github:anomalyco/opencode/v1.3.3";
     devenv.url = "github:cachix/devenv/v1.11.2";
-    # Branch/default (actively maintained)
     bluetui.url = "github:castrozan/bluetui/v0.9.1";
-    cbonsai.url = "github:castrozan/cbonsai";
-    cmatrix.url = "github:castrozan/cmatrix";
-    tuisvn.url = "github:castrozan/tuisvn";
-    install-nothing.url = "github:castrozan/install-nothing";
-    openclaw-mesh.url = "github:castrozan/openclaw-mesh";
-    lazygit.url = "github:Castrozan/lazygit";
-    nixgl.url = "github:nix-community/nixGL";
-    agenix.url = "github:ryantm/agenix";
+    hyprland.url = "github:hyprwm/Hyprland/v0.54.2";
 
+    # Own forks — follow nixpkgs (tested, no version-sensitive deps)
+    cbonsai.url = "github:castrozan/cbonsai";
+    cbonsai.inputs.nixpkgs.follows = "nixpkgs";
+    cmatrix.url = "github:castrozan/cmatrix";
+    cmatrix.inputs.nixpkgs.follows = "nixpkgs";
+    tuisvn.url = "github:castrozan/tuisvn";
+    tuisvn.inputs.nixpkgs.follows = "nixpkgs";
+    install-nothing.url = "github:castrozan/install-nothing";
+    install-nothing.inputs.nixpkgs.follows = "nixpkgs";
+    openclaw-mesh.url = "github:castrozan/openclaw-mesh";
+    openclaw-mesh.inputs.nixpkgs.follows = "nixpkgs";
+    lazygit.url = "github:Castrozan/lazygit";
+    lazygit.inputs.nixpkgs.follows = "nixpkgs";
     viu.url = "github:Castrozan/viu";
+    viu.inputs.nixpkgs.follows = "nixpkgs";
     voice-pipeline.url = "github:castrozan/voice-pipeline";
+    voice-pipeline.inputs.nixpkgs.follows = "nixpkgs";
+
+    # Well-maintained, nixpkgs-agnostic
+    nixgl.url = "github:nix-community/nixGL";
+    nixgl.inputs.nixpkgs.follows = "nixpkgs";
+    agenix.url = "github:ryantm/agenix";
+    agenix.inputs.nixpkgs.follows = "nixpkgs";
+
+    # Third-party — keep own nixpkgs
     voxtype.url = "github:peteonrails/voxtype";
     whisp-away.url = "github:madjinn/whisp-away";
-    hyprland.url = "github:hyprwm/Hyprland/v0.54.2";
     google-workspace-cli.url = "github:googleworkspace/cli";
   };
 }
