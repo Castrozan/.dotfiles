@@ -84,8 +84,8 @@
         "hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc="
       ];
 
-      max-jobs = "auto";
-      cores = 0;
+      max-jobs = 6;
+      cores = 2;
 
       download-buffer-size = "524288000";
       http-connections = 50;
@@ -97,6 +97,10 @@
 
       trusted-users = [ username ];
     };
+
+    daemonCPUSchedPolicy = "batch";
+    daemonIOSchedClass = "idle";
+    daemonIOSchedPriority = 4;
 
     optimise = {
       automatic = true;
@@ -110,12 +114,7 @@
     };
   };
 
-  systemd.services.nix-daemon.serviceConfig = {
-    MemoryHigh = "60%";
-    MemoryMax = "75%";
-    ManagedOOMMemoryPressure = "kill";
-    ManagedOOMMemoryPressureLimit = "80%";
-  };
+  systemd.services.nix-daemon.serviceConfig.Nice = 19;
 
   nixpkgs.config.allowUnfree = true;
 
