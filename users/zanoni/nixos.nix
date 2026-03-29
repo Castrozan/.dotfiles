@@ -33,6 +33,7 @@ in
     ../../nixos/modules/lid-switch.nix
     ../../nixos/modules/sudo.nix
     ../../nixos/modules/mouse-8k-polling.nix
+    ../../nixos/modules/home-assistant.nix
   ];
 
   # Disable lid switch suspend for laptop used as server/with external monitor
@@ -111,7 +112,10 @@ in
 
   networking.firewall = {
     enable = true;
-    allowedTCPPorts = [ 22 ];
+    allowedTCPPorts = [
+      22
+      8123
+    ];
   };
 
   age = {
