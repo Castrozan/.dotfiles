@@ -6,8 +6,11 @@ let
         pkgs.bats
         pkgs.kcov
         pkgs.bc
+        pkgs.python312Packages.pytest
+        pkgs.qt6.qtdeclarative
       ]
     }:$PATH"
+    export QT_DECLARATIVE_PATH="${pkgs.qt6.qtdeclarative}"
     exec ~/.dotfiles/tests/run.sh "$@"
   '';
   dotfiles-coverage = pkgs.writeShellScriptBin "dotfiles-coverage" ''
@@ -30,5 +33,6 @@ in
     pkgs.deadnix
     pkgs.statix
     pkgs.nixfmt
+    pkgs.python312Packages.pytest
   ];
 }

@@ -15,3 +15,23 @@ jobs:
 
       - name: Run quick tests
         run: ./tests/run.sh --ci
+
+  qml-and-python-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
+
+      - name: Run Python tests
+        run: |
+          nix shell nixpkgs#python312Packages.pytest --command \
+            pytest home/modules/hyprland/tests/test_*.py -x -q
+
+      - name: Run QML unit tests
+        run: |
+          nix shell nixpkgs#qt6.qtdeclarative --command bash -c '
+            export QT_DECLARATIVE_PATH=$(dirname $(dirname $(which qmltestrunner)))
+            bash home/modules/hyprland/tests/qml/run-qml-tests.sh
+          '
