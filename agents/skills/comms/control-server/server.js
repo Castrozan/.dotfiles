@@ -9,12 +9,9 @@
 const WebSocket = require("ws");
 const express = require("express");
 const http = require("http");
-const { exec, spawn } = require("child_process");
-const { promisify } = require("util");
+const { spawn } = require("child_process");
 const fs = require("fs").promises;
 const path = require("path");
-
-const execAsync = promisify(exec);
 
 // Configuration
 const CONFIG = {
@@ -70,18 +67,32 @@ async function generateTTS(text, outputId, voiceOverride = null) {
     // Create output directory
     await fs.mkdir(outputDir, { recursive: true });
 
-    // Generate TTS with timing data
-    const command =
-      `edge-tts --text "${text.replace(/"/g, '\\"')}" ` +
-      `--voice ${voiceOverride || CONFIG.TTS_VOICE} ` +
-      `--rate +0% ` +
-      `--write-media ${audioPath} ` +
-      `--write-subtitles ${timingPath}`;
+    // Generate TTS with timing data (spawn avoids shell escaping issues)
+    const ttsArgs = [
+      "--text",
+      text,
+      "--voice",
+      voiceOverride || CONFIG.TTS_VOICE,
+      "--rate",
+      "+0%",
+      "--write-media",
+      audioPath,
+      "--write-subtitles",
+      timingPath,
+    ];
 
     console.log(
       `🎤 Generating TTS: "${text.substring(0, 50)}${text.length > 50 ? "..." : ""}"`,
     );
-    await execAsync(command);
+    await new Promise((resolve, reject) => {
+      const proc = spawn("edge-tts", ttsArgs, {
+        stdio: ["ignore", "pipe", "pipe"],
+      });
+      proc.on("close", (code) =>
+        code === 0 ? resolve() : reject(new Error(`edge-tts exited ${code}`)),
+      );
+      proc.on("error", reject);
+    });
 
     // Read timing data
     const timingData = await fs.readFile(timingPath, "utf-8");
@@ -285,18 +296,9 @@ async function handleSpeak(command, ws) {
     // Generate TTS
     const tts = await generateTTS(text, id, voice);
 
-    // Play audio to chosen output sink(s)
-    const sinks = [];
-    if (output === "mic" || output === "both") sinks.push("AvatarMic");
-    if (output === "speakers" || output === "both")
-      sinks.push(CONFIG.SPEAKER_SINK);
-    for (const sink of sinks) {
-      playToSink(tts.audioPath, sink);
-    }
-    console.log(`🔊 Playing audio to: ${sinks.join(", ")}`);
-
-    // Send lip sync data to renderer (includes audioUrl for lip sync animation)
     if (clients.renderer) {
+      // Renderer connected: browser plays audio with lip sync via AudioContext
+      // Only use paplay for "mic" output (virtual mic for Meet)
       const rendererCommand = {
         type: "startSpeaking",
         id,
@@ -305,11 +307,25 @@ async function handleSpeak(command, ws) {
         text,
         audioUrl: `/audio/${id}/voice.mp3`,
       };
-
       clients.renderer.send(JSON.stringify(rendererCommand));
       console.log(
         `📤 Forwarded to renderer: startSpeaking (${tts.timing.length} phonemes)`,
       );
+
+      if (output === "mic" || output === "both") {
+        playToSink(tts.audioPath, "AvatarMic");
+        console.log(`🔊 Playing audio to: AvatarMic (virtual mic)`);
+      }
+    } else {
+      // No renderer: play audio directly via paplay
+      const sinks = [];
+      if (output === "mic" || output === "both") sinks.push("AvatarMic");
+      if (output === "speakers" || output === "both")
+        sinks.push(CONFIG.SPEAKER_SINK);
+      for (const sink of sinks) {
+        playToSink(tts.audioPath, sink);
+      }
+      console.log(`🔊 Playing audio to: ${sinks.join(", ")}`);
     }
 
     // Send acknowledgment to agent

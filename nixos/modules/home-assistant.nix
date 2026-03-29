@@ -1,23 +1,40 @@
 {
   username,
   pkgs,
+  lib,
   ...
 }:
 let
-  installMideaLocalInContainer = pkgs.writeShellScript "install-midea-local-in-homeassistant" ''
-    sleep 10
-    ${pkgs.podman}/bin/podman exec homeassistant pip install --quiet midea-local==6.5.0
-    ${pkgs.podman}/bin/podman exec homeassistant python -c "import midealocal" || exit 1
+  homeAssistantConfigDirectory = "/home/${username}/.homeassistant";
+  homeAssistantPipDepsDirectory = "/home/${username}/.homeassistant-pip-deps";
+
+  installMideaLocalBeforeStart = pkgs.writeShellScript "install-midea-local-before-homeassistant" ''
+    set -euo pipefail
+    mkdir -p ${homeAssistantPipDepsDirectory}
+    if [ ! -d "${homeAssistantPipDepsDirectory}/midealocal" ]; then
+      ${pkgs.podman}/bin/podman run --rm \
+        -v ${homeAssistantPipDepsDirectory}:/deps \
+        ghcr.io/home-assistant/home-assistant:stable \
+        pip install --target=/deps midea-local==6.5.0
+    fi
   '';
 in
 {
   virtualisation.oci-containers.containers.homeassistant = {
     image = "ghcr.io/home-assistant/home-assistant:stable";
     volumes = [
-      "/home/${username}/.homeassistant:/config"
+      "${homeAssistantConfigDirectory}:/config"
+      "${homeAssistantPipDepsDirectory}:/deps"
     ];
+    environment = {
+      PYTHONPATH = "/deps";
+    };
     extraOptions = [ "--network=host" ];
   };
 
-  systemd.services.podman-homeassistant.serviceConfig.ExecStartPost = installMideaLocalInContainer;
+  systemd.services.podman-homeassistant = {
+    serviceConfig.ExecStartPre = [
+      installMideaLocalBeforeStart
+    ];
+  };
 }
