@@ -1,8 +1,6 @@
 import subprocess
 from pathlib import Path
 
-from theme_bg_apply import send_hyprpaper_ipc_command
-
 WALLPAPERS_DIRECTORY = Path.home() / ".config" / "hypr-theme" / "wallpapers"
 CURRENT_BACKGROUND_LINK = (
     Path.home() / ".config" / "hypr-theme" / "current" / "background"
@@ -45,7 +43,10 @@ def generate_and_apply_theme_from_wallpaper(wallpaper_path: Path) -> None:
 
 def show_no_wallpapers_fallback() -> None:
     subprocess.run(["notify-send", "No wallpapers found", "-t", "2000"])
-    send_hyprpaper_ipc_command("unload all")
+    subprocess.run(
+        ["swww", "clear", "000000"],
+        capture_output=True,
+    )
 
 
 def main() -> None:

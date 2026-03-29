@@ -7,7 +7,6 @@ let
     "xdg-desktop-portal-hyprland.service"
     "quickshell-switcher.service"
     "hypr-maximize-focus-daemon.service"
-    "hyprpaper.service"
   ];
 in
 {
@@ -27,7 +26,6 @@ in
     ../audio/wiremix.nix
     ./xdg-desktop-portal-hyprland-service.nix
     ./maximize-focus-daemon-service.nix
-    ./hyprpaper-service.nix
     ../desktop/fuzzel.nix
   ];
 

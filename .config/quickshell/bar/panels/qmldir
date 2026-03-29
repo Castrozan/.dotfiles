@@ -9,3 +9,4 @@ OsdContent 1.0 OsdContent.qml
 SidebarWrapper 1.0 SidebarWrapper.qml
 SidebarContent 1.0 SidebarContent.qml
 SidebarNotificationItem 1.0 SidebarNotificationItem.qml
+WallpaperTransitionOverlay 1.0 WallpaperTransitionOverlay.qml

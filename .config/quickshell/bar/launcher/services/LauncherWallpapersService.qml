@@ -12,12 +12,16 @@ Singleton {
     property string currentWallpaperPath: ""
     property list<var> availableWallpapers: []
 
+    signal wallpaperChangeStarted(string previousWallpaperPath)
+    signal wallpaperChangeApplied()
+
     function search(queryText: string): list<var> {
         let lowerQuery = queryText.toLowerCase();
         return availableWallpapers.filter(wallpaper => wallpaper.name.toLowerCase().includes(lowerQuery));
     }
 
     function setWallpaper(wallpaperPath: string): void {
+        wallpaperChangeStarted(currentWallpaperPath);
         generateAndApplyThemeProcess.command = ["setsid", "hypr-theme-generate-and-apply", wallpaperPath];
         generateAndApplyThemeProcess.running = true;
     }
@@ -79,6 +83,7 @@ Singleton {
         onRunningChanged: {
             if (!running) {
                 readCurrentWallpaperProcess.running = true;
+                wallpaperChangeApplied();
             }
         }
     }
