@@ -2,10 +2,8 @@
 let
   systemctl = "${pkgs.systemd}/bin/systemctl";
   graphicalServices = [
-    "quickshell-bar.service"
     "mako.service"
     "xdg-desktop-portal-hyprland.service"
-    "quickshell-switcher.service"
     "hypr-maximize-focus-daemon.service"
   ];
 in
