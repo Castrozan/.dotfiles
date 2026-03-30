@@ -2,14 +2,14 @@
 let
   fetchPrebuiltBinary = import ../../../lib/fetch-prebuilt-binary.nix { inherit pkgs; };
 
-  version = "2.1.85";
+  version = "2.1.87";
 
   bucket = "https://storage.googleapis.com/claude-code-dist-86c565f3-f756-42ad-8dfa-d59b1c096819/claude-code-releases";
 
   platformBinaryHashBySystem = {
     "x86_64-linux" = {
       platform = "linux-x64";
-      sha256 = "sha256-/wsj26Ecl6UzhsYevkfUbXaKitM/mMfSIYbJpj8Xn00=";
+      sha256 = "sha256-saW4lGmGKt7g5NwoyrWoMUvE0BF+Gasmp7f/fOm1m9U=";
     };
   };
 

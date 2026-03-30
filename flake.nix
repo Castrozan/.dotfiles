@@ -125,7 +125,7 @@
     systemd-manager-tui.url = "github:matheus-git/systemd-manager-tui";
     systemd-manager-tui.inputs.nixpkgs.follows = "nixpkgs";
     readItNow-rc.url = "github:castrozan/readItNow-rc/1.1.0";
-    opencode.url = "github:anomalyco/opencode/v1.3.3";
+    opencode.url = "github:anomalyco/opencode/v1.3.8";
     devenv.url = "github:cachix/devenv/v1.11.2";
     bluetui.url = "github:castrozan/bluetui/v0.9.1";
     hyprland.url = "github:hyprwm/Hyprland/v0.54.2";
