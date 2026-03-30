@@ -86,10 +86,8 @@ let
     }
 
     _check_mcp_binary_exists
-    _ensure_chrome_is_running
 
     exec "$MCP_BINARY" \
-      --autoConnect \
       --userDataDir "$CHROME_USER_DATA_DIR" \
       --usageStatistics false \
       "$@"

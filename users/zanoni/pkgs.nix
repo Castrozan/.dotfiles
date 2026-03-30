@@ -18,6 +18,7 @@
       bun
       btop
       cacert
+      cava
       curl
       dbeaver-bin
       deno

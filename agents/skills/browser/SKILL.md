@@ -4,15 +4,16 @@ description: Use when user asks to open a webpage, scrape content, fill forms, c
 ---
 
 <how_it_works>
-Chrome DevTools MCP connects to Chrome Global (class: chrome-global, user-data-dir: ~/.config/chrome-global) via --autoConnect. Chrome must be running with --remote-debugging-port=0 (the summon script handles this). The MCP connects lazily on first tool call — no blocking wait at startup. Sites see a normal browser with real logins and cookies, not an automated one.
+Chrome DevTools MCP server starts with Claude but does NOT launch Chrome or auto-connect. Chrome Global (class: chrome-global, user-data-dir: ~/.config/chrome-global) is launched on demand in the workflow step below, only when browser tools are actually needed. The MCP connects on first tool call after Chrome is available. Sites see a normal browser with real logins and cookies, not an automated one.
 </how_it_works>
 
 <workflow>
-1. `mcp__chrome-devtools__list_pages` — verify connection
-2. `mcp__chrome-devtools__navigate_page` — go to URL
-3. `mcp__chrome-devtools__take_snapshot` — see page elements with uid refs
-4. `mcp__chrome-devtools__click` / `mcp__chrome-devtools__fill` — interact using uid from snapshot
-5. `mcp__chrome-devtools__take_screenshot` — visual verification when needed
+1. Ensure Chrome Global is running — check with `hyprctl clients -j | jq -e '.[] | select(.class == "chrome-global")'`. If not running, launch it: `google-chrome-stable --user-data-dir=~/.config/chrome-global --class=chrome-global --remote-debugging-port=0 --enable-features=UseNativeNotifications,WebRTCPipeWireCapturer &>/dev/null & disown`
+2. `mcp__chrome-devtools__list_pages` — verify connection
+3. `mcp__chrome-devtools__navigate_page` — go to URL
+4. `mcp__chrome-devtools__take_snapshot` — see page elements with uid refs
+5. `mcp__chrome-devtools__click` / `mcp__chrome-devtools__fill` — interact using uid from snapshot
+6. `mcp__chrome-devtools__take_screenshot` — visual verification when needed
 </workflow>
 
 <connection_troubleshooting>
