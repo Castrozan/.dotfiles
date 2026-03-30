@@ -1,9 +1,12 @@
 { pkgs, ... }:
 let
-  nord-off = pkgs.writeShellScriptBin "nord-off" (
-    builtins.readFile ../../../home/modules/network/scripts/nord-off
-  );
+  buildSetuidRootScriptWrapper = import ./build-setuid-root-script-wrapper.nix { inherit pkgs; };
 in
 {
-  environment.systemPackages = [ nord-off ];
+  security.wrappers.nord-off = {
+    source = "${buildSetuidRootScriptWrapper ../../../home/modules/network/scripts/nord-off}";
+    owner = "root";
+    group = "root";
+    setuid = true;
+  };
 }

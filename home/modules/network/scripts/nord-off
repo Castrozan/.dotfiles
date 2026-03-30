@@ -1,25 +1,22 @@
 #!/usr/bin/env bash
-# Script to disconnect from NordVPN, handling Tailscale restart
-# Disconnects wgnord, then restarts Tailscale if service is enabled
+set -Eeuo pipefail
 
-# Check if running as root
-if [ "$EUID" -ne 0 ]; then
-    echo "This script must be run as root (with sudo)"
-    exit 1
-fi
+readonly TAILSCALE_SETTLE_SECONDS=2
 
-# Disconnect from NordVPN
-echo "Disconnecting from NordVPN..."
-wgnord d
+_restart_tailscale_if_enabled() {
+	if systemctl is-enabled --quiet tailscaled 2>/dev/null; then
+		echo "Restarting Tailscale service..."
+		systemctl start tailscaled
+		sleep "$TAILSCALE_SETTLE_SECONDS"
+		echo "Tailscale restarted"
+	fi
+}
 
-# Restart Tailscale if service exists and is enabled
-if systemctl list-unit-files | grep -q tailscaled.service 2>/dev/null; then
-    if systemctl is-enabled --quiet tailscaled 2>/dev/null; then
-        echo "Restarting Tailscale service..."
-        systemctl start tailscaled
-        sleep 2
-        echo "Tailscale restarted"
-    fi
-fi
+_disconnect_nordvpn() {
+	echo "Disconnecting from NordVPN..."
+	wgnord d
+	_restart_tailscale_if_enabled
+	echo "Disconnected from NordVPN"
+}
 
-echo "Disconnected from NordVPN"
+_disconnect_nordvpn

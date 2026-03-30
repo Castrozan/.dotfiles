@@ -3,6 +3,12 @@ set -Eeuo pipefail
 
 readonly TAILSCALE_SETTLE_SECONDS=2
 
+_print_usage() {
+	echo "Usage: nord-on <country>"
+	echo "Example: nord-on US, nord-on Brazil, nord-on Germany"
+	exit 1
+}
+
 _stop_tailscale_if_running() {
 	if systemctl is-active --quiet tailscaled 2>/dev/null; then
 		echo "Stopping Tailscale service..."
@@ -20,15 +26,20 @@ _start_tailscale() {
 	echo "Tailscale restarted"
 }
 
-_connect_nordvpn_us() {
+_connect_nordvpn() {
+	local country="${1:-}"
+	if [[ -z "$country" ]]; then
+		_print_usage
+	fi
+
 	local tailscale_was_running=false
 
 	if _stop_tailscale_if_running; then
 		tailscale_was_running=true
 	fi
 
-	echo "Connecting to NordVPN US server..."
-	if ! wgnord c US; then
+	echo "Connecting to NordVPN ${country}..."
+	if ! wgnord c "$country"; then
 		if [[ "$tailscale_was_running" == true ]]; then
 			echo "Failed to connect to NordVPN. Restarting Tailscale..."
 			_start_tailscale
@@ -42,4 +53,4 @@ _connect_nordvpn_us() {
 	echo "NordVPN connected successfully!"
 }
 
-_connect_nordvpn_us
+_connect_nordvpn "$@"

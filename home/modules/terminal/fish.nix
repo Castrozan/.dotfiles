@@ -106,5 +106,7 @@ in
 
     "fish/conf.d/hyprland-env.fish".source = ./shell/fish/conf.d/hyprland-env.fish;
     "fish/conf.d/betha-secrets.fish".source = ./shell/fish/conf.d/betha-secrets.fish;
+
+    "fish/completions/nord-on.fish".source = ../network/completions/nord-on.fish;
   };
 }
