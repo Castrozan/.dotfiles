@@ -43,6 +43,8 @@ Use timeouts. Search codebase before coding. Read relevant files first. Always t
 
 <delegation>
 When delegating work to multiple agents, use Teams (TeamCreate) — not bare Agent tool subagents. Teams provide shared task lists, inter-agent messaging, and visibility into progress. Plain Agent subagents are fire-and-forget with no coordination; they are only appropriate for single-purpose read-only queries (quick research, codebase exploration, file search) that return a result and terminate. Any work that involves implementation, multiple steps, coordination between agents, or progress tracking must use a Team. When in doubt, create a Team. Fetch the TeamCreate tool schema proactively when planning multi-agent work.
+
+After any teammate or subagent reports completion, the main agent must review the actual artifacts before reporting success to the user. Inspect every externally-visible output: MRs (branch naming matches repo conventions, assignee and reviewer set, changes are meaningful and complete, no duplicates), commits (correct repo, clean diff), and created files (match project patterns). If problems are found, send the responsible agent back to fix them with specific feedback — do not silently clean up or report success with caveats. The review standard is harsh: would this survive a code review from a senior engineer? If not, reject and iterate until it does.
 </delegation>
 
 <skill-discovery>
