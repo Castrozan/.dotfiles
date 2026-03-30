@@ -8,7 +8,7 @@ Chrome DevTools MCP server starts with Claude but does NOT launch Chrome or auto
 </how_it_works>
 
 <workflow>
-1. Ensure Chrome Global is running — check with `hyprctl clients -j | jq -e '.[] | select(.class == "chrome-global")'`. If not running, launch it: `google-chrome-stable --user-data-dir=~/.config/chrome-global --class=chrome-global --remote-debugging-port=0 --enable-features=UseNativeNotifications,WebRTCPipeWireCapturer &>/dev/null & disown`
+1. Ensure Chrome Global is running — run `hypr-summon-chrome-global` (launches if needed, focuses if already running)
 2. `mcp__chrome-devtools__list_pages` — verify connection
 3. `mcp__chrome-devtools__navigate_page` — go to URL
 4. `mcp__chrome-devtools__take_snapshot` — see page elements with uid refs
