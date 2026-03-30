@@ -14,7 +14,10 @@ let
   };
 in
 {
-  home.packages = [ quickshellPackage ];
+  home.packages = [
+    quickshellPackage
+    pkgs.cava
+  ];
 
   xdg.configFile."quickshell/bar" = {
     source = ../../../../.config/quickshell/bar;
