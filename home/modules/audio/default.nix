@@ -151,5 +151,11 @@ in
         },
       })
     '';
+
+    "systemd/user/wireplumber.service.d/force-c-locale-for-ascii-safe-device-descriptions.conf".text =
+      ''
+        [Service]
+        Environment=LANG=C
+      '';
   };
 }

@@ -148,7 +148,7 @@ Singleton {
 
     Process {
         id: listSinksProcess
-        command: ["pactl", "--format=json", "list", "sinks"]
+        command: ["env", "LC_ALL=C", "pactl", "--format=json", "list", "sinks"]
         stdout: SplitParser {
             splitMarker: ""
             onRead: data => {
@@ -173,7 +173,7 @@ Singleton {
 
     Process {
         id: listSourcesProcess
-        command: ["pactl", "--format=json", "list", "sources"]
+        command: ["env", "LC_ALL=C", "pactl", "--format=json", "list", "sources"]
         stdout: SplitParser {
             splitMarker: ""
             onRead: data => {
@@ -222,7 +222,7 @@ Singleton {
 
     Process {
         id: listCardsProcess
-        command: ["pactl", "--format=json", "list", "cards"]
+        command: ["env", "LC_ALL=C", "pactl", "--format=json", "list", "cards"]
         stdout: SplitParser {
             splitMarker: ""
             onRead: data => {
