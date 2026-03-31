@@ -85,7 +85,7 @@
     ../../home/modules/gaming/install-nothing.nix
     ../../home/modules/gaming/vesktop.nix
 
-    # ../../home/modules/system/bluetui.nix # temporarily disabled: rust-docs build failure upstream
+    ../../home/modules/system/bluetui.nix
     ../../home/modules/system/systemd-manager-tui.nix
     ../../home/modules/dev/crabwalk.nix
     ../../home/modules/dev/k9s.nix
