@@ -34,4 +34,8 @@ in
   domain-security-agenix-secrets = mkEvalCheck "domain-security-agenix-secrets" (
     builtins.length (builtins.attrNames cfg.age.secrets) > 0 && hasFile ".secrets/source-secrets.sh"
   ) "agenix secrets should be configured";
+
+  domain-security-sophos-monitor =
+    mkEvalCheck "domain-security-sophos-monitor" (hasService "sophos-monitor-collect")
+      "sophos-monitor collection service should be defined";
 }

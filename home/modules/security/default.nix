@@ -4,5 +4,6 @@
     ./gpg.nix
     ./password-store.nix
     ./scripts.nix
+    ./sophos-monitor
   ];
 }
