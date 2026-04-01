@@ -5,6 +5,8 @@ import QtQuick
 Item {
     id: thumbnailCard
 
+    signal clicked()
+
     required property var toplevelHandle
     required property string windowTitle
     required property string windowClass
@@ -22,6 +24,12 @@ Item {
 
     width: cardWidth
     height: cardHeight
+
+    MouseArea {
+        anchors.fill: parent
+        cursorShape: Qt.PointingHandCursor
+        onClicked: thumbnailCard.clicked()
+    }
 
     Rectangle {
         id: cardBackground

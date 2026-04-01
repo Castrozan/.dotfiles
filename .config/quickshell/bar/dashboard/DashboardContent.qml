@@ -115,7 +115,9 @@ Item {
                     active: true
                     asynchronous: dashboardContentRoot.currentTabIndex !== 0
                     Layout.alignment: Qt.AlignTop
-                    sourceComponent: DashboardTab {}
+                    sourceComponent: DashboardTab {
+                        dashboardIsActive: dashboardContentRoot.dashboardIsActive
+                    }
                 }
 
                 Loader {

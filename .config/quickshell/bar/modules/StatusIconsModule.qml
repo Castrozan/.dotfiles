@@ -126,7 +126,7 @@ ColumnLayout {
         }
 
         Timer {
-            interval: 5000
+            interval: 15000
             running: true
             repeat: true
             triggeredOnStart: true
@@ -255,7 +255,7 @@ ColumnLayout {
         }
 
         Timer {
-            interval: 15000
+            interval: 30000
             running: true
             repeat: true
             triggeredOnStart: true
@@ -317,7 +317,7 @@ ColumnLayout {
         }
 
         Timer {
-            interval: 15000
+            interval: 30000
             running: true
             repeat: true
             triggeredOnStart: true

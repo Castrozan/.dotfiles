@@ -1,6 +1,4 @@
-import Quickshell
 import Quickshell.Hyprland
-import Quickshell.Io
 import QtQuick
 import QtQuick.Layouts
 import ".."
@@ -38,21 +36,11 @@ ColumnLayout {
         onTriggered: workspacesModuleRoot._refreshOccupiedWorkspaces()
     }
 
-    readonly property string hyprlandSocket2Path: Quickshell.env("XDG_RUNTIME_DIR") + "/hypr/" + Quickshell.env("HYPRLAND_INSTANCE_SIGNATURE") + "/.socket2.sock"
-
-    Process {
-        id: hyprlandWindowEventMonitorProcess
-        command: ["nc", "-U", hyprlandSocket2Path]
-        running: true
-        stdout: SplitParser {
-            splitMarker: "\n"
-            onRead: data => {
-                if (data.startsWith("openwindow>>") || data.startsWith("closewindow>>") || data.startsWith("movewindow>>")) {
-                    windowLayoutChangeDebounceTimer.restart();
-                }
-            }
+    Connections {
+        target: HyprlandEventsService
+        function onWindowLayoutChanged() {
+            windowLayoutChangeDebounceTimer.restart();
         }
-        onExited: running = true
     }
 
     Timer {

@@ -14,25 +14,12 @@ Scope {
 
     signal osdSocketMessageReceived(string message)
     signal hyprlandFullscreenEventReceived()
-    signal hyprlandWindowLayoutEventReceived()
 
-    readonly property string hyprlandSocket2Path: Quickshell.env("XDG_RUNTIME_DIR") + "/hypr/" + Quickshell.env("HYPRLAND_INSTANCE_SIGNATURE") + "/.socket2.sock"
-
-    Process {
-        id: hyprlandEventMonitorProcess
-        command: ["nc", "-U", drawersRoot.hyprlandSocket2Path]
-        running: true
-        stdout: SplitParser {
-            splitMarker: "\n"
-            onRead: data => {
-                if (data.startsWith("fullscreen>>")) {
-                    drawersRoot.hyprlandFullscreenEventReceived();
-                } else if (data.startsWith("openwindow>>") || data.startsWith("closewindow>>") || data.startsWith("movewindow>>")) {
-                    drawersRoot.hyprlandWindowLayoutEventReceived();
-                }
-            }
+    Connections {
+        target: HyprlandEventsService
+        function onFullscreenChanged() {
+            drawersRoot.hyprlandFullscreenEventReceived();
         }
-        onExited: running = true
     }
 
     SocketServer {

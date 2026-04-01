@@ -54,6 +54,12 @@ ColumnLayout {
         screenScope: barRoot.screenScope
     }
 
+    Modules.WindowSwitcherButton {
+        Layout.alignment: Qt.AlignHCenter
+        Layout.preferredWidth: 40
+        Layout.preferredHeight: 32
+    }
+
     Modules.WorkspacesModule {
         id: workspacesModule
         Layout.alignment: Qt.AlignHCenter

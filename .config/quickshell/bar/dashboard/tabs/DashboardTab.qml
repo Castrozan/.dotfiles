@@ -9,6 +9,8 @@ import QtQuick.Layouts
 GridLayout {
     id: dashboardTabRoot
 
+    property bool dashboardIsActive: false
+
     rowSpacing: Appearance.spacing.normal
     columnSpacing: Appearance.spacing.normal
 
@@ -72,6 +74,7 @@ GridLayout {
 
         ResourcesWidget {
             id: resourcesWidget
+            dashboardIsActive: dashboardTabRoot.dashboardIsActive
         }
     }
 

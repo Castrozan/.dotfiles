@@ -28,8 +28,6 @@ ColumnLayout {
         return windowClassToIconName[lowerClass] ?? lowerClass;
     }
 
-    readonly property string hyprlandSocket2Path: Quickshell.env("XDG_RUNTIME_DIR") + "/hypr/" + Quickshell.env("HYPRLAND_INSTANCE_SIGNATURE") + "/.socket2.sock"
-
     Component.onCompleted: _fetchRunningClients()
 
     function _fetchRunningClients(): void {
@@ -107,21 +105,14 @@ ColumnLayout {
         }
     }
 
-    Process {
-        id: hyprlandSocket2EventMonitorProcess
-        command: ["nc", "-U", hyprlandSocket2Path]
-        running: true
-
-        stdout: SplitParser {
-            splitMarker: "\n"
-            onRead: data => {
-                if (data.startsWith("openwindow>>") || data.startsWith("closewindow>>") || data.startsWith("movewindow>>") || data.startsWith("activewindow>>")) {
-                    runningAppsRefreshDebounceTimer.restart();
-                }
-            }
+    Connections {
+        target: HyprlandEventsService
+        function onWindowLayoutChanged() {
+            runningAppsRefreshDebounceTimer.restart();
         }
-
-        onExited: running = true
+        function onActiveWindowChanged() {
+            runningAppsRefreshDebounceTimer.restart();
+        }
     }
 
     Timer {

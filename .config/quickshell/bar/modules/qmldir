@@ -8,3 +8,4 @@ ClockModule 1.0 ClockModule.qml
 StatusIconsModule 1.0 StatusIconsModule.qml
 StatusIcon 1.0 StatusIcon.qml
 PowerButton 1.0 PowerButton.qml
+WindowSwitcherButton 1.0 WindowSwitcherButton.qml

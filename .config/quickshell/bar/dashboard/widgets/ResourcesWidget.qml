@@ -8,14 +8,28 @@ import QtQuick
 Row {
     id: resourcesWidgetRoot
 
+    property bool dashboardIsActive: false
+
     anchors.top: parent.top
     anchors.bottom: parent.bottom
 
     padding: Appearance.padding.large
     spacing: Appearance.spacing.normal
 
-    Component.onCompleted: SystemUsageService.refCount++
-    Component.onDestruction: SystemUsageService.refCount--
+    Component.onDestruction: {
+        if (resourcesWidgetRoot.dashboardIsActive)
+            SystemUsageService.refCount--;
+    }
+
+    Connections {
+        target: resourcesWidgetRoot
+        function onDashboardIsActiveChanged() {
+            if (resourcesWidgetRoot.dashboardIsActive)
+                SystemUsageService.refCount++;
+            else
+                SystemUsageService.refCount--;
+        }
+    }
 
     ResourceBar {
         iconName: "memory"

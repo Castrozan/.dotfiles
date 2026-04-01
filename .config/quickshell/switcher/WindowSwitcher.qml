@@ -215,9 +215,9 @@ Scope {
 
         visible: overlayVisible
 
-        Rectangle {
+        MouseArea {
             anchors.fill: parent
-            color: themeDimOverlay
+            onClicked: switcherRoot.cancelSwitcher()
         }
 
         Item {
@@ -244,6 +244,11 @@ Scope {
                         accentColor: themeAccent
                         backgroundColor: themeBackground
                         foregroundColor: themeForeground
+
+                        onClicked: {
+                            switcherRoot.selectedIndex = index;
+                            switcherRoot.confirmSelection();
+                        }
                     }
                 }
             }
