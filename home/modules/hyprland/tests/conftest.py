@@ -74,7 +74,6 @@ def sample_hyprland_clients():
             "floating": False,
             "pinned": False,
             "fullscreen": 0,
-            "grouped": ["0xaaa", "0xbbb"],
             "focusHistoryID": 0,
         },
         {
@@ -86,7 +85,6 @@ def sample_hyprland_clients():
             "floating": False,
             "pinned": False,
             "fullscreen": 0,
-            "grouped": ["0xaaa", "0xbbb"],
             "focusHistoryID": 1,
         },
         {
@@ -97,8 +95,7 @@ def sample_hyprland_clients():
             "pid": 9012,
             "floating": False,
             "pinned": False,
-            "fullscreen": 1,
-            "grouped": [],
+            "fullscreen": 0,
             "focusHistoryID": 2,
         },
         {
@@ -110,7 +107,6 @@ def sample_hyprland_clients():
             "floating": True,
             "pinned": False,
             "fullscreen": 0,
-            "grouped": [],
             "focusHistoryID": 3,
         },
         {
@@ -122,7 +118,6 @@ def sample_hyprland_clients():
             "floating": True,
             "pinned": True,
             "fullscreen": 0,
-            "grouped": [],
             "focusHistoryID": 4,
         },
     ]
@@ -131,9 +126,9 @@ def sample_hyprland_clients():
 @pytest.fixture
 def sample_hyprland_workspaces():
     return [
-        {"id": 1, "hasfullscreen": True},
-        {"id": 2, "hasfullscreen": True},
-        {"id": 3, "hasfullscreen": False},
+        {"id": 1},
+        {"id": 2},
+        {"id": 3},
     ]
 
 

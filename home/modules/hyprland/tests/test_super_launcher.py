@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock, call, patch
+from unittest.mock import MagicMock, patch
 
 import super_launcher
 
@@ -26,15 +26,8 @@ class TestMain:
                 super_launcher.main()
                 mock_run.assert_called_once_with(["pkill", "-x", "fuzzel"])
 
-    def test_launches_fuzzel_workflow_when_not_running(self):
+    def test_launches_fuzzel_when_not_running(self):
         with patch("super_launcher.is_fuzzel_running", return_value=False):
             with patch("super_launcher.subprocess.run") as mock_run:
-                with patch("super_launcher.time.sleep") as mock_sleep:
-                    super_launcher.main()
-
-                    assert mock_run.call_args_list == [
-                        call(["hypr-ensure-workspace-tiled"]),
-                        call(["hypr-fuzzel"]),
-                        call(["hypr-ensure-workspace-grouped"]),
-                    ]
-                    mock_sleep.assert_called_once_with(0.15)
+                super_launcher.main()
+                mock_run.assert_called_once_with(["hypr-fuzzel"])

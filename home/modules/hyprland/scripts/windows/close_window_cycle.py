@@ -1,6 +1,5 @@
 import json
 import os
-import subprocess
 import sys
 import time
 from pathlib import Path
@@ -9,7 +8,6 @@ from hyprland_ipc import (
     get_active_window,
     get_all_clients,
     run_hyprctl,
-    run_hyprctl_batch,
 )
 
 CLOSED_WINDOWS_HISTORY_FILE = (
@@ -77,10 +75,6 @@ def find_previous_window_on_workspace(
     return candidates[0].get("address")
 
 
-def ensure_remaining_tiled_windows_are_grouped_on_active_workspace() -> None:
-    subprocess.run(["hypr-ensure-workspace-grouped"], capture_output=True)
-
-
 def main() -> None:
     active_window = get_active_window()
     if not active_window:
@@ -103,17 +97,7 @@ def main() -> None:
     time.sleep(0.05)
 
     if previous_window_address:
-        run_hyprctl_batch(
-            f"dispatch focuswindow address:{previous_window_address};"
-            " dispatch fullscreen 1 unset;"
-            " dispatch fullscreen 1 set"
-        )
-    else:
-        run_hyprctl_batch(
-            "dispatch fullscreen 1 unset ; dispatch fullscreen 1 set"
-        )
-
-    ensure_remaining_tiled_windows_are_grouped_on_active_workspace()
+        run_hyprctl("dispatch", f"focuswindow address:{previous_window_address}")
 
 
 if __name__ == "__main__":

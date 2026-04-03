@@ -4,7 +4,7 @@ let
   graphicalServices = [
     "mako.service"
     "xdg-desktop-portal-hyprland.service"
-    "hypr-maximize-focus-daemon.service"
+    "hypr-focus-daemon.service"
   ];
 in
 {
@@ -23,7 +23,7 @@ in
     ../desktop/satty.nix
     ../audio/wiremix.nix
     ./xdg-desktop-portal-hyprland-service.nix
-    ./maximize-focus-daemon-service.nix
+    ./focus-daemon-service.nix
     ../desktop/fuzzel.nix
   ];
 

@@ -55,9 +55,8 @@ in
     (mkHyprlandPythonScript "hypr-menu" ./scripts/launchers/menu.py)
     (mkHyprlandPythonScript "hypr-fuzzel" ./scripts/launchers/fuzzel_launcher.py)
     (mkHyprlandPythonScript "hypr-super-launcher" ./scripts/launchers/super_launcher.py)
-    (mkHyprlandPythonScript "hypr-launch-clipse-with-workspace-group-restoration" ./scripts/launchers/launch_clipse_with_workspace_group_restoration.py)
+    (mkHyprlandPythonScript "hypr-launch-clipse" ./scripts/launchers/launch_clipse.py)
     (mkHyprlandPythonScript "hypr-summon-brave" ./scripts/launchers/summon_brave.py)
-    (mkHyprlandPythonScript "hypr-toggle-group-for-all-workspace-windows" ./scripts/windows/toggle_group_for_all_workspace_windows.py)
     (mkHyprlandPythonScript "hypr-screenshot" ./scripts/utilities/screenshot.py)
     (mkHyprlandPythonScript "hypr-network" ./scripts/hardware/network.py)
     (mkHyprlandPythonScript "hypr-toggle-monitors" ./scripts/hardware/toggle_monitors.py)
@@ -77,14 +76,11 @@ in
     ])
     (mkHyprlandPythonScript "quickshell-osd-send" ./scripts/utilities/quickshell_osd_send.py)
 
-    (mkHyprlandPythonScript "hypr-maximize-focus-daemon" ./scripts/windows/maximize_focus_daemon.py)
+    (mkHyprlandPythonScript "hypr-focus-daemon" ./scripts/windows/focus_daemon.py)
     (mkHyprlandPythonScript "hypr-close-window-cycle" ./scripts/windows/close_window_cycle.py)
     (mkHyprlandPythonScript "hypr-reopen-window" ./scripts/windows/reopen_window.py)
     (mkHyprlandPythonScript "hypr-reopen-window-picker" ./scripts/windows/reopen_window_picker.py)
     (mkHyprlandPythonScript "hypr-show-desktop" ./scripts/windows/show_desktop.py)
-    (mkHyprlandPythonScript "hypr-detach-from-group-and-move-to-workspace" ./scripts/windows/detach_from_group_and_move_to_workspace.py)
-    (mkHyprlandPythonScript "hypr-all-tiled-windows-are-in-single-group" ./scripts/windows/all_tiled_windows_are_in_single_group.py)
-    (mkHyprlandPythonScript "hypr-ensure-workspace-grouped" ./scripts/windows/ensure_workspace_grouped.py)
-    (mkHyprlandPythonScript "hypr-ensure-workspace-tiled" ./scripts/windows/ensure_workspace_tiled.py)
+    (mkHyprlandPythonScript "hypr-move-window-to-workspace" ./scripts/windows/move_window_to_workspace.py)
   ];
 }

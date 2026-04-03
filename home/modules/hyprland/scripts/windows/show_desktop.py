@@ -1,5 +1,4 @@
 import os
-import subprocess
 import time
 from pathlib import Path
 
@@ -12,26 +11,6 @@ from hyprland_ipc import (
 )
 
 STATE_DIR = Path(os.environ.get("XDG_RUNTIME_DIR", "/tmp")) / "hyprland-show-desktop"
-
-
-def find_grouped_window_on_workspace(workspace_id: int) -> str | None:
-    for client in get_all_clients():
-        if (
-            client.get("workspace", {}).get("id") == workspace_id
-            and not client.get("floating", False)
-            and len(client.get("grouped", [])) > 1
-        ):
-            return client.get("address")
-    return None
-
-
-def dissolve_groups_on_workspace(workspace_id: int) -> None:
-    grouped_window_address = find_grouped_window_on_workspace(workspace_id)
-    if grouped_window_address:
-        run_hyprctl_batch(
-            f"dispatch focuswindow address:{grouped_window_address};"
-            " dispatch togglegroup"
-        )
 
 
 def hide_all_workspace_windows_to_special_desktop(workspace_id: int) -> None:
@@ -54,8 +33,6 @@ def hide_all_workspace_windows_to_special_desktop(workspace_id: int) -> None:
         focus_file.write_text(active_address)
     state_file.write_text("\n".join(window_addresses))
 
-    dissolve_groups_on_workspace(workspace_id)
-
     hide_batch = "; ".join(
         f"dispatch movetoworkspacesilent special:desktop,address:{addr}"
         for addr in window_addresses
@@ -63,7 +40,7 @@ def hide_all_workspace_windows_to_special_desktop(workspace_id: int) -> None:
     run_hyprctl_batch(hide_batch)
 
 
-def restore_hidden_windows_and_maximize(workspace_id: int) -> None:
+def restore_hidden_windows(workspace_id: int) -> None:
     state_file = STATE_DIR / f"ws-{workspace_id}"
     focus_file = STATE_DIR / f"focus-{workspace_id}"
 
@@ -85,8 +62,6 @@ def restore_hidden_windows_and_maximize(workspace_id: int) -> None:
 
     state_file.unlink()
 
-    subprocess.run(["hypr-ensure-workspace-grouped"])
-
 
 def main() -> None:
     STATE_DIR.mkdir(parents=True, exist_ok=True)
@@ -101,7 +76,7 @@ def main() -> None:
     state_file = STATE_DIR / f"ws-{current_workspace_id}"
 
     if state_file.exists():
-        restore_hidden_windows_and_maximize(current_workspace_id)
+        restore_hidden_windows(current_workspace_id)
     else:
         hide_all_workspace_windows_to_special_desktop(current_workspace_id)
 

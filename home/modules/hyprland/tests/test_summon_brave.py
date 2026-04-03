@@ -63,7 +63,7 @@ class TestSummonOrLaunchBrave:
         ]
         assert len(dispatch_calls) > 0
 
-    def test_detaches_and_moves_from_different_workspace(
+    def test_moves_window_from_different_workspace(
         self, mock_subprocess_run, hyprctl_response_builder
     ):
         hyprctl_response_builder("activeworkspace", {"id": 1})
@@ -78,9 +78,9 @@ class TestSummonOrLaunchBrave:
             ],
         )
         summon_brave.summon_or_launch_brave()
-        detach_calls = [
+        move_calls = [
             c
             for c in mock_subprocess_run.call_args_list
-            if "hypr-detach-from-group-and-move-to-workspace" in str(c)
+            if "hypr-move-window-to-workspace" in str(c)
         ]
-        assert len(detach_calls) == 1
+        assert len(move_calls) == 1

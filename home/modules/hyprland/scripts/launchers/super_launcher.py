@@ -1,7 +1,4 @@
 import subprocess
-import time
-
-FUZZEL_SETTLE_DELAY_SECONDS = 0.15
 
 
 def is_fuzzel_running() -> bool:
@@ -14,10 +11,7 @@ def main() -> None:
         subprocess.run(["pkill", "-x", "fuzzel"])
         return
 
-    subprocess.run(["hypr-ensure-workspace-tiled"])
     subprocess.run(["hypr-fuzzel"])
-    time.sleep(FUZZEL_SETTLE_DELAY_SECONDS)
-    subprocess.run(["hypr-ensure-workspace-grouped"])
 
 
 if __name__ == "__main__":

@@ -118,15 +118,9 @@ menu:
   - key: w
     desc: Window
     submenu:
-      - key: t
-        desc: Toggle tile/group
-        cmd: hypr-toggle-group-for-all-workspace-windows
       - key: d
         desc: Show desktop
         cmd: hypr-show-desktop
-      - key: g
-        desc: Detach from group
-        cmd: hyprctl dispatch moveoutofgroup
       - key: s
         desc: Toggle split
         cmd: hyprctl dispatch togglesplit

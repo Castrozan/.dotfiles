@@ -69,12 +69,12 @@ class TestFindPreviousWindowOnWorkspace:
         assert result is None
 
 
-class TestMainEnsuresWorkspaceGroupedAfterClose:
+class TestMainFocusesPreviousWindowAfterClose:
     @patch("close_window_cycle.time.sleep")
-    def test_regroups_remaining_windows_after_closing_grouped_window(
+    def test_focuses_previous_window_after_closing(
         self, mock_sleep, mock_subprocess_run, hyprctl_response_builder
     ):
-        three_grouped_tiled_clients = [
+        clients = [
             {
                 "address": "0xaaa",
                 "workspace": {"id": 1},
@@ -83,7 +83,6 @@ class TestMainEnsuresWorkspaceGroupedAfterClose:
                 "pid": 1234,
                 "floating": False,
                 "focusHistoryID": 0,
-                "grouped": ["0xaaa", "0xbbb", "0xccc"],
             },
             {
                 "address": "0xbbb",
@@ -93,25 +92,16 @@ class TestMainEnsuresWorkspaceGroupedAfterClose:
                 "pid": 5678,
                 "floating": False,
                 "focusHistoryID": 1,
-                "grouped": ["0xaaa", "0xbbb", "0xccc"],
-            },
-            {
-                "address": "0xccc",
-                "workspace": {"id": 1},
-                "class": "code",
-                "title": "Editor",
-                "pid": 9012,
-                "floating": False,
-                "focusHistoryID": 2,
-                "grouped": ["0xaaa", "0xbbb", "0xccc"],
             },
         ]
-        hyprctl_response_builder("activewindow", three_grouped_tiled_clients[1])
-        hyprctl_response_builder("clients", three_grouped_tiled_clients)
+        hyprctl_response_builder("activewindow", clients[1])
+        hyprctl_response_builder("clients", clients)
 
-        with patch.object(
-            script,
-            "ensure_remaining_tiled_windows_are_grouped_on_active_workspace",
-        ) as mock_ensure_grouped:
-            script.main()
-            mock_ensure_grouped.assert_called_once()
+        script.main()
+
+        focus_calls = [
+            c
+            for c in mock_subprocess_run.call_args_list
+            if "focuswindow" in str(c) and "0xaaa" in str(c)
+        ]
+        assert len(focus_calls) > 0

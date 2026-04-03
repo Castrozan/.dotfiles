@@ -219,7 +219,7 @@ class TestSummonOrLaunchChromeGlobal:
         detach_calls = [
             c
             for c in mock_subprocess_run.call_args_list
-            if "hypr-detach-from-group-and-move-to-workspace" in str(c)
+            if "hypr-move-window-to-workspace" in str(c)
         ]
         assert len(detach_calls) == 1
 

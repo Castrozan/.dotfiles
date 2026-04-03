@@ -36,27 +36,25 @@ class TestHideAllWorkspaceWindowsToSpecialDesktop:
         assert not (tmp_path / "ws-1").exists()
 
 
-class TestRestoreHiddenWindowsAndMaximize:
-    @patch("show_desktop.subprocess.run")
+class TestRestoreHiddenWindows:
     @patch("show_desktop.time.sleep")
     def test_restores_windows_from_state_file(
-        self, mock_sleep, mock_subproc, tmp_path, mock_subprocess_run
+        self, mock_sleep, tmp_path, mock_subprocess_run
     ):
         state_file = tmp_path / "ws-1"
         state_file.write_text("0xaaa\n0xbbb\n")
         with patch.object(script, "STATE_DIR", tmp_path):
-            script.restore_hidden_windows_and_maximize(1)
+            script.restore_hidden_windows(1)
         assert not state_file.exists()
 
-    @patch("show_desktop.subprocess.run")
     @patch("show_desktop.time.sleep")
     def test_restores_focus_to_saved_window(
-        self, mock_sleep, mock_subproc, tmp_path, mock_subprocess_run
+        self, mock_sleep, tmp_path, mock_subprocess_run
     ):
         state_file = tmp_path / "ws-1"
         state_file.write_text("0xaaa\n")
         focus_file = tmp_path / "focus-1"
         focus_file.write_text("0xaaa")
         with patch.object(script, "STATE_DIR", tmp_path):
-            script.restore_hidden_windows_and_maximize(1)
+            script.restore_hidden_windows(1)
         assert not focus_file.exists()

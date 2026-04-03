@@ -37,7 +37,7 @@ def summon_or_launch_brave() -> None:
 
     subprocess.run(
         [
-            "hypr-detach-from-group-and-move-to-workspace",
+            "hypr-move-window-to-workspace",
             "follow",
             str(current_workspace_id),
             window_address,

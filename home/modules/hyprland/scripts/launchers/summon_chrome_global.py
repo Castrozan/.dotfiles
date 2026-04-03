@@ -159,7 +159,7 @@ def summon_or_launch_chrome_global() -> None:
 
     subprocess.run(
         [
-            "hypr-detach-from-group-and-move-to-workspace",
+            "hypr-move-window-to-workspace",
             "follow",
             str(current_workspace_id),
             window_address,
