@@ -4,7 +4,7 @@ description: Notify the user after completing substantial work. Use when finishi
 ---
 
 <execution>
-Run ~/.claude/skills/notify/scripts/notify.sh with a brief message. Voice is auto-detected from tts.json in the workspace root. Use --mobile for push notifications.
+Run scripts/notify.sh from this skill's directory with a brief message. Voice is auto-detected from tts.json in the workspace root. Use --mobile for push notifications.
 </execution>
 
 <when_to_use>
