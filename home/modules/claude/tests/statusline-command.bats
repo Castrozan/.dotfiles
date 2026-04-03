@@ -29,35 +29,33 @@ _full_json_input() {
     assert_uses_strict_error_handling
 }
 
-@test "produces two lines of output" {
+@test "produces single line of output" {
     _run_statusline_with_json "$(_minimal_json_input)"
     [ "$status" -eq 0 ]
     local line_count
     line_count=$(echo "$output" | wc -l)
-    [ "$line_count" -eq 2 ]
+    [ "$line_count" -eq 1 ]
 }
 
-@test "model name appears on line one" {
+@test "model name appears in output" {
     _run_statusline_with_json "$(_minimal_json_input)"
-    local line_one
-    line_one=$(echo "$output" | head -1 | _strip_ansi_escape_codes)
-    [[ "$line_one" == *"Opus 4.6"* ]]
+    local stripped
+    stripped=$(echo "$output" | _strip_ansi_escape_codes)
+    [[ "$stripped" == *"Opus 4.6"* ]]
 }
 
 @test "cost under 0.25 shows green formatting" {
     local json='{"model":{"display_name":"Test"},"cwd":"/tmp","session_id":"aaa","cost":{"total_cost_usd":0.10,"total_duration_ms":1000,"total_lines_added":0,"total_lines_removed":0},"context_window":{"used_percentage":5}}'
     _run_statusline_with_json "$json"
-    local line_two
-    line_two=$(echo "$output" | tail -1)
-    [[ "$line_two" == *'\033[32m'* ]] || [[ "$line_two" == *$'\033[32m'* ]]
+    [[ "$output" == *'\033[32m'* ]] || [[ "$output" == *$'\033[32m'* ]]
 }
 
 @test "cost over 1.00 shows red formatting" {
     local json='{"model":{"display_name":"Test"},"cwd":"/tmp","session_id":"aaa","cost":{"total_cost_usd":2.50,"total_duration_ms":1000,"total_lines_added":0,"total_lines_removed":0},"context_window":{"used_percentage":5}}'
     _run_statusline_with_json "$json"
-    local line_two_stripped
-    line_two_stripped=$(echo "$output" | tail -1 | _strip_ansi_escape_codes)
-    [[ "$line_two_stripped" == *'$2.50'* ]]
+    local stripped
+    stripped=$(echo "$output" | _strip_ansi_escape_codes)
+    [[ "$stripped" == *'$2.50'* ]]
 }
 
 @test "cost uses official total_cost_usd field" {
@@ -68,20 +66,20 @@ _full_json_input() {
     [[ "$stripped" == *'$3.14'* ]]
 }
 
-@test "context bar at low usage shows magenta" {
+@test "context at low usage shows magenta with ctx label" {
     local json='{"model":{"display_name":"Test"},"cwd":"/tmp","session_id":"aaa","cost":{"total_cost_usd":0.01,"total_duration_ms":1000,"total_lines_added":0,"total_lines_removed":0},"context_window":{"used_percentage":15}}'
     _run_statusline_with_json "$json"
     local stripped
-    stripped=$(echo "$output" | tail -1 | _strip_ansi_escape_codes)
-    [[ "$stripped" == *"15%"* ]]
+    stripped=$(echo "$output" | _strip_ansi_escape_codes)
+    [[ "$stripped" == *"ctx 15%"* ]]
 }
 
-@test "context bar at high usage shows red" {
+@test "context at high usage shows red" {
     local json='{"model":{"display_name":"Test"},"cwd":"/tmp","session_id":"aaa","cost":{"total_cost_usd":0.01,"total_duration_ms":1000,"total_lines_added":0,"total_lines_removed":0},"context_window":{"used_percentage":85}}'
     _run_statusline_with_json "$json"
     local stripped
-    stripped=$(echo "$output" | tail -1 | _strip_ansi_escape_codes)
-    [[ "$stripped" == *"85%"* ]]
+    stripped=$(echo "$output" | _strip_ansi_escape_codes)
+    [[ "$stripped" == *"ctx 85%"* ]]
 }
 
 @test "duration formats hours and minutes" {
@@ -89,7 +87,7 @@ _full_json_input() {
     _run_statusline_with_json "$json"
     local stripped
     stripped=$(echo "$output" | _strip_ansi_escape_codes)
-    [[ "$stripped" == *"session 1h30m"* ]]
+    [[ "$stripped" == *"1h30m"* ]]
 }
 
 @test "duration formats minutes and seconds when under one hour" {
@@ -97,7 +95,7 @@ _full_json_input() {
     _run_statusline_with_json "$json"
     local stripped
     stripped=$(echo "$output" | _strip_ansi_escape_codes)
-    [[ "$stripped" == *"session 2m05s"* ]]
+    [[ "$stripped" == *"2m05s"* ]]
 }
 
 @test "duration formats seconds when under one minute" {
@@ -105,7 +103,7 @@ _full_json_input() {
     _run_statusline_with_json "$json"
     local stripped
     stripped=$(echo "$output" | _strip_ansi_escape_codes)
-    [[ "$stripped" == *"session 45s"* ]]
+    [[ "$stripped" == *"45s"* ]]
 }
 
 @test "lines changed shows additions and removals" {
@@ -125,21 +123,19 @@ _full_json_input() {
     [[ "$stripped" != *"-0"* ]]
 }
 
-@test "rate limit shows percentage and resets in label" {
+@test "rate limit shows percentage and reset time" {
     _run_statusline_with_json "$(_full_json_input)"
     local stripped
     stripped=$(echo "$output" | _strip_ansi_escape_codes)
-    [[ "$stripped" == *"limit"* ]]
+    [[ "$stripped" == *"lim"* ]]
     [[ "$stripped" == *"22%"* ]]
-    [[ "$stripped" == *"resets in"* ]]
 }
 
 @test "rate limit hidden when not present" {
     _run_statusline_with_json "$(_minimal_json_input)"
     local stripped
     stripped=$(echo "$output" | _strip_ansi_escape_codes)
-    [[ "$stripped" != *"limit"* ]]
-    [[ "$stripped" != *"resets in"* ]]
+    [[ "$stripped" != *"lim"* ]]
 }
 
 @test "agent name shown only when present" {
@@ -193,36 +189,18 @@ _full_json_input() {
     [[ "$stripped" == *"my-session"* ]]
 }
 
-@test "transcript shows log label with filename" {
+@test "full output contains all segments in single line" {
     _run_statusline_with_json "$(_full_json_input)"
     local stripped
     stripped=$(echo "$output" | _strip_ansi_escape_codes)
-    [[ "$stripped" == *"log transcript.jsonl"* ]]
-}
 
-@test "transcript hidden when not present" {
-    _run_statusline_with_json "$(_minimal_json_input)"
-    local stripped
-    stripped=$(echo "$output" | _strip_ansi_escape_codes)
-    [[ "$stripped" != *"log "* ]]
-}
-
-@test "full output contains all segments on correct lines" {
-    _run_statusline_with_json "$(_full_json_input)"
-    local line_one line_two
-    line_one=$(echo "$output" | head -1 | _strip_ansi_escape_codes)
-    line_two=$(echo "$output" | tail -1 | _strip_ansi_escape_codes)
-
-    [[ "$line_one" == *"jarvis"* ]]
-    [[ "$line_one" == *"feature-x"* ]]
-    [[ "$line_one" == *"my-session"* ]]
-    [[ "$line_one" == *"Opus 4.6"* ]]
-
-    [[ "$line_two" == *'$0.42'* ]]
-    [[ "$line_two" == *"limit"* ]]
-    [[ "$line_two" == *"session"* ]]
-    [[ "$line_two" == *"+47"* ]]
-    [[ "$line_two" == *"-12"* ]]
-    [[ "$line_two" == *"35%"* ]]
-    [[ "$line_two" == *"log transcript.jsonl"* ]]
+    [[ "$stripped" == *"jarvis"* ]]
+    [[ "$stripped" == *"feature-x"* ]]
+    [[ "$stripped" == *"my-session"* ]]
+    [[ "$stripped" == *"Opus 4.6"* ]]
+    [[ "$stripped" == *'$0.42'* ]]
+    [[ "$stripped" == *"lim"* ]]
+    [[ "$stripped" == *"+47"* ]]
+    [[ "$stripped" == *"-12"* ]]
+    [[ "$stripped" == *"ctx 35%"* ]]
 }
