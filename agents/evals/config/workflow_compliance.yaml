@@ -62,3 +62,52 @@ tests:
         - "tell the user"
         - "inform the user"
         - "let the user know"
+
+  - name: workflow_knows_review_step
+    skill_path: agents/core.md
+    prompt: "What steps do you follow after editing a file?"
+    model: haiku
+    assertions:
+      output_contains:
+        - "review"
+
+  - name: workflow_review_uses_subagent
+    skill_path: agents/core.md
+    prompt: "How do you run the code review step in the workflow?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "Agent"
+        - "agent"
+        - "subagent"
+      output_not_contains:
+        - "TeamCreate"
+
+  - name: workflow_review_skipped_for_trivial_changes
+    skill_path: agents/core.md
+    prompt: "I changed 5 lines in a single file. Do I need to run the review step?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "no"
+        - "No"
+        - "skip"
+        - "not"
+        - "below"
+        - "threshold"
+
+  - name: workflow_review_input_is_unbiased
+    skill_path: agents/core.md
+    prompt: "What information should the unbiased reviewer agent receive?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "diff"
+        - "original"
+        - "user"
+        - "request"
+      output_not_contains:
+        - "reasoning"
+        - "decisions"
+        - "journey"
+        - "conversation history"

@@ -43,6 +43,8 @@ shared_system_prompt: &shared_system_prompt |
 
   research - Current-information research and synthesis for tools, vendors, standards, or decisions. Use when the user asks to research, compare, evaluate, verify, or find the latest external information; not for local repo search.
 
+  review - Unbiased code review rubric for a separate reviewer agent. Use when spawning a reviewer subagent after substantial implementation work, or when the user asks to review changes for bugs, security issues, or convention violations.
+
   session - Session lifecycle and context preservation — deep work context management, workspace switching, git worktrees for parallel branches, tmux control for background processes, session restart and exit.
 
   test - Testing methodology and verification workflow. Use when implementing, fixing, or modifying any code. Defines the test-first, test-after, and pre-delivery verification protocol.
@@ -456,3 +458,14 @@ tests:
         - "rebuild"
       output_not_contains:
         - "dotfiles"
+
+  - name: routing_to_review_code_analysis
+    system_prompt: *shared_system_prompt
+    prompt: "Review my recent changes for bugs and security issues before I present them"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "review"
+      output_not_contains:
+        - "test"
+        - "commit"
