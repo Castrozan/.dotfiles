@@ -32,9 +32,15 @@ let
       CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = "1";
       CLAUDE_ENABLE_STREAM_WATCHDOG = "1";
     };
+    # Workaround: bypassPermissions has a hardcoded .claude/ prompt since v2.1.78.
+    # Tracking: anthropics/claude-code#38806, #37765, #36192, #37181
     permissions = {
       defaultMode = "bypassPermissions";
-      allow = [ "*" ];
+      allow = [
+        "*"
+        "Edit(~/.claude/**)"
+        "Write(~/.claude/**)"
+      ];
       deny = [ ];
     };
     terminalShowHoverHint = false;

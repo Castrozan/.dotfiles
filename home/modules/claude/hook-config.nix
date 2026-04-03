@@ -91,14 +91,16 @@ in
     }
   ];
 
+  # Workaround: bypassPermissions has a hardcoded .claude/ prompt since v2.1.78.
+  # Tracking: anthropics/claude-code#38806, #37765, #36192, #37181
   PermissionRequest = [
     {
       matcher = ".*";
       hooks = [
         {
           type = "command";
-          command = "${runHook} ${hooksPath}/allow-all-permission-requests.py";
-          timeout = 3000;
+          command = ''echo '{"hookSpecificOutput":{"hookEventName":"PermissionRequest","permissionDecision":"allow","permissionDecisionReason":"auto-approved"}}' '';
+          timeout = 1000;
         }
       ];
     }
