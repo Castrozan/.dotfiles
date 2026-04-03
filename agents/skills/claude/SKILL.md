@@ -1,27 +1,38 @@
 ---
 name: claude
-description: Delegate work to Claude Code as an interactive session or a one-shot autonomous task. Use when spawning agents, handing off complex implementation, or running parallel coding sessions.
+description: Launch and interact with Claude Code sessions via tmux or one-shot commands. Use when spawning interactive coding sessions, delegating tasks to parallel agents, or running autonomous implementations. Also covers builtin Agent tool for in-process delegation.
 ---
 
-<interactive_session>
-Opens a visible tmux window. Agent runs interactively — you can watch it work, intervene, or follow up. Use when you need visibility or may need to course-correct mid-task.
+<tmux_sessions>
+Launch a Claude Code instance in a tmux window. The session is fully interactive — the user can watch, take over, or follow up at any time. Use the spawn script from this skill's `scripts/` directory to create the window and optionally send an initial prompt.
 
-Invoke the spawn script from this skill's `scripts/` directory:
-`spawn-claude.sh <target> <working-dir> <instructions-file> [--model MODEL]`
+Run `spawn-claude.sh --help` for exact syntax and flags. The script creates a named tmux window, starts claude in it, and optionally sends an initial prompt from a string or file.
 
-- `target`: `"session:window"` or just `"window"` (uses current tmux session)
-- `working-dir`: directory the agent starts in
-- `instructions-file`: task file the agent reads as its first prompt
-</interactive_session>
+After spawning, interact with the session through tmux primitives:
+
+Send a follow-up prompt:
+`tmux send-keys -t "session:window" "your prompt here" Enter`
+
+Read current output:
+`tmux capture-pane -t "session:window" -p -S -50`
+
+The session persists independently — if the spawning agent's conversation ends, the tmux window and its claude instance remain alive for the user.
+</tmux_sessions>
 
 <one_shot>
-Runs `claude --print "task" --dangerously-skip-permissions` and exits. No window, no back-and-forth — fire and verify. Use for context-heavy refactors, parallel worktrees, or tasks with clear success criteria verifiable by tests or script output.
+For tasks with clear success criteria that need no interaction, use `claude --print` directly. It runs, prints the result, and exits — no tmux window, no back-and-forth. Pipe input or pass the prompt as an argument. Combine with `--dangerously-skip-permissions` for fully autonomous execution in trusted environments.
 </one_shot>
 
 <builtin_agents>
-Claude Code has built-in Agent tool and Teams (TeamCreate). For multi-agent implementation work — anything with multiple steps, coordination, or progress tracking — always create a Team first, then spawn teammates with `team_name` parameter. Teams provide shared task lists, messaging, and visibility. Use bare Agent tool (without team) only for single-purpose read-only queries: quick research, codebase exploration, file search. Never use bare subagents for implementation work. The Agent tool supports worktree isolation via `isolation: "worktree"` parameter — use it for teammates that edit code to avoid conflicts.
+Claude Code has a built-in Agent tool for in-process delegation. For single-purpose read-only queries (research, codebase exploration, file search), use bare Agent tool — no tmux needed. For multi-agent implementation work with coordination needs, use Teams (TeamCreate) with `isolation: "worktree"` for code-editing teammates.
+
+Choose tmux sessions over builtin agents when: the user needs to see or take over the work, the task benefits from a persistent interactive session, or you want the session to outlive your own conversation.
 </builtin_agents>
 
-<writing_good_task_files>
-Spawned agents have no prior context. Include everything needed: what to build, where to look, what patterns to follow, what not to do. End with "Work autonomously." to prevent clarification requests.
-</writing_good_task_files>
+<traps>
+Multiline prompts via send-keys: tmux interprets Enter literally. For multi-line input, write the prompt to a temp file and send `cat /tmp/prompt.md` as the claude input, or use the spawn script's file-based prompt mode.
+
+Session identification: the session ID appears in claude's status bar. Capture it with `tmux capture-pane` and grep for `.jsonl` if you need to resume later with `claude --resume <id>`.
+
+Permission modes: interactive sessions default to asking for permission. Pass `--skip-permissions` to the spawn script for autonomous work, or let the user control permissions interactively.
+</traps>

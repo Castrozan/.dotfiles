@@ -42,16 +42,26 @@ _create_tmux_window_at_target() {
 	}
 }
 
-_build_claude_invocation_with_instructions_file() {
-	local instructions_file="$1"
-	local model="${2:-}"
+_build_claude_command() {
+	local model="$1"
+	local skip_permissions="$2"
+	local session_name="$3"
 
-	local model_flag=""
+	local command_parts="claude"
+
 	if [[ -n "$model" ]]; then
-		model_flag="--model $model"
+		command_parts+=" --model ${model}"
 	fi
 
-	echo "claude ${model_flag} \"Read the task at ${instructions_file} and implement it. Work autonomously.\""
+	if [[ "$skip_permissions" == "true" ]]; then
+		command_parts+=" --dangerously-skip-permissions"
+	fi
+
+	if [[ -n "$session_name" ]]; then
+		command_parts+=" --name ${session_name}"
+	fi
+
+	echo "$command_parts"
 }
 
 _send_command_to_tmux_pane() {
@@ -65,39 +75,85 @@ _send_command_to_tmux_pane() {
 	tmux -S "$tmux_socket" send-keys -t "${target_window}.${pane_index}" "$command_to_run" Enter
 }
 
+_send_initial_prompt_to_claude() {
+	local target_window="$1"
+	local tmux_socket="$2"
+	local prompt_text="$3"
+	local prompt_file="$4"
+
+	sleep 3
+
+	if [[ -n "$prompt_file" ]]; then
+		_send_command_to_tmux_pane "$target_window" "Read the task at ${prompt_file} and implement it." "$tmux_socket"
+	elif [[ -n "$prompt_text" ]]; then
+		_send_command_to_tmux_pane "$target_window" "$prompt_text" "$tmux_socket"
+	fi
+}
+
 _print_usage_and_exit() {
 	cat >&2 <<EOF
-Usage: ${SCRIPT_NAME} <target> <working-dir> <instructions-file> [--model MODEL]
+Usage: ${SCRIPT_NAME} <target> <working-dir> [options]
 
+Launch a Claude Code session in a tmux window.
+
+Arguments:
   target             tmux target: "session:window-name" or just "window-name" (uses current session)
-  working-dir        directory to cd into before starting claude
-  instructions-file  path to file containing task instructions for the spawned agent
+  working-dir        directory to start in
 
-  --model MODEL      claude model to use (optional, uses default if omitted)
+Options:
+  --prompt TEXT       send an initial prompt after claude starts
+  --file PATH        send "Read the task at PATH and implement it." as the initial prompt
+  --model MODEL      claude model to use (default: inherits from config)
+  --skip-permissions  run with --dangerously-skip-permissions
+  --name NAME        set a display name for the claude session
 
 Examples:
-  ${SCRIPT_NAME} dotfiles:task-resume ~/.dotfiles /tmp/task.md
-  ${SCRIPT_NAME} feature-work ~/projects/app /tmp/instructions.md --model claude-sonnet-4-6
+  ${SCRIPT_NAME} dotfiles:refactor ~/projects/app
+  ${SCRIPT_NAME} feature-work ~/projects/app --prompt "Fix the login bug in auth.ts"
+  ${SCRIPT_NAME} task-agent ~/projects/app --file /tmp/task.md --skip-permissions
+  ${SCRIPT_NAME} review ~/projects/app --model sonnet --name "code-review"
 EOF
 	exit 1
 }
 
 main() {
-	if [[ $# -lt 3 ]]; then
+	if [[ $# -lt 2 ]]; then
 		_print_usage_and_exit
 	fi
 
 	local target_specifier="$1"
 	local working_directory="$2"
-	local instructions_file="$3"
 	local model=""
+	local skip_permissions="false"
+	local session_name=""
+	local prompt_text=""
+	local prompt_file=""
 
-	shift 3
+	shift 2
 	while [[ $# -gt 0 ]]; do
 		case "$1" in
 		--model)
 			model="$2"
 			shift 2
+			;;
+		--skip-permissions)
+			skip_permissions="true"
+			shift
+			;;
+		--name)
+			session_name="$2"
+			shift 2
+			;;
+		--prompt)
+			prompt_text="$2"
+			shift 2
+			;;
+		--file)
+			prompt_file="$2"
+			shift 2
+			;;
+		--help | -h)
+			_print_usage_and_exit
 			;;
 		*)
 			echo >&2 "Unknown option: $1"
@@ -106,10 +162,15 @@ main() {
 		esac
 	done
 
-	[[ -f "$instructions_file" ]] || {
-		echo >&2 "Error: instructions file not found: ${instructions_file}"
+	if [[ -n "$prompt_text" && -n "$prompt_file" ]]; then
+		echo >&2 "Error: --prompt and --file are mutually exclusive"
 		exit 1
-	}
+	fi
+
+	if [[ -n "$prompt_file" && ! -f "$prompt_file" ]]; then
+		echo >&2 "Error: prompt file not found: ${prompt_file}"
+		exit 1
+	fi
 
 	[[ -d "$working_directory" ]] || {
 		echo >&2 "Error: working directory not found: ${working_directory}"
@@ -133,11 +194,15 @@ main() {
 	_create_tmux_window_at_target "$session" "$window_name" "$working_directory" "$tmux_socket"
 
 	local claude_command
-	claude_command="$(_build_claude_invocation_with_instructions_file "$instructions_file" "$model")"
+	claude_command="$(_build_claude_command "$model" "$skip_permissions" "$session_name")"
 
 	_send_command_to_tmux_pane "${session}:${window_name}" "$claude_command" "$tmux_socket"
 
-	echo "Spawned claude in ${session}:${window_name} — working from ${instructions_file}"
+	if [[ -n "$prompt_text" || -n "$prompt_file" ]]; then
+		_send_initial_prompt_to_claude "${session}:${window_name}" "$tmux_socket" "$prompt_text" "$prompt_file"
+	fi
+
+	echo "Spawned claude in ${session}:${window_name}"
 }
 
 main "$@"
