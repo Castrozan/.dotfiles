@@ -163,15 +163,6 @@ _build_session_cost_segment_from_json_input() {
 	printf "${cost_color}\$%s${COLOR_RESET}" "$formatted_cost"
 }
 
-_build_session_id_segment_from_json_input() {
-	local json_input="$1"
-	local session_id
-	session_id=$(echo "$json_input" | jq -r '.session_id // empty')
-	[ -z "$session_id" ] && return 0
-	local short_session_id="${session_id:0:8}"
-	printf "${COLOR_DIM}%s${COLOR_RESET}" "$short_session_id"
-}
-
 _build_session_name_segment_from_json_input() {
 	local json_input="$1"
 	local session_name
@@ -323,13 +314,12 @@ _render_statusline_from_json_input() {
 	local current_working_directory
 	current_working_directory=$(echo "$json_input" | jq -r '.cwd')
 
-	local vim_mode_segment session_id_segment agent_name_segment worktree_segment
+	local vim_mode_segment agent_name_segment worktree_segment
 	local session_name_segment git_segment model_segment
 	local session_cost_segment rate_limit_segment session_duration_segment
 	local lines_changed_segment context_window_segment transcript_path_segment
 
 	vim_mode_segment=$(_build_vim_mode_segment_from_json_input "$json_input")
-	session_id_segment=$(_build_session_id_segment_from_json_input "$json_input")
 	agent_name_segment=$(_build_agent_name_segment_from_json_input "$json_input")
 	worktree_segment=$(_build_worktree_segment_from_json_input "$json_input")
 	session_name_segment=$(_build_session_name_segment_from_json_input "$json_input")
@@ -345,7 +335,6 @@ _render_statusline_from_json_input() {
 
 	local line_one=""
 	line_one=$(_append_segment_to_output "$line_one" "$vim_mode_segment")
-	line_one=$(_append_segment_to_output "$line_one" "$session_id_segment")
 	line_one=$(_append_segment_to_output "$line_one" "$agent_name_segment")
 	line_one=$(_append_segment_to_output "$line_one" "$worktree_segment")
 	line_one=$(_append_segment_to_output "$line_one" "$session_name_segment")

@@ -37,14 +37,6 @@ _full_json_input() {
     [ "$line_count" -eq 2 ]
 }
 
-@test "session id is truncated to 8 characters" {
-    _run_statusline_with_json "$(_minimal_json_input)"
-    local stripped
-    stripped=$(echo "$output" | _strip_ansi_escape_codes)
-    [[ "$stripped" == *"abcd1234"* ]]
-    [[ "$stripped" != *"abcd1234-5678"* ]]
-}
-
 @test "model name appears on line one" {
     _run_statusline_with_json "$(_minimal_json_input)"
     local line_one
@@ -221,7 +213,6 @@ _full_json_input() {
     line_one=$(echo "$output" | head -1 | _strip_ansi_escape_codes)
     line_two=$(echo "$output" | tail -1 | _strip_ansi_escape_codes)
 
-    [[ "$line_one" == *"abcd1234"* ]]
     [[ "$line_one" == *"jarvis"* ]]
     [[ "$line_one" == *"feature-x"* ]]
     [[ "$line_one" == *"my-session"* ]]
