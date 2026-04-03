@@ -1,0 +1,96 @@
+tests:
+  - name: review_flags_obvious_null_dereference
+    skill_path: agents/skills/review/SKILL.md
+    system_prompt_suffix: |
+      Original user request: "Add a function to get user by ID"
+
+      Git diff:
+      ```diff
+      +def get_user_by_id(user_id):
+      +    user = database.find(user_id)
+      +    return user.name
+      ```
+    prompt: "Review this diff."
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "bug"
+        - "null"
+        - "None"
+        - "[9"
+        - "[8"
+
+  - name: review_ignores_preexisting_unchanged_lines
+    skill_path: agents/skills/review/SKILL.md
+    system_prompt_suffix: |
+      Original user request: "Add logging to the handler"
+
+      Git diff:
+      ```diff
+       def handle_request(request):
+      -    result = process(request)
+      +    logger.info("Processing request")
+      +    result = process(request)
+           return result
+      ```
+
+      Note: the `process` function has a known bug where it doesn't validate input, but that line was NOT changed in this diff.
+    prompt: "Review this diff."
+    model: haiku
+    assertions:
+      output_contains:
+        - "NO_ISSUES_FOUND"
+
+  - name: review_flags_hardcoded_credentials
+    skill_path: agents/skills/review/SKILL.md
+    system_prompt_suffix: |
+      Original user request: "Add database connection"
+
+      Git diff:
+      ```diff
+      +DB_PASSWORD = "admin123"
+      +connection = connect(host="db.prod.internal", password=DB_PASSWORD)
+      ```
+    prompt: "Review this diff."
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "security"
+        - "credential"
+        - "hardcoded"
+        - "password"
+        - "[9"
+        - "[8"
+
+  - name: review_ignores_style_preferences
+    skill_path: agents/skills/review/SKILL.md
+    system_prompt_suffix: |
+      Original user request: "Rename the variable for clarity"
+
+      Git diff:
+      ```diff
+      -x = calculate_total(items)
+      +total_price_for_all_items_in_cart = calculate_total(items)
+      ```
+    prompt: "Review this diff."
+    model: haiku
+    assertions:
+      output_contains:
+        - "NO_ISSUES_FOUND"
+
+  - name: review_knows_output_format_no_issues
+    skill_path: agents/skills/review/SKILL.md
+    prompt: "What should you output when you find no issues above the confidence threshold?"
+    model: haiku
+    assertions:
+      output_contains:
+        - "NO_ISSUES_FOUND"
+
+  - name: review_knows_confidence_threshold
+    skill_path: agents/skills/review/SKILL.md
+    prompt: "What is the minimum confidence score for reporting a finding?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "81"
+        - "80"
