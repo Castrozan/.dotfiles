@@ -4,7 +4,7 @@ description: Notify the user after completing substantial work. Use when finishi
 ---
 
 <execution>
-Run scripts/notify.sh with a brief message. Voice is auto-detected from tts.json in the workspace root. Use --mobile for push notifications.
+Run agents/skills/notify/scripts/notify.sh with a brief message (path relative to repo root). Voice is auto-detected from tts.json in the workspace root. Use --mobile for push notifications.
 </execution>
 
 <when_to_use>
