@@ -6,6 +6,7 @@ import os
 import subprocess
 import sys
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -227,6 +228,9 @@ def run_test(test: dict, settings: dict, dry_run: bool = False) -> TestResult:
     )
 
 
+DEFAULT_PARALLEL_WORKERS = 10
+
+
 def run_tests(
     config: dict,
     category: str | None = None,
@@ -234,17 +238,16 @@ def run_tests(
     dry_run: bool = False,
     smoke_only: bool = False,
 ) -> list[TestResult]:
-    results = []
     settings = config.get("settings", {})
 
     if smoke_only:
         smoke = config.get("smoke_test")
         if smoke:
-            result = run_test(smoke, settings, dry_run)
-            results.append(result)
-        return results
+            return [run_test(smoke, settings, dry_run)]
+        return []
 
     tests_config = config.get("tests", {})
+    tests_to_run = []
 
     for cat_name, tests in tests_config.items():
         if category and cat_name != category:
@@ -253,11 +256,24 @@ def run_tests(
         for test in tests:
             if test_name and test["name"] != test_name:
                 continue
+            tests_to_run.append(test)
 
-            result = run_test(test, settings, dry_run)
-            results.append(result)
+    if dry_run or len(tests_to_run) <= 1:
+        return [run_test(test, settings, dry_run) for test in tests_to_run]
 
-    return results
+    max_workers = settings.get("parallel_workers", DEFAULT_PARALLEL_WORKERS)
+    results_by_name = {}
+
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        future_to_test_name = {
+            executor.submit(run_test, test, settings, False): test["name"]
+            for test in tests_to_run
+        }
+        for future in as_completed(future_to_test_name):
+            test_name_key = future_to_test_name[future]
+            results_by_name[test_name_key] = future.result()
+
+    return [results_by_name[test["name"]] for test in tests_to_run]
 
 
 def print_results(results: list[TestResult]) -> bool:
