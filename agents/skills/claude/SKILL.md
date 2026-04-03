@@ -1,6 +1,6 @@
 ---
 name: claude
-description: Launch and interact with Claude Code sessions via tmux or one-shot commands. Use when spawning interactive coding sessions, delegating tasks to parallel agents, or running autonomous implementations. Also covers builtin Agent tool for in-process delegation.
+description: Launch and interact with Claude Code sessions via tmux or one-shot commands. Use when spawning interactive coding sessions, delegating tasks to parallel agents, or running autonomous implementations.
 ---
 
 <tmux_sessions>
@@ -30,9 +30,7 @@ Choose tmux sessions over builtin agents when: the user needs to see or take ove
 </builtin_agents>
 
 <traps>
-Multiline prompts via send-keys: tmux interprets Enter literally. For multi-line input, write the prompt to a temp file and send `cat /tmp/prompt.md` as the claude input, or use the spawn script's file-based prompt mode.
+Multiline prompts via send-keys: tmux interprets Enter literally, so a newline in your string submits mid-prompt. For multi-line input, write the prompt to a temp file and use the spawn script's `--file` flag, or use `tmux load-buffer /tmp/prompt.md && tmux paste-buffer -t "session:window"` to paste without triggering Enter.
 
 Session identification: the session ID appears in claude's status bar. Capture it with `tmux capture-pane` and grep for `.jsonl` if you need to resume later with `claude --resume <id>`.
-
-Permission modes: interactive sessions default to asking for permission. Pass `--skip-permissions` to the spawn script for autonomous work, or let the user control permissions interactively.
 </traps>

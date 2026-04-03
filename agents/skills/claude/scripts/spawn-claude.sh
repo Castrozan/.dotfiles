@@ -45,7 +45,7 @@ _create_tmux_window_at_target() {
 _build_claude_command() {
 	local model="$1"
 	local skip_permissions="$2"
-	local session_name="$3"
+	local claude_display_name="$3"
 
 	local command_parts="claude"
 
@@ -57,8 +57,8 @@ _build_claude_command() {
 		command_parts+=" --dangerously-skip-permissions"
 	fi
 
-	if [[ -n "$session_name" ]]; then
-		command_parts+=" --name ${session_name}"
+	if [[ -n "$claude_display_name" ]]; then
+		command_parts+=" --name ${claude_display_name}"
 	fi
 
 	echo "$command_parts"
@@ -75,13 +75,31 @@ _send_command_to_tmux_pane() {
 	tmux -S "$tmux_socket" send-keys -t "${target_window}.${pane_index}" "$command_to_run" Enter
 }
 
+_wait_for_claude_input_prompt() {
+	local target_window="$1"
+	local tmux_socket="$2"
+	local max_attempts=20
+
+	for ((attempt = 1; attempt <= max_attempts; attempt++)); do
+		local pane_content
+		pane_content="$(tmux -S "$tmux_socket" capture-pane -t "$target_window" -p -S -10 2>/dev/null || echo "")"
+		if echo "$pane_content" | grep -q '❯'; then
+			return 0
+		fi
+		sleep 1
+	done
+
+	echo >&2 "Warning: claude input prompt not detected after ${max_attempts}s, sending prompt anyway"
+	return 0
+}
+
 _send_initial_prompt_to_claude() {
 	local target_window="$1"
 	local tmux_socket="$2"
 	local prompt_text="$3"
 	local prompt_file="$4"
 
-	sleep 3
+	_wait_for_claude_input_prompt "$target_window" "$tmux_socket"
 
 	if [[ -n "$prompt_file" ]]; then
 		_send_command_to_tmux_pane "$target_window" "Read the task at ${prompt_file} and implement it." "$tmux_socket"
@@ -90,8 +108,8 @@ _send_initial_prompt_to_claude() {
 	fi
 }
 
-_print_usage_and_exit() {
-	cat >&2 <<EOF
+_print_help_and_exit() {
+	cat <<EOF
 Usage: ${SCRIPT_NAME} <target> <working-dir> [options]
 
 Launch a Claude Code session in a tmux window.
@@ -113,19 +131,27 @@ Examples:
   ${SCRIPT_NAME} task-agent ~/projects/app --file /tmp/task.md --skip-permissions
   ${SCRIPT_NAME} review ~/projects/app --model sonnet --name "code-review"
 EOF
+	exit 0
+}
+
+_print_usage_error_and_exit() {
+	echo >&2 "Error: missing required arguments. Run '${SCRIPT_NAME} --help' for usage."
 	exit 1
 }
 
 main() {
 	if [[ $# -lt 2 ]]; then
-		_print_usage_and_exit
+		if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
+			_print_help_and_exit
+		fi
+		_print_usage_error_and_exit
 	fi
 
 	local target_specifier="$1"
 	local working_directory="$2"
 	local model=""
 	local skip_permissions="false"
-	local session_name=""
+	local claude_display_name=""
 	local prompt_text=""
 	local prompt_file=""
 
@@ -141,7 +167,7 @@ main() {
 			shift
 			;;
 		--name)
-			session_name="$2"
+			claude_display_name="$2"
 			shift 2
 			;;
 		--prompt)
@@ -153,11 +179,11 @@ main() {
 			shift 2
 			;;
 		--help | -h)
-			_print_usage_and_exit
+			_print_help_and_exit
 			;;
 		*)
-			echo >&2 "Unknown option: $1"
-			_print_usage_and_exit
+			echo >&2 "Error: unknown option: $1"
+			_print_usage_error_and_exit
 			;;
 		esac
 	done
@@ -194,7 +220,7 @@ main() {
 	_create_tmux_window_at_target "$session" "$window_name" "$working_directory" "$tmux_socket"
 
 	local claude_command
-	claude_command="$(_build_claude_command "$model" "$skip_permissions" "$session_name")"
+	claude_command="$(_build_claude_command "$model" "$skip_permissions" "$claude_display_name")"
 
 	_send_command_to_tmux_pane "${session}:${window_name}" "$claude_command" "$tmux_socket"
 
