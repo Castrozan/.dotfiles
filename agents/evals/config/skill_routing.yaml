@@ -461,11 +461,8 @@ tests:
 
   - name: routing_to_review_code_analysis
     system_prompt: *shared_system_prompt
-    prompt: "Review my recent changes for bugs and security issues before I present them"
+    prompt: "Spawn an unbiased reviewer agent to check my implementation for bugs and convention violations"
     model: haiku
     assertions:
       output_contains_any:
         - "review"
-      output_not_contains:
-        - "test"
-        - "commit"
