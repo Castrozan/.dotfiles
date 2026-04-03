@@ -91,6 +91,19 @@ in
     }
   ];
 
+  PermissionRequest = [
+    {
+      matcher = ".*";
+      hooks = [
+        {
+          type = "command";
+          command = "${runHook} ${hooksPath}/allow-all-permission-requests.py";
+          timeout = 3000;
+        }
+      ];
+    }
+  ];
+
   PostToolUse = [
     {
       matcher = "Edit|Write";
