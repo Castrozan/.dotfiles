@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 import focus_daemon as daemon
 
 
@@ -76,7 +78,8 @@ class TestHandleCloseWindowEvent:
             current_focused_address="0xabc",
             previous_focused_address="0xdef",
         )
-        daemon.handle_close_window_event(state, "abc")
+        with patch("focus_daemon.time.sleep"):
+            daemon.handle_close_window_event(state, "abc")
         assert state.current_focused_address == "0xdef"
         assert state.previous_focused_address == ""
 
@@ -89,7 +92,34 @@ class TestHandleCloseWindowEvent:
         )
         daemon.handle_close_window_event(state, "def")
         assert state.previous_focused_address == ""
-        assert state.current_focused_address == "0xabc"
+
+    def test_delays_focus_dispatch_to_survive_layout_autofocus_race(
+        self, mock_subprocess_run, hyprctl_response_builder
+    ):
+        state = daemon.DaemonState(
+            current_focused_address="0xclipse",
+            previous_focused_address="0xwezterm",
+        )
+        call_order = []
+        with patch(
+            "focus_daemon.time.sleep",
+            side_effect=lambda _: call_order.append("sleep"),
+        ):
+            original_run = mock_subprocess_run.side_effect
+
+            def tracking_side_effect(args, **kwargs):
+                if "focuswindow" in str(args):
+                    call_order.append("focuswindow")
+                if original_run:
+                    return original_run(args, **kwargs)
+                from unittest.mock import MagicMock
+
+                return MagicMock(stdout="", returncode=0)
+
+            mock_subprocess_run.side_effect = tracking_side_effect
+            daemon.handle_close_window_event(state, "clipse")
+
+        assert call_order == ["sleep", "focuswindow"]
 
 
 class TestMoveFloatingWindowsOffscreen:

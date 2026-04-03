@@ -81,6 +81,9 @@ def handle_active_window_changed_event(state: DaemonState, raw_address: str) -> 
     move_floating_windows_offscreen(window_address)
 
 
+CLOSE_FOCUS_SETTLE_DELAY_SECONDS = 0.05
+
+
 def handle_close_window_event(state: DaemonState, raw_address: str) -> None:
     closed_address = f"0x{raw_address}"
 
@@ -88,12 +91,11 @@ def handle_close_window_event(state: DaemonState, raw_address: str) -> None:
         closed_address == state.current_focused_address
         and state.previous_focused_address
     ):
-        run_hyprctl(
-            "dispatch",
-            f"focuswindow address:{state.previous_focused_address}",
-        )
+        desired_focus = state.previous_focused_address
         state.current_focused_address = state.previous_focused_address
         state.previous_focused_address = ""
+        time.sleep(CLOSE_FOCUS_SETTLE_DELAY_SECONDS)
+        run_hyprctl("dispatch", f"focuswindow address:{desired_focus}")
     elif closed_address == state.previous_focused_address:
         state.previous_focused_address = ""
 
