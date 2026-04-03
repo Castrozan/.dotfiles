@@ -18,6 +18,10 @@ _run_statusline_with_json_and_columns() {
     run bash -c "echo '$json' | COLUMNS=$columns bash '$SCRIPT_UNDER_TEST'"
 }
 
+_fresh_session_json_input() {
+    echo '{"model":{"display_name":"Opus 4.6"},"cwd":"/tmp","context_window":{"used_percentage":0},"cost":{"total_cost_usd":0.00,"total_duration_ms":1000,"total_lines_added":0,"total_lines_removed":0}}'
+}
+
 _minimal_json_input() {
     echo '{"model":{"display_name":"Opus 4.6"},"cwd":"/tmp","session_id":"abcd1234-5678","context_window":{"used_percentage":10},"cost":{"total_cost_usd":0.05,"total_duration_ms":60000,"total_lines_added":0,"total_lines_removed":0}}'
 }
@@ -33,6 +37,19 @@ _full_json_input() {
 
 @test "uses strict error handling" {
     assert_uses_strict_error_handling
+}
+
+@test "fresh session shows only identity line without metrics" {
+    _run_statusline_with_json "$(_fresh_session_json_input)"
+    [ "$status" -eq 0 ]
+    local stripped
+    stripped=$(echo "$output" | _strip_ansi_escape_codes)
+    [[ "$stripped" == *"Opus 4.6"* ]]
+    [[ "$stripped" != *"$"* ]]
+    [[ "$stripped" != *"ctx"* ]]
+    local line_count
+    line_count=$(echo "$output" | wc -l)
+    [ "$line_count" -eq 1 ]
 }
 
 @test "produces single line when terminal is wide enough" {

@@ -306,8 +306,6 @@ _render_statusline_from_json_input() {
 
 	local vim_mode_segment agent_name_segment worktree_segment
 	local session_name_segment git_segment model_segment
-	local session_cost_segment rate_limit_segment session_duration_segment
-	local lines_changed_segment context_window_segment
 
 	vim_mode_segment=$(_build_vim_mode_segment_from_json_input "$json_input")
 	agent_name_segment=$(_build_agent_name_segment_from_json_input "$json_input")
@@ -315,12 +313,6 @@ _render_statusline_from_json_input() {
 	session_name_segment=$(_build_session_name_segment_from_json_input "$json_input")
 	git_segment=$(_build_git_segment_from_repo_directory "$current_working_directory")
 	model_segment=$(_build_model_segment_from_json_input "$json_input")
-
-	session_cost_segment=$(_build_session_cost_segment_from_json_input "$json_input")
-	rate_limit_segment=$(_build_rate_limit_five_hour_segment_from_json_input "$json_input")
-	session_duration_segment=$(_build_session_duration_segment_from_json_input "$json_input")
-	lines_changed_segment=$(_build_lines_changed_segment_from_json_input "$json_input")
-	context_window_segment=$(_build_context_window_segment_from_json_input "$json_input")
 
 	local identity_line=""
 	identity_line=$(_append_segment_to_output "$identity_line" "$vim_mode_segment")
@@ -330,12 +322,31 @@ _render_statusline_from_json_input() {
 	identity_line=$(_append_segment_to_output "$identity_line" "$git_segment")
 	identity_line=$(_append_segment_to_output "$identity_line" "$model_segment")
 
+	local session_has_activity
+	session_has_activity=$(echo "$json_input" | jq -r 'if (.cost.total_cost_usd // 0) > 0 then "true" else "false" end')
+
 	local metrics_line=""
-	metrics_line=$(_append_segment_to_output "$metrics_line" "$session_cost_segment")
-	metrics_line=$(_append_segment_to_output "$metrics_line" "$session_duration_segment")
-	metrics_line=$(_append_segment_to_output "$metrics_line" "$lines_changed_segment")
-	metrics_line=$(_append_segment_to_output "$metrics_line" "$context_window_segment")
-	metrics_line=$(_append_segment_to_output "$metrics_line" "$rate_limit_segment")
+	if [ "$session_has_activity" = "true" ]; then
+		local session_cost_segment rate_limit_segment session_duration_segment
+		local lines_changed_segment context_window_segment
+
+		session_cost_segment=$(_build_session_cost_segment_from_json_input "$json_input")
+		rate_limit_segment=$(_build_rate_limit_five_hour_segment_from_json_input "$json_input")
+		session_duration_segment=$(_build_session_duration_segment_from_json_input "$json_input")
+		lines_changed_segment=$(_build_lines_changed_segment_from_json_input "$json_input")
+		context_window_segment=$(_build_context_window_segment_from_json_input "$json_input")
+
+		metrics_line=$(_append_segment_to_output "$metrics_line" "$session_cost_segment")
+		metrics_line=$(_append_segment_to_output "$metrics_line" "$session_duration_segment")
+		metrics_line=$(_append_segment_to_output "$metrics_line" "$lines_changed_segment")
+		metrics_line=$(_append_segment_to_output "$metrics_line" "$context_window_segment")
+		metrics_line=$(_append_segment_to_output "$metrics_line" "$rate_limit_segment")
+	fi
+
+	if [ -z "$metrics_line" ]; then
+		printf "%b" "$identity_line"
+		return 0
+	fi
 
 	local single_line
 	single_line=$(_append_segment_to_output "$identity_line" "$metrics_line")
