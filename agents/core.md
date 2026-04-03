@@ -12,7 +12,7 @@ No comments - code should be self-documenting. We prefer long descriptive functi
 </code>
 
 <naming>
-Names replace comments. Functions, variables, files, directories — all names must be long, descriptive, and self-explanatory. A well-named function needs no comment above it. A well-named file needs no README beside it. Never abbreviate. This is how we achieve zero comments.
+Names replace comments. Functions, variables, files, directories - all names must be long, descriptive, and self-explanatory. A well-named function needs no comment above it. A well-named file needs no README beside it. Never abbreviate. This is how we achieve zero comments.
 </naming>
 
 <design>
@@ -20,7 +20,7 @@ Single Responsibility Principle everywhere. Each function does one thing. Each s
 </design>
 
 <directory-structure>
-Directories hold 5–15 files. Beyond 15, split into subdirectories grouped by cohesion — files that change together and serve one concept belong together. A directory is a cognitive unit; when scanning requires paging through more items than working memory holds, the structure has failed its purpose.
+Directories hold 5-15 files. Beyond 15, split into subdirectories grouped by cohesion - files that change together and serve one concept belong together. A directory is a cognitive unit; when scanning requires paging through more items than working memory holds, the structure has failed its purpose.
 </directory-structure>
 
 <git>
@@ -28,7 +28,7 @@ Commits are not dangerous - do them freely. During development: commit at every 
 </git>
 
 <testing>
-Commit then rebuild then test. Never present code that has not been rebuilt and tested. For .nix files, a successful rebuild IS the primary verification — skipping it means the change is unverified. Run tests/run.sh (--nix when .nix files changed, --all before delivery). Two consecutive passes confirm stability.
+Commit then rebuild then test. Never present code that has not been rebuilt and tested. For .nix files, a successful rebuild IS the primary verification - skipping it means the change is unverified. Run tests/run.sh (--nix when .nix files changed, --all before delivery). Two consecutive passes confirm stability.
 
 When a bug is reported, do not start by fixing it. First write a test that reproduces the bug and fails. A passing test is the proof the bug is resolved.
 </testing>
@@ -42,13 +42,13 @@ Use timeouts. Search codebase before coding. Read relevant files first. Always t
 </commands>
 
 <active-waiting>
-Never block on any operation that may exceed 10 minutes — builds, deploys, background agents, external processes, user responses. Run the operation in the background with output redirected to a known file path (e.g. `command > /tmp/task-name.log 2>&1 &`) so the agent remains free to receive triggers and continue other work. Immediately set up a /loop monitor at an appropriate interval to check progress by reading the output file — not by guessing from process lists. The loop must define a clear success condition, a failure condition, and an action for each (retry, try alternative approach, or escalate to user). A foreground command that hangs for 10+ minutes freezes the agent. A background command without readable output blinds the monitor. A background command without a monitoring loop abandons the task. All three are failures. The pattern is: background with output to file, loop to read the file, act on the result.
+Never block on any operation that may exceed 10 minutes - builds, deploys, background agents, external processes, user responses. Run the operation in the background with output redirected to a known file path (e.g. `command > /tmp/task-name.log 2>&1 &`) so the agent remains free to receive triggers and continue other work. Immediately set up a /loop monitor at an appropriate interval to check progress by reading the output file - not by guessing from process lists. The loop must define a clear success condition, a failure condition, and an action for each (retry, try alternative approach, or escalate to user). A foreground command that hangs for 10+ minutes freezes the agent. A background command without readable output blinds the monitor. A background command without a monitoring loop abandons the task. All three are failures. The pattern is: background with output to file, loop to read the file, act on the result.
 </active-waiting>
 
 <delegation>
-When delegating work to multiple agents, use Teams (TeamCreate) — not bare Agent tool subagents. Teams provide shared task lists, inter-agent messaging, and visibility into progress. Plain Agent subagents are fire-and-forget with no coordination; they are only appropriate for single-purpose read-only queries (quick research, codebase exploration, file search) that return a result and terminate. Any work that involves implementation, multiple steps, coordination between agents, or progress tracking must use a Team. When in doubt, create a Team. Fetch the TeamCreate tool schema proactively when planning multi-agent work.
+When delegating work to multiple agents, use Teams (TeamCreate) - not bare Agent tool subagents. Teams provide shared task lists, inter-agent messaging, and visibility into progress. Plain Agent subagents are fire-and-forget with no coordination; they are only appropriate for single-purpose read-only queries (quick research, codebase exploration, file search) that return a result and terminate. Any work that involves implementation, multiple steps, coordination between agents, or progress tracking must use a Team. When in doubt, create a Team. Fetch the TeamCreate tool schema proactively when planning multi-agent work.
 
-After any teammate or subagent reports completion, the main agent must review the actual artifacts before reporting success to the user. Inspect every externally-visible output: MRs (branch naming matches repo conventions, assignee and reviewer set, changes are meaningful and complete, no duplicates), commits (correct repo, clean diff), and created files (match project patterns). If problems are found, send the responsible agent back to fix them with specific feedback — do not silently clean up or report success with caveats. The review standard is harsh: would this survive a code review from a senior engineer? If not, reject and iterate until it does.
+After any teammate or subagent reports completion, the main agent must review the actual artifacts before reporting success to the user. Inspect every externally-visible output: MRs (branch naming matches repo conventions, assignee and reviewer set, changes are meaningful and complete, no duplicates), commits (correct repo, clean diff), and created files (match project patterns). If problems are found, send the responsible agent back to fix them with specific feedback - do not silently clean up or report success with caveats. The review standard is harsh: would this survive a code review from a senior engineer? If not, reject and iterate until it does.
 </delegation>
 
 <skill-discovery>
@@ -56,7 +56,7 @@ Before trying to use complex and uncommon tools, or if user ask you to do someth
 </skill-discovery>
 
 <scripts>
-Python 3.12 is the default language for scripts. Use bash only when the script is a thin wrapper gluing shell-native tools (tmux send-keys, fzf preview commands, sysctl/systemctl pipelines, interactive tty reads) where Python would just be subprocess.run() calls with no added logic. If the script parses data, manages state, does math, or has branching logic beyond simple conditionals, it must be Python. Python scripts run via Nix — no uv, no venv, no pip; use `pkgs.python312` wrapped through `writeShellScriptBin` with `exec python3`. Tests use pytest with mocked subprocess calls. Bash scripts that remain follow the rebuild canonical example: set -Eeuo pipefail, readonly constants, main() at bottom, underscore-prefixed helpers, early returns with stderr messages.
+Python 3.12 is the default language for scripts. Use bash only when the script is a thin wrapper gluing shell-native tools (tmux send-keys, fzf preview commands, sysctl/systemctl pipelines, interactive tty reads) where Python would just be subprocess.run() calls with no added logic. If the script parses data, manages state, does math, or has branching logic beyond simple conditionals, it must be Python. Python scripts run via Nix - no uv, no venv, no pip; use `pkgs.python312` wrapped through `writeShellScriptBin` with `exec python3`. Tests use pytest with mocked subprocess calls. Bash scripts that remain follow the rebuild canonical example: set -Eeuo pipefail, readonly constants, main() at bottom, underscore-prefixed helpers, early returns with stderr messages.
 </scripts>
 
 <documentation>
@@ -64,7 +64,7 @@ Before writing any documentation, read and follow the documentation skill for ho
 </documentation>
 
 <policies>
-Policies express general intent, goals, boundaries, and constraints — never specific implementations or current state. A policy defines what must be true and why, not how to achieve it. Code is one possible implementation of a policy; the policy survives even when the implementation changes entirely. Write policies as dense prose that makes boundaries and requisites clear without prescribing the means. Policies live in CLAUDE.md or as NixOS assertions in the modules they govern. When modifying any domain, check for applicable policies before choosing an implementation. Code must conform to policies, not the other way around.
+Policies express general intent, goals, boundaries, and constraints - never specific implementations or current state. A policy defines what must be true and why, not how to achieve it. Code is one possible implementation of a policy; the policy survives even when the implementation changes entirely. Write policies as dense prose that makes boundaries and requisites clear without prescribing the means. Policies live in CLAUDE.md or as NixOS assertions in the modules they govern. When modifying any domain, check for applicable policies before choosing an implementation. Code must conform to policies, not the other way around.
 </policies>
 
 <prompts>
@@ -72,11 +72,11 @@ Understand contextually. User prompts may contain errors - interpret intent, cor
 </prompts>
 
 <communication>
-Be direct and technical. Concise answers. If user is wrong, tell them. If build fails, fix immediately - don't just report. Verify tests pass before marking complete.
+Be direct and technical. Concise answers. If user is wrong, tell them. If build fails, fix immediately - don't just report. Verify tests pass before marking complete. Never use em dashes. Use a regular hyphen-dash surrounded by spaces, or rewrite the sentence.
 </communication>
 
 <session-resilience>
-Sessions die on gateway restarts and context compaction discards earlier conversation. Multi-step work survives only if persisted to disk. For quick tasks, write current objective and next steps to HEARTBEAT.md. For big tasks (>5 steps, multi-session, or user says "big work"), use the deep-work skill to create a full workspace with verbatim prompts, evolving plan, progress journal, and curated context. Update as you progress. Remove when delivered. On session start, check for active HEARTBEAT.md entries and `.deep-work/` workspaces — resume from disk artifacts without asking the user to re-explain. Stale entries (>24h) get reported to user, not silently resumed.
+Sessions die on gateway restarts and context compaction discards earlier conversation. Multi-step work survives only if persisted to disk. For quick tasks, write current objective and next steps to HEARTBEAT.md. For big tasks (>5 steps, multi-session, or user says "big work"), use the deep-work skill to create a full workspace with verbatim prompts, evolving plan, progress journal, and curated context. Update as you progress. Remove when delivered. On session start, check for active HEARTBEAT.md entries and `.deep-work/` workspaces - resume from disk artifacts without asking the user to re-explain. Stale entries (>24h) get reported to user, not silently resumed.
 </session-resilience>
 
 <compact-instructions>
@@ -89,15 +89,15 @@ After editing any file in this repository, execute this sequence before respondi
 1. Format the edited files (nixfmt for .nix, ruff for .py, shfmt+shellcheck for .sh)
 2. Stage each edited file individually with git add (never git add -A)
 3. Commit the change
-4. Rebuild: run /rebuild for any file change in this repo — not just .nix files
+4. Rebuild: run /rebuild for any file change in this repo - not just .nix files
 5. Run tests/run.sh (--nix if .nix files were touched, --quick otherwise)
 6. If rebuild or tests fail: fix immediately, repeat from step 1
-7. If the change touches 3+ files or 50+ lines (check `git diff --stat <pre-work-sha>..HEAD`): spawn two parallel read-only Agent subagents (model: sonnet) as unbiased reviewers. Give each the /review skill as system prompt plus its scope identifier ("You are Reviewer 1 — Bug and security scanner" or "You are Reviewer 2 — Conventions and completeness"), the original user request verbatim, and the git diff from before work started. Do not include your reasoning, implementation decisions, or conversation history. Collect both results, deduplicate overlapping findings, and fix any issues with confidence ≥81, then repeat from step 1. Record the pre-work SHA (`git rev-parse HEAD`) before your first edit in each task so the diff baseline is available.
+7. If the change touches 3+ files or 50+ lines (check `git diff --stat <pre-work-sha>..HEAD`): spawn two parallel read-only Agent subagents (model: sonnet) as unbiased reviewers. Give each the /review skill as system prompt plus its scope identifier ("You are Reviewer 1 - Bug and security scanner" or "You are Reviewer 2 - Conventions and completeness"), the original user request verbatim, and the git diff from before work started. Do not include your reasoning, implementation decisions, or conversation history. Collect both results, deduplicate overlapping findings, and fix any issues with confidence ≥81, then repeat from step 1. Record the pre-work SHA (`git rev-parse HEAD`) before your first edit in each task so the diff baseline is available.
 8. Only after rebuild succeeds, tests pass, and review clears: respond to the user
 
-A change that is not rebuilt and live-tested is not a change — it is a hypothesis. Never present hypotheses as completed work.
+A change that is not rebuilt and live-tested is not a change - it is a hypothesis. Never present hypotheses as completed work.
 
-When editing agent instructions, skills, rules, workflows, or policies (AGENTS.md, core.md, SKILL.md, CLAUDE.md, or any file that shapes agent behavior): write eval tests in agents/evals/config/ that verify the new or changed behavior before considering the work done. Evals are the unit tests for instructions — an untested instruction is as unreliable as untested code. Run the evals with `agent-eval --category <category>` and confirm they pass.
+When editing agent instructions, skills, rules, workflows, or policies (AGENTS.md, core.md, SKILL.md, CLAUDE.md, or any file that shapes agent behavior): write eval tests in agents/evals/config/ that verify the new or changed behavior before considering the work done. Evals are the unit tests for instructions - an untested instruction is as unreliable as untested code. Run the evals with `agent-eval --category <category>` and confirm they pass.
 </workflow>
 
 <notify>
@@ -105,5 +105,5 @@ After substantial work, use the notify skill and tell the user "what was done"
 </notify>
 
 <compositor-reload-policy>
-System rebuilds must never cause visual disruption to the running compositor. Configuration reloads that do not involve monitor hardware changes must not re-apply monitor rules, as mode negotiation causes DRM mode switches visible as screen blackouts. Compositor autoreload from config management symlink updates must be suppressed because the config directory symlink changes on every rebuild regardless of content. Only monitor hardware events — plug, unplug, manual toggle — justify full compositor reload with monitor re-application.
+System rebuilds must never cause visual disruption to the running compositor. Configuration reloads that do not involve monitor hardware changes must not re-apply monitor rules, as mode negotiation causes DRM mode switches visible as screen blackouts. Compositor autoreload from config management symlink updates must be suppressed because the config directory symlink changes on every rebuild regardless of content. Only monitor hardware events - plug, unplug, manual toggle - justify full compositor reload with monitor re-application.
 </compositor-reload-policy>
