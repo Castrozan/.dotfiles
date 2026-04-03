@@ -52,56 +52,20 @@ class TestTruncateHistoryFile:
         assert '"cmd14"' in lines[-1]
 
 
-class TestFindPreviousWindowOnWorkspace:
-    def test_finds_window_with_lowest_focus_history_id(
-        self, hyprctl_response_builder, sample_hyprland_clients
-    ):
-        hyprctl_response_builder("clients", sample_hyprland_clients)
-        result = script.find_previous_window_on_workspace(1, "0xbbb")
-        assert result == "0xaaa"
-
-    def test_returns_none_when_no_other_windows(self, hyprctl_response_builder):
+class TestMainKillsActiveWindow:
+    def test_dispatches_killactive(self, mock_subprocess_run, hyprctl_response_builder):
         hyprctl_response_builder(
-            "clients",
-            [{"address": "0xonly", "workspace": {"id": 1}, "focusHistoryID": 0}],
-        )
-        result = script.find_previous_window_on_workspace(1, "0xonly")
-        assert result is None
-
-
-class TestMainFocusesPreviousWindowAfterClose:
-    @patch("close_window_cycle.time.sleep")
-    def test_focuses_previous_window_after_closing(
-        self, mock_sleep, mock_subprocess_run, hyprctl_response_builder
-    ):
-        clients = [
+            "activewindow",
             {
                 "address": "0xaaa",
                 "workspace": {"id": 1},
                 "class": "kitty",
                 "title": "Terminal",
                 "pid": 1234,
-                "floating": False,
-                "focusHistoryID": 0,
             },
-            {
-                "address": "0xbbb",
-                "workspace": {"id": 1},
-                "class": "firefox",
-                "title": "Browser",
-                "pid": 5678,
-                "floating": False,
-                "focusHistoryID": 1,
-            },
-        ]
-        hyprctl_response_builder("activewindow", clients[1])
-        hyprctl_response_builder("clients", clients)
-
+        )
         script.main()
-
-        focus_calls = [
-            c
-            for c in mock_subprocess_run.call_args_list
-            if "focuswindow" in str(c) and "0xaaa" in str(c)
+        kill_calls = [
+            c for c in mock_subprocess_run.call_args_list if "killactive" in str(c)
         ]
-        assert len(focus_calls) > 0
+        assert len(kill_calls) > 0

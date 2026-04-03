@@ -1,12 +1,10 @@
 import json
 import os
 import sys
-import time
 from pathlib import Path
 
 from hyprland_ipc import (
     get_active_window,
-    get_all_clients,
     run_hyprctl,
 )
 
@@ -58,29 +56,11 @@ def truncate_history_file_to_max_entries() -> None:
         )
 
 
-def find_previous_window_on_workspace(
-    workspace_id: int, current_address: str
-) -> str | None:
-    candidates = [
-        client
-        for client in get_all_clients()
-        if client.get("workspace", {}).get("id") == workspace_id
-        and client.get("address") != current_address
-    ]
-
-    if not candidates:
-        return None
-
-    candidates.sort(key=lambda c: c.get("focusHistoryID", 0))
-    return candidates[0].get("address")
-
-
 def main() -> None:
     active_window = get_active_window()
     if not active_window:
         sys.exit(1)
 
-    active_address = active_window.get("address")
     active_workspace_id = active_window.get("workspace", {}).get("id")
     active_class = active_window.get("class", "")
     active_title = active_window.get("title", "")
@@ -88,16 +68,7 @@ def main() -> None:
 
     save_window_to_history(active_pid, active_class, active_workspace_id, active_title)
 
-    previous_window_address = find_previous_window_on_workspace(
-        active_workspace_id, active_address
-    )
-
     run_hyprctl("dispatch", "killactive")
-
-    time.sleep(0.05)
-
-    if previous_window_address:
-        run_hyprctl("dispatch", f"focuswindow address:{previous_window_address}")
 
 
 if __name__ == "__main__":
