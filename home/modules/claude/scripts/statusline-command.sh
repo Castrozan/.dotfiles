@@ -186,6 +186,17 @@ _build_agent_name_segment_from_json_input() {
 	printf "${COLOR_BOLD}${COLOR_CYAN}⚡%s${COLOR_RESET}" "$agent_name"
 }
 
+_build_transcript_log_segment_from_json_input() {
+	local json_input="$1"
+	local transcript_path
+	transcript_path=$(echo "$json_input" | jq -r '.transcript_path // empty')
+	[ -z "$transcript_path" ] && return 0
+
+	local transcript_filename
+	transcript_filename=$(basename "$transcript_path")
+	printf "${COLOR_DIM}%s${COLOR_RESET}" "$transcript_filename"
+}
+
 _build_worktree_segment_from_json_input() {
 	local json_input="$1"
 	local worktree_name
@@ -305,7 +316,7 @@ _render_statusline_from_json_input() {
 	current_working_directory=$(echo "$json_input" | jq -r '.cwd')
 
 	local vim_mode_segment agent_name_segment worktree_segment
-	local session_name_segment git_segment model_segment
+	local session_name_segment git_segment model_segment transcript_log_segment
 
 	vim_mode_segment=$(_build_vim_mode_segment_from_json_input "$json_input")
 	agent_name_segment=$(_build_agent_name_segment_from_json_input "$json_input")
@@ -313,6 +324,7 @@ _render_statusline_from_json_input() {
 	session_name_segment=$(_build_session_name_segment_from_json_input "$json_input")
 	git_segment=$(_build_git_segment_from_repo_directory "$current_working_directory")
 	model_segment=$(_build_model_segment_from_json_input "$json_input")
+	transcript_log_segment=$(_build_transcript_log_segment_from_json_input "$json_input")
 
 	local identity_line=""
 	identity_line=$(_append_segment_to_output "$identity_line" "$vim_mode_segment")
@@ -321,6 +333,7 @@ _render_statusline_from_json_input() {
 	identity_line=$(_append_segment_to_output "$identity_line" "$session_name_segment")
 	identity_line=$(_append_segment_to_output "$identity_line" "$git_segment")
 	identity_line=$(_append_segment_to_output "$identity_line" "$model_segment")
+	identity_line=$(_append_segment_to_output "$identity_line" "$transcript_log_segment")
 
 	local session_has_activity
 	session_has_activity=$(echo "$json_input" | jq -r 'if (.cost.total_cost_usd // 0) > 0 then "true" else "false" end')
