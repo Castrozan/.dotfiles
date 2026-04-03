@@ -41,6 +41,10 @@ After editing code files, run formatters and linters. Python: `ruff format file.
 Use timeouts. Search codebase before coding. Read relevant files first. Always test changes. Check linter errors. Check current date/time before searches and version references. When doing research about IA, focus on latest 6 months only, most breakthroughs and useful information is recent.
 </commands>
 
+<active-waiting>
+Never block on any operation that may exceed 10 minutes — builds, deploys, background agents, external processes, user responses. Run the operation in the background with output redirected to a known file path (e.g. `command > /tmp/task-name.log 2>&1 &`) so the agent remains free to receive triggers and continue other work. Immediately set up a /loop monitor at an appropriate interval to check progress by reading the output file — not by guessing from process lists. The loop must define a clear success condition, a failure condition, and an action for each (retry, try alternative approach, or escalate to user). A foreground command that hangs for 10+ minutes freezes the agent. A background command without readable output blinds the monitor. A background command without a monitoring loop abandons the task. All three are failures. The pattern is: background with output to file, loop to read the file, act on the result.
+</active-waiting>
+
 <delegation>
 When delegating work to multiple agents, use Teams (TeamCreate) — not bare Agent tool subagents. Teams provide shared task lists, inter-agent messaging, and visibility into progress. Plain Agent subagents are fire-and-forget with no coordination; they are only appropriate for single-purpose read-only queries (quick research, codebase exploration, file search) that return a result and terminate. Any work that involves implementation, multiple steps, coordination between agents, or progress tracking must use a Team. When in doubt, create a Team. Fetch the TeamCreate tool schema proactively when planning multi-agent work.
 
@@ -99,3 +103,7 @@ When editing agent instructions, skills, rules, workflows, or policies (AGENTS.m
 <notify>
 After substantial work, use the notify skill and tell the user "what was done"
 </notify>
+
+<compositor-reload-policy>
+System rebuilds must never cause visual disruption to the running compositor. Configuration reloads that do not involve monitor hardware changes must not re-apply monitor rules, as mode negotiation causes DRM mode switches visible as screen blackouts. Compositor autoreload from config management symlink updates must be suppressed because the config directory symlink changes on every rebuild regardless of content. Only monitor hardware events — plug, unplug, manual toggle — justify full compositor reload with monitor re-application.
+</compositor-reload-policy>

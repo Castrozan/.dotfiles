@@ -16,7 +16,7 @@ Run `rebuild` — it auto-detects platform (NixOS vs standalone home-manager) an
 </execution>
 
 <timeout_trap>
-Run rebuild in the background with short poll intervals. Never use process poll with timeout > 60000ms. A hung nix build can block for minutes — a single long poll eats the entire agent timeout budget and bricks the session. The rebuild output is verbose — use background execution and only check the final exit code + last few lines.
+Rebuilds from source (forks, custom packages) can take 10+ minutes. Follow the active-waiting pattern: redirect output to a file (`rebuild > /tmp/rebuild.log 2>&1 &`), then set up a `/loop` monitor that tails the log file to check concrete progress. Never pipe through `tail` in background — it buffers everything and produces empty output. Never poll with timeout > 60000ms — a single long poll eats the entire agent timeout budget and bricks the session.
 </timeout_trap>
 
 <dry_run>

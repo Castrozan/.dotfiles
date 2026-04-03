@@ -61,16 +61,10 @@ let
 
   claudeDotfilesRules = ''
     @AGENTS.md
-
-    ## Policies
-
-    ### Compositor reload
-
-    System rebuilds must never cause visual disruption to the running compositor. Configuration reloads that do not involve monitor hardware changes must not re-apply monitor rules, as mode negotiation causes DRM mode switches visible as screen blackouts. Compositor autoreload from config management symlink updates must be suppressed because the config directory symlink changes on every rebuild regardless of content. Only monitor hardware events — plug, unplug, manual toggle — justify full compositor reload with monitor re-application.
   '';
 
   claudeGlobalRules = ''
-    ${builtins.readFile ../../../agents/core.md}
+    @../.dotfiles/AGENTS.md
   '';
 in
 {

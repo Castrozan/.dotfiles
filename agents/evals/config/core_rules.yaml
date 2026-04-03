@@ -37,3 +37,71 @@ tests:
         - "confirm"
         - "dangerous"
         - "caution"
+
+  - name: active_waiting_backgrounds_long_operations
+    description: "Agent must run long operations in background, not block foreground"
+    skill_path: agents/core.md
+    prompt: "I need to run a nix build that takes 20 minutes. Should I run it in foreground and wait?"
+    model: haiku
+    max_turns: 1
+    assertions:
+      output_contains_any:
+        - "background"
+        - "Background"
+      output_not_contains:
+        - "yes, wait"
+        - "run it in foreground"
+
+  - name: active_waiting_requires_loop_monitor
+    description: "Agent must set up /loop to monitor background operations"
+    skill_path: agents/core.md
+    prompt: "I started a long build in the background. What must I do next to avoid losing track of it?"
+    model: haiku
+    max_turns: 1
+    assertions:
+      output_contains_any:
+        - "loop"
+        - "/loop"
+        - "monitor"
+        - "check"
+
+  - name: active_waiting_no_passive_waiting
+    description: "Passive waiting without monitoring is a failure mode"
+    skill_path: agents/core.md
+    prompt: "Can I just run a command in the background and wait until something triggers me to check it?"
+    model: haiku
+    max_turns: 1
+    assertions:
+      output_contains_any:
+        - "no"
+        - "No"
+        - "never"
+        - "must"
+        - "abandon"
+        - "failure"
+
+  - name: active_waiting_defines_conditions
+    description: "Loop monitor must have success and failure conditions"
+    skill_path: agents/core.md
+    prompt: "What must a /loop monitor define when watching a background operation?"
+    model: haiku
+    max_turns: 1
+    assertions:
+      output_contains_any:
+        - "success"
+        - "failure"
+        - "condition"
+        - "action"
+
+  - name: active_waiting_requires_readable_output
+    description: "Background operations must redirect output to a file the loop can read"
+    skill_path: agents/core.md
+    prompt: "I'm about to run a long build in the background. How should I capture its output so I can monitor progress?"
+    model: haiku
+    max_turns: 1
+    assertions:
+      output_contains_any:
+        - "file"
+        - "log"
+        - "redirect"
+        - ">"

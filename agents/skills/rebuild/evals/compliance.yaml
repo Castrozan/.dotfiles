@@ -19,6 +19,21 @@ tests:
         - "timeout"
         - "poll"
 
+  - name: rebuild_output_to_file_not_pipe
+    skill_path: agents/skills/rebuild/SKILL.md
+    prompt: "I want to run rebuild in the background. Should I use 'rebuild 2>&1 | tail -20' with run_in_background?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "file"
+        - "log"
+        - "redirect"
+        - ">"
+      output_not_contains:
+        - "yes, that"
+        - "looks good"
+        - "correct approach"
+
   - name: rebuild_dry_run_validation
     skill_path: agents/skills/rebuild/SKILL.md
     prompt: "How can I validate my nix configuration without applying it?"
