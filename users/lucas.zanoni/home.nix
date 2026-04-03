@@ -63,6 +63,7 @@
     ../../home/modules/media/obs-studio.nix
     ../../home/modules/media/suwayomi-server.nix
     ../../home/modules/media/youtube.nix
+    ../../home/modules/media/zathura.nix
     ../../home/modules/media/scripts.nix
 
     ../../home/modules/network/forticlient
