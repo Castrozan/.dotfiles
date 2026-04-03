@@ -13,6 +13,7 @@
 
     ../../home/modules/agents
     ../../home/modules/security
+    ../../home/modules/security/sophos-monitor
     ../../home/modules/audio
     ../../home/modules/claude
     ../../home/modules/codex
