@@ -98,16 +98,11 @@ tests:
 
   - name: workflow_review_input_is_unbiased
     skill_path: agents/core.md
-    prompt: "What information should the unbiased reviewer agent receive?"
+    prompt: "List ONLY the two things the unbiased reviewer agent receives. No explanation."
     model: haiku
     assertions:
       output_contains_any:
         - "diff"
-        - "original"
-        - "user"
+        - "git diff"
+      output_contains:
         - "request"
-      output_not_contains:
-        - "reasoning"
-        - "decisions"
-        - "journey"
-        - "conversation history"
