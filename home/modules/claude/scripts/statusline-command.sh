@@ -289,6 +289,16 @@ _build_lines_changed_segment_from_json_input() {
 	printf "%b" "$output"
 }
 
+_visible_width_of_ansi_string() {
+	local stripped
+	stripped=$(printf "%s" "$1" | sed 's/\x1b\[[0-9;]*m//g')
+	echo "${#stripped}"
+}
+
+_get_terminal_width() {
+	echo "${COLUMNS:-$(tput cols 2>/dev/null || echo 80)}"
+}
+
 _render_statusline_from_json_input() {
 	local json_input="$1"
 	local current_working_directory
@@ -312,20 +322,36 @@ _render_statusline_from_json_input() {
 	lines_changed_segment=$(_build_lines_changed_segment_from_json_input "$json_input")
 	context_window_segment=$(_build_context_window_segment_from_json_input "$json_input")
 
-	local statusline=""
-	statusline=$(_append_segment_to_output "$statusline" "$vim_mode_segment")
-	statusline=$(_append_segment_to_output "$statusline" "$agent_name_segment")
-	statusline=$(_append_segment_to_output "$statusline" "$worktree_segment")
-	statusline=$(_append_segment_to_output "$statusline" "$session_name_segment")
-	statusline=$(_append_segment_to_output "$statusline" "$git_segment")
-	statusline=$(_append_segment_to_output "$statusline" "$model_segment")
-	statusline=$(_append_segment_to_output "$statusline" "$session_cost_segment")
-	statusline=$(_append_segment_to_output "$statusline" "$session_duration_segment")
-	statusline=$(_append_segment_to_output "$statusline" "$lines_changed_segment")
-	statusline=$(_append_segment_to_output "$statusline" "$context_window_segment")
-	statusline=$(_append_segment_to_output "$statusline" "$rate_limit_segment")
+	local identity_line=""
+	identity_line=$(_append_segment_to_output "$identity_line" "$vim_mode_segment")
+	identity_line=$(_append_segment_to_output "$identity_line" "$agent_name_segment")
+	identity_line=$(_append_segment_to_output "$identity_line" "$worktree_segment")
+	identity_line=$(_append_segment_to_output "$identity_line" "$session_name_segment")
+	identity_line=$(_append_segment_to_output "$identity_line" "$git_segment")
+	identity_line=$(_append_segment_to_output "$identity_line" "$model_segment")
 
-	printf "%b" "$statusline"
+	local metrics_line=""
+	metrics_line=$(_append_segment_to_output "$metrics_line" "$session_cost_segment")
+	metrics_line=$(_append_segment_to_output "$metrics_line" "$session_duration_segment")
+	metrics_line=$(_append_segment_to_output "$metrics_line" "$lines_changed_segment")
+	metrics_line=$(_append_segment_to_output "$metrics_line" "$context_window_segment")
+	metrics_line=$(_append_segment_to_output "$metrics_line" "$rate_limit_segment")
+
+	local single_line
+	single_line=$(_append_segment_to_output "$identity_line" "$metrics_line")
+
+	local terminal_width
+	terminal_width=$(_get_terminal_width)
+
+	local single_line_width
+	single_line_width=$(_visible_width_of_ansi_string "$single_line")
+
+	if [ "$single_line_width" -le "$terminal_width" ]; then
+		printf "%b" "$single_line"
+	else
+		printf "%b\n" "$identity_line"
+		printf "%b" "$metrics_line"
+	fi
 }
 
 main() {

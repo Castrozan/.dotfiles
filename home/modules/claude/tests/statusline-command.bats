@@ -12,6 +12,12 @@ _run_statusline_with_json() {
     run bash -c "echo '$1' | bash '$SCRIPT_UNDER_TEST'"
 }
 
+_run_statusline_with_json_and_columns() {
+    local columns="$1"
+    local json="$2"
+    run bash -c "echo '$json' | COLUMNS=$columns bash '$SCRIPT_UNDER_TEST'"
+}
+
 _minimal_json_input() {
     echo '{"model":{"display_name":"Opus 4.6"},"cwd":"/tmp","session_id":"abcd1234-5678","context_window":{"used_percentage":10},"cost":{"total_cost_usd":0.05,"total_duration_ms":60000,"total_lines_added":0,"total_lines_removed":0}}'
 }
@@ -29,12 +35,20 @@ _full_json_input() {
     assert_uses_strict_error_handling
 }
 
-@test "produces single line of output" {
-    _run_statusline_with_json "$(_minimal_json_input)"
+@test "produces single line when terminal is wide enough" {
+    _run_statusline_with_json_and_columns 200 "$(_minimal_json_input)"
     [ "$status" -eq 0 ]
     local line_count
     line_count=$(echo "$output" | wc -l)
     [ "$line_count" -eq 1 ]
+}
+
+@test "breaks into two lines when terminal is narrow" {
+    _run_statusline_with_json_and_columns 20 "$(_minimal_json_input)"
+    [ "$status" -eq 0 ]
+    local line_count
+    line_count=$(echo "$output" | wc -l)
+    [ "$line_count" -eq 2 ]
 }
 
 @test "model name appears in output" {
@@ -189,8 +203,8 @@ _full_json_input() {
     [[ "$stripped" == *"my-session"* ]]
 }
 
-@test "full output contains all segments in single line" {
-    _run_statusline_with_json "$(_full_json_input)"
+@test "full output contains all segments" {
+    _run_statusline_with_json_and_columns 200 "$(_full_json_input)"
     local stripped
     stripped=$(echo "$output" | _strip_ansi_escape_codes)
 
