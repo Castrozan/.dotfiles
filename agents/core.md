@@ -76,7 +76,7 @@ Sessions die on gateway restarts and context compaction discards earlier convers
 </session-resilience>
 
 <compact-instructions>
-On compaction, preserve: active deep-work workspace paths and current plan phase, user requirements and constraints, files modified in this session, test results and failures, key decisions made during this session. Drop: verbose tool outputs, intermediate exploration, raw research dumps, file contents that can be re-read from disk.
+On compaction, preserve: active deep-work workspace paths and current plan phase, user requirements and constraints, files modified in this session, test results and failures, key decisions made during this session, pre-work git SHA for review baseline. Drop: verbose tool outputs, intermediate exploration, raw research dumps, file contents that can be re-read from disk.
 </compact-instructions>
 
 <workflow>
@@ -88,7 +88,8 @@ After editing any file in this repository, execute this sequence before respondi
 4. Rebuild: run /rebuild for any file change in this repo — not just .nix files
 5. Run tests/run.sh (--nix if .nix files were touched, --quick otherwise)
 6. If rebuild or tests fail: fix immediately, repeat from step 1
-7. Only after rebuild succeeds and tests pass: respond to the user
+7. If the change touches 3+ files or 50+ lines (check `git diff --stat <pre-work-sha>..HEAD`): spawn a read-only Agent subagent (model: sonnet) as an unbiased reviewer. Give it the /review skill as system prompt, the original user request verbatim, and the git diff from before work started. Do not include your reasoning, implementation decisions, or conversation history. Fix any issues the reviewer reports with confidence ≥81, then repeat from step 1. Record the pre-work SHA (`git rev-parse HEAD`) before your first edit in each task so the diff baseline is available.
+8. Only after rebuild succeeds, tests pass, and review clears: respond to the user
 
 A change that is not rebuilt and live-tested is not a change — it is a hypothesis. Never present hypotheses as completed work.
 
