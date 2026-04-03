@@ -92,6 +92,7 @@ class TestHandleCloseWindowEvent:
         )
         daemon.handle_close_window_event(state, "def")
         assert state.previous_focused_address == ""
+        assert state.current_focused_address == "0xabc"
 
     def test_delays_focus_dispatch_to_survive_layout_autofocus_race(
         self, mock_subprocess_run, hyprctl_response_builder
