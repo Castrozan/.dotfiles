@@ -1,7 +1,7 @@
 tests:
   - name: review_flags_obvious_null_dereference
     skill_path: agents/skills/review/SKILL.md
-    system_prompt_suffix: |
+    prompt: |
       Original user request: "Add a function to get user by ID"
 
       Git diff:
@@ -10,7 +10,8 @@ tests:
       +    user = database.find(user_id)
       +    return user.name
       ```
-    prompt: "Review this diff."
+
+      Review this diff.
     model: haiku
     assertions:
       output_contains_any:
@@ -22,7 +23,7 @@ tests:
 
   - name: review_ignores_preexisting_unchanged_lines
     skill_path: agents/skills/review/SKILL.md
-    system_prompt_suffix: |
+    prompt: |
       Original user request: "Add logging to the handler"
 
       Git diff:
@@ -35,7 +36,8 @@ tests:
       ```
 
       Note: the `process` function has a known bug where it doesn't validate input, but that line was NOT changed in this diff.
-    prompt: "Review this diff."
+
+      Review this diff.
     model: haiku
     assertions:
       output_contains:
@@ -43,7 +45,7 @@ tests:
 
   - name: review_flags_hardcoded_credentials
     skill_path: agents/skills/review/SKILL.md
-    system_prompt_suffix: |
+    prompt: |
       Original user request: "Add database connection"
 
       Git diff:
@@ -51,7 +53,8 @@ tests:
       +DB_PASSWORD = "admin123"
       +connection = connect(host="db.prod.internal", password=DB_PASSWORD)
       ```
-    prompt: "Review this diff."
+
+      Review this diff.
     model: haiku
     assertions:
       output_contains_any:
@@ -64,7 +67,7 @@ tests:
 
   - name: review_ignores_style_preferences
     skill_path: agents/skills/review/SKILL.md
-    system_prompt_suffix: |
+    prompt: |
       Original user request: "Rename the variable for clarity"
 
       Git diff:
@@ -72,7 +75,8 @@ tests:
       -x = calculate_total(items)
       +total_price_for_all_items_in_cart = calculate_total(items)
       ```
-    prompt: "Review this diff."
+
+      Review this diff.
     model: haiku
     assertions:
       output_contains:
