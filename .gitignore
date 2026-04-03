@@ -37,3 +37,8 @@ snapshot.json
 /.config/cava/
 /.config/pulse/
 .claude/
+
+# devenv runtime and generated files
+.devenv/
+.devenv.flake.nix
+devenv.lock
