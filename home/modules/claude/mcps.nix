@@ -25,17 +25,6 @@ let
   };
 
   browserUseConfigDir = "${homeDir}/.config/browseruse";
-  browserUseProfileId = "nix-default";
-  browserUseConfig = builtins.toJSON {
-    browser_profile = {
-      "${browserUseProfileId}" = {
-        id = browserUseProfileId;
-        default = true;
-        headless = false;
-        executable_path = chromeBinary;
-      };
-    };
-  };
 
   browserUseMcpWrapper = pkgs.writeShellScript "browser-use-mcp" ''
     export BROWSER_USE_CONFIG_PATH="${browserUseConfigDir}/config.json"
@@ -108,11 +97,25 @@ in
 
       writeBrowserUseConfig =
         let
-          configFile = pkgs.writeText "browseruse-config.json" browserUseConfig;
+          patchScript = pkgs.writeShellScript "patch-browseruse-config" ''
+            set -euo pipefail
+            CONFIG="${browserUseConfigDir}/config.json"
+            mkdir -p "${browserUseConfigDir}"
+            if [ ! -f "$CONFIG" ]; then
+              echo '{}' > "$CONFIG"
+            fi
+            ${pkgs.jq}/bin/jq '
+              .browser_profile = (
+                .browser_profile // {} |
+                to_entries |
+                map(.value.executable_path = "${chromeBinary}" | .value.headless = false) |
+                from_entries
+              )
+            ' "$CONFIG" | ${pkgs.moreutils}/bin/sponge "$CONFIG"
+          '';
         in
         lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-          run mkdir -p "${browserUseConfigDir}"
-          run cp --no-preserve=mode ${configFile} "${browserUseConfigDir}/config.json"
+          run ${patchScript}
         '';
 
       installA2aMcp = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
