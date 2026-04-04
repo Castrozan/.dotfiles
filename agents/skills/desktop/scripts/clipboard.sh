@@ -6,81 +6,90 @@ _ensure_wayland_environment() {
 	export WAYLAND_DISPLAY="${WAYLAND_DISPLAY:-wayland-1}"
 }
 
-_read_text_clipboard() {
-	wl-paste --no-newline 2>/dev/null || echo ""
-}
-
-_read_typed_clipboard() {
+_read() {
 	local mime_type="$1"
-	if [[ "$mime_type" == image/* ]]; then
-		local output_path
-		output_path="/tmp/clipboard-$(date +%Y%m%d-%H%M%S).${mime_type#image/}"
-		wl-paste --type "$mime_type" >"$output_path" 2>/dev/null
-		echo "$output_path"
+	if [[ -z "$mime_type" ]]; then
+		wl-paste --no-newline 2>/dev/null || echo ""
+	elif [[ "$mime_type" == image/* ]]; then
+		local ext="${mime_type#image/}"
+		if [[ ! "$ext" =~ ^[a-zA-Z0-9+.-]+$ ]]; then
+			echo "Invalid image type: $mime_type" >&2
+			exit 1
+		fi
+		local output="/tmp/clipboard-$(date +%Y%m%d-%H%M%S).${ext}"
+		wl-paste --type "$mime_type" >"$output" 2>/dev/null
+		echo "$output"
 	else
 		wl-paste --type "$mime_type" 2>/dev/null || echo ""
 	fi
 }
 
-_write_text_clipboard() {
+_write() {
 	local content="$1"
 	echo -n "$content" | wl-copy
 }
 
-_write_typed_clipboard() {
-	local mime_type="$1"
-	wl-copy --type "$mime_type" </dev/stdin
+_watch() {
+	wl-paste --watch cat
 }
 
 main() {
-	local action="${1:-}"
-	local mime_type=""
-	local content=""
-
-	[[ -z "$action" ]] && {
-		echo "Usage: clipboard.sh read|write [content] [--type MIME]" >&2
+	local subcommand="${1:-}"
+	if [[ -z "$subcommand" ]]; then
+		echo "Usage: clipboard.sh read|write|watch [--type MIME] [text]" >&2
 		exit 1
-	}
+	fi
 	shift
-
-	local positional_args=()
-	while [[ $# -gt 0 ]]; do
-		case "$1" in
-		--type)
-			mime_type="$2"
-			shift 2
-			;;
-		*)
-			positional_args+=("$1")
-			shift
-			;;
-		esac
-	done
 
 	_ensure_wayland_environment
 
-	case "$action" in
+	case "$subcommand" in
 	read)
-		if [[ -n "$mime_type" ]]; then
-			_read_typed_clipboard "$mime_type"
-		else
-			_read_text_clipboard
-		fi
+		local mime_type=""
+		while [[ $# -gt 0 ]]; do
+			case "$1" in
+			--type)
+				mime_type="$2"
+				shift 2
+				;;
+			*) shift ;;
+			esac
+		done
+		_read "$mime_type"
 		;;
 	write)
-		if [[ -n "$mime_type" ]]; then
-			_write_typed_clipboard "$mime_type"
+		local mime_type=""
+		local positional=()
+		while [[ $# -gt 0 ]]; do
+			case "$1" in
+			--type)
+				mime_type="$2"
+				shift 2
+				;;
+			*)
+				positional+=("$1")
+				shift
+				;;
+			esac
+		done
+		if [[ -n "$mime_type" ]] && [[ ${#positional[@]} -gt 0 ]]; then
+			echo -n "${positional[0]}" | wl-copy --type "$mime_type"
+		elif [[ -n "$mime_type" ]]; then
+			wl-copy --type "$mime_type"
+		elif [[ ${#positional[@]} -gt 0 ]]; then
+			_write "${positional[0]}"
+		elif ! [[ -t 0 ]]; then
+			wl-copy
 		else
-			content="${positional_args[0]:-}"
-			[[ -z "$content" ]] && {
-				echo "Usage: clipboard.sh write \"content\"" >&2
-				exit 1
-			}
-			_write_text_clipboard "$content"
+			echo "Usage: clipboard.sh write \"text\"  OR  echo text | clipboard.sh write" >&2
+			exit 1
 		fi
 		;;
+	watch)
+		_watch
+		;;
 	*)
-		echo "Unknown action: $action. Use 'read' or 'write'." >&2
+		echo "Unknown subcommand: $subcommand. Use read, write, or watch." >&2
 		exit 1
 		;;
 	esac

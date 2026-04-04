@@ -1,7 +1,7 @@
 <execution>
-Run scripts/clipboard.sh with read or write action.
+Run `scripts/clipboard.sh` with subcommand: `read`, `write`, or `watch`. Pass `--type MIME` for typed content. Write accepts text as argument or via stdin.
 </execution>
 
 <pitfalls>
-Wayland-only — requires socket access. When reading image types, output is saved to /tmp and path is printed (not raw binary to stdout). wl-paste exits non-zero when clipboard is empty — script returns empty string instead of failing. wl-copy holds clipboard until another copy replaces it — the process forks to background, don't worry about dangling processes.
+Wayland-only — requires socket access. Image reads save to /tmp and print the path (not raw binary). Empty clipboard returns empty string, not an error. The `watch` subcommand runs until interrupted — don't use in unattended one-shot automation.
 </pitfalls>

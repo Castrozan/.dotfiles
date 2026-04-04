@@ -34,3 +34,12 @@ tests:
       output_contains_any:
         - "clipboard.md"
         - "clipboard"
+
+  - name: desktop_routes_to_media_control
+    agent: desktop
+    prompt: "I want to pause the currently playing music and check what song is playing. Which file in this skill covers media control?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "media-control.md"
+        - "media-control"

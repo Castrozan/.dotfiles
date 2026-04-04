@@ -1,14 +1,12 @@
 ---
 name: desktop
-description: Interact with the desktop — type text, send key combos, click/move/scroll/drag mouse, capture screenshots, read/write clipboard. Use for any non-browser GUI automation.
+description: Desktop automation — screenshots, clipboard, media playback/volume, keyboard input, mouse control. Wayland-native. Use for any non-browser GUI interaction.
 ---
 
-Desktop interaction skill covering keyboard input, mouse control, screenshots, and clipboard access. All tools are Wayland-native except mouse (ydotool, works on both X11 and Wayland).
+Desktop interaction skill. Each capability has its own doc and script.
 
-For keyboard input (type text, send key combos), read `keyboard.md` in this skill directory.
-
-For mouse control (click, move, scroll, drag), read `mouse.md` in this skill directory.
-
-For screenshots (full desktop, active window, region), read `screenshot.md` in this skill directory.
-
-For clipboard access (read/write text and typed content), read `clipboard.md` in this skill directory.
+For screenshots (full, region, active window), read `screenshot.md`.
+For clipboard read/write/watch, read `clipboard.md`.
+For media playback and volume control, read `media-control.md`.
+For keyboard input (type text, send key combos), read `keyboard.md`.
+For mouse control (click, move, scroll, drag), read `mouse.md`.

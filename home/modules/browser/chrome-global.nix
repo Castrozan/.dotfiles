@@ -27,16 +27,19 @@ in
 {
   home.packages = [ latest.google-chrome ];
 
-  home.file.".config/chrome-global/policies/managed/chrome-remote-debugging.json".text =
-    builtins.toJSON
-      {
+  home.activation.enableChromeRemoteDebugging =
+    let
+      chromeRemoteDebuggingPolicy = builtins.toJSON {
         RemoteDebuggingAllowed = true;
         DeveloperToolsAvailability = 0;
       };
-
-  home.activation.enableChromeRemoteDebugging = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    run ${enableChromeRemoteDebuggingInLocalState}
-  '';
+      policyFile = pkgs.writeText "chrome-remote-debugging.json" chromeRemoteDebuggingPolicy;
+    in
+    lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+      run ${enableChromeRemoteDebuggingInLocalState}
+      run mkdir -p "${chromeGlobalUserDataDir}/policies/managed"
+      run cp --no-preserve=mode ${policyFile} "${chromeGlobalUserDataDir}/policies/managed/chrome-remote-debugging.json"
+    '';
 
   xdg.desktopEntries.chrome-global = {
     name = "Chrome";
