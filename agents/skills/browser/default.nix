@@ -88,9 +88,11 @@ let
     _check_mcp_binary_exists
     _ensure_chrome_is_running
 
+    readonly DEVTOOLS_PORT=$(head -1 "$DEVTOOLS_ACTIVE_PORT_FILE")
+    readonly DEVTOOLS_PATH=$(sed -n '2p' "$DEVTOOLS_ACTIVE_PORT_FILE")
+
     exec "$MCP_BINARY" \
-      --autoConnect \
-      --userDataDir "$CHROME_USER_DATA_DIR" \
+      --wsEndpoint "ws://127.0.0.1:''${DEVTOOLS_PORT}''${DEVTOOLS_PATH}" \
       --usageStatistics false \
       "$@"
   '';
