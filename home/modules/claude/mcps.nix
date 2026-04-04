@@ -112,7 +112,7 @@ in
         in
         lib.hm.dag.entryAfter [ "writeBoundary" ] ''
           run mkdir -p "${browserUseConfigDir}"
-          run cp ${configFile} "${browserUseConfigDir}/config.json"
+          run cp --no-preserve=mode ${configFile} "${browserUseConfigDir}/config.json"
         '';
 
       installA2aMcp = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
