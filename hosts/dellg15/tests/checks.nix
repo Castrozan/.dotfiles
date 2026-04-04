@@ -56,7 +56,7 @@ in
 
   dellg15-keyboard-backlight-service-remain-after-exit =
     mkEvalCheck "dellg15-keyboard-backlight-service-remain-after-exit"
-      (nixosCfg.systemd.services.dim-keyboard-backlight.serviceConfig.RemainAfterExit == true)
+      nixosCfg.systemd.services.dim-keyboard-backlight.serviceConfig.RemainAfterExit
       "dim-keyboard-backlight must remain after exit";
 
   dellg15-keyboard-backlight-scripts-installed =
