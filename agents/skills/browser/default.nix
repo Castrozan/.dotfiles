@@ -86,8 +86,13 @@ let
     }
 
     _check_mcp_binary_exists
+    _ensure_chrome_is_running
+
+    readonly DEVTOOLS_PORT=$(head -1 "$DEVTOOLS_ACTIVE_PORT_FILE")
 
     exec "$MCP_BINARY" \
+      --browserUrl "http://127.0.0.1:''${DEVTOOLS_PORT}" \
+      --executablePath "$CHROME_BINARY" \
       --userDataDir "$CHROME_USER_DATA_DIR" \
       --usageStatistics false \
       "$@"

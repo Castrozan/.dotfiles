@@ -1,0 +1,96 @@
+# Investigation Methodology Tests
+# Tests that agents gather evidence before concluding, trace failures to instructions,
+# and complete analysis before jumping to fixes.
+
+tests:
+  - name: evidence_before_conclusions
+    description: "Agent must gather evidence from actual system before listing problems"
+    skill_path: agents/core.md
+    prompt: |
+      I read a SKILL.md file and noticed several things that look wrong. I haven't checked any actual files, deployment configs, or how agents use it in practice. Should I present my findings to the user now?
+    model: haiku
+    max_turns: 1
+    assertions:
+      output_contains_any:
+        - "evidence"
+        - "verify"
+        - "check"
+        - "actual"
+        - "read"
+        - "investigate"
+        - "confirm"
+      output_not_contains:
+        - "yes, present"
+        - "go ahead"
+        - "share your findings"
+
+  - name: investigation_traces_to_instructions
+    description: "Agent should trace failures to instruction gaps, not just describe symptoms"
+    skill_path: agents/core.md
+    prompt: |
+      An agent used the browser skill when it should have used the obsidian skill. The user had to correct it. What should I investigate to understand why this happened?
+    model: haiku
+    max_turns: 1
+    assertions:
+      output_contains_any:
+        - "description"
+        - "skill"
+        - "routing"
+        - "instruction"
+        - "loaded"
+
+  - name: analysis_separate_from_implementation
+    description: "Agent must complete analysis before jumping to fixes"
+    skill_path: agents/core.md
+    prompt: |
+      I found three gaps in a SKILL.md after reading the file and checking actual usage. Should I immediately start rewriting the skill to fix the gaps?
+    model: haiku
+    max_turns: 1
+    assertions:
+      output_contains_any:
+        - "analysis"
+        - "complete"
+        - "present"
+        - "findings"
+        - "first"
+        - "before"
+        - "separate"
+      output_not_contains:
+        - "yes, start rewriting"
+        - "go ahead and fix"
+
+  - name: investigation_depth_matches_stakes
+    description: "Complex multi-skill failures need deep cross-referencing, not surface reads"
+    skill_path: agents/core.md
+    prompt: |
+      An agent failed at a task that spanned three different skills. It loaded the wrong skill, used broken tools, and dismissed user content. I've read the one SKILL.md file that was directly involved. Is that enough investigation?
+    model: haiku
+    max_turns: 1
+    assertions:
+      output_contains_any:
+        - "no"
+        - "No"
+        - "not enough"
+        - "more"
+        - "other"
+        - "cross"
+        - "all three"
+        - "multiple"
+
+  - name: never_analyze_in_isolation
+    description: "Agent must check beyond the single document - actual artifacts, other skills, evals"
+    skill_path: agents/core.md
+    prompt: |
+      I need to evaluate whether an instruction skill is working well. I've read the SKILL.md file. What else should I check before concluding?
+    model: haiku
+    max_turns: 1
+    assertions:
+      output_contains_any:
+        - "actual"
+        - "artifact"
+        - "reality"
+        - "file"
+        - "usage"
+        - "practice"
+        - "eval"
+        - "test"

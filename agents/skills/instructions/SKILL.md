@@ -53,6 +53,10 @@ When exact commands are required: keep in ONE authoritative location, other docs
 When instructions describe HOW: include "Verify current approach by checking [specific file/directory]". Teaches agents to confirm before acting on potentially stale instructions.
 </self_verification>
 
+<instruction_diagnosis>
+When evaluating instruction quality, verify against reality first: are the instructions actually followed? Do the produced artifacts match what the skill describes? If a skill says "summarize with key takeaways" but no processed file contains summaries, that instruction is dead. Trace the full instruction stack the failing agent had - core.md, auto-loaded skill descriptions, any loaded skill bodies, available tools - and identify where routing or behavior diverged. For each observed failure, classify: wrong (agent followed the instruction but got a bad result), missing (no instruction existed for the situation), unreachable (correct instruction exists but the agent never loaded it), or dead (aspirational prose that no agent follows). Dead instructions are worse than missing ones - they waste tokens, create false confidence that behavior is covered, and make the answer to "is there an instruction for X?" falsely yes. Cross-reference composed workflows: when a task spans multiple skills, check whether the skills reference each other or are disconnected islands the agent must navigate blind.
+</instruction_diagnosis>
+
 <cohesion>
 New instructions are not more important than existing ones. No emphasis markers (CRITICAL, IMPORTANT) for later additions. Instructions should be cohesive — latest additions integrate, not dominate.
 </cohesion>
