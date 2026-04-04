@@ -8,6 +8,7 @@
 let
   nodejs = pkgs.nodejs_22;
   homeDir = config.home.homeDirectory;
+  chromeBinary = "${latest.google-chrome}/bin/google-chrome-stable";
 
   scraplingFetchMcpWrapper = pkgs.writeShellScript "scrapling-mcp" ''
     export PLAYWRIGHT_BROWSERS_PATH="$HOME/.local/share/scrapling-browsers"
@@ -22,6 +23,19 @@ let
       ;
     chromePackage = latest.google-chrome;
   };
+
+  browserUseConfigDir = "${homeDir}/.config/browseruse";
+  browserUseConfig = builtins.toJSON {
+    browser_profile = {
+      executable_path = chromeBinary;
+      headless = false;
+    };
+  };
+
+  browserUseMcpWrapper = pkgs.writeShellScript "browser-use-mcp" ''
+    export BROWSER_USE_CONFIG_PATH="${browserUseConfigDir}/config.json"
+    exec ${pkgs.uv}/bin/uvx browser-use[cli] --mcp "$@"
+  '';
 
   a2aMcp = import ../../../agents/skills/openclaw/a2a-mcp-default.nix {
     inherit
@@ -41,6 +55,10 @@ let
   mcpServersToInject = builtins.toJSON {
     chrome-devtools = {
       command = browserMcp.mcpServerCommand;
+      args = [ ];
+    };
+    browser-use = {
+      command = "${browserUseMcpWrapper}";
       args = [ ];
     };
     scrapling-fetch = {
@@ -80,6 +98,11 @@ in
 
       installChromeDevtoolsMcp = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
         run ${browserMcp.installChromeDevtoolsMcpViaNpm}
+      '';
+
+      writeBrowserUseConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+        run mkdir -p "${browserUseConfigDir}"
+        run bash -c 'echo ${lib.escapeShellArg browserUseConfig} > "${browserUseConfigDir}/config.json"'
       '';
 
       installA2aMcp = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
