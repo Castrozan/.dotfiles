@@ -25,16 +25,22 @@ let
   };
 
   browserUseConfigDir = "${homeDir}/.config/browseruse";
+  browserUseProfileId = "nix-default";
   browserUseConfig = builtins.toJSON {
     browser_profile = {
-      executable_path = chromeBinary;
-      headless = false;
+      "${browserUseProfileId}" = {
+        id = browserUseProfileId;
+        default = true;
+        headless = false;
+        executable_path = chromeBinary;
+      };
     };
   };
 
   browserUseMcpWrapper = pkgs.writeShellScript "browser-use-mcp" ''
     export BROWSER_USE_CONFIG_PATH="${browserUseConfigDir}/config.json"
-    exec ${pkgs.uv}/bin/uvx browser-use[cli] --mcp "$@"
+    export ANONYMIZED_TELEMETRY=false
+    exec ${pkgs.uv}/bin/uvx --from 'browser-use[cli]' browser-use --mcp "$@"
   '';
 
   a2aMcp = import ../../../agents/skills/openclaw/a2a-mcp-default.nix {
@@ -100,10 +106,14 @@ in
         run ${browserMcp.installChromeDevtoolsMcpViaNpm}
       '';
 
-      writeBrowserUseConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-        run mkdir -p "${browserUseConfigDir}"
-        run bash -c 'echo ${lib.escapeShellArg browserUseConfig} > "${browserUseConfigDir}/config.json"'
-      '';
+      writeBrowserUseConfig =
+        let
+          configFile = pkgs.writeText "browseruse-config.json" browserUseConfig;
+        in
+        lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+          run mkdir -p "${browserUseConfigDir}"
+          run cp ${configFile} "${browserUseConfigDir}/config.json"
+        '';
 
       installA2aMcp = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
         run ${a2aMcp.installA2aMcpViaNpm}
