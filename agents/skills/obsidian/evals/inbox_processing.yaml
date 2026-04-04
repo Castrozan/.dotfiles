@@ -41,3 +41,15 @@ tests:
         - "comms"
         - "twikit"
         - "curl"
+
+  - name: obsidian_respects_user_curation
+    agent: obsidian
+    prompt: "The user saved a tweet that looks like low-quality content with no useful information. Should I skip it and move to the next one?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "no"
+        - "read"
+        - "review"
+        - "curated"
+        - "intentional"
