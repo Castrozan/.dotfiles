@@ -132,7 +132,7 @@ _run_evals_tier() {
 }
 
 _collect_quick_pytest_test_files() {
-	find "$REPO_DIR/home/modules" "$REPO_DIR/agents/hooks" -path "*/tests/test_*.py" -type f | sort
+	find "$REPO_DIR/home/modules" "$REPO_DIR/agents/hooks" "$REPO_DIR/agents/skills" -path "*/tests/test_*.py" -type f | sort
 }
 
 _run_quick_pytest_tests() {

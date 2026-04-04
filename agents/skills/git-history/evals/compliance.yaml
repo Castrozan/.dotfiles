@@ -1,0 +1,88 @@
+tests:
+  - name: git_history_never_uses_repeated_grep
+    skill_path: agents/skills/git-history/SKILL.md
+    prompt: "I need to search git history for all commits related to authentication. How should I do it?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "dump"
+        - "git-history"
+        - "/tmp"
+        - "layer"
+      output_not_contains:
+        - "git log --grep"
+
+  - name: git_history_starts_with_layer1
+    skill_path: agents/skills/git-history/SKILL.md
+    prompt: "I want to find when browser automation was added to the project. Where do I start?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "layer 1"
+        - "titles"
+        - "file paths"
+        - "dump"
+
+  - name: git_history_escalates_to_layer2
+    skill_path: agents/skills/git-history/SKILL.md
+    prompt: "Layer 1 didn't find enough results. What should I try next?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "layer 2"
+        - "patches"
+        - "diffs"
+        - "code changes"
+
+  - name: git_history_uses_broad_keywords
+    skill_path: agents/skills/git-history/SKILL.md
+    prompt: "I'm searching for browser-related commits but only finding a few. What am I doing wrong?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "keyword"
+        - "synonym"
+        - "variant"
+        - "broad"
+        - "multiple"
+        - "chrome"
+        - "cdp"
+
+  - name: git_history_file_paths_are_high_signal
+    skill_path: agents/skills/git-history/SKILL.md
+    prompt: "What's the advantage of searching file paths in layer 1 over commit messages?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "file path"
+        - "directory"
+        - "terse"
+        - "miss"
+        - "keyword"
+
+  - name: git_history_knows_when_not_to_use
+    skill_path: agents/skills/git-history/SKILL.md
+    prompt: "I just want to see the last commit. Should I use this skill?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "no"
+        - "git log"
+        - "git show"
+        - "don't need"
+        - "overkill"
+        - "simple"
+        - "skip"
+
+  - name: git_history_cache_invalidation
+    skill_path: agents/skills/git-history/SKILL.md
+    prompt: "How do I know if the cached git history file is still up to date?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "HEAD"
+        - "stale"
+        - "hour"
+        - "invalidat"
+        - "force"
+        - "info"
