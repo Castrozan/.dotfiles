@@ -92,8 +92,6 @@ let
 
     exec "$MCP_BINARY" \
       --browserUrl "http://127.0.0.1:''${DEVTOOLS_PORT}" \
-      --executablePath "$CHROME_BINARY" \
-      --userDataDir "$CHROME_USER_DATA_DIR" \
       --usageStatistics false \
       "$@"
   '';
