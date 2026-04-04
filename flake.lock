@@ -1286,11 +1286,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1771299619,
-        "narHash": "sha256-EuX20qDL7fCV8+eM/ELwAPbSkL6z7aCLq/Zz8TejtEY=",
+        "lastModified": 1775266973,
+        "narHash": "sha256-tt72aLS+bfKpEoF/AGozX/lIcCl+uh1d5Xs/QAR9ms8=",
         "owner": "castrozan",
         "repo": "openclaw-mesh",
-        "rev": "41d9f3e3a6423fc50d981707160474a2314b97c8",
+        "rev": "780f27c4240a99f2310f64d8a005a1a20129f02d",
         "type": "github"
       },
       "original": {
