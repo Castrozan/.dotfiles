@@ -43,4 +43,32 @@ in
   dellg15-zram-enabled =
     mkEvalCheck "dellg15-zram-enabled" nixosCfg.zramSwap.enable
       "zram swap must be enabled for compressed in-memory swap";
+
+  dellg15-keyboard-backlight-service-enabled =
+    mkEvalCheck "dellg15-keyboard-backlight-service-enabled"
+      (nixosCfg.systemd.services.dim-keyboard-backlight.enable or true)
+      "dim-keyboard-backlight service must be defined";
+
+  dellg15-keyboard-backlight-service-oneshot =
+    mkEvalCheck "dellg15-keyboard-backlight-service-oneshot"
+      (nixosCfg.systemd.services.dim-keyboard-backlight.serviceConfig.Type == "oneshot")
+      "dim-keyboard-backlight must be a oneshot service";
+
+  dellg15-keyboard-backlight-service-remain-after-exit =
+    mkEvalCheck "dellg15-keyboard-backlight-service-remain-after-exit"
+      (nixosCfg.systemd.services.dim-keyboard-backlight.serviceConfig.RemainAfterExit == true)
+      "dim-keyboard-backlight must remain after exit";
+
+  dellg15-keyboard-backlight-scripts-installed =
+    mkEvalCheck "dellg15-keyboard-backlight-scripts-installed"
+      (
+        let
+          packageNames = map (p: p.name or "") nixosCfg.environment.systemPackages;
+          hasScript = name: builtins.any (n: lib.hasPrefix name n) packageNames;
+        in
+        hasScript "set-keyboard-backlight-brightness"
+        && hasScript "set-keyboard-backlight-color"
+        && hasScript "reset-keyboard-backlight"
+      )
+      "all three keyboard backlight scripts must be in system packages";
 }
