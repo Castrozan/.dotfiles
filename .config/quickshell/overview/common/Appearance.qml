@@ -17,6 +17,8 @@ Singleton {
             return matugenLoader.item;
         if (colorSource === "caelestia" && caelestiaPaletteLoaded)
             return caelestiaColors;
+        if (hyprThemeLoaded)
+            return hyprThemeColors;
         return defaultColors;
     }
     property QtObject animation
@@ -26,11 +28,94 @@ Singleton {
     property QtObject font
     property QtObject sizes
     property bool caelestiaPaletteLoaded: false
+    property bool hyprThemeLoaded: false
 
     Loader {
         id: matugenLoader
         active: root.colorSource === "matugen"
         source: "Appearance.colors.qml"
+    }
+
+    FileView {
+        id: hyprThemeFile
+        path: Qt.url(`file://${Quickshell.env("HOME")}/.config/hypr-theme/current/theme/quickshell-bar-colors.json`)
+        watchChanges: true
+        blockLoading: true
+        onFileChanged: this.reload()
+        onLoadedChanged: {
+            if (!loaded) return;
+            root.applyHyprTheme();
+        }
+    }
+
+    function applyHyprTheme() {
+        if (!hyprThemeFile.loaded) return;
+        try {
+            const theme = JSON.parse(hyprThemeFile.text());
+            const bg = theme.background ?? "#161217";
+            const fg = theme.foreground ?? "#EAE0E7";
+            const primary = theme.primary ?? "#89b4fa";
+            const accent = theme.accent ?? "#94e2d5";
+            const dim = theme.dim ?? "#6c7086";
+            const surface = theme.surface ?? "#45475a";
+
+            hyprThemeColors.m3primary = primary;
+            hyprThemeColors.m3onPrimary = relativeLuminance(primary) > 0.5 ? "#121212" : "#f5f5f5";
+            hyprThemeColors.m3primaryContainer = ColorUtils.mix(primary, bg, 0.3);
+            hyprThemeColors.m3onPrimaryContainer = fg;
+            hyprThemeColors.m3secondary = accent;
+            hyprThemeColors.m3onSecondary = relativeLuminance(accent) > 0.5 ? "#121212" : "#f5f5f5";
+            hyprThemeColors.m3secondaryContainer = ColorUtils.mix(accent, bg, 0.25);
+            hyprThemeColors.m3onSecondaryContainer = fg;
+            // Panel bg is lighter, workspace tiles are darker (matches reference layout)
+            hyprThemeColors.m3background = ColorUtils.mix(bg, fg, 0.72);
+            hyprThemeColors.m3onBackground = fg;
+            hyprThemeColors.m3surface = ColorUtils.mix(bg, fg, 0.72);
+            hyprThemeColors.m3surfaceContainerLow = ColorUtils.mix(bg, fg, 0.92);
+            hyprThemeColors.m3surfaceContainer = ColorUtils.mix(bg, fg, 0.82);
+            hyprThemeColors.m3surfaceContainerHigh = ColorUtils.mix(bg, fg, 0.75);
+            hyprThemeColors.m3surfaceContainerHighest = ColorUtils.mix(bg, fg, 0.68);
+            hyprThemeColors.m3onSurface = fg;
+            hyprThemeColors.m3surfaceVariant = ColorUtils.mix(dim, fg, 0.6);
+            hyprThemeColors.m3onSurfaceVariant = ColorUtils.mix(fg, bg, 0.15);
+            hyprThemeColors.m3inverseSurface = fg;
+            hyprThemeColors.m3inverseOnSurface = bg;
+            hyprThemeColors.m3outline = ColorUtils.mix(dim, fg, 0.6);
+            hyprThemeColors.m3outlineVariant = ColorUtils.mix(dim, bg, 0.3);
+            hyprThemeColors.m3shadow = "#000000";
+            hyprThemeColors.darkmode = relativeLuminance(bg) < 0.5;
+
+            root.hyprThemeLoaded = true;
+        } catch (e) {
+            console.warn("overview: failed to parse hypr-theme colors", e);
+        }
+    }
+
+    property QtObject hyprThemeColors: QtObject {
+        property bool darkmode: true
+        property color m3primary: defaultColors.m3primary
+        property color m3onPrimary: defaultColors.m3onPrimary
+        property color m3primaryContainer: defaultColors.m3primaryContainer
+        property color m3onPrimaryContainer: defaultColors.m3onPrimaryContainer
+        property color m3secondary: defaultColors.m3secondary
+        property color m3onSecondary: defaultColors.m3onSecondary
+        property color m3secondaryContainer: defaultColors.m3secondaryContainer
+        property color m3onSecondaryContainer: defaultColors.m3onSecondaryContainer
+        property color m3background: defaultColors.m3background
+        property color m3onBackground: defaultColors.m3onBackground
+        property color m3surface: defaultColors.m3surface
+        property color m3surfaceContainerLow: defaultColors.m3surfaceContainerLow
+        property color m3surfaceContainer: defaultColors.m3surfaceContainer
+        property color m3surfaceContainerHigh: defaultColors.m3surfaceContainerHigh
+        property color m3surfaceContainerHighest: defaultColors.m3surfaceContainerHighest
+        property color m3onSurface: defaultColors.m3onSurface
+        property color m3surfaceVariant: defaultColors.m3surfaceVariant
+        property color m3onSurfaceVariant: defaultColors.m3onSurfaceVariant
+        property color m3inverseSurface: defaultColors.m3inverseSurface
+        property color m3inverseOnSurface: defaultColors.m3inverseOnSurface
+        property color m3outline: defaultColors.m3outline
+        property color m3outlineVariant: defaultColors.m3outlineVariant
+        property color m3shadow: defaultColors.m3shadow
     }
 
     property QtObject defaultColors: QtObject {

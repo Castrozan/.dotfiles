@@ -1,0 +1,49 @@
+tests:
+  - name: quickshell_knows_ipc_for_overview
+    skill_path: agents/skills/quickshell/SKILL.md
+    prompt: "How do I toggle the workspace overview on and off?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "ipc"
+        - "qs"
+        - "overview"
+
+  - name: quickshell_knows_overview_config_location
+    skill_path: agents/skills/quickshell/SKILL.md
+    prompt: "Where is the overview configuration file?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "config.json"
+        - "quickshell/overview"
+
+  - name: quickshell_knows_service_restart
+    skill_path: agents/skills/quickshell/SKILL.md
+    prompt: "The overview is not reflecting my QML changes. What should I do?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "rebuild"
+        - "restart"
+        - "systemctl"
+
+  - name: quickshell_knows_theme_integration
+    skill_path: agents/skills/quickshell/SKILL.md
+    prompt: "How does the overview get its colors?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "hypr-theme"
+        - "theme"
+        - "Appearance"
+
+  - name: quickshell_knows_bar_ipc
+    skill_path: agents/skills/quickshell/SKILL.md
+    prompt: "How do I trigger the dashboard popout from the bar?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "ipc"
+        - "qs"
+        - "dashboard"

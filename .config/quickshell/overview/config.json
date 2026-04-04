@@ -51,9 +51,9 @@
     "specialWorkspaceColumns": 7,
     "effects": {
       "enableBackdrop": true,
-      "backdropOpacity": 0.85,
-      "panelOpacity": 1.0,
-      "workspaceOpacity": 1.0,
+      "backdropOpacity": 0.45,
+      "panelOpacity": 0.88,
+      "workspaceOpacity": 0.92,
       "windowOverlayOpacity": 0.15,
       "enableBlur": false,
       "glassMode": false,

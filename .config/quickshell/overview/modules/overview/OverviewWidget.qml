@@ -451,7 +451,7 @@ Item {
                                     weight: Font.DemiBold
                                     family: Appearance.font.family.expressive
                                 }
-                                color: ColorUtils.transparentize(Appearance.colors.colOnLayer1, 0.8)
+                                color: ColorUtils.transparentize(Appearance.m3colors.m3onSurface, 0.3)
                                 horizontalAlignment: Text.AlignHCenter
                                 verticalAlignment: Text.AlignVCenter
                             }
@@ -489,14 +489,14 @@ Item {
             }
 
             Item {
-                visible: root.showSpecialWorkspaces
+                visible: root.showSpecialWorkspaces && root.hasSpecialWorkspaceSection
                 implicitWidth: 1
                 implicitHeight: root.specialStripGap
             }
 
             Item {
                 id: specialWorkspaceSection
-                visible: root.showSpecialWorkspaces
+                visible: root.showSpecialWorkspaces && root.hasSpecialWorkspaceSection
                 implicitWidth: root.specialSectionWidth
                 implicitHeight: root.specialStripHeight
 
