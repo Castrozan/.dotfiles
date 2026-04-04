@@ -281,7 +281,7 @@ ColumnLayout {
         iconText: {
             if (!isPowered) return "󰂲";
             if (hasConnectedDevices) return "󰂱";
-            return "";
+            return "󰂯";
         }
         iconColor: ThemeColors.foreground
 

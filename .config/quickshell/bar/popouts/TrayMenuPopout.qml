@@ -9,7 +9,7 @@ ColumnLayout {
 
     required property var trayMenuHandle
 
-    spacing: 4
+    spacing: 2
 
     QsMenuOpener {
         id: trayMenuOpener
@@ -24,14 +24,26 @@ ColumnLayout {
 
             required property var modelData
 
-            Layout.fillWidth: true
-            Layout.preferredHeight: modelData.isSeparator ? 1 : 28
+            readonly property bool itemEnabled: modelData.enabled !== false
 
-            radius: 6
+            Layout.fillWidth: true
+            Layout.preferredHeight: modelData.isSeparator ? 9 : 30
+            Layout.leftMargin: modelData.isSeparator ? 8 : 0
+            Layout.rightMargin: modelData.isSeparator ? 8 : 0
+
+            radius: modelData.isSeparator ? 0 : 6
             color: {
-                if (modelData.isSeparator) return ThemeColors.dim;
+                if (modelData.isSeparator) return "transparent";
                 if (trayMenuEntryMouseArea.containsMouse) return ThemeColors.surfaceTranslucent;
                 return "transparent";
+            }
+
+            Rectangle {
+                visible: trayMenuEntryDelegate.modelData.isSeparator
+                anchors.centerIn: parent
+                width: parent.width
+                height: 1
+                color: Qt.rgba(ThemeColors.foreground.r, ThemeColors.foreground.g, ThemeColors.foreground.b, 0.15)
             }
 
             Loader {
@@ -44,35 +56,37 @@ ColumnLayout {
                     Row {
                         anchors.verticalCenter: parent.verticalCenter
                         anchors.left: parent.left
-                        anchors.leftMargin: 8
+                        anchors.leftMargin: 10
                         anchors.right: parent.right
-                        anchors.rightMargin: 8
+                        anchors.rightMargin: 10
                         spacing: 8
 
                         Image {
                             anchors.verticalCenter: parent.verticalCenter
-                            width: 14
-                            height: 14
+                            width: 16
+                            height: 16
                             source: trayMenuEntryDelegate.modelData.icon ?? ""
-                            sourceSize: Qt.size(14, 14)
+                            sourceSize: Qt.size(16, 16)
                             visible: (trayMenuEntryDelegate.modelData.icon ?? "") !== ""
                         }
 
                         Text {
                             anchors.verticalCenter: parent.verticalCenter
                             text: trayMenuEntryDelegate.modelData.text ?? ""
-                            font.pixelSize: 12
+                            font.pixelSize: 13
                             font.family: "JetBrainsMono Nerd Font"
-                            color: trayMenuEntryDelegate.modelData.enabled ? ThemeColors.foreground : ThemeColors.dim
+                            color: trayMenuEntryDelegate.itemEnabled
+                                ? ThemeColors.foreground
+                                : Qt.rgba(ThemeColors.foreground.r, ThemeColors.foreground.g, ThemeColors.foreground.b, 0.4)
                             elide: Text.ElideRight
-                            width: Math.min(implicitWidth, 200)
+                            width: Math.min(implicitWidth, 220)
                         }
                     }
 
                     Text {
                         anchors.verticalCenter: parent.verticalCenter
                         anchors.right: parent.right
-                        anchors.rightMargin: 8
+                        anchors.rightMargin: 10
                         text: "›"
                         font.pixelSize: 14
                         color: ThemeColors.foreground
@@ -83,10 +97,10 @@ ColumnLayout {
                         id: trayMenuEntryMouseArea
                         anchors.fill: parent
                         hoverEnabled: true
-                        cursorShape: trayMenuEntryDelegate.modelData.enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
+                        cursorShape: trayMenuEntryDelegate.itemEnabled ? Qt.PointingHandCursor : Qt.ArrowCursor
 
                         onClicked: {
-                            if (trayMenuEntryDelegate.modelData.enabled && !trayMenuEntryDelegate.modelData.hasChildren) {
+                            if (trayMenuEntryDelegate.itemEnabled && !trayMenuEntryDelegate.modelData.hasChildren) {
                                 trayMenuEntryDelegate.modelData.triggered();
                             }
                         }
