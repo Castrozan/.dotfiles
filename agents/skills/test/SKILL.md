@@ -24,16 +24,9 @@ Before presenting results to the user, stop and verify completeness:
 </pre_delivery>
 
 <what_to_test>
-Use `tests/run.sh` as the canonical test entry point. It has tiered modes:
+`tests/run.sh` is the canonical entry point — run it with no args to see available tiers. Default workflow: quick after every change, `--nix` when touching `.nix` files, `--all` before delivery.
 
-- `tests/run.sh` (no args = `--quick`): skill frontmatter + non-docker bats tests (~3s). Run this for fast feedback after any change.
-- `tests/run.sh --nix`: quick + home-manager and nix eval tests (~120s). Run this when touching nix files.
-- `tests/run.sh --docker`: docker integration tests only (~60s). Run when touching setup scripts that have `*-docker.bats` tests.
-- `tests/run.sh --all`: quick + nix + docker — comprehensive pre-delivery verification.
-- `tests/run.sh --coverage`: quick tests through kcov for coverage reports.
-- `tests/run.sh --runtime`: live service tests (needs running gateway).
-
-The runner auto-detects available tools (bats, nix, docker, kcov) and skips tiers gracefully when tools are missing. For this dotfiles repo, the default workflow is: quick after every change, `--nix` when touching `.nix` files, `--all` before delivery.
+For fast iteration on a single file, run `pytest` or `bats` directly — both are globally installed and should be on PATH. Only fall back to `nix shell` if they are genuinely missing.
 </what_to_test>
 
 <test_failures>

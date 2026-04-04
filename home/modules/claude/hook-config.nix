@@ -87,6 +87,11 @@ in
           command = "${runHook} ${hooksPath}/workspace-directory-injector.py";
           timeout = 3000;
         }
+        {
+          type = "command";
+          command = "${runHook} ${hooksPath}/pre-push-ci-gate.py";
+          timeout = 600000;
+        }
       ];
     }
   ];
