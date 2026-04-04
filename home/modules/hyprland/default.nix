@@ -20,6 +20,7 @@ in
     ./wlr-which-key.nix
     ./mako.nix
     ./quickshell/window-switcher.nix
+    ./quickshell/overview.nix
     ../desktop/satty.nix
     ../audio/wiremix.nix
     ./xdg-desktop-portal-hyprland-service.nix
