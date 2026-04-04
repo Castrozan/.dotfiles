@@ -4,7 +4,7 @@ Two tools, different strengths. Browser Use is the default; Chrome DevTools MCP 
 
 ## Browser Use MCP - primary, general purpose
 
-Default tool for all browser automation. Launches its own Chrome instance via the browser-use MCP server (stdio transport). Configured with `executable_path` pointing to the Nix Chrome binary so it works on NixOS.
+Default tool for all browser automation. Launches its own Chrome instance via the browser-use MCP server (stdio transport). The system Chrome binary is configured via `executable_path` in `~/.config/browseruse/config.json`.
 
 Use for public websites, scraping, research, bulk extraction, parallel browser sessions, quick throwaway browsing, and any task where bot detection is not a concern. Also handles Electron app automation via CDP connection.
 

@@ -13,15 +13,15 @@ Original prompt: i would like to configure one skill to help agents use my pc on
 | **Browser Automation** | DONE | browser | Pinchtab (Chrome CDP), click/type/scroll/screenshot/JS eval |
 | **Browser Screenshots** | DONE | browser | Via Pinchtab screenshot command |
 | **Desktop Notifications** | DONE | notify | notify-send (D-Bus) + ntfy.sh mobile push |
-| **Clipboard Read** | PARTIAL | hey-clever | wl-paste used but not as a general capability |
+| **Clipboard Read** | DONE | clipboard | wl-paste with MIME type support, watch mode |
 | **Window Management** | PARTIAL | hyprland-debug, quickshell | Read-only diagnostics, no active window manipulation |
 | **System Monitoring** | DONE | system-health | CPU/memory/disk/temps/services/gateway |
 | **Process Control** | DONE | tmux | Start/stop/restart processes in tmux panes |
 | **Service Control** | PARTIAL | hyprland-debug, quickshell | systemctl for specific services only |
-| **Desktop Screenshots** | MISSING | — | No grim/slurp Wayland screenshot skill |
+| **Desktop Screenshots** | DONE | screenshot | grim (full/window) + slurp (region), saves to /tmp |
 | **Global Keyboard Input** | MISSING | — | No wtype/ydotool for typing outside browser |
 | **Global Mouse Control** | MISSING | — | No ydotool for clicks/moves outside browser |
-| **Clipboard Write** | MISSING | — | No wl-copy general capability |
+| **Clipboard Write** | DONE | clipboard | wl-copy from argument or stdin |
 | **Screen Recording** | MISSING | — | No wf-recorder or similar |
 | **Webcam Capture** | MISSING | — | Can output virtual camera but can't read real webcam |
 | **File Manager** | MISSING | — | No GUI file interaction |
@@ -54,9 +54,9 @@ Key insight: None of the major providers handle audio I/O, camera, or notificati
 
 ### Priority 1 — High Impact, Low Effort (tools already on system)
 
-- [ ] **screenshot** — Capture desktop/region/window screenshots using grim + slurp (Wayland). Return image path. Essential for the screenshot→action loop that all computer-use agents rely on. Could also integrate OCR (tesseract) for a screenshot→text pipeline.
+- [x] **screenshot** — Capture desktop/region/window screenshots using grim + slurp (Wayland). Return image path. Essential for the screenshot→action loop that all computer-use agents rely on. Could also integrate OCR (tesseract) for a screenshot→text pipeline.
 
-- [ ] **clipboard** — Read and write system clipboard via wl-copy/wl-paste. Agents frequently need to transfer data between contexts. Currently scattered across hey-clever with no general-purpose access.
+- [x] **clipboard** — Read and write system clipboard via wl-copy/wl-paste. Agents frequently need to transfer data between contexts. Currently scattered across hey-clever with no general-purpose access.
 
 - [ ] **keyboard** — Global keyboard input via wtype (Wayland) or ydotool. Type text, send key combos (Ctrl+S, Alt+Tab), hold modifiers. Enables interaction with any focused application, not just browser.
 
