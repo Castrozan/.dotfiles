@@ -3,7 +3,7 @@ shared_system_prompt: &shared_system_prompt |
 
   Available skills:
 
-  browser - Use when user asks to interact with a live webpage — fill forms, click buttons, navigate authenticated apps, test UI, take screenshots. Requires a visible Chrome window. Do NOT use for fetching or reading web content programmatically — use curl, MCP fetch tools, or domain-specific skills instead.
+  browser - Use when user asks to interact with a live webpage — fill forms, click buttons, navigate authenticated apps, automate Electron apps, test UI, take screenshots. Do NOT use for fetching or reading web content programmatically — use curl, MCP fetch tools, or domain-specific skills instead.
 
   claude - Launch and interact with Claude Code sessions via tmux or one-shot commands. Use when spawning interactive coding sessions, delegating tasks to parallel agents, or running autonomous implementations.
 
@@ -244,6 +244,26 @@ tests:
     assertions:
       output_contains_any:
         - "browser"
+
+  - name: routing_to_browser_electron_app
+    system_prompt: *shared_system_prompt
+    prompt: "Automate the VS Code Electron app to open a file and run a command"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "browser"
+      output_not_contains:
+        - "desktop"
+
+  - name: routing_to_browser_interactive_scrape
+    system_prompt: *shared_system_prompt
+    prompt: "Open this website in a browser, click the 'Load More' button, then extract the pricing table"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "browser"
+      output_not_contains:
+        - "research"
 
   - name: routing_to_claude_spawn_agent
     system_prompt: *shared_system_prompt
