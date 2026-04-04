@@ -5,6 +5,7 @@
     ./home/ssh.nix
     ./home/session-vars.nix
     ./home/openclaw.nix
+    ./home/claude-discord-agents.nix
 
     ../../home/core.nix
 

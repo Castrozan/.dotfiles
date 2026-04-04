@@ -2,6 +2,14 @@ let
   lucasDiscordUserId = "284143065877184512";
 in
 {
+  openclaw.mesh.claudeDiscordAgents = [
+    {
+      id = "angel";
+      emoji = "😇";
+      model = "opus";
+    }
+  ];
+
   openclaw = {
     memorySync = {
       enable = true;

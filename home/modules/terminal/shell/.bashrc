@@ -93,6 +93,7 @@ if command -v tmux &>/dev/null &&
 	[[ ! "$TERM" =~ screen ]] &&
 	[[ ! "$TERM" =~ tmux ]] &&
 	[ -z "$TMUX" ] &&
+	[ -z "$VSCODE_PID" ] &&
 	[[ $(ps -o comm= -p "$PPID") != "cursor" ]]; then
 	_start_tmux
 fi

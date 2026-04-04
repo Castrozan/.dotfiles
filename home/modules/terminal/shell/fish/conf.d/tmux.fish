@@ -16,7 +16,7 @@ function __start_tmux
     end
   end
 
-  if [ -z "$TMUX" ] && ! string match -q "*cursor*" (ps -o comm= -p $fish_pid)
+  if [ -z "$TMUX" ] && [ -z "$VSCODE_PID" ] && ! string match -q "*cursor*" (ps -o comm= -p $fish_pid)
     tmux attach -t screensaver 2>/dev/null
   end
 end

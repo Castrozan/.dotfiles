@@ -10,7 +10,7 @@ let
 
   rgbType = lib.types.listOf lib.types.ints.u8;
 
-  gridAgentModule = lib.types.submodule {
+  agentEntryModule = lib.types.submodule {
     options = {
       id = lib.mkOption {
         type = lib.types.str;
@@ -29,6 +29,10 @@ let
       inherit (a) id emoji model;
     }) cfg.gridAgents;
 
+    claudeDiscord = map (a: {
+      inherit (a) id emoji model;
+    }) cfg.claudeDiscordAgents;
+
     connections = {
       inherit (cfg.connections)
         sshHost
@@ -41,6 +45,7 @@ let
       inherit (cfg.colors)
         local
         grid
+        claudeDiscord
         edgeActive
         edgeInactive
         inactiveNode
@@ -78,7 +83,12 @@ in
 {
   options.openclaw.mesh = {
     gridAgents = lib.mkOption {
-      type = lib.types.listOf gridAgentModule;
+      type = lib.types.listOf agentEntryModule;
+      default = [ ];
+    };
+
+    claudeDiscordAgents = lib.mkOption {
+      type = lib.types.listOf agentEntryModule;
       default = [ ];
     };
 
@@ -111,6 +121,14 @@ in
         default = [
           50
           200
+          255
+        ];
+      };
+      claudeDiscord = lib.mkOption {
+        type = rgbType;
+        default = [
+          180
+          120
           255
         ];
       };

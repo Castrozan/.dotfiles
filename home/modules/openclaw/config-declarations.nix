@@ -9,14 +9,24 @@ let
 
   allAgentNames = lib.attrNames openclaw.enabledAgents;
 
+  resolvedModelPrimary =
+    agent: if agent.model.primary != null then agent.model.primary else openclaw.defaults.model.primary;
+
+  capitalize = s: lib.toUpper (lib.substring 0 1 s) + lib.substring 1 (-1) s;
+
   agentsList = lib.mapAttrsToList (
     name: agent:
     {
       id = name;
       workspace = "${homeDir}/${agent.workspace}";
-      model =
-        lib.optionalAttrs (agent.model.primary != null) { inherit (agent.model) primary; }
-        // lib.optionalAttrs (agent.model.fallbacks != [ ]) { inherit (agent.model) fallbacks; };
+      identity = {
+        name = capitalize name;
+        emoji = if agent.emoji != "" then agent.emoji else "🤖";
+      };
+      model = {
+        primary = resolvedModelPrimary agent;
+      }
+      // lib.optionalAttrs (agent.model.fallbacks != [ ]) { inherit (agent.model) fallbacks; };
       subagents = {
         allowAgents = lib.filter (n: n != name) allAgentNames;
       };
@@ -33,8 +43,6 @@ let
   telegramEnabledAgents = lib.filterAttrs (_: a: a.telegram.enable) openclaw.enabledAgents;
 
   discordEnabledAgents = lib.filterAttrs (_: a: a.discord.enable) openclaw.enabledAgents;
-
-  capitalize = s: lib.toUpper (lib.substring 0 1 s) + lib.substring 1 (-1) s;
 
   telegramAccounts = lib.mapAttrs (name: agent: {
     name = if agent.telegram.botName != null then agent.telegram.botName else capitalize name;
