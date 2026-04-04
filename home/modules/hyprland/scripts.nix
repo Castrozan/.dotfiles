@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, latest, ... }:
 let
   hyprlandPythonLibraryPath = ./scripts/windows/lib;
 
@@ -70,7 +70,10 @@ in
     (mkHyprlandPythonScriptWithDeps "hypr-microphone-toggle" ./scripts/hardware/microphone_toggle.py [
       pkgs.pulseaudio
     ])
-    (mkHyprlandPythonScript "hypr-summon-chrome-global" ./scripts/launchers/summon_chrome_global.py)
+    (mkHyprlandPythonScriptWithDeps "hypr-summon-chrome-global"
+      ./scripts/launchers/summon_chrome_global.py
+      [ latest.google-chrome ]
+    )
     (mkHyprlandPythonScriptWithDeps "brightness" ./scripts/hardware/brightness.py [
       pkgs.brightnessctl
     ])

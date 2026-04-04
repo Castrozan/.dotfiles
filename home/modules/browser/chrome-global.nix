@@ -1,45 +1,15 @@
-{
-  pkgs,
-  lib,
-  latest,
-  ...
-}:
+{ pkgs, latest, ... }:
 let
-  chromeGlobalUserDataDir = "$HOME/.config/chrome-global";
-
   chromeGlobalLauncher = pkgs.writeShellScript "chrome-global-launcher" ''
     exec ${latest.google-chrome}/bin/google-chrome-stable \
-      --user-data-dir="${chromeGlobalUserDataDir}" \
+      --user-data-dir="$HOME/.config/chrome-global" \
       --class=chrome-global \
-      --remote-debugging-port=0 \
       --enable-features=UseNativeNotifications,WebRTCPipeWireCapturer \
       "$@"
-  '';
-
-  enableChromeRemoteDebuggingInLocalState = pkgs.writeShellScript "enable-chrome-remote-debugging" ''
-    set -euo pipefail
-    LOCAL_STATE="${chromeGlobalUserDataDir}/Local State"
-    if [ -f "$LOCAL_STATE" ]; then
-      ${pkgs.jq}/bin/jq '.devtools.remote_debugging["user-enabled"] = true' "$LOCAL_STATE" | ${pkgs.moreutils}/bin/sponge "$LOCAL_STATE"
-    fi
   '';
 in
 {
   home.packages = [ latest.google-chrome ];
-
-  home.activation.enableChromeRemoteDebugging =
-    let
-      chromeRemoteDebuggingPolicy = builtins.toJSON {
-        RemoteDebuggingAllowed = true;
-        DeveloperToolsAvailability = 0;
-      };
-      policyFile = pkgs.writeText "chrome-remote-debugging.json" chromeRemoteDebuggingPolicy;
-    in
-    lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-      run ${enableChromeRemoteDebuggingInLocalState}
-      run mkdir -p "${chromeGlobalUserDataDir}/policies/managed"
-      run cp --no-preserve=mode ${policyFile} "${chromeGlobalUserDataDir}/policies/managed/chrome-remote-debugging.json"
-    '';
 
   xdg.desktopEntries.chrome-global = {
     name = "Chrome";
