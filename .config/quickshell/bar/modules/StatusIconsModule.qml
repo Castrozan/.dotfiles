@@ -22,6 +22,7 @@ ColumnLayout {
         _registerIconPosition(notificationSoundIcon, "");
         _registerIconPosition(outputDeviceTypeIcon, "");
         _registerIconPosition(microphoneIcon, "");
+        _registerIconPosition(keyboardBacklightIcon, "");
         _registerIconPosition(networkIcon, "network");
         _registerIconPosition(bluetoothIcon, "bluetooth");
         _registerIconPosition(batteryIcon, "battery");
@@ -325,6 +326,38 @@ ColumnLayout {
                 bluetoothPoweredProcess.running = true;
                 bluetoothConnectedProcess.running = true;
             }
+        }
+    }
+
+    StatusIcon {
+        id: keyboardBacklightIcon
+        Layout.alignment: Qt.AlignHCenter
+        Layout.preferredWidth: 28
+        Layout.preferredHeight: 28
+
+        property int brightnessLevel: 2
+        readonly property var levels: [0, 5, 25, 50, 100]
+        readonly property var levelIcons: ["󰌐", "󰌌", "󰌌", "󰌌", "󰌌"]
+        readonly property var levelOpacities: [0.3, 0.4, 0.6, 0.8, 1.0]
+
+        iconText: levelIcons[brightnessLevel]
+        iconColor: ThemeColors.foreground
+        opacity: levelOpacities[brightnessLevel]
+
+        onClicked: {
+            brightnessLevel = (brightnessLevel + 1) % levels.length;
+            kbdBacklightProcess.command = ["set-keyboard-backlight-brightness", String(levels[brightnessLevel])];
+            kbdBacklightProcess.running = true;
+        }
+
+        Behavior on opacity {
+            NumberAnimation { duration: 150 }
+        }
+
+        Process {
+            id: kbdBacklightProcess
+            command: ["set-keyboard-backlight-brightness", "5"]
+            running: false
         }
     }
 
