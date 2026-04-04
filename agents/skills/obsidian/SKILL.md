@@ -1,13 +1,10 @@
 ---
 name: obsidian
-description: Manage the Obsidian vault — daily notes, TODO tracking, activity logging, and inbox processing. Use when user mentions daily note, wants to log activity, add/check TODOs, review pending tasks, plan their day, process saved items, or interact with the vault.
+description: Manage the Obsidian vault — daily notes, TODO tracking, activity logging, and ReadItLater inbox processing. Use when user mentions daily note, TODOs, saved articles, saved tweets, ReadItLater items, or vault content.
 ---
 
 <vault_location>
-Vault path: @homePath@/vault/
-Daily notes: @homePath@/vault/daily-note/
-CLI tool: daily-note (creates today's note and opens in $EDITOR)
-Environment variable: OBSIDIAN_HOME=@homePath@/vault
+Vault path: `$OBSIDIAN_HOME` (set in session environment). Daily notes: `$OBSIDIAN_HOME/daily-note/`. CLI tool: `daily-note` (creates today's note and opens in $EDITOR).
 </vault_location>
 
 <daily_note_format>
@@ -37,13 +34,34 @@ Log completed work as already-checked TODO items: - [x] Description of what was 
 </logging_activity>
 
 <inbox_processing>
-The ReadItLater Inbox folder in the vault contains saved links and content. When processing the inbox: classify each item (tweet, article, GitHub repo, video, note), summarize with key takeaways, tag with relevant Obsidian tags, rate relevance (must-read, interesting, reference, skip), and mark processed items with #agent-work-done tag. Skip YouTube saves (no transcript extraction) and dead links. Process in batches of 20 items.
+Inbox path: `$OBSIDIAN_HOME/ReadItLater Inbox/` (note the space in directory name - shell commands must quote it).
+
+File structure: line 1 is `[[ReadItLater]] [[Type]]` where Type is Tweet, Article, Youtube, or Textsnippet. The type is already classified - do not re-classify. Below line 1: a heading with source link, then the captured content.
+
+Processed marker: `#agent-work-done` appended to line 1. A processed file looks like `[[ReadItLater]] [[Tweet]] #agent-work-done`. Files missing this tag are unprocessed.
+
+Finding unprocessed items (filenames contain spaces - naive `for f in $(ls)` breaks):
+```
+cd "$OBSIDIAN_HOME/ReadItLater Inbox" && ls -t *.md | while IFS= read -r f; do if ! grep -q '#agent-work-done' "$f"; then echo "$f"; fi; done
+```
+
+Every saved item was intentionally curated by the user. Read the full content before any judgment. Never dismiss, label as "low-signal", or skip without engaging with the material.
+
+Processing workflow: read the full file content first - the content is already captured locally by ReadItLater. Present a brief summary to the user verbally. Append `#agent-work-done` to line 1. Do not modify file content beyond the tag. Do not add summaries, ratings, or extra tags to the file.
+
+YouTube and Instagram saves: tag as done - content is not extractable from CLI. Do NOT skip them. Mark line 1 with `#agent-work-done`.
+
+Textsnippet and empty Note files: often near-empty (accidental saves or clipboard grabs). Tag done quickly.
+
+Multi-content files: some files contain multiple `[[ReadItLater]]` headers concatenated (e.g. multiple Reddit posts). Process as one unit, tag the first line.
+
+Tweet media enrichment: when tweets contain `pic.twitter.com` or `t.co` links and the user asks about attached images or video, the comms skill provides twikit-cli for Twitter data, and fxtwitter API returns reliable media URLs without auth. Do not reach for the browser skill to view tweet content.
 </inbox_processing>
 
 <sync>
-Notes sync across devices via Obsidian Sync when the app is running. Open Obsidian locally before reading to get latest version. Be aware of concurrent edit conflicts — check note is current before editing.
+Vault syncs continuously via the `obsidian-headless-sync` systemd service. No need to open the Obsidian app. Check service status: `systemctl --user status obsidian-headless-sync`.
 </sync>
 
 <behavior>
-Check the daily note to understand what user is working on. After completing significant work, offer to log it. When user mentions new tasks, offer to add them. Never delete unchecked items — they carry forward automatically via the CLI. Respect the note structure: no custom sections or changed headers.
+Check the daily note to understand what user is working on. After completing significant work, offer to log it. When user mentions new tasks, offer to add them. Never delete unchecked items - they carry forward automatically via the CLI. Respect the note structure: no custom sections or changed headers.
 </behavior>

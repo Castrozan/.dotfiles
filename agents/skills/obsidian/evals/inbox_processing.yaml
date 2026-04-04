@@ -1,0 +1,43 @@
+tests:
+  - name: obsidian_knows_processed_marker
+    agent: obsidian
+    prompt: "How do I tell if a ReadItLater item has already been processed?"
+    model: haiku
+    assertions:
+      output_contains:
+        - "agent-work-done"
+
+  - name: obsidian_knows_ril_file_structure
+    agent: obsidian
+    prompt: "What format does line 1 of a ReadItLater inbox file follow?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "ReadItLater"
+        - "[["
+
+  - name: obsidian_youtube_ril_handling
+    agent: obsidian
+    prompt: "A ReadItLater inbox file has [[Youtube]] type. What do I do with it? Respond in one sentence."
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "tag"
+        - "done"
+        - "mark"
+        - "agent-work-done"
+      output_not_contains:
+        - "skip it"
+        - "ignore it"
+        - "skip YouTube"
+
+  - name: obsidian_knows_tweet_enrichment_tool
+    agent: obsidian
+    prompt: "A saved tweet has a pic.twitter.com link and I need to see the image. What tool should I use?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "fxtwitter"
+        - "comms"
+        - "twikit"
+        - "curl"

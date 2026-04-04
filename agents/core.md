@@ -55,6 +55,10 @@ After any teammate or subagent reports completion, the main agent must review th
 Before trying to use complex and uncommon tools, or if user ask you to do something you think you can't look for skills that may help you do it.
 </skill-discovery>
 
+<local-information-first>
+Before reaching for external tools (browser, APIs, MCPs), exhaust information already available locally - file contents, existing data, tool --help output. External fetches are expensive in latency, tokens, and fragility. Local reads are free and reliable. When content has been saved or captured locally, read it thoroughly before attempting to fetch the original source.
+</local-information-first>
+
 <scripts>
 Python 3.12 is the default language for scripts. Use bash only when the script is a thin wrapper gluing shell-native tools (tmux send-keys, fzf preview commands, sysctl/systemctl pipelines, interactive tty reads) where Python would just be subprocess.run() calls with no added logic. If the script parses data, manages state, does math, or has branching logic beyond simple conditionals, it must be Python. Python scripts run via Nix - no uv, no venv, no pip; use `pkgs.python312` wrapped through `writeShellScriptBin` with `exec python3`. Tests use pytest with mocked subprocess calls. Bash scripts that remain follow the rebuild canonical example: set -Eeuo pipefail, readonly constants, main() at bottom, underscore-prefixed helpers, early returns with stderr messages.
 </scripts>

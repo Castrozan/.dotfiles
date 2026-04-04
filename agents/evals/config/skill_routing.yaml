@@ -3,7 +3,7 @@ shared_system_prompt: &shared_system_prompt |
 
   Available skills:
 
-  browser - Use when user asks to open a webpage, scrape content, fill forms, click buttons, take screenshots, test a web UI, or automate any browser interaction. Also use when navigating authenticated web apps or testing frontend changes.
+  browser - Use when user asks to interact with a live webpage — fill forms, click buttons, navigate authenticated apps, test UI, take screenshots. Requires a visible Chrome window. Do NOT use for fetching or reading web content programmatically — use curl, MCP fetch tools, or domain-specific skills instead.
 
   claude - Launch and interact with Claude Code sessions via tmux or one-shot commands. Use when spawning interactive coding sessions, delegating tasks to parallel agents, or running autonomous implementations.
 
@@ -31,7 +31,7 @@ shared_system_prompt: &shared_system_prompt |
 
   notify - Notify the user after completing substantial work. Use when finishing long tasks, implementations, or background operations. Plays audio and shows a desktop notification by default.
 
-  obsidian - Manage the Obsidian vault — daily notes, TODO tracking, activity logging, and inbox processing. Use when user mentions daily note, wants to log activity, add/check TODOs, review pending tasks, plan their day, process saved items, or interact with the vault.
+  obsidian - Manage the Obsidian vault — daily notes, TODO tracking, activity logging, and ReadItLater inbox processing. Use when user mentions daily note, TODOs, saved articles, saved tweets, ReadItLater items, or vault content.
 
   openclaw - OpenClaw multi-agent platform — agents, gateway, grid coordination, A2A protocol, cron jobs, Telegram bots, recurring tasks, inter-agent communication, and external agent protocols.
 
@@ -530,3 +530,44 @@ tests:
         - "research"
       output_not_contains:
         - "git-history"
+
+  - name: routing_to_obsidian_inbox_processing
+    system_prompt: *shared_system_prompt
+    prompt: "Process my saved articles from the ReadItLater inbox"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "obsidian"
+      output_not_contains:
+        - "browser"
+
+  - name: routing_to_obsidian_saved_tweet
+    system_prompt: *shared_system_prompt
+    prompt: "What does this saved tweet in my vault say?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "obsidian"
+      output_not_contains:
+        - "browser"
+        - "comms"
+
+  - name: routing_to_comms_tweet_media_fetch
+    system_prompt: *shared_system_prompt
+    prompt: "Fetch the image attached to this tweet by @user"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "comms"
+      output_not_contains:
+        - "browser"
+
+  - name: routing_ambiguous_browser_vs_comms_tweet_scraping
+    system_prompt: *shared_system_prompt
+    prompt: "I need to read what a tweet says and see its attached image"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "comms"
+      output_not_contains:
+        - "browser"
