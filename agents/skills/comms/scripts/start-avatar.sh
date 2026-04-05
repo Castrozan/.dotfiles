@@ -62,28 +62,22 @@ wait_for_port() {
 	fi
 }
 
-check_persistent_sink() {
-	local name=$1
-	if pactl list sinks short | grep -q "$name"; then
-		echo -e "  ${GREEN}✓${NC} $name present (PipeWire persistent)"
+create_virtual_sink() {
+	local name=$1 description=$2 media_class=$3
+	if pactl list sinks short 2>/dev/null | grep -q "$name" || pactl list sources short 2>/dev/null | grep -q "$name"; then
+		echo -e "  ${YELLOW}⚠${NC}  $name already exists"
 	else
-		echo -e "  ${RED}✗${NC} $name not found — check PipeWire config"
-		exit 1
+		pactl load-module module-null-sink sink_name="$name" sink_properties=device.description="$description" media.class="$media_class" channel_map=front-left,front-right >/dev/null
+		echo -e "  ${GREEN}✓${NC} $name created"
 	fi
 }
 
-# Step 1: Verify virtual audio devices (declared in PipeWire config)
-echo -e "${YELLOW}[1/5]${NC} Checking virtual audio devices..."
+# Step 1: Create virtual audio devices
+echo -e "${YELLOW}[1/5]${NC} Creating virtual audio devices..."
 
-check_persistent_sink "AvatarSpeaker"
-check_persistent_sink "AvatarMic"
-
-if pactl list sources short | grep -q "AvatarMicSource"; then
-	echo -e "  ${GREEN}✓${NC} AvatarMicSource present (PipeWire persistent)"
-else
-	echo -e "  ${RED}✗${NC} AvatarMicSource not found — check PipeWire config"
-	exit 1
-fi
+create_virtual_sink "AvatarSpeaker" "Avatar Speaker" "Audio/Sink"
+create_virtual_sink "AvatarMic" "Avatar Mic Sink" "Audio/Sink"
+create_virtual_sink "AvatarMicSource" "Avatar Microphone" "Audio/Source/Virtual"
 
 echo ""
 

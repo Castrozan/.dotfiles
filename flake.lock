@@ -684,11 +684,11 @@
         "xdph": "xdph"
       },
       "locked": {
-        "lastModified": 1775236863,
-        "narHash": "sha256-q9cakwHrZHTTu1Wgs6OxAglfFdeyRNCNF6AUb9DF+uQ=",
+        "lastModified": 1775242924,
+        "narHash": "sha256-u1fRemcaURmzwV4vkz9EoZ9q1uSxTM8b0W6riqINHUw=",
         "owner": "Castrozan",
         "repo": "Hyprland",
-        "rev": "1ef1fcf77f945ae7f72da4d65ca63d4d7f1567b5",
+        "rev": "fe3be13ec1de3ed0c95fba9869dc9fba0d9693fc",
         "type": "github"
       },
       "original": {

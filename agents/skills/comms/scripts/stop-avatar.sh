@@ -41,6 +41,15 @@ else
 	echo "  Agent browser was not running"
 fi
 
+# Remove virtual audio devices
+for sink in AvatarSpeaker AvatarMic AvatarMicSource; do
+	module_id=$(pactl list modules short 2>/dev/null | grep "sink_name=$sink " | awk '{print $1}')
+	if [ -n "$module_id" ]; then
+		pactl unload-module "$module_id"
+		echo "  $sink removed"
+	fi
+done
+
 # Re-enable hey-bot keyword detection
 rm -f /tmp/hey-bot-keywords-disabled
 echo "Avatar system stopped."
