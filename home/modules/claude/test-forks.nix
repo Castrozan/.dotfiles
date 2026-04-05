@@ -9,12 +9,25 @@ let
   testForksBase = "${homeDir}/.claude/test-forks";
   personalSkillSetDirectory = "${homeDir}/.local/share/claude-skill-sets/personal";
 
+  bunBin = "${homeDir}/.bun/bin";
+
+  installMcxCli = pkgs.writeShellScript "install-mcx-cli" ''
+    set -euo pipefail
+    export PATH="${pkgs.bun}/bin:${bunBin}:$PATH"
+    if [ ! -x "${bunBin}/mcx" ]; then
+      bun add -g @papicandela/mcx-cli
+    fi
+    if [ ! -d "${homeDir}/.mcx" ]; then
+      ${bunBin}/mcx init
+    fi
+  '';
+
   testForks = {
     mcx = {
       description = "MCX (Modular Code Execution) sandbox";
       mcpServers = {
         mcx = {
-          command = "mcx";
+          command = "${bunBin}/mcx";
           args = [ "serve" ];
         };
       };
@@ -24,14 +37,7 @@ let
         Isolated test environment for [MCX](https://github.com/schizoidcock/mcx).
         MCX replaces direct tool calls with code execution in a Bun sandbox.
 
-        ## Setup (first time)
-        ```
-        bun add -g @papicandela/mcx-cli
-        mcx init
-        ```
-
-        ## Usage
-        The `mcx` MCP server is configured in `.mcp.json`. Use `mcx_execute`, `mcx_search`, etc.
+        Use `mcx_execute`, `mcx_search`, etc. via the mcx MCP server.
         To generate adapters from OpenAPI specs: `mcx gen ./api-docs.md -n myapi`
       '';
       extraPackages = [ pkgs.bun ];
@@ -80,6 +86,10 @@ in
 
   home = {
     packages = allExtraPackages;
+
+    activation.installMcxCli = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+      run ${installMcxCli}
+    '';
 
     activation.createTestForkWorkspaces = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
       ${allWorkspaceActivations}

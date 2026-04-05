@@ -13,9 +13,10 @@ TWITTER_HOSTS = {
 }
 
 REDIRECT_MESSAGE = (
-    "BLOCKED: x.com/twitter.com URLs cannot be fetched directly (auth wall). "
-    "Use the comms skill instead — it has twikit-cli and fxtwitter fallback "
-    "that work without a browser. Load the skill with: /comms"
+    "BLOCKED: Do NOT fetch x.com/twitter.com URLs with WebFetch or browser tools. "
+    "You MUST use the Skill tool to invoke the 'comms' skill which has twikit-cli "
+    "and a fxtwitter API fallback that fetches tweet content reliably without a browser. "
+    "Call Skill(skill='comms') now, then follow the twitter.md instructions inside it."
 )
 
 
