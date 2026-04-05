@@ -66,7 +66,7 @@ ColumnLayout {
             }
         }
 
-        let updatedFirstSeenOrder = firstSeenOrderByClass;
+        let updatedFirstSeenOrder = Object.assign({}, firstSeenOrderByClass);
         let updatedNextIndex = firstSeenOrderNextIndex;
 
         for (let cls in mostRecentWindowByClass) {

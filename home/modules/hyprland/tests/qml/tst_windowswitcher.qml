@@ -395,4 +395,354 @@ Item {
             verify(!windowSwitcher.confirmRequestedBeforeOverlayReady);
         }
     }
+
+    TestCase {
+        name: "WindowSwitcherMultipleWindowsStress"
+
+        function init() {
+            windowSwitcher.windowList = [];
+            windowSwitcher.selectedIndex = 0;
+            windowSwitcher.overlayVisible = false;
+            windowSwitcher.confirmRequestedBeforeOverlayReady = false;
+        }
+
+        function test_fifteen_windows_same_workspace() {
+            var toplevels = {};
+            var clients = [];
+            for (var i = 0; i < 15; i++) {
+                var addr = "addr" + i;
+                toplevels[addr] = { wayland: "wl-" + addr };
+                clients.push({
+                    address: "0x" + addr,
+                    title: "Window " + i,
+                    "class": "app" + (i % 5),
+                    workspace: { id: 1 },
+                    focusHistoryID: i
+                });
+            }
+            windowSwitcher.buildFilteredWindowListFromFreshData(
+                JSON.stringify(clients), 1, toplevels
+            );
+            // All 15 windows shown (no deduplication in switcher)
+            compare(windowSwitcher.windowList.length, 15);
+            // Sorted by focusHistoryId
+            compare(windowSwitcher.windowList[0].focusHistoryId, 0);
+            compare(windowSwitcher.windowList[14].focusHistoryId, 14);
+        }
+
+        function test_all_windows_same_focus_id() {
+            var toplevels = {
+                "a": { wayland: "wl-a" },
+                "b": { wayland: "wl-b" },
+                "c": { wayland: "wl-c" }
+            };
+            var clients = JSON.stringify([
+                { address: "0xa", title: "Win A", "class": "app", workspace: { id: 1 }, focusHistoryID: 5 },
+                { address: "0xb", title: "Win B", "class": "app", workspace: { id: 1 }, focusHistoryID: 5 },
+                { address: "0xc", title: "Win C", "class": "app", workspace: { id: 1 }, focusHistoryID: 5 }
+            ]);
+            windowSwitcher.buildFilteredWindowListFromFreshData(clients, 1, toplevels);
+            compare(windowSwitcher.windowList.length, 3);
+            // All have same focusHistoryId — sort is stable, order depends on implementation
+        }
+
+        function test_no_windows_on_focused_workspace() {
+            var toplevels = { "a": { wayland: "wl-a" } };
+            var clients = JSON.stringify([
+                { address: "0xa", title: "Win", "class": "app", workspace: { id: 2 }, focusHistoryID: 0 }
+            ]);
+            windowSwitcher.buildFilteredWindowListFromFreshData(clients, 1, toplevels);
+            compare(windowSwitcher.windowList.length, 0);
+        }
+
+        function test_mixed_workspaces_only_focused_shown() {
+            var toplevels = {
+                "a": { wayland: "wl-a" },
+                "b": { wayland: "wl-b" },
+                "c": { wayland: "wl-c" },
+                "d": { wayland: "wl-d" }
+            };
+            var clients = JSON.stringify([
+                { address: "0xa", title: "WS1-A", "class": "app1", workspace: { id: 1 }, focusHistoryID: 0 },
+                { address: "0xb", title: "WS2-B", "class": "app2", workspace: { id: 2 }, focusHistoryID: 1 },
+                { address: "0xc", title: "WS1-C", "class": "app3", workspace: { id: 1 }, focusHistoryID: 2 },
+                { address: "0xd", title: "WS3-D", "class": "app4", workspace: { id: 3 }, focusHistoryID: 3 }
+            ]);
+            windowSwitcher.buildFilteredWindowListFromFreshData(clients, 1, toplevels);
+            compare(windowSwitcher.windowList.length, 2);
+            compare(windowSwitcher.windowList[0].title, "WS1-A");
+            compare(windowSwitcher.windowList[1].title, "WS1-C");
+        }
+
+        function test_all_windows_no_focus_history() {
+            var toplevels = {
+                "a": { wayland: "wl-a" },
+                "b": { wayland: "wl-b" }
+            };
+            var clients = JSON.stringify([
+                { address: "0xa", title: "Auto1", "class": "app1", workspace: { id: 1 } },
+                { address: "0xb", title: "Auto2", "class": "app2", workspace: { id: 1 } }
+            ]);
+            windowSwitcher.buildFilteredWindowListFromFreshData(clients, 1, toplevels);
+            compare(windowSwitcher.windowList.length, 2);
+            compare(windowSwitcher.windowList[0].focusHistoryId, 9999);
+            compare(windowSwitcher.windowList[1].focusHistoryId, 9999);
+        }
+
+        function test_windows_missing_toplevels_are_filtered() {
+            var toplevels = { "a": { wayland: "wl-a" } };
+            var clients = JSON.stringify([
+                { address: "0xa", title: "Has Toplevel", "class": "app1", workspace: { id: 1 }, focusHistoryID: 0 },
+                { address: "0xb", title: "No Toplevel", "class": "app2", workspace: { id: 1 }, focusHistoryID: 1 },
+                { address: "0xc", title: "Also No", "class": "app3", workspace: { id: 1 }, focusHistoryID: 2 }
+            ]);
+            windowSwitcher.buildFilteredWindowListFromFreshData(clients, 1, toplevels);
+            compare(windowSwitcher.windowList.length, 1);
+            compare(windowSwitcher.windowList[0].title, "Has Toplevel");
+        }
+    }
+
+    TestCase {
+        name: "WindowSwitcherStateMachineEdgeCases"
+
+        function init() {
+            windowSwitcher.windowList = [];
+            windowSwitcher.selectedIndex = 0;
+            windowSwitcher.overlayVisible = false;
+            windowSwitcher.confirmRequestedBeforeOverlayReady = false;
+        }
+
+        function test_double_confirm_when_overlay_hidden() {
+            // Confirm twice before overlay opens — flag set once, second is noop (flag already true)
+            windowSwitcher.confirmSelection();
+            verify(windowSwitcher.confirmRequestedBeforeOverlayReady);
+            windowSwitcher.confirmSelection();
+            verify(windowSwitcher.confirmRequestedBeforeOverlayReady);
+        }
+
+        function test_confirm_after_cancel_sets_flag() {
+            windowSwitcher.windowList = [{ address: "a", title: "W1" }];
+            windowSwitcher.overlayVisible = true;
+            windowSwitcher.cancelSwitcher();
+            // Now overlay is hidden, confirm should set the pre-ready flag
+            windowSwitcher.confirmSelection();
+            verify(windowSwitcher.confirmRequestedBeforeOverlayReady);
+        }
+
+        function test_nav_on_single_window_stays_at_zero() {
+            windowSwitcher.windowList = [{ address: "a", title: "W1" }];
+            windowSwitcher.selectedIndex = 0;
+            windowSwitcher.selectNextWindow();
+            compare(windowSwitcher.selectedIndex, 0);
+            windowSwitcher.selectPreviousWindow();
+            compare(windowSwitcher.selectedIndex, 0);
+        }
+
+        function test_nav_on_two_windows_toggles() {
+            windowSwitcher.windowList = [
+                { address: "a", title: "W1" },
+                { address: "b", title: "W2" }
+            ];
+            windowSwitcher.selectedIndex = 0;
+            windowSwitcher.selectNextWindow();
+            compare(windowSwitcher.selectedIndex, 1);
+            windowSwitcher.selectNextWindow();
+            compare(windowSwitcher.selectedIndex, 0);
+            windowSwitcher.selectPreviousWindow();
+            compare(windowSwitcher.selectedIndex, 1);
+        }
+
+        function test_finish_open_with_confirm_before_ready_and_single_window() {
+            windowSwitcher.confirmRequestedBeforeOverlayReady = true;
+            windowSwitcher.windowList = [{ address: "a", title: "W1" }];
+            windowSwitcher.finishOpenSwitcher();
+            // Should not show overlay, should clear flag
+            verify(!windowSwitcher.overlayVisible);
+            verify(!windowSwitcher.confirmRequestedBeforeOverlayReady);
+        }
+
+        function test_finish_open_empty_list_with_confirm_before_ready() {
+            windowSwitcher.confirmRequestedBeforeOverlayReady = true;
+            windowSwitcher.finishOpenSwitcher();
+            // Empty list — early return, flag NOT cleared
+            verify(windowSwitcher.confirmRequestedBeforeOverlayReady);
+            verify(!windowSwitcher.overlayVisible);
+        }
+
+        function test_rapid_next_next_next_confirm_cycle() {
+            windowSwitcher.windowList = [
+                { address: "a", title: "W1" },
+                { address: "b", title: "W2" },
+                { address: "c", title: "W3" },
+                { address: "d", title: "W4" },
+                { address: "e", title: "W5" }
+            ];
+            windowSwitcher.overlayVisible = true;
+            windowSwitcher.selectedIndex = 1;
+
+            // Rapid cycling: 10 nexts
+            for (var i = 0; i < 10; i++) {
+                windowSwitcher.selectNextWindow();
+            }
+            // 1 + 10 = 11, 11 % 5 = 1
+            compare(windowSwitcher.selectedIndex, 1);
+
+            windowSwitcher.confirmSelection();
+            verify(!windowSwitcher.overlayVisible);
+            compare(windowSwitcher.windowList.length, 0);
+        }
+
+        function test_clamp_handles_window_list_shrink() {
+            // Simulate: overlay open with 5 windows, user selected index 4
+            windowSwitcher.windowList = [
+                { address: "a", title: "W1" },
+                { address: "b", title: "W2" },
+                { address: "c", title: "W3" },
+                { address: "d", title: "W4" },
+                { address: "e", title: "W5" }
+            ];
+            windowSwitcher.selectedIndex = 4;
+            windowSwitcher.overlayVisible = true;
+
+            // Windows shrink (e.g., 3 closed between overlay open and confirm)
+            windowSwitcher.windowList = [
+                { address: "a", title: "W1" },
+                { address: "b", title: "W2" }
+            ];
+            // Confirm should clamp
+            windowSwitcher.confirmSelection();
+            // selectedIndex was 4, clamped to 1 (length-1), then reset to 0 after confirm
+            compare(windowSwitcher.selectedIndex, 0);
+        }
+
+        function test_open_cancel_open_confirm_sequence() {
+            var toplevels = {
+                "a": { wayland: "wl-a" },
+                "b": { wayland: "wl-b" }
+            };
+            var clients = JSON.stringify([
+                { address: "0xa", title: "Win A", "class": "app1", workspace: { id: 1 }, focusHistoryID: 0 },
+                { address: "0xb", title: "Win B", "class": "app2", workspace: { id: 1 }, focusHistoryID: 1 }
+            ]);
+
+            // Open
+            windowSwitcher.buildFilteredWindowListFromFreshData(clients, 1, toplevels);
+            windowSwitcher.finishOpenSwitcher();
+            verify(windowSwitcher.overlayVisible);
+            compare(windowSwitcher.selectedIndex, 1);
+
+            // Cancel
+            windowSwitcher.cancelSwitcher();
+            verify(!windowSwitcher.overlayVisible);
+            compare(windowSwitcher.windowList.length, 0);
+
+            // Open again
+            windowSwitcher.buildFilteredWindowListFromFreshData(clients, 1, toplevels);
+            windowSwitcher.finishOpenSwitcher();
+            verify(windowSwitcher.overlayVisible);
+            compare(windowSwitcher.selectedIndex, 1);
+
+            // Confirm
+            windowSwitcher.confirmSelection();
+            verify(!windowSwitcher.overlayVisible);
+        }
+    }
+
+    TestCase {
+        name: "WindowSwitcherLargeWindowList"
+
+        function init() {
+            windowSwitcher.windowList = [];
+            windowSwitcher.selectedIndex = 0;
+            windowSwitcher.overlayVisible = false;
+            windowSwitcher.confirmRequestedBeforeOverlayReady = false;
+        }
+
+        function test_thirty_windows_navigation() {
+            var windows = [];
+            for (var i = 0; i < 30; i++) {
+                windows.push({ address: "addr" + i, title: "Window " + i });
+            }
+            windowSwitcher.windowList = windows;
+            windowSwitcher.overlayVisible = true;
+            windowSwitcher.selectedIndex = 0;
+
+            // Navigate forward through all 30
+            for (var j = 0; j < 30; j++) {
+                compare(windowSwitcher.selectedIndex, j);
+                windowSwitcher.selectNextWindow();
+            }
+            // Wrapped back to 0
+            compare(windowSwitcher.selectedIndex, 0);
+
+            // Navigate backward through all 30
+            for (var k = 0; k < 30; k++) {
+                windowSwitcher.selectPreviousWindow();
+            }
+            compare(windowSwitcher.selectedIndex, 0);
+        }
+
+        function test_thirty_windows_build_and_sort() {
+            var toplevels = {};
+            var clients = [];
+            for (var i = 0; i < 30; i++) {
+                var addr = "win" + i;
+                toplevels[addr] = { wayland: "wl-" + addr };
+                clients.push({
+                    address: "0x" + addr,
+                    title: "App " + i,
+                    "class": "app" + i,
+                    workspace: { id: 1 },
+                    focusHistoryID: 29 - i // Reverse order
+                });
+            }
+            windowSwitcher.buildFilteredWindowListFromFreshData(
+                JSON.stringify(clients), 1, toplevels
+            );
+            compare(windowSwitcher.windowList.length, 30);
+            // Should be sorted: focusHistoryId 0 first (which is app29)
+            compare(windowSwitcher.windowList[0].title, "App 29");
+            compare(windowSwitcher.windowList[0].focusHistoryId, 0);
+            compare(windowSwitcher.windowList[29].title, "App 0");
+            compare(windowSwitcher.windowList[29].focusHistoryId, 29);
+        }
+    }
+
+    TestCase {
+        name: "WindowSwitcherThemeColors"
+
+        function init() {
+            windowSwitcher.windowList = [];
+            windowSwitcher.selectedIndex = 0;
+            windowSwitcher.overlayVisible = false;
+            windowSwitcher.confirmRequestedBeforeOverlayReady = false;
+        }
+
+        function test_parse_valid_theme_colors() {
+            var json = '{"backgroundRgb": "26, 27, 38", "foreground": "#c0caf5", "accent": "#7aa2f7"}';
+            var result = windowSwitcher.parseThemeColors(json);
+            verify(result !== null);
+            compare(result.backgroundRgb, "26, 27, 38");
+        }
+
+        function test_parse_invalid_theme_returns_null() {
+            compare(windowSwitcher.parseThemeColors("not json"), null);
+        }
+
+        function test_rgb_string_to_color_valid() {
+            var c = windowSwitcher.rgbStringToQtColor("255, 128, 0", 0.5);
+            verify(Math.abs(c.r - 1.0) < 0.01);
+            verify(Math.abs(c.g - 0.502) < 0.01);
+            verify(Math.abs(c.b - 0.0) < 0.01);
+            verify(Math.abs(c.a - 0.5) < 0.01);
+        }
+
+        function test_rgb_string_invalid_returns_black() {
+            var c = windowSwitcher.rgbStringToQtColor("invalid", 0.85);
+            compare(c.r, 0);
+            compare(c.g, 0);
+            compare(c.b, 0);
+            verify(Math.abs(c.a - 0.85) < 0.01);
+        }
+    }
 }
