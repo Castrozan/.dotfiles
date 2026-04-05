@@ -14,7 +14,7 @@ in
       "clever"
       "golden"
     ];
-    model = "anthropic/claude-sonnet-4-5";
+    model = "openai-codex/gpt-5.3-codex";
     agents = {
       jarvis.openaiVoice = "onyx";
       clever.openaiVoice = "nova";

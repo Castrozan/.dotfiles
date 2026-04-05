@@ -70,16 +70,9 @@ let
     ".agents.defaults.heartbeat.model" = openclaw.defaults.model.heartbeat;
     ".agents.defaults.subagents.model" = openclaw.defaults.model.subagents;
     ".agents.defaults.model.fallbacks" = [
-      "openai-codex/gpt-5.3-codex"
       "nvidia/meta/llama-3.3-70b-instruct"
     ];
     ".agents.defaults.models" = {
-      "anthropic/claude-sonnet-4-6" = {
-        alias = "sonnet";
-      };
-      "anthropic/claude-opus-4-6" = {
-        alias = "opus";
-      };
       "openai-codex/gpt-5.3-codex" = {
         alias = "codex";
       };
@@ -106,10 +99,6 @@ let
     ".models.providers.openai.baseUrl" = "https://api.openai.com/v1";
     ".models.providers.openai.models" = [ ];
     ".auth.profiles" = {
-      "anthropic:default" = {
-        provider = "anthropic";
-        mode = "token";
-      };
       "openai-codex:default" = {
         provider = "openai-codex";
         mode = "oauth";

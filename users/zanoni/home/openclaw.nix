@@ -42,9 +42,9 @@ in
     };
     notifyTopic = "cleber-lucas-2f2ea57a";
     defaults.model = {
-      primary = "anthropic/claude-opus-4-6";
+      primary = "openai-codex/gpt-5.3-codex";
       heartbeat = "openai-codex/gpt-5.3-codex";
-      subagents = "anthropic/claude-sonnet-4-6";
+      subagents = "openai-codex/gpt-5.3-codex";
     };
     agents = {
       clever = {
@@ -67,7 +67,7 @@ in
         enable = true;
         emoji = "🌟";
         role = "research & discovery — deep dives, analysis, long-form thinking";
-        model.primary = "anthropic/claude-sonnet-4-6";
+        model.primary = "openai-codex/gpt-5.3-codex";
         workspace = "openclaw/golden";
         tts.voice = "en-US-AriaNeural";
         telegram = {

@@ -15,7 +15,7 @@ in
       "robson"
       "jenny"
     ];
-    model = "anthropic/claude-sonnet-4-5";
+    model = "openai-codex/gpt-5.3-codex";
     ttsEngine = "edge-tts";
     agents = {
       jarvis = {

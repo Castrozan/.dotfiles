@@ -175,8 +175,8 @@ let
 
       oc-workpc-default-primary-model =
         mkEvalCheck "oc-workpc-default-primary-model"
-          (workpcConfigPatches.".agents.defaults.model.primary" == "anthropic/claude-opus-4-6")
-          "default primary model should be anthropic/claude-opus-4-6, got ${
+          (workpcConfigPatches.".agents.defaults.model.primary" == "openai-codex/gpt-5.3-codex")
+          "default primary model should be openai-codex/gpt-5.3-codex, got ${
             workpcConfigPatches.".agents.defaults.model.primary"
           }";
 
@@ -184,13 +184,8 @@ let
         let
           modelKeys = builtins.attrNames workpcConfigPatches.".agents.defaults.models";
         in
-        mkEvalCheck "oc-workpc-model-aliases"
-          (
-            hasInList modelKeys "anthropic/claude-opus-4-6"
-            && hasInList modelKeys "anthropic/claude-sonnet-4-6"
-            && hasInList modelKeys "openai-codex/gpt-5.3-codex"
-          )
-          "model aliases should include opus sonnet codex, got: ${builtins.concatStringsSep ", " modelKeys}";
+        mkEvalCheck "oc-workpc-model-aliases" (hasInList modelKeys "openai-codex/gpt-5.3-codex")
+          "model aliases should include codex, got: ${builtins.concatStringsSep ", " modelKeys}";
 
       oc-workpc-gateway-service-defined =
         mkEvalCheck "oc-workpc-gateway-service-defined" (hasInList workpcServiceNames "openclaw-gateway")
@@ -278,7 +273,7 @@ let
       ) "robson model.primary should be set";
 
       oc-agent-silver-cheaper-model = mkEvalCheck "oc-agent-silver-cheaper-model" (
-        workpcOc.agents.silver.model.primary == "anthropic/claude-sonnet-4-6"
+        workpcOc.agents.silver.model.primary == "openai-codex/gpt-5.3-codex"
       ) "silver should use cheaper model, got ${workpcOc.agents.silver.model.primary}";
 
       oc-agent-default-tts-engine = mkEvalCheck "oc-agent-default-tts-engine" (
@@ -413,7 +408,7 @@ let
         "nixos should have jarvis bot token secret";
 
     oc-agent-golden-cheaper-model = mkEvalCheck "oc-agent-golden-cheaper-model" (
-      nixosOc.agents.golden.model.primary == "anthropic/claude-sonnet-4-6"
+      nixosOc.agents.golden.model.primary == "openai-codex/gpt-5.3-codex"
     ) "golden should use cheaper model, got ${nixosOc.agents.golden.model.primary}";
 
     oc-nixos-memory-sync-remote-host = mkEvalCheck "oc-nixos-memory-sync-remote-host" (

@@ -217,7 +217,7 @@ in
             options = {
               primary = lib.mkOption {
                 type = lib.types.str;
-                default = "anthropic/claude-sonnet-4-6";
+                default = "openai-codex/gpt-5.3-codex";
               };
               heartbeat = lib.mkOption {
                 type = lib.types.str;
@@ -225,7 +225,7 @@ in
               };
               subagents = lib.mkOption {
                 type = lib.types.str;
-                default = "anthropic/claude-sonnet-4-6";
+                default = "openai-codex/gpt-5.3-codex";
               };
             };
           };

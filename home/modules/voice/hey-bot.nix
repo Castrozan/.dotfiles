@@ -502,7 +502,7 @@ in
 
     model = lib.mkOption {
       type = lib.types.str;
-      default = "anthropic/claude-sonnet-4-5";
+      default = "openai-codex/gpt-5.3-codex";
     };
 
     whisperModel = lib.mkOption {
