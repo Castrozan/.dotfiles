@@ -31,13 +31,19 @@ let
     fi
   '';
 
+  # Wrapper adds bun to PATH so the #!/usr/bin/env bun shebang in mcx resolves
+  mcxServeWrapper = pkgs.writeShellScript "mcx-serve" ''
+    export PATH="${bunBin}:$PATH"
+    exec ${bunBin}/mcx serve "$@"
+  '';
+
   testForks = {
     mcx = {
       description = "MCX (Modular Code Execution) sandbox";
       mcpServers = {
         mcx = {
-          command = "${bunBin}/mcx";
-          args = [ "serve" ];
+          command = "${mcxServeWrapper}";
+          args = [ ];
         };
       };
       claudeMd = ''
