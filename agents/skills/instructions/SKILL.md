@@ -1,6 +1,6 @@
 ---
 name: instructions
-description: Use when creating skills, agents, system prompts, optimizing AI instructions. Also use when instructions feel stale, vague, or are being ignored by the model. Fix skill routing failures (model uses wrong tool instead of the right skill). Prompt engineering, context engineering.
+description: Use when creating skills, agents, system prompts, optimizing AI instructions. Also use when instructions feel stale, vague, ignored, or misrouted. Prompt engineering, context engineering.
 ---
 
 For skill routing diagnosis and repair (model bypasses skills, uses wrong tools), read `skill-routing.md`.

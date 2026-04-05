@@ -95,7 +95,7 @@ in
       ];
     }
     {
-      matcher = "WebFetch|mcp__browser-use__browser_navigate|mcp__scrapling-fetch__s_fetch_page";
+      matcher = "WebFetch|mcp__browser-use__browser_navigate|mcp__scrapling-fetch__.*";
       hooks = [
         {
           type = "command";

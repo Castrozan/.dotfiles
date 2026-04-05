@@ -9,7 +9,7 @@ shared_system_prompt: &shared_system_prompt |
 
   commit - Create high-quality git commits with conventional format, meaningful descriptions, and analysis of changes. Use when user asks to commit, stage changes, or prepare a commit message.
 
-  comms - Send Google Chat messages, DMs, webhooks. Post and scrape Twitter/X tweets, profiles, trends. Handle x.com and twitter.com URLs (fetch tweet content, media, threads). Control VTuber avatar lip sync and expressions.
+  comms - Send Google Chat messages, DMs, webhooks. Post and scrape Twitter/X (x.com, twitter.com) tweets, profiles, trends, media. Control VTuber avatar lip sync and expressions.
 
   desktop - Interact with the desktop — type text, send key combos, click/move/scroll/drag mouse, capture screenshots, read/write clipboard. Use for any non-browser GUI automation.
 
@@ -23,7 +23,7 @@ shared_system_prompt: &shared_system_prompt |
 
   home-assistant - Control smart home devices via Home Assistant — lights (ha-light) and air conditioner (ha-ac). Use when user asks to turn on/off lights or AC, change temperature, brightness, fan speed, or check device status.
 
-  instructions - Use when creating skills, agents, system prompts, optimizing AI instructions. Also use when instructions feel stale, vague, or are being ignored by the model. Fix skill routing failures (model uses wrong tool instead of the right skill). Prompt engineering, context engineering.
+  instructions - Use when creating skills, agents, system prompts, optimizing AI instructions. Also use when instructions feel stale, vague, ignored, or misrouted. Prompt engineering, context engineering.
 
   media - Media playback control and YouTube operations — play, pause, volume, next, previous, video search, playlists management.
 
