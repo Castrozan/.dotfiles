@@ -23,7 +23,7 @@ shared_system_prompt: &shared_system_prompt |
 
   home-assistant - Control smart home devices via Home Assistant — lights (ha-light) and air conditioner (ha-ac). Use when user asks to turn on/off lights or AC, change temperature, brightness, fan speed, or check device status.
 
-  instructions - Use when creating skills, agents, system prompts, optimizing AI instructions. Also use when instructions feel stale, vague, or are being ignored by the model. Prompt engineering, context engineering.
+  instructions - Use when creating skills, agents, system prompts, optimizing AI instructions. Also use when instructions feel stale, vague, or are being ignored by the model. Fix skill routing failures (model uses wrong tool instead of the right skill). Prompt engineering, context engineering.
 
   media - Media playback control and YouTube operations — play, pause, volume, next, previous, video search, playlists management.
 
@@ -362,6 +362,17 @@ tests:
     assertions:
       output_contains_any:
         - "instructions"
+
+  - name: routing_to_instructions_skill_routing_failure
+    system_prompt: *shared_system_prompt
+    prompt: "The model keeps using WebFetch instead of the comms skill when I paste Twitter URLs. How do I fix the skill routing?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "instructions"
+      output_not_contains:
+        - "comms"
+        - "browser"
 
   - name: routing_to_notify_task_completion
     system_prompt: *shared_system_prompt
