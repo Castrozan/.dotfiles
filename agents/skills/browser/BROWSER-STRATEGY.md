@@ -18,11 +18,11 @@ Any Electron app exposes CDP when launched with `--remote-debugging-port=<port>`
 
 ## Chrome DevTools MCP - stealth, authenticated sites
 
-Fully automated from zero. The MCP wrapper handles the entire lifecycle: launches Chrome bare (no `--remote-debugging-port`, no automation flags), opens `chrome://inspect/#remote-debugging` to enable the internal debug server, auto-accepts the consent dialog via the consent acceptor script, then connects via `--autoConnect`. Google and other bot-detecting services see a normal browser because there are no automation flags - the consent dialog proves human-level approval and makes the connection invisible to websites.
+Chrome Global runs bare with zero automation flags. The user launches it via SUPER+C (`hypr-summon-chrome-global`) and enables remote debugging once via `chrome://inspect/#remote-debugging` (toggle persists across restarts). The consent dialog must be clicked Allow once per Chrome session. The MCP connects via `--autoConnect` which discovers Chrome through the user data directory. Google and other bot-detecting services see a normal browser because there are no `--remote-debugging-port`, `--enable-automation`, or `navigator.webdriver` flags.
 
 Use exclusively for Google Workspace, sites behind Cloudflare/PerimeterX bot detection, and any authenticated session where detection means account lock. Real cookies, real logins, real profile.
 
-Tradeoff: single Chrome Global instance, sequential. The consent dialog is auto-accepted once per session.
+Tradeoff: single Chrome Global instance, sequential. User must launch Chrome and have remote debugging toggled on.
 
 ## Decision matrix
 

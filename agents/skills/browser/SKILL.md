@@ -16,22 +16,24 @@ Read BROWSER-STRATEGY.md in this skill directory for the full decision framework
 </browser_use_workflow>
 
 <chrome_devtools_workflow>
-Use only for sites that detect and block automated browsers (Google Workspace, banking, Cloudflare).
+Use only for sites that detect and block automated browsers (Google Workspace, banking, Cloudflare). Chrome Global must be running with remote debugging enabled before using these tools.
 
-1. Ensure Chrome Global is running - run `hypr-summon-chrome-global`
-2. `mcp__chrome-devtools__list_pages` - verify connection
-3. `mcp__chrome-devtools__navigate_page` - go to URL
-4. `mcp__chrome-devtools__take_snapshot` - see page elements with uid refs
-5. `mcp__chrome-devtools__click` / `mcp__chrome-devtools__fill` - interact using uid from snapshot
-6. `mcp__chrome-devtools__take_screenshot` - visual verification when needed
+1. Ensure Chrome Global is running - `hypr-summon-chrome-global` (SUPER+C)
+2. Ensure remote debugging is on - user must have toggled `chrome://inspect/#remote-debugging` and clicked Allow on the consent dialog (persists across restarts, only needed once)
+3. `mcp__chrome-devtools__list_pages` - verify connection
+4. `mcp__chrome-devtools__navigate_page` - go to URL
+5. `mcp__chrome-devtools__take_snapshot` - see page elements with uid refs
+6. `mcp__chrome-devtools__click` / `mcp__chrome-devtools__fill` - interact using uid from snapshot
+7. `mcp__chrome-devtools__take_screenshot` - visual verification when needed
 </chrome_devtools_workflow>
 
 <connection_troubleshooting>
 If Chrome DevTools MCP fails with "Could not connect to Chrome":
 
 1. Verify Chrome Global is running: `hyprctl clients -j | jq '.[] | select(.class == "chrome-global")'`
-2. Check DevToolsActivePort exists: `cat ~/.config/chrome-global/DevToolsActivePort`
-3. If no DevToolsActivePort, Chrome was launched without --remote-debugging-port=0. Use SUPER+C (summon script) to relaunch.
+2. If not running: `hypr-summon-chrome-global` (SUPER+C)
+3. Check DevToolsActivePort exists: `cat ~/.config/chrome-global/DevToolsActivePort`
+4. If no DevToolsActivePort: open `chrome://inspect/#remote-debugging` in Chrome Global and toggle it on, then click Allow on the consent dialog
 </connection_troubleshooting>
 
 <tips>
