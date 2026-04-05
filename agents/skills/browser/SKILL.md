@@ -1,13 +1,15 @@
 ---
 name: browser
-description: Use when user asks to interact with a live webpage — fill forms, click buttons, navigate authenticated apps, automate Electron apps, test UI, take screenshots. Do NOT use for fetching or reading web content programmatically — use curl, MCP fetch tools, or domain-specific skills instead.
+description: Use when user asks to interact with a live webpage - fill forms, click buttons, navigate authenticated apps, automate Electron apps, test UI, take screenshots. Do NOT use for fetching or reading web content programmatically - use curl, MCP fetch tools, or domain-specific skills instead.
 ---
 
 <strategy>
-Read BROWSER-STRATEGY.md in this skill directory for the full decision framework. In short: Browser Use MCP (`mcp__browser-use__*`) is the primary tool for general browsing, scraping, and Electron apps. Chrome DevTools MCP (`mcp__chrome-devtools__*`) is for stealth on sites that detect automation (Google, banking, Cloudflare-protected).
+Two browser MCPs are available. Browser Use (`mcp__browser-use__*`) is the primary tool - it launches its own Chrome, works immediately, handles general browsing and Electron apps. Chrome DevTools (`mcp__chrome-devtools__*`) connects to the user's real Chrome Global for stealth on sites that detect automation (Google, banking, Cloudflare). Read BROWSER-STRATEGY.md for the full decision framework.
 </strategy>
 
 <browser_use_workflow>
+Works immediately with no setup. Launches its own Chrome instance.
+
 1. `mcp__browser-use__browser_navigate` - go to URL
 2. `mcp__browser-use__browser_get_state` - see page elements with index refs
 3. `mcp__browser-use__browser_click` / `mcp__browser-use__browser_type` - interact using index from state
@@ -16,25 +18,19 @@ Read BROWSER-STRATEGY.md in this skill directory for the full decision framework
 </browser_use_workflow>
 
 <chrome_devtools_workflow>
-Use only for sites that detect and block automated browsers (Google Workspace, banking, Cloudflare). Chrome Global must be running with remote debugging enabled before using these tools.
+Connects to the user's real Chrome Global via `--autoConnect`. This Chrome runs bare (no automation flags) so Google and bot-detecting sites see a normal browser. The agent does NOT launch Chrome - it must already be running with remote debugging enabled by the user.
 
-1. Ensure Chrome Global is running - `hypr-summon-chrome-global` (SUPER+C)
-2. Ensure remote debugging is on - user must have toggled `chrome://inspect/#remote-debugging` and clicked Allow on the consent dialog (persists across restarts, only needed once)
-3. `mcp__chrome-devtools__list_pages` - verify connection
-4. `mcp__chrome-devtools__navigate_page` - go to URL
-5. `mcp__chrome-devtools__take_snapshot` - see page elements with uid refs
-6. `mcp__chrome-devtools__click` / `mcp__chrome-devtools__fill` - interact using uid from snapshot
-7. `mcp__chrome-devtools__take_screenshot` - visual verification when needed
+How it works: the user launches Chrome Global (SUPER+C), enables `chrome://inspect/#remote-debugging` once (the toggle persists across restarts), and clicks Allow on the consent dialog once per session. After that, Chrome DevTools MCP tools work.
+
+If `mcp__chrome-devtools__list_pages` returns "Could not connect to Chrome", tell the user: "Chrome Global needs to be running with remote debugging enabled. Press SUPER+C to launch it, then go to chrome://inspect/#remote-debugging and toggle it on. Click Allow on the consent dialog."
+
+Once connected:
+1. `mcp__chrome-devtools__list_pages` - verify connection
+2. `mcp__chrome-devtools__navigate_page` - go to URL
+3. `mcp__chrome-devtools__take_snapshot` - see page elements with uid refs
+4. `mcp__chrome-devtools__click` / `mcp__chrome-devtools__fill` - interact using uid from snapshot
+5. `mcp__chrome-devtools__take_screenshot` - visual verification when needed
 </chrome_devtools_workflow>
-
-<connection_troubleshooting>
-If Chrome DevTools MCP fails with "Could not connect to Chrome":
-
-1. Verify Chrome Global is running: `hyprctl clients -j | jq '.[] | select(.class == "chrome-global")'`
-2. If not running: `hypr-summon-chrome-global` (SUPER+C)
-3. Check DevToolsActivePort exists: `cat ~/.config/chrome-global/DevToolsActivePort`
-4. If no DevToolsActivePort: open `chrome://inspect/#remote-debugging` in Chrome Global and toggle it on, then click Allow on the consent dialog
-</connection_troubleshooting>
 
 <tips>
 Browser Use: always get fresh state after navigation or interaction - element indices change. Prefer state over screenshots (less tokens).
