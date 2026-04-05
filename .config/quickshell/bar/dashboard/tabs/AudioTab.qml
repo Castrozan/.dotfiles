@@ -17,19 +17,16 @@ Item {
     implicitWidth: Math.max(800, audioContentColumn.implicitWidth)
     implicitHeight: Math.min(maximumTabHeight, audioContentColumn.implicitHeight)
 
-    Component.onDestruction: {
-        if (audioTabRoot.dashboardIsActive)
+    onDashboardIsActiveChanged: {
+        if (dashboardIsActive)
+            AudioService.refCount++;
+        else
             AudioService.refCount--;
     }
 
-    Connections {
-        target: audioTabRoot
-        function onDashboardIsActiveChanged() {
-            if (audioTabRoot.dashboardIsActive)
-                AudioService.refCount++;
-            else
-                AudioService.refCount--;
-        }
+    Component.onDestruction: {
+        if (audioTabRoot.dashboardIsActive)
+            AudioService.refCount--;
     }
 
     function ensureItemVisible(item: var): void {
