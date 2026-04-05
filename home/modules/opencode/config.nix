@@ -72,12 +72,7 @@ let
       };
     };
 
-    mcp = {
-      scrapling-fetch = {
-        command = "/home/lucas.zanoni/.local/bin/scrapling-mcp";
-        args = [ ];
-      };
-    };
+    mcp = { };
   };
 in
 {

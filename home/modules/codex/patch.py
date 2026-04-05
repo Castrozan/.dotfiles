@@ -20,10 +20,6 @@ chrome_user_data_directory = os.environ.get(
     "CODEX_CHROME_USER_DATA_DIR",
     str(pathlib.Path.home() / ".config" / "google-chrome"),
 )
-scrapling_fetch_mcp_command = os.environ.get(
-    "CODEX_SCRAPLING_FETCH_MCP_COMMAND",
-    str(pathlib.Path.home() / ".local" / "bin" / "scrapling-mcp"),
-)
 
 
 def build_trusted_project_entries() -> dict[str, dict[str, str]]:
@@ -69,10 +65,6 @@ def build_mcp_server_entries() -> dict[str, dict[str, Any]]:
             }
     return {
         "chrome-devtools": chrome_devtools_entry,
-        "scrapling-fetch": {
-            "command": scrapling_fetch_mcp_command,
-            "args": [],
-        },
     }
 
 

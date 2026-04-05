@@ -2,36 +2,9 @@
 let
   nodejs = pkgs.nodejs_22;
   mcporterNpmPrefix = "$HOME/.local/share/mcporter-npm";
-  scraplingMcp = pkgs.writeShellScript "scrapling-mcp" ''
-    export PLAYWRIGHT_BROWSERS_PATH="$HOME/.local/share/scrapling-browsers"
-    exec "$HOME/.local/share/scrapling-venv/bin/python" -m scrapling_fetch_mcp.mcp "$@"
-  '';
-
   mcporterServerConfig = {
-    mcpServers = {
-      scrapling-fetch = {
-        command = "${scraplingMcp}";
-        args = [ ];
-      };
-    };
+    mcpServers = { };
   };
-
-  scraplingVenvPath = "$HOME/.local/share/scrapling-venv";
-
-  installScraplingFetchMcpVenv = pkgs.writeShellScript "scrapling-fetch-mcp-venv-install" ''
-    set -euo pipefail
-    VENV="${scraplingVenvPath}"
-    MARKER="$VENV/.installed-version"
-    DESIRED_VERSION="0.2.0"
-
-    if [ -f "$MARKER" ] && [ "$(cat "$MARKER")" = "$DESIRED_VERSION" ]; then
-      exit 0
-    fi
-
-    ${pkgs.python312}/bin/python3 -m venv "$VENV" --clear
-    "$VENV/bin/pip" install --quiet "scrapling-fetch-mcp==$DESIRED_VERSION"
-    echo "$DESIRED_VERSION" > "$MARKER"
-  '';
 
   mcporterWrapper = pkgs.writeShellScriptBin "mcporter" ''
     export PATH="${nodejs}/bin:''${PATH:+:$PATH}"
@@ -68,10 +41,6 @@ in
     file.".mcporter/mcporter.json".text = builtins.toJSON mcporterServerConfig;
 
     activation = {
-      installScraplingFetchMcpVenv = config.lib.dag.entryAfter [ "writeBoundary" ] ''
-        run ${installScraplingFetchMcpVenv}
-      '';
-
       installMcporterViaNpm = config.lib.dag.entryAfter [ "writeBoundary" ] ''
         run ${installMcporterViaNpm}
       '';

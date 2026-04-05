@@ -10,11 +10,6 @@ let
   homeDir = config.home.homeDirectory;
   chromeBinary = "${latest.google-chrome}/bin/google-chrome-stable";
 
-  scraplingFetchMcpWrapper = pkgs.writeShellScript "scrapling-mcp" ''
-    export PLAYWRIGHT_BROWSERS_PATH="$HOME/.local/share/scrapling-browsers"
-    exec "$HOME/.local/share/scrapling-venv/bin/python" -m scrapling_fetch_mcp.mcp "$@"
-  '';
-
   browserMcp = import ../../../agents/skills/browser {
     inherit
       pkgs
@@ -54,10 +49,6 @@ let
     };
     browser-use = {
       command = "${browserUseMcpWrapper}";
-      args = [ ];
-    };
-    scrapling-fetch = {
-      command = "${scraplingFetchMcpWrapper}";
       args = [ ];
     };
     codex = {
