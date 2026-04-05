@@ -94,6 +94,16 @@ in
         }
       ];
     }
+    {
+      matcher = "WebFetch|mcp__browser-use__browser_navigate|mcp__scrapling-fetch__s_fetch_page";
+      hooks = [
+        {
+          type = "command";
+          command = "${runHook} ${hooksPath}/url-to-skill-router.py";
+          timeout = 2000;
+        }
+      ];
+    }
   ];
 
   # Workaround: bypassPermissions has a hardcoded .claude/ prompt since v2.1.78.
