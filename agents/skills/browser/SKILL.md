@@ -18,9 +18,7 @@ Works immediately with no setup. Launches its own Chrome instance.
 </browser_use_workflow>
 
 <chrome_devtools_workflow>
-Connects to the user's real Chrome Global via `--autoConnect`. This Chrome runs bare (no automation flags) so Google and bot-detecting sites see a normal browser. The agent does NOT launch Chrome - it must already be running with remote debugging enabled by the user.
-
-How it works: the user launches Chrome Global (SUPER+C), enables `chrome://inspect/#remote-debugging` once (the toggle persists across restarts), and clicks Allow on the consent dialog once per session. After that, Chrome DevTools MCP tools work.
+Connects to the user's real Chrome Global via `--autoConnect`. Chrome runs bare (no automation flags) so Google and bot-detecting sites see a normal browser. The user must enable `chrome://inspect/#remote-debugging` once (persists across restarts) and click Allow on the consent dialog once per Chrome session.
 
 If `mcp__chrome-devtools__list_pages` returns "Could not connect to Chrome":
 1. Run `hypr-summon-chrome-global` to launch Chrome Global for the user
