@@ -22,7 +22,10 @@ Connects to the user's real Chrome Global via `--autoConnect`. This Chrome runs 
 
 How it works: the user launches Chrome Global (SUPER+C), enables `chrome://inspect/#remote-debugging` once (the toggle persists across restarts), and clicks Allow on the consent dialog once per session. After that, Chrome DevTools MCP tools work.
 
-If `mcp__chrome-devtools__list_pages` returns "Could not connect to Chrome", tell the user: "Chrome Global needs to be running with remote debugging enabled. Press SUPER+C to launch it, then go to chrome://inspect/#remote-debugging and toggle it on. Click Allow on the consent dialog."
+If `mcp__chrome-devtools__list_pages` returns "Could not connect to Chrome":
+1. Run `hypr-summon-chrome-global` to launch Chrome Global for the user
+2. Tell the user: "Enable chrome://inspect/#remote-debugging if not already on (persists across restarts). Then click Allow on the consent dialog that will appear when I connect."
+3. Call `mcp__chrome-devtools__list_pages` - this call BLOCKS until the user clicks Allow on the consent dialog in Chrome. Do not call any other tools while waiting.
 
 Once connected:
 1. `mcp__chrome-devtools__list_pages` - verify connection
