@@ -13,10 +13,12 @@ TWITTER_HOSTS = {
 }
 
 REDIRECT_MESSAGE = (
-    "BLOCKED: Do NOT fetch x.com/twitter.com URLs with WebFetch or browser tools. "
-    "You MUST use the Skill tool to invoke the 'comms' skill which has twikit-cli "
-    "and a fxtwitter API fallback that fetches tweet content reliably without a browser. "
-    "Call Skill(skill='comms') now, then follow the twitter.md instructions inside it."
+    "BLOCKED: x.com/twitter.com URLs cannot be fetched with WebFetch or browser tools. "
+    "Use the fxtwitter API instead: "
+    "curl -sL 'https://api.fxtwitter.com/{user}/status/{tweet_id}' "
+    "Extract user and tweet_id from the URL. Returns JSON with tweet text, media URLs, "
+    "and engagement metrics. Download media with curl -sL -o /tmp/file.ext '{media_url}'. "
+    "For advanced operations (posting, searching, profiles), invoke Skill(skill='comms')."
 )
 
 

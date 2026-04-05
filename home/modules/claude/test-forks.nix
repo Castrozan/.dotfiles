@@ -11,12 +11,21 @@ let
 
   bunBin = "${homeDir}/.bun/bin";
 
+  # mcx requires bun >= 1.3.11 (nixpkgs 1.3.3 segfaults).
+  # Use ~/.bun/bin/bun installed via bun.sh official installer.
   installMcxCli = pkgs.writeShellScript "install-mcx-cli" ''
     set -euo pipefail
-    export PATH="${pkgs.bun}/bin:${bunBin}:$PATH"
-    if [ ! -x "${bunBin}/mcx" ]; then
-      bun add -g @papicandela/mcx-cli
+    export PATH="${bunBin}:$PATH"
+
+    if [ ! -x "${bunBin}/bun" ]; then
+      echo "mcx: bun not found at ${bunBin}/bun — install via: curl -fsSL https://bun.sh/install | bash"
+      exit 0
     fi
+
+    if [ ! -x "${bunBin}/mcx" ]; then
+      ${bunBin}/bun add -g @papicandela/mcx-cli
+    fi
+
     if [ ! -d "${homeDir}/.mcx" ]; then
       ${bunBin}/mcx init
     fi
@@ -40,7 +49,7 @@ let
         Use `mcx_execute`, `mcx_search`, etc. via the mcx MCP server.
         To generate adapters from OpenAPI specs: `mcx gen ./api-docs.md -n myapi`
       '';
-      extraPackages = [ pkgs.bun ];
+      extraPackages = [ ];
     };
   };
 
