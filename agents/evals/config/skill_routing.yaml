@@ -9,7 +9,7 @@ shared_system_prompt: &shared_system_prompt |
 
   commit - Create high-quality git commits with conventional format, meaningful descriptions, and analysis of changes. Use when user asks to commit, stage changes, or prepare a commit message.
 
-  comms - Send Google Chat messages, DMs, webhooks. Post and scrape Twitter/X tweets, profiles, trends. Control VTuber avatar lip sync and expressions.
+  comms - Send Google Chat messages, DMs, webhooks. Post and scrape Twitter/X tweets, profiles, trends. Handle x.com and twitter.com URLs (fetch tweet content, media, threads). Control VTuber avatar lip sync and expressions.
 
   desktop - Interact with the desktop — type text, send key combos, click/move/scroll/drag mouse, capture screenshots, read/write clipboard. Use for any non-browser GUI automation.
 
@@ -591,3 +591,47 @@ tests:
         - "comms"
       output_not_contains:
         - "browser"
+
+  - name: routing_to_comms_bare_xcom_url
+    system_prompt: *shared_system_prompt
+    prompt: "https://x.com/neogoose_btw/status/2040598081763471417"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "comms"
+      output_not_contains:
+        - "browser"
+        - "research"
+
+  - name: routing_to_comms_bare_twitter_url
+    system_prompt: *shared_system_prompt
+    prompt: "https://twitter.com/elikiaponde/status/1234567890"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "comms"
+      output_not_contains:
+        - "browser"
+        - "research"
+
+  - name: routing_to_comms_xcom_url_with_context
+    system_prompt: *shared_system_prompt
+    prompt: "https://x.com/schizoidcock/status/2040595546411266214 this looks interesting, is it any good?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "comms"
+      output_not_contains:
+        - "browser"
+        - "research"
+
+  - name: routing_to_comms_xcom_url_what_does_it_say
+    system_prompt: *shared_system_prompt
+    prompt: "what does this tweet say? https://x.com/user/status/1234567890123"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "comms"
+      output_not_contains:
+        - "browser"
+        - "research"

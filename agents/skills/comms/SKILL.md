@@ -1,6 +1,6 @@
 ---
 name: comms
-description: Send Google Chat messages, DMs, webhooks. Post and scrape Twitter/X tweets, profiles, trends. Control VTuber avatar lip sync and expressions.
+description: Send Google Chat messages, DMs, webhooks. Post and scrape Twitter/X tweets, profiles, trends. Handle x.com and twitter.com URLs (fetch tweet content, media, threads). Control VTuber avatar lip sync and expressions.
 ---
 
 Unified communication and social media skill covering messaging, social platforms, and avatar control.
