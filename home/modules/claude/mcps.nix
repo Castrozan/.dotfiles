@@ -70,10 +70,7 @@ let
       echo '{"mcpServers":{}}' > "$CLAUDE_CONFIG"
     fi
 
-    STALE_SERVERS='["scrapling-fetch"]'
-    ${pkgs.jq}/bin/jq --argjson servers "$SERVERS" --argjson stale "$STALE_SERVERS" '
-      .mcpServers = ((.mcpServers // {}) * $servers) | .mcpServers |= with_entries(select(.key as $k | $stale | index($k) | not))
-    ' "$CLAUDE_CONFIG" | ${pkgs.moreutils}/bin/sponge "$CLAUDE_CONFIG"
+    ${pkgs.jq}/bin/jq --argjson servers "$SERVERS" '.mcpServers = (.mcpServers // {}) * $servers' "$CLAUDE_CONFIG" | ${pkgs.moreutils}/bin/sponge "$CLAUDE_CONFIG"
   '';
 in
 {
