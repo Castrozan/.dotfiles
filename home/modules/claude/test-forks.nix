@@ -9,32 +9,11 @@ let
   testForksBase = "${homeDir}/.claude/test-forks";
   personalSkillSetDirectory = "${homeDir}/.local/share/claude-skill-sets/personal";
 
-  bunBin = "${homeDir}/.bun/bin";
-
-  # mcx requires bun >= 1.3.11 (nixpkgs 1.3.3 segfaults).
-  # Use ~/.bun/bin/bun installed via bun.sh official installer.
-  installMcxCli = pkgs.writeShellScript "install-mcx-cli" ''
-    set -euo pipefail
-    export PATH="${bunBin}:$PATH"
-
-    if [ ! -x "${bunBin}/bun" ]; then
-      echo "mcx: bun not found at ${bunBin}/bun — install via: curl -fsSL https://bun.sh/install | bash"
-      exit 0
-    fi
-
-    if [ ! -x "${bunBin}/mcx" ]; then
-      ${bunBin}/bun add -g @papicandela/mcx-cli
-    fi
-
-    if [ ! -d "${homeDir}/.mcx" ]; then
-      ${bunBin}/mcx init
-    fi
-  '';
-
-  # Wrapper adds bun to PATH so the #!/usr/bin/env bun shebang in mcx resolves
+  # mcx is installed via `bun add -g` (lives in ~/.bun/bin/mcx).
+  # The wrapper ensures bun is in PATH for mcx's #!/usr/bin/env bun shebang.
   mcxServeWrapper = pkgs.writeShellScript "mcx-serve" ''
-    export PATH="${bunBin}:$PATH"
-    exec ${bunBin}/mcx serve "$@"
+    export PATH="${homeDir}/.bun/bin:$PATH"
+    exec ${homeDir}/.bun/bin/mcx serve "$@"
   '';
 
   testForks = {
@@ -54,6 +33,12 @@ let
 
         Use `mcx_execute`, `mcx_search`, etc. via the mcx MCP server.
         To generate adapters from OpenAPI specs: `mcx gen ./api-docs.md -n myapi`
+
+        ## Setup (if mcx is not installed)
+        ```
+        bun add -g @papicandela/mcx-cli
+        mcx init
+        ```
       '';
       extraPackages = [ ];
     };
@@ -101,10 +86,6 @@ in
 
   home = {
     packages = allExtraPackages;
-
-    activation.installMcxCli = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-      run ${installMcxCli}
-    '';
 
     activation.createTestForkWorkspaces = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
       ${allWorkspaceActivations}
