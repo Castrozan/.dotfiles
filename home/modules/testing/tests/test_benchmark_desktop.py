@@ -147,28 +147,85 @@ class TestGetAvailableBenchmarks:
             assert "fish-startup" in names
 
 
+class TestGetLatestResultsByComponent:
+    def test_returns_empty_when_no_file(self, tmp_path):
+        result = benchmark_desktop.get_latest_results_by_component(tmp_path / "nope.csv")
+        assert result == {}
+
+    def test_parses_latest_per_component(self, tmp_path):
+        csv = tmp_path / "results.csv"
+        csv.write_text(
+            "timestamp,component,avg_ms,min_ms,max_ms,iterations\n"
+            "2026-01-01,fish,300.0,250.0,350.0,5\n"
+            "2026-01-02,fish,320.0,280.0,360.0,5\n"
+            "2026-01-01,tmux,20.0,15.0,25.0,5\n"
+        )
+        result = benchmark_desktop.get_latest_results_by_component(csv)
+        assert result["fish"] == 320.0
+        assert result["tmux"] == 20.0
+
+
 class TestCheckBaseline:
+    def _make_baseline(self, tmp_path, measurements=None):
+        from datetime import datetime, timezone
+        baseline_file = tmp_path / "baseline.json"
+        baseline = {
+            "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+            "git_commit": "abc123",
+            "threshold_percent": 200,
+            "measurements": measurements or {"test": {"avg_ms": 50, "max_allowed_ms": 100}},
+        }
+        baseline_file.write_text(json.dumps(baseline))
+        return baseline_file
+
+    def _make_results(self, tmp_path, lines):
+        csv = tmp_path / "desktop-times.csv"
+        content = benchmark_desktop.CSV_HEADER + "\n" + "\n".join(lines) + "\n"
+        csv.write_text(content)
+        return csv
+
     def test_fails_when_no_file(self, tmp_path):
         with patch.object(benchmark_desktop, "BASELINE_PATH", tmp_path / "nope.json"):
             with patch.object(benchmark_desktop, "DOTFILES_DIRECTORY", tmp_path):
                 assert benchmark_desktop.check_baseline() is False
 
-    def test_passes_with_valid_baseline(self, tmp_path):
-        baseline_file = tmp_path / "baseline.json"
-        from datetime import datetime, timezone
-        baseline = {
-            "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-            "git_commit": "abc123",
-            "threshold_percent": 200,
-            "measurements": {
-                "test": {"avg_ms": 50, "max_allowed_ms": 100}
-            },
-        }
-        baseline_file.write_text(json.dumps(baseline))
+    def test_passes_when_within_threshold(self, tmp_path):
+        baseline_file = self._make_baseline(tmp_path, {"comp": {"avg_ms": 50, "max_allowed_ms": 100}})
+        results_file = self._make_results(tmp_path, ["2026-01-01,comp,80.0,70.0,90.0,5"])
 
         with patch.object(benchmark_desktop, "BASELINE_PATH", baseline_file):
             with patch.object(benchmark_desktop, "DOTFILES_DIRECTORY", tmp_path):
-                assert benchmark_desktop.check_baseline() is True
+                with patch("benchmark_desktop.get_results_file_path", return_value=results_file):
+                    assert benchmark_desktop.check_baseline() is True
+
+    def test_fails_when_exceeds_threshold(self, tmp_path):
+        baseline_file = self._make_baseline(tmp_path, {"comp": {"avg_ms": 50, "max_allowed_ms": 100}})
+        results_file = self._make_results(tmp_path, ["2026-01-01,comp,150.0,140.0,160.0,5"])
+
+        with patch.object(benchmark_desktop, "BASELINE_PATH", baseline_file):
+            with patch.object(benchmark_desktop, "DOTFILES_DIRECTORY", tmp_path):
+                with patch("benchmark_desktop.get_results_file_path", return_value=results_file):
+                    assert benchmark_desktop.check_baseline() is False
+
+    def test_fails_when_no_run_data(self, tmp_path):
+        baseline_file = self._make_baseline(tmp_path)
+
+        with patch.object(benchmark_desktop, "BASELINE_PATH", baseline_file):
+            with patch.object(benchmark_desktop, "DOTFILES_DIRECTORY", tmp_path):
+                with patch("benchmark_desktop.get_results_file_path", return_value=tmp_path / "nope.csv"):
+                    assert benchmark_desktop.check_baseline() is False
+
+    def test_skips_missing_components(self, tmp_path):
+        baseline_file = self._make_baseline(tmp_path, {
+            "comp-a": {"avg_ms": 50, "max_allowed_ms": 100},
+            "comp-b": {"avg_ms": 50, "max_allowed_ms": 100},
+        })
+        results_file = self._make_results(tmp_path, ["2026-01-01,comp-a,80.0,70.0,90.0,5"])
+
+        with patch.object(benchmark_desktop, "BASELINE_PATH", baseline_file):
+            with patch.object(benchmark_desktop, "DOTFILES_DIRECTORY", tmp_path):
+                with patch("benchmark_desktop.get_results_file_path", return_value=results_file):
+                    assert benchmark_desktop.check_baseline() is True
 
 
 class TestSaveBaseline:

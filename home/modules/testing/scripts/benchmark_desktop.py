@@ -427,6 +427,23 @@ def save_baseline(results: list[dict]) -> None:
         )
 
 
+def get_latest_results_by_component(results_file: Path) -> dict[str, float]:
+    if not results_file.exists():
+        return {}
+
+    lines = results_file.read_text().splitlines()
+    latest: dict[str, float] = {}
+    for line in lines[1:]:
+        fields = line.split(",")
+        if len(fields) < 3:
+            continue
+        try:
+            latest[fields[1]] = float(fields[2])
+        except ValueError:
+            continue
+    return latest
+
+
 def check_baseline() -> bool:
     if not BASELINE_PATH.exists():
         print(f"FAIL: No baseline at {BASELINE_PATH.relative_to(DOTFILES_DIRECTORY)}")
@@ -450,26 +467,54 @@ def check_baseline() -> bool:
     if not measurements:
         failures.append("Baseline has no measurements.")
 
+    results_file = get_results_file_path()
+    latest = get_latest_results_by_component(results_file)
+
     print("=" * 60)
     print("DESKTOP PERFORMANCE BASELINE CHECK")
     print("=" * 60)
-    print(f"  Generated: {baseline['generated_at']}")
-    print(f"  Age: {age_days} days")
+    print(f"  Baseline: {baseline['generated_at']} (age: {age_days} days)")
     print(f"  Commit: {baseline.get('git_commit', 'unknown')}")
     print(f"  Threshold: {baseline.get('threshold_percent', '?')}%")
-    for name, data in measurements.items():
-        print(
-            f"  {name}: {format_ms(data['avg_ms'])} "
-            f"(max {format_ms(data['max_allowed_ms'])})"
+    print()
+
+    if not latest:
+        failures.append(
+            "No run data found. Run 'benchmark-desktop' first."
         )
+    else:
+        print(f"  {'Component':<22} {'Baseline':>10} {'Actual':>10} {'Max':>10} {'Status':>8}")
+        print(f"  {'-' * 62}")
+        for name, data in measurements.items():
+            baseline_ms = data["avg_ms"]
+            max_ms = data["max_allowed_ms"]
+            actual_ms = latest.get(name)
+
+            if actual_ms is None:
+                print(f"  {name:<22} {format_ms(baseline_ms):>10} {'—':>10} {format_ms(max_ms):>10} {'SKIP':>8}")
+                continue
+
+            passed = actual_ms <= max_ms
+            status = "OK" if passed else "FAIL"
+            print(
+                f"  {name:<22} "
+                f"{format_ms(baseline_ms):>10} "
+                f"{format_ms(actual_ms):>10} "
+                f"{format_ms(max_ms):>10} "
+                f"{'  ' + status:>8}"
+            )
+            if not passed:
+                failures.append(
+                    f"{name}: {format_ms(actual_ms)} exceeds max {format_ms(max_ms)}"
+                )
 
     if failures:
         print(f"\nFAILED ({len(failures)} issues):")
-        for f in failures:
-            print(f"  - {f}")
+        for failure in failures:
+            print(f"  - {failure}")
         return False
 
-    print("\nPASSED: Baseline is valid.")
+    print("\nPASSED: All components within thresholds.")
     return True
 
 
