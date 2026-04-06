@@ -107,6 +107,7 @@ _run_ci_tier() {
 	_run_quick_bats_tests_ci
 	_run_nix_tier
 	_run_rebuild_baseline_check
+	_run_desktop_baseline_check
 }
 
 _run_rebuild_baseline_check() {
@@ -117,6 +118,17 @@ _run_rebuild_baseline_check() {
 
 	echo "--- Rebuild Performance Baseline Check ---"
 	benchmark-rebuild --check-baseline
+	echo ""
+}
+
+_run_desktop_baseline_check() {
+	if ! command -v benchmark-desktop &>/dev/null; then
+		echo "SKIP: benchmark-desktop not installed" >&2
+		return 0
+	fi
+
+	echo "--- Desktop Performance Baseline Check ---"
+	benchmark-desktop --check-baseline
 	echo ""
 }
 
