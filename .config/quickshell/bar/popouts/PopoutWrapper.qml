@@ -26,12 +26,6 @@ Item {
         NumberAnimation { duration: 300; easing.type: Easing.OutCubic }
     }
 
-    Rectangle {
-        anchors.fill: parent
-        radius: 16
-        color: ThemeColors.backgroundTranslucent
-    }
-
     MouseArea {
         id: popoutMouseArea
         anchors.fill: parent

@@ -104,6 +104,7 @@ Scope {
             }
 
             function showPopout(name: string, centerY: real): void {
+                popoutHideTimer.stop();
                 popoutCurrentName = name;
                 popoutCenterY = centerY;
             }

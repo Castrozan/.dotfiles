@@ -46,64 +46,56 @@ ColumnLayout {
                 color: Qt.rgba(ThemeColors.foreground.r, ThemeColors.foreground.g, ThemeColors.foreground.b, 0.15)
             }
 
-            Loader {
+            Row {
+                anchors.verticalCenter: parent.verticalCenter
+                anchors.left: parent.left
+                anchors.leftMargin: 10
+                anchors.right: parent.right
+                anchors.rightMargin: 10
+                spacing: 8
+                visible: !trayMenuEntryDelegate.modelData.isSeparator
+
+                Image {
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: 16
+                    height: 16
+                    source: trayMenuEntryDelegate.modelData.icon ?? ""
+                    sourceSize: Qt.size(16, 16)
+                    visible: (trayMenuEntryDelegate.modelData.icon ?? "") !== ""
+                }
+
+                Text {
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: trayMenuEntryDelegate.modelData.text ?? ""
+                    font.pixelSize: 13
+                    font.family: "JetBrainsMono Nerd Font"
+                    color: ThemeColors.foreground
+                    opacity: trayMenuEntryDelegate.itemEnabled ? 1.0 : 0.4
+                    elide: Text.ElideRight
+                    width: Math.min(implicitWidth, 220)
+                }
+            }
+
+            Text {
+                anchors.verticalCenter: parent.verticalCenter
+                anchors.right: parent.right
+                anchors.rightMargin: 10
+                text: "›"
+                font.pixelSize: 14
+                color: ThemeColors.foreground
+                visible: !trayMenuEntryDelegate.modelData.isSeparator && trayMenuEntryDelegate.modelData.hasChildren
+            }
+
+            MouseArea {
+                id: trayMenuEntryMouseArea
                 anchors.fill: parent
-                active: !trayMenuEntryDelegate.modelData.isSeparator
+                hoverEnabled: true
+                visible: !trayMenuEntryDelegate.modelData.isSeparator
+                cursorShape: trayMenuEntryDelegate.itemEnabled ? Qt.PointingHandCursor : Qt.ArrowCursor
 
-                sourceComponent: Item {
-                    anchors.fill: parent
-
-                    Row {
-                        anchors.verticalCenter: parent.verticalCenter
-                        anchors.left: parent.left
-                        anchors.leftMargin: 10
-                        anchors.right: parent.right
-                        anchors.rightMargin: 10
-                        spacing: 8
-
-                        Image {
-                            anchors.verticalCenter: parent.verticalCenter
-                            width: 16
-                            height: 16
-                            source: trayMenuEntryDelegate.modelData.icon ?? ""
-                            sourceSize: Qt.size(16, 16)
-                            visible: (trayMenuEntryDelegate.modelData.icon ?? "") !== ""
-                        }
-
-                        Text {
-                            anchors.verticalCenter: parent.verticalCenter
-                            text: trayMenuEntryDelegate.modelData.text ?? ""
-                            font.pixelSize: 13
-                            font.family: "JetBrainsMono Nerd Font"
-                            color: trayMenuEntryDelegate.itemEnabled
-                                ? ThemeColors.foreground
-                                : Qt.rgba(ThemeColors.foreground.r, ThemeColors.foreground.g, ThemeColors.foreground.b, 0.4)
-                            elide: Text.ElideRight
-                            width: Math.min(implicitWidth, 220)
-                        }
-                    }
-
-                    Text {
-                        anchors.verticalCenter: parent.verticalCenter
-                        anchors.right: parent.right
-                        anchors.rightMargin: 10
-                        text: "›"
-                        font.pixelSize: 14
-                        color: ThemeColors.foreground
-                        visible: trayMenuEntryDelegate.modelData.hasChildren
-                    }
-
-                    MouseArea {
-                        id: trayMenuEntryMouseArea
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: trayMenuEntryDelegate.itemEnabled ? Qt.PointingHandCursor : Qt.ArrowCursor
-
-                        onClicked: {
-                            if (trayMenuEntryDelegate.itemEnabled && !trayMenuEntryDelegate.modelData.hasChildren) {
-                                trayMenuEntryDelegate.modelData.triggered();
-                            }
-                        }
+                onClicked: {
+                    if (trayMenuEntryDelegate.itemEnabled && !trayMenuEntryDelegate.modelData.hasChildren) {
+                        trayMenuEntryDelegate.modelData.triggered();
                     }
                 }
             }

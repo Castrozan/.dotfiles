@@ -27,6 +27,7 @@ main() {
 		_run_docker_tier
 		;;
 	evals) _run_evals_tier ;;
+	perf) _run_perf_tier ;;
 	coverage) _run_coverage_tier ;;
 	ci) _run_ci_tier ;;
 	esac
@@ -67,6 +68,10 @@ _parse_arguments() {
 			;;
 		--ci)
 			selectedMode="ci"
+			shift
+			;;
+		--perf)
+			selectedMode="perf"
 			shift
 			;;
 		*)
@@ -129,6 +134,37 @@ _run_desktop_baseline_check() {
 
 	echo "--- Desktop Performance Baseline Check ---"
 	benchmark-desktop --check-baseline
+	echo ""
+}
+
+_run_perf_tier() {
+	echo "--- Desktop Benchmarks ---"
+	if command -v benchmark-desktop &>/dev/null; then
+		benchmark-desktop 3
+	else
+		echo "SKIP: benchmark-desktop not installed" >&2
+	fi
+	echo ""
+
+	_run_desktop_baseline_check
+	_run_rebuild_baseline_check
+
+	echo "--- Shell Benchmarks ---"
+	if command -v benchmark-shell &>/dev/null; then
+		benchmark-shell 3
+	else
+		echo "SKIP: benchmark-shell not installed" >&2
+	fi
+	echo ""
+
+	echo "--- Performance Threshold Tests ---"
+	local perfTests
+	perfTests=$(find "$REPO_DIR/home/modules" -name "perf-runtime.bats" -type f 2>/dev/null | sort)
+	if [[ -n "$perfTests" ]] && command -v bats &>/dev/null; then
+		bats $perfTests
+	else
+		echo "SKIP: no perf-runtime.bats files or bats not installed" >&2
+	fi
 	echo ""
 }
 

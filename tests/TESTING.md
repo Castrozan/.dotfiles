@@ -10,6 +10,7 @@ Tests are organized in tiers by speed and tool requirements. The `tests/run.sh` 
 | Nix | home-manager integration + domain nix tests (`home/modules/*/tests/`) | ~120s | `--nix` (includes quick) |
 | Docker | `*-docker.bats` integration tests | ~60s | `--docker` |
 | Runtime | domain runtime tests (`runtime.bats`, `live-services.bats`) | variable | `--runtime` |
+| Perf | desktop + shell benchmarks, baseline checks, threshold tests | ~2m | `--perf` |
 
 Additional modes: `--all` runs quick + nix + docker. `--coverage` runs quick tests through kcov. `--ci` runs quick with CI-appropriate skip messages.
 
@@ -19,10 +20,25 @@ Additional modes: `--all` runs quick + nix + docker. `--coverage` runs quick tes
 tests/run.sh                    # quick tier (default)
 tests/run.sh --nix              # quick + nix eval tests
 tests/run.sh --docker           # docker integration tests only
-tests/run.sh --all              # everything except runtime
+tests/run.sh --all              # everything except runtime/perf
 tests/run.sh --coverage         # quick tests with kcov coverage
 tests/run.sh --runtime          # domain runtime tests
+tests/run.sh --perf             # performance benchmarks + threshold tests
 bats home/modules/system/tests/foo.bats  # single test file
+```
+
+### Performance testing
+
+```bash
+dotfiles-perf run               # benchmark all desktop components
+dotfiles-perf run 10 tmux       # benchmark tmux only, 10 iterations
+dotfiles-perf check             # compare latest run against baseline
+dotfiles-perf test              # pass/fail threshold tests (bats)
+dotfiles-perf all               # full suite: benchmark + check + threshold tests
+dotfiles-perf baseline          # measure and save new baseline
+dotfiles-perf report            # show benchmark history
+dotfiles-perf shell             # shell startup benchmark
+dotfiles-perf rebuild           # nix rebuild benchmark
 ```
 
 Each tier auto-detects tool availability (bats, nix, docker, kcov) and skips gracefully with a message when tools are missing.

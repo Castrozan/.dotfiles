@@ -53,15 +53,16 @@ ColumnLayout {
                 cursorShape: Qt.PointingHandCursor
 
                 onClicked: mouse => {
+                    let popoutName = "traymenu" + trayItemDelegate.index;
+                    if (trayModuleRoot.screenScope.popoutCurrentName === popoutName) {
+                        trayModuleRoot.screenScope.popoutCurrentName = "";
+                        return;
+                    }
                     if (mouse.button === Qt.LeftButton && !trayItemDelegate.modelData.onlyMenu) {
                         trayItemDelegate.modelData.activate();
                     }
-                    _showTrayMenuPopout();
-                }
-
-                function _showTrayMenuPopout(): void {
                     let scenePos = trayItemDelegate.mapToItem(null, 0, trayItemDelegate.height / 2);
-                    trayModuleRoot.screenScope.showPopout("traymenu" + trayItemDelegate.index, scenePos.y);
+                    trayModuleRoot.screenScope.showPopout(popoutName, scenePos.y);
                 }
             }
         }
