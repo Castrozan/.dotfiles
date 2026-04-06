@@ -7,12 +7,10 @@ let
       --enable-features=UseNativeNotifications,WebRTCPipeWireCapturer \
       "$@"
   '';
-in
-{
-  home.packages = [ latest.google-chrome ];
 
-  xdg.desktopEntries.chrome-global = {
-    name = "Chrome";
+  desktopItem = pkgs.makeDesktopItem {
+    name = "chrome-global";
+    desktopName = "Chrome";
     genericName = "Web Browser";
     exec = "${chromeGlobalLauncher} %U";
     icon = "google-chrome";
@@ -22,7 +20,7 @@ in
       "Network"
       "WebBrowser"
     ];
-    mimeType = [
+    mimeTypes = [
       "text/html"
       "text/xml"
       "application/xhtml+xml"
@@ -31,6 +29,18 @@ in
       "x-scheme-handler/https"
     ];
   };
+in
+{
+  home.packages = [
+    latest.google-chrome
+    desktopItem
+  ];
+
+  # Also place in ~/.local/share/applications/ (XDG_DATA_HOME) so xdg-open
+  # finds it first. Without this, it only lives in ~/.nix-profile/share/
+  # which is late in the search order and can be missed during rebuilds.
+  xdg.dataFile."applications/chrome-global.desktop".source =
+    "${desktopItem}/share/applications/chrome-global.desktop";
 
   xdg.mimeApps = {
     enable = true;
