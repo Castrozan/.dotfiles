@@ -13,5 +13,6 @@ in
   home.packages = [
     (mkTestingPythonScript "benchmark-rebuild" ./scripts/benchmark_rebuild.py)
     (mkTestingPythonScript "benchmark-shell" ./scripts/benchmark_shell.py)
+    (mkTestingPythonScript "benchmark-desktop" ./scripts/benchmark_desktop.py)
   ];
 }

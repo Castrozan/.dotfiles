@@ -162,6 +162,7 @@ _collect_quick_bats_test_files() {
 	find "$REPO_DIR/home/modules" -path "*/tests/*.bats" \
 		! -name "*-docker.bats" \
 		! -name "runtime.bats" \
+		! -name "*-runtime.bats" \
 		! -name "live-services.bats" \
 		! -name "cdp-browser.bats" \
 		-type f | sort
@@ -236,7 +237,7 @@ _run_nix_flake_checks() {
 _is_runtime_test_file() {
 	local filename
 	filename="$(basename "$1")"
-	[[ "$filename" == "runtime.bats" || "$filename" == "live-services.bats" ]]
+	[[ "$filename" == "runtime.bats" || "$filename" == *"-runtime.bats" || "$filename" == "live-services.bats" ]]
 }
 
 _run_domain_runtime_tests() {

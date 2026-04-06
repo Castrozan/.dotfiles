@@ -1,0 +1,63 @@
+{
+  "generated_at": "2026-04-06T00:08:31+00:00",
+  "git_commit": "74c8bdad",
+  "threshold_percent": 200,
+  "measurements": {
+    "hyprctl-ipc": {
+      "avg_ms": 25.9,
+      "max_allowed_ms": 51.8
+    },
+    "hyprctl-clients": {
+      "avg_ms": 29.4,
+      "max_allowed_ms": 58.7
+    },
+    "workspace-switch": {
+      "avg_ms": 32.8,
+      "max_allowed_ms": 65.7
+    },
+    "window-switcher": {
+      "avg_ms": 115.8,
+      "max_allowed_ms": 231.6
+    },
+    "launcher-qs": {
+      "avg_ms": 115.0,
+      "max_allowed_ms": 230.0
+    },
+    "dashboard": {
+      "avg_ms": 128.7,
+      "max_allowed_ms": 257.3
+    },
+    "sidebar": {
+      "avg_ms": 116.4,
+      "max_allowed_ms": 232.8
+    },
+    "workspace-overview": {
+      "avg_ms": 117.7,
+      "max_allowed_ms": 235.3
+    },
+    "volume-control": {
+      "avg_ms": 335.4,
+      "max_allowed_ms": 670.9
+    },
+    "fuzzel": {
+      "avg_ms": 300.6,
+      "max_allowed_ms": 601.2
+    },
+    "fish-startup": {
+      "avg_ms": 305.9,
+      "max_allowed_ms": 611.7
+    },
+    "wezterm-launch": {
+      "avg_ms": 1500.9,
+      "max_allowed_ms": 3001.8
+    },
+    "tmux-new-session": {
+      "avg_ms": 17.3,
+      "max_allowed_ms": 34.5
+    },
+    "tmux-split-window": {
+      "avg_ms": 23.9,
+      "max_allowed_ms": 47.7
+    }
+  }
+}
