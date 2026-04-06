@@ -54,11 +54,11 @@ The left extension hangs rightward from the left vertical strip inner edge. The 
     strip │
 ```
 
-Bottom junction: PathLine to `(stripRight, panelBottom + radius)`, arc to `(stripRight + radius, panelBottom)`, **CCW** (CW when corner-merged).
+Bottom junction: PathLine to `(stripRight, panelBottom + radius)`, arc to `(stripRight + radius, panelBottom)`, **CW**.
 Top junction: PathLine to `(stripRight + radius, panelTop)`, arc to `(stripRight, panelTop - radius)`, CW.
 Panel corners (top-right and bottom-right): both CCW.
 
-The bottom junction is the only junction that uses CCW in its normal (non-merged) state. This happens because the path enters the extension moving rightward from the downward-traveling strip — the clockwise winding places the concave fillet on the opposite side compared to all other junctions.
+Both junctions use CW. The path approaches going upward along the bar edge and turns right into the extension — the same right-turn geometry as the top junction (left-to-down), so the same CW direction produces the concave fillet.
 
 ## Radius Clamping
 
@@ -70,7 +70,7 @@ When a panel extends close enough to the strip's own rounded corner (within `jun
 
 **Normal** — panel edge is more than `junctionRadius` from the strip corner. Standard junction arc with full radius. The bar's inner corner radius remains intact.
 
-**Partially merged** (`cornerMerged = true`) — panel edge + `junctionRadius` reaches the strip corner. The bar's inner corner radius collapses to 0 (corner disappears). The junction arc radius transitions to `mergedArcRadius` — the remaining gap between panel edge and strip boundary — which shrinks as the panel extends further. The left extension bottom junction flips from CCW to CW at this point.
+**Partially merged** (`cornerMerged = true`) — panel edge + `junctionRadius` reaches the strip corner. The bar's inner corner radius collapses to 0 (corner disappears). The junction arc radius transitions to `mergedArcRadius` — the remaining gap between panel edge and strip boundary — which shrinks as the panel extends further.
 
 **Fully merged** (`fullyMerged = true`) — panel edge reaches the strip boundary (`mergedArcRadius <= 0`). Junction arc radius = 0, the arc disappears entirely. The panel edge IS the strip boundary. For the left extension, `bottomEdgeTargetX` jumps to `extensionRight - cornerArcRadius`, so the bottom strip now starts at the popout's far-right edge.
 

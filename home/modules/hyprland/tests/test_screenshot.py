@@ -88,6 +88,41 @@ class TestCopyScreenshotToClipboardAndNotify:
             assert "Screenshot saved" in notify_call[0][0]
 
 
+class TestAnnotateClipboardImage:
+    def test_returns_none_when_no_image_in_clipboard(self, tmp_path):
+        wl_paste_result = MagicMock()
+        wl_paste_result.returncode = 1
+        wl_paste_result.stdout = b""
+
+        with patch("screenshot.subprocess.run", return_value=wl_paste_result):
+            result = screenshot.annotate_clipboard_image(tmp_path / "test.png")
+            assert result is None
+
+    def test_saves_clipboard_and_opens_satty(self, tmp_path):
+        save_path = tmp_path / "test.png"
+        annotated_path = tmp_path / "test_annotated.png"
+
+        wl_paste_result = MagicMock()
+        wl_paste_result.returncode = 0
+        wl_paste_result.stdout = b"fake png data"
+
+        call_count = 0
+
+        def run_side_effect(args, **kwargs):
+            nonlocal call_count
+            call_count += 1
+            if call_count == 1:
+                return wl_paste_result
+            if "satty" in args:
+                annotated_path.write_bytes(b"annotated")
+            return MagicMock(returncode=0)
+
+        with patch("screenshot.subprocess.run", side_effect=run_side_effect):
+            result = screenshot.annotate_clipboard_image(save_path)
+            assert result == annotated_path
+            assert save_path.read_bytes() == b"fake png data"
+
+
 class TestMain:
     def test_region_mode_default(self, tmp_path):
         with patch(

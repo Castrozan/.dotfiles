@@ -84,6 +84,32 @@ def capture_and_annotate_screenshot(save_path: Path) -> Path | None:
     return save_path
 
 
+def annotate_clipboard_image(save_path: Path) -> Path | None:
+    result = subprocess.run(
+        ["wl-paste", "--type", "image/png"],
+        capture_output=True,
+    )
+    if result.returncode != 0 or not result.stdout:
+        subprocess.run(
+            ["notify-send", "Screenshot", "No image in clipboard", "-t", "2000"]
+        )
+        return None
+
+    save_path.write_bytes(result.stdout)
+
+    annotated_path = save_path.with_name(save_path.stem + "_annotated.png")
+    env = os.environ.copy()
+    env["GSK_RENDERER"] = "gl"
+    subprocess.run(
+        ["satty", "-f", str(save_path), "-o", str(annotated_path)],
+        env=env,
+    )
+
+    if annotated_path.is_file():
+        return annotated_path
+    return save_path
+
+
 def copy_screenshot_to_clipboard_and_notify(save_path: Path) -> None:
     with open(save_path, "rb") as screenshot_file:
         subprocess.run(["wl-copy"], stdin=screenshot_file)
@@ -127,9 +153,14 @@ def main() -> None:
             if result_path is None:
                 return
             save_path = result_path
+        case "clipboard-annotate":
+            result_path = annotate_clipboard_image(save_path)
+            if result_path is None:
+                return
+            save_path = result_path
         case _:
             print(
-                "Usage: hypr-screenshot [region|window|output|screen|annotate]",
+                "Usage: hypr-screenshot [region|window|output|screen|annotate|clipboard-annotate]",
                 file=sys.stderr,
             )
             raise SystemExit(1)

@@ -352,7 +352,7 @@ ShapePath {
         y: shapePathRoot.clampedExtensionBottomEdge
         radiusX: shapePathRoot.effectiveBottomJunctionArcRadius
         radiusY: shapePathRoot.effectiveBottomJunctionArcRadius
-        direction: shapePathRoot.bottomCornerMerged ? PathArc.Clockwise : PathArc.Counterclockwise
+        direction: PathArc.Clockwise
     }
 
     PathLine {
