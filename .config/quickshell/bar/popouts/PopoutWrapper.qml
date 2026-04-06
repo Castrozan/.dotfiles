@@ -9,7 +9,7 @@ Item {
     required property real screenHeight
     required property real barWidth
 
-    property bool containsMouse: popoutMouseArea.containsMouse
+    property bool containsMouse: popoutHoverHandler.hovered
 
     readonly property bool hasContent: currentName !== ""
     readonly property real popoutHeight: popoutContent.implicitHeight + 32
@@ -26,14 +26,8 @@ Item {
         NumberAnimation { duration: 300; easing.type: Easing.OutCubic }
     }
 
-    MouseArea {
-        id: popoutMouseArea
-        anchors.fill: parent
-        hoverEnabled: true
-        propagateComposedEvents: true
-        onClicked: mouse => mouse.accepted = false
-        onPressed: mouse => mouse.accepted = false
-        onReleased: mouse => mouse.accepted = false
+    HoverHandler {
+        id: popoutHoverHandler
     }
 
     PopoutContent {
