@@ -1690,15 +1690,15 @@
         ]
       },
       "locked": {
-        "lastModified": 1773063470,
-        "narHash": "sha256-OjO8E41us98oVvCubpgeeVzhniXwL8nOqCqVKGCO7ew=",
-        "owner": "Castrozan",
+        "lastModified": 1775450003,
+        "narHash": "sha256-2/SOAhd4OiwsyJTkStMKdCHVXXC8R9Olw3MLvrb4p6c=",
+        "owner": "viu-media",
         "repo": "viu",
-        "rev": "d2c051228a929b9989a1bfbcd58b7c79ee7cbaa9",
+        "rev": "da0e7aea5ca94459ddc94796f5eb8dd5d94fdba8",
         "type": "github"
       },
       "original": {
-        "owner": "Castrozan",
+        "owner": "viu-media",
         "repo": "viu",
         "type": "github"
       }

@@ -143,7 +143,7 @@
     openclaw-mesh.inputs.nixpkgs.follows = "nixpkgs";
     lazygit.url = "github:Castrozan/lazygit";
     lazygit.inputs.nixpkgs.follows = "nixpkgs";
-    viu.url = "github:Castrozan/viu";
+    viu.url = "github:viu-media/viu";
     viu.inputs.nixpkgs.follows = "nixpkgs";
     voice-pipeline.url = "github:castrozan/voice-pipeline";
     voice-pipeline.inputs.nixpkgs.follows = "nixpkgs";
