@@ -93,13 +93,8 @@ in
     };
   };
 
-  # Security - gnome-keyring PAM integration for Hyprland
-  security.pam.services.gdm.enableGnomeKeyring = true;
-
   # Services
   services = {
-    # Gnome-keyring for password/secrets storage (used by browsers, etc.)
-    gnome.gnome-keyring.enable = true;
     flatpak.enable = true;
     openssh = {
       enable = true;
