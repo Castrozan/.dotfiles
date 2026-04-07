@@ -11,11 +11,11 @@ let
   mongodbCompassWrappedBinary = pkgs.writeShellScriptBin "mongodb-compass" (
     if isNixOS then
       ''
-        exec ${pkgs.mongodb-compass}/bin/mongodb-compass --ignore-additional-command-line-flags --password-store=gnome-libsecret "$@"
+        exec ${pkgs.mongodb-compass}/bin/mongodb-compass --ignore-additional-command-line-flags --password-store=basic "$@"
       ''
     else
       ''
-        exec ${nixGLIntelPackage}/bin/nixGLIntel ${pkgs.mongodb-compass}/bin/mongodb-compass --ignore-additional-command-line-flags --password-store=gnome-libsecret "$@"
+        exec ${nixGLIntelPackage}/bin/nixGLIntel ${pkgs.mongodb-compass}/bin/mongodb-compass --ignore-additional-command-line-flags --password-store=basic "$@"
       ''
   );
 
