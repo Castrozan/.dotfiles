@@ -42,3 +42,9 @@ snapshot.json
 .devenv/
 .devenv.flake.nix
 devenv.lock
+
+# Stray cloned repos and build artifacts
+git-waka/
+windows-11/
+windows-11.conf
+*.iso
