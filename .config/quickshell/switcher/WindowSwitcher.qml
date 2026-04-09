@@ -104,10 +104,10 @@ Scope {
             return;
 
         if (confirmRequestedBeforeOverlayReady) {
-            confirmRequestedBeforeOverlayReady = false;
             let indexToFocus = windowList.length > 1 ? 1 : 0;
             let selectedAddress = windowList[indexToFocus].address;
             Hyprland.dispatch(`focuswindow address:0x${selectedAddress}`);
+            closeSwitcher();
             return;
         }
 
@@ -159,16 +159,19 @@ Scope {
             Hyprland.dispatch(`focuswindow address:0x${selectedAddress}`);
         }
 
-        overlayVisible = false;
-        windowList = [];
-        selectedIndex = 0;
+        closeSwitcher();
     }
 
-    function cancelSwitcher(): void {
+    function closeSwitcher(): void {
         overlayVisible = false;
         confirmRequestedBeforeOverlayReady = false;
         windowList = [];
         selectedIndex = 0;
+        Hyprland.dispatch("submap reset");
+    }
+
+    function cancelSwitcher(): void {
+        closeSwitcher();
     }
 
     IpcHandler {

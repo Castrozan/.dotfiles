@@ -56,6 +56,7 @@ Item {
                 active: !!toplevelHandle
 
                 sourceComponent: ScreencopyView {
+                    id: screencopyView
                     anchors.fill: parent
                     captureSource: toplevelHandle
                     live: false
@@ -64,8 +65,28 @@ Item {
                     constraintSize: Qt.size(thumbnailContainer.width, thumbnailContainer.height)
 
                     onHasContentChanged: {
-                        if (hasContent)
+                        if (hasContent) {
                             captureFrame();
+                            captureRetryTimer.stop();
+                        }
+                    }
+
+                    Timer {
+                        id: captureRetryTimer
+                        interval: 100
+                        repeat: true
+                        running: screencopyView.captureSource && !screencopyView.hasContent
+                        property int attempts: 0
+                        onTriggered: {
+                            attempts++;
+                            screencopyView.captureFrame();
+                            if (attempts >= 5)
+                                stop();
+                        }
+                        onRunningChanged: {
+                            if (running)
+                                attempts = 0;
+                        }
                     }
                 }
             }

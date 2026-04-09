@@ -11,6 +11,8 @@ Item {
         property bool confirmRequestedBeforeOverlayReady: false
         property int selectedIndex: 0
         property var windowList: []
+        property int submapResetDispatchCount: 0
+        property string lastFocusedWindowAddress: ""
 
         function buildFilteredWindowListFromFreshData(freshClientsJson, focusedWorkspaceId, toplevelsMap) {
             var freshClients;
@@ -66,7 +68,9 @@ Item {
                 return;
 
             if (confirmRequestedBeforeOverlayReady) {
-                confirmRequestedBeforeOverlayReady = false;
+                var indexToFocus = windowList.length > 1 ? 1 : 0;
+                lastFocusedWindowAddress = windowList[indexToFocus].address;
+                closeSwitcher();
                 return;
             }
 
@@ -81,16 +85,21 @@ Item {
             }
 
             clampSelectedIndex();
-            overlayVisible = false;
-            windowList = [];
-            selectedIndex = 0;
+            if (windowList.length > 0 && selectedIndex < windowList.length)
+                lastFocusedWindowAddress = windowList[selectedIndex].address;
+            closeSwitcher();
         }
 
-        function cancelSwitcher() {
+        function closeSwitcher() {
             overlayVisible = false;
             confirmRequestedBeforeOverlayReady = false;
             windowList = [];
             selectedIndex = 0;
+            submapResetDispatchCount++;
+        }
+
+        function cancelSwitcher() {
+            closeSwitcher();
         }
 
         function parseThemeColors(jsonText) {
@@ -133,6 +142,8 @@ Item {
             windowSwitcher.selectedIndex = 0;
             windowSwitcher.overlayVisible = false;
             windowSwitcher.confirmRequestedBeforeOverlayReady = false;
+            windowSwitcher.submapResetDispatchCount = 0;
+            windowSwitcher.lastFocusedWindowAddress = "";
         }
 
         function test_filters_windows_by_workspace() {
@@ -229,6 +240,8 @@ Item {
             windowSwitcher.selectedIndex = 0;
             windowSwitcher.overlayVisible = true;
             windowSwitcher.confirmRequestedBeforeOverlayReady = false;
+            windowSwitcher.submapResetDispatchCount = 0;
+            windowSwitcher.lastFocusedWindowAddress = "";
         }
 
         function test_select_next_wraps_around() {
@@ -307,6 +320,8 @@ Item {
             windowSwitcher.selectedIndex = 0;
             windowSwitcher.overlayVisible = false;
             windowSwitcher.confirmRequestedBeforeOverlayReady = false;
+            windowSwitcher.submapResetDispatchCount = 0;
+            windowSwitcher.lastFocusedWindowAddress = "";
         }
 
         function test_does_not_open_when_no_windows() {
@@ -343,6 +358,10 @@ Item {
             windowSwitcher.finishOpenSwitcher();
             verify(!windowSwitcher.overlayVisible);
             verify(!windowSwitcher.confirmRequestedBeforeOverlayReady);
+            compare(windowSwitcher.windowList.length, 0);
+            compare(windowSwitcher.selectedIndex, 0);
+            compare(windowSwitcher.submapResetDispatchCount, 1);
+            compare(windowSwitcher.lastFocusedWindowAddress, "b");
         }
     }
 
@@ -357,6 +376,8 @@ Item {
             windowSwitcher.selectedIndex = 1;
             windowSwitcher.overlayVisible = true;
             windowSwitcher.confirmRequestedBeforeOverlayReady = false;
+            windowSwitcher.submapResetDispatchCount = 0;
+            windowSwitcher.lastFocusedWindowAddress = "";
         }
 
         function test_confirm_closes_overlay() {
@@ -404,6 +425,8 @@ Item {
             windowSwitcher.selectedIndex = 0;
             windowSwitcher.overlayVisible = false;
             windowSwitcher.confirmRequestedBeforeOverlayReady = false;
+            windowSwitcher.submapResetDispatchCount = 0;
+            windowSwitcher.lastFocusedWindowAddress = "";
         }
 
         function test_fifteen_windows_same_workspace() {
@@ -510,6 +533,8 @@ Item {
             windowSwitcher.selectedIndex = 0;
             windowSwitcher.overlayVisible = false;
             windowSwitcher.confirmRequestedBeforeOverlayReady = false;
+            windowSwitcher.submapResetDispatchCount = 0;
+            windowSwitcher.lastFocusedWindowAddress = "";
         }
 
         function test_double_confirm_when_overlay_hidden() {
@@ -556,9 +581,11 @@ Item {
             windowSwitcher.confirmRequestedBeforeOverlayReady = true;
             windowSwitcher.windowList = [{ address: "a", title: "W1" }];
             windowSwitcher.finishOpenSwitcher();
-            // Should not show overlay, should clear flag
             verify(!windowSwitcher.overlayVisible);
             verify(!windowSwitcher.confirmRequestedBeforeOverlayReady);
+            compare(windowSwitcher.windowList.length, 0);
+            compare(windowSwitcher.submapResetDispatchCount, 1);
+            compare(windowSwitcher.lastFocusedWindowAddress, "a");
         }
 
         function test_finish_open_empty_list_with_confirm_before_ready() {
@@ -656,6 +683,8 @@ Item {
             windowSwitcher.selectedIndex = 0;
             windowSwitcher.overlayVisible = false;
             windowSwitcher.confirmRequestedBeforeOverlayReady = false;
+            windowSwitcher.submapResetDispatchCount = 0;
+            windowSwitcher.lastFocusedWindowAddress = "";
         }
 
         function test_thirty_windows_navigation() {
@@ -709,6 +738,155 @@ Item {
     }
 
     TestCase {
+        name: "WindowSwitcherSubmapResetOnClose"
+
+        function init() {
+            windowSwitcher.windowList = [];
+            windowSwitcher.selectedIndex = 0;
+            windowSwitcher.overlayVisible = false;
+            windowSwitcher.confirmRequestedBeforeOverlayReady = false;
+            windowSwitcher.submapResetDispatchCount = 0;
+            windowSwitcher.lastFocusedWindowAddress = "";
+        }
+
+        function test_confirm_dispatches_submap_reset_and_focuses_selected() {
+            windowSwitcher.windowList = [
+                { address: "a", title: "W1" },
+                { address: "b", title: "W2" }
+            ];
+            windowSwitcher.overlayVisible = true;
+            windowSwitcher.selectedIndex = 1;
+
+            windowSwitcher.confirmSelection();
+            compare(windowSwitcher.submapResetDispatchCount, 1);
+            compare(windowSwitcher.lastFocusedWindowAddress, "b");
+        }
+
+        function test_cancel_dispatches_submap_reset() {
+            windowSwitcher.windowList = [
+                { address: "a", title: "W1" },
+                { address: "b", title: "W2" }
+            ];
+            windowSwitcher.overlayVisible = true;
+
+            windowSwitcher.cancelSwitcher();
+            compare(windowSwitcher.submapResetDispatchCount, 1);
+        }
+
+        function test_card_click_then_confirm_dispatches_submap_reset() {
+            windowSwitcher.windowList = [
+                { address: "a", title: "W1" },
+                { address: "b", title: "W2" }
+            ];
+            windowSwitcher.overlayVisible = true;
+            windowSwitcher.selectedIndex = 0;
+
+            windowSwitcher.confirmSelection();
+            compare(windowSwitcher.submapResetDispatchCount, 1);
+            verify(!windowSwitcher.overlayVisible);
+            compare(windowSwitcher.windowList.length, 0);
+        }
+
+        function test_quick_switch_dispatches_submap_reset_and_focuses_window() {
+            windowSwitcher.windowList = [
+                { address: "a", title: "W1" },
+                { address: "b", title: "W2" }
+            ];
+            windowSwitcher.confirmRequestedBeforeOverlayReady = true;
+
+            windowSwitcher.finishOpenSwitcher();
+            compare(windowSwitcher.submapResetDispatchCount, 1);
+            verify(!windowSwitcher.overlayVisible);
+            compare(windowSwitcher.lastFocusedWindowAddress, "b");
+        }
+
+        function test_close_switcher_resets_all_state() {
+            windowSwitcher.windowList = [
+                { address: "a", title: "W1" },
+                { address: "b", title: "W2" }
+            ];
+            windowSwitcher.overlayVisible = true;
+            windowSwitcher.selectedIndex = 1;
+            windowSwitcher.confirmRequestedBeforeOverlayReady = true;
+
+            windowSwitcher.closeSwitcher();
+
+            verify(!windowSwitcher.overlayVisible);
+            verify(!windowSwitcher.confirmRequestedBeforeOverlayReady);
+            compare(windowSwitcher.windowList.length, 0);
+            compare(windowSwitcher.selectedIndex, 0);
+            compare(windowSwitcher.submapResetDispatchCount, 1);
+        }
+
+        function test_submap_desync_scenario_card_click_then_reopen() {
+            var toplevels = {
+                "a": { wayland: "wl-a" },
+                "b": { wayland: "wl-b" }
+            };
+            var clients = JSON.stringify([
+                { address: "0xa", title: "Win A", "class": "app1", workspace: { id: 1 }, focusHistoryID: 0 },
+                { address: "0xb", title: "Win B", "class": "app2", workspace: { id: 1 }, focusHistoryID: 1 }
+            ]);
+
+            windowSwitcher.buildFilteredWindowListFromFreshData(clients, 1, toplevels);
+            windowSwitcher.finishOpenSwitcher();
+            verify(windowSwitcher.overlayVisible);
+
+            windowSwitcher.selectedIndex = 0;
+            windowSwitcher.confirmSelection();
+            compare(windowSwitcher.submapResetDispatchCount, 1);
+            verify(!windowSwitcher.overlayVisible);
+            compare(windowSwitcher.windowList.length, 0);
+
+            windowSwitcher.buildFilteredWindowListFromFreshData(clients, 1, toplevels);
+            windowSwitcher.finishOpenSwitcher();
+            verify(windowSwitcher.overlayVisible);
+            compare(windowSwitcher.selectedIndex, 1);
+        }
+
+        function test_submap_desync_scenario_click_outside_then_reopen() {
+            var toplevels = {
+                "a": { wayland: "wl-a" },
+                "b": { wayland: "wl-b" }
+            };
+            var clients = JSON.stringify([
+                { address: "0xa", title: "Win A", "class": "app1", workspace: { id: 1 }, focusHistoryID: 0 },
+                { address: "0xb", title: "Win B", "class": "app2", workspace: { id: 1 }, focusHistoryID: 1 }
+            ]);
+
+            windowSwitcher.buildFilteredWindowListFromFreshData(clients, 1, toplevels);
+            windowSwitcher.finishOpenSwitcher();
+            verify(windowSwitcher.overlayVisible);
+
+            windowSwitcher.cancelSwitcher();
+            compare(windowSwitcher.submapResetDispatchCount, 1);
+            verify(!windowSwitcher.overlayVisible);
+
+            windowSwitcher.buildFilteredWindowListFromFreshData(clients, 1, toplevels);
+            windowSwitcher.finishOpenSwitcher();
+            verify(windowSwitcher.overlayVisible);
+            compare(windowSwitcher.selectedIndex, 1);
+        }
+
+        function test_multiple_close_cycles_dispatch_each_time() {
+            windowSwitcher.windowList = [{ address: "a", title: "W1" }];
+            windowSwitcher.overlayVisible = true;
+            windowSwitcher.cancelSwitcher();
+            compare(windowSwitcher.submapResetDispatchCount, 1);
+
+            windowSwitcher.windowList = [{ address: "b", title: "W2" }];
+            windowSwitcher.overlayVisible = true;
+            windowSwitcher.confirmSelection();
+            compare(windowSwitcher.submapResetDispatchCount, 2);
+
+            windowSwitcher.windowList = [{ address: "c", title: "W3" }];
+            windowSwitcher.overlayVisible = true;
+            windowSwitcher.cancelSwitcher();
+            compare(windowSwitcher.submapResetDispatchCount, 3);
+        }
+    }
+
+    TestCase {
         name: "WindowSwitcherThemeColors"
 
         function init() {
@@ -716,6 +894,8 @@ Item {
             windowSwitcher.selectedIndex = 0;
             windowSwitcher.overlayVisible = false;
             windowSwitcher.confirmRequestedBeforeOverlayReady = false;
+            windowSwitcher.submapResetDispatchCount = 0;
+            windowSwitcher.lastFocusedWindowAddress = "";
         }
 
         function test_parse_valid_theme_colors() {
