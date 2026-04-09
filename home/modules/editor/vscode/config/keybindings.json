@@ -235,5 +235,30 @@
   {
     "key": "ctrl+m",
     "command": "-editor.action.toggleTabFocusMode"
+  },
+  {
+    "key": "ctrl+l",
+    "command": "-expandLineSelection"
+  },
+  {
+    "key": "ctrl+l",
+    "command": "runCommands",
+    "args": {
+      "commands": [
+        "workbench.action.chat.open",
+        "github.copilot.chat.attachSelection"
+      ]
+    },
+    "when": "editorTextFocus && editorHasSelection"
+  },
+  {
+    "key": "ctrl+l",
+    "command": "workbench.action.closeAuxiliaryBar",
+    "when": "auxiliaryBarVisible && !editorHasSelection"
+  },
+  {
+    "key": "ctrl+l",
+    "command": "workbench.action.chat.open",
+    "when": "!auxiliaryBarVisible"
   }
 ]
