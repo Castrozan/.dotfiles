@@ -18,7 +18,6 @@ PATHS_REQUIRING_SYSTEM_REBUILD = [
     "home.nix",
     "default.nix",
     "shell.nix",
-    "/home/zanoni/.dotfiles",
 ]
 
 
