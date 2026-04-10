@@ -11,7 +11,16 @@ DOTFILES_REPO_NAME = ".dotfiles"
 CI_CHECKS = [
     {
         "name": "statix",
-        "cmd": ["nix", "run", "nixpkgs#statix", "--", "check", ".", "--ignore", "result*"],
+        "cmd": [
+            "nix",
+            "run",
+            "nixpkgs#statix",
+            "--",
+            "check",
+            ".",
+            "--ignore",
+            "result*",
+        ],
     },
     {
         "name": "deadnix",
@@ -19,7 +28,12 @@ CI_CHECKS = [
     },
     {
         "name": "nixfmt",
-        "cmd": ["bash", "-c", "find . -name '*.nix' -not -path './result*' -not -path './.worktrees/*' -exec nix run nixpkgs#nixfmt-rfc-style -- --check {} +"],
+        "cmd": [
+            "bash",
+            "-c",
+            "find . -name '*.nix' -not -path './result*' -not -path './.worktrees/*'"
+            " -exec nix run nixpkgs#nixfmt-rfc-style -- --check {} +",
+        ],
     },
     {
         "name": "nix flake check",
@@ -28,6 +42,10 @@ CI_CHECKS = [
     {
         "name": "quick tests",
         "cmd": ["./tests/run.sh", "--quick"],
+    },
+    {
+        "name": "eval baseline freshness",
+        "cmd": ["python3", "agents/evals/run-evals.py", "--check-baseline"],
     },
 ]
 
