@@ -1,7 +1,9 @@
 <heartbeat-setup>
-On session start, register a durable heartbeat cron. Use CronCreate with `durable: true` so it survives restarts. The cron fires while the REPL is idle - never interrupting active work.
+On session start, register a heartbeat cron via CronCreate. Crons are session-scoped - they live only while the Claude Code process is running. The cron fires while the REPL is idle, never interrupting active work.
 
-Default interval: every 30 minutes. Pick an off-minute to avoid API congestion (e.g., `7 * * * *` not `0 * * * *`, or `*/30` offset by a few minutes like `3,33 * * * *`).
+The bootstrap prompt (sent by the launch script on startup) registers the heartbeat cron automatically. If the session restarts, the launch script sends the bootstrap again and the cron is re-registered. No manual setup needed.
+
+Default interval: every 30 minutes. Pick an off-minute to avoid API congestion (e.g., `3,33 * * * *` instead of `0,30 * * * *`).
 
 The heartbeat prompt should be short and direct:
 
@@ -9,7 +11,7 @@ The heartbeat prompt should be short and direct:
 Heartbeat tick. Read HEARTBEAT.md. If there are pending tasks with elapsed intervals, work on the highest priority one. If nothing needs attention, do nothing - do not respond or log.
 ```
 
-Durable crons auto-expire after 7 days. The bootstrap prompt re-creates them on each session start, so expiry is handled automatically.
+Recurring crons auto-expire after 7 days. For persistent agents that run longer, the agent should re-register the heartbeat if it notices no cron is active (check via CronList).
 </heartbeat-setup>
 
 <heartbeat-md-format>

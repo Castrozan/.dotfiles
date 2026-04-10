@@ -46,7 +46,7 @@ The tmux window persists independently of the spawning session. If the Claude Co
 
 For production-grade persistence (auto-restart on crash), create a systemd user service that manages the tmux session - same pattern as the Discord channel agents in `home/modules/claude/channels.nix`.
 
-Durable heartbeat crons persist to `.claude/scheduled_tasks.json` and survive session restarts. They auto-expire after 7 days and are re-created by the bootstrap prompt on each session start.
+Heartbeat crons are session-scoped - they live only while the Claude Code process runs. The bootstrap prompt re-registers the heartbeat on every session start, so restarts are handled automatically by the launch script.
 </persistence>
 
 <state-files>
