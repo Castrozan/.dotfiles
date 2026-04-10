@@ -22,7 +22,16 @@ Rectangle {
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
 
-        onClicked: openWindowSwitcherProcess.running = true
+        onClicked: {
+            enterSubmapProcess.running = true;
+            openWindowSwitcherProcess.running = true;
+        }
+    }
+
+    Process {
+        id: enterSubmapProcess
+        command: ["hyprctl", "dispatch", "submap", "windowswitcher"]
+        running: false
     }
 
     Process {
