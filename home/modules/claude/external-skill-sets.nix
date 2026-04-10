@@ -81,6 +81,8 @@ let
   realpath = "${pkgs.coreutils}/bin/realpath";
   rm = "${pkgs.coreutils}/bin/rm";
 
+  claudeConfigDir = "${homeDirectory}/.claude";
+
   workspaceFishFunction = ''
     function claude-workspace --description "Claude Code with workspace skills"
       set -l extend false
@@ -102,14 +104,33 @@ let
         return 1
       end
 
+      # Create isolated config dir that mirrors ~/.claude but replaces skills/
       set -l tmpdir (${mktemp} -d -t claude-workspace.XXXXXX)
-      set -l skills_dir "$tmpdir/.claude/skills"
-      ${mkdir} -p "$skills_dir"
+      set -l config_dir "$tmpdir/claude-config"
+      ${mkdir} -p "$config_dir/skills"
 
+      # Symlink everything from ~/.claude except skills/
+      for item in ${claudeConfigDir}/* ${claudeConfigDir}/.*
+        set -l name (${basename} "$item")
+        if test "$name" = "." -o "$name" = ".."
+          continue
+        end
+        if test "$name" = "skills"
+          continue
+        end
+        ${ln} -sfn "$item" "$config_dir/$name"
+      end
+
+      # Ensure .claude.json exists so Claude can write its runtime state
+      if not test -e "$config_dir/.claude.json"
+        echo '{}' > "$config_dir/.claude.json"
+      end
+
+      # Symlink workspace skills
       for skill_file in $skill_files
         set -l skill_dir (${dirname} "$skill_file")
         set -l skill_name (${basename} "$skill_dir")
-        ${ln} -sfn (${realpath} "$skill_dir") "$skills_dir/$skill_name"
+        ${ln} -sfn (${realpath} "$skill_dir") "$config_dir/skills/$skill_name"
       end
 
       echo "Loaded "(count $skill_files)" workspace skill(s):"
@@ -118,13 +139,20 @@ let
         echo "  - $skill_name"
       end
 
-      set -l cmd_args --add-dir $tmpdir
-
+      # With --extend, also add personal skills via --add-dir
+      set -l cmd_args
       if test "$extend" = true
+        # Copy base skills into the config dir too
+        for skill in ${claudeConfigDir}/skills/*/
+          set -l skill_name (${basename} "$skill")
+          if not test -e "$config_dir/skills/$skill_name"
+            ${ln} -sfn "$skill" "$config_dir/skills/$skill_name"
+          end
+        end
         set -a cmd_args --add-dir ${personalSkillSetDirectory}
       end
 
-      command claude $cmd_args $remaining_args
+      CLAUDE_CONFIG_DIR="$config_dir" command claude $cmd_args $remaining_args
       set -l exit_code $status
 
       ${rm} -rf "$tmpdir"
