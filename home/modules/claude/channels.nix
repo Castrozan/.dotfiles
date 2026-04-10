@@ -104,7 +104,7 @@ let
       modelFlag = "--model ${agent.model}";
       nameFlag = "--name ${name}";
       skillDirFlags = lib.concatMapStringsSep " " (dir: "--add-dir ${dir}") agent.skillDirectories;
-      useWorkspace = agent.workspaceFrom != [ ];
+      useWorkspace = agent.workspaceFrom != [ ] || agent.extendWorkspace;
       fromFlags = lib.concatMapStringsSep " " (dir: "--from ${dir}") agent.workspaceFrom;
       extendFlag = if agent.extendWorkspace then "--extend" else "";
       launchBinary =

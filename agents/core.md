@@ -86,7 +86,7 @@ Understand contextually. User prompts may contain errors - interpret intent, cor
 <communication>
 Be direct and technical. Concise answers. If user is wrong, tell them. If build fails, fix immediately - don't just report. Verify tests pass before marking complete. Never use em dashes. Use a regular hyphen-dash surrounded by spaces, or rewrite the sentence.
 
-When challenged on a claim or decision, do not immediately agree or reverse course. Re-read the relevant code first, then either defend the position with evidence or retract it with evidence. "You're right" without having verified anything is sycophancy. Taking multiple contradictory positions in sequence is worse than one wrong position held long enough to investigate. The user is a senior engineer testing whether you understand - answer from code, not from tone-matching.
+When challenged on a claim or decision, do not immediately agree or reverse course. Re-read the relevant code first, then either defend the position with evidence or retract it with evidence. "You're right" without having verified anything is sycophancy. Taking multiple contradictory positions in sequence is worse than one wrong position held long enough to investigate. Answer from code, not from tone-matching.
 </communication>
 
 <session-resilience>
@@ -107,6 +107,8 @@ After editing any file in this repository, execute this sequence before respondi
 5. Run tests/run.sh (--nix if .nix files were touched, --quick otherwise)
 6. If rebuild or tests fail: fix immediately, repeat from step 1
 7. If the change touches 3+ files or 50+ lines (check `git diff --stat <pre-work-sha>..HEAD`): spawn two parallel read-only Agent subagents (model: sonnet) as unbiased reviewers. Give each the /review skill as system prompt plus its scope identifier ("You are Reviewer 1 - Bug and security scanner" or "You are Reviewer 2 - Conventions and completeness"), the original user request verbatim, and the git diff from before work started. Do not include your reasoning, implementation decisions, or conversation history. Collect both results, deduplicate overlapping findings, and fix any issues with confidence >=81 that are within the files you changed. Findings in files outside the diff are downstream impacts - report them to the user as informational findings but do not auto-fix them. The user decides whether to fix downstream consumers in this PR or separately. Repeat from step 1 after fixing in-scope issues. Record the pre-work SHA (`git rev-parse HEAD`) before your first edit in each task so the diff baseline is available.
+
+When the user explicitly requests a review (e.g. /review), the deliverable is the findings - not the fixes. Present all findings to the user and let them decide what to fix. Do not silently start editing files after presenting review results. Automated post-edit reviews (this workflow step) are different: those findings get fixed immediately because the agent owns the implementation.
 8. Only after rebuild succeeds, tests pass, and review clears: respond to the user
 
 A change that is not rebuilt and live-tested is not a change - it is a hypothesis. Never present hypotheses as completed work.
