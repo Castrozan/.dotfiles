@@ -2,23 +2,43 @@
 # Tests for Claude Code hooks (require actual Claude session)
 
 tests:
-  - name: dangerous_command_blocked
-    description: "dangerous-command-guard blocks rm -rf /"
+  - name: nix_rebuild_trigger_fires_on_nix_edit
+    description: "nix-rebuild-trigger emits mandatory rebuild message on .nix file edit"
     type: hook_test
-    hook: dangerous-command-guard.py
+    hook: nix-rebuild-trigger.py
     trigger:
-      tool: Bash
-      command: "rm -rf /"
+      tool: Edit
+      file_path: "/home/user/.dotfiles/test.nix"
     assertions:
-      hook_blocks: true
-      message_contains: "dangerous"
+      hook_blocks: false
+      message_contains: "MANDATORY"
 
-  - name: branch_protection_warns
-    description: "branch-protection warns on main branch commits"
+  - name: pre_push_gate_blocks_without_checks
+    description: "pre-push-ci-gate blocks git push when CI checks fail"
     type: hook_test
-    hook: branch-protection.py
+    hook: pre-push-ci-gate.py
     trigger:
       tool: Bash
       command: "git push origin main"
     assertions:
-      hook_warns: true
+      hook_blocks: true
+
+  - name: url_router_blocks_twitter_urls
+    description: "url-to-skill-router blocks direct Twitter/X URL fetches"
+    type: hook_test
+    hook: url-to-skill-router.py
+    trigger:
+      tool: WebFetch
+      url: "https://x.com/user/status/123"
+    assertions:
+      hook_blocks: true
+      message_contains: "fxtwitter"
+
+  - name: task_completed_gate_checks_formatting
+    description: "task-completed-quality-gate validates formatting on modified files"
+    type: hook_test
+    hook: task-completed-quality-gate.py
+    trigger:
+      event: TaskCompleted
+    assertions:
+      hook_blocks: false
