@@ -9,68 +9,11 @@ let
   skillSetsBaseDirectory = "${homeDirectory}/.local/share/claude-skill-sets";
   personalSkillSetDirectory = "${skillSetsBaseDirectory}/personal";
 
-  externalSkillSets = {
-    aplicacoes = {
-      description = "Aplicações team operations";
-      skillName = "aplicacoes-atendimento-triage";
-      sourceRepositoryPath = "${homeDirectory}/repo/aplicacoes-atendimento-triage";
-    };
-    protocolo = {
-      description = "Protocolo Digital operations";
-      skillName = "protocolo-atendimento-triage";
-      sourceRepositoryPath = "${homeDirectory}/repo/protocolo-atendimento-triage";
-    };
-    triage = {
-      description = "Generic triage operations";
-      skillName = "atendimento-triage";
-      sourceRepositoryPath = "${homeDirectory}/repo/atendimento-triage";
-    };
-  };
-
-  generateSkillSetWrapperActivationCommands = lib.concatMapStringsSep "\n" (
-    name:
-    let
-      skillSet = externalSkillSets.${name};
-      skillSetDirectory = "${skillSetsBaseDirectory}/${name}";
-      skillsDiscoveryDirectory = "${skillSetDirectory}/.claude/skills";
-    in
-    ''
-      if [ -d "${skillSet.sourceRepositoryPath}" ]; then
-        mkdir -p "${skillsDiscoveryDirectory}"
-        ln -sfn "${skillSet.sourceRepositoryPath}" "${skillsDiscoveryDirectory}/${skillSet.skillName}"
-      else
-        rm -rf "${skillSetDirectory}"
-      fi
-    ''
-  ) (builtins.attrNames externalSkillSets);
-
-  cleanupOldAplicacoesFromGlobalSkills = ''
-    rm -rf "${homeDirectory}/.claude/skills/aplicacoes-atendimento-triage"
-  '';
-
-  cleanupOldPluginWrappers = ''
-    for dir in "${skillSetsBaseDirectory}"/*/; do
-      rm -rf "$dir/.claude-plugin" "$dir/skills"
-    done
-  '';
-
   defaultClaudeFishFunction = ''
     function claude --description "Claude Code with personal skills"
       command claude --add-dir ${personalSkillSetDirectory} $argv
     end
   '';
-
-  generateFishFunctionForSkillSet =
-    name:
-    let
-      skillSet = externalSkillSets.${name};
-      skillSetDirectory = "${skillSetsBaseDirectory}/${name}";
-    in
-    ''
-      function claude-${name} --description "${skillSet.description}"
-        command claude --add-dir ${skillSetDirectory} $argv
-      end
-    '';
 
   find = "${pkgs.findutils}/bin/find";
   mktemp = "${pkgs.coreutils}/bin/mktemp";
@@ -86,22 +29,30 @@ let
   workspaceFishFunction = ''
     function claude-workspace --description "Claude Code with workspace skills"
       set -l extend false
+      set -l from_dirs
       set -l remaining_args
+      set -l skip_next false
 
-      for arg in $argv
-        switch $arg
+      for i in (seq (count $argv))
+        if test "$skip_next" = true
+          set skip_next false
+          continue
+        end
+        switch $argv[$i]
           case --extend
             set extend true
+          case --from
+            set -l next (math $i + 1)
+            if test $next -le (count $argv)
+              set -a from_dirs $argv[$next]
+              set skip_next true
+            else
+              echo "error: --from requires a directory argument"
+              return 1
+            end
           case '*'
-            set -a remaining_args $arg
+            set -a remaining_args $argv[$i]
         end
-      end
-
-      set -l skill_files (${find} . -name "SKILL.md" -type f 2>/dev/null)
-
-      if test (count $skill_files) -eq 0
-        echo "No SKILL.md files found in current directory tree"
-        return 1
       end
 
       # Create isolated config dir that mirrors ~/.claude but replaces skills/
@@ -126,23 +77,47 @@ let
         echo '{}' > "$config_dir/.claude.json"
       end
 
-      # Symlink workspace skills
-      for skill_file in $skill_files
-        set -l skill_dir (${dirname} "$skill_file")
-        set -l skill_name (${basename} "$skill_dir")
-        ${ln} -sfn (${realpath} "$skill_dir") "$config_dir/skills/$skill_name"
+      set -l skill_count 0
+
+      if test (count $from_dirs) -gt 0
+        # --from mode: load each directory as a whole skill (by its root SKILL.md)
+        for dir in $from_dirs
+          set -l abs_dir (${realpath} "$dir" 2>/dev/null)
+          if not test -f "$abs_dir/SKILL.md"
+            echo "error: no SKILL.md found at root of $dir"
+            ${rm} -rf "$tmpdir"
+            return 1
+          end
+          set -l skill_name (${basename} "$abs_dir")
+          ${ln} -sfn "$abs_dir" "$config_dir/skills/$skill_name"
+          set skill_count (math $skill_count + 1)
+        end
+      else
+        # Default mode: scan cwd for SKILL.md files
+        set -l skill_files (${find} . -name "SKILL.md" -type f 2>/dev/null)
+
+        if test (count $skill_files) -eq 0
+          echo "No SKILL.md files found in current directory tree"
+          ${rm} -rf "$tmpdir"
+          return 1
+        end
+
+        for skill_file in $skill_files
+          set -l skill_dir (${dirname} "$skill_file")
+          set -l skill_name (${basename} "$skill_dir")
+          ${ln} -sfn (${realpath} "$skill_dir") "$config_dir/skills/$skill_name"
+          set skill_count (math $skill_count + 1)
+        end
       end
 
-      echo "Loaded "(count $skill_files)" workspace skill(s):"
-      for skill_file in $skill_files
-        set -l skill_name (${basename} (${dirname} "$skill_file"))
-        echo "  - $skill_name"
+      echo "Loaded $skill_count workspace skill(s):"
+      for skill in $config_dir/skills/*/
+        echo "  - "(${basename} "$skill")
       end
 
-      # With --extend, also add personal skills via --add-dir
+      # With --extend, merge base and personal skills
       set -l cmd_args
       if test "$extend" = true
-        # Copy base skills into the config dir too
         for skill in ${claudeConfigDir}/skills/*/
           set -l skill_name (${basename} "$skill")
           if not test -e "$config_dir/skills/$skill_name"
@@ -159,26 +134,11 @@ let
       return $exit_code
     end
   '';
-
-  allFishFunctionsForExternalSkillSets = lib.concatStringsSep "\n" (
-    [
-      defaultClaudeFishFunction
-      workspaceFishFunction
-    ]
-    ++ map generateFishFunctionForSkillSet (builtins.attrNames externalSkillSets)
-  );
 in
 {
-  xdg.configFile."fish/conf.d/claude-skill-sets.fish".text = allFishFunctionsForExternalSkillSets;
+  xdg.configFile."fish/conf.d/claude-skill-sets.fish".text = lib.concatStringsSep "\n" [
+    defaultClaudeFishFunction
+    workspaceFishFunction
+  ];
 
-  home.activation.createExternalSkillSetWrappers =
-    lib.hm.dag.entryAfter
-      [
-        "writeBoundary"
-      ]
-      ''
-        ${cleanupOldAplicacoesFromGlobalSkills}
-        ${cleanupOldPluginWrappers}
-        ${generateSkillSetWrapperActivationCommands}
-      '';
 }
