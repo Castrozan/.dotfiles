@@ -80,9 +80,13 @@ let
       set -l skill_count 0
 
       if test (count $from_dirs) -gt 0
-        # --from mode: load each directory as a whole skill (by its root SKILL.md)
         for dir in $from_dirs
-          set -l abs_dir (${realpath} "$dir" 2>/dev/null)
+          if test -z "$dir" -o ! -d "$dir"
+            echo "error: '$dir' is not a valid directory"
+            ${rm} -rf "$tmpdir"
+            return 1
+          end
+          set -l abs_dir (${realpath} "$dir")
           if not test -f "$abs_dir/SKILL.md"
             echo "error: no SKILL.md found at root of $dir"
             ${rm} -rf "$tmpdir"
@@ -93,7 +97,6 @@ let
           set skill_count (math $skill_count + 1)
         end
       else
-        # Default mode: scan cwd for SKILL.md files
         set -l skill_files (${find} . -name "SKILL.md" -type f 2>/dev/null)
 
         if test (count $skill_files) -eq 0
@@ -104,8 +107,9 @@ let
 
         for skill_file in $skill_files
           set -l skill_dir (${dirname} "$skill_file")
-          set -l skill_name (${basename} "$skill_dir")
-          ${ln} -sfn (${realpath} "$skill_dir") "$config_dir/skills/$skill_name"
+          set -l abs_skill_dir (${realpath} "$skill_dir")
+          set -l skill_name (${basename} "$abs_skill_dir")
+          ${ln} -sfn "$abs_skill_dir" "$config_dir/skills/$skill_name"
           set skill_count (math $skill_count + 1)
         end
       end
@@ -115,7 +119,6 @@ let
         echo "  - "(${basename} "$skill")
       end
 
-      # With --extend, merge base and personal skills
       set -l cmd_args
       if test "$extend" = true
         for skill in ${claudeConfigDir}/skills/*/

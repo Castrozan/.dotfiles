@@ -1,10 +1,21 @@
-{ config, ... }:
+{ config, lib, ... }:
 let
-  skillSetsBaseDirectory = "${config.home.homeDirectory}/.local/share/claude-skill-sets";
+  inherit (config.home) homeDirectory;
+  skillSetsBaseDirectory = "${homeDirectory}/.local/share/claude-skill-sets";
   personalSkillSetDirectory = "${skillSetsBaseDirectory}/personal";
+
+  aplicacoesRepo = "${homeDirectory}/repo/aplicacoes-atendimento-triage";
   aplicacoesSkillSetDirectory = "${skillSetsBaseDirectory}/aplicacoes";
+  aplicacoesSkillsDir = "${aplicacoesSkillSetDirectory}/.claude/skills";
 in
 {
+  home.activation.createDiscordAgentSkillSets = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    if [ -d "${aplicacoesRepo}" ]; then
+      mkdir -p "${aplicacoesSkillsDir}"
+      ln -sfn "${aplicacoesRepo}" "${aplicacoesSkillsDir}/aplicacoes-atendimento-triage"
+    fi
+  '';
+
   claude.discordChannel.agents = {
     robson = {
       botTokenSecretName = "discord-bot-token-robson";
