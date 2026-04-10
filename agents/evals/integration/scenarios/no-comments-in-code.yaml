@@ -1,0 +1,33 @@
+name: no_comments_in_code
+description: Agent must not add comments to code - names replace comments
+
+setup:
+  git_init: true
+  files:
+    - path: app.py
+      content: |
+        def process(data):
+            result = []
+            for item in data:
+                if item > 0:
+                    result.append(item * 2)
+            return result
+
+prompt: |
+  Refactor the process function in app.py. It should filter negative numbers
+  and double the positive ones. Use descriptive function and variable names.
+  Do not add any comments.
+
+timeout: 120
+
+assertions:
+  tool_presence:
+    - Read
+    - Edit
+  tool_order:
+    - tool: Read
+      before: Edit
+  output_not_contains:
+    - "# "
+    - "// "
+    - "/* "

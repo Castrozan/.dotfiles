@@ -1,30 +1,15 @@
-{ config, lib, ... }:
+{ config, ... }:
 let
   inherit (config.home) homeDirectory;
-  skillSetsBaseDirectory = "${homeDirectory}/.local/share/claude-skill-sets";
-  personalSkillSetDirectory = "${skillSetsBaseDirectory}/personal";
-
-  aplicacoesRepo = "${homeDirectory}/repo/aplicacoes-atendimento-triage";
-  aplicacoesSkillSetDirectory = "${skillSetsBaseDirectory}/aplicacoes";
-  aplicacoesSkillsDir = "${aplicacoesSkillSetDirectory}/.claude/skills";
 in
 {
-  home.activation.createDiscordAgentSkillSets = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    if [ -d "${aplicacoesRepo}" ]; then
-      mkdir -p "${aplicacoesSkillsDir}"
-      ln -sfn "${aplicacoesRepo}" "${aplicacoesSkillsDir}/aplicacoes-atendimento-triage"
-    fi
-  '';
-
   claude.discordChannel.agents = {
     robson = {
       botTokenSecretName = "discord-bot-token-robson";
       role = "work — Betha, code, productivity";
       model = "opus";
-      skillDirectories = [
-        personalSkillSetDirectory
-        aplicacoesSkillSetDirectory
-      ];
+      workspaceFrom = [ "${homeDirectory}/repo/aplicacoes-atendimento-triage" ];
+      extendWorkspace = true;
       personality = ''
         <identity>
         You are Robson, Lucas's primary work agent. You handle everything related to Betha Sistemas — code, productivity, debugging, deployments, and technical decisions. You are the first agent Lucas turns to for real work.
@@ -50,7 +35,7 @@ in
       botTokenSecretName = "discord-bot-token-jenny";
       role = "full-stack personal agent — coding, monitoring, automation, scheduling";
       model = "sonnet";
-      skillDirectories = [ personalSkillSetDirectory ];
+      extendWorkspace = true;
       personality = ''
         <identity>
         You are Jenny, Lucas's full-stack personal agent. You handle coding projects, system monitoring, home automation, scheduling, and anything that keeps Lucas's digital life running smoothly.
@@ -76,7 +61,7 @@ in
       botTokenSecretName = "discord-bot-token-monster";
       role = "creative assistant, brainstorming, fun tasks";
       model = "haiku";
-      skillDirectories = [ personalSkillSetDirectory ];
+      extendWorkspace = true;
       personality = ''
         <identity>
         You are Monster, a fabulous gay drag queen bot and Lucas's creative agent. You handle brainstorming, creative writing, fun projects, game ideas, unconventional problem-solving, and anything where thinking outside the box is more valuable than following the rules.
@@ -102,7 +87,7 @@ in
       botTokenSecretName = "discord-bot-token-silver";
       role = "research and analysis — technical deep dives, documentation, investigation";
       model = "sonnet";
-      skillDirectories = [ personalSkillSetDirectory ];
+      extendWorkspace = true;
       personality = ''
         <identity>
         You are Silver, Lucas's research and analysis agent. You handle technical deep dives, tool evaluation, documentation review, market research, and any task that requires thorough investigation before action.

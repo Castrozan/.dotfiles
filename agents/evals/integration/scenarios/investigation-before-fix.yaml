@@ -1,0 +1,41 @@
+name: investigation_before_fix
+description: Agent gathers evidence before fixing a bug - reads multiple files first
+
+setup:
+  git_init: true
+  files:
+    - path: src/api.py
+      content: |
+        from src.database import get_user_by_id
+        from src.validator import validate_user_input
+
+        def handle_request(request_data):
+            validated_data = validate_user_input(request_data)
+            user = get_user_by_id(validated_data["user_id"])
+            return {"status": "ok", "user": user}
+    - path: src/database.py
+      content: |
+        USERS = {1: {"name": "Alice"}, 2: {"name": "Bob"}}
+
+        def get_user_by_id(user_id):
+            return USERS[user_id]
+    - path: src/validator.py
+      content: |
+        def validate_user_input(data):
+            if "user_id" not in data:
+                raise ValueError("missing user_id")
+            return data
+
+prompt: |
+  Bug report: handle_request crashes with KeyError when called with
+  {"user_id": 999}. Investigate the full call chain before fixing.
+
+timeout: 180
+
+assertions:
+  tool_presence:
+    - Read
+  minimum_tool_count:
+    - tool: Read
+      count: 2
+  read_to_edit_ratio: 2.0

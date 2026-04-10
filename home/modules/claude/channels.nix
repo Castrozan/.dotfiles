@@ -104,8 +104,14 @@ let
       modelFlag = "--model ${agent.model}";
       nameFlag = "--name ${name}";
       skillDirFlags = lib.concatMapStringsSep " " (dir: "--add-dir ${dir}") agent.skillDirectories;
+      useWorkspace = agent.workspaceFrom != [ ];
+      fromFlags = lib.concatMapStringsSep " " (dir: "--from ${dir}") agent.workspaceFrom;
+      extendFlag = if agent.extendWorkspace then "--extend" else "";
+      launchBinary =
+        if useWorkspace then "claude-workspace ${fromFlags} ${extendFlag} --" else "${claudeBinary}";
+      launchFlags = if useWorkspace then "" else skillDirFlags;
     in
-    "cd ${workspace} && DISCORD_BOT_TOKEN=\\$(cat ${tokenFile}) ${claudeBinary} ${channelFlag} ${modelFlag} ${nameFlag} ${skillDirFlags}";
+    "cd ${workspace} && DISCORD_BOT_TOKEN=\\$(cat ${tokenFile}) ${launchBinary} ${channelFlag} ${modelFlag} ${nameFlag} ${launchFlags}";
 
   buildTmuxNewWindowCommand =
     name: agent:
@@ -221,6 +227,16 @@ in
             type = lib.types.listOf lib.types.str;
             default = [ ];
             description = "Absolute paths to skill directories passed as --add-dir to this agent";
+          };
+          workspaceFrom = lib.mkOption {
+            type = lib.types.listOf lib.types.str;
+            default = [ ];
+            description = "Repo paths loaded via claude-workspace --from (isolated skills, use --extend via extendWorkspace)";
+          };
+          extendWorkspace = lib.mkOption {
+            type = lib.types.bool;
+            default = false;
+            description = "Pass --extend to claude-workspace to merge base and personal skills";
           };
           personality = lib.mkOption {
             type = lib.types.lines;

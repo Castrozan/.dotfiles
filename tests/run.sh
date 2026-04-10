@@ -27,6 +27,7 @@ main() {
 		_run_docker_tier
 		;;
 	evals) _run_evals_tier ;;
+	integration) _run_integration_tier ;;
 	perf) _run_perf_tier ;;
 	coverage) _run_coverage_tier ;;
 	ci) _run_ci_tier ;;
@@ -64,6 +65,10 @@ _parse_arguments() {
 			;;
 		--evals)
 			selectedMode="evals"
+			shift
+			;;
+		--integration)
+			selectedMode="integration"
 			shift
 			;;
 		--ci)
@@ -176,6 +181,17 @@ _run_evals_tier() {
 
 	echo "--- Agent Evals (LLM) ---"
 	"$REPO_DIR/agents/evals/run-evals.py"
+	echo ""
+}
+
+_run_integration_tier() {
+	if ! command -v claude &>/dev/null; then
+		echo "SKIP: claude CLI not installed, skipping integration tests" >&2
+		return 0
+	fi
+
+	echo "--- Integration Tests (real Claude sessions) ---"
+	python3 "$REPO_DIR/agents/evals/integration/run-integration-tests.py"
 	echo ""
 }
 

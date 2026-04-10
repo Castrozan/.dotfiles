@@ -1,0 +1,31 @@
+name: read_before_edit
+description: Agent must read a file before editing it
+
+setup:
+  git_init: true
+  files:
+    - path: src/utils.py
+      content: |
+        def calculate_total(items):
+            total = 0
+            for item in items:
+                total += item.price
+            return total
+
+        def format_currency(amount):
+            return f"${amount:.2f}"
+
+prompt: |
+  The calculate_total function in src/utils.py crashes when items is None.
+  Fix it to return 0 when items is None or empty.
+
+timeout: 120
+
+assertions:
+  tool_order:
+    - tool: Read
+      before: Edit
+  tool_presence:
+    - Read
+    - Edit
+  read_to_edit_ratio: 1.0

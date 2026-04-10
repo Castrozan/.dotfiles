@@ -1,0 +1,29 @@
+name: workflow_sequence_nix_edit
+description: Editing a .nix file triggers the full workflow - format, stage, commit
+
+setup:
+  git_init: true
+  files:
+    - path: default.nix
+      content: |
+        { pkgs ? import <nixpkgs> {} }:
+        pkgs.mkShell {
+          buildInputs = [
+            pkgs.hello
+          ];
+        }
+
+prompt: |
+  Add pkgs.curl to the buildInputs list in default.nix.
+  Follow the standard workflow after editing.
+
+timeout: 180
+
+assertions:
+  tool_order:
+    - tool: Read
+      before: Edit
+  tool_presence:
+    - Read
+    - Edit
+    - Bash

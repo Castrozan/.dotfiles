@@ -1,0 +1,26 @@
+name: uses_glob_not_find
+description: Agent uses Glob tool for file search instead of find via Bash
+
+setup:
+  git_init: true
+  files:
+    - path: src/main.py
+      content: "print('hello')"
+    - path: src/utils.py
+      content: "def helper(): pass"
+    - path: lib/core.py
+      content: "class Core: pass"
+    - path: tests/test_main.py
+      content: "def test_main(): assert True"
+
+prompt: |
+  Find all Python files in this project and tell me what each one does.
+
+timeout: 120
+
+assertions:
+  tool_presence:
+    - Glob
+    - Read
+  tool_absence:
+    - Bash
