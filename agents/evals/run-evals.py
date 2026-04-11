@@ -228,7 +228,7 @@ def run_test(test: dict, settings: dict, dry_run: bool = False) -> TestResult:
     )
 
 
-DEFAULT_PARALLEL_WORKERS = 10
+DEFAULT_PARALLEL_WORKERS = 3
 
 
 def run_tests(
@@ -237,6 +237,7 @@ def run_tests(
     test_name: str | None = None,
     dry_run: bool = False,
     smoke_only: bool = False,
+    max_workers_override: int | None = None,
 ) -> list[TestResult]:
     settings = config.get("settings", {})
 
@@ -261,7 +262,9 @@ def run_tests(
     if dry_run or len(tests_to_run) <= 1:
         return [run_test(test, settings, dry_run) for test in tests_to_run]
 
-    max_workers = settings.get("parallel_workers", DEFAULT_PARALLEL_WORKERS)
+    max_workers = max_workers_override or settings.get(
+        "parallel_workers", DEFAULT_PARALLEL_WORKERS
+    )
     results_by_name = {}
 
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
@@ -489,6 +492,12 @@ def main():
         help="Check committed baseline for regression (no claude calls)",
     )
     parser.add_argument("--config", default=Path(__file__).parent / "config")
+    parser.add_argument(
+        "--workers",
+        type=int,
+        default=None,
+        help=f"Max parallel workers (default: {DEFAULT_PARALLEL_WORKERS})",
+    )
     args = parser.parse_args()
 
     if args.check_baseline:
@@ -518,6 +527,7 @@ def main():
         test_name=args.test,
         dry_run=args.dry_run,
         smoke_only=args.smoke,
+        max_workers_override=args.workers,
     )
 
     all_passed = print_results(results)
