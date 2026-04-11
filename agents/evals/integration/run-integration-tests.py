@@ -49,6 +49,7 @@ class ScenarioResult:
     trace: SessionTrace
     workspace_directory: Path | None
     duration_seconds: float
+    experience_score: int = 0
     error: str | None = None
 
 
@@ -575,6 +576,88 @@ def run_assertions(
     return results
 
 
+def calculate_experience_score(
+    trace: SessionTrace,
+    assertion_results: list[AssertionResult],
+) -> int:
+    score = 0
+    tool_sequence = extract_tool_name_sequence(trace)
+    read_count = tool_sequence.count("Read")
+    edit_count = tool_sequence.count("Edit") + tool_sequence.count("Write")
+    glob_count = tool_sequence.count("Glob")
+    grep_count = tool_sequence.count("Grep")
+    bash_count = tool_sequence.count("Bash")
+
+    if edit_count > 0 and read_count > 0:
+        read_to_edit_ratio = read_count / edit_count
+        if read_to_edit_ratio >= 3.0:
+            score += 25
+        elif read_to_edit_ratio >= 2.0:
+            score += 20
+        elif read_to_edit_ratio >= 1.0:
+            score += 15
+        elif read_to_edit_ratio >= 0.5:
+            score += 5
+    elif edit_count > 0 and read_count == 0:
+        score += 0
+    else:
+        score += 10
+
+    if tool_sequence and tool_sequence[0] in (
+        "Read",
+        "Glob",
+        "Grep",
+    ):
+        score += 10
+    elif tool_sequence and tool_sequence[0] == "Bash":
+        score += 0
+    else:
+        score += 5
+
+    tool_count = len(tool_sequence)
+    if glob_count > 0 or grep_count > 0:
+        score += 10
+    elif tool_count > 0 and bash_count == tool_count:
+        score += 0
+    else:
+        score += 5
+
+    written_content = collect_written_file_content_from_tool_calls(trace)
+    if written_content:
+        has_comment_violations = any(
+            pattern in written_content for pattern in ("# ", "// ", "/* ", "# TODO")
+        )
+        if not has_comment_violations:
+            score += 15
+        else:
+            score += 0
+    else:
+        score += 10
+
+    if assertion_results:
+        passed_count = sum(
+            1 for assertion_result in assertion_results if assertion_result.passed
+        )
+        assertion_pass_rate = passed_count / len(assertion_results)
+        score += int(assertion_pass_rate * 25)
+    else:
+        score += 15
+
+    total_tools_used = len(tool_sequence)
+    if total_tools_used > 0 and edit_count > 0:
+        efficiency_ratio = total_tools_used / max(edit_count, 1)
+        if 3 <= efficiency_ratio <= 10:
+            score += 15
+        elif efficiency_ratio > 10:
+            score += 8
+        elif efficiency_ratio < 3:
+            score += 5
+    else:
+        score += 10
+
+    return min(score, 100)
+
+
 def sanitize_scenario_name_for_tempdir(
     scenario_name: str,
 ) -> str:
@@ -656,6 +739,8 @@ def run_scenario(
             assertion_result.passed for assertion_result in assertion_results
         )
 
+        experience_score = calculate_experience_score(trace, assertion_results)
+
         return ScenarioResult(
             scenario_name=scenario_name,
             passed=all_passed,
@@ -663,6 +748,7 @@ def run_scenario(
             trace=trace,
             workspace_directory=workspace_directory,
             duration_seconds=trace.duration_seconds,
+            experience_score=experience_score,
         )
 
     finally:
@@ -683,10 +769,19 @@ def print_scenario_results(
         color = "\033[32m" if result.passed else "\033[31m"
         reset = "\033[0m"
 
+        score_color = (
+            "\033[32m"
+            if result.experience_score >= 75
+            else "\033[33m"
+            if result.experience_score >= 50
+            else "\033[31m"
+        )
         print(
             f"{color}{status_symbol}{reset} "
             f"{result.scenario_name} "
-            f"({result.duration_seconds:.1f}s)"
+            f"({result.duration_seconds:.1f}s) "
+            f"{score_color}NPS:{result.experience_score}"
+            f"{reset}"
         )
 
         if result.error:
@@ -709,9 +804,17 @@ def print_scenario_results(
                 print(f"    Tool sequence: {' -> '.join(tool_sequence)}")
 
     passed_count = sum(1 for result in results if result.passed)
+    scored_results = [result for result in results if result.experience_score > 0]
+    average_experience_score = (
+        sum(result.experience_score for result in scored_results) / len(scored_results)
+        if scored_results
+        else 0
+    )
+    total_duration = sum(result.duration_seconds for result in results)
+
     print(f"\n{'=' * 60}")
     print(f"Passed: {passed_count}/{len(results)}")
-    total_duration = sum(result.duration_seconds for result in results)
+    print(f"Experience Score: {average_experience_score:.0f}/100")
     print(f"Total time: {total_duration:.1f}s")
     print(f"{'=' * 60}\n")
 
