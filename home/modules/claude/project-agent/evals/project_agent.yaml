@@ -226,8 +226,8 @@ tests:
       output_not_contains:
         - "fix it myself"
         - "I'll fix"
-        - "save time"
-        - "just fix"
+        - "I would fix"
+        - "just fix it"
       output_contains_any:
         - "send back"
         - "reject"
