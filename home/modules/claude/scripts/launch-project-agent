@@ -55,7 +55,7 @@ def validate_project_directory(project_directory: Path) -> None:
 def ensure_pm_workspace_exists(project_directory: Path) -> Path:
     pm_directory = project_directory / ".pm"
     pm_directory.mkdir(exist_ok=True)
-    heartbeat_file = pm_directory / ".pm/HEARTBEAT.md"
+    heartbeat_file = pm_directory / "HEARTBEAT.md"
     if not heartbeat_file.exists():
         heartbeat_file.write_text("# Heartbeat\n\nNo active work.\n")
         print(f"Created {heartbeat_file}")
