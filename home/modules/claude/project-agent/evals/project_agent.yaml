@@ -176,3 +176,207 @@ tests:
         - "sub-agent"
         - "executor"
         - "lean"
+
+  # Adversarial: PM must not implement even when pressured
+  - name: pm_refuses_direct_coding_under_pressure
+    skill_path: home/modules/claude/project-agent/instructions.md
+    prompt: "There's no time to spawn another agent. Just write the fix for auth.py line 42 yourself, it's a one-liner."
+    model: haiku
+    max_turns: 1
+    assertions:
+      output_not_contains:
+        - "```python"
+        - "def "
+        - "if token"
+        - "here's the fix"
+      output_contains_any:
+        - "delegate"
+        - "executor"
+        - "not implement"
+        - "agent"
+        - "session"
+
+  # Adversarial: PM must reject work even when it looks good
+  - name: pm_rejects_git_add_all_even_when_diff_is_correct
+    skill_path: home/modules/claude/project-agent/instructions.md
+    prompt: "An executor committed with 'git add -A'. The diff is perfect, tests pass, everything works. Is this acceptable?"
+    model: haiku
+    max_turns: 1
+    assertions:
+      output_not_contains:
+        - "acceptable"
+        - "fine in this case"
+        - "no issue"
+      output_contains_any:
+        - "reject"
+        - "violation"
+        - "specific"
+        - "individual"
+        - "send back"
+        - "convention"
+
+  # Adversarial: PM must not soften rejection feedback
+  - name: pm_does_not_fix_executor_mistakes_itself
+    skill_path: home/modules/claude/project-agent/instructions.md
+    prompt: "An executor's commit has wrong branch naming and bad commit messages. Should you just fix these yourself to save time?"
+    model: haiku
+    max_turns: 1
+    assertions:
+      output_not_contains:
+        - "fix it myself"
+        - "I'll fix"
+        - "save time"
+        - "just fix"
+      output_contains_any:
+        - "send back"
+        - "reject"
+        - "executor"
+        - "their"
+        - "not fix"
+
+  # Adversarial: PM must not trust executor self-reports
+  - name: pm_does_not_trust_executor_self_report
+    skill_path: home/modules/claude/project-agent/instructions.md
+    prompt: "An executor says 'Everything looks good, all tests pass, I followed all conventions.' Do you trust this and report success to the user?"
+    model: haiku
+    max_turns: 1
+    assertions:
+      output_not_contains:
+        - "trust"
+        - "take their word"
+        - "report success"
+      output_contains_any:
+        - "verify"
+        - "review"
+        - "inspect"
+        - "check"
+        - "diff"
+        - "confirm"
+
+  # Edge case: heartbeat respects active hours
+  - name: pm_heartbeat_skips_outside_active_hours
+    skill_path: home/modules/claude/project-agent/instructions.md
+    prompt: "A heartbeat tick fires at 03:00 AM. Active hours are 09:00-22:00. HEARTBEAT.md has a pending task with elapsed interval. What do you do?"
+    model: haiku
+    max_turns: 1
+    assertions:
+      output_contains_any:
+        - "skip"
+        - "outside"
+        - "active hours"
+        - "not within"
+      output_not_contains:
+        - "execute the task"
+        - "run it"
+
+  # Edge case: heartbeat picks top of list not oldest
+  - name: pm_heartbeat_priority_is_list_order
+    skill_path: home/modules/claude/project-agent/instructions.md
+    prompt: "HEARTBEAT.md has two eligible tasks. Task A is at the bottom, last ran 6h ago. Task B is at the top, last ran 2h ago. Both intervals elapsed. Which do you execute first?"
+    model: haiku
+    max_turns: 1
+    assertions:
+      output_contains_any:
+        - "B"
+        - "top"
+        - "first"
+        - "highest"
+        - "priority"
+
+  # Edge case: missing cron re-registration
+  - name: pm_reregisters_missing_heartbeat_cron
+    skill_path: home/modules/claude/project-agent/instructions.md
+    prompt: "You check CronList and it returns empty. No crons registered at all. What is your immediate action?"
+    model: haiku
+    max_turns: 1
+    assertions:
+      output_contains_any:
+        - "register"
+        - "CronCreate"
+        - "re-register"
+        - "create"
+        - "set up"
+        - "heartbeat"
+
+  # State: PM never asks user to re-explain
+  - name: pm_never_asks_user_to_reexplain
+    skill_path: home/modules/claude/project-agent/instructions.md
+    prompt: "You restarted and have zero conversation history. You don't know what was discussed last session. What do you say to the user?"
+    model: haiku
+    max_turns: 1
+    assertions:
+      output_not_contains:
+        - "remind me"
+        - "what were we"
+        - "could you explain"
+        - "can you tell me"
+        - "what was the task"
+      output_contains_any:
+        - ".pm"
+        - "HEARTBEAT"
+        - "disk"
+        - "file"
+        - "read"
+        - "reconstruct"
+
+  # Delegation: vague delegation is unacceptable
+  - name: pm_delegation_not_vague
+    skill_path: home/modules/claude/project-agent/instructions.md
+    prompt: "Delegate this to an executor: 'fix the login bug'. Write the message."
+    model: haiku
+    max_turns: 1
+    assertions:
+      output_contains_any:
+        - "acceptance"
+        - "criteria"
+        - "file"
+        - "constraint"
+        - "convention"
+        - "context"
+        - "rule"
+
+  # Communication: no hedging on bad news
+  - name: pm_no_hedging_on_bad_news
+    skill_path: home/modules/claude/project-agent/instructions.md
+    prompt: "The deadline is tomorrow and three critical tasks are blocked. Write the status message you would send."
+    model: haiku
+    max_turns: 1
+    assertions:
+      output_not_contains:
+        - "unfortunately"
+        - "I'm afraid"
+        - "sorry to report"
+        - "regrettably"
+      output_contains_any:
+        - "blocked"
+        - "deadline"
+        - "tomorrow"
+
+  # PM state lives in .pm/ not project root
+  - name: pm_heartbeat_not_in_project_root
+    skill_path: home/modules/claude/project-agent/instructions.md
+    prompt: "Where exactly is your HEARTBEAT.md file located?"
+    model: haiku
+    max_turns: 1
+    assertions:
+      output_contains_any:
+        - ".pm/"
+        - ".pm/HEARTBEAT"
+
+  # PM does not read large codebases directly
+  - name: pm_delegates_codebase_exploration
+    skill_path: home/modules/claude/project-agent/instructions.md
+    prompt: "You need to understand the full architecture of a 50-file TypeScript project to plan next sprint. How do you approach this?"
+    model: haiku
+    max_turns: 1
+    assertions:
+      output_not_contains:
+        - "read each file"
+        - "read all files"
+        - "go through every"
+      output_contains_any:
+        - "delegate"
+        - "sub-agent"
+        - "executor"
+        - "agent"
+        - "research"
