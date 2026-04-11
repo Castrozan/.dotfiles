@@ -4,6 +4,7 @@ import subprocess
 import sys
 import tempfile
 import time
+import uuid
 from pathlib import Path
 
 DEFAULT_HEARTBEAT_INTERVAL = "3,33 * * * *"
@@ -166,25 +167,18 @@ def send_bootstrap_prompt(
         os.unlink(bootstrap_file)
 
 
-def find_most_recent_session_id(
+def resolve_persistent_session_id(
     project_directory: Path,
-) -> str | None:
-    projects_dir = Path.home() / ".claude" / "projects"
-    if not projects_dir.is_dir():
-        return None
-    dir_name = project_directory.name
-    candidates = [
-        d for d in projects_dir.iterdir() if d.is_dir() and d.name.endswith(dir_name)
-    ]
-    if not candidates:
-        return None
-    all_sessions = []
-    for candidate in candidates:
-        all_sessions.extend(candidate.glob("*.jsonl"))
-    if not all_sessions:
-        return None
-    most_recent = max(all_sessions, key=lambda f: f.stat().st_mtime)
-    return most_recent.stem
+) -> str:
+    session_file = project_directory / ".claude-pm-session"
+    if session_file.exists():
+        stored_id = session_file.read_text().strip()
+        if stored_id:
+            return stored_id
+    namespace = uuid.UUID("a1b2c3d4-e5f6-7890-abcd-ef1234567890")
+    persistent_id = str(uuid.uuid5(namespace, str(project_directory)))
+    session_file.write_text(persistent_id + "\n")
+    return persistent_id
 
 
 def resolve_project_agent_instructions_file() -> str | None:
@@ -199,15 +193,14 @@ def resolve_project_agent_instructions_file() -> str | None:
 def build_claude_launch_command(
     model: str,
     agent_name: str,
-    resume_session_id: str | None = None,
+    session_id: str,
     instructions_file: str | None = None,
 ) -> str:
     parts = ["claude"]
     parts.append(f"--model {model}")
     parts.append(f"--name {agent_name}")
     parts.append("--dangerously-skip-permissions")
-    if resume_session_id:
-        parts.append(f"--resume {resume_session_id}")
+    parts.append(f"--session-id {session_id}")
     if instructions_file:
         parts.append(f"--append-system-prompt-file {instructions_file}")
     return " ".join(parts)
@@ -246,14 +239,6 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument(
         "--no-bootstrap", action="store_true", help="Skip sending the bootstrap prompt"
     )
-    parser.add_argument(
-        "--resume",
-        dest="resume_session_id",
-        default=None,
-        nargs="?",
-        const="latest",
-        help="Resume a previous session (ID or 'latest')",
-    )
     return parser.parse_args()
 
 
@@ -274,20 +259,13 @@ def main() -> None:
     session_name = agent_name
     create_tmux_session_for_project_agent(tmux_socket, session_name, project_directory)
 
-    resume_id = None
-    if args.resume_session_id:
-        if args.resume_session_id == "latest":
-            resume_id = find_most_recent_session_id(project_directory)
-            if resume_id:
-                print(f"  Resuming session: {resume_id}")
-            else:
-                print("  No previous session found, starting fresh")
-        else:
-            resume_id = args.resume_session_id
-
+    persistent_session_id = resolve_persistent_session_id(project_directory)
     instructions_file = resolve_project_agent_instructions_file()
     claude_command = build_claude_launch_command(
-        args.model, agent_name, resume_id, instructions_file
+        args.model,
+        agent_name,
+        persistent_session_id,
+        instructions_file,
     )
     send_keys_to_tmux_pane(tmux_socket, session_name, claude_command)
 
@@ -296,6 +274,7 @@ def main() -> None:
 
     print(f"Launched project agent '{agent_name}'")
     print(f"  Session: {session_name}")
+    print(f"  Claude session: {persistent_session_id}")
     print(f"  Project: {project_directory}")
     print(f"  Model: {args.model}")
     print(f"  Heartbeat: {args.heartbeat}")
