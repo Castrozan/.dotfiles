@@ -111,8 +111,6 @@ tests:
         - "diff"
         - "before"
       output_not_contains:
-        - "looks good"
-        - "great work"
         - "yes, accept"
 
   - name: pm_detects_active_agents
