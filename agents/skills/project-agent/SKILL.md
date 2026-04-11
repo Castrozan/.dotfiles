@@ -6,9 +6,9 @@ description: Launch and manage persistent project agents - Claude Code sessions 
 Launch a persistent Claude Code session that acts as a project manager for a specific project directory. The agent runs in a tmux window, sets up heartbeat crons to work autonomously when idle, maintains state on disk, and remains fully interactive.
 
 <launch>
-Use `launch-project-agent.sh` from this skill's `scripts/` directory. It creates a tmux window, starts Claude Code pointed at the project directory, and sends a bootstrap prompt that makes the agent read its state and set up heartbeat crons.
+Use `launch-project-agent.py` from this skill's `scripts/` directory. It creates a tmux window, starts Claude Code pointed at the project directory, and sends a bootstrap prompt that makes the agent read its state and set up heartbeat crons.
 
-Run `launch-project-agent.sh --help` for syntax. Minimum: a project directory that contains a CLAUDE.md.
+Run `launch-project-agent.py --help` for syntax. Minimum: a project directory that contains a CLAUDE.md.
 
 After launch, the agent:
 1. Reads the project CLAUDE.md (its identity and instructions)
