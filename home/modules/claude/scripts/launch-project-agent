@@ -169,21 +169,22 @@ def send_bootstrap_prompt(
 def find_most_recent_session_id(
     project_directory: Path,
 ) -> str | None:
-    home = Path.home()
-    encoded_path = str(project_directory).replace("/", "-")
-    if encoded_path.startswith("-"):
-        encoded_path = encoded_path[1:]
-    sessions_dir = home / ".claude" / "projects" / encoded_path
-    if not sessions_dir.is_dir():
+    projects_dir = Path.home() / ".claude" / "projects"
+    if not projects_dir.is_dir():
         return None
-    session_files = sorted(
-        sessions_dir.glob("*.jsonl"),
-        key=lambda f: f.stat().st_mtime,
-        reverse=True,
-    )
-    if not session_files:
+    dir_name = project_directory.name
+    candidates = [
+        d for d in projects_dir.iterdir() if d.is_dir() and d.name.endswith(dir_name)
+    ]
+    if not candidates:
         return None
-    return session_files[0].stem
+    all_sessions = []
+    for candidate in candidates:
+        all_sessions.extend(candidate.glob("*.jsonl"))
+    if not all_sessions:
+        return None
+    most_recent = max(all_sessions, key=lambda f: f.stat().st_mtime)
+    return most_recent.stem
 
 
 def build_claude_launch_command(
