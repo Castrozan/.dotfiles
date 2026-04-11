@@ -1,5 +1,6 @@
 import argparse
 import os
+import shlex
 import subprocess
 import sys
 import tempfile
@@ -187,6 +188,11 @@ def resolve_project_agent_instructions_file() -> str | None:
     if not instructions_path:
         return None
     if not Path(instructions_path).is_file():
+        print(
+            f"Warning: PROJECT_AGENT_INSTRUCTIONS set but file not found:"
+            f" {instructions_path}",
+            file=sys.stderr,
+        )
         return None
     return instructions_path
 
@@ -198,12 +204,12 @@ def build_claude_launch_command(
     instructions_file: str | None = None,
 ) -> str:
     parts = ["claude"]
-    parts.append(f"--model {model}")
-    parts.append(f"--name {agent_name}")
+    parts.append(f"--model {shlex.quote(model)}")
+    parts.append(f"--name {shlex.quote(agent_name)}")
     parts.append("--dangerously-skip-permissions")
-    parts.append(f"--session-id {session_id}")
+    parts.append(f"--session-id {shlex.quote(session_id)}")
     if instructions_file:
-        parts.append(f"--append-system-prompt-file {instructions_file}")
+        parts.append(f"--append-system-prompt-file {shlex.quote(instructions_file)}")
     return " ".join(parts)
 
 
