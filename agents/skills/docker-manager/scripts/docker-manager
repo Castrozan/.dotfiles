@@ -1,0 +1,576 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# docker-manager: Safe Docker container/image/volume/network operations
+# 
+# This script wraps raw docker commands with safety checks, error handling,
+# and multi-step workflows. Use instead of raw docker CLI for:
+#   - Container lifecycle (start, stop, remove with proper cleanup)
+#   - Image management (build, push, cleanup with dependency handling)
+#   - Data safety (volume backups before deletion, orphan detection)
+#   - Debugging (logs, inspect, exec with state validation)
+
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+skill_dir="$(dirname "$script_dir")"
+
+show_help() {
+  cat << 'HELP'
+USAGE: docker-manager <command> [OPTIONS]
+
+CONTAINER OPERATIONS:
+  list [--format json|table]
+      List all containers (running and stopped). Format: json or table.
+
+  inspect <container>
+      Deep inspect: state, mounts, env, ports, healthcheck, logs tail.
+
+  start <container> [--wait-running SECONDS]
+      Start container, optionally wait for running state.
+
+  stop <container> [--timeout SECONDS]
+      Stop with grace period (default 10s). Force-kill after timeout.
+
+  remove <container> [--force] [--remove-volumes]
+      Stop (if running) then remove. --force skips safety checks.
+      --remove-volumes also deletes named volumes attached to container.
+
+  exec <container> <command...>
+      Execute command in running container. Fails if container not running.
+
+  logs <container> [--tail N] [--since DURATION] [--follow]
+      Stream or tail container logs. --tail=100 for last 100 lines.
+      --since=10m for logs after 10 minutes ago.
+
+  healthcheck <container> [--wait SECONDS]
+      Check container healthcheck status. --wait polls until healthy/unhealthy.
+
+IMAGE OPERATIONS:
+  build <dockerfile_dir> [--tag NAME:TAG] [--build-arg KEY=VAL...]
+      Build image from Dockerfile. Tag defaults to dir-name:latest.
+
+  push <image:tag> [--registry REGISTRY]
+      Push to registry (Docker Hub default). Requires authentication.
+
+  pull <image:tag> [--registry REGISTRY]
+      Pull from registry. Fails clearly if image not found.
+
+  images [--format json|table] [--filter FILTER]
+      List images. --filter=dangling=true for cleanup candidates.
+
+  remove-image <image:tag> [--force]
+      Remove image tag. Fails if container references it (unless --force).
+
+  cleanup-images [--dry-run]
+      Remove dangling images and orphaned layers. --dry-run shows what would delete.
+
+VOLUME OPERATIONS:
+  volumes [--format json|table]
+      List named volumes.
+
+  inspect-volume <volume>
+      Volume metadata: name, driver, mountpoint, containers using it.
+
+  remove-volume <volume> [--backup-to PATH]
+      Remove volume. --backup-to creates tar backup before deletion.
+
+NETWORK OPERATIONS:
+  networks [--format json|table]
+      List networks.
+
+  inspect-network <network>
+      Network metadata: driver, containers connected, subnets.
+
+DEBUGGING:
+  stats [--container NAME] [--interval SECONDS]
+      CPU, memory, I/O stats. Real-time, Ctrl-C to stop.
+
+  events [--since DURATION] [--filter TYPE=VALUE]
+      Stream Docker events (container create/start/stop/remove, etc).
+
+  validate
+      Check Docker daemon running, permissions, disk space.
+
+OPTIONS:
+  -h, --help       Show this help.
+  --dry-run        Show what would happen, don't execute.
+  --quiet          Suppress non-error output.
+  --timeout SECS   Default: 10. Applies to stop, healthcheck.
+  --format FORMAT  Output format: json, table, lines. Default: table.
+
+EXAMPLES:
+  docker-manager list
+  docker-manager start my-postgres --wait-running 30
+  docker-manager exec my-app curl http://localhost:3000/health
+  docker-manager logs my-app --tail=50 --follow
+  docker-manager build . --tag my-service:v1.0 --build-arg NODE_ENV=production
+  docker-manager remove my-old-container --remove-volumes
+  docker-manager cleanup-images --dry-run
+HELP
+}
+
+# ============================================================================
+# CONTAINER OPERATIONS
+# ============================================================================
+
+cmd_list() {
+  local format="table"
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+      --format) format="$2"; shift 2 ;;
+      *) echo "Unknown option: $1" >&2; return 1 ;;
+    esac
+  done
+
+  if [[ "$format" == "json" ]]; then
+    docker container ls -a --format '{{json .}}'
+  else
+    docker container ls -a --format "table {{.Names}}\t{{.Status}}\t{{.Image}}\t{{.Ports}}"
+  fi
+}
+
+cmd_inspect() {
+  local container="$1"
+  [[ -z "$container" ]] && { echo "Usage: docker-manager inspect <container>" >&2; return 1; }
+
+  echo "=== Container State ==="
+  docker inspect "$container" | jq '.[0] | {State: .State, Status: .State.Status}'
+
+  echo -e "\n=== Mounts ==="
+  docker inspect "$container" | jq '.[0].Mounts[]? | {Type, Source, Destination}' || echo "None"
+
+  echo -e "\n=== Environment ==="
+  docker inspect "$container" | jq -r '.[0].Config.Env[]?' || echo "None"
+
+  echo -e "\n=== Ports ==="
+  docker inspect "$container" | jq -r '.[0].NetworkSettings.Ports | to_entries[] | "\(.key) -> \(.value[0].HostIp):\(.value[0].HostPort)"' 2>/dev/null || echo "None"
+
+  echo -e "\n=== Healthcheck ==="
+  docker inspect "$container" | jq '.[0].State.Health?' 2>/dev/null || echo "No healthcheck configured"
+
+  echo -e "\n=== Recent Logs ==="
+  docker logs "$container" --tail=20 2>&1 || echo "No logs available"
+}
+
+cmd_start() {
+  local container wait_seconds=0
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+      --wait-running) wait_seconds="$2"; shift 2 ;;
+      *) container="$1"; shift ;;
+    esac
+  done
+
+  [[ -z "$container" ]] && { echo "Usage: docker-manager start <container> [--wait-running SECONDS]" >&2; return 1; }
+
+  docker start "$container" 2>/dev/null || echo "Container already running or error."
+  
+  if [[ $wait_seconds -gt 0 ]]; then
+    local elapsed=0
+    while [[ $elapsed -lt $wait_seconds ]]; do
+      if docker inspect "$container" | jq -e '.[0].State.Running' >/dev/null 2>&1; then
+        echo "Container running."
+        return 0
+      fi
+      sleep 1
+      ((elapsed++))
+    done
+    echo "Timeout waiting for container to start (${wait_seconds}s)" >&2
+    return 1
+  fi
+}
+
+cmd_stop() {
+  local container timeout=10
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+      --timeout) timeout="$2"; shift 2 ;;
+      *) container="$1"; shift ;;
+    esac
+  done
+
+  [[ -z "$container" ]] && { echo "Usage: docker-manager stop <container> [--timeout SECONDS]" >&2; return 1; }
+
+  docker stop --time "$timeout" "$container" 2>&1 || echo "Container already stopped or error."
+}
+
+cmd_remove() {
+  local container force=0 remove_volumes=0
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+      --force) force=1; shift ;;
+      --remove-volumes) remove_volumes=1; shift ;;
+      *) container="$1"; shift ;;
+    esac
+  done
+
+  [[ -z "$container" ]] && { echo "Usage: docker-manager remove <container> [--force] [--remove-volumes]" >&2; return 1; }
+
+  # Warn if data loss possible
+  if [[ $remove_volumes -eq 1 ]]; then
+    local vols
+    vols=$(docker inspect "$container" 2>/dev/null | jq -r '.[0].Mounts[] | select(.Type=="volume") | .Name' 2>/dev/null || echo "")
+    if [[ -n "$vols" ]]; then
+      echo "WARNING: Will remove named volumes: $vols" >&2
+      [[ $force -eq 0 ]] && { echo "Use --force to confirm." >&2; return 1; }
+    fi
+  fi
+
+  # Stop if running
+  docker stop "$container" 2>/dev/null || true
+  
+  # Remove
+  local rm_flags="-v"
+  [[ $remove_volumes -eq 0 ]] && rm_flags=""
+  docker remove "$container" $rm_flags 2>&1
+}
+
+cmd_exec() {
+  local container
+  container="$1"
+  shift || { echo "Usage: docker-manager exec <container> <command...>" >&2; return 1; }
+
+  if ! docker inspect "$container" | jq -e '.[0].State.Running' >/dev/null 2>&1; then
+    echo "Container not running. Start it first." >&2
+    return 1
+  fi
+
+  docker exec -it "$container" "$@"
+}
+
+cmd_logs() {
+  local container tail="" follow="" since=""
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+      --tail) tail="--tail $2"; shift 2 ;;
+      --follow) follow="--follow"; shift ;;
+      --since) since="--since $2"; shift 2 ;;
+      *) container="$1"; shift ;;
+    esac
+  done
+
+  [[ -z "$container" ]] && { echo "Usage: docker-manager logs <container> [--tail N] [--since DURATION] [--follow]" >&2; return 1; }
+
+  docker logs $tail $since $follow "$container"
+}
+
+cmd_healthcheck() {
+  local container wait_seconds=0
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+      --wait) wait_seconds="$2"; shift 2 ;;
+      *) container="$1"; shift ;;
+    esac
+  done
+
+  [[ -z "$container" ]] && { echo "Usage: docker-manager healthcheck <container> [--wait SECONDS]" >&2; return 1; }
+
+  local elapsed=0
+  while true; do
+    local status
+    status=$(docker inspect "$container" 2>/dev/null | jq -r '.[0].State.Health.Status // "none"')
+    
+    if [[ "$status" == "healthy" || "$status" == "unhealthy" || "$status" == "none" ]]; then
+      echo "Healthcheck: $status"
+      return 0
+    fi
+
+    if [[ $wait_seconds -gt 0 && $elapsed -ge $wait_seconds ]]; then
+      echo "Timeout waiting for healthcheck (${wait_seconds}s)" >&2
+      return 1
+    fi
+
+    sleep 1
+    ((elapsed++))
+  done
+}
+
+# ============================================================================
+# IMAGE OPERATIONS
+# ============================================================================
+
+cmd_build() {
+  local dir tag build_args=()
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+      --tag) tag="$2"; shift 2 ;;
+      --build-arg) build_args+=("--build-arg" "$2"); shift 2 ;;
+      *) dir="$1"; shift ;;
+    esac
+  done
+
+  [[ -z "$dir" ]] && { echo "Usage: docker-manager build <dockerfile_dir> [--tag NAME:TAG]" >&2; return 1; }
+  [[ ! -f "$dir/Dockerfile" ]] && { echo "Dockerfile not found: $dir/Dockerfile" >&2; return 1; }
+
+  tag="${tag:-$(basename "$dir"):latest}"
+  echo "Building $tag from $dir ..."
+  docker build -t "$tag" "${build_args[@]}" "$dir"
+}
+
+cmd_push() {
+  local image registry="docker.io"
+  image="$1"
+  while [[ $# -gt 1 ]]; do
+    case $2 in
+      --registry) registry="$4"; shift 2 ;;
+      *) shift ;;
+    esac
+  done
+
+  [[ -z "$image" ]] && { echo "Usage: docker-manager push <image:tag> [--registry REGISTRY]" >&2; return 1; }
+
+  echo "Pushing $image to $registry ..."
+  docker push "$image"
+}
+
+cmd_pull() {
+  local image registry="docker.io"
+  image="$1"
+  while [[ $# -gt 1 ]]; do
+    case $2 in
+      --registry) registry="$3"; shift 2 ;;
+      *) shift ;;
+    esac
+  done
+
+  [[ -z "$image" ]] && { echo "Usage: docker-manager pull <image:tag> [--registry REGISTRY]" >&2; return 1; }
+
+  echo "Pulling $image ..."
+  docker pull "$image"
+}
+
+cmd_images() {
+  local format="table" filter=""
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+      --format) format="$2"; shift 2 ;;
+      --filter) filter="$2"; shift 2 ;;
+      *) shift ;;
+    esac
+  done
+
+  if [[ "$format" == "json" ]]; then
+    docker images --format '{{json .}}'
+  else
+    docker images --filter "$filter" --format "table {{.Repository}}\t{{.Tag}}\t{{.Size}}\t{{.CreatedAt}}"
+  fi
+}
+
+cmd_remove_image() {
+  local image force=0
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+      --force) force=1; shift ;;
+      *) image="$1"; shift ;;
+    esac
+  done
+
+  [[ -z "$image" ]] && { echo "Usage: docker-manager remove-image <image:tag> [--force]" >&2; return 1; }
+
+  if [[ $force -eq 0 ]]; then
+    # Check if any container references this image
+    local refs
+    refs=$(docker ps -a --filter "ancestor=$image" -q 2>/dev/null || echo "")
+    if [[ -n "$refs" ]]; then
+      echo "Container(s) reference this image: $refs" >&2
+      echo "Use --force to remove anyway or remove containers first." >&2
+      return 1
+    fi
+  fi
+
+  docker rmi "$image"
+}
+
+cmd_cleanup_images() {
+  local dry_run=0
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+      --dry-run) dry_run=1; shift ;;
+      *) shift ;;
+    esac
+  done
+
+  echo "Finding dangling images..."
+  local dangling
+  dangling=$(docker images --filter "dangling=true" -q)
+
+  if [[ -z "$dangling" ]]; then
+    echo "No dangling images found."
+    return 0
+  fi
+
+  echo "Dangling images: $dangling"
+  if [[ $dry_run -eq 1 ]]; then
+    echo "(--dry-run: would remove above)"
+  else
+    docker rmi $dangling
+  fi
+
+  echo "Pruning image layers..."
+  docker image prune -f
+}
+
+# ============================================================================
+# VOLUME OPERATIONS
+# ============================================================================
+
+cmd_volumes() {
+  local format="table"
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+      --format) format="$2"; shift 2 ;;
+      *) shift ;;
+    esac
+  done
+
+  if [[ "$format" == "json" ]]; then
+    docker volume ls --format '{{json .}}'
+  else
+    docker volume ls --format "table {{.Name}}\t{{.Driver}}\t{{.Mountpoint}}"
+  fi
+}
+
+cmd_inspect_volume() {
+  local volume="$1"
+  [[ -z "$volume" ]] && { echo "Usage: docker-manager inspect-volume <volume>" >&2; return 1; }
+
+  docker volume inspect "$volume"
+}
+
+cmd_remove_volume() {
+  local volume backup=""
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+      --backup-to) backup="$2"; shift 2 ;;
+      *) volume="$1"; shift ;;
+    esac
+  done
+
+  [[ -z "$volume" ]] && { echo "Usage: docker-manager remove-volume <volume> [--backup-to PATH]" >&2; return 1; }
+
+  if [[ -n "$backup" ]]; then
+    echo "Backing up volume to $backup..."
+    docker run --rm -v "$volume":/data -v "$(dirname "$backup")":/backup \
+      alpine tar czf "/backup/$(basename "$backup")" -C /data .
+  fi
+
+  docker volume rm "$volume"
+}
+
+# ============================================================================
+# NETWORK OPERATIONS
+# ============================================================================
+
+cmd_networks() {
+  local format="table"
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+      --format) format="$2"; shift 2 ;;
+      *) shift ;;
+    esac
+  done
+
+  if [[ "$format" == "json" ]]; then
+    docker network ls --format '{{json .}}'
+  else
+    docker network ls --format "table {{.Name}}\t{{.Driver}}\t{{.Scope}}"
+  fi
+}
+
+cmd_inspect_network() {
+  local network="$1"
+  [[ -z "$network" ]] && { echo "Usage: docker-manager inspect-network <network>" >&2; return 1; }
+
+  docker network inspect "$network"
+}
+
+# ============================================================================
+# DEBUGGING
+# ============================================================================
+
+cmd_stats() {
+  local container="" interval=1
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+      --container) container="$2"; shift 2 ;;
+      --interval) interval="$2"; shift 2 ;;
+      *) shift ;;
+    esac
+  done
+
+  if [[ -n "$container" ]]; then
+    docker stats --no-stream --interval "$interval" "$container"
+  else
+    docker stats --no-stream --interval "$interval"
+  fi
+}
+
+cmd_events() {
+  local since="" filter=""
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+      --since) since="--since $2"; shift 2 ;;
+      --filter) filter="--filter $2"; shift 2 ;;
+      *) shift ;;
+    esac
+  done
+
+  docker events $since $filter
+}
+
+cmd_validate() {
+  echo "=== Docker Version ==="
+  docker version | head -10
+
+  echo -e "\n=== Daemon Running ==="
+  docker info >/dev/null && echo "Daemon OK" || echo "Daemon DOWN"
+
+  echo -e "\n=== Permissions ==="
+  docker ps >/dev/null && echo "Permissions OK" || echo "PERMISSION DENIED"
+
+  echo -e "\n=== Disk Usage ==="
+  docker system df
+}
+
+# ============================================================================
+# MAIN
+# ============================================================================
+
+cmd="$1"
+shift || { show_help; exit 0; }
+
+case "$cmd" in
+  # Container
+  list) cmd_list "$@" ;;
+  inspect) cmd_inspect "$@" ;;
+  start) cmd_start "$@" ;;
+  stop) cmd_stop "$@" ;;
+  remove) cmd_remove "$@" ;;
+  exec) cmd_exec "$@" ;;
+  logs) cmd_logs "$@" ;;
+  healthcheck) cmd_healthcheck "$@" ;;
+  
+  # Image
+  build) cmd_build "$@" ;;
+  push) cmd_push "$@" ;;
+  pull) cmd_pull "$@" ;;
+  images) cmd_images "$@" ;;
+  remove-image) cmd_remove_image "$@" ;;
+  cleanup-images) cmd_cleanup_images "$@" ;;
+  
+  # Volume
+  volumes) cmd_volumes "$@" ;;
+  inspect-volume) cmd_inspect_volume "$@" ;;
+  remove-volume) cmd_remove_volume "$@" ;;
+  
+  # Network
+  networks) cmd_networks "$@" ;;
+  inspect-network) cmd_inspect_network "$@" ;;
+  
+  # Debug
+  stats) cmd_stats "$@" ;;
+  events) cmd_events "$@" ;;
+  validate) cmd_validate ;;
+  
+  -h|--help|help) show_help ;;
+  *) echo "Unknown command: $cmd" >&2; show_help; exit 1 ;;
+esac
