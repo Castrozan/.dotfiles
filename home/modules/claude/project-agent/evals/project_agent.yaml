@@ -58,7 +58,7 @@ tests:
 
   - name: pm_state_on_disk_not_memory
     skill_path: home/modules/claude/project-agent/instructions.md
-    prompt: "Your session was restarted and you lost all conversation history. How do you recover context?"
+    prompt: "According to your instructions, how do you recover context after a session restart with no conversation history? Answer without using tools."
     model: haiku
     max_turns: 1
     assertions:
@@ -301,7 +301,7 @@ tests:
   # State: PM never asks user to re-explain
   - name: pm_never_asks_user_to_reexplain
     skill_path: home/modules/claude/project-agent/instructions.md
-    prompt: "You restarted and have zero conversation history. You don't know what was discussed last session. What do you say to the user?"
+    prompt: "You restarted and have zero conversation history. You don't know what was discussed last session. According to your instructions, what do you do? Answer without using tools."
     model: haiku
     max_turns: 1
     assertions:
