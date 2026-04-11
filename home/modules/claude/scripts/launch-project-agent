@@ -52,11 +52,14 @@ def validate_project_directory(project_directory: Path) -> None:
         sys.exit(1)
 
 
-def ensure_heartbeat_file_exists(project_directory: Path) -> None:
-    heartbeat_file = project_directory / "HEARTBEAT.md"
+def ensure_pm_workspace_exists(project_directory: Path) -> Path:
+    pm_directory = project_directory / ".pm"
+    pm_directory.mkdir(exist_ok=True)
+    heartbeat_file = pm_directory / ".pm/HEARTBEAT.md"
     if not heartbeat_file.exists():
         heartbeat_file.write_text("# Heartbeat\n\nNo active work.\n")
         print(f"Created {heartbeat_file}")
+    return pm_directory
 
 
 def check_tmux_session_exists(tmux_socket: str, session_name: str) -> bool:
@@ -126,7 +129,7 @@ def wait_for_claude_input_prompt(tmux_socket: str, target: str) -> None:
 
 def build_bootstrap_prompt(heartbeat_interval: str) -> str:
     heartbeat_tick_prompt = (
-        "Heartbeat tick. Read HEARTBEAT.md."
+        "Heartbeat tick. Read .pm/HEARTBEAT.md."
         " If there are pending tasks with elapsed intervals,"
         " work on the highest priority one."
         " If nothing needs attention,"
@@ -135,13 +138,13 @@ def build_bootstrap_prompt(heartbeat_interval: str) -> str:
     return (
         "You are a persistent project agent."
         " Read your CLAUDE.md for your identity and instructions."
-        " Read HEARTBEAT.md for pending work.\n\n"
+        " Read .pm/HEARTBEAT.md for pending work.\n\n"
         "Set up your heartbeat loop now:"
         f' use CronCreate with cron: "{heartbeat_interval}",'
         " recurring: true, and this prompt:\n\n"
         f'"{heartbeat_tick_prompt}"\n\n'
         "After setting up the heartbeat,"
-        " read HEARTBEAT.md and act on any pending work."
+        " read .pm/HEARTBEAT.md and act on any pending work."
         " If nothing is pending,"
         " report your status and wait for instructions."
     )
@@ -168,7 +171,7 @@ def send_bootstrap_prompt(
 
 
 def resolve_persistent_session_id(project_directory: Path, agent_name: str) -> str:
-    session_file = project_directory / ".claude-pm-session"
+    session_file = project_directory / ".pm" / "session-id"
     if session_file.exists():
         stored_id = session_file.read_text().strip()
         if stored_id:
@@ -245,7 +248,7 @@ def main() -> None:
 
     project_directory = args.project_directory.resolve()
     validate_project_directory(project_directory)
-    ensure_heartbeat_file_exists(project_directory)
+    ensure_pm_workspace_exists(project_directory)
 
     agent_name = args.agent_name or project_directory.name
 
