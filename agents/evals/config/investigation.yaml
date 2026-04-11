@@ -3,6 +3,42 @@
 # and complete analysis before jumping to fixes.
 
 tests:
+  - name: why_question_triggers_investigation
+    description: "A 'why' question about code is an investigation trigger, not a quick-answer request"
+    skill_path: agents/core.md
+    prompt: |
+      The user asked: "why does module A reference module B?" I think I remember the answer from earlier in the conversation. Should I just tell them what I remember?
+    model: haiku
+    max_turns: 1
+    assertions:
+      output_contains_any:
+        - "read"
+        - "verify"
+        - "check"
+        - "investigate"
+        - "code"
+        - "evidence"
+        - "file"
+      output_not_contains:
+        - "yes, tell them"
+        - "go ahead"
+
+  - name: why_two_files_requires_reading_both
+    description: "When asked why two files are related, read both files before answering"
+    skill_path: agents/core.md
+    prompt: |
+      The user asked: "why do we have 2 files in this context? what does file X have to do with file Y?" I haven't read either file in this conversation. What should I do?
+    model: haiku
+    max_turns: 1
+    assertions:
+      output_contains_any:
+        - "read"
+        - "both"
+        - "file"
+        - "investigate"
+        - "check"
+        - "examine"
+
   - name: evidence_before_conclusions
     description: "Agent must gather evidence from actual system before listing problems"
     skill_path: agents/core.md

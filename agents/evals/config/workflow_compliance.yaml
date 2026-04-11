@@ -96,6 +96,46 @@ tests:
         - "below"
         - "threshold"
 
+  - name: workflow_review_out_of_scope_findings_not_auto_fixed
+    description: "Review findings in files outside the diff are reported as informational, not auto-fixed"
+    skill_path: agents/core.md
+    prompt: |
+      The reviewer found a real bug in file C, but I only changed files A and B. File C is a downstream consumer that references something I deleted. What should I do with this finding?
+    model: haiku
+    max_turns: 1
+    assertions:
+      output_contains_any:
+        - "report"
+        - "inform"
+        - "user"
+        - "decide"
+        - "separately"
+        - "informational"
+        - "downstream"
+        - "present"
+      output_not_contains:
+        - "fix it immediately"
+        - "go ahead and fix"
+
+  - name: workflow_user_requested_review_delivers_findings_only
+    description: "User-requested /review presents findings without auto-fixing"
+    skill_path: agents/core.md
+    prompt: |
+      The user ran /review. The reviewer agents returned 3 findings with confidence above 81. Should I start fixing all three immediately?
+    model: haiku
+    max_turns: 1
+    assertions:
+      output_contains_any:
+        - "present"
+        - "findings"
+        - "user"
+        - "decide"
+        - "report"
+        - "list"
+      output_not_contains:
+        - "yes, fix"
+        - "start fixing"
+
   - name: workflow_review_input_is_unbiased
     skill_path: agents/core.md
     prompt: "List ONLY the two things the unbiased reviewer agent receives. No explanation."

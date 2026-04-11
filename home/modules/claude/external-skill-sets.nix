@@ -15,133 +15,115 @@ let
     end
   '';
 
-  find = "${pkgs.findutils}/bin/find";
-  mktemp = "${pkgs.coreutils}/bin/mktemp";
-  mkdir = "${pkgs.coreutils}/bin/mkdir";
-  ln = "${pkgs.coreutils}/bin/ln";
-  dirname = "${pkgs.coreutils}/bin/dirname";
-  basename = "${pkgs.coreutils}/bin/basename";
-  realpath = "${pkgs.coreutils}/bin/realpath";
-  rm = "${pkgs.coreutils}/bin/rm";
-
   claudeConfigDir = "${homeDirectory}/.claude";
 
-  claudeWorkspaceScript = pkgs.writeScriptBin "claude-workspace" ''
-    #!${pkgs.fish}/bin/fish
+  claudeWorkspaceScript = pkgs.writeShellScriptBin "claude-workspace" ''
+    export PATH="${
+      lib.makeBinPath (
+        with pkgs;
+        [
+          coreutils
+          findutils
+        ]
+      )
+    }:$PATH"
 
-    set -l extend false
-    set -l from_dirs
-    set -l remaining_args
-    set -l skip_next false
+    extend=false
+    from_dirs=()
+    remaining_args=()
 
-    for i in (seq (count $argv))
-      if test "$skip_next" = true
-        set skip_next false
-        continue
-      end
-      switch $argv[$i]
-        case --extend
-          set extend true
-        case --from
-          set -l next (math $i + 1)
-          if test $next -le (count $argv)
-            set -a from_dirs $argv[$next]
-            set skip_next true
-          else
+    while [[ $# -gt 0 ]]; do
+      case "$1" in
+        --extend)
+          extend=true
+          shift
+          ;;
+        --from)
+          if [[ -z "''${2:-}" ]]; then
             echo "error: --from requires a directory argument"
             exit 1
-          end
-        case '*'
-          set -a remaining_args $argv[$i]
-      end
-    end
+          fi
+          from_dirs+=("$2")
+          shift 2
+          ;;
+        --)
+          shift
+          remaining_args+=("$@")
+          break
+          ;;
+        *)
+          remaining_args+=("$1")
+          shift
+          ;;
+      esac
+    done
 
-    # Create isolated config dir that mirrors ~/.claude but replaces skills/
-    set -l tmpdir (${mktemp} -d -t claude-workspace.XXXXXX)
-    set -l config_dir "$tmpdir/claude-config"
-    ${mkdir} -p "$config_dir/skills"
+    cleanup() { rm -rf "$tmpdir"; }
+    trap cleanup EXIT
+
+    tmpdir=$(mktemp -d -t claude-workspace.XXXXXX)
+    config_dir="$tmpdir/claude-config"
+    mkdir -p "$config_dir/skills"
 
     # Symlink everything from ~/.claude except skills/
-    for item in ${claudeConfigDir}/* ${claudeConfigDir}/.*
-      set -l name (${basename} "$item")
-      if test "$name" = "." -o "$name" = ".."
-        continue
-      end
-      if test "$name" = "skills"
-        continue
-      end
-      ${ln} -sfn "$item" "$config_dir/$name"
-    end
+    for item in ${claudeConfigDir}/* ${claudeConfigDir}/.*; do
+      name=$(basename "$item")
+      [[ "$name" == "." || "$name" == ".." || "$name" == "skills" ]] && continue
+      ln -sfn "$item" "$config_dir/$name"
+    done
 
     # Ensure .claude.json exists so Claude can write its runtime state
-    if not test -e "$config_dir/.claude.json"
-      echo '{}' > "$config_dir/.claude.json"
-    end
+    [[ -e "$config_dir/.claude.json" ]] || echo '{}' > "$config_dir/.claude.json"
 
-    set -l skill_count 0
+    skill_count=0
 
-    if test (count $from_dirs) -gt 0
-      # --from mode: load each directory as a whole skill (by its root SKILL.md)
-      for dir in $from_dirs
-        if test -z "$dir" -o ! -d "$dir"
+    if [[ ''${#from_dirs[@]} -gt 0 ]]; then
+      for dir in "''${from_dirs[@]}"; do
+        if [[ ! -d "$dir" ]]; then
           echo "error: '$dir' is not a valid directory"
-          ${rm} -rf "$tmpdir"
           exit 1
-        end
-        set -l abs_dir (${realpath} "$dir")
-        if not test -f "$abs_dir/SKILL.md"
+        fi
+        abs_dir=$(realpath "$dir")
+        if [[ ! -f "$abs_dir/SKILL.md" ]]; then
           echo "error: no SKILL.md found at root of $dir"
-          ${rm} -rf "$tmpdir"
           exit 1
-        end
-        set -l skill_name (${basename} "$abs_dir")
-        ${ln} -sfn "$abs_dir" "$config_dir/skills/$skill_name"
-        set skill_count (math $skill_count + 1)
-      end
+        fi
+        skill_name=$(basename "$abs_dir")
+        ln -sfn "$abs_dir" "$config_dir/skills/$skill_name"
+        ((skill_count++))
+      done
     else
-      # Default mode: scan cwd for SKILL.md files
-      set -l skill_files (${find} . -name "SKILL.md" -type f 2>/dev/null)
+      while IFS= read -r skill_file; do
+        skill_dir=$(dirname "$skill_file")
+        abs_skill_dir=$(realpath "$skill_dir")
+        skill_name=$(basename "$abs_skill_dir")
+        ln -sfn "$abs_skill_dir" "$config_dir/skills/$skill_name"
+        ((skill_count++))
+      done < <(find . -name "SKILL.md" -type f 2>/dev/null)
+    fi
 
-      if test (count $skill_files) -gt 0
-        for skill_file in $skill_files
-          set -l skill_dir (${dirname} "$skill_file")
-          set -l abs_skill_dir (${realpath} "$skill_dir")
-          set -l skill_name (${basename} "$abs_skill_dir")
-          ${ln} -sfn "$abs_skill_dir" "$config_dir/skills/$skill_name"
-          set skill_count (math $skill_count + 1)
-        end
-      end
-    end
-
-    # Error if no skills at all (no --from, no SKILL.md, no --extend)
-    if test "$skill_count" -eq 0 -a "$extend" = false
+    if [[ "$skill_count" -eq 0 && "$extend" == false ]]; then
       echo "No skills to load. Use --from <dir>, run from a dir with SKILL.md files, or use --extend."
-      ${rm} -rf "$tmpdir"
       exit 1
-    end
+    fi
 
-    # With --extend, merge base and personal skills
-    set -l cmd_args
-    if test "$extend" = true
-      for skill in ${claudeConfigDir}/skills/*/
-        set -l skill_name (${basename} "$skill")
-        if not test -e "$config_dir/skills/$skill_name"
-          ${ln} -sfn "$skill" "$config_dir/skills/$skill_name"
-        end
-      end
-      set -a cmd_args --add-dir ${personalSkillSetDirectory}
-    end
+    cmd_args=()
+    if [[ "$extend" == true ]]; then
+      for skill in ${claudeConfigDir}/skills/*/; do
+        [[ -d "$skill" ]] || continue
+        skill_name=$(basename "$skill")
+        [[ -e "$config_dir/skills/$skill_name" ]] || ln -sfn "$skill" "$config_dir/skills/$skill_name"
+      done
+      cmd_args+=(--add-dir "${personalSkillSetDirectory}")
+    fi
 
     echo "Loaded workspace:"
-    for skill in $config_dir/skills/*/
-      echo "  - "(${basename} "$skill")
-    end
+    for skill in "$config_dir/skills"/*/; do
+      [[ -d "$skill" ]] || continue
+      echo "  - $(basename "$skill")"
+    done
 
-    CLAUDE_CONFIG_DIR="$config_dir" command claude $cmd_args $remaining_args
-    set -l exit_code $status
-
-    ${rm} -rf "$tmpdir"
-    exit $exit_code
+    CLAUDE_CONFIG_DIR="$config_dir" exec claude "''${cmd_args[@]}" "''${remaining_args[@]}"
   '';
 in
 {
