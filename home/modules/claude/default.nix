@@ -11,6 +11,6 @@
     ./private.nix
     ./workspace-trust.nix
     ./scripts.nix
-    ./project-agent/project-agents.nix
+    ./project-agents.nix
   ];
 }
