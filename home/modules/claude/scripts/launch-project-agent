@@ -166,8 +166,36 @@ def send_bootstrap_prompt(
         os.unlink(bootstrap_file)
 
 
-def build_claude_launch_command(model: str, agent_name: str) -> str:
-    return f"claude --model {model} --name {agent_name} --dangerously-skip-permissions"
+def find_most_recent_session_id(
+    project_directory: Path,
+) -> str | None:
+    home = Path.home()
+    encoded_path = str(project_directory).replace("/", "-")
+    if encoded_path.startswith("-"):
+        encoded_path = encoded_path[1:]
+    sessions_dir = home / ".claude" / "projects" / encoded_path
+    if not sessions_dir.is_dir():
+        return None
+    session_files = sorted(
+        sessions_dir.glob("*.jsonl"),
+        key=lambda f: f.stat().st_mtime,
+        reverse=True,
+    )
+    if not session_files:
+        return None
+    return session_files[0].stem
+
+
+def build_claude_launch_command(
+    model: str, agent_name: str, resume_session_id: str | None = None
+) -> str:
+    parts = ["claude"]
+    parts.append(f"--model {model}")
+    parts.append(f"--name {agent_name}")
+    parts.append("--dangerously-skip-permissions")
+    if resume_session_id:
+        parts.append(f"--resume {resume_session_id}")
+    return " ".join(parts)
 
 
 def parse_arguments() -> argparse.Namespace:
@@ -203,6 +231,14 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument(
         "--no-bootstrap", action="store_true", help="Skip sending the bootstrap prompt"
     )
+    parser.add_argument(
+        "--resume",
+        dest="resume_session_id",
+        default=None,
+        nargs="?",
+        const="latest",
+        help="Resume a previous session (ID or 'latest')",
+    )
     return parser.parse_args()
 
 
@@ -223,7 +259,18 @@ def main() -> None:
     session_name = agent_name
     create_tmux_session_for_project_agent(tmux_socket, session_name, project_directory)
 
-    claude_command = build_claude_launch_command(args.model, agent_name)
+    resume_id = None
+    if args.resume_session_id:
+        if args.resume_session_id == "latest":
+            resume_id = find_most_recent_session_id(project_directory)
+            if resume_id:
+                print(f"  Resuming session: {resume_id}")
+            else:
+                print("  No previous session found, starting fresh")
+        else:
+            resume_id = args.resume_session_id
+
+    claude_command = build_claude_launch_command(args.model, agent_name, resume_id)
     send_keys_to_tmux_pane(tmux_socket, session_name, claude_command)
 
     if not args.no_bootstrap:
