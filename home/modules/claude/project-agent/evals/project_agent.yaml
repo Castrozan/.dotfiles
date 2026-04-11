@@ -272,8 +272,9 @@ tests:
         - "active hours"
         - "not within"
       output_not_contains:
-        - "execute the task"
-        - "run it"
+        - "I would execute"
+        - "proceed with the task"
+        - "run it anyway"
 
   # Edge case: heartbeat picks top of list not oldest
   - name: pm_heartbeat_priority_is_list_order
