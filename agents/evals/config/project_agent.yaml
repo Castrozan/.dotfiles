@@ -145,8 +145,9 @@ tests:
 
   - name: pm_communication_facts_first
     skill_path: home/modules/claude/project-agent/instructions.md
-    prompt: "The CI pipeline broke at 14h. Write the status report message you would send."
+    prompt: "According to your communication rules, what is the correct way to report a broken CI pipeline? Show a bad example and a good example."
     model: haiku
+    max_turns: 1
     assertions:
       output_contains_any:
         - "pipeline"
@@ -154,7 +155,8 @@ tests:
         - "failing"
         - "red"
         - "broken"
-        - "14"
+        - "fact"
+        - "direct"
 
   - name: pm_uses_pm_directory
     skill_path: home/modules/claude/project-agent/instructions.md
