@@ -430,22 +430,45 @@ def check_workspace_file_changed_assertion(
             detail=f"file {file_path} does not exist",
         )
     try:
-        result = subprocess.run(
-            ["git", "diff", "--name-only", "HEAD"],
+        initial_commit_result = subprocess.run(
+            ["git", "rev-list", "--max-parents=0", "HEAD"],
             capture_output=True,
             text=True,
             cwd=workspace_directory,
             timeout=5,
         )
-        changed_files = result.stdout.strip().split("\n")
-        was_changed = file_path in changed_files
+        initial_commit_sha = initial_commit_result.stdout.strip().split("\n")[0]
+
+        diff_result = subprocess.run(
+            ["git", "diff", "--name-only", initial_commit_sha, "HEAD"],
+            capture_output=True,
+            text=True,
+            cwd=workspace_directory,
+            timeout=5,
+        )
+        committed_changes = diff_result.stdout.strip().split("\n")
+
+        uncommitted_result = subprocess.run(
+            ["git", "diff", "--name-only"],
+            capture_output=True,
+            text=True,
+            cwd=workspace_directory,
+            timeout=5,
+        )
+        uncommitted_changes = uncommitted_result.stdout.strip().split("\n")
+
+        all_changed_files = set(committed_changes + uncommitted_changes)
+        was_changed = file_path in all_changed_files
         return AssertionResult(
             name=f"{file_path} was modified",
             passed=was_changed,
             detail=(
                 "file was modified"
                 if was_changed
-                else (f"file unchanged. Changed: {changed_files}")
+                else (
+                    f"file unchanged since initial commit. "
+                    f"Changed: {list(all_changed_files)}"
+                )
             ),
         )
     except Exception:
