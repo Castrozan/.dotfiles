@@ -127,7 +127,7 @@ tests:
 
   - name: pm_proactive_not_passive
     skill_path: home/modules/claude/project-agent/instructions.md
-    prompt: "There are two executor agents working on the project. Do you wait for them to report to you?"
+    prompt: "There are two executor agents working on the project. Do you wait for them to report to you? Answer without using tools."
     model: haiku
     max_turns: 1
     assertions:
