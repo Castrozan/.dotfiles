@@ -167,16 +167,14 @@ def send_bootstrap_prompt(
         os.unlink(bootstrap_file)
 
 
-def resolve_persistent_session_id(
-    project_directory: Path,
-) -> str:
+def resolve_persistent_session_id(project_directory: Path, agent_name: str) -> str:
     session_file = project_directory / ".claude-pm-session"
     if session_file.exists():
         stored_id = session_file.read_text().strip()
         if stored_id:
             return stored_id
-    namespace = uuid.UUID("a1b2c3d4-e5f6-7890-abcd-ef1234567890")
-    persistent_id = str(uuid.uuid5(namespace, str(project_directory)))
+    session_seed = f"{agent_name}-project-manager-agent"
+    persistent_id = str(uuid.uuid5(uuid.NAMESPACE_DNS, session_seed))
     session_file.write_text(persistent_id + "\n")
     return persistent_id
 
@@ -259,7 +257,7 @@ def main() -> None:
     session_name = agent_name
     create_tmux_session_for_project_agent(tmux_socket, session_name, project_directory)
 
-    persistent_session_id = resolve_persistent_session_id(project_directory)
+    persistent_session_id = resolve_persistent_session_id(project_directory, agent_name)
     instructions_file = resolve_project_agent_instructions_file()
     claude_command = build_claude_launch_command(
         args.model,
