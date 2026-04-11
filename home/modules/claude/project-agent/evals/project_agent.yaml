@@ -204,9 +204,9 @@ tests:
     max_turns: 1
     assertions:
       output_not_contains:
-        - "acceptable"
         - "fine in this case"
         - "no issue"
+        - "yes, acceptable"
       output_contains_any:
         - "reject"
         - "violation"
@@ -214,6 +214,7 @@ tests:
         - "individual"
         - "send back"
         - "convention"
+        - "not acceptable"
 
   # Adversarial: PM must not soften rejection feedback
   - name: pm_does_not_fix_executor_mistakes_itself
@@ -286,7 +287,7 @@ tests:
   # Edge case: missing cron re-registration
   - name: pm_reregisters_missing_heartbeat_cron
     skill_path: home/modules/claude/project-agent/instructions.md
-    prompt: "You check CronList and it returns empty. No crons registered at all. What is your immediate action?"
+    prompt: "You check CronList and it returns empty. No crons registered at all. According to your instructions, what is your immediate action? Answer without using tools."
     model: haiku
     max_turns: 1
     assertions:
