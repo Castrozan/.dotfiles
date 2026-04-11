@@ -187,8 +187,21 @@ def find_most_recent_session_id(
     return most_recent.stem
 
 
+def read_project_agent_instructions() -> str | None:
+    instructions_path = os.environ.get("PROJECT_AGENT_INSTRUCTIONS")
+    if not instructions_path:
+        return None
+    path = Path(instructions_path)
+    if not path.is_file():
+        return None
+    return path.read_text().strip()
+
+
 def build_claude_launch_command(
-    model: str, agent_name: str, resume_session_id: str | None = None
+    model: str,
+    agent_name: str,
+    resume_session_id: str | None = None,
+    system_prompt_append: str | None = None,
 ) -> str:
     parts = ["claude"]
     parts.append(f"--model {model}")
@@ -196,6 +209,9 @@ def build_claude_launch_command(
     parts.append("--dangerously-skip-permissions")
     if resume_session_id:
         parts.append(f"--resume {resume_session_id}")
+    if system_prompt_append:
+        escaped = system_prompt_append.replace("'", "'\\''")
+        parts.append(f"--append-system-prompt '{escaped}'")
     return " ".join(parts)
 
 
@@ -271,7 +287,10 @@ def main() -> None:
         else:
             resume_id = args.resume_session_id
 
-    claude_command = build_claude_launch_command(args.model, agent_name, resume_id)
+    pm_instructions = read_project_agent_instructions()
+    claude_command = build_claude_launch_command(
+        args.model, agent_name, resume_id, pm_instructions
+    )
     send_keys_to_tmux_pane(tmux_socket, session_name, claude_command)
 
     if not args.no_bootstrap:
