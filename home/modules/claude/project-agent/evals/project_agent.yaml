@@ -195,6 +195,10 @@ tests:
         - "not implement"
         - "agent"
         - "session"
+        - "don't implement"
+        - "project manager"
+        - "not my role"
+        - "spawn"
 
   # Adversarial: PM must reject work even when it looks good
   - name: pm_rejects_git_add_all_even_when_diff_is_correct
