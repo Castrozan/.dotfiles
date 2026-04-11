@@ -31,7 +31,7 @@ CI_CHECKS = [
         "cmd": [
             "bash",
             "-c",
-            "find . -name '*.nix' -not -path './result*' -not -path './.worktrees/*'"
+            "find . -name '*.nix' -not -path './result*' -not -path './.worktrees/*' -not -path './.deep-work/*'"
             " -exec nix run nixpkgs#nixfmt-rfc-style -- --check {} +",
         ],
     },
