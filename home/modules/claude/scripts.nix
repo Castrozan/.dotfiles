@@ -1,12 +1,8 @@
 { pkgs, ... }:
 let
-  launchProjectAgentScript = pkgs.writers.writePython3Bin "launch-project-agent" {
-    flakeIgnore = [
-      "E265"
-      "E501"
-      "W503"
-    ];
-  } (builtins.readFile ./scripts/launch-project-agent);
+  launchProjectAgentScript = pkgs.writeShellScriptBin "launch-project-agent" ''
+    exec ${pkgs.python312}/bin/python3 ${./scripts/launch-project-agent} "$@"
+  '';
 in
 {
   home.packages = [
