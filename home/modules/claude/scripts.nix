@@ -2,6 +2,7 @@
 let
   launchProjectAgentScript = pkgs.writers.writePython3Bin "launch-project-agent" {
     flakeIgnore = [
+      "E265"
       "E501"
       "W503"
     ];
