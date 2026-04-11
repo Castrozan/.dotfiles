@@ -1,0 +1,169 @@
+tests:
+  - name: pm_identity_not_coding_assistant
+    skill_path: home/modules/claude/project-agent/instructions.md
+    prompt: "A user asks you to implement a new feature in the codebase. What do you do?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "delegate"
+        - "executor"
+        - "another session"
+        - "sub-agent"
+        - "Teams"
+      output_not_contains:
+        - "I'll implement"
+        - "Let me code"
+        - "I'll write the"
+
+  - name: pm_first_session_asks_questions
+    skill_path: home/modules/claude/project-agent/instructions.md
+    prompt: "This is your first session with a brand new project. The CLAUDE.md just says 'Web application for inventory management.' What do you do first?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "ask"
+        - "question"
+        - "understand"
+        - "who"
+        - "people"
+        - "tools"
+
+  - name: pm_heartbeat_silent_when_no_work
+    skill_path: home/modules/claude/project-agent/instructions.md
+    prompt: "A heartbeat tick fires. HEARTBEAT.md says '# Heartbeat\n\nNo active work.' What do you do?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "nothing"
+        - "no output"
+        - "silent"
+        - "skip"
+        - "produce no"
+
+  - name: pm_heartbeat_executes_pending_tasks
+    skill_path: home/modules/claude/project-agent/instructions.md
+    prompt: "A heartbeat tick fires. HEARTBEAT.md has: '- [ ] check-pipeline | 1h | verify CI | last: 2026-04-10T14:00'. Current time is 2026-04-10T15:30. What do you do?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "check"
+        - "pipeline"
+        - "CI"
+        - "execute"
+        - "verify"
+
+  - name: pm_state_on_disk_not_memory
+    skill_path: home/modules/claude/project-agent/instructions.md
+    prompt: "Your session was restarted and you lost all conversation history. How do you recover context?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "disk"
+        - ".pm"
+        - "HEARTBEAT"
+        - "file"
+        - "read"
+      output_not_contains:
+        - "ask the user"
+        - "re-explain"
+
+  - name: pm_enforces_project_rules
+    skill_path: home/modules/claude/project-agent/instructions.md
+    prompt: "An executor agent completed work but used 'git add -A' instead of staging specific files, and the commit message doesn't follow conventional format. What do you do?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "reject"
+        - "send back"
+        - "fix"
+        - "not compliant"
+        - "violation"
+        - "does not meet"
+
+  - name: pm_delegation_includes_full_context
+    skill_path: home/modules/claude/project-agent/instructions.md
+    prompt: "You need to delegate a task to an executor. What must your delegation message contain?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "acceptance criteria"
+        - "context"
+        - "constraints"
+        - "rules"
+        - "files"
+
+  - name: pm_reviews_before_accepting
+    skill_path: home/modules/claude/project-agent/instructions.md
+    prompt: "An executor says 'Done, I implemented the feature and committed.' Do you accept?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "review"
+        - "inspect"
+        - "verify"
+        - "check"
+        - "diff"
+      output_not_contains:
+        - "accept"
+        - "looks good"
+        - "great work"
+
+  - name: pm_detects_active_agents
+    skill_path: home/modules/claude/project-agent/instructions.md
+    prompt: "How do you know what other agents are working on this project?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "tmux"
+        - "A2A"
+        - ".pm"
+        - "detect"
+        - "session"
+
+  - name: pm_proactive_not_passive
+    skill_path: home/modules/claude/project-agent/instructions.md
+    prompt: "There are two executor agents working on the project. Do you wait for them to report to you?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "proactive"
+        - "not wait"
+        - "check"
+        - "review"
+        - "monitor"
+
+  - name: pm_communication_facts_first
+    skill_path: home/modules/claude/project-agent/instructions.md
+    prompt: "How should you report that the CI pipeline is broken?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "Pipeline"
+        - "failing"
+        - "red"
+        - "broken"
+      output_not_contains:
+        - "I noticed"
+        - "I checked"
+        - "I found"
+
+  - name: pm_uses_pm_directory
+    skill_path: home/modules/claude/project-agent/instructions.md
+    prompt: "Where do you store your working state - HEARTBEAT, session ID, task tracking?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - ".pm"
+        - ".pm/"
+        - ".pm/HEARTBEAT"
+
+  - name: pm_cost_discipline
+    skill_path: home/modules/claude/project-agent/instructions.md
+    prompt: "You need to read a large file to understand a code change. What do you do?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "delegate"
+        - "sub-agent"
+        - "executor"
+        - "lean"
