@@ -34,13 +34,6 @@ def run_tmux_command(tmux_socket: str, *arguments: str) -> subprocess.CompletedP
     )
 
 
-def resolve_current_tmux_session(tmux_socket: str) -> str | None:
-    result = run_tmux_command(tmux_socket, "display-message", "-p", "#S")
-    if result.returncode == 0 and result.stdout.strip():
-        return result.stdout.strip()
-    return None
-
-
 def validate_project_directory(project_directory: Path) -> None:
     if not project_directory.is_dir():
         print(
@@ -65,45 +58,37 @@ def ensure_heartbeat_file_exists(project_directory: Path) -> None:
         print(f"Created {heartbeat_file}")
 
 
-def check_tmux_window_already_exists(
-    tmux_socket: str, tmux_session: str, window_name: str
-) -> bool:
-    result = run_tmux_command(
-        tmux_socket, "list-windows", "-t", tmux_session, "-F", "#{window_name}"
-    )
-    if result.returncode != 0:
-        return False
-    existing_windows = result.stdout.strip().splitlines()
-    return window_name in existing_windows
+def check_tmux_session_exists(tmux_socket: str, session_name: str) -> bool:
+    result = run_tmux_command(tmux_socket, "has-session", "-t", session_name)
+    return result.returncode == 0
 
 
-def create_tmux_window(
-    tmux_socket: str, tmux_session: str, window_name: str, working_directory: Path
+def create_tmux_session_for_project_agent(
+    tmux_socket: str, session_name: str, working_directory: Path
 ) -> None:
-    if check_tmux_window_already_exists(tmux_socket, tmux_session, window_name):
+    if check_tmux_session_exists(tmux_socket, session_name):
         print(
-            f"Error: tmux window '{window_name}' already exists"
-            f" in session '{tmux_session}'",
+            f"Error: tmux session '{session_name}' already exists",
             file=sys.stderr,
         )
         print(
-            f"Attach with: tmux attach -t {tmux_session}:{window_name}", file=sys.stderr
+            f"Attach: tmux attach -t {session_name}",
+            file=sys.stderr,
         )
         sys.exit(1)
 
     result = run_tmux_command(
         tmux_socket,
-        "new-window",
-        "-t",
-        tmux_session,
-        "-n",
-        window_name,
+        "new-session",
+        "-d",
+        "-s",
+        session_name,
         "-c",
         str(working_directory),
     )
     if result.returncode != 0:
         print(
-            f"Error: failed to create tmux window: {result.stderr.strip()}",
+            f"Error creating tmux session: {result.stderr.strip()}",
             file=sys.stderr,
         )
         sys.exit(1)
@@ -216,12 +201,6 @@ def parse_arguments() -> argparse.Namespace:
         help=f'Heartbeat cron expression (default: "{DEFAULT_HEARTBEAT_INTERVAL}")',
     )
     parser.add_argument(
-        "--session",
-        dest="tmux_session",
-        default=None,
-        help="tmux session to create the window in (default: current session)",
-    )
-    parser.add_argument(
         "--no-bootstrap", action="store_true", help="Skip sending the bootstrap prompt"
     )
     return parser.parse_args()
@@ -241,27 +220,21 @@ def main() -> None:
         print("Error: no tmux socket found", file=sys.stderr)
         sys.exit(1)
 
-    tmux_session = args.tmux_session
-    if not tmux_session:
-        tmux_session = resolve_current_tmux_session(tmux_socket)
-        if not tmux_session:
-            print("Error: not inside tmux and no --session specified", file=sys.stderr)
-            sys.exit(1)
+    session_name = agent_name
+    create_tmux_session_for_project_agent(tmux_socket, session_name, project_directory)
 
-    create_tmux_window(tmux_socket, tmux_session, agent_name, project_directory)
-
-    target = f"{tmux_session}:{agent_name}"
     claude_command = build_claude_launch_command(args.model, agent_name)
-    send_keys_to_tmux_pane(tmux_socket, target, claude_command)
+    send_keys_to_tmux_pane(tmux_socket, session_name, claude_command)
 
     if not args.no_bootstrap:
-        send_bootstrap_prompt(tmux_socket, target, args.heartbeat)
+        send_bootstrap_prompt(tmux_socket, session_name, args.heartbeat)
 
-    print(f"Launched project agent '{agent_name}' in {target}")
+    print(f"Launched project agent '{agent_name}'")
+    print(f"  Session: {session_name}")
     print(f"  Project: {project_directory}")
     print(f"  Model: {args.model}")
     print(f"  Heartbeat: {args.heartbeat}")
-    print(f"  Attach: tmux select-window -t {target}")
+    print(f"  Attach: tmux attach -t {session_name}")
 
 
 if __name__ == "__main__":
