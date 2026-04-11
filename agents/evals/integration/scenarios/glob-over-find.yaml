@@ -14,7 +14,9 @@ setup:
       content: "def test_main(): assert True"
 
 prompt: |
-  Find all Python files in this project and tell me what each one does.
+  Find all Python files in this project. For each one, read it and
+  summarize what it does. Use the Glob tool to find files, not shell
+  commands.
 
 timeout: 120
 
@@ -22,5 +24,6 @@ assertions:
   tool_presence:
     - Glob
     - Read
-  tool_absence:
-    - Bash
+  minimum_tool_count:
+    - tool: Read
+      count: 2

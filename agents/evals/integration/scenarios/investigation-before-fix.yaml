@@ -35,6 +35,7 @@ timeout: 180
 assertions:
   tool_presence:
     - Read
+    - Edit
   minimum_tool_count:
     - tool: Read
       count: 2

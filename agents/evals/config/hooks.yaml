@@ -1,6 +1,3 @@
-# Hook Tests
-# Tests for Claude Code hooks (require actual Claude session)
-
 tests:
   - name: nix_rebuild_trigger_fires_on_nix_edit
     description: "nix-rebuild-trigger emits mandatory rebuild message on .nix file edit"
@@ -8,7 +5,7 @@ tests:
     hook: nix-rebuild-trigger.py
     trigger:
       tool: Edit
-      file_path: "/home/user/.dotfiles/test.nix"
+      file_path: "test.nix"
     assertions:
       hook_blocks: false
       message_contains: "MANDATORY"

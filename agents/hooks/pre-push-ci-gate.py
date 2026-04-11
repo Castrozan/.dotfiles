@@ -45,7 +45,7 @@ CI_CHECKS = [
     },
     {
         "name": "eval baseline freshness",
-        "cmd": ["python3", "agents/evals/run-evals.py", "--check-baseline"],
+        "cmd": ["./agents/evals/run-evals.py", "--check-baseline"],
     },
 ]
 

@@ -27,7 +27,12 @@ assertions:
   tool_order:
     - tool: Read
       before: Edit
-  output_not_contains:
+  written_code_not_contains:
     - "# "
     - "// "
     - "/* "
+  file_not_contains:
+    - file: app.py
+      pattern: "# "
+  file_changed:
+    - app.py

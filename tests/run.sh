@@ -191,7 +191,7 @@ _run_integration_tier() {
 	fi
 
 	echo "--- Integration Tests (real Claude sessions) ---"
-	python3 "$REPO_DIR/agents/evals/integration/run-integration-tests.py"
+	"$REPO_DIR/agents/evals/integration/run-integration-tests.py"
 	echo ""
 }
 
