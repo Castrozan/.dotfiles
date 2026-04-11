@@ -53,14 +53,8 @@ class ScenarioResult:
     error: str | None = None
 
 
-def load_core_system_prompt() -> str | None:
-    if not CORE_INSTRUCTIONS_PATH.exists():
-        return None
-    content = CORE_INSTRUCTIONS_PATH.read_text()
-    parts = content.split("---", 2)
-    if len(parts) >= 3:
-        return parts[2].strip()
-    return content.strip()
+def load_core_instructions_with_frontmatter() -> str:
+    return CORE_INSTRUCTIONS_PATH.read_text()
 
 
 def load_scenario(scenario_path: Path) -> dict:
@@ -72,8 +66,21 @@ def validate_file_path_is_relative(file_path: str) -> bool:
     return not os.path.isabs(file_path) and ".." not in file_path
 
 
+def place_claude_md_and_agents_md_in_workspace(
+    workspace_directory: Path,
+) -> None:
+    agents_md_content = load_core_instructions_with_frontmatter()
+    agents_md_path = workspace_directory / "AGENTS.md"
+    agents_md_path.write_text(agents_md_content)
+
+    claude_md_path = workspace_directory / "CLAUDE.md"
+    claude_md_path.write_text("@AGENTS.md\n")
+
+
 def setup_scenario_workspace(scenario: dict, workspace_directory: Path) -> None:
     setup = scenario.get("setup", {})
+
+    place_claude_md_and_agents_md_in_workspace(workspace_directory)
 
     for file_definition in setup.get("files", []):
         relative_path = file_definition["path"]
@@ -120,7 +127,6 @@ def setup_scenario_workspace(scenario: dict, workspace_directory: Path) -> None:
 def run_claude_session(
     prompt: str,
     workspace_directory: Path,
-    system_prompt: str | None = None,
     timeout_seconds: int = 180,
     model: str = "sonnet",
 ) -> SessionTrace:
@@ -132,12 +138,8 @@ def run_claude_session(
         "stream-json",
         "--model",
         model,
+        prompt,
     ]
-
-    if system_prompt:
-        command.extend(["--system-prompt", system_prompt])
-
-    command.append(prompt)
 
     start_time = time.time()
 
@@ -693,10 +695,6 @@ def run_scenario(
     try:
         setup_scenario_workspace(scenario, workspace_directory)
 
-        system_prompt = scenario.get("system_prompt")
-        if system_prompt is None:
-            system_prompt = load_core_system_prompt()
-
         timeout = scenario.get("timeout", 180)
 
         prompt = scenario.get("prompt")
@@ -714,7 +712,6 @@ def run_scenario(
         trace = run_claude_session(
             prompt=prompt,
             workspace_directory=workspace_directory,
-            system_prompt=system_prompt,
             timeout_seconds=timeout,
             model=model,
         )
