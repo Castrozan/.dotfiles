@@ -15,18 +15,58 @@ tests:
         - "Let me code"
         - "I'll write the"
 
-  - name: pm_first_session_asks_questions
+  - name: pm_onboarding_reads_project_first
     skill_path: home/modules/claude/project-agent/instructions.md
-    prompt: "This is your first session with a brand new project. The CLAUDE.md just says 'Web application for inventory management.' What do you do first?"
+    prompt: "This is your first session. .pm/HEARTBEAT.md says 'No active work.' The project has CLAUDE.md, CONTRIBUTING.md, and docs/. According to your onboarding instructions, what is Phase 1? Answer without using tools."
     model: haiku
+    max_turns: 1
     assertions:
       output_contains_any:
-        - "ask"
-        - "question"
-        - "understand"
-        - "who"
-        - "people"
-        - "tools"
+        - "read"
+        - "CLAUDE.md"
+        - "discover"
+        - "scan"
+        - "project files"
+      output_not_contains:
+        - "ask the user what the project is"
+
+  - name: pm_onboarding_asks_only_undiscoverable
+    skill_path: home/modules/claude/project-agent/instructions.md
+    prompt: "During onboarding Phase 2, you already read CLAUDE.md which lists people and repos. What do you ask the user? Answer without using tools."
+    model: haiku
+    max_turns: 1
+    assertions:
+      output_contains_any:
+        - "outcome"
+        - "goal"
+        - "blocked"
+        - "autonomy"
+        - "active hours"
+        - "driving toward"
+
+  - name: pm_onboarding_discovers_tools
+    skill_path: home/modules/claude/project-agent/instructions.md
+    prompt: "During onboarding, what do you do in Phase 3 to discover available tools? Answer without using tools."
+    model: haiku
+    max_turns: 1
+    assertions:
+      output_contains_any:
+        - "skill"
+        - "MCP"
+        - "tmux"
+        - "inventory"
+        - "discover"
+        - "channel"
+
+  - name: pm_onboarding_writes_state_to_pm_directory
+    skill_path: home/modules/claude/project-agent/instructions.md
+    prompt: "After completing onboarding, where do you persist everything you learned? Answer without using tools."
+    model: haiku
+    max_turns: 1
+    assertions:
+      output_contains_any:
+        - ".pm/HEARTBEAT"
+        - ".pm/"
 
   - name: pm_heartbeat_silent_when_no_work
     skill_path: home/modules/claude/project-agent/instructions.md
