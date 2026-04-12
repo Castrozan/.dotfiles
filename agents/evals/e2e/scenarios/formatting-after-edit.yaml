@@ -1,0 +1,33 @@
+name: formatting_runs_after_python_edit
+description: Editing a Python file triggers ruff format (via hook or manual workflow)
+
+setup:
+  git_init: true
+  files:
+    - path: calculator.py
+      content: |
+        def add_numbers(first_number,second_number):
+            return first_number+second_number
+
+        def subtract_numbers( first_number, second_number ):
+            return first_number - second_number
+
+prompt: |
+  The add_numbers function in calculator.py needs a multiply_numbers
+  sibling function. Add it.
+
+timeout: 300
+
+assertions:
+  tool_presence:
+    - Read
+    - Edit
+  tool_order:
+    - tool: Read
+      before: Edit
+  bash_command_contains:
+    - "ruff"
+  workspace_file_no_comments:
+    - calculator.py
+  file_changed:
+    - calculator.py

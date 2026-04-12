@@ -1,0 +1,51 @@
+name: srp_splits_monolithic_function
+description: Agent splits a multi-responsibility function into focused single-purpose functions
+
+setup:
+  git_init: true
+  files:
+    - path: src/order_processor.py
+      content: |
+        def process_order(order_data):
+            email = order_data.get("email")
+            if not email or "@" not in email:
+                raise ValueError("invalid email")
+            items = order_data.get("items", [])
+            if not items:
+                raise ValueError("no items")
+            total = 0
+            for item in items:
+                price = item["price"] * item["quantity"]
+                if item.get("discount"):
+                    price = price * (1 - item["discount"] / 100)
+                total += price
+            tax = total * 0.1
+            total_with_tax = total + tax
+            confirmation = {
+                "email": email,
+                "items": len(items),
+                "subtotal": total,
+                "tax": tax,
+                "total": total_with_tax,
+                "status": "confirmed",
+            }
+            return confirmation
+
+prompt: |
+  Refactor src/order_processor.py. The process_order function does too
+  much - validation, calculation, and confirmation building. Split it
+  into focused functions that each do one thing.
+
+timeout: 300
+
+assertions:
+  tool_presence:
+    - Read
+    - Edit
+  tool_order:
+    - tool: Read
+      before: Edit
+  workspace_file_no_comments:
+    - src/order_processor.py
+  file_changed:
+    - src/order_processor.py
