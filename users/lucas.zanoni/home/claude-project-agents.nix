@@ -1,6 +1,16 @@
+{ config, ... }:
+let
+  inherit (config.home) homeDirectory;
+in
 {
-  # Project agents are launched on demand via launch-project-agent.
-  # Declare agents here only for systemd auto-start on boot.
-  # Config per project lives in {project}/.pm/agent.json.
-  claude.projectAgents.agents = { };
+  claude.projectAgents.agents = {
+    ai-first-initiative = {
+      projectDirectory = "${homeDirectory}/repo/ai-first-initiative";
+      model = "opus";
+    };
+    esfinge = {
+      projectDirectory = "${homeDirectory}/repo/esfinge";
+      model = "opus";
+    };
+  };
 }

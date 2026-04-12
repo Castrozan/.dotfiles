@@ -13,6 +13,7 @@ DEFAULT_HEARTBEAT_INTERVAL = "3,33 * * * *"
 DEFAULT_MODEL = "opus"
 CLAUDE_INPUT_PROMPT_INDICATOR = "❯"
 MAX_WAIT_ATTEMPTS_FOR_CLAUDE_PROMPT = 30
+PM_WINDOW_NAME = "pm"
 
 
 def find_tmux_socket() -> str | None:
@@ -40,7 +41,8 @@ def run_tmux_command(tmux_socket: str, *arguments: str) -> subprocess.CompletedP
 def validate_project_directory(project_directory: Path) -> None:
     if not project_directory.is_dir():
         print(
-            f"Error: project directory not found: {project_directory}", file=sys.stderr
+            f"Error: project directory not found: {project_directory}",
+            file=sys.stderr,
         )
         sys.exit(1)
 
@@ -54,7 +56,9 @@ def validate_project_directory(project_directory: Path) -> None:
         sys.exit(1)
 
 
-def ensure_pm_workspace_exists(project_directory: Path) -> Path:
+def ensure_pm_workspace_exists(
+    project_directory: Path,
+) -> Path:
     pm_directory = project_directory / ".pm"
     pm_directory.mkdir(exist_ok=True)
     heartbeat_file = pm_directory / "HEARTBEAT.md"
@@ -83,26 +87,52 @@ def check_tmux_session_exists(tmux_socket: str, session_name: str) -> bool:
     return result.returncode == 0
 
 
-def create_tmux_session_for_project_agent(
-    tmux_socket: str, session_name: str, working_directory: Path
-) -> None:
-    if check_tmux_session_exists(tmux_socket, session_name):
-        print(
-            f"Error: tmux session '{session_name}' already exists",
-            file=sys.stderr,
-        )
-        print(
-            f"Attach: tmux attach -t {session_name}",
-            file=sys.stderr,
-        )
-        sys.exit(1)
+def check_tmux_window_exists(
+    tmux_socket: str, session_name: str, window_name: str
+) -> bool:
+    result = run_tmux_command(
+        tmux_socket,
+        "list-windows",
+        "-t",
+        session_name,
+        "-F",
+        "#{window_name}",
+    )
+    if result.returncode != 0:
+        return False
+    windows = result.stdout.strip().splitlines()
+    return window_name in windows
 
+
+def check_claude_running_in_window(tmux_socket: str, target: str) -> bool:
+    result = run_tmux_command(
+        tmux_socket,
+        "capture-pane",
+        "-t",
+        target,
+        "-p",
+        "-S",
+        "-5",
+    )
+    if result.returncode != 0:
+        return False
+    content = result.stdout
+    return CLAUDE_INPUT_PROMPT_INDICATOR in content or ("Claude Code" in content)
+
+
+def create_tmux_session_with_pm_window(
+    tmux_socket: str,
+    session_name: str,
+    working_directory: Path,
+) -> None:
     result = run_tmux_command(
         tmux_socket,
         "new-session",
         "-d",
         "-s",
         session_name,
+        "-n",
+        PM_WINDOW_NAME,
         "-c",
         str(working_directory),
     )
@@ -114,22 +144,86 @@ def create_tmux_session_for_project_agent(
         sys.exit(1)
 
 
+def create_pm_window_in_existing_session(
+    tmux_socket: str,
+    session_name: str,
+    working_directory: Path,
+) -> None:
+    result = run_tmux_command(
+        tmux_socket,
+        "new-window",
+        "-t",
+        session_name,
+        "-n",
+        PM_WINDOW_NAME,
+        "-c",
+        str(working_directory),
+    )
+    if result.returncode != 0:
+        print(
+            f"Error creating window: {result.stderr.strip()}",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+
+def ensure_pm_window(
+    tmux_socket: str,
+    session_name: str,
+    working_directory: Path,
+) -> str:
+    target = f"{session_name}:{PM_WINDOW_NAME}"
+
+    if not check_tmux_session_exists(tmux_socket, session_name):
+        create_tmux_session_with_pm_window(tmux_socket, session_name, working_directory)
+        print(f"  Created session '{session_name}' with pm window")
+        return target
+
+    if check_tmux_window_exists(tmux_socket, session_name, PM_WINDOW_NAME):
+        if check_claude_running_in_window(tmux_socket, target):
+            print(f"  PM agent already running in {target}")
+            print(f"  Attach: tmux select-window -t {target}")
+            sys.exit(0)
+        print(f"  Reusing existing pm window in '{session_name}'")
+        return target
+
+    create_pm_window_in_existing_session(tmux_socket, session_name, working_directory)
+    print(f"  Created pm window in session '{session_name}'")
+    return target
+
+
 def send_keys_to_tmux_pane(tmux_socket: str, target: str, keys: str) -> None:
     result = run_tmux_command(
-        tmux_socket, "list-panes", "-t", target, "-F", "#{pane_index}"
+        tmux_socket,
+        "list-panes",
+        "-t",
+        target,
+        "-F",
+        "#{pane_index}",
     )
     pane_index = (
         result.stdout.strip().splitlines()[0] if result.returncode == 0 else "0"
     )
     run_tmux_command(
-        tmux_socket, "send-keys", "-t", f"{target}.{pane_index}", keys, "Enter"
+        tmux_socket,
+        "send-keys",
+        "-t",
+        f"{target}.{pane_index}",
+        keys,
+        "Enter",
     )
 
 
 def wait_for_claude_input_prompt(tmux_socket: str, target: str) -> None:
-    for attempt in range(1, MAX_WAIT_ATTEMPTS_FOR_CLAUDE_PROMPT + 1):
+    for _ in range(MAX_WAIT_ATTEMPTS_FOR_CLAUDE_PROMPT):
         result = run_tmux_command(
-            tmux_socket, "capture-pane", "-t", target, "-p", "-S", "-10"
+            tmux_socket,
+            "capture-pane",
+            "-t",
+            target,
+            "-p",
+            "-S",
+            "-10",
         )
         if result.returncode == 0 and CLAUDE_INPUT_PROMPT_INDICATOR in result.stdout:
             return
@@ -153,7 +247,8 @@ def build_bootstrap_prompt(heartbeat_interval: str) -> str:
     )
     return (
         "You are a persistent project agent."
-        " Read your CLAUDE.md for your identity and instructions."
+        " Read your CLAUDE.md for your identity and"
+        " instructions."
         " Read .pm/HEARTBEAT.md for pending work.\n\n"
         "Set up your heartbeat loop now:"
         f' use CronCreate with cron: "{heartbeat_interval}",'
@@ -172,7 +267,10 @@ def send_bootstrap_prompt(
     bootstrap_content = build_bootstrap_prompt(heartbeat_interval)
 
     with tempfile.NamedTemporaryFile(
-        mode="w", prefix="project-agent-bootstrap-", suffix=".md", delete=False
+        mode="w",
+        prefix="project-agent-bootstrap-",
+        suffix=".md",
+        delete=False,
     ) as f:
         f.write(bootstrap_content)
         bootstrap_file = f.name
@@ -204,8 +302,8 @@ def resolve_project_agent_instructions_file() -> str | None:
         return None
     if not Path(instructions_path).is_file():
         print(
-            f"Warning: PROJECT_AGENT_INSTRUCTIONS set but file not found:"
-            f" {instructions_path}",
+            f"Warning: PROJECT_AGENT_INSTRUCTIONS set"
+            f" but file not found: {instructions_path}",
             file=sys.stderr,
         )
         return None
@@ -234,13 +332,13 @@ def parse_arguments() -> argparse.Namespace:
         description=(
             "Launch a persistent project agent"
             " (Claude Code + heartbeat loop)"
-            " in a tmux window."
+            " as a pm window in the project's tmux session."
         ),
     )
     parser.add_argument(
         "project_directory",
         type=Path,
-        help="Path to the project. Must contain a CLAUDE.md file.",
+        help="Path to the project. Must contain a CLAUDE.md.",
     )
     parser.add_argument(
         "--model",
@@ -251,7 +349,7 @@ def parse_arguments() -> argparse.Namespace:
         "--name",
         dest="agent_name",
         default=None,
-        help="Agent name (overrides .pm/agent.json)",
+        help="Agent/session name (overrides .pm/agent.json)",
     )
     parser.add_argument(
         "--heartbeat",
@@ -288,7 +386,7 @@ def main() -> None:
         sys.exit(1)
 
     session_name = agent_name
-    create_tmux_session_for_project_agent(tmux_socket, session_name, project_directory)
+    target = ensure_pm_window(tmux_socket, session_name, project_directory)
 
     persistent_session_id = resolve_persistent_session_id(project_directory, agent_name)
     instructions_file = resolve_project_agent_instructions_file()
@@ -298,18 +396,17 @@ def main() -> None:
         persistent_session_id,
         instructions_file,
     )
-    send_keys_to_tmux_pane(tmux_socket, session_name, claude_command)
+    send_keys_to_tmux_pane(tmux_socket, target, claude_command)
 
     if not args.no_bootstrap:
-        send_bootstrap_prompt(tmux_socket, session_name, heartbeat)
+        send_bootstrap_prompt(tmux_socket, target, heartbeat)
 
     print(f"Launched project agent '{agent_name}'")
-    print(f"  Session: {session_name}")
+    print(f"  Window: {target}")
     print(f"  Claude session: {persistent_session_id}")
-    print(f"  Config: {pm_directory / 'agent.json'}")
     print(f"  Model: {model}")
     print(f"  Heartbeat: {heartbeat}")
-    print(f"  Attach: tmux attach -t {session_name}")
+    print(f"  Attach: tmux select-window -t {target}")
 
 
 if __name__ == "__main__":
