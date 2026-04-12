@@ -34,6 +34,12 @@ TOOL_NAME_NORMALIZATION = {
     "ToolSearch": "ToolSearch",
 }
 
+COLLAPSED_READ_PATTERN = re.compile(r"^\s*(?:Read|Reading) \d+ file")
+COLLAPSED_SEARCH_PATTERN = re.compile(r"^\s*Searched for \d+ pattern")
+COLLAPSED_LISTED_PATTERN = re.compile(
+    r"^\s*(?:Read|Reading) \d+ file|[Ll]isted \d+ director"
+)
+
 ACTIVE_TEST_SESSIONS: list[str] = []
 ACTIVE_TMUX_SOCKET: str = ""
 
@@ -163,19 +169,70 @@ def launch_claude_in_tmux_session(
     )
 
 
+def dismiss_workspace_trust_dialog_if_present(
+    socket_path: str,
+    tmux_target: str,
+) -> None:
+    for _ in range(15):
+        result = run_tmux_command(
+            socket_path,
+            [
+                "capture-pane",
+                "-t",
+                tmux_target,
+                "-p",
+                "-S",
+                "-20",
+            ],
+        )
+        captured_text = result.stdout
+        if "trust this folder" in captured_text.lower():
+            run_tmux_command(
+                socket_path,
+                [
+                    "send-keys",
+                    "-t",
+                    tmux_target,
+                    "Enter",
+                ],
+            )
+            time.sleep(2)
+            return
+        if "\u276f" in captured_text and "trust" not in captured_text.lower():
+            return
+        time.sleep(1)
+
+
 def wait_for_claude_input_prompt_indicator(
     socket_path: str,
     tmux_target: str,
-    max_attempts: int = 30,
+    max_attempts: int = 45,
     interval_seconds: float = 1.0,
 ) -> bool:
-    for _ in range(max_attempts):
+    for attempt in range(max_attempts):
+        if attempt == 5:
+            dismiss_workspace_trust_dialog_if_present(socket_path, tmux_target)
+
         result = run_tmux_command(
             socket_path,
-            ["capture-pane", "-t", tmux_target, "-p", "-S", "-10"],
+            [
+                "capture-pane",
+                "-t",
+                tmux_target,
+                "-p",
+                "-S",
+                "-15",
+            ],
         )
-        if "\u276f" in result.stdout:
+        captured_text = result.stdout
+
+        if "trust" in captured_text.lower():
+            dismiss_workspace_trust_dialog_if_present(socket_path, tmux_target)
+            continue
+
+        if "\u276f" in captured_text:
             return True
+
         time.sleep(interval_seconds)
     return False
 
@@ -185,53 +242,68 @@ def send_prompt_to_claude_session(
     tmux_target: str,
     prompt_text: str,
 ) -> None:
-    if "\n" in prompt_text or len(prompt_text) > 200:
-        prompt_tempfile = tempfile.NamedTemporaryFile(
-            mode="w",
-            suffix=".md",
-            delete=False,
-            prefix="e2e-prompt-",
-        )
-        prompt_tempfile.write(prompt_text)
-        prompt_tempfile.close()
-        run_tmux_command(
-            socket_path,
-            ["load-buffer", prompt_tempfile.name],
-        )
-        run_tmux_command(
-            socket_path,
-            ["paste-buffer", "-t", tmux_target],
-        )
-        run_tmux_command(
-            socket_path,
-            ["send-keys", "-t", tmux_target, "Enter"],
-        )
-        os.unlink(prompt_tempfile.name)
-    else:
-        run_tmux_command(
-            socket_path,
-            ["send-keys", "-t", tmux_target, prompt_text, "Enter"],
-        )
+    collapsed_prompt = " ".join(prompt_text.strip().split())
+    run_tmux_command(
+        socket_path,
+        [
+            "send-keys",
+            "-t",
+            tmux_target,
+            collapsed_prompt,
+            "Enter",
+        ],
+    )
+
+
+def capture_last_lines(
+    socket_path: str,
+    tmux_target: str,
+    line_count: int = 20,
+) -> str:
+    result = run_tmux_command(
+        socket_path,
+        [
+            "capture-pane",
+            "-t",
+            tmux_target,
+            "-p",
+            "-S",
+            f"-{line_count}",
+        ],
+    )
+    return result.stdout
 
 
 def wait_for_response_completion(
     socket_path: str,
     tmux_target: str,
+    prompt_text: str,
     timeout_seconds: int = 300,
-    poll_interval_seconds: float = 2.0,
+    poll_interval_seconds: float = 3.0,
 ) -> bool:
-    time.sleep(3)
+    prompt_words = prompt_text.strip().split()[:4]
+    prompt_fragment = " ".join(prompt_words)
 
-    elapsed = 3.0
+    elapsed = 0.0
+    while elapsed < 15.0:
+        time.sleep(1.0)
+        elapsed += 1.0
+        captured = capture_last_lines(socket_path, tmux_target, 30)
+        if prompt_fragment in captured:
+            break
+
+    time.sleep(5)
+    elapsed += 5.0
+
     while elapsed < timeout_seconds:
-        result = run_tmux_command(
-            socket_path,
-            ["capture-pane", "-t", tmux_target, "-p", "-S", "-5"],
-        )
-        if "\u276f" in result.stdout:
-            return True
         time.sleep(poll_interval_seconds)
         elapsed += poll_interval_seconds
+        captured = capture_last_lines(socket_path, tmux_target, 10)
+        lines = captured.strip().split("\n")
+        for line in lines:
+            stripped = line.strip()
+            if stripped == "\u276f" or stripped.startswith("\u276f "):
+                return True
     return False
 
 
@@ -312,6 +384,28 @@ def parse_tool_calls_from_terminal_output(
                 TerminalToolCallEvent(
                     tool_name=normalized_tool_name,
                     tool_arguments_text=tool_arguments,
+                    position_in_output=line_index,
+                )
+            )
+            continue
+
+        without_bullet = stripped_line.lstrip("\u25cf\u2b24 ")
+
+        if COLLAPSED_READ_PATTERN.match(without_bullet):
+            tool_calls.append(
+                TerminalToolCallEvent(
+                    tool_name="Read",
+                    tool_arguments_text=without_bullet,
+                    position_in_output=line_index,
+                )
+            )
+            continue
+
+        if COLLAPSED_SEARCH_PATTERN.match(without_bullet):
+            tool_calls.append(
+                TerminalToolCallEvent(
+                    tool_name="Grep",
+                    tool_arguments_text=without_bullet,
                     position_in_output=line_index,
                 )
             )
@@ -845,6 +939,7 @@ def run_e2e_scenario(
             completed = wait_for_response_completion(
                 socket_path,
                 tmux_target,
+                prompt_text=prompt_text,
                 timeout_seconds=timeout,
             )
             if not completed:
