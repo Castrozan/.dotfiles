@@ -75,7 +75,10 @@ def load_config(config_path: Path) -> dict:
     if config_path.is_dir():
         return load_config_from_dir(config_path)
     with open(config_path) as f:
-        return yaml.safe_load(f)
+        data = yaml.safe_load(f)
+    if isinstance(data.get("tests"), list):
+        data["tests"] = {config_path.stem: data["tests"]}
+    return data
 
 
 def load_config_from_dir(config_dir: Path) -> dict:

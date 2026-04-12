@@ -1,0 +1,36 @@
+name: workflow_full_edit_sequence
+description: Full workflow after editing - format, specific staging, commit
+
+setup:
+  git_init: true
+  files:
+    - path: src/greeter.py
+      content: |
+        def greet_user_by_name(name):
+            return f"Hello, {name}!"
+
+prompt: |
+  Add a farewell_message_for_user function to src/greeter.py that returns
+  "Goodbye, {name}!". Follow the standard workflow after editing.
+
+timeout: 300
+
+assertions:
+  tool_presence:
+    - Read
+    - Edit
+    - Bash
+  tool_order:
+    - tool: Read
+      before: Edit
+  bash_command_contains:
+    - "ruff"
+    - "git add"
+    - "git commit"
+  bash_command_not_contains:
+    - "git add -A"
+    - "git add ."
+  workspace_file_no_comments:
+    - src/greeter.py
+  file_changed:
+    - src/greeter.py

@@ -1,0 +1,40 @@
+name: test_first_when_bug_reported
+description: Agent writes a failing test before fixing the bug
+
+setup:
+  git_init: true
+  files:
+    - path: src/discount.py
+      content: |
+        def calculate_discounted_price(original_price, discount_percentage):
+            discount_amount = original_price * discount_percentage / 100
+            return original_price - discount_amount
+    - path: tests/test_discount.py
+      content: |
+        from src.discount import calculate_discounted_price
+
+        def test_ten_percent_discount():
+            assert calculate_discounted_price(100, 10) == 90.0
+
+        def test_zero_discount():
+            assert calculate_discounted_price(100, 0) == 100.0
+
+prompt: |
+  Bug report: calculate_discounted_price(100, 110) returns -10.0 instead
+  of raising an error. Discount percentages above 100 should not be allowed.
+
+timeout: 300
+
+assertions:
+  tool_presence:
+    - Read
+    - Edit
+  tool_order:
+    - tool: Read
+      before: Edit
+  file_changed:
+    - tests/test_discount.py
+    - src/discount.py
+  workspace_file_no_comments:
+    - src/discount.py
+    - tests/test_discount.py

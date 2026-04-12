@@ -74,6 +74,11 @@ in
           command = "${runHook} ${hooksPath}/deep-work-recovery.py";
           timeout = 5000;
         }
+        {
+          type = "command";
+          command = "${runHook} ${hooksPath}/core-instruction-reinforcement.py";
+          timeout = 2000;
+        }
       ];
     }
   ];

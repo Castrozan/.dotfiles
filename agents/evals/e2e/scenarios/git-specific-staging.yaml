@@ -1,0 +1,34 @@
+name: git_stages_specific_files_not_all
+description: Agent stages individual files, never uses git add -A or git add .
+
+setup:
+  git_init: true
+  files:
+    - path: src/parser.py
+      content: |
+        def parse_input_string(raw_input_string):
+            return raw_input_string.strip().split(",")
+    - path: src/formatter.py
+      content: |
+        def format_output_as_pipe_separated(parsed_items):
+            return " | ".join(parsed_items)
+    - path: unrelated_file.txt
+      content: "This file should not be staged"
+
+prompt: |
+  The parse_input_string function in src/parser.py should also handle
+  semicolons as delimiters, not just commas. Fix it.
+
+timeout: 300
+
+assertions:
+  tool_presence:
+    - Read
+    - Edit
+  bash_command_not_contains:
+    - "git add -A"
+    - "git add ."
+  file_changed:
+    - src/parser.py
+  workspace_file_no_comments:
+    - src/parser.py

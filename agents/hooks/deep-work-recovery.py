@@ -77,7 +77,8 @@ def build_workspace_recovery_summary(workspace_path):
     prompts_file = workspace_path / "prompts.md"
     if prompts_file.exists():
         sections.append(
-            f"\n### User prompts: {prompts_file} (read full file for verbatim requirements)"
+            f"\n### User prompts: {prompts_file} "
+            f"(read full file for verbatim requirements)"
         )
 
     return "\n".join(sections)
@@ -100,7 +101,7 @@ def main():
         sys.exit(1)
 
     hook_event = data.get("hook_event_name", "")
-    if hook_event != "SessionStart":
+    if hook_event not in ("SessionStart", "PostCompact"):
         sys.exit(0)
 
     project_root = os.getcwd()
@@ -119,13 +120,22 @@ def main():
         sys.exit(0)
 
     recovery_context = "\n\n".join(recovery_sections)
-    recovery_context += "\n\nResume from disk artifacts. Read full workspace files before continuing. Do not ask user to re-explain."
+    recovery_context += (
+        "\n\nResume from disk artifacts. "
+        "Read full workspace files before continuing. "
+        "Do not ask user to re-explain."
+    )
 
+    context_label = (
+        "POST-COMPACTION RECOVERY"
+        if hook_event == "PostCompact"
+        else "DEEP-WORK RECOVERY"
+    )
     output = {
         "continue": True,
         "hookSpecificOutput": {
-            "hookEventName": "SessionStart",
-            "additionalContext": "DEEP-WORK RECOVERY:\n" + recovery_context,
+            "hookEventName": hook_event,
+            "additionalContext": f"{context_label}:\n{recovery_context}",
         },
     }
     print(json.dumps(output))

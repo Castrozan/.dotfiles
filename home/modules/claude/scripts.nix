@@ -1,6 +1,8 @@
 { pkgs, ... }:
 let
+  projectAgentInstructionsFile = ./project-agent/instructions.md;
   launchProjectAgentScript = pkgs.writeShellScriptBin "launch-project-agent" ''
+    export PROJECT_AGENT_INSTRUCTIONS="${projectAgentInstructionsFile}"
     exec ${pkgs.python312}/bin/python3 ${./scripts/launch-project-agent} "$@"
   '';
 in

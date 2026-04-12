@@ -8,6 +8,7 @@
     ./home/ssh.nix
     ./home/session-vars.nix
     ./home/claude-discord-agents.nix
+    ./home/claude-project-agents.nix
 
     ../../home/core.nix
 

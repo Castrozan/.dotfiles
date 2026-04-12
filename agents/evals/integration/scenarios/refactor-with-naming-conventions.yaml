@@ -1,0 +1,53 @@
+name: refactor_enforces_naming_conventions
+description: Refactoring task must produce long descriptive names with no comments or abbreviations
+
+setup:
+  git_init: true
+  files:
+    - path: src/proc.py
+      content: |
+        def proc(d, t):
+            r = []
+            for i in d:
+                if i["ts"] > t:
+                    v = i["val"] * i["qty"]
+                    if v > 100:
+                        r.append({"id": i["id"], "total": v, "status": "high"})
+                    else:
+                        r.append({"id": i["id"], "total": v, "status": "low"})
+            return r
+
+        def fmt(items):
+            out = ""
+            for i in items:
+                out += f"{i['id']}: {i['total']} ({i['status']})\n"
+            return out
+
+prompt: |
+  Refactor src/proc.py. The function and variable names are unreadable
+  abbreviations. Replace them with long, descriptive, self-documenting
+  names. Do not add any comments - the names themselves must explain
+  the code. Split into focused single-responsibility functions if needed.
+
+timeout: 120
+
+assertions:
+  tool_presence:
+    - Read
+    - Edit
+  tool_order:
+    - tool: Read
+      before: Edit
+  written_code_not_contains:
+    - "# "
+    - "def proc("
+    - "def fmt("
+  file_not_contains:
+    - file: src/proc.py
+      pattern: "# "
+    - file: src/proc.py
+      pattern: "def proc("
+    - file: src/proc.py
+      pattern: "def fmt("
+  file_changed:
+    - src/proc.py
