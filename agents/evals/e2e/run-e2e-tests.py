@@ -279,7 +279,7 @@ def wait_for_response_completion(
     tmux_target: str,
     prompt_text: str,
     timeout_seconds: int = 300,
-    poll_interval_seconds: float = 3.0,
+    poll_interval_seconds: float = 5.0,
 ) -> bool:
     prompt_words = prompt_text.strip().split()[:4]
     prompt_fragment = " ".join(prompt_words)
@@ -292,18 +292,30 @@ def wait_for_response_completion(
         if prompt_fragment in captured:
             break
 
-    time.sleep(5)
-    elapsed += 5.0
+    time.sleep(15)
+    elapsed += 15.0
+
+    consecutive_prompt_sightings = 0
+    required_consecutive_sightings = 3
 
     while elapsed < timeout_seconds:
         time.sleep(poll_interval_seconds)
         elapsed += poll_interval_seconds
         captured = capture_last_lines(socket_path, tmux_target, 10)
         lines = captured.strip().split("\n")
+        prompt_found_this_poll = False
         for line in lines:
             stripped = line.strip()
             if stripped == "\u276f" or stripped.startswith("\u276f "):
+                prompt_found_this_poll = True
+                break
+
+        if prompt_found_this_poll:
+            consecutive_prompt_sightings += 1
+            if consecutive_prompt_sightings >= required_consecutive_sightings:
                 return True
+        else:
+            consecutive_prompt_sightings = 0
     return False
 
 
