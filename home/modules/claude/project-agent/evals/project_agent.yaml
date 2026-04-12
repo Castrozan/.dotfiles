@@ -427,3 +427,6 @@ tests:
         - "executor"
         - "agent"
         - "research"
+        - "team"
+        - "spawn"
+        - "another session"
