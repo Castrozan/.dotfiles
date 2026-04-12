@@ -247,17 +247,16 @@ def build_bootstrap_prompt(heartbeat_interval: str) -> str:
     )
     return (
         "You are a persistent project agent."
-        " Read your CLAUDE.md for your identity and"
-        " instructions."
-        " Read .pm/HEARTBEAT.md for pending work.\n\n"
-        "Set up your heartbeat loop now:"
+        " Set up your heartbeat loop now:"
         f' use CronCreate with cron: "{heartbeat_interval}",'
         " recurring: true, and this prompt:\n\n"
         f'"{heartbeat_tick_prompt}"\n\n'
-        "After setting up the heartbeat,"
-        " read .pm/HEARTBEAT.md and act on any pending work."
-        " If nothing is pending,"
-        " report your status and wait for instructions."
+        "Then read .pm/HEARTBEAT.md."
+        " If it contains only 'No active work',"
+        " this is your first session - follow your"
+        " onboarding instructions."
+        " Otherwise, read your state from disk"
+        " and resume operations."
     )
 
 
