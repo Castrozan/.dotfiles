@@ -1,6 +1,6 @@
 ---
 name: browser
-description: Use when user asks to interact with a live webpage - fill forms, click buttons, navigate authenticated apps, automate Electron apps, test UI, take screenshots. Do NOT use for fetching or reading web content programmatically - use curl, MCP fetch tools, or domain-specific skills instead.
+description: Interact with a live webpage inside a browser window — fill forms, click buttons, navigate authenticated apps, automate Electron apps, test web UI, capture browser-window screenshots for visual verification of web pages. Do NOT use for fetching or reading web content programmatically (use curl or MCP fetch). Do NOT use for desktop screenshots, system media/audio control, MPRIS players, or non-browser GUI — those belong to the desktop skill.
 ---
 
 <strategy>
