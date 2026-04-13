@@ -89,23 +89,35 @@ class TestResolvePersistentSessionId:
 
 
 class TestBuildClaudeLaunchCommand:
-    def test_always_uses_session_id(self):
-        cmd = mod.build_claude_launch_command("opus", "myproject", "abc-123")
+    def test_uses_session_id_when_not_resuming(self):
+        cmd = mod.build_claude_launch_command(
+            "opus", "myproject", "abc-123", resume_existing_session=False
+        )
         assert "--session-id" in cmd
         assert "--resume" not in cmd
+
+    def test_uses_resume_when_resuming_existing_session(self):
+        cmd = mod.build_claude_launch_command(
+            "opus", "myproject", "abc-123", resume_existing_session=True
+        )
+        assert "--resume" in cmd
+        assert "--session-id" not in cmd
 
     def test_appends_instructions_file(self):
         cmd = mod.build_claude_launch_command(
             "opus",
             "myproject",
             "abc-123",
+            resume_existing_session=False,
             instructions_file="/nix/store/abc-instructions.md",
         )
         assert "--append-system-prompt-file" in cmd
         assert "abc-instructions.md" in cmd
 
     def test_quotes_values_with_special_characters(self):
-        cmd = mod.build_claude_launch_command("opus 4", "my project", "abc-123")
+        cmd = mod.build_claude_launch_command(
+            "opus 4", "my project", "abc-123", resume_existing_session=False
+        )
         assert "'opus 4'" in cmd
         assert "'my project'" in cmd
 
