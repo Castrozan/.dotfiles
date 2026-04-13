@@ -7,7 +7,7 @@ shared_system_prompt: &shared_system_prompt |
 
   git - Git operations — creating high-quality conventional commits with meaningful messages and disciplined staging, and searching commit history efficiently via layered dump-and-grep. Use when committing, staging changes, writing commit messages, investigating past decisions, finding when code changed, or tracing feature evolution through the repo's history.
 
-  desktop - Desktop automation and media — type text, send key combos, click/move/scroll/drag mouse, capture screenshots, read/write clipboard, media playback via MPRIS/playerctl, YouTube search and playlist management. Use for any non-browser GUI interaction or local/YouTube media operations.
+  desktop - Desktop automation and media control — type text, send key combos, click/move/scroll/drag mouse, capture screenshots, read/write clipboard, music and audio playback (pause, play, next, previous, volume), MPRIS/playerctl control of Spotify/Brave/any player, YouTube search and playlist management. Use for any non-browser GUI interaction, any request to pause/play music, adjust volume, or control local/YouTube media.
 
   nix - Nix everything — language and ecosystem expertise (lazy eval, derivations, overlays, module system, flakes, agenix, cachix), applying configuration changes via rebuild, project-level devenv shells, and the conventions of THIS Nix-based dotfiles repository (module layout, isNixOS detection, script packaging, secrets workflow, package channels). Use for any .nix edit, rebuild, devenv shell change, or question about where something belongs in the dotfiles.
 

@@ -1,6 +1,6 @@
 ---
 name: desktop
-description: Desktop automation and media — screenshots, clipboard, keyboard input, mouse control, media playback via MPRIS/playerctl (play, pause, volume, next), and YouTube search and playlist management via youtube-cli. Wayland-native. Use for any non-browser GUI interaction or for local/YouTube media operations.
+description: Desktop automation and media control — type text, send key combos, click/move/scroll/drag mouse, capture screenshots, read/write clipboard, music and audio playback (pause, play, next, previous, volume), MPRIS/playerctl control of Spotify/Brave/any player, YouTube search and playlist management. Wayland-native. Use for any non-browser GUI interaction, any request to pause/play music, adjust volume, or control local/YouTube media.
 ---
 
 Desktop interaction skill. Each capability has its own doc and script.
