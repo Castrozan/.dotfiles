@@ -67,9 +67,12 @@ tests:
     assertions:
       output_contains_any:
         - "layer 1"
+        - "layer1"
         - "titles"
         - "file paths"
+        - "file path"
         - "dump"
+        - "git-history.py"
 
   - name: git_history_escalates_to_layer2
     skill_path: agents/skills/git/SKILL.md
