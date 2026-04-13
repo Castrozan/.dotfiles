@@ -125,11 +125,39 @@ let
         if useWorkspace then "claude-workspace ${fromFlags} ${extendFlag} --" else "${claudeBinary}";
       launchFlags = if useWorkspace then "" else skillDirFlags;
     in
-    "cd ${workspace} && DISCORD_BOT_TOKEN=\\$(cat ${tokenFile}) ${launchBinary} ${channelFlag} ${modelFlag} ${nameFlag} ${launchFlags}";
+    "cd ${workspace} && DISCORD_BOT_TOKEN=$(cat ${tokenFile}) ${launchBinary} ${channelFlag} ${modelFlag} ${nameFlag} ${launchFlags}";
+
+  buildAgentWrapperScript =
+    name: agent:
+    pkgs.writeShellScript "discord-agent-${name}" ''
+      trap 'exit 0' SIGTERM SIGHUP SIGINT
+
+      restart_delay=10
+      max_restart_delay=300
+
+      while true; do
+        start_time=$(date +%s)
+        ${buildAgentLaunchCommand name agent} || true
+        end_time=$(date +%s)
+        runtime=$((end_time - start_time))
+
+        if [ "$runtime" -gt 60 ]; then
+          restart_delay=10
+        fi
+
+        echo "[$(date)] Agent ${name} exited after $runtime seconds. Restarting in $restart_delay seconds..."
+        sleep "$restart_delay"
+
+        restart_delay=$((restart_delay * 2))
+        if [ "$restart_delay" -gt "$max_restart_delay" ]; then
+          restart_delay=$max_restart_delay
+        fi
+      done
+    '';
 
   buildTmuxNewWindowCommand =
     name: agent:
-    ''${pkgs.tmux}/bin/tmux new-window -t "${tmuxSessionName}" -n ${name} "${buildAgentLaunchCommand name agent}"'';
+    ''${pkgs.tmux}/bin/tmux new-window -t "${tmuxSessionName}" -n ${name} "${buildAgentWrapperScript name agent}"'';
 
   heartbeatBootstrapCommands = lib.concatMapStringsSep "\n" (
     name: buildHeartbeatBootstrapCommand name agentsWithHeartbeats.${name}
@@ -143,7 +171,7 @@ let
     fi
 
     ${pkgs.tmux}/bin/tmux new-session -d -s "${tmuxSessionName}" -n ${firstAgentName} \
-      "${buildAgentLaunchCommand firstAgentName cfg.agents.${firstAgentName}}"
+      "${buildAgentWrapperScript firstAgentName cfg.agents.${firstAgentName}}"
 
     ${lib.concatMapStringsSep "\n" (name: buildTmuxNewWindowCommand name cfg.agents.${name}) (
       builtins.tail agentNames
