@@ -528,13 +528,17 @@ def run_coached_scenario(
         )
         coach_findings = coach_result.stdout.strip()
 
-        has_failures = "FAIL:" in coach_findings
+        initial_fail_count = coach_findings.count("FAIL:")
+        initial_nps = max(0, initial_nps - (initial_fail_count * 15))
+
+        has_failures = initial_fail_count > 0
 
         if has_failures:
             correction_prompt = (
-                f"The compliance reviewer found these violations in your work:\n\n"
+                "The compliance reviewer found these "
+                "violations in your work:\n\n"
                 f"{coach_findings}\n\n"
-                f"Fix each FAIL finding now."
+                "Fix each FAIL finding now."
             )
             send_prompt(socket, worker_target, correction_prompt)
             wait_for_completion(
@@ -546,11 +550,38 @@ def run_coached_scenario(
 
         coached_output = capture_output(socket, worker_target)
         coached_tools = parse_tool_sequence(coached_output)
-        coached_nps = calculate_nps_from_tool_sequence_and_workspace(
+        coached_workspace_nps = calculate_nps_from_tool_sequence_and_workspace(
             coached_tools,
             workspace,
             scenario,
         )
+
+        if has_failures:
+            coached_coach_prompt = build_coach_prompt(coached_tools, workspace)
+            coached_coach_result = subprocess.run(
+                [
+                    "claude",
+                    "-p",
+                    "--model",
+                    "haiku",
+                    "--system-prompt",
+                    compliance_body,
+                    coached_coach_prompt,
+                ],
+                capture_output=True,
+                text=True,
+                timeout=60,
+                cwd=workspace,
+            )
+            coached_findings = coached_coach_result.stdout.strip()
+            coached_fail_count = coached_findings.count("FAIL:")
+            coached_nps = max(
+                0,
+                coached_workspace_nps - (coached_fail_count * 15),
+            )
+            coach_findings += "\n\n--- AFTER CORRECTION ---\n" + coached_findings
+        else:
+            coached_nps = coached_workspace_nps
 
         duration = time.time() - start_time
 
