@@ -15,13 +15,9 @@ shared_system_prompt: &shared_system_prompt |
 
   devenv - Manage Nix-based development environments with devenv. Use when creating, configuring, or debugging devenv shells, adding packages or services to devenv.nix, or setting up project-specific dev environments with processes, databases, or language toolchains.
 
-  docs - Documentation policies and standards. Use when creating, updating, or reviewing any documentation — READMEs, TESTING.md, inline docs, file headers, or doc-related PRs.
-
   dotfiles - User Nix based dotfiles repository. Use when adding modules, modifying user configs, managing secrets, understanding file organization, debugging rebuilds, or unsure where something belongs.
 
   home-assistant - Control smart home devices via Home Assistant — lights (ha-light) and air conditioner (ha-ac). Use when user asks to turn on/off lights or AC, change temperature, brightness, fan speed, or check device status.
-
-  instructions - Use when creating skills, agents, system prompts, optimizing AI instructions. Also use when instructions feel stale, vague, ignored, or misrouted. Prompt engineering, context engineering.
 
   media - Media playback control and YouTube operations — play, pause, volume, next, previous, video search, playlists management.
 
@@ -43,13 +39,11 @@ shared_system_prompt: &shared_system_prompt |
 
   research - Current-information research and synthesis for tools, vendors, standards, or decisions. Use when the user asks to research, compare, evaluate, verify, or find the latest external information; not for local repo search.
 
-  review - Unbiased code review rubric for a separate reviewer agent. Use when spawning a reviewer subagent after substantial implementation work, or when the user asks to review changes for bugs, security issues, or convention violations.
+  review - Meta-disciplines for quality, review, and output craft — unbiased code review rubric for reviewer subagents, offloaded-rule compliance auditing, documentation policy, AI instruction and skill authoring, and ultra-dense output mode. Use when reviewing code, auditing rule compliance after work, writing docs or policies, designing skills or prompts, or when the user asks for compressed responses.
 
   session - Session lifecycle and context preservation — deep work context management, workspace switching, git worktrees for parallel branches, tmux control for background processes, session restart and exit.
 
   test - Testing methodology and verification workflow. Use when implementing, fixing, or modifying any code. Defines the test-first, test-after, and pre-delivery verification protocol.
-
-  tldr - Compress agent output to maximum density. Use when responses are too long, over-explained, or when user wants the essential information without filler.
 
 tests:
   - name: routing_to_desktop_keyboard_typing
@@ -345,29 +339,29 @@ tests:
       output_contains_any:
         - "test"
 
-  - name: routing_to_docs_readme_update
+  - name: routing_to_review_readme_update
     system_prompt: *shared_system_prompt
     prompt: "Update the README to document the new module structure"
     model: haiku
     assertions:
       output_contains_any:
-        - "docs"
+        - "review"
 
-  - name: routing_to_instructions_skill_creation
+  - name: routing_to_review_skill_creation
     system_prompt: *shared_system_prompt
     prompt: "Create a new skill for managing Docker containers with good prompts"
     model: haiku
     assertions:
       output_contains_any:
-        - "instructions"
+        - "review"
 
-  - name: routing_to_instructions_skill_routing_failure
+  - name: routing_to_review_skill_routing_failure
     system_prompt: *shared_system_prompt
     prompt: "The model keeps using WebFetch instead of the comms skill when I paste Twitter URLs. How do I fix the skill routing?"
     model: haiku
     assertions:
       output_contains_any:
-        - "instructions"
+        - "review"
       output_not_contains:
         - "comms"
         - "browser"
@@ -398,13 +392,13 @@ tests:
       output_not_contains:
         - "browser"
 
-  - name: routing_to_tldr_compress_output
+  - name: routing_to_review_compress_output
     system_prompt: *shared_system_prompt
     prompt: "That answer was way too long, give me the short version"
     model: haiku
     assertions:
       output_contains_any:
-        - "tldr"
+        - "review"
 
   - name: routing_to_devenv_shell_setup
     system_prompt: *shared_system_prompt

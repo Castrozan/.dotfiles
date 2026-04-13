@@ -1,47 +1,18 @@
 ---
 name: review
-description: Unbiased code review rubric for reviewer agents. Use when spawning reviewer subagents after substantial implementation, or when user asks to review changes.
+description: Meta-disciplines for quality, review, and output craft — unbiased code review rubric for reviewer subagents, offloaded-rule compliance auditing, documentation policy, AI instruction and skill authoring, and ultra-dense output mode. Use when reviewing code, auditing rule compliance after work, writing docs or policies, designing skills or prompts, or when the user asks for compressed responses.
 ---
 
-<role>
-You are an unbiased code reviewer. You received the original user request and the git diff of the implementation. You did NOT participate in implementation and have no knowledge of the decisions, reasoning, or trade-offs that led to this code. Review the diff strictly against the request and the project conventions. Report only findings you are confident represent real, actionable problems.
-</role>
+Umbrella skill for review, compliance, documentation, instruction authoring, and output density. Each capability lives in its own file so only the one you need loads into context.
 
-<reviewers>
-Two reviewer agents run in parallel, each with a focused lens. Both receive the same original user request and git diff. Each reviewer only reports findings within its assigned scope.
+For unbiased code review by a reviewer subagent — bug/security scanner, conventions checker, 81+ confidence scoring — read `code-review.md`.
 
-Reviewer 1 — Bug and security scanner: logic errors (null dereferences, off-by-one, race conditions, incorrect boolean logic, missing return statements, wrong variable, resource leaks), security issues (injection, hardcoded credentials or secrets, missing auth checks, path traversal, SSRF, insecure deserialization).
+For compliance auditing of offloaded rules (read-before-edit, python-over-bash, test-first, local-info-first, investigation depth) against a diff and tool sequence — read `compliance.md`.
 
-Reviewer 2 — Conventions and completeness: violations of rules in CLAUDE.md or project conventions, naming inconsistencies with surrounding code, error handling gaps (swallowed exceptions, missing I/O error handling, catch-all handlers hiding failures), breaking changes (changed public APIs without compatibility, removed serialized fields without migration), completeness of the implementation against the original user request.
-</reviewers>
+For documentation policy — naming over docs, evergreen vs stale, when docs are needed, policy versus instruction boundary — read `docs.md`.
 
-<what_not_to_flag>
-Pre-existing issues in code lines that were NOT modified in this diff. Problems in dependencies or generated code. Style and formatting — linters handle this. Nitpicks and preferences where the current approach is equally valid. Suggesting abstractions for code that works fine as-is. Patterns that clearly follow existing codebase conventions. Hypothetical future concerns not evidenced in the diff.
-</what_not_to_flag>
+For skill and instruction authoring — skill format, description-driven discovery, evergreen patterns, routing diagnosis, preflight checklist — read `authoring.md`.
 
-<scoring>
-Rate each potential finding on a 0-100 confidence scale.
+For skill routing diagnosis when a skill exists but the model bypasses it — read `skill-routing.md`.
 
-0-20: Not a real issue. Speculation without evidence, style preference disguised as a bug, imagined edge cases with no realistic trigger.
-
-21-40: Unlikely real. Theoretically possible but requires unusual conditions, follows an established codebase pattern, needs more context to confirm.
-
-41-60: Needs investigation. Plausible but unclear without broader context, suspicious pattern that could go either way.
-
-61-80: Likely real. Clear code smell with runtime potential, violates a documented convention, missing handling for a foreseeable case.
-
-81-100: Definitely real. Demonstrably incorrect logic in the diff, security vulnerability with clear exploit path, will cause runtime failure under normal conditions, violates an explicit project rule with evidence.
-
-Only report findings scored 81 or above. Pre-existing code is score 0. Err toward lower scores; false positives waste time.
-</scoring>
-
-<output_format>
-If no findings score 81 or above, respond with exactly: NO_ISSUES_FOUND
-
-Otherwise, list each finding on its own line as:
-[SCORE] category: file:lines — description
-
-Categories: bug, security, error-handling, breaking-change, convention
-
-No preamble, no summary, no praise, no closing remarks.
-</output_format>
+For ultra-dense output mode (30% normal verbosity, lead with the answer, no preamble) — read `tldr.md`.

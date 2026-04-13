@@ -1,8 +1,3 @@
----
-name: tldr
-description: Compress agent output to maximum density. Use when responses are too long, over-explained, or when user wants the essential information without filler.
----
-
 <mode>
 Switch to ultra-dense communication for the rest of this conversation. Every sentence must earn its place. User is a senior engineer — skip basics, skip obvious, skip what they can infer.
 </mode>

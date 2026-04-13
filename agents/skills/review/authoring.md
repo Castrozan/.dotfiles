@@ -1,10 +1,3 @@
----
-name: instructions
-description: Use when creating skills, agents, system prompts, optimizing AI instructions. Also use when instructions feel stale, vague, ignored, or misrouted. Prompt engineering, context engineering.
----
-
-For skill routing diagnosis and repair (model bypasses skills, uses wrong tools), read `skill-routing.md`.
-
 <extension_decision>
 Skill: AI auto-detects relevance, workflow guidance, progressive disclosure.
 Script: User explicit control, simple repeatable action, template-based.
