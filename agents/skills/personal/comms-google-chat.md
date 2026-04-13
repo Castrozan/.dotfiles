@@ -1,5 +1,5 @@
 <scripts>
-google-chat-read-history and google-chat-send-by-name for the typical read-then-reply workflow. google-chat-browser-cli for lower-level operations (resolve contacts, send to space URLs, webhooks). Run each with --help for usage.
+Scripts live at `agents/skills/comms/scripts/` (original sibling directory, outside this umbrella) and are packaged as CLI commands by `home/modules/dev/google-workspace-cli.nix`. Use `google-chat-read-history` and `google-chat-send-by-name` for the typical read-then-reply workflow. Use `google-chat-browser-cli` for lower-level operations (resolve contacts, send to space URLs, webhooks). Run each with --help for usage.
 </scripts>
 
 <traps>
