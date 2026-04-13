@@ -5,6 +5,7 @@
   "media"
   "obsidian"
   "openclaw"
+  "personal-assistant"
   "presentation"
   "quickshell"
 ]
