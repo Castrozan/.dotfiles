@@ -1,5 +1,5 @@
 name: skill_discovery_personal_for_obsidian
-description: Agent should autonomously load personal skill for Obsidian vault operations. The vault has non-obvious constraints (daily note filename format, TODO section placement, ReadItLater inbox #agent-work-done marker) that the personal/obsidian.md sub-file documents.
+description: Agent should autonomously load personal skill for Obsidian vault operations (leading-question variant). The vault has non-obvious constraints (daily note filename format, TODO section placement, ReadItLater inbox #agent-work-done marker) that the personal/obsidian.md sub-file documents.
 
 setup:
   git_init: false

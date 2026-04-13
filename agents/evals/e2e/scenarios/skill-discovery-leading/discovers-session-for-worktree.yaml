@@ -1,5 +1,5 @@
 name: skill_discovery_session_for_worktree
-description: Agent should autonomously load session skill when asked to create a git worktree for parallel work
+description: Agent should autonomously load session skill when asked to create a git worktree for parallel work (leading-question variant)
 
 setup:
   git_init: true

@@ -1,5 +1,5 @@
 name: skill_discovery_multiple_skills_in_workflow
-description: Agent should load multiple relevant skills when a task spans domains (nix config + commit + rebuild)
+description: Agent should load multiple relevant skills when a task spans domains (nix config + commit + rebuild) (leading-question variant)
 
 setup:
   git_init: true

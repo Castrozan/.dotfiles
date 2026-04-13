@@ -1,5 +1,5 @@
 name: skill_discovery_git_for_commit
-description: Agent should autonomously load the git skill when asked to commit changes
+description: Agent should autonomously load the git skill when asked to commit changes (leading-question variant)
 
 setup:
   git_init: true

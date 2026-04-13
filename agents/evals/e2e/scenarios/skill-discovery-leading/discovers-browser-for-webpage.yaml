@@ -1,5 +1,5 @@
 name: skill_discovery_browser_for_webpage
-description: Agent should autonomously load browser skill for live webpage interaction
+description: Agent should autonomously load browser skill for live webpage interaction (leading-question variant)
 
 setup:
   git_init: false

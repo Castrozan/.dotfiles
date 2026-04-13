@@ -1,5 +1,5 @@
 name: skill_discovery_quickshell_for_bar
-description: Agent should autonomously load quickshell skill for QML/bar work. The skill documents silent-failure traps (shape paths, color systems, region masks, PathArc direction, qmldir) that are not discoverable from the error message alone.
+description: Agent should autonomously load quickshell skill for QML/bar work (leading-question variant). The skill documents silent-failure traps (shape paths, color systems, region masks, PathArc direction, qmldir) that are not discoverable from the error message alone.
 
 setup:
   git_init: false

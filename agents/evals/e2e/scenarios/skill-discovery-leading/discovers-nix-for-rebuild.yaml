@@ -1,5 +1,5 @@
 name: skill_discovery_nix_for_rebuild
-description: Agent should autonomously load the nix skill when asked to apply .nix changes
+description: Agent should autonomously load the nix skill when asked to apply .nix changes (leading-question variant)
 
 setup:
   git_init: true

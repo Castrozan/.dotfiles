@@ -1,5 +1,5 @@
 name: skill_discovery_nix_for_container
-description: Agent should autonomously load the nix skill for Docker/Podman work. The nix umbrella owns docker.md with the docker-manager wrapper that prevents cascade failures and orphaned volumes.
+description: Agent should autonomously load the nix skill for Docker/Podman work (leading-question variant). The nix umbrella owns docker.md with the docker-manager wrapper that prevents cascade failures and orphaned volumes.
 
 setup:
   git_init: false

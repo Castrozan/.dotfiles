@@ -1,5 +1,5 @@
 name: skill_discovery_test_for_bug_report
-description: Agent should autonomously load test skill for bug reports. The test skill defines the test-first/double-test/pre-delivery protocol this project uses — not obvious from a raw bug description.
+description: Agent should autonomously load test skill for bug reports (leading-question variant). The test skill defines the test-first/double-test/pre-delivery protocol this project uses - not obvious from a raw bug description.
 
 setup:
   git_init: true

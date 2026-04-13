@@ -1,5 +1,5 @@
 name: skill_discovery_desktop_for_media
-description: Agent should autonomously load desktop skill for MPRIS media control. Note the model tends to misroute "music" to browser because Brave/Chrome expose MPRIS - the desktop skill is the correct owner for playerctl/wpctl workflows.
+description: Agent should autonomously load desktop skill for MPRIS media control (leading-question variant). Note the model tends to misroute "music" to browser because Brave/Chrome expose MPRIS - the desktop skill is the correct owner for playerctl/wpctl workflows.
 
 setup:
   git_init: false

@@ -1,5 +1,5 @@
 name: skill_discovery_research_for_external_info
-description: Agent should autonomously load research skill for current external information requests
+description: Agent should autonomously load research skill for current external information requests (leading-question variant)
 
 setup:
   git_init: false

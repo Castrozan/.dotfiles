@@ -1,5 +1,5 @@
 name: skill_discovery_review_for_tldr
-description: Agent should autonomously load review skill when user asks for compressed output mode. The tldr sub-file defines concrete rules (30% density target, no preamble, lead with answer) that the agent needs to apply consistently.
+description: Agent should autonomously load review skill when user asks for compressed output mode (leading-question variant). The tldr sub-file defines concrete rules (30% density target, no preamble, lead with answer) that the agent needs to apply consistently.
 
 setup:
   git_init: true
