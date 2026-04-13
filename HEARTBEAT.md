@@ -1,5 +1,18 @@
 # Autonomous Night Session - 2026-04-13
 
+## TL;DR for the morning
+- Top-level skills: 29 → 11 (6 umbrellas, 5 standalone). See `git log --oneline 357adf70..HEAD`
+- Read-before-Edit hardened: new <skill-invocation> rule in agents/core.md plus
+  PreToolUse hook blocking Write|Edit of existing-unread files
+- Skill-discovery e2e framework added: 11 scenarios, 5 currently pass on haiku,
+  6 fail capturing the autonomy gap you described ("agent doesn't use skills
+  unless mentioned")
+- Baseline saved at agents/evals/baseline.json (92.8%, 192/207)
+- Full e2e run: 13/25 pass, NPS 57 (up from NPS 62 on smaller 14-scenario baseline,
+  new scenarios harder); 3 previously-failing scenarios now pass with NPS 80-100
+- ~40 commits, each small and reversible. Rollback via git reset --hard 357adf70
+- /tmp/claude-code-workspace-cwd is still set to ~/.dotfiles (cleanup)
+
 **Pre-work SHA:** 357adf70 (baseline: NPS 62/100, 8/14 pass)
 **Started:** 2026-04-13 01:08
 **Target end:** 2026-04-13 09:00 (user wakes)
