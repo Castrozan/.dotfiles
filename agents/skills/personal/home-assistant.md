@@ -1,7 +1,3 @@
----
-name: home-assistant
-description: Control smart home devices via Home Assistant - lights (ha-light) and air conditioner (ha-ac). Use when user asks to turn on/off lights or AC, change temperature, brightness, fan speed, or check device status.
----
 
 <architecture>
 Home Assistant runs as a Podman container on localhost:8123. Two integrations: Tuya (lights, cloud-based) and Midea AC LAN (air conditioner, local LAN). CLI scripts use the HA REST API with a long-lived token from agenix. Run any script without args for usage. Web UI credentials are in the password store under `home-assistant/admin`. Verify the systemd service name from the NixOS module before restarting - it is not the obvious name.

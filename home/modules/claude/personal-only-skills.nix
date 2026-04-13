@@ -1,10 +1,6 @@
 [
-  "comms"
   "desktop"
-  "home-assistant"
-  "obsidian"
-  "openclaw"
-  "personal-assistant"
+  "personal"
   "presentation"
   "quickshell"
 ]

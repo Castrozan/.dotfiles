@@ -1,7 +1,3 @@
----
-name: openclaw
-description: OpenClaw multi-agent platform — agents, gateway, grid coordination, A2A protocol, cron jobs, Telegram bots, recurring tasks, inter-agent communication, and external agent protocols.
----
 
 <announcement>
 "I'm using the openclaw skill."

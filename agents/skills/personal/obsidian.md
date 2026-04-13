@@ -1,8 +1,3 @@
----
-name: obsidian
-description: Manage the Obsidian vault — daily notes, TODO tracking, activity logging, and ReadItLater inbox processing. Use when user mentions daily note, TODOs, saved articles, saved tweets, ReadItLater items, or vault content.
----
-
 <vault_location>
 Vault path: `$OBSIDIAN_HOME` (set in session environment). Daily notes: `$OBSIDIAN_HOME/daily-note/`. CLI tool: `daily-note` (creates today's note and opens in $EDITOR).
 </vault_location>

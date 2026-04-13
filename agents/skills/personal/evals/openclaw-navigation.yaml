@@ -1,0 +1,25 @@
+tests:
+  - name: openclaw_routes_to_grid
+    skill_path: agents/skills/personal/SKILL.md
+    prompt: "I need to coordinate multiple agents on the OpenClaw platform and set up inter-agent communication. Which file in this skill should I read?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "grid"
+        - "openclaw-grid"
+
+  - name: openclaw_routes_to_a2a
+    skill_path: agents/skills/personal/SKILL.md
+    prompt: "I need to integrate with an external agent using the A2A protocol on the OpenClaw platform. Which file in this skill covers that?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "a2a"
+
+  - name: openclaw_routes_to_assistant_cron
+    skill_path: agents/skills/personal/SKILL.md
+    prompt: "I want to schedule a recurring task that runs automatically on a timer via the OpenClaw platform. Which file in this skill has cron job instructions?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "cron"

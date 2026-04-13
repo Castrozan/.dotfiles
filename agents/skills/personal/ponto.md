@@ -1,8 +1,3 @@
----
-name: ponto
-description: Fill time entries on Senior Gestão de Ponto. Use when user asks to fill ponto, clock-in entries, marcações, acertos de ponto, or time tracking on the Senior platform.
-disable-model-invocation: true
----
 
 <schedule>
 Mon-Fri escala 4741: 08:00–12:00 / 13:30–17:30. Four daily punches: 08:00, 12:00, 13:30, 17:30. Weekends (horário 9998/9999) skipped.

@@ -7,21 +7,11 @@ shared_system_prompt: &shared_system_prompt |
 
   git - Git operations — creating high-quality conventional commits with meaningful messages and disciplined staging, and searching commit history efficiently via layered dump-and-grep. Use when committing, staging changes, writing commit messages, investigating past decisions, finding when code changed, or tracing feature evolution through the repo's history.
 
-  comms - Send Google Chat messages, DMs, webhooks. Post and scrape Twitter/X (x.com, twitter.com) tweets, profiles, trends, media. Control VTuber avatar lip sync and expressions.
-
   desktop - Desktop automation and media — type text, send key combos, click/move/scroll/drag mouse, capture screenshots, read/write clipboard, media playback via MPRIS/playerctl, YouTube search and playlist management. Use for any non-browser GUI interaction or local/YouTube media operations.
-
-  home-assistant - Control smart home devices via Home Assistant — lights (ha-light) and air conditioner (ha-ac). Use when user asks to turn on/off lights or AC, change temperature, brightness, fan speed, or check device status.
 
   nix - Nix everything — language and ecosystem expertise (lazy eval, derivations, overlays, module system, flakes, agenix, cachix), applying configuration changes via rebuild, project-level devenv shells, and the conventions of THIS Nix-based dotfiles repository (module layout, isNixOS detection, script packaging, secrets workflow, package channels). Use for any .nix edit, rebuild, devenv shell change, or question about where something belongs in the dotfiles.
 
-  obsidian - Manage the Obsidian vault — daily notes, TODO tracking, activity logging, and ReadItLater inbox processing. Use when user mentions daily note, TODOs, saved articles, saved tweets, ReadItLater items, or vault content.
-
-  openclaw - OpenClaw multi-agent platform — agents, gateway, grid coordination, A2A protocol, cron jobs, Telegram bots, recurring tasks, inter-agent communication, and external agent protocols.
-
-  phone-status - Remote phone status over SSH. Use when checking phone battery, charging status, uptime, or storage.
-
-  ponto - Fill time entries on Senior Gestão de Ponto. Use when user asks to fill ponto, clock-in entries, marcações, acertos de ponto, or time tracking on the Senior platform.
+  personal - Lucas's personal life and platforms — autonomous assistant monitoring loop across Gmail, Google Calendar, WhatsApp, and Google Chat; Obsidian vault for daily notes, TODOs, and ReadItLater inbox; Google Chat / Twitter / VTuber avatar communications; Senior ponto time-entry automation; smart home control via Home Assistant (lights, AC); phone status over SSH; and the OpenClaw multi-agent platform (grid, A2A, Telegram bots, cron). Use for any task about Lucas's personal channels, notes, comms, smart home, phone, work time-tracking, or the openclaw platform.
 
   quickshell - Implement, debug, and test Quickshell bar/OSD/switcher. Use when modifying QML files, debugging shape paths or rendering, testing IPC calls, or verifying visual changes after edits. Also use when adding new bar modules, popouts, dashboard tabs, or launcher features.
 
@@ -101,7 +91,7 @@ tests:
     model: haiku
     assertions:
       output_contains_any:
-        - "openclaw"
+        - "personal"
       output_not_contains:
         - "session"
 
@@ -111,7 +101,7 @@ tests:
     model: haiku
     assertions:
       output_contains_any:
-        - "openclaw"
+        - "personal"
 
   - name: routing_to_openclaw_a2a_protocol
     system_prompt: *shared_system_prompt
@@ -119,7 +109,7 @@ tests:
     model: haiku
     assertions:
       output_contains_any:
-        - "openclaw"
+        - "personal"
 
   - name: routing_to_openclaw_telegram_bot
     system_prompt: *shared_system_prompt
@@ -127,7 +117,7 @@ tests:
     model: haiku
     assertions:
       output_contains_any:
-        - "openclaw"
+        - "personal"
 
   - name: routing_to_comms_google_chat_message
     system_prompt: *shared_system_prompt
@@ -135,7 +125,7 @@ tests:
     model: haiku
     assertions:
       output_contains_any:
-        - "comms"
+        - "personal"
       output_not_contains:
         - "browser"
 
@@ -145,7 +135,7 @@ tests:
     model: haiku
     assertions:
       output_contains_any:
-        - "comms"
+        - "personal"
       output_not_contains:
         - "browser"
 
@@ -155,7 +145,7 @@ tests:
     model: haiku
     assertions:
       output_contains_any:
-        - "comms"
+        - "personal"
 
   - name: routing_to_comms_twitter_scrape
     system_prompt: *shared_system_prompt
@@ -163,7 +153,7 @@ tests:
     model: haiku
     assertions:
       output_contains_any:
-        - "comms"
+        - "personal"
 
   - name: routing_to_session_deep_work
     system_prompt: *shared_system_prompt
@@ -243,7 +233,7 @@ tests:
       output_contains_any:
         - "session"
       output_not_contains:
-        - "openclaw"
+        - "personal"
 
   - name: routing_to_commit_staging
     system_prompt: *shared_system_prompt
@@ -259,7 +249,7 @@ tests:
     model: haiku
     assertions:
       output_contains_any:
-        - "home-assistant"
+        - "personal"
 
   - name: routing_to_home_assistant_ac_control
     system_prompt: *shared_system_prompt
@@ -267,7 +257,7 @@ tests:
     model: haiku
     assertions:
       output_contains_any:
-        - "home-assistant"
+        - "personal"
 
   - name: routing_to_obsidian_daily_note
     system_prompt: *shared_system_prompt
@@ -275,7 +265,7 @@ tests:
     model: haiku
     assertions:
       output_contains_any:
-        - "obsidian"
+        - "personal"
 
   - name: routing_to_obsidian_todo_tracking
     system_prompt: *shared_system_prompt
@@ -283,7 +273,7 @@ tests:
     model: haiku
     assertions:
       output_contains_any:
-        - "obsidian"
+        - "personal"
 
   - name: routing_to_dotfiles_module_addition
     system_prompt: *shared_system_prompt
@@ -341,7 +331,7 @@ tests:
       output_contains_any:
         - "review"
       output_not_contains:
-        - "comms"
+        - "personal"
         - "browser"
 
   - name: routing_to_notify_task_completion
@@ -392,7 +382,7 @@ tests:
     model: haiku
     assertions:
       output_contains_any:
-        - "phone-status"
+        - "personal"
 
   - name: routing_to_ponto_time_tracking
     system_prompt: *shared_system_prompt
@@ -400,7 +390,7 @@ tests:
     model: haiku
     assertions:
       output_contains_any:
-        - "ponto"
+        - "personal"
 
   - name: routing_ambiguous_browser_vs_desktop_screenshot
     system_prompt: *shared_system_prompt
@@ -498,7 +488,7 @@ tests:
     model: haiku
     assertions:
       output_contains_any:
-        - "obsidian"
+        - "personal"
       output_not_contains:
         - "browser"
 
@@ -508,10 +498,9 @@ tests:
     model: haiku
     assertions:
       output_contains_any:
-        - "obsidian"
+        - "personal"
       output_not_contains:
         - "browser"
-        - "comms"
 
   - name: routing_to_comms_tweet_media_fetch
     system_prompt: *shared_system_prompt
@@ -519,7 +508,7 @@ tests:
     model: haiku
     assertions:
       output_contains_any:
-        - "comms"
+        - "personal"
       output_not_contains:
         - "browser"
 
@@ -529,7 +518,7 @@ tests:
     model: haiku
     assertions:
       output_contains_any:
-        - "comms"
+        - "personal"
       output_not_contains:
         - "browser"
 
@@ -539,7 +528,7 @@ tests:
     model: haiku
     assertions:
       output_contains_any:
-        - "comms"
+        - "personal"
       output_not_contains:
         - "browser"
         - "research"
@@ -550,7 +539,7 @@ tests:
     model: haiku
     assertions:
       output_contains_any:
-        - "comms"
+        - "personal"
       output_not_contains:
         - "browser"
         - "research"
@@ -561,7 +550,7 @@ tests:
     model: haiku
     assertions:
       output_contains_any:
-        - "comms"
+        - "personal"
       output_not_contains:
         - "browser"
         - "research"
@@ -572,7 +561,7 @@ tests:
     model: haiku
     assertions:
       output_contains_any:
-        - "comms"
+        - "personal"
       output_not_contains:
         - "browser"
         - "research"

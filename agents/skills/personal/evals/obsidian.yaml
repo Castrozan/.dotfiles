@@ -1,6 +1,8 @@
 tests:
   - name: obsidian_knows_processed_marker
-    agent: obsidian
+    skill_path: agents/skills/personal/SKILL.md
+    extra_skill_paths:
+      - agents/skills/personal/obsidian.md
     prompt: "How do I tell if a ReadItLater item has already been processed?"
     model: haiku
     assertions:
@@ -8,7 +10,9 @@ tests:
         - "agent-work-done"
 
   - name: obsidian_knows_ril_file_structure
-    agent: obsidian
+    skill_path: agents/skills/personal/SKILL.md
+    extra_skill_paths:
+      - agents/skills/personal/obsidian.md
     prompt: "What format does line 1 of a ReadItLater inbox file follow?"
     model: haiku
     assertions:
@@ -17,7 +21,9 @@ tests:
         - "[["
 
   - name: obsidian_youtube_ril_handling
-    agent: obsidian
+    skill_path: agents/skills/personal/SKILL.md
+    extra_skill_paths:
+      - agents/skills/personal/obsidian.md
     prompt: "A ReadItLater inbox file has [[Youtube]] type. What do I do with it? Respond in one sentence."
     model: haiku
     assertions:
@@ -32,7 +38,9 @@ tests:
         - "skip YouTube"
 
   - name: obsidian_knows_tweet_enrichment_tool
-    agent: obsidian
+    skill_path: agents/skills/personal/SKILL.md
+    extra_skill_paths:
+      - agents/skills/personal/obsidian.md
     prompt: "A saved tweet has a pic.twitter.com link and I need to see the image. What tool should I use?"
     model: haiku
     assertions:
@@ -43,7 +51,9 @@ tests:
         - "curl"
 
   - name: obsidian_respects_user_curation
-    agent: obsidian
+    skill_path: agents/skills/personal/SKILL.md
+    extra_skill_paths:
+      - agents/skills/personal/obsidian.md
     prompt: "The user saved a tweet that looks like low-quality content with no useful information. Should I skip it and move to the next one?"
     model: haiku
     assertions:
