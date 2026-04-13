@@ -1,6 +1,8 @@
 tests:
   - name: commit_skill_knows_conventions
-    agent: commit
+    skill_path: agents/skills/git/SKILL.md
+    extra_skill_paths:
+      - agents/skills/git/commit.md
     prompt: "What are the key rules you follow when creating a commit?"
     model: haiku
     assertions:

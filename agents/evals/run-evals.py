@@ -49,7 +49,21 @@ def resolve_system_prompt_for_test(test: dict) -> str | None:
             return None
 
     resolved_path = REPO_ROOT / skill_path_value
-    return load_skill_body_from_path(resolved_path)
+    primary_body = load_skill_body_from_path(resolved_path)
+    if primary_body is None:
+        return None
+
+    extra_skill_path_values = test.get("extra_skill_paths") or []
+    extra_bodies = []
+    for extra_skill_path_value in extra_skill_path_values:
+        extra_resolved_path = REPO_ROOT / extra_skill_path_value
+        extra_body = load_skill_body_from_path(extra_resolved_path)
+        if extra_body:
+            extra_bodies.append(extra_body)
+
+    if not extra_bodies:
+        return primary_body
+    return primary_body + "\n\n" + "\n\n".join(extra_bodies)
 
 
 def discover_skill_adjacent_eval_files(repo_root: Path) -> dict[str, list[dict]]:

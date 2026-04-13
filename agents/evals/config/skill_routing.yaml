@@ -7,7 +7,7 @@ shared_system_prompt: &shared_system_prompt |
 
   claude - Launch and interact with Claude Code sessions via tmux or one-shot commands. Use when spawning interactive coding sessions, delegating tasks to parallel agents, or running autonomous implementations.
 
-  commit - Create high-quality git commits with conventional format, meaningful descriptions, and analysis of changes. Use when user asks to commit, stage changes, or prepare a commit message.
+  git - Git operations — creating high-quality conventional commits with meaningful messages and disciplined staging, and searching commit history efficiently via layered dump-and-grep. Use when committing, staging changes, writing commit messages, investigating past decisions, finding when code changed, or tracing feature evolution through the repo's history.
 
   comms - Send Google Chat messages, DMs, webhooks. Post and scrape Twitter/X (x.com, twitter.com) tweets, profiles, trends, media. Control VTuber avatar lip sync and expressions.
 
@@ -18,8 +18,6 @@ shared_system_prompt: &shared_system_prompt |
   docs - Documentation policies and standards. Use when creating, updating, or reviewing any documentation — READMEs, TESTING.md, inline docs, file headers, or doc-related PRs.
 
   dotfiles - User Nix based dotfiles repository. Use when adding modules, modifying user configs, managing secrets, understanding file organization, debugging rebuilds, or unsure where something belongs.
-
-  git-history - Search git history efficiently via layered dump-to-file + fast text search. Use when searching commit history, finding when code changed, tracing feature evolution, or investigating past decisions. Replaces repeated git log --grep calls.
 
   home-assistant - Control smart home devices via Home Assistant — lights (ha-light) and air conditioner (ha-ac). Use when user asks to turn on/off lights or AC, change temperature, brightness, fan speed, or check device status.
 
@@ -211,7 +209,7 @@ tests:
       output_contains_any:
         - "session"
       output_not_contains:
-        - "commit"
+        - "git"
 
   - name: routing_to_session_tmux_control
     system_prompt: *shared_system_prompt
@@ -281,7 +279,7 @@ tests:
     model: haiku
     assertions:
       output_contains_any:
-        - "commit"
+        - "git"
 
   - name: routing_to_home_assistant_lights
     system_prompt: *shared_system_prompt
@@ -478,7 +476,7 @@ tests:
     model: haiku
     assertions:
       output_contains_any:
-        - "commit"
+        - "git"
       output_not_contains:
         - "session"
 
@@ -506,10 +504,10 @@ tests:
     model: haiku
     assertions:
       output_contains_any:
-        - "git-history"
+        - "git"
       output_not_contains:
-        - "commit"
         - "research"
+        - "browser"
 
   - name: routing_to_git_history_find_when_changed
     system_prompt: *shared_system_prompt
@@ -517,7 +515,7 @@ tests:
     model: haiku
     assertions:
       output_contains_any:
-        - "git-history"
+        - "git"
       output_not_contains:
         - "dotfiles"
 
@@ -527,7 +525,7 @@ tests:
     model: haiku
     assertions:
       output_contains_any:
-        - "git-history"
+        - "git"
       output_not_contains:
         - "browser"
         - "research"
@@ -538,19 +536,9 @@ tests:
     model: haiku
     assertions:
       output_contains_any:
-        - "git-history"
+        - "git"
       output_not_contains:
         - "research"
-
-  - name: routing_ambiguous_git_history_vs_commit
-    system_prompt: *shared_system_prompt
-    prompt: "Create a commit for the changes I just made"
-    model: haiku
-    assertions:
-      output_contains_any:
-        - "commit"
-      output_not_contains:
-        - "git-history"
 
   - name: routing_ambiguous_git_history_vs_research
     system_prompt: *shared_system_prompt
@@ -560,7 +548,7 @@ tests:
       output_contains_any:
         - "research"
       output_not_contains:
-        - "git-history"
+        - "git"
 
   - name: routing_to_obsidian_inbox_processing
     system_prompt: *shared_system_prompt

@@ -1,8 +1,3 @@
----
-name: git-history
-description: Search git history efficiently via layered dump-to-file + fast text search. Use when searching commit history, finding when code changed, tracing feature evolution, or investigating past decisions. Replaces repeated git log --grep calls.
----
-
 <search_strategy>
 Never use repeated `git log --grep` or `git log -G` for exploratory search — each call rescans the full git object store. Instead, dump once to /tmp and search the dump with Grep (ripgrep). One dump, unlimited instant searches.
 

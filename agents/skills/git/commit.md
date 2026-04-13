@@ -1,10 +1,5 @@
----
-name: commit
-description: Create high-quality git commits with conventional format, meaningful descriptions, and analysis of changes. Use when user asks to commit, stage changes, or prepare a commit message.
----
-
 <announcement>
-"I'm using the commit skill to analyze changes and create a commit."
+"I'm using the git skill's commit capability to analyze changes and create a commit."
 </announcement>
 
 <context_gathering>
