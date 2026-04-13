@@ -105,21 +105,42 @@ Skill-discovery tests:
   framework changes in agents/evals/e2e/run-e2e-tests.py
   run with: python3 agents/evals/e2e/run-e2e-tests.py --scenario skill_discovery_git_for_commit
 
-  Live haiku results (initial spot checks, 2026-04-13 02:40):
-    skill_discovery_git_for_commit: PASS (Skill(git) invoked autonomously)
-    skill_discovery_research_for_external_info: PASS (Skill(research) invoked)
-    skill_discovery_desktop_for_media: FAIL (model did playerctl via Bash
-      without loading Skill(desktop) - exact pattern user complained about)
-  Interpretation: the autonomy issue the user described is real and measurable.
-  Simple tasks ("pause music") trigger direct Bash; tasks with nuance ("commit
-  these files", "research latest X") trigger correct Skill() invocation.
+Full e2e suite results on haiku (2026-04-13 02:50, 776s total):
+  Overall: 13/25 pass, NPS 57/100
+  Original 14 scenarios: 8/14 pass (same 57% as pre-work baseline)
+    Now passing after Read-before-Edit enforcement:
+      read_before_edit_without_any_hints NPS 80
+      formatting_runs_after_python_edit NPS 93
+      workflow_full_edit_sequence NPS 100
+      git_stages_specific_files_not_all NPS 88
+      naming_uses_descriptive_names_no_abbreviations NPS 90
+      srp_splits_monolithic_function NPS 79
+      glob_over_bash_find NPS 52, python_over_bash NPS 44
+    Still failing (different root causes, not Read-before-Edit):
+      breaking_change_removes_old_function NPS 45
+      investigation_traces_full_call_chain NPS 50
+      local_information_before_external_fetch NPS 38
+      multi_file_edit_with_specific_git_staging NPS 54
+      global_rules_apply_alongside_project_claude_md NPS 28
+      test_first_when_bug_reported NPS 34
+  New skill-discovery 11 scenarios: 5/11 pass
+    Agent invokes Skill() autonomously for: git, nix, session, browser, docker-manager
+    Agent does NOT invoke Skill() for: desktop (plays music via Bash),
+      personal (obsidian task), quickshell (bar task), research (external
+      info), review (tldr request), test (bug report - answers directly)
+  Interpretation: autonomy on skill loading is the exact gap the user named.
+  Some domains (git, nix) trigger Skill() reliably; others (simple music,
+  simple research) get answered with direct tools. Measurable baseline now
+  exists; further improvement requires skill-by-skill description tuning,
+  possibly sonnet/opus for higher-autonomy models.
 
 Rollback if needed:
   git reset --hard 357adf70 && rebuild
-  destroys ~18 commits of work; prefer selective revert
+  destroys ~24 commits of work; prefer selective revert
 
 Open items the user may want to address:
   - docker-manager kept standalone; could go under nix if user prefers 10 exactly
   - 11/60 skill_routing tests stochastic on haiku; try sonnet for stable routing
-  - skill-discovery scenarios not yet run on live claude - expensive; do selectively
+  - 6/11 skill-discovery scenarios fail; desktop/review/test/personal need
+    description tuning or model upgrade
   - /tmp/claude-code-workspace-cwd is set to ~/.dotfiles; delete when done to restore default cwd
