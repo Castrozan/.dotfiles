@@ -117,6 +117,7 @@ let
       channelFlag = "--channels plugin:discord@claude-plugins-official";
       modelFlag = "--model ${agent.model}";
       nameFlag = "--name ${name}";
+      permissionModeFlag = "--permission-mode ${agent.permissionMode}";
       skillDirFlags = lib.concatMapStringsSep " " (dir: "--add-dir ${dir}") agent.skillDirectories;
       useWorkspace = agent.workspaceFrom != [ ] || agent.extendWorkspace;
       fromFlags = lib.concatMapStringsSep " " (dir: "--from ${dir}") agent.workspaceFrom;
@@ -125,7 +126,7 @@ let
         if useWorkspace then "claude-workspace ${fromFlags} ${extendFlag} --" else "${claudeBinary}";
       launchFlags = if useWorkspace then "" else skillDirFlags;
     in
-    "cd ${workspace} && DISCORD_BOT_TOKEN=$(cat ${tokenFile}) ${launchBinary} ${channelFlag} ${modelFlag} ${nameFlag} ${launchFlags}";
+    "cd ${workspace} && DISCORD_BOT_TOKEN=$(cat ${tokenFile}) ${launchBinary} ${channelFlag} ${modelFlag} ${nameFlag} ${permissionModeFlag} ${launchFlags}";
 
   buildAgentWrapperScript =
     name: agent:
@@ -303,6 +304,16 @@ in
             type = lib.types.nullOr lib.types.str;
             default = null;
             description = "Prompt sent on each heartbeat tick. Required when heartbeatInterval is set.";
+          };
+          permissionMode = lib.mkOption {
+            type = lib.types.enum [
+              "default"
+              "acceptEdits"
+              "plan"
+              "bypassPermissions"
+            ];
+            default = "default";
+            description = "Claude Code permission mode. Use 'bypassPermissions' for fully autonomous agents that should never prompt for tool approval.";
           };
         };
       }

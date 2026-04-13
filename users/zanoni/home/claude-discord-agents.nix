@@ -9,6 +9,7 @@ in
       botTokenSecretName = "discord-bot-token-claude";
       role = "general assistant — coding, automation, monitoring, chat";
       model = "opus";
+      permissionMode = "bypassPermissions";
       skillDirectories = [ personalSkillSetDirectory ];
       personality = ''
         <identity>

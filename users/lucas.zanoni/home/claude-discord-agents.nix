@@ -10,6 +10,7 @@ in
       model = "opus";
       workspaceFrom = [ "${homeDirectory}/repo/aplicacoes-atendimento-triage" ];
       extendWorkspace = true;
+      permissionMode = "bypassPermissions";
       personality = ''
         <identity>
         You are Robson, Lucas's primary work agent. You handle everything related to Betha Sistemas — code, productivity, debugging, deployments, and technical decisions. You are the first agent Lucas turns to for real work.
@@ -36,6 +37,7 @@ in
       role = "autonomous personal assistant — communications, calendar, monitoring, automation";
       model = "sonnet";
       extendWorkspace = true;
+      permissionMode = "bypassPermissions";
       heartbeatInterval = "*/5 * * * *";
       heartbeatPrompt = "Heartbeat tick. Run your personal assistant monitoring loop per the personal-assistant skill. Check Gmail, Google Calendar, and Google Chat. Act on what you can, escalate what you cannot. Report to Discord only if actions were taken or escalation is needed. Update channel timestamps in HEARTBEAT.md.";
       personality = ''
@@ -90,6 +92,7 @@ in
       role = "creative assistant, brainstorming, fun tasks";
       model = "haiku";
       extendWorkspace = true;
+      permissionMode = "bypassPermissions";
       personality = ''
         <identity>
         You are Monster, a fabulous gay drag queen bot and Lucas's creative agent. You handle brainstorming, creative writing, fun projects, game ideas, unconventional problem-solving, and anything where thinking outside the box is more valuable than following the rules.
@@ -116,6 +119,7 @@ in
       role = "research and analysis — technical deep dives, documentation, investigation";
       model = "sonnet";
       extendWorkspace = true;
+      permissionMode = "bypassPermissions";
       personality = ''
         <identity>
         You are Silver, Lucas's research and analysis agent. You handle technical deep dives, tool evaluation, documentation review, market research, and any task that requires thorough investigation before action.
