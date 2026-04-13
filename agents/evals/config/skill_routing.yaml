@@ -9,11 +9,9 @@ shared_system_prompt: &shared_system_prompt |
 
   comms - Send Google Chat messages, DMs, webhooks. Post and scrape Twitter/X (x.com, twitter.com) tweets, profiles, trends, media. Control VTuber avatar lip sync and expressions.
 
-  desktop - Interact with the desktop — type text, send key combos, click/move/scroll/drag mouse, capture screenshots, read/write clipboard. Use for any non-browser GUI automation.
+  desktop - Desktop automation and media — type text, send key combos, click/move/scroll/drag mouse, capture screenshots, read/write clipboard, media playback via MPRIS/playerctl, YouTube search and playlist management. Use for any non-browser GUI interaction or local/YouTube media operations.
 
   home-assistant - Control smart home devices via Home Assistant — lights (ha-light) and air conditioner (ha-ac). Use when user asks to turn on/off lights or AC, change temperature, brightness, fan speed, or check device status.
-
-  media - Media playback control and YouTube operations — play, pause, volume, next, previous, video search, playlists management.
 
   nix - Nix everything — language and ecosystem expertise (lazy eval, derivations, overlays, module system, flakes, agenix, cachix), applying configuration changes via rebuild, project-level devenv shells, and the conventions of THIS Nix-based dotfiles repository (module layout, isNixOS detection, script packaging, secrets workflow, package channels). Use for any .nix edit, rebuild, devenv shell change, or question about where something belongs in the dotfiles.
 
@@ -70,23 +68,13 @@ tests:
       output_contains_any:
         - "desktop"
 
-  - name: routing_to_media_playback_control
-    system_prompt: *shared_system_prompt
-    prompt: "Pause the music that's currently playing"
-    model: haiku
-    assertions:
-      output_contains_any:
-        - "media"
-      output_not_contains:
-        - "desktop"
-
   - name: routing_to_media_volume_adjustment
     system_prompt: *shared_system_prompt
     prompt: "Turn the volume up to 80%"
     model: haiku
     assertions:
       output_contains_any:
-        - "media"
+        - "desktop"
 
   - name: routing_to_media_youtube_search
     system_prompt: *shared_system_prompt
@@ -94,7 +82,7 @@ tests:
     model: haiku
     assertions:
       output_contains_any:
-        - "media"
+        - "desktop"
       output_not_contains:
         - "browser"
         - "research"
@@ -105,7 +93,7 @@ tests:
     model: haiku
     assertions:
       output_contains_any:
-        - "media"
+        - "desktop"
 
   - name: routing_to_openclaw_agent_creation
     system_prompt: *shared_system_prompt

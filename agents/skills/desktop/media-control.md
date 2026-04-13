@@ -1,7 +1,7 @@
-<execution>
-Run `scripts/media-control.sh` with subcommand: `play`, `pause`, `toggle`, `next`, `prev`, `status`, or `volume VALUE`. Volume accepts 0-100 (absolute) or +N/-N (relative).
-</execution>
+<usage>
+Run scripts/media-control.sh with subcommands: status, play, pause, toggle, next, previous, volume VALUE, list. Pass --player NAME to target a specific player when multiple are active.
+</usage>
 
 <pitfalls>
-Requires D-Bus session bus — script auto-sets DBUS_SESSION_BUS_ADDRESS. playerctl operates on the most recent MPRIS-capable player; if multiple players are running, the target may be unexpected. Volume uses wpctl (PipeWire) — absolute values are percentages, relative use +N/-N syntax.
+Requires DBUS_SESSION_BUS_ADDRESS — script sets it automatically but agents in containers without D-Bus access will fail silently. playerctl auto-selects the "most relevant" player which may not be what you expect with multiple players running — use "list" first, then --player NAME. Volume values are 0.0-1.0 (not 0-100); prefix with +/- for relative adjustment. Some players (Brave/Chrome) expose MPRIS but ignore volume commands — use system volume (wpctl) instead for browser audio.
 </pitfalls>

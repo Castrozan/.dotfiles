@@ -2,7 +2,6 @@
   "comms"
   "desktop"
   "home-assistant"
-  "media"
   "obsidian"
   "openclaw"
   "personal-assistant"
