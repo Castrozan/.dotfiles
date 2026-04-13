@@ -197,25 +197,25 @@ def ensure_pm_window(
     tmux_socket: str,
     session_name: str,
     working_directory: Path,
-) -> str:
+) -> tuple[str, bool]:
     target = f"{session_name}:{PM_WINDOW_NAME}"
 
     if not check_tmux_session_exists(tmux_socket, session_name):
         create_tmux_session_with_pm_window(tmux_socket, session_name, working_directory)
         print(f"  Created session '{session_name}' with pm window")
-        return target
+        return target, False
 
     if check_tmux_window_exists(tmux_socket, session_name, PM_WINDOW_NAME):
         if check_claude_running_in_window(tmux_socket, target):
             print(f"  PM agent already running in {target}")
             print(f"  Attach: tmux select-window -t {target}")
-            sys.exit(0)
+            return target, True
         print(f"  Reusing existing pm window in '{session_name}'")
-        return target
+        return target, False
 
     create_pm_window_in_existing_session(tmux_socket, session_name, working_directory)
     print(f"  Created pm window in session '{session_name}'")
-    return target
+    return target, False
 
 
 def send_keys_to_tmux_pane(tmux_socket: str, target: str, keys: str) -> None:
@@ -463,26 +463,31 @@ def main() -> None:
         sys.exit(1)
 
     session_name = agent_name
-    target = ensure_pm_window(tmux_socket, session_name, project_directory)
+    target, claude_already_running = ensure_pm_window(
+        tmux_socket, session_name, project_directory
+    )
 
     persistent_session_id = resolve_persistent_session_id(project_directory, agent_name)
     existing_transcript = find_existing_transcript_for_session(
         project_directory, persistent_session_id
     )
     resume_existing_session = existing_transcript is not None
-    instructions_file = resolve_project_agent_instructions_file()
-    claude_command = build_claude_launch_command(
-        model,
-        agent_name,
-        persistent_session_id,
-        resume_existing_session,
-        instructions_file,
-    )
-    send_keys_to_tmux_pane(tmux_socket, target, claude_command)
 
-    session_mode = "resume" if resume_existing_session else "new"
-    if not args.no_bootstrap and not resume_existing_session:
-        send_bootstrap_prompt(tmux_socket, target, heartbeat)
+    if claude_already_running:
+        session_mode = "already-running"
+    else:
+        instructions_file = resolve_project_agent_instructions_file()
+        claude_command = build_claude_launch_command(
+            model,
+            agent_name,
+            persistent_session_id,
+            resume_existing_session,
+            instructions_file,
+        )
+        send_keys_to_tmux_pane(tmux_socket, target, claude_command)
+        session_mode = "resume" if resume_existing_session else "new"
+        if not args.no_bootstrap and not resume_existing_session:
+            send_bootstrap_prompt(tmux_socket, target, heartbeat)
 
     print(f"Launched project agent '{agent_name}'")
     print(f"  Window: {target}")

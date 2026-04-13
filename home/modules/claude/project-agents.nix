@@ -87,8 +87,7 @@ in
         Service = {
           Type = "simple";
           ExecStart = "${buildServiceScript name agent}";
-          ExecStop = "-${pkgs.tmux}/bin/tmux kill-session -t ${name}";
-          Restart = "always";
+          Restart = "on-failure";
           RestartSec = "10s";
           StartLimitBurst = 5;
           StartLimitIntervalSec = 300;
