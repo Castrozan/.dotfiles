@@ -122,6 +122,16 @@ in
         }
       ];
     }
+    {
+      matcher = "Write";
+      hooks = [
+        {
+          type = "command";
+          command = "${runHook} ${hooksPath}/block-write-without-read.py";
+          timeout = 2000;
+        }
+      ];
+    }
   ];
 
   # Workaround: bypassPermissions has a hardcoded .claude/ prompt since v2.1.78.

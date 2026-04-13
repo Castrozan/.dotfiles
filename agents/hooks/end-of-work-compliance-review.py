@@ -7,7 +7,7 @@ import sys
 from pathlib import Path
 
 COMPLIANCE_SKILL_PATH = (
-    Path.home() / ".dotfiles" / "agents" / "skills" / "compliance" / "SKILL.md"
+    Path.home() / ".dotfiles" / "agents" / "skills" / "review" / "compliance.md"
 )
 
 MINIMUM_TOOL_COUNT_FOR_REVIEW = 2
@@ -16,11 +16,7 @@ MINIMUM_TOOL_COUNT_FOR_REVIEW = 2
 def load_compliance_skill_body() -> str:
     if not COMPLIANCE_SKILL_PATH.exists():
         return ""
-    content = COMPLIANCE_SKILL_PATH.read_text()
-    parts = content.split("---", 2)
-    if len(parts) >= 3:
-        return parts[2].strip()
-    return content.strip()
+    return COMPLIANCE_SKILL_PATH.read_text().strip()
 
 
 def extract_tool_sequence_from_message(
