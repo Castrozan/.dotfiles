@@ -9,7 +9,7 @@
     ./hooks.nix
     ./mcps.nix
     ./private.nix
-    ./workspace-trust.nix
     ./scripts.nix
+    ./project-agents.nix
   ];
 }

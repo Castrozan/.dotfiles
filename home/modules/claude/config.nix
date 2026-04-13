@@ -59,13 +59,15 @@ let
 
   claudeGlobalSettingsJson = builtins.toJSON claudeGlobalSettings;
 
+  coreAgentRawContent = builtins.readFile ../../../agents/core.md;
+  coreAgentSplitOnFrontmatterDelimiter = builtins.split "---\n" coreAgentRawContent;
+  coreAgentBodyWithoutFrontmatter = builtins.elemAt coreAgentSplitOnFrontmatterDelimiter 4;
+
   claudeDotfilesRules = ''
     @AGENTS.md
   '';
 
-  claudeGlobalRules = ''
-    @../.dotfiles/AGENTS.md
-  '';
+  claudeGlobalRules = coreAgentBodyWithoutFrontmatter;
 in
 {
   home = {
@@ -119,10 +121,14 @@ in
       data = ''
         CLAUDE_JSON="$HOME/.claude.json"
         if [ -f "$CLAUDE_JSON" ]; then
-          PATCHED_CONTENT=$(${pkgs.jq}/bin/jq '.installMethod = "native"' "$CLAUDE_JSON")
-          CURRENT_CONTENT=$(cat "$CLAUDE_JSON")
-          if [ "$PATCHED_CONTENT" != "$CURRENT_CONTENT" ]; then
-            echo "$PATCHED_CONTENT" > "$CLAUDE_JSON.tmp" && mv "$CLAUDE_JSON.tmp" "$CLAUDE_JSON"
+          if ! ${pkgs.jq}/bin/jq '.' "$CLAUDE_JSON" >/dev/null 2>&1; then
+            echo "WARNING: $CLAUDE_JSON is corrupt, skipping patch" >&2
+          else
+            PATCHED_CONTENT=$(${pkgs.jq}/bin/jq '.installMethod = "native"' "$CLAUDE_JSON")
+            CURRENT_CONTENT=$(cat "$CLAUDE_JSON")
+            if [ "$PATCHED_CONTENT" != "$CURRENT_CONTENT" ]; then
+              echo "$PATCHED_CONTENT" > "$CLAUDE_JSON.tmp" && mv "$CLAUDE_JSON.tmp" "$CLAUDE_JSON"
+            fi
           fi
         else
           echo '{"installMethod": "native"}' > "$CLAUDE_JSON"
