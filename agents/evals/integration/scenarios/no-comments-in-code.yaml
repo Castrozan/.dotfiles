@@ -24,9 +24,6 @@ assertions:
   tool_presence:
     - Read
     - Edit
-  tool_order:
-    - tool: Read
-      before: Edit
   written_code_not_contains:
     - "# "
     - "// "

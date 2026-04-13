@@ -7,7 +7,7 @@ Umbrella skill for review, compliance, documentation, instruction authoring, and
 
 For unbiased code review by a reviewer subagent — bug/security scanner, conventions checker, 81+ confidence scoring — read `code-review.md`.
 
-For compliance auditing of offloaded rules (read-before-edit, python-over-bash, test-first, local-info-first, investigation depth) against a diff and tool sequence — read `compliance.md`.
+For compliance auditing of offloaded rules (python-over-bash, test-first, local-info-first, investigation depth) against a diff and tool sequence — read `compliance.md`.
 
 For documentation policy — naming over docs, evergreen vs stale, when docs are needed, policy versus instruction boundary — read `docs.md`.
 

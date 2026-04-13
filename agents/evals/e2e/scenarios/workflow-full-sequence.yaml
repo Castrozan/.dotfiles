@@ -20,9 +20,6 @@ assertions:
     - Read
     - Edit
     - Bash
-  tool_order:
-    - tool: Read
-      before: Edit
   bash_command_contains:
     - "ruff"
     - "git add"

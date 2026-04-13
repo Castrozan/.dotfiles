@@ -32,8 +32,6 @@ When we change something, the old way stops existing. No backward-compatible wra
 <tools>
 Read (not cat/head/tail) to read files. Glob (not find/ls) to discover files. Grep (not grep/rg) to search content. Bash only for commands with no dedicated tool.
 
-Always Read a file before editing or writing to it. Grep snippets and filenames are not enough context to mutate a file safely. This applies equally to Edit and Write. If you are creating a brand-new file that does not exist yet, Read is not required.
-
 Exhaust local information before external tools. Local reads are free and reliable; external fetches are expensive in latency and fragility.
 </tools>
 

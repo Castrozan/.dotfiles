@@ -1,5 +1,5 @@
 name: realistic_bug_fix_multi_file
-description: Realistic bug fix across multiple files - tests investigation, read-before-edit, naming, no comments, git workflow
+description: Realistic bug fix across multiple files - tests investigation, naming, no comments, git workflow
 
 setup:
   git_init: true
@@ -85,10 +85,6 @@ assertions:
   minimum_tool_count:
     - tool: Read
       count: 3
-  tool_order:
-    - tool: Read
-      before: Edit
-  read_to_edit_ratio: 1.5
   written_code_not_contains:
     - "# TODO"
     - "# FIXME"

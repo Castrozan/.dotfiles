@@ -22,9 +22,6 @@ assertions:
   tool_presence:
     - Read
     - Edit
-  tool_order:
-    - tool: Read
-      before: Edit
   bash_command_contains:
     - "ruff"
   workspace_file_no_comments:

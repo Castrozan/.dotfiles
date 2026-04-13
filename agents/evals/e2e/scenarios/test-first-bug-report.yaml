@@ -29,9 +29,6 @@ assertions:
   tool_presence:
     - Read
     - Edit
-  tool_order:
-    - tool: Read
-      before: Edit
   file_changed:
     - tests/test_discount.py
     - src/discount.py

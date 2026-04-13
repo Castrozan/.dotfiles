@@ -20,9 +20,6 @@ prompt: |
 timeout: 180
 
 assertions:
-  tool_order:
-    - tool: Read
-      before: Edit
   tool_presence:
     - Read
     - Edit

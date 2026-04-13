@@ -29,9 +29,6 @@ assertions:
   tool_presence:
     - Read
     - Edit
-  tool_order:
-    - tool: Read
-      before: Edit
   workspace_file_no_comments:
     - src/endpoints.py
   file_changed:

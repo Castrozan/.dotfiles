@@ -122,16 +122,6 @@ in
         }
       ];
     }
-    {
-      matcher = "Write|Edit";
-      hooks = [
-        {
-          type = "command";
-          command = "${runHook} ${hooksPath}/block-write-without-read.py";
-          timeout = 2000;
-        }
-      ];
-    }
   ];
 
   # Workaround: bypassPermissions has a hardcoded .claude/ prompt since v2.1.78.
@@ -167,16 +157,6 @@ in
           type = "command";
           command = "${runHook} ${hooksPath}/nix-rebuild-trigger.py";
           timeout = 3000;
-        }
-      ];
-    }
-    {
-      matcher = "Grep";
-      hooks = [
-        {
-          type = "command";
-          command = "${runHook} ${hooksPath}/read-before-edit-reminder.py";
-          timeout = 1000;
         }
       ];
     }
