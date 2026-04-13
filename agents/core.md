@@ -77,3 +77,7 @@ The end-of-work hook runs quality review automatically. It spawns parallel revie
 <investigation>
 When asked to analyze or debug, the deliverable is understanding - not a quick fix. "Why" questions are investigation triggers. Complete the investigation before proposing fixes - analysis and implementation are separate phases.
 </investigation>
+
+<skill-invocation>
+When a task matches a skill's domain, invoke Skill(skill_name) first and follow its guidance. Do not wait to be told to use a skill. Skill descriptions are loaded at session start precisely so that you can match them against the task without being prompted. Signs a task matches a skill: the task names a capability the skill handles (git ops, nix edits, desktop control, vault notes, etc.), a URL/domain the skill specializes in (x.com, twitter.com), a file type the skill owns (QML for quickshell, .nix for nix), or a workflow the skill defines (commit sequence, review rubric, deep work setup). Loading a skill is cheap; not loading it when relevant is expensive because you lose context the user already paid tokens to deliver.
+</skill-invocation>

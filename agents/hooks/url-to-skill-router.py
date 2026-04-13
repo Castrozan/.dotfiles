@@ -18,7 +18,8 @@ REDIRECT_MESSAGE = (
     "curl -sL 'https://api.fxtwitter.com/{user}/status/{tweet_id}' "
     "Extract user and tweet_id from the URL. Returns JSON with tweet text, media URLs, "
     "and engagement metrics. Download media with curl -sL -o /tmp/file.ext '{media_url}'. "
-    "For advanced operations (posting, searching, profiles), invoke Skill(skill='comms')."
+    "For advanced operations (posting, searching, profiles), invoke Skill(skill='personal') "
+    "then read personal/comms-twitter.md for Twitter-specific workflows."
 )
 
 
