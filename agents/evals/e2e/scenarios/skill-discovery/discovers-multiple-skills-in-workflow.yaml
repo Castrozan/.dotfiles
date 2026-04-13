@@ -1,0 +1,27 @@
+name: skill_discovery_multiple_skills_in_workflow
+description: Agent should load multiple relevant skills when a task spans domains (nix config + commit + rebuild)
+
+setup:
+  git_init: true
+  files:
+    - path: flake.nix
+      content: |
+        { description = "demo"; }
+    - path: home/modules/example.nix
+      content: |
+        { pkgs, ... }: { home.packages = [ pkgs.jq ]; }
+
+prompt: |
+  I added jq to home/modules/example.nix. Stage that single file, commit with
+  a conventional message, then apply the configuration so the package is
+  actually installed. What is the full correct workflow?
+
+timeout: 180
+
+assertions:
+  autonomous_skill_invocation:
+    - git
+    - nix
+  wrong_skill_not_invoked:
+    - personal
+    - review
