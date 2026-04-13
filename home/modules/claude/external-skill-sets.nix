@@ -72,8 +72,12 @@ let
       ln -sfn "$item" "$config_dir/$name"
     done
 
-    # Ensure .claude.json exists so Claude can write its runtime state
-    [[ -e "$config_dir/.claude.json" ]] || echo '{}' > "$config_dir/.claude.json"
+    # Symlink global ~/.claude.json for onboarding state and runtime config
+    if [[ -e "${homeDirectory}/.claude.json" && ! -e "$config_dir/.claude.json" ]]; then
+      ln -sfn "${homeDirectory}/.claude.json" "$config_dir/.claude.json"
+    elif [[ ! -e "$config_dir/.claude.json" ]]; then
+      echo '{}' > "$config_dir/.claude.json"
+    fi
 
     skill_count=0
 
