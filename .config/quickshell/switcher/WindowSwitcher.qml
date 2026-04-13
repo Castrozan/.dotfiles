@@ -198,6 +198,25 @@ Scope {
         }
     }
 
+    SocketServer {
+        active: true
+        path: Quickshell.env("XDG_RUNTIME_DIR") + "/quickshell-switcher.sock"
+
+        handler: Socket {
+            parser: SplitParser {
+                splitMarker: "\n"
+                onRead: message => {
+                    let command = message.trim();
+                    if (command === "open") switcherRoot.openSwitcher();
+                    else if (command === "next") switcherRoot.selectNextWindow();
+                    else if (command === "prev") switcherRoot.selectPreviousWindow();
+                    else if (command === "confirm") switcherRoot.confirmSelection();
+                    else if (command === "cancel") switcherRoot.cancelSwitcher();
+                }
+            }
+        }
+    }
+
     PanelWindow {
         id: switcherPanel
 

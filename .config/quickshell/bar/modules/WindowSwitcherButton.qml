@@ -1,9 +1,12 @@
-import Quickshell.Io
+import Quickshell
+import Quickshell.Hyprland
 import QtQuick
 import ".."
 
 Rectangle {
     id: windowSwitcherButtonRoot
+
+    readonly property string switcherSocketPath: Quickshell.env("XDG_RUNTIME_DIR") + "/quickshell-switcher.sock"
 
     radius: 8
     color: windowSwitcherMouseArea.containsMouse ? ThemeColors.surfaceTranslucent : "transparent"
@@ -23,20 +26,14 @@ Rectangle {
         cursorShape: Qt.PointingHandCursor
 
         onClicked: {
-            enterSubmapProcess.running = true;
-            openWindowSwitcherProcess.running = true;
+            Hyprland.dispatch("submap windowswitcher");
+            sendSwitcherCommandProcess.running = true;
         }
     }
 
     Process {
-        id: enterSubmapProcess
-        command: ["hyprctl", "dispatch", "submap", "windowswitcher"]
-        running: false
-    }
-
-    Process {
-        id: openWindowSwitcherProcess
-        command: ["qs", "-c", "switcher", "ipc", "call", "switcher", "open"]
+        id: sendSwitcherCommandProcess
+        command: ["sh", "-c", `printf 'open\n' | nc -U -N ${windowSwitcherButtonRoot.switcherSocketPath}`]
         running: false
     }
 }
