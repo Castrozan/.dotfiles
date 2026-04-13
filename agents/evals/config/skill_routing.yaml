@@ -9,7 +9,7 @@ shared_system_prompt: &shared_system_prompt |
 
   desktop - Desktop automation and media control — type text, send key combos, click/move/scroll/drag mouse, capture screenshots, read/write clipboard, music and audio playback (pause, play, next, previous, volume), MPRIS/playerctl control of Spotify/Brave/any player, YouTube search and playlist management. Use for any non-browser GUI interaction, any request to pause/play music, adjust volume, or control local/YouTube media.
 
-  nix - Nix everything — language and ecosystem expertise (lazy eval, derivations, overlays, module system, flakes, agenix, cachix), applying configuration changes via rebuild, project-level devenv shells, and the conventions of THIS Nix-based dotfiles repository (module layout, isNixOS detection, script packaging, secrets workflow, package channels). Use for any .nix edit, rebuild, devenv shell change, or question about where something belongs in the dotfiles.
+  nix - Nix everything — language expertise (lazy eval, derivations, overlays, module system, flakes, agenix, cachix), applying config via rebuild, devenv project shells, and THIS dotfiles repo conventions (module layout, isNixOS, script packaging, secrets, channels). Use for any .nix edit, rebuild, devenv shell, or "where does this belong in the dotfiles" question.
 
   personal - Lucas's personal channels and platforms — autonomous assistant loop (Gmail, Calendar, WhatsApp, Google Chat), Obsidian vault (daily notes, TODOs, ReadItLater inbox), Twitter/X (x.com, twitter.com) scraping and posting, VTuber avatar, Senior Gestão de Ponto (marcações, acertos), Home Assistant smart home (lights, AC), phone status SSH (battery), OpenClaw multi-agent platform (grid, A2A, Telegram bots, cron). Use for any personal channel, note, tweet, social URL, smart home, phone, ponto, or openclaw task.
 
@@ -17,7 +17,7 @@ shared_system_prompt: &shared_system_prompt |
 
   research - Current-information research and synthesis for tools, vendors, standards, or decisions. Use when the user asks to research, compare, evaluate, verify, or find the latest external information; not for local repo search.
 
-  review - Meta-disciplines for quality, review, and output craft — unbiased code review rubric for reviewer subagents, offloaded-rule compliance auditing, documentation policy, AI instruction and skill authoring, and ultra-dense output mode. Use when reviewing code, auditing rule compliance after work, writing docs or policies, designing skills or prompts, or when the user asks for compressed responses.
+  review - Quality, review, and output craft — unbiased code review rubric for reviewer subagents, offloaded-rule compliance auditing, documentation policy, skill and instruction authoring, ultra-dense output mode. Use when reviewing code, auditing rule compliance, writing docs or policies, designing skills or prompts, or when the user asks for compressed responses.
 
   session - Session lifecycle and context preservation — deep work context management, workspace switching, git worktrees for parallel branches, tmux control for background processes, spawning interactive Claude Code instances via tmux or one-shot --print, end-of-work notifications to the user, session restart and exit.
 

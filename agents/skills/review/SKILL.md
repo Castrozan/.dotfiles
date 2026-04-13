@@ -1,6 +1,6 @@
 ---
 name: review
-description: Meta-disciplines for quality, review, and output craft — unbiased code review rubric for reviewer subagents, offloaded-rule compliance auditing, documentation policy, AI instruction and skill authoring, and ultra-dense output mode. Use when reviewing code, auditing rule compliance after work, writing docs or policies, designing skills or prompts, or when the user asks for compressed responses.
+description: Quality, review, and output craft — unbiased code review rubric for reviewer subagents, offloaded-rule compliance auditing, documentation policy, skill and instruction authoring, ultra-dense output mode. Use when reviewing code, auditing rule compliance, writing docs or policies, designing skills or prompts, or when the user asks for compressed responses.
 ---
 
 Umbrella skill for review, compliance, documentation, instruction authoring, and output density. Each capability lives in its own file so only the one you need loads into context.

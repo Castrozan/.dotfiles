@@ -1,6 +1,6 @@
 ---
 name: nix
-description: Nix everything — language and ecosystem expertise (lazy eval, derivations, overlays, module system, flakes, agenix, cachix), applying configuration changes via rebuild, project-level devenv shells, and the conventions of THIS Nix-based dotfiles repository (module layout, isNixOS detection, script packaging, secrets workflow, package channels). Use for any .nix edit, rebuild, devenv shell change, or question about where something belongs in the dotfiles.
+description: Nix everything — language expertise (lazy eval, derivations, overlays, module system, flakes, agenix, cachix), applying config via rebuild, devenv project shells, and THIS dotfiles repo conventions (module layout, isNixOS, script packaging, secrets, channels). Use for any .nix edit, rebuild, devenv shell, or "where does this belong in the dotfiles" question.
 ---
 
 Umbrella skill for Nix language expertise, rebuild workflow, devenv shells, and this repository's conventions. Each capability lives in its own file so only the relevant one loads into context.
