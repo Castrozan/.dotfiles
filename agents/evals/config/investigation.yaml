@@ -64,7 +64,7 @@ tests:
     description: "Agent should trace failures to instruction gaps, not just describe symptoms"
     skill_path: agents/core.md
     prompt: |
-      An agent used the browser skill when it should have used the obsidian skill. The user had to correct it. What should I investigate to understand why this happened?
+      An agent used the browser skill when it should have used the personal skill's obsidian sub-file. The user had to correct it. What should I investigate to understand why this happened?
     model: haiku
     max_turns: 1
     assertions:
