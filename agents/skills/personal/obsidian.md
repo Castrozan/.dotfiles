@@ -50,7 +50,7 @@ Textsnippet and empty Note files: often near-empty (accidental saves or clipboar
 
 Multi-content files: some files contain multiple `[[ReadItLater]]` headers concatenated (e.g. multiple Reddit posts). Process as one unit, tag the first line.
 
-Tweet media enrichment: when tweets contain `pic.twitter.com` or `t.co` links and the user asks about attached images or video, the comms skill provides twikit-cli for Twitter data, and fxtwitter API returns reliable media URLs without auth. Do not reach for the browser skill to view tweet content.
+Tweet media enrichment: when tweets contain `pic.twitter.com` or `t.co` links and the user asks about attached images or video, read this umbrella's `comms-twitter.md` sub-file for twikit-cli usage, and use the fxtwitter API for reliable media URLs without auth. Do not reach for the browser skill to view tweet content.
 </inbox_processing>
 
 <sync>
