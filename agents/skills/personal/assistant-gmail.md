@@ -14,7 +14,7 @@ Gmail is accessed via the Gmail MCP tools (mcp__claude_ai_Gmail__*). Authenticat
 |---|---|---|
 | From a known contact, simple question | Routine | Reply directly in Lucas's voice |
 | Newsletter, notification, automated | Noise | Archive silently |
-| Meeting invite or scheduling | Calendar | Check calendar, accept/decline per calendar.md rules |
+| Meeting invite or scheduling | Calendar | Check calendar, accept/decline per assistant-calendar.md rules |
 | From boss/manager, action required | Urgent | Escalate to Discord immediately |
 | Financial (invoices, payments, subscriptions) | Financial | Escalate to Discord, never act |
 | Unknown sender, looks legitimate | Review | Draft reply, present via Discord |
