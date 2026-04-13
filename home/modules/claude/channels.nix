@@ -18,6 +18,7 @@ let
 
   nixSystemPaths = lib.concatStringsSep ":" [
     "${pkgs.tmux}/bin"
+    "${pkgs.python312}/bin"
     "/run/current-system/sw/bin"
     "/etc/profiles/per-user/${username}/bin"
     "${homeDir}/.nix-profile/bin"
@@ -93,6 +94,19 @@ let
     ${sharedCommunicationInstructions}
   '';
 
+  bootstrapHeartbeatScript = ./scripts/bootstrap-discord-agent-heartbeat;
+
+  agentsWithHeartbeats = lib.filterAttrs (_: agent: agent.heartbeatInterval != null) cfg.agents;
+  hasAgentsWithHeartbeats = agentsWithHeartbeats != { };
+
+  buildHeartbeatBootstrapCommand = name: agent: ''
+    ${pkgs.python312}/bin/python3 ${bootstrapHeartbeatScript} \
+      --session "${tmuxSessionName}" \
+      --window ${lib.escapeShellArg name} \
+      --interval ${lib.escapeShellArg agent.heartbeatInterval} \
+      --prompt ${lib.escapeShellArg agent.heartbeatPrompt} &
+  '';
+
   agentWorkspaceDirectory = name: "${agentWorkspacesBaseDirectory}/${name}";
 
   buildAgentLaunchCommand =
@@ -117,6 +131,10 @@ let
     name: agent:
     ''${pkgs.tmux}/bin/tmux new-window -t "${tmuxSessionName}" -n ${name} "${buildAgentLaunchCommand name agent}"'';
 
+  heartbeatBootstrapCommands = lib.concatMapStringsSep "\n" (
+    name: buildHeartbeatBootstrapCommand name agentsWithHeartbeats.${name}
+  ) (builtins.attrNames agentsWithHeartbeats);
+
   claudeDiscordAgentsServiceScript = pkgs.writeShellScript "claude-discord-agents-service" ''
     set -euo pipefail
 
@@ -130,6 +148,8 @@ let
     ${lib.concatMapStringsSep "\n" (name: buildTmuxNewWindowCommand name cfg.agents.${name}) (
       builtins.tail agentNames
     )}
+
+    ${lib.optionalString hasAgentsWithHeartbeats heartbeatBootstrapCommands}
 
     while ${pkgs.tmux}/bin/tmux has-session -t "${tmuxSessionName}" 2>/dev/null; do
       sleep 10
@@ -241,6 +261,16 @@ in
           personality = lib.mkOption {
             type = lib.types.lines;
             description = "Rich personality and instructions for this agent's CLAUDE.md";
+          };
+          heartbeatInterval = lib.mkOption {
+            type = lib.types.nullOr lib.types.str;
+            default = null;
+            description = "Cron expression for heartbeat interval (e.g., '*/5 * * * *'). When set, agent becomes autonomous with a polling loop.";
+          };
+          heartbeatPrompt = lib.mkOption {
+            type = lib.types.nullOr lib.types.str;
+            default = null;
+            description = "Prompt sent on each heartbeat tick. Required when heartbeatInterval is set.";
           };
         };
       }
