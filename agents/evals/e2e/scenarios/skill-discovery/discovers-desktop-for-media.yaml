@@ -1,14 +1,17 @@
 name: skill_discovery_desktop_for_media
-description: Agent should autonomously load desktop skill for media playback control
+description: Agent should autonomously load desktop skill when asked about MPRIS players and volume control with a real multi-player constraint
 
 setup:
   git_init: false
   files: []
 
 prompt: |
-  Pause whatever music is playing and lower the system volume to 20%.
+  I have multiple MPRIS-capable players running (Brave for YouTube audio,
+  Spotify for music). Volume commands only affect one of them reliably,
+  and sometimes Brave ignores volume entirely. Pause whatever is playing
+  right now and explain how to control volume consistently across both.
 
-timeout: 120
+timeout: 180
 
 assertions:
   autonomous_skill_invocation:

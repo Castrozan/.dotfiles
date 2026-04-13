@@ -105,6 +105,15 @@ Skill-discovery tests:
   framework changes in agents/evals/e2e/run-e2e-tests.py
   run with: python3 agents/evals/e2e/run-e2e-tests.py --scenario skill_discovery_git_for_commit
 
+  Live haiku results (initial spot checks, 2026-04-13 02:40):
+    skill_discovery_git_for_commit: PASS (Skill(git) invoked autonomously)
+    skill_discovery_research_for_external_info: PASS (Skill(research) invoked)
+    skill_discovery_desktop_for_media: FAIL (model did playerctl via Bash
+      without loading Skill(desktop) - exact pattern user complained about)
+  Interpretation: the autonomy issue the user described is real and measurable.
+  Simple tasks ("pause music") trigger direct Bash; tasks with nuance ("commit
+  these files", "research latest X") trigger correct Skill() invocation.
+
 Rollback if needed:
   git reset --hard 357adf70 && rebuild
   destroys ~18 commits of work; prefer selective revert
