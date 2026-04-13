@@ -95,7 +95,7 @@ The dotfiles repo (`~/.dotfiles`) is used by **multiple actors simultaneously** 
 1. **Pull first**: `git pull --rebase origin main`
 2. **Code conduct**: follow conventions and always read the nix skill's repo capability (agents/skills/nix/repo.md) and AGENTS.md
 3. **Code quality**: lint, format, test with the ci.yaml workflow
-4. **Rebuild & test**: with the rebuild skill — verify it succeeds - **ALWAYS TEST EVERYTHING YOU IMPLEMENT**
+4. **Rebuild & test**: with the nix skill's rebuild capability — verify it succeeds - **ALWAYS TEST EVERYTHING YOU IMPLEMENT**
 5. **Always use conventional commits**: `feat(scope)`, `fix(scope)`, `refactor(scope)`, etc.
 6. **Push**: `git push origin main` only after successful rebuild
 

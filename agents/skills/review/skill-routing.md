@@ -30,5 +30,5 @@ Add routing eval tests. Each test gives the shared router prompt a user input an
 </fix_with_eval_tests>
 
 <live_testing>
-After eval tests pass, verify in a real Claude Code session. Evals test an isolated router; real sessions have competing tools, MCPs, and hooks. Use the claude skill to spawn a tmux session with the failing input as the prompt. Capture pane output to verify the model used the correct skill/tool chain. Iterate on hook messages until the model follows the redirect on first attempt.
+After eval tests pass, verify in a real Claude Code session. Evals test an isolated router; real sessions have competing tools, MCPs, and hooks. Use the session skill's claude capability to spawn a tmux session with the failing input as the prompt. Capture pane output to verify the model used the correct skill/tool chain. Iterate on hook messages until the model follows the redirect on first attempt.
 </live_testing>

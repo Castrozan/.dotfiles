@@ -43,10 +43,7 @@ def main():
 
     output = {
         "continue": True,
-        "hookSpecificOutput": {
-            "hookEventName": "PostCompact",
-            "additionalContext": CRITICAL_RULES_REINFORCEMENT,
-        },
+        "systemMessage": CRITICAL_RULES_REINFORCEMENT,
     }
     print(json.dumps(output))
     sys.exit(0)

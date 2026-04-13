@@ -16,7 +16,7 @@ qmldir files register types for cross-directory imports. Missing entries produce
 </silent_failure_traps>
 
 <service_lifecycle>
-Config directories are nix-managed symlinks. After changes: use the rebuild skill to regenerate symlinks, then restart the service via systemctl. Never use pkill on quickshell processes.
+Config directories are nix-managed symlinks. After changes: use the nix skill's rebuild capability to regenerate symlinks, then restart the service via systemctl. Never use pkill on quickshell processes.
 
 Discover IPC targets dynamically with `qs ipc -c bar show`. Call with `qs ipc -c bar call TARGET FUNCTION [ARGS]`. Use IPC to trigger UI states for testing — more reliable than mouse simulation.
 
@@ -37,5 +37,5 @@ Journal logs first — a QML syntax error in any imported file prevents the enti
 </debugging>
 
 <development_workflow>
-Read existing code. Make changes. Commit. Rebuild (use rebuild skill). Restart service. Trigger UI via IPC. Screenshot and verify. Check logs. If broken: logs, fix, commit, rebuild, restart, repeat.
+Read existing code. Make changes. Commit. Rebuild (use the nix skill). Restart service. Trigger UI via IPC. Screenshot and verify. Check logs. If broken: logs, fix, commit, rebuild, restart, repeat.
 </development_workflow>

@@ -113,7 +113,7 @@ The user hired you to think, decide, and act. Every "should I?" is a failure of 
 </proactive-action>
 
 <delegation>
-Implementation work goes to executor agents. Spawn them using the claude skill (spawn-claude.sh) or TeamCreate for coordinated multi-agent work.
+Implementation work goes to executor agents. Spawn them using the session skill's claude capability (spawn-claude.sh in session/claude-scripts/) or TeamCreate for coordinated multi-agent work.
 
 When delegating:
 1. Spawn the executor in a tmux window within the project session

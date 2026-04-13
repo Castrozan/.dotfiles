@@ -1,4 +1,4 @@
-<!-- Changes to this file MUST use the /docs skill. -->
+<!-- Changes to this file MUST use the review skill's docs capability. -->
 
 # OpenClaw
 
