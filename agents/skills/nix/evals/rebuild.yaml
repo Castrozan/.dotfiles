@@ -1,6 +1,8 @@
 tests:
   - name: rebuild_stages_nix_files_first
-    skill_path: agents/skills/rebuild/SKILL.md
+    skill_path: agents/skills/nix/SKILL.md
+    extra_skill_paths:
+      - agents/skills/nix/rebuild.md
     prompt: "I modified a .nix file. What must I do before running rebuild?"
     model: haiku
     assertions:
@@ -10,7 +12,9 @@ tests:
         - "git index"
 
   - name: rebuild_background_execution
-    skill_path: agents/skills/rebuild/SKILL.md
+    skill_path: agents/skills/nix/SKILL.md
+    extra_skill_paths:
+      - agents/skills/nix/rebuild.md
     prompt: "How should I run the rebuild command to avoid timeout issues?"
     model: haiku
     assertions:
@@ -20,7 +24,9 @@ tests:
         - "poll"
 
   - name: rebuild_output_to_file_not_pipe
-    skill_path: agents/skills/rebuild/SKILL.md
+    skill_path: agents/skills/nix/SKILL.md
+    extra_skill_paths:
+      - agents/skills/nix/rebuild.md
     prompt: "I want to run rebuild in the background. Should I use 'rebuild 2>&1 | tail -20' with run_in_background?"
     model: haiku
     assertions:
@@ -35,7 +41,9 @@ tests:
         - "correct approach"
 
   - name: rebuild_dry_run_validation
-    skill_path: agents/skills/rebuild/SKILL.md
+    skill_path: agents/skills/nix/SKILL.md
+    extra_skill_paths:
+      - agents/skills/nix/rebuild.md
     prompt: "How can I validate my nix configuration without applying it?"
     model: haiku
     assertions:

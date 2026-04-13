@@ -13,15 +13,11 @@ shared_system_prompt: &shared_system_prompt |
 
   desktop - Interact with the desktop — type text, send key combos, click/move/scroll/drag mouse, capture screenshots, read/write clipboard. Use for any non-browser GUI automation.
 
-  devenv - Manage Nix-based development environments with devenv. Use when creating, configuring, or debugging devenv shells, adding packages or services to devenv.nix, or setting up project-specific dev environments with processes, databases, or language toolchains.
-
-  dotfiles - User Nix based dotfiles repository. Use when adding modules, modifying user configs, managing secrets, understanding file organization, debugging rebuilds, or unsure where something belongs.
-
   home-assistant - Control smart home devices via Home Assistant — lights (ha-light) and air conditioner (ha-ac). Use when user asks to turn on/off lights or AC, change temperature, brightness, fan speed, or check device status.
 
   media - Media playback control and YouTube operations — play, pause, volume, next, previous, video search, playlists management.
 
-  nix-expert - Nix language and ecosystem expert. Use for writing/debugging Nix expressions, lazy evaluation and fixed-points, derivations and overlays, module system internals (mkIf, mkMerge, types), flake design, ecosystem tools (devenv, direnv, cachix, agenix). For THIS dotfiles repository, use dotfiles skill instead.
+  nix - Nix everything — language and ecosystem expertise (lazy eval, derivations, overlays, module system, flakes, agenix, cachix), applying configuration changes via rebuild, project-level devenv shells, and the conventions of THIS Nix-based dotfiles repository (module layout, isNixOS detection, script packaging, secrets workflow, package channels). Use for any .nix edit, rebuild, devenv shell change, or question about where something belongs in the dotfiles.
 
   notify - Notify the user after completing substantial work. Use when finishing long tasks, implementations, or background operations. Plays audio and shows a desktop notification by default.
 
@@ -34,8 +30,6 @@ shared_system_prompt: &shared_system_prompt |
   ponto - Fill time entries on Senior Gestão de Ponto. Use when user asks to fill ponto, clock-in entries, marcações, acertos de ponto, or time tracking on the Senior platform.
 
   quickshell - Implement, debug, and test Quickshell bar/OSD/switcher. Use when modifying QML files, debugging shape paths or rendering, testing IPC calls, or verifying visual changes after edits. Also use when adding new bar modules, popouts, dashboard tabs, or launcher features.
-
-  rebuild - Apply Nix configuration changes. Use when modifying .nix files, after flake updates, or when user asks to rebuild/apply dotfiles changes.
 
   research - Current-information research and synthesis for tools, vendors, standards, or decisions. Use when the user asks to research, compare, evaluate, verify, or find the latest external information; not for local repo search.
 
@@ -313,7 +307,7 @@ tests:
     model: haiku
     assertions:
       output_contains_any:
-        - "dotfiles"
+        - "nix"
 
   - name: routing_to_nix_expert_expression
     system_prompt: *shared_system_prompt
@@ -321,7 +315,7 @@ tests:
     model: haiku
     assertions:
       output_contains_any:
-        - "nix-expert"
+        - "nix"
 
   - name: routing_to_rebuild_apply_changes
     system_prompt: *shared_system_prompt
@@ -329,7 +323,7 @@ tests:
     model: haiku
     assertions:
       output_contains_any:
-        - "rebuild"
+        - "nix"
 
   - name: routing_to_test_verification
     system_prompt: *shared_system_prompt
@@ -406,7 +400,7 @@ tests:
     model: haiku
     assertions:
       output_contains_any:
-        - "devenv"
+        - "nix"
 
   - name: routing_to_phone_status_battery
     system_prompt: *shared_system_prompt
@@ -423,16 +417,6 @@ tests:
     assertions:
       output_contains_any:
         - "ponto"
-
-  - name: routing_ambiguous_nix_dotfiles_vs_nix_expert
-    system_prompt: *shared_system_prompt
-    prompt: "Explain how mkMerge works in the NixOS module system"
-    model: haiku
-    assertions:
-      output_contains_any:
-        - "nix-expert"
-      output_not_contains:
-        - "dotfiles"
 
   - name: routing_ambiguous_browser_vs_desktop_screenshot
     system_prompt: *shared_system_prompt
@@ -474,16 +458,6 @@ tests:
       output_not_contains:
         - "session"
 
-  - name: routing_ambiguous_dotfiles_vs_rebuild
-    system_prompt: *shared_system_prompt
-    prompt: "I added a new package to my home.nix, now apply it"
-    model: haiku
-    assertions:
-      output_contains_any:
-        - "rebuild"
-      output_not_contains:
-        - "dotfiles"
-
   - name: routing_to_review_code_analysis
     system_prompt: *shared_system_prompt
     prompt: "Spawn an unbiased reviewer agent to check my implementation for bugs and convention violations"
@@ -511,7 +485,7 @@ tests:
       output_contains_any:
         - "git"
       output_not_contains:
-        - "dotfiles"
+        - "nix"
 
   - name: routing_to_git_history_trace_evolution
     system_prompt: *shared_system_prompt

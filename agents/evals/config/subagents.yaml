@@ -3,8 +3,10 @@
 
 tests:
   - name: dotfiles_expert_knows_structure
-    description: "dotfiles knows the repo structure"
-    agent: dotfiles
+    description: "nix skill knows the dotfiles repo structure"
+    skill_path: agents/skills/nix/SKILL.md
+    extra_skill_paths:
+      - agents/skills/nix/repo.md
     prompt: "Where should I put a new home-manager module?"
     model: haiku
     max_turns: 3
@@ -13,8 +15,10 @@ tests:
         - "home/modules"
 
   - name: nix_expert_explains_concepts
-    description: "nix-expert can explain Nix concepts"
-    agent: nix-expert
+    description: "nix skill can explain Nix concepts"
+    skill_path: agents/skills/nix/SKILL.md
+    extra_skill_paths:
+      - agents/skills/nix/expert.md
     prompt: "What is a Nix overlay?"
     model: haiku
     max_turns: 2

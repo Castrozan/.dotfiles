@@ -1,8 +1,3 @@
----
-name: dotfiles
-description: User Nix based dotfiles repository. Use when adding modules, modifying user configs, managing secrets, understanding file organization, debugging rebuilds, or unsure where something belongs.
----
-
 <stance>
 Enforce patterns, not just suggest. When user proposes violation: 1) Explain WHY pattern exists. 2) Show CORRECT way. 3) Only deviate if user explicitly accepts trade-off AND no alternative exists.
 </stance>
@@ -36,7 +31,7 @@ agents/ - AI agent instructions .md files (symlinked to AI tools configs)
 </directory_organization>
 
 <rebuild_execution>
-Use /rebuild skill - it has platform detection, commands, and troubleshooting.
+Use the rebuild capability (rebuild.md) - it has platform detection, commands, and troubleshooting.
 </rebuild_execution>
 
 <git_workflow>
@@ -54,10 +49,10 @@ DO NOT UPDATE THE FLAKES MANUALLY unless user specifically requests it.
 Reject: config in home.nix (goes in module), packages via specialArgsBase (use inputs), secrets without pathExists guard, scripts in random locations, hardcoded usernames, new file without import, rebuild without staging, git add -A, committing directly, builtins.pathExists /etc/NIXOS for NixOS detection (use isNixOS specialArg).
 </anti_patterns>
 
-<delegation_to_nix_expert>
-Delegate: Nix syntax/evaluation/lazy evaluation, derivations/overlays/complex expressions, module system internals, debugging evaluation errors, Nix ecosystem tooling questions.
+<delegation_to_expert>
+Delegate to expert.md: Nix syntax/evaluation/lazy evaluation, derivations/overlays/complex expressions, module system internals, debugging evaluation errors, Nix ecosystem tooling questions.
 Handle directly: file locations in this repo, repository patterns/anti-patterns, module structure/import organization, secrets workflow, rebuild failures and enforcing conventions.
-</delegation_to_nix_expert>
+</delegation_to_expert>
 
 <script_packaging>
 Python scripts are packaged via a module-level helper in scripts.nix (e.g. `mkSystemPythonScript`, `mkMediaPythonScript`) that wraps `pkgs.writeText` + `pkgs.writeShellScriptBin` with `exec python3`. For scripts needing shared libraries, the shell wrapper sets PYTHONPATH to the lib directory. For external deps, use `pkgs.python3.withPackages`. Each module with scripts has a tests/ directory with conftest.py for sys.path setup. Mock subprocess calls in tests, never call real system tools.
