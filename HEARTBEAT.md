@@ -144,7 +144,11 @@ Rollback if needed:
 
 Open items the user may want to address:
   - docker-manager kept standalone; could go under nix if user prefers 10 exactly
-  - 11/60 skill_routing tests stochastic on haiku; try sonnet for stable routing
+  - skill_routing tests highly stochastic on haiku (observed 38-53/60 across 3 runs
+    with identical config). Treat as smoke signal, not gate. Move to sonnet for
+    stable routing if you want this suite to drive description iteration.
   - 6/11 skill-discovery scenarios fail; desktop/review/test/personal need
     description tuning or model upgrade
   - /tmp/claude-code-workspace-cwd is set to ~/.dotfiles; delete when done to restore default cwd
+  - baseline.json was saved from a mid-range run (92.8%); run --save-baseline
+    again after reviewing changes if you want a fresh snapshot.
