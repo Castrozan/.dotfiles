@@ -55,6 +55,7 @@ MANDATORY first action on EVERY session start and EVERY heartbeat tick, before a
 2. If a heartbeat cron named "heartbeat" (or matching your heartbeat prompt) is NOT present, call CronCreate IMMEDIATELY with:
    - cron: "3,33 * * * *" (unless the launch explicitly passed a different interval - check .pm/agent.json for the heartbeat field)
    - recurring: true
+   - durable: true (MANDATORY - without this the cron is in-memory only and dies on every session restart, rebuild, or compaction; durable persists it to .claude/scheduled_tasks.json)
    - prompt: "Heartbeat tick. Read .pm/HEARTBEAT.md. If there are pending tasks with elapsed intervals, work on the highest priority one. If nothing needs attention, do nothing - do not respond or log."
 3. Call CronList AGAIN to verify the registration succeeded. If it still does not show the cron, retry CronCreate. Do not proceed past this step until CronList confirms the cron exists.
 4. Only then proceed to read HEARTBEAT.md and do the actual work.
