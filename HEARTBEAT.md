@@ -77,3 +77,40 @@ Remaining to place: `docker-manager`. Options: standalone (11 skills, 1 over tar
 - 01:55 - personal umbrella (18->11)
 - 02:02 - Read-before-Edit hook + core rule + tests
 - 02:05 - baseline evals stable, skill_routing 53/60 after personal description tweak
+- 02:20 - new baseline committed: 192/207 (92.8%), skill_routing 49/60 stochastic
+- 02:25 - verified block-write-without-read hook is live via home-manager symlink
+
+## For user wake-up summary
+Changes land between 357adf70 and HEAD. Review with:
+  git log --oneline 357adf70..HEAD
+
+Top-level skill count: 29 -> 11. Umbrellas:
+  git = commit + git-history
+  nix = nix-expert + rebuild + devenv + dotfiles
+  review = review + compliance + tldr + docs + instructions
+  personal = personal-assistant + comms + gchat-monitor + obsidian + ponto + phone-status + home-assistant + openclaw
+  desktop = desktop + media
+  session = session + claude + notify
+Standalone: browser, research, docker-manager, quickshell, test
+
+Read-before-Edit enforcement:
+  agents/core.md has explicit rule in <tools>
+  agents/hooks/block-write-without-read.py denies Write on existing-unread files
+  registered in home/modules/claude/hook-config.nix at PreToolUse matcher=Write
+  12 unit tests in agents/hooks/tests/test_block_write_without_read.py
+
+Skill-discovery tests:
+  new assertion types: autonomous_skill_invocation, wrong_skill_not_invoked
+  11 scenarios in agents/evals/e2e/scenarios/skill-discovery/
+  framework changes in agents/evals/e2e/run-e2e-tests.py
+  run with: python3 agents/evals/e2e/run-e2e-tests.py --scenario skill_discovery_git_for_commit
+
+Rollback if needed:
+  git reset --hard 357adf70 && rebuild
+  destroys ~18 commits of work; prefer selective revert
+
+Open items the user may want to address:
+  - docker-manager kept standalone; could go under nix if user prefers 10 exactly
+  - 11/60 skill_routing tests stochastic on haiku; try sonnet for stable routing
+  - skill-discovery scenarios not yet run on live claude - expensive; do selectively
+  - /tmp/claude-code-workspace-cwd is set to ~/.dotfiles; delete when done to restore default cwd
