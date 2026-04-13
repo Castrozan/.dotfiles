@@ -123,7 +123,7 @@ in
       ];
     }
     {
-      matcher = "Write";
+      matcher = "Write|Edit";
       hooks = [
         {
           type = "command";

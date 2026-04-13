@@ -85,7 +85,7 @@ def main():
     hook_payload = load_hook_input()
 
     tool_name = hook_payload.get("tool_name", "")
-    if tool_name != "Write":
+    if tool_name not in ("Write", "Edit"):
         sys.exit(0)
 
     target_path = extract_target_file_path_from_tool_input(hook_payload)
