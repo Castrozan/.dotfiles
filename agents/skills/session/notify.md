@@ -1,5 +1,5 @@
 <execution>
-Run scripts/notify.sh from the session skill's notify-scripts/ subdirectory with a brief message. Voice is auto-detected from tts.json in the workspace root. Use --mobile for push notifications.
+Run notify.sh from the session skill's notify-scripts/ subdirectory with a brief message. Voice is auto-detected from tts.json in the workspace root. Use --mobile for push notifications.
 </execution>
 
 <when_to_use>

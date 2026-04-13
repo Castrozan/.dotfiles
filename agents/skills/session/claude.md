@@ -1,5 +1,5 @@
 <tmux_sessions>
-Launch a Claude Code instance in a tmux window. The session is fully interactive — the user can watch, take over, or follow up at any time. Use the spawn script from this skill's `scripts/` directory to create the window and optionally send an initial prompt.
+Launch a Claude Code instance in a tmux window. The session is fully interactive — the user can watch, take over, or follow up at any time. Use the spawn script from this skill's `claude-scripts/` directory to create the window and optionally send an initial prompt.
 
 Run `spawn-claude.sh --help` for exact syntax and flags. The script creates a named tmux window, starts claude in it, and optionally sends an initial prompt from a string or file.
 
