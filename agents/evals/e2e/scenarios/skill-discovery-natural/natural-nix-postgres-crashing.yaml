@@ -1,0 +1,18 @@
+name: skill_discovery_natural_nix_postgres_crashing
+description: Natural-prompt variant. User complains about a container with no hint about docker-manager, wrappers, or the nix umbrella. Agent should still route to nix skill.
+
+setup:
+  git_init: false
+  files: []
+
+prompt: |
+  My postgres container keeps crashing, figure out why.
+
+timeout: 180
+
+assertions:
+  autonomous_skill_invocation:
+    - nix
+  wrong_skill_not_invoked:
+    - session
+    - personal

@@ -1,0 +1,18 @@
+name: skill_discovery_natural_desktop_music_too_loud
+description: Natural-prompt variant. User complains about media volume with no mention of MPRIS, playerctl, wpctl, or wrapper scripts. Agent should still route to desktop skill.
+
+setup:
+  git_init: false
+  files: []
+
+prompt: |
+  The music from Brave is way too loud, turn it down.
+
+timeout: 180
+
+assertions:
+  autonomous_skill_invocation:
+    - desktop
+  wrong_skill_not_invoked:
+    - browser
+    - personal

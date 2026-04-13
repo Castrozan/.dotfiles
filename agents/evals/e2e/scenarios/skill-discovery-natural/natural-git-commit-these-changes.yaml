@@ -1,0 +1,23 @@
+name: skill_discovery_natural_git_commit_these_changes
+description: Natural-prompt variant. User asks for a commit with no hint about conventional messages, staging discipline, or per-file adds. Agent should still route to git skill.
+
+setup:
+  git_init: true
+  files:
+    - path: feature.py
+      content: |
+        def add_numbers(a, b):
+            return a + b
+
+prompt: |
+  Commit these changes.
+
+timeout: 180
+
+assertions:
+  autonomous_skill_invocation:
+    - git
+  wrong_skill_not_invoked:
+    - nix
+    - personal
+    - research

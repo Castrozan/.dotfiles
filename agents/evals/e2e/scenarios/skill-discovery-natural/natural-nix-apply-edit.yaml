@@ -1,0 +1,25 @@
+name: skill_discovery_natural_nix_apply_edit
+description: Natural-prompt variant. User says they edited a nix file and wants it applied, with no hint about rebuild, the right workflow, or the nix skill. Agent should still route to nix skill.
+
+setup:
+  git_init: true
+  files:
+    - path: flake.nix
+      content: |
+        { description = "demo"; }
+    - path: modules/example.nix
+      content: |
+        { ... }: { environment.systemPackages = []; }
+
+prompt: |
+  I just edited a nix file, apply it.
+
+timeout: 180
+
+assertions:
+  autonomous_skill_invocation:
+    - nix
+  wrong_skill_not_invoked:
+    - git
+    - session
+    - research

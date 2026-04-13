@@ -1,0 +1,25 @@
+name: skill_discovery_natural_review_check_diff
+description: Natural-prompt variant. User asks for a bug check on a diff with no hint about the unbiased reviewer rubric or which skill owns it. Agent should still route to review skill.
+
+setup:
+  git_init: true
+  files:
+    - path: src/handler.py
+      content: |
+        def handle_request(request):
+            result = process(request)
+            return result
+
+prompt: |
+  Check this diff for bugs.
+
+timeout: 180
+
+assertions:
+  autonomous_skill_invocation:
+    - review
+  wrong_skill_not_invoked:
+    - session
+    - git
+    - nix
+    - personal

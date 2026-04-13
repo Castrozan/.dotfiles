@@ -1,0 +1,21 @@
+name: skill_discovery_natural_session_parallel_branch
+description: Natural-prompt variant. User asks for a parallel branch without touching the current tree, with no hint about worktrees or the session skill. Agent should still route to session skill.
+
+setup:
+  git_init: true
+  files:
+    - path: README.md
+      content: "demo repo"
+
+prompt: |
+  I need a parallel git branch without touching my current tree.
+
+timeout: 180
+
+assertions:
+  autonomous_skill_invocation:
+    - session
+  wrong_skill_not_invoked:
+    - git
+    - nix
+    - personal

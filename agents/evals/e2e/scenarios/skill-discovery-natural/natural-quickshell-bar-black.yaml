@@ -1,0 +1,18 @@
+name: skill_discovery_natural_quickshell_bar_black
+description: Natural-prompt variant. User reports the bar went black after a recent change, with no hint about QML, silent-failure traps, or the quickshell skill. Agent should still route to quickshell skill.
+
+setup:
+  git_init: false
+  files: []
+
+prompt: |
+  My bar just went black after the last change, help me fix it.
+
+timeout: 180
+
+assertions:
+  autonomous_skill_invocation:
+    - quickshell
+  wrong_skill_not_invoked:
+    - desktop
+    - nix

@@ -1,0 +1,19 @@
+name: skill_discovery_natural_personal_fill_ponto
+description: Natural-prompt variant. User asks to fill ponto for the week with no hint about a convention, wrapper, or which skill owns this workflow. Agent should still route to personal skill.
+
+setup:
+  git_init: false
+  files: []
+
+prompt: |
+  Fill my ponto for this week.
+
+timeout: 180
+
+assertions:
+  autonomous_skill_invocation:
+    - personal
+  wrong_skill_not_invoked:
+    - nix
+    - review
+    - session

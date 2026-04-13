@@ -810,35 +810,9 @@ def calculate_e2e_experience_score(
     assertion_results: list[E2eAssertionResult],
     workspace_directory: Path | None = None,
 ) -> int:
-    score = 50
+    score = 65
     tool_names = extract_tool_name_sequence(trace)
-    read_count = tool_names.count("Read")
     edit_count = tool_names.count("Edit") + tool_names.count("Write")
-
-    if edit_count > 0:
-        if read_count == 0:
-            score -= 20
-        else:
-            first_read = next(
-                (i for i, n in enumerate(tool_names) if n == "Read"),
-                999,
-            )
-            first_edit = next(
-                (i for i, n in enumerate(tool_names) if n in ("Edit", "Write")),
-                999,
-            )
-            if first_read < first_edit:
-                score += 10
-            else:
-                score -= 15
-
-            ratio = read_count / edit_count
-            if ratio >= 2.0:
-                score += 10
-            elif ratio >= 1.0:
-                score += 5
-    elif len(tool_names) > 0:
-        score -= 10
 
     for command in trace.detected_bash_commands:
         if "git add -A" in command or "git add ." in command:

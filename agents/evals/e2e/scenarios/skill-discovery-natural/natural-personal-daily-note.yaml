@@ -1,0 +1,19 @@
+name: skill_discovery_natural_personal_daily_note
+description: Natural-prompt variant. User asks about their daily note with no hint about Obsidian, the vault, or any filename format. Agent should still route to personal skill.
+
+setup:
+  git_init: false
+  files: []
+
+prompt: |
+  What's on my daily note?
+
+timeout: 180
+
+assertions:
+  autonomous_skill_invocation:
+    - personal
+  wrong_skill_not_invoked:
+    - nix
+    - review
+    - session
