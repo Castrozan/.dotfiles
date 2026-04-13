@@ -76,6 +76,6 @@ After editing any file in the dotfiles repo, execute this sequence before respon
 When asked to analyze or debug, the deliverable is understanding - not a quick fix. "Why" questions are investigation triggers. Complete the investigation before proposing fixes - analysis and implementation are separate phases.
 </investigation>
 
-<offloaded-rules>
-These rules are enforced by the /compliance reviewer in workflow step 8. They are listed here for awareness but the compliance agent is the enforcer: Read every file before Edit (Grep is not Read). Python for scripts with logic. Test-first for bug reports. Local docs before web search.
-</offloaded-rules>
+<read-before-edit>
+Read every file you will modify before editing it because Grep only shows fragments and editing without full context leads to broken code. The sequence is always: Read the file, understand the full context, then Edit. If you are modifying 3 files, Read all 3. Workflow step 8 verifies this - the compliance reviewer will reject edits on unread files.
+</read-before-edit>
