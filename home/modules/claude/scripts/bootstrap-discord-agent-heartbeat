@@ -5,8 +5,14 @@ import sys
 import tempfile
 import time
 
-CLAUDE_INPUT_PROMPT_INDICATOR = "❯"
-MAX_WAIT_ATTEMPTS = 60
+MAX_WAIT_ATTEMPTS = 90
+INITIAL_DELAY_SECONDS = 30
+ONBOARDING_INDICATORS = [
+    "Select login method",
+    "Choose the text style",
+    "Paste code here",
+    "Claude account with subscription",
+]
 
 
 def find_tmux_socket() -> str | None:
@@ -29,9 +35,7 @@ def find_tmux_socket() -> str | None:
     return None
 
 
-def run_tmux_command(
-    tmux_socket: str, *arguments: str
-) -> subprocess.CompletedProcess:
+def run_tmux_command(tmux_socket: str, *arguments: str) -> subprocess.CompletedProcess:
     return subprocess.run(
         ["tmux", "-S", tmux_socket, *arguments],
         capture_output=True,
@@ -39,7 +43,24 @@ def run_tmux_command(
     )
 
 
+def pane_is_at_onboarding(pane_content: str) -> bool:
+    return any(indicator in pane_content for indicator in ONBOARDING_INDICATORS)
+
+
+def pane_is_at_claude_repl_prompt(pane_content: str) -> bool:
+    if pane_is_at_onboarding(pane_content):
+        return False
+    for line in pane_content.splitlines():
+        stripped = line.strip()
+        if stripped == "❯" or stripped.endswith(" ❯"):
+            return True
+    return False
+
+
 def wait_for_claude_prompt(tmux_socket: str, target: str) -> bool:
+    print(f"Waiting {INITIAL_DELAY_SECONDS}s for onboarding to complete...")
+    time.sleep(INITIAL_DELAY_SECONDS)
+
     for attempt in range(MAX_WAIT_ATTEMPTS):
         result = run_tmux_command(
             tmux_socket,
@@ -50,15 +71,19 @@ def wait_for_claude_prompt(tmux_socket: str, target: str) -> bool:
             "-S",
             "-10",
         )
-        if result.returncode == 0 and CLAUDE_INPUT_PROMPT_INDICATOR in result.stdout:
-            return True
+        if result.returncode == 0:
+            content = result.stdout
+            if pane_is_at_onboarding(content):
+                print(f"  Attempt {attempt + 1}: still at onboarding, waiting...")
+                time.sleep(5)
+                continue
+            if pane_is_at_claude_repl_prompt(content):
+                return True
         time.sleep(2)
     return False
 
 
-def send_bootstrap_via_tmux_buffer(
-    tmux_socket: str, target: str, content: str
-) -> bool:
+def send_bootstrap_via_tmux_buffer(tmux_socket: str, target: str, content: str) -> bool:
     buffer_name = "heartbeat-bootstrap"
 
     with tempfile.NamedTemporaryFile(
@@ -155,14 +180,13 @@ def main() -> None:
 
     if not wait_for_claude_prompt(tmux_socket, target):
         print(
-            f"Warning: claude prompt not detected after {MAX_WAIT_ATTEMPTS * 2}s, "
-            "sending bootstrap anyway",
+            "Error: claude REPL prompt not detected after waiting. "
+            "Agent may be stuck at onboarding. Skipping bootstrap.",
             file=sys.stderr,
         )
+        sys.exit(1)
 
-    bootstrap_content = build_heartbeat_bootstrap_prompt(
-        args.interval, args.prompt
-    )
+    bootstrap_content = build_heartbeat_bootstrap_prompt(args.interval, args.prompt)
 
     if send_bootstrap_via_tmux_buffer(tmux_socket, target, bootstrap_content):
         print(f"Heartbeat bootstrap sent to {target}")
