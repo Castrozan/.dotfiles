@@ -1,8 +1,3 @@
----
-name: claude
-description: Launch and interact with Claude Code sessions via tmux or one-shot commands. Use when spawning interactive coding sessions, delegating tasks to parallel agents, or running autonomous implementations.
----
-
 <tmux_sessions>
 Launch a Claude Code instance in a tmux window. The session is fully interactive — the user can watch, take over, or follow up at any time. Use the spawn script from this skill's `scripts/` directory to create the window and optionally send an initial prompt.
 

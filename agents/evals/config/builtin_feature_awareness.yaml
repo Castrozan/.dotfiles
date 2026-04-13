@@ -38,7 +38,9 @@ tests:
         - "different"
 
   - name: claude_skill_knows_builtin_agents
-    skill_path: agents/skills/claude/SKILL.md
+    skill_path: agents/skills/session/SKILL.md
+    extra_skill_paths:
+      - agents/skills/session/claude.md
     prompt: "I need to spawn a parallel coding session. Should I always use spawn-claude.sh, or is there a simpler alternative?"
     model: haiku
     assertions:

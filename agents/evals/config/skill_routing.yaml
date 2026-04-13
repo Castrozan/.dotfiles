@@ -5,8 +5,6 @@ shared_system_prompt: &shared_system_prompt |
 
   browser - Use when user asks to interact with a live webpage — fill forms, click buttons, navigate authenticated apps, automate Electron apps, test UI, take screenshots. Do NOT use for fetching or reading web content programmatically — use curl, MCP fetch tools, or domain-specific skills instead.
 
-  claude - Launch and interact with Claude Code sessions via tmux or one-shot commands. Use when spawning interactive coding sessions, delegating tasks to parallel agents, or running autonomous implementations.
-
   git - Git operations — creating high-quality conventional commits with meaningful messages and disciplined staging, and searching commit history efficiently via layered dump-and-grep. Use when committing, staging changes, writing commit messages, investigating past decisions, finding when code changed, or tracing feature evolution through the repo's history.
 
   comms - Send Google Chat messages, DMs, webhooks. Post and scrape Twitter/X (x.com, twitter.com) tweets, profiles, trends, media. Control VTuber avatar lip sync and expressions.
@@ -18,8 +16,6 @@ shared_system_prompt: &shared_system_prompt |
   media - Media playback control and YouTube operations — play, pause, volume, next, previous, video search, playlists management.
 
   nix - Nix everything — language and ecosystem expertise (lazy eval, derivations, overlays, module system, flakes, agenix, cachix), applying configuration changes via rebuild, project-level devenv shells, and the conventions of THIS Nix-based dotfiles repository (module layout, isNixOS detection, script packaging, secrets workflow, package channels). Use for any .nix edit, rebuild, devenv shell change, or question about where something belongs in the dotfiles.
-
-  notify - Notify the user after completing substantial work. Use when finishing long tasks, implementations, or background operations. Plays audio and shows a desktop notification by default.
 
   obsidian - Manage the Obsidian vault — daily notes, TODO tracking, activity logging, and ReadItLater inbox processing. Use when user mentions daily note, TODOs, saved articles, saved tweets, ReadItLater items, or vault content.
 
@@ -35,7 +31,7 @@ shared_system_prompt: &shared_system_prompt |
 
   review - Meta-disciplines for quality, review, and output craft — unbiased code review rubric for reviewer subagents, offloaded-rule compliance auditing, documentation policy, AI instruction and skill authoring, and ultra-dense output mode. Use when reviewing code, auditing rule compliance after work, writing docs or policies, designing skills or prompts, or when the user asks for compressed responses.
 
-  session - Session lifecycle and context preservation — deep work context management, workspace switching, git worktrees for parallel branches, tmux control for background processes, session restart and exit.
+  session - Session lifecycle and context preservation — deep work context management, workspace switching, git worktrees for parallel branches, tmux control for background processes, spawning interactive Claude Code instances via tmux or one-shot --print, end-of-work notifications to the user, session restart and exit.
 
   test - Testing methodology and verification workflow. Use when implementing, fixing, or modifying any code. Defines the test-first, test-after, and pre-delivery verification protocol.
 
@@ -119,7 +115,7 @@ tests:
       output_contains_any:
         - "openclaw"
       output_not_contains:
-        - "claude"
+        - "session"
 
   - name: routing_to_openclaw_cron_job
     system_prompt: *shared_system_prompt
@@ -257,7 +253,7 @@ tests:
     model: haiku
     assertions:
       output_contains_any:
-        - "claude"
+        - "session"
       output_not_contains:
         - "openclaw"
 
@@ -366,7 +362,7 @@ tests:
     model: haiku
     assertions:
       output_contains_any:
-        - "notify"
+        - "session"
 
   - name: routing_to_quickshell_bar_module
     system_prompt: *shared_system_prompt
@@ -437,16 +433,6 @@ tests:
         - "research"
       output_not_contains:
         - "browser"
-
-  - name: routing_ambiguous_claude_vs_session_parallel_work
-    system_prompt: *shared_system_prompt
-    prompt: "I need two agents working on different parts of the codebase simultaneously"
-    model: haiku
-    assertions:
-      output_contains_any:
-        - "claude"
-      output_not_contains:
-        - "session"
 
   - name: routing_ambiguous_commit_vs_session_worktree
     system_prompt: *shared_system_prompt
