@@ -344,7 +344,7 @@ def resolve_persistent_session_id(project_directory: Path, agent_name: str) -> s
 
 
 def encode_project_path_for_claude_transcripts(project_directory: Path) -> str:
-    return str(project_directory).replace("/", "-")
+    return str(project_directory).replace("/", "-").replace(".", "-")
 
 
 def find_existing_transcript_for_session(
