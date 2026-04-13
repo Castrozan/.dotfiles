@@ -228,6 +228,9 @@ let
         if [ ! -f "${workspace}/HEARTBEAT.md" ]; then
           printf '# Heartbeat\n\nNo active work.\n' > "${workspace}/HEARTBEAT.md"
         fi
+        if [ ! -f "${workspace}/.claude.json" ]; then
+          printf '{"hasCompletedOnboarding":true,"numStartups":1,"installMethod":"native"}\n' > "${workspace}/.claude.json"
+        fi
       ''
     ) agentNames
   );
