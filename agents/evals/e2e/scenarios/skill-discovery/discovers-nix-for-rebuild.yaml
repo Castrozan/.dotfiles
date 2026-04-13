@@ -1,0 +1,26 @@
+name: skill_discovery_nix_for_rebuild
+description: Agent should autonomously load the nix skill when asked to apply .nix changes
+
+setup:
+  git_init: true
+  files:
+    - path: flake.nix
+      content: |
+        { description = "demo"; }
+    - path: modules/example.nix
+      content: |
+        { ... }: { environment.systemPackages = []; }
+
+prompt: |
+  I added a new package to modules/example.nix. Apply my changes to the system.
+  What is the right workflow?
+
+timeout: 180
+
+assertions:
+  autonomous_skill_invocation:
+    - nix
+  wrong_skill_not_invoked:
+    - git
+    - session
+    - research

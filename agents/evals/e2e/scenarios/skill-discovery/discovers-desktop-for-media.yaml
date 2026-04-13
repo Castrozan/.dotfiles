@@ -1,0 +1,18 @@
+name: skill_discovery_desktop_for_media
+description: Agent should autonomously load desktop skill for media playback control
+
+setup:
+  git_init: false
+  files: []
+
+prompt: |
+  Pause whatever music is playing and lower the system volume to 20%.
+
+timeout: 120
+
+assertions:
+  autonomous_skill_invocation:
+    - desktop
+  wrong_skill_not_invoked:
+    - browser
+    - personal

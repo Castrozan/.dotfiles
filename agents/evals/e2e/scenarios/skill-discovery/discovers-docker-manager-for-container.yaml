@@ -1,0 +1,20 @@
+name: skill_discovery_docker_manager_for_container
+description: Agent should autonomously load docker-manager skill for container inspection
+
+setup:
+  git_init: false
+  files: []
+
+prompt: |
+  The postgres container on this host keeps restarting. Inspect its state,
+  check the logs, and tell me what is going wrong.
+
+timeout: 180
+
+assertions:
+  autonomous_skill_invocation:
+    - docker-manager
+  wrong_skill_not_invoked:
+    - nix
+    - session
+    - personal

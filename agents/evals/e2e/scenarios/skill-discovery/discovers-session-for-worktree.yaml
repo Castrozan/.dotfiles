@@ -1,0 +1,22 @@
+name: skill_discovery_session_for_worktree
+description: Agent should autonomously load session skill when asked to create a git worktree for parallel work
+
+setup:
+  git_init: true
+  files:
+    - path: README.md
+      content: "demo repo"
+
+prompt: |
+  I want to work on a parallel branch in a separate checkout so my current
+  working tree stays untouched while I experiment. Set that up.
+
+timeout: 180
+
+assertions:
+  autonomous_skill_invocation:
+    - session
+  wrong_skill_not_invoked:
+    - git
+    - nix
+    - personal

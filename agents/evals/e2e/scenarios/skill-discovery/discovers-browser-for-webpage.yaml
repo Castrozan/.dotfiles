@@ -1,0 +1,21 @@
+name: skill_discovery_browser_for_webpage
+description: Agent should autonomously load browser skill for live webpage interaction
+
+setup:
+  git_init: false
+  files: []
+
+prompt: |
+  Open the login page at https://app.example.internal/login, fill in the username
+  field with "demo", and click the Sign In button. This is a live authenticated
+  web app I need to interact with, not a page to fetch text from.
+
+timeout: 180
+
+assertions:
+  autonomous_skill_invocation:
+    - browser
+  wrong_skill_not_invoked:
+    - research
+    - desktop
+    - personal

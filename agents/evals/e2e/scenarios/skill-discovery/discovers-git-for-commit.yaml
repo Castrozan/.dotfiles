@@ -1,0 +1,30 @@
+name: skill_discovery_git_for_commit
+description: Agent should autonomously load the git skill when asked to commit changes
+
+setup:
+  git_init: true
+  files:
+    - path: feature.py
+      content: |
+        def add_numbers(a, b):
+            return a + b
+    - path: dirty.py
+      content: |
+        x = 1
+
+prompt: |
+  I just edited feature.py. Stage just that one file and commit it with a good message.
+  Do not stage dirty.py.
+
+timeout: 180
+
+assertions:
+  autonomous_skill_invocation:
+    - git
+  wrong_skill_not_invoked:
+    - nix
+    - personal
+    - research
+  bash_command_not_contains:
+    - "git add -A"
+    - "git add ."

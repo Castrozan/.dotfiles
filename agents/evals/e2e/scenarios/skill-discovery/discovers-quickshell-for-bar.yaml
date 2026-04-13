@@ -1,0 +1,19 @@
+name: skill_discovery_quickshell_for_bar
+description: Agent should autonomously load quickshell skill for bar/OSD/QML work
+
+setup:
+  git_init: false
+  files: []
+
+prompt: |
+  My Quickshell bar crashed after I added a new widget. The shape path is rendering
+  black instead of the configured color. Help me debug it.
+
+timeout: 180
+
+assertions:
+  autonomous_skill_invocation:
+    - quickshell
+  wrong_skill_not_invoked:
+    - desktop
+    - nix

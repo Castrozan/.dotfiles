@@ -1,0 +1,21 @@
+name: skill_discovery_research_for_external_info
+description: Agent should autonomously load research skill for current external information requests
+
+setup:
+  git_init: false
+  files: []
+
+prompt: |
+  Research the latest Wayland compositors, compare their features, and recommend
+  one for a tiling-first power-user setup on NixOS. I need current information,
+  not stale documentation.
+
+timeout: 180
+
+assertions:
+  autonomous_skill_invocation:
+    - research
+  wrong_skill_not_invoked:
+    - nix
+    - browser
+    - personal

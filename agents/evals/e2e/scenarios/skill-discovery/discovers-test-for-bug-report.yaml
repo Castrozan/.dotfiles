@@ -1,0 +1,33 @@
+name: skill_discovery_test_for_bug_report
+description: Agent should autonomously load test skill when a bug is reported
+
+setup:
+  git_init: true
+  files:
+    - path: calculator.py
+      content: |
+        def divide_numbers(numerator, denominator):
+            return numerator / denominator
+    - path: test_calculator.py
+      content: |
+        from calculator import divide_numbers
+
+        def test_divide_basic():
+            assert divide_numbers(6, 3) == 2
+
+prompt: |
+  Users report that divide_numbers(10, 0) crashes with a ZeroDivisionError instead
+  of returning a sensible value. Fix the bug.
+
+timeout: 240
+
+assertions:
+  autonomous_skill_invocation:
+    - test
+  wrong_skill_not_invoked:
+    - review
+    - session
+    - personal
+  file_changed:
+    - test_calculator.py
+    - calculator.py

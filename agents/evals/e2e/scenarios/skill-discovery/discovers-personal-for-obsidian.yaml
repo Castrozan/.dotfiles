@@ -1,0 +1,20 @@
+name: skill_discovery_personal_for_obsidian
+description: Agent should autonomously load personal skill for Obsidian/vault requests
+
+setup:
+  git_init: false
+  files: []
+
+prompt: |
+  What's on my daily note today? Add a new TODO to it: "review the NixOS flake
+  update before rebuilding."
+
+timeout: 180
+
+assertions:
+  autonomous_skill_invocation:
+    - personal
+  wrong_skill_not_invoked:
+    - nix
+    - review
+    - session

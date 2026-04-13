@@ -1,0 +1,22 @@
+name: skill_discovery_review_for_tldr
+description: Agent should autonomously load review skill when user asks for compressed output mode
+
+setup:
+  git_init: false
+  files: []
+
+prompt: |
+  Your last few responses have been too long. Switch to an ultra-dense mode
+  where you trim everything down to 30% of normal verbosity and skip preamble
+  for the rest of this conversation.
+
+timeout: 120
+
+assertions:
+  autonomous_skill_invocation:
+    - review
+  wrong_skill_not_invoked:
+    - session
+    - git
+    - nix
+    - personal

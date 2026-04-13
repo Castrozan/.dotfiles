@@ -476,6 +476,57 @@ def extract_tool_name_sequence(
     return [tc.tool_name for tc in trace.detected_tool_calls]
 
 
+def extract_invoked_skill_names_from_trace(
+    trace: TerminalSessionTrace,
+) -> list[str]:
+    invoked_skill_names = []
+    for tool_call in trace.detected_tool_calls:
+        if tool_call.tool_name != "Skill":
+            continue
+        first_argument_token = tool_call.tool_arguments_text.split(",")[0].strip()
+        normalized_skill_name = first_argument_token.strip("\"'").strip()
+        if normalized_skill_name:
+            invoked_skill_names.append(normalized_skill_name)
+    return invoked_skill_names
+
+
+def check_autonomous_skill_invocation_assertion(
+    trace: TerminalSessionTrace,
+    expected_skill_name: str,
+) -> E2eAssertionResult:
+    invoked_skills = extract_invoked_skill_names_from_trace(trace)
+    present = expected_skill_name in invoked_skills
+    return E2eAssertionResult(
+        name=f"autonomously invokes Skill({expected_skill_name})",
+        passed=present,
+        detail=(
+            f"Skill({expected_skill_name}) called (all: {invoked_skills})"
+            if present
+            else (
+                f"Skill({expected_skill_name}) never invoked. "
+                f"Skills called: {invoked_skills or 'none'}"
+            )
+        ),
+    )
+
+
+def check_wrong_skill_not_invoked_assertion(
+    trace: TerminalSessionTrace,
+    forbidden_skill_name: str,
+) -> E2eAssertionResult:
+    invoked_skills = extract_invoked_skill_names_from_trace(trace)
+    present = forbidden_skill_name in invoked_skills
+    return E2eAssertionResult(
+        name=f"does NOT invoke wrong Skill({forbidden_skill_name})",
+        passed=not present,
+        detail=(
+            f"wrong skill invoked (all: {invoked_skills})"
+            if present
+            else f"correctly avoided {forbidden_skill_name}"
+        ),
+    )
+
+
 def check_terminal_tool_presence_assertion(
     trace: TerminalSessionTrace,
     required_tool: str,
@@ -714,6 +765,16 @@ def run_e2e_assertions(
 
     for required_tool in assertions.get("tool_presence", []):
         results.append(check_terminal_tool_presence_assertion(trace, required_tool))
+
+    for expected_skill_name in assertions.get("autonomous_skill_invocation", []):
+        results.append(
+            check_autonomous_skill_invocation_assertion(trace, expected_skill_name)
+        )
+
+    for forbidden_skill_name in assertions.get("wrong_skill_not_invoked", []):
+        results.append(
+            check_wrong_skill_not_invoked_assertion(trace, forbidden_skill_name)
+        )
 
     for expected in assertions.get("bash_command_contains", []):
         results.append(check_bash_command_contains_assertion(trace, expected))
@@ -1110,7 +1171,7 @@ def print_e2e_results(
 def discover_scenario_files(
     scenarios_dir: Path,
 ) -> list[Path]:
-    return sorted(scenarios_dir.glob("*.yaml"))
+    return sorted(scenarios_dir.rglob("*.yaml"))
 
 
 def main():
