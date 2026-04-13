@@ -17,7 +17,7 @@ import yaml
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent.parent
 SCENARIOS_DIR = Path(__file__).resolve().parent / "scenarios"
 CORE_INSTRUCTIONS_PATH = REPO_ROOT / "agents" / "core.md"
-COMPLIANCE_SKILL_PATH = REPO_ROOT / "agents" / "skills" / "compliance" / "SKILL.md"
+COMPLIANCE_SKILL_PATH = REPO_ROOT / "agents" / "skills" / "review" / "compliance.md"
 E2E_WORKSPACE_PARENT = Path.home() / "repo" / ".e2e-tests"
 SESSION_PREFIX = "coached-"
 
