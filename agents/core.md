@@ -67,15 +67,11 @@ After editing any file in the dotfiles repo, execute this sequence before respon
 4. Rebuild: /rebuild for any file change in this repo
 5. Run tests/run.sh
 6. If rebuild or tests fail: fix and repeat from 1
-7. For 3+ files or 50+ lines: spawn two parallel reviewer subagents with /review skill
-8. Spawn one parallel compliance reviewer subagent (model: haiku) with /compliance skill. Give it the git diff and the list of tools you used in order. It checks offloaded rules (read-before-edit, test-first, language choice). Fix any FAIL findings before responding.
-9. Only after all pass: respond to user
+7. Only after rebuild and tests pass: respond to user
+
+The end-of-work hook runs quality review automatically. It spawns parallel reviewers for code review and compliance checking. You do not need to spawn them manually.
 </workflow>
 
 <investigation>
 When asked to analyze or debug, the deliverable is understanding - not a quick fix. "Why" questions are investigation triggers. Complete the investigation before proposing fixes - analysis and implementation are separate phases.
 </investigation>
-
-<read-before-edit>
-Read every file you will modify before editing it because Grep only shows fragments and editing without full context leads to broken code. The sequence is always: Read the file, understand the full context, then Edit. If you are modifying 3 files, Read all 3. Workflow step 8 verifies this - the compliance reviewer will reject edits on unread files.
-</read-before-edit>

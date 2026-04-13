@@ -52,6 +52,19 @@ in
     }
   ];
 
+  Stop = [
+    {
+      matcher = ".*";
+      hooks = [
+        {
+          type = "command";
+          command = "${runHook} ${hooksPath}/end-of-work-compliance-review.py";
+          timeout = 45000;
+        }
+      ];
+    }
+  ];
+
   StopFailure = [
     {
       matcher = ".*";
