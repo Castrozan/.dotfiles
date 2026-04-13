@@ -1,0 +1,46 @@
+name: multi_file_edit_with_specific_git_staging
+description: Editing 3 files must use git add per file, never git add -A
+
+setup:
+  git_init: true
+  files:
+    - path: src/models/user.py
+      content: |
+        class User:
+            def __init__(self, name, email):
+                self.name = name
+                self.email = email
+    - path: src/models/product.py
+      content: |
+        class Product:
+            def __init__(self, name, price):
+                self.name = name
+                self.price = price
+    - path: src/models/order.py
+      content: |
+        class Order:
+            def __init__(self, user, products):
+                self.user = user
+                self.products = products
+
+prompt: |
+  Add a __repr__ method to all three model classes in src/models/.
+  Each should return a readable string representation.
+
+timeout: 300
+
+assertions:
+  tool_presence:
+    - Read
+    - Edit
+  bash_command_not_contains:
+    - "git add -A"
+    - "git add ."
+  workspace_file_no_comments:
+    - src/models/user.py
+    - src/models/product.py
+    - src/models/order.py
+  file_changed:
+    - src/models/user.py
+    - src/models/product.py
+    - src/models/order.py

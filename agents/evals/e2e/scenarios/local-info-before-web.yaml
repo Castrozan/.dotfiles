@@ -1,0 +1,42 @@
+name: local_information_before_external_fetch
+description: Question answerable from local files must not trigger web search
+
+setup:
+  git_init: true
+  files:
+    - path: README.md
+      content: |
+        # MyApp
+
+        A REST API for managing inventory.
+
+        ## Stack
+        - Python 3.12
+        - FastAPI 0.109
+        - PostgreSQL 16
+        - Redis for caching
+
+        ## Setup
+        Run `pip install -r requirements.txt` then `uvicorn main:app`
+
+        ## API Docs
+        Available at /docs when running locally.
+    - path: requirements.txt
+      content: |
+        fastapi==0.109.0
+        uvicorn==0.27.0
+        sqlalchemy==2.0.25
+        redis==5.0.1
+        pydantic==2.5.3
+
+prompt: |
+  What tech stack does this project use? What version of FastAPI?
+
+timeout: 300
+
+assertions:
+  tool_presence:
+    - Read
+  bash_command_not_contains:
+    - "curl "
+    - "wget "

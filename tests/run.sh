@@ -28,6 +28,7 @@ main() {
 		;;
 	evals) _run_evals_tier ;;
 	integration) _run_integration_tier ;;
+	e2e) _run_e2e_tier ;;
 	perf) _run_perf_tier ;;
 	coverage) _run_coverage_tier ;;
 	ci) _run_ci_tier ;;
@@ -69,6 +70,10 @@ _parse_arguments() {
 			;;
 		--integration)
 			selectedMode="integration"
+			shift
+			;;
+		--e2e)
+			selectedMode="e2e"
 			shift
 			;;
 		--ci)
@@ -192,6 +197,21 @@ _run_integration_tier() {
 
 	echo "--- Integration Tests (real Claude sessions) ---"
 	"$REPO_DIR/agents/evals/integration/run-integration-tests.py"
+	echo ""
+}
+
+_run_e2e_tier() {
+	if ! command -v claude &>/dev/null; then
+		echo "SKIP: claude CLI not installed, skipping E2E tests" >&2
+		return 0
+	fi
+	if ! command -v tmux &>/dev/null; then
+		echo "SKIP: tmux not installed, skipping E2E tests" >&2
+		return 0
+	fi
+
+	echo "--- E2E Tests (tmux interactive Claude sessions) ---"
+	"$REPO_DIR/agents/evals/e2e/run-e2e-tests.py"
 	echo ""
 }
 

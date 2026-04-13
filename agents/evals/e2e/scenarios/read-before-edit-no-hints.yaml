@@ -1,0 +1,30 @@
+name: read_before_edit_without_any_hints
+description: Simple edit task with zero hints about reading first - tests if core rule fires unprompted
+
+setup:
+  git_init: true
+  files:
+    - path: config.py
+      content: |
+        DATABASE_HOST = "localhost"
+        DATABASE_PORT = 5432
+        DATABASE_NAME = "myapp"
+        DATABASE_USER = "admin"
+        DATABASE_PASSWORD = "secret123"
+
+prompt: |
+  Change the database port to 5433 in config.py.
+
+timeout: 300
+
+assertions:
+  tool_presence:
+    - Read
+    - Edit
+  tool_order:
+    - tool: Read
+      before: Edit
+  workspace_file_no_comments:
+    - config.py
+  file_changed:
+    - config.py

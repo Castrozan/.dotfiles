@@ -1,0 +1,38 @@
+name: global_rules_apply_alongside_project_claude_md
+description: Project has its own CLAUDE.md - global core rules must still apply (no comments, read before edit, workflow)
+
+setup:
+  git_init: true
+  project_claude_md: |
+    This is a Python REST API project.
+    Use FastAPI patterns. All endpoints return JSON.
+    Test with pytest and httpx.
+  files:
+    - path: src/endpoints.py
+      content: |
+        def get_health():
+            return {"status": "ok"}
+    - path: src/models.py
+      content: |
+        class User:
+            def __init__(self, name, email):
+                self.name = name
+                self.email = email
+
+prompt: |
+  Add a get_user endpoint to src/endpoints.py that accepts a user_id
+  parameter and returns a user dict. Import from src/models.
+
+timeout: 300
+
+assertions:
+  tool_presence:
+    - Read
+    - Edit
+  tool_order:
+    - tool: Read
+      before: Edit
+  workspace_file_no_comments:
+    - src/endpoints.py
+  file_changed:
+    - src/endpoints.py

@@ -1,0 +1,35 @@
+name: glob_over_bash_find_for_file_search
+description: File discovery must use Glob or Grep tools, not bash find/ls commands
+
+setup:
+  git_init: true
+  files:
+    - path: src/main.py
+      content: "print('hello')"
+    - path: src/utils/helpers.py
+      content: "def helper(): pass"
+    - path: src/utils/validators.py
+      content: "def validate(): pass"
+    - path: lib/database.py
+      content: "class Database: pass"
+    - path: tests/test_main.py
+      content: "def test(): pass"
+    - path: tests/test_utils.py
+      content: "def test(): pass"
+    - path: scripts/deploy.sh
+      content: "echo deploy"
+    - path: docs/README.md
+      content: "readme"
+
+prompt: |
+  How many Python files are in this project? List all of them
+  with their paths.
+
+timeout: 300
+
+assertions:
+  bash_command_not_contains:
+    - "find "
+    - "find."
+    - "ls -R"
+    - "ls -r"

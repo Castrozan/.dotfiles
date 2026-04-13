@@ -1,0 +1,29 @@
+name: naming_uses_descriptive_names_no_abbreviations
+description: New code must use long descriptive names - no single letters, no abbreviations
+
+setup:
+  git_init: true
+  files:
+    - path: src/app.py
+      content: |
+        def main():
+            print("starting application")
+
+prompt: |
+  Add a function to src/app.py that takes a list of user dictionaries
+  (each with name, email, age) and returns only users older than 18
+  with valid email addresses (containing @).
+
+timeout: 300
+
+assertions:
+  tool_presence:
+    - Read
+    - Edit
+  tool_order:
+    - tool: Read
+      before: Edit
+  workspace_file_no_comments:
+    - src/app.py
+  file_changed:
+    - src/app.py

@@ -49,17 +49,12 @@ class ScenarioResult:
     trace: SessionTrace
     workspace_directory: Path | None
     duration_seconds: float
+    experience_score: int = 0
     error: str | None = None
 
 
-def load_core_system_prompt() -> str | None:
-    if not CORE_INSTRUCTIONS_PATH.exists():
-        return None
-    content = CORE_INSTRUCTIONS_PATH.read_text()
-    parts = content.split("---", 2)
-    if len(parts) >= 3:
-        return parts[2].strip()
-    return content.strip()
+def load_core_instructions_with_frontmatter() -> str:
+    return CORE_INSTRUCTIONS_PATH.read_text()
 
 
 def load_scenario(scenario_path: Path) -> dict:
@@ -71,8 +66,21 @@ def validate_file_path_is_relative(file_path: str) -> bool:
     return not os.path.isabs(file_path) and ".." not in file_path
 
 
+def place_claude_md_and_agents_md_in_workspace(
+    workspace_directory: Path,
+) -> None:
+    agents_md_content = load_core_instructions_with_frontmatter()
+    agents_md_path = workspace_directory / "AGENTS.md"
+    agents_md_path.write_text(agents_md_content)
+
+    claude_md_path = workspace_directory / "CLAUDE.md"
+    claude_md_path.write_text("@AGENTS.md\n")
+
+
 def setup_scenario_workspace(scenario: dict, workspace_directory: Path) -> None:
     setup = scenario.get("setup", {})
+
+    place_claude_md_and_agents_md_in_workspace(workspace_directory)
 
     for file_definition in setup.get("files", []):
         relative_path = file_definition["path"]
@@ -119,7 +127,6 @@ def setup_scenario_workspace(scenario: dict, workspace_directory: Path) -> None:
 def run_claude_session(
     prompt: str,
     workspace_directory: Path,
-    system_prompt: str | None = None,
     timeout_seconds: int = 180,
     model: str = "sonnet",
 ) -> SessionTrace:
@@ -131,12 +138,8 @@ def run_claude_session(
         "stream-json",
         "--model",
         model,
+        prompt,
     ]
-
-    if system_prompt:
-        command.extend(["--system-prompt", system_prompt])
-
-    command.append(prompt)
 
     start_time = time.time()
 
@@ -430,22 +433,45 @@ def check_workspace_file_changed_assertion(
             detail=f"file {file_path} does not exist",
         )
     try:
-        result = subprocess.run(
-            ["git", "diff", "--name-only", "HEAD"],
+        initial_commit_result = subprocess.run(
+            ["git", "rev-list", "--max-parents=0", "HEAD"],
             capture_output=True,
             text=True,
             cwd=workspace_directory,
             timeout=5,
         )
-        changed_files = result.stdout.strip().split("\n")
-        was_changed = file_path in changed_files
+        initial_commit_sha = initial_commit_result.stdout.strip().split("\n")[0]
+
+        diff_result = subprocess.run(
+            ["git", "diff", "--name-only", initial_commit_sha, "HEAD"],
+            capture_output=True,
+            text=True,
+            cwd=workspace_directory,
+            timeout=5,
+        )
+        committed_changes = diff_result.stdout.strip().split("\n")
+
+        uncommitted_result = subprocess.run(
+            ["git", "diff", "--name-only"],
+            capture_output=True,
+            text=True,
+            cwd=workspace_directory,
+            timeout=5,
+        )
+        uncommitted_changes = uncommitted_result.stdout.strip().split("\n")
+
+        all_changed_files = set(committed_changes + uncommitted_changes)
+        was_changed = file_path in all_changed_files
         return AssertionResult(
             name=f"{file_path} was modified",
             passed=was_changed,
             detail=(
                 "file was modified"
                 if was_changed
-                else (f"file unchanged. Changed: {changed_files}")
+                else (
+                    f"file unchanged since initial commit. "
+                    f"Changed: {list(all_changed_files)}"
+                )
             ),
         )
     except Exception:
@@ -552,6 +578,128 @@ def run_assertions(
     return results
 
 
+def detect_bash_tool_misuse(trace: SessionTrace) -> int:
+    penalty = 0
+    for tool_call in trace.tool_calls:
+        if tool_call.tool_name != "Bash":
+            continue
+        command = tool_call.tool_input.get("command", "")
+        if any(
+            pattern in command
+            for pattern in (
+                "cat ",
+                "head ",
+                "tail ",
+                "sed ",
+            )
+        ):
+            penalty -= 5
+        if "find " in command and "find ." in command:
+            penalty -= 5
+        if command.startswith("grep ") or " grep " in command:
+            penalty -= 5
+        if "git add -A" in command or "git add ." in command:
+            penalty -= 10
+    return max(penalty, -25)
+
+
+def detect_em_dashes_in_output(
+    trace: SessionTrace,
+) -> int:
+    combined_output = " ".join(trace.assistant_messages)
+    em_dash_count = combined_output.count("\u2014")
+    if em_dash_count > 0:
+        return -5
+    return 0
+
+
+def detect_over_explanation(
+    trace: SessionTrace,
+) -> int:
+    combined_output = " ".join(trace.assistant_messages)
+    word_count = len(combined_output.split())
+    tool_count = len(trace.tool_calls)
+
+    if tool_count == 0 and word_count > 200:
+        return -10
+    if tool_count > 0 and word_count > 500:
+        return -5
+    return 0
+
+
+def calculate_experience_score(
+    trace: SessionTrace,
+    assertion_results: list[AssertionResult],
+) -> int:
+    score = 50
+    tool_sequence = extract_tool_name_sequence(trace)
+    read_count = tool_sequence.count("Read")
+    edit_count = tool_sequence.count("Edit") + tool_sequence.count("Write")
+
+    if edit_count > 0:
+        if read_count == 0:
+            score -= 20
+        else:
+            first_read_index = next(
+                (index for index, name in enumerate(tool_sequence) if name == "Read"),
+                999,
+            )
+            first_edit_index = next(
+                (
+                    index
+                    for index, name in enumerate(tool_sequence)
+                    if name in ("Edit", "Write")
+                ),
+                999,
+            )
+            if first_read_index < first_edit_index:
+                score += 10
+            else:
+                score -= 15
+
+            read_to_edit_ratio = read_count / edit_count
+            if read_to_edit_ratio >= 2.0:
+                score += 10
+            elif read_to_edit_ratio >= 1.0:
+                score += 5
+    elif len(tool_sequence) > 0:
+        score -= 10
+
+    written_content = collect_written_file_content_from_tool_calls(trace)
+    if written_content:
+        comment_patterns = (
+            "# ",
+            "// ",
+            "/* ",
+            "# TODO",
+            "# FIXME",
+            "# NOTE",
+        )
+        comment_count = sum(
+            written_content.count(pattern) for pattern in comment_patterns
+        )
+        if comment_count == 0:
+            score += 10
+        elif comment_count <= 2:
+            score -= 5
+        else:
+            score -= 15
+
+    score += detect_bash_tool_misuse(trace)
+    score += detect_em_dashes_in_output(trace)
+    score += detect_over_explanation(trace)
+
+    if assertion_results:
+        passed_count = sum(
+            1 for assertion_result in assertion_results if assertion_result.passed
+        )
+        failed_count = len(assertion_results) - passed_count
+        score += passed_count * 3
+        score -= failed_count * 8
+
+    return max(0, min(score, 100))
+
+
 def sanitize_scenario_name_for_tempdir(
     scenario_name: str,
 ) -> str:
@@ -587,10 +735,6 @@ def run_scenario(
     try:
         setup_scenario_workspace(scenario, workspace_directory)
 
-        system_prompt = scenario.get("system_prompt")
-        if system_prompt is None:
-            system_prompt = load_core_system_prompt()
-
         timeout = scenario.get("timeout", 180)
 
         prompt = scenario.get("prompt")
@@ -608,7 +752,6 @@ def run_scenario(
         trace = run_claude_session(
             prompt=prompt,
             workspace_directory=workspace_directory,
-            system_prompt=system_prompt,
             timeout_seconds=timeout,
             model=model,
         )
@@ -633,6 +776,8 @@ def run_scenario(
             assertion_result.passed for assertion_result in assertion_results
         )
 
+        experience_score = calculate_experience_score(trace, assertion_results)
+
         return ScenarioResult(
             scenario_name=scenario_name,
             passed=all_passed,
@@ -640,6 +785,7 @@ def run_scenario(
             trace=trace,
             workspace_directory=workspace_directory,
             duration_seconds=trace.duration_seconds,
+            experience_score=experience_score,
         )
 
     finally:
@@ -660,10 +806,19 @@ def print_scenario_results(
         color = "\033[32m" if result.passed else "\033[31m"
         reset = "\033[0m"
 
+        score_color = (
+            "\033[32m"
+            if result.experience_score >= 75
+            else "\033[33m"
+            if result.experience_score >= 50
+            else "\033[31m"
+        )
         print(
             f"{color}{status_symbol}{reset} "
             f"{result.scenario_name} "
-            f"({result.duration_seconds:.1f}s)"
+            f"({result.duration_seconds:.1f}s) "
+            f"{score_color}NPS:{result.experience_score}"
+            f"{reset}"
         )
 
         if result.error:
@@ -686,9 +841,17 @@ def print_scenario_results(
                 print(f"    Tool sequence: {' -> '.join(tool_sequence)}")
 
     passed_count = sum(1 for result in results if result.passed)
+    scored_results = [result for result in results if result.experience_score > 0]
+    average_experience_score = (
+        sum(result.experience_score for result in scored_results) / len(scored_results)
+        if scored_results
+        else 0
+    )
+    total_duration = sum(result.duration_seconds for result in results)
+
     print(f"\n{'=' * 60}")
     print(f"Passed: {passed_count}/{len(results)}")
-    total_duration = sum(result.duration_seconds for result in results)
+    print(f"Experience Score: {average_experience_score:.0f}/100")
     print(f"Total time: {total_duration:.1f}s")
     print(f"{'=' * 60}\n")
 

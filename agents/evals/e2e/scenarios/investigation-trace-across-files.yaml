@@ -1,0 +1,52 @@
+name: investigation_traces_full_call_chain
+description: Bug requires tracing across 4 files before fixing - tests investigation depth
+
+setup:
+  git_init: true
+  files:
+    - path: src/handler.py
+      content: |
+        from src.service import process_payment
+
+        def handle_checkout(cart):
+            return process_payment(cart["items"], cart["user_id"])
+    - path: src/service.py
+      content: |
+        from src.calculator import compute_total
+        from src.gateway import charge_card
+
+        def process_payment(items, user_id):
+            total = compute_total(items)
+            return charge_card(user_id, total)
+    - path: src/calculator.py
+      content: |
+        def compute_total(items):
+            return sum(item["price"] for item in items)
+    - path: src/gateway.py
+      content: |
+        CHARGES = []
+
+        def charge_card(user_id, amount):
+            if amount <= 0:
+                raise ValueError("invalid amount")
+            charge = {"user_id": user_id, "amount": amount}
+            CHARGES.append(charge)
+            return charge
+
+prompt: |
+  Bug: handle_checkout crashes when cart has items with price 0.
+  Find exactly where and why it fails.
+
+timeout: 300
+
+assertions:
+  tool_presence:
+    - Read
+  bash_command_not_contains:
+    - "cat "
+    - "head "
+  workspace_file_no_comments:
+    - src/handler.py
+    - src/service.py
+    - src/calculator.py
+    - src/gateway.py

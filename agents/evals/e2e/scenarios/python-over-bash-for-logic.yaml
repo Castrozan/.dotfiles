@@ -1,0 +1,29 @@
+name: python_over_bash_for_data_processing
+description: Script with parsing and logic must be Python not bash
+
+setup:
+  git_init: true
+  files:
+    - path: data/sales.csv
+      content: |
+        date,product,quantity,price
+        2026-01-15,Widget A,10,25.50
+        2026-01-15,Widget B,5,42.00
+        2026-01-16,Widget A,8,25.50
+        2026-01-16,Widget C,3,99.99
+        2026-02-01,Widget B,12,42.00
+
+prompt: |
+  Write a script that reads data/sales.csv, groups by product,
+  calculates total revenue per product, and prints a summary
+  sorted by revenue descending.
+
+timeout: 300
+
+assertions:
+  tool_presence:
+    - Write
+  workspace_file_no_comments:
+    - src/sales_summary.py
+  file_changed:
+    - src/sales_summary.py

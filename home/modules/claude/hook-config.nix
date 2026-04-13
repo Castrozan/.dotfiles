@@ -74,6 +74,11 @@ in
           command = "${runHook} ${hooksPath}/deep-work-recovery.py";
           timeout = 5000;
         }
+        {
+          type = "command";
+          command = "${runHook} ${hooksPath}/core-instruction-reinforcement.py";
+          timeout = 2000;
+        }
       ];
     }
   ];
@@ -139,6 +144,16 @@ in
           type = "command";
           command = "${runHook} ${hooksPath}/nix-rebuild-trigger.py";
           timeout = 3000;
+        }
+      ];
+    }
+    {
+      matcher = "Grep";
+      hooks = [
+        {
+          type = "command";
+          command = "${runHook} ${hooksPath}/read-before-edit-reminder.py";
+          timeout = 1000;
         }
       ];
     }

@@ -1,0 +1,99 @@
+name: realistic_bug_fix_multi_file
+description: Realistic bug fix across multiple files - tests investigation, read-before-edit, naming, no comments, git workflow
+
+setup:
+  git_init: true
+  files:
+    - path: src/user_service.py
+      content: |
+        from src.user_repository import find_user_by_email
+        from src.notification_sender import send_welcome_notification
+
+        def register_new_user(registration_data):
+            email = registration_data.get("email")
+            existing = find_user_by_email(email)
+            if existing:
+                raise ValueError("email already registered")
+            user = {"email": email, "name": registration_data.get("name")}
+            send_welcome_notification(user)
+            return user
+
+    - path: src/user_repository.py
+      content: |
+        USERS_DATABASE = {}
+
+        def find_user_by_email(email):
+            for user_id, user in USERS_DATABASE.items():
+                if user["email"] == email:
+                    return user
+            return None
+
+        def save_user(user):
+            import uuid
+            user_id = str(uuid.uuid4())
+            USERS_DATABASE[user_id] = user
+            return user_id
+
+    - path: src/notification_sender.py
+      content: |
+        SENT_NOTIFICATIONS = []
+
+        def send_welcome_notification(user):
+            notification = {
+                "to": user["email"],
+                "subject": f"Welcome {user['name']}",
+                "body": "Thanks for signing up!",
+            }
+            SENT_NOTIFICATIONS.append(notification)
+            return notification
+
+    - path: tests/test_registration.py
+      content: |
+        from src.user_service import register_new_user
+        from src.user_repository import USERS_DATABASE
+
+        def test_register_new_user_creates_user():
+            USERS_DATABASE.clear()
+            result = register_new_user({"email": "test@example.com", "name": "Test"})
+            assert result["email"] == "test@example.com"
+
+        def test_register_duplicate_email_raises():
+            USERS_DATABASE.clear()
+            register_new_user({"email": "dup@example.com", "name": "First"})
+            try:
+                register_new_user({"email": "dup@example.com", "name": "Second"})
+                assert False, "should have raised"
+            except ValueError:
+                pass
+
+prompt: |
+  Bug report: register_new_user sends the welcome notification but never
+  actually saves the user to the database. After registration, the user
+  cannot log in because find_user_by_email returns None.
+
+  Investigate the full call chain across all files, find the root cause,
+  and fix it. Make sure existing tests still pass and add a test that
+  would have caught this bug.
+
+timeout: 180
+
+assertions:
+  tool_presence:
+    - Read
+    - Edit
+    - Bash
+  minimum_tool_count:
+    - tool: Read
+      count: 3
+  tool_order:
+    - tool: Read
+      before: Edit
+  read_to_edit_ratio: 1.5
+  written_code_not_contains:
+    - "# TODO"
+    - "# FIXME"
+    - "# fix"
+    - "# save"
+    - "# add"
+  file_changed:
+    - src/user_service.py
