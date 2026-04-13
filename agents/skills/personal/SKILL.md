@@ -1,6 +1,6 @@
 ---
 name: personal
-description: Lucas's personal life and platforms — autonomous assistant monitoring loop across Gmail, Google Calendar, WhatsApp, and Google Chat; Obsidian vault for daily notes, TODOs, and ReadItLater inbox; Google Chat messaging and webhooks; Twitter/X (x.com, twitter.com) scraping, posting, tweets, profiles, trends, media, tweet URL resolution; VTuber avatar lip sync and expressions; Senior Gestão de Ponto time-entry automation (marcações, acertos); smart home control via Home Assistant (lights, AC); phone status over SSH (battery, charging, uptime); OpenClaw multi-agent platform (grid, A2A, Telegram bots, cron). Use for any task about Lucas's personal channels, notes, tweets, social media URLs, smart home, phone, work time-tracking, or openclaw.
+description: Lucas's personal channels and platforms — autonomous assistant loop (Gmail, Calendar, WhatsApp, Google Chat), Obsidian vault (daily notes, TODOs, ReadItLater inbox), Twitter/X (x.com, twitter.com) scraping and posting, VTuber avatar, Senior Gestão de Ponto (marcações, acertos), Home Assistant smart home (lights, AC), phone status SSH (battery), OpenClaw multi-agent platform (grid, A2A, Telegram bots, cron). Use for any personal channel, note, tweet, social URL, smart home, phone, ponto, or openclaw task.
 ---
 
 Umbrella skill covering Lucas's personal communication, tools, home, and agent platforms. Each capability lives in its own file so only the relevant one loads into context.
