@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-04-11T02:25:37.815870+00:00",
-  "git_commit": "4bb898c8",
-  "total_tests": 183,
-  "total_passed": 177,
-  "total_failed": 6,
-  "pass_rate": 0.9672,
+  "generated_at": "2026-04-13T05:24:24.126568+00:00",
+  "git_commit": "ddbcffcf",
+  "total_tests": 207,
+  "total_passed": 192,
+  "total_failed": 15,
+  "pass_rate": 0.9275,
   "categories": {
     "other": {
-      "passed": 52,
-      "failed": 3,
+      "passed": 84,
+      "failed": 1,
       "tests": [
         {
           "name": "worktrees_knows_builtin_flag",
@@ -32,7 +32,7 @@
         },
         {
           "name": "delegates_to_skill",
-          "passed": false
+          "passed": true
         },
         {
           "name": "follows_git_rules",
@@ -119,6 +119,126 @@
           "passed": true
         },
         {
+          "name": "pm_identity_not_coding_assistant",
+          "passed": true
+        },
+        {
+          "name": "pm_onboarding_reads_project_first",
+          "passed": true
+        },
+        {
+          "name": "pm_onboarding_asks_only_undiscoverable",
+          "passed": true
+        },
+        {
+          "name": "pm_onboarding_discovers_tools",
+          "passed": true
+        },
+        {
+          "name": "pm_onboarding_writes_state_to_pm_directory",
+          "passed": true
+        },
+        {
+          "name": "pm_heartbeat_silent_when_no_work",
+          "passed": true
+        },
+        {
+          "name": "pm_heartbeat_executes_pending_tasks",
+          "passed": true
+        },
+        {
+          "name": "pm_state_on_disk_not_memory",
+          "passed": true
+        },
+        {
+          "name": "pm_enforces_project_rules",
+          "passed": true
+        },
+        {
+          "name": "pm_delegation_includes_full_context",
+          "passed": true
+        },
+        {
+          "name": "pm_reviews_before_accepting",
+          "passed": true
+        },
+        {
+          "name": "pm_detects_active_agents",
+          "passed": true
+        },
+        {
+          "name": "pm_proactive_not_passive",
+          "passed": true
+        },
+        {
+          "name": "pm_communication_facts_first",
+          "passed": true
+        },
+        {
+          "name": "pm_uses_pm_directory",
+          "passed": true
+        },
+        {
+          "name": "pm_cost_discipline",
+          "passed": true
+        },
+        {
+          "name": "pm_refuses_direct_coding_under_pressure",
+          "passed": true
+        },
+        {
+          "name": "pm_rejects_git_add_all_even_when_diff_is_correct",
+          "passed": true
+        },
+        {
+          "name": "pm_does_not_fix_executor_mistakes_itself",
+          "passed": false
+        },
+        {
+          "name": "pm_does_not_trust_executor_self_report",
+          "passed": true
+        },
+        {
+          "name": "pm_heartbeat_skips_outside_active_hours",
+          "passed": true
+        },
+        {
+          "name": "pm_heartbeat_priority_is_list_order",
+          "passed": true
+        },
+        {
+          "name": "pm_reregisters_missing_heartbeat_cron",
+          "passed": true
+        },
+        {
+          "name": "pm_never_asks_user_to_reexplain",
+          "passed": true
+        },
+        {
+          "name": "pm_delegation_not_vague",
+          "passed": true
+        },
+        {
+          "name": "pm_no_hedging_on_bad_news",
+          "passed": true
+        },
+        {
+          "name": "pm_heartbeat_not_in_project_root",
+          "passed": true
+        },
+        {
+          "name": "pm_delegates_codebase_exploration",
+          "passed": true
+        },
+        {
+          "name": "pm_does_not_ask_want_me_to_proceed",
+          "passed": true
+        },
+        {
+          "name": "pm_says_standing_by_when_queue_empty",
+          "passed": true
+        },
+        {
           "name": "review_flags_obvious_null_dereference",
           "passed": true
         },
@@ -152,7 +272,7 @@
         },
         {
           "name": "git_history_starts_with_layer1",
-          "passed": false
+          "passed": true
         },
         {
           "name": "git_history_escalates_to_layer2",
@@ -160,7 +280,7 @@
         },
         {
           "name": "git_history_uses_broad_keywords",
-          "passed": false
+          "passed": true
         },
         {
           "name": "git_history_file_paths_are_high_signal",
@@ -233,8 +353,8 @@
       ]
     },
     "compliance": {
-      "passed": 36,
-      "failed": 0,
+      "passed": 33,
+      "failed": 3,
       "tests": [
         {
           "name": "delegation_multi_agent_implementation_prefers_teams",
@@ -314,7 +434,7 @@
         },
         {
           "name": "rebuild_untested_is_hypothesis",
-          "passed": true
+          "passed": false
         },
         {
           "name": "workflow_knows_full_sequence",
@@ -342,7 +462,7 @@
         },
         {
           "name": "workflow_review_uses_parallel_subagents",
-          "passed": true
+          "passed": false
         },
         {
           "name": "workflow_review_skipped_for_trivial_changes",
@@ -358,7 +478,7 @@
         },
         {
           "name": "workflow_review_input_is_unbiased",
-          "passed": true
+          "passed": false
         },
         {
           "name": "rebuild_stages_nix_files_first",
@@ -383,8 +503,8 @@
       ]
     },
     "routing": {
-      "passed": 62,
-      "failed": 3,
+      "passed": 49,
+      "failed": 11,
       "tests": [
         {
           "name": "routing_to_desktop_keyboard_typing",
@@ -392,7 +512,7 @@
         },
         {
           "name": "routing_to_desktop_screenshot_capture",
-          "passed": true
+          "passed": false
         },
         {
           "name": "routing_to_desktop_clipboard_access",
@@ -400,11 +520,7 @@
         },
         {
           "name": "routing_to_desktop_mouse_click",
-          "passed": true
-        },
-        {
-          "name": "routing_to_media_playback_control",
-          "passed": true
+          "passed": false
         },
         {
           "name": "routing_to_media_volume_adjustment",
@@ -452,7 +568,7 @@
         },
         {
           "name": "routing_to_session_deep_work",
-          "passed": true
+          "passed": false
         },
         {
           "name": "routing_to_session_worktree",
@@ -480,7 +596,7 @@
         },
         {
           "name": "routing_to_browser_interactive_scrape",
-          "passed": false
+          "passed": true
         },
         {
           "name": "routing_to_claude_spawn_agent",
@@ -523,15 +639,15 @@
           "passed": true
         },
         {
-          "name": "routing_to_docs_readme_update",
+          "name": "routing_to_review_readme_update",
+          "passed": false
+        },
+        {
+          "name": "routing_to_review_skill_creation",
           "passed": true
         },
         {
-          "name": "routing_to_instructions_skill_creation",
-          "passed": true
-        },
-        {
-          "name": "routing_to_instructions_skill_routing_failure",
+          "name": "routing_to_review_skill_routing_failure",
           "passed": true
         },
         {
@@ -547,8 +663,8 @@
           "passed": true
         },
         {
-          "name": "routing_to_tldr_compress_output",
-          "passed": true
+          "name": "routing_to_review_compress_output",
+          "passed": false
         },
         {
           "name": "routing_to_devenv_shell_setup",
@@ -563,27 +679,15 @@
           "passed": true
         },
         {
-          "name": "routing_ambiguous_nix_dotfiles_vs_nix_expert",
-          "passed": true
-        },
-        {
           "name": "routing_ambiguous_browser_vs_desktop_screenshot",
           "passed": true
         },
         {
           "name": "routing_ambiguous_research_vs_browser",
-          "passed": true
-        },
-        {
-          "name": "routing_ambiguous_claude_vs_session_parallel_work",
-          "passed": true
+          "passed": false
         },
         {
           "name": "routing_ambiguous_commit_vs_session_worktree",
-          "passed": true
-        },
-        {
-          "name": "routing_ambiguous_dotfiles_vs_rebuild",
           "passed": true
         },
         {
@@ -600,14 +704,10 @@
         },
         {
           "name": "routing_to_git_history_trace_evolution",
-          "passed": true
+          "passed": false
         },
         {
           "name": "routing_to_git_history_investigate_past",
-          "passed": true
-        },
-        {
-          "name": "routing_ambiguous_git_history_vs_commit",
           "passed": true
         },
         {
@@ -620,7 +720,7 @@
         },
         {
           "name": "routing_to_obsidian_saved_tweet",
-          "passed": true
+          "passed": false
         },
         {
           "name": "routing_to_comms_tweet_media_fetch",
@@ -640,7 +740,7 @@
         },
         {
           "name": "routing_to_comms_xcom_url_with_context",
-          "passed": true
+          "passed": false
         },
         {
           "name": "routing_to_comms_xcom_url_what_does_it_say",
@@ -687,21 +787,9 @@
       ]
     },
     "navigation": {
-      "passed": 19,
+      "passed": 18,
       "failed": 0,
       "tests": [
-        {
-          "name": "comms_routes_to_google_chat",
-          "passed": true
-        },
-        {
-          "name": "comms_routes_to_twitter",
-          "passed": true
-        },
-        {
-          "name": "comms_routes_to_avatar",
-          "passed": true
-        },
         {
           "name": "desktop_routes_to_keyboard",
           "passed": true
@@ -723,11 +811,19 @@
           "passed": true
         },
         {
-          "name": "media_routes_to_media_control",
+          "name": "desktop_routes_to_youtube",
           "passed": true
         },
         {
-          "name": "media_routes_to_youtube",
+          "name": "comms_routes_to_google_chat",
+          "passed": true
+        },
+        {
+          "name": "comms_routes_to_twitter",
+          "passed": true
+        },
+        {
+          "name": "comms_routes_to_avatar",
           "passed": true
         },
         {
