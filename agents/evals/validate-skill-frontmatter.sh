@@ -45,6 +45,32 @@ _warn_if_description_too_long() {
 	fi
 }
 
+_check_referenced_sub_files_exist() {
+	local skillFile="$1"
+	local skillName="$2"
+	local skillDirectory
+	skillDirectory=$(dirname "$skillFile")
+
+	local referencedSubFileList
+	# shellcheck disable=SC2016 # literal regex, expansion not wanted
+	referencedSubFileList=$(grep -oE '`[a-zA-Z0-9_-]+\.md`' "$skillFile" | tr -d '`' | sort -u || true)
+
+	if [[ -z "$referencedSubFileList" ]]; then
+		return 0
+	fi
+
+	local missingSubFileCount=0
+	while IFS= read -r subFileName; do
+		[[ -z "$subFileName" ]] && continue
+		if [[ ! -f "$skillDirectory/$subFileName" ]]; then
+			echo "ERROR: $skillName references sub-file '$subFileName' but it does not exist at $skillDirectory/$subFileName"
+			missingSubFileCount=$((missingSubFileCount + 1))
+		fi
+	done <<<"$referencedSubFileList"
+
+	return $missingSubFileCount
+}
+
 _validate_skill() {
 	local skillFile="$1"
 	local skillName
@@ -71,6 +97,13 @@ _validate_skill() {
 	done
 
 	_warn_if_description_too_long "$skillName" "$yaml"
+
+	local subFileErrors=0
+	_check_referenced_sub_files_exist "$skillFile" "$skillName" || subFileErrors=$?
+	if [[ $subFileErrors -gt 0 ]]; then
+		errorCount=$((errorCount + subFileErrors))
+		hasError=true
+	fi
 
 	[[ "$hasError" == "false" ]] && echo "OK: $skillName"
 }
