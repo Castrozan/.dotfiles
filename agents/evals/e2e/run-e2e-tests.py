@@ -1148,6 +1148,35 @@ def discover_scenario_files(
     return sorted(scenarios_dir.rglob("*.yaml"))
 
 
+def print_multi_run_pass_rate_summary(
+    results: list[E2eScenarioResult],
+    runs_per_scenario: int,
+) -> None:
+    grouped_results_by_scenario: dict[str, list[E2eScenarioResult]] = {}
+    for result in results:
+        grouped_results_by_scenario.setdefault(result.scenario_name, []).append(result)
+
+    print(f"\n{'=' * 60}")
+    print(f"MULTI-RUN PASS-RATE SUMMARY ({runs_per_scenario} runs per scenario)")
+    print(f"{'=' * 60}\n")
+
+    for scenario_name, scenario_runs in grouped_results_by_scenario.items():
+        passed_runs = sum(1 for r in scenario_runs if r.passed)
+        total_runs = len(scenario_runs)
+        scored_runs = [r for r in scenario_runs if r.experience_score > 0]
+        avg_nps = (
+            sum(r.experience_score for r in scored_runs) / len(scored_runs)
+            if scored_runs
+            else 0
+        )
+        print(f"  {scenario_name}: {passed_runs}/{total_runs} (NPS avg {avg_nps:.0f})")
+
+    total_runs = len(results)
+    total_passed = sum(1 for r in results if r.passed)
+    print(f"\n  overall: {total_passed}/{total_runs}")
+    print(f"{'=' * 60}\n")
+
+
 def main():
     parser = argparse.ArgumentParser(
         description=("E2E tmux-based Claude Code integration tests")
@@ -1178,7 +1207,21 @@ def main():
         default=1,
         help="Run scenarios in parallel (each in its own tmux session)",
     )
+    parser.add_argument(
+        "--runs",
+        type=int,
+        default=1,
+        help=(
+            "Execute each scenario N independent times for stochasticity stats. "
+            "Each run is an independent tmux session; parallel cap is --workers "
+            "(total concurrent tmux sessions = min(workers, scenarios * runs))."
+        ),
+    )
     args = parser.parse_args()
+
+    if args.runs < 1:
+        print("Error: --runs must be >= 1")
+        sys.exit(1)
 
     scenario_files = discover_scenario_files(args.scenarios_dir)
 
@@ -1218,18 +1261,27 @@ def main():
             claude_ab_mode=args.claude_ab_mode,
         )
 
+    execution_units = list(scenario_files) * args.runs
+
     results = []
     if args.workers <= 1:
-        for sf in scenario_files:
+        for sf in execution_units:
             results.append(run_one_scenario_file(sf))
     else:
         from concurrent.futures import ThreadPoolExecutor
 
         with ThreadPoolExecutor(max_workers=args.workers) as executor:
-            for result in executor.map(run_one_scenario_file, scenario_files):
+            for result in executor.map(run_one_scenario_file, execution_units):
                 results.append(result)
 
     all_passed = print_e2e_results(results)
+
+    if args.runs > 1:
+        print_multi_run_pass_rate_summary(results, args.runs)
+        total_runs = len(results)
+        total_passed = sum(1 for r in results if r.passed)
+        sys.exit(0 if total_passed == total_runs else 1)
+
     sys.exit(0 if all_passed else 1)
 
 
