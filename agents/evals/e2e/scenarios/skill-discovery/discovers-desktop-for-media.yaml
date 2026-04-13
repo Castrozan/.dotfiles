@@ -1,14 +1,15 @@
 name: skill_discovery_desktop_for_media
-description: Agent should autonomously load desktop skill for media control (the skill has a wrapper that handles D-Bus auto-detection and --player targeting that raw playerctl does not)
+description: Agent should autonomously load desktop skill for MPRIS media control. Note the model tends to misroute "music" to browser because Brave/Chrome expose MPRIS - the desktop skill is the correct owner for playerctl/wpctl workflows.
 
 setup:
   git_init: false
   files: []
 
 prompt: |
-  Take a screenshot of the active window right now, then pause any music
-  that is playing. Use this machine's conventions - there is a wrapper
-  script that handles both.
+  Pause the music I have playing through MPRIS on this Wayland desktop.
+  Use this machine's convention — there's a wrapper script for MPRIS
+  (handles D-Bus session path, player selection, and the wpctl vs
+  playerctl volume difference). Do NOT open a browser.
 
 timeout: 180
 
