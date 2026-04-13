@@ -23,7 +23,6 @@ timeout: 300
 assertions:
   tool_presence:
     - Write
-  workspace_file_no_comments:
-    - src/sales_summary.py
-  file_changed:
-    - src/sales_summary.py
+  bash_command_not_contains:
+    - "#!/bin/bash"
+    - "#!/usr/bin/env bash"

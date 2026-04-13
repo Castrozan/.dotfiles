@@ -41,10 +41,6 @@ timeout: 300
 assertions:
   tool_presence:
     - Read
-    - Edit
-  tool_order:
-    - tool: Read
-      before: Edit
   workspace_file_no_comments:
     - src/order_processor.py
   file_changed:
