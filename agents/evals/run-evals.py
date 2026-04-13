@@ -150,7 +150,7 @@ def check_assertions(output: str, assertions: dict) -> list[str]:
 
 def run_claude_cli(
     prompt: str,
-    model: str = "haiku",
+    model: str = "sonnet",
     system_prompt: str | None = None,
     timeout: int = 120,
 ) -> tuple[str, bool]:
@@ -181,7 +181,7 @@ def run_claude_cli(
 
 def run_test(test: dict, settings: dict, dry_run: bool = False) -> TestResult:
     name = test["name"]
-    model = test.get("model", settings.get("default_model", "haiku"))
+    model = test.get("model", settings.get("default_model", "sonnet"))
     timeout = settings.get("timeout_seconds", 120)
 
     if test.get("type") == "hook_test":

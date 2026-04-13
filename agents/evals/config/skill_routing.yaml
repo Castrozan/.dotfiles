@@ -27,7 +27,7 @@ tests:
   - name: routing_to_desktop_keyboard_typing
     system_prompt: *shared_system_prompt
     prompt: "Type 'hello world' into the terminal window"
-    model: haiku
+    model: sonnet
     assertions:
       output_contains_any:
         - "desktop"
@@ -35,7 +35,7 @@ tests:
   - name: routing_to_desktop_screenshot_capture
     system_prompt: *shared_system_prompt
     prompt: "Take a screenshot of my current screen"
-    model: haiku
+    model: sonnet
     assertions:
       output_contains_any:
         - "desktop"
@@ -45,7 +45,7 @@ tests:
   - name: routing_to_desktop_clipboard_access
     system_prompt: *shared_system_prompt
     prompt: "Copy the selected text to clipboard and paste it into another window"
-    model: haiku
+    model: sonnet
     assertions:
       output_contains_any:
         - "desktop"
@@ -53,7 +53,7 @@ tests:
   - name: routing_to_desktop_mouse_click
     system_prompt: *shared_system_prompt
     prompt: "Click on the close button at position 1900,10"
-    model: haiku
+    model: sonnet
     assertions:
       output_contains_any:
         - "desktop"
@@ -61,7 +61,7 @@ tests:
   - name: routing_to_media_volume_adjustment
     system_prompt: *shared_system_prompt
     prompt: "Turn the volume up to 80%"
-    model: haiku
+    model: sonnet
     assertions:
       output_contains_any:
         - "desktop"
@@ -69,7 +69,7 @@ tests:
   - name: routing_to_media_youtube_search
     system_prompt: *shared_system_prompt
     prompt: "Search YouTube for NixOS tutorials and add the best one to my playlist"
-    model: haiku
+    model: sonnet
     assertions:
       output_contains_any:
         - "desktop"
@@ -80,7 +80,7 @@ tests:
   - name: routing_to_media_skip_track
     system_prompt: *shared_system_prompt
     prompt: "Skip to the next song"
-    model: haiku
+    model: sonnet
     assertions:
       output_contains_any:
         - "desktop"
@@ -88,7 +88,7 @@ tests:
   - name: routing_to_openclaw_agent_creation
     system_prompt: *shared_system_prompt
     prompt: "Create a new agent on the OpenClaw grid that monitors RSS feeds"
-    model: haiku
+    model: sonnet
     assertions:
       output_contains_any:
         - "personal"
@@ -98,7 +98,7 @@ tests:
   - name: routing_to_openclaw_cron_job
     system_prompt: *shared_system_prompt
     prompt: "Set up a cron job on the grid to run the cleanup task every hour"
-    model: haiku
+    model: sonnet
     assertions:
       output_contains_any:
         - "personal"
@@ -106,7 +106,7 @@ tests:
   - name: routing_to_openclaw_a2a_protocol
     system_prompt: *shared_system_prompt
     prompt: "Send an A2A message to the summarizer agent on the platform"
-    model: haiku
+    model: sonnet
     assertions:
       output_contains_any:
         - "personal"
@@ -114,7 +114,7 @@ tests:
   - name: routing_to_openclaw_telegram_bot
     system_prompt: *shared_system_prompt
     prompt: "Configure the Telegram bot on our multi-agent platform to forward alerts"
-    model: haiku
+    model: sonnet
     assertions:
       output_contains_any:
         - "personal"
@@ -122,7 +122,7 @@ tests:
   - name: routing_to_comms_google_chat_message
     system_prompt: *shared_system_prompt
     prompt: "Send a message to the team on Google Chat saying the deploy is done"
-    model: haiku
+    model: sonnet
     assertions:
       output_contains_any:
         - "personal"
@@ -132,7 +132,7 @@ tests:
   - name: routing_to_comms_twitter_post
     system_prompt: *shared_system_prompt
     prompt: "Post a tweet about the new release on my X account"
-    model: haiku
+    model: sonnet
     assertions:
       output_contains_any:
         - "personal"
@@ -142,7 +142,7 @@ tests:
   - name: routing_to_comms_vtuber_avatar
     system_prompt: *shared_system_prompt
     prompt: "Make the VTuber avatar smile and start lip syncing"
-    model: haiku
+    model: sonnet
     assertions:
       output_contains_any:
         - "personal"
@@ -150,7 +150,7 @@ tests:
   - name: routing_to_comms_twitter_scrape
     system_prompt: *shared_system_prompt
     prompt: "Scrape the latest tweets from @nixos_org"
-    model: haiku
+    model: sonnet
     assertions:
       output_contains_any:
         - "personal"
@@ -158,7 +158,7 @@ tests:
   - name: routing_to_session_deep_work
     system_prompt: *shared_system_prompt
     prompt: "This is a big task, set up a deep work workspace to track progress"
-    model: haiku
+    model: sonnet
     assertions:
       output_contains_any:
         - "session"
@@ -166,7 +166,7 @@ tests:
   - name: routing_to_session_worktree
     system_prompt: *shared_system_prompt
     prompt: "Create a git worktree so I can work on a parallel branch"
-    model: haiku
+    model: sonnet
     assertions:
       output_contains_any:
         - "session"
@@ -176,7 +176,7 @@ tests:
   - name: routing_to_session_tmux_control
     system_prompt: *shared_system_prompt
     prompt: "Start a background process in a new tmux pane"
-    model: haiku
+    model: sonnet
     assertions:
       output_contains_any:
         - "session"
@@ -184,7 +184,7 @@ tests:
   - name: routing_to_session_restart
     system_prompt: *shared_system_prompt
     prompt: "Restart the current session and preserve context"
-    model: haiku
+    model: sonnet
     assertions:
       output_contains_any:
         - "session"
@@ -192,7 +192,7 @@ tests:
   - name: routing_to_browser_web_scraping
     system_prompt: *shared_system_prompt
     prompt: "Open the AWS console and check the EC2 instances page"
-    model: haiku
+    model: sonnet
     assertions:
       output_contains_any:
         - "browser"
@@ -200,7 +200,7 @@ tests:
   - name: routing_to_browser_form_filling
     system_prompt: *shared_system_prompt
     prompt: "Fill out the login form on https://example.com with my credentials"
-    model: haiku
+    model: sonnet
     assertions:
       output_contains_any:
         - "browser"
@@ -208,7 +208,7 @@ tests:
   - name: routing_to_browser_electron_app
     system_prompt: *shared_system_prompt
     prompt: "Automate the VS Code Electron app to open a file and run a command"
-    model: haiku
+    model: sonnet
     assertions:
       output_contains_any:
         - "browser"
@@ -218,7 +218,7 @@ tests:
   - name: routing_to_browser_interactive_scrape
     system_prompt: *shared_system_prompt
     prompt: "Open this website in a browser, click the 'Load More' button, then extract the pricing table"
-    model: haiku
+    model: sonnet
     assertions:
       output_contains_any:
         - "browser"
@@ -228,7 +228,7 @@ tests:
   - name: routing_to_claude_spawn_agent
     system_prompt: *shared_system_prompt
     prompt: "Spawn a parallel agent to refactor the utils module while I work on tests"
-    model: haiku
+    model: sonnet
     assertions:
       output_contains_any:
         - "session"
@@ -238,7 +238,7 @@ tests:
   - name: routing_to_commit_staging
     system_prompt: *shared_system_prompt
     prompt: "Stage the changed files and create a commit with a good message"
-    model: haiku
+    model: sonnet
     assertions:
       output_contains_any:
         - "git"
@@ -246,7 +246,7 @@ tests:
   - name: routing_to_home_assistant_lights
     system_prompt: *shared_system_prompt
     prompt: "Turn on the living room lights and set brightness to 50%"
-    model: haiku
+    model: sonnet
     assertions:
       output_contains_any:
         - "personal"
@@ -254,7 +254,7 @@ tests:
   - name: routing_to_home_assistant_ac_control
     system_prompt: *shared_system_prompt
     prompt: "Set the air conditioner to 22 degrees and fan speed to high"
-    model: haiku
+    model: sonnet
     assertions:
       output_contains_any:
         - "personal"
@@ -262,7 +262,7 @@ tests:
   - name: routing_to_obsidian_daily_note
     system_prompt: *shared_system_prompt
     prompt: "Create today's daily note and add a TODO to review the PR"
-    model: haiku
+    model: sonnet
     assertions:
       output_contains_any:
         - "personal"
@@ -270,7 +270,7 @@ tests:
   - name: routing_to_obsidian_todo_tracking
     system_prompt: *shared_system_prompt
     prompt: "Show me all pending TODOs in my vault"
-    model: haiku
+    model: sonnet
     assertions:
       output_contains_any:
         - "personal"
@@ -278,7 +278,7 @@ tests:
   - name: routing_to_dotfiles_module_addition
     system_prompt: *shared_system_prompt
     prompt: "Add a new home-manager module for configuring zathura PDF viewer"
-    model: haiku
+    model: sonnet
     assertions:
       output_contains_any:
         - "nix"
@@ -286,7 +286,7 @@ tests:
   - name: routing_to_nix_expert_expression
     system_prompt: *shared_system_prompt
     prompt: "Help me write a Nix overlay that patches the source of a package"
-    model: haiku
+    model: sonnet
     assertions:
       output_contains_any:
         - "nix"
@@ -294,7 +294,7 @@ tests:
   - name: routing_to_rebuild_apply_changes
     system_prompt: *shared_system_prompt
     prompt: "Rebuild the system to apply the flake changes"
-    model: haiku
+    model: sonnet
     assertions:
       output_contains_any:
         - "nix"
@@ -302,7 +302,7 @@ tests:
   - name: routing_to_test_verification
     system_prompt: *shared_system_prompt
     prompt: "Run the test suite to verify the changes pass"
-    model: haiku
+    model: sonnet
     assertions:
       output_contains_any:
         - "test"
@@ -310,7 +310,7 @@ tests:
   - name: routing_to_review_readme_update
     system_prompt: *shared_system_prompt
     prompt: "Update the README to document the new module structure"
-    model: haiku
+    model: sonnet
     assertions:
       output_contains_any:
         - "review"
@@ -318,7 +318,7 @@ tests:
   - name: routing_to_review_skill_creation
     system_prompt: *shared_system_prompt
     prompt: "Create a new skill for managing Docker containers with good prompts"
-    model: haiku
+    model: sonnet
     assertions:
       output_contains_any:
         - "review"
@@ -326,7 +326,7 @@ tests:
   - name: routing_to_review_skill_routing_failure
     system_prompt: *shared_system_prompt
     prompt: "The model keeps using WebFetch instead of the comms skill when I paste Twitter URLs. How do I fix the skill routing?"
-    model: haiku
+    model: sonnet
     assertions:
       output_contains_any:
         - "review"
@@ -337,7 +337,7 @@ tests:
   - name: routing_to_notify_task_completion
     system_prompt: *shared_system_prompt
     prompt: "Notify me when the long refactoring task is complete"
-    model: haiku
+    model: sonnet
     assertions:
       output_contains_any:
         - "session"
@@ -345,7 +345,7 @@ tests:
   - name: routing_to_quickshell_bar_module
     system_prompt: *shared_system_prompt
     prompt: "Add a new battery widget to the Quickshell bar"
-    model: haiku
+    model: sonnet
     assertions:
       output_contains_any:
         - "quickshell"
@@ -353,7 +353,7 @@ tests:
   - name: routing_to_research_tool_comparison
     system_prompt: *shared_system_prompt
     prompt: "Research the latest Wayland compositors and compare their features"
-    model: haiku
+    model: sonnet
     assertions:
       output_contains_any:
         - "research"
@@ -363,7 +363,7 @@ tests:
   - name: routing_to_review_compress_output
     system_prompt: *shared_system_prompt
     prompt: "That answer was way too long, give me the short version"
-    model: haiku
+    model: sonnet
     assertions:
       output_contains_any:
         - "review"
@@ -371,7 +371,7 @@ tests:
   - name: routing_to_devenv_shell_setup
     system_prompt: *shared_system_prompt
     prompt: "Set up a devenv shell with PostgreSQL and Python 3.12 for this project"
-    model: haiku
+    model: sonnet
     assertions:
       output_contains_any:
         - "nix"
@@ -379,7 +379,7 @@ tests:
   - name: routing_to_phone_status_battery
     system_prompt: *shared_system_prompt
     prompt: "Check my phone battery level and charging status"
-    model: haiku
+    model: sonnet
     assertions:
       output_contains_any:
         - "personal"
@@ -387,7 +387,7 @@ tests:
   - name: routing_to_ponto_time_tracking
     system_prompt: *shared_system_prompt
     prompt: "Fill my ponto entries for this week on Senior"
-    model: haiku
+    model: sonnet
     assertions:
       output_contains_any:
         - "personal"
@@ -395,7 +395,7 @@ tests:
   - name: routing_ambiguous_browser_vs_desktop_screenshot
     system_prompt: *shared_system_prompt
     prompt: "Take a screenshot of my desktop showing all open windows"
-    model: haiku
+    model: sonnet
     assertions:
       output_contains_any:
         - "desktop"
@@ -405,7 +405,7 @@ tests:
   - name: routing_ambiguous_research_vs_browser
     system_prompt: *shared_system_prompt
     prompt: "What are the best practices for Nix flake design in 2026?"
-    model: haiku
+    model: sonnet
     assertions:
       output_contains_any:
         - "research"
@@ -415,7 +415,7 @@ tests:
   - name: routing_ambiguous_commit_vs_session_worktree
     system_prompt: *shared_system_prompt
     prompt: "I want to commit all my staged changes with a conventional commit message"
-    model: haiku
+    model: sonnet
     assertions:
       output_contains_any:
         - "git"
@@ -425,7 +425,7 @@ tests:
   - name: routing_to_review_code_analysis
     system_prompt: *shared_system_prompt
     prompt: "Spawn an unbiased reviewer agent to check my implementation for bugs and convention violations"
-    model: haiku
+    model: sonnet
     assertions:
       output_contains_any:
         - "review"
@@ -433,7 +433,7 @@ tests:
   - name: routing_to_git_history_search_commits
     system_prompt: *shared_system_prompt
     prompt: "Search git history for all commits related to browser automation"
-    model: haiku
+    model: sonnet
     assertions:
       output_contains_any:
         - "git"
@@ -444,7 +444,7 @@ tests:
   - name: routing_to_git_history_find_when_changed
     system_prompt: *shared_system_prompt
     prompt: "When was the authentication module first added to this repo?"
-    model: haiku
+    model: sonnet
     assertions:
       output_contains_any:
         - "git"
@@ -454,7 +454,7 @@ tests:
   - name: routing_to_git_history_trace_evolution
     system_prompt: *shared_system_prompt
     prompt: "Show me how the browser skill evolved over time in this project"
-    model: haiku
+    model: sonnet
     assertions:
       output_contains_any:
         - "git"
@@ -465,7 +465,7 @@ tests:
   - name: routing_to_git_history_investigate_past
     system_prompt: *shared_system_prompt
     prompt: "I need to understand why we switched from playwright to chrome devtools, check the git history"
-    model: haiku
+    model: sonnet
     assertions:
       output_contains_any:
         - "git"
@@ -475,7 +475,7 @@ tests:
   - name: routing_ambiguous_git_history_vs_research
     system_prompt: *shared_system_prompt
     prompt: "Research the latest trends in version control systems"
-    model: haiku
+    model: sonnet
     assertions:
       output_contains_any:
         - "research"
@@ -485,7 +485,7 @@ tests:
   - name: routing_to_obsidian_inbox_processing
     system_prompt: *shared_system_prompt
     prompt: "Process my saved articles from the ReadItLater inbox"
-    model: haiku
+    model: sonnet
     assertions:
       output_contains_any:
         - "personal"
@@ -495,7 +495,7 @@ tests:
   - name: routing_to_obsidian_saved_tweet
     system_prompt: *shared_system_prompt
     prompt: "What does this saved tweet in my vault say?"
-    model: haiku
+    model: sonnet
     assertions:
       output_contains_any:
         - "personal"
@@ -505,7 +505,7 @@ tests:
   - name: routing_to_comms_tweet_media_fetch
     system_prompt: *shared_system_prompt
     prompt: "Fetch the image attached to this tweet by @user"
-    model: haiku
+    model: sonnet
     assertions:
       output_contains_any:
         - "personal"
@@ -515,7 +515,7 @@ tests:
   - name: routing_ambiguous_browser_vs_comms_tweet_scraping
     system_prompt: *shared_system_prompt
     prompt: "I need to read what a tweet says and see its attached image"
-    model: haiku
+    model: sonnet
     assertions:
       output_contains_any:
         - "personal"
@@ -525,7 +525,7 @@ tests:
   - name: routing_to_comms_bare_xcom_url
     system_prompt: *shared_system_prompt
     prompt: "https://x.com/neogoose_btw/status/2040598081763471417"
-    model: haiku
+    model: sonnet
     assertions:
       output_contains_any:
         - "personal"
@@ -536,7 +536,7 @@ tests:
   - name: routing_to_comms_bare_twitter_url
     system_prompt: *shared_system_prompt
     prompt: "https://twitter.com/elikiaponde/status/1234567890"
-    model: haiku
+    model: sonnet
     assertions:
       output_contains_any:
         - "personal"
@@ -547,7 +547,7 @@ tests:
   - name: routing_to_comms_xcom_url_with_context
     system_prompt: *shared_system_prompt
     prompt: "https://x.com/schizoidcock/status/2040595546411266214 this looks interesting, is it any good?"
-    model: haiku
+    model: sonnet
     assertions:
       output_contains_any:
         - "personal"
@@ -558,7 +558,7 @@ tests:
   - name: routing_to_comms_xcom_url_what_does_it_say
     system_prompt: *shared_system_prompt
     prompt: "what does this tweet say? https://x.com/user/status/1234567890123"
-    model: haiku
+    model: sonnet
     assertions:
       output_contains_any:
         - "personal"

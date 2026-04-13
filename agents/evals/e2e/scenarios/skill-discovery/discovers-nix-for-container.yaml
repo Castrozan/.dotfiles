@@ -1,5 +1,5 @@
-name: skill_discovery_docker_manager_for_container
-description: Agent should autonomously load docker-manager skill for container inspection
+name: skill_discovery_nix_for_container
+description: Agent should autonomously load the nix skill (which now owns docker.md) for container inspection
 
 setup:
   git_init: false
@@ -13,8 +13,7 @@ timeout: 180
 
 assertions:
   autonomous_skill_invocation:
-    - docker-manager
-  wrong_skill_not_invoked:
     - nix
+  wrong_skill_not_invoked:
     - session
     - personal

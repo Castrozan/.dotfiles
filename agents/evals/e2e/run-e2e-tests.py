@@ -1179,7 +1179,7 @@ def main():
         description=("E2E tmux-based Claude Code integration tests")
     )
     parser.add_argument("--scenario", help="Run specific scenario by name")
-    parser.add_argument("--model", default="haiku", help="Model (default: haiku)")
+    parser.add_argument("--model", default="sonnet", help="Model (default: sonnet)")
     parser.add_argument("--dry-run", action="store_true", help="List without running")
     parser.add_argument("--list", action="store_true", help="List scenarios")
     parser.add_argument(
