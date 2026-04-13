@@ -28,6 +28,7 @@ let
     export DISABLE_AUTOUPDATER=1
     export DISABLE_INSTALLATION_CHECKS=1
     rm -rf "$HOME/.local/share/claude/versions"
+    ${pkgs.python312}/bin/python3 ${./scripts/pre-approve-current-workspace-trust-dialog} || true
     exec ${claude-code-unwrapped}/bin/claude "$@"
   '';
 in
