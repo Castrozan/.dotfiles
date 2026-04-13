@@ -128,11 +128,15 @@ Full e2e suite results on haiku (2026-04-13 02:50, 776s total):
     Agent does NOT invoke Skill() for: desktop (plays music via Bash),
       personal (obsidian task), quickshell (bar task), research (external
       info), review (tldr request), test (bug report - answers directly)
+  + new multi-skill scenario (discovers-multiple-skills-in-workflow): FAIL
+    Task spans nix + git. Agent answered from memory without loading either.
   Interpretation: autonomy on skill loading is the exact gap the user named.
-  Some domains (git, nix) trigger Skill() reliably; others (simple music,
-  simple research) get answered with direct tools. Measurable baseline now
-  exists; further improvement requires skill-by-skill description tuning,
-  possibly sonnet/opus for higher-autonomy models.
+  Some domains (git, nix) trigger Skill() reliably in ISOLATED tasks; others
+  (simple music, simple research) get answered with direct tools. For
+  COMPOSED workflows the agent may skip skill loading entirely. Measurable
+  baseline now exists; further improvement requires skill-by-skill
+  description tuning, stronger core.md rule wording, or sonnet/opus for
+  higher-autonomy models.
 
 Rollback if needed:
   git reset --hard 357adf70 && rebuild
