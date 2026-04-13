@@ -14,6 +14,8 @@ DEFAULT_MODEL = "opus"
 CLAUDE_INPUT_PROMPT_INDICATOR = "❯"
 MAX_WAIT_ATTEMPTS_FOR_CLAUDE_PROMPT = 30
 PM_WINDOW_NAME = "pm"
+CLAUDE_PROCESS_COMMAND_NAMES = frozenset({"claude", "node"})
+CLAUDE_PROJECTS_TRANSCRIPTS_DIRECTORY = Path.home() / ".claude" / "projects"
 
 
 def find_tmux_socket() -> str | None:
@@ -122,20 +124,26 @@ def check_tmux_window_exists(
     return window_name in windows
 
 
-def check_claude_running_in_window(tmux_socket: str, target: str) -> bool:
+def get_pane_current_command(tmux_socket: str, target: str) -> str | None:
     result = run_tmux_command(
         tmux_socket,
-        "capture-pane",
+        "list-panes",
         "-t",
         target,
-        "-p",
-        "-S",
-        "-5",
+        "-F",
+        "#{pane_current_command}",
     )
     if result.returncode != 0:
+        return None
+    lines = result.stdout.strip().splitlines()
+    return lines[0] if lines else None
+
+
+def check_claude_running_in_window(tmux_socket: str, target: str) -> bool:
+    current_command = get_pane_current_command(tmux_socket, target)
+    if not current_command:
         return False
-    content = result.stdout
-    return CLAUDE_INPUT_PROMPT_INDICATOR in content or ("Claude Code" in content)
+    return current_command.lower() in CLAUDE_PROCESS_COMMAND_NAMES
 
 
 def create_tmux_session_with_pm_window(
@@ -231,8 +239,11 @@ def send_keys_to_tmux_pane(tmux_socket: str, target: str, keys: str) -> None:
     )
 
 
-def wait_for_claude_input_prompt(tmux_socket: str, target: str) -> None:
+def wait_for_claude_input_prompt(tmux_socket: str, target: str) -> bool:
     for _ in range(MAX_WAIT_ATTEMPTS_FOR_CLAUDE_PROMPT):
+        if not check_claude_running_in_window(tmux_socket, target):
+            time.sleep(1)
+            continue
         result = run_tmux_command(
             tmux_socket,
             "capture-pane",
@@ -243,15 +254,9 @@ def wait_for_claude_input_prompt(tmux_socket: str, target: str) -> None:
             "-10",
         )
         if result.returncode == 0 and CLAUDE_INPUT_PROMPT_INDICATOR in result.stdout:
-            return
+            return True
         time.sleep(1)
-
-    max_seconds = MAX_WAIT_ATTEMPTS_FOR_CLAUDE_PROMPT
-    print(
-        f"Warning: claude input prompt not detected"
-        f" after {max_seconds}s, sending bootstrap anyway",
-        file=sys.stderr,
-    )
+    return False
 
 
 def build_bootstrap_prompt(heartbeat_interval: str) -> str:
@@ -293,7 +298,15 @@ def send_bootstrap_prompt(
 
     buffer_name = "project-agent-bootstrap"
     try:
-        wait_for_claude_input_prompt(tmux_socket, target)
+        if not wait_for_claude_input_prompt(tmux_socket, target):
+            print(
+                "Error: claude did not reach input prompt"
+                f" within {MAX_WAIT_ATTEMPTS_FOR_CLAUDE_PROMPT}s"
+                " - refusing to send bootstrap into shell."
+                " Check the pm window for error output.",
+                file=sys.stderr,
+            )
+            return
         load_result = run_tmux_command(
             tmux_socket, "load-buffer", "-b", buffer_name, bootstrap_file
         )
@@ -330,6 +343,20 @@ def resolve_persistent_session_id(project_directory: Path, agent_name: str) -> s
     return persistent_id
 
 
+def encode_project_path_for_claude_transcripts(project_directory: Path) -> str:
+    return str(project_directory).replace("/", "-")
+
+
+def find_existing_transcript_for_session(
+    project_directory: Path, session_id: str
+) -> Path | None:
+    encoded_path = encode_project_path_for_claude_transcripts(project_directory)
+    transcript_file = (
+        CLAUDE_PROJECTS_TRANSCRIPTS_DIRECTORY / encoded_path / f"{session_id}.jsonl"
+    )
+    return transcript_file if transcript_file.is_file() else None
+
+
 def resolve_project_agent_instructions_file() -> str | None:
     instructions_path = os.environ.get("PROJECT_AGENT_INSTRUCTIONS")
     if not instructions_path:
@@ -348,13 +375,17 @@ def build_claude_launch_command(
     model: str,
     agent_name: str,
     session_id: str,
+    resume_existing_session: bool,
     instructions_file: str | None = None,
 ) -> str:
     parts = ["claude"]
     parts.append(f"--model {shlex.quote(model)}")
     parts.append(f"--name {shlex.quote(agent_name)}")
     parts.append("--dangerously-skip-permissions")
-    parts.append(f"--session-id {shlex.quote(session_id)}")
+    if resume_existing_session:
+        parts.append(f"--resume {shlex.quote(session_id)}")
+    else:
+        parts.append(f"--session-id {shlex.quote(session_id)}")
     if instructions_file:
         parts.append(f"--append-system-prompt-file {shlex.quote(instructions_file)}")
     return " ".join(parts)
@@ -435,21 +466,27 @@ def main() -> None:
     target = ensure_pm_window(tmux_socket, session_name, project_directory)
 
     persistent_session_id = resolve_persistent_session_id(project_directory, agent_name)
+    existing_transcript = find_existing_transcript_for_session(
+        project_directory, persistent_session_id
+    )
+    resume_existing_session = existing_transcript is not None
     instructions_file = resolve_project_agent_instructions_file()
     claude_command = build_claude_launch_command(
         model,
         agent_name,
         persistent_session_id,
+        resume_existing_session,
         instructions_file,
     )
     send_keys_to_tmux_pane(tmux_socket, target, claude_command)
 
-    if not args.no_bootstrap:
+    session_mode = "resume" if resume_existing_session else "new"
+    if not args.no_bootstrap and not resume_existing_session:
         send_bootstrap_prompt(tmux_socket, target, heartbeat)
 
     print(f"Launched project agent '{agent_name}'")
     print(f"  Window: {target}")
-    print(f"  Claude session: {persistent_session_id}")
+    print(f"  Claude session: {persistent_session_id} ({session_mode})")
     print(f"  Model: {model}")
     print(f"  Heartbeat: {heartbeat}")
     print(f"  Attach: tmux select-window -t {target}")
