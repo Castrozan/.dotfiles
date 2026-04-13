@@ -16,7 +16,7 @@ Pinchtab in headed mode (use `pinchtab-switch-mode headed` — see browser skill
 </workflow>
 
 <scripts>
-Scripts connect to pinchtab's Chrome via raw CDP WebSocket using cdp-browser.js (zero-dependency Node 22 built-in WebSocket).
+Scripts live at `agents/skills/ponto/scripts/` (original sibling directory, outside this umbrella). They connect to pinchtab's Chrome via raw CDP WebSocket using cdp-browser.js (zero-dependency Node 22 built-in WebSocket).
 
 ponto-list.js: List all days and their current status (filled vs pending).
 ponto-fill.js all: Fill all pending weekdays.
