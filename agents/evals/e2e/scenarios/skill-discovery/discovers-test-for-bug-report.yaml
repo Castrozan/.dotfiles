@@ -1,5 +1,5 @@
 name: skill_discovery_test_for_bug_report
-description: Agent should autonomously load test skill when a bug is reported
+description: Agent should autonomously load test skill for bug reports. The test skill defines the test-first/double-test/pre-delivery protocol this project uses — not obvious from a raw bug description.
 
 setup:
   git_init: true
@@ -16,8 +16,10 @@ setup:
             assert divide_numbers(6, 3) == 2
 
 prompt: |
-  Users report that divide_numbers(10, 0) crashes with a ZeroDivisionError instead
-  of returning a sensible value. Fix the bug.
+  Bug report: divide_numbers(10, 0) crashes with ZeroDivisionError instead of
+  returning a sensible value. Before touching the source, follow this project's
+  testing protocol — what does it require for bug reports, and how many test
+  passes are needed to confirm stability?
 
 timeout: 240
 

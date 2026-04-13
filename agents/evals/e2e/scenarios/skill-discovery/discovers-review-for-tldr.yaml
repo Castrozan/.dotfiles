@@ -1,16 +1,22 @@
 name: skill_discovery_review_for_tldr
-description: Agent should autonomously load review skill when user asks for compressed output mode
+description: Agent should autonomously load review skill when user asks for compressed output mode. The tldr sub-file defines concrete rules (30% density target, no preamble, lead with answer) that the agent needs to apply consistently.
 
 setup:
-  git_init: false
-  files: []
+  git_init: true
+  files:
+    - path: src/handler.py
+      content: |
+        def handle_request(request):
+            result = process(request)
+            return result
 
 prompt: |
-  Your last few responses have been too long. Switch to an ultra-dense mode
-  where you trim everything down to 30% of normal verbosity and skip preamble
-  for the rest of this conversation.
+  Review src/handler.py for bugs using your standard unbiased reviewer rubric,
+  then also tell me I should switch to tldr mode for the rest of this session.
+  Do both — the review and the mode switch. Apply the actual rubric, not a
+  generic "looks fine".
 
-timeout: 120
+timeout: 180
 
 assertions:
   autonomous_skill_invocation:

@@ -1,13 +1,15 @@
 name: skill_discovery_nix_for_container
-description: Agent should autonomously load the nix skill (which now owns docker.md) for container inspection
+description: Agent should autonomously load the nix skill for Docker/Podman work. The nix umbrella owns docker.md with the docker-manager wrapper that prevents cascade failures and orphaned volumes.
 
 setup:
   git_init: false
   files: []
 
 prompt: |
-  The postgres container on this host keeps restarting. Inspect its state,
-  check the logs, and tell me what is going wrong.
+  The postgres container on this host keeps restarting. Use this project's
+  container management wrapper (not raw docker/podman commands) to inspect
+  state, check logs, and say what is going wrong. The wrapper enforces
+  ordering to prevent data loss.
 
 timeout: 180
 
