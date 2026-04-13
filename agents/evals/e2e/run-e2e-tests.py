@@ -1198,6 +1198,12 @@ def main():
         default=SCENARIOS_DIR,
         type=Path,
     )
+    parser.add_argument(
+        "--workers",
+        type=int,
+        default=1,
+        help="Run scenarios in parallel (each in its own tmux session)",
+    )
     args = parser.parse_args()
 
     scenario_files = discover_scenario_files(args.scenarios_dir)
@@ -1227,18 +1233,27 @@ def main():
                 print(f"Error: {tool} not found")
                 sys.exit(1)
 
-    results = []
-    for sf in scenario_files:
-        scenario = load_scenario(sf)
-        print(f"Running: {scenario['name']}...")
-        result = run_e2e_scenario(
-            sf,
+    def run_one_scenario_file(scenario_file):
+        scenario = load_scenario(scenario_file)
+        print(f"Running: {scenario['name']}...", flush=True)
+        return run_e2e_scenario(
+            scenario_file,
             model=args.model,
             dry_run=args.dry_run,
             debug_capture=args.debug_capture,
             claude_ab_mode=args.claude_ab_mode,
         )
-        results.append(result)
+
+    results = []
+    if args.workers <= 1:
+        for sf in scenario_files:
+            results.append(run_one_scenario_file(sf))
+    else:
+        from concurrent.futures import ThreadPoolExecutor
+
+        with ThreadPoolExecutor(max_workers=args.workers) as executor:
+            for result in executor.map(run_one_scenario_file, scenario_files):
+                results.append(result)
 
     all_passed = print_e2e_results(results)
     sys.exit(0 if all_passed else 1)
