@@ -10,4 +10,3 @@ StatusIcon 1.0 StatusIcon.qml
 PowerButton 1.0 PowerButton.qml
 WindowSwitcherButton 1.0 WindowSwitcherButton.qml
 SystemMonitorModule 1.0 SystemMonitorModule.qml
-BatteryModule 1.0 BatteryModule.qml
