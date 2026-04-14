@@ -18,12 +18,14 @@ qmldir files register types for cross-directory imports. Missing entries produce
 <service_lifecycle>
 Config directories are nix-managed symlinks. After changes: use the nix skill's rebuild capability to regenerate symlinks, then restart the service via systemctl. Never use pkill on quickshell processes.
 
-Discover IPC targets dynamically with `qs ipc -c bar show`. Call with `qs ipc -c bar call TARGET FUNCTION [ARGS]`. Use IPC to trigger UI states for testing — more reliable than mouse simulation.
+Discover IPC targets dynamically with `qs ipc --any-display -c bar show`. Call with `qs ipc --any-display -c bar call TARGET FUNCTION [ARGS]`. Use IPC to trigger UI states for testing — more reliable than mouse simulation.
+
+Always pass `ipc --any-display`: the systemd service registers its display as `wayland,wayland-1` while callers see only `wayland-1`, so the default display filter rejects the match and the call fails with "No running instances".
 
 Three quickshell services run independently:
-- `quickshell-bar.service` — vertical bar (dashboard, launcher, sidebar via IPC: `qs -p ~/.dotfiles/.config/quickshell/bar ipc call dashboard toggle`)
-- `quickshell-switcher.service` — window switcher (`qs -c switcher ipc call switcher open/next/prev/confirm/cancel`)
-- `quickshell-overview.service` — workspace overview (`qs -c overview ipc call overview toggle/open/close`)
+- `quickshell-bar.service` — vertical bar (dashboard, launcher, sidebar via IPC: `qs -p ~/.dotfiles/.config/quickshell/bar ipc --any-display call dashboard toggle`)
+- `quickshell-switcher.service` — window switcher (`qs -c switcher ipc --any-display call switcher open/next/prev/confirm/cancel`)
+- `quickshell-overview.service` — workspace overview (`qs -c overview ipc --any-display call overview toggle/open/close`)
 
 The overview reads colors from `~/.config/hypr-theme/current/theme/quickshell-bar-colors.json` via FileView with live file watching. Colors auto-update on theme change. Grid config (rows, columns, scale, effects) lives in `.config/quickshell/overview/config.json`. Theme-to-M3 mapping is in `Appearance.qml:applyHyprTheme()`.
 </service_lifecycle>
