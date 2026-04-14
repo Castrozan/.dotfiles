@@ -153,6 +153,10 @@
     nixgl.inputs.nixpkgs.follows = "nixpkgs";
     agenix.url = "github:ryantm/agenix";
     agenix.inputs.nixpkgs.follows = "nixpkgs";
+    # Tracks master for nullptr guards and scene-graph fixes landed after v0.2.1.
+    # See .config/quickshell/CRASHES.md for the incident log and update cadence.
+    quickshell.url = "git+https://git.outfoxxed.me/quickshell/quickshell?ref=master";
+    quickshell.inputs.nixpkgs.follows = "nixpkgs-unstable";
 
     # Third-party — keep own nixpkgs
     voxtype.url = "github:peteonrails/voxtype";

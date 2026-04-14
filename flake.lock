@@ -1321,6 +1321,27 @@
         "type": "github"
       }
     },
+    "quickshell": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs-unstable"
+        ]
+      },
+      "locked": {
+        "lastModified": 1775720097,
+        "narHash": "sha256-p+vqkCuFfVNyQBo370wr6MebNUvz55RZiC0m8YKUhvQ=",
+        "ref": "master",
+        "rev": "d4c92973b53d9fa34cc110d3b974eb6bde5b3027",
+        "revCount": 800,
+        "type": "git",
+        "url": "https://git.outfoxxed.me/quickshell/quickshell"
+      },
+      "original": {
+        "ref": "master",
+        "type": "git",
+        "url": "https://git.outfoxxed.me/quickshell/quickshell"
+      }
+    },
     "readItNow-rc": {
       "inputs": {
         "nixpkgs": "nixpkgs_8"
@@ -1358,6 +1379,7 @@
         "nixpkgs-unstable": "nixpkgs-unstable",
         "openclaw-mesh": "openclaw-mesh",
         "opencode": "opencode",
+        "quickshell": "quickshell",
         "readItNow-rc": "readItNow-rc",
         "systemd-manager-tui": "systemd-manager-tui",
         "tui-notifier": "tui-notifier",

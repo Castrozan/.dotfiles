@@ -7,8 +7,10 @@
 let
   nixglWrap = import ../../../../lib/nixgl-wrap.nix { inherit pkgs inputs isNixOS; };
 
+  upstreamQuickshellPackage = inputs.quickshell.packages.${pkgs.system}.quickshell;
+
   quickshellPackage = nixglWrap.wrapWithNixGLIntel {
-    package = pkgs.quickshell;
+    package = upstreamQuickshellPackage;
     binaries = [ "quickshell" ];
   };
 in
@@ -29,7 +31,10 @@ in
     Service = {
       Type = "simple";
       ExecStart = "${quickshellPackage}/bin/quickshell -c switcher";
-      Environment = [ "QT_QPA_PLATFORM=wayland" ];
+      Environment = [
+        "QT_QPA_PLATFORM=wayland"
+        "QS_DROP_EXPENSIVE_FONTS=1"
+      ];
       Restart = "always";
       RestartSec = "1s";
     };
