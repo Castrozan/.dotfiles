@@ -11,7 +11,7 @@ let
   secretsDirectory = "${homeDir}/.secrets";
   claudeBinary = "${homeDir}/.local/bin/claude";
   tmuxSessionName = "claude-discord";
-  agentWorkspacesBaseDirectory = "${homeDir}/.claude/discord-agents";
+  agentWorkspacesBaseDirectory = "${homeDir}/.claude-discord-agents";
   hasAgents = cfg.agents != { };
   agentNames = builtins.attrNames cfg.agents;
   firstAgentName = builtins.head agentNames;
@@ -251,7 +251,7 @@ let
 
   agentClaudeMarkdownFiles = lib.listToAttrs (
     map (name: {
-      name = ".claude/discord-agents/${name}/CLAUDE.md";
+      name = ".claude-discord-agents/${name}/CLAUDE.md";
       value = {
         text = buildAgentClaudeMarkdownContent name cfg.agents.${name};
       };
