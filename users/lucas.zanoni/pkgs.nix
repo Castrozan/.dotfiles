@@ -26,6 +26,7 @@
       fastfetch
       fd
       fzf
+      gdrive3
       gh
       glab
       # ghostty TODO: fix ghostty, https://gitlab.gnome.org/GNOME/gtk/-/issues/4950. A wrapper did not work.
