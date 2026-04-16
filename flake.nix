@@ -128,7 +128,7 @@
     opencode.url = "github:anomalyco/opencode/v1.3.8";
     devenv.url = "github:cachix/devenv/v1.11.2";
     bluetui.url = "github:castrozan/bluetui/v0.9.1";
-    hyprland.url = "github:Castrozan/Hyprland/fix/focus-on-close-mru";
+    hyprland.url = "github:hyprwm/Hyprland/v0.54.3";
 
     # Own forks — follow nixpkgs (tested, no version-sensitive deps)
     cbonsai.url = "github:castrozan/cbonsai";
