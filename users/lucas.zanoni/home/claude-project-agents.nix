@@ -12,5 +12,9 @@ in
       projectDirectory = "${homeDirectory}/repo/esfinge";
       model = "opus";
     };
+    betha-pm = {
+      projectDirectory = "${homeDirectory}/repo/betha-pm";
+      model = "opus";
+    };
   };
 }
