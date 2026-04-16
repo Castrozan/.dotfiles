@@ -186,26 +186,66 @@ graph TD
 
 ---
 
-## 📂 Repository Structure - Relevant things
+## 📂 Repository Structure
 
 <details>
-<summary>📂 Structure</summary>
+<summary>📂 Top-level structure</summary>
 
 ```
 .dotfiles/
-├── .bashrc              # Main shell configuration (i'm using fish with bass)
-├── .config/             # Application configs (hypr, kitty, tmux, nvim, etc.)
-├── bin/                 # Custom shell scripts & utilities
+├── agents/              # Claude Code agent skills, hooks, and evaluations
+├── flake/               # Flake infrastructure (home-manager module exports)
 ├── home/                # Home Manager shared modules
-├── hosts/               # NixOS hosts configuration
-├── nixos/               # NixOS shared system modules
-├── users/               # User-specific configurations
+│   └── modules/         # Application and feature modules (see below)
+├── hosts/               # NixOS host-specific configurations
+│   └── dellg15/         # Dell G15 hardware config, scripts, tests
+├── lib/                 # Nix utility functions (nixgl-wrap, fetch-prebuilt-binary)
+├── nixos/               # NixOS system-level modules
+│   └── modules/         # agenix, steam, virtualization, network, media-streaming...
+├── secrets/             # Encrypted secrets (agenix): api-keys, bot-tokens, credentials
+├── static/              # Static assets: wallpapers, documentation screenshots
+├── tests/               # Test suite (bats, pytest, nix-checks)
+├── users/
 │   ├── lucas.zanoni/    # Home Manager standalone config (Ubuntu/non-NixOS)
 │   └── zanoni/          # Full NixOS system config
 ├── flake.nix            # Nix Flakes entry point
 ├── Makefile             # Helper commands
 └── README.md            # This file!
 ```
+</details>
+
+<details>
+<summary>📦 home/modules/ - all application modules</summary>
+
+| Module | Description |
+|--------|-------------|
+| `agents` | A2A MCP server integration |
+| `audio` | PipeWire pipeline, Bluetooth policy, audio scripts |
+| `browser` | Chrome, Firefox, global browser config, CDP tests |
+| `claude` | Claude Code IDE: config, channels, skills, MCP servers, hooks, project agents |
+| `codex` | Codex IDE configuration and patches |
+| `cursor` | Cursor global user rules |
+| `desktop` | Clipboard, screenshots, notifications, fonts, desktop utilities |
+| `dev` | Git, GitHub Actions runner, K9s, MongoDB Compass, dev utilities |
+| `editor` | Neovim, VSCode, Cursor, JetBrains IDEA |
+| `gaming` | Vesktop, GOG CLI, bonsai, cmatrix, Nothing app |
+| `gnome` | GTK, dconf, GNOME extensions |
+| `home-assistant` | Home Assistant control scripts (AC, lights, scenes) |
+| `hyprland` | Wayland compositor, Quickshell bar, window management, keybindings |
+| `media` | MPD, MPV, codecs, streaming, audio/video utilities |
+| `network` | OpenfortivVPN, FortiClient, DNS, shell completions |
+| `ollama` | Ollama local LLM setup |
+| `openclaw` | Multi-agent platform (Telegram/Discord), workspace, skills, reliability |
+| `openclaw-mesh` | OpenClaw mesh networking |
+| `opencode` | OpenCode IDE integration |
+| `security` | Sophos monitor, keyrings, security scripts |
+| `sourcebot` | Sourcebot skill integration |
+| `system` | System utilities, sleep/suspend, hardware scripts |
+| `terminal` | Fish shell, tmux config, screensaver, terminal utilities |
+| `testing` | pytest, bats, test utilities |
+| `voice` | Voice/speech recognition integration |
+
+Each module follows the same pattern: `default.nix` as entry point, optional `scripts/` for Python/shell utilities, optional `tests/` for BATS/pytest suites, optional `docs/` for module-specific documentation.
 </details>
 
 ---
