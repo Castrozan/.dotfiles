@@ -84,7 +84,7 @@ in
 
   claude-discord-channel-survives-config-change-restart =
     mkEvalCheck "claude-discord-channel-survives-config-change-restart"
-      ((discordChannelService.Unit.X-RestartIfChanged or true) == false)
+      (!(discordChannelService.Unit.X-RestartIfChanged or true))
       "claude-discord-channel.service must set Unit.X-RestartIfChanged=false so home-manager activation does not restart it (restarting kills the tmux server in its cgroup, destroying every session including unrelated ones)";
 
   claude-discord-channel-kill-mode-process =
