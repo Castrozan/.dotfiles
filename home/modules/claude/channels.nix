@@ -95,17 +95,8 @@ let
   '';
 
   bootstrapHeartbeatScript = ./scripts/bootstrap-discord-agent-heartbeat;
-
-  agentsWithHeartbeats = lib.filterAttrs (_: agent: agent.heartbeatInterval != null) cfg.agents;
-  hasAgentsWithHeartbeats = agentsWithHeartbeats != { };
-
-  buildHeartbeatBootstrapCommand = name: agent: ''
-    ${pkgs.python312}/bin/python3 ${bootstrapHeartbeatScript} \
-      --session "${tmuxSessionName}" \
-      --window ${lib.escapeShellArg name} \
-      --interval ${lib.escapeShellArg agent.heartbeatInterval} \
-      --prompt ${lib.escapeShellArg agent.heartbeatPrompt} &
-  '';
+  discordAgentWrapperScript = ./scripts/discord-agent-wrapper;
+  claudeDiscordAgentsServiceScript = ./scripts/claude-discord-agents-service;
 
   agentWorkspaceDirectory = name: "${agentWorkspacesBaseDirectory}/${name}";
 
@@ -128,62 +119,42 @@ let
     in
     "cd ${workspace} && DISCORD_BOT_TOKEN=$(cat ${tokenFile}) ${launchBinary} ${channelFlag} ${modelFlag} ${nameFlag} ${permissionModeFlag} ${launchFlags}";
 
-  buildAgentWrapperScript =
+  buildAgentWindowCommand =
     name: agent:
     pkgs.writeShellScript "discord-agent-${name}" ''
-      trap 'exit 0' SIGTERM SIGHUP SIGINT
-
-      restart_delay=10
-      max_restart_delay=300
-
-      while true; do
-        start_time=$(date +%s)
-        ${buildAgentLaunchCommand name agent} || true
-        end_time=$(date +%s)
-        runtime=$((end_time - start_time))
-
-        if [ "$runtime" -gt 60 ]; then
-          restart_delay=10
-        fi
-
-        echo "[$(date)] Agent ${name} exited after $runtime seconds. Restarting in $restart_delay seconds..."
-        sleep "$restart_delay"
-
-        restart_delay=$((restart_delay * 2))
-        if [ "$restart_delay" -gt "$max_restart_delay" ]; then
-          restart_delay=$max_restart_delay
-        fi
-      done
+      exec ${pkgs.python312}/bin/python3 ${discordAgentWrapperScript} \
+        --agent-name ${lib.escapeShellArg name} \
+        --launch-command ${lib.escapeShellArg (buildAgentLaunchCommand name agent)}
     '';
 
-  buildTmuxNewWindowCommand =
-    name: agent:
-    ''${pkgs.tmux}/bin/tmux new-window -t "${tmuxSessionName}" -n ${name} "${buildAgentWrapperScript name agent}"'';
+  buildHeartbeatBootstrapArgv = name: agent: [
+    "${pkgs.python312}/bin/python3"
+    "${bootstrapHeartbeatScript}"
+    "--session"
+    tmuxSessionName
+    "--window"
+    name
+    "--interval"
+    agent.heartbeatInterval
+    "--prompt"
+    agent.heartbeatPrompt
+  ];
 
-  heartbeatBootstrapCommands = lib.concatMapStringsSep "\n" (
-    name: buildHeartbeatBootstrapCommand name agentsWithHeartbeats.${name}
-  ) (builtins.attrNames agentsWithHeartbeats);
+  buildAgentSpecification = name: agent: {
+    inherit name;
+    wrapper_command = "${buildAgentWindowCommand name agent}";
+    heartbeat_bootstrap_argv =
+      if agent.heartbeatInterval != null then buildHeartbeatBootstrapArgv name agent else null;
+  };
 
-  claudeDiscordAgentsServiceScript = pkgs.writeShellScript "claude-discord-agents-service" ''
-    set -euo pipefail
-
-    if ${pkgs.tmux}/bin/tmux has-session -t "${tmuxSessionName}" 2>/dev/null; then
-      ${pkgs.tmux}/bin/tmux kill-session -t "${tmuxSessionName}"
-    fi
-
-    ${pkgs.tmux}/bin/tmux new-session -d -s "${tmuxSessionName}" -n ${firstAgentName} \
-      "${buildAgentWrapperScript firstAgentName cfg.agents.${firstAgentName}}"
-
-    ${lib.concatMapStringsSep "\n" (name: buildTmuxNewWindowCommand name cfg.agents.${name}) (
-      builtins.tail agentNames
-    )}
-
-    ${lib.optionalString hasAgentsWithHeartbeats heartbeatBootstrapCommands}
-
-    while ${pkgs.tmux}/bin/tmux has-session -t "${tmuxSessionName}" 2>/dev/null; do
-      sleep 10
-    done
-  '';
+  claudeDiscordAgentsServiceSpecificationFile =
+    pkgs.writeText "claude-discord-agents-service-specification.json"
+      (
+        builtins.toJSON {
+          session_name = tmuxSessionName;
+          agents = map (name: buildAgentSpecification name cfg.agents.${name}) agentNames;
+        }
+      );
 
   claudeDiscordSessionStarter = pkgs.writeShellScriptBin "claude-discord-channel" ''
     set -euo pipefail
@@ -348,12 +319,13 @@ in
         Unit = {
           Description = "Claude Code Discord agents (persistent tmux session)";
           After = [ "network.target" ];
+          X-RestartIfChanged = false;
         };
 
         Service = {
           Type = "simple";
-          ExecStart = "${claudeDiscordAgentsServiceScript}";
-          ExecStop = "-${pkgs.tmux}/bin/tmux kill-session -t ${tmuxSessionName}";
+          ExecStart = "${pkgs.python312}/bin/python3 ${claudeDiscordAgentsServiceScript} --specification-file ${claudeDiscordAgentsServiceSpecificationFile}";
+          KillMode = "process";
           Restart = "always";
           RestartSec = "5s";
           Environment = [

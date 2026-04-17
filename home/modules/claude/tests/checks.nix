@@ -33,6 +33,28 @@ let
       ];
     }).config;
 
+  cfgWithDiscordAgent =
+    (inputs.home-manager.lib.homeManagerConfiguration {
+      inherit pkgs;
+      modules = [
+        self.homeManagerModules.claude-code
+        {
+          home = {
+            username = "test";
+            homeDirectory = "/home/test";
+            inherit (helpers) stateVersion;
+          };
+          claude.discordChannel.agents.test-agent = {
+            botTokenSecretName = "discord-bot-token-test";
+            role = "Test agent";
+            personality = "Test personality";
+          };
+        }
+      ];
+    }).config;
+
+  discordChannelService = cfgWithDiscordAgent.systemd.user.services.claude-discord-channel;
+
   fileNames = builtins.attrNames cfg.home.file;
 
   hasFilePrefix =
@@ -59,4 +81,19 @@ in
   claude-research-skill =
     mkEvalCheck "claude-research-skill" (builtins.hasAttr ".claude/skills/research" cfg.home.file)
       "research skill should be deployed for claude";
+
+  claude-discord-channel-survives-config-change-restart =
+    mkEvalCheck "claude-discord-channel-survives-config-change-restart"
+      ((discordChannelService.Unit.X-RestartIfChanged or true) == false)
+      "claude-discord-channel.service must set Unit.X-RestartIfChanged=false so home-manager activation does not restart it (restarting kills the tmux server in its cgroup, destroying every session including unrelated ones)";
+
+  claude-discord-channel-kill-mode-process =
+    mkEvalCheck "claude-discord-channel-kill-mode-process"
+      ((discordChannelService.Service.KillMode or null) == "process")
+      "claude-discord-channel.service must set Service.KillMode=process so systemctl stop/restart only kills the supervisor PID; control-group (the default) takes the tmux daemon down with the service";
+
+  claude-discord-channel-no-execstop-kill-session =
+    mkEvalCheck "claude-discord-channel-no-execstop-kill-session"
+      (!(discordChannelService.Service ? ExecStop))
+      "claude-discord-channel.service must not define ExecStop — any tmux kill-session on stop defeats the whole point of surviving restarts";
 }

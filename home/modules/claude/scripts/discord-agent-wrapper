@@ -1,0 +1,73 @@
+import argparse
+import signal
+import subprocess
+import sys
+import time
+
+INITIAL_RESTART_DELAY_SECONDS = 10
+MAXIMUM_RESTART_DELAY_SECONDS = 300
+STABLE_RUNTIME_THRESHOLD_SECONDS = 60
+
+
+def install_exit_signal_handlers() -> None:
+    def terminate_cleanly(_signal_number: int, _frame_object) -> None:
+        sys.exit(0)
+
+    for signal_number in (signal.SIGTERM, signal.SIGHUP, signal.SIGINT):
+        signal.signal(signal_number, terminate_cleanly)
+
+
+def run_launch_command_once(launch_command: str) -> float:
+    start_time = time.time()
+    subprocess.run(["bash", "-c", launch_command], check=False)
+    return time.time() - start_time
+
+
+def supervise_agent_forever(agent_name: str, launch_command: str) -> None:
+    restart_delay_seconds = INITIAL_RESTART_DELAY_SECONDS
+
+    while True:
+        runtime_seconds = run_launch_command_once(launch_command)
+
+        if runtime_seconds > STABLE_RUNTIME_THRESHOLD_SECONDS:
+            restart_delay_seconds = INITIAL_RESTART_DELAY_SECONDS
+
+        print(
+            f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] "
+            f"Agent {agent_name} exited after {int(runtime_seconds)} seconds. "
+            f"Restarting in {restart_delay_seconds} seconds...",
+            flush=True,
+        )
+        time.sleep(restart_delay_seconds)
+
+        restart_delay_seconds = min(
+            restart_delay_seconds * 2, MAXIMUM_RESTART_DELAY_SECONDS
+        )
+
+
+def parse_arguments() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        prog="discord-agent-wrapper",
+        description="Run a Discord agent launch command in a restart loop with exponential backoff",
+    )
+    parser.add_argument(
+        "--agent-name",
+        required=True,
+        help="Agent name used in restart log messages",
+    )
+    parser.add_argument(
+        "--launch-command",
+        required=True,
+        help="Shell command that starts the agent (runs under bash -c)",
+    )
+    return parser.parse_args()
+
+
+def main() -> None:
+    install_exit_signal_handlers()
+    arguments = parse_arguments()
+    supervise_agent_forever(arguments.agent_name, arguments.launch_command)
+
+
+if __name__ == "__main__":
+    main()
