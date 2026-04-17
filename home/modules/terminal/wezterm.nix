@@ -2,13 +2,14 @@
   pkgs,
   inputs,
   isNixOS,
+  latest,
   ...
 }:
 let
   nixglWrap = import ../../../lib/nixgl-wrap.nix { inherit pkgs inputs isNixOS; };
 
   weztermPackage = nixglWrap.wrapWithNixGLIntel {
-    package = pkgs.wezterm;
+    package = latest.wezterm;
     binaries = [
       "wezterm"
       "wezterm-gui"
