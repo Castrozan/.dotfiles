@@ -304,7 +304,7 @@ Evaluation infrastructure for measuring agent behavior quality:
 - `run-evals.py` - Eval runner (batch, single, or filter by tag)
 - `baseline.json` - Saved baseline scores (92.8%, 192/207 scenarios)
 - `config/` - Eval configuration per skill/scenario set
-- `e2e/` - End-to-end skill-discovery scenarios (11 scenarios)
+- `e2e/` - End-to-end scenarios (35 total: 13 behavior, 12 skill-discovery-leading, 10 skill-discovery-natural)
 - `integration/` - Integration-level behavior tests
 - `validate-skill-frontmatter.sh` - Validates all SKILL.md have required fields
 
