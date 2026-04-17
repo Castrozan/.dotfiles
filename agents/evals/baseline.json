@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-04-13T05:24:24.126568+00:00",
-  "git_commit": "ddbcffcf",
+  "generated_at": "2026-04-17T21:38:57.014554+00:00",
+  "git_commit": "2f530a82",
   "total_tests": 207,
-  "total_passed": 192,
-  "total_failed": 15,
-  "pass_rate": 0.9275,
+  "total_passed": 195,
+  "total_failed": 12,
+  "pass_rate": 0.942,
   "categories": {
     "other": {
-      "passed": 84,
-      "failed": 1,
+      "passed": 82,
+      "failed": 3,
       "tests": [
         {
           "name": "worktrees_knows_builtin_flag",
@@ -192,11 +192,11 @@
         },
         {
           "name": "pm_does_not_fix_executor_mistakes_itself",
-          "passed": false
+          "passed": true
         },
         {
           "name": "pm_does_not_trust_executor_self_report",
-          "passed": true
+          "passed": false
         },
         {
           "name": "pm_heartbeat_skips_outside_active_hours",
@@ -224,7 +224,7 @@
         },
         {
           "name": "pm_heartbeat_not_in_project_root",
-          "passed": true
+          "passed": false
         },
         {
           "name": "pm_delegates_codebase_exploration",
@@ -268,7 +268,7 @@
         },
         {
           "name": "git_history_never_uses_repeated_grep",
-          "passed": true
+          "passed": false
         },
         {
           "name": "git_history_starts_with_layer1",
@@ -503,8 +503,8 @@
       ]
     },
     "routing": {
-      "passed": 49,
-      "failed": 11,
+      "passed": 54,
+      "failed": 6,
       "tests": [
         {
           "name": "routing_to_desktop_keyboard_typing",
@@ -512,7 +512,7 @@
         },
         {
           "name": "routing_to_desktop_screenshot_capture",
-          "passed": false
+          "passed": true
         },
         {
           "name": "routing_to_desktop_clipboard_access",
@@ -520,7 +520,7 @@
         },
         {
           "name": "routing_to_desktop_mouse_click",
-          "passed": false
+          "passed": true
         },
         {
           "name": "routing_to_media_volume_adjustment",
@@ -544,7 +544,7 @@
         },
         {
           "name": "routing_to_openclaw_a2a_protocol",
-          "passed": false
+          "passed": true
         },
         {
           "name": "routing_to_openclaw_telegram_bot",
@@ -560,7 +560,7 @@
         },
         {
           "name": "routing_to_comms_vtuber_avatar",
-          "passed": true
+          "passed": false
         },
         {
           "name": "routing_to_comms_twitter_scrape",
@@ -568,7 +568,7 @@
         },
         {
           "name": "routing_to_session_deep_work",
-          "passed": false
+          "passed": true
         },
         {
           "name": "routing_to_session_worktree",
@@ -600,7 +600,7 @@
         },
         {
           "name": "routing_to_claude_spawn_agent",
-          "passed": false
+          "passed": true
         },
         {
           "name": "routing_to_commit_staging",
@@ -608,11 +608,11 @@
         },
         {
           "name": "routing_to_home_assistant_lights",
-          "passed": true
+          "passed": false
         },
         {
           "name": "routing_to_home_assistant_ac_control",
-          "passed": true
+          "passed": false
         },
         {
           "name": "routing_to_obsidian_daily_note",
@@ -648,7 +648,7 @@
         },
         {
           "name": "routing_to_review_skill_routing_failure",
-          "passed": true
+          "passed": false
         },
         {
           "name": "routing_to_notify_task_completion",
@@ -664,7 +664,7 @@
         },
         {
           "name": "routing_to_review_compress_output",
-          "passed": false
+          "passed": true
         },
         {
           "name": "routing_to_devenv_shell_setup",
@@ -672,7 +672,7 @@
         },
         {
           "name": "routing_to_phone_status_battery",
-          "passed": true
+          "passed": false
         },
         {
           "name": "routing_to_ponto_time_tracking",
@@ -684,7 +684,7 @@
         },
         {
           "name": "routing_ambiguous_research_vs_browser",
-          "passed": false
+          "passed": true
         },
         {
           "name": "routing_ambiguous_commit_vs_session_worktree",
@@ -704,7 +704,7 @@
         },
         {
           "name": "routing_to_git_history_trace_evolution",
-          "passed": false
+          "passed": true
         },
         {
           "name": "routing_to_git_history_investigate_past",
@@ -720,7 +720,7 @@
         },
         {
           "name": "routing_to_obsidian_saved_tweet",
-          "passed": false
+          "passed": true
         },
         {
           "name": "routing_to_comms_tweet_media_fetch",
@@ -740,7 +740,7 @@
         },
         {
           "name": "routing_to_comms_xcom_url_with_context",
-          "passed": false
+          "passed": true
         },
         {
           "name": "routing_to_comms_xcom_url_what_does_it_say",
