@@ -18,12 +18,16 @@ REPO_ROOT = Path(
 )
 
 
-def run_gh(*args: str, repo: str | None = None, check: bool = True) -> subprocess.CompletedProcess:
+def run_gh(
+    *args: str, repo: str | None = None, check: bool = True
+) -> subprocess.CompletedProcess:
     cmd = ["python3", str(SCRIPT)]
     if repo:
         cmd += ["--repo", repo]
     cmd += list(args)
-    return subprocess.run(cmd, capture_output=True, text=True, check=check, cwd=str(REPO_ROOT))
+    return subprocess.run(
+        cmd, capture_output=True, text=True, check=check, cwd=str(REPO_ROOT)
+    )
 
 
 def cache_path(root: Path, layer: int) -> Path:
@@ -33,10 +37,14 @@ def cache_path(root: Path, layer: int) -> Path:
 
 @pytest.fixture(autouse=True)
 def clean_cache():
-    """Clean cache before and after each test."""
-    run_gh("clean", check=False)
+    """Clean cache before and after each test via direct unlink (not subprocess)."""
+    for layer in (1, 2):
+        path = cache_path(REPO_ROOT, layer)
+        path.unlink(missing_ok=True)
     yield
-    run_gh("clean", check=False)
+    for layer in (1, 2):
+        path = cache_path(REPO_ROOT, layer)
+        path.unlink(missing_ok=True)
 
 
 # --- Script quality ---
@@ -91,7 +99,11 @@ def test_layer1_contains_commit_hashes():
     run_gh("dump")
     path = cache_path(REPO_ROOT, 1)
     lines = path.read_text(errors="replace").splitlines()
-    commit_lines = [l for l in lines if len(l) >= 9 and l[8] == " " and all(c in "0123456789abcdef" for c in l[:8])]
+    commit_lines = [
+        l
+        for l in lines
+        if len(l) >= 9 and l[8] == " " and all(c in "0123456789abcdef" for c in l[:8])
+    ]
     assert len(commit_lines) > 100
 
 
@@ -102,7 +114,7 @@ def test_dump_layer2_creates_file():
     run_gh("dump", "--layer", "2")
     path = cache_path(REPO_ROOT, 2)
     assert path.exists()
-    assert path.stat().st_size > path.parent.joinpath(cache_path(REPO_ROOT, 1).name).stat().st_size if cache_path(REPO_ROOT, 1).exists() else True
+    assert path.stat().st_size > 0
 
 
 def test_layer2_has_header():
@@ -193,7 +205,10 @@ def test_different_repos_get_different_paths():
     # Find another git repo on the system
     other_repos = [
         p
-        for p in [Path.home() / "repo" / "openclaw-mesh", Path.home() / "repo" / "openclaw"]
+        for p in [
+            Path.home() / "repo" / "openclaw-mesh",
+            Path.home() / "repo" / "openclaw",
+        ]
         if p.exists() and (p / ".git").exists()
     ]
     if not other_repos:
