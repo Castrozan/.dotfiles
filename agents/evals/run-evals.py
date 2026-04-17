@@ -3,10 +3,13 @@
 import argparse
 import json
 import os
+import shutil
 import subprocess
 import sys
+import tempfile
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -14,6 +17,33 @@ from pathlib import Path
 import yaml
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
+
+EVAL_WORKING_DIRECTORY: Path = REPO_ROOT
+
+
+@contextmanager
+def temporary_eval_worktree():
+    """Create a disposable git worktree so evals never pollute the main tree."""
+    global EVAL_WORKING_DIRECTORY
+    worktree_path = Path(tempfile.mkdtemp(prefix="eval-worktree-"))
+    try:
+        subprocess.run(
+            ["git", "worktree", "add", "--detach", str(worktree_path)],
+            cwd=REPO_ROOT,
+            capture_output=True,
+            check=True,
+        )
+        EVAL_WORKING_DIRECTORY = worktree_path
+        yield worktree_path
+    finally:
+        EVAL_WORKING_DIRECTORY = REPO_ROOT
+        subprocess.run(
+            ["git", "worktree", "remove", "--force", str(worktree_path)],
+            cwd=REPO_ROOT,
+            capture_output=True,
+        )
+        if worktree_path.exists():
+            shutil.rmtree(worktree_path, ignore_errors=True)
 
 
 @dataclass
@@ -167,7 +197,7 @@ def run_claude_cli(
             capture_output=True,
             text=True,
             timeout=timeout,
-            cwd=REPO_ROOT,
+            cwd=EVAL_WORKING_DIRECTORY,
             env=build_filtered_environment(),
         )
         return result.stdout + result.stderr, result.returncode == 0
@@ -540,14 +570,15 @@ def main():
     if args.dry_run:
         print("   (dry run - no claude calls)")
 
-    results = run_tests(
-        config,
-        category=args.category,
-        test_name=args.test,
-        dry_run=args.dry_run,
-        smoke_only=args.smoke,
-        max_workers_override=args.workers,
-    )
+    with temporary_eval_worktree():
+        results = run_tests(
+            config,
+            category=args.category,
+            test_name=args.test,
+            dry_run=args.dry_run,
+            smoke_only=args.smoke,
+            max_workers_override=args.workers,
+        )
 
     all_passed = print_results(results)
 
