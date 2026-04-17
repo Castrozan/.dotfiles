@@ -407,8 +407,13 @@ _run_qmllint_checks() {
 		return 0
 	fi
 
+	if ! command -v quickshell &>/dev/null; then
+		echo "SKIP: quickshell not installed, skipping QML lint" >&2
+		return 0
+	fi
+
 	local quickshellQmlPath
-	quickshellQmlPath="$(nix-store -qR "$(which quickshell 2>/dev/null)" 2>/dev/null | grep 'quickshell-[0-9]' | head -1)/lib/qt-6/qml"
+	quickshellQmlPath="$(nix-store -qR "$(which quickshell)" 2>/dev/null | grep 'quickshell-wrapped-[0-9]' | head -1)/lib/qt-6/qml"
 	local qt5compatPath
 	qt5compatPath="$(nix eval nixpkgs#qt6Packages.qt5compat.outPath 2>/dev/null | tr -d '"')/lib/qt-6/qml"
 
