@@ -13,7 +13,7 @@ For Obsidian vault operations — daily notes, TODO tracking, activity logging, 
 
 For communications tooling — Google Chat browser automation and webhooks (`comms-google-chat.md`), Twitter/X scraping and posting (`comms-twitter.md`), VTuber avatar lip sync and expressions (`comms-avatar.md`).
 
-For Senior Gestão de Ponto time-entry automation (pinchtab + CDP WebSocket scripts for clock-in marcações), read `ponto.md`.
+For Senior Gestao de Ponto time-entry automation (Chrome DevTools MCP for clock-in marcacoes), read `ponto.md`.
 
 For Home Assistant smart home control (Tuya lights via ha-light, Midea AC via ha-ac), read `home-assistant.md`.
 
@@ -21,4 +21,4 @@ For remote phone status over SSH (battery, charging, uptime, storage), read `pho
 
 For the OpenClaw multi-agent platform — grid coordination (`openclaw-grid.md`), A2A protocol (`openclaw-a2a.md`), cron jobs and recurring tasks (`openclaw-cron.md`), and the top-level platform overview (`openclaw.md`).
 
-Scripts for each capability still live in their original locations under `agents/skills/<capability>/scripts/` and are referenced by Nix modules.
+Scripts for each capability live in their original locations under `agents/skills/<capability>/scripts/` where applicable. Some capabilities (ponto, home-assistant) are pure Chrome DevTools MCP workflows with no scripts.
