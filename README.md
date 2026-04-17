@@ -194,6 +194,10 @@ graph TD
 ```
 .dotfiles/
 ├── agents/              # Claude Code agent skills, hooks, and evaluations
+│   ├── core.md          # Core agent behavior instructions (alwaysApply)
+│   ├── skills/          # 13 umbrella skills (git, nix, session, browser, ...)
+│   ├── hooks/           # Lifecycle hook scripts (format, lint, rebuild, review)
+│   └── evals/           # Evaluation framework (baseline, e2e, integration)
 ├── flake/               # Flake infrastructure (home-manager module exports)
 ├── home/                # Home Manager shared modules
 │   └── modules/         # Application and feature modules (see below)
@@ -246,6 +250,64 @@ graph TD
 | `voice` | Voice/speech recognition integration |
 
 Each module follows the same pattern: `default.nix` as entry point, optional `scripts/` for Python/shell utilities, optional `tests/` for BATS/pytest suites, optional `docs/` for module-specific documentation.
+</details>
+
+<details>
+<summary>🤖 agents/ - Claude Code skills, hooks, and evaluations</summary>
+
+`agents/core.md` is loaded into every session (`alwaysApply: true`) and defines the authoritative agent behavior rules (code style, git discipline, tool preferences, workflow, etc.).
+
+### Skills (`agents/skills/`)
+
+Skills are organized as umbrella directories. Each umbrella has a `SKILL.md` (the skill the agent can invoke) plus sub-skill `.md` files and optional `scripts/`, `evals/`, and Nix wiring.
+
+| Skill | Description |
+|-------|-------------|
+| `browser` | Live browser automation - fill forms, click buttons, test web UI, capture screenshots |
+| `comms` | Discord bot, Twitter/X CLI, social channel integration |
+| `desktop` | Desktop automation, media control, MPRIS players, clipboard, screenshots |
+| `git` | Commits, staging, commit message quality, history search |
+| `nix` | Nix language, module system, flakes, rebuild, devenv, Docker |
+| `openclaw` | Multi-agent platform: A2A, grid, Telegram/Discord bots, cron |
+| `personal` | Personal channels: Gmail, Calendar, WhatsApp, Obsidian, Home Assistant, ponto |
+| `phone-status` | Phone battery and status via SSH |
+| `quickshell` | Quickshell bar/OSD/switcher - QML editing, IPC, visual verification |
+| `research` | Current-information research, tool comparisons, external synthesis |
+| `review` | Code review rubric, compliance auditing, documentation, skill authoring |
+| `session` | Session lifecycle, deep work, worktrees, tmux, Claude Code instances |
+| `test` | Testing methodology and verification workflow |
+
+### Hooks (`agents/hooks/`)
+
+Python scripts wired as Claude Code lifecycle hooks:
+
+| Hook | Trigger |
+|------|---------|
+| `auto-format.py` | After editing - runs ruff, nixfmt, shfmt |
+| `lint-on-edit.py` | On file edit - runs language-appropriate linter |
+| `nix-rebuild-trigger.py` | After editing `.nix` files - queues rebuild |
+| `core-instruction-reinforcement.py` | Session start - injects core rules |
+| `deep-work-recovery.py` | Session start - resumes active deep-work context |
+| `session-context.py` | Session start - injects workspace/git/env context |
+| `workspace-directory-injector.py` | Session start - sets working directory |
+| `end-of-work-compliance-review.py` | Task completed - spawns parallel reviewers |
+| `task-completed-quality-gate.py` | Task completed - quality gate before responding |
+| `teammate-idle-quality-gate.py` | Teammate idle - reviews subagent output |
+| `pre-push-ci-gate.py` | Pre-push - runs CI checks before git push |
+| `url-to-skill-router.py` | On URL input - routes to matching skill |
+| `run-hook.sh` | Shell wrapper for hook execution |
+
+### Evals (`agents/evals/`)
+
+Evaluation infrastructure for measuring agent behavior quality:
+
+- `run-evals.py` - Eval runner (batch, single, or filter by tag)
+- `baseline.json` - Saved baseline scores (92.8%, 192/207 scenarios)
+- `config/` - Eval configuration per skill/scenario set
+- `e2e/` - End-to-end skill-discovery scenarios (11 scenarios)
+- `integration/` - Integration-level behavior tests
+- `validate-skill-frontmatter.sh` - Validates all SKILL.md have required fields
+
 </details>
 
 ---
