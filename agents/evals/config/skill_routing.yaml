@@ -25,6 +25,7 @@ shared_system_prompt: &shared_system_prompt |
 
 tests:
   - name: routing_to_desktop_keyboard_typing
+    no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "Type 'hello world' into the terminal window"
     model: sonnet
@@ -33,6 +34,7 @@ tests:
         - "desktop"
 
   - name: routing_to_desktop_screenshot_capture
+    no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "Take a screenshot of my current screen"
     model: sonnet
@@ -43,6 +45,7 @@ tests:
         - "browser"
 
   - name: routing_to_desktop_clipboard_access
+    no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "Copy the selected text to clipboard and paste it into another window"
     model: sonnet
@@ -51,6 +54,7 @@ tests:
         - "desktop"
 
   - name: routing_to_desktop_mouse_click
+    no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "Click on the close button at position 1900,10"
     model: sonnet
@@ -59,6 +63,7 @@ tests:
         - "desktop"
 
   - name: routing_to_media_volume_adjustment
+    no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "Turn the volume up to 80%"
     model: sonnet
@@ -67,6 +72,7 @@ tests:
         - "desktop"
 
   - name: routing_to_media_youtube_search
+    no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "Search YouTube for NixOS tutorials and add the best one to my playlist"
     model: sonnet
@@ -78,6 +84,7 @@ tests:
         - "research"
 
   - name: routing_to_media_skip_track
+    no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "Skip to the next song"
     model: sonnet
@@ -86,6 +93,7 @@ tests:
         - "desktop"
 
   - name: routing_to_openclaw_agent_creation
+    no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "Create a new agent on the OpenClaw grid that monitors RSS feeds"
     model: sonnet
@@ -96,6 +104,7 @@ tests:
         - "session"
 
   - name: routing_to_openclaw_cron_job
+    no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "Set up a cron job on the grid to run the cleanup task every hour"
     model: sonnet
@@ -104,6 +113,7 @@ tests:
         - "personal"
 
   - name: routing_to_openclaw_a2a_protocol
+    no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "Send an A2A message to the summarizer agent on the platform"
     model: sonnet
@@ -112,6 +122,7 @@ tests:
         - "personal"
 
   - name: routing_to_openclaw_telegram_bot
+    no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "Configure the Telegram bot on our multi-agent platform to forward alerts"
     model: sonnet
@@ -120,6 +131,7 @@ tests:
         - "personal"
 
   - name: routing_to_comms_google_chat_message
+    no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "Send a message to the team on Google Chat saying the deploy is done"
     model: sonnet
@@ -130,6 +142,7 @@ tests:
         - "browser"
 
   - name: routing_to_comms_twitter_post
+    no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "Post a tweet about the new release on my X account"
     model: sonnet
@@ -140,6 +153,7 @@ tests:
         - "browser"
 
   - name: routing_to_comms_vtuber_avatar
+    no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "Make the VTuber avatar smile and start lip syncing"
     model: sonnet
@@ -148,6 +162,7 @@ tests:
         - "personal"
 
   - name: routing_to_comms_twitter_scrape
+    no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "Scrape the latest tweets from @nixos_org"
     model: sonnet
@@ -156,6 +171,7 @@ tests:
         - "personal"
 
   - name: routing_to_session_deep_work
+    no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "This is a big task, set up a deep work workspace to track progress"
     model: sonnet
@@ -164,6 +180,7 @@ tests:
         - "session"
 
   - name: routing_to_session_worktree
+    no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "Create a git worktree so I can work on a parallel branch"
     model: sonnet
@@ -174,6 +191,7 @@ tests:
         - "git"
 
   - name: routing_to_session_tmux_control
+    no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "Start a background process in a new tmux pane"
     model: sonnet
@@ -182,6 +200,7 @@ tests:
         - "session"
 
   - name: routing_to_session_restart
+    no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "Restart the current session and preserve context"
     model: sonnet
@@ -190,6 +209,7 @@ tests:
         - "session"
 
   - name: routing_to_browser_web_scraping
+    no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "Open the AWS console and check the EC2 instances page"
     model: sonnet
@@ -198,6 +218,7 @@ tests:
         - "browser"
 
   - name: routing_to_browser_form_filling
+    no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "Fill out the login form on https://example.com with my credentials"
     model: sonnet
@@ -206,6 +227,7 @@ tests:
         - "browser"
 
   - name: routing_to_browser_electron_app
+    no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "Automate the VS Code Electron app to open a file and run a command"
     model: sonnet
@@ -216,6 +238,7 @@ tests:
         - "desktop"
 
   - name: routing_to_browser_interactive_scrape
+    no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "Open this website in a browser, click the 'Load More' button, then extract the pricing table"
     model: sonnet
@@ -226,6 +249,7 @@ tests:
         - "research"
 
   - name: routing_to_claude_spawn_agent
+    no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "Spawn a parallel agent to refactor the utils module while I work on tests"
     model: sonnet
@@ -236,6 +260,7 @@ tests:
         - "personal"
 
   - name: routing_to_commit_staging
+    no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "Stage the changed files and create a commit with a good message"
     model: sonnet
@@ -244,6 +269,7 @@ tests:
         - "git"
 
   - name: routing_to_home_assistant_lights
+    no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "Turn on the living room lights and set brightness to 50%"
     model: sonnet
@@ -252,6 +278,7 @@ tests:
         - "personal"
 
   - name: routing_to_home_assistant_ac_control
+    no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "Set the air conditioner to 22 degrees and fan speed to high"
     model: sonnet
@@ -260,6 +287,7 @@ tests:
         - "personal"
 
   - name: routing_to_obsidian_daily_note
+    no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "Create today's daily note and add a TODO to review the PR"
     model: sonnet
@@ -268,6 +296,7 @@ tests:
         - "personal"
 
   - name: routing_to_obsidian_todo_tracking
+    no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "Show me all pending TODOs in my vault"
     model: sonnet
@@ -276,6 +305,7 @@ tests:
         - "personal"
 
   - name: routing_to_dotfiles_module_addition
+    no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "Add a new home-manager module for configuring zathura PDF viewer"
     model: sonnet
@@ -284,6 +314,7 @@ tests:
         - "nix"
 
   - name: routing_to_nix_expert_expression
+    no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "Help me write a Nix overlay that patches the source of a package"
     model: sonnet
@@ -292,6 +323,7 @@ tests:
         - "nix"
 
   - name: routing_to_rebuild_apply_changes
+    no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "Rebuild the system to apply the flake changes"
     model: sonnet
@@ -300,6 +332,7 @@ tests:
         - "nix"
 
   - name: routing_to_test_verification
+    no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "Run the test suite to verify the changes pass"
     model: sonnet
@@ -308,6 +341,7 @@ tests:
         - "test"
 
   - name: routing_to_review_readme_update
+    no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "Update the README to document the new module structure"
     model: sonnet
@@ -316,6 +350,7 @@ tests:
         - "review"
 
   - name: routing_to_review_skill_creation
+    no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "Create a new skill for managing Docker containers with good prompts"
     model: sonnet
@@ -324,6 +359,7 @@ tests:
         - "review"
 
   - name: routing_to_review_skill_routing_failure
+    no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "The model keeps using WebFetch instead of the comms skill when I paste Twitter URLs. How do I fix the skill routing?"
     model: sonnet
@@ -335,6 +371,7 @@ tests:
         - "browser"
 
   - name: routing_to_notify_task_completion
+    no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "Notify me when the long refactoring task is complete"
     model: sonnet
@@ -343,6 +380,7 @@ tests:
         - "session"
 
   - name: routing_to_quickshell_bar_module
+    no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "Add a new battery widget to the Quickshell bar"
     model: sonnet
@@ -351,6 +389,7 @@ tests:
         - "quickshell"
 
   - name: routing_to_research_tool_comparison
+    no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "Research the latest Wayland compositors and compare their features"
     model: sonnet
@@ -361,6 +400,7 @@ tests:
         - "browser"
 
   - name: routing_to_review_compress_output
+    no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "That answer was way too long, give me the short version"
     model: sonnet
@@ -369,6 +409,7 @@ tests:
         - "review"
 
   - name: routing_to_devenv_shell_setup
+    no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "Set up a devenv shell with PostgreSQL and Python 3.12 for this project"
     model: sonnet
@@ -377,6 +418,7 @@ tests:
         - "nix"
 
   - name: routing_to_phone_status_battery
+    no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "Check my phone battery level and charging status"
     model: sonnet
@@ -385,6 +427,7 @@ tests:
         - "personal"
 
   - name: routing_to_ponto_time_tracking
+    no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "Fill my ponto entries for this week on Senior"
     model: sonnet
@@ -393,6 +436,7 @@ tests:
         - "personal"
 
   - name: routing_ambiguous_browser_vs_desktop_screenshot
+    no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "Take a screenshot of my desktop showing all open windows"
     model: sonnet
@@ -403,6 +447,7 @@ tests:
         - "browser"
 
   - name: routing_ambiguous_research_vs_browser
+    no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "What are the best practices for Nix flake design in 2026?"
     model: sonnet
@@ -413,6 +458,7 @@ tests:
         - "browser"
 
   - name: routing_ambiguous_commit_vs_session_worktree
+    no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "I want to commit all my staged changes with a conventional commit message"
     model: sonnet
@@ -423,6 +469,7 @@ tests:
         - "session"
 
   - name: routing_to_review_code_analysis
+    no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "Spawn an unbiased reviewer agent to check my implementation for bugs and convention violations"
     model: sonnet
@@ -431,6 +478,7 @@ tests:
         - "review"
 
   - name: routing_to_git_history_search_commits
+    no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "Search git history for all commits related to browser automation"
     model: sonnet
@@ -442,6 +490,7 @@ tests:
         - "browser"
 
   - name: routing_to_git_history_find_when_changed
+    no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "When was the authentication module first added to this repo?"
     model: sonnet
@@ -452,6 +501,7 @@ tests:
         - "nix"
 
   - name: routing_to_git_history_trace_evolution
+    no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "Show me how the browser skill evolved over time in this project"
     model: sonnet
@@ -463,6 +513,7 @@ tests:
         - "research"
 
   - name: routing_to_git_history_investigate_past
+    no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "I need to understand why we switched from playwright to chrome devtools, check the git history"
     model: sonnet
@@ -473,6 +524,7 @@ tests:
         - "research"
 
   - name: routing_ambiguous_git_history_vs_research
+    no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "Research the latest trends in version control systems"
     model: sonnet
@@ -483,6 +535,7 @@ tests:
         - "git"
 
   - name: routing_to_obsidian_inbox_processing
+    no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "Process my saved articles from the ReadItLater inbox"
     model: sonnet
@@ -493,6 +546,7 @@ tests:
         - "browser"
 
   - name: routing_to_obsidian_saved_tweet
+    no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "What does this saved tweet in my vault say?"
     model: sonnet
@@ -503,6 +557,7 @@ tests:
         - "browser"
 
   - name: routing_to_comms_tweet_media_fetch
+    no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "Fetch the image attached to this tweet by @user"
     model: sonnet
@@ -513,6 +568,7 @@ tests:
         - "browser"
 
   - name: routing_ambiguous_browser_vs_comms_tweet_scraping
+    no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "I need to read what a tweet says and see its attached image"
     model: sonnet
@@ -523,6 +579,7 @@ tests:
         - "browser"
 
   - name: routing_to_comms_bare_xcom_url
+    no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "https://x.com/neogoose_btw/status/2040598081763471417"
     model: sonnet
@@ -534,6 +591,7 @@ tests:
         - "research"
 
   - name: routing_to_comms_bare_twitter_url
+    no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "https://twitter.com/elikiaponde/status/1234567890"
     model: sonnet
@@ -545,6 +603,7 @@ tests:
         - "research"
 
   - name: routing_to_comms_xcom_url_with_context
+    no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "https://x.com/schizoidcock/status/2040595546411266214 this looks interesting, is it any good?"
     model: sonnet
@@ -556,6 +615,7 @@ tests:
         - "research"
 
   - name: routing_to_comms_xcom_url_what_does_it_say
+    no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "what does this tweet say? https://x.com/user/status/1234567890123"
     model: sonnet

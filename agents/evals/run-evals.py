@@ -183,8 +183,12 @@ def run_claude_cli(
     model: str = "sonnet",
     system_prompt: str | None = None,
     timeout: int = 120,
+    no_tools: bool = False,
 ) -> tuple[str, bool]:
     cmd = ["claude", "-p", "--model", model]
+
+    if no_tools:
+        cmd.extend(["--tools", ""])
 
     if system_prompt:
         cmd.extend(["--system-prompt", system_prompt])
@@ -252,6 +256,7 @@ def run_test(test: dict, settings: dict, dry_run: bool = False) -> TestResult:
         model=model,
         system_prompt=resolved_system_prompt,
         timeout=timeout,
+        no_tools=test.get("no_tools", False),
     )
 
     duration = time.time() - start_time
