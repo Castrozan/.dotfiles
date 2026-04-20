@@ -115,9 +115,8 @@ let
       extendFlag = if agent.extendWorkspace then "--extend" else "";
       launchBinary =
         if useWorkspace then "claude-workspace ${fromFlags} ${extendFlag} --" else "${claudeBinary}";
-      launchFlags = if useWorkspace then "" else skillDirFlags;
     in
-    "cd ${workspace} && DISCORD_BOT_TOKEN=$(cat ${tokenFile}) ${launchBinary} ${channelFlag} ${modelFlag} ${nameFlag} ${permissionModeFlag} ${launchFlags}";
+    "cd ${workspace} && DISCORD_BOT_TOKEN=$(cat ${tokenFile}) ${launchBinary} ${channelFlag} ${modelFlag} ${nameFlag} ${permissionModeFlag} ${skillDirFlags}";
 
   buildAgentWindowCommand =
     name: agent:

@@ -36,7 +36,8 @@ in
       botTokenSecretName = "discord-bot-token-jenny";
       role = "autonomous personal assistant — communications, calendar, monitoring, automation";
       model = "sonnet";
-      extendWorkspace = true;
+      workspaceFrom = [ "${homeDirectory}/.dotfiles/agents/skills/browser" ];
+      skillDirectories = [ "${homeDirectory}/.local/share/claude-skill-sets/personal" ];
       permissionMode = "bypassPermissions";
       activeHoursStart = 7;
       activeHoursEnd = 22;
