@@ -8,7 +8,6 @@
     Service = {
       WorkingDirectory = "%h/actions-runner";
       ExecStart = "%h/actions-runner/run.sh";
-      KillMode = "process";
       KillSignal = "SIGTERM";
       TimeoutStopSec = "5min";
       RuntimeMaxSec = "45min";
