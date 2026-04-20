@@ -44,6 +44,7 @@ let
 
   mcpServersToInject = builtins.toJSON {
     chrome-devtools = {
+      type = "sse";
       url = browserMcp.mcpServerSseUrl;
     };
     browser-use = {
