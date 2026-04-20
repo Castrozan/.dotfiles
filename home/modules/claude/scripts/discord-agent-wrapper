@@ -1,4 +1,6 @@
 import argparse
+import datetime
+import json
 import signal
 import subprocess
 import sys
@@ -17,17 +19,91 @@ def install_exit_signal_handlers() -> None:
         signal.signal(signal_number, terminate_cleanly)
 
 
-def run_launch_command_once(launch_command: str) -> float:
+def is_within_active_hours(
+    active_hours_start: int | None, active_hours_end: int | None
+) -> bool:
+    if active_hours_start is None:
+        return True
+    current_hour = time.localtime().tm_hour
+    if active_hours_start <= active_hours_end:
+        return active_hours_start <= current_hour < active_hours_end
+    return current_hour >= active_hours_start or current_hour < active_hours_end
+
+
+def seconds_until_active_hours_start(active_hours_start: int) -> int:
+    now = datetime.datetime.now()
+    target = now.replace(hour=active_hours_start, minute=0, second=0, microsecond=0)
+    if target <= now:
+        target += datetime.timedelta(days=1)
+    return int((target - now).total_seconds())
+
+
+def should_rotate_session(
+    daily_session_rotation: bool, last_fresh_start_date: str | None
+) -> bool:
+    if not daily_session_rotation:
+        return False
+    if last_fresh_start_date is None:
+        return False
+    today = time.strftime("%Y-%m-%d")
+    return last_fresh_start_date != today
+
+
+def launch_heartbeat_bootstrap(heartbeat_bootstrap_argv: list[str]) -> None:
+    subprocess.Popen(heartbeat_bootstrap_argv)
+
+
+def run_launch_command_once(
+    launch_command: str, heartbeat_bootstrap_argv: list[str] | None
+) -> float:
     start_time = time.time()
+    if heartbeat_bootstrap_argv:
+        launch_heartbeat_bootstrap(heartbeat_bootstrap_argv)
     subprocess.run(["bash", "-c", launch_command], check=False)
     return time.time() - start_time
 
 
-def supervise_agent_forever(agent_name: str, launch_command: str) -> None:
+def supervise_agent_forever(
+    agent_name: str,
+    launch_command: str,
+    heartbeat_bootstrap_argv: list[str] | None,
+    active_hours_start: int | None,
+    active_hours_end: int | None,
+    daily_session_rotation: bool,
+) -> None:
     restart_delay_seconds = INITIAL_RESTART_DELAY_SECONDS
+    last_fresh_start_date: str | None = None
 
     while True:
-        runtime_seconds = run_launch_command_once(launch_command)
+        if not is_within_active_hours(active_hours_start, active_hours_end):
+            sleep_seconds = seconds_until_active_hours_start(active_hours_start)
+            print(
+                f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] "
+                f"Agent {agent_name} outside active hours. "
+                f"Sleeping {sleep_seconds} seconds until {active_hours_start}:00...",
+                flush=True,
+            )
+            time.sleep(sleep_seconds)
+            last_fresh_start_date = None
+            continue
+
+        if should_rotate_session(daily_session_rotation, last_fresh_start_date):
+            print(
+                f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] "
+                f"Agent {agent_name} daily session rotation. Starting fresh.",
+                flush=True,
+            )
+            last_fresh_start_date = None
+
+        if last_fresh_start_date is None:
+            last_fresh_start_date = time.strftime("%Y-%m-%d")
+
+        runtime_seconds = run_launch_command_once(
+            launch_command, heartbeat_bootstrap_argv
+        )
+
+        if not is_within_active_hours(active_hours_start, active_hours_end):
+            continue
 
         if runtime_seconds > STABLE_RUNTIME_THRESHOLD_SECONDS:
             restart_delay_seconds = INITIAL_RESTART_DELAY_SECONDS
@@ -60,13 +136,48 @@ def parse_arguments() -> argparse.Namespace:
         required=True,
         help="Shell command that starts the agent (runs under bash -c)",
     )
+    parser.add_argument(
+        "--heartbeat-bootstrap-argv",
+        default=None,
+        help="JSON-encoded argv list for the heartbeat bootstrap script",
+    )
+    parser.add_argument(
+        "--active-hours-start",
+        type=int,
+        default=None,
+        help="Hour (0-23) when agent becomes active",
+    )
+    parser.add_argument(
+        "--active-hours-end",
+        type=int,
+        default=None,
+        help="Hour (0-23) when agent goes dormant",
+    )
+    parser.add_argument(
+        "--daily-session-rotation",
+        action="store_true",
+        default=False,
+        help="Enable once-per-day forced session restart",
+    )
     return parser.parse_args()
 
 
 def main() -> None:
     install_exit_signal_handlers()
     arguments = parse_arguments()
-    supervise_agent_forever(arguments.agent_name, arguments.launch_command)
+
+    heartbeat_bootstrap_argv = None
+    if arguments.heartbeat_bootstrap_argv:
+        heartbeat_bootstrap_argv = json.loads(arguments.heartbeat_bootstrap_argv)
+
+    supervise_agent_forever(
+        arguments.agent_name,
+        arguments.launch_command,
+        heartbeat_bootstrap_argv,
+        arguments.active_hours_start,
+        arguments.active_hours_end,
+        arguments.daily_session_rotation,
+    )
 
 
 if __name__ == "__main__":

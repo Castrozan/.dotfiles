@@ -121,10 +121,26 @@ let
 
   buildAgentWindowCommand =
     name: agent:
+    let
+      heartbeatBootstrapArgvFlag =
+        if agent.heartbeatInterval != null then
+          "--heartbeat-bootstrap-argv ${lib.escapeShellArg (builtins.toJSON (buildHeartbeatBootstrapArgv name agent))}"
+        else
+          "";
+      activeHoursFlags =
+        if agent.activeHoursStart != null then
+          "--active-hours-start ${toString agent.activeHoursStart} --active-hours-end ${toString agent.activeHoursEnd}"
+        else
+          "";
+      dailySessionRotationFlag = if agent.dailySessionRotation then "--daily-session-rotation" else "";
+    in
     pkgs.writeShellScript "discord-agent-${name}" ''
       exec ${pkgs.python312}/bin/python3 ${discordAgentWrapperScript} \
         --agent-name ${lib.escapeShellArg name} \
-        --launch-command ${lib.escapeShellArg (buildAgentLaunchCommand name agent)}
+        --launch-command ${lib.escapeShellArg (buildAgentLaunchCommand name agent)} \
+        ${heartbeatBootstrapArgvFlag} \
+        ${activeHoursFlags} \
+        ${dailySessionRotationFlag}
     '';
 
   buildHeartbeatBootstrapArgv = name: agent: [
@@ -143,8 +159,6 @@ let
   buildAgentSpecification = name: agent: {
     inherit name;
     wrapper_command = "${buildAgentWindowCommand name agent}";
-    heartbeat_bootstrap_argv =
-      if agent.heartbeatInterval != null then buildHeartbeatBootstrapArgv name agent else null;
   };
 
   claudeDiscordAgentsServiceSpecificationFile =
@@ -286,6 +300,21 @@ in
             default = "default";
             description = "Claude Code permission mode. Use 'bypassPermissions' for fully autonomous agents that should never prompt for tool approval.";
           };
+          activeHoursStart = lib.mkOption {
+            type = lib.types.nullOr lib.types.int;
+            default = null;
+            description = "Hour (0-23) when agent should start running. When null, agent runs 24/7. Must be set together with activeHoursEnd.";
+          };
+          activeHoursEnd = lib.mkOption {
+            type = lib.types.nullOr lib.types.int;
+            default = null;
+            description = "Hour (0-23) when agent should stop running. When null, agent runs 24/7. Must be set together with activeHoursStart.";
+          };
+          dailySessionRotation = lib.mkOption {
+            type = lib.types.bool;
+            default = false;
+            description = "Kill and restart the Claude process once per day to prevent context accumulation.";
+          };
         };
       }
     );
@@ -301,6 +330,17 @@ in
     }
 
     (lib.mkIf hasAgents {
+      assertions = map (
+        name:
+        let
+          agent = cfg.agents.${name};
+        in
+        {
+          assertion = (agent.activeHoursStart == null) == (agent.activeHoursEnd == null);
+          message = "Agent ${name}: activeHoursStart and activeHoursEnd must both be set or both be null";
+        }
+      ) agentNames;
+
       home = {
         packages = [ claudeDiscordSessionStarter ];
 

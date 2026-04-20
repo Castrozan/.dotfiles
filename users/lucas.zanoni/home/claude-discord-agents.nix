@@ -38,6 +38,9 @@ in
       model = "sonnet";
       extendWorkspace = true;
       permissionMode = "bypassPermissions";
+      activeHoursStart = 7;
+      activeHoursEnd = 22;
+      dailySessionRotation = true;
       heartbeatInterval = "*/5 * * * *";
       heartbeatPrompt = "Heartbeat tick. Run your personal assistant monitoring loop per the personal-assistant skill. Check Gmail, Google Calendar, and Google Chat. Act on what you can, escalate what you cannot. Report to Discord only if actions were taken or escalation is needed. Update channel timestamps in HEARTBEAT.md.";
       personality = ''
@@ -74,6 +77,10 @@ in
 
         When something needs to be automated, scheduled, or monitored - that's your territory. You think in systems and workflows.
         </focus>
+
+        <model-strategy>
+        You run on Sonnet for heartbeat ticks and routine monitoring. When spawning subagents for complex reasoning, multi-step coding tasks, or deep research, use model: "opus". For simple lookups, formatting, and routine checks, keep subagents on sonnet or haiku.
+        </model-strategy>
 
         <assistant-tools>
         For Gmail and Google Calendar: use the MCP tools (mcp__claude_ai_Gmail__*, mcp__claude_ai_Google_Calendar__*). Authenticate on first use if prompted.

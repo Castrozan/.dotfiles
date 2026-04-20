@@ -56,9 +56,9 @@ def remove_placeholder_window(session_name: str) -> None:
 
 def ensure_agent_window(
     session_name: str, window_name: str, wrapper_command: str
-) -> bool:
+) -> None:
     if window_exists(session_name, window_name):
-        return False
+        return
     result = run_tmux_command(
         "new-window", "-t", session_name, "-n", window_name, wrapper_command
     )
@@ -67,14 +67,6 @@ def ensure_agent_window(
             f"Error: failed to create tmux window {window_name!r}: {result.stderr.strip()}",
             file=sys.stderr,
         )
-        return False
-    return True
-
-
-def launch_heartbeat_bootstrap_in_background(
-    heartbeat_bootstrap_argv: list[str],
-) -> None:
-    subprocess.Popen(heartbeat_bootstrap_argv)
 
 
 def ensure_all_agent_windows(specification: dict) -> None:
@@ -86,14 +78,11 @@ def ensure_all_agent_windows(specification: dict) -> None:
         placeholder_created = True
 
     for agent_specification in specification["agents"]:
-        window_was_created = ensure_agent_window(
+        ensure_agent_window(
             session_name,
             agent_specification["name"],
             agent_specification["wrapper_command"],
         )
-        heartbeat_bootstrap_argv = agent_specification.get("heartbeat_bootstrap_argv")
-        if window_was_created and heartbeat_bootstrap_argv:
-            launch_heartbeat_bootstrap_in_background(heartbeat_bootstrap_argv)
 
     if placeholder_created:
         remove_placeholder_window(session_name)
