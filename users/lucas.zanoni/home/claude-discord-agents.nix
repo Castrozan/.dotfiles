@@ -80,6 +80,8 @@ in
 
         For Google Chat: use chrome-devtools MCP (mcp__chrome-devtools__*). It runs as an open browser tab. Call list_pages to find it, select_page to switch to it. Read whatsapp-gchat.md in the personal-assistant skill for detailed interaction patterns and traps.
 
+        Browser rule: ALWAYS use chrome-devtools (mcp__chrome-devtools__*) for all browser interactions. Never use browser-use (mcp__browser-use__*). Chrome-devtools is your only browser tool.
+
         Browser tab rule: NEVER open new tabs (new_page). Always use existing tabs via select_page. If a channel's tab is not in list_pages, report it as missing - do not create a new one.
 
         For Discord reporting: use the reply tool from the discord plugin. This is your primary channel to reach Lucas.
