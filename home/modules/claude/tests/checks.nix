@@ -55,6 +55,8 @@ let
 
   discordChannelService = cfgWithDiscordAgent.systemd.user.services.claude-discord-channel;
 
+  chromeDevtoolsSseBridgeService = cfg.systemd.user.services.chrome-devtools-mcp-sse-bridge;
+
   fileNames = builtins.attrNames cfg.home.file;
 
   hasFilePrefix =
@@ -95,5 +97,20 @@ in
   claude-discord-channel-no-execstop-kill-session =
     mkEvalCheck "claude-discord-channel-no-execstop-kill-session"
       (!(discordChannelService.Service ? ExecStop))
-      "claude-discord-channel.service must not define ExecStop — any tmux kill-session on stop defeats the whole point of surviving restarts";
+      "claude-discord-channel.service must not define ExecStop - any tmux kill-session on stop defeats the whole point of surviving restarts";
+
+  chrome-devtools-sse-bridge-service-exists =
+    mkEvalCheck "chrome-devtools-sse-bridge-service-exists"
+      (cfg.systemd.user.services ? chrome-devtools-mcp-sse-bridge)
+      "chrome-devtools-mcp-sse-bridge.service must exist so chrome-devtools MCP runs as a persistent SSE server";
+
+  chrome-devtools-sse-bridge-restart-always =
+    mkEvalCheck "chrome-devtools-sse-bridge-restart-always"
+      ((chromeDevtoolsSseBridgeService.Service.Restart or null) == "always")
+      "chrome-devtools-mcp-sse-bridge.service must set Restart=always to recover from CDP disconnects";
+
+  chrome-devtools-sse-bridge-enabled-on-login =
+    mkEvalCheck "chrome-devtools-sse-bridge-enabled-on-login"
+      (builtins.elem "default.target" (chromeDevtoolsSseBridgeService.Install.WantedBy or [ ]))
+      "chrome-devtools-mcp-sse-bridge.service must be WantedBy default.target to start on login";
 }
