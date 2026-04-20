@@ -10,17 +10,17 @@
       ExecStart = "%h/actions-runner/run.sh";
       KillSignal = "SIGTERM";
       TimeoutStopSec = "5min";
-      RuntimeMaxSec = "45min";
+      RuntimeMaxSec = "60min";
     };
   };
 
   systemd.user.timers.github-actions-runner = {
     Unit = {
-      Description = "Start GitHub Actions runner before scheduled workflow (11:45 BRT)";
+      Description = "Start GitHub Actions runner before scheduled workflow (12:00 BRT)";
     };
 
     Timer = {
-      OnCalendar = "11:45";
+      OnCalendar = "11:30";
       Persistent = true;
     };
 
