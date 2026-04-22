@@ -9,34 +9,52 @@ let
   chromeDevtoolsMcpBinary = "${chromeDevtoolsMcpNpmPrefix}/bin/chrome-devtools-mcp";
   chromeGlobalUserDataDir = "${homeDir}/.config/chrome-global";
 
+  supergatewayNpmPrefix = "${homeDir}/.local/share/supergateway-npm";
+  supergatewayBinary = "${supergatewayNpmPrefix}/bin/supergateway";
+
+  chromeDevtoolsStreamableHttpPort = 8767;
+
   install = import ./install.nix {
     inherit
       pkgs
       nodejs
       chromeDevtoolsMcpNpmPrefix
+      supergatewayNpmPrefix
       ;
   };
 
-  chromeDevtoolsMcpAutoconnectWrapper = pkgs.writeShellScriptBin "chrome-devtools-mcp-autoconnect" ''
+  chromeDevtoolsMcpAutoconnectCommand = builtins.concatStringsSep " " [
+    chromeDevtoolsMcpBinary
+    "--autoConnect"
+    "--userDataDir ${chromeGlobalUserDataDir}"
+    "--usageStatistics false"
+  ];
+
+  chromeDevtoolsStreamableHttpBridgeWrapper = pkgs.writeShellScriptBin "chrome-devtools-mcp-streamable-http-bridge" ''
     set -euo pipefail
+    export PATH="${nodejs}/bin:''${PATH:+:$PATH}"
 
-    readonly MCP_BINARY="${chromeDevtoolsMcpBinary}"
-
-    if ! "$MCP_BINARY" --version >/dev/null 2>&1; then
-      echo "chrome-devtools-mcp binary not found at $MCP_BINARY" >&2
+    if ! "${chromeDevtoolsMcpBinary}" --version >/dev/null 2>&1; then
+      echo "chrome-devtools-mcp binary not found at ${chromeDevtoolsMcpBinary}" >&2
       exit 1
     fi
 
-    exec "$MCP_BINARY" \
-      --autoConnect \
-      --userDataDir "${chromeGlobalUserDataDir}" \
-      --usageStatistics false \
-      "$@"
+    if ! "${supergatewayBinary}" --version >/dev/null 2>&1; then
+      echo "supergateway binary not found at ${supergatewayBinary}" >&2
+      exit 1
+    fi
+
+    exec "${supergatewayBinary}" \
+      --stdio "${chromeDevtoolsMcpAutoconnectCommand}" \
+      --outputTransport streamableHttp \
+      --stateful \
+      --port ${toString chromeDevtoolsStreamableHttpPort}
   '';
 in
 {
-  mcpServerCommand = "${chromeDevtoolsMcpAutoconnectWrapper}/bin/chrome-devtools-mcp-autoconnect";
-  inherit (install) installChromeDevtoolsMcpViaNpm;
+  mcpServerStreamableHttpUrl = "http://localhost:${toString chromeDevtoolsStreamableHttpPort}/mcp";
+  streamableHttpBridgeCommand = "${chromeDevtoolsStreamableHttpBridgeWrapper}/bin/chrome-devtools-mcp-streamable-http-bridge";
+  inherit (install) installChromeDevtoolsMcpViaNpm installSupergatewayViaNpm;
 
   packages = [ ];
 }

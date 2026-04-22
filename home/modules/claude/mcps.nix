@@ -8,6 +8,7 @@
 let
   nodejs = pkgs.nodejs_22;
   homeDir = config.home.homeDirectory;
+  inherit (config.home) username;
   chromeBinary = "${latest.google-chrome}/bin/google-chrome-stable";
 
   browserMcp = import ../../../agents/skills/browser {
@@ -44,8 +45,7 @@ let
 
   mcpServersToInject = builtins.toJSON {
     chrome-devtools = {
-      command = browserMcp.mcpServerCommand;
-      args = [ ];
+      url = browserMcp.mcpServerStreamableHttpUrl;
     };
     browser-use = {
       command = "${browserUseMcpWrapper}";
@@ -72,6 +72,15 @@ let
 
     ${pkgs.jq}/bin/jq --argjson servers "$SERVERS" '.mcpServers = (.mcpServers // {}) + $servers' "$CLAUDE_CONFIG" | ${pkgs.moreutils}/bin/sponge "$CLAUDE_CONFIG"
   '';
+
+  nixSystemPaths = lib.concatStringsSep ":" [
+    "${nodejs}/bin"
+    "/run/current-system/sw/bin"
+    "/etc/profiles/per-user/${username}/bin"
+    "${homeDir}/.nix-profile/bin"
+    "/usr/bin"
+    "/bin"
+  ];
 in
 {
   home = {
@@ -84,6 +93,10 @@ in
 
       installChromeDevtoolsMcp = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
         run ${browserMcp.installChromeDevtoolsMcpViaNpm}
+      '';
+
+      installSupergateway = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+        run ${browserMcp.installSupergatewayViaNpm}
       '';
 
       writeBrowserUseConfig =
@@ -124,6 +137,28 @@ in
       installA2aMcp = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
         run ${a2aMcp.installA2aMcpViaNpm}
       '';
+    };
+  };
+
+  systemd.user.services.chrome-devtools-mcp-bridge = {
+    Unit = {
+      Description = "Chrome DevTools MCP streamable HTTP bridge (supergateway)";
+      After = [ "graphical-session.target" ];
+    };
+
+    Service = {
+      Type = "simple";
+      ExecStart = browserMcp.streamableHttpBridgeCommand;
+      Restart = "always";
+      RestartSec = "3s";
+      Environment = [
+        "PATH=${nixSystemPaths}"
+        "HOME=${homeDir}"
+      ];
+    };
+
+    Install = {
+      WantedBy = [ "default.target" ];
     };
   };
 }
