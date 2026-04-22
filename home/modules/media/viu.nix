@@ -42,7 +42,7 @@ in
       preferred_spinner = "dots"
       media_api = "anilist"
       welcome_screen = false
-      provider = "allanime"
+      provider = "animepahe"
       selector = "fzf"
       auto_select_anime_result = true
       icons = true
