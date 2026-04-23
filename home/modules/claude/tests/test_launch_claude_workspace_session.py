@@ -282,3 +282,54 @@ def test_resolve_requested_skill_source_directories_requires_skill_markdown(tmp_
         loaded_workspace_launcher_module.resolve_requested_skill_source_directories(
             [str(missing_skill_markdown_directory)]
         )
+
+
+def test_compute_deterministic_workspace_directory_is_stable_for_same_path(tmp_path):
+    project_directory = tmp_path / "my-project"
+    project_directory.mkdir()
+
+    first_result = (
+        loaded_workspace_launcher_module.compute_deterministic_workspace_directory(
+            project_directory
+        )
+    )
+    second_result = (
+        loaded_workspace_launcher_module.compute_deterministic_workspace_directory(
+            project_directory
+        )
+    )
+
+    assert first_result == second_result
+    assert "/tmp/claude-workspace." in str(first_result)
+
+
+def test_compute_deterministic_workspace_directory_differs_for_different_paths(
+    tmp_path,
+):
+    first_directory = tmp_path / "project-a"
+    second_directory = tmp_path / "project-b"
+    first_directory.mkdir()
+    second_directory.mkdir()
+
+    first_result = (
+        loaded_workspace_launcher_module.compute_deterministic_workspace_directory(
+            first_directory
+        )
+    )
+    second_result = (
+        loaded_workspace_launcher_module.compute_deterministic_workspace_directory(
+            second_directory
+        )
+    )
+
+    assert first_result != second_result
+
+
+def test_recreate_workspace_directory_removes_existing_content(tmp_path):
+    workspace_directory = tmp_path / "workspace"
+    workspace_directory.mkdir()
+    (workspace_directory / "stale-file.txt").write_text("old")
+
+    loaded_workspace_launcher_module.recreate_workspace_directory(workspace_directory)
+
+    assert not workspace_directory.exists()

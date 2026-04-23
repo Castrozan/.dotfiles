@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
+import hashlib
 import os
-import subprocess
+import shutil
 import sys
-import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -335,10 +335,24 @@ def load_wrapper_environment_path(
     ).expanduser()
 
 
-def run_workspace_scoped_claude_session(
+def compute_deterministic_workspace_directory(
+    workspace_search_root_directory: Path,
+) -> Path:
+    directory_hash = hashlib.sha256(
+        str(workspace_search_root_directory.resolve()).encode()
+    ).hexdigest()[:12]
+    return Path(f"/tmp/claude-workspace.{directory_hash}") / "claude-config"
+
+
+def recreate_workspace_directory(workspace_directory: Path) -> None:
+    if workspace_directory.exists():
+        shutil.rmtree(workspace_directory)
+
+
+def exec_workspace_scoped_claude_session(
     workspace_claude_launch_plan: WorkspaceClaudeLaunchPlan,
     remaining_claude_arguments: list[str],
-) -> int:
+) -> None:
     claude_environment = os.environ.copy()
     claude_environment["CLAUDE_CONFIG_DIR"] = str(
         workspace_claude_launch_plan.config_directory
@@ -346,14 +360,17 @@ def run_workspace_scoped_claude_session(
     claude_environment["CLAUDE_CONFIG"] = str(
         workspace_claude_launch_plan.config_directory / ".claude.json"
     )
-    completed_process = subprocess.run(
-        workspace_claude_launch_plan.command_arguments + remaining_claude_arguments,
-        env=claude_environment,
+    full_command_arguments = (
+        workspace_claude_launch_plan.command_arguments + remaining_claude_arguments
     )
-    return completed_process.returncode
+    os.execvpe(
+        full_command_arguments[0],
+        full_command_arguments,
+        claude_environment,
+    )
 
 
-def main() -> int:
+def main() -> None:
     try:
         workspace_claude_wrapper_arguments = parse_workspace_claude_wrapper_arguments(
             sys.argv[1:]
@@ -373,33 +390,35 @@ def main() -> int:
             Path.home() / ".local" / "share" / "claude-skill-sets" / "personal",
         )
         claude_binary_path = os.environ.get("CLAUDE_BINARY_PATH", "claude")
+        workspace_search_root_directory = Path.cwd()
 
-        with tempfile.TemporaryDirectory(
-            prefix="claude-workspace."
-        ) as temporary_workspace_directory_name:
-            workspace_claude_launch_plan = prepare_workspace_claude_launch_plan(
-                temporary_workspace_directory=Path(temporary_workspace_directory_name)
-                / "claude-config",
-                global_claude_config_directory=global_claude_config_directory,
-                global_claude_state_file=global_claude_state_file,
-                core_instructions_file=core_instructions_file,
-                personal_skill_set_directory=personal_skill_set_directory,
-                extend_workspace_with_global_skills=workspace_claude_wrapper_arguments.extend_workspace_with_global_skills,
-                requested_skill_source_directories=workspace_claude_wrapper_arguments.requested_skill_source_directories,
-                workspace_search_root_directory=Path.cwd(),
-                claude_binary_path=claude_binary_path,
-            )
-            return run_workspace_scoped_claude_session(
-                workspace_claude_launch_plan,
-                workspace_claude_wrapper_arguments.remaining_claude_arguments,
-            )
+        deterministic_workspace_directory = compute_deterministic_workspace_directory(
+            workspace_search_root_directory
+        )
+        recreate_workspace_directory(deterministic_workspace_directory)
+
+        workspace_claude_launch_plan = prepare_workspace_claude_launch_plan(
+            temporary_workspace_directory=deterministic_workspace_directory,
+            global_claude_config_directory=global_claude_config_directory,
+            global_claude_state_file=global_claude_state_file,
+            core_instructions_file=core_instructions_file,
+            personal_skill_set_directory=personal_skill_set_directory,
+            extend_workspace_with_global_skills=workspace_claude_wrapper_arguments.extend_workspace_with_global_skills,
+            requested_skill_source_directories=workspace_claude_wrapper_arguments.requested_skill_source_directories,
+            workspace_search_root_directory=workspace_search_root_directory,
+            claude_binary_path=claude_binary_path,
+        )
+        exec_workspace_scoped_claude_session(
+            workspace_claude_launch_plan,
+            workspace_claude_wrapper_arguments.remaining_claude_arguments,
+        )
     except WorkspaceLaunchConfigurationError as workspace_launch_configuration_error:
         print(
             f"error: {workspace_launch_configuration_error}",
             file=sys.stderr,
         )
-        return 1
+        sys.exit(1)
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    main()
