@@ -9,7 +9,7 @@ Singleton {
 
     property string hostname: ""
 
-    readonly property bool hasKeyboardBacklight: hostname === "dellg15"
+    readonly property bool hasKeyboardBacklight: hostname === "nixos"
 
     FileView {
         id: hostnameFileView
