@@ -335,17 +335,10 @@ def load_wrapper_environment_path(
     ).expanduser()
 
 
-def print_loaded_skill_names(loaded_skill_names: list[str]) -> None:
-    print("Loaded workspace:")
-    for loaded_skill_name in loaded_skill_names:
-        print(f"  - {loaded_skill_name}")
-
-
 def run_workspace_scoped_claude_session(
     workspace_claude_launch_plan: WorkspaceClaudeLaunchPlan,
     remaining_claude_arguments: list[str],
 ) -> int:
-    print_loaded_skill_names(workspace_claude_launch_plan.loaded_skill_names)
     claude_environment = os.environ.copy()
     claude_environment["CLAUDE_CONFIG_DIR"] = str(
         workspace_claude_launch_plan.config_directory
