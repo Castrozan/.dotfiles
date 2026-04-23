@@ -22,6 +22,13 @@ let
     "/bin"
   ];
 
+  activeHoursFlags =
+    agent:
+    if agent.activeHoursStart != null then
+      "--active-hours-start ${toString agent.activeHoursStart} --active-hours-end ${toString agent.activeHoursEnd}"
+    else
+      "";
+
   buildServiceScript =
     name: agent:
     pkgs.writeShellScript "claude-project-agent-${name}" ''
@@ -32,7 +39,8 @@ let
         --name ${lib.escapeShellArg name} \
         --model ${lib.escapeShellArg agent.model} \
         --heartbeat ${lib.escapeShellArg agent.heartbeatInterval} \
-        --keepalive
+        --keepalive \
+        ${activeHoursFlags agent}
     '';
 
   seedProjectAgentWorkspaces = pkgs.writeShellScript "seed-project-agent-workspaces" (
@@ -69,6 +77,16 @@ in
             default = "3,33 * * * *";
             description = "Cron expression for heartbeat interval";
           };
+          activeHoursStart = lib.mkOption {
+            type = lib.types.nullOr lib.types.int;
+            default = null;
+            description = "Hour (0-23) when agent should start running. Must be set together with activeHoursEnd.";
+          };
+          activeHoursEnd = lib.mkOption {
+            type = lib.types.nullOr lib.types.int;
+            default = null;
+            description = "Hour (0-23) when agent should stop running. Must be set together with activeHoursStart.";
+          };
         };
       }
     );
@@ -77,6 +95,17 @@ in
   };
 
   config = lib.mkIf hasAgents {
+    assertions = map (
+      name:
+      let
+        agent = cfg.agents.${name};
+      in
+      {
+        assertion = (agent.activeHoursStart == null) == (agent.activeHoursEnd == null);
+        message = "Project agent ${name}: activeHoursStart and activeHoursEnd must both be set or both be null";
+      }
+    ) agentNames;
+
     systemd.user.services = lib.mapAttrs' (name: agent: {
       name = "claude-project-agent-${name}";
       value = {
@@ -87,7 +116,7 @@ in
         Service = {
           Type = "simple";
           ExecStart = "${buildServiceScript name agent}";
-          Restart = "on-failure";
+          Restart = if agent.activeHoursStart != null then "always" else "on-failure";
           RestartSec = "10s";
           StartLimitBurst = 5;
           StartLimitIntervalSec = 300;

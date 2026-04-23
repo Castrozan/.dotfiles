@@ -39,8 +39,8 @@ in
       workspaceFrom = [ "${homeDirectory}/.dotfiles/agents/skills/browser" ];
       skillDirectories = [ "${homeDirectory}/.local/share/claude-skill-sets/personal" ];
       permissionMode = "bypassPermissions";
-      activeHoursStart = 7;
-      activeHoursEnd = 22;
+      activeHoursStart = 8;
+      activeHoursEnd = 20;
       dailySessionRotation = true;
       heartbeatInterval = "*/5 * * * *";
       heartbeatPrompt = "Heartbeat tick. Run your personal assistant monitoring loop per the personal-assistant skill. Check Gmail, Google Calendar, and Google Chat. Act on what you can, escalate what you cannot. Report to Discord only if actions were taken or escalation is needed. Update channel timestamps in HEARTBEAT.md.";

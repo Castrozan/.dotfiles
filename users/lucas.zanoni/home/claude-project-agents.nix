@@ -11,10 +11,14 @@ in
     esfinge = {
       projectDirectory = "${homeDirectory}/repo/esfinge";
       model = "opus";
+      activeHoursStart = 8;
+      activeHoursEnd = 20;
     };
     betha-pm = {
       projectDirectory = "${homeDirectory}/repo/betha-pm";
       model = "opus";
+      activeHoursStart = 8;
+      activeHoursEnd = 20;
     };
   };
 }

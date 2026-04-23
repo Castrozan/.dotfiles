@@ -1,7 +1,9 @@
 import argparse
+import datetime
 import json
 import os
 import shlex
+import signal
 import subprocess
 import sys
 import tempfile
@@ -16,6 +18,64 @@ MAX_WAIT_ATTEMPTS_FOR_CLAUDE_PROMPT = 30
 PM_WINDOW_NAME = "pm"
 CLAUDE_PROCESS_COMMAND_NAMES = frozenset({"claude", "node"})
 CLAUDE_PROJECTS_TRANSCRIPTS_DIRECTORY = Path.home() / ".claude" / "projects"
+GRACEFUL_SHUTDOWN_WAIT_SECONDS = 60
+
+
+def install_exit_signal_handlers() -> None:
+    def terminate_cleanly(_signal_number: int, _frame_object) -> None:
+        sys.exit(0)
+
+    for signal_number in (signal.SIGTERM, signal.SIGHUP, signal.SIGINT):
+        signal.signal(signal_number, terminate_cleanly)
+
+
+def is_within_active_hours(
+    active_hours_start: int | None, active_hours_end: int | None
+) -> bool:
+    if active_hours_start is None:
+        return True
+    current_hour = time.localtime().tm_hour
+    if active_hours_start <= active_hours_end:
+        return active_hours_start <= current_hour < active_hours_end
+    return current_hour >= active_hours_start or current_hour < active_hours_end
+
+
+def seconds_until_active_hours_start(active_hours_start: int) -> int:
+    now = datetime.datetime.now()
+    target = now.replace(hour=active_hours_start, minute=0, second=0, microsecond=0)
+    if target <= now:
+        target += datetime.timedelta(days=1)
+    return int((target - now).total_seconds())
+
+
+def sleep_until_active_hours(active_hours_start: int, agent_name: str) -> None:
+    sleep_seconds = seconds_until_active_hours_start(active_hours_start)
+    print(
+        f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] "
+        f"Agent {agent_name} outside active hours. "
+        f"Sleeping {sleep_seconds}s until {active_hours_start:02d}:00...",
+        flush=True,
+    )
+    time.sleep(sleep_seconds)
+
+
+def terminate_agent_gracefully(tmux_socket: str, session_name: str) -> None:
+    target = f"{session_name}:{PM_WINDOW_NAME}"
+
+    if check_claude_running_in_window(tmux_socket, target):
+        if wait_for_claude_input_prompt(tmux_socket, target):
+            send_keys_to_tmux_pane(tmux_socket, target, "/exit")
+            for _ in range(GRACEFUL_SHUTDOWN_WAIT_SECONDS):
+                time.sleep(1)
+                if not check_claude_running_in_window(tmux_socket, target):
+                    break
+
+    run_tmux_command(tmux_socket, "kill-session", "-t", session_name)
+    print(
+        f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] "
+        f"Agent {session_name} shut down for end of active hours.",
+        flush=True,
+    )
 
 
 def find_tmux_socket() -> str | None:
@@ -438,11 +498,28 @@ def parse_arguments() -> argparse.Namespace:
         action="store_true",
         help="Stay alive while tmux session exists (for systemd)",
     )
+    parser.add_argument(
+        "--active-hours-start",
+        type=int,
+        default=None,
+        dest="active_hours_start",
+        help="Hour (0-23) when agent becomes active",
+    )
+    parser.add_argument(
+        "--active-hours-end",
+        type=int,
+        default=None,
+        dest="active_hours_end",
+        help="Hour (0-23) when agent goes dormant",
+    )
     return parser.parse_args()
 
 
 def main() -> None:
     args = parse_arguments()
+
+    if args.active_hours_start is not None:
+        install_exit_signal_handlers()
 
     project_directory = args.project_directory.resolve()
     validate_project_directory(project_directory)
@@ -461,6 +538,9 @@ def main() -> None:
     if not tmux_socket:
         print("Error: no tmux socket found", file=sys.stderr)
         sys.exit(1)
+
+    if not is_within_active_hours(args.active_hours_start, args.active_hours_end):
+        sleep_until_active_hours(args.active_hours_start, agent_name)
 
     session_name = agent_name
     target, claude_already_running = ensure_pm_window(
@@ -497,11 +577,24 @@ def main() -> None:
     print(f"  Attach: tmux select-window -t {target}")
 
     if args.keepalive:
-        keepalive_while_tmux_session_exists(tmux_socket, agent_name)
+        keepalive_while_tmux_session_exists(
+            tmux_socket,
+            agent_name,
+            args.active_hours_start,
+            args.active_hours_end,
+        )
 
 
-def keepalive_while_tmux_session_exists(tmux_socket: str, session_name: str) -> None:
+def keepalive_while_tmux_session_exists(
+    tmux_socket: str,
+    session_name: str,
+    active_hours_start: int | None = None,
+    active_hours_end: int | None = None,
+) -> None:
     while check_tmux_session_exists(tmux_socket, session_name):
+        if not is_within_active_hours(active_hours_start, active_hours_end):
+            terminate_agent_gracefully(tmux_socket, session_name)
+            return
         time.sleep(10)
 
 
