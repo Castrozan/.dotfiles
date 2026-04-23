@@ -22,7 +22,8 @@ ColumnLayout {
         _registerIconPosition(notificationSoundIcon, "");
         _registerIconPosition(outputDeviceTypeIcon, "");
         _registerIconPosition(microphoneIcon, "");
-        _registerIconPosition(keyboardBacklightIcon, "");
+        if (keyboardBacklightIcon.visible)
+            _registerIconPosition(keyboardBacklightIcon, "");
         _registerIconPosition(networkIcon, "network");
         _registerIconPosition(bluetoothIcon, "bluetooth");
         _registerIconPosition(batteryIcon, "battery");
@@ -331,6 +332,7 @@ ColumnLayout {
 
     StatusIcon {
         id: keyboardBacklightIcon
+        visible: MachineFeatures.hasKeyboardBacklight
         Layout.alignment: Qt.AlignHCenter
         Layout.preferredWidth: 28
         Layout.preferredHeight: 28
