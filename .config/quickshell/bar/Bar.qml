@@ -90,11 +90,13 @@ ColumnLayout {
     }
 
     Modules.BatteryModule {
+        visible: MachineFeatures.hasBattery
         Layout.alignment: Qt.AlignHCenter
         Layout.preferredWidth: 40
     }
 
     Rectangle {
+        visible: MachineFeatures.hasBattery
         Layout.alignment: Qt.AlignHCenter
         Layout.topMargin: 4
         Layout.bottomMargin: 4

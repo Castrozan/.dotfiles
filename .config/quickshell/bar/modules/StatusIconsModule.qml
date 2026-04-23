@@ -10,7 +10,7 @@ ColumnLayout {
     required property var barRoot
     required property var screenScope
 
-    readonly property bool hasHoveredPopoutIcon: networkIcon.isHovered || bluetoothIcon.isHovered || batteryIcon.isHovered
+    readonly property bool hasHoveredPopoutIcon: networkIcon.isHovered || bluetoothIcon.isHovered || (batteryIcon.visible && batteryIcon.isHovered)
 
     spacing: 2
 
@@ -26,7 +26,8 @@ ColumnLayout {
             _registerIconPosition(keyboardBacklightIcon, "");
         _registerIconPosition(networkIcon, "network");
         _registerIconPosition(bluetoothIcon, "bluetooth");
-        _registerIconPosition(batteryIcon, "battery");
+        if (batteryIcon.visible)
+            _registerIconPosition(batteryIcon, "battery");
     }
 
     function _registerIconPosition(iconItem: var, popoutName: string): void {
@@ -365,6 +366,7 @@ ColumnLayout {
 
     StatusIcon {
         id: batteryIcon
+        visible: MachineFeatures.hasBattery
         Layout.alignment: Qt.AlignHCenter
         Layout.preferredWidth: 28
         Layout.preferredHeight: 28
