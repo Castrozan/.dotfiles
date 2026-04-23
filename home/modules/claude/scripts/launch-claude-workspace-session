@@ -79,13 +79,27 @@ def discover_workspace_skill_source_directories(
 ) -> list[Path]:
     if not workspace_search_root_directory.is_dir():
         return []
-    discovered_skill_markdown_files = sorted(
-        workspace_search_root_directory.rglob("SKILL.md")
-    )
-    return [
+    discovered_skill_source_directories = [
         discovered_skill_markdown_file.parent.resolve()
-        for discovered_skill_markdown_file in discovered_skill_markdown_files
+        for discovered_skill_markdown_file in workspace_search_root_directory.rglob(
+            "SKILL.md"
+        )
     ]
+    return sorted(
+        discovered_skill_source_directories,
+        key=lambda discovered_skill_source_directory: (
+            len(
+                discovered_skill_source_directory.relative_to(
+                    workspace_search_root_directory.resolve()
+                ).parts
+            ),
+            str(
+                discovered_skill_source_directory.relative_to(
+                    workspace_search_root_directory.resolve()
+                )
+            ),
+        ),
+    )
 
 
 def collect_global_skill_source_directories(
@@ -139,9 +153,7 @@ def build_unique_skill_directory_name_map(
     for skill_source_directory in skill_source_directories:
         skill_directory_name = skill_source_directory.name
         if skill_directory_name in unique_skill_directory_name_map:
-            raise WorkspaceLaunchConfigurationError(
-                f"duplicate skill directory name detected: {skill_directory_name}"
-            )
+            continue
         unique_skill_directory_name_map[skill_directory_name] = skill_source_directory
     return unique_skill_directory_name_map
 

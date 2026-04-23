@@ -203,6 +203,73 @@ def test_prepare_workspace_claude_launch_plan_rejects_missing_default_injected_s
         )
 
 
+def test_prepare_workspace_claude_launch_plan_skips_duplicate_local_skill_directory_names(
+    tmp_path,
+):
+    global_claude_config_directory = tmp_path / "global-claude"
+    (global_claude_config_directory / "skills" / "core").mkdir(parents=True)
+    (global_claude_config_directory / "skills" / "core" / "SKILL.md").write_text(
+        "---\nname: core\n---\n"
+    )
+    (global_claude_config_directory / "skills" / "personal-skills").mkdir(parents=True)
+    (
+        global_claude_config_directory / "skills" / "personal-skills" / "SKILL.md"
+    ).write_text("---\nname: personal-skills\n---\n")
+
+    workspace_directory = tmp_path / "workspace"
+    preferred_browser_skill_directory = (
+        workspace_directory / "agents" / "skills" / "browser"
+    )
+    preferred_browser_skill_directory.mkdir(parents=True)
+    (preferred_browser_skill_directory / "SKILL.md").write_text(
+        "---\nname: browser\n---\n"
+    )
+
+    duplicate_browser_skill_directory_in_claude_worktree = (
+        workspace_directory
+        / ".claude"
+        / "worktrees"
+        / "nested-worktree"
+        / "agents"
+        / "skills"
+        / "browser"
+    )
+    duplicate_browser_skill_directory_in_claude_worktree.mkdir(parents=True)
+    (duplicate_browser_skill_directory_in_claude_worktree / "SKILL.md").write_text(
+        "---\nname: browser-duplicate\n---\n"
+    )
+
+    duplicate_browser_skill_directory_in_workspace_worktree = (
+        workspace_directory
+        / ".worktrees"
+        / "another-worktree"
+        / "agents"
+        / "skills"
+        / "browser"
+    )
+    duplicate_browser_skill_directory_in_workspace_worktree.mkdir(parents=True)
+    (duplicate_browser_skill_directory_in_workspace_worktree / "SKILL.md").write_text(
+        "---\nname: browser-duplicate\n---\n"
+    )
+
+    launch_plan = loaded_workspace_launcher_module.prepare_workspace_claude_launch_plan(
+        temporary_workspace_directory=tmp_path / "temporary-workspace",
+        global_claude_config_directory=global_claude_config_directory,
+        global_claude_state_file=tmp_path / "missing-claude-state.json",
+        core_instructions_file=tmp_path / "core.md",
+        personal_skill_set_directory=tmp_path / "personal-skill-set",
+        extend_workspace_with_global_skills=False,
+        requested_skill_source_directories=[],
+        workspace_search_root_directory=workspace_directory,
+        claude_binary_path="/bin/claude",
+    )
+
+    assert (
+        launch_plan.config_directory / "skills" / "browser"
+    ).resolve() == preferred_browser_skill_directory.resolve()
+    assert launch_plan.loaded_skill_names == ["browser", "core", "personal-skills"]
+
+
 def test_resolve_requested_skill_source_directories_requires_skill_markdown(tmp_path):
     missing_skill_markdown_directory = tmp_path / "without-skill-markdown"
     missing_skill_markdown_directory.mkdir()
