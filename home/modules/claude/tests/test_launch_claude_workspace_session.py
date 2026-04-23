@@ -29,6 +29,14 @@ def test_prepare_workspace_claude_launch_plan_only_links_minimal_runtime_entries
     (global_claude_config_directory / "rules").mkdir()
     (global_claude_config_directory / "history.jsonl").write_text("history\n")
     (global_claude_config_directory / "skills").mkdir()
+    (global_claude_config_directory / "skills" / "core").mkdir()
+    (global_claude_config_directory / "skills" / "core" / "SKILL.md").write_text(
+        "---\nname: core\n---\n"
+    )
+    (global_claude_config_directory / "skills" / "personal-skills").mkdir()
+    (
+        global_claude_config_directory / "skills" / "personal-skills" / "SKILL.md"
+    ).write_text("---\nname: personal-skills\n---\n")
 
     workspace_directory = tmp_path / "workspace"
     alpha_skill_directory = workspace_directory / "alpha"
@@ -72,7 +80,14 @@ def test_prepare_workspace_claude_launch_plan_only_links_minimal_runtime_entries
     assert (
         workspace_config_directory / "skills" / "beta"
     ).resolve() == beta_skill_directory.resolve()
-    assert launch_plan.loaded_skill_names == ["alpha", "beta"]
+    assert (workspace_config_directory / "skills" / "core").exists()
+    assert (workspace_config_directory / "skills" / "personal-skills").exists()
+    assert launch_plan.loaded_skill_names == [
+        "alpha",
+        "beta",
+        "core",
+        "personal-skills",
+    ]
     assert launch_plan.command_arguments == ["/bin/claude"]
     assert (
         workspace_config_directory / "CLAUDE.md"
@@ -83,6 +98,14 @@ def test_prepare_workspace_claude_launch_plan_merges_global_skills_only_with_ext
     tmp_path,
 ):
     global_claude_config_directory = tmp_path / "global-claude"
+    (global_claude_config_directory / "skills" / "core").mkdir(parents=True)
+    (global_claude_config_directory / "skills" / "core" / "SKILL.md").write_text(
+        "---\nname: core\n---\n"
+    )
+    (global_claude_config_directory / "skills" / "personal-skills").mkdir(parents=True)
+    (
+        global_claude_config_directory / "skills" / "personal-skills" / "SKILL.md"
+    ).write_text("---\nname: personal-skills\n---\n")
     (global_claude_config_directory / "skills" / "shared").mkdir(parents=True)
     (global_claude_config_directory / "skills" / "shared" / "SKILL.md").write_text(
         "---\nname: shared\n---\n"
@@ -113,7 +136,12 @@ def test_prepare_workspace_claude_launch_plan_merges_global_skills_only_with_ext
         launch_plan.config_directory / "skills" / "local"
     ).resolve() == local_skill_directory.resolve()
     assert (launch_plan.config_directory / "skills" / "shared").exists()
-    assert launch_plan.loaded_skill_names == ["local", "shared"]
+    assert launch_plan.loaded_skill_names == [
+        "core",
+        "local",
+        "personal-skills",
+        "shared",
+    ]
     assert launch_plan.command_arguments == [
         "/bin/claude",
         "--add-dir",
@@ -121,15 +149,50 @@ def test_prepare_workspace_claude_launch_plan_merges_global_skills_only_with_ext
     ]
 
 
-def test_prepare_workspace_claude_launch_plan_rejects_empty_workspace_without_extend(
+def test_prepare_workspace_claude_launch_plan_loads_default_skills_for_empty_workspace(
     tmp_path,
 ):
+    global_claude_config_directory = tmp_path / "global-claude"
+    (global_claude_config_directory / "skills" / "core").mkdir(parents=True)
+    (global_claude_config_directory / "skills" / "core" / "SKILL.md").write_text(
+        "---\nname: core\n---\n"
+    )
+    (global_claude_config_directory / "skills" / "personal-skills").mkdir(parents=True)
+    (
+        global_claude_config_directory / "skills" / "personal-skills" / "SKILL.md"
+    ).write_text("---\nname: personal-skills\n---\n")
+
+    launch_plan = loaded_workspace_launcher_module.prepare_workspace_claude_launch_plan(
+        temporary_workspace_directory=tmp_path / "temporary-workspace",
+        global_claude_config_directory=global_claude_config_directory,
+        global_claude_state_file=tmp_path / "missing-claude-state.json",
+        core_instructions_file=tmp_path / "core.md",
+        personal_skill_set_directory=tmp_path / "personal-skill-set",
+        extend_workspace_with_global_skills=False,
+        requested_skill_source_directories=[],
+        workspace_search_root_directory=tmp_path / "workspace",
+        claude_binary_path="/bin/claude",
+    )
+
+    assert launch_plan.loaded_skill_names == ["core", "personal-skills"]
+    assert launch_plan.command_arguments == ["/bin/claude"]
+
+
+def test_prepare_workspace_claude_launch_plan_rejects_missing_default_injected_skill(
+    tmp_path,
+):
+    global_claude_config_directory = tmp_path / "global-claude"
+    (global_claude_config_directory / "skills" / "core").mkdir(parents=True)
+    (global_claude_config_directory / "skills" / "core" / "SKILL.md").write_text(
+        "---\nname: core\n---\n"
+    )
+
     with pytest.raises(
         loaded_workspace_launcher_module.WorkspaceLaunchConfigurationError
     ):
         loaded_workspace_launcher_module.prepare_workspace_claude_launch_plan(
             temporary_workspace_directory=tmp_path / "temporary-workspace",
-            global_claude_config_directory=tmp_path / "global-claude",
+            global_claude_config_directory=global_claude_config_directory,
             global_claude_state_file=tmp_path / "missing-claude-state.json",
             core_instructions_file=tmp_path / "core.md",
             personal_skill_set_directory=tmp_path / "personal-skill-set",

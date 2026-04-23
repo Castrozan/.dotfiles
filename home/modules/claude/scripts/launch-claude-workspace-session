@@ -13,6 +13,7 @@ MINIMAL_GLOBAL_CLAUDE_RUNTIME_ENTRY_NAMES = (
     "keybindings.json",
     "plugins",
 )
+DEFAULT_INJECTED_GLOBAL_SKILL_DIRECTORY_NAMES = ("core", "personal-skills")
 
 
 class WorkspaceLaunchConfigurationError(Exception):
@@ -101,6 +102,34 @@ def collect_global_skill_source_directories(
         ],
         key=lambda global_skill_directory: global_skill_directory.name,
     )
+
+
+def collect_default_injected_global_skill_directory_name_map(
+    global_claude_config_directory: Path,
+    existing_skill_directory_names: set[str],
+) -> dict[str, Path]:
+    global_skill_root_directory = global_claude_config_directory / "skills"
+    default_injected_global_skill_directory_name_map: dict[str, Path] = {}
+    for (
+        default_injected_global_skill_directory_name
+    ) in DEFAULT_INJECTED_GLOBAL_SKILL_DIRECTORY_NAMES:
+        if (
+            default_injected_global_skill_directory_name
+            in existing_skill_directory_names
+        ):
+            continue
+        default_injected_global_skill_directory = (
+            global_skill_root_directory / default_injected_global_skill_directory_name
+        )
+        if not (default_injected_global_skill_directory / "SKILL.md").is_file():
+            raise WorkspaceLaunchConfigurationError(
+                "required injected skill is missing: "
+                f"{default_injected_global_skill_directory_name}"
+            )
+        default_injected_global_skill_directory_name_map[
+            default_injected_global_skill_directory_name
+        ] = default_injected_global_skill_directory.resolve()
+    return default_injected_global_skill_directory_name_map
 
 
 def build_unique_skill_directory_name_map(
@@ -200,6 +229,11 @@ def prepare_workspace_claude_launch_plan(
     loaded_skill_directory_name_map = build_unique_skill_directory_name_map(
         local_skill_source_directories
     )
+    loaded_skill_directory_name_map.update(
+        collect_default_injected_global_skill_directory_name_map(
+            global_claude_config_directory, set(loaded_skill_directory_name_map)
+        )
+    )
 
     if extend_workspace_with_global_skills:
         for global_skill_source_directory in collect_global_skill_source_directories(
@@ -211,7 +245,7 @@ def prepare_workspace_claude_launch_plan(
 
     if not loaded_skill_directory_name_map:
         raise WorkspaceLaunchConfigurationError(
-            "No skills to load. Use --from <dir>, run from a dir with SKILL.md files, or use --extend."
+            "No skills to load. Use --from <dir>, run from a dir with SKILL.md files, or ensure the default injected skills are available."
         )
 
     write_workspace_core_instructions_file(
