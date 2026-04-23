@@ -45,6 +45,7 @@ let
 
   mcpServersToInject = builtins.toJSON {
     chrome-devtools = {
+      type = "http";
       url = browserMcp.mcpServerStreamableHttpUrl;
     };
     browser-use = {
