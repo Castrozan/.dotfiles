@@ -179,6 +179,8 @@
 
   time.timeZone = "America/Sao_Paulo";
 
+  environment.variables.TZDIR = "${pkgs.tzdata}/share/zoneinfo";
+
   i18n = {
     defaultLocale = "en_US.UTF-8";
     extraLocaleSettings = {
