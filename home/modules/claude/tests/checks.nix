@@ -18,40 +18,20 @@ let
   };
   inherit (helpers) mkEvalCheck;
 
-  cfg =
-    (inputs.home-manager.lib.homeManagerConfiguration {
-      inherit pkgs;
-      modules = [
-        self.homeManagerModules.claude-code
-        {
-          home = {
-            username = "test";
-            homeDirectory = "/home/test";
-            inherit (helpers) stateVersion;
-          };
-        }
-      ];
-    }).config;
+  cfg = helpers.homeManagerTestConfiguration [
+    self.homeManagerModules.claude-code
+  ];
 
-  cfgWithDiscordAgent =
-    (inputs.home-manager.lib.homeManagerConfiguration {
-      inherit pkgs;
-      modules = [
-        self.homeManagerModules.claude-code
-        {
-          home = {
-            username = "test";
-            homeDirectory = "/home/test";
-            inherit (helpers) stateVersion;
-          };
-          claude.discordChannel.agents.test-agent = {
-            botTokenSecretName = "discord-bot-token-test";
-            role = "Test agent";
-            personality = "Test personality";
-          };
-        }
-      ];
-    }).config;
+  cfgWithDiscordAgent = helpers.homeManagerTestConfiguration [
+    self.homeManagerModules.claude-code
+    {
+      claude.discordChannel.agents.test-agent = {
+        botTokenSecretName = "discord-bot-token-test";
+        role = "Test agent";
+        personality = "Test personality";
+      };
+    }
+  ];
 
   discordChannelService = cfgWithDiscordAgent.systemd.user.services.claude-discord-channel;
 
@@ -96,5 +76,29 @@ in
     mkEvalCheck "claude-discord-channel-no-execstop-kill-session"
       (!(discordChannelService.Service ? ExecStop))
       "claude-discord-channel.service must not define ExecStop - any tmux kill-session on stop defeats the whole point of surviving restarts";
+
+  chrome-devtools-bridge-service-exists =
+    let
+      bridgeService = cfg.systemd.user.services.chrome-devtools-mcp-bridge;
+    in
+    mkEvalCheck "chrome-devtools-bridge-service-exists" (
+      bridgeService ? Service
+    ) "chrome-devtools-mcp-bridge.service must exist as a systemd user service";
+
+  chrome-devtools-bridge-restart-always =
+    let
+      bridgeService = cfg.systemd.user.services.chrome-devtools-mcp-bridge;
+    in
+    mkEvalCheck "chrome-devtools-bridge-restart-always" (
+      (bridgeService.Service.Restart or null) == "always"
+    ) "chrome-devtools-mcp-bridge.service must set Restart=always for auto-recovery";
+
+  chrome-devtools-bridge-wanted-by-default =
+    let
+      bridgeService = cfg.systemd.user.services.chrome-devtools-mcp-bridge;
+    in
+    mkEvalCheck "chrome-devtools-bridge-wanted-by-default" (builtins.elem "default.target" (
+      bridgeService.Install.WantedBy or [ ]
+    )) "chrome-devtools-mcp-bridge.service must be wanted by default.target to start on login";
 
 }
