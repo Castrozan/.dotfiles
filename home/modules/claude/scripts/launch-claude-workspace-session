@@ -12,6 +12,8 @@ MINIMAL_GLOBAL_CLAUDE_RUNTIME_ENTRY_NAMES = (
     "settings.json",
     "keybindings.json",
     "plugins",
+    "projects",
+    "history.jsonl",
 )
 DEFAULT_INJECTED_GLOBAL_SKILL_DIRECTORY_NAMES = ("core", "personal-skills")
 

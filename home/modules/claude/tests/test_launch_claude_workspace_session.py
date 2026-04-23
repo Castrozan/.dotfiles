@@ -26,6 +26,7 @@ def test_prepare_workspace_claude_launch_plan_only_links_minimal_runtime_entries
     (global_claude_config_directory / "settings.json").write_text("{}\n")
     (global_claude_config_directory / "keybindings.json").write_text("{}\n")
     (global_claude_config_directory / "plugins").mkdir()
+    (global_claude_config_directory / "projects").mkdir()
     (global_claude_config_directory / "rules").mkdir()
     (global_claude_config_directory / "history.jsonl").write_text("history\n")
     (global_claude_config_directory / "skills").mkdir()
@@ -71,8 +72,9 @@ def test_prepare_workspace_claude_launch_plan_only_links_minimal_runtime_entries
     assert (workspace_config_directory / "settings.json").is_symlink()
     assert (workspace_config_directory / "keybindings.json").is_symlink()
     assert (workspace_config_directory / "plugins").is_symlink()
+    assert (workspace_config_directory / "projects").is_symlink()
+    assert (workspace_config_directory / "history.jsonl").is_symlink()
     assert not (workspace_config_directory / "rules").exists()
-    assert not (workspace_config_directory / "history.jsonl").exists()
     assert (workspace_config_directory / ".claude.json").is_symlink()
     assert (
         workspace_config_directory / "skills" / "alpha"
