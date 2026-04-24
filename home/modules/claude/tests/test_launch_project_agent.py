@@ -103,16 +103,31 @@ class TestBuildClaudeLaunchCommand:
         assert "--resume" in cmd
         assert "--session-id" not in cmd
 
-    def test_appends_instructions_file(self):
+    def test_appends_single_instructions_file(self):
         cmd = mod.build_claude_launch_command(
             "opus",
             "myproject",
             "abc-123",
             resume_existing_session=False,
-            instructions_file="/nix/store/abc-instructions.md",
+            instructions_files=["/nix/store/abc-instructions.md"],
         )
         assert "--append-system-prompt-file" in cmd
         assert "abc-instructions.md" in cmd
+
+    def test_appends_multiple_instructions_files(self):
+        cmd = mod.build_claude_launch_command(
+            "opus",
+            "myproject",
+            "abc-123",
+            resume_existing_session=False,
+            instructions_files=[
+                "/nix/store/base-instructions.md",
+                "/nix/store/extra-instructions.md",
+            ],
+        )
+        assert cmd.count("--append-system-prompt-file") == 2
+        assert "base-instructions.md" in cmd
+        assert "extra-instructions.md" in cmd
 
     def test_quotes_values_with_special_characters(self):
         cmd = mod.build_claude_launch_command(
