@@ -431,6 +431,10 @@ def resolve_project_agent_instructions_file() -> str | None:
     return instructions_path
 
 
+def resolve_claude_binary_path() -> str:
+    return os.environ.get("CLAUDE_BINARY_PATH", "claude")
+
+
 def build_claude_launch_command(
     model: str,
     agent_name: str,
@@ -438,7 +442,7 @@ def build_claude_launch_command(
     resume_existing_session: bool,
     instructions_file: str | None = None,
 ) -> str:
-    parts = ["claude"]
+    parts = [shlex.quote(resolve_claude_binary_path())]
     parts.append(f"--model {shlex.quote(model)}")
     parts.append(f"--name {shlex.quote(agent_name)}")
     parts.append("--dangerously-skip-permissions")

@@ -18,7 +18,7 @@ let
   '';
 
   claudeWorkspaceScript = pkgs.writeShellScriptBin "claude-workspace" ''
-    export CLAUDE_BINARY_PATH="${lib.getExe pkgs.claude-code}"
+    export CLAUDE_BINARY_PATH="${lib.getExe config.claude.package}"
     export CLAUDE_CORE_INSTRUCTIONS_FILE="${claudeCoreInstructionsFile}"
     export CLAUDE_GLOBAL_CONFIG_DIRECTORY="${claudeConfigurationDirectory}"
     export CLAUDE_GLOBAL_STATE_FILE="${homeDirectory}/.claude.json"

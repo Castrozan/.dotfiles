@@ -1,4 +1,9 @@
-{ pkgs, ... }:
+{
+  pkgs,
+  config,
+  lib,
+  ...
+}:
 let
   fetchPrebuiltBinary = import ../../../lib/fetch-prebuilt-binary.nix { inherit pkgs; };
 
@@ -33,7 +38,14 @@ let
   '';
 in
 {
-  home = {
+  options.claude.package = lib.mkOption {
+    type = lib.types.package;
+    default = claude-code;
+    readOnly = true;
+    description = "The claude-code package used across all claude modules";
+  };
+
+  config.home = {
     packages = [ claude-code ];
     file.".local/bin/claude" = {
       source = "${claude-code}/bin/claude";
