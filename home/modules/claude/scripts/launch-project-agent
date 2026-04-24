@@ -417,14 +417,15 @@ def find_existing_transcript_for_session(
     return transcript_file if transcript_file.is_file() else None
 
 
-def resolve_project_agent_instructions_file() -> str | None:
-    instructions_path = os.environ.get("PROJECT_AGENT_INSTRUCTIONS")
+def resolve_instructions_file_from_environment_variable(
+    variable_name: str,
+) -> str | None:
+    instructions_path = os.environ.get(variable_name)
     if not instructions_path:
         return None
     if not Path(instructions_path).is_file():
         print(
-            f"Warning: PROJECT_AGENT_INSTRUCTIONS set"
-            f" but file not found: {instructions_path}",
+            f"Warning: {variable_name} set but file not found: {instructions_path}",
             file=sys.stderr,
         )
         return None
@@ -440,7 +441,7 @@ def build_claude_launch_command(
     agent_name: str,
     session_id: str,
     resume_existing_session: bool,
-    instructions_file: str | None = None,
+    instructions_files: list[str] | None = None,
 ) -> str:
     parts = [shlex.quote(resolve_claude_binary_path())]
     parts.append(f"--model {shlex.quote(model)}")
@@ -450,7 +451,7 @@ def build_claude_launch_command(
         parts.append(f"--resume {shlex.quote(session_id)}")
     else:
         parts.append(f"--session-id {shlex.quote(session_id)}")
-    if instructions_file:
+    for instructions_file in instructions_files or []:
         parts.append(f"--append-system-prompt-file {shlex.quote(instructions_file)}")
     return " ".join(parts)
 
@@ -560,13 +561,24 @@ def main() -> None:
     if claude_already_running:
         session_mode = "already-running"
     else:
-        instructions_file = resolve_project_agent_instructions_file()
+        instructions_files = [
+            path
+            for path in [
+                resolve_instructions_file_from_environment_variable(
+                    "PROJECT_AGENT_INSTRUCTIONS"
+                ),
+                resolve_instructions_file_from_environment_variable(
+                    "PROJECT_AGENT_EXTRA_INSTRUCTIONS"
+                ),
+            ]
+            if path is not None
+        ]
         claude_command = build_claude_launch_command(
             model,
             agent_name,
             persistent_session_id,
             resume_existing_session,
-            instructions_file,
+            instructions_files,
         )
         send_keys_to_tmux_pane(tmux_socket, target, claude_command)
         session_mode = "resume" if resume_existing_session else "new"

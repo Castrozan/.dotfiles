@@ -34,6 +34,9 @@ let
     pkgs.writeShellScript "claude-project-agent-${name}" ''
       set -Eeuo pipefail
       export PROJECT_AGENT_INSTRUCTIONS="${instructionsFile}"
+      ${lib.optionalString (
+        agent.extraInstructionsFile != null
+      ) ''export PROJECT_AGENT_EXTRA_INSTRUCTIONS="${agent.extraInstructionsFile}"''}
       export CLAUDE_BINARY_PATH="${config.claude.package}/bin/claude"
       exec ${pkgs.python312}/bin/python3 ${./scripts/launch-project-agent} \
         ${lib.escapeShellArg agent.projectDirectory} \
@@ -87,6 +90,11 @@ in
             type = lib.types.nullOr lib.types.int;
             default = null;
             description = "Hour (0-23) when agent should stop running. Must be set together with activeHoursStart.";
+          };
+          extraInstructionsFile = lib.mkOption {
+            type = lib.types.nullOr lib.types.path;
+            default = null;
+            description = "Path to project-specific instructions file appended after the base PM instructions";
           };
         };
       }
