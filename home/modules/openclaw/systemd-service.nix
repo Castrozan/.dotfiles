@@ -49,6 +49,20 @@ let
       exit 1
     fi
 
+    # Skip stale cron jobs missed while PC was off (>30 min threshold)
+    JOBS_FILE="${homeDir}/.openclaw/cron/jobs.json"
+    if [ -f "$JOBS_FILE" ]; then
+      NOW_MS=$(( $(date +%s) * 1000 ))
+      ${pkgs.jq}/bin/jq --argjson now "$NOW_MS" --argjson threshold 1800000 '
+        .jobs |= map(
+          if .enabled and .schedule.kind == "cron"
+            and ((.state.lastRunAtMs // 0) < ($now - $threshold))
+          then .state.nextRunAtMs = null | .state.lastRunAtMs = $now
+          else . end
+        )
+      ' "$JOBS_FILE" > "$JOBS_FILE.tmp" && mv "$JOBS_FILE.tmp" "$JOBS_FILE"
+    fi
+
     exec "$OPENCLAW_BIN" gateway --port ${toString openclaw.gatewayPort}
   '';
 in
