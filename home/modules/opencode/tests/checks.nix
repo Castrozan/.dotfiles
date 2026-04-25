@@ -23,7 +23,8 @@ let
   hasPackageMatching = pattern: builtins.any (n: builtins.match pattern n != null) packageNames;
 in
 {
-  domain-opencode-package =
-    mkEvalCheck "domain-opencode-package" (hasPackageMatching ".*opencode.*")
-      "opencode package should be installed";
+  # TODO: re-enable when opencode v1.3.8 bun lockfile is fixed upstream
+  # domain-opencode-package =
+  #   mkEvalCheck "domain-opencode-package" (hasPackageMatching ".*opencode.*")
+  #     "opencode package should be installed";
 }
