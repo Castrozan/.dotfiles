@@ -392,7 +392,7 @@ ColumnLayout {
 
         FileView {
             id: batteryCapacityFileView
-            path: "/sys/class/power_supply/BAT0/capacity"
+            path: MachineFeatures.batteryPath + "/capacity"
             onLoaded: {
                 batteryIcon.batteryCapacity = parseInt(text().trim()) || 0;
             }
@@ -400,7 +400,7 @@ ColumnLayout {
 
         FileView {
             id: batteryStatusFileView
-            path: "/sys/class/power_supply/BAT0/status"
+            path: MachineFeatures.batteryPath + "/status"
             onLoaded: {
                 batteryIcon.batteryStatus = text().trim();
             }

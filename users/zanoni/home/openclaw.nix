@@ -23,7 +23,10 @@ in
 
     userName = "Lucas";
     gatewayPort = 18789;
-    gatewayService.enable = true;
+    gatewayService = {
+      enable = true;
+      skipStaleCrons.enable = true;
+    };
     restartWatcher.enable = true;
     timeoutRecovery.enable = true;
     scheduledBackup.enable = true;

@@ -11,6 +11,7 @@
     ./reliability/scheduled-backup.nix
     ./reliability/restart-watcher/restart-watcher.nix
     ./reliability/timeout-recovery.nix
+    ./reliability/skip-stale-crons.nix
     ./reliability/restart-watcher/ensure-services-after-rebuild.nix
     ./plugins/memory-sync.nix
     ./plugins/plugins.nix
