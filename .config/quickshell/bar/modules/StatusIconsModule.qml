@@ -392,7 +392,7 @@ ColumnLayout {
 
         FileView {
             id: batteryCapacityFileView
-            path: MachineFeatures.batteryPath + "/capacity"
+            path: MachineFeatures.batteryPath !== "" ? MachineFeatures.batteryPath + "/capacity" : ""
             onLoaded: {
                 batteryIcon.batteryCapacity = parseInt(text().trim()) || 0;
             }
@@ -400,7 +400,7 @@ ColumnLayout {
 
         FileView {
             id: batteryStatusFileView
-            path: MachineFeatures.batteryPath + "/status"
+            path: MachineFeatures.batteryPath !== "" ? MachineFeatures.batteryPath + "/status" : ""
             onLoaded: {
                 batteryIcon.batteryStatus = text().trim();
             }
@@ -408,7 +408,7 @@ ColumnLayout {
 
         Timer {
             interval: 30000
-            running: true
+            running: MachineFeatures.hasBattery
             repeat: true
             triggeredOnStart: true
             onTriggered: {
