@@ -70,10 +70,10 @@ def terminate_agent_gracefully(tmux_socket: str, session_name: str) -> None:
                 if not check_claude_running_in_window(tmux_socket, target):
                     break
 
-    run_tmux_command(tmux_socket, "kill-session", "-t", session_name)
     print(
         f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] "
-        f"Agent {session_name} shut down for end of active hours.",
+        f"Agent {session_name} shut down for end of active hours. "
+        f"Tmux session and other windows preserved.",
         flush=True,
     )
 
