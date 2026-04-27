@@ -1,7 +1,12 @@
+import datetime
 import json
 from unittest.mock import patch, MagicMock
 
 import benchmark_rebuild
+
+
+def _isoformat_recent_baseline_timestamp_within_freshness_window() -> str:
+    return datetime.datetime.now(datetime.timezone.utc).isoformat()
 
 
 class TestDetectConfigurationType:
@@ -147,7 +152,7 @@ class TestCheckBaseline:
     def test_passes_with_valid_baseline(self, tmp_path):
         baseline_file = tmp_path / "baseline.json"
         baseline = {
-            "generated_at": "2026-03-27T00:00:00+00:00",
+            "generated_at": _isoformat_recent_baseline_timestamp_within_freshness_window(),
             "git_commit": "abc1234",
             "config": "home",
             "threshold_percent": 150,
@@ -189,7 +194,7 @@ class TestCheckBaseline:
     def test_fails_when_no_measurements(self, tmp_path):
         baseline_file = tmp_path / "baseline.json"
         baseline = {
-            "generated_at": "2026-03-27T00:00:00+00:00",
+            "generated_at": _isoformat_recent_baseline_timestamp_within_freshness_window(),
             "git_commit": "abc1234",
             "config": "home",
             "threshold_percent": 150,
