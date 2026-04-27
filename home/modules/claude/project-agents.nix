@@ -121,14 +121,14 @@ in
         Unit = {
           Description = "Claude Code project agent: ${name}";
           After = [ "network.target" ];
+          StartLimitBurst = 5;
+          StartLimitIntervalSec = 300;
         };
         Service = {
           Type = "simple";
           ExecStart = "${buildServiceScript name agent}";
           Restart = if agent.activeHoursStart != null then "always" else "on-failure";
           RestartSec = "10s";
-          StartLimitBurst = 5;
-          StartLimitIntervalSec = 300;
           Environment = [
             "PATH=${nixSystemPaths}"
             "HOME=${homeDir}"
