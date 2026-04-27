@@ -91,6 +91,7 @@ in
       BASH_ENV = "$HOME/.dotfiles/home/modules/terminal/shell/aliases.sh";
       CLAUDE_AUTOCOMPACT_PCT_OVERRIDE = "80";
       CLAUDE_CODE_DISABLE_TERMINAL_TITLE = "true";
+      CLAUDE_CODE_NO_FLICKER = "1";
     };
 
     activation.seedClaudeSettingsAsMutableFile = {
