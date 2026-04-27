@@ -68,7 +68,10 @@ def test_prepare_workspace_claude_launch_plan_only_links_minimal_runtime_entries
 
     workspace_config_directory = launch_plan.config_directory
 
-    assert (workspace_config_directory / ".credentials.json").is_symlink()
+    workspace_credentials_file = workspace_config_directory / ".credentials.json"
+    assert workspace_credentials_file.is_file()
+    assert not workspace_credentials_file.is_symlink()
+    assert workspace_credentials_file.read_text() == "{}\n"
     assert (workspace_config_directory / "settings.json").is_symlink()
     assert (workspace_config_directory / "keybindings.json").is_symlink()
     assert (workspace_config_directory / "plugins").is_symlink()
@@ -323,6 +326,55 @@ def test_compute_deterministic_workspace_directory_differs_for_different_paths(
     )
 
     assert first_result != second_result
+
+
+def test_atomically_replace_global_credentials_file_with_workspace_copy_propagates_changes(
+    tmp_path,
+):
+    workspace_credentials_file = tmp_path / "workspace-credentials.json"
+    global_claude_credentials_file = tmp_path / "global-credentials.json"
+    workspace_credentials_file.write_text('{"refreshed":true}\n')
+    global_claude_credentials_file.write_text('{"refreshed":false}\n')
+
+    loaded_workspace_launcher_module.atomically_replace_global_credentials_file_with_workspace_copy(
+        workspace_credentials_file, global_claude_credentials_file
+    )
+
+    assert global_claude_credentials_file.read_text() == '{"refreshed":true}\n'
+    assert global_claude_credentials_file.stat().st_mode & 0o777 == 0o600
+
+
+def test_seed_workspace_credentials_file_from_global_copies_when_global_exists(
+    tmp_path,
+):
+    workspace_config_directory = tmp_path / "workspace-config"
+    workspace_config_directory.mkdir()
+    global_claude_credentials_file = tmp_path / "global-credentials.json"
+    global_claude_credentials_file.write_text('{"token":"abc"}\n')
+
+    loaded_workspace_launcher_module.seed_workspace_credentials_file_from_global(
+        workspace_config_directory, global_claude_credentials_file
+    )
+
+    workspace_credentials_file = workspace_config_directory / ".credentials.json"
+    assert workspace_credentials_file.is_file()
+    assert not workspace_credentials_file.is_symlink()
+    assert workspace_credentials_file.read_text() == '{"token":"abc"}\n'
+    assert workspace_credentials_file.stat().st_mode & 0o777 == 0o600
+
+
+def test_seed_workspace_credentials_file_from_global_skips_when_global_missing(
+    tmp_path,
+):
+    workspace_config_directory = tmp_path / "workspace-config"
+    workspace_config_directory.mkdir()
+    global_claude_credentials_file = tmp_path / "missing-global-credentials.json"
+
+    loaded_workspace_launcher_module.seed_workspace_credentials_file_from_global(
+        workspace_config_directory, global_claude_credentials_file
+    )
+
+    assert not (workspace_config_directory / ".credentials.json").exists()
 
 
 def test_recreate_workspace_directory_removes_existing_content(tmp_path):
