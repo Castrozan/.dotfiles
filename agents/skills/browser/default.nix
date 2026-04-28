@@ -13,6 +13,7 @@ let
   supergatewayBinary = "${supergatewayNpmPrefix}/bin/supergateway";
 
   chromeDevtoolsStreamableHttpPort = 8767;
+  chromeDevtoolsStreamableHttpSessionTimeoutMilliseconds = 300000;
 
   install = import ./install.nix {
     inherit
@@ -48,6 +49,7 @@ let
       --stdio "${chromeDevtoolsMcpAutoconnectCommand}" \
       --outputTransport streamableHttp \
       --stateful \
+      --sessionTimeout ${toString chromeDevtoolsStreamableHttpSessionTimeoutMilliseconds} \
       --port ${toString chromeDevtoolsStreamableHttpPort}
   '';
 in
