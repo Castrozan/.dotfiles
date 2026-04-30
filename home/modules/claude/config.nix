@@ -19,7 +19,7 @@ let
   claudeGlobalSettings = {
     installMethod = "native";
     model = "opus";
-    effortLevel = "high";
+    effortLevel = "max";
     language = "english";
     spinnerTipsEnabled = false;
     dangerouslySkipPermissions = true;
