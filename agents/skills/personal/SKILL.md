@@ -1,24 +1,37 @@
 ---
 name: personal
-description: Lucas's personal channels and platforms — autonomous assistant loop (Gmail, Calendar, WhatsApp, Google Chat), Obsidian vault (daily notes, TODOs, ReadItLater inbox), Twitter/X (x.com, twitter.com) scraping and posting, VTuber avatar, Senior Gestão de Ponto (marcações, acertos), Home Assistant smart home (lights, AC), phone status SSH (battery), OpenClaw multi-agent platform (grid, A2A, Telegram bots, cron). Use for any personal channel, note, tweet, social URL, smart home, phone, ponto, or openclaw task.
+description: Master index for every personal skill — discover what is available without loading the full set into context. Run the listing script to enumerate top-level skills (git, nix, browser, comms, openclaw, review, session, test, ...) and umbrella chapters (Lucas's channels — Gmail, Calendar, WhatsApp, Google Chat, Obsidian, Twitter/X, Ponto, Home Assistant, phone status). Use whenever work might benefit from a personal-only skill, or when the user mentions any topic this index covers.
 ---
 
-Umbrella skill covering Lucas's personal communication, tools, home, and agent platforms. Each capability lives in its own file so only the relevant one loads into context.
+This skill is the discovery entry point for every personal skill. None of them are auto-loaded; call this first, then read only the specific `SKILL.md` or chapter file you actually need.
 
-For the autonomous monitoring loop (5-minute heartbeat across Gmail, Calendar, WhatsApp, Google Chat with triage and Discord escalation), read `assistant.md`. Inside that workflow: Gmail (`assistant-gmail.md`), Calendar (`assistant-calendar.md`), WhatsApp + Google Chat (`assistant-chat.md`).
+## Listing all personal skills
 
-For on-demand Google Chat and WhatsApp monitoring and replies (not the full loop, just "check and respond"), read `chat-monitor.md`.
+Run from this skill's base directory:
 
-For Obsidian vault operations — daily notes, TODO tracking, activity logging, ReadItLater inbox processing — read `obsidian.md`.
+```bash
+python3 scripts/list-personal-skill-metadata.py
+```
 
-For communications tooling — Google Chat browser automation and webhooks (`comms-google-chat.md`), Twitter/X scraping and posting (`comms-twitter.md`), VTuber avatar lip sync and expressions (`comms-avatar.md`).
+Optional custom vault path:
 
-For Senior Gestao de Ponto time-entry automation (Chrome DevTools MCP for clock-in marcacoes), read `ponto.md`.
+```bash
+python3 scripts/list-personal-skill-metadata.py /path/to/personal-skill-vault
+```
 
-For Home Assistant smart home control (Tuya lights via ha-light, Midea AC via ha-ac), read `home-assistant.md`.
+Returns JSON. Top-level skills include `name`, `description` (from frontmatter), `directory_name`, `path`, and `skill_markdown_path`. Chapter files inside umbrella skills include `name` (`<umbrella>/<chapter>`), `path`, and a short `preview` extracted from the file body. Read the specific files you need after inspecting the list.
 
-For remote phone status over SSH (battery, charging, uptime, storage), read `phone.md`.
+## Umbrella chapters in this skill
 
-For the OpenClaw multi-agent platform — grid coordination (`openclaw-grid.md`), A2A protocol (`openclaw-a2a.md`), cron jobs and recurring tasks (`openclaw-cron.md`), and the top-level platform overview (`openclaw.md`).
+This `personal` skill is also the umbrella for Lucas's personal channels and platforms. Each chapter lives in its own file so only the relevant one loads:
 
-Scripts for each capability live in their original locations under `agents/skills/<capability>/scripts/` where applicable. Some capabilities (ponto, home-assistant) are pure Chrome DevTools MCP workflows with no scripts.
+- `assistant.md` — autonomous monitoring loop (5-minute heartbeat across Gmail, Calendar, WhatsApp, Google Chat with triage and Discord escalation). Sub-files: `assistant-gmail.md`, `assistant-calendar.md`, `assistant-chat.md`.
+- `chat-monitor.md` — on-demand Google Chat and WhatsApp monitoring and replies (not the full loop).
+- `obsidian.md` — Obsidian vault operations (daily notes, TODO tracking, activity logging, ReadItLater inbox).
+- `comms-google-chat.md`, `comms-twitter.md`, `comms-avatar.md` — communications tooling (Google Chat browser automation and webhooks, Twitter/X scraping and posting, VTuber avatar lip sync and expressions).
+- `ponto.md` — Senior Gestao de Ponto time-entry automation (Chrome DevTools MCP for clock-in marcacoes).
+- `home-assistant.md` — Home Assistant smart home control (Tuya lights via ha-light, Midea AC via ha-ac).
+- `phone.md` — remote phone status over SSH (battery, charging, uptime, storage).
+- `openclaw.md`, `openclaw-grid.md`, `openclaw-a2a.md`, `openclaw-cron.md` — OpenClaw multi-agent platform (grid coordination, A2A protocol, cron jobs and recurring tasks, top-level platform overview).
+
+Scripts for some capabilities live in their original locations under `agents/skills/<capability>/scripts/`. Some capabilities (ponto, home-assistant) are pure Chrome DevTools MCP workflows with no scripts.

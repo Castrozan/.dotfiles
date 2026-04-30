@@ -2,7 +2,10 @@
 
 import argparse
 import json
+import re
 from pathlib import Path
+
+CHAPTER_PREVIEW_MAXIMUM_CHARACTER_COUNT = 240
 
 
 def parse_skill_markdown_frontmatter(skill_markdown_content: str) -> dict[str, str]:
@@ -20,14 +23,51 @@ def parse_skill_markdown_frontmatter(skill_markdown_content: str) -> dict[str, s
     return parsed_frontmatter
 
 
+def strip_xml_like_tags(raw_text: str) -> str:
+    return re.sub(r"<[^>]+>", " ", raw_text)
+
+
+def collapse_whitespace(raw_text: str) -> str:
+    return re.sub(r"\s+", " ", raw_text).strip()
+
+
+def extract_chapter_preview(chapter_markdown_content: str) -> str:
+    cleaned_chapter_text = collapse_whitespace(
+        strip_xml_like_tags(chapter_markdown_content)
+    )
+    if len(cleaned_chapter_text) <= CHAPTER_PREVIEW_MAXIMUM_CHARACTER_COUNT:
+        return cleaned_chapter_text
+    return (
+        cleaned_chapter_text[:CHAPTER_PREVIEW_MAXIMUM_CHARACTER_COUNT].rstrip() + "..."
+    )
+
+
+def collect_umbrella_chapter_metadata(
+    umbrella_skill_directory: Path,
+) -> list[dict[str, str]]:
+    collected_umbrella_chapter_metadata: list[dict[str, str]] = []
+    for chapter_markdown_path in sorted(umbrella_skill_directory.glob("*.md")):
+        if chapter_markdown_path.name == "SKILL.md":
+            continue
+        chapter_preview = extract_chapter_preview(chapter_markdown_path.read_text())
+        collected_umbrella_chapter_metadata.append(
+            {
+                "name": f"{umbrella_skill_directory.name}/{chapter_markdown_path.stem}",
+                "path": str(chapter_markdown_path.resolve()),
+                "preview": chapter_preview,
+            }
+        )
+    return collected_umbrella_chapter_metadata
+
+
 def collect_personal_skill_metadata(
     personal_skill_vault_directory: Path,
-) -> list[dict[str, str]]:
+) -> list[dict[str, object]]:
     resolved_personal_skill_vault_directory = personal_skill_vault_directory.resolve()
     if not resolved_personal_skill_vault_directory.is_dir():
         return []
 
-    collected_personal_skill_metadata: list[dict[str, str]] = []
+    collected_personal_skill_metadata: list[dict[str, object]] = []
     for personal_skill_directory in sorted(
         resolved_personal_skill_vault_directory.iterdir(),
         key=lambda personal_skill_directory: personal_skill_directory.name,
@@ -38,6 +78,7 @@ def collect_personal_skill_metadata(
         parsed_frontmatter = parse_skill_markdown_frontmatter(
             personal_skill_markdown_path.read_text()
         )
+        umbrella_chapters = collect_umbrella_chapter_metadata(personal_skill_directory)
         collected_personal_skill_metadata.append(
             {
                 "description": parsed_frontmatter.get("description", ""),
@@ -45,6 +86,7 @@ def collect_personal_skill_metadata(
                 "name": parsed_frontmatter.get("name", personal_skill_directory.name),
                 "path": str(personal_skill_directory.resolve()),
                 "skill_markdown_path": str(personal_skill_markdown_path.resolve()),
+                "chapters": umbrella_chapters,
             }
         )
     return collected_personal_skill_metadata
