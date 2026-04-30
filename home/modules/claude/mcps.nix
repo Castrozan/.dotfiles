@@ -28,6 +28,25 @@ let
     exec ${pkgs.uv}/bin/uvx --from 'browser-use[cli]' browser-use --mcp "$@"
   '';
 
+  browserUseMcpStreamableHttpPort = 8768;
+  browserUseMcpStreamableHttpSessionTimeoutMilliseconds = 300000;
+
+  browserUseMcpStreamableHttpBridgeWrapper = pkgs.writeShellScriptBin "browser-use-mcp-streamable-http-bridge" ''
+    set -euo pipefail
+
+    if ! "${browserMcp.supergatewayBinary}" --version >/dev/null 2>&1; then
+      echo "supergateway binary not found at ${browserMcp.supergatewayBinary}" >&2
+      exit 1
+    fi
+
+    exec "${browserMcp.supergatewayBinary}" \
+      --stdio "${browserUseMcpWrapper}" \
+      --outputTransport streamableHttp \
+      --stateful \
+      --sessionTimeout ${toString browserUseMcpStreamableHttpSessionTimeoutMilliseconds} \
+      --port ${toString browserUseMcpStreamableHttpPort}
+  '';
+
   a2aMcp = import ../../../agents/skills/openclaw/a2a-mcp-default.nix {
     inherit
       pkgs
@@ -35,6 +54,23 @@ let
       homeDir
       ;
   };
+
+  a2aMcpStreamableHttpPort = 8769;
+
+  a2aMcpStreamableHttpBridgeWrapper = pkgs.writeShellScriptBin "a2a-mcp-streamable-http-bridge" ''
+    set -euo pipefail
+    export PATH="${nodejs}/bin:''${PATH:+:$PATH}"
+
+    if ! "${browserMcp.supergatewayBinary}" --version >/dev/null 2>&1; then
+      echo "supergateway binary not found at ${browserMcp.supergatewayBinary}" >&2
+      exit 1
+    fi
+
+    exec "${browserMcp.supergatewayBinary}" \
+      --stdio "${a2aMcp.mcpServerCommand} ${builtins.head a2aMcp.mcpServerArgs}" \
+      --outputTransport streamableHttp \
+      --port ${toString a2aMcpStreamableHttpPort}
+  '';
 
   twitterCli = import ../../../agents/skills/comms/twitter-cli.nix {
     inherit
@@ -49,16 +85,16 @@ let
       url = browserMcp.mcpServerStreamableHttpUrl;
     };
     browser-use = {
-      command = "${browserUseMcpWrapper}";
-      args = [ ];
+      type = "http";
+      url = "http://localhost:${toString browserUseMcpStreamableHttpPort}/mcp";
     };
     codex = {
       command = "${homeDir}/.local/bin/codex";
       args = [ "mcp-server" ];
     };
     a2a = {
-      command = a2aMcp.mcpServerCommand;
-      args = a2aMcp.mcpServerArgs;
+      type = "http";
+      url = "http://localhost:${toString a2aMcpStreamableHttpPort}/mcp";
     };
   };
 
@@ -138,6 +174,50 @@ in
       installA2aMcp = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
         run ${a2aMcp.installA2aMcpViaNpm}
       '';
+    };
+  };
+
+  systemd.user.services.browser-use-mcp-bridge = {
+    Unit = {
+      Description = "Browser-use MCP streamable HTTP bridge (supergateway)";
+      After = [ "graphical-session.target" ];
+    };
+
+    Service = {
+      Type = "simple";
+      ExecStart = "${browserUseMcpStreamableHttpBridgeWrapper}/bin/browser-use-mcp-streamable-http-bridge";
+      Restart = "always";
+      RestartSec = "3s";
+      Environment = [
+        "PATH=${nixSystemPaths}"
+        "HOME=${homeDir}"
+      ];
+    };
+
+    Install = {
+      WantedBy = [ "default.target" ];
+    };
+  };
+
+  systemd.user.services.a2a-mcp-bridge = {
+    Unit = {
+      Description = "A2A MCP streamable HTTP bridge (supergateway)";
+      After = [ "graphical-session.target" ];
+    };
+
+    Service = {
+      Type = "simple";
+      ExecStart = "${a2aMcpStreamableHttpBridgeWrapper}/bin/a2a-mcp-streamable-http-bridge";
+      Restart = "always";
+      RestartSec = "3s";
+      Environment = [
+        "PATH=${nixSystemPaths}"
+        "HOME=${homeDir}"
+      ];
+    };
+
+    Install = {
+      WantedBy = [ "default.target" ];
     };
   };
 

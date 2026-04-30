@@ -57,6 +57,7 @@ in
   mcpServerStreamableHttpUrl = "http://localhost:${toString chromeDevtoolsStreamableHttpPort}/mcp";
   streamableHttpBridgeCommand = "${chromeDevtoolsStreamableHttpBridgeWrapper}/bin/chrome-devtools-mcp-streamable-http-bridge";
   inherit (install) installChromeDevtoolsMcpViaNpm installSupergatewayViaNpm;
+  inherit supergatewayBinary;
 
   packages = [ ];
 }
