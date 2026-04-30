@@ -56,6 +56,7 @@ let
   };
 
   a2aMcpStreamableHttpPort = 8769;
+  a2aMcpStreamableHttpSessionTimeoutMilliseconds = 300000;
 
   a2aMcpStreamableHttpBridgeWrapper = pkgs.writeShellScriptBin "a2a-mcp-streamable-http-bridge" ''
     set -euo pipefail
@@ -69,6 +70,8 @@ let
     exec "${browserMcp.supergatewayBinary}" \
       --stdio "${a2aMcp.mcpServerCommand} ${builtins.head a2aMcp.mcpServerArgs}" \
       --outputTransport streamableHttp \
+      --stateful \
+      --sessionTimeout ${toString a2aMcpStreamableHttpSessionTimeoutMilliseconds} \
       --port ${toString a2aMcpStreamableHttpPort}
   '';
 
