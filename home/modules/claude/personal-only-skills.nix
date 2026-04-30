@@ -1,6 +1,0 @@
-[
-  "desktop"
-  "personal"
-  "presentation"
-  "quickshell"
-]

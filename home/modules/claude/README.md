@@ -49,7 +49,6 @@ Then rebuild: `home-manager switch`
 |------|---------|
 | `skills.nix` | Skill discovery and routing |
 | `external-skill-sets.nix` | External skill providers (GitHub, research, etc.) |
-| `personal-only-skills.nix` | Skills restricted to personal use (time-tracking, home automation) |
 
 ### System Integration
 
@@ -72,7 +71,6 @@ home/modules/claude/
 ├── config.nix                       # Settings & home-manager integration
 ├── skills.nix                       # Skill discovery
 ├── external-skill-sets.nix          # External providers
-├── personal-only-skills.nix         # Personal-only skills
 ├── hooks.nix                        # Lifecycle hooks
 ├── mcps.nix                         # MCP servers
 ├── plugins.nix                      # Plugins

@@ -34,10 +34,10 @@ def test_prepare_workspace_claude_launch_plan_only_links_minimal_runtime_entries
     (global_claude_config_directory / "skills" / "core" / "SKILL.md").write_text(
         "---\nname: core\n---\n"
     )
-    (global_claude_config_directory / "skills" / "personal-skills").mkdir()
-    (
-        global_claude_config_directory / "skills" / "personal-skills" / "SKILL.md"
-    ).write_text("---\nname: personal-skills\n---\n")
+    (global_claude_config_directory / "skills" / "personal").mkdir()
+    (global_claude_config_directory / "skills" / "personal" / "SKILL.md").write_text(
+        "---\nname: personal\n---\n"
+    )
 
     workspace_directory = tmp_path / "workspace"
     alpha_skill_directory = workspace_directory / "alpha"
@@ -59,7 +59,7 @@ def test_prepare_workspace_claude_launch_plan_only_links_minimal_runtime_entries
         global_claude_config_directory=global_claude_config_directory,
         global_claude_state_file=global_claude_state_file,
         core_instructions_file=core_instructions_file,
-        personal_skill_set_directory=tmp_path / "personal-skills",
+        personal_skill_set_directory=tmp_path / "personal-skill-set",
         extend_workspace_with_global_skills=False,
         requested_skill_source_directories=[],
         workspace_search_root_directory=workspace_directory,
@@ -86,12 +86,12 @@ def test_prepare_workspace_claude_launch_plan_only_links_minimal_runtime_entries
         workspace_config_directory / "skills" / "beta"
     ).resolve() == beta_skill_directory.resolve()
     assert (workspace_config_directory / "skills" / "core").exists()
-    assert (workspace_config_directory / "skills" / "personal-skills").exists()
+    assert (workspace_config_directory / "skills" / "personal").exists()
     assert launch_plan.loaded_skill_names == [
         "alpha",
         "beta",
         "core",
-        "personal-skills",
+        "personal",
     ]
     assert launch_plan.command_arguments == ["/bin/claude"]
     assert (
@@ -107,10 +107,10 @@ def test_prepare_workspace_claude_launch_plan_merges_global_skills_only_with_ext
     (global_claude_config_directory / "skills" / "core" / "SKILL.md").write_text(
         "---\nname: core\n---\n"
     )
-    (global_claude_config_directory / "skills" / "personal-skills").mkdir(parents=True)
-    (
-        global_claude_config_directory / "skills" / "personal-skills" / "SKILL.md"
-    ).write_text("---\nname: personal-skills\n---\n")
+    (global_claude_config_directory / "skills" / "personal").mkdir(parents=True)
+    (global_claude_config_directory / "skills" / "personal" / "SKILL.md").write_text(
+        "---\nname: personal\n---\n"
+    )
     (global_claude_config_directory / "skills" / "shared").mkdir(parents=True)
     (global_claude_config_directory / "skills" / "shared" / "SKILL.md").write_text(
         "---\nname: shared\n---\n"
@@ -144,7 +144,7 @@ def test_prepare_workspace_claude_launch_plan_merges_global_skills_only_with_ext
     assert launch_plan.loaded_skill_names == [
         "core",
         "local",
-        "personal-skills",
+        "personal",
         "shared",
     ]
     assert launch_plan.command_arguments == [
@@ -162,10 +162,10 @@ def test_prepare_workspace_claude_launch_plan_loads_default_skills_for_empty_wor
     (global_claude_config_directory / "skills" / "core" / "SKILL.md").write_text(
         "---\nname: core\n---\n"
     )
-    (global_claude_config_directory / "skills" / "personal-skills").mkdir(parents=True)
-    (
-        global_claude_config_directory / "skills" / "personal-skills" / "SKILL.md"
-    ).write_text("---\nname: personal-skills\n---\n")
+    (global_claude_config_directory / "skills" / "personal").mkdir(parents=True)
+    (global_claude_config_directory / "skills" / "personal" / "SKILL.md").write_text(
+        "---\nname: personal\n---\n"
+    )
 
     launch_plan = loaded_workspace_launcher_module.prepare_workspace_claude_launch_plan(
         temporary_workspace_directory=tmp_path / "temporary-workspace",
@@ -179,7 +179,7 @@ def test_prepare_workspace_claude_launch_plan_loads_default_skills_for_empty_wor
         claude_binary_path="/bin/claude",
     )
 
-    assert launch_plan.loaded_skill_names == ["core", "personal-skills"]
+    assert launch_plan.loaded_skill_names == ["core", "personal"]
     assert launch_plan.command_arguments == ["/bin/claude"]
 
 
@@ -208,7 +208,7 @@ def test_prepare_workspace_claude_launch_plan_rejects_missing_default_injected_s
         )
 
 
-def test_prepare_workspace_claude_launch_plan_skips_duplicate_local_skill_directory_names(
+def test_prepare_workspace_claude_launch_plan_skips_duplicate_local_skill_directory_names(  # noqa: E501
     tmp_path,
 ):
     global_claude_config_directory = tmp_path / "global-claude"
@@ -216,10 +216,10 @@ def test_prepare_workspace_claude_launch_plan_skips_duplicate_local_skill_direct
     (global_claude_config_directory / "skills" / "core" / "SKILL.md").write_text(
         "---\nname: core\n---\n"
     )
-    (global_claude_config_directory / "skills" / "personal-skills").mkdir(parents=True)
-    (
-        global_claude_config_directory / "skills" / "personal-skills" / "SKILL.md"
-    ).write_text("---\nname: personal-skills\n---\n")
+    (global_claude_config_directory / "skills" / "personal").mkdir(parents=True)
+    (global_claude_config_directory / "skills" / "personal" / "SKILL.md").write_text(
+        "---\nname: personal\n---\n"
+    )
 
     workspace_directory = tmp_path / "workspace"
     preferred_browser_skill_directory = (
@@ -272,7 +272,7 @@ def test_prepare_workspace_claude_launch_plan_skips_duplicate_local_skill_direct
     assert (
         launch_plan.config_directory / "skills" / "browser"
     ).resolve() == preferred_browser_skill_directory.resolve()
-    assert launch_plan.loaded_skill_names == ["browser", "core", "personal-skills"]
+    assert launch_plan.loaded_skill_names == ["browser", "core", "personal"]
 
 
 def test_resolve_requested_skill_source_directories_requires_skill_markdown(tmp_path):
@@ -328,7 +328,7 @@ def test_compute_deterministic_workspace_directory_differs_for_different_paths(
     assert first_result != second_result
 
 
-def test_atomically_replace_global_credentials_file_with_workspace_copy_propagates_changes(
+def test_atomically_replace_global_credentials_file_with_workspace_copy_propagates_changes(  # noqa: E501
     tmp_path,
 ):
     workspace_credentials_file = tmp_path / "workspace-credentials.json"

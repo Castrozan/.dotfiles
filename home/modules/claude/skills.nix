@@ -1,65 +1,48 @@
 {
-  config,
-  lib,
   ...
 }:
 let
-  dotfilesSkillsDir = ../../../agents/skills;
+  dotfilesSkillsDirectory = ../../../agents/skills;
 
-  getSkillNamesFromDir =
-    dir:
-    if builtins.pathExists dir then
-      builtins.filter (name: builtins.pathExists (dir + "/${name}/SKILL.md")) (
-        builtins.attrNames (builtins.readDir dir)
+  globallyLoadedSkillNames = [ "personal" ];
+
+  getSkillNamesFromDirectory =
+    directory:
+    if builtins.pathExists directory then
+      builtins.filter (skillName: builtins.pathExists (directory + "/${skillName}/SKILL.md")) (
+        builtins.attrNames (builtins.readDir directory)
       )
     else
       [ ];
 
-  skillNames = getSkillNamesFromDir dotfilesSkillsDir;
+  allSkillNames = getSkillNamesFromDirectory dotfilesSkillsDirectory;
 
-  openclawModuleIsAvailable = builtins.hasAttr "openclaw" config;
+  baseGloballyLoadedSkillNames = builtins.filter (
+    skillName: builtins.elem skillName globallyLoadedSkillNames
+  ) allSkillNames;
 
-  skillsThatRequireOpenclawInfrastructure = [
-    "openclaw"
-    "grid"
-    "assistant-cron"
-    "hey-clever"
-  ];
+  personalVaultSkillNames = builtins.filter (
+    skillName: !builtins.elem skillName globallyLoadedSkillNames
+  ) allSkillNames;
 
-  skillNamesWithoutPlatformExclusions =
-    if openclawModuleIsAvailable then
-      skillNames
-    else
-      builtins.filter (name: !builtins.elem name skillsThatRequireOpenclawInfrastructure) skillNames;
-
-  personalOnlySkills = import ./personal-only-skills.nix;
-
-  baseSkillNames = builtins.filter (
-    name: !builtins.elem name personalOnlySkills
-  ) skillNamesWithoutPlatformExclusions;
-
-  personalOnlySkillNames = builtins.filter (
-    name: builtins.elem name personalOnlySkills
-  ) skillNamesWithoutPlatformExclusions;
-
-  baseClaudeSkills = builtins.listToAttrs (
-    map (dirname: {
-      name = ".claude/skills/${dirname}";
+  baseGloballyLoadedClaudeSkills = builtins.listToAttrs (
+    map (skillDirectoryName: {
+      name = ".claude/skills/${skillDirectoryName}";
       value = {
-        source = dotfilesSkillsDir + "/${dirname}";
+        source = dotfilesSkillsDirectory + "/${skillDirectoryName}";
         recursive = true;
       };
-    }) baseSkillNames
+    }) baseGloballyLoadedSkillNames
   );
 
-  personalOnlyClaudeSkills = builtins.listToAttrs (
-    map (dirname: {
-      name = ".local/share/claude-skill-sets/personal/.claude/skills/${dirname}";
+  personalVaultClaudeSkills = builtins.listToAttrs (
+    map (skillDirectoryName: {
+      name = ".local/share/claude-skill-sets/personal/.claude/skills/${skillDirectoryName}";
       value = {
-        source = dotfilesSkillsDir + "/${dirname}";
+        source = dotfilesSkillsDirectory + "/${skillDirectoryName}";
         recursive = true;
       };
-    }) personalOnlySkillNames
+    }) personalVaultSkillNames
   );
 
   coreAgentRawContent = builtins.readFile ../../../agents/core.md;
@@ -78,5 +61,6 @@ let
   };
 in
 {
-  home.file = baseClaudeSkills // personalOnlyClaudeSkills // coreSkillFromAgentInstructions;
+  home.file =
+    baseGloballyLoadedClaudeSkills // personalVaultClaudeSkills // coreSkillFromAgentInstructions;
 }
