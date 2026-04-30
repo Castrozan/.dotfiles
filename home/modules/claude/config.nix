@@ -92,6 +92,7 @@ in
       CLAUDE_AUTOCOMPACT_PCT_OVERRIDE = "80";
       CLAUDE_CODE_DISABLE_TERMINAL_TITLE = "true";
       CLAUDE_CODE_NO_FLICKER = "1";
+      CLAUDE_CODE_SCROLL_SPEED = "3";
     };
 
     activation.seedClaudeSettingsAsMutableFile = {
