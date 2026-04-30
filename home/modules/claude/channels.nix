@@ -241,6 +241,23 @@ let
       };
     }) agentNames
   );
+
+  agentsWithDenyToolPatterns = builtins.filter (
+    name: cfg.agents.${name}.denyToolPatterns != [ ]
+  ) agentNames;
+
+  agentWorkspaceSettingsFiles = lib.listToAttrs (
+    map (name: {
+      name = ".claude-discord-agents/${name}/.claude/settings.json";
+      value = {
+        text = builtins.toJSON {
+          permissions = {
+            deny = cfg.agents.${name}.denyToolPatterns;
+          };
+        };
+      };
+    }) agentsWithDenyToolPatterns
+  );
 in
 {
   options.claude.discordChannel.agents = lib.mkOption {
@@ -314,6 +331,15 @@ in
             default = false;
             description = "Kill and restart the Claude process once per day to prevent context accumulation.";
           };
+          denyToolPatterns = lib.mkOption {
+            type = lib.types.listOf lib.types.str;
+            default = [ ];
+            example = [
+              "mcp__chrome-devtools__*"
+              "mcp__browser-use__*"
+            ];
+            description = "Tool patterns written into the agent workspace .claude/settings.json under permissions.deny. Useful to block globally configured MCP servers (e.g. browser MCPs) for a specific agent.";
+          };
         };
       }
     );
@@ -343,7 +369,7 @@ in
       home = {
         packages = [ claudeDiscordSessionStarter ];
 
-        file = agentClaudeMarkdownFiles;
+        file = agentClaudeMarkdownFiles // agentWorkspaceSettingsFiles;
 
         activation.injectClaudeDiscordBotTokens = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
           run ${injectAllDiscordBotTokens}
