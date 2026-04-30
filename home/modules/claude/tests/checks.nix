@@ -59,8 +59,9 @@ in
       ".local/bin/claude should be in home.file";
 
   claude-research-skill =
-    mkEvalCheck "claude-research-skill" (builtins.hasAttr ".claude/skills/research" cfg.home.file)
-      "research skill should be deployed for claude";
+    mkEvalCheck "claude-research-skill"
+      (builtins.hasAttr ".local/share/claude-skill-sets/personal/.claude/skills/research" cfg.home.file)
+      "research skill should be deployed in the personal vault for claude";
 
   claude-discord-channel-survives-config-change-restart =
     mkEvalCheck "claude-discord-channel-survives-config-change-restart"
