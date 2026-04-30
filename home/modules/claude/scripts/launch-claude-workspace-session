@@ -18,6 +18,9 @@ MINIMAL_GLOBAL_CLAUDE_RUNTIME_ENTRY_NAMES = (
 DEFAULT_INJECTED_GLOBAL_SKILL_DIRECTORY_NAMES = ("core", "personal")
 WORKSPACE_CREDENTIALS_FILE_NAME = ".credentials.json"
 CREDENTIALS_SANDBOX_TO_GLOBAL_SYNC_INTERVAL_SECONDS = 2.0
+SKILL_DISCOVERY_PRUNED_CHILD_DIRECTORY_NAMES = frozenset(
+    {"node_modules", "__pycache__", "target", "dist", "build", "venv"}
+)
 
 
 class WorkspaceLaunchConfigurationError(Exception):
@@ -78,28 +81,48 @@ def resolve_requested_skill_source_directories(
     return resolved_requested_skill_source_directories
 
 
+def is_child_directory_pruned_from_skill_discovery(child_directory_name: str) -> bool:
+    if child_directory_name.startswith("."):
+        return True
+    if child_directory_name in SKILL_DISCOVERY_PRUNED_CHILD_DIRECTORY_NAMES:
+        return True
+    return False
+
+
 def discover_workspace_skill_source_directories(
     workspace_search_root_directory: Path,
 ) -> list[Path]:
     if not workspace_search_root_directory.is_dir():
         return []
-    discovered_skill_source_directories = [
-        discovered_skill_markdown_file.parent.resolve()
-        for discovered_skill_markdown_file in workspace_search_root_directory.rglob(
-            "SKILL.md"
-        )
-    ]
+    resolved_workspace_search_root_directory = workspace_search_root_directory.resolve()
+    if resolved_workspace_search_root_directory == Path.home().resolve():
+        return []
+    discovered_skill_source_directories: list[Path] = []
+    for (
+        currently_walked_directory_path,
+        child_directory_names_to_descend,
+        child_file_names_in_currently_walked_directory,
+    ) in os.walk(resolved_workspace_search_root_directory):
+        child_directory_names_to_descend[:] = [
+            child_directory_name
+            for child_directory_name in child_directory_names_to_descend
+            if not is_child_directory_pruned_from_skill_discovery(child_directory_name)
+        ]
+        if "SKILL.md" in child_file_names_in_currently_walked_directory:
+            discovered_skill_source_directories.append(
+                Path(currently_walked_directory_path)
+            )
     return sorted(
         discovered_skill_source_directories,
         key=lambda discovered_skill_source_directory: (
             len(
                 discovered_skill_source_directory.relative_to(
-                    workspace_search_root_directory.resolve()
+                    resolved_workspace_search_root_directory
                 ).parts
             ),
             str(
                 discovered_skill_source_directory.relative_to(
-                    workspace_search_root_directory.resolve()
+                    resolved_workspace_search_root_directory
                 )
             ),
         ),
