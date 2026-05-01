@@ -180,69 +180,71 @@ in
     };
   };
 
-  systemd.user.services.browser-use-mcp-bridge = {
-    Unit = {
-      Description = "Browser-use MCP streamable HTTP bridge (supergateway)";
-      After = [ "graphical-session.target" ];
+  systemd.user.services = {
+    browser-use-mcp-bridge = {
+      Unit = {
+        Description = "Browser-use MCP streamable HTTP bridge (supergateway)";
+        After = [ "graphical-session.target" ];
+      };
+
+      Service = {
+        Type = "simple";
+        ExecStart = "${browserUseMcpStreamableHttpBridgeWrapper}/bin/browser-use-mcp-streamable-http-bridge";
+        Restart = "always";
+        RestartSec = "3s";
+        Environment = [
+          "PATH=${nixSystemPaths}"
+          "HOME=${homeDir}"
+        ];
+      };
+
+      Install = {
+        WantedBy = [ "default.target" ];
+      };
     };
 
-    Service = {
-      Type = "simple";
-      ExecStart = "${browserUseMcpStreamableHttpBridgeWrapper}/bin/browser-use-mcp-streamable-http-bridge";
-      Restart = "always";
-      RestartSec = "3s";
-      Environment = [
-        "PATH=${nixSystemPaths}"
-        "HOME=${homeDir}"
-      ];
+    a2a-mcp-bridge = {
+      Unit = {
+        Description = "A2A MCP streamable HTTP bridge (supergateway)";
+        After = [ "graphical-session.target" ];
+      };
+
+      Service = {
+        Type = "simple";
+        ExecStart = "${a2aMcpStreamableHttpBridgeWrapper}/bin/a2a-mcp-streamable-http-bridge";
+        Restart = "always";
+        RestartSec = "3s";
+        Environment = [
+          "PATH=${nixSystemPaths}"
+          "HOME=${homeDir}"
+        ];
+      };
+
+      Install = {
+        WantedBy = [ "default.target" ];
+      };
     };
 
-    Install = {
-      WantedBy = [ "default.target" ];
-    };
-  };
+    chrome-devtools-mcp-bridge = {
+      Unit = {
+        Description = "Chrome DevTools MCP streamable HTTP bridge (supergateway)";
+        After = [ "graphical-session.target" ];
+      };
 
-  systemd.user.services.a2a-mcp-bridge = {
-    Unit = {
-      Description = "A2A MCP streamable HTTP bridge (supergateway)";
-      After = [ "graphical-session.target" ];
-    };
+      Service = {
+        Type = "simple";
+        ExecStart = browserMcp.streamableHttpBridgeCommand;
+        Restart = "always";
+        RestartSec = "3s";
+        Environment = [
+          "PATH=${nixSystemPaths}"
+          "HOME=${homeDir}"
+        ];
+      };
 
-    Service = {
-      Type = "simple";
-      ExecStart = "${a2aMcpStreamableHttpBridgeWrapper}/bin/a2a-mcp-streamable-http-bridge";
-      Restart = "always";
-      RestartSec = "3s";
-      Environment = [
-        "PATH=${nixSystemPaths}"
-        "HOME=${homeDir}"
-      ];
-    };
-
-    Install = {
-      WantedBy = [ "default.target" ];
-    };
-  };
-
-  systemd.user.services.chrome-devtools-mcp-bridge = {
-    Unit = {
-      Description = "Chrome DevTools MCP streamable HTTP bridge (supergateway)";
-      After = [ "graphical-session.target" ];
-    };
-
-    Service = {
-      Type = "simple";
-      ExecStart = browserMcp.streamableHttpBridgeCommand;
-      Restart = "always";
-      RestartSec = "3s";
-      Environment = [
-        "PATH=${nixSystemPaths}"
-        "HOME=${homeDir}"
-      ];
-    };
-
-    Install = {
-      WantedBy = [ "default.target" ];
+      Install = {
+        WantedBy = [ "default.target" ];
+      };
     };
   };
 }
