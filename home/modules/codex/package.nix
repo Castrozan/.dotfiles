@@ -2,15 +2,15 @@
 let
   fetchPrebuiltBinary = import ../../../lib/fetch-prebuilt-binary.nix { inherit pkgs; };
 
-  version = "0.125.0";
+  version = "0.128.0";
 
   codex-unwrapped = fetchPrebuiltBinary {
     pname = "codex";
     inherit version;
-    url = "https://github.com/openai/codex/releases/download/rust-v${version}/codex-x86_64-unknown-linux-gnu.tar.gz";
-    sha256 = "sha256-UivAubirMfOo8fxIeKvU6DsRamwbz8dxfS/gNvVM1L4=";
+    url = "https://github.com/openai/codex/releases/download/rust-v${version}/codex-x86_64-unknown-linux-musl.tar.gz";
+    sha256 = "sha256-iGuF5hGMC0MjRDfKAH++kjYRpTsQPQDg0650rvsg4jo=";
     binaryName = "codex";
-    archiveBinaryPath = "codex-x86_64-unknown-linux-gnu";
+    archiveBinaryPath = "codex-x86_64-unknown-linux-musl";
     buildInputs = with pkgs; [
       openssl
       libcap
