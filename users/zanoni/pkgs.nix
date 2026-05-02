@@ -77,6 +77,7 @@
       tree
       unzip
       usbutils
+      uv
       vesktop
       vim
       vlc
