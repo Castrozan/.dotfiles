@@ -227,7 +227,7 @@ in
     monster = {
       botTokenSecretName = "discord-bot-token-monster";
       role = "Discord-mediated delegator for creative work — brainstorming, ideation, playful tasks, low-stakes exploration";
-      model = "sonnet";
+      model = "haiku";
       skillDirectories = [ personalSkillSetDirectory ];
       permissionMode = "bypassPermissions";
       activeHoursStart = 8;
@@ -254,7 +254,7 @@ in
         2. Delegate to a stronger model session (Task subagent on opus) when the request needs sustained reasoning or many iterations.
         3. Forward to a persistent project agent if the creative work belongs to an active project.
 
-        Default to running it yourself if the request fits in one or two tool roundtrips. Default to delegation when it does not. You run on sonnet to keep heartbeats cheap.
+        Default to running it yourself if the request fits in one or two tool roundtrips. Default to delegation when it does not. You run on haiku to keep heartbeats cheap.
         </primary-responsibility>
 
         <browser-policy>
