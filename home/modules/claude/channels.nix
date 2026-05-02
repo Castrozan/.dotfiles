@@ -371,10 +371,6 @@ in
 
         file = agentClaudeMarkdownFiles // agentWorkspaceSettingsFiles;
 
-        activation.injectClaudeDiscordBotTokens = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-          run ${injectAllDiscordBotTokens}
-        '';
-
         activation.seedDiscordAgentWorkspaces = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
           run ${seedAgentWorkspaces}
         '';
@@ -383,12 +379,17 @@ in
       systemd.user.services.claude-discord-channel = {
         Unit = {
           Description = "Claude Code Discord agents (persistent tmux session)";
-          After = [ "network.target" ];
+          After = [
+            "network.target"
+            "agenix.service"
+          ];
+          Requires = [ "agenix.service" ];
           X-RestartIfChanged = false;
         };
 
         Service = {
           Type = "simple";
+          ExecStartPre = "${injectAllDiscordBotTokens}";
           ExecStart = "${pkgs.python312}/bin/python3 ${claudeDiscordAgentsServiceScript} --specification-file ${claudeDiscordAgentsServiceSpecificationFile}";
           KillMode = "process";
           Restart = "always";
