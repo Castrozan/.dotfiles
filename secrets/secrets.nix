@@ -1,9 +1,11 @@
 let
   personal_key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDXjYtc1kccaHnEeCnLfn5jB+3K8ULqIIsFoq+4pc+fX";
   workpc_key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPdOdWOmB7IhmU70+VwgUJ40MHCOwhhrDBn6rq/Fskq/";
+  macbook_key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGyaFnjj9zi0BO5w6+CSjkO6L3A1nGveR651ZDHz9pa+";
   all_keys = [
     personal_key
     workpc_key
+    macbook_key
   ];
 in
 {

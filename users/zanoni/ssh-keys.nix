@@ -4,10 +4,12 @@
 let
   phoneKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFqWoL9l50EyBgITnUyUhDuodLCRCMGLowmMcos7DJPo phone@android";
   workPcKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPdOdWOmB7IhmU70+VwgUJ40MHCOwhhrDBn6rq/Fskq/";
+  macbookKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGyaFnjj9zi0BO5w6+CSjkO6L3A1nGveR651ZDHz9pa+";
 in
 {
   authorizedKeys = [
     phoneKey
     workPcKey
+    macbookKey
   ];
 }
