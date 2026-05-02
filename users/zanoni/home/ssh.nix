@@ -37,6 +37,12 @@ let
         printf '    IdentityFile /run/agenix/id_ed25519_workpc\n\n'
       fi
 
+      if [ -n "''${hosts[mac]:-}" ]; then
+        printf 'Host mac\n'
+        printf '    HostName %s\n' "''${hosts[mac]}"
+        printf '    User lucas.zanoni\n\n'
+      fi
+
       if [ -n "''${hosts[phone]:-}" ] && [ -f "/run/agenix/id_ed25519_phone" ]; then
         printf 'Host phone\n'
         printf '    HostName %s\n' "''${hosts[phone]}"
