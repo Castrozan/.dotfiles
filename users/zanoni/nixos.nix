@@ -123,11 +123,6 @@ in
         owner = "zanoni";
         mode = "600";
       };
-      "openclaw-gateway-token" = {
-        file = ../../secrets/api-keys/openclaw-gateway-token.age;
-        owner = "zanoni";
-        mode = "400";
-      };
       "telegram-bot-token" = {
         file = ../../secrets/bot-tokens/telegram-bot-token.age;
         owner = "zanoni";

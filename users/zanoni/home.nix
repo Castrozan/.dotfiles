@@ -4,7 +4,6 @@
     ./home/hyprland.nix
     ./home/ssh.nix
     ./home/session-vars.nix
-    ./home/openclaw.nix
     ./home/claude-discord-agents.nix
 
     ../../home/core.nix
@@ -17,8 +16,6 @@
     ../../home/modules/gnome
     ../../home/modules/home-assistant
     ../../home/modules/hyprland/nixos.nix
-    ../../home/modules/openclaw
-    ../../home/modules/openclaw-mesh
     ../../home/modules/opencode
     ../../home/modules/testing
 
@@ -58,8 +55,6 @@
     ../../home/modules/voice/hey-bot.nix
     ../../home/modules/voice/hey-bot-test.nix
     ./home/hey-bot.nix
-    ../../home/modules/voice/voice-pipeline.nix
-    ./home/voice-pipeline.nix
     ../../home/modules/voice/voxtype.nix
     ../../home/modules/voice/whisp-away.nix
 
