@@ -95,7 +95,6 @@
     ]
     # Unstable packages
     ++ (with unstable; [
-      brave
       cargo
       gcc
       rustc
@@ -110,6 +109,7 @@
     ])
     # Latest packages
     ++ (with latest; [
+      brave
       gemini-cli
       vscode
     ]);
