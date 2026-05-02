@@ -6,6 +6,7 @@ let
 
   phoneHostKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOWURbP41AHeoQUC4qpSriTvVKWezdpPMGg1f3Ti7gyd";
   workPcHostKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPctlyhhY3Tf6RS/qs4aMUK/cIiZFG804XJFbd0ooWP/";
+  macHostKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINOxdbPmuHnX5ZpB1asR0TgUOb9QrDmULFv9/uOliJcQ";
 
   generateScript = pkgs.writeShellScript "generate-private-ssh-config" ''
     set -euo pipefail
@@ -59,6 +60,9 @@ let
       fi
       if [ -n "''${hosts[workpc]:-}" ]; then
         printf '%s ${workPcHostKey}\n' "''${hosts[workpc]}"
+      fi
+      if [ -n "''${hosts[mac]:-}" ]; then
+        printf '%s ${macHostKey}\n' "''${hosts[mac]}"
       fi
     } > "$KNOWN_HOSTS"
 
