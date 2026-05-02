@@ -383,7 +383,7 @@ in
             "network.target"
             "agenix.service"
           ];
-          Requires = [ "agenix.service" ];
+          Wants = [ "agenix.service" ];
           X-RestartIfChanged = false;
         };
 

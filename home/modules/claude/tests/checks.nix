@@ -78,6 +78,21 @@ in
       (!(discordChannelService.Service ? ExecStop))
       "claude-discord-channel.service must not define ExecStop - any tmux kill-session on stop defeats the whole point of surviving restarts";
 
+  claude-discord-channel-does-not-require-agenix =
+    mkEvalCheck "claude-discord-channel-does-not-require-agenix"
+      (!(builtins.elem "agenix.service" (discordChannelService.Unit.Requires or [ ])))
+      "claude-discord-channel.service must not Requires=agenix.service - every rebuild reactivates agenix and Requires propagates the deactivation, killing the tmux server. Use Wants=agenix.service plus After=agenix.service instead";
+
+  claude-discord-channel-wants-agenix =
+    mkEvalCheck "claude-discord-channel-wants-agenix"
+      (builtins.elem "agenix.service" (discordChannelService.Unit.Wants or [ ]))
+      "claude-discord-channel.service must Wants=agenix.service so agenix is started on boot but its restart does not bring the discord channel down";
+
+  claude-discord-channel-after-agenix =
+    mkEvalCheck "claude-discord-channel-after-agenix"
+      (builtins.elem "agenix.service" (discordChannelService.Unit.After or [ ]))
+      "claude-discord-channel.service must After=agenix.service so the bot tokens are available when ExecStartPre runs on initial boot";
+
   chrome-devtools-bridge-service-exists =
     let
       bridgeService = cfg.systemd.user.services.chrome-devtools-mcp-bridge;
