@@ -21,22 +21,9 @@ let
   workpcCfg = self.homeConfigurations."lucas.zanoni@x86_64-linux".config;
   nixosCfg = self.nixosConfigurations.zanoni.config.home-manager.users.zanoni;
   workpcHasOpenclaw = workpcCfg ? openclaw;
-  nixosOc = nixosCfg.openclaw;
-
-  nixosEnabledAgents = builtins.attrNames nixosOc.enabledAgents;
-  nixosConfigPatches = nixosOc.configPatches;
-  nixosConfigPatchKeys = builtins.attrNames nixosConfigPatches;
-  nixosSecretPatchKeys = builtins.attrNames nixosOc.secretPatches;
+  nixosHasOpenclaw = nixosCfg ? openclaw;
 
   hasInList = list: item: builtins.elem item list;
-
-  jarvisAllowAgents =
-    let
-      jarvisEntry = builtins.head (
-        builtins.filter (a: a.id == "jarvis") nixosConfigPatches.".agents.list"
-      );
-    in
-    jarvisEntry.subagents.allowAgents;
 
   workpcChecks =
     let
@@ -294,14 +281,6 @@ let
         workpcOc.agents.jenny.model.fallbacks == [ ]
       ) "default fallbacks list should be empty";
 
-      oc-both-memory-sync-configured = mkEvalCheck "oc-both-memory-sync-configured" (
-        workpcOc.memorySync.enable && nixosOc.memorySync.enable
-      ) "memory sync should be configured on both machines";
-
-      oc-both-jarvis-only-nixos = mkEvalCheck "oc-both-jarvis-only-nixos" (
-        nixosOc.agents.jarvis.enable && !(workpcOc.agents ? jarvis)
-      ) "jarvis should only be declared on nixos";
-
       oc-workpc-plugins-allow-memory-core = mkEvalCheck "oc-workpc-plugins-allow-memory-core" (hasInList
         workpcConfigPatches.".plugins.allow"
         "memory-core"
@@ -344,123 +323,10 @@ let
       oc-workpc-robson-allow-agents = mkEvalCheck "oc-workpc-robson-allow-agents" (
         hasInList robsonAllowAgents "jenny" && hasInList robsonAllowAgents "monster"
       ) "robson allowAgents should include jenny and monster";
+
+      oc-nixos-zanoni-no-openclaw = mkEvalCheck "oc-nixos-zanoni-no-openclaw" (
+        !nixosHasOpenclaw
+      ) "nixos zanoni should NOT have openclaw configured";
     };
-
-  nixosChecks = {
-    oc-flake-nixos-config-evaluates = mkEvalCheck "oc-flake-nixos-config-evaluates" (
-      builtins.length nixosEnabledAgents > 0
-    ) "nixosConfiguration should evaluate with enabled agents";
-
-    oc-nixos-enabled-agents =
-      mkEvalCheck "oc-nixos-enabled-agents"
-        (
-          hasInList nixosEnabledAgents "clever"
-          && hasInList nixosEnabledAgents "golden"
-          && hasInList nixosEnabledAgents "jarvis"
-        )
-        "nixos should have clever golden jarvis, got: ${builtins.concatStringsSep ", " nixosEnabledAgents}";
-
-    oc-nixos-default-agent = mkEvalCheck "oc-nixos-default-agent" (
-      nixosOc.defaultAgent == "clever"
-    ) "nixos default agent should be clever, got ${nixosOc.defaultAgent}";
-
-    oc-nixos-jarvis-telegram-enabled =
-      mkEvalCheck "oc-nixos-jarvis-telegram-enabled" nixosOc.agents.jarvis.telegram.enable
-        "jarvis telegram should be enabled";
-
-    oc-nixos-jarvis-telegram-bot-name = mkEvalCheck "oc-nixos-jarvis-telegram-bot-name" (
-      nixosOc.agents.jarvis.telegram.botName == "Jarvis"
-    ) "jarvis telegram bot name should be Jarvis, got ${nixosOc.agents.jarvis.telegram.botName}";
-
-    oc-nixos-clever-is-default =
-      mkEvalCheck "oc-nixos-clever-is-default" nixosOc.agents.clever.isDefault
-        "clever should be marked as default on nixos";
-
-    oc-nixos-gateway-port = mkEvalCheck "oc-nixos-gateway-port" (
-      nixosConfigPatches.".gateway.port" == 18789
-    ) "nixos gateway port should be 18789, got ${toString nixosConfigPatches.".gateway.port"}";
-
-    oc-nixos-telegram-accounts = mkEvalCheck "oc-nixos-telegram-accounts" (
-      hasInList nixosConfigPatchKeys ".channels.telegram.accounts.clever"
-      && hasInList nixosConfigPatchKeys ".channels.telegram.accounts.golden"
-      && hasInList nixosConfigPatchKeys ".channels.telegram.accounts.jarvis"
-    ) "nixos should have telegram accounts for clever golden jarvis";
-
-    oc-nixos-jarvis-telegram-account-name = mkEvalCheck "oc-nixos-jarvis-telegram-account-name" (
-      nixosConfigPatches.".channels.telegram.accounts.jarvis".name == "Jarvis"
-    ) "jarvis telegram account name should be Jarvis";
-
-    oc-nixos-clever-telegram-account-name = mkEvalCheck "oc-nixos-clever-telegram-account-name" (
-      nixosConfigPatches.".channels.telegram.accounts.clever".name == "Clever"
-    ) "clever telegram account should use default capitalized name";
-
-    oc-nixos-secret-path-agenix =
-      let
-        tokenPath = nixosOc.secretPatches.".gateway.auth.token";
-      in
-      mkEvalCheck "oc-nixos-secret-path-agenix" (
-        builtins.match ".*\\.secrets/.*" tokenPath != null
-      ) "nixos secret path should use secrets file, got ${tokenPath}";
-
-    oc-nixos-jarvis-bot-token-secret =
-      mkEvalCheck "oc-nixos-jarvis-bot-token-secret"
-        (hasInList nixosSecretPatchKeys ".channels.telegram.accounts.jarvis.botToken")
-        "nixos should have jarvis bot token secret";
-
-    oc-agent-golden-cheaper-model = mkEvalCheck "oc-agent-golden-cheaper-model" (
-      nixosOc.agents.golden.model.primary == "openai-codex/gpt-5.3-codex"
-    ) "golden should use cheaper model, got ${nixosOc.agents.golden.model.primary}";
-
-    oc-nixos-memory-sync-remote-host = mkEvalCheck "oc-nixos-memory-sync-remote-host" (
-      nixosOc.memorySync.remoteHost == "workpc"
-    ) "nixos memory sync remote host should be workpc, got ${nixosOc.memorySync.remoteHost}";
-
-    oc-nixos-agent-to-agent-enabled =
-      mkEvalCheck "oc-nixos-agent-to-agent-enabled" nixosConfigPatches.".tools.agentToAgent.enabled"
-        "nixos agentToAgent should be enabled";
-
-    oc-nixos-agent-to-agent-allow-list = mkEvalCheck "oc-nixos-agent-to-agent-allow-list" (
-      hasInList nixosConfigPatches.".tools.agentToAgent.allow" "clever"
-      && hasInList nixosConfigPatches.".tools.agentToAgent.allow" "golden"
-      && hasInList nixosConfigPatches.".tools.agentToAgent.allow" "jarvis"
-    ) "nixos agentToAgent allow list should include clever golden jarvis";
-
-    oc-nixos-sessions-visibility = mkEvalCheck "oc-nixos-sessions-visibility" (
-      nixosConfigPatches.".tools.sessions.visibility" == "all"
-    ) "nixos sessions visibility should be all";
-
-    oc-nixos-jarvis-allow-agents-has-entries = mkEvalCheck "oc-nixos-jarvis-allow-agents-has-entries" (
-      builtins.length jarvisAllowAgents > 0
-    ) "jarvis should have allowAgents entries";
-
-    oc-nixos-jarvis-allow-agents-includes-clever-golden =
-      mkEvalCheck "oc-nixos-jarvis-allow-agents-includes-clever-golden"
-        (hasInList jarvisAllowAgents "clever" && hasInList jarvisAllowAgents "golden")
-        "jarvis allowAgents should include clever and golden";
-
-    oc-nixos-jarvis-allow-agents-excludes-self =
-      mkEvalCheck "oc-nixos-jarvis-allow-agents-excludes-self" (!(hasInList jarvisAllowAgents "jarvis"))
-        "jarvis allowAgents should NOT include jarvis itself";
-  };
-
-  openclaw-config-namespace-exists = mkEvalCheck "openclaw-config-namespace-exists" (
-    nixosCfg ? openclaw
-  ) "openclaw config namespace should exist in nixos config";
-
-  openclaw-agent-config-evaluates = mkEvalCheck "openclaw-agent-config-evaluates" (
-    builtins.length nixosEnabledAgents > 0
-  ) "nixos config should have at least one enabled agent";
-
-  openclaw-agents-submodule-type = mkEvalCheck "openclaw-agents-submodule-type" (
-    nixosOc.agents ? clever
-  ) "agents should be an attrset with agent entries";
 in
-nixosChecks
-// (if workpcHasOpenclaw then workpcChecks else { })
-// {
-  inherit
-    openclaw-config-namespace-exists
-    openclaw-agent-config-evaluates
-    openclaw-agents-submodule-type
-    ;
-}
+if workpcHasOpenclaw then workpcChecks else { }
