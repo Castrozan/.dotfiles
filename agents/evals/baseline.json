@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-04-27T21:51:22.440886+00:00",
-  "git_commit": "c9679741",
+  "generated_at": "2026-05-02T17:53:23.627383+00:00",
+  "git_commit": "8eb130f3",
   "total_tests": 207,
-  "total_passed": 197,
-  "total_failed": 10,
-  "pass_rate": 0.9517,
+  "total_passed": 176,
+  "total_failed": 31,
+  "pass_rate": 0.8502,
   "categories": {
     "other": {
-      "passed": 82,
-      "failed": 3,
+      "passed": 77,
+      "failed": 8,
       "tests": [
         {
           "name": "worktrees_knows_builtin_flag",
@@ -72,7 +72,7 @@
         },
         {
           "name": "local_information_first",
-          "passed": false
+          "passed": true
         },
         {
           "name": "nix_rebuild_trigger_fires_on_nix_edit",
@@ -192,11 +192,11 @@
         },
         {
           "name": "pm_does_not_fix_executor_mistakes_itself",
-          "passed": true
+          "passed": false
         },
         {
           "name": "pm_does_not_trust_executor_self_report",
-          "passed": false
+          "passed": true
         },
         {
           "name": "pm_heartbeat_skips_outside_active_hours",
@@ -216,7 +216,7 @@
         },
         {
           "name": "pm_delegation_not_vague",
-          "passed": false
+          "passed": true
         },
         {
           "name": "pm_no_hedging_on_bad_news",
@@ -232,7 +232,7 @@
         },
         {
           "name": "pm_does_not_ask_want_me_to_proceed",
-          "passed": true
+          "passed": false
         },
         {
           "name": "pm_says_standing_by_when_queue_empty",
@@ -268,11 +268,11 @@
         },
         {
           "name": "git_history_never_uses_repeated_grep",
-          "passed": true
+          "passed": false
         },
         {
           "name": "git_history_starts_with_layer1",
-          "passed": true
+          "passed": false
         },
         {
           "name": "git_history_escalates_to_layer2",
@@ -336,25 +336,25 @@
         },
         {
           "name": "worktrees_never_checkout_main",
-          "passed": true
+          "passed": false
         },
         {
           "name": "worktrees_pr_from_main_directory",
-          "passed": true
+          "passed": false
         },
         {
           "name": "test_double_test_protocol",
-          "passed": true
+          "passed": false
         },
         {
           "name": "test_knows_tiers",
-          "passed": true
+          "passed": false
         }
       ]
     },
     "compliance": {
-      "passed": 33,
-      "failed": 3,
+      "passed": 31,
+      "failed": 5,
       "tests": [
         {
           "name": "delegation_multi_agent_implementation_prefers_teams",
@@ -366,7 +366,7 @@
         },
         {
           "name": "delegation_bare_subagent_acceptable_for_research",
-          "passed": true
+          "passed": false
         },
         {
           "name": "delegation_multiple_steps_requires_teams",
@@ -430,7 +430,7 @@
         },
         {
           "name": "rebuild_two_consecutive_passes",
-          "passed": false
+          "passed": true
         },
         {
           "name": "rebuild_untested_is_hypothesis",
@@ -454,7 +454,7 @@
         },
         {
           "name": "workflow_fix_before_responding",
-          "passed": true
+          "passed": false
         },
         {
           "name": "workflow_knows_review_step",
@@ -498,13 +498,13 @@
         },
         {
           "name": "test_first_before_fix",
-          "passed": true
+          "passed": false
         }
       ]
     },
     "routing": {
-      "passed": 56,
-      "failed": 4,
+      "passed": 48,
+      "failed": 12,
       "tests": [
         {
           "name": "routing_to_desktop_keyboard_typing",
@@ -532,7 +532,7 @@
         },
         {
           "name": "routing_to_media_skip_track",
-          "passed": true
+          "passed": false
         },
         {
           "name": "routing_to_openclaw_agent_creation",
@@ -560,11 +560,11 @@
         },
         {
           "name": "routing_to_comms_vtuber_avatar",
-          "passed": true
+          "passed": false
         },
         {
           "name": "routing_to_comms_twitter_scrape",
-          "passed": true
+          "passed": false
         },
         {
           "name": "routing_to_session_deep_work",
@@ -632,7 +632,7 @@
         },
         {
           "name": "routing_to_rebuild_apply_changes",
-          "passed": true
+          "passed": false
         },
         {
           "name": "routing_to_test_verification",
@@ -644,11 +644,11 @@
         },
         {
           "name": "routing_to_review_skill_creation",
-          "passed": true
+          "passed": false
         },
         {
           "name": "routing_to_review_skill_routing_failure",
-          "passed": true
+          "passed": false
         },
         {
           "name": "routing_to_notify_task_completion",
@@ -672,7 +672,7 @@
         },
         {
           "name": "routing_to_phone_status_battery",
-          "passed": true
+          "passed": false
         },
         {
           "name": "routing_to_ponto_time_tracking",
@@ -728,7 +728,7 @@
         },
         {
           "name": "routing_ambiguous_browser_vs_comms_tweet_scraping",
-          "passed": true
+          "passed": false
         },
         {
           "name": "routing_to_comms_bare_xcom_url",
@@ -787,8 +787,8 @@
       ]
     },
     "navigation": {
-      "passed": 18,
-      "failed": 0,
+      "passed": 12,
+      "failed": 6,
       "tests": [
         {
           "name": "desktop_routes_to_keyboard",
@@ -840,27 +840,27 @@
         },
         {
           "name": "session_routes_to_deep_work",
-          "passed": true
+          "passed": false
         },
         {
           "name": "session_routes_to_workspace",
-          "passed": true
+          "passed": false
         },
         {
           "name": "session_routes_to_worktrees",
-          "passed": true
+          "passed": false
         },
         {
           "name": "session_routes_to_tmux",
-          "passed": true
+          "passed": false
         },
         {
           "name": "session_routes_to_restart",
-          "passed": true
+          "passed": false
         },
         {
           "name": "session_routes_to_exit",
-          "passed": true
+          "passed": false
         }
       ]
     }
