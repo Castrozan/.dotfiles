@@ -3,6 +3,7 @@ import datetime
 import json
 import os
 import shlex
+import shutil
 import signal
 import subprocess
 import sys
@@ -391,6 +392,66 @@ def send_bootstrap_prompt(
         os.unlink(bootstrap_file)
 
 
+def parse_skill_source_directories_from_environment_variable() -> list[Path]:
+    raw_value = os.environ.get("PROJECT_AGENT_SKILL_DIRECTORIES", "")
+    if not raw_value:
+        return []
+    return [Path(entry).expanduser() for entry in raw_value.split(":") if entry]
+
+
+def discover_skill_subdirectories_with_skill_markdown(
+    skill_source_directory: Path,
+) -> list[Path]:
+    if not skill_source_directory.is_dir():
+        return []
+    return sorted(
+        child
+        for child in skill_source_directory.iterdir()
+        if child.is_dir() and (child / "SKILL.md").is_file()
+    )
+
+
+def rebuild_skills_shadow_directory_with_symlinks(
+    pm_directory: Path,
+    skill_source_directories: list[Path],
+) -> Path | None:
+    if not skill_source_directories:
+        return None
+    shadow_root_directory = pm_directory / "skills-shadow"
+    shadow_skills_directory = shadow_root_directory / ".claude" / "skills"
+    if shadow_root_directory.exists():
+        shutil.rmtree(shadow_root_directory)
+    shadow_skills_directory.mkdir(parents=True)
+    seen_skill_names: set[str] = set()
+    for source_directory in skill_source_directories:
+        if not source_directory.is_dir():
+            print(
+                f"Warning: skill source directory not found: {source_directory}",
+                file=sys.stderr,
+            )
+            continue
+        skill_subdirectories = discover_skill_subdirectories_with_skill_markdown(
+            source_directory
+        )
+        if not skill_subdirectories:
+            print(
+                f"Warning: no skills with SKILL.md found in {source_directory}",
+                file=sys.stderr,
+            )
+            continue
+        for skill_directory in skill_subdirectories:
+            skill_name = skill_directory.name
+            if skill_name in seen_skill_names:
+                print(
+                    f"Warning: skipping duplicate skill '{skill_name}' from {source_directory}",
+                    file=sys.stderr,
+                )
+                continue
+            seen_skill_names.add(skill_name)
+            (shadow_skills_directory / skill_name).symlink_to(skill_directory)
+    return shadow_root_directory
+
+
 def resolve_persistent_session_id(project_directory: Path, agent_name: str) -> str:
     session_file = project_directory / ".pm" / "session-id"
     if session_file.exists():
@@ -442,6 +503,7 @@ def build_claude_launch_command(
     session_id: str,
     resume_existing_session: bool,
     instructions_files: list[str] | None = None,
+    additional_directories: list[Path] | None = None,
 ) -> str:
     parts = [shlex.quote(resolve_claude_binary_path())]
     parts.append(f"--model {shlex.quote(model)}")
@@ -453,6 +515,8 @@ def build_claude_launch_command(
         parts.append(f"--session-id {shlex.quote(session_id)}")
     for instructions_file in instructions_files or []:
         parts.append(f"--append-system-prompt-file {shlex.quote(instructions_file)}")
+    for additional_directory in additional_directories or []:
+        parts.append(f"--add-dir {shlex.quote(str(additional_directory))}")
     return " ".join(parts)
 
 
@@ -560,6 +624,7 @@ def main() -> None:
 
     if claude_already_running:
         session_mode = "already-running"
+        skills_shadow_directory = None
     else:
         instructions_files = [
             path
@@ -573,12 +638,22 @@ def main() -> None:
             ]
             if path is not None
         ]
+        skill_source_directories = (
+            parse_skill_source_directories_from_environment_variable()
+        )
+        skills_shadow_directory = rebuild_skills_shadow_directory_with_symlinks(
+            pm_directory, skill_source_directories
+        )
+        additional_directories = (
+            [skills_shadow_directory] if skills_shadow_directory is not None else []
+        )
         claude_command = build_claude_launch_command(
             model,
             agent_name,
             persistent_session_id,
             resume_existing_session,
             instructions_files,
+            additional_directories,
         )
         send_keys_to_tmux_pane(tmux_socket, target, claude_command)
         session_mode = "resume" if resume_existing_session else "new"
@@ -590,6 +665,11 @@ def main() -> None:
     print(f"  Claude session: {persistent_session_id} ({session_mode})")
     print(f"  Model: {model}")
     print(f"  Heartbeat: {heartbeat}")
+    if skills_shadow_directory is not None:
+        skill_count = len(
+            list((skills_shadow_directory / ".claude" / "skills").iterdir())
+        )
+        print(f"  Skills shadow: {skills_shadow_directory} ({skill_count} skills)")
     print(f"  Attach: tmux select-window -t {target}")
 
     if args.keepalive:
