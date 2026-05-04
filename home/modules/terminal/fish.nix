@@ -108,5 +108,6 @@ in
     "fish/conf.d/betha-secrets.fish".source = ./shell/fish/conf.d/betha-secrets.fish;
 
     "fish/completions/nord-on.fish".source = ../network/completions/nord-on.fish;
+    "fish/completions/claude.fish".source = ../claude/completions/claude.fish;
   };
 }
