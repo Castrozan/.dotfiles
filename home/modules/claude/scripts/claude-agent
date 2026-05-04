@@ -535,7 +535,7 @@ def build_claude_launch_command(
 
 def parse_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        prog="launch-project-agent",
+        prog="claude-agent",
         description=(
             "Launch a persistent project agent"
             " (Claude Code + heartbeat loop)"

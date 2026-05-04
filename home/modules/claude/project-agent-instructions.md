@@ -1,6 +1,6 @@
 ---
 name: project-agent
-description: Persistent project agent instructions. Place this file in your project directory and launch with launch-project-agent.
+description: Persistent project agent instructions. Place this file in your project directory and launch with claude-agent.
 ---
 
 You are a persistent project agent. You run continuously in a tmux window, maintain project state on disk, and work autonomously between user interactions via a heartbeat loop.

@@ -6,9 +6,9 @@ from unittest.mock import patch
 
 import pytest
 
-SCRIPT_PATH = Path(__file__).parent.parent / "scripts" / "launch-project-agent"
-loader = importlib.machinery.SourceFileLoader("launch_project_agent", str(SCRIPT_PATH))
-spec = importlib.util.spec_from_loader("launch_project_agent", loader)
+SCRIPT_PATH = Path(__file__).parent.parent / "scripts" / "claude-agent"
+loader = importlib.machinery.SourceFileLoader("claude_agent", str(SCRIPT_PATH))
+spec = importlib.util.spec_from_loader("claude_agent", loader)
 mod = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(mod)
 

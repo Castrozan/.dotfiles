@@ -1,10 +1,10 @@
 { pkgs, config, ... }:
 let
   projectAgentInstructionsFile = ./project-agent/instructions.md;
-  launchProjectAgentScript = pkgs.writeShellScriptBin "launch-project-agent" ''
+  claudeAgentScript = pkgs.writeShellScriptBin "claude-agent" ''
     export PROJECT_AGENT_INSTRUCTIONS="${projectAgentInstructionsFile}"
     export CLAUDE_BINARY_PATH="${config.claude.package}/bin/claude"
-    exec ${pkgs.python312}/bin/python3 ${./scripts/launch-project-agent} "$@"
+    exec ${pkgs.python312}/bin/python3 ${./scripts/claude-agent} "$@"
   '';
 in
 {
@@ -21,6 +21,6 @@ in
       export PATH="${pkgs.coreutils}/bin:${pkgs.gnused}/bin:${pkgs.jq}/bin:$PATH"
       ${builtins.readFile ./scripts/claude-show-session}
     '')
-    launchProjectAgentScript
+    claudeAgentScript
   ];
 }

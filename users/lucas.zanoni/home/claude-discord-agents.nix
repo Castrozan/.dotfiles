@@ -51,7 +51,7 @@ in
 
         Persistent project agents:
         - Each project with a .pm/HEARTBEAT.md has a tmux session named after the project. Send work to it with tmux send-keys against that session.
-        - Use launch-project-agent to start a new persistent agent if a project does not have one yet.
+        - Use claude-agent to start a new persistent agent if a project does not have one yet.
 
         When delegating, write a tight self-contained brief. The receiving session does not see your Discord conversation.
         </delegation-targets>

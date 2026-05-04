@@ -38,7 +38,7 @@ let
         agent.extraInstructionsFile != null
       ) ''export PROJECT_AGENT_EXTRA_INSTRUCTIONS="${agent.extraInstructionsFile}"''}
       export CLAUDE_BINARY_PATH="${config.claude.package}/bin/claude"
-      exec ${pkgs.python312}/bin/python3 ${./scripts/launch-project-agent} \
+      exec ${pkgs.python312}/bin/python3 ${./scripts/claude-agent} \
         ${lib.escapeShellArg agent.projectDirectory} \
         --name ${lib.escapeShellArg name} \
         --model ${lib.escapeShellArg agent.model} \

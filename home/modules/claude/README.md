@@ -41,7 +41,7 @@ Then rebuild: `home-manager switch`
 |------|---------|
 | `project-agents.nix` | Declarative project agent configuration + systemd services |
 | `project-agent-instructions.md` | Shared PM identity: role, heartbeat, delegation protocol |
-| `scripts.nix` | Wraps launch-project-agent script into PATH |
+| `scripts.nix` | Wraps claude-agent script into PATH |
 
 ### Skills & Extensions
 
@@ -81,7 +81,7 @@ home/modules/claude/
 ├── project-agent-instructions.md    # PM agent identity & behavior
 │
 ├── scripts/
-│   ├── launch-project-agent         # Python: creates tmux session + Claude Code
+│   ├── claude-agent         # Python: creates tmux session + Claude Code
 │   ├── claude-restart               # Restart Claude Code session
 │   ├── claude-exit                  # Gracefully exit Claude Code
 │   ├── statusline-command.sh        # Status display (e.g., for shell prompt)
@@ -96,7 +96,7 @@ home/modules/claude/
 │   └── context-management.md        # Documentation on context layering
 │
 └── tests/
-    ├── test_launch_project_agent.py # Unit tests for launch script
+    ├── test_claude_agent.py # Unit tests for launch script
     ├── checks.nix                   # Nix derivation checks
     ├── claude-exit.bats             # Shell integration tests
     └── statusline-command.bats      # Status command tests
@@ -110,7 +110,7 @@ Automated project management agents that run in tmux sessions with periodic hear
 
 **Launch ad-hoc:**
 ```bash
-launch-project-agent ~/repo/my-project
+claude-agent ~/repo/my-project
 tmux attach -t my-project
 ```
 
@@ -268,11 +268,11 @@ tests/run.sh                       # Complete test suite
 
 # Specific tests
 cd home/modules/claude/tests
-pytest test_launch_project_agent.py -v
+pytest test_claude_agent.py -v
 ```
 
 Tests cover:
-- **Python** (launch-project-agent behavior)
+- **Python** (claude-agent behavior)
 - **Nix** (module syntax, option validation)
 - **Shell** (status scripts, lifecycle commands)
 
