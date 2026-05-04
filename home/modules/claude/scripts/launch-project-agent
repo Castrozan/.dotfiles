@@ -392,30 +392,56 @@ def send_bootstrap_prompt(
         os.unlink(bootstrap_file)
 
 
-def parse_skill_source_directories_from_environment_variable() -> list[Path]:
-    raw_value = os.environ.get("PROJECT_AGENT_SKILL_DIRECTORIES", "")
-    if not raw_value:
-        return []
-    return [Path(entry).expanduser() for entry in raw_value.split(":") if entry]
+SKILL_DISCOVERY_PRUNED_CHILD_DIRECTORY_NAMES = frozenset(
+    {"node_modules", "__pycache__", "target", "dist", "build", "venv"}
+)
 
 
-def discover_skill_subdirectories_with_skill_markdown(
-    skill_source_directory: Path,
+def is_child_directory_pruned_from_skill_discovery(child_directory_name: str) -> bool:
+    if child_directory_name.startswith("."):
+        return True
+    if child_directory_name in SKILL_DISCOVERY_PRUNED_CHILD_DIRECTORY_NAMES:
+        return True
+    return False
+
+
+def discover_skill_directories_in_project_tree(
+    project_directory: Path,
 ) -> list[Path]:
-    if not skill_source_directory.is_dir():
+    if not project_directory.is_dir():
         return []
+    resolved_project_directory = project_directory.resolve()
+    if resolved_project_directory == Path.home().resolve():
+        return []
+    discovered_skill_directories: list[Path] = []
+    for (
+        currently_walked_directory_path,
+        child_directory_names_to_descend,
+        child_file_names_in_currently_walked_directory,
+    ) in os.walk(resolved_project_directory):
+        child_directory_names_to_descend[:] = [
+            child_directory_name
+            for child_directory_name in child_directory_names_to_descend
+            if not is_child_directory_pruned_from_skill_discovery(child_directory_name)
+        ]
+        if "SKILL.md" in child_file_names_in_currently_walked_directory:
+            discovered_skill_directories.append(Path(currently_walked_directory_path))
     return sorted(
-        child
-        for child in skill_source_directory.iterdir()
-        if child.is_dir() and (child / "SKILL.md").is_file()
+        discovered_skill_directories,
+        key=lambda discovered_skill_directory: (
+            len(
+                discovered_skill_directory.relative_to(resolved_project_directory).parts
+            ),
+            str(discovered_skill_directory.relative_to(resolved_project_directory)),
+        ),
     )
 
 
 def rebuild_skills_shadow_directory_with_symlinks(
     pm_directory: Path,
-    skill_source_directories: list[Path],
+    discovered_skill_directories: list[Path],
 ) -> Path | None:
-    if not skill_source_directories:
+    if not discovered_skill_directories:
         return None
     shadow_root_directory = pm_directory / "skills-shadow"
     shadow_skills_directory = shadow_root_directory / ".claude" / "skills"
@@ -423,32 +449,19 @@ def rebuild_skills_shadow_directory_with_symlinks(
         shutil.rmtree(shadow_root_directory)
     shadow_skills_directory.mkdir(parents=True)
     seen_skill_names: set[str] = set()
-    for source_directory in skill_source_directories:
-        if not source_directory.is_dir():
-            print(
-                f"Warning: skill source directory not found: {source_directory}",
-                file=sys.stderr,
-            )
+    duplicate_skill_count = 0
+    for skill_directory in discovered_skill_directories:
+        skill_name = skill_directory.name
+        if skill_name in seen_skill_names:
+            duplicate_skill_count += 1
             continue
-        skill_subdirectories = discover_skill_subdirectories_with_skill_markdown(
-            source_directory
+        seen_skill_names.add(skill_name)
+        (shadow_skills_directory / skill_name).symlink_to(skill_directory)
+    if duplicate_skill_count > 0:
+        print(
+            f"  Skipped {duplicate_skill_count} duplicate skill(s) (first occurrence wins by depth, then path)",
+            file=sys.stderr,
         )
-        if not skill_subdirectories:
-            print(
-                f"Warning: no skills with SKILL.md found in {source_directory}",
-                file=sys.stderr,
-            )
-            continue
-        for skill_directory in skill_subdirectories:
-            skill_name = skill_directory.name
-            if skill_name in seen_skill_names:
-                print(
-                    f"Warning: skipping duplicate skill '{skill_name}' from {source_directory}",
-                    file=sys.stderr,
-                )
-                continue
-            seen_skill_names.add(skill_name)
-            (shadow_skills_directory / skill_name).symlink_to(skill_directory)
     return shadow_root_directory
 
 
@@ -638,11 +651,11 @@ def main() -> None:
             ]
             if path is not None
         ]
-        skill_source_directories = (
-            parse_skill_source_directories_from_environment_variable()
+        discovered_skill_directories = discover_skill_directories_in_project_tree(
+            project_directory
         )
         skills_shadow_directory = rebuild_skills_shadow_directory_with_symlinks(
-            pm_directory, skill_source_directories
+            pm_directory, discovered_skill_directories
         )
         additional_directories = (
             [skills_shadow_directory] if skills_shadow_directory is not None else []

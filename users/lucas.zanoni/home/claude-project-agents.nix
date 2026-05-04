@@ -7,9 +7,6 @@ in
     ai-first-initiative = {
       projectDirectory = "${homeDirectory}/repo/ai-first-initiative";
       model = "opus";
-      skillSourceDirectories = [
-        "${homeDirectory}/repo/aplicacoes-atendimento-triage/packages"
-      ];
     };
     esfinge = {
       projectDirectory = "${homeDirectory}/repo/esfinge";

@@ -37,9 +37,6 @@ let
       ${lib.optionalString (
         agent.extraInstructionsFile != null
       ) ''export PROJECT_AGENT_EXTRA_INSTRUCTIONS="${agent.extraInstructionsFile}"''}
-      ${lib.optionalString (agent.skillSourceDirectories != [ ])
-        ''export PROJECT_AGENT_SKILL_DIRECTORIES="${lib.concatStringsSep ":" agent.skillSourceDirectories}"''
-      }
       export CLAUDE_BINARY_PATH="${config.claude.package}/bin/claude"
       exec ${pkgs.python312}/bin/python3 ${./scripts/launch-project-agent} \
         ${lib.escapeShellArg agent.projectDirectory} \
@@ -98,11 +95,6 @@ in
             type = lib.types.nullOr lib.types.path;
             default = null;
             description = "Path to project-specific instructions file appended after the base PM instructions";
-          };
-          skillSourceDirectories = lib.mkOption {
-            type = lib.types.listOf lib.types.str;
-            default = [ ];
-            description = "Absolute paths to directories whose subdirectories contain SKILL.md. Symlinked into a shadow .claude/skills/ tree and exposed to claude via --add-dir.";
           };
         };
       }
