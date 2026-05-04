@@ -165,3 +165,192 @@ class TestLoadOrCreateAgentConfig:
         config = mod.load_or_create_agent_config(tmp_path, "myproject")
         assert config["name"] == "custom"
         assert config["model"] == "sonnet"
+
+
+class TestIsChildDirectoryPrunedFromSkillDiscovery:
+    def test_prunes_hidden_directories(self):
+        assert mod.is_child_directory_pruned_from_skill_discovery(".git") is True
+        assert mod.is_child_directory_pruned_from_skill_discovery(".pm") is True
+        assert mod.is_child_directory_pruned_from_skill_discovery(".claude") is True
+
+    def test_prunes_known_build_and_cache_directories(self):
+        for pruned_directory_name in (
+            "node_modules",
+            "__pycache__",
+            "target",
+            "dist",
+            "build",
+            "venv",
+        ):
+            assert (
+                mod.is_child_directory_pruned_from_skill_discovery(
+                    pruned_directory_name
+                )
+                is True
+            )
+
+    def test_keeps_regular_directories(self):
+        assert mod.is_child_directory_pruned_from_skill_discovery("packages") is False
+        assert mod.is_child_directory_pruned_from_skill_discovery("src") is False
+        assert mod.is_child_directory_pruned_from_skill_discovery("skills") is False
+
+
+class TestDiscoverSkillDirectoriesInProjectTree:
+    def test_returns_empty_for_nonexistent_directory(self, tmp_path):
+        assert (
+            mod.discover_skill_directories_in_project_tree(tmp_path / "missing") == []
+        )
+
+    def test_refuses_to_walk_home_directory(self, tmp_path, monkeypatch):
+        fake_home_directory = tmp_path / "fake-home"
+        fake_home_directory.mkdir()
+        nested_skill_directory = fake_home_directory / "project" / "nested-skill"
+        nested_skill_directory.mkdir(parents=True)
+        (nested_skill_directory / "SKILL.md").write_text("---\nname: nested\n---\n")
+        monkeypatch.setenv("HOME", str(fake_home_directory))
+
+        assert mod.discover_skill_directories_in_project_tree(fake_home_directory) == []
+
+    def test_finds_skill_at_project_root(self, tmp_path):
+        (tmp_path / "SKILL.md").write_text("---\nname: root\n---\n")
+        discovered = mod.discover_skill_directories_in_project_tree(tmp_path)
+        assert discovered == [tmp_path.resolve()]
+
+    def test_finds_skills_at_multiple_depths(self, tmp_path):
+        first_skill_directory = tmp_path / "packages" / "first-skill"
+        first_skill_directory.mkdir(parents=True)
+        (first_skill_directory / "SKILL.md").write_text("---\nname: first\n---\n")
+        deeper_skill_directory = tmp_path / "cmd" / "agent" / "skills" / "deeper-skill"
+        deeper_skill_directory.mkdir(parents=True)
+        (deeper_skill_directory / "SKILL.md").write_text("---\nname: deeper\n---\n")
+
+        discovered = mod.discover_skill_directories_in_project_tree(tmp_path)
+
+        assert first_skill_directory.resolve() in discovered
+        assert deeper_skill_directory.resolve() in discovered
+
+    def test_skips_hidden_and_pruned_directories(self, tmp_path):
+        visible_skill_directory = tmp_path / "visible-skill"
+        visible_skill_directory.mkdir()
+        (visible_skill_directory / "SKILL.md").write_text("---\nname: visible\n---\n")
+
+        hidden_skill_directory = tmp_path / ".buried" / "hidden-skill"
+        hidden_skill_directory.mkdir(parents=True)
+        (hidden_skill_directory / "SKILL.md").write_text("---\nname: hidden\n---\n")
+
+        node_modules_skill_directory = (
+            tmp_path / "node_modules" / "buried-package-skill"
+        )
+        node_modules_skill_directory.mkdir(parents=True)
+        (node_modules_skill_directory / "SKILL.md").write_text(
+            "---\nname: buried\n---\n"
+        )
+
+        discovered = mod.discover_skill_directories_in_project_tree(tmp_path)
+        assert discovered == [visible_skill_directory.resolve()]
+
+    def test_sorts_by_depth_then_path(self, tmp_path):
+        deeper_skill_directory = tmp_path / "a" / "deeper-skill"
+        deeper_skill_directory.mkdir(parents=True)
+        (deeper_skill_directory / "SKILL.md").write_text("---\nname: deeper\n---\n")
+        shallow_skill_directory = tmp_path / "z-shallow-skill"
+        shallow_skill_directory.mkdir()
+        (shallow_skill_directory / "SKILL.md").write_text("---\nname: shallow\n---\n")
+
+        discovered = mod.discover_skill_directories_in_project_tree(tmp_path)
+        assert discovered == [
+            shallow_skill_directory.resolve(),
+            deeper_skill_directory.resolve(),
+        ]
+
+
+class TestRebuildSkillsShadowDirectoryWithSymlinks:
+    def test_returns_none_for_empty_input(self, tmp_path):
+        assert mod.rebuild_skills_shadow_directory_with_symlinks(tmp_path, []) is None
+
+    def test_creates_shadow_with_symlinks_named_by_basename(self, tmp_path):
+        first_skill_directory = tmp_path / "source" / "first-skill"
+        first_skill_directory.mkdir(parents=True)
+        (first_skill_directory / "SKILL.md").write_text("---\nname: first\n---\n")
+        second_skill_directory = tmp_path / "source" / "second-skill"
+        second_skill_directory.mkdir(parents=True)
+        (second_skill_directory / "SKILL.md").write_text("---\nname: second\n---\n")
+
+        pm_directory = tmp_path / ".pm"
+        pm_directory.mkdir()
+
+        shadow_root = mod.rebuild_skills_shadow_directory_with_symlinks(
+            pm_directory, [first_skill_directory, second_skill_directory]
+        )
+
+        shadow_skills_directory = shadow_root / ".claude" / "skills"
+        assert shadow_root == pm_directory / "skills-shadow"
+        first_symlink = shadow_skills_directory / "first-skill"
+        second_symlink = shadow_skills_directory / "second-skill"
+        assert first_symlink.is_symlink()
+        assert second_symlink.is_symlink()
+        assert first_symlink.resolve() == first_skill_directory.resolve()
+        assert second_symlink.resolve() == second_skill_directory.resolve()
+
+    def test_dedups_by_basename_first_occurrence_wins(self, tmp_path):
+        winning_skill_directory = tmp_path / "primary" / "duplicate-name"
+        winning_skill_directory.mkdir(parents=True)
+        (winning_skill_directory / "SKILL.md").write_text("---\nname: winner\n---\n")
+        losing_skill_directory = tmp_path / "secondary" / "duplicate-name"
+        losing_skill_directory.mkdir(parents=True)
+        (losing_skill_directory / "SKILL.md").write_text("---\nname: loser\n---\n")
+
+        pm_directory = tmp_path / ".pm"
+        pm_directory.mkdir()
+
+        shadow_root = mod.rebuild_skills_shadow_directory_with_symlinks(
+            pm_directory, [winning_skill_directory, losing_skill_directory]
+        )
+
+        deduplicated_symlink = shadow_root / ".claude" / "skills" / "duplicate-name"
+        assert deduplicated_symlink.resolve() == winning_skill_directory.resolve()
+        assert len(list((shadow_root / ".claude" / "skills").iterdir())) == 1
+
+    def test_removes_existing_shadow_before_rebuild(self, tmp_path):
+        pm_directory = tmp_path / ".pm"
+        pm_directory.mkdir()
+        stale_shadow_directory = pm_directory / "skills-shadow"
+        stale_shadow_directory.mkdir()
+        stale_marker_file = stale_shadow_directory / "stale-marker.txt"
+        stale_marker_file.write_text("from a previous run")
+
+        fresh_skill_directory = tmp_path / "source" / "fresh-skill"
+        fresh_skill_directory.mkdir(parents=True)
+        (fresh_skill_directory / "SKILL.md").write_text("---\nname: fresh\n---\n")
+
+        mod.rebuild_skills_shadow_directory_with_symlinks(
+            pm_directory, [fresh_skill_directory]
+        )
+
+        assert not stale_marker_file.exists()
+        assert (
+            pm_directory / "skills-shadow" / ".claude" / "skills" / "fresh-skill"
+        ).is_symlink()
+
+
+class TestBuildClaudeLaunchCommandAdditionalDirectories:
+    def test_appends_add_dir_flag_for_each_additional_directory(self):
+        cmd = mod.build_claude_launch_command(
+            "opus",
+            "myproject",
+            "abc-123",
+            resume_existing_session=False,
+            additional_directories=[
+                Path("/tmp/first-shadow"),
+                Path("/tmp/second-shadow"),
+            ],
+        )
+        assert cmd.count("--add-dir") == 2
+        assert "/tmp/first-shadow" in cmd
+        assert "/tmp/second-shadow" in cmd
+
+    def test_omits_add_dir_when_no_additional_directories(self):
+        cmd = mod.build_claude_launch_command(
+            "opus", "myproject", "abc-123", resume_existing_session=False
+        )
+        assert "--add-dir" not in cmd
