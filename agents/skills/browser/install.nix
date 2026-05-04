@@ -40,12 +40,37 @@ let
         fi
       fi
     '';
+
+  patchSupergatewayUnhandledChildResponseRejection = pkgs.writeShellScript "patch-supergateway-unhandled-child-response-rejection" ''
+    set -euo pipefail
+    TARGET="${supergatewayNpmPrefix}/lib/node_modules/supergateway/dist/gateways/stdioToStatefulStreamableHttp.js"
+
+    if [ ! -f "$TARGET" ]; then
+      echo "supergateway file missing, skipping patch: $TARGET" >&2
+      exit 0
+    fi
+
+    if grep -qF 'transport.send(jsonMsg).catch(' "$TARGET"; then
+      exit 0
+    fi
+
+    if ! grep -qF 'transport.send(jsonMsg);' "$TARGET"; then
+      echo "supergateway upstream layout changed at $TARGET; refusing to patch blindly" >&2
+      exit 1
+    fi
+
+    ${pkgs.gnused}/bin/sed -i 's|transport\.send(jsonMsg);|transport.send(jsonMsg).catch((unhandledChildResponseError) => logger.error(`Failed to send to StreamableHttp`, unhandledChildResponseError));|' "$TARGET"
+  '';
+
+  installAndPatchSupergateway = pkgs.writeShellScript "install-and-patch-supergateway" ''
+    set -euo pipefail
+    ${installNpmPackageScript "supergateway" supergatewayVersion supergatewayNpmPrefix}
+    ${patchSupergatewayUnhandledChildResponseRejection}
+  '';
 in
 {
   installChromeDevtoolsMcpViaNpm =
     installNpmPackageScript "chrome-devtools-mcp" chromeDevtoolsMcpVersion
       chromeDevtoolsMcpNpmPrefix;
-  installSupergatewayViaNpm =
-    installNpmPackageScript "supergateway" supergatewayVersion
-      supergatewayNpmPrefix;
+  installSupergatewayViaNpm = installAndPatchSupergateway;
 }
