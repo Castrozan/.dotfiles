@@ -10,8 +10,8 @@ in
   home.activation.setupSophosDisableNoisyPlugins = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     PATH="/usr/bin:/usr/sbin:/sbin:$PATH"
 
-    if [ ! -x /opt/sophos-spl/bin/wdctl ]; then
-      $VERBOSE_ECHO "sophos-spl not installed, skipping noisy plugin disabler"
+    if ! systemctl list-unit-files sophos-spl.service --no-legend 2>/dev/null | grep -q sophos-spl; then
+      $VERBOSE_ECHO "sophos-spl.service not present, skipping noisy plugin disabler"
     elif [ -f "${installedSystemdUnitPath}" ] \
       && [ -x "${installedStopScriptPath}" ] \
       && cmp -s "${stopScriptSourcePath}" "${installedStopScriptPath}" \
