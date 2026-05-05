@@ -7,6 +7,15 @@ readonly SOPHOS_THREAT_DETECTOR_BINARY=/opt/sophos-spl/plugins/av/sbin/sophos_th
 readonly SECONDS_TO_WAIT_FOR_PLUGIN_REGISTRATION=5
 readonly SECONDS_TO_WAIT_BETWEEN_TERM_AND_KILL=2
 
+readonly NOISY_PLUGINS_TO_STOP=(
+	av
+	on_access_process
+	threat_detector
+	scheduled_scan_ctl
+	safestore
+	runtimedetections
+)
+
 main() {
 	if ! _sophos_is_installed; then
 		echo "sophos-spl not installed at /opt/sophos-spl, nothing to do"
@@ -15,12 +24,13 @@ main() {
 
 	sleep "$SECONDS_TO_WAIT_FOR_PLUGIN_REGISTRATION"
 
-	_stop_plugin_via_watchdog av
-	_stop_plugin_via_watchdog runtimedetections
+	for plugin_name in "${NOISY_PLUGINS_TO_STOP[@]}"; do
+		_stop_plugin_via_watchdog "$plugin_name"
+	done
 
 	_terminate_orphaned_threat_detector
 
-	echo "Sophos noisy plugins stopped: av, runtimedetections, sophos_threat_detector"
+	echo "Sophos noisy plugins stopped: ${NOISY_PLUGINS_TO_STOP[*]}"
 }
 
 _sophos_is_installed() {
