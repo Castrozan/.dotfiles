@@ -9,6 +9,7 @@
     ./home/session-vars.nix
     ./home/claude-discord-agents.nix
     ./home/claude-project-agents.nix
+    ./home/sophos-disable-plugins
 
     ../../home/core.nix
 

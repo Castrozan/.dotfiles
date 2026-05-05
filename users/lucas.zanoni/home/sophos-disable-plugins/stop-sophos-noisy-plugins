@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+readonly SOPHOS_WATCHDOG_CONTROL=/opt/sophos-spl/bin/wdctl
+readonly SOPHOS_THREAT_DETECTOR_BINARY=/opt/sophos-spl/plugins/av/sbin/sophos_threat_detector
+readonly SECONDS_TO_WAIT_FOR_PLUGIN_REGISTRATION=5
+readonly SECONDS_TO_WAIT_BETWEEN_TERM_AND_KILL=2
+
+main() {
+	if ! _sophos_is_installed; then
+		echo "sophos-spl not installed at /opt/sophos-spl, nothing to do"
+		exit 0
+	fi
+
+	sleep "$SECONDS_TO_WAIT_FOR_PLUGIN_REGISTRATION"
+
+	_stop_plugin_via_watchdog av
+	_stop_plugin_via_watchdog runtimedetections
+
+	_terminate_orphaned_threat_detector
+
+	echo "Sophos noisy plugins stopped: av, runtimedetections, sophos_threat_detector"
+}
+
+_sophos_is_installed() {
+	[ -x "$SOPHOS_WATCHDOG_CONTROL" ]
+}
+
+_stop_plugin_via_watchdog() {
+	local plugin_name="$1"
+	if ! "$SOPHOS_WATCHDOG_CONTROL" stop "$plugin_name"; then
+		echo "wdctl stop $plugin_name returned non-zero (already stopped or unknown plugin)"
+	fi
+}
+
+_terminate_orphaned_threat_detector() {
+	if ! pgrep -f "$SOPHOS_THREAT_DETECTOR_BINARY" >/dev/null; then
+		return 0
+	fi
+	pkill -TERM -f "$SOPHOS_THREAT_DETECTOR_BINARY" || true
+	sleep "$SECONDS_TO_WAIT_BETWEEN_TERM_AND_KILL"
+	pkill -KILL -f "$SOPHOS_THREAT_DETECTOR_BINARY" || true
+}
+
+main "$@"
