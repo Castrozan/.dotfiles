@@ -4,7 +4,6 @@ import hashlib
 import os
 import shutil
 import sys
-import time
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -17,7 +16,6 @@ MINIMAL_GLOBAL_CLAUDE_RUNTIME_ENTRY_NAMES = (
 )
 DEFAULT_INJECTED_GLOBAL_SKILL_DIRECTORY_NAMES = ("core", "personal")
 WORKSPACE_CREDENTIALS_FILE_NAME = ".credentials.json"
-CREDENTIALS_SANDBOX_TO_GLOBAL_SYNC_INTERVAL_SECONDS = 2.0
 SKILL_DISCOVERY_PRUNED_CHILD_DIRECTORY_NAMES = frozenset(
     {"node_modules", "__pycache__", "target", "dist", "build", "venv"}
 )
@@ -215,69 +213,14 @@ def link_minimal_global_runtime_entries(
             )
 
 
-def seed_workspace_credentials_file_from_global(
+def link_workspace_credentials_file_to_global(
     workspace_config_directory: Path,
     global_claude_credentials_file: Path,
 ) -> None:
-    if not global_claude_credentials_file.is_file():
-        return
     workspace_credentials_file = (
         workspace_config_directory / WORKSPACE_CREDENTIALS_FILE_NAME
     )
-    shutil.copy2(global_claude_credentials_file, workspace_credentials_file)
-    os.chmod(workspace_credentials_file, 0o600)
-
-
-def atomically_replace_global_credentials_file_with_workspace_copy(
-    workspace_credentials_file: Path,
-    global_claude_credentials_file: Path,
-) -> None:
-    temporary_global_credentials_file = global_claude_credentials_file.with_name(
-        global_claude_credentials_file.name + ".sync.tmp"
-    )
-    shutil.copy2(workspace_credentials_file, temporary_global_credentials_file)
-    os.chmod(temporary_global_credentials_file, 0o600)
-    os.replace(temporary_global_credentials_file, global_claude_credentials_file)
-
-
-def fork_credentials_sandbox_to_global_sync_watcher_process(
-    workspace_credentials_file: Path,
-    global_claude_credentials_file: Path,
-    polling_interval_seconds: float,
-) -> None:
-    parent_process_id_to_watch_for_termination = os.getpid()
-    forked_child_process_id = os.fork()
-    if forked_child_process_id != 0:
-        return
-
-    os.setsid()
-    last_synced_credentials_modification_time: float = -1.0
-    while True:
-        try:
-            os.kill(parent_process_id_to_watch_for_termination, 0)
-        except ProcessLookupError:
-            os._exit(0)
-        try:
-            current_credentials_modification_time = (
-                workspace_credentials_file.stat().st_mtime
-            )
-        except FileNotFoundError:
-            time.sleep(polling_interval_seconds)
-            continue
-        if (
-            current_credentials_modification_time
-            != last_synced_credentials_modification_time
-        ):
-            try:
-                atomically_replace_global_credentials_file_with_workspace_copy(
-                    workspace_credentials_file, global_claude_credentials_file
-                )
-                last_synced_credentials_modification_time = (
-                    current_credentials_modification_time
-                )
-            except OSError:
-                pass
-        time.sleep(polling_interval_seconds)
+    ensure_directory_symlink(workspace_credentials_file, global_claude_credentials_file)
 
 
 def ensure_workspace_claude_state_file(
@@ -358,7 +301,7 @@ def prepare_workspace_claude_launch_plan(
     link_minimal_global_runtime_entries(
         temporary_workspace_directory, global_claude_config_directory
     )
-    seed_workspace_credentials_file_from_global(
+    link_workspace_credentials_file_to_global(
         temporary_workspace_directory,
         global_claude_config_directory / WORKSPACE_CREDENTIALS_FILE_NAME,
     )
@@ -446,7 +389,6 @@ def recreate_workspace_directory(workspace_directory: Path) -> None:
 def exec_workspace_scoped_claude_session(
     workspace_claude_launch_plan: WorkspaceClaudeLaunchPlan,
     remaining_claude_arguments: list[str],
-    global_claude_credentials_file: Path,
 ) -> None:
     claude_environment = os.environ.copy()
     claude_environment["CLAUDE_CONFIG_DIR"] = str(
@@ -454,11 +396,6 @@ def exec_workspace_scoped_claude_session(
     )
     claude_environment["CLAUDE_CONFIG"] = str(
         workspace_claude_launch_plan.config_directory / ".claude.json"
-    )
-    fork_credentials_sandbox_to_global_sync_watcher_process(
-        workspace_claude_launch_plan.config_directory / WORKSPACE_CREDENTIALS_FILE_NAME,
-        global_claude_credentials_file,
-        CREDENTIALS_SANDBOX_TO_GLOBAL_SYNC_INTERVAL_SECONDS,
     )
     full_command_arguments = (
         workspace_claude_launch_plan.command_arguments + remaining_claude_arguments
@@ -511,7 +448,6 @@ def main() -> None:
         exec_workspace_scoped_claude_session(
             workspace_claude_launch_plan,
             workspace_claude_wrapper_arguments.remaining_claude_arguments,
-            global_claude_config_directory / WORKSPACE_CREDENTIALS_FILE_NAME,
         )
     except WorkspaceLaunchConfigurationError as workspace_launch_configuration_error:
         print(
