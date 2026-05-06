@@ -10,12 +10,12 @@
     ./home/claude-discord-agents.nix
     ./home/claude-project-agents.nix
     ./home/sophos-disable-plugins
+    ./home/forticlient-disable-update
 
     ../../home/core.nix
 
     ../../home/modules/agents
     ../../home/modules/security
-    ../../home/modules/security/sophos-monitor
     ../../home/modules/audio
     ../../home/modules/claude
     ../../home/modules/codex
