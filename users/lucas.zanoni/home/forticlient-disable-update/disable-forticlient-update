@@ -30,12 +30,12 @@ _forticlient_is_installed() {
 }
 
 _kill_any_running_update_process() {
-	if ! pgrep -x update -f "$FORTICLIENT_UPDATE_BINARY" >/dev/null; then
+	if ! pgrep -f "^$FORTICLIENT_UPDATE_BINARY( |$)" >/dev/null; then
 		return 0
 	fi
-	pkill -TERM -f "^$FORTICLIENT_UPDATE_BINARY" || true
+	pkill -TERM -f "^$FORTICLIENT_UPDATE_BINARY( |$)" || true
 	sleep 2
-	pkill -KILL -f "^$FORTICLIENT_UPDATE_BINARY" || true
+	pkill -KILL -f "^$FORTICLIENT_UPDATE_BINARY( |$)" || true
 }
 
 _update_binary_is_already_neutralized() {
