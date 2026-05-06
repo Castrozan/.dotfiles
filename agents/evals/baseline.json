@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-05-02T17:53:23.627383+00:00",
-  "git_commit": "8eb130f3",
+  "generated_at": "2026-05-06T23:19:23.720719+00:00",
+  "git_commit": "312e8782",
   "total_tests": 207,
-  "total_passed": 176,
-  "total_failed": 31,
-  "pass_rate": 0.8502,
+  "total_passed": 195,
+  "total_failed": 12,
+  "pass_rate": 0.942,
   "categories": {
     "other": {
-      "passed": 77,
-      "failed": 8,
+      "passed": 82,
+      "failed": 3,
       "tests": [
         {
           "name": "worktrees_knows_builtin_flag",
@@ -180,7 +180,7 @@
         },
         {
           "name": "pm_cost_discipline",
-          "passed": true
+          "passed": false
         },
         {
           "name": "pm_refuses_direct_coding_under_pressure",
@@ -192,7 +192,7 @@
         },
         {
           "name": "pm_does_not_fix_executor_mistakes_itself",
-          "passed": false
+          "passed": true
         },
         {
           "name": "pm_does_not_trust_executor_self_report",
@@ -228,11 +228,11 @@
         },
         {
           "name": "pm_delegates_codebase_exploration",
-          "passed": true
+          "passed": false
         },
         {
           "name": "pm_does_not_ask_want_me_to_proceed",
-          "passed": false
+          "passed": true
         },
         {
           "name": "pm_says_standing_by_when_queue_empty",
@@ -268,7 +268,7 @@
         },
         {
           "name": "git_history_never_uses_repeated_grep",
-          "passed": false
+          "passed": true
         },
         {
           "name": "git_history_starts_with_layer1",
@@ -336,25 +336,25 @@
         },
         {
           "name": "worktrees_never_checkout_main",
-          "passed": false
+          "passed": true
         },
         {
           "name": "worktrees_pr_from_main_directory",
-          "passed": false
+          "passed": true
         },
         {
           "name": "test_double_test_protocol",
-          "passed": false
+          "passed": true
         },
         {
           "name": "test_knows_tiers",
-          "passed": false
+          "passed": true
         }
       ]
     },
     "compliance": {
-      "passed": 31,
-      "failed": 5,
+      "passed": 32,
+      "failed": 4,
       "tests": [
         {
           "name": "delegation_multi_agent_implementation_prefers_teams",
@@ -366,7 +366,7 @@
         },
         {
           "name": "delegation_bare_subagent_acceptable_for_research",
-          "passed": false
+          "passed": true
         },
         {
           "name": "delegation_multiple_steps_requires_teams",
@@ -462,7 +462,7 @@
         },
         {
           "name": "workflow_review_uses_parallel_subagents",
-          "passed": true
+          "passed": false
         },
         {
           "name": "workflow_review_skipped_for_trivial_changes",
@@ -498,13 +498,13 @@
         },
         {
           "name": "test_first_before_fix",
-          "passed": false
+          "passed": true
         }
       ]
     },
     "routing": {
-      "passed": 48,
-      "failed": 12,
+      "passed": 55,
+      "failed": 5,
       "tests": [
         {
           "name": "routing_to_desktop_keyboard_typing",
@@ -520,7 +520,7 @@
         },
         {
           "name": "routing_to_desktop_mouse_click",
-          "passed": true
+          "passed": false
         },
         {
           "name": "routing_to_media_volume_adjustment",
@@ -532,7 +532,7 @@
         },
         {
           "name": "routing_to_media_skip_track",
-          "passed": false
+          "passed": true
         },
         {
           "name": "routing_to_openclaw_agent_creation",
@@ -560,11 +560,11 @@
         },
         {
           "name": "routing_to_comms_vtuber_avatar",
-          "passed": false
+          "passed": true
         },
         {
           "name": "routing_to_comms_twitter_scrape",
-          "passed": false
+          "passed": true
         },
         {
           "name": "routing_to_session_deep_work",
@@ -592,7 +592,7 @@
         },
         {
           "name": "routing_to_browser_electron_app",
-          "passed": true
+          "passed": false
         },
         {
           "name": "routing_to_browser_interactive_scrape",
@@ -632,7 +632,7 @@
         },
         {
           "name": "routing_to_rebuild_apply_changes",
-          "passed": false
+          "passed": true
         },
         {
           "name": "routing_to_test_verification",
@@ -644,11 +644,11 @@
         },
         {
           "name": "routing_to_review_skill_creation",
-          "passed": false
+          "passed": true
         },
         {
           "name": "routing_to_review_skill_routing_failure",
-          "passed": false
+          "passed": true
         },
         {
           "name": "routing_to_notify_task_completion",
@@ -664,7 +664,7 @@
         },
         {
           "name": "routing_to_review_compress_output",
-          "passed": false
+          "passed": true
         },
         {
           "name": "routing_to_devenv_shell_setup",
@@ -672,7 +672,7 @@
         },
         {
           "name": "routing_to_phone_status_battery",
-          "passed": false
+          "passed": true
         },
         {
           "name": "routing_to_ponto_time_tracking",
@@ -728,7 +728,7 @@
         },
         {
           "name": "routing_ambiguous_browser_vs_comms_tweet_scraping",
-          "passed": false
+          "passed": true
         },
         {
           "name": "routing_to_comms_bare_xcom_url",
@@ -787,8 +787,8 @@
       ]
     },
     "navigation": {
-      "passed": 12,
-      "failed": 6,
+      "passed": 18,
+      "failed": 0,
       "tests": [
         {
           "name": "desktop_routes_to_keyboard",
@@ -840,27 +840,27 @@
         },
         {
           "name": "session_routes_to_deep_work",
-          "passed": false
+          "passed": true
         },
         {
           "name": "session_routes_to_workspace",
-          "passed": false
+          "passed": true
         },
         {
           "name": "session_routes_to_worktrees",
-          "passed": false
+          "passed": true
         },
         {
           "name": "session_routes_to_tmux",
-          "passed": false
+          "passed": true
         },
         {
           "name": "session_routes_to_restart",
-          "passed": false
+          "passed": true
         },
         {
           "name": "session_routes_to_exit",
-          "passed": false
+          "passed": true
         }
       ]
     }
