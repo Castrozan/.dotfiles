@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+readonly FORTICLIENT_UPDATE_BINARY=/opt/forticlient/update
+readonly FORTICLIENT_UPDATE_BINARY_BACKUP=/opt/forticlient/update.original
+readonly FORTICLIENT_UPDATE_NOOP_SHIM_PATH=/opt/forticlient/update.noop-shim
+
+main() {
+	if ! _forticlient_is_installed; then
+		echo "forticlient not installed at /opt/forticlient, nothing to do"
+		exit 0
+	fi
+
+	_kill_any_running_update_process
+
+	if _update_binary_is_already_neutralized; then
+		echo "forticlient update binary already neutralized"
+		exit 0
+	fi
+
+	_back_up_original_update_binary
+	_install_noop_shim_in_place_of_update_binary
+
+	echo "forticlient update binary neutralized at $FORTICLIENT_UPDATE_BINARY"
+}
+
+_forticlient_is_installed() {
+	[ -d /opt/forticlient ] && [ -e "$FORTICLIENT_UPDATE_BINARY" ]
+}
+
+_kill_any_running_update_process() {
+	if ! pgrep -x update -f "$FORTICLIENT_UPDATE_BINARY" >/dev/null; then
+		return 0
+	fi
+	pkill -TERM -f "^$FORTICLIENT_UPDATE_BINARY" || true
+	sleep 2
+	pkill -KILL -f "^$FORTICLIENT_UPDATE_BINARY" || true
+}
+
+_update_binary_is_already_neutralized() {
+	[ -f "$FORTICLIENT_UPDATE_BINARY_BACKUP" ] &&
+		head -c 2 "$FORTICLIENT_UPDATE_BINARY" 2>/dev/null | grep -q '^#!'
+}
+
+_back_up_original_update_binary() {
+	if [ ! -f "$FORTICLIENT_UPDATE_BINARY_BACKUP" ]; then
+		cp -a "$FORTICLIENT_UPDATE_BINARY" "$FORTICLIENT_UPDATE_BINARY_BACKUP"
+	fi
+}
+
+_install_noop_shim_in_place_of_update_binary() {
+	cat >"$FORTICLIENT_UPDATE_NOOP_SHIM_PATH" <<'SHIM'
+#!/bin/sh
+exit 0
+SHIM
+	chmod 0755 "$FORTICLIENT_UPDATE_NOOP_SHIM_PATH"
+	mv -f "$FORTICLIENT_UPDATE_NOOP_SHIM_PATH" "$FORTICLIENT_UPDATE_BINARY"
+}
+
+main "$@"

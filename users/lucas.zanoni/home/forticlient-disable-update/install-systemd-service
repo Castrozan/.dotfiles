@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+INSTALLER_SCRIPT_DIRECTORY="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly INSTALLER_SCRIPT_DIRECTORY
+readonly DISABLE_SCRIPT_SOURCE_PATH="$INSTALLER_SCRIPT_DIRECTORY/disable-forticlient-update"
+readonly DISABLE_SCRIPT_INSTALLED_PATH=/usr/local/sbin/forticlient-disable-update
+readonly SYSTEMD_UNIT_INSTALLED_PATH=/etc/systemd/system/forticlient-disable-update.service
+readonly SYSTEMD_UNIT_NAME=forticlient-disable-update.service
+
+main() {
+	_install_disable_script_to_system_path
+	_write_systemd_unit_file
+	_reload_systemd_and_activate_unit
+	echo "$SYSTEMD_UNIT_NAME installed and active"
+}
+
+_install_disable_script_to_system_path() {
+	sudo install -m 0755 "$DISABLE_SCRIPT_SOURCE_PATH" "$DISABLE_SCRIPT_INSTALLED_PATH"
+}
+
+_write_systemd_unit_file() {
+	sudo tee "$SYSTEMD_UNIT_INSTALLED_PATH" >/dev/null <<UNIT
+[Unit]
+Description=Neutralize FortiClient periodic update binary (CPU hog)
+Requires=forticlient.service
+After=forticlient.service
+PartOf=forticlient.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=$DISABLE_SCRIPT_INSTALLED_PATH
+
+[Install]
+WantedBy=multi-user.target
+UNIT
+}
+
+_reload_systemd_and_activate_unit() {
+	sudo systemctl daemon-reload
+	sudo systemctl enable --now "$SYSTEMD_UNIT_NAME"
+}
+
+main "$@"
