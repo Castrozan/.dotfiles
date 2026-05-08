@@ -12,14 +12,9 @@ codex_developer_instructions = os.environ.get(
         "fast (default), deep, web."
     ),
 )
-chrome_devtools_mcp_command = os.environ.get(
-    "CODEX_CHROME_DEVTOOLS_MCP_COMMAND",
-    "chrome-devtools-mcp",
-)
-chrome_user_data_directory = os.environ.get(
-    "CODEX_CHROME_USER_DATA_DIR",
-    str(pathlib.Path.home() / ".config" / "google-chrome"),
-)
+chrome_devtools_mcp_streamable_http_bridge_url = os.environ[
+    "CODEX_CHROME_DEVTOOLS_MCP_STREAMABLE_HTTP_BRIDGE_URL"
+]
 
 
 def build_trusted_project_entries() -> dict[str, dict[str, str]]:
@@ -46,25 +41,10 @@ def build_trusted_project_entries() -> dict[str, dict[str, str]]:
 
 
 def build_mcp_server_entries() -> dict[str, dict[str, Any]]:
-    devtools_port_file = pathlib.Path(chrome_user_data_directory) / "DevToolsActivePort"
-    chrome_devtools_entry: dict[str, Any] = {
-        "command": chrome_devtools_mcp_command,
-        "args": ["--autoConnect", "--usageStatistics", "false"],
-    }
-    if devtools_port_file.exists():
-        lines = devtools_port_file.read_text().strip().splitlines()
-        if len(lines) >= 2:
-            chrome_devtools_entry = {
-                "command": chrome_devtools_mcp_command,
-                "args": [
-                    "--wsEndpoint",
-                    f"ws://127.0.0.1:{lines[0]}{lines[1]}",
-                    "--usageStatistics",
-                    "false",
-                ],
-            }
     return {
-        "chrome-devtools": chrome_devtools_entry,
+        "chrome-devtools": {
+            "url": chrome_devtools_mcp_streamable_http_bridge_url,
+        },
     }
 
 

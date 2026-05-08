@@ -8,7 +8,7 @@ let
   patchScript = ./patch.py;
   codexDefaultModel = "gpt-5.4";
   codexDeveloperInstructions = "Operate pragmatically: keep diffs small, verify with fast checks, and prefer repo-local truth (AGENTS.md, bin/, home/modules/). Use profiles: fast (default), deep, web.";
-  chromeDevtoolsMcpCommand = "${config.home.homeDirectory}/.local/share/chrome-devtools-mcp-npm/bin/chrome-devtools-mcp";
+  chromeDevtoolsMcpStreamableHttpBridgeUrl = "http://localhost:8767/mcp";
   codexHooksConfig = builtins.toJSON {
     SessionStart = [
       {
@@ -24,8 +24,7 @@ in
   home.activation.codexBaselineConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     CODEX_DEFAULT_MODEL=${lib.escapeShellArg codexDefaultModel} \
     CODEX_DEVELOPER_INSTRUCTIONS=${lib.escapeShellArg codexDeveloperInstructions} \
-    CODEX_CHROME_DEVTOOLS_MCP_COMMAND=${lib.escapeShellArg chromeDevtoolsMcpCommand} \
-    CODEX_CHROME_USER_DATA_DIR="${config.home.homeDirectory}/.config/google-chrome" \
+    CODEX_CHROME_DEVTOOLS_MCP_STREAMABLE_HTTP_BRIDGE_URL=${lib.escapeShellArg chromeDevtoolsMcpStreamableHttpBridgeUrl} \
     ${pkgs.python3}/bin/python3 ${patchScript}
   '';
 
