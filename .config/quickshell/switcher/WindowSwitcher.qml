@@ -137,11 +137,13 @@ Scope {
     }
 
     function selectNextWindow(): void {
+        if (!overlayVisible) { Hyprland.dispatch("submap reset"); return; }
         if (windowList.length === 0) return;
         selectedIndex = (selectedIndex + 1) % windowList.length;
     }
 
     function selectPreviousWindow(): void {
+        if (!overlayVisible) { Hyprland.dispatch("submap reset"); return; }
         if (windowList.length === 0) return;
         selectedIndex = (selectedIndex - 1 + windowList.length) % windowList.length;
     }
