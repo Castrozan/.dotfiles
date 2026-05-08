@@ -134,6 +134,10 @@ def deep_merge(base: dict[str, Any], overlay: dict[str, Any]) -> None:
 
 deep_merge(data, BASELINE)
 
+data.setdefault("mcp_servers", {})["chrome-devtools"] = build_mcp_server_entries()[
+    "chrome-devtools"
+]
+
 
 def toml_quote(value: str) -> str:
     return '"' + value.replace("\\", "\\\\").replace('"', '\\"') + '"'
