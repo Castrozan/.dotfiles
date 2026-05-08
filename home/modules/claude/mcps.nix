@@ -233,9 +233,11 @@ in
 
       Service = {
         Type = "simple";
+        ExecStartPre = "${browserMcp.chromeDevtoolsMcpOrphanReaper}";
         ExecStart = browserMcp.streamableHttpBridgeCommand;
         Restart = "always";
         RestartSec = "3s";
+        MemoryMax = "2G";
         Environment = [
           "PATH=${nixSystemPaths}"
           "HOME=${homeDir}"

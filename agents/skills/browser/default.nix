@@ -52,10 +52,16 @@ let
       --sessionTimeout ${toString chromeDevtoolsStreamableHttpSessionTimeoutMilliseconds} \
       --port ${toString chromeDevtoolsStreamableHttpPort}
   '';
+
+  chromeDevtoolsMcpOrphanReaper = pkgs.writeShellScript "chrome-devtools-mcp-orphan-reaper" ''
+    set -euo pipefail
+    ${pkgs.procps}/bin/pkill -9 -f 'chrome-devtools-mcp-npm/bin/chrome-devtools-mcp' || true
+  '';
 in
 {
   mcpServerStreamableHttpUrl = "http://localhost:${toString chromeDevtoolsStreamableHttpPort}/mcp";
   streamableHttpBridgeCommand = "${chromeDevtoolsStreamableHttpBridgeWrapper}/bin/chrome-devtools-mcp-streamable-http-bridge";
+  inherit chromeDevtoolsMcpOrphanReaper;
   inherit (install) installChromeDevtoolsMcpViaNpm installSupergatewayViaNpm;
   inherit supergatewayBinary;
 
