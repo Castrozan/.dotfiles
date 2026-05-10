@@ -3,6 +3,7 @@
 readonly DOTFILES_ROOT_DIRECTORY="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 readonly DOTFILES_BIN_DIRECTORY="$DOTFILES_ROOT_DIRECTORY/bin"
 readonly DOTFILES_MODULES_DIRECTORY="$DOTFILES_ROOT_DIRECTORY/home/modules"
+readonly DOTFILES_SKILLS_DIRECTORY="$DOTFILES_ROOT_DIRECTORY/agents/skills"
 
 _resolve_script_under_test() {
 	if [ -n "${SCRIPT_UNDER_TEST:-}" ]; then
@@ -20,6 +21,12 @@ _resolve_script_under_test() {
 	domainScriptMatch=$(find "$DOTFILES_MODULES_DIRECTORY" -type f -name "$testFileName" -path "*/scripts/*" 2>/dev/null | head -1)
 	if [ -n "$domainScriptMatch" ]; then
 		echo "$domainScriptMatch"
+		return
+	fi
+	local skillScriptMatch
+	skillScriptMatch=$(find "$DOTFILES_SKILLS_DIRECTORY" -type f -name "$testFileName" -path "*/scripts/*" 2>/dev/null | head -1)
+	if [ -n "$skillScriptMatch" ]; then
+		echo "$skillScriptMatch"
 		return
 	fi
 	echo "$legacyBinPath"
