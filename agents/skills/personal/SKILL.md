@@ -28,7 +28,6 @@ This `personal` skill is also the umbrella for Lucas's personal channels and pla
 - `assistant.md` — autonomous monitoring loop (5-minute heartbeat across Gmail, Calendar, WhatsApp, Google Chat with triage and Discord escalation). Sub-files: `assistant-gmail.md`, `assistant-calendar.md`, `assistant-chat.md`.
 - `chat-monitor.md` — on-demand Google Chat and WhatsApp monitoring and replies (not the full loop).
 - `obsidian.md` — Obsidian vault operations (daily notes, TODO tracking, activity logging, ReadItLater inbox).
-- `comms-google-chat.md`, `comms-twitter.md`, `comms-avatar.md` — communications tooling (Google Chat browser automation and webhooks, Twitter/X scraping and posting, VTuber avatar lip sync and expressions).
 - `ponto.md` — Senior Gestao de Ponto time-entry automation (Chrome DevTools MCP for clock-in marcacoes).
 - `home-assistant.md` — Home Assistant smart home control (Tuya lights via ha-light, Midea AC via ha-ac).
 - `skills/phone-status/SKILL.md` — remote phone status over SSH (battery, charging, uptime, storage).
