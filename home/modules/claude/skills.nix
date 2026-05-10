@@ -1,4 +1,4 @@
-_:
+{ pkgs, ... }:
 let
   dotfilesSkillsDirectory = ../../../agents/skills;
 
@@ -57,8 +57,35 @@ let
       ${coreAgentBodyWithoutFrontmatter}
     '';
   };
+
+  skillNamesWithInstallModule = builtins.filter (
+    skillName: builtins.pathExists (dotfilesSkillsDirectory + "/${skillName}/install/default.nix")
+  ) allSkillNames;
+
+  installModuleAcceptsOnlyPkgs =
+    skillName:
+    let
+      installModule = import (dotfilesSkillsDirectory + "/${skillName}/install");
+      installModuleArgs = builtins.functionArgs installModule;
+    in
+    builtins.length (builtins.attrNames installModuleArgs) == 1 && installModuleArgs ? pkgs;
+
+  skillNamesAutoWiredHere = builtins.filter installModuleAcceptsOnlyPkgs skillNamesWithInstallModule;
+
+  packagesFromSkillInstallModules = builtins.concatLists (
+    map (
+      skillName:
+      let
+        installModule = import (dotfilesSkillsDirectory + "/${skillName}/install") { inherit pkgs; };
+      in
+      installModule.packages or [ ]
+    ) skillNamesAutoWiredHere
+  );
 in
 {
-  home.file =
-    baseGloballyLoadedClaudeSkills // personalVaultClaudeSkills // coreSkillFromAgentInstructions;
+  home = {
+    file =
+      baseGloballyLoadedClaudeSkills // personalVaultClaudeSkills // coreSkillFromAgentInstructions;
+    packages = packagesFromSkillInstallModules;
+  };
 }
