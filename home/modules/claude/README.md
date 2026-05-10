@@ -33,7 +33,7 @@ Then rebuild: `home-manager switch`
 | `default.nix` | Module entry point, imports all submodules |
 | `claude.nix` | Base Claude Code CLI setup (binaries, data directories, environment) |
 | `config.nix` | Home-manager integration and settings |
-| `channels.nix` | Model channel aliases (opus, sonnet, haiku → API model IDs) |
+| `discord-channel/` | Discord-bot Claude Code agents (systemd service, per-agent personas) |
 
 ### Agent Infrastructure
 
@@ -67,7 +67,6 @@ home/modules/claude/
 ├── README.md                        # This file
 ├── default.nix                      # Module imports
 ├── claude.nix                       # Core Claude setup
-├── channels.nix                     # Model channel aliases
 ├── config.nix                       # Settings & home-manager integration
 ├── skills.nix                       # Skill discovery
 ├── external-skill-sets.nix          # External providers
@@ -81,11 +80,17 @@ home/modules/claude/
 ├── project-agent-instructions.md    # PM agent identity & behavior
 │
 ├── scripts/
-│   ├── claude-agent         # Python: creates tmux session + Claude Code
-│   ├── claude-restart               # Restart Claude Code session
-│   ├── claude-exit                  # Gracefully exit Claude Code
-│   ├── statusline-command.sh        # Status display (e.g., for shell prompt)
-│   └── bootstrap-discord-agent-heartbeat  # Discord agent bootstrap (legacy)
+│   ├── claude-agent                 # Python: launches claude with project-agent persona
+│   ├── statusline-command.sh        # Statusline rendered by Claude UI
+│   ├── pre-approve-current-workspace-trust-dialog  # Auto-accepts trust prompt
+│   └── launch-claude-workspace-session  # Bootstrap for external skill workspaces
+│
+├── discord-channel/
+│   ├── default.nix                  # Discord-bot agents module
+│   └── scripts/
+│       ├── claude-discord-agents-service     # systemd service entrypoint
+│       ├── discord-agent-wrapper             # Per-agent tmux wrapper
+│       └── bootstrap-discord-agent-heartbeat # Heartbeat setup
 │
 ├── project-agent/
 │   ├── instructions.md              # Per-project agent role (legacy location)
@@ -125,17 +130,18 @@ home-manager switch
 systemctl --user restart claude-project-agent-my-project
 ```
 
-### 2. Model Channels
+### 2. Discord-Bot Agents
 
-Unified model aliases that map to actual API IDs:
+Declarative Discord-bot Claude Code agents, each running as a window in the `claude-discord` tmux session under a systemd user service.
 
-```bash
-claude --model opus       # Uses latest opus variant
-claude --model sonnet     # Uses latest sonnet variant
-claude --model haiku      # Uses latest haiku variant
+```nix
+claude.discordChannel.agents = {
+  robson = { model = "opus"; persona = "..."; };
+  jenny = { model = "sonnet"; persona = "..."; };
+};
 ```
 
-Configured in `channels.nix`, editable without CLI changes.
+Configured in `discord-channel/default.nix`.
 
 ### 3. Skills & Routing
 

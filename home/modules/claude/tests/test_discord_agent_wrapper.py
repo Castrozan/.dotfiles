@@ -4,7 +4,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 
-SCRIPT_PATH = Path(__file__).parent.parent / "scripts" / "discord-agent-wrapper"
+SCRIPT_PATH = Path(__file__).parent.parent / "discord-channel" / "scripts" / "discord-agent-wrapper"
 loader = importlib.machinery.SourceFileLoader("discord_agent_wrapper", str(SCRIPT_PATH))
 spec = importlib.util.spec_from_loader("discord_agent_wrapper", loader)
 mod = importlib.util.module_from_spec(spec)

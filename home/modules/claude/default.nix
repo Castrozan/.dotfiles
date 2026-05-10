@@ -2,7 +2,7 @@
 {
   imports = [
     ./claude.nix
-    ./channels.nix
+    ./discord-channel
     ./config.nix
     ./skills.nix
     ./external-skill-sets.nix
