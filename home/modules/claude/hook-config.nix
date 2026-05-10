@@ -122,6 +122,16 @@ in
         }
       ];
     }
+    {
+      matcher = "Monitor";
+      hooks = [
+        {
+          type = "command";
+          command = "${runHook} ${hooksPath}/monitor-streaming-pattern-validator.py";
+          timeout = 3000;
+        }
+      ];
+    }
   ];
 
   # Workaround: bypassPermissions has a hardcoded .claude/ prompt since v2.1.78.

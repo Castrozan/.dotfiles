@@ -4,9 +4,9 @@ let
 
   listHookScripts =
     dir:
-    builtins.filter (name: lib.hasSuffix ".py" name || lib.hasSuffix ".sh" name) (
-      builtins.attrNames (builtins.readDir dir)
-    );
+    builtins.filter (
+      name: lib.hasSuffix ".py" name || lib.hasSuffix ".sh" name || lib.hasSuffix ".md" name
+    ) (builtins.attrNames (builtins.readDir dir));
 
   createSymlinksForHooks =
     files:
