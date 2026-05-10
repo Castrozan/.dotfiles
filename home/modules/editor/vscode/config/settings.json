@@ -116,7 +116,8 @@
   "workbench.preferredDarkColorTheme": "GitHub Dark Default",
   "editor.minimap.enabled": false,
   "files.associations": {
-    "*.desktop": "toml"
+    "*.desktop": "toml",
+    "*.fish": "fish"
   },
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.codeActionsOnSave": {
