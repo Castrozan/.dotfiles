@@ -152,10 +152,82 @@ def cmd_clean(_args, _root: Path, paths: dict[int, Path]) -> None:
     print(f"Cleaned cache for {_root}", file=sys.stderr)
 
 
+HELP_EPILOG = """\
+LAYERED WORKFLOW
+
+  Use layered dumping because the right layer depends on what you know:
+
+    Layer 1 (default) - subjects + file paths.
+      File paths are the highest-signal data here: a commit touching
+      home/modules/openclaw/browser-use/ is about browser automation
+      regardless of what the subject line says.
+
+    Layer 2 - full patches (actual diff content).
+      Use when the keyword lives in code, not commit messages: function
+      names, variable names, config keys, error strings.
+
+    Layer 3 - shortcut that dumps both layers.
+
+  Always start at layer 1. Escalate to layer 2 only after the cheaper
+  search misses, since layer 2 is much larger and slower to grep.
+
+  For surgical lookups where you already know the area, use git directly
+  instead of dumping:
+
+    git log --all -- path/to/dir/         # all history under a path
+    git log -L :functionName:file.ext     # function evolution
+    git log -S "exact_string" --all       # commits that introduced/removed a string
+
+
+SEARCH TECHNIQUE
+
+  Search broad first, narrow second. The commit message may say "browser"
+  while the file path says "chrome" and the diff says "cdp" - cast a wide
+  net in one grep:
+
+    grep -i "browser\\|chrome\\|cdp\\|playwright\\|devtools" "$(git-history path)"
+
+  Once a candidate area is identified at layer 1, drop to layer 2 for the
+  same keywords plus code-specific terms (function names, error messages).
+
+
+CACHE BEHAVIOR
+
+  Caches live at /tmp/gitlog-<repo>-<hash>-L{1,2}.txt and are auto-
+  invalidated when HEAD changes or the file is older than one hour.
+  Inspect with `git-history info`, force a re-dump with `--force`, and
+  remove with `git-history clean`. Cache is per-repo, so multiple repos
+  coexist without collision.
+
+
+WHEN NOT TO USE
+
+  Skip git-history for simple targeted lookups: `git log -1 HEAD`,
+  `git blame file`, `git show <hash>`. Those are single fast queries
+  that gain nothing from dumping.
+
+
+EXAMPLES
+
+  # First search of the session - dump layer 1, then grep
+  git-history dump
+  grep -i 'auth\\|login\\|session' "$(git-history path)"
+
+  # Search across patches (layer 2) for an error string
+  git-history dump --layer 2
+  grep -F 'KeyError: itemContent' "$(git-history path --layer 2)"
+
+  # Inspect cache state
+  git-history info
+"""
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         prog="git-history",
         description="Dump git log layers to /tmp for fast text search.",
+        epilog=HELP_EPILOG,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument("--repo", help="Path to repo (default: current git root)")
 

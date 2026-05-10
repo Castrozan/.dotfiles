@@ -1,8 +1,6 @@
 tests:
   - name: commit_uses_specific_staging
     skill_path: agents/skills/git/SKILL.md
-    extra_skill_paths:
-      - agents/skills/git/commit.md
     prompt: "Should I use git add -A to stage all my changes before committing?"
     model: haiku
     assertions:
@@ -19,8 +17,6 @@ tests:
 
   - name: commit_reads_diff_first
     skill_path: agents/skills/git/SKILL.md
-    extra_skill_paths:
-      - agents/skills/git/commit.md
     prompt: "What information do you need before writing a commit message?"
     model: haiku
     assertions:
@@ -32,8 +28,6 @@ tests:
 
   - name: commit_conventional_format
     skill_path: agents/skills/git/SKILL.md
-    extra_skill_paths:
-      - agents/skills/git/commit.md
     prompt: "What format should commit messages follow?"
     model: haiku
     assertions:
@@ -45,8 +39,6 @@ tests:
 
   - name: git_history_never_uses_repeated_grep
     skill_path: agents/skills/git/SKILL.md
-    extra_skill_paths:
-      - agents/skills/git/history.md
     prompt: "I need to search git history for all commits related to authentication. How should I do it?"
     model: haiku
     assertions:
@@ -60,8 +52,6 @@ tests:
 
   - name: git_history_starts_with_layer1
     skill_path: agents/skills/git/SKILL.md
-    extra_skill_paths:
-      - agents/skills/git/history.md
     prompt: "I want to find when browser automation was added to the project. Where do I start?"
     model: haiku
     assertions:
@@ -76,8 +66,6 @@ tests:
 
   - name: git_history_escalates_to_layer2
     skill_path: agents/skills/git/SKILL.md
-    extra_skill_paths:
-      - agents/skills/git/history.md
     prompt: "Layer 1 didn't find enough results. What should I try next?"
     model: haiku
     assertions:
@@ -89,8 +77,6 @@ tests:
 
   - name: git_history_uses_broad_keywords
     skill_path: agents/skills/git/SKILL.md
-    extra_skill_paths:
-      - agents/skills/git/history.md
     prompt: "I'm searching for browser-related commits but only finding a few. What am I doing wrong?"
     model: haiku
     assertions:
@@ -105,8 +91,6 @@ tests:
 
   - name: git_history_file_paths_are_high_signal
     skill_path: agents/skills/git/SKILL.md
-    extra_skill_paths:
-      - agents/skills/git/history.md
     prompt: "What's the advantage of searching file paths in layer 1 over commit messages?"
     model: haiku
     assertions:
@@ -119,8 +103,6 @@ tests:
 
   - name: git_history_knows_when_not_to_use
     skill_path: agents/skills/git/SKILL.md
-    extra_skill_paths:
-      - agents/skills/git/history.md
     prompt: "I just want to see the last commit. Should I use this skill?"
     model: haiku
     assertions:
@@ -135,8 +117,6 @@ tests:
 
   - name: git_history_cache_invalidation
     skill_path: agents/skills/git/SKILL.md
-    extra_skill_paths:
-      - agents/skills/git/history.md
     prompt: "How do I know if the cached git history file is still up to date?"
     model: haiku
     assertions:
