@@ -11,7 +11,7 @@ let
   inherit (config.home) username;
   chromeBinary = "${latest.google-chrome}/bin/google-chrome-stable";
 
-  browserMcp = import ../../../agents/skills/browser {
+  browserMcp = import ../../../agents/skills/browser/install {
     inherit
       pkgs
       nodejs
@@ -47,7 +47,7 @@ let
       --port ${toString browserUseMcpStreamableHttpPort}
   '';
 
-  a2aMcp = import ../../../agents/skills/openclaw/a2a-mcp-default.nix {
+  a2aMcp = import ../../../agents/skills/openclaw/install {
     inherit
       pkgs
       nodejs
@@ -75,7 +75,7 @@ let
       --port ${toString a2aMcpStreamableHttpPort}
   '';
 
-  twitterCli = import ../../../agents/skills/comms/twitter-cli.nix {
+  twitterCli = import ../../../agents/skills/comms/skills/twitter/install {
     inherit
       pkgs
       homeDir

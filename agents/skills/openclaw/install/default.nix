@@ -4,7 +4,7 @@
   nodejs,
 }:
 let
-  install = import ./a2a-mcp-install.nix {
+  install = import ./install.nix {
     inherit pkgs homeDir nodejs;
   };
 

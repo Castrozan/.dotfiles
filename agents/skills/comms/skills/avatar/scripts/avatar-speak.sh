@@ -37,7 +37,7 @@ speakers | mic | both) ;;
 	;;
 esac
 
-SERVER_DIR="@homePath@/@workspacePath@/skills/comms/control-server"
+SERVER_DIR="@homePath@/@workspacePath@/skills/comms/skills/avatar/scripts/control-server"
 TTS_JSON="@homePath@/@workspacePath@/tts.json"
 VOICE=""
 if [[ -f "$TTS_JSON" ]]; then

@@ -34,7 +34,7 @@ let
   controlServerNodeModules = pkgs.buildNpmPackage {
     pname = "avatar-control-server-deps";
     version = "1.0.0";
-    src = ../../../../agents/skills/comms/control-server;
+    src = ../../../../agents/skills/comms/skills/avatar/scripts/control-server;
     npmDepsHash = "sha256-gP9LivOQ+3+CcAbzg/Dt2RfB0p1j4045TABD3vQzu2s=";
     nodejs = pkgs.nodejs_22;
     dontNpmBuild = true;
@@ -104,7 +104,7 @@ in
 
           ${lib.concatStringsSep "\n" (
             lib.mapAttrsToList (name: agent: ''
-              AGENT_CONTROL_DIR="${homeDir}/${agent.workspace}/skills/comms/control-server"
+              AGENT_CONTROL_DIR="${homeDir}/${agent.workspace}/skills/comms/skills/avatar/scripts/control-server"
               if [ -d "$AGENT_CONTROL_DIR" ]; then
                 rm -rf "$AGENT_CONTROL_DIR/node_modules"
                 ln -sfn "${controlServerNodeModules}/node_modules" "$AGENT_CONTROL_DIR/node_modules"

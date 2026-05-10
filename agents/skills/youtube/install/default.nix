@@ -1,14 +1,12 @@
-{ pkgs, ... }:
+{ pkgs }:
 let
   python = pkgs.python312;
   virtualenvPath = "$HOME/.local/share/youtube-cli-venv";
 
-  youtubeCliSource = pkgs.writeText "youtube-cli.py" (
-    builtins.readFile ../../../agents/skills/desktop/scripts/youtube-cli.py
-  );
+  youtubeCliSource = pkgs.writeText "youtube-cli.py" (builtins.readFile ../scripts/youtube-cli.py);
 
   youtubeCliSetupSource = pkgs.writeText "youtube-cli-setup.sh" (
-    builtins.readFile ../../../agents/skills/desktop/scripts/youtube-cli-setup.sh
+    builtins.readFile ../scripts/youtube-cli-setup.sh
   );
 
   youtubeCli = pkgs.writeShellScriptBin "youtube-cli" ''
@@ -33,5 +31,5 @@ let
   '';
 in
 {
-  home.packages = [ youtubeCli ];
+  packages = [ youtubeCli ];
 }

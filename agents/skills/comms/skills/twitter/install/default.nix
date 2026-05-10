@@ -9,14 +9,14 @@ let
   secretsDirectory = "${homeDir}/.secrets";
   twikitCookiesPath = "${homeDir}/.config/twikit/cookies.json";
 
-  twikitCliSource = pkgs.writeText "twikit-cli.py" (builtins.readFile ./scripts/twikit-cli.py);
+  twikitCliSource = pkgs.writeText "twikit-cli.py" (builtins.readFile ../scripts/twikit-cli.py);
 
   extractXCookiesSource = pkgs.writeText "extract-x-cookies.py" (
-    builtins.readFile ./scripts/extract-x-cookies.py
+    builtins.readFile ../scripts/extract-x-cookies.py
   );
 
   patchTwikitTransactionSource = pkgs.writeText "patch-twikit-transaction.py" (
-    builtins.readFile ./scripts/patch-twikit-transaction.py
+    builtins.readFile ../scripts/patch-twikit-transaction.py
   );
 
   twikitCli = pkgs.writeShellScriptBin "twikit-cli" ''

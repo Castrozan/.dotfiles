@@ -1,13 +1,17 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
+# TODO: migrate to nix install like /home/zanoni/.dotfiles/agents/skills/browser
 readonly CREDENTIALS_DIR="$HOME/.config/youtube-cli"
 readonly CREDENTIALS_FILE="$CREDENTIALS_DIR/credentials.json"
 readonly PROJECT_PREFIX="youtube-cli"
 readonly APP_NAME="YouTube CLI"
 
 _log() { echo ":: $*" >&2; }
-_error() { echo "!! $*" >&2; exit 1; }
+_error() {
+  echo "!! $*" >&2
+  exit 1
+}
 
 _ensure_gcloud() {
   if command -v gcloud &>/dev/null; then
@@ -92,7 +96,7 @@ _configure_oauth_consent_screen() {
   # Check if brand already exists
   local existing_brand
   existing_brand=$(curl -s -H "Authorization: Bearer $access_token" \
-    "https://iap.googleapis.com/v1/projects/${project_id}/brands" 2>/dev/null | \
+    "https://iap.googleapis.com/v1/projects/${project_id}/brands" 2>/dev/null |
     python3 -c "import sys,json; brands=json.load(sys.stdin).get('brands',[]); print(brands[0]['name'] if brands else '')" 2>/dev/null || true)
 
   if [ -n "$existing_brand" ]; then
@@ -238,7 +242,7 @@ _write_credentials() {
   local client_secret="$2"
 
   mkdir -p "$CREDENTIALS_DIR"
-  cat > "$CREDENTIALS_FILE" <<EOF
+  cat >"$CREDENTIALS_FILE" <<EOF
 {
   "installed": {
     "client_id": "${client_id}",

@@ -1,6 +1,6 @@
 { pkgs, config, ... }:
 let
-  projectAgentInstructionsFile = ./project-agent/instructions.md;
+  projectAgentInstructionsFile = ./persistent-agents/instructions.md;
   claudeAgentScript = pkgs.writeShellScriptBin "claude-agent" ''
     export PROJECT_AGENT_INSTRUCTIONS="${projectAgentInstructionsFile}"
     export CLAUDE_BINARY_PATH="${config.claude.package}/bin/claude"

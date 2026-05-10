@@ -10,6 +10,6 @@
     ./mcps.nix
     ./private.nix
     ./scripts.nix
-    ./project-agents.nix
+    ./persistent-agents
   ];
 }

@@ -8,7 +8,7 @@ let
   cfg = config.claude.projectAgents;
   homeDir = config.home.homeDirectory;
   inherit (config.home) username;
-  instructionsFile = ./project-agent/instructions.md;
+  instructionsFile = ./instructions.md;
   hasAgents = cfg.agents != { };
   agentNames = builtins.attrNames cfg.agents;
 
@@ -38,7 +38,7 @@ let
         agent.extraInstructionsFile != null
       ) ''export PROJECT_AGENT_EXTRA_INSTRUCTIONS="${agent.extraInstructionsFile}"''}
       export CLAUDE_BINARY_PATH="${config.claude.package}/bin/claude"
-      exec ${pkgs.python312}/bin/python3 ${./scripts/claude-agent} \
+      exec ${pkgs.python312}/bin/python3 ${../scripts/claude-agent} \
         ${lib.escapeShellArg agent.projectDirectory} \
         --name ${lib.escapeShellArg name} \
         --model ${lib.escapeShellArg agent.model} \

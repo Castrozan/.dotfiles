@@ -51,7 +51,7 @@ for seg in "${SEGMENTS[@]}"; do
 	fi
 done
 
-SERVER_DIR="@homePath@/@workspacePath@/skills/comms/control-server"
+SERVER_DIR="@homePath@/@workspacePath@/skills/comms/skills/avatar/scripts/control-server"
 
 if [[ ! -d "$SERVER_DIR" ]]; then
 	echo "Error: Control server directory not found: $SERVER_DIR" >&2

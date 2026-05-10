@@ -4,7 +4,7 @@ description: Interact with a live webpage inside a browser window — fill forms
 ---
 
 <strategy>
-Two browser MCPs are available. Browser Use (`mcp__browser-use__*`) is the primary tool - it launches its own Chrome, works immediately, handles general browsing and Electron apps. Chrome DevTools (`mcp__chrome-devtools__*`) connects to the user's real Chrome Global for stealth on sites that detect automation (Google, banking, Cloudflare). Read BROWSER-STRATEGY.md for the full decision framework.
+Two browser MCPs are available. Browser Use (`mcp__browser-use__*`) is the primary tool - it launches its own Chrome, works immediately, handles general browsing and Electron apps. Chrome DevTools (`mcp__chrome-devtools__*`) connects to the user's real Chrome Global for stealth on sites that detect automation (Google, banking, Cloudflare). Read docs/BROWSER-STRATEGY.md for the full decision framework.
 </strategy>
 
 <browser_use_workflow>
