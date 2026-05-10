@@ -6,7 +6,7 @@
 
   xdg.configFile."hypr-host/input.conf".text = ''
     input {
-      sensitivity = 0.3
+      sensitivity = -0.9
     }
   '';
 }
