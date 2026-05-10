@@ -57,6 +57,22 @@ def collect_umbrella_chapter_metadata(
                 "preview": chapter_preview,
             }
         )
+    nested_skills_directory = umbrella_skill_directory / "skills"
+    if nested_skills_directory.is_dir():
+        for nested_skill_directory in sorted(nested_skills_directory.iterdir()):
+            nested_skill_markdown_path = nested_skill_directory / "SKILL.md"
+            if not nested_skill_markdown_path.is_file():
+                continue
+            chapter_preview = extract_chapter_preview(
+                nested_skill_markdown_path.read_text()
+            )
+            collected_umbrella_chapter_metadata.append(
+                {
+                    "name": f"{umbrella_skill_directory.name}/{nested_skill_directory.name}",
+                    "path": str(nested_skill_markdown_path.resolve()),
+                    "preview": chapter_preview,
+                }
+            )
     return collected_umbrella_chapter_metadata
 
 

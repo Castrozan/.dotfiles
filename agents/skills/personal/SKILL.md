@@ -31,7 +31,7 @@ This `personal` skill is also the umbrella for Lucas's personal channels and pla
 - `comms-google-chat.md`, `comms-twitter.md`, `comms-avatar.md` — communications tooling (Google Chat browser automation and webhooks, Twitter/X scraping and posting, VTuber avatar lip sync and expressions).
 - `ponto.md` — Senior Gestao de Ponto time-entry automation (Chrome DevTools MCP for clock-in marcacoes).
 - `home-assistant.md` — Home Assistant smart home control (Tuya lights via ha-light, Midea AC via ha-ac).
-- `phone.md` — remote phone status over SSH (battery, charging, uptime, storage).
+- `skills/phone-status/SKILL.md` — remote phone status over SSH (battery, charging, uptime, storage).
 - `openclaw.md`, `openclaw-grid.md`, `openclaw-a2a.md`, `openclaw-cron.md` — OpenClaw multi-agent platform (grid coordination, A2A protocol, cron jobs and recurring tasks, top-level platform overview).
 
 Scripts for some capabilities live in their original locations under `agents/skills/<capability>/scripts/`. Some capabilities (ponto, home-assistant) are pure Chrome DevTools MCP workflows with no scripts.
