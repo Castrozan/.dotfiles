@@ -21,12 +21,11 @@ let
     };
   };
 
-  allPackagesFromLanguageServers = pkgs.lib.flatten (
+  allPackagesForLSPs = pkgs.lib.flatten (
     pkgs.lib.mapAttrsToList (_: cfg: cfg.packages) languageServers
   );
-
 in
 {
-  packages = allPackagesFromLanguageServers;
+  packages = allPackagesForLSPs;
   inherit languageServers;
 }

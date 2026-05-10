@@ -1,6 +1,5 @@
 {
   pkgs,
-  config,
   lib,
   ...
 }:
@@ -8,7 +7,6 @@ let
   fetchPrebuiltBinary = import ../../../lib/fetch-prebuilt-binary.nix { inherit pkgs; };
 
   version = "2.1.132";
-
   bucket = "https://storage.googleapis.com/claude-code-dist-86c565f3-f756-42ad-8dfa-d59b1c096819/claude-code-releases";
 
   platformBinaryHashBySystem = {
@@ -22,16 +20,20 @@ let
 
   claude-code-unwrapped = fetchPrebuiltBinary {
     pname = "claude-code-unwrapped";
-    inherit version;
-    url = "${bucket}/${version}/${currentSystem.platform}/claude";
-    inherit (currentSystem) sha256;
     binaryName = "claude";
+    inherit version;
+    inherit (currentSystem) sha256;
+    url = "${bucket}/${version}/${currentSystem.platform}/claude";
   };
 
+  claudeEnvironmentVariables = import ./claude-environment-variables.nix { inherit pkgs; };
+
+  exportLinesForClaudeEnvironment = lib.concatStringsSep "\n" (
+    lib.mapAttrsToList (name: value: ''export ${name}="${value}"'') claudeEnvironmentVariables
+  );
+
   claude-code = pkgs.writeShellScriptBin "claude" ''
-    export NPM_CONFIG_PREFIX="/nonexistent"
-    export DISABLE_AUTOUPDATER=1
-    export DISABLE_INSTALLATION_CHECKS=1
+    ${exportLinesForClaudeEnvironment}
     rm -rf "$HOME/.local/share/claude/versions"
     ${pkgs.python312}/bin/python3 ${./scripts/pre-approve-current-workspace-trust-dialog} || true
     exec ${claude-code-unwrapped}/bin/claude "$@"
