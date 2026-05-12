@@ -19,7 +19,7 @@ in
       model = "opus";
       activeHoursStart = 8;
       activeHoursEnd = 20;
-      extraInstructionsFile = ../../../home/modules/claude/project-agent/betha-pm-instructions.md;
+      extraInstructionsFile = ../../../private-config/claude/project-agents/betha-pm-instructions.md;
     };
   };
 }
