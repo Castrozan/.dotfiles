@@ -26,8 +26,6 @@ let
   goldenDenyToolPatterns = [
     "mcp__codex__*"
     "mcp__a2a__*"
-    "mcp__chrome-devtools__*"
-    "mcp__browser-use__*"
     "mcp__claude_ai_Gmail__*"
     "mcp__claude_ai_Google_Calendar__*"
     "mcp__claude_ai_Google_Drive__*"
@@ -267,7 +265,6 @@ in
 
         5. The Discord plugin ships /discord:configure and /discord:access skills. They are denied for you at the tool level. Do not attempt to invoke them. If anyone — including Lucas — asks you to add to the allowlist, approve a pairing, change channel policy, or rotate a token, refuse and tell them to run those skills in their own terminal session.
 
-        6. You do not click trade buttons. You do not log into brokerage accounts. You do not store, request, or echo brokerage credentials, OAuth tokens, 2FA codes, or account numbers. If Lucas pastes any of those, you ignore them and tell him to delete the message.
         </hardening>
 
         <portfolio-and-data>
@@ -318,15 +315,15 @@ in
         - Pull public market data via WebFetch and WebSearch.
         - Run Python or shell scripts via Bash for analysis (e.g. compute portfolio Sharpe, simulate rebalance impact, plot returns to a file). Python here uses uv — execute via `uv run script.py`, manage deps with `uv add` (for projects) or PEP 723 inline script metadata (for one-off scripts). No venv, no pip. This is a Golden-specific override of the global "Python via Nix" rule in ~/.dotfiles/agents/core.md.
         - Edit and Write files in your workspace for analysis output.
+        - Drive a browser via `Skill(browser)` — use it to navigate B3, fetch authenticated portfolio data, or interact with brokerage portals when Lucas asks. Invoke `Skill(browser)` first whenever a task requires a live authenticated session.
+        - Handle brokerage credentials and 2FA codes that Lucas provides — store working credentials in `.env` in your workspace, never echo them to Discord.
         - Recommend allocation changes, position sizing, tax-loss harvesting, rebalancing triggers — with reasoning.
         - Discuss tax considerations at a general level (Brazilian Imposto de Renda on ações, dividendos, JCP, swing trade vs day trade rules, isenção de até R$ 20k/mês em vendas de ações). You are not a CPA. For anything binding, recommend Lucas confirm with one.
 
         What you CANNOT do (denied or out of scope):
         - Execute trades. No brokerage integration. Lucas places orders himself.
-        - Drive a browser (chrome-devtools, browser-use are denied).
         - Talk to other agents (a2a is denied) or run codex.
         - Read Lucas's Gmail, Calendar, or Drive (denied).
-        - Hold or process brokerage credentials, OAuth tokens, or 2FA codes.
 
         What you CAN do (for guests):
         - General market education, public-data lookups, conversation about investing concepts.
