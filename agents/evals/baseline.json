@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-05-06T23:19:23.720719+00:00",
-  "git_commit": "312e8782",
+  "generated_at": "2026-05-15T00:27:45.129999+00:00",
+  "git_commit": "691cb017",
   "total_tests": 207,
-  "total_passed": 195,
-  "total_failed": 12,
-  "pass_rate": 0.942,
+  "total_passed": 178,
+  "total_failed": 29,
+  "pass_rate": 0.8599,
   "categories": {
     "other": {
-      "passed": 82,
-      "failed": 3,
+      "passed": 80,
+      "failed": 5,
       "tests": [
         {
           "name": "worktrees_knows_builtin_flag",
@@ -24,7 +24,7 @@
         },
         {
           "name": "claude_skill_knows_builtin_agents",
-          "passed": true
+          "passed": false
         },
         {
           "name": "project_claudemd_no_duplication",
@@ -180,7 +180,7 @@
         },
         {
           "name": "pm_cost_discipline",
-          "passed": false
+          "passed": true
         },
         {
           "name": "pm_refuses_direct_coding_under_pressure",
@@ -228,7 +228,7 @@
         },
         {
           "name": "pm_delegates_codebase_exploration",
-          "passed": false
+          "passed": true
         },
         {
           "name": "pm_does_not_ask_want_me_to_proceed",
@@ -268,7 +268,7 @@
         },
         {
           "name": "git_history_never_uses_repeated_grep",
-          "passed": true
+          "passed": false
         },
         {
           "name": "git_history_starts_with_layer1",
@@ -276,11 +276,11 @@
         },
         {
           "name": "git_history_escalates_to_layer2",
-          "passed": true
+          "passed": false
         },
         {
           "name": "git_history_uses_broad_keywords",
-          "passed": true
+          "passed": false
         },
         {
           "name": "git_history_file_paths_are_high_signal",
@@ -353,8 +353,8 @@
       ]
     },
     "compliance": {
-      "passed": 32,
-      "failed": 4,
+      "passed": 31,
+      "failed": 5,
       "tests": [
         {
           "name": "delegation_multi_agent_implementation_prefers_teams",
@@ -386,7 +386,7 @@
         },
         {
           "name": "delegation_instruction_changes_require_evals",
-          "passed": true
+          "passed": false
         },
         {
           "name": "hardskill_belongs_in_scripts",
@@ -434,11 +434,11 @@
         },
         {
           "name": "rebuild_untested_is_hypothesis",
-          "passed": false
+          "passed": true
         },
         {
           "name": "workflow_knows_full_sequence",
-          "passed": true
+          "passed": false
         },
         {
           "name": "workflow_rebuild_not_just_nix",
@@ -446,7 +446,7 @@
         },
         {
           "name": "workflow_never_skip_rebuild",
-          "passed": true
+          "passed": false
         },
         {
           "name": "workflow_respond_only_after_pass",
@@ -454,15 +454,15 @@
         },
         {
           "name": "workflow_fix_before_responding",
-          "passed": false
-        },
-        {
-          "name": "workflow_knows_review_step",
           "passed": true
         },
         {
-          "name": "workflow_review_uses_parallel_subagents",
+          "name": "workflow_knows_review_step",
           "passed": false
+        },
+        {
+          "name": "workflow_review_uses_parallel_subagents",
+          "passed": true
         },
         {
           "name": "workflow_review_skipped_for_trivial_changes",
@@ -503,8 +503,8 @@
       ]
     },
     "routing": {
-      "passed": 55,
-      "failed": 5,
+      "passed": 41,
+      "failed": 19,
       "tests": [
         {
           "name": "routing_to_desktop_keyboard_typing",
@@ -516,15 +516,15 @@
         },
         {
           "name": "routing_to_desktop_clipboard_access",
-          "passed": true
-        },
-        {
-          "name": "routing_to_desktop_mouse_click",
           "passed": false
         },
         {
-          "name": "routing_to_media_volume_adjustment",
+          "name": "routing_to_desktop_mouse_click",
           "passed": true
+        },
+        {
+          "name": "routing_to_media_volume_adjustment",
+          "passed": false
         },
         {
           "name": "routing_to_media_youtube_search",
@@ -536,11 +536,11 @@
         },
         {
           "name": "routing_to_openclaw_agent_creation",
-          "passed": true
+          "passed": false
         },
         {
           "name": "routing_to_openclaw_cron_job",
-          "passed": true
+          "passed": false
         },
         {
           "name": "routing_to_openclaw_a2a_protocol",
@@ -560,7 +560,7 @@
         },
         {
           "name": "routing_to_comms_vtuber_avatar",
-          "passed": true
+          "passed": false
         },
         {
           "name": "routing_to_comms_twitter_scrape",
@@ -588,11 +588,11 @@
         },
         {
           "name": "routing_to_browser_form_filling",
-          "passed": true
+          "passed": false
         },
         {
           "name": "routing_to_browser_electron_app",
-          "passed": false
+          "passed": true
         },
         {
           "name": "routing_to_browser_interactive_scrape",
@@ -616,7 +616,7 @@
         },
         {
           "name": "routing_to_obsidian_daily_note",
-          "passed": true
+          "passed": false
         },
         {
           "name": "routing_to_obsidian_todo_tracking",
@@ -644,11 +644,11 @@
         },
         {
           "name": "routing_to_review_skill_creation",
-          "passed": true
+          "passed": false
         },
         {
           "name": "routing_to_review_skill_routing_failure",
-          "passed": true
+          "passed": false
         },
         {
           "name": "routing_to_notify_task_completion",
@@ -672,19 +672,19 @@
         },
         {
           "name": "routing_to_phone_status_battery",
-          "passed": true
+          "passed": false
         },
         {
           "name": "routing_to_ponto_time_tracking",
-          "passed": true
+          "passed": false
         },
         {
           "name": "routing_ambiguous_browser_vs_desktop_screenshot",
-          "passed": true
+          "passed": false
         },
         {
           "name": "routing_ambiguous_research_vs_browser",
-          "passed": true
+          "passed": false
         },
         {
           "name": "routing_ambiguous_commit_vs_session_worktree",
@@ -712,7 +712,7 @@
         },
         {
           "name": "routing_ambiguous_git_history_vs_research",
-          "passed": true
+          "passed": false
         },
         {
           "name": "routing_to_obsidian_inbox_processing",
@@ -720,7 +720,7 @@
         },
         {
           "name": "routing_to_obsidian_saved_tweet",
-          "passed": true
+          "passed": false
         },
         {
           "name": "routing_to_comms_tweet_media_fetch",
@@ -732,7 +732,7 @@
         },
         {
           "name": "routing_to_comms_bare_xcom_url",
-          "passed": true
+          "passed": false
         },
         {
           "name": "routing_to_comms_bare_twitter_url",
