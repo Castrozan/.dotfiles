@@ -1,6 +1,8 @@
-_:
+{ config, ... }:
 let
   wezterm-quick-temp-shell-command = "wezterm start -- tmux new-session";
+  inherit (config.home) homeDirectory;
+  wallpaper-file-uri = "file://${homeDirectory}/.dotfiles/static/alter-jellyfish-dark.jpg";
 in
 {
   dconf.settings = {
@@ -24,14 +26,14 @@ in
     "org/gnome/desktop/background" = {
       color-shading-type = "solid";
       picture-options = "zoom";
-      picture-uri = "file:///home/zanoni/.dotfiles/static/alter-jellyfish-dark.jpg";
-      picture-uri-dark = "file:///home/zanoni/.dotfiles/static/alter-jellyfish-dark.jpg";
+      picture-uri = wallpaper-file-uri;
+      picture-uri-dark = wallpaper-file-uri;
       primary-color = "#000000000000";
       secondary-color = "#000000000000";
     };
 
     "org/gnome/desktop/screensaver" = {
-      picture-uri = "file:///home/zanoni/.dotfiles/static/alter-jellyfish-dark.jpg";
+      picture-uri = wallpaper-file-uri;
       lock-delay = 0;
     };
 
