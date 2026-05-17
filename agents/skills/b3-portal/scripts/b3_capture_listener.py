@@ -16,6 +16,7 @@ from __future__ import annotations
 import asyncio
 import base64
 import json
+import os
 import signal
 from datetime import date, datetime
 from pathlib import Path
@@ -23,7 +24,12 @@ from pathlib import Path
 import httpx
 import websockets
 
-WORKSPACE_ROOT = Path("/home/zanoni/.claude-discord-agents/golden")
+WORKSPACE_ROOT = Path(
+    os.environ.get(
+        "B3_WORKSPACE_ROOT",
+        str(Path.home() / ".claude-discord-agents" / "golden"),
+    )
+)
 OUTPUT_DIRECTORY = (
     WORKSPACE_ROOT / "data" / "raw" / "b3" / date.today().isoformat() / "explore"
 )
@@ -32,7 +38,6 @@ SUMMARY_PATH = OUTPUT_DIRECTORY / "summary.txt"
 
 
 def discover_chrome_debugger_port() -> int:
-    import os
     import subprocess
 
     explicit_port = os.environ.get("B3_CHROME_PORT")
@@ -103,13 +108,12 @@ async def listen_for_b3_xhrs() -> None:
     async with websockets.connect(
         tab_websocket_url, max_size=64 * 1024 * 1024
     ) as websocket:
+
         async def send_command(method: str, params: dict | None = None) -> int:
             next_command_id[0] += 1
             command_id = next_command_id[0]
             await websocket.send(
-                json.dumps(
-                    {"id": command_id, "method": method, "params": params or {}}
-                )
+                json.dumps({"id": command_id, "method": method, "params": params or {}})
             )
             return command_id
 
@@ -167,7 +171,10 @@ async def listen_for_b3_xhrs() -> None:
             if event_method == "Network.requestWillBeSent":
                 request_url = params.get("request", {}).get("url", "")
                 request_type = params.get("type", "")
-                if request_type in ("XHR", "Fetch") and "investidor.b3.com.br" in request_url:
+                if (
+                    request_type in ("XHR", "Fetch")
+                    and "investidor.b3.com.br" in request_url
+                ):
                     captured_request_urls_by_id[params["requestId"]] = {
                         "url": request_url,
                         "method": params["request"].get("method", "GET"),
