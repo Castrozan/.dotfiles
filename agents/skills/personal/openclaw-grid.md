@@ -5,7 +5,7 @@
 | **clever** | Default agent, street-smart | claude-opus | Quick responses, general tasks, user-facing chat |
 | **golden** | Specialist | claude-sonnet | Cost-effective, good for bulk tasks, coding, analysis |
 
-This list reflects the current NixOS grid. The work PC grid has: robson, jenny, monster, silver.
+This list reflects the current NixOS grid. The work PC grid has: robson, jenny, monster.
 </team>
 
 <communication>
