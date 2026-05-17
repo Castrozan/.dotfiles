@@ -56,9 +56,8 @@ let
             hasInList workpcEnabledAgents "robson"
             && hasInList workpcEnabledAgents "jenny"
             && hasInList workpcEnabledAgents "monster"
-            && hasInList workpcEnabledAgents "silver"
           )
-          "workpc should have robson jenny monster silver, got: ${builtins.concatStringsSep ", " workpcEnabledAgents}";
+          "workpc should have robson jenny monster, got: ${builtins.concatStringsSep ", " workpcEnabledAgents}";
 
       oc-workpc-default-agent = mkEvalCheck "oc-workpc-default-agent" (
         workpcOc.defaultAgent == "robson"
@@ -76,8 +75,7 @@ let
         hasInList workpcAgentListIds "robson"
         && hasInList workpcAgentListIds "jenny"
         && hasInList workpcAgentListIds "monster"
-        && hasInList workpcAgentListIds "silver"
-      ) "agents list should include robson jenny monster silver";
+      ) "agents list should include robson jenny monster";
 
       oc-workpc-agents-list-robson-default =
         let
@@ -102,8 +100,7 @@ let
         hasInList workpcConfigPatchKeys ".channels.telegram.accounts.robson"
         && hasInList workpcConfigPatchKeys ".channels.telegram.accounts.jenny"
         && hasInList workpcConfigPatchKeys ".channels.telegram.accounts.monster"
-        && hasInList workpcConfigPatchKeys ".channels.telegram.accounts.silver"
-      ) "workpc should have telegram accounts for robson jenny monster silver";
+      ) "workpc should have telegram accounts for robson jenny monster";
 
       oc-workpc-no-jarvis-telegram = mkEvalCheck "oc-workpc-no-jarvis-telegram" (
         !(hasInList workpcConfigPatchKeys ".channels.telegram.accounts.jarvis")
@@ -113,8 +110,7 @@ let
         hasInList workpcBindingAgentIds "robson"
         && hasInList workpcBindingAgentIds "jenny"
         && hasInList workpcBindingAgentIds "monster"
-        && hasInList workpcBindingAgentIds "silver"
-      ) "workpc bindings should include robson jenny monster silver";
+      ) "workpc bindings should include robson jenny monster";
 
       oc-workpc-no-jarvis-binding = mkEvalCheck "oc-workpc-no-jarvis-binding" (
         !(hasInList workpcBindingAgentIds "jarvis")
@@ -153,7 +149,6 @@ let
         hasInList workpcSecretPatchKeys ".channels.telegram.accounts.robson.botToken"
         && hasInList workpcSecretPatchKeys ".channels.telegram.accounts.jenny.botToken"
         && hasInList workpcSecretPatchKeys ".channels.telegram.accounts.monster.botToken"
-        && hasInList workpcSecretPatchKeys ".channels.telegram.accounts.silver.botToken"
       ) "workpc should have telegram bot token secrets for enabled agents";
 
       oc-workpc-no-jarvis-bot-token = mkEvalCheck "oc-workpc-no-jarvis-bot-token" (
@@ -235,7 +230,6 @@ let
         hasInList workpcOc.memorySync.agents "robson"
         && hasInList workpcOc.memorySync.agents "jenny"
         && hasInList workpcOc.memorySync.agents "monster"
-        && hasInList workpcOc.memorySync.agents "silver"
       ) "memory sync should be configured for local agents";
 
       oc-workpc-memory-sync-remote-host = mkEvalCheck "oc-workpc-memory-sync-remote-host" (
@@ -258,10 +252,6 @@ let
       oc-agent-model-primary-set = mkEvalCheck "oc-agent-model-primary-set" (
         workpcOc.agents.robson.model.primary != null && workpcOc.agents.robson.model.primary != ""
       ) "robson model.primary should be set";
-
-      oc-agent-silver-cheaper-model = mkEvalCheck "oc-agent-silver-cheaper-model" (
-        workpcOc.agents.silver.model.primary == "openai-codex/gpt-5.3-codex"
-      ) "silver should use cheaper model, got ${workpcOc.agents.silver.model.primary}";
 
       oc-agent-default-tts-engine = mkEvalCheck "oc-agent-default-tts-engine" (
         workpcOc.agents.robson.tts.engine == "edge-tts"
@@ -313,8 +303,7 @@ let
         hasInList workpcConfigPatches.".tools.agentToAgent.allow" "robson"
         && hasInList workpcConfigPatches.".tools.agentToAgent.allow" "jenny"
         && hasInList workpcConfigPatches.".tools.agentToAgent.allow" "monster"
-        && hasInList workpcConfigPatches.".tools.agentToAgent.allow" "silver"
-      ) "workpc agentToAgent allow list should include robson jenny monster silver";
+      ) "workpc agentToAgent allow list should include robson jenny monster";
 
       oc-workpc-sessions-visibility = mkEvalCheck "oc-workpc-sessions-visibility" (
         workpcConfigPatches.".tools.sessions.visibility" == "all"
