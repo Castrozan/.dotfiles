@@ -25,7 +25,6 @@ let
     bash-language-server
 
     marksman
-    markdownlint-cli2
 
     terraform-ls
 

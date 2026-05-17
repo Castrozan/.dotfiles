@@ -66,7 +66,6 @@ return {
         nix = { "statix" },
         python = { "ruff" },
         sh = { "shellcheck" },
-        markdown = { "markdownlint-cli2" },
       },
     },
   },
