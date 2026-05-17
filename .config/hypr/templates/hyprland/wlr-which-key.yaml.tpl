@@ -155,5 +155,5 @@ menu:
     cmd: hyprlock --grace 1
 
   - key: v
-    desc: Clipboard history
-    cmd: wezterm start -- clipse
+    desc: Neovim
+    cmd: wezterm start -- nvim
