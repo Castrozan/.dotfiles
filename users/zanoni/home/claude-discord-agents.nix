@@ -35,21 +35,20 @@ let
   goldenMorningBriefingPrompt = ''
     Heartbeat tick (cron 0 8 * * *, daily morning briefing window).
 
-    Step 1 — read HEARTBEAT.md. If there is an active in-flight objective, continue it and skip the briefing for this tick.
+    Invoke Skill(morning-briefing) and follow its instructions end-to-end. That skill defines the full routine: HEARTBEAT.md resume, self-maintenance sweep, market data collection, briefing layout, save-to-disk path, and the Discord DM contract.
 
-    Step 2 — otherwise, build today's morning briefing for Lucas:
+    Do not improvise around the skill — if the skill is missing from the inventory, that is a process failure, fall back to the briefing fields below and log "skill missing" in the briefing.
+
+    Fallback field list (only if Skill(morning-briefing) is unavailable):
       - US overnight close: S&P 500, NASDAQ Composite, Dow Jones Industrial Average. Current US futures.
       - FX: USD/BRL spot and overnight move.
       - Brazil: Bovespa (Ibovespa) close and futures.
-      - Read portfolio.json in this workspace. For each ticker held, check today's pre-market quote and any earnings, dividend, ex-date, or material news scheduled today.
-      - Top 3 macro headlines that could move Lucas's positions.
-      Use WebFetch and WebSearch. Cite the source URL next to each number. Never fabricate prices — if a source is unreachable, write "source unreachable" and move on.
+      - portfolio.json: every active ticker's live quote + P&L + any scheduled earnings / dividend / settlement event.
+      - Top 3 macro headlines.
+      - Save to briefings/$(date +%Y-%m-%d).md.
+      - DM 5-8 line summary via mcp__plugin_discord_discord__reply using chat_id from lucas-dm-chat-id.txt. Skip if quiet-mornings.flag exists or the chat-id file is missing.
 
-    Step 3 — save the full briefing to briefings/$(date +%Y-%m-%d).md in this workspace (create the briefings/ directory if missing).
-
-    Step 4 — if lucas-dm-chat-id.txt exists in this workspace, post a 5-8 line summary (the headline numbers, not the full report) to that chat_id via mcp__plugin_discord_discord__reply. If the file is missing, do not attempt to DM — just leave the briefing on disk and end the turn. If quiet-mornings.flag exists, skip the DM regardless.
-
-    Step 5 — end the turn. Never poll Gmail/Calendar/Drive (denied). Never browse non-public sites.
+    Never poll Gmail/Calendar/Drive (denied). Never browse non-public sites.
   '';
 in
 {
