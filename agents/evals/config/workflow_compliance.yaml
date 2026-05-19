@@ -137,7 +137,7 @@ tests:
         - "start fixing"
 
   - name: workflow_review_input_is_unbiased
-    skill_path: agents/dotfiles.md
+    skill_path: agents/skills/review/code-review.md
     prompt: "List ONLY the two things the unbiased reviewer agent receives. No explanation."
     model: haiku
     assertions:
