@@ -1,0 +1,431 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+readonly SCRIPT_DIR
+LIB_DIR="$SCRIPT_DIR/_lib"
+readonly LIB_DIR
+
+DEFAULT_CDP_PORT=9333
+readonly DEFAULT_CDP_PORT
+
+CDP_PORT="$DEFAULT_CDP_PORT"
+
+main() {
+	_parse_global_flags "$@"
+	set -- "${POSITIONAL_ARGS[@]}"
+	local verb="${1:-}"
+	[[ -z "$verb" ]] && _print_usage_and_exit
+	shift || true
+
+	case "$verb" in
+	launch) _verb_launch "$@" ;;
+	status) _verb_status "$@" ;;
+	kill) _verb_kill "$@" ;;
+	cdp-pages) _verb_cdp_pages "$@" ;;
+	dismiss-modals) _verb_dismiss_modals "$@" ;;
+	run-command) _verb_run_command "$@" ;;
+	palette) _verb_palette "$@" ;;
+	click) _verb_click "$@" ;;
+	type) _verb_type "$@" ;;
+	screenshot) _verb_screenshot "$@" ;;
+	snapshot) _verb_snapshot "$@" ;;
+	agent) _verb_agent "$@" ;;
+	-h | --help | help) _print_usage_and_exit ;;
+	*)
+		echo "Unknown verb: $verb" >&2
+		_print_usage_and_exit
+		;;
+	esac
+}
+
+_parse_global_flags() {
+	POSITIONAL_ARGS=()
+	while (("$#")); do
+		case "$1" in
+		--port)
+			CDP_PORT="$2"
+			shift 2
+			;;
+		*)
+			POSITIONAL_ARGS+=("$1")
+			shift
+			;;
+		esac
+	done
+}
+
+_user_data_dir_for_port() {
+	echo "/tmp/vscode-cdp-${CDP_PORT}"
+}
+
+_write_prewarmed_settings() {
+	local settings_path="$1"
+	# Don't clobber settings if the caller pre-seeded the user-data-dir.
+	[[ -f "$settings_path" ]] && return 0
+	cat >"$settings_path" <<'JSON'
+{
+  "workbench.startupEditor": "none",
+  "workbench.welcomePage.walkthroughs.openOnInstall": false,
+  "workbench.tips.enabled": false,
+  "workbench.auxiliaryActivityBar.location": "hidden",
+  "workbench.secondarySideBar.defaultVisibility": "hidden",
+  "update.showReleaseNotes": false,
+  "extensions.autoUpdate": false,
+  "telemetry.telemetryLevel": "off",
+  "security.workspace.trust.startupPrompt": "never",
+  "security.workspace.trust.enabled": false,
+  "chat.commandCenter.enabled": false,
+  "chat.editing.confirmEditRequestRetry": false,
+  "github.copilot.advanced": { "authProvider": "none" }
+}
+JSON
+}
+
+_pid_file_for_port() {
+	echo "/tmp/vscode-cdp-${CDP_PORT}.pid"
+}
+
+_is_running_on_port() {
+	curl -sSf "http://localhost:${CDP_PORT}/json/version" >/dev/null 2>&1
+}
+
+_resolve_pid_listening_on_port() {
+	# `nohup code &` returns the subshell pid which exits after forking the real
+	# VS Code process. Resolve the process that actually owns the CDP port.
+	local listener_pid
+	listener_pid="$(ss -ltnpH "sport = :${CDP_PORT}" 2>/dev/null | grep -oP 'pid=\K[0-9]+' | head -1)" || true
+	if [[ -n "$listener_pid" ]]; then
+		echo "$listener_pid"
+		return 0
+	fi
+	listener_pid="$(lsof -ti ":${CDP_PORT}" 2>/dev/null | head -1)" || true
+	[[ -n "$listener_pid" ]] && echo "$listener_pid"
+}
+
+_assert_running() {
+	if ! _is_running_on_port; then
+		echo "VS Code with CDP is not running on port ${CDP_PORT}. Run: vscode launch" >&2
+		exit 1
+	fi
+}
+
+_verb_launch() {
+	local workspace_path=""
+	local -a disable_extension_ids=()
+	local disable_copilot="true"
+
+	while (("$#")); do
+		case "$1" in
+		--disable-extension)
+			disable_extension_ids+=("$2")
+			shift 2
+			;;
+		--keep-copilot)
+			disable_copilot="false"
+			shift
+			;;
+		*)
+			workspace_path="$1"
+			shift
+			;;
+		esac
+	done
+
+	if _is_running_on_port; then
+		echo "VS Code already running on port ${CDP_PORT}; reusing instance."
+		_verb_status
+		return 0
+	fi
+
+	local user_data_dir
+	user_data_dir="$(_user_data_dir_for_port)"
+	mkdir -p "$user_data_dir/User"
+	_write_prewarmed_settings "$user_data_dir/User/settings.json"
+	local pid_file
+	pid_file="$(_pid_file_for_port)"
+	local stdout_log="${user_data_dir}/launch.stdout.log"
+	local stderr_log="${user_data_dir}/launch.stderr.log"
+
+	local -a args=(
+		"--remote-debugging-port=${CDP_PORT}"
+		"--remote-allow-origins=*"
+		"--user-data-dir=${user_data_dir}"
+		"--new-window"
+	)
+	# Copilot Chat auto-opens and grabs keyboard focus, breaking palette-based
+	# command dispatch. Disable by default; opt back in with --keep-copilot.
+	if [[ "$disable_copilot" == "true" ]]; then
+		args+=("--disable-extension=GitHub.copilot-chat" "--disable-extension=GitHub.copilot")
+	fi
+	for extension_id in "${disable_extension_ids[@]}"; do
+		args+=("--disable-extension=${extension_id}")
+	done
+	[[ -n "$workspace_path" ]] && args+=("$workspace_path")
+
+	nohup code "${args[@]}" >"$stdout_log" 2>"$stderr_log" &
+	disown || true
+
+	local attempt=0
+	while ((attempt < 30)); do
+		if curl -sSf "http://localhost:${CDP_PORT}/json/version" >/dev/null 2>&1; then
+			break
+		fi
+		sleep 0.5
+		attempt=$((attempt + 1))
+	done
+	if ((attempt >= 30)); then
+		echo "VS Code did not expose CDP on port ${CDP_PORT} within 15s. Check ${stderr_log}." >&2
+		exit 1
+	fi
+
+	local resolved_pid
+	resolved_pid="$(_resolve_pid_listening_on_port)"
+	if [[ -z "$resolved_pid" ]]; then
+		echo "warning: CDP port ${CDP_PORT} is up but could not resolve owning pid" >&2
+		resolved_pid="?"
+	else
+		echo "$resolved_pid" >"$pid_file"
+	fi
+
+	echo "VS Code launched (pid=${resolved_pid}, port=${CDP_PORT}, user-data-dir=${user_data_dir})"
+	_verb_status
+}
+
+_verb_status() {
+	if ! _is_running_on_port; then
+		echo "Not running on port ${CDP_PORT}."
+		return 0
+	fi
+	local pid
+	pid="$(_resolve_pid_listening_on_port)"
+	[[ -z "$pid" ]] && pid="?"
+	echo "Running: pid=${pid} port=${CDP_PORT} user-data-dir=$(_user_data_dir_for_port)"
+	echo "Pages:"
+	curl -sS "http://localhost:${CDP_PORT}/json" | _python_helper "format_pages"
+}
+
+_verb_kill() {
+	if ! _is_running_on_port; then
+		echo "Not running on port ${CDP_PORT}."
+		_cleanup_for_port
+		return 0
+	fi
+	echo "Closing VS Code on port ${CDP_PORT}..."
+	_python_helper "run_command" --command "workbench.action.quit" || true
+	sleep 1
+	local pid
+	pid="$(_resolve_pid_listening_on_port)"
+	if [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null; then
+		kill "$pid" 2>/dev/null || true
+		sleep 1
+		kill -9 "$pid" 2>/dev/null || true
+	fi
+	_cleanup_for_port
+	echo "Killed."
+}
+
+_cleanup_for_port() {
+	rm -f "$(_pid_file_for_port)"
+	rm -rf "$(_user_data_dir_for_port)"
+}
+
+_verb_cdp_pages() {
+	_assert_running
+	if [[ "${1:-}" == "--raw" ]]; then
+		curl -sS "http://localhost:${CDP_PORT}/json"
+		return 0
+	fi
+	curl -sS "http://localhost:${CDP_PORT}/json" | _python_helper "format_pages"
+}
+
+_verb_dismiss_modals() {
+	_assert_running
+	local presses="${1:-3}"
+	_python_helper "dismiss_modals" --presses "$presses"
+}
+
+_verb_run_command() {
+	_assert_running
+	local command_id="${1:-}"
+	[[ -z "$command_id" ]] && {
+		echo "Usage: vscode run-command <command-id> [arg-json]" >&2
+		exit 1
+	}
+	local args_json="${2:-}"
+	if [[ -n "$args_json" ]]; then
+		_python_helper "run_command" --command "$command_id" --args "$args_json"
+	else
+		_python_helper "run_command" --command "$command_id"
+	fi
+}
+
+_verb_palette() {
+	_assert_running
+	local query="${1:-}"
+	[[ -z "$query" ]] && {
+		echo "Usage: vscode palette <query>" >&2
+		exit 1
+	}
+	_python_helper "palette" --query "$query"
+}
+
+_verb_click() {
+	_assert_running
+	local selector="${1:-}"
+	[[ -z "$selector" ]] && {
+		echo "Usage: vscode click <css-selector>" >&2
+		exit 1
+	}
+	_python_helper "click" --selector "$selector"
+}
+
+_verb_type() {
+	_assert_running
+	local selector="${1:-}"
+	local text="${2:-}"
+	[[ -z "$selector" || -z "$text" ]] && {
+		echo "Usage: vscode type <css-selector> <text>" >&2
+		exit 1
+	}
+	_python_helper "type" --selector "$selector" --text "$text"
+}
+
+_verb_screenshot() {
+	_assert_running
+	local out_path=""
+	local full="false"
+	while (("$#")); do
+		case "$1" in
+		--out)
+			out_path="$2"
+			shift 2
+			;;
+		--full)
+			full="true"
+			shift
+			;;
+		*) shift ;;
+		esac
+	done
+	[[ -z "$out_path" ]] && out_path="/tmp/vscode-cdp-${CDP_PORT}-screenshot.png"
+	_python_helper "screenshot" --out "$out_path" --full "$full"
+	echo "$out_path"
+}
+
+_verb_snapshot() {
+	_assert_running
+	_python_helper "snapshot"
+}
+
+_verb_agent() {
+	_assert_running
+	local subverb="${1:-}"
+	[[ -z "$subverb" ]] && {
+		echo "Usage: vscode agent <new|send|read|transcript|history> [...]" >&2
+		exit 1
+	}
+	shift
+	# Subverbs consume their positionals differently; map them onto the named
+	# flags the Python helper expects.
+	case "$subverb" in
+	send)
+		local message="${1:-}"
+		[[ -z "$message" ]] && {
+			echo "Usage: vscode agent send <message>" >&2
+			exit 1
+		}
+		_python_helper "agent" --subverb "send" --message "$message"
+		;;
+	read)
+		local since=""
+		while (("$#")); do
+			case "$1" in
+			--since)
+				since="$2"
+				shift 2
+				;;
+			*) shift ;;
+			esac
+		done
+		if [[ -n "$since" ]]; then
+			_python_helper "agent" --subverb "read" --since "$since"
+		else
+			_python_helper "agent" --subverb "read"
+		fi
+		;;
+	transcript)
+		local session_id=""
+		while (("$#")); do
+			case "$1" in
+			--session-id)
+				session_id="$2"
+				shift 2
+				;;
+			*) shift ;;
+			esac
+		done
+		if [[ -n "$session_id" ]]; then
+			_python_helper "agent" --subverb "transcript" --session-id "$session_id"
+		else
+			_python_helper "agent" --subverb "transcript"
+		fi
+		;;
+	new | history)
+		_python_helper "agent" --subverb "$subverb"
+		;;
+	*)
+		echo "Unknown agent subverb: $subverb (use one of: new, send, read, transcript, history)" >&2
+		exit 1
+		;;
+	esac
+}
+
+_python_helper() {
+	local entry="$1"
+	shift
+	uv run --quiet --script "$LIB_DIR/cdp_cli.py" --port "$CDP_PORT" --entry "$entry" "$@"
+}
+
+_print_usage_and_exit() {
+	cat <<'USAGE'
+vscode — drive VS Code via Chrome DevTools Protocol.
+
+Usage:
+  vscode [--port N] <verb> [args]
+
+Lifecycle:
+  launch [path]          start VS Code with CDP enabled (default port 9333)
+  status                 show running instance + CDP pages
+  kill                   close gracefully and remove the temp user-data-dir
+  cdp-pages [--raw]      list CDP pages (use --raw for full JSON)
+
+UI:
+  run-command <id> [arg-json]   execute a VS Code command (preferred)
+  palette <query>               open Command Palette and run first match
+  click <selector>              CSS click on the active page
+  type <selector> <text>        focus + type
+  screenshot [--out PATH] [--full]   capture viewport (or whole document)
+  snapshot                      a11y-tree snapshot of the active page
+
+Agent (Claude Code panel):
+  agent new                       start a fresh conversation
+  agent send <message>            send a message to the active session
+  agent read [--since N]          read latest assistant messages
+  agent transcript [--session-id ID]  full transcript
+  agent history                   list past sessions in current workspace
+
+Global flags:
+  --port N           CDP port (default 9333)
+
+Examples:
+  vscode launch ~/repo/ai-first-initiative
+  vscode run-command betha.syncMcp
+  vscode run-command workbench.action.reloadWindow
+  vscode screenshot --out /tmp/sidebar.png
+  vscode agent send "explain this file"
+USAGE
+	exit 1
+}
+
+main "$@"
