@@ -494,10 +494,31 @@ def agent_wait_idle(
     MAX_CONSECUTIVE_SOCKET_ERRORS_BEFORE_GIVING_UP = 5
     try:
         while time.monotonic() - start_monotonic < timeout_seconds:
-            try:
-                state = _read_chat_state(client, socket)
-                consecutive_socket_errors = 0
-            except Exception as poll_error:
+            # If we entered this iteration with no live socket (the previous
+            # reopen attempt failed), try reopening BEFORE issuing any read,
+            # so a still-down VS Code produces a clear "reopen failed"
+            # event instead of a generic NoneType AttributeError downstream.
+            if socket is None:
+                try:
+                    socket = _open_renderer_socket(client)
+                except Exception as reopen_error:
+                    poll_error = reopen_error
+                else:
+                    poll_error = None
+            else:
+                poll_error = None
+
+            if poll_error is None:
+                try:
+                    state = _read_chat_state(client, socket)
+                    consecutive_socket_errors = 0
+                except Exception as read_error:
+                    poll_error = read_error
+                    state = None
+            else:
+                state = None
+
+            if poll_error is not None:
                 consecutive_socket_errors += 1
                 print(
                     json.dumps(
@@ -528,12 +549,10 @@ def agent_wait_idle(
                 _close_socket_quietly(socket)
                 socket = None
                 time.sleep(min(poll_seconds, 5))
-                try:
-                    socket = _open_renderer_socket(client)
-                except Exception:
-                    # Will try again on the next loop iteration.
-                    pass
                 continue
+            assert (
+                state is not None
+            )  # impossible: poll_error is None means state was set
 
             running = bool(state.get("stop_visible"))
             message_count = state.get("assistant_message_count", 0)
