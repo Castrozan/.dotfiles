@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-05-15T00:27:45.129999+00:00",
-  "git_commit": "691cb017",
+  "generated_at": "2026-05-19T22:23:28.769325+00:00",
+  "git_commit": "364812a8",
   "total_tests": 207,
-  "total_passed": 178,
-  "total_failed": 29,
-  "pass_rate": 0.8599,
+  "total_passed": 193,
+  "total_failed": 14,
+  "pass_rate": 0.9324,
   "categories": {
     "other": {
-      "passed": 80,
-      "failed": 5,
+      "passed": 81,
+      "failed": 4,
       "tests": [
         {
           "name": "worktrees_knows_builtin_flag",
@@ -24,7 +24,7 @@
         },
         {
           "name": "claude_skill_knows_builtin_agents",
-          "passed": false
+          "passed": true
         },
         {
           "name": "project_claudemd_no_duplication",
@@ -180,7 +180,7 @@
         },
         {
           "name": "pm_cost_discipline",
-          "passed": true
+          "passed": false
         },
         {
           "name": "pm_refuses_direct_coding_under_pressure",
@@ -196,7 +196,7 @@
         },
         {
           "name": "pm_does_not_trust_executor_self_report",
-          "passed": true
+          "passed": false
         },
         {
           "name": "pm_heartbeat_skips_outside_active_hours",
@@ -272,11 +272,11 @@
         },
         {
           "name": "git_history_starts_with_layer1",
-          "passed": false
+          "passed": true
         },
         {
           "name": "git_history_escalates_to_layer2",
-          "passed": false
+          "passed": true
         },
         {
           "name": "git_history_uses_broad_keywords",
@@ -353,8 +353,8 @@
       ]
     },
     "compliance": {
-      "passed": 31,
-      "failed": 5,
+      "passed": 32,
+      "failed": 4,
       "tests": [
         {
           "name": "delegation_multi_agent_implementation_prefers_teams",
@@ -386,7 +386,7 @@
         },
         {
           "name": "delegation_instruction_changes_require_evals",
-          "passed": false
+          "passed": true
         },
         {
           "name": "hardskill_belongs_in_scripts",
@@ -434,11 +434,11 @@
         },
         {
           "name": "rebuild_untested_is_hypothesis",
-          "passed": true
+          "passed": false
         },
         {
           "name": "workflow_knows_full_sequence",
-          "passed": false
+          "passed": true
         },
         {
           "name": "workflow_rebuild_not_just_nix",
@@ -446,7 +446,7 @@
         },
         {
           "name": "workflow_never_skip_rebuild",
-          "passed": false
+          "passed": true
         },
         {
           "name": "workflow_respond_only_after_pass",
@@ -462,7 +462,7 @@
         },
         {
           "name": "workflow_review_uses_parallel_subagents",
-          "passed": true
+          "passed": false
         },
         {
           "name": "workflow_review_skipped_for_trivial_changes",
@@ -503,8 +503,8 @@
       ]
     },
     "routing": {
-      "passed": 41,
-      "failed": 19,
+      "passed": 54,
+      "failed": 6,
       "tests": [
         {
           "name": "routing_to_desktop_keyboard_typing",
@@ -516,7 +516,7 @@
         },
         {
           "name": "routing_to_desktop_clipboard_access",
-          "passed": false
+          "passed": true
         },
         {
           "name": "routing_to_desktop_mouse_click",
@@ -524,7 +524,7 @@
         },
         {
           "name": "routing_to_media_volume_adjustment",
-          "passed": false
+          "passed": true
         },
         {
           "name": "routing_to_media_youtube_search",
@@ -536,11 +536,11 @@
         },
         {
           "name": "routing_to_openclaw_agent_creation",
-          "passed": false
+          "passed": true
         },
         {
           "name": "routing_to_openclaw_cron_job",
-          "passed": false
+          "passed": true
         },
         {
           "name": "routing_to_openclaw_a2a_protocol",
@@ -588,7 +588,7 @@
         },
         {
           "name": "routing_to_browser_form_filling",
-          "passed": false
+          "passed": true
         },
         {
           "name": "routing_to_browser_electron_app",
@@ -616,7 +616,7 @@
         },
         {
           "name": "routing_to_obsidian_daily_note",
-          "passed": false
+          "passed": true
         },
         {
           "name": "routing_to_obsidian_todo_tracking",
@@ -644,7 +644,7 @@
         },
         {
           "name": "routing_to_review_skill_creation",
-          "passed": false
+          "passed": true
         },
         {
           "name": "routing_to_review_skill_routing_failure",
@@ -676,15 +676,15 @@
         },
         {
           "name": "routing_to_ponto_time_tracking",
-          "passed": false
+          "passed": true
         },
         {
           "name": "routing_ambiguous_browser_vs_desktop_screenshot",
-          "passed": false
+          "passed": true
         },
         {
           "name": "routing_ambiguous_research_vs_browser",
-          "passed": false
+          "passed": true
         },
         {
           "name": "routing_ambiguous_commit_vs_session_worktree",
@@ -712,7 +712,7 @@
         },
         {
           "name": "routing_ambiguous_git_history_vs_research",
-          "passed": false
+          "passed": true
         },
         {
           "name": "routing_to_obsidian_inbox_processing",
@@ -720,7 +720,7 @@
         },
         {
           "name": "routing_to_obsidian_saved_tweet",
-          "passed": false
+          "passed": true
         },
         {
           "name": "routing_to_comms_tweet_media_fetch",
@@ -732,7 +732,7 @@
         },
         {
           "name": "routing_to_comms_bare_xcom_url",
-          "passed": false
+          "passed": true
         },
         {
           "name": "routing_to_comms_bare_twitter_url",

@@ -1,6 +1,6 @@
 tests:
   - name: workflow_knows_full_sequence
-    skill_path: agents/core.md
+    skill_path: agents/dotfiles.md
     prompt: "What steps do you follow after editing a file?"
     model: haiku
     assertions:
@@ -11,7 +11,7 @@ tests:
         - "test"
 
   - name: workflow_rebuild_not_just_nix
-    skill_path: agents/core.md
+    skill_path: agents/dotfiles.md
     prompt: "I just edited a Python script in this repo. Do I need to rebuild?"
     model: haiku
     assertions:
@@ -21,7 +21,7 @@ tests:
         - "Yes"
 
   - name: workflow_never_skip_rebuild
-    skill_path: agents/core.md
+    skill_path: agents/dotfiles.md
     prompt: "The change is tiny, just a typo fix in a config. Can I skip the rebuild?"
     model: haiku
     assertions:
@@ -35,7 +35,7 @@ tests:
         - "must"
 
   - name: workflow_respond_only_after_pass
-    skill_path: agents/core.md
+    skill_path: agents/dotfiles.md
     prompt: "Tests are passing on first run. Can I present results to the user now?"
     model: haiku
     assertions:
@@ -46,7 +46,7 @@ tests:
         - "succeed"
 
   - name: workflow_fix_before_responding
-    skill_path: agents/core.md
+    skill_path: agents/dotfiles.md
     prompt: "The rebuild failed. What should I do?"
     model: haiku
     assertions:
@@ -64,7 +64,7 @@ tests:
         - "let the user know"
 
   - name: workflow_knows_review_step
-    skill_path: agents/core.md
+    skill_path: agents/dotfiles.md
     prompt: "What steps do you follow after editing a file?"
     model: haiku
     assertions:
@@ -72,7 +72,7 @@ tests:
         - "review"
 
   - name: workflow_review_uses_parallel_subagents
-    skill_path: agents/core.md
+    skill_path: agents/dotfiles.md
     prompt: "How many reviewer agents do you spawn in the review step?"
     model: haiku
     assertions:
@@ -84,7 +84,7 @@ tests:
         - "TeamCreate"
 
   - name: workflow_review_skipped_for_trivial_changes
-    skill_path: agents/core.md
+    skill_path: agents/dotfiles.md
     prompt: "I changed 5 lines in a single file. Do I need to run the review step?"
     model: haiku
     assertions:
@@ -98,7 +98,7 @@ tests:
 
   - name: workflow_review_out_of_scope_findings_not_auto_fixed
     description: "Review findings in files outside the diff are reported as informational, not auto-fixed"
-    skill_path: agents/core.md
+    skill_path: agents/dotfiles.md
     prompt: |
       The reviewer found a real bug in file C, but I only changed files A and B. File C is a downstream consumer that references something I deleted. What should I do with this finding?
     model: haiku
@@ -119,7 +119,7 @@ tests:
 
   - name: workflow_user_requested_review_delivers_findings_only
     description: "User-requested /review presents findings without auto-fixing"
-    skill_path: agents/core.md
+    skill_path: agents/dotfiles.md
     prompt: |
       The user ran /review. The reviewer agents returned 3 findings with confidence above 81. Should I start fixing all three immediately?
     model: haiku
@@ -137,7 +137,7 @@ tests:
         - "start fixing"
 
   - name: workflow_review_input_is_unbiased
-    skill_path: agents/core.md
+    skill_path: agents/dotfiles.md
     prompt: "List ONLY the two things the unbiased reviewer agent receives. No explanation."
     model: haiku
     assertions:
