@@ -72,8 +72,8 @@ run_step "screenshot writes a PNG file" "$VSCODE_CLI" --port "$TEST_CDP_PORT" \
 	screenshot --out "$SCREENSHOT_OUTPUT_PATH"
 assert_file_is_png "$SCREENSHOT_OUTPUT_PATH"
 
-run_step "run-command returns ok:true JSON" assert_substring_in_command_output '"ok": true' \
-	"$VSCODE_CLI" --port "$TEST_CDP_PORT" run-command "Preferences: Open Settings (UI)"
+run_step "command-by-title returns ok:true JSON" assert_substring_in_command_output '"ok": true' \
+	"$VSCODE_CLI" --port "$TEST_CDP_PORT" command-by-title "Preferences: Open Settings (UI)"
 
 run_step "dismiss-modals rejects non-integer" \
 	bash -c '"$0" --port "$1" dismiss-modals foo 2>&1 | grep -q "must be a positive integer"' \
@@ -84,17 +84,34 @@ run_step "dismiss-modals accepts integer" assert_substring_in_command_output '"p
 	"$VSCODE_CLI" --port "$TEST_CDP_PORT" dismiss-modals 2
 
 run_step "open Claude Code chat panel" assert_substring_in_command_output '"ok": true' \
-	"$VSCODE_CLI" --port "$TEST_CDP_PORT" run-command "workbench.action.chat.openInSidebar"
+	"$VSCODE_CLI" --port "$TEST_CDP_PORT" command-by-title "Chat: Focus on Chat View"
 sleep 2
 
 run_step "probe-chat-dom resolves pinned chat input selector" assert_substring_in_command_output '"chat_input_editor"' \
 	"$VSCODE_CLI" --port "$TEST_CDP_PORT" probe-chat-dom
 
-run_step "agent state returns ok:true JSON" assert_substring_in_command_output '"ok": true' \
+run_step "agent state returns running boolean" assert_substring_in_command_output '"running"' \
 	"$VSCODE_CLI" --port "$TEST_CDP_PORT" agent state
 
-run_step "agent read returns ok:true JSON" assert_substring_in_command_output '"ok": true' \
+run_step "agent read returns last_assistant_text key" assert_substring_in_command_output '"last_assistant_text"' \
 	"$VSCODE_CLI" --port "$TEST_CDP_PORT" agent read
+
+run_step "agent send returns ok:true (sends a tiny prompt to the real chat)" \
+	assert_substring_in_command_output '"ok": true' \
+	"$VSCODE_CLI" --port "$TEST_CDP_PORT" agent send "Reply with just OK."
+# Give the chat engine ~3 s to ack the send before snapshotting state.
+sleep 3
+run_step "agent state observes the in-flight turn (running=true OR messages>0)" \
+	bash -c '
+		state=$("$0" --port "$1" agent state 2>&1)
+		if printf %s "$state" | grep -qE "\"running\":[[:space:]]*true|\"assistant_messages\":[[:space:]]*[1-9]"; then
+			echo "ok: send round-trip received by chat"
+		else
+			echo "FAIL: send was accepted but chat never registered a turn"
+			echo "agent state output: $state"
+			exit 1
+		fi
+	' "$VSCODE_CLI" "$TEST_CDP_PORT"
 
 run_step "unimplemented agent subverb returns clear stub error" assert_substring_in_command_output "not implemented yet" \
 	"$VSCODE_CLI" --port "$TEST_CDP_PORT" agent history

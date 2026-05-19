@@ -58,7 +58,7 @@ ones wired into `scripts/_lib/cdp_cli.py` as `CHAT_*_SELECTOR` constants.
 | Stop / cancel button | `.chat-execute-toolbar .action-label.codicon-stop-circle`, `.codicon-debug-stop`, `.codicon-stop` | `agent state`: visible iff a turn is in flight (running) |
 | User request bubble | `.interactive-list .interactive-request` | not consumed (count available via probe) |
 | Assistant response bubble | `.interactive-list .interactive-response` | `agent state` / `agent read`: count + tail text |
-| IME helper textarea (sibling of Monaco) | `textarea.ime-text-area` inside `.interactive-input-editor > .chat-editor-container > .monaco-editor > .overflow-guard` | not directly used; keyboard events flow through CDP `Input.dispatchKeyEvent` instead |
+| IME helper textarea (sibling of Monaco) | `textarea.ime-text-area` inside `.interactive-input-editor > .chat-editor-container > .monaco-editor > .overflow-guard` | not investigated as an alternative — current `agent send` clicks the editor center and uses CDP `Input.insertText`. The IME textarea might be a more stable target across VS Code versions; pinning here marks it as a known candidate, not a tested fallback. |
 
 Subverbs still using stubs (need additional pinning): `agent new`,
 `agent transcript`, `agent history` — those need selectors for the
@@ -71,7 +71,7 @@ these classes. To re-discover:
 
 ```
 vscode launch ~/some-workspace
-# open the chat panel in the running VS Code (Ctrl+L or run-command
+# open the chat panel in the running VS Code (Ctrl+L or command-by-title
 # workbench.action.chat.openInSidebar)
 vscode probe-chat-dom | jq
 ```

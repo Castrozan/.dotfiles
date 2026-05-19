@@ -27,39 +27,73 @@ These flags are injected by a `pkgs.symlinkJoin` + `wrapProgram` so they apply t
 </lifecycle>
 
 <ui_interaction>
-- `vscode run-command <command-id> [arg-json]` — execute a registered VS Code command. The reliable way to drive the editor (avoids brittle DOM clicks). Examples: `betha.syncMcp`, `workbench.action.reloadWindow`, `workbench.view.extensions`, `workbench.action.openSettings`.
-- `vscode palette <query>` — open Command Palette, type the query, press Enter on the first match. Use only when you need fuzzy matching; prefer `run-command` with the exact id when known.
-- `vscode click <css-selector>` — DOM click for elements without a command (custom webview buttons, tree items, etc.).
+- `vscode command-by-title <title>` — drive a VS Code command by typing its
+  user-visible title into the Command Palette and pressing Enter. The argument
+  is the **title** (e.g. `"Preferences: Open Settings (UI)"`, `"View: Show
+  Betha Marketplace"`), NOT the internal command id like
+  `workbench.action.openSettings`. Internal ids do not render in the palette
+  unless an extension explicitly registers them. The title is also
+  **locale-dependent**: a pt-BR install shows `"Preferências: Abrir
+  Configurações (UI)"` and the en-US title will not match. CDP cannot reach
+  the Extension Host, so there is no real `vscode.commands.executeCommand`
+  bridge — this verb is the cheap "drive the UI" path. There is no way to
+  pass command arguments.
+- `vscode click <css-selector>` — DOM click for elements without a command
+  (custom webview buttons, tree items, etc.).
 - `vscode type <css-selector> <text>` — focus + type.
-- `vscode screenshot [--out PATH] [--full]` — capture the VS Code window via CDP `Page.captureScreenshot`. `--full` captures the whole document, default is viewport.
+- `vscode screenshot [--out PATH] [--full]` — capture the VS Code window via
+  CDP `Page.captureScreenshot`. `--full` captures the whole document, default
+  is viewport.
 </ui_interaction>
 
 <agent_interaction>
-Talk to the Claude Code panel inside VS Code as a subordinate agent. The panel is a WebView under VS Code's window; the dispatcher finds it by URL pattern (`vscode-webview://*claude-code*`).
+Talk to the Claude Code chat panel as a subordinate agent. Despite the
+"Build with Agent" framing the panel renders directly in the workbench DOM
+(no separate WebView page), so we drive it with the same `.interactive-*`
+selectors used by the workbench.
 
-- `vscode agent new` — start a new conversation in the active workspace.
-- `vscode agent send <message>` — type a message into the input box and submit.
-- `vscode agent read [--since N]` — return the latest N assistant messages (default: all since last `read`).
-- `vscode agent transcript [--session-id ID]` — full transcript for the active or named session.
-- `vscode agent history` — list past sessions in the current workspace.
+- `vscode agent send <message>` — focus the chat input, insert text, click
+  send. Returns immediately after submit (does not wait for a reply).
+- `vscode agent state` — `{running: bool, assistant_messages: N,
+  send_disabled: bool}`. `running` is true iff a stop/cancel button is
+  visible in the chat-execute-toolbar.
+- `vscode agent read` — tail (last 2000 chars) of the most recent assistant
+  message.
+- `vscode agent wait-idle [--timeout SECS] [--poll SECS]` — block until the
+  panel has been idle (no stop button, message count stable) across **3
+  consecutive polls**. Defaults: timeout 1800s, poll 20s. Exit 2 on timeout.
+  The 3-poll stability check is intentional: between sequential tool calls
+  inside one assistant turn the stop button briefly disappears, so a single
+  `running=false` poll would return prematurely.
+- `vscode agent new | transcript | history` — stubs. Need separate selector
+  pinning for the Sessions sidebar tree.
 
-These are **higher level than `run-command`** — they coordinate multiple CDP calls (find the right WebView, focus the input, type, click send, poll for new content). Implementation detail lives in `scripts/_lib/agent.py`.
-
-Selectors for the WebView DOM are documented in `docs/CDP-SELECTORS.md` and pinned per Claude Code extension version because Anthropic ships UI updates.
+All implemented agent verbs use the same pinned selectors in
+`scripts/_lib/cdp_cli.py` (`CHAT_*_SELECTOR`). If they break after a VS
+Code or Claude Code update, run `vscode probe-chat-dom` and update
+`docs/CDP-SELECTORS.md` + the constants.
 </agent_interaction>
 
 <tips>
 - The CDP **page list** that matters is the renderer process page (`type: "page"`, URL starts with `vscode-file://`). The dispatcher filters automatically — but if you need raw access, `vscode cdp-pages --raw` dumps the JSON.
-- `run-command` and `palette` both type into the Command Palette via simulated keyboard input. Internally they:
-  1. Click the menu bar (x=400, y=8) to break focus out of any side panel.
+- `command-by-title` types into the Command Palette via simulated keyboard
+  input. Internally it:
+  1. Resolves a safe workbench-shell coordinate (`.menubar` rect → fallback
+     to `.activitybar` bottom → fallback to `(10, 10)`) and clicks it to
+     break focus out of any side panel that would intercept Ctrl+Shift+P.
   2. Press Escape to close any open dropdown/peek.
   3. Send Ctrl+Shift+P to open the palette.
-  4. Insert the query text + press Enter.
-  If your command doesn't run, screenshot first to see where the keystrokes actually landed.
-- `run-command` is the cheapest way to drive the editor. Reach for `palette` only when you need fuzzy matching and don't know the id.
-- Always `screenshot` after a meaningful action when reporting back to the user — visual proof beats prose.
-- Snapshots beat screenshots for analyzing structure (`vscode snapshot` returns the a11y tree of the active page).
-- When VS Code's title bar shows "[Restricted Mode]", commands that touch the workspace are blocked. Use `vscode run-command workbench.trust.manage` and click "Trust" in the dialog (or run `workbench.action.trustCurrentFolder`) before continuing.
+  4. Insert the title text + press Enter.
+  If your command doesn't run, screenshot first to see where the keystrokes
+  actually landed.
+- Always `screenshot` after a meaningful action when reporting back to the
+  user — visual proof beats prose.
+- Snapshots beat screenshots for analyzing structure (`vscode snapshot`
+  returns the a11y tree of the active page).
+- When VS Code's title bar shows "[Restricted Mode]", commands that touch
+  the workspace are blocked. Use
+  `vscode command-by-title "Manage Workspace Trust"` and click "Trust" in
+  the dialog before continuing.
 - Multiple VS Code instances on different ports: pass `--port N` to every command. Default port is 9333.
 - To see the sidebar tree after a `View: Show ...` command, you may need a follow-up `workbench.action.toggleSidebarVisibility` if the sidebar was collapsed.
 </tips>
@@ -69,3 +103,32 @@ Selectors for the WebView DOM are documented in `docs/CDP-SELECTORS.md` and pinn
 - VS Code's main process and renderer share the same CDP endpoint; tools that target "the page" mean the renderer. Extension Host scripts are not reachable.
 - Headless/SSH: requires X or a display. For pure CLI extension validation (install/uninstall), use `code --install-extension` directly, not this skill.
 </known_limitations>
+
+<security>
+The Nix wrapper passes `--remote-debugging-port=9333 --remote-allow-origins=*` to every invocation of `code`. The implications:
+
+- **Any local process can attach to CDP on port 9333.** Localhost-only — the
+  port is not exposed externally — but any user-level process on this
+  machine can drive the editor, including a malicious browser tab that
+  bypasses CORS via a same-origin-spoofing trick (`--remote-allow-origins=*`
+  defeats the origin gate). On a single-user workstation this is acceptable
+  ergonomic risk; on a shared host it is not.
+- **The driven editor loads the real user profile** (`~/.config/Code`),
+  which carries logged-in sessions for Claude Code, GitHub Copilot, SSO
+  cookies, and any other extension that persists credentials in its global
+  state. An attacker who attaches to CDP can read those secrets, exfiltrate
+  them via screenshot/snapshot, and impersonate the user inside any of
+  those extensions.
+- **`Input.insertText` and `Input.dispatchKeyEvent` reach the editor as if
+  they were keystrokes.** An attacker can type and execute arbitrary
+  terminal commands inside an open VS Code terminal pane.
+- **Mitigation if the threat model changes**: drop `--remote-allow-origins=*`
+  from `home/modules/editor/vscode/vscode.nix` (this breaks the skill's
+  WebSocket attach until selectors-by-cookie or a port-knocking wrapper is
+  added), or remove `--remote-debugging-port` entirely and launch a
+  per-task instance with a randomized port + isolated user-data-dir.
+
+Decision recorded 2026-05-19: accept the risk on this single-user
+workstation. Revisit if the host becomes multi-user, or if a sandboxed
+agent runs untrusted code against the same `~/.config/Code` profile.
+</security>

@@ -9,9 +9,10 @@
 
 Every subcommand reads `--port`, `--entry`, and any extra flags. The
 `--entry` argument selects the high-level operation (format_pages,
-run_command, palette, click, type, screenshot, snapshot, agent). The
-script is invoked via `uv run --script` so the websocket-client/requests
-dependencies resolve transparently on every call.
+command_by_title, click, type, screenshot, snapshot, agent,
+dismiss_modals, probe_chat_dom). The script is invoked via
+`uv run --script` so the websocket-client/requests dependencies resolve
+transparently on every call.
 """
 
 from __future__ import annotations
@@ -19,12 +20,18 @@ from __future__ import annotations
 import argparse
 import base64
 import json
+import string
 import sys
 import time
+from pathlib import Path
 from typing import Any
 
 import requests
 from websocket import WebSocket, create_connection
+
+PROBE_CHAT_DOM_JAVASCRIPT_TEMPLATE = string.Template(
+    (Path(__file__).parent / "probe_chat_dom.js").read_text(encoding="utf-8")
+)
 
 
 class ChromeDevToolsClient:
@@ -156,12 +163,57 @@ def _click_at_coordinate(
         )
 
 
+def _resolve_workbench_focus_break_coordinate(
+    client: ChromeDevToolsClient, socket: WebSocket
+) -> tuple[float, float]:
+    """Return a screen coordinate guaranteed to be inside the workbench
+    shell but outside any panel that would intercept keystrokes.
+
+    Tries, in order:
+      1. The center of `.menubar` if visible (top-of-window strip).
+      2. The bottom of `.activitybar` (always present, left edge).
+      3. Document body (10, 10) as a last-resort fallback.
+
+    Earlier versions hardcoded (400, 8) inside the menu bar — which broke
+    when the menu bar was hidden via window.menuBarVisibility:"hidden" or
+    when the window was narrow enough that x=400 fell outside the bar.
+    """
+    locate_result = client.send_and_wait(
+        socket,
+        "Runtime.evaluate",
+        {
+            "expression": (
+                "(() => {"
+                "  const menubar = document.querySelector('.menubar');"
+                "  if (menubar) {"
+                "    const r = menubar.getBoundingClientRect();"
+                "    if (r.width > 0 && r.height > 0) {"
+                "      return JSON.stringify({source: 'menubar', x: r.left + r.width/2, y: r.top + r.height/2});"
+                "    }"
+                "  }"
+                "  const activitybar = document.querySelector('.activitybar');"
+                "  if (activitybar) {"
+                "    const r = activitybar.getBoundingClientRect();"
+                "    if (r.width > 0 && r.height > 0) {"
+                "      return JSON.stringify({source: 'activitybar', x: r.left + r.width/2, y: r.bottom - 4});"
+                "    }"
+                "  }"
+                "  return JSON.stringify({source: 'fallback', x: 10, y: 10});"
+                "})()"
+            ),
+            "returnByValue": True,
+        },
+    )
+    payload = json.loads(locate_result.get("result", {}).get("value", "{}"))
+    return float(payload["x"]), float(payload["y"])
+
+
 def _open_command_palette(client: ChromeDevToolsClient, socket: WebSocket) -> None:
     # Sidebars and panels (Chat, Search, Terminal) keep input focus across
-    # keyboard chords, swallowing Ctrl+Shift+P as text. A mouse click on the
-    # menu bar reliably moves focus to the workbench shell without disturbing
-    # any open editor. Menu bar is the top ~22 px of the window.
-    _click_at_coordinate(client, socket, x=400, y=8)
+    # keyboard chords, swallowing Ctrl+Shift+P as text. A click into a known
+    # safe workbench-shell coordinate breaks focus before we send the chord.
+    focus_x, focus_y = _resolve_workbench_focus_break_coordinate(client, socket)
+    _click_at_coordinate(client, socket, x=focus_x, y=focus_y)
     time.sleep(0.15)
     _send_key_chord(client, socket, "Escape", 27)
     time.sleep(0.1)
@@ -182,42 +234,38 @@ def dismiss_modals(client: ChromeDevToolsClient, press_count: int) -> None:
     print(json.dumps({"ok": True, "presses": press_count}))
 
 
-def run_vscode_command(
-    client: ChromeDevToolsClient, command_id: str, command_args_json: str | None
-) -> None:
-    if command_args_json:
-        print(
-            json.dumps(
-                {
-                    "ok": False,
-                    "error": "command args are not supported via the palette path",
-                }
-            )
-        )
-        sys.exit(1)
+def run_command_by_title(client: ChromeDevToolsClient, command_title: str) -> None:
+    """Execute a VS Code command by typing its visible **title** into the
+    Command Palette (Ctrl+Shift+P) and pressing Enter.
+
+    NOT a wrapper around `vscode.commands.executeCommand` — that API is
+    only reachable from the Extension Host, which CDP cannot attach to.
+    We drive the palette UI by simulated keyboard input, which means:
+
+      - The argument is the user-visible **title** (e.g. "Preferences:
+        Open Settings (UI)"), NOT the internal command id
+        (`workbench.action.openSettings`). Internal ids don't render in
+        the palette unless an extension explicitly registers them.
+      - The title is **locale-dependent**. A pt-BR VS Code shows
+        "Preferências: Abrir Configurações (UI)", which the en-US title
+        won't match. Match the locale of the running editor.
+      - There is no way to pass command arguments — the palette only
+        invokes the command with its default arguments.
+
+    If you need a real argument-passing executeCommand bridge, write a
+    VS Code extension that exposes a port; this verb is intentionally
+    the cheap "drive the UI" path.
+    """
     page = client.find_renderer_page()
     socket = client.open_socket(page["webSocketDebuggerUrl"])
     try:
         _open_command_palette(client, socket)
-        _insert_text(client, socket, command_id)
+        _insert_text(client, socket, command_title)
         time.sleep(0.3)
         _send_key_chord(client, socket, "Enter", 13)
     finally:
         socket.close()
-    print(json.dumps({"ok": True, "command": command_id, "via": "palette"}))
-
-
-def open_command_palette_and_run(client: ChromeDevToolsClient, query: str) -> None:
-    page = client.find_renderer_page()
-    socket = client.open_socket(page["webSocketDebuggerUrl"])
-    try:
-        _open_command_palette(client, socket)
-        _insert_text(client, socket, query)
-        time.sleep(0.3)
-        _send_key_chord(client, socket, "Enter", 13)
-    finally:
-        socket.close()
-    print(json.dumps({"ok": True, "query": query}))
+    print(json.dumps({"ok": True, "command_title": command_title}))
 
 
 def click_by_css_selector(client: ChromeDevToolsClient, selector: str) -> None:
@@ -397,48 +445,83 @@ def agent_state(client: ChromeDevToolsClient) -> None:
     print(json.dumps(payload))
 
 
+REQUIRED_CONSECUTIVE_IDLE_POLLS_FOR_STABILITY = 3
+
+
 def agent_wait_idle(
     client: ChromeDevToolsClient, timeout_seconds: int, poll_seconds: int
 ) -> None:
+    """Block until the chat panel has been idle (no stop button visible and
+    no new assistant messages) across `REQUIRED_CONSECUTIVE_IDLE_POLLS_FOR_STABILITY`
+    consecutive polls.
+
+    The single-poll signal `running=false` is unreliable: between two
+    sequential tool calls within one assistant turn the stop button briefly
+    disappears. Requiring multiple consecutive stable polls collapses that
+    race — Claude needs to genuinely stay idle for at least
+    (REQUIRED_CONSECUTIVE_IDLE_POLLS_FOR_STABILITY * poll_seconds) seconds
+    before we declare the turn complete.
+
+    Holds one WebSocket across the full poll loop so a long wait (e.g. 4h
+    @ 30s poll = 480 polls) does not produce a connect/disconnect storm.
+    """
+    page = client.find_renderer_page()
+    socket = client.open_socket(page["webSocketDebuggerUrl"])
     start_monotonic = time.monotonic()
     last_message_count = -1
     last_text = ""
-    while time.monotonic() - start_monotonic < timeout_seconds:
-        page = client.find_renderer_page()
-        socket = client.open_socket(page["webSocketDebuggerUrl"])
-        try:
+    consecutive_stable_idle_polls = 0
+    try:
+        while time.monotonic() - start_monotonic < timeout_seconds:
             state = _read_chat_state(client, socket)
-        finally:
-            socket.close()
-        running = bool(state.get("stop_visible"))
-        message_count = state.get("assistant_message_count", 0)
-        last_text = state.get("last_assistant_text", "")
-        elapsed = int(time.monotonic() - start_monotonic)
-        print(
-            json.dumps(
-                {
-                    "elapsed_seconds": elapsed,
-                    "running": running,
-                    "assistant_messages": message_count,
-                }
-            ),
-            flush=True,
-        )
-        if not running and message_count > 0 and message_count == last_message_count:
+            running = bool(state.get("stop_visible"))
+            message_count = state.get("assistant_message_count", 0)
+            last_text = state.get("last_assistant_text", "")
+            elapsed = int(time.monotonic() - start_monotonic)
+
+            is_stable_idle_poll = (
+                not running
+                and message_count > 0
+                and message_count == last_message_count
+            )
+            if is_stable_idle_poll:
+                consecutive_stable_idle_polls += 1
+            else:
+                consecutive_stable_idle_polls = 0
+
             print(
                 json.dumps(
                     {
-                        "ok": True,
-                        "outcome": "idle",
                         "elapsed_seconds": elapsed,
+                        "running": running,
                         "assistant_messages": message_count,
-                        "last_assistant_tail": last_text,
+                        "consecutive_stable_idle_polls": consecutive_stable_idle_polls,
                     }
-                )
+                ),
+                flush=True,
             )
-            return
-        last_message_count = message_count
-        time.sleep(poll_seconds)
+
+            if (
+                consecutive_stable_idle_polls
+                >= REQUIRED_CONSECUTIVE_IDLE_POLLS_FOR_STABILITY
+            ):
+                print(
+                    json.dumps(
+                        {
+                            "ok": True,
+                            "outcome": "idle",
+                            "elapsed_seconds": elapsed,
+                            "assistant_messages": message_count,
+                            "last_assistant_tail": last_text,
+                        }
+                    )
+                )
+                return
+
+            last_message_count = message_count
+            time.sleep(poll_seconds)
+    finally:
+        socket.close()
     print(
         json.dumps(
             {
@@ -463,58 +546,15 @@ def probe_chat_dom(client: ChromeDevToolsClient) -> None:
     — the JSON output shows which selectors still resolve and where
     they live, so docs/CDP-SELECTORS.md can be refreshed.
     """
+    expression = PROBE_CHAT_DOM_JAVASCRIPT_TEMPLATE.substitute(
+        INPUT_SELECTOR=json.dumps(CHAT_INPUT_EDITOR_SELECTOR),
+        SEND_SELECTOR=json.dumps(CHAT_SEND_BUTTON_SELECTOR),
+        STOP_SELECTOR=json.dumps(CHAT_STOP_BUTTON_SELECTOR),
+        ASSISTANT_SELECTOR=json.dumps(CHAT_ASSISTANT_MESSAGE_SELECTOR),
+    )
     page = client.find_renderer_page()
     socket = client.open_socket(page["webSocketDebuggerUrl"])
     try:
-        expression = (
-            "JSON.stringify({"
-            "  pinned_selectors: {"
-            f"    chat_input_editor: (() => {{ const el = document.querySelector({json.dumps(CHAT_INPUT_EDITOR_SELECTOR)}); if (!el) return null; const r = el.getBoundingClientRect(); return {{found: true, rect: {{x: Math.round(r.x), y: Math.round(r.y), w: Math.round(r.width), h: Math.round(r.height)}}, cls: (el.className||'').toString().slice(0,120)}}; }})(),"
-            f"    send_button: (() => {{ const el = document.querySelector({json.dumps(CHAT_SEND_BUTTON_SELECTOR)}); if (!el) return null; const r = el.getBoundingClientRect(); return {{found: true, disabled: el.classList.contains('disabled'), aria: el.getAttribute('aria-label')||'', rect: {{x: Math.round(r.x), y: Math.round(r.y), w: Math.round(r.width), h: Math.round(r.height)}}}}; }})(),"
-            f"    stop_button: (() => {{ const el = document.querySelector({json.dumps(CHAT_STOP_BUTTON_SELECTOR)}); if (!el) return null; const r = el.getBoundingClientRect(); return {{found: true, aria: el.getAttribute('aria-label')||'', rect: {{x: Math.round(r.x), y: Math.round(r.y), w: Math.round(r.width), h: Math.round(r.height)}}}}; }})(),"
-            f"    assistant_messages: {{count: document.querySelectorAll({json.dumps(CHAT_ASSISTANT_MESSAGE_SELECTOR)}).length}}"
-            "  },"
-            "  candidate_message_selectors: ["
-            "    {sel: '.interactive-list .interactive-item-container', count: document.querySelectorAll('.interactive-list .interactive-item-container').length},"
-            "    {sel: '.interactive-list .interactive-response', count: document.querySelectorAll('.interactive-list .interactive-response').length},"
-            "    {sel: '.interactive-list .interactive-request', count: document.querySelectorAll('.interactive-list .interactive-request').length},"
-            "    {sel: '.interactive-response', count: document.querySelectorAll('.interactive-response').length},"
-            "    {sel: '.chat-response', count: document.querySelectorAll('.chat-response').length},"
-            "    {sel: '[data-username]', count: document.querySelectorAll('[data-username]').length},"
-            "    {sel: '.interactive-list > div', count: document.querySelectorAll('.interactive-list > div').length}"
-            "  ],"
-            "  chat_toolbar_buttons: Array.from(document.querySelectorAll('.chat-execute-toolbar .action-label, .chat-input-toolbars .action-label')).map(el => {"
-            "    const r = el.getBoundingClientRect();"
-            "    return {aria: (el.getAttribute('aria-label')||el.title||el.textContent||'').slice(0,80), cls: (el.className||'').toString().slice(0,100), disabled: el.classList.contains('disabled'), rect: {x: Math.round(r.x), y: Math.round(r.y), w: Math.round(r.width), h: Math.round(r.height)}};"
-            "  }),"
-            "  editable_elements: Array.from(document.querySelectorAll('textarea, input, [contenteditable=\"true\"]')).map(el => {"
-            "    const r = el.getBoundingClientRect();"
-            "    return {tag: el.tagName, placeholder: el.getAttribute('placeholder') || el.getAttribute('aria-label') || '', cls: (el.className||'').toString().slice(0,100), rect: {x: Math.round(r.x), y: Math.round(r.y), w: Math.round(r.width), h: Math.round(r.height)}, visible: el.offsetParent !== null};"
-            "  }),"
-            "  send_button_ancestor_chain: (() => {"
-            f"    const send = document.querySelector({json.dumps(CHAT_SEND_BUTTON_SELECTOR)});"
-            "    if (!send) return null;"
-            "    const chain = [];"
-            "    let el = send;"
-            "    for (let i = 0; i < 12 && el; i++) {"
-            "      chain.push({tag: el.tagName, cls: (el.className||'').toString().slice(0,120)});"
-            "      el = el.parentElement;"
-            "    }"
-            "    return chain;"
-            "  })(),"
-            "  chat_input_ancestor_chain: (() => {"
-            f"    const ed = document.querySelector({json.dumps(CHAT_INPUT_EDITOR_SELECTOR)});"
-            "    if (!ed) return null;"
-            "    const chain = [];"
-            "    let el = ed;"
-            "    for (let i = 0; i < 10 && el; i++) {"
-            "      chain.push({tag: el.tagName, cls: (el.className||'').toString().slice(0,120)});"
-            "      el = el.parentElement;"
-            "    }"
-            "    return chain;"
-            "  })()"
-            "})"
-        )
         result = client.send_and_wait(
             socket,
             "Runtime.evaluate",
@@ -595,8 +635,7 @@ def main() -> None:
         "--entry",
         choices=[
             "format_pages",
-            "run_command",
-            "palette",
+            "command_by_title",
             "click",
             "type",
             "screenshot",
@@ -610,16 +649,14 @@ def main() -> None:
     parser.add_argument(
         "--presses", help="Escape press count for dismiss_modals", default="3"
     )
-    parser.add_argument("--command", help="VS Code command id for run_command")
-    parser.add_argument("--args", help="JSON-encoded args for run_command")
-    parser.add_argument("--query", help="Palette query")
+    parser.add_argument(
+        "--command-title", help="VS Code command title for command_by_title"
+    )
     parser.add_argument("--selector", help="CSS selector for click/type")
     parser.add_argument("--text", help="Text to type")
     parser.add_argument("--out", help="Output path for screenshot")
     parser.add_argument("--full", help="Full-page screenshot flag")
     parser.add_argument("--subverb", help="Agent subverb")
-    parser.add_argument("--since", help="Agent read: messages since N")
-    parser.add_argument("--session-id", help="Agent transcript: session id")
     parser.add_argument("--message", help="Agent send: message body")
     parser.add_argument("--timeout", help="Agent wait-idle: max seconds")
     parser.add_argument("--poll", help="Agent wait-idle: poll interval seconds")
@@ -629,14 +666,10 @@ def main() -> None:
 
     if args.entry == "format_pages":
         format_pages(client)
-    elif args.entry == "run_command":
-        if not args.command:
-            raise SystemExit("--command is required for run_command")
-        run_vscode_command(client, args.command, args.args)
-    elif args.entry == "palette":
-        if not args.query:
-            raise SystemExit("--query is required for palette")
-        open_command_palette_and_run(client, args.query)
+    elif args.entry == "command_by_title":
+        if not args.command_title:
+            raise SystemExit("--command-title is required for command_by_title")
+        run_command_by_title(client, args.command_title)
     elif args.entry == "click":
         if not args.selector:
             raise SystemExit("--selector is required for click")

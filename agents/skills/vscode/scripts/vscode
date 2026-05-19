@@ -25,8 +25,7 @@ main() {
 	cdp-pages) _verb_cdp_pages "$@" ;;
 	probe-chat-dom) _verb_probe_chat_dom "$@" ;;
 	dismiss-modals) _verb_dismiss_modals "$@" ;;
-	run-command) _verb_run_command "$@" ;;
-	palette) _verb_palette "$@" ;;
+	command-by-title) _verb_command_by_title "$@" ;;
 	click) _verb_click "$@" ;;
 	type) _verb_type "$@" ;;
 	screenshot) _verb_screenshot "$@" ;;
@@ -147,8 +146,10 @@ _verb_kill() {
 		return 0
 	fi
 	echo "Closing VS Code on port ${CDP_PORT}..."
-	_python_helper "run_command" --command "workbench.action.quit" || true
-	sleep 1
+	# Earlier versions routed kill through the Command Palette ("Quit" by
+	# title). That made the kill verb depend on the editor locale — a
+	# pt-BR install shows "Sair" — for no real gain. Direct signals
+	# accomplish the same graceful shutdown without the title coupling.
 	local pid
 	pid="$(_resolve_pid_listening_on_port)"
 	if [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null; then
@@ -184,29 +185,16 @@ _verb_dismiss_modals() {
 	_python_helper "dismiss_modals" --presses "$presses"
 }
 
-_verb_run_command() {
+_verb_command_by_title() {
 	_assert_running
-	local command_id="${1:-}"
-	[[ -z "$command_id" ]] && {
-		echo "Usage: vscode run-command <command-id> [arg-json]" >&2
+	local command_title="${1:-}"
+	[[ -z "$command_title" ]] && {
+		echo "Usage: vscode command-by-title <command-title>" >&2
+		echo "  Pass the user-visible title (locale-dependent), not the internal id." >&2
+		echo "  Example: vscode command-by-title \"Preferences: Open Settings (UI)\"" >&2
 		exit 1
 	}
-	local args_json="${2:-}"
-	if [[ -n "$args_json" ]]; then
-		_python_helper "run_command" --command "$command_id" --args "$args_json"
-	else
-		_python_helper "run_command" --command "$command_id"
-	fi
-}
-
-_verb_palette() {
-	_assert_running
-	local query="${1:-}"
-	[[ -z "$query" ]] && {
-		echo "Usage: vscode palette <query>" >&2
-		exit 1
-	}
-	_python_helper "palette" --query "$query"
+	_python_helper "command_by_title" --command-title "$command_title"
 }
 
 _verb_click() {
@@ -340,8 +328,12 @@ Lifecycle:
                          docs/CDP-SELECTORS.md to find what moved.
 
 UI:
-  run-command <id> [arg-json]   execute a VS Code command (preferred)
-  palette <query>               open Command Palette and run first match
+  command-by-title <title>      type the user-visible command title into the
+                                Command Palette and press Enter. The argument
+                                is the title (locale-dependent), NOT the
+                                internal command id. There is no API-level
+                                executeCommand bridge — CDP cannot reach the
+                                Extension Host.
   click <selector>              CSS click on the active page
   type <selector> <text>        focus + type
   screenshot [--out PATH] [--full]   capture viewport (or whole document)
@@ -352,7 +344,8 @@ Agent (Claude Code panel — selectors pinned 2026-05-19 against VS Code 1.119):
   agent state                     {running: bool, assistant_messages: N}
   agent read                      latest assistant message text (tail 2000 chars)
   agent wait-idle [--timeout SECS] [--poll SECS]
-                                  block until running=false (default 1800s/20s)
+                                  block until idle across 3 consecutive polls
+                                  (default 1800s/20s)
   agent new | transcript | history    stubs — pending additional selector pinning
 
 Global flags:
@@ -360,8 +353,8 @@ Global flags:
 
 Examples:
   vscode launch ~/repo/ai-first-initiative
-  vscode run-command betha.syncMcp
-  vscode run-command workbench.action.reloadWindow
+  vscode command-by-title "Preferences: Open Settings (UI)"
+  vscode command-by-title "View: Show Betha Marketplace"
   vscode screenshot --out /tmp/sidebar.png
   vscode agent send "explain this file"
 USAGE
