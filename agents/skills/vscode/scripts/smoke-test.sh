@@ -1,13 +1,16 @@
 #!/usr/bin/env bash
-# Smoke test for the vscode CDP skill. Walks the full lifecycle on a dedicated
-# CDP port and fails fast on any deviation. Designed to be safe to run while a
-# normal VS Code session is open on the default port (9333) — uses 9991.
+# Smoke test for the vscode CDP skill. Walks the full lifecycle and fails fast
+# on any deviation. Uses port 9333 because the Nix-wrapped `code` binary
+# (~/.dotfiles/home/modules/editor/vscode/vscode.nix) hard-codes that port via
+# wrapProgram; launching on any other port would not bind. This test will
+# CLOSE any running VS Code on 9333 at start — close unsaved buffers first or
+# expect the quit-confirmation dialog to swallow keyboard input until handled.
 set -Eeuo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 readonly SCRIPT_DIR
 readonly VSCODE_CLI="${SCRIPT_DIR}/vscode"
-readonly TEST_CDP_PORT=9991
+readonly TEST_CDP_PORT=9333
 readonly SCREENSHOT_OUTPUT_PATH="/tmp/vscode-cdp-smoke-test.png"
 
 run_step() {
@@ -21,7 +24,11 @@ assert_substring_in_command_output() {
 	local expected_substring="$1"
 	shift
 	local actual_output
-	actual_output="$("$@" 2>&1)"
+	# The command under test is allowed to exit non-zero (e.g. the agent stub
+	# does so intentionally). With `set -e` an assignment that captures a
+	# non-zero command-substitution exit would abort the whole test, so we
+	# explicitly mask it here.
+	actual_output="$("$@" 2>&1)" || true
 	if [[ "$actual_output" != *"$expected_substring"* ]]; then
 		printf 'FAIL: expected output to contain %q\nActual output:\n%s\n' "$expected_substring" "$actual_output" >&2
 		exit 1
