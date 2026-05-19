@@ -270,45 +270,35 @@ _verb_agent() {
 		}
 		_python_helper "agent" --subverb "send" --message "$message"
 		;;
+	state)
+		_python_helper "agent" --subverb "state"
+		;;
 	read)
-		local since=""
+		_python_helper "agent" --subverb "read"
+		;;
+	wait-idle)
+		local timeout="1800"
+		local poll="20"
 		while (("$#")); do
 			case "$1" in
-			--since)
-				since="$2"
+			--timeout)
+				timeout="$2"
+				shift 2
+				;;
+			--poll)
+				poll="$2"
 				shift 2
 				;;
 			*) shift ;;
 			esac
 		done
-		if [[ -n "$since" ]]; then
-			_python_helper "agent" --subverb "read" --since "$since"
-		else
-			_python_helper "agent" --subverb "read"
-		fi
+		_python_helper "agent" --subverb "wait-idle" --timeout "$timeout" --poll "$poll"
 		;;
-	transcript)
-		local session_id=""
-		while (("$#")); do
-			case "$1" in
-			--session-id)
-				session_id="$2"
-				shift 2
-				;;
-			*) shift ;;
-			esac
-		done
-		if [[ -n "$session_id" ]]; then
-			_python_helper "agent" --subverb "transcript" --session-id "$session_id"
-		else
-			_python_helper "agent" --subverb "transcript"
-		fi
-		;;
-	new | history)
+	transcript | history | new)
 		_python_helper "agent" --subverb "$subverb"
 		;;
 	*)
-		echo "Unknown agent subverb: $subverb (use one of: new, send, read, transcript, history)" >&2
+		echo "Unknown agent subverb: $subverb (use one of: send, state, read, wait-idle, new, transcript, history)" >&2
 		exit 1
 		;;
 	esac
@@ -344,12 +334,13 @@ UI:
   screenshot [--out PATH] [--full]   capture viewport (or whole document)
   snapshot                      a11y-tree snapshot of the active page
 
-Agent (Claude Code panel):
-  agent new                       start a fresh conversation
-  agent send <message>            send a message to the active session
-  agent read [--since N]          read latest assistant messages
-  agent transcript [--session-id ID]  full transcript
-  agent history                   list past sessions in current workspace
+Agent (Claude Code panel — selectors pinned 2026-05-19 against VS Code 1.119):
+  agent send <message>            click chat input, insert text, press send
+  agent state                     {running: bool, assistant_messages: N}
+  agent read                      latest assistant message text (tail 2000 chars)
+  agent wait-idle [--timeout SECS] [--poll SECS]
+                                  block until running=false (default 1800s/20s)
+  agent new | transcript | history    stubs — pending additional selector pinning
 
 Global flags:
   --port N           CDP port (default 9333)

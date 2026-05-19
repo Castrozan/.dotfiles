@@ -287,29 +287,219 @@ def capture_accessibility_snapshot(client: ChromeDevToolsClient) -> None:
     print(json.dumps(result, indent=2))
 
 
+# Selectors pinned 2026-05-19 against VS Code 1.119.0 with the
+# Claude Code extension active. Update docs/CDP-SELECTORS.md if Anthropic
+# ships a UI refresh and any of these stop resolving.
+CHAT_INPUT_EDITOR_SELECTOR = ".interactive-input-editor"
+CHAT_SEND_BUTTON_SELECTOR = ".chat-execute-toolbar .action-label.codicon-arrow-up"
+CHAT_STOP_BUTTON_SELECTOR = (
+    ".chat-execute-toolbar .action-label.codicon-stop-circle,"
+    " .chat-execute-toolbar .action-label.codicon-debug-stop,"
+    " .chat-execute-toolbar .action-label.codicon-stop"
+)
+CHAT_ASSISTANT_MESSAGE_SELECTOR = ".interactive-list .interactive-response"
+
+
+def _ensure_chat_panel_focused(client: ChromeDevToolsClient, socket: WebSocket) -> None:
+    locate_result = client.send_and_wait(
+        socket,
+        "Runtime.evaluate",
+        {
+            "expression": (
+                "(() => {"
+                f" const el = document.querySelector({json.dumps(CHAT_INPUT_EDITOR_SELECTOR)});"
+                " if (!el) return JSON.stringify({ok: false, error: 'chat input editor not found'});"
+                " const r = el.getBoundingClientRect();"
+                " if (r.width === 0) return JSON.stringify({ok: false, error: 'chat input editor not visible'});"
+                " return JSON.stringify({ok: true, cx: Math.round(r.left + r.width/2), cy: Math.round(r.top + r.height/2)});"
+                "})()"
+            ),
+            "returnByValue": True,
+        },
+    )
+    payload = json.loads(locate_result.get("result", {}).get("value", "{}"))
+    if not payload.get("ok"):
+        raise SystemExit(
+            f"Claude Code chat input not reachable: {payload.get('error', 'unknown')}"
+        )
+    _click_at_coordinate(client, socket, payload["cx"], payload["cy"])
+    time.sleep(0.25)
+
+
+def _read_chat_state(client: ChromeDevToolsClient, socket: WebSocket) -> dict[str, Any]:
+    expression = (
+        "JSON.stringify({"
+        f"  stop_visible: !!document.querySelector({json.dumps(CHAT_STOP_BUTTON_SELECTOR)}),"
+        f"  send_present: !!document.querySelector({json.dumps(CHAT_SEND_BUTTON_SELECTOR)}),"
+        f"  send_disabled: (() => {{ const b = document.querySelector({json.dumps(CHAT_SEND_BUTTON_SELECTOR)}); return b ? b.classList.contains('disabled') : null; }})(),"
+        f"  assistant_message_count: document.querySelectorAll({json.dumps(CHAT_ASSISTANT_MESSAGE_SELECTOR)}).length,"
+        f"  last_assistant_text: (() => {{ const m = document.querySelectorAll({json.dumps(CHAT_ASSISTANT_MESSAGE_SELECTOR)}); return m.length ? (m[m.length-1].innerText || '').slice(-2000) : ''; }})()"
+        "})"
+    )
+    result = client.send_and_wait(
+        socket,
+        "Runtime.evaluate",
+        {"expression": expression, "returnByValue": True},
+    )
+    return json.loads(result.get("result", {}).get("value", "{}"))
+
+
+def agent_send_message(client: ChromeDevToolsClient, message: str) -> None:
+    page = client.find_renderer_page()
+    socket = client.open_socket(page["webSocketDebuggerUrl"])
+    try:
+        _ensure_chat_panel_focused(client, socket)
+        _insert_text(client, socket, message)
+        time.sleep(0.4)
+        # Send button transitions from `disabled` to enabled once text is present.
+        for _ in range(10):
+            state = _read_chat_state(client, socket)
+            if state.get("send_present") and not state.get("send_disabled"):
+                break
+            time.sleep(0.2)
+        click_result = client.send_and_wait(
+            socket,
+            "Runtime.evaluate",
+            {
+                "expression": (
+                    "(() => {"
+                    f" const b = document.querySelector({json.dumps(CHAT_SEND_BUTTON_SELECTOR)});"
+                    " if (!b) return JSON.stringify({ok: false, error: 'send button not found'});"
+                    " if (b.classList.contains('disabled')) return JSON.stringify({ok: false, error: 'send button still disabled after typing'});"
+                    " b.click();"
+                    " return JSON.stringify({ok: true});"
+                    "})()"
+                ),
+                "returnByValue": True,
+            },
+        )
+        payload = json.loads(click_result.get("result", {}).get("value", "{}"))
+        if not payload.get("ok"):
+            raise SystemExit(f"agent send failed: {payload.get('error', 'unknown')}")
+    finally:
+        socket.close()
+    print(json.dumps({"ok": True, "subverb": "send", "characters": len(message)}))
+
+
+def agent_state(client: ChromeDevToolsClient) -> None:
+    page = client.find_renderer_page()
+    socket = client.open_socket(page["webSocketDebuggerUrl"])
+    try:
+        state = _read_chat_state(client, socket)
+    finally:
+        socket.close()
+    payload = {
+        "ok": True,
+        "running": bool(state.get("stop_visible")),
+        "assistant_messages": state.get("assistant_message_count", 0),
+        "send_disabled": state.get("send_disabled"),
+    }
+    print(json.dumps(payload))
+
+
+def agent_wait_idle(
+    client: ChromeDevToolsClient, timeout_seconds: int, poll_seconds: int
+) -> None:
+    start_monotonic = time.monotonic()
+    last_message_count = -1
+    last_text = ""
+    while time.monotonic() - start_monotonic < timeout_seconds:
+        page = client.find_renderer_page()
+        socket = client.open_socket(page["webSocketDebuggerUrl"])
+        try:
+            state = _read_chat_state(client, socket)
+        finally:
+            socket.close()
+        running = bool(state.get("stop_visible"))
+        message_count = state.get("assistant_message_count", 0)
+        last_text = state.get("last_assistant_text", "")
+        elapsed = int(time.monotonic() - start_monotonic)
+        print(
+            json.dumps(
+                {
+                    "elapsed_seconds": elapsed,
+                    "running": running,
+                    "assistant_messages": message_count,
+                }
+            ),
+            flush=True,
+        )
+        if not running and message_count > 0 and message_count == last_message_count:
+            print(
+                json.dumps(
+                    {
+                        "ok": True,
+                        "outcome": "idle",
+                        "elapsed_seconds": elapsed,
+                        "assistant_messages": message_count,
+                        "last_assistant_tail": last_text,
+                    }
+                )
+            )
+            return
+        last_message_count = message_count
+        time.sleep(poll_seconds)
+    print(
+        json.dumps(
+            {
+                "ok": False,
+                "outcome": "timeout",
+                "timeout_seconds": timeout_seconds,
+                "last_assistant_tail": last_text,
+            }
+        )
+    )
+    sys.exit(2)
+
+
+def agent_read_last(client: ChromeDevToolsClient) -> None:
+    page = client.find_renderer_page()
+    socket = client.open_socket(page["webSocketDebuggerUrl"])
+    try:
+        state = _read_chat_state(client, socket)
+    finally:
+        socket.close()
+    print(
+        json.dumps(
+            {
+                "ok": True,
+                "assistant_messages": state.get("assistant_message_count", 0),
+                "last_assistant_text": state.get("last_assistant_text", ""),
+            }
+        )
+    )
+
+
 def dispatch_agent_subverb(
     client: ChromeDevToolsClient, subverb: str, extra_args: argparse.Namespace
 ) -> None:
-    # The Claude Code WebView selectors are not yet pinned — this is a v1 stub
-    # that returns a clear error so callers know to follow up with selector discovery.
+    if subverb == "send":
+        if not extra_args.message:
+            raise SystemExit("--message is required for agent send")
+        agent_send_message(client, extra_args.message)
+        return
+    if subverb == "state":
+        agent_state(client)
+        return
+    if subverb == "read":
+        agent_read_last(client)
+        return
+    if subverb == "wait-idle":
+        timeout = int(extra_args.timeout or 1800)
+        poll = int(extra_args.poll or 20)
+        agent_wait_idle(client, timeout, poll)
+        return
+    # Unimplemented subverbs still return a clear stub error.
     print(
         json.dumps(
             {
                 "ok": False,
                 "subverb": subverb,
                 "error": (
-                    "agent verbs are stubbed in v1 — selectors for the Claude Code WebView need to be "
-                    "discovered against a running VS Code with the extension active. Run `vscode launch` "
-                    "and then `vscode cdp-pages --raw` to see the available WebView pages, capture a "
-                    "snapshot, and pin the selectors in docs/CDP-SELECTORS.md."
+                    f"agent subverb '{subverb}' not implemented yet. "
+                    "Implemented: send, state, read, wait-idle. "
+                    "Pending: new, transcript, history (need additional selector pinning — see docs/CDP-SELECTORS.md)."
                 ),
-                "next_steps": [
-                    "vscode launch",
-                    "vscode cdp-pages --raw",
-                    "(open Claude Code panel in VS Code)",
-                    "vscode snapshot > /tmp/claude-code-snapshot.json",
-                    "inspect snapshot for input box / send button selectors",
-                ],
             },
             indent=2,
         )
@@ -349,6 +539,8 @@ def main() -> None:
     parser.add_argument("--since", help="Agent read: messages since N")
     parser.add_argument("--session-id", help="Agent transcript: session id")
     parser.add_argument("--message", help="Agent send: message body")
+    parser.add_argument("--timeout", help="Agent wait-idle: max seconds")
+    parser.add_argument("--poll", help="Agent wait-idle: poll interval seconds")
     args = parser.parse_args()
 
     client = ChromeDevToolsClient(port=args.port)
