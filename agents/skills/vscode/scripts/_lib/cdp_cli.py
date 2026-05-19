@@ -163,22 +163,24 @@ def _click_at_coordinate(
         )
 
 
-def _resolve_workbench_focus_break_coordinate(
+def _break_focus_from_chat_panel(
     client: ChromeDevToolsClient, socket: WebSocket
-) -> tuple[float, float]:
-    """Return a screen coordinate guaranteed to be inside the workbench
-    shell but outside any panel that would intercept keystrokes.
+) -> None:
+    """Drop input focus from whatever panel currently holds it (chat input,
+    terminal, search box, etc.) so the next keyboard chord reaches the
+    workbench keybinding service instead of being typed as text.
 
     Tries, in order:
-      1. The center of `.menubar` if visible (top-of-window strip).
-      2. The bottom of `.activitybar` (always present, left edge).
-      3. Document body (10, 10) as a last-resort fallback.
-
-    Earlier versions hardcoded (400, 8) inside the menu bar — which broke
-    when the menu bar was hidden via window.menuBarVisibility:"hidden" or
-    when the window was narrow enough that x=400 fell outside the bar.
+      1. The center of `.menubar` via a synthetic mouse click — if it
+         exists in the DOM with non-zero size. This was the original
+         strategy and is the most natural focus break.
+      2. `document.body.focus()` via Runtime.evaluate. Works regardless
+         of layout: zen mode, hidden menu bar, custom title bar style.
+         The previous coordinate fallback `(10, 10)` was unsafe — on the
+         default Linux build it lands on the first Activity Bar icon and
+         opens/toggles the Explorer panel, which is a real side effect.
     """
-    locate_result = client.send_and_wait(
+    focus_attempt_result = client.send_and_wait(
         socket,
         "Runtime.evaluate",
         {
@@ -188,32 +190,32 @@ def _resolve_workbench_focus_break_coordinate(
                 "  if (menubar) {"
                 "    const r = menubar.getBoundingClientRect();"
                 "    if (r.width > 0 && r.height > 0) {"
-                "      return JSON.stringify({source: 'menubar', x: r.left + r.width/2, y: r.top + r.height/2});"
+                "      return JSON.stringify({strategy: 'menubar_click', x: r.left + r.width/2, y: r.top + r.height/2});"
                 "    }"
                 "  }"
-                "  const activitybar = document.querySelector('.activitybar');"
-                "  if (activitybar) {"
-                "    const r = activitybar.getBoundingClientRect();"
-                "    if (r.width > 0 && r.height > 0) {"
-                "      return JSON.stringify({source: 'activitybar', x: r.left + r.width/2, y: r.bottom - 4});"
-                "    }"
+                "  document.body.focus();"
+                "  if (document.activeElement && document.activeElement.blur) {"
+                "    document.activeElement.blur();"
                 "  }"
-                "  return JSON.stringify({source: 'fallback', x: 10, y: 10});"
+                "  return JSON.stringify({strategy: 'document_body_focus'});"
                 "})()"
             ),
             "returnByValue": True,
         },
     )
-    payload = json.loads(locate_result.get("result", {}).get("value", "{}"))
-    return float(payload["x"]), float(payload["y"])
+    payload = json.loads(focus_attempt_result.get("result", {}).get("value", "{}"))
+    if payload.get("strategy") == "menubar_click":
+        _click_at_coordinate(
+            client, socket, x=float(payload["x"]), y=float(payload["y"])
+        )
 
 
 def _open_command_palette(client: ChromeDevToolsClient, socket: WebSocket) -> None:
     # Sidebars and panels (Chat, Search, Terminal) keep input focus across
-    # keyboard chords, swallowing Ctrl+Shift+P as text. A click into a known
-    # safe workbench-shell coordinate breaks focus before we send the chord.
-    focus_x, focus_y = _resolve_workbench_focus_break_coordinate(client, socket)
-    _click_at_coordinate(client, socket, x=focus_x, y=focus_y)
+    # keyboard chords, swallowing Ctrl+Shift+P as text. Break focus first via
+    # a menu-bar click (preferred — natural workbench focus) or a programmatic
+    # blur as a layout-agnostic fallback.
+    _break_focus_from_chat_panel(client, socket)
     time.sleep(0.15)
     _send_key_chord(client, socket, "Escape", 27)
     time.sleep(0.1)
@@ -448,6 +450,22 @@ def agent_state(client: ChromeDevToolsClient) -> None:
 REQUIRED_CONSECUTIVE_IDLE_POLLS_FOR_STABILITY = 3
 
 
+def _open_renderer_socket(client: ChromeDevToolsClient) -> WebSocket:
+    page = client.find_renderer_page()
+    return client.open_socket(page["webSocketDebuggerUrl"])
+
+
+def _close_socket_quietly(socket: WebSocket | None) -> None:
+    if socket is None:
+        return
+    try:
+        socket.close()
+    except Exception:
+        # The socket may already be half-closed by the server; we are
+        # discarding it anyway, so swallow whatever raises here.
+        pass
+
+
 def agent_wait_idle(
     client: ChromeDevToolsClient, timeout_seconds: int, poll_seconds: int
 ) -> None:
@@ -464,16 +482,59 @@ def agent_wait_idle(
 
     Holds one WebSocket across the full poll loop so a long wait (e.g. 4h
     @ 30s poll = 480 polls) does not produce a connect/disconnect storm.
+    The socket is transparently reopened if a poll throws (page reload,
+    transient network blip) so a long watch is not crashed by one error.
     """
-    page = client.find_renderer_page()
-    socket = client.open_socket(page["webSocketDebuggerUrl"])
+    socket: WebSocket | None = _open_renderer_socket(client)
     start_monotonic = time.monotonic()
     last_message_count = -1
     last_text = ""
     consecutive_stable_idle_polls = 0
+    consecutive_socket_errors = 0
+    MAX_CONSECUTIVE_SOCKET_ERRORS_BEFORE_GIVING_UP = 5
     try:
         while time.monotonic() - start_monotonic < timeout_seconds:
-            state = _read_chat_state(client, socket)
+            try:
+                state = _read_chat_state(client, socket)
+                consecutive_socket_errors = 0
+            except Exception as poll_error:
+                consecutive_socket_errors += 1
+                print(
+                    json.dumps(
+                        {
+                            "elapsed_seconds": int(time.monotonic() - start_monotonic),
+                            "socket_error": str(poll_error),
+                            "consecutive_socket_errors": consecutive_socket_errors,
+                            "action": "reopening socket",
+                        }
+                    ),
+                    flush=True,
+                )
+                if (
+                    consecutive_socket_errors
+                    >= MAX_CONSECUTIVE_SOCKET_ERRORS_BEFORE_GIVING_UP
+                ):
+                    print(
+                        json.dumps(
+                            {
+                                "ok": False,
+                                "outcome": "socket_failure",
+                                "consecutive_socket_errors": consecutive_socket_errors,
+                                "last_error": str(poll_error),
+                            }
+                        )
+                    )
+                    sys.exit(3)
+                _close_socket_quietly(socket)
+                socket = None
+                time.sleep(min(poll_seconds, 5))
+                try:
+                    socket = _open_renderer_socket(client)
+                except Exception:
+                    # Will try again on the next loop iteration.
+                    pass
+                continue
+
             running = bool(state.get("stop_visible"))
             message_count = state.get("assistant_message_count", 0)
             last_text = state.get("last_assistant_text", "")
@@ -521,7 +582,7 @@ def agent_wait_idle(
             last_message_count = message_count
             time.sleep(poll_seconds)
     finally:
-        socket.close()
+        _close_socket_quietly(socket)
     print(
         json.dumps(
             {

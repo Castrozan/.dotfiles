@@ -87,8 +87,20 @@ run_step "open Claude Code chat panel" assert_substring_in_command_output '"ok":
 	"$VSCODE_CLI" --port "$TEST_CDP_PORT" command-by-title "Chat: Focus on Chat View"
 sleep 2
 
-run_step "probe-chat-dom resolves pinned chat input selector" assert_substring_in_command_output '"chat_input_editor"' \
-	"$VSCODE_CLI" --port "$TEST_CDP_PORT" probe-chat-dom
+run_step "probe-chat-dom reports pinned chat input + send selectors as found" \
+	bash -c '
+		probe_output=$("$0" --port "$1" probe-chat-dom 2>&1)
+		input_found=$(printf %s "$probe_output" | jq -r ".pinned_selectors.chat_input_editor.found // false")
+		send_found=$(printf %s "$probe_output" | jq -r ".pinned_selectors.send_button.found // false")
+		if [ "$input_found" != "true" ] || [ "$send_found" != "true" ]; then
+			echo "FAIL: pinned selectors not found in live DOM" >&2
+			echo "  chat_input_editor.found = $input_found" >&2
+			echo "  send_button.found       = $send_found" >&2
+			echo "  (selectors may have drifted — diff full probe-chat-dom output against docs/CDP-SELECTORS.md)" >&2
+			exit 1
+		fi
+		echo "ok: chat_input_editor + send_button both found"
+	' "$VSCODE_CLI" "$TEST_CDP_PORT"
 
 run_step "agent state returns running boolean" assert_substring_in_command_output '"running"' \
 	"$VSCODE_CLI" --port "$TEST_CDP_PORT" agent state
@@ -96,22 +108,32 @@ run_step "agent state returns running boolean" assert_substring_in_command_outpu
 run_step "agent read returns last_assistant_text key" assert_substring_in_command_output '"last_assistant_text"' \
 	"$VSCODE_CLI" --port "$TEST_CDP_PORT" agent read
 
-run_step "agent send returns ok:true (sends a tiny prompt to the real chat)" \
-	assert_substring_in_command_output '"ok": true' \
-	"$VSCODE_CLI" --port "$TEST_CDP_PORT" agent send "Reply with just OK."
-# Give the chat engine ~3 s to ack the send before snapshotting state.
-sleep 3
-run_step "agent state observes the in-flight turn (running=true OR messages>0)" \
-	bash -c '
-		state=$("$0" --port "$1" agent state 2>&1)
-		if printf %s "$state" | grep -qE "\"running\":[[:space:]]*true|\"assistant_messages\":[[:space:]]*[1-9]"; then
-			echo "ok: send round-trip received by chat"
-		else
-			echo "FAIL: send was accepted but chat never registered a turn"
-			echo "agent state output: $state"
-			exit 1
-		fi
-	' "$VSCODE_CLI" "$TEST_CDP_PORT"
+# The end-to-end `agent send` round-trip POSTS a real message into the user's
+# Claude Code chat history, consuming API tokens and leaving a transcript
+# entry every smoke run. Gated behind an opt-in env var so the default
+# `./smoke-test.sh` invocation stays side-effect-free.
+if [ "${VSCODE_SKILL_SMOKE_SIDE_EFFECTS:-0}" = "1" ]; then
+	run_step "agent send returns ok:true (sends a tiny prompt to the real chat)" \
+		assert_substring_in_command_output '"ok": true' \
+		"$VSCODE_CLI" --port "$TEST_CDP_PORT" agent send "Reply with just OK."
+	# Give the chat engine ~3 s to ack the send before snapshotting state.
+	sleep 3
+	run_step "agent state observes the in-flight turn (running=true OR messages>0)" \
+		bash -c '
+			state=$("$0" --port "$1" agent state 2>&1)
+			if printf %s "$state" | grep -qE "\"running\":[[:space:]]*true|\"assistant_messages\":[[:space:]]*[1-9]"; then
+				echo "ok: send round-trip received by chat"
+			else
+				echo "FAIL: send was accepted but chat never registered a turn"
+				echo "agent state output: $state"
+				exit 1
+			fi
+		' "$VSCODE_CLI" "$TEST_CDP_PORT"
+else
+	echo ""
+	echo "=== agent send round-trip (skipped) ==="
+	echo "skipped: set VSCODE_SKILL_SMOKE_SIDE_EFFECTS=1 to enable. The opt-in step posts a real prompt to the user's Claude Code session and consumes API tokens."
+fi
 
 run_step "unimplemented agent subverb returns clear stub error" assert_substring_in_command_output "not implemented yet" \
 	"$VSCODE_CLI" --port "$TEST_CDP_PORT" agent history
