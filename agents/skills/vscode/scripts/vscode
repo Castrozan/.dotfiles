@@ -55,37 +55,6 @@ _parse_global_flags() {
 	done
 }
 
-_user_data_dir_for_port() {
-	echo "/tmp/vscode-cdp-${CDP_PORT}"
-}
-
-_write_prewarmed_settings() {
-	local settings_path="$1"
-	# Don't clobber settings if the caller pre-seeded the user-data-dir.
-	[[ -f "$settings_path" ]] && return 0
-	cat >"$settings_path" <<'JSON'
-{
-  "workbench.startupEditor": "none",
-  "workbench.welcomePage.walkthroughs.openOnInstall": false,
-  "workbench.tips.enabled": false,
-  "workbench.auxiliaryActivityBar.location": "hidden",
-  "workbench.secondarySideBar.defaultVisibility": "hidden",
-  "update.showReleaseNotes": false,
-  "extensions.autoUpdate": false,
-  "telemetry.telemetryLevel": "off",
-  "security.workspace.trust.startupPrompt": "never",
-  "security.workspace.trust.enabled": false,
-  "chat.commandCenter.enabled": false,
-  "chat.editing.confirmEditRequestRetry": false,
-  "github.copilot.advanced": { "authProvider": "none" }
-}
-JSON
-}
-
-_pid_file_for_port() {
-	echo "/tmp/vscode-cdp-${CDP_PORT}.pid"
-}
-
 _is_running_on_port() {
 	curl -sSf "http://localhost:${CDP_PORT}/json/version" >/dev/null 2>&1
 }
@@ -93,14 +62,20 @@ _is_running_on_port() {
 _resolve_pid_listening_on_port() {
 	# `nohup code &` returns the subshell pid which exits after forking the real
 	# VS Code process. Resolve the process that actually owns the CDP port.
-	local listener_pid
-	listener_pid="$(ss -ltnpH "sport = :${CDP_PORT}" 2>/dev/null | grep -oP 'pid=\K[0-9]+' | head -1)" || true
-	if [[ -n "$listener_pid" ]]; then
-		echo "$listener_pid"
+	local listener_pid=""
+	if command -v ss >/dev/null 2>&1; then
+		listener_pid="$(ss -ltnpH "sport = :${CDP_PORT}" 2>/dev/null | grep -oP 'pid=\K[0-9]+' | head -1)" || true
+	fi
+	if [[ -z "$listener_pid" ]] && command -v lsof >/dev/null 2>&1; then
+		listener_pid="$(lsof -ti ":${CDP_PORT}" 2>/dev/null | head -1)" || true
+	fi
+	if [[ -z "$listener_pid" ]]; then
+		if ! command -v ss >/dev/null 2>&1 && ! command -v lsof >/dev/null 2>&1; then
+			echo "warning: neither 'ss' nor 'lsof' available; cannot resolve VS Code pid for port ${CDP_PORT}. Kill verb will fail to terminate the process." >&2
+		fi
 		return 0
 	fi
-	listener_pid="$(lsof -ti ":${CDP_PORT}" 2>/dev/null | head -1)" || true
-	[[ -n "$listener_pid" ]] && echo "$listener_pid"
+	echo "$listener_pid"
 }
 
 _assert_running() {
@@ -111,58 +86,23 @@ _assert_running() {
 }
 
 _verb_launch() {
-	local workspace_path=""
-	local -a disable_extension_ids=()
-	local disable_copilot="true"
-
-	while (("$#")); do
-		case "$1" in
-		--disable-extension)
-			disable_extension_ids+=("$2")
-			shift 2
-			;;
-		--keep-copilot)
-			disable_copilot="false"
-			shift
-			;;
-		*)
-			workspace_path="$1"
-			shift
-			;;
-		esac
-	done
+	local workspace_path="${1:-}"
 
 	if _is_running_on_port; then
-		echo "VS Code already running on port ${CDP_PORT}; reusing instance."
+		echo "VS Code already exposing CDP on port ${CDP_PORT}; reusing instance."
 		_verb_status
 		return 0
 	fi
 
-	local user_data_dir
-	user_data_dir="$(_user_data_dir_for_port)"
-	mkdir -p "$user_data_dir/User"
-	_write_prewarmed_settings "$user_data_dir/User/settings.json"
-	local pid_file
-	pid_file="$(_pid_file_for_port)"
-	local stdout_log="${user_data_dir}/launch.stdout.log"
-	local stderr_log="${user_data_dir}/launch.stderr.log"
-
-	local -a args=(
-		"--remote-debugging-port=${CDP_PORT}"
-		"--remote-allow-origins=*"
-		"--user-data-dir=${user_data_dir}"
-		"--new-window"
-	)
-	# Copilot Chat auto-opens and grabs keyboard focus, breaking palette-based
-	# command dispatch. Disable by default; opt back in with --keep-copilot.
-	if [[ "$disable_copilot" == "true" ]]; then
-		args+=("--disable-extension=GitHub.copilot-chat" "--disable-extension=GitHub.copilot")
-	fi
-	for extension_id in "${disable_extension_ids[@]}"; do
-		args+=("--disable-extension=${extension_id}")
-	done
+	# The Nix-wrapped `code` binary always injects --remote-debugging-port and
+	# --remote-allow-origins (see ~/.dotfiles/home/modules/editor/vscode/vscode.nix).
+	# We pass no flags here — `code` uses Lucas's real ~/.config/Code profile so
+	# logged-in Claude Code sessions, extensions, and settings are present.
+	local -a args=()
 	[[ -n "$workspace_path" ]] && args+=("$workspace_path")
 
+	local stdout_log="/tmp/vscode-cdp-${CDP_PORT}.stdout.log"
+	local stderr_log="/tmp/vscode-cdp-${CDP_PORT}.stderr.log"
 	nohup code "${args[@]}" >"$stdout_log" 2>"$stderr_log" &
 	disown || true
 
@@ -176,19 +116,14 @@ _verb_launch() {
 	done
 	if ((attempt >= 30)); then
 		echo "VS Code did not expose CDP on port ${CDP_PORT} within 15s. Check ${stderr_log}." >&2
+		echo "(Confirm 'which code' resolves to the Nix-wrapped binary that injects --remote-debugging-port.)" >&2
 		exit 1
 	fi
 
 	local resolved_pid
 	resolved_pid="$(_resolve_pid_listening_on_port)"
-	if [[ -z "$resolved_pid" ]]; then
-		echo "warning: CDP port ${CDP_PORT} is up but could not resolve owning pid" >&2
-		resolved_pid="?"
-	else
-		echo "$resolved_pid" >"$pid_file"
-	fi
-
-	echo "VS Code launched (pid=${resolved_pid}, port=${CDP_PORT}, user-data-dir=${user_data_dir})"
+	[[ -z "$resolved_pid" ]] && resolved_pid="?"
+	echo "VS Code launched (pid=${resolved_pid}, port=${CDP_PORT}, profile=~/.config/Code)"
 	_verb_status
 }
 
@@ -200,7 +135,7 @@ _verb_status() {
 	local pid
 	pid="$(_resolve_pid_listening_on_port)"
 	[[ -z "$pid" ]] && pid="?"
-	echo "Running: pid=${pid} port=${CDP_PORT} user-data-dir=$(_user_data_dir_for_port)"
+	echo "Running: pid=${pid} port=${CDP_PORT}"
 	echo "Pages:"
 	curl -sS "http://localhost:${CDP_PORT}/json" | _python_helper "format_pages"
 }
@@ -208,7 +143,6 @@ _verb_status() {
 _verb_kill() {
 	if ! _is_running_on_port; then
 		echo "Not running on port ${CDP_PORT}."
-		_cleanup_for_port
 		return 0
 	fi
 	echo "Closing VS Code on port ${CDP_PORT}..."
@@ -221,13 +155,8 @@ _verb_kill() {
 		sleep 1
 		kill -9 "$pid" 2>/dev/null || true
 	fi
-	_cleanup_for_port
+	# NEVER touch the user-data-dir — it is the user's real ~/.config/Code.
 	echo "Killed."
-}
-
-_cleanup_for_port() {
-	rm -f "$(_pid_file_for_port)"
-	rm -rf "$(_user_data_dir_for_port)"
 }
 
 _verb_cdp_pages() {
@@ -242,6 +171,10 @@ _verb_cdp_pages() {
 _verb_dismiss_modals() {
 	_assert_running
 	local presses="${1:-3}"
+	if [[ ! "$presses" =~ ^[1-9][0-9]*$ ]]; then
+		echo "dismiss-modals: presses must be a positive integer, got '${presses}'" >&2
+		exit 1
+	fi
 	_python_helper "dismiss_modals" --presses "$presses"
 }
 
@@ -395,9 +328,12 @@ Usage:
   vscode [--port N] <verb> [args]
 
 Lifecycle:
-  launch [path]          start VS Code with CDP enabled (default port 9333)
+  launch [path]          run `code [path]` — the Nix-wrapped binary always
+                         exposes CDP on port 9333 and uses your real
+                         ~/.config/Code profile (logged-in Claude Code,
+                         extensions, settings all intact).
   status                 show running instance + CDP pages
-  kill                   close gracefully and remove the temp user-data-dir
+  kill                   close VS Code gracefully (never touches user-data-dir)
   cdp-pages [--raw]      list CDP pages (use --raw for full JSON)
 
 UI:

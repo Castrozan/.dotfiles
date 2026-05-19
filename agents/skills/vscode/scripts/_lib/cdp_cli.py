@@ -20,6 +20,7 @@ import argparse
 import base64
 import json
 import sys
+import time
 from typing import Any
 
 import requests
@@ -156,8 +157,6 @@ def _click_at_coordinate(
 
 
 def _open_command_palette(client: ChromeDevToolsClient, socket: WebSocket) -> None:
-    import time
-
     # Sidebars and panels (Chat, Search, Terminal) keep input focus across
     # keyboard chords, swallowing Ctrl+Shift+P as text. A mouse click on the
     # menu bar reliably moves focus to the workbench shell without disturbing
@@ -172,8 +171,6 @@ def _open_command_palette(client: ChromeDevToolsClient, socket: WebSocket) -> No
 
 
 def dismiss_modals(client: ChromeDevToolsClient, press_count: int) -> None:
-    import time
-
     page = client.find_renderer_page()
     socket = client.open_socket(page["webSocketDebuggerUrl"])
     try:
@@ -198,8 +195,6 @@ def run_vscode_command(
             )
         )
         sys.exit(1)
-    import time
-
     page = client.find_renderer_page()
     socket = client.open_socket(page["webSocketDebuggerUrl"])
     try:
@@ -213,8 +208,6 @@ def run_vscode_command(
 
 
 def open_command_palette_and_run(client: ChromeDevToolsClient, query: str) -> None:
-    import time
-
     page = client.find_renderer_page()
     socket = client.open_socket(page["webSocketDebuggerUrl"])
     try:

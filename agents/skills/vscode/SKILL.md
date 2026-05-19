@@ -14,20 +14,16 @@ Never call `code --remote-debugging-port=...` directly — the dispatcher manage
 </canonical_invocation>
 
 <lifecycle>
-VS Code is launched in an **isolated** user-data-dir under `/tmp/vscode-cdp-<port>` so it cannot pollute Lucas's main profile. Extensions still come from the host extension dir (`~/.vscode/extensions`) so the betha-marketplace-updater + agent plugins are present, but settings, workspace state, and chat history live in the temp dir.
+The Nix-wrapped `code` binary (see `~/.dotfiles/home/modules/editor/vscode/vscode.nix`) ALWAYS launches with:
+- `--remote-debugging-port=9333` — exposes CDP on a fixed port
+- `--remote-allow-origins=*` — required so CDP WebSocket handshakes succeed
 
-Launch flags applied automatically:
-- `--remote-debugging-port=<port>` + `--remote-allow-origins=*` — exposes CDP over WebSocket
-- `--user-data-dir=/tmp/vscode-cdp-<port>` — isolated profile
-- `--new-window` — never attach to an existing window
-- `--disable-extension=GitHub.copilot-chat` + `--disable-extension=GitHub.copilot` — Copilot Chat auto-focuses the auxiliary side bar input and swallows palette keychords. Pass `--keep-copilot` to opt back in.
+These flags are injected by a `pkgs.symlinkJoin` + `wrapProgram` so they apply to every invocation of `code` system-wide — including when the user double-clicks the VS Code icon, runs `code` from a terminal, or this skill calls `code`. CDP is therefore always available against the user's real `~/.config/Code` profile (logged-in Claude Code sessions, extensions, settings all intact). The skill **never** writes a `--user-data-dir` flag and **never** touches `~/.config/Code` during `kill`.
 
-Pre-seeded `User/settings.json` disables: welcome page, tips, telemetry, workspace-trust prompt, auxiliary activity bar, secondary side bar, chat command center. Re-run `launch` after deleting the user-data-dir to refresh the seed.
-
-1. `vscode launch [path] [--disable-extension ID] [--keep-copilot]` — start the instance. Reuses the existing one if already running on the same port. Returns the CDP page list.
-2. `vscode status` — show running instance, CDP pages, websocket URL.
-3. `vscode kill` — close gracefully (`workbench.action.quit`), then SIGTERM the process, then `rm -rf` the user-data-dir.
-4. `vscode dismiss-modals [N]` — press Escape N times (default 3). Useful when a sign-in modal or notification balloon is up.
+1. `vscode launch [path]` — runs `code [path]` and waits for CDP. Reuses the existing instance if one is already on port 9333.
+2. `vscode status` — show running instance pid + CDP pages.
+3. `vscode kill` — `workbench.action.quit` then SIGTERM. Never touches the user-data-dir.
+4. `vscode dismiss-modals [N]` — press Escape N times (default 3). Useful for stray notification balloons.
 </lifecycle>
 
 <ui_interaction>
