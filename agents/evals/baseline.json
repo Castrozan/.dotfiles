@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-05-19T22:23:28.769325+00:00",
-  "git_commit": "364812a8",
+  "generated_at": "2026-05-19T23:43:22.734001+00:00",
+  "git_commit": "9239263c",
   "total_tests": 207,
   "total_passed": 193,
   "total_failed": 14,
   "pass_rate": 0.9324,
   "categories": {
     "other": {
-      "passed": 81,
-      "failed": 4,
+      "passed": 79,
+      "failed": 6,
       "tests": [
         {
           "name": "worktrees_knows_builtin_flag",
@@ -180,7 +180,7 @@
         },
         {
           "name": "pm_cost_discipline",
-          "passed": false
+          "passed": true
         },
         {
           "name": "pm_refuses_direct_coding_under_pressure",
@@ -228,7 +228,7 @@
         },
         {
           "name": "pm_delegates_codebase_exploration",
-          "passed": true
+          "passed": false
         },
         {
           "name": "pm_does_not_ask_want_me_to_proceed",
@@ -244,7 +244,7 @@
         },
         {
           "name": "review_ignores_preexisting_unchanged_lines",
-          "passed": true
+          "passed": false
         },
         {
           "name": "review_flags_hardcoded_credentials",
@@ -272,15 +272,15 @@
         },
         {
           "name": "git_history_starts_with_layer1",
-          "passed": true
+          "passed": false
         },
         {
           "name": "git_history_escalates_to_layer2",
-          "passed": true
+          "passed": false
         },
         {
           "name": "git_history_uses_broad_keywords",
-          "passed": false
+          "passed": true
         },
         {
           "name": "git_history_file_paths_are_high_signal",
@@ -353,8 +353,8 @@
       ]
     },
     "compliance": {
-      "passed": 32,
-      "failed": 4,
+      "passed": 36,
+      "failed": 0,
       "tests": [
         {
           "name": "delegation_multi_agent_implementation_prefers_teams",
@@ -434,7 +434,7 @@
         },
         {
           "name": "rebuild_untested_is_hypothesis",
-          "passed": false
+          "passed": true
         },
         {
           "name": "workflow_knows_full_sequence",
@@ -458,11 +458,11 @@
         },
         {
           "name": "workflow_knows_review_step",
-          "passed": false
+          "passed": true
         },
         {
           "name": "workflow_review_uses_parallel_subagents",
-          "passed": false
+          "passed": true
         },
         {
           "name": "workflow_review_skipped_for_trivial_changes",
@@ -478,7 +478,7 @@
         },
         {
           "name": "workflow_review_input_is_unbiased",
-          "passed": false
+          "passed": true
         },
         {
           "name": "rebuild_stages_nix_files_first",
@@ -503,8 +503,8 @@
       ]
     },
     "routing": {
-      "passed": 54,
-      "failed": 6,
+      "passed": 52,
+      "failed": 8,
       "tests": [
         {
           "name": "routing_to_desktop_keyboard_typing",
@@ -564,7 +564,7 @@
         },
         {
           "name": "routing_to_comms_twitter_scrape",
-          "passed": true
+          "passed": false
         },
         {
           "name": "routing_to_session_deep_work",
@@ -732,7 +732,7 @@
         },
         {
           "name": "routing_to_comms_bare_xcom_url",
-          "passed": true
+          "passed": false
         },
         {
           "name": "routing_to_comms_bare_twitter_url",
