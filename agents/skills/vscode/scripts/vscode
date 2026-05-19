@@ -23,6 +23,7 @@ main() {
 	status) _verb_status "$@" ;;
 	kill) _verb_kill "$@" ;;
 	cdp-pages) _verb_cdp_pages "$@" ;;
+	probe-chat-dom) _verb_probe_chat_dom "$@" ;;
 	dismiss-modals) _verb_dismiss_modals "$@" ;;
 	run-command) _verb_run_command "$@" ;;
 	palette) _verb_palette "$@" ;;
@@ -168,6 +169,11 @@ _verb_cdp_pages() {
 	curl -sS "http://localhost:${CDP_PORT}/json" | _python_helper "format_pages"
 }
 
+_verb_probe_chat_dom() {
+	_assert_running
+	_python_helper "probe_chat_dom"
+}
+
 _verb_dismiss_modals() {
 	_assert_running
 	local presses="${1:-3}"
@@ -255,7 +261,7 @@ _verb_agent() {
 	_assert_running
 	local subverb="${1:-}"
 	[[ -z "$subverb" ]] && {
-		echo "Usage: vscode agent <new|send|read|transcript|history> [...]" >&2
+		echo "Usage: vscode agent <send|state|read|wait-idle|new|transcript|history> [...]" >&2
 		exit 1
 	}
 	shift
@@ -325,6 +331,13 @@ Lifecycle:
   status                 show running instance + CDP pages
   kill                   close VS Code gracefully (never touches user-data-dir)
   cdp-pages [--raw]      list CDP pages (use --raw for full JSON)
+  probe-chat-dom         report the live DOM state of all pinned
+                         Claude-Code chat selectors (input editor, send
+                         button, stop button, assistant messages) plus
+                         editable inputs and ancestor chains. Use when
+                         agent verbs stop working after a VS Code or
+                         extension update — diff the output against
+                         docs/CDP-SELECTORS.md to find what moved.
 
 UI:
   run-command <id> [arg-json]   execute a VS Code command (preferred)

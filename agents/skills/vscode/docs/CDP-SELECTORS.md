@@ -45,28 +45,43 @@ working.
 | Remove MCP server | `betha.removeMcpServer` |
 | Check extension update | `betha.checkExtensionUpdate` |
 
-## Claude Code WebView (PINNING REQUIRED)
+## Claude Code chat panel (pinned 2026-05-19)
 
-The Claude Code panel in VS Code is a WebView. Its DOM is undocumented and
-selectors are NOT yet pinned. To complete the `vscode agent send|read|...`
-verbs, follow this procedure:
+The chat panel renders directly in the workbench DOM (NOT in a separate
+WebView page despite the "Build with Agent" UI). Selectors below are the
+ones wired into `scripts/_lib/cdp_cli.py` as `CHAT_*_SELECTOR` constants.
 
-1. `vscode launch --keep-copilot` (or whatever your Claude Code distribution
-   requires — Copilot is disabled by default).
-2. Open the Claude Code panel manually in the running VS Code window.
-3. `vscode cdp-pages --raw` and locate the page with URL containing
-   `vscode-webview://*claude-code*`.
-4. `vscode snapshot > /tmp/claude-code-snapshot.json`.
-5. Inspect for the input box (likely a `textarea` or `[contenteditable]`),
-   the send button (likely an `aria-label` like "Send Message"), and the
-   message-list container.
-6. Pin the selectors below and update `dispatch_agent_subverb` to use them.
-
-| Element | Selector | Verified |
+| Element | Selector | Used by |
 |---|---|---|
-| Input box | TBD | ❌ |
-| Send button | TBD | ❌ |
-| Message list root | TBD | ❌ |
-| Assistant message bubble | TBD | ❌ |
-| New conversation button | TBD | ❌ |
-| Session history button | TBD | ❌ |
+| Chat input editor (Monaco) | `.interactive-input-editor` | `agent send`: click center to focus, then `Input.insertText` |
+| Send button | `.chat-execute-toolbar .action-label.codicon-arrow-up` | `agent send`: clicked after text inserted; has `.disabled` while input empty |
+| Stop / cancel button | `.chat-execute-toolbar .action-label.codicon-stop-circle`, `.codicon-debug-stop`, `.codicon-stop` | `agent state`: visible iff a turn is in flight (running) |
+| User request bubble | `.interactive-list .interactive-request` | not consumed (count available via probe) |
+| Assistant response bubble | `.interactive-list .interactive-response` | `agent state` / `agent read`: count + tail text |
+| IME helper textarea (sibling of Monaco) | `textarea.ime-text-area` inside `.interactive-input-editor > .chat-editor-container > .monaco-editor > .overflow-guard` | not directly used; keyboard events flow through CDP `Input.dispatchKeyEvent` instead |
+
+Subverbs still using stubs (need additional pinning): `agent new`,
+`agent transcript`, `agent history` — those need selectors for the
+Sessions sidebar tree at the top of the chat pane.
+
+### Refresh procedure (when selectors drift)
+
+VS Code or Claude Code can ship a UI refresh that renames or restructures
+these classes. To re-discover:
+
+```
+vscode launch ~/some-workspace
+# open the chat panel in the running VS Code (Ctrl+L or run-command
+# workbench.action.chat.openInSidebar)
+vscode probe-chat-dom | jq
+```
+
+`probe-chat-dom` consolidates five earlier ad-hoc probes (probe-inputs,
+probe-chat, probe-input-area, probe-chat-input, probe-messages). It
+reports: which pinned selectors still resolve, candidate alternative
+selectors for messages, every toolbar button with `aria-label`/disabled
+state/rect, every editable element on the page, and the ancestor chain
+of both the send button and the chat input. Diff the output against the
+table above to identify what moved, then update the `CHAT_*_SELECTOR`
+constants in `scripts/_lib/cdp_cli.py` and bump the date in this
+section's heading.

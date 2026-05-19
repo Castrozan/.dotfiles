@@ -24,10 +24,10 @@ assert_substring_in_command_output() {
 	local expected_substring="$1"
 	shift
 	local actual_output
-	# The command under test is allowed to exit non-zero (e.g. the agent stub
-	# does so intentionally). With `set -e` an assignment that captures a
-	# non-zero command-substitution exit would abort the whole test, so we
-	# explicitly mask it here.
+	# The command under test is allowed to exit non-zero (e.g. an
+	# unimplemented agent subverb exits 1 by design). With `set -e` an
+	# assignment that captures a non-zero command-substitution exit would
+	# abort the whole test, so we explicitly mask it here.
 	actual_output="$("$@" 2>&1)" || true
 	if [[ "$actual_output" != *"$expected_substring"* ]]; then
 		printf 'FAIL: expected output to contain %q\nActual output:\n%s\n' "$expected_substring" "$actual_output" >&2
@@ -83,8 +83,26 @@ echo "ok: non-integer rejected"
 run_step "dismiss-modals accepts integer" assert_substring_in_command_output '"presses": 2' \
 	"$VSCODE_CLI" --port "$TEST_CDP_PORT" dismiss-modals 2
 
-run_step "agent stub returns documented v1 error" assert_substring_in_command_output "agent verbs are stubbed" \
-	"$VSCODE_CLI" --port "$TEST_CDP_PORT" agent send "hello world"
+run_step "open Claude Code chat panel" assert_substring_in_command_output '"ok": true' \
+	"$VSCODE_CLI" --port "$TEST_CDP_PORT" run-command "workbench.action.chat.openInSidebar"
+sleep 2
+
+run_step "probe-chat-dom resolves pinned chat input selector" assert_substring_in_command_output '"chat_input_editor"' \
+	"$VSCODE_CLI" --port "$TEST_CDP_PORT" probe-chat-dom
+
+run_step "agent state returns ok:true JSON" assert_substring_in_command_output '"ok": true' \
+	"$VSCODE_CLI" --port "$TEST_CDP_PORT" agent state
+
+run_step "agent read returns ok:true JSON" assert_substring_in_command_output '"ok": true' \
+	"$VSCODE_CLI" --port "$TEST_CDP_PORT" agent read
+
+run_step "unimplemented agent subverb returns clear stub error" assert_substring_in_command_output "not implemented yet" \
+	"$VSCODE_CLI" --port "$TEST_CDP_PORT" agent history
+
+run_step "unknown agent subverb is rejected" \
+	bash -c '"$0" --port "$1" agent bogus 2>&1 | grep -q "Unknown agent subverb"' \
+	"$VSCODE_CLI" "$TEST_CDP_PORT"
+echo "ok: unknown agent subverb rejected"
 
 run_step "snapshot returns non-trivial JSON" bash -c '
 	output_size=$("$0" --port "$1" snapshot | wc -c)

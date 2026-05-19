@@ -452,6 +452,87 @@ def agent_wait_idle(
     sys.exit(2)
 
 
+def probe_chat_dom(client: ChromeDevToolsClient) -> None:
+    """Re-discover Claude Code chat selectors against the live DOM.
+
+    Consolidates the five one-off probe scripts (probe-inputs.py,
+    probe-chat.py, probe-input-area.py, probe-chat-input.py,
+    probe-messages.py) that were used 2026-05-19 to pin the selectors
+    currently in CHAT_*_SELECTOR. Run this after a VS Code or Claude
+    Code extension update if `agent state` / `agent send` start failing
+    — the JSON output shows which selectors still resolve and where
+    they live, so docs/CDP-SELECTORS.md can be refreshed.
+    """
+    page = client.find_renderer_page()
+    socket = client.open_socket(page["webSocketDebuggerUrl"])
+    try:
+        expression = (
+            "JSON.stringify({"
+            "  pinned_selectors: {"
+            f"    chat_input_editor: (() => {{ const el = document.querySelector({json.dumps(CHAT_INPUT_EDITOR_SELECTOR)}); if (!el) return null; const r = el.getBoundingClientRect(); return {{found: true, rect: {{x: Math.round(r.x), y: Math.round(r.y), w: Math.round(r.width), h: Math.round(r.height)}}, cls: (el.className||'').toString().slice(0,120)}}; }})(),"
+            f"    send_button: (() => {{ const el = document.querySelector({json.dumps(CHAT_SEND_BUTTON_SELECTOR)}); if (!el) return null; const r = el.getBoundingClientRect(); return {{found: true, disabled: el.classList.contains('disabled'), aria: el.getAttribute('aria-label')||'', rect: {{x: Math.round(r.x), y: Math.round(r.y), w: Math.round(r.width), h: Math.round(r.height)}}}}; }})(),"
+            f"    stop_button: (() => {{ const el = document.querySelector({json.dumps(CHAT_STOP_BUTTON_SELECTOR)}); if (!el) return null; const r = el.getBoundingClientRect(); return {{found: true, aria: el.getAttribute('aria-label')||'', rect: {{x: Math.round(r.x), y: Math.round(r.y), w: Math.round(r.width), h: Math.round(r.height)}}}}; }})(),"
+            f"    assistant_messages: {{count: document.querySelectorAll({json.dumps(CHAT_ASSISTANT_MESSAGE_SELECTOR)}).length}}"
+            "  },"
+            "  candidate_message_selectors: ["
+            "    {sel: '.interactive-list .interactive-item-container', count: document.querySelectorAll('.interactive-list .interactive-item-container').length},"
+            "    {sel: '.interactive-list .interactive-response', count: document.querySelectorAll('.interactive-list .interactive-response').length},"
+            "    {sel: '.interactive-list .interactive-request', count: document.querySelectorAll('.interactive-list .interactive-request').length},"
+            "    {sel: '.interactive-response', count: document.querySelectorAll('.interactive-response').length},"
+            "    {sel: '.chat-response', count: document.querySelectorAll('.chat-response').length},"
+            "    {sel: '[data-username]', count: document.querySelectorAll('[data-username]').length},"
+            "    {sel: '.interactive-list > div', count: document.querySelectorAll('.interactive-list > div').length}"
+            "  ],"
+            "  chat_toolbar_buttons: Array.from(document.querySelectorAll('.chat-execute-toolbar .action-label, .chat-input-toolbars .action-label')).map(el => {"
+            "    const r = el.getBoundingClientRect();"
+            "    return {aria: (el.getAttribute('aria-label')||el.title||el.textContent||'').slice(0,80), cls: (el.className||'').toString().slice(0,100), disabled: el.classList.contains('disabled'), rect: {x: Math.round(r.x), y: Math.round(r.y), w: Math.round(r.width), h: Math.round(r.height)}};"
+            "  }),"
+            "  editable_elements: Array.from(document.querySelectorAll('textarea, input, [contenteditable=\"true\"]')).map(el => {"
+            "    const r = el.getBoundingClientRect();"
+            "    return {tag: el.tagName, placeholder: el.getAttribute('placeholder') || el.getAttribute('aria-label') || '', cls: (el.className||'').toString().slice(0,100), rect: {x: Math.round(r.x), y: Math.round(r.y), w: Math.round(r.width), h: Math.round(r.height)}, visible: el.offsetParent !== null};"
+            "  }),"
+            "  send_button_ancestor_chain: (() => {"
+            f"    const send = document.querySelector({json.dumps(CHAT_SEND_BUTTON_SELECTOR)});"
+            "    if (!send) return null;"
+            "    const chain = [];"
+            "    let el = send;"
+            "    for (let i = 0; i < 12 && el; i++) {"
+            "      chain.push({tag: el.tagName, cls: (el.className||'').toString().slice(0,120)});"
+            "      el = el.parentElement;"
+            "    }"
+            "    return chain;"
+            "  })(),"
+            "  chat_input_ancestor_chain: (() => {"
+            f"    const ed = document.querySelector({json.dumps(CHAT_INPUT_EDITOR_SELECTOR)});"
+            "    if (!ed) return null;"
+            "    const chain = [];"
+            "    let el = ed;"
+            "    for (let i = 0; i < 10 && el; i++) {"
+            "      chain.push({tag: el.tagName, cls: (el.className||'').toString().slice(0,120)});"
+            "      el = el.parentElement;"
+            "    }"
+            "    return chain;"
+            "  })()"
+            "})"
+        )
+        result = client.send_and_wait(
+            socket,
+            "Runtime.evaluate",
+            {"expression": expression, "returnByValue": True},
+        )
+        report = json.loads(result.get("result", {}).get("value", "{}"))
+        # Inject the pinned constants so reviewers can diff at a glance.
+        report["_pinned_constants"] = {
+            "CHAT_INPUT_EDITOR_SELECTOR": CHAT_INPUT_EDITOR_SELECTOR,
+            "CHAT_SEND_BUTTON_SELECTOR": CHAT_SEND_BUTTON_SELECTOR,
+            "CHAT_STOP_BUTTON_SELECTOR": CHAT_STOP_BUTTON_SELECTOR,
+            "CHAT_ASSISTANT_MESSAGE_SELECTOR": CHAT_ASSISTANT_MESSAGE_SELECTOR,
+        }
+    finally:
+        socket.close()
+    print(json.dumps(report, indent=2))
+
+
 def agent_read_last(client: ChromeDevToolsClient) -> None:
     page = client.find_renderer_page()
     socket = client.open_socket(page["webSocketDebuggerUrl"])
@@ -522,6 +603,7 @@ def main() -> None:
             "snapshot",
             "agent",
             "dismiss_modals",
+            "probe_chat_dom",
         ],
         required=True,
     )
@@ -573,6 +655,8 @@ def main() -> None:
         dispatch_agent_subverb(client, args.subverb or "", args)
     elif args.entry == "dismiss_modals":
         dismiss_modals(client, int(args.presses))
+    elif args.entry == "probe_chat_dom":
+        probe_chat_dom(client)
     else:
         raise SystemExit(f"unknown entry: {args.entry}")
 
