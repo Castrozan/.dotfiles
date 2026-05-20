@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# Usage: tmux-binding-run <command> [args...]
+# Runs a tmux key-binding command and keeps failures readable. By default
+# tmux pipes any stderr or non-zero exit from `run-shell` into a maximised
+# copy-mode buffer, which dumps raw shell errors over the whole window.
+# This wrapper swallows that output and surfaces a single readable line on
+# the tmux status bar instead, then always exits 0 so tmux never opens the
+# copy-mode wall.
+
+set -u
+
+if [ "$#" -lt 1 ]; then
+	tmux display-message -d 4000 "tmux-binding-run: no command given"
+	exit 0
+fi
+
+binding_command="$1"
+shift
+
+if ! command -v "$binding_command" >/dev/null 2>&1; then
+	tmux display-message -d 5000 "tmux binding: '$binding_command' not found - reload config with prefix r"
+	exit 0
+fi
+
+if ! captured_output=$("$binding_command" "$@" 2>&1); then
+	first_error_line=$(printf '%s\n' "$captured_output" | grep -v '^[[:space:]]*$' | head -n1)
+	tmux display-message -d 5000 "tmux binding '$binding_command' failed: ${first_error_line:-no error message}"
+fi
+
+exit 0

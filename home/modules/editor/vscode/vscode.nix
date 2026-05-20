@@ -17,10 +17,21 @@ let
       ]);
   });
 
-  vscodePackage = vscodeLinuxPinnedBuild;
+  chromeDevToolsProtocolPort = "9333";
+
+  vscodePackageAlwaysExposingChromeDevToolsProtocol = pkgs.symlinkJoin {
+    name = "vscode-with-chrome-devtools-protocol-${vscodeLinuxPinnedBuild.version}";
+    paths = [ vscodeLinuxPinnedBuild ];
+    nativeBuildInputs = [ pkgs.makeWrapper ];
+    postBuild = ''
+      wrapProgram $out/bin/code \
+        --add-flags "--remote-debugging-port=${chromeDevToolsProtocolPort}" \
+        --add-flags "--remote-allow-origins=*"
+    '';
+  };
 in
 {
   home.packages = [
-    vscodePackage
+    vscodePackageAlwaysExposingChromeDevToolsProtocol
   ];
 }

@@ -25,3 +25,7 @@ After editing any file in the dotfiles repo, execute this sequence before respon
 
 The end-of-work hook runs quality review automatically. It spawns parallel reviewers for code review and compliance checking. You do not need to spawn them manually.
 </workflow>
+
+<agent-instructions>
+After editing agent instructions (any file under agents/ or any CLAUDE.md), run `agent-eval --save-baseline` before pushing. The pre-push hook agents/hooks/pre-push-ci-gate.py blocks pushes when the eval baseline is older than three days or when compliance pass rate falls below the threshold. Skipping the eval refresh wastes a full push attempt because the hook also blocks the push that would have updated the baseline.
+</agent-instructions>

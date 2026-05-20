@@ -15,7 +15,6 @@ MINIMAL_GLOBAL_CLAUDE_RUNTIME_ENTRY_NAMES = (
     "history.jsonl",
 )
 DEFAULT_INJECTED_GLOBAL_SKILL_DIRECTORY_NAMES = ("core", "personal")
-WORKSPACE_CREDENTIALS_FILE_NAME = ".credentials.json"
 SKILL_DISCOVERY_PRUNED_CHILD_DIRECTORY_NAMES = frozenset(
     {"node_modules", "__pycache__", "target", "dist", "build", "venv"}
 )
@@ -213,16 +212,6 @@ def link_minimal_global_runtime_entries(
             )
 
 
-def link_workspace_credentials_file_to_global(
-    workspace_config_directory: Path,
-    global_claude_credentials_file: Path,
-) -> None:
-    workspace_credentials_file = (
-        workspace_config_directory / WORKSPACE_CREDENTIALS_FILE_NAME
-    )
-    ensure_directory_symlink(workspace_credentials_file, global_claude_credentials_file)
-
-
 def ensure_workspace_claude_state_file(
     workspace_config_directory: Path,
     global_claude_state_file: Path,
@@ -300,10 +289,6 @@ def prepare_workspace_claude_launch_plan(
     )
     link_minimal_global_runtime_entries(
         temporary_workspace_directory, global_claude_config_directory
-    )
-    link_workspace_credentials_file_to_global(
-        temporary_workspace_directory,
-        global_claude_config_directory / WORKSPACE_CREDENTIALS_FILE_NAME,
     )
     ensure_workspace_claude_state_file(
         temporary_workspace_directory, global_claude_state_file
