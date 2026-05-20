@@ -367,14 +367,58 @@ def test_prepare_workspace_claude_launch_plan_does_not_touch_credentials_file(
     assert not workspace_credentials_path.is_symlink()
 
 
-def test_recreate_workspace_directory_removes_existing_content(tmp_path):
+def test_second_launch_preserves_claude_written_credentials_in_same_workspace(tmp_path):
+    global_claude_config_directory = tmp_path / "global-claude"
+    (global_claude_config_directory / "skills" / "core").mkdir(parents=True)
+    (global_claude_config_directory / "skills" / "core" / "SKILL.md").write_text(
+        "---\nname: core\n---\n"
+    )
+    (global_claude_config_directory / "skills" / "personal").mkdir(parents=True)
+    (global_claude_config_directory / "skills" / "personal" / "SKILL.md").write_text(
+        "---\nname: personal\n---\n"
+    )
+
     workspace_directory = tmp_path / "workspace"
-    workspace_directory.mkdir()
-    (workspace_directory / "stale-file.txt").write_text("old")
+    skill_directory = workspace_directory / "alpha"
+    skill_directory.mkdir(parents=True)
+    (skill_directory / "SKILL.md").write_text("---\nname: alpha\n---\n")
 
-    loaded_workspace_launcher_module.recreate_workspace_directory(workspace_directory)
+    core_instructions_file = tmp_path / "core.md"
+    core_instructions_file.write_text("---\ndescription: core\n---\n\nbody\n")
 
-    assert not workspace_directory.exists()
+    deterministic_workspace_directory = tmp_path / "deterministic-workspace"
+
+    loaded_workspace_launcher_module.prepare_workspace_claude_launch_plan(
+        temporary_workspace_directory=deterministic_workspace_directory,
+        global_claude_config_directory=global_claude_config_directory,
+        global_claude_state_file=tmp_path / "missing-state.json",
+        core_instructions_file=core_instructions_file,
+        personal_skill_set_directory=tmp_path / "personal-skill-set",
+        extend_workspace_with_global_skills=False,
+        requested_skill_source_directories=[],
+        workspace_search_root_directory=workspace_directory,
+        claude_binary_path="/bin/claude",
+    )
+
+    claude_written_credentials_file = (
+        deterministic_workspace_directory / ".credentials.json"
+    )
+    claude_written_credentials_file.write_text('{"token":"user-logged-in"}\n')
+
+    loaded_workspace_launcher_module.prepare_workspace_claude_launch_plan(
+        temporary_workspace_directory=deterministic_workspace_directory,
+        global_claude_config_directory=global_claude_config_directory,
+        global_claude_state_file=tmp_path / "missing-state.json",
+        core_instructions_file=core_instructions_file,
+        personal_skill_set_directory=tmp_path / "personal-skill-set",
+        extend_workspace_with_global_skills=False,
+        requested_skill_source_directories=[],
+        workspace_search_root_directory=workspace_directory,
+        claude_binary_path="/bin/claude",
+    )
+
+    assert claude_written_credentials_file.exists()
+    assert claude_written_credentials_file.read_text() == '{"token":"user-logged-in"}\n'
 
 
 def test_discover_workspace_skill_source_directories_skips_pruned_child_directories(

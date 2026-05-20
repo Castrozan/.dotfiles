@@ -2,7 +2,6 @@
 
 import hashlib
 import os
-import shutil
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -183,6 +182,8 @@ def build_unique_skill_directory_name_map(
 
 
 def ensure_directory_symlink(target_path: Path, source_path: Path) -> None:
+    if target_path.is_symlink() or target_path.exists():
+        target_path.unlink()
     target_path.symlink_to(source_path, target_is_directory=source_path.is_dir())
 
 
@@ -366,11 +367,6 @@ def compute_deterministic_workspace_directory(
     return Path(f"/tmp/claude-workspace.{directory_hash}") / "claude-config"
 
 
-def recreate_workspace_directory(workspace_directory: Path) -> None:
-    if workspace_directory.exists():
-        shutil.rmtree(workspace_directory)
-
-
 def exec_workspace_scoped_claude_session(
     workspace_claude_launch_plan: WorkspaceClaudeLaunchPlan,
     remaining_claude_arguments: list[str],
@@ -417,7 +413,6 @@ def main() -> None:
         deterministic_workspace_directory = compute_deterministic_workspace_directory(
             workspace_search_root_directory
         )
-        recreate_workspace_directory(deterministic_workspace_directory)
 
         workspace_claude_launch_plan = prepare_workspace_claude_launch_plan(
             temporary_workspace_directory=deterministic_workspace_directory,
