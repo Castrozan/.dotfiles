@@ -85,7 +85,15 @@ nohup bash -c "
         done
         sleep 2
         tmux display-message -t '$CURRENT_TMUX_PANE' -p '' 2>/dev/null || exit 0
-        tmux send-keys -t '$CURRENT_TMUX_PANE' '$CONTINUATION_PROMPT' Enter
+
+        CONTINUATION_PROMPT_BUFFER_FILE=\$(mktemp -t claude-restart-continuation.XXXXXX)
+        printf '%s' '$CONTINUATION_PROMPT' > \"\$CONTINUATION_PROMPT_BUFFER_FILE\"
+        tmux load-buffer -b claude-restart-continuation \"\$CONTINUATION_PROMPT_BUFFER_FILE\"
+        tmux paste-buffer -b claude-restart-continuation -t '$CURRENT_TMUX_PANE'
+        rm -f \"\$CONTINUATION_PROMPT_BUFFER_FILE\"
+        tmux delete-buffer -b claude-restart-continuation 2>/dev/null || true
+        sleep 0.5
+        tmux send-keys -t '$CURRENT_TMUX_PANE' Enter
     fi
 " &>/dev/null &
 disown
