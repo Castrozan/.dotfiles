@@ -78,7 +78,9 @@
     ../../home/modules/system/scripts.nix
     ../../home/modules/system/ubuntu-system-tuning.nix
 
+    ../../home/modules/voice/voice-pipeline.nix
     ../../home/modules/voice/whisp-away.nix
+    ./home/voice-pipeline.nix
 
     ../../home/modules/home-assistant
 
