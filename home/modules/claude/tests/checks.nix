@@ -22,18 +22,18 @@ let
     self.homeManagerModules.claude-code
   ];
 
-  cfgWithDiscordAgent = helpers.homeManagerTestConfiguration [
+  cfgWithClawdeAgent = helpers.homeManagerTestConfiguration [
     self.homeManagerModules.claude-code
     {
-      claude.discordChannel.agents.test-agent = {
-        botTokenSecretName = "discord-bot-token-test";
-        role = "Test agent";
+      clawde.agents.test-agent = {
+        channel.type = "discord";
+        channel.discord.botTokenSecretName = "discord-bot-token-test";
         personality = "Test personality";
       };
     }
   ];
 
-  discordChannelService = cfgWithDiscordAgent.systemd.user.services.claude-discord-channel;
+  clawdeService = cfgWithClawdeAgent.systemd.user.services.clawde;
 
   fileNames = builtins.attrNames cfg.home.file;
 
@@ -63,35 +63,31 @@ in
       (builtins.hasAttr ".local/share/claude-skill-sets/personal/.claude/skills/research" cfg.home.file)
       "research skill should be deployed in the personal vault for claude";
 
-  claude-discord-channel-survives-config-change-restart =
-    mkEvalCheck "claude-discord-channel-survives-config-change-restart"
-      (!(discordChannelService.Unit.X-RestartIfChanged or true))
-      "claude-discord-channel.service must set Unit.X-RestartIfChanged=false so home-manager activation does not restart it (restarting kills the tmux server in its cgroup, destroying every session including unrelated ones)";
+  clawde-survives-config-change-restart =
+    mkEvalCheck "clawde-survives-config-change-restart"
+      (!(clawdeService.Unit.X-RestartIfChanged or true))
+      "clawde.service must set Unit.X-RestartIfChanged=false so home-manager activation does not restart it (restarting kills the tmux server in its cgroup, destroying every agent window)";
 
-  claude-discord-channel-kill-mode-process =
-    mkEvalCheck "claude-discord-channel-kill-mode-process"
-      ((discordChannelService.Service.KillMode or null) == "process")
-      "claude-discord-channel.service must set Service.KillMode=process so systemctl stop/restart only kills the supervisor PID; control-group (the default) takes the tmux daemon down with the service";
+  clawde-kill-mode-process =
+    mkEvalCheck "clawde-kill-mode-process" ((clawdeService.Service.KillMode or null) == "process")
+      "clawde.service must set Service.KillMode=process so systemctl stop/restart only kills the supervisor PID; control-group (the default) takes the tmux daemon down with the service";
 
-  claude-discord-channel-no-execstop-kill-session =
-    mkEvalCheck "claude-discord-channel-no-execstop-kill-session"
-      (!(discordChannelService.Service ? ExecStop))
-      "claude-discord-channel.service must not define ExecStop - any tmux kill-session on stop defeats the whole point of surviving restarts";
+  clawde-no-execstop-kill-session =
+    mkEvalCheck "clawde-no-execstop-kill-session" (!(clawdeService.Service ? ExecStop))
+      "clawde.service must not define ExecStop - any tmux kill-session on stop defeats the whole point of surviving restarts";
 
-  claude-discord-channel-does-not-require-agenix =
-    mkEvalCheck "claude-discord-channel-does-not-require-agenix"
-      (!(builtins.elem "agenix.service" (discordChannelService.Unit.Requires or [ ])))
-      "claude-discord-channel.service must not Requires=agenix.service - every rebuild reactivates agenix and Requires propagates the deactivation, killing the tmux server. Use Wants=agenix.service plus After=agenix.service instead";
+  clawde-does-not-require-agenix =
+    mkEvalCheck "clawde-does-not-require-agenix"
+      (!(builtins.elem "agenix.service" (clawdeService.Unit.Requires or [ ])))
+      "clawde.service must not Requires=agenix.service - every rebuild reactivates agenix and Requires propagates the deactivation, killing the tmux server. Use Wants=agenix.service plus After=agenix.service instead";
 
-  claude-discord-channel-wants-agenix =
-    mkEvalCheck "claude-discord-channel-wants-agenix"
-      (builtins.elem "agenix.service" (discordChannelService.Unit.Wants or [ ]))
-      "claude-discord-channel.service must Wants=agenix.service so agenix is started on boot but its restart does not bring the discord channel down";
+  clawde-wants-agenix =
+    mkEvalCheck "clawde-wants-agenix" (builtins.elem "agenix.service" (clawdeService.Unit.Wants or [ ]))
+      "clawde.service must Wants=agenix.service so agenix is started on boot but its restart does not bring the clawde supervisor down";
 
-  claude-discord-channel-after-agenix =
-    mkEvalCheck "claude-discord-channel-after-agenix"
-      (builtins.elem "agenix.service" (discordChannelService.Unit.After or [ ]))
-      "claude-discord-channel.service must After=agenix.service so the bot tokens are available when ExecStartPre runs on initial boot";
+  clawde-after-agenix =
+    mkEvalCheck "clawde-after-agenix" (builtins.elem "agenix.service" (clawdeService.Unit.After or [ ]))
+      "clawde.service must After=agenix.service so the bot tokens are available when the supervisor starts on initial boot";
 
   chrome-devtools-bridge-service-exists =
     let

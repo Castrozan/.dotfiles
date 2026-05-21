@@ -30,9 +30,14 @@ in
     systemd.user.services.clawde = {
       Unit = {
         Description = "clawde persistent agents supervisor";
-        After = [ "network.target" ];
+        After = [
+          "network.target"
+          "agenix.service"
+        ];
+        Wants = [ "agenix.service" ];
         StartLimitBurst = 5;
         StartLimitIntervalSec = 300;
+        X-RestartIfChanged = false;
       };
       Service = {
         Type = "simple";
@@ -44,6 +49,7 @@ in
         ];
         Restart = "always";
         RestartSec = "10s";
+        KillMode = "process";
         Environment = [
           "PATH=${linuxSystemPaths}"
           "HOME=${homeDir}"

@@ -7,8 +7,7 @@
     ./home/hyprland.nix
     ./home/ssh.nix
     ./home/session-vars.nix
-    ./home/claude-discord-agents.nix
-    ./home/claude-project-agents.nix
+    ./home/clawde-agents.nix
     ./home/sophos-disable-plugins
     ./home/forticlient-disable-update
 

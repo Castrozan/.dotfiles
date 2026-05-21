@@ -52,10 +52,10 @@ let
   '';
 in
 {
-  claude.discordChannel.agents = {
+  clawde.agents = {
     claude = {
-      botTokenSecretName = "discord-bot-token-claude";
-      role = "Discord-mediated general-purpose assistant — coding, automation, monitoring, chat, anything that does not clearly belong to a specialist";
+      channel.type = "discord";
+      channel.discord.botTokenSecretName = "discord-bot-token-claude";
       model = "opus";
       skillDirectories = [ personalSkillSetDirectory ];
       permissionMode = "bypassPermissions";
@@ -87,8 +87,8 @@ in
     };
 
     clever = {
-      botTokenSecretName = "discord-bot-token-clever";
-      role = "Discord-mediated delegator for home/personal work — NixOS dotfiles, home automation, overnight tasks, system administration";
+      channel.type = "discord";
+      channel.discord.botTokenSecretName = "discord-bot-token-clever";
       model = "sonnet";
       skillDirectories = [ personalSkillSetDirectory ];
       permissionMode = "bypassPermissions";
@@ -159,8 +159,8 @@ in
     };
 
     golden = {
-      botTokenSecretName = "discord-bot-token-golden";
-      role = "Lucas's personal investment manager on Discord — portfolio tracking, market data, news synthesis, allocation discussion, tax-aware suggestions. No trade execution.";
+      channel.type = "discord";
+      channel.discord.botTokenSecretName = "discord-bot-token-golden";
       model = "opus";
       skillDirectories = [ personalSkillSetDirectory ];
       permissionMode = "bypassPermissions";
@@ -355,8 +355,8 @@ in
     };
 
     jarvis = {
-      botTokenSecretName = "discord-bot-token-jarvis";
-      role = "Discord-mediated delegator with butler persona — system status, anticipated needs, tasteful summaries in Tony Stark's JARVIS style";
+      channel.type = "discord";
+      channel.discord.botTokenSecretName = "discord-bot-token-jarvis";
       model = "sonnet";
       skillDirectories = [ personalSkillSetDirectory ];
       permissionMode = "bypassPermissions";
@@ -427,8 +427,8 @@ in
     };
 
     monster = {
-      botTokenSecretName = "discord-bot-token-monster";
-      role = "Main Discord-facing public agent — handles general queries from anyone, gates privileged operations behind verified ownership by Lucas";
+      channel.type = "discord";
+      channel.discord.botTokenSecretName = "discord-bot-token-monster";
       model = "haiku";
       skillDirectories = [ ];
       permissionMode = "bypassPermissions";

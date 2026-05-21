@@ -109,6 +109,5 @@ in
 
     "fish/completions/nord-on.fish".source = ../network/completions/nord-on.fish;
     "fish/completions/claude.fish".source = ../claude/completions/claude.fish;
-    "fish/completions/claude-agent.fish".source = ../claude/completions/claude-agent.fish;
   };
 }

@@ -16,7 +16,7 @@ Layer 3 is the `prefix t` toggle, which opens a maximized side pane running the 
 
 ## Past Sessions
 
-Tmux scrollback only ever holds the current pane's lifetime. Conversations from yesterday, from another window, or from any agent invoked via `claude-agent` are completely outside its reach. The session jsonl files under `~/.claude/projects/<encoded-cwd>/` are the only durable record. `claude-show-session` reads the latest one for the current cwd; `claude --resume <uuid>` reloads the conversation into a live UI. Both bypass tmux scrollback entirely.
+Tmux scrollback only ever holds the current pane's lifetime. Conversations from yesterday, from another window, or from any clawde agent running in the `claude-discord` session are completely outside its reach. The session jsonl files under `~/.claude/projects/<encoded-cwd>/` are the only durable record. `claude-show-session` reads the latest one for the current cwd; `claude --resume <uuid>` reloads the conversation into a live UI. Both bypass tmux scrollback entirely.
 
 ## Tmux Configuration That Matters
 

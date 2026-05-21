@@ -1,24 +1,37 @@
 { config, ... }:
 let
   inherit (config.home) homeDirectory;
+  personalSkillSetDirectory = "${homeDirectory}/.local/share/claude-skill-sets/personal";
+
+  jennyHeartbeatPrompt = "Heartbeat tick. Read HEARTBEAT.md. If there is no active objective, do nothing - exit silently. If there is pending work, continue it. Never browse the web on a heartbeat tick. Never poll Gmail, Calendar, or Google Chat - those channels are not yours anymore.";
+  jennyDenyToolPatterns = [
+    "mcp__chrome-devtools__*"
+    "mcp__browser-use__*"
+  ];
+
+  projectManagerHeartbeatInterval = "3,33 * * * *";
+  projectManagerHeartbeatPrompt = "Heartbeat tick. Read .pm/HEARTBEAT.md at your workspace root. If there is no active work, exit silently. If work is in flight, continue it. Never browse the web on a heartbeat tick unless a queued task names a specific URL.";
+
+  buildProjectManagerPersonality = projectName: ''
+    <identity>
+    You are the project manager for ${projectName}. You own direction, priorities, state, and enforcement for this workspace. Lead the project end-to-end - read its CLAUDE.md, README.md, and .pm/HEARTBEAT.md to ground yourself, then drive priorities, decisions, and execution.
+    </identity>
+  '';
 in
 {
-  claude.discordChannel.agents = {
+  clawde.agents = {
     jenny = {
-      botTokenSecretName = "discord-bot-token-jenny";
-      role = "Discord-available delegator — receives requests from Lucas, dispatches to stronger Claude sessions or persistent project agents";
+      channel.type = "discord";
+      channel.discord.botTokenSecretName = "discord-bot-token-jenny";
       model = "sonnet";
-      skillDirectories = [ "${homeDirectory}/.local/share/claude-skill-sets/personal" ];
+      skillDirectories = [ personalSkillSetDirectory ];
       permissionMode = "bypassPermissions";
       activeHoursStart = 8;
       activeHoursEnd = 20;
       dailySessionRotation = true;
       heartbeatInterval = "*/30 * * * *";
-      heartbeatPrompt = "Heartbeat tick. Read HEARTBEAT.md. If there is no active objective, do nothing - exit silently. If there is pending work, continue it. Never browse the web on a heartbeat tick. Never poll Gmail, Calendar, or Google Chat - those channels are not yours anymore.";
-      denyToolPatterns = [
-        "mcp__chrome-devtools__*"
-        "mcp__browser-use__*"
-      ];
+      heartbeatPrompt = jennyHeartbeatPrompt;
+      denyToolPatterns = jennyDenyToolPatterns;
       personality = ''
         <identity>
         You are Jenny, Lucas's Discord-mediated delegator. You exist to receive requests from Lucas over Discord and dispatch them to the right execution surface. You are not a worker - you are a router. Your job is to translate vague requests into concrete delegations and report back results.
@@ -50,8 +63,8 @@ in
         - Use the codex MCP (mcp__codex__*) for tasks that fit Codex's strengths.
 
         Persistent project agents:
-        - Each project with a .pm/HEARTBEAT.md has a tmux session named after the project. Send work to it with tmux send-keys against that session.
-        - Use claude-agent to start a new persistent agent if a project does not have one yet.
+        - Each project with a .pm/HEARTBEAT.md has a tmux window inside the claude-discord tmux session. Send work to it with tmux send-keys against that window.
+        - Persistent agents are declared in nix (users/lucas.zanoni/home/clawde-agents.nix). If a project does not have one yet, ask Lucas to declare it.
 
         When delegating, write a tight self-contained brief. The receiving session does not see your Discord conversation.
         </delegation-targets>
@@ -77,6 +90,38 @@ in
         Your domain: Discord-mediated dispatch on the home/work PC. NixOS dotfiles, personal projects, automation, system tasks - all delegated when they are non-trivial. Use the personal skill set for tools you already have.
         </focus>
       '';
+    };
+
+    ai-first-initiative = {
+      channel.type = "pm";
+      channel.pm.projectDirectory = "${homeDirectory}/repo/ai-first-initiative";
+      model = "opus";
+      heartbeatInterval = projectManagerHeartbeatInterval;
+      heartbeatPrompt = projectManagerHeartbeatPrompt;
+      personality = buildProjectManagerPersonality "ai-first-initiative";
+    };
+
+    esfinge = {
+      channel.type = "pm";
+      channel.pm.projectDirectory = "${homeDirectory}/repo/esfinge";
+      model = "opus";
+      activeHoursStart = 8;
+      activeHoursEnd = 20;
+      heartbeatInterval = projectManagerHeartbeatInterval;
+      heartbeatPrompt = projectManagerHeartbeatPrompt;
+      personality = buildProjectManagerPersonality "esfinge";
+    };
+
+    betha-pm = {
+      channel.type = "pm";
+      channel.pm.projectDirectory = "${homeDirectory}/repo/betha-pm";
+      model = "opus";
+      activeHoursStart = 8;
+      activeHoursEnd = 20;
+      heartbeatInterval = projectManagerHeartbeatInterval;
+      heartbeatPrompt = projectManagerHeartbeatPrompt;
+      personality = buildProjectManagerPersonality "betha-pm";
+      additionalInstructions = builtins.readFile ../../../private-config/claude/project-agents/betha-pm-instructions.md;
     };
   };
 }
