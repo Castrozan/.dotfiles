@@ -18,7 +18,7 @@ _git_cache_is_still_valid() {
 	local cache_file="$1"
 	[ -f "$cache_file" ] || return 1
 	local cache_age_seconds
-	cache_age_seconds=$(($(date +%s) - $(stat -f %m "$cache_file" 2>/dev/null || echo 0)))
+	cache_age_seconds=$(($(date +%s) - $(stat -c %Y "$cache_file" 2>/dev/null || echo 0)))
 	[ "$cache_age_seconds" -lt "$GIT_CACHE_TTL_SECONDS" ]
 }
 
