@@ -60,6 +60,7 @@ in
     (mkHyprlandPythonScript "hypr-screenshot" ./scripts/utilities/screenshot.py)
     (mkHyprlandPythonScript "hypr-network" ./scripts/hardware/network.py)
     (mkHyprlandPythonScript "hypr-toggle-monitors" ./scripts/hardware/toggle_monitors.py)
+    (mkHyprlandPythonScript "hypr-force-builtin-only" ./scripts/hardware/force_builtin_only.py)
     (mkHyprlandPythonScript "hypr-monitor-hotplug-daemon" ./scripts/hardware/monitor_hotplug_daemon.py)
     (mkHyprlandPythonScriptWithDeps "hypr-notification-sound-toggle"
       ./scripts/hardware/notification_sound_toggle.py
