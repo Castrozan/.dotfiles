@@ -239,8 +239,6 @@ graph TD
 | `media` | MPD, MPV, codecs, streaming, audio/video utilities |
 | `network` | OpenfortivVPN, FortiClient, DNS, shell completions |
 | `ollama` | Ollama local LLM setup |
-| `openclaw` | Multi-agent platform (Telegram/Discord), workspace, skills, reliability |
-| `openclaw-mesh` | OpenClaw mesh networking |
 | `opencode` | OpenCode IDE integration |
 | `security` | Sophos monitor, keyrings, security scripts |
 | `sourcebot` | Sourcebot skill integration |
@@ -268,7 +266,6 @@ Skills are organized as umbrella directories. Each umbrella has a `SKILL.md` (th
 | `desktop` | Desktop automation, media control, MPRIS players, clipboard, screenshots |
 | `git` | Commits, staging, commit message quality, history search |
 | `nix` | Nix language, module system, flakes, rebuild, devenv, Docker |
-| `openclaw` | Multi-agent platform: A2A, grid, Telegram/Discord bots, cron |
 | `personal` | Personal channels: Gmail, Calendar, WhatsApp, Obsidian, Home Assistant, ponto |
 | `phone-status` | Phone battery and status via SSH |
 | `quickshell` | Quickshell bar/OSD/switcher - QML editing, IPC, visual verification |

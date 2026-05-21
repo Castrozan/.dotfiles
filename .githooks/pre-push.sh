@@ -4,7 +4,8 @@ set -Eeuo pipefail
 
 [ "${SKIP_HOOKS:-0}" = "1" ] && exit 0
 
-readonly REPO_ROOT=$(git rev-parse --show-toplevel)
+REPO_ROOT=$(git rev-parse --show-toplevel)
+readonly REPO_ROOT
 
 [[ "$(basename "$REPO_ROOT")" != ".dotfiles" ]] && exit 0
 
@@ -15,7 +16,6 @@ main() {
 	_run_check "deadnix" nix run nixpkgs#deadnix -- .
 	_run_check "nixfmt" bash -c "find . -name '*.nix' -not -path './result*' -not -path './.worktrees/*' -exec nix run nixpkgs#nixfmt-rfc-style -- --check {} +"
 	_run_check "quick tests" ./tests/run.sh --quick
-	_remind_nix_tests_if_openclaw_changed
 
 	echo "All pre-push checks passed."
 }
@@ -26,34 +26,6 @@ _run_check() {
 	echo "==> $checkName"
 	"$@"
 	echo ""
-}
-
-_remind_nix_tests_if_openclaw_changed() {
-	if _openclaw_files_changed; then
-		echo ""
-		echo "NOTE: OpenClaw files changed. Run 'nix flake check' to verify nix eval tests."
-		echo ""
-	fi
-}
-
-_openclaw_files_changed() {
-	local watchedPaths=(
-		"home/modules/openclaw"
-		"users/zanoni/home/openclaw"
-		"users/lucas.zanoni/home/openclaw"
-		"tests/openclaw"
-	)
-
-	local changedFiles
-	changedFiles=$(git diff --name-only origin/main...HEAD 2>/dev/null || true)
-
-	for watchedPath in "${watchedPaths[@]}"; do
-		if echo "$changedFiles" | grep -q "^$watchedPath"; then
-			return 0
-		fi
-	done
-
-	return 1
 }
 
 main "$@"

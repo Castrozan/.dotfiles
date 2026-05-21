@@ -47,7 +47,7 @@ let
       --port ${toString browserUseMcpStreamableHttpPort}
   '';
 
-  a2aMcp = import ../../../agents/skills/openclaw/install {
+  a2aMcp = import ./a2a-mcp-server/install {
     inherit
       pkgs
       nodejs

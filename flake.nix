@@ -139,8 +139,6 @@
     tuisvn.inputs.nixpkgs.follows = "nixpkgs";
     install-nothing.url = "github:castrozan/install-nothing";
     install-nothing.inputs.nixpkgs.follows = "nixpkgs";
-    openclaw-mesh.url = "github:castrozan/openclaw-mesh";
-    openclaw-mesh.inputs.nixpkgs.follows = "nixpkgs";
     lazygit.url = "github:Castrozan/lazygit";
     lazygit.inputs.nixpkgs.follows = "nixpkgs";
     viu.url = "github:viu-media/viu";

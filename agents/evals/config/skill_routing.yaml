@@ -11,7 +11,7 @@ shared_system_prompt: &shared_system_prompt |
 
   nix - Nix everything — language expertise (lazy eval, derivations, overlays, module system, flakes, agenix, cachix), applying config via rebuild, devenv project shells, and THIS dotfiles repo conventions (module layout, isNixOS, script packaging, secrets, channels). Use for any .nix edit, rebuild, devenv shell, or "where does this belong in the dotfiles" question.
 
-  personal - Lucas's personal channels and platforms — autonomous assistant loop (Gmail, Calendar, WhatsApp, Google Chat), Obsidian vault (daily notes, TODOs, ReadItLater inbox), Twitter/X (x.com, twitter.com) scraping and posting, VTuber avatar, Senior Gestão de Ponto (marcações, acertos), Home Assistant smart home (lights, AC), phone status SSH (battery), OpenClaw multi-agent platform (grid, A2A, Telegram bots, cron). Use for any personal channel, note, tweet, social URL, smart home, phone, ponto, or openclaw task.
+  personal - Lucas's personal channels and platforms — autonomous assistant loop (Gmail, Calendar, WhatsApp, Google Chat), Obsidian vault (daily notes, TODOs, ReadItLater inbox), Twitter/X (x.com, twitter.com) scraping and posting, VTuber avatar, Senior Gestão de Ponto (marcações, acertos), Home Assistant smart home (lights, AC), phone status SSH (battery). Use for any personal channel, note, tweet, social URL, smart home, phone, or ponto task.
 
   quickshell - Implement, debug, and test Quickshell bar/OSD/switcher. Use when modifying QML files, debugging shape paths or rendering, testing IPC calls, or verifying visual changes after edits. Also use when adding new bar modules, popouts, dashboard tabs, or launcher features.
 
@@ -91,44 +91,6 @@ tests:
     assertions:
       output_contains_any:
         - "desktop"
-
-  - name: routing_to_openclaw_agent_creation
-    no_tools: true
-    system_prompt: *shared_system_prompt
-    prompt: "Create a new agent on the OpenClaw grid that monitors RSS feeds"
-    model: sonnet
-    assertions:
-      output_contains_any:
-        - "personal"
-      output_not_contains:
-        - "session"
-
-  - name: routing_to_openclaw_cron_job
-    no_tools: true
-    system_prompt: *shared_system_prompt
-    prompt: "Set up a cron job on the grid to run the cleanup task every hour"
-    model: sonnet
-    assertions:
-      output_contains_any:
-        - "personal"
-
-  - name: routing_to_openclaw_a2a_protocol
-    no_tools: true
-    system_prompt: *shared_system_prompt
-    prompt: "Send an A2A message to the summarizer agent on the platform"
-    model: sonnet
-    assertions:
-      output_contains_any:
-        - "personal"
-
-  - name: routing_to_openclaw_telegram_bot
-    no_tools: true
-    system_prompt: *shared_system_prompt
-    prompt: "Configure the Telegram bot on our multi-agent platform to forward alerts"
-    model: sonnet
-    assertions:
-      output_contains_any:
-        - "personal"
 
   - name: routing_to_comms_google_chat_message
     no_tools: true

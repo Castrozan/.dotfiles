@@ -30,7 +30,6 @@ let
     "api-keys/gemini-api-key"
     "api-keys/nvidia-api-key"
     "api-keys/openai-api-key"
-    "api-keys/openclaw-gateway-token"
     "infrastructure/telegram-ids"
     "credentials/x-username"
     "credentials/x-email"

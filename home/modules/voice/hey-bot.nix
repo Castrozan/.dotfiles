@@ -487,7 +487,7 @@ in
 
     gatewayTokenFile = lib.mkOption {
       type = lib.types.str;
-      default = "${config.home.homeDirectory}/.secrets/openclaw-gateway-token";
+      default = "${config.home.homeDirectory}/.secrets/voice-gateway-token";
     };
 
     agentId = lib.mkOption {

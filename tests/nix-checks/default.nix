@@ -23,8 +23,6 @@ let
 
   claudeChecks = import ../../home/modules/claude/tests/checks.nix moduleArgs;
   codexChecks = import ../../home/modules/codex/tests/checks.nix moduleArgs;
-  openclawChecks = import ../../home/modules/openclaw/tests/checks.nix moduleArgs;
-  openclawConfigChecks = import ../../home/modules/openclaw/tests/nix-config-checks.nix moduleArgs;
 
   terminalChecks = import ../../home/modules/terminal/tests/checks.nix domainArgs;
   editorChecks = import ../../home/modules/editor/tests/checks.nix domainArgs;
@@ -36,7 +34,6 @@ let
   securityChecks = import ../../home/modules/security/tests/checks.nix domainArgs;
   ollamaChecks = import ../../home/modules/ollama/tests/checks.nix domainArgs;
   opencodeChecks = import ../../home/modules/opencode/tests/checks.nix domainArgs;
-  openclawMeshChecks = import ../../home/modules/openclaw-mesh/tests/checks.nix domainArgs;
   audioChecks = import ../../home/modules/audio/tests/checks.nix domainArgs;
   networkChecks = import ../../home/modules/network/tests/checks.nix domainArgs;
   systemChecks = import ../../home/modules/system/tests/checks.nix domainArgs;
@@ -47,8 +44,6 @@ let
 in
 claudeChecks
 // codexChecks
-// openclawChecks
-// openclawConfigChecks
 // terminalChecks
 // editorChecks
 // browserChecks
@@ -59,7 +54,6 @@ claudeChecks
 // securityChecks
 // ollamaChecks
 // opencodeChecks
-// openclawMeshChecks
 // audioChecks
 // networkChecks
 // systemChecks

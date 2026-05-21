@@ -53,7 +53,6 @@
     ./keyboard-backlight.nix
     ../scripts
     ../../../nixos/modules/xdg-portal.nix
-    ../../../nixos/modules/openclaw-watchdog.nix
     ../../../nixos/modules/network-optimization.nix
   ];
 
@@ -235,13 +234,6 @@
     };
 
     udev.extraRules = builtins.readFile ./udev-rules/99-dell-g15-touchpad.rules;
-
-    openclaw-watchdog = {
-      enable = true;
-      interval = 30;
-      gatewayPort = 18789;
-      user = username;
-    };
   };
 
   environment.systemPackages = with pkgs; [

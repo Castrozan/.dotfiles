@@ -6,7 +6,6 @@ Portable — works on any git repo. Uses repo root path as cache key.
 
 import argparse
 import hashlib
-import os
 import subprocess
 import sys
 import time
@@ -18,7 +17,9 @@ def git_root(repo: str | None = None) -> Path:
     if repo:
         cmd = ["git", "-C", repo, "rev-parse", "--show-toplevel"]
     try:
-        return Path(subprocess.check_output(cmd, text=True, stderr=subprocess.DEVNULL).strip())
+        return Path(
+            subprocess.check_output(cmd, text=True, stderr=subprocess.DEVNULL).strip()
+        )
     except subprocess.CalledProcessError:
         target = repo or "current directory"
         print(f"error: not a git repo: {target}", file=sys.stderr)
@@ -106,7 +107,9 @@ def dump_layer(root: Path, layer: int, paths: dict[int, Path], force: bool) -> N
     )
     result = subprocess.run(git_cmd, capture_output=True)
     if result.returncode != 0:
-        print(f"error: git log failed with exit code {result.returncode}", file=sys.stderr)
+        print(
+            f"error: git log failed with exit code {result.returncode}", file=sys.stderr
+        )
         sys.exit(1)
     with open(path, "wb") as f:
         f.write(header.encode())
@@ -140,7 +143,11 @@ def cmd_info(_args, root: Path, paths: dict[int, Path]) -> None:
             size = file_size_human(p)
             sh = stored_head(p)
             status = "stale" if is_stale(p, head) else "fresh"
-            print(f"Layer {layer}: {p} ({lines} lines, {size}, {status}, HEAD: {sh or 'none'})")
+            head_display = sh or "none"
+            print(
+                f"Layer {layer}: {p} "
+                f"({lines} lines, {size}, {status}, HEAD: {head_display})"
+            )
         else:
             print(f"Layer {layer}: not dumped")
 
@@ -159,8 +166,8 @@ LAYERED WORKFLOW
 
     Layer 1 (default) - subjects + file paths.
       File paths are the highest-signal data here: a commit touching
-      home/modules/openclaw/browser-use/ is about browser automation
-      regardless of what the subject line says.
+      home/modules/browser/ is about browser automation regardless of
+      what the subject line says.
 
     Layer 2 - full patches (actual diff content).
       Use when the keyword lives in code, not commit messages: function
@@ -234,11 +241,15 @@ def main() -> None:
     sub = parser.add_subparsers(dest="command")
 
     dump_p = sub.add_parser("dump", help="Dump git log to /tmp")
-    dump_p.add_argument("--layer", type=int, default=1, choices=[1, 2, 3], help="Layer to dump")
+    dump_p.add_argument(
+        "--layer", type=int, default=1, choices=[1, 2, 3], help="Layer to dump"
+    )
     dump_p.add_argument("--force", action="store_true", help="Re-dump even if fresh")
 
     path_p = sub.add_parser("path", help="Print cache file path")
-    path_p.add_argument("--layer", type=int, default=1, choices=[1, 2], help="Layer path")
+    path_p.add_argument(
+        "--layer", type=int, default=1, choices=[1, 2], help="Layer path"
+    )
 
     sub.add_parser("info", help="Show cache status")
     sub.add_parser("clean", help="Remove cached files")
@@ -252,7 +263,12 @@ def main() -> None:
     root = git_root(args.repo)
     paths = cache_paths(root)
 
-    commands = {"dump": cmd_dump, "path": cmd_path, "info": cmd_info, "clean": cmd_clean}
+    commands = {
+        "dump": cmd_dump,
+        "path": cmd_path,
+        "info": cmd_info,
+        "clean": cmd_clean,
+    }
     commands[args.command](args, root, paths)
 
 

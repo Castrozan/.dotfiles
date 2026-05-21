@@ -535,22 +535,6 @@
           "passed": true
         },
         {
-          "name": "routing_to_openclaw_agent_creation",
-          "passed": true
-        },
-        {
-          "name": "routing_to_openclaw_cron_job",
-          "passed": true
-        },
-        {
-          "name": "routing_to_openclaw_a2a_protocol",
-          "passed": true
-        },
-        {
-          "name": "routing_to_openclaw_telegram_bot",
-          "passed": true
-        },
-        {
           "name": "routing_to_comms_google_chat_message",
           "passed": true
         },
@@ -824,18 +808,6 @@
         },
         {
           "name": "comms_routes_to_avatar",
-          "passed": true
-        },
-        {
-          "name": "openclaw_routes_to_grid",
-          "passed": true
-        },
-        {
-          "name": "openclaw_routes_to_a2a",
-          "passed": true
-        },
-        {
-          "name": "openclaw_routes_to_assistant_cron",
           "passed": true
         },
         {

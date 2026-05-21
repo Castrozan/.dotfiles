@@ -6,7 +6,6 @@ let
   directoriesToScan = [
     "${homeDir}/.config"
     "${homeDir}/.claude"
-    "${homeDir}/.openclaw"
     "${homeDir}/.local"
     "${homeDir}/.codex"
   ];
