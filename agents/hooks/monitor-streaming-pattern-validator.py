@@ -23,7 +23,9 @@ def command_invokes_python_with_buffered_stdout(command_string):
     if not invokes_python:
         return False
     python_call_has_unbuffered_flag = bool(
-        re.search(r"\bpython3?\b[^|;&\n]*?(?<!\S)-[A-Za-z]*u[A-Za-z]*\b", command_string)
+        re.search(
+            r"\bpython3?\b[^|;&\n]*?(?<!\S)-[A-Za-z]*u[A-Za-z]*\b", command_string
+        )
     )
     environment_disables_python_buffering = "PYTHONUNBUFFERED=" in command_string
     return not (
@@ -106,7 +108,7 @@ def main():
     try:
         hook_input = json.load(sys.stdin)
     except json.JSONDecodeError:
-        sys.exit(1)
+        sys.exit(0)
 
     if hook_input.get("tool_name") != "Monitor":
         sys.exit(0)

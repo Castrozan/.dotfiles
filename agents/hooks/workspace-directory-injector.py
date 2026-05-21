@@ -32,7 +32,7 @@ def main():
     try:
         hook_input = json.load(sys.stdin)
     except json.JSONDecodeError:
-        sys.exit(1)
+        sys.exit(0)
 
     target_directory = read_target_workspace_directory()
 

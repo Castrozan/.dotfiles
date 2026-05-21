@@ -230,7 +230,7 @@ def main():
     try:
         data = json.load(sys.stdin)
     except json.JSONDecodeError:
-        sys.exit(1)
+        sys.exit(0)
 
     hook_event_name = data.get("hook_event_name", "")
     if hook_event_name != "SessionStart":

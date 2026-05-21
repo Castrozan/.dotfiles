@@ -47,7 +47,7 @@ def main():
     try:
         data = json.load(sys.stdin)
     except json.JSONDecodeError:
-        sys.exit(1)
+        sys.exit(0)
 
     tool_name = data.get("tool_name", "")
     tool_input = data.get("tool_input", {})

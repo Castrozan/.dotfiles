@@ -121,7 +121,7 @@ def main():
     try:
         data = json.load(sys.stdin)
     except json.JSONDecodeError:
-        sys.exit(1)
+        sys.exit(0)
 
     file_path = data.get("tool_input", {}).get("file_path", "")
 
