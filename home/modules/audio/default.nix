@@ -103,6 +103,39 @@ in
       };
     };
 
+    "pipewire/pipewire.conf.d/20-echo-cancel.conf".text = builtins.toJSON {
+      "context.modules" = [
+        {
+          name = "libpipewire-module-echo-cancel";
+          args = {
+            "library.name" = "aec/libspa-aec-webrtc";
+            "node.latency" = "1024/48000";
+            "monitor.mode" = false;
+            "capture.props" = {
+              "node.name" = "Echo Cancel Capture";
+              "node.passive" = true;
+            };
+            "source.props" = {
+              "node.name" = "echo-cancel-source";
+              "node.description" = "echo-cancel-source";
+            };
+            "playback.props" = {
+              "node.name" = "Echo Cancel Playback";
+              "node.passive" = true;
+            };
+            "sink.props" = {
+              "node.name" = "echo-cancel-sink";
+              "node.description" = "Echo Cancelled Sink";
+            };
+          };
+          flags = [
+            "ifexists"
+            "nofail"
+          ];
+        }
+      ];
+    };
+
     "wireplumber/main.lua.d/50-disable-bt-autoswitch.lua".text = ''
       table.insert(alsa_monitor.rules, {
         matches = {
