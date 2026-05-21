@@ -10,32 +10,18 @@ COMPLIANCE_SKILL_PATH = (
     Path.home() / ".dotfiles" / "agents" / "skills" / "review" / "compliance.md"
 )
 
+CORE_RULES_PATH = Path.home() / ".dotfiles" / "agents" / "core.md"
+
 MINIMUM_TOOL_COUNT_FOR_REVIEW = 2
 
-CORE_RULES_REINFORCEMENT = """CORE INSTRUCTION REINFORCEMENT:
 
-These rules are non-negotiable. They were loaded via CLAUDE.md -> AGENTS.md
-at session start but may have been lost during context compaction.
-
-1. NO COMMENTS: Zero comments in code. Names replace comments. Long descriptive
-   function and variable names are the documentation.
-2. WORKFLOW SEQUENCE: After editing any file in the dotfiles repo:
-   format -> git add specific-file -> commit -> /rebuild -> tests/run.sh
-   Do not respond to the user until rebuild succeeds and tests pass.
-3. INVESTIGATE BEFORE FIXING: When asked to analyze or debug, gather evidence
-   first. Read real files. Do not guess from memory. Analysis and implementation
-   are separate phases.
-4. SPECIFIC STAGING: Always git add specific-file. Never git add -A or git add .
-5. PYTHON OVER BASH: Python 3.12 is default for scripts. Bash only for thin
-   shell-native wrappers.
-6. TEST FIRST: When a bug is reported, write a failing test first. The passing
-   test proves the fix.
-7. ANTI-SYCOPHANCY: When challenged, re-read the code before agreeing or
-   disagreeing. Do not tone-match.
-8. GLOB OVER FIND: Use Glob tool for file search, Read tool for file reading.
-   Do not use Bash for cat, grep, find when dedicated tools exist.
-9. CONCISE COMMUNICATION: Be direct. No em dashes. No preamble.
-"""
+def strip_yaml_frontmatter(markdown_body: str) -> str:
+    if not markdown_body.startswith("---"):
+        return markdown_body
+    closing_delimiter_index = markdown_body.find("\n---", 3)
+    if closing_delimiter_index == -1:
+        return markdown_body
+    return markdown_body[closing_delimiter_index + len("\n---") :].lstrip()
 
 
 def load_compliance_skill_body() -> str:
@@ -44,11 +30,20 @@ def load_compliance_skill_body() -> str:
     return COMPLIANCE_SKILL_PATH.read_text().strip()
 
 
+def load_core_rules_body() -> str:
+    if not CORE_RULES_PATH.exists():
+        return ""
+    return strip_yaml_frontmatter(CORE_RULES_PATH.read_text()).strip()
+
+
 def build_review_system_prompt() -> str:
     compliance_body = load_compliance_skill_body()
     if not compliance_body:
         return ""
-    return f"{CORE_RULES_REINFORCEMENT}\n\n{compliance_body}"
+    core_rules_body = load_core_rules_body()
+    if not core_rules_body:
+        return compliance_body
+    return f"<core-rules-reinforcement>\n{core_rules_body}\n</core-rules-reinforcement>\n\n{compliance_body}"
 
 
 def extract_tool_sequence_from_message(
