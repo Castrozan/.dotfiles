@@ -1,12 +1,12 @@
 { config, ... }:
 let
-  secretsDir = "${config.home.homeDirectory}/.openclaw/secrets";
+  secretsDir = "${config.home.homeDirectory}/.config/voice-pipeline/secrets";
 in
 {
   services.voice-pipeline = {
     enable = true;
-    gatewayUrl = "http://localhost:${toString config.openclaw.gatewayPort}";
-    gatewayTokenFile = "${secretsDir}/openclaw-gateway-token";
+    gatewayUrl = "http://localhost:18789";
+    gatewayTokenFile = "${secretsDir}/gateway-token";
     deepgramApiKeyFile = "${secretsDir}/deepgram-api-key";
     openaiApiKeyFile = "${secretsDir}/openai-api-key";
     defaultAgent = "jarvis";
