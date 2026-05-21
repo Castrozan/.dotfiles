@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, lib, ... }:
 let
   vscodeLinuxPinnedBuild = pkgs.vscode.overrideAttrs (previousAttributes: rec {
     version = "1.119.0";
@@ -19,6 +19,14 @@ let
 
   chromeDevToolsProtocolPort = "9333";
 
+  innerCodeBinaryWithChromeDevToolsProtocolFlagsName = "code-with-chrome-devtools-protocol-flags";
+
+  electronUnknownOptionWarningPattern = "^Warning: '(remote-debugging-port|remote-allow-origins)' is not in the list of known options, but still passed to Electron/Chromium\\.$";
+
+  codeFilteringElectronUnknownOptionWarnings = pkgs.writeShellScript "code-filtering-electron-unknown-option-warnings" ''
+    exec "$(dirname "$0")/${innerCodeBinaryWithChromeDevToolsProtocolFlagsName}" "$@" 2> >(${pkgs.gnugrep}/bin/grep --line-buffered --invert-match --extended-regexp ${lib.escapeShellArg electronUnknownOptionWarningPattern} >&2)
+  '';
+
   vscodePackageAlwaysExposingChromeDevToolsProtocol = pkgs.symlinkJoin {
     name = "vscode-with-chrome-devtools-protocol-${vscodeLinuxPinnedBuild.version}";
     paths = [ vscodeLinuxPinnedBuild ];
@@ -27,6 +35,9 @@ let
       wrapProgram $out/bin/code \
         --add-flags "--remote-debugging-port=${chromeDevToolsProtocolPort}" \
         --add-flags "--remote-allow-origins=*"
+
+      mv $out/bin/code $out/bin/${innerCodeBinaryWithChromeDevToolsProtocolFlagsName}
+      install -m 0755 ${codeFilteringElectronUnknownOptionWarnings} $out/bin/code
     '';
   };
 in
