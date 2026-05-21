@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+CLAUDE_PID=$(ps -p "$PPID" -o ppid= 2>/dev/null | tr -d ' ')
+CLAUDE_COMMAND_FULL_PATH=$(ps -p "$CLAUDE_PID" -o comm= 2>/dev/null || echo "unknown")
+CLAUDE_COMMAND_NAME="${CLAUDE_COMMAND_FULL_PATH##*/}"
+
+if [[ "$CLAUDE_COMMAND_NAME" == "claude" ]]; then
+	echo "Claude PID: $CLAUDE_PID"
+	echo "Sending SIGTERM for clean shutdown..."
+	kill -TERM "$CLAUDE_PID"
+	sleep 0.5
+	pkill -TERM -P "$CLAUDE_PID" 2>/dev/null || true
+	sleep 0.5
+	pkill -KILL -P "$CLAUDE_PID" 2>/dev/null || true
+else
+	echo "Safety check FAILED: Expected 'claude' but found '$CLAUDE_COMMAND_FULL_PATH' (PID: $CLAUDE_PID)"
+	echo "Use /exit or Ctrl+D instead."
+	exit 1
+fi

@@ -12,5 +12,6 @@
     ./private.nix
     ./scripts.nix
     ./persistent-agents
+    ./workspace-trust.nix
   ];
 }

@@ -1,0 +1,110 @@
+#!/usr/bin/env python3
+
+import json
+import re
+import subprocess
+import sys
+import urllib.request
+from pathlib import Path
+
+CLAUDE_NIX_RELATIVE_PATH = "home/modules/claude/claude.nix"
+NPM_REGISTRY_URL = "https://registry.npmjs.org/@anthropic-ai/claude-code/latest"
+GCS_BUCKET_BASE_URL = "https://storage.googleapis.com/claude-code-dist-86c565f3-f756-42ad-8dfa-d59b1c096819/claude-code-releases"
+
+PLATFORM_IDENTIFIERS = {
+    "x86_64-linux": "linux-x64",
+    "aarch64-darwin": "darwin-arm64",
+}
+
+
+def fetch_latest_version_from_npm_registry():
+    with urllib.request.urlopen(NPM_REGISTRY_URL) as response:
+        package_metadata = json.loads(response.read())
+    return package_metadata["version"]
+
+
+def compute_sri_hash_for_binary(version, platform_identifier):
+    binary_download_url = (
+        f"{GCS_BUCKET_BASE_URL}/{version}/{platform_identifier}/claude"
+    )
+    print(f"  Prefetching {platform_identifier}...")
+    nix_base32_hash = subprocess.run(
+        ["nix-prefetch-url", "--type", "sha256", binary_download_url],
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout.strip()
+
+    sri_hash = subprocess.run(
+        ["nix", "hash", "to-sri", "--type", "sha256", nix_base32_hash],
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout.strip()
+
+    return sri_hash
+
+
+def find_dotfiles_repository_root():
+    git_toplevel_result = subprocess.run(
+        ["git", "rev-parse", "--show-toplevel"],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    return Path(git_toplevel_result.stdout.strip())
+
+
+def update_claude_nix_file(target_version):
+    repository_root = find_dotfiles_repository_root()
+    claude_nix_absolute_path = repository_root / CLAUDE_NIX_RELATIVE_PATH
+
+    original_file_content = claude_nix_absolute_path.read_text()
+    updated_file_content = original_file_content
+
+    current_version_match = re.search(r'version = "([^"]+)"', original_file_content)
+    if not current_version_match:
+        print("ERROR: Could not find version string in claude.nix", file=sys.stderr)
+        sys.exit(1)
+
+    current_version = current_version_match.group(1)
+    if current_version == target_version:
+        print(f"Already at version {target_version}. Nothing to do.")
+        sys.exit(0)
+
+    print(f"Updating {current_version} -> {target_version}")
+    updated_file_content = updated_file_content.replace(
+        f'version = "{current_version}"',
+        f'version = "{target_version}"',
+    )
+
+    print("Fetching binary hashes:")
+    for nix_system_name, platform_identifier in PLATFORM_IDENTIFIERS.items():
+        sri_hash = compute_sri_hash_for_binary(target_version, platform_identifier)
+        print(f"  {nix_system_name}: {sri_hash}")
+
+        old_hash_pattern = re.compile(
+            rf'("{nix_system_name}"[^}}]*sha256 = )"[^"]*"',
+            re.DOTALL,
+        )
+        updated_file_content = old_hash_pattern.sub(
+            rf'\1"{sri_hash}"', updated_file_content
+        )
+
+    claude_nix_absolute_path.write_text(updated_file_content)
+    print(f"Updated {CLAUDE_NIX_RELATIVE_PATH}")
+
+
+def main():
+    if len(sys.argv) > 1:
+        target_version = sys.argv[1]
+    else:
+        print("Fetching latest version from npm registry...")
+        target_version = fetch_latest_version_from_npm_registry()
+        print(f"Latest version: {target_version}")
+
+    update_claude_nix_file(target_version)
+
+
+if __name__ == "__main__":
+    main()

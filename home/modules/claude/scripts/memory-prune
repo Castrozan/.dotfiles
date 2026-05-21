@@ -1,0 +1,191 @@
+#!/usr/bin/env python3
+"""Archive a memory topic file out of the active recall pool.
+
+Archived facts stay readable on disk under the active memory dir's
+'archive/' subdirectory and remain reachable two ways: 1) an explicit
+'@path' mention typed by the user or written into another memory file;
+2) deliberate inspection via Read. The recall hook excludes the
+archive subdir from its ripgrep sweep, so archived memories no longer
+fire on associative matches.
+
+Two-phase move identical in spirit to memory-write's two-phase append:
+the topic file moves from '<memory-dir>/<type>-<key>.md' to
+'<memory-dir>/archive/<type>-<key>.md', and the matching pointer in
+MEMORY.md is removed in the same transaction so the index never
+references a file that isn't there. An archive index at
+'<memory-dir>/archive/MEMORY.md' gains a one-line pointer with the
+archived-on date so the human can scan what has been retired without
+grepping the directory.
+
+The script computes the active memory directory from the current
+working directory the same way memory-write does (project-encoding
+rule: every '/' and '.' in the absolute cwd becomes '-'). If the
+topic file does not exist (already archived, never written, wrong
+key) the script exits non-zero with a helpful message and does not
+touch the index.
+"""
+
+from __future__ import annotations
+
+import argparse
+import os
+import re
+import sys
+import tempfile
+import time
+from pathlib import Path
+
+VALID_TYPES = {"user", "feedback", "project", "reference"}
+MEMORY_INDEX_FILENAME = "MEMORY.md"
+ARCHIVE_DIRECTORY_NAME = "archive"
+ARCHIVE_INDEX_HEADER = (
+    "# Memory archive index\n"
+    "\n"
+    "Archived topic files. Excluded from the recall hook's ripgrep\n"
+    "sweep. Reachable via explicit @path mention or deliberate Read.\n"
+    "Restore by moving the file back up one directory and rerunning\n"
+    "memory-write to recreate the index pointer with a fresh date.\n"
+    "\n"
+)
+
+
+def encode_cwd_as_claude_project_directory(absolute_cwd: Path) -> str:
+    raw_path = str(absolute_cwd)
+    return raw_path.replace("/", "-").replace(".", "-")
+
+
+def resolve_memory_directory_for_current_cwd() -> Path:
+    absolute_cwd = Path.cwd().resolve()
+    project_directory_name = encode_cwd_as_claude_project_directory(absolute_cwd)
+    return Path.home() / ".claude" / "projects" / project_directory_name / "memory"
+
+
+def slugify_key(key: str) -> str:
+    return re.sub(r"[^a-zA-Z0-9_]+", "-", key).strip("-").lower()
+
+
+def topic_filename_for(memory_type: str, key: str) -> str:
+    return f"{memory_type}-{slugify_key(key)}.md"
+
+
+def atomically_replace_file(path: Path, content: str) -> None:
+    parent_directory = path.parent
+    with tempfile.NamedTemporaryFile(
+        mode="w",
+        delete=False,
+        dir=parent_directory,
+        prefix=".tmp-memory-prune-",
+        suffix=".md",
+    ) as temporary_file:
+        temporary_file.write(content)
+        temporary_path = temporary_file.name
+    os.replace(temporary_path, path)
+
+
+def remove_pointer_line_from_memory_index(
+    memory_index_path: Path, topic_filename: str
+) -> bool:
+    if not memory_index_path.exists():
+        return False
+    pointer_substring = f"]({topic_filename})"
+    existing_lines = memory_index_path.read_text().splitlines()
+    retained_lines = [line for line in existing_lines if pointer_substring not in line]
+    if len(retained_lines) == len(existing_lines):
+        return False
+    atomically_replace_file(memory_index_path, "\n".join(retained_lines) + "\n")
+    return True
+
+
+def append_to_archive_index(
+    archive_index_path: Path,
+    topic_filename: str,
+    memory_type: str,
+    key: str,
+) -> None:
+    iso_date = time.strftime("%Y-%m-%d")
+    if not archive_index_path.exists():
+        archive_index_path.write_text(ARCHIVE_INDEX_HEADER)
+    pointer_prefix = f"- [{memory_type}/{key}]({topic_filename})"
+    new_entry_line = f"{pointer_prefix}: archived {iso_date}"
+    existing_text = archive_index_path.read_text()
+    if pointer_prefix in existing_text:
+        return
+    atomically_replace_file(archive_index_path, existing_text + new_entry_line + "\n")
+
+
+def validate_arguments(arguments: argparse.Namespace) -> None:
+    if arguments.type not in VALID_TYPES:
+        print(
+            f"error: --type must be one of {sorted(VALID_TYPES)}, got {arguments.type!r}",
+            file=sys.stderr,
+        )
+        sys.exit(2)
+    if not arguments.key.strip():
+        print("error: --key cannot be empty", file=sys.stderr)
+        sys.exit(2)
+
+
+def parse_arguments() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        prog="memory-prune",
+        description="Archive a memory topic file out of the active recall pool.",
+    )
+    parser.add_argument(
+        "--type",
+        required=True,
+        help="One of user, feedback, project, reference.",
+    )
+    parser.add_argument(
+        "--key",
+        required=True,
+        help="Stable identifier or slug for the topic to archive.",
+    )
+    return parser.parse_args()
+
+
+def main() -> None:
+    arguments = parse_arguments()
+    validate_arguments(arguments)
+
+    memory_directory = resolve_memory_directory_for_current_cwd()
+    topic_file_name = topic_filename_for(arguments.type, arguments.key)
+    topic_file_path = memory_directory / topic_file_name
+
+    if not topic_file_path.exists():
+        print(
+            f"error: topic file not found at {topic_file_path}",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    archive_directory = memory_directory / ARCHIVE_DIRECTORY_NAME
+    archive_directory.mkdir(exist_ok=True)
+    archive_topic_path = archive_directory / topic_file_name
+
+    if archive_topic_path.exists():
+        print(
+            f"warn: archive entry already exists at {archive_topic_path}; overwriting",
+            file=sys.stderr,
+        )
+
+    os.replace(topic_file_path, archive_topic_path)
+
+    archive_index_path = archive_directory / MEMORY_INDEX_FILENAME
+    append_to_archive_index(
+        archive_index_path,
+        topic_file_name,
+        arguments.type,
+        slugify_key(arguments.key),
+    )
+
+    memory_index_path = memory_directory / MEMORY_INDEX_FILENAME
+    remove_pointer_line_from_memory_index(memory_index_path, topic_file_name)
+
+    print(
+        f"archived: {archive_topic_path}",
+        file=sys.stderr,
+    )
+
+
+if __name__ == "__main__":
+    main()

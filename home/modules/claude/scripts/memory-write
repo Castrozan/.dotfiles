@@ -1,0 +1,237 @@
+#!/usr/bin/env python3
+"""Validated append to the active agent's memory directory.
+
+The target memory directory is derived from the current working
+directory using Claude Code's project-encoding rule (every '/' and
+'.' in the absolute path is replaced with '-'). If the resulting
+path is a symlink, it is followed; if it does not exist, it is
+created with a seeded MEMORY.md header.
+
+Writes happen in two phases. First, the topic file
+'<type>-<slug-of-key>.md' is opened, the new fact is appended with
+an ISO date and the supplied author, and the file is atomically
+replaced. Second, the MEMORY.md index is loaded, the matching
+pointer line for this topic is upserted to a single line, and the
+index is atomically replaced. Duplicate facts (case-insensitive
+substring match against the existing topic file) are silently
+skipped to keep the index from churning.
+
+This script is the only sanctioned writer for files under the
+memory directory. Agents are instructed never to call Write or
+Edit directly on memory/* so that the index always stays in sync
+with the topic files.
+"""
+
+from __future__ import annotations
+
+import argparse
+import os
+import re
+import sys
+import tempfile
+import time
+from pathlib import Path
+
+VALID_TYPES = {"user", "feedback", "project", "reference"}
+MINIMUM_FACT_LENGTH = 10
+MAXIMUM_FACT_LENGTH = 2000
+MAXIMUM_INDEX_LINE_LENGTH = 200
+MEMORY_INDEX_FILENAME = "MEMORY.md"
+MEMORY_INDEX_HEADER = (
+    "# Memory index\n"
+    "\n"
+    "One line per topic file. Loaded once per Claude process boot via\n"
+    "the harness auto-memory mechanism. Agents append through the\n"
+    "memory-write CLI; never edit by hand.\n"
+    "\n"
+)
+
+
+def encode_cwd_as_claude_project_directory(absolute_cwd: Path) -> str:
+    raw_path = str(absolute_cwd)
+    return raw_path.replace("/", "-").replace(".", "-")
+
+
+def resolve_memory_directory_for_current_cwd() -> Path:
+    absolute_cwd = Path.cwd().resolve()
+    project_directory_name = encode_cwd_as_claude_project_directory(absolute_cwd)
+    return Path.home() / ".claude" / "projects" / project_directory_name / "memory"
+
+
+def ensure_memory_directory_exists(memory_directory: Path) -> Path:
+    memory_directory.mkdir(parents=True, exist_ok=True)
+    memory_index_path = memory_directory / MEMORY_INDEX_FILENAME
+    if not memory_index_path.exists():
+        memory_index_path.write_text(MEMORY_INDEX_HEADER)
+    return memory_index_path
+
+
+def slugify_key(key: str) -> str:
+    return re.sub(r"[^a-zA-Z0-9_]+", "-", key).strip("-").lower()
+
+
+def topic_filename_for(memory_type: str, key: str) -> str:
+    return f"{memory_type}-{slugify_key(key)}.md"
+
+
+def atomically_replace_file(path: Path, content: str) -> None:
+    parent_directory = path.parent
+    with tempfile.NamedTemporaryFile(
+        mode="w",
+        delete=False,
+        dir=parent_directory,
+        prefix=".tmp-memory-write-",
+        suffix=".md",
+    ) as temporary_file:
+        temporary_file.write(content)
+        temporary_path = temporary_file.name
+    os.replace(temporary_path, path)
+
+
+def fact_already_present(existing_text: str, fact: str) -> bool:
+    return fact.strip().lower() in existing_text.lower()
+
+
+def append_fact_to_topic_file(
+    topic_path: Path,
+    fact: str,
+    author: str,
+    source_message_id: str | None,
+) -> bool:
+    iso_date = time.strftime("%Y-%m-%d")
+    source_suffix = f" [msg:{source_message_id}]" if source_message_id else ""
+    new_entry_line = f"- {iso_date} ({author}): {fact}{source_suffix}\n"
+    existing_text = (
+        topic_path.read_text() if topic_path.exists() else f"# {topic_path.stem}\n\n"
+    )
+    if fact_already_present(existing_text, fact):
+        return False
+    atomically_replace_file(topic_path, existing_text + new_entry_line)
+    return True
+
+
+def upsert_index_pointer(
+    memory_index_path: Path,
+    topic_filename: str,
+    memory_type: str,
+    key: str,
+    fact: str,
+) -> None:
+    existing_lines = (
+        memory_index_path.read_text().splitlines()
+        if memory_index_path.exists()
+        else MEMORY_INDEX_HEADER.splitlines()
+    )
+    short_summary = re.sub(r"\s+", " ", fact).strip()
+    if len(short_summary) > 120:
+        short_summary = short_summary[:117].rstrip() + "..."
+    pointer_prefix = f"- [{memory_type}/{key}]({topic_filename})"
+    new_pointer_line = f"{pointer_prefix}: {short_summary}"
+    if len(new_pointer_line) > MAXIMUM_INDEX_LINE_LENGTH:
+        new_pointer_line = new_pointer_line[: MAXIMUM_INDEX_LINE_LENGTH - 3] + "..."
+    replaced_existing = False
+    for line_index, line_text in enumerate(existing_lines):
+        if line_text.startswith(pointer_prefix):
+            existing_lines[line_index] = new_pointer_line
+            replaced_existing = True
+            break
+    if not replaced_existing:
+        existing_lines.append(new_pointer_line)
+    atomically_replace_file(memory_index_path, "\n".join(existing_lines) + "\n")
+
+
+def validate_arguments(arguments: argparse.Namespace) -> None:
+    if arguments.type not in VALID_TYPES:
+        print(
+            f"error: --type must be one of {sorted(VALID_TYPES)}, got {arguments.type!r}",
+            file=sys.stderr,
+        )
+        sys.exit(2)
+    fact_length = len(arguments.fact.strip())
+    if fact_length < MINIMUM_FACT_LENGTH:
+        print(
+            f"error: --fact must be at least {MINIMUM_FACT_LENGTH} characters (got {fact_length})",
+            file=sys.stderr,
+        )
+        sys.exit(2)
+    if fact_length > MAXIMUM_FACT_LENGTH:
+        print(
+            f"error: --fact must be at most {MAXIMUM_FACT_LENGTH} characters (got {fact_length})",
+            file=sys.stderr,
+        )
+        sys.exit(2)
+    if not arguments.key.strip():
+        print("error: --key cannot be empty", file=sys.stderr)
+        sys.exit(2)
+    if not arguments.author.strip():
+        print("error: --author cannot be empty", file=sys.stderr)
+        sys.exit(2)
+
+
+def parse_arguments() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        prog="memory-write",
+        description="Validated append to the active agent's memory directory.",
+    )
+    parser.add_argument(
+        "--type",
+        required=True,
+        help="One of user, feedback, project, reference.",
+    )
+    parser.add_argument(
+        "--key",
+        required=True,
+        help="Stable identifier or slug for this topic (discord id, project name, etc).",
+    )
+    parser.add_argument(
+        "--fact",
+        required=True,
+        help="The durable fact to remember.",
+    )
+    parser.add_argument(
+        "--author",
+        required=True,
+        help="Discord id or username of the human whose statement produced this fact.",
+    )
+    parser.add_argument(
+        "--source-msg",
+        default=None,
+        help="Optional Discord message id for traceability.",
+    )
+    return parser.parse_args()
+
+
+def main() -> None:
+    arguments = parse_arguments()
+    validate_arguments(arguments)
+    memory_directory = resolve_memory_directory_for_current_cwd()
+    memory_index_path = ensure_memory_directory_exists(memory_directory)
+    topic_file_name = topic_filename_for(arguments.type, arguments.key)
+    topic_file_path = memory_directory / topic_file_name
+    fact_was_appended = append_fact_to_topic_file(
+        topic_file_path,
+        arguments.fact.strip(),
+        arguments.author.strip(),
+        arguments.source_msg,
+    )
+    if not fact_was_appended:
+        print(
+            f"skipped: fact already present in {topic_file_path.name}",
+            file=sys.stderr,
+        )
+        sys.exit(0)
+    upsert_index_pointer(
+        memory_index_path,
+        topic_file_name,
+        arguments.type,
+        slugify_key(arguments.key),
+        arguments.fact.strip(),
+    )
+    print(
+        f"saved: {memory_directory}/{topic_file_name}",
+        file=sys.stderr,
+    )
+
+
+if __name__ == "__main__":
+    main()
