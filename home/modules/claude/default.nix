@@ -2,6 +2,7 @@
 {
   imports = [
     ./claude.nix
+    ./clawde
     ./discord-channel
     ./config.nix
     ./skills.nix
