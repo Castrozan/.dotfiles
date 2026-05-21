@@ -51,6 +51,11 @@ in
           command = "${runHook} ${hooksPath}/memory-recall.py";
           timeout = 3000;
         }
+        {
+          type = "command";
+          command = "${runHook} ${hooksPath}/prohibited-command-guard.py";
+          timeout = 3000;
+        }
       ];
     }
     {
@@ -115,6 +120,11 @@ in
         {
           type = "command";
           command = "${runHook} ${hooksPath}/nix-rebuild-trigger.py";
+          timeout = 3000;
+        }
+        {
+          type = "command";
+          command = "${runHook} ${hooksPath}/line-count-advisory-guard.py";
           timeout = 3000;
         }
       ];
