@@ -3,6 +3,11 @@ let
   agenixSecretsDir = "${config.home.homeDirectory}/.secrets";
 in
 {
+  systemd.user.services.voice-pipeline.Service.Environment = [
+    "VOICE_PIPELINE_COMPLETION_ENGINE=cli"
+    "VOICE_PIPELINE_COMPLETION_CLI_COMMAND=claude -p"
+  ];
+
   services.voice-pipeline = {
     enable = true;
     gatewayUrl = "http://localhost:18789";
