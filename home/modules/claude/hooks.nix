@@ -2,22 +2,20 @@
 let
   hooksDir = ../../../agents/hooks;
 
-  listHookScripts =
-    dir:
-    builtins.filter (
-      name: lib.hasSuffix ".py" name || lib.hasSuffix ".sh" name || lib.hasSuffix ".md" name
-    ) (builtins.attrNames (builtins.readDir dir));
+  listHookScriptsRecursively = import ./list-hook-scripts-recursively.nix { inherit lib; };
 
-  createSymlinksForHooks =
-    files:
+  allHookScriptsAcrossSubdirectories = listHookScriptsRecursively hooksDir;
+
+  createFlatSymlinksForHookScripts =
+    hookScriptEntries:
     builtins.listToAttrs (
-      map (filename: {
-        name = ".claude/hooks/${filename}";
+      map (entry: {
+        name = ".claude/hooks/${entry.flatDeploymentFilename}";
         value = {
-          source = hooksDir + "/${filename}";
-          executable = lib.hasSuffix ".sh" filename;
+          source = hooksDir + "/${entry.relativePathToHooksRoot}";
+          executable = lib.hasSuffix ".sh" entry.flatDeploymentFilename;
         };
-      }) files
+      }) hookScriptEntries
     );
 
   preventDirectoryOptimization = {
@@ -25,5 +23,6 @@ let
   };
 in
 {
-  home.file = createSymlinksForHooks (listHookScripts hooksDir) // preventDirectoryOptimization;
+  home.file =
+    createFlatSymlinksForHookScripts allHookScriptsAcrossSubdirectories // preventDirectoryOptimization;
 }

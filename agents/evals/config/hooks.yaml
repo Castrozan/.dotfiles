@@ -10,16 +10,6 @@ tests:
       hook_blocks: false
       message_contains: "MANDATORY"
 
-  - name: pre_push_gate_blocks_without_checks
-    description: "pre-push-ci-gate blocks git push when CI checks fail"
-    type: hook_test
-    hook: pre-push-ci-gate.py
-    trigger:
-      tool: Bash
-      command: "git push origin main"
-    assertions:
-      hook_blocks: true
-
   - name: url_router_blocks_twitter_urls
     description: "url-to-skill-router blocks direct Twitter/X URL fetches"
     type: hook_test
@@ -30,12 +20,3 @@ tests:
     assertions:
       hook_blocks: true
       message_contains: "fxtwitter"
-
-  - name: task_completed_gate_checks_formatting
-    description: "task-completed-quality-gate validates formatting on modified files"
-    type: hook_test
-    hook: task-completed-quality-gate.py
-    trigger:
-      event: TaskCompleted
-    assertions:
-      hook_blocks: false

@@ -18,9 +18,5 @@ def import_hyphenated_hook_module(hyphenated_name):
     return module
 
 
-import_hyphenated_hook_module("deep-work-recovery")
 import_hyphenated_hook_module("session-context")
-import_hyphenated_hook_module("teammate-idle-quality-gate")
-import_hyphenated_hook_module("task-completed-quality-gate")
-import_hyphenated_hook_module("pre-push-ci-gate")
 import_hyphenated_hook_module("monitor-streaming-pattern-validator")

@@ -283,15 +283,12 @@ Python scripts wired as Claude Code lifecycle hooks:
 | `auto-format.py` | After editing - runs ruff, nixfmt, shfmt |
 | `lint-on-edit.py` | On file edit - runs language-appropriate linter |
 | `nix-rebuild-trigger.py` | After editing `.nix` files - queues rebuild |
-| `core-instruction-reinforcement.py` | Session start - injects core rules |
-| `deep-work-recovery.py` | Session start - resumes active deep-work context |
 | `session-context.py` | Session start - injects workspace/git/env context |
-| `workspace-directory-injector.py` | Session start - sets working directory |
-| `end-of-work-compliance-review.py` | Task completed - spawns parallel reviewers |
-| `task-completed-quality-gate.py` | Task completed - quality gate before responding |
-| `teammate-idle-quality-gate.py` | Teammate idle - reviews subagent output |
-| `pre-push-ci-gate.py` | Pre-push - runs CI checks before git push |
+| `workspace-directory-injector.py` | PreToolUse Bash - sets working directory |
+| `memory-recall.py` | PreToolUse - associative recall from cwd memory dir |
+| `end-of-work-compliance-review.py` | Stop - spawns compliance reviewer with core-rules reinforcement |
 | `url-to-skill-router.py` | On URL input - routes to matching skill |
+| `monitor-streaming-pattern-validator.py` | PreToolUse Monitor - validates streaming patterns |
 | `run-hook.sh` | Shell wrapper for hook execution |
 
 ### Evals (`agents/evals/`)

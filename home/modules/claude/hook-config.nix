@@ -14,42 +14,6 @@ in
         }
       ];
     }
-    {
-      matcher = ".*";
-      hooks = [
-        {
-          type = "command";
-          command = "${runHook} ${hooksPath}/deep-work-recovery.py";
-          timeout = 5000;
-        }
-      ];
-    }
-  ];
-
-  TeammateIdle = [
-    {
-      matcher = ".*";
-      hooks = [
-        {
-          type = "command";
-          command = "${runHook} ${hooksPath}/teammate-idle-quality-gate.py";
-          timeout = 10000;
-        }
-      ];
-    }
-  ];
-
-  TaskCompleted = [
-    {
-      matcher = ".*";
-      hooks = [
-        {
-          type = "command";
-          command = "${runHook} ${hooksPath}/task-completed-quality-gate.py";
-          timeout = 30000;
-        }
-      ];
-    }
   ];
 
   Stop = [
@@ -78,25 +42,17 @@ in
     }
   ];
 
-  PostCompact = [
+  PreToolUse = [
     {
       matcher = ".*";
       hooks = [
         {
           type = "command";
-          command = "${runHook} ${hooksPath}/deep-work-recovery.py";
-          timeout = 5000;
-        }
-        {
-          type = "command";
-          command = "${runHook} ${hooksPath}/core-instruction-reinforcement.py";
-          timeout = 2000;
+          command = "${runHook} ${hooksPath}/memory-recall.py";
+          timeout = 3000;
         }
       ];
     }
-  ];
-
-  PreToolUse = [
     {
       matcher = "Bash";
       hooks = [
@@ -104,11 +60,6 @@ in
           type = "command";
           command = "${runHook} ${hooksPath}/workspace-directory-injector.py";
           timeout = 3000;
-        }
-        {
-          type = "command";
-          command = "${runHook} ${hooksPath}/pre-push-ci-gate.py";
-          timeout = 600000;
         }
       ];
     }
@@ -134,8 +85,6 @@ in
     }
   ];
 
-  # Workaround: bypassPermissions has a hardcoded .claude/ prompt since v2.1.78.
-  # Tracking: anthropics/claude-code#38806, #37765, #36192, #37181
   PermissionRequest = [
     {
       matcher = ".*";
