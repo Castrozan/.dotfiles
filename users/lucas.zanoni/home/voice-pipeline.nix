@@ -1,14 +1,14 @@
 { config, ... }:
 let
-  secretsDir = "${config.home.homeDirectory}/.config/voice-pipeline/secrets";
+  agenixSecretsDir = "${config.home.homeDirectory}/.secrets";
 in
 {
   services.voice-pipeline = {
     enable = true;
     gatewayUrl = "http://localhost:18789";
-    gatewayTokenFile = "${secretsDir}/gateway-token";
-    deepgramApiKeyFile = "${secretsDir}/deepgram-api-key";
-    openaiApiKeyFile = "${secretsDir}/openai-api-key";
+    gatewayTokenFile = "${agenixSecretsDir}/voice-pipeline-gateway-token";
+    deepgramApiKeyFile = "${agenixSecretsDir}/deepgram-api-key";
+    openaiApiKeyFile = "${agenixSecretsDir}/openai-api-key";
     defaultAgent = "jarvis";
     wakeWords = [
       "jarvis"

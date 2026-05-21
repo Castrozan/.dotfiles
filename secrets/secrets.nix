@@ -32,6 +32,7 @@ in
   "api-keys/nvidia-api-key.age".publicKeys = all_keys;
   "api-keys/openai-api-key.age".publicKeys = all_keys;
   "api-keys/tavily-api-key.age".publicKeys = all_keys;
+  "api-keys/voice-pipeline-gateway-token.age".publicKeys = all_keys;
   "api-keys/metabase-api-key.age".publicKeys = all_keys;
   "api-keys/grid-token-robson.age".publicKeys = all_keys;
   "api-keys/grid-token-clever.age".publicKeys = all_keys;
