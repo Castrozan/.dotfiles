@@ -3,18 +3,25 @@ import Quickshell.Hyprland
 import Quickshell.Io
 import Qt5Compat.GraphicalEffects
 import QtQuick
-import QtQuick.Layouts
 import ".."
 
-ColumnLayout {
+Item {
     id: runningAppsModuleRoot
-
-    spacing: 2
 
     property var runningAppsByClass: []
     property string focusedWindowClass: ""
     property var firstSeenOrderByClass: ({})
     property int firstSeenOrderNextIndex: 0
+
+    readonly property int iconCellSize: 28
+    readonly property int iconCellSpacing: 2
+    readonly property int iconCellStride: iconCellSize + iconCellSpacing
+    readonly property int totalRunningAppsCount: runningAppsByClass.length
+    readonly property int maxAppsFittingByHeight: height < iconCellSize ? 0 : Math.floor((height + iconCellSpacing) / iconCellStride)
+    readonly property bool hasMoreAppsThanFit: totalRunningAppsCount > maxAppsFittingByHeight
+    readonly property int visibleAppsCount: hasMoreAppsThanFit ? Math.max(0, maxAppsFittingByHeight - 1) : totalRunningAppsCount
+    readonly property var visibleApps: runningAppsByClass.slice(0, visibleAppsCount)
+    readonly property int hiddenAppsCount: totalRunningAppsCount - visibleAppsCount
 
     readonly property var windowClassToIconName: ({
         "chrome-global": "google-chrome",
@@ -121,79 +128,110 @@ ColumnLayout {
         onTriggered: runningAppsModuleRoot._fetchRunningClients()
     }
 
-    Repeater {
-        model: runningAppsModuleRoot.runningAppsByClass
+    Column {
+        id: visibleAppsColumn
+        anchors.top: parent.top
+        anchors.horizontalCenter: parent.horizontalCenter
+        spacing: runningAppsModuleRoot.iconCellSpacing
 
-        Rectangle {
-            id: runningAppDelegate
-
-            required property var modelData
-            required property int index
-
-            Layout.alignment: Qt.AlignHCenter
-            Layout.preferredWidth: 28
-            Layout.preferredHeight: 28
-
-            radius: 6
-            color: runningAppMouseArea.containsMouse ? ThemeColors.surfaceTranslucent : "transparent"
-
-            Image {
-                id: runningAppIcon
-                anchors.centerIn: parent
-                width: 16
-                height: 16
-                source: Quickshell.iconPath(runningAppsModuleRoot._resolveIconName(runningAppDelegate.modelData.windowClass), true)
-                sourceSize: Qt.size(16, 16)
-                smooth: true
-                visible: status === Image.Ready
-            }
-
-            Colorize {
-                anchors.fill: runningAppIcon
-                source: runningAppIcon
-                visible: runningAppIcon.visible
-                hue: ThemeColors.foreground.hslHue
-                saturation: ThemeColors.foreground.hslSaturation
-                lightness: 0.3
-            }
-
-            Text {
-                anchors.centerIn: parent
-                visible: runningAppIcon.status !== Image.Ready
-                text: runningAppDelegate.modelData.windowClass.charAt(0).toUpperCase()
-                font.pixelSize: 14
-                font.bold: true
-                font.family: "JetBrainsMono Nerd Font"
-                color: ThemeColors.foreground
-            }
+        Repeater {
+            model: runningAppsModuleRoot.visibleApps
 
             Rectangle {
-                id: focusedAppAccentIndicator
-                anchors.verticalCenter: parent.verticalCenter
-                anchors.left: parent.left
-                anchors.leftMargin: -2
-                width: 3
-                height: runningAppDelegate.modelData.windowClass === runningAppsModuleRoot.focusedWindowClass ? 12 : 4
-                radius: 1.5
-                color: ThemeColors.accent
+                id: runningAppDelegate
 
-                Behavior on height {
-                    NumberAnimation {
-                        duration: 150
-                        easing.type: Easing.OutQuad
+                required property var modelData
+                required property int index
+
+                width: runningAppsModuleRoot.iconCellSize
+                height: runningAppsModuleRoot.iconCellSize
+
+                radius: 6
+                color: runningAppMouseArea.containsMouse ? ThemeColors.surfaceTranslucent : "transparent"
+
+                Image {
+                    id: runningAppIcon
+                    anchors.centerIn: parent
+                    width: 16
+                    height: 16
+                    source: Quickshell.iconPath(runningAppsModuleRoot._resolveIconName(runningAppDelegate.modelData.windowClass), true)
+                    sourceSize: Qt.size(16, 16)
+                    smooth: true
+                    visible: status === Image.Ready
+                }
+
+                Colorize {
+                    anchors.fill: runningAppIcon
+                    source: runningAppIcon
+                    visible: runningAppIcon.visible
+                    hue: ThemeColors.foreground.hslHue
+                    saturation: ThemeColors.foreground.hslSaturation
+                    lightness: 0.3
+                }
+
+                Text {
+                    anchors.centerIn: parent
+                    visible: runningAppIcon.status !== Image.Ready
+                    text: runningAppDelegate.modelData.windowClass.charAt(0).toUpperCase()
+                    font.pixelSize: 14
+                    font.bold: true
+                    font.family: "JetBrainsMono Nerd Font"
+                    color: ThemeColors.foreground
+                }
+
+                Rectangle {
+                    id: focusedAppAccentIndicator
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.left: parent.left
+                    anchors.leftMargin: -2
+                    width: 3
+                    height: runningAppDelegate.modelData.windowClass === runningAppsModuleRoot.focusedWindowClass ? 12 : 4
+                    radius: 1.5
+                    color: ThemeColors.accent
+
+                    Behavior on height {
+                        NumberAnimation {
+                            duration: 150
+                            easing.type: Easing.OutQuad
+                        }
+                    }
+                }
+
+                MouseArea {
+                    id: runningAppMouseArea
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+
+                    onClicked: {
+                        Hyprland.dispatch(`focuswindow address:${runningAppDelegate.modelData.address}`);
                     }
                 }
             }
+        }
+
+        Rectangle {
+            id: hiddenAppsOverflowIndicator
+
+            visible: runningAppsModuleRoot.hasMoreAppsThanFit
+            width: runningAppsModuleRoot.iconCellSize
+            height: runningAppsModuleRoot.iconCellSize
+            radius: 6
+            color: hiddenAppsOverflowMouseArea.containsMouse ? ThemeColors.surfaceTranslucent : "transparent"
+
+            Text {
+                anchors.centerIn: parent
+                text: "+" + runningAppsModuleRoot.hiddenAppsCount
+                color: ThemeColors.dim
+                font.pixelSize: 11
+                font.bold: true
+                font.family: "JetBrainsMono Nerd Font"
+            }
 
             MouseArea {
-                id: runningAppMouseArea
+                id: hiddenAppsOverflowMouseArea
                 anchors.fill: parent
                 hoverEnabled: true
-                cursorShape: Qt.PointingHandCursor
-
-                onClicked: {
-                    Hyprland.dispatch(`focuswindow address:${runningAppDelegate.modelData.address}`);
-                }
             }
         }
     }

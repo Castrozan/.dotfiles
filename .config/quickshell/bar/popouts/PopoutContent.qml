@@ -23,6 +23,7 @@ Item {
         if (currentName === "network") return networkPopout.implicitHeight + 32;
         if (currentName === "bluetooth") return bluetoothPopout.implicitHeight + 32;
         if (currentName === "battery") return batteryPopout.implicitHeight + 32;
+        if (currentName === "statusicons") return statusIconsPopout.implicitHeight + 32;
 
         if (isTrayMenu && trayMenuLoader.item) return trayMenuLoader.item.implicitHeight + 32;
         if (isTrayMenu) return 100;
@@ -58,6 +59,18 @@ Item {
         anchors.fill: parent
         visible: popoutContentRoot.currentName === "battery"
         active: popoutContentRoot.currentName === "battery"
+
+        opacity: visible ? 1 : 0
+        Behavior on opacity {
+            NumberAnimation { duration: 250 }
+        }
+    }
+
+    StatusIconsPopout {
+        id: statusIconsPopout
+        anchors.fill: parent
+        visible: popoutContentRoot.currentName === "statusicons"
+        active: popoutContentRoot.currentName === "statusicons"
 
         opacity: visible ? 1 : 0
         Behavior on opacity {

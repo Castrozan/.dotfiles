@@ -7,3 +7,5 @@ TrayMenuPopout 1.0 TrayMenuPopout.qml
 PopoutBorderShape 1.0 PopoutBorderShape.qml
 MprisPopout 1.0 MprisPopout.qml
 MprisPopoutControlButton 1.0 MprisPopoutControlButton.qml
+StatusIconsPopout 1.0 StatusIconsPopout.qml
+StatusIconsPopoutRow 1.0 StatusIconsPopoutRow.qml
