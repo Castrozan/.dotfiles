@@ -71,7 +71,7 @@ _bridge_harness_to_canonical_via_symlink() {
 		return 0
 	fi
 
-	if [ -d "${harness_memory_directory}" ] && [ -z "$(ls -A "${harness_memory_directory}")" ]; then
+	if [ -d "${harness_memory_directory}" ] && [ -z "$(command ls -A "${harness_memory_directory}")" ]; then
 		rmdir "${harness_memory_directory}"
 		ln -s "${CANONICAL_MEMORY_DIRECTORY}" "${harness_memory_directory}"
 		return 0
