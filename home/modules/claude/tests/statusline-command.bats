@@ -12,23 +12,13 @@ _run_statusline_with_json() {
     run bash -c "echo '$1' | bash '$SCRIPT_UNDER_TEST'"
 }
 
-_run_statusline_with_json_and_columns() {
-    local columns="$1"
-    local json="$2"
-    run bash -c "echo '$json' | COLUMNS=$columns bash '$SCRIPT_UNDER_TEST'"
-}
-
-_fresh_session_json_input() {
-    echo '{"model":{"display_name":"Opus 4.6"},"cwd":"/tmp","context_window":{"used_percentage":0},"cost":{"total_cost_usd":0.00,"total_duration_ms":1000,"total_lines_added":0,"total_lines_removed":0}}'
-}
-
 _minimal_json_input() {
-    echo '{"model":{"display_name":"Opus 4.6"},"cwd":"/tmp","session_id":"abcd1234-5678","context_window":{"used_percentage":10},"cost":{"total_cost_usd":0.05,"total_duration_ms":60000,"total_lines_added":0,"total_lines_removed":0}}'
+    echo '{"model":{"display_name":"Opus 4.7"},"cwd":"/tmp","session_id":"bb823787-e6ea-467c-b0ce-d90b8b92fc36","context_window":{"used_percentage":10}}'
 }
 
 _full_json_input() {
-    local resets_at=$(($(date +%s) + 7200))
-    echo '{"model":{"display_name":"Opus 4.6"},"cwd":"/tmp","session_id":"abcd1234-5678","session_name":"my-session","cost":{"total_cost_usd":0.42,"total_duration_ms":1823000,"total_lines_added":47,"total_lines_removed":12},"context_window":{"used_percentage":35.2},"rate_limits":{"five_hour":{"used_percentage":22.5,"resets_at":'"$resets_at"'}},"transcript_path":"/tmp/transcript.jsonl","agent":{"name":"jarvis"},"worktree":{"name":"feature-x","branch":"feat/x"},"vim":{"mode":"NORMAL"}}'
+    local resets_at_epoch=$(($(date +%s) + 7500))
+    echo '{"model":{"display_name":"Opus 4.7"},"cwd":"/tmp","session_id":"bb823787-e6ea-467c-b0ce-d90b8b92fc36","context_window":{"used_percentage":38},"rate_limits":{"five_hour":{"used_percentage":11,"resets_at":'"$resets_at_epoch"'}}}'
 }
 
 @test "passes shellcheck" {
@@ -39,199 +29,104 @@ _full_json_input() {
     assert_uses_strict_error_handling
 }
 
-@test "fresh session shows only identity line without metrics" {
-    _run_statusline_with_json "$(_fresh_session_json_input)"
-    [ "$status" -eq 0 ]
-    local stripped
-    stripped=$(echo "$output" | _strip_ansi_escape_codes)
-    [[ "$stripped" == *"Opus 4.6"* ]]
-    [[ "$stripped" != *"$"* ]]
-    [[ "$stripped" != *"ctx"* ]]
-    local line_count
-    line_count=$(echo "$output" | wc -l)
-    [ "$line_count" -eq 1 ]
-}
-
-@test "produces single line when terminal is wide enough" {
-    _run_statusline_with_json_and_columns 200 "$(_minimal_json_input)"
+@test "renders exactly one line" {
+    _run_statusline_with_json "$(_full_json_input)"
     [ "$status" -eq 0 ]
     local line_count
     line_count=$(echo "$output" | wc -l)
     [ "$line_count" -eq 1 ]
 }
 
-@test "breaks into two lines when terminal is narrow" {
-    _run_statusline_with_json_and_columns 20 "$(_minimal_json_input)"
-    [ "$status" -eq 0 ]
-    local line_count
-    line_count=$(echo "$output" | wc -l)
-    [ "$line_count" -eq 2 ]
-}
-
-@test "model name appears in output" {
+@test "model display name appears in output" {
     _run_statusline_with_json "$(_minimal_json_input)"
     local stripped
     stripped=$(echo "$output" | _strip_ansi_escape_codes)
-    [[ "$stripped" == *"Opus 4.6"* ]]
+    [[ "$stripped" == *"Opus 4.7"* ]]
 }
 
-@test "cost under 0.25 shows green formatting" {
-    local json='{"model":{"display_name":"Test"},"cwd":"/tmp","session_id":"aaa","cost":{"total_cost_usd":0.10,"total_duration_ms":1000,"total_lines_added":0,"total_lines_removed":0},"context_window":{"used_percentage":5}}'
-    _run_statusline_with_json "$json"
-    [[ "$output" == *'\033[32m'* ]] || [[ "$output" == *$'\033[32m'* ]]
-}
-
-@test "cost over 1.00 shows red formatting" {
-    local json='{"model":{"display_name":"Test"},"cwd":"/tmp","session_id":"aaa","cost":{"total_cost_usd":2.50,"total_duration_ms":1000,"total_lines_added":0,"total_lines_removed":0},"context_window":{"used_percentage":5}}'
-    _run_statusline_with_json "$json"
+@test "full session id uuid is displayed" {
+    _run_statusline_with_json "$(_minimal_json_input)"
     local stripped
     stripped=$(echo "$output" | _strip_ansi_escape_codes)
-    [[ "$stripped" == *'$2.50'* ]]
+    [[ "$stripped" == *"bb823787-e6ea-467c-b0ce-d90b8b92fc36"* ]]
 }
 
-@test "cost uses official total_cost_usd field" {
-    local json='{"model":{"display_name":"Test"},"cwd":"/tmp","session_id":"aaa","cost":{"total_cost_usd":3.14,"total_duration_ms":1000,"total_lines_added":0,"total_lines_removed":0},"context_window":{"used_percentage":5}}'
-    _run_statusline_with_json "$json"
+@test "context window shows ctx label and rounded percentage" {
+    _run_statusline_with_json "$(_minimal_json_input)"
     local stripped
     stripped=$(echo "$output" | _strip_ansi_escape_codes)
-    [[ "$stripped" == *'$3.14'* ]]
+    [[ "$stripped" == *"ctx 10%"* ]]
 }
 
-@test "context at low usage shows magenta with ctx label" {
-    local json='{"model":{"display_name":"Test"},"cwd":"/tmp","session_id":"aaa","cost":{"total_cost_usd":0.01,"total_duration_ms":1000,"total_lines_added":0,"total_lines_removed":0},"context_window":{"used_percentage":15}}'
-    _run_statusline_with_json "$json"
-    local stripped
-    stripped=$(echo "$output" | _strip_ansi_escape_codes)
-    [[ "$stripped" == *"ctx 15%"* ]]
-}
-
-@test "context at high usage shows red" {
-    local json='{"model":{"display_name":"Test"},"cwd":"/tmp","session_id":"aaa","cost":{"total_cost_usd":0.01,"total_duration_ms":1000,"total_lines_added":0,"total_lines_removed":0},"context_window":{"used_percentage":85}}'
-    _run_statusline_with_json "$json"
+@test "context window at high usage shows percentage" {
+    local json_input='{"model":{"display_name":"Opus 4.7"},"cwd":"/tmp","session_id":"abc","context_window":{"used_percentage":85}}'
+    _run_statusline_with_json "$json_input"
     local stripped
     stripped=$(echo "$output" | _strip_ansi_escape_codes)
     [[ "$stripped" == *"ctx 85%"* ]]
 }
 
-@test "duration formats hours and minutes" {
-    local json='{"model":{"display_name":"Test"},"cwd":"/tmp","session_id":"aaa","cost":{"total_cost_usd":0.01,"total_duration_ms":5400000,"total_lines_added":0,"total_lines_removed":0},"context_window":{"used_percentage":5}}'
-    _run_statusline_with_json "$json"
-    local stripped
-    stripped=$(echo "$output" | _strip_ansi_escape_codes)
-    [[ "$stripped" == *"1h30m"* ]]
-}
-
-@test "duration formats minutes and seconds when under one hour" {
-    local json='{"model":{"display_name":"Test"},"cwd":"/tmp","session_id":"aaa","cost":{"total_cost_usd":0.01,"total_duration_ms":125000,"total_lines_added":0,"total_lines_removed":0},"context_window":{"used_percentage":5}}'
-    _run_statusline_with_json "$json"
-    local stripped
-    stripped=$(echo "$output" | _strip_ansi_escape_codes)
-    [[ "$stripped" == *"2m05s"* ]]
-}
-
-@test "duration formats seconds when under one minute" {
-    local json='{"model":{"display_name":"Test"},"cwd":"/tmp","session_id":"aaa","cost":{"total_cost_usd":0.01,"total_duration_ms":45000,"total_lines_added":0,"total_lines_removed":0},"context_window":{"used_percentage":5}}'
-    _run_statusline_with_json "$json"
-    local stripped
-    stripped=$(echo "$output" | _strip_ansi_escape_codes)
-    [[ "$stripped" == *"45s"* ]]
-}
-
-@test "lines changed shows additions and removals" {
-    local json='{"model":{"display_name":"Test"},"cwd":"/tmp","session_id":"aaa","cost":{"total_cost_usd":0.01,"total_duration_ms":1000,"total_lines_added":100,"total_lines_removed":25},"context_window":{"used_percentage":5}}'
-    _run_statusline_with_json "$json"
-    local stripped
-    stripped=$(echo "$output" | _strip_ansi_escape_codes)
-    [[ "$stripped" == *"+100"* ]]
-    [[ "$stripped" == *"-25"* ]]
-}
-
-@test "lines changed hidden when both zero" {
-    _run_statusline_with_json "$(_minimal_json_input)"
-    local stripped
-    stripped=$(echo "$output" | _strip_ansi_escape_codes)
-    [[ "$stripped" != *"+0"* ]]
-    [[ "$stripped" != *"-0"* ]]
-}
-
-@test "rate limit shows percentage and reset time" {
+@test "rate limit shows lim label, percentage, and reset time" {
     _run_statusline_with_json "$(_full_json_input)"
     local stripped
     stripped=$(echo "$output" | _strip_ansi_escape_codes)
-    [[ "$stripped" == *"lim"* ]]
-    [[ "$stripped" == *"22%"* ]]
+    [[ "$stripped" == *"lim 11%"* ]]
+    [[ "$stripped" == *"2h"* ]]
 }
 
-@test "rate limit hidden when not present" {
+@test "rate limit segment hidden when rate_limits absent" {
     _run_statusline_with_json "$(_minimal_json_input)"
     local stripped
     stripped=$(echo "$output" | _strip_ansi_escape_codes)
     [[ "$stripped" != *"lim"* ]]
 }
 
-@test "agent name shown only when present" {
-    _run_statusline_with_json "$(_full_json_input)"
+@test "context segment hidden when context_window absent" {
+    local json_input='{"model":{"display_name":"Opus 4.7"},"cwd":"/tmp","session_id":"abc"}'
+    _run_statusline_with_json "$json_input"
     local stripped
     stripped=$(echo "$output" | _strip_ansi_escape_codes)
-    [[ "$stripped" == *"jarvis"* ]]
+    [[ "$stripped" != *"ctx"* ]]
 }
 
-@test "agent name hidden when not present" {
-    _run_statusline_with_json "$(_minimal_json_input)"
-    local stripped
-    stripped=$(echo "$output" | _strip_ansi_escape_codes)
-    [[ "$stripped" != *"⚡"* ]]
-}
-
-@test "worktree shown with name and branch when present" {
-    _run_statusline_with_json "$(_full_json_input)"
-    local stripped
-    stripped=$(echo "$output" | _strip_ansi_escape_codes)
-    [[ "$stripped" == *"feature-x"* ]]
-    [[ "$stripped" == *"feat/x"* ]]
-}
-
-@test "worktree hidden when not present" {
-    _run_statusline_with_json "$(_minimal_json_input)"
-    local stripped
-    stripped=$(echo "$output" | _strip_ansi_escape_codes)
-    [[ "$stripped" != *"🌿"* ]]
-}
-
-@test "vim mode shown only when present" {
-    _run_statusline_with_json "$(_full_json_input)"
-    local stripped
-    stripped=$(echo "$output" | _strip_ansi_escape_codes)
-    [[ "$stripped" == *"NORMAL"* ]]
-}
-
-@test "vim mode hidden when not present" {
-    _run_statusline_with_json "$(_minimal_json_input)"
+@test "removed segments do not appear in output" {
+    local resets_at_epoch=$(($(date +%s) + 7200))
+    local json_input='{"model":{"display_name":"Opus 4.7"},"cwd":"/tmp","session_id":"abc","session_name":"my-session","cost":{"total_cost_usd":0.42,"total_duration_ms":1823000,"total_lines_added":47,"total_lines_removed":12},"context_window":{"used_percentage":35},"rate_limits":{"five_hour":{"used_percentage":22,"resets_at":'"$resets_at_epoch"'}},"transcript_path":"/tmp/transcript.jsonl","agent":{"name":"jarvis"},"worktree":{"name":"feature-x","branch":"feat/x"},"vim":{"mode":"NORMAL"}}'
+    _run_statusline_with_json "$json_input"
     local stripped
     stripped=$(echo "$output" | _strip_ansi_escape_codes)
     [[ "$stripped" != *"NORMAL"* ]]
-    [[ "$stripped" != *"INSERT"* ]]
+    [[ "$stripped" != *"jarvis"* ]]
+    [[ "$stripped" != *"feature-x"* ]]
+    [[ "$stripped" != *"my-session"* ]]
+    [[ "$stripped" != *"transcript"* ]]
+    [[ "$stripped" != *"0.42"* ]]
+    [[ "$stripped" != *"+47"* ]]
+    [[ "$stripped" != *"-12"* ]]
 }
 
-@test "session name shown when present" {
+@test "segments are separated by the box-drawing pipe" {
     _run_statusline_with_json "$(_full_json_input)"
     local stripped
     stripped=$(echo "$output" | _strip_ansi_escape_codes)
-    [[ "$stripped" == *"my-session"* ]]
+    [[ "$stripped" == *"│"* ]]
 }
 
-@test "full output contains all segments" {
-    _run_statusline_with_json_and_columns 200 "$(_full_json_input)"
+@test "git segment shows dirty marker when working tree is dirty" {
+    local sandbox_repo_directory
+    sandbox_repo_directory=$(mktemp -d)
+    git -C "$sandbox_repo_directory" init -q -b main
+    git -C "$sandbox_repo_directory" config user.email test@example.com
+    git -C "$sandbox_repo_directory" config user.name "Test"
+    echo "first" >"$sandbox_repo_directory/file.txt"
+    git -C "$sandbox_repo_directory" add file.txt
+    git -C "$sandbox_repo_directory" commit -q -m "initial commit"
+    echo "second" >>"$sandbox_repo_directory/file.txt"
+    local json_input
+    json_input='{"model":{"display_name":"Opus 4.7"},"cwd":"'"$sandbox_repo_directory"'","session_id":"abc","context_window":{"used_percentage":5}}'
+    _run_statusline_with_json "$json_input"
     local stripped
     stripped=$(echo "$output" | _strip_ansi_escape_codes)
-
-    [[ "$stripped" == *"jarvis"* ]]
-    [[ "$stripped" == *"feature-x"* ]]
-    [[ "$stripped" == *"my-session"* ]]
-    [[ "$stripped" == *"Opus 4.6"* ]]
-    [[ "$stripped" == *'$0.42'* ]]
-    [[ "$stripped" == *"lim"* ]]
-    [[ "$stripped" == *"+47"* ]]
-    [[ "$stripped" == *"-12"* ]]
-    [[ "$stripped" == *"ctx 35%"* ]]
+    [[ "$stripped" == *"main*"* ]]
+    rm -rf "$sandbox_repo_directory"
 }
