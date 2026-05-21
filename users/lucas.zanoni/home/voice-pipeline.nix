@@ -10,8 +10,6 @@ in
 
   services.voice-pipeline = {
     enable = true;
-    gatewayUrl = "http://localhost:18789";
-    gatewayTokenFile = "${agenixSecretsDir}/voice-pipeline-gateway-token";
     deepgramApiKeyFile = "${agenixSecretsDir}/deepgram-api-key";
     openaiApiKeyFile = "${agenixSecretsDir}/openai-api-key";
     defaultAgent = "jarvis";
