@@ -96,6 +96,8 @@ in
       channel.type = "pm";
       channel.pm.projectDirectory = "${homeDirectory}/repo/ai-first-initiative";
       model = "opus";
+      activeHoursStart = 8;
+      activeHoursEnd = 20;
       heartbeatInterval = projectManagerHeartbeatInterval;
       heartbeatPrompt = projectManagerHeartbeatPrompt;
       personality = buildProjectManagerPersonality "ai-first-initiative";
