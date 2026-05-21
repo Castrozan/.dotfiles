@@ -1,0 +1,95 @@
+#!/usr/bin/env python3
+
+import argparse
+import os
+import sys
+
+DEFAULT_MEANINGFUL_LINE_PATTERN = "^⏺ "
+
+
+def parse_command_line_arguments() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        prog="claude-a2a-peer",
+        description=(
+            "Expose an already-running tmux-attached agent as an A2A peer over HTTP. "
+            "Blocks forever; designed to be invoked inside a dedicated tmux window."
+        ),
+    )
+    parser.add_argument(
+        "--tmux-target",
+        required=True,
+        help="tmux session:window of the agent to wrap",
+    )
+    parser.add_argument(
+        "--name", required=True, help="agent name advertised in the A2A Agent Card"
+    )
+    parser.add_argument(
+        "--port",
+        required=True,
+        type=int,
+        help="TCP port the A2A server listens on (caller is responsible for picking a free port)",
+    )
+    parser.add_argument(
+        "--pattern",
+        default=DEFAULT_MEANINGFUL_LINE_PATTERN,
+        help=f"regex matching meaningful pane lines (default: {DEFAULT_MEANINGFUL_LINE_PATTERN!r})",
+    )
+    parser.add_argument(
+        "--description",
+        default=None,
+        help="free-form description in the Agent Card; defaults to a name-derived value",
+    )
+    return parser.parse_args()
+
+
+def split_tmux_target_into_session_and_window(tmux_target: str) -> tuple[str, str]:
+    if ":" not in tmux_target:
+        print(
+            f"error: --tmux-target must be in 'session:window' form (got {tmux_target!r})",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+    session_name, _, window_name = tmux_target.partition(":")
+    return session_name, window_name
+
+
+def build_a2a_server_argv(arguments: argparse.Namespace) -> list[str]:
+    tmux_session_name, tmux_window_name = split_tmux_target_into_session_and_window(
+        arguments.tmux_target
+    )
+    description = arguments.description or f"short-lived clawde agent {arguments.name}"
+    return [
+        sys.executable,
+        "-m",
+        "a2a_server",
+        "--agent-name",
+        arguments.name,
+        "--agent-description",
+        description,
+        "--listen-host",
+        "127.0.0.1",
+        "--listen-port",
+        str(arguments.port),
+        "--backend-type",
+        "tmux",
+        "--tmux-session-name",
+        tmux_session_name,
+        "--tmux-window-name",
+        tmux_window_name,
+        "--tmux-meaningful-line-pattern",
+        arguments.pattern,
+    ]
+
+
+def main() -> None:
+    arguments = parse_command_line_arguments()
+    print(
+        f"A2A peer for {arguments.tmux_target} as {arguments.name!r} "
+        f"listening on http://127.0.0.1:{arguments.port}",
+        flush=True,
+    )
+    os.execvp(sys.executable, build_a2a_server_argv(arguments))
+
+
+if __name__ == "__main__":
+    main()
