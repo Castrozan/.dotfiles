@@ -156,7 +156,7 @@ def main():
             ],
             capture_output=True,
             text=True,
-            timeout=30,
+            timeout=90,
             env={
                 key: value for key, value in os.environ.items() if key != "CLAUDECODE"
             },
