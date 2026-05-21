@@ -35,6 +35,29 @@ def import_hyphenated_hook_module(hyphenated_name):
 
 import_hyphenated_hook_module("session-context")
 import_hyphenated_hook_module("monitor-streaming-pattern-validator")
+end_of_work_compliance_review_module = import_hyphenated_hook_module(
+    "end-of-work-compliance-review"
+)
+import end_of_work_compliance_review_logging as end_of_work_compliance_review_logging_module  # noqa: E402
+
+
+@pytest.fixture
+def reset_session_id_prefix_between_tests():
+    end_of_work_compliance_review_module.set_session_id_short_prefix("")
+    yield
+    end_of_work_compliance_review_module.set_session_id_short_prefix("")
+
+
+@pytest.fixture
+def isolate_persistent_log_file(tmp_path, monkeypatch):
+    isolated_log_path = tmp_path / "logs" / "end-of-work-compliance-review.log"
+    monkeypatch.setattr(
+        end_of_work_compliance_review_logging_module,
+        "PERSISTENT_LOG_FILE_PATH",
+        isolated_log_path,
+    )
+    return isolated_log_path
+
 
 PROHIBITED_COMMAND_GUARD_HOOK_SCRIPT_PATH = find_hook_module_path(
     "prohibited-command-guard"

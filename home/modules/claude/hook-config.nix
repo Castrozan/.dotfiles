@@ -23,7 +23,7 @@ in
         {
           type = "command";
           command = "${runHook} ${hooksPath}/end-of-work-compliance-review.py";
-          timeout = 120000;
+          timeout = 540000;
         }
       ];
     }
