@@ -12,28 +12,26 @@ import json
 import re
 import sys
 
+COMMAND_BOUNDARY_PREFIX = r"(?:^|[;&|`(]\s*)"
+
 PROHIBITED_BASH_COMMAND_PATTERNS = [
     (
-        r"git\s+add\s+(-A|--all|\.)(\s|$)",
+        rf"{COMMAND_BOUNDARY_PREFIX}git\s+add\s+(-A|--all|\.)(\s|$)",
         "git add -A/--all/. is prohibited; stage specific files (parallel work risk).",
     ),
     (
-        r"\bclone\b.*castrozan/\.?dotfiles",
+        rf"{COMMAND_BOUNDARY_PREFIX}(?:git|gh\s+repo)\s+clone\s+\S*castrozan[/-]?\.?dotfiles",
         "Cloning castrozan/.dotfiles is prohibited; use 'gh api' for remote access.",
     ),
     (
-        r"git\s+clone\s+.*castrozan[/-]?\.?dotfiles",
-        "Cloning a castrozan/.dotfiles repo is prohibited; use 'gh api' instead.",
-    ),
-    (
-        r"(?:^|[;&|`(]\s*)direnv\s+(allow|hook|exec|reload|status|edit|deny|block|prune|version)\b",
+        rf"{COMMAND_BOUNDARY_PREFIX}direnv\s+(allow|hook|exec|reload|status|edit|deny|block|prune|version)\b",
         "direnv is prohibited; use 'devenv shell' or 'devenv shell -- command'.",
     ),
 ]
 
 PROHIBITED_FILE_PATH_PATTERNS = [
     (
-        r"castrozan/\.?dotfiles",
+        r"(?:^|/)castrozan/\.?dotfiles(?:/|$)",
         "Writing under castrozan/.dotfiles is prohibited; repo must not live on disk.",
     ),
 ]
@@ -49,20 +47,12 @@ PROHIBITED_PATTERNS_BY_TOOL = {
 def extract_inspectable_text(tool_name: str, tool_input: dict) -> str:
     if tool_name == "Bash":
         return tool_input.get("command", "") or ""
-    if tool_name == "Write":
-        parts = [tool_input.get("file_path", ""), tool_input.get("content", "")]
-        return "\n".join(part for part in parts if part)
-    if tool_name == "Edit":
-        parts = [
-            tool_input.get("file_path", ""),
-            tool_input.get("old_string", ""),
-            tool_input.get("new_string", ""),
-        ]
-        return "\n".join(part for part in parts if part)
+    if tool_name in ("Write", "Edit"):
+        return tool_input.get("file_path", "") or ""
     if tool_name == "NotebookEdit":
-        path = tool_input.get("notebook_path", "") or tool_input.get("file_path", "")
-        parts = [path, tool_input.get("new_source", "")]
-        return "\n".join(part for part in parts if part)
+        return (
+            tool_input.get("notebook_path", "") or tool_input.get("file_path", "") or ""
+        )
     return ""
 
 

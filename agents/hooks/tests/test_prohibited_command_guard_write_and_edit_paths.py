@@ -48,3 +48,18 @@ class TestWriteAndEditFilePathBlocking:
         )
         assert result.returncode == 0
         assert result.stdout == ""
+
+    def test_allows_content_mentioning_prohibited_path(
+        self, invoke_prohibited_command_guard_hook
+    ):
+        result = invoke_prohibited_command_guard_hook(
+            {
+                "tool_name": "Write",
+                "tool_input": {
+                    "file_path": "/tmp/notes.md",
+                    "content": "We do not write to castrozan/.dotfiles anymore.",
+                },
+            }
+        )
+        assert result.returncode == 0
+        assert result.stdout == ""

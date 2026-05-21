@@ -25,6 +25,11 @@ class TestBashSafeCommands:
             "virtualenv .venv",
             "pipx install black",
             "poetry install",
+            "echo 'git add -A is bad' >> notes.md",
+            "echo 'direnv allow' | wc -l",
+            "grep -r 'castrozan/.dotfiles' agents/",
+            "cat <<EOF\ngit add -A inside heredoc\nEOF",
+            "python3 -c 'print(\"direnv allow\")'",
         ],
     )
     def test_allows_safe_commands(self, command, invoke_prohibited_command_guard_hook):
