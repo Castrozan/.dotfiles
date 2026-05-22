@@ -1,70 +1,19 @@
-<extension_decision>
-Skill: AI auto-detects relevance, workflow guidance, progressive disclosure.
-Script: User explicit control, simple repeatable action, template-based.
-</extension_decision>
+You audit instruction-file changes against the standards in the `instructions` skill. Instruction files are SKILL.md and their sub-files, `.claude/agents/*.md` definitions, CLAUDE.md at any depth, and prompt strings passed to Agent or Team tool calls in the diff. Load the `instructions` skill if not already loaded, then check each rule against each changed instruction file.
 
-<skill_format>
-Skills live in agents/skills/name/SKILL.md, deployed to IA agents via home-manager. YAML frontmatter requires name and description fields. Short directory names for easy discovery. Body uses XML tags with dense prose. Script-backed skills keep logic in scripts/ subdirectory with SKILL.md as minimal entry point.
-</skill_format>
+Skip rules already enforced elsewhere: the frontmatter validator script already checks description word count and that sub-file references resolve; do not re-report those. Skip rules covered by `code-review.md` (naming, staging, commit format) and `compliance.md` (Python over Bash, test-first, local-first).
 
-<skill_discovery>
-Description drives discovery — models match semantically, so embed synonyms in prose. Every skill description is injected into every agent session; each word is a shared token tax across all interactions. Cap at 2 sentences, ~30 words. Add "Do NOT use for..." only where a sibling skill creates real confusion. All trigger information goes in the description, not the body.
-</skill_discovery>
+Rules:
+1. Evergreen text: no hardcoded absolute paths, exact command syntax, version numbers, dates, or release names that will rot. Patterns and intent over literal syntax. Pointers ("the rebuild script") over copies.
+2. No code explanation: the file documents only what reading the underlying code or script cannot reveal. No section describes "what this script does" or "what this directory contains" when the answer is visible by opening it.
+3. Density and voice: imperative ("Do X"), no filler ("you should", "please consider", "as a reminder"), dense prose over bullet lists for connected ideas. Bullets only when items are genuinely unordered and disconnected.
+4. Named failure modes: every "do not" or "never" line names the specific failure it prevents. Generic caution ("be careful", "be thoughtful") fails this rule because the model cannot derive behavior from it.
+5. No frontmatter duplication: the body does not restate what the YAML description already said.
+6. Surface fit: content lives on the right surface. Workflow-specific guidance that loads on demand belongs in a skill, not CLAUDE.md. Policy that must apply every session belongs in CLAUDE.md, not buried in a skill sub-file. Reference-card content that a script's --help already exposes belongs in the script, not the skill.
+7. Staleness vector: each specific factual claim (file path, command flag, validator threshold, tool name) is a future liability. Justify each one or replace with a pattern. A file that needs editing every time an unrelated implementation changes is the failure shape this rule catches.
 
-<writing_instructions>
-XML tags for structure with descriptive long tag names. Dense prose in imperative voice ("Do X" not "You should do X"). Context over quantity — minimal high-signal tokens. Only add what the model doesn't already know. Challenge each piece: "Does this paragraph justify its token cost?"
+Output format (one line per finding):
+PASS: file - rule-number - evidence
+FAIL: file - rule-number - evidence
+UNKNOWN: file - rule-number - insufficient data
 
-Never explain what code does — the model can read it. Document what the model cannot infer: non-obvious constraints, traps where code compiles but behaves wrong, reasons behind surprising design choices, which things must stay in sync and why. If a fact is discoverable by reading the source file, it does not belong in instructions.
-
-A stale instruction is worse than no instruction. When instructions describe code structure that later changes, the model follows the instruction over what it reads, producing confident wrong behavior. Every specific detail is a future liability. Write about forces and constraints, not about current implementation.
-</writing_instructions>
-
-<policy_versus_instruction>
-Policies and instructions serve different purposes. An instruction tells agents how to behave during work — formatting rules, commit conventions, tool usage. A policy declares intent, goals, boundaries, and constraints for a domain — what must be true about audio, networking, or security regardless of implementation. Policies never name specific tools, commands, paths, or current state. They define requisites and boundaries in dense prose so that any implementation satisfying the constraints is acceptable. When asked to write a policy, do not produce implementation documentation or reference guides — those are instructions or code, not policy.
-</policy_versus_instruction>
-
-<evergreen_instructions>
-Instructions become stale when code changes. Write instructions that stay accurate without maintenance.
-
-Pointers over copies: "Run the rebuild script" not "Run ./home/modules/system/scripts/rebuild".
-Patterns over commands: Document patterns, not exact syntax.
-Reference locations: Point to where truth lives, agent reads current state.
-No hardcoded paths: Reference things by purpose, not by path.
-Intent over implementation: What user wants rarely changes, how to accomplish it evolves.
-Version independence: Avoid embedding versions, dates, release names.
-</evergreen_instructions>
-
-<hardskill_belongs_in_scripts>
-Scripts and their --help output are the authoritative source for exact commands, flags, and syntax. Skills document what scripts cannot express: silent failure modes, non-obvious ordering constraints, domain boundaries, and which things must stay in sync. If a script's name and --help already tell the agent how to use it, the skill must not repeat that information. When a skill wraps scripts, its body should be traps and boundaries — not a reference card for the scripts' CLI interface.
-
-Exception: genuinely non-obvious hard constraints where wrong syntax silently succeeds. Branch naming formats, socket paths that fail silently, staging rules that cause data loss — these earn their token cost because the agent cannot discover the constraint by running --help or reading source. The test: "would the agent silently produce wrong results without this line?" If no, cut it.
-</hardskill_belongs_in_scripts>
-
-<unavoidable_specifics>
-When exact commands are required: keep in ONE authoritative location, other docs point there. Mark as "verify current command before using".
-</unavoidable_specifics>
-
-<self_verification>
-When instructions describe HOW: include "Verify current approach by checking [specific file/directory]". Teaches agents to confirm before acting on potentially stale instructions.
-</self_verification>
-
-<instruction_diagnosis>
-When evaluating instruction quality, verify against reality first: are the instructions actually followed? Do the produced artifacts match what the skill describes? If no artifact shows evidence of an instruction being applied, that instruction is dead. Trace the full instruction stack the failing agent had - core.md, auto-loaded skill descriptions, any loaded skill bodies, available tools - and identify where routing or behavior diverged. For each observed failure, classify: wrong (agent followed the instruction but got a bad result), missing (no instruction existed for the situation), unreachable (correct instruction exists but the agent never loaded it), or dead (aspirational prose that no agent follows). Dead instructions are worse than missing ones - they waste tokens, create false confidence that behavior is covered, and make the answer to "is there an instruction for X?" falsely yes. Cross-reference composed workflows: when a task spans multiple skills, check whether the skills reference each other or are disconnected islands the agent must navigate blind.
-</instruction_diagnosis>
-
-<cohesion>
-New instructions are not more important than existing ones. No emphasis markers (CRITICAL, IMPORTANT) for later additions. Instructions should be cohesive — latest additions integrate, not dominate.
-</cohesion>
-
-<skill_authoring_preflight>
-Before writing any SKILL.md, answer these questions. If any answer is "yes", revise before committing:
-
-- Is the description over 2 sentences or ~30 words? Cut it — every skill's description loads in every agent session.
-- Does the body repeat what the frontmatter description already says? Remove it.
-- Does any section belong to a different skill's responsibility? Tool skills document their own API only — workflow composition belongs in workflow skills.
-- Are there hardcoded file paths, tokens, or environment-specific values that will go stale? Generalize to patterns or point to where the truth lives.
-- Would a dense two-line prose replace a verbose example block without losing clarity? Prefer density.
-- Does any content exist only because raw research data was fresh in context? Strip research artifacts — write from synthesized patterns, not from raw dumps.
-- Does any section explain what code does? Remove it — the model reads code. Only keep what the model cannot infer: traps, non-obvious constraints, sync requirements, and "whys".
-- Does any directory exceed 15 files? Split by cohesion — group files that change together and serve one concept into subdirectories.
-</skill_authoring_preflight>
+Report only FAIL and UNKNOWN findings unless the caller asks for full output.

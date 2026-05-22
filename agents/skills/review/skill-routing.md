@@ -1,18 +1,9 @@
 <skill_routing_diagnosis>
-When a skill exists but the model bypasses it (uses raw tools instead), diagnose the routing chain before fixing anything.
-
-Failure classification for routing:
-- Unreachable: skill exists but description doesn't match the user's input pattern (fix description)
-- Outcompeted: model sees a direct tool (WebFetch, browser MCP) and tries it before considering skills (fix with PreToolUse hook)
-- Misrouted: model routes to the wrong skill (fix with eval tests + description disambiguation)
+When a skill exists but the model bypasses it (uses raw tools instead), diagnose the routing chain before fixing anything. Three failure classifications: 1) unreachable, the skill exists but its description doesn't match the user's input pattern (fix the description); 2) outcompeted, the model sees a direct tool (WebFetch, browser MCP) and tries it before considering skills (fix with a PreToolUse hook); 3) misrouted, the model routes to the wrong skill (fix with eval tests and description disambiguation).
 </skill_routing_diagnosis>
 
 <diagnosis_workflow>
-1. Reproduce: get the exact user input that failed routing
-2. Check routing evals for existing coverage of that input pattern
-3. Read the target skill's description - does it semantically match the input?
-4. Check if direct tools (WebFetch, browser MCPs) would intercept before skill routing fires
-5. Classify the failure, then fix
+1) Reproduce by getting the exact user input that failed routing; 2) check routing evals for existing coverage of that input pattern; 3) read the target skill's description and ask whether it semantically matches the input; 4) check if direct tools (WebFetch, browser MCPs) would intercept before skill routing fires; 5) classify the failure, then fix.
 </diagnosis_workflow>
 
 <fix_skill_description>
@@ -20,9 +11,7 @@ Update the skill's SKILL.md description AND the matching entry in the routing ev
 </fix_skill_description>
 
 <fix_with_pretooluse_hook>
-When direct tools outcompete skills (model tries WebFetch on a URL that needs a skill), create a PreToolUse hook that blocks the tool and redirects. Look in the hooks directory for existing URL-routing hooks as a pattern. The hook receives tool input on stdin as JSON, inspects the URL, and exits 2 with a stderr redirect message.
-
-The redirect message must be actionable: give the model the exact command or API call, not just the skill name. Skill(name) may fail in fresh sessions. Inline the minimal working command so the model can act immediately. Use wildcard matchers for MCP servers with multiple tools to avoid gaps.
+When direct tools outcompete skills (model tries WebFetch on a URL that needs a skill), create a PreToolUse hook that blocks the tool and redirects. Look in the hooks directory for existing URL-routing hooks as a pattern. The hook receives tool input on stdin as JSON, inspects the URL, and exits 2 with a stderr redirect message. The redirect message must be actionable: give the model the exact command or API call, not just the skill name (Skill(name) may fail in fresh sessions), inline the minimal working command so the model can act immediately, and use wildcard matchers for MCP servers with multiple tools to avoid gaps.
 </fix_with_pretooluse_hook>
 
 <fix_with_eval_tests>
