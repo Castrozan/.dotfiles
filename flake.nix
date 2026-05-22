@@ -71,29 +71,9 @@
         in
         mkLinuxHomeConfigFor "lucas.zanoni";
 
-      # nixosConfigurations.${username} is a NixOS system configuration for a user
-      # ./bin/rebuild for how to apply
-      nixosConfigurations =
-        let
-          username = "zanoni";
-          specialArgs = specialArgsBase // {
-            inherit username;
-            isNixOS = true;
-          };
-        in
-        {
-          "${username}" = nixpkgs.lib.nixosSystem {
-            inherit specialArgs;
-            system = linuxSystem;
-
-            modules = [
-              ./hosts/dellg15
-              ./users/${username}/nixos.nix
-              home-manager.nixosModules.home-manager
-              (import ./users/${username}/nixos-home-config.nix)
-            ];
-          };
-        };
+      # Personal NixOS host (zanoni) is built by ./zanoni-system/flake.nix
+      # (a private submodule). Shared modules and user config below remain
+      # consumable from there via flake input.
 
       homeManagerModules = import ./flake/home-manager-modules.nix;
 

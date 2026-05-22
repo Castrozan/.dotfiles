@@ -105,14 +105,29 @@ _fix_agenix_identity_key_ownership() {
 }
 
 _rebuild_nixos() {
-	local username dotfiles_path
+	local username dotfiles_path flake_path
 	username="$(whoami)"
 	dotfiles_path="$DOTFILES_DIR"
 
-	echo ":: Detected NixOS. Running nixos-rebuild switch..."
-	echo ":: Flake: ${dotfiles_path}#${username}"
+	flake_path="$(_resolve_nixos_flake_path "$username" "$dotfiles_path")"
 
-	sudo env "$NIXOS_ALLOW_UNFREE" nixos-rebuild switch --flake "${dotfiles_path}?submodules=1#${username}"
+	echo ":: Detected NixOS. Running nixos-rebuild switch..."
+	echo ":: Flake: ${flake_path}#${username}"
+
+	sudo env "$NIXOS_ALLOW_UNFREE" nixos-rebuild switch --flake "${flake_path}?submodules=1#${username}"
+}
+
+_resolve_nixos_flake_path() {
+	local username="$1"
+	local dotfiles_path="$2"
+	local zanoni_system_path="${dotfiles_path}/zanoni-system"
+
+	if [ "$username" = "zanoni" ] && [ -f "${zanoni_system_path}/flake.nix" ]; then
+		echo "$zanoni_system_path"
+		return
+	fi
+
+	echo "$dotfiles_path"
 }
 
 _rebuild_home_manager() {
