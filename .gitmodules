@@ -4,3 +4,6 @@
 [submodule "password-store"]
 	path = password-store
 	url = git@github.com:Castrozan/password-store.git
+[submodule "zanoni-system"]
+	path = zanoni-system
+	url = git@github.com:castrozan/zanoni-system.git
