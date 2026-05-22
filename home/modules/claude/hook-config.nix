@@ -66,6 +66,11 @@ in
           command = "${runHook} ${hooksPath}/workspace-directory-injector.py";
           timeout = 3000;
         }
+        {
+          type = "command";
+          command = "${runHook} ${hooksPath}/background-bash-anti-pattern-validator.py";
+          timeout = 3000;
+        }
       ];
     }
     {
