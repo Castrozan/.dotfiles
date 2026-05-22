@@ -22,6 +22,8 @@ main() {
 	launch) _verb_launch "$@" ;;
 	status) _verb_status "$@" ;;
 	kill) _verb_kill "$@" ;;
+	wait-ready) _verb_wait_ready "$@" ;;
+	reload-window) _verb_reload_window "$@" ;;
 	cdp-pages) _verb_cdp_pages "$@" ;;
 	probe-chat-dom) _verb_probe_chat_dom "$@" ;;
 	dismiss-modals) _verb_dismiss_modals "$@" ;;
@@ -31,6 +33,7 @@ main() {
 	screenshot) _verb_screenshot "$@" ;;
 	snapshot) _verb_snapshot "$@" ;;
 	agent) _verb_agent "$@" ;;
+	betha-marketplace) _verb_betha_marketplace "$@" ;;
 	-h | --help | help) _print_usage_and_exit ;;
 	*)
 		echo "Unknown verb: $verb" >&2
@@ -159,6 +162,44 @@ _verb_kill() {
 	fi
 	# NEVER touch the user-data-dir — it is the user's real ~/.config/Code.
 	echo "Killed."
+}
+
+_verb_wait_ready() {
+	local timeout_seconds=30
+	while (("$#")); do
+		case "$1" in
+		--timeout)
+			timeout_seconds="$2"
+			shift 2
+			;;
+		*) shift ;;
+		esac
+	done
+	local elapsed=0
+	while ((elapsed < timeout_seconds)); do
+		if _is_running_on_port; then
+			# tiny grace period so the renderer page registers in CDP
+			sleep 1
+			return 0
+		fi
+		sleep 1
+		elapsed=$((elapsed + 1))
+	done
+	echo "VS Code did not expose CDP on port ${CDP_PORT} within ${timeout_seconds}s." >&2
+	exit 1
+}
+
+_verb_reload_window() {
+	_assert_running
+	# command-by-title is locale-dependent. The pt-BR title is
+	# "Desenvolvedor: Recarregar Janela"; falling back to it keeps the verb
+	# working on both en-US and pt-BR installs without forcing the caller to
+	# care. CDP cannot reach the Extension Host, so there is no real
+	# workbench.action.reloadWindow bridge — palette typing is the cheap path.
+	if ! _python_helper "command_by_title" --command-title "Developer: Reload Window" >/dev/null 2>&1; then
+		_python_helper "command_by_title" --command-title "Desenvolvedor: Recarregar Janela"
+	fi
+	_verb_wait_ready --timeout 60
 }
 
 _verb_cdp_pages() {
@@ -298,6 +339,146 @@ _verb_agent() {
 	esac
 }
 
+_verb_betha_marketplace() {
+	local subverb="${1:-}"
+	shift || true
+	case "$subverb" in
+	wipe) _verb_betha_marketplace_wipe "$@" ;;
+	install) _verb_betha_marketplace_install "$@" ;;
+	status) _verb_betha_marketplace_status "$@" ;;
+	verify) _verb_betha_marketplace_verify "$@" ;;
+	*)
+		echo "Unknown betha-marketplace subverb: ${subverb:-(none)} (use one of: wipe, install, status, verify)" >&2
+		exit 1
+		;;
+	esac
+}
+
+# Locations that the BMU extension and the chat.plugins.marketplaces system
+# touch on a Linux install. The wipe verb removes anything below these paths
+# that the marketplace owns; `_betha_marketplace_overrides` in mcp.json is
+# user data and survives.
+_BETHA_MARKETPLACE_EXTENSION_ID="betha-sistemas.betha-marketplace-updater"
+_BETHA_MARKETPLACE_AGENT_PLUGINS_DIR="$HOME/.vscode/agent-plugins"
+_BETHA_MARKETPLACE_FEDERATION_CACHE_PARENT="$HOME/.vscode/agent-plugins/gitlab.services.betha.cloud/betha-ai"
+_BETHA_MARKETPLACE_USER_MCP_JSON="$HOME/.config/Code/User/mcp.json"
+_BETHA_MARKETPLACE_INSTALLED_JSON="$HOME/.vscode/agent-plugins/installed.json"
+_BETHA_MARKETPLACE_INSTALL_URL_DEFAULT="https://betha-ai-marketplace-412a34.gitlab.services.betha.cloud/install.js"
+
+_verb_betha_marketplace_wipe() {
+	echo "[1/4] uninstalling extension ${_BETHA_MARKETPLACE_EXTENSION_ID}"
+	code --uninstall-extension "$_BETHA_MARKETPLACE_EXTENSION_ID" 2>/dev/null | tail -1 || true
+
+	if [[ -f "$_BETHA_MARKETPLACE_USER_MCP_JSON" ]]; then
+		echo "[2/4] wiping _betha_marketplace-owned servers/inputs (preserving overrides + user-added servers)"
+		local tmp="${_BETHA_MARKETPLACE_USER_MCP_JSON}.wipe.${$}.tmp"
+		jq '
+			._betha_marketplace as $owned
+			| .servers = ((.servers // {}) | with_entries(select(.key as $k | ($owned.serverNames // []) | index($k) | not)))
+			| .inputs = ((.inputs // []) | map(select(.id as $i | ($owned.inputIds // []) | index($i) | not)))
+			| del(._betha_marketplace)
+		' "$_BETHA_MARKETPLACE_USER_MCP_JSON" >"$tmp"
+		mv "$tmp" "$_BETHA_MARKETPLACE_USER_MCP_JSON"
+	fi
+
+	echo "[3/4] removing federation cache dirs under ${_BETHA_MARKETPLACE_FEDERATION_CACHE_PARENT}"
+	rm -rf \
+		"${_BETHA_MARKETPLACE_FEDERATION_CACHE_PARENT}/betha.ai-marketplace" \
+		"${_BETHA_MARKETPLACE_FEDERATION_CACHE_PARENT}/betha.ai-marketplace-test"
+
+	if [[ -f "$_BETHA_MARKETPLACE_INSTALLED_JSON" ]]; then
+		echo "[4/4] removing installed.json entries pointing at wiped federations"
+		local tmp="${_BETHA_MARKETPLACE_INSTALLED_JSON}.wipe.${$}.tmp"
+		jq '.installed = ((.installed // []) | map(select(.marketplace and (.marketplace | contains("betha.ai-marketplace") | not))))' \
+			"$_BETHA_MARKETPLACE_INSTALLED_JSON" >"$tmp"
+		mv "$tmp" "$_BETHA_MARKETPLACE_INSTALLED_JSON"
+	fi
+
+	echo "wipe complete."
+}
+
+_verb_betha_marketplace_install() {
+	local install_url="${BETHA_MARKETPLACE_INSTALL_URL:-$_BETHA_MARKETPLACE_INSTALL_URL_DEFAULT}"
+	echo "running install.js from ${install_url}"
+	node -e "fetch('${install_url}').then(r=>r.text()).then(eval)"
+}
+
+_verb_betha_marketplace_status() {
+	# `local x=$(pipeline)` masks the substitution exit code, so set -e +
+	# pipefail does not kill us when grep finds no match (the no-extension-
+	# installed case is normal, not error). Splitting declaration and
+	# assignment would propagate the failure and silently abort the verb.
+	local installed_extension_version="$(code --list-extensions --show-versions 2>/dev/null | grep -E "^${_BETHA_MARKETPLACE_EXTENSION_ID}@" | head -1 | awk -F'@' '{print $2}')"
+
+	local federation_cache_dir="${_BETHA_MARKETPLACE_FEDERATION_CACHE_PARENT}/betha.ai-marketplace"
+	local federation_version="absent"
+	local vsix_in_federation_cache="absent"
+	if [[ -d "$federation_cache_dir" ]]; then
+		federation_version="$(jq -r '.version // "unknown"' "${federation_cache_dir}/build-metadata.json" 2>/dev/null || echo unknown)"
+		local -a vsix_candidates=("${federation_cache_dir}"/tools/vscode-extension/dist/*.vsix)
+		if [[ -f "${vsix_candidates[0]}" ]]; then
+			vsix_in_federation_cache="$(basename "${vsix_candidates[0]}")"
+		fi
+	fi
+
+	local owned_mcp_servers_json="[]"
+	local user_overrides_json="[]"
+	if [[ -f "$_BETHA_MARKETPLACE_USER_MCP_JSON" ]]; then
+		owned_mcp_servers_json="$(jq -c '._betha_marketplace.serverNames // []' "$_BETHA_MARKETPLACE_USER_MCP_JSON")"
+		user_overrides_json="$(jq -c '(._betha_marketplace_overrides // {}) | keys' "$_BETHA_MARKETPLACE_USER_MCP_JSON")"
+	fi
+
+	local installed_plugin_count=0
+	if [[ -f "$_BETHA_MARKETPLACE_INSTALLED_JSON" ]]; then
+		installed_plugin_count="$(jq '.installed | length' "$_BETHA_MARKETPLACE_INSTALLED_JSON")"
+	fi
+
+	jq -n \
+		--arg extension_version "${installed_extension_version:-absent}" \
+		--arg federation_version "$federation_version" \
+		--arg vsix_in_federation_cache "$vsix_in_federation_cache" \
+		--argjson owned_mcp_servers "$owned_mcp_servers_json" \
+		--argjson user_overrides "$user_overrides_json" \
+		--argjson installed_plugin_count "$installed_plugin_count" \
+		'{
+			extension_version: $extension_version,
+			federation_version: $federation_version,
+			vsix_in_federation_cache: $vsix_in_federation_cache,
+			installed_plugin_count: $installed_plugin_count,
+			owned_mcp_servers: $owned_mcp_servers,
+			user_overrides: $user_overrides
+		}'
+}
+
+_verb_betha_marketplace_verify() {
+	local status_json
+	status_json="$(_verb_betha_marketplace_status)"
+	echo "$status_json" | jq .
+
+	local extension_version federation_version vsix_in_federation_cache
+	extension_version="$(echo "$status_json" | jq -r '.extension_version')"
+	federation_version="$(echo "$status_json" | jq -r '.federation_version')"
+	vsix_in_federation_cache="$(echo "$status_json" | jq -r '.vsix_in_federation_cache')"
+
+	local all_ok=1
+	[[ "$extension_version" == "absent" ]] && {
+		echo "FAIL: extension not installed" >&2
+		all_ok=0
+	}
+	[[ "$federation_version" == "absent" ]] && {
+		echo "FAIL: federation cache absent — VS Code has not yet cloned the marketplace branch" >&2
+		all_ok=0
+	}
+	[[ "$vsix_in_federation_cache" == "absent" ]] && {
+		echo "WARN: marketplace branch does not carry the extension VSIX — selfUpdate.ts will not detect new extension versions (fixed in marketplace v2.8.2)" >&2
+	}
+
+	if ((all_ok == 0)); then
+		exit 1
+	fi
+	echo "verify: OK"
+}
+
 _python_helper() {
 	local entry="$1"
 	shift
@@ -318,6 +499,13 @@ Lifecycle:
                          extensions, settings all intact).
   status                 show running instance + CDP pages
   kill                   close VS Code gracefully (never touches user-data-dir)
+  wait-ready [--timeout SECS]
+                         block until CDP responds on the port (default 30s).
+                         Useful after a manual launch from a different shell.
+  reload-window          send Developer: Reload Window via the palette and
+                         block until the renderer is back on CDP. Locale-
+                         tolerant: falls back to the pt-BR title if the
+                         en-US one does not match.
   cdp-pages [--raw]      list CDP pages (use --raw for full JSON)
   probe-chat-dom         report the live DOM state of all pinned
                          Claude-Code chat selectors (input editor, send
@@ -347,6 +535,26 @@ Agent (Claude Code panel — selectors pinned 2026-05-19 against VS Code 1.119):
                                   block until idle across 3 consecutive polls
                                   (default 1800s/20s)
   agent new | transcript | history    stubs — pending additional selector pinning
+
+Betha Marketplace (betha-sistemas.betha-marketplace-updater + federation):
+  betha-marketplace wipe          uninstall the extension, drop federation
+                                  caches under ~/.vscode/agent-plugins, strip
+                                  _betha_marketplace-owned servers/inputs from
+                                  User/mcp.json (preserving user-added servers
+                                  and _betha_marketplace_overrides), and remove
+                                  installed.json entries pointing at the wiped
+                                  federations.
+  betha-marketplace install       run the install.js one-liner against the
+                                  prod marketplace (override via env var
+                                  BETHA_MARKETPLACE_INSTALL_URL).
+  betha-marketplace status        JSON snapshot of the current install state:
+                                  extension_version, federation_version,
+                                  vsix_in_federation_cache, installed_plugin_count,
+                                  owned_mcp_servers, user_overrides.
+  betha-marketplace verify        status + exit 0 only if extension installed
+                                  and federation cache present. Warns (not
+                                  fails) when the VSIX is missing from the
+                                  cache, which would break selfUpdate.ts.
 
 Global flags:
   --port N           CDP port (default 9333)

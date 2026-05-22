@@ -74,6 +74,58 @@ Code or Claude Code update, run `vscode probe-chat-dom` and update
 `docs/CDP-SELECTORS.md` + the constants.
 </agent_interaction>
 
+<betha_marketplace>
+Sub-namespace for the Betha Marketplace lifecycle on a Linux ~/.config/Code
+install. The verbs are filesystem + shell only (no CDP), but they live in
+this skill because they manage VS Code state — the extension, the
+agent-plugins federation cache, and the User/mcp.json that the sync engine
+writes to.
+
+- `vscode betha-marketplace wipe` — uninstalls
+  `betha-sistemas.betha-marketplace-updater`, removes both prod and test
+  federation caches under
+  `~/.vscode/agent-plugins/gitlab.services.betha.cloud/betha-ai/`,
+  strips `_betha_marketplace`-owned servers and inputs from
+  `~/.config/Code/User/mcp.json` while preserving every user-added server
+  and the `_betha_marketplace_overrides` block (the user-data escape
+  hatch for per-host MCP overrides), and removes
+  `installed.json` entries that point at the wiped federations.
+
+- `vscode betha-marketplace install` — runs the prod `install.js`
+  one-liner. Override the URL with `BETHA_MARKETPLACE_INSTALL_URL`. The
+  one-liner clones `main` via SSH and installs the latest VSIX under
+  `tools/vscode-extension/dist/` via `code --install-extension --force`.
+
+- `vscode betha-marketplace status` — JSON snapshot:
+  `extension_version`, `federation_version` (from
+  `build-metadata.json`), `vsix_in_federation_cache` (the file
+  `selfUpdate.ts` scans), `installed_plugin_count`,
+  `owned_mcp_servers`, `user_overrides`.
+
+- `vscode betha-marketplace verify` — pretty-prints status + exits
+  non-zero if the extension or federation cache is absent. Emits a WARN
+  (not FAIL) when the VSIX is missing from the cache, which silently
+  breaks `selfUpdate.ts` — that file is only published by marketplace
+  v2.8.2+ via the `copyLatestVscodeExtensionVsixIntoBundle` step in
+  `src/core/marketplace-branch.ts`.
+
+Typical zero-to-installed sequence:
+
+```
+vscode betha-marketplace wipe
+vscode kill            # only needed when truly testing 'from zero'
+vscode launch
+vscode betha-marketplace install
+vscode reload-window
+vscode betha-marketplace verify
+```
+
+The wipe is safe to run while VS Code is open; the extension's
+`watchInstalledJsonChanges` watcher will fire and re-sync.
+`_betha_marketplace_overrides.<server>` survives because the sync engine
+re-applies it whenever the matching server name appears again.
+</betha_marketplace>
+
 <tips>
 - The CDP **page list** that matters is the renderer process page (`type: "page"`, URL starts with `vscode-file://`). The dispatcher filters automatically — but if you need raw access, `vscode cdp-pages --raw` dumps the JSON.
 - `command-by-title` types into the Command Palette via simulated keyboard
