@@ -4,7 +4,9 @@ import sys
 from pathlib import Path
 
 HOOK_SCRIPT_PATH = (
-    Path(__file__).resolve().parent.parent / "background-bash-anti-pattern-validator.py"
+    Path(__file__).resolve().parent.parent
+    / "pre-tool-use"
+    / "background-bash-anti-pattern-validator.py"
 )
 
 
