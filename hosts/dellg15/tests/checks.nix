@@ -1,7 +1,7 @@
 {
   pkgs,
   lib,
-  self,
+  inputs,
   ...
 }:
 let
@@ -13,7 +13,25 @@ let
   };
   inherit (helpers) mkEvalCheck;
 
-  nixosCfg = self.nixosConfigurations.zanoni.config;
+  # Build a minimal NixOS config from the dellg15 host module so the
+  # host-level assertions below can run without depending on a top-level
+  # flake nixosConfigurations entry (which now lives in zanoni-system).
+  nixosCfg =
+    (inputs.nixpkgs.lib.nixosSystem {
+      system = pkgs.stdenv.hostPlatform.system;
+      specialArgs = {
+        inherit inputs;
+        username = "zanoni";
+        isNixOS = true;
+        nixpkgs-version = "25.11";
+        home-version = "25.11";
+        unstable = pkgs;
+        latest = pkgs;
+      };
+      modules = [
+        ../.
+      ];
+    }).config;
 in
 {
   dellg15-nix-daemon-max-jobs = mkEvalCheck "dellg15-nix-daemon-max-jobs" (
