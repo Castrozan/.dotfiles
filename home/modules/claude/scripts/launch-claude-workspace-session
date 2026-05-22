@@ -2,21 +2,17 @@
 
 import hashlib
 import os
+import shutil
 import sys
 from dataclasses import dataclass
 from pathlib import Path
 
-MINIMAL_GLOBAL_CLAUDE_RUNTIME_ENTRY_NAMES = (
-    "settings.json",
-    "keybindings.json",
-    "plugins",
-    "projects",
-    "history.jsonl",
-)
-DEFAULT_INJECTED_GLOBAL_SKILL_DIRECTORY_NAMES = ("core", "personal")
 SKILL_DISCOVERY_PRUNED_CHILD_DIRECTORY_NAMES = frozenset(
     {"node_modules", "__pycache__", "target", "dist", "build", "venv"}
 )
+WORKSPACE_SKILL_NAMESPACE_DIRECTORY_NAME_PREFIX = "__workspace_"
+WORKSPACE_SKILL_NAMESPACE_DIRECTORY_NAME_SUFFIX = "__"
+WORKSPACE_SKILL_NAMESPACE_SOURCE_CWD_SENTINEL_FILE_NAME = ".source-cwd"
 
 
 class WorkspaceLaunchConfigurationError(Exception):
@@ -25,56 +21,15 @@ class WorkspaceLaunchConfigurationError(Exception):
 
 @dataclass(frozen=True)
 class WorkspaceClaudeLaunchPlan:
-    config_directory: Path
+    workspace_skill_namespace_directory: Path
+    discovered_skill_directory_name_map: dict[str, Path]
     command_arguments: list[str]
-    loaded_skill_names: list[str]
 
 
 @dataclass(frozen=True)
 class WorkspaceClaudeWrapperArguments:
-    extend_workspace_with_global_skills: bool
     requested_skill_source_directories: list[str]
     remaining_claude_arguments: list[str]
-
-
-def strip_optional_markdown_frontmatter(markdown_content: str) -> str:
-    if not markdown_content.startswith("---\n"):
-        return markdown_content
-    frontmatter_parts = markdown_content.split("---", 2)
-    if len(frontmatter_parts) < 3:
-        return markdown_content
-    markdown_body = frontmatter_parts[2]
-    if markdown_body.startswith("\n"):
-        return markdown_body[1:]
-    return markdown_body
-
-
-def load_core_instructions_body(core_instructions_file: Path) -> str:
-    if not core_instructions_file.is_file():
-        return ""
-    return strip_optional_markdown_frontmatter(core_instructions_file.read_text())
-
-
-def resolve_requested_skill_source_directories(
-    requested_skill_source_directories: list[str],
-) -> list[Path]:
-    resolved_requested_skill_source_directories: list[Path] = []
-    for requested_skill_source_directory in requested_skill_source_directories:
-        resolved_requested_skill_source_directory = (
-            Path(requested_skill_source_directory).expanduser().resolve()
-        )
-        if not resolved_requested_skill_source_directory.is_dir():
-            raise WorkspaceLaunchConfigurationError(
-                f"'{requested_skill_source_directory}' is not a valid directory"
-            )
-        if not (resolved_requested_skill_source_directory / "SKILL.md").is_file():
-            raise WorkspaceLaunchConfigurationError(
-                f"no SKILL.md found at root of {requested_skill_source_directory}"
-            )
-        resolved_requested_skill_source_directories.append(
-            resolved_requested_skill_source_directory
-        )
-    return resolved_requested_skill_source_directories
 
 
 def is_child_directory_pruned_from_skill_discovery(child_directory_name: str) -> bool:
@@ -125,48 +80,26 @@ def discover_workspace_skill_source_directories(
     )
 
 
-def collect_global_skill_source_directories(
-    global_claude_config_directory: Path,
+def resolve_requested_skill_source_directories(
+    requested_skill_source_directories: list[str],
 ) -> list[Path]:
-    global_skill_root_directory = global_claude_config_directory / "skills"
-    if not global_skill_root_directory.is_dir():
-        return []
-    return sorted(
-        [
-            global_skill_directory.resolve()
-            for global_skill_directory in global_skill_root_directory.iterdir()
-            if (global_skill_directory / "SKILL.md").is_file()
-        ],
-        key=lambda global_skill_directory: global_skill_directory.name,
-    )
-
-
-def collect_default_injected_global_skill_directory_name_map(
-    global_claude_config_directory: Path,
-    existing_skill_directory_names: set[str],
-) -> dict[str, Path]:
-    global_skill_root_directory = global_claude_config_directory / "skills"
-    default_injected_global_skill_directory_name_map: dict[str, Path] = {}
-    for (
-        default_injected_global_skill_directory_name
-    ) in DEFAULT_INJECTED_GLOBAL_SKILL_DIRECTORY_NAMES:
-        if (
-            default_injected_global_skill_directory_name
-            in existing_skill_directory_names
-        ):
-            continue
-        default_injected_global_skill_directory = (
-            global_skill_root_directory / default_injected_global_skill_directory_name
+    resolved_requested_skill_source_directories: list[Path] = []
+    for requested_skill_source_directory in requested_skill_source_directories:
+        resolved_requested_skill_source_directory = (
+            Path(requested_skill_source_directory).expanduser().resolve()
         )
-        if not (default_injected_global_skill_directory / "SKILL.md").is_file():
+        if not resolved_requested_skill_source_directory.is_dir():
             raise WorkspaceLaunchConfigurationError(
-                "required injected skill is missing: "
-                f"{default_injected_global_skill_directory_name}"
+                f"'{requested_skill_source_directory}' is not a valid directory"
             )
-        default_injected_global_skill_directory_name_map[
-            default_injected_global_skill_directory_name
-        ] = default_injected_global_skill_directory.resolve()
-    return default_injected_global_skill_directory_name_map
+        if not (resolved_requested_skill_source_directory / "SKILL.md").is_file():
+            raise WorkspaceLaunchConfigurationError(
+                f"no SKILL.md found at root of {requested_skill_source_directory}"
+            )
+        resolved_requested_skill_source_directories.append(
+            resolved_requested_skill_source_directory
+        )
+    return resolved_requested_skill_source_directories
 
 
 def build_unique_skill_directory_name_map(
@@ -181,150 +114,149 @@ def build_unique_skill_directory_name_map(
     return unique_skill_directory_name_map
 
 
+def compute_workspace_skill_namespace_directory_name(
+    workspace_source_cwd: Path,
+) -> str:
+    workspace_source_cwd_hash = hashlib.sha256(
+        str(workspace_source_cwd.resolve()).encode()
+    ).hexdigest()[:12]
+    return (
+        WORKSPACE_SKILL_NAMESPACE_DIRECTORY_NAME_PREFIX
+        + workspace_source_cwd_hash
+        + WORKSPACE_SKILL_NAMESPACE_DIRECTORY_NAME_SUFFIX
+    )
+
+
 def ensure_directory_symlink(target_path: Path, source_path: Path) -> None:
-    if target_path.is_symlink() or target_path.exists():
+    if target_path.is_symlink():
         target_path.unlink()
+    elif target_path.exists():
+        if target_path.is_dir():
+            shutil.rmtree(target_path)
+        else:
+            target_path.unlink()
     target_path.symlink_to(source_path, target_is_directory=source_path.is_dir())
 
 
-def write_workspace_core_instructions_file(
-    workspace_config_directory: Path,
-    core_instructions_file: Path,
+def remove_workspace_skill_namespace_directory_in_place(
+    workspace_skill_namespace_directory: Path,
 ) -> None:
-    (workspace_config_directory / "CLAUDE.md").write_text(
-        load_core_instructions_body(core_instructions_file)
-    )
-
-
-def link_minimal_global_runtime_entries(
-    workspace_config_directory: Path,
-    global_claude_config_directory: Path,
-) -> None:
-    for (
-        minimal_global_claude_runtime_entry_name
-    ) in MINIMAL_GLOBAL_CLAUDE_RUNTIME_ENTRY_NAMES:
-        global_runtime_entry_path = (
-            global_claude_config_directory / minimal_global_claude_runtime_entry_name
-        )
-        if global_runtime_entry_path.exists():
-            ensure_directory_symlink(
-                workspace_config_directory / minimal_global_claude_runtime_entry_name,
-                global_runtime_entry_path.resolve(),
-            )
-
-
-def ensure_workspace_claude_state_file(
-    workspace_config_directory: Path,
-    global_claude_state_file: Path,
-) -> None:
-    workspace_claude_state_file = workspace_config_directory / ".claude.json"
-    if global_claude_state_file.is_file():
-        ensure_directory_symlink(
-            workspace_claude_state_file, global_claude_state_file.resolve()
-        )
+    if workspace_skill_namespace_directory.is_symlink():
+        workspace_skill_namespace_directory.unlink()
         return
-    workspace_claude_state_file.write_text("{}\n")
+    if workspace_skill_namespace_directory.exists():
+        shutil.rmtree(workspace_skill_namespace_directory)
 
 
-def link_loaded_skill_directories(
-    workspace_skills_directory: Path,
-    loaded_skill_directory_name_map: dict[str, Path],
-) -> list[str]:
-    loaded_skill_names = sorted(loaded_skill_directory_name_map)
-    for loaded_skill_name in loaded_skill_names:
-        ensure_directory_symlink(
-            workspace_skills_directory / loaded_skill_name,
-            loaded_skill_directory_name_map[loaded_skill_name],
+def sweep_stale_workspace_skill_namespace_directories(
+    global_claude_skills_directory: Path,
+) -> None:
+    if not global_claude_skills_directory.is_dir():
+        return
+    for candidate_directory in global_claude_skills_directory.iterdir():
+        if candidate_directory.is_symlink():
+            continue
+        if not candidate_directory.is_dir():
+            continue
+        if not candidate_directory.name.startswith(
+            WORKSPACE_SKILL_NAMESPACE_DIRECTORY_NAME_PREFIX
+        ):
+            continue
+        source_cwd_sentinel_file = (
+            candidate_directory
+            / WORKSPACE_SKILL_NAMESPACE_SOURCE_CWD_SENTINEL_FILE_NAME
         )
-    return loaded_skill_names
+        if not source_cwd_sentinel_file.is_file():
+            shutil.rmtree(candidate_directory)
+            continue
+        recorded_source_cwd = Path(source_cwd_sentinel_file.read_text().strip())
+        if not recorded_source_cwd.is_dir():
+            shutil.rmtree(candidate_directory)
+
+
+def populate_workspace_skill_namespace_directory(
+    workspace_skill_namespace_directory: Path,
+    discovered_skill_directory_name_map: dict[str, Path],
+    workspace_source_cwd: Path,
+) -> None:
+    workspace_skill_namespace_directory.mkdir(parents=True)
+    (
+        workspace_skill_namespace_directory
+        / WORKSPACE_SKILL_NAMESPACE_SOURCE_CWD_SENTINEL_FILE_NAME
+    ).write_text(str(workspace_source_cwd.resolve()) + "\n")
+    for (
+        discovered_skill_directory_name,
+        discovered_skill_source_directory,
+    ) in discovered_skill_directory_name_map.items():
+        ensure_directory_symlink(
+            workspace_skill_namespace_directory / discovered_skill_directory_name,
+            discovered_skill_source_directory,
+        )
 
 
 def prepare_workspace_claude_launch_plan(
-    temporary_workspace_directory: Path,
-    global_claude_config_directory: Path,
-    global_claude_state_file: Path,
-    core_instructions_file: Path,
-    personal_skill_set_directory: Path,
-    extend_workspace_with_global_skills: bool,
-    requested_skill_source_directories: list[str],
+    global_claude_skills_directory: Path,
     workspace_search_root_directory: Path,
+    requested_skill_source_directories: list[str],
     claude_binary_path: str,
 ) -> WorkspaceClaudeLaunchPlan:
-    temporary_workspace_directory.mkdir(parents=True, exist_ok=True)
-    workspace_skills_directory = temporary_workspace_directory / "skills"
-    workspace_skills_directory.mkdir(parents=True, exist_ok=True)
-
     if requested_skill_source_directories:
-        local_skill_source_directories = resolve_requested_skill_source_directories(
+        skill_source_directories = resolve_requested_skill_source_directories(
             requested_skill_source_directories
         )
     else:
-        local_skill_source_directories = discover_workspace_skill_source_directories(
+        skill_source_directories = discover_workspace_skill_source_directories(
             workspace_search_root_directory
         )
 
-    loaded_skill_directory_name_map = build_unique_skill_directory_name_map(
-        local_skill_source_directories
+    discovered_skill_directory_name_map = build_unique_skill_directory_name_map(
+        skill_source_directories
     )
-    loaded_skill_directory_name_map.update(
-        collect_default_injected_global_skill_directory_name_map(
-            global_claude_config_directory, set(loaded_skill_directory_name_map)
+
+    workspace_skill_namespace_directory_name = (
+        compute_workspace_skill_namespace_directory_name(
+            workspace_search_root_directory
         )
     )
-
-    if extend_workspace_with_global_skills:
-        for global_skill_source_directory in collect_global_skill_source_directories(
-            global_claude_config_directory
-        ):
-            loaded_skill_directory_name_map.setdefault(
-                global_skill_source_directory.name, global_skill_source_directory
-            )
-
-    if not loaded_skill_directory_name_map:
-        raise WorkspaceLaunchConfigurationError(
-            "No skills to load. Use --from <dir>, run from a dir with SKILL.md files, or ensure the default injected skills are available."
-        )
-
-    write_workspace_core_instructions_file(
-        temporary_workspace_directory, core_instructions_file
+    workspace_skill_namespace_directory = (
+        global_claude_skills_directory / workspace_skill_namespace_directory_name
     )
-    link_minimal_global_runtime_entries(
-        temporary_workspace_directory, global_claude_config_directory
-    )
-    ensure_workspace_claude_state_file(
-        temporary_workspace_directory, global_claude_state_file
-    )
-    loaded_skill_names = link_loaded_skill_directories(
-        workspace_skills_directory, loaded_skill_directory_name_map
-    )
-
-    command_arguments = [claude_binary_path]
-    if extend_workspace_with_global_skills:
-        command_arguments.extend(
-            ["--add-dir", str(personal_skill_set_directory.resolve())]
-        )
 
     return WorkspaceClaudeLaunchPlan(
-        config_directory=temporary_workspace_directory,
-        command_arguments=command_arguments,
-        loaded_skill_names=loaded_skill_names,
+        workspace_skill_namespace_directory=workspace_skill_namespace_directory,
+        discovered_skill_directory_name_map=discovered_skill_directory_name_map,
+        command_arguments=[claude_binary_path],
+    )
+
+
+def materialize_workspace_skill_namespace_directory_on_disk(
+    workspace_claude_launch_plan: WorkspaceClaudeLaunchPlan,
+    global_claude_skills_directory: Path,
+    workspace_source_cwd: Path,
+) -> None:
+    global_claude_skills_directory.mkdir(parents=True, exist_ok=True)
+    sweep_stale_workspace_skill_namespace_directories(global_claude_skills_directory)
+    remove_workspace_skill_namespace_directory_in_place(
+        workspace_claude_launch_plan.workspace_skill_namespace_directory
+    )
+    if not workspace_claude_launch_plan.discovered_skill_directory_name_map:
+        return
+    populate_workspace_skill_namespace_directory(
+        workspace_claude_launch_plan.workspace_skill_namespace_directory,
+        workspace_claude_launch_plan.discovered_skill_directory_name_map,
+        workspace_source_cwd,
     )
 
 
 def parse_workspace_claude_wrapper_arguments(
     command_line_arguments: list[str],
 ) -> WorkspaceClaudeWrapperArguments:
-    extend_workspace_with_global_skills = False
     requested_skill_source_directories: list[str] = []
     remaining_claude_arguments: list[str] = []
     current_argument_index = 0
 
     while current_argument_index < len(command_line_arguments):
         current_argument = command_line_arguments[current_argument_index]
-        if current_argument == "--extend":
-            extend_workspace_with_global_skills = True
-            current_argument_index += 1
-            continue
         if current_argument == "--from":
             if current_argument_index + 1 >= len(command_line_arguments):
                 raise WorkspaceLaunchConfigurationError(
@@ -344,7 +276,6 @@ def parse_workspace_claude_wrapper_arguments(
         current_argument_index += 1
 
     return WorkspaceClaudeWrapperArguments(
-        extend_workspace_with_global_skills=extend_workspace_with_global_skills,
         requested_skill_source_directories=requested_skill_source_directories,
         remaining_claude_arguments=remaining_claude_arguments,
     )
@@ -358,34 +289,14 @@ def load_wrapper_environment_path(
     ).expanduser()
 
 
-def compute_deterministic_workspace_directory(
-    workspace_search_root_directory: Path,
-) -> Path:
-    directory_hash = hashlib.sha256(
-        str(workspace_search_root_directory.resolve()).encode()
-    ).hexdigest()[:12]
-    return Path(f"/tmp/claude-workspace.{directory_hash}") / "claude-config"
-
-
-def exec_workspace_scoped_claude_session(
+def exec_claude_with_workspace_skills(
     workspace_claude_launch_plan: WorkspaceClaudeLaunchPlan,
     remaining_claude_arguments: list[str],
 ) -> None:
-    claude_environment = os.environ.copy()
-    claude_environment["CLAUDE_CONFIG_DIR"] = str(
-        workspace_claude_launch_plan.config_directory
-    )
-    claude_environment["CLAUDE_CONFIG"] = str(
-        workspace_claude_launch_plan.config_directory / ".claude.json"
-    )
     full_command_arguments = (
         workspace_claude_launch_plan.command_arguments + remaining_claude_arguments
     )
-    os.execvpe(
-        full_command_arguments[0],
-        full_command_arguments,
-        claude_environment,
-    )
+    os.execvp(full_command_arguments[0], full_command_arguments)
 
 
 def main() -> None:
@@ -393,39 +304,24 @@ def main() -> None:
         workspace_claude_wrapper_arguments = parse_workspace_claude_wrapper_arguments(
             sys.argv[1:]
         )
-        global_claude_config_directory = load_wrapper_environment_path(
-            "CLAUDE_GLOBAL_CONFIG_DIRECTORY", Path.home() / ".claude"
-        )
-        global_claude_state_file = load_wrapper_environment_path(
-            "CLAUDE_GLOBAL_STATE_FILE", Path.home() / ".claude.json"
-        )
-        core_instructions_file = load_wrapper_environment_path(
-            "CLAUDE_CORE_INSTRUCTIONS_FILE",
-            Path.home() / ".dotfiles" / "agents" / "core.md",
-        )
-        personal_skill_set_directory = load_wrapper_environment_path(
-            "CLAUDE_PERSONAL_SKILL_SET_DIRECTORY",
-            Path.home() / ".local" / "share" / "claude-skill-sets" / "personal",
+        global_claude_skills_directory = load_wrapper_environment_path(
+            "CLAUDE_GLOBAL_SKILLS_DIRECTORY", Path.home() / ".claude" / "skills"
         )
         claude_binary_path = os.environ.get("CLAUDE_BINARY_PATH", "claude")
         workspace_search_root_directory = Path.cwd()
 
-        deterministic_workspace_directory = compute_deterministic_workspace_directory(
-            workspace_search_root_directory
-        )
-
         workspace_claude_launch_plan = prepare_workspace_claude_launch_plan(
-            temporary_workspace_directory=deterministic_workspace_directory,
-            global_claude_config_directory=global_claude_config_directory,
-            global_claude_state_file=global_claude_state_file,
-            core_instructions_file=core_instructions_file,
-            personal_skill_set_directory=personal_skill_set_directory,
-            extend_workspace_with_global_skills=workspace_claude_wrapper_arguments.extend_workspace_with_global_skills,
-            requested_skill_source_directories=workspace_claude_wrapper_arguments.requested_skill_source_directories,
+            global_claude_skills_directory=global_claude_skills_directory,
             workspace_search_root_directory=workspace_search_root_directory,
+            requested_skill_source_directories=workspace_claude_wrapper_arguments.requested_skill_source_directories,
             claude_binary_path=claude_binary_path,
         )
-        exec_workspace_scoped_claude_session(
+        materialize_workspace_skill_namespace_directory_on_disk(
+            workspace_claude_launch_plan,
+            global_claude_skills_directory,
+            workspace_search_root_directory,
+        )
+        exec_claude_with_workspace_skills(
             workspace_claude_launch_plan,
             workspace_claude_wrapper_arguments.remaining_claude_arguments,
         )
