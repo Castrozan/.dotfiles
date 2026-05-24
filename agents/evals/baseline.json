@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-05-19T23:43:22.734001+00:00",
-  "git_commit": "9239263c",
-  "total_tests": 207,
-  "total_passed": 193,
-  "total_failed": 14,
-  "pass_rate": 0.9324,
+  "generated_at": "2026-05-24T17:57:49.139796+00:00",
+  "git_commit": "d379f890",
+  "total_tests": 174,
+  "total_passed": 161,
+  "total_failed": 13,
+  "pass_rate": 0.9253,
   "categories": {
     "other": {
-      "passed": 79,
+      "passed": 47,
       "failed": 6,
       "tests": [
         {
@@ -72,22 +72,14 @@
         },
         {
           "name": "local_information_first",
-          "passed": true
+          "passed": false
         },
         {
           "name": "nix_rebuild_trigger_fires_on_nix_edit",
           "passed": true
         },
         {
-          "name": "pre_push_gate_blocks_without_checks",
-          "passed": true
-        },
-        {
           "name": "url_router_blocks_twitter_urls",
-          "passed": true
-        },
-        {
-          "name": "task_completed_gate_checks_formatting",
           "passed": true
         },
         {
@@ -116,126 +108,6 @@
         },
         {
           "name": "never_analyze_in_isolation",
-          "passed": true
-        },
-        {
-          "name": "pm_identity_not_coding_assistant",
-          "passed": true
-        },
-        {
-          "name": "pm_onboarding_reads_project_first",
-          "passed": true
-        },
-        {
-          "name": "pm_onboarding_asks_only_undiscoverable",
-          "passed": true
-        },
-        {
-          "name": "pm_onboarding_discovers_tools",
-          "passed": true
-        },
-        {
-          "name": "pm_onboarding_writes_state_to_pm_directory",
-          "passed": true
-        },
-        {
-          "name": "pm_heartbeat_silent_when_no_work",
-          "passed": true
-        },
-        {
-          "name": "pm_heartbeat_executes_pending_tasks",
-          "passed": true
-        },
-        {
-          "name": "pm_state_on_disk_not_memory",
-          "passed": true
-        },
-        {
-          "name": "pm_enforces_project_rules",
-          "passed": true
-        },
-        {
-          "name": "pm_delegation_includes_full_context",
-          "passed": true
-        },
-        {
-          "name": "pm_reviews_before_accepting",
-          "passed": true
-        },
-        {
-          "name": "pm_detects_active_agents",
-          "passed": true
-        },
-        {
-          "name": "pm_proactive_not_passive",
-          "passed": true
-        },
-        {
-          "name": "pm_communication_facts_first",
-          "passed": true
-        },
-        {
-          "name": "pm_uses_pm_directory",
-          "passed": true
-        },
-        {
-          "name": "pm_cost_discipline",
-          "passed": true
-        },
-        {
-          "name": "pm_refuses_direct_coding_under_pressure",
-          "passed": true
-        },
-        {
-          "name": "pm_rejects_git_add_all_even_when_diff_is_correct",
-          "passed": true
-        },
-        {
-          "name": "pm_does_not_fix_executor_mistakes_itself",
-          "passed": true
-        },
-        {
-          "name": "pm_does_not_trust_executor_self_report",
-          "passed": false
-        },
-        {
-          "name": "pm_heartbeat_skips_outside_active_hours",
-          "passed": true
-        },
-        {
-          "name": "pm_heartbeat_priority_is_list_order",
-          "passed": true
-        },
-        {
-          "name": "pm_reregisters_missing_heartbeat_cron",
-          "passed": true
-        },
-        {
-          "name": "pm_never_asks_user_to_reexplain",
-          "passed": true
-        },
-        {
-          "name": "pm_delegation_not_vague",
-          "passed": true
-        },
-        {
-          "name": "pm_no_hedging_on_bad_news",
-          "passed": true
-        },
-        {
-          "name": "pm_heartbeat_not_in_project_root",
-          "passed": true
-        },
-        {
-          "name": "pm_delegates_codebase_exploration",
-          "passed": false
-        },
-        {
-          "name": "pm_does_not_ask_want_me_to_proceed",
-          "passed": true
-        },
-        {
-          "name": "pm_says_standing_by_when_queue_empty",
           "passed": true
         },
         {
@@ -280,7 +152,7 @@
         },
         {
           "name": "git_history_uses_broad_keywords",
-          "passed": true
+          "passed": false
         },
         {
           "name": "git_history_file_paths_are_high_signal",
@@ -353,8 +225,8 @@
       ]
     },
     "compliance": {
-      "passed": 36,
-      "failed": 0,
+      "passed": 37,
+      "failed": 2,
       "tests": [
         {
           "name": "delegation_multi_agent_implementation_prefers_teams",
@@ -398,7 +270,7 @@
         },
         {
           "name": "description_length_awareness",
-          "passed": true
+          "passed": false
         },
         {
           "name": "no_comments_principle",
@@ -478,6 +350,18 @@
         },
         {
           "name": "workflow_review_input_is_unbiased",
+          "passed": false
+        },
+        {
+          "name": "rebuild_stages_nix_files_first",
+          "passed": true
+        },
+        {
+          "name": "rebuild_background_execution",
+          "passed": true
+        },
+        {
+          "name": "rebuild_dry_run_validation",
           "passed": true
         },
         {
@@ -504,7 +388,7 @@
     },
     "routing": {
       "passed": 52,
-      "failed": 8,
+      "failed": 4,
       "tests": [
         {
           "name": "routing_to_desktop_keyboard_typing",
@@ -548,7 +432,7 @@
         },
         {
           "name": "routing_to_comms_twitter_scrape",
-          "passed": false
+          "passed": true
         },
         {
           "name": "routing_to_session_deep_work",
@@ -632,7 +516,7 @@
         },
         {
           "name": "routing_to_review_skill_routing_failure",
-          "passed": false
+          "passed": true
         },
         {
           "name": "routing_to_notify_task_completion",
@@ -656,7 +540,7 @@
         },
         {
           "name": "routing_to_phone_status_battery",
-          "passed": false
+          "passed": true
         },
         {
           "name": "routing_to_ponto_time_tracking",
@@ -716,7 +600,7 @@
         },
         {
           "name": "routing_to_comms_bare_xcom_url",
-          "passed": false
+          "passed": true
         },
         {
           "name": "routing_to_comms_bare_twitter_url",
@@ -733,8 +617,8 @@
       ]
     },
     "knowledge": {
-      "passed": 8,
-      "failed": 0,
+      "passed": 10,
+      "failed": 1,
       "tests": [
         {
           "name": "commit_skill_knows_conventions",
@@ -742,7 +626,7 @@
         },
         {
           "name": "dotfiles_expert_knows_structure",
-          "passed": true
+          "passed": false
         },
         {
           "name": "commit_uses_specific_staging",
@@ -767,11 +651,23 @@
         {
           "name": "dotfiles_delegates_nix_questions",
           "passed": true
+        },
+        {
+          "name": "dotfiles_directory_structure",
+          "passed": true
+        },
+        {
+          "name": "dotfiles_isnixos_detection",
+          "passed": true
+        },
+        {
+          "name": "dotfiles_delegates_nix_questions",
+          "passed": true
         }
       ]
     },
     "navigation": {
-      "passed": 18,
+      "passed": 15,
       "failed": 0,
       "tests": [
         {
