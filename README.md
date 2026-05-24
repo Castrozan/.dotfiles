@@ -145,20 +145,20 @@ graph TD
     end
 
     subgraph "NixOS Configuration"
-        NixOS["nixosConfigurations.zanoni"]
-        Host["hosts/dellg15<br/>hardware config"]
-        UserNixOS["users/zanoni/nixos.nix"]
+        NixOS["nixosConfigurations.&lt;host&gt;"]
+        Host["hosts/&lt;host&gt;<br/>hardware config"]
+        UserNixOS["users/&lt;user&gt;/nixos.nix"]
     end
 
     subgraph "Darwin Configuration"
-        Darwin["darwinConfigurations<br/>macbook-alpha + macbook-beta"]
-        DarwinHost["hosts/macbook-{alpha,beta}<br/>nix-darwin host config"]
-        DarwinHome["users/lucas.zanoni/{alpha,beta}/home.nix"]
+        Darwin["darwinConfigurations.&lt;host&gt;"]
+        DarwinHost["hosts/&lt;host&gt;<br/>nix-darwin host config"]
+        DarwinHome["users/&lt;user&gt;/&lt;machine&gt;/home.nix"]
     end
 
     subgraph "Home Manager Configuration"
-        HomeStandalone["homeConfigurations<br/>lucas.zanoni@x86_64-linux"]
-        UserHome["users/lucas.zanoni/linux/home.nix"]
+        HomeStandalone["homeConfigurations.&lt;user&gt;@&lt;system&gt;"]
+        UserHome["users/&lt;user&gt;/linux/home.nix"]
         Modules["home/{base,linux,darwin}/*<br/>platform-gated modules"]
     end
 
@@ -201,139 +201,15 @@ graph TD
 
 ---
 
-## 📂 Repository Structure
+## 📂 Repository Layout
 
-<details>
-<summary>📂 Top-level structure</summary>
+Flake inputs live in `flake.nix`; outputs are split into `flake/{outputs,nixos-configurations,darwin-configurations,home-manager-modules}.nix`. Each output factory enumerates the hosts it owns and threads `hostname` plus `isNixOS` / `isDarwin` flags into `extraSpecialArgs`.
 
-```
-.dotfiles/
-├── agents/              # Claude Code agent skills, hooks, and evaluations
-│   ├── core.md          # Core agent behavior instructions (alwaysApply)
-│   ├── skills/          # 13 umbrella skills (git, nix, session, browser, ...)
-│   ├── hooks/           # Lifecycle hook scripts (format, lint, rebuild, review)
-│   └── evals/           # Evaluation framework (baseline, e2e, integration)
-├── flake/               # Flake outputs split out from flake.nix
-│   ├── outputs.nix              # Top entry: homeConfigurations + nixosConfigurations + darwinConfigurations
-│   ├── nixos-configurations.nix # zanoni (dellg15)
-│   ├── darwin-configurations.nix# macbook-alpha (Coates) + macbook-beta (Betha)
-│   └── home-manager-modules.nix # claude-code, codex exports
-├── home/                # Home Manager modules, split by platform (ryan4yin-style)
-│   ├── base/            # Any-platform modules (claude, codex, terminal, editor, dev, ...)
-│   ├── linux/           # Linux-only modules (audio, gnome, hyprland, voice, ...)
-│   ├── darwin/          # Darwin-only modules (aerospace, karabiner, maccy, spaceman, ...)
-│   └── hosts/           # Per-host home overlays (placeholder)
-├── hosts/               # System-level host configs (NixOS + nix-darwin)
-│   ├── dellg15/         # Dell G15 NixOS host
-│   ├── macbook-alpha/   # Coates macbook (darwin)
-│   └── macbook-beta/    # Betha macbook (darwin)
-├── lib/                 # Nix utility functions (nixgl-wrap, fetch-prebuilt-binary)
-├── nixos/               # NixOS system-level module library
-│   └── modules/         # agenix, steam, virtualization, network, media-streaming...
-├── private-config/      # Private submodule: per-machine company-specific overrides
-│   └── machines/{macbook-alpha,macbook-beta,workpc}/ # git-user, ssh, clawde-pm, skills
-├── secrets/             # Encrypted secrets (agenix): api-keys, bot-tokens, credentials
-├── static/              # Static assets: wallpapers, documentation screenshots
-├── tests/               # Test suite (bats, pytest, nix-checks)
-├── users/
-│   ├── lucas.zanoni/    # Multi-machine user (darwin + Ubuntu)
-│   │   ├── alpha/       # macbook-alpha entry (darwin)
-│   │   ├── beta/        # macbook-beta entry (darwin)
-│   │   ├── linux/       # workpc Ubuntu entry (home-manager standalone)
-│   │   ├── home/        # Shared per-user modules (git, ssh, session-vars, ...)
-│   │   ├── pkgs.nix     # Shared package list, Linux-only branch gated
-│   │   └── scripts/     # Shared user-level scripts
-│   └── zanoni/          # NixOS user (zanoni @ dellg15)
-├── flake.nix            # Nix Flakes entry point (inputs only)
-├── Makefile             # Helper commands
-└── README.md            # This file!
-```
-</details>
+Home Manager modules under `home/` are split by platform, ryan4yin-style: `home/base/` (any-platform), `home/linux/`, `home/darwin/`. Per-platform subtrees let Linux-only modules never load on darwin and vice versa. Each module owns its `default.nix`, optional `scripts/`, optional `tests/`.
 
-<details>
-<summary>📦 home/{base,linux,darwin}/ - all application modules</summary>
+System-level host configs live in `hosts/<host>/`; reusable NixOS modules live in `nixos/modules/`. Users own their entry points under `users/<user>/`. Multi-machine users keep a per-machine subdir (`alpha/`, `linux/`, `beta/`) each holding its own `home.nix` and HM wrapper; shared per-user modules and packages stay at `users/<user>/`. Routers at `users/<user>/home/{git,ssh}.nix` look up `private-config/machines/${hostname}/<file>` so per-machine overrides land automatically when the file exists.
 
-| Module | Description |
-|--------|-------------|
-| `agents` | A2A MCP server integration |
-| `audio` | PipeWire pipeline, Bluetooth policy, audio scripts |
-| `browser` | Chrome, Firefox, global browser config, CDP tests |
-| `claude` | Claude Code IDE: config, channels, skills, MCP servers, hooks, project agents |
-| `codex` | Codex IDE configuration and patches |
-| `desktop` | Clipboard, screenshots, notifications, fonts, desktop utilities |
-| `dev` | Git, GitHub Actions runner, K9s, MongoDB Compass, dev utilities |
-| `editor` | Neovim, VSCode, Cursor, JetBrains IDEA |
-| `gaming` | Vesktop, GOG CLI, bonsai, cmatrix, Nothing app |
-| `gnome` | GTK, dconf, GNOME extensions |
-| `home-assistant` | Home Assistant control scripts (AC, lights, scenes) |
-| `hyprland` | Wayland compositor, Quickshell bar, window management, keybindings |
-| `media` | MPD, MPV, codecs, streaming, audio/video utilities |
-| `network` | OpenfortivVPN, FortiClient, DNS, shell completions |
-| `ollama` | Ollama local LLM setup |
-| `opencode` | OpenCode IDE integration |
-| `security` | Sophos monitor, keyrings, security scripts |
-| `sourcebot` | Sourcebot skill integration |
-| `system` | System utilities, sleep/suspend, hardware scripts |
-| `terminal` | Fish shell, tmux config, screensaver, terminal utilities |
-| `testing` | pytest, bats, test utilities |
-| `voice` | Voice/speech recognition integration |
-
-Each module follows the same pattern: `default.nix` as entry point, optional `scripts/` for Python/shell utilities, optional `tests/` for BATS/pytest suites, optional `docs/` for module-specific documentation.
-</details>
-
-<details>
-<summary>🤖 agents/ - Claude Code skills, hooks, and evaluations</summary>
-
-`agents/core.md` is loaded into every session (`alwaysApply: true`) and defines the authoritative agent behavior rules (code style, git discipline, tool preferences, workflow, etc.).
-
-### Skills (`agents/skills/`)
-
-Skills are organized as umbrella directories. Each umbrella has a `SKILL.md` (the skill the agent can invoke) plus sub-skill `.md` files and optional `scripts/`, `evals/`, and Nix wiring.
-
-| Skill | Description |
-|-------|-------------|
-| `browser` | Live browser automation - fill forms, click buttons, test web UI, capture screenshots |
-| `comms` | Discord bot, Twitter/X CLI, social channel integration |
-| `desktop` | Desktop automation, media control, MPRIS players, clipboard, screenshots |
-| `git` | Commits, staging, commit message quality, history search |
-| `nix` | Nix language, module system, flakes, rebuild, devenv, Docker |
-| `personal` | Personal channels: Gmail, Calendar, WhatsApp, Obsidian, Home Assistant, ponto |
-| `phone-status` | Phone battery and status via SSH |
-| `quickshell` | Quickshell bar/OSD/switcher - QML editing, IPC, visual verification |
-| `research` | Current-information research, tool comparisons, external synthesis |
-| `review` | Code review rubric, compliance auditing, documentation, skill authoring |
-| `session` | Session lifecycle, deep work, worktrees, tmux, Claude Code instances |
-| `test` | Testing methodology and verification workflow |
-
-### Hooks (`agents/hooks/`)
-
-Python scripts wired as Claude Code lifecycle hooks:
-
-| Hook | Trigger |
-|------|---------|
-| `auto-format.py` | After editing - runs ruff, nixfmt, shfmt |
-| `lint-on-edit.py` | On file edit - runs language-appropriate linter |
-| `nix-rebuild-trigger.py` | After editing `.nix` files - queues rebuild |
-| `session-context.py` | Session start - injects workspace/git/env context |
-| `workspace-directory-injector.py` | PreToolUse Bash - sets working directory |
-| `memory-recall.py` | PreToolUse - associative recall from cwd memory dir |
-| `end-of-work-compliance-review.py` | Stop - spawns compliance reviewer with core-rules reinforcement |
-| `url-to-skill-router.py` | On URL input - routes to matching skill |
-| `monitor-streaming-pattern-validator.py` | PreToolUse Monitor - validates streaming patterns |
-| `run-hook.sh` | Shell wrapper for hook execution |
-
-### Evals (`agents/evals/`)
-
-Evaluation infrastructure for measuring agent behavior quality:
-
-- `run-evals.py` - Eval runner (batch, single, or filter by tag)
-- `baseline.json` - Saved baseline scores (92.8%, 192/207 scenarios)
-- `config/` - Eval configuration per skill/scenario set
-- `e2e/` - End-to-end scenarios (35 total: 13 behavior, 12 skill-discovery-leading, 10 skill-discovery-natural)
-- `integration/` - Integration-level behavior tests
-- `validate-skill-frontmatter.sh` - Validates all SKILL.md have required fields
-
-</details>
+Private, machine-specific configuration (work emails, gitlab hosts, company skills) lives in the `private-config/` submodule under `private-config/machines/<hostname>/`. Encrypted secrets live in `secrets/` (agenix). Static assets in `static/`. The Claude Code agent system lives in `agents/` with `core.md` always applied and skills/hooks/evals as siblings; `agents/skills/<name>/SKILL.md` is the convention.
 
 ---
 
