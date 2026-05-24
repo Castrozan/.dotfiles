@@ -19,6 +19,18 @@ let
     isNixOS = true;
     isDarwin = false;
   };
+
+  homeManagerWrapper = {
+    home-manager = {
+      useGlobalPkgs = true;
+      useUserPackages = true;
+      backupFileExtension = "backup";
+      overwriteBackup = true;
+
+      extraSpecialArgs = specialArgs;
+      users.${username} = import ../home/hosts/linux/chise.nix;
+    };
+  };
 in
 {
   ${machineAlias} = nixpkgs.lib.nixosSystem {
@@ -27,9 +39,8 @@ in
 
     modules = [
       ../hosts/${machineAlias}
-      ../users/${username}/nixos.nix
       home-manager.nixosModules.home-manager
-      (import ../users/${username}/nixos-home-config.nix)
+      homeManagerWrapper
     ];
   };
 }

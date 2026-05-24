@@ -86,8 +86,8 @@ sudo nixos-generate-config --dir hosts/your_host/configs
 ```
 
 #### 3. Customize Your Configuration
-- Copy and modify a user directory from `users/` (use `zanoni` as template)
-- Update `flake.nix` to add your configuration in `nixosConfigurations`
+- Copy and adapt the existing host setup: `hosts/chise/` (system config) and `home/hosts/linux/chise.nix` plus `home/hosts/linux/chise/` (per-user home-manager modules) as templates
+- Update `flake/nixos-configurations.nix` to register your machine alias under `nixosConfigurations`
 
 #### 4. Deploy the Flake
 ```bash
@@ -147,18 +147,18 @@ graph TD
     subgraph "NixOS Configuration"
         NixOS["nixosConfigurations.&lt;host&gt;"]
         Host["hosts/&lt;host&gt;<br/>hardware config"]
-        UserNixOS["users/&lt;user&gt;/nixos.nix"]
+        UserNixOS["hosts/&lt;host&gt;/nixos-system.nix<br/>+ home/hosts/linux/&lt;alias&gt;.nix"]
     end
 
     subgraph "Darwin Configuration"
         Darwin["darwinConfigurations.&lt;host&gt;"]
         DarwinHost["hosts/&lt;host&gt;<br/>nix-darwin host config"]
-        DarwinHome["users/&lt;user&gt;/&lt;machine&gt;/home.nix"]
+        DarwinHome["home/hosts/darwin/&lt;alias&gt;.nix"]
     end
 
     subgraph "Home Manager Configuration"
-        HomeStandalone["homeConfigurations.&lt;user&gt;@&lt;system&gt;"]
-        UserHome["users/&lt;user&gt;/linux/home.nix"]
+        HomeStandalone["homeConfigurations.&lt;alias&gt;"]
+        UserHome["home/hosts/linux/&lt;alias&gt;.nix"]
         Modules["home/{base,linux,darwin}/*<br/>platform-gated modules"]
     end
 
@@ -207,7 +207,7 @@ Flake inputs live in `flake.nix`; outputs are split into `flake/{outputs,nixos-c
 
 Home Manager modules under `home/` are split by platform, ryan4yin-style: `home/base/` (any-platform), `home/linux/`, `home/darwin/`. Per-platform subtrees let Linux-only modules never load on darwin and vice versa. Each module owns its `default.nix`, optional `scripts/`, optional `tests/`.
 
-System-level host configs live in `hosts/<host>/`; reusable NixOS modules live in `nixos/modules/`. Users own their entry points under `users/<user>/`. Multi-machine users keep a per-machine subdir (`alpha/`, `linux/`, `beta/`) each holding its own `home.nix` and HM wrapper; shared per-user modules and packages stay at `users/<user>/`. Routers at `users/<user>/home/{git,ssh}.nix` look up `private-config/machines/${hostname}/<file>` so per-machine overrides land automatically when the file exists.
+System-level host configs live in `hosts/<host>/`; reusable NixOS modules live in `nixos/modules/`. Each machine's home-manager entry point is `home/hosts/{linux,darwin}/<alias>.nix` (ryan4yin-style); host-only home modules can sit beside it in `home/hosts/{linux,darwin}/<alias>/`. Per-user shared bits live in `home/base/` (e.g. `home/base/packages/lucas-zanoni.nix`). Routers at `home/base/dev/git-private.nix` and `home/base/network/ssh-private.nix` look up `private-config/machines/${hostname}/<file>` so per-machine overrides land automatically when the file exists.
 
 Private, machine-specific configuration (work emails, gitlab hosts, company skills) lives in the `private-config/` submodule under `private-config/machines/<hostname>/`. Encrypted secrets live in `secrets/` (agenix). Static assets in `static/`. The Claude Code agent system lives in `agents/` with `core.md` always applied and skills/hooks/evals as siblings; `agents/skills/<name>/SKILL.md` is the convention.
 

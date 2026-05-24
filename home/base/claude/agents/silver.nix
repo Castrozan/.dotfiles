@@ -3,7 +3,7 @@ _: {
     model = "opus";
     permissionMode = "bypassPermissions";
     skillDirectories = [ ];
-    personality = builtins.readFile ./agents/silver-personality.md;
+    personality = builtins.readFile ./silver-personality.md;
     channel = {
       type = "discord";
       discord.botTokenSecretName = "discord-bot-token-silver";

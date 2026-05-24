@@ -130,7 +130,7 @@ in
 
         Persistent project agents:
         - Each project with a .pm/HEARTBEAT.md has a tmux session named after the project. Send work to it with tmux send-keys against that session.
-        - Persistent agents are declared in nix (users/''${username}/home/claude-project-agents.nix). If a project does not have one yet, ask Lucas to declare it - do not try to launch one yourself.
+        - Persistent agents are declared in nix (home/hosts/linux/chise/clawde-agents.nix). If a project does not have one yet, ask Lucas to declare it - do not try to launch one yourself.
 
         When delegating, write a tight self-contained brief. The receiving session does not see your Discord conversation.
         </delegation-targets>
@@ -398,7 +398,7 @@ in
 
         Persistent project agents:
         - Projects with a .pm/HEARTBEAT.md have tmux sessions named after the project. Send briefs with tmux send-keys.
-        - Persistent agents are declared in nix (users/''${username}/home/claude-project-agents.nix). For a project without one, ask Lucas to declare it.
+        - Persistent agents are declared in nix (home/hosts/linux/chise/clawde-agents.nix). For a project without one, ask Lucas to declare it.
 
         Briefs are self-contained. The receiving session does not see Discord history.
         </delegation-targets>

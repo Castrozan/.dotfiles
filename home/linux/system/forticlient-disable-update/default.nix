@@ -1,8 +1,8 @@
 { config, lib, ... }:
 let
   dotfilesDir = "${config.home.homeDirectory}/.dotfiles";
-  installerScriptPath = "${dotfilesDir}/users/lucas.zanoni/home/forticlient-disable-update/install-systemd-service";
-  disableScriptSourcePath = "${dotfilesDir}/users/lucas.zanoni/home/forticlient-disable-update/disable-forticlient-update";
+  installerScriptPath = "${dotfilesDir}/home/linux/system/forticlient-disable-update/install-systemd-service";
+  disableScriptSourcePath = "${dotfilesDir}/home/linux/system/forticlient-disable-update/disable-forticlient-update";
   installedSystemdUnitPath = "/etc/systemd/system/forticlient-disable-update.service";
   installedDisableScriptPath = "/usr/local/sbin/forticlient-disable-update";
 in

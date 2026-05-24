@@ -17,13 +17,14 @@ bin/ - standalone scripts (system-wide, executable)
 home/core.nix - shared home-manager core
 home/scripts/ - home-manager managed scripts (nix-built)
 home/{base,linux,darwin}/ - shared modules (name.nix or name/default.nix for complex)
+home/hosts/{linux,darwin}/<alias>.nix - per-machine home-manager entry point (IMPORTS ONLY)
+home/hosts/{linux,darwin}/<alias>/ - optional per-machine home-manager submodules
+home/base/packages/<user>.nix - per-user shared package set (used by multiple machines)
+home/base/dev/git-private.nix - per-user git router (sources private-config/machines/<hostname>/git-user.nix)
+home/base/network/ssh-private.nix - per-user ssh router (sources private-config/machines/<hostname>/ssh.nix)
+home/base/network/scripts/ - shared per-user ssh activation scripts
 nixos/modules/ - NixOS-only modules
-users/username/home.nix - IMPORTS ONLY, no configuration
-users/username/pkgs.nix - user-specific packages
-users/username/home/ - user-specific configs (git, ssh)
-users/username/scripts/ - user-specific scripts
-users/username/nixos.nix - NixOS user config
-hosts/hostname/ - machine-specific configs
+hosts/<host>/ - machine-specific system config; nixos hosts also have nixos-system.nix for per-user-on-the-host bits
 secrets/*.age - agenix encrypted secrets
 secrets/secrets.nix - public key mappings
 private-config/ - private git submodule (work agents, company skills, identity docs)

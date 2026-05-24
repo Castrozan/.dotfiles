@@ -29,7 +29,7 @@ Home-manager module that installs Claude Code, declares its config, and runs per
 
 See `clawde/default.nix` for the option schema, `clawde/instructions/clawde-runtime.md` for runtime rules, and `clawde/channel-adapters/<name>/instructions/<name>-runtime.md` for per-channel behavior.
 
-Agents are configured at the user level in `users/<user>/home/clawde-agents.nix`.
+Agents are declared per-machine: chise's live in `home/hosts/linux/chise/clawde-agents.nix`, jojo's in `home/base/claude/agents/jojo-clawde-agents.nix`, and the shared `silver` (rin/kira) declaration is `home/base/claude/agents/silver.nix`.
 
 ## Testing
 

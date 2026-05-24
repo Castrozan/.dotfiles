@@ -58,7 +58,7 @@ in
         isDarwin = false;
       };
 
-      modules = [ ../users/lucas.zanoni/jojo/home.nix ];
+      modules = [ ../home/hosts/linux/jojo.nix ];
     };
   };
 

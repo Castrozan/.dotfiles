@@ -4,8 +4,7 @@
   ...
 }:
 # hostname is required from extraSpecialArgs. Threaded by:
-#   flake/outputs.nix (homeConfigurations), flake/darwin-configurations.nix (darwin),
-#   users/lucas.zanoni/{alpha,beta}/home-config.nix.
+#   flake/outputs.nix (homeConfigurations), flake/darwin-configurations.nix (darwin).
 # Adds private-config/machines/<hostname>/git-user.nix when that file exists.
 let
   privateConfigRoot = ../../../private-config;
@@ -15,7 +14,7 @@ let
 in
 {
   imports = [
-    ../../../home/base/dev/git.nix
+    ./git.nix
   ]
   ++ lib.optionals privateGitUserExists [
     privateGitUserPath

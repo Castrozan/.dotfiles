@@ -77,7 +77,7 @@ in
 
         Persistent project agents:
         - Each project with a .pm/HEARTBEAT.md has a tmux window inside the claude-discord tmux session. Send work to it with tmux send-keys against that window.
-        - Persistent agents are declared in nix (users/lucas.zanoni/home/clawde-agents.nix). If a project does not have one yet, ask Lucas to declare it.
+        - Persistent agents are declared in nix (home/base/claude/agents/jojo-clawde-agents.nix). If a project does not have one yet, ask Lucas to declare it.
 
         When delegating, write a tight self-contained brief. The receiving session does not see your Discord conversation.
         </delegation-targets>

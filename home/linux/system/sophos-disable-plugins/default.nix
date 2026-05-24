@@ -1,8 +1,8 @@
 { config, lib, ... }:
 let
   dotfilesDir = "${config.home.homeDirectory}/.dotfiles";
-  installerScriptPath = "${dotfilesDir}/users/lucas.zanoni/home/sophos-disable-plugins/install-systemd-service";
-  stopScriptSourcePath = "${dotfilesDir}/users/lucas.zanoni/home/sophos-disable-plugins/stop-sophos-noisy-plugins";
+  installerScriptPath = "${dotfilesDir}/home/linux/system/sophos-disable-plugins/install-systemd-service";
+  stopScriptSourcePath = "${dotfilesDir}/home/linux/system/sophos-disable-plugins/stop-sophos-noisy-plugins";
   installedSystemdUnitPath = "/etc/systemd/system/sophos-disable-noisy-plugins.service";
   installedStopScriptPath = "/usr/local/sbin/sophos-disable-noisy-plugins-stop";
 in

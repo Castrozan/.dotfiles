@@ -4,8 +4,8 @@
 #   sudo darwin-rebuild switch --flake .#kira   (work-Betha)
 #
 # rin = toosaka rin, kira = kira yoshikage. See private-config/machines.nix
-# for the alias↔hostname mapping. hosts/<alias>/ owns hardware-level config,
-# users/lucas.zanoni/<alias>/home-config.nix owns home-manager wiring.
+# for the alias<->hostname mapping. hosts/<alias>/ owns hardware-level config,
+# home/hosts/darwin/<alias>.nix owns the home-manager entry point.
 {
   nix-darwin,
   home-manager,
@@ -23,6 +23,24 @@ let
     isDarwin = true;
   };
 
+  mkHomeManagerWrapperFor =
+    machineAlias:
+    { inputs, ... }:
+    {
+      home-manager = {
+        useGlobalPkgs = true;
+        useUserPackages = true;
+        backupFileExtension = "backup";
+        overwriteBackup = true;
+        sharedModules = [ inputs.stylix.homeModules.stylix ];
+
+        extraSpecialArgs = specialArgs // {
+          hostname = machineAlias;
+        };
+        users.${username} = import (../home/hosts/darwin + "/${machineAlias}.nix");
+      };
+    };
+
   mkDarwinHostFor = machineAlias: {
     ${machineAlias} = nix-darwin.lib.darwinSystem {
       specialArgs = specialArgs // {
@@ -33,7 +51,7 @@ let
       modules = [
         ../hosts/${machineAlias}
         home-manager.darwinModules.home-manager
-        (import ../users/${username}/${machineAlias}/home-config.nix)
+        (mkHomeManagerWrapperFor machineAlias)
       ];
     };
   };

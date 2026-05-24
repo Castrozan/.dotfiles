@@ -41,9 +41,14 @@ def _collect_files_with_extension(extension):
     return [path for path in _walk_repo_paths_filtered() if path.suffix == extension]
 
 
-def _path_is_in_zanoni_user_tree(path):
+def _path_is_in_chise_host_tree(path):
     relative = path.relative_to(REPO_ROOT).as_posix()
-    return relative.startswith("users/zanoni/") or relative == "users/zanoni"
+    return (
+        relative.startswith("hosts/chise/")
+        or relative == "hosts/chise"
+        or relative.startswith("home/hosts/linux/chise/")
+        or relative == "home/hosts/linux/chise.nix"
+    )
 
 
 HARDCODED_NON_LUCAS_HOME_PATTERN = re.compile(r"/home/zanoni(?:/|\b)")
@@ -51,7 +56,7 @@ HARDCODED_NON_LUCAS_HOME_PATTERN = re.compile(r"/home/zanoni(?:/|\b)")
 
 def _is_acceptable_zanoni_home_reference(path):
     relative = path.relative_to(REPO_ROOT).as_posix()
-    if _path_is_in_zanoni_user_tree(path):
+    if _path_is_in_chise_host_tree(path):
         return True
     if relative.startswith("nixos/"):
         return True
@@ -95,7 +100,7 @@ def test_no_hardcoded_zanoni_home_paths_outside_zanoni_user_tree(
                 offenders.append(f"{path}:{line_number}: {line.strip()}")
 
     assert not offenders, (
-        "Hardcoded /home/zanoni/ path found outside the users/zanoni/ tree. "
+        "Hardcoded /home/zanoni/ path found outside the chise host tree. "
         "Use config.home.homeDirectory or $HOME instead.\n" + "\n".join(offenders)
     )
 

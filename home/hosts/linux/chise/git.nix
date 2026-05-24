@@ -1,6 +1,6 @@
 { ... }:
 {
-  imports = [ ../../../home/base/dev/git.nix ];
+  imports = [ ../../../base/dev/git.nix ];
 
   programs.git.settings.user = {
     name = "Castrozan";

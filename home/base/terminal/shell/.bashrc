@@ -71,7 +71,7 @@ esac
 
 ## BEGIN DEFINE GLOBAL VARIABLES
 # Note: most of the global variables are managed by Home Manager sessionVariables
-# See: users/$USER/home/session-vars.nix
+# See: home/base/system/session-vars-*.nix (per-user) or home/hosts/linux/<alias>/session-vars.nix (per-machine)
 # Source Home Manager session variables (single source of truth for environment variables)
 if [ -f "$HOME/.nix-profile/etc/profile.d/hm-session-vars.sh" ]; then
 	# shellcheck source=/dev/null

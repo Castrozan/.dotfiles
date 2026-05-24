@@ -1,15 +1,17 @@
 #!/usr/bin/env sh
 
 # commit-msg hook: auto‑prefix commit-subject with (<scope>)
-# based on changes under users/<username>/ or hosts/<hostname>/
+# based on changes under hosts/<hostname>/ or home/hosts/{linux,darwin}/<alias>/
 
 MSG_FILE="$1"
 
 # get list of staged files
 STAGED=$(git diff --cached --name-only)
 
-# look for the first occurrence of users/<user>/ or hosts/<host>/
-SCOPE_DIR=$(echo "$STAGED" | grep -m1 -E '^(users|hosts)/[^/]+/' | sed -E 's#^(users|hosts)/([^/]+)/.*#\2#')
+# look for the first occurrence of hosts/<host>/ or home/hosts/{linux,darwin}/<alias>/
+SCOPE_DIR=$(echo "$STAGED" |
+	grep -m1 -E '^(hosts/[^/]+/|home/hosts/(linux|darwin)/[^/]+(\.nix|/))' |
+	sed -E -e 's#^hosts/([^/]+)/.*#\1#' -e 's#^home/hosts/(linux|darwin)/([^/.]+)(\.nix|/.*)#\2#')
 
 # if no scope-dir found, skip
 [ -z "$SCOPE_DIR" ] && exit 0

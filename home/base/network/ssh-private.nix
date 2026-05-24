@@ -7,8 +7,7 @@
   ...
 }:
 # hostname is required from extraSpecialArgs. Threaded by:
-#   flake/outputs.nix (homeConfigurations), flake/darwin-configurations.nix (darwin),
-#   users/lucas.zanoni/{alpha,beta}/home-config.nix.
+#   flake/outputs.nix (homeConfigurations), flake/darwin-configurations.nix (darwin).
 # Adds private-config/machines/<hostname>/ssh.nix when that file exists.
 let
   sshHostsSecretExists = builtins.pathExists ../../../secrets/infrastructure/ssh-hosts.age;
