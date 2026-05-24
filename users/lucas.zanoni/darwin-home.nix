@@ -31,18 +31,18 @@ in
     ../../home/modules/editor/vscode/vscode.nix
 
     ../../home/modules/desktop/theming
-    ../../home/modules/desktop/aerospace.nix
-    ../../home/modules/desktop/application-launcher
-    ../../home/modules/desktop/brave
-    ../../home/modules/desktop/workspace-navigator
-    ../../home/modules/desktop/workspace-switcher-client
+    ../../home/darwin/desktop/aerospace.nix
+    ../../home/darwin/desktop/application-launcher
+    ../../home/darwin/desktop/brave
+    ../../home/darwin/desktop/workspace-navigator
+    ../../home/darwin/desktop/workspace-switcher-client
     ../../home/modules/desktop/fonts.nix
-    ../../home/modules/desktop/karabiner
-    ../../home/modules/desktop/keyboard-layout
-    ../../home/modules/desktop/maccy.nix
-    ../../home/modules/desktop/spaceman.nix
-    ../../home/modules/desktop/summon-browser
-    ../../home/modules/desktop/home-assistant-remote.nix
+    ../../home/darwin/desktop/karabiner
+    ../../home/darwin/desktop/keyboard-layout
+    ../../home/darwin/desktop/maccy.nix
+    ../../home/darwin/desktop/spaceman.nix
+    ../../home/darwin/desktop/summon-browser
+    ../../home/darwin/desktop/home-assistant-remote.nix
 
     ../../home/modules/dev/devenv.nix
     ../../home/modules/dev/git.nix
