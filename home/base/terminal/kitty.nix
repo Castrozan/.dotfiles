@@ -34,7 +34,7 @@ in
       enable_audio_bell = false;
       mouse_hide_wait = "-1.0";
       window_padding_width = 10;
-      background_opacity = "1.0";
+      background_opacity = lib.mkForce "1.0";
       background_image = "wallpaper.png";
       startup_session = "startup.conf";
       background_image_layout = "cscaled";
