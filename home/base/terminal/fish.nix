@@ -36,7 +36,7 @@ let
   );
 
   fishSpecificAliasOverrides = [
-    "alias source-shell 'source ~/.dotfiles/home/modules/terminal/shell/fish/config.fish'"
+    "alias source-shell 'source ~/.dotfiles/home/base/terminal/shell/fish/config.fish'"
   ];
 
   generatedFishAliasesAndExports =

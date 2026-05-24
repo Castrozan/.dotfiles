@@ -61,7 +61,7 @@ let
 
     _test() {
       local perf_tests
-      perf_tests=$(find ~/.dotfiles/home/modules -name "perf-runtime.bats" -type f | sort)
+      perf_tests=$(find ~/.dotfiles/home/base ~/.dotfiles/home/linux ~/.dotfiles/home/darwin -name "perf-runtime.bats" -type f | sort)
       if [ -z "$perf_tests" ]; then
         echo "No perf-runtime.bats files found"
         exit 1

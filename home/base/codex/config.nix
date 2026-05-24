@@ -7,7 +7,7 @@
 let
   patchScript = ./patch.py;
   codexDefaultModel = "gpt-5.4";
-  codexDeveloperInstructions = "Operate pragmatically: keep diffs small, verify with fast checks, and prefer repo-local truth (AGENTS.md, bin/, home/modules/). Use profiles: fast (default), deep, web.";
+  codexDeveloperInstructions = "Operate pragmatically: keep diffs small, verify with fast checks, and prefer repo-local truth (AGENTS.md, bin/, home/{base,linux,darwin}/). Use profiles: fast (default), deep, web.";
   chromeDevtoolsMcpStreamableHttpBridgeUrl = "http://localhost:8767/mcp";
   codexHooksConfig = builtins.toJSON {
     SessionStart = [

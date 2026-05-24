@@ -2,7 +2,9 @@
 
 readonly DOTFILES_ROOT_DIRECTORY="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 readonly DOTFILES_BIN_DIRECTORY="$DOTFILES_ROOT_DIRECTORY/bin"
-readonly DOTFILES_MODULES_DIRECTORY="$DOTFILES_ROOT_DIRECTORY/home/modules"
+readonly DOTFILES_HOME_BASE_DIRECTORY="$DOTFILES_ROOT_DIRECTORY/home/base"
+readonly DOTFILES_HOME_LINUX_DIRECTORY="$DOTFILES_ROOT_DIRECTORY/home/linux"
+readonly DOTFILES_HOME_DARWIN_DIRECTORY="$DOTFILES_ROOT_DIRECTORY/home/darwin"
 readonly DOTFILES_SKILLS_DIRECTORY="$DOTFILES_ROOT_DIRECTORY/agents/skills"
 
 _resolve_script_under_test() {
@@ -18,7 +20,11 @@ _resolve_script_under_test() {
 		return
 	fi
 	local domainScriptMatch
-	domainScriptMatch=$(find "$DOTFILES_MODULES_DIRECTORY" -type f -name "$testFileName" -path "*/scripts/*" 2>/dev/null | head -1)
+	domainScriptMatch=$(find \
+		"$DOTFILES_HOME_BASE_DIRECTORY" \
+		"$DOTFILES_HOME_LINUX_DIRECTORY" \
+		"$DOTFILES_HOME_DARWIN_DIRECTORY" \
+		-type f -name "$testFileName" -path "*/scripts/*" 2>/dev/null | head -1)
 	if [ -n "$domainScriptMatch" ]; then
 		echo "$domainScriptMatch"
 		return

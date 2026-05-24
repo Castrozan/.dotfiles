@@ -3,7 +3,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "post-tool-use"))
 
-from lint_on_edit_linter_configurations import parse_ruff_output  # noqa: E402
+from lint_on_edit_linter_table import parse_ruff_output  # noqa: E402
 
 
 def test_ruff_parser_filters_out_all_checks_passed_success_line():

@@ -8,7 +8,7 @@ codex_developer_instructions = os.environ.get(
     "CODEX_DEVELOPER_INSTRUCTIONS",
     (
         "Operate pragmatically: keep diffs small, verify with fast checks, and "
-        "prefer repo-local truth (AGENTS.md, bin/, home/modules/). Use profiles: "
+        "prefer repo-local truth (AGENTS.md, bin/, home/{base,linux,darwin}/). Use profiles: "
         "fast (default), deep, web."
     ),
 )

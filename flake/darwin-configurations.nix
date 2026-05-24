@@ -1,11 +1,11 @@
 # Two macbooks (different physical machines, same lucas.zanoni user).
 # Activate with:
 #   sudo darwin-rebuild switch --flake .#macbook-alpha   (Coates)
-#   sudo darwin-rebuild switch --flake .#macbook-beta    (work-Betha; host dir to be added)
+#   sudo darwin-rebuild switch --flake .#macbook-beta    (work-Betha)
 #
-# Both compose with the same darwin-home-config.nix and share user-level
-# modules. Host-level divergence (hardware, host-only services) lives
-# under hosts/macbook-<alpha|beta>/.
+# Each composes with its own users/lucas.zanoni/<alpha|beta>/home-config.nix.
+# Host-level divergence (hardware, host-only services) lives under
+# hosts/macbook-<alpha|beta>/.
 {
   nix-darwin,
   home-manager,

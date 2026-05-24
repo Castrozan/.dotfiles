@@ -169,7 +169,7 @@ _run_perf_tier() {
 
 	echo "--- Performance Threshold Tests ---"
 	local perfTests
-	perfTests=$(find "$REPO_DIR/home/modules" -name "perf-runtime.bats" -type f 2>/dev/null | sort)
+	perfTests=$(find "$REPO_DIR/home/base" "$REPO_DIR/home/linux" "$REPO_DIR/home/darwin" -name "perf-runtime.bats" -type f 2>/dev/null | sort)
 	if [[ -n "$perfTests" ]] && command -v bats &>/dev/null; then
 		bats $perfTests
 	else
@@ -216,7 +216,7 @@ _run_e2e_tier() {
 }
 
 _collect_quick_pytest_test_files() {
-	find "$REPO_DIR/home/modules" "$REPO_DIR/agents/hooks" "$REPO_DIR/agents/skills" "$REPO_DIR/tests" -path "*/tests/test_*.py" -type f | sort
+	find "$REPO_DIR/home/base" "$REPO_DIR/home/linux" "$REPO_DIR/home/darwin" "$REPO_DIR/agents/hooks" "$REPO_DIR/agents/skills" "$REPO_DIR/tests" -path "*/tests/test_*.py" -type f | sort
 }
 
 _run_quick_pytest_tests() {
@@ -243,7 +243,7 @@ _run_skill_frontmatter_validation() {
 }
 
 _collect_quick_bats_test_files() {
-	find "$REPO_DIR/home/modules" -path "*/tests/*.bats" \
+	find "$REPO_DIR/home/base" "$REPO_DIR/home/linux" "$REPO_DIR/home/darwin" -path "*/tests/*.bats" \
 		! -name "*-docker.bats" \
 		! -name "runtime.bats" \
 		! -name "*-runtime.bats" \
@@ -331,7 +331,7 @@ _run_domain_runtime_tests() {
 	fi
 
 	local runtimeTestFiles=()
-	for testFile in "$REPO_DIR"/home/modules/*/tests/*.bats; do
+	for testFile in "$REPO_DIR"/home/base/*/tests/*.bats "$REPO_DIR"/home/linux/*/tests/*.bats "$REPO_DIR"/home/darwin/*/tests/*.bats; do
 		[[ -f "$testFile" ]] || continue
 		_is_runtime_test_file "$testFile" || continue
 		runtimeTestFiles+=("$testFile")
@@ -342,7 +342,7 @@ _run_domain_runtime_tests() {
 		return 0
 	fi
 
-	echo "--- Domain Runtime Tests (home/modules/*/tests/) ---"
+	echo "--- Domain Runtime Tests (home/{base,linux,darwin}/*/tests/) ---"
 	bats "${runtimeTestFiles[@]}"
 	echo ""
 }
@@ -359,7 +359,7 @@ _run_docker_integration_tests() {
 
 	echo "--- Docker Integration Tests ---"
 	local dockerTestFiles
-	dockerTestFiles=$(find "$REPO_DIR/home/modules" -path "*/tests/*-docker.bats" -type f | sort)
+	dockerTestFiles=$(find "$REPO_DIR/home/base" "$REPO_DIR/home/linux" "$REPO_DIR/home/darwin" -path "*/tests/*-docker.bats" -type f | sort)
 
 	if [[ -z "$dockerTestFiles" ]]; then
 		echo "No docker test files found"
@@ -384,7 +384,7 @@ _run_bats_with_coverage() {
 
 _run_qml_unit_tests() {
 	local qmlTestDirs
-	qmlTestDirs=$(find "$REPO_DIR/home/modules" -path "*/tests/qml/run-qml-tests.sh" -type f | sort)
+	qmlTestDirs=$(find "$REPO_DIR/home/base" "$REPO_DIR/home/linux" "$REPO_DIR/home/darwin" -path "*/tests/qml/run-qml-tests.sh" -type f | sort)
 
 	if [[ -z "$qmlTestDirs" ]]; then
 		return 0

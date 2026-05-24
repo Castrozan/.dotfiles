@@ -1,10 +1,10 @@
 {
-  claude-code = ../home/modules/claude;
-  codex = ../home/modules/codex;
+  claude-code = ../home/base/claude;
+  codex = ../home/base/codex;
   default = {
     imports = [
-      ../home/modules/claude
-      ../home/modules/codex
+      ../home/base/claude
+      ../home/base/codex
     ];
   };
 }

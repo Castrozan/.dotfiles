@@ -51,7 +51,7 @@ _clean_previous_coverage() {
 }
 
 _collect_quick_bats_test_files() {
-	find "$REPOSITORY_DIR/home/modules" -path "*/tests/*.bats" \
+	find "$REPOSITORY_DIR/home/base" "$REPOSITORY_DIR/home/linux" "$REPOSITORY_DIR/home/darwin" -path "*/tests/*.bats" \
 		! -name "*-docker.bats" \
 		! -name "runtime.bats" \
 		! -name "live-services.bats" \
@@ -66,7 +66,7 @@ _run_bats_through_kcov() {
 	testFiles=$(_collect_quick_bats_test_files)
 	kcov \
 		--bash-dont-parse-binary-dir \
-		--include-pattern="$REPOSITORY_DIR/home/modules/" \
+		--include-pattern="$REPOSITORY_DIR/home/base/" --include-pattern="$REPOSITORY_DIR/home/linux/" --include-pattern="$REPOSITORY_DIR/home/darwin/" \
 		"$COVERAGE_OUTPUT_DIR" \
 		bats $testFiles
 }

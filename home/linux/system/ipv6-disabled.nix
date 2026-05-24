@@ -13,7 +13,7 @@ in
       $VERBOSE_ECHO "IPv6 already disabled on Zanoni"
     else
       echo "Disabling IPv6 on Zanoni connection..."
-      "${dotfilesDir}/home/modules/system/scripts/setup-ipv6-disabled"
+      "${dotfilesDir}/home/base/system/scripts/setup-ipv6-disabled"
     fi
   '';
 }
