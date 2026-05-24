@@ -150,36 +150,51 @@ graph TD
         UserNixOS["users/zanoni/nixos.nix"]
     end
 
+    subgraph "Darwin Configuration"
+        Darwin["darwinConfigurations<br/>macbook-alpha + macbook-beta"]
+        DarwinHost["hosts/macbook-{alpha,beta}<br/>nix-darwin host config"]
+        DarwinHome["users/lucas.zanoni/{alpha,beta}/home.nix"]
+    end
+
     subgraph "Home Manager Configuration"
         HomeStandalone["homeConfigurations<br/>lucas.zanoni@x86_64-linux"]
-        UserHome["users/*/home.nix"]
-        Modules["home/{base,linux,darwin}/*<br/>app configs"]
+        UserHome["users/lucas.zanoni/linux/home.nix"]
+        Modules["home/{base,linux,darwin}/*<br/>platform-gated modules"]
     end
 
     subgraph "External Inputs"
         Nixpkgs["nixpkgs-25.11"]
         Unstable["nixpkgs-unstable"]
         HM["home-manager"]
+        ND["nix-darwin"]
     end
 
     Flake --> NixOS
+    Flake --> Darwin
     Flake --> HomeStandalone
-    
+
     NixOS --> Host
     NixOS --> UserNixOS
     NixOS --> HM
-    
+
+    Darwin --> DarwinHost
+    Darwin --> DarwinHome
+    Darwin --> ND
+
     HomeStandalone --> UserHome
     UserHome --> Modules
+    DarwinHome --> Modules
     
     Flake --> Nixpkgs
     Flake --> Unstable
 
     style Flake fill:#f38ba8,color:#1e1e2e
     style NixOS fill:#a6e3a1,color:#1e1e2e
+    style Darwin fill:#fab387,color:#1e1e2e
     style HomeStandalone fill:#89b4fa,color:#1e1e2e
     style Nixpkgs fill:#f9e2af,color:#1e1e2e
     style HM fill:#cba6f7,color:#1e1e2e
+    style ND fill:#fab387,color:#1e1e2e
 ```
 
 </details>
@@ -198,21 +213,38 @@ graph TD
 │   ├── skills/          # 13 umbrella skills (git, nix, session, browser, ...)
 │   ├── hooks/           # Lifecycle hook scripts (format, lint, rebuild, review)
 │   └── evals/           # Evaluation framework (baseline, e2e, integration)
-├── flake/               # Flake infrastructure (home-manager module exports)
-├── home/                # Home Manager shared modules
-│   └── modules/         # Application and feature modules (see below)
-├── hosts/               # NixOS host-specific configurations
-│   └── dellg15/         # Dell G15 hardware config, scripts, tests
+├── flake/               # Flake outputs split out from flake.nix
+│   ├── outputs.nix              # Top entry: homeConfigurations + nixosConfigurations + darwinConfigurations
+│   ├── nixos-configurations.nix # zanoni (dellg15)
+│   ├── darwin-configurations.nix# macbook-alpha (Coates) + macbook-beta (Betha)
+│   └── home-manager-modules.nix # claude-code, codex exports
+├── home/                # Home Manager modules, split by platform (ryan4yin-style)
+│   ├── base/            # Any-platform modules (claude, codex, terminal, editor, dev, ...)
+│   ├── linux/           # Linux-only modules (audio, gnome, hyprland, voice, ...)
+│   ├── darwin/          # Darwin-only modules (aerospace, karabiner, maccy, spaceman, ...)
+│   └── hosts/           # Per-host home overlays (placeholder)
+├── hosts/               # System-level host configs (NixOS + nix-darwin)
+│   ├── dellg15/         # Dell G15 NixOS host
+│   ├── macbook-alpha/   # Coates macbook (darwin)
+│   └── macbook-beta/    # Betha macbook (darwin)
 ├── lib/                 # Nix utility functions (nixgl-wrap, fetch-prebuilt-binary)
-├── nixos/               # NixOS system-level modules
+├── nixos/               # NixOS system-level module library
 │   └── modules/         # agenix, steam, virtualization, network, media-streaming...
+├── private-config/      # Private submodule: per-machine company-specific overrides
+│   └── machines/{macbook-alpha,macbook-beta,workpc}/ # git-user, ssh, clawde-pm, skills
 ├── secrets/             # Encrypted secrets (agenix): api-keys, bot-tokens, credentials
 ├── static/              # Static assets: wallpapers, documentation screenshots
 ├── tests/               # Test suite (bats, pytest, nix-checks)
 ├── users/
-│   ├── lucas.zanoni/    # Home Manager standalone config (Ubuntu/non-NixOS)
-│   └── zanoni/          # Full NixOS system config
-├── flake.nix            # Nix Flakes entry point
+│   ├── lucas.zanoni/    # Multi-machine user (darwin + Ubuntu)
+│   │   ├── alpha/       # macbook-alpha entry (darwin)
+│   │   ├── beta/        # macbook-beta entry (darwin)
+│   │   ├── linux/       # workpc Ubuntu entry (home-manager standalone)
+│   │   ├── home/        # Shared per-user modules (git, ssh, session-vars, ...)
+│   │   ├── pkgs.nix     # Shared package list, Linux-only branch gated
+│   │   └── scripts/     # Shared user-level scripts
+│   └── zanoni/          # NixOS user (zanoni @ dellg15)
+├── flake.nix            # Nix Flakes entry point (inputs only)
 ├── Makefile             # Helper commands
 └── README.md            # This file!
 ```
@@ -228,7 +260,6 @@ graph TD
 | `browser` | Chrome, Firefox, global browser config, CDP tests |
 | `claude` | Claude Code IDE: config, channels, skills, MCP servers, hooks, project agents |
 | `codex` | Codex IDE configuration and patches |
-| `cursor` | Cursor global user rules |
 | `desktop` | Clipboard, screenshots, notifications, fonts, desktop utilities |
 | `dev` | Git, GitHub Actions runner, K9s, MongoDB Compass, dev utilities |
 | `editor` | Neovim, VSCode, Cursor, JetBrains IDEA |
