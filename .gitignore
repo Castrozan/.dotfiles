@@ -5,6 +5,9 @@
 # Deep-work context workspaces (local-only session artifacts)
 .deep-work/
 
+# Session heartbeat (local-only resume marker)
+HEARTBEAT.md
+
 # Home-manager deployed (source: agents/, run ./bin/rebuild)
 /CLAUDE.md
 /CLAUDE.md.*
