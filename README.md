@@ -80,7 +80,7 @@ cd .dotfiles
 ```
 
 #### 2. Generate Hardware Configuration
-Replace `your_host` with your machine's identifier (e.g., `dellg15`):
+Replace `your_host` with your machine's identifier (e.g., `chise`):
 ```bash
 sudo nixos-generate-config --dir hosts/your_host/configs
 ```
