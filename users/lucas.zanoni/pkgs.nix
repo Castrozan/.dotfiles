@@ -1,6 +1,7 @@
 {
   # Dependency injection
   pkgs,
+  lib,
   latest,
   ...
 }:
@@ -16,7 +17,6 @@
       brave
       bun
       cargo
-      cava
       curl
       delta
       docker-compose
@@ -31,18 +31,10 @@
       glab
       # ghostty TODO: fix ghostty, https://gitlab.gnome.org/GNOME/gtk/-/issues/4950. A wrapper did not work.
       git
-      gnome-shell-extensions
-      gnome-extension-manager
-      gnomeExtensions.default-workspace
-      gnomeExtensions.workspace-matrix
       gnutar
       go
 
-      imv
       insomnia
-      i2p
-      i2pd
-      i2pd-tools
       jq
       kubectl
       # lens TODO: fix lens, im using the snap version for now
@@ -56,13 +48,9 @@
       nodePackages.prettier
       obsidian
       ollama
-      playerctl
-      pavucontrol
       pipes
       postman
-      pulsemixer
       postgresql
-      quickemu
       redisinsight
       ripgrep-all
       ruff
@@ -76,15 +64,33 @@
       uv
       vim
       whisper-cpp
-      wiremix
-      wl-clipboard
-      wtype
-      xclip
       yamllint
-      ydotool
       zip
       zoxide
     ]
+    ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux (
+      with pkgs;
+      [
+        cava
+        gnome-shell-extensions
+        gnome-extension-manager
+        gnomeExtensions.default-workspace
+        gnomeExtensions.workspace-matrix
+        imv
+        i2p
+        i2pd
+        i2pd-tools
+        playerctl
+        pavucontrol
+        pulsemixer
+        quickemu
+        wiremix
+        wl-clipboard
+        wtype
+        xclip
+        ydotool
+      ]
+    )
     # Appending to list
     ++ (with latest; [
       lazydocker
