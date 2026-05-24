@@ -1,8 +1,8 @@
 { lib, inputs, ... }:
 let
   privateConfigRoot = ../../../private-config;
-  macbookBetaClawdePmPath = "${toString privateConfigRoot}/machines/macbook-beta/clawde-pm.nix";
-  macbookBetaClawdePmExists = builtins.pathExists macbookBetaClawdePmPath;
+  kiraClawdePmPath = "${toString privateConfigRoot}/machines/kira/clawde-pm.nix";
+  kiraClawdePmExists = builtins.pathExists kiraClawdePmPath;
 in
 {
   imports = [
@@ -65,7 +65,7 @@ in
 
     "${inputs.private-config}/sb-toolkit"
   ]
-  ++ lib.optionals macbookBetaClawdePmExists [
-    macbookBetaClawdePmPath
+  ++ lib.optionals kiraClawdePmExists [
+    kiraClawdePmPath
   ];
 }

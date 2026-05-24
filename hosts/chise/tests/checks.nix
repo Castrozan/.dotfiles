@@ -13,54 +13,53 @@ let
   };
   inherit (helpers) mkEvalCheck;
 
-  nixosCfg = self.nixosConfigurations.zanoni.config;
+  nixosCfg = self.nixosConfigurations.chise.config;
 in
 {
-  dellg15-nix-daemon-max-jobs = mkEvalCheck "dellg15-nix-daemon-max-jobs" (
+  chise-nix-daemon-max-jobs = mkEvalCheck "chise-nix-daemon-max-jobs" (
     nixosCfg.nix.settings.max-jobs <= 6
   ) "max-jobs must be <= 6 to prevent memory saturation on 16GB RAM";
 
-  dellg15-nix-daemon-cores = mkEvalCheck "dellg15-nix-daemon-cores" (
+  chise-nix-daemon-cores = mkEvalCheck "chise-nix-daemon-cores" (
     nixosCfg.nix.settings.cores > 0 && nixosCfg.nix.settings.cores <= 2
   ) "cores must be 1-2 to leave CPU headroom for interactive processes";
 
-  dellg15-nix-daemon-cpu-sched-policy = mkEvalCheck "dellg15-nix-daemon-cpu-sched-policy" (
+  chise-nix-daemon-cpu-sched-policy = mkEvalCheck "chise-nix-daemon-cpu-sched-policy" (
     nixosCfg.nix.daemonCPUSchedPolicy == "batch"
   ) "nix-daemon must use batch CPU scheduling for background throughput";
 
-  dellg15-nix-daemon-io-sched-class = mkEvalCheck "dellg15-nix-daemon-io-sched-class" (
+  chise-nix-daemon-io-sched-class = mkEvalCheck "chise-nix-daemon-io-sched-class" (
     nixosCfg.nix.daemonIOSchedClass == "idle"
   ) "nix-daemon must use idle IO scheduling to avoid starving interactive IO";
 
-  dellg15-nix-daemon-nice = mkEvalCheck "dellg15-nix-daemon-nice" (
+  chise-nix-daemon-nice = mkEvalCheck "chise-nix-daemon-nice" (
     nixosCfg.systemd.services.nix-daemon.serviceConfig.Nice == 19
   ) "nix-daemon must run at Nice=19 (lowest CPU priority)";
 
-  dellg15-earlyoom-enabled =
-    mkEvalCheck "dellg15-earlyoom-enabled" nixosCfg.services.earlyoom.enable
+  chise-earlyoom-enabled =
+    mkEvalCheck "chise-earlyoom-enabled" nixosCfg.services.earlyoom.enable
       "earlyoom must be enabled to prevent kernel OOM freezes";
 
-  dellg15-zram-enabled =
-    mkEvalCheck "dellg15-zram-enabled" nixosCfg.zramSwap.enable
+  chise-zram-enabled =
+    mkEvalCheck "chise-zram-enabled" nixosCfg.zramSwap.enable
       "zram swap must be enabled for compressed in-memory swap";
 
-  dellg15-keyboard-backlight-service-enabled =
-    mkEvalCheck "dellg15-keyboard-backlight-service-enabled"
+  chise-keyboard-backlight-service-enabled =
+    mkEvalCheck "chise-keyboard-backlight-service-enabled"
       (nixosCfg.systemd.services.dim-keyboard-backlight.enable or true)
       "dim-keyboard-backlight service must be defined";
 
-  dellg15-keyboard-backlight-service-oneshot =
-    mkEvalCheck "dellg15-keyboard-backlight-service-oneshot"
-      (nixosCfg.systemd.services.dim-keyboard-backlight.serviceConfig.Type == "oneshot")
-      "dim-keyboard-backlight must be a oneshot service";
+  chise-keyboard-backlight-service-oneshot = mkEvalCheck "chise-keyboard-backlight-service-oneshot" (
+    nixosCfg.systemd.services.dim-keyboard-backlight.serviceConfig.Type == "oneshot"
+  ) "dim-keyboard-backlight must be a oneshot service";
 
-  dellg15-keyboard-backlight-service-remain-after-exit =
-    mkEvalCheck "dellg15-keyboard-backlight-service-remain-after-exit"
+  chise-keyboard-backlight-service-remain-after-exit =
+    mkEvalCheck "chise-keyboard-backlight-service-remain-after-exit"
       nixosCfg.systemd.services.dim-keyboard-backlight.serviceConfig.RemainAfterExit
       "dim-keyboard-backlight must remain after exit";
 
-  dellg15-keyboard-backlight-scripts-installed =
-    mkEvalCheck "dellg15-keyboard-backlight-scripts-installed"
+  chise-keyboard-backlight-scripts-installed =
+    mkEvalCheck "chise-keyboard-backlight-scripts-installed"
       (
         let
           packageNames = map (p: p.name or "") nixosCfg.environment.systemPackages;

@@ -29,12 +29,8 @@ def initialize_csv_if_needed(results_file: Path) -> None:
 
 
 def detect_configuration_type() -> str:
-    try:
-        hostname = Path("/etc/hostname").read_text().strip()
-        if Path("/etc/nixos").is_dir() and "zanoni" in hostname:
-            return "nixos"
-    except (FileNotFoundError, PermissionError):
-        pass
+    if Path("/etc/nixos").is_dir():
+        return "nixos"
     return "home"
 
 
@@ -42,8 +38,8 @@ def get_flake_output_for_configuration(
     configuration_type: str,
 ) -> str:
     if configuration_type == "nixos":
-        return "nixosConfigurations.zanoni.config.system.build.toplevel"
-    return 'homeConfigurations."lucas.zanoni@x86_64-linux".activationPackage'
+        return "nixosConfigurations.chise.config.system.build.toplevel"
+    return "homeConfigurations.jojo.activationPackage"
 
 
 def get_current_git_short_commit() -> str:

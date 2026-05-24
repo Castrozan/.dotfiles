@@ -16,31 +16,33 @@ in
     }
   ];
 
-  Stop = [
-    {
-      matcher = ".*";
-      hooks = [
-        {
-          type = "command";
-          command = "notify-claude-turn-ended-with-focus-action 'Claude turn ended' 'normal'";
-          timeout = 3000;
-        }
-      ];
-    }
-  ];
+  /*
+    Stop = [
+      {
+        matcher = ".*";
+        hooks = [
+          {
+            type = "command";
+            command = "notify-claude-turn-ended-with-focus-action 'Claude turn ended' 'normal'";
+            timeout = 3000;
+          }
+        ];
+      }
+    ];
 
-  StopFailure = [
-    {
-      matcher = ".*";
-      hooks = [
-        {
-          type = "command";
-          command = "notify-claude-turn-ended-with-focus-action 'Turn failed' 'critical'";
-          timeout = 3000;
-        }
-      ];
-    }
-  ];
+    StopFailure = [
+      {
+        matcher = ".*";
+        hooks = [
+          {
+            type = "command";
+            command = "notify-claude-turn-ended-with-focus-action 'Turn failed' 'critical'";
+            timeout = 3000;
+          }
+        ];
+      }
+    ];
+  */
 
   PreToolUse = [
     {

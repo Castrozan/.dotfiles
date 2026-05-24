@@ -2,10 +2,11 @@
   pkgs,
   config,
   lib,
+  hostname,
   ...
 }:
 let
-  jiraConfigSource = ../../../private-config/machines/macbook-alpha/jira-config.yml;
+  jiraConfigSource = "${toString ../../../private-config}/machines/${hostname}/jira-config.yml";
   jiraConfigSourceExists = builtins.pathExists jiraConfigSource;
 
   jiraConfigDestination = "${config.home.homeDirectory}/.config/.jira/.config.yml";

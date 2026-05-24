@@ -104,41 +104,40 @@ _fix_agenix_identity_key_ownership() {
 	fi
 }
 
-_rebuild_nixos() {
-	local username dotfiles_path
+_resolve_machine_alias() {
+	local username arch
 	username="$(whoami)"
+	arch="$(uname -m)"
+
+	case "${username}/${arch}" in
+	zanoni/x86_64) echo "chise" ;;
+	lucas.zanoni/x86_64) echo "jojo" ;;
+	*)
+		echo "Unable to resolve machine alias for ${username}/${arch}" >&2
+		exit 1
+		;;
+	esac
+}
+
+_rebuild_nixos() {
+	local machineAlias dotfiles_path
+	machineAlias="$(_resolve_machine_alias)"
 	dotfiles_path="$DOTFILES_DIR"
 
 	echo ":: Detected NixOS. Running nixos-rebuild switch..."
-	echo ":: Flake: ${dotfiles_path}#${username}"
+	echo ":: Flake: ${dotfiles_path}#${machineAlias}"
 
-	sudo env "$NIXOS_ALLOW_UNFREE" nixos-rebuild switch --flake "${dotfiles_path}?submodules=1#${username}"
+	sudo env "$NIXOS_ALLOW_UNFREE" nixos-rebuild switch --flake "${dotfiles_path}?submodules=1#${machineAlias}"
 }
 
 _rebuild_home_manager() {
 	local config
-	config="$(_build_home_manager_config_name)"
+	config="$(_resolve_machine_alias)"
 
 	echo ":: Detected non-NixOS. Running home-manager switch..."
 	echo ":: Flake: ${DOTFILES_DIR}#${config}"
 
 	_hm_switch_with_rate_limit_fallback "$config"
-}
-
-_build_home_manager_config_name() {
-	local username arch system
-	username="$(whoami)"
-	arch="$(uname -m)"
-
-	local os_suffix="linux"
-
-	case "$arch" in
-	x86_64) system="x86_64-${os_suffix}" ;;
-	aarch64 | arm64) system="aarch64-${os_suffix}" ;;
-	*) system="${arch}-${os_suffix}" ;;
-	esac
-
-	echo "${username}@${system}"
 }
 
 _hm_switch_with_rate_limit_fallback() {

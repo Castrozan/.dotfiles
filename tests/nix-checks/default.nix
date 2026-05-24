@@ -40,7 +40,7 @@ let
   voiceChecks = import ../../home/linux/voice/tests/checks.nix domainArgs;
   sourcebotChecks = import ../../home/base/sourcebot/tests/checks.nix domainArgs;
 
-  dellg15Checks = import ../../hosts/dellg15/tests/checks.nix moduleArgs;
+  chiseChecks = import ../../hosts/chise/tests/checks.nix moduleArgs;
 in
 claudeChecks
 // codexChecks
@@ -59,4 +59,4 @@ claudeChecks
 // systemChecks
 // voiceChecks
 // sourcebotChecks
-// dellg15Checks
+// chiseChecks

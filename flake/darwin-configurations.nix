@@ -1,11 +1,11 @@
 # Two macbooks (different physical machines, same lucas.zanoni user).
 # Activate with:
-#   sudo darwin-rebuild switch --flake .#macbook-alpha   (Coates)
-#   sudo darwin-rebuild switch --flake .#macbook-beta    (work-Betha)
+#   sudo darwin-rebuild switch --flake .#rin    (Coates)
+#   sudo darwin-rebuild switch --flake .#kira   (work-Betha)
 #
-# Each composes with its own users/lucas.zanoni/<alpha|beta>/home-config.nix.
-# Host-level divergence (hardware, host-only services) lives under
-# hosts/macbook-<alpha|beta>/.
+# rin = toosaka rin, kira = kira yoshikage. See private-config/machines.nix
+# for the alias↔hostname mapping. hosts/<alias>/ owns hardware-level config,
+# users/lucas.zanoni/<alias>/home-config.nix owns home-manager wiring.
 {
   nix-darwin,
   home-manager,
@@ -23,33 +23,28 @@ let
     isDarwin = true;
   };
 
-  machineDirByHostname = {
-    "macbook-alpha" = "alpha";
-    "macbook-beta" = "beta";
-  };
-
-  mkDarwinHostFor = hostname: {
-    ${hostname} = nix-darwin.lib.darwinSystem {
+  mkDarwinHostFor = machineAlias: {
+    ${machineAlias} = nix-darwin.lib.darwinSystem {
       specialArgs = specialArgs // {
-        inherit hostname;
+        hostname = machineAlias;
       };
       system = darwinSystem;
 
       modules = [
-        ../hosts/${hostname}
+        ../hosts/${machineAlias}
         home-manager.darwinModules.home-manager
-        (import ../users/${username}/${machineDirByHostname.${hostname}}/home-config.nix)
+        (import ../users/${username}/${machineAlias}/home-config.nix)
       ];
     };
   };
 
-  hostnamesWithExistingHostDirectory =
-    builtins.filter (hostname: builtins.pathExists (../hosts + "/${hostname}"))
+  machineAliasesWithExistingHostDirectory =
+    builtins.filter (machineAlias: builtins.pathExists (../hosts + "/${machineAlias}"))
       [
-        "macbook-alpha"
-        "macbook-beta"
+        "rin"
+        "kira"
       ];
 in
 builtins.foldl' (
-  acc: hostname: acc // mkDarwinHostFor hostname
-) { } hostnamesWithExistingHostDirectory
+  acc: machineAlias: acc // mkDarwinHostFor machineAlias
+) { } machineAliasesWithExistingHostDirectory

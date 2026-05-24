@@ -48,4 +48,4 @@ jobs:
 
       - name: NixOS assertions (dry eval)
         run: |
-          nix build .#nixosConfigurations.zanoni.config.system.build.toplevel --dry-run 2>&1
+          nix build .#nixosConfigurations.chise.config.system.build.toplevel --dry-run 2>&1

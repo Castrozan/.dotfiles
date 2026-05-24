@@ -44,26 +44,32 @@ let
   };
 in
 {
-  # homeConfigurations.${username}@${system} is a standalone home-manager
-  # configuration for a user and system architecture. ./bin/rebuild applies it.
+  # homeConfigurations.<machineAlias> is a standalone home-manager
+  # configuration. Anime alias as key (jojo, ...); username is set via
+  # extraSpecialArgs. ./bin/rebuild applies it.
   homeConfigurations =
     let
-      mkLinuxHomeConfigFor = username: {
-        "${username}@${linuxSystem}" = home-manager.lib.homeManagerConfiguration {
-          inherit pkgs;
+      jojoConfig = home-manager.lib.homeManagerConfiguration {
+        inherit pkgs;
 
-          extraSpecialArgs = specialArgsBase // {
-            inherit username;
-            hostname = "workpc";
-            isNixOS = false;
-            isDarwin = false;
-          };
-
-          modules = [ ../users/${username}/linux/home.nix ];
+        extraSpecialArgs = specialArgsBase // {
+          username = "lucas.zanoni";
+          hostname = "jojo";
+          isNixOS = false;
+          isDarwin = false;
         };
+
+        modules = [ ../users/lucas.zanoni/jojo/home.nix ];
       };
     in
-    mkLinuxHomeConfigFor "lucas.zanoni";
+    {
+      jojo = jojoConfig;
+      # Legacy alias kept for one rebuild cycle so the installed rebuild
+      # script (which uses ${username}@${system}) can apply the new outputs
+      # and pick up the alias-aware rebuild binary. Drop after the first
+      # successful rebuild on jojo.
+      "lucas.zanoni@${linuxSystem}" = jojoConfig;
+    };
 
   nixosConfigurations = import ./nixos-configurations.nix {
     inherit

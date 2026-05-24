@@ -2,7 +2,7 @@
 set -Eeuo pipefail
 
 readonly DOTFILES_DIRECTORY="$HOME/.dotfiles"
-readonly FLAKE_REFERENCE="${DOTFILES_DIRECTORY}#macbook-alpha"
+readonly FLAKE_REFERENCE="${DOTFILES_DIRECTORY}#rin"
 readonly CURRENT_SYSTEM_SYMLINK_PATH="/run/current-system"
 readonly ANSI_RED_BOLD="\033[1;31m"
 readonly ANSI_RESET="\033[0m"
