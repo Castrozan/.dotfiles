@@ -125,7 +125,7 @@ curl -L https://nixos.org/nix/install | sh -s -- --daemon
 #### 3. Deploy with Home Manager
 ```bash
 # For the lucas.zanoni configuration (adjust username as needed)
-nix run home-manager/release-25.11 -- --flake .#lucas.zanoni@x86_64-linux switch -b "backup-$(date +%Y-%m-%d-%H-%M-%S)"
+nix run home-manager/release-25.11 -- --flake .#jojo switch -b "backup-$(date +%Y-%m-%d-%H-%M-%S)"
 ```
 </details>
 
