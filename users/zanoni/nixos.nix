@@ -133,8 +133,8 @@ in
         owner = "zanoni";
         mode = "400";
       };
-      "id_ed25519_workpc" = {
-        file = ../../secrets/infrastructure/id_ed25519_workpc.age;
+      "id_ed25519_jojo" = {
+        file = ../../secrets/infrastructure/id_ed25519_jojo.age;
         owner = "zanoni";
         mode = "600";
       };

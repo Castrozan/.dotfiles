@@ -1,12 +1,12 @@
 { lib, pkgs, ... }:
 let
   phoneSecretExists = builtins.pathExists ../../../secrets/infrastructure/id_ed25519_phone.age;
-  workpcSecretExists = builtins.pathExists ../../../secrets/infrastructure/id_ed25519_workpc.age;
+  jojoSecretExists = builtins.pathExists ../../../secrets/infrastructure/id_ed25519_jojo.age;
   sshHostsSecretExists = builtins.pathExists ../../../secrets/infrastructure/ssh-hosts.age;
 
   phoneHostKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOWURbP41AHeoQUC4qpSriTvVKWezdpPMGg1f3Ti7gyd";
-  workPcHostKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPctlyhhY3Tf6RS/qs4aMUK/cIiZFG804XJFbd0ooWP/";
-  macHostKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINOxdbPmuHnX5ZpB1asR0TgUOb9QrDmULFv9/uOliJcQ";
+  jojoHostKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPctlyhhY3Tf6RS/qs4aMUK/cIiZFG804XJFbd0ooWP/";
+  rinHostKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINOxdbPmuHnX5ZpB1asR0TgUOb9QrDmULFv9/uOliJcQ";
 
   generateScript = pkgs.writeShellScript "generate-private-ssh-config" ''
     set -euo pipefail
@@ -31,16 +31,16 @@ let
 
     # Generate SSH config for private hosts
     {
-      if [ -n "''${hosts[workpc]:-}" ] && [ -f "/run/agenix/id_ed25519_workpc" ]; then
-        printf 'Host workpc\n'
-        printf '    HostName %s\n' "''${hosts[workpc]}"
+      if [ -n "''${hosts[jojo]:-}" ] && [ -f "/run/agenix/id_ed25519_jojo" ]; then
+        printf 'Host jojo\n'
+        printf '    HostName %s\n' "''${hosts[jojo]}"
         printf '    User lucas.zanoni\n'
-        printf '    IdentityFile /run/agenix/id_ed25519_workpc\n\n'
+        printf '    IdentityFile /run/agenix/id_ed25519_jojo\n\n'
       fi
 
-      if [ -n "''${hosts[mac]:-}" ]; then
-        printf 'Host mac\n'
-        printf '    HostName %s\n' "''${hosts[mac]}"
+      if [ -n "''${hosts[rin]:-}" ]; then
+        printf 'Host rin\n'
+        printf '    HostName %s\n' "''${hosts[rin]}"
         printf '    User lucas.zanoni\n\n'
       fi
 
@@ -58,11 +58,11 @@ let
       if [ -n "''${hosts[phone]:-}" ]; then
         printf '[%s]:8022 ${phoneHostKey}\n' "''${hosts[phone]}"
       fi
-      if [ -n "''${hosts[workpc]:-}" ]; then
-        printf '%s ${workPcHostKey}\n' "''${hosts[workpc]}"
+      if [ -n "''${hosts[jojo]:-}" ]; then
+        printf '%s ${jojoHostKey}\n' "''${hosts[jojo]}"
       fi
-      if [ -n "''${hosts[mac]:-}" ]; then
-        printf '%s ${macHostKey}\n' "''${hosts[mac]}"
+      if [ -n "''${hosts[rin]:-}" ]; then
+        printf '%s ${rinHostKey}\n' "''${hosts[rin]}"
       fi
     } > "$KNOWN_HOSTS"
 
@@ -83,7 +83,7 @@ in
   };
 
   home.activation.generatePrivateSshConfig =
-    lib.mkIf (sshHostsSecretExists && (phoneSecretExists || workpcSecretExists))
+    lib.mkIf (sshHostsSecretExists && (phoneSecretExists || jojoSecretExists))
       (
         lib.hm.dag.entryAfter [ "writeBoundary" ] ''
           run ${generateScript}
