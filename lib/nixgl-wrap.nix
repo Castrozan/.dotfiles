@@ -12,7 +12,7 @@ let
       package,
       binaries,
     }:
-    if isNixOS then
+    if isNixOS || pkgs.stdenv.hostPlatform.isDarwin then
       package
     else
       let

@@ -1,5 +1,6 @@
 {
   pkgs,
+  lib,
   inputs,
   isNixOS,
   ...
@@ -19,11 +20,11 @@ in
   programs.kitty = {
     enable = true;
     package = kittyPackage;
-    themeFile = "Catppuccin-Mocha";
+    themeFile = lib.mkDefault "Catppuccin-Mocha";
     font = {
-      name = "Fira Code";
-      size = 16;
-      package = pkgs.fira-code;
+      name = lib.mkDefault "Fira Code";
+      size = lib.mkDefault 16;
+      package = lib.mkDefault pkgs.fira-code;
     };
     settings = {
       shell = "fish";
