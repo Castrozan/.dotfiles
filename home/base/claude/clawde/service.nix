@@ -24,7 +24,9 @@ let
   '';
 in
 {
-  config = lib.mkIf hasAgents {
+  # clawde supervises a tmux session via systemd user units (Linux-only).
+  # nix-darwin uses launchd; a Darwin port would set launchd.user.agents.
+  config = lib.mkIf (hasAgents && pkgs.stdenv.hostPlatform.isLinux) {
     home.packages = [ clawdeSessionStarter ];
 
     systemd.user.services.clawde = {
