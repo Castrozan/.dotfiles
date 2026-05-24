@@ -46,9 +46,11 @@ let
     + "\n";
 in
 {
-  home.packages = with pkgs; [
-    carapace
-    fishPlugins.bass
+  home.packages = [
+    pkgs.carapace
+  ]
+  ++ lib.optionals (!pkgs.stdenv.hostPlatform.isDarwin) [
+    pkgs.fishPlugins.bass
   ];
 
   programs = {
@@ -57,10 +59,6 @@ in
       package = pkgs.fish;
       interactiveShellInit = "${shellInit}";
       plugins = [
-        {
-          name = "bass";
-          src = pkgs.fishPlugins.bass;
-        }
         {
           name = "autopair";
           src = pkgs.fishPlugins.autopair;
@@ -75,6 +73,10 @@ in
         }
       ]
       ++ lib.optionals (!pkgs.stdenv.hostPlatform.isDarwin) [
+        {
+          name = "bass";
+          src = pkgs.fishPlugins.bass;
+        }
         {
           name = "fzf-fish";
           src = pkgs.fishPlugins.fzf-fish;
