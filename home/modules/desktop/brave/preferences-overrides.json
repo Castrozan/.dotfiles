@@ -1,0 +1,50 @@
+{
+  "bookmark_bar": {
+    "show_on_all_tabs": true
+  },
+  "browser": {
+    "theme": {
+      "color_scheme": 2
+    }
+  },
+  "signin": {
+    "allowed": false
+  },
+  "spellcheck": {
+    "dictionaries": ["en-GB"],
+    "use_spelling_service": false
+  },
+  "intl": {
+    "accept_languages": "en-US,pt-BR,pt,en",
+    "selected_languages": "en-US,en"
+  },
+  "privacy_sandbox": {
+    "first_party_sets_enabled": false,
+    "m1": {
+      "ad_measurement_enabled": false,
+      "fledge_enabled": false,
+      "topics_enabled": false
+    }
+  },
+  "brave": {
+    "always_show_bookmark_bar_on_ntp": false,
+    "enable_window_closing_confirm": false,
+    "show_side_panel_button": false,
+    "ai_chat": {
+      "show_toolbar_button": false
+    },
+    "brave_vpn": {
+      "show_button": false
+    },
+    "wallet": {
+      "show_wallet_icon_on_toolbar": false
+    },
+    "rewards": {
+      "show_brave_rewards_button_in_location_bar": false
+    },
+    "accelerators": {
+      "34015": ["Command+KeyW", "Control+KeyW"],
+      "34027": ["Control+KeyD"]
+    }
+  }
+}

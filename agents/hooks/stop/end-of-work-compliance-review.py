@@ -20,12 +20,18 @@ from end_of_work_compliance_review_prompt_builder import (  # noqa: E402, F401
     build_review_user_prompt,
     summarize_tool_call_for_prompt,
 )
+from end_of_work_compliance_review_findings_handler import (  # noqa: E402
+    emit_review_decision_to_stdout,
+)
 from end_of_work_compliance_review_subprocess import (  # noqa: E402
     run_review_subprocess_with_liveness_polling,
 )
+from end_of_work_compliance_review_tool_call_inspectors import (  # noqa: E402
+    find_parking_tool_calls,
+    has_any_file_mutating_tool_call,
+)
 from end_of_work_compliance_review_transcript_parser import (  # noqa: E402
     extract_current_turn_context_from_transcript,
-    has_any_file_mutating_tool_call,
 )
 from end_of_work_compliance_review_workspace import (  # noqa: E402, F401
     COMPLIANCE_SKILL_PATH,
@@ -47,6 +53,18 @@ def main():
 
     set_session_id_short_prefix(data.get("session_id", ""))
 
+    log_status(
+        f"received Stop payload: "
+        f"hook_event_name={data.get('hook_event_name', '')}, "
+        f"stop_hook_active={data.get('stop_hook_active', False)}, "
+        f"cwd={data.get('cwd', '')}, "
+        f"transcript_path={data.get('transcript_path', '')}"
+    )
+
+    if data.get("stop_hook_active"):
+        log_status("skipped: stop_hook_active=true, allowing stop to avoid loop")
+        sys.exit(0)
+
     transcript_path_string = data.get("transcript_path", "")
     if not transcript_path_string:
         log_status("skipped: no transcript_path in Stop payload")
@@ -59,6 +77,18 @@ def main():
         sys.exit(0)
 
     ordered_tool_calls = current_turn_context.get("ordered_tool_calls", [])
+
+    parking_tool_calls = find_parking_tool_calls(ordered_tool_calls)
+    if parking_tool_calls:
+        parking_tool_names = ", ".join(
+            tool_call.get("name", "?") for tool_call in parking_tool_calls[:5]
+        )
+        log_status(
+            f"skipped: agent parked on {len(parking_tool_calls)} yielding "
+            f"tool call(s) ({parking_tool_names})"
+        )
+        sys.exit(0)
+
     if len(ordered_tool_calls) < MINIMUM_TOOL_COUNT_FOR_REVIEW:
         log_status(
             f"skipped: only {len(ordered_tool_calls)} tool call(s) this turn, "
@@ -147,33 +177,7 @@ def main():
         )
         sys.exit(0)
 
-    findings = review_stdout.strip()
-
-    fail_lines = [
-        line.strip()
-        for line in findings.split("\n")
-        if line.strip().startswith("FAIL:")
-    ]
-
-    if not fail_lines:
-        log_status(
-            f"haiku returned in {elapsed_seconds}s, no FAIL lines, turn proceeds"
-        )
-        sys.exit(0)
-
-    log_status(
-        f"haiku returned in {elapsed_seconds}s, {len(fail_lines)} FAIL line(s), "
-        f"blocking turn"
-    )
-    for fail_line in fail_lines:
-        log_status(f"  {fail_line}")
-
-    feedback = "COMPLIANCE REVIEW FAILED. Fix these before responding:\n" + "\n".join(
-        fail_lines
-    )
-
-    output = {"decision": "block", "reason": feedback}
-    print(json.dumps(output))
+    emit_review_decision_to_stdout(review_stdout, elapsed_seconds)
     sys.exit(0)
 
 

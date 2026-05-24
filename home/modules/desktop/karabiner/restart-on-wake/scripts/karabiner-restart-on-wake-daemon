@@ -1,0 +1,404 @@
+#!/usr/bin/env python3
+
+import json
+import os
+import signal
+import subprocess
+import sys
+import time
+
+from AppKit import NSWorkspace
+from Foundation import NSObject, NSTimer
+from PyObjCTools import AppHelper
+
+KARABINER_CONSOLE_USER_SERVER_LAUNCHD_LABEL = (
+    "org.pqrs.service.agent.karabiner_console_user_server"
+)
+LAUNCHCTL_BINARY_PATH = "/bin/launchctl"
+
+DAEMON_HEALTH_STATE_FILE_PATH = "/tmp/karabiner-health.json"
+DAEMON_STRUCTURED_EVENT_LOG_FILE_PATH = "/tmp/karabiner-daemon.log"
+
+KARABINER_CONSOLE_USER_SERVER_LOG_FILE_PATH = (
+    f"{os.path.expanduser('~')}/.local/share/karabiner/log/console_user_server.log"
+)
+KARABINER_CORE_SERVICE_LOG_FILE_PATH = "/var/log/karabiner/core_service.log"
+
+KARABINER_CLI_BINARY_PATH = (
+    "/Library/Application Support/org.pqrs/Karabiner-Elements/bin/karabiner_cli"
+)
+KARABINER_CLI_IPC_PROBE_TIMEOUT_SECONDS = 5.0
+
+KARABINER_CLI_IPC_PROBE_FAILURE_KICK_IS_ENABLED = True
+CONSECUTIVE_IPC_PROBE_FAILURES_REQUIRED_BEFORE_KICK = 3
+MINIMUM_SECONDS_BETWEEN_REACTIVE_KICKS = 300.0
+
+HEALTH_PROBE_INTERVAL_SECONDS = 60.0
+PERIODIC_SAFETY_NET_KICK_INTERVAL_SECONDS = 1800.0
+
+KICK_REASON_WAKE = "wake"
+KICK_REASON_PERIODIC_SAFETY_NET = "periodic_safety_net"
+KICK_REASON_KARABINER_CLI_IPC_PROBE_FAILURE = "karabiner_cli_ipc_probe_failure"
+
+
+def current_epoch_seconds():
+    return time.time()
+
+
+def current_iso8601_timestamp_string():
+    return time.strftime("%Y-%m-%dT%H:%M:%S%z", time.localtime())
+
+
+def append_structured_event_log_line(event_payload):
+    log_line_payload = {
+        "epoch": current_epoch_seconds(),
+        "iso8601": current_iso8601_timestamp_string(),
+        **event_payload,
+    }
+    try:
+        with open(DAEMON_STRUCTURED_EVENT_LOG_FILE_PATH, "a") as log_file:
+            log_file.write(json.dumps(log_line_payload) + "\n")
+    except OSError:
+        pass
+
+
+def read_current_health_state_from_file():
+    if not os.path.exists(DAEMON_HEALTH_STATE_FILE_PATH):
+        return {}
+    try:
+        with open(DAEMON_HEALTH_STATE_FILE_PATH, "r") as health_state_file:
+            return json.load(health_state_file)
+    except (OSError, json.JSONDecodeError):
+        return {}
+
+
+def write_merged_health_state_updates_to_file(state_updates):
+    merged_state = read_current_health_state_from_file()
+    merged_state.update(state_updates)
+    try:
+        with open(DAEMON_HEALTH_STATE_FILE_PATH, "w") as health_state_file:
+            json.dump(merged_state, health_state_file, indent=2, sort_keys=True)
+    except OSError:
+        pass
+
+
+def get_file_modification_epoch_seconds_or_none(file_path):
+    if not os.path.exists(file_path):
+        return None
+    try:
+        return os.path.getmtime(file_path)
+    except OSError:
+        return None
+
+
+def is_karabiner_console_user_server_process_running():
+    return (
+        subprocess.run(
+            ["/usr/bin/pgrep", "-x", "karabiner_console_user_server"],
+            capture_output=True,
+            check=False,
+        ).returncode
+        == 0
+    )
+
+
+def is_karabiner_core_service_process_running():
+    return (
+        subprocess.run(
+            ["/usr/bin/pgrep", "-x", "Karabiner-Core-Service"],
+            capture_output=True,
+            check=False,
+        ).returncode
+        == 0
+    )
+
+
+def probe_karabiner_cli_ipc_and_return_outcome():
+    probe_started_at_epoch_seconds = current_epoch_seconds()
+    profile_name_or_none = None
+    grabbed_keyboard_device_count_or_none = None
+    probe_failure_reason_or_none = None
+    try:
+        profile_name_completion = subprocess.run(
+            [KARABINER_CLI_BINARY_PATH, "--show-current-profile-name"],
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=KARABINER_CLI_IPC_PROBE_TIMEOUT_SECONDS,
+        )
+        if profile_name_completion.returncode != 0:
+            probe_failure_reason_or_none = (
+                f"show-current-profile-name exit {profile_name_completion.returncode}"
+            )
+        else:
+            profile_name_or_none = profile_name_completion.stdout.strip() or None
+    except subprocess.TimeoutExpired:
+        probe_failure_reason_or_none = "show-current-profile-name timed out"
+    except FileNotFoundError:
+        probe_failure_reason_or_none = "karabiner_cli binary not found"
+    if probe_failure_reason_or_none is None:
+        try:
+            connected_devices_completion = subprocess.run(
+                [KARABINER_CLI_BINARY_PATH, "--list-connected-devices"],
+                check=False,
+                capture_output=True,
+                text=True,
+                timeout=KARABINER_CLI_IPC_PROBE_TIMEOUT_SECONDS,
+            )
+            if connected_devices_completion.returncode != 0:
+                probe_failure_reason_or_none = (
+                    f"list-connected-devices exit"
+                    f" {connected_devices_completion.returncode}"
+                )
+            else:
+                connected_devices = json.loads(connected_devices_completion.stdout)
+                grabbed_keyboard_device_count_or_none = sum(
+                    1
+                    for device in connected_devices
+                    if device.get("device_identifiers", {}).get("is_keyboard")
+                )
+        except subprocess.TimeoutExpired:
+            probe_failure_reason_or_none = "list-connected-devices timed out"
+        except (json.JSONDecodeError, FileNotFoundError) as probe_error:
+            probe_failure_reason_or_none = (
+                f"list-connected-devices parse error: {probe_error}"
+            )
+    probe_latency_seconds = current_epoch_seconds() - probe_started_at_epoch_seconds
+    return {
+        "succeeded": probe_failure_reason_or_none is None,
+        "failure_reason": probe_failure_reason_or_none,
+        "latency_seconds": probe_latency_seconds,
+        "profile_name": profile_name_or_none,
+        "grabbed_keyboard_device_count": grabbed_keyboard_device_count_or_none,
+    }
+
+
+def kick_karabiner_console_user_server_via_launchctl(kick_reason):
+    primary_user_id = os.getuid()
+    launchd_kickstart_target = (
+        f"gui/{primary_user_id}/{KARABINER_CONSOLE_USER_SERVER_LAUNCHD_LABEL}"
+    )
+    kick_started_at_epoch_seconds = current_epoch_seconds()
+    append_structured_event_log_line(
+        {
+            "event": "kick_attempt",
+            "launchd_target": launchd_kickstart_target,
+            "reason": kick_reason,
+        }
+    )
+    completion = subprocess.run(
+        [LAUNCHCTL_BINARY_PATH, "kickstart", "-k", launchd_kickstart_target],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    kick_duration_seconds = current_epoch_seconds() - kick_started_at_epoch_seconds
+    append_structured_event_log_line(
+        {
+            "event": "kick_completed",
+            "launchd_target": launchd_kickstart_target,
+            "reason": kick_reason,
+            "duration_seconds": kick_duration_seconds,
+            "exit_code": completion.returncode,
+        }
+    )
+    previous_health_state = read_current_health_state_from_file()
+    write_merged_health_state_updates_to_file(
+        {
+            "last_kick_epoch": kick_started_at_epoch_seconds,
+            "last_kick_reason": kick_reason,
+            "last_kick_duration_seconds": kick_duration_seconds,
+            "kick_count_total": previous_health_state.get("kick_count_total", 0) + 1,
+        }
+    )
+
+
+def run_full_health_probe_and_kick_if_ipc_probe_failed():
+    console_user_server_log_mtime_epoch = get_file_modification_epoch_seconds_or_none(
+        KARABINER_CONSOLE_USER_SERVER_LOG_FILE_PATH
+    )
+    core_service_log_mtime_epoch = get_file_modification_epoch_seconds_or_none(
+        KARABINER_CORE_SERVICE_LOG_FILE_PATH
+    )
+    is_console_user_server_running = is_karabiner_console_user_server_process_running()
+    is_core_service_running = is_karabiner_core_service_process_running()
+    karabiner_cli_ipc_probe_outcome = probe_karabiner_cli_ipc_and_return_outcome()
+    write_merged_health_state_updates_to_file(
+        {
+            "last_health_probe_epoch": current_epoch_seconds(),
+            "karabiner_console_user_server_log_mtime_epoch": (
+                console_user_server_log_mtime_epoch
+            ),
+            "karabiner_core_service_log_mtime_epoch": core_service_log_mtime_epoch,
+            "karabiner_console_user_server_process_running": (
+                is_console_user_server_running
+            ),
+            "karabiner_core_service_process_running": is_core_service_running,
+            "karabiner_cli_ipc_probe_succeeded": (
+                karabiner_cli_ipc_probe_outcome["succeeded"]
+            ),
+            "karabiner_cli_ipc_probe_latency_seconds": (
+                karabiner_cli_ipc_probe_outcome["latency_seconds"]
+            ),
+            "karabiner_cli_ipc_probe_failure_reason": (
+                karabiner_cli_ipc_probe_outcome["failure_reason"]
+            ),
+            "karabiner_current_profile_name": (
+                karabiner_cli_ipc_probe_outcome["profile_name"]
+            ),
+            "karabiner_grabbed_keyboard_device_count": (
+                karabiner_cli_ipc_probe_outcome["grabbed_keyboard_device_count"]
+            ),
+        }
+    )
+    append_structured_event_log_line(
+        {
+            "event": "health_probe",
+            "console_user_server_running": is_console_user_server_running,
+            "core_service_running": is_core_service_running,
+            "console_user_server_log_mtime_epoch": console_user_server_log_mtime_epoch,
+            "core_service_log_mtime_epoch": core_service_log_mtime_epoch,
+            "ipc_probe_succeeded": karabiner_cli_ipc_probe_outcome["succeeded"],
+            "ipc_probe_latency_seconds": (
+                karabiner_cli_ipc_probe_outcome["latency_seconds"]
+            ),
+            "ipc_probe_failure_reason": (
+                karabiner_cli_ipc_probe_outcome["failure_reason"]
+            ),
+            "grabbed_keyboard_device_count": (
+                karabiner_cli_ipc_probe_outcome["grabbed_keyboard_device_count"]
+            ),
+        }
+    )
+    previous_health_state = read_current_health_state_from_file()
+    if karabiner_cli_ipc_probe_outcome["succeeded"]:
+        write_merged_health_state_updates_to_file(
+            {"consecutive_ipc_probe_failure_count": 0}
+        )
+        return
+    consecutive_ipc_probe_failure_count = (
+        previous_health_state.get("consecutive_ipc_probe_failure_count", 0) + 1
+    )
+    write_merged_health_state_updates_to_file(
+        {
+            "karabiner_cli_ipc_probe_failure_count_total": previous_health_state.get(
+                "karabiner_cli_ipc_probe_failure_count_total", 0
+            )
+            + 1,
+            "consecutive_ipc_probe_failure_count": (
+                consecutive_ipc_probe_failure_count
+            ),
+        }
+    )
+    append_structured_event_log_line(
+        {
+            "event": "ipc_probe_degraded_detected",
+            "failure_reason": karabiner_cli_ipc_probe_outcome["failure_reason"],
+            "consecutive_failure_count": consecutive_ipc_probe_failure_count,
+        }
+    )
+    if not KARABINER_CLI_IPC_PROBE_FAILURE_KICK_IS_ENABLED:
+        return
+    if not is_console_user_server_running:
+        return
+    if (
+        consecutive_ipc_probe_failure_count
+        < CONSECUTIVE_IPC_PROBE_FAILURES_REQUIRED_BEFORE_KICK
+    ):
+        return
+    seconds_since_last_reactive_kick = (
+        current_epoch_seconds()
+        - previous_health_state.get("last_reactive_kick_epoch", 0)
+    )
+    if seconds_since_last_reactive_kick < MINIMUM_SECONDS_BETWEEN_REACTIVE_KICKS:
+        append_structured_event_log_line(
+            {
+                "event": "ipc_probe_kick_suppressed_by_cooldown",
+                "seconds_since_last_reactive_kick": seconds_since_last_reactive_kick,
+            }
+        )
+        return
+    write_merged_health_state_updates_to_file(
+        {"last_reactive_kick_epoch": current_epoch_seconds()}
+    )
+    kick_karabiner_console_user_server_via_launchctl(
+        KICK_REASON_KARABINER_CLI_IPC_PROBE_FAILURE
+    )
+
+
+def record_wake_event_in_health_state_and_kick():
+    write_merged_health_state_updates_to_file(
+        {"last_wake_epoch": current_epoch_seconds()}
+    )
+    append_structured_event_log_line({"event": "wake"})
+    kick_karabiner_console_user_server_via_launchctl(KICK_REASON_WAKE)
+
+
+def run_periodic_safety_net_kick():
+    kick_karabiner_console_user_server_via_launchctl(KICK_REASON_PERIODIC_SAFETY_NET)
+
+
+def initialize_health_state_for_daemon_start():
+    write_merged_health_state_updates_to_file(
+        {
+            "daemon_started_epoch": current_epoch_seconds(),
+            "daemon_process_id": os.getpid(),
+        }
+    )
+    append_structured_event_log_line({"event": "daemon_started", "pid": os.getpid()})
+
+
+class KarabinerHealthMonitorEventHandler(NSObject):
+    def workspaceDidWake_(self, _notification):
+        record_wake_event_in_health_state_and_kick()
+
+    def fullHealthProbeTimerFired_(self, _timer):
+        run_full_health_probe_and_kick_if_ipc_probe_failed()
+
+    def periodicSafetyNetKickTimerFired_(self, _timer):
+        run_periodic_safety_net_kick()
+
+
+def register_workspace_wake_observer_for_handler(event_handler):
+    workspace_notification_center = NSWorkspace.sharedWorkspace().notificationCenter()
+    workspace_notification_center.addObserver_selector_name_object_(
+        event_handler,
+        "workspaceDidWake:",
+        "NSWorkspaceDidWakeNotification",
+        None,
+    )
+
+
+def schedule_full_health_probe_timer_for_handler(event_handler):
+    NSTimer.scheduledTimerWithTimeInterval_target_selector_userInfo_repeats_(
+        HEALTH_PROBE_INTERVAL_SECONDS,
+        event_handler,
+        "fullHealthProbeTimerFired:",
+        None,
+        True,
+    )
+
+
+def schedule_periodic_safety_net_kick_timer_for_handler(event_handler):
+    NSTimer.scheduledTimerWithTimeInterval_target_selector_userInfo_repeats_(
+        PERIODIC_SAFETY_NET_KICK_INTERVAL_SECONDS,
+        event_handler,
+        "periodicSafetyNetKickTimerFired:",
+        None,
+        True,
+    )
+
+
+def main():
+    signal.signal(signal.SIGTERM, lambda _signum, _frame: sys.exit(0))
+    initialize_health_state_for_daemon_start()
+    event_handler = KarabinerHealthMonitorEventHandler.alloc().init()
+    register_workspace_wake_observer_for_handler(event_handler)
+    schedule_full_health_probe_timer_for_handler(event_handler)
+    schedule_periodic_safety_net_kick_timer_for_handler(event_handler)
+    run_full_health_probe_and_kick_if_ipc_probe_failed()
+    AppHelper.runEventLoop()
+
+
+if __name__ == "__main__":
+    main()

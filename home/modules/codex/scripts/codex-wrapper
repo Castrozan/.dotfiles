@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# Wraps codex with our standard model/sandbox/approval flags so the binary on
+# PATH always runs with the dotfiles' defaults. Driven by CODEX_UNWRAPPED_BIN.
+
+export NPM_CONFIG_PREFIX="/nonexistent"
+exec "$CODEX_UNWRAPPED_BIN" \
+	--model "gpt-5.4" \
+	--sandbox "danger-full-access" \
+	--ask-for-approval "never" \
+	--no-alt-screen \
+	"$@"

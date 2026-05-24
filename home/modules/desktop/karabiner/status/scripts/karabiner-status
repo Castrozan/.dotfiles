@@ -1,0 +1,197 @@
+#!/usr/bin/env python3
+
+import argparse
+import json
+import os
+import sys
+import time
+
+DAEMON_HEALTH_STATE_FILE_PATH = "/tmp/karabiner-health.json"
+DAEMON_STRUCTURED_EVENT_LOG_FILE_PATH = "/tmp/karabiner-daemon.log"
+
+EXIT_CODE_HEALTHY = 0
+EXIT_CODE_DEGRADED = 1
+
+
+def read_health_state_from_file_or_none():
+    if not os.path.exists(DAEMON_HEALTH_STATE_FILE_PATH):
+        return None
+    try:
+        with open(DAEMON_HEALTH_STATE_FILE_PATH, "r") as health_state_file:
+            return json.load(health_state_file)
+    except (OSError, json.JSONDecodeError):
+        return None
+
+
+def format_seconds_ago_as_human_readable_duration(target_epoch_seconds):
+    if target_epoch_seconds is None:
+        return "never"
+    elapsed_seconds_since_target = time.time() - target_epoch_seconds
+    if elapsed_seconds_since_target < 0:
+        return "in the future"
+    if elapsed_seconds_since_target < 60:
+        return f"{int(elapsed_seconds_since_target)}s ago"
+    if elapsed_seconds_since_target < 3600:
+        return f"{int(elapsed_seconds_since_target / 60)}m ago"
+    if elapsed_seconds_since_target < 86400:
+        return f"{elapsed_seconds_since_target / 3600:.1f}h ago"
+    return f"{elapsed_seconds_since_target / 86400:.1f}d ago"
+
+
+def determine_overall_health_status_from_state(health_state):
+    if health_state is None:
+        return "NO HEALTH FILE"
+    if not health_state.get("karabiner_core_service_process_running", True):
+        return "DEGRADED (core service not running)"
+    if not health_state.get("karabiner_console_user_server_process_running", True):
+        return "DEGRADED (console user server not running)"
+    if health_state.get("karabiner_cli_ipc_probe_succeeded") is False:
+        ipc_failure_reason = health_state.get("karabiner_cli_ipc_probe_failure_reason")
+        return f"DEGRADED (ipc probe failed: {ipc_failure_reason})"
+    if health_state.get("last_health_probe_epoch") is None:
+        return "UNKNOWN (no health probe yet)"
+    return "HEALTHY"
+
+
+def format_health_state_as_human_readable_summary(health_state):
+    overall_health_status = determine_overall_health_status_from_state(health_state)
+    if health_state is None:
+        return f"Karabiner daemon: {overall_health_status}", EXIT_CODE_DEGRADED
+    summary_lines = [f"Karabiner daemon: {overall_health_status}"]
+    summary_lines.append(
+        f"  Daemon process:                pid={health_state.get('daemon_process_id', '-')}"
+        f", started {format_seconds_ago_as_human_readable_duration(health_state.get('daemon_started_epoch'))}"
+    )
+    summary_lines.append(
+        f"  Karabiner-Core-Service:        "
+        f"{'running' if health_state.get('karabiner_core_service_process_running') else 'NOT RUNNING'}"
+    )
+    summary_lines.append(
+        f"  karabiner_console_user_server: "
+        f"{'running' if health_state.get('karabiner_console_user_server_process_running') else 'NOT RUNNING'}"
+    )
+    ipc_probe_succeeded = health_state.get("karabiner_cli_ipc_probe_succeeded")
+    ipc_probe_latency_milliseconds = (
+        health_state.get("karabiner_cli_ipc_probe_latency_seconds", 0) * 1000
+    )
+    summary_lines.append(
+        f"  karabiner_cli IPC probe:       "
+        f"{'OK' if ipc_probe_succeeded else 'FAIL' if ipc_probe_succeeded is False else 'pending'}"
+        f" ({ipc_probe_latency_milliseconds:.0f}ms latency)"
+    )
+    if ipc_probe_succeeded is False:
+        summary_lines.append(
+            f"    failure reason:              "
+            f"{health_state.get('karabiner_cli_ipc_probe_failure_reason', '-')}"
+        )
+    summary_lines.append(
+        f"  Current Karabiner profile:     "
+        f"{health_state.get('karabiner_current_profile_name') or '-'}"
+    )
+    summary_lines.append(
+        f"  Grabbed keyboard devices:      "
+        f"{health_state.get('karabiner_grabbed_keyboard_device_count', '-')}"
+    )
+    summary_lines.append(
+        f"  Last health probe:             "
+        f"{format_seconds_ago_as_human_readable_duration(health_state.get('last_health_probe_epoch'))}"
+    )
+    summary_lines.append(
+        f"  Core service log last write:   "
+        f"{format_seconds_ago_as_human_readable_duration(health_state.get('karabiner_core_service_log_mtime_epoch'))}"
+    )
+    summary_lines.append(
+        f"  User server log last write:    "
+        f"{format_seconds_ago_as_human_readable_duration(health_state.get('karabiner_console_user_server_log_mtime_epoch'))}"
+    )
+    summary_lines.append(
+        f"  Last kick:                     "
+        f"{format_seconds_ago_as_human_readable_duration(health_state.get('last_kick_epoch'))}"
+        f" (reason: {health_state.get('last_kick_reason', '-')})"
+    )
+    summary_lines.append(
+        f"  Last wake:                     "
+        f"{format_seconds_ago_as_human_readable_duration(health_state.get('last_wake_epoch'))}"
+    )
+    summary_lines.append(
+        f"  Total kicks:                   {health_state.get('kick_count_total', 0)}"
+    )
+    summary_lines.append(
+        f"  IPC probe failures total:      "
+        f"{health_state.get('karabiner_cli_ipc_probe_failure_count_total', 0)}"
+    )
+    is_healthy = (
+        health_state.get("karabiner_core_service_process_running", False)
+        and health_state.get("karabiner_console_user_server_process_running", False)
+        and health_state.get("karabiner_cli_ipc_probe_succeeded") is True
+    )
+    exit_code = EXIT_CODE_HEALTHY if is_healthy else EXIT_CODE_DEGRADED
+    return "\n".join(summary_lines), exit_code
+
+
+def parse_command_line_arguments():
+    parser = argparse.ArgumentParser(
+        description="Show Karabiner health-monitor daemon status."
+    )
+    parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Output raw JSON health state instead of human-readable summary.",
+    )
+    parser.add_argument(
+        "--log-tail",
+        type=int,
+        metavar="N",
+        default=None,
+        help="Also print the last N structured event log lines after the summary.",
+    )
+    return parser.parse_args()
+
+
+def emit_json_health_state_output(health_state):
+    if health_state is None:
+        json.dump({}, sys.stdout, indent=2)
+    else:
+        json.dump(health_state, sys.stdout, indent=2, sort_keys=True)
+    sys.stdout.write("\n")
+
+
+def print_last_n_structured_event_log_lines(line_count):
+    if not os.path.exists(DAEMON_STRUCTURED_EVENT_LOG_FILE_PATH):
+        print(f"(no log file at {DAEMON_STRUCTURED_EVENT_LOG_FILE_PATH})")
+        return
+    try:
+        with open(DAEMON_STRUCTURED_EVENT_LOG_FILE_PATH, "r") as log_file:
+            all_log_lines = log_file.readlines()
+    except OSError as read_error:
+        print(f"(failed to read log: {read_error})")
+        return
+    print()
+    print(f"--- last {line_count} event log lines ---")
+    for log_line in all_log_lines[-line_count:]:
+        print(log_line.rstrip())
+
+
+def main():
+    command_line_arguments = parse_command_line_arguments()
+    health_state = read_health_state_from_file_or_none()
+    if command_line_arguments.json:
+        emit_json_health_state_output(health_state)
+        is_healthy = (
+            health_state is not None
+            and health_state.get("karabiner_core_service_process_running", False)
+            and health_state.get("karabiner_console_user_server_process_running", False)
+            and health_state.get("karabiner_cli_ipc_probe_succeeded") is True
+        )
+        sys.exit(EXIT_CODE_HEALTHY if is_healthy else EXIT_CODE_DEGRADED)
+    summary_text, exit_code = format_health_state_as_human_readable_summary(
+        health_state
+    )
+    print(summary_text)
+    if command_line_arguments.log_tail is not None:
+        print_last_n_structured_event_log_lines(command_line_arguments.log_tail)
+    sys.exit(exit_code)
+
+
+if __name__ == "__main__":
+    main()

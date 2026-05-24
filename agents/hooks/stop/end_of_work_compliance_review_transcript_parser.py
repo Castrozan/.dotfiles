@@ -187,11 +187,3 @@ def extract_current_turn_context_from_transcript(transcript_path: Path) -> dict:
         "workspace_cwd": workspace_cwd,
         "session_start_timestamp": session_start_timestamp,
     }
-
-
-def has_any_file_mutating_tool_call(ordered_tool_calls: list[dict]) -> bool:
-    mutating_tool_names = {"Edit", "Write", "NotebookEdit", "Update"}
-    for tool_call_block in ordered_tool_calls:
-        if tool_call_block.get("name") in mutating_tool_names:
-            return True
-    return False

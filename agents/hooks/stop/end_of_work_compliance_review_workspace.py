@@ -3,8 +3,6 @@
 import subprocess
 from pathlib import Path
 
-CORE_RULES_PATH = Path.home() / ".dotfiles" / "agents" / "core.md"
-
 COMPLIANCE_SKILL_PATH = (
     Path.home() / ".dotfiles" / "agents" / "skills" / "review" / "compliance.md"
 )
@@ -21,34 +19,10 @@ MAX_WORKSPACE_DOC_CHARS = 3000
 MAX_DIFF_CHARS = 2000
 
 
-def strip_yaml_frontmatter(markdown_body: str) -> str:
-    if not markdown_body.startswith("---"):
-        return markdown_body
-    closing_delimiter_index = markdown_body.find("\n---", 3)
-    if closing_delimiter_index == -1:
-        return markdown_body
-    return markdown_body[closing_delimiter_index + len("\n---") :].lstrip()
-
-
-def load_core_rules_body() -> str:
-    if not CORE_RULES_PATH.exists():
-        return ""
-    return strip_yaml_frontmatter(CORE_RULES_PATH.read_text()).strip()
-
-
 def load_compliance_skill_body() -> str:
-    compliance_text = ""
-    if COMPLIANCE_SKILL_PATH.exists():
-        compliance_text = COMPLIANCE_SKILL_PATH.read_text().strip()
-    core_rules_text = load_core_rules_body()
-    if not core_rules_text:
-        return compliance_text
-    if not compliance_text:
-        return f"<core-rules-reinforcement>\n{core_rules_text}\n</core-rules-reinforcement>"
-    return (
-        f"<core-rules-reinforcement>\n{core_rules_text}\n</core-rules-reinforcement>\n\n"
-        f"{compliance_text}"
-    )
+    if not COMPLIANCE_SKILL_PATH.exists():
+        return ""
+    return COMPLIANCE_SKILL_PATH.read_text().strip()
 
 
 def load_workspace_policy_docs(workspace_cwd: str) -> dict[str, str]:

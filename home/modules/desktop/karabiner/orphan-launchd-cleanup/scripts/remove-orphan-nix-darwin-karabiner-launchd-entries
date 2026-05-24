@@ -1,0 +1,61 @@
+#!/bin/sh
+
+set -eu
+
+orphanSystemLaunchDaemonPlistPaths="
+/Library/LaunchDaemons/org.nixos.start_karabiner_daemons.plist
+/Library/LaunchDaemons/org.nixos.setsuid_karabiner_session_monitor.plist
+"
+
+orphanSystemLaunchDaemonLabels="
+org.nixos.start_karabiner_daemons
+org.nixos.setsuid_karabiner_session_monitor
+"
+
+orphanUserLaunchAgentPlistPath="$HOME/Library/LaunchAgents/org.nixos.activate_karabiner_system_ext.plist"
+orphanUserLaunchAgentLabel="org.nixos.activate_karabiner_system_ext"
+
+orphanVirtualHidDeviceManagerDirectoryPath="/Applications/.Nix-Karabiner"
+
+primaryUserId="$(/usr/bin/id -u)"
+
+anyOrphanSystemPlistExists() {
+	for orphanSystemLaunchDaemonPlistPath in $orphanSystemLaunchDaemonPlistPaths; do
+		if [ -e "$orphanSystemLaunchDaemonPlistPath" ]; then
+			return 0
+		fi
+	done
+	return 1
+}
+
+removeOrphanSystemLaunchDaemonsWithSudo() {
+	for orphanSystemLaunchDaemonLabel in $orphanSystemLaunchDaemonLabels; do
+		sudo /bin/launchctl bootout "system/$orphanSystemLaunchDaemonLabel" 2>/dev/null || true
+	done
+	for orphanSystemLaunchDaemonPlistPath in $orphanSystemLaunchDaemonPlistPaths; do
+		sudo rm -f "$orphanSystemLaunchDaemonPlistPath"
+	done
+}
+
+removeOrphanUserLaunchAgent() {
+	if [ ! -e "$orphanUserLaunchAgentPlistPath" ]; then
+		return 0
+	fi
+	/bin/launchctl bootout "gui/$primaryUserId/$orphanUserLaunchAgentLabel" 2>/dev/null || true
+	rm -f "$orphanUserLaunchAgentPlistPath"
+}
+
+removeOrphanVirtualHidDeviceManagerDirectoryWithSudo() {
+	if [ ! -d "$orphanVirtualHidDeviceManagerDirectoryPath" ]; then
+		return 0
+	fi
+	sudo chflags -R nouchg "$orphanVirtualHidDeviceManagerDirectoryPath" 2>/dev/null || true
+	sudo rm -rf "$orphanVirtualHidDeviceManagerDirectoryPath"
+}
+
+if anyOrphanSystemPlistExists; then
+	removeOrphanSystemLaunchDaemonsWithSudo
+fi
+
+removeOrphanUserLaunchAgent
+removeOrphanVirtualHidDeviceManagerDirectoryWithSudo
