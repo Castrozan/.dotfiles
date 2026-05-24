@@ -23,7 +23,7 @@ let
     ../tmux.nix
     ../wezterm.nix
     ../atuin.nix
-    ../yazi.nix
+    ../yazi
   ];
 
   fishConfDFiles = [
