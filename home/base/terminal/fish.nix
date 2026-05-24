@@ -73,6 +73,8 @@ in
           name = "puffer";
           src = pkgs.fishPlugins.puffer;
         }
+      ]
+      ++ lib.optionals (!pkgs.stdenv.hostPlatform.isDarwin) [
         {
           name = "fzf-fish";
           src = pkgs.fishPlugins.fzf-fish;
