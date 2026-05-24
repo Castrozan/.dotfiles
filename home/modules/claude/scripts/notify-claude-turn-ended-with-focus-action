@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+readonly NOTIFICATION_TITLE="${1:-Claude turn ended}"
+readonly NOTIFICATION_URGENCY="${2:-normal}"
+readonly STOP_REASON_BODY="${CLAUDE_STOP_REASON:-Turn complete}"
+
+resolve_source_terminal_window_address_by_walking_parent_process_pids() {
+	local current_pid="${PPID:-$$}"
+	while [ -n "$current_pid" ] && [ "$current_pid" != "1" ]; do
+		local matched_address
+		matched_address=$(hyprctl clients -j 2>/dev/null |
+			jq -r --arg pid "$current_pid" '.[] | select(.pid == ($pid|tonumber)) | .address' |
+			head -1)
+		if [ -n "$matched_address" ] && [ "$matched_address" != "null" ]; then
+			printf '%s' "$matched_address"
+			return
+		fi
+		current_pid=$(ps -p "$current_pid" -o ppid= 2>/dev/null | tr -d ' ' || true)
+	done
+}
+
+RESOLVED_SOURCE_TERMINAL_WINDOW_ADDRESS="$(resolve_source_terminal_window_address_by_walking_parent_process_pids)"
+readonly RESOLVED_SOURCE_TERMINAL_WINDOW_ADDRESS
+
+dispatch_focus_to_captured_terminal_window_or_fallback_to_wezterm_class() {
+	if [ -n "$RESOLVED_SOURCE_TERMINAL_WINDOW_ADDRESS" ]; then
+		hyprctl dispatch focuswindow "address:${RESOLVED_SOURCE_TERMINAL_WINDOW_ADDRESS}" >/dev/null 2>&1 || true
+	else
+		hyprctl dispatch focuswindow "class:^(org\.wezfurlong\.wezterm)$" >/dev/null 2>&1 || true
+	fi
+}
+
+emit_notification_and_handle_default_action() {
+	local action_invoked
+	action_invoked=$(
+		notify-send \
+			--app-name 'Claude Code' \
+			--urgency="$NOTIFICATION_URGENCY" \
+			--action='default=Focus terminal' \
+			--wait \
+			"$NOTIFICATION_TITLE" \
+			"$STOP_REASON_BODY" 2>/dev/null
+	) || true
+	if [ "$action_invoked" = "default" ]; then
+		dispatch_focus_to_captured_terminal_window_or_fallback_to_wezterm_class
+	fi
+}
+
+# Spawn the blocking notify-send --wait in a detached background process so
+# the hook returns immediately and does not hit its timeout.
+{
+	exec </dev/null >/dev/null 2>&1
+	emit_notification_and_handle_default_action
+} &
+disown
+exit 0

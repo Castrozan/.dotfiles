@@ -17,16 +17,16 @@ in
   ];
 
   Stop = [
-    # {
-    #   matcher = ".*";
-    #   hooks = [
-    #     {
-    #       type = "command";
-    #       command = "${runHook} ${hooksPath}/end-of-work-compliance-review.py";
-    #       timeout = 540000;
-    #     }
-    #   ];
-    # }
+    {
+      matcher = ".*";
+      hooks = [
+        {
+          type = "command";
+          command = "notify-claude-turn-ended-with-focus-action 'Claude turn ended' 'normal'";
+          timeout = 3000;
+        }
+      ];
+    }
   ];
 
   StopFailure = [
@@ -35,7 +35,7 @@ in
       hooks = [
         {
           type = "command";
-          command = "notify-send --app-name 'Claude Code' --urgency=critical 'Turn failed' \"$CLAUDE_STOP_REASON\" 2>/dev/null || true";
+          command = "notify-claude-turn-ended-with-focus-action 'Turn failed' 'critical'";
           timeout = 3000;
         }
       ];

@@ -15,6 +15,10 @@ let
     export PYTHONPATH=${../../../agents}
     exec ${pkgs.python312}/bin/python3 ${./scripts/claude-a2a-peer} "$@"
   '';
+  notifyClaudeTurnEndedWithFocusActionScript = pkgs.writeShellScriptBin "notify-claude-turn-ended-with-focus-action" ''
+    export PATH="${pkgs.hyprland}/bin:${pkgs.libnotify}/bin:${pkgs.jq}/bin:${pkgs.procps}/bin:${pkgs.coreutils}/bin:$PATH"
+    exec ${pkgs.bash}/bin/bash ${./scripts/notify-claude-turn-ended-with-focus-action} "$@"
+  '';
 in
 {
   home.packages = [
@@ -22,5 +26,6 @@ in
     memoryWriteScript
     memoryPruneScript
     claudeA2aPeerScript
+    notifyClaudeTurnEndedWithFocusActionScript
   ];
 }
