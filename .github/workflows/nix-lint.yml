@@ -45,3 +45,7 @@ jobs:
 
       - name: Nix flake checks
         run: nix flake check --print-build-logs --show-trace
+
+      - name: NixOS assertions (dry eval)
+        run: |
+          nix build .#nixosConfigurations.zanoni.config.system.build.toplevel --dry-run 2>&1
