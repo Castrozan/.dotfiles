@@ -18,8 +18,8 @@ let
   inherit (helpers) mkEvalCheck;
 
   cfg = helpers.homeManagerTestConfiguration [
-    ../lid-switch-ignore.nix
-    ../oom-protection.nix
+    ../../../linux/system/lid-switch-ignore.nix
+    ../../../linux/system/oom-protection.nix
     ../stale-symlink-cleanup.nix
   ];
 

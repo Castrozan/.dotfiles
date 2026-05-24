@@ -18,7 +18,7 @@ let
   inherit (helpers) mkEvalCheck;
 
   cfg = helpers.homeManagerTestConfiguration [
-    ../vesktop.nix
+    ../../../linux/gaming/vesktop.nix
     ../cbonsai.nix
     ../cmatrix.nix
     ../install-nothing.nix

@@ -55,6 +55,7 @@ in
           extraSpecialArgs = specialArgsBase // {
             inherit username;
             isNixOS = false;
+            isDarwin = false;
           };
 
           modules = [ ../users/${username}/home.nix ];

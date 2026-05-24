@@ -21,24 +21,24 @@ let
     inherit self;
   };
 
-  claudeChecks = import ../../home/modules/claude/tests/checks.nix moduleArgs;
-  codexChecks = import ../../home/modules/codex/tests/checks.nix moduleArgs;
+  claudeChecks = import ../../home/base/claude/tests/checks.nix moduleArgs;
+  codexChecks = import ../../home/base/codex/tests/checks.nix moduleArgs;
 
-  terminalChecks = import ../../home/modules/terminal/tests/checks.nix domainArgs;
-  editorChecks = import ../../home/modules/editor/tests/checks.nix domainArgs;
-  browserChecks = import ../../home/modules/browser/tests/checks.nix domainArgs;
-  desktopChecks = import ../../home/modules/desktop/tests/checks.nix domainArgs;
-  devChecks = import ../../home/modules/dev/tests/checks.nix domainArgs;
-  gamingChecks = import ../../home/modules/gaming/tests/checks.nix domainArgs;
-  gnomeChecks = import ../../home/modules/gnome/tests/checks.nix domainArgs;
-  securityChecks = import ../../home/modules/security/tests/checks.nix domainArgs;
-  ollamaChecks = import ../../home/modules/ollama/tests/checks.nix domainArgs;
-  opencodeChecks = import ../../home/modules/opencode/tests/checks.nix domainArgs;
-  audioChecks = import ../../home/modules/audio/tests/checks.nix domainArgs;
-  networkChecks = import ../../home/modules/network/tests/checks.nix domainArgs;
-  systemChecks = import ../../home/modules/system/tests/checks.nix domainArgs;
-  voiceChecks = import ../../home/modules/voice/tests/checks.nix domainArgs;
-  sourcebotChecks = import ../../home/modules/sourcebot/tests/checks.nix domainArgs;
+  terminalChecks = import ../../home/base/terminal/tests/checks.nix domainArgs;
+  editorChecks = import ../../home/base/editor/tests/checks.nix domainArgs;
+  browserChecks = import ../../home/base/browser/tests/checks.nix domainArgs;
+  desktopChecks = import ../../home/base/desktop/tests/checks.nix domainArgs;
+  devChecks = import ../../home/base/dev/tests/checks.nix domainArgs;
+  gamingChecks = import ../../home/base/gaming/tests/checks.nix domainArgs;
+  gnomeChecks = import ../../home/linux/gnome/tests/checks.nix domainArgs;
+  securityChecks = import ../../home/base/security/tests/checks.nix domainArgs;
+  ollamaChecks = import ../../home/base/ollama/tests/checks.nix domainArgs;
+  opencodeChecks = import ../../home/base/opencode/tests/checks.nix domainArgs;
+  audioChecks = import ../../home/linux/audio/tests/checks.nix domainArgs;
+  networkChecks = import ../../home/base/network/tests/checks.nix domainArgs;
+  systemChecks = import ../../home/base/system/tests/checks.nix domainArgs;
+  voiceChecks = import ../../home/linux/voice/tests/checks.nix domainArgs;
+  sourcebotChecks = import ../../home/base/sourcebot/tests/checks.nix domainArgs;
 
   dellg15Checks = import ../../hosts/dellg15/tests/checks.nix moduleArgs;
 in

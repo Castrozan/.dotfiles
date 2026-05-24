@@ -18,7 +18,7 @@ let
   inherit (helpers) mkEvalCheck;
 
   cfg = helpers.homeManagerTestConfiguration [
-    ../network-optimization.nix
+    ../../../linux/network/network-optimization.nix
     ../tailscale-daemon.nix
   ];
 

@@ -16,6 +16,7 @@ let
   specialArgs = specialArgsBase // {
     inherit username;
     isNixOS = true;
+    isDarwin = false;
   };
 in
 {

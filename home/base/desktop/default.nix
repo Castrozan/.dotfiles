@@ -1,11 +1,11 @@
 {
   imports = [
-    ./bananas.nix
-    ./clipse.nix
-    ./flameshot.nix
+    ../../linux/desktop/bananas.nix
+    ../../linux/desktop/clipse.nix
+    ../../linux/desktop/flameshot.nix
     ./fonts.nix
-    ./fuzzel.nix
-    ./ksnip.nix
-    ./satty.nix
+    ../../linux/desktop/fuzzel.nix
+    ../../linux/desktop/ksnip.nix
+    ../../linux/desktop/satty.nix
   ];
 }

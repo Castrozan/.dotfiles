@@ -19,8 +19,8 @@ let
 
   cfg = helpers.homeManagerTestConfiguration [
     ../fonts.nix
-    ../fuzzel.nix
-    ../clipse.nix
+    ../../../linux/desktop/fuzzel.nix
+    ../../../linux/desktop/clipse.nix
   ];
 
   hasService = name: builtins.hasAttr name cfg.systemd.user.services;

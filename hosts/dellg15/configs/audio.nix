@@ -1,6 +1,6 @@
 { config, pkgs, ... }:
 let
-  btPolicy = import ../../../home/modules/audio/bluetooth-policy.nix;
+  btPolicy = import ../../../home/linux/audio/bluetooth-policy.nix;
 in
 {
   assertions = [

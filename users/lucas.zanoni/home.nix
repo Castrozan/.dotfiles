@@ -11,97 +11,97 @@
     ./home/sophos-disable-plugins
     ./home/forticlient-disable-update
 
-    ../../home/core.nix
+    ../../home/base/core.nix
 
-    ../../home/modules/agents
-    ../../home/modules/security
-    ../../home/modules/audio
-    ../../home/modules/claude
-    ../../home/modules/codex
-    ../../home/modules/gnome/dconf.nix
-    ../../home/modules/gnome/extension-manager.nix
-    ../../home/modules/hyprland/standalone.nix
-    ../../home/modules/opencode
-    ../../home/modules/opencode/private.nix
-    ../../home/modules/sourcebot
-    ../../home/modules/testing
+    ../../home/base/agents
+    ../../home/base/security
+    ../../home/linux/audio
+    ../../home/base/claude
+    ../../home/base/codex
+    ../../home/linux/gnome/dconf.nix
+    ../../home/linux/gnome/extension-manager.nix
+    ../../home/linux/hyprland/standalone.nix
+    ../../home/base/opencode
+    ../../home/base/opencode/private.nix
+    ../../home/base/sourcebot
+    ../../home/base/testing
 
-    ../../home/modules/terminal/atuin.nix
-    ../../home/modules/terminal/fish.nix
-    ../../home/modules/terminal/kitty.nix
-    ../../home/modules/terminal/tmux.nix
-    ../../home/modules/terminal/wezterm.nix
-    ../../home/modules/terminal/yazi
-    ../../home/modules/terminal/scripts.nix
+    ../../home/base/terminal/atuin.nix
+    ../../home/base/terminal/fish.nix
+    ../../home/base/terminal/kitty.nix
+    ../../home/base/terminal/tmux.nix
+    ../../home/base/terminal/wezterm.nix
+    ../../home/base/terminal/yazi
+    ../../home/base/terminal/scripts.nix
 
-    ../../home/modules/editor/cursor
-    ../../home/modules/editor/jetbrains-idea.nix
-    ../../home/modules/editor/neovim.nix
-    ../../home/modules/editor/vscode
-    ../../home/modules/editor/zed-editor.nix
-    ../../home/modules/editor/scripts.nix
+    ../../home/base/editor/cursor
+    ../../home/base/editor/jetbrains-idea.nix
+    ../../home/base/editor/neovim.nix
+    ../../home/base/editor/vscode
+    ../../home/base/editor/zed-editor.nix
+    ../../home/base/editor/scripts.nix
 
-    ../../home/modules/browser/chrome-global.nix
-    ../../home/modules/browser/firefox.nix
+    ../../home/base/browser/chrome-global.nix
+    ../../home/base/browser/firefox.nix
 
-    ../../home/modules/desktop/bananas.nix
-    ../../home/modules/desktop/clipse.nix
-    ../../home/modules/desktop/flameshot.nix
-    ../../home/modules/desktop/fonts.nix
-    ../../home/modules/desktop/ksnip.nix
-    ../../home/modules/desktop/scripts.nix
+    ../../home/linux/desktop/bananas.nix
+    ../../home/linux/desktop/clipse.nix
+    ../../home/linux/desktop/flameshot.nix
+    ../../home/base/desktop/fonts.nix
+    ../../home/linux/desktop/ksnip.nix
+    ../../home/linux/desktop/scripts.nix
 
-    ../../home/modules/dev/ccost.nix
-    ../../home/modules/dev/devenv.nix
-    ../../home/modules/dev/github-actions-runner.nix
-    ../../home/modules/dev/glab.nix
-    ../../home/modules/dev/google-workspace-cli.nix
-    ../../home/modules/dev/lazygit.nix
-    ../../home/modules/dev/mcporter.nix
-    ../../home/modules/dev/scripts.nix
+    ../../home/base/dev/ccost.nix
+    ../../home/base/dev/devenv.nix
+    ../../home/base/dev/github-actions-runner.nix
+    ../../home/base/dev/glab.nix
+    ../../home/base/dev/google-workspace-cli.nix
+    ../../home/base/dev/lazygit.nix
+    ../../home/base/dev/mcporter.nix
+    ../../home/base/dev/scripts.nix
 
-    ../../home/modules/media/ani-cli.nix
-    ../../home/modules/media/bad-apple.nix
-    ../../home/modules/media/obs-studio.nix
-    ../../home/modules/media/suwayomi-server.nix
-    ../../home/modules/media/zathura
-    ../../home/modules/media/scripts.nix
+    ../../home/base/media/ani-cli.nix
+    ../../home/base/media/bad-apple.nix
+    ../../home/base/media/obs-studio.nix
+    ../../home/base/media/suwayomi-server.nix
+    ../../home/base/media/zathura
+    ../../home/base/media/scripts.nix
 
-    ../../home/modules/network/forticlient
-    ../../home/modules/network/network-optimization.nix
-    ../../home/modules/network/openfortivpn
-    ../../home/modules/network/tailscale-daemon.nix
+    ../../home/linux/network/forticlient
+    ../../home/linux/network/network-optimization.nix
+    ../../home/linux/network/openfortivpn
+    ../../home/base/network/tailscale-daemon.nix
 
-    ../../home/modules/system/lid-switch-ignore.nix
-    ../../home/modules/system/oom-protection.nix
-    ../../home/modules/system/stale-symlink-cleanup.nix
-    ../../home/modules/system/scripts.nix
-    ../../home/modules/system/ubuntu-system-tuning.nix
+    ../../home/linux/system/lid-switch-ignore.nix
+    ../../home/linux/system/oom-protection.nix
+    ../../home/base/system/stale-symlink-cleanup.nix
+    ../../home/base/system/scripts.nix
+    ../../home/linux/system/ubuntu-system-tuning.nix
 
-    ../../home/modules/voice/voice-pipeline.nix
-    ../../home/modules/voice/whisp-away.nix
+    ../../home/linux/voice/voice-pipeline.nix
+    ../../home/linux/voice/whisp-away.nix
     ./home/voice-pipeline.nix
 
-    ../../home/modules/home-assistant
+    ../../home/linux/home-assistant
 
-    ../../home/modules/gaming/cbonsai.nix
-    ../../home/modules/gaming/cmatrix.nix
-    ../../home/modules/gaming/install-nothing.nix
-    ../../home/modules/gaming/vesktop.nix
+    ../../home/base/gaming/cbonsai.nix
+    ../../home/base/gaming/cmatrix.nix
+    ../../home/base/gaming/install-nothing.nix
+    ../../home/linux/gaming/vesktop.nix
 
-    ../../home/modules/system/bluetui.nix
-    ../../home/modules/system/systemd-manager-tui.nix
-    ../../home/modules/dev/crabwalk.nix
-    ../../home/modules/dev/k9s.nix
-    ../../home/modules/dev/mongodb-compass.nix
-    ../../home/modules/dev/ralph-tui.nix
-    ../../home/modules/dev/tuisvn.nix
-    ../../home/modules/gaming/gogcli.nix
-    ../../home/modules/desktop/tui-notifier.nix
-    ../../home/modules/desktop/vial.nix
-    ../../home/modules/media/obsidian
-    ../../home/modules/media/readItNow.nix
-    ../../home/modules/media/summarize.nix
-    ../../home/modules/media/viu.nix
+    ../../home/base/system/bluetui.nix
+    ../../home/base/system/systemd-manager-tui.nix
+    ../../home/base/dev/crabwalk.nix
+    ../../home/base/dev/k9s.nix
+    ../../home/base/dev/mongodb-compass.nix
+    ../../home/base/dev/ralph-tui.nix
+    ../../home/base/dev/tuisvn.nix
+    ../../home/base/gaming/gogcli.nix
+    ../../home/linux/desktop/tui-notifier.nix
+    ../../home/linux/desktop/vial.nix
+    ../../home/base/media/obsidian
+    ../../home/base/media/readItNow.nix
+    ../../home/base/media/summarize.nix
+    ../../home/base/media/viu.nix
   ];
 }

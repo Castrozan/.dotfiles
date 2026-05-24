@@ -20,6 +20,7 @@ let
     inherit username;
     inherit (darwinPkgs) unstable latest;
     isNixOS = false;
+    isDarwin = true;
   };
 
   mkDarwinHostFor = hostname: {

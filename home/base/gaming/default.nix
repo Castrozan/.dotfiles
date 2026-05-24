@@ -3,6 +3,6 @@
     ./cbonsai.nix
     ./cmatrix.nix
     ./install-nothing.nix
-    ./vesktop.nix
+    ../../linux/gaming/vesktop.nix
   ];
 }

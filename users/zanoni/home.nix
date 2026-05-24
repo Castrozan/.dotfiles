@@ -6,69 +6,69 @@
     ./home/session-vars.nix
     ./home/clawde-agents.nix
 
-    ../../home/core.nix
+    ../../home/base/core.nix
 
-    ../../home/modules/agents
-    ../../home/modules/security
-    ../../home/modules/audio
-    ../../home/modules/claude
-    ../../home/modules/codex
-    ../../home/modules/gnome
-    ../../home/modules/home-assistant
-    ../../home/modules/hyprland/nixos.nix
-    ../../home/modules/opencode
-    ../../home/modules/testing
+    ../../home/base/agents
+    ../../home/base/security
+    ../../home/linux/audio
+    ../../home/base/claude
+    ../../home/base/codex
+    ../../home/linux/gnome
+    ../../home/linux/home-assistant
+    ../../home/linux/hyprland/nixos.nix
+    ../../home/base/opencode
+    ../../home/base/testing
 
-    ../../home/modules/terminal/atuin.nix
-    ../../home/modules/terminal/fish.nix
-    ../../home/modules/terminal/kitty.nix
-    ../../home/modules/terminal/tmux.nix
-    ../../home/modules/terminal/wezterm.nix
-    ../../home/modules/terminal/scripts.nix
+    ../../home/base/terminal/atuin.nix
+    ../../home/base/terminal/fish.nix
+    ../../home/base/terminal/kitty.nix
+    ../../home/base/terminal/tmux.nix
+    ../../home/base/terminal/wezterm.nix
+    ../../home/base/terminal/scripts.nix
 
-    ../../home/modules/editor/cursor
-    ../../home/modules/editor/neovim.nix
-    ../../home/modules/editor/vscode
-    ../../home/modules/editor/scripts.nix
+    ../../home/base/editor/cursor
+    ../../home/base/editor/neovim.nix
+    ../../home/base/editor/vscode
+    ../../home/base/editor/scripts.nix
 
-    ../../home/modules/browser/firefox.nix
+    ../../home/base/browser/firefox.nix
 
-    ../../home/modules/desktop/clipse.nix
-    ../../home/modules/desktop/fonts.nix
-    ../../home/modules/desktop/fuzzel.nix
-    ../../home/modules/desktop/scripts.nix
+    ../../home/linux/desktop/clipse.nix
+    ../../home/base/desktop/fonts.nix
+    ../../home/linux/desktop/fuzzel.nix
+    ../../home/linux/desktop/scripts.nix
 
-    ../../home/modules/dev/ccost.nix
-    ../../home/modules/dev/devenv.nix
-    ../../home/modules/dev/lazygit.nix
-    ../../home/modules/dev/mcporter.nix
-    ../../home/modules/dev/scripts.nix
+    ../../home/base/dev/ccost.nix
+    ../../home/base/dev/devenv.nix
+    ../../home/base/dev/lazygit.nix
+    ../../home/base/dev/mcporter.nix
+    ../../home/base/dev/scripts.nix
 
-    ../../home/modules/media/ani-cli.nix
-    ../../home/modules/media/bad-apple.nix
-    ../../home/modules/media/suwayomi-server.nix
-    ../../home/modules/media/scripts.nix
+    ../../home/base/media/ani-cli.nix
+    ../../home/base/media/bad-apple.nix
+    ../../home/base/media/suwayomi-server.nix
+    ../../home/base/media/scripts.nix
 
-    ../../home/modules/system/scripts.nix
-    ../../home/modules/system/stale-symlink-cleanup.nix
+    ../../home/base/system/scripts.nix
+    ../../home/base/system/stale-symlink-cleanup.nix
 
-    ../../home/modules/voice/hey-bot.nix
-    ../../home/modules/voice/hey-bot-test.nix
+    ../../home/linux/voice/hey-bot.nix
+    ../../home/linux/voice/hey-bot-test.nix
     ./home/hey-bot.nix
-    ../../home/modules/voice/voxtype.nix
-    ../../home/modules/voice/whisp-away.nix
+    ../../home/linux/voice/voxtype.nix
+    ../../home/linux/voice/whisp-away.nix
 
-    ../../home/modules/gaming/cbonsai.nix
-    ../../home/modules/gaming/cmatrix.nix
-    ../../home/modules/gaming/install-nothing.nix
-    ../../home/modules/gaming/vesktop.nix
+    ../../home/base/gaming/cbonsai.nix
+    ../../home/base/gaming/cmatrix.nix
+    ../../home/base/gaming/install-nothing.nix
+    ../../home/linux/gaming/vesktop.nix
 
-    ../../home/modules/system/bluetui.nix
-    ../../home/modules/system/systemd-manager-tui.nix
-    ../../home/modules/dev/ralph-tui.nix
-    ../../home/modules/desktop/vial.nix
-    ../../home/modules/media/obsidian
-    ../../home/modules/media/summarize.nix
-    ../../home/modules/media/viu.nix
+    ../../home/base/system/bluetui.nix
+    ../../home/base/system/systemd-manager-tui.nix
+    ../../home/base/dev/ralph-tui.nix
+    ../../home/linux/desktop/vial.nix
+    ../../home/base/media/obsidian
+    ../../home/base/media/summarize.nix
+    ../../home/base/media/viu.nix
   ];
 }

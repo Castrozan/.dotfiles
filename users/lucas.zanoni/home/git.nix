@@ -5,7 +5,7 @@ let
 in
 {
   imports = [
-    ../../../home/modules/dev/git.nix
+    ../../../home/base/dev/git.nix
   ]
   ++ lib.optionals workpcPrivateConfigExists [
     "${privateConfigRoot}/machines/workpc/git-user.nix"
