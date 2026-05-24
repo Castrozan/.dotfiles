@@ -7,6 +7,6 @@ in
     (pkgs.writeShellScriptBin "daily-note" ''
       exec ${pkgs.python312}/bin/python3 ${dailyNoteSource} "$@"
     '')
-    (pkgs.writeShellScriptBin "on" (builtins.readFile ./scripts/obsidian-quick-note))
+    (pkgs.writeShellScriptBin "obsidian-quick-note" (builtins.readFile ./scripts/obsidian-quick-note))
   ];
 }
