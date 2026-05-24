@@ -1,0 +1,100 @@
+#!/usr/bin/env python3
+
+import signal
+import sys
+import time
+
+import Quartz
+from AppKit import NSApplicationActivationPolicyRegular, NSWorkspace
+
+POLL_INTERVAL_SECONDS = 2
+GRACE_PERIOD_SECONDS = 5
+
+EXCLUDED_APPLICATION_BUNDLE_IDENTIFIERS = frozenset(
+    {
+        "com.apple.finder",
+    }
+)
+
+
+def get_process_identifiers_with_visible_windows():
+    window_info_list = Quartz.CGWindowListCopyWindowInfo(
+        Quartz.kCGWindowListOptionAll | Quartz.kCGWindowListExcludeDesktopElements,
+        Quartz.kCGNullWindowID,
+    )
+    process_identifiers = set()
+    for window_info in window_info_list or []:
+        window_layer = window_info.get(Quartz.kCGWindowLayer, -1)
+        if window_layer != 0:
+            continue
+        window_bounds = window_info.get(Quartz.kCGWindowBounds, {})
+        if window_bounds.get("Width", 0) > 0 and window_bounds.get("Height", 0) > 0:
+            process_identifier = window_info.get(Quartz.kCGWindowOwnerPID)
+            if process_identifier:
+                process_identifiers.add(process_identifier)
+    return process_identifiers
+
+
+def get_running_regular_applications():
+    workspace = NSWorkspace.sharedWorkspace()
+    return [
+        application
+        for application in workspace.runningApplications()
+        if application.activationPolicy() == NSApplicationActivationPolicyRegular
+    ]
+
+
+def main():
+    signal.signal(signal.SIGTERM, lambda _signum, _frame: sys.exit(0))
+
+    last_seen_with_windows_by_process_identifier = {}
+
+    while True:
+        time.sleep(POLL_INTERVAL_SECONDS)
+
+        running_applications = get_running_regular_applications()
+        process_identifiers_with_windows = (
+            get_process_identifiers_with_visible_windows()
+        )
+        current_time = time.time()
+
+        for application in running_applications:
+            process_identifier = application.processIdentifier()
+            bundle_identifier = application.bundleIdentifier()
+
+            if bundle_identifier in EXCLUDED_APPLICATION_BUNDLE_IDENTIFIERS:
+                continue
+
+            if process_identifier in process_identifiers_with_windows:
+                last_seen_with_windows_by_process_identifier[process_identifier] = (
+                    current_time
+                )
+            elif process_identifier in last_seen_with_windows_by_process_identifier:
+                seconds_since_last_window = (
+                    current_time
+                    - last_seen_with_windows_by_process_identifier[process_identifier]
+                )
+                if seconds_since_last_window >= GRACE_PERIOD_SECONDS:
+                    application_name = application.localizedName() or "unknown"
+                    print(
+                        f"Terminating {application_name} (PID {process_identifier})"
+                        f" - no windows for {seconds_since_last_window:.0f}s",
+                        flush=True,
+                    )
+                    application.terminate()
+                    del last_seen_with_windows_by_process_identifier[process_identifier]
+
+        running_process_identifiers = {
+            application.processIdentifier() for application in running_applications
+        }
+        stale_process_identifiers = [
+            pid
+            for pid in last_seen_with_windows_by_process_identifier
+            if pid not in running_process_identifiers
+        ]
+        for stale_pid in stale_process_identifiers:
+            del last_seen_with_windows_by_process_identifier[stale_pid]
+
+
+if __name__ == "__main__":
+    main()

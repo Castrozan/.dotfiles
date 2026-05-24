@@ -1,0 +1,153 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+readonly DOTFILES_DIRECTORY="$HOME/.dotfiles"
+readonly FLAKE_REFERENCE="${DOTFILES_DIRECTORY}#macbook"
+readonly CURRENT_SYSTEM_SYMLINK_PATH="/run/current-system"
+readonly ANSI_RED_BOLD="\033[1;31m"
+readonly ANSI_RESET="\033[0m"
+
+_source_nix_daemon_if_needed() {
+	if ! command -v nix &>/dev/null; then
+		if [[ -f /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]]; then
+			# shellcheck disable=SC1091
+			. /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
+		else
+			echo "error: nix is not available and nix-daemon.sh not found" >&2
+			return 1
+		fi
+	fi
+}
+
+_ensure_darwin_rebuild_available() {
+	if ! command -v darwin-rebuild &>/dev/null; then
+		export PATH="/run/current-system/sw/bin:$PATH"
+	fi
+	if ! command -v darwin-rebuild &>/dev/null; then
+		echo "error: darwin-rebuild not found" >&2
+		return 1
+	fi
+}
+
+_reload_aerospace_config() {
+	if command -v aerospace &>/dev/null; then
+		aerospace reload-config
+	fi
+}
+
+_stage_unstaged_nix_files() {
+	local unstaged_nix_files
+	unstaged_nix_files=$(git -C "$DOTFILES_DIRECTORY" diff --name-only -- '*.nix' 2>/dev/null || true)
+	if [[ -n "$unstaged_nix_files" ]]; then
+		echo "staging modified nix files:" >&2
+		while IFS= read -r nix_file; do
+			echo "  $nix_file" >&2
+			git -C "$DOTFILES_DIRECTORY" add "$DOTFILES_DIRECTORY/$nix_file"
+		done <<<"$unstaged_nix_files"
+	fi
+}
+
+_read_current_system_symlink_target() {
+	readlink "$CURRENT_SYSTEM_SYMLINK_PATH" 2>/dev/null || echo ""
+}
+
+_read_current_system_symlink_modification_epoch_seconds() {
+	stat -f "%Sm" -t "%s" "$CURRENT_SYSTEM_SYMLINK_PATH" 2>/dev/null || echo "0"
+}
+
+_create_rebuild_output_logfile() {
+	mktemp -t darwin-rebuild-output.XXXXXX
+}
+
+_run_darwin_rebuild_switch_with_logging() {
+	local rebuild_output_logfile="$1"
+	shift
+	sudo darwin-rebuild switch --flake "$FLAKE_REFERENCE" "$@" 2>&1 | tee "$rebuild_output_logfile"
+}
+
+_extract_activation_failure_hint_from_log() {
+	local rebuild_output_logfile="$1"
+	local last_brew_bundle_failure_line
+	last_brew_bundle_failure_line=$(grep -E "brew bundle failed|Homebrew bundle|error:" "$rebuild_output_logfile" | tail -5 || true)
+	if [[ -n "$last_brew_bundle_failure_line" ]]; then
+		echo "$last_brew_bundle_failure_line"
+	else
+		echo "(no obvious failure cue found in rebuild output)"
+	fi
+}
+
+_abort_with_stale_current_system_error() {
+	local rebuild_output_logfile="$1"
+	local current_system_symlink_target_before="$2"
+	local current_system_symlink_modification_epoch_seconds_before="$3"
+	local current_system_symlink_modification_epoch_seconds_after="$4"
+	local activation_failure_hint
+	activation_failure_hint=$(_extract_activation_failure_hint_from_log "$rebuild_output_logfile")
+	{
+		printf '%b' "$ANSI_RED_BOLD"
+		echo "error: ${CURRENT_SYSTEM_SYMLINK_PATH} was not refreshed by darwin-rebuild switch"
+		echo "       target:          ${current_system_symlink_target_before}"
+		echo "       mtime before:    ${current_system_symlink_modification_epoch_seconds_before}"
+		echo "       mtime after:     ${current_system_symlink_modification_epoch_seconds_after}"
+		echo ""
+		echo "the activate script aborted before updating ${CURRENT_SYSTEM_SYMLINK_PATH},"
+		echo "so you are still running the previous system generation."
+		echo ""
+		echo "likely culprit (from rebuild output):"
+		echo "${activation_failure_hint}"
+		echo ""
+		echo "full rebuild log: ${rebuild_output_logfile}"
+		echo "to re-run activation manually: sudo /run/current-system/activate"
+		printf '%b' "$ANSI_RESET"
+	} >&2
+	exit 1
+}
+
+_verify_current_system_symlink_was_refreshed() {
+	local rebuild_output_logfile="$1"
+	local current_system_symlink_target_before="$2"
+	local current_system_symlink_modification_epoch_seconds_before="$3"
+	local current_system_symlink_modification_epoch_seconds_after
+	current_system_symlink_modification_epoch_seconds_after=$(_read_current_system_symlink_modification_epoch_seconds)
+	if [[ "$current_system_symlink_modification_epoch_seconds_before" == "$current_system_symlink_modification_epoch_seconds_after" ]]; then
+		_abort_with_stale_current_system_error \
+			"$rebuild_output_logfile" \
+			"$current_system_symlink_target_before" \
+			"$current_system_symlink_modification_epoch_seconds_before" \
+			"$current_system_symlink_modification_epoch_seconds_after"
+	fi
+}
+
+main() {
+	_source_nix_daemon_if_needed
+	_ensure_darwin_rebuild_available
+
+	local rebuild_output_logfile
+	rebuild_output_logfile=$(_create_rebuild_output_logfile)
+
+	# shellcheck disable=SC1091
+	source "$DOTFILES_DIRECTORY/agents/scripts/exclusive-run-lock.sh"
+	acquire_exclusive_run_lock_or_emit_retry_instructions "rebuild" 180 "$rebuild_output_logfile"
+
+	_stage_unstaged_nix_files
+
+	local current_system_symlink_target_before
+	current_system_symlink_target_before=$(_read_current_system_symlink_target)
+	local current_system_symlink_modification_epoch_seconds_before
+	current_system_symlink_modification_epoch_seconds_before=$(_read_current_system_symlink_modification_epoch_seconds)
+
+	echo "rebuilding darwin configuration from ${FLAKE_REFERENCE}..." >&2
+	echo "rebuild output is being logged to ${rebuild_output_logfile}" >&2
+	_run_darwin_rebuild_switch_with_logging "$rebuild_output_logfile" "$@"
+
+	_verify_current_system_symlink_was_refreshed \
+		"$rebuild_output_logfile" \
+		"$current_system_symlink_target_before" \
+		"$current_system_symlink_modification_epoch_seconds_before"
+
+	_reload_aerospace_config
+
+	echo "rebuild complete" >&2
+}
+
+main "$@"
