@@ -1,0 +1,93 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+CONTINUATION_PROMPT="${1:-}"
+
+BASH_TOOL_PID="$PPID"
+CLAUDE_PID=$(ps -p "$BASH_TOOL_PID" -o ppid= 2>/dev/null | tr -d ' ')
+CLAUDE_COMMAND_FULL_PATH=$(ps -p "$CLAUDE_PID" -o comm= 2>/dev/null || echo "unknown")
+CLAUDE_COMMAND_NAME="${CLAUDE_COMMAND_FULL_PATH##*/}"
+
+if [[ "$CLAUDE_COMMAND_NAME" != "claude" ]]; then
+	echo "Safety check FAILED: Expected 'claude' but found '$CLAUDE_COMMAND_FULL_PATH' (PID: $CLAUDE_PID)"
+	echo "Use /exit or Ctrl+D instead."
+	exit 1
+fi
+
+if [[ -z "${TMUX:-}" ]]; then
+	echo "Not in tmux — cannot auto-restart."
+	echo "Use /exit then manually: claude --continue"
+	exit 1
+fi
+
+CURRENT_TMUX_PANE="$TMUX_PANE"
+
+CLAUDE_CMDLINE=$(ps -ww -p "$CLAUDE_PID" -o args= 2>/dev/null || echo "")
+EXTRACTED_SESSION_ID=""
+if [[ "$CLAUDE_CMDLINE" =~ --resume[[:space:]]+([a-f0-9-]+) ]]; then
+	EXTRACTED_SESSION_ID="${BASH_REMATCH[1]}"
+elif [[ "$CLAUDE_CMDLINE" =~ --session-id[[:space:]]+([a-f0-9-]+) ]]; then
+	EXTRACTED_SESSION_ID="${BASH_REMATCH[1]}"
+fi
+
+if [[ -z "$EXTRACTED_SESSION_ID" ]]; then
+	WORKING_DIRECTORY=$(pwd)
+	WORKING_DIRECTORY_SLASHES_REPLACED="${WORKING_DIRECTORY//\//-}"
+	CLAUDE_PROJECT_DIR_NAME="${WORKING_DIRECTORY_SLASHES_REPLACED//./-}"
+	CLAUDE_SESSIONS_DIR="$HOME/.claude/projects/$CLAUDE_PROJECT_DIR_NAME"
+	MOST_RECENT_SESSION_FILE=""
+	MOST_RECENT_MODIFICATION_TIME=0
+	for SESSION_CANDIDATE in "$CLAUDE_SESSIONS_DIR"/*.jsonl; do
+		[[ -f "$SESSION_CANDIDATE" ]] || continue
+		CANDIDATE_MODIFICATION_TIME=$(stat -f %m "$SESSION_CANDIDATE" 2>/dev/null || echo "0")
+		if ((CANDIDATE_MODIFICATION_TIME > MOST_RECENT_MODIFICATION_TIME)); then
+			MOST_RECENT_MODIFICATION_TIME=$CANDIDATE_MODIFICATION_TIME
+			MOST_RECENT_SESSION_FILE=$SESSION_CANDIDATE
+		fi
+	done
+	if [[ -n "$MOST_RECENT_SESSION_FILE" ]]; then
+		MOST_RECENT_SESSION_BASENAME="${MOST_RECENT_SESSION_FILE##*/}"
+		EXTRACTED_SESSION_ID="${MOST_RECENT_SESSION_BASENAME%.jsonl}"
+	fi
+fi
+
+if [[ -n "$EXTRACTED_SESSION_ID" ]]; then
+	RESUME_COMMAND="claude --resume $EXTRACTED_SESSION_ID"
+else
+	RESUME_COMMAND="claude --continue"
+fi
+
+echo "Restarting with: $RESUME_COMMAND"
+
+nohup bash -c "
+    while kill -0 $CLAUDE_PID 2>/dev/null; do
+        tmux display-message -t '$CURRENT_TMUX_PANE' -p '' 2>/dev/null || exit 0
+        sleep 0.2
+    done
+
+    pkill -TERM -P $CLAUDE_PID 2>/dev/null || true
+    sleep 0.5
+    pkill -KILL -P $CLAUDE_PID 2>/dev/null || true
+
+    tmux display-message -t '$CURRENT_TMUX_PANE' -p '' 2>/dev/null || exit 0
+
+    sleep 1
+    tmux send-keys -t '$CURRENT_TMUX_PANE' '$RESUME_COMMAND' Enter
+
+    if [[ -n '$CONTINUATION_PROMPT' ]]; then
+        for ATTEMPT in \$(seq 1 60); do
+            tmux display-message -t '$CURRENT_TMUX_PANE' -p '' 2>/dev/null || exit 0
+            PANE_CONTENT=\$(tmux capture-pane -t '$CURRENT_TMUX_PANE' -p -S -5)
+            if echo \"\$PANE_CONTENT\" | grep -q '❯'; then
+                break
+            fi
+            sleep 1
+        done
+        sleep 2
+        tmux display-message -t '$CURRENT_TMUX_PANE' -p '' 2>/dev/null || exit 0
+        tmux send-keys -t '$CURRENT_TMUX_PANE' '$CONTINUATION_PROMPT' Enter
+    fi
+" &>/dev/null &
+disown
+
+kill -TERM "$CLAUDE_PID"
