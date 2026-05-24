@@ -1,8 +1,8 @@
 #!/usr/bin/env bats
 
-load '../../../../tests/helpers/bash-script-assertions'
+load '../../../../../tests/helpers/bash-script-assertions'
 
-SCRIPT_UNDER_TEST="$(cd "$(dirname "$BATS_TEST_FILENAME")" && pwd)/../../../../agents/skills/session/scripts/claude-restart"
+SCRIPT_UNDER_TEST="$(cd "$(dirname "$BATS_TEST_FILENAME")" && pwd)/../../../../../agents/skills/session/scripts/claude-restart"
 
 @test "passes shellcheck" {
 	assert_passes_shellcheck

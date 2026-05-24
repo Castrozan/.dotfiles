@@ -1,8 +1,8 @@
 #!/usr/bin/env bats
 
-load '../../../../tests/helpers/bash-script-assertions'
+load '../../../../../tests/helpers/bash-script-assertions'
 
-SCRIPT_UNDER_TEST="$(cd "$(dirname "$BATS_TEST_FILENAME")" && pwd)/../scripts/statusline-command.sh"
+SCRIPT_UNDER_TEST="$(cd "$(dirname "$BATS_TEST_FILENAME")" && pwd)/../../scripts/statusline-command.sh"
 
 _strip_ansi_escape_codes() {
     sed 's/\x1b\[[0-9;]*m//g'
