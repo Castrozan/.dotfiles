@@ -1,13 +1,13 @@
 { lib, ... }:
 let
-  workpcPrivateConfigDirectory = ../../../private-config/machines/workpc;
-  workpcPrivateConfigExists = builtins.pathExists workpcPrivateConfigDirectory;
+  privateConfigRoot = ../../../private-config;
+  workpcPrivateConfigExists = builtins.pathExists privateConfigRoot;
 in
 {
   imports = [
     ../../../home/modules/dev/git.nix
   ]
   ++ lib.optionals workpcPrivateConfigExists [
-    "${workpcPrivateConfigDirectory}/git-user.nix"
+    "${privateConfigRoot}/machines/workpc/git-user.nix"
   ];
 }

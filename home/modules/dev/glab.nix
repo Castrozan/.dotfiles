@@ -4,12 +4,12 @@
   ...
 }:
 let
-  workpcPrivateConfigDirectory = ../../../private-config/machines/workpc;
-  workpcPrivateConfigExists = builtins.pathExists workpcPrivateConfigDirectory;
+  privateConfigRoot = ../../../private-config;
+  workpcPrivateConfigExists = builtins.pathExists privateConfigRoot;
 in
 {
   imports = lib.optionals workpcPrivateConfigExists [
-    "${workpcPrivateConfigDirectory}/glab-host.nix"
+    "${privateConfigRoot}/machines/workpc/glab-host.nix"
   ];
 
   options.glab.gitlabHost = lib.mkOption {

@@ -2,8 +2,8 @@
 let
   sshHostsSecretExists = builtins.pathExists ../../../secrets/infrastructure/ssh-hosts.age;
 
-  workpcPrivateConfigDirectory = ../../../private-config/machines/workpc;
-  workpcPrivateConfigExists = builtins.pathExists workpcPrivateConfigDirectory;
+  privateConfigRoot = ../../../private-config;
+  workpcPrivateConfigExists = builtins.pathExists privateConfigRoot;
 
   generateScript = pkgs.writeShellScript "generate-private-ssh-config" ''
         set -euo pipefail
@@ -40,7 +40,7 @@ let
 in
 {
   imports = lib.optionals workpcPrivateConfigExists [
-    "${workpcPrivateConfigDirectory}/ssh-gitlab.nix"
+    "${privateConfigRoot}/machines/workpc/ssh-gitlab.nix"
   ];
 
   programs.ssh = {

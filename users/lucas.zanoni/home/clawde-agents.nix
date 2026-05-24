@@ -3,8 +3,8 @@ let
   inherit (config.home) homeDirectory;
   personalSkillSetDirectory = "${homeDirectory}/.local/share/claude-skill-sets/personal";
 
-  workpcPrivateConfigDirectory = ../../../private-config/machines/workpc;
-  workpcPrivateConfigExists = builtins.pathExists workpcPrivateConfigDirectory;
+  privateConfigRoot = ../../../private-config;
+  workpcPrivateConfigExists = builtins.pathExists privateConfigRoot;
 
   jennyHeartbeatPrompt = "Heartbeat tick. Read HEARTBEAT.md. If there is no active objective, do nothing - exit silently. If there is pending work, continue it. Never browse the web on a heartbeat tick. Never poll Gmail, Calendar, or Google Chat - those channels are not yours anymore.";
   jennyDenyToolPatterns = [
@@ -23,7 +23,7 @@ let
 in
 {
   imports = lib.optionals workpcPrivateConfigExists [
-    "${workpcPrivateConfigDirectory}/clawde-pm.nix"
+    "${privateConfigRoot}/machines/workpc/clawde-pm.nix"
   ];
 
   clawde.agents = {
