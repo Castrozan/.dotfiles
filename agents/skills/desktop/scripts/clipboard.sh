@@ -12,24 +12,34 @@ _ensure_wayland_environment() {
 
 _darwin_read() {
 	local mime_type="$1"
-	if [[ -z "$mime_type" ]]; then
+	if [[ -z "$mime_type" || "$mime_type" == text/* ]]; then
 		pbpaste
-	elif [[ "$mime_type" == image/* ]]; then
-		local ext="${mime_type#image/}"
-		if [[ ! "$ext" =~ ^[a-zA-Z0-9+.-]+$ ]]; then
-			echo "Invalid image type: $mime_type" >&2
-			exit 1
-		fi
-		local output="/tmp/clipboard-$(date +%Y%m%d-%H%M%S).${ext}"
-		osascript -e "set png_data to the clipboard as «class PNGf»" \
-			-e "set fh to open for access POSIX file \"$output\" with write permission" \
-			-e "set eof of fh to 0" \
-			-e "write png_data to fh" \
-			-e "close access fh" >/dev/null 2>&1
-		echo "$output"
-	else
-		pbpaste
+		return
 	fi
+	local osascript_clipboard_class
+	local file_extension
+	case "$mime_type" in
+	image/png)
+		osascript_clipboard_class="«class PNGf»"
+		file_extension="png"
+		;;
+	image/tiff)
+		osascript_clipboard_class="«class TIFF»"
+		file_extension="tiff"
+		;;
+	*)
+		echo "Unsupported MIME type on darwin: $mime_type (supported: image/png, image/tiff, text/*)" >&2
+		exit 1
+		;;
+	esac
+	local output="/tmp/clipboard-$(date +%Y%m%d-%H%M%S).${file_extension}"
+	osascript \
+		-e "set clipboard_image_bytes to the clipboard as ${osascript_clipboard_class}" \
+		-e "set output_file_handle to open for access POSIX file \"$output\" with write permission" \
+		-e "set eof of output_file_handle to 0" \
+		-e "write clipboard_image_bytes to output_file_handle" \
+		-e "close access output_file_handle" >/dev/null 2>&1
+	echo "$output"
 }
 
 _darwin_write() {

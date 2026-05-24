@@ -61,6 +61,11 @@ let
     };
   };
 
+  # launchd has no After/Wants equivalent for ordering against agenix's
+  # decrypt step. ThrottleInterval=10 plus the python service script's own
+  # retry on missing secret files is the workaround: clawde restarts itself
+  # until ~/.secrets/<token> appears. Acceptable as long as agents on this
+  # host only need secrets that are nice-to-have at start time.
   darwinLaunchdAgent = {
     enable = true;
     config = {
