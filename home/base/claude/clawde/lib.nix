@@ -17,16 +17,14 @@ let
   agentNames = builtins.attrNames cfg.agents;
   hasAgents = cfg.agents != { };
 
-  linuxSystemPaths = lib.concatStringsSep ":" [
-    "${pkgs.tmux}/bin"
-    "${pkgs.python312}/bin"
-    "${pkgs.git}/bin"
-    "/run/current-system/sw/bin"
-    "/etc/profiles/per-user/${username}/bin"
-    "${homeDir}/.nix-profile/bin"
-    "/usr/bin"
-    "/bin"
-  ];
+  clawdeRuntimePaths = import ./runtime-paths.nix {
+    inherit
+      pkgs
+      lib
+      username
+      homeDir
+      ;
+  };
 
   clawdeRuntimeInstructions = builtins.readFile ./instructions/clawde-runtime.md;
 
@@ -183,7 +181,7 @@ in
     cfg
     agentNames
     hasAgents
-    linuxSystemPaths
+    clawdeRuntimePaths
     agentWorkspaceDirectory
     agentChannelEnvDirectory
     resolveChannelAdapterTokenSecretFile

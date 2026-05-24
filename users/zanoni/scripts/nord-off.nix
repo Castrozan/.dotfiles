@@ -4,7 +4,7 @@ let
 in
 {
   security.wrappers.nord-off = {
-    source = "${buildSetuidRootScriptWrapper ../../../home/modules/network/scripts/nord-off}";
+    source = "${buildSetuidRootScriptWrapper ../../../home/base/network/scripts/nord-off}";
     owner = "root";
     group = "root";
     setuid = true;
