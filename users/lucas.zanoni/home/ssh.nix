@@ -1,11 +1,21 @@
-{ lib, pkgs, ... }:
+{
+  lib,
+  pkgs,
+  hostname,
+  isDarwin,
+  isNixOS,
+  ...
+}:
 let
   sshHostsSecretExists = builtins.pathExists ../../../secrets/infrastructure/ssh-hosts.age;
 
   privateConfigRoot = ../../../private-config;
-  workpcPrivateConfigExists = builtins.pathExists privateConfigRoot;
+  privateConfigExists = builtins.pathExists privateConfigRoot;
+  privateSshOverridePath = "${toString privateConfigRoot}/machines/${hostname}/ssh.nix";
+  privateSshOverrideExists = privateConfigExists && builtins.pathExists privateSshOverridePath;
+  isWorkpcLinux = !isDarwin && !isNixOS;
 
-  generateScript = pkgs.writeShellApplication {
+  workpcGenerateScript = pkgs.writeShellApplication {
     name = "generate-private-ssh-config";
     runtimeInputs = [ pkgs.coreutils ];
     text = ''
@@ -15,8 +25,8 @@ let
   };
 in
 {
-  imports = lib.optionals workpcPrivateConfigExists [
-    "${privateConfigRoot}/machines/workpc/ssh-gitlab.nix"
+  imports = lib.optionals privateSshOverrideExists [
+    privateSshOverridePath
   ];
 
   programs.ssh = {
@@ -34,9 +44,9 @@ in
     };
   };
 
-  home.activation.generatePrivateSshConfig = lib.mkIf sshHostsSecretExists (
+  home.activation.generatePrivateSshConfig = lib.mkIf (sshHostsSecretExists && isWorkpcLinux) (
     lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-      run ${generateScript}/bin/generate-private-ssh-config
+      run ${workpcGenerateScript}/bin/generate-private-ssh-config
     ''
   );
 }

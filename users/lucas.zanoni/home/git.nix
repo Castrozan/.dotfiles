@@ -1,13 +1,19 @@
-{ lib, ... }:
+{
+  lib,
+  hostname,
+  ...
+}:
 let
   privateConfigRoot = ../../../private-config;
-  workpcPrivateConfigExists = builtins.pathExists privateConfigRoot;
+  privateConfigExists = builtins.pathExists privateConfigRoot;
+  privateGitUserPath = "${toString privateConfigRoot}/machines/${hostname}/git-user.nix";
+  privateGitUserExists = privateConfigExists && builtins.pathExists privateGitUserPath;
 in
 {
   imports = [
     ../../../home/base/dev/git.nix
   ]
-  ++ lib.optionals workpcPrivateConfigExists [
-    "${privateConfigRoot}/machines/workpc/git-user.nix"
+  ++ lib.optionals privateGitUserExists [
+    privateGitUserPath
   ];
 }

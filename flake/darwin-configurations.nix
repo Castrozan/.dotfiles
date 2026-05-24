@@ -23,6 +23,11 @@ let
     isDarwin = true;
   };
 
+  machineDirByHostname = {
+    "macbook-alpha" = "alpha";
+    "macbook-beta" = "beta";
+  };
+
   mkDarwinHostFor = hostname: {
     ${hostname} = nix-darwin.lib.darwinSystem {
       specialArgs = specialArgs // {
@@ -33,7 +38,7 @@ let
       modules = [
         ../hosts/${hostname}
         home-manager.darwinModules.home-manager
-        (import ../users/${username}/darwin-home-config.nix)
+        (import ../users/${username}/${machineDirByHostname.${hostname}}/home-config.nix)
       ];
     };
   };

@@ -1,11 +1,13 @@
 {
   username,
+  hostname,
   nixpkgs-version,
   home-version,
   inputs,
   unstable,
   latest,
   isNixOS,
+  isDarwin,
   ...
 }:
 {
@@ -24,9 +26,11 @@
         unstable
         latest
         username
+        hostname
         isNixOS
+        isDarwin
         ;
     };
-    users.${username} = import ./darwin-home.nix;
+    users.${username} = import ./home.nix;
   };
 }

@@ -54,11 +54,12 @@ in
 
           extraSpecialArgs = specialArgsBase // {
             inherit username;
+            hostname = "workpc";
             isNixOS = false;
             isDarwin = false;
           };
 
-          modules = [ ../users/${username}/home.nix ];
+          modules = [ ../users/${username}/linux/home.nix ];
         };
       };
     in
