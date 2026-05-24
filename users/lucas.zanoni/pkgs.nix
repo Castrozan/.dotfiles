@@ -51,7 +51,6 @@
       pipes
       postman
       postgresql
-      redisinsight
       ripgrep-all
       ruff
       rustc
@@ -84,6 +83,7 @@
         pavucontrol
         pulsemixer
         quickemu
+        redisinsight
         wiremix
         wl-clipboard
         wtype
