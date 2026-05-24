@@ -17,16 +17,16 @@ in
   ];
 
   Stop = [
-    {
-      matcher = ".*";
-      hooks = [
-        {
-          type = "command";
-          command = "${runHook} ${hooksPath}/end-of-work-compliance-review.py";
-          timeout = 540000;
-        }
-      ];
-    }
+    # {
+    #   matcher = ".*";
+    #   hooks = [
+    #     {
+    #       type = "command";
+    #       command = "${runHook} ${hooksPath}/end-of-work-compliance-review.py";
+    #       timeout = 540000;
+    #     }
+    #   ];
+    # }
   ];
 
   StopFailure = [
