@@ -1,6 +1,12 @@
-{ pkgs, config, ... }:
+{
+  pkgs,
+  config,
+  lib,
+  ...
+}:
 let
-  jiraConfigSource = ./jira-config.yml;
+  jiraConfigSource = ../../../private-config/machines/macbook-alpha/jira-config.yml;
+  jiraConfigSourceExists = builtins.pathExists jiraConfigSource;
 
   jiraConfigDestination = "${config.home.homeDirectory}/.config/.jira/.config.yml";
 
@@ -14,7 +20,9 @@ in
 {
   home.packages = [ pkgs.jira-cli-go ];
 
-  home.activation.deployJiraConfig = config.lib.dag.entryAfter [ "writeBoundary" ] ''
-    run ${deployJiraConfigScript}
-  '';
+  home.activation = lib.mkIf jiraConfigSourceExists {
+    deployJiraConfig = config.lib.dag.entryAfter [ "writeBoundary" ] ''
+      run ${deployJiraConfigScript}
+    '';
+  };
 }

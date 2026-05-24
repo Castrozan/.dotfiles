@@ -1,11 +1,14 @@
+import os
 import subprocess
 import sys
 
-WORK_NAME = "Lucas de Castro Zanoni"
-WORK_EMAIL = "lucas.zanoni@betha.com.br"
+WORK_NAME = os.environ.get("GIT_TOGGLE_WORK_NAME", "Lucas de Castro Zanoni")
+WORK_EMAIL = os.environ.get("GIT_TOGGLE_WORK_EMAIL", "")
 
-PERSONAL_NAME = "Castrozan"
-PERSONAL_EMAIL = "castro.lucas290@gmail.com"
+PERSONAL_NAME = os.environ.get("GIT_TOGGLE_PERSONAL_NAME", "Castrozan")
+PERSONAL_EMAIL = os.environ.get(
+    "GIT_TOGGLE_PERSONAL_EMAIL", "castro.lucas290@gmail.com"
+)
 
 ANSI_RED = "\033[0;31m"
 ANSI_GREEN = "\033[0;32m"

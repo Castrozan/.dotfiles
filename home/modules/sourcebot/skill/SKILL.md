@@ -1,6 +1,6 @@
 ---
 name: sourcebot
-description: Search code across GitLab repositories using Sourcebot. Use when searching for code patterns, functions, classes, APIs, or files across work repositories at gitlab.services.betha.cloud, or when managing the Sourcebot service.
+description: Search code across GitLab repositories using Sourcebot. Use when searching for code patterns, functions, classes, APIs, or files across configured work repositories, or when managing the Sourcebot service.
 ---
 
 <search>
@@ -40,6 +40,6 @@ Config: ~/.local/share/sourcebot/config.json
 <workflow>
 1. Before searching, verify Sourcebot is running: `sourcebot status`
 2. If not running, start it: `sourcebot start`
-3. Search using the API — parse results and use `webUrl` to link to GitLab source
+3. Search using the API — parse results and use `webUrl` to link to the GitLab source
 4. Refine searches with filters when results are too broad
 </workflow>

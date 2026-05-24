@@ -2,6 +2,9 @@
 let
   sshHostsSecretExists = builtins.pathExists ../../../secrets/infrastructure/ssh-hosts.age;
 
+  workpcPrivateConfigDirectory = ../../../private-config/machines/workpc;
+  workpcPrivateConfigExists = builtins.pathExists workpcPrivateConfigDirectory;
+
   generateScript = pkgs.writeShellScript "generate-private-ssh-config" ''
         set -euo pipefail
         HOSTS="/run/agenix/ssh-hosts"
@@ -36,6 +39,10 @@ let
   '';
 in
 {
+  imports = lib.optionals workpcPrivateConfigExists [
+    "${workpcPrivateConfigDirectory}/ssh-gitlab.nix"
+  ];
+
   programs.ssh = {
     enable = true;
     enableDefaultConfig = false;
@@ -43,16 +50,6 @@ in
 
     matchBlocks = {
       "*" = { };
-      "gitlab.com" = {
-        hostname = "gitlab.services.betha.cloud";
-        user = "git";
-        identityFile = "~/.ssh/id_ed25519";
-      };
-      "gitlab.services.betha.cloud" = {
-        hostname = "gitlab.services.betha.cloud";
-        user = "git";
-        identityFile = "~/.ssh/id_ed25519";
-      };
       "github.com" = {
         hostname = "github.com";
         user = "git";

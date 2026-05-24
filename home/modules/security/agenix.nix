@@ -15,8 +15,8 @@ let
   };
 
   secretsWithEnvironmentVariables = {
-    "credentials/betha-email" = "BETHA_EMAIL";
-    "credentials/betha-password" = "BETHA_PASSWORD";
+    "credentials/work-email" = "WORK_EMAIL";
+    "credentials/work-password" = "WORK_PASSWORD";
     "credentials/jira-token" = "JIRA_TOKEN";
     "credentials/elastic-password" = "ELASTIC_PASSWORD";
     "credentials/grafana-password" = "GRAFANA_PASSWORD";

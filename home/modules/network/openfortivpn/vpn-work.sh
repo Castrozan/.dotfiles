@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
-# vpn-betha - Connect to Betha VPN via SAML
+# vpn-work - Connect to work VPN via SAML
 # Uses openfortivpn with SAML authentication for FortiGate VPN
+# Set OPENFORTIVPN_WORK_HOST to override the default VPN host on first run,
+# or use 'vpn-work --set-host <hostname>' to persist it.
 
 export PATH="@openfortivpn@/bin:@procps@/bin:@coreutils@/bin:@gnugrep@/bin:@xdgUtils@/bin:$PATH"
 
-VPN_HOST_CACHE_FILE="${XDG_CACHE_HOME:-$HOME/.cache}/vpn-betha/host"
-DEFAULT_VPN_HOST="vpn.betha.com.br"
-VPN_PORT="10443"
+VPN_HOST_CACHE_FILE="${XDG_CACHE_HOME:-$HOME/.cache}/vpn-work/host"
+DEFAULT_VPN_HOST="${OPENFORTIVPN_WORK_HOST:-vpn.example.com}"
+VPN_PORT="${OPENFORTIVPN_WORK_PORT:-10443}"
 LOG_FILE="/tmp/openfortivpn.log"
 OPENFORTIVPN="@openfortivpn@/bin/openfortivpn"
 
@@ -30,7 +32,7 @@ case "${1:-}" in
 --set-host)
 	if [ -z "${2:-}" ]; then
 		echo "Current host: $VPN_HOST"
-		echo "Usage: vpn-betha --set-host <hostname>"
+		echo "Usage: vpn-work --set-host <hostname>"
 		exit 1
 	fi
 	save_vpn_host_to_cache "$2"
@@ -70,17 +72,17 @@ case "${1:-}" in
 	fi
 	;;
 -h | --help)
-	echo "vpn-betha - Connect to Betha VPN via SAML"
+	echo "vpn-work - Connect to work VPN via SAML"
 	echo "Host: $VPN_HOST:$VPN_PORT"
 	echo ""
 	echo "Usage:"
-	echo "  vpn-betha                       Connect and detach after tunnel is up"
-	echo "  vpn-betha -a|--attach           Connect in foreground (attached)"
-	echo "  vpn-betha -s|--status           Check connection status"
-	echo "  vpn-betha -d|--disconnect       Disconnect VPN"
-	echo "  vpn-betha -l|--log              Tail the VPN log"
-	echo "  vpn-betha --set-host <host>     Set VPN host (current: $VPN_HOST)"
-	echo "  vpn-betha -h|--help             Show this help"
+	echo "  vpn-work                       Connect and detach after tunnel is up"
+	echo "  vpn-work -a|--attach           Connect in foreground (attached)"
+	echo "  vpn-work -s|--status           Check connection status"
+	echo "  vpn-work -d|--disconnect       Disconnect VPN"
+	echo "  vpn-work -l|--log              Tail the VPN log"
+	echo "  vpn-work --set-host <host>     Set VPN host (current: $VPN_HOST)"
+	echo "  vpn-work -h|--help             Show this help"
 	;;
 *)
 	if pgrep -x openfortivpn >/dev/null; then

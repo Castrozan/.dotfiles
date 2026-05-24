@@ -1,4 +1,8 @@
-{ inputs, ... }:
+{ lib, inputs, ... }:
+let
+  macbookAlphaPrivateConfigDirectory = ../../private-config/machines/macbook-alpha;
+  macbookAlphaPrivateConfigExists = builtins.pathExists macbookAlphaPrivateConfigDirectory;
+in
 {
   imports = [
     ./pkgs.nix
@@ -7,7 +11,6 @@
     ./home/ssh.nix
     ./home/session-vars.nix
     ./home/clawde-silver.nix
-    ./home/clawde-coates-pm.nix
 
     ../../home/core.nix
 
@@ -60,5 +63,8 @@
     ../../home/modules/media/zathura
 
     "${inputs.private-config}/sb-toolkit"
+  ]
+  ++ lib.optionals macbookAlphaPrivateConfigExists [
+    "${macbookAlphaPrivateConfigDirectory}/clawde-pm.nix"
   ];
 }

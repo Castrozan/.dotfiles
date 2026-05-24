@@ -15,13 +15,20 @@ CHROME_GLOBAL_FLAGS = [
     f"--class={CHROME_GLOBAL_CLASS}",
     "--enable-features=UseNativeNotifications",
 ]
-CHROME_GLOBAL_URLS = [
-    "chrome://newtab",
-    "https://mail.google.com/chat/u/0/#chat/home",
-    "https://desenv.betha.com.br/secure/RapidBoard.jspa?rapidView=514&selectedIssue=AP-9448",
-    "https://gitlab.services.betha.cloud/",
-    "chrome://newtab",
-]
+
+
+def build_initial_urls_from_environment() -> list[str]:
+    raw = os.environ.get("CHROME_GLOBAL_INITIAL_URLS", "")
+    extra_urls = [url for url in (entry.strip() for entry in raw.split(",")) if url]
+    return [
+        "chrome://newtab",
+        "https://mail.google.com/chat/u/0/#chat/home",
+        *extra_urls,
+        "chrome://newtab",
+    ]
+
+
+CHROME_GLOBAL_URLS = build_initial_urls_from_environment()
 
 CHROME_GLOBAL_PREFERENCES_JSON = """\
 {

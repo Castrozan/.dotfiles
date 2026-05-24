@@ -24,9 +24,18 @@ def build_trusted_project_entries() -> dict[str, dict[str, str]]:
         str(home_directory / ".dotfiles"): {"trust_level": "trusted"},
     }
 
+    extra_trusted_parents_env = os.environ.get(
+        "CODEX_EXTRA_TRUSTED_PARENT_DIRECTORIES", ""
+    )
+    extra_trusted_parents = [
+        pathlib.Path(os.path.expanduser(entry.strip()))
+        for entry in extra_trusted_parents_env.split(":")
+        if entry.strip()
+    ]
+
     for trusted_parent_directory in [
         home_directory / "repo",
-        home_directory / "betha-fly" / "projects",
+        *extra_trusted_parents,
     ]:
         if not trusted_parent_directory.is_dir():
             continue

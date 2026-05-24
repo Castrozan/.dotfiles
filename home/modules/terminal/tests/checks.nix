@@ -35,7 +35,7 @@ let
     "fish/conf.d/key-bindings.fish"
     "fish/conf.d/private-aliases.fish"
     "fish/conf.d/hyprland-env.fish"
-    "fish/conf.d/betha-secrets.fish"
+    "fish/conf.d/work-secrets.fish"
   ];
 
   fishFunctionFiles = [

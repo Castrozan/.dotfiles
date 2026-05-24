@@ -36,8 +36,8 @@ in
   "api-keys/grid-token-robson.age".publicKeys = all_keys;
   "api-keys/grid-token-clever.age".publicKeys = all_keys;
 
-  "credentials/betha-email.age".publicKeys = all_keys;
-  "credentials/betha-password.age".publicKeys = all_keys;
+  "credentials/work-email.age".publicKeys = all_keys;
+  "credentials/work-password.age".publicKeys = all_keys;
   "credentials/elastic-password.age".publicKeys = all_keys;
   "credentials/grafana-password.age".publicKeys = all_keys;
   "credentials/jira-token.age".publicKeys = all_keys;

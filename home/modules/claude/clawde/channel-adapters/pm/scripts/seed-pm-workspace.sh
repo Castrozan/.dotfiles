@@ -2,7 +2,7 @@
 # Seed a project-manager agent's workspace under an existing project tree.
 #
 # Arguments:
-#   $1  absolute path of the project the PM owns (e.g. ~/repo/coates-pm)
+#   $1  absolute path of the project the PM owns (e.g. ~/repo/my-pm)
 #
 # Behavior:
 #   - Ensures <projectDir>/.pm/ exists.

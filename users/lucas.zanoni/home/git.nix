@@ -1,9 +1,13 @@
-{ ... }:
+{ lib, ... }:
+let
+  workpcPrivateConfigDirectory = ../../../private-config/machines/workpc;
+  workpcPrivateConfigExists = builtins.pathExists workpcPrivateConfigDirectory;
+in
 {
-  imports = [ ../../../home/modules/dev/git.nix ];
-
-  programs.git.settings.user = {
-    name = "Lucas de Castro Zanoni";
-    email = "lucas.zanoni@betha.com.br";
-  };
+  imports = [
+    ../../../home/modules/dev/git.nix
+  ]
+  ++ lib.optionals workpcPrivateConfigExists [
+    "${workpcPrivateConfigDirectory}/git-user.nix"
+  ];
 }

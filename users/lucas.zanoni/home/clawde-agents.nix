@@ -1,7 +1,10 @@
-{ config, ... }:
+{ lib, config, ... }:
 let
   inherit (config.home) homeDirectory;
   personalSkillSetDirectory = "${homeDirectory}/.local/share/claude-skill-sets/personal";
+
+  workpcPrivateConfigDirectory = ../../../private-config/machines/workpc;
+  workpcPrivateConfigExists = builtins.pathExists workpcPrivateConfigDirectory;
 
   jennyHeartbeatPrompt = "Heartbeat tick. Read HEARTBEAT.md. If there is no active objective, do nothing - exit silently. If there is pending work, continue it. Never browse the web on a heartbeat tick. Never poll Gmail, Calendar, or Google Chat - those channels are not yours anymore.";
   jennyDenyToolPatterns = [
@@ -19,6 +22,10 @@ let
   '';
 in
 {
+  imports = lib.optionals workpcPrivateConfigExists [
+    "${workpcPrivateConfigDirectory}/clawde-pm.nix"
+  ];
+
   clawde.agents = {
     jenny = {
       channel.type = "discord";
@@ -114,16 +121,5 @@ in
       personality = buildProjectManagerPersonality "esfinge";
     };
 
-    betha-pm = {
-      channel.type = "pm";
-      channel.pm.projectDirectory = "${homeDirectory}/repo/betha-pm";
-      model = "opus";
-      activeHoursStart = 8;
-      activeHoursEnd = 20;
-      heartbeatInterval = projectManagerHeartbeatInterval;
-      heartbeatPrompt = projectManagerHeartbeatPrompt;
-      personality = buildProjectManagerPersonality "betha-pm";
-      additionalInstructions = builtins.readFile ../../../private-config/claude/project-agents/betha-pm-instructions.md;
-    };
   };
 }

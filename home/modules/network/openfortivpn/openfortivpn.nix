@@ -1,11 +1,11 @@
 { pkgs, ... }:
 let
-  vpn-betha = pkgs.stdenv.mkDerivation {
-    name = "vpn-betha";
+  vpn-work = pkgs.stdenv.mkDerivation {
+    name = "vpn-work";
     dontUnpack = true;
     dontBuild = true;
 
-    wrapperScript = pkgs.writeScript "vpn-betha" (
+    wrapperScript = pkgs.writeScript "vpn-work" (
       pkgs.lib.replaceStrings
         [
           "@openfortivpn@"
@@ -21,19 +21,19 @@ let
           "${pkgs.gnugrep}"
           "${pkgs.xdg-utils}"
         ]
-        (builtins.readFile ./vpn-betha.sh)
+        (builtins.readFile ./vpn-work.sh)
     );
 
     installPhase = ''
       mkdir -p $out/bin
-      cp $wrapperScript $out/bin/vpn-betha
-      chmod +x $out/bin/vpn-betha
+      cp $wrapperScript $out/bin/vpn-work
+      chmod +x $out/bin/vpn-work
     '';
   };
 in
 {
   home.packages = [
     pkgs.openfortivpn
-    vpn-betha
+    vpn-work
   ];
 }

@@ -202,7 +202,6 @@
     "AUTOUPDATER",
     "beepy",
     "BEGINTOLLID",
-    "betha",
     "BFCGWT",
     "Bibata",
     "bindd",
@@ -552,15 +551,13 @@
     ".github/instructions": true,
     ".copilot/instructions": true,
     "~/.claude/rules": false,
-    "~/.config/betha/instructions": true
+    "~/.config/work/instructions": true
   },
   "chat.mcp.access": "all",
   "chat.mcp.serverSampling": {},
   "chat.agent.maxRequests": 9999999999,
   "chat.viewSessions.orientation": "stacked",
-  "chat.plugins.marketplaces": [
-    "git@gitlab.services.betha.cloud:betha-ai/betha.ai-marketplace.git"
-  ],
+  "chat.plugins.marketplaces": [],
   "chat.tools.terminal.autoApprove": {
     "/^uname -r$/": {
       "approve": true,
