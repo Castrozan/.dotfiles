@@ -13,8 +13,7 @@ let
 
   specialArgs = specialArgsBase // {
     inherit username;
-    unstable = darwinPkgs.unstable;
-    latest = darwinPkgs.latest;
+    inherit (darwinPkgs) unstable latest;
     isNixOS = false;
   };
 
