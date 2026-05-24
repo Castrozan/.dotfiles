@@ -7,9 +7,9 @@ The same constraint applies to `xdg-desktop-portal-hyprland` on Ubuntu, which ne
 
 ## Platform Split
 
-NixOS configures PipeWire and WirePlumber at the system level through `hosts/*/configs/audio.nix` using declarative options (`services.pipewire`, `wireplumber.extraConfig`). Ubuntu configures them at the user level through `xdg.configFile` drop-ins in `~/.config/pipewire/pipewire.conf.d/` and `~/.config/wireplumber/`. The home-manager audio module at `home/modules/audio/` handles this split with `lib.mkIf (!isNixOS)` — the `xdg.configFile` block only activates on Ubuntu.
+NixOS configures PipeWire and WirePlumber at the system level through `hosts/*/configs/audio.nix` using declarative options (`services.pipewire`, `wireplumber.extraConfig`). Ubuntu configures them at the user level through `xdg.configFile` drop-ins in `~/.config/pipewire/pipewire.conf.d/` and `~/.config/wireplumber/`. The home-manager audio module at `home/{base,linux,darwin}/audio/` handles this split with `lib.mkIf (!isNixOS)` — the `xdg.configFile` block only activates on Ubuntu.
 
-Both platforms share the same Bluetooth policy values. `home/modules/audio/bluetooth-policy.nix` is a plain Nix attrset (not a module) that both the Ubuntu Lua configs and the NixOS declarative configs import directly. This prevents drift between platforms. Codec preference, auto-connect profiles, priority values, and headset autoswitch behavior are defined once there.
+Both platforms share the same Bluetooth policy values. `home/{base,linux,darwin}/audio/bluetooth-policy.nix` is a plain Nix attrset (not a module) that both the Ubuntu Lua configs and the NixOS declarative configs import directly. This prevents drift between platforms. Codec preference, auto-connect profiles, priority values, and headset autoswitch behavior are defined once there.
 
 WirePlumber config format differs by platform because Ubuntu ships WirePlumber 0.4 (Lua-based `table.insert` into monitor rules) while NixOS uses WirePlumber 0.5 (declarative `monitor.*.rules` attrsets). The semantics are identical, only the syntax changes.
 

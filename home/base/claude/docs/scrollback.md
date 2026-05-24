@@ -8,7 +8,7 @@ Claude Code 2.1.89+ ships a fullscreen TUI that renders on the terminal's altern
 
 ## The Three-Layer Model
 
-Layer 1 is claude's in-app scroll, available only in fullscreen mode (`CLAUDE_CODE_NO_FLICKER=1` in `home/modules/claude/config.nix`). Mouse wheel, `PageUp`/`PageDown`, `Ctrl+Home`/`Ctrl+End` navigate the entire current conversation inside claude's render tree. This is the fast path for "scroll back to look at something in this session."
+Layer 1 is claude's in-app scroll, available only in fullscreen mode (`CLAUDE_CODE_NO_FLICKER=1` in `home/{base,linux,darwin}/claude/config.nix`). Mouse wheel, `PageUp`/`PageDown`, `Ctrl+Home`/`Ctrl+End` navigate the entire current conversation inside claude's render tree. This is the fast path for "scroll back to look at something in this session."
 
 Layer 2 is tmux copy mode (`prefix [`) for selecting and copying whatever Layer 1 has currently rendered on screen. Standard tmux selection, search, and clipboard integration apply. Limited to one screenful at a time.
 

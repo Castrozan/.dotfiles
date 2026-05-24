@@ -20,7 +20,7 @@ tests:
     skill_path: agents/skills/review/SKILL.md
     extra_skill_paths:
       - agents/skills/review/authoring.md
-    prompt: "I want my skill to reference the rebuild script. Should I write the full path like ./home/modules/system/scripts/rebuild.sh?"
+    prompt: "I want my skill to reference the rebuild script. Should I write the full path like ./home/base/system/scripts/rebuild.sh?"
     model: haiku
     assertions:
       output_contains_any:

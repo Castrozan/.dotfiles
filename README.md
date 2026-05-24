@@ -153,7 +153,7 @@ graph TD
     subgraph "Home Manager Configuration"
         HomeStandalone["homeConfigurations<br/>lucas.zanoni@x86_64-linux"]
         UserHome["users/*/home.nix"]
-        Modules["home/modules/*<br/>app configs"]
+        Modules["home/{base,linux,darwin}/*<br/>app configs"]
     end
 
     subgraph "External Inputs"
@@ -219,7 +219,7 @@ graph TD
 </details>
 
 <details>
-<summary>📦 home/modules/ - all application modules</summary>
+<summary>📦 home/{base,linux,darwin}/ - all application modules</summary>
 
 | Module | Description |
 |--------|-------------|

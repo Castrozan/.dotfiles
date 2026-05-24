@@ -1,10 +1,10 @@
 function __source_bash_aliases_into_fish
-  bass source ~/.dotfiles/home/modules/terminal/shell/aliases.sh
+  bass source ~/.dotfiles/home/base/terminal/shell/aliases.sh
 
   set -l bash_alias_definition_field_delimiter (printf '\t')
   set -l bash_alias_definitions (
     command bash -c '
-      source "$HOME/.dotfiles/home/modules/terminal/shell/aliases.sh" >/dev/null 2>&1
+      source "$HOME/.dotfiles/home/base/terminal/shell/aliases.sh" >/dev/null 2>&1
 
       while IFS= read -r bash_alias_definition; do
         bash_alias_name=${bash_alias_definition#alias }
@@ -37,7 +37,7 @@ function __source_bash_aliases_into_fish
     alias $parsed_bash_alias_definition[1] "$unquoted_bash_alias_body"
   end
 
-  alias source-shell 'source ~/.dotfiles/home/modules/terminal/shell/fish/config.fish'
+  alias source-shell 'source ~/.dotfiles/home/base/terminal/shell/fish/config.fish'
 end
 
 __source_bash_aliases_into_fish

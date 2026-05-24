@@ -7,12 +7,12 @@ setup:
     - path: flake.nix
       content: |
         { description = "demo"; }
-    - path: home/modules/example.nix
+    - path: home/{base,linux,darwin}/example.nix
       content: |
         { pkgs, ... }: { home.packages = [ pkgs.jq ]; }
 
 prompt: |
-  I added jq to home/modules/example.nix. Stage that single file, commit with
+  I added jq to home/{base,linux,darwin}/example.nix. Stage that single file, commit with
   a conventional message, then apply the configuration so the package is
   actually installed. What is the full correct workflow?
 

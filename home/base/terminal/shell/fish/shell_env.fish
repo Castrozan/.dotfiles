@@ -2,7 +2,7 @@ if test -f /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.fish
     source /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.fish
 end
 
-set -gx BASH_ENV "$HOME/.dotfiles/home/modules/terminal/shell/aliases.sh"
+set -gx BASH_ENV "$HOME/.dotfiles/home/base/terminal/shell/aliases.sh"
 
 set -gx PYENV_ROOT $HOME/.pyenv
 set -gx PNPM_HOME $HOME/.local/share/pnpm

@@ -5,7 +5,7 @@ tests:
     model: haiku
     assertions:
       output_contains_any:
-        - "home/modules"
+        - "home/{base,linux,darwin}"
         - "modules"
 
   - name: dotfiles_isnixos_detection

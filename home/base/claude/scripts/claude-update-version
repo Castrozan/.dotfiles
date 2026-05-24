@@ -7,7 +7,7 @@ import sys
 import urllib.request
 from pathlib import Path
 
-CLAUDE_NIX_RELATIVE_PATH = "home/modules/claude/claude.nix"
+CLAUDE_NIX_RELATIVE_PATH = "home/base/claude/claude.nix"
 NPM_REGISTRY_URL = "https://registry.npmjs.org/@anthropic-ai/claude-code/latest"
 GCS_BUCKET_BASE_URL = "https://storage.googleapis.com/claude-code-dist-86c565f3-f756-42ad-8dfa-d59b1c096819/claude-code-releases"
 

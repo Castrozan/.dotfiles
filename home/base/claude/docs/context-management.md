@@ -16,7 +16,7 @@ Auto-compaction triggers when token usage approaches the context window limit. I
 
 ### Configuration
 
-`CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` controls when compaction fires, as a percentage of context used (1-100). Default behavior triggers near 100%. Setting it to 90 means compaction happens at 90% usage, giving headroom before hitting the wall. This is configured in `home/modules/claude/config.nix` via `sessionVariables`.
+`CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` controls when compaction fires, as a percentage of context used (1-100). Default behavior triggers near 100%. Setting it to 90 means compaction happens at 90% usage, giving headroom before hitting the wall. This is configured in `home/{base,linux,darwin}/claude/config.nix` via `sessionVariables`.
 
 Disabling auto-compaction entirely: `claude config set -g autoCompactEnabled false` writes to `~/.claude.json`. The setting in `~/.claude/settings.json` is silently ignored — this is a known gotcha. The `/config` toggle is per-session only.
 

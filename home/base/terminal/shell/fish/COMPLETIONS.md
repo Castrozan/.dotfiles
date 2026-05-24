@@ -74,7 +74,7 @@ This configuration enhances fish shell autocompletions with AI-powered and intel
 ✓ **All plugins are now active!**
 
 Your fish shell now has:
-- Atuin 18.10.0 (AI-powered history) - already configured in `home/modules/atuin.nix`
+- Atuin 18.10.0 (AI-powered history) - already configured in `home/{base,linux,darwin}/atuin.nix`
 - Carapace 1.5.5 (500+ CLI tool completions)
 - Autopair (bracket/quote pairing)
 - Sponge (failed command filtering)
@@ -90,7 +90,7 @@ Your fish shell now has:
 - You have disabled the up-arrow override with `--disable-up-arrow` flag
 
 If you want to enable sync across machines:
-1. Edit `home/modules/atuin.nix`
+1. Edit `home/{base,linux,darwin}/atuin.nix`
 2. Set `auto_sync = true` and `sync_frequency = "5m"`
 3. Run `rebuild`
 4. Run `atuin register` or `atuin login`

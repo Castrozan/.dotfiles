@@ -53,7 +53,7 @@ always use `memory-write`. Garbage is prevented at the gate.
 `agents/skills/instructions/memory.md` is the meta-stance for agents that
 design memory systems (me, doing this). It does NOT get wired into bots.
 Bots get a separate runtime protocol file in
-`home/modules/claude/discord-channel/instructions/`, concatenated into
+`home/{base,linux,darwin}/claude/discord-channel/instructions/`, concatenated into
 each bot's CLAUDE.md alongside `discord-bot-operating-rules.md`. The
 runtime protocol is workflow-centric (see section 6).
 

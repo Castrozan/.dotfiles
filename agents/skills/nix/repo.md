@@ -16,7 +16,7 @@ flake.nix
 bin/ - standalone scripts (system-wide, executable)
 home/core.nix - shared home-manager core
 home/scripts/ - home-manager managed scripts (nix-built)
-home/modules/ - shared modules (name.nix or name/default.nix for complex)
+home/{base,linux,darwin}/ - shared modules (name.nix or name/default.nix for complex)
 nixos/modules/ - NixOS-only modules
 users/username/home.nix - IMPORTS ONLY, no configuration
 users/username/pkgs.nix - user-specific packages

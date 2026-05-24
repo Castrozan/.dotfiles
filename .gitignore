@@ -14,7 +14,7 @@ HEARTBEAT.md
 /AGENTS.md
 /AGENTS.md.*
 .cursor/
-home/modules/cursor/cursor-global-user-rules.md
+home/base/editor/cursor/cursor-global-user-rules.md
 
 # Nix build output
 result

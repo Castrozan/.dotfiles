@@ -7,7 +7,7 @@ Tests are organized in tiers by speed and tool requirements. The `tests/run.sh` 
 | Tier | Content | Time | Flag |
 |---|---|---|---|
 | Quick | skill frontmatter + pure bash bats (excludes `*-docker.bats`) | ~3s | `--quick` (default) |
-| Nix | home-manager integration + domain nix tests (`home/modules/*/tests/`) | ~120s | `--nix` (includes quick) |
+| Nix | home-manager integration + domain nix tests (`home/{base,linux,darwin}/*/tests/`) | ~120s | `--nix` (includes quick) |
 | Docker | `*-docker.bats` integration tests | ~60s | `--docker` |
 | Runtime | domain runtime tests (`runtime.bats`, `live-services.bats`) | variable | `--runtime` |
 | Perf | desktop + shell benchmarks, baseline checks, threshold tests | ~2m | `--perf` |
@@ -24,7 +24,7 @@ tests/run.sh --all              # everything except runtime/perf
 tests/run.sh --coverage         # quick tests with kcov coverage
 tests/run.sh --runtime          # domain runtime tests
 tests/run.sh --perf             # performance benchmarks + threshold tests
-bats home/modules/system/tests/foo.bats  # single test file
+bats home/{base,linux,darwin}/system/tests/foo.bats  # single test file
 ```
 
 ### Performance testing
@@ -51,23 +51,23 @@ Files matching `*-docker.bats` are docker integration tests. They require docker
 
 | Category | Location | Requires |
 |---|---|---|
-| Domain script tests | `home/modules/*/tests/*.bats` (excluding docker, runtime) | bats |
-| Docker integration | `home/modules/*/tests/*-docker.bats` | bats, docker |
-| Domain runtime tests | `home/modules/*/tests/runtime.bats`, `live-services.bats` | bats, running services |
-| Domain nix tests | `home/modules/*/tests/checks.nix` | nix |
+| Domain script tests | `home/{base,linux,darwin}/*/tests/*.bats` (excluding docker, runtime) | bats |
+| Docker integration | `home/{base,linux,darwin}/*/tests/*-docker.bats` | bats, docker |
+| Domain runtime tests | `home/{base,linux,darwin}/*/tests/runtime.bats`, `live-services.bats` | bats, running services |
+| Domain nix tests | `home/{base,linux,darwin}/*/tests/checks.nix` | nix |
 | Home manager integration | `tests/nix-modules/home-manager.bats` | bats, nix |
 | Skill frontmatter | `agents/evals/validate-skill-frontmatter.sh` | bash |
 | Agent evals | `agents/evals/` | claude cli |
 
 ## Co-located Domain Tests
 
-All tests live alongside their modules in `home/modules/<domain>/tests/`. The test runner discovers them dynamically via `home/modules/*/tests/*.bats`. Tier routing uses filename convention: `runtime.bats` and `live-services.bats` go to the runtime tier, `*-docker.bats` to the docker tier, everything else to the quick tier.
+All tests live alongside their modules in `home/{base,linux,darwin}/<domain>/tests/`. The test runner discovers them dynamically via `home/{base,linux,darwin}/*/tests/*.bats`. Tier routing uses filename convention: `runtime.bats` and `live-services.bats` go to the runtime tier, `*-docker.bats` to the docker tier, everything else to the quick tier.
 
 Tests load shared helpers from `tests/helpers/` via relative path. Cross-cutting integration tests that span multiple modules stay in `tests/`.
 
 ## Writing Bin Script Tests
 
-Test filename must match script name: `bin/foo` → `home/modules/<domain>/tests/foo.bats`.
+Test filename must match script name: `bin/foo` → `home/{base,linux,darwin}/<domain>/tests/foo.bats`.
 
 The shared helper at `tests/helpers/bash-script-assertions.bash` auto-resolves the script path from the test filename.
 
@@ -174,11 +174,11 @@ teardown() {
 ## Policies
 
 1. **Every `bin/` script gets a test file.** At minimum: `assert_is_executable` + `assert_passes_shellcheck`.
-2. **Test filename = script name.** `bin/foo` → `home/modules/<domain>/tests/foo.bats`. The helper auto-resolves the path.
+2. **Test filename = script name.** `bin/foo` → `home/{base,linux,darwin}/<domain>/tests/foo.bats`. The helper auto-resolves the path.
 3. **Static over execution for setup scripts.** Scripts requiring sudo/root are tested via content analysis, not execution. Verify configs, packages, and service activation are declared correctly.
 4. **Behavioral tests for CLI scripts.** Scripts that take user input should test error paths (missing args, bad input) and success paths.
 5. **Docker for e2e.** Name docker integration test files `*-docker.bats` so they are automatically excluded from the quick tier. Run `docker run --rm --privileged dotfiles-test bash -c 'bin/setup-foo'` to verify setup scripts actually install and configure correctly on Ubuntu.
 6. **No external test libraries.** `tests/helpers/bash-script-assertions.bash` covers common assertions. Avoid adding bats-assert/bats-file/bats-mock unless a concrete need arises.
 7. **Shellcheck is mandatory.** All bash scripts must pass shellcheck. The `assert_passes_shellcheck` assertion handles environments where shellcheck isn't installed by skipping.
 8. **Names mean things.** Test directories mirror source directories. File and function names describe what they test, not how. Follow `agents/core.md` naming and script conventions.
-9. **Canonical script pattern.** All shell scripts under `tests/` follow the same pattern as `home/modules/system/scripts/rebuild`: `set -Eeuo pipefail`, `readonly` constants, `main()` at bottom, `_` prefixed private functions, no comments.
+9. **Canonical script pattern.** All shell scripts under `tests/` follow the same pattern as `home/{base,linux,darwin}/system/scripts/rebuild`: `set -Eeuo pipefail`, `readonly` constants, `main()` at bottom, `_` prefixed private functions, no comments.

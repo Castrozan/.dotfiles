@@ -7,7 +7,7 @@
     "share": "manual",
     "default_agent": "plan",
     "instructions": [
-        "/home/lucas.zanoni/.dotfiles/home/modules/cursor/global-user-rules/user-rules.md"
+        "/home/lucas.zanoni/.dotfiles/home/base/editor/cursor/cursor-global-user-rules.md"
     ],
     "keybinds": {
         "input_newline": "shift+return,ctrl+return,alt+return,ctrl+j"

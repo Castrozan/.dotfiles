@@ -380,7 +380,7 @@ JSEOF
 	[[ ! -f "$BATS_TEST_DIRNAME/../../agents/skills/browser/scripts/pw-daemon.js" ]]
 	[[ ! -f "$BATS_TEST_DIRNAME/../../agents/skills/browser/default.nix" ]]
 	[[ ! -f "$BATS_TEST_DIRNAME/../../agents/skills/ponto/scripts/playwright-resolver.js" ]]
-	[[ ! -f "$BATS_TEST_DIRNAME/../../home/modules/playwright.nix" ]]
+	[[ ! -f "$BATS_TEST_DIRNAME/../../home/base/playwright.nix" ]]
 }
 
 @test "no stale PW_PORT or playwright-resolver references" {
