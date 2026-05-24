@@ -31,7 +31,7 @@
     ../../home/modules/terminal/kitty.nix
     ../../home/modules/terminal/tmux.nix
     ../../home/modules/terminal/wezterm.nix
-    ../../home/modules/terminal/yazi.nix
+    ../../home/modules/terminal/yazi
     ../../home/modules/terminal/scripts.nix
 
     ../../home/modules/editor/cursor
@@ -64,7 +64,7 @@
     ../../home/modules/media/bad-apple.nix
     ../../home/modules/media/obs-studio.nix
     ../../home/modules/media/suwayomi-server.nix
-    ../../home/modules/media/zathura.nix
+    ../../home/modules/media/zathura
     ../../home/modules/media/scripts.nix
 
     ../../home/modules/network/forticlient
@@ -99,8 +99,7 @@
     ../../home/modules/gaming/gogcli.nix
     ../../home/modules/desktop/tui-notifier.nix
     ../../home/modules/desktop/vial.nix
-    ../../home/modules/media/obsidian.nix
-    ../../home/modules/media/obsidian-headless-sync.nix
+    ../../home/modules/media/obsidian
     ../../home/modules/media/readItNow.nix
     ../../home/modules/media/summarize.nix
     ../../home/modules/media/viu.nix

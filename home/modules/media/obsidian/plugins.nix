@@ -31,16 +31,9 @@ let
             sha256 = stylesHash;
           }
         else
-          null;
+          "";
 
-      installPhase = ''
-        runHook preInstall
-        mkdir -p $out
-        cp $mainJs $out/main.js
-        cp $manifestJson $out/manifest.json
-        ${if stylesHash != null then "cp $stylesCss $out/styles.css" else ""}
-        runHook postInstall
-      '';
+      installPhase = builtins.readFile ./scripts/obsidian-plugin-install-phase.sh;
     };
 
   plugins = {

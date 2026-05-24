@@ -27,6 +27,6 @@
         isNixOS
         ;
     };
-    users.${username} = import ./home.nix;
+    users.${username} = import ./darwin-home.nix;
   };
 }

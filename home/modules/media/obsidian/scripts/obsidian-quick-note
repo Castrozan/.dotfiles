@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+if [ -z "${1:-}" ]; then
+	echo "Error: A file name must be set, e.g. on \"the wonderful thing about tiggers\"." >&2
+	exit 1
+fi
+
+note_name_with_dashes=$(echo "$1" | tr ' ' '-')
+readonly note_name_with_dashes
+formatted_file_name="$(date "+%Y-%m-%d")_${note_name_with_dashes}.md"
+readonly formatted_file_name
+
+cd "$OBSIDIAN_HOME" || exit
+touch "${formatted_file_name}"
+${EDITOR:-vim} "${formatted_file_name}"

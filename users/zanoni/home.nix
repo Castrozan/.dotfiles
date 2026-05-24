@@ -67,8 +67,7 @@
     ../../home/modules/system/systemd-manager-tui.nix
     ../../home/modules/dev/ralph-tui.nix
     ../../home/modules/desktop/vial.nix
-    ../../home/modules/media/obsidian.nix
-    ../../home/modules/media/obsidian-headless-sync.nix
+    ../../home/modules/media/obsidian
     ../../home/modules/media/summarize.nix
     ../../home/modules/media/viu.nix
   ];

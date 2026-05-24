@@ -14,11 +14,13 @@
       nixpkgs-unstable,
       nixpkgs-latest,
       home-manager,
+      nix-darwin,
       ...
     }:
     # let in notation to declare local variables for output scope
     let
       linuxSystem = "x86_64-linux";
+      darwinSystem = "aarch64-darwin";
       home-version = "25.11";
       nixpkgs-version = "25.11";
 
@@ -39,6 +41,8 @@
 
       linux = mkPkgsFor linuxSystem;
       inherit (linux) pkgs unstable latest;
+
+      darwin = mkPkgsFor darwinSystem;
 
       specialArgsBase = {
         inherit
@@ -75,6 +79,35 @@
       # (a private submodule). Shared modules and user config below remain
       # consumable from there via flake input.
 
+      # Two macbooks (different machines, same lucas.zanoni user). Activate with:
+      #   sudo darwin-rebuild switch --flake .#macbook-alpha
+      #   sudo darwin-rebuild switch --flake .#macbook-beta   (when added)
+      darwinConfigurations =
+        let
+          username = "lucas.zanoni";
+          specialArgs = specialArgsBase // {
+            inherit username;
+            unstable = darwin.unstable;
+            latest = darwin.latest;
+            isNixOS = false;
+          };
+          mkDarwinHostFor = hostname: {
+            ${hostname} = nix-darwin.lib.darwinSystem {
+              specialArgs = specialArgs // {
+                inherit hostname;
+              };
+              system = darwinSystem;
+
+              modules = [
+                ./hosts/${hostname}
+                home-manager.darwinModules.home-manager
+                (import ./users/${username}/darwin-home-config.nix)
+              ];
+            };
+          };
+        in
+        mkDarwinHostFor "macbook-alpha";
+
       homeManagerModules = import ./flake/home-manager-modules.nix;
 
       checks.${linuxSystem} = import ./tests/nix-checks {
@@ -99,6 +132,21 @@
     nixpkgs-latest.url = "github:nixos/nixpkgs/nixos-unstable";
     home-manager.url = "github:nix-community/home-manager/release-25.11";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
+
+    # nix-darwin for the macbook host. Inert on Linux activations.
+    nix-darwin.url = "github:nix-darwin/nix-darwin/nix-darwin-25.11";
+    nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
+
+    # Theming used by the macbook host (and any Linux host that opts in).
+    stylix.url = "github:danth/stylix/release-25.11";
+    stylix.inputs.nixpkgs.follows = "nixpkgs";
+
+    # Private assets repo (already mounted as a git submodule at private-config/);
+    # also exposed as a flake input so darwin modules that take it via inputs.
+    private-config = {
+      url = "git+ssh://git@github.com/Castrozan/private-config";
+      flake = false;
+    };
 
     # Tag-pinned — keep own nixpkgs (incompatible or untested with ours)
     tui-notifier.url = "github:castrozan/tui-notifier/1.0.1";
