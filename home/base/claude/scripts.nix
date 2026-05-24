@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, lib, ... }:
 let
   claudeUpdateVersionScript = pkgs.writeShellScriptBin "claude-update-version" ''
     export PATH="${pkgs.nix}/bin:${pkgs.git}/bin:$PATH"
@@ -26,6 +26,8 @@ in
     memoryWriteScript
     memoryPruneScript
     claudeA2aPeerScript
+  ]
+  ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [
     notifyClaudeTurnEndedWithFocusActionScript
   ];
 }
