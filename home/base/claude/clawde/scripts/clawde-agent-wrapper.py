@@ -20,22 +20,30 @@ def install_exit_signal_handlers() -> None:
 
 
 def is_within_active_hours(
-    active_hours_start: int | None, active_hours_end: int | None
+    active_hours_start: int | None,
+    active_hours_end: int | None,
+    now: datetime.datetime | None = None,
 ) -> bool:
     if active_hours_start is None:
         return True
-    current_hour = time.localtime().tm_hour
+    if now is None:
+        now = datetime.datetime.now()
+    current_hour = now.hour
     if active_hours_start <= active_hours_end:
         return active_hours_start <= current_hour < active_hours_end
     return current_hour >= active_hours_start or current_hour < active_hours_end
 
 
-def seconds_until_active_hours_start(active_hours_start: int) -> int:
-    now = datetime.datetime.now()
+def seconds_until_active_hours_start(
+    active_hours_start: int,
+    now: datetime.datetime | None = None,
+) -> int:
+    if now is None:
+        now = datetime.datetime.now()
     target = now.replace(hour=active_hours_start, minute=0, second=0, microsecond=0)
-    if target <= now:
+    if target <= now and now.hour != active_hours_start:
         target += datetime.timedelta(days=1)
-    return int((target - now).total_seconds())
+    return max(1, int((target - now).total_seconds()))
 
 
 def should_rotate_session(
