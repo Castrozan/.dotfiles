@@ -8,6 +8,8 @@
   buildInputs ? [ ],
   nativeBuildInputs ? [ ],
   archiveBinaryPath ? null,
+  archivePrefixToInstall ? null,
+  preserveCodeSignature ? false,
   meta ? { },
 }:
 let
@@ -71,13 +73,19 @@ pkgs.stdenv.mkDerivation {
 
   dontUnpack = !isArchive;
   dontStrip = true;
+  dontFixup = preserveCodeSignature;
 
   sourceRoot = if isTarballArchive || isZipArchive then "." else null;
 
   unpackPhase = if isDebArchive then unpackPhaseForArchiveType else null;
 
   installPhase =
-    if isArchive then
+    if archivePrefixToInstall != null then
+      ''
+        mkdir -p $out
+        cp -R ${archivePrefixToInstall}/. $out/
+      ''
+    else if isArchive then
       ''
         install -Dm755 ${resolvedArchiveBinaryPath} $out/bin/${binaryName}
       ''

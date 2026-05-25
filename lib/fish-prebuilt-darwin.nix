@@ -1,40 +1,15 @@
 { pkgs }:
 let
+  fetchPrebuiltBinary = import ./fetch-prebuilt-binary.nix { inherit pkgs; };
   version = "4.1.2";
-  appBundleZipName = "fish-${version}.app.zip";
-  upstreamReleaseUrl = "https://github.com/fish-shell/fish-shell/releases/download/${version}/${appBundleZipName}";
-  appBundleZipHash = "sha256-cTCvVrSjLQAhlZb2dDXXi6jbWaxxh/MQQGcRlhrnqvU=";
-  unpackedRelativePrefixPathInsideAppBundle = "Contents/Resources/base/usr/local";
 in
-pkgs.stdenvNoCC.mkDerivation {
+fetchPrebuiltBinary {
   pname = "fish";
   inherit version;
-
-  src = pkgs.fetchurl {
-    url = upstreamReleaseUrl;
-    hash = appBundleZipHash;
-  };
-
-  nativeBuildInputs = [ pkgs.unzip ];
-
-  dontStrip = true;
-  dontFixup = true;
-
-  unpackPhase = ''
-    runHook preUnpack
-    unzip -q $src
-    runHook postUnpack
-  '';
-
-  sourceRoot = "fish-${version}.app";
-
-  installPhase = ''
-    runHook preInstall
-    mkdir -p $out
-    cp -R ${unpackedRelativePrefixPathInsideAppBundle}/. $out/
-    runHook postInstall
-  '';
-
+  url = "https://github.com/fish-shell/fish-shell/releases/download/${version}/fish-${version}.app.zip";
+  sha256 = "sha256-cTCvVrSjLQAhlZb2dDXXi6jbWaxxh/MQQGcRlhrnqvU=";
+  archivePrefixToInstall = "fish-${version}.app/Contents/Resources/base/usr/local";
+  preserveCodeSignature = true;
   meta = {
     description = "fish ${version} prebuilt darwin binary from upstream releases, preserves Apple code signature so macOS 26.1 (Tahoe) does not SIGKILL at exec";
     homepage = "https://fishshell.com/";

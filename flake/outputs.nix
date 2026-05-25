@@ -13,14 +13,11 @@ let
   home-version = "25.11";
   nixpkgs-version = "25.11";
 
-  prebuiltFishFromUpstreamReleaseThatStillPassesMacOSTahoeCodeSigningAtExec =
-    pkgsForDarwin: import ../lib/fish-prebuilt-darwin.nix { pkgs = pkgsForDarwin; };
-
   workingFishOnDarwinForMacOSCodeSigningEnforcementOverlay =
     final: prev:
     if prev.stdenv.hostPlatform.isDarwin then
       {
-        fish = prebuiltFishFromUpstreamReleaseThatStillPassesMacOSTahoeCodeSigningAtExec prev;
+        fish = import ../lib/fish-prebuilt-darwin.nix { pkgs = prev; };
       }
     else
       { };
