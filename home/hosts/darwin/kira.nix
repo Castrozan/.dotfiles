@@ -52,7 +52,7 @@ in
     ../../base/dev/lazygit.nix
     ../../base/dev/scripts.nix
 
-    ../../base/terminal/bad-apple.nix
+    # ../../base/terminal/bad-apple.nix  # disabled on darwin: pulls latest.yt-dlp -> deno -> rusty-v8 (V8 build takes 30+ min on aarch64-darwin)
     ../../base/terminal/cbonsai.nix
     ../../base/terminal/cmatrix.nix
 
