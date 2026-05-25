@@ -16,24 +16,21 @@ wezterm.on('gui-startup', function(cmd)
   window:gui_window():maximize()
 end)
 
-wezterm.on('gui-attached', function(domain)
-  local window = mux.get_active_window()
-  if window then
-    window:gui_window():maximize()
-  end
-end)
+if type(mux.get_active_window) == 'function' then
+  wezterm.on('gui-attached', function(domain)
+    local window = mux.get_active_window()
+    if window then
+      window:gui_window():maximize()
+    end
+  end)
+end
 
-return {
+local config = {
   font = wezterm.font_with_fallback({
     'MonaspiceNe Nerd Font Mono',
     'Noto Color Emoji',
   }),
   font_size = 16,
-
-  color_schemes = {
-    ['HyprTheme'] = hypr_theme_colors,
-  },
-  color_scheme = 'HyprTheme',
 
   window_padding = {
     left = 10,
@@ -98,3 +95,10 @@ return {
 
   window_close_confirmation = 'NeverPrompt',
 }
+
+if hypr_theme_colors then
+  config.color_schemes = { ['HyprTheme'] = hypr_theme_colors }
+  config.color_scheme = 'HyprTheme'
+end
+
+return config
