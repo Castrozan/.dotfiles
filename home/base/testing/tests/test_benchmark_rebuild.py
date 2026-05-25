@@ -36,7 +36,7 @@ class TestDetectConfigurationType:
         with patch(
             "benchmark_rebuild.Path",
         ) as mock_path:
-            mock_path.return_value.read_text.side_effect = FileNotFoundError
+            mock_path.return_value.is_dir.return_value = False
             result = benchmark_rebuild.detect_configuration_type()
             assert result == "home"
 
