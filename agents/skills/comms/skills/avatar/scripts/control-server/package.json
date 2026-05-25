@@ -21,7 +21,8 @@
     "ws": "^8.20.1"
   },
   "overrides": {
-    "path-to-regexp": "^0.1.13"
+    "path-to-regexp": "^0.1.13",
+    "qs": "^6.15.2"
   },
   "engines": {
     "node": ">=18.0.0"
