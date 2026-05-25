@@ -30,8 +30,7 @@ let
 
   braveSpellcheckIsLockedToEnGb = bravePreferencesOverrides.spellcheck.dictionaries == [ "en-GB" ];
 
-  braveGoogleSigninIsDisabledInPreferencesOverrides =
-    bravePreferencesOverrides.signin.allowed == false;
+  braveGoogleSigninIsDisabledInPreferencesOverrides = !bravePreferencesOverrides.signin.allowed;
 in
 {
   domain-desktop-brave-duplicate-tab-bound-to-control-d =

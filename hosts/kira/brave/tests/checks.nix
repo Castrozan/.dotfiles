@@ -16,20 +16,19 @@ let
   braveDarwinManagedPolicyKeys =
     braveDarwinPolicyConfig.system.defaults.CustomUserPreferences."com.brave.Browser";
 
-  bookmarkBarIsForcedOnByPolicy = braveDarwinManagedPolicyKeys.BookmarkBarEnabled == true;
+  bookmarkBarIsForcedOnByPolicy = braveDarwinManagedPolicyKeys.BookmarkBarEnabled;
   googleSigninIsDisabledByPolicy = braveDarwinManagedPolicyKeys.BrowserSignin == 0;
-  spellcheckRemoteServiceIsDisabledByPolicy =
-    braveDarwinManagedPolicyKeys.SpellCheckServiceEnabled == false;
+  spellcheckRemoteServiceIsDisabledByPolicy = !braveDarwinManagedPolicyKeys.SpellCheckServiceEnabled;
   spellcheckLanguageIsLockedToEnGbByPolicy =
     braveDarwinManagedPolicyKeys.SpellcheckLanguage == [ "en-GB" ];
   allPrivacySandboxApisAreDisabledByPolicy =
-    braveDarwinManagedPolicyKeys.PrivacySandboxAdTopicsEnabled == false
-    && braveDarwinManagedPolicyKeys.PrivacySandboxSiteEnabledAdsEnabled == false
-    && braveDarwinManagedPolicyKeys.PrivacySandboxAdMeasurementEnabled == false;
+    !braveDarwinManagedPolicyKeys.PrivacySandboxAdTopicsEnabled
+    && !braveDarwinManagedPolicyKeys.PrivacySandboxSiteEnabledAdsEnabled
+    && !braveDarwinManagedPolicyKeys.PrivacySandboxAdMeasurementEnabled;
   telemetryAndStatsPingsAreDisabledByPolicy =
-    braveDarwinManagedPolicyKeys.MetricsReportingEnabled == false
-    && braveDarwinManagedPolicyKeys.BraveStatsPingEnabled == false
-    && braveDarwinManagedPolicyKeys.BraveP3AEnabled == false;
+    !braveDarwinManagedPolicyKeys.MetricsReportingEnabled
+    && !braveDarwinManagedPolicyKeys.BraveStatsPingEnabled
+    && !braveDarwinManagedPolicyKeys.BraveP3AEnabled;
 in
 {
   macbook-brave-bookmark-bar-forced-on =
