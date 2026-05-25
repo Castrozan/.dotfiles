@@ -107,6 +107,7 @@
       "brave-browser"
       "dbeaver-community"
       "docker"
+      "google-chrome"
       "obsidian"
       "wezterm"
     ];
