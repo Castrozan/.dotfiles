@@ -1,15 +1,18 @@
 { pkgs, ... }:
 {
-  fonts.fontconfig.enable = pkgs.stdenv.hostPlatform.isLinux;
+  fonts.fontconfig.enable = true;
 
-  home.packages = with pkgs; [
-    nerd-fonts.monaspace
-    nerd-fonts.fira-code
-    nerd-fonts.jetbrains-mono
-    fira-code
-    fira-code-symbols
-    noto-fonts-color-emoji
-    symbola
-    material-symbols
-  ];
+  home.packages =
+    (with pkgs; [
+      nerd-fonts.fira-code
+      nerd-fonts.jetbrains-mono
+      fira-code
+      fira-code-symbols
+      noto-fonts-color-emoji
+      symbola
+      material-symbols
+    ])
+    ++ pkgs.lib.optionals pkgs.stdenv.hostPlatform.isLinux [
+      pkgs.nerd-fonts.monaspace
+    ];
 }
