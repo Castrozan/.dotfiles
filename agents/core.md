@@ -48,7 +48,7 @@ After editing code files, run formatters: Python ruff format && ruff check, Nix 
 </formatting>
 
 <workflow>
-After editing any file in the dotfiles repo, execute this sequence before responding, no exceptions: 1) format edited files; 2) stage each file with git add specific-file (never -A); 3) commit; 4) rebuild: /rebuild for any file change in this repo; 5) run tests/run.sh; 6) if rebuild or tests fail: fix and repeat from 1; 7) only after rebuild and tests pass: respond to user. The end-of-work hook runs quality review automatically. It spawns parallel reviewers for code review and compliance checking. You do not need to spawn them manually.
+After editing any file in the dotfiles repo, execute this sequence before responding, no exceptions: 1) format edited files; 2) stage each file with git add specific-file (never -A); 3) commit; 4) rebuild: /rebuild for any file change in this repo; 5) run tests/run.sh; 6) if rebuild or tests fail: fix and repeat from 1; 7) only after rebuild and tests pass: respond to user.
 </workflow>
 
 <investigation>

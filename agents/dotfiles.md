@@ -22,8 +22,6 @@ After editing any file in the dotfiles repo, execute this sequence before respon
 5. Run tests/run.sh
 6. If rebuild or tests fail: fix and repeat from 1
 7. Only after rebuild and tests pass: respond to user
-
-The end-of-work hook runs quality review automatically. It spawns parallel reviewers for code review and compliance checking. You do not need to spawn them manually.
 </workflow>
 
 <agent-instructions>
