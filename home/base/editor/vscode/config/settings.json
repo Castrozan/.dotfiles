@@ -112,7 +112,7 @@
   "window.autoDetectColorScheme": true,
   "window.titleBarStyle": "custom",
   "window.confirmSaveUntitledWorkspace": false,
-  "window.zoomLevel": 1,
+  "window.zoomLevel": 2,
   "workbench.preferredDarkColorTheme": "GitHub Dark Default",
   "editor.minimap.enabled": false,
   "files.associations": {
