@@ -17,11 +17,6 @@
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
     # For latest bleeding edge packages - daily* updated with: $ nix flake update nixpkgs-latest
     nixpkgs-latest.url = "github:nixos/nixpkgs/nixos-unstable";
-    # Pinned to a nixpkgs revision whose fish-on-aarch64-darwin still passes
-    # macOS 26.1 (Tahoe) code-signing enforcement at exec. Newer revisions
-    # produce a fish-4.2.1 binary that the kernel SIGKILLs at startup with
-    # CODESIGNING/Invalid Page. Override pkgs.fish from this on darwin only.
-    nixpkgs-darwin-fish-working-on-macos-tahoe.url = "github:nixos/nixpkgs/b6a8526db03f735b89dd5ff348f53f752e7ddc8e";
     home-manager.url = "github:nix-community/home-manager/release-25.11";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
