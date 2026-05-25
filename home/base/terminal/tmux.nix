@@ -14,13 +14,23 @@ let
       sha256 = "1w49sjcvzblga8cc8pf9cxnksnc9gs9kfdh7nqdg3p39x8mi4xv9";
     };
   };
+
+  fishLoginShellPathThatSurvivesRebuildsAndGarbageCollection =
+    if pkgs.stdenv.hostPlatform.isDarwin then
+      "/run/current-system/sw/bin/fish"
+    else
+      "${pkgs.fish}/bin/fish";
+
+  preEmptDefaultCommandOnDarwinSoTmuxPluginsSensibleSkipsItsReattachWithNixStorePathInjection = lib.optionalString pkgs.stdenv.hostPlatform.isDarwin ''
+    set -g default-command "${fishLoginShellPathThatSurvivesRebuildsAndGarbageCollection} -l"
+  '';
 in
 {
   programs.tmux = {
     enable = true;
     baseIndex = 1;
     clock24 = false;
-    shell = "${pkgs.fish}/bin/fish";
+    shell = fishLoginShellPathThatSurvivesRebuildsAndGarbageCollection;
     plugins = [
       pkgs.tmuxPlugins.sensible
       pkgs.tmuxPlugins.yank
@@ -33,6 +43,7 @@ in
     ];
     extraConfig = ''
       set-environment -g PATH "${pkgs.tmux}/bin:${pkgs.coreutils}/bin:${pkgs.bash}/bin:/etc/profiles/per-user/''$USER/bin:''$HOME/.nix-profile/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin:/usr/sbin:/usr/bin:/bin"
+      ${preEmptDefaultCommandOnDarwinSoTmuxPluginsSensibleSkipsItsReattachWithNixStorePathInjection}
       ${settings}
       ${binds}
     '';
