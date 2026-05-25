@@ -11,6 +11,7 @@
   home-manager,
   darwinSystem,
   darwinPkgs,
+  darwinSystemOverlays,
   specialArgsBase,
 }:
 let
@@ -49,6 +50,7 @@ let
       system = darwinSystem;
 
       modules = [
+        { nixpkgs.overlays = darwinSystemOverlays; }
         ../hosts/${machineAlias}
         home-manager.darwinModules.home-manager
         (mkHomeManagerWrapperFor machineAlias)

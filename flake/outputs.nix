@@ -3,6 +3,7 @@ inputs@{
   nixpkgs,
   nixpkgs-unstable,
   nixpkgs-latest,
+  nixpkgs-darwin-fish-working-on-macos-tahoe,
   home-manager,
   nix-darwin,
   ...
@@ -12,6 +13,21 @@ let
   darwinSystem = "aarch64-darwin";
   home-version = "25.11";
   nixpkgs-version = "25.11";
+
+  fishFromNixpkgsThatStillPassesMacOSTahoeCodeSigningAtExec =
+    (import nixpkgs-darwin-fish-working-on-macos-tahoe {
+      system = darwinSystem;
+      config.allowUnfree = true;
+    }).fish;
+
+  workingFishOnDarwinForMacOSCodeSigningEnforcementOverlay =
+    final: prev:
+    if prev.stdenv.hostPlatform.isDarwin then
+      {
+        fish = fishFromNixpkgsThatStillPassesMacOSTahoeCodeSigningAtExec;
+      }
+    else
+      { };
 
   mkPkgsFor = system: {
     pkgs = import nixpkgs {
@@ -79,6 +95,7 @@ in
       specialArgsBase
       ;
     darwinPkgs = darwin;
+    darwinSystemOverlays = [ workingFishOnDarwinForMacOSCodeSigningEnforcementOverlay ];
   };
 
   homeManagerModules = import ./home-manager-modules.nix;
