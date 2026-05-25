@@ -17,7 +17,7 @@
    </a>
 </p>
 
-Welcome to my dotfiles! This repository contains my desktop environment setup for both **NixOS** and **Ubuntu**. It's built with Nix Flakes and Home Manager.
+Welcome to my dotfiles! This repository contains my desktop environment setup for **NixOS**, **Ubuntu**, and **macOS** under one flake. Built with Nix Flakes, Home Manager, and nix-darwin.
 
 https://github.com/user-attachments/assets/c5959f36-6b7a-450c-a18c-f430d60fcafc
 
@@ -80,18 +80,18 @@ cd .dotfiles
 ```
 
 #### 2. Generate Hardware Configuration
-Replace `your_host` with your machine's identifier (e.g., `chise`):
+Pick a short alias for the machine (this repo uses anime names: `chise`, `rin`, `kira`, `jojo`). Then:
 ```bash
-sudo nixos-generate-config --dir hosts/your_host/configs
+sudo nixos-generate-config --dir hosts/<alias>/configs
 ```
 
 #### 3. Customize Your Configuration
-- Copy and adapt the existing host setup: `hosts/chise/` (system config) and `home/hosts/linux/chise.nix` plus `home/hosts/linux/chise/` (per-user home-manager modules) as templates
-- Update `flake/nixos-configurations.nix` to register your machine alias under `nixosConfigurations`
+- Copy `hosts/chise/` (system config) and `home/hosts/linux/chise.nix` plus `home/hosts/linux/chise/` (per-user home-manager modules) as templates for the new alias
+- Update `flake/nixos-configurations.nix` to register `nixosConfigurations.<alias>`
 
 #### 4. Deploy the Flake
 ```bash
-sudo nixos-rebuild switch --flake .#your_user
+sudo nixos-rebuild switch --flake .?submodules=1#<alias>
 ```
 
 #### 5. Post-Deployment
@@ -104,7 +104,7 @@ sudo nixos-rebuild switch --flake .#your_user
 
 ### Home Manager Standalone
 
-Don't wanna go full NixOS for now? No worries! You can still use the flake with Home Manager to manage your dotfiles:
+For Ubuntu / non-NixOS Linux, drive the flake with Home Manager alone:
 <details>
 <summary>
    <b>Quick Start for: 🐧 Ubuntu/Non-NixOS systems</b>
@@ -124,9 +124,33 @@ curl -L https://nixos.org/nix/install | sh -s -- --daemon
 
 #### 3. Deploy with Home Manager
 ```bash
-# For the lucas.zanoni configuration (adjust username as needed)
-nix run home-manager/release-25.11 -- --flake .#jojo switch -b "backup-$(date +%Y-%m-%d-%H-%M-%S)"
+nix run home-manager/release-25.11 -- --flake .?submodules=1#jojo switch -b "backup-$(date +%Y-%m-%d-%H-%M-%S)"
 ```
+</details>
+
+---
+
+### macOS (nix-darwin)
+
+For macOS, the flake composes nix-darwin with home-manager:
+<details>
+<summary>
+   <b>Quick Start for: 🍎 macOS</b>
+</summary>
+
+#### 1. Install Nix + nix-darwin
+```bash
+sh <(curl -L https://nixos.org/nix/install)
+nix run nix-darwin -- switch --flake .?submodules=1#<alias>
+```
+
+#### 2. Activate later rebuilds
+```bash
+sudo darwin-rebuild switch --flake .?submodules=1#<alias>
+```
+Use the host's alias (`rin`, `kira`, ...). Wezterm is expected to be installed as a Homebrew cask; the cask list is declared in `hosts/<alias>/default.nix`.
+
+</details>
 </details>
 
 ---

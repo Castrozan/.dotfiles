@@ -3,14 +3,16 @@ Enforce patterns, not just suggest. When user proposes violation: 1) Explain WHY
 </stance>
 
 <architecture>
-flake.nix
-  homeConfigurations."$user@$arch" (standalone home-manager, non-NixOS)
-  nixosConfigurations."$user" (full NixOS system)
+flake.nix (inputs) + flake/{outputs,nixos-configurations,darwin-configurations,home-manager-modules}.nix (outputs)
+  nixosConfigurations.<alias>          (full NixOS system, e.g. chise)
+  darwinConfigurations.<alias>         (nix-darwin macOS, e.g. rin, kira)
+  homeConfigurations.<alias>           (standalone home-manager on non-NixOS Linux, e.g. jojo)
+Each output threads (hostname=<alias>, isNixOS, isDarwin, username) through extraSpecialArgs.
 </architecture>
 
-<nixos_detection>
-`isNixOS` boolean injected from flake.nix via specialArgs (NixOS) / extraSpecialArgs (standalone home-manager). NixOS configs get `true`, standalone gets `false`. Modules consume it as function argument: `{ isNixOS, ... }:`. Use `lib.mkIf isNixOS` for NixOS-conditional config. NEVER use `builtins.pathExists /etc/NIXOS` - broken in pure flake evaluation.
-</nixos_detection>
+<platform_detection>
+`isNixOS`, `isDarwin`, and `hostname` (the alias) are injected via specialArgs / extraSpecialArgs. Consume as function args: `{ isNixOS, isDarwin, hostname, ... }:`. Use `lib.mkIf` to guard. NEVER use `builtins.pathExists /etc/NIXOS` - broken in pure flake evaluation.
+</platform_detection>
 
 <directory_organization>
 bin/ - standalone scripts (system-wide, executable)
