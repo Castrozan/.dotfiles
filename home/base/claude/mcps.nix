@@ -6,6 +6,7 @@
   ...
 }:
 let
+  inherit (pkgs.stdenv.hostPlatform) isLinux;
   nodejs = pkgs.nodejs_22;
   homeDir = config.home.homeDirectory;
   inherit (config.home) username;
@@ -31,7 +32,7 @@ let
   browserUseMcpStreamableHttpPort = 8768;
   browserUseMcpStreamableHttpSessionTimeoutMilliseconds = 300000;
 
-  browserUseMcpStreamableHttpBridgeWrapper = pkgs.writeShellScriptBin "browser-use-mcp-streamable-http-bridge" ''
+  browserUseMcpStreamableHttpBridgeLauncher = pkgs.writeShellScript "browser-use-mcp-streamable-http-bridge-launcher" ''
     set -euo pipefail
 
     if ! "${browserMcp.supergatewayBinary}" --version >/dev/null 2>&1; then
@@ -58,7 +59,7 @@ let
   a2aMcpStreamableHttpPort = 8769;
   a2aMcpStreamableHttpSessionTimeoutMilliseconds = 300000;
 
-  a2aMcpStreamableHttpBridgeWrapper = pkgs.writeShellScriptBin "a2a-mcp-streamable-http-bridge" ''
+  a2aMcpStreamableHttpBridgeLauncher = pkgs.writeShellScript "a2a-mcp-streamable-http-bridge-launcher" ''
     set -euo pipefail
     export PATH="${nodejs}/bin:''${PATH:+:$PATH}"
 
@@ -75,6 +76,12 @@ let
       --port ${toString a2aMcpStreamableHttpPort}
   '';
 
+  chromeDevtoolsMcpStreamableHttpBridgeLauncher = pkgs.writeShellScript "chrome-devtools-mcp-streamable-http-bridge-launcher" ''
+    set -euo pipefail
+    ${browserMcp.chromeDevtoolsMcpOrphanReaper}
+    exec ${browserMcp.streamableHttpBridgeCommand}
+  '';
+
   twitterCli = import ../../../agents/skills/comms/skills/twitter/install {
     inherit
       pkgs
@@ -82,24 +89,28 @@ let
       ;
   };
 
-  mcpServersToInject = builtins.toJSON {
-    chrome-devtools = {
-      type = "http";
-      url = browserMcp.mcpServerStreamableHttpUrl;
-    };
-    browser-use = {
-      type = "http";
-      url = "http://localhost:${toString browserUseMcpStreamableHttpPort}/mcp";
-    };
-    codex = {
-      command = "${homeDir}/.local/bin/codex";
-      args = [ "mcp-server" ];
-    };
-    a2a = {
-      type = "http";
-      url = "http://localhost:${toString a2aMcpStreamableHttpPort}/mcp";
-    };
-  };
+  mcpServersToInject = builtins.toJSON (
+    {
+      chrome-devtools = {
+        type = "http";
+        url = browserMcp.mcpServerStreamableHttpUrl;
+      };
+      codex = {
+        command = "${homeDir}/.local/bin/codex";
+        args = [ "mcp-server" ];
+      };
+      a2a = {
+        type = "http";
+        url = "http://localhost:${toString a2aMcpStreamableHttpPort}/mcp";
+      };
+    }
+    // lib.optionalAttrs isLinux {
+      browser-use = {
+        type = "http";
+        url = "http://localhost:${toString browserUseMcpStreamableHttpPort}/mcp";
+      };
+    }
+  );
 
   injectMcpServersIntoClaudeConfig = pkgs.writeShellScript "inject-mcp-servers" ''
     set -euo pipefail
@@ -121,8 +132,45 @@ let
     "/usr/bin"
     "/bin"
   ];
+
+  crossPlatformMcpBridgeServiceSpecs = {
+    chrome-devtools-mcp-bridge = {
+      description = "Chrome DevTools MCP streamable HTTP bridge (supergateway)";
+      launcher = chromeDevtoolsMcpStreamableHttpBridgeLauncher;
+      linuxOnlyServiceExtraConfig = {
+        MemoryMax = "2G";
+      };
+    };
+    a2a-mcp-bridge = {
+      description = "A2A MCP streamable HTTP bridge (supergateway)";
+      launcher = a2aMcpStreamableHttpBridgeLauncher;
+      linuxOnlyServiceExtraConfig = { };
+    };
+  };
+
+  linuxOnlyMcpBridgeServiceSpecs = {
+    browser-use-mcp-bridge = {
+      description = "Browser-use MCP streamable HTTP bridge (supergateway)";
+      launcher = browserUseMcpStreamableHttpBridgeLauncher;
+      linuxOnlyServiceExtraConfig = { };
+    };
+  };
 in
 {
+  imports = [
+    (import ./mcps/mcp-bridge-runners.nix {
+      inherit
+        homeDir
+        nixSystemPaths
+        crossPlatformMcpBridgeServiceSpecs
+        linuxOnlyMcpBridgeServiceSpecs
+        ;
+    })
+    (import ./mcps/browser-use-config-patcher.nix {
+      inherit browserUseConfigDir chromeBinary;
+    })
+  ];
+
   home = {
     packages = browserMcp.packages ++ twitterCli.packages;
 
@@ -139,114 +187,9 @@ in
         run ${browserMcp.installSupergatewayViaNpm}
       '';
 
-      writeBrowserUseConfig =
-        let
-          defaultProfileId = "nix-default";
-          defaultConfig = builtins.toJSON {
-            browser_profile = {
-              "${defaultProfileId}" = {
-                id = defaultProfileId;
-                default = true;
-                headless = false;
-                executable_path = chromeBinary;
-              };
-            };
-          };
-          defaultConfigFile = pkgs.writeText "browseruse-default-config.json" defaultConfig;
-          patchBrowserUseConfigWithChromeBinary = pkgs.writeShellScript "patch-browseruse-config-with-chrome-binary" ''
-            set -euo pipefail
-            CONFIG="${browserUseConfigDir}/config.json"
-            mkdir -p "${browserUseConfigDir}"
-            if [ ! -f "$CONFIG" ] || [ "$(${pkgs.jq}/bin/jq '.browser_profile | length' "$CONFIG" 2>/dev/null)" = "0" ] || [ "$(${pkgs.jq}/bin/jq '.browser_profile | length' "$CONFIG" 2>/dev/null)" = "null" ]; then
-              cp --no-preserve=mode ${defaultConfigFile} "$CONFIG"
-            else
-              ${pkgs.jq}/bin/jq '
-                .browser_profile |= (
-                  to_entries |
-                  map(.value.executable_path = "${chromeBinary}" | .value.headless = false) |
-                  from_entries
-                )
-              ' "$CONFIG" | ${pkgs.moreutils}/bin/sponge "$CONFIG"
-            fi
-          '';
-        in
-        lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-          run ${patchBrowserUseConfigWithChromeBinary}
-        '';
-
       installA2aMcp = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
         run ${a2aMcp.installA2aMcpViaNpm}
       '';
-    };
-  };
-
-  systemd.user.services = {
-    browser-use-mcp-bridge = {
-      Unit = {
-        Description = "Browser-use MCP streamable HTTP bridge (supergateway)";
-        After = [ "graphical-session.target" ];
-      };
-
-      Service = {
-        Type = "simple";
-        ExecStart = "${browserUseMcpStreamableHttpBridgeWrapper}/bin/browser-use-mcp-streamable-http-bridge";
-        Restart = "always";
-        RestartSec = "3s";
-        Environment = [
-          "PATH=${nixSystemPaths}"
-          "HOME=${homeDir}"
-        ];
-      };
-
-      Install = {
-        WantedBy = [ "default.target" ];
-      };
-    };
-
-    a2a-mcp-bridge = {
-      Unit = {
-        Description = "A2A MCP streamable HTTP bridge (supergateway)";
-        After = [ "graphical-session.target" ];
-      };
-
-      Service = {
-        Type = "simple";
-        ExecStart = "${a2aMcpStreamableHttpBridgeWrapper}/bin/a2a-mcp-streamable-http-bridge";
-        Restart = "always";
-        RestartSec = "3s";
-        Environment = [
-          "PATH=${nixSystemPaths}"
-          "HOME=${homeDir}"
-        ];
-      };
-
-      Install = {
-        WantedBy = [ "default.target" ];
-      };
-    };
-
-    chrome-devtools-mcp-bridge = {
-      Unit = {
-        Description = "Chrome DevTools MCP streamable HTTP bridge (supergateway)";
-        After = [ "graphical-session.target" ];
-      };
-
-      Service = {
-        Type = "simple";
-        ExecStartPre = "${browserMcp.chromeDevtoolsMcpOrphanReaper}";
-        ExecStart = browserMcp.streamableHttpBridgeCommand;
-        Restart = "always";
-        RestartSec = "3s";
-        MemoryMax = "2G";
-        Environment = [
-          "PATH=${nixSystemPaths}"
-          "HOME=${homeDir}"
-        ];
-      };
-
-      Install = {
-        WantedBy = [ "default.target" ];
-      };
     };
   };
 }
