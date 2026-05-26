@@ -140,10 +140,16 @@
     '';
   };
 
-  nix.settings.trusted-users = [
-    "root"
-    username
-  ];
+  nix.settings = {
+    trusted-users = [
+      "root"
+      username
+    ];
+    experimental-features = [
+      "nix-command"
+      "flakes"
+    ];
+  };
 
   nixpkgs = {
     config.allowUnfree = true;
