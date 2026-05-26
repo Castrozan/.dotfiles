@@ -42,7 +42,10 @@ in
       "github.com" = {
         hostname = "github.com";
         user = "git";
-        identityFile = "~/.ssh/id_rsa";
+        identityFile = [
+          "~/.ssh/id_ed25519"
+          "~/.ssh/id_rsa"
+        ];
       };
     };
   };
