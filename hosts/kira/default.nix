@@ -103,11 +103,13 @@
   homebrew = {
     enable = true;
     onActivation.cleanup = "zap";
+    taps = [ "nikitabobko/tap" ];
     casks = [
       "brave-browser"
       "dbeaver-community"
       "docker"
       "google-chrome"
+      "nikitabobko/tap/aerospace"
       "obsidian"
       "wezterm"
     ];
