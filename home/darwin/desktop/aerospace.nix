@@ -87,10 +87,10 @@ in
     };
   };
 
-  launchd.agents.aerospace = {
+  launchd.agents.aerospace-app = {
     enable = true;
     config = {
-      Label = "org.nix-community.home.aerospace";
+      Label = "org.nix-community.home.aerospace-app";
       ProgramArguments = [
         "/Applications/AeroSpace.app/Contents/MacOS/AeroSpace"
       ];
