@@ -125,6 +125,7 @@ let
   buildAgentWindowCommand =
     name: agent:
     let
+      workspaceDirectory = agentWorkspaceDirectory name;
       heartbeatBootstrapArgvFlag =
         if agent.heartbeatInterval != null then
           "--heartbeat-bootstrap-argv ${lib.escapeShellArg (builtins.toJSON (buildHeartbeatBootstrapArgv name agent))}"
@@ -136,9 +137,7 @@ let
         else
           "";
       dailySessionRotationFlag = if agent.dailySessionRotation then "--daily-session-rotation" else "";
-    in
-    pkgs.writeShellScript "clawde-agent-${name}" (
-      lib.concatStringsSep " " [
+      execPythonWrapperInvocation = lib.concatStringsSep " " [
         "exec"
         "${pkgs.python312}/bin/python3"
         "${./scripts/clawde-agent-wrapper.py}"
@@ -147,8 +146,12 @@ let
         heartbeatBootstrapArgvFlag
         activeHoursFlags
         dailySessionRotationFlag
-      ]
-    );
+      ];
+    in
+    pkgs.writeShellScript "clawde-agent-${name}" ''
+      cd ${lib.escapeShellArg workspaceDirectory}
+      ${execPythonWrapperInvocation}
+    '';
 
   buildAgentSpecification = name: agent: {
     inherit name;
