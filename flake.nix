@@ -46,6 +46,10 @@
     hyprland.url = "github:hyprwm/Hyprland/v0.55.2";
 
     # Own forks — follow nixpkgs (tested, no version-sensitive deps)
+    aerospace = {
+      url = "github:Castrozan/AeroSpace/fix/tahoe-ax-prompt-loop";
+      flake = false;
+    };
     cbonsai.url = "github:castrozan/cbonsai";
     cbonsai.inputs.nixpkgs.follows = "nixpkgs";
     cmatrix.url = "github:castrozan/cmatrix";

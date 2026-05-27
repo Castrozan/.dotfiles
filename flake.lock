@@ -1,5 +1,22 @@
 {
   "nodes": {
+    "aerospace": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1779912808,
+        "narHash": "sha256-MR3EvwIbwHlvhWyPs6rRx3GsRUWlv1Jd5qld/v5qSoU=",
+        "owner": "Castrozan",
+        "repo": "AeroSpace",
+        "rev": "f56a624f51f9e3dc5101da920cd286775f7539b6",
+        "type": "github"
+      },
+      "original": {
+        "owner": "Castrozan",
+        "ref": "fix/tahoe-ax-prompt-loop",
+        "repo": "AeroSpace",
+        "type": "github"
+      }
+    },
     "agenix": {
       "inputs": {
         "darwin": "darwin",
@@ -1526,6 +1543,7 @@
     },
     "root": {
       "inputs": {
+        "aerospace": "aerospace",
         "agenix": "agenix",
         "bluetui": "bluetui",
         "cbonsai": "cbonsai",

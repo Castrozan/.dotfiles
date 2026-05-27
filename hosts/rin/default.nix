@@ -103,7 +103,6 @@
   homebrew = {
     enable = true;
     onActivation.cleanup = "zap";
-    taps = [ "nikitabobko/tap" ];
     brews = [
       "tailscale"
     ];
@@ -112,7 +111,6 @@
       "dbeaver-community"
       "docker"
       "google-chrome"
-      "nikitabobko/tap/aerospace"
       "obsidian"
       "wezterm"
     ];
