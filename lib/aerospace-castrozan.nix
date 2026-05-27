@@ -64,8 +64,8 @@ stdenv.mkDerivation {
     let subcommandDescriptions: [[String]] = []
     SWIFT_EOF
 
-    /usr/bin/xcrun swift build -c release --arch arm64 --arch x86_64 --product aerospace
-    /usr/bin/xcrun swift build -c release --arch arm64 --arch x86_64 --product AeroSpaceApp
+    /Library/Developer/CommandLineTools/usr/bin/swift build -c release --arch arm64 --arch x86_64 --product aerospace
+    /Library/Developer/CommandLineTools/usr/bin/swift build -c release --arch arm64 --arch x86_64 --product AeroSpaceApp
 
     runHook postBuild
   '';
