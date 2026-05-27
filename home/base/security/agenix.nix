@@ -2,12 +2,17 @@
   inputs,
   config,
   lib,
+  hostname,
   ...
 }:
 let
   secretsDirectory = "${config.home.homeDirectory}/.secrets";
 
   identityKeyPath = "${config.home.homeDirectory}/.ssh/id_ed25519";
+
+  privateConfigRoot = ../../../private-config;
+  privateMachineSecretsModulePath = "${toString privateConfigRoot}/machines/${hostname}/secrets.nix";
+  privateMachineSecretsModuleExists = builtins.pathExists privateMachineSecretsModulePath;
 
   makeSecret = name: {
     file = ../../../secrets/${name}.age;
@@ -80,7 +85,12 @@ let
   '';
 in
 {
-  imports = [ inputs.agenix.homeManagerModules.default ];
+  imports = [
+    inputs.agenix.homeManagerModules.default
+  ]
+  ++ lib.optionals privateMachineSecretsModuleExists [
+    privateMachineSecretsModulePath
+  ];
 
   age = {
     identityPaths = [ identityKeyPath ];
