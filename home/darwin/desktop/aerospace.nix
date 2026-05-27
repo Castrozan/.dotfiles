@@ -1,4 +1,9 @@
-{ lib, config, ... }:
+{
+  lib,
+  config,
+  unstable,
+  ...
+}:
 let
   workspaceNumbers = lib.range 1 7;
 
@@ -51,6 +56,7 @@ in
 {
   programs.aerospace = {
     enable = true;
+    package = unstable.aerospace;
     launchd.enable = false;
     userSettings = {
       enable-normalization-flatten-containers = true;
