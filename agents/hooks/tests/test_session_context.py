@@ -18,12 +18,16 @@ class TestExtractVscodeProjectNameFromTitle:
     def test_standard_vscode_title_with_file_and_project(self):
         title = "flake.nix - dotfiles - Visual Studio Code"
         assert (
-            session_context_hyprland.extract_vscode_project_name_from_title(title) == "dotfiles"
+            session_context_hyprland.extract_vscode_project_name_from_title(title)
+            == "dotfiles"
         )
 
     def test_vscode_title_with_only_project(self):
         title = "oauth - Visual Studio Code"
-        assert session_context_hyprland.extract_vscode_project_name_from_title(title) == "oauth"
+        assert (
+            session_context_hyprland.extract_vscode_project_name_from_title(title)
+            == "oauth"
+        )
 
     def test_vscode_title_with_nested_dashes_in_filename(self):
         title = "my-config-file.yaml - my-project - Visual Studio Code"
