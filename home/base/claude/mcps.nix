@@ -89,41 +89,6 @@ let
       ;
   };
 
-  mcpServersToInject = builtins.toJSON (
-    {
-      chrome-devtools = {
-        type = "http";
-        url = browserMcp.mcpServerStreamableHttpUrl;
-      };
-      codex = {
-        command = "${homeDir}/.local/bin/codex";
-        args = [ "mcp-server" ];
-      };
-      a2a = {
-        type = "http";
-        url = "http://localhost:${toString a2aMcpStreamableHttpPort}/mcp";
-      };
-    }
-    // lib.optionalAttrs isLinux {
-      browser-use = {
-        type = "http";
-        url = "http://localhost:${toString browserUseMcpStreamableHttpPort}/mcp";
-      };
-    }
-  );
-
-  injectMcpServersIntoClaudeConfig = pkgs.writeShellScript "inject-mcp-servers" ''
-    set -euo pipefail
-    CLAUDE_CONFIG="${homeDir}/.claude.json"
-    SERVERS='${mcpServersToInject}'
-
-    if [ ! -f "$CLAUDE_CONFIG" ]; then
-      echo '{"mcpServers":{}}' > "$CLAUDE_CONFIG"
-    fi
-
-    ${pkgs.jq}/bin/jq --argjson servers "$SERVERS" '.mcpServers = (.mcpServers // {}) + $servers' "$CLAUDE_CONFIG" | ${pkgs.moreutils}/bin/sponge "$CLAUDE_CONFIG"
-  '';
-
   nixSystemPaths = lib.concatStringsSep ":" [
     "${nodejs}/bin"
     "/run/current-system/sw/bin"
@@ -169,16 +134,18 @@ in
     (import ./mcps/browser-use-config-patcher.nix {
       inherit browserUseConfigDir chromeBinary;
     })
+    (import ./mcps/inject-mcp-servers-into-claude-config.nix {
+      inherit homeDir;
+      chromeDevtoolsMcpStreamableHttpUrl = browserMcp.mcpServerStreamableHttpUrl;
+      inherit a2aMcpStreamableHttpPort browserUseMcpStreamableHttpPort;
+      codexBinaryPath = "${homeDir}/.local/bin/codex";
+    })
   ];
 
   home = {
     packages = browserMcp.packages ++ twitterCli.packages;
 
     activation = {
-      injectMcpServers = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-        run ${injectMcpServersIntoClaudeConfig}
-      '';
-
       installChromeDevtoolsMcp = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
         run ${browserMcp.installChromeDevtoolsMcpViaNpm}
       '';
