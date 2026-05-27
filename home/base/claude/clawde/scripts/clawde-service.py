@@ -69,15 +69,15 @@ def ensure_agent_window(
         )
 
 
-def ensure_all_agent_windows(specification: dict) -> None:
-    session_name = specification["session_name"]
+def ensure_agent_windows_for_session(session_specification: dict) -> None:
+    session_name = session_specification["name"]
 
     placeholder_created = False
     if not session_exists(session_name):
         create_session_with_placeholder_window(session_name)
         placeholder_created = True
 
-    for agent_specification in specification["agents"]:
+    for agent_specification in session_specification["agents"]:
         ensure_agent_window(
             session_name,
             agent_specification["name"],
@@ -88,8 +88,14 @@ def ensure_all_agent_windows(specification: dict) -> None:
         remove_placeholder_window(session_name)
 
 
-def supervise_until_session_ends(session_name: str) -> None:
-    while session_exists(session_name):
+def ensure_all_agent_windows(specification: dict) -> None:
+    for session_specification in specification["sessions"]:
+        ensure_agent_windows_for_session(session_specification)
+
+
+def supervise_until_all_sessions_end(specification: dict) -> None:
+    declared_session_names = [session["name"] for session in specification["sessions"]]
+    while any(session_exists(name) for name in declared_session_names):
         time.sleep(SUPERVISOR_POLL_INTERVAL_SECONDS)
 
 
@@ -102,15 +108,15 @@ def parse_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         prog="clawde-service",
         description=(
-            "Idempotently ensure the clawde tmux session and all agent windows "
-            "exist, bootstrap heartbeats only for newly-created windows, then supervise "
-            "until the session goes away."
+            "Idempotently ensure every declared clawde tmux session and all agent "
+            "windows exist, bootstrap heartbeats only for newly-created windows, "
+            "then supervise until every declared session goes away."
         ),
     )
     parser.add_argument(
         "--specification-file",
         required=True,
-        help="Path to JSON file describing the session and its agents",
+        help="Path to JSON file describing the sessions and their agents",
     )
     return parser.parse_args()
 
@@ -119,7 +125,7 @@ def main() -> None:
     arguments = parse_arguments()
     specification = load_specification(arguments.specification_file)
     ensure_all_agent_windows(specification)
-    supervise_until_session_ends(specification["session_name"])
+    supervise_until_all_sessions_end(specification)
 
 
 if __name__ == "__main__":

@@ -10,7 +10,7 @@ let
   secretsDirectory = "${homeDir}/.secrets";
   claudeBinary = "${homeDir}/.nix-profile/bin/claude";
 
-  tmuxSessionName = "claude-discord";
+  defaultTmuxSessionName = "claude-discord";
   agentWorkspacesBaseDirectory = "${homeDir}/.claude-discord-agents";
 
   cfg = config.clawde;
@@ -28,9 +28,7 @@ let
 
   clawdeRuntimeInstructions = builtins.readFile ./instructions/clawde-runtime.md;
 
-  a2aPeerHelpers = import ./peer-adapters/a2a/lib.nix { inherit pkgs lib tmuxSessionName; };
-
-  agentChannelEnvDirectory = name: "${homeDir}/.claude/channels/discord/${name}";
+  a2aPeerHelpers = import ./peer-adapters/a2a/lib.nix { inherit pkgs lib; };
 
   getChannelAdapterFor = agent: cfg.channelAdapters.${agent.channel.type} or null;
 
@@ -113,7 +111,7 @@ let
     "${pkgs.python312}/bin/python3"
     "${./scripts/bootstrap-heartbeat.py}"
     "--session"
-    tmuxSessionName
+    agent.tmuxSession
     "--window"
     name
     "--interval"
@@ -164,10 +162,19 @@ let
     in
     [ mainSpec ] ++ peerSpecs;
 
+  distinctTmuxSessionNames = lib.unique (map (name: cfg.agents.${name}.tmuxSession) agentNames);
+
+  agentNamesInTmuxSession =
+    sessionName: builtins.filter (name: cfg.agents.${name}.tmuxSession == sessionName) agentNames;
+
+  buildSessionSpecification = sessionName: {
+    name = sessionName;
+    agents = lib.concatMap buildAllSpecificationsForOneAgent (agentNamesInTmuxSession sessionName);
+  };
+
   clawdeServiceSpecificationFile = pkgs.writeText "clawde-service-specification.json" (
     builtins.toJSON {
-      session_name = tmuxSessionName;
-      agents = lib.concatMap buildAllSpecificationsForOneAgent agentNames;
+      sessions = map buildSessionSpecification distinctTmuxSessionNames;
     }
   );
 in
@@ -176,17 +183,16 @@ in
     homeDir
     secretsDirectory
     claudeBinary
-    tmuxSessionName
+    defaultTmuxSessionName
+    distinctTmuxSessionNames
     agentWorkspacesBaseDirectory
     cfg
     agentNames
     hasAgents
     clawdeRuntimePaths
     agentWorkspaceDirectory
-    agentChannelEnvDirectory
     resolveChannelAdapterTokenSecretFile
     resolveChannelAdapterTokenEnvironmentVariable
-    buildAgentClaudeMarkdownContent
     clawdeServiceSpecificationFile
     ;
 }

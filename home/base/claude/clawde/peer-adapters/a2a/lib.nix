@@ -1,7 +1,6 @@
 {
   pkgs,
   lib,
-  tmuxSessionName,
 }:
 let
   a2aPeerAdapterInstructions = builtins.readFile ./instructions/a2a-peer-runtime.md;
@@ -47,7 +46,7 @@ let
         "--tmux-meaningful-line-pattern"
         (lib.escapeShellArg agent.expose.a2a.tmuxMeaningfulLinePattern)
         "--tmux-session-name"
-        (lib.escapeShellArg tmuxSessionName)
+        (lib.escapeShellArg agent.tmuxSession)
         "--tmux-window-name"
         (lib.escapeShellArg name)
       ]

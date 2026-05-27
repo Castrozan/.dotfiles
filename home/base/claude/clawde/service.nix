@@ -9,7 +9,7 @@ let
   inherit (helpers)
     hasAgents
     homeDir
-    tmuxSessionName
+    defaultTmuxSessionName
     clawdeRuntimePaths
     clawdeServiceSpecificationFile
     ;
@@ -18,7 +18,7 @@ let
 
   clawdeSessionStarter = pkgs.writeShellScriptBin "clawde" ''
     export TMUX_BIN=${pkgs.tmux}/bin/tmux
-    export TMUX_SESSION_NAME=${lib.escapeShellArg tmuxSessionName}
+    export DEFAULT_TMUX_SESSION_NAME=${lib.escapeShellArg defaultTmuxSessionName}
     export SYSTEMD_USER_SERVICE_NAME=clawde
     export LAUNCHD_LABEL=org.nix-community.home.clawde
     ${builtins.readFile ./scripts/start-clawde.sh}
