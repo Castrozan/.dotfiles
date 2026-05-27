@@ -8,7 +8,7 @@ let
 
   homeDir = homeDirectory;
   secretsDirectory = "${homeDir}/.secrets";
-  claudeBinary = "${homeDir}/.nix-profile/bin/claude";
+  claudeBinary = lib.getExe config.claude.package;
 
   tmuxSessionName = "claude-discord";
   agentWorkspacesBaseDirectory = "${homeDir}/clawde";
