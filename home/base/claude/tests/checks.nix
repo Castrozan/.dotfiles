@@ -33,6 +33,25 @@ let
     }
   ];
 
+  cfgWithClawdeAgentsOnDistinctSessions = helpers.homeManagerTestConfiguration [
+    self.homeManagerModules.claude-code
+    {
+      clawde.agents = {
+        agent-on-default-session = {
+          channel.type = "discord";
+          channel.discord.botTokenSecretName = "discord-bot-token-test";
+          personality = "Default session agent personality";
+        };
+        agent-on-custom-session = {
+          channel.type = "discord";
+          channel.discord.botTokenSecretName = "discord-bot-token-test";
+          tmuxSession = "custom-session-for-this-agent";
+          personality = "Custom session agent personality";
+        };
+      };
+    }
+  ];
+
   clawdeService = cfgWithClawdeAgent.systemd.user.services.clawde;
 
   fileNames = builtins.attrNames cfg.home.file;
@@ -88,6 +107,27 @@ in
   clawde-after-agenix =
     mkEvalCheck "clawde-after-agenix" (builtins.elem "agenix.service" (clawdeService.Unit.After or [ ]))
       "clawde.service must After=agenix.service so the bot tokens are available when the supervisor starts on initial boot";
+
+  clawde-agent-tmux-session-defaults-to-claude-discord =
+    mkEvalCheck "clawde-agent-tmux-session-defaults-to-claude-discord"
+      (cfgWithClawdeAgent.clawde.agents.test-agent.tmuxSession == "claude-discord")
+      "clawde.agents.<name>.tmuxSession must default to 'claude-discord' so existing configs keep their current behavior";
+
+  clawde-agent-tmux-session-accepts-custom-value =
+    mkEvalCheck "clawde-agent-tmux-session-accepts-custom-value"
+      (
+        cfgWithClawdeAgentsOnDistinctSessions.clawde.agents.agent-on-custom-session.tmuxSession
+        == "custom-session-for-this-agent"
+      )
+      "clawde.agents.<name>.tmuxSession must round-trip a custom session name set in the config";
+
+  clawde-agents-can-live-on-distinct-tmux-sessions =
+    mkEvalCheck "clawde-agents-can-live-on-distinct-tmux-sessions"
+      (
+        cfgWithClawdeAgentsOnDistinctSessions.clawde.agents.agent-on-default-session.tmuxSession
+        != cfgWithClawdeAgentsOnDistinctSessions.clawde.agents.agent-on-custom-session.tmuxSession
+      )
+      "two agents with different tmuxSession values must keep distinct session names so the clawde supervisor can host them in separate tmux sessions";
 
   chrome-devtools-bridge-service-exists =
     let
