@@ -10,7 +10,7 @@ let
   secretsDirectory = "${homeDir}/.secrets";
   claudeBinary = lib.getExe config.claude.package;
 
-  tmuxSessionName = "claude-discord";
+  tmuxSessionName = "clawde";
   agentWorkspacesBaseDirectory = "${homeDir}/.claude-discord-agents";
 
   cfg = config.clawde;

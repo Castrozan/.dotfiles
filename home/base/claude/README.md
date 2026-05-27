@@ -25,7 +25,7 @@ Home-manager module that installs Claude Code, declares its config, and runs per
 
 ## clawde
 
-`clawde/` is the persistent-agent framework. One systemd-user service supervises one tmux session (`claude-discord`), with one window per agent. Each agent is declared as `clawde.agents.<name>` with a channel adapter (`channel.type = "pm"` or `"discord"`) and optional peer adapters (`expose.a2a.enable = true`).
+`clawde/` is the persistent-agent framework. One systemd-user service supervises one tmux session (`clawde`), with one window per agent. Each agent is declared as `clawde.agents.<name>` with a channel adapter (`channel.type = "pm"` or `"discord"`) and optional peer adapters (`expose.a2a.enable = true`).
 
 See `clawde/default.nix` for the option schema, `clawde/instructions/clawde-runtime.md` for runtime rules, and `clawde/channel-adapters/<name>/instructions/<name>-runtime.md` for per-channel behavior.
 

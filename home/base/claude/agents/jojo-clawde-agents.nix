@@ -76,7 +76,7 @@ in
         - Use the codex MCP (mcp__codex__*) for tasks that fit Codex's strengths.
 
         Persistent project agents:
-        - Each project with a .pm/HEARTBEAT.md has a tmux window inside the claude-discord tmux session. Send work to it with tmux send-keys against that window.
+        - Each project with a .pm/HEARTBEAT.md has a tmux window inside the clawde tmux session. Send work to it with tmux send-keys against that window.
         - Persistent agents are declared in nix (home/base/claude/agents/jojo-clawde-agents.nix). If a project does not have one yet, ask Lucas to declare it.
 
         When delegating, write a tight self-contained brief. The receiving session does not see your Discord conversation.
