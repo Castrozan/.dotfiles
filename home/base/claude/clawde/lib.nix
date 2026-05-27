@@ -155,7 +155,7 @@ let
 
   buildAgentSpecification = name: agent: {
     inherit name;
-    wrapper_command = "${buildAgentWindowCommand name agent}";
+    wrapper_command = "exec ${buildAgentWindowCommand name agent}";
   };
 
   buildAllSpecificationsForOneAgent =
