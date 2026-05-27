@@ -84,14 +84,14 @@ Two candidate paths exist:
 - Harness-managed: `~/.claude/projects/<cwd-encoded>/memory/`. Auto-loaded
   by the harness on session start, but opaque path, scattered across
   `~/.claude/projects/`, owned by Claude internals.
-- Agent workspace: `~/.claude-discord-agents/<name>/memory/`. Visible,
+- Agent workspace: `~/clawde/<name>/memory/`. Visible,
   declarative, co-located with the agent's identity. But the harness does
   not auto-load `MEMORY.md` from there.
 
 Decision: workspace path is canonical. Bridge with a symlink created at
 agent workspace seeding:
 
-    ~/.claude/projects/<cwd-encoded>/memory/  ->  ~/.claude-discord-agents/<name>/memory/
+    ~/.claude/projects/<cwd-encoded>/memory/  ->  ~/clawde/<name>/memory/
 
 This gives both: the canonical visible path lives with the agent, AND the
 harness loads `MEMORY.md` for free via the symlink. The `autoMemory-
@@ -127,7 +127,7 @@ strategies work without code changes.
 └───────────────────────────────────────────────────────┘
 
 storage:
-~/.claude-discord-agents/silver/memory/         <- canonical
+~/clawde/silver/memory/                         <- canonical
   MEMORY.md                                     <- one-line pointers
   user-284143065877184512.md                    <- lucas facts
   user-<other-id>.md                            <- per-discord-user

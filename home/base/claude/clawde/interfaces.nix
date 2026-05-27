@@ -22,7 +22,7 @@
           workspaceDirectoryFor = lib.mkOption {
             type = lib.types.functionTo (lib.types.nullOr lib.types.str);
             default = _: null;
-            description = "Function: agent -> absolute workspace path, or null to fall back to the clawde default (~/.claude-discord-agents/<name>).";
+            description = "Function: agent -> absolute workspace path, or null to fall back to the clawde default (~/clawde/<name>).";
           };
           agentActivationScriptFor = lib.mkOption {
             type = lib.types.functionTo lib.types.str;
