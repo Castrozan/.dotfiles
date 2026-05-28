@@ -1,25 +1,34 @@
-{ pkgs, ... }:
+{ pkgs, lib, ... }:
 let
+  # kcov drives bash coverage but is Linux-only in nixpkgs. Omit it from the
+  # darwin closures so home-manager can still build dotfiles-test there; the
+  # coverage helper is omitted entirely.
+  kcovPackages = lib.optional pkgs.stdenv.hostPlatform.isLinux pkgs.kcov;
+
   dotfiles-test = pkgs.writeShellScriptBin "dotfiles-test" ''
     export PATH="${
-      pkgs.lib.makeBinPath [
-        pkgs.bats
-        pkgs.kcov
-        pkgs.bc
-        pkgs.python312Packages.pytest
-        pkgs.qt6.qtdeclarative
-      ]
+      pkgs.lib.makeBinPath (
+        [
+          pkgs.bats
+          pkgs.bc
+          pkgs.python312Packages.pytest
+          pkgs.qt6.qtdeclarative
+        ]
+        ++ kcovPackages
+      )
     }:$PATH"
     export QT_DECLARATIVE_PATH="${pkgs.qt6.qtdeclarative}"
     exec ~/.dotfiles/tests/run.sh "$@"
   '';
   dotfiles-coverage = pkgs.writeShellScriptBin "dotfiles-coverage" ''
     export PATH="${
-      pkgs.lib.makeBinPath [
-        pkgs.kcov
-        pkgs.bats
-        pkgs.bc
-      ]
+      pkgs.lib.makeBinPath (
+        [
+          pkgs.bats
+          pkgs.bc
+        ]
+        ++ kcovPackages
+      )
     }:$PATH"
     exec ~/.dotfiles/tests/cover/bash-coverage.sh "$@"
   '';
@@ -112,10 +121,10 @@ in
     dotfiles-coverage
     dotfiles-perf
     pkgs.bats
-    pkgs.kcov
     pkgs.deadnix
     pkgs.statix
     pkgs.nixfmt
     pkgs.python312Packages.pytest
-  ];
+  ]
+  ++ kcovPackages;
 }
