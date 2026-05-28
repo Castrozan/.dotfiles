@@ -51,7 +51,7 @@ in
 {
   programs.aerospace = {
     enable = true;
-    launchd.enable = true;
+    launchd.enable = false;
     userSettings = {
       enable-normalization-flatten-containers = true;
       enable-normalization-opposite-orientation-for-nested-containers = true;
@@ -84,6 +84,20 @@ in
 
       mode.main.binding =
         workspaceSwitchBindings // workspaceMoveBindings // focusBindings // workspaceNavigationBindings;
+    };
+  };
+
+  launchd.agents.aerospace-app = {
+    enable = true;
+    config = {
+      Label = "org.nix-community.home.aerospace-app";
+      ProgramArguments = [
+        "/Applications/AeroSpace.app/Contents/MacOS/AeroSpace"
+      ];
+      RunAtLoad = true;
+      KeepAlive = true;
+      StandardOutPath = "/tmp/aerospace.log";
+      StandardErrorPath = "/tmp/aerospace.err.log";
     };
   };
 }

@@ -103,6 +103,7 @@
   homebrew = {
     enable = true;
     onActivation.cleanup = "zap";
+    taps = [ "nikitabobko/tap" ];
     brews = [
       "tailscale"
     ];
@@ -111,6 +112,7 @@
       "dbeaver-community"
       "docker"
       "google-chrome"
+      "nikitabobko/tap/aerospace"
       "obsidian"
       "wezterm"
     ];
@@ -135,14 +137,21 @@
   security = {
     pam.services.sudo_local.touchIdAuth = true;
     sudo.extraConfig = ''
-      ${username} ALL=(ALL) NOPASSWD: ALL
+      Cmnd_Alias NIX_DARWIN_CMDS = /run/current-system/sw/bin/darwin-rebuild, /run/current-system/sw/bin/nix, /run/current-system/sw/bin/nix-env, /run/current-system/sw/bin/nix-store, /run/current-system/sw/bin/nix-channel, /run/current-system/sw/bin/nix-build, /run/current-system/sw/bin/nix-collect-garbage, /run/current-system/sw/bin/nix-instantiate, /run/current-system/sw/bin/nix-shell, /run/current-system/sw/bin/nix-prefetch-url, /run/current-system/sw/bin/nix-hash, /run/current-system/sw/bin/nix-copy-closure, /run/current-system/sw/bin/nix-daemon, /bin/launchctl
+      ${username} ALL=(ALL) NOPASSWD: NIX_DARWIN_CMDS
     '';
   };
 
-  nix.settings.trusted-users = [
-    "root"
-    username
-  ];
+  nix.settings = {
+    trusted-users = [
+      "root"
+      username
+    ];
+    experimental-features = [
+      "nix-command"
+      "flakes"
+    ];
+  };
 
   nixpkgs = {
     config.allowUnfree = true;

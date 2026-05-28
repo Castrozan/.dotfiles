@@ -126,8 +126,8 @@ in
 
           tmuxSession = lib.mkOption {
             type = lib.types.str;
-            default = "claude-discord";
-            description = "tmux session name that hosts this agent's window. Agents sharing the same value live as windows of the same tmux session; distinct values create separate sessions, all supervised by the single clawde systemd service. Defaults to 'claude-discord'.";
+            default = "clawde";
+            description = "tmux session name that hosts this agent's window. Agents sharing the same value live as windows of the same tmux session; distinct values create separate sessions, all supervised by the single clawde systemd service. Defaults to 'clawde'.";
           };
 
           channel = lib.mkOption {

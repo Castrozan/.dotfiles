@@ -108,10 +108,10 @@ in
     mkEvalCheck "clawde-after-agenix" (builtins.elem "agenix.service" (clawdeService.Unit.After or [ ]))
       "clawde.service must After=agenix.service so the bot tokens are available when the supervisor starts on initial boot";
 
-  clawde-agent-tmux-session-defaults-to-claude-discord =
-    mkEvalCheck "clawde-agent-tmux-session-defaults-to-claude-discord"
-      (cfgWithClawdeAgent.clawde.agents.test-agent.tmuxSession == "claude-discord")
-      "clawde.agents.<name>.tmuxSession must default to 'claude-discord' so existing configs keep their current behavior";
+  clawde-agent-tmux-session-defaults-to-clawde =
+    mkEvalCheck "clawde-agent-tmux-session-defaults-to-clawde"
+      (cfgWithClawdeAgent.clawde.agents.test-agent.tmuxSession == "clawde")
+      "clawde.agents.<name>.tmuxSession must default to 'clawde' so agents without an explicit session share the canonical clawde tmux session";
 
   clawde-agent-tmux-session-accepts-custom-value =
     mkEvalCheck "clawde-agent-tmux-session-accepts-custom-value"

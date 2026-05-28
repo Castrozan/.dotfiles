@@ -20,9 +20,7 @@ bootstrap_module = _load_bootstrap_module()
 
 
 def test_bootstrap_buffer_name_is_unique_per_target():
-    name_for_first_agent = bootstrap_module.build_bootstrap_buffer_name(
-        "claude-discord:jenny"
-    )
+    name_for_first_agent = bootstrap_module.build_bootstrap_buffer_name("clawde:jenny")
     name_for_second_agent = bootstrap_module.build_bootstrap_buffer_name(
         "esfinge:esfinge"
     )

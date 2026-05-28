@@ -8,7 +8,7 @@ description: Manage today's daily manager report file. Use when the user asks to
 </announcement>
 
 <file_location>
-One file per day at `~/vault/manager-reports/YYYY-MM-DD-manager-report.md`. Multiple sessions may write the same file concurrently.
+One file per day named `<YYYY-MM-DD>-manager-report.md`. Storage directory is resolved at call time: walk up from cwd for a `.pm/HEARTBEAT.md` marker; if found, write under `<workspace-root>/manager-reports/`; otherwise fall back to `~/vault/manager-reports/`. Multiple sessions may write the same file concurrently.
 </file_location>
 
 <helper_script>

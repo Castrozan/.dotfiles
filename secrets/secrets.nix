@@ -2,10 +2,12 @@ let
   chise_key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDXjYtc1kccaHnEeCnLfn5jB+3K8ULqIIsFoq+4pc+fX";
   jojo_key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPdOdWOmB7IhmU70+VwgUJ40MHCOwhhrDBn6rq/Fskq/";
   rin_key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGyaFnjj9zi0BO5w6+CSjkO6L3A1nGveR651ZDHz9pa+";
+  kira_key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJw+IAmg/Vwv7U3BKyKl5fE+VidKx3ZPp8fkWJTy4jNG";
   all_keys = [
     chise_key
     jojo_key
     rin_key
+    kira_key
   ];
 in
 {
