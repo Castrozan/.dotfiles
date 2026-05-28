@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-05-24T17:57:49.139796+00:00",
-  "git_commit": "d379f890",
+  "generated_at": "2026-05-28T20:47:03.598300+00:00",
+  "git_commit": "c4618a2d",
   "total_tests": 174,
-  "total_passed": 161,
-  "total_failed": 13,
-  "pass_rate": 0.9253,
+  "total_passed": 164,
+  "total_failed": 10,
+  "pass_rate": 0.9425,
   "categories": {
     "other": {
-      "passed": 47,
-      "failed": 6,
+      "passed": 50,
+      "failed": 3,
       "tests": [
         {
           "name": "worktrees_knows_builtin_flag",
@@ -72,7 +72,7 @@
         },
         {
           "name": "local_information_first",
-          "passed": false
+          "passed": true
         },
         {
           "name": "nix_rebuild_trigger_fires_on_nix_edit",
@@ -144,11 +144,11 @@
         },
         {
           "name": "git_history_starts_with_layer1",
-          "passed": false
+          "passed": true
         },
         {
           "name": "git_history_escalates_to_layer2",
-          "passed": false
+          "passed": true
         },
         {
           "name": "git_history_uses_broad_keywords",
@@ -225,8 +225,8 @@
       ]
     },
     "compliance": {
-      "passed": 37,
-      "failed": 2,
+      "passed": 35,
+      "failed": 4,
       "tests": [
         {
           "name": "delegation_multi_agent_implementation_prefers_teams",
@@ -270,7 +270,7 @@
         },
         {
           "name": "description_length_awareness",
-          "passed": false
+          "passed": true
         },
         {
           "name": "no_comments_principle",
@@ -306,7 +306,7 @@
         },
         {
           "name": "rebuild_untested_is_hypothesis",
-          "passed": true
+          "passed": false
         },
         {
           "name": "workflow_knows_full_sequence",
@@ -330,11 +330,11 @@
         },
         {
           "name": "workflow_knows_review_step",
-          "passed": true
+          "passed": false
         },
         {
           "name": "workflow_review_uses_parallel_subagents",
-          "passed": true
+          "passed": false
         },
         {
           "name": "workflow_review_skipped_for_trivial_changes",
@@ -387,8 +387,8 @@
       ]
     },
     "routing": {
-      "passed": 52,
-      "failed": 4,
+      "passed": 54,
+      "failed": 2,
       "tests": [
         {
           "name": "routing_to_desktop_keyboard_typing",
@@ -428,7 +428,7 @@
         },
         {
           "name": "routing_to_comms_vtuber_avatar",
-          "passed": false
+          "passed": true
         },
         {
           "name": "routing_to_comms_twitter_scrape",
@@ -464,7 +464,7 @@
         },
         {
           "name": "routing_to_browser_interactive_scrape",
-          "passed": false
+          "passed": true
         },
         {
           "name": "routing_to_claude_spawn_agent",
@@ -480,7 +480,7 @@
         },
         {
           "name": "routing_to_home_assistant_ac_control",
-          "passed": false
+          "passed": true
         },
         {
           "name": "routing_to_obsidian_daily_note",
@@ -536,7 +536,7 @@
         },
         {
           "name": "routing_to_devenv_shell_setup",
-          "passed": true
+          "passed": false
         },
         {
           "name": "routing_to_phone_status_battery",
