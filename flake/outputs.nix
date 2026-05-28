@@ -26,7 +26,7 @@ let
     final: prev:
     if prev.stdenv.hostPlatform.isDarwin then
       {
-        aerospace = inputs.aerospace.packages.${prev.stdenv.hostPlatform.system}.aerospace;
+        inherit (inputs.aerospace.packages.${prev.stdenv.hostPlatform.system}) aerospace;
       }
     else
       { };
