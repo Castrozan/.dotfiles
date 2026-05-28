@@ -1,4 +1,9 @@
-{ lib, config, ... }:
+{
+  lib,
+  pkgs,
+  config,
+  ...
+}:
 let
   workspaceNumbers = lib.range 1 7;
 
@@ -51,7 +56,7 @@ in
 {
   programs.aerospace = {
     enable = true;
-    launchd.enable = true;
+    launchd.enable = false;
     userSettings = {
       enable-normalization-flatten-containers = true;
       enable-normalization-opposite-orientation-for-nested-containers = true;
@@ -84,6 +89,31 @@ in
 
       mode.main.binding =
         workspaceSwitchBindings // workspaceMoveBindings // focusBindings // workspaceNavigationBindings;
+    };
+  };
+
+  home.activation.installAerospaceAppAtCanonicalPath = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    canonicalPath="/Applications/AeroSpace.app"
+    sourceAppBundle="${pkgs.aerospace}/Applications/AeroSpace.app"
+    if [ -L "$canonicalPath" ] || [ -d "$canonicalPath" ]; then
+      $DRY_RUN_CMD /bin/rm -rf "$canonicalPath"
+    fi
+    $DRY_RUN_CMD /bin/cp -R "$sourceAppBundle" "$canonicalPath"
+    $DRY_RUN_CMD /usr/bin/chflags -R nouchg "$canonicalPath" 2>/dev/null || true
+    $DRY_RUN_CMD /usr/bin/codesign --force --deep --sign - "$canonicalPath" 2>/dev/null || true
+  '';
+
+  launchd.agents.aerospace-app = {
+    enable = true;
+    config = {
+      Label = "org.nix-community.home.aerospace-app";
+      ProgramArguments = [
+        "/Applications/AeroSpace.app/Contents/MacOS/AeroSpace"
+      ];
+      RunAtLoad = true;
+      KeepAlive = true;
+      StandardOutPath = "/tmp/aerospace.log";
+      StandardErrorPath = "/tmp/aerospace.err.log";
     };
   };
 }
