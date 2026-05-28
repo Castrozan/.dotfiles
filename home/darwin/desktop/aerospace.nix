@@ -1,4 +1,9 @@
-{ lib, config, ... }:
+{
+  lib,
+  pkgs,
+  config,
+  ...
+}:
 let
   workspaceNumbers = lib.range 1 7;
 
@@ -86,6 +91,17 @@ in
         workspaceSwitchBindings // workspaceMoveBindings // focusBindings // workspaceNavigationBindings;
     };
   };
+
+  home.activation.installAerospaceAppAtCanonicalPath = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    canonicalPath="/Applications/AeroSpace.app"
+    sourceAppBundle="${pkgs.aerospace}/Applications/AeroSpace.app"
+    if [ -L "$canonicalPath" ] || [ -d "$canonicalPath" ]; then
+      $DRY_RUN_CMD /bin/rm -rf "$canonicalPath"
+    fi
+    $DRY_RUN_CMD /bin/cp -R "$sourceAppBundle" "$canonicalPath"
+    $DRY_RUN_CMD /usr/bin/chflags -R nouchg "$canonicalPath" 2>/dev/null || true
+    $DRY_RUN_CMD /usr/bin/codesign --force --deep --sign - "$canonicalPath" 2>/dev/null || true
+  '';
 
   launchd.agents.aerospace-app = {
     enable = true;

@@ -8,10 +8,10 @@ let
 
   homeDir = homeDirectory;
   secretsDirectory = "${homeDir}/.secrets";
-  claudeBinary = "${homeDir}/.nix-profile/bin/claude";
+  claudeBinary = lib.getExe config.claude.package;
 
-  tmuxSessionName = "claude-discord";
-  agentWorkspacesBaseDirectory = "${homeDir}/.claude-discord-agents";
+  tmuxSessionName = "clawde";
+  agentWorkspacesBaseDirectory = "${homeDir}/clawde";
 
   cfg = config.clawde;
   agentNames = builtins.attrNames cfg.agents;
@@ -125,6 +125,7 @@ let
   buildAgentWindowCommand =
     name: agent:
     let
+      workspaceDirectory = agentWorkspaceDirectory name;
       heartbeatBootstrapArgvFlag =
         if agent.heartbeatInterval != null then
           "--heartbeat-bootstrap-argv ${lib.escapeShellArg (builtins.toJSON (buildHeartbeatBootstrapArgv name agent))}"
@@ -136,9 +137,7 @@ let
         else
           "";
       dailySessionRotationFlag = if agent.dailySessionRotation then "--daily-session-rotation" else "";
-    in
-    pkgs.writeShellScript "clawde-agent-${name}" (
-      lib.concatStringsSep " " [
+      execPythonWrapperInvocation = lib.concatStringsSep " " [
         "exec"
         "${pkgs.python312}/bin/python3"
         "${./scripts/clawde-agent-wrapper.py}"
@@ -147,12 +146,16 @@ let
         heartbeatBootstrapArgvFlag
         activeHoursFlags
         dailySessionRotationFlag
-      ]
-    );
+      ];
+    in
+    pkgs.writeShellScript "clawde-agent-${name}" ''
+      cd ${lib.escapeShellArg workspaceDirectory}
+      ${execPythonWrapperInvocation}
+    '';
 
   buildAgentSpecification = name: agent: {
     inherit name;
-    wrapper_command = "${buildAgentWindowCommand name agent}";
+    wrapper_command = "exec ${buildAgentWindowCommand name agent}";
   };
 
   buildAllSpecificationsForOneAgent =

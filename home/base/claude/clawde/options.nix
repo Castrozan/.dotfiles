@@ -121,7 +121,7 @@ in
           workspaceDirectory = lib.mkOption {
             type = lib.types.nullOr lib.types.str;
             default = null;
-            description = "Override the agent's workspace path. When null, the active channel adapter decides (and falls back to ~/.claude-discord-agents/<name>).";
+            description = "Override the agent's workspace path. When null, the active channel adapter decides (and falls back to ~/clawde/<name>).";
           };
 
           channel = lib.mkOption {

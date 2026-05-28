@@ -38,6 +38,7 @@ let
         };
         isNixOS = false;
         username = "test";
+        hostname = "test";
         inherit nixpkgs-version home-version;
       };
       modules = [

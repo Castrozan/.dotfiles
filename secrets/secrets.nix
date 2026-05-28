@@ -45,7 +45,6 @@ in
   "credentials/jira-token.age".publicKeys = all_keys;
   "credentials/jira-api-token.age".publicKeys = all_keys;
   "credentials/glab-token.age".publicKeys = all_keys;
-  "credentials/gitlab-com-token.age".publicKeys = all_keys;
   "credentials/wiki-token.age".publicKeys = all_keys;
   "credentials/x-username.age".publicKeys = all_keys;
   "credentials/x-email.age".publicKeys = all_keys;
