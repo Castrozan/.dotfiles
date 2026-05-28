@@ -1,11 +1,12 @@
 # Two macbooks (different physical machines, same lucas.zanoni user).
 # Activate with:
-#   sudo darwin-rebuild switch --flake .#rin    (Coates)
-#   sudo darwin-rebuild switch --flake .#kira   (work-Betha)
+#   sudo darwin-rebuild switch --flake .#rin
+#   sudo darwin-rebuild switch --flake .#kira
 #
 # rin = toosaka rin, kira = kira yoshikage. See private-config/machines.nix
-# for the alias<->hostname mapping. hosts/<alias>/ owns hardware-level config,
-# home/hosts/darwin/<alias>.nix owns the home-manager entry point.
+# for the alias<->hostname mapping and per-machine role. hosts/<alias>/ owns
+# hardware-level config, home/hosts/darwin/<alias>.nix owns the home-manager
+# entry point.
 {
   nix-darwin,
   home-manager,

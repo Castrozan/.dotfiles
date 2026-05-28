@@ -18,6 +18,6 @@ class TestEncodeCwdAsClaudeProjectDirectory:
 
     def test_handles_workspace_with_dots_and_dashes(self):
         result = memory_recall.encode_cwd_as_claude_project_directory(
-            Path("/Users/lucas.zanoni/clawde/coates-pm")
+            Path("/Users/lucas.zanoni/clawde/work-pm")
         )
-        assert result == "-Users-lucas-zanoni-clawde-coates-pm"
+        assert result == "-Users-lucas-zanoni-clawde-work-pm"

@@ -17,8 +17,8 @@ class TestEncodeCwdAsClaudeProjectDirectory:
         assert result == "-Users-lucas--dotfiles"
 
     def test_matches_recall_hook_encoding(self):
-        absolute_workspace = Path("/Users/lucas.zanoni/clawde/coates-pm")
+        absolute_workspace = Path("/Users/lucas.zanoni/clawde/work-pm")
         assert (
             memory_write.encode_cwd_as_claude_project_directory(absolute_workspace)
-            == "-Users-lucas-zanoni-clawde-coates-pm"
+            == "-Users-lucas-zanoni-clawde-work-pm"
         )
