@@ -5,7 +5,7 @@
   supergatewayNpmPrefix,
 }:
 let
-  chromeDevtoolsMcpVersion = "0.20.3";
+  chromeDevtoolsMcpVersion = "1.1.1";
   supergatewayVersion = "3.4.3";
 
   installNpmPackageScript =
