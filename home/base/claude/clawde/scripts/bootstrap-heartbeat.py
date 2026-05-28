@@ -18,15 +18,10 @@ ONBOARDING_INDICATORS = [
 def find_tmux_socket() -> str | None:
     tmux_tmpdir = os.environ.get("TMUX_TMPDIR")
     uid = os.getuid()
-    candidate_directories = []
-    if tmux_tmpdir:
-        candidate_directories.append(tmux_tmpdir)
-    candidate_directories.extend(
-        [
-            f"/run/user/{uid}/tmux-{uid}",
-            f"/tmp/tmux-{uid}",
-        ]
-    )
+    candidate_directories = ([tmux_tmpdir] if tmux_tmpdir else []) + [
+        f"/run/user/{uid}/tmux-{uid}",
+        f"/tmp/tmux-{uid}",
+    ]
     for directory in candidate_directories:
         if os.path.exists(directory):
             socket_path = os.path.join(directory, "default")
@@ -83,8 +78,12 @@ def wait_for_claude_prompt(tmux_socket: str, target: str) -> bool:
     return False
 
 
+def build_bootstrap_buffer_name(target: str) -> str:
+    return f"heartbeat-bootstrap-{target.replace(':', '-')}"
+
+
 def send_bootstrap_via_tmux_buffer(tmux_socket: str, target: str, content: str) -> bool:
-    buffer_name = "heartbeat-bootstrap"
+    buffer_name = build_bootstrap_buffer_name(target)
 
     with tempfile.NamedTemporaryFile(
         mode="w",
