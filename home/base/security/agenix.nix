@@ -30,10 +30,12 @@ let
     "credentials/work-email" = "WORK_EMAIL";
     "credentials/work-password" = "WORK_PASSWORD";
     "credentials/jira-token" = "JIRA_TOKEN";
+    "credentials/jira-api-token" = "JIRA_API_TOKEN";
     "credentials/elastic-password" = "ELASTIC_PASSWORD";
     "credentials/grafana-password" = "GRAFANA_PASSWORD";
     "api-keys/metabase-api-key" = "METABASE_API_KEY";
     "credentials/wiki-token" = "WIKI_TOKEN";
+    "credentials/glab-token" = "GITLAB_TOKEN";
   };
 
   secretsWithoutEnvironmentVariables = [
@@ -43,6 +45,7 @@ let
     "api-keys/nvidia-api-key"
     "api-keys/openai-api-key"
     "infrastructure/telegram-ids"
+    "infrastructure/ssh-hosts"
     "credentials/x-username"
     "credentials/x-email"
     "credentials/x-password"
