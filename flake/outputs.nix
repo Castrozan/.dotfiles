@@ -26,9 +26,7 @@ let
     final: prev:
     if prev.stdenv.hostPlatform.isDarwin then
       {
-        aerospace = prev.callPackage ../lib/aerospace-castrozan.nix {
-          aerospaceSource = inputs.aerospace;
-        };
+        aerospace = inputs.aerospace.packages.${prev.stdenv.hostPlatform.system}.aerospace;
       }
     else
       { };
