@@ -8,7 +8,7 @@
     ./skills.nix
     ./external-skill-sets.nix
     ./hooks.nix
-    ./mcps.nix
+    ./mcps
     ./private.nix
     ./scripts.nix
   ];
