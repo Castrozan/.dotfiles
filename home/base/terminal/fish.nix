@@ -109,7 +109,6 @@ in
     "fish/functions/nix.fish".source = ./shell/fish/functions/nix.fish;
 
     "fish/conf.d/hyprland-env.fish".source = ./shell/fish/conf.d/hyprland-env.fish;
-    "fish/conf.d/work-secrets.fish".source = ./shell/fish/conf.d/work-secrets.fish;
 
     "fish/completions/nord-on.fish".source = ../network/completions/nord-on.fish;
     "fish/completions/claude.fish".source = ../claude/completions/claude.fish;

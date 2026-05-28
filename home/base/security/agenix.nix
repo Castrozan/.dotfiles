@@ -14,15 +14,7 @@ let
     path = "${secretsDirectory}/${builtins.baseNameOf name}";
   };
 
-  secretsWithEnvironmentVariables = {
-    "credentials/work-email" = "WORK_EMAIL";
-    "credentials/work-password" = "WORK_PASSWORD";
-    "credentials/jira-token" = "JIRA_TOKEN";
-    "credentials/elastic-password" = "ELASTIC_PASSWORD";
-    "credentials/grafana-password" = "GRAFANA_PASSWORD";
-    "api-keys/metabase-api-key" = "METABASE_API_KEY";
-    "credentials/wiki-token" = "WIKI_TOKEN";
-  };
+  secretsWithEnvironmentVariables = { };
 
   secretsWithoutEnvironmentVariables = [
     "api-keys/brave-api-key"
