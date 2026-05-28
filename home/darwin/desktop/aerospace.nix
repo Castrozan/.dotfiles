@@ -96,6 +96,11 @@ in
     canonicalPath="/Applications/AeroSpace.app"
     sourceAppBundle="${pkgs.aerospace}/Applications/AeroSpace.app"
     if [ -L "$canonicalPath" ] || [ -d "$canonicalPath" ]; then
+      # /bin/cp -R from the nix store preserves the store's 0555 dir mode, so
+      # subsequent activations cannot rm -rf the canonical path until we
+      # restore write permission on every directory.
+      $DRY_RUN_CMD /usr/bin/chflags -R nouchg "$canonicalPath" 2>/dev/null || true
+      $DRY_RUN_CMD /bin/chmod -R u+w "$canonicalPath" 2>/dev/null || true
       $DRY_RUN_CMD /bin/rm -rf "$canonicalPath"
     fi
     $DRY_RUN_CMD /bin/cp -R "$sourceAppBundle" "$canonicalPath"
