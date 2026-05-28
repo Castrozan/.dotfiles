@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-05-28T20:47:03.598300+00:00",
-  "git_commit": "c4618a2d",
+  "generated_at": "2026-05-28T22:59:57.010198+00:00",
+  "git_commit": "78d5186e",
   "total_tests": 174,
-  "total_passed": 164,
-  "total_failed": 10,
-  "pass_rate": 0.9425,
+  "total_passed": 160,
+  "total_failed": 14,
+  "pass_rate": 0.9195,
   "categories": {
     "other": {
-      "passed": 50,
-      "failed": 3,
+      "passed": 48,
+      "failed": 5,
       "tests": [
         {
           "name": "worktrees_knows_builtin_flag",
@@ -124,7 +124,7 @@
         },
         {
           "name": "review_ignores_style_preferences",
-          "passed": true
+          "passed": false
         },
         {
           "name": "review_knows_output_format_no_issues",
@@ -144,7 +144,7 @@
         },
         {
           "name": "git_history_starts_with_layer1",
-          "passed": true
+          "passed": false
         },
         {
           "name": "git_history_escalates_to_layer2",
@@ -152,7 +152,7 @@
         },
         {
           "name": "git_history_uses_broad_keywords",
-          "passed": false
+          "passed": true
         },
         {
           "name": "git_history_file_paths_are_high_signal",
@@ -176,7 +176,7 @@
         },
         {
           "name": "obsidian_youtube_ril_handling",
-          "passed": true
+          "passed": false
         },
         {
           "name": "obsidian_knows_tweet_enrichment_tool",
@@ -387,8 +387,8 @@
       ]
     },
     "routing": {
-      "passed": 54,
-      "failed": 2,
+      "passed": 52,
+      "failed": 4,
       "tests": [
         {
           "name": "routing_to_desktop_keyboard_typing",
@@ -428,7 +428,7 @@
         },
         {
           "name": "routing_to_comms_vtuber_avatar",
-          "passed": true
+          "passed": false
         },
         {
           "name": "routing_to_comms_twitter_scrape",
@@ -464,7 +464,7 @@
         },
         {
           "name": "routing_to_browser_interactive_scrape",
-          "passed": true
+          "passed": false
         },
         {
           "name": "routing_to_claude_spawn_agent",
@@ -480,7 +480,7 @@
         },
         {
           "name": "routing_to_home_assistant_ac_control",
-          "passed": true
+          "passed": false
         },
         {
           "name": "routing_to_obsidian_daily_note",
@@ -508,7 +508,7 @@
         },
         {
           "name": "routing_to_review_readme_update",
-          "passed": false
+          "passed": true
         },
         {
           "name": "routing_to_review_skill_creation",
@@ -536,7 +536,7 @@
         },
         {
           "name": "routing_to_devenv_shell_setup",
-          "passed": false
+          "passed": true
         },
         {
           "name": "routing_to_phone_status_battery",
@@ -596,7 +596,7 @@
         },
         {
           "name": "routing_ambiguous_browser_vs_comms_tweet_scraping",
-          "passed": true
+          "passed": false
         },
         {
           "name": "routing_to_comms_bare_xcom_url",
