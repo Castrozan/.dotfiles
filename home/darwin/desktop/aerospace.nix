@@ -52,14 +52,6 @@ let
     cmd-alt-shift-right = "exec-and-forget ${userBinPath}/workspace-navigate next --move-window";
   };
 
-  aerospaceLaunchWithPopupDismisser = pkgs.writeShellScript "aerospace-launch-with-popup-dismisser" ''
-    (
-      sleep 5
-      /usr/bin/pkill -x universalAccessAuthWarn 2>/dev/null || true
-    ) &
-    exec /Applications/AeroSpace.app/Contents/MacOS/AeroSpace
-  '';
-
 in
 {
   programs.aerospace = {
@@ -127,7 +119,7 @@ in
     config = {
       Label = "org.nix-community.home.aerospace-app";
       ProgramArguments = [
-        "${aerospaceLaunchWithPopupDismisser}"
+        "/Applications/AeroSpace.app/Contents/MacOS/AeroSpace"
       ];
       RunAtLoad = true;
       KeepAlive = true;
