@@ -26,6 +26,12 @@ The daemon does not auto-respawn. AeroSpace keeps working. Re-fire only if AeroS
 
 Signing the binary with a real Apple Developer ID (`Developer ID Application: ...`) satisfies `anchor apple` and removes the popup permanently. Requires Apple Developer Program membership ($99/yr). Until then the workaround above is the answer.
 
+## Do NOT wrap the launchd ProgramArguments in a bash script that pkills the popup
+
+Tested: a `pkgs.writeShellScript` wrapper that backgrounded `(sleep 5; pkill -x universalAccessAuthWarn) &` before `exec`ing AeroSpace triggered a NEW Tahoe popup - **"bash would like to control this computer using accessibility features"** - because Tahoe's TCC treats the backgrounded bash subshell's pkill of an AX-related system daemon as bash itself wanting accessibility. Net effect: traded the AeroSpace popup loop for a bash popup loop. Keep launchd `ProgramArguments` pointed straight at the AeroSpace binary.
+
+The rebuild-time `home.activation.dismissAerospaceAccessibilityPopup` step is fine because it runs in the activation context of `darwin-rebuild switch`, not as a launchd-spawned wrapper subshell.
+
 ## Things that do NOT fix this
 
 - `tccutil reset Accessibility bobko.aerospace` - tested, popup returns
