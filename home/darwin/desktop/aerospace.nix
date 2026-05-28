@@ -52,6 +52,14 @@ let
     cmd-alt-shift-right = "exec-and-forget ${userBinPath}/workspace-navigate next --move-window";
   };
 
+  aerospaceLaunchWithPopupDismisser = pkgs.writeShellScript "aerospace-launch-with-popup-dismisser" ''
+    (
+      sleep 5
+      /usr/bin/pkill -x universalAccessAuthWarn 2>/dev/null || true
+    ) &
+    exec /Applications/AeroSpace.app/Contents/MacOS/AeroSpace
+  '';
+
 in
 {
   programs.aerospace = {
@@ -108,12 +116,18 @@ in
     $DRY_RUN_CMD /usr/bin/codesign --force --deep --sign - "$canonicalPath" 2>/dev/null || true
   '';
 
+  home.activation.dismissAerospaceAccessibilityPopup =
+    lib.hm.dag.entryAfter [ "setupLaunchAgents" ]
+      ''
+        $DRY_RUN_CMD /usr/bin/pkill -x universalAccessAuthWarn 2>/dev/null || true
+      '';
+
   launchd.agents.aerospace-app = {
     enable = true;
     config = {
       Label = "org.nix-community.home.aerospace-app";
       ProgramArguments = [
-        "/Applications/AeroSpace.app/Contents/MacOS/AeroSpace"
+        "${aerospaceLaunchWithPopupDismisser}"
       ];
       RunAtLoad = true;
       KeepAlive = true;
