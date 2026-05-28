@@ -19,6 +19,7 @@ in
 
     ../../base/claude
     ../../base/codex
+    ../../base/testing
 
     ../../base/terminal/atuin.nix
     ../../base/terminal/fish.nix
