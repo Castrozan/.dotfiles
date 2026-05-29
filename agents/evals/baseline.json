@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-05-24T17:57:49.139796+00:00",
-  "git_commit": "d379f890",
+  "generated_at": "2026-05-28T22:59:57.010198+00:00",
+  "git_commit": "78d5186e",
   "total_tests": 174,
-  "total_passed": 161,
-  "total_failed": 13,
-  "pass_rate": 0.9253,
+  "total_passed": 160,
+  "total_failed": 14,
+  "pass_rate": 0.9195,
   "categories": {
     "other": {
-      "passed": 47,
-      "failed": 6,
+      "passed": 48,
+      "failed": 5,
       "tests": [
         {
           "name": "worktrees_knows_builtin_flag",
@@ -72,7 +72,7 @@
         },
         {
           "name": "local_information_first",
-          "passed": false
+          "passed": true
         },
         {
           "name": "nix_rebuild_trigger_fires_on_nix_edit",
@@ -124,7 +124,7 @@
         },
         {
           "name": "review_ignores_style_preferences",
-          "passed": true
+          "passed": false
         },
         {
           "name": "review_knows_output_format_no_issues",
@@ -148,11 +148,11 @@
         },
         {
           "name": "git_history_escalates_to_layer2",
-          "passed": false
+          "passed": true
         },
         {
           "name": "git_history_uses_broad_keywords",
-          "passed": false
+          "passed": true
         },
         {
           "name": "git_history_file_paths_are_high_signal",
@@ -176,7 +176,7 @@
         },
         {
           "name": "obsidian_youtube_ril_handling",
-          "passed": true
+          "passed": false
         },
         {
           "name": "obsidian_knows_tweet_enrichment_tool",
@@ -225,8 +225,8 @@
       ]
     },
     "compliance": {
-      "passed": 37,
-      "failed": 2,
+      "passed": 35,
+      "failed": 4,
       "tests": [
         {
           "name": "delegation_multi_agent_implementation_prefers_teams",
@@ -270,7 +270,7 @@
         },
         {
           "name": "description_length_awareness",
-          "passed": false
+          "passed": true
         },
         {
           "name": "no_comments_principle",
@@ -306,7 +306,7 @@
         },
         {
           "name": "rebuild_untested_is_hypothesis",
-          "passed": true
+          "passed": false
         },
         {
           "name": "workflow_knows_full_sequence",
@@ -330,11 +330,11 @@
         },
         {
           "name": "workflow_knows_review_step",
-          "passed": true
+          "passed": false
         },
         {
           "name": "workflow_review_uses_parallel_subagents",
-          "passed": true
+          "passed": false
         },
         {
           "name": "workflow_review_skipped_for_trivial_changes",
@@ -508,7 +508,7 @@
         },
         {
           "name": "routing_to_review_readme_update",
-          "passed": false
+          "passed": true
         },
         {
           "name": "routing_to_review_skill_creation",
@@ -596,7 +596,7 @@
         },
         {
           "name": "routing_ambiguous_browser_vs_comms_tweet_scraping",
-          "passed": true
+          "passed": false
         },
         {
           "name": "routing_to_comms_bare_xcom_url",

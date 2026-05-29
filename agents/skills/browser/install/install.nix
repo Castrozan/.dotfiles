@@ -5,7 +5,7 @@
   supergatewayNpmPrefix,
 }:
 let
-  chromeDevtoolsMcpVersion = "0.20.3";
+  chromeDevtoolsMcpVersion = "1.1.1";
   supergatewayVersion = "3.4.3";
 
   installNpmPackageScript =
@@ -62,10 +62,37 @@ let
     ${pkgs.gnused}/bin/sed -i 's|transport\.send(jsonMsg);|transport.send(jsonMsg).catch((unhandledChildResponseError) => logger.error(`Failed to send to StreamableHttp`, unhandledChildResponseError));|' "$TARGET"
   '';
 
+  patchSupergatewayChildKillSigkill = pkgs.writeShellScript "patch-supergateway-child-kill-sigkill" ''
+    set -euo pipefail
+    TARGET="${supergatewayNpmPrefix}/lib/node_modules/supergateway/dist/gateways/stdioToStatefulStreamableHttp.js"
+
+    if [ ! -f "$TARGET" ]; then
+      echo "supergateway file missing, skipping patch: $TARGET" >&2
+      exit 0
+    fi
+
+    if grep -qF "child.kill('SIGKILL')" "$TARGET"; then
+      exit 0
+    fi
+
+    if ! grep -qE 'child\.kill\(\);' "$TARGET"; then
+      echo "supergateway upstream layout changed at $TARGET; refusing to patch blindly" >&2
+      exit 1
+    fi
+
+    ${pkgs.gnused}/bin/sed -i "s|child\.kill();|child.kill('SIGKILL');|g" "$TARGET"
+
+    if grep -qE 'child\.kill\(\);' "$TARGET"; then
+      echo "supergateway SIGKILL patch failed to replace all child.kill() calls at $TARGET" >&2
+      exit 1
+    fi
+  '';
+
   installAndPatchSupergateway = pkgs.writeShellScript "install-and-patch-supergateway" ''
     set -euo pipefail
     ${installNpmPackageScript "supergateway" supergatewayVersion supergatewayNpmPrefix}
     ${patchSupergatewayUnhandledChildResponseRejection}
+    ${patchSupergatewayChildKillSigkill}
   '';
 
   patchChromeDevtoolsMcpSilenceUnknownIssueWarnings = pkgs.writeShellScript "patch-chrome-devtools-mcp-silence-unknown-issue-warnings" ''

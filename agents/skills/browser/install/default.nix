@@ -13,7 +13,7 @@ let
   supergatewayBinary = "${supergatewayNpmPrefix}/bin/supergateway";
 
   chromeDevtoolsStreamableHttpPort = 8767;
-  chromeDevtoolsStreamableHttpSessionTimeoutMilliseconds = 60000;
+  chromeDevtoolsStreamableHttpSessionTimeoutMilliseconds = 3600000;
 
   install = import ./install.nix {
     inherit

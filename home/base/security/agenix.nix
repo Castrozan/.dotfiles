@@ -2,6 +2,7 @@
   inputs,
   config,
   lib,
+  pkgs,
   hostname,
   ...
 }:
@@ -26,7 +27,10 @@ let
     path = "${secretsDirectory}/${builtins.baseNameOf name}";
   };
 
-  secretsWithEnvironmentVariables = { };
+  secretsWithEnvironmentVariables = {
+    "credentials/jira-api-token" = "JIRA_API_TOKEN";
+    "credentials/glab-token" = "GITLAB_TOKEN";
+  };
 
   secretsWithoutEnvironmentVariables = [
     "api-keys/brave-api-key"
@@ -35,6 +39,7 @@ let
     "api-keys/nvidia-api-key"
     "api-keys/openai-api-key"
     "infrastructure/telegram-ids"
+    "infrastructure/ssh-hosts"
     "credentials/x-username"
     "credentials/x-email"
     "credentials/x-password"
@@ -105,4 +110,26 @@ in
     text = sourceSecretsScriptContent;
     executable = true;
   };
+
+  # Upstream agenix-home-manager ships the activate-agenix launchd plist with
+  # KeepAlive {Crashed: false, SuccessfulExit: false}. Both subkeys evaluate
+  # to "kept alive" under launchd's dict semantics, so the mount script
+  # reruns every throttle window (~10s) for the entire login session even
+  # after a clean exit. Rewrite the plist to a single boolean KeepAlive: false
+  # after home-manager's own setupLaunchAgents step writes it, then re-bootstrap
+  # the agent so the new policy takes effect immediately.
+  home.activation.disableAgenixLaunchdRestartLoop = lib.mkIf pkgs.stdenv.hostPlatform.isDarwin (
+    lib.hm.dag.entryAfter [ "setupLaunchAgents" ] ''
+      plistPath="$HOME/Library/LaunchAgents/org.nix-community.home.activate-agenix.plist"
+      if [ -f "$plistPath" ]; then
+        $DRY_RUN_CMD /bin/chmod u+w "$plistPath"
+        $DRY_RUN_CMD /usr/libexec/PlistBuddy -c "Delete :KeepAlive" "$plistPath" 2>/dev/null || true
+        $DRY_RUN_CMD /usr/libexec/PlistBuddy -c "Add :KeepAlive bool false" "$plistPath"
+        $DRY_RUN_CMD /bin/chmod 0444 "$plistPath"
+        launchAgentDomain="gui/$(/usr/bin/id -u)"
+        $DRY_RUN_CMD /bin/launchctl bootout "$launchAgentDomain/org.nix-community.home.activate-agenix" 2>/dev/null || true
+        $DRY_RUN_CMD /bin/launchctl bootstrap "$launchAgentDomain" "$plistPath"
+      fi
+    ''
+  );
 }
