@@ -5,9 +5,14 @@
   chromePackage,
 }:
 let
+  inherit (pkgs.stdenv.hostPlatform) isDarwin;
   chromeDevtoolsMcpNpmPrefix = "${homeDir}/.local/share/chrome-devtools-mcp-npm";
   chromeDevtoolsMcpBinary = "${chromeDevtoolsMcpNpmPrefix}/bin/chrome-devtools-mcp";
-  chromeGlobalUserDataDir = "${homeDir}/.config/chrome-global";
+  chromeGlobalUserDataDir =
+    if isDarwin then
+      "${homeDir}/Library/Application Support/Google/Chrome"
+    else
+      "${homeDir}/.config/chrome-global";
 
   supergatewayNpmPrefix = "${homeDir}/.local/share/supergateway-npm";
   supergatewayBinary = "${supergatewayNpmPrefix}/bin/supergateway";
@@ -27,7 +32,7 @@ let
   chromeDevtoolsMcpAutoconnectCommand = builtins.concatStringsSep " " [
     chromeDevtoolsMcpBinary
     "--autoConnect"
-    "--userDataDir ${chromeGlobalUserDataDir}"
+    "--userDataDir '${chromeGlobalUserDataDir}'"
     "--usageStatistics false"
   ];
 
