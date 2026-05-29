@@ -44,9 +44,9 @@ let
       exit 1
     fi
 
-    ${pkgs.gnused}/bin/sed -i '/handleDevToolsAsPage: true,/a\        protocolTimeout: 30000,' "$TARGET"
+    ${pkgs.gnused}/bin/sed -i '/handleDevToolsAsPage: true,/a\        protocolTimeout: 300000,' "$TARGET"
 
-    if ! grep -qF 'protocolTimeout: 30000,' "$TARGET"; then
+    if ! grep -qF 'protocolTimeout: 300000,' "$TARGET"; then
       echo "chrome-devtools-mcp bounded-protocol-timeout patch failed at $TARGET" >&2
       exit 1
     fi
