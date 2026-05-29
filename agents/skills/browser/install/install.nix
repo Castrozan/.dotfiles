@@ -118,10 +118,64 @@ let
     fi
   '';
 
+  patchChromeDevtoolsMcpBoundedProtocolTimeout = pkgs.writeShellScript "patch-chrome-devtools-mcp-bounded-protocol-timeout" ''
+    set -euo pipefail
+    TARGET="${chromeDevtoolsMcpNpmPrefix}/lib/node_modules/chrome-devtools-mcp/build/src/browser.js"
+
+    if [ ! -f "$TARGET" ]; then
+      echo "chrome-devtools-mcp browser.js missing, skipping patch: $TARGET" >&2
+      exit 0
+    fi
+
+    if grep -qF 'protocolTimeout:' "$TARGET"; then
+      exit 0
+    fi
+
+    if ! grep -qF 'handleDevToolsAsPage: true,' "$TARGET"; then
+      echo "chrome-devtools-mcp browser.js layout changed at $TARGET; refusing to patch blindly" >&2
+      exit 1
+    fi
+
+    ${pkgs.gnused}/bin/sed -i '/handleDevToolsAsPage: true,/a\        protocolTimeout: 30000,' "$TARGET"
+
+    if ! grep -qF 'protocolTimeout: 30000,' "$TARGET"; then
+      echo "chrome-devtools-mcp bounded-protocol-timeout patch failed at $TARGET" >&2
+      exit 1
+    fi
+  '';
+
+  patchChromeDevtoolsMcpIgnoreNetworkEnableTimeout = pkgs.writeShellScript "patch-chrome-devtools-mcp-ignore-network-enable-timeout" ''
+    set -euo pipefail
+    TARGET="${chromeDevtoolsMcpNpmPrefix}/lib/node_modules/chrome-devtools-mcp/build/src/third_party/index.js"
+
+    if [ ! -f "$TARGET" ]; then
+      echo "chrome-devtools-mcp bundle missing, skipping patch: $TARGET" >&2
+      exit 0
+    fi
+
+    if grep -qF 'error.message.includes("timed out")' "$TARGET"; then
+      exit 0
+    fi
+
+    if ! grep -qF 'error.message.includes("wasn'\'''t found")' "$TARGET"; then
+      echo "chrome-devtools-mcp bundle layout changed at $TARGET; refusing to patch blindly" >&2
+      exit 1
+    fi
+
+    ${pkgs.gnused}/bin/sed -i 's#includes("wasn\x27t found")#includes("wasn\x27t found") || error.message.includes("timed out")#' "$TARGET"
+
+    if ! grep -qF 'error.message.includes("timed out")' "$TARGET"; then
+      echo "chrome-devtools-mcp ignore-network-enable-timeout patch failed at $TARGET" >&2
+      exit 1
+    fi
+  '';
+
   installAndPatchChromeDevtoolsMcp = pkgs.writeShellScript "install-and-patch-chrome-devtools-mcp" ''
     set -euo pipefail
     ${installNpmPackageScript "chrome-devtools-mcp" chromeDevtoolsMcpVersion chromeDevtoolsMcpNpmPrefix}
     ${patchChromeDevtoolsMcpSilenceUnknownIssueWarnings}
+    ${patchChromeDevtoolsMcpBoundedProtocolTimeout}
+    ${patchChromeDevtoolsMcpIgnoreNetworkEnableTimeout}
   '';
 in
 {
