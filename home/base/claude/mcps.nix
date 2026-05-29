@@ -151,7 +151,7 @@ in
   ];
 
   home = {
-    packages = browserMcp.packages;
+    inherit (browserMcp) packages;
 
     activation = {
       installChromeDevtoolsMcp = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
