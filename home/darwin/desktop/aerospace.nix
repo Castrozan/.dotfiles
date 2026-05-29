@@ -74,6 +74,10 @@ in
       ];
       on-focused-monitor-changed = [ "move-mouse monitor-lazy-center" ];
 
+      on-window-detected = [
+        { run = [ "layout accordion" ]; }
+      ];
+
       gaps = {
         inner = {
           horizontal = 0;
