@@ -22,6 +22,15 @@ let
     else
       { };
 
+  aerospaceCastrozanForkOverlay =
+    final: prev:
+    if prev.stdenv.hostPlatform.isDarwin then
+      {
+        inherit (inputs.aerospace.packages.${prev.stdenv.hostPlatform.system}) aerospace;
+      }
+    else
+      { };
+
   mkPkgsFor = system: {
     pkgs = import nixpkgs {
       inherit system;
@@ -88,7 +97,10 @@ in
       specialArgsBase
       ;
     darwinPkgs = darwin;
-    darwinSystemOverlays = [ workingFishOnDarwinForMacOSCodeSigningEnforcementOverlay ];
+    darwinSystemOverlays = [
+      workingFishOnDarwinForMacOSCodeSigningEnforcementOverlay
+      aerospaceCastrozanForkOverlay
+    ];
   };
 
   homeManagerModules = import ./home-manager-modules.nix;

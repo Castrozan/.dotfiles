@@ -11,7 +11,7 @@ let
   claudeBinary = lib.getExe config.claude.package;
 
   defaultTmuxSessionName = "clawde";
-  agentWorkspacesBaseDirectory = "${homeDir}/.claude-discord-agents";
+  agentWorkspacesBaseDirectory = "${homeDir}/clawde";
 
   cfg = config.clawde;
   agentNames = builtins.attrNames cfg.agents;

@@ -4,7 +4,7 @@ set -euo pipefail
 # bridge it into the Claude Code harness path so MEMORY.md auto-loads.
 #
 # Arguments:
-#   $1  absolute path of the agent workspace (e.g. ~/.claude-discord-agents/silver)
+#   $1  absolute path of the agent workspace (e.g. ~/clawde/silver)
 #
 # Behavior:
 #   1. Ensures <workspace>/memory/ exists; seeds MEMORY.md with the
