@@ -1,11 +1,13 @@
-{ lib, ... }:
+{ lib, hostname, ... }:
 let
   privateConfigDir = ../../../private-config/claude;
   agentsDir = privateConfigDir + "/agents";
-  skillsDir = privateConfigDir + "/skills";
+  sharedSkillsDir = privateConfigDir + "/skills";
+  perMachineSkillsDir = ../../../private-config/machines + "/${hostname}/skills";
 
   agentsDirExists = builtins.pathExists agentsDir;
-  skillsDirExists = builtins.pathExists skillsDir;
+  sharedSkillsDirExists = builtins.pathExists sharedSkillsDir;
+  perMachineSkillsDirExists = builtins.pathExists perMachineSkillsDir;
 
   privateAgentFiles =
     if agentsDirExists then
@@ -15,13 +17,11 @@ let
     else
       [ ];
 
-  privateSkillDirs =
-    if skillsDirExists then
-      builtins.filter (
-        name: name != ".gitkeep" && builtins.pathExists (skillsDir + "/${name}/SKILL.md")
-      ) (builtins.attrNames (builtins.readDir skillsDir))
-    else
-      [ ];
+  skillDirNamesIn =
+    skillsDir:
+    builtins.filter (
+      name: name != ".gitkeep" && builtins.pathExists (skillsDir + "/${name}/SKILL.md")
+    ) (builtins.attrNames (builtins.readDir skillsDir));
 
   privateAgentSymlinks = builtins.listToAttrs (
     map (filename: {
@@ -32,18 +32,24 @@ let
     }) privateAgentFiles
   );
 
-  privateSkillSymlinks = builtins.listToAttrs (
-    map (dirname: {
-      name = ".claude/skills/${dirname}";
-      value = {
-        source = "${skillsDir}/${dirname}";
-        recursive = true;
-      };
-    }) privateSkillDirs
-  );
+  skillSymlinksFrom =
+    skillsDir:
+    builtins.listToAttrs (
+      map (dirname: {
+        name = ".claude/skills/${dirname}";
+        value = {
+          source = "${skillsDir}/${dirname}";
+          recursive = true;
+        };
+      }) (skillDirNamesIn skillsDir)
+    );
+
+  sharedSkillSymlinks = if sharedSkillsDirExists then skillSymlinksFrom sharedSkillsDir else { };
+  perMachineSkillSymlinks =
+    if perMachineSkillsDirExists then skillSymlinksFrom perMachineSkillsDir else { };
 in
 {
-  home.file = lib.mkIf (agentsDirExists || skillsDirExists) (
-    privateAgentSymlinks // privateSkillSymlinks
+  home.file = lib.mkIf (agentsDirExists || sharedSkillsDirExists || perMachineSkillsDirExists) (
+    privateAgentSymlinks // sharedSkillSymlinks // perMachineSkillSymlinks
   );
 }
