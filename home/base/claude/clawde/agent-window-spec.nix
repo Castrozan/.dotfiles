@@ -2,7 +2,6 @@
   pkgs,
   lib,
   cfg,
-  claudeBinary,
   clawdeRuntimeInstructions,
   a2aPeerHelpers,
   agentWorkspaceDirectory,
@@ -11,6 +10,8 @@
   resolveChannelAdapterEnvironmentSetter,
 }:
 let
+  claudeResolvedFromAgentRuntimePathForRebuildStability = "claude";
+
   buildAgentClaudeMarkdownContent = name: agent: ''
     ${agent.personality}
 
@@ -39,7 +40,7 @@ let
       skillDirFlags = lib.concatMapStringsSep " " (dir: "--add-dir ${dir}") agent.skillDirectories;
       appendSystemPromptFileFlag = "--append-system-prompt-file ${buildAgentInstructionsFile name agent}";
     in
-    "cd ${workspace} && ${environmentSetter}${claudeBinary} ${channelFlag} ${modelFlag} ${nameFlag} ${permissionModeFlag} ${appendSystemPromptFileFlag} ${skillDirFlags}";
+    "cd ${workspace} && ${environmentSetter}${claudeResolvedFromAgentRuntimePathForRebuildStability} ${channelFlag} ${modelFlag} ${nameFlag} ${permissionModeFlag} ${appendSystemPromptFileFlag} ${skillDirFlags}";
 
   buildHeartbeatBootstrapArgv = name: agent: [
     "${pkgs.python312}/bin/python3"

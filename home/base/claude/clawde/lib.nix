@@ -82,7 +82,6 @@ let
       pkgs
       lib
       cfg
-      claudeBinary
       clawdeRuntimeInstructions
       a2aPeerHelpers
       agentWorkspaceDirectory
