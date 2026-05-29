@@ -17,7 +17,7 @@ let
   };
 
   claudeGlobalSettings = {
-    model = "opus";
+    model = "claude-opus-4-8";
     effortLevel = "max";
     language = "english";
     spinnerTipsEnabled = false;
