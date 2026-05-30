@@ -100,6 +100,8 @@
     };
   };
 
+  services.openssh.enable = true;
+
   homebrew = {
     enable = true;
     onActivation.cleanup = "zap";
