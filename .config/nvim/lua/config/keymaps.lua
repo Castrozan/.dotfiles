@@ -136,8 +136,11 @@ local function find_buffer_to_focus_after_closing(buffer_to_close)
 end
 
 local function close_current_buffer_focusing_right_then_left()
+  if not current_buffer_represents_a_file() then
+    return
+  end
   local buffer_to_close = vim.api.nvim_get_current_buf()
-  if current_buffer_represents_a_file() and not find_other_listed_file_buffer_than(buffer_to_close) then
+  if not find_other_listed_file_buffer_than(buffer_to_close) then
     Snacks.dashboard({ win = vim.api.nvim_get_current_win() })
     vim.cmd("bdelete " .. buffer_to_close)
     return
