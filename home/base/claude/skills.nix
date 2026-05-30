@@ -58,6 +58,19 @@ let
     '';
   };
 
+  interactivePreferencesRawContent = builtins.readFile ../../../agents/interactive-preferences.md;
+
+  interactivePreferencesSkillFromInstructions = {
+    ".claude/skills/interactive-preferences/SKILL.md".text = ''
+      ---
+      name: interactive-preferences
+      description: Inject Lucas's interactive-session response preferences (TL;DR-only replies; exhaust capabilities before returning) into the running session as governing rules. Use when a session was started without these rules in its system prompt - an already-running session, or one not launched via the cla/claude wrapper - and Lucas asks to apply, load, or inject his interactive preferences.
+      ---
+
+      ${interactivePreferencesRawContent}
+    '';
+  };
+
   skillNamesWithInstallModule = builtins.filter (
     skillName: builtins.pathExists (dotfilesSkillsDirectory + "/${skillName}/install/default.nix")
   ) allSkillNames;
@@ -85,7 +98,10 @@ in
 {
   home = {
     file =
-      baseGloballyLoadedClaudeSkills // personalVaultClaudeSkills // coreSkillFromAgentInstructions;
+      baseGloballyLoadedClaudeSkills
+      // personalVaultClaudeSkills
+      // coreSkillFromAgentInstructions
+      // interactivePreferencesSkillFromInstructions;
     packages = packagesFromSkillInstallModules;
   };
 }
