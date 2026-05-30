@@ -1,30 +1,47 @@
 # Testing
 
+## Taxonomy
+
+Test category is the **directory** a test lives in, not its filename. Every
+module's `tests/` directory splits into `unit/`, `integration/`, and `e2e/`,
+and the runner tiers off those directory names.
+
+- `unit/` — fast, mocked, no system state. The `--quick` (default) gate.
+- `integration/` — needs docker, real services, or multi-step subprocess flows.
+- `e2e/` — runs against a live system (runtime checks, headless browser, perf).
+
+Agent LLM tests are a separate axis under `agents/evals/{evals,integration,e2e}/`
+and keep their own flags (`--evals`, `--integration`, `--e2e`).
+
 ## Tiers
 
-Tests are organized in tiers by speed and tool requirements. The `tests/run.sh` script is the canonical entry point for all tiers.
+`tests/run.sh` is the canonical entry point. Script-test tiers collect by
+directory; collection is platform-guarded (`home/linux` on Linux, `home/darwin`
+on macOS).
 
-| Tier | Content | Time | Flag |
-|---|---|---|---|
-| Quick | skill frontmatter + pure bash bats (excludes `*-docker.bats`) | ~3s | `--quick` (default) |
-| Nix | home-manager integration + domain nix tests (`home/{base,linux,darwin}/*/tests/`) | ~120s | `--nix` (includes quick) |
-| Docker | `*-docker.bats` integration tests | ~60s | `--docker` |
-| Runtime | domain runtime tests (`runtime.bats`, `live-services.bats`) | variable | `--runtime` |
-| Perf | desktop + shell benchmarks, baseline checks, threshold tests | ~2m | `--perf` |
+| Tier | Content | Flag |
+|---|---|---|
+| Quick | skill frontmatter + `unit/` bats + `unit/` pytest + qml | `--quick` (default) |
+| Nix | quick + domain nix tests (`home/{base,linux,darwin}/*/tests/checks.nix`) | `--nix` |
+| Integration (scripts) | `integration/` bats + `integration/` pytest | `--integration-scripts` (alias `--docker`) |
+| Runtime / e2e (scripts) | `e2e/` bats + `e2e/` pytest | `--runtime` |
+| Perf | desktop + shell benchmarks, baseline checks, threshold tests | `--perf` |
+| Agent evals | `agents/evals/` single-turn / sessions / tmux | `--evals` / `--integration` / `--e2e` |
 
-Additional modes: `--all` runs quick + nix + docker. `--coverage` runs quick tests through kcov. `--ci` runs quick with CI-appropriate skip messages.
+Additional modes: `--all` runs quick + nix + integration-scripts. `--coverage`
+runs `unit/` bats through kcov. `--ci` runs quick with CI-appropriate skips.
 
 ## Run
 
 ```bash
-tests/run.sh                    # quick tier (default)
-tests/run.sh --nix              # quick + nix eval tests
-tests/run.sh --docker           # docker integration tests only
-tests/run.sh --all              # everything except runtime/perf
-tests/run.sh --coverage         # quick tests with kcov coverage
-tests/run.sh --runtime          # domain runtime tests
-tests/run.sh --perf             # performance benchmarks + threshold tests
-bats home/{base,linux,darwin}/system/tests/foo.bats  # single test file
+tests/run.sh                       # quick tier (default): unit/ only
+tests/run.sh --nix                 # quick + nix eval tests
+tests/run.sh --integration-scripts # integration/ bats + pytest (alias: --docker)
+tests/run.sh --runtime             # e2e/ script tests (live system)
+tests/run.sh --all                 # quick + nix + integration-scripts
+tests/run.sh --coverage            # unit/ bats with kcov coverage
+tests/run.sh --perf                # performance benchmarks + threshold tests
+bats home/base/system/tests/unit/foo.bats  # single test file
 ```
 
 ### Performance testing
@@ -43,31 +60,33 @@ dotfiles-perf rebuild           # nix rebuild benchmark
 
 Each tier auto-detects tool availability (bats, nix, docker, kcov) and skips gracefully with a message when tools are missing.
 
-## Docker Test Naming Convention
-
-Files matching `*-docker.bats` are docker integration tests. They require docker, run inside containers, and are excluded from the quick tier, pre-push hook, CI, and kcov coverage. When adding a new docker integration test, name it `<script>-docker.bats` and it will automatically be routed to the docker tier.
-
 ## Test Categories
 
 | Category | Location | Requires |
 |---|---|---|
-| Domain script tests | `home/{base,linux,darwin}/*/tests/*.bats` (excluding docker, runtime) | bats |
-| Docker integration | `home/{base,linux,darwin}/*/tests/*-docker.bats` | bats, docker |
-| Domain runtime tests | `home/{base,linux,darwin}/*/tests/runtime.bats`, `live-services.bats` | bats, running services |
+| Unit script tests | `home/{base,linux,darwin}/*/tests/unit/*.bats`, `.../unit/test_*.py` | bats / pytest |
+| Integration script tests | `home/{base,linux,darwin}/*/tests/integration/*.bats`, `.../integration/test_*.py` | bats / pytest, docker or services |
+| E2E script tests | `home/{base,linux,darwin}/*/tests/e2e/*.bats`, `.../e2e/test_*.py` | bats / pytest, live system |
 | Domain nix tests | `home/{base,linux,darwin}/*/tests/checks.nix` | nix |
-| Home manager integration | `tests/nix-modules/home-manager.bats` | bats, nix |
 | Skill frontmatter | `agents/evals/validate-skill-frontmatter.sh` | bash |
-| Agent evals | `agents/evals/` | claude cli |
+| Agent evals | `agents/evals/{evals,integration,e2e}/` | claude cli |
 
 ## Co-located Domain Tests
 
-All tests live alongside their modules in `home/{base,linux,darwin}/<domain>/tests/`. The test runner discovers them dynamically via `home/{base,linux,darwin}/*/tests/*.bats`. Tier routing uses filename convention: `runtime.bats` and `live-services.bats` go to the runtime tier, `*-docker.bats` to the docker tier, everything else to the quick tier.
+Tests live alongside their modules in `home/{base,linux,darwin}/<domain>/tests/`,
+split into `unit/`, `integration/`, and `e2e/` subdirectories. The runner
+discovers them by directory (`*/tests/<tier>/*.bats` and `*/tests/<tier>/test_*.py`)
+— the subdirectory **is** the tier. There is no filename-suffix routing.
 
-Tests load shared helpers from `tests/helpers/` via relative path. Cross-cutting integration tests that span multiple modules stay in `tests/`.
+Bats tests load shared helpers from `tests/helpers/` via relative path; a test in
+`home/base/<domain>/tests/unit/` is five levels deep, so it loads
+`'../../../../../tests/helpers/bash-script-assertions'`. Pytest tests resolve the
+script under test through a `conftest.py` at the module's `tests/` level, which
+applies to all three subdirectories.
 
 ## Writing Bin Script Tests
 
-Test filename must match script name: `bin/foo` → `home/{base,linux,darwin}/<domain>/tests/foo.bats`.
+Test filename must match script name: `bin/foo` → `home/{base,linux,darwin}/<domain>/tests/unit/foo.bats` (or `integration/` / `e2e/` for the heavier tiers).
 
 The shared helper at `tests/helpers/bash-script-assertions.bash` auto-resolves the script path from the test filename.
 
@@ -76,7 +95,7 @@ The shared helper at `tests/helpers/bash-script-assertions.bash` auto-resolves t
 ```bash
 #!/usr/bin/env bats
 
-load '../../../../tests/helpers/bash-script-assertions'
+load '../../../../../tests/helpers/bash-script-assertions'
 
 @test "is executable" {
     assert_is_executable
@@ -121,7 +140,7 @@ load '../../../../tests/helpers/bash-script-assertions'
 ```bash
 #!/usr/bin/env bats
 
-load '../../../../tests/helpers/bash-script-assertions'
+load '../../../../../tests/helpers/bash-script-assertions'
 
 @test "is executable"     { assert_is_executable; }
 @test "passes shellcheck" { assert_passes_shellcheck; }
@@ -140,7 +159,7 @@ load '../../../../tests/helpers/bash-script-assertions'
 ```bash
 #!/usr/bin/env bats
 
-load '../../../../tests/helpers/bash-script-assertions'
+load '../../../../../tests/helpers/bash-script-assertions'
 
 @test "is executable"              { assert_is_executable; }
 @test "passes shellcheck"          { assert_passes_shellcheck; }
@@ -174,10 +193,10 @@ teardown() {
 ## Policies
 
 1. **Every `bin/` script gets a test file.** At minimum: `assert_is_executable` + `assert_passes_shellcheck`.
-2. **Test filename = script name.** `bin/foo` → `home/{base,linux,darwin}/<domain>/tests/foo.bats`. The helper auto-resolves the path.
+2. **Test filename = script name, category = directory.** `bin/foo` → `home/{base,linux,darwin}/<domain>/tests/unit/foo.bats`. The helper auto-resolves the script path from the filename regardless of which tier directory the test lives in.
 3. **Static over execution for setup scripts.** Scripts requiring sudo/root are tested via content analysis, not execution. Verify configs, packages, and service activation are declared correctly.
 4. **Behavioral tests for CLI scripts.** Scripts that take user input should test error paths (missing args, bad input) and success paths.
-5. **Docker for e2e.** Name docker integration test files `*-docker.bats` so they are automatically excluded from the quick tier. Run `docker run --rm --privileged dotfiles-test bash -c 'bin/setup-foo'` to verify setup scripts actually install and configure correctly on Ubuntu.
+5. **Containerized integration tests go in `integration/`.** Place docker-backed tests under `<domain>/tests/integration/`; they run via `--integration-scripts` (alias `--docker`) and stay out of the quick gate by directory, not by filename. Run `docker run --rm --privileged dotfiles-test bash -c 'bin/setup-foo'` to verify setup scripts install and configure correctly on Ubuntu.
 6. **No external test libraries.** `tests/helpers/bash-script-assertions.bash` covers common assertions. Avoid adding bats-assert/bats-file/bats-mock unless a concrete need arises.
 7. **Shellcheck is mandatory.** All bash scripts must pass shellcheck. The `assert_passes_shellcheck` assertion handles environments where shellcheck isn't installed by skipping.
 8. **Names mean things.** Test directories mirror source directories. File and function names describe what they test, not how. Follow `agents/core.md` naming and script conventions.
