@@ -2,6 +2,7 @@
   config,
   lib,
   hostname,
+  healthCheckLib,
   ...
 }:
 let
@@ -70,5 +71,19 @@ in
                 fi
         '';
       };
+
+      healthCheck.probes = [
+        (healthCheckLib.mkBinaryProbe {
+          name = "glab cli";
+          command = "glab --version";
+        })
+      ]
+      ++ lib.optional (config.glab.gitlabHost != null) (
+        healthCheckLib.mkFileProbe {
+          name = "glab host entry: ${config.glab.gitlabHost}";
+          path = glabConfigFile;
+          contains = "${config.glab.gitlabHost}:";
+        }
+      );
     };
 }

@@ -9,5 +9,6 @@
     ./channel-adapters/discord
     ./channel-adapters/pm
     ./peer-adapters/a2a
+    ./health.nix
   ];
 }

@@ -5,6 +5,8 @@
   ...
 }:
 {
+  imports = [ ./system/health-check ];
+
   home = {
     inherit username;
     homeDirectory =

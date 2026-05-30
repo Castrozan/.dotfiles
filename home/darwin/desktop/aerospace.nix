@@ -2,6 +2,7 @@
   lib,
   pkgs,
   config,
+  healthCheckLib,
   ...
 }:
 let
@@ -131,4 +132,15 @@ in
       StandardErrorPath = "/tmp/aerospace.err.log";
     };
   };
+
+  healthCheck.probes = [
+    (healthCheckLib.mkAppProbe {
+      name = "AeroSpace.app";
+      bundle = "AeroSpace";
+    })
+    (healthCheckLib.mkProcessProbe {
+      name = "AeroSpace running";
+      pattern = "AeroSpace.app/Contents/MacOS/AeroSpace";
+    })
+  ];
 }
