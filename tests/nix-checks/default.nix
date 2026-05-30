@@ -27,6 +27,7 @@ let
   terminalChecks = import ../../home/base/terminal/tests/checks.nix domainArgs;
   editorChecks = import ../../home/base/editor/tests/checks.nix domainArgs;
   browserChecks = import ../../home/base/browser/tests/checks.nix domainArgs;
+  braveDesktopChecks = import ../../home/darwin/desktop/brave/tests/checks.nix domainArgs;
   desktopChecks = import ../../home/base/desktop/tests/checks.nix domainArgs;
   devChecks = import ../../home/base/dev/tests/checks.nix domainArgs;
   gamingChecks = import ../../home/base/gaming/tests/checks.nix domainArgs;
@@ -47,6 +48,7 @@ claudeChecks
 // terminalChecks
 // editorChecks
 // browserChecks
+// braveDesktopChecks
 // desktopChecks
 // devChecks
 // gamingChecks
