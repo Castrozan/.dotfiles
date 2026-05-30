@@ -97,6 +97,32 @@ def invoke_line_count_advisory_guard_hook():
     return runner
 
 
+AGENT_INSTRUCTION_FILE_AUTHORING_ROUTER_HOOK_SCRIPT_PATH = find_hook_module_path(
+    "agent-instruction-file-authoring-router"
+)
+
+
+@pytest.fixture
+def invoke_agent_instruction_file_authoring_router_hook(tmp_path, monkeypatch):
+    monkeypatch.setenv(
+        "AGENT_INSTRUCTION_AUTHORING_ROUTER_STATE_DIRECTORY", str(tmp_path)
+    )
+
+    def runner(payload: dict) -> subprocess.CompletedProcess:
+        return subprocess.run(
+            [
+                sys.executable,
+                str(AGENT_INSTRUCTION_FILE_AUTHORING_ROUTER_HOOK_SCRIPT_PATH),
+            ],
+            input=json.dumps(payload),
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
+
+    return runner
+
+
 MEMORY_RECALL_HOOK_SCRIPT_PATH = find_hook_module_path("memory-recall")
 
 

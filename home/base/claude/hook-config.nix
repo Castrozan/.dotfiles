@@ -67,6 +67,16 @@ in
         }
       ];
     }
+    {
+      matcher = "Write|Edit";
+      hooks = [
+        {
+          type = "command";
+          command = "${runHook} ${hooksPath}/agent-instruction-file-authoring-router.py";
+          timeout = 3000;
+        }
+      ];
+    }
   ];
 
   PermissionRequest = [
