@@ -1,6 +1,6 @@
 { pkgs, inputs, ... }:
 let
-  hyprlandFlake = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
+  hyprlandFlake = import ../../../../lib/patched-hyprland.nix { inherit pkgs inputs; };
 in
 {
   home.packages = [ hyprlandFlake ];

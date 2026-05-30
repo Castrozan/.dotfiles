@@ -1,0 +1,22 @@
+diff --git a/src/desktop/state/FocusState.cpp b/src/desktop/state/FocusState.cpp
+index 702b02c4..68de5ff6 100644
+--- a/src/desktop/state/FocusState.cpp
++++ b/src/desktop/state/FocusState.cpp
+@@ -93,11 +93,16 @@ void CFocusState::fullWindowFocus(PHLWINDOW pWindow, eFocusReason reason, SP<CWL
+ 
+ void CFocusState::rawWindowFocus(PHLWINDOW pWindow, eFocusReason reason, SP<CWLSurfaceResource> surface) {
+     static auto PFOLLOWMOUSE        = CConfigValue<Config::INTEGER>("input:follow_mouse");
+     static auto PSPECIALFALLTHROUGH = CConfigValue<Config::INTEGER>("input:special_fallthrough");
+ 
+-    if (pWindow == m_focusWindow && surface == m_focusSurface)
++    // Only short-circuit when the seat's keyboard focus already matches what this focus would assert.
++    // An exclusive layer-shell surface can hijack keyboard focus without changing window focus; on
++    // release the window keeps m_focusWindow/m_focusSurface but the seat keyboard focus is left null,
++    // so the wl_keyboard.enter is never re-sent. Checking the seat state here re-asserts it.
++    const auto INTENDEDKBSURFACE = surface ? surface : (pWindow ? pWindow->wlSurface()->resource() : nullptr);
++    if (pWindow == m_focusWindow && surface == m_focusSurface && g_pSeatManager->m_state.keyboardFocus == INTENDEDKBSURFACE)
+         return;
+ 
+     if (!pWindow || !pWindow->priorityFocus()) {
+         if (g_pSessionLockManager->isSessionLocked()) {
+             Log::logger->log(Log::DEBUG, "Refusing a keyboard focus to a window because of a sessionlock");
