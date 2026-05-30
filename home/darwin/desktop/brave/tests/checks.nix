@@ -32,15 +32,17 @@ let
 
   braveGoogleSigninIsDisabledInPreferencesOverrides = !bravePreferencesOverrides.signin.allowed;
 
-  braveFirstTabSelectionAcceleratorAddsAltDigitOneAlongsideCommand =
+  braveFirstTabSelectionAcceleratorAddsAltDigitOneAlongsideCommandDefaults =
     bravePreferencesOverrides.brave.accelerators."34018" == [
       "Command+Digit1"
+      "Command+Numpad1"
       "Alt+Digit1"
     ];
 
-  braveLastTabSelectionAcceleratorAddsAltDigitNineAlongsideCommand =
+  braveLastTabSelectionAcceleratorAddsAltDigitNineAlongsideCommandDefaults =
     bravePreferencesOverrides.brave.accelerators."34026" == [
       "Command+Digit9"
+      "Command+Numpad9"
       "Alt+Digit9"
     ];
 in
@@ -66,11 +68,11 @@ in
 
   domain-desktop-brave-first-tab-selection-adds-alt-digit-one =
     mkEvalCheck "domain-desktop-brave-first-tab-selection-adds-alt-digit-one"
-      braveFirstTabSelectionAcceleratorAddsAltDigitOneAlongsideCommand
-      "Brave Select Tab 0 (command id 34018) must keep Command+Digit1 and add Alt+Digit1";
+      braveFirstTabSelectionAcceleratorAddsAltDigitOneAlongsideCommandDefaults
+      "Brave Select Tab 0 (command id 34018) must keep Command+Digit1 and Command+Numpad1 and add Alt+Digit1";
 
   domain-desktop-brave-last-tab-selection-adds-alt-digit-nine =
     mkEvalCheck "domain-desktop-brave-last-tab-selection-adds-alt-digit-nine"
-      braveLastTabSelectionAcceleratorAddsAltDigitNineAlongsideCommand
-      "Brave Select Last Tab (command id 34026) must keep Command+Digit9 and add Alt+Digit9";
+      braveLastTabSelectionAcceleratorAddsAltDigitNineAlongsideCommandDefaults
+      "Brave Select Last Tab (command id 34026) must keep Command+Digit9 and Command+Numpad9 and add Alt+Digit9";
 }
