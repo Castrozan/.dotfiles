@@ -1,16 +1,16 @@
 {
-  "generated_at": "2026-04-27T21:36:52+00:00",
-  "git_commit": "c9679741",
-  "config": "eval",
+  "generated_at": "2026-05-30T20:46:21+00:00",
+  "git_commit": "aa688a86",
+  "config": "home",
   "threshold_percent": 150,
   "measurements": {
     "eval": {
-      "duration_seconds": 112.103,
-      "max_allowed_seconds": 168.154
+      "duration_seconds": 1199.526,
+      "max_allowed_seconds": 1799.289
     },
     "rebuild": {
-      "duration_seconds": 64.45,
-      "max_allowed_seconds": 96.675
+      "duration_seconds": 102.571,
+      "max_allowed_seconds": 153.857
     }
   }
 }
