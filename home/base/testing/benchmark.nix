@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, lib, ... }:
 let
   mkTestingPythonScript =
     name: file:
@@ -8,11 +8,15 @@ let
     pkgs.writeShellScriptBin name ''
       exec ${pkgs.python312}/bin/python3 ${pythonSource} "$@"
     '';
+
+  desktopBenchmarkIsHyprlandOnlyAndUnavailableOnDarwin = lib.optional pkgs.stdenv.hostPlatform.isLinux (
+    mkTestingPythonScript "benchmark-desktop" ./scripts/benchmark_desktop.py
+  );
 in
 {
   home.packages = [
     (mkTestingPythonScript "benchmark-rebuild" ./scripts/benchmark_rebuild.py)
     (mkTestingPythonScript "benchmark-shell" ./scripts/benchmark_shell.py)
-    (mkTestingPythonScript "benchmark-desktop" ./scripts/benchmark_desktop.py)
-  ];
+  ]
+  ++ desktopBenchmarkIsHyprlandOnlyAndUnavailableOnDarwin;
 }
