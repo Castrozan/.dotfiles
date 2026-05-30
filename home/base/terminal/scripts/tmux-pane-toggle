@@ -9,8 +9,8 @@
 set -eu
 
 if [ "$#" -lt 2 ]; then
-    echo "usage: tmux-pane-toggle <pane_title> <command_to_run> [working_directory]" >&2
-    exit 2
+	echo "usage: tmux-pane-toggle <pane_title> <command_to_run> [working_directory]" >&2
+	exit 2
 fi
 
 pane_title="$1"
@@ -21,33 +21,35 @@ current_window_id=$(tmux display-message -p '#{window_id}')
 current_pane_id=$(tmux display-message -p '#{pane_id}')
 
 existing_pane_id=$(
-    tmux list-panes -t "$current_window_id" -F '#{pane_id} #{pane_title}' 2>/dev/null |
-        { grep -E "^%[0-9]+ ${pane_title}$" || true; } |
-        cut -d' ' -f1 |
-        head -n1
+	tmux list-panes -t "$current_window_id" -F '#{pane_id} #{pane_title}' 2>/dev/null |
+		{ grep -E "^%[0-9]+ ${pane_title}$" || true; } |
+		cut -d' ' -f1 |
+		head -n1
 )
 
 if [ -n "$existing_pane_id" ]; then
-    tmux select-pane -t "$existing_pane_id"
-    tmux resize-pane -Z
-    exit 0
+	tmux select-pane -t "$existing_pane_id"
+	tmux resize-pane -Z
+	exit 0
 fi
 
 previous_pane_id="$current_pane_id"
 previous_pane_was_zoomed=$(tmux display-message -p -t "$previous_pane_id" '#{pane_zoomed}')
 
 if ! new_pane_id=$(tmux split-window -v -c "$working_directory" -P -F '#{pane_id}' 2>&1); then
-    tmux display-message -d 3000 "Error: Failed to create pane: $new_pane_id"
-    exit 1
+	tmux display-message -d 3000 "Error: Failed to create pane: $new_pane_id"
+	exit 1
 fi
 
 tmux select-pane -t "$new_pane_id" -T "$pane_title"
 tmux resize-pane -Z -t "$new_pane_id"
 
 if [ "$previous_pane_was_zoomed" = "1" ]; then
-    cleanup_command="$command_to_run; tmux kill-pane -t $new_pane_id 2>/dev/null && sleep 0.1 && tmux select-pane -t $previous_pane_id 2>/dev/null && tmux resize-pane -Z -t $previous_pane_id 2>/dev/null || true"
+	restore_command="tmux kill-pane -t $new_pane_id ; tmux select-pane -t $previous_pane_id ; tmux resize-pane -Z -t $previous_pane_id"
 else
-    cleanup_command="$command_to_run; tmux kill-pane -t $new_pane_id 2>/dev/null && tmux select-pane -t $previous_pane_id 2>/dev/null || true"
+	restore_command="tmux kill-pane -t $new_pane_id ; tmux select-pane -t $previous_pane_id"
 fi
+
+cleanup_command="$command_to_run; tmux run-shell -b '$restore_command'"
 
 tmux send-keys -t "$new_pane_id" "$cleanup_command" Enter

@@ -83,6 +83,12 @@ assert_script_source_matches() {
 	[ "$status" -eq 0 ]
 }
 
+assert_script_source_does_not_match() {
+	local pattern="$1"
+	run grep -E -- "$pattern" "$(_resolve_script_under_test)"
+	[ "$status" -ne 0 ]
+}
+
 assert_script_source_matches_all() {
 	for pattern in "$@"; do
 		assert_script_source_matches "$pattern"
