@@ -28,8 +28,13 @@
     ../../base/terminal/wezterm.nix
     ../../base/terminal/yazi
 
+    ../../base/editor/jetbrains-idea.nix
     ../../base/editor/neovim.nix
+    ../../base/editor/scripts.nix
     ../../base/editor/vscode/vscode.nix
+    ../../base/editor/zed-editor.nix
+
+    ../../base/browser/firefox.nix
 
     ../../base/desktop/theming
     ../../darwin/desktop/aerospace.nix
