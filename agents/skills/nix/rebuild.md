@@ -25,19 +25,7 @@ The rebuild script handles detection automatically.
 </platform_difference>
 
 <stale_fetcher_cache>
-`rebuild` builds the flake through the git fetcher (`.?submodules=1`), which caches the resolved repo revision in `~/.cache/nix/fetcher-cache-v*.sqlite`. This cache can pin an OLD commit and keep building stale source even after you commit new changes — and `--refresh`, `--option eval-cache false`, and `--option tarball-ttl 0` do NOT dislodge it.
-
-Symptom: `rebuild` exits 0 but the change is not live. `nix flake metadata '.?submodules=1'` shows the new source, yet the build bakes in old file content at an unchanged store path. Confirm the fetcher is stale:
-```
-nix eval --impure --raw --expr '(builtins.getFlake "git+file://'"$PWD"'?submodules=1").rev'
-git rev-parse HEAD   # if these differ, the fetcher cache is stale
-```
-Fix — drop only the fetcher cache (NOT all of `~/.cache/nix`, which needlessly re-downloads inputs), then rebuild:
-```
-rm -f ~/.cache/nix/fetcher-cache-v*.sqlite*
-rebuild
-```
-Verify a deploy landed by inspecting the installed artifact, not the exit code. The hyprland python scripts are `writeShellScriptBin` wrappers that `exec` a separate `<hash>-source.py`; grepping the wrapper for your change is a false negative. Resolve `~/.nix-profile/bin/<name>`, extract the `/nix/store/...-source.py` it execs, and grep that.
+`rebuild` resolves the flake via the git fetcher (`?submodules=1`), which caches the repo revision in `~/.cache/nix/fetcher-cache-v*.sqlite` and can pin an old commit so the build keeps using stale source after you commit; `--refresh`, `--option eval-cache false`, and `--option tarball-ttl 0` do not clear it. Symptom: `rebuild` exits 0 but the change is not live and the built store path never changes; confirm by comparing `builtins.getFlake`'s `.rev` against `git rev-parse HEAD`, a mismatch means the cache is stale. Fix: `rm -f ~/.cache/nix/fetcher-cache-v*.sqlite*` then rebuild, deleting only this file and not all of `~/.cache/nix` which forces needless input re-downloads. Verify a deploy from the installed artifact, not the exit code: the hyprland python scripts are `writeShellScriptBin` wrappers that `exec` a separate `<hash>-source.py`, so grep the `-source.py` the wrapper execs (the wrapper itself silently lacks your change).
 </stale_fetcher_cache>
 
 <troubleshooting>
