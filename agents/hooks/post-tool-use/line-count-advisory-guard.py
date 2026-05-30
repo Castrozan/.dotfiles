@@ -12,7 +12,6 @@ Exit codes:
 from __future__ import annotations
 
 import json
-import os
 import sys
 from pathlib import Path
 
@@ -22,8 +21,10 @@ from line_count_policy import (
     LINE_COUNT_ADVISORY_THRESHOLD,
     LINE_COUNT_BLOCKING_THRESHOLD,
     LINE_COUNT_WARNING_THRESHOLD,
-    count_lines_in_file,
-    file_path_has_code_extension,
+    SEVERITY_ADVISORY,
+    SEVERITY_BLOCKING,
+    SEVERITY_WARNING,
+    evaluate_code_file_line_count,
 )
 
 APPLICABLE_TOOL_NAMES = frozenset({"Write", "Edit", "MultiEdit", "NotebookEdit"})
@@ -71,12 +72,14 @@ def build_advisory_payload(file_path: str, line_count: int) -> dict:
     }
 
 
-def determine_payload_for_line_count(file_path: str, line_count: int) -> dict | None:
-    if line_count > LINE_COUNT_BLOCKING_THRESHOLD:
+def determine_payload_for_severity(
+    file_path: str, line_count: int, severity: str
+) -> dict | None:
+    if severity == SEVERITY_BLOCKING:
         return build_blocking_payload(file_path, line_count)
-    if line_count > LINE_COUNT_WARNING_THRESHOLD:
+    if severity == SEVERITY_WARNING:
         return build_warning_payload(file_path, line_count)
-    if line_count > LINE_COUNT_ADVISORY_THRESHOLD:
+    if severity == SEVERITY_ADVISORY:
         return build_advisory_payload(file_path, line_count)
     return None
 
@@ -96,18 +99,12 @@ def main() -> None:
     if not target_file_path:
         sys.exit(0)
 
-    if not file_path_has_code_extension(target_file_path):
+    evaluation = evaluate_code_file_line_count(target_file_path)
+    if evaluation is None:
         sys.exit(0)
 
-    if not os.path.isfile(target_file_path):
-        sys.exit(0)
-
-    try:
-        line_count = count_lines_in_file(target_file_path)
-    except OSError:
-        sys.exit(0)
-
-    payload = determine_payload_for_line_count(target_file_path, line_count)
+    line_count, severity = evaluation
+    payload = determine_payload_for_severity(target_file_path, line_count, severity)
     if payload is None:
         sys.exit(0)
 

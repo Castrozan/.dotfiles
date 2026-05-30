@@ -1,34 +1,38 @@
 #!/usr/bin/env python3
-"""Fail if any tracked code file exceeds the blocking line-count threshold.
+"""Block files from newly exceeding the line-count hard limit.
 
-Walks `git ls-files`, filters by code extensions, counts lines, and:
-  - exits 1 listing every offender above LINE_COUNT_BLOCKING_THRESHOLD
-  - prints (but does not fail on) files above LINE_COUNT_WARNING_THRESHOLD
+Existing over-limit files are grandfathered in tests/line-count-baseline.json,
+which maps each one to its allowed line count. The check fails when a file that
+is not grandfathered exceeds the blocking threshold, or when a grandfathered
+file grows beyond its recorded count. Shrinking always passes. Run with
+--update-baseline to refreeze the current state after deliberately splitting or
+accepting files.
 
-Shares thresholds and the extension list with the Write/Edit hook via
+Thresholds and the code-extension list are shared with the Write/Edit hook via
 agents/hooks/post-tool-use/line_count_policy.py.
 """
 
 from __future__ import annotations
 
+import json
 import subprocess
 import sys
 from pathlib import Path
 
 REPOSITORY_ROOT = Path(__file__).resolve().parent.parent
 SHARED_POLICY_DIRECTORY = REPOSITORY_ROOT / "agents" / "hooks" / "post-tool-use"
+BASELINE_FILE_PATH = Path(__file__).resolve().parent / "line-count-baseline.json"
 
 sys.path.insert(0, str(SHARED_POLICY_DIRECTORY))
 
 from line_count_policy import (  # noqa: E402
     LINE_COUNT_BLOCKING_THRESHOLD,
-    LINE_COUNT_WARNING_THRESHOLD,
-    count_lines_in_file,
-    file_path_has_code_extension,
+    SEVERITY_BLOCKING,
+    evaluate_code_file_line_count,
 )
 
 
-def list_tracked_files_in_repository() -> list[Path]:
+def list_tracked_file_paths() -> list[Path]:
     completed_process = subprocess.run(
         ["git", "ls-files"],
         check=True,
@@ -46,76 +50,89 @@ def list_tracked_files_in_repository() -> list[Path]:
     return tracked_file_paths
 
 
-def collect_offenders_and_warnings(
-    tracked_file_paths: list[Path],
-) -> tuple[list[tuple[Path, int]], list[tuple[Path, int]]]:
-    blocking_offenders = []
-    warning_offenders = []
-    for absolute_path in tracked_file_paths:
-        if not file_path_has_code_extension(str(absolute_path)):
+def line_count_per_over_limit_file() -> dict[str, int]:
+    over_limit_files = {}
+    for absolute_path in list_tracked_file_paths():
+        evaluation = evaluate_code_file_line_count(str(absolute_path))
+        if evaluation is None:
             continue
-        try:
-            line_count = count_lines_in_file(str(absolute_path))
-        except OSError:
-            continue
-        if line_count > LINE_COUNT_BLOCKING_THRESHOLD:
-            blocking_offenders.append((absolute_path, line_count))
-        elif line_count > LINE_COUNT_WARNING_THRESHOLD:
-            warning_offenders.append((absolute_path, line_count))
-    blocking_offenders.sort(key=lambda entry: entry[1], reverse=True)
-    warning_offenders.sort(key=lambda entry: entry[1], reverse=True)
-    return blocking_offenders, warning_offenders
+        line_count, severity = evaluation
+        if severity == SEVERITY_BLOCKING:
+            relative_path = str(absolute_path.relative_to(REPOSITORY_ROOT))
+            over_limit_files[relative_path] = line_count
+    return over_limit_files
 
 
-def format_relative_path(absolute_path: Path) -> str:
-    return str(absolute_path.relative_to(REPOSITORY_ROOT))
+def load_grandfathered_line_counts() -> dict[str, int]:
+    if not BASELINE_FILE_PATH.is_file():
+        return {}
+    return json.loads(BASELINE_FILE_PATH.read_text())
 
 
-def print_warning_section(warning_offenders: list[tuple[Path, int]]) -> None:
-    if not warning_offenders:
-        return
-    print(
-        f"WARNINGS ({len(warning_offenders)} files > "
-        f"{LINE_COUNT_WARNING_THRESHOLD} lines):",
-        file=sys.stderr,
-    )
-    for absolute_path, line_count in warning_offenders:
-        print(
-            f"  {line_count:>5} {format_relative_path(absolute_path)}",
-            file=sys.stderr,
+def write_grandfathered_line_counts(over_limit_files: dict[str, int]) -> None:
+    serialized = json.dumps(dict(sorted(over_limit_files.items())), indent=2)
+    BASELINE_FILE_PATH.write_text(serialized + "\n")
+
+
+def find_new_or_worsened_offenders(
+    current_over_limit_files: dict[str, int],
+    grandfathered_line_counts: dict[str, int],
+) -> list[tuple[str, int, int]]:
+    regressions = []
+    for relative_path, line_count in sorted(current_over_limit_files.items()):
+        allowed_line_count = grandfathered_line_counts.get(
+            relative_path, LINE_COUNT_BLOCKING_THRESHOLD
         )
+        if line_count > allowed_line_count:
+            regressions.append((relative_path, line_count, allowed_line_count))
+    return regressions
 
 
-def print_failure_section(blocking_offenders: list[tuple[Path, int]]) -> None:
+def print_regression_failure(regressions: list[tuple[str, int, int]]) -> None:
     print(
-        f"FAILED: {len(blocking_offenders)} files exceed "
+        f"FAILED: {len(regressions)} file(s) newly exceed the "
         f"{LINE_COUNT_BLOCKING_THRESHOLD}-line hard limit:",
         file=sys.stderr,
     )
-    for absolute_path, line_count in blocking_offenders:
+    for relative_path, line_count, allowed_line_count in regressions:
+        if allowed_line_count == LINE_COUNT_BLOCKING_THRESHOLD:
+            ceiling_description = "new offender"
+        else:
+            ceiling_description = f"grandfathered at {allowed_line_count}"
         print(
-            f"  {line_count:>5} {format_relative_path(absolute_path)}",
+            f"  {line_count:>5} {relative_path}  ({ceiling_description})",
             file=sys.stderr,
         )
     print(
-        "\nSplit each file into smaller modules with single responsibilities.",
+        "\nSplit the file into smaller single-responsibility modules, or run "
+        "tests/check-line-counts.py --update-baseline if the growth is intended.",
         file=sys.stderr,
     )
 
 
 def main() -> int:
-    tracked_file_paths = list_tracked_files_in_repository()
-    blocking_offenders, warning_offenders = collect_offenders_and_warnings(
-        tracked_file_paths
-    )
-
-    print_warning_section(warning_offenders)
-
-    if not blocking_offenders:
-        print("line-count check: OK")
+    if "--update-baseline" in sys.argv[1:]:
+        over_limit_files = line_count_per_over_limit_file()
+        write_grandfathered_line_counts(over_limit_files)
+        print(
+            f"line-count baseline updated: {len(over_limit_files)} grandfathered files"
+        )
         return 0
 
-    print_failure_section(blocking_offenders)
+    current_over_limit_files = line_count_per_over_limit_file()
+    grandfathered_line_counts = load_grandfathered_line_counts()
+    regressions = find_new_or_worsened_offenders(
+        current_over_limit_files, grandfathered_line_counts
+    )
+
+    if not regressions:
+        print(
+            f"line-count check: OK ({len(grandfathered_line_counts)} "
+            "grandfathered files)"
+        )
+        return 0
+
+    print_regression_failure(regressions)
     return 1
 
 

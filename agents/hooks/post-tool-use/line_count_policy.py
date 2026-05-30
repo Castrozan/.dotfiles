@@ -74,6 +74,12 @@ CODE_FILE_EXTENSIONS = frozenset(
 )
 
 
+SEVERITY_OK = "ok"
+SEVERITY_ADVISORY = "advisory"
+SEVERITY_WARNING = "warning"
+SEVERITY_BLOCKING = "blocking"
+
+
 def file_path_has_code_extension(file_path: str) -> bool:
     _root, extension = os.path.splitext(file_path)
     return extension.lower() in CODE_FILE_EXTENSIONS
@@ -88,3 +94,25 @@ def count_lines_in_file(file_path: str) -> int:
     if not contents.endswith(b"\n"):
         line_count += 1
     return line_count
+
+
+def classify_line_count(line_count: int) -> str:
+    if line_count > LINE_COUNT_BLOCKING_THRESHOLD:
+        return SEVERITY_BLOCKING
+    if line_count > LINE_COUNT_WARNING_THRESHOLD:
+        return SEVERITY_WARNING
+    if line_count > LINE_COUNT_ADVISORY_THRESHOLD:
+        return SEVERITY_ADVISORY
+    return SEVERITY_OK
+
+
+def evaluate_code_file_line_count(file_path: str) -> tuple[int, str] | None:
+    if not file_path_has_code_extension(file_path):
+        return None
+    if not os.path.isfile(file_path):
+        return None
+    try:
+        line_count = count_lines_in_file(file_path)
+    except OSError:
+        return None
+    return line_count, classify_line_count(line_count)

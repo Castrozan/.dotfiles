@@ -15,6 +15,8 @@ source "$SCRIPT_DIR/lib/nix-checks.sh"
 source "$SCRIPT_DIR/lib/qml.sh"
 # shellcheck source=lib/skill-frontmatter.sh
 source "$SCRIPT_DIR/lib/skill-frontmatter.sh"
+# shellcheck source=lib/line-counts.sh
+source "$SCRIPT_DIR/lib/line-counts.sh"
 # shellcheck source=lib/evals.sh
 source "$SCRIPT_DIR/lib/evals.sh"
 # shellcheck source=lib/perf.sh
@@ -76,6 +78,7 @@ _parse_arguments() {
 
 _run_quick_tier() {
 	_run_skill_frontmatter_validation
+	_run_line_count_check
 	_run_quick_bats_tests
 	_run_quick_pytest_tests
 	_run_qml_unit_tests
@@ -103,6 +106,7 @@ _run_coverage_tier() {
 
 _run_ci_tier() {
 	_run_skill_frontmatter_validation
+	_run_line_count_check
 	_run_quick_bats_tests_ci
 	_run_nix_tier
 	_run_rebuild_baseline_check
