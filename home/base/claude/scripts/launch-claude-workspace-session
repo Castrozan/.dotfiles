@@ -14,6 +14,9 @@ WORKSPACE_SKILL_NAMESPACE_PARENT_DIRECTORY = Path("/tmp")
 WORKSPACE_SKILL_NAMESPACE_DIRECTORY_NAME_PREFIX = "claude-workspace-skills."
 WORKSPACE_SKILL_NAMESPACE_SOURCE_CWD_SENTINEL_FILE_NAME = ".source-cwd"
 WORKSPACE_SKILL_NAMESPACE_CLAUDE_SKILLS_SUBPATH = Path(".claude") / "skills"
+INTERACTIVE_PREFERENCES_FILE_PATH_ENVIRONMENT_VARIABLE_NAME = (
+    "CLAUDE_INTERACTIVE_PREFERENCES_PATH"
+)
 
 
 class WorkspaceLaunchConfigurationError(Exception):
@@ -101,6 +104,23 @@ def resolve_requested_skill_source_directories(
             resolved_requested_skill_source_directory
         )
     return resolved_requested_skill_source_directories
+
+
+def build_interactive_preferences_system_prompt_arguments() -> list[str]:
+    interactive_preferences_file_path_value = os.environ.get(
+        INTERACTIVE_PREFERENCES_FILE_PATH_ENVIRONMENT_VARIABLE_NAME
+    )
+    if not interactive_preferences_file_path_value:
+        return []
+    interactive_preferences_file_path = Path(interactive_preferences_file_path_value)
+    if not interactive_preferences_file_path.is_file():
+        return []
+    interactive_preferences_content = (
+        interactive_preferences_file_path.read_text().strip()
+    )
+    if not interactive_preferences_content:
+        return []
+    return ["--append-system-prompt", interactive_preferences_content]
 
 
 def build_unique_skill_directory_name_map(
@@ -219,6 +239,7 @@ def prepare_workspace_claude_launch_plan(
     )
 
     command_arguments = [claude_binary_path]
+    command_arguments.extend(build_interactive_preferences_system_prompt_arguments())
     if discovered_skill_directory_name_map:
         command_arguments.extend(
             ["--add-dir", str(workspace_skill_namespace_directory)]
