@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 DOTFILES_DIRECTORY = Path.home() / ".dotfiles"
-BASELINE_PATH = DOTFILES_DIRECTORY / "home" / "modules" / "testing" / "baseline.json"
+BASELINE_PATH = DOTFILES_DIRECTORY / "home" / "base" / "testing" / "baseline.json"
 RESULTS_DIRECTORY = Path.home() / ".local" / "share" / "dotfiles-benchmarks"
 RESULTS_FILE_NAME = "rebuild-times.csv"
 CSV_HEADER = "timestamp,type,config,duration_seconds,commit"

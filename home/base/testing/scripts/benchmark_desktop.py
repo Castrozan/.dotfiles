@@ -12,7 +12,9 @@ RESULTS_DIRECTORY = Path.home() / ".local" / "share" / "dotfiles-benchmarks"
 RESULTS_FILE_NAME = "desktop-times.csv"
 CSV_HEADER = "timestamp,component,avg_ms,min_ms,max_ms,iterations"
 
-BASELINE_PATH = DOTFILES_DIRECTORY / "home" / "modules" / "testing" / "baseline-desktop.json"
+BASELINE_PATH = (
+    DOTFILES_DIRECTORY / "home" / "base" / "testing" / "baseline-desktop.json"
+)
 
 DEFAULT_ITERATIONS = 5
 REGRESSION_THRESHOLD_PERCENT = 200
@@ -360,7 +362,7 @@ def run_benchmarks(
         results.append(result)
 
         if result["error"]:
-            print(f"    FAILED (all iterations errored)")
+            print("    FAILED (all iterations errored)")
         else:
             print(
                 f"    avg={format_ms(result['avg'])}  "
@@ -479,11 +481,11 @@ def check_baseline() -> bool:
     print()
 
     if not latest:
-        failures.append(
-            "No run data found. Run 'benchmark-desktop' first."
-        )
+        failures.append("No run data found. Run 'benchmark-desktop' first.")
     else:
-        print(f"  {'Component':<22} {'Baseline':>10} {'Actual':>10} {'Max':>10} {'Status':>8}")
+        print(
+            f"  {'Component':<22} {'Baseline':>10} {'Actual':>10} {'Max':>10} {'Status':>8}"
+        )
         print(f"  {'-' * 62}")
         for name, data in measurements.items():
             baseline_ms = data["avg_ms"]
@@ -491,7 +493,9 @@ def check_baseline() -> bool:
             actual_ms = latest.get(name)
 
             if actual_ms is None:
-                print(f"  {name:<22} {format_ms(baseline_ms):>10} {'—':>10} {format_ms(max_ms):>10} {'SKIP':>8}")
+                print(
+                    f"  {name:<22} {format_ms(baseline_ms):>10} {'—':>10} {format_ms(max_ms):>10} {'SKIP':>8}"
+                )
                 continue
 
             passed = actual_ms <= max_ms
