@@ -111,7 +111,9 @@
       "docker"
       "firefox"
       "google-chrome"
+      "maccy"
       "obsidian"
+      "visual-studio-code"
       "wezterm"
     ];
   };

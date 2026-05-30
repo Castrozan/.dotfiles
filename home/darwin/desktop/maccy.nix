@@ -1,7 +1,5 @@
-{ pkgs, config, ... }:
+{ config, ... }:
 {
-  home.packages = [ pkgs.maccy ];
-
   home.activation.configureMaccyDefaults = config.lib.dag.entryAfter [ "writeBoundary" ] ''
     /usr/bin/defaults write org.p0deje.Maccy KeyboardShortcuts_popup -string '{"carbonKeyCode":9,"carbonModifiers":768}'
     /usr/bin/defaults write org.p0deje.Maccy pasteByDefault -bool true
@@ -13,7 +11,7 @@
     enable = true;
     config = {
       Label = "com.dotfiles.maccy";
-      Program = "${pkgs.maccy}/Applications/Maccy.app/Contents/MacOS/Maccy";
+      Program = "/Applications/Maccy.app/Contents/MacOS/Maccy";
       KeepAlive = true;
       RunAtLoad = true;
       StandardOutPath = "/tmp/maccy.log";

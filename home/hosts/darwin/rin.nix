@@ -29,7 +29,6 @@ in
     ../../base/terminal/yazi
 
     ../../base/editor/neovim.nix
-    ../../base/editor/vscode/vscode.nix
 
     ../../base/desktop/theming
     ../../darwin/desktop/aerospace.nix

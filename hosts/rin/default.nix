@@ -111,7 +111,9 @@
       "dbeaver-community"
       "docker"
       "google-chrome"
+      "maccy"
       "obsidian"
+      "visual-studio-code"
       "wezterm"
     ];
   };
