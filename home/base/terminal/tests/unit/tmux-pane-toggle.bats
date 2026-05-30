@@ -27,9 +27,9 @@ load '../../../../../tests/helpers/bash-script-assertions'
 	assert_script_source_matches 'tmux resize-pane -Z'
 }
 
-@test "restores the previous pane via server-side run-shell so the dying pane never owns the re-zoom" {
+@test "delegates restoration to a server-side run-shell so the dying pane never owns the re-zoom" {
 	assert_script_source_matches 'tmux run-shell -b'
-	assert_script_source_matches 'tmux resize-pane -Z -t \$previous_pane_id'
+	assert_script_source_matches 'tmux-restore-pane-after-toggle \$new_pane_id \$previous_pane_id \$previous_pane_was_zoomed'
 }
 
 @test "does not chain pane restoration after kill-pane in the dying shell" {

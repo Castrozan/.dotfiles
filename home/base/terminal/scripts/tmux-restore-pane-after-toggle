@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# Usage: tmux-restore-pane-after-toggle <dead_pane_id> <previous_pane_id> <previous_pane_was_zoomed>
+# Runs server-side (via tmux run-shell -b) after a toggled pane's command
+# exits, so it survives the death of the pane it tears down. Kills the dead
+# pane, waits for the layout to settle, focuses the previous pane and re-zooms
+# it when it was zoomed before. Waiting until the dead pane is gone is what
+# makes the re-zoom deterministic: resize-pane -Z is a blind toggle, so zooming
+# before the kill's relayout lands would toggle the window straight back off.
+
+[ "${DEBUG:-}" = "1" ] && set -x
+set -eu
+
+if [ "$#" -lt 3 ]; then
+	echo "usage: tmux-restore-pane-after-toggle <dead_pane_id> <previous_pane_id> <previous_pane_was_zoomed>" >&2
+	exit 2
+fi
+
+dead_pane_id="$1"
+previous_pane_id="$2"
+previous_pane_was_zoomed="$3"
+
+window_id=$(tmux display-message -p -t "$previous_pane_id" '#{window_id}')
+
+tmux kill-pane -t "$dead_pane_id" 2>/dev/null || true
+
+while tmux list-panes -t "$window_id" -F '#{pane_id}' 2>/dev/null | grep -qx "$dead_pane_id"; do
+	sleep 0.02
+done
+
+tmux select-pane -t "$previous_pane_id"
+
+if [ "$previous_pane_was_zoomed" = "1" ] &&
+	[ "$(tmux display-message -p -t "$previous_pane_id" '#{window_zoomed_flag}')" = "0" ]; then
+	tmux resize-pane -Z -t "$previous_pane_id"
+fi
