@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# Block until this pane's real PTY size matches the size tmux already models for
+# it, then return. tmux-pane-toggle zooms the freshly split pane before launching
+# the editor, but resize-pane -Z applies the new winsize asynchronously in the
+# server's event loop - so without this gate the editor starts while the PTY is
+# still the half-height split, lays out at the wrong size, and (with the
+# alternate screen disabled) never redraws cleanly until a manual resize. Waiting
+# here makes the editor be born at the final zoomed size. Bounded so a stuck
+# resize can never hang the launch.
+
+[ "${DEBUG:-}" = "1" ] && set -x
+set -eu
+
+for _ in $(seq 1 100); do
+	modelled_size=$(tmux display-message -p '#{pane_height} #{pane_width}' 2>/dev/null) || exit 0
+	[ "$(stty size 2>/dev/null)" = "$modelled_size" ] && exit 0
+	sleep 0.01
+done

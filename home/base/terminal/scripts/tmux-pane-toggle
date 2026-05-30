@@ -44,6 +44,6 @@ fi
 tmux select-pane -t "$new_pane_id" -T "$pane_title"
 tmux resize-pane -Z -t "$new_pane_id"
 
-cleanup_command="$command_to_run; tmux run-shell -b 'tmux-restore-pane-after-toggle $new_pane_id $previous_pane_id $previous_pane_was_zoomed'"
+launch_command="tmux-wait-pane-resize; $command_to_run; tmux run-shell -b 'tmux-restore-pane-after-toggle $new_pane_id $previous_pane_id $previous_pane_was_zoomed'"
 
-tmux send-keys -t "$new_pane_id" "$cleanup_command" Enter
+tmux send-keys -t "$new_pane_id" "$launch_command" Enter
