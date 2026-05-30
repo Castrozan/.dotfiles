@@ -21,6 +21,11 @@ load '../../../../../tests/helpers/bash-script-assertions'
 	assert_script_source_matches 'tmux send-keys -t "\$new_pane_id"'
 }
 
+@test "detects the previous zoom state via window_zoomed_flag not the nonexistent pane_zoomed" {
+	assert_script_source_matches "window_zoomed_flag"
+	assert_script_source_does_not_match "pane_zoomed"
+}
+
 @test "toggles by selecting an existing pane with the same title" {
 	assert_script_source_matches 'tmux list-panes'
 	assert_script_source_matches 'tmux select-pane -t "\$existing_pane_id"'

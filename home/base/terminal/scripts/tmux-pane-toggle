@@ -34,7 +34,7 @@ if [ -n "$existing_pane_id" ]; then
 fi
 
 previous_pane_id="$current_pane_id"
-previous_pane_was_zoomed=$(tmux display-message -p -t "$previous_pane_id" '#{pane_zoomed}')
+previous_pane_was_zoomed=$(tmux display-message -p -t "$previous_pane_id" '#{window_zoomed_flag}')
 
 if ! new_pane_id=$(tmux split-window -v -c "$working_directory" -P -F '#{pane_id}' 2>&1); then
 	tmux display-message -d 3000 "Error: Failed to create pane: $new_pane_id"
