@@ -3,6 +3,20 @@ name: b3-portal
 description: Log into and scrape data from Lucas's B3 Área do Investidor (investidor.b3.com.br) via browser-use MCP plus raw CDP XHR capture. Use when syncing portfolio positions, trades, dividends, or any other read-only data from B3 — for example when Golden runs b3-sync, or when verifying brokerage state. Documents the working flow, the SPA quirks that broke prior attempts, the API endpoint catalog, and the institution-CNPJ filter trick.
 ---
 
+<managed_scope>
+GOLDEN MANAGES ONLY THE NUBANK SLEEVE (NuInvest + Nubank Caixinhas). Hard scope boundary set by Lucas on 2026-05-30.
+
+B3 aggregates EVERY institution Lucas has custody at. On 2026-05-12 that included Sicoob (~R$ 36k), Caixa/CEF (~R$ 34k), and Inter (~R$ 7k) in renda fixa. That money is Lucas's but it is OUT OF SCOPE. Do NOT:
+- pull non-Nubank institutions into portfolio.json,
+- propose managing / rebalancing / diversifying them,
+- treat B3's total patrimônio as the number Golden manages or sizes against,
+- offer to "expand scope" to all institutions.
+
+When syncing, filter to Nubank only: `documentoInstituicao=62169875000179` (NU CTVM). Ignore every other institution chip. Note the Nubank Caixinhas RDB does NOT appear in B3 at all (see gotchas), so even within the Nubank sleeve, B3 only shows the BDR/ETF/FII/externally-custodiada-RF part — combine it with what Lucas reports for the Caixinhas.
+
+Why this rule exists: on 2026-05-30 Golden saw the ~R$ 77k of non-Nubank renda fixa in a B3 capture and over-reacted — proposing to track all institutions and run a full multi-institution sync. Lucas corrected: "We only manage nubank." Do not repeat that overreaction.
+</managed_scope>
+
 <scope>
 Authoritative recipe for pulling data from B3's `investidor.b3.com.br` portal. The portal is an Angular SPA backed by Microsoft Azure AD B2C for auth. There is no public read API, so we drive a real browser and listen to its XHRs over CDP. This skill documents:
 
