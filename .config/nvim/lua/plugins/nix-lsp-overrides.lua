@@ -29,7 +29,6 @@ return {
         rust_analyzer = {},
         gopls = {},
         bashls = {},
-        marksman = {},
         terraformls = {},
         sourcekit = {
           cmd = { "sourcekit-lsp" },
