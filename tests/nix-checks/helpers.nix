@@ -42,6 +42,7 @@ let
         inherit nixpkgs-version home-version;
       };
       modules = [
+        ../../home/base/system/health-check
         {
           home = {
             username = "test";
