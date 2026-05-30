@@ -35,6 +35,7 @@ def import_hyphenated_hook_module(hyphenated_name):
 
 import_hyphenated_hook_module("session-context")
 import_hyphenated_hook_module("monitor-streaming-pattern-validator")
+import_hyphenated_hook_module("memory-recall")
 
 
 PROHIBITED_COMMAND_GUARD_HOOK_SCRIPT_PATH = find_hook_module_path(
