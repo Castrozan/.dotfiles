@@ -43,32 +43,44 @@ let
     }) personalVaultSkillNames
   );
 
-  coreAgentRawContent = builtins.readFile ../../../agents/core.md;
-  coreAgentSplitOnFrontmatterDelimiter = builtins.split "---\n" coreAgentRawContent;
-  coreAgentBodyWithoutFrontmatter = builtins.elemAt coreAgentSplitOnFrontmatterDelimiter 4;
+  readInstructionsBodyWithoutFrontmatter =
+    instructionsFile:
+    let
+      rawInstructionsContent = builtins.readFile instructionsFile;
+      startsWithFrontmatterDelimiter = builtins.substring 0 4 rawInstructionsContent == "---\n";
+    in
+    if startsWithFrontmatterDelimiter then
+      builtins.elemAt (builtins.split "---\n" rawInstructionsContent) 4
+    else
+      rawInstructionsContent;
 
-  coreSkillFromAgentInstructions = {
-    ".claude/skills/core/SKILL.md".text = ''
-      ---
-      name: core
-      description: Display core agent behavior instructions. Use when user wants to see, review, or reference the core rules, or when injecting core instructions as context into subagents, oneshot sessions, or external tools.
-      ---
+  makeSkillFromInstructionsFile =
+    {
+      skillName,
+      skillDescription,
+      instructionsFile,
+    }:
+    {
+      ".claude/skills/${skillName}/SKILL.md".text = ''
+        ---
+        name: ${skillName}
+        description: ${skillDescription}
+        ---
 
-      ${coreAgentBodyWithoutFrontmatter}
-    '';
+        ${readInstructionsBodyWithoutFrontmatter instructionsFile}
+      '';
+    };
+
+  coreSkillFromAgentInstructions = makeSkillFromInstructionsFile {
+    skillName = "core";
+    skillDescription = "Display core agent behavior instructions. Use when user wants to see, review, or reference the core rules, or when injecting core instructions as context into subagents, oneshot sessions, or external tools.";
+    instructionsFile = ../../../agents/core.md;
   };
 
-  interactivePreferencesRawContent = builtins.readFile ../../../agents/interactive-preferences.md;
-
-  interactivePreferencesSkillFromInstructions = {
-    ".claude/skills/interactive-preferences/SKILL.md".text = ''
-      ---
-      name: interactive-preferences
-      description: Inject Lucas's interactive-session response preferences (TL;DR-only replies; exhaust capabilities before returning) into the running session as governing rules. Use when a session was started without these rules in its system prompt - an already-running session, or one not launched via the cla/claude wrapper - and Lucas asks to apply, load, or inject his interactive preferences.
-      ---
-
-      ${interactivePreferencesRawContent}
-    '';
+  interactivePreferencesSkillFromInstructions = makeSkillFromInstructionsFile {
+    skillName = "interactive-preferences";
+    skillDescription = "Inject Lucas's interactive-session response preferences (TL;DR-only replies; exhaust capabilities before returning) into the running session as governing rules. Use when a session was started without these rules in its system prompt - an already-running session, or one not launched via the cla/claude wrapper - and Lucas asks to apply, load, or inject his interactive preferences.";
+    instructionsFile = ../../../agents/interactive-preferences.md;
   };
 
   skillNamesWithInstallModule = builtins.filter (
