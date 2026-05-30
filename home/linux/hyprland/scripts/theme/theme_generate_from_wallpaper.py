@@ -14,6 +14,9 @@ ANSI_HUE_TARGETS = {
     6: 0.500,
 }
 
+MINIMUM_ACCENT_CONTRAST_RATIO = 4.5
+ACCENT_LIGHTNESS_STEP_WHILE_LIFTING_FOR_CONTRAST = 0.02
+
 
 def extract_first_frame_if_gif(image_path: Path) -> Path:
     with Image.open(image_path) as image:
@@ -96,6 +99,64 @@ def saturate_and_brighten_color(
     return hls_to_color(hue, adjusted_lightness, boosted_saturation)
 
 
+def linearize_srgb_channel(channel_value: int) -> float:
+    normalized = channel_value / 255.0
+    if normalized <= 0.03928:
+        return normalized / 12.92
+    return ((normalized + 0.055) / 1.055) ** 2.4
+
+
+def calculate_relative_luminance(color: tuple[int, int, int]) -> float:
+    red, green, blue = (linearize_srgb_channel(channel) for channel in color)
+    return 0.2126 * red + 0.7152 * green + 0.0722 * blue
+
+
+def calculate_contrast_ratio(
+    color_a: tuple[int, int, int], color_b: tuple[int, int, int]
+) -> float:
+    luminance_a = calculate_relative_luminance(color_a)
+    luminance_b = calculate_relative_luminance(color_b)
+    lighter = max(luminance_a, luminance_b)
+    darker = min(luminance_a, luminance_b)
+    return (lighter + 0.05) / (darker + 0.05)
+
+
+def lighten_color_until_minimum_contrast(
+    color: tuple[int, int, int],
+    background: tuple[int, int, int],
+    minimum_ratio: float,
+) -> tuple[int, int, int]:
+    hue, lightness, saturation = color_to_hls(color)
+    lifted_color = color
+    while (
+        calculate_contrast_ratio(lifted_color, background) < minimum_ratio
+        and lightness < 1.0
+    ):
+        lightness = min(
+            1.0, lightness + ACCENT_LIGHTNESS_STEP_WHILE_LIFTING_FOR_CONTRAST
+        )
+        lifted_color = hls_to_color(hue, lightness, saturation)
+    return lifted_color
+
+
+def lift_accent_slots_to_minimum_contrast(
+    palette: list[tuple[int, int, int]],
+    background: tuple[int, int, int],
+) -> None:
+    for normal_slot in ANSI_HUE_TARGETS:
+        bright_slot = normal_slot + 8
+        palette[normal_slot] = lighten_color_until_minimum_contrast(
+            palette[normal_slot], background, MINIMUM_ACCENT_CONTRAST_RATIO
+        )
+        palette[bright_slot] = lighten_color_until_minimum_contrast(
+            palette[bright_slot], background, MINIMUM_ACCENT_CONTRAST_RATIO
+        )
+        normal_luminance = calculate_yiq_luminance(*palette[normal_slot])
+        bright_luminance = calculate_yiq_luminance(*palette[bright_slot])
+        if bright_luminance < normal_luminance:
+            palette[bright_slot] = palette[normal_slot]
+
+
 def assign_colors_to_ansi_slots_by_hue(
     extracted_colors: list[tuple[int, int, int]],
 ) -> dict[int, tuple[int, int, int]]:
@@ -129,6 +190,8 @@ def build_sixteen_color_palette(
         palette[ansi_slot + 8] = saturate_and_brighten_color(
             base_color, saturation_boost=0.8, target_lightness=0.55
         )
+
+    lift_accent_slots_to_minimum_contrast(palette, palette[0])
 
     return palette
 
