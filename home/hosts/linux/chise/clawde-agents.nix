@@ -89,7 +89,7 @@ in
     clever = {
       channel.type = "discord";
       channel.discord.botTokenSecretName = "discord-bot-token-clever";
-      model = "sonnet";
+      model = "opus";
       skillDirectories = [ personalSkillSetDirectory ];
       permissionMode = "bypassPermissions";
       activeHoursStart = 8;
