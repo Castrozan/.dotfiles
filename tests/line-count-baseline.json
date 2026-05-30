@@ -48,7 +48,7 @@
   "home/base/system/scripts/nix_gc.py": 267,
   "home/base/system/tests/unit/test_mouse_poll_rate.py": 400,
   "home/base/system/tests/unit/test_nix_gc.py": 372,
-  "home/base/testing/scripts/benchmark_desktop.py": 680,
+  "home/base/testing/scripts/benchmark_desktop.py": 684,
   "home/base/testing/scripts/benchmark_rebuild.py": 368,
   "home/base/testing/tests/unit/test_benchmark_desktop.py": 259,
   "home/hosts/linux/chise/clawde-agents.nix": 599,
