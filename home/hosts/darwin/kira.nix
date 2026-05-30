@@ -53,9 +53,13 @@
     ../../base/dev/devenv.nix
     ../../base/dev/git.nix
     ../../base/dev/glab.nix
+    ../../base/dev/google-workspace-cli.nix
     ../../base/dev/jira.nix
     ../../base/dev/lazygit.nix
+    ../../base/dev/mcporter.nix
+    ../../base/dev/ralph-tui.nix
     ../../base/dev/scripts.nix
+    ../../base/dev/tuisvn.nix
 
     # ../../base/terminal/bad-apple.nix  # disabled on darwin: pulls latest.yt-dlp -> deno -> rusty-v8 (V8 build takes 30+ min on aarch64-darwin)
     ../../base/terminal/cbonsai.nix
