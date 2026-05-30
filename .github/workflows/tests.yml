@@ -27,7 +27,7 @@ jobs:
       - name: Run Python tests
         run: |
           nix shell nixpkgs#python312Packages.pytest --command \
-            pytest home/linux/hyprland/tests/test_*.py -x -q
+            bash -c 'pytest $(find home/base home/linux agents/hooks agents/skills tests -path "*/tests/unit/test_*.py" -type f | sort) -x -q'
 
       - name: Run QML unit tests
         run: |
