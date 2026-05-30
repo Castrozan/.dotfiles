@@ -51,12 +51,12 @@ _clean_previous_coverage() {
 }
 
 _collect_quick_bats_test_files() {
-	find "$REPOSITORY_DIR/home/base" "$REPOSITORY_DIR/home/linux" "$REPOSITORY_DIR/home/darwin" -path "*/tests/*.bats" \
-		! -name "*-docker.bats" \
-		! -name "runtime.bats" \
-		! -name "live-services.bats" \
-		! -name "cdp-browser.bats" \
-		-type f | sort
+	local platformSpecificHomeDirectory="$REPOSITORY_DIR/home/linux"
+	if [[ "$(uname)" == "Darwin" ]]; then
+		platformSpecificHomeDirectory="$REPOSITORY_DIR/home/darwin"
+	fi
+	find "$REPOSITORY_DIR/home/base" "$platformSpecificHomeDirectory" \
+		-path "*/tests/unit/*.bats" -type f | sort
 }
 
 _run_bats_through_kcov() {

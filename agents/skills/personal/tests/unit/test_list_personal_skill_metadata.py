@@ -4,7 +4,7 @@ from pathlib import Path
 
 
 SCRIPT_PATH = (
-    Path(__file__).resolve().parent.parent
+    Path(__file__).resolve().parent.parent.parent
     / "scripts"
     / "list-personal-skill-metadata.py"
 )

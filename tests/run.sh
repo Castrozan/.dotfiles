@@ -11,8 +11,6 @@ source "$SCRIPT_DIR/lib/bats.sh"
 source "$SCRIPT_DIR/lib/pytest.sh"
 # shellcheck source=lib/nix-checks.sh
 source "$SCRIPT_DIR/lib/nix-checks.sh"
-# shellcheck source=lib/docker.sh
-source "$SCRIPT_DIR/lib/docker.sh"
 # shellcheck source=lib/qml.sh
 source "$SCRIPT_DIR/lib/qml.sh"
 # shellcheck source=lib/skill-frontmatter.sh
@@ -36,12 +34,12 @@ main() {
 		_run_quick_tier
 		_run_nix_tier
 		;;
-	docker) _run_docker_tier ;;
+	integration-scripts) _run_integration_scripts_tier ;;
 	runtime) _run_runtime_tier ;;
 	all)
 		_run_quick_tier
 		_run_nix_tier
-		_run_docker_tier
+		_run_integration_scripts_tier
 		;;
 	evals) _run_evals_tier ;;
 	integration) _run_integration_tier ;;
@@ -59,7 +57,7 @@ _parse_arguments() {
 		case $1 in
 		--quick) selectedMode="quick" && shift ;;
 		--nix) selectedMode="nix" && shift ;;
-		--docker) selectedMode="docker" && shift ;;
+		--integration-scripts | --docker) selectedMode="integration-scripts" && shift ;;
 		--runtime) selectedMode="runtime" && shift ;;
 		--all) selectedMode="all" && shift ;;
 		--coverage) selectedMode="coverage" && shift ;;
@@ -88,12 +86,14 @@ _run_nix_tier() {
 	_run_nix_flake_checks
 }
 
-_run_docker_tier() {
-	_run_docker_integration_tests
+_run_integration_scripts_tier() {
+	_run_integration_scripts_bats_tests
+	_run_integration_scripts_pytest_tests
 }
 
 _run_runtime_tier() {
-	_run_domain_runtime_tests
+	_run_e2e_scripts_bats_tests
+	_run_e2e_scripts_pytest_tests
 }
 
 _run_coverage_tier() {

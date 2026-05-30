@@ -1,7 +1,7 @@
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "post-tool-use"))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent / "post-tool-use"))
 
 from lint_on_edit_linter_table import parse_ruff_output  # noqa: E402
 

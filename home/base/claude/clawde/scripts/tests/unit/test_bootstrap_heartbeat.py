@@ -5,7 +5,7 @@ import sys
 
 def _load_bootstrap_module():
     module_path = (
-        pathlib.Path(__file__).resolve().parent.parent / "bootstrap-heartbeat.py"
+        pathlib.Path(__file__).resolve().parent.parent.parent / "bootstrap-heartbeat.py"
     )
     module_spec = importlib.util.spec_from_file_location(
         "bootstrap_heartbeat", module_path

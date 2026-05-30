@@ -6,7 +6,7 @@ import sys
 
 def _load_wrapper_module():
     module_path = (
-        pathlib.Path(__file__).resolve().parent.parent / "clawde-agent-wrapper.py"
+        pathlib.Path(__file__).resolve().parent.parent.parent / "clawde-agent-wrapper.py"
     )
     module_spec = importlib.util.spec_from_file_location(
         "clawde_agent_wrapper", module_path
