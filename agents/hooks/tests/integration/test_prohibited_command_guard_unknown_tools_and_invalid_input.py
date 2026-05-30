@@ -13,8 +13,8 @@ class TestUnknownToolsAreAllowed:
 
 
 class TestInvalidInput:
-    def test_exits_one_on_invalid_json(
+    def test_exits_zero_silently_on_invalid_json(
         self, invoke_prohibited_command_guard_hook_with_raw_stdin
     ):
         result = invoke_prohibited_command_guard_hook_with_raw_stdin("not json")
-        assert result.returncode == 1
+        assert result.returncode == 0

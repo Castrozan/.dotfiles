@@ -23,7 +23,10 @@ def test_namespace_directory_lives_under_workspace_skill_namespace_parent_direct
     assert (
         launch_plan.workspace_skill_namespace_directory == expected_namespace_directory
     )
-    assert launch_plan.command_arguments == ["/bin/claude"]
+    assert launch_plan.command_arguments == [
+        "/bin/claude",
+        *workspace_launcher_module.build_interactive_preferences_system_prompt_arguments(),
+    ]
 
 
 def test_local_skill_discovery_populates_name_map(tmp_path, workspace_launcher_module):
@@ -124,6 +127,7 @@ def test_command_arguments_include_add_dir_when_local_skills_discovered(
 
     assert launch_plan.command_arguments == [
         "/bin/claude",
+        *workspace_launcher_module.build_interactive_preferences_system_prompt_arguments(),
         "--add-dir",
         str(launch_plan.workspace_skill_namespace_directory),
     ]

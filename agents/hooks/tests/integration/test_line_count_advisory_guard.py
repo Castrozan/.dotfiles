@@ -155,7 +155,7 @@ class TestMissingOrInvalidInputs:
         assert result.returncode == 0
         assert result.stdout == ""
 
-    def test_exits_one_on_invalid_json(self):
+    def test_exits_zero_silently_on_invalid_json(self):
         result = subprocess.run(
             [sys.executable, str(HOOK_SCRIPT_PATH)],
             input="not json",
@@ -163,7 +163,8 @@ class TestMissingOrInvalidInputs:
             text=True,
             timeout=5,
         )
-        assert result.returncode == 1
+        assert result.returncode == 0
+        assert result.stdout == ""
 
 
 class TestNotebookEditPathField:

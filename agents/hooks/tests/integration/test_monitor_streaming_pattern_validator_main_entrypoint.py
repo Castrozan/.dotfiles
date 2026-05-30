@@ -80,6 +80,6 @@ class TestMain:
         assert exit_code == 0
         assert stdout_text == ""
 
-    def test_exits_with_error_on_invalid_json(self):
+    def test_exits_silently_on_invalid_json(self):
         exit_code, _ = self.run_main_and_capture_stdout("not json")
-        assert exit_code == 1
+        assert exit_code == 0

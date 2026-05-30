@@ -95,3 +95,47 @@ def invoke_line_count_advisory_guard_hook():
         )
 
     return runner
+
+
+MEMORY_RECALL_HOOK_SCRIPT_PATH = find_hook_module_path("memory-recall")
+
+
+@pytest.fixture
+def isolated_memory_recall_environment(tmp_path, monkeypatch):
+    fake_home_directory = tmp_path / "fake-home"
+    fake_home_directory.mkdir()
+    debounce_state_directory = tmp_path / "debounce-state"
+    debounce_state_directory.mkdir()
+    monkeypatch.setenv("HOME", str(fake_home_directory))
+    monkeypatch.setenv(
+        "MEMORY_RECALL_DEBOUNCE_STATE_DIRECTORY", str(debounce_state_directory)
+    )
+    return fake_home_directory, debounce_state_directory
+
+
+@pytest.fixture
+def make_memory_recall_directory():
+    def create_memory_directory_for_workspace(fake_home_directory, workspace_directory):
+        import memory_recall
+
+        memory_directory = memory_recall.resolve_memory_directory_for_cwd(
+            str(workspace_directory)
+        )
+        memory_directory.mkdir(parents=True, exist_ok=True)
+        return memory_directory
+
+    return create_memory_directory_for_workspace
+
+
+@pytest.fixture
+def invoke_memory_recall_hook():
+    def run_hook_with_payload(payload: dict) -> subprocess.CompletedProcess:
+        return subprocess.run(
+            [sys.executable, str(MEMORY_RECALL_HOOK_SCRIPT_PATH)],
+            input=json.dumps(payload),
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
+
+    return run_hook_with_payload
