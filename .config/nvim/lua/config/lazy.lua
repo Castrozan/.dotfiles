@@ -50,7 +50,7 @@ require("lazy").setup({
     lazy = false,
     version = false,
   },
-  install = { colorscheme = { "catppuccin", "tokyonight", "habamax" } },
+  install = { colorscheme = { "base16-default-dark", "habamax" } },
   checker = { enabled = true, notify = false },
   rocks = { enabled = false },
   performance = {
