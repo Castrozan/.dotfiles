@@ -1,17 +1,14 @@
-{ lib, inputs, ... }:
-let
-  privateConfigRoot = ../../../private-config;
-  kiraClawdePmPath = "${toString privateConfigRoot}/machines/kira/clawde-pm.nix";
-  kiraClawdePmExists = builtins.pathExists kiraClawdePmPath;
-in
+{ inputs, ... }:
 {
   imports = [
     ../../base/packages/lucas-zanoni.nix
 
     ../../base/dev/git-private.nix
+    ../../base/dev/git-toggle-user.nix
     ../../base/network/ssh-private.nix
     ../../base/system/session-vars-lucas-zanoni.nix
     ../../base/claude/agents/silver.nix
+    ../../base/claude/agents/jojo-clawde-agents.nix
 
     ../../base/core.nix
 
@@ -19,6 +16,8 @@ in
 
     ../../base/claude
     ../../base/codex
+    ../../base/opencode
+    ../../base/opencode/private.nix
     ../../base/testing
 
     ../../base/terminal/atuin.nix
@@ -65,8 +64,5 @@ in
     ../../base/media/zathura
 
     "${inputs.private-config}/sb-toolkit"
-  ]
-  ++ lib.optionals kiraClawdePmExists [
-    kiraClawdePmPath
   ];
 }
