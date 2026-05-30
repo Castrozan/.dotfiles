@@ -31,6 +31,10 @@ return {
         bashls = {},
         marksman = {},
         terraformls = {},
+        sourcekit = {
+          cmd = { "sourcekit-lsp" },
+          filetypes = { "swift", "objc", "objcpp", "c", "cpp" },
+        },
       },
       setup = {
         rust_analyzer = function()
@@ -61,12 +65,12 @@ return {
   },
   {
     "mfussenegger/nvim-lint",
-    opts = {
-      linters_by_ft = {
-        nix = { "statix" },
-        python = { "ruff" },
-        sh = { "shellcheck" },
-      },
-    },
+    opts = function(_, opts)
+      opts.linters_by_ft = opts.linters_by_ft or {}
+      opts.linters_by_ft.nix = { "statix" }
+      opts.linters_by_ft.python = { "ruff" }
+      opts.linters_by_ft.sh = { "shellcheck" }
+      opts.linters_by_ft.markdown = nil
+    end,
   },
 }
