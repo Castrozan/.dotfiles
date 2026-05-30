@@ -31,6 +31,18 @@ let
   braveSpellcheckIsLockedToEnGb = bravePreferencesOverrides.spellcheck.dictionaries == [ "en-GB" ];
 
   braveGoogleSigninIsDisabledInPreferencesOverrides = !bravePreferencesOverrides.signin.allowed;
+
+  braveFirstTabSelectionAcceleratorAddsAltDigitOneAlongsideCommand =
+    bravePreferencesOverrides.brave.accelerators."34018" == [
+      "Command+Digit1"
+      "Alt+Digit1"
+    ];
+
+  braveLastTabSelectionAcceleratorAddsAltDigitNineAlongsideCommand =
+    bravePreferencesOverrides.brave.accelerators."34026" == [
+      "Command+Digit9"
+      "Alt+Digit9"
+    ];
 in
 {
   domain-desktop-brave-duplicate-tab-bound-to-control-d =
@@ -51,4 +63,14 @@ in
     mkEvalCheck "domain-desktop-brave-google-signin-disabled-in-overrides"
       braveGoogleSigninIsDisabledInPreferencesOverrides
       "Brave signin.allowed must be false in preferences overrides";
+
+  domain-desktop-brave-first-tab-selection-adds-alt-digit-one =
+    mkEvalCheck "domain-desktop-brave-first-tab-selection-adds-alt-digit-one"
+      braveFirstTabSelectionAcceleratorAddsAltDigitOneAlongsideCommand
+      "Brave Select Tab 0 (command id 34018) must keep Command+Digit1 and add Alt+Digit1";
+
+  domain-desktop-brave-last-tab-selection-adds-alt-digit-nine =
+    mkEvalCheck "domain-desktop-brave-last-tab-selection-adds-alt-digit-nine"
+      braveLastTabSelectionAcceleratorAddsAltDigitNineAlongsideCommand
+      "Brave Select Last Tab (command id 34026) must keep Command+Digit9 and add Alt+Digit9";
 }

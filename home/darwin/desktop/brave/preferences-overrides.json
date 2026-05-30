@@ -44,7 +44,16 @@
     },
     "accelerators": {
       "34015": ["Command+KeyW", "Control+KeyW"],
-      "34027": ["Control+KeyD"]
+      "34027": ["Control+KeyD"],
+      "34018": ["Command+Digit1", "Alt+Digit1"],
+      "34019": ["Command+Digit2", "Alt+Digit2"],
+      "34020": ["Command+Digit3", "Alt+Digit3"],
+      "34021": ["Command+Digit4", "Alt+Digit4"],
+      "34022": ["Command+Digit5", "Alt+Digit5"],
+      "34023": ["Command+Digit6", "Alt+Digit6"],
+      "34024": ["Command+Digit7", "Alt+Digit7"],
+      "34025": ["Command+Digit8", "Alt+Digit8"],
+      "34026": ["Command+Digit9", "Alt+Digit9"]
     }
   }
 }
