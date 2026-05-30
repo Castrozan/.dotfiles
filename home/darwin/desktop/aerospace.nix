@@ -134,10 +134,6 @@ in
   };
 
   healthCheck.probes = [
-    (healthCheckLib.mkAppProbe {
-      name = "AeroSpace.app";
-      bundle = "AeroSpace";
-    })
     (healthCheckLib.mkProcessProbe {
       name = "AeroSpace running";
       pattern = "AeroSpace.app/Contents/MacOS/AeroSpace";

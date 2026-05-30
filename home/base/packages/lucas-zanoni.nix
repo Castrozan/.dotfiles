@@ -15,7 +15,7 @@
       bat
       bats
       brave
-      bun
+      latest.bun
       cargo
       curl
       delta

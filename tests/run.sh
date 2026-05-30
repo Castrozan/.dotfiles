@@ -1,5 +1,20 @@
 #!/usr/bin/env bash
 
+# Re-exec under bash >= 4 when /usr/bin/env picks macOS system bash (3.2).
+# bats.sh / pytest.sh use mapfile, which is bash 4+.
+if [ "${BASH_VERSINFO[0]:-0}" -lt 4 ]; then
+	for _candidateBash in \
+		/run/current-system/sw/bin/bash \
+		"/etc/profiles/per-user/${USER}/bin/bash" \
+		/opt/homebrew/bin/bash; do
+		if [ -x "$_candidateBash" ]; then
+			exec "$_candidateBash" "$0" "$@"
+		fi
+	done
+	echo "tests/run.sh: bash >= 4 required, only $BASH_VERSION found" >&2
+	exit 1
+fi
+
 set -Eeuo pipefail
 
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

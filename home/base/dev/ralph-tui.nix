@@ -1,14 +1,22 @@
-{ pkgs, lib, ... }:
+{
+  pkgs,
+  lib,
+  latest,
+  ...
+}:
+let
+  # ralph-tui >=0.x requires Bun >=1.3.6; nixpkgs stable currently pins 1.3.3,
+  # so use the daily-bumped nixpkgs-latest channel for bun specifically.
+  bunPackage = latest.bun;
+in
 {
   home = {
-    packages = with pkgs; [ bun ];
-
     sessionPath = [ "$HOME/.bun/bin" ];
 
     activation.installRalphTui = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-      export PATH="${pkgs.bun}/bin:$PATH"
+      export PATH="${bunPackage}/bin:$PATH"
       if [ ! -f "$HOME/.bun/bin/ralph-tui" ]; then
-        ${pkgs.bun}/bin/bun install -g ralph-tui 2>/dev/null || true
+        ${bunPackage}/bin/bun install -g ralph-tui 2>/dev/null || true
       fi
     '';
   };

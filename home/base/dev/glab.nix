@@ -55,35 +55,19 @@ in
         before = [ ];
         data = ''
                 mkdir -p "${glabConfigDir}"
-
-                if [ -L "${glabConfigFile}" ]; then
-                  rm "${glabConfigFile}"
-                fi
-
-                if [ ! -f "${glabConfigFile}" ]; then
-                  cat > "${glabConfigFile}" << 'GLAB_CONFIG_EOF'
+                rm -f "${glabConfigFile}"
+                cat > "${glabConfigFile}" << 'GLAB_CONFIG_EOF'
           ${initialGlabConfig}
           GLAB_CONFIG_EOF
-                  chmod 600 "${glabConfigFile}"
-                  echo "Created glab config at ${glabConfigFile}"
-                else
-                  chmod 600 "${glabConfigFile}" 2>/dev/null || true
-                fi
+                chmod 600 "${glabConfigFile}"
         '';
       };
 
       healthCheck.probes = [
         (healthCheckLib.mkBinaryProbe {
-          name = "glab cli";
-          command = "glab --version";
+          name = "glab auth recognises configured host + token";
+          command = ". $HOME/.secrets/source-secrets.sh 2>/dev/null; glab auth status 2>&1 | grep -q 'Token found'";
         })
-      ]
-      ++ lib.optional (config.glab.gitlabHost != null) (
-        healthCheckLib.mkFileProbe {
-          name = "glab host entry: ${config.glab.gitlabHost}";
-          path = glabConfigFile;
-          contains = "${config.glab.gitlabHost}:";
-        }
-      );
+      ];
     };
 }
