@@ -100,12 +100,11 @@
     };
   };
 
+  services.tailscale.enable = true;
+
   homebrew = {
     enable = true;
     onActivation.cleanup = "zap";
-    brews = [
-      "tailscale"
-    ];
     casks = [
       "brave-browser"
       "dbeaver-community"
