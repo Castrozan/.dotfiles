@@ -30,7 +30,8 @@ return {
         time_format = "%H:%M:%S",
       },
       completion = {
-        nvim_cmp = true,
+        nvim_cmp = false,
+        blink = true,
         min_chars = 2,
       },
       ui = {
