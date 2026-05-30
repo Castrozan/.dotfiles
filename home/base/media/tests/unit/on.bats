@@ -1,6 +1,6 @@
 #!/usr/bin/env bats
 
-load '../../../../tests/helpers/bash-script-assertions'
+load '../../../../../tests/helpers/bash-script-assertions'
 
 @test "is executable" {
     assert_is_executable

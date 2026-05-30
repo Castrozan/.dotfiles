@@ -1,7 +1,7 @@
 #!/usr/bin/env bats
 bats_require_minimum_version 1.5.0
 
-readonly CDP_BROWSER_MODULE="$BATS_TEST_DIRNAME/../../../../agents/skills/ponto/scripts/cdp-browser.js"
+readonly CDP_BROWSER_MODULE="$BATS_TEST_DIRNAME/../../../../../agents/skills/ponto/scripts/cdp-browser.js"
 readonly CDP_TEST_PORT=19222
 readonly TEST_PAGE_HTML='<html><head><title>CDP Test Page</title></head><body>
   <h1>Test Heading</h1>
@@ -370,21 +370,21 @@ JSEOF
 }
 
 @test "agent-browser package files are removed" {
-	[[ ! -f "$BATS_TEST_DIRNAME/../agent-browser-package.nix" ]]
-	[[ ! -f "$BATS_TEST_DIRNAME/../scripts.nix" ]]
+	[[ ! -f "$BATS_TEST_DIRNAME/../../agent-browser-package.nix" ]]
+	[[ ! -f "$BATS_TEST_DIRNAME/../../scripts.nix" ]]
 }
 
 @test "deleted pw and playwright files do not exist" {
-	[[ ! -f "$BATS_TEST_DIRNAME/../../agents/skills/browser/scripts/pw.sh" ]]
-	[[ ! -f "$BATS_TEST_DIRNAME/../../agents/skills/browser/scripts/pw.js" ]]
-	[[ ! -f "$BATS_TEST_DIRNAME/../../agents/skills/browser/scripts/pw-daemon.js" ]]
-	[[ ! -f "$BATS_TEST_DIRNAME/../../agents/skills/browser/default.nix" ]]
-	[[ ! -f "$BATS_TEST_DIRNAME/../../agents/skills/ponto/scripts/playwright-resolver.js" ]]
-	[[ ! -f "$BATS_TEST_DIRNAME/../../home/base/playwright.nix" ]]
+	[[ ! -f "$BATS_TEST_DIRNAME/../../../agents/skills/browser/scripts/pw.sh" ]]
+	[[ ! -f "$BATS_TEST_DIRNAME/../../../agents/skills/browser/scripts/pw.js" ]]
+	[[ ! -f "$BATS_TEST_DIRNAME/../../../agents/skills/browser/scripts/pw-daemon.js" ]]
+	[[ ! -f "$BATS_TEST_DIRNAME/../../../agents/skills/browser/default.nix" ]]
+	[[ ! -f "$BATS_TEST_DIRNAME/../../../agents/skills/ponto/scripts/playwright-resolver.js" ]]
+	[[ ! -f "$BATS_TEST_DIRNAME/../../../home/base/playwright.nix" ]]
 }
 
 @test "no stale PW_PORT or playwright-resolver references" {
-	local codebase="$BATS_TEST_DIRNAME/../.."
+	local codebase="$BATS_TEST_DIRNAME/../../.."
 	run ! grep -r --include='*.js' --include='*.sh' --include='*.nix' \
 		'PW_PORT' "$codebase/agents" "$codebase/home" 2>/dev/null
 	run ! grep -r --include='*.js' --include='*.sh' --include='*.nix' \
