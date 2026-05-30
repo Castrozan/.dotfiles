@@ -38,8 +38,15 @@ while IFS= read -r trusted_directory; do
 done <<<"$TRUSTED_DIRECTORIES"
 
 jq_arguments=(--arg install_method native)
-# shellcheck disable=SC2016 # $install_method is a jq variable, not a bash expansion
+# shellcheck disable=SC2016 # jq variables expand inside jq, not in bash
 jq_filter='.installMethod = $install_method'
+# Seed onboarding flags so a fresh .claude.json on a new machine does not
+# show the first-run wizard on every `claude` launch. Each key uses //=
+# (jq's "set if null") so a user's later changes are preserved.
+jq_filter+=' | .theme //= "dark"'
+jq_filter+=' | .hasCompletedOnboarding //= true'
+jq_filter+=' | .hasOnboardedInPrevSession //= true'
+jq_filter+=' | .themeOnboardingHasBeenSet //= true'
 for path_index in "${!trust_paths[@]}"; do
 	jq_arguments+=(--arg "path_${path_index}" "${trust_paths[$path_index]}")
 	jq_filter+=" | .projects[\$path_${path_index}].hasTrustDialogAccepted = true"
