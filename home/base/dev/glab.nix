@@ -48,6 +48,17 @@ in
         no_prompt: false
       ''
       + hostsSection;
+
+      decryptedTokenFilePath = "${config.home.homeDirectory}/.secrets/glab-token";
+      appendHostTokenCommand =
+        if config.glab.gitlabHost == null then
+          ""
+        else
+          ''
+            if [ -s "${decryptedTokenFilePath}" ]; then
+              printf '    token: %s\n' "$(cat "${decryptedTokenFilePath}")" >> "${glabConfigFile}"
+            fi
+          '';
     in
     {
       home.activation.setupGlabConfig = {
@@ -59,6 +70,7 @@ in
                 cat > "${glabConfigFile}" << 'GLAB_CONFIG_EOF'
           ${initialGlabConfig}
           GLAB_CONFIG_EOF
+                ${appendHostTokenCommand}
                 chmod 600 "${glabConfigFile}"
         '';
       };
