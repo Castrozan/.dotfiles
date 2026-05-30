@@ -121,6 +121,7 @@
     echo "configuring pmset for both battery and AC..." >&2
     pmset -b sleep 0 displaysleep 0 disksleep 0 standby 0 autopoweroff 0 hibernatemode 0
     pmset -c sleep 0 displaysleep 0 disksleep 0 standby 0 autopoweroff 0 hibernatemode 0
+    pmset -a disablesleep 1
   '';
 
   system.defaults.screensaver = {
