@@ -4,9 +4,30 @@
   crossPlatformMcpBridgeServiceSpecs,
   linuxOnlyMcpBridgeServiceSpecs,
 }:
-{ pkgs, lib, ... }:
+{
+  pkgs,
+  lib,
+  healthCheckLib,
+  ...
+}:
 let
   inherit (pkgs.stdenv.hostPlatform) isDarwin isLinux;
+
+  allSpecs =
+    crossPlatformMcpBridgeServiceSpecs // (lib.optionalAttrs isLinux linuxOnlyMcpBridgeServiceSpecs);
+
+  mkMcpBridgeProbe =
+    name: _spec:
+    if isDarwin then
+      healthCheckLib.mkLaunchdProbe {
+        name = "mcp bridge: ${name}";
+        label = "com.dotfiles.${name}";
+      }
+    else
+      healthCheckLib.mkSystemdUserUnitProbe {
+        name = "mcp bridge: ${name}";
+        unit = "${name}.service";
+      };
 
   mkSystemdUserUnitFromMcpBridgeServiceSpec =
     {
@@ -70,4 +91,6 @@ in
   launchd.agents = lib.mkIf isDarwin (
     lib.mapAttrs mkLaunchdAgentFromMcpBridgeServiceSpec crossPlatformMcpBridgeServiceSpecs
   );
+
+  healthCheck.probes = lib.mapAttrsToList mkMcpBridgeProbe allSpecs;
 }

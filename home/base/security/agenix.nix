@@ -4,6 +4,7 @@
   lib,
   pkgs,
   hostname,
+  healthCheckLib,
   ...
 }:
 let
@@ -110,6 +111,15 @@ in
     text = sourceSecretsScriptContent;
     executable = true;
   };
+
+  healthCheck.probes = map (
+    secretName:
+    healthCheckLib.mkFileProbe {
+      category = "secret";
+      name = "agenix: ${secretName}";
+      path = "${secretsDirectory}/${builtins.baseNameOf secretName}";
+    }
+  ) allSecretNames;
 
   # Upstream agenix-home-manager ships the activate-agenix launchd plist with
   # KeepAlive {Crashed: false, SuccessfulExit: false}. Both subkeys evaluate

@@ -2,6 +2,7 @@
   pkgs,
   inputs,
   isNixOS,
+  healthCheckLib,
   ...
 }:
 let
@@ -44,4 +45,11 @@ in
       WantedBy = [ "graphical-session.target" ];
     };
   };
+
+  healthCheck.probes = [
+    (healthCheckLib.mkSystemdUserUnitProbe {
+      name = "linux app launcher (quickshell overview)";
+      unit = "quickshell-overview.service";
+    })
+  ];
 }

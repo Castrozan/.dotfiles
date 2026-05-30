@@ -2,6 +2,7 @@
   pkgs,
   config,
   lib,
+  healthCheckLib,
   ...
 }:
 let
@@ -43,4 +44,11 @@ in
       StandardErrorPath = "/tmp/application-launcher-daemon.log";
     };
   };
+
+  healthCheck.probes = [
+    (healthCheckLib.mkLaunchdProbe {
+      name = "darwin app launcher daemon";
+      label = applicationLauncherDaemonLaunchdLabel;
+    })
+  ];
 }
