@@ -2,7 +2,6 @@ vim.g.snacks_animate = false
 
 local options = vim.opt
 
-options.spell = true
 options.spelllang = { "en" }
 options.scrolloff = 8
 options.sidescrolloff = 8
