@@ -6,7 +6,12 @@
   ...
 }:
 let
-  workspaceNumbers = lib.range 1 7;
+  workspaceGrid = import ./workspace-grid.nix;
+  workspaceGridColumns = workspaceGrid.columns;
+  totalWorkspaceCount = workspaceGrid.columns * workspaceGrid.rows;
+
+  registeredWorkspaceNumbers = lib.range 1 totalWorkspaceCount;
+  directlyBoundWorkspaceNumbers = lib.range 1 workspaceGridColumns;
 
   userBinPath = "/etc/profiles/per-user/${config.home.username}/bin";
 
@@ -14,7 +19,7 @@ let
     map (n: {
       name = "cmd-${toString n}";
       value = "workspace ${toString n}";
-    }) workspaceNumbers
+    }) directlyBoundWorkspaceNumbers
   );
 
   workspaceMoveBindings = lib.listToAttrs (
@@ -24,7 +29,7 @@ let
         "move-node-to-workspace ${toString n}"
         "workspace ${toString n}"
       ];
-    }) workspaceNumbers
+    }) directlyBoundWorkspaceNumbers
   );
 
   workspaceAccordionStartupCommands =
@@ -32,7 +37,7 @@ let
       "workspace ${toString n}"
       "flatten-workspace-tree"
       "layout accordion"
-    ]) workspaceNumbers
+    ]) registeredWorkspaceNumbers
     ++ [ "workspace 1" ];
 
   focusBindings = {
@@ -45,12 +50,20 @@ let
   workspaceNavigationBindings = {
     ctrl-alt-left = "exec-and-forget ${userBinPath}/workspace-navigate prev";
     ctrl-alt-right = "exec-and-forget ${userBinPath}/workspace-navigate next";
+    ctrl-alt-up = "exec-and-forget ${userBinPath}/workspace-navigate row-up";
+    ctrl-alt-down = "exec-and-forget ${userBinPath}/workspace-navigate row-down";
     ctrl-alt-shift-left = "exec-and-forget ${userBinPath}/workspace-navigate prev --move-window";
     ctrl-alt-shift-right = "exec-and-forget ${userBinPath}/workspace-navigate next --move-window";
+    ctrl-alt-shift-up = "exec-and-forget ${userBinPath}/workspace-navigate row-up --move-window";
+    ctrl-alt-shift-down = "exec-and-forget ${userBinPath}/workspace-navigate row-down --move-window";
     cmd-alt-left = "exec-and-forget ${userBinPath}/workspace-navigate prev";
     cmd-alt-right = "exec-and-forget ${userBinPath}/workspace-navigate next";
+    cmd-alt-up = "exec-and-forget ${userBinPath}/workspace-navigate row-up";
+    cmd-alt-down = "exec-and-forget ${userBinPath}/workspace-navigate row-down";
     cmd-alt-shift-left = "exec-and-forget ${userBinPath}/workspace-navigate prev --move-window";
     cmd-alt-shift-right = "exec-and-forget ${userBinPath}/workspace-navigate next --move-window";
+    cmd-alt-shift-up = "exec-and-forget ${userBinPath}/workspace-navigate row-up --move-window";
+    cmd-alt-shift-down = "exec-and-forget ${userBinPath}/workspace-navigate row-down --move-window";
   };
 
 in
@@ -74,6 +87,12 @@ in
         ''exec-and-forget ${userBinPath}/workspace-switcher-send "focus:$AEROSPACE_WINDOW_ID"''
       ];
       on-focused-monitor-changed = [ "move-mouse monitor-lazy-center" ];
+
+      exec-on-workspace-change = [
+        "/bin/bash"
+        "-c"
+        "/usr/bin/open -g 'swiftbar://refreshallplugins'"
+      ];
 
       on-window-detected = [
         { run = [ "layout accordion" ]; }
@@ -100,17 +119,28 @@ in
   home.activation.installAerospaceAppAtCanonicalPath = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     canonicalPath="/Applications/AeroSpace.app"
     sourceAppBundle="${pkgs.aerospace}/Applications/AeroSpace.app"
-    if [ -L "$canonicalPath" ] || [ -d "$canonicalPath" ]; then
-      # /bin/cp -R from the nix store preserves the store's 0555 dir mode, so
-      # subsequent activations cannot rm -rf the canonical path until we
-      # restore write permission on every directory.
+    installedSourceMarker="$canonicalPath/Contents/.nix-source"
+
+    # Reinstalling rm's, re-copies, and re-codesigns the bundle, which mints a
+    # new ad-hoc code identity and makes macOS revoke AeroSpace's Accessibility
+    # grant. That breaks the IPC socket until the user re-approves it. So only
+    # reinstall when the nix store source actually changed, recorded in a marker
+    # file; an unchanged source is a no-op that preserves the existing grant.
+    if [ "$(cat "$installedSourceMarker" 2>/dev/null)" != "${pkgs.aerospace}" ]; then
+      if [ -L "$canonicalPath" ] || [ -d "$canonicalPath" ]; then
+        # /bin/cp -R from the nix store preserves the store's 0555 dir mode, so
+        # subsequent activations cannot rm -rf the canonical path until we
+        # restore write permission on every directory.
+        $DRY_RUN_CMD /usr/bin/chflags -R nouchg "$canonicalPath" 2>/dev/null || true
+        $DRY_RUN_CMD /bin/chmod -R u+w "$canonicalPath" 2>/dev/null || true
+        $DRY_RUN_CMD /bin/rm -rf "$canonicalPath"
+      fi
+      $DRY_RUN_CMD /bin/cp -R "$sourceAppBundle" "$canonicalPath"
       $DRY_RUN_CMD /usr/bin/chflags -R nouchg "$canonicalPath" 2>/dev/null || true
       $DRY_RUN_CMD /bin/chmod -R u+w "$canonicalPath" 2>/dev/null || true
-      $DRY_RUN_CMD /bin/rm -rf "$canonicalPath"
+      $DRY_RUN_CMD /usr/bin/codesign --force --deep --sign - "$canonicalPath" 2>/dev/null || true
+      $DRY_RUN_CMD /bin/echo "${pkgs.aerospace}" >"$installedSourceMarker"
     fi
-    $DRY_RUN_CMD /bin/cp -R "$sourceAppBundle" "$canonicalPath"
-    $DRY_RUN_CMD /usr/bin/chflags -R nouchg "$canonicalPath" 2>/dev/null || true
-    $DRY_RUN_CMD /usr/bin/codesign --force --deep --sign - "$canonicalPath" 2>/dev/null || true
   '';
 
   home.activation.dismissAerospaceAccessibilityPopup =

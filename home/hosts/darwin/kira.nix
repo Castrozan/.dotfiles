@@ -45,7 +45,7 @@
     ../../darwin/desktop/karabiner
     ../../darwin/desktop/keyboard-layout
     ../../darwin/desktop/maccy.nix
-    ../../darwin/desktop/spaceman.nix
+    ../../darwin/desktop/swiftbar
     ../../darwin/desktop/summon-browser
     ../../darwin/desktop/home-assistant-remote.nix
 
