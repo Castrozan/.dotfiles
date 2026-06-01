@@ -38,9 +38,9 @@ let
       nameFlag = "--name ${name}";
       permissionModeFlag = "--permission-mode ${agent.permissionMode}";
       skillDirFlags = lib.concatMapStringsSep " " (dir: "--add-dir ${dir}") agent.skillDirectories;
-      appendSystemPromptFileFlag = "--append-system-prompt-file ${buildAgentInstructionsFile name agent}";
+      appendSystemPromptFlag = "--append-system-prompt \"$(cat ${buildAgentInstructionsFile name agent})\"";
     in
-    "cd ${workspace} && ${environmentSetter}${claudeResolvedFromAgentRuntimePathForRebuildStability} ${channelFlag} ${modelFlag} ${nameFlag} ${permissionModeFlag} ${appendSystemPromptFileFlag} ${skillDirFlags}";
+    "cd ${workspace} && ${environmentSetter}${claudeResolvedFromAgentRuntimePathForRebuildStability} ${channelFlag} ${modelFlag} ${nameFlag} ${permissionModeFlag} ${appendSystemPromptFlag} ${skillDirFlags}";
 
   buildHeartbeatBootstrapArgv = name: agent: [
     "${pkgs.python312}/bin/python3"
