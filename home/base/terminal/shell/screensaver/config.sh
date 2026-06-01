@@ -6,12 +6,12 @@ _resolve_primary_screensaver_command() {
 	if command -v cbonsai &>/dev/null; then
 		echo 'cbonsai --live --infinite'
 	else
-		echo 'cmatrix -b -s'
+		echo 'cmatrix -b -s -u 1'
 	fi
 }
 
 SCREENSAVER_COMMANDS=(
 	"$(_resolve_primary_screensaver_command)"
-	'cmatrix -b'
+	'cmatrix -b -u 1'
 	'sleep 3; bad-apple'
 )
