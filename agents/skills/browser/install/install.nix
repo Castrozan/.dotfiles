@@ -1,19 +1,13 @@
 {
   pkgs,
   nodejs,
-  chromeDevtoolsMcpNpmPrefix,
   supergatewayNpmPrefix,
 }:
 let
-  chromeDevtoolsMcpVersion = "1.1.1";
   supergatewayVersion = "3.4.3";
 
   supergatewayPatches = import ./supergateway-patches.nix {
     inherit pkgs supergatewayNpmPrefix;
-  };
-
-  chromeDevtoolsMcpPatches = import ./chrome-devtools-mcp-patches.nix {
-    inherit pkgs chromeDevtoolsMcpNpmPrefix;
   };
 
   installNpmPackageScript =
@@ -56,16 +50,7 @@ let
     ${supergatewayPatches.patchSupergatewayChildKillSigkill}
   '';
 
-  installAndPatchChromeDevtoolsMcp = pkgs.writeShellScript "install-and-patch-chrome-devtools-mcp" ''
-    set -euo pipefail
-    ${installNpmPackageScript "chrome-devtools-mcp" chromeDevtoolsMcpVersion chromeDevtoolsMcpNpmPrefix}
-    ${chromeDevtoolsMcpPatches.patchChromeDevtoolsMcpSilenceUnknownIssueWarnings}
-    ${chromeDevtoolsMcpPatches.patchChromeDevtoolsMcpBoundedProtocolTimeout}
-    ${chromeDevtoolsMcpPatches.patchChromeDevtoolsMcpIgnoreNetworkEnableTimeout}
-    ${chromeDevtoolsMcpPatches.patchChromeDevtoolsMcpIgnoreFrameManagerInitializeTimeout}
-  '';
 in
 {
-  installChromeDevtoolsMcpViaNpm = installAndPatchChromeDevtoolsMcp;
   installSupergatewayViaNpm = installAndPatchSupergateway;
 }

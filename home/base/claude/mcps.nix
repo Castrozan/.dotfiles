@@ -154,10 +154,6 @@ in
     inherit (browserMcp) packages;
 
     activation = {
-      installChromeDevtoolsMcp = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-        run ${browserMcp.installChromeDevtoolsMcpViaNpm}
-      '';
-
       installSupergateway = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
         run ${browserMcp.installSupergatewayViaNpm}
       '';

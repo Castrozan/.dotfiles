@@ -6,8 +6,10 @@
 }:
 let
   inherit (pkgs.stdenv.hostPlatform) isDarwin;
-  chromeDevtoolsMcpNpmPrefix = "${homeDir}/.local/share/chrome-devtools-mcp-npm";
-  chromeDevtoolsMcpBinary = "${chromeDevtoolsMcpNpmPrefix}/bin/chrome-devtools-mcp";
+  chromeDevtoolsMcpPackage = import ./chrome-devtools-mcp-package.nix {
+    inherit pkgs nodejs;
+  };
+  chromeDevtoolsMcpBinary = "${chromeDevtoolsMcpPackage}/bin/chrome-devtools-mcp";
   chromeGlobalUserDataDir =
     if isDarwin then
       "${homeDir}/Library/Application Support/Google/Chrome"
@@ -24,7 +26,6 @@ let
     inherit
       pkgs
       nodejs
-      chromeDevtoolsMcpNpmPrefix
       supergatewayNpmPrefix
       ;
   };
@@ -60,14 +61,14 @@ let
 
   chromeDevtoolsMcpOrphanReaper = pkgs.writeShellScript "chrome-devtools-mcp-orphan-reaper" ''
     set -euo pipefail
-    ${pkgs.procps}/bin/pkill -9 -f 'chrome-devtools-mcp-npm/bin/chrome-devtools-mcp' || true
+    ${pkgs.procps}/bin/pkill -9 -f 'chrome-devtools-mcp/build/src/bin/chrome-devtools-mcp.js' || true
   '';
 in
 {
   mcpServerStreamableHttpUrl = "http://localhost:${toString chromeDevtoolsStreamableHttpPort}/mcp";
   streamableHttpBridgeCommand = "${chromeDevtoolsStreamableHttpBridgeWrapper}/bin/chrome-devtools-mcp-streamable-http-bridge";
   inherit chromeDevtoolsMcpOrphanReaper;
-  inherit (install) installChromeDevtoolsMcpViaNpm installSupergatewayViaNpm;
+  inherit (install) installSupergatewayViaNpm;
   inherit supergatewayBinary;
 
   packages = [ ];
