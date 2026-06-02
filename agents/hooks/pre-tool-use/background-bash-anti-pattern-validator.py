@@ -11,7 +11,7 @@ from background_bash_fake_success_detectors import (  # noqa: E402
     command_pipes_count_into_test_against_literal_zero,
     command_uses_until_loop_terminating_on_empty_count,
 )
-from background_bash_hang_detectors import (  # noqa: E402
+from interactive_command_hang_detectors import (  # noqa: E402
     command_launches_interactive_full_screen_program,
     command_runs_git_subcommand_that_opens_an_editor,
 )

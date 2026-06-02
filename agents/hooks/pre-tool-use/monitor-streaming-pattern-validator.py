@@ -3,8 +3,17 @@
 import json
 import re
 import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent))
+
+from interactive_command_hang_detectors import (  # noqa: E402
+    command_launches_interactive_full_screen_program,
+    command_runs_git_subcommand_that_opens_an_editor,
+)
 
 STREAMING_PATTERNS_REFERENCE_FILE_PATH = "~/.claude/hooks/monitor-streaming-patterns.md"
+HANG_PATTERNS_REFERENCE_FILE_PATH = "~/.claude/hooks/background-bash-anti-patterns.md"
 
 STDERR_HEAVY_COMMAND_PATTERNS = (
     r"\bgit\s+(fetch|push|pull|clone|clean|gc)\b",
@@ -76,6 +85,11 @@ PATTERN_DETECTORS_BY_RULE_NAME = {
     "stderr-only-without-redirect": command_runs_known_stderr_heavy_program_without_redirect,
 }
 
+HANG_PATTERN_DETECTORS_BY_RULE_NAME = {
+    "interactive-editor-or-full-screen-tui": command_launches_interactive_full_screen_program,
+    "command-that-opens-an-editor": command_runs_git_subcommand_that_opens_an_editor,
+}
+
 
 def find_streaming_anti_patterns_in_command(command_string):
     return [
@@ -85,12 +99,36 @@ def find_streaming_anti_patterns_in_command(command_string):
     ]
 
 
-def build_deny_reason_message(triggered_rule_names):
-    rules_list_text = ", ".join(triggered_rule_names)
-    return (
-        f"Monitor would batch all output into a single end-of-stream notification because the command matches: {rules_list_text}. "
-        f"Read {STREAMING_PATTERNS_REFERENCE_FILE_PATH} for the correct invocation patterns, then retry."
-    )
+def find_hang_anti_patterns_in_command(command_string):
+    return [
+        rule_name
+        for rule_name, detector in HANG_PATTERN_DETECTORS_BY_RULE_NAME.items()
+        if detector(command_string)
+    ]
+
+
+def build_deny_reason_message(triggered_streaming_rules, triggered_hang_rules):
+    sentences = []
+    if triggered_hang_rules:
+        hang_rules_list_text = ", ".join(triggered_hang_rules)
+        sentences.append(
+            f"Monitor runs this command and streams its stdout, but the command "
+            f"matches: {hang_rules_list_text}. It blocks forever on a controlling "
+            f"terminal that the Monitor process does not have (interactive editor, "
+            f"full-screen TUI, or a subcommand that opens an editor), so it never "
+            f"produces output or exits. "
+            f"Read {HANG_PATTERNS_REFERENCE_FILE_PATH} for the correct invocation "
+            f"patterns, then retry."
+        )
+    if triggered_streaming_rules:
+        streaming_rules_list_text = ", ".join(triggered_streaming_rules)
+        sentences.append(
+            f"Monitor would batch all output into a single end-of-stream "
+            f"notification because the command matches: {streaming_rules_list_text}. "
+            f"Read {STREAMING_PATTERNS_REFERENCE_FILE_PATH} for the correct "
+            f"invocation patterns, then retry."
+        )
+    return " ".join(sentences)
 
 
 def emit_deny_decision_for_pre_tool_use_hook(deny_reason_message):
@@ -117,12 +155,13 @@ def main():
     if not command_string:
         sys.exit(0)
 
-    triggered_rule_names = find_streaming_anti_patterns_in_command(command_string)
-    if not triggered_rule_names:
+    triggered_streaming_rules = find_streaming_anti_patterns_in_command(command_string)
+    triggered_hang_rules = find_hang_anti_patterns_in_command(command_string)
+    if not triggered_streaming_rules and not triggered_hang_rules:
         sys.exit(0)
 
     emit_deny_decision_for_pre_tool_use_hook(
-        build_deny_reason_message(triggered_rule_names)
+        build_deny_reason_message(triggered_streaming_rules, triggered_hang_rules)
     )
     sys.exit(0)
 
