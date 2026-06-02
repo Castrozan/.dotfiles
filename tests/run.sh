@@ -28,6 +28,8 @@ source "$SCRIPT_DIR/lib/pytest.sh"
 source "$SCRIPT_DIR/lib/nix-checks.sh"
 # shellcheck source=lib/qml.sh
 source "$SCRIPT_DIR/lib/qml.sh"
+# shellcheck source=lib/lua.sh
+source "$SCRIPT_DIR/lib/lua.sh"
 # shellcheck source=lib/skill-frontmatter.sh
 source "$SCRIPT_DIR/lib/skill-frontmatter.sh"
 # shellcheck source=lib/line-counts.sh
@@ -98,6 +100,7 @@ _run_quick_tier() {
 	_run_quick_pytest_tests
 	_run_qml_unit_tests
 	_run_qmllint_checks
+	_run_lua_unit_tests
 }
 
 _run_nix_tier() {
