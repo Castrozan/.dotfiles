@@ -13,12 +13,16 @@ Only scripts under 10 lines of actual logic may live inline in `.nix` files via 
 Never present code that has not been rebuilt and tested. For .nix files, a successful rebuild IS the primary verification. Run tests/run.sh (--nix when .nix files changed, --quick otherwise).
 </testing>
 
+<rebuild>
+Rebuild is sudoless: the nix-darwin commands carry a command-scoped NOPASSWD sudoers rule, so the rebuild never prompts for a password. A bare `sudo -n true` probe still fails because the rule is not blanket sudo; do not conclude from that probe that the rebuild needs a password. Agents run the rebuild themselves and never defer it to the user or hand back a command for the user to type; invoke the rebuild directly, wait for it to finish, and report the result.
+</rebuild>
+
 <workflow>
 After editing any file in the dotfiles repo, execute this sequence before responding. No exceptions.
 1. Format edited files
 2. Stage each file with git add specific-file (never -A)
 3. Commit
-4. Rebuild: /rebuild for any file change in this repo
+4. Rebuild for any file change in this repo, running it yourself and never deferring to the user (see <rebuild>)
 5. Run tests/run.sh
 6. If rebuild or tests fail: fix and repeat from 1
 7. Only after rebuild and tests pass: respond to user
