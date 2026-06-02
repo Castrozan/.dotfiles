@@ -33,10 +33,6 @@ def command_runs_in_a_streamed_or_backgrounded_context(tool_name, tool_input):
     return tool_name == "Bash" and tool_input.get("run_in_background") is True
 
 
-def tool_sleeps_as_a_substitute_for_waiting_on_a_condition(tool_name):
-    return tool_name == "Bash"
-
-
 def build_deny_reason_message(
     triggered_streaming_rules,
     triggered_hang_rules,
@@ -107,11 +103,7 @@ def main():
 
     triggered_streaming_rules = find_streaming_anti_patterns_in_command(command_string)
     triggered_hang_rules = find_hang_anti_patterns_in_command(command_string)
-    triggered_busy_wait_rules = (
-        find_busy_wait_anti_patterns_in_command(command_string)
-        if tool_sleeps_as_a_substitute_for_waiting_on_a_condition(tool_name)
-        else []
-    )
+    triggered_busy_wait_rules = find_busy_wait_anti_patterns_in_command(command_string)
     if not (
         triggered_streaming_rules or triggered_hang_rules or triggered_busy_wait_rules
     ):

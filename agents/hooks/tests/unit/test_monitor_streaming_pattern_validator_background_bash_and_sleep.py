@@ -2,14 +2,6 @@ import monitor_streaming_pattern_validator as sut
 import pytest
 
 
-class TestBlindSleepRuleAppliesOnlyToBackgroundedBash:
-    def test_monitor_until_loops_may_sleep_to_pace_condition_checks(self):
-        assert not sut.tool_sleeps_as_a_substitute_for_waiting_on_a_condition("Monitor")
-
-    def test_backgrounded_bash_sleep_is_an_anti_pattern(self):
-        assert sut.tool_sleeps_as_a_substitute_for_waiting_on_a_condition("Bash")
-
-
 class TestStreamedOrBackgroundedContextGate:
     def test_monitor_is_in_scope(self):
         assert sut.command_runs_in_a_streamed_or_backgrounded_context("Monitor", {})
@@ -37,7 +29,7 @@ class TestBlindSleepWaitRule:
             "sleep 0.5",
         ],
     )
-    def test_blind_sleep_is_flagged(self, command):
+    def test_blind_or_bounded_sleep_is_flagged(self, command):
         assert "blind-sleep-wait" in sut.find_busy_wait_anti_patterns_in_command(
             command
         )
@@ -45,10 +37,12 @@ class TestBlindSleepWaitRule:
     @pytest.mark.parametrize(
         "command",
         [
+            "until ! pgrep -f darwin-rebuild; do sleep 15; done",
+            "while ! curl -sf localhost:8767; do sleep 1; done",
             "curl --max-time 5 localhost:8767",
             "git sleeper_branch checkout",
             "cat /tmp/sleep.log",
         ],
     )
-    def test_non_blind_wait_commands_are_not_flagged(self, command):
+    def test_condition_paced_or_non_sleep_commands_are_not_flagged(self, command):
         assert sut.find_busy_wait_anti_patterns_in_command(command) == []

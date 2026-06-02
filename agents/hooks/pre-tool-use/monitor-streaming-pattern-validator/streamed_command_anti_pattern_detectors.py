@@ -78,7 +78,15 @@ def command_runs_known_stderr_heavy_program_without_redirect(command_string):
 
 
 def command_waits_blindly_on_a_timed_sleep(command_string):
-    return bool(re.search(r"(?<![A-Za-z0-9_/.-])sleep\s+[0-9.]", command_string))
+    has_timed_sleep = bool(
+        re.search(r"(?<![A-Za-z0-9_/.-])sleep\s+[0-9.]", command_string)
+    )
+    if not has_timed_sleep:
+        return False
+    sleep_paces_a_condition_loop = bool(
+        re.search(r"(?<![A-Za-z0-9_])(?:until|while)(?![A-Za-z0-9_])", command_string)
+    )
+    return not sleep_paces_a_condition_loop
 
 
 PATTERN_DETECTORS_BY_RULE_NAME = {
