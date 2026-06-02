@@ -8,6 +8,7 @@
     ../../base/network/ssh-private.nix
     ../../base/system/session-vars-lucas-zanoni.nix
     ../../base/claude/agents/jojo-clawde-agents.nix
+    ../../base/claude/agents/steward.nix
     ../../linux/system/sophos-disable-plugins
     ../../linux/system/forticlient-disable-update
 

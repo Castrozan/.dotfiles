@@ -9,6 +9,7 @@
     ../../base/system/session-vars-lucas-zanoni.nix
     ../../base/claude/agents/silver.nix
     ../../base/claude/agents/jojo-clawde-agents.nix
+    ../../base/claude/agents/steward.nix
 
     ../../base/core.nix
 

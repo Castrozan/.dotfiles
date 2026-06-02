@@ -43,6 +43,33 @@ let
     }) personalVaultSkillNames
   );
 
+  curatedSkillSets = {
+    steward = [
+      "git"
+      "nix"
+      "test"
+      "session"
+      "review"
+      "steward"
+    ];
+  };
+
+  claudeSkillsForCuratedSet =
+    setName: skillNames:
+    builtins.listToAttrs (
+      map (skillDirectoryName: {
+        name = ".local/share/claude-skill-sets/${setName}/.claude/skills/${skillDirectoryName}";
+        value = {
+          source = dotfilesSkillsDirectory + "/${skillDirectoryName}";
+          recursive = true;
+        };
+      }) (builtins.filter (skillName: builtins.elem skillName allSkillNames) skillNames)
+    );
+
+  curatedSkillSetClaudeSkills = builtins.foldl' (
+    accumulated: setName: accumulated // claudeSkillsForCuratedSet setName curatedSkillSets.${setName}
+  ) { } (builtins.attrNames curatedSkillSets);
+
   readInstructionsBodyWithoutFrontmatter =
     instructionsFile:
     let
@@ -112,6 +139,7 @@ in
     file =
       baseGloballyLoadedClaudeSkills
       // personalVaultClaudeSkills
+      // curatedSkillSetClaudeSkills
       // coreSkillFromAgentInstructions
       // interactivePreferencesSkillFromInstructions;
     packages = packagesFromSkillInstallModules;
