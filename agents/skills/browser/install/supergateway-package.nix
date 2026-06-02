@@ -19,8 +19,15 @@ pkgs.buildNpmPackage {
 
   npmFlags = [ "--ignore-scripts" ];
 
+  postPatch = ''
+    substituteInPlace src/gateways/stdioToStatefulStreamableHttp.ts \
+      --replace-fail \
+        "transport.send(jsonMsg)" \
+        "transport.send(jsonMsg).catch((asyncChildResponseSendError) => logger.error('Failed to send child response to StreamableHttp', asyncChildResponseSendError))"
+  '';
+
   meta = {
-    description = "Pristine pinned supergateway stdio-to-streamableHttp MCP bridge (no in-place patches)";
+    description = "Pinned supergateway stdio-to-streamableHttp MCP bridge; guards the async transport.send so a late child response on an already-closed connection logs instead of crashing the whole bridge process";
     homepage = "https://github.com/supercorp-ai/supergateway";
   };
 }
