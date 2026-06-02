@@ -52,6 +52,7 @@
     ../../linux/desktop/ksnip.nix
     ../../linux/desktop/scripts.nix
 
+    ../../base/dev/aws.nix
     ../../base/dev/ccost.nix
     ../../base/dev/devenv.nix
     ../../base/dev/github-actions-runner.nix

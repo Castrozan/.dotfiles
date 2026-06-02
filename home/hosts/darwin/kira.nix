@@ -46,6 +46,7 @@
     ../../darwin/desktop/maccy.nix
     ../../darwin/desktop/home-assistant-remote.nix
 
+    ../../base/dev/aws.nix
     ../../base/dev/devenv.nix
     ../../base/dev/git.nix
     ../../base/dev/glab.nix
