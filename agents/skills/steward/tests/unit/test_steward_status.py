@@ -50,6 +50,18 @@ def test_health_check_summary_reports_failing_probes():
     assert summary["failing"] == ["daemon/b"]
 
 
+def test_health_check_summary_ignores_own_daemon_self_probe():
+    probes = json.dumps(
+        [
+            {"category": "daemon", "name": "clawde agent: steward", "status": "fail"},
+            {"category": "daemon", "name": "clawde agent: golden", "status": "fail"},
+        ]
+    )
+    with patch.object(steward_status, "run_capturing", return_value=(1, probes)):
+        summary = steward_status.health_check_summary()
+    assert summary["failing"] == ["daemon/clawde agent: golden"]
+
+
 def test_health_check_summary_marks_unavailable_when_missing():
     with patch.object(steward_status, "run_capturing", return_value=(127, "not found")):
         assert steward_status.health_check_summary() == {"available": False}

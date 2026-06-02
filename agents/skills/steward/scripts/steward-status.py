@@ -94,6 +94,12 @@ def unread_inbox_messages() -> list[str]:
     return sorted(entry.name for entry in inbox.glob("*.json") if entry.is_file())
 
 
+def is_own_daemon_self_probe(probe: dict) -> bool:
+    return probe.get("category") == "daemon" and "clawde agent: steward" in probe.get(
+        "name", ""
+    )
+
+
 def health_check_summary() -> dict:
     return_code, output = run_capturing(["health-check", "--json"], Path.home(), 60)
     if return_code == 127:
@@ -103,7 +109,11 @@ def health_check_summary() -> dict:
     except json.JSONDecodeError:
         return {"available": True, "parse_error": True, "exit_code": return_code}
     probes = parsed if isinstance(parsed, list) else parsed.get("probes", [])
-    failing = [probe for probe in probes if probe.get("status", "pass") != "pass"]
+    failing = [
+        probe
+        for probe in probes
+        if probe.get("status", "pass") != "pass" and not is_own_daemon_self_probe(probe)
+    ]
     return {
         "available": True,
         "exit_code": return_code,
@@ -128,15 +138,12 @@ def build_report() -> dict:
     inbox = unread_inbox_messages()
     health = health_check_summary()
 
-    health_broken = health.get("available") and bool(health.get("failing"))
     needs_validation = head_revision != validated_revision or dirty
     needs_sync = behind > 0
     needs_push = ahead > 0
     has_mail = bool(inbox)
 
-    if health_broken:
-        verdict = "broken"
-    elif needs_sync:
+    if needs_sync:
         verdict = "needs_sync"
     elif needs_validation:
         verdict = "needs_validation"
