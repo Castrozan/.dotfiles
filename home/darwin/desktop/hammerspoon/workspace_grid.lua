@@ -18,7 +18,7 @@ workspaceGrid.totalWorkspaceCount = totalWorkspaceCount
 local workspaceNumberByWindowId = {}
 local savedFloatingFrameByWindowId = {}
 local currentWorkspaceNumber = firstWorkspaceNumber
-local menuBarIndicator = hs.menubar.new()
+local menuBarIndicator = require("workspace_grid_menubar")
 
 local function manageableWindows()
   return hs.window.filter.default:getWindows()
@@ -60,21 +60,7 @@ local function showWindowOnScreen(window)
   end
 end
 
-local function renderMenuBarIndicator()
-  local segments = {}
-  for workspaceNumber = 1, totalWorkspaceCount do
-    if workspaceNumber == currentWorkspaceNumber then
-      table.insert(segments, "[" .. workspaceNumber .. "]")
-    else
-      table.insert(segments, tostring(workspaceNumber))
-    end
-  end
-  if menuBarIndicator then
-    menuBarIndicator:setTitle(table.concat(segments, " "))
-  end
-end
-
-function workspaceGrid.switchToWorkspace(targetWorkspaceNumber)
+function workspaceGrid.switchToWorkspace(targetWorkspaceNumber, preferredFocusWindow)
   if targetWorkspaceNumber < 1 or targetWorkspaceNumber > totalWorkspaceCount then
     return
   end
@@ -90,10 +76,13 @@ function workspaceGrid.switchToWorkspace(targetWorkspaceNumber)
       parkWindowOffScreen(window)
     end
   end
+  if preferredFocusWindow then
+    windowToRefocus = preferredFocusWindow
+  end
   if windowToRefocus then
     windowToRefocus:focus()
   end
-  renderMenuBarIndicator()
+  menuBarIndicator.render(currentWorkspaceNumber, totalWorkspaceCount)
 end
 
 function workspaceGrid.moveFocusedWindowToWorkspace(targetWorkspaceNumber)
@@ -102,7 +91,7 @@ function workspaceGrid.moveFocusedWindowToWorkspace(targetWorkspaceNumber)
     return
   end
   workspaceNumberByWindowId[focused:id()] = targetWorkspaceNumber
-  workspaceGrid.switchToWorkspace(targetWorkspaceNumber)
+  workspaceGrid.switchToWorkspace(targetWorkspaceNumber, focused)
 end
 
 function workspaceGrid.navigateWorkspace(deltaWithinGrid, alsoMoveFocusedWindow)
@@ -189,7 +178,7 @@ function workspaceGrid.registerExistingWindowsOnFirstWorkspace()
       workspaceNumberByWindowId[window:id()] = firstWorkspaceNumber
     end
   end
-  renderMenuBarIndicator()
+  menuBarIndicator.render(currentWorkspaceNumber, totalWorkspaceCount)
 end
 
 function workspaceGrid.currentWorkspaceNumber()
