@@ -154,10 +154,6 @@ in
     inherit (browserMcp) packages;
 
     activation = {
-      installSupergateway = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-        run ${browserMcp.installSupergatewayViaNpm}
-      '';
-
       installA2aMcp = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
         run ${a2aMcp.installA2aMcpViaNpm}
       '';

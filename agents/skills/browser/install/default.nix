@@ -16,19 +16,13 @@ let
     else
       "${homeDir}/.config/chrome-global";
 
-  supergatewayNpmPrefix = "${homeDir}/.local/share/supergateway-npm";
-  supergatewayBinary = "${supergatewayNpmPrefix}/bin/supergateway";
+  supergatewayPackage = import ./supergateway-package.nix {
+    inherit pkgs nodejs;
+  };
+  supergatewayBinary = "${supergatewayPackage}/bin/supergateway";
 
   chromeDevtoolsStreamableHttpPort = 8767;
   chromeDevtoolsStreamableHttpSessionTimeoutMilliseconds = 3600000;
-
-  install = import ./install.nix {
-    inherit
-      pkgs
-      nodejs
-      supergatewayNpmPrefix
-      ;
-  };
 
   chromeDevtoolsMcpAutoconnectCommand = builtins.concatStringsSep " " [
     chromeDevtoolsMcpBinary
@@ -68,7 +62,6 @@ in
   mcpServerStreamableHttpUrl = "http://localhost:${toString chromeDevtoolsStreamableHttpPort}/mcp";
   streamableHttpBridgeCommand = "${chromeDevtoolsStreamableHttpBridgeWrapper}/bin/chrome-devtools-mcp-streamable-http-bridge";
   inherit chromeDevtoolsMcpOrphanReaper;
-  inherit (install) installSupergatewayViaNpm;
   inherit supergatewayBinary;
 
   packages = [ ];
