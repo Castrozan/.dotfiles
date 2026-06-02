@@ -1,5 +1,4 @@
-{ ... }:
-[
+_: [
   {
     description = "Cmd+Q sends show to application-launcher daemon (send_user_command, no fork+exec)";
     manipulators = [
