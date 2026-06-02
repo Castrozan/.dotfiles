@@ -38,7 +38,6 @@ in
     ../../darwin/desktop/karabiner
     ../../darwin/desktop/keyboard-layout
     ../../darwin/desktop/maccy.nix
-    ../../darwin/desktop/spaceman.nix
     ../../darwin/desktop/home-assistant-remote.nix
 
     ../../base/dev/devenv.nix
