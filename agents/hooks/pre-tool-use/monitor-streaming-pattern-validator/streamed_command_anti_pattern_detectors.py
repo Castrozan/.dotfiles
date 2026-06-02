@@ -11,6 +11,7 @@ if shared_common_hook_modules_directory.is_dir():
     sys.path.insert(0, str(shared_common_hook_modules_directory))
 
 from interactive_command_hang_detectors import (  # noqa: E402
+    command_invokes_hammerspoon_ipc_without_timeout,
     command_launches_interactive_full_screen_program,
     command_runs_git_subcommand_that_opens_an_editor,
 )
@@ -100,6 +101,7 @@ PATTERN_DETECTORS_BY_RULE_NAME = {
 HANG_PATTERN_DETECTORS_BY_RULE_NAME = {
     "interactive-editor-or-full-screen-tui": command_launches_interactive_full_screen_program,
     "command-that-opens-an-editor": command_runs_git_subcommand_that_opens_an_editor,
+    "hammerspoon-ipc-blocks-without-timeout": command_invokes_hammerspoon_ipc_without_timeout,
 }
 
 BUSY_WAIT_PATTERN_DETECTORS_BY_RULE_NAME = {

@@ -112,3 +112,24 @@ def command_runs_git_subcommand_that_opens_an_editor(command_string):
             return True
 
     return False
+
+
+HAMMERSPOON_IPC_INVOCATION = (
+    COMMAND_SEGMENT_START
+    + OPTIONAL_ENVIRONMENT_ASSIGNMENT_PREFIX
+    + r"(?P<timeout_wrapper>g?timeout\s+\S+\s+)?"
+    + r"(?:\S*/)?hs\b"
+)
+
+
+def command_invokes_hammerspoon_ipc_without_timeout(command_string):
+    for match in re.finditer(HAMMERSPOON_IPC_INVOCATION, command_string):
+        invocation_segment = segment_following_match_until_next_separator(
+            command_string, match
+        )
+        if not re.search(r"(?<!\w)-c\b", invocation_segment):
+            continue
+        if match.group("timeout_wrapper"):
+            continue
+        return True
+    return False
