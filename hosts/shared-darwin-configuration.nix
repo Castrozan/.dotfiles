@@ -28,7 +28,7 @@
         "com.apple.AppleMultitouchTrackpad"."TrackpadFiveFingerPinchGesture" = 0;
         "com.apple.driver.AppleBluetoothMultitouch.trackpad"."TrackpadFourFingerPinchGesture" = 0;
         "com.apple.driver.AppleBluetoothMultitouch.trackpad"."TrackpadFiveFingerPinchGesture" = 0;
-        "com.apple.universalaccess".mouseDriverCursorSize = 2.5;
+        "com.apple.universalaccess".mouseDriverCursorSize = 1.5;
         "com.apple.HIToolbox" = {
           AppleEnabledInputSources = [
             {
