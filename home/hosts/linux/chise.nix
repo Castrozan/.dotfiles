@@ -4,7 +4,7 @@
     ./chise/hyprland.nix
     ./chise/ssh.nix
     ./chise/session-vars.nix
-    ./chise/clawde-agents.nix
+    ./chise/clawde-agents
 
     ../../base/core.nix
 
