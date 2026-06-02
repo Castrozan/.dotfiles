@@ -1,15 +1,28 @@
-# Background Bash — silent fake-success patterns
+# Background Bash — anti-patterns
 
 A Bash command launched with `run_in_background: true` reports completion
 via a single task-notification with an exit code, then the LLM reads
-the output file. If the command exits 0 with empty/wrong output, the
-notification looks identical to genuine success and the LLM has no
-in-band signal that something went wrong.
+the output file.
 
-The patterns below produce exactly that shape: exit 0, empty output,
-notification fires, but the command never actually did its job because a
-filter matched nothing — often due to a typo, a fabricated literal, or
-an unset variable.
+The validator rejects two distinct failure modes:
+
+1. **silent-fake-success** — the command exits 0 with empty/wrong output,
+   so the notification looks identical to genuine success and the LLM has
+   no in-band signal that something went wrong. Usually a filter that
+   matched nothing because of a typo, a fabricated literal, or an unset
+   variable.
+2. **hang-forever** — the command blocks on a controlling terminal that a
+   background task does not have (interactive editor, full-screen TUI, or
+   a git subcommand that opens an editor). It never exits, so the
+   completion notification never arrives and the task is stuck. These
+   shapes were confirmed empirically: launched under `setsid` with stdin
+   at EOF (the background harness environment), they never terminate.
+
+   Note: servers, `tail -f`, `journalctl -f`, `watch`, and long `sleep`s
+   also never terminate, but those are *legitimate* background uses (the
+   intended replacement for the Monitor tool), so they are NOT rejected.
+   Pagers (`less`, `more`, `man`) are NOT rejected either — they detect
+   non-TTY stdout and behave like `cat`, exiting immediately.
 
 If the PreToolUse validator rejected your background bash invocation,
 find the named rule below and rewrite the command before retrying.
@@ -96,6 +109,66 @@ Or assert the upstream query produced expected shape before testing:
   jq -e 'type == "array"' prs.json >/dev/null || { echo "query failed"; exit 1; }
   [ "$(jq length prs.json)" = "0" ] && echo "no PR open"
   ```
+
+---
+
+## interactive-editor-or-full-screen-tui
+
+```
+vim                      nano        top
+nvim file.txt            emacs       htop
+```
+
+An interactive editor, pager-that-pages, or full-screen TUI opens
+`/dev/tty` and blocks for keyboard input. A background task has no
+controlling terminal, so the read never returns — the command hangs
+forever and the completion notification never fires.
+
+Flagged programs: `vim`, `vi`, `nvim`, `nano`, `pico`, `micro`, `joe`,
+`emacs`, `emacsclient`, `vimdiff`, `top`, `htop`, `btop`.
+
+- Wrong: `vim notes.txt` (in background)
+- Wrong: `top`
+- Right (non-interactive edit): `sed -i 's/old/new/' notes.txt`
+- Right (one-shot process sample): `top -l 1` (macOS) / `top -b -n1` (Linux)
+- Right (scripted vim): `vim -es -c '...' -c 'wq' file` or `nvim --headless ...`
+- Right (emacs script): `emacs --batch -l script.el`
+
+The escape flags above (`-l`/`-b` for top, `-es`/`-Es`/`--headless` for
+vim/nvim, `--batch` for emacs, `--eval`/`-e` for emacsclient) make the
+program non-interactive, so they are NOT rejected.
+
+`less`, `more`, `man` are deliberately absent — they detect non-TTY
+stdout and stream like `cat`, so they do not hang.
+
+---
+
+## git-subcommand-that-opens-an-editor
+
+```
+git commit                 # no -m → opens $EDITOR → hangs
+git commit --amend         # no -m / no --no-edit → opens $EDITOR
+git rebase -i HEAD~3       # opens the todo-list editor
+git tag -a v1.0            # annotated tag, no -m → opens $EDITOR
+```
+
+When git needs a message and none is supplied on the command line, it
+launches `$EDITOR`/`$GIT_EDITOR` (default `vi`). In the background that
+editor opens `/dev/tty` and blocks forever. Confirmed: `git commit` with
+`EDITOR` set to vim, nano, or unset all hang; `git commit -m ...` and
+`EDITOR=cat git commit` terminate.
+
+- Wrong: `git commit`
+- Wrong: `git commit --amend`
+- Right: `git commit -m "feat: message"`
+- Right: `git commit --amend --no-edit`
+- Right: `git commit -F message.txt`
+- Right (interactive rebase becomes non-interactive): set
+  `GIT_SEQUENCE_EDITOR=true` / `GIT_EDITOR=true`, or avoid rebasing in the
+  background entirely.
+
+`git add -p` is NOT flagged — with stdin at EOF it reads no hunks and
+aborts cleanly instead of hanging.
 
 ---
 
