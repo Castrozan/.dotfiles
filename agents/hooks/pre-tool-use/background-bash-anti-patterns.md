@@ -172,6 +172,49 @@ aborts cleanly instead of hanging.
 
 ---
 
+## lingering-daemon-or-service (advisory, not a hard deny)
+
+```
+rebuild                    systemctl start foo
+darwin-rebuild switch      launchctl bootstrap ...
+home-manager switch        brew services start foo
+```
+
+This one is an **advisory** (the hook emits a `systemMessage` and still
+allows the command), because starting a service is sometimes intended.
+
+The background-bash harness marks a task complete only when the command's
+**entire process group/session exits** — not when the foreground command
+exits, and not when its stdout pipe reaches EOF (confirmed empirically:
+redirecting a child's fds away from the pipe does not change the wait;
+moving the child into a new session does). So a command that finishes its
+own work but leaves a child alive in the same session — a restarted
+service, a build daemon, an activation step — makes the task hang even
+though the command succeeded. `rebuild` is the canonical case: the script
+prints `rebuild complete` and exits, but a restarted launchd/systemd
+service keeps the group alive.
+
+Two fixes, use either or both:
+
+1. **Detach into a new session and poll a log marker** (most robust):
+   ```
+   launch-command-detached-into-new-session /tmp/rebuild.log rebuild
+   # then poll /tmp/rebuild.log for the success/failure marker:
+   #   grep -q "rebuild complete" /tmp/rebuild.log
+   ```
+   The wrapper runs the command via setsid, redirects output to the log,
+   and returns immediately, so the harness never waits on the command or
+   its daemons. You decide completion from the log marker, not the task
+   notification.
+
+2. **Key off the log marker instead of the completion notification.**
+   Even without the wrapper, treat a known success line in the output file
+   (`rebuild complete`, a server's "listening on", etc.) as the real
+   completion signal. The task-completion notification is unreliable for
+   anything that spawns a lingering child.
+
+---
+
 ## General mitigations
 
 When `run_in_background: true`, design the command so that:

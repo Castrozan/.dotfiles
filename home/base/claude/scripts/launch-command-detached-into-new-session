@@ -1,0 +1,54 @@
+#!/usr/bin/env python3
+"""Launch a command in a brand-new session so the calling background task does
+not wait on it or any daemon it spawns.
+
+The Claude Code background-bash harness considers a task complete only when its
+entire process group/session has exited - not when the foreground command
+exits. A command like `rebuild` finishes its own work but leaves restarted
+services or build children alive in the same session, so the task hangs even
+though the command succeeded.
+
+This wrapper runs the command via start_new_session=True (setsid), redirects its
+output to a log file, prints the pid, and returns immediately. The caller then
+polls the log file for the command's own success/failure marker instead of
+relying on the harness completion notification.
+"""
+
+import subprocess
+import sys
+
+
+def main():
+    if len(sys.argv) < 3:
+        print(
+            "usage: launch-command-detached-into-new-session "
+            "<log_file_path> <command> [args...]",
+            file=sys.stderr,
+        )
+        sys.exit(2)
+
+    log_file_path = sys.argv[1]
+    command_with_arguments = sys.argv[2:]
+
+    log_file = open(log_file_path, "ab", buffering=0)
+    detached_process = subprocess.Popen(
+        command_with_arguments,
+        stdin=subprocess.DEVNULL,
+        stdout=log_file,
+        stderr=subprocess.STDOUT,
+        start_new_session=True,
+    )
+
+    print(
+        f"launched pid={detached_process.pid} in a new session; "
+        f"output -> {log_file_path}"
+    )
+    print(
+        f"poll {log_file_path} for the command's success marker; "
+        f"check liveness with: kill -0 {detached_process.pid}"
+    )
+    sys.exit(0)
+
+
+if __name__ == "__main__":
+    main()

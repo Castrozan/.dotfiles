@@ -10,6 +10,9 @@ let
   memoryPruneScript = pkgs.writeShellScriptBin "memory-prune" ''
     exec ${pkgs.python312}/bin/python3 ${./scripts/memory-prune} "$@"
   '';
+  launchCommandDetachedIntoNewSessionScript = pkgs.writeShellScriptBin "launch-command-detached-into-new-session" ''
+    exec ${pkgs.python312}/bin/python3 ${./scripts/launch-command-detached-into-new-session} "$@"
+  '';
   claudeA2aPeerScript = pkgs.writeShellScriptBin "claude-a2a-peer" ''
     export PATH="${pkgs.tmux}/bin:$PATH"
     export PYTHONPATH=${../../../agents}
@@ -25,6 +28,7 @@ in
     claudeUpdateVersionScript
     memoryWriteScript
     memoryPruneScript
+    launchCommandDetachedIntoNewSessionScript
     claudeA2aPeerScript
   ]
   ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [

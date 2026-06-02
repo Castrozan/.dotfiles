@@ -11,6 +11,9 @@ from background_bash_fake_success_detectors import (  # noqa: E402
     command_pipes_count_into_test_against_literal_zero,
     command_uses_until_loop_terminating_on_empty_count,
 )
+from background_daemon_spawner_detectors import (  # noqa: E402
+    command_starts_a_lingering_daemon_or_service,
+)
 from interactive_command_hang_detectors import (  # noqa: E402
     command_launches_interactive_full_screen_program,
     command_runs_git_subcommand_that_opens_an_editor,
@@ -77,6 +80,19 @@ def build_deny_reason_message(triggered_rule_names):
     )
 
 
+def build_lingering_daemon_advisory_message():
+    return (
+        "This background command starts a long-lived service or daemon. The "
+        "background task completes only when the whole process group exits, so a "
+        "child left running in the same session makes the task hang even after "
+        "the command itself succeeds (e.g. rebuild finishes but a restarted "
+        "service keeps the group alive). Prefer: "
+        "launch-command-detached-into-new-session <log_file> <command>, then poll "
+        "<log_file> for the command's own success marker instead of waiting for "
+        f"the completion notification. See {BACKGROUND_BASH_PATTERNS_REFERENCE_FILE_PATH}."
+    )
+
+
 def emit_deny_decision_for_pre_tool_use_hook(deny_reason_message):
     output_payload = {
         "hookSpecificOutput": {
@@ -86,6 +102,10 @@ def emit_deny_decision_for_pre_tool_use_hook(deny_reason_message):
         }
     }
     json.dump(output_payload, sys.stdout)
+
+
+def emit_non_blocking_advisory_for_pre_tool_use_hook(advisory_message):
+    json.dump({"continue": True, "systemMessage": advisory_message}, sys.stdout)
 
 
 def main():
@@ -107,12 +127,18 @@ def main():
         sys.exit(0)
 
     triggered_rule_names = find_background_bash_anti_patterns_in_command(command_string)
-    if not triggered_rule_names:
+    if triggered_rule_names:
+        emit_deny_decision_for_pre_tool_use_hook(
+            build_deny_reason_message(triggered_rule_names)
+        )
         sys.exit(0)
 
-    emit_deny_decision_for_pre_tool_use_hook(
-        build_deny_reason_message(triggered_rule_names)
-    )
+    if command_starts_a_lingering_daemon_or_service(command_string):
+        emit_non_blocking_advisory_for_pre_tool_use_hook(
+            build_lingering_daemon_advisory_message()
+        )
+        sys.exit(0)
+
     sys.exit(0)
 
 
