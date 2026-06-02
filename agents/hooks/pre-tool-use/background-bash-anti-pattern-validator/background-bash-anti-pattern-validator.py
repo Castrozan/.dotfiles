@@ -4,7 +4,11 @@ import json
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent))
+hook_script_directory = Path(__file__).resolve().parent
+sys.path.insert(0, str(hook_script_directory))
+shared_common_hook_modules_directory = hook_script_directory.parent / "common"
+if shared_common_hook_modules_directory.is_dir():
+    sys.path.insert(0, str(shared_common_hook_modules_directory))
 
 from background_bash_fake_success_detectors import (  # noqa: E402
     command_filters_by_hardcoded_long_literal_used_in_count_or_test,

@@ -45,7 +45,7 @@ def main():
                     f"💡 TMUX REMINDER: {reason}.\n"
                     "Consider running in tmux to prevent losing progress if connection drops.\n"
                     "Start with: tmux new -s build  |  Attach with: tmux attach -t build"
-                )
+                ),
             }
             print(json.dumps(output))
             sys.exit(0)

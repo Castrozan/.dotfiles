@@ -21,7 +21,9 @@ import subprocess
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "pre-tool-use"))
+sys.path.insert(
+    0, str(Path(__file__).resolve().parent.parent / "pre-tool-use" / "common")
+)
 
 from interactive_command_hang_detectors import (  # noqa: E402
     command_launches_interactive_full_screen_program,

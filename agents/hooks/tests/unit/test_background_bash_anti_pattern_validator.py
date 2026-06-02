@@ -6,10 +6,12 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
-HOOK_SCRIPT_PATH = (
-    Path(__file__).resolve().parent.parent.parent
-    / "pre-tool-use"
-    / "background-bash-anti-pattern-validator.py"
+HOOK_SCRIPT_PATH = next(
+    candidate
+    for candidate in Path(__file__)
+    .resolve()
+    .parent.parent.parent.rglob("background-bash-anti-pattern-validator.py")
+    if "__pycache__" not in candidate.parts
 )
 
 _module_spec = importlib.util.spec_from_file_location(

@@ -3,10 +3,12 @@ import subprocess
 import sys
 from pathlib import Path
 
-HOOK_SCRIPT_PATH = (
-    Path(__file__).resolve().parent.parent.parent
-    / "pre-tool-use"
-    / "background-bash-anti-pattern-validator.py"
+HOOK_SCRIPT_PATH = next(
+    candidate
+    for candidate in Path(__file__)
+    .resolve()
+    .parent.parent.parent.rglob("background-bash-anti-pattern-validator.py")
+    if "__pycache__" not in candidate.parts
 )
 
 
