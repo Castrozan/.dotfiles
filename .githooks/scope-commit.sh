@@ -1,26 +1,29 @@
 #!/usr/bin/env sh
 
-# commit-msg hook: auto‑prefix commit-subject with (<scope>)
-# based on changes under hosts/<hostname>/ or home/hosts/{linux,darwin}/<alias>/
+commit_message_file="$1"
 
-MSG_FILE="$1"
+staged_files=$(git diff --cached --name-only)
 
-# get list of staged files
-STAGED=$(git diff --cached --name-only)
-
-# look for the first occurrence of hosts/<host>/ or home/hosts/{linux,darwin}/<alias>/
-SCOPE_DIR=$(echo "$STAGED" |
+scope=$(printf '%s\n' "$staged_files" |
 	grep -m1 -E '^(hosts/[^/]+/|home/hosts/(linux|darwin)/[^/]+(\.nix|/))' |
 	sed -E -e 's#^hosts/([^/]+)/.*#\1#' -e 's#^home/hosts/(linux|darwin)/([^/.]+)(\.nix|/.*)#\2#')
 
-# if no scope-dir found, skip
-[ -z "$SCOPE_DIR" ] && exit 0
+[ -z "$scope" ] && exit 0
 
-PREFIX="($SCOPE_DIR)"
+scope_prefix="($scope)"
 
-# don't double‐up if it's already there
-grep -qE "^[^:]+${PREFIX}:" "$MSG_FILE" && exit 0
+subject=$(head -n 1 "$commit_message_file")
+body=$(tail -n +2 "$commit_message_file")
 
-sed -i -E "1 s/^([^:]+):/\\1${PREFIX}:/1" "$MSG_FILE"
+case "$subject" in
+*"${scope_prefix}:"*) exit 0 ;;
+esac
+
+prefixed_subject=$(printf '%s' "$subject" | sed -E "s/^([^:]+):/\\1${scope_prefix}:/")
+
+{
+	printf '%s\n' "$prefixed_subject"
+	printf '%s' "$body"
+} >"$commit_message_file"
 
 exit 0
