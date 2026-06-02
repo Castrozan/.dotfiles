@@ -30,8 +30,10 @@ _ensure_darwin_rebuild_available() {
 }
 
 _reload_hammerspoon_config() {
-	if command -v hs &>/dev/null; then
-		hs -c "hs.reload()"
+	local hammerspoon_command_line_interface
+	hammerspoon_command_line_interface=$(command -v hs || echo /opt/homebrew/bin/hs)
+	if [ -x "$hammerspoon_command_line_interface" ]; then
+		"$hammerspoon_command_line_interface" -c "hs.reload()" || true
 	fi
 }
 
