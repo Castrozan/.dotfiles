@@ -31,17 +31,14 @@ in
     ../../base/editor/neovim.nix
 
     ../../base/desktop/theming
-    ../../darwin/desktop/aerospace.nix
+    ../../darwin/desktop/hammerspoon
     ../../darwin/desktop/application-launcher
     ../../darwin/desktop/brave
-    ../../darwin/desktop/workspace-navigator
-    ../../darwin/desktop/workspace-switcher-client
     ../../base/desktop/fonts.nix
     ../../darwin/desktop/karabiner
     ../../darwin/desktop/keyboard-layout
     ../../darwin/desktop/maccy.nix
     ../../darwin/desktop/spaceman.nix
-    ../../darwin/desktop/summon-browser
     ../../darwin/desktop/home-assistant-remote.nix
 
     ../../base/dev/devenv.nix

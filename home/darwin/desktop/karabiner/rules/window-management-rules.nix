@@ -1,22 +1,5 @@
-{ userBinPath }:
+{ ... }:
 [
-  {
-    description = "Cmd+W closes focused window via AeroSpace";
-    manipulators = [
-      {
-        type = "basic";
-        from = {
-          key_code = "w";
-          modifiers.mandatory = [ "command" ];
-        };
-        to = [
-          {
-            shell_command = "${userBinPath}/aerospace close";
-          }
-        ];
-      }
-    ];
-  }
   {
     description = "Cmd+Q sends show to application-launcher daemon (send_user_command, no fork+exec)";
     manipulators = [

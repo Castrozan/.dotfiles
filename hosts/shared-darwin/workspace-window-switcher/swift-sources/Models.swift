@@ -5,7 +5,7 @@ struct WorkspaceWindow: Equatable {
     let applicationName: String
     let title: String
 
-    static func fromAeroSpaceDictionary(_ dictionary: [String: Any]) -> WorkspaceWindow? {
+    static func fromWindowDictionary(_ dictionary: [String: Any]) -> WorkspaceWindow? {
         guard let identifier = dictionary["window-id"] as? Int else { return nil }
         let applicationName = (dictionary["app-name"] as? String) ?? ""
         let title = (dictionary["window-title"] as? String) ?? applicationName

@@ -16,12 +16,7 @@ final class DaemonCompositionRoot {
     }
 
     private func buildAllDependencies() -> ComposedDaemonDependencies {
-        let aerospaceSocketPathResolver = AeroSpaceSocketPathResolver()
-        let aerospaceIpcClient = AeroSpaceIpcClient(
-            socketPathResolver: aerospaceSocketPathResolver,
-            connectionTimeoutSeconds: DaemonConfiguration.aerospaceIpcTimeoutSeconds
-        )
-        let aerospaceWindowProvider = AeroSpaceWindowProvider(ipcClient: aerospaceIpcClient)
+        let fileBackedWindowProvider = FileBackedWindowProvider()
 
         let applicationIconProvider = ApplicationIconProvider()
         let activationPerformanceProfiler = ActivationPerformanceProfiler(
@@ -57,8 +52,8 @@ final class DaemonCompositionRoot {
         )
 
         let windowSwitcherStateMachine = WindowSwitcherStateMachine(
-            windowProvider: aerospaceWindowProvider,
-            windowFocuser: aerospaceWindowProvider,
+            windowProvider: fileBackedWindowProvider,
+            windowFocuser: fileBackedWindowProvider,
             overlayRenderer: switcherOverlayPanel,
             mruTracker: mostRecentlyUsedWindowTracker,
             activationFlagWriter: activationFlagFileWriter,

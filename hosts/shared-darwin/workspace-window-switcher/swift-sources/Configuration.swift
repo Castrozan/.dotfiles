@@ -25,5 +25,4 @@ enum DaemonConfiguration {
     static let datagramReadBufferSize = 4096
     static let kernelReceiveBufferBytes: Int32 = 1024 * 1024
     static let commandSocketFileMode: mode_t = 0o666
-    static let aerospaceIpcTimeoutSeconds: Int = 2
 }

@@ -2,39 +2,39 @@ import Foundation
 
 enum WorkspaceWindowTests {
     static func runAll() {
-        testFromAeroSpaceDictionaryParsesWellFormedInput()
-        testFromAeroSpaceDictionaryReturnsNilWithoutWindowIdentifier()
-        testFromAeroSpaceDictionaryDefaultsEmptyApplicationName()
-        testFromAeroSpaceDictionaryDefaultsTitleToApplicationName()
+        testFromWindowDictionaryParsesWellFormedInput()
+        testFromWindowDictionaryReturnsNilWithoutWindowIdentifier()
+        testFromWindowDictionaryDefaultsEmptyApplicationName()
+        testFromWindowDictionaryDefaultsTitleToApplicationName()
     }
 
-    static func testFromAeroSpaceDictionaryParsesWellFormedInput() {
+    static func testFromWindowDictionaryParsesWellFormedInput() {
         let dictionary: [String: Any] = [
             "window-id": 42,
             "app-name": "WezTerm",
             "window-title": "fish",
         ]
-        let parsed = WorkspaceWindow.fromAeroSpaceDictionary(dictionary)
+        let parsed = WorkspaceWindow.fromWindowDictionary(dictionary)
         TestAssertion.assertEqual(
             parsed,
             WorkspaceWindow(identifier: 42, applicationName: "WezTerm", title: "fish")
         )
     }
 
-    static func testFromAeroSpaceDictionaryReturnsNilWithoutWindowIdentifier() {
+    static func testFromWindowDictionaryReturnsNilWithoutWindowIdentifier() {
         let dictionary: [String: Any] = ["app-name": "WezTerm", "window-title": "fish"]
-        TestAssertion.assertNil(WorkspaceWindow.fromAeroSpaceDictionary(dictionary))
+        TestAssertion.assertNil(WorkspaceWindow.fromWindowDictionary(dictionary))
     }
 
-    static func testFromAeroSpaceDictionaryDefaultsEmptyApplicationName() {
+    static func testFromWindowDictionaryDefaultsEmptyApplicationName() {
         let dictionary: [String: Any] = ["window-id": 1, "window-title": "fish"]
-        let parsed = WorkspaceWindow.fromAeroSpaceDictionary(dictionary)
+        let parsed = WorkspaceWindow.fromWindowDictionary(dictionary)
         TestAssertion.assertEqual(parsed?.applicationName, "")
     }
 
-    static func testFromAeroSpaceDictionaryDefaultsTitleToApplicationName() {
+    static func testFromWindowDictionaryDefaultsTitleToApplicationName() {
         let dictionary: [String: Any] = ["window-id": 1, "app-name": "App"]
-        let parsed = WorkspaceWindow.fromAeroSpaceDictionary(dictionary)
+        let parsed = WorkspaceWindow.fromWindowDictionary(dictionary)
         TestAssertion.assertEqual(parsed?.title, "App")
     }
 }

@@ -7,8 +7,6 @@ struct AllTestsRunner {
         SelectionIndexCalculatorTests.runAll()
         MostRecentlyUsedWindowTrackerTests.runAll()
         SocketCommandParserTests.runAll()
-        AeroSpaceIpcRequestEncoderTests.runAll()
-        AeroSpaceIpcResponseParserTests.runAll()
         print("ALL SWIFT LOGIC TESTS PASSED")
     }
 }
