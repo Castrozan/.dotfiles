@@ -29,9 +29,9 @@ _ensure_darwin_rebuild_available() {
 	fi
 }
 
-_reload_aerospace_config() {
-	if command -v aerospace &>/dev/null; then
-		aerospace reload-config
+_reload_hammerspoon_config() {
+	if command -v hs &>/dev/null; then
+		hs -c "hs.reload()"
 	fi
 }
 
@@ -145,7 +145,7 @@ main() {
 		"$current_system_symlink_target_before" \
 		"$current_system_symlink_modification_epoch_seconds_before"
 
-	_reload_aerospace_config
+	_reload_hammerspoon_config
 
 	echo "rebuild complete" >&2
 }
