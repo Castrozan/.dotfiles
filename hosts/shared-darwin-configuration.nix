@@ -5,6 +5,19 @@
   ...
 }:
 {
+  imports = [
+    ./shared-darwin/brave
+    ./shared-darwin/wezterm
+    ./shared-darwin/displays
+    ./shared-darwin/finder
+    ./shared-darwin/window-manager
+    ./shared-darwin/symbolic-hotkeys
+    ./shared-darwin/quit-windowless-applications
+    ./shared-darwin/workspace-window-switcher
+    ./shared-darwin/rebuild
+    ./shared-darwin/karabiner
+  ];
+
   users.users.${username} = {
     name = username;
     home = "/Users/${username}";
