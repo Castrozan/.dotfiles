@@ -2,6 +2,14 @@ import monitor_streaming_pattern_validator as sut
 import pytest
 
 
+class TestBlindSleepRuleAppliesOnlyToBackgroundedBash:
+    def test_monitor_until_loops_may_sleep_to_pace_condition_checks(self):
+        assert not sut.tool_sleeps_as_a_substitute_for_waiting_on_a_condition("Monitor")
+
+    def test_backgrounded_bash_sleep_is_an_anti_pattern(self):
+        assert sut.tool_sleeps_as_a_substitute_for_waiting_on_a_condition("Bash")
+
+
 class TestStreamedOrBackgroundedContextGate:
     def test_monitor_is_in_scope(self):
         assert sut.command_runs_in_a_streamed_or_backgrounded_context("Monitor", {})
