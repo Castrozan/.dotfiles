@@ -72,6 +72,7 @@ in
 ++ (import ./terminal-input-method-rules.nix { inherit onlyTerminalsCondition; })
 ++ (import ./function-key-passthrough-in-terminals-rules.nix { inherit onlyTerminalsCondition; })
 ++ (import ./word-navigation-rules.nix { inherit excludeTerminalsCondition; })
+++ (import ./browser-summon-rules.nix)
 ++ (import ./brave-keybind-passthrough-rules.nix)
 ++ (import ./linux-style-modifier-rules.nix {
   inherit excludeTerminalsCondition makeControlToCommandManipulator controlToCommandLetters;

@@ -39,12 +39,16 @@ end
 -- active workspace's windows and performs the focus it requests.
 require("switcher_bridge")
 
-hs.hotkey.bind({ "cmd" }, "b", function()
+-- Summon is triggered from karabiner (Cmd+B / Cmd+C) rather than an hs.hotkey,
+-- because karabiner remaps Ctrl+C to Cmd+C: a global Cmd+C hotkey here would also
+-- catch the remapped Ctrl+C and steal copy. Karabiner matches Cmd+C before that
+-- remap and invokes these via `hs -c`, so Ctrl+C still copies.
+function summonBraveBrowserToCurrentWorkspace()
   workspaceGrid.summonApplicationToCurrentWorkspace("Brave Browser")
-end)
-hs.hotkey.bind({ "cmd" }, "c", function()
+end
+function summonGoogleChromeToCurrentWorkspace()
   workspaceGrid.summonApplicationToCurrentWorkspace("Google Chrome")
-end)
+end
 
 local windowEventWatcher = hs.window.filter.new()
 windowEventWatcher:subscribe(hs.window.filter.windowCreated, function(window)
