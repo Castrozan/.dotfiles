@@ -11,9 +11,11 @@ from AppKit import NSWorkspace
 from Foundation import NSObject, NSTimer
 from PyObjCTools import AppHelper
 
-KARABINER_CONSOLE_USER_SERVER_LAUNCHD_LABEL = (
-    "org.pqrs.service.agent.karabiner_console_user_server"
-)
+KARABINER_USER_AGENT_LAUNCHD_LABELS_TO_KICK_IN_RESTART_ORDER = [
+    "org.pqrs.service.agent.Karabiner-Core-Service-rev2",
+    "org.pqrs.service.agent.karabiner_session_monitor",
+    "org.pqrs.service.agent.karabiner_console_user_server",
+]
 LAUNCHCTL_BINARY_PATH = "/bin/launchctl"
 
 DAEMON_HEALTH_STATE_FILE_PATH = "/tmp/karabiner-health.json"
@@ -31,7 +33,13 @@ KARABINER_CLI_IPC_PROBE_TIMEOUT_SECONDS = 5.0
 
 KARABINER_CLI_IPC_PROBE_FAILURE_KICK_IS_ENABLED = True
 CONSECUTIVE_IPC_PROBE_FAILURES_REQUIRED_BEFORE_KICK = 3
+CONSECUTIVE_SHARED_SECRET_DESYNC_PROBES_REQUIRED_BEFORE_KICK = 2
 MINIMUM_SECONDS_BETWEEN_REACTIVE_KICKS = 300.0
+
+KARABINER_CONSOLE_USER_SERVER_CORE_SERVICE_CONNECTED_LOG_MARKER = (
+    "core_service_client is connected"
+)
+KARABINER_CONSOLE_USER_SERVER_INVALID_SHARED_SECRET_LOG_MARKER = "invalid shared secret"
 
 HEALTH_PROBE_INTERVAL_SECONDS = 60.0
 PERIODIC_SAFETY_NET_KICK_INTERVAL_SECONDS = 1800.0
@@ -39,6 +47,7 @@ PERIODIC_SAFETY_NET_KICK_INTERVAL_SECONDS = 1800.0
 KICK_REASON_WAKE = "wake"
 KICK_REASON_PERIODIC_SAFETY_NET = "periodic_safety_net"
 KICK_REASON_KARABINER_CLI_IPC_PROBE_FAILURE = "karabiner_cli_ipc_probe_failure"
+KICK_REASON_SHARED_SECRET_DESYNC = "shared_secret_desync"
 
 
 def current_epoch_seconds():
@@ -113,6 +122,25 @@ def is_karabiner_core_service_process_running():
     )
 
 
+def count_invalid_shared_secret_errors_since_last_core_service_connect():
+    try:
+        with open(KARABINER_CONSOLE_USER_SERVER_LOG_FILE_PATH, "r") as log_file:
+            log_lines = log_file.readlines()
+    except OSError:
+        return 0
+    most_recent_core_service_connect_line_index = None
+    for line_index, log_line in enumerate(log_lines):
+        if KARABINER_CONSOLE_USER_SERVER_CORE_SERVICE_CONNECTED_LOG_MARKER in log_line:
+            most_recent_core_service_connect_line_index = line_index
+    if most_recent_core_service_connect_line_index is None:
+        return 0
+    return sum(
+        1
+        for log_line in log_lines[most_recent_core_service_connect_line_index:]
+        if KARABINER_CONSOLE_USER_SERVER_INVALID_SHARED_SECRET_LOG_MARKER in log_line
+    )
+
+
 def probe_karabiner_cli_ipc_and_return_outcome():
     probe_started_at_epoch_seconds = current_epoch_seconds()
     profile_name_or_none = None
@@ -173,33 +201,41 @@ def probe_karabiner_cli_ipc_and_return_outcome():
     }
 
 
-def kick_karabiner_console_user_server_via_launchctl(kick_reason):
+def kick_karabiner_user_agents_via_launchctl(kick_reason):
     primary_user_id = os.getuid()
-    launchd_kickstart_target = (
-        f"gui/{primary_user_id}/{KARABINER_CONSOLE_USER_SERVER_LAUNCHD_LABEL}"
-    )
+    launchd_kickstart_targets_in_restart_order = [
+        f"gui/{primary_user_id}/{launchd_label}"
+        for launchd_label in (
+            KARABINER_USER_AGENT_LAUNCHD_LABELS_TO_KICK_IN_RESTART_ORDER
+        )
+    ]
     kick_started_at_epoch_seconds = current_epoch_seconds()
     append_structured_event_log_line(
         {
             "event": "kick_attempt",
-            "launchd_target": launchd_kickstart_target,
+            "launchd_targets": launchd_kickstart_targets_in_restart_order,
             "reason": kick_reason,
         }
     )
-    completion = subprocess.run(
-        [LAUNCHCTL_BINARY_PATH, "kickstart", "-k", launchd_kickstart_target],
-        check=False,
-        capture_output=True,
-        text=True,
-    )
+    launchd_target_kickstart_exit_codes = {}
+    for launchd_kickstart_target in launchd_kickstart_targets_in_restart_order:
+        completion = subprocess.run(
+            [LAUNCHCTL_BINARY_PATH, "kickstart", "-k", launchd_kickstart_target],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        launchd_target_kickstart_exit_codes[launchd_kickstart_target] = (
+            completion.returncode
+        )
     kick_duration_seconds = current_epoch_seconds() - kick_started_at_epoch_seconds
     append_structured_event_log_line(
         {
             "event": "kick_completed",
-            "launchd_target": launchd_kickstart_target,
+            "launchd_targets": launchd_kickstart_targets_in_restart_order,
             "reason": kick_reason,
             "duration_seconds": kick_duration_seconds,
-            "exit_code": completion.returncode,
+            "exit_codes": launchd_target_kickstart_exit_codes,
         }
     )
     previous_health_state = read_current_health_state_from_file()
@@ -270,6 +306,35 @@ def run_full_health_probe_and_kick_if_ipc_probe_failed():
             ),
         }
     )
+    reactively_kick_if_ipc_probe_degraded(
+        karabiner_cli_ipc_probe_outcome, is_console_user_server_running
+    )
+    reactively_kick_if_shared_secret_desync_detected(is_console_user_server_running)
+
+
+def reactively_kick_with_cooldown(kick_reason):
+    previous_health_state = read_current_health_state_from_file()
+    seconds_since_last_reactive_kick = current_epoch_seconds() - (
+        previous_health_state.get("last_reactive_kick_epoch", 0)
+    )
+    if seconds_since_last_reactive_kick < MINIMUM_SECONDS_BETWEEN_REACTIVE_KICKS:
+        append_structured_event_log_line(
+            {
+                "event": "reactive_kick_suppressed_by_cooldown",
+                "reason": kick_reason,
+                "seconds_since_last_reactive_kick": seconds_since_last_reactive_kick,
+            }
+        )
+        return
+    write_merged_health_state_updates_to_file(
+        {"last_reactive_kick_epoch": current_epoch_seconds()}
+    )
+    kick_karabiner_user_agents_via_launchctl(kick_reason)
+
+
+def reactively_kick_if_ipc_probe_degraded(
+    karabiner_cli_ipc_probe_outcome, is_console_user_server_running
+):
     previous_health_state = read_current_health_state_from_file()
     if karabiner_cli_ipc_probe_outcome["succeeded"]:
         write_merged_health_state_updates_to_file(
@@ -306,24 +371,59 @@ def run_full_health_probe_and_kick_if_ipc_probe_failed():
         < CONSECUTIVE_IPC_PROBE_FAILURES_REQUIRED_BEFORE_KICK
     ):
         return
-    seconds_since_last_reactive_kick = (
-        current_epoch_seconds()
-        - previous_health_state.get("last_reactive_kick_epoch", 0)
+    reactively_kick_with_cooldown(KICK_REASON_KARABINER_CLI_IPC_PROBE_FAILURE)
+
+
+def reactively_kick_if_shared_secret_desync_detected(is_console_user_server_running):
+    invalid_shared_secret_error_count = (
+        count_invalid_shared_secret_errors_since_last_core_service_connect()
     )
-    if seconds_since_last_reactive_kick < MINIMUM_SECONDS_BETWEEN_REACTIVE_KICKS:
-        append_structured_event_log_line(
-            {
-                "event": "ipc_probe_kick_suppressed_by_cooldown",
-                "seconds_since_last_reactive_kick": seconds_since_last_reactive_kick,
-            }
+    previous_health_state = read_current_health_state_from_file()
+    write_merged_health_state_updates_to_file(
+        {
+            "karabiner_invalid_shared_secret_error_count_since_last_connect": (
+                invalid_shared_secret_error_count
+            )
+        }
+    )
+    if invalid_shared_secret_error_count == 0:
+        write_merged_health_state_updates_to_file(
+            {"consecutive_shared_secret_desync_probe_count": 0}
         )
         return
+    consecutive_shared_secret_desync_probe_count = (
+        previous_health_state.get("consecutive_shared_secret_desync_probe_count", 0) + 1
+    )
     write_merged_health_state_updates_to_file(
-        {"last_reactive_kick_epoch": current_epoch_seconds()}
+        {
+            "shared_secret_desync_probe_count_total": previous_health_state.get(
+                "shared_secret_desync_probe_count_total", 0
+            )
+            + 1,
+            "consecutive_shared_secret_desync_probe_count": (
+                consecutive_shared_secret_desync_probe_count
+            ),
+        }
     )
-    kick_karabiner_console_user_server_via_launchctl(
-        KICK_REASON_KARABINER_CLI_IPC_PROBE_FAILURE
+    append_structured_event_log_line(
+        {
+            "event": "shared_secret_desync_detected",
+            "invalid_shared_secret_error_count": invalid_shared_secret_error_count,
+            "consecutive_desync_probe_count": (
+                consecutive_shared_secret_desync_probe_count
+            ),
+        }
     )
+    if not KARABINER_CLI_IPC_PROBE_FAILURE_KICK_IS_ENABLED:
+        return
+    if not is_console_user_server_running:
+        return
+    if (
+        consecutive_shared_secret_desync_probe_count
+        < CONSECUTIVE_SHARED_SECRET_DESYNC_PROBES_REQUIRED_BEFORE_KICK
+    ):
+        return
+    reactively_kick_with_cooldown(KICK_REASON_SHARED_SECRET_DESYNC)
 
 
 def record_wake_event_in_health_state_and_kick():
@@ -331,11 +431,11 @@ def record_wake_event_in_health_state_and_kick():
         {"last_wake_epoch": current_epoch_seconds()}
     )
     append_structured_event_log_line({"event": "wake"})
-    kick_karabiner_console_user_server_via_launchctl(KICK_REASON_WAKE)
+    kick_karabiner_user_agents_via_launchctl(KICK_REASON_WAKE)
 
 
 def run_periodic_safety_net_kick():
-    kick_karabiner_console_user_server_via_launchctl(KICK_REASON_PERIODIC_SAFETY_NET)
+    kick_karabiner_user_agents_via_launchctl(KICK_REASON_PERIODIC_SAFETY_NET)
 
 
 def initialize_health_state_for_daemon_start():

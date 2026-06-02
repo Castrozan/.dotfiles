@@ -13,10 +13,8 @@ def test_kick_writes_kick_metadata_and_increments_total_counter(
         "run",
         MagicMock(return_value=make_completed_process_with_exit_zero()),
     )
-    daemon_module.kick_karabiner_console_user_server_via_launchctl("wake")
-    daemon_module.kick_karabiner_console_user_server_via_launchctl(
-        "periodic_safety_net"
-    )
+    daemon_module.kick_karabiner_user_agents_via_launchctl("wake")
+    daemon_module.kick_karabiner_user_agents_via_launchctl("periodic_safety_net")
     final_health_state = daemon_module.read_current_health_state_from_file()
     assert final_health_state["kick_count_total"] == 2
     assert final_health_state["last_kick_reason"] == "periodic_safety_net"

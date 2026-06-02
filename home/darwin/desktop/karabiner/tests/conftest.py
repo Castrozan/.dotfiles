@@ -57,9 +57,11 @@ def karabiner_status_cli_module():
 def temporary_daemon_state_paths(tmp_path):
     health_state_file_path = tmp_path / "karabiner-health.json"
     structured_event_log_file_path = tmp_path / "karabiner-daemon.log"
+    console_user_server_log_file_path = tmp_path / "console_user_server.log"
     return {
         "health_state_file_path": str(health_state_file_path),
         "structured_event_log_file_path": str(structured_event_log_file_path),
+        "console_user_server_log_file_path": str(console_user_server_log_file_path),
     }
 
 
@@ -76,6 +78,11 @@ def daemon_module_with_temporary_paths(
         karabiner_restart_on_wake_daemon_module,
         "DAEMON_STRUCTURED_EVENT_LOG_FILE_PATH",
         temporary_daemon_state_paths["structured_event_log_file_path"],
+    )
+    monkeypatch.setattr(
+        karabiner_restart_on_wake_daemon_module,
+        "KARABINER_CONSOLE_USER_SERVER_LOG_FILE_PATH",
+        temporary_daemon_state_paths["console_user_server_log_file_path"],
     )
     return karabiner_restart_on_wake_daemon_module
 
