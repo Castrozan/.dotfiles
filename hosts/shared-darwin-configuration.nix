@@ -53,6 +53,7 @@
       NSGlobalDomain = {
         NSAutomaticWindowAnimationsEnabled = false;
         NSWindowResizeTime = 0.001;
+        "com.apple.swipescrolldirection" = false;
       };
       dock = {
         autohide = true;

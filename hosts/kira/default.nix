@@ -14,8 +14,6 @@
     ./karabiner
   ];
 
-  system.defaults.NSGlobalDomain."com.apple.swipescrolldirection" = false;
-
   services.tailscale.enable = true;
 
   homebrew.casks = [
