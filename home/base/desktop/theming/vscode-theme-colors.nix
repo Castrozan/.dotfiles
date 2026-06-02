@@ -87,10 +87,23 @@ let
       "Library/Application Support/Code/User/settings.json"
     else
       ".config/Code/User/settings.json";
+
+  vscodeThemeColorsAppliedMarker = "${./inject-vscode-theme-colors.py} ${vscodeColorCustomizationsJsonFile}";
 in
 ''
   VSCODE_SETTINGS_FILE="$HOME/${vscodeSettingsRelativePath}"
-  if [ -f "$VSCODE_SETTINGS_FILE" ]; then
-    ${pkgs.python312}/bin/python3 ${./inject-vscode-theme-colors.py} "$VSCODE_SETTINGS_FILE" "${vscodeColorCustomizationsJsonFile}"
+  sentinelDirectory="$HOME/.local/state/dotfiles-activation"
+  sentinelFile="$sentinelDirectory/vscode-theme-colors-applied"
+
+  # Skip when these theme colors are already injected so a normal rebuild never
+  # launches python against VS Code's protected Application Support data and thus
+  # never triggers the macOS "access data from other apps" TCC prompt. The marker
+  # check is unprotected and short-circuits before any protected access.
+  if [ "$(cat "$sentinelFile" 2>/dev/null)" != "${vscodeThemeColorsAppliedMarker}" ]; then
+    if [ -f "$VSCODE_SETTINGS_FILE" ]; then
+      ${pkgs.python312}/bin/python3 ${./inject-vscode-theme-colors.py} "$VSCODE_SETTINGS_FILE" "${vscodeColorCustomizationsJsonFile}"
+      mkdir -p "$sentinelDirectory"
+      printf '%s' "${vscodeThemeColorsAppliedMarker}" >"$sentinelFile"
+    fi
   fi
 ''
