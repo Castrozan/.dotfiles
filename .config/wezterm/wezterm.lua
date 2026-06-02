@@ -45,8 +45,8 @@ local config = {
   max_fps = 120,
   window_decorations = 'RESIZE',
   use_resize_increments = false,
-  window_background_opacity = 0.75,
-  macos_window_background_blur = 8,
+  window_background_opacity = 0.85,
+  macos_window_background_blur = 20,
 
   enable_tab_bar = false,
   hide_tab_bar_if_only_one_tab = true,
