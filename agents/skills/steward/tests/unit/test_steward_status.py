@@ -38,11 +38,16 @@ def test_last_validated_revision_reads_stamp(monkeypatch, tmp_path):
 
 
 def test_health_check_summary_reports_failing_probes():
-    probes = json.dumps([{"name": "a", "ok": True}, {"name": "b", "ok": False}])
+    probes = json.dumps(
+        [
+            {"category": "bin", "name": "a", "status": "pass"},
+            {"category": "daemon", "name": "b", "status": "fail"},
+        ]
+    )
     with patch.object(steward_status, "run_capturing", return_value=(1, probes)):
         summary = steward_status.health_check_summary()
     assert summary["available"] is True
-    assert summary["failing"] == ["b"]
+    assert summary["failing"] == ["daemon/b"]
 
 
 def test_health_check_summary_marks_unavailable_when_missing():

@@ -103,14 +103,15 @@ def health_check_summary() -> dict:
     except json.JSONDecodeError:
         return {"available": True, "parse_error": True, "exit_code": return_code}
     probes = parsed if isinstance(parsed, list) else parsed.get("probes", [])
-    failing = [
-        probe for probe in probes if not probe.get("ok", probe.get("passed", True))
-    ]
+    failing = [probe for probe in probes if probe.get("status", "pass") != "pass"]
     return {
         "available": True,
         "exit_code": return_code,
         "total": len(probes),
-        "failing": [probe.get("name", "?") for probe in failing],
+        "failing": [
+            f"{probe.get('category', '?')}/{probe.get('name', '?')}"
+            for probe in failing
+        ],
     }
 
 
