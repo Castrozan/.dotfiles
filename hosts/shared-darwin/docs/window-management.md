@@ -1,13 +1,21 @@
 ## Window Management
 
-AeroSpace is the window manager. All windows live on macOS Space 1; AeroSpace simulates virtual workspaces by moving inactive ones offscreen rather than using macOS Spaces. macOS-native tools (Mission Control, AltTab) therefore see every window as being on the same space — anything that needs workspace awareness has to go through AeroSpace's CLI or socket.
+The window manager is a custom Hammerspoon virtual-workspace grid (`home/darwin/desktop/hammerspoon/workspace_grid.lua`), **not AeroSpace**. AeroSpace was the prior system; it was dropped because its ad-hoc-signed fork's disk access deadlocked under SophosCryptoGuard, whereas Hammerspoon is notarized (Developer ID) and Sophos trusts it.
 
-AeroSpace's config lives at `~/.config/aerospace/aerospace.toml` as a mutable file outside the nix store. The backup branch `backup/aerospace-workspaces` carries the corresponding nix module at `home/{base,linux,darwin}/desktop/aerospace.nix` if declarative management is wanted later.
+The grid simulates a 7x3 = 21-workspace layout on a single macOS Space by show/hiding windows rather than using macOS Spaces: standard windows on the active workspace are maximized (accordion), inactive-workspace windows are parked far offscreen (`x = -1000000`), and dialogs/panels float and restore to their saved position on switch. macOS-native tools (Mission Control, AltTab) therefore see every window as being on the same Space — anything that needs workspace awareness goes through this module.
+
+### Workspace state survives reloads
+
+The window->workspace map and the active workspace are held in memory and **persisted to disk** (`home/darwin/desktop/hammerspoon/workspace_grid_persistence.lua`, default `~/.cache/hammerspoon/workspace-grid-state`) on every change. `init.lua` restores them on load before re-parking windows. Without this, a Hammerspoon reload — which **every config redeploy on rebuild triggers** — would wipe the in-memory map and collapse every window onto workspace 1. The state file format is plain text: first line is the active workspace number, each remaining line is `<window-id> <workspace-number>`.
 
 ### Cmd+Tab — workspace-aware switching
 
-macOS intercepts Cmd+Tab at the WindowServer level before any app can catch it. Karabiner operates at the HID layer (lower) and wins the race; the rule fires `to.send_user_command` which sends a UNIX datagram directly into the workspace-window-switcher daemon at `/tmp/workspace-switcher.sock`. The daemon queries AeroSpace for windows on the focused workspace, presents an MRU-ordered overlay, and on commit calls `aerospace focus --window-id` to switch. End-to-end keystroke handling is sub-millisecond on the karabiner side. The IPC mechanism and why it replaced the previous fork+exec path is documented in `home/{base,linux,darwin}/desktop/karabiner/README.md`. Daemon sources live at `hosts/macbook/scripts/workspace-window-switcher-daemon-swift-sources/`.
+macOS intercepts Cmd+Tab at the WindowServer level before any app can catch it. Karabiner operates at the HID layer (lower) and wins the race; the rule sends a UNIX datagram into the workspace-window-switcher daemon at `/tmp/workspace-switcher.sock`. The daemon (`hosts/shared-darwin/workspace-window-switcher/`, Swift) renders an MRU-ordered overlay and handles the hold-cmd / cycle / release-to-commit interaction. It reads the active workspace's windows from a JSON file that `switcher_bridge.lua` keeps fresh (`/tmp/workspace-window-switcher-windows.json`) and requests focus by writing a window id to a file that module watches (`/tmp/workspace-window-switcher-focus-request`) — keeping focus in Hammerspoon avoids the daemon needing its own Accessibility/Screen-Recording grants. The IPC mechanism is documented in `home/darwin/desktop/karabiner/README.md`.
+
+### Keybindings
+
+Bound in `init.lua`: Cmd+1..7 switch workspace, Cmd+Shift+1..7 move the focused window to a workspace, Ctrl+Alt+arrows (and Cmd+Alt+arrows) navigate the grid, Ctrl+Alt+Shift+arrows (and Cmd+Alt+Shift+arrows) carry the focused window with you. Summon Brave/Chrome to the current workspace is invoked from Karabiner (Cmd+B / Cmd+C via `hs -c`) rather than an `hs.hotkey`, so the Karabiner Ctrl+C→Cmd+C remap does not steal copy.
 
 ### AltTab
 
-Installed via homebrew cask, configured declaratively in `hosts/macbook/default.nix` under `CustomUserPreferences."com.lwouis.alt-tab-macos"`. The `holdShortcut` preference uses a dict format that nix-darwin's `defaults write` does not serialize correctly, so the Cmd+Tab shortcut must be set manually in AltTab's GUI. AltTab is unused for Cmd+Tab now that the AeroSpace workspace switcher exists, but remains installed as a fallback.
+Installed via homebrew cask as a fallback. Unused for Cmd+Tab now that the workspace-window-switcher daemon exists.

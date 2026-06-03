@@ -58,7 +58,9 @@ windowEventWatcher:subscribe(hs.window.filter.windowFocused, function(window)
   workspaceGrid.onWindowFocused(window)
 end)
 
+workspaceGrid.restorePersistedWorkspaceState()
 workspaceGrid.registerExistingWindowsOnFirstWorkspace()
+workspaceGrid.switchToWorkspace(workspaceGrid.currentWorkspaceNumber())
 
 function currentWorkspaceForTest()
   return workspaceGrid.currentWorkspaceNumber()

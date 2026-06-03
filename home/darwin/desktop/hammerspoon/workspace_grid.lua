@@ -19,6 +19,7 @@ local workspaceNumberByWindowId = {}
 local savedFloatingFrameByWindowId = {}
 local currentWorkspaceNumber = firstWorkspaceNumber
 local menuBarIndicator = require("workspace_grid_menubar")
+local workspaceGridPersistence = require("workspace_grid_persistence")
 
 local function manageableWindows()
 	return hs.window.filter.default:getWindows()
@@ -83,6 +84,7 @@ function workspaceGrid.switchToWorkspace(targetWorkspaceNumber, preferredFocusWi
 		windowToRefocus:focus()
 	end
 	menuBarIndicator.render(currentWorkspaceNumber, totalWorkspaceCount)
+	workspaceGridPersistence.save(currentWorkspaceNumber, workspaceNumberByWindowId)
 end
 
 function workspaceGrid.moveFocusedWindowToWorkspace(targetWorkspaceNumber)
@@ -122,6 +124,7 @@ function workspaceGrid.summonApplicationToCurrentWorkspace(applicationName)
 		workspaceNumberByWindowId[window:id()] = currentWorkspaceNumber
 		showWindowOnScreen(window)
 		window:focus()
+		workspaceGridPersistence.save(currentWorkspaceNumber, workspaceNumberByWindowId)
 	end
 end
 
@@ -152,6 +155,7 @@ function workspaceGrid.focusWindowById(windowId)
 		workspaceNumberByWindowId[windowId] = currentWorkspaceNumber
 		window:focus()
 		showWindowOnScreen(window)
+		workspaceGridPersistence.save(currentWorkspaceNumber, workspaceNumberByWindowId)
 	end
 end
 
@@ -161,6 +165,7 @@ function workspaceGrid.onWindowCreated(window)
 		if windowIsTileable(window) then
 			showWindowOnScreen(window)
 		end
+		workspaceGridPersistence.save(currentWorkspaceNumber, workspaceNumberByWindowId)
 	end
 end
 
@@ -177,6 +182,14 @@ function workspaceGrid.registerExistingWindowsOnFirstWorkspace()
 		end
 	end
 	menuBarIndicator.render(currentWorkspaceNumber, totalWorkspaceCount)
+end
+
+function workspaceGrid.restorePersistedWorkspaceState()
+	local restoredCurrentWorkspaceNumber, restoredAssignments = workspaceGridPersistence.load()
+	currentWorkspaceNumber = restoredCurrentWorkspaceNumber or currentWorkspaceNumber
+	for windowId, workspaceNumber in pairs(restoredAssignments) do
+		workspaceNumberByWindowId[windowId] = workspaceNumber
+	end
 end
 
 function workspaceGrid.currentWorkspaceNumber()
