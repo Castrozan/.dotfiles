@@ -65,9 +65,10 @@ in
       (builtins.hasAttr ".claude/settings.json.nix-source" cfg.home.file)
       "settings.json.nix-source should be in home.file (mutable settings.json is seeded from this)";
 
-  claude-hooks-directory =
-    mkEvalCheck "claude-hooks-directory" (hasFilePrefix ".claude/hooks/")
-      "hooks directory entries should be in home.file";
+  claude-hooks-deployed-as-single-directory =
+    mkEvalCheck "claude-hooks-deployed-as-single-directory"
+      (builtins.hasAttr ".claude/hooks" cfg.home.file && !(hasFilePrefix ".claude/hooks/"))
+      "hooks must deploy as one atomic directory symlink (home.file.\".claude/hooks\"), never per-file entries; per-file relinking transiently removes helper modules mid-rebuild and breaks hook imports";
 
   claude-skills-directory =
     mkEvalCheck "claude-skills-directory" (hasFilePrefix ".claude/skills/")

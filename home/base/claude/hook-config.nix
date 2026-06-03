@@ -30,6 +30,11 @@ in
           command = "${runHook} ${hooksPath}/prohibited-command-guard.py";
           timeout = 3000;
         }
+        {
+          type = "command";
+          command = "${runHook} ${hooksPath}/prohibited-words-guard.py";
+          timeout = 3000;
+        }
       ];
     }
     {
