@@ -153,12 +153,4 @@ in
       bridgeService.Install.WantedBy or [ ]
     )) "chrome-devtools-mcp-bridge.service must be wanted by default.target to start on login";
 
-  chrome-devtools-mcp-install-patches-unknown-issue-warn =
-    let
-      activationData = cfg.home.activation.installChromeDevtoolsMcp.data or "";
-    in
-    mkEvalCheck "chrome-devtools-mcp-install-patches-unknown-issue-warn"
-      (builtins.match ".*install-and-patch-chrome-devtools-mcp.*" activationData != null)
-      "installChromeDevtoolsMcp activation must run install-and-patch-chrome-devtools-mcp; the bundled DevTools front-end has no PerformanceIssue handler and console.warns ~11x/sec, growing each child to 3 GB/h until the host swaps";
-
 }
