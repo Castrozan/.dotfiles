@@ -19,8 +19,7 @@ let
     map (alias: {
       name = alias;
       value = {
-        host = stewardNetworkRegistry.${alias}.host;
-        user = stewardNetworkRegistry.${alias}.user;
+        inherit (stewardNetworkRegistry.${alias}) host user;
         identity_file = "~/.ssh/id_ed25519";
       };
     }) peerAliases
