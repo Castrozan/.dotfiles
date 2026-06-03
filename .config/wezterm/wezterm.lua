@@ -45,6 +45,7 @@ local config = {
   max_fps = 120,
   window_decorations = 'RESIZE',
   use_resize_increments = false,
+  adjust_window_size_when_changing_font_size = false,
   window_background_opacity = 0.85,
   macos_window_background_blur = 20,
 
