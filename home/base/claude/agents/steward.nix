@@ -53,7 +53,12 @@ let
   ];
 in
 {
-  home.file."clawde/steward/peers.json".text = builtins.toJSON peersConfiguration;
+  home.file = {
+    "clawde/steward/peers.json".text = builtins.toJSON peersConfiguration;
+
+    ".local/share/claude-skill-sets/steward/.claude/skills/steward".source =
+      config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.dotfiles/agents/skills/steward";
+  };
 
   clawde.agents.steward = {
     model = "opus";
