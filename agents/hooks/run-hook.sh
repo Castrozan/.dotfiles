@@ -14,8 +14,6 @@ if [[ ! -f "$HOOK_SCRIPT" ]]; then
 	exit 1
 fi
 
-# ~/.claude/hooks is a read-only nix store symlink, so route Python bytecode to a
-# writable cache; otherwise helper modules recompile on every tool call.
 export PYTHONPYCACHEPREFIX="${XDG_CACHE_HOME:-$HOME/.cache}/claude-code-hooks/pycache"
 
 python3 "$HOOK_SCRIPT" "$@"

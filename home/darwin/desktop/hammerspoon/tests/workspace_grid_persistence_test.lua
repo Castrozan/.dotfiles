@@ -1,7 +1,3 @@
--- Reproduces the "every window jumps to workspace 1 on rebuild" bug: a Hammerspoon
--- reload wipes the in-memory window->workspace map, so assignments and the active
--- workspace must survive a reload by being persisted to disk and restored on load.
-
 local moduleDirectory = arg[0]:gsub("tests/[^/]*$", "")
 package.path = moduleDirectory .. "?.lua;" .. package.path
 
@@ -63,7 +59,6 @@ local function loadFreshGrid()
   return grid
 end
 
--- First Hammerspoon run: assign window 102 to workspace 3, leave on workspace 2.
 local grid = loadFreshGrid()
 grid.registerExistingWindowsOnFirstWorkspace()
 windows[2]:focus()
@@ -71,7 +66,6 @@ grid.moveFocusedWindowToWorkspace(3)
 grid.switchToWorkspace(2)
 expectEqual("active workspace is 2 before reload", 2, grid.currentWorkspaceNumber())
 
--- Reload: fresh in-memory state, then restore from disk.
 local reloadedGrid = loadFreshGrid()
 reloadedGrid.restorePersistedWorkspaceState()
 

@@ -1,8 +1,3 @@
--- Persists the virtual-workspace grid's window->workspace assignments and the
--- active workspace to disk, so a Hammerspoon reload (every config redeploy on
--- rebuild triggers one) restores them instead of collapsing every window onto
--- workspace 1. Kept separate from the grid so each module has one responsibility.
-
 local workspaceGridPersistence = {}
 
 local stateFilePathOverrideForTest = nil

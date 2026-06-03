@@ -12,7 +12,7 @@ User is a senior engineer. Be direct and technical. Concise answers. If user is 
 </user>
 
 <code-style>
-No comments in code - names replace comments. Functions, variables, files, directories must be long, descriptive, and self-explanatory because that is how we achieve zero comments. Never abbreviate. Follow existing patterns. Single Responsibility Principle: each function does one thing, each script has one purpose. When a function grows beyond one responsibility, split it.
+Write zero comments, ever, in any language: no inline comments, no docstrings, no module or section header banners, no commented-out code, no TODO notes. Names carry all meaning - make functions, variables, files, and directories long, descriptive, and self-explanatory; never abbreviate. Legacy files still carrying comments do not license new ones: match their surrounding style but never add a comment, and drop comments you would otherwise have written. Follow existing patterns. Single Responsibility Principle: each function does one thing, each script has one purpose. When a function grows beyond one responsibility, split it.
 </code-style>
 
 <scripts>

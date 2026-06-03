@@ -5,8 +5,6 @@ require("hs.ipc")
 local workspaceGrid = require("workspace_grid")
 local menuBarIndicator = require("workspace_grid_menubar")
 
--- Hammerspoon reloads on every config redeploy; delete the menu-bar indicator on
--- the way out so reloads do not pile up orphaned indicators frozen at stale workspaces.
 hs.shutdownCallback = function()
   menuBarIndicator.deleteIndicator()
 end

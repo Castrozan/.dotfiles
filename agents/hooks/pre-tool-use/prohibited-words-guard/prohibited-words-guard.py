@@ -1,24 +1,4 @@
 #!/usr/bin/env python3
-"""Block tool calls that would leak prohibited words outside private repos.
-
-The wordlist lives in the private-config submodule so the words themselves never
-enter the public dotfiles repo. This script carries none of them; it loads them
-at runtime. If the wordlist is absent or empty the hook is a no-op.
-
-Inspected leak vectors:
-  - file names  (Write / Edit / NotebookEdit / MultiEdit destination paths)
-  - file contents (new content written; Edit checks only the replacement text,
-    never the removed text, so scrubbing a word out is never blocked)
-  - publishing commands (git commit / tag, gh pr / issue / release, glab mr /
-    issue) whose message text would land in shared history
-
-Paths and commands scoped to private-config are exempt.
-
-Exit codes:
-  0 - allow the tool call.
-  2 - block the tool call (prohibited word would leak).
-"""
-
 from __future__ import annotations
 
 import json

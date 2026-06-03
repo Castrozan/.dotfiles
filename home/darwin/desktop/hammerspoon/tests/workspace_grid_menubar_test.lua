@@ -1,9 +1,3 @@
--- Reproduces the stale-menubar bug: Hammerspoon reloads on every config redeploy,
--- and each load creates a new menu-bar item. Without deleting the old one on the way
--- out, orphaned indicators pile up frozen at the workspace they showed at reload time,
--- so the bar can display a workspace different from the live one. A reload must leave
--- exactly one indicator, showing the live workspace.
-
 local moduleDirectory = arg[0]:gsub("tests/[^/]*$", "")
 package.path = moduleDirectory .. "?.lua;" .. package.path
 
@@ -44,8 +38,6 @@ menuBar.render(2, 7)
 expectEqual("first load shows exactly one indicator", 1, liveMenuBarCount())
 expectEqual("the indicator brackets the active workspace", "1 [2] 3 4 5 6 7", createdMenuBars[1].title)
 
--- A config redeploy reloads Hammerspoon: hs.shutdownCallback deletes the old indicator
--- (init.lua wires it to deleteIndicator), then a fresh require creates a new one.
 local function simulateReload()
   menuBar.deleteIndicator()
   package.loaded["workspace_grid_menubar"] = nil

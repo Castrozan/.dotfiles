@@ -4,13 +4,6 @@
   lib,
   ...
 }:
-# Deploys the work AWS SSO profile config so `aws sso login --profile <name>`
-# (the vt_prod / vt_test aliases in private-config/shell/aliases.sh) can resolve.
-# The file lives in the private-config submodule because it carries the account
-# ids and the company SSO start url. It holds no credentials - real tokens are
-# written by `aws sso login` into ~/.aws/sso/cache - so it needs no agenix.
-# Copied (not symlinked) to keep private content out of the world-readable nix
-# store and to leave ~/.aws writable for the aws cli, matching jira.nix.
 let
   awsConfigSource = "${toString ../../../private-config}/aws/config";
   awsConfigSourceExists = builtins.pathExists awsConfigSource;
