@@ -83,6 +83,35 @@ def invoke_prohibited_command_guard_hook_with_raw_stdin():
     return runner
 
 
+PROHIBITED_WORDS_GUARD_HOOK_SCRIPT_PATH = find_hook_module_path(
+    "prohibited-words-guard"
+)
+
+
+def run_prohibited_words_guard(payload: dict) -> subprocess.CompletedProcess:
+    return subprocess.run(
+        [sys.executable, str(PROHIBITED_WORDS_GUARD_HOOK_SCRIPT_PATH)],
+        input=json.dumps(payload),
+        capture_output=True,
+        text=True,
+        timeout=5,
+    )
+
+
+@pytest.fixture
+def invoke_prohibited_words_guard_hook(tmp_path, monkeypatch):
+    wordlist_file = tmp_path / "prohibited-words.txt"
+    wordlist_file.write_text("# fake words\nacme\ninitech\n", encoding="utf-8")
+    monkeypatch.setenv("PROHIBITED_WORDS_FILE", str(wordlist_file))
+    return run_prohibited_words_guard
+
+
+@pytest.fixture
+def invoke_prohibited_words_guard_hook_without_wordlist(tmp_path, monkeypatch):
+    monkeypatch.setenv("PROHIBITED_WORDS_FILE", str(tmp_path / "missing-wordlist.txt"))
+    return run_prohibited_words_guard
+
+
 @pytest.fixture
 def invoke_line_count_advisory_guard_hook():
     def runner(payload: dict) -> subprocess.CompletedProcess:
