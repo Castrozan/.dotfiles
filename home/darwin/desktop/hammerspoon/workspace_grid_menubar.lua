@@ -21,4 +21,13 @@ function workspaceGridMenuBar.render(currentWorkspaceNumber, totalWorkspaceCount
   menuBarIndicatorHandle:setTitle(table.concat(segments, " "))
 end
 
+-- Called from hs.shutdownCallback before a reload so the old indicator is removed
+-- instead of lingering as an orphan frozen at the workspace it last showed.
+function workspaceGridMenuBar.deleteIndicator()
+  if menuBarIndicatorHandle then
+    menuBarIndicatorHandle:delete()
+    menuBarIndicatorHandle = nil
+  end
+end
+
 return workspaceGridMenuBar

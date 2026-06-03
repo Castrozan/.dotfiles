@@ -3,6 +3,13 @@ require("hs.ipc")
 -- Wiring only: bind the prior AeroSpace keybinds to the virtual-workspace grid
 -- defined in workspace_grid.lua, and feed it window create/focus events.
 local workspaceGrid = require("workspace_grid")
+local menuBarIndicator = require("workspace_grid_menubar")
+
+-- Hammerspoon reloads on every config redeploy; delete the menu-bar indicator on
+-- the way out so reloads do not pile up orphaned indicators frozen at stale workspaces.
+hs.shutdownCallback = function()
+  menuBarIndicator.deleteIndicator()
+end
 
 for columnNumber = 1, workspaceGrid.columns do
   hs.hotkey.bind({ "cmd" }, tostring(columnNumber), function()
