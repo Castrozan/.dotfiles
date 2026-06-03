@@ -12,6 +12,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from continuous_integration_status import continuous_integration_status_for_revision
+
 
 def dotfiles_directory() -> Path:
     return Path(os.environ.get("STEWARD_DOTFILES_DIR", str(Path.home() / ".dotfiles")))
@@ -137,11 +139,16 @@ def build_report() -> dict:
     validated_revision = last_validated_revision()
     inbox = unread_inbox_messages()
     health = health_check_summary()
+    continuous_integration = continuous_integration_status_for_revision(
+        repository, upstream_revision, run_capturing
+    )
 
     needs_validation = head_revision != validated_revision or dirty
     needs_sync = behind > 0
     needs_push = ahead > 0
     has_mail = bool(inbox)
+    continuous_integration_failing = continuous_integration.get("state") == "failing"
+    continuous_integration_pending = continuous_integration.get("state") == "pending"
 
     if needs_sync:
         verdict = "needs_sync"
@@ -149,8 +156,12 @@ def build_report() -> dict:
         verdict = "needs_validation"
     elif needs_push:
         verdict = "needs_push"
+    elif continuous_integration_failing:
+        verdict = "ci_failing"
     elif has_mail:
         verdict = "has_mail"
+    elif continuous_integration_pending:
+        verdict = "ci_pending"
     else:
         verdict = "clean"
 
@@ -167,6 +178,9 @@ def build_report() -> dict:
         "needs_sync": needs_sync,
         "needs_validation": needs_validation,
         "needs_push": needs_push,
+        "continuous_integration": continuous_integration,
+        "continuous_integration_failing": continuous_integration_failing,
+        "continuous_integration_pending": continuous_integration_pending,
         "health": health,
         "inbox_unread": inbox,
         "verdict": verdict,
