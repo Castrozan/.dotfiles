@@ -1,6 +1,8 @@
-{ pkgs, ... }:
+{ pkgs, config, ... }:
 let
   dotfilesSkillsDirectory = ../../../agents/skills;
+
+  liveDotfilesSkillsDirectory = "${config.home.homeDirectory}/.dotfiles/agents/skills";
 
   globallyLoadedSkillNames = [ "personal" ];
 
@@ -54,15 +56,26 @@ let
     ];
   };
 
+  # The steward syncs the repo it stewards, so its own skill loads live from that
+  # checkout via an out-of-store symlink rather than a build-time snapshot: rule
+  # changes merged to main reach every machine's steward on git pull, no rebuild.
+  # Bootstrapping the symlink itself still takes one rebuild per machine.
+  curatedSkillSetSourceAttrs =
+    setName: skillDirectoryName:
+    if setName == "steward" && skillDirectoryName == "steward" then
+      { source = config.lib.file.mkOutOfStoreSymlink "${liveDotfilesSkillsDirectory}/steward"; }
+    else
+      {
+        source = dotfilesSkillsDirectory + "/${skillDirectoryName}";
+        recursive = true;
+      };
+
   claudeSkillsForCuratedSet =
     setName: skillNames:
     builtins.listToAttrs (
       map (skillDirectoryName: {
         name = ".local/share/claude-skill-sets/${setName}/.claude/skills/${skillDirectoryName}";
-        value = {
-          source = dotfilesSkillsDirectory + "/${skillDirectoryName}";
-          recursive = true;
-        };
+        value = curatedSkillSetSourceAttrs setName skillDirectoryName;
       }) (builtins.filter (skillName: builtins.elem skillName allSkillNames) skillNames)
     );
 
