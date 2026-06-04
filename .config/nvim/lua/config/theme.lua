@@ -1,7 +1,3 @@
-local wallpaper_palette = require("config.theme.wallpaper_palette")
-local transparency = require("config.theme.transparency")
-local markdown_heading_backgrounds = require("config.theme.markdown_heading_backgrounds")
-
 local dynamic_theme = {}
 
 local theme_change_signal_file_path = vim.fn.expand("~/.config/hypr-theme/current/theme.name")
@@ -10,8 +6,8 @@ local active_background_hex = "#05070e"
 
 local function schedule_background_clear()
   vim.schedule(function()
-    transparency.clear_backgrounds_to_let_terminal_show_through()
-    markdown_heading_backgrounds.soften_against_background(active_background_hex)
+    require("config.theme.transparency").clear_backgrounds_to_let_terminal_show_through()
+    require("config.theme.markdown_heading_backgrounds").soften_against_background(active_background_hex)
   end)
 end
 
@@ -20,10 +16,18 @@ function dynamic_theme.apply()
   if not base16_module_is_available then
     return
   end
-  local base16_palette = wallpaper_palette.read_and_map_to_base16()
+  local base16_palette = require("config.theme.wallpaper_palette").read_and_map_to_base16()
   active_background_hex = base16_palette.base00
   base16_module.setup(base16_palette)
   schedule_background_clear()
+end
+
+local function forget_cached_theme_submodules_so_next_require_reads_disk()
+  for module_name in pairs(package.loaded) do
+    if module_name:match("^config%.theme%.") then
+      package.loaded[module_name] = nil
+    end
+  end
 end
 
 local wallpaper_theme_change_watcher
@@ -70,8 +74,9 @@ function dynamic_theme.setup_live_reload_on_wallpaper_change()
   })
 
   vim.api.nvim_create_user_command("ThemeReload", function()
+    forget_cached_theme_submodules_so_next_require_reads_disk()
     dynamic_theme.apply()
-  end, { desc = "Re-read the wallpaper palette and re-apply the dynamic theme" })
+  end, { desc = "Reload theme submodules from disk and re-apply the dynamic theme" })
 end
 
 return dynamic_theme
