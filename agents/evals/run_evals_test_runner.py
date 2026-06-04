@@ -53,7 +53,7 @@ def run_claude_cli(
     timeout: int = 120,
     no_tools: bool = False,
 ) -> tuple[str, bool]:
-    cmd = ["claude", "-p", "--model", model]
+    cmd = ["claude", "-p", "--model", model, "--strict-mcp-config"]
 
     if no_tools:
         cmd.extend(["--tools", ""])
