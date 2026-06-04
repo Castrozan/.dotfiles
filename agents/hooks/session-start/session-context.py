@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """session-context.py - Show relevant context at session start."""
 
+from __future__ import annotations
+
 import json
 import sys
 from datetime import datetime

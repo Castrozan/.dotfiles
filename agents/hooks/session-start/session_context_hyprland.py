@@ -1,5 +1,7 @@
 """Detect and summarize the current Hyprland workspace + windows for session context."""
 
+from __future__ import annotations
+
 import json
 
 from session_context_command_runner import run_cmd

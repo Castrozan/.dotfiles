@@ -1,5 +1,7 @@
 """Render gathered context dictionaries into the human-readable banner sections."""
 
+from __future__ import annotations
+
 from datetime import datetime
 from typing import Any, Dict
 

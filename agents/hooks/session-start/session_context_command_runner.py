@@ -1,5 +1,7 @@
 """Run external commands with a bounded timeout for context gathering."""
 
+from __future__ import annotations
+
 import subprocess
 
 
