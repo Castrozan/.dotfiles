@@ -35,7 +35,7 @@ local function occupiedWorkspaceNumbers()
 end
 
 local function renderMenuBarIndicator()
-	menuBarIndicator.render(currentWorkspaceNumber, workspaceGridColumns, occupiedWorkspaceNumbers(), totalWorkspaceCount)
+	menuBarIndicator.render(currentWorkspaceNumber, workspaceGridColumns, occupiedWorkspaceNumbers())
 end
 
 function workspaceGrid.switchToWorkspace(targetWorkspaceNumber, preferredFocusWindow)
