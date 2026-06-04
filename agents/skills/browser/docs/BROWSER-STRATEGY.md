@@ -1,6 +1,6 @@
 # Browser Automation Strategy
 
-Two tools, different strengths. Browser Use is the default; Chrome DevTools MCP is for stealth.
+Three tools, different strengths. Browser Use is the default; Chrome DevTools MCP is for stealth; PinchTab is the CLI fallback when the MCP transports are flaky or you need a stable already-authenticated local session.
 
 ## Browser Use MCP - primary, general purpose
 
@@ -14,6 +14,14 @@ Use exclusively for Google Workspace, sites behind Cloudflare/PerimeterX bot det
 
 Tradeoff: single Chrome Global instance, sequential. Requires user to have remote debugging enabled in Chrome.
 
+## PinchTab CLI - resilient fallback, persistent auth
+
+No MCP - a `pinchtab` binary driven from bash, so it keeps working when an MCP transport drops mid-session (the recurring chrome-devtools failure mode). Runs its own server on `localhost:9867` with a persistent Chrome profile, so a one-time headed login stays authenticated across runs - it renders authed local apps (e.g. a CA3-backed dev server) without re-login.
+
+Reach for it when: the MCP tools are flaky or disconnected, you need a stable already-logged-in session for a local/dev app, or you want screenshot/snapshot verification driven entirely from the shell. Core loop: `pinchtab nav <url>` -> `pinchtab snap` (a11y refs, prefer over pixels) -> `pinchtab screenshot --output <file>` then Read the file; interact with `pinchtab click <ref>` / `type <ref> <text>`; `pinchtab server -H` for a visible window to log in. See the skill's `pinchtab_workflow` for the command list.
+
+Tradeoff: guards are UP by default (only localhost/127.0.0.1 allowed; `server -y` lowers them); its profile is separate from the user's real Chrome, so it is not a stealth substitute for bot-detecting sites.
+
 ## Decision matrix
 
 | Scenario | Tool |
@@ -24,3 +32,6 @@ Tradeoff: single Chrome Global instance, sequential. Requires user to have remot
 | Parallel browser sessions | Browser Use |
 | Google services, banking, authenticated sites | Chrome DevTools MCP |
 | Sites with aggressive bot detection + need local auth | Chrome DevTools MCP |
+| MCP transport flaky / disconnected mid-task | PinchTab CLI |
+| Authed local/dev app, want a session that stays logged in | PinchTab CLI |
+| Shell-driven screenshot/snapshot verification | PinchTab CLI |
