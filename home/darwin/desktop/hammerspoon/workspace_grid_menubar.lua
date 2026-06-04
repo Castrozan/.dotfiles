@@ -17,7 +17,7 @@ local function cellAttributes(isActive, isOccupied)
   return { color = labelColor }
 end
 
-function workspaceGridMenuBar.render(currentWorkspaceNumber, columnsPerRow, occupiedWorkspaceNumbers)
+function workspaceGridMenuBar.render(currentWorkspaceNumber, columnsPerRow, occupiedWorkspaceNumbers, totalWorkspaceCount)
   if not menuBarIndicatorHandle then
     return
   end
@@ -26,6 +26,7 @@ function workspaceGridMenuBar.render(currentWorkspaceNumber, columnsPerRow, occu
   local firstWorkspaceInRow = rowIndex * columnsPerRow + 1
   local lastWorkspaceInRow = firstWorkspaceInRow + columnsPerRow - 1
   local styledTitle = hs.styledtext.new("")
+  local renderedWidth = 0
   for workspaceNumber = firstWorkspaceInRow, lastWorkspaceInRow do
     local cellText = figureSpace .. workspaceNumber .. figureSpace
     local attributes = cellAttributes(
@@ -33,6 +34,14 @@ function workspaceGridMenuBar.render(currentWorkspaceNumber, columnsPerRow, occu
       occupiedWorkspaceNumbers[workspaceNumber] == true
     )
     styledTitle = styledTitle .. hs.styledtext.new(cellText, attributes)
+    renderedWidth = renderedWidth + utf8.len(cellText)
+  end
+  if totalWorkspaceCount then
+    local widestCellWidth = #tostring(totalWorkspaceCount) + 2
+    local leadingPadding = columnsPerRow * widestCellWidth - renderedWidth
+    if leadingPadding > 0 then
+      styledTitle = hs.styledtext.new(string.rep(figureSpace, leadingPadding)) .. styledTitle
+    end
   end
   menuBarIndicatorHandle:setTitle(styledTitle)
 end
