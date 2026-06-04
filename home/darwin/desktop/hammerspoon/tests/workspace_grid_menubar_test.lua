@@ -60,16 +60,21 @@ local function plainTitle(styledTitle)
   return (table.concat(parts):gsub(figureSpace, " "))
 end
 
-local function titleCharacterWidth(styledTitle)
-  local plain = {}
-  for _, segment in ipairs(styledTitle.segments) do
-    table.insert(plain, segment.text)
-  end
-  return utf8.len(table.concat(plain))
-end
-
 local function cellSegment(styledTitle, firstWorkspaceInRow, workspaceNumber)
   return styledTitle.segments[(workspaceNumber - firstWorkspaceInRow) + 2]
+end
+
+local function everyCellHasEqualWidth(styledTitle)
+  local firstCellWidth = nil
+  for index = 2, #styledTitle.segments do
+    local cellWidth = utf8.len(styledTitle.segments[index].text)
+    if firstCellWidth == nil then
+      firstCellWidth = cellWidth
+    elseif cellWidth ~= firstCellWidth then
+      return false
+    end
+  end
+  return firstCellWidth ~= nil
 end
 
 local function cellColorName(styledTitle, firstWorkspaceInRow, workspaceNumber)
@@ -97,28 +102,24 @@ end
 menuBar.render(2, 7, { [2] = true, [5] = true })
 expectEqual("first load shows exactly one indicator", 1, liveMenuBarCount())
 expectEqual(
-  "every cell has the same width so numbers keep a fixed position",
-  "  1   2   3   4   5   6   7 ",
+  "single-digit numbers sit centered in equal-width cells",
+  " 1  2  3  4  5  6  7 ",
   plainTitle(createdMenuBars[1].title)
 )
+expectEqual("every cell in a row has the same width", true, everyCellHasEqualWidth(createdMenuBars[1].title))
 expectEqual("the active workspace gets the accent background", "controlAccentColor", cellBackgroundName(createdMenuBars[1].title, 1, 2))
 expectEqual("the active workspace text contrasts against the accent", "selectedMenuItemTextColor", cellColorName(createdMenuBars[1].title, 1, 2))
 expectEqual("an occupied workspace uses the accent text color", "controlAccentColor", cellColorName(createdMenuBars[1].title, 1, 5))
 expectEqual("an occupied workspace has no background", nil, cellBackgroundName(createdMenuBars[1].title, 1, 5))
 expectEqual("an unoccupied workspace uses the solid label color", "labelColor", cellColorName(createdMenuBars[1].title, 1, 1))
 
-local firstRowCharacterWidth = titleCharacterWidth(createdMenuBars[1].title)
 menuBar.render(18, 7, { [18] = true })
 expectEqual(
   "the third row shows its own seven workspaces",
   " 15  16  17  18  19  20  21 ",
   plainTitle(createdMenuBars[1].title)
 )
-expectEqual(
-  "every row renders to the same character width",
-  firstRowCharacterWidth,
-  titleCharacterWidth(createdMenuBars[1].title)
-)
+expectEqual("every double-digit cell in a row has the same width", true, everyCellHasEqualWidth(createdMenuBars[1].title))
 
 local function simulateReload()
   menuBar.deleteIndicator()
@@ -132,7 +133,7 @@ menuBar.render(1, 7)
 expectEqual("a reload leaves exactly one indicator, no orphan frozen at the old workspace", 1, liveMenuBarCount())
 expectEqual(
   "the surviving indicator shows the live workspace, not a stale one",
-  "  1   2   3   4   5   6   7 ",
+  " 1  2  3  4  5  6  7 ",
   plainTitle(createdMenuBars[#createdMenuBars].title)
 )
 expectEqual(

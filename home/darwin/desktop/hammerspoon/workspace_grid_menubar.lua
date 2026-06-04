@@ -7,13 +7,6 @@ local accentColor = { list = "System", name = "controlAccentColor" }
 local labelColor = { list = "System", name = "labelColor" }
 local activeTextColor = { list = "System", name = "selectedMenuItemTextColor" }
 
-local function paddedNumberText(workspaceNumber)
-  if workspaceNumber < 10 then
-    return figureSpace .. workspaceNumber
-  end
-  return tostring(workspaceNumber)
-end
-
 local function cellAttributes(isActive, isOccupied)
   if isActive then
     return { color = activeTextColor, backgroundColor = accentColor }
@@ -34,7 +27,7 @@ function workspaceGridMenuBar.render(currentWorkspaceNumber, columnsPerRow, occu
   local lastWorkspaceInRow = firstWorkspaceInRow + columnsPerRow - 1
   local styledTitle = hs.styledtext.new("")
   for workspaceNumber = firstWorkspaceInRow, lastWorkspaceInRow do
-    local cellText = figureSpace .. paddedNumberText(workspaceNumber) .. figureSpace
+    local cellText = figureSpace .. workspaceNumber .. figureSpace
     local attributes = cellAttributes(
       workspaceNumber == currentWorkspaceNumber,
       occupiedWorkspaceNumbers[workspaceNumber] == true
