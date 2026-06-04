@@ -8,6 +8,13 @@ return {
             hidden = true,
             follow = true,
             ignored = true,
+            win = {
+              list = {
+                keys = {
+                  ["<c-n>"] = "explorer_add",
+                },
+              },
+            },
           },
         },
       },
