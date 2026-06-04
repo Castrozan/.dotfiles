@@ -23,6 +23,8 @@ local exact_highlight_groups_to_make_transparent = {
   "SnacksPickerBoxBorder",
   "SnacksPickerListBorder",
   "SnacksPickerInputBorder",
+  "RenderMarkdownCode",
+  "RenderMarkdownCodeInline",
 }
 
 local function strip_background_from_highlight_group(group_name)
