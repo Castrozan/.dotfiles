@@ -4,11 +4,13 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 
 import run_evals_worktree_and_environment
+from run_evals_assertions import check_assertions
 from run_evals_config_loader import resolve_system_prompt_for_test
 from run_evals_worktree_and_environment import build_filtered_environment
 
 DEFAULT_PARALLEL_WORKERS = 3
-TIMEOUT_RETRY_ATTEMPTS = 1
+TRANSIENT_RETRY_ATTEMPTS = 2
+TRANSIENT_RETRY_BACKOFF_SECONDS = 3
 
 
 @dataclass
@@ -19,31 +21,6 @@ class TestResult:
     output: str
     assertions_failed: list[str]
     error: str | None = None
-
-
-def check_assertions(output: str, assertions: dict) -> list[str]:
-    failures = []
-
-    if "output_contains" in assertions:
-        for expected in assertions["output_contains"]:
-            if expected.lower() not in output.lower():
-                failures.append(f"Expected '{expected}' in output")
-
-    if "output_not_contains" in assertions:
-        for forbidden in assertions["output_not_contains"]:
-            if forbidden.lower() in output.lower():
-                failures.append(f"Unexpected '{forbidden}' in output")
-
-    if "output_contains_any" in assertions:
-        found = any(
-            exp.lower() in output.lower() for exp in assertions["output_contains_any"]
-        )
-        if not found:
-            failures.append(
-                f"Expected one of {assertions['output_contains_any']} in output"
-            )
-
-    return failures
 
 
 def run_claude_cli(
@@ -63,7 +40,8 @@ def run_claude_cli(
 
     cmd.append(prompt)
 
-    for attempt in range(TIMEOUT_RETRY_ATTEMPTS + 1):
+    last_transient_failure = ""
+    for attempt in range(TRANSIENT_RETRY_ATTEMPTS + 1):
         try:
             result = subprocess.run(
                 cmd,
@@ -73,14 +51,18 @@ def run_claude_cli(
                 cwd=run_evals_worktree_and_environment.EVAL_WORKING_DIRECTORY,
                 env=build_filtered_environment(),
             )
-            return result.stdout + result.stderr, result.returncode == 0
+            if result.returncode == 0:
+                return result.stdout + result.stderr, True
+            last_transient_failure = result.stdout + result.stderr
         except subprocess.TimeoutExpired:
-            if attempt == TIMEOUT_RETRY_ATTEMPTS:
-                return f"Timeout after {timeout}s", False
+            last_transient_failure = f"Timeout after {timeout}s"
         except FileNotFoundError:
             return "claude CLI not found - run 'rebuild' first", False
         except Exception as e:
             return str(e), False
+        if attempt < TRANSIENT_RETRY_ATTEMPTS:
+            time.sleep(TRANSIENT_RETRY_BACKOFF_SECONDS * (attempt + 1))
+    return last_transient_failure, False
 
 
 def run_test(test: dict, settings: dict, dry_run: bool = False) -> TestResult:
