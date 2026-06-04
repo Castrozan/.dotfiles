@@ -110,6 +110,11 @@ local function yiq_luminance_of_hex(color_hex)
   return (red * 299 + green * 587 + blue * 114) / 1000.0
 end
 
+function accent_contrast_floor.lighten_against_background(color_hex, background_hex)
+  local background_red, background_green, background_blue = red_green_blue_from_hex(background_hex)
+  return lighten_hex_until_minimum_contrast(color_hex, background_red, background_green, background_blue)
+end
+
 function accent_contrast_floor.lift_accent_slots_against_background(palette)
   local background_red, background_green, background_blue = red_green_blue_from_hex(palette.background)
   for _, normal_slot_number in ipairs(accent_normal_slot_numbers) do
