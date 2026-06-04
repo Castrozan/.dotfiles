@@ -1,9 +1,3 @@
--- Virtual-workspace window manager replicating the AeroSpace 7x3 grid by
--- show/hiding windows on one macOS Space (Hammerspoon is notarized so Sophos
--- does not block it). Standard windows on the active workspace are maximized
--- (accordion); dialogs/panels float and restore to position on switch. The
--- Cmd+Tab switcher is the separate Swift daemon, fed by switcher_bridge.lua.
-
 local workspaceGrid = {}
 
 local workspaceGridColumns = 7
@@ -27,8 +21,6 @@ end
 local function workspaceOfWindow(window)
 	local windowId = window:id()
 	if workspaceNumberByWindowId[windowId] == nil then
-		-- Default unknown windows to ws 1, never to the switch target (else switching
-		-- to an empty workspace would claim every unassigned window).
 		workspaceNumberByWindowId[windowId] = firstWorkspaceNumber
 	end
 	return workspaceNumberByWindowId[windowId]
@@ -114,8 +106,6 @@ function workspaceGrid.summonApplicationToCurrentWorkspace(applicationName)
 	end
 end
 
--- Consumed by switcher_bridge.lua to feed the Swift Cmd+Tab daemon the active
--- workspace's windows, in the shape its WorkspaceWindow decoder expects.
 function workspaceGrid.currentWorkspaceWindowList()
 	local windows = {}
 	for _, window in ipairs(manageableWindows()) do
