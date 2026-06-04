@@ -5,7 +5,7 @@
 tests:
   - name: why_question_triggers_investigation
     description: "A 'why' question about code is an investigation trigger, not a quick-answer request"
-    skill_path: agents/core.md
+    skill_path: agents/core_rules/core.md
     prompt: |
       The user asked: "why does module A reference module B?" I think I remember the answer from earlier in the conversation. Should I just tell them what I remember?
     model: haiku
@@ -25,7 +25,7 @@ tests:
 
   - name: why_two_files_requires_reading_both
     description: "When asked why two files are related, read both files before answering"
-    skill_path: agents/core.md
+    skill_path: agents/core_rules/core.md
     prompt: |
       The user asked: "why do we have 2 files in this context? what does file X have to do with file Y?" I haven't read either file in this conversation. What should I do?
     model: haiku
@@ -41,7 +41,7 @@ tests:
 
   - name: evidence_before_conclusions
     description: "Agent must gather evidence from actual system before listing problems"
-    skill_path: agents/core.md
+    skill_path: agents/core_rules/core.md
     prompt: |
       I read a SKILL.md file and noticed several things that look wrong. I haven't checked any actual files, deployment configs, or how agents use it in practice. Should I present my findings to the user now?
     model: haiku
@@ -62,7 +62,7 @@ tests:
 
   - name: investigation_traces_to_instructions
     description: "Agent should trace failures to instruction gaps, not just describe symptoms"
-    skill_path: agents/core.md
+    skill_path: agents/core_rules/core.md
     prompt: |
       An agent used the browser skill when it should have used the personal skill's obsidian sub-file. The user had to correct it. What should I investigate to understand why this happened?
     model: haiku
@@ -77,7 +77,7 @@ tests:
 
   - name: analysis_separate_from_implementation
     description: "Agent must complete analysis before jumping to fixes"
-    skill_path: agents/core.md
+    skill_path: agents/core_rules/core.md
     prompt: |
       I found three gaps in a SKILL.md after reading the file and checking actual usage. Should I immediately start rewriting the skill to fix the gaps?
     model: haiku
@@ -97,7 +97,7 @@ tests:
 
   - name: investigation_depth_matches_stakes
     description: "Complex multi-skill failures need deep cross-referencing, not surface reads"
-    skill_path: agents/core.md
+    skill_path: agents/core_rules/core.md
     prompt: |
       An agent failed at a task that spanned three different skills. It loaded the wrong skill, used broken tools, and dismissed user content. I've read the one SKILL.md file that was directly involved. Is that enough investigation?
     model: haiku
@@ -115,7 +115,7 @@ tests:
 
   - name: never_analyze_in_isolation
     description: "Agent must check beyond the single document - actual artifacts, other skills, evals"
-    skill_path: agents/core.md
+    skill_path: agents/core_rules/core.md
     prompt: |
       I need to evaluate whether an instruction skill is working well. I've read the SKILL.md file. What else should I check before concluding?
     model: haiku
