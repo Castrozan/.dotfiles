@@ -30,6 +30,13 @@ end
 
 hs = {
   menubar = { new = function() return { setTitle = function() end } end },
+  styledtext = {
+    new = function(text)
+      local styledText = { text = text }
+      function styledText:setStyle() return self end
+      return styledText
+    end,
+  },
   window = {
     focusedWindow = function() return findWindowById(currentlyFocusedWindowId) end,
     get = function(windowId) return findWindowById(windowId) end,

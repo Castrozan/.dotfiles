@@ -85,6 +85,15 @@ hs = {
 			return { setTitle = function() end }
 		end,
 	},
+	styledtext = {
+		new = function(text)
+			local styledText = { text = text }
+			function styledText:setStyle()
+				return self
+			end
+			return styledText
+		end,
+	},
 	application = {
 		launchOrFocus = function()
 			launchOrFocusCallCount = launchOrFocusCallCount + 1

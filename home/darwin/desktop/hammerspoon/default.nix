@@ -8,6 +8,7 @@
     file = {
       ".hammerspoon/init.lua".source = ./init.lua;
       ".hammerspoon/workspace_grid.lua".source = ./workspace_grid.lua;
+      ".hammerspoon/workspace_grid_window_layout.lua".source = ./workspace_grid_window_layout.lua;
       ".hammerspoon/workspace_grid_persistence.lua".source = ./workspace_grid_persistence.lua;
       ".hammerspoon/workspace_grid_menubar.lua".source = ./workspace_grid_menubar.lua;
       ".hammerspoon/switcher_bridge.lua".source = ./switcher_bridge.lua;

@@ -12,6 +12,16 @@ hs = {
       return menuBarItem
     end,
   },
+  styledtext = {
+    new = function(text)
+      local styledText = { text = text, styles = {} }
+      function styledText:setStyle(attributes, startIndex, endIndex)
+        table.insert(self.styles, { attributes = attributes, startIndex = startIndex, endIndex = endIndex })
+        return self
+      end
+      return styledText
+    end,
+  },
 }
 
 local function liveMenuBarCount()
@@ -34,9 +44,32 @@ local function expectEqual(description, expectedValue, actualValue)
   end
 end
 
-menuBar.render(2, 7)
+local function cellAlphaForWorkspace(styledText, firstWorkspaceInRow, workspaceNumber)
+  local cellStartIndex = (workspaceNumber - firstWorkspaceInRow) * 4 + 1
+  for _, style in ipairs(styledText.styles) do
+    if style.startIndex == cellStartIndex then
+      return style.attributes.color.alpha
+    end
+  end
+  return nil
+end
+
+menuBar.render(2, 7, { [2] = true })
 expectEqual("first load shows exactly one indicator", 1, liveMenuBarCount())
-expectEqual("the indicator brackets the active workspace", "1 [2] 3 4 5 6 7", createdMenuBars[1].title)
+expectEqual(
+  "the indicator brackets the active workspace and pads numbers to a fixed width",
+  "  1 [ 2]  3   4   5   6   7 ",
+  createdMenuBars[1].title.text
+)
+expectEqual("the occupied workspace is drawn fully opaque", 1.0, cellAlphaForWorkspace(createdMenuBars[1].title, 1, 2))
+expectEqual("an empty workspace is dimmed", 0.35, cellAlphaForWorkspace(createdMenuBars[1].title, 1, 1))
+
+menuBar.render(18, 7, { [18] = true })
+expectEqual(
+  "the third row shows its own seven workspaces at the same width",
+  " 15  16  17 [18] 19  20  21 ",
+  createdMenuBars[1].title.text
+)
 
 local function simulateReload()
   menuBar.deleteIndicator()
@@ -50,8 +83,8 @@ menuBar.render(1, 7)
 expectEqual("a reload leaves exactly one indicator, no orphan frozen at the old workspace", 1, liveMenuBarCount())
 expectEqual(
   "the surviving indicator shows the live workspace, not a stale one",
-  "[1] 2 3 4 5 6 7",
-  createdMenuBars[#createdMenuBars].title
+  "[ 1]  2   3   4   5   6   7 ",
+  createdMenuBars[#createdMenuBars].title.text
 )
 
 os.exit(failureCount == 0 and 0 or 1)

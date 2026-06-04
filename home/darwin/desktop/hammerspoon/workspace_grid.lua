@@ -9,25 +9,19 @@ local workspaceGrid = {}
 local workspaceGridColumns = 7
 local workspaceGridRows = 3
 local totalWorkspaceCount = workspaceGridColumns * workspaceGridRows
-local offScreenParkingX = -1000000
 local firstWorkspaceNumber = 1
 
 workspaceGrid.columns = workspaceGridColumns
 workspaceGrid.totalWorkspaceCount = totalWorkspaceCount
 
 local workspaceNumberByWindowId = {}
-local savedFloatingFrameByWindowId = {}
 local currentWorkspaceNumber = firstWorkspaceNumber
 local menuBarIndicator = require("workspace_grid_menubar")
 local workspaceGridPersistence = require("workspace_grid_persistence")
+local windowLayout = require("workspace_grid_window_layout")
 
 local function manageableWindows()
 	return hs.window.filter.default:getWindows()
-end
-
--- Dialogs/panels float at their natural size instead of being maximized.
-local function windowIsTileable(window)
-	return window:isStandard()
 end
 
 local function workspaceOfWindow(window)
@@ -40,25 +34,16 @@ local function workspaceOfWindow(window)
 	return workspaceNumberByWindowId[windowId]
 end
 
-local function parkWindowOffScreen(window)
-	if not windowIsTileable(window) and savedFloatingFrameByWindowId[window:id()] == nil then
-		savedFloatingFrameByWindowId[window:id()] = window:frame()
+local function occupiedWorkspaceNumbers()
+	local occupied = {}
+	for _, window in ipairs(manageableWindows()) do
+		occupied[workspaceOfWindow(window)] = true
 	end
-	local frame = window:frame()
-	frame.x = offScreenParkingX
-	window:setFrame(frame)
+	return occupied
 end
 
-local function showWindowOnScreen(window)
-	if windowIsTileable(window) then
-		window:setFrame(window:screen():frame())
-	else
-		local savedFrame = savedFloatingFrameByWindowId[window:id()]
-		if savedFrame then
-			window:setFrame(savedFrame)
-			savedFloatingFrameByWindowId[window:id()] = nil
-		end
-	end
+local function renderMenuBarIndicator()
+	menuBarIndicator.render(currentWorkspaceNumber, workspaceGridColumns, occupiedWorkspaceNumbers())
 end
 
 function workspaceGrid.switchToWorkspace(targetWorkspaceNumber, preferredFocusWindow)
@@ -69,12 +54,12 @@ function workspaceGrid.switchToWorkspace(targetWorkspaceNumber, preferredFocusWi
 	local windowToRefocus = nil
 	for _, window in ipairs(manageableWindows()) do
 		if workspaceOfWindow(window) == targetWorkspaceNumber then
-			showWindowOnScreen(window)
-			if windowIsTileable(window) then
+			windowLayout.showWindowOnScreen(window)
+			if windowLayout.windowIsTileable(window) then
 				windowToRefocus = window
 			end
 		else
-			parkWindowOffScreen(window)
+			windowLayout.parkWindowOffScreen(window)
 		end
 	end
 	if preferredFocusWindow then
@@ -83,7 +68,7 @@ function workspaceGrid.switchToWorkspace(targetWorkspaceNumber, preferredFocusWi
 	if windowToRefocus then
 		windowToRefocus:focus()
 	end
-	menuBarIndicator.render(currentWorkspaceNumber, workspaceGridColumns)
+	renderMenuBarIndicator()
 	workspaceGridPersistence.save(currentWorkspaceNumber, workspaceNumberByWindowId)
 end
 
@@ -122,8 +107,9 @@ function workspaceGrid.summonApplicationToCurrentWorkspace(applicationName)
 	local window = application:mainWindow() or application:allWindows()[1]
 	if window then
 		workspaceNumberByWindowId[window:id()] = currentWorkspaceNumber
-		showWindowOnScreen(window)
+		windowLayout.showWindowOnScreen(window)
 		window:focus()
+		renderMenuBarIndicator()
 		workspaceGridPersistence.save(currentWorkspaceNumber, workspaceNumberByWindowId)
 	end
 end
@@ -154,7 +140,7 @@ function workspaceGrid.focusWindowById(windowId)
 	if window then
 		workspaceNumberByWindowId[windowId] = currentWorkspaceNumber
 		window:focus()
-		showWindowOnScreen(window)
+		windowLayout.showWindowOnScreen(window)
 		workspaceGridPersistence.save(currentWorkspaceNumber, workspaceNumberByWindowId)
 	end
 end
@@ -162,16 +148,17 @@ end
 function workspaceGrid.onWindowCreated(window)
 	if window and window:id() then
 		workspaceNumberByWindowId[window:id()] = currentWorkspaceNumber
-		if windowIsTileable(window) then
-			showWindowOnScreen(window)
+		if windowLayout.windowIsTileable(window) then
+			windowLayout.showWindowOnScreen(window)
 		end
+		renderMenuBarIndicator()
 		workspaceGridPersistence.save(currentWorkspaceNumber, workspaceNumberByWindowId)
 	end
 end
 
 function workspaceGrid.onWindowFocused(window)
-	if window and window:id() and workspaceOfWindow(window) == currentWorkspaceNumber and windowIsTileable(window) then
-		showWindowOnScreen(window)
+	if window and window:id() and workspaceOfWindow(window) == currentWorkspaceNumber and windowLayout.windowIsTileable(window) then
+		windowLayout.showWindowOnScreen(window)
 	end
 end
 
@@ -181,7 +168,7 @@ function workspaceGrid.registerExistingWindowsOnFirstWorkspace()
 			workspaceNumberByWindowId[window:id()] = firstWorkspaceNumber
 		end
 	end
-	menuBarIndicator.render(currentWorkspaceNumber, workspaceGridColumns)
+	renderMenuBarIndicator()
 end
 
 function workspaceGrid.restorePersistedWorkspaceState()
