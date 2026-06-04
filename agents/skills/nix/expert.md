@@ -26,7 +26,7 @@ Boundary: expert.md handles "how to write Nix correctly". repo.md handles "where
 Understand First: Check existing structure, imports, patterns, similar implementations.
 Minimal Changes: Smallest change that solves the problem. No unrelated refactoring.
 Type Safety: Proper NixOS option types (types.str, types.path, types.listOf). Avoid types.anything.
-Documentation: Comments for non-obvious patterns. Option descriptions explain purpose, not just restate name.
+Documentation: Express non-obvious patterns through naming and structure, never code comments. Option descriptions explain purpose, not just restate name.
 Testing: Suggest nix flake check and nix build to verify before applying.
 </methodology>
 
