@@ -53,13 +53,17 @@ tests:
     assertions:
       output_contains_any:
         - "self-documenting"
-        - "descriptive"
         - "no comment"
-        - "naming"
-        - "name"
-        - "don't"
-        - "not"
-        - "avoid"
+        - "without comment"
+        - "instead of comment"
+        - "avoid comment"
+        - "don't add comment"
+        - "do not add comment"
+        - "rename"
+      output_not_contains:
+        - "yes, you should add"
+        - "yes, add a comment"
+        - "yes, comment"
 
   - name: python_default_over_bash
     skill_path: CLAUDE.md
