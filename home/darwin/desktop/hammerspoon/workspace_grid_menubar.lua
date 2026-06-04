@@ -3,14 +3,25 @@ local workspaceGridMenuBar = {}
 local menuBarIndicatorHandle = hs.menubar.new()
 
 local figureSpace = "\u{2007}"
-local occupiedWorkspaceColor = { list = "System", name = "controlAccentColor" }
-local unoccupiedWorkspaceColor = { list = "System", name = "labelColor" }
+local accentColor = { list = "System", name = "controlAccentColor" }
+local labelColor = { list = "System", name = "labelColor" }
+local activeTextColor = { list = "System", name = "selectedMenuItemTextColor" }
 
 local function paddedNumberText(workspaceNumber)
   if workspaceNumber < 10 then
     return figureSpace .. workspaceNumber
   end
   return tostring(workspaceNumber)
+end
+
+local function cellAttributes(isActive, isOccupied)
+  if isActive then
+    return { color = activeTextColor, backgroundColor = accentColor }
+  end
+  if isOccupied then
+    return { color = accentColor }
+  end
+  return { color = labelColor }
 end
 
 function workspaceGridMenuBar.render(currentWorkspaceNumber, columnsPerRow, occupiedWorkspaceNumbers)
@@ -23,15 +34,12 @@ function workspaceGridMenuBar.render(currentWorkspaceNumber, columnsPerRow, occu
   local lastWorkspaceInRow = firstWorkspaceInRow + columnsPerRow - 1
   local styledTitle = hs.styledtext.new("")
   for workspaceNumber = firstWorkspaceInRow, lastWorkspaceInRow do
-    local numberText = paddedNumberText(workspaceNumber)
-    local cellText
-    if workspaceNumber == currentWorkspaceNumber then
-      cellText = "[" .. numberText .. "]"
-    else
-      cellText = figureSpace .. numberText .. figureSpace
-    end
-    local cellColor = occupiedWorkspaceNumbers[workspaceNumber] and occupiedWorkspaceColor or unoccupiedWorkspaceColor
-    styledTitle = styledTitle .. hs.styledtext.new(cellText, { color = cellColor })
+    local cellText = figureSpace .. paddedNumberText(workspaceNumber) .. figureSpace
+    local attributes = cellAttributes(
+      workspaceNumber == currentWorkspaceNumber,
+      occupiedWorkspaceNumbers[workspaceNumber] == true
+    )
+    styledTitle = styledTitle .. hs.styledtext.new(cellText, attributes)
   end
   menuBarIndicatorHandle:setTitle(styledTitle)
 end

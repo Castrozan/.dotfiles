@@ -29,7 +29,15 @@ hs = {
   styledtext = {
     new = function(text, attributes)
       return setmetatable(
-        { segments = { { text = text, color = attributes and attributes.color or nil } } },
+        {
+          segments = {
+            {
+              text = text,
+              color = attributes and attributes.color or nil,
+              backgroundColor = attributes and attributes.backgroundColor or nil,
+            },
+          },
+        },
         styledTextMeta
       )
     end,
@@ -60,9 +68,18 @@ local function titleCharacterWidth(styledTitle)
   return utf8.len(table.concat(plain))
 end
 
+local function cellSegment(styledTitle, firstWorkspaceInRow, workspaceNumber)
+  return styledTitle.segments[(workspaceNumber - firstWorkspaceInRow) + 2]
+end
+
 local function cellColorName(styledTitle, firstWorkspaceInRow, workspaceNumber)
-  local segment = styledTitle.segments[(workspaceNumber - firstWorkspaceInRow) + 2]
+  local segment = cellSegment(styledTitle, firstWorkspaceInRow, workspaceNumber)
   return segment and segment.color and segment.color.name or nil
+end
+
+local function cellBackgroundName(styledTitle, firstWorkspaceInRow, workspaceNumber)
+  local segment = cellSegment(styledTitle, firstWorkspaceInRow, workspaceNumber)
+  return segment and segment.backgroundColor and segment.backgroundColor.name or nil
 end
 
 local menuBar = require("workspace_grid_menubar")
@@ -77,21 +94,24 @@ local function expectEqual(description, expectedValue, actualValue)
   end
 end
 
-menuBar.render(2, 7, { [2] = true })
+menuBar.render(2, 7, { [2] = true, [5] = true })
 expectEqual("first load shows exactly one indicator", 1, liveMenuBarCount())
 expectEqual(
-  "the indicator brackets the active workspace and pads numbers to a fixed width",
-  "  1 [ 2]  3   4   5   6   7 ",
+  "every cell has the same width so numbers keep a fixed position",
+  "  1   2   3   4   5   6   7 ",
   plainTitle(createdMenuBars[1].title)
 )
-expectEqual("the occupied workspace uses the theme accent color", "controlAccentColor", cellColorName(createdMenuBars[1].title, 1, 2))
+expectEqual("the active workspace gets the accent background", "controlAccentColor", cellBackgroundName(createdMenuBars[1].title, 1, 2))
+expectEqual("the active workspace text contrasts against the accent", "selectedMenuItemTextColor", cellColorName(createdMenuBars[1].title, 1, 2))
+expectEqual("an occupied workspace uses the accent text color", "controlAccentColor", cellColorName(createdMenuBars[1].title, 1, 5))
+expectEqual("an occupied workspace has no background", nil, cellBackgroundName(createdMenuBars[1].title, 1, 5))
 expectEqual("an unoccupied workspace uses the solid label color", "labelColor", cellColorName(createdMenuBars[1].title, 1, 1))
 
 local firstRowCharacterWidth = titleCharacterWidth(createdMenuBars[1].title)
 menuBar.render(18, 7, { [18] = true })
 expectEqual(
   "the third row shows its own seven workspaces",
-  " 15  16  17 [18] 19  20  21 ",
+  " 15  16  17  18  19  20  21 ",
   plainTitle(createdMenuBars[1].title)
 )
 expectEqual(
@@ -112,8 +132,13 @@ menuBar.render(1, 7)
 expectEqual("a reload leaves exactly one indicator, no orphan frozen at the old workspace", 1, liveMenuBarCount())
 expectEqual(
   "the surviving indicator shows the live workspace, not a stale one",
-  "[ 1]  2   3   4   5   6   7 ",
+  "  1   2   3   4   5   6   7 ",
   plainTitle(createdMenuBars[#createdMenuBars].title)
+)
+expectEqual(
+  "the live workspace is the one highlighted after reload",
+  "controlAccentColor",
+  cellBackgroundName(createdMenuBars[#createdMenuBars].title, 1, 1)
 )
 
 os.exit(failureCount == 0 and 0 or 1)
