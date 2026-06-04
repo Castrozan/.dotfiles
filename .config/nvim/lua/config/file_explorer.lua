@@ -36,6 +36,7 @@ local function open_file_explorer_with_persisted_width()
   Snacks.explorer({
     hidden = true,
     follow = true,
+    ignored = true,
     layout = { layout = { width = read_persisted_file_explorer_width() } },
   })
 end

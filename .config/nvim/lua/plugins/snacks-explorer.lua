@@ -7,6 +7,7 @@ return {
           explorer = {
             hidden = true,
             follow = true,
+            ignored = true,
           },
         },
       },
