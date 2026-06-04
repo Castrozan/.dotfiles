@@ -26,8 +26,6 @@ let
 
     terraform-ls
 
-    marksman
-
     jdt-language-server
     jdk21
 
