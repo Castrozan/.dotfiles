@@ -30,6 +30,7 @@ return {
         gopls = {},
         bashls = {},
         terraformls = {},
+        marksman = {},
         sourcekit = {
           cmd = { "sourcekit-lsp" },
           filetypes = { "swift", "objc", "objcpp", "c", "cpp" },
