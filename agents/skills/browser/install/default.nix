@@ -21,6 +21,11 @@ let
   };
   supergatewayBinary = "${supergatewayPackage}/bin/supergateway";
 
+  pinchtabPackage = import ./pinchtab-package.nix {
+    inherit pkgs;
+  };
+  pinchtabBinary = "${pinchtabPackage}/bin/pinchtab";
+
   chromeDevtoolsStreamableHttpPort = 8767;
   chromeDevtoolsStreamableHttpSessionTimeoutMilliseconds = 3600000;
 
@@ -63,6 +68,7 @@ in
   streamableHttpBridgeCommand = "${chromeDevtoolsStreamableHttpBridgeWrapper}/bin/chrome-devtools-mcp-streamable-http-bridge";
   inherit chromeDevtoolsMcpOrphanReaper;
   inherit supergatewayBinary;
+  inherit pinchtabBinary;
 
-  packages = [ ];
+  packages = [ pinchtabPackage ];
 }

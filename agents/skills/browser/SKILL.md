@@ -4,8 +4,22 @@ description: Interact with a live webpage inside a browser window — fill forms
 ---
 
 <strategy>
-Two browser MCPs are available. Browser Use (`mcp__browser-use__*`) is the primary tool - it launches its own Chrome, works immediately, handles general browsing and Electron apps. Chrome DevTools (`mcp__chrome-devtools__*`) connects to the user's real Chrome Global for stealth on sites that detect automation (Google, banking, Cloudflare). Read docs/BROWSER-STRATEGY.md for the full decision framework.
+Two browser MCPs plus one CLI are available. Browser Use (`mcp__browser-use__*`) is the primary MCP - it launches its own Chrome, works immediately, handles general browsing and Electron apps. Chrome DevTools (`mcp__chrome-devtools__*`) connects to the user's real Chrome Global for stealth on sites that detect automation (Google, banking, Cloudflare). PinchTab (`pinchtab` CLI, no MCP) is the resilient fallback - its own persistent-profile Chrome (stays logged in across runs) driven entirely from bash; reach for it when the MCP transports are flaky or you need a stable already-authenticated session for a local app. Read docs/BROWSER-STRATEGY.md for the full decision framework.
 </strategy>
+
+<pinchtab_workflow>
+CLI only (no MCP), driven from bash. Its server runs a persistent-profile Chrome on localhost:9867, so logins survive across runs (log in once in headed mode and stay authenticated). `pinchtab nav` auto-starts the local server.
+
+1. `pinchtab nav <url>` - navigate (auto-starts the server; `--new-tab`, `--snap`)
+2. `pinchtab snap` - accessibility tree with refs (prefer over screenshot)
+3. `pinchtab screenshot --output <file>` - save a screenshot (then Read the file)
+4. `pinchtab text` - extract page text; `pinchtab capture` - paired screenshot + snapshot from one DOM epoch
+5. `pinchtab click <ref>` / `pinchtab type <ref> <text>` - interact using refs from `snap`
+6. `pinchtab health` / `pinchtab tabs` - status; `pinchtab server -H` - headed (visible) for logging in
+7. `pinchtab help` or `pinchtab <command> --help` for the full command and flag list
+
+Guards are UP by default (allowed domains: localhost/127.0.0.1); `pinchtab server -y` lowers them. For an isolated tab set `PINCHTAB_SESSION=$(pinchtab session create --agent-id <id> --print-token)`.
+</pinchtab_workflow>
 
 <browser_use_workflow>
 Works immediately with no setup. Launches its own Chrome instance.
