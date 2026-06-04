@@ -93,10 +93,13 @@ def ensure_all_agent_windows(specification: dict) -> None:
         ensure_agent_windows_for_session(session_specification)
 
 
-def supervise_until_all_sessions_end(specification: dict) -> None:
-    declared_session_names = [session["name"] for session in specification["sessions"]]
-    while any(session_exists(name) for name in declared_session_names):
-        time.sleep(SUPERVISOR_POLL_INTERVAL_SECONDS)
+def reconcile_sessions_forever(
+    specification: dict,
+    poll_interval_seconds: int = SUPERVISOR_POLL_INTERVAL_SECONDS,
+) -> None:
+    while True:
+        ensure_all_agent_windows(specification)
+        time.sleep(poll_interval_seconds)
 
 
 def load_specification(specification_file_path: str) -> dict:
@@ -109,8 +112,8 @@ def parse_arguments() -> argparse.Namespace:
         prog="clawde-service",
         description=(
             "Idempotently ensure every declared clawde tmux session and all agent "
-            "windows exist, bootstrap heartbeats only for newly-created windows, "
-            "then supervise until every declared session goes away."
+            "windows exist, then reconcile forever so any session or window that "
+            "dies after startup gets recreated on the next poll."
         ),
     )
     parser.add_argument(
@@ -124,8 +127,7 @@ def parse_arguments() -> argparse.Namespace:
 def main() -> None:
     arguments = parse_arguments()
     specification = load_specification(arguments.specification_file)
-    ensure_all_agent_windows(specification)
-    supervise_until_all_sessions_end(specification)
+    reconcile_sessions_forever(specification)
 
 
 if __name__ == "__main__":
