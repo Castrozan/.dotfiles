@@ -8,6 +8,7 @@ from run_evals_config_loader import resolve_system_prompt_for_test
 from run_evals_worktree_and_environment import build_filtered_environment
 
 DEFAULT_PARALLEL_WORKERS = 3
+TIMEOUT_RETRY_ATTEMPTS = 1
 
 
 @dataclass
@@ -62,22 +63,24 @@ def run_claude_cli(
 
     cmd.append(prompt)
 
-    try:
-        result = subprocess.run(
-            cmd,
-            capture_output=True,
-            text=True,
-            timeout=timeout,
-            cwd=run_evals_worktree_and_environment.EVAL_WORKING_DIRECTORY,
-            env=build_filtered_environment(),
-        )
-        return result.stdout + result.stderr, result.returncode == 0
-    except subprocess.TimeoutExpired:
-        return f"Timeout after {timeout}s", False
-    except FileNotFoundError:
-        return "claude CLI not found - run 'rebuild' first", False
-    except Exception as e:
-        return str(e), False
+    for attempt in range(TIMEOUT_RETRY_ATTEMPTS + 1):
+        try:
+            result = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                timeout=timeout,
+                cwd=run_evals_worktree_and_environment.EVAL_WORKING_DIRECTORY,
+                env=build_filtered_environment(),
+            )
+            return result.stdout + result.stderr, result.returncode == 0
+        except subprocess.TimeoutExpired:
+            if attempt == TIMEOUT_RETRY_ATTEMPTS:
+                return f"Timeout after {timeout}s", False
+        except FileNotFoundError:
+            return "claude CLI not found - run 'rebuild' first", False
+        except Exception as e:
+            return str(e), False
 
 
 def run_test(test: dict, settings: dict, dry_run: bool = False) -> TestResult:
