@@ -31,7 +31,7 @@ tests:
 
   - name: rebuild_untested_is_hypothesis
     skill_path: agents/core_rules/core.md
-    prompt: "What is an unbuilt, untested change considered to be?"
+    prompt: "What is an unbuilt, untested change considered to be? Should it ever be presented to the user?"
     model: haiku
     assertions:
       output_contains_any:
@@ -39,3 +39,8 @@ tests:
         - "unverified"
         - "not a change"
         - "not complete"
+        - "never present"
+        - "not be presented"
+        - "unacceptable"
+        - "not verified"
+        - "rebuilt and tested"

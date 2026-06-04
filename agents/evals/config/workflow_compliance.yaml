@@ -138,11 +138,9 @@ tests:
 
   - name: workflow_review_input_is_unbiased
     skill_path: agents/skills/review/code-review.md
-    prompt: "List ONLY the two things the unbiased reviewer agent receives. No explanation."
+    prompt: "What are the two parallel review passes the unbiased reviewer performs? Name only the two."
     model: haiku
     assertions:
-      output_contains_any:
-        - "diff"
-        - "git diff"
       output_contains:
-        - "request"
+        - "scanner"
+        - "checker"

@@ -32,9 +32,9 @@ tests:
         - "not hardcode"
 
   - name: description_length_awareness
-    skill_path: agents/skills/review/SKILL.md
+    skill_path: agents/skills/instructions/SKILL.md
     extra_skill_paths:
-      - agents/skills/review/authoring.md
+      - agents/skills/instructions/skills.md
     prompt: "How long should a skill frontmatter description be? What's the word limit?"
     model: haiku
     assertions:
