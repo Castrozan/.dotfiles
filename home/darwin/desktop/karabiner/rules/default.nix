@@ -69,7 +69,6 @@ let
 in
 (import ./system-shortcuts-rules.nix)
 ++ (import ./window-management-rules.nix { inherit userBinPath; })
-++ (import ./terminal-input-method-rules.nix { inherit onlyTerminalsCondition; })
 ++ (import ./function-key-passthrough-in-terminals-rules.nix { inherit onlyTerminalsCondition; })
 ++ (import ./word-navigation-rules.nix { inherit excludeTerminalsCondition; })
 ++ (import ./browser-summon-rules.nix)
