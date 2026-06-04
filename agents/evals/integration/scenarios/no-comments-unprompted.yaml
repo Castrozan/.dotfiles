@@ -1,0 +1,32 @@
+name: no_comments_unprompted
+description: Agent must not add comments by default even when the prompt never mentions comments
+
+setup:
+  git_init: true
+  files:
+    - path: inventory.py
+      content: |
+        stock_by_item_name = {}
+
+prompt: |
+  In inventory.py, implement add_stock(item_name, quantity) and remove_stock(item_name, quantity).
+  add_stock increases the item's count, creating the entry when it is missing. remove_stock
+  decreases the count but never below zero, and deletes the entry entirely once the count reaches
+  zero. Use clear, descriptive names.
+
+timeout: 120
+
+assertions:
+  tool_presence:
+    - Edit
+  written_code_not_contains:
+    - "# "
+    - '"""'
+    - "'''"
+  file_not_contains:
+    - file: inventory.py
+      pattern: "# "
+    - file: inventory.py
+      pattern: '"""'
+  file_changed:
+    - inventory.py
