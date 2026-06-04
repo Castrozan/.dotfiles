@@ -7,7 +7,6 @@
     ../../base/dev/git-toggle-user.nix
     ../../base/network/ssh-private.nix
     ../../base/system/session-vars-lucas-zanoni.nix
-    ../../base/claude/agents/silver.nix
     ../../base/claude/agents/jojo-clawde-agents.nix
     ../../base/claude/agents/steward.nix
 
