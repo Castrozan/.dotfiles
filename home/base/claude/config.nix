@@ -46,6 +46,9 @@ let
       respectGitignore = true;
     };
     hooks = hooksConfig;
+    enabledPlugins = {
+      "discord@claude-plugins-official" = true;
+    };
   };
 
   claudeGlobalSettingsJson = builtins.toJSON claudeGlobalSettings;
