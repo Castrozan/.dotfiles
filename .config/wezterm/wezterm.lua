@@ -47,6 +47,7 @@ local config = {
   use_resize_increments = false,
   adjust_window_size_when_changing_font_size = false,
   window_background_opacity = 0.85,
+  text_background_opacity = 0.5,
   macos_window_background_blur = 20,
 
   enable_tab_bar = false,

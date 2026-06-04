@@ -2,13 +2,8 @@ local dynamic_theme = {}
 
 local theme_change_signal_file_path = vim.fn.expand("~/.config/hypr-theme/current/theme.name")
 
-local active_background_hex = "#05070e"
-
 local function schedule_background_clear()
-  vim.schedule(function()
-    require("config.theme.transparency").clear_backgrounds_to_let_terminal_show_through()
-    require("config.theme.markdown_heading_backgrounds").soften_against_background(active_background_hex)
-  end)
+  vim.schedule(require("config.theme.transparency").clear_backgrounds_to_let_terminal_show_through)
 end
 
 function dynamic_theme.apply()
@@ -16,9 +11,7 @@ function dynamic_theme.apply()
   if not base16_module_is_available then
     return
   end
-  local base16_palette = require("config.theme.wallpaper_palette").read_and_map_to_base16()
-  active_background_hex = base16_palette.base00
-  base16_module.setup(base16_palette)
+  base16_module.setup(require("config.theme.wallpaper_palette").read_and_map_to_base16())
   schedule_background_clear()
 end
 
@@ -68,8 +61,8 @@ function dynamic_theme.setup_live_reload_on_wallpaper_change()
   })
 
   vim.api.nvim_create_autocmd("FileType", {
-    group = vim.api.nvim_create_augroup("ReclearBackgroundsWhenAnyFiletypePluginAddsGroups", { clear = true }),
-    pattern = "*",
+    group = vim.api.nvim_create_augroup("ReclearBackgroundsWhenSnacksPickerOpens", { clear = true }),
+    pattern = { "snacks_picker_list", "snacks_layout_box", "snacks_picker_input" },
     callback = schedule_background_clear,
   })
 
