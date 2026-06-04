@@ -51,9 +51,12 @@ def run_claude_cli(
                 cwd=run_evals_worktree_and_environment.EVAL_WORKING_DIRECTORY,
                 env=build_filtered_environment(),
             )
-            if result.returncode == 0:
-                return result.stdout + result.stderr, True
-            last_transient_failure = result.stdout + result.stderr
+            combined_output = result.stdout + result.stderr
+            if result.returncode == 0 and combined_output.strip():
+                return combined_output, True
+            last_transient_failure = (
+                combined_output or f"empty output (exit {result.returncode})"
+            )
         except subprocess.TimeoutExpired:
             last_transient_failure = f"Timeout after {timeout}s"
         except FileNotFoundError:
