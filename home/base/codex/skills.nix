@@ -19,7 +19,7 @@ let
 
   skillNames = getSkillNamesFromDir dotfilesSkillsDir;
 
-  coreAgentRawContent = builtins.readFile ../../../agents/core.md;
+  coreAgentRawContent = builtins.readFile ../../../agents/core_rules/core.md;
   coreAgentSplitOnFrontmatterDelimiter = builtins.split "---\n" coreAgentRawContent;
   coreAgentBodyWithoutFrontmatter = builtins.elemAt coreAgentSplitOnFrontmatterDelimiter 4;
 

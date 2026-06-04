@@ -100,13 +100,13 @@ let
   coreSkillFromAgentInstructions = makeSkillFromInstructionsFile {
     skillName = "core";
     skillDescription = "Display core agent behavior instructions. Use when user wants to see, review, or reference the core rules, or when injecting core instructions as context into subagents, oneshot sessions, or external tools.";
-    instructionsFile = ../../../agents/core.md;
+    instructionsFile = ../../../agents/core_rules/core.md;
   };
 
   interactivePreferencesSkillFromInstructions = makeSkillFromInstructionsFile {
     skillName = "interactive-preferences";
     skillDescription = "Inject Lucas's interactive-session response preferences (TL;DR-only replies; exhaust capabilities before returning) into the running session as governing rules. Use when a session was started without these rules in its system prompt - an already-running session, or one not launched via the cla/claude wrapper - and Lucas asks to apply, load, or inject his interactive preferences.";
-    instructionsFile = ../../../agents/interactive-preferences.md;
+    instructionsFile = ../../../agents/core_rules/communication/interactive-preferences.md;
   };
 
   skillNamesWithInstallModule = builtins.filter (

@@ -2,7 +2,7 @@ _:
 let
 
   globalRules = ''
-    ${builtins.readFile ../../../agents/core.md}
+    ${builtins.readFile ../../../agents/core_rules/core.md}
   '';
 
   opencodeGlobalSettings = {
