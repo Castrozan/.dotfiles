@@ -2,7 +2,10 @@
 let
   dotfilesSkillsDirectory = ../../../agents/skills;
 
-  globallyLoadedSkillNames = [ "personal" ];
+  globallyLoadedSkillNames = [
+    "personal"
+    "goal-prompt"
+  ];
 
   getSkillNamesFromDirectory =
     directory:
