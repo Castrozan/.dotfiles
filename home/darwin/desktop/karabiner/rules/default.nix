@@ -7,18 +7,14 @@ let
     "^com\\.googlecode\\.iterm2$"
   ];
 
-  nonTerminalApplicationIsFrontmostVariableName = "non_terminal_application_is_frontmost";
+  nonTerminalFrontmostDefaultDenyGuard = import ./non-terminal-frontmost-default-deny-guard.nix;
 
   excludeTerminalsCondition = [
     {
       type = "frontmost_application_unless";
       bundle_identifiers = terminalBundleIdentifiers;
     }
-    {
-      type = "variable_if";
-      name = nonTerminalApplicationIsFrontmostVariableName;
-      value = 1;
-    }
+    nonTerminalFrontmostDefaultDenyGuard.defaultDenyCondition
   ];
 
   onlyTerminalsCondition = [
