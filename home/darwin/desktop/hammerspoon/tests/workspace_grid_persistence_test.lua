@@ -29,14 +29,12 @@ local function findWindowById(targetWindowId)
 end
 
 hs = {
-  menubar = { new = function() return { setIcon = function() end } end },
-  canvas = {
-    new = function()
-      return {
-        replaceElements = function() end,
-        imageFromCanvas = function() return {} end,
-        delete = function() end,
-      }
+  menubar = { new = function() return { setTitle = function() end } end },
+  styledtext = {
+    new = function(text)
+      return setmetatable({ text = text }, {
+        __concat = function(left, right) return hs.styledtext.new(left.text .. right.text) end,
+      })
     end,
   },
   window = {

@@ -82,16 +82,16 @@ local fakeBraveApplication = {
 hs = {
 	menubar = {
 		new = function()
-			return { setIcon = function() end }
+			return { setTitle = function() end }
 		end,
 	},
-	canvas = {
-		new = function()
-			return {
-				replaceElements = function() end,
-				imageFromCanvas = function() return {} end,
-				delete = function() end,
-			}
+	styledtext = {
+		new = function(text)
+			return setmetatable({ text = text }, {
+				__concat = function(left, right)
+					return hs.styledtext.new(left.text .. right.text)
+				end,
+			})
 		end,
 	},
 	application = {

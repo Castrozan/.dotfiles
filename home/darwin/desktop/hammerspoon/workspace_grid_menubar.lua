@@ -2,12 +2,8 @@ local workspaceGridMenuBar = {}
 
 local menuBarIndicatorHandle = hs.menubar.new()
 
-local menuBarHeight = 22
-local cellWidth = 22
-local pillHorizontalInset = 2
-local pillVerticalInset = 3
-local pillCornerRadius = 5
-local textSize = 13
+local menuBarFont = { name = "Menlo", size = 13 }
+local cellCharacterWidth = 3
 local accentColor = { list = "System", name = "controlAccentColor" }
 local labelColor = { list = "System", name = "labelColor" }
 local activeTextColor = { list = "System", name = "selectedMenuItemTextColor" }
@@ -28,45 +24,24 @@ function workspaceGridMenuBar.cellsForRow(currentWorkspaceNumber, columnsPerRow,
   return cells
 end
 
-local function indicatorImage(cells)
-  local indicatorWidth = #cells * cellWidth
-  local canvas = hs.canvas.new({ x = 0, y = 0, w = indicatorWidth, h = menuBarHeight })
-  local elements = {}
-  for slotIndex, cell in ipairs(cells) do
-    local cellLeft = (slotIndex - 1) * cellWidth
-    if cell.isActive then
-      table.insert(elements, {
-        type = "rectangle",
-        action = "fill",
-        fillColor = accentColor,
-        roundedRectRadii = { xRadius = pillCornerRadius, yRadius = pillCornerRadius },
-        frame = {
-          x = cellLeft + pillHorizontalInset,
-          y = pillVerticalInset,
-          w = cellWidth - pillHorizontalInset * 2,
-          h = menuBarHeight - pillVerticalInset * 2,
-        },
-      })
-    end
-    local cellTextColor = labelColor
-    if cell.isActive then
-      cellTextColor = activeTextColor
-    elseif cell.isOccupied then
-      cellTextColor = accentColor
-    end
-    table.insert(elements, {
-      type = "text",
-      text = tostring(cell.workspaceNumber),
-      textColor = cellTextColor,
-      textSize = textSize,
-      textAlignment = "center",
-      frame = { x = cellLeft, y = 2, w = cellWidth, h = menuBarHeight },
-    })
+local function centeredText(value, width)
+  local text = tostring(value)
+  local totalPadding = width - #text
+  if totalPadding <= 0 then
+    return text
   end
-  canvas:replaceElements(elements)
-  local image = canvas:imageFromCanvas()
-  canvas:delete()
-  return image
+  local leftPadding = math.floor(totalPadding / 2)
+  return string.rep(" ", leftPadding) .. text .. string.rep(" ", totalPadding - leftPadding)
+end
+
+local function cellAttributes(cell)
+  if cell.isActive then
+    return { font = menuBarFont, color = activeTextColor, backgroundColor = accentColor }
+  end
+  if cell.isOccupied then
+    return { font = menuBarFont, color = accentColor }
+  end
+  return { font = menuBarFont, color = labelColor }
 end
 
 function workspaceGridMenuBar.render(currentWorkspaceNumber, columnsPerRow, occupiedWorkspaceNumbers)
@@ -74,7 +49,12 @@ function workspaceGridMenuBar.render(currentWorkspaceNumber, columnsPerRow, occu
     return
   end
   local cells = workspaceGridMenuBar.cellsForRow(currentWorkspaceNumber, columnsPerRow, occupiedWorkspaceNumbers)
-  menuBarIndicatorHandle:setIcon(indicatorImage(cells), false)
+  local styledTitle = hs.styledtext.new("")
+  for _, cell in ipairs(cells) do
+    local cellText = centeredText(cell.workspaceNumber, cellCharacterWidth)
+    styledTitle = styledTitle .. hs.styledtext.new(cellText, cellAttributes(cell))
+  end
+  menuBarIndicatorHandle:setTitle(styledTitle)
 end
 
 function workspaceGridMenuBar.deleteIndicator()
