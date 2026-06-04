@@ -22,7 +22,7 @@ let
     releaseBinaryBySystem.${system} or (throw "pinchtab: unsupported system ${system}");
   pinchtabReleaseBinary = pkgs.fetchurl {
     url = "https://github.com/pinchtab/pinchtab/releases/download/v${version}/${selectedReleaseBinary.asset}";
-    hash = selectedReleaseBinary.hash;
+    inherit (selectedReleaseBinary) hash;
   };
 in
 pkgs.stdenv.mkDerivation {
