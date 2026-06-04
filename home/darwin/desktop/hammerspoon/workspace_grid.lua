@@ -83,7 +83,7 @@ function workspaceGrid.switchToWorkspace(targetWorkspaceNumber, preferredFocusWi
 	if windowToRefocus then
 		windowToRefocus:focus()
 	end
-	menuBarIndicator.render(currentWorkspaceNumber, totalWorkspaceCount)
+	menuBarIndicator.render(currentWorkspaceNumber, workspaceGridColumns)
 	workspaceGridPersistence.save(currentWorkspaceNumber, workspaceNumberByWindowId)
 end
 
@@ -181,7 +181,7 @@ function workspaceGrid.registerExistingWindowsOnFirstWorkspace()
 			workspaceNumberByWindowId[window:id()] = firstWorkspaceNumber
 		end
 	end
-	menuBarIndicator.render(currentWorkspaceNumber, totalWorkspaceCount)
+	menuBarIndicator.render(currentWorkspaceNumber, workspaceGridColumns)
 end
 
 function workspaceGrid.restorePersistedWorkspaceState()
