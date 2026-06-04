@@ -5,8 +5,7 @@
     ./clawde
     ./config.nix
     ./configure-claude-json.nix
-    ./skills.nix
-    ./external-skill-sets.nix
+    ./skill-injection
     ./hooks.nix
     ./mcps.nix
     ./private.nix
