@@ -53,41 +53,44 @@ let
   passthroughIndex = indexOfFirstRuleWhereManipulatorMatches isBravePassthroughManipulatorForLetterD;
   linuxStyleIndex = indexOfFirstRuleWhereManipulatorMatches isLinuxStyleControlToCommandRemapForLetterD;
 
-  nonTerminalFrontmostDefaultDenyGuard = import ../rules/non-terminal-frontmost-default-deny-guard.nix;
+  applicationFocusDefaultDenyGuards = import ../rules/application-focus-default-deny-guards.nix;
+  inherit (applicationFocusDefaultDenyGuards) applicationFocusVariableNames;
 
   allManipulators = lib.concatMap (rule: rule.manipulators or [ ]) karabinerRules;
 
-  manipulatorExcludesTerminals =
-    manipulator:
+  manipulatorHasFrontmostConditionMatching =
+    frontmostConditionType: bundleIdentifierInfix: manipulator:
     lib.any (
       condition:
-      condition.type or "" == "frontmost_application_unless"
-      && lib.any (bundleIdentifier: lib.hasInfix "wezterm" (lib.toLower bundleIdentifier)) (
+      condition.type or "" == frontmostConditionType
+      && lib.any (bundleIdentifier: lib.hasInfix bundleIdentifierInfix (lib.toLower bundleIdentifier)) (
         condition.bundle_identifiers or [ ]
       )
     ) (manipulator.conditions or [ ]);
 
   manipulatorHasDefaultDenyGuard =
-    manipulator:
+    guardVariableName: manipulator:
     lib.any (
       condition:
       condition.type or "" == "variable_if"
-      &&
-        condition.name or ""
-        == nonTerminalFrontmostDefaultDenyGuard.nonTerminalApplicationIsFrontmostVariableName
+      && condition.name or "" == guardVariableName
       && (condition.value or null) == 1
     ) (manipulator.conditions or [ ]);
 
-  atLeastOneExcludeTerminalsManipulatorExists = lib.any manipulatorExcludesTerminals allManipulators;
+  everyManipulatorWithFrontmostConditionIsDefaultDenyGuarded =
+    frontmostConditionType: bundleIdentifierInfix: guardVariableName:
+    let
+      matchingManipulators = lib.filter (manipulatorHasFrontmostConditionMatching frontmostConditionType bundleIdentifierInfix) allManipulators;
+    in
+    matchingManipulators != [ ]
+    && lib.all (manipulatorHasDefaultDenyGuard guardVariableName) matchingManipulators;
 
-  everyExcludeTerminalsManipulatorIsDefaultDenyGuarded = lib.all (
-    manipulator:
-    !(manipulatorExcludesTerminals manipulator) || manipulatorHasDefaultDenyGuard manipulator
-  ) allManipulators;
+  hammerspoonApplicationFocusModuleContent = builtins.readFile ../../hammerspoon/karabiner_application_focus_variables.lua;
 
-  hammerspoonTerminalFocusVariableModuleContent = builtins.readFile ../../hammerspoon/karabiner_terminal_focus_variable.lua;
-
-  hammerspoonReferencesGuardVariableName = lib.hasInfix nonTerminalFrontmostDefaultDenyGuard.nonTerminalApplicationIsFrontmostVariableName hammerspoonTerminalFocusVariableModuleContent;
+  hammerspoonSetsEveryApplicationFocusVariable = lib.all (
+    applicationFocusVariableName:
+    lib.hasInfix applicationFocusVariableName hammerspoonApplicationFocusModuleContent
+  ) applicationFocusDefaultDenyGuards.allApplicationFocusVariableNames;
 in
 {
   domain-desktop-karabiner-brave-ctrl-d-passthrough-pre-empts-linux-style-remap =
@@ -97,13 +100,27 @@ in
 
   domain-desktop-karabiner-except-in-terminals-rules-are-default-deny-guarded =
     mkEvalCheck "domain-desktop-karabiner-except-in-terminals-rules-are-default-deny-guarded"
-      (
-        atLeastOneExcludeTerminalsManipulatorExists && everyExcludeTerminalsManipulatorIsDefaultDenyGuarded
+      (everyManipulatorWithFrontmostConditionIsDefaultDenyGuarded "frontmost_application_unless" "wezterm"
+        applicationFocusVariableNames.nonTerminalApplicationIsFrontmost
       )
       "Every except-in-terminals manipulator must also carry the non_terminal_application_is_frontmost == 1 default-deny guard, so the Ctrl-to-Cmd remaps fail closed during karabiner's post-restart startup window instead of hijacking Ctrl+C and the tmux prefix in the terminal";
 
-  domain-desktop-karabiner-default-deny-variable-name-matches-hammerspoon =
-    mkEvalCheck "domain-desktop-karabiner-default-deny-variable-name-matches-hammerspoon"
-      hammerspoonReferencesGuardVariableName
-      "The hammerspoon karabiner_terminal_focus_variable module must set the same variable name the karabiner default-deny guard reads, otherwise the guard fails closed permanently and the Ctrl-to-Cmd remaps silently stop working";
+  domain-desktop-karabiner-only-in-terminals-rules-are-default-deny-guarded =
+    mkEvalCheck "domain-desktop-karabiner-only-in-terminals-rules-are-default-deny-guarded"
+      (everyManipulatorWithFrontmostConditionIsDefaultDenyGuarded "frontmost_application_if" "wezterm"
+        applicationFocusVariableNames.terminalApplicationIsFrontmost
+      )
+      "Every only-in-terminals manipulator must also carry the terminal_application_is_frontmost == 1 default-deny guard, so it fails closed during karabiner's startup window and stays correct when frontmost_application conditions go stale during a shared-secret desync";
+
+  domain-desktop-karabiner-brave-frontmost-rules-are-default-deny-guarded =
+    mkEvalCheck "domain-desktop-karabiner-brave-frontmost-rules-are-default-deny-guarded"
+      (everyManipulatorWithFrontmostConditionIsDefaultDenyGuarded "frontmost_application_if" "brave"
+        applicationFocusVariableNames.braveBrowserIsFrontmost
+      )
+      "Every brave-frontmost manipulator must also carry the brave_browser_is_frontmost == 1 default-deny guard, so it fails closed during karabiner's startup window and stays correct when frontmost_application conditions go stale during a shared-secret desync";
+
+  domain-desktop-karabiner-default-deny-variables-match-hammerspoon =
+    mkEvalCheck "domain-desktop-karabiner-default-deny-variables-match-hammerspoon"
+      hammerspoonSetsEveryApplicationFocusVariable
+      "The hammerspoon karabiner_application_focus_variables module must set every application-focus variable name the karabiner default-deny guards read, otherwise a guard fails closed permanently and its rule silently stops working";
 }

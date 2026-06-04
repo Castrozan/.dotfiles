@@ -1,4 +1,6 @@
 let
+  applicationFocusDefaultDenyGuards = import ./application-focus-default-deny-guards.nix;
+
   braveBundleIdentifierRegex = "^com\\.brave\\.Browser$";
 
   carveOutBraveFromControlToCommandRemapForLetter = letter: {
@@ -21,6 +23,7 @@ let
         type = "frontmost_application_if";
         bundle_identifiers = [ braveBundleIdentifierRegex ];
       }
+      (applicationFocusDefaultDenyGuards.makeApplicationFocusDefaultDenyCondition applicationFocusDefaultDenyGuards.applicationFocusVariableNames.braveBrowserIsFrontmost)
     ];
   };
 

@@ -44,7 +44,7 @@ end
 -- active workspace's windows and performs the focus it requests.
 require("switcher_bridge")
 
-require("karabiner_terminal_focus_variable").start()
+require("karabiner_application_focus_variables").start()
 
 -- Summon is triggered from karabiner (Cmd+B / Cmd+C) rather than an hs.hotkey,
 -- because karabiner remaps Ctrl+C to Cmd+C: a global Cmd+C hotkey here would also

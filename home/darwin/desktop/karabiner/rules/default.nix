@@ -7,14 +7,18 @@ let
     "^com\\.googlecode\\.iterm2$"
   ];
 
-  nonTerminalFrontmostDefaultDenyGuard = import ./non-terminal-frontmost-default-deny-guard.nix;
+  applicationFocusDefaultDenyGuards = import ./application-focus-default-deny-guards.nix;
+  inherit (applicationFocusDefaultDenyGuards)
+    makeApplicationFocusDefaultDenyCondition
+    applicationFocusVariableNames
+    ;
 
   excludeTerminalsCondition = [
     {
       type = "frontmost_application_unless";
       bundle_identifiers = terminalBundleIdentifiers;
     }
-    nonTerminalFrontmostDefaultDenyGuard.defaultDenyCondition
+    (makeApplicationFocusDefaultDenyCondition applicationFocusVariableNames.nonTerminalApplicationIsFrontmost)
   ];
 
   onlyTerminalsCondition = [
@@ -22,6 +26,7 @@ let
       type = "frontmost_application_if";
       bundle_identifiers = terminalBundleIdentifiers;
     }
+    (makeApplicationFocusDefaultDenyCondition applicationFocusVariableNames.terminalApplicationIsFrontmost)
   ];
 
   makeControlToCommandManipulator = fromLetter: toLetter: {

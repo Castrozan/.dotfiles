@@ -12,8 +12,8 @@
       ".hammerspoon/workspace_grid_persistence.lua".source = ./workspace_grid_persistence.lua;
       ".hammerspoon/workspace_grid_menubar.lua".source = ./workspace_grid_menubar.lua;
       ".hammerspoon/switcher_bridge.lua".source = ./switcher_bridge.lua;
-      ".hammerspoon/karabiner_terminal_focus_variable.lua".source =
-        ./karabiner_terminal_focus_variable.lua;
+      ".hammerspoon/karabiner_application_focus_variables.lua".source =
+        ./karabiner_application_focus_variables.lua;
     };
 
     # Stop Hammerspoon popping its Console window every launch/reload (a config
