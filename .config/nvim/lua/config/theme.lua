@@ -1,12 +1,18 @@
 local wallpaper_palette = require("config.theme.wallpaper_palette")
 local transparency = require("config.theme.transparency")
+local markdown_heading_backgrounds = require("config.theme.markdown_heading_backgrounds")
 
 local dynamic_theme = {}
 
 local theme_change_signal_file_path = vim.fn.expand("~/.config/hypr-theme/current/theme.name")
 
+local active_background_hex = "#05070e"
+
 local function schedule_background_clear()
-  vim.schedule(transparency.clear_backgrounds_to_let_terminal_show_through)
+  vim.schedule(function()
+    transparency.clear_backgrounds_to_let_terminal_show_through()
+    markdown_heading_backgrounds.soften_against_background(active_background_hex)
+  end)
 end
 
 function dynamic_theme.apply()
@@ -14,7 +20,9 @@ function dynamic_theme.apply()
   if not base16_module_is_available then
     return
   end
-  base16_module.setup(wallpaper_palette.read_and_map_to_base16())
+  local base16_palette = wallpaper_palette.read_and_map_to_base16()
+  active_background_hex = base16_palette.base00
+  base16_module.setup(base16_palette)
   schedule_background_clear()
 end
 
