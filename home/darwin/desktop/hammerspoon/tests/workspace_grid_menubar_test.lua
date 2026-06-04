@@ -109,12 +109,12 @@ expectEqual("the third row holds its own seven workspaces", "15 16 17 18 19 20 2
 
 menuBar.render(2, 7, { [2] = true, [5] = true })
 expectEqual("first load shows exactly one indicator", 1, liveMenuBarCount())
-expectEqual("a single-digit number is centered in its three-character cell", " 1 ", segmentForCellText(createdMenuBars[1].title, " 1 ") and " 1 " or nil)
-expectEqual("the active workspace carries the accent background", "controlAccentColor", segmentForCellText(createdMenuBars[1].title, " 2 ").backgroundColor.name)
-expectEqual("the active workspace text contrasts against the accent", "selectedMenuItemTextColor", segmentForCellText(createdMenuBars[1].title, " 2 ").color.name)
-expectEqual("an occupied workspace uses the accent text color", "controlAccentColor", segmentForCellText(createdMenuBars[1].title, " 5 ").color.name)
-expectEqual("an unoccupied workspace uses the auto-following label color", "labelColor", segmentForCellText(createdMenuBars[1].title, " 1 ").color.name)
-expectEqual("every cell is drawn in a monospaced font", "Menlo", segmentForCellText(createdMenuBars[1].title, " 1 ").font.name)
+expectEqual("a single-digit number is zero-padded to two characters", "01", segmentForCellText(createdMenuBars[1].title, "01") and "01" or nil)
+expectEqual("the active workspace carries the accent background", "controlAccentColor", segmentForCellText(createdMenuBars[1].title, "02").backgroundColor.name)
+expectEqual("the active workspace text contrasts against the accent", "selectedMenuItemTextColor", segmentForCellText(createdMenuBars[1].title, "02").color.name)
+expectEqual("an occupied workspace uses the accent text color", "controlAccentColor", segmentForCellText(createdMenuBars[1].title, "05").color.name)
+expectEqual("an unoccupied workspace uses the auto-following label color", "labelColor", segmentForCellText(createdMenuBars[1].title, "01").color.name)
+expectEqual("every cell is drawn in a monospaced font", "Menlo", segmentForCellText(createdMenuBars[1].title, "01").font.name)
 
 local singleDigitRowWidth = titleCharacterWidth(createdMenuBars[1].title)
 
@@ -137,7 +137,7 @@ expectEqual("a reload leaves exactly one indicator, no orphan frozen at the old 
 expectEqual(
   "the live workspace is the one highlighted after reload",
   "controlAccentColor",
-  segmentForCellText(createdMenuBars[#createdMenuBars].title, " 1 ").backgroundColor.name
+  segmentForCellText(createdMenuBars[#createdMenuBars].title, "01").backgroundColor.name
 )
 
 os.exit(failureCount == 0 and 0 or 1)

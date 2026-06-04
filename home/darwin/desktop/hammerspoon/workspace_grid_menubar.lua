@@ -3,7 +3,6 @@ local workspaceGridMenuBar = {}
 local menuBarIndicatorHandle = hs.menubar.new()
 
 local menuBarFont = { name = "Menlo", size = 13 }
-local cellCharacterWidth = 3
 local accentColor = { list = "System", name = "controlAccentColor" }
 local labelColor = { list = "System", name = "labelColor" }
 local activeTextColor = { list = "System", name = "selectedMenuItemTextColor" }
@@ -24,16 +23,6 @@ function workspaceGridMenuBar.cellsForRow(currentWorkspaceNumber, columnsPerRow,
   return cells
 end
 
-local function centeredText(value, width)
-  local text = tostring(value)
-  local totalPadding = width - #text
-  if totalPadding <= 0 then
-    return text
-  end
-  local leftPadding = math.floor(totalPadding / 2)
-  return string.rep(" ", leftPadding) .. text .. string.rep(" ", totalPadding - leftPadding)
-end
-
 local function cellAttributes(cell)
   if cell.isActive then
     return { font = menuBarFont, color = activeTextColor, backgroundColor = accentColor }
@@ -50,8 +39,11 @@ function workspaceGridMenuBar.render(currentWorkspaceNumber, columnsPerRow, occu
   end
   local cells = workspaceGridMenuBar.cellsForRow(currentWorkspaceNumber, columnsPerRow, occupiedWorkspaceNumbers)
   local styledTitle = hs.styledtext.new("")
-  for _, cell in ipairs(cells) do
-    local cellText = centeredText(cell.workspaceNumber, cellCharacterWidth)
+  for cellIndex, cell in ipairs(cells) do
+    if cellIndex > 1 then
+      styledTitle = styledTitle .. hs.styledtext.new(" ", { font = menuBarFont })
+    end
+    local cellText = string.format("%02d", cell.workspaceNumber)
     styledTitle = styledTitle .. hs.styledtext.new(cellText, cellAttributes(cell))
   end
   menuBarIndicatorHandle:setTitle(styledTitle)
