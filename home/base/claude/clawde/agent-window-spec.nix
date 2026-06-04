@@ -82,6 +82,7 @@ let
       ];
     in
     pkgs.writeShellScript "clawde-agent-${name}" ''
+      mkdir -p ${lib.escapeShellArg workspaceDirectory}
       cd ${lib.escapeShellArg workspaceDirectory}
       ${execPythonWrapperInvocation}
     '';
