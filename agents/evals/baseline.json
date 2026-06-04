@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-06-02T20:35:35.347703+00:00",
-  "git_commit": "349e34ab",
-  "total_tests": 174,
-  "total_passed": 160,
-  "total_failed": 14,
-  "pass_rate": 0.9195,
+  "generated_at": "2026-06-04T21:24:28.810879+00:00",
+  "git_commit": "03e37d57",
+  "total_tests": 171,
+  "total_passed": 161,
+  "total_failed": 10,
+  "pass_rate": 0.9415,
   "categories": {
     "other": {
-      "passed": 49,
-      "failed": 4,
+      "passed": 48,
+      "failed": 2,
       "tests": [
         {
           "name": "worktrees_knows_builtin_flag",
@@ -72,7 +72,7 @@
         },
         {
           "name": "local_information_first",
-          "passed": true
+          "passed": false
         },
         {
           "name": "nix_rebuild_trigger_fires_on_nix_edit",
@@ -116,7 +116,7 @@
         },
         {
           "name": "review_ignores_preexisting_unchanged_lines",
-          "passed": true
+          "passed": false
         },
         {
           "name": "review_flags_hardcoded_credentials",
@@ -140,19 +140,7 @@
         },
         {
           "name": "git_history_never_uses_repeated_grep",
-          "passed": false
-        },
-        {
-          "name": "git_history_starts_with_layer1",
-          "passed": false
-        },
-        {
-          "name": "git_history_escalates_to_layer2",
-          "passed": false
-        },
-        {
-          "name": "git_history_uses_broad_keywords",
-          "passed": false
+          "passed": true
         },
         {
           "name": "git_history_file_paths_are_high_signal",
@@ -225,8 +213,8 @@
       ]
     },
     "compliance": {
-      "passed": 34,
-      "failed": 5,
+      "passed": 37,
+      "failed": 2,
       "tests": [
         {
           "name": "delegation_multi_agent_implementation_prefers_teams",
@@ -302,11 +290,11 @@
         },
         {
           "name": "rebuild_two_consecutive_passes",
-          "passed": false
+          "passed": true
         },
         {
           "name": "rebuild_untested_is_hypothesis",
-          "passed": false
+          "passed": true
         },
         {
           "name": "workflow_knows_full_sequence",
@@ -326,7 +314,7 @@
         },
         {
           "name": "workflow_fix_before_responding",
-          "passed": true
+          "passed": false
         },
         {
           "name": "workflow_knows_review_step",
@@ -334,7 +322,7 @@
         },
         {
           "name": "workflow_review_uses_parallel_subagents",
-          "passed": false
+          "passed": true
         },
         {
           "name": "workflow_review_skipped_for_trivial_changes",
@@ -350,7 +338,7 @@
         },
         {
           "name": "workflow_review_input_is_unbiased",
-          "passed": false
+          "passed": true
         },
         {
           "name": "rebuild_stages_nix_files_first",
@@ -387,8 +375,8 @@
       ]
     },
     "routing": {
-      "passed": 52,
-      "failed": 4,
+      "passed": 50,
+      "failed": 6,
       "tests": [
         {
           "name": "routing_to_desktop_keyboard_typing",
@@ -416,7 +404,7 @@
         },
         {
           "name": "routing_to_media_skip_track",
-          "passed": true
+          "passed": false
         },
         {
           "name": "routing_to_comms_google_chat_message",
@@ -512,7 +500,7 @@
         },
         {
           "name": "routing_to_review_skill_creation",
-          "passed": true
+          "passed": false
         },
         {
           "name": "routing_to_review_skill_routing_failure",
@@ -560,7 +548,7 @@
         },
         {
           "name": "routing_to_review_code_analysis",
-          "passed": false
+          "passed": true
         },
         {
           "name": "routing_to_git_history_search_commits",
@@ -572,7 +560,7 @@
         },
         {
           "name": "routing_to_git_history_trace_evolution",
-          "passed": true
+          "passed": false
         },
         {
           "name": "routing_to_git_history_investigate_past",
@@ -617,8 +605,8 @@
       ]
     },
     "knowledge": {
-      "passed": 10,
-      "failed": 1,
+      "passed": 11,
+      "failed": 0,
       "tests": [
         {
           "name": "commit_skill_knows_conventions",
@@ -626,7 +614,7 @@
         },
         {
           "name": "dotfiles_expert_knows_structure",
-          "passed": false
+          "passed": true
         },
         {
           "name": "commit_uses_specific_staging",
