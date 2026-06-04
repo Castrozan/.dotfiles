@@ -6,6 +6,7 @@ import time
 
 BOOTSTRAP_PLACEHOLDER_WINDOW_NAME = "__bootstrap__"
 SUPERVISOR_POLL_INTERVAL_SECONDS = 10
+AGENT_STARTUP_STAGGER_SECONDS = 2
 
 
 def run_tmux_command(*arguments: str) -> subprocess.CompletedProcess:
@@ -56,9 +57,9 @@ def remove_placeholder_window(session_name: str) -> None:
 
 def ensure_agent_window(
     session_name: str, window_name: str, wrapper_command: str
-) -> None:
+) -> bool:
     if window_exists(session_name, window_name):
-        return
+        return False
     result = run_tmux_command(
         "new-window", "-t", session_name, "-n", window_name, wrapper_command
     )
@@ -67,6 +68,8 @@ def ensure_agent_window(
             f"Error: failed to create tmux window {window_name!r}: {result.stderr.strip()}",
             file=sys.stderr,
         )
+        return False
+    return True
 
 
 def ensure_agent_windows_for_session(session_specification: dict) -> None:
@@ -78,11 +81,13 @@ def ensure_agent_windows_for_session(session_specification: dict) -> None:
         placeholder_created = True
 
     for agent_specification in session_specification["agents"]:
-        ensure_agent_window(
+        agent_window_was_created = ensure_agent_window(
             session_name,
             agent_specification["name"],
             agent_specification["wrapper_command"],
         )
+        if agent_window_was_created:
+            time.sleep(AGENT_STARTUP_STAGGER_SECONDS)
 
     if placeholder_created:
         remove_placeholder_window(session_name)

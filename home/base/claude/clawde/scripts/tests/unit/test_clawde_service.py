@@ -45,6 +45,7 @@ def test_reconcile_recreates_a_session_that_died_after_startup(monkeypatch):
         return _FakeCompletedProcess(0)
 
     monkeypatch.setattr(service_module, "run_tmux_command", fake_run_tmux_command)
+    monkeypatch.setattr(service_module.time, "sleep", lambda _seconds: None)
 
     specification = {
         "sessions": [
@@ -54,7 +55,7 @@ def test_reconcile_recreates_a_session_that_died_after_startup(monkeypatch):
             },
             {
                 "name": "clawde",
-                "agents": [{"name": "silver", "wrapper_command": "true"}],
+                "agents": [{"name": "first-agent", "wrapper_command": "true"}],
             },
             {
                 "name": "esfinge",
@@ -67,6 +68,97 @@ def test_reconcile_recreates_a_session_that_died_after_startup(monkeypatch):
 
     assert issued_new_session_names == ["clawde"], (
         "reconcile must recreate the dead 'clawde' session and only it"
+    )
+
+
+def _fake_tmux_with_window_inventory(live_session_names, windows_by_session):
+    def fake_run_tmux_command(*arguments):
+        subcommand = arguments[0]
+        if subcommand == "has-session":
+            return _FakeCompletedProcess(0 if arguments[2] in live_session_names else 1)
+        if subcommand == "new-session":
+            session_name = arguments[3]
+            live_session_names.add(session_name)
+            windows_by_session.setdefault(session_name, set()).add(arguments[5])
+            return _FakeCompletedProcess(0)
+        if subcommand == "list-windows":
+            return _FakeCompletedProcess(
+                0, stdout="\n".join(windows_by_session.get(arguments[2], set()))
+            )
+        if subcommand == "new-window":
+            windows_by_session.setdefault(arguments[2], set()).add(arguments[4])
+            return _FakeCompletedProcess(0)
+        return _FakeCompletedProcess(0)
+
+    return fake_run_tmux_command
+
+
+def test_each_newly_created_agent_window_is_staggered(monkeypatch):
+    monkeypatch.setattr(
+        service_module,
+        "run_tmux_command",
+        _fake_tmux_with_window_inventory(set(), {}),
+    )
+    stagger_sleeps = []
+    monkeypatch.setattr(
+        service_module.time, "sleep", lambda seconds: stagger_sleeps.append(seconds)
+    )
+
+    specification = {
+        "sessions": [
+            {
+                "name": "clawde",
+                "agents": [
+                    {"name": "first-agent", "wrapper_command": "true"},
+                    {"name": "second-agent", "wrapper_command": "true"},
+                    {"name": "third-agent", "wrapper_command": "true"},
+                    {"name": "fourth-agent", "wrapper_command": "true"},
+                ],
+            }
+        ]
+    }
+
+    service_module.ensure_all_agent_windows(specification)
+
+    assert stagger_sleeps == [service_module.AGENT_STARTUP_STAGGER_SECONDS] * 4, (
+        "every newly created agent window must be staggered so the agents do not "
+        "spawn the shared Discord bun plugin MCP server concurrently and race on "
+        "linking dependencies"
+    )
+
+
+def test_steady_state_reconcile_does_not_stagger_existing_windows(monkeypatch):
+    monkeypatch.setattr(
+        service_module,
+        "run_tmux_command",
+        _fake_tmux_with_window_inventory(
+            {"clawde"},
+            {"clawde": {"first-agent", "second-agent", "third-agent", "fourth-agent"}},
+        ),
+    )
+    stagger_sleeps = []
+    monkeypatch.setattr(
+        service_module.time, "sleep", lambda seconds: stagger_sleeps.append(seconds)
+    )
+
+    specification = {
+        "sessions": [
+            {
+                "name": "clawde",
+                "agents": [
+                    {"name": "first-agent", "wrapper_command": "true"},
+                    {"name": "second-agent", "wrapper_command": "true"},
+                    {"name": "third-agent", "wrapper_command": "true"},
+                    {"name": "fourth-agent", "wrapper_command": "true"},
+                ],
+            }
+        ]
+    }
+
+    service_module.ensure_all_agent_windows(specification)
+
+    assert stagger_sleeps == [], (
+        "a reconcile pass where every agent window already exists must not sleep"
     )
 
 
