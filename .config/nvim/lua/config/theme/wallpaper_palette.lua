@@ -70,7 +70,7 @@ function wallpaper_palette.read_and_map_to_base16()
   return {
     base00 = background,
     base01 = blend_two_hex_colors(background, foreground, 0.06),
-    base02 = blend_two_hex_colors(background, foreground, 0.13),
+    base02 = blend_two_hex_colors(background, foreground, 0.35),
     base03 = accent_contrast_floor.lighten_against_background(palette.color8, background),
     base04 = blend_two_hex_colors(palette.color8, foreground, 0.5),
     base05 = foreground,
