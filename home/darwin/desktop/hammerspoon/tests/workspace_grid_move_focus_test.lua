@@ -85,6 +85,7 @@ hs = {
 }
 
 local workspaceGrid = require("workspace_grid")
+require("workspace_grid_persistence").setStateFilePathForTest(os.tmpname())
 
 local failureCount = 0
 local function expectEqual(description, expectedValue, actualValue)
