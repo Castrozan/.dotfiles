@@ -145,7 +145,7 @@ tests:
   - name: local_information_first
     description: "Agent should prefer local information before reaching for external tools"
     skill_path: agents/core_rules/core.md
-    prompt: "I have a saved file with the full tweet text already in it. Should I open Chrome to read the tweet?"
+    prompt: "I have a saved file with the full tweet text already in it. Should I open Chrome to read the tweet? Begin your answer with YES or NO."
     model: haiku
     max_turns: 1
     assertions:
@@ -156,6 +156,4 @@ tests:
         - "file"
         - "read"
       output_not_contains:
-        - "open Chrome"
-        - "navigate"
-        - "browser"
+        - "yes"
