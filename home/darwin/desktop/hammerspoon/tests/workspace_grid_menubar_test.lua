@@ -84,8 +84,8 @@ expectEqual(
   "  1 [ 2]  3   4   5   6   7 ",
   plainTitle(createdMenuBars[1].title)
 )
-expectEqual("the occupied workspace uses the bar's label color", "labelColor", cellColorName(createdMenuBars[1].title, 1, 2))
-expectEqual("an empty workspace is dimmed", "tertiaryLabelColor", cellColorName(createdMenuBars[1].title, 1, 1))
+expectEqual("the occupied workspace uses the theme accent color", "controlAccentColor", cellColorName(createdMenuBars[1].title, 1, 2))
+expectEqual("an unoccupied workspace uses the solid label color", "labelColor", cellColorName(createdMenuBars[1].title, 1, 1))
 
 local firstRowCharacterWidth = titleCharacterWidth(createdMenuBars[1].title)
 menuBar.render(18, 7, { [18] = true })

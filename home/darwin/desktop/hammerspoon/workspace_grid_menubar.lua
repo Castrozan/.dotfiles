@@ -3,8 +3,8 @@ local workspaceGridMenuBar = {}
 local menuBarIndicatorHandle = hs.menubar.new()
 
 local figureSpace = "\u{2007}"
-local occupiedWorkspaceColor = { list = "System", name = "labelColor" }
-local emptyWorkspaceColor = { list = "System", name = "tertiaryLabelColor" }
+local occupiedWorkspaceColor = { list = "System", name = "controlAccentColor" }
+local unoccupiedWorkspaceColor = { list = "System", name = "labelColor" }
 
 local function paddedNumberText(workspaceNumber)
   if workspaceNumber < 10 then
@@ -30,7 +30,7 @@ function workspaceGridMenuBar.render(currentWorkspaceNumber, columnsPerRow, occu
     else
       cellText = figureSpace .. numberText .. figureSpace
     end
-    local cellColor = occupiedWorkspaceNumbers[workspaceNumber] and occupiedWorkspaceColor or emptyWorkspaceColor
+    local cellColor = occupiedWorkspaceNumbers[workspaceNumber] and occupiedWorkspaceColor or unoccupiedWorkspaceColor
     styledTitle = styledTitle .. hs.styledtext.new(cellText, { color = cellColor })
   end
   menuBarIndicatorHandle:setTitle(styledTitle)
