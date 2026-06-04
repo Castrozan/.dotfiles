@@ -68,8 +68,8 @@ function dynamic_theme.setup_live_reload_on_wallpaper_change()
   })
 
   vim.api.nvim_create_autocmd("FileType", {
-    group = vim.api.nvim_create_augroup("ReclearBackgroundsWhenSnacksPickerOpens", { clear = true }),
-    pattern = { "snacks_picker_list", "snacks_layout_box", "snacks_picker_input" },
+    group = vim.api.nvim_create_augroup("ReclearBackgroundsWhenAnyFiletypePluginAddsGroups", { clear = true }),
+    pattern = "*",
     callback = schedule_background_clear,
   })
 
