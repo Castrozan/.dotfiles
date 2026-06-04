@@ -1,3 +1,5 @@
+local accent_contrast_floor = require("config.theme.accent_contrast_floor")
+
 local wallpaper_palette = {}
 
 local wallpaper_palette_file_path = vim.fn.expand("~/.config/hypr-theme/current/theme/colors.toml")
@@ -62,7 +64,7 @@ local function blend_two_hex_colors(first_hex, second_hex, second_color_weight)
 end
 
 function wallpaper_palette.read_and_map_to_base16()
-  local palette = read_wallpaper_palette_from_disk()
+  local palette = accent_contrast_floor.lift_accent_slots_against_background(read_wallpaper_palette_from_disk())
   local background = palette.background
   local foreground = palette.foreground
   return {
