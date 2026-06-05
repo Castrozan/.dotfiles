@@ -12,6 +12,8 @@ import sys
 import tempfile
 from pathlib import Path
 
+PREFERENCE_MERGE_DEFERRED_BECAUSE_BRAVE_RUNNING_EXIT_CODE = 3
+
 
 def brave_is_currently_running() -> bool:
     try:
@@ -96,7 +98,7 @@ def main() -> int:
             "INFO: Brave is running; preference merge deferred until next launch.",
             file=sys.stderr,
         )
-        return 0
+        return PREFERENCE_MERGE_DEFERRED_BECAUSE_BRAVE_RUNNING_EXIT_CODE
 
     if not overrides_path.exists():
         print(f"ERROR: overrides file missing: {overrides_path}", file=sys.stderr)
