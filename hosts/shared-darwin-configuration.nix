@@ -7,6 +7,7 @@
 {
   imports = [
     ./shared-darwin/brave
+    ./shared-darwin/chrome
     ./shared-darwin/wezterm
     ./shared-darwin/displays
     ./shared-darwin/finder

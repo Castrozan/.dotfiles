@@ -42,6 +42,7 @@ let
   sourcebotChecks = import ../../home/base/sourcebot/tests/checks.nix domainArgs;
 
   chiseChecks = import ../../hosts/chise/tests/checks.nix moduleArgs;
+  chromeDarwinPolicyChecks = import ../../hosts/shared-darwin/chrome/tests/checks.nix domainArgs;
 in
 claudeChecks
 // codexChecks
@@ -62,3 +63,4 @@ claudeChecks
 // voiceChecks
 // sourcebotChecks
 // chiseChecks
+// chromeDarwinPolicyChecks
