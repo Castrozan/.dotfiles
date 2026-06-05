@@ -10,6 +10,15 @@ vim.api.nvim_create_autocmd("BufReadPost", {
   end,
 })
 
+local quiet_listchars_in_prose_group = vim.api.nvim_create_augroup("QuietListcharsInProse", { clear = true })
+vim.api.nvim_create_autocmd("FileType", {
+  group = quiet_listchars_in_prose_group,
+  pattern = { "markdown", "norg", "rmd", "org" },
+  callback = function()
+    vim.wo.list = false
+  end,
+})
+
 local trim_trailing_whitespace_on_save_group =
   vim.api.nvim_create_augroup("TrimTrailingWhitespaceOnSave", { clear = true })
 vim.api.nvim_create_autocmd("BufWritePre", {

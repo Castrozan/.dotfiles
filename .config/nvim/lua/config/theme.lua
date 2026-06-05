@@ -11,8 +11,12 @@ function dynamic_theme.apply()
   if not base16_module_is_available then
     return
   end
-  base16_module.setup(require("config.theme.wallpaper_palette").read_and_map_to_base16())
+  local base16_palette = require("config.theme.wallpaper_palette").read_and_map_to_base16()
+  base16_module.setup(base16_palette)
   schedule_background_clear()
+  vim.schedule(function()
+    require("config.theme.markdown_highlights").apply(base16_palette)
+  end)
 end
 
 local function forget_cached_theme_submodules_so_next_require_reads_disk()
