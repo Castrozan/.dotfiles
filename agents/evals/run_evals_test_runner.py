@@ -8,7 +8,7 @@ from run_evals_assertions import check_assertions
 from run_evals_config_loader import resolve_system_prompt_for_test
 from run_evals_worktree_and_environment import build_filtered_environment
 
-DEFAULT_PARALLEL_WORKERS = 3
+DEFAULT_PARALLEL_WORKERS = 2
 TRANSIENT_RETRY_ATTEMPTS = 2
 TRANSIENT_RETRY_BACKOFF_SECONDS = 3
 
