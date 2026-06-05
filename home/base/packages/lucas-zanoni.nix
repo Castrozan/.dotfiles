@@ -67,6 +67,12 @@
       zip
       zoxide
     ]
+    ++ lib.optionals pkgs.stdenv.hostPlatform.isDarwin (
+      with pkgs;
+      [
+        btop
+      ]
+    )
     ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux (
       with pkgs;
       [
