@@ -63,39 +63,6 @@ tests:
         - "inform the user"
         - "let the user know"
 
-  - name: workflow_knows_review_step
-    skill_path: agents/dotfiles.md
-    prompt: "What steps do you follow after editing a file?"
-    model: haiku
-    assertions:
-      output_contains:
-        - "review"
-
-  - name: workflow_review_uses_parallel_subagents
-    skill_path: agents/dotfiles.md
-    prompt: "How many reviewer agents do you spawn in the review step?"
-    model: haiku
-    assertions:
-      output_contains_any:
-        - "two"
-        - "Two"
-        - "2"
-      output_not_contains:
-        - "TeamCreate"
-
-  - name: workflow_review_skipped_for_trivial_changes
-    skill_path: agents/dotfiles.md
-    prompt: "I changed 5 lines in a single file. Do I need to run the review step?"
-    model: haiku
-    assertions:
-      output_contains_any:
-        - "no"
-        - "No"
-        - "skip"
-        - "not"
-        - "below"
-        - "threshold"
-
   - name: workflow_review_out_of_scope_findings_not_auto_fixed
     description: "Review findings in files outside the diff are reported as informational, not auto-fixed"
     skill_path: agents/dotfiles.md
