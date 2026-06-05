@@ -28,6 +28,8 @@ let
 
   chromeDevtoolsStreamableHttpPort = 8767;
   chromeDevtoolsStreamableHttpSessionTimeoutMilliseconds = 3600000;
+  chromeDevtoolsStreamableHttpSessionTimeoutSeconds =
+    chromeDevtoolsStreamableHttpSessionTimeoutMilliseconds / 1000;
 
   chromeDevtoolsMcpAutoconnectCommand = builtins.concatStringsSep " " [
     chromeDevtoolsMcpBinary
@@ -58,15 +60,24 @@ let
       --port ${toString chromeDevtoolsStreamableHttpPort}
   '';
 
-  chromeDevtoolsMcpOrphanReaper = pkgs.writeShellScript "chrome-devtools-mcp-orphan-reaper" ''
-    set -euo pipefail
-    ${pkgs.procps}/bin/pkill -9 -f 'chrome-devtools-mcp/build/src/bin/chrome-devtools-mcp.js' || true
-  '';
+  reapChromeDevtoolsMcpChildrenScript = ./scripts/reap-chrome-devtools-mcp-children.py;
+
+  mkChromeDevtoolsMcpChildReaper =
+    minimumAgeSeconds:
+    pkgs.writeShellScript "reap-chrome-devtools-mcp-children-min-age-${toString minimumAgeSeconds}s" ''
+      export PATH="/usr/bin:/bin''${PATH:+:$PATH}"
+      export MINIMUM_AGE_SECONDS=${toString minimumAgeSeconds}
+      exec ${pkgs.python3}/bin/python3 ${reapChromeDevtoolsMcpChildrenScript}
+    '';
+
+  chromeDevtoolsMcpOrphanReaper = mkChromeDevtoolsMcpChildReaper 0;
 in
 {
   mcpServerStreamableHttpUrl = "http://localhost:${toString chromeDevtoolsStreamableHttpPort}/mcp";
   streamableHttpBridgeCommand = "${chromeDevtoolsStreamableHttpBridgeWrapper}/bin/chrome-devtools-mcp-streamable-http-bridge";
   inherit chromeDevtoolsMcpOrphanReaper;
+  inherit mkChromeDevtoolsMcpChildReaper;
+  inherit chromeDevtoolsStreamableHttpSessionTimeoutSeconds;
   inherit supergatewayBinary;
   inherit pinchtabBinary;
 

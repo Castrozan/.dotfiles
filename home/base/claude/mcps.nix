@@ -9,7 +9,9 @@ let
   nodejs = pkgs.nodejs_22;
   homeDir = config.home.homeDirectory;
   inherit (config.home) username;
+  inherit (pkgs.stdenv.hostPlatform) isDarwin;
   chromeBinary = "${latest.google-chrome}/bin/google-chrome-stable";
+  chromeDevtoolsMcpChildReaperIntervalSeconds = 900;
 
   browserMcp = import ../../../agents/skills/browser/install {
     inherit
@@ -149,6 +151,23 @@ in
       codexBinaryPath = "${homeDir}/.local/bin/codex";
     })
   ];
+
+  launchd.agents = lib.mkIf isDarwin {
+    chrome-devtools-mcp-child-reaper = {
+      enable = true;
+      config = {
+        Label = "com.dotfiles.chrome-devtools-mcp-child-reaper";
+        ProgramArguments = [
+          "${pkgs.bash}/bin/bash"
+          "${browserMcp.mkChromeDevtoolsMcpChildReaper browserMcp.chromeDevtoolsStreamableHttpSessionTimeoutSeconds}"
+        ];
+        StartInterval = chromeDevtoolsMcpChildReaperIntervalSeconds;
+        RunAtLoad = false;
+        StandardOutPath = "/tmp/chrome-devtools-mcp-child-reaper.log";
+        StandardErrorPath = "/tmp/chrome-devtools-mcp-child-reaper.log";
+      };
+    };
+  };
 
   home = {
     inherit (browserMcp) packages;
