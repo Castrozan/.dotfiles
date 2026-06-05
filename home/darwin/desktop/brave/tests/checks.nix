@@ -22,10 +22,15 @@ let
   braveDuplicateTabCustomKeybindIsBoundToControlD =
     bravePreferencesOverrides.brave.accelerators."34027" == [ "Control+KeyD" ];
 
-  braveCloseTabAcceleratorIncludesBothCmdWAndCtrlW =
+  braveCloseTabAcceleratorIsBoundToCtrlWOnly =
     bravePreferencesOverrides.brave.accelerators."34015" == [
-      "Command+KeyW"
       "Control+KeyW"
+    ];
+
+  braveCloseWindowAcceleratorIsBoundToCmdW =
+    bravePreferencesOverrides.brave.accelerators."34012" == [
+      "Command+KeyW"
+      "Command+Shift+KeyW"
     ];
 
   braveSpellcheckIsLockedToEnGb = bravePreferencesOverrides.spellcheck.dictionaries == [ "en-GB" ];
@@ -52,10 +57,15 @@ in
       braveDuplicateTabCustomKeybindIsBoundToControlD
       "Brave Duplicate Tab (command id 34027) must be bound to Control+KeyD";
 
-  domain-desktop-brave-close-tab-bound-to-both-cmd-w-and-ctrl-w =
-    mkEvalCheck "domain-desktop-brave-close-tab-bound-to-both-cmd-w-and-ctrl-w"
-      braveCloseTabAcceleratorIncludesBothCmdWAndCtrlW
-      "Brave Close Tab (command id 34015) must keep its default Command+KeyW and add Control+KeyW";
+  domain-desktop-brave-close-tab-bound-to-ctrl-w-only =
+    mkEvalCheck "domain-desktop-brave-close-tab-bound-to-ctrl-w-only"
+      braveCloseTabAcceleratorIsBoundToCtrlWOnly
+      "Brave Close Tab (command id 34015) must be bound to Control+KeyW only so Cmd+W is free for Close Window";
+
+  domain-desktop-brave-close-window-bound-to-cmd-w =
+    mkEvalCheck "domain-desktop-brave-close-window-bound-to-cmd-w"
+      braveCloseWindowAcceleratorIsBoundToCmdW
+      "Brave Close Window (command id 34012) must be bound to Command+KeyW and keep Command+Shift+KeyW";
 
   domain-desktop-brave-spellcheck-locked-to-en-gb =
     mkEvalCheck "domain-desktop-brave-spellcheck-locked-to-en-gb" braveSpellcheckIsLockedToEnGb
