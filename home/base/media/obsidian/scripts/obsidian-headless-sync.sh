@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
-# Runs obsidian-headless sync continuously against the local vault. Driven by
-# NODE_BIN_DIR, NPM_PREFIX, VAULT_PATH env vars.
 
 export PATH="$NODE_BIN_DIR${PATH:+:$PATH}"
 export NPM_CONFIG_PREFIX="$NPM_PREFIX"
@@ -11,4 +9,4 @@ if [ ! -x "$OB_BIN" ]; then
 	exit 1
 fi
 
-exec "$OB_BIN" sync --continuous --path "$VAULT_PATH"
+exec "$OB_BIN" sync --path "$VAULT_PATH"

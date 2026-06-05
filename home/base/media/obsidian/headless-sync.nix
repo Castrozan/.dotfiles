@@ -76,8 +76,8 @@ in
         "${pkgs.bash}/bin/bash"
         "${obsidianHeadlessSyncScript}"
       ];
-      KeepAlive = true;
       RunAtLoad = true;
+      StartInterval = 300;
       StandardOutPath = "/tmp/obsidian-headless-sync.log";
       StandardErrorPath = "/tmp/obsidian-headless-sync.log";
     };
