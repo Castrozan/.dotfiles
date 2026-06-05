@@ -1,6 +1,11 @@
-{ pkgs, ... }:
+{
+  pkgs,
+  lib,
+  hostname,
+  ...
+}:
 let
-  hooksConfig = import ./hook-config.nix;
+  hooksConfig = import ./hook-config.nix { inherit lib hostname; };
   pluginsConfig = import ./plugins.nix { inherit pkgs; };
 
   claudeKeybindings = {

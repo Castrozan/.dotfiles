@@ -1,6 +1,18 @@
+{ lib, hostname }:
 let
   hooksPath = "~/.claude/hooks";
   runHook = "${hooksPath}/run-hook.sh";
+
+  machineAllowedProhibitedWordsFile =
+    ../../../private-config/machines + "/${hostname}/claude-prohibited-words-allowed.nix";
+  machineAllowedProhibitedWords =
+    if builtins.pathExists machineAllowedProhibitedWordsFile then
+      import machineAllowedProhibitedWordsFile
+    else
+      [ ];
+  prohibitedWordsAllowedEnvironmentAssignment =
+    "PROHIBITED_WORDS_ALLOWED="
+    + lib.escapeShellArg (lib.concatStringsSep "," machineAllowedProhibitedWords);
 in
 {
   SessionStart = [
@@ -32,7 +44,7 @@ in
         }
         {
           type = "command";
-          command = "${runHook} ${hooksPath}/prohibited-words-guard.py";
+          command = "${prohibitedWordsAllowedEnvironmentAssignment} ${runHook} ${hooksPath}/prohibited-words-guard.py";
           timeout = 3000;
         }
       ];

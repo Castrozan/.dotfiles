@@ -127,6 +127,39 @@ class TestPublishingCommands:
         assert result.returncode == 0
 
 
+class TestMachineAllowedWords:
+    def test_allows_word_listed_in_machine_allowed_env(
+        self, invoke_prohibited_words_guard_hook, monkeypatch
+    ):
+        monkeypatch.setenv("PROHIBITED_WORDS_ALLOWED", "acme")
+        result = invoke_prohibited_words_guard_hook(
+            {
+                "tool_name": "Write",
+                "tool_input": {
+                    "file_path": "/Users/x/.dotfiles/notes.md",
+                    "content": "we deploy to the acme cluster",
+                },
+            }
+        )
+        assert result.returncode == 0
+
+    def test_still_blocks_other_words_when_one_is_allowed(
+        self, invoke_prohibited_words_guard_hook, monkeypatch
+    ):
+        monkeypatch.setenv("PROHIBITED_WORDS_ALLOWED", "acme")
+        result = invoke_prohibited_words_guard_hook(
+            {
+                "tool_name": "Write",
+                "tool_input": {
+                    "file_path": "/Users/x/.dotfiles/notes.md",
+                    "content": "initech runs here",
+                },
+            }
+        )
+        assert result.returncode == 2
+        assert "initech" in parse_system_message(result.stdout).lower()
+
+
 class TestWordlistAbsent:
     def test_no_op_when_wordlist_missing(
         self, invoke_prohibited_words_guard_hook_without_wordlist

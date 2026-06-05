@@ -42,6 +42,13 @@ def load_prohibited_words() -> list[str]:
     return words
 
 
+def load_machine_allowed_words() -> set[str]:
+    raw_allowed_words = os.environ.get("PROHIBITED_WORDS_ALLOWED", "")
+    return {
+        entry.strip().lower() for entry in raw_allowed_words.split(",") if entry.strip()
+    }
+
+
 def path_is_within_private_repository(file_path: str) -> bool:
     if not file_path:
         return False
@@ -132,7 +139,11 @@ def emit_block_and_exit(tool_name: str, word: str, label: str) -> None:
 
 def main() -> None:
     prohibited_words = load_prohibited_words()
-    if not prohibited_words:
+    machine_allowed_words = load_machine_allowed_words()
+    enforced_prohibited_words = [
+        word for word in prohibited_words if word not in machine_allowed_words
+    ]
+    if not enforced_prohibited_words:
         sys.exit(0)
 
     try:
@@ -147,7 +158,7 @@ def main() -> None:
     segments = collect_segments_to_inspect(
         tool_name, tool_input, current_working_directory
     )
-    violation = find_prohibited_word_in_segments(prohibited_words, segments)
+    violation = find_prohibited_word_in_segments(enforced_prohibited_words, segments)
 
     if violation is None:
         sys.exit(0)
