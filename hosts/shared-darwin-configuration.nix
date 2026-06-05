@@ -111,6 +111,7 @@
       "dbeaver-community"
       "docker"
       "google-chrome"
+      "hammerspoon"
       "maccy"
       "obsidian"
       "visual-studio-code"

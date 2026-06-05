@@ -8,6 +8,5 @@
 
   homebrew.casks = [
     "firefox"
-    "hammerspoon"
   ];
 }

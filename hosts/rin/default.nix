@@ -7,8 +7,4 @@
   homebrew.brews = [
     "tailscale"
   ];
-
-  homebrew.casks = [
-    "hammerspoon"
-  ];
 }
