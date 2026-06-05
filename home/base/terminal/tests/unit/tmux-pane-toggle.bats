@@ -21,6 +21,25 @@ load '../../../../../tests/helpers/bash-script-assertions'
 	assert_script_source_matches 'send-keys -t "\$new_pane_id"'
 }
 
+@test "reads pane context from positional args so the hot path skips display-message" {
+	assert_script_source_matches 'current_window_id="\$\{4:-'
+	assert_script_source_matches 'previous_pane_id="\$\{5:-'
+	assert_script_source_matches 'previous_pane_was_zoomed="\$\{6:-'
+}
+
+@test "every pane-context query is a fallback default so supplied args skip the round-trip" {
+	local scriptPath totalQueries fallbackQueries
+	scriptPath="$(_resolve_script_under_test)"
+	totalQueries=$(grep -cE '\$\(tmux display-message -p' "$scriptPath")
+	fallbackQueries=$(grep -cE ':-\$\(tmux display-message -p' "$scriptPath")
+	[ "$totalQueries" -gt 0 ]
+	[ "$totalQueries" -eq "$fallbackQueries" ]
+}
+
+@test "batches post-split select, resize, and send into one tmux invocation" {
+	assert_script_source_matches 'resize-pane -Z -t "\$new_pane_id" \\; send-keys'
+}
+
 @test "detects the previous zoom state via window_zoomed_flag not the nonexistent pane_zoomed" {
 	assert_script_source_matches "window_zoomed_flag"
 	assert_script_source_does_not_match "pane_zoomed"
@@ -28,8 +47,7 @@ load '../../../../../tests/helpers/bash-script-assertions'
 
 @test "toggles by selecting an existing pane with the same title" {
 	assert_script_source_matches 'tmux list-panes'
-	assert_script_source_matches 'tmux select-pane -t "\$existing_pane_id"'
-	assert_script_source_matches 'resize-pane -Z -t "\$existing_pane_id"'
+	assert_script_source_matches 'tmux select-pane -t "\$existing_pane_id" \\; resize-pane -Z -t "\$existing_pane_id"'
 }
 
 @test "delegates restoration to a server-side run-shell so the dying pane never owns the re-zoom" {
