@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-06-04T21:24:28.810879+00:00",
-  "git_commit": "03e37d57",
-  "total_tests": 171,
-  "total_passed": 161,
-  "total_failed": 10,
-  "pass_rate": 0.9415,
+  "generated_at": "2026-06-05T13:27:37.911866+00:00",
+  "git_commit": "3c39beaa",
+  "total_tests": 167,
+  "total_passed": 165,
+  "total_failed": 2,
+  "pass_rate": 0.988,
   "categories": {
     "other": {
-      "passed": 48,
-      "failed": 2,
+      "passed": 49,
+      "failed": 1,
       "tests": [
         {
           "name": "worktrees_knows_builtin_flag",
@@ -72,7 +72,7 @@
         },
         {
           "name": "local_information_first",
-          "passed": false
+          "passed": true
         },
         {
           "name": "nix_rebuild_trigger_fires_on_nix_edit",
@@ -213,8 +213,8 @@
       ]
     },
     "compliance": {
-      "passed": 37,
-      "failed": 2,
+      "passed": 36,
+      "failed": 0,
       "tests": [
         {
           "name": "delegation_multi_agent_implementation_prefers_teams",
@@ -314,18 +314,6 @@
         },
         {
           "name": "workflow_fix_before_responding",
-          "passed": false
-        },
-        {
-          "name": "workflow_knows_review_step",
-          "passed": false
-        },
-        {
-          "name": "workflow_review_uses_parallel_subagents",
-          "passed": true
-        },
-        {
-          "name": "workflow_review_skipped_for_trivial_changes",
           "passed": true
         },
         {
@@ -375,8 +363,8 @@
       ]
     },
     "routing": {
-      "passed": 50,
-      "failed": 6,
+      "passed": 54,
+      "failed": 1,
       "tests": [
         {
           "name": "routing_to_desktop_keyboard_typing",
@@ -400,11 +388,11 @@
         },
         {
           "name": "routing_to_media_youtube_search",
-          "passed": true
+          "passed": false
         },
         {
           "name": "routing_to_media_skip_track",
-          "passed": false
+          "passed": true
         },
         {
           "name": "routing_to_comms_google_chat_message",
@@ -488,23 +476,19 @@
         },
         {
           "name": "routing_to_rebuild_apply_changes",
-          "passed": false
+          "passed": true
         },
         {
           "name": "routing_to_test_verification",
           "passed": true
         },
         {
-          "name": "routing_to_review_readme_update",
-          "passed": false
-        },
-        {
           "name": "routing_to_review_skill_creation",
-          "passed": false
+          "passed": true
         },
         {
           "name": "routing_to_review_skill_routing_failure",
-          "passed": false
+          "passed": true
         },
         {
           "name": "routing_to_notify_task_completion",
@@ -560,7 +544,7 @@
         },
         {
           "name": "routing_to_git_history_trace_evolution",
-          "passed": false
+          "passed": true
         },
         {
           "name": "routing_to_git_history_investigate_past",
