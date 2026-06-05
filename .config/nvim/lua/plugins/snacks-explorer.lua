@@ -12,6 +12,7 @@ return {
               list = {
                 keys = {
                   ["<c-n>"] = "explorer_add",
+                  ["<c-k>e"] = "confirm",
                 },
               },
             },
