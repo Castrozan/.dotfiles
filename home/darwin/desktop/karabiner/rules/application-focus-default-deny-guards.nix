@@ -9,6 +9,7 @@ let
     terminalApplicationIsFrontmost = "terminal_application_is_frontmost";
     nonTerminalApplicationIsFrontmost = "non_terminal_application_is_frontmost";
     braveBrowserIsFrontmost = "brave_browser_is_frontmost";
+    chromeBrowserIsFrontmost = "chrome_browser_is_frontmost";
   };
 in
 {

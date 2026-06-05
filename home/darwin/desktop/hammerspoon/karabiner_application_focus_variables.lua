@@ -10,6 +10,7 @@ local terminalBundleIdentifiers = {
 	["com.googlecode.iterm2"] = true,
 }
 local braveBrowserBundleIdentifier = "com.brave.Browser"
+local chromeBrowserBundleIdentifier = "com.google.Chrome"
 
 local function currentFrontmostBundleIdentifier()
 	local frontmostApplication = hs.application.frontmostApplication()
@@ -23,14 +24,17 @@ local function setKarabinerApplicationFocusVariables()
 	local bundleIdentifier = currentFrontmostBundleIdentifier()
 	local frontmostIsTerminal = bundleIdentifier ~= nil and terminalBundleIdentifiers[bundleIdentifier] == true
 	local frontmostIsBraveBrowser = bundleIdentifier == braveBrowserBundleIdentifier
+	local frontmostIsChromeBrowser = bundleIdentifier == chromeBrowserBundleIdentifier
 
 	local applicationFocusVariablesJson = string.format(
 		'{"terminal_application_is_frontmost":%d,'
 			.. '"non_terminal_application_is_frontmost":%d,'
-			.. '"brave_browser_is_frontmost":%d}',
+			.. '"brave_browser_is_frontmost":%d,'
+			.. '"chrome_browser_is_frontmost":%d}',
 		frontmostIsTerminal and 1 or 0,
 		frontmostIsTerminal and 0 or 1,
-		frontmostIsBraveBrowser and 1 or 0
+		frontmostIsBraveBrowser and 1 or 0,
+		frontmostIsChromeBrowser and 1 or 0
 	)
 
 	hs.task.new(karabinerCliPath, nil, { "--set-variables", applicationFocusVariablesJson }):start()

@@ -119,6 +119,13 @@ in
       )
       "Every brave-frontmost manipulator must also carry the brave_browser_is_frontmost == 1 default-deny guard, so it fails closed during karabiner's startup window and stays correct when frontmost_application conditions go stale during a shared-secret desync";
 
+  domain-desktop-karabiner-chrome-frontmost-rules-are-default-deny-guarded =
+    mkEvalCheck "domain-desktop-karabiner-chrome-frontmost-rules-are-default-deny-guarded"
+      (everyManipulatorWithFrontmostConditionIsDefaultDenyGuarded "frontmost_application_if" "chrome"
+        applicationFocusVariableNames.chromeBrowserIsFrontmost
+      )
+      "Every chrome-frontmost manipulator must also carry the chrome_browser_is_frontmost == 1 default-deny guard, so it fails closed during karabiner's startup window and stays correct when frontmost_application conditions go stale during a shared-secret desync";
+
   domain-desktop-karabiner-default-deny-variables-match-hammerspoon =
     mkEvalCheck "domain-desktop-karabiner-default-deny-variables-match-hammerspoon"
       hammerspoonSetsEveryApplicationFocusVariable

@@ -30,6 +30,7 @@
     ./desktop/hammerspoon
     ./desktop/application-launcher
     ./desktop/brave
+    ./desktop/chrome
     ../base/desktop/fonts.nix
     ./desktop/karabiner
     ./desktop/keyboard-layout

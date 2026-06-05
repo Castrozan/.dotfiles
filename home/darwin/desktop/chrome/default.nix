@@ -9,17 +9,17 @@ let
   };
 in
 {
-  home.activation.mergeBraveDefaultProfilePreferences =
+  home.activation.mergeChromeDefaultProfilePreferences =
     config.lib.dag.entryAfter
       [
         "writeBoundary"
       ]
       (
         chromiumProfilePreferenceMerge.mkChromiumProfilePreferenceMergeActivationScript {
-          browserDisplayProcessName = "Brave Browser";
-          browserUserDataDirectoryRelativeToHome = "Library/Application Support/BraveSoftware/Brave-Browser";
+          browserDisplayProcessName = "Google Chrome";
+          browserUserDataDirectoryRelativeToHome = "Library/Application Support/Google/Chrome";
           preferencesOverridesJsonFile = ./preferences-overrides.json;
-          sentinelBasename = "brave-preferences-applied";
+          sentinelBasename = "chrome-preferences-applied";
         }
       );
 }

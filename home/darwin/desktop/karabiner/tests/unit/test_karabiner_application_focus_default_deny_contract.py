@@ -8,6 +8,7 @@ RULES_DEFAULT_NIX_PATH = KARABINER_DIRECTORY / "rules" / "default.nix"
 BRAVE_KEYBIND_PASSTHROUGH_NIX_PATH = (
     KARABINER_DIRECTORY / "rules" / "brave-keybind-passthrough-rules.nix"
 )
+CHROME_KEYBIND_NIX_PATH = KARABINER_DIRECTORY / "rules" / "chrome-keybind-rules.nix"
 HAMMERSPOON_APPLICATION_FOCUS_MODULE_PATH = (
     KARABINER_DIRECTORY.parent
     / "hammerspoon"
@@ -29,6 +30,7 @@ APPLICATION_FOCUS_VARIABLE_NAMES = (
     "terminal_application_is_frontmost",
     "non_terminal_application_is_frontmost",
     "brave_browser_is_frontmost",
+    "chrome_browser_is_frontmost",
 )
 CONFIG_CHANGED_SENTINEL_BASENAME = "karabiner-config-changed-since-last-kick"
 
@@ -61,11 +63,18 @@ def test_hammerspoon_sets_every_application_focus_variable_the_guards_read():
         assert application_focus_variable_name in hammerspoon_content
 
 
+def test_chrome_rules_guard_their_frontmost_keybinds_from_the_guard():
+    chrome_content = CHROME_KEYBIND_NIX_PATH.read_text()
+    assert "application-focus-default-deny-guards.nix" in chrome_content
+    assert "chromeBrowserIsFrontmost" in chrome_content
+
+
 def test_hammerspoon_reports_terminal_and_brave_focus_consistently():
     hammerspoon_content = HAMMERSPOON_APPLICATION_FOCUS_MODULE_PATH.read_text()
     assert "frontmostIsTerminal and 1 or 0" in hammerspoon_content
     assert "frontmostIsTerminal and 0 or 1" in hammerspoon_content
     assert "frontmostIsBraveBrowser and 1 or 0" in hammerspoon_content
+    assert "frontmostIsChromeBrowser and 1 or 0" in hammerspoon_content
 
 
 def test_kick_runs_only_when_the_config_changed_sentinel_is_present():
