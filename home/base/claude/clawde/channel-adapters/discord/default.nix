@@ -27,6 +27,10 @@ let
     builtins.readFile ../../scripts/inject-one-secret.sh
   );
 
+  waitForSecretScript = pkgs.writeShellScript "wait-for-discord-bot-token-secret" (
+    builtins.readFile ./scripts/wait-for-secret.sh
+  );
+
   discordChannelEnvDirectoryFor = name: "${homeDir}/.claude/channels/discord/${name}";
 in
 {
@@ -55,7 +59,10 @@ in
       environmentSetterFor =
         agent:
         if agent.channel.discord.botTokenSecretName != null then
-          "DISCORD_BOT_TOKEN=$(cat ${secretsDirectory}/${agent.channel.discord.botTokenSecretName}) "
+          let
+            tokenFile = lib.escapeShellArg "${secretsDirectory}/${agent.channel.discord.botTokenSecretName}";
+          in
+          "${waitForSecretScript} ${tokenFile} && DISCORD_BOT_TOKEN=$(cat ${tokenFile}) "
         else
           "";
       agentActivationScriptFor =
