@@ -33,6 +33,9 @@ let
       "Command+Shift+KeyW"
     ];
 
+  braveDefaultSearchProviderIsPinnedToGooglePrepopulatedEngineGuid =
+    bravePreferencesOverrides.default_search_provider.guid == "485bf7d3-0215-45af-87dc-538868000001";
+
   braveSpellcheckIsLockedToEnGb = bravePreferencesOverrides.spellcheck.dictionaries == [ "en-GB" ];
 
   braveGoogleSigninIsDisabledInPreferencesOverrides = !bravePreferencesOverrides.signin.allowed;
@@ -66,6 +69,11 @@ in
     mkEvalCheck "domain-desktop-brave-close-window-bound-to-cmd-w"
       braveCloseWindowAcceleratorIsBoundToCmdW
       "Brave Close Window (command id 34012) must be bound to Command+KeyW and keep Command+Shift+KeyW";
+
+  domain-desktop-brave-default-search-provider-pinned-to-google =
+    mkEvalCheck "domain-desktop-brave-default-search-provider-pinned-to-google"
+      braveDefaultSearchProviderIsPinnedToGooglePrepopulatedEngineGuid
+      "Brave default_search_provider.guid must be Google's prepopulated engine guid (prepopulate id 1)";
 
   domain-desktop-brave-spellcheck-locked-to-en-gb =
     mkEvalCheck "domain-desktop-brave-spellcheck-locked-to-en-gb" braveSpellcheckIsLockedToEnGb
