@@ -11,13 +11,7 @@ let
   secretsDirectory = "${config.home.homeDirectory}/.secrets";
 
   primaryIdentityKeyPath = "${config.home.homeDirectory}/.ssh/id_ed25519";
-  hostsWithDedicatedSystemIdentity = {
-    rin = "${config.home.homeDirectory}/.ssh/id_ed25519_nixos";
-  };
-  dedicatedSystemIdentityKeyPaths = lib.optional (
-    hostsWithDedicatedSystemIdentity ? ${hostname}
-  ) hostsWithDedicatedSystemIdentity.${hostname};
-  identityKeyPaths = [ primaryIdentityKeyPath ] ++ dedicatedSystemIdentityKeyPaths;
+  identityKeyPaths = [ primaryIdentityKeyPath ];
 
   privateConfigRoot = ../../../private-config;
   privateMachineSecretsModulePath = "${toString privateConfigRoot}/machines/${hostname}/secrets.nix";
