@@ -142,6 +142,22 @@ tests:
         - "code"
         - "investigate"
 
+  - name: typo_inference_proceeds_without_asking
+    description: "Agent must infer a misspelled proper noun and proceed, not halt to ask"
+    skill_path: agents/core_rules/core.md
+    prompt: "I need help connecting to the company VPN using Sophos. Can you check the sonhos config?"
+    model: haiku
+    max_turns: 1
+    assertions:
+      output_contains_any:
+        - "Sophos"
+        - "sophos"
+      output_not_contains:
+        - "did you mean"
+        - "clarify"
+        - "what do you mean"
+        - "I'm not sure what"
+
   - name: local_information_first
     description: "Agent should prefer local information before reaching for external tools"
     skill_path: agents/core_rules/core.md
