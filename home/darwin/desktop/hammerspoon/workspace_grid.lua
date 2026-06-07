@@ -87,23 +87,32 @@ function workspaceGrid.navigateWorkspace(deltaWithinGrid, alsoMoveFocusedWindow)
 	end
 end
 
-function workspaceGrid.summonApplicationToCurrentWorkspace(applicationName)
-	local application = hs.application.get(applicationName)
-	if not application then
-		hs.application.launchOrFocus(applicationName)
-		application = hs.application.get(applicationName)
+local function firstStandardWindowForBundleIdentifier(applicationBundleIdentifier)
+	for _, application in ipairs(hs.application.applicationsForBundleID(applicationBundleIdentifier)) do
+		local mainWindow = application:mainWindow()
+		if mainWindow and mainWindow:isStandard() then
+			return mainWindow
+		end
+		for _, window in ipairs(application:allWindows()) do
+			if window:isStandard() then
+				return window
+			end
+		end
 	end
-	if not application then
+	return nil
+end
+
+function workspaceGrid.summonApplicationToCurrentWorkspace(applicationName, applicationBundleIdentifier)
+	local window = firstStandardWindowForBundleIdentifier(applicationBundleIdentifier)
+	if not window then
+		hs.application.launchOrFocus(applicationName)
 		return
 	end
-	local window = application:mainWindow() or application:allWindows()[1]
-	if window then
-		workspaceNumberByWindowId[window:id()] = currentWorkspaceNumber
-		windowLayout.showWindowOnScreen(window)
-		window:focus()
-		renderMenuBarIndicator()
-		workspaceGridPersistence.save(currentWorkspaceNumber, workspaceNumberByWindowId)
-	end
+	workspaceNumberByWindowId[window:id()] = currentWorkspaceNumber
+	windowLayout.showWindowOnScreen(window)
+	window:focus()
+	renderMenuBarIndicator()
+	workspaceGridPersistence.save(currentWorkspaceNumber, workspaceNumberByWindowId)
 end
 
 function workspaceGrid.currentWorkspaceWindowList()
@@ -147,7 +156,12 @@ function workspaceGrid.onWindowCreated(window)
 end
 
 function workspaceGrid.onWindowFocused(window)
-	if window and window:id() and workspaceOfWindow(window) == currentWorkspaceNumber and windowLayout.windowIsTileable(window) then
+	if
+		window
+		and window:id()
+		and workspaceOfWindow(window) == currentWorkspaceNumber
+		and windowLayout.windowIsTileable(window)
+	then
 		windowLayout.showWindowOnScreen(window)
 	end
 end

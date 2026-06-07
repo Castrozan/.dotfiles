@@ -51,10 +51,10 @@ require("karabiner_application_focus_variables").start()
 -- catch the remapped Ctrl+C and steal copy. Karabiner matches Cmd+C before that
 -- remap and invokes these via `hs -c`, so Ctrl+C still copies.
 function summonBraveBrowserToCurrentWorkspace()
-	workspaceGrid.summonApplicationToCurrentWorkspace("Brave Browser")
+	workspaceGrid.summonApplicationToCurrentWorkspace("Brave Browser", "com.brave.Browser")
 end
 function summonGoogleChromeToCurrentWorkspace()
-	workspaceGrid.summonApplicationToCurrentWorkspace("Google Chrome")
+	workspaceGrid.summonApplicationToCurrentWorkspace("Google Chrome", "com.google.Chrome")
 end
 
 local windowEventWatcher = hs.window.filter.new()

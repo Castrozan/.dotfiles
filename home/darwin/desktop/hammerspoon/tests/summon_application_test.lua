@@ -1,17 +1,13 @@
--- Reproduces the Cmd+B double-window bug: summoning an already-running browser
--- must NOT call launchOrFocus, because launchOrFocus reopens the app and Chromium
--- answers the reopen by spawning a fresh window on top of the one we summon.
--- It must only re-tag, un-park, and focus the existing window.
-
 local moduleDirectory = arg[0]:gsub("tests/[^/]*$", "")
 package.path = moduleDirectory .. "?.lua;" .. package.path
 
 local offScreenParkingX = -1000000
 
 local launchOrFocusCallCount = 0
+local lastLaunchedApplicationName = nil
 local currentlyFocusedWindowId = nil
 
-local function makeFakeWindow(windowId)
+local function makeFakeWindow(windowId, isStandardWindow)
 	local fakeWindow = {
 		storedFrame = { x = offScreenParkingX, y = 100, w = 400, h = 300 },
 	}
@@ -19,7 +15,7 @@ local function makeFakeWindow(windowId)
 		return windowId
 	end
 	function fakeWindow:isStandard()
-		return true
+		return isStandardWindow
 	end
 	function fakeWindow:frame()
 		return {
@@ -45,7 +41,7 @@ local function makeFakeWindow(windowId)
 	function fakeWindow:application()
 		return {
 			name = function()
-				return "Brave Browser"
+				return "Browser"
 			end,
 		}
 	end
@@ -55,29 +51,21 @@ local function makeFakeWindow(windowId)
 	return fakeWindow
 end
 
-local braveWindow = makeFakeWindow(1)
-local allManagedWindowsInIterationOrder = { braveWindow }
-
-local function findWindowById(targetWindowId)
-	for _, window in ipairs(allManagedWindowsInIterationOrder) do
-		if window:id() == targetWindowId then
-			return window
-		end
-	end
-	return nil
+local function makeFakeApplication(windows)
+	return {
+		mainWindow = function()
+			return windows[1]
+		end,
+		allWindows = function()
+			return windows
+		end,
+		name = function()
+			return "Browser"
+		end,
+	}
 end
 
-local fakeBraveApplication = {
-	mainWindow = function()
-		return braveWindow
-	end,
-	allWindows = function()
-		return { braveWindow }
-	end,
-	name = function()
-		return "Brave Browser"
-	end,
-}
+local runningApplicationsByBundleIdentifier = {}
 
 hs = {
 	menubar = {
@@ -95,27 +83,25 @@ hs = {
 		end,
 	},
 	application = {
-		launchOrFocus = function()
+		launchOrFocus = function(applicationName)
 			launchOrFocusCallCount = launchOrFocusCallCount + 1
+			lastLaunchedApplicationName = applicationName
 		end,
-		get = function(applicationName)
-			if applicationName == "Brave Browser" then
-				return fakeBraveApplication
-			end
-			return nil
+		applicationsForBundleID = function(bundleIdentifier)
+			return runningApplicationsByBundleIdentifier[bundleIdentifier] or {}
 		end,
 	},
 	window = {
 		focusedWindow = function()
-			return findWindowById(currentlyFocusedWindowId)
+			return nil
 		end,
-		get = function(windowId)
-			return findWindowById(windowId)
+		get = function()
+			return nil
 		end,
 		filter = {
 			default = {
 				getWindows = function()
-					return allManagedWindowsInIterationOrder
+					return {}
 				end,
 			},
 		},
@@ -136,10 +122,45 @@ local function expectEqual(description, expectedValue, actualValue)
 	end
 end
 
-workspaceGrid.summonApplicationToCurrentWorkspace("Brave Browser")
+local runningBrowserWindow = makeFakeWindow(1, true)
+runningApplicationsByBundleIdentifier = {
+	["com.brave.Browser"] = { makeFakeApplication({ runningBrowserWindow }) },
+}
+launchOrFocusCallCount = 0
+currentlyFocusedWindowId = nil
+workspaceGrid.summonApplicationToCurrentWorkspace("Brave Browser", "com.brave.Browser")
 
-expectEqual("already-running Brave is not relaunched (no reopen, no extra window)", 0, launchOrFocusCallCount)
-expectEqual("the existing Brave window is focused", 1, currentlyFocusedWindowId)
-expectEqual("the existing Brave window is un-parked onto the screen", 0, braveWindow.storedFrame.x)
+expectEqual("a running browser with a window is not relaunched (no reopen, no extra window)", 0, launchOrFocusCallCount)
+expectEqual("the existing browser window is focused", 1, currentlyFocusedWindowId)
+expectEqual("the existing browser window is un-parked onto the screen", 0, runningBrowserWindow.storedFrame.x)
+
+runningApplicationsByBundleIdentifier = {
+	["com.google.Chrome"] = { makeFakeApplication({}) },
+}
+launchOrFocusCallCount = 0
+lastLaunchedApplicationName = nil
+currentlyFocusedWindowId = nil
+workspaceGrid.summonApplicationToCurrentWorkspace("Google Chrome", "com.google.Chrome")
+
+expectEqual(
+	"a windowless instance (devtools bridge) still triggers a launch to open a window",
+	1,
+	launchOrFocusCallCount
+)
+expectEqual("the launch targets the named application", "Google Chrome", lastLaunchedApplicationName)
+
+local windowedInstanceWindow = makeFakeWindow(2, true)
+runningApplicationsByBundleIdentifier = {
+	["com.google.Chrome"] = {
+		makeFakeApplication({}),
+		makeFakeApplication({ windowedInstanceWindow }),
+	},
+}
+launchOrFocusCallCount = 0
+currentlyFocusedWindowId = nil
+workspaceGrid.summonApplicationToCurrentWorkspace("Google Chrome", "com.google.Chrome")
+
+expectEqual("a windowed instance is focused even when a windowless instance also runs", 2, currentlyFocusedWindowId)
+expectEqual("no launch happens when any instance already has a window", 0, launchOrFocusCallCount)
 
 os.exit(failureCount == 0 and 0 or 1)
