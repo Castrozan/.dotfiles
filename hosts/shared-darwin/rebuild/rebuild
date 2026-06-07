@@ -46,6 +46,12 @@ _reload_hammerspoon_config() {
 	wait "$hammerspoon_reload_command_pid" 2>/dev/null || true
 }
 
+_nudge_clawde_agents_to_redeploy_on_continued_sessions() {
+	if command -v clawde-redeploy &>/dev/null; then
+		clawde-redeploy || true
+	fi
+}
+
 _stage_unstaged_nix_files() {
 	local unstaged_nix_files
 	unstaged_nix_files=$(git -C "$DOTFILES_DIRECTORY" diff --name-only -- '*.nix' 2>/dev/null || true)
@@ -155,6 +161,8 @@ main() {
 		"$rebuild_output_logfile" \
 		"$current_system_symlink_target_before" \
 		"$current_system_symlink_modification_epoch_seconds_before"
+
+	_nudge_clawde_agents_to_redeploy_on_continued_sessions
 
 	_reload_hammerspoon_config
 
