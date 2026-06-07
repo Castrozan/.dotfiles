@@ -33,6 +33,10 @@ let
       if [ -f "$TWIKIT_CLIENT" ]; then
         ${pkgs.gnused}/bin/sed -i "s/\['itemContent'\]\['value'\]/['value']/g" "$TWIKIT_CLIENT"
       fi
+      TWIKIT_USER="$VENV/lib/python3.12/site-packages/twikit/user.py"
+      if [ -f "$TWIKIT_USER" ]; then
+        ${pkgs.gnused}/bin/sed -i "s/\['description'\]\['urls'\]/['description'].get('urls', [])/g; s/legacy\['pinned_tweet_ids_str'\]/legacy.get('pinned_tweet_ids_str', [])/g; s/legacy\['withheld_in_countries'\]/legacy.get('withheld_in_countries', [])/g" "$TWIKIT_USER"
+      fi
       ${python}/bin/python "${patchTwikitTransactionSource}" "$VENV"
     fi
 
