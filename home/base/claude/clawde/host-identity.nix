@@ -1,5 +1,7 @@
-{ hostname, ... }:
+{ config, hostname, ... }:
 let
+  runtimeLocations = import ./runtime-locations.nix { homeDir = config.home.homeDirectory; };
+
   machinesRegistryPath = ../../../../private-config/machines.nix;
   machinesRegistry =
     if builtins.pathExists machinesRegistryPath then import machinesRegistryPath else { };
@@ -10,5 +12,5 @@ let
   };
 in
 {
-  home.file."clawde/host-identity.json".text = builtins.toJSON hostIdentity;
+  home.file.${runtimeLocations.hostIdentityRelativeToHome}.text = builtins.toJSON hostIdentity;
 }

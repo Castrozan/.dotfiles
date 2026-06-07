@@ -10,8 +10,10 @@ let
   secretsDirectory = "${homeDir}/.secrets";
   claudeBinary = lib.getExe config.claude.package;
 
+  runtimeLocations = import ./runtime-locations.nix { inherit homeDir; };
+
   defaultTmuxSessionName = "clawde";
-  agentWorkspacesBaseDirectory = "${homeDir}/clawde";
+  agentWorkspacesBaseDirectory = runtimeLocations.runtimeRootDirectory;
 
   cfg = config.clawde;
   agentNames = builtins.attrNames cfg.agents;
