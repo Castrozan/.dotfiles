@@ -1,0 +1,11 @@
+{
+  "_note": "Soft signal boost for the research-digest X source. The workflow ranks by topic relevance and never restricts results to these handles. Curate freely; regenerate from your X following with twikit-cli following if wanted.",
+  "accounts": [
+    "steipete",
+    "karpathy",
+    "simonw",
+    "swyx",
+    "_jasonwei",
+    "ggerganov"
+  ]
+}
