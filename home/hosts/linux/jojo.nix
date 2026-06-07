@@ -64,9 +64,6 @@
     ../../base/system/scripts.nix
     ../../linux/system/ubuntu-system-tuning.nix
 
-    ../../linux/voice/voice-pipeline.nix
-    ../../linux/voice/voice-pipeline-overrides.nix
-
     ../../base/system/systemd-manager-tui.nix
     ../../base/dev/crabwalk.nix
     ../../base/dev/k9s.nix
