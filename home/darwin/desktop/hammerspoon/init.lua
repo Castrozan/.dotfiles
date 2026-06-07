@@ -67,7 +67,7 @@ end)
 
 workspaceGrid.restorePersistedWorkspaceState()
 workspaceGrid.registerExistingWindowsOnFirstWorkspace()
-workspaceGrid.switchToWorkspace(workspaceGrid.currentWorkspaceNumber())
+workspaceGrid.switchToWorkspace(workspaceGrid.currentWorkspaceNumber(), hs.window.focusedWindow())
 
 function currentWorkspaceForTest()
 	return workspaceGrid.currentWorkspaceNumber()

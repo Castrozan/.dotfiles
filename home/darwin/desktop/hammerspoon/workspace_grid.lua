@@ -9,6 +9,7 @@ workspaceGrid.columns = workspaceGridColumns
 workspaceGrid.totalWorkspaceCount = totalWorkspaceCount
 
 local workspaceNumberByWindowId = {}
+local lastFocusedWindowIdByWorkspaceNumber = {}
 local currentWorkspaceNumber = firstWorkspaceNumber
 local menuBarIndicator = require("workspace_grid_menubar")
 local workspaceGridPersistence = require("workspace_grid_persistence")
@@ -43,22 +44,26 @@ function workspaceGrid.switchToWorkspace(targetWorkspaceNumber, preferredFocusWi
 		return
 	end
 	currentWorkspaceNumber = targetWorkspaceNumber
-	local windowToRefocus = nil
+	local rememberedFocusWindowId = lastFocusedWindowIdByWorkspaceNumber[targetWorkspaceNumber]
+	local rememberedFocusWindow = nil
+	local firstTileableWindow = nil
 	for _, window in ipairs(manageableWindows()) do
 		if workspaceOfWindow(window) == targetWorkspaceNumber then
 			windowLayout.showWindowOnScreen(window)
 			if windowLayout.windowIsTileable(window) then
-				windowToRefocus = window
+				firstTileableWindow = firstTileableWindow or window
+				if window:id() == rememberedFocusWindowId then
+					rememberedFocusWindow = window
+				end
 			end
 		else
 			windowLayout.parkWindowOffScreen(window)
 		end
 	end
-	if preferredFocusWindow then
-		windowToRefocus = preferredFocusWindow
-	end
+	local windowToRefocus = preferredFocusWindow or rememberedFocusWindow or firstTileableWindow
 	if windowToRefocus then
 		windowToRefocus:focus()
+		lastFocusedWindowIdByWorkspaceNumber[targetWorkspaceNumber] = windowToRefocus:id()
 	end
 	renderMenuBarIndicator()
 	workspaceGridPersistence.save(currentWorkspaceNumber, workspaceNumberByWindowId)
@@ -162,6 +167,7 @@ function workspaceGrid.onWindowFocused(window)
 		and workspaceOfWindow(window) == currentWorkspaceNumber
 		and windowLayout.windowIsTileable(window)
 	then
+		lastFocusedWindowIdByWorkspaceNumber[currentWorkspaceNumber] = window:id()
 		windowLayout.showWindowOnScreen(window)
 	end
 end
