@@ -4,6 +4,7 @@
     ./interfaces.nix
     ./options.nix
     ./host-identity.nix
+    ./fleet.nix
     ./workspace-files.nix
     ./activations.nix
     ./service.nix

@@ -7,19 +7,18 @@
 let
   stewardSkillRoot = ../../../../agents/skills/steward;
 
-  stewardNetworkRegistryPath = ../../../../private-config/steward-network.nix;
-  stewardNetworkRegistry =
-    if builtins.pathExists stewardNetworkRegistryPath then import stewardNetworkRegistryPath else { };
+  machinesRegistryPath = ../../../../private-config/machines.nix;
+  machinesRegistry =
+    if builtins.pathExists machinesRegistryPath then import machinesRegistryPath else { };
 
-  peerAliases = builtins.filter (alias: alias != hostname) (
-    builtins.attrNames stewardNetworkRegistry
-  );
+  peerAliases = builtins.filter (alias: alias != hostname) (builtins.attrNames machinesRegistry);
 
   peerEndpoints = builtins.listToAttrs (
     map (alias: {
       name = alias;
       value = {
-        inherit (stewardNetworkRegistry.${alias}) host user;
+        host = machinesRegistry.${alias}.tailscaleIp;
+        user = machinesRegistry.${alias}.username;
         identity_file = "~/.ssh/id_ed25519";
       };
     }) peerAliases
@@ -33,11 +32,12 @@ let
 
   stewardSkillSetDirectory = "${config.home.homeDirectory}/.local/share/claude-skill-sets/steward";
 
-  personalityWithMachineIdentity =
-    builtins.replaceStrings
-      [ "@stewardSelf@" "@stewardPeers@" ]
-      [ hostname (lib.concatStringsSep ", " peerAliases) ]
-      (builtins.readFile (stewardSkillRoot + "/personality.md"));
+  personalityWithMachineIdentity = import ../clawde/inject-agent-identity.nix {
+    inherit lib;
+    self = hostname;
+    peers = peerAliases;
+    personality = builtins.readFile (stewardSkillRoot + "/personality.md");
+  };
 
   stewardDenyToolPatterns = [
     "mcp__chrome-devtools__*"
