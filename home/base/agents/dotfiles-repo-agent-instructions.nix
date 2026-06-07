@@ -1,6 +1,9 @@
 _:
 let
-  dotfilesRepoAgentInstructions = builtins.readFile ../../../agents/dotfiles.md;
+  dotfilesRepoAgentInstructions =
+    builtins.readFile ../../../agents/dotfiles.md
+    + "\n"
+    + builtins.readFile ../../../agents/snippets/rebuild.md;
 in
 {
   home.file = {

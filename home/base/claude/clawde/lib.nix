@@ -28,7 +28,10 @@ let
       ;
   };
 
-  clawdeRuntimeInstructions = builtins.readFile ./instructions/clawde-runtime.md;
+  clawdeRuntimeInstructions =
+    builtins.readFile ./instructions/clawde-runtime.md
+    + "\n"
+    + builtins.readFile ../../../../agents/snippets/rebuild.md;
 
   a2aPeerHelpers = import ./peer-adapters/a2a/lib.nix { inherit pkgs lib; };
 
