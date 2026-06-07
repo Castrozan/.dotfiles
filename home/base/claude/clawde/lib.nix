@@ -94,8 +94,12 @@ let
       resolveChannelAdapterLaunchFlag
       resolveChannelAdapterEnvironmentSetter
       ;
+    inherit (runtimeLocations) agentInstructionsFile;
   };
-  inherit (agentWindowSpecHelpers) buildAllSpecificationsForOneAgent;
+  inherit (agentWindowSpecHelpers)
+    buildAllSpecificationsForOneAgent
+    buildAgentClaudeMarkdownContentByName
+    ;
 
   distinctTmuxSessionNames = lib.unique (map (name: cfg.agents.${name}.tmuxSession) agentNames);
 
@@ -129,5 +133,7 @@ in
     resolveChannelAdapterTokenSecretFile
     resolveChannelAdapterTokenEnvironmentVariable
     clawdeServiceSpecificationFile
+    buildAgentClaudeMarkdownContentByName
+    runtimeLocations
     ;
 }

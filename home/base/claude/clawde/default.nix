@@ -6,6 +6,7 @@
     ./host-identity.nix
     ./fleet.nix
     ./workspace-files.nix
+    ./instruction-files.nix
     ./activations.nix
     ./service.nix
     ./channel-adapters/discord

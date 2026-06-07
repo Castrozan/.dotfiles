@@ -5,6 +5,7 @@
   clawdeRuntimeInstructions,
   a2aPeerHelpers,
   agentWorkspaceDirectory,
+  agentInstructionsFile,
   resolveChannelAdapterInstructions,
   resolveChannelAdapterLaunchFlag,
   resolveChannelAdapterEnvironmentSetter,
@@ -24,9 +25,8 @@ let
     ${agent.additionalInstructions}
   '';
 
-  buildAgentInstructionsFile =
-    name: agent:
-    pkgs.writeText "clawde-agent-${name}-instructions.md" (buildAgentClaudeMarkdownContent name agent);
+  buildAgentClaudeMarkdownContentByName =
+    name: buildAgentClaudeMarkdownContent name cfg.agents.${name};
 
   buildAgentLaunchCommand =
     name: agent:
@@ -38,7 +38,7 @@ let
       nameFlag = "--name ${name}";
       permissionModeFlag = "--permission-mode ${agent.permissionMode}";
       skillDirFlags = lib.concatMapStringsSep " " (dir: "--add-dir ${dir}") agent.skillDirectories;
-      appendSystemPromptFlag = "--append-system-prompt \"$(cat ${buildAgentInstructionsFile name agent})\"";
+      appendSystemPromptFlag = "--append-system-prompt \"$(cat ${agentInstructionsFile name})\"";
     in
     "cd ${workspace} && ${environmentSetter}${claudeResolvedFromAgentRuntimePathForRebuildStability} \${CLAWDE_RESUME_FLAG:-} ${channelFlag} ${modelFlag} ${nameFlag} ${permissionModeFlag} ${appendSystemPromptFlag} ${skillDirFlags}";
 
@@ -109,5 +109,5 @@ let
     [ mainSpec ] ++ peerSpecs;
 in
 {
-  inherit buildAllSpecificationsForOneAgent;
+  inherit buildAllSpecificationsForOneAgent buildAgentClaudeMarkdownContentByName;
 }

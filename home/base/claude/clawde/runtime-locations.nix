@@ -8,4 +8,7 @@ rec {
 
   fleetManifestRelativeToHome = "${runtimeRootRelativeToHome}/fleet.json";
   fleetManifestFile = "${homeDir}/${fleetManifestRelativeToHome}";
+
+  agentInstructionsRelativeToHome = name: "${runtimeRootRelativeToHome}/instructions/${name}.md";
+  agentInstructionsFile = name: "${homeDir}/${agentInstructionsRelativeToHome name}";
 }
