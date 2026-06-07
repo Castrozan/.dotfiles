@@ -18,6 +18,10 @@ load '../../../../../tests/helpers/bash-script-assertions'
 	assert_script_source_matches 'Safety check FAILED'
 }
 
+@test "defaults to a heads-up continuation so a bare restart resumes the agent into a turn" {
+	assert_script_source_matches 'CONTINUATION_PROMPT="\$\{1:-\$DEFAULT_RESTART_HEADS_UP\}"'
+}
+
 @test "requires tmux environment variable" {
 	assert_script_source_matches 'TMUX'
 }

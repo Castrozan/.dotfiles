@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-CONTINUATION_PROMPT="${1:-}"
+DEFAULT_RESTART_HEADS_UP="claude-restart succeeded: this session was terminated and resumed. Continue from where you left off."
+CONTINUATION_PROMPT="${1:-$DEFAULT_RESTART_HEADS_UP}"
 
 ANCESTOR_SCAN_START_PROCESS_ID="${CLAUDE_RESTART_ANCESTOR_SCAN_START_PROCESS_ID:-$PPID}"
 
