@@ -2,15 +2,35 @@
 
 from __future__ import annotations
 
+import json
 import os
 import platform
+from pathlib import Path
 from typing import Dict
+
+
+def resolve_host_identity() -> Dict[str, str]:
+    host_identity_path = Path.home() / ".config" / "clawde" / "host-identity.json"
+    try:
+        host_identity = json.loads(host_identity_path.read_text())
+    except (OSError, ValueError):
+        return {}
+
+    resolved = {}
+    alias = host_identity.get("alias")
+    if alias:
+        resolved["host"] = alias
+    role = host_identity.get("role")
+    if role and role != "unknown":
+        resolved["host_role"] = role
+    return resolved
 
 
 def get_system_info() -> Dict[str, str]:
     info = {}
 
     info["user"] = os.environ.get("USER", "unknown")
+    info.update(resolve_host_identity())
 
     system_name = platform.system()
     if system_name == "Darwin":
