@@ -97,6 +97,7 @@ local config = {
     { key = 's', mods = 'CTRL|SHIFT', action = wezterm.action.SendString(os.getenv('HOME') .. '/.dotfiles/bin/tmux-session-chooser\n') },
     { key = 'k', mods = 'CTRL|SHIFT', action = wezterm.action.DisableDefaultAssignment },
     { key = 'p', mods = 'CTRL|SHIFT', action = wezterm.action.DisableDefaultAssignment },
+    { key = 'f', mods = 'CTRL|SHIFT', action = wezterm.action.DisableDefaultAssignment },
     { key = 'UpArrow', mods = 'CTRL|SHIFT', action = wezterm.action.SendString('\x1b[1;6A') },
     { key = 'DownArrow', mods = 'CTRL|SHIFT', action = wezterm.action.SendString('\x1b[1;6B') },
     { key = 'PageUp', mods = 'CTRL', action = wezterm.action.SendString('\x1b[5;5~') },
