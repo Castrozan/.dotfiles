@@ -79,8 +79,9 @@ let
       execPythonWrapperInvocation = lib.concatStringsSep " " [
         "exec"
         "${pkgs.python312}/bin/python3"
-        "${./scripts/clawde-agent-wrapper.py}"
+        "${./scripts/agent-wrapper}/wrapper.py"
         "--agent-name ${lib.escapeShellArg name}"
+        "--tmux-session ${lib.escapeShellArg agent.tmuxSession}"
         "--launch-command ${lib.escapeShellArg (buildAgentLaunchCommand name agent)}"
         heartbeatDriverArgvFlag
         activeHoursFlags

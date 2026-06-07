@@ -10,7 +10,7 @@ let
     agentName: _agentConfig:
     healthCheckLib.mkProcessProbe {
       name = "clawde agent: ${agentName}";
-      pattern = "clawde-agent-wrapper.py --agent-name ${agentName}";
+      pattern = "agent-wrapper/wrapper.py --agent-name ${agentName}";
     }
   ) config.clawde.agents;
 
