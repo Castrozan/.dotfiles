@@ -12,7 +12,20 @@ from restart_scheduling import (
     should_reset_backoff,
     should_rotate_session,
 )
-from session_watchdog import run_launch_command_once
+from session_watchdog import run_launch_command_once, terminate_process_tree
+
+
+class RedeploySignalState:
+    def __init__(self) -> None:
+        self.resume_requested = False
+        self.current_child_process_id: int | None = None
+
+
+redeploy_signal_state = RedeploySignalState()
+
+
+def register_current_child_process_id(child_process_id: int | None) -> None:
+    redeploy_signal_state.current_child_process_id = child_process_id
 
 
 def install_exit_signal_handlers() -> None:
@@ -21,6 +34,20 @@ def install_exit_signal_handlers() -> None:
 
     for signal_number in (signal.SIGTERM, signal.SIGHUP, signal.SIGINT):
         signal.signal(signal_number, terminate_cleanly)
+
+
+def request_resume_restart_now() -> None:
+    redeploy_signal_state.resume_requested = True
+    child_process_id = redeploy_signal_state.current_child_process_id
+    if child_process_id is not None:
+        terminate_process_tree(child_process_id)
+
+
+def install_redeploy_signal_handler() -> None:
+    def handle_redeploy_signal(_signal_number: int, _frame_object) -> None:
+        request_resume_restart_now()
+
+    signal.signal(signal.SIGUSR1, handle_redeploy_signal)
 
 
 def build_tmux_target(tmux_session: str | None, agent_name: str) -> str | None:
@@ -65,8 +92,14 @@ def supervise_agent_forever(
         if last_fresh_start_date is None:
             last_fresh_start_date = time.strftime("%Y-%m-%d")
 
+        resume_continue = redeploy_signal_state.resume_requested
+        redeploy_signal_state.resume_requested = False
         runtime_seconds, was_stuck_kill = run_launch_command_once(
-            launch_command, heartbeat_driver_argv, tmux_target
+            launch_command,
+            heartbeat_driver_argv,
+            tmux_target,
+            resume_continue=resume_continue,
+            register_child_pid=register_current_child_process_id,
         )
 
         if not is_within_active_hours(active_hours_start, active_hours_end):
@@ -136,6 +169,7 @@ def parse_arguments() -> argparse.Namespace:
 
 def main() -> None:
     install_exit_signal_handlers()
+    install_redeploy_signal_handler()
     arguments = parse_arguments()
 
     heartbeat_driver_argv = None

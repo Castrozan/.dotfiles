@@ -62,9 +62,17 @@ def run_launch_command_once(
     launch_command: str,
     heartbeat_driver_argv: list[str] | None,
     tmux_target: str | None,
+    resume_continue: bool = False,
+    register_child_pid=None,
 ) -> tuple[float, bool]:
     start_time = time.time()
-    agent_process = subprocess.Popen(["bash", "-c", launch_command])
+    launch_environment = dict(os.environ)
+    launch_environment["CLAWDE_RESUME_FLAG"] = "--continue" if resume_continue else ""
+    agent_process = subprocess.Popen(
+        ["bash", "-c", launch_command], env=launch_environment
+    )
+    if register_child_pid is not None:
+        register_child_pid(agent_process.pid)
     driver_process = (
         subprocess.Popen(heartbeat_driver_argv) if heartbeat_driver_argv else None
     )
@@ -97,6 +105,8 @@ def run_launch_command_once(
                     was_stuck_kill = True
                     break
     finally:
+        if register_child_pid is not None:
+            register_child_pid(None)
         if driver_process is not None:
             driver_process.terminate()
             try:

@@ -24,6 +24,15 @@ let
     ${builtins.readFile ./scripts/start-clawde.sh}
   '';
 
+  clawdeGracefulRedeploy = pkgs.writeShellScriptBin "clawde-redeploy" ''
+    set -euo pipefail
+    if pkill --signal USR1 --full 'agent-wrapper/wrapper.py --agent-name'; then
+      echo "Signaled clawde agents to restart on their continued sessions (claude --continue)."
+    else
+      echo "No running clawde agent wrappers matched; nothing to redeploy."
+    fi
+  '';
+
   clawdeServiceExecArguments = [
     "${pkgs.python312}/bin/python3"
     "${clawdeServiceScript}"
@@ -84,7 +93,10 @@ let
 in
 {
   config = lib.mkIf hasAgents {
-    home.packages = [ clawdeSessionStarter ];
+    home.packages = [
+      clawdeSessionStarter
+      clawdeGracefulRedeploy
+    ];
 
     systemd.user.services = lib.mkIf pkgs.stdenv.hostPlatform.isLinux {
       clawde = linuxSystemdUnit;

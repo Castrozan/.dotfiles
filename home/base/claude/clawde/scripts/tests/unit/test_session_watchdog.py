@@ -41,3 +41,37 @@ def test_pane_indicates_usage_limit_modal_ignores_idle_repl_pane():
         "● Heartbeat scheduled, nothing pending - standing by for messages.\n❯\n"
     )
     assert session_watchdog.pane_indicates_usage_limit_modal(pane_content) is False
+
+
+def test_resume_continue_exposes_continue_flag_to_launch_command(tmp_path):
+    captured_flag = tmp_path / "flag.txt"
+    session_watchdog.run_launch_command_once(
+        f'printf "%s" "$CLAWDE_RESUME_FLAG" > "{captured_flag}"',
+        None,
+        None,
+        resume_continue=True,
+    )
+    assert captured_flag.read_text() == "--continue"
+
+
+def test_default_launch_leaves_resume_flag_empty(tmp_path):
+    captured_flag = tmp_path / "flag.txt"
+    session_watchdog.run_launch_command_once(
+        f'printf "%s" "$CLAWDE_RESUME_FLAG" > "{captured_flag}"',
+        None,
+        None,
+    )
+    assert captured_flag.read_text() == ""
+
+
+def test_register_child_pid_callback_receives_live_then_none(tmp_path):
+    observed_process_ids = []
+    session_watchdog.run_launch_command_once(
+        "true",
+        None,
+        None,
+        register_child_pid=observed_process_ids.append,
+    )
+    assert len(observed_process_ids) == 2
+    assert isinstance(observed_process_ids[0], int)
+    assert observed_process_ids[1] is None
