@@ -24,7 +24,6 @@ ppid=) printf '%s\n' "$parentProcessId" ;;
 esac
 STUB
 	chmod +x "$stubbedProcessTreeDirectory/ps"
-	sessionScriptsDirectory="$DOTFILES_SKILLS_DIRECTORY/session/scripts"
 }
 
 teardown() {
@@ -39,26 +38,20 @@ teardown() {
 	assert_passes_shellcheck
 }
 
-@test "validates process name before killing" {
-	assert_script_source_matches 'Safety check'
-}
-
-@test "uses SIGTERM for clean shutdown" {
-	assert_script_source_matches "SIGTERM"
-}
-
-@test "delegates to find-claude-ancestor-pid and reports the target without killing" {
-	PATH="$stubbedProcessTreeDirectory:$sessionScriptsDirectory:$PATH" \
-		CLAUDE_EXIT_ANCESTOR_SCAN_START_PROCESS_ID=2100 \
-		run_script_under_test --print-target
+@test "prints the claude pid when claude is the immediate parent" {
+	PATH="$stubbedProcessTreeDirectory:$PATH" run_script_under_test 2300
 	[ "$status" -eq 0 ]
-	[[ "$output" == *"Claude PID: 2300"* ]]
+	[ "$output" = "2300" ]
 }
 
-@test "fails safe when no claude process is in the ancestor chain" {
-	PATH="$stubbedProcessTreeDirectory:$sessionScriptsDirectory:$PATH" \
-		CLAUDE_EXIT_ANCESTOR_SCAN_START_PROCESS_ID=9100 \
-		run_script_under_test --print-target
+@test "walks past intermediate shells to the claude ancestor" {
+	PATH="$stubbedProcessTreeDirectory:$PATH" run_script_under_test 2100
+	[ "$status" -eq 0 ]
+	[ "$output" = "2300" ]
+}
+
+@test "exits non-zero when no claude ancestor exists" {
+	PATH="$stubbedProcessTreeDirectory:$PATH" run_script_under_test 9100
 	[ "$status" -ne 0 ]
-	[[ "$output" == *"Safety check FAILED"* ]]
+	[ -z "$output" ]
 }

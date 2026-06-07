@@ -3,13 +3,10 @@ set -euo pipefail
 
 CONTINUATION_PROMPT="${1:-}"
 
-BASH_TOOL_PID="$PPID"
-CLAUDE_PID=$(ps -p "$BASH_TOOL_PID" -o ppid= 2>/dev/null | tr -d ' ')
-CLAUDE_COMMAND_FULL_PATH=$(ps -p "$CLAUDE_PID" -o comm= 2>/dev/null || echo "unknown")
-CLAUDE_COMMAND_NAME="${CLAUDE_COMMAND_FULL_PATH##*/}"
+ANCESTOR_SCAN_START_PROCESS_ID="${CLAUDE_RESTART_ANCESTOR_SCAN_START_PROCESS_ID:-$PPID}"
 
-if [[ "$CLAUDE_COMMAND_NAME" != "claude" ]]; then
-	echo "Safety check FAILED: Expected 'claude' but found '$CLAUDE_COMMAND_FULL_PATH' (PID: $CLAUDE_PID)"
+if ! CLAUDE_PID=$(find-claude-ancestor-pid "$ANCESTOR_SCAN_START_PROCESS_ID"); then
+	echo "Safety check FAILED: no 'claude' process found among the ancestors of PID $ANCESTOR_SCAN_START_PROCESS_ID"
 	echo "Use /exit or Ctrl+D instead."
 	exit 1
 fi

@@ -2,8 +2,6 @@
 
 load '../../../../../tests/helpers/bash-script-assertions'
 
-SCRIPT_UNDER_TEST="$(cd "$(dirname "$BATS_TEST_FILENAME")" && pwd)/../../../../../agents/skills/session/scripts/claude-restart"
-
 @test "passes shellcheck" {
 	assert_passes_shellcheck
 }
@@ -12,8 +10,12 @@ SCRIPT_UNDER_TEST="$(cd "$(dirname "$BATS_TEST_FILENAME")" && pwd)/../../../../.
 	assert_uses_strict_error_handling
 }
 
-@test "safety check extracts basename from full nix store path" {
-	assert_script_source_matches 'CLAUDE_COMMAND_NAME="\$\{CLAUDE_COMMAND_FULL_PATH##\*/\}'
+@test "resolves the claude pid by walking ancestors via the shared helper" {
+	assert_script_source_matches 'CLAUDE_PID=\$\(find-claude-ancestor-pid'
+}
+
+@test "fails safe when no claude ancestor is found" {
+	assert_script_source_matches 'Safety check FAILED'
 }
 
 @test "requires tmux environment variable" {

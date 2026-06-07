@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+candidateProcessId="${1:-$PPID}"
+remainingHops=8
+
+while [[ -n "$candidateProcessId" && "$candidateProcessId" != "0" && "$candidateProcessId" != "1" && "$remainingHops" -gt 0 ]]; do
+	candidateCommandPath=$(ps -p "$candidateProcessId" -o comm= 2>/dev/null || true)
+	if [[ "${candidateCommandPath##*/}" == "claude" ]]; then
+		printf '%s\n' "$candidateProcessId"
+		exit 0
+	fi
+	candidateProcessId=$(ps -p "$candidateProcessId" -o ppid= 2>/dev/null | tr -d ' ')
+	remainingHops=$((remainingHops - 1))
+done
+
+exit 1
