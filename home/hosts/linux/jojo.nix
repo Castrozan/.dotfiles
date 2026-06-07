@@ -4,6 +4,8 @@
     ../../base/dev/git-toggle-user.nix
 
     ../../base/dev/git-private.nix
+    ../../linux/hyprland/jojo-monitors.nix
+    ../../linux/hyprland/standalone.nix
     ../../base/network/ssh-private.nix
     ../../base/system/session-vars-lucas-zanoni.nix
     ../../base/claude/agents/jojo-clawde-agents.nix
