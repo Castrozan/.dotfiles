@@ -32,9 +32,18 @@ _ensure_darwin_rebuild_available() {
 _reload_hammerspoon_config() {
 	local hammerspoon_command_line_interface
 	hammerspoon_command_line_interface=$(command -v hs || echo /opt/homebrew/bin/hs)
-	if [ -x "$hammerspoon_command_line_interface" ]; then
-		"$hammerspoon_command_line_interface" -c "hs.reload()" || true
+	if [ ! -x "$hammerspoon_command_line_interface" ]; then
+		return 0
 	fi
+	"$hammerspoon_command_line_interface" -c "hs.reload()" >/dev/null 2>&1 &
+	local hammerspoon_reload_command_pid=$!
+	local elapsed_seconds=0
+	while [ "$elapsed_seconds" -lt 5 ] && kill -0 "$hammerspoon_reload_command_pid" 2>/dev/null; do
+		sleep 1
+		elapsed_seconds=$((elapsed_seconds + 1))
+	done
+	kill "$hammerspoon_reload_command_pid" 2>/dev/null || true
+	wait "$hammerspoon_reload_command_pid" 2>/dev/null || true
 }
 
 _stage_unstaged_nix_files() {
