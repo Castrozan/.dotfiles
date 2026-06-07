@@ -1,6 +1,6 @@
 { hostname, ... }:
 let
-  machinesRegistryPath = ../../../private-config/machines.nix;
+  machinesRegistryPath = ../../../../private-config/machines.nix;
   machinesRegistry =
     if builtins.pathExists machinesRegistryPath then import machinesRegistryPath else { };
   selfMachine = machinesRegistry.${hostname} or { };
@@ -10,5 +10,5 @@ let
   };
 in
 {
-  home.file.".config/clawde/host-identity.json".text = builtins.toJSON hostIdentity;
+  home.file."clawde/host-identity.json".text = builtins.toJSON hostIdentity;
 }

@@ -10,7 +10,7 @@ from typing import Dict
 
 
 def resolve_host_identity() -> Dict[str, str]:
-    host_identity_path = Path.home() / ".config" / "clawde" / "host-identity.json"
+    host_identity_path = Path.home() / "clawde" / "host-identity.json"
     try:
         host_identity = json.loads(host_identity_path.read_text())
     except (OSError, ValueError):

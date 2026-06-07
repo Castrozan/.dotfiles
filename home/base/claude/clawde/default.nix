@@ -3,6 +3,7 @@
   imports = [
     ./interfaces.nix
     ./options.nix
+    ./host-identity.nix
     ./workspace-files.nix
     ./activations.nix
     ./service.nix
