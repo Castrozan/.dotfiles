@@ -8,6 +8,8 @@
     ../../base/system/session-vars-lucas-zanoni.nix
     ../../base/claude/agents/jojo-clawde-agents.nix
     ../../base/claude/agents/steward.nix
+    ../../linux/system/sophos-disable-plugins
+    ../../linux/system/forticlient-disable-update
     ../../base/core.nix
 
     ../../base/agents
@@ -51,7 +53,9 @@
     ../../base/media/zathura
     ../../base/media/scripts.nix
 
+    ../../linux/network/forticlient
     ../../linux/network/network-optimization.nix
+    ../../linux/network/openfortivpn
     ../../base/network/tailscale-daemon.nix
 
     ../../linux/system/lid-switch-ignore.nix
