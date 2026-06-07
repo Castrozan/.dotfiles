@@ -36,7 +36,7 @@ let
 
   stewardActivate = pkgs.writeShellScriptBin "steward-activate" ''
     set -euo pipefail
-    export PATH="${pkgs.git}/bin:${pkgs.systemd}/bin:${pkgs.coreutils}/bin:''${PATH:+$PATH}"
+    export PATH="${pkgs.git}/bin:${pkgs.lib.optionalString pkgs.stdenv.isLinux "${pkgs.systemd}/bin:"}${pkgs.coreutils}/bin:''${PATH:+$PATH}"
     exec ${python}/bin/python3 ${stewardActivateSource} "$@"
   '';
 in
