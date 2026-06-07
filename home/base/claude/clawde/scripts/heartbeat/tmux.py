@@ -6,6 +6,8 @@ import time
 
 MAX_WAIT_ATTEMPTS = 90
 INITIAL_DELAY_SECONDS = 30
+REPL_PROMPT_MARKER = "❯"
+AUTOSUGGESTION_GHOST_SEPARATOR = "\xa0"
 ONBOARDING_INDICATORS = [
     "Select login method",
     "Choose the text style",
@@ -41,14 +43,17 @@ def pane_is_at_onboarding(pane_content: str) -> bool:
     return any(indicator in pane_content for indicator in ONBOARDING_INDICATORS)
 
 
+def line_is_idle_repl_prompt(line: str) -> bool:
+    stripped = line.strip()
+    if stripped == REPL_PROMPT_MARKER or stripped.endswith(" " + REPL_PROMPT_MARKER):
+        return True
+    return line.startswith(REPL_PROMPT_MARKER + AUTOSUGGESTION_GHOST_SEPARATOR)
+
+
 def pane_is_at_claude_repl_prompt(pane_content: str) -> bool:
     if pane_is_at_onboarding(pane_content):
         return False
-    for line in pane_content.splitlines():
-        stripped = line.strip()
-        if stripped == "❯" or stripped.endswith(" ❯"):
-            return True
-    return False
+    return any(line_is_idle_repl_prompt(line) for line in pane_content.splitlines())
 
 
 def capture_recent_pane(tmux_socket: str, target: str) -> str | None:

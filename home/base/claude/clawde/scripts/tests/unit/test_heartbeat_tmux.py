@@ -39,6 +39,25 @@ def test_pane_at_repl_prompt_detects_bare_marker():
     assert tmux_module.pane_is_at_claude_repl_prompt("prefixed line ❯")
 
 
+def test_pane_with_empty_prompt_and_trailing_space_is_idle():
+    assert tmux_module.pane_is_at_claude_repl_prompt("some output\n❯ \n")
+
+
+def test_pane_with_autosuggestion_ghost_is_idle():
+    pane_with_history_ghost = (
+        "✻ Cooked for 39s\n"
+        "──── steward ──\n"
+        "❯\xa0Leave the submodule, end the tick\n"
+        "────\n"
+    )
+    assert tmux_module.pane_is_at_claude_repl_prompt(pane_with_history_ghost)
+
+
+def test_pane_with_real_typed_input_is_not_idle():
+    pane_with_pending_input = "some output\n❯ git status\n"
+    assert not tmux_module.pane_is_at_claude_repl_prompt(pane_with_pending_input)
+
+
 def test_pane_at_onboarding_is_not_treated_as_idle_prompt():
     onboarding_pane = "Select login method\n❯ 1. Claude account with subscription"
     assert not tmux_module.pane_is_at_claude_repl_prompt(onboarding_pane)
