@@ -26,7 +26,7 @@ let
 
   clawdeGracefulRedeploy = pkgs.writeShellScriptBin "clawde-redeploy" ''
     set -euo pipefail
-    if pkill --signal USR1 --full 'agent-wrapper/wrapper.py --agent-name'; then
+    if pkill -USR1 -f 'agent-wrapper/wrapper.py --agent-name'; then
       echo "Signaled clawde agents to restart on their continued sessions (claude --continue)."
     else
       echo "No running clawde agent wrappers matched; nothing to redeploy."
