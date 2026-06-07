@@ -7,14 +7,6 @@
       "color_scheme": 2
     }
   },
-  "spellcheck": {
-    "dictionaries": ["en-GB"],
-    "use_spelling_service": false
-  },
-  "intl": {
-    "accept_languages": "en-US,pt-BR,pt,en",
-    "selected_languages": "en-US,en"
-  },
   "privacy_sandbox": {
     "first_party_sets_enabled": false,
     "m1": {
