@@ -17,7 +17,7 @@ let
   agentMemoryEntries = [
     "Lucas's primary machine is a nix-darwin (macOS) setup managed from ~/.dotfiles. For .nix changes a successful rebuild IS the primary verification. The rebuild is sudoless via a command-scoped NOPASSWD rule, so a bare sudo probe failing does not mean it needs a password."
     "Hermes itself is nix-packaged here via a wrapper plus a pinned uv venv at ~/.hermes/.venv. config.yaml is regenerated from the nix module on every launch, so it is declarative: permanent config or model changes go in home/base/hermes in the dotfiles repo, not via `hermes config set` or in-session /model (those revert on next launch)."
-    ''Anthropic auth uses OAuth seeded automatically from the macOS Keychain item "Claude Code-credentials", shared with Claude Code. There is no API key and no token to manage.''
+    "Inference uses the openai-codex provider running gpt-5.5, seeded automatically from Lucas's Codex CLI OAuth at ~/.codex/auth.json. There is no API key to manage. Direct Anthropic OAuth was abandoned because Anthropic walls third-party OAuth apps behind purchased extra-usage credits rather than the Max base allowance."
     "Assume parallel work in the dotfiles repo across multiple agent sessions. Stage specific files before committing."
   ];
 

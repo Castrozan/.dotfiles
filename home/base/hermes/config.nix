@@ -1,8 +1,8 @@
 { pkgs }:
 pkgs.writeText "hermes-config.yaml" ''
   model:
-    provider: anthropic
-    model: claude-opus-4-8
+    provider: openai-codex
+    model: gpt-5.5
   toolsets:
     - hermes-cli
   security:
