@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+hermes_home="${HERMES_HOME:-$HOME/.hermes}"
+venv_dir="$hermes_home/.venv"
+version_sentinel="$venv_dir/.hermes-installed-version-$HERMES_AGENT_VERSION"
+
+export HERMES_HOME="$hermes_home"
+export PATH="$HERMES_AGENT_RUNTIME_PATH:$PATH"
+
+mkdir -p "$hermes_home"
+
+if [ ! -f "$version_sentinel" ]; then
+	rm -rf "$venv_dir"
+	"$HERMES_AGENT_UV" venv --python "$HERMES_AGENT_PYTHON" "$venv_dir"
+	UV_NO_CONFIG=1 "$HERMES_AGENT_UV" pip install \
+		--python "$venv_dir/bin/python" \
+		"$HERMES_AGENT_PACKAGE_SPEC"
+	touch "$version_sentinel"
+fi
+
+if [ -z "${HERMES_AGENT_LAUNCH_SEEDED:-}" ]; then
+	export HERMES_AGENT_LAUNCH_SEEDED=1
+	install -m 0644 "$HERMES_AGENT_CONFIG_TEMPLATE" "$hermes_home/config.yaml"
+	memories_dir="$hermes_home/memories"
+	mkdir -p "$memories_dir"
+	if [ ! -f "$memories_dir/USER.md" ]; then
+		install -m 0644 "$HERMES_AGENT_USER_MEMORY" "$memories_dir/USER.md"
+	fi
+	if [ ! -f "$memories_dir/MEMORY.md" ]; then
+		install -m 0644 "$HERMES_AGENT_AGENT_MEMORY" "$memories_dir/MEMORY.md"
+	fi
+fi
+
+exec "$venv_dir/bin/hermes" "$@"

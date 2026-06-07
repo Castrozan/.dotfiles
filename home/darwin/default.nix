@@ -14,6 +14,7 @@
 
     ../base/claude
     ../base/codex
+    ../base/hermes
     ../base/testing
 
     ../base/terminal/atuin.nix
