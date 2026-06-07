@@ -43,10 +43,7 @@ def format_system_info_section(sys_info: Dict[str, str]) -> str | None:
     if sys_info.get("user"):
         sys_parts.append(f"User: {sys_info['user']}")
     if sys_info.get("host"):
-        host_label = sys_info["host"]
-        if sys_info.get("host_role"):
-            host_label = f"{host_label} ({sys_info['host_role']})"
-        sys_parts.append(f"Host: {host_label}")
+        sys_parts.append(f"Host: {sys_info['host']}")
     if sys_info.get("os"):
         sys_parts.append(f"OS: {sys_info['os']}")
     if not sys_parts:

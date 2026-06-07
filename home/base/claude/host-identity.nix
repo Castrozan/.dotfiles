@@ -6,7 +6,6 @@ let
   selfMachine = machinesRegistry.${hostname} or { };
   hostIdentity = {
     alias = hostname;
-    role = selfMachine.role or "unknown";
     platform = selfMachine.platform or "unknown";
   };
 in

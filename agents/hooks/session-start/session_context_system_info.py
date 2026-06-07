@@ -20,9 +20,6 @@ def resolve_host_identity() -> Dict[str, str]:
     alias = host_identity.get("alias")
     if alias:
         resolved["host"] = alias
-    role = host_identity.get("role")
-    if role and role != "unknown":
-        resolved["host_role"] = role
     return resolved
 
 
