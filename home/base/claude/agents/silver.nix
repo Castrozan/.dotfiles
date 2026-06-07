@@ -1,15 +1,14 @@
-{ hostname, ... }:
-let
-  personalityWithHostIdentity = builtins.replaceStrings [ "@silverSelf@" ] [ hostname ] (
-    builtins.readFile ./silver-personality.md
-  );
-in
+{ lib, hostname, ... }:
 {
   clawde.agents.silver = {
     model = "opus";
     permissionMode = "bypassPermissions";
     skillDirectories = [ ];
-    personality = personalityWithHostIdentity;
+    personality = import ../clawde/inject-agent-identity.nix {
+      inherit lib;
+      self = hostname;
+      personality = builtins.readFile ./silver-personality.md;
+    };
     channel = {
       type = "discord";
       discord.botTokenSecretName = "discord-bot-token-silver";
