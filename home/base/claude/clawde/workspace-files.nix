@@ -14,28 +14,43 @@ let
     agentWorkspaceDirectory
     ;
 
-  workspaceRelativeToHome =
+  workspaceRelativeToHome = name: lib.removePrefix "${homeDir}/" (agentWorkspaceDirectory name);
+
+  enforceDiscordReplyStopHook = pkgs.writeShellScript "enforce-discord-reply-stop-hook" ''
+    exec ${pkgs.python312}/bin/python3 ${./channel-adapters/discord/scripts/enforce-discord-reply-stop-hook.py} "$@"
+  '';
+
+  agentIsDiscord = name: cfg.agents.${name}.channel.type == "discord";
+
+  agentSettings =
     name:
     let
-      workspace = agentWorkspaceDirectory name;
+      agent = cfg.agents.${name};
+      denySettings = lib.optionalAttrs (agent.denyToolPatterns != [ ]) {
+        permissions.deny = agent.denyToolPatterns;
+      };
+      discordReplyEnforcementSettings = lib.optionalAttrs (agentIsDiscord name) {
+        hooks.Stop = [
+          {
+            hooks = [
+              {
+                type = "command";
+                command = "${enforceDiscordReplyStopHook}";
+              }
+            ];
+          }
+        ];
+      };
     in
-    lib.removePrefix "${homeDir}/" workspace;
-
-  agentsWithDenyToolPatterns = builtins.filter (
-    name: cfg.agents.${name}.denyToolPatterns != [ ]
-  ) agentNames;
+    lib.recursiveUpdate denySettings discordReplyEnforcementSettings;
 
   agentWorkspaceSettingsFiles = lib.listToAttrs (
     map (name: {
       name = "${workspaceRelativeToHome name}/.claude/settings.json";
       value = {
-        text = builtins.toJSON {
-          permissions = {
-            deny = cfg.agents.${name}.denyToolPatterns;
-          };
-        };
+        text = builtins.toJSON (agentSettings name);
       };
-    }) agentsWithDenyToolPatterns
+    }) (builtins.filter (name: agentSettings name != { }) agentNames)
   );
 in
 {
