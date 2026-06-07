@@ -34,9 +34,7 @@ let
     teammateMode = "tmux";
     permissions = {
       defaultMode = "bypassPermissions";
-      allow = [
-        "*"
-      ];
+      allow = [ ];
       deny = [ ];
     };
     terminalShowHoverHint = false;
