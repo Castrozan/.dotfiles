@@ -12,6 +12,10 @@ let
     builtins.readFile ../scripts/steward-msg.py
   );
 
+  stewardActivateSource = pkgs.writeText "steward-activate.py" (
+    builtins.readFile ../scripts/steward-activate.py
+  );
+
   stewardStatus = pkgs.writeShellScriptBin "steward-status" ''
     set -euo pipefail
     export PATH="${pkgs.git}/bin:${pkgs.gh}/bin:${pkgs.coreutils}/bin:''${PATH:+$PATH}"
@@ -29,11 +33,18 @@ let
     ${stewardStatus}/bin/steward-status \
       | ${python}/bin/python3 -c 'import json, sys; sys.exit(0 if json.load(sys.stdin).get("attention_required") else 1)'
   '';
+
+  stewardActivate = pkgs.writeShellScriptBin "steward-activate" ''
+    set -euo pipefail
+    export PATH="${pkgs.git}/bin:${pkgs.systemd}/bin:${pkgs.coreutils}/bin:''${PATH:+$PATH}"
+    exec ${python}/bin/python3 ${stewardActivateSource} "$@"
+  '';
 in
 {
   packages = [
     stewardStatus
     stewardMessage
     stewardHeartbeatGate
+    stewardActivate
   ];
 }
