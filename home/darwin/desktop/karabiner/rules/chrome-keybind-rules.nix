@@ -79,6 +79,45 @@ let
     "8"
     "9"
   ];
+
+  openHistoryWithControlH = {
+    type = "basic";
+    from = {
+      key_code = "h";
+      modifiers = {
+        mandatory = [ "control" ];
+        optional = [ "any" ];
+      };
+    };
+    to = [
+      {
+        key_code = "y";
+        modifiers = [ "command" ];
+      }
+    ];
+    conditions = chromeIsFrontmostCondition;
+  };
+
+  openDownloadsWithControlJ = {
+    type = "basic";
+    from = {
+      key_code = "j";
+      modifiers = {
+        mandatory = [ "control" ];
+        optional = [ "any" ];
+      };
+    };
+    to = [
+      {
+        key_code = "j";
+        modifiers = [
+          "command"
+          "shift"
+        ];
+      }
+    ];
+    conditions = chromeIsFrontmostCondition;
+  };
 in
 [
   {
@@ -91,5 +130,12 @@ in
   {
     description = "Chrome: Option+Digit selects tabs alongside the native Command+Digit (mirrors Brave's Alt+Digit accelerator additions)";
     manipulators = map selectTabWithOptionDigit tabSelectionDigitKeyCodes;
+  }
+  {
+    description = "Chrome: Linux-style Ctrl+H opens history and Ctrl+J opens downloads via the Mac Chromium shortcuts";
+    manipulators = [
+      openHistoryWithControlH
+      openDownloadsWithControlJ
+    ];
   }
 ]

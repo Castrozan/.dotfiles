@@ -3,6 +3,14 @@ let
 
   braveBundleIdentifierRegex = "^com\\.brave\\.Browser$";
 
+  braveIsFrontmostConditions = [
+    {
+      type = "frontmost_application_if";
+      bundle_identifiers = [ braveBundleIdentifierRegex ];
+    }
+    (applicationFocusDefaultDenyGuards.makeApplicationFocusDefaultDenyCondition applicationFocusDefaultDenyGuards.applicationFocusVariableNames.braveBrowserIsFrontmost)
+  ];
+
   carveOutBraveFromControlToCommandRemapForLetter = letter: {
     type = "basic";
     from = {
@@ -18,13 +26,25 @@ let
         modifiers = [ "control" ];
       }
     ];
-    conditions = [
+    conditions = braveIsFrontmostConditions;
+  };
+
+  remapBraveControlKeyToCommandShortcut = fromKeyCode: toKeyCode: toModifiers: {
+    type = "basic";
+    from = {
+      key_code = fromKeyCode;
+      modifiers = {
+        mandatory = [ "control" ];
+        optional = [ "any" ];
+      };
+    };
+    to = [
       {
-        type = "frontmost_application_if";
-        bundle_identifiers = [ braveBundleIdentifierRegex ];
+        key_code = toKeyCode;
+        modifiers = toModifiers;
       }
-      (applicationFocusDefaultDenyGuards.makeApplicationFocusDefaultDenyCondition applicationFocusDefaultDenyGuards.applicationFocusVariableNames.braveBrowserIsFrontmost)
     ];
+    conditions = braveIsFrontmostConditions;
   };
 
   bravePassthroughLetters = [ "d" ];
@@ -33,5 +53,15 @@ in
   {
     description = "Brave: preserve Ctrl+letter passthrough so Brave's own accelerator table handles it (overrides Linux-style Ctrl-to-Cmd remap)";
     manipulators = map carveOutBraveFromControlToCommandRemapForLetter bravePassthroughLetters;
+  }
+  {
+    description = "Brave: Linux-style Ctrl+H opens history and Ctrl+J opens downloads via the Mac Chromium shortcuts";
+    manipulators = [
+      (remapBraveControlKeyToCommandShortcut "h" "y" [ "command" ])
+      (remapBraveControlKeyToCommandShortcut "j" "j" [
+        "command"
+        "shift"
+      ])
+    ];
   }
 ]
