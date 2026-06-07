@@ -42,26 +42,32 @@ let
     in
     "cd ${workspace} && ${environmentSetter}${claudeResolvedFromAgentRuntimePathForRebuildStability} ${channelFlag} ${modelFlag} ${nameFlag} ${permissionModeFlag} ${appendSystemPromptFlag} ${skillDirFlags}";
 
-  buildHeartbeatBootstrapArgv = name: agent: [
-    "${pkgs.python312}/bin/python3"
-    "${./scripts/bootstrap-heartbeat.py}"
-    "--session"
-    agent.tmuxSession
-    "--window"
-    name
-    "--interval"
-    agent.heartbeatInterval
-    "--prompt"
-    agent.heartbeatPrompt
-  ];
+  buildHeartbeatDriverArgv =
+    name: agent:
+    [
+      "${pkgs.python312}/bin/python3"
+      "${./scripts/heartbeat}/driver.py"
+      "--session"
+      agent.tmuxSession
+      "--window"
+      name
+      "--interval"
+      agent.heartbeatInterval
+      "--prompt"
+      agent.heartbeatPrompt
+    ]
+    ++ lib.optionals (agent.heartbeatGateCommand != null) [
+      "--gate-command"
+      agent.heartbeatGateCommand
+    ];
 
   buildAgentWindowCommand =
     name: agent:
     let
       workspaceDirectory = agentWorkspaceDirectory name;
-      heartbeatBootstrapArgvFlag =
+      heartbeatDriverArgvFlag =
         if agent.heartbeatInterval != null then
-          "--heartbeat-bootstrap-argv ${lib.escapeShellArg (builtins.toJSON (buildHeartbeatBootstrapArgv name agent))}"
+          "--heartbeat-driver-argv ${lib.escapeShellArg (builtins.toJSON (buildHeartbeatDriverArgv name agent))}"
         else
           "";
       activeHoursFlags =
@@ -76,7 +82,7 @@ let
         "${./scripts/clawde-agent-wrapper.py}"
         "--agent-name ${lib.escapeShellArg name}"
         "--launch-command ${lib.escapeShellArg (buildAgentLaunchCommand name agent)}"
-        heartbeatBootstrapArgvFlag
+        heartbeatDriverArgvFlag
         activeHoursFlags
         dailySessionRotationFlag
       ];

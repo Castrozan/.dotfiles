@@ -23,10 +23,17 @@ let
     export PATH="${pkgs.openssh}/bin:${pkgs.coreutils}/bin:''${PATH:+$PATH}"
     exec ${python}/bin/python3 ${stewardMessageSource} "$@"
   '';
+
+  stewardHeartbeatGate = pkgs.writeShellScriptBin "steward-heartbeat-gate" ''
+    set -euo pipefail
+    ${stewardStatus}/bin/steward-status \
+      | ${python}/bin/python3 -c 'import json, sys; sys.exit(0 if json.load(sys.stdin).get("attention_required") else 1)'
+  '';
 in
 {
   packages = [
     stewardStatus
     stewardMessage
+    stewardHeartbeatGate
   ];
 }

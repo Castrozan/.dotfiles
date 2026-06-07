@@ -56,6 +56,11 @@ in
             default = null;
             description = "Prompt sent on each heartbeat tick. Required when heartbeatInterval is set.";
           };
+          heartbeatGateCommand = lib.mkOption {
+            type = lib.types.nullOr lib.types.str;
+            default = null;
+            description = "Shell command run before each heartbeat tick. Exit 0 fires the tick and wakes the LLM; any non-zero exit skips the tick without spending tokens. Null always fires. Only meaningful when heartbeatInterval is set.";
+          };
           activeHoursStart = lib.mkOption {
             type = lib.types.nullOr lib.types.int;
             default = null;

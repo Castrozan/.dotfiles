@@ -57,24 +57,29 @@ def should_rotate_session(
     return last_fresh_start_date != today
 
 
-def launch_heartbeat_bootstrap(heartbeat_bootstrap_argv: list[str]) -> None:
-    subprocess.Popen(heartbeat_bootstrap_argv)
-
-
 def run_launch_command_once(
-    launch_command: str, heartbeat_bootstrap_argv: list[str] | None
+    launch_command: str, heartbeat_driver_argv: list[str] | None
 ) -> float:
     start_time = time.time()
-    if heartbeat_bootstrap_argv:
-        launch_heartbeat_bootstrap(heartbeat_bootstrap_argv)
-    subprocess.run(["bash", "-c", launch_command], check=False)
+    driver_process = (
+        subprocess.Popen(heartbeat_driver_argv) if heartbeat_driver_argv else None
+    )
+    try:
+        subprocess.run(["bash", "-c", launch_command], check=False)
+    finally:
+        if driver_process is not None:
+            driver_process.terminate()
+            try:
+                driver_process.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                driver_process.kill()
     return time.time() - start_time
 
 
 def supervise_agent_forever(
     agent_name: str,
     launch_command: str,
-    heartbeat_bootstrap_argv: list[str] | None,
+    heartbeat_driver_argv: list[str] | None,
     active_hours_start: int | None,
     active_hours_end: int | None,
     daily_session_rotation: bool,
@@ -106,9 +111,7 @@ def supervise_agent_forever(
         if last_fresh_start_date is None:
             last_fresh_start_date = time.strftime("%Y-%m-%d")
 
-        runtime_seconds = run_launch_command_once(
-            launch_command, heartbeat_bootstrap_argv
-        )
+        runtime_seconds = run_launch_command_once(launch_command, heartbeat_driver_argv)
 
         if not is_within_active_hours(active_hours_start, active_hours_end):
             continue
@@ -145,9 +148,9 @@ def parse_arguments() -> argparse.Namespace:
         help="Shell command that starts the agent (runs under bash -c)",
     )
     parser.add_argument(
-        "--heartbeat-bootstrap-argv",
+        "--heartbeat-driver-argv",
         default=None,
-        help="JSON-encoded argv list for the heartbeat bootstrap script",
+        help="JSON-encoded argv list for the heartbeat driver process",
     )
     parser.add_argument(
         "--active-hours-start",
@@ -174,14 +177,14 @@ def main() -> None:
     install_exit_signal_handlers()
     arguments = parse_arguments()
 
-    heartbeat_bootstrap_argv = None
-    if arguments.heartbeat_bootstrap_argv:
-        heartbeat_bootstrap_argv = json.loads(arguments.heartbeat_bootstrap_argv)
+    heartbeat_driver_argv = None
+    if arguments.heartbeat_driver_argv:
+        heartbeat_driver_argv = json.loads(arguments.heartbeat_driver_argv)
 
     supervise_agent_forever(
         arguments.agent_name,
         arguments.launch_command,
-        heartbeat_bootstrap_argv,
+        heartbeat_driver_argv,
         arguments.active_hours_start,
         arguments.active_hours_end,
         arguments.daily_session_rotation,

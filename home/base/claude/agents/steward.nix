@@ -66,6 +66,7 @@ in
     dailySessionRotation = true;
     heartbeatInterval = "*/15 * * * *";
     heartbeatPrompt = builtins.readFile (stewardSkillRoot + "/heartbeat-prompt.md");
+    heartbeatGateCommand = "steward-heartbeat-gate";
     skillDirectories = [ stewardSkillSetDirectory ];
     denyToolPatterns = stewardDenyToolPatterns;
     personality = personalityWithMachineIdentity;
