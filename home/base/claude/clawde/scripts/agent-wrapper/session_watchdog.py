@@ -3,7 +3,7 @@ import signal
 import subprocess
 import time
 
-from stuck_indicators import pane_indicates_stuck_modal
+from stuck_indicators import pane_poll_is_stuck_evidence
 
 WATCHDOG_POLL_INTERVAL_SECONDS = 30
 WATCHDOG_CONSECUTIVE_STUCK_THRESHOLD = 2
@@ -70,6 +70,7 @@ def run_launch_command_once(
         subprocess.Popen(heartbeat_driver_argv) if heartbeat_driver_argv else None
     )
     consecutive_stuck_polls = 0
+    previous_pane_content: str | None = None
     was_stuck_kill = False
     try:
         while True:
@@ -80,17 +81,19 @@ def run_launch_command_once(
                 if tmux_target is None:
                     continue
                 pane_content = capture_pane_content(tmux_target)
-                if pane_content is not None and pane_indicates_stuck_modal(
-                    pane_content
-                ):
+                if pane_content is None:
+                    consecutive_stuck_polls = 0
+                    continue
+                if pane_poll_is_stuck_evidence(pane_content, previous_pane_content):
                     consecutive_stuck_polls += 1
                 else:
                     consecutive_stuck_polls = 0
+                previous_pane_content = pane_content
                 if consecutive_stuck_polls >= WATCHDOG_CONSECUTIVE_STUCK_THRESHOLD:
                     print(
                         f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] "
-                        "Stuck modal detected in pane "
-                        "(usage limit or authentication failure). "
+                        "Agent pane unresponsive "
+                        "(frozen and not at the idle prompt, or usage-limit modal). "
                         "Terminating session to trigger a restart.",
                         flush=True,
                     )

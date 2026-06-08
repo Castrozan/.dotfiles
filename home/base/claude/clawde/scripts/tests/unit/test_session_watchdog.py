@@ -21,54 +21,91 @@ def _load_agent_wrapper_module(module_name: str):
 stuck_indicators = _load_agent_wrapper_module("stuck_indicators")
 session_watchdog = _load_agent_wrapper_module("session_watchdog")
 
+IDLE_REPL_PANE = "● Heartbeat scheduled, nothing pending - standing by.\n❯\n"
+AUTH_FAILURE_MODAL_PANE = (
+    "Please run /login · API Error: 401 Invalid authentication credentials\n"
+)
+USAGE_LIMIT_MODAL_PANE = (
+    "What do you want to do?\n"
+    " ❯ Adjust monthly spend limit\n"
+    "   Wait for limit to reset\n"
+)
+AGENT_DISCUSSING_AUTH_ERROR_THEN_IDLE_PANE = (
+    "I see the steward pane shows API Error: 401 / Please run /login - that is the\n"
+    "auth-stuck state we are fixing.\n❯\n"
+)
 
-def test_pane_indicates_stuck_modal_detects_blocking_usage_limit_prompt():
-    pane_content = (
-        "What do you want to do?\n"
-        " ❯ Adjust monthly spend limit\n"
-        "   Wait for limit to reset\n"
-        "   Resets 3am (America/Sao_Paulo)\n"
+
+def test_pane_is_at_idle_repl_prompt_true_for_idle_pane():
+    assert stuck_indicators.pane_is_at_idle_repl_prompt(IDLE_REPL_PANE) is True
+
+
+def test_pane_is_at_idle_repl_prompt_false_for_frozen_modal():
+    assert (
+        stuck_indicators.pane_is_at_idle_repl_prompt(AUTH_FAILURE_MODAL_PANE) is False
     )
-    assert stuck_indicators.pane_indicates_stuck_modal(pane_content) is True
 
 
-def test_pane_indicates_stuck_modal_detects_weekly_limit_banner():
-    pane_content = "You've hit your weekly limit · resets 3am (America/Sao_Paulo)\n"
-    assert stuck_indicators.pane_indicates_stuck_modal(pane_content) is True
+def test_pane_is_at_idle_repl_prompt_false_at_onboarding_even_with_prompt_glyph():
+    onboarding_pane = "Select login method\n ❯ Claude account with subscription\n"
+    assert stuck_indicators.pane_is_at_idle_repl_prompt(onboarding_pane) is False
 
 
-def test_pane_indicates_stuck_modal_detects_login_prompt():
-    pane_content = (
-        "Please run /login · API Error: 401 Invalid authentication credentials\n"
+def test_idle_repl_pane_is_never_stuck_evidence_even_when_frozen():
+    assert (
+        stuck_indicators.pane_poll_is_stuck_evidence(IDLE_REPL_PANE, IDLE_REPL_PANE)
+        is False
     )
-    assert stuck_indicators.pane_indicates_stuck_modal(pane_content) is True
 
 
-def test_pane_indicates_authentication_failure_detects_invalid_credentials():
-    pane_content = "API Error: 401 Invalid authentication credentials\n"
-    assert stuck_indicators.pane_indicates_authentication_failure(pane_content) is True
-
-
-def test_pane_indicates_authentication_failure_ignores_usage_limit():
-    pane_content = "You've hit your weekly limit\n"
-    assert stuck_indicators.pane_indicates_authentication_failure(pane_content) is False
-
-
-def test_pane_indicates_stuck_modal_ignores_idle_repl_pane():
-    pane_content = (
-        "● Heartbeat scheduled, nothing pending - standing by for messages.\n❯\n"
+def test_agent_discussing_auth_error_but_back_at_prompt_is_not_stuck():
+    assert (
+        stuck_indicators.pane_poll_is_stuck_evidence(
+            AGENT_DISCUSSING_AUTH_ERROR_THEN_IDLE_PANE,
+            AGENT_DISCUSSING_AUTH_ERROR_THEN_IDLE_PANE,
+        )
+        is False
     )
-    assert stuck_indicators.pane_indicates_stuck_modal(pane_content) is False
 
 
-def test_watchdog_terminates_session_when_pane_shows_auth_failure(monkeypatch):
+def test_progressing_pane_is_not_stuck_even_without_prompt():
+    assert (
+        stuck_indicators.pane_poll_is_stuck_evidence(
+            "Running step 2 of 5... 41s\n", "Running step 2 of 5... 12s\n"
+        )
+        is False
+    )
+
+
+def test_frozen_non_idle_pane_is_stuck_evidence():
+    assert (
+        stuck_indicators.pane_poll_is_stuck_evidence(
+            AUTH_FAILURE_MODAL_PANE, AUTH_FAILURE_MODAL_PANE
+        )
+        is True
+    )
+
+
+def test_first_poll_without_previous_capture_is_not_stuck_evidence():
+    assert (
+        stuck_indicators.pane_poll_is_stuck_evidence(AUTH_FAILURE_MODAL_PANE, None)
+        is False
+    )
+
+
+def test_usage_limit_modal_is_stuck_evidence_on_first_sight():
+    assert (
+        stuck_indicators.pane_poll_is_stuck_evidence(USAGE_LIMIT_MODAL_PANE, None)
+        is True
+    )
+
+
+def test_watchdog_terminates_session_when_pane_is_frozen_and_not_idle(monkeypatch):
     monkeypatch.setattr(session_watchdog, "WATCHDOG_POLL_INTERVAL_SECONDS", 0)
     monkeypatch.setattr(
         session_watchdog,
         "capture_pane_content",
-        lambda _tmux_target: (
-            "Please run /login · API Error: 401 Invalid authentication credentials\n"
-        ),
+        lambda _tmux_target: AUTH_FAILURE_MODAL_PANE,
     )
     terminated_process_ids: list[int] = []
 
@@ -77,9 +114,7 @@ def test_watchdog_terminates_session_when_pane_shows_auth_failure(monkeypatch):
         session_watchdog.os.kill(root_process_id, session_watchdog.signal.SIGKILL)
 
     monkeypatch.setattr(
-        session_watchdog,
-        "terminate_process_tree",
-        terminate_and_record,
+        session_watchdog, "terminate_process_tree", terminate_and_record
     )
     _runtime_seconds, was_stuck_kill = session_watchdog.run_launch_command_once(
         "sleep 30",

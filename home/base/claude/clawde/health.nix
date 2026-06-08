@@ -7,7 +7,7 @@
 }:
 let
   agentWrapperDirectory = ./scripts/agent-wrapper;
-  agentPaneStuckModalCheckerScript = "${agentWrapperDirectory}/check_agent_pane_for_stuck_modal.py";
+  agentPaneResponsivenessCheckerScript = "${agentWrapperDirectory}/check_agent_pane_responsiveness.py";
 
   clawdeAgentProcessProbes = lib.mapAttrsToList (
     agentName: _agentConfig:
@@ -20,11 +20,11 @@ let
   clawdeAgentPaneLivenessProbes = lib.mapAttrsToList (
     agentName: agentConfig:
     healthCheckLib.mkCommandProbe {
-      name = "clawde agent pane liveness: ${agentName}";
+      name = "clawde agent pane responsiveness: ${agentName}";
       command = lib.concatStringsSep " " [
         "PYTHONPATH=${lib.escapeShellArg agentWrapperDirectory}"
         "${pkgs.python312}/bin/python3"
-        "${agentPaneStuckModalCheckerScript}"
+        "${agentPaneResponsivenessCheckerScript}"
         "--tmux-target"
         (lib.escapeShellArg "${agentConfig.tmuxSession}:${agentName}")
       ];
