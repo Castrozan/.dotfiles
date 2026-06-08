@@ -3,8 +3,7 @@
   imports = [
     ./claude.nix
     ./clawde
-    ./config.nix
-    ./configure-claude-json.nix
+    ./settings
     ./skill-injection
     ./hooks
     ./mcps.nix

@@ -30,7 +30,7 @@ let
     url = "${bucket}/${version}/${currentSystem.platform}/claude";
   };
 
-  claudeEnvironmentVariables = import ./claude-environment-variables.nix { inherit pkgs; };
+  claudeEnvironmentVariables = import ./settings/environment-variables.nix { inherit pkgs; };
 
   exportLinesForClaudeEnvironment = lib.concatStringsSep "\n" (
     lib.mapAttrsToList (name: value: ''export ${name}="${value}"'') claudeEnvironmentVariables

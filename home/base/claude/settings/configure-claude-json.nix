@@ -22,7 +22,7 @@ in
       export TRUSTED_PARENT_DIRECTORIES=${lib.escapeShellArg (lib.concatStringsSep "\n" trustedParentDirectories)}
       export TRUSTED_DIRECTORIES=${lib.escapeShellArg (lib.concatStringsSep "\n" trustedDirectories)}
       export JQ_BIN=${pkgs.jq}/bin/jq
-      ${pkgs.bash}/bin/bash ${./scripts/configure-claude-json.sh}
+      ${pkgs.bash}/bin/bash ${./configure-claude-json.sh}
     '';
   };
 }
