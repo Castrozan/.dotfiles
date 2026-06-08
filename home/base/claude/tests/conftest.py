@@ -5,7 +5,10 @@ from pathlib import Path
 import pytest
 
 WORKSPACE_LAUNCHER_SCRIPT_PATH = (
-    Path(__file__).parent.parent / "scripts" / "launch-claude-workspace-session"
+    Path(__file__).parent.parent
+    / "skill-injection"
+    / "scripts"
+    / "launch-claude-workspace-session"
 )
 
 
