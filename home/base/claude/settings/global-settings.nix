@@ -24,6 +24,8 @@ let
   claudeGlobalSettings = {
     model = "claude-opus-4-8";
     effortLevel = "max";
+    ultracode = true;
+    enableWorkflows = true;
     language = "english";
     spinnerTipsEnabled = false;
     dangerouslySkipPermissions = true;
