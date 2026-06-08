@@ -7,6 +7,8 @@ in
   imports = [
     ../../darwin
 
+    ./kira/clawde-agents
+
     ../../base/dev/git-toggle-user.nix
 
     ../../base/opencode

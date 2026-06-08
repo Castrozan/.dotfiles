@@ -33,7 +33,7 @@ in
     permissionMode = "bypassPermissions";
     dailySessionRotation = true;
     heartbeatInterval = "*/30 * * * *";
-    heartbeatPrompt = shared.jennyHeartbeatPrompt;
+    heartbeatPrompt = shared.agentHeartbeatPrompt;
     denyToolPatterns = monsterDenyToolPatterns;
     personality = builtins.replaceStrings [ "@lucasDiscordUserId@" ] [ shared.lucasDiscordUserId ] (
       builtins.readFile ./personality.md
