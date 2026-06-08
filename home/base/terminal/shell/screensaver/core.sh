@@ -2,16 +2,17 @@
 
 _check_command_available() {
 	local cmd="$1"
+	local segment base_cmd
 
-	# Extract the first word (base command) from the command string
-	local base_cmd
-	base_cmd=$(echo "$cmd" | awk '{print $1}')
+	while IFS= read -r segment; do
+		base_cmd=$(echo "$segment" | awk '{print $1}')
+		[ -z "$base_cmd" ] && continue
+		if ! command -v "$base_cmd" &>/dev/null; then
+			return 1
+		fi
+	done < <(echo "$cmd" | tr ';|&' '\n')
 
-	if command -v "$base_cmd" &>/dev/null; then
-		return 0
-	fi
-
-	return 1
+	return 0
 }
 
 # Wait for a tmux pane's shell to be ready (showing a prompt)
