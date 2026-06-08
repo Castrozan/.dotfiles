@@ -14,7 +14,6 @@ in
     dailySessionRotation = true;
     heartbeatInterval = "*/30 * * * *";
     heartbeatPrompt = shared.agentHeartbeatPrompt;
-    denyToolPatterns = shared.browserDenyToolPatterns;
     personality = builtins.replaceStrings [ "@lucasDiscordUserId@" ] [ shared.lucasDiscordUserId ] (
       builtins.readFile ./personality.md
     );
