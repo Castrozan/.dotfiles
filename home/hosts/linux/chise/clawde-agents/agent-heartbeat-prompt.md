@@ -1,1 +1,0 @@
-Heartbeat tick. Read HEARTBEAT.md. If there is no active objective, do nothing - exit silently. If there is pending work, continue it. Never browse the web on a heartbeat tick. Never poll Gmail, Calendar, or Google Chat - those channels are not yours anymore.

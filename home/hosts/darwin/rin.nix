@@ -8,7 +8,6 @@ in
     ../../darwin
   ]
   ++ lib.optionals rinPrivateConfigExists [
-    "${privateConfigRoot}/machines/rin/clawde-pm.nix"
-    "${privateConfigRoot}/machines/rin/clawde-silver.nix"
+    "${privateConfigRoot}/machines/rin/clawde-agents"
   ];
 }

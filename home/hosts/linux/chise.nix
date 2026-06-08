@@ -1,10 +1,14 @@
+{ lib, ... }:
+let
+  privateConfigRoot = ../../../private-config;
+  chisePrivateConfigExists = builtins.pathExists privateConfigRoot;
+in
 {
   imports = [
     ./chise/git.nix
     ./chise/hyprland.nix
     ./chise/ssh.nix
     ./chise/session-vars.nix
-    ./chise/clawde-agents
     ../../base/claude/clawde-agents/steward.nix
 
     ../../base/core.nix
@@ -71,5 +75,8 @@
     ../../base/media/obsidian
     ../../base/media/summarize.nix
     ../../base/media/viu.nix
+  ]
+  ++ lib.optionals chisePrivateConfigExists [
+    "${privateConfigRoot}/machines/chise/clawde-agents"
   ];
 }

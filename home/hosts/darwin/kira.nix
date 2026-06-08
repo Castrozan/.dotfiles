@@ -7,8 +7,6 @@ in
   imports = [
     ../../darwin
 
-    ./kira/clawde-agents
-
     ../../base/dev/git-toggle-user.nix
 
     ../../base/opencode
@@ -27,6 +25,6 @@ in
     ../../base/dev/tuisvn.nix
   ]
   ++ lib.optionals kiraPrivateConfigExists [
-    "${privateConfigRoot}/machines/kira/clawde-pm.nix"
+    "${privateConfigRoot}/machines/kira/clawde-agents"
   ];
 }
