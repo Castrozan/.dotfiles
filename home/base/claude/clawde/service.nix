@@ -24,13 +24,10 @@ let
     ${builtins.readFile ./scripts/start-clawde.sh}
   '';
 
+  clawdeGracefulRedeployScript = ./scripts/clawde-redeploy.py;
+
   clawdeGracefulRedeploy = pkgs.writeShellScriptBin "clawde-redeploy" ''
-    set -euo pipefail
-    if pkill -USR1 -f 'agent-wrapper/wrapper.py --agent-name'; then
-      echo "Signaled clawde agents to restart on their continued sessions (claude --continue)."
-    else
-      echo "No running clawde agent wrappers matched; nothing to redeploy."
-    fi
+    exec ${pkgs.python312}/bin/python3 ${clawdeGracefulRedeployScript} "$@"
   '';
 
   clawdeServiceExecArguments = [

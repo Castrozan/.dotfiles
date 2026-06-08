@@ -162,11 +162,11 @@ main() {
 		"$current_system_symlink_target_before" \
 		"$current_system_symlink_modification_epoch_seconds_before"
 
-	_nudge_clawde_agents_to_redeploy_on_continued_sessions
-
 	_reload_hammerspoon_config
 
 	echo "rebuild complete" >&2
+
+	_nudge_clawde_agents_to_redeploy_on_continued_sessions
 }
 
 main "$@"
