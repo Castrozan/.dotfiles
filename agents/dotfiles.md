@@ -3,6 +3,10 @@ description: Agent behavior instructions specific to the .dotfiles repository
 alwaysApply: true
 ---
 
+<configuration>
+Every configuration change lives in this repo and applies declaratively through its capabilities - nix modules, home-manager, agenix, overlays, packaged scripts - never by mutating a machine by hand outside the repo. Fold new config into the existing module structure rather than adding one-off files. Make it work on every system type this repo targets (NixOS and darwin) when the feature allows, guarding platform-specific pieces behind `isNixOS`/`isDarwin`.
+</configuration>
+
 <scripts>
 Python 3.12 is the default language for scripts. Use bash only when the script is a thin wrapper gluing shell-native tools (tmux send-keys, fzf, sysctl pipelines) where Python would just be subprocess.run calls. Python scripts run via Nix - no uv, no venv, no pip.
 
@@ -27,7 +31,3 @@ After editing any file in the dotfiles repo, execute this sequence before respon
 <agent-instructions>
 After editing agent instructions (any file under agents/ or any CLAUDE.md), run `agent-eval --save-baseline` before pushing so the compliance pass rate stays current.
 </agent-instructions>
-
-<configuration>
-All configuration lives in this repo and is applied declaratively through its full capabilities - nix modules, home-manager, agenix secrets, overlays, packaged scripts - so the system is built from this repo rather than mutated by hand. Never configure the system imperatively outside the repo. When adding configuration, integrate it into the existing module structure and, where the feature allows, make it compatible with every system type this repo targets (NixOS and darwin), guarding platform-specific pieces behind `isNixOS`/`isDarwin` rather than splitting into separate one-off configs.
-</configuration>
