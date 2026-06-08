@@ -8,6 +8,6 @@
     ./hooks
     ./mcps
     ./private.nix
-    ./scripts.nix
+    ./scripts
   ];
 }
