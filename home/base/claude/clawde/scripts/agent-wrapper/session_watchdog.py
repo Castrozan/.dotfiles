@@ -3,18 +3,11 @@ import signal
 import subprocess
 import time
 
+from stuck_indicators import pane_indicates_stuck_modal
+
 WATCHDOG_POLL_INTERVAL_SECONDS = 30
 WATCHDOG_CONSECUTIVE_STUCK_THRESHOLD = 2
 PANE_CAPTURE_LINE_COUNT = 80
-USAGE_LIMIT_MODAL_INDICATORS = [
-    "Wait for limit to reset",
-    "Adjust monthly spend limit",
-    "You've hit your weekly limit",
-]
-
-
-def pane_indicates_usage_limit_modal(pane_content: str) -> bool:
-    return any(indicator in pane_content for indicator in USAGE_LIMIT_MODAL_INDICATORS)
 
 
 def capture_pane_content(tmux_target: str) -> str | None:
@@ -87,7 +80,7 @@ def run_launch_command_once(
                 if tmux_target is None:
                     continue
                 pane_content = capture_pane_content(tmux_target)
-                if pane_content is not None and pane_indicates_usage_limit_modal(
+                if pane_content is not None and pane_indicates_stuck_modal(
                     pane_content
                 ):
                     consecutive_stuck_polls += 1
@@ -96,7 +89,8 @@ def run_launch_command_once(
                 if consecutive_stuck_polls >= WATCHDOG_CONSECUTIVE_STUCK_THRESHOLD:
                     print(
                         f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] "
-                        "Usage-limit modal detected in pane. "
+                        "Stuck modal detected in pane "
+                        "(usage limit or authentication failure). "
                         "Terminating session to trigger a restart.",
                         flush=True,
                     )
