@@ -1,30 +1,22 @@
-import importlib.util
-import pathlib
-import sys
+from clawde_service_test_helpers import (
+    FakeCompletedProcess,
+    fake_tmux_with_window_inventory,
+    load_service_module,
+)
+
+service_module = load_service_module()
 
 
-def _load_service_module():
-    module_path = (
-        pathlib.Path(__file__).resolve().parent.parent.parent / "clawde-service.py"
+def _patch_no_running_wrappers(monkeypatch):
+    monkeypatch.setattr(
+        service_module.agent_wrapper_reconcile,
+        "find_session_agent_wrapper_processes",
+        lambda _session_name: [],
     )
-    module_spec = importlib.util.spec_from_file_location("clawde_service", module_path)
-    module = importlib.util.module_from_spec(module_spec)
-    sys.modules["clawde_service"] = module
-    module_spec.loader.exec_module(module)
-    return module
-
-
-service_module = _load_service_module()
-
-
-class _FakeCompletedProcess:
-    def __init__(self, returncode, stdout=""):
-        self.returncode = returncode
-        self.stdout = stdout
-        self.stderr = ""
 
 
 def test_reconcile_recreates_a_session_that_died_after_startup(monkeypatch):
+    _patch_no_running_wrappers(monkeypatch)
     live_session_names = {"ai-first-initiative", "esfinge"}
     issued_new_session_names = []
 
@@ -32,17 +24,17 @@ def test_reconcile_recreates_a_session_that_died_after_startup(monkeypatch):
         subcommand = arguments[0]
         if subcommand == "has-session":
             requested_session_name = arguments[2]
-            return _FakeCompletedProcess(
+            return FakeCompletedProcess(
                 0 if requested_session_name in live_session_names else 1
             )
         if subcommand == "new-session":
             created_session_name = arguments[3]
             issued_new_session_names.append(created_session_name)
             live_session_names.add(created_session_name)
-            return _FakeCompletedProcess(0)
+            return FakeCompletedProcess(0)
         if subcommand == "list-windows":
-            return _FakeCompletedProcess(0, stdout="silver\n")
-        return _FakeCompletedProcess(0)
+            return FakeCompletedProcess(0, stdout="silver\n")
+        return FakeCompletedProcess(0)
 
     monkeypatch.setattr(service_module, "run_tmux_command", fake_run_tmux_command)
     monkeypatch.setattr(service_module.time, "sleep", lambda _seconds: None)
@@ -71,33 +63,12 @@ def test_reconcile_recreates_a_session_that_died_after_startup(monkeypatch):
     )
 
 
-def _fake_tmux_with_window_inventory(live_session_names, windows_by_session):
-    def fake_run_tmux_command(*arguments):
-        subcommand = arguments[0]
-        if subcommand == "has-session":
-            return _FakeCompletedProcess(0 if arguments[2] in live_session_names else 1)
-        if subcommand == "new-session":
-            session_name = arguments[3]
-            live_session_names.add(session_name)
-            windows_by_session.setdefault(session_name, set()).add(arguments[5])
-            return _FakeCompletedProcess(0)
-        if subcommand == "list-windows":
-            return _FakeCompletedProcess(
-                0, stdout="\n".join(windows_by_session.get(arguments[2], set()))
-            )
-        if subcommand == "new-window":
-            windows_by_session.setdefault(arguments[2], set()).add(arguments[4])
-            return _FakeCompletedProcess(0)
-        return _FakeCompletedProcess(0)
-
-    return fake_run_tmux_command
-
-
 def test_each_newly_created_agent_window_is_staggered(monkeypatch):
+    _patch_no_running_wrappers(monkeypatch)
     monkeypatch.setattr(
         service_module,
         "run_tmux_command",
-        _fake_tmux_with_window_inventory(set(), {}),
+        fake_tmux_with_window_inventory(set(), {}),
     )
     stagger_sleeps = []
     monkeypatch.setattr(
@@ -128,10 +99,11 @@ def test_each_newly_created_agent_window_is_staggered(monkeypatch):
 
 
 def test_steady_state_reconcile_does_not_stagger_existing_windows(monkeypatch):
+    _patch_no_running_wrappers(monkeypatch)
     monkeypatch.setattr(
         service_module,
         "run_tmux_command",
-        _fake_tmux_with_window_inventory(
+        fake_tmux_with_window_inventory(
             {"clawde"},
             {"clawde": {"first-agent", "second-agent", "third-agent", "fourth-agent"}},
         ),

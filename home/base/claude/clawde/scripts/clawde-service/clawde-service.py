@@ -4,6 +4,8 @@ import subprocess
 import sys
 import time
 
+import agent_wrapper_reconcile
+
 BOOTSTRAP_PLACEHOLDER_WINDOW_NAME = "__bootstrap__"
 SUPERVISOR_POLL_INTERVAL_SECONDS = 10
 AGENT_STARTUP_STAGGER_SECONDS = 2
@@ -80,7 +82,19 @@ def ensure_agent_windows_for_session(session_specification: dict) -> None:
         create_session_with_placeholder_window(session_name)
         placeholder_created = True
 
+    declared_agent_names = {
+        agent_specification["name"]
+        for agent_specification in session_specification["agents"]
+    }
+    agent_names_with_a_running_wrapper = (
+        agent_wrapper_reconcile.agent_names_with_running_wrapper_after_reconcile(
+            session_name, declared_agent_names
+        )
+    )
+
     for agent_specification in session_specification["agents"]:
+        if agent_specification["name"] in agent_names_with_a_running_wrapper:
+            continue
         agent_window_was_created = ensure_agent_window(
             session_name,
             agent_specification["name"],

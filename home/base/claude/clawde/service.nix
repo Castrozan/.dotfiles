@@ -14,7 +14,7 @@ let
     clawdeServiceSpecificationFile
     ;
 
-  clawdeServiceScript = ./scripts/clawde-service.py;
+  clawdeServiceScript = "${./scripts/clawde-service}/clawde-service.py";
 
   clawdeSessionStarter = pkgs.writeShellScriptBin "clawde" ''
     export TMUX_BIN=${pkgs.tmux}/bin/tmux
