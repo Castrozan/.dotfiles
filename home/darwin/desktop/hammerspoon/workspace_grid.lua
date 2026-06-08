@@ -8,29 +8,34 @@ local firstWorkspaceNumber = 1
 workspaceGrid.columns = workspaceGridColumns
 workspaceGrid.totalWorkspaceCount = totalWorkspaceCount
 
-local workspaceNumberByWindowId = {}
-local lastFocusedWindowIdByWorkspaceNumber = {}
 local currentWorkspaceNumber = firstWorkspaceNumber
 local menuBarIndicator = require("workspace_grid_menubar")
 local workspaceGridPersistence = require("workspace_grid_persistence")
 local windowLayout = require("workspace_grid_window_layout")
+local sessionGeneration = require("workspace_grid_session_generation")
+local windowAssignment = require("workspace_grid_window_assignment")
+local windowSummon = require("workspace_grid_summon")
+
+function workspaceGrid.setSessionGenerationTokenForTest(token)
+	sessionGeneration.setTokenForTest(token)
+end
 
 local function manageableWindows()
 	return hs.window.filter.default:getWindows()
 end
 
-local function workspaceOfWindow(window)
-	local windowId = window:id()
-	if workspaceNumberByWindowId[windowId] == nil then
-		workspaceNumberByWindowId[windowId] = firstWorkspaceNumber
-	end
-	return workspaceNumberByWindowId[windowId]
+local function persistWorkspaceState()
+	workspaceGridPersistence.save(
+		currentWorkspaceNumber,
+		sessionGeneration.currentToken(),
+		windowAssignment.allWorkspaceNumbersByWindowId()
+	)
 end
 
 local function occupiedWorkspaceNumbers()
 	local occupied = {}
 	for _, window in ipairs(manageableWindows()) do
-		occupied[workspaceOfWindow(window)] = true
+		occupied[windowAssignment.workspaceOfWindowId(window:id())] = true
 	end
 	return occupied
 end
@@ -44,11 +49,11 @@ function workspaceGrid.switchToWorkspace(targetWorkspaceNumber, preferredFocusWi
 		return
 	end
 	currentWorkspaceNumber = targetWorkspaceNumber
-	local rememberedFocusWindowId = lastFocusedWindowIdByWorkspaceNumber[targetWorkspaceNumber]
+	local rememberedFocusWindowId = windowAssignment.rememberedFocusedWindowId(targetWorkspaceNumber)
 	local rememberedFocusWindow = nil
 	local firstTileableWindow = nil
 	for _, window in ipairs(manageableWindows()) do
-		if workspaceOfWindow(window) == targetWorkspaceNumber then
+		if windowAssignment.workspaceOfWindowId(window:id()) == targetWorkspaceNumber then
 			windowLayout.showWindowOnScreen(window)
 			if windowLayout.windowIsTileable(window) then
 				firstTileableWindow = firstTileableWindow or window
@@ -63,10 +68,10 @@ function workspaceGrid.switchToWorkspace(targetWorkspaceNumber, preferredFocusWi
 	local windowToRefocus = preferredFocusWindow or rememberedFocusWindow or firstTileableWindow
 	if windowToRefocus then
 		windowToRefocus:focus()
-		lastFocusedWindowIdByWorkspaceNumber[targetWorkspaceNumber] = windowToRefocus:id()
+		windowAssignment.rememberFocusedWindow(targetWorkspaceNumber, windowToRefocus:id())
 	end
 	renderMenuBarIndicator()
-	workspaceGridPersistence.save(currentWorkspaceNumber, workspaceNumberByWindowId)
+	persistWorkspaceState()
 end
 
 function workspaceGrid.moveFocusedWindowToWorkspace(targetWorkspaceNumber)
@@ -74,7 +79,7 @@ function workspaceGrid.moveFocusedWindowToWorkspace(targetWorkspaceNumber)
 	if not focused then
 		return
 	end
-	workspaceNumberByWindowId[focused:id()] = targetWorkspaceNumber
+	windowAssignment.assignWindowToWorkspace(focused:id(), targetWorkspaceNumber)
 	workspaceGrid.switchToWorkspace(targetWorkspaceNumber, focused)
 end
 
@@ -92,38 +97,20 @@ function workspaceGrid.navigateWorkspace(deltaWithinGrid, alsoMoveFocusedWindow)
 	end
 end
 
-local function firstStandardWindowForBundleIdentifier(applicationBundleIdentifier)
-	for _, application in ipairs(hs.application.applicationsForBundleID(applicationBundleIdentifier)) do
-		local mainWindow = application:mainWindow()
-		if mainWindow and mainWindow:isStandard() then
-			return mainWindow
-		end
-		for _, window in ipairs(application:allWindows()) do
-			if window:isStandard() then
-				return window
-			end
-		end
-	end
-	return nil
-end
-
 function workspaceGrid.summonApplicationToCurrentWorkspace(applicationName, applicationBundleIdentifier)
-	local window = firstStandardWindowForBundleIdentifier(applicationBundleIdentifier)
-	if not window then
-		hs.application.launchOrFocus(applicationName)
-		return
-	end
-	workspaceNumberByWindowId[window:id()] = currentWorkspaceNumber
-	windowLayout.showWindowOnScreen(window)
-	window:focus()
-	renderMenuBarIndicator()
-	workspaceGridPersistence.save(currentWorkspaceNumber, workspaceNumberByWindowId)
+	windowSummon.summon(applicationName, applicationBundleIdentifier, function(window)
+		windowAssignment.assignWindowToWorkspace(window:id(), currentWorkspaceNumber)
+		windowLayout.showWindowOnScreen(window)
+		window:focus()
+		renderMenuBarIndicator()
+		persistWorkspaceState()
+	end)
 end
 
 function workspaceGrid.currentWorkspaceWindowList()
 	local windows = {}
 	for _, window in ipairs(manageableWindows()) do
-		if workspaceOfWindow(window) == currentWorkspaceNumber then
+		if windowAssignment.workspaceOfWindowId(window:id()) == currentWorkspaceNumber then
 			local application = window:application()
 			table.insert(windows, {
 				["window-id"] = window:id(),
@@ -142,21 +129,29 @@ end
 function workspaceGrid.focusWindowById(windowId)
 	local window = hs.window.get(windowId)
 	if window then
-		workspaceNumberByWindowId[windowId] = currentWorkspaceNumber
+		windowAssignment.assignWindowToWorkspace(windowId, currentWorkspaceNumber)
 		window:focus()
 		windowLayout.showWindowOnScreen(window)
-		workspaceGridPersistence.save(currentWorkspaceNumber, workspaceNumberByWindowId)
+		persistWorkspaceState()
 	end
 end
 
 function workspaceGrid.onWindowCreated(window)
 	if window and window:id() then
-		workspaceNumberByWindowId[window:id()] = currentWorkspaceNumber
+		windowAssignment.assignWindowToWorkspace(window:id(), currentWorkspaceNumber)
 		if windowLayout.windowIsTileable(window) then
 			windowLayout.showWindowOnScreen(window)
 		end
 		renderMenuBarIndicator()
-		workspaceGridPersistence.save(currentWorkspaceNumber, workspaceNumberByWindowId)
+		persistWorkspaceState()
+	end
+end
+
+function workspaceGrid.onWindowDestroyed(window)
+	if window and window:id() then
+		windowAssignment.forgetWindow(window:id())
+		renderMenuBarIndicator()
+		persistWorkspaceState()
 	end
 end
 
@@ -164,29 +159,36 @@ function workspaceGrid.onWindowFocused(window)
 	if
 		window
 		and window:id()
-		and workspaceOfWindow(window) == currentWorkspaceNumber
+		and windowAssignment.workspaceOfWindowId(window:id()) == currentWorkspaceNumber
 		and windowLayout.windowIsTileable(window)
 	then
-		lastFocusedWindowIdByWorkspaceNumber[currentWorkspaceNumber] = window:id()
+		windowAssignment.rememberFocusedWindow(currentWorkspaceNumber, window:id())
 		windowLayout.showWindowOnScreen(window)
 	end
 end
 
 function workspaceGrid.registerExistingWindowsOnFirstWorkspace()
 	for _, window in ipairs(manageableWindows()) do
-		if workspaceNumberByWindowId[window:id()] == nil then
-			workspaceNumberByWindowId[window:id()] = firstWorkspaceNumber
+		if not windowAssignment.isWindowAssigned(window:id()) then
+			windowAssignment.assignWindowToWorkspace(window:id(), firstWorkspaceNumber)
 		end
 	end
 	renderMenuBarIndicator()
 end
 
 function workspaceGrid.restorePersistedWorkspaceState()
-	local restoredCurrentWorkspaceNumber, restoredAssignments = workspaceGridPersistence.load()
-	currentWorkspaceNumber = restoredCurrentWorkspaceNumber or currentWorkspaceNumber
-	for windowId, workspaceNumber in pairs(restoredAssignments) do
-		workspaceNumberByWindowId[windowId] = workspaceNumber
+	local restoredCurrentWorkspaceNumber, restoredSessionGenerationToken, restoredAssignments =
+		workspaceGridPersistence.load()
+	if restoredSessionGenerationToken ~= sessionGeneration.currentToken() then
+		currentWorkspaceNumber = firstWorkspaceNumber
+		return
 	end
+	currentWorkspaceNumber = restoredCurrentWorkspaceNumber or currentWorkspaceNumber
+	local liveWindowIdSet = {}
+	for _, window in ipairs(manageableWindows()) do
+		liveWindowIdSet[window:id()] = true
+	end
+	windowAssignment.adoptAssignmentsForLiveWindows(restoredAssignments, liveWindowIdSet)
 end
 
 function workspaceGrid.currentWorkspaceNumber()
