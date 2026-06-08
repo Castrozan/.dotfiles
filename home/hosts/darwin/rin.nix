@@ -6,10 +6,9 @@ in
 {
   imports = [
     ../../darwin
-
-    ../../base/claude/agents/silver.nix
   ]
   ++ lib.optionals rinPrivateConfigExists [
     "${privateConfigRoot}/machines/rin/clawde-pm.nix"
+    "${privateConfigRoot}/machines/rin/clawde-silver.nix"
   ];
 }
