@@ -13,7 +13,7 @@ let
   chromeBinary = "${latest.google-chrome}/bin/google-chrome-stable";
   chromeDevtoolsMcpChildReaperIntervalSeconds = 900;
 
-  browserMcp = import ../../../agents/skills/browser/install {
+  browserMcp = import ../../../../agents/skills/browser/install {
     inherit
       pkgs
       nodejs
@@ -55,7 +55,7 @@ let
       --port ${toString browserUseMcpStreamableHttpPort}
   '';
 
-  a2aMcp = import ../agents/a2a/install.nix {
+  a2aMcp = import ../../agents/a2a/install.nix {
     inherit
       pkgs
       nodejs
@@ -133,7 +133,7 @@ let
 in
 {
   imports = [
-    (import ./mcps/mcp-bridge-runners.nix {
+    (import ./mcp-bridge-runners.nix {
       inherit
         homeDir
         nixSystemPaths
@@ -141,10 +141,10 @@ in
         linuxOnlyMcpBridgeServiceSpecs
         ;
     })
-    (import ./mcps/browser-use-config-patcher.nix {
+    (import ./browser-use-config-patcher.nix {
       inherit browserUseConfigDir chromeBinary;
     })
-    (import ./mcps/inject-mcp-servers-into-claude-config.nix {
+    (import ./inject-mcp-servers-into-claude-config.nix {
       inherit homeDir;
       chromeDevtoolsMcpStreamableHttpUrl = browserMcp.mcpServerStreamableHttpUrl;
       inherit a2aMcpStreamableHttpPort browserUseMcpStreamableHttpPort;

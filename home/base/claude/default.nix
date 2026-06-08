@@ -6,7 +6,7 @@
     ./settings
     ./skill-injection
     ./hooks
-    ./mcps.nix
+    ./mcps
     ./private.nix
     ./scripts.nix
   ];
