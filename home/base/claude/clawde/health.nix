@@ -6,13 +6,32 @@
   ...
 }:
 let
-  clawdeAgentProbes = lib.mapAttrsToList (
+  agentWrapperDirectory = ./scripts/agent-wrapper;
+  agentPaneStuckModalCheckerScript = "${agentWrapperDirectory}/check_agent_pane_for_stuck_modal.py";
+
+  clawdeAgentProcessProbes = lib.mapAttrsToList (
     agentName: _agentConfig:
     healthCheckLib.mkProcessProbe {
       name = "clawde agent: ${agentName}";
       pattern = "agent-wrapper/wrapper.py --agent-name ${agentName}";
     }
   ) config.clawde.agents;
+
+  clawdeAgentPaneLivenessProbes = lib.mapAttrsToList (
+    agentName: agentConfig:
+    healthCheckLib.mkCommandProbe {
+      name = "clawde agent pane liveness: ${agentName}";
+      command = lib.concatStringsSep " " [
+        "PYTHONPATH=${lib.escapeShellArg agentWrapperDirectory}"
+        "${pkgs.python312}/bin/python3"
+        "${agentPaneStuckModalCheckerScript}"
+        "--tmux-target"
+        (lib.escapeShellArg "${agentConfig.tmuxSession}:${agentName}")
+      ];
+    }
+  ) config.clawde.agents;
+
+  clawdeAgentProbes = clawdeAgentProcessProbes ++ clawdeAgentPaneLivenessProbes;
 
   clawdeServiceProbe =
     if pkgs.stdenv.hostPlatform.isDarwin then
