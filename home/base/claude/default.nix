@@ -1,7 +1,7 @@
 { ... }:
 {
   imports = [
-    ./claude.nix
+    ./binary.nix
     ./clawde
     ./settings
     ./skill-injection

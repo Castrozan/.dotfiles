@@ -4,24 +4,35 @@ Home-manager module that installs Claude Code, declares its config, and runs per
 
 ## Module layout
 
+`default.nix` imports only subdir entrypoints plus the few top-level files below.
+
 | Path | Purpose |
 |------|---------|
-| `claude.nix` | Pins the Claude Code binary (versioned, prefetched per-platform) |
-| `claude-environment-variables.nix` | Env vars Claude reads at startup |
-| `config.nix` | settings.json source + activation that keeps it mutable |
-| `default.nix` | Module entry point - imports all the .nix files in this dir |
+| `binary.nix` | Pins the Claude Code binary (versioned, prefetched per-platform), exports its env vars, pre-approves the workspace trust dialog |
+| `default.nix` | Module entry point - imports the subdirs and top-level files |
+| `private.nix` | Deploys private agents/skills from `private-config/` (per-machine and shared) |
+| `personal-only-skills.nix` | List of skills restricted to personal (non-work) sessions |
+| `settings/` | `settings.json` source + keybindings + env vars + plugins, `.claude.json` trust dirs, statusline scripts, and the mutable-settings workaround |
+| `hooks/` | Deploys `agents/hooks/` flat under `~/.claude/hooks/` (`default.nix`), hook event registrations (`event-registrations.nix`), and the recursive hook-tree walker |
+| `mcps/` | MCP server registration: supergateway bridge runners, injection into `.claude.json`, browser-use config patcher |
+| `skill-injection/` | `claude` fish wrapper, the `claude-workspace` launcher (`scripts/`), and the skill-set builders |
 | `clawde/` | Persistent agent framework: tmux session + supervisor + channel/peer adapters |
-| `external-skill-sets.nix` | `claude` fish wrapper + claude-workspace launcher with personal skill set |
-| `hook-config.nix` | Hook event registrations (PreToolUse, PostToolUse, Stop, etc.) |
-| `hooks.nix` | Walks agents/hooks/ recursively, deploys each script flat under ~/.claude/hooks/ |
-| `list-hook-scripts-recursively.nix` | Helper that walks the hooks tree |
-| `mcps.nix` | MCP server registrations |
-| `plugins.nix` | Claude Code plugins |
-| `private.nix` | Private config that should not be committed (gitignored) |
-| `scripts.nix` | Wires extra bins into PATH: memory-write, memory-prune, claude-update-version, claude-a2a-peer |
-| `skills.nix` | Deploys agents/skills/ to ~/.claude/skills/ (base) and the personal vault |
-| `workspace-trust.nix` | Marks ~/repo/* + ~ + ~/.dotfiles as trusted in .claude.json |
-| `workarounds/` | Compensations for upstream issues (install-method, mutable settings) |
+| `clawde-agents/` | Shared clawde agent declarations that depend on public skill files (currently `steward`). Per-machine declarations live in `private-config/machines/<host>/clawde-*.nix` |
+| `scripts/` | General Claude helper bins + their wiring (`default.nix`): memory-write/prune, claude-a2a-peer, claude-update-version, launch-command-detached, notify-turn-ended |
+| `completions/` | `claude.fish` completion (installed by `home/base/terminal/fish.nix`) |
+| `docs/` | Module documentation |
+
+## a2a is provider-agnostic
+
+The a2a MCP client (the `a2a-mcp-server` npm package that lets an agent call peers) lives in the shared `home/base/agents/a2a/` layer, not inside this module:
+
+| Path | Purpose |
+|------|---------|
+| `home/base/agents/a2a/install.nix` | Single source for the npm install + binary/command/args, consumed by any provider |
+| `home/base/agents/a2a/default.nix` | Runs the install activation exactly once |
+| `home/base/agents/a2a/register.nix` | `registerStdioServerInJsonConfig` helper for providers that register a2a via stdio |
+
+Claude registers a2a as an HTTP bridge in `mcps/` (consuming `a2a/install.nix`); codex/opencode/hermes can register it via the same shared layer. The real A2A server implementation is the provider-agnostic Python package at the repo-root `agents/a2a_server/`.
 
 ## clawde
 
@@ -29,7 +40,7 @@ Home-manager module that installs Claude Code, declares its config, and runs per
 
 See `clawde/default.nix` for the option schema, `clawde/instructions/clawde-runtime.md` for runtime rules, and `clawde/channel-adapters/<name>/instructions/<name>-runtime.md` for per-channel behavior.
 
-Agents are declared per-machine: chise's live in `home/hosts/linux/chise/clawde-agents.nix`, jojo's in `home/base/claude/agents/jojo-clawde-agents.nix`, and the shared `silver` (rin/kira) declaration is `home/base/claude/agents/silver.nix`.
+Agent declarations live per-machine in `private-config/machines/<host>/clawde-*.nix` (e.g. the per-host PM agents and rin's `clawde-silver.nix`); the shared `steward` agent, which reads the public steward skill at eval time, lives in `clawde-agents/steward.nix`.
 
 ## Testing
 
