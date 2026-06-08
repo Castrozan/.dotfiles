@@ -1,3 +1,8 @@
+{ lib, ... }:
+let
+  privateConfigRoot = ../../../private-config;
+  jojoPrivateConfigExists = builtins.pathExists privateConfigRoot;
+in
 {
   imports = [
     ../../base/packages/lucas-zanoni.nix
@@ -8,7 +13,6 @@
     ../../linux/hyprland/standalone.nix
     ../../base/network/ssh-private.nix
     ../../base/system/session-vars-lucas-zanoni.nix
-    ../../base/claude/agents/jojo-clawde-agents.nix
     ../../base/claude/agents/steward.nix
     ../../linux/system/sophos-disable-plugins
     ../../linux/system/forticlient-disable-update
@@ -76,5 +80,8 @@
     ../../base/media/readItNow.nix
     ../../base/media/summarize.nix
     ../../base/media/viu.nix
+  ]
+  ++ lib.optionals jojoPrivateConfigExists [
+    "${privateConfigRoot}/machines/jojo/clawde-pm.nix"
   ];
 }

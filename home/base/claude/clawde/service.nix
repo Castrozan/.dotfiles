@@ -25,8 +25,10 @@ let
   '';
 
   clawdeGracefulRedeployScript = ./scripts/clawde-redeploy.py;
+  clawdeResumeNudgeScript = "${./scripts/heartbeat}/resume_nudge.py";
 
   clawdeGracefulRedeploy = pkgs.writeShellScriptBin "clawde-redeploy" ''
+    export CLAWDE_RESUME_NUDGE_SCRIPT=${clawdeResumeNudgeScript}
     exec ${pkgs.python312}/bin/python3 ${clawdeGracefulRedeployScript} "$@"
   '';
 

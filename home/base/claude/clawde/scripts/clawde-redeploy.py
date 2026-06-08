@@ -1,4 +1,5 @@
 import os
+import re
 import signal
 import subprocess
 import sys
@@ -7,6 +8,9 @@ import time
 AGENT_WRAPPER_PROCESS_MATCH_PATTERN = "agent-wrapper/wrapper.py --agent-name"
 GRACE_DELAY_SECONDS_BEFORE_SIGNALING = 2
 REDEPLOY_LOG_RELATIVE_PATH = "Library/Logs/clawde-redeploy.log"
+RESUME_NUDGE_SCRIPT_ENVIRONMENT_VARIABLE = "CLAWDE_RESUME_NUDGE_SCRIPT"
+AGENT_NAME_PATTERN = re.compile(r"--agent-name (\S+)")
+TMUX_SESSION_PATTERN = re.compile(r"--tmux-session (\S+)")
 
 
 def find_agent_wrapper_process_ids() -> list[int]:
@@ -20,14 +24,58 @@ def find_agent_wrapper_process_ids() -> list[int]:
     ]
 
 
+def read_full_command_line(process_id: int) -> str:
+    completed_process = subprocess.run(
+        ["ps", "-ww", "-p", str(process_id), "-o", "command="],
+        capture_output=True,
+        text=True,
+    )
+    return completed_process.stdout.strip()
+
+
+def describe_agent_wrappers() -> list[dict]:
+    agent_wrappers = []
+    for process_id in find_agent_wrapper_process_ids():
+        command_line = read_full_command_line(process_id)
+        agent_name_match = AGENT_NAME_PATTERN.search(command_line)
+        tmux_session_match = TMUX_SESSION_PATTERN.search(command_line)
+        if not agent_name_match or not tmux_session_match:
+            continue
+        agent_wrappers.append(
+            {
+                "process_id": process_id,
+                "agent_name": agent_name_match.group(1),
+                "tmux_session": tmux_session_match.group(1),
+            }
+        )
+    return agent_wrappers
+
+
 def signal_agent_wrappers_to_restart_on_continued_sessions(
-    agent_wrapper_process_ids: list[int],
+    agent_wrappers: list[dict],
 ) -> None:
-    for agent_wrapper_process_id in agent_wrapper_process_ids:
+    for agent_wrapper in agent_wrappers:
         try:
-            os.kill(agent_wrapper_process_id, signal.SIGUSR1)
+            os.kill(agent_wrapper["process_id"], signal.SIGUSR1)
         except ProcessLookupError:
             pass
+
+
+def spawn_resume_nudges(agent_wrappers: list[dict]) -> None:
+    resume_nudge_script_path = os.environ.get(RESUME_NUDGE_SCRIPT_ENVIRONMENT_VARIABLE)
+    if not resume_nudge_script_path:
+        return
+    for agent_wrapper in agent_wrappers:
+        subprocess.Popen(
+            [
+                sys.executable,
+                resume_nudge_script_path,
+                "--session",
+                agent_wrapper["tmux_session"],
+                "--window",
+                agent_wrapper["agent_name"],
+            ]
+        )
 
 
 def redirect_standard_streams_to_redeploy_log_file() -> None:
@@ -55,25 +103,26 @@ def detach_into_background_daemon_escaping_caller_process_tree() -> None:
 
 
 def main() -> None:
-    agent_wrapper_process_ids = find_agent_wrapper_process_ids()
-    if not agent_wrapper_process_ids:
+    agent_wrappers = describe_agent_wrappers()
+    if not agent_wrappers:
         print("No running clawde agent wrappers matched; nothing to redeploy.")
         return
     print(
-        f"Signaling {len(agent_wrapper_process_ids)} clawde agent wrapper(s) to restart "
-        "on their continued sessions (claude --continue), detached after a short grace delay."
+        f"Signaling {len(agent_wrappers)} clawde agent wrapper(s) to restart on their "
+        "continued sessions (claude --continue) and resume their work, detached after "
+        "a short grace delay."
     )
     sys.stdout.flush()
     detach_into_background_daemon_escaping_caller_process_tree()
     time.sleep(GRACE_DELAY_SECONDS_BEFORE_SIGNALING)
-    surviving_agent_wrapper_process_ids = find_agent_wrapper_process_ids()
+    surviving_agent_wrappers = describe_agent_wrappers()
     print(
         f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] clawde-redeploy signaling "
-        f"{len(surviving_agent_wrapper_process_ids)} wrapper(s) with SIGUSR1"
+        f"{len(surviving_agent_wrappers)} wrapper(s) with SIGUSR1 and scheduling "
+        "resume nudges"
     )
-    signal_agent_wrappers_to_restart_on_continued_sessions(
-        surviving_agent_wrapper_process_ids
-    )
+    signal_agent_wrappers_to_restart_on_continued_sessions(surviving_agent_wrappers)
+    spawn_resume_nudges(surviving_agent_wrappers)
 
 
 if __name__ == "__main__":

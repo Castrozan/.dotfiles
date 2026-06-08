@@ -29,16 +29,33 @@ def test_find_agent_wrapper_process_ids_parses_pgrep_output(monkeypatch):
     assert clawde_redeploy.find_agent_wrapper_process_ids() == [111, 222, 333]
 
 
-def test_find_agent_wrapper_process_ids_ignores_non_numeric_lines(monkeypatch):
-    class CompletedProcessStub:
-        stdout = "\n   \n444\n"
-
+def test_describe_agent_wrappers_extracts_name_and_session(monkeypatch):
     monkeypatch.setattr(
-        clawde_redeploy.subprocess,
-        "run",
-        lambda *args, **kwargs: CompletedProcessStub(),
+        clawde_redeploy, "find_agent_wrapper_process_ids", lambda: [501, 502]
     )
-    assert clawde_redeploy.find_agent_wrapper_process_ids() == [444]
+    command_lines = {
+        501: "python wrapper.py --agent-name silver --tmux-session clawde --launch-command cd x",
+        502: "python wrapper.py --agent-name steward --tmux-session clawde --heartbeat-driver-argv []",
+    }
+    monkeypatch.setattr(
+        clawde_redeploy, "read_full_command_line", lambda pid: command_lines[pid]
+    )
+    assert clawde_redeploy.describe_agent_wrappers() == [
+        {"process_id": 501, "agent_name": "silver", "tmux_session": "clawde"},
+        {"process_id": 502, "agent_name": "steward", "tmux_session": "clawde"},
+    ]
+
+
+def test_describe_agent_wrappers_skips_wrapper_without_session(monkeypatch):
+    monkeypatch.setattr(
+        clawde_redeploy, "find_agent_wrapper_process_ids", lambda: [601]
+    )
+    monkeypatch.setattr(
+        clawde_redeploy,
+        "read_full_command_line",
+        lambda pid: "python wrapper.py --agent-name orphan",
+    )
+    assert clawde_redeploy.describe_agent_wrappers() == []
 
 
 def test_signal_agent_wrappers_sends_sigusr1_to_each(monkeypatch):
@@ -50,7 +67,9 @@ def test_signal_agent_wrappers_sends_sigusr1_to_each(monkeypatch):
             (process_id, signal_number)
         ),
     )
-    clawde_redeploy.signal_agent_wrappers_to_restart_on_continued_sessions([7, 8])
+    clawde_redeploy.signal_agent_wrappers_to_restart_on_continued_sessions(
+        [{"process_id": 7}, {"process_id": 8}]
+    )
     assert signalled_calls == [(7, signal.SIGUSR1), (8, signal.SIGUSR1)]
 
 
@@ -59,4 +78,45 @@ def test_signal_agent_wrappers_ignores_already_exited_process(monkeypatch):
         raise ProcessLookupError
 
     monkeypatch.setattr(clawde_redeploy.os, "kill", raise_process_lookup_error)
-    clawde_redeploy.signal_agent_wrappers_to_restart_on_continued_sessions([9])
+    clawde_redeploy.signal_agent_wrappers_to_restart_on_continued_sessions(
+        [{"process_id": 9}]
+    )
+
+
+def test_spawn_resume_nudges_builds_session_window_argv(monkeypatch):
+    spawned_argvs = []
+    monkeypatch.setenv(
+        clawde_redeploy.RESUME_NUDGE_SCRIPT_ENVIRONMENT_VARIABLE,
+        "/path/resume_nudge.py",
+    )
+    monkeypatch.setattr(clawde_redeploy.sys, "executable", "/python")
+    monkeypatch.setattr(
+        clawde_redeploy.subprocess, "Popen", lambda argv: spawned_argvs.append(argv)
+    )
+    clawde_redeploy.spawn_resume_nudges(
+        [{"agent_name": "silver", "tmux_session": "clawde"}]
+    )
+    assert spawned_argvs == [
+        [
+            "/python",
+            "/path/resume_nudge.py",
+            "--session",
+            "clawde",
+            "--window",
+            "silver",
+        ]
+    ]
+
+
+def test_spawn_resume_nudges_noop_without_env(monkeypatch):
+    spawned_argvs = []
+    monkeypatch.delenv(
+        clawde_redeploy.RESUME_NUDGE_SCRIPT_ENVIRONMENT_VARIABLE, raising=False
+    )
+    monkeypatch.setattr(
+        clawde_redeploy.subprocess, "Popen", lambda argv: spawned_argvs.append(argv)
+    )
+    clawde_redeploy.spawn_resume_nudges(
+        [{"agent_name": "silver", "tmux_session": "clawde"}]
+    )
+    assert spawned_argvs == []
