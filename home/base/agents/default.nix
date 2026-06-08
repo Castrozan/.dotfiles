@@ -1,6 +1,6 @@
 _: {
   imports = [
-    ./mcps
+    ./a2a
     ./dotfiles-repo-agent-instructions.nix
     ./twitter-cli.nix
   ];

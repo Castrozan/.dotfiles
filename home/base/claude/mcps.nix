@@ -55,7 +55,7 @@ let
       --port ${toString browserUseMcpStreamableHttpPort}
   '';
 
-  a2aMcp = import ./a2a-mcp-server/install {
+  a2aMcp = import ../agents/a2a/install.nix {
     inherit
       pkgs
       nodejs
@@ -171,11 +171,5 @@ in
 
   home = {
     inherit (browserMcp) packages;
-
-    activation = {
-      installA2aMcp = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-        run ${a2aMcp.installA2aMcpViaNpm}
-      '';
-    };
   };
 }
