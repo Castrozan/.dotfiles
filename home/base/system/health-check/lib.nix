@@ -29,6 +29,17 @@ rec {
       probe = "pgrep -f ${lib.escapeShellArg pattern} >/dev/null 2>&1";
     };
 
+  mkCommandProbe =
+    {
+      category ? "daemon",
+      name,
+      command,
+    }:
+    {
+      inherit category name;
+      probe = "${command} >/dev/null 2>&1";
+    };
+
   mkFileProbe =
     {
       category ? "config",
