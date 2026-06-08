@@ -13,7 +13,7 @@ in
     ../../linux/hyprland/standalone.nix
     ../../base/network/ssh-private.nix
     ../../base/system/session-vars-lucas-zanoni.nix
-    ../../base/claude/agents/steward.nix
+    ../../base/claude/clawde-agents/steward.nix
     ../../linux/system/sophos-disable-plugins
     ../../linux/system/forticlient-disable-update
     ../../base/core.nix

@@ -5,7 +5,7 @@
     ./chise/ssh.nix
     ./chise/session-vars.nix
     ./chise/clawde-agents
-    ../../base/claude/agents/steward.nix
+    ../../base/claude/clawde-agents/steward.nix
 
     ../../base/core.nix
 
