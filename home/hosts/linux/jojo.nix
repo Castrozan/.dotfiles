@@ -1,4 +1,8 @@
-{ ... }:
+{ lib, ... }:
+let
+  privateConfigRoot = ../../../private-config;
+  jojoPrivateConfigExists = builtins.pathExists privateConfigRoot;
+in
 {
   imports = [
     ../../base/packages/lucas-zanoni.nix
@@ -76,5 +80,8 @@
     ../../base/media/readItNow.nix
     ../../base/media/summarize.nix
     ../../base/media/viu.nix
+  ]
+  ++ lib.optionals jojoPrivateConfigExists [
+    "${privateConfigRoot}/machines/jojo/clawde-agents"
   ];
 }
