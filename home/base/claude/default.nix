@@ -6,7 +6,7 @@
     ./config.nix
     ./configure-claude-json.nix
     ./skill-injection
-    ./hooks.nix
+    ./hooks
     ./mcps.nix
     ./private.nix
     ./scripts.nix

@@ -1,6 +1,6 @@
 { pkgs, lib, ... }:
 let
-  hooksDir = ../../../agents/hooks;
+  hooksDir = ../../../../agents/hooks;
 
   listHookScriptsRecursively = import ./list-hook-scripts-recursively.nix { inherit lib; };
 

@@ -4,7 +4,7 @@ let
   runHook = "${hooksPath}/run-hook.sh";
 
   machineAllowedProhibitedWordsFile =
-    ../../../private-config/machines + "/${hostname}/claude-prohibited-words-allowed.nix";
+    ../../../../private-config/machines + "/${hostname}/claude-prohibited-words-allowed.nix";
   machineAllowedProhibitedWords =
     if builtins.pathExists machineAllowedProhibitedWordsFile then
       import machineAllowedProhibitedWordsFile
