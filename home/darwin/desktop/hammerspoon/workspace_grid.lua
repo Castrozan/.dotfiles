@@ -3,12 +3,12 @@ local workspaceGrid = {}
 local workspaceGridColumns = 7
 local workspaceGridRows = 3
 local totalWorkspaceCount = workspaceGridColumns * workspaceGridRows
-local firstWorkspaceNumber = 1
+local defaultWorkspaceNumber = 11
 
 workspaceGrid.columns = workspaceGridColumns
 workspaceGrid.totalWorkspaceCount = totalWorkspaceCount
 
-local currentWorkspaceNumber = firstWorkspaceNumber
+local currentWorkspaceNumber = defaultWorkspaceNumber
 local menuBarIndicator = require("workspace_grid_menubar")
 local workspaceGridPersistence = require("workspace_grid_persistence")
 local windowLayout = require("workspace_grid_window_layout")
@@ -164,10 +164,10 @@ function workspaceGrid.onWindowFocused(window)
 	end
 end
 
-function workspaceGrid.registerExistingWindowsOnFirstWorkspace()
+function workspaceGrid.registerExistingWindowsOnDefaultWorkspace()
 	for _, window in ipairs(manageableWindows()) do
 		if not windowAssignment.isWindowAssigned(window:id()) then
-			windowAssignment.assignWindowToWorkspace(window:id(), firstWorkspaceNumber)
+			windowAssignment.assignWindowToWorkspace(window:id(), defaultWorkspaceNumber)
 		end
 	end
 	renderMenuBarIndicator()
@@ -177,7 +177,7 @@ function workspaceGrid.restorePersistedWorkspaceState()
 	local restoredCurrentWorkspaceNumber, restoredSessionGenerationToken, restoredAssignments =
 		workspaceGridPersistence.load()
 	if restoredSessionGenerationToken ~= nil and restoredSessionGenerationToken ~= sessionGeneration.currentToken() then
-		currentWorkspaceNumber = firstWorkspaceNumber
+		currentWorkspaceNumber = defaultWorkspaceNumber
 		return
 	end
 	currentWorkspaceNumber = restoredCurrentWorkspaceNumber or currentWorkspaceNumber

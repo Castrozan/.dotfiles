@@ -72,9 +72,9 @@ local function expectEqual(description, expectedValue, actualValue)
   end
 end
 
-workspaceGrid.registerExistingWindowsOnFirstWorkspace()
+workspaceGrid.registerExistingWindowsOnDefaultWorkspace()
 workspaceGrid.switchToWorkspace(2)
-workspaceGrid.switchToWorkspace(1)
+workspaceGrid.switchToWorkspace(11)
 
 expectEqual("the dead filter-cache window is never moved (no setFrame, no hang)", 0, deadWindowSetFrameCallCount)
 expectEqual("the live window is still laid out across the switches", true, liveWindowSetFrameCallCount > 0)

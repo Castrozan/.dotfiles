@@ -1,6 +1,6 @@
 local workspaceGridWindowAssignment = {}
 
-local defaultWorkspaceNumber = 1
+local defaultWorkspaceNumber = 11
 local workspaceNumberByWindowId = {}
 local lastFocusedWindowIdByWorkspaceNumber = {}
 

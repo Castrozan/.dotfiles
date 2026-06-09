@@ -8,7 +8,7 @@ local expectEqual = harness.expectEqual
 local windows = harness.setLiveWindowsToIds({ 101, 102, 103 })
 
 local grid = harness.loadFreshGrid()
-grid.registerExistingWindowsOnFirstWorkspace()
+grid.registerExistingWindowsOnDefaultWorkspace()
 windows[2]:focus()
 grid.moveFocusedWindowToWorkspace(3)
 grid.switchToWorkspace(2)
@@ -22,7 +22,7 @@ reloadedGrid.switchToWorkspace(3)
 local windowsOnWorkspaceThree = reloadedGrid.currentWorkspaceWindowList().windows
 expectEqual("exactly one window is on workspace 3 after reload", 1, #windowsOnWorkspaceThree)
 expectEqual(
-	"the window restored onto workspace 3 is 102, not collapsed to workspace 1",
+	"the window restored onto workspace 3 is 102, not collapsed to the default workspace",
 	102,
 	windowsOnWorkspaceThree[1] and windowsOnWorkspaceThree[1]["window-id"] or -1
 )
@@ -31,15 +31,19 @@ local windowsBeforeReboot = harness.setLiveWindowsToIds({ 201, 202, 203 })
 
 local gridBeforeReboot = harness.loadFreshGrid()
 gridBeforeReboot.setSessionGenerationTokenForTest("boot-token-before")
-gridBeforeReboot.registerExistingWindowsOnFirstWorkspace()
+gridBeforeReboot.registerExistingWindowsOnDefaultWorkspace()
 windowsBeforeReboot[2]:focus()
 gridBeforeReboot.moveFocusedWindowToWorkspace(3)
 
 local gridAfterReboot = harness.loadFreshGrid()
 gridAfterReboot.setSessionGenerationTokenForTest("boot-token-after")
 gridAfterReboot.restorePersistedWorkspaceState()
-expectEqual("after a reboot the active workspace resets to 1", 1, gridAfterReboot.currentWorkspaceNumber())
-gridAfterReboot.registerExistingWindowsOnFirstWorkspace()
+expectEqual(
+	"after a reboot the active workspace resets to the default workspace 11",
+	11,
+	gridAfterReboot.currentWorkspaceNumber()
+)
+gridAfterReboot.registerExistingWindowsOnDefaultWorkspace()
 gridAfterReboot.switchToWorkspace(3)
 expectEqual(
 	"after a reboot no window resurrects on workspace 3 from the stale map",
@@ -51,7 +55,7 @@ local windowsBeforeClose = harness.setLiveWindowsToIds({ 301, 302 })
 
 local gridWithBothWindows = harness.loadFreshGrid()
 gridWithBothWindows.setSessionGenerationTokenForTest("boot-token-stable")
-gridWithBothWindows.registerExistingWindowsOnFirstWorkspace()
+gridWithBothWindows.registerExistingWindowsOnDefaultWorkspace()
 windowsBeforeClose[2]:focus()
 gridWithBothWindows.moveFocusedWindowToWorkspace(3)
 
@@ -78,11 +82,11 @@ oldFormatStateFile:close()
 local gridReadingOldFormat = harness.loadFreshGrid()
 gridReadingOldFormat.setSessionGenerationTokenForTest("boot-token-stable")
 gridReadingOldFormat.restorePersistedWorkspaceState()
-gridReadingOldFormat.registerExistingWindowsOnFirstWorkspace()
+gridReadingOldFormat.registerExistingWindowsOnDefaultWorkspace()
 gridReadingOldFormat.switchToWorkspace(3)
 local windowsOnWorkspaceThreeFromOldFormat = gridReadingOldFormat.currentWorkspaceWindowList().windows
 expectEqual(
-	"an old-format state file with no generation line does not collapse every window onto workspace 1",
+	"an old-format state file with no generation line does not collapse every window onto the default workspace",
 	1,
 	#windowsOnWorkspaceThreeFromOldFormat
 )

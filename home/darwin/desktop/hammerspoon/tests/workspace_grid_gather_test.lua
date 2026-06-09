@@ -66,7 +66,7 @@ local function expectEqual(description, expectedValue, actualValue)
   end
 end
 
-workspaceGrid.registerExistingWindowsOnFirstWorkspace()
+workspaceGrid.registerExistingWindowsOnDefaultWorkspace()
 windowA:focus()
 workspaceGrid.moveFocusedWindowToWorkspace(2)
 workspaceGrid.switchToWorkspace(3)

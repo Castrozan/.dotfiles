@@ -80,7 +80,7 @@ windowEventWatcher:subscribe(hs.window.filter.windowDestroyed, function(window)
 end)
 
 workspaceGrid.restorePersistedWorkspaceState()
-workspaceGrid.registerExistingWindowsOnFirstWorkspace()
+workspaceGrid.registerExistingWindowsOnDefaultWorkspace()
 workspaceGrid.switchToWorkspace(workspaceGrid.currentWorkspaceNumber(), hs.window.focusedWindow())
 
 function currentWorkspaceForTest()
