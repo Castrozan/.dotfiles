@@ -12,9 +12,8 @@ let
     agentNames
     agentWorkspaceDirectory
     claudeBinary
+    getChannelAdapterFor
     ;
-
-  getChannelAdapterFor = agent: cfg.channelAdapters.${agent.channel.type} or null;
 
   perAgentChannelAdapterActivationLines = lib.concatMapStringsSep "\n" (
     name:

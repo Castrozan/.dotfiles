@@ -7,7 +7,6 @@ let
   inherit (config.home) username homeDirectory;
 
   homeDir = homeDirectory;
-  secretsDirectory = "${homeDir}/.secrets";
   claudeBinary = lib.getExe config.claude.package;
 
   runtimeLocations = import ./runtime-locations.nix { inherit homeDir; };
@@ -119,21 +118,12 @@ let
     in
     if agentType != null then agentType.runtimeInstructions else "";
 
-  resolveChannelAdapterTokenSecretFile =
-    agent:
-    if agent.channel.type == "discord" && agent.channel.discord.botTokenSecretName != null then
-      "${secretsDirectory}/${agent.channel.discord.botTokenSecretName}"
-    else
-      null;
-
-  resolveChannelAdapterTokenEnvironmentVariable =
-    agent: if agent.channel.type == "discord" then "DISCORD_BOT_TOKEN" else null;
-
   agentWindowSpecHelpers = import ./agent-window-spec.nix {
     inherit
       pkgs
       lib
       effectiveAgentByName
+      resolveAgentTypeInstructions
       clawdeRuntimeInstructions
       a2aPeerHelpers
       agentWorkspaceDirectory
@@ -168,7 +158,6 @@ in
 {
   inherit
     homeDir
-    secretsDirectory
     claudeBinary
     defaultTmuxSessionName
     distinctTmuxSessionNames
@@ -178,9 +167,8 @@ in
     hasAgents
     clawdeRuntimePaths
     agentWorkspaceDirectory
+    getChannelAdapterFor
     effectiveAgentByName
-    resolveChannelAdapterTokenSecretFile
-    resolveChannelAdapterTokenEnvironmentVariable
     clawdeServiceSpecificationFile
     buildAgentClaudeMarkdownContentByName
     buildAgentLaunchConfigByName

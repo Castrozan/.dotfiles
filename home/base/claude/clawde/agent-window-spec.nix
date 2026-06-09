@@ -2,6 +2,7 @@
   pkgs,
   lib,
   effectiveAgentByName,
+  resolveAgentTypeInstructions,
   clawdeRuntimeInstructions,
   a2aPeerHelpers,
   agentWorkspaceDirectory,
@@ -18,6 +19,8 @@ let
     ${agent.personality}
 
     ${clawdeRuntimeInstructions}
+
+    ${resolveAgentTypeInstructions agent}
 
     ${resolveChannelAdapterInstructions agent}
 
