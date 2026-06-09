@@ -9,12 +9,19 @@ is read-only.
 
 import json
 import os
-import subprocess
 import sys
 from pathlib import Path
 
 from continuous_integration_status import continuous_integration_status_for_revision
 from health_summary import health_check_summary
+from repository_status import (
+    classify_verdict,
+    current_branch,
+    divergence_from_upstream,
+    git_output,
+    run_capturing,
+    working_tree_is_dirty,
+)
 from submodule_status import submodule_report
 
 
@@ -39,52 +46,6 @@ def self_alias() -> str:
         except json.JSONDecodeError:
             return "unknown"
     return "unknown"
-
-
-def run_capturing(
-    arguments: list[str], working_directory: Path, timeout_seconds: int
-) -> tuple[int, str]:
-    try:
-        completed = subprocess.run(
-            arguments,
-            cwd=str(working_directory),
-            capture_output=True,
-            text=True,
-            timeout=timeout_seconds,
-        )
-        return completed.returncode, (completed.stdout + completed.stderr).strip()
-    except subprocess.TimeoutExpired:
-        return 124, f"timeout after {timeout_seconds}s"
-    except FileNotFoundError as missing_executable:
-        return 127, f"not found: {missing_executable.filename}"
-
-
-def git_output(repository: Path, *git_arguments: str, timeout_seconds: int = 20) -> str:
-    return_code, output = run_capturing(
-        ["git", *git_arguments], repository, timeout_seconds
-    )
-    return output if return_code == 0 else ""
-
-
-def current_branch(repository: Path) -> str:
-    return git_output(repository, "rev-parse", "--abbrev-ref", "HEAD") or "unknown"
-
-
-def working_tree_is_dirty(repository: Path) -> bool:
-    return bool(git_output(repository, "status", "--porcelain"))
-
-
-def divergence_from_upstream(repository: Path, branch: str) -> tuple[int, int]:
-    counts = git_output(
-        repository, "rev-list", "--left-right", "--count", f"origin/{branch}...HEAD"
-    )
-    if not counts:
-        return 0, 0
-    behind_text, _, ahead_text = counts.partition("\t")
-    try:
-        return int(behind_text.strip()), int(ahead_text.strip())
-    except ValueError:
-        return 0, 0
 
 
 def last_validated_revision() -> str:
@@ -117,8 +78,9 @@ def build_report() -> dict:
     submodules = submodule_report(run_capturing, repository)
 
     needs_validation = head_revision != validated_revision or dirty
-    needs_sync = behind > 0
-    needs_push = ahead > 0
+    superproject_divergence = behind > 0 and ahead > 0
+    needs_sync = behind > 0 and ahead == 0
+    needs_push = ahead > 0 and behind == 0
     has_mail = bool(inbox)
     continuous_integration_failing = continuous_integration.get("state") == "failing"
     continuous_integration_pending = continuous_integration.get("state") == "pending"
@@ -126,26 +88,18 @@ def build_report() -> dict:
     needs_submodule_sync = submodules["needs_submodule_sync"]
     needs_submodule_push = submodules["needs_submodule_push"]
 
-    if needs_sync:
-        verdict = "needs_sync"
-    elif submodule_divergence:
-        verdict = "submodule_divergence"
-    elif needs_submodule_sync:
-        verdict = "needs_submodule_sync"
-    elif needs_validation:
-        verdict = "needs_validation"
-    elif needs_submodule_push:
-        verdict = "needs_submodule_push"
-    elif needs_push:
-        verdict = "needs_push"
-    elif continuous_integration_failing:
-        verdict = "ci_failing"
-    elif has_mail:
-        verdict = "has_mail"
-    elif continuous_integration_pending:
-        verdict = "ci_pending"
-    else:
-        verdict = "clean"
+    verdict = classify_verdict(
+        superproject_divergence=superproject_divergence,
+        needs_sync=needs_sync,
+        submodule_divergence=submodule_divergence,
+        needs_submodule_sync=needs_submodule_sync,
+        needs_validation=needs_validation,
+        needs_submodule_push=needs_submodule_push,
+        needs_push=needs_push,
+        continuous_integration_failing=continuous_integration_failing,
+        has_mail=has_mail,
+        continuous_integration_pending=continuous_integration_pending,
+    )
 
     return {
         "self": self_alias(),
@@ -157,6 +111,7 @@ def build_report() -> dict:
         "ahead": ahead,
         "dirty": dirty,
         "last_validated": validated_revision,
+        "superproject_divergence": superproject_divergence,
         "needs_sync": needs_sync,
         "needs_validation": needs_validation,
         "needs_push": needs_push,

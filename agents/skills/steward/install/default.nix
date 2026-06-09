@@ -5,6 +5,7 @@ let
   stewardStatusSource = pkgs.runCommand "steward-status-source" { } ''
     mkdir -p $out
     cp ${../scripts/steward-status.py} $out/steward-status.py
+    cp ${../scripts/repository_status.py} $out/repository_status.py
     cp ${../scripts/continuous_integration_status.py} $out/continuous_integration_status.py
     cp ${../scripts/health_summary.py} $out/health_summary.py
     cp ${../scripts/submodule_status.py} $out/submodule_status.py
