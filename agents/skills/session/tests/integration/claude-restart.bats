@@ -42,7 +42,8 @@ load '../../../../../tests/helpers/bash-script-assertions'
 	assert_script_source_matches 'CLAUDE_PROJECT_DIR_NAME.*//\./-'
 }
 
-@test "finds most recent session file by modification time" {
+@test "finds most recent session file by modification time portably on darwin and linux" {
+	assert_script_source_matches 'stat -f %m'
 	assert_script_source_matches 'stat -c %Y'
 }
 
