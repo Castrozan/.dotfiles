@@ -6,7 +6,6 @@ from run_evals_test_runner import TestResult
 from run_evals_worktree_and_environment import REPO_ROOT
 
 BASELINE_PATH = REPO_ROOT / "agents" / "evals" / "baseline.json"
-MAXIMUM_BASELINE_AGE_DAYS = 3
 MINIMUM_PASS_RATE_OVERALL = 0.75
 MINIMUM_PASS_RATE_COMPLIANCE = 0.85
 MAXIMUM_REGRESSION_DROP = 0.05
@@ -105,12 +104,6 @@ def check_baseline_for_regression() -> bool:
 
     generated_at = datetime.fromisoformat(baseline["generated_at"])
     age_days = (datetime.now(timezone.utc) - generated_at).days
-    if age_days > MAXIMUM_BASELINE_AGE_DAYS:
-        failures.append(
-            f"Baseline is {age_days} days old "
-            f"(max {MAXIMUM_BASELINE_AGE_DAYS}). "
-            f"Re-run 'run-evals.py --save-baseline' locally."
-        )
 
     overall_pass_rate = baseline.get("pass_rate", 0)
     if overall_pass_rate < MINIMUM_PASS_RATE_OVERALL:

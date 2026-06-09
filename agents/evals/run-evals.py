@@ -9,7 +9,6 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from run_evals_baseline import (  # noqa: F401, E402
     BASELINE_PATH,
-    MAXIMUM_BASELINE_AGE_DAYS,
     MAXIMUM_REGRESSION_DROP,
     MINIMUM_PASS_RATE_COMPLIANCE,
     MINIMUM_PASS_RATE_OVERALL,

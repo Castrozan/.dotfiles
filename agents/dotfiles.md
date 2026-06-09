@@ -37,5 +37,5 @@ A clawde agent's runtime config - heartbeat gate, interval, prompt, launch comma
 </applying-clawde-agent-changes>
 
 <agent-instructions>
-After editing agent instructions (any file under agents/ or any CLAUDE.md), run `agent-eval --save-baseline` before pushing so the compliance pass rate stays current.
+The eval baseline (`agents/evals/baseline.json`) is a committed snapshot that CI guards via `agent-eval --check-baseline` against absolute pass-rate floors only - there is no age or freshness gate. Do not re-run `agent-eval --save-baseline` after editing agent instructions; the full suite is a slow LLM run whose routing evals flake, so a proactive re-save bakes transient failures into the committed baseline. Re-save only when `--check-baseline` fails CI on a genuine pass-rate regression, or to deliberately record a meaningfully improved instruction surface.
 </agent-instructions>

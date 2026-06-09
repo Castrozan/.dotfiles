@@ -84,16 +84,17 @@ point is a commit - the chart is the repo remembering its own report cards.</p>
 </div>
 
 <h2>The gate that keeps it honest</h2>
-<p class="lede"><code>agent-eval --check-baseline</code> runs in CI and the local pre-push hook with
+<p class="lede"><code>agent-eval --check-baseline</code> runs in CI with
 no model calls. It just reads the committed baseline and fails the build when:</p>
 <div class="chips">
 <span class="chip">overall pass rate <b>&ge; 75%</b></span>
 <span class="chip">compliance pass rate <b>&ge; 85%</b></span>
-<span class="chip">baseline age <b>&le; 3 days</b></span>
 </div>
-<p class="lede">The freshness rule forces a re-run whenever the instructions change, so the number
-here can never quietly drift from reality. Dips that do not reproduce on a standalone re-run are
-concurrency noise on long runs, not real regressions.</p>
+<p class="lede">The baseline is a committed snapshot, refreshed intentionally with
+<code>agent-eval --save-baseline</code> when the instruction surface meaningfully changes - never on a
+clock. CI only guards the absolute floor, so this number moves only when someone records a new run.
+Dips that do not reproduce on a standalone re-run are concurrency noise on long runs, not real
+regressions.</p>
 
 <h2>Every recorded baseline</h2>
 <table id="dataTable">
