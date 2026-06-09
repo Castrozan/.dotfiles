@@ -16,6 +16,10 @@ let
     builtins.readFile ../scripts/steward-activate.py
   );
 
+  stewardHeartbeatGateSource = pkgs.writeText "steward-heartbeat-gate.py" (
+    builtins.readFile ../scripts/steward-heartbeat-gate.py
+  );
+
   stewardStatus = pkgs.writeShellScriptBin "steward-status" ''
     set -euo pipefail
     export PATH="${pkgs.git}/bin:${pkgs.gh}/bin:${pkgs.coreutils}/bin:''${PATH:+$PATH}"
@@ -30,8 +34,8 @@ let
 
   stewardHeartbeatGate = pkgs.writeShellScriptBin "steward-heartbeat-gate" ''
     set -euo pipefail
-    ${stewardStatus}/bin/steward-status \
-      | ${python}/bin/python3 -c 'import json, sys; sys.exit(0 if json.load(sys.stdin).get("attention_required") else 1)'
+    export STEWARD_STATUS_COMMAND="${stewardStatus}/bin/steward-status"
+    exec ${python}/bin/python3 ${stewardHeartbeatGateSource} "$@"
   '';
 
   stewardActivate = pkgs.writeShellScriptBin "steward-activate" ''
