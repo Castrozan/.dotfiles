@@ -32,6 +32,10 @@ After editing any file in the dotfiles repo, execute this sequence before respon
 7. Only after rebuild and tests pass: respond to user
 </workflow>
 
+<applying-clawde-agent-changes>
+A rebuild does not make a running clawde agent's runtime config live. The rebuild's redeploy warm-restarts each agent's session in place (claude --continue), but the agent's wrapper process keeps running with the launch command and heartbeat-driver argv it was started with. So a change to an agent's heartbeat gate, interval, prompt, or launch command stays dormant - the agent keeps its old behavior - until the wrapper is fully respawned, which happens on reboot or when the supervisor recreates the window after the wrapper exits, not on a rebuild. Never assume a rebuilt agent-config change took effect; to apply one, respawn the agent's wrapper.
+</applying-clawde-agent-changes>
+
 <agent-instructions>
 After editing agent instructions (any file under agents/ or any CLAUDE.md), run `agent-eval --save-baseline` before pushing so the compliance pass rate stays current.
 </agent-instructions>
