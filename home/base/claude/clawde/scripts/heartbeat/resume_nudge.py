@@ -1,11 +1,18 @@
 import argparse
+import subprocess
 import sys
+import time
 
 from tmux import (
     find_tmux_socket,
     send_prompt_via_tmux_buffer,
     wait_for_claude_prompt,
 )
+
+AGENT_WRAPPER_COMMAND_FRAGMENT = "agent-wrapper/wrapper.py --agent-name"
+LIVE_CLAUDE_PROCESS_NAME_FRAGMENT = "claude"
+LIVE_CLAUDE_WAIT_MAX_ATTEMPTS = 20
+LIVE_CLAUDE_WAIT_DELAY_SECONDS = 2
 
 RESUME_NUDGE_PROMPT = (
     "<resume>\n"
@@ -31,9 +38,57 @@ def parse_arguments() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def find_agent_wrapper_process_id(agent_name: str) -> int | None:
+    completed_process = subprocess.run(
+        ["pgrep", "-f", f"{AGENT_WRAPPER_COMMAND_FRAGMENT} {agent_name}"],
+        capture_output=True,
+        text=True,
+    )
+    for line in completed_process.stdout.split():
+        if line.strip().isdigit():
+            return int(line)
+    return None
+
+
+def agent_wrapper_has_live_claude_child(wrapper_process_id: int) -> bool:
+    completed_process = subprocess.run(
+        ["pgrep", "-P", str(wrapper_process_id), "-l"],
+        capture_output=True,
+        text=True,
+    )
+    return any(
+        LIVE_CLAUDE_PROCESS_NAME_FRAGMENT in child_description
+        for child_description in completed_process.stdout.splitlines()
+        if child_description.strip()
+    )
+
+
+def agent_has_live_claude_repl(agent_name: str) -> bool:
+    wrapper_process_id = find_agent_wrapper_process_id(agent_name)
+    if wrapper_process_id is None:
+        return False
+    return agent_wrapper_has_live_claude_child(wrapper_process_id)
+
+
+def wait_for_live_claude_repl(agent_name: str) -> bool:
+    for _ in range(LIVE_CLAUDE_WAIT_MAX_ATTEMPTS):
+        if agent_has_live_claude_repl(agent_name):
+            return True
+        time.sleep(LIVE_CLAUDE_WAIT_DELAY_SECONDS)
+    return False
+
+
 def main() -> None:
     arguments = parse_arguments()
     target = f"{arguments.session}:{arguments.window}"
+
+    if not wait_for_live_claude_repl(arguments.window):
+        print(
+            f"Agent {target} has no live claude REPL (dormant or outside active "
+            "hours); skipping resume nudge.",
+            file=sys.stderr,
+        )
+        return
 
     tmux_socket = find_tmux_socket()
     if not tmux_socket:
