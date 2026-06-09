@@ -47,7 +47,7 @@ in
     personalityTemplateFor =
       agent:
       let
-        projectName = agent.typeParams.project-manager.projectName;
+        inherit (agent.typeParams.project-manager) projectName;
       in
       if projectName == null then null else buildProjectManagerPersonality projectName;
     workspaceDirectoryFor = agent: agent.typeParams.project-manager.projectDirectory;
