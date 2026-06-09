@@ -2,10 +2,6 @@ name: pages
 on:
   push:
     branches: [main]
-    paths:
-      - "agents/evals/baseline.json"
-      - "agents/evals/render_baseline_dashboard.py"
-      - ".github/workflows/pages.yml"
   workflow_dispatch:
 
 permissions:
@@ -29,12 +25,23 @@ jobs:
           fetch-depth: 0
           submodules: false
 
+      - uses: cachix/install-nix-action@v31
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
-      - name: Render baseline dashboard
-        run: python3 agents/evals/render_baseline_dashboard.py site
+      - name: Build coverage report
+        run: |
+          find home/base home/linux home/darwin -path "*/scripts/*" -type f -exec chmod +x {} +
+          nix shell nixpkgs#kcov nixpkgs#bats nixpkgs#bc --command ./tests/cover/bash-coverage.sh --ci
+
+      - name: Assemble site
+        run: |
+          mkdir -p site
+          cp .github/pages/index.html site/index.html
+          cp -r tests/coverage site/coverage
+          python3 agents/evals/render_baseline_dashboard.py site/baseline
 
       - uses: actions/configure-pages@v5
 
