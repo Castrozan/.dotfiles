@@ -6,6 +6,7 @@ let
     "goal-prompt"
     "browser"
     "deliver"
+    "tmux-claude"
   ];
 
   getSkillNamesFromDirectory =
