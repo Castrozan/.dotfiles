@@ -9,6 +9,9 @@
       builtins.readFile ./scripts/tmux-wait-pane-resize
     ))
     (pkgs.writeShellScriptBin "tmux-binding-run" (builtins.readFile ./scripts/tmux-binding-run))
+    (pkgs.writeShellScriptBin "tmux-window-to-new-session" (
+      builtins.readFile ./scripts/tmux-window-to-new-session
+    ))
     (pkgs.writeShellScriptBin "tmux-resurrect" (builtins.readFile ./scripts/tmux-resurrect))
     (pkgs.writeShellScriptBin "tmux-session-chooser" (builtins.readFile ./scripts/tmux-session-chooser))
     (pkgs.writeShellScriptBin "set-random-bg-kitty" (builtins.readFile ./scripts/set-random-bg-kitty))
