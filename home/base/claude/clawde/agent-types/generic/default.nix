@@ -1,0 +1,4 @@
+{ ... }:
+{
+  config.clawde.agentTypes.generic = { };
+}

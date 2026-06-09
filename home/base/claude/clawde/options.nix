@@ -1,16 +1,15 @@
 {
   config,
   lib,
-  pkgs,
   ...
 }:
 let
-  helpers = import ./lib.nix { inherit pkgs config lib; };
+  agentTypeInheritedConfig = import ./agent-type-inheritance.nix { inherit config lib; };
 in
 {
   options.clawde.agents = lib.mkOption {
     type = lib.types.attrsOf (
-      lib.types.submodule {
+      lib.types.submodule (agentSubmoduleArguments: {
         options = {
           personality = lib.mkOption {
             type = lib.types.lines;
@@ -146,26 +145,23 @@ in
             default = { };
             description = "Channel adapter configuration (how the agent receives and sends messages).";
           };
+
+          type = lib.mkOption {
+            type = lib.types.str;
+            default = "generic";
+            description = "Agent type. Selects a registered clawde.agentTypes entry whose defaults (model, heartbeat, personality template, deny patterns, skill directories, packages) are inherited by this agent unless the instance overrides them. 'generic' inherits nothing.";
+          };
+
+          typeParams = lib.mkOption {
+            type = lib.types.submodule { options = { }; };
+            default = { };
+            description = "Per-agent parameters consumed by the agent's type. Each agent type re-opens this submodule with its own subkey (e.g., typeParams.project-manager).";
+          };
         };
-      }
+        config = agentTypeInheritedConfig agentSubmoduleArguments;
+      })
     );
     default = { };
     description = "clawde persistent agents - each becomes a window in the clawde tmux session.";
-  };
-
-  config = lib.mkIf helpers.hasAgents {
-    assertions = map (
-      name:
-      let
-        agent = helpers.cfg.agents.${name};
-        knownChannelTypes = [ "none" ] ++ builtins.attrNames helpers.cfg.channelAdapters;
-      in
-      {
-        assertion =
-          ((agent.activeHoursStart == null) == (agent.activeHoursEnd == null))
-          && builtins.elem agent.channel.type knownChannelTypes;
-        message = "Agent ${name}: activeHoursStart/End must both be set or both be null, and channel.type must be one of ${lib.concatStringsSep ", " knownChannelTypes} (got '${agent.channel.type}').";
-      }
-    ) helpers.agentNames;
   };
 }

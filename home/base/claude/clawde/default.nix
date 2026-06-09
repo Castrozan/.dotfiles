@@ -2,7 +2,10 @@
 {
   imports = [
     ./interfaces.nix
+    ./agent-type-interfaces.nix
     ./options.nix
+    ./agent-assertions.nix
+    ./agent-types
     ./host-identity.nix
     ./fleet.nix
     ./workspace-files.nix
