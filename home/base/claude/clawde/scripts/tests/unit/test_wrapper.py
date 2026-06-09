@@ -1,6 +1,9 @@
 import importlib.util
+import json
 import pathlib
 import sys
+
+import pytest
 
 AGENT_WRAPPER_DIRECTORY = (
     pathlib.Path(__file__).resolve().parent.parent.parent / "agent-wrapper"
@@ -20,15 +23,71 @@ def _load_wrapper_module():
 wrapper = _load_wrapper_module()
 
 
-def test_redeploy_request_sets_resume_flag_without_a_child():
-    wrapper.redeploy_signal_state.resume_requested = False
-    wrapper.redeploy_signal_state.current_child_process_id = None
-    wrapper.request_resume_restart_now()
-    assert wrapper.redeploy_signal_state.resume_requested is True
+class _StopSupervising(Exception):
+    pass
 
 
-def test_register_current_child_process_id_updates_state():
-    wrapper.register_current_child_process_id(4242)
-    assert wrapper.redeploy_signal_state.current_child_process_id == 4242
-    wrapper.register_current_child_process_id(None)
-    assert wrapper.redeploy_signal_state.current_child_process_id is None
+def _write_launch_config(config_path, launch_command):
+    config_path.write_text(
+        json.dumps(
+            {
+                "launch_command": launch_command,
+                "heartbeat_driver_argv": None,
+                "active_hours_start": None,
+                "active_hours_end": None,
+                "daily_session_rotation": False,
+                "tmux_session": None,
+            }
+        )
+    )
+
+
+def test_load_agent_launch_config_reads_json(tmp_path):
+    config_file = tmp_path / "agent.json"
+    _write_launch_config(config_file, "claude --name steward")
+    assert (
+        wrapper.load_agent_launch_config(str(config_file))["launch_command"]
+        == "claude --name steward"
+    )
+
+
+def test_supervise_rereads_config_on_each_restart(monkeypatch, tmp_path):
+    config_file = tmp_path / "agent.json"
+    _write_launch_config(config_file, "first")
+    launch_commands_run = []
+
+    def fake_run_launch_command_once(
+        launch_command, heartbeat_driver_argv, tmux_target, **_kwargs
+    ):
+        launch_commands_run.append(launch_command)
+        if len(launch_commands_run) == 1:
+            _write_launch_config(config_file, "second")
+            return (0.0, False)
+        raise _StopSupervising()
+
+    monkeypatch.setattr(
+        wrapper, "run_launch_command_once", fake_run_launch_command_once
+    )
+    monkeypatch.setattr(wrapper, "is_within_active_hours", lambda start, end: True)
+    monkeypatch.setattr(wrapper, "should_rotate_session", lambda rotation, date: False)
+    monkeypatch.setattr(wrapper.time, "sleep", lambda seconds: None)
+
+    with pytest.raises(_StopSupervising):
+        wrapper.supervise_agent_forever("steward", str(config_file))
+
+    assert launch_commands_run == ["first", "second"]
+
+
+def test_supervise_retries_when_config_unreadable(monkeypatch, tmp_path):
+    recorded_sleeps = []
+
+    def fake_sleep(seconds):
+        recorded_sleeps.append(seconds)
+        raise _StopSupervising()
+
+    monkeypatch.setattr(wrapper.time, "sleep", fake_sleep)
+
+    with pytest.raises(_StopSupervising):
+        wrapper.supervise_agent_forever("steward", str(tmp_path / "missing.json"))
+
+    assert recorded_sleeps

@@ -6,6 +6,7 @@
   a2aPeerHelpers,
   agentWorkspaceDirectory,
   agentInstructionsFile,
+  agentLaunchConfigFile,
   resolveChannelAdapterInstructions,
   resolveChannelAdapterLaunchFlag,
   resolveChannelAdapterEnvironmentSetter,
@@ -61,31 +62,28 @@ let
       agent.heartbeatGateCommand
     ];
 
+  buildAgentLaunchConfig = name: agent: {
+    launch_command = buildAgentLaunchCommand name agent;
+    heartbeat_driver_argv =
+      if agent.heartbeatInterval != null then buildHeartbeatDriverArgv name agent else null;
+    active_hours_start = agent.activeHoursStart;
+    active_hours_end = agent.activeHoursEnd;
+    daily_session_rotation = agent.dailySessionRotation;
+    tmux_session = agent.tmuxSession;
+  };
+
+  buildAgentLaunchConfigByName = name: buildAgentLaunchConfig name cfg.agents.${name};
+
   buildAgentWindowCommand =
-    name: agent:
+    name: _agent:
     let
       workspaceDirectory = agentWorkspaceDirectory name;
-      heartbeatDriverArgvFlag =
-        if agent.heartbeatInterval != null then
-          "--heartbeat-driver-argv ${lib.escapeShellArg (builtins.toJSON (buildHeartbeatDriverArgv name agent))}"
-        else
-          "";
-      activeHoursFlags =
-        if agent.activeHoursStart != null then
-          "--active-hours-start ${toString agent.activeHoursStart} --active-hours-end ${toString agent.activeHoursEnd}"
-        else
-          "";
-      dailySessionRotationFlag = if agent.dailySessionRotation then "--daily-session-rotation" else "";
       execPythonWrapperInvocation = lib.concatStringsSep " " [
         "exec"
         "${pkgs.python312}/bin/python3"
         "${./scripts/agent-wrapper}/wrapper.py"
         "--agent-name ${lib.escapeShellArg name}"
-        "--tmux-session ${lib.escapeShellArg agent.tmuxSession}"
-        "--launch-command ${lib.escapeShellArg (buildAgentLaunchCommand name agent)}"
-        heartbeatDriverArgvFlag
-        activeHoursFlags
-        dailySessionRotationFlag
+        "--config-file ${lib.escapeShellArg (agentLaunchConfigFile name)}"
       ];
     in
     pkgs.writeShellScript "clawde-agent-${name}" ''
@@ -109,5 +107,9 @@ let
     [ mainSpec ] ++ peerSpecs;
 in
 {
-  inherit buildAllSpecificationsForOneAgent buildAgentClaudeMarkdownContentByName;
+  inherit
+    buildAllSpecificationsForOneAgent
+    buildAgentClaudeMarkdownContentByName
+    buildAgentLaunchConfigByName
+    ;
 }

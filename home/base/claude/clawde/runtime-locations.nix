@@ -11,4 +11,7 @@ rec {
 
   agentInstructionsRelativeToHome = name: "${runtimeRootRelativeToHome}/instructions/${name}.md";
   agentInstructionsFile = name: "${homeDir}/${agentInstructionsRelativeToHome name}";
+
+  agentLaunchConfigRelativeToHome = name: "${runtimeRootRelativeToHome}/launch-config/${name}.json";
+  agentLaunchConfigFile = name: "${homeDir}/${agentLaunchConfigRelativeToHome name}";
 }

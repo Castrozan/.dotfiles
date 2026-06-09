@@ -7,6 +7,7 @@
     ./fleet.nix
     ./workspace-files.nix
     ./instruction-files.nix
+    ./launch-config-files.nix
     ./activations.nix
     ./service.nix
     ./channel-adapters/discord
