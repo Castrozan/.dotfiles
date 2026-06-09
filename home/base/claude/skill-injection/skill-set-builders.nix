@@ -4,6 +4,8 @@ let
   globallyLoadedSkillNames = [
     "personal"
     "goal-prompt"
+    "browser"
+    "deliver"
   ];
 
   getSkillNamesFromDirectory =
