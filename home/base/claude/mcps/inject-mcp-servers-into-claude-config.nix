@@ -1,6 +1,7 @@
 {
   homeDir,
-  chromeDevtoolsMcpStreamableHttpUrl,
+  chromeDevtoolsMcpStdioCommand,
+  chromeDevtoolsMcpStdioArgs,
   a2aMcpStreamableHttpPort,
   browserUseMcpStreamableHttpPort,
   codexBinaryPath,
@@ -9,8 +10,8 @@
 let
   desiredMcpServersToInject = {
     chrome-devtools = {
-      type = "http";
-      url = chromeDevtoolsMcpStreamableHttpUrl;
+      command = chromeDevtoolsMcpStdioCommand;
+      args = chromeDevtoolsMcpStdioArgs;
     };
     codex = {
       command = codexBinaryPath;

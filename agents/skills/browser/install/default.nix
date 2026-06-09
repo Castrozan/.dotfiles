@@ -38,6 +38,16 @@ let
     "--usageStatistics false"
   ];
 
+  chromeDevtoolsMcpStdioCommand = chromeDevtoolsMcpBinary;
+
+  chromeDevtoolsMcpStdioArgs = [
+    "--autoConnect"
+    "--userDataDir"
+    chromeGlobalUserDataDir
+    "--usageStatistics"
+    "false"
+  ];
+
   chromeDevtoolsStreamableHttpBridgeWrapper = pkgs.writeShellScriptBin "chrome-devtools-mcp-streamable-http-bridge" ''
     set -euo pipefail
     export PATH="${nodejs}/bin:''${PATH:+:$PATH}"
@@ -78,6 +88,8 @@ in
   inherit chromeDevtoolsMcpOrphanReaper;
   inherit mkChromeDevtoolsMcpChildReaper;
   inherit chromeDevtoolsStreamableHttpSessionTimeoutSeconds;
+  inherit chromeDevtoolsMcpStdioCommand;
+  inherit chromeDevtoolsMcpStdioArgs;
   inherit supergatewayBinary;
   inherit pinchtabBinary;
 

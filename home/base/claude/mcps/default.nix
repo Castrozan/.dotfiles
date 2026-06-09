@@ -149,7 +149,7 @@ in
     })
     (import ./inject-mcp-servers-into-claude-config.nix {
       inherit homeDir;
-      chromeDevtoolsMcpStreamableHttpUrl = browserMcp.mcpServerStreamableHttpUrl;
+      inherit (browserMcp) chromeDevtoolsMcpStdioCommand chromeDevtoolsMcpStdioArgs;
       inherit a2aMcpStreamableHttpPort browserUseMcpStreamableHttpPort;
       codexBinaryPath = "${homeDir}/.local/bin/codex";
     })
