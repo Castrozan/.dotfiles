@@ -33,7 +33,7 @@ After editing any file in the dotfiles repo, execute this sequence before respon
 </workflow>
 
 <applying-clawde-agent-changes>
-A rebuild does not make a running clawde agent's runtime config live. The rebuild's redeploy warm-restarts each agent's session in place (claude --continue), but the agent's wrapper process keeps running with the launch command and heartbeat-driver argv it was started with. So a change to an agent's heartbeat gate, interval, prompt, or launch command stays dormant - the agent keeps its old behavior - until the wrapper is fully respawned, which happens on reboot or when the supervisor recreates the window after the wrapper exits, not on a rebuild. Never assume a rebuilt agent-config change took effect; to apply one, respawn the agent's wrapper.
+A clawde agent's runtime config - heartbeat gate, interval, prompt, launch command, active hours, rotation - lives in a per-agent file the wrapper re-reads on every restart, so a rebuild's warm redeploy applies config changes in place, no respawn needed. The exception is a change to the agent-wrapper code itself: the running wrapper keeps executing the code it launched with, so wrapper-code changes stay dormant until the window is fully respawned (reboot, or kill the window so the supervisor recreates it from the new spec). Never assume rebuilt wrapper code is live on the running agents - check the live process and respawn if it still runs the old code.
 </applying-clawde-agent-changes>
 
 <agent-instructions>
