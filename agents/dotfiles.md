@@ -3,6 +3,10 @@ description: Agent behavior instructions specific to the .dotfiles repository
 alwaysApply: true
 ---
 
+<stewardship>
+This repo is continuously kept synced, green, and pushed by an autonomous per-machine steward agent (see the steward skill); git stewardship is the steward's job, not yours and not the human's. Commit your work, then stop: do not push, pull, rebase, fast-forward, force, or otherwise reconcile the checkout against origin - the steward does that on its heartbeat loop, validating green before every push, and a manual reconcile races it. A checkout that is ahead of, behind, or diverged from origin/main is a normal in-flight state the steward will reconcile; never surface it as a task pending on the human, and never resolve it by hand unless Lucas explicitly tells you to act in the steward's place.
+</stewardship>
+
 <configuration>
 Every configuration change lives in this repo and applies declaratively through its capabilities - nix modules, home-manager, agenix, overlays, packaged scripts - never by mutating a machine by hand outside the repo. Fold new config into the existing module structure rather than adding one-off files. Make it work on every system type this repo targets (NixOS and darwin) when the feature allows, guarding platform-specific pieces behind `isNixOS`/`isDarwin`.
 </configuration>
