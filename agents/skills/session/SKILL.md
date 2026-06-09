@@ -13,7 +13,7 @@ For git worktrees and parallel branches, read `worktrees.md`.
 
 For tmux session and process control primitives, read `tmux.md`.
 
-For launching new Claude Code sessions — interactive tmux windows, one-shot `--print`, builtin Agent/Team delegation, multiline prompt traps, resume-by-session-id — read `claude.md`.
+For launching and driving another Claude Code session - interactive tmux windows, builtin Agent/Team delegation, one-shot, resume-by-session-id - use the always-injected `tmux-claude` skill.
 
 For end-of-work notifications to the user (TTS, desktop popup, mobile push via ntfy), read `notify.md`.
 
