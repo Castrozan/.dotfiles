@@ -15,7 +15,7 @@ Documentation must stay accurate without maintenance. Reference patterns, not cu
 </evergreen>
 
 <when_docs_are_needed>
-Architecture decisions that affect multiple modules. Non-obvious constraints from upstream dependencies. Migration guides for breaking changes. These are the only valid reasons to write documentation. External documentation or reference to a external docs.
+Architecture decisions that affect multiple modules. Non-obvious constraints from upstream dependencies. Migration guides for breaking changes. External integration details, or a pointer to authoritative external docs. These are the only valid reasons to write documentation.
 </when_docs_are_needed>
 
 <policy_documentation>
