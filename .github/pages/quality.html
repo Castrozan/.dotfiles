@@ -16,59 +16,112 @@
 <div class="wrap">
 <h1>how agent quality is measured</h1>
 <p class="lede">This repo treats its own AI agent like production software: a test pyramid, a
-regression gate, and scored end-to-end runs. Here is the system that keeps the agent honest,
-distilled from the design notes in
+regression gate, scored end-to-end runs, and experiments on how instructions are loaded. This page
+is the canonical record of that system, originally written up in
 <a href="https://github.com/Castrozan/.dotfiles/issues/70">issue #70</a>.</p>
 
 <h2>Why it exists</h2>
 <div class="panel">
-<p>The agent's behaviour degraded over a two-week window. Investigation found two compounding
-causes: an upstream adaptive-thinking regression that cut reasoning depth, and a near-doubling of
-the instruction surface during the same window. The fix was not "write better rules" - it was to
-<b>measure</b> compliance continuously, so regressions surface immediately instead of weeks later.</p>
+<p>The agent's behaviour degraded over a two-week window. Investigation found two compounding root
+causes:</p>
+<ul>
+<li><b>Adaptive-thinking regression</b> (upstream, issue #42796) - thinking depth dropped 73% and
+the read-to-edit ratio collapsed from 6.6 to 2.0.</li>
+<li><b>Instruction surface doubled</b> - 14 core.md commits in 5 weeks, during the exact window
+model reasoning capacity dropped.</li>
+</ul>
+<p>The response was not "write better rules" - it was to <b>measure</b> compliance continuously, so
+regressions surface in minutes instead of weeks.</p>
 </div>
+
+<h2>Instruction loading</h2>
+<pre class="diagram">~/.claude/CLAUDE.md  →  @AGENTS.md (alwaysApply: true)
+                              │
+                        core.md (125 lines, 25 sections)
+                              │
+        ┌─────────────────────┼──────────────────────┐
+   Session Start          PostCompact             Subagents
+   (natural load)   (hook re-injects top 10)   (CLAUDE.md in workspace)</pre>
 
 <h2>The testing pyramid</h2>
 <div class="pyramid">
-<div class="tier t3"><div class="tt">Tier 3 - E2E</div><div class="td">Real interactive tmux sessions, real claude, hooks firing. 6 scenarios scored 0-100 (NPS) with penalties.</div></div>
-<div class="tier t2"><div class="tt">Tier 2 - Integration</div><div class="td">claude -p with the real CLAUDE.md, stream-json tool-call parsing, workspace artifact checks. 7 scenarios.</div></div>
-<div class="tier t1"><div class="tt">Tier 1 - Static evals</div><div class="td">Prompt evals on haiku across compliance, routing, navigation and knowledge. This is the <a href="../baseline/">baseline pass rate</a>, gated in CI and pre-push.</div></div>
-<div class="tier t0"><div class="tt">Tier 0 - Quick</div><div class="td">bats, pytest, QML, frontmatter. No model calls, runs in under ten seconds.</div></div>
+<div class="tier t3"><div class="tt">Tier 3 - E2E</div><div class="td">Real interactive tmux sessions, real claude, hooks firing. Dual-signal assertions: terminal output plus workspace artifacts.</div><div class="meta">6 scenarios &middot; NPS 0-100 with penalties &middot; tests/run.sh --e2e</div></div>
+<div class="tier t2"><div class="tt">Tier 2 - Integration</div><div class="td">claude -p with the real CLAUDE.md, stream-json tool-call parsing, workspace file checks.</div><div class="meta">7 scenarios &middot; NPS 0-100 &middot; tests/run.sh --integration</div></div>
+<div class="tier t1"><div class="tt">Tier 1 - Static evals</div><div class="td">Prompt evals on haiku across compliance, routing, navigation and knowledge. This is the <a href="../baseline/">live baseline</a>, gated in CI and pre-push.</div><div class="meta">183 tests / 14 categories &middot; 3-day max age &middot; tests/run.sh --evals</div></div>
+<div class="tier t0"><div class="tt">Tier 0 - Quick</div><div class="td">bats, pytest, QML, frontmatter. No model calls.</div><div class="meta">runs in under 10s &middot; tests/run.sh --quick</div></div>
 </div>
+<p class="lede">An A/B test runner sits alongside the pyramid to compare instruction-loading configs.</p>
 
-<h2>NPS scoring</h2>
-<p class="lede">Tiers 2 and 3 do not just count pass or fail - they score each run 0-100 with explicit
-penalties, so a technically-passing but sloppy run cannot hide. Earlier scoring was bonus-only and
-inflated results; penalties were added to make the number trustworthy.</p>
-
-<h2>What the experiments found</h2>
-<p class="lede">An A/B harness compared how instructions are loaded into the agent:</p>
+<h2>Results</h2>
+<p class="lede">End-to-end runs in real tmux sessions, scored 0-100 (NPS):</p>
 <table>
-<thead><tr><th>loading method</th><th>score</th><th>finding</th></tr></thead>
+<thead><tr><th>model</th><th>pass</th><th>NPS</th><th>best</th><th>worst</th></tr></thead>
 <tbody>
-<tr><td><code>@reference</code> in CLAUDE.md</td><td>83</td><td>best - complements the harness built-ins</td></tr>
-<tr><td>no instructions</td><td>78</td><td>model defaults are already decent</td></tr>
+<tr><td>opus</td><td>3/6</td><td>69</td><td>workflow: 100</td><td>test: 23</td></tr>
+<tr><td>haiku</td><td>2/6</td><td>50</td><td>format: 88</td><td>test: 6</td></tr>
+<tr><td>sonnet</td><td>1/6</td><td>39</td><td>git: 88</td><td>format: 13</td></tr>
+</tbody>
+</table>
+<p class="lede">A/B test - how instructions are loaded into the agent:</p>
+<table>
+<thead><tr><th>config</th><th>score</th><th>finding</th></tr></thead>
+<tbody>
+<tr><td><code>@reference</code></td><td>83</td><td>best - complements the harness instructions</td></tr>
+<tr><td>no-instructions</td><td>78</td><td>model defaults are already decent</td></tr>
 <tr><td>inline</td><td>76</td><td>good</td></tr>
 <tr><td><code>--system-prompt</code></td><td>67</td><td>worst - competes with harness built-ins</td></tr>
 </tbody>
 </table>
-<p class="lede">Key takeaway: given enough thinking time the agent scored a perfect 100 on the
-workflow scenario, which means the instructions themselves are sound - the failures were model
-capacity gaps, not instruction gaps.</p>
+<p class="lede">Static evals at the time: 96.7% (177/183), up from 92.2% (118/128). The
+<a href="../baseline/">baseline dashboard</a> tracks this number live.</p>
 
 <h2>Prompt-engineering strategy</h2>
-<div class="chips">
-<span class="chip">XML-tagged rule boundaries</span>
-<span class="chip">zero-ambiguity constraints</span>
-<span class="chip">override block: custom &gt; default</span>
-<span class="chip">~5 lines per rule, dense</span>
-<span class="chip">PostCompact re-injects top rules</span>
-<span class="chip">@reference loading</span>
+<div class="panel">
+<ul>
+<li><b>Structure</b> - XML tags isolate sections; the model treats each as a discrete rule boundary.</li>
+<li><b>Tone</b> - zero ambiguity. "No comments", not "avoid when possible". Every sentence is a constraint.</li>
+<li><b>Priority</b> - an <code>&lt;override&gt;</code> block at line 1 establishes custom &gt; default.</li>
+<li><b>Density</b> - 125 lines / 25 rules, about 5 lines each. Dense prose, no tutorials.</li>
+<li><b>Reinforcement</b> - a PostCompact hook re-injects the top 10 rules after context compaction.</li>
+<li><b>Loading</b> - @reference (83) &gt; inline (76) &gt; system-prompt (67).</li>
+</ul>
+</div>
+
+<h2>What changed</h2>
+<div class="cols">
+<div class="panel">
+<b>New</b>
+<ul>
+<li>E2E tmux test framework (<code>agents/evals/e2e/</code>) - real sessions, terminal parser, dual-signal assertions, NPS scoring.</li>
+<li>Integration framework (<code>agents/evals/integration/</code>) - stream-json parsing, 7 scenarios.</li>
+<li>A/B test runner for instruction-loading configs.</li>
+<li>PostCompact reinforcement hook - re-injects the 10 most-violated rules.</li>
+<li>Pre-push eval baseline enforcement - local gate, 3-day max age (was 7, CI-only).</li>
+</ul>
+</div>
+<div class="panel">
+<b>Fixed</b>
+<ul>
+<li>deep-work-recovery.py ignored PostCompact events (accepted only SessionStart).</li>
+<li>Stale hooks.yaml referenced deleted hooks.</li>
+<li>A hardcoded absolute path in nix-rebuild-trigger.py.</li>
+<li>NPS scoring was bonus-only and inflated scores - penalties added.</li>
+<li>Integration tests used --system-prompt, the worst loading method.</li>
+<li>Eval baseline was 7 days stale with no local enforcement.</li>
+</ul>
+</div>
+</div>
+<div class="panel">
+<b>Key finding</b>
+<p>Opus scored NPS 100 on the workflow scenario, which proves the instructions work when the model
+has enough thinking time. The failures were model-capacity gaps from the adaptive-thinking
+regression, not instruction gaps.</p>
 </div>
 
 <footer>
-Distilled from <a href="https://github.com/Castrozan/.dotfiles/issues/70">issue #70</a> &middot;
-see the live <a href="../baseline/">baseline dashboard</a>
+Canonical record of <a href="https://github.com/Castrozan/.dotfiles/issues/70">issue #70</a> &middot;
+live <a href="../baseline/">baseline dashboard</a> &middot;
+<a href="../">reports hub</a>
 </footer>
 </div>
 </body>

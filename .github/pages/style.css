@@ -124,6 +124,25 @@ tbody tr:hover { background: var(--panel); }
 .tier.t2 { max-width: 72%; }
 .tier.t1 { max-width: 86%; border-color: var(--accent); }
 .tier.t0 { max-width: 100%; }
+.tier .meta { color: var(--muted); font-size: .78rem; margin-top: .35rem; }
+
+.diagram {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1rem 1.2rem;
+  overflow-x: auto;
+  font-size: .8rem;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.cols ul { margin: .4rem 0 0; padding-left: 1.1rem; }
+.cols li { margin: .35rem 0; color: var(--muted); }
+.panel ul { margin: .4rem 0 0; padding-left: 1.1rem; }
+.panel li { margin: .35rem 0; color: var(--muted); }
+@media (max-width: 640px) { .cols { grid-template-columns: 1fr; } }
 
 footer {
   color: var(--muted);
