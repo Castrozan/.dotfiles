@@ -41,12 +41,16 @@ function workspaceGridPersistence.load()
 		return nil, nil, workspaceNumberByWindowId
 	end
 	local currentWorkspaceNumber = tonumber(file:read("l"))
-	local generationLine = file:read("l")
-	local sessionGenerationToken = generationLine and generationLine:match("^generation (.+)$") or nil
+	local sessionGenerationToken = nil
 	for line in file:lines() do
-		local windowId, workspaceNumber = line:match("^(%-?%d+)%s+(%d+)$")
-		if windowId then
-			workspaceNumberByWindowId[tonumber(windowId)] = tonumber(workspaceNumber)
+		local generationTokenOnThisLine = line:match("^generation (.+)$")
+		if generationTokenOnThisLine then
+			sessionGenerationToken = generationTokenOnThisLine
+		else
+			local windowId, workspaceNumber = line:match("^(%-?%d+)%s+(%d+)$")
+			if windowId then
+				workspaceNumberByWindowId[tonumber(windowId)] = tonumber(workspaceNumber)
+			end
 		end
 	end
 	file:close()

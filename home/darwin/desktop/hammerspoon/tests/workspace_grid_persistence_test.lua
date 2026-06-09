@@ -1,121 +1,20 @@
 local moduleDirectory = arg[0]:gsub("tests/[^/]*$", "")
-package.path = moduleDirectory .. "?.lua;" .. package.path
+package.path = moduleDirectory .. "?.lua;" .. moduleDirectory .. "tests/?.lua;" .. package.path
 
-local currentlyFocusedWindowId = nil
+local harness = require("workspace_grid_test_harness")
+harness.installFakeHammerspoonGlobal()
+local expectEqual = harness.expectEqual
 
-local function makeFakeWindow(windowId)
-	local fakeWindow = { storedFrame = { x = 100, y = 100, w = 400, h = 300 } }
-	function fakeWindow:id()
-		return windowId
-	end
-	function fakeWindow:isStandard()
-		return true
-	end
-	function fakeWindow:frame()
-		return { x = self.storedFrame.x, y = self.storedFrame.y, w = self.storedFrame.w, h = self.storedFrame.h }
-	end
-	function fakeWindow:setFrame(newFrame)
-		self.storedFrame = newFrame
-	end
-	function fakeWindow:screen()
-		return {
-			frame = function()
-				return { x = 0, y = 0, w = 1440, h = 900 }
-			end,
-		}
-	end
-	function fakeWindow:focus()
-		currentlyFocusedWindowId = windowId
-	end
-	function fakeWindow:application()
-		return {
-			name = function()
-				return "FakeApp"
-			end,
-		}
-	end
-	function fakeWindow:title()
-		return "fake-title-" .. windowId
-	end
-	return fakeWindow
-end
+local windows = harness.setLiveWindowsToIds({ 101, 102, 103 })
 
-local windows = { makeFakeWindow(101), makeFakeWindow(102), makeFakeWindow(103) }
-local function findWindowById(targetWindowId)
-	for _, window in ipairs(windows) do
-		if window:id() == targetWindowId then
-			return window
-		end
-	end
-	return nil
-end
-
-hs = {
-	menubar = {
-		new = function()
-			return { setTitle = function() end }
-		end,
-	},
-	styledtext = {
-		new = function(text)
-			return setmetatable({ text = text }, {
-				__concat = function(left, right)
-					return hs.styledtext.new(left.text .. right.text)
-				end,
-			})
-		end,
-	},
-	window = {
-		focusedWindow = function()
-			return findWindowById(currentlyFocusedWindowId)
-		end,
-		get = function(windowId)
-			return findWindowById(windowId)
-		end,
-		filter = { default = {
-			getWindows = function()
-				return windows
-			end,
-		} },
-	},
-}
-
-local stateFile = os.tmpname()
-os.remove(stateFile)
-
-local failureCount = 0
-local function expectEqual(description, expectedValue, actualValue)
-	if expectedValue ~= actualValue then
-		failureCount = failureCount + 1
-		print(
-			string.format("FAIL: %s (expected %s, got %s)", description, tostring(expectedValue), tostring(actualValue))
-		)
-	else
-		print(string.format("PASS: %s", description))
-	end
-end
-
-local function loadFreshGrid()
-	package.loaded["workspace_grid"] = nil
-	package.loaded["workspace_grid_menubar"] = nil
-	package.loaded["workspace_grid_persistence"] = nil
-	package.loaded["workspace_grid_window_layout"] = nil
-	package.loaded["workspace_grid_window_assignment"] = nil
-	package.loaded["workspace_grid_session_generation"] = nil
-	package.loaded["workspace_grid_summon"] = nil
-	local grid = require("workspace_grid")
-	require("workspace_grid_persistence").setStateFilePathForTest(stateFile)
-	return grid
-end
-
-local grid = loadFreshGrid()
+local grid = harness.loadFreshGrid()
 grid.registerExistingWindowsOnFirstWorkspace()
 windows[2]:focus()
 grid.moveFocusedWindowToWorkspace(3)
 grid.switchToWorkspace(2)
 expectEqual("active workspace is 2 before reload", 2, grid.currentWorkspaceNumber())
 
-local reloadedGrid = loadFreshGrid()
+local reloadedGrid = harness.loadFreshGrid()
 reloadedGrid.restorePersistedWorkspaceState()
 
 expectEqual("active workspace 2 survives the reload", 2, reloadedGrid.currentWorkspaceNumber())
@@ -128,16 +27,15 @@ expectEqual(
 	windowsOnWorkspaceThree[1] and windowsOnWorkspaceThree[1]["window-id"] or -1
 )
 
-windows = { makeFakeWindow(201), makeFakeWindow(202), makeFakeWindow(203) }
-currentlyFocusedWindowId = nil
+local windowsBeforeReboot = harness.setLiveWindowsToIds({ 201, 202, 203 })
 
-local gridBeforeReboot = loadFreshGrid()
+local gridBeforeReboot = harness.loadFreshGrid()
 gridBeforeReboot.setSessionGenerationTokenForTest("boot-token-before")
 gridBeforeReboot.registerExistingWindowsOnFirstWorkspace()
-windows[2]:focus()
+windowsBeforeReboot[2]:focus()
 gridBeforeReboot.moveFocusedWindowToWorkspace(3)
 
-local gridAfterReboot = loadFreshGrid()
+local gridAfterReboot = harness.loadFreshGrid()
 gridAfterReboot.setSessionGenerationTokenForTest("boot-token-after")
 gridAfterReboot.restorePersistedWorkspaceState()
 expectEqual("after a reboot the active workspace resets to 1", 1, gridAfterReboot.currentWorkspaceNumber())
@@ -149,19 +47,17 @@ expectEqual(
 	#gridAfterReboot.currentWorkspaceWindowList().windows
 )
 
-windows = { makeFakeWindow(301), makeFakeWindow(302) }
-currentlyFocusedWindowId = nil
+local windowsBeforeClose = harness.setLiveWindowsToIds({ 301, 302 })
 
-local gridWithBothWindows = loadFreshGrid()
+local gridWithBothWindows = harness.loadFreshGrid()
 gridWithBothWindows.setSessionGenerationTokenForTest("boot-token-stable")
 gridWithBothWindows.registerExistingWindowsOnFirstWorkspace()
-windows[2]:focus()
+windowsBeforeClose[2]:focus()
 gridWithBothWindows.moveFocusedWindowToWorkspace(3)
 
-windows = { makeFakeWindow(301) }
-currentlyFocusedWindowId = nil
+harness.setLiveWindowsToIds({ 301 })
 
-local gridAfterWindowClosed = loadFreshGrid()
+local gridAfterWindowClosed = harness.loadFreshGrid()
 gridAfterWindowClosed.setSessionGenerationTokenForTest("boot-token-stable")
 gridAfterWindowClosed.restorePersistedWorkspaceState()
 gridAfterWindowClosed.switchToWorkspace(3)
@@ -171,4 +67,29 @@ expectEqual(
 	#gridAfterWindowClosed.currentWorkspaceWindowList().windows
 )
 
-os.exit(failureCount == 0 and 0 or 1)
+harness.setLiveWindowsToIds({ 401, 402 })
+
+local oldFormatStateFile = io.open(harness.stateFilePath(), "w")
+oldFormatStateFile:write("2\n")
+oldFormatStateFile:write("401 1\n")
+oldFormatStateFile:write("402 3\n")
+oldFormatStateFile:close()
+
+local gridReadingOldFormat = harness.loadFreshGrid()
+gridReadingOldFormat.setSessionGenerationTokenForTest("boot-token-stable")
+gridReadingOldFormat.restorePersistedWorkspaceState()
+gridReadingOldFormat.registerExistingWindowsOnFirstWorkspace()
+gridReadingOldFormat.switchToWorkspace(3)
+local windowsOnWorkspaceThreeFromOldFormat = gridReadingOldFormat.currentWorkspaceWindowList().windows
+expectEqual(
+	"an old-format state file with no generation line does not collapse every window onto workspace 1",
+	1,
+	#windowsOnWorkspaceThreeFromOldFormat
+)
+expectEqual(
+	"the old-format assignment is adopted so window 402 stays on workspace 3",
+	402,
+	windowsOnWorkspaceThreeFromOldFormat[1] and windowsOnWorkspaceThreeFromOldFormat[1]["window-id"] or -1
+)
+
+harness.exitWithAccumulatedStatus()

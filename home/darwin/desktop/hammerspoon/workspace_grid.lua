@@ -179,7 +179,7 @@ end
 function workspaceGrid.restorePersistedWorkspaceState()
 	local restoredCurrentWorkspaceNumber, restoredSessionGenerationToken, restoredAssignments =
 		workspaceGridPersistence.load()
-	if restoredSessionGenerationToken ~= sessionGeneration.currentToken() then
+	if restoredSessionGenerationToken ~= nil and restoredSessionGenerationToken ~= sessionGeneration.currentToken() then
 		currentWorkspaceNumber = firstWorkspaceNumber
 		return
 	end
