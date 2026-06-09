@@ -1,11 +1,10 @@
 {
-  config,
   lib,
   hostname,
   ...
 }:
 let
-  stewardSkillRoot = ../../../../agents/skills/steward;
+  stewardPayloadRoot = ../clawde/agent-types/steward/payload;
 
   machinesRegistryPath = ../../../../private-config/machines.nix;
   machinesRegistry =
@@ -30,45 +29,18 @@ let
     peers = peerEndpoints;
   };
 
-  stewardSkillSetDirectory = "${config.home.homeDirectory}/.local/share/claude-skill-sets/steward";
-
   personalityWithMachineIdentity = import ../clawde/inject-agent-identity.nix {
     inherit lib;
     self = hostname;
     peers = peerAliases;
-    personality = builtins.readFile (stewardSkillRoot + "/personality.md");
+    personality = builtins.readFile (stewardPayloadRoot + "/personality.md");
   };
-
-  stewardDenyToolPatterns = [
-    "mcp__chrome-devtools__*"
-    "mcp__browser-use__*"
-    "mcp__codex__*"
-    "mcp__a2a__*"
-    "mcp__claude_ai_Gmail__*"
-    "mcp__claude_ai_Google_Calendar__*"
-    "mcp__claude_ai_Google_Drive__*"
-    "mcp__plugin_discord_discord__*"
-    "Skill(discord:configure)"
-    "Skill(discord:access)"
-  ];
 in
 {
-  home.file = {
-    "clawde/steward/peers.json".text = builtins.toJSON peersConfiguration;
-
-    ".local/share/claude-skill-sets/steward/.claude/skills/steward".source =
-      config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.dotfiles/agents/skills/steward";
-  };
+  home.file."clawde/steward/peers.json".text = builtins.toJSON peersConfiguration;
 
   clawde.agents.steward = {
-    model = "opus";
-    permissionMode = "bypassPermissions";
-    dailySessionRotation = true;
-    heartbeatInterval = "*/15 * * * *";
-    heartbeatPrompt = builtins.readFile (stewardSkillRoot + "/heartbeat-prompt.md");
-    heartbeatGateCommand = "clawde-heartbeat-change-gate --label steward --probe steward-heartbeat-probe";
-    skillDirectories = [ stewardSkillSetDirectory ];
-    denyToolPatterns = stewardDenyToolPatterns;
+    type = "steward";
     personality = personalityWithMachineIdentity;
   };
 }
