@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-06-09T17:38:18.631863+00:00",
-  "git_commit": "ad8845bb",
+  "generated_at": "2026-06-09T18:35:50.893470+00:00",
+  "git_commit": "f33b0741",
   "total_tests": 168,
-  "total_passed": 163,
-  "total_failed": 5,
-  "pass_rate": 0.9702,
+  "total_passed": 164,
+  "total_failed": 4,
+  "pass_rate": 0.9762,
   "categories": {
     "other": {
-      "passed": 49,
-      "failed": 2,
+      "passed": 51,
+      "failed": 0,
       "tests": [
         {
           "name": "worktrees_knows_builtin_flag",
@@ -120,7 +120,7 @@
         },
         {
           "name": "review_ignores_preexisting_unchanged_lines",
-          "passed": false
+          "passed": true
         },
         {
           "name": "review_flags_hardcoded_credentials",
@@ -152,7 +152,7 @@
         },
         {
           "name": "git_history_knows_when_not_to_use",
-          "passed": false
+          "passed": true
         },
         {
           "name": "git_history_cache_invalidation",
@@ -217,8 +217,8 @@
       ]
     },
     "compliance": {
-      "passed": 36,
-      "failed": 0,
+      "passed": 35,
+      "failed": 1,
       "tests": [
         {
           "name": "delegation_multi_agent_implementation_prefers_teams",
@@ -294,7 +294,7 @@
         },
         {
           "name": "rebuild_two_consecutive_passes",
-          "passed": true
+          "passed": false
         },
         {
           "name": "rebuild_untested_is_hypothesis",
