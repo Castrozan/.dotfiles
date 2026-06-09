@@ -16,8 +16,8 @@ let
     builtins.readFile ../scripts/steward-activate.py
   );
 
-  stewardHeartbeatGateSource = pkgs.writeText "steward-heartbeat-gate.py" (
-    builtins.readFile ../scripts/steward-heartbeat-gate.py
+  stewardHeartbeatProbeSource = pkgs.writeText "steward-heartbeat-probe.py" (
+    builtins.readFile ../scripts/steward-heartbeat-probe.py
   );
 
   stewardStatus = pkgs.writeShellScriptBin "steward-status" ''
@@ -32,10 +32,10 @@ let
     exec ${python}/bin/python3 ${stewardMessageSource} "$@"
   '';
 
-  stewardHeartbeatGate = pkgs.writeShellScriptBin "steward-heartbeat-gate" ''
+  stewardHeartbeatProbe = pkgs.writeShellScriptBin "steward-heartbeat-probe" ''
     set -euo pipefail
     export STEWARD_STATUS_COMMAND="${stewardStatus}/bin/steward-status"
-    exec ${python}/bin/python3 ${stewardHeartbeatGateSource} "$@"
+    exec ${python}/bin/python3 ${stewardHeartbeatProbeSource} "$@"
   '';
 
   stewardActivate = pkgs.writeShellScriptBin "steward-activate" ''
@@ -48,7 +48,7 @@ in
   packages = [
     stewardStatus
     stewardMessage
-    stewardHeartbeatGate
+    stewardHeartbeatProbe
     stewardActivate
   ];
 }
