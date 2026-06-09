@@ -168,6 +168,7 @@ in
     clawdeRuntimePaths
     agentWorkspaceDirectory
     getChannelAdapterFor
+    getAgentTypeFor
     effectiveAgentByName
     clawdeServiceSpecificationFile
     buildAgentClaudeMarkdownContentByName
