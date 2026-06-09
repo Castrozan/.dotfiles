@@ -36,9 +36,9 @@ Claude registers a2a as an HTTP bridge in `mcps/` (consuming `a2a/install.nix`);
 
 ## clawde
 
-`clawde/` is the persistent-agent framework. One systemd-user service supervises one tmux session (`clawde`), with one window per agent. Each agent is declared as `clawde.agents.<name>` with a channel adapter (`channel.type = "pm"` or `"discord"`) and optional peer adapters (`expose.a2a.enable = true`).
+`clawde/` is the persistent-agent framework. One systemd-user service supervises one tmux session (`clawde`), with one window per agent. Each agent is declared as `clawde.agents.<name>` with an agent type (`type = "project-manager"`, defaulting to `"generic"`) that supplies role defaults inherited unless the instance overrides them, a channel adapter (`channel.type = "discord"` or `"none"`) for transport, and optional peer adapters (`expose.a2a.enable = true`).
 
-See `clawde/default.nix` for the option schema, `clawde/instructions/clawde-runtime.md` for runtime rules, and `clawde/channel-adapters/<name>/instructions/<name>-runtime.md` for per-channel behavior.
+See `clawde/default.nix` for the option schema, `clawde/instructions/clawde-runtime.md` for runtime rules, `clawde/agent-types/<name>/` for per-type role defaults and instructions, and `clawde/channel-adapters/<name>/instructions/<name>-runtime.md` for per-channel transport behavior.
 
 Agent declarations live per-machine in `private-config/machines/<host>/clawde-*.nix` (e.g. the per-host PM agents and rin's `clawde-silver.nix`); the shared `steward` agent, which reads the public steward skill at eval time, lives in `clawde-agents/steward.nix`.
 

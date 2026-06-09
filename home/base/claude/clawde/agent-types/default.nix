@@ -2,5 +2,6 @@
 {
   imports = [
     ./generic
+    ./project-manager
   ];
 }
