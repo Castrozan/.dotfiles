@@ -2,8 +2,9 @@
 """Read-only maintenance diagnosis for the dotfiles steward agent.
 
 Emits a single JSON object describing the repository and system health so the
-steward can decide what to do this heartbeat. Performs exactly one network
-mutation (git fetch); everything else is read-only.
+steward can decide what to do this heartbeat. The only network reads are git
+fetches on the superproject and on each initialized submodule; everything else
+is read-only.
 """
 
 import json
@@ -13,6 +14,8 @@ import sys
 from pathlib import Path
 
 from continuous_integration_status import continuous_integration_status_for_revision
+from health_summary import health_check_summary
+from submodule_status import submodule_report
 
 
 def dotfiles_directory() -> Path:
@@ -96,37 +99,6 @@ def unread_inbox_messages() -> list[str]:
     return sorted(entry.name for entry in inbox.glob("*.json") if entry.is_file())
 
 
-def is_own_daemon_self_probe(probe: dict) -> bool:
-    return probe.get("category") == "daemon" and "clawde agent: steward" in probe.get(
-        "name", ""
-    )
-
-
-def health_check_summary() -> dict:
-    return_code, output = run_capturing(["health-check", "--json"], Path.home(), 60)
-    if return_code == 127:
-        return {"available": False}
-    try:
-        parsed = json.loads(output)
-    except json.JSONDecodeError:
-        return {"available": True, "parse_error": True, "exit_code": return_code}
-    probes = parsed if isinstance(parsed, list) else parsed.get("probes", [])
-    failing = [
-        probe
-        for probe in probes
-        if probe.get("status", "pass") != "pass" and not is_own_daemon_self_probe(probe)
-    ]
-    return {
-        "available": True,
-        "exit_code": return_code,
-        "total": len(probes),
-        "failing": [
-            f"{probe.get('category', '?')}/{probe.get('name', '?')}"
-            for probe in failing
-        ],
-    }
-
-
 def build_report() -> dict:
     repository = dotfiles_directory()
     branch = current_branch(repository)
@@ -138,10 +110,11 @@ def build_report() -> dict:
     dirty = working_tree_is_dirty(repository)
     validated_revision = last_validated_revision()
     inbox = unread_inbox_messages()
-    health = health_check_summary()
+    health = health_check_summary(run_capturing)
     continuous_integration = continuous_integration_status_for_revision(
         repository, upstream_revision, run_capturing
     )
+    submodules = submodule_report(run_capturing, repository)
 
     needs_validation = head_revision != validated_revision or dirty
     needs_sync = behind > 0
@@ -149,11 +122,20 @@ def build_report() -> dict:
     has_mail = bool(inbox)
     continuous_integration_failing = continuous_integration.get("state") == "failing"
     continuous_integration_pending = continuous_integration.get("state") == "pending"
+    submodule_divergence = submodules["submodule_divergence"]
+    needs_submodule_sync = submodules["needs_submodule_sync"]
+    needs_submodule_push = submodules["needs_submodule_push"]
 
     if needs_sync:
         verdict = "needs_sync"
+    elif submodule_divergence:
+        verdict = "submodule_divergence"
+    elif needs_submodule_sync:
+        verdict = "needs_submodule_sync"
     elif needs_validation:
         verdict = "needs_validation"
+    elif needs_submodule_push:
+        verdict = "needs_submodule_push"
     elif needs_push:
         verdict = "needs_push"
     elif continuous_integration_failing:
@@ -181,6 +163,10 @@ def build_report() -> dict:
         "continuous_integration": continuous_integration,
         "continuous_integration_failing": continuous_integration_failing,
         "continuous_integration_pending": continuous_integration_pending,
+        "submodules": submodules["submodules"],
+        "needs_submodule_sync": needs_submodule_sync,
+        "needs_submodule_push": needs_submodule_push,
+        "submodule_divergence": submodule_divergence,
         "health": health,
         "inbox_unread": inbox,
         "verdict": verdict,
