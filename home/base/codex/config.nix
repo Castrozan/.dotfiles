@@ -2,13 +2,21 @@
   pkgs,
   lib,
   config,
+  latest,
   ...
 }:
 let
-  patchScript = ./patch.py;
+  nodejs = pkgs.nodejs_22;
+  homeDir = config.home.homeDirectory;
+  browserMcp = import ../../../agents/skills/browser/install {
+    inherit pkgs nodejs homeDir;
+    chromePackage = latest.google-chrome;
+  };
+  codexConfigGenerator = ./config-generator;
   codexDefaultModel = "gpt-5.4";
   codexDeveloperInstructions = "Operate pragmatically: keep diffs small, verify with fast checks, and prefer repo-local truth (AGENTS.md, bin/, home/{base,linux,darwin}/). Use profiles: fast (default), deep, web.";
-  chromeDevtoolsMcpStreamableHttpBridgeUrl = "http://localhost:8767/mcp";
+  chromeDevtoolsMcpStdioCommand = browserMcp.chromeDevtoolsMcpStdioCommand;
+  chromeDevtoolsMcpStdioArgsJson = builtins.toJSON browserMcp.chromeDevtoolsMcpStdioArgs;
   codexHooksConfig = builtins.toJSON {
     SessionStart = [
       {
@@ -24,8 +32,9 @@ in
   home.activation.codexBaselineConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     CODEX_DEFAULT_MODEL=${lib.escapeShellArg codexDefaultModel} \
     CODEX_DEVELOPER_INSTRUCTIONS=${lib.escapeShellArg codexDeveloperInstructions} \
-    CODEX_CHROME_DEVTOOLS_MCP_STREAMABLE_HTTP_BRIDGE_URL=${lib.escapeShellArg chromeDevtoolsMcpStreamableHttpBridgeUrl} \
-    ${pkgs.python3}/bin/python3 ${patchScript}
+    CODEX_CHROME_DEVTOOLS_MCP_COMMAND=${lib.escapeShellArg chromeDevtoolsMcpStdioCommand} \
+    CODEX_CHROME_DEVTOOLS_MCP_ARGS_JSON=${lib.escapeShellArg chromeDevtoolsMcpStdioArgsJson} \
+    ${pkgs.python3}/bin/python3 ${codexConfigGenerator}/generate_config.py
   '';
 
   home.activation.codexHooksConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
