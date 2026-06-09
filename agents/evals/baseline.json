@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-06-05T13:27:37.911866+00:00",
-  "git_commit": "3c39beaa",
-  "total_tests": 167,
-  "total_passed": 165,
-  "total_failed": 2,
-  "pass_rate": 0.988,
+  "generated_at": "2026-06-09T17:38:18.631863+00:00",
+  "git_commit": "ad8845bb",
+  "total_tests": 168,
+  "total_passed": 163,
+  "total_failed": 5,
+  "pass_rate": 0.9702,
   "categories": {
     "other": {
       "passed": 49,
-      "failed": 1,
+      "failed": 2,
       "tests": [
         {
           "name": "worktrees_knows_builtin_flag",
@@ -68,6 +68,10 @@
         },
         {
           "name": "defend_or_retract_with_evidence",
+          "passed": true
+        },
+        {
+          "name": "typo_inference_proceeds_without_asking",
           "passed": true
         },
         {
@@ -148,7 +152,7 @@
         },
         {
           "name": "git_history_knows_when_not_to_use",
-          "passed": true
+          "passed": false
         },
         {
           "name": "git_history_cache_invalidation",
@@ -363,8 +367,8 @@
       ]
     },
     "routing": {
-      "passed": 54,
-      "failed": 1,
+      "passed": 52,
+      "failed": 3,
       "tests": [
         {
           "name": "routing_to_desktop_keyboard_typing",
@@ -456,7 +460,7 @@
         },
         {
           "name": "routing_to_home_assistant_ac_control",
-          "passed": true
+          "passed": false
         },
         {
           "name": "routing_to_obsidian_daily_note",
@@ -488,7 +492,7 @@
         },
         {
           "name": "routing_to_review_skill_routing_failure",
-          "passed": true
+          "passed": false
         },
         {
           "name": "routing_to_notify_task_completion",
