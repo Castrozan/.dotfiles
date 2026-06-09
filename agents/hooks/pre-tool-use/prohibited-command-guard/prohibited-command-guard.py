@@ -14,6 +14,8 @@ import sys
 
 COMMAND_BOUNDARY_PREFIX = r"(?:^|[;&|`(]\s*)"
 
+SANCTIONED_HEADLESS_CLAUDE_OVERRIDE_SENTINEL = "CLAUDE_HEADLESS_SANCTIONED=1"
+
 PROHIBITED_BASH_COMMAND_PATTERNS = [
     (
         rf"{COMMAND_BOUNDARY_PREFIX}git\s+add\s+(-A|--all|\.)(\s|$)",
@@ -26,6 +28,14 @@ PROHIBITED_BASH_COMMAND_PATTERNS = [
     (
         rf"{COMMAND_BOUNDARY_PREFIX}direnv\s+(allow|hook|exec|reload|status|edit|deny|block|prune|version)\b",
         "direnv is prohibited; use 'devenv shell' or 'devenv shell -- command'.",
+    ),
+    (
+        rf"{COMMAND_BOUNDARY_PREFIX}claude(?![\w-])[^;&|`)\n]*?\s(?:-p|--print)(?:[=\s'\"]|$)",
+        "claude -p/--print (headless oneshot) is prohibited; drive an interactive "
+        "session instead (the claude-workspace wrapper, or session spawn-claude.sh). "
+        "For a genuinely sanctioned one-off, prefix the command with "
+        f"{SANCTIONED_HEADLESS_CLAUDE_OVERRIDE_SENTINEL}.",
+        SANCTIONED_HEADLESS_CLAUDE_OVERRIDE_SENTINEL,
     ),
 ]
 
@@ -62,9 +72,14 @@ def find_first_violation(tool_name: str, inspectable_text: str):
 
     patterns_for_this_tool = PROHIBITED_PATTERNS_BY_TOOL.get(tool_name, [])
 
-    for pattern, reason in patterns_for_this_tool:
-        if re.search(pattern, inspectable_text, re.IGNORECASE):
-            return pattern, reason
+    for rule in patterns_for_this_tool:
+        pattern, reason = rule[0], rule[1]
+        override_sentinel = rule[2] if len(rule) > 2 else None
+        if not re.search(pattern, inspectable_text, re.IGNORECASE):
+            continue
+        if override_sentinel and override_sentinel in inspectable_text:
+            continue
+        return pattern, reason
     return None
 
 
