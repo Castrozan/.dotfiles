@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 SKILL_DISCOVERY_PRUNED_CHILD_DIRECTORY_NAMES = frozenset(
-    {"node_modules", "__pycache__", "target", "dist", "build", "venv"}
+    {"node_modules", "__pycache__", "target", "dist", "build", "venv", "agent-types"}
 )
 WORKSPACE_SKILL_NAMESPACE_PARENT_DIRECTORY = Path("/tmp")
 WORKSPACE_SKILL_NAMESPACE_DIRECTORY_NAME_PREFIX = "claude-workspace-skills."
