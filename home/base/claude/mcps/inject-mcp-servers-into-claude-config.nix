@@ -2,7 +2,8 @@
   homeDir,
   chromeDevtoolsMcpStdioCommand,
   chromeDevtoolsMcpStdioArgs,
-  a2aMcpStreamableHttpPort,
+  a2aMcpStdioCommand,
+  a2aMcpStdioArgs,
   browserUseMcpStreamableHttpPort,
   codexBinaryPath,
 }:
@@ -18,8 +19,8 @@ let
       args = [ "mcp-server" ];
     };
     a2a = {
-      type = "http";
-      url = "http://localhost:${toString a2aMcpStreamableHttpPort}/mcp";
+      command = a2aMcpStdioCommand;
+      args = a2aMcpStdioArgs;
     };
     browser-use = {
       type = "http";

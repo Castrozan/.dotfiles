@@ -66,32 +66,6 @@ let
       ;
   };
 
-  a2aMcpStreamableHttpPort = 8769;
-  a2aMcpStreamableHttpSessionTimeoutMilliseconds = 60000;
-
-  a2aMcpOrphanReaper = pkgs.writeShellScript "a2a-mcp-orphan-reaper" ''
-    set -euo pipefail
-    ${pkgs.procps}/bin/pkill -9 -f 'a2a-mcp-server-npm/bin/a2a-mcp-server' || true
-  '';
-
-  a2aMcpStreamableHttpBridgeLauncher = pkgs.writeShellScript "a2a-mcp-streamable-http-bridge-launcher" ''
-    set -euo pipefail
-    export PATH="${nodejs}/bin:''${PATH:+:$PATH}"
-    ${a2aMcpOrphanReaper}
-
-    if ! "${browserMcp.supergatewayBinary}" --version >/dev/null 2>&1; then
-      echo "supergateway binary not found at ${browserMcp.supergatewayBinary}" >&2
-      exit 1
-    fi
-
-    exec "${browserMcp.supergatewayBinary}" \
-      --stdio "${a2aMcp.mcpServerCommand} ${builtins.head a2aMcp.mcpServerArgs}" \
-      --outputTransport streamableHttp \
-      --stateful \
-      --sessionTimeout ${toString a2aMcpStreamableHttpSessionTimeoutMilliseconds} \
-      --port ${toString a2aMcpStreamableHttpPort}
-  '';
-
   nixSystemPaths = lib.concatStringsSep ":" [
     "${nodejs}/bin"
     "/run/current-system/sw/bin"
@@ -102,13 +76,6 @@ let
   ];
 
   crossPlatformMcpBridgeServiceSpecs = {
-    a2a-mcp-bridge = {
-      description = "A2A MCP streamable HTTP bridge (supergateway)";
-      launcher = a2aMcpStreamableHttpBridgeLauncher;
-      linuxOnlyServiceExtraConfig = {
-        MemoryMax = "2G";
-      };
-    };
     browser-use-mcp-bridge = {
       description = "Browser-use MCP streamable HTTP bridge (supergateway)";
       launcher = browserUseMcpStreamableHttpBridgeLauncher;
@@ -136,7 +103,9 @@ in
     (import ./inject-mcp-servers-into-claude-config.nix {
       inherit homeDir;
       inherit (browserMcp) chromeDevtoolsMcpStdioCommand chromeDevtoolsMcpStdioArgs;
-      inherit a2aMcpStreamableHttpPort browserUseMcpStreamableHttpPort;
+      a2aMcpStdioCommand = a2aMcp.mcpServerCommand;
+      a2aMcpStdioArgs = a2aMcp.mcpServerArgs;
+      inherit browserUseMcpStreamableHttpPort;
       codexBinaryPath = "${homeDir}/.local/bin/codex";
     })
   ];
