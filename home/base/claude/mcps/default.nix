@@ -15,7 +15,6 @@ let
       "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
     else
       "${latest.google-chrome}/bin/google-chrome-stable";
-  chromeDevtoolsMcpChildReaperIntervalSeconds = 900;
 
   browserMcp = import ../../../../agents/skills/browser/install {
     inherit
@@ -93,12 +92,6 @@ let
       --port ${toString a2aMcpStreamableHttpPort}
   '';
 
-  chromeDevtoolsMcpStreamableHttpBridgeLauncher = pkgs.writeShellScript "chrome-devtools-mcp-streamable-http-bridge-launcher" ''
-    set -euo pipefail
-    ${browserMcp.chromeDevtoolsMcpOrphanReaper}
-    exec ${browserMcp.streamableHttpBridgeCommand}
-  '';
-
   nixSystemPaths = lib.concatStringsSep ":" [
     "${nodejs}/bin"
     "/run/current-system/sw/bin"
@@ -109,13 +102,6 @@ let
   ];
 
   crossPlatformMcpBridgeServiceSpecs = {
-    chrome-devtools-mcp-bridge = {
-      description = "Chrome DevTools MCP streamable HTTP bridge (supergateway)";
-      launcher = chromeDevtoolsMcpStreamableHttpBridgeLauncher;
-      linuxOnlyServiceExtraConfig = {
-        MemoryMax = "2G";
-      };
-    };
     a2a-mcp-bridge = {
       description = "A2A MCP streamable HTTP bridge (supergateway)";
       launcher = a2aMcpStreamableHttpBridgeLauncher;
@@ -154,23 +140,6 @@ in
       codexBinaryPath = "${homeDir}/.local/bin/codex";
     })
   ];
-
-  launchd.agents = lib.mkIf isDarwin {
-    chrome-devtools-mcp-child-reaper = {
-      enable = true;
-      config = {
-        Label = "com.dotfiles.chrome-devtools-mcp-child-reaper";
-        ProgramArguments = [
-          "${pkgs.bash}/bin/bash"
-          "${browserMcp.mkChromeDevtoolsMcpChildReaper browserMcp.chromeDevtoolsStreamableHttpSessionTimeoutSeconds}"
-        ];
-        StartInterval = chromeDevtoolsMcpChildReaperIntervalSeconds;
-        RunAtLoad = false;
-        StandardOutPath = "/tmp/chrome-devtools-mcp-child-reaper.log";
-        StandardErrorPath = "/tmp/chrome-devtools-mcp-child-reaper.log";
-      };
-    };
-  };
 
   home = {
     inherit (browserMcp) packages;

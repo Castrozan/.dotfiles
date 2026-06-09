@@ -135,28 +135,13 @@ in
       )
       "two agents with different tmuxSession values must keep distinct session names so the clawde supervisor can host them in separate tmux sessions";
 
-  chrome-devtools-bridge-service-exists =
-    let
-      bridgeService = cfg.systemd.user.services.chrome-devtools-mcp-bridge;
-    in
-    mkEvalCheck "chrome-devtools-bridge-service-exists" (
-      bridgeService ? Service
-    ) "chrome-devtools-mcp-bridge.service must exist as a systemd user service";
+  chrome-devtools-mcp-bridge-service-removed =
+    mkEvalCheck "chrome-devtools-mcp-bridge-service-removed"
+      (!(cfg.systemd.user.services ? "chrome-devtools-mcp-bridge"))
+      "chrome-devtools-mcp-bridge.service must not exist; chrome-devtools is a direct stdio MCP";
 
-  chrome-devtools-bridge-restart-always =
-    let
-      bridgeService = cfg.systemd.user.services.chrome-devtools-mcp-bridge;
-    in
-    mkEvalCheck "chrome-devtools-bridge-restart-always" (
-      (bridgeService.Service.Restart or null) == "always"
-    ) "chrome-devtools-mcp-bridge.service must set Restart=always for auto-recovery";
-
-  chrome-devtools-bridge-wanted-by-default =
-    let
-      bridgeService = cfg.systemd.user.services.chrome-devtools-mcp-bridge;
-    in
-    mkEvalCheck "chrome-devtools-bridge-wanted-by-default" (builtins.elem "default.target" (
-      bridgeService.Install.WantedBy or [ ]
-    )) "chrome-devtools-mcp-bridge.service must be wanted by default.target to start on login";
+  a2a-mcp-bridge-service-still-exists = mkEvalCheck "a2a-mcp-bridge-service-still-exists" (
+    cfg.systemd.user.services ? "a2a-mcp-bridge"
+  ) "a2a-mcp-bridge.service must still exist; the supergateway bridge is retained for a2a";
 
 }

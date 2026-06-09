@@ -16,7 +16,7 @@ Tradeoff: single Chrome Global instance, sequential. Requires user to have remot
 
 ## PinchTab CLI - resilient fallback, persistent auth
 
-No MCP - a `pinchtab` binary driven from bash, so it keeps working when an MCP transport drops mid-session (the recurring chrome-devtools failure mode). Runs its own server on `localhost:9867` with a persistent Chrome profile, so a one-time headed login stays authenticated across runs - it renders authed local apps (e.g. a CA3-backed dev server) without re-login.
+No MCP - a `pinchtab` binary driven from bash, so it keeps working when an MCP server is flaky or disconnected mid-session. Runs its own server on `localhost:9867` with a persistent Chrome profile, so a one-time headed login stays authenticated across runs - it renders authed local apps (e.g. a CA3-backed dev server) without re-login.
 
 Reach for it when: the MCP tools are flaky or disconnected, you need a stable already-logged-in session for a local/dev app, or you want screenshot/snapshot verification driven entirely from the shell. Core loop: `pinchtab nav <url>` -> `pinchtab snap` (a11y refs, prefer over pixels) -> `pinchtab screenshot --output <file>` then Read the file; interact with `pinchtab click <ref>` / `type <ref> <text>`; `pinchtab server -H` for a visible window to log in. See the skill's `pinchtab_workflow` for the command list.
 
