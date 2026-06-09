@@ -12,6 +12,13 @@ STATE_DIRECTORY_OVERRIDE_ENVIRONMENT_VARIABLE = (
 
 INSTRUCTION_FILENAMES_THAT_ARE_ALWAYS_AGENT_DIRECTED = {"claude.md", "agents.md"}
 
+AGENT_DIRECTED_INSTRUCTION_RELATIVE_PATHS = {
+    "agents/dotfiles.md",
+    "agents/core_rules/core.md",
+    "agents/core_rules/core-skill-frontmatter.md",
+    "agents/snippets/rebuild.md",
+}
+
 AUTHORING_STANDARDS_DIRECTIVE = (
     "BLOCKED: this file instructs an AI agent, so it must be authored against the "
     "instruction-authoring standards before you edit it. First invoke "
@@ -64,6 +71,12 @@ def is_agent_directed_instruction_file(file_path):
         return False
     path = Path(file_path)
     if path.name.lower() in INSTRUCTION_FILENAMES_THAT_ARE_ALWAYS_AGENT_DIRECTED:
+        return True
+    posix_path = path.as_posix()
+    if any(
+        posix_path == relative_path or posix_path.endswith("/" + relative_path)
+        for relative_path in AGENT_DIRECTED_INSTRUCTION_RELATIVE_PATHS
+    ):
         return True
     if path.suffix.lower() != ".md":
         return False
