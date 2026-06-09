@@ -38,8 +38,10 @@ jobs:
 
       - name: Assemble site
         run: |
-          mkdir -p site
+          mkdir -p site/quality
+          cp .github/pages/style.css site/style.css
           cp .github/pages/index.html site/index.html
+          cp .github/pages/quality.html site/quality/index.html
           cp -r tests/coverage site/coverage
           python3 agents/evals/render_baseline_dashboard.py site/baseline
 

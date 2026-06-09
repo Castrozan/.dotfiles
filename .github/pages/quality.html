@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>how quality is measured | dotfiles</title>
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<nav class="top">
+<a class="brand" href="../">dotfiles reports</a>
+<a href="../baseline/">baseline</a>
+<a href="../quality/" class="active">quality</a>
+<a href="../coverage/">coverage</a>
+</nav>
+<div class="wrap">
+<h1>how agent quality is measured</h1>
+<p class="lede">This repo treats its own AI agent like production software: a test pyramid, a
+regression gate, and scored end-to-end runs. Here is the system that keeps the agent honest,
+distilled from the design notes in
+<a href="https://github.com/Castrozan/.dotfiles/issues/70">issue #70</a>.</p>
+
+<h2>Why it exists</h2>
+<div class="panel">
+<p>The agent's behaviour degraded over a two-week window. Investigation found two compounding
+causes: an upstream adaptive-thinking regression that cut reasoning depth, and a near-doubling of
+the instruction surface during the same window. The fix was not "write better rules" - it was to
+<b>measure</b> compliance continuously, so regressions surface immediately instead of weeks later.</p>
+</div>
+
+<h2>The testing pyramid</h2>
+<div class="pyramid">
+<div class="tier t3"><div class="tt">Tier 3 - E2E</div><div class="td">Real interactive tmux sessions, real claude, hooks firing. 6 scenarios scored 0-100 (NPS) with penalties.</div></div>
+<div class="tier t2"><div class="tt">Tier 2 - Integration</div><div class="td">claude -p with the real CLAUDE.md, stream-json tool-call parsing, workspace artifact checks. 7 scenarios.</div></div>
+<div class="tier t1"><div class="tt">Tier 1 - Static evals</div><div class="td">Prompt evals on haiku across compliance, routing, navigation and knowledge. This is the <a href="../baseline/">baseline pass rate</a>, gated in CI and pre-push.</div></div>
+<div class="tier t0"><div class="tt">Tier 0 - Quick</div><div class="td">bats, pytest, QML, frontmatter. No model calls, runs in under ten seconds.</div></div>
+</div>
+
+<h2>NPS scoring</h2>
+<p class="lede">Tiers 2 and 3 do not just count pass or fail - they score each run 0-100 with explicit
+penalties, so a technically-passing but sloppy run cannot hide. Earlier scoring was bonus-only and
+inflated results; penalties were added to make the number trustworthy.</p>
+
+<h2>What the experiments found</h2>
+<p class="lede">An A/B harness compared how instructions are loaded into the agent:</p>
+<table>
+<thead><tr><th>loading method</th><th>score</th><th>finding</th></tr></thead>
+<tbody>
+<tr><td><code>@reference</code> in CLAUDE.md</td><td>83</td><td>best - complements the harness built-ins</td></tr>
+<tr><td>no instructions</td><td>78</td><td>model defaults are already decent</td></tr>
+<tr><td>inline</td><td>76</td><td>good</td></tr>
+<tr><td><code>--system-prompt</code></td><td>67</td><td>worst - competes with harness built-ins</td></tr>
+</tbody>
+</table>
+<p class="lede">Key takeaway: given enough thinking time the agent scored a perfect 100 on the
+workflow scenario, which means the instructions themselves are sound - the failures were model
+capacity gaps, not instruction gaps.</p>
+
+<h2>Prompt-engineering strategy</h2>
+<div class="chips">
+<span class="chip">XML-tagged rule boundaries</span>
+<span class="chip">zero-ambiguity constraints</span>
+<span class="chip">override block: custom &gt; default</span>
+<span class="chip">~5 lines per rule, dense</span>
+<span class="chip">PostCompact re-injects top rules</span>
+<span class="chip">@reference loading</span>
+</div>
+
+<footer>
+Distilled from <a href="https://github.com/Castrozan/.dotfiles/issues/70">issue #70</a> &middot;
+see the live <a href="../baseline/">baseline dashboard</a>
+</footer>
+</div>
+</body>
+</html>
