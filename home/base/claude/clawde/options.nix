@@ -1,19 +1,16 @@
 {
-  config,
   lib,
   ...
 }:
-let
-  agentTypeInheritedConfig = import ./agent-type-inheritance.nix { inherit config lib; };
-in
 {
   options.clawde.agents = lib.mkOption {
     type = lib.types.attrsOf (
-      lib.types.submodule (agentSubmoduleArguments: {
+      lib.types.submodule {
         options = {
           personality = lib.mkOption {
-            type = lib.types.lines;
-            description = "Identity, role, personality - the specialization-layer content unique to this agent.";
+            type = lib.types.nullOr lib.types.lines;
+            default = null;
+            description = "Identity, role, personality - the specialization-layer content unique to this agent. Null inherits the agent type's personality template; the effective value must be non-null.";
           };
           additionalInstructions = lib.mkOption {
             type = lib.types.lines;
@@ -21,59 +18,61 @@ in
             description = "Extra instructions concatenated after base + channel adapter blocks. Overlays for further specialization (PM, browser, etc).";
           };
           model = lib.mkOption {
-            type = lib.types.str;
-            default = "sonnet";
-            description = "Claude model alias (opus, sonnet, haiku).";
+            type = lib.types.nullOr lib.types.str;
+            default = null;
+            description = "Claude model alias (opus, sonnet, haiku). Null inherits the agent type's default, falling back to sonnet.";
           };
           skillDirectories = lib.mkOption {
             type = lib.types.listOf lib.types.str;
             default = [ ];
-            description = "Absolute paths passed as --add-dir.";
+            description = "Absolute paths passed as --add-dir. Composed additively with the agent type's default skill directories.";
           };
           denyToolPatterns = lib.mkOption {
             type = lib.types.listOf lib.types.str;
             default = [ ];
-            description = "Tool patterns written into the agent workspace .claude/settings.json under permissions.deny. Additive across layers.";
+            description = "Tool patterns written into the agent workspace .claude/settings.json under permissions.deny. Composed additively with the agent type's default deny patterns.";
           };
           permissionMode = lib.mkOption {
-            type = lib.types.enum [
-              "default"
-              "acceptEdits"
-              "plan"
-              "bypassPermissions"
-            ];
-            default = "default";
-            description = "Claude Code permission mode. 'bypassPermissions' for fully autonomous agents.";
+            type = lib.types.nullOr (
+              lib.types.enum [
+                "default"
+                "acceptEdits"
+                "plan"
+                "bypassPermissions"
+              ]
+            );
+            default = null;
+            description = "Claude Code permission mode. Null inherits the agent type's default, falling back to 'default'. 'bypassPermissions' for fully autonomous agents.";
           };
           heartbeatInterval = lib.mkOption {
             type = lib.types.nullOr lib.types.str;
             default = null;
-            description = "Cron expression. When set, the agent runs an autonomous polling loop.";
+            description = "Cron expression. When set, the agent runs an autonomous polling loop. Null inherits the agent type's default.";
           };
           heartbeatPrompt = lib.mkOption {
             type = lib.types.nullOr lib.types.str;
             default = null;
-            description = "Prompt sent on each heartbeat tick. Required when heartbeatInterval is set.";
+            description = "Prompt sent on each heartbeat tick. Required when the effective heartbeatInterval is set. Null inherits the agent type's default.";
           };
           heartbeatGateCommand = lib.mkOption {
             type = lib.types.nullOr lib.types.str;
             default = null;
-            description = "Shell command run before each heartbeat tick. Exit 0 fires the tick and wakes the LLM; any non-zero exit skips the tick without spending tokens. Null always fires. Only meaningful when heartbeatInterval is set.";
+            description = "Shell command run before each heartbeat tick. Exit 0 fires the tick and wakes the LLM; any non-zero exit skips the tick without spending tokens. Null inherits the agent type's default, then always fires. Only meaningful when heartbeatInterval is set.";
           };
           activeHoursStart = lib.mkOption {
             type = lib.types.nullOr lib.types.int;
             default = null;
-            description = "Hour (0-23) when agent becomes active. Null = 24/7.";
+            description = "Hour (0-23) when agent becomes active. Null inherits the agent type's default, then 24/7.";
           };
           activeHoursEnd = lib.mkOption {
             type = lib.types.nullOr lib.types.int;
             default = null;
-            description = "Hour (0-23) when agent goes dormant.";
+            description = "Hour (0-23) when agent goes dormant. Null inherits the agent type's default.";
           };
           dailySessionRotation = lib.mkOption {
-            type = lib.types.bool;
-            default = false;
-            description = "Kill and restart the Claude process once per day to prevent context accumulation.";
+            type = lib.types.nullOr lib.types.bool;
+            default = null;
+            description = "Kill and restart the Claude process once per day to prevent context accumulation. Null inherits the agent type's default, then false.";
           };
           expose = lib.mkOption {
             type = lib.types.submodule {
@@ -125,7 +124,7 @@ in
           workspaceDirectory = lib.mkOption {
             type = lib.types.nullOr lib.types.str;
             default = null;
-            description = "Override the agent's workspace path. When null, the active channel adapter decides (and falls back to ~/clawde/<name>).";
+            description = "Override the agent's workspace path. When null, the agent type then the active channel adapter decides (and falls back to ~/clawde/<name>).";
           };
 
           tmuxSession = lib.mkOption {
@@ -158,8 +157,7 @@ in
             description = "Per-agent parameters consumed by the agent's type. Each agent type re-opens this submodule with its own subkey (e.g., typeParams.project-manager).";
           };
         };
-        config = agentTypeInheritedConfig agentSubmoduleArguments;
-      })
+      }
     );
     default = { };
     description = "clawde persistent agents - each becomes a window in the clawde tmux session.";

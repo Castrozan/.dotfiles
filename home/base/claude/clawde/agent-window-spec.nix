@@ -1,7 +1,7 @@
 {
   pkgs,
   lib,
-  cfg,
+  effectiveAgentByName,
   clawdeRuntimeInstructions,
   a2aPeerHelpers,
   agentWorkspaceDirectory,
@@ -27,7 +27,7 @@ let
   '';
 
   buildAgentClaudeMarkdownContentByName =
-    name: buildAgentClaudeMarkdownContent name cfg.agents.${name};
+    name: buildAgentClaudeMarkdownContent name (effectiveAgentByName name);
 
   buildAgentLaunchCommand =
     name: agent:
@@ -72,7 +72,7 @@ let
     tmux_session = agent.tmuxSession;
   };
 
-  buildAgentLaunchConfigByName = name: buildAgentLaunchConfig name cfg.agents.${name};
+  buildAgentLaunchConfigByName = name: buildAgentLaunchConfig name (effectiveAgentByName name);
 
   buildAgentWindowCommand =
     name: _agent:
@@ -100,7 +100,7 @@ let
   buildAllSpecificationsForOneAgent =
     name:
     let
-      agent = cfg.agents.${name};
+      agent = effectiveAgentByName name;
       mainSpec = buildAgentSpecification name agent;
       peerSpecs = a2aPeerHelpers.peerWindowSpecificationsForAgent name agent;
     in

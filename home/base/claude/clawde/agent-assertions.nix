@@ -17,6 +17,7 @@ in
           name:
           let
             agent = helpers.cfg.agents.${name};
+            effectiveAgent = helpers.effectiveAgentByName name;
             typeDefinition = helpers.cfg.agentTypes.${agent.type} or null;
             missingRequiredParams =
               if typeDefinition == null then
@@ -28,7 +29,11 @@ in
           in
           [
             {
-              assertion = (agent.activeHoursStart == null) == (agent.activeHoursEnd == null);
+              assertion = effectiveAgent.personality != null;
+              message = "Agent ${name}: personality is required - set it on the instance or supply a personality template on type '${agent.type}'.";
+            }
+            {
+              assertion = (effectiveAgent.activeHoursStart == null) == (effectiveAgent.activeHoursEnd == null);
               message = "Agent ${name}: activeHoursStart and activeHoursEnd must both be set or both be null.";
             }
             {

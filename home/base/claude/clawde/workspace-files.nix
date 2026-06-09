@@ -12,6 +12,7 @@ let
     homeDir
     agentNames
     agentWorkspaceDirectory
+    effectiveAgentByName
     ;
 
   workspaceRelativeToHome = name: lib.removePrefix "${homeDir}/" (agentWorkspaceDirectory name);
@@ -25,7 +26,7 @@ let
   agentSettings =
     name:
     let
-      agent = cfg.agents.${name};
+      agent = effectiveAgentByName name;
       denySettings = lib.optionalAttrs (agent.denyToolPatterns != [ ]) {
         permissions.deny = agent.denyToolPatterns;
       };
