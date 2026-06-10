@@ -4,7 +4,7 @@
   chromeDevtoolsMcpStdioArgs,
   a2aMcpStdioCommand,
   a2aMcpStdioArgs,
-  browserUseMcpStreamableHttpPort,
+  browserUseMcpStdioCommand,
   codexBinaryPath,
 }:
 { pkgs, lib, ... }:
@@ -23,8 +23,8 @@ let
       args = a2aMcpStdioArgs;
     };
     browser-use = {
-      type = "http";
-      url = "http://localhost:${toString browserUseMcpStreamableHttpPort}/mcp";
+      command = browserUseMcpStdioCommand;
+      args = [ ];
     };
   };
 

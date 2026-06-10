@@ -33,31 +33,6 @@ let
     exec ${pkgs.uv}/bin/uvx --from 'browser-use[cli]' browser-use --mcp "$@"
   '';
 
-  browserUseMcpStreamableHttpPort = 8768;
-  browserUseMcpStreamableHttpSessionTimeoutMilliseconds = 60000;
-
-  browserUseMcpOrphanReaper = pkgs.writeShellScript "browser-use-mcp-orphan-reaper" ''
-    set -euo pipefail
-    ${pkgs.procps}/bin/pkill -9 -f 'browser-use --mcp' || true
-  '';
-
-  browserUseMcpStreamableHttpBridgeLauncher = pkgs.writeShellScript "browser-use-mcp-streamable-http-bridge-launcher" ''
-    set -euo pipefail
-    ${browserUseMcpOrphanReaper}
-
-    if ! "${browserMcp.supergatewayBinary}" --version >/dev/null 2>&1; then
-      echo "supergateway binary not found at ${browserMcp.supergatewayBinary}" >&2
-      exit 1
-    fi
-
-    exec "${browserMcp.supergatewayBinary}" \
-      --stdio "${browserUseMcpWrapper}" \
-      --outputTransport streamableHttp \
-      --stateful \
-      --sessionTimeout ${toString browserUseMcpStreamableHttpSessionTimeoutMilliseconds} \
-      --port ${toString browserUseMcpStreamableHttpPort}
-  '';
-
   a2aMcp = import ../../agents/a2a/install.nix {
     inherit
       pkgs
@@ -75,15 +50,7 @@ let
     "/bin"
   ];
 
-  crossPlatformMcpBridgeServiceSpecs = {
-    browser-use-mcp-bridge = {
-      description = "Browser-use MCP streamable HTTP bridge (supergateway)";
-      launcher = browserUseMcpStreamableHttpBridgeLauncher;
-      linuxOnlyServiceExtraConfig = {
-        MemoryMax = "2G";
-      };
-    };
-  };
+  crossPlatformMcpBridgeServiceSpecs = { };
 
   linuxOnlyMcpBridgeServiceSpecs = { };
 in
@@ -105,7 +72,7 @@ in
       inherit (browserMcp) chromeDevtoolsMcpStdioCommand chromeDevtoolsMcpStdioArgs;
       a2aMcpStdioCommand = a2aMcp.mcpServerCommand;
       a2aMcpStdioArgs = a2aMcp.mcpServerArgs;
-      inherit browserUseMcpStreamableHttpPort;
+      browserUseMcpStdioCommand = browserUseMcpWrapper;
       codexBinaryPath = "${homeDir}/.local/bin/codex";
     })
   ];
