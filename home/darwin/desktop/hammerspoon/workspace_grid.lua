@@ -15,16 +15,17 @@ local windowLayout = require("workspace_grid_window_layout")
 local sessionGeneration = require("workspace_grid_session_generation")
 local windowAssignment = require("workspace_grid_window_assignment")
 local windowSummon = require("workspace_grid_summon")
+local windowQuery = require("workspace_grid_window_query")
+
+local manageableWindows = windowQuery.manageableWindows
+local liveWindowExists = windowQuery.liveWindowExists
 
 function workspaceGrid.setSessionGenerationTokenForTest(token)
 	sessionGeneration.setTokenForTest(token)
 end
 
-local function manageableWindows()
-	return hs.window.filter.default:getWindows()
-end
-
 local function persistWorkspaceState()
+	windowAssignment.forgetWindowsFailingLivenessCheck(liveWindowExists)
 	workspaceGridPersistence.save(
 		currentWorkspaceNumber,
 		sessionGeneration.currentToken(),
@@ -32,16 +33,8 @@ local function persistWorkspaceState()
 	)
 end
 
-local function occupiedWorkspaceNumbers()
-	local occupied = {}
-	for _, window in ipairs(manageableWindows()) do
-		occupied[windowAssignment.workspaceOfWindowId(window:id())] = true
-	end
-	return occupied
-end
-
 local function renderMenuBarIndicator()
-	menuBarIndicator.render(currentWorkspaceNumber, workspaceGridColumns, occupiedWorkspaceNumbers())
+	menuBarIndicator.render(currentWorkspaceNumber, workspaceGridColumns, windowQuery.occupiedWorkspaceNumbers())
 end
 
 function workspaceGrid.switchToWorkspace(targetWorkspaceNumber, preferredFocusWindow)
@@ -107,22 +100,24 @@ function workspaceGrid.summonApplicationToCurrentWorkspace(applicationName, appl
 	end)
 end
 
-function workspaceGrid.currentWorkspaceWindowList()
-	local windows = {}
+function workspaceGrid.gatherAllWindowsToCurrentWorkspace()
 	for _, window in ipairs(manageableWindows()) do
-		if windowAssignment.workspaceOfWindowId(window:id()) == currentWorkspaceNumber then
-			local application = window:application()
-			table.insert(windows, {
-				["window-id"] = window:id(),
-				["app-name"] = (application and application:name()) or "",
-				["window-title"] = window:title() or "",
-			})
-		end
+		windowAssignment.assignWindowToWorkspace(window:id(), currentWorkspaceNumber)
+		windowLayout.showWindowOnScreen(window)
 	end
+	local focusedWindow = hs.window.focusedWindow()
+	if focusedWindow then
+		windowAssignment.rememberFocusedWindow(currentWorkspaceNumber, focusedWindow:id())
+	end
+	renderMenuBarIndicator()
+	persistWorkspaceState()
+end
+
+function workspaceGrid.currentWorkspaceWindowList()
 	local focused = hs.window.focusedWindow()
 	return {
 		focused = focused and focused:id() or nil,
-		windows = windows,
+		windows = windowQuery.windowDescriptorsOnWorkspace(currentWorkspaceNumber),
 	}
 end
 

@@ -10,6 +10,7 @@
       ".hammerspoon/workspace_grid.lua".source = ./workspace_grid.lua;
       ".hammerspoon/workspace_grid_window_layout.lua".source = ./workspace_grid_window_layout.lua;
       ".hammerspoon/workspace_grid_window_assignment.lua".source = ./workspace_grid_window_assignment.lua;
+      ".hammerspoon/workspace_grid_window_query.lua".source = ./workspace_grid_window_query.lua;
       ".hammerspoon/workspace_grid_session_generation.lua".source =
         ./workspace_grid_session_generation.lua;
       ".hammerspoon/workspace_grid_summon.lua".source = ./workspace_grid_summon.lua;

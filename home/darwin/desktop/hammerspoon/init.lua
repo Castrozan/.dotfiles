@@ -9,14 +9,25 @@ hs.shutdownCallback = function()
 	menuBarIndicator.deleteIndicator()
 end
 
+local workspaceRowSwitchModifiers = { { "cmd" }, { "cmd", "alt" }, { "cmd", "ctrl" } }
+for rowIndex = 0, #workspaceRowSwitchModifiers - 1 do
+	for columnNumber = 1, workspaceGrid.columns do
+		local targetWorkspaceNumber = rowIndex * workspaceGrid.columns + columnNumber
+		hs.hotkey.bind(workspaceRowSwitchModifiers[rowIndex + 1], tostring(columnNumber), function()
+			workspaceGrid.switchToWorkspace(targetWorkspaceNumber)
+		end)
+	end
+end
+
 for columnNumber = 1, workspaceGrid.columns do
-	hs.hotkey.bind({ "cmd" }, tostring(columnNumber), function()
-		workspaceGrid.switchToWorkspace(columnNumber)
-	end)
 	hs.hotkey.bind({ "cmd", "shift" }, tostring(columnNumber), function()
 		workspaceGrid.moveFocusedWindowToWorkspace(columnNumber)
 	end)
 end
+
+hs.hotkey.bind({ "cmd", "ctrl", "alt" }, "g", function()
+	workspaceGrid.gatherAllWindowsToCurrentWorkspace()
+end)
 
 local navigationDeltasByArrowKey = {
 	left = -1,
@@ -81,4 +92,4 @@ function switchToWorkspaceForTest(targetWorkspaceNumber)
 	return workspaceGrid.currentWorkspaceNumber()
 end
 
-hs.alert.show("virtual-workspace grid loaded (7x2)")
+hs.alert.show("virtual-workspace grid loaded (7x3)")

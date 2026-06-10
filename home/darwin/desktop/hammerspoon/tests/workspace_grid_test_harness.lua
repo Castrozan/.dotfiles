@@ -105,6 +105,7 @@ function workspaceGridTestHarness.loadFreshGrid()
 	package.loaded["workspace_grid_persistence"] = nil
 	package.loaded["workspace_grid_window_layout"] = nil
 	package.loaded["workspace_grid_window_assignment"] = nil
+	package.loaded["workspace_grid_window_query"] = nil
 	package.loaded["workspace_grid_session_generation"] = nil
 	package.loaded["workspace_grid_summon"] = nil
 	local grid = require("workspace_grid")

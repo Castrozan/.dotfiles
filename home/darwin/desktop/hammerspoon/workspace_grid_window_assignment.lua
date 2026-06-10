@@ -48,4 +48,16 @@ function workspaceGridWindowAssignment.adoptAssignmentsForLiveWindows(restoredAs
 	end
 end
 
+function workspaceGridWindowAssignment.forgetWindowsFailingLivenessCheck(windowIsLive)
+	local staleWindowIds = {}
+	for windowId in pairs(workspaceNumberByWindowId) do
+		if not windowIsLive(windowId) then
+			staleWindowIds[#staleWindowIds + 1] = windowId
+		end
+	end
+	for _, windowId in ipairs(staleWindowIds) do
+		workspaceGridWindowAssignment.forgetWindow(windowId)
+	end
+end
+
 return workspaceGridWindowAssignment
