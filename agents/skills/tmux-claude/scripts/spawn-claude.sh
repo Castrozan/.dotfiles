@@ -48,7 +48,7 @@ Usage: ${SCRIPT_NAME} <target> <working-dir> [options]
 Launch a Claude Code session in a tmux window.
 
 Arguments:
-  target             tmux target: "session:window-name" or just "window-name" (uses current session)
+  target             tmux target: "session:window-name" (creates the session if absent) or just "window-name" (new window in the current session)
   working-dir        directory to start in
 
 Options:
@@ -150,7 +150,7 @@ main() {
 	session="${resolved_target%%:*}"
 	window_name="${resolved_target##*:}"
 
-	_create_tmux_window_at_target "$session" "$window_name" "$working_directory" "$tmux_socket"
+	_ensure_tmux_session_and_window "$session" "$window_name" "$working_directory" "$tmux_socket"
 
 	local claude_command
 	claude_command="$(_build_claude_command "$model" "$skip_permissions" "$claude_display_name")"

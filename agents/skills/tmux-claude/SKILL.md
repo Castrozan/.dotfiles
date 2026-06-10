@@ -8,7 +8,7 @@ Spawn a tmux session when the user needs to watch or take over the work, when it
 </when_to_spawn>
 
 <spawning>
-`spawn-claude` is on PATH everywhere; it creates a named tmux window, starts claude, waits for the input prompt, then optionally sends an initial prompt. Run `spawn-claude --help` for targets and flags rather than memorizing them. Pass a multi-line initial prompt via `--file`, never inline, so it is not submitted line by line.
+`spawn-claude` is on PATH everywhere; it creates the target tmux session if it does not yet exist (otherwise adds a window to it), starts claude, waits for the input prompt, then optionally sends an initial prompt. Run `spawn-claude --help` for targets and flags rather than memorizing them. Pass a multi-line initial prompt via `--file`, never inline, so it is not submitted line by line.
 </spawning>
 
 <socket_fails_silently>

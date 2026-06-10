@@ -27,17 +27,28 @@ _resolve_tmux_target_from_specifier() {
 	echo "${current_session}:${target_specifier}"
 }
 
-_create_tmux_window_at_target() {
+_ensure_tmux_session_and_window() {
 	local session="$1"
 	local window_name="$2"
 	local working_directory="$3"
 	local tmux_socket="$4"
 
-	tmux -S "$tmux_socket" new-window -t "$session" -n "$window_name" -c "$working_directory"
-	tmux -S "$tmux_socket" list-windows -t "$session" | grep -q "$window_name" || {
-		echo >&2 "Error: failed to create window '${window_name}' in session '${session}'"
-		exit 1
-	}
+	if tmux -S "$tmux_socket" has-session -t "$session" 2>/dev/null; then
+		tmux -S "$tmux_socket" new-window -t "$session" -n "$window_name" -c "$working_directory"
+	else
+		tmux -S "$tmux_socket" new-session -d -s "$session" -n "$window_name" -c "$working_directory"
+	fi
+
+	local attempt
+	for ((attempt = 1; attempt <= 25; attempt++)); do
+		if tmux -S "$tmux_socket" list-windows -t "$session" -F "#{window_name}" 2>/dev/null | grep -q "$window_name"; then
+			return 0
+		fi
+		sleep 0.2
+	done
+
+	echo >&2 "Error: failed to create window '${window_name}' in session '${session}'"
+	exit 1
 }
 
 _send_command_to_tmux_pane() {
