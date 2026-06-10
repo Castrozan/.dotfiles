@@ -16,11 +16,6 @@ let
     else
       "${homeDir}/.config/chrome-global";
 
-  supergatewayPackage = import ./supergateway-package.nix {
-    inherit pkgs nodejs;
-  };
-  supergatewayBinary = "${supergatewayPackage}/bin/supergateway";
-
   pinchtabPackage = import ./pinchtab-package.nix {
     inherit pkgs;
   };
@@ -39,7 +34,6 @@ in
 {
   inherit chromeDevtoolsMcpStdioCommand;
   inherit chromeDevtoolsMcpStdioArgs;
-  inherit supergatewayBinary;
   inherit pinchtabBinary;
 
   packages = [ pinchtabPackage ];

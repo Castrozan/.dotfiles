@@ -14,7 +14,7 @@ Home-manager module that installs Claude Code, declares its config, and runs per
 | `personal-only-skills.nix` | List of skills restricted to personal (non-work) sessions |
 | `settings/` | `settings.json` source + keybindings + env vars + plugins, `.claude.json` trust dirs, statusline scripts, and the mutable-settings workaround |
 | `hooks/` | Deploys `agents/hooks/` flat under `~/.claude/hooks/` (`default.nix`), hook event registrations (`event-registrations.nix`), and the recursive hook-tree walker |
-| `mcps/` | MCP server registration: supergateway bridge runners, injection into `.claude.json`, browser-use config patcher |
+| `mcps/` | MCP server registration: direct stdio server injection into `.claude.json`, browser-use config patcher |
 | `skill-injection/` | `claude` fish wrapper, the `claude-workspace` launcher (`scripts/`), and the skill-set builders |
 | `clawde/` | Persistent agent framework: tmux session + supervisor + channel/peer adapters |
 | `clawde-agents/` | Shared clawde agent declarations that depend on public skill files (currently `steward`). Per-machine declarations live in `private-config/machines/<host>/clawde-*.nix` |

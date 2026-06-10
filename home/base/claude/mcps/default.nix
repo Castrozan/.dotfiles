@@ -8,7 +8,6 @@
 let
   nodejs = pkgs.nodejs_22;
   homeDir = config.home.homeDirectory;
-  inherit (config.home) username;
   inherit (pkgs.stdenv.hostPlatform) isDarwin;
   chromeBinary =
     if isDarwin then
@@ -41,29 +40,9 @@ let
       ;
   };
 
-  nixSystemPaths = lib.concatStringsSep ":" [
-    "${nodejs}/bin"
-    "/run/current-system/sw/bin"
-    "/etc/profiles/per-user/${username}/bin"
-    "${homeDir}/.nix-profile/bin"
-    "/usr/bin"
-    "/bin"
-  ];
-
-  crossPlatformMcpBridgeServiceSpecs = { };
-
-  linuxOnlyMcpBridgeServiceSpecs = { };
 in
 {
   imports = [
-    (import ./mcp-bridge-runners.nix {
-      inherit
-        homeDir
-        nixSystemPaths
-        crossPlatformMcpBridgeServiceSpecs
-        linuxOnlyMcpBridgeServiceSpecs
-        ;
-    })
     (import ./browser-use-config-patcher.nix {
       inherit browserUseConfigDir chromeBinary;
     })
