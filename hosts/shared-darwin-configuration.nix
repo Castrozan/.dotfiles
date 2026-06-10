@@ -113,6 +113,7 @@
       "docker"
       "google-chrome"
       "hammerspoon"
+      "itsycal"
       "maccy"
       "obsidian"
       "visual-studio-code"
