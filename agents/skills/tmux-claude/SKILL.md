@@ -1,6 +1,6 @@
 ---
 name: tmux-claude
-description: Spawn and drive a second Claude Code session in a tmux window the user can watch or take over - send prompts, read output, resume by id. Use to start, hand off, or coordinate a background Claude.
+description: Spawn and drive a second Claude Code session in a tmux window you can watch or take over - send prompts, read output, resume by id. Use to hand off a background Claude.
 ---
 
 <when_to_spawn>
@@ -20,7 +20,7 @@ send-keys treats every newline as Enter, so a multi-line prompt submits mid-thou
 </multiline_submits_early>
 
 <resume>
-The session id shows in claude's status bar. Capture the pane, grep the `.jsonl` id, and run `claude --resume <id>` in a fresh window to continue that conversation.
+To continue a spawned session later, find its session id (shown in claude's status bar, and the name of its `.jsonl` transcript) and run `claude --resume <id>` in a fresh window.
 </resume>
 
 <oneshot_is_gated>
