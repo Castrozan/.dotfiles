@@ -30,6 +30,16 @@ def _record_reconcile_effects(monkeypatch, list_windows_stdout, running_wrappers
         "terminate_agent_wrapper_process",
         terminated_process_ids.append,
     )
+    monkeypatch.setattr(
+        service_module.agent_wrapper_reconcile,
+        "find_session_window_panes",
+        lambda _session_name: [],
+    )
+    monkeypatch.setattr(
+        service_module.agent_wrapper_reconcile,
+        "rename_window",
+        lambda _window_id, _window_name: None,
+    )
     return issued_new_windows, terminated_process_ids
 
 
@@ -121,11 +131,16 @@ def test_creates_window_when_no_wrapper_is_running(monkeypatch):
 def test_find_wrapper_processes_filters_by_session_and_parses_agent_name(monkeypatch):
     command_lines_by_process_id = {
         111: "python3 /n/agent-wrapper/wrapper.py --agent-name steward "
-        "--tmux-session clawde --launch-command cd /x && claude",
+        "--config-file /c/steward.json",
         222: "python3 /n/agent-wrapper/wrapper.py --agent-name esfinge "
-        "--tmux-session esfinge --launch-command cd /y && claude",
+        "--config-file /c/esfinge.json",
         333: "python3 /n/agent-wrapper/wrapper.py --agent-name jenny "
-        "--tmux-session clawde --launch-command cd /z && claude",
+        "--config-file /c/jenny.json",
+    }
+    tmux_session_by_config_file_path = {
+        "/c/steward.json": "clawde",
+        "/c/esfinge.json": "esfinge",
+        "/c/jenny.json": "clawde",
     }
 
     def fake_subprocess_run(arguments, capture_output, text):
@@ -139,6 +154,11 @@ def test_find_wrapper_processes_filters_by_session_and_parses_agent_name(monkeyp
     monkeypatch.setattr(
         service_module.agent_wrapper_reconcile.subprocess, "run", fake_subprocess_run
     )
+    monkeypatch.setattr(
+        service_module.agent_wrapper_reconcile,
+        "read_tmux_session_from_launch_config",
+        lambda config_file_path: tmux_session_by_config_file_path[config_file_path],
+    )
 
     discovered = (
         service_module.agent_wrapper_reconcile.find_session_agent_wrapper_processes(
@@ -150,6 +170,6 @@ def test_find_wrapper_processes_filters_by_session_and_parses_agent_name(monkeyp
         {"process_id": 111, "agent_name": "steward"},
         {"process_id": 333, "agent_name": "jenny"},
     ], (
-        "discovery must return only wrappers tagged --tmux-session clawde, so "
-        "reconciling one session never terminates another session's agents"
+        "discovery must return only wrappers whose --config-file declares tmux_session "
+        "'clawde', so reconciling one session never terminates another session's agents"
     )

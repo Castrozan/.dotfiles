@@ -34,11 +34,16 @@ def test_describe_agent_wrappers_extracts_name_and_session(monkeypatch):
         clawde_redeploy, "find_agent_wrapper_process_ids", lambda: [501, 502]
     )
     command_lines = {
-        501: "python wrapper.py --agent-name silver --tmux-session clawde --launch-command cd x",
-        502: "python wrapper.py --agent-name steward --tmux-session clawde --heartbeat-driver-argv []",
+        501: "python wrapper.py --agent-name silver --config-file /c/silver.json",
+        502: "python wrapper.py --agent-name steward --config-file /c/steward.json",
     }
     monkeypatch.setattr(
         clawde_redeploy, "read_full_command_line", lambda pid: command_lines[pid]
+    )
+    monkeypatch.setattr(
+        clawde_redeploy,
+        "read_tmux_session_from_launch_config",
+        lambda config_file_path: "clawde",
     )
     assert clawde_redeploy.describe_agent_wrappers() == [
         {"process_id": 501, "agent_name": "silver", "tmux_session": "clawde"},
@@ -46,7 +51,7 @@ def test_describe_agent_wrappers_extracts_name_and_session(monkeypatch):
     ]
 
 
-def test_describe_agent_wrappers_skips_wrapper_without_session(monkeypatch):
+def test_describe_agent_wrappers_skips_wrapper_without_config_file(monkeypatch):
     monkeypatch.setattr(
         clawde_redeploy, "find_agent_wrapper_process_ids", lambda: [601]
     )
@@ -54,6 +59,23 @@ def test_describe_agent_wrappers_skips_wrapper_without_session(monkeypatch):
         clawde_redeploy,
         "read_full_command_line",
         lambda pid: "python wrapper.py --agent-name orphan",
+    )
+    assert clawde_redeploy.describe_agent_wrappers() == []
+
+
+def test_describe_agent_wrappers_skips_wrapper_whose_config_lacks_session(monkeypatch):
+    monkeypatch.setattr(
+        clawde_redeploy, "find_agent_wrapper_process_ids", lambda: [701]
+    )
+    monkeypatch.setattr(
+        clawde_redeploy,
+        "read_full_command_line",
+        lambda pid: "python wrapper.py --agent-name ghost --config-file /c/ghost.json",
+    )
+    monkeypatch.setattr(
+        clawde_redeploy,
+        "read_tmux_session_from_launch_config",
+        lambda config_file_path: None,
     )
     assert clawde_redeploy.describe_agent_wrappers() == []
 
