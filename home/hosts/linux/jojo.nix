@@ -28,7 +28,6 @@ in
     ../../base/sourcebot
     ../../base/testing
 
-    ../../base/terminal/atuin.nix
     ../../base/terminal/fish.nix
     ../../base/terminal/kitty.nix
     ../../base/terminal/tmux.nix

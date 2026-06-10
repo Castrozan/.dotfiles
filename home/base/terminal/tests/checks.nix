@@ -22,7 +22,6 @@ let
     ../kitty.nix
     ../tmux.nix
     ../wezterm.nix
-    ../atuin.nix
     ../yazi
   ];
 
@@ -124,10 +123,6 @@ in
     mkEvalCheck "domain-terminal-wezterm-ctrl-click-in-tmux"
       (hasBypassMouseReporting && hasOpenLinkAction && hasNopDownEvent && hasMouseReportingBindings)
       "wezterm must have bypass_mouse_reporting_modifiers, OpenLinkAtMouseCursor, Nop down-event, and mouse_reporting=true bindings for ctrl+click to work inside tmux";
-
-  domain-terminal-atuin-fish = mkEvalCheck "domain-terminal-atuin-fish" (
-    cfg.programs.atuin.enable && cfg.programs.atuin.enableFishIntegration
-  ) "atuin should be enabled with fish integration";
 
   domain-terminal-yazi-enabled =
     mkEvalCheck "domain-terminal-yazi-enabled" cfg.programs.yazi.enable
