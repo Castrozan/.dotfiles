@@ -7,8 +7,6 @@
 }:
 { pkgs, lib, ... }:
 let
-  inherit (pkgs.stdenv.hostPlatform) isLinux;
-
   desiredMcpServersToInject = {
     chrome-devtools = {
       type = "http";
@@ -22,8 +20,6 @@ let
       type = "http";
       url = "http://localhost:${toString a2aMcpStreamableHttpPort}/mcp";
     };
-  }
-  // lib.optionalAttrs isLinux {
     browser-use = {
       type = "http";
       url = "http://localhost:${toString browserUseMcpStreamableHttpPort}/mcp";

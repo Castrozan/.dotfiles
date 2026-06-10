@@ -10,7 +10,11 @@ let
   homeDir = config.home.homeDirectory;
   inherit (config.home) username;
   inherit (pkgs.stdenv.hostPlatform) isDarwin;
-  chromeBinary = "${latest.google-chrome}/bin/google-chrome-stable";
+  chromeBinary =
+    if isDarwin then
+      "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+    else
+      "${latest.google-chrome}/bin/google-chrome-stable";
   chromeDevtoolsMcpChildReaperIntervalSeconds = 900;
 
   browserMcp = import ../../../../agents/skills/browser/install {
@@ -119,9 +123,6 @@ let
         MemoryMax = "2G";
       };
     };
-  };
-
-  linuxOnlyMcpBridgeServiceSpecs = {
     browser-use-mcp-bridge = {
       description = "Browser-use MCP streamable HTTP bridge (supergateway)";
       launcher = browserUseMcpStreamableHttpBridgeLauncher;
@@ -130,6 +131,8 @@ let
       };
     };
   };
+
+  linuxOnlyMcpBridgeServiceSpecs = { };
 in
 {
   imports = [
