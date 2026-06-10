@@ -15,7 +15,7 @@ let
   codexConfigGenerator = ./config-generator;
   codexDefaultModel = "gpt-5.4";
   codexDeveloperInstructions = "Operate pragmatically: keep diffs small, verify with fast checks, and prefer repo-local truth (AGENTS.md, bin/, home/{base,linux,darwin}/). Use profiles: fast (default), deep, web.";
-  chromeDevtoolsMcpStdioCommand = browserMcp.chromeDevtoolsMcpStdioCommand;
+  inherit (browserMcp) chromeDevtoolsMcpStdioCommand;
   chromeDevtoolsMcpStdioArgsJson = builtins.toJSON browserMcp.chromeDevtoolsMcpStdioArgs;
   codexHooksConfig = builtins.toJSON {
     SessionStart = [
