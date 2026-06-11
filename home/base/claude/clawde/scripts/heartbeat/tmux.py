@@ -14,6 +14,10 @@ ONBOARDING_INDICATORS = [
     "Paste code here",
     "Claude account with subscription",
 ]
+RESUME_CONFIRMATION_MODAL_INDICATORS = [
+    "Resuming the full session will consume",
+    "Resume full session as-is",
+]
 
 
 def find_tmux_socket() -> str | None:
@@ -41,6 +45,17 @@ def run_tmux_command(tmux_socket: str, *arguments: str) -> subprocess.CompletedP
 
 def pane_is_at_onboarding(pane_content: str) -> bool:
     return any(indicator in pane_content for indicator in ONBOARDING_INDICATORS)
+
+
+def pane_indicates_resume_confirmation_modal(pane_content: str) -> bool:
+    return all(
+        indicator in pane_content for indicator in RESUME_CONFIRMATION_MODAL_INDICATORS
+    )
+
+
+def send_single_key_to_pane(tmux_socket: str, target: str, key: str) -> bool:
+    result = run_tmux_command(tmux_socket, "send-keys", "-t", target, key)
+    return result.returncode == 0
 
 
 def line_is_idle_repl_prompt(line: str) -> bool:

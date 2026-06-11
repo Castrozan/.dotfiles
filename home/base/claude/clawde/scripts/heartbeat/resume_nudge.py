@@ -4,8 +4,12 @@ import sys
 import time
 
 from tmux import (
+    capture_recent_pane,
     find_tmux_socket,
+    pane_indicates_resume_confirmation_modal,
+    pane_is_at_claude_repl_prompt,
     send_prompt_via_tmux_buffer,
+    send_single_key_to_pane,
     wait_for_claude_prompt,
 )
 
@@ -13,6 +17,9 @@ AGENT_WRAPPER_COMMAND_FRAGMENT = "agent-wrapper/wrapper.py --agent-name"
 LIVE_CLAUDE_PROCESS_NAME_FRAGMENT = "claude"
 LIVE_CLAUDE_WAIT_MAX_ATTEMPTS = 20
 LIVE_CLAUDE_WAIT_DELAY_SECONDS = 2
+RESUME_MODAL_DISMISS_MAX_ATTEMPTS = 15
+RESUME_MODAL_DISMISS_DELAY_SECONDS = 2
+RESUME_MODAL_SUMMARY_RESUME_KEY = "Enter"
 
 RESUME_NUDGE_PROMPT = (
     "<resume>\n"
@@ -78,6 +85,22 @@ def wait_for_live_claude_repl(agent_name: str) -> bool:
     return False
 
 
+def dismiss_resume_confirmation_modal_if_present(tmux_socket: str, target: str) -> None:
+    for _ in range(RESUME_MODAL_DISMISS_MAX_ATTEMPTS):
+        pane_content = capture_recent_pane(tmux_socket, target)
+        if pane_content is None:
+            time.sleep(RESUME_MODAL_DISMISS_DELAY_SECONDS)
+            continue
+        if pane_is_at_claude_repl_prompt(pane_content):
+            return
+        if pane_indicates_resume_confirmation_modal(pane_content):
+            send_single_key_to_pane(
+                tmux_socket, target, RESUME_MODAL_SUMMARY_RESUME_KEY
+            )
+            return
+        time.sleep(RESUME_MODAL_DISMISS_DELAY_SECONDS)
+
+
 def main() -> None:
     arguments = parse_arguments()
     target = f"{arguments.session}:{arguments.window}"
@@ -94,6 +117,8 @@ def main() -> None:
     if not tmux_socket:
         print("Error: no tmux socket found", file=sys.stderr)
         sys.exit(1)
+
+    dismiss_resume_confirmation_modal_if_present(tmux_socket, target)
 
     if not wait_for_claude_prompt(tmux_socket, target):
         print(

@@ -99,6 +99,9 @@ def test_main_injects_when_agent_has_live_claude(monkeypatch):
     )
     monkeypatch.setattr(resume_nudge, "find_tmux_socket", lambda: "/socket")
     monkeypatch.setattr(
+        resume_nudge, "capture_recent_pane", lambda socket, target: "some output\n❯\n"
+    )
+    monkeypatch.setattr(
         resume_nudge, "wait_for_claude_prompt", lambda socket, target: True
     )
     injected_targets = []
@@ -109,3 +112,54 @@ def test_main_injects_when_agent_has_live_claude(monkeypatch):
     )
     resume_nudge.main()
     assert injected_targets == ["clawde:jenny"]
+
+
+RESUME_CONFIRMATION_MODAL_PANE = (
+    "This session is 13h 41m old and 111.2k tokens.\n"
+    "Resuming the full session will consume a substantial portion of your usage "
+    "limits. We recommend resuming from a summary.\n"
+    "   1. Resume from summary (recommended)\n"
+    "   2. Resume full session as-is\n"
+    "   3. Don't ask me again\n"
+    "Enter to confirm · Esc to cancel\n"
+)
+
+
+def test_main_dismisses_resume_confirmation_modal_before_injecting(monkeypatch):
+    monkeypatch.setattr(
+        resume_nudge.sys,
+        "argv",
+        ["clawde-resume-nudge", "--session", "clawde", "--window", "steward"],
+    )
+    monkeypatch.setattr(
+        resume_nudge, "wait_for_live_claude_repl", lambda agent_name: True
+    )
+    monkeypatch.setattr(resume_nudge, "find_tmux_socket", lambda: "/socket")
+    pane_captures = [RESUME_CONFIRMATION_MODAL_PANE, "● back at the prompt\n❯\n"]
+    monkeypatch.setattr(
+        resume_nudge,
+        "capture_recent_pane",
+        lambda socket, target: pane_captures.pop(0) if pane_captures else "❯\n",
+    )
+    keys_sent = []
+    monkeypatch.setattr(
+        resume_nudge,
+        "send_single_key_to_pane",
+        lambda socket, target, key: keys_sent.append(key),
+    )
+    monkeypatch.setattr(
+        resume_nudge, "wait_for_claude_prompt", lambda socket, target: True
+    )
+    injected_targets = []
+    monkeypatch.setattr(
+        resume_nudge,
+        "send_prompt_via_tmux_buffer",
+        lambda socket, target, content: injected_targets.append(target),
+    )
+    resume_nudge.main()
+    assert keys_sent == ["Enter"], (
+        "a warm redeploy that lands on an oversized session must answer the "
+        "resume-confirmation dialog with Enter (the pre-highlighted summary resume) "
+        "so the agent reaches its REPL instead of wedging at the dialog"
+    )
+    assert injected_targets == ["clawde:steward"]

@@ -61,3 +61,41 @@ def test_pane_with_real_typed_input_is_not_idle():
 def test_pane_at_onboarding_is_not_treated_as_idle_prompt():
     onboarding_pane = "Select login method\n❯ 1. Claude account with subscription"
     assert not tmux_module.pane_is_at_claude_repl_prompt(onboarding_pane)
+
+
+RESUME_CONFIRMATION_MODAL_PANE = (
+    "This session is 13h 41m old and 111.2k tokens.\n"
+    "\n"
+    "Resuming the full session will consume a substantial portion of your usage "
+    "limits. We recommend resuming from a summary.\n"
+    "   1. Resume from summary (recommended)\n"
+    "   2. Resume full session as-is\n"
+    "   3. Don't ask me again\n"
+    "Enter to confirm · Esc to cancel\n"
+)
+
+
+def test_resume_confirmation_modal_is_detected():
+    assert tmux_module.pane_indicates_resume_confirmation_modal(
+        RESUME_CONFIRMATION_MODAL_PANE
+    )
+
+
+def test_ordinary_idle_prompt_is_not_a_resume_confirmation_modal():
+    assert not tmux_module.pane_indicates_resume_confirmation_modal("some output\n❯\n")
+
+
+def test_send_single_key_to_pane_reports_tmux_success(monkeypatch):
+    recorded_arguments = []
+
+    def fake_run_tmux_command(tmux_socket, *arguments):
+        recorded_arguments.append(arguments)
+
+        class _CompletedProcess:
+            returncode = 0
+
+        return _CompletedProcess()
+
+    monkeypatch.setattr(tmux_module, "run_tmux_command", fake_run_tmux_command)
+    assert tmux_module.send_single_key_to_pane("/socket", "clawde:steward", "Enter")
+    assert recorded_arguments == [("send-keys", "-t", "clawde:steward", "Enter")]
