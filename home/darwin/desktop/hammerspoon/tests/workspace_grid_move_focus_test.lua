@@ -83,6 +83,9 @@ hs = {
     get = function(windowId)
       return findWindowById(windowId)
     end,
+    allWindows = function()
+      return allManagedWindowsInIterationOrder
+    end,
     filter = {
       default = {
         getWindows = function()

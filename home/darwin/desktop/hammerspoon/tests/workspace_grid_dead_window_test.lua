@@ -1,5 +1,5 @@
 -- Reproduces the stale-filter-cache bug: hs.window.filter.default keeps
--- returning a window object after its id stops resolving via hs.window.get
+-- returning a window object after it stops appearing in the live window set
 -- (a closed window whose destroy event never fired). Operating on that dead
 -- object hung the switch loop on an AX setFrame and surfaced it as a phantom
 -- "exec" tile in the Cmd+Tab switcher. The grid must skip any window the live
@@ -35,6 +35,7 @@ end
 local liveWindow = makeFakeWindow(1, function() liveWindowSetFrameCallCount = liveWindowSetFrameCallCount + 1 end)
 local deadWindow = makeFakeWindow(99, function() deadWindowSetFrameCallCount = deadWindowSetFrameCallCount + 1 end)
 
+local liveWindowsReturnedByAllWindows = { liveWindow }
 local windowsReturnedByDefaultFilter = { liveWindow, deadWindow }
 local function resolveLiveWindowById(targetWindowId)
   if targetWindowId == 1 then return liveWindow end
@@ -53,6 +54,7 @@ hs = {
   window = {
     focusedWindow = function() return resolveLiveWindowById(currentlyFocusedWindowId) end,
     get = function(windowId) return resolveLiveWindowById(windowId) end,
+    allWindows = function() return liveWindowsReturnedByAllWindows end,
     filter = { default = { getWindows = function() return windowsReturnedByDefaultFilter end } },
   },
 }

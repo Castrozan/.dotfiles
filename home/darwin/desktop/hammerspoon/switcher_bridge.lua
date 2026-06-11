@@ -20,9 +20,9 @@ local function writeCurrentWorkspaceWindowsFile()
   end
 end
 
--- The daemon reads the file when Cmd+Tab activates it; refreshing a few times a
--- second keeps it current without coupling to every focus/move event.
-local windowsFileRefreshTimer = hs.timer.doEvery(0.3, writeCurrentWorkspaceWindowsFile)
+-- The daemon reads the file when Cmd+Tab activates it; a periodic refresh keeps
+-- it current without coupling to every focus/move event.
+local windowsFileRefreshTimer = hs.timer.doEvery(1.0, writeCurrentWorkspaceWindowsFile)
 windowsFileRefreshTimer:start()
 
 local focusRequestWatcher = hs.pathwatcher.new(focusRequestFilePath, function()

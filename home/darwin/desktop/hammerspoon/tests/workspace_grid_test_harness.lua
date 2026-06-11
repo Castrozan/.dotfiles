@@ -82,6 +82,9 @@ function workspaceGridTestHarness.installFakeHammerspoonGlobal()
 			get = function(windowId)
 				return findWindowById(windowId)
 			end,
+			allWindows = function()
+				return currentWindows
+			end,
 			filter = { default = {
 				getWindows = function()
 					return currentWindows

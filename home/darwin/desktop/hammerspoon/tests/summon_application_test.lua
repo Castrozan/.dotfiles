@@ -98,6 +98,9 @@ hs = {
 		get = function()
 			return nil
 		end,
+		allWindows = function()
+			return {}
+		end,
 		filter = {
 			default = {
 				getWindows = function()

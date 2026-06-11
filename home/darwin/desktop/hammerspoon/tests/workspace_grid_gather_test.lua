@@ -48,6 +48,7 @@ hs = {
   window = {
     focusedWindow = function() return findWindowById(currentlyFocusedWindowId) end,
     get = function(windowId) return findWindowById(windowId) end,
+    allWindows = function() return allWindows end,
     filter = { default = { getWindows = function() return allWindows end } },
   },
 }

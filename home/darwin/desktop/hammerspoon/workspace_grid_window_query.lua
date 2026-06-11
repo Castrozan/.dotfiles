@@ -2,16 +2,19 @@ local workspaceGridWindowQuery = {}
 
 local windowAssignment = require("workspace_grid_window_assignment")
 
-local function liveWindowExists(windowId)
-	return hs.window.get(windowId) ~= nil
+function workspaceGridWindowQuery.liveWindowIdSet()
+	local liveWindowIds = {}
+	for _, window in ipairs(hs.window.allWindows()) do
+		liveWindowIds[window:id()] = true
+	end
+	return liveWindowIds
 end
 
-workspaceGridWindowQuery.liveWindowExists = liveWindowExists
-
 function workspaceGridWindowQuery.manageableWindows()
+	local liveWindowIds = workspaceGridWindowQuery.liveWindowIdSet()
 	local liveWindows = {}
 	for _, window in ipairs(hs.window.filter.default:getWindows()) do
-		if liveWindowExists(window:id()) then
+		if liveWindowIds[window:id()] then
 			liveWindows[#liveWindows + 1] = window
 		end
 	end

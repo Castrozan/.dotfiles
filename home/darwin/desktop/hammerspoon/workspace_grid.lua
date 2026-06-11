@@ -18,14 +18,16 @@ local windowSummon = require("workspace_grid_summon")
 local windowQuery = require("workspace_grid_window_query")
 
 local manageableWindows = windowQuery.manageableWindows
-local liveWindowExists = windowQuery.liveWindowExists
 
 function workspaceGrid.setSessionGenerationTokenForTest(token)
 	sessionGeneration.setTokenForTest(token)
 end
 
 local function persistWorkspaceState()
-	windowAssignment.forgetWindowsFailingLivenessCheck(liveWindowExists)
+	local liveWindowIds = windowQuery.liveWindowIdSet()
+	windowAssignment.forgetWindowsFailingLivenessCheck(function(windowId)
+		return liveWindowIds[windowId] == true
+	end)
 	workspaceGridPersistence.save(
 		currentWorkspaceNumber,
 		sessionGeneration.currentToken(),
