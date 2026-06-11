@@ -27,7 +27,7 @@ class _StopSupervising(Exception):
     pass
 
 
-def _write_launch_config(config_path, launch_command):
+def _write_launch_config(config_path, launch_command, daily_session_rotation=False):
     config_path.write_text(
         json.dumps(
             {
@@ -35,7 +35,7 @@ def _write_launch_config(config_path, launch_command):
                 "heartbeat_driver_argv": None,
                 "active_hours_start": None,
                 "active_hours_end": None,
-                "daily_session_rotation": False,
+                "daily_session_rotation": daily_session_rotation,
                 "tmux_session": None,
             }
         )
@@ -76,6 +76,37 @@ def test_supervise_rereads_config_on_each_restart(monkeypatch, tmp_path):
         wrapper.supervise_agent_forever("steward", str(config_file))
 
     assert launch_commands_run == ["first", "second"]
+
+
+def test_session_rotation_drops_pending_resume_so_relaunch_is_fresh(
+    monkeypatch, tmp_path
+):
+    config_file = tmp_path / "agent.json"
+    _write_launch_config(config_file, "claude", daily_session_rotation=True)
+    wrapper.redeploy_signal_state.resume_requested = True
+    observed_resume_continue = []
+
+    def fake_run_launch_command_once(
+        launch_command, heartbeat_driver_argv, tmux_target, **kwargs
+    ):
+        observed_resume_continue.append(kwargs.get("resume_continue"))
+        raise _StopSupervising()
+
+    monkeypatch.setattr(
+        wrapper, "run_launch_command_once", fake_run_launch_command_once
+    )
+    monkeypatch.setattr(wrapper, "is_within_active_hours", lambda start, end: True)
+    monkeypatch.setattr(wrapper, "should_rotate_session", lambda rotation, date: True)
+    monkeypatch.setattr(wrapper.time, "sleep", lambda seconds: None)
+
+    with pytest.raises(_StopSupervising):
+        wrapper.supervise_agent_forever("steward", str(config_file))
+
+    assert observed_resume_continue == [False], (
+        "a pending redeploy that lands on a session-rotation day must launch fresh, "
+        "not --continue onto a day-old session that raises the resume-confirmation "
+        "dialog and wedges the agent"
+    )
 
 
 def test_supervise_retries_when_config_unreadable(monkeypatch, tmp_path):

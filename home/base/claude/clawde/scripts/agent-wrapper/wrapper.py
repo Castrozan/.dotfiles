@@ -73,6 +73,7 @@ def supervise_agent_forever(agent_name: str, config_file_path: str) -> None:
                 flush=True,
             )
             last_fresh_start_date = None
+            redeploy_signal_state.resume_requested = False
 
         if last_fresh_start_date is None:
             last_fresh_start_date = time.strftime("%Y-%m-%d")
