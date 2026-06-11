@@ -51,6 +51,12 @@ def terminate_process_tree(root_process_id: int) -> None:
             pass
 
 
+def heartbeat_driver_has_given_up(
+    driver_process: subprocess.Popen | None,
+) -> bool:
+    return driver_process is not None and driver_process.poll() is not None
+
+
 def run_launch_command_once(
     launch_command: str,
     heartbeat_driver_argv: list[str] | None,
@@ -78,6 +84,18 @@ def run_launch_command_once(
                 agent_process.wait(timeout=WATCHDOG_POLL_INTERVAL_SECONDS)
                 break
             except subprocess.TimeoutExpired:
+                if heartbeat_driver_has_given_up(driver_process):
+                    print(
+                        f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] "
+                        "Heartbeat driver exited without reaching the claude REPL; "
+                        "the session is wedged at a pre-prompt modal. "
+                        "Terminating session to trigger a fresh restart.",
+                        flush=True,
+                    )
+                    terminate_process_tree(agent_process.pid)
+                    agent_process.wait()
+                    was_stuck_kill = True
+                    break
                 if tmux_target is None:
                     continue
                 pane_content = capture_pane_content(tmux_target)

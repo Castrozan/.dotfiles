@@ -125,6 +125,33 @@ def test_watchdog_terminates_session_when_pane_is_frozen_and_not_idle(monkeypatc
     assert len(terminated_process_ids) == 1
 
 
+def test_watchdog_terminates_when_heartbeat_driver_gives_up_on_repl(monkeypatch):
+    monkeypatch.setattr(session_watchdog, "WATCHDOG_POLL_INTERVAL_SECONDS", 0)
+    monkeypatch.setattr(
+        session_watchdog, "capture_pane_content", lambda _tmux_target: None
+    )
+    terminated_process_ids: list[int] = []
+
+    def terminate_and_record(root_process_id: int) -> None:
+        terminated_process_ids.append(root_process_id)
+        session_watchdog.os.kill(root_process_id, session_watchdog.signal.SIGKILL)
+
+    monkeypatch.setattr(
+        session_watchdog, "terminate_process_tree", terminate_and_record
+    )
+    _runtime_seconds, was_stuck_kill = session_watchdog.run_launch_command_once(
+        "sleep 30",
+        ["bash", "-c", "exit 1"],
+        "clawde:steward",
+    )
+    assert was_stuck_kill is True, (
+        "when the heartbeat driver exits because it never found a live REPL, the "
+        "session is wedged at a pre-prompt modal (e.g. the resume-confirmation "
+        "dialog) and the watchdog must terminate it to force a fresh restart"
+    )
+    assert len(terminated_process_ids) == 1
+
+
 def test_resume_continue_exposes_continue_flag_to_launch_command(tmp_path):
     captured_flag = tmp_path / "flag.txt"
     session_watchdog.run_launch_command_once(
