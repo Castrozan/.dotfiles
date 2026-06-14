@@ -1,11 +1,12 @@
-{ ... }:
+{ inputs, ... }:
 {
   imports = [
     ./binary.nix
-    ./clawde
+    inputs.clawde.homeManagerModules.default
     ./clawde-wiring.nix
     ./settings
     ./skill-injection
+    ./workflows
     ./hooks
     ./mcps
     ./private.nix

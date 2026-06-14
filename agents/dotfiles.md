@@ -21,6 +21,10 @@ Only scripts under 10 lines of actual logic may live inline in `.nix` files via 
 Never present code that has not been rebuilt and tested. For .nix files, a successful rebuild IS the primary verification. Run tests/run.sh (--nix when .nix files changed, --quick otherwise).
 </testing>
 
+<workflows>
+For a substantive change to this repo, run the `dotfiles-change-review` workflow over the working diff before committing; it fans out one reviewer per dimension (correctness, nix rebuild safety, code style, instruction-surface quality, test coverage, public-repo safety) and adversarially verifies each finding. Author further repo workflows as `dotfiles-*` under `home/base/claude/workflows/`, deployed to `~/.claude/workflows/`, rather than ad-hoc subagent fan-out.
+</workflows>
+
 <workflow>
 After editing any file in the dotfiles repo, execute this sequence before responding. No exceptions.
 1. Format edited files
