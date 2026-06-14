@@ -4,7 +4,7 @@ description: Spawn and drive a second Claude Code session in a tmux window you c
 ---
 
 <when_to_spawn>
-Spawn a tmux session when the user needs to watch or take over the work, when it benefits from a persistent interactive session, or when it must outlive your own conversation. For read-only research, codebase exploration, or file search, use the builtin Agent tool instead - no tmux. For multi-agent work that edits code and needs coordination, use Teams (`TeamCreate`) with `isolation: "worktree"`.
+Spawn a tmux session when the user needs to watch or take over the work, when it benefits from a persistent interactive session, or when it must outlive your own conversation. For read-only research, codebase exploration, or file search, use the builtin Agent tool instead - no tmux. For multi-agent work that edits code, run a Workflow (see the `deliver` skill) with worktree isolation, never Teams.
 </when_to_spawn>
 
 <spawning>

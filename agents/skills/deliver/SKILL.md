@@ -24,7 +24,7 @@ Launching the autonomous run is a human-only action: `/goal` is reserved for the
 </human_gate_before_launch>
 
 <execute_incrementally>
-Run each slice through one loop: write a failing repro or test first because red-before-green is the only proof the work was needed and is done (`test` skill); build the smallest diff for one concern behind a reversible flag defaulted off; verify; ship a small commit staged by name; update the tracker. Parallelize with the Workflow tool when work fans out across many files, perspectives, or candidates, keeping its control flow deterministic; delegate coordinated multi-agent work to Teams and single read-only queries to Agent subagents, per the delegation rules. Flip a flag default-on only after its slice is green.
+Run each slice through one loop: write a failing repro or test first because red-before-green is the only proof the work was needed and is done (`test` skill); build the smallest diff for one concern behind a reversible flag defaulted off; verify; ship a small commit staged by name; update the tracker. Parallelize with the Workflow tool when work fans out across many files, perspectives, or candidates, keeping its control flow deterministic; route coordinated multi-step work to a Workflow and single read-only queries to a plain Agent subagent, never to Teams, per the delegation rules. Flip a flag default-on only after its slice is green.
 </execute_incrementally>
 
 <prove_it_live>

@@ -19,7 +19,7 @@ Write to disk at these moments: immediately when receiving a substantial user pr
 </update-cadence>
 
 <recovery>
-On session start or after compaction, if a `.deep-work/` workspace exists with active work, read all workspace files before doing anything else. Reconstruct understanding from: prompts.md for what was asked, plan.md for what's planned, progress.md for what's done, context.md for what was learned. Continue from where progress.md left off. Never ask the user to re-explain what's already captured in prompts.md. A PostCompact hook automatically triggers deep-work-recovery on compaction — the recovery script surfaces workspace state into the compacted context.
+On session start or after compaction, if a `.deep-work/` workspace exists with active work, read all workspace files before doing anything else. Reconstruct understanding from: prompts.md for what was asked, plan.md for what's planned, progress.md for what's done, context.md for what was learned. Continue from where progress.md left off. Never ask the user to re-explain what's already captured in prompts.md. A SessionStart compaction hook automatically re-injects a recovery directive into the compacted context, prompting you to re-read the workspace files before continuing.
 </recovery>
 
 <auto_memory_boundary>
