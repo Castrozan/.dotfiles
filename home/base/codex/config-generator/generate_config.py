@@ -60,16 +60,37 @@ def build_mcp_server_entries() -> dict[str, dict[str, Any]]:
     }
 
 
+PROFILE_OVERRIDES = {
+    "fast": {
+        "model": codex_default_model,
+        "model_reasoning_effort": "xhigh",
+        "model_reasoning_summary": "none",
+        "model_verbosity": "low",
+    },
+    "deep": {
+        "model": codex_default_model,
+        "model_reasoning_effort": "high",
+        "model_reasoning_summary": "concise",
+        "model_verbosity": "high",
+    },
+    "web": {
+        "sandbox_mode": "workspace-write",
+        "sandbox_workspace_write": {
+            "network_access": True,
+        },
+        "web_search": "live",
+    },
+}
+
 BASELINE = {
     "approval_policy": "never",
     "developer_instructions": codex_developer_instructions,
     "model": codex_default_model,
-    "model_reasoning_effort": "medium",
-    "model_reasoning_summary": "auto",
-    "model_verbosity": "medium",
+    "model_reasoning_effort": "xhigh",
+    "model_reasoning_summary": "none",
+    "model_verbosity": "low",
     "notify": ["notify-send", "--app-name", "Codex"],
     "personality": "pragmatic",
-    "profile": "fast",
     "review_model": codex_default_model,
     "sandbox_mode": "danger-full-access",
     "suppress_unstable_features_warning": True,
@@ -92,27 +113,6 @@ BASELINE = {
     },
     "tools": {
         "view_image": True,
-    },
-    "profiles": {
-        "fast": {
-            "model": codex_default_model,
-            "model_reasoning_effort": "xhigh",
-            "model_reasoning_summary": "none",
-            "model_verbosity": "low",
-        },
-        "deep": {
-            "model": codex_default_model,
-            "model_reasoning_effort": "high",
-            "model_reasoning_summary": "concise",
-            "model_verbosity": "high",
-        },
-        "web": {
-            "sandbox_mode": "workspace-write",
-            "sandbox_workspace_write": {
-                "network_access": True,
-            },
-            "web_search": "live",
-        },
     },
     "projects": build_trusted_project_entries(),
     "mcp_servers": build_mcp_server_entries(),
@@ -146,8 +146,17 @@ def deep_merge(base: dict[str, Any], overlay: dict[str, Any]) -> None:
 
 deep_merge(data, BASELINE)
 
+data.pop("profile", None)
+data.pop("profiles", None)
+
 data.setdefault("mcp_servers", {})["chrome-devtools"] = build_mcp_server_entries()[
     "chrome-devtools"
 ]
 
 config_path.write_text(render_codex_config_toml(data), encoding="utf-8")
+
+for profile_name, profile_overrides in PROFILE_OVERRIDES.items():
+    profile_config_path = config_path.parent / f"{profile_name}.config.toml"
+    profile_config_path.write_text(
+        render_codex_config_toml(profile_overrides), encoding="utf-8"
+    )
