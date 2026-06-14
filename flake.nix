@@ -35,6 +35,9 @@
       flake = false;
     };
 
+    clawde.url = "git+ssh://git@github.com/Castrozan/clawde";
+    clawde.inputs.nixpkgs.follows = "nixpkgs";
+
     # Tag-pinned — keep own nixpkgs (incompatible or untested with ours)
     tui-notifier.url = "github:castrozan/tui-notifier/1.0.1";
     systemd-manager-tui.url = "github:matheus-git/systemd-manager-tui";

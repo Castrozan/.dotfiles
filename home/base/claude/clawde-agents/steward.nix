@@ -1,10 +1,11 @@
 {
   lib,
   hostname,
+  inputs,
   ...
 }:
 let
-  stewardPayloadRoot = ../clawde/agent-types/steward/payload;
+  stewardPayloadRoot = inputs.clawde.stewardPayloadPath;
 
   machinesRegistryPath = ../../../../private-config/machines.nix;
   machinesRegistry =
@@ -29,7 +30,7 @@ let
     peers = peerEndpoints;
   };
 
-  personalityWithMachineIdentity = import ../clawde/inject-agent-identity.nix {
+  personalityWithMachineIdentity = inputs.clawde.injectAgentIdentity {
     inherit lib;
     self = hostname;
     peers = peerAliases;

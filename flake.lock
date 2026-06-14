@@ -199,6 +199,26 @@
         "type": "github"
       }
     },
+    "clawde": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1781471807,
+        "narHash": "sha256-UxRE2nqi7s54uF/qpnl4y7WyIoYro9aCcChHkHLHcig=",
+        "ref": "refs/heads/main",
+        "rev": "34bb18880fc1409d4b4e839fb24f529443d5ca64",
+        "revCount": 2,
+        "type": "git",
+        "url": "ssh://git@github.com/Castrozan/clawde"
+      },
+      "original": {
+        "type": "git",
+        "url": "ssh://git@github.com/Castrozan/clawde"
+      }
+    },
     "cmatrix": {
       "inputs": {
         "flake-utils": "flake-utils_3",
@@ -1529,6 +1549,7 @@
         "agenix": "agenix",
         "bluetui": "bluetui",
         "cbonsai": "cbonsai",
+        "clawde": "clawde",
         "cmatrix": "cmatrix",
         "devenv": "devenv",
         "google-workspace-cli": "google-workspace-cli",
