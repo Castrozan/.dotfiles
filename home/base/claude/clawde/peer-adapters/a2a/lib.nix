@@ -5,7 +5,7 @@
 let
   a2aPeerAdapterInstructions = builtins.readFile ./instructions/a2a-peer-runtime.md;
 
-  repoAgentsDirectory = ../../../../../../agents;
+  repoAgentsDirectory = ./.;
 
   resolveA2APeerPublicEndpointUrl =
     agent:
