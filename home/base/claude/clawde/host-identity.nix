@@ -2,9 +2,7 @@
 let
   runtimeLocations = import ./runtime-locations.nix { homeDir = config.home.homeDirectory; };
 
-  machinesRegistryPath = ../../../../private-config/machines.nix;
-  machinesRegistry =
-    if builtins.pathExists machinesRegistryPath then import machinesRegistryPath else { };
+  inherit (config.clawde) machinesRegistry;
   selfMachine = machinesRegistry.${hostname} or { };
   hostIdentity = {
     alias = hostname;

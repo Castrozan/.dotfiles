@@ -3,6 +3,7 @@
   imports = [
     ./interfaces.nix
     ./agent-type-interfaces.nix
+    ./host-wiring-interfaces.nix
     ./options.nix
     ./agent-assertions.nix
     ./agent-types

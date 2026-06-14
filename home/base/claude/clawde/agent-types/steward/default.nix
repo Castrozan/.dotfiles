@@ -7,7 +7,13 @@
 let
   stewardSkillSetDirectory = "${config.home.homeDirectory}/.local/share/claude-skill-sets/steward";
 
-  stewardLiveCheckoutPayloadPath = "${config.home.homeDirectory}/.dotfiles/home/base/claude/clawde/agent-types/steward/payload";
+  inherit (config.clawde) stewardLiveCheckoutPayloadPath;
+
+  stewardSkillPayloadSource =
+    if stewardLiveCheckoutPayloadPath != null then
+      config.lib.file.mkOutOfStoreSymlink stewardLiveCheckoutPayloadPath
+    else
+      ./payload;
 
   stewardPackages = (import ./payload/install/default.nix { inherit pkgs; }).packages;
 
@@ -45,7 +51,7 @@ in
       home.packages = stewardPackages;
 
       home.file.".local/share/claude-skill-sets/steward/.claude/skills/steward".source =
-        config.lib.file.mkOutOfStoreSymlink stewardLiveCheckoutPayloadPath;
+        stewardSkillPayloadSource;
     })
   ];
 }

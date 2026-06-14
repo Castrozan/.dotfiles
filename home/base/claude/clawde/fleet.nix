@@ -2,13 +2,11 @@
 let
   runtimeLocations = import ./runtime-locations.nix { homeDir = config.home.homeDirectory; };
 
-  machinesRegistryPath = ../../../../private-config/machines.nix;
-  machinesRegistry =
-    if builtins.pathExists machinesRegistryPath then import machinesRegistryPath else { };
+  inherit (config.clawde) machinesRegistry;
 
   fleetTopology = {
     self = hostname;
-    dotfilesRepo = "${config.home.homeDirectory}/.dotfiles";
+    dotfilesRepo = config.clawde.dotfilesRepoPath;
     hosts = builtins.mapAttrs (_alias: machine: { inherit (machine) platform; }) machinesRegistry;
   };
 in
