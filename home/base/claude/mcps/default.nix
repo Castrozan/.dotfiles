@@ -29,7 +29,7 @@ let
   browserUseMcpWrapper = pkgs.writeShellScript "browser-use-mcp" ''
     export BROWSER_USE_CONFIG_PATH="${browserUseConfigDir}/config.json"
     export ANONYMIZED_TELEMETRY=false
-    exec ${pkgs.uv}/bin/uvx --from 'browser-use[cli]' browser-use --mcp "$@"
+    exec ${pkgs.uv}/bin/uvx --python ${pkgs.python312}/bin/python3.12 --from 'browser-use[cli]' browser-use --mcp "$@"
   '';
 
   a2aMcp = import ../../agents/a2a/install.nix {
