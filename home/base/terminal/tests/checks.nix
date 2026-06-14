@@ -124,10 +124,10 @@ in
       (hasBypassMouseReporting && hasOpenLinkAction && hasNopDownEvent && hasMouseReportingBindings)
       "wezterm must have bypass_mouse_reporting_modifiers, OpenLinkAtMouseCursor, Nop down-event, and mouse_reporting=true bindings for ctrl+click to work inside tmux";
 
-  domain-terminal-wezterm-webgpu-front-end =
-    mkEvalCheck "domain-terminal-wezterm-webgpu-front-end"
-      (lib.hasInfix "front_end = 'WebGpu'" cfg.programs.wezterm.extraConfig)
-      "wezterm must set front_end = 'WebGpu' to keep the renderer off the macOS OpenGL shim that segfaults on window teardown";
+  domain-terminal-wezterm-webgpu-front-end-on-darwin =
+    mkEvalCheck "domain-terminal-wezterm-webgpu-front-end-on-darwin"
+      (lib.hasInfix "front_end = is_darwin and 'WebGpu' or 'OpenGL'" cfg.programs.wezterm.extraConfig)
+      "wezterm must select WebGpu on darwin (to dodge the macOS OpenGL-shim teardown segfault) and OpenGL elsewhere, guarded by is_darwin";
 
   domain-terminal-yazi-enabled =
     mkEvalCheck "domain-terminal-yazi-enabled" cfg.programs.yazi.enable
