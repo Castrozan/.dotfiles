@@ -172,4 +172,17 @@ in
       ];
     }
   ];
+
+  SubagentStop = [
+    {
+      matcher = ".*";
+      hooks = [
+        {
+          type = "command";
+          command = "${runHook} ${hooksPath}/lint-turn-review.py";
+          timeout = 5000;
+        }
+      ];
+    }
+  ];
 }

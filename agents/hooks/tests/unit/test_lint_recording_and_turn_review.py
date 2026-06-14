@@ -87,6 +87,21 @@ def test_turn_review_suggests_linter_when_no_native_command(tmp_path):
     assert "ruff" in parsed["systemMessage"]
 
 
+def test_turn_review_handles_subagent_stop_event(tmp_path):
+    session_id = "pytest-turn-review-subagent"
+    clear_session_ledger(session_id)
+    (tmp_path / "package.json").write_text('{"scripts": {"lint": "eslint ."}}')
+    typescript_file = tmp_path / "app.ts"
+    typescript_file.write_text("const a = 1\n")
+    append_edited_source_file(session_id, str(typescript_file))
+    result = run_hook(
+        TURN_REVIEW_HOOK_SCRIPT,
+        {"hook_event_name": "SubagentStop", "session_id": session_id},
+    )
+    parsed = json.loads(result.stdout)
+    assert "npm run lint" in parsed["systemMessage"]
+
+
 def test_turn_review_silent_when_no_files_recorded():
     session_id = "pytest-turn-review-empty"
     clear_session_ledger(session_id)

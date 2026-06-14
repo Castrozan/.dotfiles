@@ -3,7 +3,7 @@ export const meta = {
   description:
     "Adversarial multi-dimension review of the current dotfiles working diff: one reviewer per dimension, refute every finding, then synthesize a prioritized report tuned to this nix/home-manager repo.",
   whenToUse:
-    "Before committing a substantive change to the dotfiles repo, when you want broader cross-checked coverage than a single-pass review: nix rebuild safety, code style, instruction-surface quality, and test coverage.",
+    "Before committing a substantive change to the dotfiles repo, when you want broader cross-checked coverage than a single-pass review: it cross-checks correctness, nix rebuild safety, code style, instruction-surface quality, test coverage, and public-repo safety.",
   phases: [
     { title: "Scope", detail: "resolve the working diff and digest it" },
     { title: "Review", detail: "one reviewer per dimension over the diff" },
