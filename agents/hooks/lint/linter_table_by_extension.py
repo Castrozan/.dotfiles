@@ -1,5 +1,3 @@
-"""File-extension to linter configuration table for the lint-on-edit hook."""
-
 from __future__ import annotations
 
 

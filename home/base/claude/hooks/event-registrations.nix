@@ -26,6 +26,16 @@ in
         }
       ];
     }
+    {
+      matcher = "compact";
+      hooks = [
+        {
+          type = "command";
+          command = "${runHook} ${hooksPath}/compaction-context-recovery.py";
+          timeout = 3000;
+        }
+      ];
+    }
   ];
 
   PreToolUse = [
@@ -120,6 +130,11 @@ in
         }
         {
           type = "command";
+          command = "${runHook} ${hooksPath}/record-edited-source-file.py";
+          timeout = 3000;
+        }
+        {
+          type = "command";
           command = "${runHook} ${hooksPath}/nix-rebuild-trigger.py";
           timeout = 3000;
         }
@@ -127,6 +142,32 @@ in
           type = "command";
           command = "${runHook} ${hooksPath}/line-count-advisory-guard.py";
           timeout = 3000;
+        }
+      ];
+    }
+  ];
+
+  UserPromptSubmit = [
+    {
+      matcher = ".*";
+      hooks = [
+        {
+          type = "command";
+          command = "${runHook} ${hooksPath}/tldr-reminder.py";
+          timeout = 2000;
+        }
+      ];
+    }
+  ];
+
+  Stop = [
+    {
+      matcher = ".*";
+      hooks = [
+        {
+          type = "command";
+          command = "${runHook} ${hooksPath}/lint-turn-review.py";
+          timeout = 5000;
         }
       ];
     }

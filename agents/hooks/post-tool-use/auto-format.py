@@ -117,6 +117,41 @@ def run_formatter(file_path: str, formatter: dict) -> bool:
         return False
 
 
+def find_file_in_ancestor_directories(start_directory: str, filename: str):
+    current_directory = os.path.abspath(start_directory)
+    while True:
+        candidate_path = os.path.join(current_directory, filename)
+        if os.path.exists(candidate_path):
+            return candidate_path
+        parent_directory = os.path.dirname(current_directory)
+        if parent_directory == current_directory:
+            return None
+        current_directory = parent_directory
+
+
+def repository_declares_conflicting_formatter(
+    file_path: str, file_extension: str
+) -> bool:
+    start_directory = os.path.dirname(os.path.abspath(file_path)) or "."
+    if file_extension == ".py":
+        pyproject_path = find_file_in_ancestor_directories(
+            start_directory, "pyproject.toml"
+        )
+        if pyproject_path:
+            try:
+                with open(pyproject_path) as pyproject_file:
+                    pyproject_text = pyproject_file.read()
+            except OSError:
+                pyproject_text = ""
+            if "[tool.black]" in pyproject_text and "[tool.ruff" not in pyproject_text:
+                return True
+    if file_extension in (".js", ".ts", ".tsx", ".jsx", ".json", ".yaml", ".yml"):
+        for biome_config_name in ("biome.json", "biome.jsonc"):
+            if find_file_in_ancestor_directories(start_directory, biome_config_name):
+                return True
+    return False
+
+
 def main():
     try:
         data = json.load(sys.stdin)
@@ -138,6 +173,9 @@ def main():
     ext = ext.lower()
 
     if ext not in FORMATTERS:
+        sys.exit(0)
+
+    if repository_declares_conflicting_formatter(file_path, ext):
         sys.exit(0)
 
     for formatter in FORMATTERS[ext]["formatters"]:
