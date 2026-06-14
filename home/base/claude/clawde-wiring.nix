@@ -7,4 +7,6 @@ in
     if builtins.pathExists machinesRegistryPath then import machinesRegistryPath else { };
 
   clawde.stewardLiveCheckoutPayloadPath = "${config.home.homeDirectory}/.dotfiles/home/base/claude/clawde/agent-types/steward/payload";
+
+  clawde.claudePackage = config.claude.package;
 }

@@ -2,7 +2,7 @@
   config,
   lib,
   pkgs,
-  healthCheckLib,
+  healthCheckLib ? null,
   ...
 }:
 let
@@ -47,6 +47,6 @@ let
 
   clawdeServiceEnabled = (lib.length clawdeAgentProbes) > 0;
 in
-{
+lib.mkIf (healthCheckLib != null) {
   healthCheck.probes = clawdeAgentProbes ++ lib.optional clawdeServiceEnabled clawdeServiceProbe;
 }

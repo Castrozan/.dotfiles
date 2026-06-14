@@ -7,7 +7,7 @@ let
   inherit (config.home) username homeDirectory;
 
   homeDir = homeDirectory;
-  claudeBinary = lib.getExe config.claude.package;
+  claudeBinary = lib.getExe config.clawde.claudePackage;
 
   runtimeLocations = import ./runtime-locations.nix { inherit homeDir; };
 
