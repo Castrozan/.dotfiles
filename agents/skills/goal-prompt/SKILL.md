@@ -1,6 +1,6 @@
 ---
 name: goal-prompt
-description: Author a goal prompt for an autonomous or scheduled agent - a single-line plaintext brief under 4k chars. Use when writing the prompt that drives a routine, cron agent, remote trigger, or any one-field autonomous run.
+description: Author a goal prompt for an autonomous or scheduled agent - a single-line plaintext brief under 3.5k chars. Use when writing the prompt that drives a routine, cron agent, remote trigger, or any one-field autonomous run.
 ---
 
 <what_a_goal_prompt_is>
@@ -8,7 +8,7 @@ A goal prompt is the entire brief an autonomous agent receives in one prompt fie
 </what_a_goal_prompt_is>
 
 <hard_output_constraints>
-Output is one continuous line: no newlines, no markdown, no code fences, plaintext only. Many fields choke on line breaks, so an embedded newline silently truncates the brief. Keep the string under 4000 characters as a hard ceiling. When the draft exceeds it, cut context the agent can rediscover at runtime before the goal or success criteria.
+Output is one continuous line: no newlines, no markdown, no code fences, plaintext only. Many fields choke on line breaks, so an embedded newline silently truncates the brief. Keep the string under 3500 characters as a hard ceiling; the goal field rejects anything past 4000, so 3500 leaves margin for the labels and joins. When the draft exceeds it, cut context the agent can rediscover at runtime before the goal or success criteria.
 </hard_output_constraints>
 
 <inline_structure>
