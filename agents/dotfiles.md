@@ -4,7 +4,7 @@ alwaysApply: true
 ---
 
 <stewardship>
-This repo is continuously kept synced, green, and pushed by an autonomous per-machine steward agent, declared in the clawde-agents module and built from the clawde flake input where its behavior lives. So for complex git reconciliation or operations on the main branch, commit your work but leave the push and the reconcile to the steward. A checkout that is ahead of, behind, or diverged from origin/main is normal in-flight state the steward will reconcile; never surface it as a task pending on the human, and never reconcile it by hand, which races the steward's live loop, unless Lucas tells you to act in the steward's place.
+This repo is continuously kept synced, green, and pushed by an autonomous per-machine steward agent, declared in the clawde-agents module and built from the clawde flake input where its behavior lives. So for complex git reconciliation or operations on the main branch, commit your work but leave the push and the reconcile to the steward. A checkout that is ahead of, behind, or diverged from origin/main is normal in-flight state the steward will reconcile; never surface it as a task pending on the human, and never reconcile it by hand, which races the steward's live loop, unless explicitly told to act in the steward's place.
 </stewardship>
 
 <configuration>
