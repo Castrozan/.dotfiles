@@ -42,6 +42,7 @@ in
     ../../base/browser/firefox.nix
 
     ../../base/desktop/fonts.nix
+    ../../base/desktop/home-assistant-remote.nix
     ../../linux/desktop/scripts.nix
 
     ../../base/dev/aws.nix

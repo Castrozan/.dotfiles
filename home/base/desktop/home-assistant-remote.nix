@@ -1,6 +1,6 @@
 { pkgs, ... }:
 let
-  remoteSshHostAlias = "nixos";
+  homeAssistantHostSshAlias = "chise";
 
   remoteHomeAssistantBinaryNames = [
     "ha-light"
@@ -14,7 +14,7 @@ let
       name = remoteBinaryName;
       runtimeInputs = [ pkgs.openssh ];
       text = ''
-        exec ssh ${remoteSshHostAlias} -- ${remoteBinaryName} "$@"
+        exec ssh ${homeAssistantHostSshAlias} -- ${remoteBinaryName} "$@"
       '';
     };
 in

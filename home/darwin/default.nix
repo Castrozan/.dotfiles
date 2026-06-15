@@ -35,7 +35,7 @@
     ./desktop/karabiner
     ./desktop/keyboard-layout
     ./desktop/maccy.nix
-    ./desktop/home-assistant-remote.nix
+    ../base/desktop/home-assistant-remote.nix
 
     ../base/dev/devenv.nix
     ../base/dev/git.nix
