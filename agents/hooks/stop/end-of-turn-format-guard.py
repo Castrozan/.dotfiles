@@ -38,12 +38,20 @@ NEXT_LABEL_PATTERN = re.compile(
 LIST_MARKER_LINE_PATTERN = re.compile(r"^\s*([-*+]\s|\d+[.)]\s)")
 MARKDOWN_HEADER_LINE_PATTERN = re.compile(r"^\s*#{1,6}\s")
 
+TRACKABLE_ARTIFACT_REFERENCE_PATTERN = re.compile(
+    r"\bmerge request\b|\bpull request\b|\bMR\s*!?\d+|\bPR\s*#?\d+",
+    re.IGNORECASE,
+)
+URL_PRESENT_PATTERN = re.compile(r"https?://", re.IGNORECASE)
+
 COMPRESSION_GUIDANCE = (
     "Rewrite it as a short, well-written plain-prose status report: open with a header-less "
     "paragraph that answers directly and gives the cause or context so Lucas understands it "
     "fully, then a **Done:** line and a **Next:** line in plain sentences. No bullet or numbered "
-    "lists, no section headers, no reaction or narration openers, and no em dashes. If Lucas "
-    "explicitly asked for a document or code, resend it unchanged and it will pass."
+    "lists, no section headers, no reaction or narration openers, and no em dashes. When the work "
+    "produced an MR, a PR, a ticket, an issue, or a deploy, include its link so Lucas can click "
+    "through to validate it. If Lucas explicitly asked for a document or code, resend it "
+    "unchanged and it will pass."
 )
 
 
@@ -121,6 +129,11 @@ def template_violations_in_reply(reply_text: str) -> list[str]:
         violations.append("uses a bullet or numbered list instead of prose")
     if any(MARKDOWN_HEADER_LINE_PATTERN.match(line) for line in prose_lines):
         violations.append("uses a section header")
+    prose_text = "\n".join(prose_lines)
+    if TRACKABLE_ARTIFACT_REFERENCE_PATTERN.search(
+        prose_text
+    ) and not URL_PRESENT_PATTERN.search(prose_text):
+        violations.append("names an MR or PR but gives no link to validate it")
 
     if (
         len(prose_lines) > SHORT_CONFIRMATION_MAXIMUM_PROSE_LINES

@@ -94,6 +94,17 @@ def test_blocks_section_header(tmp_path):
     assert json.loads(result.stdout)["decision"] == "block"
 
 
+def test_blocks_mr_reference_without_a_link(tmp_path):
+    reply = (
+        "Landed the tidy on its branch.\n"
+        "**Done:** committed as MR !15.\n"
+        "**Next:** nothing pending"
+    )
+    transcript = write_transcript_with_final_assistant_reply(tmp_path, reply)
+    result = invoke_guard(stop_payload(transcript))
+    assert json.loads(result.stdout)["decision"] == "block"
+
+
 def test_judges_final_reply_when_prior_turn_was_clean(tmp_path):
     transcript = write_transcript_from_events(
         tmp_path,

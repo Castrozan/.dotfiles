@@ -39,6 +39,40 @@ def test_allows_reply_at_the_word_cap(tmp_path):
     assert result.stdout.strip() == ""
 
 
+def test_allows_mr_reference_with_a_link(tmp_path):
+    reply = (
+        "Landed the tidy on its branch.\n"
+        "**Done:** committed as MR !15, "
+        "https://gitlab.example.com/group/repo/-/merge_requests/15.\n"
+        "**Next:** nothing pending"
+    )
+    transcript = write_transcript_with_final_assistant_reply(tmp_path, reply)
+    result = invoke_guard(stop_payload(transcript))
+    assert result.stdout.strip() == ""
+
+
+def test_allows_fenced_mr_reference_without_a_link(tmp_path):
+    reply = (
+        "Here is the build log you asked for.\n"
+        "```log\nbuild for MR !15 failed at step 3\n```\n"
+        "**Done:** captured the log\n**Next:** nothing pending"
+    )
+    transcript = write_transcript_with_final_assistant_reply(tmp_path, reply)
+    result = invoke_guard(stop_payload(transcript))
+    assert result.stdout.strip() == ""
+
+
+def test_allows_benign_bang_number(tmp_path):
+    reply = (
+        "Traced the crash to the exit path.\n"
+        "**Done:** the process exited with code !42 and left no leak.\n"
+        "**Next:** nothing pending"
+    )
+    transcript = write_transcript_with_final_assistant_reply(tmp_path, reply)
+    result = invoke_guard(stop_payload(transcript))
+    assert result.stdout.strip() == ""
+
+
 def test_allows_short_one_line_confirmation(tmp_path):
     transcript = write_transcript_with_final_assistant_reply(
         tmp_path, "Committed as abc123 and rebuilt clean."

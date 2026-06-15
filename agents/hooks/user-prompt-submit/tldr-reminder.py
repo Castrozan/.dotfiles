@@ -14,8 +14,10 @@ TLDR_REPLY_REMINDER = (
     "Lucas understands it fully, then a `**Done:**` line and a `**Next:**` line, each one or two "
     "plain sentences; a one or two sentence confirmation may be the opening paragraph alone. "
     'No reaction or sycophancy openers, no mechanics narration ("Let me", "I\'ll go ahead"), no '
-    "section headers, no repeated content, no em dashes, no pasted output. Full context comes "
-    "from complete prose, not length. A Stop hook bounces one reply per turn that breaks this."
+    "section headers, no repeated content, no em dashes, no pasted output. Include the link to "
+    "any MR, PR, ticket, issue, or deploy the work produced so Lucas can validate it. Full "
+    "context comes from complete prose, not length. A Stop hook bounces one reply per turn that "
+    "breaks this."
 )
 
 
