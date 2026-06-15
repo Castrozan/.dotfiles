@@ -1,6 +1,6 @@
 ---
 name: deliver
-description: Drive a large software goal end-to-end: investigate context, design the build process, author a goal prompt, then execute with workflows and subagents until it works live. For big objectives needing a process, not one-off tasks.
+description: Drive a large software goal end-to-end - investigate context, design the build process, author a goal prompt, then execute with workflows and subagents until it works live. For big objectives needing a process, not one-off tasks.
 ---
 
 <scope>
