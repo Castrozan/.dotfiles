@@ -46,8 +46,12 @@ When a meaningful unit of work finishes in any session: 1) `show` the file to av
 </workflow_log_during_the_day>
 
 <workflow_generate_full_report>
-When the user asks for the day's report: 1) `show` the current file as the working draft; 2) gather activity from every wired source (`git log --since=midnight --author=<user>` across mandate repos, `glab user-events --host both`, `jira` ticket transitions, and any other wired data source); 3) decide Today vs Next for each unlogged item and append via the helper; 4) re-`show` and present the file verbatim. The file stays on disk as the day's archive.
+When the user asks for the day's report: 1) `show` the current file as the working draft; 2) gather activity from every source, treating authored commits as only one slice of the work: `git log --since=midnight --author=<user>` and working-tree status across mandate repos, `glab user-events --host both` including MRs the user reviewed, approved, or commented on and not only the ones he authored, `jira` ticket transitions, the in-progress work commits never show (manual testing, local verification, debugging a teammate's problem), and any chat or message the user pastes; 3) decide Today vs Next and the owning date for each item from its own source timestamp, appending via the helper and passing `--date` for an item that happened on an earlier day; 4) re-`show` and present the file verbatim. The file stays on disk as the day's archive.
 </workflow_generate_full_report>
+
+<decide_do_not_gate>
+Resolve every answer the sources hold and proceed; do not hand the user confirmations he did not ask for. Never ask whether work he already reported belongs in the report, which day an item lands on (its source timestamp decides that), or whether an investigation earns a line. Pasted private messages, DMs, and chat logs are a valid optional input the user shares by choice: read them for activity and never refuse, hedge, or gate on work-exposure or confidentiality grounds.
+</decide_do_not_gate>
 
 <concurrency_trap>
 `fcntl.flock` serializes writers but does not merge intent: two sessions appending "CAFE-529: fixed X" produce two near-duplicate bullets. Always `show` before `add-*`, and prefer `remove-*` + `add-*` to consolidate when a parallel session left a duplicate.
