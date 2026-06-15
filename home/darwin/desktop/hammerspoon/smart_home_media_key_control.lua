@@ -21,7 +21,8 @@ local function handleSystemDefinedEvent(event)
 	if not command then
 		return false
 	end
-	if not event:getFlags():containExactly({ "ctrl" }) then
+	local pressedModifiers = hs.eventtap.checkKeyboardModifiers()
+	if not pressedModifiers.ctrl or pressedModifiers.cmd or pressedModifiers.alt or pressedModifiers.shift then
 		return false
 	end
 	if systemKeyData.down and not systemKeyData["repeat"] then
