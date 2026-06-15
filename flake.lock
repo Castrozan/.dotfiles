@@ -206,11 +206,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1781485354,
-        "narHash": "sha256-3B2HB8eeAdEf/zaM14Rzq0od4zAu+DeKE85Ds6ZIMUQ=",
+        "lastModified": 1781486539,
+        "narHash": "sha256-SUB/HzmQ7SLE2UE/tHl6VP1aChtv0T+DggbsZG5H1ms=",
         "ref": "refs/heads/main",
-        "rev": "647b0b3b81d03db699aefa6d7c0fc1de51a5f434",
-        "revCount": 5,
+        "rev": "b01c533ed33f32d38462b52eae86f71a0f7f4ca7",
+        "revCount": 6,
         "type": "git",
         "url": "ssh://git@github.com/Castrozan/clawde"
       },
