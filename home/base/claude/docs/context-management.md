@@ -1,6 +1,6 @@
 # Claude Code Context Management
 
-Claude Code operates within a 200K token context window by default. Long sessions with heavy tool use, parallel subagents, and large file reads can exhaust this window, causing compaction (lossy summarization) or outright API failures on `--resume`. This document covers how context works, what breaks, and how to manage it.
+Claude Code's context window depends on the model. On first-party `api.anthropic.com`, the current Claude 4.x models (opus-4-8, opus-4-7, fable-5, mythos-5) default to a **1M token window** with no `[1m]` suffix required; set `CLAUDE_CODE_DISABLE_1M_CONTEXT=1` to fall back to the 200K window. Older or non-first-party models use 200K. Long sessions with heavy tool use, parallel subagents, and large file reads can exhaust this window, causing compaction (lossy summarization) or outright API failures on `--resume`. This document covers how context works, what breaks, and how to manage it.
 
 ## The Resume 500 Problem
 
@@ -16,7 +16,7 @@ Auto-compaction triggers when token usage approaches the context window limit. I
 
 ### Configuration
 
-`CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` controls when compaction fires, as a percentage of context used (1-100). Default behavior triggers near 100%. Setting it to 90 means compaction happens at 90% usage, giving headroom before hitting the wall. This is configured in `home/{base,linux,darwin}/claude/config.nix` via `sessionVariables`.
+`CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` controls when compaction fires, as a percentage (1-100) of the **effective auto-compact window**, not of "context used". In the binary (`gu6`) the threshold is `min(window × pct/100, window − 13000)`. The trap: that window is the model's full context, so on a 1M-default model (opus-4-8) `80` waits until **800K tokens** before compacting, long after Opus output quality has degraded, which reads as "context climbs to 100% and work gets sloppy". Clamp the window first so the percentage lands at a sane absolute count: `CLAUDE_CODE_DISABLE_1M_CONTEXT=1` drops it to 200K (then `80` compacts at 160K), or `CLAUDE_CODE_AUTO_COMPACT_WINDOW=<tokens>` sets it explicitly (floored at 100K, capped at 1M). Both are configured in `home/base/claude/settings/environment-variables.nix`.
 
 Disabling auto-compaction entirely: `claude config set -g autoCompactEnabled false` writes to `~/.claude.json`. The setting in `~/.claude/settings.json` is silently ignored — this is a known gotcha. The `/config` toggle is per-session only.
 
@@ -28,7 +28,7 @@ Subagents via the Task tool get their own context windows. Heavy exploration, fi
 
 ## Extended Context (1M Token Window)
 
-Claude Opus 4.6, Sonnet 4.6, Sonnet 4.5, and Sonnet 4 support 1M token context windows via the `[1m]` suffix:
+The current first-party Claude 4.x models (opus-4-8, opus-4-7, fable-5, mythos-5) enable the 1M window automatically on `api.anthropic.com` with no suffix needed (binary: `Im()` returns 1M for these when the platform is firstParty/Bedrock/mantle). Other 1M-capable models opt in via the `[1m]` suffix:
 
 ```
 /model sonnet[1m]
@@ -39,7 +39,7 @@ Claude Opus 4.6, Sonnet 4.6, Sonnet 4.5, and Sonnet 4 support 1M token context w
 
 1M context is available to API pay-as-you-go users at usage tier 4+ ($400+ in credits) and Claude Code pay-as-you-go users. It is NOT available on Max, Pro, Teams, or Enterprise subscriptions. This is the single most complained-about restriction in the Claude Code community. Multiple GitHub issues document regressions where 1M access disappears after updates ([#26428](https://github.com/anthropics/claude-code/issues/26428), [#15057](https://github.com/anthropics/claude-code/issues/15057)).
 
-Pricing above 200K tokens: 2x input, 1.5x output. The beta header `context-1m-2025-08-07` is handled automatically by Claude Code when using the `[1m]` suffix.
+Pricing above 200K tokens: 2x input, 1.5x output. The beta header `context-1m-2025-08-07` is applied automatically: on by default for the 4.x models above, and forced on other models by the `[1m]` suffix. To turn the 1M window OFF (and escape the auto-compact-at-800K trap), set `CLAUDE_CODE_DISABLE_1M_CONTEXT=1`.
 
 ## Model Switching
 
