@@ -85,4 +85,3 @@ in
 ++ (import ./linux-style-modifier-rules.nix {
   inherit excludeTerminalsCondition makeControlToCommandManipulator controlToCommandLetters;
 })
-++ (import ./smart-home-control-rules.nix { inherit userBinPath; })

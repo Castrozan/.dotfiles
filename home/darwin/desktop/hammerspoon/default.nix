@@ -19,6 +19,11 @@
       ".hammerspoon/switcher_bridge.lua".source = ./switcher_bridge.lua;
       ".hammerspoon/karabiner_application_focus_variables.lua".source =
         ./karabiner_application_focus_variables.lua;
+      ".hammerspoon/smart_home_media_key_control.lua".text =
+        builtins.replaceStrings
+          [ "@USER_BIN_PATH@" ]
+          [ "/etc/profiles/per-user/${config.home.username}/bin" ]
+          (builtins.readFile ./smart_home_media_key_control.lua);
     };
 
     # Stop Hammerspoon popping its Console window every launch/reload (a config
