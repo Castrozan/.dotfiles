@@ -10,8 +10,8 @@ END_OF_TURN_FORMAT_GUARD_SCRIPT = next(HOOKS_ROOT.rglob("end-of-turn-format-guar
 INTERACTIVE_SESSION_ENVIRONMENT_VARIABLE = "CLAUDE_INTERACTIVE_PREFERENCES_PATH"
 
 WELL_FORMED_REPLY = (
-    "Committed the template change and the guard hook.\n"
-    "**Done:**\n- rewrote the interactive template\n- added the stop guard\n"
+    "The template change and the guard hook are committed and the suite is green.\n"
+    "**Done:** rewrote the interactive template and added the stop guard that bounces slop.\n"
     "**Next:** nothing pending"
 )
 

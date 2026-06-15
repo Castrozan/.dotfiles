@@ -54,18 +54,42 @@ def test_blocks_long_reply_without_template_labels(tmp_path):
     assert json.loads(result.stdout)["decision"] == "block"
 
 
-def test_blocks_long_reply_even_with_template_labels(tmp_path):
-    essay_lines = "\n".join(f"- detail line {index}" for index in range(20))
-    wall = f"State sentence.\n**Done:**\n{essay_lines}\n**Next:** done"
+def test_blocks_long_prose_reply_even_with_template_labels(tmp_path):
+    essay_lines = "\n".join(
+        f"Sentence number {index} explaining yet another detail at length."
+        for index in range(20)
+    )
+    wall = f"State sentence.\n{essay_lines}\n**Done:** x\n**Next:** done"
     transcript = write_transcript_with_final_assistant_reply(tmp_path, wall)
     result = invoke_guard(stop_payload(transcript))
     assert json.loads(result.stdout)["decision"] == "block"
 
 
-def test_blocks_single_paragraph_word_wall(tmp_path):
-    paragraph = " ".join(["word"] * 240)
-    wall = f"{paragraph}\n**Done:** x\n**Next:** y"
-    transcript = write_transcript_with_final_assistant_reply(tmp_path, wall)
+def test_blocks_reply_one_word_over_the_word_cap(tmp_path):
+    paragraph = " ".join(["word"] * 247)
+    reply = f"{paragraph}\n**Done:** x\n**Next:** y"
+    transcript = write_transcript_with_final_assistant_reply(tmp_path, reply)
+    result = invoke_guard(stop_payload(transcript))
+    assert json.loads(result.stdout)["decision"] == "block"
+
+
+def test_blocks_bullet_list(tmp_path):
+    reply = "Here is the state.\n**Done:** the work\n- first item\n- second item\n**Next:** y"
+    transcript = write_transcript_with_final_assistant_reply(tmp_path, reply)
+    result = invoke_guard(stop_payload(transcript))
+    assert json.loads(result.stdout)["decision"] == "block"
+
+
+def test_blocks_numbered_list(tmp_path):
+    reply = "Here is the state.\n**Done:** the work\n1. first step\n2. second step\n**Next:** y"
+    transcript = write_transcript_with_final_assistant_reply(tmp_path, reply)
+    result = invoke_guard(stop_payload(transcript))
+    assert json.loads(result.stdout)["decision"] == "block"
+
+
+def test_blocks_section_header(tmp_path):
+    reply = "Here is the state.\n## Root cause\nsome prose about it.\n**Done:** x\n**Next:** y"
+    transcript = write_transcript_with_final_assistant_reply(tmp_path, reply)
     result = invoke_guard(stop_payload(transcript))
     assert json.loads(result.stdout)["decision"] == "block"
 

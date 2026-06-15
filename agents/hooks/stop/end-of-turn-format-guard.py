@@ -11,7 +11,7 @@ INTERACTIVE_SESSION_ENVIRONMENT_VARIABLE = "CLAUDE_INTERACTIVE_PREFERENCES_PATH"
 
 SHORT_CONFIRMATION_MAXIMUM_PROSE_LINES = 3
 SCANNABLE_MAXIMUM_PROSE_LINES = 14
-SCANNABLE_MAXIMUM_PROSE_WORDS = 220
+SCANNABLE_MAXIMUM_PROSE_WORDS = 250
 
 EM_DASH_CHARACTER = "—"
 
@@ -35,11 +35,15 @@ NEXT_LABEL_PATTERN = re.compile(
     r"^\s*\*{0,2}next\*{0,2}\s*:", re.IGNORECASE | re.MULTILINE
 )
 
+LIST_MARKER_LINE_PATTERN = re.compile(r"^\s*([-*+]\s|\d+[.)]\s)")
+MARKDOWN_HEADER_LINE_PATTERN = re.compile(r"^\s*#{1,6}\s")
+
 COMPRESSION_GUIDANCE = (
-    "If Lucas explicitly asked for a document, a full explanation, or code, resend it unchanged "
-    "and it will pass; otherwise compress to one sentence of state, then a **Done:** line and a "
-    "**Next:** line of at most three bullets each, with no reaction openers, no mechanics "
-    "narration, no extra essay sections, and no em dashes."
+    "Rewrite it as a short, well-written plain-prose status report: open with a header-less "
+    "paragraph that answers directly and gives the cause or context so Lucas understands it "
+    "fully, then a **Done:** line and a **Next:** line in plain sentences. No bullet or numbered "
+    "lists, no section headers, no reaction or narration openers, and no em dashes. If Lucas "
+    "explicitly asked for a document or code, resend it unchanged and it will pass."
 )
 
 
@@ -113,6 +117,11 @@ def template_violations_in_reply(reply_text: str) -> list[str]:
         DONE_LABEL_PATTERN.search(reply_text) and NEXT_LABEL_PATTERN.search(reply_text)
     )
 
+    if any(LIST_MARKER_LINE_PATTERN.match(line) for line in prose_lines):
+        violations.append("uses a bullet or numbered list instead of prose")
+    if any(MARKDOWN_HEADER_LINE_PATTERN.match(line) for line in prose_lines):
+        violations.append("uses a section header")
+
     if (
         len(prose_lines) > SHORT_CONFIRMATION_MAXIMUM_PROSE_LINES
         and not has_done_and_next_labels
@@ -152,7 +161,7 @@ def main() -> None:
         sys.exit(0)
 
     block_reason = (
-        "End-of-turn reply breaks the enforced TL;DR template ("
+        "End-of-turn reply breaks the enforced plain-prose template ("
         + "; ".join(violations)
         + "). "
         + COMPRESSION_GUIDANCE

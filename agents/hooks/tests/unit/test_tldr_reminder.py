@@ -32,7 +32,7 @@ def test_injects_reminder_in_interactive_session():
     )
     parsed = json.loads(result.stdout)
     assert parsed["hookSpecificOutput"]["hookEventName"] == "UserPromptSubmit"
-    assert "TL;DR" in parsed["hookSpecificOutput"]["additionalContext"]
+    assert "Done:" in parsed["hookSpecificOutput"]["additionalContext"]
 
 
 def test_silent_in_non_interactive_session():

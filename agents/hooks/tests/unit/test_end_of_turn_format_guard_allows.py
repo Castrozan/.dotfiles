@@ -18,14 +18,22 @@ def test_allows_well_formed_template_reply(tmp_path):
     assert result.stdout.strip() == ""
 
 
-def test_allows_full_template_with_three_bullets_each(tmp_path):
+def test_allows_prose_with_done_next_and_assumed(tmp_path):
     reply = (
-        "Wired the guard and verified the suite.\n"
-        "**Done:**\n- rewrote the template\n- added the guard hook\n- registered it on Stop\n"
-        "**Next:**\n- restart claude to pick up the env\n- tune caps if too strict\n"
-        "- nothing else pending\n"
-        "**Assumed:** single-bounce enforcement because you said inforce it"
+        "Wired the guard and verified the whole suite passes after the rebuild.\n"
+        "**Done:** rewrote the template into prose, added the guard hook, and registered it on "
+        "the Stop event so it runs at the end of every interactive turn.\n"
+        "**Next:** restart claude to pick up the change, then tune the caps later if they bite.\n"
+        "**Assumed:** single-bounce enforcement because you asked to inforce it."
     )
+    transcript = write_transcript_with_final_assistant_reply(tmp_path, reply)
+    result = invoke_guard(stop_payload(transcript))
+    assert result.stdout.strip() == ""
+
+
+def test_allows_reply_at_the_word_cap(tmp_path):
+    paragraph = " ".join(["word"] * 246)
+    reply = f"{paragraph}\n**Done:** x\n**Next:** y"
     transcript = write_transcript_with_final_assistant_reply(tmp_path, reply)
     result = invoke_guard(stop_payload(transcript))
     assert result.stdout.strip() == ""
