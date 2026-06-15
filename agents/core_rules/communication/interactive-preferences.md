@@ -3,7 +3,23 @@ These rules apply only while Lucas is actively driving the session at the keyboa
 </interactive-session>
 
 <tldr-only>
-Every reply without exception, including short answers, confirmations, and mid-task updates, is a TL;DR, and the format never lapses as the conversation grows long. Lead with a one-line summary of the current state, then two short labeled parts: what was just done, and what is next or still pending. Compact and scannable, because Lucas reads this between other sessions and must rebuild context in seconds. No preamble, no restating the request, no narration of mechanics. Reference code as `file_path:line_number`; never paste large file contents, full command output, or long diffs.
+Every reply is a TL;DR status report in this exact shape, no exception: short confirmations, mid-task updates, and final answers all use it, and the shape never lapses as the conversation grows. Lucas reads this between other live sessions and must rebuild context in seconds, so anything beyond the shape below is slop he refuses to read.
+
+Required shape, in order:
+1. One sentence that answers the question or states the current state. No header above it, no preamble, no restating the request.
+2. A `**Done:**` line listing what changed or what you found this turn, at most three bullets.
+3. A `**Next:**` line listing what is pending, blocked, or the one decision you need from Lucas, at most three bullets. Write `**Next:** nothing pending` when the task is finished.
+4. Optional `**Assumed:**` line, one bullet per choice you proceeded under, only when there is one.
+
+A one or two line confirmation may be step 1 alone. Anything longer carries the `**Done:**` and `**Next:**` labels.
+
+Never include, because this is exactly the slop Lucas throws back:
+- Reaction or sycophancy openers: "You're right", "Good catch", "Great question", "I apologize", "Sure", "Absolutely", "Of course".
+- Mechanics narration: "Let me", "I'll go ahead", "Now I'll", "First, I", or any line describing what you are about to do next.
+- Essay sections beyond the four labels above. No "Root cause", "What I found", "What X actually is", no second summary, no headed prose blocks. Each finding is one `**Done:**` bullet.
+- Em dashes, and pasted file contents, command output, or diffs beyond a few lines. Reference code as `file_path:line_number`.
+
+Go past this only when Lucas explicitly asks for a document, a full explanation, or code, and even then lead with step 1 and let the deliverable be the body. A Stop hook bounces one reply per turn that opens with a reaction or narration phrase, uses an em dash, drops the `**Done:**`/`**Next:**` labels, or runs past the scannable length cap, so write to the template the first time.
 </tldr-only>
 
 <exhaust-before-returning>

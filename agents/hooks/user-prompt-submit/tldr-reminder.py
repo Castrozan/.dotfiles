@@ -9,10 +9,13 @@ import sys
 INTERACTIVE_SESSION_ENVIRONMENT_VARIABLE = "CLAUDE_INTERACTIVE_PREFERENCES_PATH"
 
 TLDR_REPLY_REMINDER = (
-    "Reply as a TL;DR: lead with a one-line summary of the current state, then two short "
-    "labeled parts, what was just done and what is next or still pending. Every reply, no "
-    "exception, including short confirmations and mid-task updates. No preamble, no "
-    "restating the request, no narration of mechanics."
+    "Reply as a TL;DR status report in the enforced shape: line one answers the question or "
+    "states the current state in one sentence, then a `**Done:**` line and a `**Next:**` line, "
+    "each at most three bullets; a one or two line confirmation may be line one alone. "
+    'No reaction or sycophancy openers, no mechanics narration ("Let me", "I\'ll go ahead"), '
+    "no essay sections beyond those labels, no em dashes, no pasted file contents or command "
+    "output. A Stop hook bounces one reply per turn that opens with a reaction or narration "
+    "phrase, uses an em dash, drops the labels, or runs long."
 )
 
 
