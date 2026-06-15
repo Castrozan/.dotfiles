@@ -16,7 +16,7 @@ Home-manager module that installs Claude Code, declares its config, and runs per
 | `hooks/` | Deploys `agents/hooks/` flat under `~/.claude/hooks/` (`default.nix`), hook event registrations (`event-registrations.nix`), and the recursive hook-tree walker |
 | `mcps/` | MCP server registration: direct stdio server injection into `.claude.json`, browser-use config patcher |
 | `skill-injection/` | `claude` fish wrapper, the `claude-workspace` launcher (`scripts/`), and the skill-set builders |
-| `clawde/` | Persistent agent framework: tmux session + supervisor + channel/peer adapters |
+| `clawde-wiring.nix` | Injects host wiring (machines registry, claude package, dotfiles path) into the external clawde flake module |
 | `clawde-agents/` | Shared clawde agent declarations that depend on public skill files (currently `steward`). Per-machine declarations live in `private-config/machines/<host>/clawde-*.nix` |
 | `scripts/` | General Claude helper bins + their wiring (`default.nix`): memory-write/prune, claude-a2a-peer, claude-update-version, launch-command-detached, notify-turn-ended |
 | `completions/` | `claude.fish` completion (installed by `home/base/terminal/fish.nix`) |
@@ -36,9 +36,9 @@ Claude registers a2a as an HTTP bridge in `mcps/` (consuming `a2a/install.nix`);
 
 ## clawde
 
-`clawde/` is the persistent-agent framework. One systemd-user service supervises one tmux session (`clawde`), with one window per agent. Each agent is declared as `clawde.agents.<name>` with an agent type (`type = "project-manager"`, defaulting to `"generic"`) that supplies role defaults inherited unless the instance overrides them, a channel adapter (`channel.type = "discord"` or `"none"`) for transport, and optional peer adapters (`expose.a2a.enable = true`).
+The persistent-agent framework lives in its own private flake at `github.com/Castrozan/clawde`, consumed as the `clawde` flake input and imported via `inputs.clawde.homeManagerModules.default`. One systemd-user service supervises one tmux session (`clawde`), with one window per agent. Each agent is declared as `clawde.agents.<name>` with an agent type (`type = "project-manager"`, defaulting to `"generic"`) that supplies role defaults inherited unless the instance overrides them, a channel adapter (`channel.type = "discord"` or `"none"`) for transport, and optional peer adapters (`expose.a2a.enable = true`).
 
-See `clawde/default.nix` for the option schema, `clawde/instructions/clawde-runtime.md` for runtime rules, `clawde/agent-types/<name>/` for per-type role defaults and instructions, and `clawde/channel-adapters/<name>/instructions/<name>-runtime.md` for per-channel transport behavior.
+The dotfiles owns only the host wiring (`clawde-wiring.nix` supplies `clawde.machinesRegistry`, `clawde.claudePackage`, `clawde.dotfilesRepoPath`) and the agent declarations; the module, option schema, runtime instructions, agent types, and channel adapters live in the clawde repo. Bump it with `nix flake update clawde`.
 
 Agent declarations live per-machine in `private-config/machines/<host>/clawde-*.nix` (e.g. the per-host PM agents and rin's `clawde-silver.nix`); the shared `steward` agent, which reads the public steward skill at eval time, lives in `clawde-agents/steward.nix`.
 
