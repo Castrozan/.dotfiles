@@ -206,17 +206,17 @@
         ]
       },
       "locked": {
-        "lastModified": 1781492489,
-        "narHash": "sha256-QF7zKxMYpgMxfR66b63TEt1nmhq7+VlpVVOlzguAyzQ=",
-        "ref": "refs/heads/main",
-        "rev": "d40d015e0259b35caac85baffe0e34323888f211",
-        "revCount": 9,
-        "type": "git",
-        "url": "ssh://git@github.com/Castrozan/clawde"
+        "lastModified": 1781496069,
+        "narHash": "sha256-Fy2sfVNv6SWH7Su2CllXEhRXkIjgvFbcUR3kf2UZzYY=",
+        "owner": "Castrozan",
+        "repo": "clawde",
+        "rev": "990036add8972a4ba6ecd847fd5037a1e59f4a20",
+        "type": "github"
       },
       "original": {
-        "type": "git",
-        "url": "ssh://git@github.com/Castrozan/clawde"
+        "owner": "Castrozan",
+        "repo": "clawde",
+        "type": "github"
       }
     },
     "cmatrix": {
