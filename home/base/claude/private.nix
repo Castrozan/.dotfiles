@@ -68,7 +68,8 @@ let
     if perMachineSkillsDirExists then skillSymlinksFrom perMachineSkillsDir else { };
 in
 {
-  home.file = lib.mkIf (agentsDirExists || sharedSkillsDirExists || perMachineSkillsDirExists) (
-    privateAgentSymlinks // sharedSkillSymlinks // perMachineSkillSymlinks
-  );
+  home.file =
+    lib.mkIf
+      (agentsDirExists || commandsDirExists || sharedSkillsDirExists || perMachineSkillsDirExists)
+      (privateAgentSymlinks // privateCommandSymlinks // sharedSkillSymlinks // perMachineSkillSymlinks);
 }

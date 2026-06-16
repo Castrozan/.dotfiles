@@ -89,8 +89,8 @@ def test_collect_personal_skill_metadata_includes_umbrella_chapters(tmp_path):
         "Vault path is at $OBSIDIAN_HOME with daily notes inside.\n"
         "</vault_location>\n"
     )
-    (umbrella_skill_directory / "ponto.md").write_text(
-        "Senior Gestao de Ponto - time entry automation via Chrome DevTools MCP.\n"
+    (umbrella_skill_directory / "readitlater.md").write_text(
+        "ReadItLater inbox triage workflow.\n"
     )
 
     personal_skill_metadata = (
@@ -104,15 +104,15 @@ def test_collect_personal_skill_metadata_includes_umbrella_chapters(tmp_path):
     assert umbrella_metadata["name"] == "personal"
     chapter_entries = umbrella_metadata["chapters"]
     assert len(chapter_entries) == 2
-    obsidian_chapter, ponto_chapter = chapter_entries
+    obsidian_chapter, readitlater_chapter = chapter_entries
     assert obsidian_chapter["name"] == "personal/obsidian"
     assert obsidian_chapter["path"] == str(
         (umbrella_skill_directory / "obsidian.md").resolve()
     )
     assert "Vault path is at $OBSIDIAN_HOME" in obsidian_chapter["preview"]
     assert "<vault_location>" not in obsidian_chapter["preview"]
-    assert ponto_chapter["name"] == "personal/ponto"
-    assert ponto_chapter["preview"].startswith("Senior Gestao de Ponto")
+    assert readitlater_chapter["name"] == "personal/readitlater"
+    assert readitlater_chapter["preview"].startswith("ReadItLater inbox triage")
 
 
 def test_extract_chapter_preview_truncates_long_text():

@@ -6,6 +6,7 @@
     ./clawde-wiring.nix
     ./settings
     ./skill-injection
+    ./commands
     ./workflows
     ./hooks
     ./mcps

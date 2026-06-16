@@ -26,5 +26,3 @@ Returns JSON. Top-level skills include `name`, `description` (from frontmatter),
 This `personal` skill is also the umbrella for Lucas's personal channels and platforms. Each chapter lives in its own file so only the relevant one loads:
 
 - `obsidian.md` — Obsidian vault operations (daily notes, TODO tracking, activity logging, ReadItLater inbox).
-
-Scripts for some capabilities live in their original locations under `agents/skills/<capability>/scripts/`. Some capabilities (ponto, home-assistant) are pure Chrome DevTools MCP workflows with no scripts.
