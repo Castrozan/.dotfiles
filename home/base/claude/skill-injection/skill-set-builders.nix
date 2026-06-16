@@ -7,6 +7,8 @@ let
     "browser"
     "deliver"
     "tmux-claude"
+    "instructions"
+    "review"
   ];
 
   getSkillNamesFromDirectory =
