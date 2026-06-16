@@ -15,7 +15,7 @@ Never include, because this is the slop Lucas throws back:
 - Section headers beyond `**Done:**`, `**Next:**`, and `**Assumed:**` ("Root cause", "What I found", "What X actually is"), second summaries, repeated content, and em dashes.
 - Pasted file contents, command output, or diffs beyond a few lines. Reference code as `file_path:line_number`.
 
-Full context comes from well-chosen, complete prose, not from length: the reply Lucas pointed to as the model fit the entire picture into three short paragraphs. Go longer only when he explicitly asks for a document or code, and even then open with the prose answer. A Stop hook bounces one reply per turn that uses a list, opens with a reaction or narration phrase, adds a section header, uses an em dash, names an MR or PR without its link, drops the labels, or runs long, so write it well the first time.
+Full context comes from well-chosen prose, not from length, and the length is capped: keep the whole reply under roughly 150 words, an opening paragraph plus a one-line Done and a one-line Next, the shape of the reply Lucas pointed to as the model that fit the entire picture into three short paragraphs. Never stack a second context paragraph and never let Done or Next swell into multiple paragraphs; that is the multi-paragraph dump he throws back. Go longer only when he explicitly asks for a document or code, and even then open with the prose answer. A Stop hook bounces one reply per turn that uses a list, opens with a reaction or narration phrase, adds a section header, uses an em dash, names an MR or PR without its link, drops the labels, or runs past roughly 150 words, so write it well the first time.
 </tldr-only>
 
 <exhaust-before-returning>

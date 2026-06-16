@@ -66,11 +66,26 @@ def test_blocks_long_prose_reply_even_with_template_labels(tmp_path):
 
 
 def test_blocks_reply_one_word_over_the_word_cap(tmp_path):
-    paragraph = " ".join(["word"] * 247)
+    paragraph = " ".join(["word"] * 147)
     reply = f"{paragraph}\n**Done:** x\n**Next:** y"
     transcript = write_transcript_with_final_assistant_reply(tmp_path, reply)
     result = invoke_guard(stop_payload(transcript))
     assert json.loads(result.stdout)["decision"] == "block"
+
+
+def test_blocks_multi_paragraph_dump_under_the_word_cap(tmp_path):
+    reply = (
+        "Opening paragraph that states the situation plainly.\n\n"
+        "A second context paragraph that keeps explaining the background.\n\n"
+        "**Done:** the first piece landed and was verified clean.\n\n"
+        "A further paragraph piling on more detail about the work.\n\n"
+        "**Next:** nothing pending"
+    )
+    transcript = write_transcript_with_final_assistant_reply(tmp_path, reply)
+    result = invoke_guard(stop_payload(transcript))
+    parsed = json.loads(result.stdout)
+    assert parsed["decision"] == "block"
+    assert "paragraph" in parsed["reason"]
 
 
 def test_blocks_bullet_list(tmp_path):

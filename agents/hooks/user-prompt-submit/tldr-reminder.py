@@ -13,11 +13,14 @@ TLDR_REPLY_REMINDER = (
     "Open with a header-less paragraph that answers directly and gives the cause or context so "
     "Lucas understands it fully, then a `**Done:**` line and a `**Next:**` line, each one or two "
     "plain sentences; a one or two sentence confirmation may be the opening paragraph alone. "
+    "Keep the whole reply under roughly 150 words and to that shape, an opening paragraph plus a "
+    "one-line Done and a one-line Next, never a multi-paragraph dump and never a Done or Next "
+    "that swells into several paragraphs. "
     'No reaction or sycophancy openers, no mechanics narration ("Let me", "I\'ll go ahead"), no '
     "section headers, no repeated content, no em dashes, no pasted output. Include the link to "
     "any MR, PR, ticket, issue, or deploy the work produced so Lucas can validate it. Full "
-    "context comes from complete prose, not length. A Stop hook bounces one reply per turn that "
-    "breaks this."
+    "context comes from well-chosen prose, not length. A Stop hook bounces one reply per turn "
+    "that breaks this or runs past roughly 150 words."
 )
 
 
