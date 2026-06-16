@@ -136,7 +136,8 @@ def template_violations_in_reply(reply_text: str) -> list[str]:
     if paragraph_block_count > MAXIMUM_PROSE_PARAGRAPH_BLOCKS:
         violations.append(
             f"stacks {paragraph_block_count} prose paragraphs, past the "
-            f"{MAXIMUM_PROSE_PARAGRAPH_BLOCKS}-paragraph opening-plus-Done-plus-Next ceiling"
+            f"{MAXIMUM_PROSE_PARAGRAPH_BLOCKS}-block ceiling of opening, Done, Next, and an "
+            "optional Assumed line"
         )
 
     return violations
