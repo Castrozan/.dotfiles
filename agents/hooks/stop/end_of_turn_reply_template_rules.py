@@ -43,8 +43,8 @@ URL_PRESENT_PATTERN = re.compile(r"https?://", re.IGNORECASE)
 COMPRESSION_GUIDANCE = (
     "Rewrite it as a short, well-written plain-prose status report under roughly "
     f"{SCANNABLE_MAXIMUM_PROSE_WORDS} words: open with a header-less paragraph that answers "
-    "directly and gives the cause or context so Lucas understands it fully, then a single "
-    "**Done:** line and a single **Next:** line in plain sentences. Keep it to that shape, an "
+    "directly and gives the cause or context so Lucas understands it fully, then a "
+    "**Done:** line and a **Next:** line in plain sentences. Keep it to that shape, an "
     "opening paragraph plus a Done and Next of one or two lines each, never a multi-paragraph dump "
     "and "
     "never a Done or Next that swells into several paragraphs. No bullet or numbered lists, no "

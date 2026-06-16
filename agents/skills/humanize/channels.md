@@ -19,5 +19,5 @@ A published page or any public-repo text reaches an audience you do not control,
 </published_page>
 
 <live_keyboard_reply>
-A live keyboard reply defers entirely to interactive-preferences.md tldr-only for shape, the Done and Next labels, no lists, the Stop hook. This skill supplies the de-slop library underneath that shape, not the reply mechanics.
+A live keyboard reply defers entirely to interactive-preferences.md for shape, the Done and Next labels, no lists, the Stop hook. This skill supplies the de-slop library underneath that shape, not the reply mechanics.
 </live_keyboard_reply>
