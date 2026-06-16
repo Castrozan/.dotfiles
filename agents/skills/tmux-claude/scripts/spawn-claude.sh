@@ -164,4 +164,6 @@ main() {
 	echo "Spawned claude in ${session}:${window_name}"
 }
 
-main "$@"
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+	main "$@"
+fi
