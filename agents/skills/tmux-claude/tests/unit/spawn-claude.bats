@@ -37,3 +37,14 @@ teardown() {
 	[[ "$output" == *placeholder* ]]
 	[[ "$output" == *added-window* ]]
 }
+
+@test "_ensure_tmux_session_and_window does not steal focus from the active window" {
+	tmux -S "$TEST_TMUX_SOCKET" new-session -d -s existing-session -n placeholder
+
+	run _ensure_tmux_session_and_window existing-session added-window /tmp "$TEST_TMUX_SOCKET"
+	[ "$status" -eq 0 ]
+
+	run tmux -S "$TEST_TMUX_SOCKET" list-windows -t existing-session -F "#{window_active} #{window_name}"
+	[[ "$output" == *"1 placeholder"* ]]
+	[[ "$output" == *"0 added-window"* ]]
+}

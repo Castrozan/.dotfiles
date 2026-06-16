@@ -34,7 +34,7 @@ _ensure_tmux_session_and_window() {
 	local tmux_socket="$4"
 
 	if tmux -S "$tmux_socket" has-session -t "$session" 2>/dev/null; then
-		tmux -S "$tmux_socket" new-window -t "$session" -n "$window_name" -c "$working_directory"
+		tmux -S "$tmux_socket" new-window -d -t "$session" -n "$window_name" -c "$working_directory"
 	else
 		tmux -S "$tmux_socket" new-session -d -s "$session" -n "$window_name" -c "$working_directory"
 	fi
