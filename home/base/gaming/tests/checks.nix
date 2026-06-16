@@ -20,7 +20,6 @@ let
   cfg = helpers.homeManagerTestConfiguration [
     ../../../linux/gaming/vesktop.nix
     ../cbonsai.nix
-    ../cmatrix.nix
     ../install-nothing.nix
   ];
 

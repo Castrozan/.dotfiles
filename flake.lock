@@ -227,11 +227,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1780347566,
-        "narHash": "sha256-rcCwfl7nfzIW4CSHwc69+/eG9YVxb/B8Nl02r3a1EGY=",
+        "lastModified": 1781637146,
+        "narHash": "sha256-XCZV1eUGWZjuQQkDyHDlUzAcWr++zq3BZYPNUTYXxGA=",
         "owner": "castrozan",
         "repo": "cmatrix",
-        "rev": "ec62a0d4b4e649d999ccdbc732219a11c0f7e70c",
+        "rev": "7d67801602056e68bbc6403dd78a0f1cf6e8411f",
         "type": "github"
       },
       "original": {

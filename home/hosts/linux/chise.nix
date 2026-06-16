@@ -29,6 +29,7 @@ in
     ../../base/terminal/tmux.nix
     ../../base/terminal/wezterm.nix
     ../../base/terminal/scripts.nix
+    ../../base/terminal/cmatrix.nix
 
     ../../base/editor/cursor
     ../../base/editor/neovim.nix
@@ -63,7 +64,6 @@ in
     ../../linux/voice/whisp-away.nix
 
     ../../base/gaming/cbonsai.nix
-    ../../base/gaming/cmatrix.nix
     ../../base/gaming/install-nothing.nix
     ../../linux/gaming/vesktop.nix
 
