@@ -83,5 +83,5 @@ in
 ++ (import ./brave-keybind-passthrough-rules.nix)
 ++ (import ./chrome-keybind-rules.nix)
 ++ (import ./linux-style-modifier-rules.nix {
-  inherit excludeTerminalsCondition makeControlToCommandManipulator controlToCommandLetters;
+  inherit makeControlToCommandManipulator controlToCommandLetters;
 })
