@@ -2,10 +2,12 @@
 let
   privateConfigDir = ../../../private-config/claude;
   agentsDir = privateConfigDir + "/agents";
+  commandsDir = privateConfigDir + "/commands";
   sharedSkillsDir = privateConfigDir + "/skills";
   perMachineSkillsDir = ../../../private-config/machines + "/${hostname}/skills";
 
   agentsDirExists = builtins.pathExists agentsDir;
+  commandsDirExists = builtins.pathExists commandsDir;
   sharedSkillsDirExists = builtins.pathExists sharedSkillsDir;
   perMachineSkillsDirExists = builtins.pathExists perMachineSkillsDir;
 
@@ -13,6 +15,14 @@ let
     if agentsDirExists then
       builtins.filter (name: lib.hasSuffix ".md" name && name != ".gitkeep") (
         builtins.attrNames (builtins.readDir agentsDir)
+      )
+    else
+      [ ];
+
+  privateCommandFiles =
+    if commandsDirExists then
+      builtins.filter (name: lib.hasSuffix ".md" name && name != ".gitkeep") (
+        builtins.attrNames (builtins.readDir commandsDir)
       )
     else
       [ ];
@@ -30,6 +40,15 @@ let
         source = "${agentsDir}/${filename}";
       };
     }) privateAgentFiles
+  );
+
+  privateCommandSymlinks = builtins.listToAttrs (
+    map (filename: {
+      name = ".claude/commands/${filename}";
+      value = {
+        source = "${commandsDir}/${filename}";
+      };
+    }) privateCommandFiles
   );
 
   skillSymlinksFrom =
