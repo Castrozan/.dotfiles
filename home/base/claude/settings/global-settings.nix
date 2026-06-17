@@ -5,7 +5,7 @@
   ...
 }:
 let
-  hooksConfig = import ../hooks/event-registrations.nix { inherit lib hostname; };
+  hooksConfig = import ../hooks/event-registrations { inherit lib hostname; };
   pluginsConfig = import ./plugins.nix { inherit pkgs; };
 
   claudeKeybindings = {

@@ -1,14 +1,8 @@
 #!/usr/bin/env python3
 
 import json
-import os
-import re
 import sys
 from pathlib import Path
-
-STATE_DIRECTORY_OVERRIDE_ENVIRONMENT_VARIABLE = (
-    "AGENT_INSTRUCTION_AUTHORING_ROUTER_STATE_DIRECTORY"
-)
 
 INSTRUCTION_FILENAMES_THAT_ARE_ALWAYS_AGENT_DIRECTED = {"claude.md", "agents.md"}
 
@@ -21,45 +15,39 @@ AGENT_DIRECTED_INSTRUCTION_RELATIVE_PATHS = {
 
 AUTHORING_STANDARDS_DIRECTIVE = (
     "BLOCKED: this file instructs an AI agent, so it must be authored against the "
-    "instruction-authoring standards before you edit it. First invoke "
+    "instruction-authoring standards. This guard blocks every edit to an AI instruction "
+    "file until you have loaded those standards into context this session by invoking "
     "Skill(skill='instructions') for the SKILL.md, CLAUDE.md, agent-definition, and "
-    "subagent-brief conventions; invoke Skill(skill='review') and read its docs.md for "
-    "the documentation and policy-writing principle; and read any repo-local "
-    "instruction-authoring guidance in the nearest CLAUDE.md or AGENTS.md. Then "
-    "re-attempt this edit applying those standards. This guard fires once per file per "
-    "session, so the re-attempt proceeds."
+    "subagent-brief conventions; also invoke Skill(skill='review') and read its docs.md "
+    "for the documentation and policy-writing principle, and read any repo-local "
+    "instruction-authoring guidance in the nearest CLAUDE.md or AGENTS.md. Once you have "
+    "invoked Skill(skill='instructions') this session, re-attempt this edit applying "
+    "those standards and it will proceed."
 )
 
 
-def resolve_state_directory():
-    override = os.environ.get(STATE_DIRECTORY_OVERRIDE_ENVIRONMENT_VARIABLE)
-    if override:
-        return Path(override)
-    return Path("/tmp")
-
-
-def state_path_for_session(session_id):
-    sanitized_session_id = re.sub(r"[^a-zA-Z0-9_-]+", "-", session_id or "unknown")
-    return (
-        resolve_state_directory()
-        / f"agent-instruction-authoring-router-{sanitized_session_id}.json"
+def load_instructions_skill_marker_module():
+    hook_script_directory = Path(__file__).resolve().parent
+    shared_common_hook_modules_directory = (
+        hook_script_directory.parent.parent / "common"
     )
+    for candidate_directory in (
+        hook_script_directory,
+        shared_common_hook_modules_directory,
+    ):
+        candidate_directory_string = str(candidate_directory)
+        if candidate_directory.is_dir() and candidate_directory_string not in sys.path:
+            sys.path.insert(0, candidate_directory_string)
+    import instructions_skill_marker
+
+    return instructions_skill_marker
 
 
-def load_already_nudged_target_paths(state_path):
-    if not state_path.exists():
-        return set()
-    try:
-        return set(json.loads(state_path.read_text()))
-    except (json.JSONDecodeError, OSError):
-        return set()
-
-
-def persist_already_nudged_target_paths(state_path, target_paths):
-    try:
-        state_path.write_text(json.dumps(sorted(target_paths)))
-    except OSError:
-        pass
+def has_loaded_instructions_skill_this_session(session_id):
+    instructions_skill_marker = load_instructions_skill_marker_module()
+    return instructions_skill_marker.instructions_skill_loaded_marker_path(
+        session_id
+    ).exists()
 
 
 def extract_edited_file_path(tool_input):
@@ -95,15 +83,8 @@ def main():
     if not is_agent_directed_instruction_file(file_path):
         sys.exit(0)
 
-    resolved_target_path = str(Path(file_path).expanduser())
-    state_path = state_path_for_session(hook_input.get("session_id", ""))
-    already_nudged_target_paths = load_already_nudged_target_paths(state_path)
-
-    if resolved_target_path in already_nudged_target_paths:
+    if has_loaded_instructions_skill_this_session(hook_input.get("session_id", "")):
         sys.exit(0)
-
-    already_nudged_target_paths.add(resolved_target_path)
-    persist_already_nudged_target_paths(state_path, already_nudged_target_paths)
 
     print(AUTHORING_STANDARDS_DIRECTIVE, file=sys.stderr)
     sys.exit(2)

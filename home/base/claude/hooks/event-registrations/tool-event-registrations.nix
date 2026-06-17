@@ -1,43 +1,9 @@
-{ lib, hostname }:
-let
-  hooksPath = "~/.claude/hooks";
-  runHook = "${hooksPath}/run-hook.sh";
-
-  machineAllowedProhibitedWordsFile =
-    ../../../../private-config/machines + "/${hostname}/claude-prohibited-words-allowed.nix";
-  machineAllowedProhibitedWords =
-    if builtins.pathExists machineAllowedProhibitedWordsFile then
-      import machineAllowedProhibitedWordsFile
-    else
-      [ ];
-  prohibitedWordsAllowedEnvironmentAssignment =
-    "PROHIBITED_WORDS_ALLOWED="
-    + lib.escapeShellArg (lib.concatStringsSep "," machineAllowedProhibitedWords);
-in
 {
-  SessionStart = [
-    {
-      matcher = ".*";
-      hooks = [
-        {
-          type = "command";
-          command = "${runHook} ${hooksPath}/session-context.py";
-          timeout = 5000;
-        }
-      ];
-    }
-    {
-      matcher = "compact";
-      hooks = [
-        {
-          type = "command";
-          command = "${runHook} ${hooksPath}/compaction-context-recovery.py";
-          timeout = 3000;
-        }
-      ];
-    }
-  ];
-
+  hooksPath,
+  runHook,
+  prohibitedWordsAllowedEnvironmentAssignment,
+}:
+{
   PreToolUse = [
     {
       matcher = ".*";
@@ -121,6 +87,16 @@ in
 
   PostToolUse = [
     {
+      matcher = "Skill";
+      hooks = [
+        {
+          type = "command";
+          command = "${runHook} ${hooksPath}/record-instructions-skill-invocation.py";
+          timeout = 3000;
+        }
+      ];
+    }
+    {
       matcher = "Edit|Write";
       hooks = [
         {
@@ -142,50 +118,6 @@ in
           type = "command";
           command = "${runHook} ${hooksPath}/line-count-advisory-guard.py";
           timeout = 3000;
-        }
-      ];
-    }
-  ];
-
-  UserPromptSubmit = [
-    {
-      matcher = ".*";
-      hooks = [
-        {
-          type = "command";
-          command = "${runHook} ${hooksPath}/tldr-reminder.py";
-          timeout = 2000;
-        }
-      ];
-    }
-  ];
-
-  Stop = [
-    {
-      matcher = ".*";
-      hooks = [
-        {
-          type = "command";
-          command = "${runHook} ${hooksPath}/lint-turn-review.py";
-          timeout = 5000;
-        }
-        {
-          type = "command";
-          command = "${runHook} ${hooksPath}/end-of-turn-format-guard.py";
-          timeout = 5000;
-        }
-      ];
-    }
-  ];
-
-  SubagentStop = [
-    {
-      matcher = ".*";
-      hooks = [
-        {
-          type = "command";
-          command = "${runHook} ${hooksPath}/lint-turn-review.py";
-          timeout = 5000;
         }
       ];
     }

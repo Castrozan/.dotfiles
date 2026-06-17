@@ -1,7 +1,7 @@
 import pytest
 
 
-class TestAgentDirectedInstructionFilesAreRoutedToAuthoringStandards:
+class TestInstructionFileEditsAreGatedOnTheInstructionsSkill:
     @pytest.mark.parametrize(
         "tool_name",
         ["Write", "Edit"],
@@ -17,7 +17,7 @@ class TestAgentDirectedInstructionFilesAreRoutedToAuthoringStandards:
             "some/repo/skills/nested/deeply/notes.md",
         ],
     )
-    def test_blocks_first_edit_to_agent_directed_file(
+    def test_blocks_edit_to_agent_directed_file_until_skill_loaded(
         self,
         tool_name,
         file_path,
@@ -56,11 +56,11 @@ class TestAgentDirectedInstructionFilesAreRoutedToAuthoringStandards:
         assert result.returncode == 0
         assert result.stdout == ""
 
-    def test_blocks_only_the_first_edit_to_a_file_per_session(
+    def test_keeps_blocking_every_edit_while_the_skill_is_unloaded(
         self, invoke_agent_instruction_file_authoring_router_hook
     ):
         payload = {
-            "session_id": "session-debounce",
+            "session_id": "session-persistent-block",
             "tool_name": "Edit",
             "tool_input": {"file_path": "/home/lucas.zanoni/.dotfiles/CLAUDE.md"},
         }
@@ -69,31 +69,117 @@ class TestAgentDirectedInstructionFilesAreRoutedToAuthoringStandards:
         second_result = invoke_agent_instruction_file_authoring_router_hook(payload)
 
         assert first_result.returncode == 2
-        assert second_result.returncode == 0
-        assert second_result.stdout == ""
+        assert second_result.returncode == 2
 
-    def test_nudges_each_distinct_file_independently_within_a_session(
-        self, invoke_agent_instruction_file_authoring_router_hook
+    def test_opens_the_gate_after_the_instructions_skill_is_recorded(
+        self,
+        invoke_agent_instruction_file_authoring_router_hook,
+        invoke_record_instructions_skill_invocation_hook,
     ):
-        claude_md_result = invoke_agent_instruction_file_authoring_router_hook(
+        edit_payload = {
+            "session_id": "session-gate-open",
+            "tool_name": "Edit",
+            "tool_input": {"file_path": "/home/lucas.zanoni/.dotfiles/CLAUDE.md"},
+        }
+
+        blocked_before = invoke_agent_instruction_file_authoring_router_hook(
+            edit_payload
+        )
+        invoke_record_instructions_skill_invocation_hook(
             {
-                "session_id": "session-distinct",
+                "session_id": "session-gate-open",
+                "tool_name": "Skill",
+                "tool_input": {"skill": "instructions"},
+            }
+        )
+        allowed_after = invoke_agent_instruction_file_authoring_router_hook(
+            edit_payload
+        )
+
+        assert blocked_before.returncode == 2
+        assert allowed_after.returncode == 0
+        assert allowed_after.stdout == ""
+
+    def test_gate_is_scoped_to_the_recording_session(
+        self,
+        invoke_agent_instruction_file_authoring_router_hook,
+        invoke_record_instructions_skill_invocation_hook,
+    ):
+        invoke_record_instructions_skill_invocation_hook(
+            {
+                "session_id": "session-with-skill",
+                "tool_name": "Skill",
+                "tool_input": {"skill": "instructions"},
+            }
+        )
+
+        other_session_result = invoke_agent_instruction_file_authoring_router_hook(
+            {
+                "session_id": "session-without-skill",
                 "tool_name": "Edit",
                 "tool_input": {"file_path": "/home/lucas.zanoni/.dotfiles/CLAUDE.md"},
             }
         )
-        skill_md_result = invoke_agent_instruction_file_authoring_router_hook(
+
+        assert other_session_result.returncode == 2
+
+    def test_unrelated_skill_invocation_does_not_open_the_gate(
+        self,
+        invoke_agent_instruction_file_authoring_router_hook,
+        invoke_record_instructions_skill_invocation_hook,
+    ):
+        invoke_record_instructions_skill_invocation_hook(
             {
-                "session_id": "session-distinct",
-                "tool_name": "Edit",
-                "tool_input": {
-                    "file_path": "/home/lucas.zanoni/.dotfiles/agents/skills/nix/SKILL.md"
-                },
+                "session_id": "session-unrelated-skill",
+                "tool_name": "Skill",
+                "tool_input": {"skill": "nix"},
             }
         )
 
-        assert claude_md_result.returncode == 2
-        assert skill_md_result.returncode == 2
+        result = invoke_agent_instruction_file_authoring_router_hook(
+            {
+                "session_id": "session-unrelated-skill",
+                "tool_name": "Edit",
+                "tool_input": {"file_path": "/home/lucas.zanoni/.dotfiles/CLAUDE.md"},
+            }
+        )
+
+        assert result.returncode == 2
+
+    @pytest.mark.parametrize(
+        "skill_name,expected_returncode",
+        [
+            ("plugin:instructions", 0),
+            ("marketplace:instructions", 0),
+            ("plugin:not-instructions", 2),
+            ("instructions-helper", 2),
+            ("instructions:extras", 2),
+        ],
+    )
+    def test_only_the_instructions_skill_or_its_namespaced_form_opens_the_gate(
+        self,
+        skill_name,
+        expected_returncode,
+        invoke_agent_instruction_file_authoring_router_hook,
+        invoke_record_instructions_skill_invocation_hook,
+    ):
+        invoke_record_instructions_skill_invocation_hook(
+            {
+                "session_id": "session-namespaced-skill",
+                "tool_name": "Skill",
+                "tool_input": {"skill": skill_name},
+            }
+        )
+
+        result = invoke_agent_instruction_file_authoring_router_hook(
+            {
+                "session_id": "session-namespaced-skill",
+                "tool_name": "Edit",
+                "tool_input": {"file_path": "/home/lucas.zanoni/.dotfiles/CLAUDE.md"},
+            }
+        )
+
+        assert result.returncode == expected_returncode
 
     def test_ignores_input_without_a_file_path(
         self, invoke_agent_instruction_file_authoring_router_hook

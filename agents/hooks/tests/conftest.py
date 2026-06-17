@@ -1,60 +1,45 @@
-import importlib
 import json
-import subprocess
 import sys
 from pathlib import Path
 
 import pytest
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-HOOKS_DIRECTORY = Path(__file__).resolve().parent.parent
-
-
-def find_hook_module_path(hyphenated_name):
-    candidate_module_paths = [
-        candidate
-        for candidate in HOOKS_DIRECTORY.rglob(f"{hyphenated_name}.py")
-        if "tests" not in candidate.parts and "__pycache__" not in candidate.parts
-    ]
-    if not candidate_module_paths:
-        raise FileNotFoundError(f"hook script not found: {hyphenated_name}.py")
-    return candidate_module_paths[0]
-
-
-def import_hyphenated_hook_module(hyphenated_name):
-    module_path = find_hook_module_path(hyphenated_name)
-    spec = importlib.util.spec_from_file_location(
-        hyphenated_name.replace("-", "_"), module_path
-    )
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[hyphenated_name.replace("-", "_")] = module
-    spec.loader.exec_module(module)
-    return module
-
+from hook_module_loader import (
+    find_hook_module_path,
+    import_hyphenated_hook_module,
+    run_hook_subprocess,
+)
 
 import_hyphenated_hook_module("session-context")
 import_hyphenated_hook_module("monitor-streaming-pattern-validator")
 import_hyphenated_hook_module("memory-recall")
 
-
 PROHIBITED_COMMAND_GUARD_HOOK_SCRIPT_PATH = find_hook_module_path(
     "prohibited-command-guard"
+)
+PROHIBITED_WORDS_GUARD_HOOK_SCRIPT_PATH = find_hook_module_path(
+    "prohibited-words-guard"
 )
 LINE_COUNT_ADVISORY_GUARD_HOOK_SCRIPT_PATH = find_hook_module_path(
     "line-count-advisory-guard"
 )
+AGENT_INSTRUCTION_FILE_AUTHORING_ROUTER_HOOK_SCRIPT_PATH = find_hook_module_path(
+    "agent-instruction-file-authoring-router"
+)
+RECORD_INSTRUCTIONS_SKILL_INVOCATION_HOOK_SCRIPT_PATH = find_hook_module_path(
+    "record-instructions-skill-invocation"
+)
+MEMORY_RECALL_HOOK_SCRIPT_PATH = find_hook_module_path("memory-recall")
 
 
 @pytest.fixture
 def invoke_prohibited_command_guard_hook():
-    def runner(payload: dict) -> subprocess.CompletedProcess:
-        return subprocess.run(
-            [sys.executable, str(PROHIBITED_COMMAND_GUARD_HOOK_SCRIPT_PATH)],
-            input=json.dumps(payload),
-            capture_output=True,
-            text=True,
-            timeout=5,
+    def runner(payload: dict):
+        return run_hook_subprocess(
+            PROHIBITED_COMMAND_GUARD_HOOK_SCRIPT_PATH, json.dumps(payload)
         )
 
     return runner
@@ -63,38 +48,22 @@ def invoke_prohibited_command_guard_hook():
 @pytest.fixture
 def parse_prohibited_command_guard_system_message():
     def parser(stdout: str) -> str:
-        parsed = json.loads(stdout)
-        return parsed.get("systemMessage", "")
+        return json.loads(stdout).get("systemMessage", "")
 
     return parser
 
 
 @pytest.fixture
 def invoke_prohibited_command_guard_hook_with_raw_stdin():
-    def runner(raw_stdin: str) -> subprocess.CompletedProcess:
-        return subprocess.run(
-            [sys.executable, str(PROHIBITED_COMMAND_GUARD_HOOK_SCRIPT_PATH)],
-            input=raw_stdin,
-            capture_output=True,
-            text=True,
-            timeout=5,
-        )
+    def runner(raw_stdin: str):
+        return run_hook_subprocess(PROHIBITED_COMMAND_GUARD_HOOK_SCRIPT_PATH, raw_stdin)
 
     return runner
 
 
-PROHIBITED_WORDS_GUARD_HOOK_SCRIPT_PATH = find_hook_module_path(
-    "prohibited-words-guard"
-)
-
-
-def run_prohibited_words_guard(payload: dict) -> subprocess.CompletedProcess:
-    return subprocess.run(
-        [sys.executable, str(PROHIBITED_WORDS_GUARD_HOOK_SCRIPT_PATH)],
-        input=json.dumps(payload),
-        capture_output=True,
-        text=True,
-        timeout=5,
+def run_prohibited_words_guard(payload: dict):
+    return run_hook_subprocess(
+        PROHIBITED_WORDS_GUARD_HOOK_SCRIPT_PATH, json.dumps(payload)
     )
 
 
@@ -114,21 +83,12 @@ def invoke_prohibited_words_guard_hook_without_wordlist(tmp_path, monkeypatch):
 
 @pytest.fixture
 def invoke_line_count_advisory_guard_hook():
-    def runner(payload: dict) -> subprocess.CompletedProcess:
-        return subprocess.run(
-            [sys.executable, str(LINE_COUNT_ADVISORY_GUARD_HOOK_SCRIPT_PATH)],
-            input=json.dumps(payload),
-            capture_output=True,
-            text=True,
-            timeout=5,
+    def runner(payload: dict):
+        return run_hook_subprocess(
+            LINE_COUNT_ADVISORY_GUARD_HOOK_SCRIPT_PATH, json.dumps(payload)
         )
 
     return runner
-
-
-AGENT_INSTRUCTION_FILE_AUTHORING_ROUTER_HOOK_SCRIPT_PATH = find_hook_module_path(
-    "agent-instruction-file-authoring-router"
-)
 
 
 @pytest.fixture
@@ -137,22 +97,27 @@ def invoke_agent_instruction_file_authoring_router_hook(tmp_path, monkeypatch):
         "AGENT_INSTRUCTION_AUTHORING_ROUTER_STATE_DIRECTORY", str(tmp_path)
     )
 
-    def runner(payload: dict) -> subprocess.CompletedProcess:
-        return subprocess.run(
-            [
-                sys.executable,
-                str(AGENT_INSTRUCTION_FILE_AUTHORING_ROUTER_HOOK_SCRIPT_PATH),
-            ],
-            input=json.dumps(payload),
-            capture_output=True,
-            text=True,
-            timeout=5,
+    def runner(payload: dict):
+        return run_hook_subprocess(
+            AGENT_INSTRUCTION_FILE_AUTHORING_ROUTER_HOOK_SCRIPT_PATH,
+            json.dumps(payload),
         )
 
     return runner
 
 
-MEMORY_RECALL_HOOK_SCRIPT_PATH = find_hook_module_path("memory-recall")
+@pytest.fixture
+def invoke_record_instructions_skill_invocation_hook(tmp_path, monkeypatch):
+    monkeypatch.setenv(
+        "AGENT_INSTRUCTION_AUTHORING_ROUTER_STATE_DIRECTORY", str(tmp_path)
+    )
+
+    def runner(payload: dict):
+        return run_hook_subprocess(
+            RECORD_INSTRUCTIONS_SKILL_INVOCATION_HOOK_SCRIPT_PATH, json.dumps(payload)
+        )
+
+    return runner
 
 
 @pytest.fixture
@@ -184,13 +149,7 @@ def make_memory_recall_directory():
 
 @pytest.fixture
 def invoke_memory_recall_hook():
-    def run_hook_with_payload(payload: dict) -> subprocess.CompletedProcess:
-        return subprocess.run(
-            [sys.executable, str(MEMORY_RECALL_HOOK_SCRIPT_PATH)],
-            input=json.dumps(payload),
-            capture_output=True,
-            text=True,
-            timeout=5,
-        )
+    def run_hook_with_payload(payload: dict):
+        return run_hook_subprocess(MEMORY_RECALL_HOOK_SCRIPT_PATH, json.dumps(payload))
 
     return run_hook_with_payload
