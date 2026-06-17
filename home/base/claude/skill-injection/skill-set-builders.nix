@@ -9,6 +9,7 @@ let
     "tmux-claude"
     "instructions"
     "review"
+    "humanize"
   ];
 
   getSkillNamesFromDirectory =
