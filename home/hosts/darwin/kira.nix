@@ -19,9 +19,12 @@ in
     ../../base/editor/zed-editor.nix
 
     ../../base/dev/aws.nix
+    ../../base/dev/bitwarden-cli.nix
     ../../base/dev/google-workspace-cli.nix
+    ../../base/dev/infisical.nix
     ../../base/dev/mcporter.nix
     ../../base/dev/ralph-tui.nix
+    ../../base/dev/temporal.nix
     ../../base/dev/tuisvn.nix
   ]
   ++ lib.optionals kiraPrivateConfigExists [
