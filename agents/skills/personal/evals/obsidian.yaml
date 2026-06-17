@@ -46,7 +46,7 @@ tests:
     assertions:
       output_contains_any:
         - "fxtwitter"
-        - "comms"
+        - "twitter"
         - "twikit"
         - "curl"
 

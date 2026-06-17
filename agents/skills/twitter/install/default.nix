@@ -9,15 +9,7 @@ let
   secretsDirectory = "${homeDir}/.secrets";
   twikitCookiesPath = "${homeDir}/.config/twikit/cookies.json";
 
-  twikitCliSource = pkgs.writeText "twikit-cli.py" (builtins.readFile ../scripts/twikit-cli.py);
-
-  extractXCookiesSource = pkgs.writeText "extract-x-cookies.py" (
-    builtins.readFile ../scripts/extract-x-cookies.py
-  );
-
-  patchTwikitTransactionSource = pkgs.writeText "patch-twikit-transaction.py" (
-    builtins.readFile ../scripts/patch-twikit-transaction.py
-  );
+  twitterScriptsDirectory = ../scripts;
 
   twikitCli = pkgs.writeShellScriptBin "twikit-cli" ''
     set -euo pipefail
@@ -37,7 +29,7 @@ let
       if [ -f "$TWIKIT_USER" ]; then
         ${pkgs.gnused}/bin/sed -i "s/\['description'\]\['urls'\]/['description'].get('urls', [])/g; s/legacy\['pinned_tweet_ids_str'\]/legacy.get('pinned_tweet_ids_str', [])/g; s/legacy\['withheld_in_countries'\]/legacy.get('withheld_in_countries', [])/g" "$TWIKIT_USER"
       fi
-      ${python}/bin/python "${patchTwikitTransactionSource}" "$VENV"
+      ${python}/bin/python "${twitterScriptsDirectory}/patch-twikit-transaction.py" "$VENV"
     fi
 
     export TWIKIT_COOKIES_PATH="${twikitCookiesPath}"
@@ -53,10 +45,10 @@ let
     export TWIKIT_PASSWORD_FILE="${secretsDirectory}/x-password"
 
     if [ "''${1:-}" = "extract-cookies" ]; then
-      exec "$VENV/bin/python" "${extractXCookiesSource}"
+      exec "$VENV/bin/python" "${twitterScriptsDirectory}/extract-x-cookies.py"
     fi
 
-    exec "$VENV/bin/python" "${twikitCliSource}" "$@"
+    exec "$VENV/bin/python" "${twitterScriptsDirectory}/twikit-cli.py" "$@"
   '';
 in
 {

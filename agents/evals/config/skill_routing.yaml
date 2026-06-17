@@ -106,7 +106,7 @@ tests:
       output_contains_any:
         - "desktop"
 
-  - name: routing_to_comms_google_chat_message
+  - name: routing_to_personal_google_chat_message
     no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "Send a message to the team on Google Chat saying the deploy is done"
@@ -117,7 +117,7 @@ tests:
       output_not_contains:
         - "browser"
 
-  - name: routing_to_comms_twitter_post
+  - name: routing_to_personal_twitter_post
     no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "Post a tweet about the new release on my X account"
@@ -128,7 +128,7 @@ tests:
       output_not_contains:
         - "browser"
 
-  - name: routing_to_comms_vtuber_avatar
+  - name: routing_to_personal_vtuber_avatar
     no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "Make the VTuber avatar smile and start lip syncing"
@@ -137,7 +137,7 @@ tests:
       output_contains_any:
         - "personal"
 
-  - name: routing_to_comms_twitter_scrape
+  - name: routing_to_personal_twitter_scrape
     no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "Scrape the latest tweets from @nixos_org"
@@ -328,7 +328,7 @@ tests:
   - name: routing_to_review_skill_routing_failure
     no_tools: true
     system_prompt: *shared_system_prompt
-    prompt: "The model keeps using WebFetch instead of the comms skill when I paste Twitter URLs. How do I fix the skill routing?"
+    prompt: "The model keeps using WebFetch instead of the twitter skill when I paste Twitter URLs. How do I fix the skill routing?"
     model: sonnet
     assertions:
       output_contains_any:
@@ -523,7 +523,7 @@ tests:
       output_not_contains:
         - "browser"
 
-  - name: routing_to_comms_tweet_media_fetch
+  - name: routing_to_personal_tweet_media_fetch
     no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "Fetch the image attached to this tweet by @user"
@@ -534,7 +534,7 @@ tests:
       output_not_contains:
         - "browser"
 
-  - name: routing_ambiguous_browser_vs_comms_tweet_scraping
+  - name: routing_ambiguous_browser_vs_personal_tweet_scraping
     no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "I need to read what a tweet says and see its attached image"
@@ -545,7 +545,7 @@ tests:
       output_not_contains:
         - "browser"
 
-  - name: routing_to_comms_bare_xcom_url
+  - name: routing_to_personal_bare_xcom_url
     no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "https://x.com/neogoose_btw/status/2040598081763471417"
@@ -557,7 +557,7 @@ tests:
         - "browser"
         - "research"
 
-  - name: routing_to_comms_bare_twitter_url
+  - name: routing_to_personal_bare_twitter_url
     no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "https://twitter.com/elikiaponde/status/1234567890"
@@ -569,7 +569,7 @@ tests:
         - "browser"
         - "research"
 
-  - name: routing_to_comms_xcom_url_with_context
+  - name: routing_to_personal_xcom_url_with_context
     no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "https://x.com/schizoidcock/status/2040595546411266214 this looks interesting, is it any good?"
@@ -581,7 +581,7 @@ tests:
         - "browser"
         - "research"
 
-  - name: routing_to_comms_xcom_url_what_does_it_say
+  - name: routing_to_personal_xcom_url_what_does_it_say
     no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "what does this tweet say? https://x.com/user/status/1234567890123"

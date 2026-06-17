@@ -4,7 +4,7 @@ description: Control the VTuber avatar — start and stop the renderer, virtual 
 ---
 
 <scripts>
-All scripts live at @homePath@/@workspacePath@/skills/comms/skills/avatar/scripts/. Start all services with start-avatar.sh (opens visible browser). Stop with stop-avatar.sh. Speak with avatar-speak.sh or avatar-speak-multi.sh — run --help for usage.
+All scripts live at @homePath@/@workspacePath@/skills/avatar/scripts/. Start all services with start-avatar.sh (opens visible browser). Stop with stop-avatar.sh. Speak with avatar-speak.sh or avatar-speak-multi.sh — run --help for usage.
 </scripts>
 
 <voice_conversation_mode>
