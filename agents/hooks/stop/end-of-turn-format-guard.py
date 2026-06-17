@@ -7,25 +7,23 @@ import os
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent))
+hook_script_directory = Path(__file__).resolve().parent
+shared_common_hook_modules_directory = hook_script_directory.parent / "common"
+for importable_directory in (
+    hook_script_directory,
+    shared_common_hook_modules_directory,
+):
+    importable_directory_string = str(importable_directory)
+    if importable_directory.is_dir() and importable_directory_string not in sys.path:
+        sys.path.insert(0, importable_directory_string)
 
 from end_of_turn_reply_template_rules import (  # noqa: E402
     COMPRESSION_GUIDANCE,
     template_violations_in_reply,
 )
-
-INTERACTIVE_SESSION_ENVIRONMENT_VARIABLE = "CLAUDE_INTERACTIVE_PREFERENCES_PATH"
-CLAWDE_BACKGROUND_AGENT_ENVIRONMENT_MARKER = "CLAWDE_RESUME_FLAG"
-
-
-def is_clawde_background_agent_session() -> bool:
-    return CLAWDE_BACKGROUND_AGENT_ENVIRONMENT_MARKER in os.environ
-
-
-def is_keyboard_driven_interactive_session() -> bool:
-    if is_clawde_background_agent_session():
-        return False
-    return bool(os.environ.get(INTERACTIVE_SESSION_ENVIRONMENT_VARIABLE))
+from interactive_session_detection import (  # noqa: E402
+    is_keyboard_driven_interactive_session,
+)
 
 
 def read_hook_input_or_exit() -> dict:

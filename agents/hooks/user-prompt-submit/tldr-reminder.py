@@ -3,11 +3,22 @@
 from __future__ import annotations
 
 import json
-import os
 import sys
+from pathlib import Path
 
-INTERACTIVE_SESSION_ENVIRONMENT_VARIABLE = "CLAUDE_INTERACTIVE_PREFERENCES_PATH"
-CLAWDE_BACKGROUND_AGENT_ENVIRONMENT_MARKER = "CLAWDE_RESUME_FLAG"
+hook_script_directory = Path(__file__).resolve().parent
+shared_common_hook_modules_directory = hook_script_directory.parent / "common"
+for importable_directory in (
+    hook_script_directory,
+    shared_common_hook_modules_directory,
+):
+    importable_directory_string = str(importable_directory)
+    if importable_directory.is_dir() and importable_directory_string not in sys.path:
+        sys.path.insert(0, importable_directory_string)
+
+from interactive_session_detection import (  # noqa: E402
+    is_keyboard_driven_interactive_session,
+)
 
 TLDR_REPLY_REMINDER = (
     "Reply as a short, well-written status report in plain prose, no lists and no numbering. "
@@ -30,16 +41,6 @@ def read_hook_input_or_exit() -> dict:
         return json.load(sys.stdin)
     except json.JSONDecodeError:
         sys.exit(0)
-
-
-def is_clawde_background_agent_session() -> bool:
-    return CLAWDE_BACKGROUND_AGENT_ENVIRONMENT_MARKER in os.environ
-
-
-def is_keyboard_driven_interactive_session() -> bool:
-    if is_clawde_background_agent_session():
-        return False
-    return bool(os.environ.get(INTERACTIVE_SESSION_ENVIRONMENT_VARIABLE))
 
 
 def main() -> None:
