@@ -1,3 +1,8 @@
+---
+name: deep-work
+description: Persist task context to disk so big or compaction-prone work survives across sessions. Use for work over ~5 steps, spanning sessions, or when explicitly asked to preserve context; not for quick fixes.
+---
+
 <activation>
 Activate when any condition is met: user says "big work" or similar, task has more than 5 discrete steps, work will clearly span multiple sessions, or user explicitly asks to preserve context. Do not activate for quick fixes, single-file edits, or tasks completable in one exchange. When in doubt, ask — the overhead of deep-work management on a small task wastes more than it saves.
 </activation>
@@ -5,13 +10,13 @@ Activate when any condition is met: user says "big work" or similar, task has mo
 <workspace>
 Create `.deep-work/{task-slug}/` in the project root. Add `.deep-work/` to `.gitignore` if not present. The workspace contains four files, each with a distinct purpose:
 
-`prompts.md` — Every user prompt stored verbatim with timestamps. Never summarize, paraphrase, or omit. Copy the exact text. This is the single source of truth for what the user asked. After compaction, the original prompt is the only way to verify you haven't drifted from what was actually requested. When a user gives a detailed specification, requirements list, or multi-paragraph request, that text IS the requirements document — summarizing it destroys signal.
+prompts.md — Every user prompt stored verbatim with timestamps. Never summarize, paraphrase, or omit. Copy the exact text. This is the single source of truth for what the user asked. After compaction, the original prompt is the only way to verify you haven't drifted from what was actually requested. When a user gives a detailed specification, requirements list, or multi-paragraph request, that text IS the requirements document — summarizing it destroys signal.
 
-`plan.md` — The current implementation plan. Starts as initial breakdown, evolves as work progresses. Mark phases as done, in-progress, or pending. Update when approach changes — never let the plan diverge from reality. Include phase dependencies and ordering constraints so recovery knows what can be parallelized.
+plan.md — The current implementation plan. Starts as initial breakdown, evolves as work progresses. Mark phases as done, in-progress, or pending. Update when approach changes — never let the plan diverge from reality. Include phase dependencies and ordering constraints so recovery knows what can be parallelized.
 
-`progress.md` — Chronological journal of completed work. Each entry: timestamp, what was done, key decisions and their rationale, files changed. This reconstructs full context after compaction. Write entries in enough detail that a fresh agent with no conversation history can understand what happened and why.
+progress.md — Chronological journal of completed work. Each entry: timestamp, what was done, key decisions and their rationale, files changed. This reconstructs full context after compaction. Write entries in enough detail that a fresh agent with no conversation history can understand what happened and why.
 
-`context.md` — Curated high-signal context that must survive compaction. Requirements extracted from prompts, constraints discovered during research, user corrections, non-obvious dependencies, architecture decisions. Not a dump — each entry must justify its inclusion by being something the agent cannot rediscover from reading code alone.
+context.md — Curated high-signal context that must survive compaction. Requirements extracted from prompts, constraints discovered during research, user corrections, non-obvious dependencies, architecture decisions. Not a dump — each entry must justify its inclusion by being something the agent cannot rediscover from reading code alone.
 </workspace>
 
 <update-cadence>

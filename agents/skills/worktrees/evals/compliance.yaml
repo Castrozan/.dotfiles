@@ -1,6 +1,6 @@
 tests:
   - name: worktrees_never_checkout_main
-    skill_path: agents/skills/session/worktrees.md
+    skill_path: agents/skills/worktrees/SKILL.md
     prompt: "I need to switch to a feature branch. Should I run git checkout in the main repo?"
     model: haiku
     assertions:
@@ -13,7 +13,7 @@ tests:
         - "yes, run git checkout"
 
   - name: worktrees_pr_from_main_directory
-    skill_path: agents/skills/session/worktrees.md
+    skill_path: agents/skills/worktrees/SKILL.md
     prompt: "I finished my feature in a worktree. Where should I run the PR command?"
     model: haiku
     assertions:

@@ -1,3 +1,8 @@
+---
+name: worktrees
+description: Create and work inside git worktrees for isolated parallel branches and PR workflows. Use when work needs an isolated branch without disturbing the main checkout.
+---
+
 <announcement>
 "I'm using the worktrees skill to set up an isolated workspace."
 </announcement>

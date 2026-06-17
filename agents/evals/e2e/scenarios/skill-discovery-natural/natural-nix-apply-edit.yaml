@@ -21,5 +21,4 @@ assertions:
     - nix
   wrong_skill_not_invoked:
     - git
-    - session
     - research

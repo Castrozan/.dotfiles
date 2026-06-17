@@ -1,3 +1,8 @@
+---
+name: tmux
+description: tmux session and pane control primitives for background processes. Use when driving tmux directly; to launch or drive another Claude Code instance, use the `tmux-claude` skill instead.
+---
+
 <socket_trap>
 Hyprland sets TMUX_TMPDIR=$XDG_RUNTIME_DIR, placing the socket at /run/user/$UID/tmux-$UID/default. Bare tmux commands use /tmp and will fail silently with "no server running" even when sessions exist.
 

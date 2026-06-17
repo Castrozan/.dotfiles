@@ -1,5 +1,5 @@
-name: skill_discovery_natural_session_parallel_branch
-description: Natural-prompt variant. User asks for a parallel branch without touching the current tree, with no hint about worktrees or the session skill. Agent should still route to session skill.
+name: skill_discovery_natural_worktrees_parallel_branch
+description: Natural-prompt variant. User asks for a parallel branch without touching the current tree, with no hint about worktrees or the worktrees skill. Agent should still route to the worktrees skill.
 
 setup:
   git_init: true
@@ -14,7 +14,7 @@ timeout: 180
 
 assertions:
   autonomous_skill_invocation:
-    - session
+    - worktrees
   wrong_skill_not_invoked:
     - git
     - nix

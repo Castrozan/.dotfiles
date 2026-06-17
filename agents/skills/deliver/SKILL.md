@@ -16,7 +16,7 @@ Derive the steps from this goal's context; never paste a fixed template. Anchor 
 </design_the_process_from_context>
 
 <author_the_goal>
-Persist the plan to a durable tracker before executing (a deep-work workspace or PLAN file per the `session` skill) so it survives compaction and resumes across sessions; that tracker is the single source of live state and you update it as the last step of every increment. Then use the `goal-prompt` skill to write one self-contained launch brief that points at the tracker as the live spec instead of restating it, so the brief stays evergreen as state changes.
+Persist the plan to a durable tracker before executing (a deep-work workspace or PLAN file per the `deep-work` skill) so it survives compaction and resumes across sessions; that tracker is the single source of live state and you update it as the last step of every increment. Then use the `goal-prompt` skill to write one self-contained launch brief that points at the tracker as the live spec instead of restating it, so the brief stays evergreen as state changes.
 </author_the_goal>
 
 <human_gate_before_launch>

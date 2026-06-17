@@ -25,7 +25,6 @@ assertions:
     - test
   wrong_skill_not_invoked:
     - review
-    - session
     - personal
   file_changed:
     - test_calculator.py

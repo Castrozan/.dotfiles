@@ -24,7 +24,7 @@ ppid=) printf '%s\n' "$parentProcessId" ;;
 esac
 STUB
 	chmod +x "$stubbedProcessTreeDirectory/ps"
-	sessionScriptsDirectory="$DOTFILES_SKILLS_DIRECTORY/session/scripts"
+	exitScriptsDirectory="$DOTFILES_SKILLS_DIRECTORY/exit/scripts"
 }
 
 teardown() {
@@ -48,7 +48,7 @@ teardown() {
 }
 
 @test "delegates to find-claude-ancestor-pid and reports the target without killing" {
-	PATH="$stubbedProcessTreeDirectory:$sessionScriptsDirectory:$PATH" \
+	PATH="$stubbedProcessTreeDirectory:$exitScriptsDirectory:$PATH" \
 		CLAUDE_EXIT_ANCESTOR_SCAN_START_PROCESS_ID=2100 \
 		run_script_under_test --print-target
 	[ "$status" -eq 0 ]
@@ -56,7 +56,7 @@ teardown() {
 }
 
 @test "fails safe when no claude process is in the ancestor chain" {
-	PATH="$stubbedProcessTreeDirectory:$sessionScriptsDirectory:$PATH" \
+	PATH="$stubbedProcessTreeDirectory:$exitScriptsDirectory:$PATH" \
 		CLAUDE_EXIT_ANCESTOR_SCAN_START_PROCESS_ID=9100 \
 		run_script_under_test --print-target
 	[ "$status" -ne 0 ]

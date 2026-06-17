@@ -1,3 +1,8 @@
+---
+name: workspace
+description: Switch the Bash working directory to another repo or directory for the session. Use when work must run commands outside the primary repo.
+---
+
 <mechanism>
 Write an absolute path to `/tmp/claude-code-workspace-cwd` to switch. A PreToolUse hook prepends `cd <dir> && direnv export` to every Bash command. Delete the file to return to the original directory. Verify with `pwd` after switching.
 </mechanism>

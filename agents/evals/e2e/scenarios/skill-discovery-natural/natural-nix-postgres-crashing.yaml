@@ -14,5 +14,4 @@ assertions:
   autonomous_skill_invocation:
     - nix
   wrong_skill_not_invoked:
-    - session
     - personal

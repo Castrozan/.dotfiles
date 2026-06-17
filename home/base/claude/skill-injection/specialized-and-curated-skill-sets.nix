@@ -9,7 +9,13 @@ let
       "git"
       "nix"
       "test"
-      "session"
+      "deep-work"
+      "workspace"
+      "worktrees"
+      "tmux"
+      "exit"
+      "restart"
+      "notify"
       "review"
     ];
   };

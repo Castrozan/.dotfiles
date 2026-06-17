@@ -19,7 +19,21 @@ shared_system_prompt: &shared_system_prompt |
 
   review - Quality, review, and output craft — unbiased code review rubric for reviewer subagents, offloaded-rule compliance auditing, documentation policy, skill and instruction authoring, ultra-dense output mode. Use when reviewing code, auditing rule compliance, writing docs or policies, designing skills or prompts, or when the user asks for compressed responses.
 
-  session - Session lifecycle and context preservation — deep work context management, workspace switching, git worktrees for parallel branches, tmux control for background processes, spawning interactive Claude Code instances via tmux or one-shot --print, end-of-work notifications to the user, session restart and exit.
+  deep-work - Persist task context to disk so multi-session or compaction-prone work survives. Use for big work (more than 5 steps, spans sessions, explicit context-preservation request); creates a `.deep-work/{task}/` workspace of verbatim prompts, plan, progress journal, and curated context. Not for quick single-exchange fixes.
+
+  workspace - Switch the Bash working directory to another repo or directory for the session via a state file. Use when work must run commands outside the primary repo.
+
+  worktrees - Create and work in git worktrees for isolated parallel branches and PR workflows. Use when work needs an isolated branch without disturbing the main checkout. Do NOT use for plain commits or staging.
+
+  tmux - tmux session and pane control primitives for background processes. Use when driving tmux directly to run or manage long-running background processes.
+
+  tmux-claude - Launch and drive another Claude Code instance — interactive tmux windows, builtin Agent/Team delegation, one-shot --print, resume-by-session-id. Use to spawn a parallel Claude agent or background coding session.
+
+  exit - End the current Claude Code session cleanly when all work is complete and committed.
+
+  restart - Restart the current Claude Code session in place, resuming by session id with an optional continuation prompt. Use to reload after config changes or to resume without waiting for input.
+
+  notify - Notify the user that work finished (TTS plus desktop popup, or mobile push). Use after substantial work; skip for quick answers and chat.
 
   test - Testing methodology and verification workflow. Use when implementing, fixing, or modifying any code. Defines the test-first, test-after, and pre-delivery verification protocol.
 
@@ -132,43 +146,43 @@ tests:
       output_contains_any:
         - "personal"
 
-  - name: routing_to_session_deep_work
+  - name: routing_to_deep_work
     no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "This is a big task, set up a deep work workspace to track progress"
     model: sonnet
     assertions:
       output_contains_any:
-        - "session"
+        - "deep-work"
 
-  - name: routing_to_session_worktree
+  - name: routing_to_worktrees
     no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "Create a git worktree so I can work on a parallel branch"
     model: sonnet
     assertions:
       output_contains_any:
-        - "session"
+        - "worktrees"
       output_not_contains:
         - "git"
 
-  - name: routing_to_session_tmux_control
+  - name: routing_to_tmux_control
     no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "Start a background process in a new tmux pane"
     model: sonnet
     assertions:
       output_contains_any:
-        - "session"
+        - "tmux"
 
-  - name: routing_to_session_restart
+  - name: routing_to_restart
     no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "Restart the current session and preserve context"
     model: sonnet
     assertions:
       output_contains_any:
-        - "session"
+        - "restart"
 
   - name: routing_to_browser_web_scraping
     no_tools: true
@@ -217,7 +231,7 @@ tests:
     model: sonnet
     assertions:
       output_contains_any:
-        - "session"
+        - "tmux-claude"
       output_not_contains:
         - "personal"
 
@@ -330,7 +344,7 @@ tests:
     model: sonnet
     assertions:
       output_contains_any:
-        - "session"
+        - "notify"
 
   - name: routing_to_quickshell_bar_module
     no_tools: true
@@ -410,7 +424,7 @@ tests:
       output_not_contains:
         - "browser"
 
-  - name: routing_ambiguous_commit_vs_session_worktree
+  - name: routing_ambiguous_commit_vs_worktrees
     no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "I want to commit all my staged changes with a conventional commit message"
@@ -419,7 +433,7 @@ tests:
       output_contains_any:
         - "git"
       output_not_contains:
-        - "session"
+        - "worktrees"
 
   - name: routing_to_review_code_analysis
     no_tools: true

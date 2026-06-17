@@ -1,3 +1,8 @@
+---
+name: restart
+description: Restart the current Claude Code session in place, resuming the same session with an optional continuation prompt. Use to reload after config changes or resume work without waiting for input.
+---
+
 <prerequisites>
 Running inside tmux. Commit any pending changes before restarting.
 </prerequisites>
