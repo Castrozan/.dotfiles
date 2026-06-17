@@ -48,12 +48,12 @@ let
         model = "anthropic/claude-sonnet-4-6";
         description = "Read-only planning agent for architecture and design";
         tools = {
-          read = "allow";
-          glob = "allow";
-          grep = "allow";
-          bash = "deny";
-          edit = "deny";
-          write = "deny";
+          read = true;
+          glob = true;
+          grep = true;
+          bash = false;
+          edit = false;
+          write = false;
         };
       };
       explore = {
@@ -61,13 +61,13 @@ let
         model = "anthropic/claude-sonnet-4-6";
         description = "Fast read-only codebase exploration agent";
         tools = {
-          read = "allow";
-          glob = "allow";
-          grep = "allow";
-          lsp = "allow";
-          bash = "deny";
-          edit = "deny";
-          write = "deny";
+          read = true;
+          glob = true;
+          grep = true;
+          lsp = true;
+          bash = false;
+          edit = false;
+          write = false;
         };
       };
     };
