@@ -1,20 +1,34 @@
-{ pkgs, inputs, ... }:
-# TODO: opencode v1.3.8 has stale bun lockfile upstream — re-enable when fixed
-# let
-#   opencodeFromFlakeInput = inputs.opencode.packages.${pkgs.stdenv.hostPlatform.system}.default;
-#
-#   opencodeWithPatchedShebangs = opencodeFromFlakeInput.overrideAttrs (previousAttrs: {
-#     nativeBuildInputs = previousAttrs.nativeBuildInputs ++ [ pkgs.nodejs ];
-#     postConfigure = ''
-#       ${previousAttrs.postConfigure or ""}
-#       patchShebangs .
-#     '';
-#   });
-#
-#   opencode = pkgs.writeShellScriptBin "opencode" ''
-#     exec ${opencodeWithPatchedShebangs}/bin/opencode "$@" 2> >(grep -v "^INFO" >&2)
-#   '';
-# in
+{ pkgs, ... }:
+let
+  fetchPrebuiltBinary = import ../../../lib/fetch-prebuilt-binary.nix { inherit pkgs; };
+
+  version = "1.17.7";
+
+  opencodeUpstreamReleaseDescriptorBySystem = {
+    "x86_64-linux" = {
+      releaseAssetName = "opencode-linux-x64.tar.gz";
+      sha256 = "sha256-YP5aktya9k7AeTSP7d4X4S2mqGfv5+g1O+gDhIBgeSQ=";
+      buildInputs = [ ];
+    };
+    "aarch64-darwin" = {
+      releaseAssetName = "opencode-darwin-arm64.zip";
+      sha256 = "sha256-emOutaFbKdomgawrjHTUyzpk+hO2EZijx9x3EkPCOXI=";
+      buildInputs = [ ];
+    };
+  };
+
+  currentHostSystem = opencodeUpstreamReleaseDescriptorBySystem.${pkgs.stdenv.hostPlatform.system};
+
+  opencode = fetchPrebuiltBinary {
+    pname = "opencode";
+    inherit version;
+    url = "https://github.com/anomalyco/opencode/releases/download/v${version}/${currentHostSystem.releaseAssetName}";
+    inherit (currentHostSystem) sha256 buildInputs;
+    binaryName = "opencode";
+    archiveBinaryPath = "opencode";
+  };
+in
 {
-  home.packages = [ ];
+  home.packages = [ opencode ];
+  home.file.".local/bin/opencode".source = "${opencode}/bin/opencode";
 }
