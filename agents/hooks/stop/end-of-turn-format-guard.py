@@ -15,6 +15,17 @@ from end_of_turn_reply_template_rules import (  # noqa: E402
 )
 
 INTERACTIVE_SESSION_ENVIRONMENT_VARIABLE = "CLAUDE_INTERACTIVE_PREFERENCES_PATH"
+CLAWDE_BACKGROUND_AGENT_ENVIRONMENT_MARKER = "CLAWDE_RESUME_FLAG"
+
+
+def is_clawde_background_agent_session() -> bool:
+    return CLAWDE_BACKGROUND_AGENT_ENVIRONMENT_MARKER in os.environ
+
+
+def is_keyboard_driven_interactive_session() -> bool:
+    if is_clawde_background_agent_session():
+        return False
+    return bool(os.environ.get(INTERACTIVE_SESSION_ENVIRONMENT_VARIABLE))
 
 
 def read_hook_input_or_exit() -> dict:
@@ -60,7 +71,7 @@ def main() -> None:
     hook_input = read_hook_input_or_exit()
     if hook_input.get("hook_event_name", "") != "Stop":
         sys.exit(0)
-    if not os.environ.get(INTERACTIVE_SESSION_ENVIRONMENT_VARIABLE):
+    if not is_keyboard_driven_interactive_session():
         sys.exit(0)
     if hook_input.get("stop_hook_active"):
         sys.exit(0)

@@ -18,6 +18,28 @@ def test_allows_well_formed_template_reply(tmp_path):
     assert result.stdout.strip() == ""
 
 
+def test_allows_clawde_background_agent_reply_that_would_otherwise_block(tmp_path):
+    slop_reply = "You're right — fixed it.\n**Done:** x\n**Next:** y"
+    transcript = write_transcript_with_final_assistant_reply(tmp_path, slop_reply)
+    result = invoke_guard(
+        stop_payload(transcript),
+        clawde_background_agent=True,
+        clawde_marker_value="--continue",
+    )
+    assert result.stdout.strip() == ""
+
+
+def test_allows_clawde_background_agent_reply_with_empty_marker_value(tmp_path):
+    slop_reply = "You're right — fixed it.\n**Done:** x\n**Next:** y"
+    transcript = write_transcript_with_final_assistant_reply(tmp_path, slop_reply)
+    result = invoke_guard(
+        stop_payload(transcript),
+        clawde_background_agent=True,
+        clawde_marker_value="",
+    )
+    assert result.stdout.strip() == ""
+
+
 def test_allows_prose_with_done_next_and_assumed(tmp_path):
     reply = (
         "Wired the guard and verified the whole suite passes after the rebuild.\n"

@@ -17,6 +17,7 @@ WORKSPACE_SKILL_NAMESPACE_CLAUDE_SKILLS_SUBPATH = Path(".claude") / "skills"
 INTERACTIVE_PREFERENCES_FILE_PATH_ENVIRONMENT_VARIABLE_NAME = (
     "CLAUDE_INTERACTIVE_PREFERENCES_PATH"
 )
+CLAWDE_BACKGROUND_AGENT_ENVIRONMENT_MARKER = "CLAWDE_RESUME_FLAG"
 
 
 class WorkspaceLaunchConfigurationError(Exception):
@@ -104,6 +105,12 @@ def resolve_requested_skill_source_directories(
             resolved_requested_skill_source_directory
         )
     return resolved_requested_skill_source_directories
+
+
+def scrub_interactive_preferences_environment_for_clawde_background_agent() -> None:
+    if CLAWDE_BACKGROUND_AGENT_ENVIRONMENT_MARKER not in os.environ:
+        return
+    os.environ.pop(INTERACTIVE_PREFERENCES_FILE_PATH_ENVIRONMENT_VARIABLE_NAME, None)
 
 
 def build_interactive_preferences_system_prompt_arguments() -> list[str]:
@@ -314,6 +321,7 @@ def exec_claude_with_workspace_skills(
 
 def main() -> None:
     try:
+        scrub_interactive_preferences_environment_for_clawde_background_agent()
         workspace_claude_wrapper_arguments = parse_workspace_claude_wrapper_arguments(
             sys.argv[1:]
         )

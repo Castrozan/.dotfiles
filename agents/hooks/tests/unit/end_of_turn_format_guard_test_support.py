@@ -8,6 +8,7 @@ HOOKS_ROOT = Path(__file__).resolve().parents[2]
 END_OF_TURN_FORMAT_GUARD_SCRIPT = next(HOOKS_ROOT.rglob("end-of-turn-format-guard.py"))
 
 INTERACTIVE_SESSION_ENVIRONMENT_VARIABLE = "CLAUDE_INTERACTIVE_PREFERENCES_PATH"
+CLAWDE_BACKGROUND_AGENT_ENVIRONMENT_MARKER = "CLAWDE_RESUME_FLAG"
 
 WELL_FORMED_REPLY = (
     "The template change and the guard hook are committed and the suite is green.\n"
@@ -59,17 +60,26 @@ def write_transcript_with_final_assistant_reply(
 
 
 def invoke_guard(
-    payload: dict, interactive: bool = True
+    payload: dict,
+    interactive: bool = True,
+    clawde_background_agent: bool = False,
+    clawde_marker_value: str = "",
 ) -> subprocess.CompletedProcess:
     environment = {
         key: value
         for key, value in os.environ.items()
-        if key != INTERACTIVE_SESSION_ENVIRONMENT_VARIABLE
+        if key
+        not in (
+            INTERACTIVE_SESSION_ENVIRONMENT_VARIABLE,
+            CLAWDE_BACKGROUND_AGENT_ENVIRONMENT_MARKER,
+        )
     }
     if interactive:
         environment[INTERACTIVE_SESSION_ENVIRONMENT_VARIABLE] = (
             "/some/interactive-preferences.md"
         )
+    if clawde_background_agent:
+        environment[CLAWDE_BACKGROUND_AGENT_ENVIRONMENT_MARKER] = clawde_marker_value
     return subprocess.run(
         [sys.executable, str(END_OF_TURN_FORMAT_GUARD_SCRIPT)],
         input=json.dumps(payload),
