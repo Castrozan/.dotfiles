@@ -23,6 +23,7 @@ in
     ../../base/dev/google-workspace-cli.nix
     ../../base/dev/infisical.nix
     ../../base/dev/mcporter.nix
+    ../../base/dev/mongodb-atlas-cli.nix
     ../../base/dev/ralph-tui.nix
     ../../base/dev/temporal.nix
     ../../base/dev/tuisvn.nix
