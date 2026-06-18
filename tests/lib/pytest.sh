@@ -12,6 +12,7 @@ _pytest_collection_root_directories() {
 		"$platformSpecificHomeDirectory" \
 		"$REPO_DIR/agents/hooks" \
 		"$REPO_DIR/agents/skills" \
+		"$REPO_DIR/agents/usage" \
 		"$REPO_DIR/tests"
 }
 
