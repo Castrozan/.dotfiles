@@ -1,0 +1,271 @@
+{
+  "account_label": "2c9c0c7cb164",
+  "daily_activity": [
+    {
+      "date": "2026-05-26",
+      "message_count": 1407,
+      "session_count": 2,
+      "tool_call_count": 281
+    },
+    {
+      "date": "2026-05-28",
+      "message_count": 1578,
+      "session_count": 1,
+      "tool_call_count": 420
+    },
+    {
+      "date": "2026-05-30",
+      "message_count": 1781,
+      "session_count": 2,
+      "tool_call_count": 568
+    },
+    {
+      "date": "2026-06-01",
+      "message_count": 17391,
+      "session_count": 46,
+      "tool_call_count": 3567
+    },
+    {
+      "date": "2026-06-02",
+      "message_count": 6073,
+      "session_count": 29,
+      "tool_call_count": 1207
+    },
+    {
+      "date": "2026-06-03",
+      "message_count": 3275,
+      "session_count": 6,
+      "tool_call_count": 673
+    },
+    {
+      "date": "2026-06-04",
+      "message_count": 14224,
+      "session_count": 1156,
+      "tool_call_count": 1493
+    },
+    {
+      "date": "2026-06-05",
+      "message_count": 9263,
+      "session_count": 526,
+      "tool_call_count": 844
+    },
+    {
+      "date": "2026-06-08",
+      "message_count": 4903,
+      "session_count": 22,
+      "tool_call_count": 946
+    },
+    {
+      "date": "2026-06-09",
+      "message_count": 20636,
+      "session_count": 499,
+      "tool_call_count": 3795
+    },
+    {
+      "date": "2026-06-10",
+      "message_count": 10806,
+      "session_count": 39,
+      "tool_call_count": 2341
+    },
+    {
+      "date": "2026-06-11",
+      "message_count": 10928,
+      "session_count": 11,
+      "tool_call_count": 2028
+    },
+    {
+      "date": "2026-06-12",
+      "message_count": 6338,
+      "session_count": 40,
+      "tool_call_count": 1281
+    },
+    {
+      "date": "2026-06-14",
+      "message_count": 7094,
+      "session_count": 21,
+      "tool_call_count": 1243
+    },
+    {
+      "date": "2026-06-15",
+      "message_count": 14706,
+      "session_count": 13,
+      "tool_call_count": 2665
+    },
+    {
+      "date": "2026-06-16",
+      "message_count": 13819,
+      "session_count": 44,
+      "tool_call_count": 2689
+    },
+    {
+      "date": "2026-06-17",
+      "message_count": 33835,
+      "session_count": 334,
+      "tool_call_count": 6165
+    }
+  ],
+  "daily_model_tokens": [
+    {
+      "date": "2026-05-26",
+      "tokens_by_model": {
+        "claude-opus-4-7": 403411
+      }
+    },
+    {
+      "date": "2026-05-28",
+      "tokens_by_model": {
+        "claude-opus-4-7": 626368
+      }
+    },
+    {
+      "date": "2026-05-30",
+      "tokens_by_model": {
+        "claude-opus-4-8": 7367970
+      }
+    },
+    {
+      "date": "2026-06-01",
+      "tokens_by_model": {
+        "claude-haiku-4-5-20251001": 18348,
+        "claude-opus-4-8": 13265847
+      }
+    },
+    {
+      "date": "2026-06-02",
+      "tokens_by_model": {
+        "claude-haiku-4-5-20251001": 6573,
+        "claude-opus-4-8": 3597354
+      }
+    },
+    {
+      "date": "2026-06-03",
+      "tokens_by_model": {
+        "claude-haiku-4-5-20251001": 6858,
+        "claude-opus-4-8": 2199093
+      }
+    },
+    {
+      "date": "2026-06-04",
+      "tokens_by_model": {
+        "claude-haiku-4-5-20251001": 936042,
+        "claude-opus-4-8": 2499105,
+        "claude-sonnet-4-6": 101072
+      }
+    },
+    {
+      "date": "2026-06-05",
+      "tokens_by_model": {
+        "claude-haiku-4-5-20251001": 378290,
+        "claude-opus-4-8": 1049666,
+        "claude-sonnet-4-6": 2116
+      }
+    },
+    {
+      "date": "2026-06-08",
+      "tokens_by_model": {
+        "claude-opus-4-8": 3329606
+      }
+    },
+    {
+      "date": "2026-06-09",
+      "tokens_by_model": {
+        "claude-haiku-4-5-20251001": 438512,
+        "claude-opus-4-8": 19861504,
+        "claude-sonnet-4-6": 1623
+      }
+    },
+    {
+      "date": "2026-06-10",
+      "tokens_by_model": {
+        "claude-haiku-4-5-20251001": 34443,
+        "claude-opus-4-8": 11030254
+      }
+    },
+    {
+      "date": "2026-06-11",
+      "tokens_by_model": {
+        "claude-opus-4-8": 11086772
+      }
+    },
+    {
+      "date": "2026-06-12",
+      "tokens_by_model": {
+        "claude-haiku-4-5-20251001": 26651,
+        "claude-opus-4-8": 6943009
+      }
+    },
+    {
+      "date": "2026-06-14",
+      "tokens_by_model": {
+        "claude-haiku-4-5-20251001": 29470,
+        "claude-opus-4-8": 6576071
+      }
+    },
+    {
+      "date": "2026-06-15",
+      "tokens_by_model": {
+        "claude-haiku-4-5-20251001": 8259,
+        "claude-opus-4-8": 13561721
+      }
+    },
+    {
+      "date": "2026-06-16",
+      "tokens_by_model": {
+        "claude-opus-4-8": 11944401
+      }
+    },
+    {
+      "date": "2026-06-17",
+      "tokens_by_model": {
+        "claude-haiku-4-5-20251001": 506222,
+        "claude-opus-4-8": 27148817
+      }
+    }
+  ],
+  "machine_label": "71fc83e765e0",
+  "memory_recall_savings": {
+    "dedup_suppressed_character_total": 6031,
+    "injected_recall_character_total": 172054,
+    "injected_recall_event_count": 309,
+    "memory_recall_session_count": 98,
+    "suppressed_recall_event_count_by_reason": {
+      "budget": 5,
+      "debounce": 58,
+      "dedup": 11
+    },
+    "suppressed_recall_event_total": 74
+  },
+  "model_usage_totals": {
+    "claude-haiku-4-5-20251001": {
+      "cache_creation_input_tokens": 29494059,
+      "cache_read_input_tokens": 128818875,
+      "cost_usd": 0,
+      "input_tokens": 94321,
+      "output_tokens": 2295347
+    },
+    "claude-opus-4-7": {
+      "cache_creation_input_tokens": 8280021,
+      "cache_read_input_tokens": 348776394,
+      "cost_usd": 0,
+      "input_tokens": 13665,
+      "output_tokens": 1016114
+    },
+    "claude-opus-4-8": {
+      "cache_creation_input_tokens": 919143720,
+      "cache_read_input_tokens": 15970324893,
+      "cost_usd": 0,
+      "input_tokens": 22874565,
+      "output_tokens": 118586625
+    },
+    "claude-sonnet-4-6": {
+      "cache_creation_input_tokens": 2947350,
+      "cache_read_input_tokens": 4226549,
+      "cost_usd": 0,
+      "input_tokens": 3065,
+      "output_tokens": 101746
+    }
+  },
+  "schema_version": 1,
+  "stats_first_session_date": "2026-05-26",
+  "stats_last_computed_date": "2026-06-17"
+}
