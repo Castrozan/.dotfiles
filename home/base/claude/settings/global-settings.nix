@@ -8,6 +8,14 @@ let
   hooksConfig = import ../hooks/event-registrations { inherit lib hostname; };
   pluginsConfig = import ./plugins.nix { inherit pkgs; };
 
+  privateMarketplacePluginsPath =
+    ../../../../private-config/machines + "/${hostname}/claude-plugins.nix";
+  privateMarketplacePlugins =
+    if builtins.pathExists privateMarketplacePluginsPath then
+      import privateMarketplacePluginsPath
+    else
+      { };
+
   claudeKeybindings = {
     "$schema" = "https://www.schemastore.org/claude-code-keybindings.json";
     "$docs" = "https://code.claude.com/docs/en/keybindings";
@@ -51,7 +59,8 @@ let
       respectGitignore = true;
     };
     hooks = hooksConfig;
-  };
+  }
+  // privateMarketplacePlugins;
 
   claudeGlobalSettingsJson = builtins.toJSON claudeGlobalSettings;
 

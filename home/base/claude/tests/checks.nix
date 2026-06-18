@@ -68,6 +68,21 @@ let
   deployedEventRunsLintTurnReview =
     event:
     lib.any (command: lib.hasInfix "lint-turn-review.py" command) (deployedHookCommandsForEvent event);
+
+  testMachinePrivateMarketplacePluginsFixture = ../../../../private-config/machines/test/claude-plugins.nix;
+  testMachinePrivateMarketplacePluginsFixtureExists = builtins.pathExists testMachinePrivateMarketplacePluginsFixture;
+  testMachinePrivateMarketplacePlugins =
+    if testMachinePrivateMarketplacePluginsFixtureExists then
+      import testMachinePrivateMarketplacePluginsFixture
+    else
+      { };
+  privateMarketplacePluginsAreFoldedIntoSettings =
+    !testMachinePrivateMarketplacePluginsFixtureExists
+    || (
+      (deployedSettings.extraKnownMarketplaces or { })
+      == testMachinePrivateMarketplacePlugins.extraKnownMarketplaces
+      && (deployedSettings.enabledPlugins or { }) == testMachinePrivateMarketplacePlugins.enabledPlugins
+    );
 in
 {
   claude-settings-nix-source =
@@ -167,5 +182,10 @@ in
     mkEvalCheck "hooks-lint-turn-review-registered-on-subagent-stop"
       (deployedEventRunsLintTurnReview "SubagentStop")
       "the deployed settings must register lint-turn-review.py on the SubagentStop event so subagent turns get the same lint review; guards event-registrations.nix against dropping the SubagentStop registration";
+
+  claude-private-marketplace-plugins-folded-into-settings =
+    mkEvalCheck "claude-private-marketplace-plugins-folded-into-settings"
+      privateMarketplacePluginsAreFoldedIntoSettings
+      "when a private-config/machines/<hostname>/claude-plugins.nix exists, global-settings.nix must fold its extraKnownMarketplaces and enabledPlugins into the deployed settings.json.nix-source; a dropped `// privateMarketplacePlugins` would silently regress the only path that installs the per-machine plugin";
 
 }
