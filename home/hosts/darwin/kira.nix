@@ -27,6 +27,7 @@ in
     ../../base/dev/ralph-tui.nix
     ../../base/dev/temporal.nix
     ../../base/dev/tuisvn.nix
+    ../../base/dev/waha-tui.nix
   ]
   ++ lib.optionals kiraPrivateConfigExists [
     "${privateConfigRoot}/machines/kira/clawde-agents"
