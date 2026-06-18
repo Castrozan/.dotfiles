@@ -44,6 +44,7 @@ jobs:
           cp .github/pages/quality.html site/quality/index.html
           cp -r tests/coverage site/coverage
           python3 agents/evals/render_baseline_dashboard.py site/baseline
+          python3 agents/usage/render_usage_dashboard.py site/usage
 
       - uses: actions/configure-pages@v5
 
