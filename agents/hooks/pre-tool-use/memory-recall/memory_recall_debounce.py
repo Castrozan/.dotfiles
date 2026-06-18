@@ -13,6 +13,10 @@ DEBOUNCE_KEYWORD_OVERLAP_THRESHOLD = 0.5
 SESSION_RECALL_EVENT_BUDGET = 40
 SESSION_RECALL_CHARACTER_BUDGET = 20000
 
+SUPPRESSION_REASON_BUDGET = "budget"
+SUPPRESSION_REASON_DEBOUNCE = "debounce"
+SUPPRESSION_REASON_DEDUP = "dedup"
+
 
 def resolve_debounce_state_directory() -> Path:
     override = os.environ.get("MEMORY_RECALL_DEBOUNCE_STATE_DIRECTORY")
@@ -96,5 +100,23 @@ def record_recall_injection(
     state["recall_event_count"] = state.get("recall_event_count", 0) + 1
     state["recall_character_total"] = (
         state.get("recall_character_total", 0) + injected_character_count
+    )
+    write_debounce_state(state_path, state)
+
+
+def record_recall_suppression(
+    state_path: Path,
+    suppression_reason: str,
+    would_have_injected_character_count: int = 0,
+) -> None:
+    state = load_debounce_state(state_path)
+    suppressed_counts_by_reason = state.get("suppressed_event_count_by_reason", {})
+    suppressed_counts_by_reason[suppression_reason] = (
+        suppressed_counts_by_reason.get(suppression_reason, 0) + 1
+    )
+    state["suppressed_event_count_by_reason"] = suppressed_counts_by_reason
+    state["dedup_suppressed_character_total"] = (
+        state.get("dedup_suppressed_character_total", 0)
+        + would_have_injected_character_count
     )
     write_debounce_state(state_path, state)

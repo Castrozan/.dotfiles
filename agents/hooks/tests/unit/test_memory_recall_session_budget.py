@@ -95,3 +95,59 @@ class TestPersistDebounceStatePreservesBudgetFields:
         assert state["recall_character_total"] == 1234
         assert memory_recall.was_recall_path_set_already_injected(state, ["/a/one.md"])
         assert state["last_keywords"] == ["fresh", "keywords"]
+
+
+class TestRecordRecallSuppression:
+    def test_suppression_increments_reason_count(self, tmp_path):
+        state_path = tmp_path / "memory-recall-session.json"
+        memory_recall.record_recall_suppression(
+            state_path, memory_recall.SUPPRESSION_REASON_BUDGET
+        )
+        state = memory_recall.load_debounce_state(state_path)
+        assert state["suppressed_event_count_by_reason"] == {
+            memory_recall.SUPPRESSION_REASON_BUDGET: 1
+        }
+
+    def test_distinct_reasons_count_independently(self, tmp_path):
+        state_path = tmp_path / "memory-recall-session.json"
+        memory_recall.record_recall_suppression(
+            state_path, memory_recall.SUPPRESSION_REASON_DEBOUNCE
+        )
+        memory_recall.record_recall_suppression(
+            state_path, memory_recall.SUPPRESSION_REASON_DEBOUNCE
+        )
+        memory_recall.record_recall_suppression(
+            state_path, memory_recall.SUPPRESSION_REASON_DEDUP, 300
+        )
+        state = memory_recall.load_debounce_state(state_path)
+        assert state["suppressed_event_count_by_reason"] == {
+            memory_recall.SUPPRESSION_REASON_DEBOUNCE: 2,
+            memory_recall.SUPPRESSION_REASON_DEDUP: 1,
+        }
+
+    def test_only_dedup_character_count_accumulates(self, tmp_path):
+        state_path = tmp_path / "memory-recall-session.json"
+        memory_recall.record_recall_suppression(
+            state_path, memory_recall.SUPPRESSION_REASON_BUDGET
+        )
+        memory_recall.record_recall_suppression(
+            state_path, memory_recall.SUPPRESSION_REASON_DEDUP, 512
+        )
+        memory_recall.record_recall_suppression(
+            state_path, memory_recall.SUPPRESSION_REASON_DEDUP, 488
+        )
+        state = memory_recall.load_debounce_state(state_path)
+        assert state["dedup_suppressed_character_total"] == 1000
+
+    def test_suppression_preserves_existing_budget_and_debounce_fields(self, tmp_path):
+        state_path = tmp_path / "memory-recall-session.json"
+        memory_recall.record_recall_injection(state_path, ["/a/one.md"], 42)
+        memory_recall.persist_debounce_state(state_path, ["api", "server"])
+        memory_recall.record_recall_suppression(
+            state_path, memory_recall.SUPPRESSION_REASON_DEDUP, 7
+        )
+        state = memory_recall.load_debounce_state(state_path)
+        assert state["recall_event_count"] == 1
+        assert state["recall_character_total"] == 42
+        assert state["last_keywords"] == ["api", "server"]
+        assert state["dedup_suppressed_character_total"] == 7

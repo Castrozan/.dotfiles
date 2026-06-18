@@ -28,12 +28,16 @@ from memory_recall_debounce import (  # noqa: E402, F401
     DEBOUNCE_SECONDS,
     SESSION_RECALL_CHARACTER_BUDGET,
     SESSION_RECALL_EVENT_BUDGET,
+    SUPPRESSION_REASON_BUDGET,
+    SUPPRESSION_REASON_DEBOUNCE,
+    SUPPRESSION_REASON_DEDUP,
     debounce_state_path_for_session,
     has_recall_session_budget_been_exhausted,
     hash_recall_path_set,
     load_debounce_state,
     persist_debounce_state,
     record_recall_injection,
+    record_recall_suppression,
     resolve_debounce_state_directory,
     should_skip_due_to_debounce,
     was_recall_path_set_already_injected,
@@ -82,8 +86,10 @@ def main() -> None:
     state_path = debounce_state_path_for_session(session_id)
     state = load_debounce_state(state_path)
     if has_recall_session_budget_been_exhausted(state):
+        record_recall_suppression(state_path, SUPPRESSION_REASON_BUDGET)
         exit_silently()
     if should_skip_due_to_debounce(state, set(keywords)):
+        record_recall_suppression(state_path, SUPPRESSION_REASON_DEBOUNCE)
         exit_silently()
 
     scores = ripgrep_score_per_file(memory_directory, keywords)
@@ -97,11 +103,14 @@ def main() -> None:
         exit_silently()
 
     recall_path_identifiers = [str(path.resolve()) for path in recall_paths]
+    recall_context = format_recall_context(recall_paths, memory_directory)
     if was_recall_path_set_already_injected(state, recall_path_identifiers):
+        record_recall_suppression(
+            state_path, SUPPRESSION_REASON_DEDUP, len(recall_context)
+        )
         persist_debounce_state(state_path, keywords)
         exit_silently()
 
-    recall_context = format_recall_context(recall_paths, memory_directory)
     persist_debounce_state(state_path, keywords)
     record_recall_injection(state_path, recall_path_identifiers, len(recall_context))
     emit_additional_context_and_exit(recall_context)
