@@ -5,6 +5,7 @@
     inputs.clawde.homeManagerModules.default
     ./clawde-wiring.nix
     ./settings
+    ./telemetry
     ./skill-injection
     ./commands
     ./workflows
