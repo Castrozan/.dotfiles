@@ -102,6 +102,19 @@
     };
   };
 
+  launchd.user.agents.itsycal-menu-bar-calendar-on-login = {
+    serviceConfig = {
+      Label = "com.dotfiles.itsycal-menu-bar-calendar-on-login";
+      ProgramArguments = [
+        "/usr/bin/open"
+        "-a"
+        "Itsycal"
+      ];
+      RunAtLoad = true;
+      LaunchOnlyOnce = true;
+    };
+  };
+
   services.openssh.enable = true;
 
   homebrew = {
