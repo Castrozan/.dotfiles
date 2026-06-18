@@ -26,11 +26,17 @@ from memory_recall_debounce import (  # noqa: E402, F401
     DEBOUNCE_HARD_FLOOR_SECONDS,
     DEBOUNCE_KEYWORD_OVERLAP_THRESHOLD,
     DEBOUNCE_SECONDS,
+    SESSION_RECALL_CHARACTER_BUDGET,
+    SESSION_RECALL_EVENT_BUDGET,
     debounce_state_path_for_session,
+    has_recall_session_budget_been_exhausted,
+    hash_recall_path_set,
     load_debounce_state,
     persist_debounce_state,
+    record_recall_injection,
     resolve_debounce_state_directory,
     should_skip_due_to_debounce,
+    was_recall_path_set_already_injected,
 )
 from memory_recall_io import (  # noqa: E402, F401
     emit_additional_context_and_exit,
@@ -75,6 +81,8 @@ def main() -> None:
 
     state_path = debounce_state_path_for_session(session_id)
     state = load_debounce_state(state_path)
+    if has_recall_session_budget_been_exhausted(state):
+        exit_silently()
     if should_skip_due_to_debounce(state, set(keywords)):
         exit_silently()
 
@@ -88,10 +96,15 @@ def main() -> None:
         persist_debounce_state(state_path, keywords)
         exit_silently()
 
+    recall_path_identifiers = [str(path.resolve()) for path in recall_paths]
+    if was_recall_path_set_already_injected(state, recall_path_identifiers):
+        persist_debounce_state(state_path, keywords)
+        exit_silently()
+
+    recall_context = format_recall_context(recall_paths, memory_directory)
     persist_debounce_state(state_path, keywords)
-    emit_additional_context_and_exit(
-        format_recall_context(recall_paths, memory_directory)
-    )
+    record_recall_injection(state_path, recall_path_identifiers, len(recall_context))
+    emit_additional_context_and_exit(recall_context)
 
 
 if __name__ == "__main__":
