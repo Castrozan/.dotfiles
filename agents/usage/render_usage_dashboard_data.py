@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from usage_otel_metrics_aggregation import sum_otel_metrics
+
 DEFAULT_SNAPSHOT_DIRECTORY = Path("agents/usage/snapshots")
 AGGREGATE_TOKEN_FIELDS = (
     "input_tokens",
@@ -116,6 +118,9 @@ def group_snapshots_by_account(usage_snapshots: list[dict]) -> list[dict]:
                 "memory_recall_savings": sum_memory_recall_savings(
                     [s.get("memory_recall_savings", {}) for s in account_snapshots]
                 ),
+                "otel_metrics": sum_otel_metrics(
+                    [s.get("otel_metrics", {}) for s in account_snapshots]
+                ),
                 "first_session_date": _earliest(
                     [s.get("stats_first_session_date") for s in account_snapshots]
                 ),
@@ -162,6 +167,9 @@ def summarize_accounts(account_views: list[dict]) -> dict:
         ),
         "token_totals": aggregate_token_fields(combined_model_usage),
         "memory_recall_savings": combined_savings,
+        "otel_metrics": sum_otel_metrics(
+            [account_view["otel_metrics"] for account_view in account_views]
+        ),
         "first_session_date": _earliest(
             [account_view["first_session_date"] for account_view in account_views]
         ),

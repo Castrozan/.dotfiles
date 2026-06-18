@@ -13,6 +13,10 @@ from account_label_anonymizer import (  # noqa: E402
     derive_machine_label,
     read_current_account_uuid,
 )
+from claude_otel_metrics_reader import (  # noqa: E402
+    default_otel_metrics_file_path,
+    summarize_otel_metrics_file,
+)
 from claude_usage_stats_reader import (  # noqa: E402
     default_stats_cache_path,
     read_stats_cache,
@@ -48,8 +52,13 @@ def main() -> int:
     memory_recall_savings = summarize_memory_recall_savings_in_directory(
         memory_recall_state_directory()
     )
+    otel_metrics = summarize_otel_metrics_file(default_otel_metrics_file_path())
     usage_snapshot = build_usage_snapshot(
-        account_label, machine_label, stats_cache_summary, memory_recall_savings
+        account_label,
+        machine_label,
+        stats_cache_summary,
+        memory_recall_savings,
+        otel_metrics,
     )
     snapshot_path = write_usage_snapshot(DEFAULT_SNAPSHOT_DIRECTORY, usage_snapshot)
     print(f"wrote {snapshot_path}")

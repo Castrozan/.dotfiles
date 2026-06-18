@@ -224,16 +224,16 @@
   ],
   "machine_label": "71fc83e765e0",
   "memory_recall_savings": {
-    "dedup_suppressed_character_total": 6031,
-    "injected_recall_character_total": 172054,
-    "injected_recall_event_count": 309,
+    "dedup_suppressed_character_total": 24358,
+    "injected_recall_character_total": 192282,
+    "injected_recall_event_count": 343,
     "memory_recall_session_count": 98,
     "suppressed_recall_event_count_by_reason": {
-      "budget": 5,
-      "debounce": 58,
-      "dedup": 11
+      "budget": 166,
+      "debounce": 129,
+      "dedup": 43
     },
-    "suppressed_recall_event_total": 74
+    "suppressed_recall_event_total": 338
   },
   "model_usage_totals": {
     "claude-haiku-4-5-20251001": {
@@ -264,6 +264,16 @@
       "input_tokens": 3065,
       "output_tokens": 101746
     }
+  },
+  "otel_metrics": {
+    "has_data": true,
+    "token_usage_by_type": {
+      "cacheCreation": 50627,
+      "cacheRead": 749968,
+      "input": 5151,
+      "output": 9074
+    },
+    "total_cost_usd": 1.1339
   },
   "schema_version": 1,
   "stats_first_session_date": "2026-05-26",

@@ -24,6 +24,11 @@ SNAPSHOT_ONE = {
         "dedup_suppressed_character_total": 200,
         "suppressed_recall_event_count_by_reason": {"dedup": 3, "budget": 1},
     },
+    "otel_metrics": {
+        "token_usage_by_type": {"cacheRead": 1000, "output": 20},
+        "total_cost_usd": 1.2,
+        "has_data": True,
+    },
 }
 
 SNAPSHOT_TWO = {
@@ -45,6 +50,11 @@ SNAPSHOT_TWO = {
         "suppressed_recall_event_total": 1,
         "dedup_suppressed_character_total": 80,
         "suppressed_recall_event_count_by_reason": {"debounce": 1},
+    },
+    "otel_metrics": {
+        "token_usage_by_type": {"cacheRead": 500, "input": 7},
+        "total_cost_usd": 0.3,
+        "has_data": True,
     },
 }
 
@@ -90,6 +100,13 @@ class TestGroupSnapshotsByAccount:
         assert account["daily_total_tokens"]["2026-06-16"] == 150
         assert account["first_session_date"] == "2026-05-20"
         assert account["last_computed_date"] == "2026-06-17"
+        assert account["otel_metrics"]["token_usage_by_type"] == {
+            "cacheRead": 1500,
+            "output": 20,
+            "input": 7,
+        }
+        assert account["otel_metrics"]["total_cost_usd"] == 1.5
+        assert account["otel_metrics"]["has_data"] is True
 
     def test_savings_reasons_are_summed_across_machines(self):
         accounts = render_usage_dashboard_data.group_snapshots_by_account(
@@ -120,6 +137,12 @@ class TestBuildUsageViewModel:
         assert view_model["summary"]["account_count"] == 2
         assert view_model["summary"]["machine_count"] == 3
         assert view_model["summary"]["token_totals"]["cache_read_input_tokens"] == 1599
+        assert view_model["summary"]["otel_metrics"]["token_usage_by_type"] == {
+            "cacheRead": 1500,
+            "output": 20,
+            "input": 7,
+        }
+        assert view_model["summary"]["otel_metrics"]["total_cost_usd"] == 1.5
         assert view_model["chart"]["dates"] == ["2026-06-16", "2026-06-17"]
         first_account_series = view_model["chart"]["series"][0]
         assert first_account_series["account_label"] == "acct1"

@@ -2,6 +2,13 @@ from __future__ import annotations
 
 import json
 
+from render_usage_dashboard_sections import (
+    render_account_rows,
+    render_chart_datasets,
+    render_otel_panel,
+    render_stat_cards,
+)
+
 NAVIGATION = (
     '<nav class="top">'
     '<a class="brand" href="../">dotfiles reports</a>'
@@ -12,105 +19,12 @@ NAVIGATION = (
     "</nav>"
 )
 
-ACCOUNT_SERIES_COLORS = ["#58a6ff", "#3fb950", "#d29922", "#bc8cff", "#f85149"]
-
-
-def format_token_count(token_count: float) -> str:
-    for divisor, suffix in ((1_000_000_000, "B"), (1_000_000, "M"), (1_000, "K")):
-        if token_count >= divisor:
-            return f"{token_count / divisor:.2f}{suffix}"
-    return str(int(token_count))
-
-
-def cache_read_share_percent(token_totals: dict) -> float:
-    cache_read = token_totals.get("cache_read_input_tokens", 0)
-    cache_creation = token_totals.get("cache_creation_input_tokens", 0)
-    fresh_input = token_totals.get("input_tokens", 0)
-    input_side_total = cache_read + cache_creation + fresh_input
-    if input_side_total == 0:
-        return 0.0
-    return round(cache_read / input_side_total * 100, 1)
-
-
-def render_stat_cards(summary: dict) -> str:
-    token_totals = summary["token_totals"]
-    savings = summary["memory_recall_savings"]
-    cards = [
-        (
-            "accounts tracked",
-            str(summary["account_count"]),
-            f"across {summary['machine_count']} machine(s)",
-        ),
-        (
-            "cache-read tokens",
-            format_token_count(token_totals["cache_read_input_tokens"]),
-            "the dominant cost driver",
-        ),
-        (
-            "cache-read share",
-            f"{cache_read_share_percent(token_totals)}%",
-            "of all input-side tokens",
-        ),
-        (
-            "recall events suppressed",
-            str(savings["suppressed_recall_event_total"]),
-            "budget + debounce + dedup",
-        ),
-        (
-            "dedup chars saved",
-            format_token_count(savings["dedup_suppressed_character_total"]),
-            "duplicate recalls stopped",
-        ),
-    ]
-    return "\n".join(
-        f'<div class="card"><div class="k">{value}</div>'
-        f'<div class="l">{label}</div><div class="s">{sub}</div></div>'
-        for label, value, sub in cards
-    )
-
-
-def render_account_rows(account_views: list[dict]) -> str:
-    rows = []
-    for account_view in account_views:
-        token_totals = account_view["token_totals"]
-        savings = account_view["memory_recall_savings"]
-        rows.append(
-            "<tr>"
-            f"<td><code>{account_view['account_label']}</code></td>"
-            f"<td>{account_view['machine_count']}</td>"
-            f"<td>{account_view['first_session_date'] or '-'} to "
-            f"{account_view['last_computed_date'] or '-'}</td>"
-            f"<td>{format_token_count(token_totals['cache_read_input_tokens'])}</td>"
-            f"<td>{format_token_count(token_totals['output_tokens'])}</td>"
-            f"<td>${token_totals['cost_usd']:,.0f}</td>"
-            f"<td>{savings['suppressed_recall_event_total']}</td>"
-            "</tr>"
-        )
-    return "\n".join(rows)
-
-
-def render_chart_datasets(chart: dict) -> str:
-    datasets = []
-    for series_index, account_series in enumerate(chart["series"]):
-        color = ACCOUNT_SERIES_COLORS[series_index % len(ACCOUNT_SERIES_COLORS)]
-        datasets.append(
-            {
-                "label": account_series["account_label"],
-                "data": account_series["values"],
-                "borderColor": color,
-                "backgroundColor": color + "26",
-                "tension": 0.2,
-                "spanGaps": True,
-                "pointRadius": 2,
-            }
-        )
-    return json.dumps(datasets)
-
 
 def render_dashboard_html(view_model: dict) -> str:
     summary = view_model["summary"]
     stat_cards = render_stat_cards(summary) if summary["account_count"] else ""
     account_rows = render_account_rows(view_model["accounts"])
+    otel_panel = render_otel_panel(summary.get("otel_metrics", {}))
     chart_labels = json.dumps(view_model["chart"]["dates"])
     chart_datasets = render_chart_datasets(view_model["chart"])
     return f"""<!doctype html>
@@ -143,6 +57,13 @@ on a prompt-cached model they dwarf fresh input and are what actually burns the 
 reads is a <b>cache-read</b>, not fresh input. That is why the lever that matters is
 cutting repeated context, not trimming prompts: the cache-read column below is the cost.</p>
 </div>
+
+<h2>OpenTelemetry token stream</h2>
+<p class="lede">A local OpenTelemetry collector on every machine receives Claude Code's
+<code>claude_code.token.usage</code> metric and writes it to a rotating local file. Each
+machine folds the aggregated counts (never the account id) into its snapshot, so this is a
+live, type-resolved view that corroborates the cache-read story above.</p>
+{otel_panel}
 
 <h2>Per-account totals</h2>
 <table>
