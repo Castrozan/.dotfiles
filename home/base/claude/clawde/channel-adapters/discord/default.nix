@@ -68,17 +68,13 @@ in
       environmentSetterFor =
         { name, agent }:
         let
-          stateDirectorySetter = "DISCORD_STATE_DIR=${lib.escapeShellArg (discordChannelEnvDirectoryFor name)} ";
-          tokenSetter =
-            if agent.channel.discord.botTokenSecretName != null then
-              let
-                tokenFile = lib.escapeShellArg "${secretsDirectory}/${agent.channel.discord.botTokenSecretName}";
-              in
-              "${waitForSecretScript} ${tokenFile} && DISCORD_BOT_TOKEN=$(cat ${tokenFile}) "
-            else
-              "";
+          stateDirectoryAssignment = "DISCORD_STATE_DIR=${lib.escapeShellArg (discordChannelEnvDirectoryFor name)} ";
+          tokenFile = lib.escapeShellArg "${secretsDirectory}/${toString agent.channel.discord.botTokenSecretName}";
+          hasToken = agent.channel.discord.botTokenSecretName != null;
+          waitForTokenPrefix = lib.optionalString hasToken "${waitForSecretScript} ${tokenFile} && ";
+          tokenAssignment = lib.optionalString hasToken "DISCORD_BOT_TOKEN=$(cat ${tokenFile}) ";
         in
-        "${stateDirectorySetter}${tokenSetter}";
+        "${waitForTokenPrefix}${stateDirectoryAssignment}${tokenAssignment}";
       agentActivationScriptFor =
         {
           name,
