@@ -29,6 +29,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies and run unit tests
+        working-directory: apps/usage-dashboard
+        env:
+          CI: "true"
+        run: |
+          npm ci
+          npm test -- --watch=false
+
       - id: auth
         uses: google-github-actions/auth@v2
         with:

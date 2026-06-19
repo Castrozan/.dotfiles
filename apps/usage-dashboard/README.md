@@ -12,9 +12,9 @@ one, and aggregates them client-side into the per-account view, daily-token char
 token-stream panel and per-account table. It re-fetches on a fixed interval so the page is live
 rather than a frozen build-time snapshot.
 
-The aggregation is a faithful port of the former Python renderer
-(`agents/usage/render_usage_dashboard_data.py` and `usage_otel_metrics_aggregation.py`); the
-unit tests pin that contract.
+The aggregation is a faithful port of the Python renderer
+(`agents/usage/render_usage_dashboard_data.py` and `usage_otel_metrics_aggregation.py`), which
+still backs the GitHub Pages `/usage/` report; the unit tests pin that contract.
 
 ## Structure
 

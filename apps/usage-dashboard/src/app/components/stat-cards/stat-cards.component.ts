@@ -5,7 +5,7 @@ import { cacheReadSharePercent, formatTokenCount } from '../../shared/token-form
 interface StatCard {
   label: string;
   value: string;
-  sub: string;
+  subtitle: string;
 }
 
 @Component({
@@ -15,9 +15,9 @@ interface StatCard {
     <div class="cards">
       @for (card of cards(); track card.label) {
         <div class="card">
-          <div class="k">{{ card.value }}</div>
-          <div class="l">{{ card.label }}</div>
-          <div class="s">{{ card.sub }}</div>
+          <div class="card-value">{{ card.value }}</div>
+          <div class="card-label">{{ card.label }}</div>
+          <div class="card-subtitle">{{ card.subtitle }}</div>
         </div>
       }
     </div>
@@ -34,27 +34,27 @@ export class StatCardsComponent {
       {
         label: 'accounts tracked',
         value: String(summary.account_count),
-        sub: `across ${summary.machine_count} machine(s)`,
+        subtitle: `across ${summary.machine_count} machine(s)`,
       },
       {
         label: 'cache-read tokens',
         value: formatTokenCount(tokenTotals.cache_read_input_tokens),
-        sub: 'the dominant cost driver',
+        subtitle: 'the dominant cost driver',
       },
       {
         label: 'cache-read share',
         value: `${cacheReadSharePercent(tokenTotals)}%`,
-        sub: 'of all input-side tokens',
+        subtitle: 'of all input-side tokens',
       },
       {
         label: 'recall events suppressed',
         value: String(savings.suppressed_recall_event_total),
-        sub: 'budget + debounce + dedup',
+        subtitle: 'budget + debounce + dedup',
       },
       {
         label: 'dedup chars saved',
         value: formatTokenCount(savings.dedup_suppressed_character_total),
-        sub: 'duplicate recalls stopped',
+        subtitle: 'duplicate recalls stopped',
       },
     ];
   });

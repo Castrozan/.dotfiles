@@ -1,4 +1,4 @@
-import { MemoryRecallSavings, ModelUsageTotals, OtelMetrics } from './usage-snapshot.model';
+import { MemoryRecallSavings, ModelUsageTotals } from './usage-snapshot.model';
 
 export interface TokenTotals {
   input_tokens: number;
@@ -14,8 +14,9 @@ export interface AggregatedOtelMetrics {
   has_data: boolean;
 }
 
-export interface AggregatedMemoryRecallSavings
-  extends Required<Omit<MemoryRecallSavings, 'suppressed_recall_event_count_by_reason'>> {
+export interface AggregatedMemoryRecallSavings extends Required<
+  Omit<MemoryRecallSavings, 'suppressed_recall_event_count_by_reason'>
+> {
   suppressed_recall_event_count_by_reason: Record<string, number>;
 }
 
@@ -56,5 +57,3 @@ export interface UsageViewModel {
   summary: UsageSummary;
   chart: ChartSeries;
 }
-
-export type { MemoryRecallSavings, ModelUsageTotals, OtelMetrics };
