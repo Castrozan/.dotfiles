@@ -1,0 +1,58 @@
+name: deploy usage-dashboard
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - apps/usage-dashboard/**
+      - .github/workflows/usage-dashboard-deploy.yml
+  workflow_dispatch: {}
+
+concurrency:
+  group: usage-dashboard-deploy
+  cancel-in-progress: true
+
+env:
+  GCP_PROJECT: zg-url-shortener-2026
+  GCP_REGION: southamerica-east1
+  ARTIFACT_REPOSITORY: dotfiles-apps
+  SERVICE_NAME: dotfiles-usage-dashboard
+  IMAGE_HOST: southamerica-east1-docker.pkg.dev
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/933601426694/locations/global/workloadIdentityPools/github-actions/providers/github
+          service_account: dotfiles-github-deployer@zg-url-shortener-2026.iam.gserviceaccount.com
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.IMAGE_HOST }} --quiet
+
+      - name: Build and push image
+        working-directory: apps/usage-dashboard
+        run: |
+          IMAGE="${IMAGE_HOST}/${GCP_PROJECT}/${ARTIFACT_REPOSITORY}/usage-dashboard"
+          docker build -t "${IMAGE}:${GITHUB_SHA}" -t "${IMAGE}:latest" .
+          docker push "${IMAGE}:${GITHUB_SHA}"
+          docker push "${IMAGE}:latest"
+
+      - name: Deploy to Cloud Run
+        run: |
+          IMAGE="${IMAGE_HOST}/${GCP_PROJECT}/${ARTIFACT_REPOSITORY}/usage-dashboard"
+          gcloud run deploy "${SERVICE_NAME}" \
+            --image "${IMAGE}:${GITHUB_SHA}" \
+            --region "${GCP_REGION}" \
+            --project "${GCP_PROJECT}" \
+            --quiet
