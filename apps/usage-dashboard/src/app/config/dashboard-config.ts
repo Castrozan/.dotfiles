@@ -9,5 +9,5 @@ export const DASHBOARD_CONFIGURATION: DashboardConfiguration = {
   snapshotsBucket: 'zg-url-shortener-2026-dotfiles-usage-snapshots',
   snapshotsObjectPrefix: 'snapshots/',
   liveRefreshIntervalMilliseconds: 30000,
-  reportsBaseUrl: 'https://castrozan.github.io/.dotfiles/',
+  reportsBaseUrl: 'https://dotfiles-reports-r6guaqsm2a-rj.a.run.app/',
 };
