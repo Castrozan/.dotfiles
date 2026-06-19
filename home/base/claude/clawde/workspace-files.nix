@@ -30,7 +30,7 @@ let
       denySettings = lib.optionalAttrs (agent.denyToolPatterns != [ ]) {
         permissions.deny = agent.denyToolPatterns;
       };
-      discordReplyEnforcementSettings = lib.optionalAttrs (agentIsDiscord name) {
+      discordAgentSettings = lib.optionalAttrs (agentIsDiscord name) {
         hooks.Stop = [
           {
             hooks = [
@@ -41,9 +41,10 @@ let
             ];
           }
         ];
+        enabledPlugins."discord@claude-plugins-official" = true;
       };
     in
-    lib.recursiveUpdate denySettings discordReplyEnforcementSettings;
+    lib.recursiveUpdate denySettings discordAgentSettings;
 
   agentWorkspaceSettingsFiles = lib.listToAttrs (
     map (name: {
