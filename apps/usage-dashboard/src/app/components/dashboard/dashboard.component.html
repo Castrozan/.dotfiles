@@ -1,0 +1,91 @@
+<nav class="top">
+  <a class="brand" href="/">dotfiles reports</a>
+  <a href="/baseline/">baseline</a>
+  <a href="/quality/">quality</a>
+  <a href="/coverage/">coverage</a>
+  <a href="/" class="active">usage</a>
+</nav>
+
+<div class="wrap">
+  <header class="page-head">
+    <h1>token usage across accounts</h1>
+    <div class="live-status">
+      @if (errorMessage()) {
+        <span class="status-dot status-error"></span>
+        <span>live feed unavailable</span>
+      } @else if (isLoading()) {
+        <span class="status-dot status-loading"></span>
+        <span>loading live snapshots</span>
+      } @else {
+        <span class="status-dot status-live"></span>
+        <span>live · updated {{ lastUpdatedLabel() }}</span>
+      }
+    </div>
+  </header>
+
+  <p class="lede">
+    Claude Code token consumption per account, pulled live from each machine's
+    <code>stats-cache.json</code> snapshot in Cloud Storage. Every account is an opaque
+    salted hash of its id, so the numbers are public but the accounts are not. The headline
+    number is cache-read tokens: on a prompt-cached model they dwarf fresh input and are what
+    actually burns the plan.
+  </p>
+
+  @if (errorMessage(); as message) {
+    <div class="panel error-panel"><p>Could not reach the snapshot feed: {{ message }}</p></div>
+  }
+
+  @if (viewModel(); as vm) {
+    @if (vm.summary.account_count) {
+      <app-stat-cards [summary]="vm.summary" />
+    }
+
+    <app-daily-tokens-chart [chart]="vm.chart" />
+
+    <h2>Where the tokens go</h2>
+    <div class="panel">
+      <p>
+        Claude Code reuses a cached prefix across turns, so almost every token a long session
+        reads is a <b>cache-read</b>, not fresh input. That is why the lever that matters is
+        cutting repeated context, not trimming prompts: the cache-read column below is the
+        cost.
+      </p>
+    </div>
+
+    <h2>OpenTelemetry token stream</h2>
+    <p class="lede">
+      A local OpenTelemetry collector on every machine receives Claude Code's
+      <code>claude_code.token.usage</code> metric and writes it to a rotating local file. Each
+      machine folds the aggregated counts (never the account id) into its snapshot, so this is
+      a live, type-resolved view that corroborates the cache-read story above.
+    </p>
+    <app-otel-panel [otelMetrics]="vm.summary.otel_metrics" />
+
+    <h2>Per-account totals</h2>
+    <app-account-table [accounts]="vm.accounts" />
+
+    <h2>The memory-recall lever</h2>
+    <p class="lede">
+      The memory-recall hook injects relevant memory files into a turn, then suppresses the
+      injection when the same set was already shown (dedup), when a per-session budget is
+      spent, or when nothing changed (debounce). Those suppressions are the directly
+      attributable savings folded into each snapshot.
+    </p>
+
+    <h2>Honest caveat on attribution</h2>
+    <div class="panel">
+      <p>
+        A machine carries one current account, and <code>stats-cache.json</code> is not split
+        by account. A machine that switched accounts attributes its whole local history to the
+        account active now, so the early part of a series can be pre-switch usage. Read the
+        recent slope as the current account's, not the absolute history.
+      </p>
+    </div>
+  }
+
+  <footer>
+    Served live from Cloud Run, reading anonymized per-machine snapshots from Cloud Storage
+    that each machine exports with <code>agents/usage/export_usage_snapshot.py</code> &middot;
+    <a href="/baseline/">agent-eval baseline</a>
+  </footer>
+</div>
