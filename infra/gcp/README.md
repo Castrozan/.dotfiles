@@ -10,6 +10,20 @@ region `southamerica-east1`), mirroring the deploy pattern of the `zg-url-shorte
 - `google_service_account.usage_snapshot_uploader` — the identity each machine uses to push
   its snapshot to the bucket (`roles/storage.objectAdmin` scoped to the bucket only).
 - `google_artifact_registry_repository.dotfiles_apps` — Docker images for Cloud Run.
+- `google_cloud_run_v2_service.usage_dashboard` — the Angular usage front end (`apps/usage-dashboard`).
+- `google_cloud_run_v2_service.reports` — the static reports hub, baseline, coverage and quality
+  pages (`apps/reports`).
+- `github_workload_identity.tf` — keyless GitHub Actions auth (WIF pool, provider, deployer SA)
+  so the deploy workflows push images and roll out new revisions without a stored key.
+
+## Bootstrap order
+
+A `google_cloud_run_v2_service` cannot be created until a pullable image already exists at its
+configured tag, so the first apply of a new service is a two-step bootstrap: build and push the
+image to Artifact Registry on an amd64 host (chise, native; not the arm64 mac, whose images are
+the wrong arch for Cloud Run), then `terraform apply`. Each service carries
+`lifecycle { ignore_changes = [template[0].containers[0].image] }`, so after the initial create
+the deploy workflows own the running image tag and Terraform never reverts it.
 
 ## State
 
