@@ -48,6 +48,10 @@ let
   '';
 in
 {
+  imports = [
+    ./usage-snapshot-upload.nix
+  ];
+
   config = lib.mkMerge [
     {
       home.activation.ensureClaudeOtelMetricsDirectory = lib.hm.dag.entryAfter [ "writeBoundary" ] ''

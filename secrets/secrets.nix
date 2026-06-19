@@ -48,6 +48,7 @@ in
   "credentials/viu-auth.age".publicKeys = all_keys;
   "credentials/home-assistant-token.age".publicKeys = all_keys;
   "credentials/google-totp-secret.age".publicKeys = all_keys;
+  "credentials/gcp-usage-uploader-key.age".publicKeys = all_keys;
 
   "infrastructure/id_ed25519_phone.age".publicKeys = all_keys;
   "infrastructure/id_ed25519_jojo.age".publicKeys = all_keys;
