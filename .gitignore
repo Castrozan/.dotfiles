@@ -39,6 +39,7 @@ __pycache__/
 .cache/
 snapshot.json
 agents/usage/snapshots/
+apps/reports/site/
 /.config/cava/
 /.config/pulse/
 .claude/

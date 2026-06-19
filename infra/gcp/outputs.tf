@@ -18,6 +18,10 @@ output "usage_dashboard_url" {
   value = google_cloud_run_v2_service.usage_dashboard.uri
 }
 
+output "reports_url" {
+  value = google_cloud_run_v2_service.reports.uri
+}
+
 output "github_workload_identity_provider" {
   value = google_iam_workload_identity_pool_provider.github_actions.name
 }

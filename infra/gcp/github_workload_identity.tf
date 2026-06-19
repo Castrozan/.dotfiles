@@ -49,3 +49,9 @@ resource "google_service_account_iam_member" "github_deployer_acts_as_runtime" {
   role               = "roles/iam.serviceAccountUser"
   member             = "serviceAccount:${google_service_account.github_deployer.email}"
 }
+
+resource "google_service_account_iam_member" "github_deployer_acts_as_reports_runtime" {
+  service_account_id = google_service_account.reports_runtime.name
+  role               = "roles/iam.serviceAccountUser"
+  member             = "serviceAccount:${google_service_account.github_deployer.email}"
+}

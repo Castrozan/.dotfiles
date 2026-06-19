@@ -22,3 +22,8 @@ variable "usage_dashboard_image" {
   type    = string
   default = "southamerica-east1-docker.pkg.dev/zg-url-shortener-2026/dotfiles-apps/usage-dashboard:latest"
 }
+
+variable "reports_image" {
+  type    = string
+  default = "southamerica-east1-docker.pkg.dev/zg-url-shortener-2026/dotfiles-apps/reports:latest"
+}

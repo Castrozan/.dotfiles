@@ -1,0 +1,78 @@
+name: deploy reports
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+concurrency:
+  group: reports-deploy
+  cancel-in-progress: true
+
+env:
+  GCP_PROJECT: zg-url-shortener-2026
+  GCP_REGION: southamerica-east1
+  ARTIFACT_REPOSITORY: dotfiles-apps
+  SERVICE_NAME: dotfiles-reports
+  IMAGE_HOST: southamerica-east1-docker.pkg.dev
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: false
+
+      - uses: cachix/install-nix-action@v31
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Build coverage report
+        run: |
+          find home/base home/linux home/darwin -path "*/scripts/*" -type f -exec chmod +x {} +
+          nix shell nixpkgs#kcov nixpkgs#bats nixpkgs#bc --command ./tests/cover/bash-coverage.sh --ci
+
+      - name: Assemble static site
+        run: |
+          mkdir -p apps/reports/site/quality
+          cp .github/pages/style.css apps/reports/site/style.css
+          cp .github/pages/index.html apps/reports/site/index.html
+          cp .github/pages/quality.html apps/reports/site/quality/index.html
+          cp -r tests/coverage apps/reports/site/coverage
+          python3 agents/evals/render_baseline_dashboard.py apps/reports/site/baseline
+
+      - id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/933601426694/locations/global/workloadIdentityPools/github-actions/providers/github
+          service_account: dotfiles-github-deployer@zg-url-shortener-2026.iam.gserviceaccount.com
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.IMAGE_HOST }} --quiet
+
+      - name: Build and push image
+        working-directory: apps/reports
+        run: |
+          IMAGE="${IMAGE_HOST}/${GCP_PROJECT}/${ARTIFACT_REPOSITORY}/reports"
+          docker build -t "${IMAGE}:${GITHUB_SHA}" -t "${IMAGE}:latest" .
+          docker push "${IMAGE}:${GITHUB_SHA}"
+          docker push "${IMAGE}:latest"
+
+      - name: Deploy to Cloud Run
+        run: |
+          IMAGE="${IMAGE_HOST}/${GCP_PROJECT}/${ARTIFACT_REPOSITORY}/reports"
+          gcloud run deploy "${SERVICE_NAME}" \
+            --image "${IMAGE}:${GITHUB_SHA}" \
+            --region "${GCP_REGION}" \
+            --project "${GCP_PROJECT}" \
+            --quiet
