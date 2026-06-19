@@ -32,6 +32,10 @@ let
   );
 
   discordChannelEnvDirectoryFor = name: "${homeDir}/.claude/channels/discord/${name}";
+
+  sharedDiscordAccessFile = "${homeDir}/.claude/channels/discord/access.json";
+
+  mergeDiscordChannelAccessCommand = "${pkgs.python312}/bin/python3 ${../../scripts/merge-discord-channel-access.py}";
 in
 {
   options.clawde.agents = lib.mkOption {
@@ -43,6 +47,11 @@ in
               type = lib.types.nullOr lib.types.str;
               default = null;
               description = "Name of the decrypted secret file in ~/.secrets/ that holds the Discord bot token.";
+            };
+            options.allowedChannelsSecretName = lib.mkOption {
+              type = lib.types.nullOr lib.types.str;
+              default = null;
+              description = "Name of the decrypted secret file in ~/.secrets/ holding the Discord channel snowflakes this agent is allowed to respond in, merged into the agent's own access.json under groups.";
             };
           };
           default = { };
@@ -57,14 +66,19 @@ in
       instructions = discordAdapterInstructions;
       launchFlags = _: "--channels plugin:discord@claude-plugins-official";
       environmentSetterFor =
-        agent:
-        if agent.channel.discord.botTokenSecretName != null then
-          let
-            tokenFile = lib.escapeShellArg "${secretsDirectory}/${agent.channel.discord.botTokenSecretName}";
-          in
-          "${waitForSecretScript} ${tokenFile} && DISCORD_BOT_TOKEN=$(cat ${tokenFile}) "
-        else
-          "";
+        { name, agent }:
+        let
+          stateDirectorySetter = "DISCORD_STATE_DIR=${lib.escapeShellArg (discordChannelEnvDirectoryFor name)} ";
+          tokenSetter =
+            if agent.channel.discord.botTokenSecretName != null then
+              let
+                tokenFile = lib.escapeShellArg "${secretsDirectory}/${agent.channel.discord.botTokenSecretName}";
+              in
+              "${waitForSecretScript} ${tokenFile} && DISCORD_BOT_TOKEN=$(cat ${tokenFile}) "
+            else
+              "";
+        in
+        "${stateDirectorySetter}${tokenSetter}";
       agentActivationScriptFor =
         {
           name,
@@ -78,10 +92,15 @@ in
               "${injectOneSecretScript} ${lib.escapeShellArg "${secretsDirectory}/${agent.channel.discord.botTokenSecretName}"} ${lib.escapeShellArg (discordChannelEnvDirectoryFor name)} DISCORD_BOT_TOKEN"
             else
               "";
+          channelsSecretFlag =
+            lib.optionalString (agent.channel.discord.allowedChannelsSecretName != null)
+              " --channels-secret-file ${lib.escapeShellArg "${secretsDirectory}/${agent.channel.discord.allowedChannelsSecretName}"}";
+          mergeChannelAccessLine = "${mergeDiscordChannelAccessCommand} --state-directory ${lib.escapeShellArg (discordChannelEnvDirectoryFor name)} --shared-access-file ${lib.escapeShellArg sharedDiscordAccessFile}${channelsSecretFlag}";
         in
         ''
           ${seedDiscordWorkspaceScript} ${lib.escapeShellArg workspaceDirectory} ${lib.escapeShellArg claudeBinary}
           ${secretInjectionLine}
+          ${mergeChannelAccessLine}
         '';
       preActivation = if hasDiscordAgents then "run ${updateClaudePluginsMarketplace}" else null;
     };

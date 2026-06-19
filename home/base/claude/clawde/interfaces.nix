@@ -17,7 +17,7 @@
           environmentSetterFor = lib.mkOption {
             type = lib.types.functionTo lib.types.str;
             default = _: "";
-            description = "Function: agent -> shell prefix that exports any env vars the adapter needs in the agent's launch command (e.g., DISCORD_BOT_TOKEN=$(cat ...)).";
+            description = "Function: { name, agent } -> shell prefix that exports any env vars the adapter needs in the agent's launch command (e.g., DISCORD_BOT_TOKEN=$(cat ...), DISCORD_STATE_DIR=...).";
           };
           workspaceDirectoryFor = lib.mkOption {
             type = lib.types.functionTo (lib.types.nullOr lib.types.str);

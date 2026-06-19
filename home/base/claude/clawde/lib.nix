@@ -73,11 +73,11 @@ let
     if adapter != null then adapter.launchFlags agent else "";
 
   resolveChannelAdapterEnvironmentSetter =
-    agent:
+    name: agent:
     let
       adapter = getChannelAdapterFor agent;
     in
-    if adapter != null then adapter.environmentSetterFor agent else "";
+    if adapter != null then adapter.environmentSetterFor { inherit name agent; } else "";
 
   effectiveAgentByName =
     name:

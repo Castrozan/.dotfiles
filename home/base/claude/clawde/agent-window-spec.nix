@@ -36,7 +36,7 @@ let
     name: agent:
     let
       workspace = agentWorkspaceDirectory name;
-      environmentSetter = resolveChannelAdapterEnvironmentSetter agent;
+      environmentSetter = resolveChannelAdapterEnvironmentSetter name agent;
       channelFlag = resolveChannelAdapterLaunchFlag agent;
       modelFlag = "--model ${agent.model}";
       nameFlag = "--name ${name}";
