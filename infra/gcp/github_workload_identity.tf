@@ -44,18 +44,6 @@ resource "google_project_iam_member" "github_deployer_run_admin" {
   member  = "serviceAccount:${google_service_account.github_deployer.email}"
 }
 
-resource "google_service_account_iam_member" "github_deployer_acts_as_runtime" {
-  service_account_id = google_service_account.usage_dashboard_runtime.name
-  role               = "roles/iam.serviceAccountUser"
-  member             = "serviceAccount:${google_service_account.github_deployer.email}"
-}
-
-resource "google_service_account_iam_member" "github_deployer_acts_as_reports_runtime" {
-  service_account_id = google_service_account.reports_runtime.name
-  role               = "roles/iam.serviceAccountUser"
-  member             = "serviceAccount:${google_service_account.github_deployer.email}"
-}
-
 resource "google_storage_bucket_iam_member" "github_deployer_publishes_reports_static_artifacts" {
   bucket = google_storage_bucket.usage_snapshots.name
   role   = "roles/storage.objectAdmin"

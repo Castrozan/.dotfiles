@@ -11,10 +11,6 @@ concurrency:
 
 env:
   GCP_PROJECT: zg-url-shortener-2026
-  GCP_REGION: southamerica-east1
-  ARTIFACT_REPOSITORY: dotfiles-apps
-  SERVICE_NAME: dotfiles-reports
-  IMAGE_HOST: southamerica-east1-docker.pkg.dev
 
 permissions:
   contents: read
@@ -65,23 +61,3 @@ jobs:
             --recursive --delete-unmatched-destination-objects
           gcloud storage rsync apps/reports/site/coverage "${BUCKET}/reports/coverage" \
             --recursive --delete-unmatched-destination-objects
-
-      - name: Configure Docker for Artifact Registry
-        run: gcloud auth configure-docker ${{ env.IMAGE_HOST }} --quiet
-
-      - name: Build and push image
-        working-directory: apps/reports
-        run: |
-          IMAGE="${IMAGE_HOST}/${GCP_PROJECT}/${ARTIFACT_REPOSITORY}/reports"
-          docker build -t "${IMAGE}:${GITHUB_SHA}" -t "${IMAGE}:latest" .
-          docker push "${IMAGE}:${GITHUB_SHA}"
-          docker push "${IMAGE}:latest"
-
-      - name: Deploy to Cloud Run
-        run: |
-          IMAGE="${IMAGE_HOST}/${GCP_PROJECT}/${ARTIFACT_REPOSITORY}/reports"
-          gcloud run deploy "${SERVICE_NAME}" \
-            --image "${IMAGE}:${GITHUB_SHA}" \
-            --region "${GCP_REGION}" \
-            --project "${GCP_PROJECT}" \
-            --quiet
