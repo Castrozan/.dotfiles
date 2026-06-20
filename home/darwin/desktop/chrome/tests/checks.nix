@@ -17,6 +17,19 @@ let
   };
   inherit (helpers) mkEvalCheck;
 
+  chromeGlobalLauncher = import ../chrome-global-launcher.nix { inherit pkgs; };
+
+  chromeGlobalLauncherConfiguration = helpers.homeManagerTestConfiguration [ ../default.nix ];
+
+  chromeGlobalLauncherTargetsChromeGlobalUserDataDir = lib.hasInfix ''--user-data-dir="$HOME/.config/chrome-global"'' chromeGlobalLauncher.chromeGlobalLauncherScript;
+
+  chromeGlobalLauncherHasNoRemoteDebuggingFlag =
+    !lib.hasInfix "--remote-debugging-port" chromeGlobalLauncher.chromeGlobalLauncherScript;
+
+  chromeGlobalLauncherIsInHomePackages = lib.any (
+    package: (lib.getName package) == "summon-chrome-global"
+  ) chromeGlobalLauncherConfiguration.home.packages;
+
   chromePreferencesOverrides = builtins.fromJSON (builtins.readFile ../preferences-overrides.json);
 
   chromeBookmarkBarShownOnAllTabs = chromePreferencesOverrides.bookmark_bar.show_on_all_tabs;
@@ -36,6 +49,21 @@ let
   chromeOmitsIntlLanguageOverrideChromeRevertsOnLaunch = !(chromePreferencesOverrides ? intl);
 in
 {
+  domain-desktop-chrome-global-launcher-targets-chrome-global-user-data-dir =
+    mkEvalCheck "domain-desktop-chrome-global-launcher-targets-chrome-global-user-data-dir"
+      chromeGlobalLauncherTargetsChromeGlobalUserDataDir
+      "summon-chrome-global must launch the non-default ~/.config/chrome-global profile, matching chromeGlobalUserDataDir in the chrome-devtools-mcp install so autoConnect can attach";
+
+  domain-desktop-chrome-global-launcher-no-remote-debugging-flag =
+    mkEvalCheck "domain-desktop-chrome-global-launcher-no-remote-debugging-flag"
+      chromeGlobalLauncherHasNoRemoteDebuggingFlag
+      "summon-chrome-global must not inject --remote-debugging-port so Chrome stays bare for autoConnect stealth, exposing the debug endpoint only through the in-Chrome consent dialog";
+
+  domain-desktop-chrome-global-launcher-in-home-packages =
+    mkEvalCheck "domain-desktop-chrome-global-launcher-in-home-packages"
+      chromeGlobalLauncherIsInHomePackages
+      "summon-chrome-global must be wired into home.packages so the launcher is on PATH for the chrome-devtools recovery step";
+
   domain-desktop-chrome-bookmark-bar-shown-on-all-tabs =
     mkEvalCheck "domain-desktop-chrome-bookmark-bar-shown-on-all-tabs" chromeBookmarkBarShownOnAllTabs
       "Chrome bookmark_bar.show_on_all_tabs must be true to mirror the Brave bookmark bar";

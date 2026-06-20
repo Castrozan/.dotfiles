@@ -35,7 +35,7 @@ Works immediately with no setup. Launches its own Chrome instance.
 Connects to the user's real Chrome Global via `--autoConnect`. Chrome runs bare (no automation flags) so Google and bot-detecting sites see a normal browser. The user must enable `chrome://inspect/#remote-debugging` once (persists across restarts) and click Allow on the consent dialog once per Chrome session.
 
 If `mcp__chrome-devtools__list_pages` returns "Could not connect to Chrome":
-1. Run `hypr-summon-chrome-global` to launch Chrome Global for the user
+1. Launch Chrome Global for the user: `hypr-summon-chrome-global` on Linux, `summon-chrome-global` on macOS
 2. Tell the user: "Enable chrome://inspect/#remote-debugging if not already on (persists across restarts). Then click Allow on the consent dialog that will appear when I connect."
 3. Call `mcp__chrome-devtools__list_pages` - this call BLOCKS until the user clicks Allow on the consent dialog in Chrome. Do not call any other tools while waiting.
 

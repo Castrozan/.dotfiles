@@ -7,8 +7,12 @@ let
   chromiumProfilePreferenceMerge = import ../chromium-preferences/profile-preference-merge.nix {
     inherit pkgs;
   };
+
+  chromeGlobalLauncher = import ./chrome-global-launcher.nix { inherit pkgs; };
 in
 {
+  home.packages = [ chromeGlobalLauncher.chromeGlobalLauncherPackage ];
+
   home.activation.mergeChromeDefaultProfilePreferences =
     config.lib.dag.entryAfter
       [
