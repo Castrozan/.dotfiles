@@ -55,6 +55,14 @@ resource "google_storage_bucket_iam_member" "lucaszanoni_web_deployer_terraform_
   member = "serviceAccount:${google_service_account.lucaszanoni_web_deployer.email}"
 }
 
+resource "google_artifact_registry_repository" "lucaszanoni_web_application_images" {
+  project       = var.project_id
+  location      = var.region
+  repository_id = "lucaszanoni-web"
+  format        = "DOCKER"
+  description   = "Container images for the lucaszanoni-web micro-frontends, pushed by the keyless GitHub Actions deployer."
+}
+
 resource "google_service_account" "lucaszanoni_web_runtime" {
   account_id   = "lucaszanoni-web-runtime"
   display_name = "lucaszanoni-web Cloud Run runtime identity"
