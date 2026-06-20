@@ -18,6 +18,11 @@ variable "github_repository" {
   default = "Castrozan/.dotfiles"
 }
 
+variable "lucaszanoni_web_github_repository" {
+  type    = string
+  default = "Castrozan/lucaszanoni-web"
+}
+
 variable "usage_dashboard_image" {
   type    = string
   default = "southamerica-east1-docker.pkg.dev/zg-url-shortener-2026/dotfiles-apps/usage-dashboard:latest"
