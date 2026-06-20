@@ -57,6 +57,15 @@ jobs:
 
       - uses: google-github-actions/setup-gcloud@v2
 
+      - name: Publish baseline and coverage to the usage snapshots bucket
+        if: ${{ vars.REPORTS_STATIC_GCS_PUBLISH == 'true' }}
+        run: |
+          BUCKET="gs://${GCP_PROJECT}-dotfiles-usage-snapshots"
+          gcloud storage rsync apps/reports/site/baseline "${BUCKET}/reports/baseline" \
+            --recursive --delete-unmatched-destination-objects
+          gcloud storage rsync apps/reports/site/coverage "${BUCKET}/reports/coverage" \
+            --recursive --delete-unmatched-destination-objects
+
       - name: Configure Docker for Artifact Registry
         run: gcloud auth configure-docker ${{ env.IMAGE_HOST }} --quiet
 
