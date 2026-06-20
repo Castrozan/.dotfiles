@@ -119,15 +119,25 @@ _resolve_machine_alias() {
 	esac
 }
 
+_resolve_nixos_flake_ref() {
+	local machine_alias="$1"
+
+	if [ -f /etc/nixos/flake.nix ]; then
+		echo "/etc/nixos#${machine_alias}"
+	else
+		echo "${DOTFILES_DIR}?submodules=1#${machine_alias}"
+	fi
+}
+
 _rebuild_nixos() {
-	local machineAlias dotfiles_path
-	machineAlias="$(_resolve_machine_alias)"
-	dotfiles_path="$DOTFILES_DIR"
+	local machine_alias flake_ref
+	machine_alias="$(_resolve_machine_alias)"
+	flake_ref="$(_resolve_nixos_flake_ref "$machine_alias")"
 
 	echo ":: Detected NixOS. Running nixos-rebuild switch..."
-	echo ":: Flake: ${dotfiles_path}#${machineAlias}"
+	echo ":: Flake: ${flake_ref}"
 
-	sudo env "$NIXOS_ALLOW_UNFREE" nixos-rebuild switch --flake "${dotfiles_path}?submodules=1#${machineAlias}"
+	sudo env "$NIXOS_ALLOW_UNFREE" nixos-rebuild switch --flake "${flake_ref}"
 }
 
 _rebuild_home_manager() {
