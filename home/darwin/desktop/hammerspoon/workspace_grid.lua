@@ -92,14 +92,18 @@ function workspaceGrid.navigateWorkspace(deltaWithinGrid, alsoMoveFocusedWindow)
 	end
 end
 
-function workspaceGrid.summonApplicationToCurrentWorkspace(applicationName, applicationBundleIdentifier)
+function workspaceGrid.summonApplicationToCurrentWorkspace(
+	applicationName,
+	applicationBundleIdentifier,
+	coldLaunchShellCommand
+)
 	windowSummon.summon(applicationName, applicationBundleIdentifier, function(window)
 		windowAssignment.assignWindowToWorkspace(window:id(), currentWorkspaceNumber)
 		windowLayout.showWindowOnScreen(window)
 		window:focus()
 		renderMenuBarIndicator()
 		persistWorkspaceState()
-	end)
+	end, coldLaunchShellCommand)
 end
 
 function workspaceGrid.gatherAllWindowsToCurrentWorkspace()

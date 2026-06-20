@@ -15,10 +15,19 @@ local function firstStandardWindowForBundleIdentifier(applicationBundleIdentifie
 	return nil
 end
 
-function workspaceGridSummon.summon(applicationName, applicationBundleIdentifier, placeWindowOnCurrentWorkspace)
+function workspaceGridSummon.summon(
+	applicationName,
+	applicationBundleIdentifier,
+	placeWindowOnCurrentWorkspace,
+	coldLaunchShellCommand
+)
 	local window = firstStandardWindowForBundleIdentifier(applicationBundleIdentifier)
 	if not window then
-		hs.application.launchOrFocus(applicationName)
+		if coldLaunchShellCommand then
+			hs.execute(coldLaunchShellCommand, true)
+		else
+			hs.application.launchOrFocus(applicationName)
+		end
 		return
 	end
 	placeWindowOnCurrentWorkspace(window)

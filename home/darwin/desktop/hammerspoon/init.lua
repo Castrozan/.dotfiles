@@ -67,7 +67,7 @@ function summonBraveBrowserToCurrentWorkspace()
 	workspaceGrid.summonApplicationToCurrentWorkspace("Brave Browser", "com.brave.Browser")
 end
 function summonGoogleChromeToCurrentWorkspace()
-	workspaceGrid.summonApplicationToCurrentWorkspace("Google Chrome", "com.google.Chrome")
+	workspaceGrid.summonApplicationToCurrentWorkspace("Google Chrome", "com.google.Chrome", "summon-chrome-global")
 end
 
 local windowEventWatcher = hs.window.filter.new()

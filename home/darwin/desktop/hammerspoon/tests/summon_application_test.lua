@@ -6,6 +6,8 @@ local offScreenParkingX = -1000000
 local launchOrFocusCallCount = 0
 local lastLaunchedApplicationName = nil
 local currentlyFocusedWindowId = nil
+local executeCallCount = 0
+local lastExecutedShellCommand = nil
 
 local function makeFakeWindow(windowId, isStandardWindow)
 	local fakeWindow = {
@@ -68,6 +70,10 @@ end
 local runningApplicationsByBundleIdentifier = {}
 
 hs = {
+	execute = function(command)
+		executeCallCount = executeCallCount + 1
+		lastExecutedShellCommand = command
+	end,
 	menubar = {
 		new = function()
 			return { setTitle = function() end }
@@ -142,15 +148,39 @@ runningApplicationsByBundleIdentifier = {
 }
 launchOrFocusCallCount = 0
 lastLaunchedApplicationName = nil
+executeCallCount = 0
+lastExecutedShellCommand = nil
 currentlyFocusedWindowId = nil
-workspaceGrid.summonApplicationToCurrentWorkspace("Google Chrome", "com.google.Chrome")
+workspaceGrid.summonApplicationToCurrentWorkspace("Google Chrome", "com.google.Chrome", "summon-chrome-global")
 
 expectEqual(
-	"a windowless instance (devtools bridge) still triggers a launch to open a window",
+	"a windowless instance with a cold-launch command runs that command instead of launchOrFocus",
+	1,
+	executeCallCount
+)
+expectEqual(
+	"the cold-launch command opens chrome-global rather than the default profile",
+	"summon-chrome-global",
+	lastExecutedShellCommand
+)
+expectEqual("a cold-launch command suppresses the launchOrFocus fallback", 0, launchOrFocusCallCount)
+
+runningApplicationsByBundleIdentifier = {
+	["com.brave.Browser"] = { makeFakeApplication({}) },
+}
+launchOrFocusCallCount = 0
+lastLaunchedApplicationName = nil
+executeCallCount = 0
+lastExecutedShellCommand = nil
+workspaceGrid.summonApplicationToCurrentWorkspace("Brave Browser", "com.brave.Browser")
+
+expectEqual(
+	"a windowless instance without a cold-launch command falls back to launchOrFocus",
 	1,
 	launchOrFocusCallCount
 )
-expectEqual("the launch targets the named application", "Google Chrome", lastLaunchedApplicationName)
+expectEqual("the fallback launch targets the named application", "Brave Browser", lastLaunchedApplicationName)
+expectEqual("the fallback path runs no shell command", 0, executeCallCount)
 
 local windowedInstanceWindow = makeFakeWindow(2, true)
 runningApplicationsByBundleIdentifier = {
