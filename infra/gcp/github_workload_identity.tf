@@ -55,3 +55,9 @@ resource "google_service_account_iam_member" "github_deployer_acts_as_reports_ru
   role               = "roles/iam.serviceAccountUser"
   member             = "serviceAccount:${google_service_account.github_deployer.email}"
 }
+
+resource "google_storage_bucket_iam_member" "github_deployer_publishes_reports_static_artifacts" {
+  bucket = google_storage_bucket.usage_snapshots.name
+  role   = "roles/storage.objectAdmin"
+  member = "serviceAccount:${google_service_account.github_deployer.email}"
+}
