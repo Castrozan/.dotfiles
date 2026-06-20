@@ -1,121 +1,13 @@
 local moduleDirectory = arg[0]:gsub("tests/[^/]*$", "")
 package.path = moduleDirectory .. "?.lua;" .. package.path
 
-local offScreenParkingX = -1000000
+local testDoubles = require("tests.summon_application_test_doubles")
+testDoubles.installGlobalHammerspoonMock()
 
-local launchOrFocusCallCount = 0
-local lastLaunchedApplicationName = nil
-local currentlyFocusedWindowId = nil
-local executeCallCount = 0
-local lastExecutedShellCommand = nil
-
-local function makeFakeWindow(windowId, isStandardWindow)
-	local fakeWindow = {
-		storedFrame = { x = offScreenParkingX, y = 100, w = 400, h = 300 },
-	}
-	function fakeWindow:id()
-		return windowId
-	end
-	function fakeWindow:isStandard()
-		return isStandardWindow
-	end
-	function fakeWindow:frame()
-		return {
-			x = self.storedFrame.x,
-			y = self.storedFrame.y,
-			w = self.storedFrame.w,
-			h = self.storedFrame.h,
-		}
-	end
-	function fakeWindow:setFrame(newFrame)
-		self.storedFrame = newFrame
-	end
-	function fakeWindow:screen()
-		return {
-			frame = function()
-				return { x = 0, y = 0, w = 1440, h = 900 }
-			end,
-		}
-	end
-	function fakeWindow:focus()
-		currentlyFocusedWindowId = windowId
-	end
-	function fakeWindow:application()
-		return {
-			name = function()
-				return "Browser"
-			end,
-		}
-	end
-	function fakeWindow:title()
-		return "fake-title-" .. windowId
-	end
-	return fakeWindow
-end
-
-local function makeFakeApplication(windows)
-	return {
-		mainWindow = function()
-			return windows[1]
-		end,
-		allWindows = function()
-			return windows
-		end,
-		name = function()
-			return "Browser"
-		end,
-	}
-end
-
-local runningApplicationsByBundleIdentifier = {}
-
-hs = {
-	execute = function(command)
-		executeCallCount = executeCallCount + 1
-		lastExecutedShellCommand = command
-	end,
-	menubar = {
-		new = function()
-			return { setTitle = function() end }
-		end,
-	},
-	styledtext = {
-		new = function(text)
-			return setmetatable({ text = text }, {
-				__concat = function(left, right)
-					return hs.styledtext.new(left.text .. right.text)
-				end,
-			})
-		end,
-	},
-	application = {
-		launchOrFocus = function(applicationName)
-			launchOrFocusCallCount = launchOrFocusCallCount + 1
-			lastLaunchedApplicationName = applicationName
-		end,
-		applicationsForBundleID = function(bundleIdentifier)
-			return runningApplicationsByBundleIdentifier[bundleIdentifier] or {}
-		end,
-	},
-	window = {
-		focusedWindow = function()
-			return nil
-		end,
-		get = function()
-			return nil
-		end,
-		allWindows = function()
-			return {}
-		end,
-		filter = {
-			default = {
-				getWindows = function()
-					return {}
-				end,
-			},
-		},
-	},
-}
+local makeFakeWindow = testDoubles.makeFakeWindow
+local makeFakeApplication = testDoubles.makeFakeApplication
+local setRunningApplications = testDoubles.setRunningApplications
+local captures = testDoubles.captures
 
 local workspaceGrid = require("workspace_grid")
 
@@ -131,69 +23,92 @@ local function expectEqual(description, expectedValue, actualValue)
 	end
 end
 
+local function timesShellCommandExecuted(commandText)
+	local occurrences = 0
+	for _, executedCommand in ipairs(captures.executedShellCommands) do
+		if executedCommand == commandText then
+			occurrences = occurrences + 1
+		end
+	end
+	return occurrences
+end
+
 local runningBrowserWindow = makeFakeWindow(1, true)
-runningApplicationsByBundleIdentifier = {
+setRunningApplications({
 	["com.brave.Browser"] = { makeFakeApplication({ runningBrowserWindow }) },
-}
-launchOrFocusCallCount = 0
-currentlyFocusedWindowId = nil
+})
+captures.launchOrFocusCallCount = 0
+captures.currentlyFocusedWindowId = nil
 workspaceGrid.summonApplicationToCurrentWorkspace("Brave Browser", "com.brave.Browser")
 
-expectEqual("a running browser with a window is not relaunched (no reopen, no extra window)", 0, launchOrFocusCallCount)
-expectEqual("the existing browser window is focused", 1, currentlyFocusedWindowId)
+expectEqual(
+	"a running browser with a window is not relaunched (no reopen, no extra window)",
+	0,
+	captures.launchOrFocusCallCount
+)
+expectEqual("the existing browser window is focused", 1, captures.currentlyFocusedWindowId)
 expectEqual("the existing browser window is un-parked onto the screen", 0, runningBrowserWindow.storedFrame.x)
 
-runningApplicationsByBundleIdentifier = {
+setRunningApplications({
 	["com.google.Chrome"] = { makeFakeApplication({}) },
-}
-launchOrFocusCallCount = 0
-lastLaunchedApplicationName = nil
-executeCallCount = 0
-lastExecutedShellCommand = nil
-currentlyFocusedWindowId = nil
+})
+captures.launchOrFocusCallCount = 0
+captures.lastLaunchedApplicationName = nil
+captures.lastExecuteRanInUserEnvironment = nil
+captures.executedShellCommands = {}
+captures.currentlyFocusedWindowId = nil
 workspaceGrid.summonApplicationToCurrentWorkspace("Google Chrome", "com.google.Chrome", "summon-chrome-global")
 
 expectEqual(
-	"a windowless instance with a cold-launch command runs that command instead of launchOrFocus",
+	"a windowless instance with a cold-launch command opens chrome-global instead of launchOrFocus",
 	1,
-	executeCallCount
+	timesShellCommandExecuted("summon-chrome-global")
 )
 expectEqual(
-	"the cold-launch command opens chrome-global rather than the default profile",
-	"summon-chrome-global",
-	lastExecutedShellCommand
+	"the cold launch runs in the login-shell environment so the nix-profile launcher resolves on PATH",
+	true,
+	captures.lastExecuteRanInUserEnvironment
 )
-expectEqual("a cold-launch command suppresses the launchOrFocus fallback", 0, launchOrFocusCallCount)
+expectEqual("a cold-launch command suppresses the launchOrFocus fallback", 0, captures.launchOrFocusCallCount)
 
-runningApplicationsByBundleIdentifier = {
+setRunningApplications({
 	["com.brave.Browser"] = { makeFakeApplication({}) },
-}
-launchOrFocusCallCount = 0
-lastLaunchedApplicationName = nil
-executeCallCount = 0
-lastExecutedShellCommand = nil
+})
+captures.launchOrFocusCallCount = 0
+captures.lastLaunchedApplicationName = nil
+captures.executedShellCommands = {}
 workspaceGrid.summonApplicationToCurrentWorkspace("Brave Browser", "com.brave.Browser")
 
 expectEqual(
 	"a windowless instance without a cold-launch command falls back to launchOrFocus",
 	1,
-	launchOrFocusCallCount
+	captures.launchOrFocusCallCount
 )
-expectEqual("the fallback launch targets the named application", "Brave Browser", lastLaunchedApplicationName)
-expectEqual("the fallback path runs no shell command", 0, executeCallCount)
+expectEqual("the fallback launch targets the named application", "Brave Browser", captures.lastLaunchedApplicationName)
+expectEqual("the fallback path runs no shell command", 0, #captures.executedShellCommands)
 
 local windowedInstanceWindow = makeFakeWindow(2, true)
-runningApplicationsByBundleIdentifier = {
+setRunningApplications({
 	["com.google.Chrome"] = {
 		makeFakeApplication({}),
 		makeFakeApplication({ windowedInstanceWindow }),
 	},
-}
-launchOrFocusCallCount = 0
-currentlyFocusedWindowId = nil
-workspaceGrid.summonApplicationToCurrentWorkspace("Google Chrome", "com.google.Chrome")
+})
+captures.launchOrFocusCallCount = 0
+captures.executedShellCommands = {}
+captures.currentlyFocusedWindowId = nil
+workspaceGrid.summonApplicationToCurrentWorkspace("Google Chrome", "com.google.Chrome", "summon-chrome-global")
 
-expectEqual("a windowed instance is focused even when a windowless instance also runs", 2, currentlyFocusedWindowId)
-expectEqual("no launch happens when any instance already has a window", 0, launchOrFocusCallCount)
+expectEqual(
+	"a windowed instance is focused even when a windowless instance also runs",
+	2,
+	captures.currentlyFocusedWindowId
+)
+expectEqual("no launch happens when any instance already has a window", 0, captures.launchOrFocusCallCount)
+expectEqual(
+	"an existing window short-circuits the cold launch even with a command present",
+	0,
+	timesShellCommandExecuted("summon-chrome-global")
+)
 
 os.exit(failureCount == 0 and 0 or 1)
