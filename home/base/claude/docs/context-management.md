@@ -39,11 +39,11 @@ The current first-party Claude 4.x models (opus-4-8, opus-4-7, fable-5, mythos-5
 /model opus[1m]
 ```
 
-### Access Restrictions (as of February 2026)
+### Plan Availability (as of June 2026)
 
-1M context is available to API pay-as-you-go users at usage tier 4+ ($400+ in credits) and Claude Code pay-as-you-go users. It is NOT available on Max, Pro, Teams, or Enterprise subscriptions. This is the single most complained-about restriction in the Claude Code community. Multiple GitHub issues document regressions where 1M access disappears after updates ([#26428](https://github.com/anthropics/claude-code/issues/26428), [#15057](https://github.com/anthropics/claude-code/issues/15057)).
+The February-2026 restriction is gone. Since March 2026, Max, Team, and Enterprise plans get the 1M window automatically in Claude Code for Opus 4.8, Opus 4.7, Opus 4.6, and Fable 5, with no surcharge and no configuration. Pro users get the same models at 1M only after enabling usage credits. API and Claude Code pay-as-you-go users also have it. The old "NOT available on Max" claim and the tier-4-only gate no longer hold; the earlier disappear-after-update regressions are tracked in [#26428](https://github.com/anthropics/claude-code/issues/26428) and [#15057](https://github.com/anthropics/claude-code/issues/15057).
 
-Pricing above 200K tokens: 2x input, 1.5x output. The beta header `context-1m-2025-08-07` is applied automatically: on by default for the 4.x models above, and forced on other models by the `[1m]` suffix. To turn the 1M window OFF (and escape the auto-compact-at-800K trap), set `CLAUDE_CODE_DISABLE_1M_CONTEXT=1`.
+Pricing: Opus 4.x now serve the full 1M window at standard rates, so the old 2x-input / 1.5x-output surcharge above 200K no longer applies to these models. 1M is GA for them with no `[1m]` suffix and no beta header; other models still opt in via `[1m]`. To turn the 1M window OFF (and escape the auto-compact-at-800K trap), set `CLAUDE_CODE_DISABLE_1M_CONTEXT=1`.
 
 ## Model Switching
 
