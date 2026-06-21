@@ -41,7 +41,7 @@ If `mcp__chrome-devtools__list_pages` returns "Could not connect to Chrome":
 
 Once connected:
 1. `mcp__chrome-devtools__list_pages` - verify connection
-2. `mcp__chrome-devtools__navigate_page` - go to URL
+2. `mcp__chrome-devtools__new_page` with `background: true` - open work in a fresh tab; never `navigate_page` the currently selected tab, that replaces in place whatever the user has open there
 3. `mcp__chrome-devtools__take_snapshot` - see page elements with uid refs
 4. `mcp__chrome-devtools__click` / `mcp__chrome-devtools__fill` - interact using uid from snapshot
 5. `mcp__chrome-devtools__take_screenshot` - visual verification when needed
@@ -55,7 +55,7 @@ If `mcp__brave-devtools__list_pages` returns "Could not connect":
 2. Tell the user: "Enable brave://inspect/#remote-debugging if not already on (persists across restarts). Then click Allow on the consent dialog that will appear when I connect."
 3. Call `mcp__brave-devtools__list_pages` - this call BLOCKS until the user clicks Allow on the consent dialog in Brave. Do not call any other tools while waiting.
 
-Once connected, the `mcp__brave-devtools__*` tools are identical in shape to the Chrome target: `list_pages`, `navigate_page`, `take_snapshot`, `click`/`fill`, `take_screenshot`.
+Once connected, the `mcp__brave-devtools__*` tools are identical in shape to the Chrome target (`list_pages`, `new_page`, `take_snapshot`, `click`/`fill`, `take_screenshot`); follow the same once-connected steps, and because this is the user's everyday Brave full of live tabs, always open work with `new_page` (`background: true`) and never `navigate_page` the selected tab, which would replace a tab the user is using.
 </brave_devtools_workflow>
 
 <tips>

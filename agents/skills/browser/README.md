@@ -14,6 +14,10 @@ Both CDP targets connect via `--autoConnect` to a real browser launched bare wit
 Three traps each waste a whole session if hit, and they apply to each target independently: 1) the first `list_pages`, and every new client connection, BLOCKS until the user clicks Allow, which is expected and not a hang, so wait for it and never time it out, retry-storm it, kill the process, or report it broken; 2) never add `--remote-debugging-port` or any automation flag to suppress the prompt, that flag is exactly what destroys the stealth and the recurring manual Allow is the cost of invisibility by design; 3) each target is one browser, single and sequential, so never drive it from parallel agents or open concurrent clients because each new client needs its own Allow and they hang while the browser serializes them, one agent and one connection at a time per target.
 </chrome_devtools_never_break_the_gate>
 
+<real_browser_never_clobber_the_users_open_tab>
+Both CDP targets attach to a real browser whose selected page on connect is the user's live foreground tab, and `navigate_page` replaces that tab's content in place instead of opening a new one, so navigating the selected tab silently destroys whatever the user had open there. Always open work with `new_page` and `background: true`, which loads a fresh tab without stealing the user's focus, or `select_page` onto a tab you already own; reserve `navigate_page` for a tab you opened yourself. This is intended chrome-devtools-mcp behavior through the latest release, not a bug a version bump fixes, so do not chase a newer pin for it.
+</real_browser_never_clobber_the_users_open_tab>
+
 <chrome_devtools_performance_is_not_the_limit>
 Once authorized either target sustains tens of thousands of CDP operations per second at roughly 1ms latency with no memory growth, so never diagnose slowness or contention here; the only ceiling is the manual Allow.
 </chrome_devtools_performance_is_not_the_limit>
