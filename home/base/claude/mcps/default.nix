@@ -48,7 +48,12 @@ in
     })
     (import ./inject-mcp-servers-into-claude-config.nix {
       inherit homeDir;
-      inherit (browserMcp) chromeDevtoolsMcpStdioCommand chromeDevtoolsMcpStdioArgs;
+      inherit (browserMcp)
+        chromeDevtoolsMcpStdioCommand
+        chromeDevtoolsMcpStdioArgs
+        braveDevtoolsMcpStdioCommand
+        braveDevtoolsMcpStdioArgs
+        ;
       a2aMcpStdioCommand = a2aMcp.mcpServerCommand;
       a2aMcpStdioArgs = a2aMcp.mcpServerArgs;
       browserUseMcpStdioCommand = browserUseMcpWrapper;

@@ -2,6 +2,8 @@
   homeDir,
   chromeDevtoolsMcpStdioCommand,
   chromeDevtoolsMcpStdioArgs,
+  braveDevtoolsMcpStdioCommand,
+  braveDevtoolsMcpStdioArgs,
   a2aMcpStdioCommand,
   a2aMcpStdioArgs,
   browserUseMcpStdioCommand,
@@ -13,6 +15,10 @@ let
     chrome-devtools = {
       command = chromeDevtoolsMcpStdioCommand;
       args = chromeDevtoolsMcpStdioArgs;
+    };
+    brave-devtools = {
+      command = braveDevtoolsMcpStdioCommand;
+      args = braveDevtoolsMcpStdioArgs;
     };
     codex = {
       command = codexBinaryPath;
@@ -30,6 +36,7 @@ let
 
   mcpServerNamesManagedAcrossAllPlatforms = [
     "a2a"
+    "brave-devtools"
     "browser-use"
     "chrome-devtools"
     "codex"

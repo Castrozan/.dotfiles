@@ -4,7 +4,7 @@ description: Interact with a live webpage inside a browser window — fill forms
 ---
 
 <strategy>
-Two browser MCPs plus one CLI are available. Browser Use (`mcp__browser-use__*`) is the primary MCP - it launches its own Chrome, works immediately, handles general browsing and Electron apps. Chrome DevTools (`mcp__chrome-devtools__*`) connects to the user's real Chrome Global for stealth on sites that detect automation (Google, banking, Cloudflare). PinchTab (`pinchtab` CLI, no MCP) is the resilient fallback - its own persistent-profile Chrome (stays logged in across runs) driven entirely from bash; reach for it when the MCP transports are flaky or you need a stable already-authenticated session for a local app. Read `README.md` for the full decision framework.
+Browser MCPs plus one CLI are available. Browser Use (`mcp__browser-use__*`) is the primary MCP - it launches its own Chrome, works immediately, handles general browsing and Electron apps. Two stealth CDP targets connect to a real browser for sites that detect automation (Google, banking, Cloudflare): Chrome DevTools (`mcp__chrome-devtools__*`) attaches to the dedicated Chrome Global, and Brave DevTools (`mcp__brave-devtools__*`) attaches to the user's everyday Cmd+B Brave on its real default profile; pick by which browser holds the logged-in session you need. PinchTab (`pinchtab` CLI, no MCP) is the resilient fallback - its own persistent-profile Chrome (stays logged in across runs) driven entirely from bash; reach for it when the MCP transports are flaky or you need a stable already-authenticated session for a local app. Read `README.md` for the full decision framework.
 </strategy>
 
 <pinchtab_workflow>
@@ -47,7 +47,18 @@ Once connected:
 5. `mcp__chrome-devtools__take_screenshot` - visual verification when needed
 </chrome_devtools_workflow>
 
+<brave_devtools_workflow>
+Same chrome-devtools-mcp tool surface as above but pointed at the user's everyday Brave, the one Cmd+B summons, on its real default profile via `--autoConnect`. Brave runs bare (no automation flags) so bot-detecting sites see a normal browser carrying the user's real Brave logins and extensions. The user must enable `brave://inspect/#remote-debugging` once (persists across restarts) and click Allow on the consent dialog once per Brave session. This is a separate browser from the Chrome target, so a login in one is not a login in the other.
+
+If `mcp__brave-devtools__list_pages` returns "Could not connect":
+1. Ensure Brave is running for the user: `open -a "Brave Browser"` on macOS (or have the user press Cmd+B), `brave` on Linux.
+2. Tell the user: "Enable brave://inspect/#remote-debugging if not already on (persists across restarts). Then click Allow on the consent dialog that will appear when I connect."
+3. Call `mcp__brave-devtools__list_pages` - this call BLOCKS until the user clicks Allow on the consent dialog in Brave. Do not call any other tools while waiting.
+
+Once connected, the `mcp__brave-devtools__*` tools are identical in shape to the Chrome target: `list_pages`, `navigate_page`, `take_snapshot`, `click`/`fill`, `take_screenshot`.
+</brave_devtools_workflow>
+
 <tips>
 Browser Use: always get fresh state after navigation or interaction - element indices change. Prefer state over screenshots (less tokens).
-Chrome DevTools: always take a fresh snapshot after navigation - uids change between snapshots. Prefer snapshots over screenshots.
+Chrome DevTools and Brave DevTools: always take a fresh snapshot after navigation - uids change between snapshots. Prefer snapshots over screenshots. Each target is single and sequential and needs its own Allow; never drive both concurrently.
 </tips>
