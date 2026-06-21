@@ -49,8 +49,14 @@ rm -rf "$handlerApplicationPath"
 
 "$launchServicesRegister" -f "$handlerApplicationPath"
 
-if "$dutiBinary" -s "$handlerBundleIdentifier" http all &&
-	"$dutiBinary" -s "$handlerBundleIdentifier" https all; then
+dutiRegistrationSucceeded=true
+for urlScheme in http https; do
+	if ! "$dutiBinary" -s "$handlerBundleIdentifier" "$urlScheme"; then
+		dutiRegistrationSucceeded=false
+	fi
+done
+
+if [ "$dutiRegistrationSucceeded" = true ]; then
 	echo "INFO: $handlerApplicationName registered as the default http/https handler; confirm the macOS prompt if one appears."
 else
 	echo "WARN: could not set $handlerApplicationName as default browser automatically; set it manually under System Settings > Desktop & Dock > Default web browser." >&2

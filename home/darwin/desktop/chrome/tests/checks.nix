@@ -52,8 +52,8 @@ let
     && lib.hasInfix "CFBundleURLSchemes:1 string https" installDefaultBrowserHandlerScriptSource;
 
   installDefaultBrowserHandlerScriptRegistersDefaultViaDuti =
-    lib.hasInfix "http all" installDefaultBrowserHandlerScriptSource
-    && lib.hasInfix "https all" installDefaultBrowserHandlerScriptSource;
+    lib.hasInfix "for urlScheme in http https" installDefaultBrowserHandlerScriptSource
+    && lib.hasInfix ''"$dutiBinary" -s "$handlerBundleIdentifier" "$urlScheme"'' installDefaultBrowserHandlerScriptSource;
 
   chromePreferencesOverrides = builtins.fromJSON (builtins.readFile ../preferences-overrides.json);
 
