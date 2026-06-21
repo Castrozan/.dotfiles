@@ -44,6 +44,7 @@ jobs:
           cp .github/pages/quality.html apps/reports/site/quality/index.html
           cp -r tests/coverage apps/reports/site/coverage
           python3 agents/evals/render_baseline_dashboard.py apps/reports/site/baseline
+          cp .github/pages/style.css apps/reports/site/baseline/style.css
 
       - id: auth
         uses: google-github-actions/auth@v2
