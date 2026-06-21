@@ -19,7 +19,9 @@ let
 
   chromeGlobalLauncher = import ../chrome-global-launcher.nix { inherit pkgs; };
 
-  chromeGlobalLauncherConfiguration = helpers.homeManagerTestConfiguration [ ../default.nix ];
+  chromeGlobalLauncherConfiguration = helpers.homeManagerTestConfigurationForDarwin [
+    ../default.nix
+  ];
 
   chromeGlobalLauncherTargetsChromeGlobalUserDataDir = lib.hasInfix ''--user-data-dir="$HOME/.config/chrome-global"'' chromeGlobalLauncher.chromeGlobalLauncherScript;
 
@@ -29,6 +31,29 @@ let
   chromeGlobalLauncherIsInHomePackages = lib.any (
     package: (lib.getName package) == "summon-chrome-global"
   ) chromeGlobalLauncherConfiguration.home.packages;
+
+  chromeGlobalUrlOpenerTargetsChromeGlobalUserDataDir = lib.hasInfix ''--user-data-dir="$HOME/.config/chrome-global"'' chromeGlobalLauncher.chromeGlobalUrlOpenerScript;
+
+  chromeGlobalUrlOpenerIsInHomePackages = lib.any (
+    package: (lib.getName package) == "open-url-in-chrome-global"
+  ) chromeGlobalLauncherConfiguration.home.packages;
+
+  defaultBrowserHandlerActivationIsWired =
+    chromeGlobalLauncherConfiguration.home.activation ? installChromeGlobalDefaultBrowserHandler;
+
+  defaultBrowserHandlerActivationReferencesDuti = lib.hasInfix "/bin/duti" chromeGlobalLauncherConfiguration.home.activation.installChromeGlobalDefaultBrowserHandler.data;
+
+  installDefaultBrowserHandlerScriptSource = builtins.readFile ../scripts/install-chrome-global-default-browser-handler.sh;
+
+  installDefaultBrowserHandlerScriptUsesOpenLocationHandler = lib.hasInfix "on open location" installDefaultBrowserHandlerScriptSource;
+
+  installDefaultBrowserHandlerScriptDeclaresHttpAndHttpsSchemes =
+    lib.hasInfix "CFBundleURLSchemes:0 string http" installDefaultBrowserHandlerScriptSource
+    && lib.hasInfix "CFBundleURLSchemes:1 string https" installDefaultBrowserHandlerScriptSource;
+
+  installDefaultBrowserHandlerScriptRegistersDefaultViaDuti =
+    lib.hasInfix "http all" installDefaultBrowserHandlerScriptSource
+    && lib.hasInfix "https all" installDefaultBrowserHandlerScriptSource;
 
   chromePreferencesOverrides = builtins.fromJSON (builtins.readFile ../preferences-overrides.json);
 
@@ -63,6 +88,41 @@ in
     mkEvalCheck "domain-desktop-chrome-global-launcher-in-home-packages"
       chromeGlobalLauncherIsInHomePackages
       "summon-chrome-global must be wired into home.packages so the launcher is on PATH for the chrome-devtools recovery step";
+
+  domain-desktop-chrome-global-url-opener-targets-chrome-global-user-data-dir =
+    mkEvalCheck "domain-desktop-chrome-global-url-opener-targets-chrome-global-user-data-dir"
+      chromeGlobalUrlOpenerTargetsChromeGlobalUserDataDir
+      "open-url-in-chrome-global must open URLs in the ~/.config/chrome-global profile so links land in the attachable chrome-devtools-mcp target, not the unreachable default profile";
+
+  domain-desktop-chrome-global-url-opener-in-home-packages =
+    mkEvalCheck "domain-desktop-chrome-global-url-opener-in-home-packages"
+      chromeGlobalUrlOpenerIsInHomePackages
+      "open-url-in-chrome-global must be wired into home.packages so the default-browser handler app can forward URLs to it by absolute store path";
+
+  domain-desktop-chrome-global-default-browser-handler-activation-wired =
+    mkEvalCheck "domain-desktop-chrome-global-default-browser-handler-activation-wired"
+      defaultBrowserHandlerActivationIsWired
+      "the installChromeGlobalDefaultBrowserHandler activation must be wired so darwin reaches parity with the Linux xdg.mimeApps routing that already sends links to chrome-global";
+
+  domain-desktop-chrome-global-default-browser-handler-activation-references-duti =
+    mkEvalCheck "domain-desktop-chrome-global-default-browser-handler-activation-references-duti"
+      defaultBrowserHandlerActivationReferencesDuti
+      "forcing the activation script must resolve the darwin-only duti store path, proving the module evaluates under darwin pkgs in the test harness instead of passing only because the wired-check never forces the thunk";
+
+  domain-desktop-chrome-global-default-browser-handler-uses-open-location =
+    mkEvalCheck "domain-desktop-chrome-global-default-browser-handler-uses-open-location"
+      installDefaultBrowserHandlerScriptUsesOpenLocationHandler
+      "the handler app must implement the AppleScript open-location handler because LaunchServices delivers http/https to a default browser via the GURL Apple event, not argv";
+
+  domain-desktop-chrome-global-default-browser-handler-declares-http-https =
+    mkEvalCheck "domain-desktop-chrome-global-default-browser-handler-declares-http-https"
+      installDefaultBrowserHandlerScriptDeclaresHttpAndHttpsSchemes
+      "the handler app Info.plist must declare http and https CFBundleURLSchemes or LaunchServices will not offer it as a default web browser";
+
+  domain-desktop-chrome-global-default-browser-handler-registers-via-duti =
+    mkEvalCheck "domain-desktop-chrome-global-default-browser-handler-registers-via-duti"
+      installDefaultBrowserHandlerScriptRegistersDefaultViaDuti
+      "the install script must set the handler as the default http and https handler via duti so link clicks route to chrome-global";
 
   domain-desktop-chrome-bookmark-bar-shown-on-all-tabs =
     mkEvalCheck "domain-desktop-chrome-bookmark-bar-shown-on-all-tabs" chromeBookmarkBarShownOnAllTabs

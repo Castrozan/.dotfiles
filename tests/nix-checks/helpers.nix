@@ -22,18 +22,18 @@ let
       )
     ) checks;
 
-  homeManagerTestConfiguration =
-    modules:
+  homeManagerTestConfigurationForSystemPkgs =
+    systemDouble: systemPkgs: modules:
     (inputs.home-manager.lib.homeManagerConfiguration {
-      inherit pkgs;
+      pkgs = systemPkgs;
       extraSpecialArgs = {
         inherit inputs;
         unstable = import inputs.nixpkgs-unstable {
-          system = "x86_64-linux";
+          system = systemDouble;
           config.allowUnfree = true;
         };
         latest = import inputs.nixpkgs-latest {
-          system = "x86_64-linux";
+          system = systemDouble;
           config.allowUnfree = true;
         };
         isNixOS = false;
@@ -53,8 +53,22 @@ let
       ]
       ++ modules;
     }).config;
+
+  homeManagerTestConfiguration = homeManagerTestConfigurationForSystemPkgs "x86_64-linux" pkgs;
+
+  homeManagerTestConfigurationForDarwin = homeManagerTestConfigurationForSystemPkgs "aarch64-darwin" (
+    import inputs.nixpkgs {
+      system = "aarch64-darwin";
+      config.allowUnfree = true;
+    }
+  );
 in
 {
-  inherit mkEvalCheck mkEvalCheckGroup homeManagerTestConfiguration;
+  inherit
+    mkEvalCheck
+    mkEvalCheckGroup
+    homeManagerTestConfiguration
+    homeManagerTestConfigurationForDarwin
+    ;
   stateVersion = home-version;
 }
