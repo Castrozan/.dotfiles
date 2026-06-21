@@ -71,6 +71,36 @@ _print_plist_entry() {
 	[ "$(_print_plist_entry ':CFBundleIdentifier')" = "$HANDLER_BUNDLE_IDENTIFIER" ]
 }
 
+@test "builds under the gnu coreutils mktemp that home-manager activation puts on PATH" {
+	GNU_STRICT_MKTEMP_DIRECTORY="$TEST_DIRECTORY/gnu-strict-mktemp"
+	mkdir -p "$GNU_STRICT_MKTEMP_DIRECTORY"
+	cat >"$GNU_STRICT_MKTEMP_DIRECTORY/mktemp" <<'STUB'
+#!/usr/bin/env bash
+if [ "$1" = "-d" ]; then
+	exec /usr/bin/mktemp -d "${@:2}"
+fi
+for argument in "$@"; do
+	case "$argument" in
+	-*) ;;
+	*XXX*) ;;
+	*)
+		echo "mktemp: too few X's in template '$argument'" >&2
+		exit 1
+		;;
+	esac
+done
+exec /usr/bin/mktemp "$@"
+STUB
+	chmod +x "$GNU_STRICT_MKTEMP_DIRECTORY/mktemp"
+	run env PATH="$GNU_STRICT_MKTEMP_DIRECTORY:$PATH" bash "$SCRIPT_UNDER_TEST" \
+		"$OPENER_BINARY" \
+		"$SUCCESSFUL_DUTI_STUB" \
+		"$HANDLER_BUNDLE_IDENTIFIER" \
+		"$HANDLER_APPLICATION_NAME"
+	[ "$status" -eq 0 ]
+	[ -d "$HOME/Applications/$HANDLER_APPLICATION_NAME.app" ]
+}
+
 @test "exits zero and still installs the app when duti registration fails so a manual-confirmation case does not loop the rebuild" {
 	_run_install_with_duti "$FAILING_DUTI_STUB"
 	[ "$status" -eq 0 ]

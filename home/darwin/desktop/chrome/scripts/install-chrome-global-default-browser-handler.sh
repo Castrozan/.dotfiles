@@ -14,8 +14,9 @@ launchServicesRegister=/System/Library/Frameworks/CoreServices.framework/Version
 
 mkdir -p "$userApplicationsDirectory"
 
-appleScriptSourceFile="$(mktemp -t chrome-global-default-browser-handler).applescript"
-trap 'rm -f "$appleScriptSourceFile"' EXIT
+temporaryWorkingDirectory="$(mktemp -d)"
+trap 'rm -rf "$temporaryWorkingDirectory"' EXIT
+appleScriptSourceFile="$temporaryWorkingDirectory/chrome-global-default-browser-handler.applescript"
 
 cat >"$appleScriptSourceFile" <<APPLESCRIPT
 on open location theURL
