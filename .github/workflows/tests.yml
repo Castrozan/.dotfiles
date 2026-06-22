@@ -26,8 +26,11 @@ jobs:
 
       - name: Run Python tests
         run: |
-          nix shell nixpkgs#python312Packages.pytest --command \
-            bash -c 'pytest $(find home/base home/linux agents/hooks agents/skills tests -path "*/tests/unit/test_*.py" -type f | sort) -x -q'
+          nix shell nixpkgs#python312Packages.pytest --command bash -c '
+            export REPO_DIR="$PWD"
+            source tests/lib/pytest.sh
+            pytest $(_collect_pytest_test_files_in_tier_directory unit) -x -q
+          '
 
       - name: Run QML unit tests
         run: |

@@ -35,7 +35,10 @@ in
     ../../nixos/modules/sudo.nix
     ../../nixos/modules/mouse-8k-polling.nix
     ../../nixos/modules/home-assistant.nix
+    ../../nixos/modules/jarvis-session-bridge
   ];
+
+  custom.jarvisSessionBridge.enable = true;
 
   # Disable lid switch suspend for laptop used as server/with external monitor
   custom.lidSwitch.disable = true;

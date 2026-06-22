@@ -70,4 +70,35 @@ in
         && hasScript "reset-keyboard-backlight"
       )
       "all three keyboard backlight scripts must be in system packages";
+
+  chise-jarvis-session-bridge-enabled =
+    mkEvalCheck "chise-jarvis-session-bridge-enabled"
+      (builtins.elem "multi-user.target" nixosCfg.systemd.services.jarvis-session-bridge.wantedBy)
+      "jarvis-session-bridge unit must be wanted by multi-user.target so the cockpit Internal terminal has a backend";
+
+  chise-jarvis-session-bridge-execstart-resolves =
+    mkEvalCheck "chise-jarvis-session-bridge-execstart-resolves"
+      (lib.hasInfix "jarvis_session_bridge" nixosCfg.systemd.services.jarvis-session-bridge.serviceConfig.ExecStart)
+      "jarvis-session-bridge ExecStart must resolve to the packaged bridge so the service can start";
+
+  chise-jarvis-session-bridge-loopback-only =
+    mkEvalCheck "chise-jarvis-session-bridge-loopback-only"
+      (
+        nixosCfg.systemd.services.jarvis-session-bridge.environment.JARVIS_SESSION_BRIDGE_LISTEN_ADDRESS
+        == "127.0.0.1"
+      )
+      "jarvis-session-bridge must bind loopback only so only the co-located Cloudflare Tunnel connector can reach it";
+
+  chise-jarvis-session-bridge-origin-non-empty =
+    mkEvalCheck "chise-jarvis-session-bridge-origin-non-empty"
+      (
+        nixosCfg.systemd.services.jarvis-session-bridge.environment.JARVIS_SESSION_BRIDGE_ALLOWED_ORIGIN
+        != ""
+      )
+      "jarvis-session-bridge must enforce a non-empty allowed Origin so a forged browser request cannot open a session";
+
+  chise-jarvis-session-bridge-command-marshalled =
+    mkEvalCheck "chise-jarvis-session-bridge-command-marshalled"
+      (lib.hasInfix "bin/bash" nixosCfg.systemd.services.jarvis-session-bridge.environment.JARVIS_SESSION_BRIDGE_COMMAND_JSON)
+      "jarvis-session-bridge session command must marshal into the service environment as JSON";
 }
