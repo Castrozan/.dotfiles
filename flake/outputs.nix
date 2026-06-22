@@ -105,4 +105,15 @@ in
       ;
     inherit (nixpkgs) lib;
   };
+
+  checks.${darwinSystem} = import ../tests/nix-checks {
+    inherit
+      inputs
+      self
+      nixpkgs-version
+      home-version
+      ;
+    pkgs = darwin.pkgs;
+    inherit (nixpkgs) lib;
+  };
 }
