@@ -39,7 +39,7 @@ in
     services.cloudflared = {
       enable = true;
       tunnels.${cloudflareTunnelConnectorConfig.tunnelId} = {
-        credentialsFile = cloudflareTunnelConnectorConfig.credentialsFile;
+        inherit (cloudflareTunnelConnectorConfig) credentialsFile;
         default = "http_status:404";
         ingress = {
           ${cloudflareTunnelConnectorConfig.ingressHostname} =
