@@ -101,4 +101,9 @@ in
     mkEvalCheck "chise-jarvis-session-bridge-command-marshalled"
       (lib.hasInfix "bin/bash" nixosCfg.systemd.services.jarvis-session-bridge.environment.JARVIS_SESSION_BRIDGE_COMMAND_JSON)
       "jarvis-session-bridge session command must marshal into the service environment as JSON";
+
+  chise-cloudflare-tunnel-connector-disabled-by-default =
+    mkEvalCheck "chise-cloudflare-tunnel-connector-disabled-by-default"
+      (!(nixosCfg.services.cloudflared.enable or false))
+      "the Cloudflare Tunnel connector must stay disabled until its credentials are provisioned, so chise publishes no public origin by default and the Jarvis bridge stays reachable only over loopback";
 }

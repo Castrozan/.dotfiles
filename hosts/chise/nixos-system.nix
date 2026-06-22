@@ -36,6 +36,7 @@ in
     ../../nixos/modules/mouse-8k-polling.nix
     ../../nixos/modules/home-assistant.nix
     ../../nixos/modules/jarvis-session-bridge
+    ../../nixos/modules/cloudflare-tunnel-connector
   ];
 
   custom.jarvisSessionBridge.enable = true;
