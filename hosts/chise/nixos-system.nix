@@ -37,7 +37,8 @@ in
     ../../nixos/modules/home-assistant.nix
     ../../nixos/modules/jarvis-session-bridge
     ../../nixos/modules/cloudflare-tunnel-connector
-  ];
+  ]
+  ++ lib.optional (builtins.pathExists ../../private-config/machines/chise/jarvis-connector.nix) ../../private-config/machines/chise/jarvis-connector.nix;
 
   custom.jarvisSessionBridge.enable = true;
 
