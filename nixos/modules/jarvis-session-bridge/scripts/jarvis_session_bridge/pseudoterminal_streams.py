@@ -41,8 +41,35 @@ async def stream_pseudoterminal_output_to_websocket(
         event_loop.remove_reader(master_file_descriptor)
 
 
+async def wait_until_pseudoterminal_writable(master_file_descriptor, event_loop):
+    pseudoterminal_writable = event_loop.create_future()
+
+    def mark_pseudoterminal_writable():
+        if not pseudoterminal_writable.done():
+            pseudoterminal_writable.set_result(None)
+
+    event_loop.add_writer(master_file_descriptor, mark_pseudoterminal_writable)
+    try:
+        await pseudoterminal_writable
+    finally:
+        event_loop.remove_writer(master_file_descriptor)
+
+
+async def write_all_owner_input_to_pseudoterminal(
+    master_file_descriptor, owner_input_bytes, event_loop
+):
+    unwritten_owner_input = memoryview(owner_input_bytes)
+    while unwritten_owner_input:
+        try:
+            written_byte_count = os.write(master_file_descriptor, unwritten_owner_input)
+        except BlockingIOError:
+            await wait_until_pseudoterminal_writable(master_file_descriptor, event_loop)
+            continue
+        unwritten_owner_input = unwritten_owner_input[written_byte_count:]
+
+
 async def stream_websocket_input_to_pseudoterminal(
-    master_file_descriptor, websocket_connection
+    master_file_descriptor, websocket_connection, event_loop
 ):
     async for owner_message in websocket_connection:
         owner_input_bytes = (
@@ -51,6 +78,8 @@ async def stream_websocket_input_to_pseudoterminal(
             else owner_message
         )
         try:
-            os.write(master_file_descriptor, owner_input_bytes)
+            await write_all_owner_input_to_pseudoterminal(
+                master_file_descriptor, owner_input_bytes, event_loop
+            )
         except OSError:
             return

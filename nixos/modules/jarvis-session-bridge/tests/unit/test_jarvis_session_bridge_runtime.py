@@ -1,60 +1,15 @@
 import asyncio
 import os
-import sys
-import types
-from pathlib import Path
 
-BRIDGE_PACKAGE_DIRECTORY_PATH = (
-    Path(__file__).resolve().parents[2] / "scripts" / "jarvis_session_bridge"
+from jarvis_session_bridge_runtime_test_doubles import (
+    OutputCollectingWebsocket,
+    RecordingClosingWebsocket,
+    ScriptedInputWebsocket,
 )
-sys.path.insert(0, str(BRIDGE_PACKAGE_DIRECTORY_PATH))
-
-
-class ConnectionClosed(Exception):
-    pass
-
-
-fake_websockets_module = types.ModuleType("websockets")
-fake_websockets_exceptions_module = types.ModuleType("websockets.exceptions")
-fake_websockets_exceptions_module.ConnectionClosed = ConnectionClosed
-fake_websockets_module.exceptions = fake_websockets_exceptions_module
-sys.modules.setdefault("websockets", fake_websockets_module)
-sys.modules.setdefault("websockets.exceptions", fake_websockets_exceptions_module)
 
 import pseudoterminal_streams
 import server
 import settings
-
-
-class RecordingClosingWebsocket:
-    def __init__(self, request_origin):
-        self.request = types.SimpleNamespace(headers={"Origin": request_origin})
-        self.close_calls = []
-
-    async def close(self, code=1000, reason=""):
-        self.close_calls.append((code, reason))
-
-
-class OutputCollectingWebsocket:
-    def __init__(self):
-        self.sent_messages = []
-
-    async def send(self, message):
-        self.sent_messages.append(message)
-
-
-class ScriptedInputWebsocket:
-    def __init__(self, owner_messages):
-        self._owner_message_iterator = iter(owner_messages)
-
-    def __aiter__(self):
-        return self
-
-    async def __anext__(self):
-        try:
-            return next(self._owner_message_iterator)
-        except StopIteration:
-            raise StopAsyncIteration
 
 
 def test_bridge_rejects_disallowed_origin_with_1008_and_never_spawns(monkeypatch):
@@ -114,8 +69,9 @@ def test_input_streamer_writes_text_and_binary_owner_messages_to_pty():
     scripted_input_websocket = ScriptedInputWebsocket(["echo one\n", b"raw-bytes"])
 
     async def drive_input_streamer_to_completion():
+        event_loop = asyncio.get_running_loop()
         await pseudoterminal_streams.stream_websocket_input_to_pseudoterminal(
-            pseudoterminal_write_descriptor, scripted_input_websocket
+            pseudoterminal_write_descriptor, scripted_input_websocket, event_loop
         )
 
     asyncio.run(drive_input_streamer_to_completion())
@@ -124,3 +80,37 @@ def test_input_streamer_writes_text_and_binary_owner_messages_to_pty():
     os.close(pseudoterminal_read_descriptor)
 
     assert received_owner_input == b"echo one\nraw-bytes"
+
+
+def test_input_streamer_drains_backpressured_pseudoterminal_without_dropping_input():
+    pseudoterminal_read_descriptor, pseudoterminal_write_descriptor = os.pipe()
+    os.set_blocking(pseudoterminal_write_descriptor, False)
+    os.set_blocking(pseudoterminal_read_descriptor, False)
+    large_owner_input = b"x" * (1024 * 1024)
+    scripted_input_websocket = ScriptedInputWebsocket([large_owner_input])
+    received_input_chunks = []
+
+    async def drive_backpressured_input_streamer():
+        event_loop = asyncio.get_running_loop()
+        streaming_task = event_loop.create_task(
+            pseudoterminal_streams.stream_websocket_input_to_pseudoterminal(
+                pseudoterminal_write_descriptor, scripted_input_websocket, event_loop
+            )
+        )
+        received_byte_count = 0
+        while received_byte_count < len(large_owner_input):
+            await asyncio.sleep(0)
+            try:
+                drained_chunk = os.read(pseudoterminal_read_descriptor, 65536)
+            except BlockingIOError:
+                await asyncio.sleep(0.001)
+                continue
+            received_input_chunks.append(drained_chunk)
+            received_byte_count += len(drained_chunk)
+        await asyncio.wait_for(streaming_task, timeout=5)
+
+    asyncio.run(drive_backpressured_input_streamer())
+    os.close(pseudoterminal_write_descriptor)
+    os.close(pseudoterminal_read_descriptor)
+
+    assert b"".join(received_input_chunks) == large_owner_input

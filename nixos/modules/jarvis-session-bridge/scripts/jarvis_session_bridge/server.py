@@ -13,6 +13,27 @@ from settings import (
     resolve_bridge_settings,
 )
 
+SESSION_PROCESS_TERMINATION_TIMEOUT_SECONDS = 5
+
+
+async def terminate_session_process(session_process):
+    if session_process.returncode is not None:
+        return
+    try:
+        session_process.send_signal(signal.SIGHUP)
+    except ProcessLookupError:
+        return
+    try:
+        await asyncio.wait_for(
+            session_process.wait(), SESSION_PROCESS_TERMINATION_TIMEOUT_SECONDS
+        )
+    except TimeoutError:
+        try:
+            os.killpg(os.getpgid(session_process.pid), signal.SIGKILL)
+        except ProcessLookupError:
+            return
+        await session_process.wait()
+
 
 async def bridge_session_over_websocket(websocket_connection, settings, event_loop):
     if not is_request_origin_allowed(
@@ -44,7 +65,7 @@ async def bridge_session_over_websocket(websocket_connection, settings, event_lo
     )
     input_task = event_loop.create_task(
         stream_websocket_input_to_pseudoterminal(
-            master_file_descriptor, websocket_connection
+            master_file_descriptor, websocket_connection, event_loop
         )
     )
     session_wait_task = event_loop.create_task(session_process.wait())
@@ -58,11 +79,7 @@ async def bridge_session_over_websocket(websocket_connection, settings, event_lo
         for pending_task in (output_task, input_task, session_wait_task):
             if not pending_task.done():
                 pending_task.cancel()
-        if session_process.returncode is None:
-            try:
-                session_process.send_signal(signal.SIGHUP)
-            except ProcessLookupError:
-                pass
+        await terminate_session_process(session_process)
         try:
             os.close(master_file_descriptor)
         except OSError:
