@@ -14,7 +14,6 @@
       bash-completion
       bat
       bats
-      brave
       latest.bun
       cargo
       curl
@@ -76,6 +75,7 @@
     ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux (
       with pkgs;
       [
+        brave
         cava
         gnome-shell-extensions
         gnome-extension-manager
