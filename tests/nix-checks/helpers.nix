@@ -54,7 +54,12 @@ let
       ++ modules;
     }).config;
 
-  homeManagerTestConfiguration = homeManagerTestConfigurationForSystemPkgs "x86_64-linux" pkgs;
+  homeManagerTestConfiguration = homeManagerTestConfigurationForSystemPkgs "x86_64-linux" (
+    import inputs.nixpkgs {
+      system = "x86_64-linux";
+      config.allowUnfree = true;
+    }
+  );
 
   homeManagerTestConfigurationForDarwin = homeManagerTestConfigurationForSystemPkgs "aarch64-darwin" (
     import inputs.nixpkgs {
