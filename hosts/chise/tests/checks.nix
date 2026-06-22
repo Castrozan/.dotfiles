@@ -128,10 +128,25 @@ in
       )
       "jarvis-session-bridge must enforce a non-empty allowed Origin so a forged browser request cannot open a session";
 
-  chise-jarvis-session-bridge-command-marshalled =
-    mkEvalCheck "chise-jarvis-session-bridge-command-marshalled"
-      (lib.hasInfix "bin/bash" nixosCfg.systemd.services.jarvis-session-bridge.environment.JARVIS_SESSION_BRIDGE_COMMAND_JSON)
-      "jarvis-session-bridge session command must marshal into the service environment as JSON";
+  chise-jarvis-session-bridge-attaches-persistent-session =
+    mkEvalCheck "chise-jarvis-session-bridge-attaches-persistent-session"
+      (lib.hasInfix "attach-session" nixosCfg.systemd.services.jarvis-session-bridge.environment.JARVIS_SESSION_BRIDGE_COMMAND_JSON)
+      "jarvis-session-bridge must attach each owner connection to the always-on opencode tmux session rather than spawn a throwaway shell, so every connection shares one live TUI";
+
+  chise-jarvis-session-tmux-enabled =
+    mkEvalCheck "chise-jarvis-session-tmux-enabled"
+      (builtins.elem "multi-user.target" nixosCfg.systemd.services.jarvis-session-tmux.wantedBy)
+      "the persistent opencode tmux session unit must be wanted by multi-user.target so the always-on TUI exists for the bridge to attach to";
+
+  chise-jarvis-session-tmux-keepalive =
+    mkEvalCheck "chise-jarvis-session-tmux-keepalive"
+      (nixosCfg.systemd.services.jarvis-session-tmux.serviceConfig.Restart == "always")
+      "the persistent opencode tmux session must restart always so opencode is resident like the clawde agents and a crash respawns a fresh TUI";
+
+  chise-jarvis-session-tmux-launches-opencode =
+    mkEvalCheck "chise-jarvis-session-tmux-launches-opencode"
+      (lib.hasInfix "opencode" nixosCfg.systemd.services.jarvis-session-tmux.environment.JARVIS_PERSISTENT_SESSION_COMMAND)
+      "the persistent tmux session must launch opencode as its window command so the cockpit terminal shows the opencode TUI";
 
   chise-cloudflare-tunnel-connector-disabled-publishes-nothing =
     mkEvalCheck "chise-cloudflare-tunnel-connector-disabled-publishes-nothing"

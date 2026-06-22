@@ -1,5 +1,6 @@
 import asyncio
 import os
+import pty
 
 from jarvis_session_bridge_runtime_test_doubles import (
     OutputCollectingWebsocket,
@@ -61,12 +62,12 @@ def test_output_streamer_forwards_pty_bytes_then_returns_on_eof():
     asyncio.run(drive_output_streamer_until_eof())
     os.close(pseudoterminal_read_descriptor)
 
-    assert "".join(output_collecting_websocket.sent_messages) == "hello-from-pty"
+    assert b"".join(output_collecting_websocket.sent_messages) == b"hello-from-pty"
 
 
-def test_input_streamer_writes_text_and_binary_owner_messages_to_pty():
+def test_input_streamer_writes_binary_owner_keystrokes_to_pty():
     pseudoterminal_read_descriptor, pseudoterminal_write_descriptor = os.pipe()
-    scripted_input_websocket = ScriptedInputWebsocket(["echo one\n", b"raw-bytes"])
+    scripted_input_websocket = ScriptedInputWebsocket([b"echo one\n", b"raw-bytes"])
 
     async def drive_input_streamer_to_completion():
         event_loop = asyncio.get_running_loop()
@@ -80,6 +81,36 @@ def test_input_streamer_writes_text_and_binary_owner_messages_to_pty():
     os.close(pseudoterminal_read_descriptor)
 
     assert received_owner_input == b"echo one\nraw-bytes"
+
+
+def test_input_streamer_applies_resize_control_frame_and_never_writes_it_to_pty():
+    import fcntl
+    import struct
+    import termios
+
+    master_file_descriptor, slave_file_descriptor = pty.openpty()
+    scripted_input_websocket = ScriptedInputWebsocket(
+        ['{"type":"resize","columns":203,"rows":51}', b"after-resize"]
+    )
+
+    async def drive_input_streamer_to_completion():
+        event_loop = asyncio.get_running_loop()
+        await pseudoterminal_streams.stream_websocket_input_to_pseudoterminal(
+            master_file_descriptor, scripted_input_websocket, event_loop
+        )
+
+    asyncio.run(drive_input_streamer_to_completion())
+
+    applied_rows, applied_columns, _unused_x_pixels, _unused_y_pixels = struct.unpack(
+        "HHHH",
+        fcntl.ioctl(slave_file_descriptor, termios.TIOCGWINSZ, b"\x00" * 8),
+    )
+    keystrokes_written_after_the_resize = os.read(master_file_descriptor, 4096)
+    os.close(master_file_descriptor)
+    os.close(slave_file_descriptor)
+
+    assert (applied_columns, applied_rows) == (203, 51)
+    assert keystrokes_written_after_the_resize == b"after-resize"
 
 
 def test_input_streamer_drains_backpressured_pseudoterminal_without_dropping_input():

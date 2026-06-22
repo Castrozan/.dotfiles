@@ -1,9 +1,18 @@
 import asyncio
+import fcntl
 import os
+import struct
+import termios
 
+from settings import parse_owner_control_message
 from websockets.exceptions import ConnectionClosed
 
 PSEUDOTERMINAL_READ_CHUNK_SIZE = 65536
+
+
+def apply_pseudoterminal_window_size(master_file_descriptor, columns, rows):
+    packed_window_size = struct.pack("HHHH", rows, columns, 0, 0)
+    fcntl.ioctl(master_file_descriptor, termios.TIOCSWINSZ, packed_window_size)
 
 
 async def stream_pseudoterminal_output_to_websocket(
@@ -32,9 +41,7 @@ async def stream_pseudoterminal_output_to_websocket(
             if output_chunk is None:
                 return
             try:
-                await websocket_connection.send(
-                    output_chunk.decode("utf-8", errors="replace")
-                )
+                await websocket_connection.send(output_chunk)
             except ConnectionClosed:
                 return
     finally:
@@ -72,14 +79,22 @@ async def stream_websocket_input_to_pseudoterminal(
     master_file_descriptor, websocket_connection, event_loop
 ):
     async for owner_message in websocket_connection:
-        owner_input_bytes = (
-            owner_message.encode("utf-8")
-            if isinstance(owner_message, str)
-            else owner_message
-        )
+        if isinstance(owner_message, str):
+            requested_window_size = parse_owner_control_message(owner_message)
+            if requested_window_size is None:
+                continue
+            try:
+                apply_pseudoterminal_window_size(
+                    master_file_descriptor,
+                    requested_window_size.columns,
+                    requested_window_size.rows,
+                )
+            except OSError:
+                return
+            continue
         try:
             await write_all_owner_input_to_pseudoterminal(
-                master_file_descriptor, owner_input_bytes, event_loop
+                master_file_descriptor, owner_message, event_loop
             )
         except OSError:
             return

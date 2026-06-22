@@ -59,3 +59,54 @@ def test_is_request_origin_allowed_requires_exact_match_when_configured():
 def test_is_request_origin_allowed_allows_any_when_unset():
     assert settings.is_request_origin_allowed("", "")
     assert settings.is_request_origin_allowed("https://anything.test", "")
+
+
+def test_parse_owner_control_message_reads_a_resize_request():
+    parsed_window_size = settings.parse_owner_control_message(
+        '{"type": "resize", "columns": 180, "rows": 48}'
+    )
+    assert parsed_window_size == settings.PseudoterminalWindowSizeRequest(
+        columns=180, rows=48
+    )
+
+
+def test_parse_owner_control_message_ignores_non_json_keystroke_text():
+    assert settings.parse_owner_control_message("ls -la\n") is None
+
+
+def test_parse_owner_control_message_ignores_unknown_control_types():
+    assert (
+        settings.parse_owner_control_message('{"type": "paste", "data": "x"}') is None
+    )
+
+
+def test_parse_owner_control_message_rejects_non_positive_or_non_integer_dimensions():
+    assert (
+        settings.parse_owner_control_message('{"type":"resize","columns":0,"rows":40}')
+        is None
+    )
+    assert (
+        settings.parse_owner_control_message('{"type":"resize","columns":80,"rows":-1}')
+        is None
+    )
+    assert (
+        settings.parse_owner_control_message(
+            '{"type":"resize","columns":80.5,"rows":40}'
+        )
+        is None
+    )
+    assert (
+        settings.parse_owner_control_message(
+            '{"type":"resize","columns":true,"rows":40}'
+        )
+        is None
+    )
+
+
+def test_parse_owner_control_message_rejects_dimensions_beyond_the_maximum():
+    assert (
+        settings.parse_owner_control_message(
+            '{"type":"resize","columns":99999,"rows":40}'
+        )
+        is None
+    )

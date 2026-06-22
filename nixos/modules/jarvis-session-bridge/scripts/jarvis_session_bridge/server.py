@@ -4,6 +4,7 @@ import pty
 import signal
 
 from pseudoterminal_streams import (
+    apply_pseudoterminal_window_size,
     stream_pseudoterminal_output_to_websocket,
     stream_websocket_input_to_pseudoterminal,
 )
@@ -14,6 +15,8 @@ from settings import (
 )
 
 SESSION_PROCESS_TERMINATION_TIMEOUT_SECONDS = 5
+INITIAL_PSEUDOTERMINAL_COLUMNS = 120
+INITIAL_PSEUDOTERMINAL_ROWS = 32
 
 
 async def terminate_session_process(session_process):
@@ -44,6 +47,11 @@ async def bridge_session_over_websocket(websocket_connection, settings, event_lo
 
     master_file_descriptor, slave_file_descriptor = pty.openpty()
     os.set_blocking(master_file_descriptor, False)
+    apply_pseudoterminal_window_size(
+        master_file_descriptor,
+        INITIAL_PSEUDOTERMINAL_COLUMNS,
+        INITIAL_PSEUDOTERMINAL_ROWS,
+    )
 
     child_environment = dict(os.environ)
     child_environment["TERM"] = settings.terminal_type
