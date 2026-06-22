@@ -98,6 +98,10 @@
         file = ../../secrets/infrastructure/wifi-psk-zanoni.age;
         mode = "400";
       };
+      "jarvis-session-connector-credentials" = {
+        file = ../../secrets/infrastructure/jarvis-session-connector-credentials.age;
+        mode = "400";
+      };
     };
   };
 }

@@ -59,4 +59,5 @@ in
   "infrastructure/gpg-private-key.age".publicKeys = all_keys;
   "infrastructure/wifi-psk-zanoni.age".publicKeys = all_keys;
   "infrastructure/telegram-ids.age".publicKeys = all_keys;
+  "infrastructure/jarvis-session-connector-credentials.age".publicKeys = all_keys;
 }
