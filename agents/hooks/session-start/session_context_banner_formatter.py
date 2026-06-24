@@ -52,7 +52,4 @@ def format_system_info_section(sys_info: Dict[str, str]) -> str | None:
 
 
 def format_time_sections(now: datetime) -> list[str]:
-    sections = [f"Date: {now.strftime('%Y-%m-%d %H:%M')} ({now.strftime('%A')})"]
-    if now.hour >= 18:
-        sections.append("Note: After hours - avoid risky deployments")
-    return sections
+    return [f"Date: {now.strftime('%Y-%m-%d %H:%M')} ({now.strftime('%A')})"]
