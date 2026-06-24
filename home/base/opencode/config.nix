@@ -45,7 +45,43 @@ let
       };
     };
 
-    mcp = { };
+    mcp = {
+      jira-desenv = {
+        type = "local";
+        command = [
+          "npx"
+          "-y"
+          "@betha/jira-mcp"
+        ];
+        environment = {
+          JIRA_BASE_URL = "https://desenv.betha.com.br/";
+          JIRA_USERNAME = "{env:JIRA_DESENV_USERNAME}";
+          JIRA_PASSWORD = "{env:JIRA_DESENV_PASSWORD}";
+          NPM_CONFIG_REGISTRY = "http://nexus3.betha.com.br/repository/npm-all/";
+        };
+        enabled = true;
+      };
+      sourcebot = {
+        type = "remote";
+        url = "https://sourcebot.betha.cloud/api/mcp";
+        headers = {
+          Authorization = "Bearer {env:SOURCEBOT_TOKEN}";
+        };
+        enabled = true;
+      };
+      chrome-devtools = {
+        type = "local";
+        command = [
+          "npx"
+          "-y"
+          "chrome-devtools-mcp@latest"
+        ];
+        environment = {
+          NPM_CONFIG_REGISTRY = "https://registry.npmjs.org/";
+        };
+        enabled = true;
+      };
+    };
   };
 in
 {
