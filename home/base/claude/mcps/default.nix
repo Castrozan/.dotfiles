@@ -43,6 +43,7 @@ let
 in
 {
   imports = [
+    ./chrome-devtools-mcp-runaway-watchdog.nix
     (import ./browser-use-config-patcher.nix {
       inherit browserUseConfigDir chromeBinary;
     })
