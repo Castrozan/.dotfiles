@@ -63,6 +63,13 @@ _print_plist_entry() {
 	[ "$(_print_plist_entry ':CFBundleURLTypes:0:LSHandlerRank')" = "Owner" ]
 }
 
+@test "leaves a valid code signature so launchservices honors the edited info.plist instead of showing the applet startup screen" {
+	_run_install_with_duti "$SUCCESSFUL_DUTI_STUB"
+	[ "$status" -eq 0 ]
+	run /usr/bin/codesign --verify --verbose=2 "$HOME/Applications/$HANDLER_APPLICATION_NAME.app"
+	[ "$status" -eq 0 ]
+}
+
 @test "is idempotent across repeated installs" {
 	_run_install_with_duti "$SUCCESSFUL_DUTI_STUB"
 	[ "$status" -eq 0 ]

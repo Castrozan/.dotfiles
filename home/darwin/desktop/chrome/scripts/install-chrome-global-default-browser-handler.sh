@@ -10,6 +10,7 @@ userApplicationsDirectory="$HOME/Applications"
 handlerApplicationPath="$userApplicationsDirectory/$handlerApplicationName.app"
 handlerInfoPlist="$handlerApplicationPath/Contents/Info.plist"
 plistBuddy=/usr/libexec/PlistBuddy
+codesignBinary=/usr/bin/codesign
 launchServicesRegister=/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister
 
 mkdir -p "$userApplicationsDirectory"
@@ -46,6 +47,8 @@ rm -rf "$handlerApplicationPath"
 "$plistBuddy" -c "Add :CFBundleURLTypes:0:CFBundleURLSchemes array" "$handlerInfoPlist"
 "$plistBuddy" -c "Add :CFBundleURLTypes:0:CFBundleURLSchemes:0 string http" "$handlerInfoPlist"
 "$plistBuddy" -c "Add :CFBundleURLTypes:0:CFBundleURLSchemes:1 string https" "$handlerInfoPlist"
+
+"$codesignBinary" --force --sign - "$handlerApplicationPath"
 
 "$launchServicesRegister" -f "$handlerApplicationPath"
 
