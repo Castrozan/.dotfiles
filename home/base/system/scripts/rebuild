@@ -119,26 +119,44 @@ _resolve_machine_alias() {
 	esac
 }
 
+_etc_nixos_flake_present() {
+	[ -f /etc/nixos/flake.nix ]
+}
+
 _resolve_nixos_flake_ref() {
 	local machine_alias="$1"
 
-	if [ -f /etc/nixos/flake.nix ]; then
+	if _etc_nixos_flake_present; then
 		echo "/etc/nixos#${machine_alias}"
 	else
 		echo "${DOTFILES_DIR}?submodules=1#${machine_alias}"
 	fi
 }
 
+_assert_chise_not_deploying_from_bare_dotfiles() {
+	local machine_alias="$1"
+
+	[ "$machine_alias" = "chise" ] || return 0
+	_etc_nixos_flake_present && return 0
+
+	echo "Error: refusing to deploy chise from bare ${DOTFILES_DIR}." >&2
+	echo "       chise must deploy via /etc/nixos#chise, the zanoni-system entrypoint that layers the openclaw overlay onto dotfiles." >&2
+	echo "       Bare dotfiles carries no openclaw by design, so this would strip openclaw-gateway.service and take clever+jarvis offline." >&2
+	echo "       Restore /etc/nixos/flake.nix (a copy of ~/zanoni-system/flake.nix) and retry." >&2
+	return 1
+}
+
 _rebuild_nixos() {
 	local machine_alias flake_ref
 	machine_alias="$(_resolve_machine_alias)"
+	_assert_chise_not_deploying_from_bare_dotfiles "$machine_alias" || return 1
 	flake_ref="$(_resolve_nixos_flake_ref "$machine_alias")"
 
 	echo ":: Detected NixOS. Running nixos-rebuild switch..."
 	echo ":: Flake: ${flake_ref}"
 
 	local -a lock_flags=()
-	if [ -f /etc/nixos/flake.nix ]; then
+	if _etc_nixos_flake_present; then
 		lock_flags+=(--no-write-lock-file)
 	fi
 
@@ -188,4 +206,6 @@ _reload_hyprland() {
 	echo ":: Hyprland config refreshed."
 }
 
-main "$@"
+if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
+	main "$@"
+fi
