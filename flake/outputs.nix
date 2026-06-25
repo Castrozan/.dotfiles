@@ -113,7 +113,7 @@ in
       nixpkgs-version
       home-version
       ;
-    pkgs = darwin.pkgs;
+    inherit (darwin) pkgs;
     inherit (nixpkgs) lib;
   };
 }
