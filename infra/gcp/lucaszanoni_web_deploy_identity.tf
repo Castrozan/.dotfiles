@@ -38,6 +38,12 @@ resource "google_project_iam_member" "lucaszanoni_web_deployer_run_admin" {
   member  = "serviceAccount:${google_service_account.lucaszanoni_web_deployer.email}"
 }
 
+resource "google_project_iam_member" "lucaszanoni_web_deployer_secret_manager_admin" {
+  project = var.project_id
+  role    = "roles/secretmanager.admin"
+  member  = "serviceAccount:${google_service_account.lucaszanoni_web_deployer.email}"
+}
+
 resource "google_storage_bucket" "lucaszanoni_web_terraform_state" {
   name                        = "${var.project_id}-lucaszanoni-web-tfstate"
   location                    = var.region
