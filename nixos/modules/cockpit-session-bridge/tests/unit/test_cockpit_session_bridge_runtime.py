@@ -2,7 +2,7 @@ import asyncio
 import os
 import pty
 
-from jarvis_session_bridge_runtime_test_doubles import (
+from cockpit_session_bridge_runtime_test_doubles import (
     OutputCollectingWebsocket,
     RecordingClosingWebsocket,
     ScriptedInputWebsocket,
@@ -22,7 +22,7 @@ def test_bridge_rejects_disallowed_origin_with_1008_and_never_spawns(monkeypatch
 
     monkeypatch.setattr(asyncio, "create_subprocess_exec", refuse_to_spawn)
 
-    origin_gated_settings = settings.JarvisSessionBridgeSettings(
+    origin_gated_settings = settings.CockpitSessionBridgeSettings(
         listen_address="127.0.0.1",
         listen_port=8787,
         session_command=["/bin/sh", "-il"],

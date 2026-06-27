@@ -124,7 +124,7 @@ async def handle_bridge_websocket_connection(
     await bridge_session_over_websocket(websocket_connection, settings, event_loop)
 
 
-async def serve_jarvis_session_bridge(settings):
+async def serve_cockpit_session_bridge(settings):
     import websockets
 
     event_loop = asyncio.get_running_loop()
@@ -142,5 +142,5 @@ async def serve_jarvis_session_bridge(settings):
         await asyncio.Future()
 
 
-def run_jarvis_session_bridge():
-    asyncio.run(serve_jarvis_session_bridge(resolve_bridge_settings(os.environ)))
+def run_cockpit_session_bridge():
+    asyncio.run(serve_cockpit_session_bridge(resolve_bridge_settings(os.environ)))

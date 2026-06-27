@@ -4,7 +4,7 @@ import types
 from pathlib import Path
 
 BRIDGE_PACKAGE_DIRECTORY_PATH = (
-    Path(__file__).resolve().parents[2] / "scripts" / "jarvis_session_bridge"
+    Path(__file__).resolve().parents[2] / "scripts" / "cockpit_session_bridge"
 )
 sys.path.insert(0, str(BRIDGE_PACKAGE_DIRECTORY_PATH))
 

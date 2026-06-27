@@ -16,7 +16,7 @@ def test_a_disallowed_origin_on_the_lifecycle_path_is_closed_and_never_dispatche
     websocket_connection = ScriptedLifecycleControlWebsocket(
         ['{"operation":"list-sessions"}'], request_origin="https://evil.test"
     )
-    origin_gated_settings = settings.JarvisSessionBridgeSettings(
+    origin_gated_settings = settings.CockpitSessionBridgeSettings(
         listen_address="127.0.0.1",
         listen_port=8787,
         session_command=["/bin/sh", "-il"],

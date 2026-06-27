@@ -5,8 +5,8 @@
   ...
 }:
 let
-  jarvisSessionBridgeConfig = config.custom.jarvisSessionBridge;
-  persistentSessionConfig = jarvisSessionBridgeConfig.persistentSession;
+  cockpitSessionBridgeConfig = config.custom.cockpitSessionBridge;
+  persistentSessionConfig = cockpitSessionBridgeConfig.persistentSession;
   pythonWithWebsockets = pkgs.python3.withPackages (pythonPackages: [ pythonPackages.websockets ]);
 
   tmuxTemporaryDirectory = "/tmp";
@@ -22,8 +22,8 @@ let
   '';
 in
 {
-  options.custom.jarvisSessionBridge = {
-    enable = lib.mkEnableOption "the Jarvis cockpit session bridge that streams the persistent opencode terminal over a loopback websocket for the owner-only cockpit Internal terminal";
+  options.custom.cockpitSessionBridge = {
+    enable = lib.mkEnableOption "the cockpit session bridge that streams the persistent opencode terminal over a loopback websocket for the owner-only cockpit Internal terminal";
 
     listenAddress = lib.mkOption {
       type = lib.types.str;
@@ -65,7 +65,7 @@ in
     persistentSession = {
       enable = lib.mkOption {
         type = lib.types.bool;
-        default = jarvisSessionBridgeConfig.enable;
+        default = cockpitSessionBridgeConfig.enable;
         description = "Keep an always-on tmux session running opencode so the cockpit Internal terminal attaches to one shared live TUI, the way the clawde agents stay resident, instead of spawning a throwaway shell per connection.";
       };
 
@@ -89,7 +89,7 @@ in
     };
   };
 
-  config = lib.mkIf jarvisSessionBridgeConfig.enable {
+  config = lib.mkIf cockpitSessionBridgeConfig.enable {
     systemd.services.jarvis-session-tmux = lib.mkIf persistentSessionConfig.enable {
       description = "Jarvis always-on opencode tmux session";
       wantedBy = [ "multi-user.target" ];
@@ -107,12 +107,12 @@ in
         ExecStart = "${pkgs.bashInteractive}/bin/bash ${./scripts/maintain_persistent_session.sh} ${persistentSessionConfig.socketName} ${persistentSessionConfig.sessionName} ${persistentSessionTmuxConfiguration}";
         Restart = "always";
         RestartSec = 5;
-        User = jarvisSessionBridgeConfig.serviceUser;
+        User = cockpitSessionBridgeConfig.serviceUser;
       };
     };
 
-    systemd.services.jarvis-session-bridge = {
-      description = "Jarvis cockpit session bridge";
+    systemd.services.cockpit-session-bridge = {
+      description = "cockpit session bridge";
       wantedBy = [ "multi-user.target" ];
       after = [
         "network.target"
@@ -120,18 +120,18 @@ in
       ];
       wants = lib.optional persistentSessionConfig.enable "jarvis-session-tmux.service";
       environment = {
-        JARVIS_SESSION_BRIDGE_LISTEN_ADDRESS = jarvisSessionBridgeConfig.listenAddress;
-        JARVIS_SESSION_BRIDGE_LISTEN_PORT = toString jarvisSessionBridgeConfig.listenPort;
-        JARVIS_SESSION_BRIDGE_COMMAND_JSON = builtins.toJSON jarvisSessionBridgeConfig.sessionCommand;
-        JARVIS_SESSION_BRIDGE_ALLOWED_ORIGIN = jarvisSessionBridgeConfig.allowedRequestOrigin;
-        JARVIS_SESSION_BRIDGE_COCKPIT_TMUX_PATH = "${pkgs.tmux}/bin/tmux";
+        COCKPIT_SESSION_BRIDGE_LISTEN_ADDRESS = cockpitSessionBridgeConfig.listenAddress;
+        COCKPIT_SESSION_BRIDGE_LISTEN_PORT = toString cockpitSessionBridgeConfig.listenPort;
+        COCKPIT_SESSION_BRIDGE_COMMAND_JSON = builtins.toJSON cockpitSessionBridgeConfig.sessionCommand;
+        COCKPIT_SESSION_BRIDGE_ALLOWED_ORIGIN = cockpitSessionBridgeConfig.allowedRequestOrigin;
+        COCKPIT_SESSION_BRIDGE_TMUX_PATH = "${pkgs.tmux}/bin/tmux";
         TMUX_TMPDIR = tmuxTemporaryDirectory;
       };
       serviceConfig = {
-        ExecStart = "${pythonWithWebsockets}/bin/python ${./scripts/jarvis_session_bridge}";
+        ExecStart = "${pythonWithWebsockets}/bin/python ${./scripts/cockpit_session_bridge}";
         Restart = "on-failure";
         RestartSec = 2;
-        User = jarvisSessionBridgeConfig.serviceUser;
+        User = cockpitSessionBridgeConfig.serviceUser;
       };
     };
   };

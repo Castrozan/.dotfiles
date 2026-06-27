@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 
 BRIDGE_PACKAGE_DIRECTORY_PATH = (
-    Path(__file__).resolve().parents[2] / "scripts" / "jarvis_session_bridge"
+    Path(__file__).resolve().parents[2] / "scripts" / "cockpit_session_bridge"
 )
 sys.path.insert(0, str(BRIDGE_PACKAGE_DIRECTORY_PATH))
 
@@ -22,10 +22,11 @@ def test_resolve_bridge_settings_uses_defaults_for_empty_environment():
 def test_resolve_bridge_settings_reads_overrides_from_environment():
     resolved_settings = settings.resolve_bridge_settings(
         {
-            "JARVIS_SESSION_BRIDGE_LISTEN_ADDRESS": "0.0.0.0",
-            "JARVIS_SESSION_BRIDGE_LISTEN_PORT": "9001",
-            "JARVIS_SESSION_BRIDGE_COMMAND_JSON": '["/run/current-system/sw/bin/fish", "-l"]',
-            "JARVIS_SESSION_BRIDGE_ALLOWED_ORIGIN": "https://example.test",
+            "COCKPIT_SESSION_BRIDGE_LISTEN_ADDRESS": "0.0.0.0",
+            "COCKPIT_SESSION_BRIDGE_LISTEN_PORT": "9001",
+            "COCKPIT_SESSION_BRIDGE_COMMAND_JSON": '["/run/current-system/sw/bin/fish", "-l"]',
+            "COCKPIT_SESSION_BRIDGE_ALLOWED_ORIGIN": "https://example.test",
+            "COCKPIT_SESSION_BRIDGE_TMUX_PATH": "/run/current-system/sw/bin/tmux",
         }
     )
     assert resolved_settings.listen_address == "0.0.0.0"
@@ -35,6 +36,10 @@ def test_resolve_bridge_settings_reads_overrides_from_environment():
         "-l",
     ]
     assert resolved_settings.allowed_request_origin == "https://example.test"
+    assert (
+        resolved_settings.cockpit_tmux_executable_path
+        == "/run/current-system/sw/bin/tmux"
+    )
 
 
 def test_parse_session_command_rejects_non_string_entries():

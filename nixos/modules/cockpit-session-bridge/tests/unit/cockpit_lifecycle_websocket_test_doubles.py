@@ -1,11 +1,11 @@
 import types
 
-import jarvis_session_bridge_runtime_test_doubles
+import cockpit_session_bridge_runtime_test_doubles
 
 import cockpit_lifecycle_websocket
 import cockpit_tmux_lifecycle
 
-del jarvis_session_bridge_runtime_test_doubles
+del cockpit_session_bridge_runtime_test_doubles
 
 TMUX_EXECUTABLE_PATH = "/run/current-system/sw/bin/tmux"
 COCKPIT_SOCKET_PREFIX = [TMUX_EXECUTABLE_PATH, "-L", "cockpit"]

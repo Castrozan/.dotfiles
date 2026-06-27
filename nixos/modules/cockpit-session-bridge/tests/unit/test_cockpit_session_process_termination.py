@@ -2,7 +2,7 @@ import asyncio
 import os
 import signal
 
-from jarvis_session_bridge_runtime_test_doubles import FakeSessionProcess
+from cockpit_session_bridge_runtime_test_doubles import FakeSessionProcess
 
 import server
 

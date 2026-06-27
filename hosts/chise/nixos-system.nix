@@ -35,12 +35,12 @@ in
     ../../nixos/modules/sudo.nix
     ../../nixos/modules/mouse-8k-polling.nix
     ../../nixos/modules/home-assistant.nix
-    ../../nixos/modules/jarvis-session-bridge
+    ../../nixos/modules/cockpit-session-bridge
     ../../nixos/modules/cloudflare-tunnel-connector
   ]
   ++ lib.optional (builtins.pathExists ../../private-config/machines/chise/jarvis-connector.nix) ../../private-config/machines/chise/jarvis-connector.nix;
 
-  custom.jarvisSessionBridge.enable = true;
+  custom.cockpitSessionBridge.enable = true;
 
   # Disable lid switch suspend for laptop used as server/with external monitor
   custom.lidSwitch.disable = true;

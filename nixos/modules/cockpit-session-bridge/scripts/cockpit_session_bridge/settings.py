@@ -11,7 +11,7 @@ MAXIMUM_PSEUDOTERMINAL_DIMENSION = 10000
 
 
 @dataclass(frozen=True)
-class JarvisSessionBridgeSettings:
+class CockpitSessionBridgeSettings:
     listen_address: str
     listen_port: int
     session_command: list
@@ -69,24 +69,24 @@ def parse_session_command(raw_session_command_json):
 
 
 def resolve_bridge_settings(process_environment):
-    return JarvisSessionBridgeSettings(
+    return CockpitSessionBridgeSettings(
         listen_address=process_environment.get(
-            "JARVIS_SESSION_BRIDGE_LISTEN_ADDRESS", DEFAULT_LISTEN_ADDRESS
+            "COCKPIT_SESSION_BRIDGE_LISTEN_ADDRESS", DEFAULT_LISTEN_ADDRESS
         ),
         listen_port=int(
             process_environment.get(
-                "JARVIS_SESSION_BRIDGE_LISTEN_PORT", str(DEFAULT_LISTEN_PORT)
+                "COCKPIT_SESSION_BRIDGE_LISTEN_PORT", str(DEFAULT_LISTEN_PORT)
             )
         ),
         session_command=parse_session_command(
-            process_environment.get("JARVIS_SESSION_BRIDGE_COMMAND_JSON", "")
+            process_environment.get("COCKPIT_SESSION_BRIDGE_COMMAND_JSON", "")
         ),
         allowed_request_origin=process_environment.get(
-            "JARVIS_SESSION_BRIDGE_ALLOWED_ORIGIN", DEFAULT_ALLOWED_REQUEST_ORIGIN
+            "COCKPIT_SESSION_BRIDGE_ALLOWED_ORIGIN", DEFAULT_ALLOWED_REQUEST_ORIGIN
         ),
         terminal_type=DEFAULT_TERMINAL_TYPE,
         cockpit_tmux_executable_path=process_environment.get(
-            "JARVIS_SESSION_BRIDGE_COCKPIT_TMUX_PATH",
+            "COCKPIT_SESSION_BRIDGE_TMUX_PATH",
             DEFAULT_COCKPIT_TMUX_EXECUTABLE_PATH,
         ),
     )
