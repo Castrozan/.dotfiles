@@ -66,26 +66,45 @@ def _serialize_session(session):
     }
 
 
+def _build_open_session_mutation_command(tmux_executable_path, lifecycle_request):
+    return build_open_session_command(
+        tmux_executable_path, lifecycle_request["sessionName"]
+    )
+
+
+def _build_rename_session_mutation_command(tmux_executable_path, lifecycle_request):
+    return build_rename_session_command(
+        tmux_executable_path,
+        lifecycle_request["currentSessionName"],
+        lifecycle_request["newSessionName"],
+    )
+
+
+def _build_close_session_mutation_command(tmux_executable_path, lifecycle_request):
+    return build_close_session_command(
+        tmux_executable_path, lifecycle_request["sessionName"]
+    )
+
+
+def _build_open_window_mutation_command(tmux_executable_path, lifecycle_request):
+    return build_open_window_command(
+        tmux_executable_path,
+        lifecycle_request["sessionName"],
+        lifecycle_request["windowTitle"],
+        lifecycle_request.get("agentLaunchCommand", ""),
+    )
+
+
+def _build_close_window_mutation_command(tmux_executable_path, lifecycle_request):
+    return build_close_window_command(
+        tmux_executable_path, lifecycle_request["windowIdentifier"]
+    )
+
+
 _MUTATION_COMMAND_BUILDERS = {
-    "open-session": lambda tmux_executable_path, request: build_open_session_command(
-        tmux_executable_path, request["sessionName"]
-    ),
-    "rename-session": lambda tmux_executable_path,
-    request: build_rename_session_command(
-        tmux_executable_path,
-        request["currentSessionName"],
-        request["newSessionName"],
-    ),
-    "close-session": lambda tmux_executable_path, request: build_close_session_command(
-        tmux_executable_path, request["sessionName"]
-    ),
-    "open-window": lambda tmux_executable_path, request: build_open_window_command(
-        tmux_executable_path,
-        request["sessionName"],
-        request["windowTitle"],
-        request.get("agentLaunchCommand", ""),
-    ),
-    "close-window": lambda tmux_executable_path, request: build_close_window_command(
-        tmux_executable_path, request["windowIdentifier"]
-    ),
+    "open-session": _build_open_session_mutation_command,
+    "rename-session": _build_rename_session_mutation_command,
+    "close-session": _build_close_session_mutation_command,
+    "open-window": _build_open_window_mutation_command,
+    "close-window": _build_close_window_mutation_command,
 }
