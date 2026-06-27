@@ -122,7 +122,7 @@ for (
   sectionIndex < foundation.sections.length;
   sectionIndex++
 ) {
-  const spec = foundation.sections[sectionIndex];
+  const sectionSpecification = foundation.sections[sectionIndex];
   const priorMarkup =
     builtSections
       .map((section) => `SECTION ${section.id}:\n${section.markup}`)
@@ -133,18 +133,18 @@ for (
 
   for (let attempt = 1; attempt <= maximumRevisionsPerSection; attempt++) {
     const candidate = await agent(
-      `You are building one section of a web page, in order, as part of a section-by-section construction. Build ONLY the "${spec.id}" section (role: ${spec.role}). Inject real, purposeful, final content. Never use lorem ipsum, never use placeholder labels like "Feature one" or "Lorem", never invent facts the brief does not support.\n\nPAGE THESIS: ${foundation.thesis}\nAUDIENCE: ${foundation.audience}\nPRIMARY ACTION: ${foundation.primaryAction}\nTHIS SECTION'S ONE IDEA: ${spec.oneIdea}\nHOW IT RELATES TO THE PREVIOUS SECTION: ${spec.relatesToPrev || "n/a"}\nWHAT IT SETS UP NEXT: ${spec.setsUpNext || "n/a"}\nWHY IT EARNS ITS PLACE: ${spec.whyItEarnsItsPlace}\n\nOUTPUT FORMAT: ${outputFormat}. Emit only the markup for this one section (no document wrapper, no <head>); it will be assembled with the others later. ${sharedConstraints ? `CONSTRAINTS: ${sharedConstraints}\n` : ""}\nALREADY-BUILT SECTIONS (ground your content in these so it continues the page rather than repeating or contradicting them):\n${priorMarkup}\n${outstandingDefects ? `\nYour previous attempt was rejected by the meaning gate. Fix exactly these defects: ${JSON.stringify(outstandingDefects)}` : ""}`,
+      `You are building one section of a web page, in order, as part of a section-by-section construction. Build ONLY the "${sectionSpecification.id}" section (role: ${sectionSpecification.role}). Inject real, purposeful, final content. Never use lorem ipsum, never use placeholder labels like "Feature one" or "Lorem", never invent facts the brief does not support.\n\nPAGE THESIS: ${foundation.thesis}\nAUDIENCE: ${foundation.audience}\nPRIMARY ACTION: ${foundation.primaryAction}\nTHIS SECTION'S ONE IDEA: ${sectionSpecification.oneIdea}\nHOW IT RELATES TO THE PREVIOUS SECTION: ${sectionSpecification.relatesToPrev || "n/a"}\nWHAT IT SETS UP NEXT: ${sectionSpecification.setsUpNext || "n/a"}\nWHY IT EARNS ITS PLACE: ${sectionSpecification.whyItEarnsItsPlace}\n\nOUTPUT FORMAT: ${outputFormat}. Emit only the markup for this one section (no document wrapper, no <head>); it will be assembled with the others later. ${sharedConstraints ? `CONSTRAINTS: ${sharedConstraints}\n` : ""}\nALREADY-BUILT SECTIONS (ground your content in these so it continues the page rather than repeating or contradicting them):\n${priorMarkup}\n${outstandingDefects ? `\nYour previous attempt was rejected by the meaning gate. Fix exactly these defects: ${JSON.stringify(outstandingDefects)}` : ""}`,
       {
-        label: `build:${spec.id}:attempt-${attempt}`,
+        label: `build:${sectionSpecification.id}:attempt-${attempt}`,
         phase: "Build",
         schema: SECTION_SCHEMA,
       },
     );
 
     const verdict = await agent(
-      `You are the meaning gate for one section of a web page. Adversarially judge whether every element of this section carries real meaning, and try hard to REFUTE it. The page exists to fight placeholder skeletons, so reject anything that is filler, a placeholder, off-thesis, unrelated to its neighbors, decorative with no informational purpose, or an unsupported claim the brief does not back. It passes ONLY if every element advances the section's one idea, the section advances the page thesis, and it connects to the sections around it. Default to passes=false when in doubt and name each defect with a concrete fix.\n\nPAGE THESIS: ${foundation.thesis}\nTHIS SECTION'S ONE IDEA: ${spec.oneIdea}\nIT MUST RELATE TO PREVIOUS: ${spec.relatesToPrev || "n/a"}\nIT MUST SET UP NEXT: ${spec.setsUpNext || "n/a"}\n${sharedConstraints ? `CONSTRAINTS THE CONTENT MUST RESPECT: ${sharedConstraints}\n` : ""}\nSECTION CONTENT RATIONALE: ${candidate.contentRationale}\nSECTION MARKUP:\n${candidate.markup}`,
+      `You are the meaning gate for one section of a web page. Adversarially judge whether every element of this section carries real meaning, and try hard to REFUTE it. The page exists to fight placeholder skeletons, so reject anything that is filler, a placeholder, off-thesis, unrelated to its neighbors, decorative with no informational purpose, or an unsupported claim the brief does not back. It passes ONLY if every element advances the section's one idea, the section advances the page thesis, and it connects to the sections around it. Default to passes=false when in doubt and name each defect with a concrete fix.\n\nPAGE THESIS: ${foundation.thesis}\nTHIS SECTION'S ONE IDEA: ${sectionSpecification.oneIdea}\nIT MUST RELATE TO PREVIOUS: ${sectionSpecification.relatesToPrev || "n/a"}\nIT MUST SET UP NEXT: ${sectionSpecification.setsUpNext || "n/a"}\n${sharedConstraints ? `CONSTRAINTS THE CONTENT MUST RESPECT: ${sharedConstraints}\n` : ""}\nSECTION CONTENT RATIONALE: ${candidate.contentRationale}\nSECTION MARKUP:\n${candidate.markup}`,
       {
-        label: `gate:${spec.id}:attempt-${attempt}`,
+        label: `gate:${sectionSpecification.id}:attempt-${attempt}`,
         phase: "Build",
         schema: GATE_SCHEMA,
       },
@@ -159,7 +159,7 @@ for (
 
   builtSections.push(acceptedSection);
   log(
-    `Section "${spec.id}" ${acceptedSection.gate.passes ? "passed" : "best-effort after " + maximumRevisionsPerSection + " tries"} the meaning gate.`,
+    `Section "${sectionSpecification.id}" ${acceptedSection.gate.passes ? "passed" : "best-effort after " + maximumRevisionsPerSection + " tries"} the meaning gate.`,
   );
 }
 
