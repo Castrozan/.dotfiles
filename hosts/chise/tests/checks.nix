@@ -155,7 +155,7 @@ in
 
   chise-cloudflare-tunnel-connector-enabled-turns-on-cloudflared =
     mkEvalCheck "chise-cloudflare-tunnel-connector-enabled-turns-on-cloudflared"
-      (cloudflareTunnelConnectorEnabled.services.cloudflared.enable == true)
+      cloudflareTunnelConnectorEnabled.services.cloudflared.enable
       "an enabled Cloudflare Tunnel connector must turn cloudflared on so the owner-only cockpit terminal reaches the Jarvis bridge over the named tunnel";
 
   chise-cloudflare-tunnel-connector-registers-tunnel-by-id =
