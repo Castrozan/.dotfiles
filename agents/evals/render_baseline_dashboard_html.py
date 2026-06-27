@@ -1,13 +1,6 @@
 import json
 
-NAVIGATION = (
-    '<nav class="top">'
-    '<a class="brand" href="../">dotfiles reports</a>'
-    '<a href="../baseline/" class="active">baseline</a>'
-    '<a href="../quality/">quality</a>'
-    '<a href="../coverage/">coverage</a>'
-    "</nav>"
-)
+ATRIUM_QUALITY_URL = "/engineering/dotfiles/reports/quality/"
 
 
 def render_stat_cards(summary):
@@ -58,7 +51,6 @@ def render_dashboard_html(revisions, summary):
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 <body>
-{NAVIGATION}
 <div class="wrap">
 <h1>agent-eval baseline</h1>
 <p class="lede">How well the AI agent on this machine obeys the dotfiles instruction surface,
@@ -105,8 +97,8 @@ regressions.</p>
 <footer>
 Auto-generated from <code>agents/evals/baseline.json</code> history by
 <code>agents/evals/render_baseline_dashboard.py</code> on every push &middot;
-<a href="../quality/">how quality is measured</a> &middot;
-<a href="https://github.com/Castrozan/.dotfiles/issues/70">design notes</a>
+<a href="{ATRIUM_QUALITY_URL}" target="_top">how quality is measured</a> &middot;
+<a href="https://github.com/Castrozan/.dotfiles/issues/70" target="_top">design notes</a>
 </footer>
 </div>
 
