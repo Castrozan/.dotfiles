@@ -10,6 +10,7 @@ _pytest_collection_root_directories() {
 	printf '%s\n' \
 		"$REPO_DIR/home/base" \
 		"$platformSpecificHomeDirectory" \
+		"$REPO_DIR/agents/evals" \
 		"$REPO_DIR/agents/hooks" \
 		"$REPO_DIR/agents/skills" \
 		"$REPO_DIR/agents/usage" \
