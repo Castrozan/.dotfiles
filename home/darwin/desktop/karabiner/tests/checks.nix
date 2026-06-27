@@ -19,59 +19,14 @@ let
 
   karabinerRules = import ../rules { username = "test"; };
 
-  indexOfFirstRuleWhereManipulatorMatches =
-    manipulatorPredicate:
-    let
-      ruleHasMatchingManipulator = rule: lib.any manipulatorPredicate (rule.manipulators or [ ]);
-      allIndices = lib.lists.imap0 (indexInList: rule: {
-        inherit indexInList;
-        matches = ruleHasMatchingManipulator rule;
-      }) karabinerRules;
-      matchingEntries = builtins.filter (entry: entry.matches) allIndices;
-    in
-    if matchingEntries == [ ] then null else (builtins.head matchingEntries).indexInList;
-
-  isBravePassthroughManipulatorForLetterD =
-    manipulator:
-    (manipulator.from.key_code or "") == "d"
-    && builtins.elem "control" (manipulator.from.modifiers.mandatory or [ ])
-    && lib.any (to: to.key_code or "" == "d" && to.modifiers or [ ] == [ "control" ]) (
-      manipulator.to or [ ]
-    )
-    && lib.any (
-      condition:
-      condition.type or "" == "frontmost_application_if"
-      && lib.any (b: lib.hasInfix "brave" (lib.toLower b)) (condition.bundle_identifiers or [ ])
-    ) (manipulator.conditions or [ ]);
-
-  isLinuxStyleControlToCommandRemapForLetterD =
-    manipulator:
-    (manipulator.from.key_code or "") == "d"
-    && builtins.elem "control" (manipulator.from.modifiers.mandatory or [ ])
-    && lib.any (to: builtins.elem "command" (to.modifiers or [ ])) (manipulator.to or [ ]);
-
-  passthroughIndex = indexOfFirstRuleWhereManipulatorMatches isBravePassthroughManipulatorForLetterD;
-  linuxStyleIndex = indexOfFirstRuleWhereManipulatorMatches isLinuxStyleControlToCommandRemapForLetterD;
-
-  isChromeControlShiftZoomRemapForKey =
-    zoomKeyCode: manipulator:
-    (manipulator.from.key_code or "") == zoomKeyCode
-    && builtins.elem "control" (manipulator.from.modifiers.mandatory or [ ])
-    && builtins.elem "shift" (manipulator.from.modifiers.mandatory or [ ])
-    && lib.any (to: (to.key_code or "") == zoomKeyCode && (to.modifiers or [ ]) == [ "command" ]) (
-      manipulator.to or [ ]
-    )
-    && lib.any (
-      condition:
-      condition.type or "" == "frontmost_application_if"
-      && lib.any (b: lib.hasInfix "chrome" (lib.toLower b)) (condition.bundle_identifiers or [ ])
-    ) (manipulator.conditions or [ ]);
-
-  chromeZoomInRemapIsPresent =
-    indexOfFirstRuleWhereManipulatorMatches (isChromeControlShiftZoomRemapForKey "equal_sign") != null;
-
-  chromeZoomOutRemapIsPresent =
-    indexOfFirstRuleWhereManipulatorMatches (isChromeControlShiftZoomRemapForKey "hyphen") != null;
+  manipulatorMatchHelpers = import ./manipulator-match-helpers.nix { inherit lib karabinerRules; };
+  inherit (manipulatorMatchHelpers)
+    braveControlDPassthroughPreEmptsLinuxStyleRemap
+    chromeZoomInRemapIsPresent
+    chromeZoomOutRemapIsPresent
+    bravePlainControlBDisablePreEmptsLinuxStyleRemap
+    chromePlainControlBDisablePreEmptsLinuxStyleRemap
+    ;
 
   applicationFocusDefaultDenyGuards = import ../rules/application-focus-default-deny-guards.nix;
   inherit (applicationFocusDefaultDenyGuards) applicationFocusVariableNames;
@@ -115,7 +70,7 @@ in
 {
   domain-desktop-karabiner-brave-ctrl-d-passthrough-pre-empts-linux-style-remap =
     mkEvalCheck "domain-desktop-karabiner-brave-ctrl-d-passthrough-pre-empts-linux-style-remap"
-      (passthroughIndex != null && linuxStyleIndex != null && passthroughIndex < linuxStyleIndex)
+      braveControlDPassthroughPreEmptsLinuxStyleRemap
       "Brave Ctrl+D passthrough rule must appear before the Linux-style Ctrl-to-Cmd remap so it pre-empts the conversion when Brave is frontmost";
 
   domain-desktop-karabiner-except-in-terminals-rules-are-default-deny-guarded =
@@ -160,4 +115,14 @@ in
     mkEvalCheck "domain-desktop-karabiner-chrome-zoom-out-control-shift-hyphen-remap-present"
       chromeZoomOutRemapIsPresent
       "Chrome must remap Ctrl+Shift+- to Command+- so Ctrl+Shift+- zooms out, because Chrome ignores brave.accelerators and only a Karabiner rule can deliver the Mac zoom shortcut";
+
+  domain-desktop-karabiner-brave-ctrl-b-disable-pre-empts-linux-style-remap =
+    mkEvalCheck "domain-desktop-karabiner-brave-ctrl-b-disable-pre-empts-linux-style-remap"
+      bravePlainControlBDisablePreEmptsLinuxStyleRemap
+      "Brave plain Ctrl+B must be disabled to vk_none by a rule appearing before the Linux-style Ctrl-to-Cmd remap, so Ctrl+B does nothing instead of being converted to Cmd+B (bold) when Brave is frontmost; Ctrl+Shift+B stays free for the bookmark bar toggle because the disable matches plain control only";
+
+  domain-desktop-karabiner-chrome-ctrl-b-disable-pre-empts-linux-style-remap =
+    mkEvalCheck "domain-desktop-karabiner-chrome-ctrl-b-disable-pre-empts-linux-style-remap"
+      chromePlainControlBDisablePreEmptsLinuxStyleRemap
+      "Chrome plain Ctrl+B must be disabled to vk_none by a rule appearing before the Linux-style Ctrl-to-Cmd remap, so Ctrl+B does nothing instead of being converted to Cmd+B (bold) when Chrome is frontmost; Ctrl+Shift+B stays free for the bookmark bar toggle because the disable matches plain control only";
 }
