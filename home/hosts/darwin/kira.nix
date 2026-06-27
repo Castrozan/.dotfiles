@@ -30,5 +30,8 @@ in
   ]
   ++ lib.optionals kiraPrivateConfigExists [
     "${privateConfigRoot}/machines/kira/clawde-agents"
-  ];
+  ]
+  ++ lib.optional (builtins.pathExists ../../../private-config/machines/kira/jarvis-connector.nix) ../../../private-config/machines/kira/jarvis-connector.nix;
+
+  custom.cockpitSessionBridge.enable = true;
 }

@@ -52,6 +52,9 @@
 
     ../base/network/tailscale-daemon.nix
 
+    ./cockpit-session-bridge
+    ./cloudflare-tunnel-connector
+
     ../base/media/obsidian
     ../base/media/zathura
 
