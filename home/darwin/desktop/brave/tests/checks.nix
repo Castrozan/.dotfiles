@@ -53,6 +53,18 @@ let
       "Command+Numpad9"
       "Alt+Digit9"
     ];
+
+  braveZoomInAcceleratorAddsControlShiftEqualAlongsideCommandEqual =
+    bravePreferencesOverrides.brave.accelerators."38001" == [
+      "Command+Equal"
+      "Control+Shift+Equal"
+    ];
+
+  braveZoomOutAcceleratorAddsControlShiftMinusAlongsideCommandMinus =
+    bravePreferencesOverrides.brave.accelerators."38003" == [
+      "Command+Minus"
+      "Control+Shift+Minus"
+    ];
 in
 {
   domain-desktop-brave-duplicate-tab-bound-to-control-d =
@@ -93,4 +105,14 @@ in
     mkEvalCheck "domain-desktop-brave-last-tab-selection-adds-alt-digit-nine"
       braveLastTabSelectionAcceleratorAddsAltDigitNineAlongsideCommandDefaults
       "Brave Select Last Tab (command id 34026) must keep Command+Digit9 and Command+Numpad9 and add Alt+Digit9";
+
+  domain-desktop-brave-zoom-in-adds-control-shift-equal =
+    mkEvalCheck "domain-desktop-brave-zoom-in-adds-control-shift-equal"
+      braveZoomInAcceleratorAddsControlShiftEqualAlongsideCommandEqual
+      "Brave Zoom In (command id 38001) must keep Command+Equal and add Control+Shift+Equal so Ctrl+Shift++ zooms in";
+
+  domain-desktop-brave-zoom-out-adds-control-shift-minus =
+    mkEvalCheck "domain-desktop-brave-zoom-out-adds-control-shift-minus"
+      braveZoomOutAcceleratorAddsControlShiftMinusAlongsideCommandMinus
+      "Brave Zoom Out (command id 38003) must keep Command+Minus and add Control+Shift+Minus so Ctrl+Shift+- zooms out";
 }

@@ -118,6 +118,31 @@ let
     ];
     conditions = chromeIsFrontmostCondition;
   };
+
+  remapControlShiftZoomKeyToCommandZoom = zoomKeyCode: {
+    type = "basic";
+    from = {
+      key_code = zoomKeyCode;
+      modifiers = {
+        mandatory = [
+          "control"
+          "shift"
+        ];
+        optional = [ "any" ];
+      };
+    };
+    to = [
+      {
+        key_code = zoomKeyCode;
+        modifiers = [ "command" ];
+      }
+    ];
+    conditions = chromeIsFrontmostCondition;
+  };
+
+  zoomInWithControlShiftEqual = remapControlShiftZoomKeyToCommandZoom "equal_sign";
+
+  zoomOutWithControlShiftHyphen = remapControlShiftZoomKeyToCommandZoom "hyphen";
 in
 [
   {
@@ -136,6 +161,13 @@ in
     manipulators = [
       openHistoryWithControlH
       openDownloadsWithControlJ
+    ];
+  }
+  {
+    description = "Chrome: Ctrl+Shift+= zooms in and Ctrl+Shift+- zooms out via the Mac Command zoom shortcuts (mirrors Brave's zoom accelerator additions, which Chrome cannot carry because it ignores brave.accelerators)";
+    manipulators = [
+      zoomInWithControlShiftEqual
+      zoomOutWithControlShiftHyphen
     ];
   }
 ]

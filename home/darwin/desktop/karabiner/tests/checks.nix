@@ -53,6 +53,26 @@ let
   passthroughIndex = indexOfFirstRuleWhereManipulatorMatches isBravePassthroughManipulatorForLetterD;
   linuxStyleIndex = indexOfFirstRuleWhereManipulatorMatches isLinuxStyleControlToCommandRemapForLetterD;
 
+  isChromeControlShiftZoomRemapForKey =
+    zoomKeyCode: manipulator:
+    (manipulator.from.key_code or "") == zoomKeyCode
+    && builtins.elem "control" (manipulator.from.modifiers.mandatory or [ ])
+    && builtins.elem "shift" (manipulator.from.modifiers.mandatory or [ ])
+    && lib.any (to: (to.key_code or "") == zoomKeyCode && (to.modifiers or [ ]) == [ "command" ]) (
+      manipulator.to or [ ]
+    )
+    && lib.any (
+      condition:
+      condition.type or "" == "frontmost_application_if"
+      && lib.any (b: lib.hasInfix "chrome" (lib.toLower b)) (condition.bundle_identifiers or [ ])
+    ) (manipulator.conditions or [ ]);
+
+  chromeZoomInRemapIsPresent =
+    indexOfFirstRuleWhereManipulatorMatches (isChromeControlShiftZoomRemapForKey "equal_sign") != null;
+
+  chromeZoomOutRemapIsPresent =
+    indexOfFirstRuleWhereManipulatorMatches (isChromeControlShiftZoomRemapForKey "hyphen") != null;
+
   applicationFocusDefaultDenyGuards = import ../rules/application-focus-default-deny-guards.nix;
   inherit (applicationFocusDefaultDenyGuards) applicationFocusVariableNames;
 
@@ -130,4 +150,14 @@ in
     mkEvalCheck "domain-desktop-karabiner-default-deny-variables-match-hammerspoon"
       hammerspoonSetsEveryApplicationFocusVariable
       "The hammerspoon karabiner_application_focus_variables module must set every application-focus variable name the karabiner default-deny guards read, otherwise a guard fails closed permanently and its rule silently stops working";
+
+  domain-desktop-karabiner-chrome-zoom-in-control-shift-equal-remap-present =
+    mkEvalCheck "domain-desktop-karabiner-chrome-zoom-in-control-shift-equal-remap-present"
+      chromeZoomInRemapIsPresent
+      "Chrome must remap Ctrl+Shift+= to Command+= so Ctrl+Shift++ zooms in, because Chrome ignores brave.accelerators and only a Karabiner rule can deliver the Mac zoom shortcut";
+
+  domain-desktop-karabiner-chrome-zoom-out-control-shift-hyphen-remap-present =
+    mkEvalCheck "domain-desktop-karabiner-chrome-zoom-out-control-shift-hyphen-remap-present"
+      chromeZoomOutRemapIsPresent
+      "Chrome must remap Ctrl+Shift+- to Command+- so Ctrl+Shift+- zooms out, because Chrome ignores brave.accelerators and only a Karabiner rule can deliver the Mac zoom shortcut";
 }
