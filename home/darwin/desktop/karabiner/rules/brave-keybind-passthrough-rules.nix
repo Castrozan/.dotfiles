@@ -47,6 +47,23 @@ let
     conditions = braveIsFrontmostConditions;
   };
 
+  disableBravePlainControlKeyByMappingToVkNone = keyCode: {
+    type = "basic";
+    from = {
+      key_code = keyCode;
+      modifiers = {
+        mandatory = [ "control" ];
+        optional = [ ];
+      };
+    };
+    to = [
+      {
+        key_code = "vk_none";
+      }
+    ];
+    conditions = braveIsFrontmostConditions;
+  };
+
   bravePassthroughLetters = [ "d" ];
 in
 [
@@ -62,6 +79,12 @@ in
         "command"
         "shift"
       ])
+    ];
+  }
+  {
+    description = "Brave: disable plain Ctrl+B so it does nothing instead of being remapped to Cmd+B (bold); Ctrl+Shift+B still reaches the bookmark bar toggle";
+    manipulators = [
+      (disableBravePlainControlKeyByMappingToVkNone "b")
     ];
   }
 ]

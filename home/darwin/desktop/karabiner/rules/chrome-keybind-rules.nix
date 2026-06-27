@@ -143,6 +143,23 @@ let
   zoomInWithControlShiftEqual = remapControlShiftZoomKeyToCommandZoom "equal_sign";
 
   zoomOutWithControlShiftHyphen = remapControlShiftZoomKeyToCommandZoom "hyphen";
+
+  disableChromePlainControlKeyByMappingToVkNone = keyCode: {
+    type = "basic";
+    from = {
+      key_code = keyCode;
+      modifiers = {
+        mandatory = [ "control" ];
+        optional = [ ];
+      };
+    };
+    to = [
+      {
+        key_code = "vk_none";
+      }
+    ];
+    conditions = chromeIsFrontmostCondition;
+  };
 in
 [
   {
@@ -168,6 +185,12 @@ in
     manipulators = [
       zoomInWithControlShiftEqual
       zoomOutWithControlShiftHyphen
+    ];
+  }
+  {
+    description = "Chrome: disable plain Ctrl+B so it does nothing instead of being remapped to Cmd+B (bold); Ctrl+Shift+B still reaches the bookmark bar toggle";
+    manipulators = [
+      (disableChromePlainControlKeyByMappingToVkNone "b")
     ];
   }
 ]
