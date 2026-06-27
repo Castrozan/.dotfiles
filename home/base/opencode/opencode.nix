@@ -2,17 +2,17 @@
 let
   fetchPrebuiltBinary = import ../../../lib/fetch-prebuilt-binary.nix { inherit pkgs; };
 
-  version = "1.17.7";
+  version = "1.17.11";
 
   opencodeUpstreamReleaseDescriptorBySystem = {
     "x86_64-linux" = {
       releaseAssetName = "opencode-linux-x64.tar.gz";
-      sha256 = "sha256-YP5aktya9k7AeTSP7d4X4S2mqGfv5+g1O+gDhIBgeSQ=";
+      sha256 = "sha256-au/Lu38EzbRkK+Ugjdv6uzw9J0+Ba/Qr/3LupcJE3KI=";
       buildInputs = [ ];
     };
     "aarch64-darwin" = {
       releaseAssetName = "opencode-darwin-arm64.zip";
-      sha256 = "sha256-emOutaFbKdomgawrjHTUyzpk+hO2EZijx9x3EkPCOXI=";
+      sha256 = "sha256-QHI0RgE96oJS7qTxgNcH916AWvVO6FoU/XwSZRO6g0I=";
       buildInputs = [ ];
     };
   };

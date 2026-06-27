@@ -2,12 +2,12 @@
 let
   fetchPrebuiltBinary = import ../../../lib/fetch-prebuilt-binary.nix { inherit pkgs; };
 
-  version = "0.141.0";
+  version = "0.142.3";
 
   codexUpstreamReleaseDescriptorBySystem = {
     "x86_64-linux" = {
       releaseTargetTriple = "x86_64-unknown-linux-musl";
-      sha256 = "sha256-8eK/n6C6brghGdYhtrcbw47dM8BtwoZ7MaAnBSNYlX0=";
+      sha256 = "sha256-+WgT9BaStNiuRNCBIWWi/MQpGW6zSB9rwiGv3slqF/g=";
       buildInputs = with pkgs; [
         openssl
         libcap
@@ -16,7 +16,7 @@ let
     };
     "aarch64-darwin" = {
       releaseTargetTriple = "aarch64-apple-darwin";
-      sha256 = "sha256-q96tX+68JZ3squwzRlQju7eQSzBJ+ijpIgnLkkaTwPQ=";
+      sha256 = "sha256-wwMVy0HWbQAPya1mc19CiNn/DH/nSPaPcautcC1y+DI=";
       buildInputs = [ ];
     };
   };
