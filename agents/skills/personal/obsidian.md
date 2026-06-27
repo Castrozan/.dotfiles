@@ -54,7 +54,7 @@ Tweet media enrichment: when tweets contain `pic.twitter.com` or `t.co` links an
 </inbox_processing>
 
 <sync>
-Vault syncs continuously via the `obsidian-headless-sync` systemd service. No need to open the Obsidian app. Check service status: `systemctl --user status obsidian-headless-sync`.
+Vault syncs automatically on every host via a scheduled single-pass `obsidian-headless-sync`, run about every 5 minutes, so the Obsidian app need not be open and edits land within roughly that window. On Linux it is a systemd user timer plus oneshot service (`systemctl --user status obsidian-headless-sync.timer`); on macOS it is a launchd agent on a 300s interval (`launchctl print gui/$(id -u)/com.dotfiles.obsidian-headless-sync`).
 </sync>
 
 <behavior>

@@ -46,6 +46,8 @@ let
     export VAULT_PATH=${lib.escapeShellArg vaultPath}
     ${builtins.readFile ./scripts/obsidian-headless-sync.sh}
   '';
+
+  inherit (pkgs.stdenv.hostPlatform) isDarwin isLinux;
 in
 {
   home = {
@@ -68,7 +70,7 @@ in
         '';
   };
 
-  launchd.agents.obsidian-headless-sync = {
+  launchd.agents.obsidian-headless-sync = lib.mkIf isDarwin {
     enable = true;
     config = {
       Label = "com.dotfiles.obsidian-headless-sync";
@@ -81,5 +83,37 @@ in
       StandardOutPath = "/tmp/obsidian-headless-sync.log";
       StandardErrorPath = "/tmp/obsidian-headless-sync.log";
     };
+  };
+
+  systemd.user = lib.mkIf isLinux {
+    services.obsidian-headless-sync = {
+      Unit = {
+        Description = "Obsidian headless vault single-pass sync";
+        After = [ "network.target" ];
+      };
+
+      Service = {
+        Type = "oneshot";
+        ExecStart = "${pkgs.bash}/bin/bash ${obsidianHeadlessSyncScript}";
+      };
+    };
+
+    timers.obsidian-headless-sync = {
+      Unit = {
+        Description = "Periodic obsidian-headless vault sync every 300s";
+      };
+
+      Timer = {
+        OnStartupSec = "60s";
+        OnUnitActiveSec = "300s";
+        Persistent = true;
+      };
+
+      Install = {
+        WantedBy = [ "timers.target" ];
+      };
+    };
+
+    startServices = "sd-switch";
   };
 }
