@@ -39,6 +39,8 @@ async def build_cockpit_lifecycle_reply(
             "error": "unsupported-operation",
             "operation": str(unsupported_operation),
         }
+    except KeyError:
+        return {"error": "invalid-request"}
 
 
 def decode_cockpit_lifecycle_request(raw_request_message):

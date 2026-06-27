@@ -91,6 +91,18 @@ def test_an_unsupported_operation_replies_with_an_error_and_never_runs_tmux():
     ]
 
 
+def test_a_valid_operation_missing_a_required_field_replies_with_an_error_and_never_runs_tmux():
+    runner = RecordingSubprocessRunner()
+    websocket_connection = ScriptedLifecycleControlWebsocket(
+        ['{"operation":"open-session"}']
+    )
+
+    drive_lifecycle_control(websocket_connection, runner)
+
+    assert runner.executed_commands == []
+    assert decoded_replies(websocket_connection) == [{"error": "invalid-request"}]
+
+
 def test_each_request_on_one_connection_gets_its_own_reply_in_order():
     runner = RecordingSubprocessRunner({"list-sessions": "", "list-windows": ""})
     websocket_connection = ScriptedLifecycleControlWebsocket(

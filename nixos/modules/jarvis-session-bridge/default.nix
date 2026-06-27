@@ -124,6 +124,7 @@ in
         JARVIS_SESSION_BRIDGE_LISTEN_PORT = toString jarvisSessionBridgeConfig.listenPort;
         JARVIS_SESSION_BRIDGE_COMMAND_JSON = builtins.toJSON jarvisSessionBridgeConfig.sessionCommand;
         JARVIS_SESSION_BRIDGE_ALLOWED_ORIGIN = jarvisSessionBridgeConfig.allowedRequestOrigin;
+        JARVIS_SESSION_BRIDGE_COCKPIT_TMUX_PATH = "${pkgs.tmux}/bin/tmux";
         TMUX_TMPDIR = tmuxTemporaryDirectory;
       };
       serviceConfig = {
