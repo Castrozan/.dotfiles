@@ -57,7 +57,9 @@
       "34023": ["Command+Digit6", "Command+Numpad6", "Alt+Digit6"],
       "34024": ["Command+Digit7", "Command+Numpad7", "Alt+Digit7"],
       "34025": ["Command+Digit8", "Command+Numpad8", "Alt+Digit8"],
-      "34026": ["Command+Digit9", "Command+Numpad9", "Alt+Digit9"]
+      "34026": ["Command+Digit9", "Command+Numpad9", "Alt+Digit9"],
+      "38001": ["Command+Equal", "Control+Shift+Equal"],
+      "38003": ["Command+Minus", "Control+Shift+Minus"]
     }
   }
 }
