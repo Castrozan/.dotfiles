@@ -3,6 +3,10 @@ import os
 import pty
 import signal
 
+from cockpit_lifecycle_websocket import (
+    COCKPIT_LIFECYCLE_CONTROL_PATH,
+    stream_cockpit_lifecycle_control_over_websocket,
+)
 from pseudoterminal_streams import (
     apply_pseudoterminal_window_size,
     stream_pseudoterminal_output_to_websocket,
@@ -11,6 +15,7 @@ from pseudoterminal_streams import (
 from settings import (
     is_request_origin_allowed,
     read_request_origin,
+    read_request_path,
     resolve_bridge_settings,
 )
 
@@ -95,16 +100,44 @@ async def bridge_session_over_websocket(websocket_connection, settings, event_lo
         await websocket_connection.close()
 
 
+async def bridge_cockpit_lifecycle_over_websocket(
+    websocket_connection, settings, *, subprocess_runner=None
+):
+    if not is_request_origin_allowed(
+        read_request_origin(websocket_connection), settings.allowed_request_origin
+    ):
+        await websocket_connection.close(code=1008, reason="origin not allowed")
+        return
+    await stream_cockpit_lifecycle_control_over_websocket(
+        websocket_connection,
+        settings.cockpit_tmux_executable_path,
+        subprocess_runner=subprocess_runner,
+    )
+
+
+async def handle_bridge_websocket_connection(
+    websocket_connection, settings, event_loop
+):
+    if read_request_path(websocket_connection) == COCKPIT_LIFECYCLE_CONTROL_PATH:
+        await bridge_cockpit_lifecycle_over_websocket(websocket_connection, settings)
+        return
+    await bridge_session_over_websocket(websocket_connection, settings, event_loop)
+
+
 async def serve_jarvis_session_bridge(settings):
     import websockets
 
     event_loop = asyncio.get_running_loop()
 
-    async def handle_session_connection(websocket_connection):
-        await bridge_session_over_websocket(websocket_connection, settings, event_loop)
+    async def handle_incoming_websocket_connection(websocket_connection):
+        await handle_bridge_websocket_connection(
+            websocket_connection, settings, event_loop
+        )
 
     async with websockets.serve(
-        handle_session_connection, settings.listen_address, settings.listen_port
+        handle_incoming_websocket_connection,
+        settings.listen_address,
+        settings.listen_port,
     ):
         await asyncio.Future()
 

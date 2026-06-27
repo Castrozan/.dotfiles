@@ -6,6 +6,7 @@ DEFAULT_LISTEN_ADDRESS = "127.0.0.1"
 DEFAULT_LISTEN_PORT = 8787
 DEFAULT_ALLOWED_REQUEST_ORIGIN = "https://lucaszanoni.com"
 DEFAULT_TERMINAL_TYPE = "xterm-256color"
+DEFAULT_COCKPIT_TMUX_EXECUTABLE_PATH = "tmux"
 MAXIMUM_PSEUDOTERMINAL_DIMENSION = 10000
 
 
@@ -16,6 +17,7 @@ class JarvisSessionBridgeSettings:
     session_command: list
     allowed_request_origin: str
     terminal_type: str
+    cockpit_tmux_executable_path: str = DEFAULT_COCKPIT_TMUX_EXECUTABLE_PATH
 
 
 @dataclass(frozen=True)
@@ -83,6 +85,10 @@ def resolve_bridge_settings(process_environment):
             "JARVIS_SESSION_BRIDGE_ALLOWED_ORIGIN", DEFAULT_ALLOWED_REQUEST_ORIGIN
         ),
         terminal_type=DEFAULT_TERMINAL_TYPE,
+        cockpit_tmux_executable_path=process_environment.get(
+            "JARVIS_SESSION_BRIDGE_COCKPIT_TMUX_PATH",
+            DEFAULT_COCKPIT_TMUX_EXECUTABLE_PATH,
+        ),
     )
 
 
@@ -99,4 +105,11 @@ def read_request_origin(websocket_connection):
     legacy_request_headers = getattr(websocket_connection, "request_headers", None)
     if legacy_request_headers is not None:
         return legacy_request_headers.get("Origin", "")
+    return ""
+
+
+def read_request_path(websocket_connection):
+    connection_request = getattr(websocket_connection, "request", None)
+    if connection_request is not None:
+        return getattr(connection_request, "path", "")
     return ""
