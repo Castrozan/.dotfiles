@@ -5,14 +5,23 @@
   ...
 }:
 let
-  accelerateWithoutSandboxFlakyChecks =
-    unstable.python312Packages.accelerate.overridePythonAttrs
-      (_: {
-        doCheck = false;
-        dontUsePythonImportsCheck = true;
+  accelerateWithoutSandboxFlakyChecks = pkgs.python312Packages.accelerate.overridePythonAttrs (_: {
+    doCheck = false;
+    dontUsePythonImportsCheck = true;
+  });
+
+  sentencepieceWithWorkingNativeLibrary =
+    pkgs.python312Packages.sentencepiece.overridePythonAttrs
+      (old: {
+        buildInputs = [
+          unstable.sentencepiece
+        ]
+        ++ builtins.filter (dependency: !(lib.hasInfix "sentencepiece" (dependency.name or ""))) (
+          old.buildInputs or [ ]
+        );
       });
 
-  videoGenerationPythonEnvironment = unstable.python312.withPackages (pythonPackages: [
+  videoGenerationPythonEnvironment = pkgs.python312.withPackages (pythonPackages: [
     pythonPackages.torch
     pythonPackages.torchvision
     pythonPackages.diffusers
@@ -20,7 +29,7 @@ let
     accelerateWithoutSandboxFlakyChecks
     pythonPackages.huggingface-hub
     pythonPackages.safetensors
-    pythonPackages.sentencepiece
+    sentencepieceWithWorkingNativeLibrary
     pythonPackages.protobuf
     pythonPackages.einops
     pythonPackages.ftfy
