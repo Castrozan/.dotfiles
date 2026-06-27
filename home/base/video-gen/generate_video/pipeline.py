@@ -1,5 +1,4 @@
-import subprocess
-
+import av
 import numpy as np
 
 
@@ -64,37 +63,27 @@ def coerce_frame_to_uint8_rgb(frame):
         array = array.astype(np.uint8)
     if array.ndim == 2:
         array = np.stack([array, array, array], axis=-1)
-    return np.ascontiguousarray(array[:, :, :3])
+    array = array[:, :, :3]
+    height, width = array.shape[:2]
+    array = array[: height - (height % 2), : width - (width % 2)]
+    return np.ascontiguousarray(array)
 
 
 def write_video_file(frames, output_path, frames_per_second):
     rgb_frames = [coerce_frame_to_uint8_rgb(frame) for frame in frames]
     height, width = rgb_frames[0].shape[:2]
-    ffmpeg_command = [
-        "ffmpeg",
-        "-y",
-        "-f",
-        "rawvideo",
-        "-pix_fmt",
-        "rgb24",
-        "-s",
-        f"{width}x{height}",
-        "-framerate",
-        str(frames_per_second),
-        "-i",
-        "-",
-        "-an",
-        "-c:v",
-        "libx264",
-        "-pix_fmt",
-        "yuv420p",
-        output_path,
-    ]
-    encoder = subprocess.Popen(ffmpeg_command, stdin=subprocess.PIPE)
-    for frame in rgb_frames:
-        encoder.stdin.write(frame.tobytes())
-    encoder.stdin.close()
-    return_code = encoder.wait()
-    if return_code != 0:
-        raise RuntimeError(f"ffmpeg exited with status {return_code}")
+    container = av.open(output_path, mode="w")
+    try:
+        stream = container.add_stream("libx264", rate=frames_per_second)
+        stream.width = width
+        stream.height = height
+        stream.pix_fmt = "yuv420p"
+        for array in rgb_frames:
+            video_frame = av.VideoFrame.from_ndarray(array, format="rgb24")
+            for packet in stream.encode(video_frame):
+                container.mux(packet)
+        for packet in stream.encode():
+            container.mux(packet)
+    finally:
+        container.close()
     return len(rgb_frames)

@@ -31,6 +31,7 @@ let
     pythonPackages.safetensors
     sentencepieceWithWorkingNativeLibrary
     pythonPackages.protobuf
+    pythonPackages.av
     pythonPackages.einops
     pythonPackages.ftfy
     pythonPackages.numpy
@@ -45,7 +46,6 @@ let
   videoGenerationCommand = pkgs.writeShellScriptBin "video-gen" ''
     export PYTORCH_ENABLE_MPS_FALLBACK="''${PYTORCH_ENABLE_MPS_FALLBACK:-1}"
     export TOKENIZERS_PARALLELISM="''${TOKENIZERS_PARALLELISM:-false}"
-    export PATH="${pkgs.ffmpeg}/bin:$PATH"
     export PYTHONPATH="${videoGeneratorPackageRoot}''${PYTHONPATH:+:$PYTHONPATH}"
     exec ${videoGenerationPythonEnvironment}/bin/python -m generate_video "$@"
   '';
