@@ -58,4 +58,8 @@ in
   codex-core-skill =
     mkEvalCheck "codex-core-skill" (builtins.hasAttr ".codex/skills/core/SKILL.md" cfg.home.file)
       "core skill should be generated for codex";
+
+  codex-global-agents-instructions =
+    mkEvalCheck "codex-global-agents-instructions" (builtins.hasAttr ".codex/AGENTS.md" cfg.home.file)
+      "core agent rules should be deployed as codex global ~/.codex/AGENTS.md instructions";
 }

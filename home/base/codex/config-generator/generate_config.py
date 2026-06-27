@@ -6,7 +6,7 @@ from typing import Any
 
 from toml_render import render_codex_config_toml
 
-codex_default_model = os.environ.get("CODEX_DEFAULT_MODEL", "gpt-5.4")
+codex_default_model = os.environ.get("CODEX_DEFAULT_MODEL", "gpt-5.5")
 codex_developer_instructions = os.environ.get(
     "CODEX_DEVELOPER_INSTRUCTIONS",
     (
