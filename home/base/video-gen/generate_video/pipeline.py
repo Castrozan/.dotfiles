@@ -25,6 +25,14 @@ def apply_inference_memory_savers(pipeline):
                 method()
             except Exception:
                 pass
+    variational_autoencoder = getattr(pipeline, "vae", None)
+    for method_name in ("enable_tiling", "enable_slicing"):
+        method = getattr(variational_autoencoder, method_name, None)
+        if callable(method):
+            try:
+                method()
+            except Exception:
+                pass
 
 
 def place_pipeline_on_device(pipeline, device, enable_cpu_offload):
