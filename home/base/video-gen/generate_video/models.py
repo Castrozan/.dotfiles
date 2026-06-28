@@ -45,17 +45,17 @@ MODEL_REGISTRY = {
     },
     "hunyuanvideo": {
         "repository": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-480p_t2v",
-        "pipeline_class": "HunyuanVideoPipeline",
+        "pipeline_class": "HunyuanVideo15Pipeline",
         "preferred_dtype": "bfloat16",
         "defaults": {
             "width": 832,
             "height": 480,
             "num_frames": 49,
-            "num_inference_steps": 30,
-            "guidance_scale": 6.0,
+            "num_inference_steps": 40,
+            "guidance_scale": 7.0,
             "fps": 24,
         },
-        "description": "Tencent HunyuanVideo-1.5, strongest unfiltered NSFW-capable base; heavy (~24GB, --cpu-offload); license excludes EU/UK/South Korea",
+        "description": "Tencent HunyuanVideo-1.5, highest-quality unfiltered base; needs CUDA or a GGUF/ComfyUI route, its 8.3B transformer OOMs via diffusers on a 24GB Mac; license excludes EU/UK/South Korea",
     },
     "cogvideox": {
         "repository": "THUDM/CogVideoX-2b",

@@ -1,3 +1,5 @@
+import inspect
+
 import av
 import numpy as np
 
@@ -39,20 +41,36 @@ def place_pipeline_on_device(pipeline, device, enable_cpu_offload):
 
 
 def generate_video_frames(pipeline, prompt, negative_prompt, parameters, generator):
-    call_keyword_arguments = {
+    candidate_arguments = {
         "prompt": prompt,
         "width": parameters["width"],
         "height": parameters["height"],
         "num_frames": parameters["num_frames"],
         "num_inference_steps": parameters["num_inference_steps"],
         "guidance_scale": parameters["guidance_scale"],
+        "negative_prompt": negative_prompt,
+        "generator": generator,
     }
-    if negative_prompt is not None:
-        call_keyword_arguments["negative_prompt"] = negative_prompt
-    if generator is not None:
-        call_keyword_arguments["generator"] = generator
-    result = pipeline(**call_keyword_arguments)
+    supported_arguments = filter_arguments_to_pipeline_signature(
+        pipeline, candidate_arguments
+    )
+    result = pipeline(**supported_arguments)
     return result.frames[0]
+
+
+def filter_arguments_to_pipeline_signature(pipeline, candidate_arguments):
+    call_signature = inspect.signature(pipeline.__call__)
+    accepts_arbitrary_keywords = any(
+        parameter.kind == parameter.VAR_KEYWORD
+        for parameter in call_signature.parameters.values()
+    )
+    accepted_keywords = set(call_signature.parameters)
+    return {
+        name: value
+        for name, value in candidate_arguments.items()
+        if value is not None
+        and (accepts_arbitrary_keywords or name in accepted_keywords)
+    }
 
 
 def coerce_frame_to_uint8_rgb(frame):
