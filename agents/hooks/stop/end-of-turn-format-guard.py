@@ -33,9 +33,23 @@ def read_hook_input_or_exit() -> dict:
         sys.exit(0)
 
 
-def read_final_assistant_reply_text(transcript_path: str) -> str:
+def user_prompt_text_from_event(transcript_event: dict) -> str:
+    content = transcript_event.get("message", {}).get("content", "")
+    if isinstance(content, str):
+        return content.strip()
+    if isinstance(content, list):
+        return "".join(
+            block.get("text", "")
+            for block in content
+            if isinstance(block, dict) and block.get("type") == "text"
+        ).strip()
+    return ""
+
+
+def read_final_turn_request_and_reply(transcript_path: str) -> tuple[str, str]:
     if not transcript_path or not os.path.exists(transcript_path):
-        return ""
+        return "", ""
+    current_turn_user_request = ""
     final_reply_text = ""
     with open(transcript_path, encoding="utf-8") as transcript_file:
         for transcript_line in transcript_file:
@@ -49,6 +63,9 @@ def read_final_assistant_reply_text(transcript_path: str) -> str:
             event_kind = transcript_event.get("type")
             if event_kind == "user":
                 final_reply_text = ""
+                typed_request = user_prompt_text_from_event(transcript_event)
+                if typed_request:
+                    current_turn_user_request = typed_request
                 continue
             if event_kind != "assistant":
                 continue
@@ -62,7 +79,7 @@ def read_final_assistant_reply_text(transcript_path: str) -> str:
             ).strip()
             if text_of_this_message:
                 final_reply_text = text_of_this_message
-    return final_reply_text
+    return current_turn_user_request, final_reply_text
 
 
 def main() -> None:
@@ -74,11 +91,13 @@ def main() -> None:
     if hook_input.get("stop_hook_active"):
         sys.exit(0)
 
-    reply_text = read_final_assistant_reply_text(hook_input.get("transcript_path", ""))
+    user_request_text, reply_text = read_final_turn_request_and_reply(
+        hook_input.get("transcript_path", "")
+    )
     if not reply_text:
         sys.exit(0)
 
-    violations = template_violations_in_reply(reply_text)
+    violations = template_violations_in_reply(reply_text, user_request_text)
     if not violations:
         sys.exit(0)
 

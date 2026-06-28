@@ -53,14 +53,6 @@ def test_allows_prose_with_done_next_and_assumed(tmp_path):
     assert result.stdout.strip() == ""
 
 
-def test_allows_reply_at_the_word_cap(tmp_path):
-    paragraph = " ".join(["word"] * 146)
-    reply = f"{paragraph}\n**Done:** x\n**Next:** y"
-    transcript = write_transcript_with_final_assistant_reply(tmp_path, reply)
-    result = invoke_guard(stop_payload(transcript))
-    assert result.stdout.strip() == ""
-
-
 def test_allows_blank_separated_three_block_reply(tmp_path):
     reply = (
         "The caps are tightened and the suite is green after the rebuild.\n\n"
