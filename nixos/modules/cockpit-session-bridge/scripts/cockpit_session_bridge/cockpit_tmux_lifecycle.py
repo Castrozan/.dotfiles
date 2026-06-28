@@ -123,6 +123,18 @@ def build_close_window_command(
     )
 
 
+def build_attach_session_command(
+    tmux_executable_path, enumeration_socket_name, attach_target
+):
+    return build_cockpit_tmux_command(
+        tmux_executable_path,
+        enumeration_socket_name,
+        "attach-session",
+        "-t",
+        attach_target,
+    )
+
+
 def parse_cockpit_session_inventory(list_sessions_output, list_windows_output):
     windows_by_session_name = {}
     for window_line in _non_empty_output_lines(list_windows_output):

@@ -1,5 +1,6 @@
 import json
 from dataclasses import dataclass
+from urllib.parse import parse_qs, urlsplit
 
 DEFAULT_SESSION_COMMAND = ["/bin/sh", "-il"]
 DEFAULT_LISTEN_ADDRESS = "127.0.0.1"
@@ -124,3 +125,10 @@ def read_request_path(websocket_connection):
     if connection_request is not None:
         return getattr(connection_request, "path", "")
     return ""
+
+
+def read_session_attach_target(request_path):
+    requested_session_names = parse_qs(urlsplit(request_path).query).get("sessionName")
+    if requested_session_names and requested_session_names[0]:
+        return requested_session_names[0]
+    return None
