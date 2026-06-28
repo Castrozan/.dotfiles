@@ -5,33 +5,48 @@
   ...
 }:
 let
-  accelerateWithoutSandboxFlakyChecks = pkgs.python312Packages.accelerate.overridePythonAttrs (_: {
-    doCheck = false;
-    dontUsePythonImportsCheck = true;
-  });
+  disableChecks =
+    pythonPackage:
+    pythonPackage.overridePythonAttrs (_: {
+      doCheck = false;
+      doInstallCheck = false;
+      dontUsePythonImportsCheck = true;
+    });
 
-  sentencepieceWithWorkingNativeLibrary =
-    pkgs.python312Packages.sentencepiece.overridePythonAttrs
-      (old: {
-        buildInputs = [
-          unstable.sentencepiece
-        ]
-        ++ builtins.filter (dependency: !(lib.hasInfix "sentencepiece" (dependency.name or ""))) (
-          old.buildInputs or [ ]
-        );
-      });
+  useOfficialWheelWithoutBrokenDepCheck =
+    pythonPackage:
+    pythonPackage.overridePythonAttrs (previousAttributes: {
+      dontCheckRuntimeDeps = true;
+      dependencies = (previousAttributes.dependencies or [ ]) ++ [ unstable.python312Packages.fsspec ];
+    });
 
-  videoGenerationPythonEnvironment = pkgs.python312.withPackages (pythonPackages: [
+  videoGenerationPython = unstable.python312.override {
+    packageOverrides = finalPythonPackages: previousPythonPackages: {
+      torch-bin = useOfficialWheelWithoutBrokenDepCheck previousPythonPackages.torch-bin;
+      torchvision-bin = useOfficialWheelWithoutBrokenDepCheck previousPythonPackages.torchvision-bin;
+      torch = finalPythonPackages.torch-bin;
+      torchvision = finalPythonPackages.torchvision-bin;
+      accelerate = disableChecks previousPythonPackages.accelerate;
+      diffusers = disableChecks previousPythonPackages.diffusers;
+      transformers = disableChecks previousPythonPackages.transformers;
+      safetensors = disableChecks previousPythonPackages.safetensors;
+      einops = disableChecks previousPythonPackages.einops;
+      tensorboard = disableChecks previousPythonPackages.tensorboard;
+    };
+  };
+
+  videoGenerationPythonEnvironment = videoGenerationPython.withPackages (pythonPackages: [
     pythonPackages.torch
     pythonPackages.torchvision
     pythonPackages.diffusers
     pythonPackages.transformers
-    accelerateWithoutSandboxFlakyChecks
+    pythonPackages.accelerate
     pythonPackages.huggingface-hub
     pythonPackages.safetensors
-    sentencepieceWithWorkingNativeLibrary
+    pythonPackages.sentencepiece
     pythonPackages.protobuf
     pythonPackages.av
+    pythonPackages.fsspec
     pythonPackages.einops
     pythonPackages.ftfy
     pythonPackages.numpy
