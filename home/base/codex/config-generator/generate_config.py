@@ -17,6 +17,8 @@ codex_developer_instructions = os.environ.get(
 )
 chrome_devtools_mcp_command = os.environ["CODEX_CHROME_DEVTOOLS_MCP_COMMAND"]
 chrome_devtools_mcp_args = json.loads(os.environ["CODEX_CHROME_DEVTOOLS_MCP_ARGS_JSON"])
+brave_devtools_mcp_command = os.environ["CODEX_BRAVE_DEVTOOLS_MCP_COMMAND"]
+brave_devtools_mcp_args = json.loads(os.environ["CODEX_BRAVE_DEVTOOLS_MCP_ARGS_JSON"])
 
 
 def build_trusted_project_entries() -> dict[str, dict[str, str]]:
@@ -56,6 +58,10 @@ def build_mcp_server_entries() -> dict[str, dict[str, Any]]:
         "chrome-devtools": {
             "command": chrome_devtools_mcp_command,
             "args": chrome_devtools_mcp_args,
+        },
+        "brave-devtools": {
+            "command": brave_devtools_mcp_command,
+            "args": brave_devtools_mcp_args,
         },
     }
 
@@ -149,9 +155,9 @@ deep_merge(data, BASELINE)
 data.pop("profile", None)
 data.pop("profiles", None)
 
-data.setdefault("mcp_servers", {})["chrome-devtools"] = build_mcp_server_entries()[
-    "chrome-devtools"
-]
+existing_mcp_servers = data.setdefault("mcp_servers", {})
+for generated_server_name, generated_server_entry in build_mcp_server_entries().items():
+    existing_mcp_servers[generated_server_name] = generated_server_entry
 
 config_path.write_text(render_codex_config_toml(data), encoding="utf-8")
 

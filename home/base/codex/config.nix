@@ -15,8 +15,9 @@ let
   codexConfigGenerator = ./config-generator;
   codexDefaultModel = "gpt-5.5";
   codexDeveloperInstructions = "Operate pragmatically: keep diffs small, verify with fast checks, and prefer repo-local truth (AGENTS.md, bin/, home/{base,linux,darwin}/). Use profiles: fast (default), deep, web.";
-  inherit (browserMcp) chromeDevtoolsMcpStdioCommand;
+  inherit (browserMcp) chromeDevtoolsMcpStdioCommand braveDevtoolsMcpStdioCommand;
   chromeDevtoolsMcpStdioArgsJson = builtins.toJSON browserMcp.chromeDevtoolsMcpStdioArgs;
+  braveDevtoolsMcpStdioArgsJson = builtins.toJSON browserMcp.braveDevtoolsMcpStdioArgs;
   codexHooksConfig = builtins.toJSON {
     SessionStart = [
       {
@@ -34,6 +35,8 @@ in
     CODEX_DEVELOPER_INSTRUCTIONS=${lib.escapeShellArg codexDeveloperInstructions} \
     CODEX_CHROME_DEVTOOLS_MCP_COMMAND=${lib.escapeShellArg chromeDevtoolsMcpStdioCommand} \
     CODEX_CHROME_DEVTOOLS_MCP_ARGS_JSON=${lib.escapeShellArg chromeDevtoolsMcpStdioArgsJson} \
+    CODEX_BRAVE_DEVTOOLS_MCP_COMMAND=${lib.escapeShellArg braveDevtoolsMcpStdioCommand} \
+    CODEX_BRAVE_DEVTOOLS_MCP_ARGS_JSON=${lib.escapeShellArg braveDevtoolsMcpStdioArgsJson} \
     ${pkgs.python3}/bin/python3 ${codexConfigGenerator}/generate_config.py
   '';
 
