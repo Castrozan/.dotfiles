@@ -3,6 +3,7 @@
   config,
   lib,
   latest,
+  hostname,
   ...
 }:
 let
@@ -40,6 +41,16 @@ let
       ;
   };
 
+  mem0Mcp = import ./mem0/wrapper.nix {
+    inherit
+      pkgs
+      lib
+      hostname
+      homeDir
+      ;
+    privateConfigRoot = ../../../../private-config;
+  };
+
 in
 {
   imports = [
@@ -58,6 +69,8 @@ in
       a2aMcpStdioCommand = a2aMcp.mcpServerCommand;
       a2aMcpStdioArgs = a2aMcp.mcpServerArgs;
       browserUseMcpStdioCommand = browserUseMcpWrapper;
+      mem0McpStdioCommand = mem0Mcp.mcpServerCommand;
+      mem0McpStdioArgs = mem0Mcp.mcpServerArgs;
       codexBinaryPath = "${homeDir}/.local/bin/codex";
     })
   ];
@@ -65,4 +78,8 @@ in
   home = {
     inherit (browserMcp) packages;
   };
+
+  home.activation.prewarmMem0McpDependencies = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    run ${mem0Mcp.prewarmScript}
+  '';
 }

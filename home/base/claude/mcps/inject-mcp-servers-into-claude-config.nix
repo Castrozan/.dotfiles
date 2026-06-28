@@ -7,6 +7,8 @@
   a2aMcpStdioCommand,
   a2aMcpStdioArgs,
   browserUseMcpStdioCommand,
+  mem0McpStdioCommand,
+  mem0McpStdioArgs,
   codexBinaryPath,
 }:
 { pkgs, lib, ... }:
@@ -32,6 +34,10 @@ let
       command = browserUseMcpStdioCommand;
       args = [ ];
     };
+    mem0 = {
+      command = mem0McpStdioCommand;
+      args = mem0McpStdioArgs;
+    };
   };
 
   mcpServerNamesManagedAcrossAllPlatforms = [
@@ -40,6 +46,7 @@ let
     "browser-use"
     "chrome-devtools"
     "codex"
+    "mem0"
   ];
 
   desiredMcpServersJson = builtins.toJSON desiredMcpServersToInject;
