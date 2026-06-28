@@ -29,10 +29,13 @@ class RecordingSubprocessRunner:
         return cockpit_tmux_lifecycle.CockpitTmuxCommandResult(0, "", "")
 
 
-def dispatch(lifecycle_request, subprocess_runner):
+def dispatch(lifecycle_request, subprocess_runner, socket_policy=None):
     return asyncio.run(
         cockpit_lifecycle_control.dispatch_cockpit_lifecycle_request(
-            TMUX_EXECUTABLE_PATH, lifecycle_request, subprocess_runner=subprocess_runner
+            TMUX_EXECUTABLE_PATH,
+            socket_policy or cockpit_lifecycle_control.CockpitTmuxSocketPolicy(),
+            lifecycle_request,
+            subprocess_runner=subprocess_runner,
         )
     )
 
@@ -41,7 +44,7 @@ def test_list_sessions_returns_the_serialized_inventory_as_plain_data():
     runner = RecordingSubprocessRunner(
         {
             "list-sessions": "jarvis-refactor\n",
-            "list-windows": "jarvis-refactor\t@1\tclaude\n",
+            "list-windows": "jarvis-refactor\t@1\tclaude\tclaude\n",
         }
     )
 
@@ -52,7 +55,13 @@ def test_list_sessions_returns_the_serialized_inventory_as_plain_data():
         "sessions": [
             {
                 "sessionName": "jarvis-refactor",
-                "windows": [{"windowIdentifier": "@1", "windowTitle": "claude"}],
+                "windows": [
+                    {
+                        "windowIdentifier": "@1",
+                        "windowTitle": "claude",
+                        "agentDriver": "claude",
+                    }
+                ],
             }
         ],
     }

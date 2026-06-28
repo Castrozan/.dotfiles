@@ -3,6 +3,7 @@ import os
 import pty
 import signal
 
+from cockpit_lifecycle_control import CockpitTmuxSocketPolicy
 from cockpit_lifecycle_websocket import (
     COCKPIT_LIFECYCLE_CONTROL_PATH,
     stream_cockpit_lifecycle_control_over_websocket,
@@ -111,6 +112,10 @@ async def bridge_cockpit_lifecycle_over_websocket(
     await stream_cockpit_lifecycle_control_over_websocket(
         websocket_connection,
         settings.cockpit_tmux_executable_path,
+        CockpitTmuxSocketPolicy(
+            enumeration_socket_name=settings.cockpit_tmux_enumeration_socket_name,
+            mutation_socket_name=settings.cockpit_tmux_mutation_socket_name,
+        ),
         subprocess_runner=subprocess_runner,
     )
 

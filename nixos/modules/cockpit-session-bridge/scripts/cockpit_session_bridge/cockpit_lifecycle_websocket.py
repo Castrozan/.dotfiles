@@ -10,11 +10,11 @@ COCKPIT_LIFECYCLE_CONTROL_PATH = "/cockpit/lifecycle"
 
 
 async def stream_cockpit_lifecycle_control_over_websocket(
-    websocket_connection, tmux_executable_path, *, subprocess_runner=None
+    websocket_connection, tmux_executable_path, socket_policy, *, subprocess_runner=None
 ):
     async for raw_request_message in websocket_connection:
         lifecycle_reply = await build_cockpit_lifecycle_reply(
-            tmux_executable_path, raw_request_message, subprocess_runner
+            tmux_executable_path, socket_policy, raw_request_message, subprocess_runner
         )
         try:
             await websocket_connection.send(json.dumps(lifecycle_reply))
@@ -23,7 +23,7 @@ async def stream_cockpit_lifecycle_control_over_websocket(
 
 
 async def build_cockpit_lifecycle_reply(
-    tmux_executable_path, raw_request_message, subprocess_runner
+    tmux_executable_path, socket_policy, raw_request_message, subprocess_runner
 ):
     lifecycle_request = decode_cockpit_lifecycle_request(raw_request_message)
     if lifecycle_request is None:
@@ -31,6 +31,7 @@ async def build_cockpit_lifecycle_reply(
     try:
         return await dispatch_cockpit_lifecycle_request(
             tmux_executable_path,
+            socket_policy,
             lifecycle_request,
             subprocess_runner=subprocess_runner,
         )

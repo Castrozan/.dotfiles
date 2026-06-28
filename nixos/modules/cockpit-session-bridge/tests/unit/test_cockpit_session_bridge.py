@@ -17,6 +17,8 @@ def test_resolve_bridge_settings_uses_defaults_for_empty_environment():
     assert resolved_settings.listen_port == 8787
     assert resolved_settings.session_command == ["/bin/sh", "-il"]
     assert resolved_settings.allowed_request_origin == "https://lucaszanoni.com"
+    assert resolved_settings.cockpit_tmux_enumeration_socket_name == "cockpit"
+    assert resolved_settings.cockpit_tmux_mutation_socket_name == "cockpit"
 
 
 def test_resolve_bridge_settings_reads_overrides_from_environment():
@@ -27,6 +29,8 @@ def test_resolve_bridge_settings_reads_overrides_from_environment():
             "COCKPIT_SESSION_BRIDGE_COMMAND_JSON": '["/run/current-system/sw/bin/fish", "-l"]',
             "COCKPIT_SESSION_BRIDGE_ALLOWED_ORIGIN": "https://example.test",
             "COCKPIT_SESSION_BRIDGE_TMUX_PATH": "/run/current-system/sw/bin/tmux",
+            "COCKPIT_SESSION_BRIDGE_TMUX_ENUMERATION_SOCKET": "",
+            "COCKPIT_SESSION_BRIDGE_TMUX_MUTATION_SOCKET": "cockpit",
         }
     )
     assert resolved_settings.listen_address == "0.0.0.0"
@@ -40,6 +44,8 @@ def test_resolve_bridge_settings_reads_overrides_from_environment():
         resolved_settings.cockpit_tmux_executable_path
         == "/run/current-system/sw/bin/tmux"
     )
+    assert resolved_settings.cockpit_tmux_enumeration_socket_name == ""
+    assert resolved_settings.cockpit_tmux_mutation_socket_name == "cockpit"
 
 
 def test_parse_session_command_rejects_non_string_entries():

@@ -34,4 +34,5 @@ in
   ++ lib.optional (builtins.pathExists ../../../private-config/machines/kira/jarvis-connector.nix) ../../../private-config/machines/kira/jarvis-connector.nix;
 
   custom.cockpitSessionBridge.enable = true;
+  custom.cockpitSessionBridge.tmuxEnumerationSocket = "";
 }

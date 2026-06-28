@@ -8,6 +8,7 @@ from cockpit_lifecycle_websocket_test_doubles import (
     ScriptedLifecycleControlWebsocket,
 )
 
+import cockpit_lifecycle_control
 import cockpit_lifecycle_websocket
 
 
@@ -16,6 +17,7 @@ def drive_lifecycle_control(websocket_connection, subprocess_runner):
         cockpit_lifecycle_websocket.stream_cockpit_lifecycle_control_over_websocket(
             websocket_connection,
             TMUX_EXECUTABLE_PATH,
+            cockpit_lifecycle_control.CockpitTmuxSocketPolicy(),
             subprocess_runner=subprocess_runner,
         )
     )
@@ -29,7 +31,7 @@ def test_a_list_sessions_request_replies_with_the_serialized_inventory():
     runner = RecordingSubprocessRunner(
         {
             "list-sessions": "reports-deploy\n",
-            "list-windows": "reports-deploy\t@1\tclaude\n",
+            "list-windows": "reports-deploy\t@1\tclaude\tclaude\n",
         }
     )
     websocket_connection = ScriptedLifecycleControlWebsocket(
@@ -44,7 +46,13 @@ def test_a_list_sessions_request_replies_with_the_serialized_inventory():
             "sessions": [
                 {
                     "sessionName": "reports-deploy",
-                    "windows": [{"windowIdentifier": "@1", "windowTitle": "claude"}],
+                    "windows": [
+                        {
+                            "windowIdentifier": "@1",
+                            "windowTitle": "claude",
+                            "agentDriver": "claude",
+                        }
+                    ],
                 }
             ],
         }

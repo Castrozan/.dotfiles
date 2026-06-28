@@ -62,6 +62,18 @@ in
       description = "Exact browser Origin the bridge accepts; an empty string disables the check and is intended for local testing only.";
     };
 
+    tmuxEnumerationSocket = lib.mkOption {
+      type = lib.types.str;
+      default = "cockpit";
+      description = "tmux socket name the lifecycle list-sessions enumeration reads; an empty string targets the owner's default interactive socket so the workspace can see his real claude sessions.";
+    };
+
+    tmuxMutationSocket = lib.mkOption {
+      type = lib.types.str;
+      default = "cockpit";
+      description = "tmux socket name every destructive lifecycle mutation is confined to; kept on the sandbox cockpit socket so the website can never kill the owner's real sessions even when enumeration reads his default socket.";
+    };
+
     persistentSession = {
       enable = lib.mkOption {
         type = lib.types.bool;
@@ -127,6 +139,8 @@ in
           COCKPIT_SESSION_BRIDGE_COMMAND_JSON = builtins.toJSON cockpitSessionBridgeConfig.sessionCommand;
           COCKPIT_SESSION_BRIDGE_ALLOWED_ORIGIN = cockpitSessionBridgeConfig.allowedRequestOrigin;
           COCKPIT_SESSION_BRIDGE_TMUX_PATH = "${pkgs.tmux}/bin/tmux";
+          COCKPIT_SESSION_BRIDGE_TMUX_ENUMERATION_SOCKET = cockpitSessionBridgeConfig.tmuxEnumerationSocket;
+          COCKPIT_SESSION_BRIDGE_TMUX_MUTATION_SOCKET = cockpitSessionBridgeConfig.tmuxMutationSocket;
           TMUX_TMPDIR = tmuxTemporaryDirectory;
         };
         KeepAlive = true;
