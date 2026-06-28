@@ -47,7 +47,7 @@ let
     conditions = braveIsFrontmostConditions;
   };
 
-  disableBravePlainControlKeyByMappingToVkNone = keyCode: {
+  passthroughBravePlainControlKeyToPage = keyCode: {
     type = "basic";
     from = {
       key_code = keyCode;
@@ -58,7 +58,8 @@ let
     };
     to = [
       {
-        key_code = "vk_none";
+        key_code = keyCode;
+        modifiers = [ "control" ];
       }
     ];
     conditions = braveIsFrontmostConditions;
@@ -82,9 +83,9 @@ in
     ];
   }
   {
-    description = "Brave: disable plain Ctrl+B so it does nothing instead of being remapped to Cmd+B (bold); Ctrl+Shift+B still reaches the bookmark bar toggle";
+    description = "Brave: pass plain Ctrl+B through to the page as Ctrl+B (pre-empts the Linux-style Ctrl-to-Cmd remap so web apps can use it as a leader key) instead of remapping to Cmd+B (bold); Ctrl+Shift+B still reaches the bookmark bar toggle";
     manipulators = [
-      (disableBravePlainControlKeyByMappingToVkNone "b")
+      (passthroughBravePlainControlKeyToPage "b")
     ];
   }
 ]

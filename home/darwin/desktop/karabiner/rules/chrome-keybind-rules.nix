@@ -144,7 +144,7 @@ let
 
   zoomOutWithControlShiftHyphen = remapControlShiftZoomKeyToCommandZoom "hyphen";
 
-  disableChromePlainControlKeyByMappingToVkNone = keyCode: {
+  passthroughChromePlainControlKeyToPage = keyCode: {
     type = "basic";
     from = {
       key_code = keyCode;
@@ -155,7 +155,8 @@ let
     };
     to = [
       {
-        key_code = "vk_none";
+        key_code = keyCode;
+        modifiers = [ "control" ];
       }
     ];
     conditions = chromeIsFrontmostCondition;
@@ -188,9 +189,9 @@ in
     ];
   }
   {
-    description = "Chrome: disable plain Ctrl+B so it does nothing instead of being remapped to Cmd+B (bold); Ctrl+Shift+B still reaches the bookmark bar toggle";
+    description = "Chrome: pass plain Ctrl+B through to the page as Ctrl+B (pre-empts the Linux-style Ctrl-to-Cmd remap so web apps can use it as a leader key) instead of remapping to Cmd+B (bold); Ctrl+Shift+B still reaches the bookmark bar toggle";
     manipulators = [
-      (disableChromePlainControlKeyByMappingToVkNone "b")
+      (passthroughChromePlainControlKeyToPage "b")
     ];
   }
 ]
