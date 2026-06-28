@@ -47,6 +47,10 @@ Prefer the Workflow tool for anything beyond a single task: a dynamic workflow i
 Never block on operations exceeding 10 minutes. Background with output to file, /loop monitor to check progress, clear success/failure conditions. A foreground command that hangs freezes the agent. A background command without a monitoring loop abandons the task.
 </active-waiting>
 
+<context-budget>
+This model runs a 1M-token context window (Opus 4.8, 1M-context variant), not 200K. Spend it: read whole relevant files instead of narrow line ranges, keep earlier findings in context instead of re-deriving them, and fan out parallel subagents and workflows freely since the parent absorbs only their summarized returns. Do not pre-emptively `/compact`; auto-compaction is tuned to fire near the window ceiling, far past the point where premature summarization costs more than it saves. The budget that is not the window is raw transcript size: `--resume` replays the full unsummarized history, so a session fat with large file dumps and parallel subagent outputs fails resume with a 500. Keep that history lean by routing heavy reads, broad searches, and fan-out to subagents that return summaries, never by starving your working context. The 1M window is not automatic from the bare model id; it requires the `[1m]` model variant, and the compaction math, env knobs, and resume-500 failure mode live in `home/base/claude/docs/context-management.md`.
+</context-budget>
+
 <workflow>
 After editing any file in the dotfiles repo, execute this sequence before responding, no exceptions: 1) format edited files; 2) stage each file with git add specific-file (never -A); 3) commit; 4) rebuild: /rebuild for any file change in this repo; 5) run tests/run.sh; 6) if rebuild or tests fail: fix and repeat from 1; 7) only after rebuild and tests pass: respond to user.
 </workflow>

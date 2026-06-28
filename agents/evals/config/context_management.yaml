@@ -1,0 +1,59 @@
+tests:
+  - name: context_budget_knows_1m_window
+    skill_path: agents/core_rules/core.md
+    prompt: "What is my context window size, 200K or 1M? Answer with the number."
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "1M"
+        - "1m"
+        - "1 million"
+        - "1,000,000"
+        - "1000000"
+        - "million"
+      output_not_contains:
+        - "200K"
+        - "200,000"
+
+  - name: context_budget_no_premature_compact
+    skill_path: agents/core_rules/core.md
+    prompt: "I'm partway through a long session but nowhere near the window ceiling. Should I run /compact now just to be safe? Begin with YES or NO."
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "no"
+        - "not"
+        - "don't"
+        - "ceiling"
+        - "premature"
+        - "wait"
+      output_not_contains:
+        - "yes, compact now"
+        - "yes, run /compact"
+
+  - name: context_budget_offloads_heavy_output_for_resume_safety
+    skill_path: agents/core_rules/core.md
+    prompt: "Why route large file reads and parallel subagent dumps through subagents that return summaries instead of keeping the raw output in the main session?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "resume"
+        - "500"
+        - "history"
+        - "summar"
+        - "lean"
+        - "transcript"
+
+  - name: context_budget_exploits_window_over_fragmenting
+    skill_path: agents/core_rules/core.md
+    prompt: "I have a 1M-token window. When a file is clearly relevant to the task, should I read narrow line ranges to save tokens, or read the whole file?"
+    model: haiku
+    assertions:
+      output_contains_any:
+        - "whole"
+        - "entire"
+        - "full"
+        - "exploit"
+        - "spend"
+      output_not_contains:
+        - "narrow line ranges to save"

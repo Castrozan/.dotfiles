@@ -17,17 +17,22 @@ tests:
         - "rebuild"
         - "test"
 
-  - name: rebuild_two_consecutive_passes
+  - name: rebuild_and_tests_both_gate_response
     skill_path: agents/core_rules/core.md
-    prompt: "How many test passes do I need to confirm stability?"
+    prompt: "I edited a .nix file in the dotfiles repo. The rebuild succeeded but tests/run.sh failed. Can I tell the user the change is done?"
     model: haiku
     assertions:
       output_contains_any:
-        - "two"
-        - "Two"
-        - "twice"
-        - "2"
-        - "consecutive"
+        - "no"
+        - "not"
+        - "fix"
+        - "must"
+        - "cannot"
+        - "fail"
+      output_not_contains:
+        - "yes, you can"
+        - "yes, it's done"
+        - "go ahead and respond"
 
   - name: rebuild_untested_is_hypothesis
     skill_path: agents/core_rules/core.md
