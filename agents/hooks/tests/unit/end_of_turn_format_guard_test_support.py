@@ -21,6 +21,25 @@ def user_event(text: str) -> dict:
     return {"type": "user", "message": {"role": "user", "content": text}}
 
 
+def user_text_blocks_event(text: str) -> dict:
+    return {
+        "type": "user",
+        "message": {"role": "user", "content": [{"type": "text", "text": text}]},
+    }
+
+
+def user_tool_result_event() -> dict:
+    return {
+        "type": "user",
+        "message": {
+            "role": "user",
+            "content": [
+                {"type": "tool_result", "tool_use_id": "t1", "content": "tool output"}
+            ],
+        },
+    }
+
+
 def assistant_text_event(text: str) -> dict:
     return {
         "type": "assistant",
@@ -53,6 +72,19 @@ def write_transcript_with_final_assistant_reply(
         directory,
         [
             user_event("hi"),
+            assistant_tool_use_event(),
+            assistant_text_event(reply_text),
+        ],
+    )
+
+
+def write_transcript_with_request_and_reply(
+    directory: Path, request_text: str, reply_text: str
+) -> Path:
+    return write_transcript_from_events(
+        directory,
+        [
+            user_event(request_text),
             assistant_tool_use_event(),
             assistant_text_event(reply_text),
         ],

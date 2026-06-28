@@ -5,8 +5,9 @@ from __future__ import annotations
 import re
 
 SHORT_CONFIRMATION_MAXIMUM_PROSE_LINES = 3
-SCANNABLE_MAXIMUM_PROSE_LINES = 9
-SCANNABLE_MAXIMUM_PROSE_WORDS = 150
+SCANNABLE_MAXIMUM_PROSE_LINES = 14
+REPLY_TARGET_PROSE_WORDS = 150
+REPLY_HARD_WORD_CEILING = 250
 MAXIMUM_PROSE_PARAGRAPH_BLOCKS = 4
 
 EM_DASH_CHARACTER = "—"
@@ -40,18 +41,41 @@ TRACKABLE_ARTIFACT_REFERENCE_PATTERN = re.compile(
 )
 URL_PRESENT_PATTERN = re.compile(r"https?://", re.IGNORECASE)
 
+LONG_FORM_PRODUCE_VERB = (
+    r"(write|draft|compose|produce|generate|create|make|build|author|put together)"
+)
+LONG_FORM_ARTIFACT_NOUN = (
+    r"(docs?|documentation|document|write-?up|essay|readme|runbook|guide|tutorial|"
+    r"specification|proposal|diagram|deep[- ]?dive|walkthrough)"
+)
+LONG_FORM_ARTIFACT_REQUEST_PATTERN = re.compile(
+    r"\b"
+    + LONG_FORM_PRODUCE_VERB
+    + r"\b[^.\n?!;]{0,60}?\b"
+    + LONG_FORM_ARTIFACT_NOUN
+    + r"\b",
+    re.IGNORECASE,
+)
+LONG_FORM_DIRECTIVE_PATTERN = re.compile(
+    r"\b(in (full|detail)|long[- ]form|verbatim|do\s*n.?t summari[sz]e|no summary|"
+    r"full (picture|breakdown|architecture|overview|write-?up)|as much detail|"
+    r"the (full|whole|entire) (file|code|script|function|contents|diff|output|log))\b",
+    re.IGNORECASE,
+)
+
 COMPRESSION_GUIDANCE = (
-    "Rewrite it as a short, well-written plain-prose status report under roughly "
-    f"{SCANNABLE_MAXIMUM_PROSE_WORDS} words: open with a header-less paragraph that answers "
-    "directly and gives the cause or context so Lucas understands it fully, then a "
-    "**Done:** line and a **Next:** line in plain sentences. Keep it to that shape, an "
-    "opening paragraph plus a Done and Next of one or two lines each, never a multi-paragraph dump "
-    "and "
-    "never a Done or Next that swells into several paragraphs. No bullet or numbered lists, no "
-    "section headers, no reaction or narration openers, and no em dashes. When the work produced "
-    "an MR, a PR, a ticket, an issue, or a deploy, include its link so Lucas can click through to "
-    "validate it. If Lucas explicitly asked for a document or code, resend it unchanged and it "
-    "will pass."
+    "Rewrite it as a short, well-written plain-prose status report: open with a header-less "
+    "paragraph that answers directly and gives the cause or context, then a **Done:** line and a "
+    "**Next:** line in plain sentences. Aim for roughly "
+    f"{REPLY_TARGET_PROSE_WORDS} words; a turn with real substance may run longer, and only a "
+    f"genuine wall past {REPLY_HARD_WORD_CEILING} prose words is bounced, so keep the substance "
+    "Lucas needs and cut only filler, never the answer. No bullet or numbered lists, no section "
+    "headers, no reaction or narration openers, and no em dashes. When the work produced an MR, a "
+    "PR, a ticket, an issue, or a deploy, include its link so Lucas can click through to validate "
+    "it. If Lucas explicitly asked for a document or an in-detail write-up, keep its full length "
+    "and structure, and note that fenced code blocks are already exempt from the count; but always "
+    "drop em dashes and reaction or narration openers and link any MR or PR you name, because "
+    "those still bounce a resend."
 )
 
 
@@ -89,7 +113,16 @@ def prose_paragraph_block_count(reply_text: str) -> int:
     return blocks
 
 
-def template_violations_in_reply(reply_text: str) -> list[str]:
+def user_request_permits_long_form(user_request_text: str) -> bool:
+    if not user_request_text:
+        return False
+    return bool(
+        LONG_FORM_ARTIFACT_REQUEST_PATTERN.search(user_request_text)
+        or LONG_FORM_DIRECTIVE_PATTERN.search(user_request_text)
+    )
+
+
+def always_enforced_violations(reply_text: str) -> list[str]:
     violations: list[str] = []
     reply_without_leading_space = reply_text.lstrip()
 
@@ -100,6 +133,17 @@ def template_violations_in_reply(reply_text: str) -> list[str]:
     if EM_DASH_CHARACTER in reply_text:
         violations.append("contains an em dash")
 
+    prose_text = "\n".join(prose_lines_outside_code_fences(reply_text))
+    if TRACKABLE_ARTIFACT_REFERENCE_PATTERN.search(
+        prose_text
+    ) and not URL_PRESENT_PATTERN.search(prose_text):
+        violations.append("names an MR or PR but gives no link to validate it")
+
+    return violations
+
+
+def shape_and_length_violations(reply_text: str) -> list[str]:
+    violations: list[str] = []
     prose_lines = prose_lines_outside_code_fences(reply_text)
     prose_word_count = sum(len(line.split()) for line in prose_lines)
     paragraph_block_count = prose_paragraph_block_count(reply_text)
@@ -111,11 +155,6 @@ def template_violations_in_reply(reply_text: str) -> list[str]:
         violations.append("uses a bullet or numbered list instead of prose")
     if any(MARKDOWN_HEADER_LINE_PATTERN.match(line) for line in prose_lines):
         violations.append("uses a section header")
-    prose_text = "\n".join(prose_lines)
-    if TRACKABLE_ARTIFACT_REFERENCE_PATTERN.search(
-        prose_text
-    ) and not URL_PRESENT_PATTERN.search(prose_text):
-        violations.append("names an MR or PR but gives no link to validate it")
 
     if (
         len(prose_lines) > SHORT_CONFIRMATION_MAXIMUM_PROSE_LINES
@@ -129,10 +168,10 @@ def template_violations_in_reply(reply_text: str) -> list[str]:
             f"runs {len(prose_lines)} prose lines, past the "
             f"{SCANNABLE_MAXIMUM_PROSE_LINES}-line scannable cap"
         )
-    if prose_word_count > SCANNABLE_MAXIMUM_PROSE_WORDS:
+    if prose_word_count > REPLY_HARD_WORD_CEILING:
         violations.append(
-            f"runs {prose_word_count} prose words, past the "
-            f"{SCANNABLE_MAXIMUM_PROSE_WORDS}-word scannable cap"
+            f"runs {prose_word_count} prose words, a wall past the "
+            f"{REPLY_HARD_WORD_CEILING}-word hard ceiling"
         )
     if paragraph_block_count > MAXIMUM_PROSE_PARAGRAPH_BLOCKS:
         violations.append(
@@ -141,4 +180,14 @@ def template_violations_in_reply(reply_text: str) -> list[str]:
             "optional Assumed line"
         )
 
+    return violations
+
+
+def template_violations_in_reply(
+    reply_text: str, user_request_text: str = ""
+) -> list[str]:
+    violations = always_enforced_violations(reply_text)
+    if user_request_permits_long_form(user_request_text):
+        return violations
+    violations.extend(shape_and_length_violations(reply_text))
     return violations
