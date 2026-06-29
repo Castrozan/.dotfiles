@@ -32,6 +32,19 @@ let
   hasForbiddenRestartPolicy =
     lib.hasInfix "unless-stopped" composeText || lib.hasInfix "restart: always" composeText;
 
+  composeLines = lib.splitString "\n" composeText;
+  publishedPortLines = builtins.filter (
+    line: builtins.match ''.*- "[0-9].*'' line != null
+  ) composeLines;
+  everyPublishedPortIsLoopbackBound =
+    publishedPortLines != [ ] && builtins.all (line: lib.hasInfix "127.0.0.1:" line) publishedPortLines;
+  composeBindsANonLoopbackInterface = lib.hasInfix "0.0.0.0" composeText;
+  everyServiceHasConfigVolume = builtins.all (
+    service: lib.hasInfix ("\${ARR_CONFIG_ROOT}/" + service) composeText
+  ) serviceNames;
+  envPinsChiseConfigRoot = lib.hasInfix "ARR_CONFIG_ROOT=/home/zanoni/arr-stack/config" envText;
+  envPinsChiseDataRoot = lib.hasInfix "ARR_DATA_ROOT=/home/zanoni/arr-stack/data" envText;
+
   moduleConditionForHostname =
     candidateHostname:
     (import ../../../home/linux/arr-stack/default.nix {
@@ -89,4 +102,18 @@ in
     mkEvalCheck "chise-arr-stack-noop-off-chise"
       (!(moduleConditionForHostname "kira") && !(moduleConditionForHostname "rin"))
       "the arr-stack module must be a no-op on every host other than chise so kira/rin never deploy the stack";
+
+  chise-arr-stack-published-ports-loopback-only =
+    mkEvalCheck "chise-arr-stack-published-ports-loopback-only"
+      (everyPublishedPortIsLoopbackBound && !composeBindsANonLoopbackInterface)
+      "every published port must bind 127.0.0.1 only so the web UIs and download client are never exposed to the LAN; reaching them from another device must go through an SSH tunnel or Tailscale";
+
+  chise-arr-stack-config-volume-per-service =
+    mkEvalCheck "chise-arr-stack-config-volume-per-service" everyServiceHasConfigVolume
+      "every service must bind-mount a config volume under ARR_CONFIG_ROOT so a service added to the compose roster cannot drift away from the persistence directories the module creates";
+
+  chise-arr-stack-env-roots-pinned-to-chise-home =
+    mkEvalCheck "chise-arr-stack-env-roots-pinned-to-chise-home"
+      (envPinsChiseConfigRoot && envPinsChiseDataRoot)
+      "the env config and data roots must point at zanoni's home on chise so the compose bind mounts match the persistence directories the module activation creates";
 }
