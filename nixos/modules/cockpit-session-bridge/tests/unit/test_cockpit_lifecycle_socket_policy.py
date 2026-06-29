@@ -93,7 +93,10 @@ def test_remote_ssh_host_forwards_enumeration_over_ssh_while_mutations_stay_loca
 
     assert list_sessions_runner.executed_commands
     for executed_command in list_sessions_runner.executed_commands:
-        assert executed_command[:2] == ["ssh", "lucas.zanoni@kira"]
+        assert executed_command[0] == "ssh"
+        assert "lucas.zanoni@kira" in executed_command
+        assert executed_command[-1].startswith("tmux ")
+        assert "/nix/store/" not in executed_command[-1]
     assert close_session_runner.executed_commands == [
         [*COCKPIT_SOCKET_PREFIX, "kill-session", "-t", "owner-real-work"]
     ]

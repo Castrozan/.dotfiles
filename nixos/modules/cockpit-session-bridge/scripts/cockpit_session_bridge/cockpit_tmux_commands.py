@@ -1,5 +1,14 @@
 import shlex
 
+NON_INTERACTIVE_SSH_OPTIONS = [
+    "-o",
+    "BatchMode=yes",
+    "-o",
+    "StrictHostKeyChecking=accept-new",
+    "-o",
+    "ConnectTimeout=10",
+]
+REMOTE_TMUX_EXECUTABLE = "tmux"
 SESSION_NAME_LIST_FORMAT = "#{session_name}"
 WINDOW_INVENTORY_LIST_FORMAT = (
     "#{session_name}\t#{window_id}\t#{pane_current_command}\t#{window_name}"
@@ -13,18 +22,21 @@ def build_cockpit_tmux_command(
     remote_ssh_host="",
     allocate_remote_pseudoterminal=False,
 ):
+    tmux_command_executable = (
+        REMOTE_TMUX_EXECUTABLE if remote_ssh_host else tmux_executable_path
+    )
     if tmux_socket_name:
         local_tmux_command = [
-            tmux_executable_path,
+            tmux_command_executable,
             "-L",
             tmux_socket_name,
             *tmux_arguments,
         ]
     else:
-        local_tmux_command = [tmux_executable_path, *tmux_arguments]
+        local_tmux_command = [tmux_command_executable, *tmux_arguments]
     if not remote_ssh_host:
         return local_tmux_command
-    remote_ssh_invocation = ["ssh"]
+    remote_ssh_invocation = ["ssh", *NON_INTERACTIVE_SSH_OPTIONS]
     if allocate_remote_pseudoterminal:
         remote_ssh_invocation.append("-tt")
     remote_ssh_invocation.append(remote_ssh_host)

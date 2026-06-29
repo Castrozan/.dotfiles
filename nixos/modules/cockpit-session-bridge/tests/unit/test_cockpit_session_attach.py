@@ -93,9 +93,10 @@ def test_resolve_session_command_attaches_the_requested_session_over_ssh_when_a_
     )
     assert resolved == [
         "ssh",
+        *cockpit_tmux_commands.NON_INTERACTIVE_SSH_OPTIONS,
         "-tt",
         "lucas.zanoni@kira",
-        f"{TMUX_EXECUTABLE_PATH} attach-session -t dotfiles",
+        f"{cockpit_tmux_commands.REMOTE_TMUX_EXECUTABLE} attach-session -t dotfiles",
     ]
 
 
