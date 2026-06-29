@@ -42,7 +42,6 @@ in
 
   custom.cockpitSessionBridge = {
     enable = true;
-    tmuxRemoteSshHost = "lucas.zanoni@kira";
     tmuxEnumerationSocket = "";
   };
 
