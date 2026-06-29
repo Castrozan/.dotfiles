@@ -64,6 +64,7 @@ let
     "credentials/google-totp-secret"
     "credentials/gcp-usage-uploader-key"
     "infrastructure/kira-session-connector-credentials"
+    "infrastructure/rin-session-connector-credentials"
   ];
 
   secretFileExists = name: builtins.pathExists (../../../secrets/${name}.age);

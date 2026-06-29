@@ -63,4 +63,5 @@ in
   "infrastructure/telegram-ids.age".publicKeys = all_keys;
   "infrastructure/jarvis-session-connector-credentials.age".publicKeys = all_keys;
   "infrastructure/kira-session-connector-credentials.age".publicKeys = all_keys;
+  "infrastructure/rin-session-connector-credentials.age".publicKeys = all_keys;
 }
