@@ -7,24 +7,25 @@ and down by hand.
 
 ## Roster
 
-| Service     | Role                          | Local URL                |
-| ----------- | ----------------------------- | ------------------------ |
-| qbittorrent | download client               | http://127.0.0.1:8080    |
-| prowlarr    | indexer manager               | http://127.0.0.1:9696    |
-| sonarr      | TV                            | http://127.0.0.1:8989    |
-| radarr      | movies                        | http://127.0.0.1:7878    |
-| lidarr      | music                         | http://127.0.0.1:8686    |
-| readarr     | books                         | http://127.0.0.1:8788    |
-| bazarr      | subtitles                     | http://127.0.0.1:6767    |
+| Service     | Role                          | Tailnet URL                  |
+| ----------- | ----------------------------- | ---------------------------- |
+| qbittorrent | download client               | http://100.94.11.81:8080     |
+| prowlarr    | indexer manager               | http://100.94.11.81:9696     |
+| sonarr      | TV                            | http://100.94.11.81:8989     |
+| radarr      | movies                        | http://100.94.11.81:7878     |
+| lidarr      | music                         | http://100.94.11.81:8686     |
+| readarr     | books                         | http://100.94.11.81:8788     |
+| bazarr      | subtitles                     | http://100.94.11.81:6767     |
 
-All web UIs publish to `127.0.0.1` only, so they are reachable from chise
-itself, not from the LAN. To reach them from another device, tunnel over SSH
-(`ssh -L 9696:127.0.0.1:9696 chise`) or expose a port through Tailscale
-deliberately.
+All web UIs publish to chise's tailscale IP literal `100.94.11.81` only, so they
+are reachable from any device on the tailnet but not on the LAN or any other
+interface. Open e.g. `http://100.94.11.81:9696` from a tailnet-joined machine.
+The *arr apps have no login, so this exposes them to the tailnet (accepted);
+qBittorrent keeps its WebUI password.
 
-Readarr's host port is `8788` rather than its default `8787`, because chise
-already binds `127.0.0.1:8787` for the cockpit session bridge. Inside the stack
-Readarr still listens on `8787`, so other apps reach it at `readarr:8787`.
+Readarr's host port is `8788` rather than its default `8787` (chise's cockpit
+session bridge already owns `8787` on loopback). Inside the stack Readarr still
+listens on `8787`, so other apps reach it at `readarr:8787`.
 
 By default there is no VPN: qBittorrent runs directly on the `arrnet` bridge and
 the *arr apps reach it at host `qbittorrent`, port `8080`. Routing the stack
