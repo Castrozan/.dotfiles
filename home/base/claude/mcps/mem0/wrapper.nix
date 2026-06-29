@@ -18,6 +18,7 @@ let
   defaultUserId = "lucas";
 
   memoryServerPythonDependencies = [
+    "mcp"
     "mem0ai"
     "chromadb"
     "sentence-transformers"
@@ -50,7 +51,7 @@ let
     export HF_HUB_DISABLE_TELEMETRY=1
     if ${pkgs.coreutils}/bin/timeout 300 ${pkgs.uv}/bin/uv run --no-project --python ${pythonInterpreter} \
       ${uvWithDependencyFlags} \
-      python -c 'import mem0, chromadb, sentence_transformers' >/dev/null 2>&1; then
+      python -c 'import mcp, mem0, chromadb, sentence_transformers' >/dev/null 2>&1; then
       echo "mem0-mcp: python dependencies ready"
     else
       echo "mem0-mcp: dependency prewarm skipped (offline?); resolves on first use" >&2
