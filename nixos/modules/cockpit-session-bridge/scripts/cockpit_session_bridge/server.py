@@ -8,7 +8,7 @@ from cockpit_lifecycle_websocket import (
     COCKPIT_LIFECYCLE_CONTROL_PATH,
     stream_cockpit_lifecycle_control_over_websocket,
 )
-from cockpit_tmux_lifecycle import build_attach_session_command
+from cockpit_tmux_commands import build_attach_session_command
 from pseudoterminal_streams import (
     apply_pseudoterminal_window_size,
     stream_pseudoterminal_output_to_websocket,
@@ -36,6 +36,7 @@ def resolve_session_command(websocket_connection, settings):
         settings.cockpit_tmux_executable_path,
         settings.cockpit_tmux_enumeration_socket_name,
         attach_target,
+        remote_ssh_host=settings.cockpit_tmux_remote_ssh_host,
     )
 
 
@@ -129,6 +130,7 @@ async def bridge_cockpit_lifecycle_over_websocket(
         CockpitTmuxSocketPolicy(
             enumeration_socket_name=settings.cockpit_tmux_enumeration_socket_name,
             mutation_socket_name=settings.cockpit_tmux_mutation_socket_name,
+            remote_ssh_host=settings.cockpit_tmux_remote_ssh_host,
         ),
         subprocess_runner=subprocess_runner,
     )

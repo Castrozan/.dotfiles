@@ -74,6 +74,12 @@ in
       description = "tmux socket name every destructive lifecycle mutation is confined to; kept on the sandbox cockpit socket so the website can never kill the owner's real sessions even when enumeration reads his default socket.";
     };
 
+    tmuxRemoteSshHost = lib.mkOption {
+      type = lib.types.str;
+      default = "";
+      description = "When non-empty, the SSH destination (user@host) the bridge runs every enumeration and attach tmux command through, so a bridge on one host can list and drive another host's real sessions over SSH without exposing that host's loopback bridge to the network; empty keeps all tmux commands local. Destructive mutations always stay on the local sandbox mutation socket and are never forwarded, so the remote host's real sessions can be read and attached but never killed.";
+    };
+
     persistentSession = {
       enable = lib.mkOption {
         type = lib.types.bool;
@@ -131,6 +137,7 @@ in
         "jarvis-session-tmux.service"
       ];
       wants = lib.optional persistentSessionConfig.enable "jarvis-session-tmux.service";
+      path = [ pkgs.openssh ];
       environment = {
         COCKPIT_SESSION_BRIDGE_LISTEN_ADDRESS = cockpitSessionBridgeConfig.listenAddress;
         COCKPIT_SESSION_BRIDGE_LISTEN_PORT = toString cockpitSessionBridgeConfig.listenPort;
@@ -139,6 +146,7 @@ in
         COCKPIT_SESSION_BRIDGE_TMUX_PATH = "${pkgs.tmux}/bin/tmux";
         COCKPIT_SESSION_BRIDGE_TMUX_ENUMERATION_SOCKET = cockpitSessionBridgeConfig.tmuxEnumerationSocket;
         COCKPIT_SESSION_BRIDGE_TMUX_MUTATION_SOCKET = cockpitSessionBridgeConfig.tmuxMutationSocket;
+        COCKPIT_SESSION_BRIDGE_TMUX_REMOTE_SSH_HOST = cockpitSessionBridgeConfig.tmuxRemoteSshHost;
         TMUX_TMPDIR = tmuxTemporaryDirectory;
       };
       serviceConfig = {

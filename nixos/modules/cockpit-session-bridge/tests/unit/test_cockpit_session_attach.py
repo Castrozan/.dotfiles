@@ -1,3 +1,4 @@
+import dataclasses
 import sys
 from pathlib import Path
 
@@ -6,7 +7,7 @@ BRIDGE_PACKAGE_DIRECTORY_PATH = (
 )
 sys.path.insert(0, str(BRIDGE_PACKAGE_DIRECTORY_PATH))
 
-import cockpit_tmux_lifecycle
+import cockpit_tmux_commands
 import server
 import settings
 
@@ -51,13 +52,13 @@ def test_read_session_attach_target_is_none_without_a_session_name():
 
 
 def test_build_attach_session_command_targets_the_default_socket_when_enumeration_is_empty():
-    assert cockpit_tmux_lifecycle.build_attach_session_command(
+    assert cockpit_tmux_commands.build_attach_session_command(
         TMUX_EXECUTABLE_PATH, "", "dotfiles"
     ) == [TMUX_EXECUTABLE_PATH, "attach-session", "-t", "dotfiles"]
 
 
 def test_build_attach_session_command_uses_the_enumeration_socket_when_named():
-    assert cockpit_tmux_lifecycle.build_attach_session_command(
+    assert cockpit_tmux_commands.build_attach_session_command(
         TMUX_EXECUTABLE_PATH, "cockpit", "reports-deploy"
     ) == [
         TMUX_EXECUTABLE_PATH,
@@ -79,6 +80,22 @@ def test_resolve_session_command_attaches_the_requested_session_on_the_enumerati
         "attach-session",
         "-t",
         "dotfiles",
+    ]
+
+
+def test_resolve_session_command_attaches_the_requested_session_over_ssh_when_a_remote_host_is_set():
+    remote_settings = dataclasses.replace(
+        _attach_settings(), cockpit_tmux_remote_ssh_host="lucas.zanoni@kira"
+    )
+    resolved = server.resolve_session_command(
+        _FakeWebsocketConnection("/cockpit/jarvis-session/?sessionName=dotfiles"),
+        remote_settings,
+    )
+    assert resolved == [
+        "ssh",
+        "-tt",
+        "lucas.zanoni@kira",
+        f"{TMUX_EXECUTABLE_PATH} attach-session -t dotfiles",
     ]
 
 

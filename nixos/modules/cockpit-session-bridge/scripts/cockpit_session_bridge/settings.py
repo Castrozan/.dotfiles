@@ -22,6 +22,7 @@ class CockpitSessionBridgeSettings:
     cockpit_tmux_executable_path: str = DEFAULT_COCKPIT_TMUX_EXECUTABLE_PATH
     cockpit_tmux_enumeration_socket_name: str = DEFAULT_COCKPIT_TMUX_SOCKET_NAME
     cockpit_tmux_mutation_socket_name: str = DEFAULT_COCKPIT_TMUX_SOCKET_NAME
+    cockpit_tmux_remote_ssh_host: str = ""
 
 
 @dataclass(frozen=True)
@@ -100,6 +101,10 @@ def resolve_bridge_settings(process_environment):
         cockpit_tmux_mutation_socket_name=process_environment.get(
             "COCKPIT_SESSION_BRIDGE_TMUX_MUTATION_SOCKET",
             DEFAULT_COCKPIT_TMUX_SOCKET_NAME,
+        ),
+        cockpit_tmux_remote_ssh_host=process_environment.get(
+            "COCKPIT_SESSION_BRIDGE_TMUX_REMOTE_SSH_HOST",
+            "",
         ),
     )
 

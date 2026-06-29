@@ -1,12 +1,13 @@
 import asyncio
 from dataclasses import dataclass
 
+from cockpit_tmux_commands import (
+    build_list_sessions_command,
+    build_list_windows_command,
+)
+
 DEFAULT_COCKPIT_TMUX_SOCKET_NAME = "cockpit"
 SESSION_INVENTORY_FIELD_SEPARATOR = "\t"
-SESSION_NAME_LIST_FORMAT = "#{session_name}"
-WINDOW_INVENTORY_LIST_FORMAT = (
-    "#{session_name}\t#{window_id}\t#{pane_current_command}\t#{window_name}"
-)
 
 
 @dataclass(frozen=True)
@@ -29,112 +30,6 @@ class CockpitTmuxCommandResult:
     standard_error: str
 
 
-def build_cockpit_tmux_command(tmux_executable_path, tmux_socket_name, *tmux_arguments):
-    if tmux_socket_name:
-        return [tmux_executable_path, "-L", tmux_socket_name, *tmux_arguments]
-    return [tmux_executable_path, *tmux_arguments]
-
-
-def build_list_sessions_command(tmux_executable_path, enumeration_socket_name):
-    return build_cockpit_tmux_command(
-        tmux_executable_path,
-        enumeration_socket_name,
-        "list-sessions",
-        "-F",
-        SESSION_NAME_LIST_FORMAT,
-    )
-
-
-def build_list_windows_command(tmux_executable_path, enumeration_socket_name):
-    return build_cockpit_tmux_command(
-        tmux_executable_path,
-        enumeration_socket_name,
-        "list-windows",
-        "-a",
-        "-F",
-        WINDOW_INVENTORY_LIST_FORMAT,
-    )
-
-
-def build_open_session_command(
-    tmux_executable_path, mutation_socket_name, session_name
-):
-    return build_cockpit_tmux_command(
-        tmux_executable_path,
-        mutation_socket_name,
-        "new-session",
-        "-d",
-        "-s",
-        session_name,
-    )
-
-
-def build_rename_session_command(
-    tmux_executable_path, mutation_socket_name, current_session_name, new_session_name
-):
-    return build_cockpit_tmux_command(
-        tmux_executable_path,
-        mutation_socket_name,
-        "rename-session",
-        "-t",
-        current_session_name,
-        new_session_name,
-    )
-
-
-def build_close_session_command(
-    tmux_executable_path, mutation_socket_name, session_name
-):
-    return build_cockpit_tmux_command(
-        tmux_executable_path, mutation_socket_name, "kill-session", "-t", session_name
-    )
-
-
-def build_open_window_command(
-    tmux_executable_path,
-    mutation_socket_name,
-    session_name,
-    window_title,
-    agent_launch_command,
-):
-    open_window_command = build_cockpit_tmux_command(
-        tmux_executable_path,
-        mutation_socket_name,
-        "new-window",
-        "-t",
-        session_name,
-        "-n",
-        window_title,
-    )
-    if agent_launch_command:
-        open_window_command.append(agent_launch_command)
-    return open_window_command
-
-
-def build_close_window_command(
-    tmux_executable_path, mutation_socket_name, window_identifier
-):
-    return build_cockpit_tmux_command(
-        tmux_executable_path,
-        mutation_socket_name,
-        "kill-window",
-        "-t",
-        window_identifier,
-    )
-
-
-def build_attach_session_command(
-    tmux_executable_path, enumeration_socket_name, attach_target
-):
-    return build_cockpit_tmux_command(
-        tmux_executable_path,
-        enumeration_socket_name,
-        "attach-session",
-        "-t",
-        attach_target,
-    )
-
-
 def parse_cockpit_session_inventory(list_sessions_output, list_windows_output):
     windows_by_session_name = {}
     for window_line in _non_empty_output_lines(list_windows_output):
@@ -150,14 +45,26 @@ def parse_cockpit_session_inventory(list_sessions_output, list_windows_output):
 
 
 async def list_cockpit_sessions(
-    tmux_executable_path, enumeration_socket_name, *, subprocess_runner=None
+    tmux_executable_path,
+    enumeration_socket_name,
+    *,
+    remote_ssh_host="",
+    subprocess_runner=None,
 ):
     runner = subprocess_runner or run_tmux_subprocess_command
     list_sessions_result = await runner(
-        build_list_sessions_command(tmux_executable_path, enumeration_socket_name)
+        build_list_sessions_command(
+            tmux_executable_path,
+            enumeration_socket_name,
+            remote_ssh_host=remote_ssh_host,
+        )
     )
     list_windows_result = await runner(
-        build_list_windows_command(tmux_executable_path, enumeration_socket_name)
+        build_list_windows_command(
+            tmux_executable_path,
+            enumeration_socket_name,
+            remote_ssh_host=remote_ssh_host,
+        )
     )
     return parse_cockpit_session_inventory(
         list_sessions_result.standard_output, list_windows_result.standard_output
