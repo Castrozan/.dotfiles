@@ -36,7 +36,6 @@ let
   gnomeChecks = import ../../home/linux/gnome/tests/checks.nix domainArgs;
   securityChecks = import ../../home/base/security/tests/checks.nix domainArgs;
   ollamaChecks = import ../../home/base/ollama/tests/checks.nix domainArgs;
-  videoGenChecks = import ../../home/base/video-gen/tests/checks.nix domainArgs;
   opencodeChecks = import ../../home/base/opencode/tests/checks.nix domainArgs;
   audioChecks = import ../../home/linux/audio/tests/checks.nix domainArgs;
   networkChecks = import ../../home/base/network/tests/checks.nix domainArgs;
@@ -61,7 +60,6 @@ claudeChecks
 // gnomeChecks
 // securityChecks
 // ollamaChecks
-// videoGenChecks
 // opencodeChecks
 // audioChecks
 // networkChecks
