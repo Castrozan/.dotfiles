@@ -33,7 +33,9 @@ in
   ]
   ++ lib.optional (builtins.pathExists ../../../private-config/machines/kira/cloudflare-tunnel-connector.nix) ../../../private-config/machines/kira/cloudflare-tunnel-connector.nix;
 
-  custom.cockpitSessionBridge.enable = true;
-  custom.cockpitSessionBridge.tmuxEnumerationSocket = "";
-  custom.cockpitSessionBridge.tmuxMutationSocket = "";
+  custom.cockpitSessionBridge = {
+    enable = true;
+    tmuxEnumerationSocket = "";
+    tmuxMutationSocket = "";
+  };
 }
