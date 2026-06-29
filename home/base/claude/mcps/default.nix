@@ -96,8 +96,9 @@ in
       browserUseMcpStdioCommand = browserUseMcpWrapper;
       mem0McpServerConfig = mem0Mcp.serverConfig;
       inherit (figmaMcp)
-        figmaMcpStdioCommand
-        figmaMcpStdioArgs
+        figmaReadMcpStdioCommand
+        figmaReadMcpStdioArgs
+        figmaWriteCapableRemoteServerConfig
         ;
       codexBinaryPath = "${homeDir}/.local/bin/codex";
     })

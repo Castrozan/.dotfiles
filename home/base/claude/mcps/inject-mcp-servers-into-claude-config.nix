@@ -8,8 +8,9 @@
   a2aMcpStdioArgs,
   browserUseMcpStdioCommand,
   mem0McpServerConfig,
-  figmaMcpStdioCommand,
-  figmaMcpStdioArgs,
+  figmaReadMcpStdioCommand,
+  figmaReadMcpStdioArgs,
+  figmaWriteCapableRemoteServerConfig,
   codexBinaryPath,
 }:
 { pkgs, lib, ... }:
@@ -36,9 +37,10 @@ let
       args = [ ];
     };
     mem0 = mem0McpServerConfig;
-    figma = {
-      command = figmaMcpStdioCommand;
-      args = figmaMcpStdioArgs;
+    figma = figmaWriteCapableRemoteServerConfig;
+    figma-read = {
+      command = figmaReadMcpStdioCommand;
+      args = figmaReadMcpStdioArgs;
     };
   };
 
@@ -50,6 +52,7 @@ let
     "codex"
     "mem0"
     "figma"
+    "figma-read"
   ];
 
   desiredMcpServersJson = builtins.toJSON desiredMcpServersToInject;
