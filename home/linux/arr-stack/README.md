@@ -15,13 +15,17 @@ and down by hand.
 | sonarr      | TV                        | http://127.0.0.1:8989    |
 | radarr      | movies                    | http://127.0.0.1:7878    |
 | lidarr      | music                     | http://127.0.0.1:8686    |
-| readarr     | books                     | http://127.0.0.1:8787    |
+| readarr     | books                     | http://127.0.0.1:8788    |
 | bazarr      | subtitles                 | http://127.0.0.1:6767    |
 
 All web UIs publish to `127.0.0.1` only, so they are reachable from chise
 itself, not from the LAN. To reach them from another device, tunnel over SSH
 (`ssh -L 9696:127.0.0.1:9696 chise`) or expose a port through Tailscale
 deliberately.
+
+Readarr's host port is `8788` rather than its default `8787`, because chise
+already binds `127.0.0.1:8787` for the cockpit session bridge. Inside the stack
+Readarr still listens on `8787`, so other apps reach it at `readarr:8787`.
 
 qBittorrent shares gluetun's network namespace (`network_mode:
 service:gluetun`), so all torrent traffic exits through the VPN. The *arr apps

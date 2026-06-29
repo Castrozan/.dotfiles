@@ -117,7 +117,7 @@ services:
     networks:
       - arrnet
     ports:
-      - "127.0.0.1:8787:8787"
+      - "127.0.0.1:8788:8787"
     environment:
       <<: *arr-common-environment
     volumes:
