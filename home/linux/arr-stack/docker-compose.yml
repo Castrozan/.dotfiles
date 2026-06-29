@@ -1,0 +1,113 @@
+name: arr-stack
+
+x-arr-common-environment: &arr-common-environment
+  PUID: ${PUID}
+  PGID: ${PGID}
+  TZ: ${TZ}
+
+networks:
+  arrnet:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
+
+services:
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent:4.6.7
+    container_name: arr-qbittorrent
+    restart: "no"
+    networks:
+      - arrnet
+    ports:
+      - "127.0.0.1:8080:8080"
+    environment:
+      <<: *arr-common-environment
+      WEBUI_PORT: "8080"
+      TORRENTING_PORT: "6881"
+    volumes:
+      - ${ARR_CONFIG_ROOT}/qbittorrent:/config
+      - ${ARR_DATA_ROOT}:/data
+
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:latest
+    container_name: arr-prowlarr
+    restart: "no"
+    networks:
+      - arrnet
+    ports:
+      - "127.0.0.1:9696:9696"
+    environment:
+      <<: *arr-common-environment
+    volumes:
+      - ${ARR_CONFIG_ROOT}/prowlarr:/config
+
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: arr-sonarr
+    restart: "no"
+    networks:
+      - arrnet
+    ports:
+      - "127.0.0.1:8989:8989"
+    environment:
+      <<: *arr-common-environment
+    volumes:
+      - ${ARR_CONFIG_ROOT}/sonarr:/config
+      - ${ARR_DATA_ROOT}:/data
+
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: arr-radarr
+    restart: "no"
+    networks:
+      - arrnet
+    ports:
+      - "127.0.0.1:7878:7878"
+    environment:
+      <<: *arr-common-environment
+    volumes:
+      - ${ARR_CONFIG_ROOT}/radarr:/config
+      - ${ARR_DATA_ROOT}:/data
+
+  lidarr:
+    image: lscr.io/linuxserver/lidarr:latest
+    container_name: arr-lidarr
+    restart: "no"
+    networks:
+      - arrnet
+    ports:
+      - "127.0.0.1:8686:8686"
+    environment:
+      <<: *arr-common-environment
+    volumes:
+      - ${ARR_CONFIG_ROOT}/lidarr:/config
+      - ${ARR_DATA_ROOT}:/data
+
+  readarr:
+    image: lscr.io/linuxserver/readarr:0.4.18-develop
+    container_name: arr-readarr
+    restart: "no"
+    networks:
+      - arrnet
+    ports:
+      - "127.0.0.1:8788:8787"
+    environment:
+      <<: *arr-common-environment
+    volumes:
+      - ${ARR_CONFIG_ROOT}/readarr:/config
+      - ${ARR_DATA_ROOT}:/data
+
+  bazarr:
+    image: lscr.io/linuxserver/bazarr:latest
+    container_name: arr-bazarr
+    restart: "no"
+    networks:
+      - arrnet
+    ports:
+      - "127.0.0.1:6767:6767"
+    environment:
+      <<: *arr-common-environment
+    volumes:
+      - ${ARR_CONFIG_ROOT}/bazarr:/config
+      - ${ARR_DATA_ROOT}:/data

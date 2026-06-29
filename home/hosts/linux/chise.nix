@@ -53,6 +53,7 @@ in
     ../../base/media/bad-apple.nix
     ../../base/media/suwayomi-server.nix
     ../../base/media/scripts.nix
+    ../../linux/arr-stack
 
     ../../base/system/scripts.nix
     ../../base/system/stale-symlink-cleanup.nix
