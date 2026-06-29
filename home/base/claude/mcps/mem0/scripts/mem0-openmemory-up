@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+compose_file="${HOME}/.config/mem0/openmemory-compose.yaml"
+api_base="http://localhost:8765"
+qdrant_base="http://localhost:6333"
+ollama_base="http://host.docker.internal:11434"
+embedder_model="nomic-embed-text"
+embedder_dims=768
+llm_model="qwen2.5:3b"
+collection="openmemory"
+
+if [ ! -f "$compose_file" ]; then
+	echo "mem0: compose file not found at $compose_file (rebuild first)" >&2
+	exit 1
+fi
+if ! docker info >/dev/null 2>&1; then
+	echo "mem0: docker daemon not running; start Docker Desktop first" >&2
+	exit 1
+fi
+
+for model in "$embedder_model" "$llm_model"; do
+	if ! ollama list 2>/dev/null | grep -q "${model%%:*}"; then
+		echo "mem0: pulling ollama model $model ..."
+		ollama pull "$model"
+	fi
+done
+
+echo "mem0: starting OpenMemory stack ..."
+docker compose -f "$compose_file" up -d
+
+echo "mem0: waiting for the API ..."
+for _ in $(seq 1 40); do
+	[ "$(curl -s -o /dev/null -w '%{http_code}' --max-time 4 "$api_base/docs")" = "200" ] && break
+	sleep 3
+done
+
+echo "mem0: applying local ollama config ..."
+curl -fsS --max-time 20 -X PUT "$api_base/api/v1/config/" \
+	-H 'Content-Type: application/json' \
+	-d "{\"mem0\":{\"llm\":{\"provider\":\"ollama\",\"config\":{\"model\":\"$llm_model\",\"temperature\":0.1,\"max_tokens\":2000,\"ollama_base_url\":\"$ollama_base\"}},\"embedder\":{\"provider\":\"ollama\",\"config\":{\"model\":\"$embedder_model\",\"ollama_base_url\":\"$ollama_base\"}}}}" >/dev/null
+
+if [ "$(curl -s -o /dev/null -w '%{http_code}' --max-time 6 "$qdrant_base/collections/$collection")" != "200" ]; then
+	echo "mem0: creating qdrant collection at $embedder_dims dims (matches $embedder_model) ..."
+	curl -fsS --max-time 8 -X PUT "$qdrant_base/collections/$collection" \
+		-H 'Content-Type: application/json' \
+		-d "{\"vectors\":{\"size\":$embedder_dims,\"distance\":\"Cosine\"}}" >/dev/null
+fi
+
+echo "mem0: OpenMemory MCP ready at $api_base/mcp/claude/sse/${USER:-lucas}"

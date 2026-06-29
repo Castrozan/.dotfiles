@@ -42,14 +42,15 @@ let
   };
 
   mem0Mcp = import ./mem0/wrapper.nix {
-    inherit
-      pkgs
-      lib
-      hostname
-      homeDir
-      ;
+    inherit lib hostname;
     privateConfigRoot = ../../../../private-config;
+    defaultUserId = "lucas";
+    localBaseUrl = "http://localhost:8765";
   };
+
+  mem0OpenmemoryUp = pkgs.writeShellScriptBin "mem0-openmemory-up" (
+    builtins.readFile ./mem0/scripts/mem0-openmemory-up
+  );
 
 in
 {
@@ -69,17 +70,13 @@ in
       a2aMcpStdioCommand = a2aMcp.mcpServerCommand;
       a2aMcpStdioArgs = a2aMcp.mcpServerArgs;
       browserUseMcpStdioCommand = browserUseMcpWrapper;
-      mem0McpStdioCommand = mem0Mcp.mcpServerCommand;
-      mem0McpStdioArgs = mem0Mcp.mcpServerArgs;
+      mem0McpServerConfig = mem0Mcp.serverConfig;
       codexBinaryPath = "${homeDir}/.local/bin/codex";
     })
   ];
 
   home = {
-    inherit (browserMcp) packages;
+    packages = browserMcp.packages ++ [ mem0OpenmemoryUp ];
+    file.".config/mem0/openmemory-compose.yaml".source = ./mem0/openmemory-compose.yaml;
   };
-
-  home.activation.prewarmMem0McpDependencies = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    run ${mem0Mcp.prewarmScript}
-  '';
 }

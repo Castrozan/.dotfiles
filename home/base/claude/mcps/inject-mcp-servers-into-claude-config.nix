@@ -7,8 +7,7 @@
   a2aMcpStdioCommand,
   a2aMcpStdioArgs,
   browserUseMcpStdioCommand,
-  mem0McpStdioCommand,
-  mem0McpStdioArgs,
+  mem0McpServerConfig,
   codexBinaryPath,
 }:
 { pkgs, lib, ... }:
@@ -34,10 +33,7 @@ let
       command = browserUseMcpStdioCommand;
       args = [ ];
     };
-    mem0 = {
-      command = mem0McpStdioCommand;
-      args = mem0McpStdioArgs;
-    };
+    mem0 = mem0McpServerConfig;
   };
 
   mcpServerNamesManagedAcrossAllPlatforms = [

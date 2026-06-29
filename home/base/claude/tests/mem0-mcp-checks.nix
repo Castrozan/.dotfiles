@@ -4,41 +4,50 @@
   mkEvalCheck,
   cfg,
 }:
+let
+  mem0WrapperFor =
+    hostname:
+    import ../mcps/mem0/wrapper.nix {
+      inherit lib hostname;
+      privateConfigRoot = ../../../../private-config;
+      defaultUserId = "lucas";
+      localBaseUrl = "http://localhost:8765";
+    };
+in
 {
-  mem0-mcp-prewarm-activation-registered =
-    mkEvalCheck "mem0-mcp-prewarm-activation-registered"
-      (cfg.home.activation ? prewarmMem0McpDependencies)
-      "the mem0 MCP module must register its dependency prewarm activation so the local fallback's python deps resolve at rebuild time instead of stalling the first session on an uncached uv resolve";
+  mem0-mcp-self-host-tooling-is-deployed =
+    mkEvalCheck "mem0-mcp-self-host-tooling-is-deployed"
+      (
+        (cfg.home.file ? ".config/mem0/openmemory-compose.yaml")
+        && builtins.any (
+          package: (package.pname or package.name or "") == "mem0-openmemory-up"
+        ) cfg.home.packages
+      )
+      "the official OpenMemory self-host must be deployable: the compose file lands in ~/.config/mem0 and the mem0-openmemory-up bring-up command is on PATH; without these there is no self-hosted server for the local endpoint to reach";
 
-  mem0-mcp-defaults-to-local-when-no-private-host-file =
-    mkEvalCheck "mem0-mcp-defaults-to-local-when-no-private-host-file"
+  mem0-mcp-defaults-to-local-openmemory-when-no-private-host-file =
+    mkEvalCheck "mem0-mcp-defaults-to-local-openmemory-when-no-private-host-file"
       (
         let
-          mem0WrapperForHostWithoutRemote = import ../mcps/mem0/wrapper.nix {
-            inherit pkgs lib;
-            hostname = "host-without-a-private-mem0-host-file";
-            homeDir = "/home/test";
-            privateConfigRoot = ../../../../private-config;
-          };
+          wrapper = mem0WrapperFor "host-without-a-private-mem0-host-file";
         in
-        mem0WrapperForHostWithoutRemote.remoteConfigured == false
-        && mem0WrapperForHostWithoutRemote.mcpServerCommand != ""
+        wrapper.remoteConfigured == false
+        && wrapper.serverConfig.type == "sse"
+        && lib.hasInfix "localhost:8765/mcp/claude/sse/" wrapper.serverConfig.url
       )
-      "a host without a private mem0-host.nix must resolve to the local fallback (remoteConfigured=false) while still producing a runnable MCP server command; this guards the public switchable mechanism plus local degradation for every non-configured machine";
+      "a host without a private mem0-host.nix must point Claude at the local self-hosted OpenMemory instance (http://localhost:8765/mcp/...); this guards the per-machine default for every non-configured machine";
 
-  mem0-mcp-uses-remote-when-private-host-file-is-present =
-    mkEvalCheck "mem0-mcp-uses-remote-when-private-host-file-is-present"
+  mem0-mcp-points-at-remote-when-private-host-file-is-present =
+    mkEvalCheck "mem0-mcp-points-at-remote-when-private-host-file-is-present"
       (
         let
           privateTestHostFile = ../../../../private-config/machines/test/mem0-host.nix;
-          mem0WrapperForHostWithRemote = import ../mcps/mem0/wrapper.nix {
-            inherit pkgs lib;
-            hostname = "test";
-            homeDir = "/home/test";
-            privateConfigRoot = ../../../../private-config;
-          };
+          wrapper = mem0WrapperFor "test";
         in
-        (!builtins.pathExists privateTestHostFile) || mem0WrapperForHostWithRemote.remoteConfigured == true
+        (!builtins.pathExists privateTestHostFile)
+        || (
+          wrapper.remoteConfigured == true && lib.hasInfix "mem0-remote.test.invalid" wrapper.serverConfig.url
+        )
       )
-      "when private-config/machines/<host>/mem0-host.nix exists, the wrapper must resolve the remote backend (remoteConfigured=true) by importing that file; this guards the production-active host-switch branch that threads the remote URL into MEM0_REMOTE_BASE_URL, which the fallback-only check cannot see";
+      "when private-config/machines/<host>/mem0-host.nix exists, the wrapper must point Claude at that remote host's OpenMemory endpoint; guards the production-active per-machine host-switch the local-default check cannot see";
 }
