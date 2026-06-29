@@ -15,7 +15,7 @@ let
 
   nixosCfg = self.nixosConfigurations.chise.config;
 
-  arrStackChecks = import ./arr-stack.nix { inherit pkgs lib self; };
+  arrStackChecks = import ./arr-stack.nix { inherit pkgs lib; };
 
   evalCloudflareTunnelConnector =
     connectorSettings:
