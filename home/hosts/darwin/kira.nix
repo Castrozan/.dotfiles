@@ -35,4 +35,5 @@ in
 
   custom.cockpitSessionBridge.enable = true;
   custom.cockpitSessionBridge.tmuxEnumerationSocket = "";
+  custom.cockpitSessionBridge.tmuxMutationSocket = "";
 }
