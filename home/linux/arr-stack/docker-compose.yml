@@ -25,8 +25,6 @@ services:
       - arrnet
     ports:
       - "127.0.0.1:8080:8080"
-      - "127.0.0.1:6881:6881/tcp"
-      - "127.0.0.1:6881:6881/udp"
     environment:
       TZ: ${TZ}
       FIREWALL_INPUT_PORTS: "8080"

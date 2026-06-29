@@ -61,11 +61,11 @@ decrypted to `/run/agenix/arr-vpn-env` (owner `zanoni`, mode 400) and loaded
 into gluetun via `env_file`.
 
 The shipped secret is a placeholder template. Put your real provider creds in
-before the first `up`:
+before the first `up`, using the repo's agenix wrapper (it resolves the rules
+dir and key path for you):
 
 ```sh
-cd ~/.dotfiles
-EDITOR=nvim nix run github:ryantm/agenix -- -e secrets/credentials/arr-vpn-env.age
+agenix-edit credentials/arr-vpn-env.age
 ```
 
 It is a plain `KEY=value` env file consumed by gluetun. A WireGuard example:
@@ -80,6 +80,11 @@ SERVER_COUNTRIES=Sweden
 
 See the gluetun wiki for your provider's exact variables. After editing,
 rebuild chise so the new ciphertext is re-decrypted.
+
+The torrent port is not published on the host: with the VPN, incoming peer
+connections arrive through the tunnel, not localhost. For better seeding, enable
+your provider's port forwarding in gluetun (`VPN_PORT_FORWARDING=on` plus the
+provider settings) and set qBittorrent's listen port to the forwarded one.
 
 ## Running without a VPN (optional)
 
