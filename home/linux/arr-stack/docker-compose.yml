@@ -111,7 +111,7 @@ services:
       - ${ARR_DATA_ROOT}:/data
 
   readarr:
-    image: lscr.io/linuxserver/readarr:develop
+    image: lscr.io/linuxserver/readarr:0.4.18-develop
     container_name: arr-readarr
     restart: "no"
     networks:
