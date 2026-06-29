@@ -3,7 +3,12 @@ import os
 import sys
 
 from .compute import build_generator, select_compute_device, select_torch_dtype
-from .models import DEFAULT_MODEL, MODEL_REGISTRY, print_model_registry
+from .models import (
+    DEFAULT_MODEL,
+    HOSTED_PROVIDERS,
+    MODEL_REGISTRY,
+    print_model_registry,
+)
 from .pipeline import (
     build_video_pipeline,
     generate_video_frames,
@@ -101,6 +106,48 @@ def main():
         return 2
 
     model_spec = MODEL_REGISTRY[arguments.model]
+    if model_spec.get("provider") in HOSTED_PROVIDERS:
+        return run_hosted_generation(arguments, model_spec)
+    return run_local_generation(arguments, model_spec)
+
+
+def run_hosted_generation(arguments, model_spec):
+    from .hosted import (
+        generate_with_gemini_veo,
+        generate_with_openai_sora,
+        resolve_gemini_api_key,
+        resolve_openai_api_key,
+    )
+
+    provider = model_spec["provider"]
+    if provider == "gemini-veo":
+        api_key = resolve_gemini_api_key()
+        key_hint = "set GEMINI_API_KEY or place it at ~/.secrets/gemini-api-key"
+        generate = generate_with_gemini_veo
+    else:
+        api_key = resolve_openai_api_key()
+        key_hint = "set OPENAI_API_KEY or place it at ~/.secrets/openai-api-key"
+        generate = generate_with_openai_sora
+
+    if not api_key:
+        print(
+            f"error: the {arguments.model} hosted model needs an API key; {key_hint}. "
+            "No request was sent, no spend.",
+            file=sys.stderr,
+        )
+        return 2
+
+    parameters = dict(model_spec["defaults"])
+    output_path = os.path.abspath(arguments.output)
+    print(f"model: {arguments.model} ({model_spec['repository']}) [hosted {provider}]")
+    print(f"parameters: {parameters}")
+    print("submitting to the hosted API (this is a paid request)...")
+    generate(model_spec, arguments.prompt, parameters, output_path, api_key)
+    print(f"wrote {output_path}")
+    return 0
+
+
+def run_local_generation(arguments, model_spec):
     device = select_compute_device(arguments.device)
     torch_dtype = select_torch_dtype(device, model_spec["preferred_dtype"])
     parameters = resolve_generation_parameters(model_spec, arguments)
