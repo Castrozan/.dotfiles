@@ -33,9 +33,12 @@ let
   publishedPortLines = builtins.filter (
     line: builtins.match ''.*- "[0-9].*'' line != null
   ) composeLines;
-  everyPublishedPortIsLoopbackBound =
-    publishedPortLines != [ ] && builtins.all (line: lib.hasInfix "127.0.0.1:" line) publishedPortLines;
-  composeBindsANonLoopbackInterface = lib.hasInfix "0.0.0.0" composeText;
+  tailscaleBindAddress = "100.94.11.81";
+  everyPublishedPortIsTailnetBound =
+    publishedPortLines != [ ]
+    && builtins.all (line: lib.hasInfix "${tailscaleBindAddress}:" line) publishedPortLines;
+  composeBindsAWildcardInterface =
+    lib.hasInfix "0.0.0.0" composeText || lib.hasInfix "127.0.0.1" composeText;
   everyServiceHasConfigVolume = builtins.all (
     service: lib.hasInfix ("\${ARR_CONFIG_ROOT}/" + service) composeText
   ) serviceNames;
@@ -94,10 +97,10 @@ in
       (!(moduleConditionForHostname "kira") && !(moduleConditionForHostname "rin"))
       "the arr-stack module must be a no-op on every host other than chise so kira/rin never deploy the stack";
 
-  chise-arr-stack-published-ports-loopback-only =
-    mkEvalCheck "chise-arr-stack-published-ports-loopback-only"
-      (everyPublishedPortIsLoopbackBound && !composeBindsANonLoopbackInterface)
-      "every published port must bind 127.0.0.1 only so the web UIs and download client are never exposed to the LAN; reaching them from another device must go through an SSH tunnel or Tailscale";
+  chise-arr-stack-published-ports-tailnet-bound =
+    mkEvalCheck "chise-arr-stack-published-ports-tailnet-bound"
+      (everyPublishedPortIsTailnetBound && !composeBindsAWildcardInterface)
+      "every published port must bind chise's tailscale IP literal (100.94.11.81) so the web UIs are reachable on the tailnet but not on 0.0.0.0 or any other interface";
 
   chise-arr-stack-config-volume-per-service =
     mkEvalCheck "chise-arr-stack-config-volume-per-service" everyServiceHasConfigVolume

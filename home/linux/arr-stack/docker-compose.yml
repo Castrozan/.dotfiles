@@ -20,7 +20,7 @@ services:
     networks:
       - arrnet
     ports:
-      - "127.0.0.1:8080:8080"
+      - "100.94.11.81:8080:8080"
     environment:
       <<: *arr-common-environment
       WEBUI_PORT: "8080"
@@ -36,7 +36,7 @@ services:
     networks:
       - arrnet
     ports:
-      - "127.0.0.1:9696:9696"
+      - "100.94.11.81:9696:9696"
     environment:
       <<: *arr-common-environment
     volumes:
@@ -49,7 +49,7 @@ services:
     networks:
       - arrnet
     ports:
-      - "127.0.0.1:8989:8989"
+      - "100.94.11.81:8989:8989"
     environment:
       <<: *arr-common-environment
     volumes:
@@ -63,7 +63,7 @@ services:
     networks:
       - arrnet
     ports:
-      - "127.0.0.1:7878:7878"
+      - "100.94.11.81:7878:7878"
     environment:
       <<: *arr-common-environment
     volumes:
@@ -77,7 +77,7 @@ services:
     networks:
       - arrnet
     ports:
-      - "127.0.0.1:8686:8686"
+      - "100.94.11.81:8686:8686"
     environment:
       <<: *arr-common-environment
     volumes:
@@ -91,7 +91,7 @@ services:
     networks:
       - arrnet
     ports:
-      - "127.0.0.1:8788:8787"
+      - "100.94.11.81:8788:8787"
     environment:
       <<: *arr-common-environment
     volumes:
@@ -105,7 +105,7 @@ services:
     networks:
       - arrnet
     ports:
-      - "127.0.0.1:6767:6767"
+      - "100.94.11.81:6767:6767"
     environment:
       <<: *arr-common-environment
     volumes:
