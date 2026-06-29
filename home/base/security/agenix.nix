@@ -63,6 +63,7 @@ let
     "credentials/home-assistant-token"
     "credentials/google-totp-secret"
     "credentials/gcp-usage-uploader-key"
+    "infrastructure/kira-session-connector-credentials"
   ];
 
   secretFileExists = name: builtins.pathExists (../../../secrets/${name}.age);
