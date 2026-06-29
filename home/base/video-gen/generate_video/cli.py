@@ -2,25 +2,13 @@ import argparse
 import os
 import sys
 
-from .compute import build_generator, select_compute_device, select_torch_dtype
-from .models import (
-    DEFAULT_MODEL,
-    HOSTED_PROVIDERS,
-    MODEL_REGISTRY,
-    print_model_registry,
-)
-from .pipeline import (
-    build_video_pipeline,
-    generate_video_frames,
-    place_pipeline_on_device,
-    write_video_file,
-)
+from .models import DEFAULT_MODEL, MODEL_REGISTRY, print_model_registry
 
 
 def parse_arguments():
     parser = argparse.ArgumentParser(
         prog="video-gen",
-        description="Generate a video clip from a text prompt using a local open-weight model.",
+        description="Generate a video clip from a text prompt using a hosted video-generation API.",
     )
     parser.add_argument(
         "prompt", nargs="?", help="text description of the clip to generate"
@@ -29,44 +17,13 @@ def parse_arguments():
         "--model",
         choices=sorted(MODEL_REGISTRY.keys()),
         default=DEFAULT_MODEL,
-        help=f"open-weight model to run (default: {DEFAULT_MODEL})",
+        help=f"hosted model to call (default: {DEFAULT_MODEL})",
     )
     parser.add_argument(
         "--output", default="clip.mp4", help="output video path (default: clip.mp4)"
     )
     parser.add_argument(
-        "--negative-prompt", default=None, help="things to avoid in the clip"
-    )
-    parser.add_argument("--width", type=int, default=None, help="frame width in pixels")
-    parser.add_argument(
-        "--height", type=int, default=None, help="frame height in pixels"
-    )
-    parser.add_argument(
-        "--num-frames", type=int, default=None, help="number of frames to render"
-    )
-    parser.add_argument("--steps", type=int, default=None, help="denoising steps")
-    parser.add_argument(
-        "--guidance-scale",
-        type=float,
-        default=None,
-        help="classifier-free guidance scale",
-    )
-    parser.add_argument(
-        "--fps", type=int, default=None, help="frames per second of the output video"
-    )
-    parser.add_argument(
-        "--seed", type=int, default=None, help="random seed for reproducibility"
-    )
-    parser.add_argument(
-        "--cpu-offload",
-        action="store_true",
-        help="offload model layers to host memory between steps to fit tight memory",
-    )
-    parser.add_argument(
-        "--device",
-        choices=["auto", "mps", "cuda", "cpu"],
-        default="auto",
-        help="compute device (default: auto-detect mps, then cuda, then cpu)",
+        "--seconds", type=int, default=None, help="clip duration in seconds"
     )
     parser.add_argument(
         "--list-models",
@@ -74,22 +31,6 @@ def parse_arguments():
         help="print the available models and exit",
     )
     return parser.parse_args()
-
-
-def resolve_generation_parameters(model_spec, arguments):
-    parameters = dict(model_spec["defaults"])
-    overrides = {
-        "width": arguments.width,
-        "height": arguments.height,
-        "num_frames": arguments.num_frames,
-        "num_inference_steps": arguments.steps,
-        "guidance_scale": arguments.guidance_scale,
-        "fps": arguments.fps,
-    }
-    for key, value in overrides.items():
-        if value is not None:
-            parameters[key] = value
-    return parameters
 
 
 def main():
@@ -106,9 +47,7 @@ def main():
         return 2
 
     model_spec = MODEL_REGISTRY[arguments.model]
-    if model_spec.get("provider") in HOSTED_PROVIDERS:
-        return run_hosted_generation(arguments, model_spec)
-    return run_local_generation(arguments, model_spec)
+    return run_hosted_generation(arguments, model_spec)
 
 
 def run_hosted_generation(arguments, model_spec):
@@ -131,50 +70,20 @@ def run_hosted_generation(arguments, model_spec):
 
     if not api_key:
         print(
-            f"error: the {arguments.model} hosted model needs an API key; {key_hint}. "
+            f"error: the {arguments.model} model needs an API key; {key_hint}. "
             "No request was sent, no spend.",
             file=sys.stderr,
         )
         return 2
 
     parameters = dict(model_spec["defaults"])
+    if arguments.seconds is not None:
+        parameters["duration_seconds"] = arguments.seconds
+
     output_path = os.path.abspath(arguments.output)
     print(f"model: {arguments.model} ({model_spec['repository']}) [hosted {provider}]")
     print(f"parameters: {parameters}")
     print("submitting to the hosted API (this is a paid request)...")
     generate(model_spec, arguments.prompt, parameters, output_path, api_key)
     print(f"wrote {output_path}")
-    return 0
-
-
-def run_local_generation(arguments, model_spec):
-    device = select_compute_device(arguments.device)
-    torch_dtype = select_torch_dtype(device, model_spec["preferred_dtype"])
-    parameters = resolve_generation_parameters(model_spec, arguments)
-
-    print(f"model: {arguments.model} ({model_spec['repository']})")
-    print(f"device: {device}  dtype: {torch_dtype}")
-    print(
-        f"resolution: {parameters['width']}x{parameters['height']}  "
-        f"frames: {parameters['num_frames']}  steps: {parameters['num_inference_steps']}"
-    )
-    print("loading pipeline (first run downloads weights to the Hugging Face cache)...")
-
-    pipeline = build_video_pipeline(model_spec, torch_dtype)
-    place_pipeline_on_device(pipeline, device, arguments.cpu_offload)
-
-    generator = build_generator(arguments.seed)
-
-    print("generating frames...")
-    frames = generate_video_frames(
-        pipeline,
-        arguments.prompt,
-        arguments.negative_prompt,
-        parameters,
-        generator,
-    )
-
-    output_path = os.path.abspath(arguments.output)
-    write_video_file(frames, output_path, parameters["fps"])
-    print(f"wrote {len(frames)} frames to {output_path}")
     return 0
