@@ -94,6 +94,16 @@ def test_remote_attach_target_with_shell_metacharacters_is_quoted_not_executed()
     ]
 
 
+def test_select_window_crosses_ssh_without_allocating_a_pseudoterminal():
+    assert cockpit_tmux_commands.build_select_window_command(
+        TMUX_EXECUTABLE_PATH, "cockpit", "@7", remote_ssh_host=REMOTE_SSH_HOST
+    ) == [
+        *SSH,
+        REMOTE_SSH_HOST,
+        f"{REMOTE_TMUX} -L cockpit select-window -t @7",
+    ]
+
+
 def test_remote_ssh_host_preserves_the_named_socket_flag_inside_the_ssh_command():
     assert cockpit_tmux_commands.build_list_sessions_command(
         TMUX_EXECUTABLE_PATH, "cockpit", remote_ssh_host=REMOTE_SSH_HOST

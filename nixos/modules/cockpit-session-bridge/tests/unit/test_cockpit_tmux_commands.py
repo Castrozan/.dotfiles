@@ -132,3 +132,9 @@ def test_build_attach_session_command_attaches_locally_when_no_remote_host_is_gi
     assert cockpit_tmux_commands.build_attach_session_command(
         TMUX_EXECUTABLE_PATH, "", "todos"
     ) == [TMUX_EXECUTABLE_PATH, "-u", "attach-session", "-t", "todos"]
+
+
+def test_build_select_window_command_targets_the_window_on_the_enumeration_socket():
+    assert cockpit_tmux_commands.build_select_window_command(
+        TMUX_EXECUTABLE_PATH, "cockpit", "@7"
+    ) == [*COCKPIT_SOCKET_PREFIX, "select-window", "-t", "@7"]

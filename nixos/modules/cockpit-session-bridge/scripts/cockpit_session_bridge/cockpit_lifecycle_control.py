@@ -6,6 +6,7 @@ from cockpit_tmux_commands import (
     build_open_session_command,
     build_open_window_command,
     build_rename_session_command,
+    build_select_window_command,
 )
 from cockpit_tmux_lifecycle import (
     DEFAULT_COCKPIT_TMUX_SOCKET_NAME,
@@ -41,6 +42,10 @@ async def dispatch_cockpit_lifecycle_request(
         return await _list_sessions_response(
             tmux_executable_path, socket_policy, subprocess_runner
         )
+    if requested_operation == "select-window":
+        return await _select_window_response(
+            tmux_executable_path, socket_policy, lifecycle_request, subprocess_runner
+        )
     build_mutation_command = _MUTATION_COMMAND_BUILDERS.get(requested_operation)
     if build_mutation_command is None:
         raise UnsupportedCockpitLifecycleOperation(requested_operation)
@@ -68,6 +73,20 @@ async def _list_sessions_response(
         "operation": "list-sessions",
         "sessions": [_serialize_session(session) for session in sessions],
     }
+
+
+async def _select_window_response(
+    tmux_executable_path, socket_policy, lifecycle_request, subprocess_runner
+):
+    select_window_command = build_select_window_command(
+        tmux_executable_path,
+        socket_policy.enumeration_socket_name,
+        lifecycle_request["windowIdentifier"],
+        remote_ssh_host=socket_policy.remote_ssh_host,
+    )
+    return await _run_mutation_response(
+        "select-window", select_window_command, subprocess_runner
+    )
 
 
 async def _run_mutation_response(
