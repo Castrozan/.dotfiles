@@ -44,6 +44,7 @@ let
   ) serviceNames;
   envPinsChiseConfigRoot = lib.hasInfix "ARR_CONFIG_ROOT=/home/zanoni/arr-stack/config" envText;
   envPinsChiseDataRoot = lib.hasInfix "ARR_DATA_ROOT=/home/zanoni/arr-stack/data" envText;
+  envMatchesChiseUserAndGroup = lib.hasInfix "PUID=1000" envText && lib.hasInfix "PGID=100" envText;
 
   moduleConditionForHostname =
     candidateHostname:
@@ -116,4 +117,8 @@ in
     mkEvalCheck "chise-arr-stack-env-roots-pinned-to-chise-home"
       (envPinsChiseConfigRoot && envPinsChiseDataRoot)
       "the env config and data roots must point at zanoni's home on chise so the compose bind mounts match the persistence directories the module activation creates";
+
+  chise-arr-stack-env-matches-chise-user-and-group =
+    mkEvalCheck "chise-arr-stack-env-matches-chise-user-and-group" envMatchesChiseUserAndGroup
+      "PUID/PGID must match zanoni on chise (uid 1000, gid 100 = users group), or the linuxserver containers write files the user cannot manage and chown the bind mounts to the wrong group";
 }
