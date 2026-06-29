@@ -72,6 +72,10 @@ let
   chromeOmitsSpellcheckOverrideChromeRevertsOnLaunch = !(chromePreferencesOverrides ? spellcheck);
 
   chromeOmitsIntlLanguageOverrideChromeRevertsOnLaunch = !(chromePreferencesOverrides ? intl);
+
+  versionDriftRestarterChecks = import ./version-drift-restarter-checks.nix {
+    inherit lib mkEvalCheck chromeGlobalLauncherConfiguration;
+  };
 in
 {
   domain-desktop-chrome-global-launcher-targets-chrome-global-user-data-dir =
@@ -161,3 +165,4 @@ in
       chromeOmitsIntlLanguageOverrideChromeRevertsOnLaunch
       "Chrome overrides must omit intl because Chrome reconciles accept_languages on launch and reverts an external file write, so pinning it here is a no-op";
 }
+// versionDriftRestarterChecks
