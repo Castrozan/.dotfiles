@@ -2,10 +2,11 @@
   pkgs,
   nodejs,
   homeDir,
+  hostname,
 }:
 let
   figmaDeveloperMcpVersion = "0.13.2";
-  figmaPersonalAccessTokenPath = "${homeDir}/.secrets/figma-personal-access-token";
+  figmaPersonalAccessTokenPath = "${homeDir}/.secrets/figma-personal-access-token-${hostname}";
   figmaMcpImageDownloadDirectory = "${homeDir}/.cache/figma-developer-mcp-images";
 
   figmaMcpStdioWrapper = pkgs.writeShellScript "figma-developer-mcp" ''

@@ -3,6 +3,7 @@
   config,
   lib,
   latest,
+  hostname,
   ...
 }:
 let
@@ -45,6 +46,7 @@ let
       pkgs
       nodejs
       homeDir
+      hostname
       ;
   };
 
