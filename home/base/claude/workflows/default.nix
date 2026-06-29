@@ -1,4 +1,4 @@
-_:
+{ lib, ... }:
 let
   workflowFilesFromInstall =
     install:
@@ -9,14 +9,23 @@ let
       }) (builtins.attrNames install.workflowSources)
     );
 
+  localWorkflowsDirectory = ./.;
+  localWorkflowFileNames = builtins.filter (fileName: lib.hasSuffix ".js" fileName) (
+    builtins.attrNames (builtins.readDir localWorkflowsDirectory)
+  );
+  localWorkflowFiles = builtins.listToAttrs (
+    map (fileName: {
+      name = ".claude/workflows/${fileName}";
+      value.source = localWorkflowsDirectory + "/${fileName}";
+    }) localWorkflowFileNames
+  );
+
   housekeepingInstall = import ../../../../agents/skills/housekeeping/install { };
   pageComposerInstall = import ../../../../agents/skills/page-composer/install { };
 in
 {
   home.file =
-    workflowFilesFromInstall housekeepingInstall
-    // workflowFilesFromInstall pageComposerInstall
-    // {
-      ".claude/workflows/dotfiles-change-review.js".source = ./dotfiles-change-review.js;
-    };
+    localWorkflowFiles
+    // workflowFilesFromInstall housekeepingInstall
+    // workflowFilesFromInstall pageComposerInstall;
 }
