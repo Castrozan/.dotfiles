@@ -102,6 +102,11 @@
         file = ../../secrets/infrastructure/jarvis-session-connector-credentials.age;
         mode = "400";
       };
+      "arr-vpn-env" = {
+        file = ../../secrets/credentials/arr-vpn-env.age;
+        owner = "zanoni";
+        mode = "400";
+      };
     };
   };
 }
