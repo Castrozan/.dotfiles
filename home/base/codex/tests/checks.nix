@@ -62,4 +62,9 @@ in
   codex-global-agents-instructions =
     mkEvalCheck "codex-global-agents-instructions" (builtins.hasAttr ".codex/AGENTS.md" cfg.home.file)
       "core agent rules should be deployed as codex global ~/.codex/AGENTS.md instructions";
+
+  codex-claude-plugin-port-activation =
+    mkEvalCheck "codex-claude-plugin-port-activation"
+      (builtins.hasAttr "codexClaudePluginPort" cfg.home.activation)
+      "third-party Claude Code plugins should be ported into Codex via an activation step";
 }
