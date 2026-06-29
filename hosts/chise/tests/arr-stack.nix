@@ -45,6 +45,7 @@ let
 
   composeHasNoVpnContainer =
     !(lib.hasInfix "gluetun" composeText) && !(lib.hasInfix "service:gluetun" composeText);
+  qbittorrentPinnedToV4 = lib.hasInfix "qbittorrent:4" composeText;
   readmeDocumentsHostLevelVpn =
     lib.hasInfix "nord-on-us" readmeText && lib.hasInfix "nord-off" readmeText;
 
@@ -75,6 +76,10 @@ in
   chise-arr-stack-no-vpn-container =
     mkEvalCheck "chise-arr-stack-no-vpn-container" composeHasNoVpnContainer
       "the stack must ship no per-container VPN (no gluetun); qBittorrent runs direct and the optional VPN is host-level wgnord";
+
+  chise-arr-stack-qbittorrent-pinned-to-v4 =
+    mkEvalCheck "chise-arr-stack-qbittorrent-pinned-to-v4" qbittorrentPinnedToV4
+      "qBittorrent is pinned to a 4.x image because the EOL Readarr 0.4.18 client cannot authenticate against qBittorrent v5's WebUI";
 
   chise-arr-stack-documents-host-level-vpn =
     mkEvalCheck "chise-arr-stack-documents-host-level-vpn" readmeDocumentsHostLevelVpn
