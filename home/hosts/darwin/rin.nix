@@ -9,5 +9,12 @@ in
   ]
   ++ lib.optionals rinPrivateConfigExists [
     "${privateConfigRoot}/machines/rin/clawde-agents"
-  ];
+  ]
+  ++ lib.optional (builtins.pathExists ../../../private-config/machines/rin/cloudflare-tunnel-connector.nix) ../../../private-config/machines/rin/cloudflare-tunnel-connector.nix;
+
+  custom.cockpitSessionBridge = {
+    enable = true;
+    tmuxEnumerationSocket = "";
+    persistentSession.enable = false;
+  };
 }
