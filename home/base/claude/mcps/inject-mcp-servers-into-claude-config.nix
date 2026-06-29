@@ -7,6 +7,7 @@
   a2aMcpStdioCommand,
   a2aMcpStdioArgs,
   browserUseMcpStdioCommand,
+  mem0McpServerConfig,
   figmaMcpStdioCommand,
   figmaMcpStdioArgs,
   codexBinaryPath,
@@ -34,6 +35,7 @@ let
       command = browserUseMcpStdioCommand;
       args = [ ];
     };
+    mem0 = mem0McpServerConfig;
     figma = {
       command = figmaMcpStdioCommand;
       args = figmaMcpStdioArgs;
@@ -46,6 +48,7 @@ let
     "browser-use"
     "chrome-devtools"
     "codex"
+    "mem0"
     "figma"
   ];
 

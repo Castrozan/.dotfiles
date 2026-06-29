@@ -41,6 +41,17 @@ let
       ;
   };
 
+  mem0Mcp = import ./mem0/wrapper.nix {
+    inherit lib hostname;
+    privateConfigRoot = ../../../../private-config;
+    defaultUserId = "lucas";
+    localBaseUrl = "http://localhost:8765";
+  };
+
+  mem0OpenmemoryUp = pkgs.writeShellScriptBin "mem0-openmemory-up" (
+    builtins.readFile ./mem0/scripts/mem0-openmemory-up
+  );
+
   figmaMcp = import ./figma {
     inherit
       pkgs
@@ -68,6 +79,7 @@ in
       a2aMcpStdioCommand = a2aMcp.mcpServerCommand;
       a2aMcpStdioArgs = a2aMcp.mcpServerArgs;
       browserUseMcpStdioCommand = browserUseMcpWrapper;
+      mem0McpServerConfig = mem0Mcp.serverConfig;
       inherit (figmaMcp)
         figmaMcpStdioCommand
         figmaMcpStdioArgs
@@ -77,6 +89,7 @@ in
   ];
 
   home = {
-    inherit (browserMcp) packages;
+    packages = browserMcp.packages ++ [ mem0OpenmemoryUp ];
+    file.".config/mem0/openmemory-compose.yaml".source = ./mem0/openmemory-compose.yaml;
   };
 }
