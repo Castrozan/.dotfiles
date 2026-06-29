@@ -40,6 +40,14 @@ let
       ;
   };
 
+  figmaMcp = import ./figma {
+    inherit
+      pkgs
+      nodejs
+      homeDir
+      ;
+  };
+
 in
 {
   imports = [
@@ -58,6 +66,10 @@ in
       a2aMcpStdioCommand = a2aMcp.mcpServerCommand;
       a2aMcpStdioArgs = a2aMcp.mcpServerArgs;
       browserUseMcpStdioCommand = browserUseMcpWrapper;
+      inherit (figmaMcp)
+        figmaMcpStdioCommand
+        figmaMcpStdioArgs
+        ;
       codexBinaryPath = "${homeDir}/.local/bin/codex";
     })
   ];
