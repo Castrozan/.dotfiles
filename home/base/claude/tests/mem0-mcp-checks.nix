@@ -50,4 +50,36 @@ in
         )
       )
       "when private-config/machines/<host>/mem0-host.nix exists, the wrapper must point Claude at that remote host's OpenMemory endpoint; guards the production-active per-machine host-switch the local-default check cannot see";
+
+  mem0-mcp-launchd-autostart-guarded-to-darwin-local =
+    mkEvalCheck "mem0-mcp-launchd-autostart-guarded-to-darwin-local"
+      (
+        let
+          autostartFor =
+            { isDarwin, usesLocalStack }:
+            import ../mcps/mem0/autostart.nix {
+              inherit lib isDarwin usesLocalStack;
+              bringUpScriptBin = "/nix/store/fake-mem0-openmemory-up";
+              environmentPath = "/usr/bin:/bin";
+            };
+          enabled = autostartFor {
+            isDarwin = true;
+            usesLocalStack = true;
+          };
+          onLinux = autostartFor {
+            isDarwin = false;
+            usesLocalStack = true;
+          };
+          onRemoteHost = autostartFor {
+            isDarwin = true;
+            usesLocalStack = false;
+          };
+        in
+        enabled.config.condition == true
+        && (enabled.config.content.launchd.agents ? mem0-openmemory-autostart)
+        && enabled.config.content.launchd.agents.mem0-openmemory-autostart.config.RunAtLoad == true
+        && onLinux.config.condition == false
+        && onRemoteHost.config.condition == false
+      )
+      "the OpenMemory launchd auto-start must register only on darwin hosts that run the local stack (kira), with RunAtLoad so the stack survives reboots; it must stay off on linux and off on hosts pointed at a remote OpenMemory";
 }

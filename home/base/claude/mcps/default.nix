@@ -52,6 +52,15 @@ let
     builtins.readFile ./mem0/scripts/mem0-openmemory-up
   );
 
+  mem0AutostartEnvironmentPath = lib.concatStringsSep ":" [
+    "/usr/local/bin"
+    "/run/current-system/sw/bin"
+    "/etc/profiles/per-user/${config.home.username}/bin"
+    "${homeDir}/.nix-profile/bin"
+    "/usr/bin"
+    "/bin"
+  ];
+
   figmaMcp = import ./figma {
     inherit
       pkgs
@@ -65,6 +74,12 @@ in
 {
   imports = [
     ./chrome-devtools-mcp-runaway-watchdog.nix
+    (import ./mem0/autostart.nix {
+      inherit lib isDarwin;
+      usesLocalStack = !mem0Mcp.remoteConfigured;
+      bringUpScriptBin = mem0OpenmemoryUp;
+      environmentPath = mem0AutostartEnvironmentPath;
+    })
     (import ./browser-use-config-patcher.nix {
       inherit browserUseConfigDir chromeBinary;
     })
