@@ -31,7 +31,7 @@ in
   ++ lib.optionals kiraPrivateConfigExists [
     "${privateConfigRoot}/machines/kira/clawde-agents"
   ]
-  ++ lib.optional (builtins.pathExists ../../../private-config/machines/kira/jarvis-connector.nix) ../../../private-config/machines/kira/jarvis-connector.nix;
+  ++ lib.optional (builtins.pathExists ../../../private-config/machines/kira/cloudflare-tunnel-connector.nix) ../../../private-config/machines/kira/cloudflare-tunnel-connector.nix;
 
   custom.cockpitSessionBridge.enable = true;
   custom.cockpitSessionBridge.tmuxEnumerationSocket = "";
