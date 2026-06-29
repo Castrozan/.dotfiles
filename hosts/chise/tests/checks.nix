@@ -15,6 +15,8 @@ let
 
   nixosCfg = self.nixosConfigurations.chise.config;
 
+  arrStackChecks = import ./arr-stack.nix { inherit pkgs lib self; };
+
   evalCloudflareTunnelConnector =
     connectorSettings:
     (lib.evalModules {
@@ -46,7 +48,8 @@ let
   cloudflareTunnelConnectorEnabledTunnel =
     cloudflareTunnelConnectorEnabled.services.cloudflared.tunnels.${cloudflareTunnelConnectorTunnelId};
 in
-{
+arrStackChecks
+// {
   chise-nix-daemon-max-jobs = mkEvalCheck "chise-nix-daemon-max-jobs" (
     nixosCfg.nix.settings.max-jobs <= 6
   ) "max-jobs must be <= 6 to prevent memory saturation on 16GB RAM";
