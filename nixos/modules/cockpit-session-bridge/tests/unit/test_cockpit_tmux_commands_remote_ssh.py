@@ -79,7 +79,7 @@ def test_attach_builder_forces_a_remote_pseudoterminal_when_a_remote_host_is_giv
         *SSH,
         "-tt",
         REMOTE_SSH_HOST,
-        f"{REMOTE_TMUX} attach-session -t todos",
+        f"{REMOTE_TMUX} -u attach-session -t todos",
     ]
 
 
@@ -90,7 +90,7 @@ def test_remote_attach_target_with_shell_metacharacters_is_quoted_not_executed()
         *SSH,
         "-tt",
         REMOTE_SSH_HOST,
-        f"{REMOTE_TMUX} attach-session -t " + shlex.quote("feature; rm -rf /"),
+        f"{REMOTE_TMUX} -u attach-session -t " + shlex.quote("feature; rm -rf /"),
     ]
 
 

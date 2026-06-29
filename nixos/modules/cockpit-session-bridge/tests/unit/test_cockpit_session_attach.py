@@ -54,7 +54,7 @@ def test_read_session_attach_target_is_none_without_a_session_name():
 def test_build_attach_session_command_targets_the_default_socket_when_enumeration_is_empty():
     assert cockpit_tmux_commands.build_attach_session_command(
         TMUX_EXECUTABLE_PATH, "", "dotfiles"
-    ) == [TMUX_EXECUTABLE_PATH, "attach-session", "-t", "dotfiles"]
+    ) == [TMUX_EXECUTABLE_PATH, "-u", "attach-session", "-t", "dotfiles"]
 
 
 def test_build_attach_session_command_uses_the_enumeration_socket_when_named():
@@ -64,6 +64,7 @@ def test_build_attach_session_command_uses_the_enumeration_socket_when_named():
         TMUX_EXECUTABLE_PATH,
         "-L",
         "cockpit",
+        "-u",
         "attach-session",
         "-t",
         "reports-deploy",
@@ -77,6 +78,7 @@ def test_resolve_session_command_attaches_the_requested_session_on_the_enumerati
     )
     assert resolved == [
         TMUX_EXECUTABLE_PATH,
+        "-u",
         "attach-session",
         "-t",
         "dotfiles",
@@ -96,7 +98,7 @@ def test_resolve_session_command_attaches_the_requested_session_over_ssh_when_a_
         *cockpit_tmux_commands.NON_INTERACTIVE_SSH_OPTIONS,
         "-tt",
         "lucas.zanoni@kira",
-        f"{cockpit_tmux_commands.REMOTE_TMUX_EXECUTABLE} attach-session -t dotfiles",
+        f"{cockpit_tmux_commands.REMOTE_TMUX_EXECUTABLE} -u attach-session -t dotfiles",
     ]
 
 

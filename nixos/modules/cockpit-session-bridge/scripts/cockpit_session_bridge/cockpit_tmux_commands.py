@@ -143,6 +143,7 @@ def build_attach_session_command(
     return build_cockpit_tmux_command(
         tmux_executable_path,
         enumeration_socket_name,
+        "-u",
         "attach-session",
         "-t",
         attach_target,

@@ -131,4 +131,4 @@ def test_build_close_window_targets_the_window_identifier():
 def test_build_attach_session_command_attaches_locally_when_no_remote_host_is_given():
     assert cockpit_tmux_commands.build_attach_session_command(
         TMUX_EXECUTABLE_PATH, "", "todos"
-    ) == [TMUX_EXECUTABLE_PATH, "attach-session", "-t", "todos"]
+    ) == [TMUX_EXECUTABLE_PATH, "-u", "attach-session", "-t", "todos"]

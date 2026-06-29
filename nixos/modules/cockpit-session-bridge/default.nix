@@ -43,6 +43,7 @@ in
         "${pkgs.tmux}/bin/tmux"
         "-L"
         persistentSessionConfig.socketName
+        "-u"
         "attach-session"
         "-t"
         persistentSessionConfig.sessionName
