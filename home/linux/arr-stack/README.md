@@ -7,16 +7,15 @@ and down by hand.
 
 ## Roster
 
-| Service     | Role                      | Local URL                |
-| ----------- | ------------------------- | ------------------------ |
-| gluetun     | VPN gateway for the torrent client | (no UI)         |
-| qbittorrent | download client (via VPN) | http://127.0.0.1:8080    |
-| prowlarr    | indexer manager           | http://127.0.0.1:9696    |
-| sonarr      | TV                        | http://127.0.0.1:8989    |
-| radarr      | movies                    | http://127.0.0.1:7878    |
-| lidarr      | music                     | http://127.0.0.1:8686    |
-| readarr     | books                     | http://127.0.0.1:8788    |
-| bazarr      | subtitles                 | http://127.0.0.1:6767    |
+| Service     | Role                          | Local URL                |
+| ----------- | ----------------------------- | ------------------------ |
+| qbittorrent | download client               | http://127.0.0.1:8080    |
+| prowlarr    | indexer manager               | http://127.0.0.1:9696    |
+| sonarr      | TV                            | http://127.0.0.1:8989    |
+| radarr      | movies                        | http://127.0.0.1:7878    |
+| lidarr      | music                         | http://127.0.0.1:8686    |
+| readarr     | books                         | http://127.0.0.1:8788    |
+| bazarr      | subtitles                     | http://127.0.0.1:6767    |
 
 All web UIs publish to `127.0.0.1` only, so they are reachable from chise
 itself, not from the LAN. To reach them from another device, tunnel over SSH
@@ -27,9 +26,10 @@ Readarr's host port is `8788` rather than its default `8787`, because chise
 already binds `127.0.0.1:8787` for the cockpit session bridge. Inside the stack
 Readarr still listens on `8787`, so other apps reach it at `readarr:8787`.
 
-qBittorrent shares gluetun's network namespace (`network_mode:
-service:gluetun`), so all torrent traffic exits through the VPN. The *arr apps
-reach qBittorrent at host `gluetun`, port `8080`, on the `arrnet` bridge.
+By default there is no VPN: qBittorrent runs directly on the `arrnet` bridge and
+the *arr apps reach it at host `qbittorrent`, port `8080`. Routing the stack
+through a VPN is an independent, host-level toggle (see below), not a container
+in this stack.
 
 ## Bring it up / down
 
@@ -57,69 +57,25 @@ Config and data live under documented host paths (created on rebuild, owned by
   laid out as `data/torrents` and `data/media/{tv,movies,music,books}` so
   imports are atomic hardlink moves on one filesystem (no slow copies).
 
-## VPN credentials (required by the default stack)
+## Optional VPN (off by default, host-level)
 
-The VPN credentials are stored in **agenix**, never in the public tree. The
-encrypted secret is `secrets/credentials/arr-vpn-env.age`; on chise it is
-decrypted to `/run/agenix/arr-vpn-env` (owner `zanoni`, mode 400) and loaded
-into gluetun via `env_file`.
+The default stack runs with no VPN: qBittorrent talks to the internet directly.
+There is no per-container VPN gateway in this stack and nothing to configure here
+to get the default behavior.
 
-The shipped secret is a placeholder template. Put your real provider creds in
-before the first `up`, using the repo's agenix wrapper (it resolves the rules
-dir and key path for you):
+chise already has host-level NordVPN via `wgnord`, toggled by the packaged
+scripts in this repo. Because it is a host-level WireGuard tunnel, turning it on
+routes *all* of chise's traffic, the arr-stack containers included, with no
+compose changes:
 
 ```sh
-agenix-edit credentials/arr-vpn-env.age
+nord-on-us    # connect NordVPN (US) on chise: wgnord c US
+nord-off      # disconnect: wgnord d
 ```
 
-It is a plain `KEY=value` env file consumed by gluetun. A WireGuard example:
-
-```
-VPN_SERVICE_PROVIDER=mullvad
-VPN_TYPE=wireguard
-WIREGUARD_PRIVATE_KEY=<your-key>
-WIREGUARD_ADDRESSES=10.0.0.2/32
-SERVER_COUNTRIES=Sweden
-```
-
-See the gluetun wiki for your provider's exact variables. After editing,
-rebuild chise so the new ciphertext is re-decrypted.
-
-The torrent port is not published on the host: with the VPN, incoming peer
-connections arrive through the tunnel, not localhost. For better seeding, enable
-your provider's port forwarding in gluetun (`VPN_PORT_FORWARDING=on` plus the
-provider settings) and set qBittorrent's listen port to the forwarded one.
-
-## Running without a VPN (optional)
-
-The VPN is the safe default. To run qBittorrent without it, drop the gluetun
-service and give qBittorrent its own network and ports. Replace the
-`qbittorrent` block with:
-
-```yaml
-  qbittorrent:
-    image: lscr.io/linuxserver/qbittorrent:latest
-    container_name: arr-qbittorrent
-    restart: "no"
-    networks:
-      - arrnet
-    ports:
-      - "127.0.0.1:8080:8080"
-      - "127.0.0.1:6881:6881/tcp"
-      - "127.0.0.1:6881:6881/udp"
-    environment:
-      PUID: ${PUID}
-      PGID: ${PGID}
-      TZ: ${TZ}
-      WEBUI_PORT: "8080"
-      TORRENTING_PORT: "6881"
-    volumes:
-      - ${ARR_CONFIG_ROOT}/qbittorrent:/config
-      - ${ARR_DATA_ROOT}:/data
-```
-
-and delete the `gluetun` service. Without the VPN, the download client's
-traffic is no longer tunneled.
+See `home/base/network/scripts/` (`nord-on-us`, `nord-off`, `nord-on`,
+`setup_wgnord`) and `hosts/chise/scripts/` for the script definitions. Bring the
+stack up the same way regardless; the VPN is an independent host toggle.
 
 ## Optional media server
 

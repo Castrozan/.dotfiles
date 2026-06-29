@@ -13,40 +13,14 @@ networks:
         - subnet: 172.28.0.0/16
 
 services:
-  gluetun:
-    image: qmcgaw/gluetun:latest
-    container_name: arr-gluetun
-    restart: "no"
-    cap_add:
-      - NET_ADMIN
-    devices:
-      - /dev/net/tun:/dev/net/tun
-    networks:
-      - arrnet
-    ports:
-      - "127.0.0.1:8080:8080"
-    environment:
-      TZ: ${TZ}
-      FIREWALL_INPUT_PORTS: "8080"
-      FIREWALL_OUTBOUND_SUBNETS: "172.28.0.0/16"
-    env_file:
-      - /run/agenix/arr-vpn-env
-    volumes:
-      - ${ARR_CONFIG_ROOT}/gluetun:/gluetun
-    healthcheck:
-      test: ["CMD", "/gluetun-entrypoint", "healthcheck"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-
   qbittorrent:
     image: lscr.io/linuxserver/qbittorrent:latest
     container_name: arr-qbittorrent
     restart: "no"
-    depends_on:
-      gluetun:
-        condition: service_healthy
-    network_mode: "service:gluetun"
+    networks:
+      - arrnet
+    ports:
+      - "127.0.0.1:8080:8080"
     environment:
       <<: *arr-common-environment
       WEBUI_PORT: "8080"

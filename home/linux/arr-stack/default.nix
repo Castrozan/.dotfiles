@@ -8,7 +8,6 @@ let
   isChise = hostname == "chise";
   stackRoot = "${config.home.homeDirectory}/arr-stack";
   configServiceDirectories = [
-    "gluetun"
     "qbittorrent"
     "prowlarr"
     "sonarr"
