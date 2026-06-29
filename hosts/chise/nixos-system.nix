@@ -40,7 +40,11 @@ in
   ]
   ++ lib.optional (builtins.pathExists ../../private-config/machines/chise/jarvis-connector.nix) ../../private-config/machines/chise/jarvis-connector.nix;
 
-  custom.cockpitSessionBridge.enable = true;
+  custom.cockpitSessionBridge = {
+    enable = true;
+    tmuxRemoteSshHost = "lucas.zanoni@kira";
+    tmuxEnumerationSocket = "";
+  };
 
   # Disable lid switch suspend for laptop used as server/with external monitor
   custom.lidSwitch.disable = true;

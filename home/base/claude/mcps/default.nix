@@ -52,6 +52,15 @@ let
     builtins.readFile ./mem0/scripts/mem0-openmemory-up
   );
 
+  figmaMcp = import ./figma {
+    inherit
+      pkgs
+      nodejs
+      homeDir
+      hostname
+      ;
+  };
+
 in
 {
   imports = [
@@ -71,6 +80,10 @@ in
       a2aMcpStdioArgs = a2aMcp.mcpServerArgs;
       browserUseMcpStdioCommand = browserUseMcpWrapper;
       mem0McpServerConfig = mem0Mcp.serverConfig;
+      inherit (figmaMcp)
+        figmaMcpStdioCommand
+        figmaMcpStdioArgs
+        ;
       codexBinaryPath = "${homeDir}/.local/bin/codex";
     })
   ];

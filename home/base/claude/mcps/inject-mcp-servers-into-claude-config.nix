@@ -8,6 +8,8 @@
   a2aMcpStdioArgs,
   browserUseMcpStdioCommand,
   mem0McpServerConfig,
+  figmaMcpStdioCommand,
+  figmaMcpStdioArgs,
   codexBinaryPath,
 }:
 { pkgs, lib, ... }:
@@ -34,6 +36,10 @@ let
       args = [ ];
     };
     mem0 = mem0McpServerConfig;
+    figma = {
+      command = figmaMcpStdioCommand;
+      args = figmaMcpStdioArgs;
+    };
   };
 
   mcpServerNamesManagedAcrossAllPlatforms = [
@@ -43,6 +49,7 @@ let
     "chrome-devtools"
     "codex"
     "mem0"
+    "figma"
   ];
 
   desiredMcpServersJson = builtins.toJSON desiredMcpServersToInject;

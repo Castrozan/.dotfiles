@@ -30,7 +30,7 @@ let
   };
 
   claudeGlobalSettings = {
-    model = "claude-opus-4-8";
+    model = "claude-opus-4-8[1m]";
     effortLevel = "max";
     ultracode = true;
     enableWorkflows = true;

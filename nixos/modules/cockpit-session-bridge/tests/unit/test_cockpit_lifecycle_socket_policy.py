@@ -70,6 +70,39 @@ def test_close_operations_target_the_mutation_socket_even_when_enumeration_reads
     assert close_window_runner.executed_commands[0][1:3] == ["-L", "cockpit"]
 
 
+def test_remote_ssh_host_forwards_enumeration_over_ssh_while_mutations_stay_local():
+    remote_enumeration_policy = cockpit_lifecycle_control.CockpitTmuxSocketPolicy(
+        enumeration_socket_name="",
+        mutation_socket_name="cockpit",
+        remote_ssh_host="lucas.zanoni@kira",
+    )
+
+    list_sessions_runner = RecordingSubprocessRunner()
+    dispatch(
+        {"operation": "list-sessions"},
+        list_sessions_runner,
+        remote_enumeration_policy,
+    )
+
+    close_session_runner = RecordingSubprocessRunner()
+    dispatch(
+        {"operation": "close-session", "sessionName": "owner-real-work"},
+        close_session_runner,
+        remote_enumeration_policy,
+    )
+
+    assert list_sessions_runner.executed_commands
+    for executed_command in list_sessions_runner.executed_commands:
+        assert executed_command[0] == "ssh"
+        assert "lucas.zanoni@kira" in executed_command
+        assert executed_command[-1].startswith("tmux ")
+        assert "/nix/store/" not in executed_command[-1]
+    assert close_session_runner.executed_commands == [
+        [*COCKPIT_SOCKET_PREFIX, "kill-session", "-t", "owner-real-work"]
+    ]
+    assert "ssh" not in close_session_runner.executed_commands[0]
+
+
 def test_list_sessions_reads_the_default_socket_when_enumeration_is_empty_while_mutations_stay_sandboxed():
     owner_default_enumeration_policy = (
         cockpit_lifecycle_control.CockpitTmuxSocketPolicy(

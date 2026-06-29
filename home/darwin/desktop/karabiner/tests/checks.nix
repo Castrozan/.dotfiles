@@ -24,8 +24,8 @@ let
     braveControlDPassthroughPreEmptsLinuxStyleRemap
     chromeZoomInRemapIsPresent
     chromeZoomOutRemapIsPresent
-    bravePlainControlBDisablePreEmptsLinuxStyleRemap
-    chromePlainControlBDisablePreEmptsLinuxStyleRemap
+    bravePlainControlBPassthroughPreEmptsLinuxStyleRemap
+    chromePlainControlBPassthroughPreEmptsLinuxStyleRemap
     ;
 
   applicationFocusDefaultDenyGuards = import ../rules/application-focus-default-deny-guards.nix;
@@ -116,13 +116,13 @@ in
       chromeZoomOutRemapIsPresent
       "Chrome must remap Ctrl+Shift+- to Command+- so Ctrl+Shift+- zooms out, because Chrome ignores brave.accelerators and only a Karabiner rule can deliver the Mac zoom shortcut";
 
-  domain-desktop-karabiner-brave-ctrl-b-disable-pre-empts-linux-style-remap =
-    mkEvalCheck "domain-desktop-karabiner-brave-ctrl-b-disable-pre-empts-linux-style-remap"
-      bravePlainControlBDisablePreEmptsLinuxStyleRemap
-      "Brave plain Ctrl+B must be disabled to vk_none by a rule appearing before the Linux-style Ctrl-to-Cmd remap, so Ctrl+B does nothing instead of being converted to Cmd+B (bold) when Brave is frontmost; Ctrl+Shift+B stays free for the bookmark bar toggle because the disable matches plain control only";
+  domain-desktop-karabiner-brave-ctrl-b-passthrough-pre-empts-linux-style-remap =
+    mkEvalCheck "domain-desktop-karabiner-brave-ctrl-b-passthrough-pre-empts-linux-style-remap"
+      bravePlainControlBPassthroughPreEmptsLinuxStyleRemap
+      "Brave plain Ctrl+B must pass through to the page as Ctrl+B by a rule appearing before the Linux-style Ctrl-to-Cmd remap, so web apps can use Ctrl+B as a leader key instead of it being converted to Cmd+B (bold) when Brave is frontmost; Ctrl+Shift+B stays free for the bookmark bar toggle because the passthrough matches plain control only";
 
-  domain-desktop-karabiner-chrome-ctrl-b-disable-pre-empts-linux-style-remap =
-    mkEvalCheck "domain-desktop-karabiner-chrome-ctrl-b-disable-pre-empts-linux-style-remap"
-      chromePlainControlBDisablePreEmptsLinuxStyleRemap
-      "Chrome plain Ctrl+B must be disabled to vk_none by a rule appearing before the Linux-style Ctrl-to-Cmd remap, so Ctrl+B does nothing instead of being converted to Cmd+B (bold) when Chrome is frontmost; Ctrl+Shift+B stays free for the bookmark bar toggle because the disable matches plain control only";
+  domain-desktop-karabiner-chrome-ctrl-b-passthrough-pre-empts-linux-style-remap =
+    mkEvalCheck "domain-desktop-karabiner-chrome-ctrl-b-passthrough-pre-empts-linux-style-remap"
+      chromePlainControlBPassthroughPreEmptsLinuxStyleRemap
+      "Chrome plain Ctrl+B must pass through to the page as Ctrl+B by a rule appearing before the Linux-style Ctrl-to-Cmd remap, so web apps can use Ctrl+B as a leader key instead of it being converted to Cmd+B (bold) when Chrome is frontmost; Ctrl+Shift+B stays free for the bookmark bar toggle because the passthrough matches plain control only";
 }

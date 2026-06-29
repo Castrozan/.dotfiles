@@ -8,6 +8,7 @@ from cockpit_lifecycle_websocket import (
     COCKPIT_LIFECYCLE_CONTROL_PATH,
     stream_cockpit_lifecycle_control_over_websocket,
 )
+from cockpit_tmux_commands import build_attach_session_command
 from pseudoterminal_streams import (
     apply_pseudoterminal_window_size,
     stream_pseudoterminal_output_to_websocket,
@@ -17,12 +18,26 @@ from settings import (
     is_request_origin_allowed,
     read_request_origin,
     read_request_path,
+    read_session_attach_target,
     resolve_bridge_settings,
 )
+
 
 SESSION_PROCESS_TERMINATION_TIMEOUT_SECONDS = 5
 INITIAL_PSEUDOTERMINAL_COLUMNS = 120
 INITIAL_PSEUDOTERMINAL_ROWS = 32
+
+
+def resolve_session_command(websocket_connection, settings):
+    attach_target = read_session_attach_target(read_request_path(websocket_connection))
+    if attach_target is None:
+        return settings.session_command
+    return build_attach_session_command(
+        settings.cockpit_tmux_executable_path,
+        settings.cockpit_tmux_enumeration_socket_name,
+        attach_target,
+        remote_ssh_host=settings.cockpit_tmux_remote_ssh_host,
+    )
 
 
 async def terminate_session_process(session_process):
@@ -63,7 +78,7 @@ async def bridge_session_over_websocket(websocket_connection, settings, event_lo
     child_environment["TERM"] = settings.terminal_type
 
     session_process = await asyncio.create_subprocess_exec(
-        *settings.session_command,
+        *resolve_session_command(websocket_connection, settings),
         stdin=slave_file_descriptor,
         stdout=slave_file_descriptor,
         stderr=slave_file_descriptor,
@@ -115,6 +130,7 @@ async def bridge_cockpit_lifecycle_over_websocket(
         CockpitTmuxSocketPolicy(
             enumeration_socket_name=settings.cockpit_tmux_enumeration_socket_name,
             mutation_socket_name=settings.cockpit_tmux_mutation_socket_name,
+            remote_ssh_host=settings.cockpit_tmux_remote_ssh_host,
         ),
         subprocess_runner=subprocess_runner,
     )

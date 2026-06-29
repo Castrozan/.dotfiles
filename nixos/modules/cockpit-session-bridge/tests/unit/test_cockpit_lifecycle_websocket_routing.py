@@ -37,6 +37,36 @@ def test_a_disallowed_origin_on_the_lifecycle_path_is_closed_and_never_dispatche
     assert websocket_connection.sent_messages == []
 
 
+def test_the_lifecycle_handler_forwards_enumeration_over_ssh_when_a_remote_host_is_set():
+    runner = RecordingSubprocessRunner()
+    websocket_connection = ScriptedLifecycleControlWebsocket(
+        ['{"operation":"list-sessions"}']
+    )
+    remote_settings = settings.CockpitSessionBridgeSettings(
+        listen_address="127.0.0.1",
+        listen_port=8787,
+        session_command=["/bin/sh", "-il"],
+        allowed_request_origin="https://lucaszanoni.com",
+        terminal_type="xterm-256color",
+        cockpit_tmux_executable_path=TMUX_EXECUTABLE_PATH,
+        cockpit_tmux_enumeration_socket_name="",
+        cockpit_tmux_remote_ssh_host="lucas.zanoni@kira",
+    )
+
+    asyncio.run(
+        server.bridge_cockpit_lifecycle_over_websocket(
+            websocket_connection, remote_settings, subprocess_runner=runner
+        )
+    )
+
+    assert runner.executed_commands
+    for executed_command in runner.executed_commands:
+        assert executed_command[0] == "ssh"
+        assert "lucas.zanoni@kira" in executed_command
+        assert executed_command[-1].startswith("tmux ")
+        assert "/nix/store/" not in executed_command[-1]
+
+
 def test_the_lifecycle_path_routes_to_the_lifecycle_handler_not_the_session_bridge():
     routed_handlers = []
     websocket_connection = ScriptedLifecycleControlWebsocket(

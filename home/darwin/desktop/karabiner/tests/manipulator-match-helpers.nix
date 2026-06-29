@@ -48,13 +48,15 @@ let
       && lib.any (b: lib.hasInfix "chrome" (lib.toLower b)) (condition.bundle_identifiers or [ ])
     ) (manipulator.conditions or [ ]);
 
-  isPlainControlBDisableToVkNoneForBrowser =
+  isPlainControlBPassthroughForBrowser =
     browserBundleInfix: manipulator:
     (manipulator.from.key_code or "") == "b"
     && (manipulator.from.modifiers.mandatory or [ ]) == [ "control" ]
     && !(builtins.elem "shift" (manipulator.from.modifiers.optional or [ ]))
     && !(builtins.elem "any" (manipulator.from.modifiers.optional or [ ]))
-    && lib.any (to: (to.key_code or "") == "vk_none") (manipulator.to or [ ])
+    && lib.any (to: (to.key_code or "") == "b" && (to.modifiers or [ ]) == [ "control" ]) (
+      manipulator.to or [ ]
+    )
     && lib.any (
       condition:
       condition.type or "" == "frontmost_application_if"
@@ -63,12 +65,12 @@ let
       )
     ) (manipulator.conditions or [ ]);
 
-  bravePlainControlBDisableIndex = indexOfFirstRuleWhereManipulatorMatches (
-    isPlainControlBDisableToVkNoneForBrowser "brave"
+  bravePlainControlBPassthroughIndex = indexOfFirstRuleWhereManipulatorMatches (
+    isPlainControlBPassthroughForBrowser "brave"
   );
 
-  chromePlainControlBDisableIndex = indexOfFirstRuleWhereManipulatorMatches (
-    isPlainControlBDisableToVkNoneForBrowser "chrome"
+  chromePlainControlBPassthroughIndex = indexOfFirstRuleWhereManipulatorMatches (
+    isPlainControlBPassthroughForBrowser "chrome"
   );
 in
 {
@@ -81,13 +83,13 @@ in
   chromeZoomOutRemapIsPresent =
     indexOfFirstRuleWhereManipulatorMatches (isChromeControlShiftZoomRemapForKey "hyphen") != null;
 
-  bravePlainControlBDisablePreEmptsLinuxStyleRemap =
-    bravePlainControlBDisableIndex != null
+  bravePlainControlBPassthroughPreEmptsLinuxStyleRemap =
+    bravePlainControlBPassthroughIndex != null
     && linuxStyleIndex != null
-    && bravePlainControlBDisableIndex < linuxStyleIndex;
+    && bravePlainControlBPassthroughIndex < linuxStyleIndex;
 
-  chromePlainControlBDisablePreEmptsLinuxStyleRemap =
-    chromePlainControlBDisableIndex != null
+  chromePlainControlBPassthroughPreEmptsLinuxStyleRemap =
+    chromePlainControlBPassthroughIndex != null
     && linuxStyleIndex != null
-    && chromePlainControlBDisableIndex < linuxStyleIndex;
+    && chromePlainControlBPassthroughIndex < linuxStyleIndex;
 }

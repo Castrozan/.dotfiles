@@ -1,12 +1,14 @@
 from dataclasses import dataclass
 
-from cockpit_tmux_lifecycle import (
-    DEFAULT_COCKPIT_TMUX_SOCKET_NAME,
+from cockpit_tmux_commands import (
     build_close_session_command,
     build_close_window_command,
     build_open_session_command,
     build_open_window_command,
     build_rename_session_command,
+)
+from cockpit_tmux_lifecycle import (
+    DEFAULT_COCKPIT_TMUX_SOCKET_NAME,
     list_cockpit_sessions,
     run_tmux_subprocess_command,
 )
@@ -23,6 +25,7 @@ AGENT_DRIVER_BY_PANE_CURRENT_COMMAND = {
 class CockpitTmuxSocketPolicy:
     enumeration_socket_name: str = DEFAULT_COCKPIT_TMUX_SOCKET_NAME
     mutation_socket_name: str = DEFAULT_COCKPIT_TMUX_SOCKET_NAME
+    remote_ssh_host: str = ""
 
 
 class UnsupportedCockpitLifecycleOperation(Exception):
@@ -58,6 +61,7 @@ async def _list_sessions_response(
     sessions = await list_cockpit_sessions(
         tmux_executable_path,
         socket_policy.enumeration_socket_name,
+        remote_ssh_host=socket_policy.remote_ssh_host,
         subprocess_runner=subprocess_runner,
     )
     return {

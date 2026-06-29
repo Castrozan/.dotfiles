@@ -1,5 +1,6 @@
 import json
 from dataclasses import dataclass
+from urllib.parse import parse_qs, urlsplit
 
 DEFAULT_SESSION_COMMAND = ["/bin/sh", "-il"]
 DEFAULT_LISTEN_ADDRESS = "127.0.0.1"
@@ -21,6 +22,7 @@ class CockpitSessionBridgeSettings:
     cockpit_tmux_executable_path: str = DEFAULT_COCKPIT_TMUX_EXECUTABLE_PATH
     cockpit_tmux_enumeration_socket_name: str = DEFAULT_COCKPIT_TMUX_SOCKET_NAME
     cockpit_tmux_mutation_socket_name: str = DEFAULT_COCKPIT_TMUX_SOCKET_NAME
+    cockpit_tmux_remote_ssh_host: str = ""
 
 
 @dataclass(frozen=True)
@@ -100,6 +102,10 @@ def resolve_bridge_settings(process_environment):
             "COCKPIT_SESSION_BRIDGE_TMUX_MUTATION_SOCKET",
             DEFAULT_COCKPIT_TMUX_SOCKET_NAME,
         ),
+        cockpit_tmux_remote_ssh_host=process_environment.get(
+            "COCKPIT_SESSION_BRIDGE_TMUX_REMOTE_SSH_HOST",
+            "",
+        ),
     )
 
 
@@ -124,3 +130,10 @@ def read_request_path(websocket_connection):
     if connection_request is not None:
         return getattr(connection_request, "path", "")
     return ""
+
+
+def read_session_attach_target(request_path):
+    requested_session_names = parse_qs(urlsplit(request_path).query).get("sessionName")
+    if requested_session_names and requested_session_names[0]:
+        return requested_session_names[0]
+    return None

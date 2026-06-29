@@ -7,6 +7,7 @@ BRIDGE_PACKAGE_DIRECTORY_PATH = (
 )
 sys.path.insert(0, str(BRIDGE_PACKAGE_DIRECTORY_PATH))
 
+import cockpit_tmux_commands
 import cockpit_tmux_lifecycle
 
 
@@ -87,10 +88,10 @@ def test_list_cockpit_sessions_runs_both_listings_and_returns_the_parsed_invento
         )
     ]
     assert executed_commands == [
-        cockpit_tmux_lifecycle.build_list_sessions_command(
+        cockpit_tmux_commands.build_list_sessions_command(
             TMUX_EXECUTABLE_PATH, "cockpit"
         ),
-        cockpit_tmux_lifecycle.build_list_windows_command(
+        cockpit_tmux_commands.build_list_windows_command(
             TMUX_EXECUTABLE_PATH, "cockpit"
         ),
     ]
