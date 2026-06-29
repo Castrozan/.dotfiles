@@ -31,7 +31,7 @@ in
         let
           wrapper = mem0WrapperFor "host-without-a-private-mem0-host-file";
         in
-        wrapper.remoteConfigured == false
+        !wrapper.remoteConfigured
         && wrapper.serverConfig.type == "sse"
         && lib.hasInfix "localhost:8765/mcp/claude/sse/" wrapper.serverConfig.url
       )
@@ -45,9 +45,7 @@ in
           wrapper = mem0WrapperFor "test";
         in
         (!builtins.pathExists privateTestHostFile)
-        || (
-          wrapper.remoteConfigured == true && lib.hasInfix "mem0-remote.test.invalid" wrapper.serverConfig.url
-        )
+        || (wrapper.remoteConfigured && lib.hasInfix "mem0-remote.test.invalid" wrapper.serverConfig.url)
       )
       "when private-config/machines/<host>/mem0-host.nix exists, the wrapper must point Claude at that remote host's OpenMemory endpoint; guards the production-active per-machine host-switch the local-default check cannot see";
 
@@ -75,11 +73,11 @@ in
             usesLocalStack = false;
           };
         in
-        enabled.config.condition == true
+        enabled.config.condition
         && (enabled.config.content.launchd.agents ? mem0-openmemory-autostart)
-        && enabled.config.content.launchd.agents.mem0-openmemory-autostart.config.RunAtLoad == true
-        && onLinux.config.condition == false
-        && onRemoteHost.config.condition == false
+        && enabled.config.content.launchd.agents.mem0-openmemory-autostart.config.RunAtLoad
+        && !onLinux.config.condition
+        && !onRemoteHost.config.condition
       )
       "the OpenMemory launchd auto-start must register only on darwin hosts that run the local stack (kira), with RunAtLoad so the stack survives reboots; it must stay off on linux and off on hosts pointed at a remote OpenMemory";
 }
