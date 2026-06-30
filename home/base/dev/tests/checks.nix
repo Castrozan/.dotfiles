@@ -27,6 +27,13 @@ let
 
   packageNames = map (p: p.name or p.pname or "unknown") cfg.home.packages;
   hasPackageMatching = pattern: builtins.any (n: builtins.match pattern n != null) packageNames;
+
+  darwinCfg = helpers.homeManagerTestConfigurationForDarwin [
+    ../ccost.nix
+  ];
+  darwinPackageNames = map (p: p.name or p.pname or "unknown") darwinCfg.home.packages;
+  darwinHasPackageMatching =
+    pattern: builtins.any (n: builtins.match pattern n != null) darwinPackageNames;
 in
 {
   domain-dev-lazygit-enabled =
@@ -50,4 +57,12 @@ in
   domain-dev-google-cloud-sdk-package =
     mkEvalCheck "domain-dev-google-cloud-sdk-package" (hasPackageMatching ".*google-cloud-sdk.*")
       "google cloud sdk should be installed for google workspace cli setup";
+
+  domain-dev-ccost-package-linux =
+    mkEvalCheck "domain-dev-ccost-package-linux" (hasPackageMatching ".*ccost.*")
+      "ccost cost tracker should resolve to a package on linux";
+
+  domain-dev-ccost-package-darwin =
+    mkEvalCheck "domain-dev-ccost-package-darwin" (darwinHasPackageMatching ".*ccost.*")
+      "ccost must select a darwin prebuilt binary so it installs on darwin, not only linux";
 }
