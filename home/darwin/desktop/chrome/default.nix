@@ -17,10 +17,6 @@ let
   defaultBrowserHandlerSentinelMarker = "${installChromeGlobalDefaultBrowserHandlerScript} ${chromeGlobalUrlOpenerBinary} ${pkgs.duti}/bin/duti ${chromeGlobalDefaultBrowserHandlerBundleIdentifier} ${chromeGlobalDefaultBrowserHandlerApplicationName}";
 in
 {
-  imports = [
-    ./chrome-global-version-drift-restarter.nix
-  ];
-
   home = {
     packages = [
       chromeGlobalLauncher.chromeGlobalLauncherPackage

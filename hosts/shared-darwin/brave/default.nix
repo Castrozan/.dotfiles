@@ -10,5 +10,7 @@
     MetricsReportingEnabled = false;
     BraveStatsPingEnabled = false;
     BraveP3AEnabled = false;
+    SUEnableAutomaticChecks = false;
+    SUAutomaticallyUpdate = false;
   };
 }

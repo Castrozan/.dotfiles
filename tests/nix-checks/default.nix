@@ -46,6 +46,7 @@ let
 
   chiseChecks = import ../../hosts/chise/tests/checks.nix moduleArgs;
   chromeDarwinPolicyChecks = import ../../hosts/shared-darwin/chrome/tests/checks.nix domainArgs;
+  braveDarwinPolicyChecks = import ../../hosts/shared-darwin/brave/tests/checks.nix domainArgs;
 in
 claudeChecks
 // codexChecks
@@ -70,3 +71,4 @@ claudeChecks
 // sourcebotChecks
 // chiseChecks
 // chromeDarwinPolicyChecks
+// braveDarwinPolicyChecks

@@ -29,6 +29,9 @@ let
     !braveDarwinManagedPolicyKeys.MetricsReportingEnabled
     && !braveDarwinManagedPolicyKeys.BraveStatsPingEnabled
     && !braveDarwinManagedPolicyKeys.BraveP3AEnabled;
+  sparkleAutoUpdateIsDisabledByPolicy =
+    !braveDarwinManagedPolicyKeys.SUEnableAutomaticChecks
+    && !braveDarwinManagedPolicyKeys.SUAutomaticallyUpdate;
 in
 {
   macbook-brave-bookmark-bar-forced-on =
@@ -56,4 +59,8 @@ in
   macbook-brave-telemetry-disabled =
     mkEvalCheck "macbook-brave-telemetry-disabled" telemetryAndStatsPingsAreDisabledByPolicy
       "Brave MetricsReporting, BraveStatsPing, and BraveP3A must all be disabled";
+
+  macbook-brave-sparkle-auto-update-disabled =
+    mkEvalCheck "macbook-brave-sparkle-auto-update-disabled" sparkleAutoUpdateIsDisabledByPolicy
+      "Brave Sparkle SUEnableAutomaticChecks and SUAutomaticallyUpdate must be false so the updater never swaps the install underneath a running Brave, mirroring the Chrome Keystone disable";
 }
