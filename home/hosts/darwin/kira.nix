@@ -30,7 +30,7 @@ in
   ]
   ++ lib.optionals kiraPrivateConfigExists [
     "${privateConfigRoot}/machines/kira/clawde-agents"
-    "${privateConfigRoot}/machines/kira/senior-ponto"
+    "${privateConfigRoot}/machines/kira/scheduled-tasks"
   ]
   ++ lib.optional (builtins.pathExists ../../../private-config/machines/kira/cloudflare-tunnel-connector.nix) ../../../private-config/machines/kira/cloudflare-tunnel-connector.nix;
 
