@@ -38,6 +38,7 @@
     ../base/desktop/home-assistant-remote.nix
 
     ../base/dev/ccost.nix
+    ../base/dev/ccusage.nix
     ../base/dev/devenv.nix
     ../base/dev/git.nix
     ../base/dev/glab.nix

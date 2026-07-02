@@ -21,6 +21,7 @@ let
     ../lazygit.nix
     ../devenv.nix
     ../ccost.nix
+    ../ccusage.nix
     ../mcporter.nix
     ../google-workspace-cli.nix
   ];
@@ -30,6 +31,7 @@ let
 
   darwinCfg = helpers.homeManagerTestConfigurationForDarwin [
     ../ccost.nix
+    ../ccusage.nix
   ];
   darwinPackageNames = map (p: p.name or p.pname or "unknown") darwinCfg.home.packages;
   darwinHasPackageMatching =
@@ -65,4 +67,12 @@ in
   domain-dev-ccost-package-darwin =
     mkEvalCheck "domain-dev-ccost-package-darwin" (darwinHasPackageMatching ".*ccost.*")
       "ccost must select a darwin prebuilt binary so it installs on darwin, not only linux";
+
+  domain-dev-ccusage-package-linux =
+    mkEvalCheck "domain-dev-ccusage-package-linux" (hasPackageMatching ".*ccusage.*")
+      "ccusage usage tracker should resolve to a package on linux";
+
+  domain-dev-ccusage-package-darwin =
+    mkEvalCheck "domain-dev-ccusage-package-darwin" (darwinHasPackageMatching ".*ccusage.*")
+      "ccusage must select a darwin prebuilt binary so it installs on darwin, not only linux";
 }

@@ -47,6 +47,7 @@ in
 
     ../../base/dev/aws.nix
     ../../base/dev/ccost.nix
+    ../../base/dev/ccusage.nix
     ../../base/dev/devenv.nix
     ../../base/dev/github-actions-runner.nix
     ../../base/dev/glab.nix

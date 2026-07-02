@@ -44,6 +44,7 @@ in
     ../../linux/desktop/scripts.nix
 
     ../../base/dev/ccost.nix
+    ../../base/dev/ccusage.nix
     ../../base/dev/devenv.nix
     ../../base/dev/lazygit.nix
     ../../base/dev/mcporter.nix
