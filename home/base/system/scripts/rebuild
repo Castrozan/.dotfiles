@@ -8,6 +8,15 @@ readonly NIXOS_ALLOW_UNFREE="NIXPKGS_ALLOW_UNFREE=1"
 readonly AGENIX_IDENTITY_KEY="${HOME}/.ssh/id_ed25519"
 readonly NIXOS_SETUID_WRAPPERS_DIR="/run/wrappers/bin"
 
+_sudo() {
+	local sudo_bin="sudo"
+	if [ -x "${NIXOS_SETUID_WRAPPERS_DIR}/sudo" ]; then
+		sudo_bin="${NIXOS_SETUID_WRAPPERS_DIR}/sudo"
+	fi
+
+	"$sudo_bin" -n "$@"
+}
+
 _ensure_setuid_wrappers_in_path() {
 	if [ -d "$NIXOS_SETUID_WRAPPERS_DIR" ]; then
 		case ":$PATH:" in
@@ -96,11 +105,11 @@ _fix_agenix_identity_key_ownership() {
 	[ "$current_owner" = "$expected_owner" ] && return 0
 
 	echo ":: Fixing agenix identity key ownership ($current_owner -> $expected_owner)..."
-	sudo chown "$expected_owner" "$AGENIX_IDENTITY_KEY"
-	sudo chmod 600 "$AGENIX_IDENTITY_KEY"
+	_sudo chown "$expected_owner" "$AGENIX_IDENTITY_KEY"
+	_sudo chmod 600 "$AGENIX_IDENTITY_KEY"
 	if [ -f "$AGENIX_IDENTITY_KEY.pub" ]; then
-		sudo chown "$expected_owner" "$AGENIX_IDENTITY_KEY.pub"
-		sudo chmod 644 "$AGENIX_IDENTITY_KEY.pub"
+		_sudo chown "$expected_owner" "$AGENIX_IDENTITY_KEY.pub"
+		_sudo chmod 644 "$AGENIX_IDENTITY_KEY.pub"
 	fi
 }
 
@@ -160,7 +169,7 @@ _rebuild_nixos() {
 		lock_flags+=(--no-write-lock-file)
 	fi
 
-	sudo env "$NIXOS_ALLOW_UNFREE" nixos-rebuild switch --flake "${flake_ref}" "${lock_flags[@]}"
+	_sudo env "PATH=${NIXOS_SETUID_WRAPPERS_DIR}:${PATH}" "$NIXOS_ALLOW_UNFREE" nixos-rebuild switch --flake "${flake_ref}" "${lock_flags[@]}"
 }
 
 _rebuild_home_manager() {
