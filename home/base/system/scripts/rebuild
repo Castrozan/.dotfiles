@@ -5,8 +5,11 @@ set -Eeuo pipefail
 readonly DOTFILES_DIR="${HOME}/.dotfiles"
 readonly BACKUP_PREFIX="backup"
 readonly NIXOS_ALLOW_UNFREE="NIXPKGS_ALLOW_UNFREE=1"
+readonly REBUILD_WRAPPER_SENTINEL="DOTFILES_REBUILD_WRAPPER=1"
 readonly AGENIX_IDENTITY_KEY="${HOME}/.ssh/id_ed25519"
 readonly NIXOS_SETUID_WRAPPERS_DIR="/run/wrappers/bin"
+readonly ZANONI_SYSTEM_FLAKE="${ZANONI_SYSTEM_FLAKE:-${HOME}/zanoni-system/flake.nix}"
+readonly ETC_NIXOS_FLAKE="${ETC_NIXOS_FLAKE:-/etc/nixos/flake.nix}"
 
 _sudo() {
 	local sudo_bin="sudo"
@@ -129,7 +132,26 @@ _resolve_machine_alias() {
 }
 
 _etc_nixos_flake_present() {
-	[ -f /etc/nixos/flake.nix ]
+	[ -f "$ETC_NIXOS_FLAKE" ]
+}
+
+_zanoni_system_flake_present() {
+	[ -f "$ZANONI_SYSTEM_FLAKE" ]
+}
+
+_etc_nixos_flake_matches_zanoni_system() {
+	cmp -s "$ZANONI_SYSTEM_FLAKE" "$ETC_NIXOS_FLAKE"
+}
+
+_sync_etc_nixos_flake_from_zanoni_system() {
+	local machine_alias="$1"
+
+	[ "$machine_alias" = "chise" ] || return 0
+	_zanoni_system_flake_present || return 0
+	_etc_nixos_flake_matches_zanoni_system && return 0
+
+	echo ":: Syncing ${ETC_NIXOS_FLAKE} from zanoni-system entrypoint (${ZANONI_SYSTEM_FLAKE})..."
+	_sudo install -D -m 0644 "$ZANONI_SYSTEM_FLAKE" "$ETC_NIXOS_FLAKE"
 }
 
 _resolve_nixos_flake_ref() {
@@ -158,6 +180,7 @@ _assert_chise_not_deploying_from_bare_dotfiles() {
 _rebuild_nixos() {
 	local machine_alias flake_ref
 	machine_alias="$(_resolve_machine_alias)"
+	_sync_etc_nixos_flake_from_zanoni_system "$machine_alias"
 	_assert_chise_not_deploying_from_bare_dotfiles "$machine_alias" || return 1
 	flake_ref="$(_resolve_nixos_flake_ref "$machine_alias")"
 
@@ -169,7 +192,7 @@ _rebuild_nixos() {
 		lock_flags+=(--no-write-lock-file)
 	fi
 
-	_sudo env "PATH=${NIXOS_SETUID_WRAPPERS_DIR}:${PATH}" "$NIXOS_ALLOW_UNFREE" nixos-rebuild switch --flake "${flake_ref}" "${lock_flags[@]}"
+	_sudo env "PATH=${NIXOS_SETUID_WRAPPERS_DIR}:${PATH}" "$NIXOS_ALLOW_UNFREE" "$REBUILD_WRAPPER_SENTINEL" nixos-rebuild switch --flake "${flake_ref}" "${lock_flags[@]}"
 }
 
 _rebuild_home_manager() {

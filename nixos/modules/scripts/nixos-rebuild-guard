@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+if [ "${DOTFILES_REBUILD_WRAPPER:-}" != "1" ]; then
+	for guarded_action in "$@"; do
+		case "$guarded_action" in
+		switch | boot | test)
+			echo "error: direct 'nixos-rebuild $guarded_action' is blocked on this host." >&2
+			echo "       Run the 'rebuild' command, which deploys chise through the zanoni-system entrypoint." >&2
+			exit 1
+			;;
+		esac
+	done
+fi
+
+exec "$REAL_NIXOS_REBUILD" "$@"

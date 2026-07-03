@@ -51,3 +51,44 @@ setup() {
 	[ "$status" -eq 0 ]
 	[[ "$output" == *".dotfiles?submodules=1#chise" ]]
 }
+
+@test "zanoni-system sync is skipped for non-chise hosts" {
+	_zanoni_system_flake_present() { return 0; }
+	_etc_nixos_flake_matches_zanoni_system() { return 1; }
+	_sudo() { echo "SUDO_CALLED"; }
+	run _sync_etc_nixos_flake_from_zanoni_system jojo
+	[ "$status" -eq 0 ]
+	[[ "$output" != *"SUDO_CALLED"* ]]
+}
+
+@test "zanoni-system sync is skipped when the zanoni-system flake is absent" {
+	_zanoni_system_flake_present() { return 1; }
+	_etc_nixos_flake_matches_zanoni_system() { return 1; }
+	_sudo() { echo "SUDO_CALLED"; }
+	run _sync_etc_nixos_flake_from_zanoni_system chise
+	[ "$status" -eq 0 ]
+	[[ "$output" != *"SUDO_CALLED"* ]]
+}
+
+@test "zanoni-system sync is skipped when /etc/nixos already matches" {
+	_zanoni_system_flake_present() { return 0; }
+	_etc_nixos_flake_matches_zanoni_system() { return 0; }
+	_sudo() { echo "SUDO_CALLED"; }
+	run _sync_etc_nixos_flake_from_zanoni_system chise
+	[ "$status" -eq 0 ]
+	[[ "$output" != *"SUDO_CALLED"* ]]
+}
+
+@test "zanoni-system sync installs /etc/nixos flake from zanoni-system when it differs" {
+	_zanoni_system_flake_present() { return 0; }
+	_etc_nixos_flake_matches_zanoni_system() { return 1; }
+	_sudo() { echo "SUDO_CALLED $*"; }
+	run _sync_etc_nixos_flake_from_zanoni_system chise
+	[ "$status" -eq 0 ]
+	[[ "$output" == *"SUDO_CALLED install -D -m 0644"* ]]
+}
+
+@test "nixos-rebuild is invoked with the rebuild-wrapper sentinel" {
+	grep -q 'REBUILD_WRAPPER_SENTINEL.* nixos-rebuild switch' "$SCRIPT_UNDER_TEST"
+	grep -q 'DOTFILES_REBUILD_WRAPPER=1' "$SCRIPT_UNDER_TEST"
+}

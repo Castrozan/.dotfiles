@@ -50,6 +50,15 @@ let
 in
 arrStackChecks
 // {
+  chise-rebuild-guard-wrapper-shadows-nixos-rebuild =
+    mkEvalCheck "chise-rebuild-guard-wrapper-shadows-nixos-rebuild"
+      (builtins.any (
+        p:
+        (p.name or "") == "nixos-rebuild"
+        && (p.meta.priority or lib.meta.defaultPriority) < lib.meta.defaultPriority
+      ) nixosCfg.environment.systemPackages)
+      "the nixos-rebuild guard wrapper must be installed with lib.hiPrio so it wins the systemPackages collision and shadows the real nixos-rebuild, blocking a manual switch/boot/test outside the rebuild command";
+
   chise-nix-daemon-max-jobs = mkEvalCheck "chise-nix-daemon-max-jobs" (
     nixosCfg.nix.settings.max-jobs <= 6
   ) "max-jobs must be <= 6 to prevent memory saturation on 16GB RAM";
