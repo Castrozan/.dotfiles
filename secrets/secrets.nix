@@ -40,6 +40,7 @@ in
   "api-keys/tavily-api-key.age".publicKeys = all_keys;
   "api-keys/grid-token-robson.age".publicKeys = all_keys;
   "api-keys/grid-token-clever.age".publicKeys = all_keys;
+  "api-keys/todoist-api-token.age".publicKeys = all_keys;
 
   "credentials/jira-api-token.age".publicKeys = all_keys;
   "credentials/glab-token.age".publicKeys = all_keys;

@@ -34,6 +34,7 @@ let
     "api-keys/gemini-api-key"
     "api-keys/nvidia-api-key"
     "api-keys/openai-api-key"
+    "api-keys/todoist-api-token"
     "infrastructure/telegram-ids"
     "infrastructure/ssh-hosts"
     "credentials/x-username"
