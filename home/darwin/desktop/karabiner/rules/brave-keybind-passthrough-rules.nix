@@ -65,9 +65,55 @@ let
     conditions = braveIsFrontmostConditions;
   };
 
+  closeTabWithControlW = {
+    type = "basic";
+    from = {
+      key_code = "w";
+      modifiers = {
+        mandatory = [ "control" ];
+        optional = [ "any" ];
+      };
+    };
+    to = [
+      {
+        key_code = "w";
+        modifiers = [ "command" ];
+      }
+    ];
+    conditions = braveIsFrontmostConditions;
+  };
+
+  closeWindowWithCommandW = {
+    type = "basic";
+    from = {
+      key_code = "w";
+      modifiers = {
+        mandatory = [ "command" ];
+        optional = [ "any" ];
+      };
+    };
+    to = [
+      {
+        key_code = "w";
+        modifiers = [
+          "command"
+          "shift"
+        ];
+      }
+    ];
+    conditions = braveIsFrontmostConditions;
+  };
+
   bravePassthroughLetters = [ "d" ];
 in
 [
+  {
+    description = "Brave: Linux-style Ctrl+W closes the tab while Cmd+W closes the window, driven at the keystroke layer because Brave reverts a brave.accelerators override that removes a default binding: Cmd+W is Brave's default Close Tab, so on launch Brave restores Cmd+W to Close Tab and strips it from Close Window. Remapping physical Cmd+W to Cmd+Shift+W (Brave's default Close Window) and physical Ctrl+W to Cmd+W (Brave's default Close Tab) targets only defaults Brave never reverts (mirrors chrome-keybind-rules)";
+    manipulators = [
+      closeTabWithControlW
+      closeWindowWithCommandW
+    ];
+  }
   {
     description = "Brave: preserve Ctrl+letter passthrough so Brave's own accelerator table handles it (overrides Linux-style Ctrl-to-Cmd remap)";
     manipulators = map carveOutBraveFromControlToCommandRemapForLetter bravePassthroughLetters;

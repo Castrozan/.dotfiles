@@ -22,17 +22,6 @@ let
   braveDuplicateTabCustomKeybindIsBoundToControlD =
     bravePreferencesOverrides.brave.accelerators."34027" == [ "Control+KeyD" ];
 
-  braveCloseTabAcceleratorIsBoundToCtrlWOnly =
-    bravePreferencesOverrides.brave.accelerators."34015" == [
-      "Control+KeyW"
-    ];
-
-  braveCloseWindowAcceleratorIsBoundToCmdW =
-    bravePreferencesOverrides.brave.accelerators."34012" == [
-      "Command+KeyW"
-      "Command+Shift+KeyW"
-    ];
-
   braveDefaultSearchProviderIsPinnedToGooglePrepopulatedEngineGuid =
     bravePreferencesOverrides.default_search_provider.guid == "485bf7d3-0215-45af-87dc-538868000001";
 
@@ -71,16 +60,6 @@ in
     mkEvalCheck "domain-desktop-brave-duplicate-tab-bound-to-control-d"
       braveDuplicateTabCustomKeybindIsBoundToControlD
       "Brave Duplicate Tab (command id 34027) must be bound to Control+KeyD";
-
-  domain-desktop-brave-close-tab-bound-to-ctrl-w-only =
-    mkEvalCheck "domain-desktop-brave-close-tab-bound-to-ctrl-w-only"
-      braveCloseTabAcceleratorIsBoundToCtrlWOnly
-      "Brave Close Tab (command id 34015) must be bound to Control+KeyW only so Cmd+W is free for Close Window";
-
-  domain-desktop-brave-close-window-bound-to-cmd-w =
-    mkEvalCheck "domain-desktop-brave-close-window-bound-to-cmd-w"
-      braveCloseWindowAcceleratorIsBoundToCmdW
-      "Brave Close Window (command id 34012) must be bound to Command+KeyW and keep Command+Shift+KeyW";
 
   domain-desktop-brave-default-search-provider-pinned-to-google =
     mkEvalCheck "domain-desktop-brave-default-search-provider-pinned-to-google"

@@ -72,6 +72,40 @@ let
   chromePlainControlBPassthroughIndex = indexOfFirstRuleWhereManipulatorMatches (
     isPlainControlBPassthroughForBrowser "chrome"
   );
+
+  manipulatorHasFrontmostBrowser =
+    browserBundleInfix: manipulator:
+    lib.any (
+      condition:
+      condition.type or "" == "frontmost_application_if"
+      && lib.any (b: lib.hasInfix browserBundleInfix (lib.toLower b)) (
+        condition.bundle_identifiers or [ ]
+      )
+    ) (manipulator.conditions or [ ]);
+
+  isCloseTabControlWRemapForBrowser =
+    browserBundleInfix: manipulator:
+    (manipulator.from.key_code or "") == "w"
+    && (manipulator.from.modifiers.mandatory or [ ]) == [ "control" ]
+    && lib.any (to: (to.key_code or "") == "w" && (to.modifiers or [ ]) == [ "command" ]) (
+      manipulator.to or [ ]
+    )
+    && manipulatorHasFrontmostBrowser browserBundleInfix manipulator;
+
+  isCloseWindowCommandWRemapForBrowser =
+    browserBundleInfix: manipulator:
+    (manipulator.from.key_code or "") == "w"
+    && (manipulator.from.modifiers.mandatory or [ ]) == [ "command" ]
+    && lib.any (
+      to:
+      (to.key_code or "") == "w"
+      &&
+        (to.modifiers or [ ]) == [
+          "command"
+          "shift"
+        ]
+    ) (manipulator.to or [ ])
+    && manipulatorHasFrontmostBrowser browserBundleInfix manipulator;
 in
 {
   braveControlDPassthroughPreEmptsLinuxStyleRemap =
@@ -92,4 +126,16 @@ in
     chromePlainControlBPassthroughIndex != null
     && linuxStyleIndex != null
     && chromePlainControlBPassthroughIndex < linuxStyleIndex;
+
+  braveCloseTabControlWRemapIsPresent =
+    indexOfFirstRuleWhereManipulatorMatches (isCloseTabControlWRemapForBrowser "brave") != null;
+
+  braveCloseWindowCommandWRemapIsPresent =
+    indexOfFirstRuleWhereManipulatorMatches (isCloseWindowCommandWRemapForBrowser "brave") != null;
+
+  chromeCloseTabControlWRemapIsPresent =
+    indexOfFirstRuleWhereManipulatorMatches (isCloseTabControlWRemapForBrowser "chrome") != null;
+
+  chromeCloseWindowCommandWRemapIsPresent =
+    indexOfFirstRuleWhereManipulatorMatches (isCloseWindowCommandWRemapForBrowser "chrome") != null;
 }

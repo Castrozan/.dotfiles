@@ -26,6 +26,10 @@ let
     chromeZoomOutRemapIsPresent
     bravePlainControlBPassthroughPreEmptsLinuxStyleRemap
     chromePlainControlBPassthroughPreEmptsLinuxStyleRemap
+    braveCloseTabControlWRemapIsPresent
+    braveCloseWindowCommandWRemapIsPresent
+    chromeCloseTabControlWRemapIsPresent
+    chromeCloseWindowCommandWRemapIsPresent
     ;
 
   applicationFocusDefaultDenyGuards = import ../rules/application-focus-default-deny-guards.nix;
@@ -125,4 +129,24 @@ in
     mkEvalCheck "domain-desktop-karabiner-chrome-ctrl-b-passthrough-pre-empts-linux-style-remap"
       chromePlainControlBPassthroughPreEmptsLinuxStyleRemap
       "Chrome plain Ctrl+B must pass through to the page as Ctrl+B by a rule appearing before the Linux-style Ctrl-to-Cmd remap, so web apps can use Ctrl+B as a leader key instead of it being converted to Cmd+B (bold) when Chrome is frontmost; Ctrl+Shift+B stays free for the bookmark bar toggle because the passthrough matches plain control only";
+
+  domain-desktop-karabiner-brave-close-tab-control-w-remap-present =
+    mkEvalCheck "domain-desktop-karabiner-brave-close-tab-control-w-remap-present"
+      braveCloseTabControlWRemapIsPresent
+      "Brave must remap Ctrl+W to Command+W at the keystroke layer so Ctrl+W closes the tab via Brave's default Close Tab accelerator, because Brave reverts a brave.accelerators override that removes the Cmd+W default from Close Tab";
+
+  domain-desktop-karabiner-brave-close-window-command-w-remap-present =
+    mkEvalCheck "domain-desktop-karabiner-brave-close-window-command-w-remap-present"
+      braveCloseWindowCommandWRemapIsPresent
+      "Brave must remap Cmd+W to Command+Shift+W at the keystroke layer so Cmd+W closes the window via Brave's default Close Window accelerator, because Brave reverts the brave.accelerators override that binds Cmd+W to Close Window and restores Cmd+W to Close Tab on launch";
+
+  domain-desktop-karabiner-chrome-close-tab-control-w-remap-present =
+    mkEvalCheck "domain-desktop-karabiner-chrome-close-tab-control-w-remap-present"
+      chromeCloseTabControlWRemapIsPresent
+      "Chrome must remap Ctrl+W to Command+W at the keystroke layer so Ctrl+W closes the tab, because Chrome ignores brave.accelerators and only a Karabiner rule can deliver the Linux-style close-tab shortcut";
+
+  domain-desktop-karabiner-chrome-close-window-command-w-remap-present =
+    mkEvalCheck "domain-desktop-karabiner-chrome-close-window-command-w-remap-present"
+      chromeCloseWindowCommandWRemapIsPresent
+      "Chrome must remap Cmd+W to Command+Shift+W at the keystroke layer so Cmd+W closes the window, because Chrome ignores brave.accelerators and only a Karabiner rule can deliver the close-window shortcut";
 }
