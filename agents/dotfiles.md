@@ -3,6 +3,10 @@ description: Agent behavior instructions specific to the .dotfiles repository
 alwaysApply: true
 ---
 
+<orientation>
+If you are reading this you are inside the dotfiles repo, the single declarative source of truth for every machine it configures. The live machine is a projection of this repo, so its whole configuration - packages, services, host and user settings, dotfiles, secrets, packaged scripts, even this instruction file - is produced by a nix module here and materialized by a rebuild. A change made by hand on the running machine is drift the next rebuild erases; a change made here is the real thing, which is why most tasks reduce to finding the module that already owns what you are changing and editing that. Before guessing where something lives, load the `nix` skill: it carries this repo's map - module layout, host split, secrets, script packaging, the "where does this belong" call.
+</orientation>
+
 <stewardship>
 This repo is continuously kept synced, green, and pushed by an autonomous per-machine steward agent, declared in the clawde-agents module and built from the clawde flake input where its behavior lives. So for complex git reconciliation or operations on the main branch, commit your work but leave the push and the reconcile to the steward. A checkout that is ahead of, behind, or diverged from origin/main is normal in-flight state the steward will reconcile; never surface it as a task pending on the human, and never reconcile it by hand, which races the steward's live loop, unless explicitly told to act in the steward's place.
 </stewardship>
