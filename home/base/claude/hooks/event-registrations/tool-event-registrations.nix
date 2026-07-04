@@ -41,6 +41,16 @@
       ];
     }
     {
+      matcher = "mcp__codex__codex";
+      hooks = [
+        {
+          type = "command";
+          command = "${runHook} ${hooksPath}/codex-sandbox-downgrade-guard.py";
+          timeout = 2000;
+        }
+      ];
+    }
+    {
       matcher = "WebFetch|mcp__browser-use__browser_navigate";
       hooks = [
         {

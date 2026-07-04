@@ -60,14 +60,6 @@ let
     prefix: builtins.any (n: builtins.substring 0 (builtins.stringLength prefix) n == prefix) fileNames;
 
   deployedSettings = builtins.fromJSON cfg.home.file.".claude/settings.json.nix-source".text;
-  deployedHookCommandsForEvent =
-    event:
-    lib.concatMap (matcherGroup: map (hook: hook.command) (matcherGroup.hooks or [ ])) (
-      deployedSettings.hooks.${event} or [ ]
-    );
-  deployedEventRunsLintTurnReview =
-    event:
-    lib.any (command: lib.hasInfix "lint-turn-review.py" command) (deployedHookCommandsForEvent event);
 
   testMachinePrivateMarketplacePluginsFixture = ../../../../private-config/machines/test/claude-plugins.nix;
   testMachinePrivateMarketplacePluginsFixtureExists = builtins.pathExists testMachinePrivateMarketplacePluginsFixture;
@@ -174,15 +166,6 @@ in
       (!(cfg.systemd.user.services ? "browser-use-mcp-bridge"))
       "browser-use-mcp-bridge.service must not exist; browser-use is a direct stdio MCP on all platforms";
 
-  hooks-lint-turn-review-registered-on-stop =
-    mkEvalCheck "hooks-lint-turn-review-registered-on-stop" (deployedEventRunsLintTurnReview "Stop")
-      "the deployed settings must register lint-turn-review.py on the Stop event so end-of-turn lint review fires";
-
-  hooks-lint-turn-review-registered-on-subagent-stop =
-    mkEvalCheck "hooks-lint-turn-review-registered-on-subagent-stop"
-      (deployedEventRunsLintTurnReview "SubagentStop")
-      "the deployed settings must register lint-turn-review.py on the SubagentStop event so subagent turns get the same lint review; guards event-registrations.nix against dropping the SubagentStop registration";
-
   claude-private-marketplace-plugins-folded-into-settings =
     mkEvalCheck "claude-private-marketplace-plugins-folded-into-settings"
       privateMarketplacePluginsAreFoldedIntoSettings
@@ -192,6 +175,13 @@ in
 // import ./mem0-mcp-checks.nix {
   inherit
     pkgs
+    lib
+    mkEvalCheck
+    cfg
+    ;
+}
+// import ./hook-registration-checks.nix {
+  inherit
     lib
     mkEvalCheck
     cfg

@@ -33,6 +33,19 @@ RECORD_INSTRUCTIONS_SKILL_INVOCATION_HOOK_SCRIPT_PATH = find_hook_module_path(
     "record-instructions-skill-invocation"
 )
 MEMORY_RECALL_HOOK_SCRIPT_PATH = find_hook_module_path("memory-recall")
+CODEX_SANDBOX_DOWNGRADE_GUARD_HOOK_SCRIPT_PATH = find_hook_module_path(
+    "codex-sandbox-downgrade-guard"
+)
+
+
+@pytest.fixture
+def invoke_codex_sandbox_downgrade_guard_hook():
+    def runner(payload: dict):
+        return run_hook_subprocess(
+            CODEX_SANDBOX_DOWNGRADE_GUARD_HOOK_SCRIPT_PATH, json.dumps(payload)
+        )
+
+    return runner
 
 
 @pytest.fixture

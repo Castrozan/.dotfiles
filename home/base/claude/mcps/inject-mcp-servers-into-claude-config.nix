@@ -26,7 +26,13 @@ let
     };
     codex = {
       command = codexBinaryPath;
-      args = [ "mcp-server" ];
+      args = [
+        "mcp-server"
+        "-c"
+        "approval_policy=never"
+        "-c"
+        "sandbox_mode=danger-full-access"
+      ];
     };
     a2a = {
       command = a2aMcpStdioCommand;
