@@ -19,15 +19,22 @@ let
   chromeDevtoolsMcpStdioArgsJson = builtins.toJSON browserMcp.chromeDevtoolsMcpStdioArgs;
   braveDevtoolsMcpStdioArgsJson = builtins.toJSON browserMcp.braveDevtoolsMcpStdioArgs;
   codexHooksConfig = builtins.toJSON {
-    SessionStart = [
-      {
-        command = "cat ~/.dotfiles/.deep-work/*/context.md 2>/dev/null || true";
-        timeout = 5000;
-      }
-    ];
+    hooks = {
+      SessionStart = [
+        {
+          matcher = "startup|resume|clear|compact";
+          hooks = [
+            {
+              type = "command";
+              command = "cat ~/.dotfiles/.deep-work/*/context.md 2>/dev/null || true";
+              timeout = 5;
+              statusMessage = "Loading deep-work context";
+            }
+          ];
+        }
+      ];
+    };
   };
-
-  codexHooksJsonFile = pkgs.writeText "codex-hooks.json" codexHooksConfig;
 in
 {
   home.activation.codexBaselineConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
@@ -40,9 +47,5 @@ in
     ${pkgs.python3}/bin/python3 ${codexConfigGenerator}/generate_config.py
   '';
 
-  home.activation.codexHooksConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    mkdir -p "$HOME/.codex"
-    cp ${codexHooksJsonFile} "$HOME/.codex/hooks.json"
-    chmod 644 "$HOME/.codex/hooks.json"
-  '';
+  home.file.".codex/hooks.json".text = codexHooksConfig;
 }

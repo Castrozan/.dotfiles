@@ -46,6 +46,7 @@ NESTED_TABLES = {
     "analytics",
     "mcp_servers",
     "sandbox_workspace_write",
+    "tui",
     "tools",
 }
 
@@ -58,7 +59,13 @@ def render_codex_config_toml(data: dict[str, Any]) -> str:
             continue
         lines.append(f"{k} = {toml_value(data[k])}")
 
-    for table_name in ["analytics", "tools", "sandbox_workspace_write", "features"]:
+    for table_name in [
+        "analytics",
+        "tools",
+        "sandbox_workspace_write",
+        "features",
+        "tui",
+    ]:
         tbl = data.get(table_name)
         if not isinstance(tbl, dict) or not tbl:
             continue

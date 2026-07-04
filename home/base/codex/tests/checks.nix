@@ -67,4 +67,25 @@ in
     mkEvalCheck "codex-claude-plugin-port-activation"
       (builtins.hasAttr "codexClaudePluginPort" cfg.home.activation)
       "third-party Claude Code plugins should be ported into Codex via an activation step";
+
+  codex-hooks-config-managed-file =
+    mkEvalCheck "codex-hooks-config-managed-file" (builtins.hasAttr ".codex/hooks.json" cfg.home.file)
+      "Codex hooks should be deployed as a declarative home.file entry";
+
+  codex-hooks-config-current-schema =
+    let
+      hooksFile = cfg.home.file.".codex/hooks.json" or null;
+      hooksConfig =
+        if hooksFile != null && hooksFile ? text then builtins.fromJSON hooksFile.text else { };
+      sessionStartGroups =
+        if hooksConfig ? hooks && hooksConfig.hooks ? SessionStart then
+          hooksConfig.hooks.SessionStart
+        else
+          [ ];
+      firstSessionStartGroup =
+        if sessionStartGroups == [ ] then { } else builtins.head sessionStartGroups;
+    in
+    mkEvalCheck "codex-hooks-config-current-schema" (
+      hooksConfig ? hooks && firstSessionStartGroup ? hooks
+    ) "Codex hooks.json should use the current top-level hooks schema";
 }

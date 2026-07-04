@@ -120,6 +120,9 @@ BASELINE = {
     "tools": {
         "view_image": True,
     },
+    "tui": {
+        "show_tooltips": False,
+    },
     "projects": build_trusted_project_entries(),
     "mcp_servers": build_mcp_server_entries(),
 }
