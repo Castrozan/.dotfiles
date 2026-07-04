@@ -46,8 +46,6 @@
       "show_brave_rewards_button_in_location_bar": false
     },
     "accelerators": {
-      "34012": ["Command+KeyW", "Command+Shift+KeyW"],
-      "34015": ["Control+KeyW"],
       "34027": ["Control+KeyD"],
       "34018": ["Command+Digit1", "Command+Numpad1", "Alt+Digit1"],
       "34019": ["Command+Digit2", "Command+Numpad2", "Alt+Digit2"],
