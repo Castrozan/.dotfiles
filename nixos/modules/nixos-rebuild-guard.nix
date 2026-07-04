@@ -5,7 +5,7 @@ let
   );
 
   guardedNixosRebuild = pkgs.writeShellScriptBin "nixos-rebuild" ''
-    export REAL_NIXOS_REBUILD=${pkgs.nixos-rebuild-ng}/bin/nixos-rebuild
+    export REAL_NIXOS_REBUILD=${pkgs.nixos-rebuild-ng}/bin/nixos-rebuild-ng
     exec ${guardScript} "$@"
   '';
 in
