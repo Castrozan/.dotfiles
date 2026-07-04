@@ -7,7 +7,7 @@ let
   codexUpstreamReleaseDescriptorBySystem = {
     "x86_64-linux" = {
       releaseTargetTriple = "x86_64-unknown-linux-musl";
-      sha256 = "sha256-BklHXMFh6lyvV3VPzWdyW+r/lrmJpx9NpeebPmcw/oQ=";
+      sha256 = "sha256-y5M+w8thv0tfyI7s9eYUmCn6phclNbbvCvsBVL60qrg=";
       buildInputs = with pkgs; [
         openssl
         libcap
@@ -16,7 +16,7 @@ let
     };
     "aarch64-darwin" = {
       releaseTargetTriple = "aarch64-apple-darwin";
-      sha256 = "sha256-BgAvX/inhWizMzubS7pOdu8arIDDz7ThswwFMstI0Z0=";
+      sha256 = "sha256-cVaxmWJzXJz7VVzde6voxA55dogfhxK3gRmSGdLjpwc=";
       buildInputs = [ ];
     };
   };
