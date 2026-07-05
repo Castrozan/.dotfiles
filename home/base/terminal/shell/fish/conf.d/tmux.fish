@@ -1,4 +1,8 @@
 function __start_tmux
+  if set -q HERDR_ENV
+    return
+  end
+
   if not command -v tmux > /dev/null
     return
   end
