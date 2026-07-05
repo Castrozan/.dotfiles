@@ -34,11 +34,21 @@ let
     line: builtins.match ''.*- "[0-9].*'' line != null
   ) composeLines;
   tailscaleBindAddress = "100.94.11.81";
-  everyPublishedPortIsTailnetBound =
+  funnelLoopbackPublishes = [
+    "127.0.0.1:8096:8096"
+    "127.0.0.1:5055:5055"
+  ];
+  lineIsFunnelLoopbackPublish =
+    line: builtins.any (publish: lib.hasInfix publish line) funnelLoopbackPublishes;
+  everyPublishedPortIsTailnetBoundOrFunnelLoopback =
     publishedPortLines != [ ]
-    && builtins.all (line: lib.hasInfix "${tailscaleBindAddress}:" line) publishedPortLines;
-  composeBindsAWildcardInterface =
-    lib.hasInfix "0.0.0.0" composeText || lib.hasInfix "127.0.0.1" composeText;
+    && builtins.all (
+      line: lib.hasInfix "${tailscaleBindAddress}:" line || lineIsFunnelLoopbackPublish line
+    ) publishedPortLines;
+  composeBindsAWildcardInterface = lib.hasInfix "0.0.0.0" composeText;
+  composeLoopbackPublishesOnlyFunnelTargets = builtins.all lineIsFunnelLoopbackPublish (
+    builtins.filter (line: lib.hasInfix "127.0.0.1" line) publishedPortLines
+  );
   everyServiceHasConfigVolume = builtins.all (
     service: lib.hasInfix ("\${ARR_CONFIG_ROOT}/" + service) composeText
   ) serviceNames;
@@ -99,8 +109,12 @@ in
 
   chise-arr-stack-published-ports-tailnet-bound =
     mkEvalCheck "chise-arr-stack-published-ports-tailnet-bound"
-      (everyPublishedPortIsTailnetBound && !composeBindsAWildcardInterface)
-      "every published port must bind chise's tailscale IP literal (100.94.11.81) so the web UIs are reachable on the tailnet but not on 0.0.0.0 or any other interface";
+      (
+        everyPublishedPortIsTailnetBoundOrFunnelLoopback
+        && !composeBindsAWildcardInterface
+        && composeLoopbackPublishesOnlyFunnelTargets
+      )
+      "every published port must bind chise's tailscale IP literal (100.94.11.81), except the Jellyfin 127.0.0.1:8096 and Jellyseerr 127.0.0.1:5055 loopback publishes the Tailscale Funnels proxy to reach the public internet; no port may bind the 0.0.0.0 wildcard, and loopback may publish nothing but those funnel targets";
 
   chise-arr-stack-config-volume-per-service =
     mkEvalCheck "chise-arr-stack-config-volume-per-service" everyServiceHasConfigVolume
