@@ -1,6 +1,7 @@
 _: {
   qt = {
     enable = true;
-    platformTheme.name = "gnome";
+    platformTheme.name = "qtct";
+    style.name = "adwaita-dark";
   };
 }
