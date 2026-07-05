@@ -64,6 +64,9 @@ let
     "credentials/home-assistant-token"
     "credentials/google-totp-secret"
     "credentials/gcp-usage-uploader-key"
+    "credentials/bitwarden-client-id"
+    "credentials/bitwarden-client-secret"
+    "credentials/bitwarden-master-password"
     "infrastructure/kira-session-connector-credentials"
     "infrastructure/rin-session-connector-credentials"
   ];

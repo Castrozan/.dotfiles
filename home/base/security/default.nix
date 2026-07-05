@@ -1,8 +1,8 @@
 {
   imports = [
     ./agenix.nix
+    ./bitwarden.nix
     ./gpg.nix
-    ./password-store.nix
     ./scripts.nix
   ];
 }
