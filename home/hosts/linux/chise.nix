@@ -9,6 +9,7 @@ in
     ./chise/hyprland.nix
     ./chise/ssh.nix
     ./chise/session-vars.nix
+    ./chise/vivaldi-default-browser.nix
     ../../base/claude/clawde-agents/steward.nix
 
     ../../base/core.nix
