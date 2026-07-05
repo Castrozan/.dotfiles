@@ -70,6 +70,47 @@ let
       ;
   };
 
+  mcpServerDefinitions = {
+    chrome-devtools = {
+      command = browserMcp.chromeDevtoolsMcpStdioCommand;
+      args = browserMcp.chromeDevtoolsMcpStdioArgs;
+    };
+    brave-devtools = {
+      command = browserMcp.braveDevtoolsMcpStdioCommand;
+      args = browserMcp.braveDevtoolsMcpStdioArgs;
+    };
+    codex = {
+      command = "${homeDir}/.local/bin/codex";
+      args = [
+        "mcp-server"
+        "-c"
+        "approval_policy=never"
+        "-c"
+        "sandbox_mode=danger-full-access"
+      ];
+    };
+    a2a = {
+      command = a2aMcp.mcpServerCommand;
+      args = a2aMcp.mcpServerArgs;
+    };
+    browser-use = {
+      command = browserUseMcpWrapper;
+      args = [ ];
+    };
+    mem0 = mem0Mcp.serverConfig;
+    figma = figmaMcp.figmaWriteCapableRemoteServerConfig;
+    figma-read = {
+      command = figmaMcp.figmaReadMcpStdioCommand;
+      args = figmaMcp.figmaReadMcpStdioArgs;
+    };
+  };
+
+  buildClawdeAgentMcpConfigFile =
+    agentName: serverNames:
+    pkgs.writeText "clawde-agent-mcp-config-${agentName}.json" (
+      builtins.toJSON { mcpServers = lib.getAttrs serverNames mcpServerDefinitions; }
+    );
+
 in
 {
   imports = [
@@ -84,25 +125,11 @@ in
       inherit browserUseConfigDir chromeBinary;
     })
     (import ./inject-mcp-servers-into-claude-config.nix {
-      inherit homeDir;
-      inherit (browserMcp)
-        chromeDevtoolsMcpStdioCommand
-        chromeDevtoolsMcpStdioArgs
-        braveDevtoolsMcpStdioCommand
-        braveDevtoolsMcpStdioArgs
-        ;
-      a2aMcpStdioCommand = a2aMcp.mcpServerCommand;
-      a2aMcpStdioArgs = a2aMcp.mcpServerArgs;
-      browserUseMcpStdioCommand = browserUseMcpWrapper;
-      mem0McpServerConfig = mem0Mcp.serverConfig;
-      inherit (figmaMcp)
-        figmaReadMcpStdioCommand
-        figmaReadMcpStdioArgs
-        figmaWriteCapableRemoteServerConfig
-        ;
-      codexBinaryPath = "${homeDir}/.local/bin/codex";
+      inherit homeDir mcpServerDefinitions;
     })
   ];
+
+  _module.args.buildClawdeAgentMcpConfigFile = buildClawdeAgentMcpConfigFile;
 
   home = {
     packages = browserMcp.packages ++ [ mem0OpenmemoryUp ];

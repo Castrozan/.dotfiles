@@ -2,6 +2,7 @@
   lib,
   hostname,
   inputs,
+  buildClawdeAgentMcpConfigFile,
   ...
 }:
 let
@@ -43,5 +44,6 @@ in
   clawde.agents.steward = {
     type = "steward";
     personality = personalityWithMachineIdentity;
+    mcpConfigFile = buildClawdeAgentMcpConfigFile "steward" [ "a2a" ];
   };
 }

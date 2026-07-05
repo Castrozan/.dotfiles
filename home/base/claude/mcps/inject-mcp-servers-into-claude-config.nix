@@ -1,68 +1,11 @@
 {
   homeDir,
-  chromeDevtoolsMcpStdioCommand,
-  chromeDevtoolsMcpStdioArgs,
-  braveDevtoolsMcpStdioCommand,
-  braveDevtoolsMcpStdioArgs,
-  a2aMcpStdioCommand,
-  a2aMcpStdioArgs,
-  browserUseMcpStdioCommand,
-  mem0McpServerConfig,
-  figmaReadMcpStdioCommand,
-  figmaReadMcpStdioArgs,
-  figmaWriteCapableRemoteServerConfig,
-  codexBinaryPath,
+  mcpServerDefinitions,
 }:
 { pkgs, lib, ... }:
 let
-  desiredMcpServersToInject = {
-    chrome-devtools = {
-      command = chromeDevtoolsMcpStdioCommand;
-      args = chromeDevtoolsMcpStdioArgs;
-    };
-    brave-devtools = {
-      command = braveDevtoolsMcpStdioCommand;
-      args = braveDevtoolsMcpStdioArgs;
-    };
-    codex = {
-      command = codexBinaryPath;
-      args = [
-        "mcp-server"
-        "-c"
-        "approval_policy=never"
-        "-c"
-        "sandbox_mode=danger-full-access"
-      ];
-    };
-    a2a = {
-      command = a2aMcpStdioCommand;
-      args = a2aMcpStdioArgs;
-    };
-    browser-use = {
-      command = browserUseMcpStdioCommand;
-      args = [ ];
-    };
-    mem0 = mem0McpServerConfig;
-    figma = figmaWriteCapableRemoteServerConfig;
-    figma-read = {
-      command = figmaReadMcpStdioCommand;
-      args = figmaReadMcpStdioArgs;
-    };
-  };
-
-  mcpServerNamesManagedAcrossAllPlatforms = [
-    "a2a"
-    "brave-devtools"
-    "browser-use"
-    "chrome-devtools"
-    "codex"
-    "mem0"
-    "figma"
-    "figma-read"
-  ];
-
-  desiredMcpServersJson = builtins.toJSON desiredMcpServersToInject;
-  managedMcpServerNamesJson = builtins.toJSON mcpServerNamesManagedAcrossAllPlatforms;
+  desiredMcpServersJson = builtins.toJSON mcpServerDefinitions;
+  managedMcpServerNamesJson = builtins.toJSON (builtins.attrNames mcpServerDefinitions);
 
   injectMcpServersIntoClaudeConfig = pkgs.writeShellScript "inject-mcp-servers" ''
     set -euo pipefail
