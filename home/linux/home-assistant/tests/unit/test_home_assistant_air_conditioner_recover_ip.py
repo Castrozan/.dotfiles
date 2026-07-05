@@ -111,7 +111,7 @@ class TestParseLocalIpv4Networks:
             "wlp4s0\n"
             "5: docker0    inet 172.17.0.1/16 brd 172.17.255.255 scope global "
             "docker0\n"
-            "7: tailscale0    inet 100.94.11.81/32 scope global tailscale0\n"
+            "7: tailscale0    inet 100.100.100.100/32 scope global tailscale0\n"
             "9: bigif    inet 10.0.0.5/8 scope global bigif\n"
         )
         result = (
