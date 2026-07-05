@@ -125,7 +125,7 @@ in
 
   domain-terminal-wezterm-webgpu-front-end-on-darwin =
     mkEvalCheck "domain-terminal-wezterm-webgpu-front-end-on-darwin"
-      (lib.hasInfix "front_end = is_darwin and 'WebGpu' or 'OpenGL'" cfg.programs.wezterm.extraConfig)
+      (lib.hasInfix "front_end = is_darwin and \"WebGpu\" or \"OpenGL\"" cfg.programs.wezterm.extraConfig)
       "wezterm must select WebGpu on darwin (to dodge the macOS OpenGL-shim teardown segfault) and OpenGL elsewhere, guarded by is_darwin";
 
   domain-terminal-yazi-enabled =
