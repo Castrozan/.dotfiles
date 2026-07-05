@@ -17,6 +17,8 @@ def generate_codex_config(tmp_path):
             "CODEX_CHROME_DEVTOOLS_MCP_ARGS_JSON": "[]",
             "CODEX_BRAVE_DEVTOOLS_MCP_COMMAND": "brave-mcp",
             "CODEX_BRAVE_DEVTOOLS_MCP_ARGS_JSON": "[]",
+            "CODEX_VIVALDI_DEVTOOLS_MCP_COMMAND": "vivaldi-mcp",
+            "CODEX_VIVALDI_DEVTOOLS_MCP_ARGS_JSON": "[]",
         }
     )
 
