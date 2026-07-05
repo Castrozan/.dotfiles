@@ -22,7 +22,8 @@ if [ -z "${DOTFILES_TEST_MEMORY_SCOPE:-}" ] &&
 	[ -n "${DBUS_SESSION_BUS_ADDRESS:-}" ]; then
 	exec systemd-run --user --scope -q \
 		--setenv=DOTFILES_TEST_MEMORY_SCOPE=1 \
-		-p MemoryMax="${DOTFILES_TEST_MEMORY_MAX:-60%}" \
+		-p MemoryHigh="${DOTFILES_TEST_MEMORY_HIGH:-45%}" \
+		-p MemoryMax="${DOTFILES_TEST_MEMORY_MAX:-55%}" \
 		-p MemorySwapMax="${DOTFILES_TEST_MEMORY_SWAP_MAX:-0}" \
 		-- "$0" "$@"
 fi
