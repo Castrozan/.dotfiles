@@ -24,7 +24,7 @@ let
     version = herdrVersion;
     src = pkgs.fetchurl {
       url = "https://github.com/ogulcancelik/herdr/releases/download/v${herdrVersion}/${herdrReleaseAsset.asset}";
-      hash = herdrReleaseAsset.hash;
+      inherit (herdrReleaseAsset) hash;
     };
     dontUnpack = true;
     dontConfigure = true;
