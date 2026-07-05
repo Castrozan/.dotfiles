@@ -1,3 +1,7 @@
+if set -q TMUX
+    set -gx TERM tmux-256color
+end
+
 set fish_greeting
 
 # Enhanced autosuggestions configuration
@@ -35,4 +39,3 @@ if command -v clipse &>/dev/null
         disown
     end
 end
-
