@@ -17,6 +17,16 @@ fi
 
 set -Eeuo pipefail
 
+if [ -z "${DOTFILES_TEST_MEMORY_SCOPE:-}" ] &&
+	command -v systemd-run >/dev/null 2>&1 &&
+	[ -n "${DBUS_SESSION_BUS_ADDRESS:-}" ]; then
+	exec systemd-run --user --scope -q \
+		--setenv=DOTFILES_TEST_MEMORY_SCOPE=1 \
+		-p MemoryMax="${DOTFILES_TEST_MEMORY_MAX:-60%}" \
+		-p MemorySwapMax="${DOTFILES_TEST_MEMORY_SWAP_MAX:-0}" \
+		-- "$0" "$@"
+fi
+
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
