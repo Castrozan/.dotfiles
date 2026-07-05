@@ -46,6 +46,23 @@ def import_watchdog_module_with_fake_psutil():
     return module
 
 
+def import_orphan_reaper_module_with_fake_psutil():
+    import_watchdog_module_with_fake_psutil()
+    module_name = "reap_orphaned_chrome_devtools_mcp_instances"
+    script_path = WATCHDOG_DIRECTORY / "reap_orphaned_chrome_devtools_mcp_instances.py"
+    loader = importlib.machinery.SourceFileLoader(module_name, str(script_path))
+    spec = importlib.util.spec_from_loader(module_name, loader)
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[module_name] = module
+    loader.exec_module(module)
+    return module
+
+
 @pytest.fixture
 def watchdog_module():
     return import_watchdog_module_with_fake_psutil()
+
+
+@pytest.fixture
+def orphan_reaper_module():
+    return import_orphan_reaper_module_with_fake_psutil()

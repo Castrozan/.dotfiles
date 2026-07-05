@@ -12,12 +12,16 @@ let
 
   watchdogScriptSource = lib.fileset.toSource {
     root = ../../../../agents/skills/browser/install/watchdog;
-    fileset = ../../../../agents/skills/browser/install/watchdog/kill_runaway_chrome_devtools_mcp_instances.py;
+    fileset = lib.fileset.unions [
+      ../../../../agents/skills/browser/install/watchdog/chrome_devtools_mcp_watchdog.py
+      ../../../../agents/skills/browser/install/watchdog/kill_runaway_chrome_devtools_mcp_instances.py
+      ../../../../agents/skills/browser/install/watchdog/reap_orphaned_chrome_devtools_mcp_instances.py
+    ];
   };
 
   watchdogProgramArguments = [
     "${watchdogPythonEnvironment}/bin/python"
-    "${watchdogScriptSource}/kill_runaway_chrome_devtools_mcp_instances.py"
+    "${watchdogScriptSource}/chrome_devtools_mcp_watchdog.py"
   ];
 
   watchdogLogFilePath = "/tmp/chrome-devtools-mcp-runaway-watchdog.log";
@@ -39,14 +43,14 @@ in
     })
     (lib.mkIf pkgs.stdenv.hostPlatform.isLinux {
       systemd.user.services.chrome-devtools-mcp-runaway-watchdog = {
-        Unit.Description = "Terminate runaway chrome-devtools-mcp instances pinning CPU";
+        Unit.Description = "Reap orphaned and CPU-runaway chrome-devtools-mcp instances";
         Service = {
           Type = "oneshot";
           ExecStart = lib.concatStringsSep " " watchdogProgramArguments;
         };
       };
       systemd.user.timers.chrome-devtools-mcp-runaway-watchdog = {
-        Unit.Description = "Periodic runaway chrome-devtools-mcp watchdog";
+        Unit.Description = "Periodic chrome-devtools-mcp watchdog (orphan + CPU-runaway reaping)";
         Timer = {
           OnBootSec = "1min";
           OnUnitActiveSec = "${toString watchdogInvocationIntervalSeconds}s";
