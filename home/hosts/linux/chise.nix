@@ -41,7 +41,6 @@ in
     ../../linux/desktop/clipse.nix
     ../../base/desktop/fonts.nix
     ../../linux/desktop/fuzzel.nix
-    ../../linux/desktop/vivaldi-flatpak.nix
     ../../linux/desktop/scripts.nix
 
     ../../base/dev/ccost.nix

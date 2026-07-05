@@ -112,6 +112,7 @@
     ++ (with latest; [
       brave
       gemini-cli
+      vivaldi
       vscode
     ]);
 }
