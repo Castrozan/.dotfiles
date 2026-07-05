@@ -2,6 +2,7 @@
   system.defaults.CustomUserPreferences."com.brave.Browser" = {
     BookmarkBarEnabled = true;
     BrowserSignin = 0;
+    PasswordManagerEnabled = false;
     SpellCheckServiceEnabled = false;
     SpellcheckLanguage = [ "en-GB" ];
     PrivacySandboxAdTopicsEnabled = false;

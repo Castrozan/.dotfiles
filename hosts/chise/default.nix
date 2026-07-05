@@ -11,5 +11,7 @@
     ./nixos-system.nix
 
     ./configs/arr-stack-host-integration.nix
+
+    ./configs/brave-policies.nix
   ];
 }

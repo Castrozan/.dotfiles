@@ -41,16 +41,4 @@ in
   # which is late in the search order and can be missed during rebuilds.
   xdg.dataFile."applications/chrome-global.desktop".source =
     "${desktopItem}/share/applications/chrome-global.desktop";
-
-  xdg.mimeApps = {
-    enable = true;
-    defaultApplications = {
-      "text/html" = "chrome-global.desktop";
-      "text/xml" = "chrome-global.desktop";
-      "application/xhtml+xml" = "chrome-global.desktop";
-      "application/xml" = "chrome-global.desktop";
-      "x-scheme-handler/http" = "chrome-global.desktop";
-      "x-scheme-handler/https" = "chrome-global.desktop";
-    };
-  };
 }
