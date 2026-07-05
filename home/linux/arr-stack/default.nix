@@ -48,17 +48,19 @@ let
   );
 in
 lib.mkIf isChise {
-  home.file = {
-    "arr-stack/docker-compose.yml".source = ./docker-compose.yml;
-    "arr-stack/.env".source = ./env;
-    "arr-stack/README.md".source = ./README.md;
+  home = {
+    file = {
+      "arr-stack/docker-compose.yml".source = ./docker-compose.yml;
+      "arr-stack/.env".source = ./env;
+      "arr-stack/README.md".source = ./README.md;
+    };
+
+    activation.createArrStackPersistenceDirectories = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+      ${makePersistenceDirectoriesCommand}
+    '';
+
+    activation.deployArrStackHomepageConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+      ${deployHomepageConfigCommand}
+    '';
   };
-
-  home.activation.createArrStackPersistenceDirectories = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    ${makePersistenceDirectoriesCommand}
-  '';
-
-  home.activation.deployArrStackHomepageConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    ${deployHomepageConfigCommand}
-  '';
 }
