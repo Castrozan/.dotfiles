@@ -1,0 +1,62 @@
+[theme]
+name = "catppuccin"
+
+[terminal]
+new_cwd = "follow"
+
+[ui]
+mouse_capture = true
+accent = "cyan"
+
+[keys]
+prefix = "ctrl+b"
+reload_config = "prefix+a"
+detach = "prefix+d"
+settings = "prefix+s"
+new_tab = "prefix+c"
+rename_tab = "prefix+r"
+previous_tab = "prefix+p"
+next_tab = "prefix+n"
+switch_tab = "prefix+1..9"
+new_workspace = "prefix+shift+s"
+rename_workspace = "prefix+shift+w"
+close_workspace = "prefix+shift+d"
+workspace_picker = "prefix+w"
+close_pane = "prefix+x"
+zoom = "prefix+z"
+resize_mode = "prefix+shift+r"
+focus_pane_left = "prefix+h"
+focus_pane_down = "prefix+j"
+focus_pane_up = "prefix+k"
+focus_pane_right = "prefix+l"
+cycle_pane_next = "prefix+o"
+cycle_pane_previous = "prefix+shift+o"
+split_vertical = "prefix+%"
+split_horizontal = 'prefix+"'
+edit_scrollback = "prefix+["
+toggle_sidebar = "prefix+shift+b"
+
+[[keys.command]]
+key = "prefix+i"
+type = "pane"
+command = "lazygit"
+
+[[keys.command]]
+key = "prefix+b"
+type = "pane"
+command = "btop"
+
+[[keys.command]]
+key = "prefix+e"
+type = "pane"
+command = "fish -lc c"
+
+[[keys.command]]
+key = "prefix+v"
+type = "pane"
+command = "nvim ."
+
+[[keys.command]]
+key = "prefix+t"
+type = "pane"
+command = "fish -lc 'claude-show-session | LESS=\"-R +G\" less'"
