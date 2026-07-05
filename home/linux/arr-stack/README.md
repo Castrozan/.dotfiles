@@ -9,6 +9,9 @@ and down by hand.
 
 | Service     | Role                          | Tailnet URL                  |
 | ----------- | ----------------------------- | ---------------------------- |
+| homepage    | dashboard (all services)      | http://100.94.11.81 (`arr`)  |
+| jellyfin    | media server / watch UI       | http://100.94.11.81:8096     |
+| jellyseerr  | browse and request front end  | http://100.94.11.81:5055     |
 | qbittorrent | download client               | http://100.94.11.81:8080     |
 | prowlarr    | indexer manager               | http://100.94.11.81:9696     |
 | sonarr      | TV                            | http://100.94.11.81:8989     |
@@ -16,6 +19,12 @@ and down by hand.
 | lidarr      | music                         | http://100.94.11.81:8686     |
 | readarr     | books                         | http://100.94.11.81:8788     |
 | bazarr      | subtitles                     | http://100.94.11.81:6767     |
+
+The dashboard is the front door: browse `http://arr` on chise (a hostname alias to the
+tailscale IP) or `http://chise.tailfdafd6.ts.net` from any other tailnet device, and click a
+tile to reach each service. Jellyfin is the Netflix-style page for watching the library;
+Jellyseerr is the browse-and-request front end wired to Radarr/Sonarr. Homepage config lives
+in `home/linux/arr-stack/homepage/` (declarative) and deploys to `config/homepage/`.
 
 All web UIs publish to chise's tailscale IP literal `100.94.11.81` only, so they
 are reachable from any device on the tailnet but not on the LAN or any other
@@ -78,9 +87,10 @@ See `home/base/network/scripts/` (`nord-on-us`, `nord-off`, `nord-on`,
 `setup_wgnord`) and `hosts/chise/scripts/` for the script definitions. Bring the
 stack up the same way regardless; the VPN is an independent host toggle.
 
-## Optional media server
+## Media server GPU transcoding
 
-Jellyfin/Jellyseerr are intentionally not shipped: Jellyfin transcoding wants
-GPU wiring (chise has an NVIDIA GPU) and Jellyseerr is pointless without a media
-server, so neither is "trivial." Add them later as their own compose services
-if wanted.
+Jellyfin and Jellyseerr now ship as compose services. Jellyfin mounts
+`data/media` read-only and serves the library at port 8096. Hardware transcoding
+uses chise's NVIDIA RTX 3050 via `hardware.nvidia-container-toolkit` (enabled in
+`hosts/chise/configs/arr-stack-host-integration.nix`); direct play works without
+it, and the GPU is used for on-the-fly transcode when a client needs it.

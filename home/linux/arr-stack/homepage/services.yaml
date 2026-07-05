@@ -1,0 +1,41 @@
+- Watch:
+    - Jellyfin:
+        icon: jellyfin.png
+        href: http://100.94.11.81:8096
+        description: Stream your movie and TV library
+    - Jellyseerr:
+        icon: jellyseerr.png
+        href: http://100.94.11.81:5055
+        description: Browse and request new titles
+
+- Management:
+    - Radarr:
+        icon: radarr.png
+        href: http://100.94.11.81:7878
+        description: Movies
+    - Sonarr:
+        icon: sonarr.png
+        href: http://100.94.11.81:8989
+        description: TV shows
+    - Lidarr:
+        icon: lidarr.png
+        href: http://100.94.11.81:8686
+        description: Music
+    - Readarr:
+        icon: readarr.png
+        href: http://100.94.11.81:8788
+        description: Books
+    - Bazarr:
+        icon: bazarr.png
+        href: http://100.94.11.81:6767
+        description: Subtitles
+    - Prowlarr:
+        icon: prowlarr.png
+        href: http://100.94.11.81:9696
+        description: Indexer manager
+
+- Download:
+    - qBittorrent:
+        icon: qbittorrent.png
+        href: http://100.94.11.81:8080
+        description: Download client

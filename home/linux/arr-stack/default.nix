@@ -15,6 +15,9 @@ let
     "lidarr"
     "readarr"
     "bazarr"
+    "jellyfin"
+    "jellyseerr"
+    "homepage"
   ];
   dataDirectories = [
     "torrents"
@@ -37,6 +40,10 @@ lib.mkIf isChise {
     "arr-stack/docker-compose.yml".source = ./docker-compose.yml;
     "arr-stack/.env".source = ./env;
     "arr-stack/README.md".source = ./README.md;
+    "arr-stack/config/homepage/settings.yaml".source = ./homepage/settings.yaml;
+    "arr-stack/config/homepage/services.yaml".source = ./homepage/services.yaml;
+    "arr-stack/config/homepage/widgets.yaml".source = ./homepage/widgets.yaml;
+    "arr-stack/config/homepage/bookmarks.yaml".source = ./homepage/bookmarks.yaml;
   };
 
   home.activation.createArrStackPersistenceDirectories = lib.hm.dag.entryAfter [ "writeBoundary" ] ''

@@ -111,3 +111,45 @@ services:
     volumes:
       - ${ARR_CONFIG_ROOT}/bazarr:/config
       - ${ARR_DATA_ROOT}:/data
+
+  jellyfin:
+    image: lscr.io/linuxserver/jellyfin:latest
+    container_name: arr-jellyfin
+    restart: "no"
+    networks:
+      - arrnet
+    ports:
+      - "100.94.11.81:8096:8096"
+    environment:
+      <<: *arr-common-environment
+    volumes:
+      - ${ARR_CONFIG_ROOT}/jellyfin:/config
+      - ${ARR_DATA_ROOT}/media:/media:ro
+
+  jellyseerr:
+    image: fallenbagel/jellyseerr:latest
+    container_name: arr-jellyseerr
+    restart: "no"
+    networks:
+      - arrnet
+    ports:
+      - "100.94.11.81:5055:5055"
+    environment:
+      <<: *arr-common-environment
+      LOG_LEVEL: "info"
+    volumes:
+      - ${ARR_CONFIG_ROOT}/jellyseerr:/app/config
+
+  homepage:
+    image: ghcr.io/gethomepage/homepage:latest
+    container_name: arr-homepage
+    restart: "no"
+    networks:
+      - arrnet
+    ports:
+      - "100.94.11.81:80:3000"
+    environment:
+      <<: *arr-common-environment
+      HOMEPAGE_ALLOWED_HOSTS: "arr,100.94.11.81,chise.tailfdafd6.ts.net,localhost"
+    volumes:
+      - ${ARR_CONFIG_ROOT}/homepage:/app/config

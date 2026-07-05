@@ -9,5 +9,7 @@
 
     # User-specific NixOS configuration for zanoni on this host
     ./nixos-system.nix
+
+    ./configs/arr-stack-host-integration.nix
   ];
 }
