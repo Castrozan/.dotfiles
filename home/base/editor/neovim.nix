@@ -15,6 +15,7 @@ let
     typescript-language-server
     nodePackages.prettier
     nodePackages.eslint
+    vscode-langservers-extracted
 
     rust-analyzer
 
