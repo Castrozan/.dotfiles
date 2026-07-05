@@ -17,7 +17,6 @@ WORKSPACE_SKILL_NAMESPACE_CLAUDE_SKILLS_SUBPATH = Path(".claude") / "skills"
 INTERACTIVE_PREFERENCES_FILE_PATH_ENVIRONMENT_VARIABLE_NAME = (
     "CLAUDE_INTERACTIVE_PREFERENCES_PATH"
 )
-INTERACTIVE_MODEL_ENVIRONMENT_VARIABLE_NAME = "CLAUDE_INTERACTIVE_MODEL"
 CLAWDE_BACKGROUND_AGENT_ENVIRONMENT_MARKER = "CLAWDE_RESUME_FLAG"
 
 
@@ -108,11 +107,10 @@ def resolve_requested_skill_source_directories(
     return resolved_requested_skill_source_directories
 
 
-def scrub_interactive_only_environment_for_clawde_background_agent() -> None:
+def scrub_interactive_preferences_environment_for_clawde_background_agent() -> None:
     if CLAWDE_BACKGROUND_AGENT_ENVIRONMENT_MARKER not in os.environ:
         return
     os.environ.pop(INTERACTIVE_PREFERENCES_FILE_PATH_ENVIRONMENT_VARIABLE_NAME, None)
-    os.environ.pop(INTERACTIVE_MODEL_ENVIRONMENT_VARIABLE_NAME, None)
 
 
 def build_interactive_preferences_system_prompt_arguments() -> list[str]:
@@ -130,15 +128,6 @@ def build_interactive_preferences_system_prompt_arguments() -> list[str]:
     if not interactive_preferences_content:
         return []
     return ["--append-system-prompt", interactive_preferences_content]
-
-
-def build_interactive_model_selection_arguments() -> list[str]:
-    interactive_model_value = os.environ.get(
-        INTERACTIVE_MODEL_ENVIRONMENT_VARIABLE_NAME
-    )
-    if not interactive_model_value:
-        return []
-    return ["--model", interactive_model_value]
 
 
 def build_unique_skill_directory_name_map(
@@ -257,7 +246,6 @@ def prepare_workspace_claude_launch_plan(
     )
 
     command_arguments = [claude_binary_path]
-    command_arguments.extend(build_interactive_model_selection_arguments())
     command_arguments.extend(build_interactive_preferences_system_prompt_arguments())
     if discovered_skill_directory_name_map:
         command_arguments.extend(
@@ -333,7 +321,7 @@ def exec_claude_with_workspace_skills(
 
 def main() -> None:
     try:
-        scrub_interactive_only_environment_for_clawde_background_agent()
+        scrub_interactive_preferences_environment_for_clawde_background_agent()
         workspace_claude_wrapper_arguments = parse_workspace_claude_wrapper_arguments(
             sys.argv[1:]
         )
