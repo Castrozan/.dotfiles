@@ -106,7 +106,6 @@ in
 
     "fish/functions/fish_prompt.fish".source = ./shell/fish/functions/fish_prompt.fish;
     "fish/functions/cursor.fish".source = ./shell/fish/functions/cursor.fish;
-    "fish/functions/nix.fish".source = ./shell/fish/functions/nix.fish;
 
     "fish/conf.d/hyprland-env.fish".source = ./shell/fish/conf.d/hyprland-env.fish;
 

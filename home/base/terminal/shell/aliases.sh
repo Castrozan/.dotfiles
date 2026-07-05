@@ -6,8 +6,6 @@ shopt -s expand_aliases
 # NixOS setuid wrappers (sudo, ping, etc) — non-login shells miss this
 [[ -d /run/wrappers/bin ]] && [[ ":$PATH:" != *":/run/wrappers/bin:"* ]] && export PATH="/run/wrappers/bin:$PATH"
 
-. "$HOME/.dotfiles/home/base/terminal/shell/nix-memory-limit.sh"
-
 # Personal aliases
 alias clebr='cd $HOME/.clebr'
 alias bashrc='nvim ~/.bashrc'

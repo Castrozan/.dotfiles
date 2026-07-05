@@ -15,5 +15,6 @@
     (pkgs.writeShellScriptBin "tmux-resurrect" (builtins.readFile ./scripts/tmux-resurrect))
     (pkgs.writeShellScriptBin "tmux-session-chooser" (builtins.readFile ./scripts/tmux-session-chooser))
     (pkgs.writeShellScriptBin "set-random-bg-kitty" (builtins.readFile ./scripts/set-random-bg-kitty))
+    (pkgs.writeShellScriptBin "nix" (builtins.readFile ./scripts/nix-memory-capped-wrapper.sh))
   ];
 }

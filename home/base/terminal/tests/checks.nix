@@ -39,7 +39,6 @@ let
   fishFunctionFiles = [
     "fish/functions/fish_prompt.fish"
     "fish/functions/cursor.fish"
-    "fish/functions/nix.fish"
   ];
 
   allFishConfDFilesDeployed = builtins.all (f: cfg.xdg.configFile ? "${f}") fishConfDFiles;

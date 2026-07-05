@@ -17,11 +17,11 @@ fi
 
 set -Eeuo pipefail
 
-if [ -z "${DOTFILES_TEST_MEMORY_SCOPE:-}" ] &&
+if [ -z "${__NIX_MEMORY_SCOPED:-}" ] &&
 	command -v systemd-run >/dev/null 2>&1 &&
 	[ -n "${DBUS_SESSION_BUS_ADDRESS:-}" ]; then
 	exec systemd-run --user --scope -q \
-		--setenv=DOTFILES_TEST_MEMORY_SCOPE=1 \
+		--setenv=__NIX_MEMORY_SCOPED=1 \
 		-p MemoryHigh="${DOTFILES_TEST_MEMORY_HIGH:-45%}" \
 		-p MemoryMax="${DOTFILES_TEST_MEMORY_MAX:-55%}" \
 		-p MemorySwapMax="${DOTFILES_TEST_MEMORY_SWAP_MAX:-0}" \
