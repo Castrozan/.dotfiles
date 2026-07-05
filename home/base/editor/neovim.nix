@@ -24,6 +24,8 @@ let
 
     bash-language-server
 
+    marksman
+
     terraform-ls
 
     jdt-language-server
