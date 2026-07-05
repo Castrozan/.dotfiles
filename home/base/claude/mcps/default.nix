@@ -107,9 +107,9 @@ let
 
   buildClawdeAgentMcpConfigFile =
     agentName: serverNames:
-    pkgs.writeText "clawde-agent-mcp-config-${agentName}.json" (
+    "${pkgs.writeText "clawde-agent-mcp-config-${agentName}.json" (
       builtins.toJSON { mcpServers = lib.getAttrs serverNames mcpServerDefinitions; }
-    );
+    )}";
 
 in
 {
