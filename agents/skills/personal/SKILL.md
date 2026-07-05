@@ -26,3 +26,4 @@ Returns JSON. Top-level skills include `name`, `description` (from frontmatter),
 This `personal` skill is also the umbrella for Lucas's personal channels and platforms. Each chapter lives in its own file so only the relevant one loads:
 
 - `obsidian.md` — Obsidian vault operations (daily notes, TODO tracking, activity logging, ReadItLater inbox).
+- `passwords.md` — Bitwarden vault access: retrieve and store personal passwords via the `bw` CLI and `bw-session` helper.
