@@ -21,6 +21,7 @@
     ../base/terminal/kitty.nix
     ../base/terminal/scripts.nix
     ../base/terminal/tmux.nix
+    ../base/terminal/herdr.nix
     ../base/terminal/wezterm.nix
     ../base/terminal/yazi
 

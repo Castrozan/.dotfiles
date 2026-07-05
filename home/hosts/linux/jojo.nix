@@ -31,6 +31,7 @@ in
     ../../base/terminal/fish.nix
     ../../base/terminal/kitty.nix
     ../../base/terminal/tmux.nix
+    ../../base/terminal/herdr.nix
     ../../base/terminal/wezterm.nix
     ../../base/terminal/yazi
     ../../base/terminal/scripts.nix

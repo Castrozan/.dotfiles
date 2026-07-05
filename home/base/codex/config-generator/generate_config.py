@@ -19,6 +19,10 @@ chrome_devtools_mcp_command = os.environ["CODEX_CHROME_DEVTOOLS_MCP_COMMAND"]
 chrome_devtools_mcp_args = json.loads(os.environ["CODEX_CHROME_DEVTOOLS_MCP_ARGS_JSON"])
 brave_devtools_mcp_command = os.environ["CODEX_BRAVE_DEVTOOLS_MCP_COMMAND"]
 brave_devtools_mcp_args = json.loads(os.environ["CODEX_BRAVE_DEVTOOLS_MCP_ARGS_JSON"])
+vivaldi_devtools_mcp_command = os.environ["CODEX_VIVALDI_DEVTOOLS_MCP_COMMAND"]
+vivaldi_devtools_mcp_args = json.loads(
+    os.environ["CODEX_VIVALDI_DEVTOOLS_MCP_ARGS_JSON"]
+)
 
 
 def build_trusted_project_entries() -> dict[str, dict[str, str]]:
@@ -62,6 +66,10 @@ def build_mcp_server_entries() -> dict[str, dict[str, Any]]:
         "brave-devtools": {
             "command": brave_devtools_mcp_command,
             "args": brave_devtools_mcp_args,
+        },
+        "vivaldi-devtools": {
+            "command": vivaldi_devtools_mcp_command,
+            "args": vivaldi_devtools_mcp_args,
         },
     }
 

@@ -4,7 +4,7 @@ description: Interact with a live webpage inside a browser window — fill forms
 ---
 
 <strategy>
-Browser MCPs plus one CLI are available. Browser Use (`mcp__browser-use__*`) is the primary MCP - it launches its own Chrome, works immediately, handles general browsing and Electron apps. Two stealth CDP targets connect to a real browser for sites that detect automation (Google, banking, Cloudflare): Chrome DevTools (`mcp__chrome-devtools__*`) attaches to the dedicated Chrome Global, and Brave DevTools (`mcp__brave-devtools__*`) attaches to the user's everyday Cmd+B Brave on its real default profile; pick by which browser holds the logged-in session you need. PinchTab (`pinchtab` CLI, no MCP) is the resilient fallback - its own persistent-profile Chrome (stays logged in across runs) driven entirely from bash; reach for it when the MCP transports are flaky or you need a stable already-authenticated session for a local app. Read `README.md` for the full decision framework.
+Browser MCPs plus one CLI are available. Browser Use (`mcp__browser-use__*`) is the primary MCP - it launches its own Chrome, works immediately, handles general browsing and Electron apps. Three stealth CDP targets connect to a real browser for sites that detect automation (Google, banking, Cloudflare): Chrome DevTools (`mcp__chrome-devtools__*`) attaches to the dedicated Chrome Global, Brave DevTools (`mcp__brave-devtools__*`) attaches to the user's everyday Cmd+B Brave on its real default profile, and Vivaldi DevTools (`mcp__vivaldi-devtools__*`) attaches to the native Vivaldi on its `~/.config/vivaldi` profile; pick by which browser holds the logged-in session you need. PinchTab (`pinchtab` CLI, no MCP) is the resilient fallback - its own persistent-profile Chrome (stays logged in across runs) driven entirely from bash; reach for it when the MCP transports are flaky or you need a stable already-authenticated session for a local app. Read `README.md` for the full decision framework.
 </strategy>
 
 <pinchtab_workflow>
@@ -57,6 +57,17 @@ If `mcp__brave-devtools__list_pages` returns "Could not connect":
 
 Once connected, the `mcp__brave-devtools__*` tools are identical in shape to the Chrome target (`list_pages`, `new_page`, `take_snapshot`, `click`/`fill`, `take_screenshot`); follow the same once-connected steps, and because this is the user's everyday Brave full of live tabs, always open work with `new_page` (`background: true`) and never `navigate_page` the selected tab, which would replace a tab the user is using.
 </brave_devtools_workflow>
+
+<vivaldi_devtools_workflow>
+Same chrome-devtools-mcp tool surface as the Chrome and Brave targets but pointed at the native Vivaldi on its real default profile via `--autoConnect`. Vivaldi is Chromium, so it exposes identical CDP; it runs bare so bot-detecting sites see a normal browser carrying the user's real Vivaldi logins and extensions. The user must enable `vivaldi://inspect/#remote-debugging` once (persists across restarts) and click Allow on the consent dialog once per Vivaldi session. This is a separate browser from the Chrome and Brave targets, so a login in one is not a login in the others.
+
+If `mcp__vivaldi-devtools__list_pages` returns "Could not connect":
+1. Ensure native Vivaldi is running for the user: `vivaldi` on Linux.
+2. Tell the user: "Enable vivaldi://inspect/#remote-debugging if not already on (persists across restarts). Then click Allow on the consent dialog that will appear when I connect."
+3. Call `mcp__vivaldi-devtools__list_pages` - this call BLOCKS until the user clicks Allow on the consent dialog in Vivaldi. Do not call any other tools while waiting.
+
+Once connected, the `mcp__vivaldi-devtools__*` tools are identical in shape to the other targets (`list_pages`, `new_page`, `take_snapshot`, `click`/`fill`, `take_screenshot`); follow the same once-connected steps, and because this is the user's everyday Vivaldi full of live tabs, always open work with `new_page` (`background: true`) and never `navigate_page` the selected tab, which would replace a tab the user is using.
+</vivaldi_devtools_workflow>
 
 <tips>
 Browser Use: always get fresh state after navigation or interaction - element indices change. Prefer state over screenshots (less tokens).

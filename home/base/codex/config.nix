@@ -15,9 +15,14 @@ let
   codexConfigGenerator = ./config-generator;
   codexDefaultModel = "gpt-5.5";
   codexDeveloperInstructions = "Operate pragmatically: keep diffs small, verify with fast checks, and prefer repo-local truth (AGENTS.md, bin/, home/{base,linux,darwin}/). Use profiles: fast (default), deep, web.";
-  inherit (browserMcp) chromeDevtoolsMcpStdioCommand braveDevtoolsMcpStdioCommand;
+  inherit (browserMcp)
+    chromeDevtoolsMcpStdioCommand
+    braveDevtoolsMcpStdioCommand
+    vivaldiDevtoolsMcpStdioCommand
+    ;
   chromeDevtoolsMcpStdioArgsJson = builtins.toJSON browserMcp.chromeDevtoolsMcpStdioArgs;
   braveDevtoolsMcpStdioArgsJson = builtins.toJSON browserMcp.braveDevtoolsMcpStdioArgs;
+  vivaldiDevtoolsMcpStdioArgsJson = builtins.toJSON browserMcp.vivaldiDevtoolsMcpStdioArgs;
   codexHooksConfig = builtins.toJSON {
     hooks = {
       SessionStart = [
@@ -44,6 +49,8 @@ in
     CODEX_CHROME_DEVTOOLS_MCP_ARGS_JSON=${lib.escapeShellArg chromeDevtoolsMcpStdioArgsJson} \
     CODEX_BRAVE_DEVTOOLS_MCP_COMMAND=${lib.escapeShellArg braveDevtoolsMcpStdioCommand} \
     CODEX_BRAVE_DEVTOOLS_MCP_ARGS_JSON=${lib.escapeShellArg braveDevtoolsMcpStdioArgsJson} \
+    CODEX_VIVALDI_DEVTOOLS_MCP_COMMAND=${lib.escapeShellArg vivaldiDevtoolsMcpStdioCommand} \
+    CODEX_VIVALDI_DEVTOOLS_MCP_ARGS_JSON=${lib.escapeShellArg vivaldiDevtoolsMcpStdioArgsJson} \
     ${pkgs.python3}/bin/python3 ${codexConfigGenerator}/generate_config.py
   '';
 

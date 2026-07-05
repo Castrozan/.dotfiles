@@ -79,6 +79,10 @@ let
       command = browserMcp.braveDevtoolsMcpStdioCommand;
       args = browserMcp.braveDevtoolsMcpStdioArgs;
     };
+    vivaldi-devtools = {
+      command = browserMcp.vivaldiDevtoolsMcpStdioCommand;
+      args = browserMcp.vivaldiDevtoolsMcpStdioArgs;
+    };
     codex = {
       command = "${homeDir}/.local/bin/codex";
       args = [

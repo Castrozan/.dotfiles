@@ -14,6 +14,10 @@ let
     inherit (pkgs.stdenv.hostPlatform) isDarwin;
   };
   braveDefaultUserDataDir = "${homeDir}/${braveDefaultProfile.userDataDirectoryRelativeToHome}";
+  vivaldiDefaultProfile = import ../../../../home/base/browser/vivaldi-default-profile.nix {
+    inherit (pkgs.stdenv.hostPlatform) isDarwin;
+  };
+  vivaldiDefaultUserDataDir = "${homeDir}/${vivaldiDefaultProfile.userDataDirectoryRelativeToHome}";
 
   pinchtabPackage = import ./pinchtab-package.nix {
     inherit pkgs;
@@ -33,12 +37,17 @@ let
 
   braveDevtoolsMcpStdioCommand = chromeDevtoolsMcpBinary;
   braveDevtoolsMcpStdioArgs = mkChromeDevtoolsAutoConnectArgs braveDefaultUserDataDir;
+
+  vivaldiDevtoolsMcpStdioCommand = chromeDevtoolsMcpBinary;
+  vivaldiDevtoolsMcpStdioArgs = mkChromeDevtoolsAutoConnectArgs vivaldiDefaultUserDataDir;
 in
 {
   inherit chromeDevtoolsMcpStdioCommand;
   inherit chromeDevtoolsMcpStdioArgs;
   inherit braveDevtoolsMcpStdioCommand;
   inherit braveDevtoolsMcpStdioArgs;
+  inherit vivaldiDevtoolsMcpStdioCommand;
+  inherit vivaldiDevtoolsMcpStdioArgs;
   inherit pinchtabBinary;
 
   packages = [ pinchtabPackage ];
