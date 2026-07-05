@@ -10,6 +10,7 @@ let
     "instructions"
     "review"
     "humanize"
+    "restart"
   ];
 
   getSkillNamesFromDirectory =
