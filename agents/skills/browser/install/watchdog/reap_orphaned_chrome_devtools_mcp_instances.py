@@ -7,7 +7,7 @@ from kill_runaway_chrome_devtools_mcp_instances import (
     terminate_process_gracefully,
 )
 
-REPARENTED_ORPHAN_PARENT_NAMES = {"systemd", "init"}
+REPARENTED_ORPHAN_PARENT_NAMES = {"systemd", "init", "launchd"}
 SIGTERM_GRACE_SECONDS = 5.0
 
 

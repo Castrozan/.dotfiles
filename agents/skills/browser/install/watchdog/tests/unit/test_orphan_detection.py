@@ -44,6 +44,10 @@ def test_orphan_when_parent_named_init(orphan_reaper_module):
     assert orphan_reaper_module.is_orphaned_by_parent(4242, "init") is True
 
 
+def test_orphan_when_reparented_to_darwin_launchd(orphan_reaper_module):
+    assert orphan_reaper_module.is_orphaned_by_parent(100, "launchd") is True
+
+
 def test_not_orphan_when_parent_is_live_node_client(orphan_reaper_module):
     assert orphan_reaper_module.is_orphaned_by_parent(4242, "node") is False
 
