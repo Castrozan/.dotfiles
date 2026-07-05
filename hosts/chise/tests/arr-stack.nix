@@ -34,11 +34,17 @@ let
     line: builtins.match ''.*- "[0-9].*'' line != null
   ) composeLines;
   tailscaleBindAddress = "100.94.11.81";
-  everyPublishedPortIsTailnetBound =
+  jellyfinFunnelLoopbackPublish = "127.0.0.1:8096:8096";
+  everyPublishedPortIsTailnetBoundOrFunnelLoopback =
     publishedPortLines != [ ]
-    && builtins.all (line: lib.hasInfix "${tailscaleBindAddress}:" line) publishedPortLines;
-  composeBindsAWildcardInterface =
-    lib.hasInfix "0.0.0.0" composeText || lib.hasInfix "127.0.0.1" composeText;
+    && builtins.all (
+      line:
+      lib.hasInfix "${tailscaleBindAddress}:" line || lib.hasInfix jellyfinFunnelLoopbackPublish line
+    ) publishedPortLines;
+  composeBindsAWildcardInterface = lib.hasInfix "0.0.0.0" composeText;
+  composeLoopbackPublishesOnlyJellyfinFunnel = builtins.all (
+    line: lib.hasInfix jellyfinFunnelLoopbackPublish line
+  ) (builtins.filter (line: lib.hasInfix "127.0.0.1" line) publishedPortLines);
   everyServiceHasConfigVolume = builtins.all (
     service: lib.hasInfix ("\${ARR_CONFIG_ROOT}/" + service) composeText
   ) serviceNames;
@@ -99,8 +105,12 @@ in
 
   chise-arr-stack-published-ports-tailnet-bound =
     mkEvalCheck "chise-arr-stack-published-ports-tailnet-bound"
-      (everyPublishedPortIsTailnetBound && !composeBindsAWildcardInterface)
-      "every published port must bind chise's tailscale IP literal (100.94.11.81) so the web UIs are reachable on the tailnet but not on 0.0.0.0 or any other interface";
+      (
+        everyPublishedPortIsTailnetBoundOrFunnelLoopback
+        && !composeBindsAWildcardInterface
+        && composeLoopbackPublishesOnlyJellyfinFunnel
+      )
+      "every published port must bind chise's tailscale IP literal (100.94.11.81), except the single Jellyfin 127.0.0.1:8096 loopback publish the Tailscale Funnel proxies to reach the public internet; no port may bind the 0.0.0.0 wildcard, and loopback may publish nothing but that Jellyfin funnel target";
 
   chise-arr-stack-config-volume-per-service =
     mkEvalCheck "chise-arr-stack-config-volume-per-service" everyServiceHasConfigVolume

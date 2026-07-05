@@ -39,6 +39,7 @@ in
     ../../nixos/modules/cockpit-session-bridge
     ../../nixos/modules/cloudflare-tunnel-connector
     ../../nixos/modules/jellyseerr-public-request-tunnel
+    ../../nixos/modules/jellyfin-tailscale-funnel
   ]
   ++ lib.optional (builtins.pathExists ../../private-config/machines/chise/jarvis-connector.nix) ../../private-config/machines/chise/jarvis-connector.nix;
 
@@ -46,6 +47,8 @@ in
     enable = true;
     tmuxEnumerationSocket = "";
   };
+
+  custom.jellyfinTailscaleFunnel.enable = true;
 
   # Disable lid switch suspend for laptop used as server/with external monitor
   custom.lidSwitch.disable = true;
