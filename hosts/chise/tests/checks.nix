@@ -19,11 +19,11 @@ let
 
   cloudflareTunnelChecks = import ./cloudflare-tunnels.nix { inherit pkgs lib; };
 
-  jellyfinFunnelChecks = import ./jellyfin-funnel.nix { inherit pkgs lib; };
+  arrMediaFunnelChecks = import ./arr-media-funnel.nix { inherit pkgs lib; };
 in
 arrStackChecks
 // cloudflareTunnelChecks
-// jellyfinFunnelChecks
+// arrMediaFunnelChecks
 // {
   chise-rebuild-guard-wrapper-shadows-nixos-rebuild =
     mkEvalCheck "chise-rebuild-guard-wrapper-shadows-nixos-rebuild"

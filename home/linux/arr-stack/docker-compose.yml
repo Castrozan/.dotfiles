@@ -139,6 +139,7 @@ services:
       - arrnet
     ports:
       - "100.94.11.81:5055:5055"
+      - "127.0.0.1:5055:5055"
     environment:
       <<: *arr-common-environment
       LOG_LEVEL: "info"

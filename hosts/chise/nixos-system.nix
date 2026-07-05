@@ -39,19 +39,33 @@ in
     ../../nixos/modules/cockpit-session-bridge
     ../../nixos/modules/cloudflare-tunnel-connector
     ../../nixos/modules/jellyseerr-public-request-tunnel
-    ../../nixos/modules/jellyfin-tailscale-funnel
+    ../../nixos/modules/arr-media-tailscale-funnel
   ]
   ++ lib.optional (builtins.pathExists ../../private-config/machines/chise/jarvis-connector.nix) ../../private-config/machines/chise/jarvis-connector.nix;
 
-  custom.cockpitSessionBridge = {
-    enable = true;
-    tmuxEnumerationSocket = "";
+  custom = {
+    cockpitSessionBridge = {
+      enable = true;
+      tmuxEnumerationSocket = "";
+    };
+
+    arrMediaTailscaleFunnel = {
+      enable = true;
+      funnels = [
+        {
+          publicHttpsPort = 443;
+          loopbackUrl = "http://127.0.0.1:8096";
+        }
+        {
+          publicHttpsPort = 8443;
+          loopbackUrl = "http://127.0.0.1:5055";
+        }
+      ];
+    };
+
+    # Disable lid switch suspend for laptop used as server/with external monitor
+    lidSwitch.disable = true;
   };
-
-  custom.jellyfinTailscaleFunnel.enable = true;
-
-  # Disable lid switch suspend for laptop used as server/with external monitor
-  custom.lidSwitch.disable = true;
 
   users.users.zanoni = {
     isNormalUser = true;

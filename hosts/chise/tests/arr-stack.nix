@@ -34,17 +34,21 @@ let
     line: builtins.match ''.*- "[0-9].*'' line != null
   ) composeLines;
   tailscaleBindAddress = "100.94.11.81";
-  jellyfinFunnelLoopbackPublish = "127.0.0.1:8096:8096";
+  funnelLoopbackPublishes = [
+    "127.0.0.1:8096:8096"
+    "127.0.0.1:5055:5055"
+  ];
+  lineIsFunnelLoopbackPublish =
+    line: builtins.any (publish: lib.hasInfix publish line) funnelLoopbackPublishes;
   everyPublishedPortIsTailnetBoundOrFunnelLoopback =
     publishedPortLines != [ ]
     && builtins.all (
-      line:
-      lib.hasInfix "${tailscaleBindAddress}:" line || lib.hasInfix jellyfinFunnelLoopbackPublish line
+      line: lib.hasInfix "${tailscaleBindAddress}:" line || lineIsFunnelLoopbackPublish line
     ) publishedPortLines;
   composeBindsAWildcardInterface = lib.hasInfix "0.0.0.0" composeText;
-  composeLoopbackPublishesOnlyJellyfinFunnel = builtins.all (
-    line: lib.hasInfix jellyfinFunnelLoopbackPublish line
-  ) (builtins.filter (line: lib.hasInfix "127.0.0.1" line) publishedPortLines);
+  composeLoopbackPublishesOnlyFunnelTargets = builtins.all lineIsFunnelLoopbackPublish (
+    builtins.filter (line: lib.hasInfix "127.0.0.1" line) publishedPortLines
+  );
   everyServiceHasConfigVolume = builtins.all (
     service: lib.hasInfix ("\${ARR_CONFIG_ROOT}/" + service) composeText
   ) serviceNames;
@@ -108,9 +112,9 @@ in
       (
         everyPublishedPortIsTailnetBoundOrFunnelLoopback
         && !composeBindsAWildcardInterface
-        && composeLoopbackPublishesOnlyJellyfinFunnel
+        && composeLoopbackPublishesOnlyFunnelTargets
       )
-      "every published port must bind chise's tailscale IP literal (100.94.11.81), except the single Jellyfin 127.0.0.1:8096 loopback publish the Tailscale Funnel proxies to reach the public internet; no port may bind the 0.0.0.0 wildcard, and loopback may publish nothing but that Jellyfin funnel target";
+      "every published port must bind chise's tailscale IP literal (100.94.11.81), except the Jellyfin 127.0.0.1:8096 and Jellyseerr 127.0.0.1:5055 loopback publishes the Tailscale Funnels proxy to reach the public internet; no port may bind the 0.0.0.0 wildcard, and loopback may publish nothing but those funnel targets";
 
   chise-arr-stack-config-volume-per-service =
     mkEvalCheck "chise-arr-stack-config-volume-per-service" everyServiceHasConfigVolume
