@@ -44,6 +44,8 @@ let
     export NODE_BIN_DIR=${nodejs}/bin
     export NPM_PREFIX=${lib.escapeShellArg npmPrefixDirectory}
     export VAULT_PATH=${lib.escapeShellArg vaultPath}
+    export TIMEOUT_BIN=${pkgs.coreutils}/bin/timeout
+    export FIND_BIN=${pkgs.findutils}/bin/find
     ${builtins.readFile ./scripts/obsidian-headless-sync.sh}
   '';
 
