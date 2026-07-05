@@ -14,6 +14,19 @@ let
   composeText = builtins.readFile ../../../home/linux/arr-stack/docker-compose.yml;
   envText = builtins.readFile ../../../home/linux/arr-stack/env;
   readmeText = builtins.readFile ../../../home/linux/arr-stack/README.md;
+  homepageServicesText = builtins.readFile ../../../home/linux/arr-stack/homepage/services.yaml;
+
+  machineIdentityMapPath = ../../../private-config/machines.nix;
+  privateConfigPresent = builtins.pathExists machineIdentityMapPath;
+  forbiddenTailnetBindAddress =
+    if privateConfigPresent then (import machineIdentityMapPath).chise.tailscaleIp else null;
+  publicSourcesCarryNoTailnetIpLiteral =
+    forbiddenTailnetBindAddress == null
+    || (
+      !(lib.hasInfix forbiddenTailnetBindAddress composeText)
+      && !(lib.hasInfix forbiddenTailnetBindAddress homepageServicesText)
+      && !(lib.hasInfix forbiddenTailnetBindAddress readmeText)
+    );
 
   serviceNames = [
     "qbittorrent"
@@ -31,19 +44,23 @@ let
 
   composeLines = lib.splitString "\n" composeText;
   publishedPortLines = builtins.filter (
-    line: builtins.match ''.*- "[0-9].*'' line != null
+    line: builtins.match ''.*- "[0-9$].*'' line != null
   ) composeLines;
-  tailscaleBindAddress = "100.94.11.81";
+  tailnetBindVariable = "\${ARR_BIND_ADDR";
   funnelLoopbackPublishes = [
     "127.0.0.1:8096:8096"
     "127.0.0.1:5055:5055"
   ];
   lineIsFunnelLoopbackPublish =
     line: builtins.any (publish: lib.hasInfix publish line) funnelLoopbackPublishes;
+  tailnetBoundPublishCount = builtins.length (
+    builtins.filter (line: lib.hasInfix tailnetBindVariable line) publishedPortLines
+  );
   everyPublishedPortIsTailnetBoundOrFunnelLoopback =
     publishedPortLines != [ ]
+    && tailnetBoundPublishCount >= builtins.length serviceNames
     && builtins.all (
-      line: lib.hasInfix "${tailscaleBindAddress}:" line || lineIsFunnelLoopbackPublish line
+      line: lib.hasInfix tailnetBindVariable line || lineIsFunnelLoopbackPublish line
     ) publishedPortLines;
   composeBindsAWildcardInterface = lib.hasInfix "0.0.0.0" composeText;
   composeLoopbackPublishesOnlyFunnelTargets = builtins.all lineIsFunnelLoopbackPublish (
@@ -114,7 +131,12 @@ in
         && !composeBindsAWildcardInterface
         && composeLoopbackPublishesOnlyFunnelTargets
       )
-      "every published port must bind chise's tailscale IP literal (100.94.11.81), except the Jellyfin 127.0.0.1:8096 and Jellyseerr 127.0.0.1:5055 loopback publishes the Tailscale Funnels proxy to reach the public internet; no port may bind the 0.0.0.0 wildcard, and loopback may publish nothing but those funnel targets";
+      "every published port must bind chise's tailnet address through the \${ARR_BIND_ADDR} variable, except the Jellyfin 127.0.0.1:8096 and Jellyseerr 127.0.0.1:5055 loopback publishes the Tailscale Funnels proxy to reach the public internet; no port may bind the 0.0.0.0 wildcard, and loopback may publish nothing but those funnel targets";
+
+  chise-arr-stack-no-tailnet-ip-literal-in-public-sources =
+    mkEvalCheck "chise-arr-stack-no-tailnet-ip-literal-in-public-sources"
+      publicSourcesCarryNoTailnetIpLiteral
+      "chise's tailnet bind address must never appear as a literal in the public compose, homepage services, or README; it flows in only through the runtime ARR_BIND_ADDR variable and the private-config machine map, so any reintroduction of the raw IP fails this guard on a checkout that has the private submodule";
 
   chise-arr-stack-config-volume-per-service =
     mkEvalCheck "chise-arr-stack-config-volume-per-service" everyServiceHasConfigVolume

@@ -7,28 +7,28 @@ and down by hand.
 
 ## Roster
 
-| Service     | Role                          | Tailnet URL                  |
-| ----------- | ----------------------------- | ---------------------------- |
-| homepage    | dashboard (all services)      | http://100.94.11.81 (`arr`)  |
-| jellyfin    | media server / watch UI       | http://100.94.11.81:8096     |
-| jellyseerr  | browse and request front end  | http://100.94.11.81:5055     |
-| qbittorrent | download client               | http://100.94.11.81:8080     |
-| prowlarr    | indexer manager               | http://100.94.11.81:9696     |
-| sonarr      | TV                            | http://100.94.11.81:8989     |
-| radarr      | movies                        | http://100.94.11.81:7878     |
-| lidarr      | music                         | http://100.94.11.81:8686     |
-| readarr     | books                         | http://100.94.11.81:8788     |
-| bazarr      | subtitles                     | http://100.94.11.81:6767     |
+| Service     | Role                          | Tailnet URL     |
+| ----------- | ----------------------------- | --------------- |
+| homepage    | dashboard (all services)      | http://arr      |
+| jellyfin    | media server / watch UI       | http://arr:8096 |
+| jellyseerr  | browse and request front end  | http://arr:5055 |
+| qbittorrent | download client               | http://arr:8080 |
+| prowlarr    | indexer manager               | http://arr:9696 |
+| sonarr      | TV                            | http://arr:8989 |
+| radarr      | movies                        | http://arr:7878 |
+| lidarr      | music                         | http://arr:8686 |
+| readarr     | books                         | http://arr:8788 |
+| bazarr      | subtitles                     | http://arr:6767 |
 
-The dashboard is the front door: browse `http://arr` on chise (a hostname alias to the
-tailscale IP) or `http://chise.tailfdafd6.ts.net` from any other tailnet device, and click a
+The dashboard is the front door: browse `http://arr` on chise (a hostname alias to chise's
+tailscale IP) or chise's MagicDNS name from any other tailnet device, and click a
 tile to reach each service. Jellyfin is the Netflix-style page for watching the library;
 Jellyseerr is the browse-and-request front end wired to Radarr/Sonarr. Homepage config lives
 in `home/linux/arr-stack/homepage/` (declarative) and deploys to `config/homepage/`.
 
-All web UIs publish to chise's tailscale IP literal `100.94.11.81` only, so they
-are reachable from any device on the tailnet but not on the LAN or any other
-interface. Open e.g. `http://100.94.11.81:9696` from a tailnet-joined machine.
+All web UIs publish only to chise's tailscale IP, which the `arr` alias resolves
+to, so they are reachable from any device on the tailnet but not on the LAN or any
+other interface. Open e.g. `http://arr:9696` from a tailnet-joined machine.
 The *arr apps have no login, so this exposes them to the tailnet (accepted);
 qBittorrent keeps its WebUI password.
 

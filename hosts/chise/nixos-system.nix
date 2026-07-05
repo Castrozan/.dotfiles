@@ -38,7 +38,6 @@ in
     ../../nixos/modules/home-assistant.nix
     ../../nixos/modules/cockpit-session-bridge
     ../../nixos/modules/cloudflare-tunnel-connector
-    ../../nixos/modules/jellyseerr-public-request-tunnel
     ../../nixos/modules/arr-media-tailscale-funnel
   ]
   ++ lib.optional (builtins.pathExists ../../private-config/machines/chise/jarvis-connector.nix) ../../private-config/machines/chise/jarvis-connector.nix;
