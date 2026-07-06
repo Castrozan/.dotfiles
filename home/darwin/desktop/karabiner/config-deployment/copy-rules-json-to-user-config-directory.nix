@@ -7,6 +7,7 @@ let
   karabinerRulesList = import ../rules { inherit (config.home) username; };
 
   karabinerProfileContainingRules = {
+    global.check_for_updates_on_startup = false;
     profiles = [
       {
         name = "Default";
