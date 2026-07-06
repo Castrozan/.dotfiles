@@ -119,7 +119,7 @@
 
   homebrew = {
     enable = true;
-    onActivation.cleanup = "zap";
+    onActivation.cleanup = "none";
     casks = [
       "brave-browser"
       "dbeaver-community"
