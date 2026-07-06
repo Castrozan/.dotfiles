@@ -45,6 +45,9 @@ def test_periodic_safety_net_kick_uses_periodic_reason(
     make_completed_process_with_exit_zero,
 ):
     daemon_module = daemon_module_with_temporary_paths
+    daemon_module.write_merged_health_state_updates_to_file(
+        {"karabiner_cli_ipc_probe_succeeded": False}
+    )
     monkeypatch.setattr(
         daemon_module.subprocess,
         "run",

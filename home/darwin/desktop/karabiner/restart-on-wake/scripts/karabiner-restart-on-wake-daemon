@@ -434,7 +434,36 @@ def record_wake_event_in_health_state_and_kick():
     kick_karabiner_user_agents_via_launchctl(KICK_REASON_WAKE)
 
 
+def is_karabiner_health_state_degraded(current_health_state):
+    if current_health_state.get("karabiner_cli_ipc_probe_succeeded") is False:
+        return True
+    if (
+        current_health_state.get("karabiner_console_user_server_process_running")
+        is False
+    ):
+        return True
+    if current_health_state.get("karabiner_core_service_process_running") is False:
+        return True
+    if current_health_state.get("karabiner_grabbed_keyboard_device_count") == 0:
+        return True
+    return False
+
+
 def run_periodic_safety_net_kick():
+    current_health_state = read_current_health_state_from_file()
+    if not is_karabiner_health_state_degraded(current_health_state):
+        append_structured_event_log_line(
+            {
+                "event": "periodic_safety_net_kick_suppressed_healthy",
+                "karabiner_cli_ipc_probe_succeeded": current_health_state.get(
+                    "karabiner_cli_ipc_probe_succeeded"
+                ),
+                "karabiner_grabbed_keyboard_device_count": current_health_state.get(
+                    "karabiner_grabbed_keyboard_device_count"
+                ),
+            }
+        )
+        return
     kick_karabiner_user_agents_via_launchctl(KICK_REASON_PERIODIC_SAFETY_NET)
 
 
