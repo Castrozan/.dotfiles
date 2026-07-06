@@ -31,13 +31,5 @@
     activation.suppressHammerspoonConsoleAtLaunch = config.lib.dag.entryAfter [ "writeBoundary" ] ''
       /usr/bin/defaults write org.hammerspoon.Hammerspoon MJShowWindowAtLaunchKey -bool false
     '';
-
-    activation.reloadHammerspoonToApplyConfigChanges =
-      config.lib.dag.entryAfter [ "writeBoundary" "suppressHammerspoonConsoleAtLaunch" ]
-        ''
-          if /usr/bin/pgrep -x Hammerspoon > /dev/null 2>&1; then
-            /opt/homebrew/bin/hs -c 'hs.timer.doAfter(0.5, hs.reload)' > /dev/null 2>&1 || true
-          fi
-        '';
   };
 }
