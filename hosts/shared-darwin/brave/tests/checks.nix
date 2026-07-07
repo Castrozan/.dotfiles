@@ -12,7 +12,7 @@ let
   };
   inherit (helpers) mkEvalCheck;
 
-  braveDarwinPolicyConfig = import ../default.nix;
+  braveDarwinPolicyConfig = import ../default.nix { inherit lib; };
   braveDarwinManagedPolicyKeys =
     braveDarwinPolicyConfig.system.defaults.CustomUserPreferences."com.brave.Browser";
 
@@ -32,6 +32,13 @@ let
   sparkleAutoUpdateIsDisabledByPolicy =
     !braveDarwinManagedPolicyKeys.SUEnableAutomaticChecks
     && !braveDarwinManagedPolicyKeys.SUAutomaticallyUpdate;
+
+  braveUpdaterManagedPreferenceInstallScript =
+    braveDarwinPolicyConfig.system.activationScripts.postActivation.text.content;
+  braveUpdaterUpdatesForcedDisabledByManagedPreference =
+    lib.hasInfix "/Library/Managed Preferences/com.brave.Keystone.plist" braveUpdaterManagedPreferenceInstallScript
+    && lib.hasInfix "<key>UpdateDefault</key>" braveUpdaterManagedPreferenceInstallScript
+    && lib.hasInfix "<integer>3</integer>" braveUpdaterManagedPreferenceInstallScript;
 in
 {
   macbook-brave-bookmark-bar-forced-on =
@@ -63,4 +70,9 @@ in
   macbook-brave-sparkle-auto-update-disabled =
     mkEvalCheck "macbook-brave-sparkle-auto-update-disabled" sparkleAutoUpdateIsDisabledByPolicy
       "Brave Sparkle SUEnableAutomaticChecks and SUAutomaticallyUpdate must be false so the updater never swaps the install underneath a running Brave, mirroring the Chrome Keystone disable";
+
+  macbook-brave-updater-updates-forced-disabled =
+    mkEvalCheck "macbook-brave-updater-updates-forced-disabled"
+      braveUpdaterUpdatesForcedDisabledByManagedPreference
+      "Brave must install a forced managed preference /Library/Managed Preferences/com.brave.Keystone.plist with updatePolicies.global.UpdateDefault=3 so the bundled Chromium/Omaha BraveUpdater stays disabled when Brave promotes it away from Sparkle; the SU* keys do not govern that updater, and value 3 is Disabled on the Managed Preferences integer scale (not 0, which is Enabled there)";
 }
