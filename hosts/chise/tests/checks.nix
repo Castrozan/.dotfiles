@@ -25,13 +25,34 @@ let
     inherit pkgs lib;
   };
 
+  arrStackOnDemandSupervisorChecks = import ./arr-stack-on-demand-supervisor.nix {
+    inherit pkgs lib;
+  };
+
   arrMediaFunnelExecStart = builtins.concatStringsSep "\n" nixosCfg.systemd.services.arr-media-tailscale-funnel.serviceConfig.ExecStart;
 in
 arrStackChecks
 // cloudflareTunnelChecks
 // arrMediaFunnelChecks
 // arrMediaLoginRateLimitProxyChecks
+// arrStackOnDemandSupervisorChecks
 // {
+  chise-arr-on-demand-supervisor-wired-on-chise =
+    mkEvalCheck "chise-arr-on-demand-supervisor-wired-on-chise"
+      (
+        (nixosCfg.systemd.services ? arr-stack-on-demand-supervisor)
+        && builtins.elem "timers.target" nixosCfg.systemd.timers.arr-stack-on-demand-supervisor.wantedBy
+      )
+      "chise must actually run the on-demand supervisor service and its polling timer, or the download chain would never come up for a request or go down when idle on the real host";
+
+  chise-arr-on-demand-supervisor-excludes-front-ends-on-chise =
+    mkEvalCheck "chise-arr-on-demand-supervisor-excludes-front-ends-on-chise"
+      (
+        !(lib.hasInfix "jellyfin" nixosCfg.systemd.services.arr-stack-on-demand-supervisor.environment.ARR_ON_DEMAND_SERVICES)
+        && !(lib.hasInfix "jellyseerr" nixosCfg.systemd.services.arr-stack-on-demand-supervisor.environment.ARR_ON_DEMAND_SERVICES)
+      )
+      "the wired chise supervisor must never list jellyfin or jellyseerr among its on-demand services, so the idle sweep can never stop the always-on public front ends the funnel and rate limiter depend on";
+
   chise-arr-media-funnel-targets-ratelimit-proxy-not-container =
     mkEvalCheck "chise-arr-media-funnel-targets-ratelimit-proxy-not-container"
       (

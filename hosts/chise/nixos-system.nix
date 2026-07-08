@@ -40,6 +40,7 @@ in
     ../../nixos/modules/cloudflare-tunnel-connector
     ../../nixos/modules/arr-media-tailscale-funnel
     ../../nixos/modules/arr-media-login-ratelimit-proxy
+    ../../nixos/modules/arr-stack-on-demand-supervisor
   ]
   ++ lib.optional (builtins.pathExists ../../private-config/machines/chise/jarvis-connector.nix) ../../private-config/machines/chise/jarvis-connector.nix;
 
@@ -77,6 +78,11 @@ in
           loopbackUrl = "http://127.0.0.1:9444";
         }
       ];
+    };
+
+    arrStackOnDemandSupervisor = {
+      enable = true;
+      stackHomeDirectory = "/home/zanoni/arr-stack";
     };
 
     # Disable lid switch suspend for laptop used as server/with external monitor
