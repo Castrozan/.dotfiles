@@ -15,14 +15,14 @@ let
     };
   };
 
-  fishLoginShellPathThatSurvivesRebuildsAndGarbageCollection =
+  interactiveLoginShellPathThatSurvivesRebuildsAndGarbageCollection =
     if pkgs.stdenv.hostPlatform.isDarwin then
-      "/run/current-system/sw/bin/fish"
+      "/run/current-system/sw/bin/bash"
     else
       "${pkgs.fish}/bin/fish";
 
   preEmptDefaultCommandOnDarwinSoTmuxPluginsSensibleSkipsItsReattachWithNixStorePathInjection = lib.optionalString pkgs.stdenv.hostPlatform.isDarwin ''
-    set -g default-command "${fishLoginShellPathThatSurvivesRebuildsAndGarbageCollection} -l"
+    set -g default-command "${interactiveLoginShellPathThatSurvivesRebuildsAndGarbageCollection} -l"
   '';
 in
 {
@@ -30,7 +30,7 @@ in
     enable = true;
     baseIndex = 1;
     clock24 = false;
-    shell = fishLoginShellPathThatSurvivesRebuildsAndGarbageCollection;
+    shell = interactiveLoginShellPathThatSurvivesRebuildsAndGarbageCollection;
     plugins = [
       pkgs.tmuxPlugins.sensible
       pkgs.tmuxPlugins.yank
