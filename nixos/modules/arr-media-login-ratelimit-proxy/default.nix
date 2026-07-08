@@ -105,10 +105,10 @@ in
       enable = true;
       recommendedProxySettings = true;
       recommendedOptimisation = true;
+      clientMaxBodySize = "512m";
       appendHttpConfig = ''
         set_real_ip_from 127.0.0.1;
         real_ip_header X-Forwarded-For;
-        client_max_body_size 512m;
         map $remote_addr $arrMediaRateLimitKey {
           default $remote_addr;
           "~^(?<ipv4address>[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)$" $ipv4address;
