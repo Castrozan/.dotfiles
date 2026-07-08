@@ -32,47 +32,35 @@ let
     package: (lib.getName package) == "summon-chrome-global"
   ) chromeGlobalLauncherConfiguration.home.packages;
 
-  chromeGlobalUrlOpenerTargetsChromeGlobalUserDataDir = lib.hasInfix ''--user-data-dir="$HOME/.config/chrome-global"'' chromeGlobalLauncher.chromeGlobalUrlOpenerScript;
+  convergeActivationData =
+    chromeGlobalLauncherConfiguration.home.activation.convergeChromeEntryPointsOnChromeGlobal.data;
 
-  chromeGlobalUrlOpenerIsInHomePackages = lib.any (
-    package: (lib.getName package) == "open-url-in-chrome-global"
-  ) chromeGlobalLauncherConfiguration.home.packages;
+  convergeActivationIsWired =
+    chromeGlobalLauncherConfiguration.home.activation ? convergeChromeEntryPointsOnChromeGlobal;
 
-  defaultBrowserHandlerActivationIsWired =
-    chromeGlobalLauncherConfiguration.home.activation ? installChromeGlobalDefaultBrowserHandler;
+  convergeActivationReferencesDuti = lib.hasInfix "/bin/duti" convergeActivationData;
 
-  defaultBrowserHandlerActivationReferencesDuti = lib.hasInfix "/bin/duti" chromeGlobalLauncherConfiguration.home.activation.installChromeGlobalDefaultBrowserHandler.data;
+  convergeActivationTargetsDefaultChromePath = lib.hasInfix "Library/Application Support/Google/Chrome" convergeActivationData;
 
-  installDefaultBrowserHandlerScriptSource = builtins.readFile ../scripts/install-chrome-global-default-browser-handler.sh;
+  convergeActivationSetsPlainChromeBundleId = lib.hasInfix "com.google.Chrome" convergeActivationData;
 
-  installDefaultBrowserHandlerScriptUsesOpenLocationHandler = lib.hasInfix "on open location" installDefaultBrowserHandlerScriptSource;
+  convergeScriptSource = builtins.readFile ../scripts/converge-chrome-entry-points-on-chrome-global.sh;
 
-  installDefaultBrowserHandlerScriptDeclaresHttpAndHttpsSchemes =
-    lib.hasInfix "CFBundleURLSchemes:0 string http" installDefaultBrowserHandlerScriptSource
-    && lib.hasInfix "CFBundleURLSchemes:1 string https" installDefaultBrowserHandlerScriptSource;
+  convergeScriptSymlinksDefaultPathToChromeGlobal = lib.hasInfix ''ln -s "$chromeGlobalUserDataDirectory" "$defaultChromeUserDataDirectory"'' convergeScriptSource;
 
-  installDefaultBrowserHandlerScriptRegistersDefaultViaDuti =
-    lib.hasInfix "for urlScheme in http https" installDefaultBrowserHandlerScriptSource
-    && lib.hasInfix ''"$dutiBinary" -s "$handlerBundleIdentifier" "$urlScheme"'' installDefaultBrowserHandlerScriptSource;
+  convergeScriptDefersWhileChromeRuns = lib.hasInfix "pgrep -x" convergeScriptSource;
 
-  linkDefaultChromeProfileActivationIsWired =
-    chromeGlobalLauncherConfiguration.home.activation ? linkDefaultChromeProfileToChromeGlobalProfile;
+  convergeScriptBacksUpExistingDefaultProfile = lib.hasInfix "pre-chrome-global-symlink-backup" convergeScriptSource;
 
-  linkDefaultChromeProfileActivationTargetsDefaultChromePath = lib.hasInfix "Library/Application Support/Google/Chrome" chromeGlobalLauncherConfiguration.home.activation.linkDefaultChromeProfileToChromeGlobalProfile.data;
+  convergeScriptSetsChromeAsDefaultBrowserViaDuti = lib.hasInfix ''"$dutiBinary" -s "$chromeBundleIdentifier" "$urlScheme"'' convergeScriptSource;
 
-  linkDefaultChromeProfileScriptSource = builtins.readFile ../scripts/link-default-chrome-profile-to-chrome-global.sh;
-
-  linkDefaultChromeProfileScriptSymlinksDefaultPathToChromeGlobal = lib.hasInfix ''ln -s "$chromeGlobalUserDataDirectory" "$defaultChromeUserDataDirectory"'' linkDefaultChromeProfileScriptSource;
-
-  linkDefaultChromeProfileScriptDefersWhileChromeRuns = lib.hasInfix "pgrep -x" linkDefaultChromeProfileScriptSource;
-
-  linkDefaultChromeProfileScriptBacksUpExistingDefaultProfile = lib.hasInfix "pre-chrome-global-symlink-backup" linkDefaultChromeProfileScriptSource;
+  convergeScriptRemovesRetiredLinkHandlerApp = lib.hasInfix ''rm -rf "$retiredLinkHandlerApplicationPath"'' convergeScriptSource;
 in
 {
   domain-desktop-chrome-global-launcher-targets-chrome-global-user-data-dir =
     mkEvalCheck "domain-desktop-chrome-global-launcher-targets-chrome-global-user-data-dir"
       chromeGlobalLauncherTargetsChromeGlobalUserDataDir
-      "summon-chrome-global must launch the non-default ~/.config/chrome-global profile, matching chromeGlobalUserDataDir in the chrome-devtools-mcp install so autoConnect can attach";
+      "summon-chrome-global must launch the ~/.config/chrome-global profile, matching chromeGlobalUserDataDir in the chrome-devtools-mcp install so autoConnect can attach";
 
   domain-desktop-chrome-global-launcher-no-remote-debugging-flag =
     mkEvalCheck "domain-desktop-chrome-global-launcher-no-remote-debugging-flag"
@@ -84,65 +72,49 @@ in
       chromeGlobalLauncherIsInHomePackages
       "summon-chrome-global must be wired into home.packages so the launcher is on PATH for the chrome-devtools recovery step";
 
-  domain-desktop-chrome-global-url-opener-targets-chrome-global-user-data-dir =
-    mkEvalCheck "domain-desktop-chrome-global-url-opener-targets-chrome-global-user-data-dir"
-      chromeGlobalUrlOpenerTargetsChromeGlobalUserDataDir
-      "open-url-in-chrome-global must open URLs in the ~/.config/chrome-global profile so links land in the attachable chrome-devtools-mcp target, not the unreachable default profile";
+  domain-desktop-chrome-converge-activation-wired =
+    mkEvalCheck "domain-desktop-chrome-converge-activation-wired" convergeActivationIsWired
+      "the convergeChromeEntryPointsOnChromeGlobal activation must be wired so every macOS Chrome entry point resolves to the single chrome-global profile";
 
-  domain-desktop-chrome-global-url-opener-in-home-packages =
-    mkEvalCheck "domain-desktop-chrome-global-url-opener-in-home-packages"
-      chromeGlobalUrlOpenerIsInHomePackages
-      "open-url-in-chrome-global must be wired into home.packages so the default-browser handler app can forward URLs to it by absolute store path";
+  domain-desktop-chrome-converge-activation-references-duti =
+    mkEvalCheck "domain-desktop-chrome-converge-activation-references-duti"
+      convergeActivationReferencesDuti
+      "forcing the activation must resolve the darwin-only duti store path, proving the module evaluates under darwin pkgs in the test harness instead of passing only because the wired-check never forced the thunk";
 
-  domain-desktop-chrome-global-default-browser-handler-activation-wired =
-    mkEvalCheck "domain-desktop-chrome-global-default-browser-handler-activation-wired"
-      defaultBrowserHandlerActivationIsWired
-      "the installChromeGlobalDefaultBrowserHandler activation must be wired so darwin reaches parity with the Linux xdg.mimeApps routing that already sends links to chrome-global";
+  domain-desktop-chrome-converge-activation-targets-default-path =
+    mkEvalCheck "domain-desktop-chrome-converge-activation-targets-default-path"
+      convergeActivationTargetsDefaultChromePath
+      "the activation must pass Chrome's default macOS user-data-dir so the symlink is placed where an unflagged Chrome launch (Dock, Spotlight, Finder) actually looks";
 
-  domain-desktop-chrome-global-default-browser-handler-activation-references-duti =
-    mkEvalCheck "domain-desktop-chrome-global-default-browser-handler-activation-references-duti"
-      defaultBrowserHandlerActivationReferencesDuti
-      "forcing the activation script must resolve the darwin-only duti store path, proving the module evaluates under darwin pkgs in the test harness instead of passing only because the wired-check never forces the thunk";
+  domain-desktop-chrome-converge-activation-sets-plain-chrome-default =
+    mkEvalCheck "domain-desktop-chrome-converge-activation-sets-plain-chrome-default"
+      convergeActivationSetsPlainChromeBundleId
+      "the activation must pass the plain com.google.Chrome bundle id so links route through Chrome itself, not the retired AppleScript link-handler applet that showed a startup-screen splash";
 
-  domain-desktop-chrome-global-default-browser-handler-uses-open-location =
-    mkEvalCheck "domain-desktop-chrome-global-default-browser-handler-uses-open-location"
-      installDefaultBrowserHandlerScriptUsesOpenLocationHandler
-      "the handler app must implement the AppleScript open-location handler because LaunchServices delivers http/https to a default browser via the GURL Apple event, not argv";
-
-  domain-desktop-chrome-global-default-browser-handler-declares-http-https =
-    mkEvalCheck "domain-desktop-chrome-global-default-browser-handler-declares-http-https"
-      installDefaultBrowserHandlerScriptDeclaresHttpAndHttpsSchemes
-      "the handler app Info.plist must declare http and https CFBundleURLSchemes or LaunchServices will not offer it as a default web browser";
-
-  domain-desktop-chrome-global-default-browser-handler-registers-via-duti =
-    mkEvalCheck "domain-desktop-chrome-global-default-browser-handler-registers-via-duti"
-      installDefaultBrowserHandlerScriptRegistersDefaultViaDuti
-      "the install script must set the handler as the default http and https handler via duti so link clicks route to chrome-global";
-
-  domain-desktop-chrome-link-default-profile-activation-wired =
-    mkEvalCheck "domain-desktop-chrome-link-default-profile-activation-wired"
-      linkDefaultChromeProfileActivationIsWired
-      "the linkDefaultChromeProfileToChromeGlobalProfile activation must be wired so the raw Chrome.app launch path (Dock, Spotlight, manual open) shares the one chrome-global profile instead of Chrome's untouched default profile";
-
-  domain-desktop-chrome-link-default-profile-activation-targets-default-path =
-    mkEvalCheck "domain-desktop-chrome-link-default-profile-activation-targets-default-path"
-      linkDefaultChromeProfileActivationTargetsDefaultChromePath
-      "the activation must pass Chrome's default macOS user-data-dir so the symlink is placed where an unflagged Chrome launch actually looks";
-
-  domain-desktop-chrome-link-default-profile-symlinks-to-chrome-global =
-    mkEvalCheck "domain-desktop-chrome-link-default-profile-symlinks-to-chrome-global"
-      linkDefaultChromeProfileScriptSymlinksDefaultPathToChromeGlobal
+  domain-desktop-chrome-converge-symlinks-default-path-to-chrome-global =
+    mkEvalCheck "domain-desktop-chrome-converge-symlinks-default-path-to-chrome-global"
+      convergeScriptSymlinksDefaultPathToChromeGlobal
       "the script must symlink the default profile path to chrome-global so every launch path resolves to the single configured profile";
 
-  domain-desktop-chrome-link-default-profile-defers-while-chrome-runs =
-    mkEvalCheck "domain-desktop-chrome-link-default-profile-defers-while-chrome-runs"
-      linkDefaultChromeProfileScriptDefersWhileChromeRuns
-      "the script must defer while Chrome is running so it never swaps the profile directory out from under an open instance";
+  domain-desktop-chrome-converge-defers-while-chrome-runs =
+    mkEvalCheck "domain-desktop-chrome-converge-defers-while-chrome-runs"
+      convergeScriptDefersWhileChromeRuns
+      "the script must defer while Chrome is running so it never swaps the profile directory or the default browser out from under an open instance, and so the symlink and the duti switch land together with no regression window";
 
-  domain-desktop-chrome-link-default-profile-backs-up-existing-profile =
-    mkEvalCheck "domain-desktop-chrome-link-default-profile-backs-up-existing-profile"
-      linkDefaultChromeProfileScriptBacksUpExistingDefaultProfile
+  domain-desktop-chrome-converge-backs-up-existing-profile =
+    mkEvalCheck "domain-desktop-chrome-converge-backs-up-existing-profile"
+      convergeScriptBacksUpExistingDefaultProfile
       "the script must back up a pre-existing real default profile once before replacing it with the symlink so no profile data is destroyed";
+
+  domain-desktop-chrome-converge-sets-chrome-default-browser-via-duti =
+    mkEvalCheck "domain-desktop-chrome-converge-sets-chrome-default-browser-via-duti"
+      convergeScriptSetsChromeAsDefaultBrowserViaDuti
+      "the script must register plain Chrome as the default http and https handler via duti so link clicks open Chrome directly into the symlinked chrome-global profile";
+
+  domain-desktop-chrome-converge-removes-retired-link-handler-app =
+    mkEvalCheck "domain-desktop-chrome-converge-removes-retired-link-handler-app"
+      convergeScriptRemovesRetiredLinkHandlerApp
+      "the script must remove the retired Chrome Global Link Handler applet so the stale AppleScript app no longer lingers once plain Chrome is the default browser";
 }
 // import ./checks/preferences-overrides-checks.nix {
   inherit
