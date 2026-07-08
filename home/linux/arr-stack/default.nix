@@ -7,6 +7,25 @@
 let
   isChise = hostname == "chise";
   stackRoot = "${config.home.homeDirectory}/arr-stack";
+  machineIdentityMapPath = ../../../private-config/machines.nix;
+  privateConfigPresent = builtins.pathExists machineIdentityMapPath;
+  chiseMachineIdentity = lib.optionalAttrs privateConfigPresent (import machineIdentityMapPath).chise;
+  chiseTailnetBindAddress = chiseMachineIdentity.tailscaleIp or "127.0.0.1";
+  chiseTailnetHostname = chiseMachineIdentity.tailnetHostname or null;
+  homepageAllowedHosts = lib.concatStringsSep "," (
+    [
+      "arr"
+      chiseTailnetBindAddress
+    ]
+    ++ lib.optional (chiseTailnetHostname != null) chiseTailnetHostname
+    ++ [ "localhost" ]
+  );
+  staticEnvironmentFileContents = builtins.readFile ./env;
+  runtimeEnvironmentFileContents =
+    (lib.removeSuffix "\n" staticEnvironmentFileContents)
+    + "\n"
+    + "ARR_BIND_ADDR=${chiseTailnetBindAddress}\n"
+    + "ARR_ALLOWED_HOSTS=${homepageAllowedHosts}\n";
   configServiceDirectories = [
     "qbittorrent"
     "prowlarr"
@@ -51,7 +70,7 @@ lib.mkIf isChise {
   home = {
     file = {
       "arr-stack/docker-compose.yml".source = ./docker-compose.yml;
-      "arr-stack/.env".source = ./env;
+      "arr-stack/.env".text = runtimeEnvironmentFileContents;
       "arr-stack/README.md".source = ./README.md;
     };
 

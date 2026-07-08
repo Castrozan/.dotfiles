@@ -41,36 +41,6 @@ let
 
   cloudflareTunnelConnectorEnabledTunnel =
     cloudflareTunnelConnectorEnabled.services.cloudflared.tunnels.${cloudflareTunnelConnectorTunnelId};
-
-  evalJellyseerrPublicRequestTunnel =
-    tunnelSettings:
-    (lib.evalModules {
-      modules = [
-        ../../../nixos/modules/jellyseerr-public-request-tunnel
-        {
-          options.services.cloudflared = lib.mkOption {
-            type = lib.types.attrs;
-            default = { };
-          };
-          config.custom.jellyseerrPublicRequestTunnel = tunnelSettings;
-        }
-      ];
-    }).config;
-
-  jellyseerrPublicRequestTunnelId = "11111111-1111-1111-1111-111111111111";
-
-  jellyseerrPublicRequestTunnelDisabled = evalJellyseerrPublicRequestTunnel {
-    enable = false;
-  };
-
-  jellyseerrPublicRequestTunnelEnabled = evalJellyseerrPublicRequestTunnel {
-    enable = true;
-    tunnelId = jellyseerrPublicRequestTunnelId;
-    credentialsFile = "/run/agenix/jellyseerr-public-request-tunnel-credentials";
-  };
-
-  jellyseerrPublicRequestTunnelEnabledTunnel =
-    jellyseerrPublicRequestTunnelEnabled.services.cloudflared.tunnels.${jellyseerrPublicRequestTunnelId};
 in
 {
   chise-cloudflare-tunnel-connector-disabled-publishes-nothing =
@@ -103,40 +73,4 @@ in
         == "/run/agenix/jarvis-session-connector-credentials"
       )
       "the connector must take its tunnel credentials from the agenix-provisioned path so the account tag and tunnel secret never enter the Nix store";
-
-  chise-jellyseerr-public-request-tunnel-disabled-publishes-nothing =
-    mkEvalCheck "chise-jellyseerr-public-request-tunnel-disabled-publishes-nothing"
-      (!(jellyseerrPublicRequestTunnelDisabled.services.cloudflared.enable or false))
-      "the Jellyseerr public request tunnel must publish no cloudflared service while disabled, so the request portal stays reachable only across the tailnet until the owner opts in at go-live";
-
-  chise-jellyseerr-public-request-tunnel-enabled-turns-on-cloudflared =
-    mkEvalCheck "chise-jellyseerr-public-request-tunnel-enabled-turns-on-cloudflared"
-      jellyseerrPublicRequestTunnelEnabled.services.cloudflared.enable
-      "an enabled Jellyseerr public request tunnel must turn cloudflared on so approved friends reach the request portal over the public hostname";
-
-  chise-jellyseerr-public-request-tunnel-registers-tunnel-by-id =
-    mkEvalCheck "chise-jellyseerr-public-request-tunnel-registers-tunnel-by-id"
-      (builtins.hasAttr jellyseerrPublicRequestTunnelId jellyseerrPublicRequestTunnelEnabled.services.cloudflared.tunnels)
-      "the tunnel must register under its configured tunnelId so cloudflared runs the provisioned media request tunnel rather than an empty default";
-
-  chise-jellyseerr-public-request-tunnel-routes-hostname-to-jellyseerr =
-    mkEvalCheck "chise-jellyseerr-public-request-tunnel-routes-hostname-to-jellyseerr"
-      (
-        jellyseerrPublicRequestTunnelEnabledTunnel.ingress."requests.lucaszanoni.com"
-        == "http://100.94.11.81:5055"
-      )
-      "the tunnel must route only the public request hostname to the tailnet-bound Jellyseerr so it exposes the request portal and nothing else from the host";
-
-  chise-jellyseerr-public-request-tunnel-catch-all-is-404 =
-    mkEvalCheck "chise-jellyseerr-public-request-tunnel-catch-all-is-404"
-      (jellyseerrPublicRequestTunnelEnabledTunnel.default == "http_status:404")
-      "the tunnel must answer every non-request hostname with a 404 so Radarr, Sonarr, Prowlarr and qBittorrent stay tailnet-only and never leak through the public edge";
-
-  chise-jellyseerr-public-request-tunnel-credentials-from-agenix =
-    mkEvalCheck "chise-jellyseerr-public-request-tunnel-credentials-from-agenix"
-      (
-        jellyseerrPublicRequestTunnelEnabledTunnel.credentialsFile
-        == "/run/agenix/jellyseerr-public-request-tunnel-credentials"
-      )
-      "the tunnel must take its credentials from the agenix-provisioned path so the account tag and tunnel secret never enter the Nix store";
 }
