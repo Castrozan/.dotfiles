@@ -85,7 +85,7 @@ in
 
   systemd.services.arr-media-tailscale-funnel = {
     after = [ "nginx.service" ];
-    wants = [ "nginx.service" ];
+    requires = [ "nginx.service" ];
   };
 
   users.users.zanoni = {

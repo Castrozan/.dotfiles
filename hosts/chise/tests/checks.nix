@@ -46,13 +46,13 @@ arrStackChecks
     mkEvalCheck "chise-arr-media-ratelimit-nginx-enabled-on-chise" nixosCfg.services.nginx.enable
       "chise must actually run the rate-limiting nginx the funnel now depends on, or the public media endpoints would 502 behind a funnel pointing at a dead port";
 
-  chise-arr-media-funnel-ordered-after-nginx =
-    mkEvalCheck "chise-arr-media-funnel-ordered-after-nginx"
+  chise-arr-media-funnel-requires-nginx-before-repoint =
+    mkEvalCheck "chise-arr-media-funnel-requires-nginx-before-repoint"
       (
         builtins.elem "nginx.service" nixosCfg.systemd.services.arr-media-tailscale-funnel.after
-        && builtins.elem "nginx.service" nixosCfg.systemd.services.arr-media-tailscale-funnel.wants
+        && builtins.elem "nginx.service" nixosCfg.systemd.services.arr-media-tailscale-funnel.requires
       )
-      "the funnel unit must order after and want nginx so a rebuild brings the rate-limiting proxy up before the public funnel repoints onto it, shrinking the window where the funnel could target a not-yet-listening nginx and 502";
+      "the funnel unit must order after and require nginx so a rebuild only repoints the public funnel onto the proxy once nginx has actually started; if nginx fails its config test the funnel unit never starts and the previous container target stays live (up but unthrottled) instead of the funnel 502-ing onto a dead proxy";
 
   chise-rebuild-guard-wrapper-shadows-nixos-rebuild =
     mkEvalCheck "chise-rebuild-guard-wrapper-shadows-nixos-rebuild"
