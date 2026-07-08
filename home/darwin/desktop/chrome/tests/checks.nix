@@ -55,23 +55,18 @@ let
     lib.hasInfix "for urlScheme in http https" installDefaultBrowserHandlerScriptSource
     && lib.hasInfix ''"$dutiBinary" -s "$handlerBundleIdentifier" "$urlScheme"'' installDefaultBrowserHandlerScriptSource;
 
-  chromePreferencesOverrides = builtins.fromJSON (builtins.readFile ../preferences-overrides.json);
+  linkDefaultChromeProfileActivationIsWired =
+    chromeGlobalLauncherConfiguration.home.activation ? linkDefaultChromeProfileToChromeGlobalProfile;
 
-  chromeBookmarkBarShownOnAllTabs = chromePreferencesOverrides.bookmark_bar.show_on_all_tabs;
+  linkDefaultChromeProfileActivationTargetsDefaultChromePath = lib.hasInfix "Library/Application Support/Google/Chrome" chromeGlobalLauncherConfiguration.home.activation.linkDefaultChromeProfileToChromeGlobalProfile.data;
 
-  chromeThemeColorSchemeIsDark = chromePreferencesOverrides.browser.theme.color_scheme == 2;
+  linkDefaultChromeProfileScriptSource = builtins.readFile ../scripts/link-default-chrome-profile-to-chrome-global.sh;
 
-  chromePrivacySandboxTopicsDisabled = !chromePreferencesOverrides.privacy_sandbox.m1.topics_enabled;
+  linkDefaultChromeProfileScriptSymlinksDefaultPathToChromeGlobal = lib.hasInfix ''ln -s "$chromeGlobalUserDataDirectory" "$defaultChromeUserDataDirectory"'' linkDefaultChromeProfileScriptSource;
 
-  chromeKeepsGoogleSigninEnabledByOmittingTheSigninOverride = !(chromePreferencesOverrides ? signin);
+  linkDefaultChromeProfileScriptDefersWhileChromeRuns = lib.hasInfix "pgrep -x" linkDefaultChromeProfileScriptSource;
 
-  chromeOmitsBraveSpecificNamespace = !(chromePreferencesOverrides ? brave);
-
-  chromeOmitsBraveSearchProviderGuid = !(chromePreferencesOverrides ? default_search_provider);
-
-  chromeOmitsSpellcheckOverrideChromeRevertsOnLaunch = !(chromePreferencesOverrides ? spellcheck);
-
-  chromeOmitsIntlLanguageOverrideChromeRevertsOnLaunch = !(chromePreferencesOverrides ? intl);
+  linkDefaultChromeProfileScriptBacksUpExistingDefaultProfile = lib.hasInfix "pre-chrome-global-symlink-backup" linkDefaultChromeProfileScriptSource;
 in
 {
   domain-desktop-chrome-global-launcher-targets-chrome-global-user-data-dir =
@@ -124,40 +119,37 @@ in
       installDefaultBrowserHandlerScriptRegistersDefaultViaDuti
       "the install script must set the handler as the default http and https handler via duti so link clicks route to chrome-global";
 
-  domain-desktop-chrome-bookmark-bar-shown-on-all-tabs =
-    mkEvalCheck "domain-desktop-chrome-bookmark-bar-shown-on-all-tabs" chromeBookmarkBarShownOnAllTabs
-      "Chrome bookmark_bar.show_on_all_tabs must be true to mirror the Brave bookmark bar";
+  domain-desktop-chrome-link-default-profile-activation-wired =
+    mkEvalCheck "domain-desktop-chrome-link-default-profile-activation-wired"
+      linkDefaultChromeProfileActivationIsWired
+      "the linkDefaultChromeProfileToChromeGlobalProfile activation must be wired so the raw Chrome.app launch path (Dock, Spotlight, manual open) shares the one chrome-global profile instead of Chrome's untouched default profile";
 
-  domain-desktop-chrome-theme-color-scheme-is-dark =
-    mkEvalCheck "domain-desktop-chrome-theme-color-scheme-is-dark" chromeThemeColorSchemeIsDark
-      "Chrome browser.theme.color_scheme must be 2 (dark) to mirror the Brave dark theme";
+  domain-desktop-chrome-link-default-profile-activation-targets-default-path =
+    mkEvalCheck "domain-desktop-chrome-link-default-profile-activation-targets-default-path"
+      linkDefaultChromeProfileActivationTargetsDefaultChromePath
+      "the activation must pass Chrome's default macOS user-data-dir so the symlink is placed where an unflagged Chrome launch actually looks";
 
-  domain-desktop-chrome-privacy-sandbox-topics-disabled =
-    mkEvalCheck "domain-desktop-chrome-privacy-sandbox-topics-disabled"
-      chromePrivacySandboxTopicsDisabled
-      "Chrome privacy_sandbox.m1.topics_enabled must be false to mirror Brave's privacy sandbox lockdown";
+  domain-desktop-chrome-link-default-profile-symlinks-to-chrome-global =
+    mkEvalCheck "domain-desktop-chrome-link-default-profile-symlinks-to-chrome-global"
+      linkDefaultChromeProfileScriptSymlinksDefaultPathToChromeGlobal
+      "the script must symlink the default profile path to chrome-global so every launch path resolves to the single configured profile";
 
-  domain-desktop-chrome-google-signin-stays-enabled =
-    mkEvalCheck "domain-desktop-chrome-google-signin-stays-enabled"
-      chromeKeepsGoogleSigninEnabledByOmittingTheSigninOverride
-      "Chrome overrides must omit the signin key so Google sign-in stays enabled, unlike the Brave overrides which disable it";
+  domain-desktop-chrome-link-default-profile-defers-while-chrome-runs =
+    mkEvalCheck "domain-desktop-chrome-link-default-profile-defers-while-chrome-runs"
+      linkDefaultChromeProfileScriptDefersWhileChromeRuns
+      "the script must defer while Chrome is running so it never swaps the profile directory out from under an open instance";
 
-  domain-desktop-chrome-omits-brave-specific-namespace =
-    mkEvalCheck "domain-desktop-chrome-omits-brave-specific-namespace" chromeOmitsBraveSpecificNamespace
-      "Chrome overrides must omit the brave namespace because Chrome ignores brave.accelerators and brave button-visibility keys";
-
-  domain-desktop-chrome-omits-brave-search-provider-guid =
-    mkEvalCheck "domain-desktop-chrome-omits-brave-search-provider-guid"
-      chromeOmitsBraveSearchProviderGuid
-      "Chrome overrides must omit default_search_provider because the Brave prepopulated-engine guid does not match Chrome's TemplateURL guids and Google is already Chrome's default";
-
-  domain-desktop-chrome-omits-spellcheck-override =
-    mkEvalCheck "domain-desktop-chrome-omits-spellcheck-override"
-      chromeOmitsSpellcheckOverrideChromeRevertsOnLaunch
-      "Chrome overrides must omit spellcheck because Chrome reconciles spellcheck dictionaries on launch and reverts an external file write, so pinning it here is a no-op";
-
-  domain-desktop-chrome-omits-intl-language-override =
-    mkEvalCheck "domain-desktop-chrome-omits-intl-language-override"
-      chromeOmitsIntlLanguageOverrideChromeRevertsOnLaunch
-      "Chrome overrides must omit intl because Chrome reconciles accept_languages on launch and reverts an external file write, so pinning it here is a no-op";
+  domain-desktop-chrome-link-default-profile-backs-up-existing-profile =
+    mkEvalCheck "domain-desktop-chrome-link-default-profile-backs-up-existing-profile"
+      linkDefaultChromeProfileScriptBacksUpExistingDefaultProfile
+      "the script must back up a pre-existing real default profile once before replacing it with the symlink so no profile data is destroyed";
+}
+// import ./checks/preferences-overrides-checks.nix {
+  inherit
+    pkgs
+    lib
+    inputs
+    nixpkgs-version
+    home-version
+    ;
 }

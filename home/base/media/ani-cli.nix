@@ -25,6 +25,10 @@ in
     ani-cli = "ani-cli --no-detach";
   };
 
+  programs.bash.shellAliases = {
+    ani-cli = "ani-cli --no-detach";
+  };
+
   home.file.".config/mpv/mpv.conf".text = ''
     vo=kitty
     video-sync=display-resample

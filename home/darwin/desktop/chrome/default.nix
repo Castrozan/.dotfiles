@@ -11,6 +11,7 @@ let
   chromeGlobalLauncher = import ./chrome-global-launcher.nix { inherit pkgs; };
 
   installChromeGlobalDefaultBrowserHandlerScript = ./scripts/install-chrome-global-default-browser-handler.sh;
+  linkDefaultChromeProfileToChromeGlobalScript = ./scripts/link-default-chrome-profile-to-chrome-global.sh;
   chromeGlobalDefaultBrowserHandlerBundleIdentifier = "com.lucaszanoni.chrome-global-link-handler";
   chromeGlobalDefaultBrowserHandlerApplicationName = "Chrome Global Link Handler";
   chromeGlobalUrlOpenerBinary = "${chromeGlobalLauncher.chromeGlobalUrlOpenerPackage}/bin/open-url-in-chrome-global";
@@ -37,6 +38,18 @@ in
               sentinelBasename = "chrome-global-preferences-applied";
             }
           );
+
+      linkDefaultChromeProfileToChromeGlobalProfile =
+        config.lib.dag.entryAfter
+          [
+            "writeBoundary"
+          ]
+          ''
+            ${pkgs.bash}/bin/bash ${linkDefaultChromeProfileToChromeGlobalScript} \
+              "$HOME/${chromeGlobalLauncher.chromeGlobalUserDataDirectoryRelativeToHome}" \
+              "$HOME/Library/Application Support/Google/Chrome" \
+              "Google Chrome" || echo "WARN: default Chrome profile symlink step failed; a later rebuild retries." >&2
+          '';
 
       installChromeGlobalDefaultBrowserHandler =
         config.lib.dag.entryAfter

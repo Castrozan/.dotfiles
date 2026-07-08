@@ -19,4 +19,8 @@ in
   programs.fish.shellAliases = {
     bwu = "bw-session";
   };
+
+  programs.bash.shellAliases = {
+    bwu = "bw-session";
+  };
 }

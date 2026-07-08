@@ -38,10 +38,11 @@ let
     };
   };
 
-  publicShellAliasesPath = "$HOME/.dotfiles/home/base/terminal/shell/aliases.sh";
+  shellAliasesForNonInteractiveBash = "$HOME/.dotfiles/home/base/terminal/shell/aliases.sh";
+  interactiveBashConfiguration = "$HOME/.dotfiles/home/base/terminal/shell/bash_interactive.sh";
 in
 {
-  home.sessionVariables.BASH_ENV = publicShellAliasesPath;
+  home.sessionVariables.BASH_ENV = shellAliasesForNonInteractiveBash;
 
   programs.bash = lib.mkIf isDarwin {
     enable = true;
@@ -49,8 +50,8 @@ in
       if [[ $- == *i* ]]; then
         enable -f ${flylineLoadableBuiltin}/lib/libflyline.dylib flyline 2>/dev/null || true
       fi
-      if [ -r "${publicShellAliasesPath}" ]; then
-        . "${publicShellAliasesPath}"
+      if [ -r "${interactiveBashConfiguration}" ]; then
+        . "${interactiveBashConfiguration}"
       fi
     '';
   };
