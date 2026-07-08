@@ -61,25 +61,27 @@ in
       obsidianHeadlessWrapper
     ];
 
-    activation.installObsidianHeadlessViaNpm = config.lib.dag.entryAfter [ "writeBoundary" ] ''
-      run ${installObsidianHeadlessViaNpm}
-    '';
+    activation = {
+      installObsidianHeadlessViaNpm = config.lib.dag.entryAfter [ "writeBoundary" ] ''
+        run ${installObsidianHeadlessViaNpm}
+      '';
 
-    activation.placeObsidianHeadlessSecrets =
-      config.lib.dag.entryAfter
-        [
-          "writeBoundary"
-          "agenix"
-        ]
+      placeObsidianHeadlessSecrets =
+        config.lib.dag.entryAfter
+          [
+            "writeBoundary"
+            "agenix"
+          ]
+          ''
+            run ${placeObsidianHeadlessSecrets}
+          '';
+
+      ensureObsidianHeadlessSyncLoaded = lib.mkIf isDarwin (
+        config.lib.dag.entryAfter [ "setupLaunchAgents" ] ''
+          run ${ensureObsidianHeadlessSyncLoadedScript}
         ''
-          run ${placeObsidianHeadlessSecrets}
-        '';
-
-    activation.ensureObsidianHeadlessSyncLoaded = lib.mkIf isDarwin (
-      config.lib.dag.entryAfter [ "setupLaunchAgents" ] ''
-        run ${ensureObsidianHeadlessSyncLoadedScript}
-      ''
-    );
+      );
+    };
   };
 
   launchd.agents.obsidian-headless-sync = lib.mkIf isDarwin {
