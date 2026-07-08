@@ -53,7 +53,7 @@ command = "btop"
 [[keys.command]]
 key = "prefix+e"
 type = "pane"
-command = "fish -lc c"
+command = "code . -n"
 
 [[keys.command]]
 key = "prefix+v"
@@ -63,7 +63,7 @@ command = "nvim ."
 [[keys.command]]
 key = "prefix+t"
 type = "pane"
-command = "fish -lc 'claude-show-session | LESS=\"-R +G\" less'"
+command = "bash -c 'claude-show-session | LESS=\"-R +G\" less'"
 
 [[keys.command]]
 key = "prefix+ctrl+c"

@@ -18,7 +18,6 @@
     ../base/testing
 
     ../base/terminal/bash.nix
-    ../base/terminal/fish.nix
     ../base/terminal/kitty.nix
     ../base/terminal/scripts.nix
     ../base/terminal/tmux.nix
