@@ -40,6 +40,7 @@ let
 
   shellAliasesForNonInteractiveBash = "$HOME/.dotfiles/home/base/terminal/shell/aliases.sh";
   interactiveBashConfiguration = "$HOME/.dotfiles/home/base/terminal/shell/bash_interactive.sh";
+  flylineKeybindingsConfiguration = "$HOME/.dotfiles/home/base/terminal/shell/bash_flyline_config.sh";
 in
 {
   home.sessionVariables.BASH_ENV = shellAliasesForNonInteractiveBash;
@@ -48,7 +49,11 @@ in
     enable = true;
     initExtra = ''
       if [[ $- == *i* ]]; then
-        enable -f ${flylineLoadableBuiltin}/lib/libflyline.dylib flyline 2>/dev/null || true
+        if enable -f ${flylineLoadableBuiltin}/lib/libflyline.dylib flyline 2>/dev/null; then
+          if [ -r "${flylineKeybindingsConfiguration}" ]; then
+            . "${flylineKeybindingsConfiguration}"
+          fi
+        fi
       fi
       if [ -r "${interactiveBashConfiguration}" ]; then
         . "${interactiveBashConfiguration}"
