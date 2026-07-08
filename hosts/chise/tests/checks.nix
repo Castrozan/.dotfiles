@@ -20,11 +20,40 @@ let
   cloudflareTunnelChecks = import ./cloudflare-tunnels.nix { inherit pkgs lib; };
 
   arrMediaFunnelChecks = import ./arr-media-funnel.nix { inherit pkgs lib; };
+
+  arrMediaLoginRateLimitProxyChecks = import ./arr-media-login-ratelimit-proxy.nix {
+    inherit pkgs lib;
+  };
+
+  arrMediaFunnelExecStart = builtins.concatStringsSep "\n" nixosCfg.systemd.services.arr-media-tailscale-funnel.serviceConfig.ExecStart;
 in
 arrStackChecks
 // cloudflareTunnelChecks
 // arrMediaFunnelChecks
+// arrMediaLoginRateLimitProxyChecks
 // {
+  chise-arr-media-funnel-targets-ratelimit-proxy-not-container =
+    mkEvalCheck "chise-arr-media-funnel-targets-ratelimit-proxy-not-container"
+      (
+        lib.hasInfix "http://127.0.0.1:9443" arrMediaFunnelExecStart
+        && lib.hasInfix "http://127.0.0.1:9444" arrMediaFunnelExecStart
+        && !(lib.hasInfix "http://127.0.0.1:8096" arrMediaFunnelExecStart)
+        && !(lib.hasInfix "http://127.0.0.1:5055" arrMediaFunnelExecStart)
+      )
+      "the public funnel must target the loopback rate-limit proxy ports (9443/9444), never the container ports (8096/5055) directly, so no public request can reach the loginless media origins without passing the per-IP login limiter first";
+
+  chise-arr-media-ratelimit-nginx-enabled-on-chise =
+    mkEvalCheck "chise-arr-media-ratelimit-nginx-enabled-on-chise" nixosCfg.services.nginx.enable
+      "chise must actually run the rate-limiting nginx the funnel now depends on, or the public media endpoints would 502 behind a funnel pointing at a dead port";
+
+  chise-arr-media-funnel-ordered-after-nginx =
+    mkEvalCheck "chise-arr-media-funnel-ordered-after-nginx"
+      (
+        builtins.elem "nginx.service" nixosCfg.systemd.services.arr-media-tailscale-funnel.after
+        && builtins.elem "nginx.service" nixosCfg.systemd.services.arr-media-tailscale-funnel.wants
+      )
+      "the funnel unit must order after and want nginx so a rebuild brings the rate-limiting proxy up before the public funnel repoints onto it, shrinking the window where the funnel could target a not-yet-listening nginx and 502";
+
   chise-rebuild-guard-wrapper-shadows-nixos-rebuild =
     mkEvalCheck "chise-rebuild-guard-wrapper-shadows-nixos-rebuild"
       (builtins.any (

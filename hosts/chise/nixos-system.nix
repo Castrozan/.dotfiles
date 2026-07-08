@@ -39,6 +39,7 @@ in
     ../../nixos/modules/cockpit-session-bridge
     ../../nixos/modules/cloudflare-tunnel-connector
     ../../nixos/modules/arr-media-tailscale-funnel
+    ../../nixos/modules/arr-media-login-ratelimit-proxy
   ]
   ++ lib.optional (builtins.pathExists ../../private-config/machines/chise/jarvis-connector.nix) ../../private-config/machines/chise/jarvis-connector.nix;
 
@@ -48,22 +49,43 @@ in
       tmuxEnumerationSocket = "";
     };
 
+    arrMediaLoginRateLimitProxy = {
+      enable = true;
+      origins = [
+        {
+          listenPort = 9443;
+          upstreamUrl = "http://127.0.0.1:8096";
+          loginLocationRegexes = [ "^/Users/AuthenticateByName" ];
+        }
+        {
+          listenPort = 9444;
+          upstreamUrl = "http://127.0.0.1:5055";
+          loginLocationRegexes = [ "^/api/v1/auth/(jellyfin|plex|local)" ];
+        }
+      ];
+    };
+
     arrMediaTailscaleFunnel = {
       enable = true;
       funnels = [
         {
           publicHttpsPort = 443;
-          loopbackUrl = "http://127.0.0.1:8096";
+          loopbackUrl = "http://127.0.0.1:9443";
         }
         {
           publicHttpsPort = 8443;
-          loopbackUrl = "http://127.0.0.1:5055";
+          loopbackUrl = "http://127.0.0.1:9444";
         }
       ];
     };
 
     # Disable lid switch suspend for laptop used as server/with external monitor
     lidSwitch.disable = true;
+  };
+
+  systemd.services.arr-media-tailscale-funnel = {
+    after = [ "nginx.service" ];
+    wants = [ "nginx.service" ];
   };
 
   users.users.zanoni = {
