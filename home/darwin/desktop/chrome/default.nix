@@ -24,7 +24,7 @@ in
     ];
 
     activation = {
-      mergeChromeDefaultProfilePreferences =
+      mergeChromeGlobalProfilePreferences =
         config.lib.dag.entryAfter
           [
             "writeBoundary"
@@ -32,9 +32,9 @@ in
           (
             chromiumProfilePreferenceMerge.mkChromiumProfilePreferenceMergeActivationScript {
               browserDisplayProcessName = "Google Chrome";
-              browserUserDataDirectoryRelativeToHome = "Library/Application Support/Google/Chrome";
+              browserUserDataDirectoryRelativeToHome = ".config/chrome-global";
               preferencesOverridesJsonFile = ./preferences-overrides.json;
-              sentinelBasename = "chrome-preferences-applied";
+              sentinelBasename = "chrome-global-preferences-applied";
             }
           );
 

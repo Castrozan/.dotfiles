@@ -49,6 +49,10 @@ let
     ${builtins.readFile ./scripts/obsidian-headless-sync.sh}
   '';
 
+  ensureObsidianHeadlessSyncLoadedScript = pkgs.writeShellScript "obsidian-headless-sync-ensure-loaded" ''
+    ${builtins.readFile ./scripts/ensure-obsidian-headless-sync-loaded.sh}
+  '';
+
   inherit (pkgs.stdenv.hostPlatform) isDarwin isLinux;
 in
 {
@@ -70,6 +74,12 @@ in
         ''
           run ${placeObsidianHeadlessSecrets}
         '';
+
+    activation.ensureObsidianHeadlessSyncLoaded = lib.mkIf isDarwin (
+      config.lib.dag.entryAfter [ "setupLaunchAgents" ] ''
+        run ${ensureObsidianHeadlessSyncLoadedScript}
+      ''
+    );
   };
 
   launchd.agents.obsidian-headless-sync = lib.mkIf isDarwin {
