@@ -72,6 +72,7 @@ in
     arrStackOnDemandSupervisor = {
       enable = true;
       stackHomeDirectory = "/home/zanoni/arr-stack";
+      keepChainAlwaysOn = true;
     };
 
     # Disable lid switch suspend for laptop used as server/with external monitor

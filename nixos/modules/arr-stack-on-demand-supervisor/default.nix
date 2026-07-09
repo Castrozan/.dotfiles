@@ -55,6 +55,12 @@ in
       description = "A pending Jellyseerr request younger than this pre-warms the chain so an approval never hands off to a dead Radarr; an older ignored pending request does not, and if it is finally approved the resulting failed request is retried once the chain comes up.";
     };
 
+    keepChainAlwaysOn = lib.mkOption {
+      type = lib.types.bool;
+      default = false;
+      description = "When true, the supervisor keeps the whole download chain up on every tick and never idles it down, trading the on-demand savings for a chain that is always running so Sonarr and Radarr can catch newly aired episodes of monitored series the moment they release. Leave false for pure on-demand.";
+    };
+
     bindAddressKey = lib.mkOption {
       type = lib.types.str;
       default = "ARR_BIND_ADDR";
@@ -97,6 +103,8 @@ in
         DOCKER_COMPOSE_BIN = "${pkgs.docker-compose}/bin/docker-compose";
         ARR_ON_DEMAND_SERVICES = lib.concatStringsSep " " arrStackOnDemandSupervisorConfig.onDemandServices;
         ARR_IDLE_GRACE_SECONDS = toString arrStackOnDemandSupervisorConfig.idleGraceSeconds;
+        ARR_KEEP_CHAIN_ALWAYS_ON =
+          if arrStackOnDemandSupervisorConfig.keepChainAlwaysOn then "true" else "false";
         ARR_RECENT_PENDING_WINDOW_SECONDS = toString arrStackOnDemandSupervisorConfig.recentPendingWindowSeconds;
         ARR_STATE_FILE = "/var/lib/${stateDirectoryName}/last-active-epoch";
         ARR_BIND_ADDRESS_KEY = arrStackOnDemandSupervisorConfig.bindAddressKey;

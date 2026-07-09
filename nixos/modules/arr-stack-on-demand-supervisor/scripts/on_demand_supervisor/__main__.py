@@ -29,6 +29,8 @@ def resolve_configuration():
             "ARR_ON_DEMAND_SERVICES"
         ).split(),
         "idle_grace_seconds": int(required_environment_value("ARR_IDLE_GRACE_SECONDS")),
+        "keep_chain_always_on": required_environment_value("ARR_KEEP_CHAIN_ALWAYS_ON")
+        == "true",
         "recent_pending_window_seconds": int(
             required_environment_value("ARR_RECENT_PENDING_WINDOW_SECONDS")
         ),

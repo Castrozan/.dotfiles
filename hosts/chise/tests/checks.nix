@@ -53,6 +53,14 @@ arrStackChecks
       )
       "the wired chise supervisor must never list jellyfin or jellyseerr among its on-demand services, so the idle sweep can never stop the always-on public front ends the funnel and rate limiter depend on";
 
+  chise-arr-on-demand-supervisor-keeps-chain-always-on =
+    mkEvalCheck "chise-arr-on-demand-supervisor-keeps-chain-always-on"
+      (
+        nixosCfg.systemd.services.arr-stack-on-demand-supervisor.environment.ARR_KEEP_CHAIN_ALWAYS_ON
+        == "true"
+      )
+      "chise opts the supervisor into keep-chain-always-on so Sonarr and Radarr stay resident and catch newly aired episodes of monitored series the moment they release, instead of idling down and missing them";
+
   chise-arr-media-funnel-targets-ratelimit-proxy-not-container =
     mkEvalCheck "chise-arr-media-funnel-targets-ratelimit-proxy-not-container"
       (

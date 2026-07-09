@@ -80,6 +80,19 @@ def run_supervisor_tick(configuration, now_epoch, dry_run):
     radarr_url = configuration["radarr_url"]
     sonarr_url = configuration["sonarr_url"]
 
+    if configuration["keep_chain_always_on"]:
+        running = running_on_demand_services(base_command, on_demand_services)
+        missing_services = [
+            service for service in on_demand_services if service not in running
+        ]
+        if missing_services:
+            log(f"keep-chain-always-on: starting missing services {missing_services}")
+            start_on_demand_services(base_command, on_demand_services, dry_run)
+        else:
+            log("keep-chain-always-on: full chain up, holding")
+        write_last_active_epoch(state_file_path, now_epoch)
+        return
+
     recent_pending_request_ids, failed_request_ids = actionable_requests(
         jellyseerr_url,
         jellyseerr_api_key,
