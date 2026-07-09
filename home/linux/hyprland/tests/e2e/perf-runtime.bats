@@ -123,9 +123,9 @@ _qs_bar_ipc() {
 
 # ── Terminal ────���────────────────────────��───────────────────────────────────
 
-@test "perf: fish interactive startup < 500ms" {
-	ms=$(_measure_ms fish -i -c exit)
-	echo "# fish startup: ${ms}ms" >&3
+@test "perf: bash interactive startup < 500ms" {
+	ms=$(_measure_ms bash -i -c exit)
+	echo "# bash startup: ${ms}ms" >&3
 	[ "$ms" -lt 500 ]
 }
 

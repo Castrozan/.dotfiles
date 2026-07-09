@@ -28,7 +28,7 @@ in
     ../../base/sourcebot
     ../../base/testing
 
-    ../../base/terminal/fish.nix
+    ../../base/terminal/bash.nix
     ../../base/terminal/kitty.nix
     ../../base/terminal/tmux.nix
     ../../base/terminal/herdr.nix

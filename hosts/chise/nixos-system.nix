@@ -16,6 +16,7 @@ let
     (builtins.readFile ../../home/base/terminal/shell/aliases.sh)
     (builtins.readFile ../../home/base/terminal/shell/zoxide.sh)
     (builtins.readFile ../../home/base/terminal/shell/default_directories.sh)
+    (builtins.readFile ../../home/base/terminal/shell/bash_hyprland_env.sh)
   ];
   sshKeys = import ./ssh-keys.nix;
 in
@@ -101,7 +102,7 @@ in
       "networkmanager"
       "wheel"
     ];
-    shell = pkgs.fish;
+    shell = pkgs.bashInteractive;
     openssh.authorizedKeys.keys = sshKeys.authorizedKeys;
   };
 
@@ -109,6 +110,7 @@ in
   # TODO: this is workaround from home/packages/bash.nix
   environment = {
     etc."bashrc".text = bashrc;
+    shells = [ pkgs.bashInteractive ];
     # NIX_PATH configuration
     # Decision: Keep default NIX_PATH for compatibility with nix repl and other tools
     # For flake-based workflows, use `nix repl '<nixpkgs>'` or import from flake inputs directly
@@ -134,8 +136,6 @@ in
       portalPackage =
         inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland;
     };
-    # Enable fish globally so it's registered in /etc/shells and available as a login shell
-    fish.enable = true;
     # Allows running uncompiled binaries from npm, pip and other packages
     nix-ld = {
       enable = true;

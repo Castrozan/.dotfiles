@@ -71,7 +71,6 @@
     tmux.enable = false;
     neovim.enable = false;
     vim.enable = false;
-    fish.enable = false;
     fzf.enable = false;
   };
 }

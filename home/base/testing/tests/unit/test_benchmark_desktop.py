@@ -121,7 +121,7 @@ class TestFilterBenchmarks:
         assert len(result) == 2
 
     def test_filters_by_partial_match(self):
-        benchmarks = [("tmux-new", None), ("tmux-split", None), ("fish", None)]
+        benchmarks = [("tmux-new", None), ("tmux-split", None), ("wezterm", None)]
         result = benchmark_desktop.filter_benchmarks(benchmarks, "tmux")
         assert len(result) == 2
 
@@ -137,14 +137,14 @@ class TestGetAvailableBenchmarks:
             result = benchmark_desktop.get_available_benchmarks()
             names = [n for n, _ in result]
             assert "hyprctl-ipc" in names
-            assert "fish-startup" in names
+            assert "wezterm-launch" in names
 
     def test_returns_terminal_only_when_no_hyprland(self):
         with patch("benchmark_desktop.is_hyprland_running", return_value=False):
             result = benchmark_desktop.get_available_benchmarks()
             names = [n for n, _ in result]
             assert "hyprctl-ipc" not in names
-            assert "fish-startup" in names
+            assert "wezterm-launch" in names
 
 
 class TestGetLatestResultsByComponent:
@@ -156,12 +156,12 @@ class TestGetLatestResultsByComponent:
         csv = tmp_path / "results.csv"
         csv.write_text(
             "timestamp,component,avg_ms,min_ms,max_ms,iterations\n"
-            "2026-01-01,fish,300.0,250.0,350.0,5\n"
-            "2026-01-02,fish,320.0,280.0,360.0,5\n"
+            "2026-01-01,wezterm,300.0,250.0,350.0,5\n"
+            "2026-01-02,wezterm,320.0,280.0,360.0,5\n"
             "2026-01-01,tmux,20.0,15.0,25.0,5\n"
         )
         result = benchmark_desktop.get_latest_results_by_component(csv)
-        assert result["fish"] == 320.0
+        assert result["wezterm"] == 320.0
         assert result["tmux"] == 20.0
 
 

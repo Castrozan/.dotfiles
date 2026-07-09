@@ -21,10 +21,6 @@ in
     pkgs.mpv-shim-default-shaders
   ];
 
-  programs.fish.shellAliases = {
-    ani-cli = "ani-cli --no-detach";
-  };
-
   programs.bash.shellAliases = {
     ani-cli = "ani-cli --no-detach";
   };

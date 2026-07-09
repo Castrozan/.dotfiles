@@ -16,10 +16,6 @@ in
     bitwardenSession
   ];
 
-  programs.fish.shellAliases = {
-    bwu = "bw-session";
-  };
-
   programs.bash.shellAliases = {
     bwu = "bw-session";
   };

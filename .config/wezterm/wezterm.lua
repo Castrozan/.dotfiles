@@ -57,7 +57,7 @@ local config = {
 	warn_about_missing_glyphs = false,
 	freetype_load_target = "Light",
 	scrollback_lines = 10000,
-	default_prog = is_darwin and { "/run/current-system/sw/bin/bash", "-l" } or { "fish" },
+	default_prog = is_darwin and { "/run/current-system/sw/bin/bash", "-l" } or { "bash", "-l" },
 	default_cwd = wezterm.home_dir,
 
 	term = "wezterm",

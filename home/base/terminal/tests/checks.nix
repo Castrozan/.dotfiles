@@ -18,35 +18,12 @@ let
   inherit (helpers) mkEvalCheck;
 
   cfg = helpers.homeManagerTestConfiguration [
-    ../fish.nix
+    ../bash.nix
     ../kitty.nix
     ../tmux.nix
     ../wezterm.nix
     ../yazi
   ];
-
-  fishConfDFiles = [
-    "fish/conf.d/shell-env.fish"
-    "fish/conf.d/tmux.fish"
-    "fish/conf.d/fish-aliases.fish"
-    "fish/conf.d/fzf.fish"
-    "fish/conf.d/default-directories.fish"
-    "fish/conf.d/key-bindings.fish"
-    "fish/conf.d/private-aliases.fish"
-    "fish/conf.d/hyprland-env.fish"
-  ];
-
-  fishFunctionFiles = [
-    "fish/functions/fish_prompt.fish"
-    "fish/functions/cursor.fish"
-  ];
-
-  allFishConfDFilesDeployed = builtins.all (f: cfg.xdg.configFile ? "${f}") fishConfDFiles;
-
-  allFishFunctionFilesDeployed = builtins.all (f: cfg.xdg.configFile ? "${f}") fishFunctionFiles;
-
-  fishShellInitHasNoHardcodedSources =
-    !(lib.hasInfix "source ~/.dotfiles/" cfg.programs.fish.interactiveShellInit);
 
   bashrcContent = builtins.readFile ../shell/.bashrc;
   bashrcHasNoHardcodedSources = !(lib.hasInfix ". $HOME/.dotfiles/" bashrcContent);
@@ -67,26 +44,13 @@ let
   tmuxFunctionsDefinedBeforeCall = startTmuxCallPosition > screensaverFunctionPosition;
 in
 {
-  domain-terminal-fish-enabled =
-    mkEvalCheck "domain-terminal-fish-enabled"
-      (cfg.programs.fish.enable && builtins.length cfg.programs.fish.plugins >= 3)
-      "fish should be enabled with >= 3 plugins, got ${toString (builtins.length cfg.programs.fish.plugins)}";
+  domain-terminal-bash-enabled =
+    mkEvalCheck "domain-terminal-bash-enabled" cfg.programs.bash.enable
+      "bash should be enabled";
 
   domain-terminal-carapace-enabled =
     mkEvalCheck "domain-terminal-carapace-enabled" cfg.programs.carapace.enable
       "carapace completion should be enabled";
-
-  domain-terminal-fish-conf-d-deployed =
-    mkEvalCheck "domain-terminal-fish-conf-d-deployed" allFishConfDFilesDeployed
-      "all fish conf.d files should be deployed via xdg.configFile";
-
-  domain-terminal-fish-functions-deployed =
-    mkEvalCheck "domain-terminal-fish-functions-deployed" allFishFunctionFilesDeployed
-      "all fish function files should be deployed via xdg.configFile";
-
-  domain-terminal-fish-no-hardcoded-sources =
-    mkEvalCheck "domain-terminal-fish-no-hardcoded-sources" fishShellInitHasNoHardcodedSources
-      "fish interactiveShellInit should not contain hardcoded source ~/.dotfiles/ paths";
 
   domain-terminal-bash-no-hardcoded-sources =
     mkEvalCheck "domain-terminal-bash-no-hardcoded-sources" bashrcHasNoHardcodedSources

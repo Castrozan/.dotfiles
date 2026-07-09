@@ -27,7 +27,7 @@ in
       package = lib.mkDefault pkgs.fira-code;
     };
     settings = {
-      shell = if pkgs.stdenv.hostPlatform.isDarwin then "/run/current-system/sw/bin/bash" else "fish";
+      shell = if pkgs.stdenv.hostPlatform.isDarwin then "/run/current-system/sw/bin/bash" else "bash";
       shell_integration = "no-rc";
       confirm_os_window_close = 0;
       dynamic_background_opacity = true;

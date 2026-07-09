@@ -22,6 +22,7 @@ for _bash_interactive_source_file in \
 	fzf_catppuccin_theme.sh \
 	default_directories.sh \
 	bash_prompt.sh \
+	bash_hyprland_env.sh \
 	bash_tmux_autostart.sh; do
 	if [ -r "$_bash_interactive_shell_directory/$_bash_interactive_source_file" ]; then
 		. "$_bash_interactive_shell_directory/$_bash_interactive_source_file"

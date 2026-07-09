@@ -238,10 +238,6 @@ def bench_fuzzel_launch() -> float:
     return elapsed
 
 
-def bench_fish_startup() -> float:
-    return run_timed(["fish", "-i", "-c", "exit"])
-
-
 def bench_wezterm_launch() -> float:
     start = time.perf_counter()
     proc = subprocess.Popen(
@@ -313,7 +309,6 @@ BENCHMARKS_HYPRLAND = [
 ]
 
 BENCHMARKS_TERMINAL = [
-    ("fish-startup", bench_fish_startup),
     ("wezterm-launch", bench_wezterm_launch),
     ("tmux-new-session", bench_tmux_new_session),
     ("tmux-split-window", bench_tmux_split),
@@ -629,7 +624,7 @@ def print_usage() -> None:
     print()
     print("Components (partial match):")
     print("  hyprctl, workspace, switcher, launcher, dashboard,")
-    print("  sidebar, overview, volume, fuzzel, fish, wezterm, tmux")
+    print("  sidebar, overview, volume, fuzzel, wezterm, tmux")
     print()
     print("Examples:")
     print("  benchmark-desktop              # all, 5 iterations")

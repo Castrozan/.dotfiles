@@ -1,10 +1,10 @@
-{ lib, pkgs, ... }:
+{ lib, ... }:
 {
   programs.yazi = {
     enable = true;
 
     enableBashIntegration = true;
-    enableFishIntegration = !pkgs.stdenv.hostPlatform.isDarwin;
+    enableFishIntegration = false;
 
     settings = {
       mgr = {

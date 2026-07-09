@@ -62,11 +62,11 @@ class TestFormatIndividualTimes:
 class TestDetermineShellsToBenchmark:
     def test_returns_default_shells_for_none(self):
         result = benchmark_shell.determine_shells_to_benchmark(None)
-        assert result == ["bash", "fish"]
+        assert result == ["bash"]
 
     def test_returns_default_shells_for_all(self):
         result = benchmark_shell.determine_shells_to_benchmark("all")
-        assert result == ["bash", "fish"]
+        assert result == ["bash"]
 
     def test_returns_specific_shell(self):
         result = benchmark_shell.determine_shells_to_benchmark("zsh")
@@ -77,7 +77,7 @@ class TestParseArguments:
     def test_defaults(self):
         iterations, shells = benchmark_shell.parse_arguments([])
         assert iterations == 10
-        assert shells == ["bash", "fish"]
+        assert shells == ["bash"]
 
     def test_custom_iterations(self):
         iterations, shells = benchmark_shell.parse_arguments(["5"])

@@ -1,13 +1,15 @@
-{ pkgs, lib, ... }:
+{ pkgs, ... }:
 let
-  inherit (pkgs.stdenv.hostPlatform) isDarwin;
-
   flylineVersion = "1.3.0";
 
   flylineReleaseAssetForSystem = {
     "aarch64-darwin" = {
       asset = "libflyline-v${flylineVersion}-aarch64-apple-darwin.tar.gz";
       hash = "sha256-fYPAf3OGMrLu/r4rG98mZM1qXAagA9ZaI2KnY8vhhBc=";
+    };
+    "x86_64-linux" = {
+      asset = "libflyline-v${flylineVersion}-x86_64-unknown-linux-gnu.tar.gz";
+      hash = "sha256-IbsKeg5BdJb/aO+DecrcBdNeQq7jV/xkrZqNlfaTIPg=";
     };
   };
 
@@ -28,7 +30,7 @@ let
       runHook preInstall
       mkdir -p "$out/lib"
       tar -xzf "$src" -C "$out/lib"
-      mv "$out/lib/libflyline.dylib."* "$out/lib/libflyline.dylib"
+      mv "$out/lib/libflyline."* "$out/lib/libflyline.loadable"
       runHook postInstall
     '';
     meta = {
@@ -45,31 +47,33 @@ in
 {
   home.sessionVariables.BASH_ENV = shellAliasesForNonInteractiveBash;
 
-  programs.bash = lib.mkIf isDarwin {
-    enable = true;
-    initExtra = ''
-      if [[ $- == *i* ]]; then
-        if enable -f ${flylineLoadableBuiltin}/lib/libflyline.dylib flyline 2>/dev/null; then
-          if [ -r "${flylineKeybindingsConfiguration}" ]; then
-            . "${flylineKeybindingsConfiguration}"
+  programs = {
+    bash = {
+      enable = true;
+      initExtra = ''
+        if [[ $- == *i* ]]; then
+          if enable -f ${flylineLoadableBuiltin}/lib/libflyline.loadable flyline 2>/dev/null; then
+            if [ -r "${flylineKeybindingsConfiguration}" ]; then
+              . "${flylineKeybindingsConfiguration}"
+            fi
           fi
         fi
-      fi
-      if [ -r "${interactiveBashConfiguration}" ]; then
-        . "${interactiveBashConfiguration}"
-      fi
-    '';
-  };
+        if [ -r "${interactiveBashConfiguration}" ]; then
+          . "${interactiveBashConfiguration}"
+        fi
+      '';
+    };
 
-  programs.zoxide = lib.mkIf isDarwin {
-    enable = true;
-    enableBashIntegration = true;
-    enableFishIntegration = false;
-  };
+    zoxide = {
+      enable = true;
+      enableBashIntegration = true;
+      enableFishIntegration = false;
+    };
 
-  programs.carapace = lib.mkIf isDarwin {
-    enable = true;
-    enableBashIntegration = true;
-    enableFishIntegration = false;
+    carapace = {
+      enable = true;
+      enableBashIntegration = true;
+      enableFishIntegration = false;
+    };
   };
 }

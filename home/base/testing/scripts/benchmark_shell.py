@@ -10,7 +10,7 @@ RESULTS_FILE_NAME = "shell-times.csv"
 CSV_HEADER = "timestamp,shell,avg_seconds,iterations"
 
 DEFAULT_ITERATIONS = 10
-DEFAULT_SHELLS = ["bash", "fish"]
+DEFAULT_SHELLS = ["bash"]
 
 
 def ensure_results_directory_exists() -> None:

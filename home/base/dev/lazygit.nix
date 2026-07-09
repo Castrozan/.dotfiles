@@ -6,11 +6,7 @@
 
     settings = {
       os = {
-        shell =
-          if pkgs.stdenv.hostPlatform.isDarwin then
-            "${pkgs.bashInteractive}/bin/bash -c"
-          else
-            "${pkgs.fish}/bin/fish -i -c";
+        shell = "${pkgs.bashInteractive}/bin/bash -c";
       };
     };
   };

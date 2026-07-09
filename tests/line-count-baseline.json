@@ -37,7 +37,6 @@
   "agents/skills/youtube/scripts/youtube-cli-setup.sh": 306,
   "agents/skills/youtube/scripts/youtube-cli.py": 327,
   "home/base/browser/firefox.nix": 248,
-  "home/base/claude/completions/claude.fish": 284,
   "home/base/media/scripts/speed_read.py": 319,
   "home/base/media/tests/unit/test_daily_note.py": 263,
   "home/base/media/tests/unit/test_speed_read.py": 244,

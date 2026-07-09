@@ -25,7 +25,6 @@ in
     ../../base/opencode
     ../../base/testing
 
-    ../../base/terminal/fish.nix
     ../../base/terminal/kitty.nix
     ../../base/terminal/tmux.nix
     ../../base/terminal/herdr.nix

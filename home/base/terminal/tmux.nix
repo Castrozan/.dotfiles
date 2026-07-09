@@ -19,7 +19,7 @@ let
     if pkgs.stdenv.hostPlatform.isDarwin then
       "/run/current-system/sw/bin/bash"
     else
-      "${pkgs.fish}/bin/fish";
+      "${pkgs.bashInteractive}/bin/bash";
 
   preEmptDefaultCommandOnDarwinSoTmuxPluginsSensibleSkipsItsReattachWithNixStorePathInjection = lib.optionalString pkgs.stdenv.hostPlatform.isDarwin ''
     set -g default-command "${interactiveLoginShellPathThatSurvivesRebuildsAndGarbageCollection} -l"
