@@ -60,4 +60,16 @@ in
       fi
     '';
   };
+
+  programs.zoxide = lib.mkIf isDarwin {
+    enable = true;
+    enableBashIntegration = true;
+    enableFishIntegration = false;
+  };
+
+  programs.carapace = lib.mkIf isDarwin {
+    enable = true;
+    enableBashIntegration = true;
+    enableFishIntegration = false;
+  };
 }
