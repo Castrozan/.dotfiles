@@ -48,6 +48,16 @@ in
       )
       "chise opts the supervisor into keep-chain-always-on so Sonarr and Radarr stay resident and catch newly aired episodes of monitored series the moment they release, instead of idling down and missing them";
 
+  chise-arr-on-demand-disk-guard-emails-via-agenix-secret =
+    mkEvalCheck "chise-arr-on-demand-disk-guard-emails-via-agenix-secret"
+      (
+        lib.hasInfix "jellyseerr-smtp-app-password" nixosCfg.systemd.services.arr-stack-on-demand-supervisor.environment.ARR_DISK_ALERT_APP_PASSWORD_FILE
+        &&
+          nixosCfg.systemd.services.arr-stack-on-demand-supervisor.environment.ARR_DISK_ALERT_EMAIL_RECIPIENT
+          != ""
+      )
+      "the chise disk guard must send its low-space alert through the agenix Gmail app password and a real recipient, reusing the Jellyseerr email secret so a critical disk pauses downloads and actually tells Lucas rather than failing silently";
+
   chise-arr-media-funnel-targets-ratelimit-proxy-not-container =
     mkEvalCheck "chise-arr-media-funnel-targets-ratelimit-proxy-not-container"
       (

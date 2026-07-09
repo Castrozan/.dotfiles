@@ -107,4 +107,18 @@ in
         && enabledEnvironment.ARR_COMPOSE_PROJECT == "arr-stack"
       )
       "the supervisor must drive the standalone docker-compose binary against the arr-stack project so bringing the chain up and down targets the same containers the stack already declares";
+
+  chise-arr-on-demand-disk-guard-stops-fill-below-critical-floor =
+    mkEvalCheck "chise-arr-on-demand-disk-guard-stops-fill-below-critical-floor"
+      (
+        enabledEnvironment.ARR_DISK_GUARD_FILL_SERVICE == "qbittorrent"
+        && lib.elem enabledEnvironment.ARR_DISK_GUARD_FILL_SERVICE (
+          lib.splitString " " enabledEnvironment.ARR_ON_DEMAND_SERVICES
+        )
+        &&
+          (lib.toInt enabledEnvironment.ARR_DISK_GUARD_CRITICAL_GIGABYTES)
+          < (lib.toInt enabledEnvironment.ARR_DISK_GUARD_WARNING_GIGABYTES)
+        && lib.hasInfix "arr-stack" enabledEnvironment.ARR_DISK_GUARD_PATH
+      )
+      "the disk guard must stop the download client, which must itself be an on-demand service so the guard can hold it out of the keep-alive restart, once free space on the shared stack filesystem falls below a critical floor that sits under the warning floor, so a single large grab can never fill root to zero and brick the host";
 }

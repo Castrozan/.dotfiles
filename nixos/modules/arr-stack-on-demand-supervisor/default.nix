@@ -6,85 +6,14 @@
 }:
 let
   arrStackOnDemandSupervisorConfig = config.custom.arrStackOnDemandSupervisor;
+  diskGuardConfig = arrStackOnDemandSupervisorConfig.diskGuard;
   supervisorPackageDirectory = ./scripts/on_demand_supervisor;
   stateDirectoryName = "arr-stack-on-demand-supervisor";
   stackHome = arrStackOnDemandSupervisorConfig.stackHomeDirectory;
+  diskGuardPath = if diskGuardConfig.path == "" then stackHome else diskGuardConfig.path;
 in
 {
-  options.custom.arrStackOnDemandSupervisor = {
-    enable = lib.mkEnableOption "a root systemd timer that brings the arr-stack download chain (radarr/sonarr/prowlarr/qbittorrent/bazarr) up on demand when a Jellyseerr request needs fulfilling, keeps it up while a download queue is active, and stops it after an idle grace, so the download chain runs only while there is work instead of 24/7, without touching the always-on jellyfin/jellyseerr front ends";
-
-    stackHomeDirectory = lib.mkOption {
-      type = lib.types.str;
-      description = "Absolute path to the arr-stack home directory holding docker-compose.yml, .env and config/, e.g. /home/zanoni/arr-stack; the supervisor reads the compose project, the generated .env bind address and each app's on-disk API key from underneath it.";
-    };
-
-    composeProjectName = lib.mkOption {
-      type = lib.types.str;
-      default = "arr-stack";
-      description = "The docker compose project name the on-demand services live under, matching the name declared in docker-compose.yml.";
-    };
-
-    onDemandServices = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
-      default = [
-        "radarr"
-        "sonarr"
-        "prowlarr"
-        "qbittorrent"
-        "bazarr"
-      ];
-      description = "The download-chain compose services brought up on demand and stopped when idle; excludes the always-on jellyfin/jellyseerr front ends, and since Jellyseerr requests are movie/TV only it leaves lidarr/readarr down.";
-    };
-
-    idleGraceSeconds = lib.mkOption {
-      type = lib.types.int;
-      default = 1200;
-      description = "How long the download chain may sit with no active download queue and no actionable request before the supervisor stops it, covering post-download import and a brief search with no immediate result without flapping.";
-    };
-
-    pollIntervalSeconds = lib.mkOption {
-      type = lib.types.int;
-      default = 180;
-      description = "How often the supervisor re-evaluates demand and idle state; media requests tolerate a few minutes of start latency so a short poll is unnecessary.";
-    };
-
-    recentPendingWindowSeconds = lib.mkOption {
-      type = lib.types.int;
-      default = 21600;
-      description = "A pending Jellyseerr request younger than this pre-warms the chain so an approval never hands off to a dead Radarr; an older ignored pending request does not, and if it is finally approved the resulting failed request is retried once the chain comes up.";
-    };
-
-    keepChainAlwaysOn = lib.mkOption {
-      type = lib.types.bool;
-      default = false;
-      description = "When true, the supervisor keeps the whole download chain up on every tick and never idles it down, trading the on-demand savings for a chain that is always running so Sonarr and Radarr can catch newly aired episodes of monitored series the moment they release. Leave false for pure on-demand.";
-    };
-
-    bindAddressKey = lib.mkOption {
-      type = lib.types.str;
-      default = "ARR_BIND_ADDR";
-      description = "The .env key the supervisor reads at runtime to learn the tailnet address the *arr web UIs listen on, so the tailscale IP stays out of the nix source and lives only in the build-generated .env.";
-    };
-
-    jellyseerrUrl = lib.mkOption {
-      type = lib.types.str;
-      default = "http://127.0.0.1:5055";
-      description = "Loopback base URL of the always-on Jellyseerr the supervisor queries for actionable requests and drives retries against, using the API key read from its settings.json.";
-    };
-
-    radarrPort = lib.mkOption {
-      type = lib.types.str;
-      default = "7878";
-      description = "Radarr web UI port the supervisor queries for the active download queue, combined with the bind address read from .env.";
-    };
-
-    sonarrPort = lib.mkOption {
-      type = lib.types.str;
-      default = "8989";
-      description = "Sonarr web UI port the supervisor queries for the active download queue, combined with the bind address read from .env.";
-    };
-  };
+  imports = [ ./options.nix ];
 
   config = lib.mkIf arrStackOnDemandSupervisorConfig.enable {
     systemd.services.arr-stack-on-demand-supervisor = {
@@ -114,6 +43,18 @@ in
         RADARR_CONFIG_FILE = "${stackHome}/config/radarr/config.xml";
         SONARR_PORT = arrStackOnDemandSupervisorConfig.sonarrPort;
         SONARR_CONFIG_FILE = "${stackHome}/config/sonarr/config.xml";
+        ARR_DISK_GUARD_PATH = diskGuardPath;
+        ARR_DISK_GUARD_WARNING_GIGABYTES = toString diskGuardConfig.warningFreeGigabytes;
+        ARR_DISK_GUARD_CRITICAL_GIGABYTES = toString diskGuardConfig.criticalFreeGigabytes;
+        ARR_DISK_GUARD_FILL_SERVICE = diskGuardConfig.fillService;
+        ARR_DISK_GUARD_CRITICAL_REMINDER_SECONDS = toString diskGuardConfig.criticalReminderSeconds;
+        ARR_DISK_GUARD_ALERT_STATE_FILE = "/var/lib/${stateDirectoryName}/disk-guard-alert-state.json";
+        ARR_DISK_ALERT_SMTP_HOST = diskGuardConfig.alertSmtpHost;
+        ARR_DISK_ALERT_SMTP_PORT = toString diskGuardConfig.alertSmtpPort;
+        ARR_DISK_ALERT_SMTP_USERNAME = diskGuardConfig.alertSmtpUsername;
+        ARR_DISK_ALERT_EMAIL_SENDER = diskGuardConfig.alertEmailSender;
+        ARR_DISK_ALERT_EMAIL_RECIPIENT = diskGuardConfig.alertEmailRecipient;
+        ARR_DISK_ALERT_APP_PASSWORD_FILE = diskGuardConfig.alertAppPasswordSecretFile;
       };
       serviceConfig = {
         Type = "oneshot";

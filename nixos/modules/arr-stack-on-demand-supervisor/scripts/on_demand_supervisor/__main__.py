@@ -1,3 +1,4 @@
+import os
 import sys
 import time
 
@@ -8,6 +9,31 @@ from runtime_environment import (
     required_environment_value,
 )
 from supervisor_core import run_supervisor_tick
+
+
+def resolve_disk_guard_configuration():
+    return {
+        "path": required_environment_value("ARR_DISK_GUARD_PATH"),
+        "warning_gigabytes": float(
+            required_environment_value("ARR_DISK_GUARD_WARNING_GIGABYTES")
+        ),
+        "critical_gigabytes": float(
+            required_environment_value("ARR_DISK_GUARD_CRITICAL_GIGABYTES")
+        ),
+        "fill_service": required_environment_value("ARR_DISK_GUARD_FILL_SERVICE"),
+        "critical_reminder_seconds": int(
+            required_environment_value("ARR_DISK_GUARD_CRITICAL_REMINDER_SECONDS")
+        ),
+        "alert_state_file": required_environment_value(
+            "ARR_DISK_GUARD_ALERT_STATE_FILE"
+        ),
+        "smtp_host": required_environment_value("ARR_DISK_ALERT_SMTP_HOST"),
+        "smtp_port": int(required_environment_value("ARR_DISK_ALERT_SMTP_PORT")),
+        "smtp_username": os.environ.get("ARR_DISK_ALERT_SMTP_USERNAME", ""),
+        "email_sender": os.environ.get("ARR_DISK_ALERT_EMAIL_SENDER", ""),
+        "email_recipient": os.environ.get("ARR_DISK_ALERT_EMAIL_RECIPIENT", ""),
+        "app_password_file": os.environ.get("ARR_DISK_ALERT_APP_PASSWORD_FILE", ""),
+    }
 
 
 def resolve_configuration():
@@ -43,6 +69,7 @@ def resolve_configuration():
         "sonarr_url": f"http://{bind_address}:{sonarr_port}",
         "radarr_config_file": required_environment_value("RADARR_CONFIG_FILE"),
         "sonarr_config_file": required_environment_value("SONARR_CONFIG_FILE"),
+        "disk_guard": resolve_disk_guard_configuration(),
     }
 
 

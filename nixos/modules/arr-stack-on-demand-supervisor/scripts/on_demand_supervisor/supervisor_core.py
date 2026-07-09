@@ -1,3 +1,4 @@
+from disk_space_guard import enforce_disk_space_guard
 from download_activity import arr_download_queue_active, arr_service_reachable
 from download_chain_control import (
     read_last_active_epoch,
@@ -8,6 +9,13 @@ from download_chain_control import (
 )
 from jellyseerr_client import actionable_requests, retry_request
 from runtime_environment import log, read_arr_api_key_from_config_xml
+
+
+def held_down_services_from_disk_guard(configuration, base_command, now_epoch, dry_run):
+    disk_guard = configuration.get("disk_guard")
+    if not disk_guard:
+        return []
+    return enforce_disk_space_guard(disk_guard, base_command, now_epoch, dry_run)
 
 
 def keep_chain_up_for_actionable_requests(
@@ -80,14 +88,21 @@ def run_supervisor_tick(configuration, now_epoch, dry_run):
     radarr_url = configuration["radarr_url"]
     sonarr_url = configuration["sonarr_url"]
 
+    held_down_services = held_down_services_from_disk_guard(
+        configuration, base_command, now_epoch, dry_run
+    )
+    effective_services = [
+        service for service in on_demand_services if service not in held_down_services
+    ]
+
     if configuration["keep_chain_always_on"]:
         running = running_on_demand_services(base_command, on_demand_services)
         missing_services = [
-            service for service in on_demand_services if service not in running
+            service for service in effective_services if service not in running
         ]
         if missing_services:
             log(f"keep-chain-always-on: starting missing services {missing_services}")
-            start_on_demand_services(base_command, on_demand_services, dry_run)
+            start_on_demand_services(base_command, effective_services, dry_run)
         else:
             log("keep-chain-always-on: full chain up, holding")
         write_last_active_epoch(state_file_path, now_epoch)
@@ -108,7 +123,7 @@ def run_supervisor_tick(configuration, now_epoch, dry_run):
             jellyseerr_url,
             jellyseerr_api_key,
             base_command,
-            on_demand_services,
+            effective_services,
             state_file_path,
             now_epoch,
             radarr_url,

@@ -75,6 +75,12 @@ in
       enable = true;
       stackHomeDirectory = "/home/zanoni/arr-stack";
       keepChainAlwaysOn = true;
+      diskGuard = {
+        alertSmtpUsername = "castro.lucas290@gmail.com";
+        alertEmailSender = "castro.lucas290@gmail.com";
+        alertEmailRecipient = "castro.lucas290@gmail.com";
+        alertAppPasswordSecretFile = config.age.secrets."jellyseerr-smtp-app-password".path;
+      };
     };
 
     jellyseerrEmailNotifications = {
