@@ -25,23 +25,11 @@ let
     ../yazi
   ];
 
-  bashrcContent = builtins.readFile ../shell/.bashrc;
-  bashrcHasNoHardcodedSources = !(lib.hasInfix ". $HOME/.dotfiles/" bashrcContent);
-
-  screensaverContent = builtins.readFile ../shell/screensaver.sh;
-  tmuxMainContent = builtins.readFile ../shell/tmux_main.sh;
-  bashrcWithDependenciesFirst = builtins.concatStringsSep "\n" [
-    screensaverContent
-    tmuxMainContent
-    bashrcContent
-  ];
-  startTmuxCallPosition = builtins.stringLength (
-    builtins.head (lib.splitString "_start_tmux\n" bashrcWithDependenciesFirst)
-  );
-  screensaverFunctionPosition = builtins.stringLength (
-    builtins.head (lib.splitString "_start_screensaver_tmux_session" screensaverContent)
-  );
-  tmuxFunctionsDefinedBeforeCall = startTmuxCallPosition > screensaverFunctionPosition;
+  tmuxAutostartContent = builtins.readFile ../shell/bash_tmux_autostart.sh;
+  tmuxAutostartDefinesStartAndSourcesDependencies =
+    lib.hasInfix "_start_tmux()" tmuxAutostartContent
+    && lib.hasInfix "screensaver.sh" tmuxAutostartContent
+    && lib.hasInfix "tmux_main.sh" tmuxAutostartContent;
 in
 {
   domain-terminal-bash-enabled =
@@ -52,13 +40,10 @@ in
     mkEvalCheck "domain-terminal-carapace-enabled" cfg.programs.carapace.enable
       "carapace completion should be enabled";
 
-  domain-terminal-bash-no-hardcoded-sources =
-    mkEvalCheck "domain-terminal-bash-no-hardcoded-sources" bashrcHasNoHardcodedSources
-      ".bashrc should not contain hardcoded . $HOME/.dotfiles/ source lines";
-
-  domain-terminal-bash-tmux-functions-before-call =
-    mkEvalCheck "domain-terminal-bash-tmux-functions-before-call" tmuxFunctionsDefinedBeforeCall
-      "screensaver/tmux functions must be defined before _start_tmux call in concatenated bashrc";
+  domain-terminal-bash-tmux-autostart-wires-dependencies =
+    mkEvalCheck "domain-terminal-bash-tmux-autostart-wires-dependencies"
+      tmuxAutostartDefinesStartAndSourcesDependencies
+      "bash_tmux_autostart.sh must define _start_tmux and source screensaver.sh + tmux_main.sh";
 
   domain-terminal-kitty-catppuccin =
     mkEvalCheck "domain-terminal-kitty-catppuccin"

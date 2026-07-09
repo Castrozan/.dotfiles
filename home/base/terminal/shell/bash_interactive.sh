@@ -18,6 +18,7 @@ _bash_interactive_shell_directory="$HOME/.dotfiles/home/base/terminal/shell"
 
 for _bash_interactive_source_file in \
 	bash_env.sh \
+	bash_history.sh \
 	aliases.sh \
 	fzf_catppuccin_theme.sh \
 	default_directories.sh \

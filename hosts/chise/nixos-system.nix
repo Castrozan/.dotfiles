@@ -6,18 +6,6 @@
   ...
 }:
 let
-  bashrc = builtins.concatStringsSep "\n" [
-    (builtins.readFile ../../home/base/terminal/shell/screensaver.sh)
-    (builtins.readFile ../../home/base/terminal/shell/tmux_main.sh)
-    (builtins.readFile ../../home/base/terminal/shell/.bashrc)
-    (builtins.readFile ../../home/base/terminal/shell/bash_history.sh)
-    (builtins.readFile ../../home/base/terminal/shell/fzf_catppuccin_theme.sh)
-    (builtins.readFile ../../home/base/terminal/shell/fzf_bash_history.sh)
-    (builtins.readFile ../../home/base/terminal/shell/aliases.sh)
-    (builtins.readFile ../../home/base/terminal/shell/zoxide.sh)
-    (builtins.readFile ../../home/base/terminal/shell/default_directories.sh)
-    (builtins.readFile ../../home/base/terminal/shell/bash_hyprland_env.sh)
-  ];
   sshKeys = import ./ssh-keys.nix;
 in
 {
@@ -106,10 +94,7 @@ in
     openssh.authorizedKeys.keys = sshKeys.authorizedKeys;
   };
 
-  # Global Bash configuration
-  # TODO: this is workaround from home/packages/bash.nix
   environment = {
-    etc."bashrc".text = bashrc;
     shells = [ pkgs.bashInteractive ];
     # NIX_PATH configuration
     # Decision: Keep default NIX_PATH for compatibility with nix repl and other tools
