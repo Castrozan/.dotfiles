@@ -157,6 +157,6 @@ services:
     environment:
       <<: *arr-common-environment
       HOMEPAGE_ALLOWED_HOSTS: "${ARR_ALLOWED_HOSTS}"
-      HOMEPAGE_VAR_ARR_HOST: "${ARR_BIND_ADDR}"
+      HOMEPAGE_VAR_ARR_HOST: "${ARR_DASHBOARD_HOST}"
     volumes:
       - ${ARR_CONFIG_ROOT}/homepage:/app/config
