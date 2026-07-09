@@ -9,11 +9,11 @@ class TestReconcileDirectMessageAllowlist:
         state_directory = tmp_path / "jenny"
         state_directory.mkdir()
         merge_discord_agent_access.reconcile_direct_message_allowlist(
-            str(state_directory), "allowlist", ["284143065877184512"]
+            str(state_directory), "allowlist", ["123456789012345678"]
         )
         document = json.loads((state_directory / "access.json").read_text())
         assert document["dmPolicy"] == "allowlist"
-        assert document["allowFrom"] == ["284143065877184512"]
+        assert document["allowFrom"] == ["123456789012345678"]
         assert document["groups"] == {}
         assert document["pending"] == {}
 
@@ -21,7 +21,7 @@ class TestReconcileDirectMessageAllowlist:
         state_directory = tmp_path / "jenny"
         state_directory.mkdir()
         merge_discord_agent_access.reconcile_direct_message_allowlist(
-            str(state_directory), "allowlist", ["284143065877184512"]
+            str(state_directory), "allowlist", ["123456789012345678"]
         )
         mode = stat.S_IMODE((state_directory / "access.json").stat().st_mode)
         assert mode == 0o600
@@ -42,21 +42,21 @@ class TestReconcileDirectMessageAllowlist:
             )
         )
         merge_discord_agent_access.reconcile_direct_message_allowlist(
-            str(state_directory), "allowlist", ["284143065877184512"]
+            str(state_directory), "allowlist", ["123456789012345678"]
         )
         document = json.loads((state_directory / "access.json").read_text())
         assert document["groups"] == {
             "640612380338028606": {"requireMention": False, "allowFrom": []}
         }
-        assert document["allowFrom"] == ["284143065877184512"]
+        assert document["allowFrom"] == ["123456789012345678"]
 
     def test_recovers_from_corrupt_access_file(self, tmp_path):
         state_directory = tmp_path / "jenny"
         state_directory.mkdir()
         (state_directory / "access.json").write_text("{ truncated")
         merge_discord_agent_access.reconcile_direct_message_allowlist(
-            str(state_directory), "allowlist", ["284143065877184512"]
+            str(state_directory), "allowlist", ["123456789012345678"]
         )
         document = json.loads((state_directory / "access.json").read_text())
         assert document["dmPolicy"] == "allowlist"
-        assert document["allowFrom"] == ["284143065877184512"]
+        assert document["allowFrom"] == ["123456789012345678"]

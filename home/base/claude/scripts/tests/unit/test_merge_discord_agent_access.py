@@ -16,10 +16,10 @@ class TestApplyDirectMessageAllowlist:
     def test_overwrites_dm_policy_and_allow_from(self):
         document = {"dmPolicy": "pairing", "allowFrom": [], "groups": {}, "pending": {}}
         merge_discord_agent_access.apply_direct_message_allowlist(
-            document, "allowlist", ["284143065877184512"]
+            document, "allowlist", ["123456789012345678"]
         )
         assert document["dmPolicy"] == "allowlist"
-        assert document["allowFrom"] == ["284143065877184512"]
+        assert document["allowFrom"] == ["123456789012345678"]
 
     def test_preserves_existing_groups_and_pending(self):
         document = {
@@ -29,7 +29,7 @@ class TestApplyDirectMessageAllowlist:
             "pending": {"abc": {"senderId": "222"}},
         }
         merge_discord_agent_access.apply_direct_message_allowlist(
-            document, "allowlist", ["284143065877184512"]
+            document, "allowlist", ["123456789012345678"]
         )
         assert document["groups"] == {"111": {"requireMention": False, "allowFrom": []}}
         assert document["pending"] == {"abc": {"senderId": "222"}}
