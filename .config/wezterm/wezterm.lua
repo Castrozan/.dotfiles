@@ -98,7 +98,7 @@ local config = {
 		{
 			key = "s",
 			mods = "CTRL|SHIFT",
-			action = wezterm.action.SendString(os.getenv("HOME") .. "/.dotfiles/bin/tmux-session-chooser\n"),
+			action = wezterm.action.SendString("herdr\n"),
 		},
 		{ key = "f", mods = "CTRL|SHIFT", action = wezterm.action.DisableDefaultAssignment },
 		{ key = "k", mods = "CTRL|SHIFT", action = wezterm.action.DisableDefaultAssignment },

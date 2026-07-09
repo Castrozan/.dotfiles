@@ -25,11 +25,12 @@ let
     ../yazi
   ];
 
-  tmuxAutostartContent = builtins.readFile ../shell/bash_tmux_autostart.sh;
-  tmuxAutostartDefinesStartAndSourcesDependencies =
-    lib.hasInfix "_start_tmux()" tmuxAutostartContent
-    && lib.hasInfix "screensaver.sh" tmuxAutostartContent
-    && lib.hasInfix "tmux_main.sh" tmuxAutostartContent;
+  herdrAutostartContent = builtins.readFile ../shell/bash_herdr_autostart.sh;
+  herdrAutostartDefinesStartAndGuardsAgainstNestingAndTmux =
+    lib.hasInfix "_start_herdr()" herdrAutostartContent
+    && lib.hasInfix "HERDR_ENV" herdrAutostartContent
+    && lib.hasInfix "\${TMUX:-}" herdrAutostartContent
+    && lib.hasInfix "command -v herdr" herdrAutostartContent;
 in
 {
   domain-terminal-bash-enabled =
@@ -40,10 +41,10 @@ in
     mkEvalCheck "domain-terminal-carapace-enabled" cfg.programs.carapace.enable
       "carapace completion should be enabled";
 
-  domain-terminal-bash-tmux-autostart-wires-dependencies =
-    mkEvalCheck "domain-terminal-bash-tmux-autostart-wires-dependencies"
-      tmuxAutostartDefinesStartAndSourcesDependencies
-      "bash_tmux_autostart.sh must define _start_tmux and source screensaver.sh + tmux_main.sh";
+  domain-terminal-bash-herdr-autostart-launches-herdr =
+    mkEvalCheck "domain-terminal-bash-herdr-autostart-launches-herdr"
+      herdrAutostartDefinesStartAndGuardsAgainstNestingAndTmux
+      "bash_herdr_autostart.sh must define _start_herdr and guard against relaunching inside HERDR_ENV or an existing TMUX session before launching herdr";
 
   domain-terminal-kitty-catppuccin =
     mkEvalCheck "domain-terminal-kitty-catppuccin"
