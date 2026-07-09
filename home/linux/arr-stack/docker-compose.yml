@@ -30,7 +30,7 @@ services:
       - ${ARR_DATA_ROOT}:/data
 
   prowlarr:
-    image: lscr.io/linuxserver/prowlarr:latest
+    image: lscr.io/linuxserver/prowlarr:2.4.0.5397-ls151@sha256:3950b5e48cf4ba9dab78fe14038dd7f062e66b7b4ab368b02c94a13f6a3dae9f
     container_name: arr-prowlarr
     restart: "no"
     networks:
@@ -43,7 +43,7 @@ services:
       - ${ARR_CONFIG_ROOT}/prowlarr:/config
 
   sonarr:
-    image: lscr.io/linuxserver/sonarr:latest
+    image: lscr.io/linuxserver/sonarr:4.0.19.2979-ls316@sha256:fbb15bb4fb14d1ffe017f6be0e3fed8f1b300e4687e329767da0b61f36ba1eed
     container_name: arr-sonarr
     restart: "no"
     networks:
@@ -57,7 +57,7 @@ services:
       - ${ARR_DATA_ROOT}:/data
 
   radarr:
-    image: lscr.io/linuxserver/radarr:latest
+    image: lscr.io/linuxserver/radarr:6.2.1.10461-ls308@sha256:39da107b5a9371fdaa651bd188049b863716a815385eb3a30d41071b7e1aeb33
     container_name: arr-radarr
     restart: "no"
     networks:
@@ -71,7 +71,7 @@ services:
       - ${ARR_DATA_ROOT}:/data
 
   lidarr:
-    image: lscr.io/linuxserver/lidarr:latest
+    image: lscr.io/linuxserver/lidarr:3.1.0.4875-ls32@sha256:4ac390131993f3104a43c4abed79b8abd3227e2536f7b468877e5f41d9f54da4
     container_name: arr-lidarr
     restart: "no"
     networks:
@@ -99,7 +99,7 @@ services:
       - ${ARR_DATA_ROOT}:/data
 
   bazarr:
-    image: lscr.io/linuxserver/bazarr:latest
+    image: lscr.io/linuxserver/bazarr:v1.5.6-ls352@sha256:aaaa087af75a73b7ac765dcc5d748874cfafdb93c23ec9f64fbb481dea291b23
     container_name: arr-bazarr
     restart: "no"
     networks:
@@ -113,7 +113,7 @@ services:
       - ${ARR_DATA_ROOT}:/data
 
   jellyfin:
-    image: lscr.io/linuxserver/jellyfin:latest
+    image: lscr.io/linuxserver/jellyfin:10.11.11ubu2404-ls39@sha256:96d21c396f46f10578931c2941e3f2789f7087b5ab0e166afedf29e7385c6aa7
     container_name: arr-jellyfin
     restart: "no"
     networks:
@@ -132,7 +132,7 @@ services:
       - ${ARR_DATA_ROOT}/media:/media:ro
 
   jellyseerr:
-    image: fallenbagel/jellyseerr:latest
+    image: fallenbagel/jellyseerr:2.7.3@sha256:4538137bc5af902dece165f2bf73776d9cf4eafb6dd714670724af8f3eb77764
     container_name: arr-jellyseerr
     restart: "no"
     networks:
@@ -147,7 +147,7 @@ services:
       - ${ARR_CONFIG_ROOT}/jellyseerr:/app/config
 
   homepage:
-    image: ghcr.io/gethomepage/homepage:latest
+    image: ghcr.io/gethomepage/homepage:v1.13.2@sha256:a0b71c8e757298d02560186bab9fbe3fc2d375c523a62cc1019177b37e48aa28
     container_name: arr-homepage
     restart: "no"
     networks:
