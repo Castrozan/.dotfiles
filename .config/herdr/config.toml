@@ -77,3 +77,11 @@ command = "$HERDR_BIN_PATH pane move $HERDR_ACTIVE_PANE_ID --new-tab --no-focus"
 key = "prefix+shift+c"
 type = "shell"
 command = "$HERDR_BIN_PATH pane move $HERDR_ACTIVE_PANE_ID --new-workspace"
+
+[[keys.command]]
+key = "ctrl+g"
+type = "shell"
+command = "$HERDR_BIN_PATH pane send-keys $HERDR_ACTIVE_PANE_ID ctrl+b"
+
+[experimental]
+allow_nested = true
