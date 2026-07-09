@@ -57,6 +57,8 @@ in
   "credentials/bitwarden-client-secret.age".publicKeys = all_keys;
   "credentials/bitwarden-master-password.age".publicKeys = all_keys;
   "credentials/jellyseerr-smtp-app-password.age".publicKeys = all_keys;
+  "credentials/arr-qbittorrent-password.age".publicKeys = all_keys;
+  "credentials/arr-samaritano-indexer-apikey.age".publicKeys = all_keys;
 
   "infrastructure/id_ed25519_phone.age".publicKeys = all_keys;
   "infrastructure/grid-hosts.age".publicKeys = all_keys;

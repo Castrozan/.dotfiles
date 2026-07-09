@@ -33,6 +33,10 @@ let
     inherit pkgs lib;
   };
 
+  arrConfigProvisionerChecks = import ./arr-config-provisioner.nix {
+    inherit pkgs lib;
+  };
+
   arrStackHostIntegrationChecks = import ./arr-stack-host-integration.nix {
     inherit lib mkEvalCheck nixosCfg;
   };
@@ -43,6 +47,7 @@ arrStackChecks
 // arrMediaLoginRateLimitProxyChecks
 // arrStackOnDemandSupervisorChecks
 // jellyseerrNotificationsChecks
+// arrConfigProvisionerChecks
 // arrStackHostIntegrationChecks
 // {
   chise-rebuild-guard-wrapper-shadows-nixos-rebuild =

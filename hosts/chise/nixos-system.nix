@@ -32,6 +32,7 @@ in
     ../../nixos/modules/arr-media-login-ratelimit-proxy
     ../../nixos/modules/arr-stack-on-demand-supervisor
     ../../nixos/modules/jellyseerr-notifications
+    ../../nixos/modules/arr-config-provisioner
   ]
   ++ lib.optional (builtins.pathExists ../../private-config/machines/chise/jarvis-connector.nix) ../../private-config/machines/chise/jarvis-connector.nix;
 
@@ -91,6 +92,13 @@ in
       appPasswordSecretFile = config.age.secrets."jellyseerr-smtp-app-password".path;
     };
 
+    arrConfigProvisioner = {
+      enable = true;
+      stackHomeDirectory = "/home/zanoni/arr-stack";
+      qbittorrentPasswordSecretFile = config.age.secrets."arr-qbittorrent-password".path;
+      samaritanoApiKeySecretFile = config.age.secrets."arr-samaritano-indexer-apikey".path;
+    };
+
     # Disable lid switch suspend for laptop used as server/with external monitor
     lidSwitch.disable = true;
   };
@@ -102,6 +110,11 @@ in
 
   systemd.services.jellyseerr-email-notifications.restartTriggers = [
     ../../secrets/credentials/jellyseerr-smtp-app-password.age
+  ];
+
+  systemd.services.arr-config-provisioner.restartTriggers = [
+    ../../secrets/credentials/arr-qbittorrent-password.age
+    ../../secrets/credentials/arr-samaritano-indexer-apikey.age
   ];
 
   users.users.zanoni = {

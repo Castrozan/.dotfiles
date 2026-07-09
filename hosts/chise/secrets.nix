@@ -101,6 +101,14 @@
         file = ../../secrets/credentials/jellyseerr-smtp-app-password.age;
         mode = "400";
       };
+      "arr-qbittorrent-password" = {
+        file = ../../secrets/credentials/arr-qbittorrent-password.age;
+        mode = "400";
+      };
+      "arr-samaritano-indexer-apikey" = {
+        file = ../../secrets/credentials/arr-samaritano-indexer-apikey.age;
+        mode = "400";
+      };
     };
   };
 }

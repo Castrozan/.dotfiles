@@ -1,0 +1,422 @@
+[
+  {
+    "includeCustomFormatWhenRenaming": false,
+    "name": "Portuguese (BR) / Dublado",
+    "specifications": [
+      {
+        "fields": [
+          {
+            "advanced": false,
+            "helpText": "Custom Format RegEx is Case Insensitive",
+            "isFloat": false,
+            "label": "Regular Expression",
+            "name": "value",
+            "order": 0,
+            "privacy": "normal",
+            "type": "textbox",
+            "value": "\\b(dublado|nacional|dual|dual.?audio|pt.?br|portugu[e\u00ea]s)\\b"
+          }
+        ],
+        "implementation": "ReleaseTitleSpecification",
+        "implementationName": "Release Title",
+        "infoLink": "https://wiki.servarr.com/radarr/settings#custom-formats-2",
+        "name": "Dublado/Nacional/PT-BR title",
+        "negate": false,
+        "required": false
+      },
+      {
+        "fields": [
+          {
+            "advanced": false,
+            "isFloat": false,
+            "label": "Language",
+            "name": "value",
+            "order": 0,
+            "privacy": "normal",
+            "selectOptions": [
+              {
+                "dividerAfter": false,
+                "name": "Any",
+                "order": 0,
+                "value": -1
+              },
+              {
+                "dividerAfter": false,
+                "name": "Original",
+                "order": 0,
+                "value": -2
+              },
+              {
+                "dividerAfter": true,
+                "name": "Unknown",
+                "order": 0,
+                "value": 0
+              },
+              {
+                "dividerAfter": false,
+                "name": "Afrikaans",
+                "order": 0,
+                "value": 51
+              },
+              {
+                "dividerAfter": false,
+                "name": "Albanian",
+                "order": 0,
+                "value": 50
+              },
+              {
+                "dividerAfter": false,
+                "name": "Arabic",
+                "order": 0,
+                "value": 31
+              },
+              {
+                "dividerAfter": false,
+                "name": "Bengali",
+                "order": 0,
+                "value": 34
+              },
+              {
+                "dividerAfter": false,
+                "name": "Bosnian",
+                "order": 0,
+                "value": 41
+              },
+              {
+                "dividerAfter": false,
+                "name": "Bulgarian",
+                "order": 0,
+                "value": 29
+              },
+              {
+                "dividerAfter": false,
+                "name": "Catalan",
+                "order": 0,
+                "value": 38
+              },
+              {
+                "dividerAfter": false,
+                "name": "Chinese",
+                "order": 0,
+                "value": 10
+              },
+              {
+                "dividerAfter": false,
+                "name": "Croatian",
+                "order": 0,
+                "value": 39
+              },
+              {
+                "dividerAfter": false,
+                "name": "Czech",
+                "order": 0,
+                "value": 25
+              },
+              {
+                "dividerAfter": false,
+                "name": "Danish",
+                "order": 0,
+                "value": 6
+              },
+              {
+                "dividerAfter": false,
+                "name": "Dutch",
+                "order": 0,
+                "value": 7
+              },
+              {
+                "dividerAfter": false,
+                "name": "English",
+                "order": 0,
+                "value": 1
+              },
+              {
+                "dividerAfter": false,
+                "name": "Estonian",
+                "order": 0,
+                "value": 42
+              },
+              {
+                "dividerAfter": false,
+                "name": "Finnish",
+                "order": 0,
+                "value": 16
+              },
+              {
+                "dividerAfter": false,
+                "name": "Flemish",
+                "order": 0,
+                "value": 19
+              },
+              {
+                "dividerAfter": false,
+                "name": "French",
+                "order": 0,
+                "value": 2
+              },
+              {
+                "dividerAfter": false,
+                "name": "Georgian",
+                "order": 0,
+                "value": 57
+              },
+              {
+                "dividerAfter": false,
+                "name": "German",
+                "order": 0,
+                "value": 4
+              },
+              {
+                "dividerAfter": false,
+                "name": "Greek",
+                "order": 0,
+                "value": 20
+              },
+              {
+                "dividerAfter": false,
+                "name": "Hebrew",
+                "order": 0,
+                "value": 23
+              },
+              {
+                "dividerAfter": false,
+                "name": "Hindi",
+                "order": 0,
+                "value": 26
+              },
+              {
+                "dividerAfter": false,
+                "name": "Hungarian",
+                "order": 0,
+                "value": 22
+              },
+              {
+                "dividerAfter": false,
+                "name": "Icelandic",
+                "order": 0,
+                "value": 9
+              },
+              {
+                "dividerAfter": false,
+                "name": "Indonesian",
+                "order": 0,
+                "value": 44
+              },
+              {
+                "dividerAfter": false,
+                "name": "Italian",
+                "order": 0,
+                "value": 5
+              },
+              {
+                "dividerAfter": false,
+                "name": "Japanese",
+                "order": 0,
+                "value": 8
+              },
+              {
+                "dividerAfter": false,
+                "name": "Kannada",
+                "order": 0,
+                "value": 49
+              },
+              {
+                "dividerAfter": false,
+                "name": "Korean",
+                "order": 0,
+                "value": 21
+              },
+              {
+                "dividerAfter": false,
+                "name": "Latvian",
+                "order": 0,
+                "value": 36
+              },
+              {
+                "dividerAfter": false,
+                "name": "Lithuanian",
+                "order": 0,
+                "value": 24
+              },
+              {
+                "dividerAfter": false,
+                "name": "Macedonian",
+                "order": 0,
+                "value": 46
+              },
+              {
+                "dividerAfter": false,
+                "name": "Malayalam",
+                "order": 0,
+                "value": 48
+              },
+              {
+                "dividerAfter": false,
+                "name": "Marathi",
+                "order": 0,
+                "value": 52
+              },
+              {
+                "dividerAfter": false,
+                "name": "Mongolian",
+                "order": 0,
+                "value": 56
+              },
+              {
+                "dividerAfter": false,
+                "name": "Norwegian",
+                "order": 0,
+                "value": 15
+              },
+              {
+                "dividerAfter": false,
+                "name": "Persian",
+                "order": 0,
+                "value": 33
+              },
+              {
+                "dividerAfter": false,
+                "name": "Polish",
+                "order": 0,
+                "value": 12
+              },
+              {
+                "dividerAfter": false,
+                "name": "Portuguese",
+                "order": 0,
+                "value": 18
+              },
+              {
+                "dividerAfter": false,
+                "name": "Portuguese (Brazil)",
+                "order": 0,
+                "value": 30
+              },
+              {
+                "dividerAfter": false,
+                "name": "Romanian",
+                "order": 0,
+                "value": 27
+              },
+              {
+                "dividerAfter": false,
+                "name": "Romansh",
+                "order": 0,
+                "value": 55
+              },
+              {
+                "dividerAfter": false,
+                "name": "Russian",
+                "order": 0,
+                "value": 11
+              },
+              {
+                "dividerAfter": false,
+                "name": "Serbian",
+                "order": 0,
+                "value": 40
+              },
+              {
+                "dividerAfter": false,
+                "name": "Slovak",
+                "order": 0,
+                "value": 35
+              },
+              {
+                "dividerAfter": false,
+                "name": "Slovenian",
+                "order": 0,
+                "value": 47
+              },
+              {
+                "dividerAfter": false,
+                "name": "Spanish",
+                "order": 0,
+                "value": 3
+              },
+              {
+                "dividerAfter": false,
+                "name": "Spanish (Latino)",
+                "order": 0,
+                "value": 37
+              },
+              {
+                "dividerAfter": false,
+                "name": "Swedish",
+                "order": 0,
+                "value": 14
+              },
+              {
+                "dividerAfter": false,
+                "name": "Tagalog",
+                "order": 0,
+                "value": 53
+              },
+              {
+                "dividerAfter": false,
+                "name": "Tamil",
+                "order": 0,
+                "value": 43
+              },
+              {
+                "dividerAfter": false,
+                "name": "Telugu",
+                "order": 0,
+                "value": 45
+              },
+              {
+                "dividerAfter": false,
+                "name": "Thai",
+                "order": 0,
+                "value": 28
+              },
+              {
+                "dividerAfter": false,
+                "name": "Turkish",
+                "order": 0,
+                "value": 17
+              },
+              {
+                "dividerAfter": false,
+                "name": "Ukrainian",
+                "order": 0,
+                "value": 32
+              },
+              {
+                "dividerAfter": false,
+                "name": "Urdu",
+                "order": 0,
+                "value": 54
+              },
+              {
+                "dividerAfter": false,
+                "name": "Vietnamese",
+                "order": 0,
+                "value": 13
+              }
+            ],
+            "type": "select",
+            "value": 30
+          },
+          {
+            "advanced": false,
+            "helpText": "Matches if any language other than the selected language is present",
+            "isFloat": false,
+            "label": "Except Language",
+            "name": "exceptLanguage",
+            "order": 1,
+            "privacy": "normal",
+            "type": "checkbox",
+            "value": false
+          }
+        ],
+        "implementation": "LanguageSpecification",
+        "implementationName": "Language",
+        "infoLink": "https://wiki.servarr.com/radarr/settings#custom-formats-2",
+        "name": "Portuguese Language",
+        "negate": false,
+        "required": false
+      }
+    ]
+  }
+]

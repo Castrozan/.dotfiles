@@ -48,6 +48,16 @@ in
       )
       "chise opts the supervisor into keep-chain-always-on so Sonarr and Radarr stay resident and catch newly aired episodes of monitored series the moment they release, instead of idling down and missing them";
 
+  chise-arr-config-provisioner-wired-with-agenix-secrets =
+    mkEvalCheck "chise-arr-config-provisioner-wired-with-agenix-secrets"
+      (
+        (nixosCfg.systemd.services ? arr-config-provisioner)
+        && (nixosCfg.age.secrets ? "arr-qbittorrent-password")
+        && (nixosCfg.age.secrets ? "arr-samaritano-indexer-apikey")
+        && nixosCfg.systemd.services.arr-config-provisioner.restartTriggers != [ ]
+      )
+      "chise must actually run the config provisioner, declare both arr secrets in agenix, and carry a restartTrigger so a re-encrypted secret re-provisions on rebuild, or a wiped config dir would not be reconstructed from the repo";
+
   chise-arr-on-demand-disk-guard-emails-via-agenix-secret =
     mkEvalCheck "chise-arr-on-demand-disk-guard-emails-via-agenix-secret"
       (
