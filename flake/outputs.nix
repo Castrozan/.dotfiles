@@ -44,24 +44,6 @@ let
   };
 in
 {
-  # homeConfigurations.<machineAlias> is a standalone home-manager
-  # configuration. Anime alias as key (jojo, ...); username is set via
-  # extraSpecialArgs. ./bin/rebuild applies it.
-  homeConfigurations = {
-    jojo = home-manager.lib.homeManagerConfiguration {
-      inherit pkgs;
-
-      extraSpecialArgs = specialArgsBase // {
-        username = "lucas.zanoni";
-        hostname = "jojo";
-        isNixOS = false;
-        isDarwin = false;
-      };
-
-      modules = [ ../home/hosts/linux/jojo.nix ];
-    };
-  };
-
   nixosConfigurations = import ./nixos-configurations.nix {
     inherit
       nixpkgs

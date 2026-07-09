@@ -34,7 +34,7 @@ setup() {
 
 @test "non-chise deploy is allowed even when /etc/nixos/flake.nix is absent" {
 	_etc_nixos_flake_present() { return 1; }
-	run _assert_chise_not_deploying_from_bare_dotfiles jojo
+	run _assert_chise_not_deploying_from_bare_dotfiles kira
 	[ "$status" -eq 0 ]
 }
 
@@ -56,7 +56,7 @@ setup() {
 	_zanoni_system_flake_present() { return 0; }
 	_etc_nixos_flake_matches_zanoni_system() { return 1; }
 	_sudo() { echo "SUDO_CALLED"; }
-	run _sync_etc_nixos_flake_from_zanoni_system jojo
+	run _sync_etc_nixos_flake_from_zanoni_system kira
 	[ "$status" -eq 0 ]
 	[[ "$output" != *"SUDO_CALLED"* ]]
 }

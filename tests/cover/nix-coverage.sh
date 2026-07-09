@@ -28,7 +28,7 @@ _find_all_nix_files() {
 
 _try_resolve_imported_files_via_nix_derivation() {
 	echo "Building dependency graph (this may take a moment)..."
-	nix path-info --derivation "$REPOSITORY_DIR#homeConfigurations.jojo.activationPackage" 2>/dev/null |
+	nix path-info --derivation "$REPOSITORY_DIR#nixosConfigurations.chise.config.system.build.toplevel" 2>/dev/null |
 		xargs nix derivation show 2>/dev/null |
 		grep -oP '"'"$REPOSITORY_DIR"'/[^"]+\.nix"' |
 		tr -d '"' |

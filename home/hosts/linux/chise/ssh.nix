@@ -1,11 +1,9 @@
 { lib, pkgs, ... }:
 let
   phoneSecretExists = builtins.pathExists ../../../../secrets/infrastructure/id_ed25519_phone.age;
-  jojoSecretExists = builtins.pathExists ../../../../secrets/infrastructure/id_ed25519_jojo.age;
   sshHostsSecretExists = builtins.pathExists ../../../../secrets/infrastructure/ssh-hosts.age;
 
   phoneHostKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOWURbP41AHeoQUC4qpSriTvVKWezdpPMGg1f3Ti7gyd";
-  jojoHostKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPctlyhhY3Tf6RS/qs4aMUK/cIiZFG804XJFbd0ooWP/";
   rinHostKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINOxdbPmuHnX5ZpB1asR0TgUOb9QrDmULFv9/uOliJcQ";
 
   generateScript = pkgs.writeShellScript "generate-private-ssh-config" ''
@@ -31,13 +29,6 @@ let
 
     # Generate SSH config for private hosts
     {
-      if [ -n "''${hosts[jojo]:-}" ] && [ -f "/run/agenix/id_ed25519_jojo" ]; then
-        printf 'Host jojo\n'
-        printf '    HostName %s\n' "''${hosts[jojo]}"
-        printf '    User lucas.zanoni\n'
-        printf '    IdentityFile /run/agenix/id_ed25519_jojo\n\n'
-      fi
-
       if [ -n "''${hosts[rin]:-}" ]; then
         printf 'Host rin\n'
         printf '    HostName %s\n' "''${hosts[rin]}"
@@ -57,9 +48,6 @@ let
     {
       if [ -n "''${hosts[phone]:-}" ]; then
         printf '[%s]:8022 ${phoneHostKey}\n' "''${hosts[phone]}"
-      fi
-      if [ -n "''${hosts[jojo]:-}" ]; then
-        printf '%s ${jojoHostKey}\n' "''${hosts[jojo]}"
       fi
       if [ -n "''${hosts[rin]:-}" ]; then
         printf '%s ${rinHostKey}\n' "''${hosts[rin]}"
@@ -82,11 +70,9 @@ in
     matchBlocks."*" = { };
   };
 
-  home.activation.generatePrivateSshConfig =
-    lib.mkIf (sshHostsSecretExists && (phoneSecretExists || jojoSecretExists))
-      (
-        lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-          run ${generateScript}
-        ''
-      );
+  home.activation.generatePrivateSshConfig = lib.mkIf (sshHostsSecretExists && phoneSecretExists) (
+    lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+      run ${generateScript}
+    ''
+  );
 }

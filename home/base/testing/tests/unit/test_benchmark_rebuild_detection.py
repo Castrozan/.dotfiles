@@ -26,13 +26,13 @@ class TestDetectConfigurationType:
             result = benchmark_rebuild.detect_configuration_type()
             assert result == "nixos"
 
-    def test_returns_home_when_no_nixos_directory(self):
+    def test_returns_darwin_when_no_nixos_directory(self):
         with patch(
             "benchmark_rebuild.Path",
         ) as mock_path:
             mock_path.return_value.is_dir.return_value = False
             result = benchmark_rebuild.detect_configuration_type()
-            assert result == "home"
+            assert result == "darwin"
 
 
 class TestGetFlakeOutputForConfiguration:
@@ -40,10 +40,10 @@ class TestGetFlakeOutputForConfiguration:
         result = benchmark_rebuild.get_flake_output_for_configuration("nixos")
         assert "nixosConfigurations" in result
 
-    def test_returns_home_output_for_home(self):
-        result = benchmark_rebuild.get_flake_output_for_configuration("home")
-        assert "homeConfigurations" in result
+    def test_returns_darwin_output_for_darwin(self):
+        result = benchmark_rebuild.get_flake_output_for_configuration("darwin")
+        assert "darwinConfigurations" in result
 
-    def test_returns_home_output_for_unknown(self):
+    def test_returns_darwin_output_for_unknown(self):
         result = benchmark_rebuild.get_flake_output_for_configuration("other")
-        assert "homeConfigurations" in result
+        assert "darwinConfigurations" in result

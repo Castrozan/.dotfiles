@@ -6,7 +6,6 @@ Enforce patterns, not just suggest. When user proposes violation: 1) Explain WHY
 flake.nix (inputs) + flake/{outputs,nixos-configurations,darwin-configurations,home-manager-modules}.nix (outputs)
   nixosConfigurations.<alias>          (full NixOS system, e.g. chise)
   darwinConfigurations.<alias>         (nix-darwin macOS, e.g. rin, kira)
-  homeConfigurations.<alias>           (standalone home-manager on non-NixOS Linux, e.g. jojo)
 Each output threads (hostname=<alias>, isNixOS, isDarwin, username) through extraSpecialArgs.
 </architecture>
 

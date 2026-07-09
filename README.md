@@ -17,7 +17,7 @@
    </a>
 </p>
 
-Welcome to my dotfiles! This repository contains my desktop environment setup for **NixOS**, **Ubuntu**, and **macOS** under one flake. Built with Nix Flakes, Home Manager, and nix-darwin.
+Welcome to my dotfiles! This repository contains my desktop environment setup for **NixOS** and **macOS** under one flake. Built with Nix Flakes, Home Manager, and nix-darwin.
 
 https://github.com/user-attachments/assets/c5959f36-6b7a-450c-a18c-f430d60fcafc
 
@@ -80,7 +80,7 @@ cd .dotfiles
 ```
 
 #### 2. Generate Hardware Configuration
-Pick a short alias for the machine (this repo uses anime names: `chise`, `rin`, `kira`, `jojo`). Then:
+Pick a short alias for the machine (this repo uses anime names: `chise`, `rin`, `kira`). Then:
 ```bash
 sudo nixos-generate-config --dir hosts/<alias>/configs
 ```
@@ -98,34 +98,6 @@ sudo nixos-rebuild switch --flake .?submodules=1#<alias>
 - Restart your system (recommended)
 - Enjoy your new setup! 🎉
 
-</details>
-
----
-
-### Home Manager Standalone
-
-For Ubuntu / non-NixOS Linux, drive the flake with Home Manager alone:
-<details>
-<summary>
-   <b>Quick Start for: 🐧 Ubuntu/Non-NixOS systems</b>
-</summary>
-
-#### 1. Clone the Repository
-```bash
-cd ~
-git clone https://github.com/castrozan/.dotfiles.git
-cd .dotfiles
-```
-
-#### 2. Install Nix (if not already installed)
-```bash
-curl -L https://nixos.org/nix/install | sh -s -- --daemon
-```
-
-#### 3. Deploy with Home Manager
-```bash
-nix run home-manager/release-25.11 -- --flake .?submodules=1#jojo switch -b "backup-$(date +%Y-%m-%d-%H-%M-%S)"
-```
 </details>
 
 ---
@@ -181,7 +153,6 @@ graph TD
     end
 
     subgraph "Home Manager Configuration"
-        HomeStandalone["homeConfigurations.&lt;alias&gt;"]
         UserHome["home/hosts/linux/&lt;alias&gt;.nix"]
         Modules["home/{base,linux,darwin}/*<br/>platform-gated modules"]
     end
@@ -195,7 +166,6 @@ graph TD
 
     Flake --> NixOS
     Flake --> Darwin
-    Flake --> HomeStandalone
 
     NixOS --> Host
     NixOS --> UserNixOS
@@ -205,7 +175,7 @@ graph TD
     Darwin --> DarwinHome
     Darwin --> ND
 
-    HomeStandalone --> UserHome
+    NixOS --> UserHome
     UserHome --> Modules
     DarwinHome --> Modules
     
@@ -215,7 +185,6 @@ graph TD
     style Flake fill:#f38ba8,color:#1e1e2e
     style NixOS fill:#a6e3a1,color:#1e1e2e
     style Darwin fill:#fab387,color:#1e1e2e
-    style HomeStandalone fill:#89b4fa,color:#1e1e2e
     style Nixpkgs fill:#f9e2af,color:#1e1e2e
     style HM fill:#cba6f7,color:#1e1e2e
     style ND fill:#fab387,color:#1e1e2e

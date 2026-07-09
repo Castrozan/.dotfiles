@@ -31,7 +31,7 @@ def initialize_csv_if_needed(results_file: Path) -> None:
 def detect_configuration_type() -> str:
     if Path("/etc/nixos").is_dir():
         return "nixos"
-    return "home"
+    return "darwin"
 
 
 def get_flake_output_for_configuration(
@@ -39,7 +39,7 @@ def get_flake_output_for_configuration(
 ) -> str:
     if configuration_type == "nixos":
         return "nixosConfigurations.chise.config.system.build.toplevel"
-    return "homeConfigurations.jojo.activationPackage"
+    return "darwinConfigurations.kira.system"
 
 
 def get_current_git_short_commit() -> str:
@@ -301,7 +301,7 @@ def print_usage() -> None:
     print("  --check-baseline - Validate committed baseline")
     print()
     print("Configs:")
-    print("  home   - Standalone home-manager")
+    print("  darwin - macOS nix-darwin")
     print("  nixos  - NixOS configuration")
     print("  auto   - Auto-detect (default)")
 

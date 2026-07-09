@@ -123,7 +123,6 @@ _resolve_machine_alias() {
 
 	case "${username}/${arch}" in
 	zanoni/x86_64) echo "chise" ;;
-	lucas.zanoni/x86_64) echo "jojo" ;;
 	*)
 		echo "Unable to resolve machine alias for ${username}/${arch}" >&2
 		exit 1
