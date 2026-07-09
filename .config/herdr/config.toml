@@ -2,6 +2,8 @@
 name = "catppuccin"
 
 [terminal]
+default_shell = "/run/current-system/sw/bin/bash"
+shell_mode = "login"
 new_cwd = "follow"
 
 [ui]
