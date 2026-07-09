@@ -187,3 +187,11 @@ in
     cfg
     ;
 }
+// import ./discord-channel-access-checks.nix {
+  inherit
+    lib
+    mkEvalCheck
+    helpers
+    self
+    ;
+}

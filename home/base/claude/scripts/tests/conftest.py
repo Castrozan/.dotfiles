@@ -23,6 +23,7 @@ def import_extensionless_python_script(extensionless_name):
 
 import_extensionless_python_script("memory-write")
 import_extensionless_python_script("memory-prune")
+import_extensionless_python_script("merge-discord-agent-access")
 
 
 @pytest.fixture

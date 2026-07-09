@@ -8,10 +8,11 @@ def default_access_document():
 
 
 def load_existing_or_default(target_access_file):
-    if os.path.isfile(target_access_file):
+    try:
         with open(target_access_file) as target_handle:
             return json.load(target_handle)
-    return default_access_document()
+    except (FileNotFoundError, json.JSONDecodeError, OSError):
+        return default_access_document()
 
 
 def apply_direct_message_allowlist(access_document, dm_policy, allow_from_user_ids):
@@ -23,10 +24,13 @@ def apply_direct_message_allowlist(access_document, dm_policy, allow_from_user_i
 
 
 def write_access_document(target_access_file, access_document):
-    os.makedirs(os.path.dirname(target_access_file), exist_ok=True)
-    with open(target_access_file, "w") as target_handle:
-        json.dump(access_document, target_handle, indent=2)
-    os.chmod(target_access_file, 0o600)
+    target_directory = os.path.dirname(target_access_file)
+    os.makedirs(target_directory, exist_ok=True)
+    temporary_access_file = f"{target_access_file}.tmp"
+    with open(temporary_access_file, "w") as temporary_handle:
+        json.dump(access_document, temporary_handle, indent=2)
+    os.chmod(temporary_access_file, 0o600)
+    os.replace(temporary_access_file, target_access_file)
 
 
 def reconcile_direct_message_allowlist(state_directory, dm_policy, allow_from_user_ids):
