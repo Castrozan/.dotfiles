@@ -13,15 +13,6 @@ let
   home-version = "25.11";
   nixpkgs-version = "25.11";
 
-  workingFishOnDarwinForMacOSCodeSigningEnforcementOverlay =
-    final: prev:
-    if prev.stdenv.hostPlatform.isDarwin then
-      {
-        fish = import ../lib/fish-prebuilt-darwin.nix { pkgs = prev; };
-      }
-    else
-      { };
-
   mkPkgsFor = system: {
     pkgs = import nixpkgs {
       inherit system;
@@ -88,9 +79,7 @@ in
       specialArgsBase
       ;
     darwinPkgs = darwin;
-    darwinSystemOverlays = [
-      workingFishOnDarwinForMacOSCodeSigningEnforcementOverlay
-    ];
+    darwinSystemOverlays = [ ];
   };
 
   homeManagerModules = import ./home-manager-modules.nix;

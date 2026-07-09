@@ -148,9 +148,6 @@
 
   system.defaults.CustomUserPreferences."com.apple.screensaver".idleTime = 0;
 
-  programs.fish.enable = true;
-  programs.fish.useBabelfish = true;
-
   security = {
     pam.services.sudo_local.touchIdAuth = true;
     sudo.extraConfig = ''
