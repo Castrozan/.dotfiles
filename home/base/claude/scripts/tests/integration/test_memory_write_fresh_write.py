@@ -6,13 +6,13 @@ class TestFreshWrite:
         result = invoke_memory_write(
             workspace,
             type="user",
-            key="284143065877184512",
+            key="123456789012345678",
             fact="lucas prefers pnpm over npm for js projects",
             author="lucas",
         )
         assert result.returncode == 0, result.stderr
         memory_dir = expected_memory_directory(fake_home, workspace)
-        topic_path = memory_dir / "user-284143065877184512.md"
+        topic_path = memory_dir / "user-123456789012345678.md"
         assert topic_path.exists()
         content = topic_path.read_text()
         assert "lucas prefers pnpm over npm" in content

@@ -129,7 +129,7 @@ strategies work without code changes.
 storage:
 ~/clawde/silver/memory/                         <- canonical
   MEMORY.md                                     <- one-line pointers
-  user-284143065877184512.md                    <- lucas facts
+  user-123456789012345678.md                    <- lucas facts
   user-<other-id>.md                            <- per-discord-user
   feedback.md                                   <- corrections
   project-<name>.md                             <- per-project

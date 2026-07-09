@@ -30,6 +30,6 @@ class TestTopicFilenameFor:
 
     def test_preserves_numeric_discord_id(self):
         assert (
-            memory_write.topic_filename_for("user", "284143065877184512")
-            == "user-284143065877184512.md"
+            memory_write.topic_filename_for("user", "123456789012345678")
+            == "user-123456789012345678.md"
         )
