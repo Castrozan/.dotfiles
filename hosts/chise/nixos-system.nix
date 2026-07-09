@@ -103,19 +103,21 @@ in
     lidSwitch.disable = true;
   };
 
-  systemd.services.arr-media-tailscale-funnel = {
-    after = [ "nginx.service" ];
-    requires = [ "nginx.service" ];
+  systemd.services = {
+    arr-media-tailscale-funnel = {
+      after = [ "nginx.service" ];
+      requires = [ "nginx.service" ];
+    };
+
+    jellyseerr-email-notifications.restartTriggers = [
+      ../../secrets/credentials/jellyseerr-smtp-app-password.age
+    ];
+
+    arr-config-provisioner.restartTriggers = [
+      ../../secrets/credentials/arr-qbittorrent-password.age
+      ../../secrets/credentials/arr-samaritano-indexer-apikey.age
+    ];
   };
-
-  systemd.services.jellyseerr-email-notifications.restartTriggers = [
-    ../../secrets/credentials/jellyseerr-smtp-app-password.age
-  ];
-
-  systemd.services.arr-config-provisioner.restartTriggers = [
-    ../../secrets/credentials/arr-qbittorrent-password.age
-    ../../secrets/credentials/arr-samaritano-indexer-apikey.age
-  ];
 
   users.users.zanoni = {
     isNormalUser = true;
