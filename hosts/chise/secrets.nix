@@ -97,6 +97,10 @@
         file = ../../secrets/infrastructure/jarvis-session-connector-credentials.age;
         mode = "400";
       };
+      "jellyseerr-smtp-app-password" = {
+        file = ../../secrets/credentials/jellyseerr-smtp-app-password.age;
+        mode = "400";
+      };
     };
   };
 }

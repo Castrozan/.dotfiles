@@ -1,5 +1,6 @@
 # NixOS configuration for zanoni
 {
+  config,
   lib,
   pkgs,
   inputs,
@@ -30,6 +31,7 @@ in
     ../../nixos/modules/arr-media-tailscale-funnel
     ../../nixos/modules/arr-media-login-ratelimit-proxy
     ../../nixos/modules/arr-stack-on-demand-supervisor
+    ../../nixos/modules/jellyseerr-notifications
   ]
   ++ lib.optional (builtins.pathExists ../../private-config/machines/chise/jarvis-connector.nix) ../../private-config/machines/chise/jarvis-connector.nix;
 
@@ -75,6 +77,14 @@ in
       keepChainAlwaysOn = true;
     };
 
+    jellyseerrEmailNotifications = {
+      enable = true;
+      jellyseerrSettingsFile = "/home/zanoni/arr-stack/config/jellyseerr/settings.json";
+      senderAddress = "castro.lucas290@gmail.com";
+      smtpUsername = "castro.lucas290@gmail.com";
+      appPasswordSecretFile = config.age.secrets."jellyseerr-smtp-app-password".path;
+    };
+
     # Disable lid switch suspend for laptop used as server/with external monitor
     lidSwitch.disable = true;
   };
@@ -83,6 +93,10 @@ in
     after = [ "nginx.service" ];
     requires = [ "nginx.service" ];
   };
+
+  systemd.services.jellyseerr-email-notifications.restartTriggers = [
+    ../../secrets/credentials/jellyseerr-smtp-app-password.age
+  ];
 
   users.users.zanoni = {
     isNormalUser = true;
