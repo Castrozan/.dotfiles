@@ -12,6 +12,16 @@ _run_statusline_with_json() {
 	run bash -c "echo '$1' | bash '$SCRIPT_UNDER_TEST'"
 }
 
+_run_statusline_with_json_and_auto_compact_env() {
+	local json_input="$1" auto_compact_window="$2" auto_compact_percentage="$3"
+	run bash -c "echo '$json_input' | CLAUDE_CODE_AUTO_COMPACT_WINDOW='$auto_compact_window' CLAUDE_AUTOCOMPACT_PCT_OVERRIDE='$auto_compact_percentage' bash '$SCRIPT_UNDER_TEST'"
+}
+
+_run_statusline_with_json_without_auto_compact_env() {
+	local json_input="$1"
+	run bash -c "echo '$json_input' | env -u CLAUDE_CODE_AUTO_COMPACT_WINDOW -u CLAUDE_AUTOCOMPACT_PCT_OVERRIDE bash '$SCRIPT_UNDER_TEST'"
+}
+
 _minimal_json_input() {
 	echo '{"model":{"display_name":"Opus 4.7"},"cwd":"/tmp","session_id":"bb823787-e6ea-467c-b0ce-d90b8b92fc36","context_window":{"used_percentage":10}}'
 }
@@ -64,6 +74,30 @@ _full_json_input() {
 	local stripped
 	stripped=$(echo "$output" | _strip_ansi_escape_codes)
 	[[ "$stripped" == *"ctx 85%"* ]]
+}
+
+@test "context window percentage is computed against the auto-compact trigger" {
+	local json_input='{"model":{"display_name":"Opus 4.7"},"cwd":"/tmp","session_id":"abc","context_window":{"used_percentage":18,"total_input_tokens":175000}}'
+	_run_statusline_with_json_and_auto_compact_env "$json_input" 1000000 35
+	local stripped
+	stripped=$(echo "$output" | _strip_ansi_escape_codes)
+	[[ "$stripped" == *"ctx 50%"* ]]
+}
+
+@test "context window percentage caps at 100 past the auto-compact trigger" {
+	local json_input='{"model":{"display_name":"Opus 4.7"},"cwd":"/tmp","session_id":"abc","context_window":{"used_percentage":50,"total_input_tokens":500000}}'
+	_run_statusline_with_json_and_auto_compact_env "$json_input" 1000000 35
+	local stripped
+	stripped=$(echo "$output" | _strip_ansi_escape_codes)
+	[[ "$stripped" == *"ctx 100%"* ]]
+}
+
+@test "context window falls back to raw used_percentage without auto-compact env" {
+	local json_input='{"model":{"display_name":"Opus 4.7"},"cwd":"/tmp","session_id":"abc","context_window":{"used_percentage":18,"total_input_tokens":175000}}'
+	_run_statusline_with_json_without_auto_compact_env "$json_input"
+	local stripped
+	stripped=$(echo "$output" | _strip_ansi_escape_codes)
+	[[ "$stripped" == *"ctx 18%"* ]]
 }
 
 @test "rate limit shows lim label, percentage, and reset time" {

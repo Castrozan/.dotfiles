@@ -8,15 +8,41 @@ _build_model_segment_from_json_input() {
 	printf "${COLOR_CYAN}%s${COLOR_RESET}" "$model_display_name"
 }
 
+_resolve_auto_compact_trigger_tokens() {
+	local auto_compact_window="${CLAUDE_CODE_AUTO_COMPACT_WINDOW:-}"
+	local auto_compact_percentage="${CLAUDE_AUTOCOMPACT_PCT_OVERRIDE:-}"
+	[[ "$auto_compact_window" =~ ^[0-9]+$ ]] || return 0
+	[[ "$auto_compact_percentage" =~ ^[0-9]+$ ]] || return 0
+	[ "$auto_compact_window" -gt 0 ] || return 0
+
+	local percentage_based_trigger=$((auto_compact_window * auto_compact_percentage / 100))
+	local floor_based_trigger=$((auto_compact_window - 13000))
+	local trigger=$((percentage_based_trigger < floor_based_trigger ? percentage_based_trigger : floor_based_trigger))
+	[ "$trigger" -gt 0 ] || return 0
+
+	printf "%s" "$trigger"
+}
+
 _build_context_window_segment_from_json_input() {
 	local json_input="$1"
 
-	local used_percentage
-	used_percentage=$(echo "$json_input" | jq -r '.context_window.used_percentage // empty')
-	[ -z "$used_percentage" ] && return 0
+	local raw_window_used_percentage
+	raw_window_used_percentage=$(echo "$json_input" | jq -r '.context_window.used_percentage // empty')
+	[ -z "$raw_window_used_percentage" ] && return 0
+
+	local display_percentage="$raw_window_used_percentage"
+
+	local used_input_tokens auto_compact_trigger_tokens
+	used_input_tokens=$(echo "$json_input" | jq -r '.context_window.total_input_tokens // empty')
+	auto_compact_trigger_tokens=$(_resolve_auto_compact_trigger_tokens)
+	if [[ "$used_input_tokens" =~ ^[0-9]+$ ]] && [ -n "$auto_compact_trigger_tokens" ]; then
+		local percentage_of_auto_compact_trigger=$(((used_input_tokens * 100 + auto_compact_trigger_tokens / 2) / auto_compact_trigger_tokens))
+		[ "$percentage_of_auto_compact_trigger" -gt 100 ] && percentage_of_auto_compact_trigger=100
+		display_percentage="$percentage_of_auto_compact_trigger"
+	fi
 
 	local rounded_used_percentage
-	rounded_used_percentage=$(printf "%.0f" "$used_percentage")
+	rounded_used_percentage=$(printf "%.0f" "$display_percentage")
 
 	local context_color
 	if [ "$rounded_used_percentage" -ge 80 ]; then
