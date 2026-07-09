@@ -16,5 +16,6 @@
     OBSIDIAN_HOME = "$HOME/vault";
     EDITOR = "code";
     TZDIR = "${pkgs.tzdata}/share/zoneinfo";
+    LANG = "en_US.UTF-8";
   };
 }
