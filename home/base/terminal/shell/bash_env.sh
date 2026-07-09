@@ -5,6 +5,13 @@ case ":$PATH:" in
 *) export PATH="$PATH:$HOME/.local/bin" ;;
 esac
 
+if [ -d /opt/homebrew/bin ]; then
+	case ":$PATH:" in
+	*":/opt/homebrew/bin:"*) ;;
+	*) export PATH="$PATH:/opt/homebrew/bin:/opt/homebrew/sbin" ;;
+	esac
+fi
+
 if [ -d /opt/nvim-linux64/bin ]; then
 	case ":$PATH:" in
 	*":/opt/nvim-linux64/bin:"*) ;;
