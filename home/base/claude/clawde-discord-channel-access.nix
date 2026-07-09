@@ -7,20 +7,19 @@
 let
   discordChannelAccessByAgent = config.clawdeDiscordChannelAccess;
   discordChannelsDirectory = "${config.home.homeDirectory}/.claude/channels/discord";
+  mergeAgentAccessScript = ./scripts/merge-discord-agent-access.py;
 
-  renderedAccessFileFor =
+  mergeAccessCommandFor =
     agentName: agentAccess:
-    pkgs.writeText "discord-channel-access-${agentName}.json" (
-      builtins.toJSON {
-        inherit (agentAccess) dmPolicy allowFrom groups;
-        pending = { };
-      }
-    );
-
-  deployAccessFileCommandFor =
-    agentName: agentAccess:
-    "$DRY_RUN_CMD ${pkgs.coreutils}/bin/install -Dm600 ${renderedAccessFileFor agentName agentAccess} "
-    + lib.escapeShellArg "${discordChannelsDirectory}/${agentName}/access.json";
+    let
+      allowFromArguments = lib.concatMapStringsSep " " (
+        userId: "--allow-from-user-id ${lib.escapeShellArg userId}"
+      ) agentAccess.allowFrom;
+    in
+    "$DRY_RUN_CMD ${pkgs.python312}/bin/python3 ${mergeAgentAccessScript}"
+    + " --state-directory ${lib.escapeShellArg "${discordChannelsDirectory}/${agentName}"}"
+    + " --dm-policy ${lib.escapeShellArg agentAccess.dmPolicy}"
+    + lib.optionalString (allowFromArguments != "") " ${allowFromArguments}";
 in
 {
   options.clawdeDiscordChannelAccess = lib.mkOption {
@@ -41,43 +40,24 @@ in
             default = [ ];
             description = "Discord user IDs allowed to reach this agent by direct message.";
           };
-          groups = lib.mkOption {
-            type = lib.types.attrsOf (
-              lib.types.submodule {
-                options = {
-                  requireMention = lib.mkOption {
-                    type = lib.types.bool;
-                    default = true;
-                    description = "Deliver only guild-channel messages that mention the bot.";
-                  };
-                  allowFrom = lib.mkOption {
-                    type = lib.types.listOf lib.types.str;
-                    default = [ ];
-                    description = "Discord user IDs allowed in this guild channel; empty means anyone in the channel.";
-                  };
-                };
-              }
-            );
-            default = { };
-            description = "Opted-in guild channels keyed by Discord channel ID.";
-          };
         };
       }
     );
     default = { };
     description = ''
-      Declarative Discord plugin access allowlist per clawde agent. The access
-      file is rewritten on every rebuild so it never drifts back to the empty
-      default that silently drops every inbound message. Populate the
-      identifiers from private-config so they stay out of the public tree.
+      Declarative Discord plugin DM allowlist per clawde agent, reasserted on
+      every rebuild so it never drifts back to the empty default that silently
+      drops every inbound message. This owns dmPolicy and allowFrom only; guild
+      channel opt-ins (groups) stay with the clawde channel adapter's
+      allowedChannelsSecretName merge, and both passes are field-disjoint so
+      they compose regardless of activation order. Populate the identifiers from
+      private-config so they stay out of the public tree.
     '';
   };
 
   config = lib.mkIf (discordChannelAccessByAgent != { }) {
     home.activation.deployClawdeDiscordChannelAccess = lib.hm.dag.entryAfter [ "writeBoundary" ] (
-      lib.concatStringsSep "\n" (
-        lib.mapAttrsToList deployAccessFileCommandFor discordChannelAccessByAgent
-      )
+      lib.concatStringsSep "\n" (lib.mapAttrsToList mergeAccessCommandFor discordChannelAccessByAgent)
     );
   };
 }
