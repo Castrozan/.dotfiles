@@ -32,6 +32,10 @@ let
     && lib.hasInfix "HERDR_ENV" herdrAutostartContent
     && lib.hasInfix "\${TMUX:-}" herdrAutostartContent
     && lib.hasInfix "command -v herdr" herdrAutostartContent;
+  herdrAutostartScopesSessionPerWorkspace =
+    lib.hasInfix "_current_workspace_herdr_session_name" herdrAutostartContent
+    && lib.hasInfix "workspace-grid-state" herdrAutostartContent
+    && lib.hasInfix "herdr --session" herdrAutostartContent;
 in
 {
   domain-terminal-bash-enabled =
@@ -55,6 +59,11 @@ in
     mkEvalCheck "domain-terminal-bash-herdr-autostart-launches-herdr"
       herdrAutostartDefinesStartAndGuardsAgainstNestingAndTmux
       "bash_herdr_autostart.sh must define _start_herdr and guard against relaunching inside HERDR_ENV or an existing TMUX session before launching herdr";
+
+  domain-terminal-bash-herdr-autostart-scopes-session-per-workspace =
+    mkEvalCheck "domain-terminal-bash-herdr-autostart-scopes-session-per-workspace"
+      herdrAutostartScopesSessionPerWorkspace
+      "bash_herdr_autostart.sh must attach each terminal to a per-workspace herdr session (herdr --session workspace-<N>) derived from the Hammerspoon workspace-grid-state file, so windows on different workspaces get independent, non-mirrored, reattachable sessions like tmux";
 
   domain-terminal-kitty-catppuccin =
     mkEvalCheck "domain-terminal-kitty-catppuccin"

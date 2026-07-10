@@ -1,5 +1,15 @@
 #!/usr/bin/env bash
 
+_current_workspace_herdr_session_name() {
+	local stateFilePath="${HAMMERSPOON_WORKSPACE_STATE_FILE:-$HOME/.cache/hammerspoon/workspace-grid-state}"
+	local currentWorkspaceNumber
+	currentWorkspaceNumber="$(head -1 "$stateFilePath" 2>/dev/null)"
+	case "$currentWorkspaceNumber" in
+	'' | *[!0-9]*) return ;;
+	*) printf 'workspace-%s\n' "$currentWorkspaceNumber" ;;
+	esac
+}
+
 _start_herdr() {
 	if [ -n "${HERDR_ENV:-}" ]; then
 		return
@@ -18,7 +28,13 @@ _start_herdr() {
 		return
 	fi
 
-	herdr
+	local perWorkspaceSessionName
+	perWorkspaceSessionName="$(_current_workspace_herdr_session_name)"
+	if [ -n "$perWorkspaceSessionName" ]; then
+		herdr --session "$perWorkspaceSessionName"
+	else
+		herdr
+	fi
 }
 
 case $- in
