@@ -39,6 +39,4 @@ in
     tmuxEnumerationSocket = "";
     tmuxMutationSocket = "";
   };
-
-  home.sessionVariables.HERDR_DEFAULT_SESSION_WORKSPACE_NUMBER = "4";
 }
