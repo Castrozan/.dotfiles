@@ -19,6 +19,7 @@ let
 
   cfg = helpers.homeManagerTestConfiguration [
     ../bash.nix
+    ../herdr.nix
     ../kitty.nix
     ../tmux.nix
     ../wezterm.nix
@@ -40,6 +41,15 @@ in
   domain-terminal-carapace-enabled =
     mkEvalCheck "domain-terminal-carapace-enabled" cfg.programs.carapace.enable
       "carapace completion should be enabled";
+
+  domain-terminal-herdr-config-is-mutable-seed =
+    mkEvalCheck "domain-terminal-herdr-config-is-mutable-seed"
+      (
+        builtins.hasAttr ".config/herdr/config.toml.nix-source" cfg.home.file
+        && !(builtins.hasAttr ".config/herdr/config.toml" cfg.home.file)
+        && builtins.hasAttr "seedHerdrConfigAsMutableFile" cfg.home.activation
+      )
+      "herdr config.toml must be seeded as a mutable file so herdr can persist runtime UI settings: the nix-source belongs in home.file, config.toml itself must not be a read-only symlink, and the seedHerdrConfigAsMutableFile activation must run";
 
   domain-terminal-bash-herdr-autostart-launches-herdr =
     mkEvalCheck "domain-terminal-bash-herdr-autostart-launches-herdr"

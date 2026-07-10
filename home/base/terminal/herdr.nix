@@ -46,7 +46,9 @@ let
   };
 in
 {
+  imports = [ ./herdr/make-config-mutable.nix ];
+
   home.packages = [ herdrStaticReleaseBinary ];
 
-  home.file.".config/herdr/config.toml".source = ../../../.config/herdr/config.toml;
+  home.file.".config/herdr/config.toml.nix-source".source = ../../../.config/herdr/config.toml;
 }
