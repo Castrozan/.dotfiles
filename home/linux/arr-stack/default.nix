@@ -1,12 +1,14 @@
 {
   config,
   lib,
+  pkgs,
   hostname,
   ...
 }:
 let
   isChise = hostname == "chise";
   stackRoot = "${config.home.homeDirectory}/arr-stack";
+  arrUsersCli = import ./arr-users-cli.nix { inherit pkgs stackRoot; };
   machineIdentityMapPath = ../../../private-config/machines.nix;
   privateConfigPresent = builtins.pathExists machineIdentityMapPath;
   chiseMachineIdentity = lib.optionalAttrs privateConfigPresent (import machineIdentityMapPath).chise;
@@ -71,6 +73,8 @@ let
 in
 lib.mkIf isChise {
   home = {
+    packages = [ arrUsersCli ];
+
     file = {
       "arr-stack/docker-compose.yml".source = ./docker-compose.yml;
       "arr-stack/.env".text = runtimeEnvironmentFileContents;

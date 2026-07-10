@@ -85,7 +85,7 @@ let
       config = {
         home.homeDirectory = "/home/test";
       };
-      inherit lib;
+      inherit lib pkgs;
       hostname = candidateHostname;
     }).condition;
 in

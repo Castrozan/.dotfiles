@@ -109,6 +109,11 @@
         file = ../../secrets/credentials/arr-samaritano-indexer-apikey.age;
         mode = "400";
       };
+      "jellyfin-admin-api-key" = {
+        file = ../../secrets/credentials/jellyfin-admin-api-key.age;
+        owner = "zanoni";
+        mode = "400";
+      };
     };
   };
 }
