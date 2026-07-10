@@ -107,6 +107,7 @@ local config = {
 		{ key = "DownArrow", mods = "CTRL|SHIFT", action = wezterm.action.SendString("\x1b[1;6B") },
 		{ key = "PageUp", mods = "CTRL", action = wezterm.action.SendString("\x1b[5;5~") },
 		{ key = "PageDown", mods = "CTRL", action = wezterm.action.SendString("\x1b[6;5~") },
+		{ key = "w", mods = "CTRL|SHIFT", action = wezterm.action.CloseCurrentTab({ confirm = false }) },
 	},
 
 	initial_cols = 300,
@@ -114,6 +115,10 @@ local config = {
 
 	window_close_confirmation = "NeverPrompt",
 }
+
+if is_darwin then
+	table.insert(config.keys, { key = "w", mods = "CMD", action = wezterm.action.CloseCurrentTab({ confirm = false }) })
+end
 
 if hypr_theme_colors then
 	config.color_schemes = { ["HyprTheme"] = hypr_theme_colors }
