@@ -1,13 +1,26 @@
 #!/usr/bin/env bash
 
-_current_workspace_herdr_session_name() {
+_current_workspace_number() {
 	local stateFilePath="${HAMMERSPOON_WORKSPACE_STATE_FILE:-$HOME/.cache/hammerspoon/workspace-grid-state}"
 	local currentWorkspaceNumber
 	currentWorkspaceNumber="$(head -1 "$stateFilePath" 2>/dev/null)"
 	case "$currentWorkspaceNumber" in
 	'' | *[!0-9]*) return ;;
-	*) printf 'workspace-%s\n' "$currentWorkspaceNumber" ;;
+	*) printf '%s\n' "$currentWorkspaceNumber" ;;
 	esac
+}
+
+_current_workspace_herdr_session_name() {
+	local currentWorkspaceNumber
+	currentWorkspaceNumber="$(_current_workspace_number)"
+	if [ -z "$currentWorkspaceNumber" ]; then
+		return
+	fi
+	if [ -n "${HERDR_DEFAULT_SESSION_WORKSPACE_NUMBER:-}" ] &&
+		[ "$currentWorkspaceNumber" = "$HERDR_DEFAULT_SESSION_WORKSPACE_NUMBER" ]; then
+		return
+	fi
+	printf 'workspace-%s\n' "$currentWorkspaceNumber"
 }
 
 _start_herdr() {

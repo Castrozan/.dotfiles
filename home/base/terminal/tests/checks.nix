@@ -36,6 +36,9 @@ let
     lib.hasInfix "_current_workspace_herdr_session_name" herdrAutostartContent
     && lib.hasInfix "workspace-grid-state" herdrAutostartContent
     && lib.hasInfix "herdr --session" herdrAutostartContent;
+  herdrAutostartMapsDesignatedWorkspaceToDefaultSession =
+    lib.hasInfix "HERDR_DEFAULT_SESSION_WORKSPACE_NUMBER" herdrAutostartContent
+    && lib.hasInfix "_current_workspace_number" herdrAutostartContent;
 in
 {
   domain-terminal-bash-enabled =
@@ -64,6 +67,11 @@ in
     mkEvalCheck "domain-terminal-bash-herdr-autostart-scopes-session-per-workspace"
       herdrAutostartScopesSessionPerWorkspace
       "bash_herdr_autostart.sh must attach each terminal to a per-workspace herdr session (herdr --session workspace-<N>) derived from the Hammerspoon workspace-grid-state file, so windows on different workspaces get independent, non-mirrored, reattachable sessions like tmux";
+
+  domain-terminal-bash-herdr-autostart-maps-designated-workspace-to-default-session =
+    mkEvalCheck "domain-terminal-bash-herdr-autostart-maps-designated-workspace-to-default-session"
+      herdrAutostartMapsDesignatedWorkspaceToDefaultSession
+      "bash_herdr_autostart.sh must let a host designate one workspace (via HERDR_DEFAULT_SESSION_WORKSPACE_NUMBER) to attach to the shared default herdr session instead of a per-workspace one, so the workspace that views the clawde agents lands where they already live without any per-workspace session";
 
   domain-terminal-kitty-catppuccin =
     mkEvalCheck "domain-terminal-kitty-catppuccin"
