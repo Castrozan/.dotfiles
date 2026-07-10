@@ -15,6 +15,10 @@ This repo is continuously kept synced, green, and pushed by an autonomous per-ma
 Every configuration change lives in this repo and applies declaratively through its capabilities - nix modules, home-manager, agenix, overlays, packaged scripts - never by mutating a machine by hand outside the repo. Fold new config into the existing module structure rather than adding one-off files. Make it work on every system type this repo targets (NixOS and darwin) when the feature allows, guarding platform-specific pieces behind `isNixOS`/`isDarwin`.
 </configuration>
 
+<machine-local-wrapper>
+On chise only, the live system is not built straight from this repo: a machine-local entrypoint flake at `~/zanoni-system` (untracked, outside this tree) imports the public chise config from here and layers a private overlay on top, and `rebuild` builds that entrypoint, not this repo directly. So a service, unit, secret, or option that is live on chise but absent from this repo is most likely owned by that overlay, not missing: check `~/zanoni-system` before declaring it undeclared or re-adding it here. The wrapper applies through the same `rebuild` but is not a git repo, so the commit-and-steward flow here does not govern it. Chise-specific; other hosts build directly from this repo.
+</machine-local-wrapper>
+
 <scripts>
 Python 3.12 is the default language for scripts. Use bash only when the script is a thin wrapper gluing shell-native tools (tmux send-keys, fzf, sysctl pipelines) where Python would just be subprocess.run calls. Python scripts run via Nix - no uv, no venv, no pip.
 
