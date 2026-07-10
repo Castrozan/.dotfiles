@@ -16,7 +16,7 @@ Every configuration change lives in this repo and applies declaratively through 
 </configuration>
 
 <machine-local-wrapper>
-On chise only, the live system is not built straight from this repo: a machine-local entrypoint flake at `~/zanoni-system` (untracked, outside this tree) imports the public chise config from here and layers a private overlay on top, and `rebuild` builds that entrypoint, not this repo directly. So a service, unit, secret, or option that is live on chise but absent from this repo is most likely owned by that overlay, not missing: check `~/zanoni-system` before declaring it undeclared or re-adding it here. The wrapper applies through the same `rebuild` but is not a git repo, so the commit-and-steward flow here does not govern it. Chise-specific; other hosts build directly from this repo.
+On chise only, the live system is not built straight from this repo: a machine-local entrypoint flake at `~/zanoni-system` (outside this tree) imports the public chise config from here and layers a private overlay on top, and `rebuild` builds that entrypoint, not this repo directly. So a service, unit, secret, or option that is live on chise but absent from this repo is most likely owned by that overlay, not missing: check `~/zanoni-system` before declaring it undeclared or re-adding it here. That entrypoint is its own standalone private git repo, with its own origin, not this repo and not a submodule of it, no CI and no peer stewards; the chise steward keeps it reconciled with its origin fast-forward-only, so commit a wrapper change into that repo rather than assuming a rebuild alone captures it. Chise-specific; other hosts build directly from this repo.
 </machine-local-wrapper>
 
 <scripts>
