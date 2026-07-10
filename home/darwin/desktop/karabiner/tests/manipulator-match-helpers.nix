@@ -34,19 +34,25 @@ let
   passthroughIndex = indexOfFirstRuleWhereManipulatorMatches isBravePassthroughManipulatorForLetterD;
   linuxStyleIndex = indexOfFirstRuleWhereManipulatorMatches isLinuxStyleControlToCommandRemapForLetterD;
 
-  isChromeControlShiftZoomRemapForKey =
-    zoomKeyCode: manipulator:
+  isControlZoomRemapForBrowser =
+    browserBundleInfix: zoomKeyCode: mustHaveShift: manipulator:
     (manipulator.from.key_code or "") == zoomKeyCode
     && builtins.elem "control" (manipulator.from.modifiers.mandatory or [ ])
-    && builtins.elem "shift" (manipulator.from.modifiers.mandatory or [ ])
+    && (builtins.elem "shift" (manipulator.from.modifiers.mandatory or [ ])) == mustHaveShift
     && lib.any (to: (to.key_code or "") == zoomKeyCode && (to.modifiers or [ ]) == [ "command" ]) (
       manipulator.to or [ ]
     )
-    && lib.any (
-      condition:
-      condition.type or "" == "frontmost_application_if"
-      && lib.any (b: lib.hasInfix "chrome" (lib.toLower b)) (condition.bundle_identifiers or [ ])
-    ) (manipulator.conditions or [ ]);
+    && manipulatorHasFrontmostBrowser browserBundleInfix manipulator;
+
+  browserHasBothControlZoomVariants =
+    browserBundleInfix: zoomKeyCode:
+    indexOfFirstRuleWhereManipulatorMatches (
+      isControlZoomRemapForBrowser browserBundleInfix zoomKeyCode true
+    ) != null
+    &&
+      indexOfFirstRuleWhereManipulatorMatches (
+        isControlZoomRemapForBrowser browserBundleInfix zoomKeyCode false
+      ) != null;
 
   isPlainControlBPassthroughForBrowser =
     browserBundleInfix: manipulator:
@@ -111,11 +117,13 @@ in
   braveControlDPassthroughPreEmptsLinuxStyleRemap =
     passthroughIndex != null && linuxStyleIndex != null && passthroughIndex < linuxStyleIndex;
 
-  chromeZoomInRemapIsPresent =
-    indexOfFirstRuleWhereManipulatorMatches (isChromeControlShiftZoomRemapForKey "equal_sign") != null;
+  chromeZoomInRemapIsPresent = browserHasBothControlZoomVariants "chrome" "equal_sign";
 
-  chromeZoomOutRemapIsPresent =
-    indexOfFirstRuleWhereManipulatorMatches (isChromeControlShiftZoomRemapForKey "hyphen") != null;
+  chromeZoomOutRemapIsPresent = browserHasBothControlZoomVariants "chrome" "hyphen";
+
+  braveZoomInRemapIsPresent = browserHasBothControlZoomVariants "brave" "equal_sign";
+
+  braveZoomOutRemapIsPresent = browserHasBothControlZoomVariants "brave" "hyphen";
 
   bravePlainControlBPassthroughPreEmptsLinuxStyleRemap =
     bravePlainControlBPassthroughIndex != null

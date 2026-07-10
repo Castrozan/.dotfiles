@@ -24,6 +24,8 @@ let
     braveControlDPassthroughPreEmptsLinuxStyleRemap
     chromeZoomInRemapIsPresent
     chromeZoomOutRemapIsPresent
+    braveZoomInRemapIsPresent
+    braveZoomOutRemapIsPresent
     bravePlainControlBPassthroughPreEmptsLinuxStyleRemap
     chromePlainControlBPassthroughPreEmptsLinuxStyleRemap
     braveCloseTabControlWRemapIsPresent
@@ -110,15 +112,21 @@ in
       hammerspoonSetsEveryApplicationFocusVariable
       "The hammerspoon karabiner_application_focus_variables module must set every application-focus variable name the karabiner default-deny guards read, otherwise a guard fails closed permanently and its rule silently stops working";
 
-  domain-desktop-karabiner-chrome-zoom-in-control-shift-equal-remap-present =
-    mkEvalCheck "domain-desktop-karabiner-chrome-zoom-in-control-shift-equal-remap-present"
-      chromeZoomInRemapIsPresent
-      "Chrome must remap Ctrl+Shift+= to Command+= so Ctrl+Shift++ zooms in, because Chrome ignores brave.accelerators and only a Karabiner rule can deliver the Mac zoom shortcut";
+  domain-desktop-karabiner-chrome-zoom-in-remap-present =
+    mkEvalCheck "domain-desktop-karabiner-chrome-zoom-in-remap-present" chromeZoomInRemapIsPresent
+      "Chrome must remap both Ctrl+= and Ctrl+Shift+= to Command+= so plain Ctrl+= and Ctrl++ zoom in, because Chrome ignores brave.accelerators and only a Karabiner rule can deliver the Mac zoom shortcut";
 
-  domain-desktop-karabiner-chrome-zoom-out-control-shift-hyphen-remap-present =
-    mkEvalCheck "domain-desktop-karabiner-chrome-zoom-out-control-shift-hyphen-remap-present"
-      chromeZoomOutRemapIsPresent
-      "Chrome must remap Ctrl+Shift+- to Command+- so Ctrl+Shift+- zooms out, because Chrome ignores brave.accelerators and only a Karabiner rule can deliver the Mac zoom shortcut";
+  domain-desktop-karabiner-chrome-zoom-out-remap-present =
+    mkEvalCheck "domain-desktop-karabiner-chrome-zoom-out-remap-present" chromeZoomOutRemapIsPresent
+      "Chrome must remap both Ctrl+- and Ctrl+Shift+- to Command+- so plain Ctrl+- and Ctrl+_ zoom out, because Chrome ignores brave.accelerators and only a Karabiner rule can deliver the Mac zoom shortcut";
+
+  domain-desktop-karabiner-brave-zoom-in-remap-present =
+    mkEvalCheck "domain-desktop-karabiner-brave-zoom-in-remap-present" braveZoomInRemapIsPresent
+      "Brave must remap both Ctrl+= and Ctrl+Shift+= to Command+= at the keystroke layer so plain Ctrl+= and Ctrl++ zoom in, because Brave strips the Control+Shift+Equal accelerator addition on launch";
+
+  domain-desktop-karabiner-brave-zoom-out-remap-present =
+    mkEvalCheck "domain-desktop-karabiner-brave-zoom-out-remap-present" braveZoomOutRemapIsPresent
+      "Brave must remap both Ctrl+- and Ctrl+Shift+- to Command+- at the keystroke layer so plain Ctrl+- and Ctrl+_ zoom out, because Brave strips the Control+Shift+Minus accelerator addition on launch";
 
   domain-desktop-karabiner-brave-ctrl-b-passthrough-pre-empts-linux-style-remap =
     mkEvalCheck "domain-desktop-karabiner-brave-ctrl-b-passthrough-pre-empts-linux-style-remap"

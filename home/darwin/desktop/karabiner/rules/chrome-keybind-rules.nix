@@ -119,30 +119,9 @@ let
     conditions = chromeIsFrontmostCondition;
   };
 
-  remapControlShiftZoomKeyToCommandZoom = zoomKeyCode: {
-    type = "basic";
-    from = {
-      key_code = zoomKeyCode;
-      modifiers = {
-        mandatory = [
-          "control"
-          "shift"
-        ];
-        optional = [ "any" ];
-      };
-    };
-    to = [
-      {
-        key_code = zoomKeyCode;
-        modifiers = [ "command" ];
-      }
-    ];
+  chromeZoomManipulators = import ./browser-zoom-remap.nix {
     conditions = chromeIsFrontmostCondition;
   };
-
-  zoomInWithControlShiftEqual = remapControlShiftZoomKeyToCommandZoom "equal_sign";
-
-  zoomOutWithControlShiftHyphen = remapControlShiftZoomKeyToCommandZoom "hyphen";
 
   passthroughChromePlainControlKeyToPage = keyCode: {
     type = "basic";
@@ -182,11 +161,8 @@ in
     ];
   }
   {
-    description = "Chrome: Ctrl+Shift+= zooms in and Ctrl+Shift+- zooms out via the Mac Command zoom shortcuts (mirrors Brave's zoom accelerator additions, which Chrome cannot carry because it ignores brave.accelerators)";
-    manipulators = [
-      zoomInWithControlShiftEqual
-      zoomOutWithControlShiftHyphen
-    ];
+    description = "Chrome: Linux-style Ctrl+= / Ctrl++ zoom in and Ctrl+- / Ctrl+_ zoom out via the Mac Command zoom shortcuts, because Chrome ignores brave.accelerators and only a Karabiner rule can deliver the Mac zoom shortcut (mirrors brave-keybind-passthrough-rules)";
+    manipulators = chromeZoomManipulators;
   }
   {
     description = "Chrome: pass plain Ctrl+B through to the page as Ctrl+B (pre-empts the Linux-style Ctrl-to-Cmd remap so web apps can use it as a leader key) instead of remapping to Cmd+B (bold); Ctrl+Shift+B still reaches the bookmark bar toggle";

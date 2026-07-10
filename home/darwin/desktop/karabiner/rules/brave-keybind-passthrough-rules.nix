@@ -104,6 +104,10 @@ let
     conditions = braveIsFrontmostConditions;
   };
 
+  braveZoomManipulators = import ./browser-zoom-remap.nix {
+    conditions = braveIsFrontmostConditions;
+  };
+
   bravePassthroughLetters = [ "d" ];
 in
 [
@@ -127,6 +131,10 @@ in
         "shift"
       ])
     ];
+  }
+  {
+    description = "Brave: Linux-style Ctrl+= / Ctrl++ zoom in and Ctrl+- / Ctrl+_ zoom out, remapped to the Mac Command zoom shortcuts at the keystroke layer because Brave reverts the brave.accelerators additions that added Control+Shift+Equal / Control+Shift+Minus, stripping them on launch and leaving only the native Command+Equal / Command+Minus defaults (mirrors chrome-keybind-rules)";
+    manipulators = braveZoomManipulators;
   }
   {
     description = "Brave: pass plain Ctrl+B through to the page as Ctrl+B (pre-empts the Linux-style Ctrl-to-Cmd remap so web apps can use it as a leader key) instead of remapping to Cmd+B (bold); Ctrl+Shift+B still reaches the bookmark bar toggle";

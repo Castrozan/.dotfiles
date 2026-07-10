@@ -43,17 +43,9 @@ let
       "Alt+Digit9"
     ];
 
-  braveZoomInAcceleratorAddsControlShiftEqualAlongsideCommandEqual =
-    bravePreferencesOverrides.brave.accelerators."38001" == [
-      "Command+Equal"
-      "Control+Shift+Equal"
-    ];
-
-  braveZoomOutAcceleratorAddsControlShiftMinusAlongsideCommandMinus =
-    bravePreferencesOverrides.brave.accelerators."38003" == [
-      "Command+Minus"
-      "Control+Shift+Minus"
-    ];
+  braveZoomAcceleratorsAreNotOverriddenBecauseBraveStripsControlShiftAdditionsOnLaunch =
+    !(bravePreferencesOverrides.brave.accelerators ? "38001")
+    && !(bravePreferencesOverrides.brave.accelerators ? "38003");
 in
 {
   domain-desktop-brave-duplicate-tab-bound-to-control-d =
@@ -85,13 +77,8 @@ in
       braveLastTabSelectionAcceleratorAddsAltDigitNineAlongsideCommandDefaults
       "Brave Select Last Tab (command id 34026) must keep Command+Digit9 and Command+Numpad9 and add Alt+Digit9";
 
-  domain-desktop-brave-zoom-in-adds-control-shift-equal =
-    mkEvalCheck "domain-desktop-brave-zoom-in-adds-control-shift-equal"
-      braveZoomInAcceleratorAddsControlShiftEqualAlongsideCommandEqual
-      "Brave Zoom In (command id 38001) must keep Command+Equal and add Control+Shift+Equal so Ctrl+Shift++ zooms in";
-
-  domain-desktop-brave-zoom-out-adds-control-shift-minus =
-    mkEvalCheck "domain-desktop-brave-zoom-out-adds-control-shift-minus"
-      braveZoomOutAcceleratorAddsControlShiftMinusAlongsideCommandMinus
-      "Brave Zoom Out (command id 38003) must keep Command+Minus and add Control+Shift+Minus so Ctrl+Shift+- zooms out";
+  domain-desktop-brave-zoom-accelerators-not-overridden =
+    mkEvalCheck "domain-desktop-brave-zoom-accelerators-not-overridden"
+      braveZoomAcceleratorsAreNotOverriddenBecauseBraveStripsControlShiftAdditionsOnLaunch
+      "Brave Zoom In/Out (command ids 38001/38003) must not be set in preferences overrides because Brave strips Control+Shift+Equal / Control+Shift+Minus additions on launch; zoom is driven at the Karabiner keystroke layer instead (see brave-keybind-passthrough-rules)";
 }
