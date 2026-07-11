@@ -1,4 +1,4 @@
-{ lib, ... }:
+{ pkgs, lib, ... }:
 let
   selectedTheme = import ../selected-theme.nix;
 
@@ -21,7 +21,7 @@ let
   };
 in
 {
-  home.activation.applyMacosThemeAppearance = lib.hm.dag.entryAfter [
-    "writeBoundary"
-  ] macosAppearanceActivationScript;
+  home.activation.applyMacosThemeAppearance = lib.mkIf pkgs.stdenv.hostPlatform.isDarwin (
+    lib.hm.dag.entryAfter [ "writeBoundary" ] macosAppearanceActivationScript
+  );
 }
