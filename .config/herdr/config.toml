@@ -88,5 +88,15 @@ key = "ctrl+g"
 type = "shell"
 command = "$HERDR_BIN_PATH pane send-keys $HERDR_ACTIVE_PANE_ID ctrl+b"
 
+[[keys.copy_mode_command]]
+key = "ctrl+up"
+command = "scroll-up"
+count = 5
+
+[[keys.copy_mode_command]]
+key = "ctrl+down"
+command = "scroll-down"
+count = 5
+
 [experimental]
 allow_nested = true
