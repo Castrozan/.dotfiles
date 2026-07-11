@@ -4,8 +4,6 @@ from process_table_parsers import command_first_token_basename, sum_process_cpu_
 FLEET_BUCKET_COMMAND_SUBSTRINGS = [
     ("claude_cli", "/bin/claude "),
     ("chrome_devtools_mcp", "chrome-devtools-mcp"),
-    ("figma_mcp", "figma-developer-mcp"),
-    ("browser_use_mcp", "browser-use --mcp"),
     ("a2a_mcp", "a2a-mcp-server"),
     ("codex_cli", "/bin/codex "),
 ]

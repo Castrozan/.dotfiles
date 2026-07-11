@@ -50,19 +50,18 @@ because of that larger window, and have no safe analogue on the smaller one.
 
 ## MCP servers
 
-- Claude wires five: `chrome-devtools`, `brave-devtools`, `codex`
-  (self-referential: Claude calling Codex), `a2a`, `browser-use`.
+- Claude wires: `chrome-devtools`, `brave-devtools`, `codex`
+  (self-referential: Claude calling Codex), `a2a` (agent-only, not injected
+  into interactive sessions), and `mem0`.
 - Codex wired only `chrome-devtools`.
 - Ported now: `brave-devtools`. The `agents/skills/browser/install` module
   that `config.nix` already imports exposes the Brave command/args for free
   (same `chrome-devtools-mcp` binary pointed at the Brave profile), so this is
   a zero-new-dependency parity win that completes the browser skill's toolset
   for Codex.
-- Deferred: `browser-use` (a uvx+python wrapper that would need a refactor, and
-  browser automation is token-heavy against the 272K window), `a2a` (needs an
-  agent-backend service Codex has no receiver for; a client without a backend
-  is a false-confidence surface), `codex` (self-referential, not applicable to
-  Codex itself).
+- Deferred: `a2a` (needs an agent-backend service Codex has no receiver for; a
+  client without a backend is a false-confidence surface), `codex`
+  (self-referential, not applicable to Codex itself).
 
 ## Hooks
 

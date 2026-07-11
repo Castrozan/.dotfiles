@@ -29,8 +29,6 @@ in
   "discord-channels/discord-channels-monster.age".publicKeys = all_keys;
 
   "api-keys/brave-api-key.age".publicKeys = all_keys;
-  "api-keys/figma-personal-access-token-kira.age".publicKeys = all_keys;
-  "api-keys/figma-personal-access-token-rin.age".publicKeys = all_keys;
   "api-keys/deepgram-api-key.age".publicKeys = all_keys;
   "api-keys/gemini-api-key.age".publicKeys = all_keys;
   "api-keys/nvidia-api-key.age".publicKeys = all_keys;

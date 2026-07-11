@@ -10,11 +10,6 @@ let
   nodejs = pkgs.nodejs_22;
   homeDir = config.home.homeDirectory;
   inherit (pkgs.stdenv.hostPlatform) isDarwin;
-  chromeBinary =
-    if isDarwin then
-      "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
-    else
-      "${latest.google-chrome}/bin/google-chrome-stable";
 
   browserMcp = import ../../../../agents/skills/browser/install {
     inherit
@@ -24,14 +19,6 @@ let
       ;
     chromePackage = latest.google-chrome;
   };
-
-  browserUseConfigDir = "${homeDir}/.config/browseruse";
-
-  browserUseMcpWrapper = pkgs.writeShellScript "browser-use-mcp" ''
-    export BROWSER_USE_CONFIG_PATH="${browserUseConfigDir}/config.json"
-    export ANONYMIZED_TELEMETRY=false
-    exec ${pkgs.uv}/bin/uvx --python ${pkgs.python312}/bin/python3.12 --from 'browser-use[cli]' browser-use --mcp "$@"
-  '';
 
   a2aMcp = import ../../agents/a2a/install.nix {
     inherit
@@ -61,15 +48,6 @@ let
     "/bin"
   ];
 
-  figmaMcp = import ./figma {
-    inherit
-      pkgs
-      nodejs
-      homeDir
-      hostname
-      ;
-  };
-
   mcpServerDefinitions = {
     chrome-devtools = {
       command = browserMcp.chromeDevtoolsMcpStdioCommand;
@@ -93,16 +71,7 @@ let
       command = a2aMcp.mcpServerCommand;
       args = a2aMcp.mcpServerArgs;
     };
-    browser-use = {
-      command = browserUseMcpWrapper;
-      args = [ ];
-    };
     mem0 = mem0Mcp.serverConfig;
-    figma = figmaMcp.figmaWriteCapableRemoteServerConfig;
-    figma-read = {
-      command = figmaMcp.figmaReadMcpStdioCommand;
-      args = figmaMcp.figmaReadMcpStdioArgs;
-    };
   }
   // lib.optionalAttrs (hostname == "chise") {
     vivaldi-devtools = {
@@ -111,11 +80,12 @@ let
     };
   };
 
-  hostGatedBrowserMcpServerNames = [ "vivaldi-devtools" ];
+  mcpServerInjectionPartition = import ./mcp-server-injection-partition.nix {
+    inherit lib;
+    allMcpServerNames = builtins.attrNames mcpServerDefinitions;
+  };
 
-  managedMcpServerNames = lib.unique (
-    builtins.attrNames mcpServerDefinitions ++ hostGatedBrowserMcpServerNames
-  );
+  interactivelyInjectedMcpServerDefinitions = removeAttrs mcpServerDefinitions mcpServerInjectionPartition.agentOnlyMcpServerNames;
 
   buildClawdeAgentMcpConfigFile =
     agentName: serverNames:
@@ -133,11 +103,10 @@ in
       bringUpScriptBin = mem0OpenmemoryUp;
       environmentPath = mem0AutostartEnvironmentPath;
     })
-    (import ./browser-use-config-patcher.nix {
-      inherit browserUseConfigDir chromeBinary;
-    })
     (import ./inject-mcp-servers-into-claude-config.nix {
-      inherit homeDir mcpServerDefinitions managedMcpServerNames;
+      inherit homeDir;
+      managedMcpServerNames = mcpServerInjectionPartition.managedMcpServerNames;
+      mcpServerDefinitions = interactivelyInjectedMcpServerDefinitions;
     })
   ];
 

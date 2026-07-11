@@ -1,5 +1,5 @@
 <tool_selection>
-Browser tools, pick by detection risk and which session you need, not by habit. Browser Use (`mcp__browser-use__*`) is the default for all general browsing. The three stealth CDP targets, Chrome DevTools (`mcp__chrome-devtools__*`), Brave DevTools (`mcp__brave-devtools__*`), and Vivaldi DevTools (`mcp__vivaldi-devtools__*`), are only for sites that detect automation and where you need a real authenticated session: Google, banking, anything behind Cloudflare or PerimeterX. PinchTab (`pinchtab` CLI, no MCP) is the fallback when the MCP transports go flaky or you need a persistent already-logged-in local or dev session. `SKILL.md` holds the per-tool command workflows; this file holds why and when.
+Browser tools, pick by detection risk and which session you need, not by habit. PinchTab (`pinchtab` CLI, no MCP) is the default for all general browsing, scraping, and local or dev sessions: its own persistent-profile Chrome driven from bash, logged in once in headed mode and authenticated across runs. The three stealth CDP targets, Chrome DevTools (`mcp__chrome-devtools__*`), Brave DevTools (`mcp__brave-devtools__*`), and Vivaldi DevTools (`mcp__vivaldi-devtools__*`), are only for sites that detect automation and where you need the user's real everyday authenticated session: Google, banking, anything behind Cloudflare or PerimeterX. `SKILL.md` holds the per-tool command workflows; this file holds why and when.
 </tool_selection>
 
 <stealth_cdp_targets_chrome_brave_vivaldi>
@@ -22,6 +22,6 @@ The CDP targets attach to a real browser whose selected page on connect is the u
 Once authorized any target sustains tens of thousands of CDP operations per second at roughly 1ms latency with no memory growth, so never diagnose slowness or contention here; the only ceiling is the manual Allow.
 </chrome_devtools_performance_is_not_the_limit>
 
-<browser_use_and_pinchtab_tradeoffs>
-Browser Use launches its own Chrome, needs zero setup, and supports parallel sessions, but it carries automation flags so bot-detecting sites flag it; use it for public sites, scraping, research, bulk extraction, throwaway browsing, and Electron apps. PinchTab runs its own persistent-profile Chrome driven from bash, so a one-time headed login stays authenticated across runs and it survives MCP flakiness, but its profile is separate from the user's real Chrome so it is not a stealth substitute for bot-detecting sites.
-</browser_use_and_pinchtab_tradeoffs>
+<pinchtab_tradeoffs>
+PinchTab runs its own persistent-profile Chrome driven from bash, needs no MCP transport, and a one-time headed login stays authenticated across runs; use it for public sites, scraping, research, bulk extraction, throwaway browsing, Electron apps, and local or dev sessions. Its profile is separate from the user's real Chrome, so it is not a stealth substitute for bot-detecting sites that need the user's actual logged-in accounts; reach for a CDP target there instead.
+</pinchtab_tradeoffs>

@@ -161,11 +161,6 @@ in
     !(cfg.systemd.user.services ? "a2a-mcp-bridge")
   ) "a2a-mcp-bridge.service must not exist; a2a is a direct stdio MCP";
 
-  browser-use-mcp-bridge-service-removed =
-    mkEvalCheck "browser-use-mcp-bridge-service-removed"
-      (!(cfg.systemd.user.services ? "browser-use-mcp-bridge"))
-      "browser-use-mcp-bridge.service must not exist; browser-use is a direct stdio MCP on all platforms";
-
   claude-private-marketplace-plugins-folded-into-settings =
     mkEvalCheck "claude-private-marketplace-plugins-folded-into-settings"
       privateMarketplacePluginsAreFoldedIntoSettings
@@ -178,6 +173,12 @@ in
     lib
     mkEvalCheck
     cfg
+    ;
+}
+// import ./mcp-server-injection-checks.nix {
+  inherit
+    lib
+    mkEvalCheck
     ;
 }
 // import ./hook-registration-checks.nix {

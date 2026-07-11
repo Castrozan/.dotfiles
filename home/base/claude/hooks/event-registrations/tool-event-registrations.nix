@@ -51,7 +51,7 @@
       ];
     }
     {
-      matcher = "WebFetch|mcp__browser-use__browser_navigate";
+      matcher = "WebFetch";
       hooks = [
         {
           type = "command";

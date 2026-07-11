@@ -1,7 +1,11 @@
 ---
 name: b3-portal
-description: Log into and scrape data from Lucas's B3 Área do Investidor (investidor.b3.com.br) via browser-use MCP plus raw CDP XHR capture. Use when syncing portfolio positions, trades, dividends, or any other read-only data from B3 — for example when Golden runs b3-sync, or when verifying brokerage state. Documents the working flow, the SPA quirks that broke prior attempts, the API endpoint catalog, and the institution-CNPJ filter trick.
+description: Log into and scrape data from Lucas's B3 Área do Investidor (investidor.b3.com.br) via a browser-automation tool (transport being repointed off the removed browser-use MCP) plus raw CDP XHR capture. Use when syncing portfolio positions, trades, dividends, or any other read-only data from B3 — for example when Golden runs b3-sync, or when verifying brokerage state. Documents the working flow, the SPA quirks that broke prior attempts, the API endpoint catalog, and the institution-CNPJ filter trick.
 ---
+
+<browser_use_removed>
+The `browser-use` MCP this recipe drives was removed from the dotfiles (no machine wired it). Every `browser-use` step below is therefore non-functional until this skill is repointed at PinchTab (its own persistent-profile Chrome with full input simulation, the closest surviving analog to browser-use) or `browser-use` is restored. Per `<why_not_chrome_devtools>` below, a `*-devtools` CDP target is unlikely to clear B3's Angular click guards or hold a B3-authenticated session, so it is not the repoint target. The SPA quirks, endpoint catalog, and CNPJ filter trick remain valid; only the browser transport is dead. Do not attempt `mcp__browser-use__*` calls.
+</browser_use_removed>
 
 <managed_scope>
 GOLDEN MANAGES ONLY THE NUBANK SLEEVE (NuInvest + Nubank Caixinhas). Hard scope boundary set by Lucas on 2026-05-30.

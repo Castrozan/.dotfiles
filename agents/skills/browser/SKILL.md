@@ -4,7 +4,7 @@ description: Interact with a live webpage inside a browser window — fill forms
 ---
 
 <strategy>
-Browser MCPs plus one CLI are available. Browser Use (`mcp__browser-use__*`) is the primary MCP - it launches its own Chrome, works immediately, handles general browsing and Electron apps. Three stealth CDP targets connect to a real browser for sites that detect automation (Google, banking, Cloudflare): Chrome DevTools (`mcp__chrome-devtools__*`) attaches to the dedicated Chrome Global, Brave DevTools (`mcp__brave-devtools__*`) attaches to the user's everyday Cmd+B Brave on its real default profile, and Vivaldi DevTools (`mcp__vivaldi-devtools__*`) attaches to the native Vivaldi on its `~/.config/vivaldi` profile; pick by which browser holds the logged-in session you need. PinchTab (`pinchtab` CLI, no MCP) is the resilient fallback - its own persistent-profile Chrome (stays logged in across runs) driven entirely from bash; reach for it when the MCP transports are flaky or you need a stable already-authenticated session for a local app. Read `README.md` for the full decision framework.
+Three browser MCPs plus one CLI are available. PinchTab (`pinchtab` CLI, no MCP) is the general-purpose default - its own persistent-profile Chrome driven entirely from bash, works immediately for general browsing, scraping, Electron apps, and local apps, and a one-time headed login stays authenticated across runs. Three stealth CDP targets connect to a real browser for sites that detect automation (Google, banking, Cloudflare): Chrome DevTools (`mcp__chrome-devtools__*`) attaches to the dedicated Chrome Global, Brave DevTools (`mcp__brave-devtools__*`) attaches to the user's everyday Cmd+B Brave on its real default profile, and Vivaldi DevTools (`mcp__vivaldi-devtools__*`) attaches to the native Vivaldi on its `~/.config/vivaldi` profile; reach for one when you need the user's actual logged-in session on a bot-detecting site, picking by which browser holds it. Read `README.md` for the full decision framework.
 </strategy>
 
 <pinchtab_workflow>
@@ -20,16 +20,6 @@ CLI only (no MCP), driven from bash. Its server runs a persistent-profile Chrome
 
 Guards are UP by default (allowed domains: localhost/127.0.0.1); `pinchtab server -y` lowers them. For an isolated tab set `PINCHTAB_SESSION=$(pinchtab session create --agent-id <id> --print-token)`.
 </pinchtab_workflow>
-
-<browser_use_workflow>
-Works immediately with no setup. Launches its own Chrome instance.
-
-1. `mcp__browser-use__browser_navigate` - go to URL
-2. `mcp__browser-use__browser_get_state` - see page elements with index refs
-3. `mcp__browser-use__browser_click` / `mcp__browser-use__browser_type` - interact using index from state
-4. `mcp__browser-use__browser_screenshot` - visual verification when needed
-5. `mcp__browser-use__browser_close_all` - clean up when done
-</browser_use_workflow>
 
 <chrome_devtools_workflow>
 Connects to the user's real Chrome Global via `--autoConnect`. Chrome runs bare (no automation flags) so Google and bot-detecting sites see a normal browser. The user must enable `chrome://inspect/#remote-debugging` once (persists across restarts) and click Allow on the consent dialog once per Chrome session.
@@ -70,6 +60,6 @@ Once connected, the `mcp__vivaldi-devtools__*` tools are identical in shape to t
 </vivaldi_devtools_workflow>
 
 <tips>
-Browser Use: always get fresh state after navigation or interaction - element indices change. Prefer state over screenshots (less tokens).
+PinchTab: prefer `snap` (accessibility tree with refs) over screenshots for less tokens; get a fresh `snap` after navigation or interaction because refs change.
 Chrome DevTools and Brave DevTools: always take a fresh snapshot after navigation - uids change between snapshots. Prefer snapshots over screenshots. Each target is single and sequential and needs its own Allow; never drive both concurrently.
 </tips>
