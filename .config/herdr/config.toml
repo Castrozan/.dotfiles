@@ -13,7 +13,7 @@ new_cwd = "follow"
 
 [ui]
 mouse_capture = true
-accent = "cyan"
+accent = "@herdr_accent@"
 sidebar_collapsed = true
 confirm_close = false
 prompt_new_tab_name = false

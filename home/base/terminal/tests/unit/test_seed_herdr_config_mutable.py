@@ -68,7 +68,26 @@ def test_preserves_runtime_agent_panel_sort_across_rebuild(monkeypatch, tmp_path
 
 
 def test_nix_source_wins_for_declared_ui_keys(monkeypatch, tmp_path):
+    monkeypatch.delenv("HERDR_RUNTIME_OWNS_ACCENT", raising=False)
     live = '[ui]\nagent_panel_sort = "priority"\naccent = "magenta"\n'
+    target_path = _run_main(monkeypatch, tmp_path, live)
+    merged = tomllib.loads(target_path.read_text())
+    assert merged["ui"]["accent"] == "cyan"
+
+
+def test_runtime_accent_preserved_when_runtime_owns_accent(monkeypatch, tmp_path):
+    monkeypatch.setenv("HERDR_RUNTIME_OWNS_ACCENT", "1")
+    live = '[ui]\nagent_panel_sort = "priority"\naccent = "#abcdef"\n'
+    target_path = _run_main(monkeypatch, tmp_path, live)
+    merged = tomllib.loads(target_path.read_text())
+    assert merged["ui"]["accent"] == "#abcdef"
+
+
+def test_runtime_accent_reverts_to_nix_source_when_runtime_does_not_own_accent(
+    monkeypatch, tmp_path
+):
+    monkeypatch.delenv("HERDR_RUNTIME_OWNS_ACCENT", raising=False)
+    live = '[ui]\nagent_panel_sort = "priority"\naccent = "#abcdef"\n'
     target_path = _run_main(monkeypatch, tmp_path, live)
     merged = tomllib.loads(target_path.read_text())
     assert merged["ui"]["accent"] == "cyan"

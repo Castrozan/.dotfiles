@@ -1,7 +1,12 @@
 import os
 import tomllib
 
-RUNTIME_OWNED_UI_KEYS_PRESERVED_ACROSS_REBUILDS = ("agent_panel_sort",)
+
+def runtime_owned_ui_keys_preserved_across_rebuilds():
+    keys = ["agent_panel_sort"]
+    if os.environ.get("HERDR_RUNTIME_OWNS_ACCENT") == "1":
+        keys.append("accent")
+    return tuple(keys)
 
 
 def read_preserved_ui_values(live_config_path):
@@ -15,7 +20,7 @@ def read_preserved_ui_values(live_config_path):
     live_ui_table = live_config.get("ui", {})
     return {
         key: live_ui_table[key]
-        for key in RUNTIME_OWNED_UI_KEYS_PRESERVED_ACROSS_REBUILDS
+        for key in runtime_owned_ui_keys_preserved_across_rebuilds()
         if key in live_ui_table
     }
 
