@@ -2,12 +2,15 @@
   {
     "name": "HD - 720p/1080p",
     "upgradeAllowed": true,
-    "minFormatScore": -100,
-    "cutoffFormatScore": 25,
+    "minFormatScore": 1,
+    "cutoffFormatScore": 50,
     "formatScores": {
-      "Multi-Subtitle": 25,
-      "English Subtitle Group": 20,
-      "VOSTFR / French": -25
+      "English": 50,
+      "English Subtitle Group": 50,
+      "Multi-Subtitle": 50,
+      "Portuguese (BR)": 50,
+      "Portuguese (BR) Subtitle": 50,
+      "VOSTFR / French": -1000
     }
   }
 ]

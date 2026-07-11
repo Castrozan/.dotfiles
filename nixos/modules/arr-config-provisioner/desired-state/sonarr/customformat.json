@@ -44,7 +44,7 @@
     "name": "English Subtitle Group",
     "specifications": [
       {
-        "name": "Known English or multi-subtitle fansub group",
+        "name": "English or known English-subtitle fansub group",
         "implementation": "ReleaseTitleSpecification",
         "implementationName": "Release Title",
         "infoLink": "https://wiki.servarr.com/sonarr/settings#custom-formats",
@@ -53,7 +53,75 @@
         "fields": [
           {
             "name": "value",
-            "value": "\\b(erai[ ._-]?raws|toonshub|subsplease|judas)\\b"
+            "value": "\\b(english|eng[ ._-]?subs?|erai[ ._-]?raws|toonshub|subsplease|judas)\\b"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "includeCustomFormatWhenRenaming": false,
+    "name": "English",
+    "specifications": [
+      {
+        "name": "English language",
+        "implementation": "LanguageSpecification",
+        "implementationName": "Language",
+        "infoLink": "https://wiki.servarr.com/sonarr/settings#custom-formats",
+        "negate": false,
+        "required": false,
+        "fields": [
+          {
+            "name": "value",
+            "value": 1
+          },
+          {
+            "name": "exceptLanguage",
+            "value": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "includeCustomFormatWhenRenaming": false,
+    "name": "Portuguese (BR)",
+    "specifications": [
+      {
+        "name": "Portuguese (Brazil) language",
+        "implementation": "LanguageSpecification",
+        "implementationName": "Language",
+        "infoLink": "https://wiki.servarr.com/sonarr/settings#custom-formats",
+        "negate": false,
+        "required": false,
+        "fields": [
+          {
+            "name": "value",
+            "value": 30
+          },
+          {
+            "name": "exceptLanguage",
+            "value": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "includeCustomFormatWhenRenaming": false,
+    "name": "Portuguese (BR) Subtitle",
+    "specifications": [
+      {
+        "name": "Portuguese (BR) release title",
+        "implementation": "ReleaseTitleSpecification",
+        "implementationName": "Release Title",
+        "infoLink": "https://wiki.servarr.com/sonarr/settings#custom-formats",
+        "negate": false,
+        "required": false,
+        "fields": [
+          {
+            "name": "value",
+            "value": "\\b(dublado|nacional|pt[ ._-]?br|leg[ ._-]?pt|portugu[eê]s)\\b"
           }
         ]
       }
