@@ -1,6 +1,11 @@
 [theme]
 name = "catppuccin"
 
+[theme.custom]
+overlay0 = "#9399b2"
+overlay1 = "#a6adc8"
+subtext0 = "#bac2de"
+
 [terminal]
 default_shell = "/run/current-system/sw/bin/bash"
 shell_mode = "login"
