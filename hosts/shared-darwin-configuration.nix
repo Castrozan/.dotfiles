@@ -11,6 +11,7 @@
     ./shared-darwin/wezterm
     ./shared-darwin/displays
     ./shared-darwin/finder
+    ./shared-darwin/spotlight
     ./shared-darwin/window-manager
     ./shared-darwin/symbolic-hotkeys
     ./shared-darwin/quit-windowless-applications
