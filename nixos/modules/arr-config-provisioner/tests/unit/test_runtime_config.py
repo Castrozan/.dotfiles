@@ -101,3 +101,25 @@ def test_load_desired_objects_substitutes_secrets(tmp_path):
         str(tmp_path), "radarr", "downloadclient", {"@QBITTORRENT_PASSWORD@": "pw"}
     )
     assert out[0]["fields"][0]["value"] == "pw"
+
+
+def test_load_optional_desired_objects_returns_empty_when_file_absent(tmp_path):
+    assert (
+        runtime_config.load_optional_desired_objects(
+            str(tmp_path), "sonarr", "qualityprofile", {}
+        )
+        == []
+    )
+
+
+def test_load_optional_desired_objects_reads_and_substitutes_when_present(tmp_path):
+    sonarr_directory = tmp_path / "sonarr"
+    sonarr_directory.mkdir()
+    (sonarr_directory / "qualityprofile.json").write_text(
+        json.dumps([{"name": "HD - 720p/1080p", "token": "@QBITTORRENT_PASSWORD@"}]),
+        encoding="utf-8",
+    )
+    out = runtime_config.load_optional_desired_objects(
+        str(tmp_path), "sonarr", "qualityprofile", {"@QBITTORRENT_PASSWORD@": "pw"}
+    )
+    assert out == [{"name": "HD - 720p/1080p", "token": "pw"}]

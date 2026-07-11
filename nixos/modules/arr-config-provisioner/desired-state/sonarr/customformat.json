@@ -1,0 +1,62 @@
+[
+  {
+    "includeCustomFormatWhenRenaming": false,
+    "name": "VOSTFR / French",
+    "specifications": [
+      {
+        "name": "VOSTFR or French release title",
+        "implementation": "ReleaseTitleSpecification",
+        "implementationName": "Release Title",
+        "infoLink": "https://wiki.servarr.com/sonarr/settings#custom-formats",
+        "negate": false,
+        "required": false,
+        "fields": [
+          {
+            "name": "value",
+            "value": "\\b(vostfr|vff|vf2|truefrench|french)\\b"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "includeCustomFormatWhenRenaming": false,
+    "name": "Multi-Subtitle",
+    "specifications": [
+      {
+        "name": "Multi-subtitle release title",
+        "implementation": "ReleaseTitleSpecification",
+        "implementationName": "Release Title",
+        "infoLink": "https://wiki.servarr.com/sonarr/settings#custom-formats",
+        "negate": false,
+        "required": false,
+        "fields": [
+          {
+            "name": "value",
+            "value": "\\bmulti[ ._-]?subs?\\b"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "includeCustomFormatWhenRenaming": false,
+    "name": "English Subtitle Group",
+    "specifications": [
+      {
+        "name": "Known English or multi-subtitle fansub group",
+        "implementation": "ReleaseTitleSpecification",
+        "implementationName": "Release Title",
+        "infoLink": "https://wiki.servarr.com/sonarr/settings#custom-formats",
+        "negate": false,
+        "required": false,
+        "fields": [
+          {
+            "name": "value",
+            "value": "\\b(erai[ ._-]?raws|toonshub|subsplease|judas)\\b"
+          }
+        ]
+      }
+    ]
+  }
+]

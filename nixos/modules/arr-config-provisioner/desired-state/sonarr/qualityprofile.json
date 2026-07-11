@@ -1,0 +1,13 @@
+[
+  {
+    "name": "HD - 720p/1080p",
+    "upgradeAllowed": true,
+    "minFormatScore": -100,
+    "cutoffFormatScore": 25,
+    "formatScores": {
+      "Multi-Subtitle": 25,
+      "English Subtitle Group": 20,
+      "VOSTFR / French": -25
+    }
+  }
+]

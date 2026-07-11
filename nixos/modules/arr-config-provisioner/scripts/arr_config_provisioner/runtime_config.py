@@ -68,3 +68,11 @@ def contains_unresolved_secret_token(value):
 def load_desired_objects(desired_state_dir, app, resource, secret_map):
     with open(f"{desired_state_dir}/{app}/{resource}.json", encoding="utf-8") as handle:
         return substitute_secrets(json.load(handle), secret_map)
+
+
+def load_optional_desired_objects(desired_state_dir, app, resource, secret_map):
+    path = f"{desired_state_dir}/{app}/{resource}.json"
+    if not os.path.exists(path):
+        return []
+    with open(path, encoding="utf-8") as handle:
+        return substitute_secrets(json.load(handle), secret_map)
