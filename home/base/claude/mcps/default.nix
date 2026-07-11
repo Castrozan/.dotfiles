@@ -105,7 +105,7 @@ in
     })
     (import ./inject-mcp-servers-into-claude-config.nix {
       inherit homeDir;
-      managedMcpServerNames = mcpServerInjectionPartition.managedMcpServerNames;
+      inherit (mcpServerInjectionPartition) managedMcpServerNames;
       mcpServerDefinitions = interactivelyInjectedMcpServerDefinitions;
     })
   ];
