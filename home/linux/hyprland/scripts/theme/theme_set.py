@@ -167,6 +167,7 @@ def main() -> None:
     subprocess.run(["hypr-restart-hyprctl"])
     subprocess.run(["makoctl", "reload"], capture_output=True)
     update_btop_theme_in_config()
+    subprocess.run(["hypr-theme-set-herdr"])
     update_clipse_custom_theme()
     update_vscode_color_customizations()
     subprocess.run(["hypr-theme-set-gnome"])
