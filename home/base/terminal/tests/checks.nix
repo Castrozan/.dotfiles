@@ -32,6 +32,13 @@ let
     && lib.hasInfix "HERDR_ENV" herdrAutostartContent
     && lib.hasInfix "\${TMUX:-}" herdrAutostartContent
     && lib.hasInfix "command -v herdr" herdrAutostartContent;
+  herdrAutostartAttachesDefaultSessionNotCoupledToMacosWorkspace =
+    !(lib.hasInfix "workspace-grid-state" herdrAutostartContent)
+    && !(lib.hasInfix "HAMMERSPOON_WORKSPACE_STATE_FILE" herdrAutostartContent)
+    && !(lib.hasInfix "herdr --session" herdrAutostartContent);
+
+  herdrConfigContent = builtins.readFile ../../../../.config/herdr/config.toml;
+  herdrConfigBindsWorkspaceChooserAsChooseSession = lib.hasInfix "goto = \"prefix+s\"" herdrConfigContent;
 in
 {
   domain-terminal-bash-enabled =
@@ -51,10 +58,28 @@ in
       )
       "herdr config.toml must be seeded as a mutable file so herdr can persist runtime UI settings: the nix-source belongs in home.file, config.toml itself must not be a read-only symlink, and the seedHerdrConfigAsMutableFile activation must run";
 
+  domain-terminal-herdr-installed-from-fork-flake-input =
+    mkEvalCheck "domain-terminal-herdr-installed-from-fork-flake-input"
+      (builtins.any (
+        pkg: (pkg.outPath or "") == inputs.herdr.packages."x86_64-linux".default.outPath
+      ) cfg.home.packages)
+      "herdr must be installed from the Castrozan/herdr flake input (the source-built fork carrying the session switcher), not a fetched upstream release binary";
+
   domain-terminal-bash-herdr-autostart-launches-herdr =
     mkEvalCheck "domain-terminal-bash-herdr-autostart-launches-herdr"
       herdrAutostartDefinesStartAndGuardsAgainstNestingAndTmux
       "bash_herdr_autostart.sh must define _start_herdr and guard against relaunching inside HERDR_ENV or an existing TMUX session before launching herdr";
+
+  domain-terminal-bash-herdr-autostart-attaches-default-session-not-coupled-to-macos-workspace =
+    mkEvalCheck
+      "domain-terminal-bash-herdr-autostart-attaches-default-session-not-coupled-to-macos-workspace"
+      herdrAutostartAttachesDefaultSessionNotCoupledToMacosWorkspace
+      "bash_herdr_autostart.sh must launch bare herdr into the default session, never deriving a session name from the macOS workspace (no Hammerspoon workspace-grid-state read, no herdr --session): tmux-literal independence comes from separate named sessions the user creates, not from coupling session identity to the desktop the window sits on";
+
+  domain-terminal-herdr-config-binds-workspace-chooser-as-choose-session =
+    mkEvalCheck "domain-terminal-herdr-config-binds-workspace-chooser-as-choose-session"
+      herdrConfigBindsWorkspaceChooserAsChooseSession
+      "herdr config.toml must bind goto (prefix+s) so the workspace chooser, which lists every workspace, is tmux choose-session: with per-client active-workspace each client jumps its own view to any workspace, the reachability half of the tmux workflow";
 
   domain-terminal-kitty-catppuccin =
     mkEvalCheck "domain-terminal-kitty-catppuccin"
