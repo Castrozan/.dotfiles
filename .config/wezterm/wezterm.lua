@@ -54,6 +54,8 @@ local config = {
 	enable_tab_bar = false,
 	hide_tab_bar_if_only_one_tab = true,
 
+	audible_bell = "Disabled",
+
 	warn_about_missing_glyphs = false,
 	freetype_load_target = "Light",
 	scrollback_lines = 10000,
