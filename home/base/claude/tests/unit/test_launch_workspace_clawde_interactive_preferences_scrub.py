@@ -37,7 +37,7 @@ def test_scrub_removes_interactive_preferences_for_clawde_background_agent(
     )
     monkeypatch.setenv(CLAWDE_BACKGROUND_AGENT_ENVIRONMENT_MARKER, "--continue")
 
-    workspace_launcher_module.scrub_interactive_preferences_environment_for_clawde_background_agent()
+    workspace_launcher_module.scrub_interactive_only_environment_for_clawde_background_agent()
 
     import os
 
@@ -60,7 +60,7 @@ def test_scrub_removes_interactive_preferences_when_clawde_marker_is_empty(
     )
     monkeypatch.setenv(CLAWDE_BACKGROUND_AGENT_ENVIRONMENT_MARKER, "")
 
-    workspace_launcher_module.scrub_interactive_preferences_environment_for_clawde_background_agent()
+    workspace_launcher_module.scrub_interactive_only_environment_for_clawde_background_agent()
 
     assert (
         workspace_launcher_module.build_interactive_preferences_system_prompt_arguments()
@@ -77,7 +77,7 @@ def test_scrub_keeps_interactive_preferences_for_keyboard_session(
     )
     monkeypatch.delenv(CLAWDE_BACKGROUND_AGENT_ENVIRONMENT_MARKER, raising=False)
 
-    workspace_launcher_module.scrub_interactive_preferences_environment_for_clawde_background_agent()
+    workspace_launcher_module.scrub_interactive_only_environment_for_clawde_background_agent()
 
     assert (
         workspace_launcher_module.build_interactive_preferences_system_prompt_arguments()
