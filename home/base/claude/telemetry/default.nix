@@ -17,14 +17,21 @@ let
             endpoint: 127.0.0.1:4317
           http:
             endpoint: 127.0.0.1:4318
+      hostmetrics:
+        collection_interval: 60s
+        scrapers:
+          cpu: {}
+          load: {}
+          memory: {}
+          paging: {}
     processors:
       batch: {}
     exporters:
       file:
         path: ${metricsFilePath}
         rotation:
-          max_megabytes: 5
-          max_backups: 3
+          max_megabytes: 20
+          max_backups: 14
           max_days: 14
     service:
       telemetry:
@@ -33,6 +40,10 @@ let
       pipelines:
         metrics:
           receivers: [otlp]
+          processors: [batch]
+          exporters: [file]
+        metrics/system:
+          receivers: [hostmetrics]
           processors: [batch]
           exporters: [file]
   '';
@@ -50,6 +61,7 @@ in
 {
   imports = [
     ./usage-snapshot-upload.nix
+    ./performance-sampler
   ];
 
   config = lib.mkMerge [
