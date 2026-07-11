@@ -83,6 +83,14 @@
         "dmask=0022"
       ];
     };
+    "/home/zanoni/arr-stack/data" = {
+      device = "/dev/disk/by-label/arr-data";
+      fsType = "ext4";
+      options = [
+        "nofail"
+        "x-systemd.device-timeout=10s"
+      ];
+    };
   };
 
   nix = {

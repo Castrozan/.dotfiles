@@ -77,6 +77,7 @@ in
       stackHomeDirectory = "/home/zanoni/arr-stack";
       keepChainAlwaysOn = true;
       diskGuard = {
+        path = "/home/zanoni/arr-stack/data";
         alertSmtpUsername = "castro.lucas290@gmail.com";
         alertEmailSender = "castro.lucas290@gmail.com";
         alertEmailRecipient = "castro.lucas290@gmail.com";
@@ -104,6 +105,8 @@ in
   };
 
   systemd.services = {
+    docker.unitConfig.RequiresMountsFor = [ "/home/zanoni/arr-stack/data" ];
+
     arr-media-tailscale-funnel = {
       after = [ "nginx.service" ];
       requires = [ "nginx.service" ];
