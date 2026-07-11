@@ -1,25 +1,12 @@
 { pkgs, lib, ... }:
 let
-  selectedThemeName = "kanagawa";
+  selectedTheme = import ./selected-theme.nix;
 
-  themesDirectory = ../../../../static/themes;
+  themeColorsToml = selectedTheme.colorsToml;
 
-  themeColorsToml = builtins.fromTOML (
-    builtins.readFile (themesDirectory + "/${selectedThemeName}/colors.toml")
-  );
+  themeIsLight = selectedTheme.isLight;
 
-  themeIsLight = builtins.pathExists (themesDirectory + "/${selectedThemeName}/light.mode");
-
-  themeBackgroundFileNames = builtins.attrNames (
-    builtins.readDir (themesDirectory + "/${selectedThemeName}/backgrounds")
-  );
-
-  sortedBackgroundFileNames = builtins.sort (a: b: a < b) themeBackgroundFileNames;
-
-  firstBackgroundFileName = builtins.head sortedBackgroundFileNames;
-
-  selectedWallpaperPath =
-    themesDirectory + "/${selectedThemeName}/backgrounds/${firstBackgroundFileName}";
+  selectedWallpaperPath = selectedTheme.wallpaperPath;
 
   removeHashFromColor = color: lib.removePrefix "#" color;
 
