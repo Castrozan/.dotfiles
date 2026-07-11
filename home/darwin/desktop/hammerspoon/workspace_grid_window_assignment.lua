@@ -5,10 +5,11 @@ local workspaceNumberByWindowId = {}
 local lastFocusedWindowIdByWorkspaceNumber = {}
 
 function workspaceGridWindowAssignment.workspaceOfWindowId(windowId)
-	if workspaceNumberByWindowId[windowId] == nil then
-		workspaceNumberByWindowId[windowId] = defaultWorkspaceNumber
+	local assignedWorkspaceNumber = workspaceNumberByWindowId[windowId]
+	if assignedWorkspaceNumber == nil then
+		return defaultWorkspaceNumber
 	end
-	return workspaceNumberByWindowId[windowId]
+	return assignedWorkspaceNumber
 end
 
 function workspaceGridWindowAssignment.assignWindowToWorkspace(windowId, workspaceNumber)

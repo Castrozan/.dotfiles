@@ -185,11 +185,7 @@ function workspaceGrid.restorePersistedWorkspaceState()
 		return
 	end
 	currentWorkspaceNumber = restoredCurrentWorkspaceNumber or currentWorkspaceNumber
-	local liveWindowIdSet = {}
-	for _, window in ipairs(manageableWindows()) do
-		liveWindowIdSet[window:id()] = true
-	end
-	windowAssignment.adoptAssignmentsForLiveWindows(restoredAssignments, liveWindowIdSet)
+	windowAssignment.adoptAssignmentsForLiveWindows(restoredAssignments, windowQuery.liveWindowIdSet())
 end
 
 function workspaceGrid.currentWorkspaceNumber()

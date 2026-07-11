@@ -2,6 +2,7 @@ local workspaceGridTestHarness = {}
 
 local currentWindows = {}
 local currentlyFocusedWindowId = nil
+local filterVisibleWindowIdSet = nil
 
 local function makeFakeWindow(windowId)
 	local fakeWindow = { storedFrame = { x = 100, y = 100, w = 400, h = 300 } }
@@ -56,7 +57,19 @@ function workspaceGridTestHarness.setLiveWindowsToIds(windowIds)
 	end
 	currentWindows = rebuiltWindows
 	currentlyFocusedWindowId = nil
+	filterVisibleWindowIdSet = nil
 	return rebuiltWindows
+end
+
+function workspaceGridTestHarness.setFilterVisibleWindowIds(visibleWindowIds)
+	if visibleWindowIds == nil then
+		filterVisibleWindowIdSet = nil
+		return
+	end
+	filterVisibleWindowIdSet = {}
+	for _, windowId in ipairs(visibleWindowIds) do
+		filterVisibleWindowIdSet[windowId] = true
+	end
 end
 
 function workspaceGridTestHarness.installFakeHammerspoonGlobal()
@@ -85,11 +98,22 @@ function workspaceGridTestHarness.installFakeHammerspoonGlobal()
 			allWindows = function()
 				return currentWindows
 			end,
-			filter = { default = {
-				getWindows = function()
-					return currentWindows
-				end,
-			} },
+			filter = {
+				default = {
+					getWindows = function()
+						if filterVisibleWindowIdSet == nil then
+							return currentWindows
+						end
+						local filteredWindows = {}
+						for _, window in ipairs(currentWindows) do
+							if filterVisibleWindowIdSet[window:id()] then
+								filteredWindows[#filteredWindows + 1] = window
+							end
+						end
+						return filteredWindows
+					end,
+				},
+			},
 		},
 	}
 	return hs
