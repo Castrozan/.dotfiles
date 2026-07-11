@@ -11,6 +11,7 @@ mouse_capture = true
 accent = "cyan"
 sidebar_collapsed = true
 confirm_close = false
+prompt_new_tab_name = false
 
 [keys]
 prefix = "ctrl+b"
