@@ -78,7 +78,7 @@
   "home/linux/hyprland/tests/unit/test_theme_set.py": 264,
   "home/linux/voice/hey-bot-test.nix": 244,
   "home/linux/voice/hey-bot.nix": 546,
-  "hosts/chise/configs/configuration.nix": 250,
+  "hosts/chise/configs/configuration.nix": 258,
   "hosts/chise/configs/keyboard-backlight.nix": 212,
   "hosts/chise/nixos-system.nix": 217
 }
