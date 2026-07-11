@@ -19,10 +19,11 @@ chrome_devtools_mcp_command = os.environ["CODEX_CHROME_DEVTOOLS_MCP_COMMAND"]
 chrome_devtools_mcp_args = json.loads(os.environ["CODEX_CHROME_DEVTOOLS_MCP_ARGS_JSON"])
 brave_devtools_mcp_command = os.environ["CODEX_BRAVE_DEVTOOLS_MCP_COMMAND"]
 brave_devtools_mcp_args = json.loads(os.environ["CODEX_BRAVE_DEVTOOLS_MCP_ARGS_JSON"])
-vivaldi_devtools_mcp_command = os.environ["CODEX_VIVALDI_DEVTOOLS_MCP_COMMAND"]
+vivaldi_devtools_mcp_command = os.environ.get("CODEX_VIVALDI_DEVTOOLS_MCP_COMMAND", "")
 vivaldi_devtools_mcp_args = json.loads(
-    os.environ["CODEX_VIVALDI_DEVTOOLS_MCP_ARGS_JSON"]
+    os.environ.get("CODEX_VIVALDI_DEVTOOLS_MCP_ARGS_JSON", "[]")
 )
+managed_mcp_server_names = {"chrome-devtools", "brave-devtools", "vivaldi-devtools"}
 
 
 def build_trusted_project_entries() -> dict[str, dict[str, str]]:
@@ -58,7 +59,7 @@ def build_trusted_project_entries() -> dict[str, dict[str, str]]:
 
 
 def build_mcp_server_entries() -> dict[str, dict[str, Any]]:
-    return {
+    mcp_server_entries: dict[str, dict[str, Any]] = {
         "chrome-devtools": {
             "command": chrome_devtools_mcp_command,
             "args": chrome_devtools_mcp_args,
@@ -67,11 +68,13 @@ def build_mcp_server_entries() -> dict[str, dict[str, Any]]:
             "command": brave_devtools_mcp_command,
             "args": brave_devtools_mcp_args,
         },
-        "vivaldi-devtools": {
+    }
+    if vivaldi_devtools_mcp_command:
+        mcp_server_entries["vivaldi-devtools"] = {
             "command": vivaldi_devtools_mcp_command,
             "args": vivaldi_devtools_mcp_args,
-        },
-    }
+        }
+    return mcp_server_entries
 
 
 PROFILE_OVERRIDES = {
@@ -167,7 +170,13 @@ data.pop("profile", None)
 data.pop("profiles", None)
 
 existing_mcp_servers = data.setdefault("mcp_servers", {})
-for generated_server_name, generated_server_entry in build_mcp_server_entries().items():
+generated_mcp_server_entries = build_mcp_server_entries()
+for stale_server_name in managed_mcp_server_names - set(generated_mcp_server_entries):
+    existing_mcp_servers.pop(stale_server_name, None)
+for (
+    generated_server_name,
+    generated_server_entry,
+) in generated_mcp_server_entries.items():
     existing_mcp_servers[generated_server_name] = generated_server_entry
 
 config_path.write_text(render_codex_config_toml(data), encoding="utf-8")

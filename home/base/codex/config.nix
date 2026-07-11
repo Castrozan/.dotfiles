@@ -3,6 +3,7 @@
   lib,
   config,
   latest,
+  hostname,
   ...
 }:
 let
@@ -18,11 +19,15 @@ let
   inherit (browserMcp)
     chromeDevtoolsMcpStdioCommand
     braveDevtoolsMcpStdioCommand
-    vivaldiDevtoolsMcpStdioCommand
     ;
+  includeVivaldiDevtoolsMcp = hostname == "chise";
+  vivaldiDevtoolsMcpStdioCommand =
+    if includeVivaldiDevtoolsMcp then browserMcp.vivaldiDevtoolsMcpStdioCommand else "";
   chromeDevtoolsMcpStdioArgsJson = builtins.toJSON browserMcp.chromeDevtoolsMcpStdioArgs;
   braveDevtoolsMcpStdioArgsJson = builtins.toJSON browserMcp.braveDevtoolsMcpStdioArgs;
-  vivaldiDevtoolsMcpStdioArgsJson = builtins.toJSON browserMcp.vivaldiDevtoolsMcpStdioArgs;
+  vivaldiDevtoolsMcpStdioArgsJson = builtins.toJSON (
+    if includeVivaldiDevtoolsMcp then browserMcp.vivaldiDevtoolsMcpStdioArgs else [ ]
+  );
   codexHooksConfig = builtins.toJSON {
     hooks = {
       SessionStart = [

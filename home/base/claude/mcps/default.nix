@@ -79,10 +79,6 @@ let
       command = browserMcp.braveDevtoolsMcpStdioCommand;
       args = browserMcp.braveDevtoolsMcpStdioArgs;
     };
-    vivaldi-devtools = {
-      command = browserMcp.vivaldiDevtoolsMcpStdioCommand;
-      args = browserMcp.vivaldiDevtoolsMcpStdioArgs;
-    };
     codex = {
       command = "${homeDir}/.local/bin/codex";
       args = [
@@ -107,7 +103,19 @@ let
       command = figmaMcp.figmaReadMcpStdioCommand;
       args = figmaMcp.figmaReadMcpStdioArgs;
     };
+  }
+  // lib.optionalAttrs (hostname == "chise") {
+    vivaldi-devtools = {
+      command = browserMcp.vivaldiDevtoolsMcpStdioCommand;
+      args = browserMcp.vivaldiDevtoolsMcpStdioArgs;
+    };
   };
+
+  hostGatedBrowserMcpServerNames = [ "vivaldi-devtools" ];
+
+  managedMcpServerNames = lib.unique (
+    builtins.attrNames mcpServerDefinitions ++ hostGatedBrowserMcpServerNames
+  );
 
   buildClawdeAgentMcpConfigFile =
     agentName: serverNames:
@@ -129,7 +137,7 @@ in
       inherit browserUseConfigDir chromeBinary;
     })
     (import ./inject-mcp-servers-into-claude-config.nix {
-      inherit homeDir mcpServerDefinitions;
+      inherit homeDir mcpServerDefinitions managedMcpServerNames;
     })
   ];
 

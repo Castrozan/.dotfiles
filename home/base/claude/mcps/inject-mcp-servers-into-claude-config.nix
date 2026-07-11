@@ -1,11 +1,12 @@
 {
   homeDir,
   mcpServerDefinitions,
+  managedMcpServerNames,
 }:
 { pkgs, lib, ... }:
 let
   desiredMcpServersJson = builtins.toJSON mcpServerDefinitions;
-  managedMcpServerNamesJson = builtins.toJSON (builtins.attrNames mcpServerDefinitions);
+  managedMcpServerNamesJson = builtins.toJSON managedMcpServerNames;
 
   injectMcpServersIntoClaudeConfig = pkgs.writeShellScript "inject-mcp-servers" ''
     set -euo pipefail

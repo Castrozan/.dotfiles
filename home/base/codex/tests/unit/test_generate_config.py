@@ -5,7 +5,7 @@ import tomllib
 from pathlib import Path
 
 
-def generate_codex_config(tmp_path):
+def generate_codex_config(tmp_path, env_overrides=None):
     generator_path = (
         Path(__file__).parent.parent.parent / "config-generator" / "generate_config.py"
     )
@@ -21,6 +21,8 @@ def generate_codex_config(tmp_path):
             "CODEX_VIVALDI_DEVTOOLS_MCP_ARGS_JSON": "[]",
         }
     )
+    if env_overrides is not None:
+        env.update(env_overrides)
 
     subprocess.run([sys.executable, str(generator_path)], check=True, env=env)
 
@@ -36,3 +38,24 @@ def test_generated_config_defaults_to_full_bypass(tmp_path):
     generated_config = generate_codex_config(tmp_path)
     assert generated_config["sandbox_mode"] == "danger-full-access"
     assert generated_config["approval_policy"] == "never"
+
+
+def test_generated_config_includes_vivaldi_devtools_when_command_present(tmp_path):
+    generated_config = generate_codex_config(tmp_path)
+    assert "vivaldi-devtools" in generated_config["mcp_servers"]
+
+
+def test_generated_config_omits_vivaldi_devtools_when_command_empty(tmp_path):
+    generated_config = generate_codex_config(
+        tmp_path, {"CODEX_VIVALDI_DEVTOOLS_MCP_COMMAND": ""}
+    )
+    assert "vivaldi-devtools" not in generated_config["mcp_servers"]
+    assert "chrome-devtools" in generated_config["mcp_servers"]
+
+
+def test_generated_config_prunes_stale_vivaldi_devtools_entry(tmp_path):
+    generate_codex_config(tmp_path)
+    generated_config = generate_codex_config(
+        tmp_path, {"CODEX_VIVALDI_DEVTOOLS_MCP_COMMAND": ""}
+    )
+    assert "vivaldi-devtools" not in generated_config["mcp_servers"]
