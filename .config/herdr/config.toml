@@ -13,6 +13,9 @@ sidebar_collapsed = true
 confirm_close = false
 prompt_new_tab_name = false
 
+[ui.sound]
+enabled = false
+
 [keys]
 prefix = "ctrl+b"
 reload_config = "prefix+a"
