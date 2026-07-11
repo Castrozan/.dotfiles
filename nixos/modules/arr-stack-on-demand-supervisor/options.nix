@@ -141,5 +141,25 @@
         description = "Path to the agenix-decrypted SMTP app password the root supervisor reads to send disk alerts; empty disables the email. Can point at the same secret the Jellyseerr email agent uses.";
       };
     };
+
+    mountGuard = {
+      enable = lib.mkOption {
+        type = lib.types.bool;
+        default = false;
+        description = "When the arr-stack data lives on a separate drive mounted at the disk-guard path, enable the mount-health guard: each poll the supervisor verifies that path is a live mount and, if the drive has dropped, holds the download chain down and emails a data-drive-disconnected alert instead of crashing on the dead mount or refilling the root disk. Leave false on single-partition hosts where the data path is not its own mount, or the guard would stop the stack every tick.";
+      };
+
+      dataDeviceUnit = lib.mkOption {
+        type = lib.types.str;
+        default = "";
+        description = ''systemd .device unit the instant BindsTo guard couples to, e.g. "dev-disk-by\\x2dlabel-arr\\x2ddata.device" for a drive mounted by label arr-data; the moment the device disappears on a live disconnect systemd tears the guard down and its ExecStop runs docker compose down, so the stack stops gracefully instead of poll-latency later. Empty leaves the instant guard off and relies on the poll-based mountGuard.enable check alone.'';
+      };
+
+      dataMountUnit = lib.mkOption {
+        type = lib.types.str;
+        default = "";
+        description = ''systemd .mount unit that mounts the data drive, e.g. "home-zanoni-arr\\x2dstack-data.mount"; the instant guard arms while this unit is active so it only reacts to a disconnect of an actually-mounted drive. Empty arms the guard at multi-user.target instead.'';
+      };
+    };
   };
 }

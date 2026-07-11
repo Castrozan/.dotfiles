@@ -8,6 +8,7 @@ from download_chain_control import (
     write_last_active_epoch,
 )
 from jellyseerr_client import actionable_requests, retry_request
+from mount_health_guard import enforce_data_mount_guard
 from runtime_environment import log, read_arr_api_key_from_config_xml
 
 
@@ -81,6 +82,8 @@ def stop_chain_when_idle_past_grace(
 
 def run_supervisor_tick(configuration, now_epoch, dry_run):
     base_command = configuration["base_command"]
+    if enforce_data_mount_guard(configuration, base_command, now_epoch, dry_run):
+        return
     on_demand_services = configuration["on_demand_services"]
     state_file_path = configuration["state_file_path"]
     jellyseerr_url = configuration["jellyseerr_url"]

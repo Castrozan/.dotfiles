@@ -27,6 +27,11 @@ def resolve_disk_guard_configuration():
         "alert_state_file": required_environment_value(
             "ARR_DISK_GUARD_ALERT_STATE_FILE"
         ),
+        "mount_guard_enabled": os.environ.get("ARR_MOUNT_GUARD_ENABLED", "false")
+        == "true",
+        "mount_alert_state_file": required_environment_value(
+            "ARR_MOUNT_GUARD_ALERT_STATE_FILE"
+        ),
         "smtp_host": required_environment_value("ARR_DISK_ALERT_SMTP_HOST"),
         "smtp_port": int(required_environment_value("ARR_DISK_ALERT_SMTP_PORT")),
         "smtp_username": os.environ.get("ARR_DISK_ALERT_SMTP_USERNAME", ""),

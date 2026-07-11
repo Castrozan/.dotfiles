@@ -83,6 +83,11 @@ in
         alertEmailRecipient = "castro.lucas290@gmail.com";
         alertAppPasswordSecretFile = config.age.secrets."jellyseerr-smtp-app-password".path;
       };
+      mountGuard = {
+        enable = true;
+        dataDeviceUnit = "dev-disk-by\\x2dlabel-arr\\x2ddata.device";
+        dataMountUnit = "home-zanoni-arr\\x2dstack-data.mount";
+      };
     };
 
     jellyseerrEmailNotifications = {

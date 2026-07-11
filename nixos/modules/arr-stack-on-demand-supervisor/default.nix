@@ -7,10 +7,19 @@
 let
   arrStackOnDemandSupervisorConfig = config.custom.arrStackOnDemandSupervisor;
   diskGuardConfig = arrStackOnDemandSupervisorConfig.diskGuard;
+  mountGuardConfig = arrStackOnDemandSupervisorConfig.mountGuard;
   supervisorPackageDirectory = ./scripts/on_demand_supervisor;
   stateDirectoryName = "arr-stack-on-demand-supervisor";
   stackHome = arrStackOnDemandSupervisorConfig.stackHomeDirectory;
   diskGuardPath = if diskGuardConfig.path == "" then stackHome else diskGuardConfig.path;
+  driveGuardStopScript = pkgs.writeShellScript "arr-stack-drive-guard-stop" ''
+    ${pkgs.docker-compose}/bin/docker-compose \
+      --file ${stackHome}/docker-compose.yml \
+      --env-file ${stackHome}/.env \
+      --project-directory ${stackHome} \
+      --project-name ${arrStackOnDemandSupervisorConfig.composeProjectName} \
+      stop --timeout 30 ${lib.concatStringsSep " " arrStackOnDemandSupervisorConfig.onDemandServices} || true
+  '';
 in
 {
   imports = [ ./options.nix ];
@@ -49,6 +58,8 @@ in
         ARR_DISK_GUARD_FILL_SERVICE = diskGuardConfig.fillService;
         ARR_DISK_GUARD_CRITICAL_REMINDER_SECONDS = toString diskGuardConfig.criticalReminderSeconds;
         ARR_DISK_GUARD_ALERT_STATE_FILE = "/var/lib/${stateDirectoryName}/disk-guard-alert-state.json";
+        ARR_MOUNT_GUARD_ENABLED = if mountGuardConfig.enable then "true" else "false";
+        ARR_MOUNT_GUARD_ALERT_STATE_FILE = "/var/lib/${stateDirectoryName}/mount-guard-alert-state.json";
         ARR_DISK_ALERT_SMTP_HOST = diskGuardConfig.alertSmtpHost;
         ARR_DISK_ALERT_SMTP_PORT = toString diskGuardConfig.alertSmtpPort;
         ARR_DISK_ALERT_SMTP_USERNAME = diskGuardConfig.alertSmtpUsername;
@@ -72,5 +83,32 @@ in
         Unit = "arr-stack-on-demand-supervisor.service";
       };
     };
+
+    systemd.services.arr-stack-drive-guard =
+      lib.mkIf (mountGuardConfig.enable && mountGuardConfig.dataDeviceUnit != "")
+        {
+          description = "Shut the arr-stack down the instant its data drive disconnects";
+          bindsTo = [ mountGuardConfig.dataDeviceUnit ];
+          after = [
+            mountGuardConfig.dataDeviceUnit
+            "docker.service"
+          ]
+          ++ lib.optional (mountGuardConfig.dataMountUnit != "") mountGuardConfig.dataMountUnit;
+          requires = [ "docker.service" ];
+          wantedBy =
+            if mountGuardConfig.dataMountUnit != "" then
+              [ mountGuardConfig.dataMountUnit ]
+            else
+              [ "multi-user.target" ];
+          restartIfChanged = false;
+          stopIfChanged = false;
+          unitConfig.X-StopOnRemoval = false;
+          serviceConfig = {
+            Type = "oneshot";
+            RemainAfterExit = true;
+            ExecStart = "${pkgs.coreutils}/bin/true";
+            ExecStop = driveGuardStopScript;
+          };
+        };
   };
 }
