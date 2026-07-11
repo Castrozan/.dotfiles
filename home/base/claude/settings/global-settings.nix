@@ -53,7 +53,7 @@ let
     permissions = {
       defaultMode = "bypassPermissions";
       allow = [ ];
-      deny = [ ];
+      deny = [ "Artifact" ];
     };
     terminalShowHoverHint = false;
     statusLine = {
