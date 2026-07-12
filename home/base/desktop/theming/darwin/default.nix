@@ -36,6 +36,9 @@ in
         inherit pkgs;
         binName = "theme-colors-from-wallpaper";
       })
+      (import ../color-generation/regeneration-command-package.nix {
+        inherit pkgs;
+      })
     ];
   };
 }

@@ -64,6 +64,12 @@ _stage_unstaged_nix_files() {
 	fi
 }
 
+_regenerate_wallpaper_derived_theme_colors() {
+	if command -v theme-regenerate-wallpaper-derived-colors &>/dev/null; then
+		theme-regenerate-wallpaper-derived-colors "$DOTFILES_DIRECTORY" || true
+	fi
+}
+
 _read_current_system_symlink_target() {
 	readlink "$CURRENT_SYSTEM_SYMLINK_PATH" 2>/dev/null || echo ""
 }
@@ -147,6 +153,7 @@ main() {
 	acquire_exclusive_run_lock_or_emit_retry_instructions "rebuild" 180 "$rebuild_output_logfile"
 
 	_stage_unstaged_nix_files
+	_regenerate_wallpaper_derived_theme_colors
 
 	local current_system_symlink_target_before
 	current_system_symlink_target_before=$(_read_current_system_symlink_target)
