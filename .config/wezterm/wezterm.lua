@@ -105,6 +105,8 @@ local config = {
 		{ key = "f", mods = "CTRL|SHIFT", action = wezterm.action.DisableDefaultAssignment },
 		{ key = "k", mods = "CTRL|SHIFT", action = wezterm.action.DisableDefaultAssignment },
 		{ key = "p", mods = "CTRL|SHIFT", action = wezterm.action.DisableDefaultAssignment },
+		{ key = "UpArrow", mods = "CTRL", action = wezterm.action.SendString("\x1b[1;5A") },
+		{ key = "DownArrow", mods = "CTRL", action = wezterm.action.SendString("\x1b[1;5B") },
 		{ key = "UpArrow", mods = "CTRL|SHIFT", action = wezterm.action.SendString("\x1b[1;6A") },
 		{ key = "DownArrow", mods = "CTRL|SHIFT", action = wezterm.action.SendString("\x1b[1;6B") },
 		{ key = "PageUp", mods = "CTRL", action = wezterm.action.SendString("\x02p") },
