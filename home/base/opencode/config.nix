@@ -1,9 +1,21 @@
-_:
+{
+  pkgs,
+  config,
+  latest,
+  ...
+}:
 let
 
   globalRules = ''
     ${builtins.readFile ../../../agents/core_rules/core.md}
   '';
+
+  browserMcp = import ../../../agents/skills/browser/install {
+    inherit pkgs;
+    homeDir = config.home.homeDirectory;
+    nodejs = pkgs.nodejs_22;
+    chromePackage = latest.google-chrome;
+  };
 
   opencodeGlobalSettings = {
     "$schema" = "https://opencode.ai/config.json";
@@ -71,14 +83,7 @@ let
       };
       chrome-devtools = {
         type = "local";
-        command = [
-          "npx"
-          "-y"
-          "chrome-devtools-mcp@latest"
-        ];
-        environment = {
-          NPM_CONFIG_REGISTRY = "https://registry.npmjs.org/";
-        };
+        command = [ browserMcp.chromeDevtoolsMcpStdioCommand ] ++ browserMcp.chromeDevtoolsMcpStdioArgs;
         enabled = true;
       };
     };
