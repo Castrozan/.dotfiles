@@ -21,19 +21,21 @@ let
   };
 in
 {
-  home.activation.applyMacosThemeAppearance = lib.mkIf pkgs.stdenv.hostPlatform.isDarwin (
-    lib.hm.dag.entryAfter [ "writeBoundary" ] macosAppearanceActivationScript
-  );
+  home = {
+    activation.applyMacosThemeAppearance = lib.mkIf pkgs.stdenv.hostPlatform.isDarwin (
+      lib.hm.dag.entryAfter [ "writeBoundary" ] macosAppearanceActivationScript
+    );
 
-  home.file = lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
-    ".config/hypr-theme/current/theme/colors.toml".source = selectedTheme.colorsTomlPath;
-    ".config/hypr-theme/current/theme.name".text = selectedTheme.name;
+    file = lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
+      ".config/hypr-theme/current/theme/colors.toml".source = selectedTheme.colorsTomlPath;
+      ".config/hypr-theme/current/theme.name".text = selectedTheme.name;
+    };
+
+    packages = lib.mkIf pkgs.stdenv.hostPlatform.isDarwin [
+      (import ../color-generation/package.nix {
+        inherit pkgs;
+        binName = "theme-colors-from-wallpaper";
+      })
+    ];
   };
-
-  home.packages = lib.mkIf pkgs.stdenv.hostPlatform.isDarwin [
-    (import ../color-generation/package.nix {
-      inherit pkgs;
-      binName = "theme-colors-from-wallpaper";
-    })
-  ];
 }
