@@ -1,11 +1,7 @@
 ---
 name: b3-portal
-description: Log into and scrape data from Lucas's B3 Área do Investidor (investidor.b3.com.br) via a browser-automation tool (transport being repointed off the removed browser-use MCP) plus raw CDP XHR capture. Use when syncing portfolio positions, trades, dividends, or any other read-only data from B3 — for example when Golden runs b3-sync, or when verifying brokerage state. Documents the working flow, the SPA quirks that broke prior attempts, the API endpoint catalog, and the institution-CNPJ filter trick.
+description: Log into and scrape data from Lucas's B3 Área do Investidor (investidor.b3.com.br) via the PinchTab browser-automation CLI plus raw CDP XHR capture. Use when syncing portfolio positions, trades, dividends, or any other read-only data from B3 — for example when Golden runs b3-sync, or when verifying brokerage state. Documents the working flow, the SPA quirks that broke prior attempts, the API endpoint catalog, and the institution-CNPJ filter trick.
 ---
-
-<browser_use_removed>
-The `browser-use` MCP this recipe drives was removed from the dotfiles (no machine wired it). Every `browser-use` step below is therefore non-functional until this skill is repointed at PinchTab (its own persistent-profile Chrome with full input simulation, the closest surviving analog to browser-use) or `browser-use` is restored. Per `<why_not_chrome_devtools>` below, a `*-devtools` CDP target is unlikely to clear B3's Angular click guards or hold a B3-authenticated session, so it is not the repoint target. The SPA quirks, endpoint catalog, and CNPJ filter trick remain valid; only the browser transport is dead. Do not attempt `mcp__browser-use__*` calls.
-</browser_use_removed>
 
 <managed_scope>
 GOLDEN MANAGES ONLY THE NUBANK SLEEVE (NuInvest + Nubank Caixinhas). Hard scope boundary set by Lucas on 2026-05-30.
@@ -25,8 +21,8 @@ Why this rule exists: on 2026-05-30 Golden saw the ~R$ 77k of non-Nubank renda f
 Authoritative recipe for pulling data from B3's `investidor.b3.com.br` portal. The portal is an Angular SPA backed by Microsoft Azure AD B2C for auth. There is no public read API, so we drive a real browser and listen to its XHRs over CDP. This skill documents:
 
 - the login dance (cookie banner gating, B2C OAuth flow, no-2FA happy path)
-- the working browser tooling (`browser-use` MCP, NOT `chrome-devtools` MCP — see "Why not chrome-devtools" below)
-- the raw-CDP XHR listener that runs alongside browser-use
+- the working browser tooling (the `pinchtab` CLI, NOT `chrome-devtools` MCP — see "Why not chrome-devtools" below)
+- the raw-CDP XHR listener that runs alongside PinchTab
 - the API endpoint catalog (institutions, trades, dividends, IR informes)
 - the per-institution filter trick (clicking an institution chip dispatches `?documentoInstituicao=<CNPJ>` to the same endpoint)
 - the gotchas that wasted hours the first time around
@@ -48,47 +44,51 @@ Do NOT invoke for: brokerage-app screenshots, third-party financial data, public
 <credentials_policy>
 Lucas's CPF + B3 password live in `.env` in the golden workspace (`/home/zanoni/.claude-discord-agents/golden/.env`) as `B3_CPF` and `B3_PASSWORD`. The `.env` is `chmod 600` and gitignored.
 
-Never echo credentials into Discord, briefings, memory files, or any other persistent doc. If Lucas pastes credentials in Discord, tell him to delete the message and write them to `.env` instead. The persona explicitly allows handling these credentials — the older "refuse on principle" rule was deprecated 2026-05-12 when browser-use was unblocked at the tool layer.
+Never echo credentials into Discord, briefings, memory files, or any other persistent doc. If Lucas pastes credentials in Discord, tell him to delete the message and write them to `.env` instead. The persona explicitly allows handling these credentials — the older "refuse on principle" rule was deprecated 2026-05-12 when the B3 login flow was unblocked at the tool layer.
 
 B3 does NOT require 2FA for Lucas's account today (2026-05-12). The B2C login accepts CPF+password and returns OAuth code+id_token directly to `https://www.investidor.b3.com.br?code=...&id_token=...`.
 </credentials_policy>
 
+<pinchtab_bootstrap>
+One-time setup on golden before the first B3 run:
+
+1. **Domain allowlist**: PinchTab's navigation guard is UP by default and returns `Error 403: navigation blocked by IDPI: Domain not in allowlist` on B3. Add the B3 login + B2C hosts to `security.allowedDomains` in golden's PinchTab config (`~/.pinchtab/config.json`, or `$PINCHTAB_CONFIG`): `www.investidor.b3.com.br`, `investidor.b3.com.br`, `b3investidor.b2clogin.com`. Then `pinchtab server restart`.
+2. **Dedicated profile + headed login**: use a B3-only profile so the authenticated session is isolated and reused safely rather than sharing the `default` profile: `export PINCHTAB_SESSION=$(pinchtab session create --agent-id golden-b3)`, then `pinchtab server -H` (headed) for the interactive first login. On golden the profile lives under `/home/zanoni/.pinchtab/profiles/<profile>`.
+
+After this, subsequent runs reuse the authenticated persistent profile with no re-login until B2C token expiry.
+</pinchtab_bootstrap>
+
 <login_flow>
-1. **Reach the login page**: navigate browser-use to `https://www.investidor.b3.com.br/login`.
-2. **Cookie banner blocks everything**: there is a OneTrust banner with buttons `REJEITAR TODOS OS COOKIES` and `ACEITAR TODOS OS COOKIES`. The Angular `Entrar` button is `disabled="true"` until cookies are dismissed. Click `ACEITAR TODOS OS COOKIES` (id `onetrust-accept-btn-handler`). Rejecting also works but persists across reloads, so re-accept after a session restart.
-3. **CPF input**: find the input with placeholder `Digite seu CPF ou CNPJ`. Use `browser_type` with the CPF (digits only, no formatting).
-4. **Click Entrar**: redirects to `https://b3investidor.b2clogin.com/b3Investidor.onmicrosoft.com/oauth2/v2.0/authorize?p=B2C_1A_SIGN_IN&...&doc_hint=<CPF>` (Azure AD B2C).
-5. **Password input**: type the password into the empty input on the B2C page, click the `ENTRAR` button.
-6. **OAuth callback**: redirects back to `https://www.investidor.b3.com.br/?state=...&code=...&id_token=...`, then the SPA processes the code and you land on `https://www.investidor.b3.com.br/` authenticated.
+1. **Reach the login page**: `pinchtab nav https://www.investidor.b3.com.br/login --snap`. Requires the B3 hosts on the allowlist (see `<pinchtab_bootstrap>`), or the nav returns the 403 IDPI error.
+2. **Cookie banner blocks everything**: a OneTrust banner (`REJEITAR TODOS OS COOKIES` / `ACEITAR TODOS OS COOKIES`) keeps the Angular `Entrar` button `disabled="true"` until dismissed. Accept it by clicking `#onetrust-accept-btn-handler` (from `pinchtab snap`, click the ref, or `pinchtab click '#onetrust-accept-btn-handler'`). Rejecting also works but persists across reloads, so re-accept after a profile reset.
+3. **CPF input**: `pinchtab type` the CPF (digits only, no formatting) into the input with placeholder `Digite seu CPF ou CNPJ`. Use `type` (real keystrokes), NEVER `fill` (value injection leaves the Angular form control unaware and Entrar stays disabled, see `<gotchas>`).
+4. **Click Entrar**: `pinchtab click` the `Entrar` button in default mode (trusted `Input.dispatchMouseEvent`); never `--mode dom` or `--mode dispatch`. Redirects to `https://b3investidor.b2clogin.com/b3Investidor.onmicrosoft.com/oauth2/v2.0/authorize?p=B2C_1A_SIGN_IN&...&doc_hint=<CPF>` (Azure AD B2C).
+5. **Password input**: `pinchtab type` the password into the empty input on the B2C page, then `pinchtab click` the `ENTRAR` button.
+6. **OAuth callback**: redirects back to `https://www.investidor.b3.com.br/?state=...&code=...&id_token=...`; the SPA processes the code and lands authenticated on `https://www.investidor.b3.com.br/`.
 
-You can confirm authentication by checking that `browser_get_state` shows the side-nav buttons (`Início`, `Extratos`, `Proventos`, `Relatórios`, `Portabilidade`) and at least one institution filter chip (e.g. `NU`).
+Confirm authentication with `pinchtab url` (back at investidor.b3.com.br) and `pinchtab snap` showing the side-nav (`Início`, `Extratos`, `Proventos`, `Relatórios`, `Portabilidade`) and at least one institution chip (e.g. `NU`).
 
-**Session persistence**: browser-use launches Chrome with a tmp `--user-data-dir=/tmp/browser-use-user-data-dir-*`, so cookies do NOT survive across browser-use sessions. Each new run requires re-login.
+**Session persistence**: PinchTab drives a persistent on-disk profile, so a one-time headed login persists the B3 session across runs until normal B2C cookie/token expiry, unlike browser-use's old throwaway profile that forced a re-login every run.
 </login_flow>
 
 <chrome_topology>
-Two Chrome instances may exist on Lucas's machine:
+Two Chrome instances may exist on golden's machine:
 
-1. **chrome-global** at `~/.config/chrome-global` profile, port 9222. This is the dotfiles-managed personal Chrome (`hypr-summon-chrome-global` launcher). Shared with `chrome-devtools` MCP server (auto-connects). NOT what browser-use uses.
+1. **chrome-global** at `~/.config/chrome-global` profile, port 9222. The dotfiles-managed personal Chrome (`hypr-summon-chrome-global` launcher), shared with the `chrome-devtools` MCP. NOT what we use for B3.
 
-2. **browser-use's own Chrome** at `/tmp/browser-use-user-data-dir-<random>` profile, random CDP port (different each spawn — e.g. 48811, 52785). browser-use launches and tears it down per session. **This is the Chrome with B3 cookies after login.**
+2. **PinchTab's own Chrome** at `~/.pinchtab/profiles/<profile>`, exposing a real CDP remote-debugging port (default `9869`; the PinchTab server is `9867` and its first instance's HTTP API is `9868`, neither of which is CDP). This is the Chrome carrying the B3 session after login, and the only Chrome exposing a debug port (chrome-global runs bare without one).
 
-When you write a CDP listener to capture XHRs, point it at browser-use's port, NOT 9222. Discovery: `pgrep -af browser-use-user-data-dir | grep -oP 'remote-debugging-port=\d+' | head -1`.
-
-The bundled `scripts/b3_capture_listener.py` does this auto-discovery.
+Point the CDP XHR listener at PinchTab's port. Discovery on Linux: `pgrep -af 'pinchtab/profiles' | grep -oP 'remote-debugging-port=\K\d+' | head -1`. The bundled `scripts/b3_capture_listener.py` does this auto-discovery (falls back to 9869).
 </chrome_topology>
 
 <why_not_chrome_devtools>
-The `chrome-devtools` MCP server is configured to auto-connect to the chrome-global profile. If you try to drive an authenticated B3 session through it:
+The `chrome-devtools` MCP auto-connects to the chrome-global profile. Driving an authenticated B3 session through it fails: either "Cannot connect to Chrome" (chrome-global not running), or it attaches to the unauthenticated chrome-global tab and returns nonsense.
 
-- It will either fail with "Cannot connect to Chrome" (when chrome-global isn't running), OR
-- It will attach to the unauthenticated chrome-global tab and produce nonsense results.
-
-`browser-use` is the right tool because it launches its own isolated Chrome with a fresh profile, and its full-stack input simulation handles Angular's strict click-event guards (which CDP `Input.dispatchMouseEvent` does NOT — see "Gotchas").
+PinchTab is the right tool because it drives its own persistent-profile Chrome and its default `click`/`type` dispatch trusted CDP `Input.*` events (`isTrusted=true`), which fire the real mouse and `input` events Angular's guards require. The historical "raw CDP fails, only browser-use works" note was a misdiagnosis: the trap was value-injection (`fill` / setting `.value`), which never fires the `input` event that enables the Entrar button, NOT the trust level of the click. So use `pinchtab type` (keystrokes) for the CPF and password fields and default `pinchtab click` (never `--mode dom`/`--mode dispatch`) for the buttons.
 </why_not_chrome_devtools>
 
 <xhr_capture_pattern>
-B3's SPA fires XHR/Fetch requests on every page navigation and most interactions. We capture them via raw CDP `Network.enable` on a parallel WebSocket while browser-use drives the browser.
+B3's SPA fires XHR/Fetch requests on every page navigation and most interactions. We capture them via raw CDP `Network.enable` on a parallel WebSocket while PinchTab drives the browser.
 
 The bundled `scripts/b3_capture_listener.py` does this. Run it in the background BEFORE driving the browser:
 
@@ -98,9 +98,9 @@ nohup uv run python <skill_dir>/scripts/b3_capture_listener.py > /tmp/b3-listene
 disown
 ```
 
-It writes one JSON file per captured XHR into `data/raw/b3/<today>/explore/<HHMMSS>_<seq>_<url-segment>.json` and appends a `summary.txt`. SIGINT stops it cleanly.
+It writes one JSON file per captured XHR into `data/raw/b3/<today>/explore/<HHMMSS>_<seq>_<url-segment>.json` and appends a `summary.txt`. SIGINT stops it cleanly. After each PinchTab click/navigation, give the listener 3-4 seconds to drain.
 
-Then drive the browser via browser-use MCP. After each click/navigation, give the listener 3-4 seconds to drain.
+Alternative to evaluate as a follow-up: PinchTab ships a built-in capture, `pinchtab network --type xhr --filter investidor.b3 --body --buffer-size 500 --json`, which can replace the listener. The raw-CDP listener stays primary for now because it guarantees a body fetch on every `loadingFinished` and is the proven high-volume path.
 </xhr_capture_pattern>
 
 <endpoint_catalog>
@@ -147,13 +147,15 @@ Persistent endpoint patterns are committed to `/home/zanoni/.claude-discord-agen
 </endpoint_catalog>
 
 <gotchas>
-**Angular click guards ignore synthetic clicks.** The page's `Entrar` button reads `disabled=""` from the Angular component's `Input`, not the DOM attribute. Calling `el.click()` or even CDP `Input.dispatchMouseEvent` does NOT enable it. `browser-use`'s input pipeline replays through the real browser event loop, which works. Don't waste time trying to fake clicks via raw CDP — drive via browser-use.
+**Angular enables Entrar only on a real `input` event.** The `Entrar` button reads `disabled` from the Angular component's form control, not the DOM attribute. `fill` / value-injection (setting `.value`) and `click --mode dom|dispatch` leave it disabled because the control never sees an `input` event. Use `pinchtab type` (real keystrokes fire `input`) for CPF and password, and default `pinchtab click` (trusted `Input.dispatchMouseEvent`) for buttons. CDP `Input.*` events are trusted (`isTrusted=true`); the old "raw CDP fails" belief was value-injection, not the click trust level.
+
+**PinchTab domain allowlist 403.** With the default guard up, navigating to B3 returns `Error 403: navigation blocked by IDPI: Domain not in allowlist`. Add the B3 + B2C hosts to `security.allowedDomains` first (see `<pinchtab_bootstrap>`).
 
 **Cookie banner gating.** `Entrar` is permanently disabled until cookies are dismissed. Reject *or* accept works, but rejection persists across page reloads.
 
-**Pure raw-CDP login probably fails.** Even with the right approach, the SPA's anti-automation heuristics may refuse to dispatch the login flow. browser-use's stealth Chrome is what gets past.
+**Anti-automation residual risk.** PinchTab's stealth is light (vs browser-use's heavier stealth), so B3's B2C anti-automation heuristics are the open variable, confirmed only by a live headed login. The persistent headed profile (a real prior login, real cookies) helps more than browser-use's throwaway profile did. If login is refused, retry from a fresh headed session before assuming a code bug.
 
-**404 on `/extrato/posicoes` and `/extrato/eventos`.** Those routes are stale. The current "Posições" view is the SPA root (`/`), and "Eventos" is `/extrato/eventos` is a tab within Extratos page but accessed via the side-tab click (not direct URL).
+**404 on `/extrato/posicoes` and `/extrato/eventos`.** Those routes are stale. The current "Posições" view is the SPA root (`/`), and "Eventos" is a tab within the Extratos page accessed via the side-tab click (not a direct URL).
 
 **`golden b3-sync --capture` is broken** as of 2026-05-12. Attaches WebSocket correctly but captures 0 XHRs. Root cause not investigated. Workaround: use the bundled `b3_capture_listener.py` instead. TODO: debug `b3_cdp_client.py:_pump_incoming_messages` and the response-body race condition.
 
@@ -165,19 +167,18 @@ Persistent endpoint patterns are committed to `/home/zanoni/.claude-discord-agen
 <standard_workflow>
 For "sync Nubank-only positions from B3":
 
-1. Verify `.env` has `B3_CPF` and `B3_PASSWORD`. If missing, ask Lucas (and tell him to paste in DM not channel).
+1. Verify `.env` has `B3_CPF` and `B3_PASSWORD`. If missing, ask Lucas (and tell him to paste in DM not channel). Confirm PinchTab bootstrap is done (`<pinchtab_bootstrap>`).
 2. Start the listener: `nohup uv run python ~/.local/share/claude-skill-sets/personal/.claude/skills/b3-portal/scripts/b3_capture_listener.py > /tmp/b3-listener.log 2>&1 & disown`.
-3. Drive login via `browser-use`:
-   - `browser_navigate https://www.investidor.b3.com.br/login`
-   - `browser_get_state` → find cookie accept button index → `browser_click`
-   - find CPF input index → `browser_type <CPF>`
-   - find Entrar button index → `browser_click`
-   - wait, then `browser_get_state` → on B2C page, find password input index → `browser_type <password>`
-   - find ENTRAR button → `browser_click`
-   - wait 5s, confirm URL is back at investidor.b3.com.br with the dashboard.
+3. Drive login via PinchTab (`<login_flow>`):
+   - `pinchtab nav https://www.investidor.b3.com.br/login --snap`
+   - click the cookie accept button `#onetrust-accept-btn-handler`
+   - `pinchtab type` the CPF into the `Digite seu CPF ou CNPJ` input
+   - `pinchtab click` the `Entrar` button (default mode)
+   - on the B2C page: `pinchtab type` the password, then `pinchtab click` `ENTRAR`
+   - confirm `pinchtab url` is back at investidor.b3.com.br with the dashboard.
 4. Click the `NU` institution filter chip → captures `minha-carteira/instituicao?documentoInstituicao=62169875000179` → has NU's RF/RV breakdown.
-5. Navigate to `/extrato/movimentacao` and `/extrato/negociacao` for cash flow and trades.
-6. Navigate to `/proventos/visao-geral` and click through the 5 tabs (Visão geral, Recebidos, A Receber, Radar, Calendário) for full dividend history.
+5. `pinchtab nav` to `/extrato/movimentacao` and `/extrato/negociacao` for cash flow and trades.
+6. `pinchtab nav` to `/proventos/visao-geral` and click through the 5 tabs (Visão geral, Recebidos, A Receber, Radar, Calendário) for full dividend history.
 7. Stop the listener with `kill <pid>`.
 8. Inspect the captured JSON files in `data/raw/b3/<today>/explore/` and filter to NU-only by `nomeInstituicao == "NU INVESTIMENTOS S.A. - CTVM"` or `documentoInstituicao == "62169875000179"`.
 

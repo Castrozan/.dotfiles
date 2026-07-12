@@ -1,11 +1,11 @@
 """Long-running CDP XHR listener for B3 portal exploration.
 
-Connects to browser-use's Chrome (default port 52785, or first found chrome with
+Connects to PinchTab's Chrome (default port 9869, or first found chrome with
 remote-debugging), enables Network domain, then loops forever capturing every
 investidor.b3.com.br XHR/Fetch response body. Writes one JSON file per request,
 plus an append-only summary.txt, into data/raw/b3/<today>/explore/.
 
-Browser navigation is done externally (via browser-use MCP); this script only
+Browser navigation is done externally (via the pinchtab CLI); this script only
 listens.
 
 Stop with SIGINT.
@@ -46,7 +46,7 @@ def discover_chrome_debugger_port() -> int:
         candidate_ports.append(int(explicit_port))
     try:
         pgrep_output = subprocess.run(
-            ["pgrep", "-af", "browser-use-user-data-dir"],
+            ["pgrep", "-af", "pinchtab/profiles"],
             capture_output=True,
             text=True,
             timeout=2,
@@ -57,7 +57,7 @@ def discover_chrome_debugger_port() -> int:
             candidate_ports.append(int(match.group(1)))
     except Exception:
         pass
-    candidate_ports.extend([52785, 9222, 9223])
+    candidate_ports.extend([9869, 9222])
     seen_ports: set[int] = set()
     for candidate_port in candidate_ports:
         if candidate_port in seen_ports:

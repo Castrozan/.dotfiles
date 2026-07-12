@@ -143,20 +143,22 @@ arrStackChecks
   chise-cockpit-session-bridge-attaches-persistent-session =
     mkEvalCheck "chise-cockpit-session-bridge-attaches-persistent-session"
       (lib.hasInfix "attach-session" nixosCfg.systemd.services.cockpit-session-bridge.environment.COCKPIT_SESSION_BRIDGE_COMMAND_JSON)
-      "cockpit-session-bridge must attach each owner connection to the always-on opencode tmux session rather than spawn a throwaway shell, so every connection shares one live TUI";
+      "cockpit-session-bridge must attach each owner connection to the host's persistent TUI tmux session rather than spawn a throwaway shell, so every connection shares one live TUI";
 
   chise-jarvis-session-tmux-enabled =
     mkEvalCheck "chise-jarvis-session-tmux-enabled"
       (builtins.elem "multi-user.target" nixosCfg.systemd.services.jarvis-session-tmux.wantedBy)
-      "the persistent opencode tmux session unit must be wanted by multi-user.target so the always-on TUI exists for the bridge to attach to";
+      "the persistent cockpit TUI session unit must be wanted by multi-user.target so the always-on TUI exists for the bridge to attach to";
 
   chise-jarvis-session-tmux-keepalive =
     mkEvalCheck "chise-jarvis-session-tmux-keepalive"
       (nixosCfg.systemd.services.jarvis-session-tmux.serviceConfig.Restart == "always")
-      "the persistent opencode tmux session must restart always so opencode is resident like the clawde agents and a crash respawns a fresh TUI";
+      "the persistent cockpit TUI session must restart always so the TUI stays resident like the clawde agents and a crash respawns a fresh one";
 
-  chise-jarvis-session-tmux-launches-opencode =
-    mkEvalCheck "chise-jarvis-session-tmux-launches-opencode"
-      (lib.hasInfix "opencode" nixosCfg.systemd.services.jarvis-session-tmux.environment.JARVIS_PERSISTENT_SESSION_COMMAND)
-      "the persistent tmux session must launch opencode as its window command so the cockpit terminal shows the opencode TUI";
+  chise-jarvis-session-tmux-does-not-launch-opencode =
+    mkEvalCheck "chise-jarvis-session-tmux-does-not-launch-opencode"
+      (
+        !(lib.hasInfix "opencode" nixosCfg.systemd.services.jarvis-session-tmux.environment.JARVIS_PERSISTENT_SESSION_COMMAND)
+      )
+      "the persistent tmux session must not launch opencode; jarvis is an openclaw bot, so the bare-dotfiles default is a plain login shell and chise's private overlay overrides the command to its openclaw TUI";
 }
