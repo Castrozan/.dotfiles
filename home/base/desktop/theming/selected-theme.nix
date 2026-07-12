@@ -23,6 +23,7 @@ in
 {
   name = selectedThemeName;
   colorsToml = themeColorsToml;
+  colorsTomlPath = themesDirectory + "/${selectedThemeName}/colors.toml";
   accentHex = themeColorsToml.accent;
   isLight = themeIsLight;
   wallpaperPath = selectedWallpaperPath;

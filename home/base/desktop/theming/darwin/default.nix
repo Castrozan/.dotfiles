@@ -24,4 +24,9 @@ in
   home.activation.applyMacosThemeAppearance = lib.mkIf pkgs.stdenv.hostPlatform.isDarwin (
     lib.hm.dag.entryAfter [ "writeBoundary" ] macosAppearanceActivationScript
   );
+
+  home.file = lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
+    ".config/hypr-theme/current/theme/colors.toml".source = selectedTheme.colorsTomlPath;
+    ".config/hypr-theme/current/theme.name".text = selectedTheme.name;
+  };
 }
