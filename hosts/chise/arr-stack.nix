@@ -67,6 +67,10 @@
       stackHomeDirectory = "/home/zanoni/arr-stack";
       qbittorrentPasswordSecretFile = config.age.secrets."arr-qbittorrent-password".path;
       samaritanoApiKeySecretFile = config.age.secrets."arr-samaritano-indexer-apikey".path;
+      loginUsername = "lucas";
+      radarrPasswordSecretFile = config.age.secrets."arr-radarr-password".path;
+      sonarrPasswordSecretFile = config.age.secrets."arr-sonarr-password".path;
+      prowlarrPasswordSecretFile = config.age.secrets."arr-prowlarr-password".path;
     };
   };
 
@@ -84,6 +88,9 @@
 
     arr-config-provisioner.restartTriggers = [
       ../../secrets/credentials/arr-qbittorrent-password.age
+      ../../secrets/credentials/arr-radarr-password.age
+      ../../secrets/credentials/arr-sonarr-password.age
+      ../../secrets/credentials/arr-prowlarr-password.age
       ../../secrets/credentials/arr-samaritano-indexer-apikey.age
     ];
   };

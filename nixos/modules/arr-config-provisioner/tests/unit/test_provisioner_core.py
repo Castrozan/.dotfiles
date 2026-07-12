@@ -9,6 +9,22 @@ sys.path.insert(0, str(PROVISIONER_PACKAGE_DIRECTORY_PATH))
 import provisioner_core
 
 
+def stub_all_steps(monkeypatch):
+    monkeypatch.setattr(
+        provisioner_core, "provision_step", lambda configuration, step, dry_run: None
+    )
+    monkeypatch.setattr(
+        provisioner_core,
+        "provision_quality_profile_step",
+        lambda configuration, step, dry_run: None,
+    )
+    monkeypatch.setattr(
+        provisioner_core,
+        "provision_host_login_step",
+        lambda configuration, step, dry_run: None,
+    )
+
+
 def test_provision_all_continues_after_a_failing_step(monkeypatch):
     attempted = []
 
@@ -17,33 +33,20 @@ def test_provision_all_continues_after_a_failing_step(monkeypatch):
         if len(attempted) == 1:
             raise RuntimeError("first step failed")
 
+    stub_all_steps(monkeypatch)
     monkeypatch.setattr(provisioner_core, "provision_step", failing_first_step)
-    monkeypatch.setattr(
-        provisioner_core,
-        "provision_quality_profile_step",
-        lambda configuration, step, dry_run: None,
-    )
     failed_steps = provisioner_core.provision_all({}, False)
     assert len(attempted) == len(provisioner_core.RESOURCE_PLAN)
     assert failed_steps == 1
 
 
 def test_provision_all_reports_zero_failures_on_clean_run(monkeypatch):
-    monkeypatch.setattr(
-        provisioner_core, "provision_step", lambda configuration, step, dry_run: None
-    )
-    monkeypatch.setattr(
-        provisioner_core,
-        "provision_quality_profile_step",
-        lambda configuration, step, dry_run: None,
-    )
+    stub_all_steps(monkeypatch)
     assert provisioner_core.provision_all({}, False) == 0
 
 
 def test_provision_all_counts_failing_quality_profile_steps(monkeypatch):
-    monkeypatch.setattr(
-        provisioner_core, "provision_step", lambda configuration, step, dry_run: None
-    )
+    stub_all_steps(monkeypatch)
 
     def failing_quality_profile_step(configuration, step, dry_run):
         raise RuntimeError("quality profile step failed")
@@ -55,3 +58,18 @@ def test_provision_all_counts_failing_quality_profile_steps(monkeypatch):
     )
     failed_steps = provisioner_core.provision_all({}, False)
     assert failed_steps == len(provisioner_core.QUALITY_PROFILE_PLAN)
+
+
+def test_provision_all_counts_failing_host_login_steps(monkeypatch):
+    stub_all_steps(monkeypatch)
+
+    def failing_host_login_step(configuration, step, dry_run):
+        raise RuntimeError("host login step failed")
+
+    monkeypatch.setattr(
+        provisioner_core,
+        "provision_host_login_step",
+        failing_host_login_step,
+    )
+    failed_steps = provisioner_core.provision_all({}, False)
+    assert failed_steps == len(provisioner_core.HOST_LOGIN_PLAN)

@@ -105,6 +105,18 @@
         file = ../../secrets/credentials/arr-qbittorrent-password.age;
         mode = "400";
       };
+      "arr-radarr-password" = {
+        file = ../../secrets/credentials/arr-radarr-password.age;
+        mode = "400";
+      };
+      "arr-sonarr-password" = {
+        file = ../../secrets/credentials/arr-sonarr-password.age;
+        mode = "400";
+      };
+      "arr-prowlarr-password" = {
+        file = ../../secrets/credentials/arr-prowlarr-password.age;
+        mode = "400";
+      };
       "arr-samaritano-indexer-apikey" = {
         file = ../../secrets/credentials/arr-samaritano-indexer-apikey.age;
         mode = "400";

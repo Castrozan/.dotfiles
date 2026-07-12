@@ -52,3 +52,16 @@ def update_resource(
         api_key,
         body,
     )
+
+
+def get_host_config(base_url, api_key):
+    return request_json("GET", f"{base_url}/config/host", api_key)
+
+
+def update_host_config(base_url, api_key, host_config):
+    return request_json(
+        "PUT",
+        f"{base_url}/config/host/{host_config['id']}",
+        api_key,
+        host_config,
+    )

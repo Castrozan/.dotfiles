@@ -36,6 +36,30 @@ in
       default = "";
       description = "Path to the agenix-decrypted private-indexer key substituted into the @SAMARITANO_APIKEY@ placeholder of the indexer desired state; when unset or the file is absent the private indexer is skipped while the public indexers still provision.";
     };
+
+    loginUsername = lib.mkOption {
+      type = lib.types.str;
+      default = "";
+      description = "Web-UI login username set as the Forms-auth account on radarr/sonarr/prowlarr; combined with each app's password secret it gives one owner login per app. When empty the host-login step is skipped, leaving each app's existing auth untouched.";
+    };
+
+    radarrPasswordSecretFile = lib.mkOption {
+      type = lib.types.str;
+      default = "";
+      description = "Path to the agenix-decrypted radarr web-UI login password; radarr's Forms auth is left untouched when unset so a missing secret never locks the app open with an empty password.";
+    };
+
+    sonarrPasswordSecretFile = lib.mkOption {
+      type = lib.types.str;
+      default = "";
+      description = "Path to the agenix-decrypted sonarr web-UI login password; sonarr's Forms auth is left untouched when unset.";
+    };
+
+    prowlarrPasswordSecretFile = lib.mkOption {
+      type = lib.types.str;
+      default = "";
+      description = "Path to the agenix-decrypted prowlarr web-UI login password; prowlarr's Forms auth is left untouched when unset.";
+    };
   };
 
   config = lib.mkIf arrConfigProvisionerConfig.enable {
@@ -55,6 +79,10 @@ in
         ARR_PROVISIONER_QBITTORRENT_PASSWORD_FILE =
           arrConfigProvisionerConfig.qbittorrentPasswordSecretFile;
         ARR_PROVISIONER_SAMARITANO_APIKEY_FILE = arrConfigProvisionerConfig.samaritanoApiKeySecretFile;
+        ARR_PROVISIONER_LOGIN_USERNAME = arrConfigProvisionerConfig.loginUsername;
+        ARR_PROVISIONER_RADARR_PASSWORD_FILE = arrConfigProvisionerConfig.radarrPasswordSecretFile;
+        ARR_PROVISIONER_SONARR_PASSWORD_FILE = arrConfigProvisionerConfig.sonarrPasswordSecretFile;
+        ARR_PROVISIONER_PROWLARR_PASSWORD_FILE = arrConfigProvisionerConfig.prowlarrPasswordSecretFile;
       };
       serviceConfig = {
         Type = "oneshot";

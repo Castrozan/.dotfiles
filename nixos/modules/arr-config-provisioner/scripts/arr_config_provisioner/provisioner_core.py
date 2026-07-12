@@ -1,4 +1,5 @@
 from arr_api_client import wait_for_api_ready
+from host_auth_provisioner import provision_host_login
 from provisioner_logging import log
 from quality_profile_provisioner import provision_quality_profiles
 from runtime_config import (
@@ -74,6 +75,12 @@ QUALITY_PROFILE_PLAN = [
     {"app": "sonarr", "port": 8989},
 ]
 
+HOST_LOGIN_PLAN = [
+    {"app": "radarr", "port": 7878},
+    {"app": "sonarr", "port": 8989},
+    {"app": "prowlarr", "port": 9696},
+]
+
 
 def build_base_url(bind_address, port, app):
     return f"http://{bind_address}:{port}/api/{APP_API_VERSION[app]}"
@@ -122,9 +129,25 @@ def provision_quality_profile_step(configuration, step, dry_run):
     log(f"{app}/qualityprofile: {outcomes}")
 
 
+def provision_host_login_step(configuration, step, dry_run):
+    app = step["app"]
+    base_url = build_base_url(configuration["bind_address"], step["port"], app)
+    api_key = read_app_api_key(configuration["config_root"], app)
+    if not wait_for_api_ready(base_url, api_key):
+        raise RuntimeError(f"{app} api not reachable")
+    outcome = provision_host_login(
+        base_url,
+        api_key,
+        configuration["login_username"],
+        configuration["login_passwords"].get(app, ""),
+        dry_run,
+    )
+    log(f"{app}/host-login: {outcome}")
+
+
 def provision_all(configuration, dry_run):
     failed_steps = 0
-    total_steps = len(RESOURCE_PLAN) + len(QUALITY_PROFILE_PLAN)
+    total_steps = len(RESOURCE_PLAN) + len(QUALITY_PROFILE_PLAN) + len(HOST_LOGIN_PLAN)
     for step in RESOURCE_PLAN:
         try:
             provision_step(configuration, step, dry_run)
@@ -137,6 +160,12 @@ def provision_all(configuration, dry_run):
         except Exception as error:
             failed_steps += 1
             log(f"{step['app']}/qualityprofile: skipped after error: {error}")
+    for step in HOST_LOGIN_PLAN:
+        try:
+            provision_host_login_step(configuration, step, dry_run)
+        except Exception as error:
+            failed_steps += 1
+            log(f"{step['app']}/host-login: skipped after error: {error}")
     if failed_steps:
         log(
             f"WARNING: {failed_steps} of {total_steps} steps could not be applied; "
