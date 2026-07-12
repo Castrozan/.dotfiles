@@ -59,6 +59,7 @@ in
   "credentials/arr-radarr-password.age".publicKeys = all_keys;
   "credentials/arr-sonarr-password.age".publicKeys = all_keys;
   "credentials/arr-prowlarr-password.age".publicKeys = all_keys;
+  "credentials/arr-bazarr-password.age".publicKeys = all_keys;
   "credentials/arr-samaritano-indexer-apikey.age".publicKeys = all_keys;
   "credentials/jellyfin-admin-api-key.age".publicKeys = all_keys;
 

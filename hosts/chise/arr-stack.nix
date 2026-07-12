@@ -72,6 +72,14 @@
       sonarrPasswordSecretFile = config.age.secrets."arr-sonarr-password".path;
       prowlarrPasswordSecretFile = config.age.secrets."arr-prowlarr-password".path;
     };
+
+    bazarrAuthProvisioner = {
+      enable = true;
+      configFile = "/home/zanoni/arr-stack/config/bazarr/config/config.yaml";
+      containerName = "arr-bazarr";
+      loginUsername = "lucas";
+      passwordSecretFile = config.age.secrets."arr-bazarr-password".path;
+    };
   };
 
   systemd.services = {
@@ -92,6 +100,10 @@
       ../../secrets/credentials/arr-sonarr-password.age
       ../../secrets/credentials/arr-prowlarr-password.age
       ../../secrets/credentials/arr-samaritano-indexer-apikey.age
+    ];
+
+    bazarr-auth-provisioner.restartTriggers = [
+      ../../secrets/credentials/arr-bazarr-password.age
     ];
   };
 }

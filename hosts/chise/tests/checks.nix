@@ -37,6 +37,10 @@ let
     inherit pkgs lib;
   };
 
+  bazarrAuthProvisionerChecks = import ./bazarr-auth-provisioner.nix {
+    inherit pkgs lib;
+  };
+
   arrStackHostIntegrationChecks = import ./arr-stack-host-integration.nix {
     inherit lib mkEvalCheck nixosCfg;
   };
@@ -48,6 +52,7 @@ arrStackChecks
 // arrStackOnDemandSupervisorChecks
 // jellyseerrNotificationsChecks
 // arrConfigProvisionerChecks
+// bazarrAuthProvisionerChecks
 // arrStackHostIntegrationChecks
 // {
   chise-rebuild-guard-wrapper-shadows-nixos-rebuild =

@@ -117,6 +117,10 @@
         file = ../../secrets/credentials/arr-prowlarr-password.age;
         mode = "400";
       };
+      "arr-bazarr-password" = {
+        file = ../../secrets/credentials/arr-bazarr-password.age;
+        mode = "400";
+      };
       "arr-samaritano-indexer-apikey" = {
         file = ../../secrets/credentials/arr-samaritano-indexer-apikey.age;
         mode = "400";

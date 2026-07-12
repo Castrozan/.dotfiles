@@ -33,6 +33,7 @@ in
     ../../nixos/modules/arr-stack-on-demand-supervisor
     ../../nixos/modules/jellyseerr-notifications
     ../../nixos/modules/arr-config-provisioner
+    ../../nixos/modules/bazarr-auth-provisioner
   ]
   ++ lib.optional (builtins.pathExists ../../private-config/machines/chise/jarvis-connector.nix) ../../private-config/machines/chise/jarvis-connector.nix;
 
