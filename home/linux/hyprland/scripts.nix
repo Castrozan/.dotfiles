@@ -17,19 +17,6 @@ let
       exec ${pkgs.python312}/bin/python3 ${pythonSource} "$@"
     '';
 
-  mkHyprlandPythonScriptWithPythonPackages =
-    name: file: pythonPackagesFn: runtimeDeps:
-    let
-      pythonWithPackages = pkgs.python312.withPackages pythonPackagesFn;
-      pythonSource = pkgs.writeText "${name}-source.py" (builtins.readFile file);
-      pathPrefix =
-        if runtimeDeps != [ ] then ''export PATH="${pkgs.lib.makeBinPath runtimeDeps}:$PATH"'' else "";
-    in
-    pkgs.writeShellScriptBin name ''
-      ${pathPrefix}
-      export PYTHONPATH="${hyprlandPythonLibraryPath}:''${PYTHONPATH:-}"
-      exec ${pythonWithPackages}/bin/python3 ${pythonSource} "$@"
-    '';
 in
 {
   home.packages = [
@@ -39,14 +26,10 @@ in
     (mkHyprlandPythonScript "hypr-theme-bg-next" ./scripts/theme/theme_bg_next.py)
     (mkHyprlandPythonScript "hypr-theme-set-gnome" ./scripts/theme/theme_set_gnome.py)
     (mkHyprlandPythonScript "hypr-theme-set-herdr" ./scripts/theme/theme_set_herdr_accent.py)
-    (mkHyprlandPythonScriptWithPythonPackages "hypr-theme-generate-from-wallpaper"
-      ./scripts/theme/theme_generate_from_wallpaper.py
-      (ps: [
-        ps.colorthief
-        ps.pillow
-      ])
-      [ ]
-    )
+    (import ../../base/desktop/theming/color-generation/package.nix {
+      inherit pkgs;
+      binName = "hypr-theme-generate-from-wallpaper";
+    })
     (mkHyprlandPythonScriptWithDeps "hypr-theme-generate-and-apply"
       ./scripts/theme/theme_generate_and_apply.py
       [ pkgs.ffmpeg ]

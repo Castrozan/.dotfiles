@@ -57,7 +57,6 @@
   "home/linux/home-assistant/tests/unit/test_home_assistant_light_control.py": 310,
   "home/linux/hyprland/scripts/hardware/network.py": 490,
   "home/linux/hyprland/scripts/hardware/notification_sound_toggle.py": 206,
-  "home/linux/hyprland/scripts/theme/theme_generate_from_wallpaper.py": 254,
   "home/linux/hyprland/tests/mru_stress_test.py": 497,
   "home/linux/hyprland/tests/qml/tst_appearance.qml": 283,
   "home/linux/hyprland/tests/qml/tst_audioservice.qml": 453,

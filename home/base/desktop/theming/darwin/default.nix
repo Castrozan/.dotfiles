@@ -29,4 +29,11 @@ in
     ".config/hypr-theme/current/theme/colors.toml".source = selectedTheme.colorsTomlPath;
     ".config/hypr-theme/current/theme.name".text = selectedTheme.name;
   };
+
+  home.packages = lib.mkIf pkgs.stdenv.hostPlatform.isDarwin [
+    (import ../color-generation/package.nix {
+      inherit pkgs;
+      binName = "theme-colors-from-wallpaper";
+    })
+  ];
 }

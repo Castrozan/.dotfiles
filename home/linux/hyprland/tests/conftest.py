@@ -11,6 +11,13 @@ HARDWARE_SCRIPTS_DIR = SCRIPTS_DIR / "hardware"
 LAUNCHERS_SCRIPTS_DIR = SCRIPTS_DIR / "launchers"
 THEME_SCRIPTS_DIR = SCRIPTS_DIR / "theme"
 UTILITIES_SCRIPTS_DIR = SCRIPTS_DIR / "utilities"
+COLOR_GENERATION_DIR = (
+    Path(__file__).parent.parent.parent.parent
+    / "base"
+    / "desktop"
+    / "theming"
+    / "color-generation"
+)
 
 sys.path.insert(0, str(WINDOWS_LIB_DIR))
 sys.path.insert(0, str(WINDOWS_SCRIPTS_DIR))
@@ -18,6 +25,7 @@ sys.path.insert(0, str(HARDWARE_SCRIPTS_DIR))
 sys.path.insert(0, str(LAUNCHERS_SCRIPTS_DIR))
 sys.path.insert(0, str(THEME_SCRIPTS_DIR))
 sys.path.insert(0, str(UTILITIES_SCRIPTS_DIR))
+sys.path.insert(0, str(COLOR_GENERATION_DIR))
 
 
 @pytest.fixture
