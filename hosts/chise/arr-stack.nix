@@ -59,6 +59,7 @@
       senderAddress = "castro.lucas290@gmail.com";
       smtpUsername = "castro.lucas290@gmail.com";
       appPasswordSecretFile = config.age.secrets."jellyseerr-smtp-app-password".path;
+      notificationTypesBitmask = 142;
     };
 
     arrConfigProvisioner = {

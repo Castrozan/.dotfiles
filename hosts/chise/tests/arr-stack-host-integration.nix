@@ -16,6 +16,14 @@ in
       )
       "chise must actually run the email-notification patcher and carry a restartTrigger, or a fresh Gmail app password dropped into agenix would never be applied to Jellyseerr on rebuild";
 
+  chise-jellyseerr-email-notifies-requester-on-media-available =
+    mkEvalCheck "chise-jellyseerr-email-notifies-requester-on-media-available"
+      (
+        builtins.bitAnd (lib.toInt nixosCfg.systemd.services.jellyseerr-email-notifications.environment.JELLYSEERR_NOTIFICATION_TYPES_BITMASK) 8
+        == 8
+      )
+      "chise must set the email agent bitmask to include Media Available (bit 8), the notification Jellyseerr routes to the requester, so an auto-approving friend whose request finishes downloading is emailed that it is now available; auto-approval suppresses any requester-facing 'being processed' notification, so available is the friend-facing event that survives it";
+
   chise-jellyseerr-email-app-password-secret-declared =
     mkEvalCheck "chise-jellyseerr-email-app-password-secret-declared"
       (
