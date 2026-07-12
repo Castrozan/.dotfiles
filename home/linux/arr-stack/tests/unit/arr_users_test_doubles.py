@@ -69,7 +69,7 @@ def stub_jellyfin(monkeypatch, users, created_user=None):
 
 
 def stub_jellyseerr(monkeypatch, jellyseerr_user=None):
-    calls = {"imported": [], "deleted": []}
+    calls = {"imported": [], "deleted": [], "permissions": [], "emails": []}
     monkeypatch.setattr(
         user_account_operations.jellyseerr_api_client,
         "import_jellyfin_users",
@@ -84,5 +84,19 @@ def stub_jellyseerr(monkeypatch, jellyseerr_user=None):
         user_account_operations.jellyseerr_api_client,
         "delete_user",
         lambda base_url, api_key, user_id: calls["deleted"].append(user_id),
+    )
+    monkeypatch.setattr(
+        user_account_operations.jellyseerr_api_client,
+        "set_user_permissions",
+        lambda base_url, api_key, user_id, permissions: calls["permissions"].append(
+            (user_id, permissions)
+        ),
+    )
+    monkeypatch.setattr(
+        user_account_operations.jellyseerr_api_client,
+        "set_user_email",
+        lambda base_url, api_key, user_id, email: calls["emails"].append(
+            (user_id, email)
+        ),
     )
     return calls

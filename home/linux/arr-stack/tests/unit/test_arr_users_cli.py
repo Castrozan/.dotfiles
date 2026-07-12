@@ -49,8 +49,40 @@ def test_parser_requires_a_subcommand():
 
 
 def test_every_subcommand_has_a_handler():
-    subcommands = set(SUBCOMMANDS_REQUIRING_USERNAME) | {"list"}
+    subcommands = set(SUBCOMMANDS_REQUIRING_USERNAME) | {"list", "set-email"}
     assert set(cli.COMMAND_HANDLERS) == subcommands
+
+
+def test_parser_accepts_create_with_email():
+    arguments = cli.build_argument_parser().parse_args(
+        ["create", "Bruno", "--email", "bruno@example.com"]
+    )
+    assert arguments.email == "bruno@example.com"
+
+
+def test_parser_accepts_set_email_with_username_and_email():
+    arguments = cli.build_argument_parser().parse_args(
+        ["set-email", "Bruno", "bruno@example.com"]
+    )
+    assert arguments.command == "set-email"
+    assert arguments.username == "Bruno"
+    assert arguments.email == "bruno@example.com"
+
+
+def test_run_set_email_prints_username_and_email(monkeypatch, capsys):
+    monkeypatch.setattr(
+        cli.user_account_operations,
+        "set_friend_email",
+        lambda context, username, email: {"username": username, "email": email},
+    )
+    arguments = cli.build_argument_parser().parse_args(
+        ["set-email", "Bruno", "bruno@example.com"]
+    )
+    cli.run_set_email(object(), arguments)
+
+    printed = capsys.readouterr().out
+    assert "Bruno" in printed
+    assert "bruno@example.com" in printed
 
 
 def test_main_maps_value_error_to_exit_one(monkeypatch):
@@ -97,11 +129,51 @@ def test_main_maps_url_error_to_exit_one(monkeypatch):
     assert exit_info.value.code == 1
 
 
+def test_run_create_prints_email_when_set_and_import_succeeded(monkeypatch, capsys):
+    monkeypatch.setattr(
+        cli.user_account_operations,
+        "create_friend_account",
+        lambda context, username, password, email: {
+            "username": username,
+            "password": "generated-pw",
+            "jellyfin_user_id": "id",
+            "jellyseerr_user_id": 9,
+        },
+    )
+    arguments = cli.build_argument_parser().parse_args(
+        ["create", "Bruno", "--email", "bruno@example.com"]
+    )
+    cli.run_create(object(), arguments)
+
+    assert "email: bruno@example.com" in capsys.readouterr().out
+
+
+def test_run_create_omits_email_line_when_import_pending(monkeypatch, capsys):
+    monkeypatch.setattr(
+        cli.user_account_operations,
+        "create_friend_account",
+        lambda context, username, password, email: {
+            "username": username,
+            "password": "generated-pw",
+            "jellyfin_user_id": "id",
+            "jellyseerr_user_id": None,
+        },
+    )
+    arguments = cli.build_argument_parser().parse_args(
+        ["create", "Bruno", "--email", "bruno@example.com"]
+    )
+    cli.run_create(object(), arguments)
+
+    printed = capsys.readouterr().out
+    assert "email:" not in printed
+    assert "import pending" in printed
+
+
 def test_run_create_reports_import_pending_when_jellyseerr_absent(monkeypatch, capsys):
     monkeypatch.setattr(
         cli.user_account_operations,
         "create_friend_account",
-        lambda context, username, password: {
+        lambda context, username, password, email: {
             "username": username,
             "password": "generated-pw",
             "jellyfin_user_id": "id",

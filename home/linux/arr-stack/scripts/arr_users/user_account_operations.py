@@ -4,6 +4,7 @@ from dataclasses import dataclass
 import friend_account_policy
 import jellyfin_api_client
 import jellyseerr_api_client
+import jellyseerr_friend_access
 import password_generation
 
 
@@ -62,7 +63,7 @@ def list_accounts(context):
     return accounts
 
 
-def create_friend_account(context, username, password=None):
+def create_friend_account(context, username, password=None, email=None):
     existing_user = jellyfin_api_client.find_user_by_name(
         context.jellyfin_base_url, context.jellyfin_api_key, username
     )
@@ -76,7 +77,9 @@ def create_friend_account(context, username, password=None):
     jellyfin_user_id = created_user["Id"]
 
     apply_friend_policy_or_roll_back_user(context, created_user)
-    jellyseerr_user_id = import_into_jellyseerr_best_effort(context, jellyfin_user_id)
+    jellyseerr_user_id = jellyseerr_friend_access.import_into_jellyseerr_best_effort(
+        context, jellyfin_user_id, email
+    )
 
     return {
         "username": username,
@@ -104,17 +107,22 @@ def apply_friend_policy_or_roll_back_user(context, created_user):
         raise
 
 
-def import_into_jellyseerr_best_effort(context, jellyfin_user_id):
-    try:
-        jellyseerr_api_client.import_jellyfin_users(
-            context.jellyseerr_base_url, context.jellyseerr_api_key, [jellyfin_user_id]
+def set_friend_email(context, username, email):
+    jellyfin_user = require_friend_user(context, username)
+    jellyseerr_user = jellyseerr_api_client.find_user_by_jellyfin_user_id(
+        context.jellyseerr_base_url, context.jellyseerr_api_key, jellyfin_user["Id"]
+    )
+    if jellyseerr_user is None:
+        raise ValueError(
+            f"'{username}' has no Jellyseerr account yet; create or import it first"
         )
-        jellyseerr_user = jellyseerr_api_client.find_user_by_jellyfin_user_id(
-            context.jellyseerr_base_url, context.jellyseerr_api_key, jellyfin_user_id
-        )
-    except urllib.error.URLError:
-        return None
-    return jellyseerr_user.get("id") if jellyseerr_user else None
+    jellyseerr_api_client.set_user_email(
+        context.jellyseerr_base_url,
+        context.jellyseerr_api_key,
+        jellyseerr_user["id"],
+        email,
+    )
+    return {"username": username, "email": email}
 
 
 def delete_friend_account(context, username):

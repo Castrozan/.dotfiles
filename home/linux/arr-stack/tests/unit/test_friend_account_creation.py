@@ -30,8 +30,23 @@ def test_create_applies_friend_policy_and_imports_into_jellyseerr(monkeypatch):
     assert applied_policy["IsAdministrator"] is False
     assert applied_policy["EnableContentDeletion"] is False
     assert jellyseerr_calls["imported"] == [["new-id"]]
+    assert jellyseerr_calls["permissions"] == [(9, 160)]
+    assert jellyseerr_calls["emails"] == []
     assert result["jellyseerr_user_id"] == 9
     assert result["password"] == jellyfin_calls["created"][0][1]
+
+
+def test_create_auto_approves_and_sets_email_when_email_given(monkeypatch):
+    created = {"Id": "new-id", "Name": "Ana", "Policy": {}}
+    stub_jellyfin(monkeypatch, [], created_user=created)
+    jellyseerr_calls = stub_jellyseerr(monkeypatch, jellyseerr_user={"id": 9})
+
+    user_account_operations.create_friend_account(
+        make_context(), "Ana", email="ana@example.com"
+    )
+
+    assert jellyseerr_calls["permissions"] == [(9, 160)]
+    assert jellyseerr_calls["emails"] == [(9, "ana@example.com")]
 
 
 def test_create_uses_explicit_password_when_given(monkeypatch):

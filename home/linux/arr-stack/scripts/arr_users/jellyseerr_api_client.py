@@ -52,3 +52,32 @@ def import_jellyfin_users(base_url, api_key, jellyfin_user_ids):
 
 def delete_user(base_url, api_key, jellyseerr_user_id):
     request_json(base_url, api_key, "DELETE", f"/api/v1/user/{jellyseerr_user_id}")
+
+
+def set_user_permissions(base_url, api_key, jellyseerr_user_id, permissions):
+    return request_json(
+        base_url,
+        api_key,
+        "PUT",
+        f"/api/v1/user/{jellyseerr_user_id}",
+        {"permissions": permissions},
+    )
+
+
+def set_user_email(base_url, api_key, jellyseerr_user_id, email):
+    current_settings = (
+        request_json(
+            base_url,
+            api_key,
+            "GET",
+            f"/api/v1/user/{jellyseerr_user_id}/settings/main",
+        )
+        or {}
+    )
+    return request_json(
+        base_url,
+        api_key,
+        "POST",
+        f"/api/v1/user/{jellyseerr_user_id}/settings/main",
+        {**current_settings, "email": email},
+    )

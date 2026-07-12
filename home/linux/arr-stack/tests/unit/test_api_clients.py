@@ -39,6 +39,57 @@ def test_jellyseerr_import_falls_back_to_empty_on_none(monkeypatch):
     assert jellyseerr_api_client.import_jellyfin_users("base", "key", ["a"]) == []
 
 
+def test_jellyseerr_set_user_permissions_sends_put_with_permissions(monkeypatch):
+    captured = {}
+
+    def capture_request(base_url, api_key, method, path, payload=None):
+        captured.update(method=method, path=path, payload=payload)
+
+    monkeypatch.setattr(jellyseerr_api_client, "request_json", capture_request)
+    jellyseerr_api_client.set_user_permissions("base", "key", 7, 160)
+
+    assert captured["method"] == "PUT"
+    assert captured["path"] == "/api/v1/user/7"
+    assert captured["payload"] == {"permissions": 160}
+
+
+def test_jellyseerr_set_user_email_round_trips_current_settings(monkeypatch):
+    calls = []
+
+    def fake_request(base_url, api_key, method, path, payload=None):
+        calls.append({"method": method, "path": path, "payload": payload})
+        if method == "GET":
+            return {"username": None, "locale": "pt-BR"}
+        return {"email": payload["email"]}
+
+    monkeypatch.setattr(jellyseerr_api_client, "request_json", fake_request)
+    jellyseerr_api_client.set_user_email("base", "key", 4, "friend@example.com")
+
+    get_call, post_call = calls
+    assert get_call["method"] == "GET"
+    assert get_call["path"] == "/api/v1/user/4/settings/main"
+    assert post_call["method"] == "POST"
+    assert post_call["path"] == "/api/v1/user/4/settings/main"
+    assert post_call["payload"] == {
+        "username": None,
+        "locale": "pt-BR",
+        "email": "friend@example.com",
+    }
+
+
+def test_jellyseerr_set_user_email_tolerates_missing_settings(monkeypatch):
+    calls = []
+
+    def fake_request(base_url, api_key, method, path, payload=None):
+        calls.append(payload)
+        return None
+
+    monkeypatch.setattr(jellyseerr_api_client, "request_json", fake_request)
+    jellyseerr_api_client.set_user_email("base", "key", 4, "friend@example.com")
+
+    assert calls[1] == {"email": "friend@example.com"}
+
+
 def test_jellyfin_list_users_falls_back_to_empty_on_none(monkeypatch):
     monkeypatch.setattr(
         jellyfin_api_client, "request_json", lambda *args, **kwargs: None

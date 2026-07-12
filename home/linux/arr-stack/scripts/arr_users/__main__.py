@@ -31,12 +31,22 @@ def run_list(context, _arguments):
 
 def run_create(context, arguments):
     created = user_account_operations.create_friend_account(
-        context, arguments.username, arguments.password
+        context, arguments.username, arguments.password, arguments.email
     )
     print(f"username: {created['username']}")
     print(f"password: {created['password']}")
     print(f"jellyfin: {created['jellyfin_user_id']}")
     print(f"jellyseerr: {created['jellyseerr_user_id'] or 'import pending'}")
+    if arguments.email and created["jellyseerr_user_id"] is not None:
+        print(f"email: {arguments.email}")
+
+
+def run_set_email(context, arguments):
+    updated = user_account_operations.set_friend_email(
+        context, arguments.username, arguments.email
+    )
+    print(f"username: {updated['username']}")
+    print(f"email: {updated['email']}")
 
 
 def run_delete(context, arguments):
@@ -78,6 +88,13 @@ def build_argument_parser():
     create_parser = subparsers.add_parser("create", help="Create a friend account")
     create_parser.add_argument("username")
     create_parser.add_argument("--password", default=None)
+    create_parser.add_argument("--email", default=None)
+
+    set_email_parser = subparsers.add_parser(
+        "set-email", help="Set a friend's email so request notifications reach them"
+    )
+    set_email_parser.add_argument("username")
+    set_email_parser.add_argument("email")
 
     delete_parser = subparsers.add_parser("delete", help="Delete a friend account")
     delete_parser.add_argument("username")
@@ -102,6 +119,7 @@ def build_argument_parser():
 COMMAND_HANDLERS = {
     "list": run_list,
     "create": run_create,
+    "set-email": run_set_email,
     "delete": run_delete,
     "reset-password": run_reset_password,
     "enable": run_enable,

@@ -45,3 +45,12 @@ def test_is_administrator_reads_nested_policy():
     assert friend_account_policy.is_administrator({"Policy": {"IsAdministrator": True}})
     assert not friend_account_policy.is_administrator({"Policy": {}})
     assert not friend_account_policy.is_administrator({})
+
+
+def test_friend_jellyseerr_permissions_combine_request_and_auto_approve():
+    assert friend_account_policy.FRIEND_JELLYSEERR_PERMISSIONS_BITMASK == 160
+    assert (
+        friend_account_policy.FRIEND_JELLYSEERR_PERMISSIONS_BITMASK
+        == friend_account_policy.JELLYSEERR_PERMISSION_REQUEST
+        | friend_account_policy.JELLYSEERR_PERMISSION_AUTO_APPROVE
+    )

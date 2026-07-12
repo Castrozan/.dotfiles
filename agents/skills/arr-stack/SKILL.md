@@ -4,7 +4,7 @@ description: Manage the chise media stack: create and manage Jellyfin friend acc
 ---
 
 <commands>
-Two CLIs, chise only: `arr-users` manages friend accounts (list, create, delete, reset-password, enable, disable) and `arr-status [title]` prints one line per Jellyseerr request with its stage and any live download progress. Run either with `--help` for the exact interface; do not reconstruct flags from memory. On any host other than chise these commands do not exist.
+Two CLIs, chise only: `arr-users` manages friend accounts (list, create, set-email, delete, reset-password, enable, disable) and `arr-status [title]` prints one line per Jellyseerr request with its stage and any live download progress. Run either with `--help` for the exact interface; do not reconstruct flags from memory. On any host other than chise these commands do not exist.
 </commands>
 
 <account_model>

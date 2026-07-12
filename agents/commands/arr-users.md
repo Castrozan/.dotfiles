@@ -6,7 +6,7 @@ argument-hint: [action, e.g. "create an account for Bruno" or "list accounts"]
 Manage friend accounts on the media stack with the `arr-users` CLI. Run `arr-users --help`, or a subcommand with `--help`, for the exact interface. Carry out: $ARGUMENTS
 
 <subcommands>
-`arr-users list` prints every account as `username <tab> role <tab> state <tab> requests`, where role is admin or friend, state is enabled or disabled, and requests is jellyseerr or no-jellyseerr. `arr-users create <username> [--password PW]` creates the account and prints the generated password once. `arr-users reset-password <username> [--password PW]` sets a new password and prints it. `arr-users disable <username>` blocks login without deleting; `arr-users enable <username>` reverses it. `arr-users delete <username>` removes the account from both apps. When you create or reset, relay the username and password to the user so they can hand it to the friend, then do not repeat the password in later turns.
+`arr-users list` prints every account as `username <tab> role <tab> state <tab> requests`, where role is admin or friend, state is enabled or disabled, and requests is jellyseerr or no-jellyseerr. `arr-users create <username> [--password PW] [--email EMAIL]` creates the account, auto-approves its Jellyseerr requests, and prints the generated password once; pass `--email` to attach the friend's address so the request-available notification reaches them. `arr-users set-email <username> <email>` sets an existing friend's Jellyseerr email for that notification, and needs the friend already imported into Jellyseerr. `arr-users reset-password <username> [--password PW]` sets a new password and prints it. `arr-users disable <username>` blocks login without deleting; `arr-users enable <username>` reverses it. `arr-users delete <username>` removes the account from both apps. When you create or reset, relay the username and password to the user so they can hand it to the friend, then do not repeat the password in later turns.
 </subcommands>
 
 <architecture>
@@ -14,7 +14,7 @@ Jellyfin is the only public watch surface and Jellyseerr authenticates against i
 </architecture>
 
 <friend_policy>
-A created account is not an administrator, is hidden from the login user list, can play and download content and set its own preferences, cannot delete content, and has no Live TV. On Jellyseerr the imported user lands on the instance default permission, which is request-with-approval, so a new request emails the admin rather than auto-downloading. To change what a friend may do, edit the policy in `home/linux/arr-stack/scripts/arr_users/friend_account_policy.py` and rebuild, never by clicking in the Jellyfin dashboard, which drifts from the repo.
+A created account is not an administrator, is hidden from the login user list, can play and download content and set its own preferences, cannot delete content, and has no Live TV. On Jellyseerr the CLI grants the imported user Request plus Auto-Approve (bitmask 160, defined in `home/linux/arr-stack/scripts/arr_users/friend_account_policy.py`), so a friend's request auto-approves and downloads without admin sign-off, and Jellyseerr emails the friend that the media is available once their account carries a real email. To change what a friend may do, edit that policy and rebuild, never by clicking in the Jellyfin dashboard, which drifts from the repo.
 </friend_policy>
 
 <traps>
