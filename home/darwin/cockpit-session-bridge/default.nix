@@ -29,7 +29,7 @@ let
 in
 {
   options.custom.cockpitSessionBridge = {
-    enable = lib.mkEnableOption "the cockpit session bridge that streams a persistent host-configured terminal over a loopback websocket for the owner-only cockpit Internal terminal";
+    enable = lib.mkEnableOption "the cockpit session bridge that streams the persistent opencode terminal over a loopback websocket for the owner-only cockpit Internal terminal";
 
     listenAddress = lib.mkOption {
       type = lib.types.str;
@@ -54,7 +54,7 @@ in
         "-t"
         persistentSessionConfig.sessionName
       ];
-      description = "Argument vector launched inside a pseudoterminal for each accepted owner session; by default it attaches a client to the host's persistent TUI session so every owner connection shares the same live terminal.";
+      description = "Argument vector launched inside a pseudoterminal for each accepted owner session; by default it attaches a client to the always-on opencode tmux session so every owner connection shares the same live terminal.";
     };
 
     allowedRequestOrigin = lib.mkOption {
@@ -85,7 +85,7 @@ in
       enable = lib.mkOption {
         type = lib.types.bool;
         default = cockpitSessionBridgeConfig.enable;
-        description = "Keep an always-on tmux session running a host-configured TUI (e.g. chise's openclaw jarvis bot) so the cockpit Internal terminal attaches to one shared live TUI instead of spawning a throwaway shell per connection.";
+        description = "Keep an always-on tmux session running opencode so the cockpit Internal terminal attaches to one shared live TUI instead of spawning a throwaway shell per connection.";
       };
 
       socketName = lib.mkOption {
@@ -97,13 +97,13 @@ in
       sessionName = lib.mkOption {
         type = lib.types.str;
         default = "jarvis";
-        description = "tmux session name holding the always-on TUI.";
+        description = "tmux session name holding the always-on opencode TUI.";
       };
 
       command = lib.mkOption {
         type = lib.types.str;
-        default = "${pkgs.bashInteractive}/bin/bash -il";
-        description = "Shell command tmux runs as the persistent session's only window; the default is a plain login-shell placeholder, and a host wanting a resident TUI (e.g. chise runs its openclaw jarvis bot) overrides this to launch it.";
+        default = "${pkgs.bashInteractive}/bin/bash -lc 'exec opencode'";
+        description = "Shell command tmux runs as the persistent session's only window; a login non-interactive bash inherits the owner's PATH so opencode resolves, and exec replaces the shell so the window dies with opencode and the keepalive restarts it.";
       };
     };
   };

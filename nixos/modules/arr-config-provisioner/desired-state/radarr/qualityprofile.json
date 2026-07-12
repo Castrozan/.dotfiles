@@ -5,5 +5,15 @@
     "formatScores": {
       "Portuguese (BR) / Dublado": 50
     }
+  },
+  {
+    "name": "PT-BR Dublado",
+    "cloneFrom": "HD - 720p/1080p",
+    "upgradeAllowed": true,
+    "minFormatScore": 1,
+    "cutoffFormatScore": 50,
+    "formatScores": {
+      "Portuguese (BR) / Dublado": 50
+    }
   }
 ]

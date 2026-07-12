@@ -126,5 +126,25 @@
         ]
       }
     ]
+  },
+  {
+    "includeCustomFormatWhenRenaming": false,
+    "name": "Portuguese (BR) Dublado",
+    "specifications": [
+      {
+        "name": "Dublado / Nacional / DUAL release title",
+        "implementation": "ReleaseTitleSpecification",
+        "implementationName": "Release Title",
+        "infoLink": "https://wiki.servarr.com/sonarr/settings#custom-formats",
+        "negate": false,
+        "required": false,
+        "fields": [
+          {
+            "name": "value",
+            "value": "\\b(dublado|nacional|dual|dual[ ._-]?audio)\\b"
+          }
+        ]
+      }
+    ]
   }
 ]

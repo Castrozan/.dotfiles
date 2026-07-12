@@ -147,7 +147,7 @@ Persistent endpoint patterns are committed to `/home/zanoni/.claude-discord-agen
 </endpoint_catalog>
 
 <gotchas>
-**Angular enables Entrar only on a real `input` event.** The `Entrar` button reads `disabled` from the Angular component's form control, not the DOM attribute. `fill` / value-injection (setting `.value`) and `click --mode dom|dispatch` leave it disabled because the control never sees an `input` event. Use `pinchtab type` (real keystrokes fire `input`) for CPF and password, and default `pinchtab click` (trusted `Input.dispatchMouseEvent`) for buttons. CDP `Input.*` events are trusted (`isTrusted=true`); the old "raw CDP fails" belief was value-injection, not the click trust level.
+**Angular enables Entrar only on a real `input` event.** Use `pinchtab type` (never `fill`) for CPF and password and default `pinchtab click` (never `--mode dom|dispatch`) for buttons; see `<why_not_chrome_devtools>` for why value-injection leaves the button disabled.
 
 **PinchTab domain allowlist 403.** With the default guard up, navigating to B3 returns `Error 403: navigation blocked by IDPI: Domain not in allowlist`. Add the B3 + B2C hosts to `security.allowedDomains` first (see `<pinchtab_bootstrap>`).
 
