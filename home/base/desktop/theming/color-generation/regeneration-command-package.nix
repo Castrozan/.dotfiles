@@ -1,17 +1,18 @@
 { pkgs }:
 let
-  themeColorsFromWallpaperGenerator = import ./package.nix {
-    inherit pkgs;
-    binName = "theme-colors-from-wallpaper";
-  };
+  colorGenerationSourcesDirectory = ./.;
+  pythonWithColorLibraries = pkgs.python312.withPackages (
+    pythonPackages: with pythonPackages; [
+      colorthief
+      pillow
+    ]
+  );
 in
 pkgs.writeShellApplication {
   name = "theme-regenerate-wallpaper-derived-colors";
-  runtimeInputs = [
-    pkgs.coreutils
-    pkgs.findutils
-    pkgs.git
-    themeColorsFromWallpaperGenerator
-  ];
-  text = builtins.readFile ./regenerate_wallpaper_derived_colors.sh;
+  runtimeInputs = [ pkgs.git ];
+  text = ''
+    export PYTHONPATH="${colorGenerationSourcesDirectory}:''${PYTHONPATH:-}"
+    exec ${pythonWithColorLibraries}/bin/python3 ${colorGenerationSourcesDirectory}/regenerate_wallpaper_derived_colors.py "$@"
+  '';
 }

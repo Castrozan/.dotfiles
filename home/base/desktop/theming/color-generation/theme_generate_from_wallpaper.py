@@ -169,6 +169,14 @@ def generate_colors_toml_from_palette(palette: list[tuple[int, int, int]]) -> st
     return "\n".join(lines) + "\n"
 
 
+def generate_colors_toml_for_image_path(wallpaper_image_path: Path) -> str:
+    resolved_image_path = extract_first_frame_if_gif(wallpaper_image_path)
+    dominant_colors = extract_dominant_colors_from_image(resolved_image_path)
+    luminance_sorted_colors = sort_colors_by_luminance(dominant_colors)
+    sixteen_color_palette = build_sixteen_color_palette(luminance_sorted_colors)
+    return generate_colors_toml_from_palette(sixteen_color_palette)
+
+
 def main() -> None:
     if len(sys.argv) < 2:
         print("Usage: theme-generate-from-wallpaper <image-path>", file=sys.stderr)
@@ -179,12 +187,7 @@ def main() -> None:
         print(f"Image file not found: {wallpaper_image_path}", file=sys.stderr)
         raise SystemExit(1)
 
-    resolved_image_path = extract_first_frame_if_gif(wallpaper_image_path)
-    dominant_colors = extract_dominant_colors_from_image(resolved_image_path)
-    luminance_sorted_colors = sort_colors_by_luminance(dominant_colors)
-    sixteen_color_palette = build_sixteen_color_palette(luminance_sorted_colors)
-    colors_toml_content = generate_colors_toml_from_palette(sixteen_color_palette)
-    print(colors_toml_content, end="")
+    print(generate_colors_toml_for_image_path(wallpaper_image_path), end="")
 
 
 if __name__ == "__main__":
