@@ -7,8 +7,8 @@ from wallpaper_color_math import (
     calculate_hls_saturation,
     calculate_yiq_luminance,
     color_to_hls,
-    darken_color_by_percentage,
     format_rgb_as_hex_string,
+    hls_to_color,
     hue_distance,
     lighten_color_by_percentage,
     lighten_color_until_minimum_contrast,
@@ -25,6 +25,10 @@ ANSI_HUE_TARGETS = {
 }
 
 MINIMUM_ACCENT_CONTRAST_RATIO = 4.5
+
+DARK_BACKGROUND_MAXIMUM_LIGHTNESS = 0.13
+
+MINIMUM_BACKGROUND_ANCHOR_SATURATION = 0.2
 
 
 def extract_first_frame_if_gif(image_path: Path) -> Path:
@@ -89,12 +93,35 @@ def lift_accent_slots_to_minimum_contrast(
             palette[bright_slot] = palette[normal_slot]
 
 
+def pick_darkest_chromatic_anchor_color(
+    sorted_colors: list[tuple[int, int, int]],
+) -> tuple[int, int, int]:
+    darker_half = sorted_colors[: max(1, len(sorted_colors) // 2)]
+    chromatic_dark_colors = [
+        color
+        for color in darker_half
+        if color_to_hls(color)[2] > MINIMUM_BACKGROUND_ANCHOR_SATURATION
+    ]
+    anchor_candidates = chromatic_dark_colors or darker_half
+    return max(anchor_candidates, key=lambda color: color_to_hls(color)[2])
+
+
+def derive_dark_background_from_chromatic_anchor(
+    sorted_colors: list[tuple[int, int, int]],
+) -> tuple[int, int, int]:
+    anchor_color = pick_darkest_chromatic_anchor_color(sorted_colors)
+    hue, lightness, saturation = color_to_hls(anchor_color)
+    return hls_to_color(
+        hue, min(lightness, DARK_BACKGROUND_MAXIMUM_LIGHTNESS), saturation
+    )
+
+
 def build_sixteen_color_palette(
     sorted_colors: list[tuple[int, int, int]],
 ) -> list[tuple[int, int, int]]:
     palette = [sorted_colors[0]] * 16
 
-    palette[0] = darken_color_by_percentage(sorted_colors[0], 0.2)
+    palette[0] = derive_dark_background_from_chromatic_anchor(sorted_colors)
     palette[7] = lighten_color_by_percentage(sorted_colors[-1], 0.80)
     palette[8] = lighten_color_by_percentage(palette[0], 0.30)
     palette[15] = lighten_color_by_percentage(sorted_colors[-1], 0.90)

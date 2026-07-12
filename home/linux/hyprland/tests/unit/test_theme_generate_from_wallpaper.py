@@ -96,9 +96,9 @@ class TestBuildSixteenColorPalette:
     def test_returns_sixteen_colors(self, palette):
         assert len(palette) == 16
 
-    def test_color0_is_darkened(self, palette):
-        original = color_math.calculate_yiq_luminance(*SAMPLE_COLORFUL_PALETTE[0])
-        assert color_math.calculate_yiq_luminance(*palette[0]) < original
+    def test_color0_is_dark_and_preserves_chroma(self, palette):
+        assert color_math.calculate_yiq_luminance(*palette[0]) < 50
+        assert color_math.color_to_hls(palette[0])[2] > 0.2
 
     def test_color7_is_lightened(self, palette):
         brightest = max(
