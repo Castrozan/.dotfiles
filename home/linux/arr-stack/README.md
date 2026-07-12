@@ -1,9 +1,15 @@
 # arr-stack (chise only)
 
 Self-hosted media-automation stack, deployed declaratively to `~/arr-stack/` on
-host **chise** only, as a single docker-compose project. It is **down by
-default**: nothing starts on boot and no systemd unit ups it. You bring it up
-and down by hand.
+host **chise** only, as a single docker-compose project. The front ends
+(Jellyfin, Jellyseerr) run under `restart: unless-stopped`, so they start on boot
+and self-heal. The download chain (qBittorrent and the *arr apps) stays
+`restart: "no"` and is driven by the on-demand supervisor
+(`arr-stack-on-demand-supervisor`): it comes up when a Jellyseerr request needs
+fulfilling and idles down after a grace, or stays resident when
+`keepChainAlwaysOn` is set, as it is on chise. A drive-guard stops the stack the
+instant its data drive disconnects and brings the front ends back when it
+reconnects. You can still drive it by hand with `docker compose` (below).
 
 ## Roster
 
@@ -109,7 +115,7 @@ The nix change is three edits:
   ```
 
 - Gate the stack on the mount in the `systemd.services` block of
-  `hosts/chise/nixos-system.nix`, so the host still boots if the drive dies but
+  `hosts/chise/arr-stack.nix`, so the host still boots if the drive dies but
   docker (the whole stack) waits for it:
 
   ```nix
@@ -118,7 +124,7 @@ The nix change is three edits:
 
 - Point the disk-guard at the drive instead of the internal disk by adding
   `path = "/home/zanoni/arr-stack/data";` to the `arrStackOnDemandSupervisor.diskGuard`
-  block in `hosts/chise/nixos-system.nix`.
+  block in `hosts/chise/arr-stack.nix`.
 
 ## Optional VPN (off by default, host-level)
 
