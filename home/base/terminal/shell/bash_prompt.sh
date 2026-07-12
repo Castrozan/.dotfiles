@@ -36,7 +36,9 @@ _prompt_update_git_branch() {
 		return
 	fi
 	local head_contents=""
-	read -r head_contents <"$_prompt_git_cached_git_dir/HEAD" 2>/dev/null
+	if [[ -r "$_prompt_git_cached_git_dir/HEAD" ]]; then
+		read -r head_contents <"$_prompt_git_cached_git_dir/HEAD"
+	fi
 	if [[ "$head_contents" == "ref: refs/heads/"* ]]; then
 		_prompt_git_branch_rendered=" (${head_contents#ref: refs/heads/})"
 	else
