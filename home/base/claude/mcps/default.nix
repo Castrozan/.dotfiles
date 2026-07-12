@@ -9,7 +9,6 @@
 let
   nodejs = pkgs.nodejs_22;
   homeDir = config.home.homeDirectory;
-  inherit (pkgs.stdenv.hostPlatform) isDarwin;
 
   browserMcp = import ../../../../agents/skills/browser/install {
     inherit
@@ -32,21 +31,7 @@ let
     inherit lib hostname;
     privateConfigRoot = ../../../../private-config;
     defaultUserId = "lucas";
-    localBaseUrl = "http://localhost:8765";
   };
-
-  mem0OpenmemoryUp = pkgs.writeShellScriptBin "mem0-openmemory-up" (
-    builtins.readFile ./mem0/scripts/mem0-openmemory-up
-  );
-
-  mem0AutostartEnvironmentPath = lib.concatStringsSep ":" [
-    "/usr/local/bin"
-    "/run/current-system/sw/bin"
-    "/etc/profiles/per-user/${config.home.username}/bin"
-    "${homeDir}/.nix-profile/bin"
-    "/usr/bin"
-    "/bin"
-  ];
 
   mcpServerDefinitions = {
     chrome-devtools = {
@@ -71,6 +56,8 @@ let
       command = a2aMcp.mcpServerCommand;
       args = a2aMcp.mcpServerArgs;
     };
+  }
+  // lib.optionalAttrs mem0Mcp.remoteConfigured {
     mem0 = mem0Mcp.serverConfig;
   }
   // lib.optionalAttrs (hostname == "chise") {
@@ -97,12 +84,6 @@ in
 {
   imports = [
     ./chrome-devtools-mcp-runaway-watchdog.nix
-    (import ./mem0/autostart.nix {
-      inherit lib isDarwin;
-      usesLocalStack = !mem0Mcp.remoteConfigured;
-      bringUpScriptBin = mem0OpenmemoryUp;
-      environmentPath = mem0AutostartEnvironmentPath;
-    })
     (import ./inject-mcp-servers-into-claude-config.nix {
       inherit homeDir;
       inherit (mcpServerInjectionPartition) managedMcpServerNames;
@@ -113,7 +94,6 @@ in
   _module.args.buildClawdeAgentMcpConfigFile = buildClawdeAgentMcpConfigFile;
 
   home = {
-    packages = browserMcp.packages ++ [ mem0OpenmemoryUp ];
-    file.".config/mem0/openmemory-compose.yaml".source = ./mem0/openmemory-compose.yaml;
+    packages = browserMcp.packages;
   };
 }

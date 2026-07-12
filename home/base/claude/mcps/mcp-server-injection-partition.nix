@@ -7,6 +7,8 @@ let
 
   hostGatedBrowserMcpServerNames = [ "vivaldi-devtools" ];
 
+  hostGatedRemoteMemoryMcpServerNames = [ "mem0" ];
+
   retiredMcpServerNames = [
     "browser-use"
     "figma"
@@ -16,13 +18,17 @@ let
   interactivelyInjectedMcpServerNames = lib.subtractLists agentOnlyMcpServerNames allMcpServerNames;
 
   managedMcpServerNames = lib.unique (
-    allMcpServerNames ++ hostGatedBrowserMcpServerNames ++ retiredMcpServerNames
+    allMcpServerNames
+    ++ hostGatedBrowserMcpServerNames
+    ++ hostGatedRemoteMemoryMcpServerNames
+    ++ retiredMcpServerNames
   );
 in
 {
   inherit
     agentOnlyMcpServerNames
     hostGatedBrowserMcpServerNames
+    hostGatedRemoteMemoryMcpServerNames
     retiredMcpServerNames
     interactivelyInjectedMcpServerNames
     managedMcpServerNames

@@ -11,31 +11,35 @@ let
       inherit lib hostname;
       privateConfigRoot = ../../../../private-config;
       defaultUserId = "lucas";
-      localBaseUrl = "http://localhost:8765";
     };
 in
 {
-  mem0-mcp-self-host-tooling-is-deployed =
-    mkEvalCheck "mem0-mcp-self-host-tooling-is-deployed"
-      (
-        (cfg.home.file ? ".config/mem0/openmemory-compose.yaml")
-        && builtins.any (
-          package: (package.pname or package.name or "") == "mem0-openmemory-up"
-        ) cfg.home.packages
-      )
-      "the official OpenMemory self-host must be deployable: the compose file lands in ~/.config/mem0 and the mem0-openmemory-up bring-up command is on PATH; without these there is no self-hosted server for the local endpoint to reach";
-
-  mem0-mcp-defaults-to-local-openmemory-when-no-private-host-file =
-    mkEvalCheck "mem0-mcp-defaults-to-local-openmemory-when-no-private-host-file"
+  mem0-mcp-omitted-when-no-private-host-file =
+    mkEvalCheck "mem0-mcp-omitted-when-no-private-host-file"
       (
         let
           wrapper = mem0WrapperFor "host-without-a-private-mem0-host-file";
         in
         !wrapper.remoteConfigured
-        && wrapper.serverConfig.type == "sse"
-        && lib.hasInfix "localhost:8765/mcp/claude/sse/" wrapper.serverConfig.url
       )
-      "a host without a private mem0-host.nix must point Claude at the local self-hosted OpenMemory instance (http://localhost:8765/mcp/...); this guards the per-machine default for every non-configured machine";
+      "a host without a private mem0-host.nix must not be marked remote-configured, so the injector leaves mem0 out of ~/.claude.json entirely; there is no local self-hosted stack to fall back to, mem0 is wired only on hosts pointed at a reachable remote OpenMemory";
+
+  mem0-mcp-normalizes-trailing-slash-base-url-into-a-single-sse-path =
+    mkEvalCheck "mem0-mcp-normalizes-trailing-slash-base-url-into-a-single-sse-path"
+      (
+        let
+          wrapper = import ../mcps/mem0/wrapper.nix {
+            inherit lib;
+            hostname = "synthetic-remote-host";
+            privateConfigRoot = ./fixtures/mem0-remote-host-fixture;
+            defaultUserId = "lucas";
+          };
+        in
+        wrapper.remoteConfigured
+        && wrapper.serverConfig.type == "sse"
+        && wrapper.serverConfig.url == "https://synthetic-mem0-host.test/mcp/claude/sse/lucas"
+      )
+      "a mem0-host.nix base URL ending in a slash (the production shape) must normalize to a single-slash sse path, not a //mcp double slash the remote MCP would reject; this uses an in-tree fixture so the endpoint construction is exercised under the standard nix test tier without depending on the private-config submodule being checked out";
 
   mem0-mcp-points-at-remote-when-private-host-file-is-present =
     mkEvalCheck "mem0-mcp-points-at-remote-when-private-host-file-is-present"
@@ -45,39 +49,21 @@ in
           wrapper = mem0WrapperFor "test";
         in
         (!builtins.pathExists privateTestHostFile)
-        || (wrapper.remoteConfigured && lib.hasInfix "mem0-remote.test.invalid" wrapper.serverConfig.url)
+        || (
+          wrapper.remoteConfigured
+          && wrapper.serverConfig.type == "sse"
+          && wrapper.serverConfig.url == "http://mem0-remote.test.invalid/mcp/claude/sse/lucas"
+        )
       )
-      "when private-config/machines/<host>/mem0-host.nix exists, the wrapper must point Claude at that remote host's OpenMemory endpoint; guards the production-active per-machine host-switch the local-default check cannot see";
+      "when private-config/machines/<host>/mem0-host.nix exists, the wrapper must mark the host remote-configured and emit exactly the normalized sse endpoint at that remote host; guards the production-active per-machine host-switch the omitted-default check cannot see";
 
-  mem0-mcp-launchd-autostart-guarded-to-darwin-local =
-    mkEvalCheck "mem0-mcp-launchd-autostart-guarded-to-darwin-local"
+  mem0-mcp-no-self-host-machinery-remains =
+    mkEvalCheck "mem0-mcp-no-self-host-machinery-remains"
       (
-        let
-          autostartFor =
-            { isDarwin, usesLocalStack }:
-            import ../mcps/mem0/autostart.nix {
-              inherit lib isDarwin usesLocalStack;
-              bringUpScriptBin = "/nix/store/fake-mem0-openmemory-up";
-              environmentPath = "/usr/bin:/bin";
-            };
-          enabled = autostartFor {
-            isDarwin = true;
-            usesLocalStack = true;
-          };
-          onLinux = autostartFor {
-            isDarwin = false;
-            usesLocalStack = true;
-          };
-          onRemoteHost = autostartFor {
-            isDarwin = true;
-            usesLocalStack = false;
-          };
-        in
-        enabled.config.condition
-        && (enabled.config.content.launchd.agents ? mem0-openmemory-autostart)
-        && enabled.config.content.launchd.agents.mem0-openmemory-autostart.config.RunAtLoad
-        && !onLinux.config.condition
-        && !onRemoteHost.config.condition
+        (!(cfg.home.file ? ".config/mem0/openmemory-compose.yaml"))
+        && !builtins.any (
+          package: (package.pname or package.name or "") == "mem0-openmemory-up"
+        ) cfg.home.packages
       )
-      "the OpenMemory launchd auto-start must register only on darwin hosts that run the local stack (kira), with RunAtLoad so the stack survives reboots; it must stay off on linux and off on hosts pointed at a remote OpenMemory";
+      "the docker self-hosted OpenMemory stack is removed: no openmemory-compose.yaml is deployed and no mem0-openmemory-up command is on PATH, so no host tries to bring up a local mem0 server";
 }
