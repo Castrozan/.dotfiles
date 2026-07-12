@@ -80,4 +80,9 @@ in
     mkEvalCheck "chise-arr-media-tailscale-funnel-enabled-after-tailscaled"
       (builtins.elem "tailscaled.service" arrMediaTailscaleFunnelUnit.after)
       "the funnel unit must order after tailscaled so the serve config is applied against a running Tailscale daemon";
+
+  chise-arr-media-tailscale-funnel-waits-for-tailscale-backend-running =
+    mkEvalCheck "chise-arr-media-tailscale-funnel-waits-for-tailscale-backend-running"
+      (lib.hasInfix "wait-for-tailscale-backend-running" arrMediaTailscaleFunnelUnit.serviceConfig.ExecStartPre)
+      "the funnel unit must wait for the Tailscale backend to reach Running before asserting the serve config, because ordering after tailscaled only waits for the daemon to start, not to authenticate, so on a cold boot the oneshot otherwise runs against a NoState backend, exits 1 and drops the public media exposure until a manual restart";
 }

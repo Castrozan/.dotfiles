@@ -7,6 +7,16 @@
 let
   arrMediaTailscaleFunnelConfig = config.custom.arrMediaTailscaleFunnel;
 
+  waitForTailscaleBackendRunning = pkgs.writeShellApplication {
+    name = "arr-media-tailscale-funnel-wait-for-tailscale-backend-running";
+    runtimeInputs = [
+      pkgs.tailscale
+      pkgs.jq
+      pkgs.coreutils
+    ];
+    text = builtins.readFile ./scripts/wait-for-tailscale-backend-running.sh;
+  };
+
   funnelSubmodule = lib.types.submodule {
     options = {
       publicHttpsPort = lib.mkOption {
@@ -47,6 +57,7 @@ in
       serviceConfig = {
         Type = "oneshot";
         RemainAfterExit = true;
+        ExecStartPre = "${waitForTailscaleBackendRunning}/bin/arr-media-tailscale-funnel-wait-for-tailscale-backend-running";
         ExecStart = map (
           funnel:
           "${pkgs.tailscale}/bin/tailscale funnel --https=${toString funnel.publicHttpsPort} --bg ${funnel.loopbackUrl}"
