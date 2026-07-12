@@ -52,10 +52,10 @@ B3 does NOT require 2FA for Lucas's account today (2026-05-12). The B2C login ac
 <pinchtab_bootstrap>
 One-time setup on golden before the first B3 run:
 
-1. **Domain allowlist**: PinchTab's navigation guard is UP by default and returns `Error 403: navigation blocked by IDPI: Domain not in allowlist` on B3. Add the B3 login + B2C hosts to `security.allowedDomains` in golden's PinchTab config (`~/.pinchtab/config.json`, or `$PINCHTAB_CONFIG`): `www.investidor.b3.com.br`, `investidor.b3.com.br`, `b3investidor.b2clogin.com`. Then `pinchtab server restart`.
+1. **Domain allowlist**: PinchTab's navigation guard is UP by default and returns `Error 403: navigation blocked by IDPI: Domain not in allowlist` on B3. Add the B3 login + B2C hosts to `security.allowedDomains` in golden's PinchTab config (`~/.pinchtab/config.json`, or `$PINCHTAB_CONFIG`): `www.investidor.b3.com.br`, `investidor.b3.com.br`, `b3investidor.b2clogin.com`. Edit `config.json` on disk only and do not start a server here; step 2's headed start reads the updated allowlist at startup, and a server started now would make that headed start fail at the port bind.
 2. **Dedicated profile + headed login**: use a B3-only profile so the authenticated session is isolated and reused safely rather than sharing the `default` profile: `export PINCHTAB_SESSION=$(pinchtab session create --agent-id golden-b3)`, then `pinchtab server -H` (headed) for the interactive first login. On golden the profile lives under `/home/zanoni/.pinchtab/profiles/<profile>`.
 
-After this, subsequent runs reuse the authenticated persistent profile with no re-login until B2C token expiry.
+After this, subsequent runs reuse the authenticated persistent profile with no re-login until B2C token expiry. To apply a later allowlist or config edit to an already-running headless server, `pinchtab server restart`.
 </pinchtab_bootstrap>
 
 <login_flow>
