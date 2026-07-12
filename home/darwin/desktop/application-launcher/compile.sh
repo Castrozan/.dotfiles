@@ -4,7 +4,7 @@
 # so the new binary takes effect immediately. Driven by SWIFT_BINARY_PATH,
 # SWIFT_SOURCES_DIR, OWNER_USERNAME, LAUNCHD_LABEL env vars.
 
-swiftDaemonSourceStamp="$SWIFT_SOURCES_DIR $(/usr/bin/swiftc --version 2>/dev/null | head -1)"
+swiftDaemonSourceStamp="$SWIFT_SOURCES_DIR $(/usr/bin/swiftc --version 2>/dev/null | head -1) ${SWIFT_COMPILE_RECIPE_HASH:-}"
 swiftDaemonSourceStampPath="$SWIFT_BINARY_PATH.sourcehash"
 if [ -x "$SWIFT_BINARY_PATH" ] && [ "$(cat "$swiftDaemonSourceStampPath" 2>/dev/null)" = "$swiftDaemonSourceStamp" ]; then
 	echo "application-launcher-daemon swift sources unchanged, skipping recompile" >&2

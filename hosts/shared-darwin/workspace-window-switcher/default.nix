@@ -12,6 +12,7 @@ in
     export SWIFT_BINARY_PATH=${lib.escapeShellArg swiftDaemonBinaryPath}
     export SWIFT_SOURCES_DIR=${swiftDaemonSourcesDirectory}
     export OWNER_USERNAME=${lib.escapeShellArg username}
+    export SWIFT_COMPILE_RECIPE_HASH=${builtins.hashFile "sha256" ./compile.sh}
     ${builtins.readFile ./compile.sh}
   '';
 

@@ -30,6 +30,7 @@ in
     export SWIFT_SOURCES_DIR=${./swift-sources}
     export OWNER_USERNAME=${lib.escapeShellArg config.home.username}
     export LAUNCHD_LABEL=${lib.escapeShellArg applicationLauncherDaemonLaunchdLabel}
+    export SWIFT_COMPILE_RECIPE_HASH=${builtins.hashFile "sha256" ./compile.sh}
     ${builtins.readFile ./compile.sh}
   '';
 
