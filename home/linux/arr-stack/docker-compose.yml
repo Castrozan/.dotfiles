@@ -115,7 +115,7 @@ services:
   jellyfin:
     image: lscr.io/linuxserver/jellyfin:10.11.11ubu2404-ls39@sha256:96d21c396f46f10578931c2941e3f2789f7087b5ab0e166afedf29e7385c6aa7
     container_name: arr-jellyfin
-    restart: "no"
+    restart: unless-stopped
     networks:
       - arrnet
     ports:
@@ -134,7 +134,7 @@ services:
   jellyseerr:
     image: fallenbagel/jellyseerr:2.7.3@sha256:4538137bc5af902dece165f2bf73776d9cf4eafb6dd714670724af8f3eb77764
     container_name: arr-jellyseerr
-    restart: "no"
+    restart: unless-stopped
     networks:
       - arrnet
     ports:
@@ -149,7 +149,7 @@ services:
   homepage:
     image: ghcr.io/gethomepage/homepage:v1.13.2@sha256:a0b71c8e757298d02560186bab9fbe3fc2d375c523a62cc1019177b37e48aa28
     container_name: arr-homepage
-    restart: "no"
+    restart: unless-stopped
     networks:
       - arrnet
     ports:

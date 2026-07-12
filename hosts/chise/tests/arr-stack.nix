@@ -39,8 +39,22 @@ let
   ];
   composeContainsEveryService = builtins.all (service: lib.hasInfix service composeText) serviceNames;
   restartNoCount = (builtins.length (lib.splitString ''restart: "no"'' composeText)) - 1;
-  hasForbiddenRestartPolicy =
-    lib.hasInfix "unless-stopped" composeText || lib.hasInfix "restart: always" composeText;
+  unlessStoppedCount = (builtins.length (lib.splitString "restart: unless-stopped" composeText)) - 1;
+
+  alwaysOnFrontEndServices = [
+    "jellyfin"
+    "jellyseerr"
+    "homepage"
+  ];
+  serviceRestartPolicyBlock =
+    service: policy: "container_name: arr-${service}\n    restart: ${policy}";
+  downloadChainServicesPinnedToRestartNo = builtins.all (
+    service: lib.hasInfix (serviceRestartPolicyBlock service ''"no"'') composeText
+  ) serviceNames;
+  alwaysOnFrontEndServicesPinnedToUnlessStopped = builtins.all (
+    service: lib.hasInfix (serviceRestartPolicyBlock service "unless-stopped") composeText
+  ) alwaysOnFrontEndServices;
+  composeHasNoAlwaysRestartPolicy = !(lib.hasInfix "restart: always" composeText);
 
   composeLines = lib.splitString "\n" composeText;
   publishedPortLines = builtins.filter (
@@ -94,14 +108,19 @@ in
     mkEvalCheck "chise-arr-stack-roster-complete" composeContainsEveryService
       "the compose file must define every mandated service (qbittorrent, prowlarr, sonarr, radarr, lidarr, readarr, bazarr) so the full *arr stack is present";
 
-  chise-arr-stack-down-by-default-restart-no =
-    mkEvalCheck "chise-arr-stack-down-by-default-restart-no"
-      (restartNoCount >= builtins.length serviceNames)
-      ''every service must set restart: "no" so the stack never auto-starts or auto-restarts; it is brought up by hand only'';
+  chise-arr-stack-download-chain-restart-no =
+    mkEvalCheck "chise-arr-stack-download-chain-restart-no"
+      (downloadChainServicesPinnedToRestartNo && restartNoCount == builtins.length serviceNames)
+      ''the seven download-chain *arr services (qbittorrent, prowlarr, sonarr, radarr, lidarr, readarr, bazarr) must each set restart: "no", and no other service may, so docker never resurrects the download chain on boot: the on-demand supervisor, not docker, owns its lifecycle'';
 
-  chise-arr-stack-no-auto-restart-policy =
-    mkEvalCheck "chise-arr-stack-no-auto-restart-policy" (!hasForbiddenRestartPolicy)
-      "the compose file must not use unless-stopped or restart: always, which would resurrect the stack on boot and defeat down-by-default";
+  chise-arr-stack-front-ends-restart-unless-stopped =
+    mkEvalCheck "chise-arr-stack-front-ends-restart-unless-stopped"
+      (
+        alwaysOnFrontEndServicesPinnedToUnlessStopped
+        && unlessStoppedCount == builtins.length alwaysOnFrontEndServices
+        && composeHasNoAlwaysRestartPolicy
+      )
+      "restart: unless-stopped is allowed only on the three always-on front ends (jellyfin, jellyseerr, homepage) so they self-heal and come back after a reboot without a manual bring-up, is forbidden on every other service, and restart: always is never allowed";
 
   chise-arr-stack-no-vpn-container =
     mkEvalCheck "chise-arr-stack-no-vpn-container" composeHasNoVpnContainer
