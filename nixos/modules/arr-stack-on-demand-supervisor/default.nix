@@ -20,6 +20,19 @@ let
       --project-name ${arrStackOnDemandSupervisorConfig.composeProjectName} \
       stop --timeout 30 ${lib.concatStringsSep " " arrStackOnDemandSupervisorConfig.onDemandServices} || true
   '';
+  driveGuardStartScript = pkgs.writeShellScript "arr-stack-drive-guard-start" ''
+    ${pkgs.docker-compose}/bin/docker-compose \
+      --file ${stackHome}/docker-compose.yml \
+      --env-file ${stackHome}/.env \
+      --project-directory ${stackHome} \
+      --project-name ${arrStackOnDemandSupervisorConfig.composeProjectName} \
+      up --detach ${lib.concatStringsSep " " mountGuardConfig.frontEndServices} || true
+  '';
+  driveGuardStartCommand =
+    if mountGuardConfig.frontEndServices == [ ] then
+      "${pkgs.coreutils}/bin/true"
+    else
+      driveGuardStartScript;
 in
 {
   imports = [ ./options.nix ];
@@ -98,7 +111,7 @@ in
               serviceConfig = {
                 Type = "oneshot";
                 RemainAfterExit = true;
-                ExecStart = "${pkgs.coreutils}/bin/true";
+                ExecStart = driveGuardStartCommand;
                 ExecStop = driveGuardStopScript;
               };
             };

@@ -89,4 +89,9 @@ in
         && builtins.elem "nginx.service" nixosCfg.systemd.services.arr-media-tailscale-funnel.requires
       )
       "the funnel unit must order after and require nginx so a rebuild only repoints the public funnel onto the proxy once nginx has actually started; if nginx fails its config test the funnel unit never starts and the previous container target stays live (up but unthrottled) instead of the funnel 502-ing onto a dead proxy";
+
+  chise-arr-drive-guard-restores-front-ends-on-reconnect =
+    mkEvalCheck "chise-arr-drive-guard-restores-front-ends-on-reconnect"
+      (lib.hasInfix "arr-stack-drive-guard-start" nixosCfg.systemd.services.arr-stack-drive-guard.serviceConfig.ExecStart)
+      "the drive guard's ExecStart must run the compose bring-up script rather than the true no-op, so when the data drive reconnects and the mount reactivates the always-on front ends the guard tore down come back without a manual bring-up; the download chain is left to the supervisor poll, and the guard's ExecStop still stops it gracefully on disconnect";
 }
