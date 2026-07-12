@@ -14,7 +14,6 @@ let
   composeText = builtins.readFile ../../../home/linux/arr-stack/docker-compose.yml;
   envText = builtins.readFile ../../../home/linux/arr-stack/env;
   readmeText = builtins.readFile ../../../home/linux/arr-stack/README.md;
-  homepageServicesText = builtins.readFile ../../../home/linux/arr-stack/homepage/services.yaml;
 
   machineIdentityMapPath = ../../../private-config/machines.nix;
   privateConfigPresent = builtins.pathExists machineIdentityMapPath;
@@ -24,7 +23,6 @@ let
     forbiddenTailnetBindAddress == null
     || (
       !(lib.hasInfix forbiddenTailnetBindAddress composeText)
-      && !(lib.hasInfix forbiddenTailnetBindAddress homepageServicesText)
       && !(lib.hasInfix forbiddenTailnetBindAddress readmeText)
     );
 
@@ -44,7 +42,6 @@ let
   alwaysOnFrontEndServices = [
     "jellyfin"
     "jellyseerr"
-    "homepage"
   ];
   serviceRestartPolicyBlock =
     service: policy: "container_name: arr-${service}\n    restart: ${policy}";
@@ -120,7 +117,7 @@ in
         && unlessStoppedCount == builtins.length alwaysOnFrontEndServices
         && composeHasNoAlwaysRestartPolicy
       )
-      "restart: unless-stopped is allowed only on the three always-on front ends (jellyfin, jellyseerr, homepage) so they self-heal and come back after a reboot without a manual bring-up, is forbidden on every other service, and restart: always is never allowed";
+      "restart: unless-stopped is allowed only on the always-on front ends (jellyfin, jellyseerr) so they self-heal and come back after a reboot without a manual bring-up, is forbidden on every other service, and restart: always is never allowed";
 
   chise-arr-stack-no-vpn-container =
     mkEvalCheck "chise-arr-stack-no-vpn-container" composeHasNoVpnContainer
@@ -155,7 +152,7 @@ in
   chise-arr-stack-no-tailnet-ip-literal-in-public-sources =
     mkEvalCheck "chise-arr-stack-no-tailnet-ip-literal-in-public-sources"
       publicSourcesCarryNoTailnetIpLiteral
-      "chise's tailnet bind address must never appear as a literal in the public compose, homepage services, or README; it flows in only through the runtime ARR_BIND_ADDR variable and the private-config machine map, so any reintroduction of the raw IP fails this guard on a checkout that has the private submodule";
+      "chise's tailnet bind address must never appear as a literal in the public compose or README; it flows in only through the runtime ARR_BIND_ADDR variable and the private-config machine map, so any reintroduction of the raw IP fails this guard on a checkout that has the private submodule";
 
   chise-arr-stack-config-volume-per-service =
     mkEvalCheck "chise-arr-stack-config-volume-per-service" everyServiceHasConfigVolume

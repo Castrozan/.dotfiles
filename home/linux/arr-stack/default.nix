@@ -14,24 +14,11 @@ let
   privateConfigPresent = builtins.pathExists machineIdentityMapPath;
   chiseMachineIdentity = lib.optionalAttrs privateConfigPresent (import machineIdentityMapPath).chise;
   chiseTailnetBindAddress = chiseMachineIdentity.tailscaleIp or "127.0.0.1";
-  chiseTailnetHostname = chiseMachineIdentity.tailnetHostname or null;
-  chiseDashboardHost =
-    if chiseTailnetHostname != null then chiseTailnetHostname else chiseTailnetBindAddress;
-  homepageAllowedHosts = lib.concatStringsSep "," (
-    [
-      "arr"
-      chiseTailnetBindAddress
-    ]
-    ++ lib.optional (chiseTailnetHostname != null) chiseTailnetHostname
-    ++ [ "localhost" ]
-  );
   staticEnvironmentFileContents = builtins.readFile ./env;
   runtimeEnvironmentFileContents =
     (lib.removeSuffix "\n" staticEnvironmentFileContents)
     + "\n"
-    + "ARR_BIND_ADDR=${chiseTailnetBindAddress}\n"
-    + "ARR_ALLOWED_HOSTS=${homepageAllowedHosts}\n"
-    + "ARR_DASHBOARD_HOST=${chiseDashboardHost}\n";
+    + "ARR_BIND_ADDR=${chiseTailnetBindAddress}\n";
   configServiceDirectories = [
     "qbittorrent"
     "prowlarr"
@@ -42,7 +29,6 @@ let
     "bazarr"
     "jellyfin"
     "jellyseerr"
-    "homepage"
   ];
   dataDirectories = [
     "torrents"
@@ -59,18 +45,6 @@ let
   makePersistenceDirectoriesCommand = lib.concatMapStringsSep "\n" (
     directory: ''$DRY_RUN_CMD mkdir -p $VERBOSE_ARG "${directory}"''
   ) allPersistenceDirectories;
-  homepageConfigFiles = {
-    "settings.yaml" = ./homepage/settings.yaml;
-    "services.yaml" = ./homepage/services.yaml;
-    "widgets.yaml" = ./homepage/widgets.yaml;
-    "bookmarks.yaml" = ./homepage/bookmarks.yaml;
-  };
-  deployHomepageConfigCommand = lib.concatStringsSep "\n" (
-    lib.mapAttrsToList (fileName: source: ''
-      $DRY_RUN_CMD rm -f "${stackRoot}/config/homepage/${fileName}"
-      $DRY_RUN_CMD install -D -m 0644 ${source} "${stackRoot}/config/homepage/${fileName}"
-    '') homepageConfigFiles
-  );
 in
 lib.mkIf isChise {
   home = {
@@ -87,10 +61,6 @@ lib.mkIf isChise {
 
     activation.createArrStackPersistenceDirectories = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
       ${makePersistenceDirectoriesCommand}
-    '';
-
-    activation.deployArrStackHomepageConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-      ${deployHomepageConfigCommand}
     '';
   };
 }

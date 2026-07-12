@@ -1,9 +1,0 @@
-- greeting:
-    text_size: xl
-    text: arr-stack
-
-- datetime:
-    text_size: l
-    format:
-      timeStyle: short
-      dateStyle: short

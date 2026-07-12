@@ -164,7 +164,7 @@
       frontEndServices = lib.mkOption {
         type = lib.types.listOf lib.types.str;
         default = [ ];
-        description = ''Always-on compose services the instant guard brings back up the moment the data drive reconnects, e.g. [ "jellyfin" "jellyseerr" "homepage" ]. On a live disconnect docker's RequiresMountsFor tears these down with the mount, and because they run under restart: unless-stopped rather than being started by the supervisor, nothing revives them when the drive returns. Since the guard is wanted by the mount unit, its ExecStart re-runs on every mount activation and does docker compose up -d on exactly these once the drive is back and docker is up, restoring the public front ends without a manual bring-up. Empty leaves ExecStart a no-op. The on-demand download chain is left to the supervisor poll, so it is not listed here.'';
+        description = ''Always-on compose services the instant guard brings back up the moment the data drive reconnects, e.g. [ "jellyfin" "jellyseerr" ]. On a live disconnect docker's RequiresMountsFor tears these down with the mount, and because they run under restart: unless-stopped rather than being started by the supervisor, nothing revives them when the drive returns. Since the guard is wanted by the mount unit, its ExecStart re-runs on every mount activation and does docker compose up -d on exactly these once the drive is back and docker is up, restoring the public front ends without a manual bring-up. Empty leaves ExecStart a no-op. The on-demand download chain is left to the supervisor poll, so it is not listed here.'';
       };
     };
   };

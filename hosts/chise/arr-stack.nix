@@ -49,7 +49,6 @@
         frontEndServices = [
           "jellyfin"
           "jellyseerr"
-          "homepage"
         ];
       };
     };

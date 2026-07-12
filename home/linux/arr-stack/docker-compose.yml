@@ -145,18 +145,3 @@ services:
       LOG_LEVEL: "info"
     volumes:
       - ${ARR_CONFIG_ROOT}/jellyseerr:/app/config
-
-  homepage:
-    image: ghcr.io/gethomepage/homepage:v1.13.2@sha256:a0b71c8e757298d02560186bab9fbe3fc2d375c523a62cc1019177b37e48aa28
-    container_name: arr-homepage
-    restart: unless-stopped
-    networks:
-      - arrnet
-    ports:
-      - "${ARR_BIND_ADDR:?set in ~/arr-stack/.env}:80:3000"
-    environment:
-      <<: *arr-common-environment
-      HOMEPAGE_ALLOWED_HOSTS: "${ARR_ALLOWED_HOSTS}"
-      HOMEPAGE_VAR_ARR_HOST: "${ARR_DASHBOARD_HOST}"
-    volumes:
-      - ${ARR_CONFIG_ROOT}/homepage:/app/config
