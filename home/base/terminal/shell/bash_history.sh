@@ -10,16 +10,24 @@ export HISTFILESIZE=20000
 
 # Function to trim trailing spaces and replace the last command
 trim_and_save_history() {
-    local current_command
-    # Extract the current command (excluding history number)
-    current_command=$(history 1 | sed 's/^[ ]*[0-9]*[ ]*//' | awk '{$1=$1};1')
-
-    # Remove the last command in history
-    history -d "$(history | tail -n 1 | awk '{print $1}')"
-
-    # Add the trimmed command to history
-    history -s "$current_command"
+	local history_entry entry_number normalized_command
+	local -a command_words
+	history_entry=$(history 1)
+	[[ "$history_entry" =~ ^[[:space:]]*([0-9]+)[[:space:]]+(.*)$ ]] || return
+	entry_number="${BASH_REMATCH[1]}"
+	read -r -a command_words <<<"${BASH_REMATCH[2]}"
+	normalized_command="${command_words[*]}"
+	history -d "$entry_number"
+	history -s "$normalized_command"
 }
 
 # Set PROMPT_COMMAND to the custom function
-PROMPT_COMMAND='history -a; trim_and_save_history'
+_last_trimmed_histcmd=0
+_history_prompt_command() {
+	history -a
+	if [[ "$HISTCMD" != "$_last_trimmed_histcmd" ]]; then
+		_last_trimmed_histcmd="$HISTCMD"
+		trim_and_save_history
+	fi
+}
+PROMPT_COMMAND='_history_prompt_command'
