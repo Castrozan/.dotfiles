@@ -94,6 +94,6 @@ in
   _module.args.buildClawdeAgentMcpConfigFile = buildClawdeAgentMcpConfigFile;
 
   home = {
-    packages = browserMcp.packages;
+    inherit (browserMcp) packages;
   };
 }
