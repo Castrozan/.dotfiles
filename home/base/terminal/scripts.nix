@@ -1,6 +1,17 @@
 { pkgs, ... }:
+let
+  mkTerminalPythonScript =
+    name: file:
+    let
+      pythonSource = pkgs.writeText "${name}-source.py" (builtins.readFile file);
+    in
+    pkgs.writeShellScriptBin name ''
+      exec ${pkgs.python312}/bin/python3 ${pythonSource} "$@"
+    '';
+in
 {
   home.packages = [
+    (mkTerminalPythonScript "herdr-screensaver" ./scripts/launch_herdr_screensaver.py)
     (pkgs.writeShellScriptBin "tmux-pane-toggle" (builtins.readFile ./scripts/tmux-pane-toggle))
     (pkgs.writeShellScriptBin "tmux-restore-pane-after-toggle" (
       builtins.readFile ./scripts/tmux-restore-pane-after-toggle

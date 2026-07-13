@@ -21,10 +21,13 @@ let
     ../bash.nix
     ../herdr.nix
     ../kitty.nix
+    ../scripts.nix
     ../tmux.nix
     ../wezterm.nix
     ../yazi
   ];
+
+  aliasesContent = builtins.readFile ../shell/aliases.sh;
 
   herdrAutostartContent = builtins.readFile ../shell/bash_herdr_autostart.sh;
   herdrAutostartDefinesStartAndGuardsAgainstNestingAndTmux =
@@ -116,4 +119,12 @@ in
   domain-terminal-yazi-enabled =
     mkEvalCheck "domain-terminal-yazi-enabled" cfg.programs.yazi.enable
       "yazi file manager should be enabled";
+
+  domain-terminal-screensaver-alias-wired-to-herdr-screensaver-package =
+    mkEvalCheck "domain-terminal-screensaver-alias-wired-to-herdr-screensaver-package"
+      (
+        builtins.any (pkg: (pkg.name or "") == "herdr-screensaver") cfg.home.packages
+        && lib.hasInfix "alias t='herdr-screensaver'" aliasesContent
+      )
+      "the t alias must invoke the herdr-screensaver command and that command must be registered as a home package, or typing t runs a missing binary";
 }
