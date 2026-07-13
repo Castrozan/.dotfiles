@@ -37,10 +37,17 @@ let
     tree-sitter
     gcc
   ];
+
+  brazilianPortugueseSpellFile = pkgs.fetchurl {
+    url = "https://ftp.nluug.nl/pub/vim/runtime/spell/pt.utf-8.spl";
+    hash = "sha256-Pl/BALaVG3g8+zOGraQ8s5g5VT4E+qQVr1z1vV1qtjs=";
+  };
 in
 {
   home.file.".config/nvim".source =
     config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.dotfiles/.config/nvim";
+
+  xdg.dataFile."nvim/site/spell/pt.utf-8.spl".source = brazilianPortugueseSpellFile;
 
   programs.neovim = {
     enable = true;
