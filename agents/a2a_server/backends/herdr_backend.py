@@ -8,15 +8,13 @@ PANE_CAPTURE_LINE_COUNT = 200
 DELAY_BETWEEN_TYPING_INPUT_AND_PRESSING_ENTER_SECONDS = 0.25
 
 
-class TmuxAttachedAgentBackend(AgentBackend):
+class HerdrAttachedAgentBackend(AgentBackend):
     def __init__(
         self,
-        tmux_session_name: str,
-        tmux_window_name: str,
+        herdr_pane_id: str,
         meaningful_line_pattern: re.Pattern | None = None,
     ) -> None:
-        self._tmux_session_name = tmux_session_name
-        self._tmux_window_name = tmux_window_name
+        self._herdr_pane_id = herdr_pane_id
         self._meaningful_line_pattern = meaningful_line_pattern
         self._previously_observed_meaningful_line_occurrence_keys: set[
             tuple[str, int]
@@ -24,10 +22,10 @@ class TmuxAttachedAgentBackend(AgentBackend):
         self._last_activity_at_epoch_seconds = time.time()
 
     def start(self) -> None:
-        if not self._target_tmux_window_exists():
+        if not self._target_herdr_pane_exists():
             raise RuntimeError(
-                f"tmux target {self._target_specifier()!r} does not exist; "
-                "the backend attaches to an already-running window"
+                f"herdr pane {self._herdr_pane_id!r} does not exist; "
+                "the backend attaches to an already-running pane"
             )
         initial_capture_text = self._capture_pane_text()
         self._previously_observed_meaningful_line_occurrence_keys = set(
@@ -37,11 +35,9 @@ class TmuxAttachedAgentBackend(AgentBackend):
         )
 
     def send_input_text(self, text: str) -> None:
-        self._run_tmux_command(
-            ["send-keys", "-t", self._target_specifier(), "-l", text]
-        )
+        self._run_herdr_command(["pane", "send-text", self._herdr_pane_id, text])
         time.sleep(DELAY_BETWEEN_TYPING_INPUT_AND_PRESSING_ENTER_SECONDS)
-        self._run_tmux_command(["send-keys", "-t", self._target_specifier(), "Enter"])
+        self._run_herdr_command(["pane", "send-keys", self._herdr_pane_id, "Enter"])
         self._last_activity_at_epoch_seconds = time.time()
 
     def observe(self) -> BackendObservation:
@@ -68,46 +64,39 @@ class TmuxAttachedAgentBackend(AgentBackend):
         )
         return BackendObservation(
             raw_output_since_last_call="\n".join(new_lines_in_capture_order),
-            is_alive=self._target_tmux_window_exists(),
+            is_alive=self._target_herdr_pane_exists(),
             last_activity_at_epoch_seconds=self._last_activity_at_epoch_seconds,
         )
 
     def cancel_gracefully(self) -> None:
-        self._run_tmux_command(["send-keys", "-t", self._target_specifier(), "C-c"])
+        self._run_herdr_command(["pane", "send-keys", self._herdr_pane_id, "C-c"])
 
     def stop(self) -> None:
-        self._run_tmux_command(["kill-window", "-t", self._target_specifier()])
+        self._run_herdr_command(["pane", "close", self._herdr_pane_id])
 
-    def _target_specifier(self) -> str:
-        return f"{self._tmux_session_name}:{self._tmux_window_name}"
-
-    def _target_tmux_window_exists(self) -> bool:
-        result = self._run_tmux_command(
-            ["list-windows", "-t", self._tmux_session_name, "-F", "#{window_name}"]
-        )
-        if result.returncode != 0:
-            return False
-        return self._tmux_window_name in result.stdout.splitlines()
+    def _target_herdr_pane_exists(self) -> bool:
+        result = self._run_herdr_command(["pane", "get", self._herdr_pane_id])
+        return result.returncode == 0
 
     def _capture_pane_text(self) -> str:
-        result = self._run_tmux_command(
+        result = self._run_herdr_command(
             [
-                "capture-pane",
-                "-p",
-                "-J",
-                "-t",
-                self._target_specifier(),
-                "-S",
-                f"-{PANE_CAPTURE_LINE_COUNT}",
+                "pane",
+                "read",
+                self._herdr_pane_id,
+                "--source",
+                "recent-unwrapped",
+                "--lines",
+                str(PANE_CAPTURE_LINE_COUNT),
             ]
         )
         if result.returncode != 0:
             return ""
         return result.stdout
 
-    def _run_tmux_command(self, arguments: list[str]) -> subprocess.CompletedProcess:
+    def _run_herdr_command(self, arguments: list[str]) -> subprocess.CompletedProcess:
         return subprocess.run(
-            ["tmux", *arguments],
+            ["herdr", *arguments],
             capture_output=True,
             text=True,
             check=False,

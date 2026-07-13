@@ -5,8 +5,8 @@ import sys
 from .a2a_server import run_a2a_server_blocking
 from .agent_card import build_agent_card_from_environment
 from .backends.base import AgentBackend
+from .backends.herdr_backend import HerdrAttachedAgentBackend
 from .backends.subprocess_backend import SubprocessAgentBackend
-from .backends.tmux_backend import TmuxAttachedAgentBackend
 
 
 def parse_command_line_arguments() -> argparse.Namespace:
@@ -14,7 +14,7 @@ def parse_command_line_arguments() -> argparse.Namespace:
         prog="a2a-server",
         description=(
             "HTTP server that exposes a single CLI agent as an A2A peer. "
-            "Wraps either a tmux-attached agent (default) or a subprocess agent."
+            "Wraps either a herdr-attached agent (default) or a subprocess agent."
         ),
     )
     parser.add_argument("--agent-name", required=True)
@@ -28,13 +28,12 @@ def parse_command_line_arguments() -> argparse.Namespace:
     )
     parser.add_argument(
         "--backend-type",
-        choices=["tmux", "subprocess"],
+        choices=["herdr", "subprocess"],
         required=True,
     )
-    parser.add_argument("--tmux-session-name", default=None)
-    parser.add_argument("--tmux-window-name", default=None)
+    parser.add_argument("--herdr-pane", default=None)
     parser.add_argument(
-        "--tmux-meaningful-line-pattern",
+        "--herdr-meaningful-line-pattern",
         default=None,
         help=(
             "Optional regex. When set, only pane lines matching this pattern count as "
@@ -52,21 +51,20 @@ def parse_command_line_arguments() -> argparse.Namespace:
 
 
 def construct_backend_from_arguments(arguments: argparse.Namespace) -> AgentBackend:
-    if arguments.backend_type == "tmux":
-        if not arguments.tmux_session_name or not arguments.tmux_window_name:
+    if arguments.backend_type == "herdr":
+        if not arguments.herdr_pane:
             print(
-                "error: --tmux-session-name and --tmux-window-name are required for backend-type=tmux",
+                "error: --herdr-pane is required for backend-type=herdr",
                 file=sys.stderr,
             )
             sys.exit(2)
         compiled_meaningful_line_pattern = (
-            re.compile(arguments.tmux_meaningful_line_pattern)
-            if arguments.tmux_meaningful_line_pattern
+            re.compile(arguments.herdr_meaningful_line_pattern)
+            if arguments.herdr_meaningful_line_pattern
             else None
         )
-        return TmuxAttachedAgentBackend(
-            tmux_session_name=arguments.tmux_session_name,
-            tmux_window_name=arguments.tmux_window_name,
+        return HerdrAttachedAgentBackend(
+            herdr_pane_id=arguments.herdr_pane,
             meaningful_line_pattern=compiled_meaningful_line_pattern,
         )
     if not arguments.subprocess_command:
