@@ -124,7 +124,7 @@ in
     mkEvalCheck "domain-terminal-screensaver-alias-wired-to-herdr-screensaver-package"
       (
         builtins.any (pkg: (pkg.name or "") == "herdr-screensaver") cfg.home.packages
-        && lib.hasInfix "alias t='herdr-screensaver'" aliasesContent
+        && lib.hasInfix "alias h='herdr-screensaver'" aliasesContent
       )
-      "the t alias must invoke the herdr-screensaver command and that command must be registered as a home package, or typing t runs a missing binary";
+      "the h alias must invoke the herdr-screensaver command and that command must be registered as a home package, or typing h runs a missing binary";
 }
