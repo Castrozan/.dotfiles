@@ -6,7 +6,7 @@ let
     "goal-prompt"
     "browser"
     "deliver"
-    "tmux-claude"
+    "herdr"
     "instructions"
     "review"
     "humanize"

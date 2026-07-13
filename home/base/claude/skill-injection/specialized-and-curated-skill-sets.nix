@@ -12,7 +12,7 @@ let
       "deep-work"
       "workspace"
       "worktrees"
-      "tmux"
+      "herdr"
       "exit"
       "restart"
       "notify"

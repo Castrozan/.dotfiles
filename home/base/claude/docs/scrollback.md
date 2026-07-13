@@ -12,11 +12,11 @@ Layer 1 is claude's in-app scroll, available only in fullscreen mode (`CLAUDE_CO
 
 Layer 2 is tmux copy mode (`prefix [`) for selecting and copying whatever Layer 1 has currently rendered on screen. Standard tmux selection, search, and clipboard integration apply. Limited to one screenful at a time.
 
-Layer 3 is the `prefix t` toggle, which opens a maximized side pane running the current pane's most recent session jsonl through `claude-show-session` into `less`. This is the path for "select the entire conversation," "search across the whole session," or "grab text from much earlier." The viewer uses cwd to locate the encoded project directory under `~/.claude/projects/`. Toggle pattern mirrors `prefix i` (lazygit) and `prefix b` (btop).
+Layer 3 is the session jsonl: to "select the entire conversation," "search across the whole session," or "grab text from much earlier," read the current cwd's most recent transcript under `~/.claude/projects/<encoded-cwd>/` directly (or `claude --resume <uuid>` to reload it into a live UI). This is independent of the multiplexer.
 
 ## Past Sessions
 
-Tmux scrollback only ever holds the current pane's lifetime. Conversations from yesterday, from another window, or from any clawde agent running in the `clawde` session are completely outside its reach. The session jsonl files under `~/.claude/projects/<encoded-cwd>/` are the only durable record. `claude-show-session` reads the latest one for the current cwd; `claude --resume <uuid>` reloads the conversation into a live UI. Both bypass tmux scrollback entirely.
+Multiplexer scrollback only ever holds the current pane's lifetime. Conversations from yesterday, from another window, or from any clawde agent running in the `clawde` session are completely outside its reach. The session jsonl files under `~/.claude/projects/<encoded-cwd>/` are the only durable record; `claude --resume <uuid>` reloads a conversation into a live UI, bypassing scrollback entirely.
 
 ## Tmux Configuration That Matters
 
