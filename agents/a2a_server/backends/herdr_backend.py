@@ -1,3 +1,4 @@
+import json
 import re
 import subprocess
 import time
@@ -64,7 +65,7 @@ class HerdrAttachedAgentBackend(AgentBackend):
         )
         return BackendObservation(
             raw_output_since_last_call="\n".join(new_lines_in_capture_order),
-            is_alive=self._target_herdr_pane_exists(),
+            is_alive=self._target_pane_hosts_live_agent(),
             last_activity_at_epoch_seconds=self._last_activity_at_epoch_seconds,
         )
 
@@ -77,6 +78,16 @@ class HerdrAttachedAgentBackend(AgentBackend):
     def _target_herdr_pane_exists(self) -> bool:
         result = self._run_herdr_command(["pane", "get", self._herdr_pane_id])
         return result.returncode == 0
+
+    def _target_pane_hosts_live_agent(self) -> bool:
+        result = self._run_herdr_command(["pane", "get", self._herdr_pane_id])
+        if result.returncode != 0:
+            return False
+        try:
+            pane_information = json.loads(result.stdout)["result"]["pane"]
+        except (json.JSONDecodeError, KeyError, TypeError):
+            return False
+        return pane_information.get("agent") is not None
 
     def _capture_pane_text(self) -> str:
         result = self._run_herdr_command(

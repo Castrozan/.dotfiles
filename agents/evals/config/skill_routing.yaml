@@ -25,9 +25,7 @@ shared_system_prompt: &shared_system_prompt |
 
   worktrees - Create and work in git worktrees for isolated parallel branches and PR workflows. Use when work needs an isolated branch without disturbing the main checkout. Do NOT use for plain commits or staging.
 
-  tmux - tmux session and pane control primitives for background processes. Use when driving tmux directly to run or manage long-running background processes.
-
-  tmux-claude - Launch and drive another Claude Code instance — interactive tmux windows, builtin Agent/Team delegation, one-shot --print, resume-by-session-id. Use to spawn a parallel Claude agent or background coding session.
+  herdr - Drive herdr, the terminal workspace manager, and orchestrate Claude Code agents in it: spawn, prompt, read, wait on, or take over a background Claude. Also scripts herdr workspaces, tabs, and panes. Use to run or manage long-running background processes in a pane, or to spawn a parallel Claude agent or background coding session.
 
   exit - End the current Claude Code session cleanly when all work is complete and committed.
 
@@ -169,11 +167,11 @@ tests:
   - name: routing_to_tmux_control
     no_tools: true
     system_prompt: *shared_system_prompt
-    prompt: "Start a background process in a new tmux pane"
+    prompt: "Start a background process in a new herdr pane"
     model: sonnet
     assertions:
       output_contains_any:
-        - "tmux"
+        - "herdr"
 
   - name: routing_to_restart
     no_tools: true
@@ -231,7 +229,7 @@ tests:
     model: sonnet
     assertions:
       output_contains_any:
-        - "tmux-claude"
+        - "herdr"
       output_not_contains:
         - "personal"
 

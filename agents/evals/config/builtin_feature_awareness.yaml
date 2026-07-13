@@ -38,8 +38,8 @@ tests:
         - "different"
 
   - name: claude_skill_knows_builtin_agents
-    skill_path: agents/skills/tmux-claude/SKILL.md
-    prompt: "I need to spawn a parallel coding session. Should I always spawn a separate tmux Claude with spawn-claude, or is there a simpler alternative?"
+    skill_path: agents/skills/herdr/SKILL.md
+    prompt: "I need to spawn a parallel coding session. Should I always spawn a separate herdr Claude agent with 'herdr agent start', or is there a simpler alternative?"
     model: haiku
     assertions:
       output_contains_any:

@@ -9,6 +9,7 @@ def _replace_capture_pane_text_with(backend, text):
 
 def _set_target_pane_exists_to(backend, exists):
     backend._target_herdr_pane_exists = lambda: exists
+    backend._target_pane_hosts_live_agent = lambda: exists
 
 
 class TestObserveProducesActivityOnlyForNewMeaningfulLines:
