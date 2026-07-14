@@ -1,4 +1,5 @@
 import json
+import random
 import shutil
 import subprocess
 import sys
@@ -42,13 +43,31 @@ def all_command_segments_available(command):
     return True
 
 
+def resolve_equation_art_command():
+    if not shutil.which("equation-art"):
+        return "equation-art"
+    try:
+        completed = subprocess.run(
+            ["equation-art", "--list-formulas"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+    except (subprocess.CalledProcessError, OSError):
+        return "equation-art"
+    formula_names = [name for name in completed.stdout.split() if name]
+    if not formula_names:
+        return "equation-art"
+    return f"equation-art --formula {random.choice(formula_names)}"
+
+
 def resolve_available_screensaver_commands():
     if shutil.which("cbonsai"):
         companion_command = "cbonsai --live --infinite"
     else:
         companion_command = "cmatrix -b -s -u 8"
     candidate_commands = [
-        "equation-art",
+        resolve_equation_art_command(),
         companion_command,
         "cmatrix -b -u 8",
         "sleep 3; bad-apple",

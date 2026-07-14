@@ -1,3 +1,5 @@
+import argparse
+import random
 import shutil
 import sys
 import time
@@ -16,27 +18,91 @@ FRAME_INTERVAL_SECONDS = 1.0 / FRAMES_PER_SECOND
 TIME_STEP = 2 * np.pi / 45
 
 point_index = np.arange(1, POINT_COUNT, dtype=np.float64)
-parity_offset = (point_index % 2) * 9
-k = 9 * np.cos(point_index / 81.0)
-e = point_index / 765.0 - 13
-d = np.hypot(k, e) / 4.0
 
 
-def render_equation_frame(t, columns, rows):
-    width = columns * 2
-    height = rows * 4
-    scale = min(width, height) / 300.0
-    off_x = width / 2.0
-    off_y = height / 2.0
+def twin_figures(t):
+    i = point_index
+    parity = (i % 2) * 9
+    k = 9 * np.cos(i / 81.0)
+    e = i / 765.0 - 13
+    d = np.hypot(k, e) / 4.0
     inner = np.where(k * k < 19, t * 3 + d * 4, d / 2 + 4)
     q = (
         79
         - 2 * np.sin(k * 3)
-        + np.sin(inner) / 2 * k * (9 + 5 * np.sin(d * d - e / 6 - t + parity_offset))
+        + np.sin(inner) / 2 * k * (9 + 5 * np.sin(d * d - e / 6 - t + parity))
     )
-    c = d * d / 9 - t / 16 + parity_offset
-    xi = (q * np.sin(c) * scale + off_x).astype(np.int64)
-    yi = ((q + 50) * np.cos(c) * scale + off_y).astype(np.int64)
+    c = d * d / 9 - t / 16 + parity
+    return q * np.sin(c), (q + 50) * np.cos(c)
+
+
+def solo_figure(t):
+    i = point_index
+    k = 9 * np.cos(i / 81.0)
+    e = i / 765.0 - 13
+    d = np.hypot(k, e) / 4.0
+    inner = np.where(k * k < 19, t * 3 + d * 4, d / 2 + 4)
+    q = (
+        79
+        - 2 * np.sin(k * 3)
+        + np.sin(inner) / 2 * k * (9 + 5 * np.sin(d * d - e / 6 - t))
+    )
+    c = d * d / 9 - t / 16
+    return q * np.sin(c), (q + 50) * np.cos(c)
+
+
+def tight_swirl(t):
+    i = point_index
+    k = 9 * np.cos(i / 81.0)
+    e = i / 765.0 - 13
+    d = np.hypot(k, e) / 4.0
+    inner = np.where(k * k < 19, t * 3 + d * 4, d / 2 + 4)
+    q = (
+        79
+        - 2 * np.sin(k * 3)
+        + np.sin(inner) / 2 * k * (9 + 5 * np.sin(d * d / 2 - e / 6 - t))
+    )
+    c = d * d / 12 - t / 16
+    return q * np.sin(c), (q + 50) * np.cos(c)
+
+
+def petal_spray(t):
+    i = point_index
+    k = 9 * np.cos(i / 60.0)
+    e = i / 500.0 - 13
+    d = np.hypot(k, e) / 4.0
+    inner = np.where(k * k < 19, t * 2 + d * 3, d / 2 + 4)
+    q = (
+        64
+        - 2 * np.sin(k * 4)
+        + np.sin(inner) / 2 * k * (9 + 5 * np.sin(d * d - e / 6 - t))
+    )
+    c = d * d / 9 - t / 16
+    return q * np.sin(c), (q + 50) * np.cos(c)
+
+
+EQUATION_FORMULAS = {
+    "twin": twin_figures,
+    "solo": solo_figure,
+    "swirl": tight_swirl,
+    "petal": petal_spray,
+}
+
+
+def list_formula_names():
+    return list(EQUATION_FORMULAS)
+
+
+def render_equation_frame(t, columns, rows, formula_name):
+    width = columns * 2
+    height = rows * 4
+    x, y = EQUATION_FORMULAS[formula_name](t)
+    extent_x = np.percentile(np.abs(x), 98)
+    extent_y = np.percentile(np.abs(y), 98)
+    extent = max(extent_x, extent_y, 1e-6)
+    scale = 0.46 * min(width, height) / extent
+    xi = (x * scale + width / 2.0).astype(np.int64)
+    yi = (y * scale + height / 2.0).astype(np.int64)
     visible = (xi >= 0) & (xi < width) & (yi >= 0) & (yi < height)
     xi = xi[visible]
     yi = yi[visible]
@@ -52,7 +118,14 @@ def render_equation_frame(t, columns, rows):
     return "\n".join(lines)
 
 
-def main():
+def parse_arguments():
+    parser = argparse.ArgumentParser(prog="equation-art")
+    parser.add_argument("--formula", choices=list_formula_names())
+    parser.add_argument("--list-formulas", action="store_true")
+    return parser.parse_args()
+
+
+def animate(formula_name):
     sys.stdout.write("\033[?25l\033[2J")
     previous_size = None
     t = 0.0
@@ -63,7 +136,9 @@ def main():
             if (columns, rows) != previous_size:
                 sys.stdout.write("\033[2J")
                 previous_size = (columns, rows)
-            sys.stdout.write("\033[H" + render_equation_frame(t, columns, rows))
+            sys.stdout.write(
+                "\033[H" + render_equation_frame(t, columns, rows, formula_name)
+            )
             sys.stdout.flush()
             t += TIME_STEP
             time.sleep(FRAME_INTERVAL_SECONDS)
@@ -71,6 +146,15 @@ def main():
         pass
     finally:
         sys.stdout.write("\033[?25h\033[0m\n")
+
+
+def main():
+    arguments = parse_arguments()
+    if arguments.list_formulas:
+        sys.stdout.write("\n".join(list_formula_names()) + "\n")
+        return
+    formula_name = arguments.formula or random.choice(list_formula_names())
+    animate(formula_name)
 
 
 if __name__ == "__main__":

@@ -35,18 +35,21 @@ def test_cast_path_varies_with_size_command_and_seconds():
     assert first.name == "cast.bin"
 
 
-def test_terminate_child_escalates_to_sigkill_when_sigterm_ignored(monkeypatch):
-    signals_sent = []
+def test_terminate_child_closes_master_before_escalating_signals(monkeypatch):
+    call_order = []
     monkeypatch.setattr(
-        precompute_loop.os, "kill", lambda pid, number: signals_sent.append(number)
+        precompute_loop.os, "close", lambda fd: call_order.append("close")
+    )
+    monkeypatch.setattr(
+        precompute_loop.os, "kill", lambda pid, number: call_order.append(number)
     )
     monkeypatch.setattr(precompute_loop.os, "waitpid", lambda pid, flags: (0, 0))
-    monkeypatch.setattr(precompute_loop.os, "close", lambda fd: None)
     ticks = iter([0.0, 0.1, 0.6, 0.6, 0.7, 1.2])
     monkeypatch.setattr(precompute_loop.time, "monotonic", lambda: next(ticks))
     monkeypatch.setattr(precompute_loop.time, "sleep", lambda seconds: None)
     precompute_loop.terminate_child(4242, 9)
-    assert signals_sent == [
+    assert call_order == [
+        "close",
         precompute_loop.signal.SIGTERM,
         precompute_loop.signal.SIGKILL,
     ]

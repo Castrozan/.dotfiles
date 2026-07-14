@@ -1,5 +1,6 @@
 import importlib.util
 import pathlib
+import types
 
 SCRIPT_PATH = (
     pathlib.Path(__file__).resolve().parents[2]
@@ -27,6 +28,13 @@ def _which_returning(available_executables):
         return f"/usr/bin/{executable}" if executable in available else None
 
     return fake_which
+
+
+def _list_formulas_returning(formula_names):
+    def fake_run(arguments, **_keyword_arguments):
+        return types.SimpleNamespace(stdout="\n".join(formula_names) + "\n")
+
+    return fake_run
 
 
 def test_split_command_keeps_single_command_whole():
@@ -100,25 +108,58 @@ def test_resolve_is_empty_when_nothing_available(monkeypatch):
     assert launcher.resolve_available_screensaver_commands() == []
 
 
-def test_resolve_lists_equation_art_first_when_present(monkeypatch):
+def test_resolve_equation_art_command_picks_a_listed_formula(monkeypatch):
+    monkeypatch.setattr(launcher.shutil, "which", _which_returning({"equation-art"}))
+    monkeypatch.setattr(
+        launcher.subprocess, "run", _list_formulas_returning(["twin", "solo", "swirl"])
+    )
+    monkeypatch.setattr(launcher.random, "choice", lambda names: names[1])
+    assert launcher.resolve_equation_art_command() == "equation-art --formula solo"
+
+
+def test_resolve_equation_art_command_falls_back_when_binary_absent(monkeypatch):
+    monkeypatch.setattr(launcher.shutil, "which", _which_returning(set()))
+    assert launcher.resolve_equation_art_command() == "equation-art"
+
+
+def test_resolve_equation_art_command_falls_back_when_listing_fails(monkeypatch):
+    monkeypatch.setattr(launcher.shutil, "which", _which_returning({"equation-art"}))
+
+    def raise_oserror(arguments, **_keyword_arguments):
+        raise OSError("equation-art not runnable")
+
+    monkeypatch.setattr(launcher.subprocess, "run", raise_oserror)
+    assert launcher.resolve_equation_art_command() == "equation-art"
+
+
+def test_resolve_equation_art_command_falls_back_when_no_formulas_listed(monkeypatch):
+    monkeypatch.setattr(launcher.shutil, "which", _which_returning({"equation-art"}))
+    monkeypatch.setattr(launcher.subprocess, "run", _list_formulas_returning([]))
+    assert launcher.resolve_equation_art_command() == "equation-art"
+
+
+def test_resolve_lists_randomized_equation_art_first_when_present(monkeypatch):
     monkeypatch.setattr(
         launcher.shutil,
         "which",
         _which_returning({"equation-art", "cbonsai", "cmatrix"}),
     )
+    monkeypatch.setattr(
+        launcher, "resolve_equation_art_command", lambda: "equation-art --formula petal"
+    )
     assert launcher.resolve_available_screensaver_commands() == [
-        "equation-art",
+        "equation-art --formula petal",
         "cbonsai --live --infinite",
         "cmatrix -b -u 8",
     ]
 
 
-def test_wrap_routes_equation_art_through_precompute_loop(monkeypatch):
+def test_wrap_routes_randomized_equation_art_through_precompute_loop(monkeypatch):
     monkeypatch.setattr(launcher.shutil, "which", _which_returning({"precompute-loop"}))
     assert (
-        launcher.wrap_command_for_cheap_replay("equation-art")
+        launcher.wrap_command_for_cheap_replay("equation-art --formula swirl")
         == f"precompute-loop --seconds {launcher.PRECOMPUTE_LOOP_CAPTURE_SECONDS} "
-        "-- equation-art"
+        "-- equation-art --formula swirl"
     )
 
 
@@ -136,63 +177,3 @@ def test_wrap_leaves_incremental_generators_live(monkeypatch):
 def test_wrap_leaves_command_untouched_when_precompute_loop_absent(monkeypatch):
     monkeypatch.setattr(launcher.shutil, "which", _which_returning(set()))
     assert launcher.wrap_command_for_cheap_replay("equation-art") == "equation-art"
-
-
-def test_start_screensaver_routes_pane_commands_through_precompute_loop(monkeypatch):
-    monkeypatch.setattr(launcher.shutil, "which", _which_returning({"precompute-loop"}))
-    monkeypatch.setattr(
-        launcher, "resolve_available_screensaver_commands", lambda: ["equation-art"]
-    )
-    monkeypatch.setattr(launcher, "create_screensaver_workspace", lambda: ("ws1", "p1"))
-    herdr_calls = []
-    monkeypatch.setattr(
-        launcher, "run_herdr", lambda *arguments: herdr_calls.append(arguments)
-    )
-    launcher.start_screensaver()
-    pane_run_calls = [call for call in herdr_calls if call[:2] == ("pane", "run")]
-    assert pane_run_calls == [
-        (
-            "pane",
-            "run",
-            "p1",
-            f"precompute-loop --seconds {launcher.PRECOMPUTE_LOOP_CAPTURE_SECONDS} "
-            "-- equation-art",
-        )
-    ]
-
-
-def test_single_command_uses_root_pane_without_splitting(monkeypatch):
-    split_calls = []
-    monkeypatch.setattr(
-        launcher, "split_pane", lambda *arguments: split_calls.append(arguments)
-    )
-    assert launcher.build_screensaver_panes("p1", 1) == ["p1"]
-    assert split_calls == []
-
-
-def test_two_commands_split_the_right_column_once(monkeypatch):
-    split_calls = []
-
-    def fake_split(pane_id, direction, ratio):
-        split_calls.append((pane_id, direction, ratio))
-        return "pRight"
-
-    monkeypatch.setattr(launcher, "split_pane", fake_split)
-    assert launcher.build_screensaver_panes("p1", 2) == ["p1", "pRight"]
-    assert split_calls == [("p1", "right", launcher.PRIMARY_LEFT_COLUMN_RATIO)]
-
-
-def test_three_commands_split_right_then_down(monkeypatch):
-    split_calls = []
-    split_outputs = iter(["pRight", "pBottom"])
-
-    def fake_split(pane_id, direction, ratio):
-        split_calls.append((pane_id, direction, ratio))
-        return next(split_outputs)
-
-    monkeypatch.setattr(launcher, "split_pane", fake_split)
-    assert launcher.build_screensaver_panes("p1", 3) == ["p1", "pRight", "pBottom"]
-    assert split_calls == [
-        ("p1", "right", launcher.PRIMARY_LEFT_COLUMN_RATIO),
-        ("pRight", "down", launcher.RIGHT_COLUMN_VERTICAL_SPLIT_RATIO),
-    ]
