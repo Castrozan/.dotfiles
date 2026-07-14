@@ -5,13 +5,18 @@ let
   # coverage helper is omitted entirely.
   kcovPackages = lib.optional pkgs.stdenv.hostPlatform.isLinux pkgs.kcov;
 
+  pytestWithScriptDependencies = pkgs.python312.withPackages (pythonPackages: [
+    pythonPackages.pytest
+    pythonPackages.numpy
+  ]);
+
   dotfiles-test = pkgs.writeShellScriptBin "dotfiles-test" ''
     export PATH="${
       pkgs.lib.makeBinPath (
         [
           pkgs.bats
           pkgs.bc
-          pkgs.python312Packages.pytest
+          pytestWithScriptDependencies
           pkgs.qt6.qtdeclarative
         ]
         ++ kcovPackages
@@ -124,7 +129,7 @@ in
     pkgs.deadnix
     pkgs.statix
     pkgs.nixfmt
-    pkgs.python312Packages.pytest
+    pytestWithScriptDependencies
   ]
   ++ kcovPackages;
 }
