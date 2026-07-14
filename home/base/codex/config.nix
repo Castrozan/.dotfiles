@@ -14,7 +14,7 @@ let
     chromePackage = latest.google-chrome;
   };
   codexConfigGenerator = ./config-generator;
-  codexDefaultModel = "gpt-5.5";
+  codexDefaultModel = "gpt-5.6-sol";
   codexDeveloperInstructions = "Operate pragmatically: keep diffs small, verify with fast checks, and prefer repo-local truth (AGENTS.md, bin/, home/{base,linux,darwin}/). Use profiles: fast (default), deep, web.";
   inherit (browserMcp)
     chromeDevtoolsMcpStdioCommand
