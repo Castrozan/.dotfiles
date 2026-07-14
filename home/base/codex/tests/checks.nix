@@ -21,6 +21,9 @@ let
   cfg =
     (inputs.home-manager.lib.homeManagerConfiguration {
       inherit pkgs;
+      extraSpecialArgs = {
+        hostname = "test";
+      };
       modules = [
         self.homeManagerModules.codex
         {
