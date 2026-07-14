@@ -27,6 +27,29 @@ if type(mux.get_active_window) == "function" then
 	end)
 end
 
+local open_hovered_link_in_brave = false
+
+wezterm.on("open-uri", function(window, pane, uri)
+	if not open_hovered_link_in_brave then
+		return true
+	end
+	open_hovered_link_in_brave = false
+	if is_darwin then
+		wezterm.background_child_process({ "/usr/bin/open", "-b", "com.brave.Browser", uri })
+	else
+		wezterm.background_child_process({ "brave", uri })
+	end
+	return false
+end)
+
+local open_hovered_link_in_brave_action = wezterm.action_callback(function(window, pane)
+	open_hovered_link_in_brave = true
+	wezterm.time.call_after(0.2, function()
+		open_hovered_link_in_brave = false
+	end)
+	window:perform_action(wezterm.action.OpenLinkAtMouseCursor, pane)
+end)
+
 local config = {
 	font = wezterm.font_with_fallback({
 		"MonaspiceNe Nerd Font Mono",
@@ -87,6 +110,28 @@ local config = {
 		{
 			event = { Down = { streak = 1, button = "Left" } },
 			mods = "CTRL",
+			action = wezterm.action.Nop,
+			mouse_reporting = true,
+		},
+		{
+			event = { Up = { streak = 1, button = "Left" } },
+			mods = "CTRL|SHIFT",
+			action = open_hovered_link_in_brave_action,
+		},
+		{
+			event = { Down = { streak = 1, button = "Left" } },
+			mods = "CTRL|SHIFT",
+			action = wezterm.action.Nop,
+		},
+		{
+			event = { Up = { streak = 1, button = "Left" } },
+			mods = "CTRL|SHIFT",
+			action = open_hovered_link_in_brave_action,
+			mouse_reporting = true,
+		},
+		{
+			event = { Down = { streak = 1, button = "Left" } },
+			mods = "CTRL|SHIFT",
 			action = wezterm.action.Nop,
 			mouse_reporting = true,
 		},
