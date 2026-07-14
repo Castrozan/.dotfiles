@@ -55,3 +55,7 @@ A clawde agent's runtime config - heartbeat gate, interval, prompt, launch comma
 <agent-instructions>
 The eval baseline (`agents/evals/baseline.json`) is a committed snapshot that CI guards via `agent-eval --check-baseline` against absolute pass-rate floors only - there is no age or freshness gate. Do not re-run `agent-eval --save-baseline` after editing agent instructions; the full suite is a slow LLM run whose routing evals flake, so a proactive re-save bakes transient failures into the committed baseline. Re-save only when `--check-baseline` fails CI on a genuine pass-rate regression, or to deliberately record a meaningfully improved instruction surface.
 </agent-instructions>
+
+<herdr-server-restart>
+herdr runs as one shared server, the `default` session, hosting the whole clawde fleet, the steward, and the interactive session at once, so a new herdr binary from a rebuild only goes live on a full `herdr server stop` and relaunch, which restarts every session on it and drops the whole fleet; the fleet self-heals as the clawde supervisor respawns agents into their pinned sessions and the human reconnects with `herdr`. This restart is the normal way to apply a herdr change and you complete it rather than handing it back, but it is fleet-wide and disruptive, so perform it only with the user's explicit approval, current or prior, never unprompted, and when approved stop the server detached after a short delay so your final report flushes before this session drops.
+</herdr-server-restart>
