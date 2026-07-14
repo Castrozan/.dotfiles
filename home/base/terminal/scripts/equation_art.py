@@ -12,16 +12,16 @@ DOT_BIT = np.array(
     [[0x01, 0x08], [0x02, 0x10], [0x04, 0x20], [0x40, 0x80]], dtype=np.uint16
 )
 
-POINT_COUNT = 22000
+POINT_PARAMETER_DOMAIN = 22000
+TARGET_POINT_DENSITY_PER_DOT_CELL = 0.85
+MINIMUM_POINT_COUNT = 2000
+FIGURE_FILL_RATIO = 0.46
 FRAMES_PER_SECOND = 15
 FRAME_INTERVAL_SECONDS = 1.0 / FRAMES_PER_SECOND
 TIME_STEP = 2 * np.pi / 45
 
-point_index = np.arange(1, POINT_COUNT, dtype=np.float64)
 
-
-def twin_figures(t):
-    i = point_index
+def twin_figures(t, i):
     parity = (i % 2) * 9
     k = 9 * np.cos(i / 81.0)
     e = i / 765.0 - 13
@@ -36,8 +36,7 @@ def twin_figures(t):
     return q * np.sin(c), (q + 50) * np.cos(c)
 
 
-def solo_figure(t):
-    i = point_index
+def solo_figure(t, i):
     k = 9 * np.cos(i / 81.0)
     e = i / 765.0 - 13
     d = np.hypot(k, e) / 4.0
@@ -51,8 +50,7 @@ def solo_figure(t):
     return q * np.sin(c), (q + 50) * np.cos(c)
 
 
-def tight_swirl(t):
-    i = point_index
+def tight_swirl(t, i):
     k = 9 * np.cos(i / 81.0)
     e = i / 765.0 - 13
     d = np.hypot(k, e) / 4.0
@@ -66,8 +64,7 @@ def tight_swirl(t):
     return q * np.sin(c), (q + 50) * np.cos(c)
 
 
-def petal_spray(t):
-    i = point_index
+def petal_spray(t, i):
     k = 9 * np.cos(i / 60.0)
     e = i / 500.0 - 13
     d = np.hypot(k, e) / 4.0
@@ -93,14 +90,31 @@ def list_formula_names():
     return list(EQUATION_FORMULAS)
 
 
+def resolve_sample_stride(columns, rows):
+    dot_cell_count = (columns * 2) * (rows * 4)
+    target_point_count = max(
+        MINIMUM_POINT_COUNT, TARGET_POINT_DENSITY_PER_DOT_CELL * dot_cell_count
+    )
+    stride = max(1, round(POINT_PARAMETER_DOMAIN / target_point_count))
+    if stride % 2 == 0:
+        stride += 1
+    return stride
+
+
 def render_equation_frame(t, columns, rows, formula_name):
     width = columns * 2
     height = rows * 4
-    x, y = EQUATION_FORMULAS[formula_name](t)
+    point_index = np.arange(
+        1,
+        POINT_PARAMETER_DOMAIN,
+        resolve_sample_stride(columns, rows),
+        dtype=np.float64,
+    )
+    x, y = EQUATION_FORMULAS[formula_name](t, point_index)
     extent_x = np.percentile(np.abs(x), 98)
     extent_y = np.percentile(np.abs(y), 98)
     extent = max(extent_x, extent_y, 1e-6)
-    scale = 0.46 * min(width, height) / extent
+    scale = FIGURE_FILL_RATIO * min(width, height) / extent
     xi = (x * scale + width / 2.0).astype(np.int64)
     yi = (y * scale + height / 2.0).astype(np.int64)
     visible = (xi >= 0) & (xi < width) & (yi >= 0) & (yi < height)

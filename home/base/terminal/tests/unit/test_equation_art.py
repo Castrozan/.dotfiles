@@ -54,3 +54,23 @@ def test_distinct_formulas_render_differently():
 def test_list_formula_names_matches_registry():
     assert equation_art.list_formula_names() == list(equation_art.EQUATION_FORMULAS)
     assert "twin" in equation_art.list_formula_names()
+
+
+def test_small_pane_subsamples_with_an_odd_stride():
+    small_stride = equation_art.resolve_sample_stride(40, 12)
+    large_stride = equation_art.resolve_sample_stride(200, 50)
+    assert small_stride > 1
+    assert small_stride % 2 == 1
+    assert large_stride == 1
+
+
+def test_small_pane_stays_as_sparse_as_a_large_pane():
+    def coverage(columns, rows):
+        frame = equation_art.render_equation_frame(3.0, columns, rows, "twin")
+        filled = sum(
+            1 for character in frame if ord(character) >= equation_art.BRAILLE_BASE
+        )
+        return filled / (columns * rows)
+
+    assert coverage(40, 12) < 0.25
+    assert coverage(40, 12) < coverage(90, 30) * 2.5
