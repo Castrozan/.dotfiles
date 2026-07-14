@@ -129,7 +129,7 @@ in
     pkgs.deadnix
     pkgs.statix
     pkgs.nixfmt
-    pytestWithScriptDependencies
+    (pkgs.writeShellScriptBin "pytest" ''exec ${pytestWithScriptDependencies}/bin/pytest "$@"'')
   ]
   ++ kcovPackages;
 }
