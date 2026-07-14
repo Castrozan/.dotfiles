@@ -6,6 +6,8 @@ import sys
 SCREENSAVER_WORKSPACE_LABEL = "screensaver"
 PRIMARY_LEFT_COLUMN_RATIO = 0.66
 RIGHT_COLUMN_VERTICAL_SPLIT_RATIO = 0.60
+PRECOMPUTE_LOOP_CAPTURE_SECONDS = 60
+SELF_LOOPING_COMMAND_MARKERS = ("bad-apple", "precompute-loop")
 
 
 def run_herdr(*arguments):
@@ -51,6 +53,14 @@ def resolve_available_screensaver_commands():
         for command in candidate_commands
         if all_command_segments_available(command)
     ]
+
+
+def wrap_command_for_cheap_replay(command):
+    if not shutil.which("precompute-loop"):
+        return command
+    if any(marker in command for marker in SELF_LOOPING_COMMAND_MARKERS):
+        return command
+    return f"precompute-loop --seconds {PRECOMPUTE_LOOP_CAPTURE_SECONDS} -- {command}"
 
 
 def find_screensaver_workspace_id():
@@ -123,7 +133,7 @@ def start_screensaver():
     workspace_id, root_pane_id = create_screensaver_workspace()
     panes = build_screensaver_panes(root_pane_id, len(commands))
     for pane_id, command in zip(panes, commands):
-        run_herdr("pane", "run", pane_id, command)
+        run_herdr("pane", "run", pane_id, wrap_command_for_cheap_replay(command))
     run_herdr("workspace", "focus", workspace_id)
 
 

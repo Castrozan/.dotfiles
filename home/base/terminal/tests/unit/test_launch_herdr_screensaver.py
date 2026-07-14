@@ -100,6 +100,57 @@ def test_resolve_is_empty_when_nothing_available(monkeypatch):
     assert launcher.resolve_available_screensaver_commands() == []
 
 
+def test_wrap_routes_continuous_generator_through_precompute_loop(monkeypatch):
+    monkeypatch.setattr(launcher.shutil, "which", _which_returning({"precompute-loop"}))
+    assert (
+        launcher.wrap_command_for_cheap_replay("cmatrix -b -u 8")
+        == f"precompute-loop --seconds {launcher.PRECOMPUTE_LOOP_CAPTURE_SECONDS} "
+        "-- cmatrix -b -u 8"
+    )
+
+
+def test_wrap_leaves_command_untouched_when_precompute_loop_absent(monkeypatch):
+    monkeypatch.setattr(launcher.shutil, "which", _which_returning(set()))
+    assert (
+        launcher.wrap_command_for_cheap_replay("cmatrix -b -u 8") == "cmatrix -b -u 8"
+    )
+
+
+def test_wrap_skips_self_looping_commands(monkeypatch):
+    monkeypatch.setattr(launcher.shutil, "which", _which_returning({"precompute-loop"}))
+    assert (
+        launcher.wrap_command_for_cheap_replay("sleep 3; bad-apple")
+        == "sleep 3; bad-apple"
+    )
+    assert (
+        launcher.wrap_command_for_cheap_replay("precompute-loop --seconds 60 -- x")
+        == "precompute-loop --seconds 60 -- x"
+    )
+
+
+def test_start_screensaver_routes_pane_commands_through_precompute_loop(monkeypatch):
+    monkeypatch.setattr(launcher.shutil, "which", _which_returning({"precompute-loop"}))
+    monkeypatch.setattr(
+        launcher, "resolve_available_screensaver_commands", lambda: ["cmatrix -b -u 8"]
+    )
+    monkeypatch.setattr(launcher, "create_screensaver_workspace", lambda: ("ws1", "p1"))
+    herdr_calls = []
+    monkeypatch.setattr(
+        launcher, "run_herdr", lambda *arguments: herdr_calls.append(arguments)
+    )
+    launcher.start_screensaver()
+    pane_run_calls = [call for call in herdr_calls if call[:2] == ("pane", "run")]
+    assert pane_run_calls == [
+        (
+            "pane",
+            "run",
+            "p1",
+            f"precompute-loop --seconds {launcher.PRECOMPUTE_LOOP_CAPTURE_SECONDS} "
+            "-- cmatrix -b -u 8",
+        )
+    ]
+
+
 def test_single_command_uses_root_pane_without_splitting(monkeypatch):
     split_calls = []
     monkeypatch.setattr(

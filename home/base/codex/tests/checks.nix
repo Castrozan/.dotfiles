@@ -37,6 +37,30 @@ let
 
   hasFilePrefix =
     prefix: builtins.any (n: builtins.substring 0 (builtins.stringLength prefix) n == prefix) fileNames;
+
+  parsedCodexHooksConfig =
+    let
+      hooksFile = cfg.home.file.".codex/hooks.json" or null;
+    in
+    if hooksFile != null && hooksFile ? text then
+      builtins.fromJSON (builtins.unsafeDiscardStringContext hooksFile.text)
+    else
+      { };
+
+  codexHookEventCommands =
+    eventName:
+    let
+      eventGroups =
+        if parsedCodexHooksConfig ? hooks && parsedCodexHooksConfig.hooks ? ${eventName} then
+          parsedCodexHooksConfig.hooks.${eventName}
+        else
+          [ ];
+    in
+    builtins.concatMap (group: map (hook: hook.command or "") (group.hooks or [ ])) eventGroups;
+
+  codexHookEventRunsScript =
+    eventName: scriptName:
+    builtins.any (command: lib.hasInfix scriptName command) (codexHookEventCommands eventName);
 in
 {
   codex-bin-wrapper =
@@ -74,43 +98,38 @@ in
 
   codex-hooks-config-current-schema =
     let
-      hooksFile = cfg.home.file.".codex/hooks.json" or null;
-      hooksConfig =
-        if hooksFile != null && hooksFile ? text then
-          builtins.fromJSON (builtins.unsafeDiscardStringContext hooksFile.text)
-        else
-          { };
       sessionStartGroups =
-        if hooksConfig ? hooks && hooksConfig.hooks ? SessionStart then
-          hooksConfig.hooks.SessionStart
+        if parsedCodexHooksConfig ? hooks && parsedCodexHooksConfig.hooks ? SessionStart then
+          parsedCodexHooksConfig.hooks.SessionStart
         else
           [ ];
       firstSessionStartGroup =
         if sessionStartGroups == [ ] then { } else builtins.head sessionStartGroups;
     in
     mkEvalCheck "codex-hooks-config-current-schema" (
-      hooksConfig ? hooks && firstSessionStartGroup ? hooks
+      parsedCodexHooksConfig ? hooks && firstSessionStartGroup ? hooks
     ) "Codex hooks.json should use the current top-level hooks schema";
 
   codex-hooks-config-post-tool-use-auto-format-and-rebuild =
-    let
-      hooksFile = cfg.home.file.".codex/hooks.json" or null;
-      hooksConfig =
-        if hooksFile != null && hooksFile ? text then
-          builtins.fromJSON (builtins.unsafeDiscardStringContext hooksFile.text)
-        else
-          { };
-      postToolUseGroups =
-        if hooksConfig ? hooks && hooksConfig.hooks ? PostToolUse then
-          hooksConfig.hooks.PostToolUse
-        else
-          [ ];
-      postToolUseCommands = builtins.concatMap (
-        group: map (hook: hook.command or "") (group.hooks or [ ])
-      ) postToolUseGroups;
-      commandMentions = needle: builtins.any (command: lib.hasInfix needle command) postToolUseCommands;
-    in
-    mkEvalCheck "codex-hooks-config-post-tool-use-auto-format-and-rebuild" (
-      commandMentions "auto-format.py" && commandMentions "nix-rebuild-trigger.py"
-    ) "Codex PostToolUse hooks should run auto-format and nix-rebuild-trigger";
+    mkEvalCheck "codex-hooks-config-post-tool-use-auto-format-and-rebuild"
+      (
+        codexHookEventRunsScript "PostToolUse" "auto-format.py"
+        && codexHookEventRunsScript "PostToolUse" "nix-rebuild-trigger.py"
+        && codexHookEventRunsScript "PostToolUse" "record-edited-source-file.py"
+      )
+      "Codex PostToolUse hooks should run auto-format, nix-rebuild-trigger, and record-edited-source-file";
+
+  codex-hooks-config-pre-tool-use-recall-and-guards =
+    mkEvalCheck "codex-hooks-config-pre-tool-use-recall-and-guards"
+      (
+        codexHookEventRunsScript "PreToolUse" "memory-recall.py"
+        && codexHookEventRunsScript "PreToolUse" "prohibited-command-guard.py"
+        && codexHookEventRunsScript "PreToolUse" "prohibited-words-guard.py"
+      )
+      "Codex PreToolUse hooks should run memory-recall and the prohibited-command/word guards";
+
+  codex-hooks-config-stop-lint-review =
+    mkEvalCheck "codex-hooks-config-stop-lint-review"
+      (codexHookEventRunsScript "Stop" "lint-turn-review.py")
+      "Codex Stop hook should run lint-turn-review";
 }

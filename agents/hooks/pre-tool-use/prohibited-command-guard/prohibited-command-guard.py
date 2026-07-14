@@ -11,6 +11,20 @@ from __future__ import annotations
 import json
 import re
 import sys
+from pathlib import Path
+
+_MODULE_DIRECTORY = Path(__file__).resolve().parent
+for _shared_module_candidate_directory in [_MODULE_DIRECTORY] + [
+    ancestor / "common" for ancestor in _MODULE_DIRECTORY.parents
+]:
+    _shared_module_candidate_path = str(_shared_module_candidate_directory)
+    if (
+        _shared_module_candidate_directory.is_dir()
+        and _shared_module_candidate_path not in sys.path
+    ):
+        sys.path.insert(0, _shared_module_candidate_path)
+
+from codex_tool_payload import normalize_codex_tool_payload  # noqa: E402
 
 COMMAND_BOUNDARY_PREFIX = r"(?:^|[;&|`(]\s*)"
 
@@ -101,6 +115,8 @@ def main() -> None:
         data = json.load(sys.stdin)
     except json.JSONDecodeError:
         sys.exit(0)
+
+    data = normalize_codex_tool_payload(data)
 
     tool_name = data.get("tool_name", "")
     tool_input = data.get("tool_input", {}) or {}

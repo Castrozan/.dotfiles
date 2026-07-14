@@ -33,11 +33,10 @@ larger window and have no safe analogue on the smaller one.
   `skill-runtime-dependency-packages.nix`.
 - Codex: every `agents/skills/*` skill plus a generated `core` skill deployed
   flat to `~/.codex/skills/<name>/SKILL.md` (`skills.nix`).
-- Gap: the skill BODIES are at parity, but Codex does NOT install the skills'
-  runtime dependency packages. Several skills (todo, youtube, twitter, git
-  history, exit/restart) load their SKILL.md but the CLI they tell the agent to
-  run is absent from PATH on a Codex-only machine. Portable and valuable;
-  highest-ROI non-hook follow-up. The curated session-type sets and launch-time
+- No gap. The skills' runtime CLIs (`skill-runtime-dependency-packages.nix`) go
+  into `home.packages`, which is the profile-global package set: the Claude and
+  Codex modules are imported into the SAME home-manager config, so those CLIs are
+  already on PATH for Codex. The curated session-type sets and launch-time
   workspace discovery are clawde/launcher-specific and correctly out of scope.
 
 ## Hooks
@@ -51,31 +50,35 @@ for model-facing injection. Input fields match Claude's (`tool_name`,
 schema is PascalCase-keyed like Claude's; `timeout` is in SECONDS (Claude's
 registrations use milliseconds).
 
-- Deployed now (`home/base/codex/hooks/`): `SessionStart` deep-work context load
-  plus two `PostToolUse` hooks running the SHARED `agents/hooks/post-tool-use`
-  scripts, `auto-format.py` and `nix-rebuild-trigger.py`. The scripts are
-  input-shape-agnostic: `agents/hooks/common/changed_file_paths.py` returns
-  `tool_input.file_path` for Claude's `Edit`/`Write`, or parses Codex
-  `apply_patch` `*** Update/Add/Delete File:` markers out of the tool payload.
-  One script set, both CLIs, no duplication.
-- The one wrinkle handled: Codex edits arrive as `apply_patch` patches under the
-  `shell`/`apply_patch` tool, so the changed path is not in `tool_input.file_path`
-  the way Claude exposes it. The shared parser extracts it from the patch text.
-- Remaining Claude hooks, ranked by daily-driver value, as the follow-up port
-  list (all now technically portable onto Codex's `features.hooks`):
-  - `memory-recall` (PreToolUse) + `memory-write`/`memory-prune` CLIs + the
-    `MEMORY.md` file store: the single biggest continuity capability; recall
-    injection depends on the PreToolUse protocol and the Claude memory dir, so it
-    needs a Codex-specific adapter.
-  - `record-edited-source-file` + `lint-turn-review` (PostToolUse + Stop):
-    end-of-turn repo-native lint of the files touched this turn.
-  - `prohibited-words-guard` (PreToolUse): public-repo leak guard on
-    commit/tag/MR-create commands. Top SAFETY follow-up.
-  - `prohibited-command-guard` (PreToolUse): blocks `git add -A`/`.` and other
-    footguns.
-  - `agent-instruction-file-authoring-router` (PreToolUse): gates edits to
-    instruction surfaces on the `instructions` skill being loaded.
-  - `compaction-context-recovery` (SessionStart `compact`): reload-trackers nudge.
+Two shared helpers make one script set serve both CLIs, no duplication:
+`agents/hooks/common/changed_file_paths.py` (returns `tool_input.file_path` for
+Claude `Edit`/`Write`, or parses Codex `apply_patch` `*** Update/Add/Delete File:`
+markers) and `agents/hooks/common/codex_tool_payload.py` (rewrites a Codex `shell`
+list-command `{"command":["git","add","-A"]}` into a Claude-shaped
+`Bash` string so the guards' scanners work unchanged). All hooks are staged flat
+into one store dir (`home/base/codex/hooks/hook-scripts.nix`) so sibling imports
+resolve, exactly like Claude's flat `~/.claude/hooks`.
+
+- Deployed now (`home/base/codex/hooks/`):
+  - `SessionStart`: deep-work context load.
+  - `PreToolUse` (matcher `.*`): `memory-recall.py` (shares the SAME
+    `~/.claude/projects/<enc>/memory/` store as Claude, so recall continuity
+    carries across both CLIs; needs `rg`), then `prohibited-command-guard.py` and
+    `prohibited-words-guard.py` (the latter env-prefixed with the per-host
+    `PROHIBITED_WORDS_ALLOWED` allowlist, same as Claude).
+  - `PostToolUse` (matcher `.*`): `auto-format.py`, `record-edited-source-file.py`
+    (feeds the lint ledger), `nix-rebuild-trigger.py`.
+  - `Stop` (matcher `.*`): `lint-turn-review.py` reads the ledger and surfaces a
+    repo-native lint advisory for the files touched this turn.
+- Non-gaps confirmed: the `memory-write`/`memory-prune` CLIs are already on PATH
+  for Codex (profile-global `home.packages`), and both they and `memory-recall`
+  compute the same `~/.claude/projects/<enc>/memory/` dir from cwd.
+- Guard blocking note: the guards emit `{"continue": false, ...}` and exit 2,
+  which Codex parses (shared wire protocol); live hard-block under
+  `danger-full-access` is expected to hold but is worth a live confirm.
+- Remaining ports, lower value: `agent-instruction-file-authoring-router`
+  (PreToolUse gate on the `instructions` skill) and `compaction-context-recovery`
+  (SessionStart `compact` reload nudge).
 - Deferred for safety: `session-context` SessionStart enrichment (git status /
   recent commits) would pipe private-infra commit text into model context inside
   a PUBLIC repo. Not ported deliberately.
@@ -124,11 +127,14 @@ registrations use milliseconds).
 
 ## Summary of state
 
-- Instruction body, skills bodies, browser MCPs, full-access posture, max
-  reasoning, and context-compaction philosophy are at parity.
-- `PostToolUse` auto-format and nix-rebuild-trigger hooks are PORTED to Codex via
-  shared input-shape-agnostic scripts.
-- Highest-value remaining ports: the memory system, the skills' runtime CLIs,
-  end-of-turn lint review, and the two publish/command safety guards.
-- Everything else is a model/window limit, a documented safety deferral, or a
-  Claude-TUI/launcher/clawde-agent artifact.
+- Instruction body, skills bodies (and their runtime CLIs), browser MCPs,
+  full-access posture, max reasoning, and context-compaction philosophy are at
+  parity.
+- Ported to Codex via shared, input-shape-agnostic scripts: memory recall
+  (PreToolUse, shared store with Claude), the prohibited-command and
+  prohibited-words guards (PreToolUse), auto-format + record-edited +
+  nix-rebuild-trigger (PostToolUse), and lint-turn-review (Stop).
+- Remaining ports are low value (instruction-file authoring gate, compaction
+  reload nudge); everything else is a model/window limit, a documented safety
+  deferral (`session-context` leak), or a Claude-TUI/launcher/clawde-agent
+  artifact.

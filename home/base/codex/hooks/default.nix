@@ -1,17 +1,25 @@
-{ pkgs, ... }:
+{
+  pkgs,
+  lib,
+  hostname,
+  ...
+}:
 let
-  sharedHooksDirectory = ../../../../agents/hooks;
+  codexHookScripts = import ./hook-scripts.nix { inherit pkgs lib; };
 
-  codexPostToolUseHookScripts = pkgs.runCommandLocal "codex-post-tool-use-hooks" { } ''
-    mkdir -p "$out"
-    install -m 0644 ${sharedHooksDirectory}/common/changed_file_paths.py "$out/changed_file_paths.py"
-    install -m 0644 ${sharedHooksDirectory}/post-tool-use/formatter_table_by_extension.py "$out/formatter_table_by_extension.py"
-    install -m 0644 ${sharedHooksDirectory}/post-tool-use/auto-format.py "$out/auto-format.py"
-    install -m 0644 ${sharedHooksDirectory}/post-tool-use/nix-rebuild-trigger.py "$out/nix-rebuild-trigger.py"
-  '';
+  runCodexHookScript =
+    scriptFilename: "${pkgs.python3}/bin/python3 ${codexHookScripts}/${scriptFilename}";
 
-  runCodexPostToolUseHookScript =
-    scriptFilename: "${pkgs.python3}/bin/python3 ${codexPostToolUseHookScripts}/${scriptFilename}";
+  machineAllowedProhibitedWordsFile =
+    ../../../../private-config/machines + "/${hostname}/claude-prohibited-words-allowed.nix";
+  machineAllowedProhibitedWords =
+    if builtins.pathExists machineAllowedProhibitedWordsFile then
+      import machineAllowedProhibitedWordsFile
+    else
+      [ ];
+  prohibitedWordsAllowedEnvironmentAssignment =
+    "PROHIBITED_WORDS_ALLOWED="
+    + lib.escapeShellArg (lib.concatStringsSep "," machineAllowedProhibitedWords);
 
   codexHooksConfiguration = {
     hooks = {
@@ -28,19 +36,58 @@ let
           ];
         }
       ];
+      PreToolUse = [
+        {
+          matcher = ".*";
+          hooks = [
+            {
+              type = "command";
+              command = runCodexHookScript "memory-recall.py";
+              timeout = 5;
+            }
+            {
+              type = "command";
+              command = runCodexHookScript "prohibited-command-guard.py";
+              timeout = 3;
+            }
+            {
+              type = "command";
+              command = "${prohibitedWordsAllowedEnvironmentAssignment} ${runCodexHookScript "prohibited-words-guard.py"}";
+              timeout = 3;
+            }
+          ];
+        }
+      ];
       PostToolUse = [
         {
           matcher = ".*";
           hooks = [
             {
               type = "command";
-              command = runCodexPostToolUseHookScript "auto-format.py";
+              command = runCodexHookScript "auto-format.py";
               timeout = 15;
             }
             {
               type = "command";
-              command = runCodexPostToolUseHookScript "nix-rebuild-trigger.py";
+              command = runCodexHookScript "record-edited-source-file.py";
+              timeout = 3;
+            }
+            {
+              type = "command";
+              command = runCodexHookScript "nix-rebuild-trigger.py";
               timeout = 5;
+            }
+          ];
+        }
+      ];
+      Stop = [
+        {
+          matcher = ".*";
+          hooks = [
+            {
+              type = "command";
+              command = runCodexHookScript "lint-turn-review.py";
+              timeout = 15;
             }
           ];
         }

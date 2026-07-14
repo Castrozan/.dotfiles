@@ -7,8 +7,19 @@ import os
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent))
+_MODULE_DIRECTORY = Path(__file__).resolve().parent
+for _shared_module_candidate_directory in (
+    _MODULE_DIRECTORY,
+    _MODULE_DIRECTORY.parent / "common",
+):
+    _shared_module_candidate_path = str(_shared_module_candidate_directory)
+    if (
+        _shared_module_candidate_directory.is_dir()
+        and _shared_module_candidate_path not in sys.path
+    ):
+        sys.path.insert(0, _shared_module_candidate_path)
 
+from changed_file_paths import collect_changed_file_paths  # noqa: E402
 from lint_ledger import append_edited_source_file  # noqa: E402
 from linter_table_by_extension import LINTERS_BY_FILE_EXTENSION  # noqa: E402
 
@@ -22,17 +33,16 @@ def read_hook_input_or_exit() -> dict:
 
 def main() -> None:
     hook_input = read_hook_input_or_exit()
-    file_path = hook_input.get("tool_input", {}).get("file_path", "")
     session_id = hook_input.get("session_id", "")
 
-    if not file_path or not os.path.exists(file_path):
-        sys.exit(0)
+    for file_path in collect_changed_file_paths(hook_input):
+        if not os.path.exists(file_path):
+            continue
+        _, file_extension = os.path.splitext(file_path)
+        if file_extension.lower() not in LINTERS_BY_FILE_EXTENSION:
+            continue
+        append_edited_source_file(session_id, os.path.abspath(file_path))
 
-    _, file_extension = os.path.splitext(file_path)
-    if file_extension.lower() not in LINTERS_BY_FILE_EXTENSION:
-        sys.exit(0)
-
-    append_edited_source_file(session_id, os.path.abspath(file_path))
     sys.exit(0)
 
 
