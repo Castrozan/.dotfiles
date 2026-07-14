@@ -1,19 +1,21 @@
 { pkgs, ... }:
 let
-  mkTerminalPythonScript =
-    name: file:
+  mkTerminalPythonScriptWith =
+    name: file: pythonInterpreter:
     let
       pythonSource = pkgs.writeText "${name}-source.py" (builtins.readFile file);
     in
     pkgs.writeShellScriptBin name ''
-      exec ${pkgs.python312}/bin/python3 ${pythonSource} "$@"
+      exec ${pythonInterpreter}/bin/python3 ${pythonSource} "$@"
     '';
+  mkTerminalPythonScript = name: file: mkTerminalPythonScriptWith name file pkgs.python312;
+  equationArtPython = pkgs.python312.withPackages (pythonPackages: [ pythonPackages.numpy ]);
 in
 {
   home.packages = [
     (mkTerminalPythonScript "herdr-screensaver" ./scripts/launch_herdr_screensaver.py)
     (mkTerminalPythonScript "precompute-loop" ./scripts/precompute_loop.py)
-    (mkTerminalPythonScript "equation-art" ./scripts/equation_art.py)
+    (mkTerminalPythonScriptWith "equation-art" ./scripts/equation_art.py equationArtPython)
     (pkgs.writeShellScriptBin "tmux-pane-toggle" (builtins.readFile ./scripts/tmux-pane-toggle))
     (pkgs.writeShellScriptBin "tmux-restore-pane-after-toggle" (
       builtins.readFile ./scripts/tmux-restore-pane-after-toggle
