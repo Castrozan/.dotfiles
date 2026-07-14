@@ -3,6 +3,7 @@ vim.g.snacks_animate = false
 local options = vim.opt
 
 options.spelllang = { "en", "pt_br" }
+options.spelloptions = "camel"
 options.scrolloff = 8
 options.sidescrolloff = 8
 options.tabstop = 4
