@@ -7,7 +7,7 @@ SCREENSAVER_WORKSPACE_LABEL = "screensaver"
 PRIMARY_LEFT_COLUMN_RATIO = 0.66
 RIGHT_COLUMN_VERTICAL_SPLIT_RATIO = 0.60
 PRECOMPUTE_LOOP_CAPTURE_SECONDS = 60
-SELF_LOOPING_COMMAND_MARKERS = ("bad-apple", "precompute-loop")
+PRECOMPUTE_LOOP_WRAPPED_COMMAND_MARKERS = ("equation-art",)
 
 
 def run_herdr(*arguments):
@@ -44,10 +44,15 @@ def all_command_segments_available(command):
 
 def resolve_available_screensaver_commands():
     if shutil.which("cbonsai"):
-        primary_command = "cbonsai --live --infinite"
+        companion_command = "cbonsai --live --infinite"
     else:
-        primary_command = "cmatrix -b -s -u 8"
-    candidate_commands = [primary_command, "cmatrix -b -u 8", "sleep 3; bad-apple"]
+        companion_command = "cmatrix -b -s -u 8"
+    candidate_commands = [
+        "equation-art",
+        companion_command,
+        "cmatrix -b -u 8",
+        "sleep 3; bad-apple",
+    ]
     return [
         command
         for command in candidate_commands
@@ -58,7 +63,7 @@ def resolve_available_screensaver_commands():
 def wrap_command_for_cheap_replay(command):
     if not shutil.which("precompute-loop"):
         return command
-    if any(marker in command for marker in SELF_LOOPING_COMMAND_MARKERS):
+    if not any(marker in command for marker in PRECOMPUTE_LOOP_WRAPPED_COMMAND_MARKERS):
         return command
     return f"precompute-loop --seconds {PRECOMPUTE_LOOP_CAPTURE_SECONDS} -- {command}"
 

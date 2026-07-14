@@ -13,6 +13,7 @@ in
   home.packages = [
     (mkTerminalPythonScript "herdr-screensaver" ./scripts/launch_herdr_screensaver.py)
     (mkTerminalPythonScript "precompute-loop" ./scripts/precompute_loop.py)
+    (mkTerminalPythonScript "equation-art" ./scripts/equation_art.py)
     (pkgs.writeShellScriptBin "tmux-pane-toggle" (builtins.readFile ./scripts/tmux-pane-toggle))
     (pkgs.writeShellScriptBin "tmux-restore-pane-after-toggle" (
       builtins.readFile ./scripts/tmux-restore-pane-after-toggle

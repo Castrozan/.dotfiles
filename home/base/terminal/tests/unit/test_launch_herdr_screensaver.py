@@ -100,38 +100,48 @@ def test_resolve_is_empty_when_nothing_available(monkeypatch):
     assert launcher.resolve_available_screensaver_commands() == []
 
 
-def test_wrap_routes_continuous_generator_through_precompute_loop(monkeypatch):
+def test_resolve_lists_equation_art_first_when_present(monkeypatch):
+    monkeypatch.setattr(
+        launcher.shutil,
+        "which",
+        _which_returning({"equation-art", "cbonsai", "cmatrix"}),
+    )
+    assert launcher.resolve_available_screensaver_commands() == [
+        "equation-art",
+        "cbonsai --live --infinite",
+        "cmatrix -b -u 8",
+    ]
+
+
+def test_wrap_routes_equation_art_through_precompute_loop(monkeypatch):
     monkeypatch.setattr(launcher.shutil, "which", _which_returning({"precompute-loop"}))
     assert (
-        launcher.wrap_command_for_cheap_replay("cmatrix -b -u 8")
+        launcher.wrap_command_for_cheap_replay("equation-art")
         == f"precompute-loop --seconds {launcher.PRECOMPUTE_LOOP_CAPTURE_SECONDS} "
-        "-- cmatrix -b -u 8"
+        "-- equation-art"
+    )
+
+
+def test_wrap_leaves_incremental_generators_live(monkeypatch):
+    monkeypatch.setattr(launcher.shutil, "which", _which_returning({"precompute-loop"}))
+    assert (
+        launcher.wrap_command_for_cheap_replay("cmatrix -b -u 8") == "cmatrix -b -u 8"
+    )
+    assert (
+        launcher.wrap_command_for_cheap_replay("cbonsai --live --infinite")
+        == "cbonsai --live --infinite"
     )
 
 
 def test_wrap_leaves_command_untouched_when_precompute_loop_absent(monkeypatch):
     monkeypatch.setattr(launcher.shutil, "which", _which_returning(set()))
-    assert (
-        launcher.wrap_command_for_cheap_replay("cmatrix -b -u 8") == "cmatrix -b -u 8"
-    )
-
-
-def test_wrap_skips_self_looping_commands(monkeypatch):
-    monkeypatch.setattr(launcher.shutil, "which", _which_returning({"precompute-loop"}))
-    assert (
-        launcher.wrap_command_for_cheap_replay("sleep 3; bad-apple")
-        == "sleep 3; bad-apple"
-    )
-    assert (
-        launcher.wrap_command_for_cheap_replay("precompute-loop --seconds 60 -- x")
-        == "precompute-loop --seconds 60 -- x"
-    )
+    assert launcher.wrap_command_for_cheap_replay("equation-art") == "equation-art"
 
 
 def test_start_screensaver_routes_pane_commands_through_precompute_loop(monkeypatch):
     monkeypatch.setattr(launcher.shutil, "which", _which_returning({"precompute-loop"}))
     monkeypatch.setattr(
-        launcher, "resolve_available_screensaver_commands", lambda: ["cmatrix -b -u 8"]
+        launcher, "resolve_available_screensaver_commands", lambda: ["equation-art"]
     )
     monkeypatch.setattr(launcher, "create_screensaver_workspace", lambda: ("ws1", "p1"))
     herdr_calls = []
@@ -146,7 +156,7 @@ def test_start_screensaver_routes_pane_commands_through_precompute_loop(monkeypa
             "run",
             "p1",
             f"precompute-loop --seconds {launcher.PRECOMPUTE_LOOP_CAPTURE_SECONDS} "
-            "-- cmatrix -b -u 8",
+            "-- equation-art",
         )
     ]
 
