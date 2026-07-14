@@ -12,6 +12,10 @@ SKILL_DISCOVERY_PRUNED_CHILD_DIRECTORY_NAMES = frozenset(
 )
 WORKSPACE_SKILL_NAMESPACE_PARENT_DIRECTORY = Path("/tmp")
 WORKSPACE_SKILL_NAMESPACE_DIRECTORY_NAME_PREFIX = "claude-workspace-skills."
+WORKSPACE_SKILL_NAMESPACE_STAGING_DIRECTORY_NAME_PREFIX = (
+    "." + WORKSPACE_SKILL_NAMESPACE_DIRECTORY_NAME_PREFIX
+)
+WORKSPACE_SKILL_NAMESPACE_STAGING_DIRECTORY_NAME_INFIX = ".staging."
 WORKSPACE_SKILL_NAMESPACE_SOURCE_CWD_SENTINEL_FILE_NAME = ".source-cwd"
 WORKSPACE_SKILL_NAMESPACE_CLAUDE_SKILLS_SUBPATH = Path(".claude") / "skills"
 INTERACTIVE_PREFERENCES_FILE_PATH_ENVIRONMENT_VARIABLE_NAME = (
@@ -153,16 +157,43 @@ def build_unique_skill_directory_name_map(
     return unique_skill_directory_name_map
 
 
+def compute_workspace_source_cwd_hash(workspace_source_cwd: Path) -> str:
+    return hashlib.sha256(str(workspace_source_cwd.resolve()).encode()).hexdigest()[:12]
+
+
 def compute_workspace_skill_namespace_directory(
     workspace_source_cwd: Path,
 ) -> Path:
-    workspace_source_cwd_hash = hashlib.sha256(
-        str(workspace_source_cwd.resolve()).encode()
-    ).hexdigest()[:12]
     return (
         WORKSPACE_SKILL_NAMESPACE_PARENT_DIRECTORY
-        / f"{WORKSPACE_SKILL_NAMESPACE_DIRECTORY_NAME_PREFIX}{workspace_source_cwd_hash}"
+        / f"{WORKSPACE_SKILL_NAMESPACE_DIRECTORY_NAME_PREFIX}{compute_workspace_source_cwd_hash(workspace_source_cwd)}"
     )
+
+
+def compute_workspace_skill_namespace_staging_directory(
+    workspace_source_cwd: Path,
+    materializing_process_identifier: int,
+) -> Path:
+    return WORKSPACE_SKILL_NAMESPACE_PARENT_DIRECTORY / (
+        WORKSPACE_SKILL_NAMESPACE_STAGING_DIRECTORY_NAME_PREFIX
+        + compute_workspace_source_cwd_hash(workspace_source_cwd)
+        + WORKSPACE_SKILL_NAMESPACE_STAGING_DIRECTORY_NAME_INFIX
+        + str(materializing_process_identifier)
+    )
+
+
+def remove_directory_tree_tolerating_concurrent_removal(directory_path: Path) -> None:
+    try:
+        shutil.rmtree(directory_path)
+    except FileNotFoundError:
+        pass
+
+
+def remove_swept_namespace_directory_best_effort(candidate_directory: Path) -> None:
+    try:
+        shutil.rmtree(candidate_directory)
+    except OSError:
+        pass
 
 
 def ensure_directory_symlink(target_path: Path, source_path: Path) -> None:
@@ -180,10 +211,11 @@ def remove_workspace_skill_namespace_directory_in_place(
     workspace_skill_namespace_directory: Path,
 ) -> None:
     if workspace_skill_namespace_directory.is_symlink():
-        workspace_skill_namespace_directory.unlink()
+        workspace_skill_namespace_directory.unlink(missing_ok=True)
         return
-    if workspace_skill_namespace_directory.exists():
-        shutil.rmtree(workspace_skill_namespace_directory)
+    remove_directory_tree_tolerating_concurrent_removal(
+        workspace_skill_namespace_directory
+    )
 
 
 def sweep_stale_workspace_skill_namespace_directories() -> None:
@@ -203,11 +235,50 @@ def sweep_stale_workspace_skill_namespace_directories() -> None:
             / WORKSPACE_SKILL_NAMESPACE_SOURCE_CWD_SENTINEL_FILE_NAME
         )
         if not source_cwd_sentinel_file.is_file():
-            shutil.rmtree(candidate_directory)
+            remove_swept_namespace_directory_best_effort(candidate_directory)
             continue
         recorded_source_cwd = Path(source_cwd_sentinel_file.read_text().strip())
         if not recorded_source_cwd.is_dir():
-            shutil.rmtree(candidate_directory)
+            remove_swept_namespace_directory_best_effort(candidate_directory)
+
+
+def is_process_identifier_currently_running(process_identifier: int) -> bool:
+    try:
+        os.kill(process_identifier, 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+    return True
+
+
+def sweep_orphaned_workspace_skill_namespace_staging_directories() -> None:
+    if not WORKSPACE_SKILL_NAMESPACE_PARENT_DIRECTORY.is_dir():
+        return
+    for candidate_directory in WORKSPACE_SKILL_NAMESPACE_PARENT_DIRECTORY.iterdir():
+        if candidate_directory.is_symlink():
+            continue
+        if not candidate_directory.is_dir():
+            continue
+        if not candidate_directory.name.startswith(
+            WORKSPACE_SKILL_NAMESPACE_STAGING_DIRECTORY_NAME_PREFIX
+        ):
+            continue
+        if (
+            WORKSPACE_SKILL_NAMESPACE_STAGING_DIRECTORY_NAME_INFIX
+            not in candidate_directory.name
+        ):
+            continue
+        staging_owner_process_identifier_text = candidate_directory.name.rsplit(
+            WORKSPACE_SKILL_NAMESPACE_STAGING_DIRECTORY_NAME_INFIX, 1
+        )[1]
+        if not staging_owner_process_identifier_text.isdigit():
+            continue
+        if is_process_identifier_currently_running(
+            int(staging_owner_process_identifier_text)
+        ):
+            continue
+        remove_swept_namespace_directory_best_effort(candidate_directory)
 
 
 def populate_workspace_skill_namespace_directory(
@@ -271,18 +342,64 @@ def prepare_workspace_claude_launch_plan(
     )
 
 
+def swap_staging_into_final_namespace_accepting_concurrent_winner(
+    workspace_skill_namespace_staging_directory: Path,
+    workspace_skill_namespace_directory: Path,
+) -> None:
+    remove_workspace_skill_namespace_directory_in_place(
+        workspace_skill_namespace_directory
+    )
+    try:
+        os.replace(
+            workspace_skill_namespace_staging_directory,
+            workspace_skill_namespace_directory,
+        )
+    except OSError:
+        if not workspace_skill_namespace_directory.is_dir():
+            raise
+
+
+def build_workspace_skill_namespace_directory_via_staging_swap(
+    workspace_skill_namespace_directory: Path,
+    workspace_skill_namespace_staging_directory: Path,
+    discovered_skill_directory_name_map: dict[str, Path],
+    workspace_source_cwd: Path,
+) -> None:
+    remove_workspace_skill_namespace_directory_in_place(
+        workspace_skill_namespace_staging_directory
+    )
+    try:
+        populate_workspace_skill_namespace_directory(
+            workspace_skill_namespace_staging_directory,
+            discovered_skill_directory_name_map,
+            workspace_source_cwd,
+        )
+        swap_staging_into_final_namespace_accepting_concurrent_winner(
+            workspace_skill_namespace_staging_directory,
+            workspace_skill_namespace_directory,
+        )
+    finally:
+        remove_workspace_skill_namespace_directory_in_place(
+            workspace_skill_namespace_staging_directory
+        )
+
+
 def materialize_workspace_skill_namespace_directory_on_disk(
     workspace_claude_launch_plan: WorkspaceClaudeLaunchPlan,
     workspace_source_cwd: Path,
 ) -> None:
     sweep_stale_workspace_skill_namespace_directories()
-    remove_workspace_skill_namespace_directory_in_place(
-        workspace_claude_launch_plan.workspace_skill_namespace_directory
-    )
+    sweep_orphaned_workspace_skill_namespace_staging_directories()
     if not workspace_claude_launch_plan.discovered_skill_directory_name_map:
+        remove_workspace_skill_namespace_directory_in_place(
+            workspace_claude_launch_plan.workspace_skill_namespace_directory
+        )
         return
-    populate_workspace_skill_namespace_directory(
+    build_workspace_skill_namespace_directory_via_staging_swap(
         workspace_claude_launch_plan.workspace_skill_namespace_directory,
+        compute_workspace_skill_namespace_staging_directory(
+            workspace_source_cwd, os.getpid()
+        ),
         workspace_claude_launch_plan.discovered_skill_directory_name_map,
         workspace_source_cwd,
     )
