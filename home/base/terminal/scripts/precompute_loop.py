@@ -35,31 +35,23 @@ def resolve_cast_path(command, capture_seconds, columns, lines):
 
 def terminate_child(child_pid, master_fd):
     try:
-        os.kill(child_pid, signal.SIGTERM)
-    except ProcessLookupError:
-        pass
-    deadline = time.monotonic() + CHILD_TERMINATION_GRACE_SECONDS
-    while time.monotonic() < deadline:
-        try:
-            waited_pid, _ = os.waitpid(child_pid, os.WNOHANG)
-        except ChildProcessError:
-            break
-        if waited_pid == child_pid:
-            break
-        time.sleep(0.02)
-    else:
-        try:
-            os.kill(child_pid, signal.SIGKILL)
-        except ProcessLookupError:
-            pass
-        try:
-            os.waitpid(child_pid, 0)
-        except ChildProcessError:
-            pass
-    try:
         os.close(master_fd)
     except OSError:
         pass
+    for termination_signal in (signal.SIGTERM, signal.SIGKILL):
+        try:
+            os.kill(child_pid, termination_signal)
+        except ProcessLookupError:
+            return
+        deadline = time.monotonic() + CHILD_TERMINATION_GRACE_SECONDS
+        while time.monotonic() < deadline:
+            try:
+                waited_pid, _ = os.waitpid(child_pid, os.WNOHANG)
+            except ChildProcessError:
+                return
+            if waited_pid == child_pid:
+                return
+            time.sleep(0.02)
 
 
 def capture_command_chunks(command, capture_seconds, columns, lines, echo=True):

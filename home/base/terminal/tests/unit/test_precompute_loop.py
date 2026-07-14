@@ -40,18 +40,16 @@ def test_terminate_child_escalates_to_sigkill_when_sigterm_ignored(monkeypatch):
     monkeypatch.setattr(
         precompute_loop.os, "kill", lambda pid, number: signals_sent.append(number)
     )
-    monkeypatch.setattr(
-        precompute_loop.os,
-        "waitpid",
-        lambda pid, flags: (pid, 0) if flags == 0 else (0, 0),
-    )
+    monkeypatch.setattr(precompute_loop.os, "waitpid", lambda pid, flags: (0, 0))
     monkeypatch.setattr(precompute_loop.os, "close", lambda fd: None)
-    ticks = iter([0.0, 0.1, 0.6])
+    ticks = iter([0.0, 0.1, 0.6, 0.6, 0.7, 1.2])
     monkeypatch.setattr(precompute_loop.time, "monotonic", lambda: next(ticks))
     monkeypatch.setattr(precompute_loop.time, "sleep", lambda seconds: None)
     precompute_loop.terminate_child(4242, 9)
-    assert signals_sent[0] == precompute_loop.signal.SIGTERM
-    assert precompute_loop.signal.SIGKILL in signals_sent
+    assert signals_sent == [
+        precompute_loop.signal.SIGTERM,
+        precompute_loop.signal.SIGKILL,
+    ]
 
 
 def test_terminate_child_stops_at_sigterm_when_child_exits(monkeypatch):

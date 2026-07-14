@@ -31,7 +31,7 @@ def test_frame_is_deterministic_for_same_time_and_size():
 
 def test_frame_plots_some_braille_points():
     frame = equation_art.render_equation_frame(1.0, 60, 30)
-    assert any(character != " " for character in frame)
+    assert any(ord(character) >= equation_art.BRAILLE_BASE for character in frame)
 
 
 def test_frame_advances_over_time():
