@@ -17,6 +17,7 @@
       ".hammerspoon/workspace_grid_persistence.lua".source = ./workspace_grid_persistence.lua;
       ".hammerspoon/workspace_grid_menubar.lua".source = ./workspace_grid_menubar.lua;
       ".hammerspoon/switcher_bridge.lua".source = ./switcher_bridge.lua;
+      ".hammerspoon/prevent_window_minimize.lua".source = ./prevent_window_minimize.lua;
       ".hammerspoon/karabiner_application_focus_variables.lua".source =
         ./karabiner_application_focus_variables.lua;
       ".hammerspoon/smart_home_media_key_control.lua".text =
