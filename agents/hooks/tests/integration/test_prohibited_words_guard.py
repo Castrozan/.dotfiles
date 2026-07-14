@@ -16,7 +16,7 @@ class TestFileContentsAndNames:
                 },
             }
         )
-        assert result.returncode == 2
+        assert result.returncode == 0
         assert "acme" in parse_system_message(result.stdout).lower()
 
     def test_blocks_word_in_file_name(self, invoke_prohibited_words_guard_hook):
@@ -29,7 +29,7 @@ class TestFileContentsAndNames:
                 },
             }
         )
-        assert result.returncode == 2
+        assert result.returncode == 0
         assert "file name" in parse_system_message(result.stdout).lower()
 
     def test_blocks_word_in_edit_replacement(self, invoke_prohibited_words_guard_hook):
@@ -43,7 +43,7 @@ class TestFileContentsAndNames:
                 },
             }
         )
-        assert result.returncode == 2
+        assert result.returncode == 0
 
     def test_allows_edit_that_removes_the_word(
         self, invoke_prohibited_words_guard_hook
@@ -100,7 +100,7 @@ class TestPublishingCommands:
                 "tool_input": {"command": 'git commit -m "fix acme deploy"'},
             }
         )
-        assert result.returncode == 2
+        assert result.returncode == 0
 
     def test_allows_word_in_non_publishing_command(
         self, invoke_prohibited_words_guard_hook
@@ -156,7 +156,7 @@ class TestMachineAllowedWords:
                 },
             }
         )
-        assert result.returncode == 2
+        assert result.returncode == 0
         assert "initech" in parse_system_message(result.stdout).lower()
 
 

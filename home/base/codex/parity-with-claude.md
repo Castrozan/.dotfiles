@@ -41,41 +41,66 @@ larger window and have no safe analogue on the smaller one.
 
 ## Hooks
 
-Codex's hook subsystem is now stable (`features.hooks = true`) and exposes the
-same event vocabulary and JSON wire protocol as Claude: `PreToolUse`,
-`PostToolUse`, `SessionStart`, `UserPromptSubmit`, `PermissionRequest`,
-`SubagentStart`, `SubagentStop`, `Stop`, plus `hookSpecificOutput.additionalContext`
-for model-facing injection. Input fields match Claude's (`tool_name`,
-`tool_input`, `tool_response`, `cwd`, `transcript_path`). The `~/.codex/hooks.json`
-schema is PascalCase-keyed like Claude's; `timeout` is in SECONDS (Claude's
-registrations use milliseconds).
+Codex's hook subsystem is stable (`features.hooks = true`) and speaks Claude's
+event vocabulary and JSON wire protocol (`PreToolUse`, `PostToolUse`,
+`SessionStart`, `Stop`, ...) including `hookSpecificOutput` for model-facing
+injection. Three payload facts were established by CAPTURING real Codex 0.144.1
+hook input, not assumed:
 
-Two shared helpers make one script set serve both CLIs, no duplication:
-`agents/hooks/common/changed_file_paths.py` (returns `tool_input.file_path` for
-Claude `Edit`/`Write`, or parses Codex `apply_patch` `*** Update/Add/Delete File:`
-markers) and `agents/hooks/common/codex_tool_payload.py` (rewrites a Codex `shell`
-list-command `{"command":["git","add","-A"]}` into a Claude-shaped
-`Bash` string so the guards' scanners work unchanged). All hooks are staged flat
-into one store dir (`home/base/codex/hooks/hook-scripts.nix`) so sibling imports
-resolve, exactly like Claude's flat `~/.claude/hooks`.
+- A shell command reaches the hook already Claude-shaped: `tool_name` is `Bash`
+  and `tool_input.command` is a clean string (`"git add -A"`). The `/bin/zsh -lc`
+  wrapper Codex uses to EXECUTE a command never reaches the hook, so the command
+  guard's scanners work directly, no unwrapping needed.
+- A file write reaches the hook as `tool_name` `apply_patch` with the full patch
+  body (markers plus added `+` lines) in `tool_input.command`.
+- `timeout` is in SECONDS (Claude uses milliseconds).
 
-- Deployed now (`home/base/codex/hooks/`):
+Two enforcement facts, also established live, drove the design:
+
+- Codex honors a PreToolUse block ONLY as
+  `{"hookSpecificOutput":{"permissionDecision":"deny",...}}` with exit 0. A nonzero
+  exit (Claude's `continue:false` + exit-2 convention) is logged "PreToolUse
+  Failed" and the tool runs anyway. So the guards emit the `permissionDecision:
+  deny` schema through a shared `common/pre_tool_use_block.py`; Claude honors the
+  same schema (the in-repo `monitor-streaming-pattern-validator` already relies on
+  it), so one guard blocks on both CLIs.
+- Codex gates hooks behind a per-invocation trust review ("hooks need review
+  before they can run") that project trust does NOT satisfy and that a rebuild
+  would re-invalidate (the `hooks.json` store path changes). The `codex` wrapper
+  (`package.nix`) therefore launches with `--dangerously-bypass-hook-trust`, so the
+  nix-managed guards run every session, matching the danger-full-access /
+  approval-never posture. Without this flag the entire hooks port is inert.
+
+Two shared helpers let one script set serve both CLIs:
+`common/changed_file_paths.py` (returns `tool_input.file_path` for Claude
+`Edit`/`Write`, or parses the Codex `apply_patch` `*** Add/Update/Delete File:`
+markers and added-line content) and `common/codex_tool_payload.py` (a defensive
+no-op on the observed `Bash`/`apply_patch` payloads; it only rewrites a
+hypothetical `shell` list-command into a Claude `Bash` string). All hooks stage
+flat into one store dir (`home/base/codex/hooks/hook-scripts.nix`) so sibling
+imports resolve, exactly like Claude's flat `~/.claude/hooks`.
+
+- Deployed and live-confirmed (`home/base/codex/hooks/`):
   - `SessionStart`: deep-work context load.
   - `PreToolUse` (matcher `.*`): `memory-recall.py` (shares the SAME
     `~/.claude/projects/<enc>/memory/` store as Claude, so recall continuity
     carries across both CLIs; needs `rg`), then `prohibited-command-guard.py` and
     `prohibited-words-guard.py` (the latter env-prefixed with the per-host
-    `PROHIBITED_WORDS_ALLOWED` allowlist, same as Claude).
+    `PROHIBITED_WORDS_ALLOWED` allowlist). Both block via the deny schema; the
+    words guard also scans `apply_patch` bodies and file names, closing the Codex
+    write-path content-scan gap (Codex writes files via `apply_patch`, not
+    Write/Edit).
   - `PostToolUse` (matcher `.*`): `auto-format.py`, `record-edited-source-file.py`
-    (feeds the lint ledger), `nix-rebuild-trigger.py`.
+    (feeds the lint ledger), `nix-rebuild-trigger.py`, all reading changed paths
+    from the `apply_patch` payload.
   - `Stop` (matcher `.*`): `lint-turn-review.py` reads the ledger and surfaces a
     repo-native lint advisory for the files touched this turn.
+- Live-confirmed via an isolated `CODEX_HOME` exec run: the command guard refuses
+  `git add -A` ("PreToolUse Blocked") and the words guard refuses an `apply_patch`
+  adding a prohibited word.
 - Non-gaps confirmed: the `memory-write`/`memory-prune` CLIs are already on PATH
   for Codex (profile-global `home.packages`), and both they and `memory-recall`
   compute the same `~/.claude/projects/<enc>/memory/` dir from cwd.
-- Guard blocking note: the guards emit `{"continue": false, ...}` and exit 2,
-  which Codex parses (shared wire protocol); live hard-block under
-  `danger-full-access` is expected to hold but is worth a live confirm.
 - Remaining ports, lower value: `agent-instruction-file-authoring-router`
   (PreToolUse gate on the `instructions` skill) and `compaction-context-recovery`
   (SessionStart `compact` reload nudge).
@@ -113,7 +138,9 @@ resolve, exactly like Claude's flat `~/.claude/hooks`.
 
 - Both run full-access with no approval prompts: Claude via
   `dangerouslySkipPermissions` / `bypassPermissions`, Codex via
-  `--sandbox danger-full-access --ask-for-approval never`.
+  `--sandbox danger-full-access --ask-for-approval never`. The Codex wrapper also
+  passes `--dangerously-bypass-hook-trust` so its nix-managed hooks run without a
+  per-session review prompt.
 - Both default to maximum reasoning: Claude `effortLevel = max`, Codex
   `model_reasoning_effort = xhigh` with `model_verbosity = low` and no reasoning
   summary.
@@ -132,8 +159,10 @@ resolve, exactly like Claude's flat `~/.claude/hooks`.
   parity.
 - Ported to Codex via shared, input-shape-agnostic scripts: memory recall
   (PreToolUse, shared store with Claude), the prohibited-command and
-  prohibited-words guards (PreToolUse), auto-format + record-edited +
-  nix-rebuild-trigger (PostToolUse), and lint-turn-review (Stop).
+  prohibited-words guards (PreToolUse, blocking via the `permissionDecision: deny`
+  schema Codex requires), auto-format + record-edited + nix-rebuild-trigger
+  (PostToolUse), and lint-turn-review (Stop). The wrapper's
+  `--dangerously-bypass-hook-trust` is what lets any of them run.
 - Remaining ports are low value (instruction-file authoring gate, compaction
   reload nudge); everything else is a model/window limit, a documented safety
   deferral (`session-context` leak), or a Claude-TUI/launcher/clawde-agent

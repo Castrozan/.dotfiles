@@ -1,11 +1,4 @@
 #!/usr/bin/env python3
-"""Block tool invocations that violate documented policies.
-
-Exit codes:
-  0 - Allow the tool call to proceed.
-  2 - BLOCK the tool call (policy violation).
-"""
-
 from __future__ import annotations
 
 import json
@@ -25,6 +18,7 @@ for _shared_module_candidate_directory in [_MODULE_DIRECTORY] + [
         sys.path.insert(0, _shared_module_candidate_path)
 
 from codex_tool_payload import normalize_codex_tool_payload  # noqa: E402
+from pre_tool_use_block import deny_pre_tool_use_call  # noqa: E402
 
 COMMAND_BOUNDARY_PREFIX = r"(?:^|[;&|`(]\s*)"
 
@@ -99,15 +93,9 @@ def find_first_violation(tool_name: str, inspectable_text: str):
 
 
 def emit_block_and_exit(reason: str, tool_name: str, inspectable_text: str) -> None:
-    output = {
-        "continue": False,
-        "systemMessage": (
-            f"BLOCKED ({tool_name}): {reason}\n"
-            f"Offending input: {inspectable_text.strip()}"
-        ),
-    }
-    print(json.dumps(output))
-    sys.exit(2)
+    deny_pre_tool_use_call(
+        f"BLOCKED ({tool_name}): {reason}\nOffending input: {inspectable_text.strip()}"
+    )
 
 
 def main() -> None:

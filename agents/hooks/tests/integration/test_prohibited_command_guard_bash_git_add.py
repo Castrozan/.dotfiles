@@ -21,7 +21,7 @@ class TestBashGitAddBlocking:
         result = invoke_prohibited_command_guard_hook(
             {"tool_name": "Bash", "tool_input": {"command": command}}
         )
-        assert result.returncode == 2
+        assert result.returncode == 0
         message = parse_prohibited_command_guard_system_message(result.stdout)
         assert "git add" in message
         assert "prohibited" in message.lower()

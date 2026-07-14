@@ -5,6 +5,7 @@ let
   hookScriptRelativePaths = [
     "common/changed_file_paths.py"
     "common/codex_tool_payload.py"
+    "common/pre_tool_use_block.py"
     "post-tool-use/formatter_table_by_extension.py"
     "post-tool-use/auto-format.py"
     "post-tool-use/nix-rebuild-trigger.py"
@@ -21,6 +22,7 @@ let
     "pre-tool-use/memory-recall/memory_recall_ripgrep.py"
     "pre-tool-use/prohibited-command-guard/prohibited-command-guard.py"
     "pre-tool-use/prohibited-words-guard/prohibited-words-guard.py"
+    "pre-tool-use/prohibited-words-guard/prohibited_words_segments.py"
   ];
 
   installHookScriptCommand =

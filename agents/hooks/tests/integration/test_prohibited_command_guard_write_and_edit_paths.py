@@ -24,7 +24,7 @@ class TestWriteAndEditFilePathBlocking:
         result = invoke_prohibited_command_guard_hook(
             {"tool_name": tool_name, "tool_input": {"file_path": file_path}}
         )
-        assert result.returncode == 2
+        assert result.returncode == 0
         message = parse_prohibited_command_guard_system_message(result.stdout)
         assert "castrozan" in message.lower()
 

@@ -10,6 +10,7 @@ _APPLY_PATCH_FILE_MARKER_PATTERN = re.compile(
 _APPLY_PATCH_MOVE_MARKER_PATTERN = re.compile(
     r"^\*\*\* Move to: ([^\"\n]+)", re.MULTILINE
 )
+_APPLY_PATCH_ADDED_LINE_PATTERN = re.compile(r"^\+(.*)$", re.MULTILINE)
 
 
 def _directly_reported_edited_path(tool_input: object) -> str:
@@ -36,6 +37,11 @@ def _paths_declared_in_apply_patch_markers(hook_input: dict) -> list[str]:
         marker_match.strip().strip('"').rstrip("\\").strip()
         for marker_match in marker_matches
     ]
+
+
+def apply_patch_added_content(hook_input: dict) -> str:
+    serialized_payload = _serialized_tool_input(hook_input)
+    return "\n".join(_APPLY_PATCH_ADDED_LINE_PATTERN.findall(serialized_payload))
 
 
 def collect_changed_file_paths(hook_input: dict) -> list[str]:
