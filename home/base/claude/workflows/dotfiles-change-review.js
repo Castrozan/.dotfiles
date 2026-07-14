@@ -51,13 +51,13 @@ const REVIEW_DIMENSIONS = [
     key: "nix-rebuild-safety",
     title: "Nix and rebuild safety",
     focus:
-      "will it evaluate and rebuild on every targeted system; module-option and type mismatches, missing or wrong imports, infinite recursion, platform guards (isNixOS vs isDarwin), agenix secret wiring, and submodule gitlink bumps that must be committed to deploy",
+      "will it evaluate and rebuild on every targeted system; module-option and type mismatches, missing or wrong imports, infinite recursion, platform guards (isNixOS vs isDarwin), agenix secret wiring, submodule gitlink bumps that must be committed to deploy, and any expensive operation (rebuild, cargo, full nix eval, network fetch, slow scan) run per-item in a loop or per-agent in a parallel fan-out where a single run at the boundary would do",
   },
   {
     key: "code-style",
     title: "Code style this repo enforces",
     focus:
-      "zero comments anywhere, long descriptive names with no abbreviations, domain nesting rather than many prefixed sibling files, single responsibility, scripts over 10 lines extracted from nix string interpolation, no backward-compatible shims or aliases",
+      "zero comments anywhere, long descriptive names with no abbreviations, domain nesting rather than many prefixed sibling files, single responsibility, scripts over 10 lines extracted from nix string interpolation, no backward-compatible shims or aliases, and any workaround whose only justification would be an explanatory comment (the no-comment rule makes such code wrong: fix the code, not the comment)",
   },
   {
     key: "instruction-surface",
