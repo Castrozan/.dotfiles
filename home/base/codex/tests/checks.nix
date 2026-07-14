@@ -76,7 +76,10 @@ in
     let
       hooksFile = cfg.home.file.".codex/hooks.json" or null;
       hooksConfig =
-        if hooksFile != null && hooksFile ? text then builtins.fromJSON hooksFile.text else { };
+        if hooksFile != null && hooksFile ? text then
+          builtins.fromJSON (builtins.unsafeDiscardStringContext hooksFile.text)
+        else
+          { };
       sessionStartGroups =
         if hooksConfig ? hooks && hooksConfig.hooks ? SessionStart then
           hooksConfig.hooks.SessionStart
@@ -88,4 +91,26 @@ in
     mkEvalCheck "codex-hooks-config-current-schema" (
       hooksConfig ? hooks && firstSessionStartGroup ? hooks
     ) "Codex hooks.json should use the current top-level hooks schema";
+
+  codex-hooks-config-post-tool-use-auto-format-and-rebuild =
+    let
+      hooksFile = cfg.home.file.".codex/hooks.json" or null;
+      hooksConfig =
+        if hooksFile != null && hooksFile ? text then
+          builtins.fromJSON (builtins.unsafeDiscardStringContext hooksFile.text)
+        else
+          { };
+      postToolUseGroups =
+        if hooksConfig ? hooks && hooksConfig.hooks ? PostToolUse then
+          hooksConfig.hooks.PostToolUse
+        else
+          [ ];
+      postToolUseCommands = builtins.concatMap (
+        group: map (hook: hook.command or "") (group.hooks or [ ])
+      ) postToolUseGroups;
+      commandMentions = needle: builtins.any (command: lib.hasInfix needle command) postToolUseCommands;
+    in
+    mkEvalCheck "codex-hooks-config-post-tool-use-auto-format-and-rebuild" (
+      commandMentions "auto-format.py" && commandMentions "nix-rebuild-trigger.py"
+    ) "Codex PostToolUse hooks should run auto-format and nix-rebuild-trigger";
 }

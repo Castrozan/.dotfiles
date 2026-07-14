@@ -3,21 +3,24 @@
 import json
 import os
 import sys
+from pathlib import Path
+
+_MODULE_DIRECTORY = Path(__file__).resolve().parent
+for _shared_module_candidate_directory in (
+    _MODULE_DIRECTORY,
+    _MODULE_DIRECTORY.parent / "common",
+):
+    _shared_module_candidate_path = str(_shared_module_candidate_directory)
+    if (
+        _shared_module_candidate_directory.is_dir()
+        and _shared_module_candidate_path not in sys.path
+    ):
+        sys.path.insert(0, _shared_module_candidate_path)
+
+from changed_file_paths import collect_changed_file_paths  # noqa: E402
 
 NIX_FILE_EXTENSIONS = [
     ".nix",
-]
-
-PATHS_REQUIRING_SYSTEM_REBUILD = [
-    ".dotfiles",
-    "/etc/nixos",
-    "configuration.nix",
-    "hardware-configuration.nix",
-    "flake.nix",
-    "flake.lock",
-    "home.nix",
-    "default.nix",
-    "shell.nix",
 ]
 
 
@@ -32,46 +35,37 @@ def has_nix_file_extension(path: str) -> bool:
     return False
 
 
-def is_system_configuration_path(path: str) -> bool:
-    if not path:
-        return False
-
-    for system_path in PATHS_REQUIRING_SYSTEM_REBUILD:
-        if system_path in path:
-            return True
-
-    return False
-
-
 def main():
     try:
         data = json.load(sys.stdin)
     except json.JSONDecodeError:
         sys.exit(0)
 
-    tool_name = data.get("tool_name", "")
-    tool_input = data.get("tool_input", {})
+    changed_nix_files = [
+        path
+        for path in collect_changed_file_paths(data)
+        if has_nix_file_extension(path)
+    ]
 
-    if tool_name not in ["Edit", "Write"]:
+    if not changed_nix_files:
         sys.exit(0)
 
-    file_path = tool_input.get("file_path", "") or tool_input.get("path", "")
-
-    if not file_path:
-        sys.exit(0)
-
-    if not has_nix_file_extension(file_path):
-        sys.exit(0)
-
+    changed_nix_file_names = ", ".join(
+        sorted({os.path.basename(path) for path in changed_nix_files})
+    )
     mandatory_rebuild_message = (
-        f"MANDATORY: {os.path.basename(file_path)} changed. "
-        "You MUST stage, commit, and run /rebuild "
+        f"MANDATORY: {changed_nix_file_names} changed. "
+        "You MUST stage, commit, and run the rebuild "
         "before responding to the user. "
         "Do not skip. Untested nix changes are not changes."
     )
     output = {
         "continue": True,
         "systemMessage": mandatory_rebuild_message,
+        "hookSpecificOutput": {
+            "hookEventName": "PostToolUse",
+            "additionalContext": mandatory_rebuild_message,
+        },
     }
     print(json.dumps(output))
 

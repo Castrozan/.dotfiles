@@ -28,23 +28,6 @@ let
   vivaldiDevtoolsMcpStdioArgsJson = builtins.toJSON (
     if includeVivaldiDevtoolsMcp then browserMcp.vivaldiDevtoolsMcpStdioArgs else [ ]
   );
-  codexHooksConfig = builtins.toJSON {
-    hooks = {
-      SessionStart = [
-        {
-          matcher = "startup|resume|clear|compact";
-          hooks = [
-            {
-              type = "command";
-              command = "cat ~/.dotfiles/.deep-work/*/context.md 2>/dev/null || true";
-              timeout = 5;
-              statusMessage = "Loading deep-work context";
-            }
-          ];
-        }
-      ];
-    };
-  };
 in
 {
   home.activation.codexBaselineConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
@@ -58,6 +41,4 @@ in
     CODEX_VIVALDI_DEVTOOLS_MCP_ARGS_JSON=${lib.escapeShellArg vivaldiDevtoolsMcpStdioArgsJson} \
     ${pkgs.python3}/bin/python3 ${codexConfigGenerator}/generate_config.py
   '';
-
-  home.file.".codex/hooks.json".text = codexHooksConfig;
 }

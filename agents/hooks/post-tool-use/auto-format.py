@@ -4,76 +4,22 @@ import json
 import os
 import subprocess
 import sys
+from pathlib import Path
 
-FORMATTERS = {
-    ".nix": {
-        "formatters": [
-            {"cmd": ["nixfmt"], "name": "nixfmt"},
-        ],
-        "timeout": 10,
-    },
-    ".py": {
-        "formatters": [
-            {"cmd": ["ruff", "format", "--quiet"], "name": "ruff"},
-        ],
-        "timeout": 10,
-    },
-    ".js": {
-        "formatters": [
-            {"cmd": ["prettier", "--write"], "name": "prettier"},
-        ],
-        "timeout": 10,
-    },
-    ".ts": {
-        "formatters": [
-            {"cmd": ["prettier", "--write"], "name": "prettier"},
-        ],
-        "timeout": 10,
-    },
-    ".tsx": {
-        "formatters": [
-            {"cmd": ["prettier", "--write"], "name": "prettier"},
-        ],
-        "timeout": 10,
-    },
-    ".jsx": {
-        "formatters": [
-            {"cmd": ["prettier", "--write"], "name": "prettier"},
-        ],
-        "timeout": 10,
-    },
-    ".json": {
-        "formatters": [
-            {"cmd": ["prettier", "--write"], "name": "prettier"},
-            {"cmd": ["jq", ".", "--indent", "2"], "name": "jq", "redirect": True},
-        ],
-        "timeout": 5,
-    },
-    ".yaml": {
-        "formatters": [
-            {"cmd": ["prettier", "--write"], "name": "prettier"},
-        ],
-        "timeout": 5,
-    },
-    ".yml": {
-        "formatters": [
-            {"cmd": ["prettier", "--write"], "name": "prettier"},
-        ],
-        "timeout": 5,
-    },
-    ".sh": {
-        "formatters": [
-            {"cmd": ["shfmt", "-w"], "name": "shfmt"},
-        ],
-        "timeout": 5,
-    },
-    ".bash": {
-        "formatters": [
-            {"cmd": ["shfmt", "-w"], "name": "shfmt"},
-        ],
-        "timeout": 5,
-    },
-}
+_MODULE_DIRECTORY = Path(__file__).resolve().parent
+for _shared_module_candidate_directory in (
+    _MODULE_DIRECTORY,
+    _MODULE_DIRECTORY.parent / "common",
+):
+    _shared_module_candidate_path = str(_shared_module_candidate_directory)
+    if (
+        _shared_module_candidate_directory.is_dir()
+        and _shared_module_candidate_path not in sys.path
+    ):
+        sys.path.insert(0, _shared_module_candidate_path)
+
+from changed_file_paths import collect_changed_file_paths  # noqa: E402
+from formatter_table_by_extension import FORMATTERS_BY_FILE_EXTENSION  # noqa: E402
 
 
 def check_formatter_available(formatter_cmd: list[str]) -> bool:
@@ -152,41 +98,40 @@ def repository_declares_conflicting_formatter(
     return False
 
 
+def format_single_file(file_path: str) -> None:
+    if not file_path or not os.path.exists(file_path):
+        return
+
+    try:
+        if os.path.getsize(file_path) > 1024 * 1024:
+            return
+    except OSError:
+        return
+
+    _, ext = os.path.splitext(file_path)
+    ext = ext.lower()
+
+    if ext not in FORMATTERS_BY_FILE_EXTENSION:
+        return
+
+    if repository_declares_conflicting_formatter(file_path, ext):
+        return
+
+    for formatter in FORMATTERS_BY_FILE_EXTENSION[ext]["formatters"]:
+        if check_formatter_available(formatter["cmd"]):
+            run_formatter(file_path, formatter)
+            return
+
+
 def main():
     try:
         data = json.load(sys.stdin)
     except json.JSONDecodeError:
         sys.exit(0)
 
-    file_path = data.get("tool_input", {}).get("file_path", "")
+    for file_path in collect_changed_file_paths(data):
+        format_single_file(file_path)
 
-    if not file_path or not os.path.exists(file_path):
-        sys.exit(0)
-
-    try:
-        if os.path.getsize(file_path) > 1024 * 1024:
-            sys.exit(0)
-    except OSError:
-        sys.exit(0)
-
-    _, ext = os.path.splitext(file_path)
-    ext = ext.lower()
-
-    if ext not in FORMATTERS:
-        sys.exit(0)
-
-    if repository_declares_conflicting_formatter(file_path, ext):
-        sys.exit(0)
-
-    for formatter in FORMATTERS[ext]["formatters"]:
-        if check_formatter_available(formatter["cmd"]):
-            run_formatter(file_path, formatter)
-            sys.exit(0)
-
-    missing_names = [f["name"] for f in FORMATTERS[ext]["formatters"]]
-    names = ", ".join(missing_names)
-    message = f"No formatters for {ext} files. Install: {names}"
-    print(json.dumps({"continue": True, "systemMessage": message}))
     sys.exit(0)
 
 
