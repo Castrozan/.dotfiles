@@ -4,6 +4,7 @@ require("hs.ipc")
 -- defined in workspace_grid.lua, and feed it window create/focus events.
 local workspaceGrid = require("workspace_grid")
 local menuBarIndicator = require("workspace_grid_menubar")
+local chromePersonalProfileWindow = require("chrome_personal_profile_window")
 
 hs.shutdownCallback = function()
 	menuBarIndicator.deleteIndicator()
@@ -65,8 +66,12 @@ require("prevent_window_minimize").start()
 -- because karabiner remaps Ctrl+C to Cmd+C: a global Cmd+C hotkey here would also
 -- catch the remapped Ctrl+C and steal copy. Karabiner matches Cmd+C before that
 -- remap and invokes these via `hs -c`, so Ctrl+C still copies.
-function summonBraveBrowserToCurrentWorkspace()
-	workspaceGrid.summonApplicationToCurrentWorkspace("Brave Browser", "com.brave.Browser")
+function summonPersonalChromeToCurrentWorkspace()
+	workspaceGrid.summonApplicationProfileWindowToCurrentWorkspace(
+		"com.google.Chrome",
+		"summon-chrome-personal-profile",
+		chromePersonalProfileWindow.windowBelongsToPersonalProfile
+	)
 end
 function summonGoogleChromeToCurrentWorkspace()
 	workspaceGrid.summonApplicationToCurrentWorkspace("Google Chrome", "com.google.Chrome", "summon-chrome-global")

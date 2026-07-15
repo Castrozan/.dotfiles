@@ -72,6 +72,34 @@ let
     applicationFocusVariableName:
     lib.hasInfix applicationFocusVariableName hammerspoonApplicationFocusModuleContent
   ) applicationFocusDefaultDenyGuards.allApplicationFocusVariableNames;
+
+  browserSummonRules = import ../rules/browser-summon-rules.nix;
+
+  hammerspoonInitModuleContent = builtins.readFile ../../hammerspoon/init.lua;
+
+  browserSummonShellCommands = lib.concatMap (
+    rule:
+    lib.concatMap (manipulator: map (toEntry: toEntry.shell_command or "") (manipulator.to or [ ])) (
+      rule.manipulators or [ ]
+    )
+  ) browserSummonRules;
+
+  hammerspoonFunctionNameInvokedByShellCommand =
+    shellCommand:
+    let
+      match = builtins.match ''.*-c "([a-zA-Z0-9_]+)\(\)".*'' shellCommand;
+    in
+    if match == null then null else builtins.head match;
+
+  browserSummonHammerspoonFunctionNames = lib.filter (name: name != null) (
+    map hammerspoonFunctionNameInvokedByShellCommand browserSummonShellCommands
+  );
+
+  everyBrowserSummonFunctionIsDefinedInHammerspoonInit =
+    browserSummonHammerspoonFunctionNames != [ ]
+    && lib.all (
+      functionName: lib.hasInfix "function ${functionName}(" hammerspoonInitModuleContent
+    ) browserSummonHammerspoonFunctionNames;
 in
 {
   domain-desktop-karabiner-brave-ctrl-d-passthrough-pre-empts-linux-style-remap =
@@ -111,6 +139,11 @@ in
     mkEvalCheck "domain-desktop-karabiner-default-deny-variables-match-hammerspoon"
       hammerspoonSetsEveryApplicationFocusVariable
       "The hammerspoon karabiner_application_focus_variables module must set every application-focus variable name the karabiner default-deny guards read, otherwise a guard fails closed permanently and its rule silently stops working";
+
+  domain-desktop-karabiner-browser-summon-functions-defined-in-hammerspoon =
+    mkEvalCheck "domain-desktop-karabiner-browser-summon-functions-defined-in-hammerspoon"
+      everyBrowserSummonFunctionIsDefinedInHammerspoonInit
+      "Every hammerspoon global function the karabiner browser-summon rules invoke via `hs -c` must be defined in init.lua, otherwise renaming or dropping one side of the seam leaves Cmd+B or Cmd+C a silently dead keybind with all other tests still green";
 
   domain-desktop-karabiner-chrome-zoom-in-remap-present =
     mkEvalCheck "domain-desktop-karabiner-chrome-zoom-in-remap-present" chromeZoomInRemapIsPresent

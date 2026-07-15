@@ -18,6 +18,7 @@ in
   home = {
     packages = [
       chromeGlobalLauncher.chromeGlobalLauncherPackage
+      chromeGlobalLauncher.chromePersonalProfileLauncherPackage
     ];
 
     activation = {

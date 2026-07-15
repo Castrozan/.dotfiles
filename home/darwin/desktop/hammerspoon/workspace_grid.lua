@@ -14,7 +14,6 @@ local workspaceGridPersistence = require("workspace_grid_persistence")
 local windowLayout = require("workspace_grid_window_layout")
 local sessionGeneration = require("workspace_grid_session_generation")
 local windowAssignment = require("workspace_grid_window_assignment")
-local windowSummon = require("workspace_grid_summon")
 local windowQuery = require("workspace_grid_window_query")
 
 local manageableWindows = windowQuery.manageableWindows
@@ -92,19 +91,20 @@ function workspaceGrid.navigateWorkspace(deltaWithinGrid, alsoMoveFocusedWindow)
 	end
 end
 
-function workspaceGrid.summonApplicationToCurrentWorkspace(
-	applicationName,
-	applicationBundleIdentifier,
-	coldLaunchShellCommand
-)
-	windowSummon.summon(applicationName, applicationBundleIdentifier, function(window)
-		windowAssignment.assignWindowToWorkspace(window:id(), currentWorkspaceNumber)
-		windowLayout.showWindowOnScreen(window)
-		window:focus()
-		renderMenuBarIndicator()
-		persistWorkspaceState()
-	end, coldLaunchShellCommand)
+local function placeSummonedWindowOnCurrentWorkspace(window)
+	windowAssignment.assignWindowToWorkspace(window:id(), currentWorkspaceNumber)
+	windowLayout.showWindowOnScreen(window)
+	window:focus()
+	renderMenuBarIndicator()
+	persistWorkspaceState()
 end
+
+local summonToWorkspaceEntryPoints = require("workspace_grid_summon_to_workspace").buildSummonToWorkspaceEntryPoints(
+	placeSummonedWindowOnCurrentWorkspace
+)
+workspaceGrid.summonApplicationToCurrentWorkspace = summonToWorkspaceEntryPoints.summonApplicationToCurrentWorkspace
+workspaceGrid.summonApplicationProfileWindowToCurrentWorkspace =
+	summonToWorkspaceEntryPoints.summonApplicationProfileWindowToCurrentWorkspace
 
 function workspaceGrid.gatherAllWindowsToCurrentWorkspace()
 	for _, window in ipairs(manageableWindows()) do

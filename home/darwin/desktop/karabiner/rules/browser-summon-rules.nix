@@ -16,9 +16,9 @@ let
 in
 [
   {
-    description = "Cmd+B summons Brave Browser to the current workspace via Hammerspoon";
+    description = "Cmd+B summons the personal Google Chrome profile to the current workspace via Hammerspoon";
     manipulators = [
-      (makeSummonViaHammerspoonGlobalFunctionManipulator "b" "summonBraveBrowserToCurrentWorkspace")
+      (makeSummonViaHammerspoonGlobalFunctionManipulator "b" "summonPersonalChromeToCurrentWorkspace")
     ];
   }
   {

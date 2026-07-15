@@ -32,6 +32,17 @@ let
     package: (lib.getName package) == "summon-chrome-global"
   ) chromeGlobalLauncherConfiguration.home.packages;
 
+  chromePersonalProfileLauncherDelegatesToChromeGlobal = lib.hasInfix "/bin/summon-chrome-global" chromeGlobalLauncher.chromePersonalProfileLauncherScript;
+
+  chromePersonalProfileLauncherTargetsPersonalProfileDirectory = lib.hasInfix ''--profile-directory="Profile 2"'' chromeGlobalLauncher.chromePersonalProfileLauncherScript;
+
+  chromePersonalProfileLauncherHasNoRemoteDebuggingFlag =
+    !lib.hasInfix "--remote-debugging-port" chromeGlobalLauncher.chromePersonalProfileLauncherScript;
+
+  chromePersonalProfileLauncherIsInHomePackages = lib.any (
+    package: (lib.getName package) == "summon-chrome-personal-profile"
+  ) chromeGlobalLauncherConfiguration.home.packages;
+
   convergeActivationData =
     chromeGlobalLauncherConfiguration.home.activation.convergeChromeEntryPointsOnChromeGlobal.data;
 
@@ -71,6 +82,26 @@ in
     mkEvalCheck "domain-desktop-chrome-global-launcher-in-home-packages"
       chromeGlobalLauncherIsInHomePackages
       "summon-chrome-global must be wired into home.packages so the launcher is on PATH for the chrome-devtools recovery step";
+
+  domain-desktop-chrome-personal-profile-launcher-delegates-to-chrome-global =
+    mkEvalCheck "domain-desktop-chrome-personal-profile-launcher-delegates-to-chrome-global"
+      chromePersonalProfileLauncherDelegatesToChromeGlobal
+      "summon-chrome-personal-profile must delegate to summon-chrome-global so it inherits the single ~/.config/chrome-global user-data-dir instead of forking a second Chrome data dir, which would open a stray profile store rather than a window in the live instance";
+
+  domain-desktop-chrome-personal-profile-launcher-targets-personal-profile-directory =
+    mkEvalCheck "domain-desktop-chrome-personal-profile-launcher-targets-personal-profile-directory"
+      chromePersonalProfileLauncherTargetsPersonalProfileDirectory
+      "summon-chrome-personal-profile must pass --profile-directory=\"Profile 2\" so the Cmd+B summon opens the personal profile window, not the work profile";
+
+  domain-desktop-chrome-personal-profile-launcher-no-remote-debugging-flag =
+    mkEvalCheck "domain-desktop-chrome-personal-profile-launcher-no-remote-debugging-flag"
+      chromePersonalProfileLauncherHasNoRemoteDebuggingFlag
+      "summon-chrome-personal-profile must not inject --remote-debugging-port so the personal profile stays a bare browser like the global launcher";
+
+  domain-desktop-chrome-personal-profile-launcher-in-home-packages =
+    mkEvalCheck "domain-desktop-chrome-personal-profile-launcher-in-home-packages"
+      chromePersonalProfileLauncherIsInHomePackages
+      "summon-chrome-personal-profile must be wired into home.packages so the hammerspoon Cmd+B cold-launch resolves it on PATH";
 
   domain-desktop-chrome-converge-activation-wired =
     mkEvalCheck "domain-desktop-chrome-converge-activation-wired" convergeActivationIsWired
