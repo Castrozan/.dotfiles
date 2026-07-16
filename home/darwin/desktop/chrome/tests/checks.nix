@@ -53,30 +53,6 @@ let
   chromeWorkProfileLauncherIsInHomePackages = lib.any (
     package: (lib.getName package) == "summon-chrome-work-profile"
   ) chromeGlobalLauncherConfiguration.home.packages;
-
-  convergeActivationData =
-    chromeGlobalLauncherConfiguration.home.activation.convergeChromeEntryPointsOnChromeGlobal.data;
-
-  convergeActivationIsWired =
-    chromeGlobalLauncherConfiguration.home.activation ? convergeChromeEntryPointsOnChromeGlobal;
-
-  convergeActivationReferencesDuti = lib.hasInfix "/bin/duti" convergeActivationData;
-
-  convergeActivationTargetsDefaultChromePath = lib.hasInfix "Library/Application Support/Google/Chrome" convergeActivationData;
-
-  convergeActivationSetsPlainChromeBundleId = lib.hasInfix "com.google.Chrome" convergeActivationData;
-
-  convergeScriptSource = builtins.readFile ../scripts/converge-chrome-entry-points-on-chrome-global.sh;
-
-  convergeScriptSymlinksDefaultPathToChromeGlobal = lib.hasInfix ''ln -s "$chromeGlobalUserDataDirectory" "$defaultChromeUserDataDirectory"'' convergeScriptSource;
-
-  convergeScriptDefersWhileChromeRuns = lib.hasInfix "pgrep -x" convergeScriptSource;
-
-  convergeScriptBacksUpExistingDefaultProfile = lib.hasInfix "pre-chrome-global-symlink-backup" convergeScriptSource;
-
-  convergeScriptSetsChromeAsDefaultBrowserViaDuti = lib.hasInfix ''"$dutiBinary" -s "$chromeBundleIdentifier" "$urlScheme"'' convergeScriptSource;
-
-  convergeScriptRemovesRetiredLinkHandlerApp = lib.hasInfix ''rm -rf "$retiredLinkHandlerApplicationPath"'' convergeScriptSource;
 in
 {
   domain-desktop-chrome-global-launcher-targets-chrome-global-user-data-dir =
@@ -133,50 +109,15 @@ in
     mkEvalCheck "domain-desktop-chrome-work-profile-launcher-in-home-packages"
       chromeWorkProfileLauncherIsInHomePackages
       "summon-chrome-work-profile must be wired into home.packages so the hammerspoon Cmd+C cold-launch resolves it on PATH";
-
-  domain-desktop-chrome-converge-activation-wired =
-    mkEvalCheck "domain-desktop-chrome-converge-activation-wired" convergeActivationIsWired
-      "the convergeChromeEntryPointsOnChromeGlobal activation must be wired so every macOS Chrome entry point resolves to the single chrome-global profile";
-
-  domain-desktop-chrome-converge-activation-references-duti =
-    mkEvalCheck "domain-desktop-chrome-converge-activation-references-duti"
-      convergeActivationReferencesDuti
-      "forcing the activation must resolve the darwin-only duti store path, proving the module evaluates under darwin pkgs in the test harness instead of passing only because the wired-check never forced the thunk";
-
-  domain-desktop-chrome-converge-activation-targets-default-path =
-    mkEvalCheck "domain-desktop-chrome-converge-activation-targets-default-path"
-      convergeActivationTargetsDefaultChromePath
-      "the activation must pass Chrome's default macOS user-data-dir so the symlink is placed where an unflagged Chrome launch (Dock, Spotlight, Finder) actually looks";
-
-  domain-desktop-chrome-converge-activation-sets-plain-chrome-default =
-    mkEvalCheck "domain-desktop-chrome-converge-activation-sets-plain-chrome-default"
-      convergeActivationSetsPlainChromeBundleId
-      "the activation must pass the plain com.google.Chrome bundle id so links route through Chrome itself, not the retired AppleScript link-handler applet that showed a startup-screen splash";
-
-  domain-desktop-chrome-converge-symlinks-default-path-to-chrome-global =
-    mkEvalCheck "domain-desktop-chrome-converge-symlinks-default-path-to-chrome-global"
-      convergeScriptSymlinksDefaultPathToChromeGlobal
-      "the script must symlink the default profile path to chrome-global so every launch path resolves to the single configured profile";
-
-  domain-desktop-chrome-converge-defers-while-chrome-runs =
-    mkEvalCheck "domain-desktop-chrome-converge-defers-while-chrome-runs"
-      convergeScriptDefersWhileChromeRuns
-      "the script must defer while Chrome is running so it never swaps the profile directory or the default browser out from under an open instance, and so the symlink and the duti switch land together with no regression window";
-
-  domain-desktop-chrome-converge-backs-up-existing-profile =
-    mkEvalCheck "domain-desktop-chrome-converge-backs-up-existing-profile"
-      convergeScriptBacksUpExistingDefaultProfile
-      "the script must back up a pre-existing real default profile once before replacing it with the symlink so no profile data is destroyed";
-
-  domain-desktop-chrome-converge-sets-chrome-default-browser-via-duti =
-    mkEvalCheck "domain-desktop-chrome-converge-sets-chrome-default-browser-via-duti"
-      convergeScriptSetsChromeAsDefaultBrowserViaDuti
-      "the script must register plain Chrome as the default http and https handler via duti so link clicks open Chrome directly into the symlinked chrome-global profile";
-
-  domain-desktop-chrome-converge-removes-retired-link-handler-app =
-    mkEvalCheck "domain-desktop-chrome-converge-removes-retired-link-handler-app"
-      convergeScriptRemovesRetiredLinkHandlerApp
-      "the script must remove the retired Chrome Global Link Handler applet so the stale AppleScript app no longer lingers once plain Chrome is the default browser";
+}
+// import ./checks/converge-entry-points-checks.nix {
+  inherit
+    pkgs
+    lib
+    inputs
+    nixpkgs-version
+    home-version
+    ;
 }
 // import ./checks/preferences-overrides-checks.nix {
   inherit
