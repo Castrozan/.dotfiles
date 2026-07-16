@@ -8,9 +8,10 @@ let
       browserUserDataDirectoryRelativeToHome,
       preferencesOverridesJsonFile,
       sentinelBasename,
+      targetFileRelativeToUserDataDirectory ? "Default/Preferences",
     }:
     let
-      preferencesAppliedMarker = "${mergeChromiumProfilePreferencesScript} ${preferencesOverridesJsonFile} ${browserDisplayProcessName}";
+      preferencesAppliedMarker = "${mergeChromiumProfilePreferencesScript} ${preferencesOverridesJsonFile} ${browserDisplayProcessName} ${targetFileRelativeToUserDataDirectory}";
     in
     ''
       browserUserDataDirectory="$HOME/${browserUserDataDirectoryRelativeToHome}"
@@ -25,7 +26,8 @@ let
             ${mergeChromiumProfilePreferencesScript} \
             ${preferencesOverridesJsonFile} \
             "$browserUserDataDirectory" \
-            "${browserDisplayProcessName}"; then
+            "${browserDisplayProcessName}" \
+            "${targetFileRelativeToUserDataDirectory}"; then
             mkdir -p "$sentinelDirectory"
             printf '%s' "${preferencesAppliedMarker}" >"$sentinelFile"
           else

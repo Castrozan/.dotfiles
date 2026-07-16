@@ -80,10 +80,11 @@ def backup_preferences_once_per_run(preferences_path: Path) -> None:
 
 
 def main() -> int:
-    if len(sys.argv) != 4:
+    if len(sys.argv) not in (4, 5):
         print(
             "usage: merge-chromium-profile-preferences <overrides.json> "
-            "<browser_user_data_dir> <browser_process_name>",
+            "<browser_user_data_dir> <browser_process_name> "
+            "[target_file_relative_to_user_data_dir]",
             file=sys.stderr,
         )
         return 2
@@ -91,6 +92,9 @@ def main() -> int:
     overrides_path = Path(sys.argv[1])
     browser_user_data_directory = Path(sys.argv[2]).expanduser()
     browser_process_name = sys.argv[3]
+    target_file_relative_to_user_data_directory = (
+        sys.argv[4] if len(sys.argv) == 5 else "Default/Preferences"
+    )
 
     if chromium_browser_process_is_running(browser_process_name):
         print(
@@ -107,13 +111,13 @@ def main() -> int:
     with overrides_path.open() as overrides_file:
         overrides = json.load(overrides_file)
 
-    default_profile_preferences_path = (
-        browser_user_data_directory / "Default" / "Preferences"
+    target_file_path = (
+        browser_user_data_directory / target_file_relative_to_user_data_directory
     )
-    backup_preferences_once_per_run(default_profile_preferences_path)
-    existing = load_existing_preferences_or_empty(default_profile_preferences_path)
+    backup_preferences_once_per_run(target_file_path)
+    existing = load_existing_preferences_or_empty(target_file_path)
     merged = deep_merge_overrides_into_existing(existing, overrides)
-    write_json_atomically(default_profile_preferences_path, merged)
+    write_json_atomically(target_file_path, merged)
     return 0
 
 

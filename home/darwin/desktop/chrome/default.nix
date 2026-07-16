@@ -37,6 +37,21 @@ in
             }
           );
 
+      applyChromeGlobalPersonalProfileDistinctiveIcon =
+        config.lib.dag.entryAfter
+          [
+            "writeBoundary"
+          ]
+          (
+            chromiumProfilePreferenceMerge.mkChromiumProfilePreferenceMergeActivationScript {
+              browserDisplayProcessName = "Google Chrome";
+              browserUserDataDirectoryRelativeToHome = ".config/chrome-global";
+              preferencesOverridesJsonFile = ./local-state-personal-profile-overrides.json;
+              sentinelBasename = "chrome-global-personal-profile-icon-applied";
+              targetFileRelativeToUserDataDirectory = "Local State";
+            }
+          );
+
       convergeChromeEntryPointsOnChromeGlobal =
         config.lib.dag.entryAfter
           [

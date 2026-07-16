@@ -128,3 +128,12 @@ in
     home-version
     ;
 }
+// import ./checks/personal-profile-icon-checks.nix {
+  inherit
+    pkgs
+    lib
+    inputs
+    nixpkgs-version
+    home-version
+    ;
+}
