@@ -17,8 +17,6 @@ codex_developer_instructions = os.environ.get(
 )
 chrome_devtools_mcp_command = os.environ["CODEX_CHROME_DEVTOOLS_MCP_COMMAND"]
 chrome_devtools_mcp_args = json.loads(os.environ["CODEX_CHROME_DEVTOOLS_MCP_ARGS_JSON"])
-brave_devtools_mcp_command = os.environ["CODEX_BRAVE_DEVTOOLS_MCP_COMMAND"]
-brave_devtools_mcp_args = json.loads(os.environ["CODEX_BRAVE_DEVTOOLS_MCP_ARGS_JSON"])
 vivaldi_devtools_mcp_command = os.environ.get("CODEX_VIVALDI_DEVTOOLS_MCP_COMMAND", "")
 vivaldi_devtools_mcp_args = json.loads(
     os.environ.get("CODEX_VIVALDI_DEVTOOLS_MCP_ARGS_JSON", "[]")
@@ -63,10 +61,6 @@ def build_mcp_server_entries() -> dict[str, dict[str, Any]]:
         "chrome-devtools": {
             "command": chrome_devtools_mcp_command,
             "args": chrome_devtools_mcp_args,
-        },
-        "brave-devtools": {
-            "command": brave_devtools_mcp_command,
-            "args": brave_devtools_mcp_args,
         },
     }
     if vivaldi_devtools_mcp_command:

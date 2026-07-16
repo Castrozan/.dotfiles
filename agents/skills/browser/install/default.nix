@@ -10,10 +10,6 @@ let
   };
   chromeDevtoolsMcpBinary = "${chromeDevtoolsMcpPackage}/bin/chrome-devtools-mcp";
   chromeGlobalUserDataDir = "${homeDir}/.config/chrome-global";
-  braveDefaultProfile = import ../../../../home/base/browser/brave-default-profile.nix {
-    inherit (pkgs.stdenv.hostPlatform) isDarwin;
-  };
-  braveDefaultUserDataDir = "${homeDir}/${braveDefaultProfile.userDataDirectoryRelativeToHome}";
   vivaldiDefaultProfile = import ../../../../home/base/browser/vivaldi-default-profile.nix {
     inherit (pkgs.stdenv.hostPlatform) isDarwin;
   };
@@ -35,17 +31,12 @@ let
   chromeDevtoolsMcpStdioCommand = chromeDevtoolsMcpBinary;
   chromeDevtoolsMcpStdioArgs = mkChromeDevtoolsAutoConnectArgs chromeGlobalUserDataDir;
 
-  braveDevtoolsMcpStdioCommand = chromeDevtoolsMcpBinary;
-  braveDevtoolsMcpStdioArgs = mkChromeDevtoolsAutoConnectArgs braveDefaultUserDataDir;
-
   vivaldiDevtoolsMcpStdioCommand = chromeDevtoolsMcpBinary;
   vivaldiDevtoolsMcpStdioArgs = mkChromeDevtoolsAutoConnectArgs vivaldiDefaultUserDataDir;
 in
 {
   inherit chromeDevtoolsMcpStdioCommand;
   inherit chromeDevtoolsMcpStdioArgs;
-  inherit braveDevtoolsMcpStdioCommand;
-  inherit braveDevtoolsMcpStdioArgs;
   inherit vivaldiDevtoolsMcpStdioCommand;
   inherit vivaldiDevtoolsMcpStdioArgs;
   inherit pinchtabBinary;

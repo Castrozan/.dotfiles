@@ -38,10 +38,6 @@ let
       command = browserMcp.chromeDevtoolsMcpStdioCommand;
       args = browserMcp.chromeDevtoolsMcpStdioArgs;
     };
-    brave-devtools = {
-      command = browserMcp.braveDevtoolsMcpStdioCommand;
-      args = browserMcp.braveDevtoolsMcpStdioArgs;
-    };
     codex = {
       command = "${homeDir}/.local/bin/codex";
       args = [

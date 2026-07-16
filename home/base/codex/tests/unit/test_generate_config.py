@@ -15,8 +15,6 @@ def generate_codex_config(tmp_path, env_overrides=None):
             "HOME": str(tmp_path),
             "CODEX_CHROME_DEVTOOLS_MCP_COMMAND": "chrome-mcp",
             "CODEX_CHROME_DEVTOOLS_MCP_ARGS_JSON": "[]",
-            "CODEX_BRAVE_DEVTOOLS_MCP_COMMAND": "brave-mcp",
-            "CODEX_BRAVE_DEVTOOLS_MCP_ARGS_JSON": "[]",
             "CODEX_VIVALDI_DEVTOOLS_MCP_COMMAND": "vivaldi-mcp",
             "CODEX_VIVALDI_DEVTOOLS_MCP_ARGS_JSON": "[]",
         }
@@ -59,3 +57,20 @@ def test_generated_config_prunes_stale_vivaldi_devtools_entry(tmp_path):
         tmp_path, {"CODEX_VIVALDI_DEVTOOLS_MCP_COMMAND": ""}
     )
     assert "vivaldi-devtools" not in generated_config["mcp_servers"]
+
+
+def test_generated_config_never_emits_brave_devtools(tmp_path):
+    generated_config = generate_codex_config(tmp_path)
+    assert "brave-devtools" not in generated_config["mcp_servers"]
+    assert "chrome-devtools" in generated_config["mcp_servers"]
+
+
+def test_generated_config_prunes_stale_brave_devtools_entry(tmp_path):
+    config_path = tmp_path / ".codex" / "config.toml"
+    config_path.parent.mkdir(parents=True, exist_ok=True)
+    config_path.write_text(
+        '[mcp_servers.brave-devtools]\ncommand = "brave-mcp"\nargs = []\n',
+        encoding="utf-8",
+    )
+    generated_config = generate_codex_config(tmp_path)
+    assert "brave-devtools" not in generated_config["mcp_servers"]

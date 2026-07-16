@@ -10,6 +10,7 @@ let
   hostGatedRemoteMemoryMcpServerNames = [ "mem0" ];
 
   retiredMcpServerNames = [
+    "brave-devtools"
     "browser-use"
     "figma"
     "figma-read"
