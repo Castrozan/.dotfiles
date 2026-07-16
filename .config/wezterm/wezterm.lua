@@ -27,25 +27,31 @@ if type(mux.get_active_window) == "function" then
 	end)
 end
 
-local open_hovered_link_in_brave = false
+local open_hovered_link_in_personal_chrome = false
 
 wezterm.on("open-uri", function(window, pane, uri)
-	if not open_hovered_link_in_brave then
+	if not open_hovered_link_in_personal_chrome then
 		return true
 	end
-	open_hovered_link_in_brave = false
+	open_hovered_link_in_personal_chrome = false
 	if is_darwin then
-		wezterm.background_child_process({ "/usr/bin/open", "-b", "com.brave.Browser", uri })
+		wezterm.background_child_process({
+			"/run/current-system/sw/bin/bash",
+			"-lc",
+			'exec summon-chrome-personal-profile "$1"',
+			"wezterm-open-uri",
+			uri,
+		})
 	else
 		wezterm.background_child_process({ "brave", uri })
 	end
 	return false
 end)
 
-local open_hovered_link_in_brave_action = wezterm.action_callback(function(window, pane)
-	open_hovered_link_in_brave = true
+local open_hovered_link_in_personal_chrome_action = wezterm.action_callback(function(window, pane)
+	open_hovered_link_in_personal_chrome = true
 	wezterm.time.call_after(0.2, function()
-		open_hovered_link_in_brave = false
+		open_hovered_link_in_personal_chrome = false
 	end)
 	window:perform_action(wezterm.action.OpenLinkAtMouseCursor, pane)
 end)
@@ -116,7 +122,7 @@ local config = {
 		{
 			event = { Up = { streak = 1, button = "Left" } },
 			mods = "CTRL|SHIFT",
-			action = open_hovered_link_in_brave_action,
+			action = open_hovered_link_in_personal_chrome_action,
 		},
 		{
 			event = { Down = { streak = 1, button = "Left" } },
@@ -126,7 +132,7 @@ local config = {
 		{
 			event = { Up = { streak = 1, button = "Left" } },
 			mods = "CTRL|SHIFT",
-			action = open_hovered_link_in_brave_action,
+			action = open_hovered_link_in_personal_chrome_action,
 			mouse_reporting = true,
 		},
 		{
