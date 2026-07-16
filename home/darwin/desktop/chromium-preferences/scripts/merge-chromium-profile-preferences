@@ -12,6 +12,10 @@ from pathlib import Path
 PREFERENCE_MERGE_DEFERRED_BECAUSE_BROWSER_RUNNING_EXIT_CODE = 3
 
 
+class ExistingPreferencesUnreadableError(Exception):
+    pass
+
+
 def chromium_browser_process_is_running(browser_process_name: str) -> bool:
     try:
         result = subprocess.run(
@@ -56,18 +60,16 @@ def write_json_atomically(destination_path: Path, content: dict) -> None:
     os.replace(temporary_file.name, destination_path)
 
 
-def load_existing_preferences_or_empty(preferences_path: Path) -> dict:
+def load_existing_preferences_or_empty_when_absent(preferences_path: Path) -> dict:
     if not preferences_path.exists():
         return {}
     try:
         with preferences_path.open() as preferences_file:
             return json.load(preferences_file)
     except (json.JSONDecodeError, OSError) as load_error:
-        print(
-            f"WARN: cannot read {preferences_path}: {load_error}",
-            file=sys.stderr,
-        )
-        return {}
+        raise ExistingPreferencesUnreadableError(
+            f"cannot parse existing {preferences_path}: {load_error}"
+        ) from load_error
 
 
 def backup_preferences_once_per_run(preferences_path: Path) -> None:
@@ -115,7 +117,15 @@ def main() -> int:
         browser_user_data_directory / target_file_relative_to_user_data_directory
     )
     backup_preferences_once_per_run(target_file_path)
-    existing = load_existing_preferences_or_empty(target_file_path)
+    try:
+        existing = load_existing_preferences_or_empty_when_absent(target_file_path)
+    except ExistingPreferencesUnreadableError as unreadable_error:
+        print(
+            f"ERROR: refusing to overwrite {target_file_path} with only the "
+            f"overrides; {unreadable_error}",
+            file=sys.stderr,
+        )
+        return 1
     merged = deep_merge_overrides_into_existing(existing, overrides)
     write_json_atomically(target_file_path, merged)
     return 0
