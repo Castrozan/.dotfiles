@@ -111,28 +111,28 @@ in
       (hasBypassMouseReporting && hasOpenLinkAction && hasNopDownEvent && hasMouseReportingBindings)
       "wezterm must have bypass_mouse_reporting_modifiers, OpenLinkAtMouseCursor, Nop down-event, and mouse_reporting=true bindings for ctrl+click to work inside tmux";
 
-  domain-terminal-wezterm-ctrl-shift-click-opens-brave =
+  domain-terminal-wezterm-ctrl-shift-click-opens-personal-chrome =
     let
       weztermConfig = cfg.programs.wezterm.extraConfig;
       hasOpenUriHandler = lib.hasInfix "wezterm.on(\"open-uri\"" weztermConfig;
-      hasBraveFlag = lib.hasInfix "open_hovered_link_in_brave" weztermConfig;
-      hasBraveAction = lib.hasInfix "open_hovered_link_in_brave_action" weztermConfig;
+      hasPersonalChromeFlag = lib.hasInfix "open_hovered_link_in_personal_chrome" weztermConfig;
+      hasPersonalChromeAction = lib.hasInfix "open_hovered_link_in_personal_chrome_action" weztermConfig;
       hasFlagExpiryTimer = lib.hasInfix "wezterm.time.call_after" weztermConfig;
-      hasDarwinBraveBundleId = lib.hasInfix "com.brave.Browser" weztermConfig;
+      hasDarwinChromeSummon = lib.hasInfix "summon-chrome-personal-profile" weztermConfig;
       hasLinuxBraveBinary = lib.hasInfix "{ \"brave\", uri }" weztermConfig;
       hasCtrlShiftMods = lib.hasInfix "mods = \"CTRL|SHIFT\"" weztermConfig;
     in
-    mkEvalCheck "domain-terminal-wezterm-ctrl-shift-click-opens-brave"
+    mkEvalCheck "domain-terminal-wezterm-ctrl-shift-click-opens-personal-chrome"
       (
         hasOpenUriHandler
-        && hasBraveFlag
-        && hasBraveAction
+        && hasPersonalChromeFlag
+        && hasPersonalChromeAction
         && hasFlagExpiryTimer
-        && hasDarwinBraveBundleId
+        && hasDarwinChromeSummon
         && hasLinuxBraveBinary
         && hasCtrlShiftMods
       )
-      "wezterm ctrl+shift+click must route the hovered link to Brave: an open-uri handler gated by open_hovered_link_in_brave with a call_after expiry, the darwin com.brave.Browser bundle id and linux brave binary branches, and a CTRL|SHIFT mouse binding using the named action";
+      "wezterm ctrl+shift+click must route the hovered link to the personal Chrome profile: an open-uri handler gated by open_hovered_link_in_personal_chrome with a call_after expiry, the darwin summon-chrome-personal-profile branch and the linux brave binary fallback, and a CTRL|SHIFT mouse binding using the named action";
 
   domain-terminal-wezterm-webgpu-front-end-on-darwin =
     mkEvalCheck "domain-terminal-wezterm-webgpu-front-end-on-darwin"
