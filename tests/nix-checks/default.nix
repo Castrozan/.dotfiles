@@ -47,6 +47,7 @@ let
   chiseChecks = import ../../hosts/chise/tests/checks.nix moduleArgs;
   chromeDarwinPolicyChecks = import ../../hosts/shared-darwin/chrome/tests/checks.nix domainArgs;
   braveDarwinPolicyChecks = import ../../hosts/shared-darwin/brave/tests/checks.nix domainArgs;
+  disableMusicMediaKeyLaunchChecks = import ../../hosts/shared-darwin/disable-music-media-key-launch/tests/checks.nix domainArgs;
 in
 claudeChecks
 // codexChecks
@@ -72,3 +73,4 @@ claudeChecks
 // chiseChecks
 // chromeDarwinPolicyChecks
 // braveDarwinPolicyChecks
+// disableMusicMediaKeyLaunchChecks
