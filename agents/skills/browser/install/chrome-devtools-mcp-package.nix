@@ -3,10 +3,10 @@
   nodejs,
 }:
 let
-  version = "1.4.0";
+  version = "1.6.0";
   npmTarball = pkgs.fetchurl {
     url = "https://registry.npmjs.org/chrome-devtools-mcp/-/chrome-devtools-mcp-${version}.tgz";
-    hash = "sha256-0tRNmnPaSZIILB8WhfvEoTaUF2cNSplI0w7L70FBmZk=";
+    hash = "sha256-HmMsLZcUtPgrTPq077nOV1CFx1/+XpdyODEprwEsnIQ=";
   };
 in
 pkgs.stdenv.mkDerivation {
