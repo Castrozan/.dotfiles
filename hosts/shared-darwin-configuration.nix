@@ -15,7 +15,7 @@
     ./shared-darwin/window-manager
     ./shared-darwin/symbolic-hotkeys
     ./shared-darwin/quit-windowless-applications
-    ./shared-darwin/disable-music-media-key-launch
+    ./shared-darwin/disable-unused-apple-background-agents
     ./shared-darwin/workspace-window-switcher
     ./shared-darwin/rebuild
     ./shared-darwin/karabiner
