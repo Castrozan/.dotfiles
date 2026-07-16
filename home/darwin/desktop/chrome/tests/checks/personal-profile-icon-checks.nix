@@ -28,7 +28,7 @@ let
 
   iconOverridesSetAvatarIcon = personalProfileOverrides ? avatar_icon;
 
-  iconOverridesDisableGaiaPicture = personalProfileOverrides.use_gaia_picture == false;
+  iconOverridesDisableGaiaPicture = !personalProfileOverrides.use_gaia_picture;
 
   chromeConfiguration = helpers.homeManagerTestConfigurationForDarwin [
     ../../default.nix
