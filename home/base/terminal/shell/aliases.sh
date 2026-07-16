@@ -32,7 +32,7 @@ alias g='lazygit'
 alias gc='nix-gc'
 alias game-shift='sudo game-shift'
 alias grep='grep --color=auto'
-alias h='herdr-screensaver'
+command -v herdr-screensaver >/dev/null 2>&1 && alias h='herdr-screensaver'
 alias i='idea . > /dev/null 2>&1 & disown'
 alias k='k9s'
 alias kc="nvim ~/.config/kitty/kitty.conf"
