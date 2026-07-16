@@ -16,7 +16,7 @@
       ".hammerspoon/workspace_grid_summon.lua".source = ./workspace_grid_summon.lua;
       ".hammerspoon/workspace_grid_summon_to_workspace.lua".source =
         ./workspace_grid_summon_to_workspace.lua;
-      ".hammerspoon/chrome_personal_profile_window.lua".source = ./chrome_personal_profile_window.lua;
+      ".hammerspoon/chrome_profile_window.lua".source = ./chrome_profile_window.lua;
       ".hammerspoon/workspace_grid_persistence.lua".source = ./workspace_grid_persistence.lua;
       ".hammerspoon/workspace_grid_menubar.lua".source = ./workspace_grid_menubar.lua;
       ".hammerspoon/switcher_bridge.lua".source = ./switcher_bridge.lua;

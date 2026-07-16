@@ -14,7 +14,7 @@ macOS intercepts Cmd+Tab at the WindowServer level before any app can catch it. 
 
 ### Keybindings
 
-Bound in `init.lua`: Cmd+1..7 switch workspace, Cmd+Shift+1..7 move the focused window to a workspace, Ctrl+Alt+arrows (and Cmd+Alt+arrows) navigate the grid, Ctrl+Alt+Shift+arrows (and Cmd+Alt+Shift+arrows) carry the focused window with you. Summon the personal Chrome profile (Cmd+B) and Chrome Global (Cmd+C) to the current workspace is invoked from Karabiner (via `hs -c`) rather than an `hs.hotkey`, so the Karabiner Ctrl+C→Cmd+C remap does not steal copy.
+Bound in `init.lua`: Cmd+1..7 switch workspace, Cmd+Shift+1..7 move the focused window to a workspace, Ctrl+Alt+arrows (and Cmd+Alt+arrows) navigate the grid, Ctrl+Alt+Shift+arrows (and Cmd+Alt+Shift+arrows) carry the focused window with you. Summon the personal Chrome profile (Cmd+B) and the work Chrome profile (Cmd+C) to the current workspace is invoked from Karabiner (via `hs -c`) rather than an `hs.hotkey`, so the Karabiner Ctrl+C→Cmd+C remap does not steal copy. Each summon matches its profile by a Chrome window title marker, the personal profile by the title suffix and the work profile by the parenthetical profile-name disambiguator Chrome appends only when multiple profiles run, and cold-launches the profile-specific launcher when no matching window exists.
 
 ### AltTab
 

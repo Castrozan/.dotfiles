@@ -4,38 +4,15 @@ local offScreenParkingX = -1000000
 summonApplicationTestDoubles.offScreenParkingX = offScreenParkingX
 
 local captures = {
-	launchOrFocusCallCount = 0,
-	lastLaunchedApplicationName = nil,
 	currentlyFocusedWindowId = nil,
 	lastExecuteRanInUserEnvironment = nil,
 	executedShellCommands = {},
-	killCallCount = 0,
-	deferTerminationAndRelaunch = false,
-	pendingRelaunchActions = {},
 }
 summonApplicationTestDoubles.captures = captures
 
 local runningApplicationsByBundleIdentifier = {}
 function summonApplicationTestDoubles.setRunningApplications(applicationsByBundleIdentifier)
 	runningApplicationsByBundleIdentifier = applicationsByBundleIdentifier
-end
-
-function summonApplicationTestDoubles.finishPendingTerminations()
-	for _, applications in pairs(runningApplicationsByBundleIdentifier) do
-		for _, application in ipairs(applications) do
-			if application.terminationRequested then
-				application.terminated = true
-			end
-		end
-	end
-end
-
-function summonApplicationTestDoubles.runPendingRelaunchActions()
-	local pendingActions = captures.pendingRelaunchActions
-	captures.pendingRelaunchActions = {}
-	for _, pendingAction in ipairs(pendingActions) do
-		pendingAction()
-	end
 end
 
 function summonApplicationTestDoubles.makeFakeWindow(windowId, isStandardWindow)
@@ -83,27 +60,14 @@ function summonApplicationTestDoubles.makeFakeWindow(windowId, isStandardWindow)
 end
 
 function summonApplicationTestDoubles.makeFakeApplication(windows)
-	local fakeApplication = {
-		mainWindow = function()
-			return windows[1]
-		end,
+	return {
 		allWindows = function()
 			return windows
 		end,
 		name = function()
 			return "Browser"
 		end,
-		terminated = false,
-		terminationRequested = false,
 	}
-	function fakeApplication:kill()
-		captures.killCallCount = captures.killCallCount + 1
-		fakeApplication.terminationRequested = true
-		if not captures.deferTerminationAndRelaunch then
-			fakeApplication.terminated = true
-		end
-	end
-	return fakeApplication
 end
 
 function summonApplicationTestDoubles.installGlobalHammerspoonMock()
@@ -127,38 +91,8 @@ function summonApplicationTestDoubles.installGlobalHammerspoonMock()
 			end,
 		},
 		application = {
-			launchOrFocus = function(applicationName)
-				captures.launchOrFocusCallCount = captures.launchOrFocusCallCount + 1
-				captures.lastLaunchedApplicationName = applicationName
-			end,
 			applicationsForBundleID = function(bundleIdentifier)
-				local applications = runningApplicationsByBundleIdentifier[bundleIdentifier] or {}
-				local aliveApplications = {}
-				for _, application in ipairs(applications) do
-					if not application.terminated then
-						table.insert(aliveApplications, application)
-					end
-				end
-				return aliveApplications
-			end,
-		},
-		timer = {
-			doEvery = function(_, tickFunction)
-				local timerObject = { stopped = false }
-				function timerObject:stop()
-					self.stopped = true
-				end
-				local guardedTick = function()
-					if not timerObject.stopped then
-						tickFunction()
-					end
-				end
-				if captures.deferTerminationAndRelaunch then
-					table.insert(captures.pendingRelaunchActions, guardedTick)
-				else
-					guardedTick()
-				end
-				return timerObject
+				return runningApplicationsByBundleIdentifier[bundleIdentifier] or {}
 			end,
 		},
 		window = {

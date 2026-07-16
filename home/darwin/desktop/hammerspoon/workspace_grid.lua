@@ -102,7 +102,6 @@ end
 local summonToWorkspaceEntryPoints = require("workspace_grid_summon_to_workspace").buildSummonToWorkspaceEntryPoints(
 	placeSummonedWindowOnCurrentWorkspace
 )
-workspaceGrid.summonApplicationToCurrentWorkspace = summonToWorkspaceEntryPoints.summonApplicationToCurrentWorkspace
 workspaceGrid.summonApplicationProfileWindowToCurrentWorkspace =
 	summonToWorkspaceEntryPoints.summonApplicationProfileWindowToCurrentWorkspace
 

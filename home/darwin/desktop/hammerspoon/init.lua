@@ -4,7 +4,7 @@ require("hs.ipc")
 -- defined in workspace_grid.lua, and feed it window create/focus events.
 local workspaceGrid = require("workspace_grid")
 local menuBarIndicator = require("workspace_grid_menubar")
-local chromePersonalProfileWindow = require("chrome_personal_profile_window")
+local chromeProfileWindow = require("chrome_profile_window")
 
 hs.shutdownCallback = function()
 	menuBarIndicator.deleteIndicator()
@@ -70,11 +70,15 @@ function summonPersonalChromeToCurrentWorkspace()
 	workspaceGrid.summonApplicationProfileWindowToCurrentWorkspace(
 		"com.google.Chrome",
 		"summon-chrome-personal-profile",
-		chromePersonalProfileWindow.windowBelongsToPersonalProfile
+		chromeProfileWindow.windowBelongsToPersonalProfile
 	)
 end
-function summonGoogleChromeToCurrentWorkspace()
-	workspaceGrid.summonApplicationToCurrentWorkspace("Google Chrome", "com.google.Chrome", "summon-chrome-global")
+function summonWorkChromeToCurrentWorkspace()
+	workspaceGrid.summonApplicationProfileWindowToCurrentWorkspace(
+		"com.google.Chrome",
+		"summon-chrome-work-profile",
+		chromeProfileWindow.windowBelongsToWorkProfile
+	)
 end
 
 local windowEventWatcher = hs.window.filter.new()

@@ -22,9 +22,9 @@ in
     ];
   }
   {
-    description = "Cmd+C summons Google Chrome to the current workspace via Hammerspoon";
+    description = "Cmd+C summons the work Google Chrome profile to the current workspace via Hammerspoon";
     manipulators = [
-      (makeSummonViaHammerspoonGlobalFunctionManipulator "c" "summonGoogleChromeToCurrentWorkspace")
+      (makeSummonViaHammerspoonGlobalFunctionManipulator "c" "summonWorkChromeToCurrentWorkspace")
     ];
   }
 ]

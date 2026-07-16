@@ -19,6 +19,7 @@ in
     packages = [
       chromeGlobalLauncher.chromeGlobalLauncherPackage
       chromeGlobalLauncher.chromePersonalProfileLauncherPackage
+      chromeGlobalLauncher.chromeWorkProfileLauncherPackage
     ];
 
     activation = {

@@ -14,7 +14,7 @@ local setRunningApplications = testDoubles.setRunningApplications
 local captures = testDoubles.captures
 
 local workspaceGrid = require("workspace_grid")
-local chromePersonalProfileWindow = require("chrome_personal_profile_window")
+local chromeProfileWindow = require("chrome_profile_window")
 
 local function withTitle(window, title)
 	function window:title()
@@ -27,7 +27,15 @@ local function summonPersonalProfile()
 	workspaceGrid.summonApplicationProfileWindowToCurrentWorkspace(
 		"com.google.Chrome",
 		"summon-chrome-personal-profile",
-		chromePersonalProfileWindow.windowBelongsToPersonalProfile
+		chromeProfileWindow.windowBelongsToPersonalProfile
+	)
+end
+
+local function summonWorkProfile()
+	workspaceGrid.summonApplicationProfileWindowToCurrentWorkspace(
+		"com.google.Chrome",
+		"summon-chrome-work-profile",
+		chromeProfileWindow.windowBelongsToWorkProfile
 	)
 end
 
@@ -95,6 +103,38 @@ expectEqual(
 	"the personal profile is cold-launched when Chrome is not running",
 	1,
 	timesShellCommandExecuted(captures.executedShellCommands, "summon-chrome-personal-profile")
+)
+
+setRunningApplications({
+	["com.google.Chrome"] = { makeFakeApplication({ workProfileWindow, personalProfileWindow }) },
+})
+captures.currentlyFocusedWindowId = nil
+captures.executedShellCommands = {}
+summonWorkProfile()
+
+expectEqual("the work-profile window is focused, not the personal-profile window", 1, captures.currentlyFocusedWindowId)
+expectEqual(
+	"no cold launch runs when a work-profile window already exists",
+	0,
+	timesShellCommandExecuted(captures.executedShellCommands, "summon-chrome-work-profile")
+)
+
+setRunningApplications({
+	["com.google.Chrome"] = { makeFakeApplication({ personalProfileWindow }) },
+})
+captures.currentlyFocusedWindowId = nil
+captures.executedShellCommands = {}
+summonWorkProfile()
+
+expectEqual(
+	"a personal-profile window does not satisfy the work-profile summon",
+	nil,
+	captures.currentlyFocusedWindowId
+)
+expectEqual(
+	"the work profile is cold-launched when only a personal-profile window exists",
+	1,
+	timesShellCommandExecuted(captures.executedShellCommands, "summon-chrome-work-profile")
 )
 
 harness.exitWithAccumulatedResult()
