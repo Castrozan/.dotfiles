@@ -76,6 +76,7 @@ function workspaceGrid.moveFocusedWindowToWorkspace(targetWorkspaceNumber)
 		return
 	end
 	if pinnedWindow.windowIsPinned(focused) then
+		workspaceGrid.switchToWorkspace(targetWorkspaceNumber)
 		return
 	end
 	windowAssignment.assignWindowToWorkspace(focused:id(), targetWorkspaceNumber)

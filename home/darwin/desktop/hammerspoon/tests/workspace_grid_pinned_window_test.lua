@@ -40,8 +40,8 @@ local function makeFakeWindow(windowId, windowTitle)
 	return fakeWindow
 end
 
-local ambientCanvasWindow = makeFakeWindow(1, "ambient-canvas")
-local ordinaryWindow = makeFakeWindow(2, "some editor - Google Chrome - Lucas")
+local ambientCanvasWindow = makeFakeWindow(1, "ambient-canvas-gpu-screensaver")
+local ordinaryWindow = makeFakeWindow(2, "ambient-canvas - Google Chrome - Lucas")
 local allManagedWindowsInIterationOrder = { ambientCanvasWindow, ordinaryWindow }
 
 local function findWindowById(targetWindowId)
@@ -128,6 +128,11 @@ workspaceGrid.switchToWorkspace(pinnedWorkspaceNumber)
 ambientCanvasWindow:focus()
 workspaceGrid.moveFocusedWindowToWorkspace(3)
 expectEqual(
+	"navigating with the pinned window focused still switches the active workspace",
+	3,
+	workspaceGrid.currentWorkspaceNumber()
+)
+expectEqual(
 	"cmd-shift move refuses to drag the pinned window off workspace 11",
 	true,
 	windowIsOnWorkspace(1, pinnedWorkspaceNumber)
@@ -136,6 +141,14 @@ expectEqual("pinned window never lands on the move destination workspace 3", fal
 
 workspaceGrid.switchToWorkspace(3)
 workspaceGrid.onWindowCreated(ordinaryWindow)
+expectEqual(
+	"an ordinary window whose title only starts with ambient-canvas is not pinned to 11",
+	false,
+	windowIsOnWorkspace(2, pinnedWorkspaceNumber)
+)
+expectEqual("that ordinary window stays on the workspace it was created on", true, windowIsOnWorkspace(2, 3))
+
+workspaceGrid.switchToWorkspace(3)
 workspaceGrid.gatherAllWindowsToCurrentWorkspace()
 expectEqual("gather-all leaves the pinned window on workspace 11", true, windowIsOnWorkspace(1, pinnedWorkspaceNumber))
 expectEqual("gather-all still pulls an ordinary window onto the current workspace 3", true, windowIsOnWorkspace(2, 3))
