@@ -1,16 +1,25 @@
 (function runAmbientCanvasPlayer() {
   const grid = document.getElementById("ambient-canvas-grid");
   const paneConfigurations = window.AMBIENT_CANVAS_PANES || [];
+  const explicitLayout = window.AMBIENT_CANVAS_LAYOUT || null;
   const sceneFactories = window.AMBIENT_CANVAS_SCENE_FACTORIES || {};
 
   if (!grid || paneConfigurations.length === 0) {
     return;
   }
 
-  const columnCount = Math.ceil(Math.sqrt(paneConfigurations.length));
-  const rowCount = Math.ceil(paneConfigurations.length / columnCount);
-  grid.style.gridTemplateColumns = "repeat(" + columnCount + ", 1fr)";
-  grid.style.gridTemplateRows = "repeat(" + rowCount + ", 1fr)";
+  if (explicitLayout) {
+    grid.style.gridTemplateColumns = explicitLayout.columnTemplate;
+    grid.style.gridTemplateRows = explicitLayout.rowTemplate;
+    grid.style.gridTemplateAreas = explicitLayout.areaRows
+      .map((areaRow) => '"' + areaRow + '"')
+      .join(" ");
+  } else {
+    const columnCount = Math.ceil(Math.sqrt(paneConfigurations.length));
+    const rowCount = Math.ceil(paneConfigurations.length / columnCount);
+    grid.style.gridTemplateColumns = "repeat(" + columnCount + ", 1fr)";
+    grid.style.gridTemplateRows = "repeat(" + rowCount + ", 1fr)";
+  }
 
   let currentDevicePixelRatio = window.devicePixelRatio || 1;
 
@@ -35,6 +44,9 @@
     }
     const canvasElement = document.createElement("canvas");
     canvasElement.className = "ambient-canvas-pane";
+    if (paneConfiguration.area) {
+      canvasElement.style.gridArea = paneConfiguration.area;
+    }
     grid.appendChild(canvasElement);
     sizeCanvasToPane(canvasElement);
     const rendererOptions = Object.assign(
