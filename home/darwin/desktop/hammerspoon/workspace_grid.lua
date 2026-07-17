@@ -15,6 +15,8 @@ local windowLayout = require("workspace_grid_window_layout")
 local sessionGeneration = require("workspace_grid_session_generation")
 local windowAssignment = require("workspace_grid_window_assignment")
 local windowQuery = require("workspace_grid_window_query")
+local navigation = require("workspace_grid_navigation")
+local pinnedWindow = require("workspace_grid_pinned_window")
 
 local manageableWindows = windowQuery.manageableWindows
 
@@ -73,17 +75,15 @@ function workspaceGrid.moveFocusedWindowToWorkspace(targetWorkspaceNumber)
 	if not focused then
 		return
 	end
+	if pinnedWindow.windowIsPinned(focused) then
+		return
+	end
 	windowAssignment.assignWindowToWorkspace(focused:id(), targetWorkspaceNumber)
 	workspaceGrid.switchToWorkspace(targetWorkspaceNumber, focused)
 end
 
 function workspaceGrid.navigateWorkspace(deltaWithinGrid, alsoMoveFocusedWindow)
-	local target = currentWorkspaceNumber + deltaWithinGrid
-	if target < 1 then
-		target = totalWorkspaceCount + target
-	elseif target > totalWorkspaceCount then
-		target = target - totalWorkspaceCount
-	end
+	local target = navigation.wrapWorkspaceNumber(currentWorkspaceNumber, deltaWithinGrid, totalWorkspaceCount)
 	if alsoMoveFocusedWindow then
 		workspaceGrid.moveFocusedWindowToWorkspace(target)
 	else
@@ -107,8 +107,10 @@ workspaceGrid.summonApplicationProfileWindowToCurrentWorkspace =
 
 function workspaceGrid.gatherAllWindowsToCurrentWorkspace()
 	for _, window in ipairs(manageableWindows()) do
-		windowAssignment.assignWindowToWorkspace(window:id(), currentWorkspaceNumber)
-		windowLayout.showWindowOnScreen(window)
+		if not pinnedWindow.windowIsPinned(window) then
+			windowAssignment.assignWindowToWorkspace(window:id(), currentWorkspaceNumber)
+			windowLayout.showWindowOnScreen(window)
+		end
 	end
 	local focusedWindow = hs.window.focusedWindow()
 	if focusedWindow then
@@ -138,8 +140,11 @@ end
 
 function workspaceGrid.onWindowCreated(window)
 	if window and window:id() then
-		windowAssignment.assignWindowToWorkspace(window:id(), currentWorkspaceNumber)
-		if windowLayout.windowIsTileable(window) then
+		local assignedWorkspaceNumber = pinnedWindow.resolveWorkspaceForWindow(window, currentWorkspaceNumber)
+		windowAssignment.assignWindowToWorkspace(window:id(), assignedWorkspaceNumber)
+		if assignedWorkspaceNumber ~= currentWorkspaceNumber then
+			windowLayout.parkWindowOffScreen(window)
+		elseif windowLayout.windowIsTileable(window) then
 			windowLayout.showWindowOnScreen(window)
 		end
 		renderMenuBarIndicator()
