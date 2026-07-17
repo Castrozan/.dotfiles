@@ -163,6 +163,11 @@ in
       )
       "wezterm ctrl+super+click must be the personal-profile escape hatch, kept off ctrl+shift which collides with the terminal's own ctrl+shift keybindings: the open-uri handler dispatching on hovered_link_target_chrome_profile_launcher with a call_after expiry, the darwin summon-chrome-personal-profile branch and the linux brave binary fallback, and a CTRL|SUPER mouse binding using open_hovered_link_in_personal_chrome_action";
 
+  domain-terminal-wezterm-binds-reload-configuration =
+    mkEvalCheck "domain-terminal-wezterm-binds-reload-configuration"
+      (lib.hasInfix "action = wezterm.action.ReloadConfiguration" cfg.programs.wezterm.extraConfig)
+      "wezterm must bind ReloadConfiguration to a key: across nix rebuilds the config symlink is swapped to a fresh immutable store path that wezterm's file watcher never detects, so config changes never auto-apply and the only way to load them without a full app restart is a manual reload keybinding";
+
   domain-terminal-wezterm-webgpu-front-end-on-darwin =
     mkEvalCheck "domain-terminal-wezterm-webgpu-front-end-on-darwin"
       (lib.hasInfix "front_end = is_darwin and \"WebGpu\" or \"OpenGL\"" cfg.programs.wezterm.extraConfig)

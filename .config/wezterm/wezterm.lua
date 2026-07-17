@@ -179,6 +179,7 @@ local config = {
 
 if is_darwin then
 	table.insert(config.keys, { key = "w", mods = "CMD", action = wezterm.action.CloseCurrentTab({ confirm = false }) })
+	table.insert(config.keys, { key = "r", mods = "CMD|SHIFT", action = wezterm.action.ReloadConfiguration })
 end
 
 if hypr_theme_colors then
