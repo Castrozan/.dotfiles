@@ -1,21 +1,9 @@
-{
-  pkgs,
-  config,
-  latest,
-  ...
-}:
+_:
 let
 
   globalRules = ''
     ${builtins.readFile ../../../agents/core_rules/core.md}
   '';
-
-  browserMcp = import ../../../agents/skills/browser/install {
-    inherit pkgs;
-    homeDir = config.home.homeDirectory;
-    nodejs = pkgs.nodejs_22;
-    chromePackage = latest.google-chrome;
-  };
 
   opencodeGlobalSettings = {
     "$schema" = "https://opencode.ai/config.json";
@@ -57,36 +45,7 @@ let
       };
     };
 
-    mcp = {
-      jira-desenv = {
-        type = "local";
-        command = [
-          "npx"
-          "-y"
-          "@betha/jira-mcp"
-        ];
-        environment = {
-          JIRA_BASE_URL = "https://desenv.betha.com.br/";
-          JIRA_USERNAME = "{env:JIRA_DESENV_USERNAME}";
-          JIRA_PASSWORD = "{env:JIRA_DESENV_PASSWORD}";
-          NPM_CONFIG_REGISTRY = "http://nexus3.betha.com.br/repository/npm-all/";
-        };
-        enabled = true;
-      };
-      sourcebot = {
-        type = "remote";
-        url = "https://sourcebot.betha.cloud/api/mcp";
-        headers = {
-          Authorization = "Bearer {env:SOURCEBOT_TOKEN}";
-        };
-        enabled = true;
-      };
-      chrome-devtools = {
-        type = "local";
-        command = [ browserMcp.chromeDevtoolsMcpStdioCommand ] ++ browserMcp.chromeDevtoolsMcpStdioArgs;
-        enabled = true;
-      };
-    };
+    mcp = { };
   };
 in
 {
