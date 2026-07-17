@@ -17,6 +17,12 @@
     const shader = gl.createShader(shaderType);
     gl.shaderSource(shader, shaderSource);
     gl.compileShader(shader);
+    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+      console.error(
+        "ambient-canvas shader failed to compile: " +
+          gl.getShaderInfoLog(shader),
+      );
+    }
     return shader;
   }
 
@@ -31,6 +37,14 @@
       compileShader(gl.FRAGMENT_SHADER, fragmentShaderSource),
     );
     gl.linkProgram(program);
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+      console.error(
+        "ambient-canvas program for scene " +
+          scene.name +
+          " failed to link: " +
+          gl.getProgramInfoLog(program),
+      );
+    }
 
     const pointIndices = new Float32Array(scene.pointCount);
     for (let position = 0; position < scene.pointCount; position += 1) {

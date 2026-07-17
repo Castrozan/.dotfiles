@@ -2,7 +2,7 @@ import os
 import subprocess
 import sys
 
-CHROMIUM_BROWSER_CANDIDATES = ["Brave Browser", "Google Chrome"]
+CHROMIUM_BROWSER_CANDIDATES = ["Google Chrome", "Brave Browser"]
 AMBIENT_CANVAS_PROFILE_DIRECTORY = os.path.expanduser(
     "~/.local/state/ambient-canvas/profile"
 )

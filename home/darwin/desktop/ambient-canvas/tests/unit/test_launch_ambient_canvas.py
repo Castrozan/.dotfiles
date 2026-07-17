@@ -34,11 +34,30 @@ def test_centered_geometry_is_fraction_of_screen_and_centered():
     assert top == 140
 
 
+def test_resolve_browser_prefers_chrome_when_both_are_installed(monkeypatch):
+    monkeypatch.setattr(
+        launcher.os.path,
+        "isdir",
+        lambda path: path
+        in ("/Applications/Google Chrome.app", "/Applications/Brave Browser.app"),
+    )
+    assert launcher.resolve_chromium_browser_application() == "Google Chrome"
+
+
+def test_resolve_browser_falls_back_to_brave_when_chrome_absent(monkeypatch):
+    monkeypatch.setattr(
+        launcher.os.path,
+        "isdir",
+        lambda path: path == "/Applications/Brave Browser.app",
+    )
+    assert launcher.resolve_chromium_browser_application() == "Brave Browser"
+
+
 def test_browser_arguments_open_a_new_app_mode_instance():
     arguments = launcher.build_browser_arguments(
-        "Brave Browser", "file:///store/index.html", (1440, 720, 280, 140)
+        "Google Chrome", "file:///store/index.html", (1440, 720, 280, 140)
     )
-    assert arguments[:4] == ["open", "-na", "Brave Browser", "--args"]
+    assert arguments[:4] == ["open", "-na", "Google Chrome", "--args"]
     assert "--app=file:///store/index.html" in arguments
     assert f"--user-data-dir={launcher.AMBIENT_CANVAS_PROFILE_DIRECTORY}" in arguments
     assert "--window-size=1440,720" in arguments
@@ -89,3 +108,29 @@ def test_read_screen_dimensions_falls_back_when_bounds_unparsable(monkeypatch):
         launcher.FALLBACK_SCREEN_WIDTH,
         launcher.FALLBACK_SCREEN_HEIGHT,
     )
+
+
+def test_read_screen_dimensions_parses_well_formed_bounds(monkeypatch):
+    import types
+
+    monkeypatch.setattr(
+        launcher.subprocess,
+        "run",
+        lambda arguments, **_keyword_arguments: types.SimpleNamespace(
+            stdout="0, 0, 2560, 1440\n"
+        ),
+    )
+    assert launcher.read_screen_dimensions() == (2560, 1440)
+
+
+def test_main_returns_error_when_no_chromium_browser_is_installed(monkeypatch):
+    monkeypatch.setattr(launcher, "resolve_chromium_browser_application", lambda: None)
+    assert launcher.main() == 1
+
+
+def test_main_returns_error_when_web_assets_are_missing(monkeypatch):
+    monkeypatch.setattr(
+        launcher, "resolve_chromium_browser_application", lambda: "Google Chrome"
+    )
+    monkeypatch.setattr(launcher, "resolve_index_file_url", lambda: None)
+    assert launcher.main() == 1
