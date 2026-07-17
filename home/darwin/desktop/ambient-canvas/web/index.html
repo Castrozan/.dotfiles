@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ambient-canvas</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: #0a1a2f;
+        overflow: hidden;
+      }
+      canvas#ambient-canvas-surface {
+        display: block;
+        width: 100vw;
+        height: 100vh;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="ambient-canvas-surface"></canvas>
+    <script src="scenes/yuruyurau.js"></script>
+    <script src="player.js"></script>
+  </body>
+</html>

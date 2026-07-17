@@ -1,7 +1,7 @@
 local chromeProfileWindow = {}
 
-local personalProfileWindowTitleSuffixPattern = " %- Google Chrome %- Lucas$"
-local workProfileWindowTitleDisambiguatedInfixPattern = " %- Google Chrome %- Lucas %("
+local personalProfileWindowTitleSuffixPattern = " %- Google Chrome[ :%-]+Lucas$"
+local workProfileWindowTitleDisambiguatedInfixPattern = " %- Google Chrome[ :%-]+Lucas %("
 
 function chromeProfileWindow.windowBelongsToPersonalProfile(window)
 	local windowTitle = window:title()

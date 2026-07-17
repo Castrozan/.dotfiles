@@ -137,4 +137,47 @@ expectEqual(
 	timesShellCommandExecuted(captures.executedShellCommands, "summon-chrome-work-profile")
 )
 
+local workProfileWindowPortugueseLocale =
+	withTitle(makeFakeWindow(3, true), "Marco Antonio Alves Filho - Chat - Google Chrome: Lucas (betha.com.br)")
+local personalProfileWindowPortugueseLocale = withTitle(makeFakeWindow(4, true), "New tab - Google Chrome: Lucas")
+setRunningApplications({
+	["com.google.Chrome"] = {
+		makeFakeApplication({ workProfileWindowPortugueseLocale, personalProfileWindowPortugueseLocale }),
+	},
+})
+captures.currentlyFocusedWindowId = nil
+captures.executedShellCommands = {}
+summonPersonalProfile()
+
+expectEqual(
+	"the Portuguese-locale colon-separated personal-profile window is focused, not cold-launched",
+	4,
+	captures.currentlyFocusedWindowId
+)
+expectEqual(
+	"no cold launch runs when a Portuguese-locale personal-profile window already exists",
+	0,
+	timesShellCommandExecuted(captures.executedShellCommands, "summon-chrome-personal-profile")
+)
+
+setRunningApplications({
+	["com.google.Chrome"] = {
+		makeFakeApplication({ workProfileWindowPortugueseLocale, personalProfileWindowPortugueseLocale }),
+	},
+})
+captures.currentlyFocusedWindowId = nil
+captures.executedShellCommands = {}
+summonWorkProfile()
+
+expectEqual(
+	"the Portuguese-locale colon-separated work-profile window is focused, not cold-launched",
+	3,
+	captures.currentlyFocusedWindowId
+)
+expectEqual(
+	"no cold launch runs when a Portuguese-locale work-profile window already exists",
+	0,
+	timesShellCommandExecuted(captures.executedShellCommands, "summon-chrome-work-profile")
+)
+
 harness.exitWithAccumulatedResult()
