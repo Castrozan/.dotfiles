@@ -134,3 +134,30 @@ def test_main_returns_error_when_web_assets_are_missing(monkeypatch):
     )
     monkeypatch.setattr(launcher, "resolve_index_file_url", lambda: None)
     assert launcher.main() == 1
+
+
+def test_main_launches_the_configured_browser_on_the_success_path(monkeypatch):
+    monkeypatch.setattr(
+        launcher, "resolve_chromium_browser_application", lambda: "Google Chrome"
+    )
+    monkeypatch.setattr(
+        launcher, "resolve_index_file_url", lambda: "file:///store/index.html"
+    )
+    monkeypatch.setattr(launcher, "read_screen_dimensions", lambda: (2000, 1000))
+    monkeypatch.setattr(
+        launcher.os, "makedirs", lambda *args, **keyword_arguments: None
+    )
+    captured_arguments = {}
+
+    def capture_subprocess_run(arguments, **_keyword_arguments):
+        captured_arguments["value"] = arguments
+
+    monkeypatch.setattr(launcher.subprocess, "run", capture_subprocess_run)
+    assert launcher.main() == 0
+    assert captured_arguments["value"][:4] == [
+        "open",
+        "-na",
+        "Google Chrome",
+        "--args",
+    ]
+    assert "--app=file:///store/index.html" in captured_arguments["value"]
