@@ -128,6 +128,11 @@ expectEqual(
 expectEqual("pinned window is absent from the workspace it was created on", false, windowIsOnWorkspace(1, 5))
 
 workspaceGrid.switchToWorkspace(pinnedWorkspaceNumber)
+expectEqual(
+	"the shown pinned window fills the full display height, covering the menu bar",
+	940,
+	ambientCanvasWindow.storedFrame.h
+)
 ambientCanvasWindow:focus()
 workspaceGrid.moveFocusedWindowToWorkspace(3)
 expectEqual(
@@ -155,5 +160,10 @@ workspaceGrid.switchToWorkspace(3)
 workspaceGrid.gatherAllWindowsToCurrentWorkspace()
 expectEqual("gather-all leaves the pinned window on workspace 11", true, windowIsOnWorkspace(1, pinnedWorkspaceNumber))
 expectEqual("gather-all still pulls an ordinary window onto the current workspace 3", true, windowIsOnWorkspace(2, 3))
+expectEqual(
+	"an ordinary shown window keeps the working-area height, not the full display",
+	900,
+	ordinaryWindow.storedFrame.h
+)
 
 os.exit(failureCount == 0 and 0 or 1)
