@@ -140,7 +140,7 @@ in
       )
       "wezterm plain ctrl+click must route the hovered link to the work Chrome profile: an open-uri handler dispatching on hovered_link_target_chrome_profile_launcher with a call_after expiry, a summon-chrome-work-profile darwin branch and the linux brave binary fallback, and a plain CTRL mouse binding using open_hovered_link_in_work_chrome_action";
 
-  domain-terminal-wezterm-ctrl-shift-click-opens-personal-chrome =
+  domain-terminal-wezterm-ctrl-super-click-opens-personal-chrome =
     let
       weztermConfig = cfg.programs.wezterm.extraConfig;
       hasOpenUriHandler = lib.hasInfix "wezterm.on(\"open-uri\"" weztermConfig;
@@ -149,9 +149,9 @@ in
       hasFlagExpiryTimer = lib.hasInfix "wezterm.time.call_after" weztermConfig;
       hasDarwinChromeSummon = lib.hasInfix "summon-chrome-personal-profile" weztermConfig;
       hasLinuxBraveBinary = lib.hasInfix "{ \"brave\", uri }" weztermConfig;
-      hasCtrlShiftMods = lib.hasInfix "mods = \"CTRL|SHIFT\"" weztermConfig;
+      hasCtrlSuperMods = lib.hasInfix "mods = \"CTRL|SUPER\"" weztermConfig;
     in
-    mkEvalCheck "domain-terminal-wezterm-ctrl-shift-click-opens-personal-chrome"
+    mkEvalCheck "domain-terminal-wezterm-ctrl-super-click-opens-personal-chrome"
       (
         hasOpenUriHandler
         && routesThroughProfileLauncherVariable
@@ -159,9 +159,9 @@ in
         && hasFlagExpiryTimer
         && hasDarwinChromeSummon
         && hasLinuxBraveBinary
-        && hasCtrlShiftMods
+        && hasCtrlSuperMods
       )
-      "wezterm ctrl+shift+click must remain the personal-profile escape hatch: the open-uri handler dispatching on hovered_link_target_chrome_profile_launcher with a call_after expiry, the darwin summon-chrome-personal-profile branch and the linux brave binary fallback, and a CTRL|SHIFT mouse binding using open_hovered_link_in_personal_chrome_action";
+      "wezterm ctrl+super+click must be the personal-profile escape hatch, kept off ctrl+shift which collides with the terminal's own ctrl+shift keybindings: the open-uri handler dispatching on hovered_link_target_chrome_profile_launcher with a call_after expiry, the darwin summon-chrome-personal-profile branch and the linux brave binary fallback, and a CTRL|SUPER mouse binding using open_hovered_link_in_personal_chrome_action";
 
   domain-terminal-wezterm-webgpu-front-end-on-darwin =
     mkEvalCheck "domain-terminal-wezterm-webgpu-front-end-on-darwin"

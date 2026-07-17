@@ -128,23 +128,23 @@ local config = {
 		},
 		{
 			event = { Up = { streak = 1, button = "Left" } },
-			mods = "CTRL|SHIFT",
+			mods = "CTRL|SUPER",
 			action = open_hovered_link_in_personal_chrome_action,
 		},
 		{
 			event = { Down = { streak = 1, button = "Left" } },
-			mods = "CTRL|SHIFT",
+			mods = "CTRL|SUPER",
 			action = wezterm.action.Nop,
 		},
 		{
 			event = { Up = { streak = 1, button = "Left" } },
-			mods = "CTRL|SHIFT",
+			mods = "CTRL|SUPER",
 			action = open_hovered_link_in_personal_chrome_action,
 			mouse_reporting = true,
 		},
 		{
 			event = { Down = { streak = 1, button = "Left" } },
-			mods = "CTRL|SHIFT",
+			mods = "CTRL|SUPER",
 			action = wezterm.action.Nop,
 			mouse_reporting = true,
 		},
