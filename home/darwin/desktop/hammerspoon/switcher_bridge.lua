@@ -7,17 +7,29 @@
 -- Accessibility/Screen-Recording grants.
 
 local workspaceGrid = require("workspace_grid")
+local pinnedWindow = require("workspace_grid_pinned_window")
 
 local workspaceWindowsFilePath = "/tmp/workspace-window-switcher-windows.json"
 local focusRequestFilePath = "/tmp/workspace-window-switcher-focus-request"
 
+local function switchableWindowsOfCurrentWorkspace()
+	local currentWorkspaceWindows = workspaceGrid.currentWorkspaceWindowList()
+	local switchableWindows = {}
+	for _, windowDescriptor in ipairs(currentWorkspaceWindows.windows) do
+		if not pinnedWindow.windowTitleIsPinned(windowDescriptor["window-title"]) then
+			switchableWindows[#switchableWindows + 1] = windowDescriptor
+		end
+	end
+	return { focused = currentWorkspaceWindows.focused, windows = switchableWindows }
+end
+
 local function writeCurrentWorkspaceWindowsFile()
-  local serialized = hs.json.encode(workspaceGrid.currentWorkspaceWindowList())
-  local file = io.open(workspaceWindowsFilePath, "w")
-  if file then
-    file:write(serialized)
-    file:close()
-  end
+	local serialized = hs.json.encode(switchableWindowsOfCurrentWorkspace())
+	local file = io.open(workspaceWindowsFilePath, "w")
+	if file then
+		file:write(serialized)
+		file:close()
+	end
 end
 
 -- The daemon reads the file when Cmd+Tab activates it; a periodic refresh keeps
@@ -26,22 +38,22 @@ local windowsFileRefreshTimer = hs.timer.doEvery(1.0, writeCurrentWorkspaceWindo
 windowsFileRefreshTimer:start()
 
 local focusRequestWatcher = hs.pathwatcher.new(focusRequestFilePath, function()
-  local file = io.open(focusRequestFilePath, "r")
-  if not file then
-    return
-  end
-  local content = file:read("*a") or ""
-  file:close()
-  local requestedWindowId = tonumber(content:match("^%-?%d+"))
-  if requestedWindowId then
-    workspaceGrid.focusWindowById(requestedWindowId)
-  end
+	local file = io.open(focusRequestFilePath, "r")
+	if not file then
+		return
+	end
+	local content = file:read("*a") or ""
+	file:close()
+	local requestedWindowId = tonumber(content:match("^%-?%d+"))
+	if requestedWindowId then
+		workspaceGrid.focusWindowById(requestedWindowId)
+	end
 end)
 focusRequestWatcher:start()
 
 writeCurrentWorkspaceWindowsFile()
 
 return {
-  windowsFileRefreshTimer = windowsFileRefreshTimer,
-  focusRequestWatcher = focusRequestWatcher,
+	windowsFileRefreshTimer = windowsFileRefreshTimer,
+	focusRequestWatcher = focusRequestWatcher,
 }
