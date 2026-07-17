@@ -1,0 +1,34 @@
+--- a/build/src/McpResponse.js
++++ b/build/src/McpResponse.js
+@@ -693,12 +693,13 @@
+             if (regularPages.length) {
+                 const parts = [`## Pages`];
+                 const structuredPages = [];
+-                for (const mcpPage of regularPages) {
++                const regularPageTitles = await Promise.all(regularPages.map(page => fetchPageTitle(page.pptrPage)));
++                for (const [regularPageIndex, mcpPage] of regularPages.entries()) {
+                     const isolatedContextName = mcpPage.isolatedContextName;
+                     const contextLabel = isolatedContextName
+                         ? ` isolatedContext=${isolatedContextName}`
+                         : '';
+-                    const title = await fetchPageTitle(mcpPage.pptrPage);
++                    const title = regularPageTitles[regularPageIndex];
+                     const pageLabel = title
+                         ? `${truncateTitle(title)} (${mcpPage.pptrPage.url()})`
+                         : mcpPage.pptrPage.url();
+@@ -712,12 +713,13 @@
+                 if (extensionPages.length) {
+                     response.push(`## Extension Pages`);
+                     const structuredExtensionPages = [];
+-                    for (const mcpPage of extensionPages) {
++                    const extensionPageTitles = await Promise.all(extensionPages.map(page => fetchPageTitle(page.pptrPage)));
++                    for (const [extensionPageIndex, mcpPage] of extensionPages.entries()) {
+                         const isolatedContextName = mcpPage.isolatedContextName;
+                         const contextLabel = isolatedContextName
+                             ? ` isolatedContext=${isolatedContextName}`
+                             : '';
+-                        const title = await fetchPageTitle(mcpPage.pptrPage);
++                        const title = extensionPageTitles[extensionPageIndex];
+                         const pageLabel = title
+                             ? `${truncateTitle(title)} (${mcpPage.pptrPage.url()})`
+                             : mcpPage.pptrPage.url();

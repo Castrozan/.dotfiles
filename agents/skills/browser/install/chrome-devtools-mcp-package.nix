@@ -14,6 +14,8 @@ pkgs.stdenv.mkDerivation {
   inherit version;
   src = npmTarball;
 
+  patches = [ ./chrome-devtools-mcp-patches/parallelize-list-pages-title-fetch.patch ];
+
   nativeBuildInputs = [ pkgs.makeWrapper ];
 
   dontConfigure = true;
@@ -33,7 +35,7 @@ pkgs.stdenv.mkDerivation {
   '';
 
   meta = {
-    description = "Pristine pinned chrome-devtools-mcp (no in-place patches; self-bundled, zero npm dependencies)";
+    description = "Pinned chrome-devtools-mcp, self-bundled with zero npm dependencies, carrying one upstream-bug patch that parallelizes the list_pages title fetch so it does not stall for a second per open tab against the consent-attached Chrome";
     homepage = "https://github.com/ChromeDevTools/chrome-devtools-mcp";
   };
 }
