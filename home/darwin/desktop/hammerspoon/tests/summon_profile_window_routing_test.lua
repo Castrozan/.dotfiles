@@ -137,8 +137,7 @@ expectEqual(
 	timesShellCommandExecuted(captures.executedShellCommands, "summon-chrome-work-profile")
 )
 
-local workProfileWindowPortugueseLocale =
-	withTitle(makeFakeWindow(3, true), "Marco Antonio Alves Filho - Chat - Google Chrome: Lucas (betha.com.br)")
+local workProfileWindowPortugueseLocale = withTitle(makeFakeWindow(3, true), "Slack - Google Chrome: Lucas (Work)")
 local personalProfileWindowPortugueseLocale = withTitle(makeFakeWindow(4, true), "New tab - Google Chrome: Lucas")
 setRunningApplications({
 	["com.google.Chrome"] = {
