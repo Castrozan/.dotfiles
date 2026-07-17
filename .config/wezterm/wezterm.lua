@@ -27,18 +27,19 @@ if type(mux.get_active_window) == "function" then
 	end)
 end
 
-local open_hovered_link_in_personal_chrome = false
+local hovered_link_target_chrome_profile_launcher = nil
 
 wezterm.on("open-uri", function(window, pane, uri)
-	if not open_hovered_link_in_personal_chrome then
+	if not hovered_link_target_chrome_profile_launcher then
 		return true
 	end
-	open_hovered_link_in_personal_chrome = false
+	local target_chrome_profile_launcher = hovered_link_target_chrome_profile_launcher
+	hovered_link_target_chrome_profile_launcher = nil
 	if is_darwin then
 		wezterm.background_child_process({
 			"/run/current-system/sw/bin/bash",
 			"-lc",
-			'exec summon-chrome-personal-profile "$1"',
+			"exec " .. target_chrome_profile_launcher .. ' "$1"',
 			"wezterm-open-uri",
 			uri,
 		})
@@ -48,13 +49,19 @@ wezterm.on("open-uri", function(window, pane, uri)
 	return false
 end)
 
-local open_hovered_link_in_personal_chrome_action = wezterm.action_callback(function(window, pane)
-	open_hovered_link_in_personal_chrome = true
-	wezterm.time.call_after(0.2, function()
-		open_hovered_link_in_personal_chrome = false
+local function open_hovered_link_in_chrome_profile_action(target_chrome_profile_launcher)
+	return wezterm.action_callback(function(window, pane)
+		hovered_link_target_chrome_profile_launcher = target_chrome_profile_launcher
+		wezterm.time.call_after(0.2, function()
+			hovered_link_target_chrome_profile_launcher = nil
+		end)
+		window:perform_action(wezterm.action.OpenLinkAtMouseCursor, pane)
 	end)
-	window:perform_action(wezterm.action.OpenLinkAtMouseCursor, pane)
-end)
+end
+
+local open_hovered_link_in_work_chrome_action = open_hovered_link_in_chrome_profile_action("summon-chrome-work-profile")
+local open_hovered_link_in_personal_chrome_action =
+	open_hovered_link_in_chrome_profile_action("summon-chrome-personal-profile")
 
 local config = {
 	font = wezterm.font_with_fallback({
@@ -100,7 +107,7 @@ local config = {
 		{
 			event = { Up = { streak = 1, button = "Left" } },
 			mods = "CTRL",
-			action = wezterm.action.OpenLinkAtMouseCursor,
+			action = open_hovered_link_in_work_chrome_action,
 		},
 		{
 			event = { Down = { streak = 1, button = "Left" } },
@@ -110,7 +117,7 @@ local config = {
 		{
 			event = { Up = { streak = 1, button = "Left" } },
 			mods = "CTRL",
-			action = wezterm.action.OpenLinkAtMouseCursor,
+			action = open_hovered_link_in_work_chrome_action,
 			mouse_reporting = true,
 		},
 		{

@@ -117,11 +117,34 @@ in
       (hasBypassMouseReporting && hasOpenLinkAction && hasNopDownEvent && hasMouseReportingBindings)
       "wezterm must have bypass_mouse_reporting_modifiers, OpenLinkAtMouseCursor, Nop down-event, and mouse_reporting=true bindings for ctrl+click to work inside tmux";
 
+  domain-terminal-wezterm-ctrl-click-opens-work-chrome =
+    let
+      weztermConfig = cfg.programs.wezterm.extraConfig;
+      hasOpenUriHandler = lib.hasInfix "wezterm.on(\"open-uri\"" weztermConfig;
+      routesThroughProfileLauncherVariable = lib.hasInfix "hovered_link_target_chrome_profile_launcher" weztermConfig;
+      hasWorkChromeAction = lib.hasInfix "open_hovered_link_in_work_chrome_action" weztermConfig;
+      hasFlagExpiryTimer = lib.hasInfix "wezterm.time.call_after" weztermConfig;
+      hasWorkChromeSummon = lib.hasInfix "summon-chrome-work-profile" weztermConfig;
+      hasLinuxBraveBinary = lib.hasInfix "{ \"brave\", uri }" weztermConfig;
+      hasPlainCtrlMods = lib.hasInfix "mods = \"CTRL\"" weztermConfig;
+    in
+    mkEvalCheck "domain-terminal-wezterm-ctrl-click-opens-work-chrome"
+      (
+        hasOpenUriHandler
+        && routesThroughProfileLauncherVariable
+        && hasWorkChromeAction
+        && hasFlagExpiryTimer
+        && hasWorkChromeSummon
+        && hasLinuxBraveBinary
+        && hasPlainCtrlMods
+      )
+      "wezterm plain ctrl+click must route the hovered link to the work Chrome profile: an open-uri handler dispatching on hovered_link_target_chrome_profile_launcher with a call_after expiry, a summon-chrome-work-profile darwin branch and the linux brave binary fallback, and a plain CTRL mouse binding using open_hovered_link_in_work_chrome_action";
+
   domain-terminal-wezterm-ctrl-shift-click-opens-personal-chrome =
     let
       weztermConfig = cfg.programs.wezterm.extraConfig;
       hasOpenUriHandler = lib.hasInfix "wezterm.on(\"open-uri\"" weztermConfig;
-      hasPersonalChromeFlag = lib.hasInfix "open_hovered_link_in_personal_chrome" weztermConfig;
+      routesThroughProfileLauncherVariable = lib.hasInfix "hovered_link_target_chrome_profile_launcher" weztermConfig;
       hasPersonalChromeAction = lib.hasInfix "open_hovered_link_in_personal_chrome_action" weztermConfig;
       hasFlagExpiryTimer = lib.hasInfix "wezterm.time.call_after" weztermConfig;
       hasDarwinChromeSummon = lib.hasInfix "summon-chrome-personal-profile" weztermConfig;
@@ -131,14 +154,14 @@ in
     mkEvalCheck "domain-terminal-wezterm-ctrl-shift-click-opens-personal-chrome"
       (
         hasOpenUriHandler
-        && hasPersonalChromeFlag
+        && routesThroughProfileLauncherVariable
         && hasPersonalChromeAction
         && hasFlagExpiryTimer
         && hasDarwinChromeSummon
         && hasLinuxBraveBinary
         && hasCtrlShiftMods
       )
-      "wezterm ctrl+shift+click must route the hovered link to the personal Chrome profile: an open-uri handler gated by open_hovered_link_in_personal_chrome with a call_after expiry, the darwin summon-chrome-personal-profile branch and the linux brave binary fallback, and a CTRL|SHIFT mouse binding using the named action";
+      "wezterm ctrl+shift+click must remain the personal-profile escape hatch: the open-uri handler dispatching on hovered_link_target_chrome_profile_launcher with a call_after expiry, the darwin summon-chrome-personal-profile branch and the linux brave binary fallback, and a CTRL|SHIFT mouse binding using open_hovered_link_in_personal_chrome_action";
 
   domain-terminal-wezterm-webgpu-front-end-on-darwin =
     mkEvalCheck "domain-terminal-wezterm-webgpu-front-end-on-darwin"
