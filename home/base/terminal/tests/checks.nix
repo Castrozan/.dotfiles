@@ -117,51 +117,28 @@ in
       (hasBypassMouseReporting && hasOpenLinkAction && hasNopDownEvent && hasMouseReportingBindings)
       "wezterm must have bypass_mouse_reporting_modifiers, OpenLinkAtMouseCursor, Nop down-event, and mouse_reporting=true bindings for ctrl+click to work inside tmux";
 
-  domain-terminal-wezterm-ctrl-click-opens-work-chrome =
+  domain-terminal-wezterm-ctrl-click-opens-work-chrome-only =
     let
       weztermConfig = cfg.programs.wezterm.extraConfig;
       hasOpenUriHandler = lib.hasInfix "wezterm.on(\"open-uri\"" weztermConfig;
-      routesThroughProfileLauncherVariable = lib.hasInfix "hovered_link_target_chrome_profile_launcher" weztermConfig;
-      hasWorkChromeAction = lib.hasInfix "open_hovered_link_in_work_chrome_action" weztermConfig;
-      hasFlagExpiryTimer = lib.hasInfix "wezterm.time.call_after" weztermConfig;
-      hasWorkChromeSummon = lib.hasInfix "summon-chrome-work-profile" weztermConfig;
+      routesToWorkChrome = lib.hasInfix "summon-chrome-work-profile" weztermConfig;
       hasLinuxBraveBinary = lib.hasInfix "{ \"brave\", uri }" weztermConfig;
+      opensLinkAtMouseCursor = lib.hasInfix "OpenLinkAtMouseCursor" weztermConfig;
       hasPlainCtrlMods = lib.hasInfix "mods = \"CTRL\"" weztermConfig;
+      noPersonalProfileRouting = !(lib.hasInfix "summon-chrome-personal-profile" weztermConfig);
+      noSuperMouseBinding = !(lib.hasInfix "mods = \"CTRL|SUPER\"" weztermConfig);
     in
-    mkEvalCheck "domain-terminal-wezterm-ctrl-click-opens-work-chrome"
+    mkEvalCheck "domain-terminal-wezterm-ctrl-click-opens-work-chrome-only"
       (
         hasOpenUriHandler
-        && routesThroughProfileLauncherVariable
-        && hasWorkChromeAction
-        && hasFlagExpiryTimer
-        && hasWorkChromeSummon
+        && routesToWorkChrome
         && hasLinuxBraveBinary
+        && opensLinkAtMouseCursor
         && hasPlainCtrlMods
+        && noPersonalProfileRouting
+        && noSuperMouseBinding
       )
-      "wezterm plain ctrl+click must route the hovered link to the work Chrome profile: an open-uri handler dispatching on hovered_link_target_chrome_profile_launcher with a call_after expiry, a summon-chrome-work-profile darwin branch and the linux brave binary fallback, and a plain CTRL mouse binding using open_hovered_link_in_work_chrome_action";
-
-  domain-terminal-wezterm-ctrl-super-click-opens-personal-chrome =
-    let
-      weztermConfig = cfg.programs.wezterm.extraConfig;
-      hasOpenUriHandler = lib.hasInfix "wezterm.on(\"open-uri\"" weztermConfig;
-      routesThroughProfileLauncherVariable = lib.hasInfix "hovered_link_target_chrome_profile_launcher" weztermConfig;
-      hasPersonalChromeAction = lib.hasInfix "open_hovered_link_in_personal_chrome_action" weztermConfig;
-      hasFlagExpiryTimer = lib.hasInfix "wezterm.time.call_after" weztermConfig;
-      hasDarwinChromeSummon = lib.hasInfix "summon-chrome-personal-profile" weztermConfig;
-      hasLinuxBraveBinary = lib.hasInfix "{ \"brave\", uri }" weztermConfig;
-      hasCtrlSuperMods = lib.hasInfix "mods = \"CTRL|SUPER\"" weztermConfig;
-    in
-    mkEvalCheck "domain-terminal-wezterm-ctrl-super-click-opens-personal-chrome"
-      (
-        hasOpenUriHandler
-        && routesThroughProfileLauncherVariable
-        && hasPersonalChromeAction
-        && hasFlagExpiryTimer
-        && hasDarwinChromeSummon
-        && hasLinuxBraveBinary
-        && hasCtrlSuperMods
-      )
-      "wezterm ctrl+super+click must be the personal-profile escape hatch, kept off ctrl+shift which collides with the terminal's own ctrl+shift keybindings: the open-uri handler dispatching on hovered_link_target_chrome_profile_launcher with a call_after expiry, the darwin summon-chrome-personal-profile branch and the linux brave binary fallback, and a CTRL|SUPER mouse binding using open_hovered_link_in_personal_chrome_action";
+      "wezterm ctrl+click must open the hovered link only in the work Chrome profile: an open-uri handler that unconditionally runs summon-chrome-work-profile on darwin (brave on linux), a plain CTRL mouse binding using OpenLinkAtMouseCursor, and no personal-profile routing or ctrl+super mouse binding";
 
   domain-terminal-wezterm-binds-reload-configuration =
     mkEvalCheck "domain-terminal-wezterm-binds-reload-configuration"

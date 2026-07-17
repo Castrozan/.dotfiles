@@ -27,19 +27,12 @@ if type(mux.get_active_window) == "function" then
 	end)
 end
 
-local hovered_link_target_chrome_profile_launcher = nil
-
 wezterm.on("open-uri", function(window, pane, uri)
-	if not hovered_link_target_chrome_profile_launcher then
-		return true
-	end
-	local target_chrome_profile_launcher = hovered_link_target_chrome_profile_launcher
-	hovered_link_target_chrome_profile_launcher = nil
 	if is_darwin then
 		wezterm.background_child_process({
 			"/run/current-system/sw/bin/bash",
 			"-lc",
-			"exec " .. target_chrome_profile_launcher .. ' "$1"',
+			'exec summon-chrome-work-profile "$1"',
 			"wezterm-open-uri",
 			uri,
 		})
@@ -48,20 +41,6 @@ wezterm.on("open-uri", function(window, pane, uri)
 	end
 	return false
 end)
-
-local function open_hovered_link_in_chrome_profile_action(target_chrome_profile_launcher)
-	return wezterm.action_callback(function(window, pane)
-		hovered_link_target_chrome_profile_launcher = target_chrome_profile_launcher
-		wezterm.time.call_after(0.2, function()
-			hovered_link_target_chrome_profile_launcher = nil
-		end)
-		window:perform_action(wezterm.action.OpenLinkAtMouseCursor, pane)
-	end)
-end
-
-local open_hovered_link_in_work_chrome_action = open_hovered_link_in_chrome_profile_action("summon-chrome-work-profile")
-local open_hovered_link_in_personal_chrome_action =
-	open_hovered_link_in_chrome_profile_action("summon-chrome-personal-profile")
 
 local config = {
 	font = wezterm.font_with_fallback({
@@ -107,7 +86,7 @@ local config = {
 		{
 			event = { Up = { streak = 1, button = "Left" } },
 			mods = "CTRL",
-			action = open_hovered_link_in_work_chrome_action,
+			action = wezterm.action.OpenLinkAtMouseCursor,
 		},
 		{
 			event = { Down = { streak = 1, button = "Left" } },
@@ -117,34 +96,12 @@ local config = {
 		{
 			event = { Up = { streak = 1, button = "Left" } },
 			mods = "CTRL",
-			action = open_hovered_link_in_work_chrome_action,
+			action = wezterm.action.OpenLinkAtMouseCursor,
 			mouse_reporting = true,
 		},
 		{
 			event = { Down = { streak = 1, button = "Left" } },
 			mods = "CTRL",
-			action = wezterm.action.Nop,
-			mouse_reporting = true,
-		},
-		{
-			event = { Up = { streak = 1, button = "Left" } },
-			mods = "CTRL|SUPER",
-			action = open_hovered_link_in_personal_chrome_action,
-		},
-		{
-			event = { Down = { streak = 1, button = "Left" } },
-			mods = "CTRL|SUPER",
-			action = wezterm.action.Nop,
-		},
-		{
-			event = { Up = { streak = 1, button = "Left" } },
-			mods = "CTRL|SUPER",
-			action = open_hovered_link_in_personal_chrome_action,
-			mouse_reporting = true,
-		},
-		{
-			event = { Down = { streak = 1, button = "Left" } },
-			mods = "CTRL|SUPER",
 			action = wezterm.action.Nop,
 			mouse_reporting = true,
 		},
