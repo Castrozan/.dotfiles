@@ -22,6 +22,9 @@ local function makeFakeWindow(windowId, windowTitle)
 			frame = function()
 				return { x = 0, y = 0, w = 1440, h = 900 }
 			end,
+			fullFrame = function()
+				return { x = 0, y = 0, w = 1440, h = 940 }
+			end,
 		}
 	end
 	function fakeWindow:focus()

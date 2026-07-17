@@ -1,5 +1,7 @@
 local workspaceGridWindowLayout = {}
 
+local pinnedWindow = require("workspace_grid_pinned_window")
+
 local offScreenParkingX = -1000000
 local savedFloatingFrameByWindowId = {}
 
@@ -18,7 +20,11 @@ end
 
 function workspaceGridWindowLayout.showWindowOnScreen(window)
 	if workspaceGridWindowLayout.windowIsTileable(window) then
-		window:setFrame(window:screen():frame())
+		if pinnedWindow.windowIsPinned(window) then
+			window:setFrame(window:screen():fullFrame())
+		else
+			window:setFrame(window:screen():frame())
+		end
 	else
 		local savedFrame = savedFloatingFrameByWindowId[window:id()]
 		if savedFrame then

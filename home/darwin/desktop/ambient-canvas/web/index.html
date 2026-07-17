@@ -12,16 +12,27 @@
         background: #0a1a2f;
         overflow: hidden;
       }
-      canvas#ambient-canvas-surface {
-        display: block;
+      #ambient-canvas-grid {
+        display: grid;
         width: 100vw;
         height: 100vh;
+        gap: 2px;
+        background: #0a1a2f;
+      }
+      canvas.ambient-canvas-pane {
+        display: block;
+        width: 100%;
+        height: 100%;
+        background: #0a1a2f;
       }
     </style>
   </head>
   <body>
-    <canvas id="ambient-canvas-surface"></canvas>
+    <div id="ambient-canvas-grid"></div>
     <script src="scenes/yuruyurau.js"></script>
+    <script src="scenes/matrix_rain.js"></script>
+    <script src="scenes/bonsai.js"></script>
+    <script src="panes.js"></script>
     <script src="player.js"></script>
   </body>
 </html>
