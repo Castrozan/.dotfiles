@@ -48,3 +48,44 @@ def test_browser_arguments_open_a_new_app_mode_instance():
 def test_resolve_index_file_url_is_none_without_environment(monkeypatch):
     monkeypatch.delenv("AMBIENT_CANVAS_INDEX", raising=False)
     assert launcher.resolve_index_file_url() is None
+
+
+def test_resolve_index_file_url_builds_file_url_for_existing_asset(
+    monkeypatch, tmp_path
+):
+    index_path = tmp_path / "index.html"
+    index_path.write_text("<html></html>")
+    monkeypatch.setenv("AMBIENT_CANVAS_INDEX", str(index_path))
+    assert launcher.resolve_index_file_url() == "file://" + str(index_path)
+
+
+def test_resolve_index_file_url_is_none_when_asset_missing(monkeypatch, tmp_path):
+    monkeypatch.setenv("AMBIENT_CANVAS_INDEX", str(tmp_path / "absent.html"))
+    assert launcher.resolve_index_file_url() is None
+
+
+def test_read_screen_dimensions_falls_back_when_osascript_absent(monkeypatch):
+    def raise_file_not_found(arguments, **_keyword_arguments):
+        raise FileNotFoundError("osascript not present")
+
+    monkeypatch.setattr(launcher.subprocess, "run", raise_file_not_found)
+    assert launcher.read_screen_dimensions() == (
+        launcher.FALLBACK_SCREEN_WIDTH,
+        launcher.FALLBACK_SCREEN_HEIGHT,
+    )
+
+
+def test_read_screen_dimensions_falls_back_when_bounds_unparsable(monkeypatch):
+    import types
+
+    monkeypatch.setattr(
+        launcher.subprocess,
+        "run",
+        lambda arguments, **_keyword_arguments: types.SimpleNamespace(
+            stdout="not,bounds"
+        ),
+    )
+    assert launcher.read_screen_dimensions() == (
+        launcher.FALLBACK_SCREEN_WIDTH,
+        launcher.FALLBACK_SCREEN_HEIGHT,
+    )
