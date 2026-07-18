@@ -27,6 +27,8 @@ struct InstalledApplicationCatalog {
         "Directory Utility",
         "Wireless Diagnostics",
         "Feedback Assistant",
+        "Screen Time",
+        "Software Update",
     ]
 
     private static let searchDirectories: [ApplicationSearchDirectory] = [
