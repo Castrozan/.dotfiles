@@ -14,8 +14,8 @@
 
   const cssRules = [
     "ytd-watch-flexy { --ytweak-col: min(1600px, 92vw); }",
-    "#masthead-container.ytd-app, #masthead-container tp-yt-app-header, ytd-masthead#masthead { height: 45px !important; min-height: 45px !important; }",
-    "ytd-masthead #container.ytd-masthead { transform: scale(0.82); transform-origin: left center; width: 122% !important; }",
+    "ytd-app { --ytd-masthead-height: 45px !important; }",
+    "#masthead-container.ytd-app, ytd-masthead#masthead, ytd-masthead #background.ytd-masthead, ytd-masthead #container.ytd-masthead { height: 45px !important; min-height: 45px !important; }",
     "ytd-page-manager.ytd-app { margin-top: 45px !important; }",
     "ytd-watch-flexy[theater] #full-bleed-container { height: calc(100vh - 53px) !important; max-height: calc(100vh - 53px) !important; }",
     "ytd-watch-flexy[theater] #columns { display: flex !important; flex-direction: column !important; align-items: center !important; }",
