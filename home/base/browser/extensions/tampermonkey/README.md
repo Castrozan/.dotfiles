@@ -1,5 +1,5 @@
 # Tampermonkey userscripts
 
-Version-controlled backup of the userscripts imported into Tampermonkey by hand. This directory is the source of truth: edit the `.user.js` here, then reinstall it in the browser.
+Loose copies of userscripts kept here in the repo, nothing more. This is not a backup: the authoritative copies and their real backups live in Tampermonkey itself, synced to Google Drive. Editing here is just a convenience, install and persist through the extension.
 
-No Nix module references these files, so they are not part of any derivation. Running `rebuild` or `tests/run.sh` does nothing for a change to a script here. Installing and updating happens in the browser, never through the system build.
+No Nix module references these files, so a `rebuild` or `tests/run.sh` run does nothing for a change to a script here.
