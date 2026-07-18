@@ -14,13 +14,54 @@ struct InstalledApplicationCatalog {
         applicationsByDisplayName: [:]
     )
 
-    private static let searchDirectories: [URL] = [
-        URL(fileURLWithPath: "/Applications"),
-        URL(fileURLWithPath: "/Applications/Utilities"),
-        URL(fileURLWithPath: "/System/Applications"),
-        URL(fileURLWithPath: "/System/Applications/Utilities"),
-        FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Applications"),
-        FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Applications/Home Manager Apps"),
+    private struct ApplicationSearchDirectory {
+        let directoryURL: URL
+        let userLaunchableDisplayNameAllowlist: Set<String>?
+    }
+
+    private static let coreServicesUserLaunchableDisplayNames: Set<String> = [
+        "Finder",
+        "Keychain Access",
+        "About This Mac",
+        "Archive Utility",
+        "Directory Utility",
+        "Wireless Diagnostics",
+        "Feedback Assistant",
+    ]
+
+    private static let searchDirectories: [ApplicationSearchDirectory] = [
+        ApplicationSearchDirectory(
+            directoryURL: URL(fileURLWithPath: "/Applications"),
+            userLaunchableDisplayNameAllowlist: nil
+        ),
+        ApplicationSearchDirectory(
+            directoryURL: URL(fileURLWithPath: "/Applications/Utilities"),
+            userLaunchableDisplayNameAllowlist: nil
+        ),
+        ApplicationSearchDirectory(
+            directoryURL: URL(fileURLWithPath: "/System/Applications"),
+            userLaunchableDisplayNameAllowlist: nil
+        ),
+        ApplicationSearchDirectory(
+            directoryURL: URL(fileURLWithPath: "/System/Applications/Utilities"),
+            userLaunchableDisplayNameAllowlist: nil
+        ),
+        ApplicationSearchDirectory(
+            directoryURL: FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Applications"),
+            userLaunchableDisplayNameAllowlist: nil
+        ),
+        ApplicationSearchDirectory(
+            directoryURL: FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Applications/Home Manager Apps"),
+            userLaunchableDisplayNameAllowlist: nil
+        ),
+        ApplicationSearchDirectory(
+            directoryURL: URL(fileURLWithPath: "/System/Library/CoreServices"),
+            userLaunchableDisplayNameAllowlist: coreServicesUserLaunchableDisplayNames
+        ),
+        ApplicationSearchDirectory(
+            directoryURL: URL(fileURLWithPath: "/System/Library/CoreServices/Applications"),
+            userLaunchableDisplayNameAllowlist: coreServicesUserLaunchableDisplayNames
+        ),
     ]
 
     static func discoverInstalledApplications() -> InstalledApplicationCatalog {
@@ -28,11 +69,16 @@ struct InstalledApplicationCatalog {
         var bundlesByDisplayName: [String: InstalledApplication] = [:]
         for searchDirectory in searchDirectories {
             guard let directoryContents = try? fileManager.contentsOfDirectory(
-                at: searchDirectory,
+                at: searchDirectory.directoryURL,
                 includingPropertiesForKeys: nil
             ) else { continue }
             for bundleURL in directoryContents where bundleURL.pathExtension == "app" {
                 let displayName = bundleURL.deletingPathExtension().lastPathComponent
+                if let allowlist = searchDirectory.userLaunchableDisplayNameAllowlist,
+                    !allowlist.contains(displayName)
+                {
+                    continue
+                }
                 bundlesByDisplayName[displayName] = InstalledApplication(
                     displayName: displayName,
                     bundleURL: bundleURL
