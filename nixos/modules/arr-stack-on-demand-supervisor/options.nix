@@ -44,6 +44,12 @@
       description = "A pending Jellyseerr request younger than this pre-warms the chain so an approval never hands off to a dead Radarr; an older ignored pending request does not, and if it is finally approved the resulting failed request is retried once the chain comes up.";
     };
 
+    missingItemSearchIntervalSeconds = lib.mkOption {
+      type = lib.types.int;
+      default = 21600;
+      description = "How often the supervisor sweeps Radarr and Sonarr for monitored-but-missing items and re-searches any not already downloading, so a request whose one-shot on-add search hit a transient zero-active-indexers window self-heals instead of stranding at Jellyseerr processing forever. A sweep that finds every indexer disabled defers without consuming the interval so it retries on the next poll the moment indexers recover; otherwise it runs at most this often to avoid hammering the indexers into rate-limit backoff. The sweep only runs while the download chain is up, so on a pure on-demand host it fires during the active-or-grace window after a request wakes the chain, while a keepChainAlwaysOn host re-sweeps every interval regardless.";
+    };
+
     keepChainAlwaysOn = lib.mkOption {
       type = lib.types.bool;
       default = false;

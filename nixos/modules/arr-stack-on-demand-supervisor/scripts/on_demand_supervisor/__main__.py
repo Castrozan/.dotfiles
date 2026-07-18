@@ -66,6 +66,12 @@ def resolve_configuration():
             required_environment_value("ARR_RECENT_PENDING_WINDOW_SECONDS")
         ),
         "state_file_path": required_environment_value("ARR_STATE_FILE"),
+        "missing_search_state_file": required_environment_value(
+            "ARR_MISSING_SEARCH_STATE_FILE"
+        ),
+        "missing_search_interval_seconds": int(
+            required_environment_value("ARR_MISSING_SEARCH_INTERVAL_SECONDS")
+        ),
         "jellyseerr_url": required_environment_value("JELLYSEERR_URL"),
         "jellyseerr_api_key": read_jellyseerr_api_key(
             required_environment_value("JELLYSEERR_SETTINGS_FILE")

@@ -9,6 +9,10 @@ def log(message):
     print(f"{timestamp} arr-stack-on-demand-supervisor: {message}", flush=True)
 
 
+def parse_iso8601_to_epoch(value):
+    return datetime.fromisoformat(value.replace("Z", "+00:00")).timestamp()
+
+
 def required_environment_value(name):
     value = os.environ.get(name)
     if value is None or value == "":

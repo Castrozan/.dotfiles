@@ -32,8 +32,14 @@ def test_always_on_starts_full_chain_and_never_queries_jellyseerr(monkeypatch):
     started_service_sets = []
     written_epochs = []
     jellyseerr_calls = []
+    sweep_calls = []
     monkeypatch.setattr(
         supervisor_core, "running_on_demand_services", lambda base, services: set()
+    )
+    monkeypatch.setattr(
+        supervisor_core,
+        "maybe_run_missing_search_sweep",
+        lambda configuration, now, dry_run: sweep_calls.append(now),
     )
     monkeypatch.setattr(
         supervisor_core,
@@ -56,6 +62,7 @@ def test_always_on_starts_full_chain_and_never_queries_jellyseerr(monkeypatch):
     assert started_service_sets == [ON_DEMAND_SERVICES]
     assert written_epochs == [1000.0]
     assert jellyseerr_calls == []
+    assert sweep_calls == [1000.0]
 
 
 def test_always_on_holds_without_restart_when_full_chain_is_up(monkeypatch):
@@ -64,6 +71,11 @@ def test_always_on_holds_without_restart_when_full_chain_is_up(monkeypatch):
         supervisor_core,
         "running_on_demand_services",
         lambda base, services: set(services),
+    )
+    monkeypatch.setattr(
+        supervisor_core,
+        "maybe_run_missing_search_sweep",
+        lambda configuration, now, dry_run: None,
     )
     monkeypatch.setattr(
         supervisor_core,

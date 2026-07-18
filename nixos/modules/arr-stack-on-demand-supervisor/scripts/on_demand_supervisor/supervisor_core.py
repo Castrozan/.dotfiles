@@ -8,6 +8,7 @@ from download_chain_control import (
     write_last_active_epoch,
 )
 from jellyseerr_client import actionable_requests, retry_request
+from missing_search_sweep import run_missing_search_sweep
 from mount_health_guard import enforce_data_mount_guard
 from runtime_environment import log, read_arr_api_key_from_config_xml
 
@@ -17,6 +18,27 @@ def held_down_services_from_disk_guard(configuration, base_command, now_epoch, d
     if not disk_guard:
         return []
     return enforce_disk_space_guard(disk_guard, base_command, now_epoch, dry_run)
+
+
+def maybe_run_missing_search_sweep(configuration, now_epoch, dry_run):
+    state_file_path = configuration["missing_search_state_file"]
+    interval_seconds = configuration["missing_search_interval_seconds"]
+    last_sweep_epoch = read_last_active_epoch(state_file_path)
+    if last_sweep_epoch is not None and now_epoch - last_sweep_epoch < interval_seconds:
+        return
+    radarr_endpoint = (
+        configuration["radarr_url"],
+        read_arr_api_key_from_config_xml(configuration["radarr_config_file"]),
+    )
+    sonarr_endpoint = (
+        configuration["sonarr_url"],
+        read_arr_api_key_from_config_xml(configuration["sonarr_config_file"]),
+    )
+    swept = run_missing_search_sweep(
+        radarr_endpoint, sonarr_endpoint, now_epoch, dry_run
+    )
+    if swept:
+        write_last_active_epoch(state_file_path, now_epoch)
 
 
 def keep_chain_up_for_actionable_requests(
@@ -108,6 +130,7 @@ def run_supervisor_tick(configuration, now_epoch, dry_run):
             start_on_demand_services(base_command, effective_services, dry_run)
         else:
             log("keep-chain-always-on: full chain up, holding")
+        maybe_run_missing_search_sweep(configuration, now_epoch, dry_run)
         write_last_active_epoch(state_file_path, now_epoch)
         return
 
@@ -151,6 +174,7 @@ def run_supervisor_tick(configuration, now_epoch, dry_run):
             read_arr_api_key_from_config_xml(configuration["sonarr_config_file"]),
         ),
     ]
+    maybe_run_missing_search_sweep(configuration, now_epoch, dry_run)
     stop_chain_when_idle_past_grace(
         base_command,
         on_demand_services,

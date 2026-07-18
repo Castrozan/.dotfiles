@@ -1,12 +1,7 @@
 import json
-from datetime import datetime
 
 from http_client import http_request
-
-
-def parse_iso8601_to_epoch(value):
-    normalized = value.replace("Z", "+00:00")
-    return datetime.fromisoformat(normalized).timestamp()
+from runtime_environment import parse_iso8601_to_epoch
 
 
 def actionable_requests(base_url, api_key, now_epoch, recent_pending_window_seconds):

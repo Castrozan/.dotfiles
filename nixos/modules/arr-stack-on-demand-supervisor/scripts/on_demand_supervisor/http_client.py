@@ -2,8 +2,9 @@ import urllib.error
 import urllib.request
 
 
-def http_request(method, url, headers, timeout_seconds=15):
-    request = urllib.request.Request(url, method=method)
+def http_request(method, url, headers, timeout_seconds=15, body=None):
+    data = body.encode() if isinstance(body, str) else body
+    request = urllib.request.Request(url, data=data, method=method)
     for header_name, header_value in headers.items():
         request.add_header(header_name, header_value)
     try:

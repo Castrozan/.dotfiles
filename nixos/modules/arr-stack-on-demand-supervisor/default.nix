@@ -60,6 +60,8 @@ in
               if arrStackOnDemandSupervisorConfig.keepChainAlwaysOn then "true" else "false";
             ARR_RECENT_PENDING_WINDOW_SECONDS = toString arrStackOnDemandSupervisorConfig.recentPendingWindowSeconds;
             ARR_STATE_FILE = "/var/lib/${stateDirectoryName}/last-active-epoch";
+            ARR_MISSING_SEARCH_STATE_FILE = "/var/lib/${stateDirectoryName}/missing-search-epoch";
+            ARR_MISSING_SEARCH_INTERVAL_SECONDS = toString arrStackOnDemandSupervisorConfig.missingItemSearchIntervalSeconds;
             ARR_BIND_ADDRESS_KEY = arrStackOnDemandSupervisorConfig.bindAddressKey;
             JELLYSEERR_URL = arrStackOnDemandSupervisorConfig.jellyseerrUrl;
             JELLYSEERR_SETTINGS_FILE = "${stackHome}/config/jellyseerr/settings.json";

@@ -165,6 +165,11 @@ def test_critical_disk_holds_fill_service_out_of_keep_chain_always_on(
     )
     monkeypatch.setattr(
         supervisor_core,
+        "maybe_run_missing_search_sweep",
+        lambda configuration, now, dry_run: None,
+    )
+    monkeypatch.setattr(
+        supervisor_core,
         "start_on_demand_services",
         lambda base, services, dry_run: started.append(list(services)),
     )
