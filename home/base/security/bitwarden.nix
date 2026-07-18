@@ -5,7 +5,7 @@
   ...
 }:
 let
-  homeDirectory = config.home.homeDirectory;
+  inherit (config.home) homeDirectory;
   applicationDataRoot = "${homeDirectory}/.local/share/bitwarden-cli";
 
   bitwardenAccountModule =
@@ -97,20 +97,22 @@ in
       masterPasswordSecret = "bitwarden-master-password";
     };
 
-    home.packages = [
-      pkgs.bitwarden-cli
-      bitwardenSessionHelper
-    ]
-    ++ accountScopedWrappers;
-
-    home.file.".config/bitwarden-cli/accounts.json".text = accountRegistryContent;
-
     programs.bash.shellAliases = {
       bwu = "bw-session personal";
     };
 
-    home.activation.ensureBitwardenApplicationDataDirectories = lib.hm.dag.entryAfter [
-      "writeBoundary"
-    ] ensureApplicationDataDirectoriesScript;
+    home = {
+      packages = [
+        pkgs.bitwarden-cli
+        bitwardenSessionHelper
+      ]
+      ++ accountScopedWrappers;
+
+      file.".config/bitwarden-cli/accounts.json".text = accountRegistryContent;
+
+      activation.ensureBitwardenApplicationDataDirectories = lib.hm.dag.entryAfter [
+        "writeBoundary"
+      ] ensureApplicationDataDirectoriesScript;
+    };
   };
 }

@@ -33,21 +33,23 @@ let
 in
 {
   config = lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
-    home.packages = [
-      ambientCanvasScreensaverLauncher
-      ambientCanvasLoopRenderer
-    ];
+    home = {
+      packages = [
+        ambientCanvasScreensaverLauncher
+        ambientCanvasLoopRenderer
+      ];
 
-    home.activation.ensureAmbientCanvasStateDirectory = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-      run mkdir -p ${lib.escapeShellArg ambientCanvasStateDirectory}
-    '';
+      activation.ensureAmbientCanvasStateDirectory = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+        run mkdir -p ${lib.escapeShellArg ambientCanvasStateDirectory}
+      '';
 
-    home.activation.compileAmbientCanvasPlayer = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-      export AMBIENT_CANVAS_PLAYER_BINARY_PATH=${lib.escapeShellArg ambientCanvasPlayerBinaryPath}
-      export AMBIENT_CANVAS_PLAYER_SOURCES_DIR=${./swift-sources}
-      export AMBIENT_CANVAS_PLAYER_COMPILE_RECIPE_HASH=${builtins.hashFile "sha256" ./compile-player.sh}
-      ${builtins.readFile ./compile-player.sh}
-    '';
+      activation.compileAmbientCanvasPlayer = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+        export AMBIENT_CANVAS_PLAYER_BINARY_PATH=${lib.escapeShellArg ambientCanvasPlayerBinaryPath}
+        export AMBIENT_CANVAS_PLAYER_SOURCES_DIR=${./swift-sources}
+        export AMBIENT_CANVAS_PLAYER_COMPILE_RECIPE_HASH=${builtins.hashFile "sha256" ./compile-player.sh}
+        ${builtins.readFile ./compile-player.sh}
+      '';
+    };
 
     launchd.agents.ambient-canvas = {
       enable = true;
