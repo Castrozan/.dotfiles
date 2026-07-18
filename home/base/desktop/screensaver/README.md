@@ -6,7 +6,7 @@ whose cost profile forced a different choice.
 
 | Platform | Implementation | Renderer | Trigger |
 | --- | --- | --- | --- |
-| darwin | `ambient-canvas/` (Chrome WebGL) | GPU, isolated Chrome process | `com.dotfiles.ambient-canvas` launchd keep-alive, pinned to Hammerspoon workspace 11 |
+| darwin | `ambient-canvas/` (WebGL scenes pre-recorded to a looping video) | HTML5 `<video>` hardware-decoded in a Chrome app window | `com.dotfiles.ambient-canvas` launchd keep-alive, pinned to Hammerspoon workspace 11 |
 | Linux | herdr terminal grid (`scripts/launch_herdr_screensaver.py`) | wezterm cell repaint | manual: the `h` alias runs `herdr-screensaver` |
 
 ## Why two implementations
@@ -27,33 +27,70 @@ off-screen window is not "occluded" to macOS and wezterm never throttles it:
 - Terminal grid, wezterm CPU: ~54% of a core parked off-screen, ~43% visible, ~0.1% once
   the herdr workspace is closed. The backend animation processes themselves are ~0.3% CPU
   and ~63MB. So the real cost is the wezterm repaint, not the scenes.
-- Chrome `ambient-canvas`: ~52% CPU and ~862MB RSS in its own 7-process Chrome tree, GPU
-  rendered, with zero wezterm impact. Higher raw numbers, but isolated from the terminal.
+- Live-WebGL `ambient-canvas` (the previous darwin design): the isolated Chrome tree
+  generated the animation every frame, which measured well over a full core (renderer plus
+  a dedicated GPU process) 24/7, because the window is pinned across Spaces so macOS never
+  occludes it into throttling. The generative art is the cost, and it is paid continuously.
 
-On darwin the isolation wins, so `ambient-canvas` is the darwin screensaver and the herdr
-grid is gated to Linux.
+The current darwin design pays the generative cost once. The WebGL scenes are recorded to a
+short looping video and the 24/7 window just plays that video, hardware-decoded, so the live
+per-frame compute disappears. On darwin the isolation still wins over the herdr grid, so
+`ambient-canvas` is the darwin screensaver and the herdr grid is gated to Linux.
 
-## ambient-canvas (darwin GPU)
+## ambient-canvas (darwin)
 
-`ambient-canvas/web/index.html` loads a full-window WebGL canvas grid. Layout and panes are
-declared data, one line per pane:
+The animation is authored as live WebGL/canvas scenes; those scenes are the source of truth.
+A build step records them once into a looping video, and the 24/7 window plays that video.
+
+### Scenes (authoring surface)
+
+`ambient-canvas/web/index.html` loads a full-window canvas grid. Layout and panes are declared
+data, one line per pane:
 
 - `web/panes.js` declares `AMBIENT_CANVAS_LAYOUT` (a CSS `grid-template-areas` spec) and
   `AMBIENT_CANVAS_PANES` (each `{ area, scene }`).
 - `web/player.js` builds the grid, instantiates one scene per pane, and drives their render
-  loop.
+  loop. After each frame it calls `window.AMBIENT_CANVAS_FRAME_OBSERVER` if present, and it
+  merges `window.AMBIENT_CANVAS_RENDERER_OPTION_OVERRIDES` into every scene's options.
 - `web/scenes/*.js` each register a scene factory on
   `window.AMBIENT_CANVAS_SCENE_FACTORIES[name]`. A factory is
   `(canvasElement, options) => { render(elapsedSeconds), resize(width, height) }`.
 
 To add a pane: write `web/scenes/<name>.js` registering the factory, add its `<script>` to
 `index.html`, then add one `{ area, scene }` entry to `AMBIENT_CANVAS_PANES` and its area to
-the layout grid.
+the layout grid. The scenes use `Math.random`, so the recorded loop is not pixel-seamless;
+the loop is long enough that the seam is unobtrusive.
 
-`ambient-canvas/default.nix` packages the `ambient-canvas` launcher and, guarded by
-`isDarwin`, installs the `com.dotfiles.ambient-canvas` launchd agent that relaunches the
-window every 30s if it is not running. Hammerspoon pins the window (title prefix
-`ambient-canvas-gpu-screensaver`) to workspace 11.
+### Record and play
+
+- `web/recorder.js` activates only when `index.html` is opened with `?record`. It composites
+  every pane canvas into one canvas per frame (WebGL panes honor the injected
+  `preserveDrawingBuffer` option), runs a `MediaRecorder`, and POSTs the encoded clip to a
+  local receiver. It prefers an H.264 MP4 container so the M-series media engine can decode
+  the loop in hardware.
+- `web/player-video.html` is the 24/7 window: a single `<video>` that plays the recorded loop
+  and restarts itself on `ended` (JS-driven, not the `loop` attribute, so container quirks
+  can't break looping). Its title stays `ambient-canvas-gpu-screensaver` so the Hammerspoon
+  pin to workspace 11 is unchanged.
+- `scripts/ambient_canvas_media/` holds the Python: `ambient_canvas_browser` (shared browser
+  and geometry resolution), `recorded_loop_upload_server` (stdlib HTTP receiver that writes
+  `loop.<ext>` atomically), `render_ambient_canvas_loop` (drives a throwaway Chrome record
+  window), `display_ambient_canvas_loop` (launches the video window), and
+  `ensure_ambient_canvas_screensaver` (the launchd entry: regenerate if stale, then keep the
+  window alive). No external encoder is used, because the nixpkgs `ffmpeg` is AMFI-killed on
+  the M-series host.
+
+### Refresh
+
+The recorded loop lives in `~/.local/state/ambient-canvas/` next to `loop.source`, which
+records the `web/` nix store path it was rendered from. `ensure_ambient_canvas_screensaver`
+compares that against the current store path, so any change to a scene changes the store path
+and the next launchd tick regenerates the loop automatically. Force a rebuild by hand with
+`ambient-canvas-render` (optionally `--seconds N`).
+
+`ambient-canvas/default.nix` packages the `ambient-canvas` launcher and the
+`ambient-canvas-render` command and, guarded by `isDarwin`, installs the
+`com.dotfiles.ambient-canvas` launchd agent that runs the ensure entry every 30s.
 
 ## herdr terminal grid (Linux)
 

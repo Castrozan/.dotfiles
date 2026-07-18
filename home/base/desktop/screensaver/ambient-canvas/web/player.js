@@ -52,6 +52,7 @@
     const rendererOptions = Object.assign(
       { devicePixelRatio: currentDevicePixelRatio },
       paneConfiguration.options || {},
+      window.AMBIENT_CANVAS_RENDERER_OPTION_OVERRIDES || {},
     );
     try {
       activeRenderers.push({
@@ -89,6 +90,9 @@
       (timestampMilliseconds - startTimestampMilliseconds) / 1000.0;
     for (const activeRenderer of activeRenderers) {
       activeRenderer.renderer.render(elapsedSeconds);
+    }
+    if (window.AMBIENT_CANVAS_FRAME_OBSERVER) {
+      window.AMBIENT_CANVAS_FRAME_OBSERVER(activeRenderers, elapsedSeconds);
     }
     window.requestAnimationFrame(renderFrame);
   }

@@ -27,6 +27,9 @@ let
   linuxInstallsHerdrScreensaver = packageIsInstalled "herdr-screensaver" linuxCfg;
   darwinInstallsHerdrScreensaver = packageIsInstalled "herdr-screensaver" darwinCfg;
   aliasGuardedByCommandExistence = lib.hasInfix "command -v herdr-screensaver" aliasesContent;
+
+  darwinInstallsAmbientCanvasLoopRenderer = packageIsInstalled "ambient-canvas-render" darwinCfg;
+  linuxInstallsAmbientCanvasLoopRenderer = packageIsInstalled "ambient-canvas-render" linuxCfg;
 in
 {
   domain-screensaver-herdr-launcher-installed-on-linux =
@@ -52,4 +55,9 @@ in
     mkEvalCheck "domain-screensaver-ambient-canvas-is-darwin-only"
       (packageIsInstalled "ambient-canvas" darwinCfg && !(packageIsInstalled "ambient-canvas" linuxCfg))
       "the Chrome ambient-canvas screensaver must build only on darwin, where its GPU-isolated window never touches the wezterm frame budget, and never on Linux, where the herdr grid is used instead";
+
+  domain-screensaver-ambient-canvas-loop-renderer-is-darwin-only =
+    mkEvalCheck "domain-screensaver-ambient-canvas-loop-renderer-is-darwin-only"
+      (darwinInstallsAmbientCanvasLoopRenderer && !linuxInstallsAmbientCanvasLoopRenderer)
+      "the ambient-canvas-render command regenerates the pre-recorded loop video from the web scenes and must install only on darwin alongside the ambient-canvas launcher, the darwin-only consumer of that media";
 }

@@ -107,6 +107,8 @@
     const gl = canvasElement.getContext("webgl", {
       antialias: true,
       alpha: false,
+      preserveDrawingBuffer:
+        (options && options.preserveDrawingBuffer) || false,
     });
     if (!gl) {
       console.error("ambient-canvas: WebGL unavailable for a yuruyurau pane");
