@@ -4,7 +4,7 @@
 // @description  Theater player fills the viewport (title below the fold), header 20% smaller, comments behind a tab, suggestions as a big centered grid
 // @author       zanoni
 // @match        https://www.youtube.com/*
-// @run-at       document-idle
+// @run-at       document-start
 // @grant        none
 // ==/UserScript==
 (function () {
@@ -81,13 +81,29 @@
     return true;
   }
 
+  let pollTimer = null;
+  let refitScheduled = false;
+
+  function scheduleRefit() {
+    if (refitScheduled) return;
+    refitScheduled = true;
+    [0, 300, 800, 1500].forEach((delay) => setTimeout(refitPlayer, delay));
+    setTimeout(() => {
+      refitScheduled = false;
+    }, 1600);
+  }
+
   function apply() {
     ensureStyle();
+    if (pollTimer) clearInterval(pollTimer);
     let attempts = 0;
-    const poll = setInterval(() => {
-      if (mountTabs() || ++attempts > 40) clearInterval(poll);
+    pollTimer = setInterval(() => {
+      if (mountTabs() || ++attempts > 40) {
+        clearInterval(pollTimer);
+        pollTimer = null;
+      }
     }, 250);
-    [0, 300, 800, 1500].forEach((delay) => setTimeout(refitPlayer, delay));
+    scheduleRefit();
   }
 
   function watchTheaterAttribute() {
