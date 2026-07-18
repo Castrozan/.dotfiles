@@ -2,7 +2,6 @@ import AppKit
 
 final class AmbientCanvasPlayerWindowController {
     static let pinnedScreensaverWindowTitle = "ambient-canvas-gpu-screensaver"
-    static let screenCoverageFraction: CGFloat = 0.72
     static let deepNavyBackgroundColor = NSColor(
         red: 0x0a / 255.0,
         green: 0x1a / 255.0,
@@ -21,8 +20,8 @@ final class AmbientCanvasPlayerWindowController {
 
     func presentPinnedScreensaverWindow() {
         let hostingWindow = NSWindow(
-            contentRect: centeredScreensaverWindowFrame(),
-            styleMask: [.titled, .fullSizeContentView],
+            contentRect: fullScreenWindowFrame(),
+            styleMask: [.titled, .fullSizeContentView, .resizable],
             backing: .buffered,
             defer: false
         )
@@ -48,15 +47,7 @@ final class AmbientCanvasPlayerWindowController {
         recordedLoopVideoView = videoView
     }
 
-    private func centeredScreensaverWindowFrame() -> NSRect {
-        let screenFrame = NSScreen.main?.frame ?? NSRect(x: 0, y: 0, width: 1440, height: 900)
-        let windowWidth = screenFrame.width * Self.screenCoverageFraction
-        let windowHeight = screenFrame.height * Self.screenCoverageFraction
-        return NSRect(
-            x: screenFrame.minX + (screenFrame.width - windowWidth) / 2,
-            y: screenFrame.minY + (screenFrame.height - windowHeight) / 2,
-            width: windowWidth,
-            height: windowHeight
-        )
+    private func fullScreenWindowFrame() -> NSRect {
+        return NSScreen.main?.frame ?? NSRect(x: 0, y: 0, width: 1440, height: 900)
     }
 }
