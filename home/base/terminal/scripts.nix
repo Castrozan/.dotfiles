@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, lib, ... }:
 let
   mkTerminalPythonScriptWith =
     name: file: pythonInterpreter:
@@ -30,6 +30,8 @@ in
     (pkgs.writeShellScriptBin "tmux-session-chooser" (builtins.readFile ./scripts/tmux-session-chooser))
     (pkgs.writeShellScriptBin "set-random-bg-kitty" (builtins.readFile ./scripts/set-random-bg-kitty))
     (pkgs.writeShellScriptBin "nix" (builtins.readFile ./scripts/nix-memory-capped-wrapper.sh))
-    (mkTerminalPythonScript "herdr-screensaver" ./scripts/launch_herdr_screensaver.py)
-  ];
+  ]
+  ++ lib.optional pkgs.stdenv.hostPlatform.isLinux (
+    mkTerminalPythonScript "herdr-screensaver" ./scripts/launch_herdr_screensaver.py
+  );
 }

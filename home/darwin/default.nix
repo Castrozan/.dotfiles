@@ -30,6 +30,7 @@
     ../base/desktop/theming
     ./desktop/hammerspoon
     ./desktop/application-launcher
+    ./desktop/ambient-canvas
     ./desktop/brave
     ./desktop/chrome
     ../base/desktop/fonts.nix
