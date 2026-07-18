@@ -35,9 +35,10 @@ off-screen window is not "occluded" to macOS and wezterm never throttles it:
 The current darwin design pays the generative cost once. The WebGL scenes are recorded to a
 short looping video and the 24/7 window is a native Swift `AVPlayer` (no browser at all), which
 routes the loop through VideoToolbox for hardware decode, so the live per-frame compute
-disappears. The player also pauses playback whenever workspace 11 is off-screen (window
-occlusion), so it decodes zero frames when nobody is looking at it. A browser only runs offscreen
-for the ~30s record step that regenerates the loop. On darwin the isolation still wins over the
+disappears. The player also pauses playback whenever its window is not actually on screen for the
+viewer: when workspace 11 is not the active Space, when the window is fully covered, or when the
+display sleeps. So it decodes zero frames when nobody is looking at it and resumes seamlessly on
+return. A browser only runs offscreen for the ~30s record step that regenerates the loop. On darwin the isolation still wins over the
 herdr grid, so `ambient-canvas` is the darwin screensaver and the herdr grid is gated to Linux.
 
 ## ambient-canvas (darwin)
@@ -74,7 +75,9 @@ the loop is long enough that the seam is unobtrusive.
 - `swift-sources/*.swift` compile to the 24/7 window: a native `AVQueuePlayer` + `AVPlayerLooper`
   behind an `AVPlayerLayer` (seamless loop, no restart flash), `videoGravity = .resizeAspect` so
   the loop is never cropped or zoomed when Hammerspoon resizes the pinned window to full screen,
-  and an occlusion controller that pauses decode when the window is not visible. The window title
+  and a visibility-gated playback controller that pauses decode whenever the window is not on the
+  active Space, is covered, or the display sleeps (it observes both window occlusion and
+  `NSWorkspace.activeSpaceDidChangeNotification`). The window title
   is `ambient-canvas-gpu-screensaver` so the Hammerspoon pin to workspace 11 is unchanged; it is a
   titled window with a hidden transparent titlebar so the title stays readable via accessibility.
   `compile-player.sh` builds it with the system `/usr/bin/swiftc` during home-manager activation,

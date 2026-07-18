@@ -1,6 +1,6 @@
 import AppKit
 
-final class AmbientCanvasOcclusionPausePlaybackController {
+final class AmbientCanvasVisibilityGatedPlaybackController {
     private let observedWindow: NSWindow
     private let recordedLoopVideoView: AmbientCanvasRecordedLoopVideoView
 
@@ -13,10 +13,19 @@ final class AmbientCanvasOcclusionPausePlaybackController {
             name: NSWindow.didChangeOcclusionStateNotification,
             object: observedWindow
         )
+        NSWorkspace.shared.notificationCenter.addObserver(
+            self,
+            selector: #selector(synchronizePlaybackWithWindowVisibility),
+            name: NSWorkspace.activeSpaceDidChangeNotification,
+            object: nil
+        )
     }
 
     @objc private func synchronizePlaybackWithWindowVisibility() {
-        if observedWindow.occlusionState.contains(.visible) {
+        let windowIsOnScreenForTheViewer =
+            observedWindow.occlusionState.contains(.visible)
+            && observedWindow.isOnActiveSpace
+        if windowIsOnScreenForTheViewer {
             recordedLoopVideoView.resumePlayback()
         } else {
             recordedLoopVideoView.pausePlayback()

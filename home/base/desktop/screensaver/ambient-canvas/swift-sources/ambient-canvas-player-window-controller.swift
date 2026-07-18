@@ -13,7 +13,7 @@ final class AmbientCanvasPlayerWindowController {
     private let recordedLoopFileUrl: URL
     private var screensaverWindow: NSWindow?
     private var recordedLoopVideoView: AmbientCanvasRecordedLoopVideoView?
-    private var occlusionPausePlaybackController: AmbientCanvasOcclusionPausePlaybackController?
+    private var visibilityGatedPlaybackController: AmbientCanvasVisibilityGatedPlaybackController?
 
     init(recordedLoopFileUrl: URL) {
         self.recordedLoopFileUrl = recordedLoopFileUrl
@@ -40,7 +40,7 @@ final class AmbientCanvasPlayerWindowController {
         hostingWindow.contentView = videoView
         hostingWindow.orderFrontRegardless()
 
-        occlusionPausePlaybackController = AmbientCanvasOcclusionPausePlaybackController(
+        visibilityGatedPlaybackController = AmbientCanvasVisibilityGatedPlaybackController(
             observedWindow: hostingWindow,
             recordedLoopVideoView: videoView
         )
