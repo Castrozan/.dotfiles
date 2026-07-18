@@ -8,6 +8,7 @@ SHORT_CONFIRMATION_MAXIMUM_PROSE_LINES = 3
 SCANNABLE_MAXIMUM_PROSE_LINES = 14
 REPLY_TARGET_PROSE_WORDS = 150
 REPLY_HARD_WORD_CEILING = 250
+REPLY_HARD_CHARACTER_CEILING = 1600
 MAXIMUM_PROSE_PARAGRAPH_BLOCKS = 4
 
 EM_DASH_CHARACTER = "—"
@@ -146,6 +147,7 @@ def shape_and_length_violations(reply_text: str) -> list[str]:
     violations: list[str] = []
     prose_lines = prose_lines_outside_code_fences(reply_text)
     prose_word_count = sum(len(line.split()) for line in prose_lines)
+    prose_character_count = sum(len(line) for line in prose_lines)
     paragraph_block_count = prose_paragraph_block_count(reply_text)
     has_done_and_next_labels = bool(
         DONE_LABEL_PATTERN.search(reply_text) and NEXT_LABEL_PATTERN.search(reply_text)
@@ -172,6 +174,11 @@ def shape_and_length_violations(reply_text: str) -> list[str]:
         violations.append(
             f"runs {prose_word_count} prose words, a wall past the "
             f"{REPLY_HARD_WORD_CEILING}-word hard ceiling"
+        )
+    if prose_character_count > REPLY_HARD_CHARACTER_CEILING:
+        violations.append(
+            f"runs {prose_character_count} prose characters, a wall past the "
+            f"{REPLY_HARD_CHARACTER_CEILING}-character hard ceiling"
         )
     if paragraph_block_count > MAXIMUM_PROSE_PARAGRAPH_BLOCKS:
         violations.append(

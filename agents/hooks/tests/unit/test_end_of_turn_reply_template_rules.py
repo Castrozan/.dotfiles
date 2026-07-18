@@ -9,6 +9,7 @@ if str(RULES_MODULE_DIRECTORY) not in sys.path:
     sys.path.insert(0, str(RULES_MODULE_DIRECTORY))
 
 from end_of_turn_reply_template_rules import (  # noqa: E402
+    REPLY_HARD_CHARACTER_CEILING,
     REPLY_HARD_WORD_CEILING,
     template_violations_in_reply,
     user_request_permits_long_form,
@@ -51,6 +52,13 @@ def test_routine_long_reply_trips_the_hard_ceiling():
     reply = " ".join(["word"] * (REPLY_HARD_WORD_CEILING + 10))
     violations = template_violations_in_reply(reply, "is obsidian syncing?")
     assert any("hard ceiling" in v for v in violations)
+
+
+def test_routine_char_heavy_reply_trips_the_character_ceiling():
+    reply = "x" * (REPLY_HARD_CHARACTER_CEILING + 50)
+    violations = template_violations_in_reply(reply, "is obsidian syncing?")
+    assert any("character hard ceiling" in v for v in violations)
+    assert not any("word hard ceiling" in v for v in violations)
 
 
 def test_long_form_request_skips_length_and_shape_but_keeps_hygiene():
