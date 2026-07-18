@@ -53,6 +53,10 @@ def build_record_browser_arguments(
         "--autoplay-policy=no-user-gesture-required",
         "--disable-translate",
         "--use-gl=angle",
+        "--disable-background-timer-throttling",
+        "--disable-backgrounding-occluded-windows",
+        "--disable-renderer-backgrounding",
+        "--disable-features=CalculateNativeWinOcclusion",
     ]
 
 

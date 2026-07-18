@@ -82,11 +82,21 @@
 
     const selectedMimeType = resolveSupportedMimeType();
     const containerExtension = containerExtensionForMimeType(selectedMimeType);
-    const mediaStream = recordCanvas.captureStream(captureFramesPerSecond);
-    mediaRecorder = new MediaRecorder(
-      mediaStream,
-      selectedMimeType ? { mimeType: selectedMimeType } : undefined,
+    const targetBitsPerPixelPerFrame = 0.35;
+    const targetVideoBitsPerSecond = Math.round(
+      recordCanvas.width *
+        recordCanvas.height *
+        captureFramesPerSecond *
+        targetBitsPerPixelPerFrame,
     );
+    const mediaStream = recordCanvas.captureStream(captureFramesPerSecond);
+    const mediaRecorderOptions = {
+      videoBitsPerSecond: targetVideoBitsPerSecond,
+    };
+    if (selectedMimeType) {
+      mediaRecorderOptions.mimeType = selectedMimeType;
+    }
+    mediaRecorder = new MediaRecorder(mediaStream, mediaRecorderOptions);
     mediaRecorder.ondataavailable = function collectChunk(dataEvent) {
       if (dataEvent.data && dataEvent.data.size > 0) {
         recordedChunks.push(dataEvent.data);
