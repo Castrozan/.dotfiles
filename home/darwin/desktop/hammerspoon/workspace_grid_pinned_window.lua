@@ -3,15 +3,12 @@ local workspaceGridPinnedWindow = {}
 local pinnedWindowWorkspaceNumber = 11
 local pinnedWindowTitlePrefixPattern = "^ambient%-canvas%-gpu%-screensaver"
 
-function workspaceGridPinnedWindow.windowTitleIsPinned(windowTitle)
-	return windowTitle ~= nil and windowTitle:match(pinnedWindowTitlePrefixPattern) ~= nil
-end
-
 function workspaceGridPinnedWindow.windowIsPinned(window)
 	if window == nil then
 		return false
 	end
-	return workspaceGridPinnedWindow.windowTitleIsPinned(window:title())
+	local windowTitle = window:title()
+	return windowTitle ~= nil and windowTitle:match(pinnedWindowTitlePrefixPattern) ~= nil
 end
 
 function workspaceGridPinnedWindow.resolveWorkspaceForWindow(window, fallbackWorkspaceNumber)
