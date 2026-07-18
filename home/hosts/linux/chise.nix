@@ -42,6 +42,7 @@ in
 
     ../../linux/desktop/clipse.nix
     ../../base/desktop/fonts.nix
+    ../../base/desktop/screensaver
     ../../linux/desktop/fuzzel.nix
     ../../linux/desktop/scripts.nix
 

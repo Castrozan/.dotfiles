@@ -21,21 +21,23 @@ let
   '';
 in
 {
-  home.packages = [ ambientCanvasLauncher ];
+  config = lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
+    home.packages = [ ambientCanvasLauncher ];
 
-  home.activation.ensureAmbientCanvasStateDirectory = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    run mkdir -p ${lib.escapeShellArg ambientCanvasStateDirectory}
-  '';
+    home.activation.ensureAmbientCanvasStateDirectory = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+      run mkdir -p ${lib.escapeShellArg ambientCanvasStateDirectory}
+    '';
 
-  launchd.agents.ambient-canvas = {
-    enable = true;
-    config = {
-      Label = "com.dotfiles.ambient-canvas";
-      ProgramArguments = [ "${relaunchAmbientCanvasIfNotRunning}" ];
-      RunAtLoad = true;
-      StartInterval = 30;
-      StandardOutPath = "${ambientCanvasStateDirectory}/keep-alive.log";
-      StandardErrorPath = "${ambientCanvasStateDirectory}/keep-alive.log";
+    launchd.agents.ambient-canvas = {
+      enable = true;
+      config = {
+        Label = "com.dotfiles.ambient-canvas";
+        ProgramArguments = [ "${relaunchAmbientCanvasIfNotRunning}" ];
+        RunAtLoad = true;
+        StartInterval = 30;
+        StandardOutPath = "${ambientCanvasStateDirectory}/keep-alive.log";
+        StandardErrorPath = "${ambientCanvasStateDirectory}/keep-alive.log";
+      };
     };
   };
 }

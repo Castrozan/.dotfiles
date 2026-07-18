@@ -32,6 +32,7 @@ let
   karabinerDesktopChecks = import ../../home/darwin/desktop/karabiner/tests/checks.nix domainArgs;
   cloudflareTunnelConnectorChecks = import ../../home/darwin/cloudflare-tunnel-connector/tests/checks.nix domainArgs;
   desktopChecks = import ../../home/base/desktop/tests/checks.nix domainArgs;
+  screensaverChecks = import ../../home/base/desktop/screensaver/tests/checks.nix domainArgs;
   devChecks = import ../../home/base/dev/tests/checks.nix domainArgs;
   gamingChecks = import ../../home/base/gaming/tests/checks.nix domainArgs;
   gnomeChecks = import ../../home/linux/gnome/tests/checks.nix domainArgs;
@@ -59,6 +60,7 @@ claudeChecks
 // karabinerDesktopChecks
 // cloudflareTunnelConnectorChecks
 // desktopChecks
+// screensaverChecks
 // devChecks
 // gamingChecks
 // gnomeChecks

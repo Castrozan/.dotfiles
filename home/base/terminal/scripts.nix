@@ -1,20 +1,6 @@
-{ pkgs, lib, ... }:
-let
-  mkTerminalPythonScriptWith =
-    name: file: pythonInterpreter:
-    let
-      pythonSource = pkgs.writeText "${name}-source.py" (builtins.readFile file);
-    in
-    pkgs.writeShellScriptBin name ''
-      exec ${pythonInterpreter}/bin/python3 ${pythonSource} "$@"
-    '';
-  mkTerminalPythonScript = name: file: mkTerminalPythonScriptWith name file pkgs.python312;
-  equationArtPython = pkgs.python312.withPackages (pythonPackages: [ pythonPackages.numpy ]);
-in
+{ pkgs, ... }:
 {
   home.packages = [
-    (mkTerminalPythonScript "precompute-loop" ./scripts/precompute_loop.py)
-    (mkTerminalPythonScriptWith "equation-art" ./scripts/equation_art.py equationArtPython)
     (pkgs.writeShellScriptBin "tmux-pane-toggle" (builtins.readFile ./scripts/tmux-pane-toggle))
     (pkgs.writeShellScriptBin "tmux-restore-pane-after-toggle" (
       builtins.readFile ./scripts/tmux-restore-pane-after-toggle
@@ -30,8 +16,5 @@ in
     (pkgs.writeShellScriptBin "tmux-session-chooser" (builtins.readFile ./scripts/tmux-session-chooser))
     (pkgs.writeShellScriptBin "set-random-bg-kitty" (builtins.readFile ./scripts/set-random-bg-kitty))
     (pkgs.writeShellScriptBin "nix" (builtins.readFile ./scripts/nix-memory-capped-wrapper.sh))
-  ]
-  ++ lib.optional pkgs.stdenv.hostPlatform.isLinux (
-    mkTerminalPythonScript "herdr-screensaver" ./scripts/launch_herdr_screensaver.py
-  );
+  ];
 }

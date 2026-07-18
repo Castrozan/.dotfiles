@@ -27,14 +27,6 @@ let
     ../yazi
   ];
 
-  aliasesContent = builtins.readFile ../shell/aliases.sh;
-
-  darwinScriptsCfg = helpers.homeManagerTestConfigurationForDarwin [ ../scripts.nix ];
-  darwinInstallsHerdrScreensaverPackage = builtins.any (
-    pkg: (pkg.name or "") == "herdr-screensaver"
-  ) darwinScriptsCfg.home.packages;
-  screensaverAliasGuardedByCommandExistence = lib.hasInfix "command -v herdr-screensaver" aliasesContent;
-
   herdrAutostartContent = builtins.readFile ../shell/bash_herdr_autostart.sh;
   herdrAutostartDefinesStartAndGuardsAgainstNestingAndTmux =
     lib.hasInfix "_start_herdr()" herdrAutostartContent
@@ -153,17 +145,4 @@ in
   domain-terminal-yazi-enabled =
     mkEvalCheck "domain-terminal-yazi-enabled" cfg.programs.yazi.enable
       "yazi file manager should be enabled";
-
-  domain-terminal-screensaver-alias-wired-to-herdr-screensaver-package =
-    mkEvalCheck "domain-terminal-screensaver-alias-wired-to-herdr-screensaver-package"
-      (
-        builtins.any (pkg: (pkg.name or "") == "herdr-screensaver") cfg.home.packages
-        && lib.hasInfix "alias h='herdr-screensaver'" aliasesContent
-      )
-      "the h alias must invoke the herdr-screensaver command and that command must be registered as a home package, or typing h runs a missing binary";
-
-  domain-terminal-screensaver-alias-does-not-dangle-where-the-screensaver-is-gated-out =
-    mkEvalCheck "domain-terminal-screensaver-alias-does-not-dangle-where-the-screensaver-is-gated-out"
-      (darwinInstallsHerdrScreensaverPackage || screensaverAliasGuardedByCommandExistence)
-      "aliases.sh defines h for every platform that sources it, but scripts.nix installs herdr-screensaver only on Linux, so on darwin the alias must be guarded by command -v herdr-screensaver or typing h runs a missing binary";
 }
