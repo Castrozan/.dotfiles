@@ -7,6 +7,7 @@
   const captureDurationSeconds = Number(recordParameters.get("seconds")) || 30;
   const captureFramesPerSecond = Number(recordParameters.get("fps")) || 30;
   const uploadUrl = recordParameters.get("uploadUrl") || "";
+  const layoutSettleMilliseconds = 1000;
 
   window.AMBIENT_CANVAS_RENDERER_OPTION_OVERRIDES = {
     preserveDrawingBuffer: true,
@@ -33,6 +34,8 @@
     return mimeType.indexOf("mp4") !== -1 ? "mp4" : "webm";
   }
 
+  const ambientCanvasGrid = document.getElementById("ambient-canvas-grid");
+
   const recordCanvas = document.createElement("canvas");
   recordCanvas.style.position = "fixed";
   recordCanvas.style.left = "0";
@@ -40,11 +43,15 @@
   recordCanvas.style.pointerEvents = "none";
   recordCanvas.style.opacity = "0";
   const recordContext = recordCanvas.getContext("2d");
-  recordCanvas.width = Math.max(1, Math.floor(window.innerWidth));
-  recordCanvas.height = Math.max(1, Math.floor(window.innerHeight));
   document.body.appendChild(recordCanvas);
 
-  function compositePanesForFrame(activeRenderers) {
+  const recordedChunks = [];
+  let mediaRecorder = null;
+  let firstLaidOutFrameTimestamp = null;
+
+  function compositePanesForFrame(activeRenderers, gridBounds) {
+    const horizontalScale = recordCanvas.width / gridBounds.width;
+    const verticalScale = recordCanvas.height / gridBounds.height;
     recordContext.fillStyle = "#0a1a2f";
     recordContext.fillRect(0, 0, recordCanvas.width, recordCanvas.height);
     for (const activeRenderer of activeRenderers) {
@@ -54,56 +61,86 @@
       }
       recordContext.drawImage(
         activeRenderer.canvasElement,
-        Math.round(bounds.left),
-        Math.round(bounds.top),
-        Math.round(bounds.width),
-        Math.round(bounds.height),
+        Math.round((bounds.left - gridBounds.left) * horizontalScale),
+        Math.round((bounds.top - gridBounds.top) * verticalScale),
+        Math.round(bounds.width * horizontalScale),
+        Math.round(bounds.height * verticalScale),
       );
     }
+  }
+
+  function beginRecording(settledGridBounds) {
+    const devicePixelRatio = window.devicePixelRatio || 1;
+    recordCanvas.width = Math.max(
+      2,
+      Math.round(settledGridBounds.width * devicePixelRatio),
+    );
+    recordCanvas.height = Math.max(
+      2,
+      Math.round(settledGridBounds.height * devicePixelRatio),
+    );
+
+    const selectedMimeType = resolveSupportedMimeType();
+    const containerExtension = containerExtensionForMimeType(selectedMimeType);
+    const mediaStream = recordCanvas.captureStream(captureFramesPerSecond);
+    mediaRecorder = new MediaRecorder(
+      mediaStream,
+      selectedMimeType ? { mimeType: selectedMimeType } : undefined,
+    );
+    mediaRecorder.ondataavailable = function collectChunk(dataEvent) {
+      if (dataEvent.data && dataEvent.data.size > 0) {
+        recordedChunks.push(dataEvent.data);
+      }
+    };
+    mediaRecorder.onstop = function uploadRecording() {
+      const recordedBlob = new Blob(recordedChunks, {
+        type: selectedMimeType || "video/webm",
+      });
+      if (!uploadUrl) {
+        return;
+      }
+      fetch(uploadUrl + "?extension=" + containerExtension, {
+        method: "POST",
+        body: recordedBlob,
+      })
+        .catch(function ignoreUploadFailure() {})
+        .finally(function closeAfterUpload() {
+          window.setTimeout(function requestWindowClose() {
+            window.close();
+          }, 250);
+        });
+    };
+    mediaRecorder.start();
+    window.setTimeout(function stopRecording() {
+      if (mediaRecorder.state !== "inactive") {
+        mediaRecorder.stop();
+      }
+    }, captureDurationSeconds * 1000);
   }
 
   window.AMBIENT_CANVAS_FRAME_OBSERVER = function observeFrame(
     activeRenderers,
   ) {
-    compositePanesForFrame(activeRenderers);
-  };
-
-  const selectedMimeType = resolveSupportedMimeType();
-  const containerExtension = containerExtensionForMimeType(selectedMimeType);
-  const mediaStream = recordCanvas.captureStream(captureFramesPerSecond);
-  const mediaRecorder = new MediaRecorder(
-    mediaStream,
-    selectedMimeType ? { mimeType: selectedMimeType } : undefined,
-  );
-  const recordedChunks = [];
-  mediaRecorder.ondataavailable = function collectChunk(dataEvent) {
-    if (dataEvent.data && dataEvent.data.size > 0) {
-      recordedChunks.push(dataEvent.data);
-    }
-  };
-  mediaRecorder.onstop = function uploadRecording() {
-    const recordedBlob = new Blob(recordedChunks, {
-      type: selectedMimeType || "video/webm",
-    });
-    if (!uploadUrl) {
+    if (!ambientCanvasGrid) {
       return;
     }
-    fetch(uploadUrl + "?extension=" + containerExtension, {
-      method: "POST",
-      body: recordedBlob,
-    })
-      .catch(function ignoreUploadFailure() {})
-      .finally(function closeAfterUpload() {
-        window.setTimeout(function requestWindowClose() {
-          window.close();
-        }, 250);
-      });
-  };
-
-  mediaRecorder.start();
-  window.setTimeout(function stopRecording() {
-    if (mediaRecorder.state !== "inactive") {
-      mediaRecorder.stop();
+    const gridBounds = ambientCanvasGrid.getBoundingClientRect();
+    if (gridBounds.width < 1 || gridBounds.height < 1) {
+      return;
     }
-  }, captureDurationSeconds * 1000);
+    if (mediaRecorder === null) {
+      if (firstLaidOutFrameTimestamp === null) {
+        firstLaidOutFrameTimestamp = performance.now();
+        return;
+      }
+      if (
+        performance.now() - firstLaidOutFrameTimestamp <
+        layoutSettleMilliseconds
+      ) {
+        return;
+      }
+      beginRecording(gridBounds);
+    }
+    compositePanesForFrame(activeRenderers, gridBounds);
+  };
 })();
