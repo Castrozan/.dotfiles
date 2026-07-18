@@ -20,7 +20,7 @@ final class AmbientCanvasPlayerWindowController {
 
     func presentPinnedScreensaverWindow() {
         let hostingWindow = NSWindow(
-            contentRect: fullScreenWindowFrame(),
+            contentRect: hammerspoonManagedInitialWindowFrame(),
             styleMask: [.titled, .fullSizeContentView, .resizable],
             backing: .buffered,
             defer: false
@@ -47,7 +47,18 @@ final class AmbientCanvasPlayerWindowController {
         recordedLoopVideoView = videoView
     }
 
-    private func fullScreenWindowFrame() -> NSRect {
-        return NSScreen.main?.frame ?? NSRect(x: 0, y: 0, width: 1440, height: 900)
+    private func hammerspoonManagedInitialWindowFrame() -> NSRect {
+        let initialWidth: CGFloat = 1280
+        let initialHeight: CGFloat = 800
+        guard let visibleScreenFrame = NSScreen.main?.visibleFrame else {
+            return NSRect(x: 0, y: 0, width: initialWidth, height: initialHeight)
+        }
+        let centeredOriginX =
+            visibleScreenFrame.origin.x + (visibleScreenFrame.width - initialWidth) / 2
+        let centeredOriginY =
+            visibleScreenFrame.origin.y + (visibleScreenFrame.height - initialHeight) / 2
+        return NSRect(
+            x: centeredOriginX, y: centeredOriginY, width: initialWidth, height: initialHeight
+        )
     }
 }
