@@ -6,7 +6,7 @@ whose cost profile forced a different choice.
 
 | Platform | Implementation | Renderer | Trigger |
 | --- | --- | --- | --- |
-| darwin | `ambient-canvas/` (WebGL scenes pre-recorded to a looping video) | HTML5 `<video>` hardware-decoded in a Chrome app window | `com.dotfiles.ambient-canvas` launchd keep-alive, pinned to Hammerspoon workspace 11 |
+| darwin | `ambient-canvas/` (WebGL scenes pre-recorded to a looping video) | native Swift `AVPlayer` window, VideoToolbox hardware decode | `com.dotfiles.ambient-canvas` launchd keep-alive, pinned to Hammerspoon workspace 11 |
 | Linux | herdr terminal grid (`scripts/launch_herdr_screensaver.py`) | wezterm cell repaint | manual: the `h` alias runs `herdr-screensaver` |
 
 ## Why two implementations
@@ -33,9 +33,12 @@ off-screen window is not "occluded" to macOS and wezterm never throttles it:
   occludes it into throttling. The generative art is the cost, and it is paid continuously.
 
 The current darwin design pays the generative cost once. The WebGL scenes are recorded to a
-short looping video and the 24/7 window just plays that video, hardware-decoded, so the live
-per-frame compute disappears. On darwin the isolation still wins over the herdr grid, so
-`ambient-canvas` is the darwin screensaver and the herdr grid is gated to Linux.
+short looping video and the 24/7 window is a native Swift `AVPlayer` (no browser at all), which
+routes the loop through VideoToolbox for hardware decode, so the live per-frame compute
+disappears. The player also pauses playback whenever workspace 11 is off-screen (window
+occlusion), so it decodes zero frames when nobody is looking at it. A browser only runs offscreen
+for the ~30s record step that regenerates the loop. On darwin the isolation still wins over the
+herdr grid, so `ambient-canvas` is the darwin screensaver and the herdr grid is gated to Linux.
 
 ## ambient-canvas (darwin)
 
@@ -68,17 +71,21 @@ the loop is long enough that the seam is unobtrusive.
   `preserveDrawingBuffer` option), runs a `MediaRecorder`, and POSTs the encoded clip to a
   local receiver. It prefers an H.264 MP4 container so the M-series media engine can decode
   the loop in hardware.
-- `web/player-video.html` is the 24/7 window: a single `<video>` that plays the recorded loop
-  and restarts itself on `ended` (JS-driven, not the `loop` attribute, so container quirks
-  can't break looping). Its title stays `ambient-canvas-gpu-screensaver` so the Hammerspoon
-  pin to workspace 11 is unchanged.
-- `scripts/ambient_canvas_media/` holds the Python: `ambient_canvas_browser` (shared browser
+- `swift-sources/*.swift` compile to the 24/7 window: a native `AVQueuePlayer` + `AVPlayerLooper`
+  behind an `AVPlayerLayer` (seamless loop, no restart flash), `videoGravity = .resizeAspect` so
+  the loop is never cropped or zoomed when Hammerspoon resizes the pinned window to full screen,
+  and an occlusion controller that pauses decode when the window is not visible. The window title
+  is `ambient-canvas-gpu-screensaver` so the Hammerspoon pin to workspace 11 is unchanged; it is a
+  titled window with a hidden transparent titlebar so the title stays readable via accessibility.
+  `compile-player.sh` builds it with the system `/usr/bin/swiftc` during home-manager activation,
+  stamped so it only recompiles when the sources change, mirroring the application-launcher daemon.
+- `scripts/ambient_canvas_media/` holds the Python: `ambient_canvas_browser` (shared record browser
   and geometry resolution), `recorded_loop_upload_server` (stdlib HTTP receiver that writes
   `loop.<ext>` atomically), `render_ambient_canvas_loop` (drives a throwaway Chrome record
-  window), `display_ambient_canvas_loop` (launches the video window), and
+  window), `display_ambient_canvas_loop` (spawns the native player binary detached), and
   `ensure_ambient_canvas_screensaver` (the launchd entry: regenerate if stale, then keep the
   window alive). No external encoder is used, because the nixpkgs `ffmpeg` is AMFI-killed on
-  the M-series host.
+  the M-series host; the browser's own `MediaRecorder` produces the H.264 loop instead.
 
 ### Refresh
 
@@ -89,7 +96,8 @@ and the next launchd tick regenerates the loop automatically. Force a rebuild by
 `ambient-canvas-render` (optionally `--seconds N`).
 
 `ambient-canvas/default.nix` packages the `ambient-canvas` launcher and the
-`ambient-canvas-render` command and, guarded by `isDarwin`, installs the
+`ambient-canvas-render` command and, guarded by `isDarwin`, compiles the native player from
+`swift-sources/` via a `compileAmbientCanvasPlayer` activation and installs the
 `com.dotfiles.ambient-canvas` launchd agent that runs the ensure entry every 30s.
 
 ## herdr terminal grid (Linux)

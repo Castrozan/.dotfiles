@@ -82,29 +82,20 @@ def test_resolve_index_file_path_returns_existing_asset(monkeypatch, tmp_path):
     assert render.resolve_index_file_path() == str(index_path)
 
 
-def test_resolve_player_page_path_sits_next_to_the_index():
-    assert (
-        display.resolve_player_page_path("/store/web/index.html")
-        == "/store/web/player-video.html"
+def test_build_player_process_arguments_pass_binary_then_media():
+    assert display.build_player_process_arguments(
+        "/home/user/.local/bin/ambient-canvas-player", "/state/loop.mp4"
+    ) == ["/home/user/.local/bin/ambient-canvas-player", "/state/loop.mp4"]
+
+
+def test_resolve_recorded_loop_media_path_reads_pointer(tmp_path):
+    (tmp_path / "loop.current").write_text("loop.mp4\n")
+    (tmp_path / "loop.mp4").write_bytes(b"recorded")
+    assert display.resolve_recorded_loop_media_path(str(tmp_path)) == str(
+        tmp_path / "loop.mp4"
     )
 
 
-def test_build_display_url_encodes_the_recorded_source():
-    display_url = display.build_display_url(
-        "/store/web/player-video.html", "file:///state/loop.mp4"
-    )
-    assert display_url.startswith("file:///store/web/player-video.html?")
-    assert "src=file%3A%2F%2F%2Fstate%2Floop.mp4" in display_url
-
-
-def test_build_display_browser_arguments_open_new_app_with_file_access():
-    arguments = display.build_display_browser_arguments(
-        "Google Chrome",
-        "file:///store/web/player-video.html?src=file%3A%2F%2Floop.mp4",
-        "/state/profile",
-        (1440, 720, 280, 140),
-    )
-    assert arguments[:4] == ["open", "-na", "Google Chrome", "--args"]
-    assert "--user-data-dir=/state/profile" in arguments
-    assert "--allow-file-access-from-files" in arguments
-    assert "--window-position=280,140" in arguments
+def test_resolve_recorded_loop_media_path_is_none_when_media_missing(tmp_path):
+    (tmp_path / "loop.current").write_text("loop.mp4\n")
+    assert display.resolve_recorded_loop_media_path(str(tmp_path)) is None

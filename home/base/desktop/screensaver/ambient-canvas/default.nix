@@ -10,6 +10,7 @@ let
   ambientCanvasMediaScriptsDirectory = ./scripts/ambient_canvas_media;
   ambientCanvasStateDirectory = "${config.home.homeDirectory}/.local/state/ambient-canvas";
   ambientCanvasSourceIdentifier = "${ambientCanvasWebRoot}";
+  ambientCanvasPlayerBinaryPath = "${config.home.homeDirectory}/.local/bin/ambient-canvas-player";
 
   ambientCanvasScreensaverLauncher = pkgs.writeShellScriptBin "ambient-canvas" ''
     export AMBIENT_CANVAS_INDEX="${ambientCanvasIndexFile}"
@@ -17,6 +18,7 @@ let
       ${ambientCanvasMediaScriptsDirectory}/ensure_ambient_canvas_screensaver.py \
       --output-directory "${ambientCanvasStateDirectory}" \
       --source-identifier "${ambientCanvasSourceIdentifier}" \
+      --player-binary "${ambientCanvasPlayerBinaryPath}" \
       "$@"
   '';
 
@@ -38,6 +40,13 @@ in
 
     home.activation.ensureAmbientCanvasStateDirectory = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
       run mkdir -p ${lib.escapeShellArg ambientCanvasStateDirectory}
+    '';
+
+    home.activation.compileAmbientCanvasPlayer = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+      export AMBIENT_CANVAS_PLAYER_BINARY_PATH=${lib.escapeShellArg ambientCanvasPlayerBinaryPath}
+      export AMBIENT_CANVAS_PLAYER_SOURCES_DIR=${./swift-sources}
+      export AMBIENT_CANVAS_PLAYER_COMPILE_RECIPE_HASH=${builtins.hashFile "sha256" ./compile-player.sh}
+      ${builtins.readFile ./compile-player.sh}
     '';
 
     launchd.agents.ambient-canvas = {

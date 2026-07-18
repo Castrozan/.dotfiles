@@ -6,7 +6,7 @@ import sys
 import time
 
 from display_ambient_canvas_loop import (
-    DEFAULT_DISPLAY_PROFILE_DIRECTORY,
+    DEFAULT_PLAYER_BINARY_PATH,
     launch_display,
 )
 from render_ambient_canvas_loop import (
@@ -44,29 +44,29 @@ def recorded_loop_exists(output_directory):
     )
 
 
-def is_display_running(display_profile_directory):
+def is_display_running(display_process_marker):
     completed = subprocess.run(
-        ["/usr/bin/pgrep", "-f", display_profile_directory],
+        ["/usr/bin/pgrep", "-f", display_process_marker],
         check=False,
         capture_output=True,
     )
     return completed.returncode == 0
 
 
-def stop_display(display_profile_directory):
+def stop_display(display_process_marker):
     subprocess.run(
-        ["/usr/bin/pkill", "-f", display_profile_directory],
+        ["/usr/bin/pkill", "-f", display_process_marker],
         check=False,
         capture_output=True,
     )
 
 
 def wait_for_display_to_exit(
-    display_profile_directory, timeout_seconds=5.0, poll_interval_seconds=0.2
+    display_process_marker, timeout_seconds=5.0, poll_interval_seconds=0.2
 ):
     deadline = time.monotonic() + timeout_seconds
     while time.monotonic() < deadline:
-        if not is_display_running(display_profile_directory):
+        if not is_display_running(display_process_marker):
             return
         time.sleep(poll_interval_seconds)
 
@@ -75,7 +75,7 @@ def ensure_screensaver(
     index_file_path,
     output_directory,
     source_identifier,
-    display_profile_directory,
+    player_binary_path,
     duration_seconds,
     frames_per_second,
 ):
@@ -93,16 +93,14 @@ def ensure_screensaver(
         ):
             return 1
         if rendered_media_filename is not None and is_display_running(
-            display_profile_directory
+            player_binary_path
         ):
-            stop_display(display_profile_directory)
-            wait_for_display_to_exit(display_profile_directory)
+            stop_display(player_binary_path)
+            wait_for_display_to_exit(player_binary_path)
             display_needs_relaunch = True
 
-    if display_needs_relaunch or not is_display_running(display_profile_directory):
-        return launch_display(
-            index_file_path, output_directory, display_profile_directory
-        )
+    if display_needs_relaunch or not is_display_running(player_binary_path):
+        return launch_display(player_binary_path, output_directory)
     return 0
 
 
@@ -110,9 +108,7 @@ def main():
     argument_parser = argparse.ArgumentParser()
     argument_parser.add_argument("--output-directory", required=True)
     argument_parser.add_argument("--source-identifier", required=True)
-    argument_parser.add_argument(
-        "--profile-directory", default=DEFAULT_DISPLAY_PROFILE_DIRECTORY
-    )
+    argument_parser.add_argument("--player-binary", default=DEFAULT_PLAYER_BINARY_PATH)
     argument_parser.add_argument(
         "--seconds", type=int, default=DEFAULT_CAPTURE_DURATION_SECONDS
     )
@@ -132,7 +128,7 @@ def main():
         index_file_path,
         parsed_arguments.output_directory,
         parsed_arguments.source_identifier,
-        parsed_arguments.profile_directory,
+        parsed_arguments.player_binary,
         parsed_arguments.seconds,
         parsed_arguments.fps,
     )
