@@ -53,6 +53,7 @@
     ../base/terminal/cmatrix.nix
 
     ../base/security/agenix.nix
+    ../base/security/bitwarden.nix
 
     ../base/network/tailscale-daemon.nix
 
