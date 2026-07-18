@@ -36,22 +36,21 @@ class RecordedLoopUploadServer(http.server.ThreadingHTTPServer):
         )
         self.output_directory = output_directory
         self.upload_completed_event = threading.Event()
-        self.received_media_filename = None
+        self.received_extension = None
+        self.received_staging_path = None
 
     @property
     def upload_port(self):
         return self.server_address[1]
 
     def receive_recorded_loop(self, extension, recorded_bytes):
-        media_filename = f"loop.{extension}"
-        destination_path = os.path.join(self.output_directory, media_filename)
-        temporary_descriptor, temporary_path = tempfile.mkstemp(
-            dir=self.output_directory, suffix=f".{extension}.partial"
+        staging_descriptor, staging_path = tempfile.mkstemp(
+            dir=self.output_directory, suffix=f".{extension}.staging"
         )
-        with os.fdopen(temporary_descriptor, "wb") as temporary_file:
-            temporary_file.write(recorded_bytes)
-        os.replace(temporary_path, destination_path)
-        self.received_media_filename = media_filename
+        with os.fdopen(staging_descriptor, "wb") as staging_file:
+            staging_file.write(recorded_bytes)
+        self.received_extension = extension
+        self.received_staging_path = staging_path
         self.upload_completed_event.set()
 
 

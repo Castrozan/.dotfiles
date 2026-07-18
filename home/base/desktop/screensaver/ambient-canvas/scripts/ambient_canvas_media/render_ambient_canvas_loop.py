@@ -21,6 +21,7 @@ from recorded_loop_upload_server import (
 DEFAULT_CAPTURE_DURATION_SECONDS = 30
 DEFAULT_CAPTURE_FRAMES_PER_SECOND = 30
 CHROME_STARTUP_AND_UPLOAD_GRACE_SECONDS = 45
+MINIMUM_RECORDED_BYTES_PER_SECOND = 20000
 
 
 def build_record_index_url(
@@ -112,21 +113,36 @@ def render_recorded_loop(
         stderr=subprocess.DEVNULL,
     )
 
-    upload_arrived = upload_server.upload_completed_event.wait(
-        duration_seconds + CHROME_STARTUP_AND_UPLOAD_GRACE_SECONDS
-    )
-    terminate_browser_process(browser_process, throwaway_profile_directory)
-    upload_server.shutdown()
-    shutil.rmtree(throwaway_profile_directory, ignore_errors=True)
+    try:
+        upload_arrived = upload_server.upload_completed_event.wait(
+            duration_seconds + CHROME_STARTUP_AND_UPLOAD_GRACE_SECONDS
+        )
+    finally:
+        terminate_browser_process(browser_process, throwaway_profile_directory)
+        upload_server.shutdown()
+        shutil.rmtree(throwaway_profile_directory, ignore_errors=True)
 
-    if not upload_arrived or upload_server.received_media_filename is None:
+    staging_path = upload_server.received_staging_path
+    if not upload_arrived or staging_path is None:
         print("render-ambient-canvas-loop: recording did not complete", file=sys.stderr)
         return None
 
+    if os.path.getsize(staging_path) < (
+        duration_seconds * MINIMUM_RECORDED_BYTES_PER_SECOND
+    ):
+        os.remove(staging_path)
+        print(
+            "render-ambient-canvas-loop: recording had too little motion",
+            file=sys.stderr,
+        )
+        return None
+
+    media_filename = f"loop.{upload_server.received_extension}"
+    os.replace(staging_path, os.path.join(output_directory, media_filename))
     write_recorded_loop_pointer_files(
-        output_directory, upload_server.received_media_filename, source_identifier
+        output_directory, media_filename, source_identifier
     )
-    return upload_server.received_media_filename
+    return media_filename
 
 
 def resolve_index_file_path():

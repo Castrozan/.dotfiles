@@ -1,7 +1,9 @@
 import argparse
 import os
+import signal
 import subprocess
 import sys
+import time
 
 from display_ambient_canvas_loop import (
     DEFAULT_DISPLAY_PROFILE_DIRECTORY,
@@ -59,6 +61,16 @@ def stop_display(display_profile_directory):
     )
 
 
+def wait_for_display_to_exit(
+    display_profile_directory, timeout_seconds=5.0, poll_interval_seconds=0.2
+):
+    deadline = time.monotonic() + timeout_seconds
+    while time.monotonic() < deadline:
+        if not is_display_running(display_profile_directory):
+            return
+        time.sleep(poll_interval_seconds)
+
+
 def ensure_screensaver(
     index_file_path,
     output_directory,
@@ -67,6 +79,7 @@ def ensure_screensaver(
     duration_seconds,
     frames_per_second,
 ):
+    display_needs_relaunch = False
     if not recorded_loop_is_fresh(output_directory, source_identifier):
         rendered_media_filename = render_recorded_loop(
             index_file_path,
@@ -83,8 +96,10 @@ def ensure_screensaver(
             display_profile_directory
         ):
             stop_display(display_profile_directory)
+            wait_for_display_to_exit(display_profile_directory)
+            display_needs_relaunch = True
 
-    if not is_display_running(display_profile_directory):
+    if display_needs_relaunch or not is_display_running(display_profile_directory):
         return launch_display(
             index_file_path, output_directory, display_profile_directory
         )
@@ -124,4 +139,5 @@ def main():
 
 
 if __name__ == "__main__":
+    signal.signal(signal.SIGTERM, lambda *ignored: sys.exit(1))
     sys.exit(main())
