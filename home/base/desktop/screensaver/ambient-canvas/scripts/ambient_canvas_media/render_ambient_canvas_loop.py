@@ -21,6 +21,7 @@ from recorded_loop_upload_server import (
 DEFAULT_CAPTURE_DURATION_SECONDS = 30
 DEFAULT_CAPTURE_FRAMES_PER_SECOND = 30
 CHROME_STARTUP_AND_UPLOAD_GRACE_SECONDS = 45
+DETERMINISTIC_RENDER_WALL_CLOCK_MULTIPLIER = 4
 MINIMUM_RECORDED_BYTES_PER_SECOND = 20000
 
 
@@ -119,7 +120,8 @@ def render_recorded_loop(
 
     try:
         upload_arrived = upload_server.upload_completed_event.wait(
-            duration_seconds + CHROME_STARTUP_AND_UPLOAD_GRACE_SECONDS
+            duration_seconds * DETERMINISTIC_RENDER_WALL_CLOCK_MULTIPLIER
+            + CHROME_STARTUP_AND_UPLOAD_GRACE_SECONDS
         )
     finally:
         terminate_browser_process(browser_process, throwaway_profile_directory)

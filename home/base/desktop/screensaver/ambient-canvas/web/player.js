@@ -79,8 +79,6 @@
       );
     }
   }
-  window.addEventListener("resize", handleWindowResize);
-
   let startTimestampMilliseconds = null;
   function renderFrame(timestampMilliseconds) {
     if (startTimestampMilliseconds === null) {
@@ -96,5 +94,12 @@
     }
     window.requestAnimationFrame(renderFrame);
   }
+
+  if (window.AMBIENT_CANVAS_RECORD_DRIVER) {
+    window.AMBIENT_CANVAS_RECORD_DRIVER(activeRenderers);
+    return;
+  }
+
+  window.addEventListener("resize", handleWindowResize);
   window.requestAnimationFrame(renderFrame);
 })();

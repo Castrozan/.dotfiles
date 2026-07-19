@@ -68,6 +68,8 @@ def test_build_record_browser_arguments_use_throwaway_profile_and_gl():
     assert "--user-data-dir=/tmp/throwaway" in arguments
     assert "--window-size=1440,720" in arguments
     assert "--use-gl=angle" in arguments
+    assert "--disable-background-timer-throttling" in arguments
+    assert "--disable-backgrounding-occluded-windows" in arguments
 
 
 def test_resolve_index_file_path_is_none_without_environment(monkeypatch):
