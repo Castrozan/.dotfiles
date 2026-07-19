@@ -1,82 +1,14 @@
 // ==UserScript==
 // @name         YouTube Theater Focus Layout
-// @version      1.2.1
-// @description  Theater player fills the viewport (title below the fold), header 20% smaller, comments behind a tab, suggestions as a big centered grid, and a watch page never plays until you interact with its tab
+// @version      1.3.0
+// @description  Theater player fills the viewport (title below the fold), header 20% smaller, comments behind a tab, suggestions as a big centered grid
 // @author       zanoni
 // @match        https://www.youtube.com/*
-// @run-at       document-start
+// @run-at       document-idle
 // @grant        none
 // ==/UserScript==
 (function () {
   "use strict";
-  const nativeMediaPlay = HTMLMediaElement.prototype.play;
-  let autoplayReleased = false;
-  let autoplayHeldVideo = null;
-  function pickVideo() {
-    return (
-      document.querySelector("video.html5-main-video") ||
-      document.querySelector("video")
-    );
-  }
-  function logRelease(reason) {
-    try {
-      const log = JSON.parse(localStorage.getItem("ytweakReleaseLog") || "[]");
-      log.push([reason, Math.round(performance.now()), location.href]);
-      localStorage.setItem("ytweakReleaseLog", JSON.stringify(log.slice(-20)));
-    } catch (ignored) {}
-  }
-  function releaseAutoplay(reason) {
-    if (autoplayReleased) return;
-    autoplayReleased = true;
-    logRelease(reason);
-    const held = autoplayHeldVideo;
-    autoplayHeldVideo = null;
-    if (held && held.paused) nativeMediaPlay.call(held).catch(() => {});
-  }
-  function onTrustedInteraction(event) {
-    if (!event || event.isTrusted !== false) {
-      releaseAutoplay("interaction:" + (event ? event.type : "manual"));
-    }
-  }
-  HTMLMediaElement.prototype.play = function ytweakGuardedPlay() {
-    if (!autoplayReleased) {
-      autoplayHeldVideo = this;
-      try {
-        this.pause();
-      } catch (ignored) {}
-      return Promise.resolve();
-    }
-    return nativeMediaPlay.apply(this, arguments);
-  };
-  document.addEventListener(
-    "play",
-    (event) => {
-      if (
-        !autoplayReleased &&
-        event.target instanceof HTMLMediaElement &&
-        !event.target.paused
-      ) {
-        autoplayHeldVideo = event.target;
-        event.target.pause();
-      }
-    },
-    true,
-  );
-  document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible")
-      releaseAutoplay("visibilitychange");
-  });
-  ["pointerdown", "keydown", "wheel"].forEach((type) =>
-    document.addEventListener(type, onTrustedInteraction, true),
-  );
-  setInterval(() => {
-    if (autoplayReleased) return;
-    const video = autoplayHeldVideo || pickVideo();
-    if (video && !video.paused) {
-      autoplayHeldVideo = video;
-      video.pause();
-    }
-  }, 300);
   const STYLE_ID = "ytweak-style";
   const TABS_ID = "ytweak-tabs";
 
