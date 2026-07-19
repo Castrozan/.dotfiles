@@ -5,11 +5,7 @@ let
   # coverage helper is omitted entirely.
   kcovPackages = lib.optional pkgs.stdenv.hostPlatform.isLinux pkgs.kcov;
 
-  pytestWithScriptDependencies = pkgs.python312.withPackages (pythonPackages: [
-    pythonPackages.pytest
-    pythonPackages.numpy
-    pythonPackages.tomli-w
-  ]);
+  pytestWithScriptDependencies = import ./python-test-environment.nix { inherit pkgs; };
 
   dotfiles-test = pkgs.writeShellScriptBin "dotfiles-test" ''
     export PATH="${

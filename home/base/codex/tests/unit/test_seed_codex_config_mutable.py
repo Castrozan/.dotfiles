@@ -1,31 +1,6 @@
-import os
 import stat
-import subprocess
-import sys
-import tomllib
-from pathlib import Path
 
-
-SCRIPT_UNDER_TEST = (
-    Path(__file__).parents[2] / "config" / "seed_codex_config_mutable.py"
-)
-
-
-def run_seed(tmp_path):
-    environment = os.environ.copy()
-    environment["HOME"] = str(tmp_path)
-    return subprocess.run(
-        [sys.executable, str(SCRIPT_UNDER_TEST)],
-        check=False,
-        env=environment,
-        capture_output=True,
-        text=True,
-    )
-
-
-def read_live_config(tmp_path):
-    with (tmp_path / ".codex" / "config.toml").open("rb") as stream:
-        return tomllib.load(stream)
+from seed_codex_config_test_support import read_live_config, run_seed
 
 
 def test_seed_creates_mutable_config_from_nix_source(tmp_path):
@@ -42,21 +17,60 @@ def test_seed_creates_mutable_config_from_nix_source(tmp_path):
     assert stat.S_IMODE((codex_directory / "config.toml").stat().st_mode) == 0o600
 
 
-def test_seed_removes_everything_not_declared_by_nix_source(tmp_path):
+def test_seed_preserves_runtime_sections_and_replaces_source_owned_settings(
+    tmp_path,
+):
     codex_directory = tmp_path / ".codex"
     codex_directory.mkdir()
     (codex_directory / "config.toml.nix-source").write_text(
-        'model = "current-model"\n', encoding="utf-8"
+        """
+model = "current-model"
+
+[mcp_servers.current]
+command = "current"
+
+[projects."/declared-project"]
+trust_level = "trusted"
+""".strip()
+        + "\n",
+        encoding="utf-8",
     )
     (codex_directory / "config.toml").write_text(
-        'model = "stale-model"\n\n[mcp_servers.stale]\ncommand = "stale"\n',
+        """
+model = "stale-model"
+
+[mcp_servers.stale]
+command = "stale"
+
+[projects."/runtime-project"]
+trust_level = "trusted"
+
+[projects."/declared-project"]
+trust_level = "untrusted"
+
+[marketplaces.community]
+source = "https://example.invalid/marketplace.json"
+
+[plugins."example@community"]
+enabled = true
+""".strip()
+        + "\n",
         encoding="utf-8",
     )
 
     result = run_seed(tmp_path)
 
     assert result.returncode == 0, result.stderr
-    assert read_live_config(tmp_path) == {"model": "current-model"}
+    live_config = read_live_config(tmp_path)
+    assert live_config["model"] == "current-model"
+    assert set(live_config["mcp_servers"]) == {"current"}
+    assert set(live_config["projects"]) == {
+        "/declared-project",
+        "/runtime-project",
+    }
+    assert live_config["projects"]["/declared-project"] == {"trust_level": "trusted"}
+    assert set(live_config["marketplaces"]) == {"community"}
+    assert set(live_config["plugins"]) == {"example@community"}
 
 
 def test_seed_removes_legacy_generated_profiles(tmp_path):

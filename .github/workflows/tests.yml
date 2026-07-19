@@ -26,7 +26,7 @@ jobs:
 
       - name: Run Python tests
         run: |
-          nix shell --impure --expr 'with builtins.getFlake "nixpkgs"; legacyPackages.${builtins.currentSystem}.python312.withPackages (pythonPackages: [ pythonPackages.pytest pythonPackages.numpy ])' --command bash -c '
+          nix shell --impure --expr 'let pkgs = (builtins.getFlake "nixpkgs").legacyPackages.${builtins.currentSystem}; in import ./home/base/testing/python-test-environment.nix { inherit pkgs; }' --command bash -c '
             export REPO_DIR="$PWD"
             source tests/lib/pytest.sh
             pytest $(_collect_pytest_test_files_in_tier_directory unit) -x -q
