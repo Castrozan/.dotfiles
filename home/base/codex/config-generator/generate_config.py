@@ -4,6 +4,10 @@ import pathlib
 import tomllib
 from typing import Any
 
+from config_pruning import (
+    prune_private_matching_config_entries,
+    read_pruned_config_substrings_from_environment,
+)
 from toml_render import render_codex_config_toml
 
 codex_default_model = os.environ.get("CODEX_DEFAULT_MODEL", "gpt-5.5")
@@ -21,13 +25,7 @@ vivaldi_devtools_mcp_command = os.environ.get("CODEX_VIVALDI_DEVTOOLS_MCP_COMMAN
 vivaldi_devtools_mcp_args = json.loads(
     os.environ.get("CODEX_VIVALDI_DEVTOOLS_MCP_ARGS_JSON", "[]")
 )
-pruned_config_substrings = tuple(
-    substring.casefold()
-    for substring in json.loads(
-        os.environ.get("CODEX_PRUNED_CONFIG_SUBSTRINGS_JSON", "[]")
-    )
-    if isinstance(substring, str) and substring
-)
+pruned_config_substrings = read_pruned_config_substrings_from_environment()
 managed_mcp_server_names = {"chrome-devtools", "brave-devtools", "vivaldi-devtools"}
 
 
@@ -165,37 +163,6 @@ def deep_merge(base: dict[str, Any], overlay: dict[str, Any]) -> None:
             base[key] = value
 
 
-def config_value_matches_pruned_substring(value: Any) -> bool:
-    if isinstance(value, str):
-        casefolded_value = value.casefold()
-        return any(
-            pruned_substring in casefolded_value
-            for pruned_substring in pruned_config_substrings
-        )
-    if isinstance(value, dict):
-        return any(
-            config_value_matches_pruned_substring(key)
-            or config_value_matches_pruned_substring(nested_value)
-            for key, nested_value in value.items()
-        )
-    if isinstance(value, list):
-        return any(config_value_matches_pruned_substring(item) for item in value)
-    return False
-
-
-def prune_private_matching_config_entries(config_data: dict[str, Any]) -> None:
-    for config_section_name in ("projects", "mcp_servers", "plugins"):
-        config_section = config_data.get(config_section_name)
-        if not isinstance(config_section, dict):
-            continue
-        for config_entry_name in list(config_section):
-            config_entry = {
-                config_entry_name: config_section[config_entry_name],
-            }
-            if config_value_matches_pruned_substring(config_entry):
-                del config_section[config_entry_name]
-
-
 deep_merge(data, BASELINE)
 
 data.pop("profile", None)
@@ -211,7 +178,7 @@ for (
 ) in generated_mcp_server_entries.items():
     existing_mcp_servers[generated_server_name] = generated_server_entry
 
-prune_private_matching_config_entries(data)
+prune_private_matching_config_entries(data, pruned_config_substrings)
 
 config_path.write_text(render_codex_config_toml(data), encoding="utf-8")
 
