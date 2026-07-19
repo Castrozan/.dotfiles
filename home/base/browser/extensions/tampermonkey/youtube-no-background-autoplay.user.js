@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         YouTube No Background Autoplay
-// @version      1.0.0
-// @description  Hold a watch page paused while its tab is hidden; let it play the moment the tab is focused, so background tabs stay silent until visited
+// @version      3.0.0
+// @description  Stop a watch page from ever starting playback while its tab is unfocused or hidden and has never been viewed (no audio at all); start it when you focus the tab; never re-pause a video you are already watching
 // @author       zanoni
 // @match        https://www.youtube.com/*
 // @run-at       document-start
@@ -10,8 +10,9 @@
 (function () {
   "use strict";
 
-  let releasedForThisVideo = !document.hidden;
-  let blockedWhileHidden = false;
+  function isActive() {
+    return document.visibilityState === "visible" && document.hasFocus();
+  }
 
   function findVideo() {
     return (
@@ -20,41 +21,62 @@
     );
   }
 
-  function holdPaused(mediaElement) {
-    if (releasedForThisVideo || !document.hidden) return;
-    if (!(mediaElement instanceof HTMLMediaElement)) return;
-    blockedWhileHidden = true;
-    mediaElement.pause();
+  let hasBeenActive = isActive();
+  let heldVideo = null;
+
+  function shouldBlock() {
+    return !hasBeenActive && !isActive();
+  }
+
+  const nativePlay = HTMLMediaElement.prototype.play;
+  HTMLMediaElement.prototype.play = function play() {
+    if (shouldBlock()) {
+      heldVideo = this;
+      try {
+        this.pause();
+      } catch (ignored) {}
+      return Promise.resolve();
+    }
+    return nativePlay.apply(this, arguments);
+  };
+
+  function release() {
+    if (!isActive()) return;
+    hasBeenActive = true;
+    const video = heldVideo;
+    heldVideo = null;
+    if (video && video.paused) nativePlay.call(video).catch(() => {});
   }
 
   document.addEventListener(
     "play",
     (event) => {
-      holdPaused(event.target);
+      if (
+        shouldBlock() &&
+        event.target instanceof HTMLMediaElement &&
+        !event.target.paused
+      ) {
+        heldVideo = event.target;
+        event.target.pause();
+      }
     },
     true,
   );
 
+  document.addEventListener("visibilitychange", release);
+  window.addEventListener("focus", release);
+
   setInterval(() => {
-    if (releasedForThisVideo || !document.hidden) return;
-    const video = findVideo();
-    if (video && !video.paused) holdPaused(video);
-  }, 400);
-
-  document.addEventListener("visibilitychange", () => {
-    if (document.hidden || releasedForThisVideo) return;
-    releasedForThisVideo = true;
-    if (!blockedWhileHidden) return;
-    const video = findVideo();
-    if (video && video.paused) video.play().catch(() => {});
-  });
-
-  window.addEventListener("yt-navigate-finish", () => {
-    if (document.hidden) {
-      releasedForThisVideo = false;
-      blockedWhileHidden = false;
-    } else {
-      releasedForThisVideo = true;
+    if (isActive()) {
+      release();
+      return;
     }
-  });
+    if (shouldBlock()) {
+      const video = heldVideo || findVideo();
+      if (video && !video.paused) {
+        heldVideo = video;
+        video.pause();
+      }
+    }
+  }, 300);
 })();
