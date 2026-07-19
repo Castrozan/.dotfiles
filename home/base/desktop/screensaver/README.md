@@ -92,8 +92,17 @@ pixel-seamless; boundaries are cuts and the loop is long enough that the seam is
   the M-series media engine decodes the loop in hardware.
 - `swift-sources/*.swift` compile to the 24/7 window: a native `AVQueuePlayer` + `AVPlayerLooper`
   behind an `AVPlayerLayer` (seamless loop, no restart flash), `videoGravity = .resizeAspect` so
-  the loop is never cropped or zoomed when Hammerspoon resizes the pinned window to full screen,
-  and a visibility-gated playback controller that pauses decode whenever the window is not on the
+  the loop is never cropped or zoomed. That only holds because the window is an
+  `AmbientCanvasUnconstrainedScreensaverWindow`, an `NSWindow` subclass whose
+  `constrainFrameRect` returns the proposed rect untouched. `workspace_grid_window_layout.lua`
+  pins the window to `screen():fullFrame()`, but AppKit silently re-constrains a `.titled`
+  window to the _visible_ frame about a second later, so on a 1920x1080 display the window
+  settled at 1920x1050 and `.resizeAspect` fitted the 16:9 loop to 1866x1050, leaving a measured
+  27px pillarbox on each side. With the clamp overridden the window is the loop's exact
+  resolution, so the video decodes 1:1 with no pillarbox and no resampling; the menu bar simply
+  draws over the top 30px. Reaching for `.resizeAspectFill` instead only hides the clamp, and it
+  generalizes badly, cropping roughly 13% of the width on a non-16:9 display.
+  There is also a visibility-gated playback controller that pauses decode whenever the window is not on the
   active Space, is covered, or the display sleeps (it observes both window occlusion and
   `NSWorkspace.activeSpaceDidChangeNotification`). The window title
   is `ambient-canvas-gpu-screensaver` so the Hammerspoon pin to workspace 11 is unchanged; it is a
@@ -127,6 +136,12 @@ video as `seekable: [[0, 0]]`, so every seek silently no-ops and every frame cap
 opening black frame. And the scene is deterministic only through `prepareFrame`, which seeks
 to the exact frame time and resolves on `seeked`; the braille grid is derived from the measured
 glyph advance width, so dots stay square and the source is letterboxed rather than stretched.
+
+Source framing follows the clip. Four of the six declared clips are 640x360 and fill the 16:9
+frame edge to edge; `FtutLA63Cp8` and `djV11Xbc914` are 480x360, so they letterbox to 75% of
+the frame width. That is intrinsic to a 4:3 source and is left alone deliberately: cropping
+them to 16:9 costs 12.5% off the top and bottom, which clips heads in roughly two of every
+five sampled frames. Swap the clip rather than crop it.
 
 ### Refresh
 

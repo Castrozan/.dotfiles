@@ -19,7 +19,7 @@ final class AmbientCanvasPlayerWindowController {
     }
 
     func presentPinnedScreensaverWindow() {
-        let hostingWindow = NSWindow(
+        let hostingWindow = AmbientCanvasUnconstrainedScreensaverWindow(
             contentRect: hammerspoonManagedInitialWindowFrame(),
             styleMask: [.titled, .fullSizeContentView, .resizable],
             backing: .buffered,
