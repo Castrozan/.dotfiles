@@ -98,6 +98,7 @@ in
   codex-config-mutable-seed-activation = mkEvalCheck "codex-config-mutable-seed-activation" (
     builtins.hasAttr "seedCodexConfigAsMutableFile" cfg.home.activation
     && !(builtins.hasAttr "codexBaselineConfig" cfg.home.activation)
+    && builtins.elem "linkGeneration" cfg.home.activation.seedCodexConfigAsMutableFile.after
   ) "Codex config must use Claude-style mutable seeding instead of the legacy generator activation";
 
   codex-config-legacy-profiles-removed = mkEvalCheck "codex-config-legacy-profiles-removed" (

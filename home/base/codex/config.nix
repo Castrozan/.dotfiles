@@ -57,7 +57,10 @@ in
   home.file.".codex/config.toml.nix-source".source = codexConfigSource;
 
   home.activation.seedCodexConfigAsMutableFile = {
-    after = [ "writeBoundary" ];
+    after = [
+      "writeBoundary"
+      "linkGeneration"
+    ];
     before = [ ];
     data = ''
       export CODEX_CONFIG="$HOME/.codex/config.toml"
