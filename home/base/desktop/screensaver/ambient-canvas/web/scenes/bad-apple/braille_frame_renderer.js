@@ -7,61 +7,8 @@ window.AmbientCanvasBrailleFrameRenderer =
       [0x04, 0x20],
       [0x40, 0x80],
     ];
-    const BRAILLE_DOT_COLUMNS_PER_CELL = 2;
-    const BRAILLE_DOT_ROWS_PER_CELL = 4;
-    const FULLY_RAISED_BRAILLE_CELL = "⣿";
 
-    function resolveGlyphGrid(
-      displayContext,
-      canvasElement,
-      characterRows,
-      glyphFontFamily,
-    ) {
-      const fontSize = canvasElement.height / characterRows;
-      displayContext.font = fontSize + "px " + glyphFontFamily;
-      const advanceWidth =
-        displayContext.measureText(FULLY_RAISED_BRAILLE_CELL).width || fontSize;
-      return {
-        fontSize: fontSize,
-        advanceWidth: advanceWidth,
-        characterRows: characterRows,
-        characterColumns: Math.max(
-          1,
-          Math.floor(canvasElement.width / advanceWidth),
-        ),
-        dotPixelWidth: advanceWidth / BRAILLE_DOT_COLUMNS_PER_CELL,
-        dotPixelHeight: fontSize / BRAILLE_DOT_ROWS_PER_CELL,
-      };
-    }
-
-    function drawSourceIntoDotGrid(
-      samplingContext,
-      imageSource,
-      sourcePixelWidth,
-      sourcePixelHeight,
-      glyphGrid,
-    ) {
-      const dotColumns =
-        glyphGrid.characterColumns * BRAILLE_DOT_COLUMNS_PER_CELL;
-      const dotRows = glyphGrid.characterRows * BRAILLE_DOT_ROWS_PER_CELL;
-      samplingContext.fillStyle = "#000000";
-      samplingContext.fillRect(0, 0, dotColumns, dotRows);
-      const fittedScale = Math.min(
-        (dotColumns * glyphGrid.dotPixelWidth) / sourcePixelWidth,
-        (dotRows * glyphGrid.dotPixelHeight) / sourcePixelHeight,
-      );
-      const drawnDotWidth =
-        (sourcePixelWidth * fittedScale) / glyphGrid.dotPixelWidth;
-      const drawnDotHeight =
-        (sourcePixelHeight * fittedScale) / glyphGrid.dotPixelHeight;
-      samplingContext.drawImage(
-        imageSource,
-        (dotColumns - drawnDotWidth) / 2,
-        (dotRows - drawnDotHeight) / 2,
-        drawnDotWidth,
-        drawnDotHeight,
-      );
-    }
+    const glyphGridGeometry = window.AmbientCanvasBrailleGlyphGrid;
 
     function resolveBrailleCellCodePoint(
       dotPixels,
@@ -71,15 +18,20 @@ window.AmbientCanvasBrailleFrameRenderer =
       luminanceThreshold,
     ) {
       let raisedDotBits = 0;
-      for (let dotRow = 0; dotRow < BRAILLE_DOT_ROWS_PER_CELL; dotRow += 1) {
+      for (
+        let dotRow = 0;
+        dotRow < glyphGridGeometry.dotRowsPerCell;
+        dotRow += 1
+      ) {
         for (
           let dotColumn = 0;
-          dotColumn < BRAILLE_DOT_COLUMNS_PER_CELL;
+          dotColumn < glyphGridGeometry.dotColumnsPerCell;
           dotColumn += 1
         ) {
           const sampleX =
-            characterColumn * BRAILLE_DOT_COLUMNS_PER_CELL + dotColumn;
-          const sampleY = characterRow * BRAILLE_DOT_ROWS_PER_CELL + dotRow;
+            characterColumn * glyphGridGeometry.dotColumnsPerCell + dotColumn;
+          const sampleY =
+            characterRow * glyphGridGeometry.dotRowsPerCell + dotRow;
           const sampleOffset = (sampleY * dotColumns + sampleX) * 4;
           const luminance =
             (dotPixels[sampleOffset] * 0.2126 +
@@ -102,8 +54,6 @@ window.AmbientCanvasBrailleFrameRenderer =
       dotPixels,
       appearance,
     ) {
-      const dotColumns =
-        glyphGrid.characterColumns * BRAILLE_DOT_COLUMNS_PER_CELL;
       displayContext.fillStyle = appearance.glyphColor;
       displayContext.textBaseline = "top";
       const horizontalInset =
@@ -124,7 +74,7 @@ window.AmbientCanvasBrailleFrameRenderer =
           glyphRowText += String.fromCharCode(
             resolveBrailleCellCodePoint(
               dotPixels,
-              dotColumns,
+              glyphGrid.dotColumns,
               characterRow,
               characterColumn,
               appearance.luminanceThreshold,
@@ -161,23 +111,20 @@ window.AmbientCanvasBrailleFrameRenderer =
         if (!sourcePixelWidth || !sourcePixelHeight) {
           return;
         }
-        const glyphGrid = resolveGlyphGrid(
+        const glyphGrid = glyphGridGeometry.resolveGlyphGrid(
           displayContext,
           canvasElement,
           appearance.characterRows,
           appearance.glyphFontFamily,
         );
-        const dotColumns =
-          glyphGrid.characterColumns * BRAILLE_DOT_COLUMNS_PER_CELL;
-        const dotRows = glyphGrid.characterRows * BRAILLE_DOT_ROWS_PER_CELL;
         if (
-          samplingCanvas.width !== dotColumns ||
-          samplingCanvas.height !== dotRows
+          samplingCanvas.width !== glyphGrid.dotColumns ||
+          samplingCanvas.height !== glyphGrid.dotRows
         ) {
-          samplingCanvas.width = dotColumns;
-          samplingCanvas.height = dotRows;
+          samplingCanvas.width = glyphGrid.dotColumns;
+          samplingCanvas.height = glyphGrid.dotRows;
         }
-        drawSourceIntoDotGrid(
+        glyphGridGeometry.drawSourceIntoDotGrid(
           samplingContext,
           imageSource,
           sourcePixelWidth,
@@ -187,8 +134,8 @@ window.AmbientCanvasBrailleFrameRenderer =
         const dotPixels = samplingContext.getImageData(
           0,
           0,
-          dotColumns,
-          dotRows,
+          glyphGrid.dotColumns,
+          glyphGrid.dotRows,
         ).data;
         paintBrailleGlyphs(
           displayContext,
