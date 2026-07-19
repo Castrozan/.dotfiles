@@ -10,10 +10,14 @@
 
   const outputPixelWidth = 1920;
   const outputPixelHeight = 1080;
+  const contentFillFraction = 0.9;
   const targetBitsPerPixelPerFrame = 0.35;
   const keyFrameIntervalSeconds = 2;
   const encoderQueueHighWatermark = 8;
   const encoderQueueDrainTarget = 4;
+
+  const compositor = window.AmbientCanvasRecordingCompositor;
+  const encoder = window.AmbientCanvasRecordingEncoder;
 
   window.AMBIENT_CANVAS_RENDERER_OPTION_OVERRIDES = {
     preserveDrawingBuffer: true,
@@ -27,147 +31,29 @@
     });
   }
 
-  function waitForEncoderQueueToDrain(videoEncoder) {
-    return new Promise(function resolveWhenDrained(resolve) {
-      function checkQueueDepth() {
-        if (videoEncoder.encodeQueueSize <= encoderQueueDrainTarget) {
-          resolve();
-          return;
-        }
-        window.setTimeout(checkQueueDepth, 4);
-      }
-      checkQueueDepth();
-    });
-  }
-
-  function forceDeterministicGridLayout() {
-    const grid = document.getElementById("ambient-canvas-grid");
-    grid.style.position = "fixed";
-    grid.style.left = "0";
-    grid.style.top = "0";
-    grid.style.width = outputPixelWidth + "px";
-    grid.style.height = outputPixelHeight + "px";
-    return grid;
-  }
-
-  function resolveFixedResolutionPanePlacements(activeRenderers, grid) {
-    const gridBounds = grid.getBoundingClientRect();
-    const horizontalScale = outputPixelWidth / gridBounds.width;
-    const verticalScale = outputPixelHeight / gridBounds.height;
-    const panePlacements = [];
-    for (const activeRenderer of activeRenderers) {
-      const bounds = activeRenderer.canvasElement.getBoundingClientRect();
-      const panedPixelWidth = Math.max(
-        1,
-        Math.round(bounds.width * horizontalScale),
-      );
-      const panedPixelHeight = Math.max(
-        1,
-        Math.round(bounds.height * verticalScale),
-      );
-      activeRenderer.canvasElement.width = panedPixelWidth;
-      activeRenderer.canvasElement.height = panedPixelHeight;
-      activeRenderer.renderer.resize(panedPixelWidth, panedPixelHeight);
-      panePlacements.push({
-        renderer: activeRenderer.renderer,
-        canvasElement: activeRenderer.canvasElement,
-        destinationLeft: Math.round(
-          (bounds.left - gridBounds.left) * horizontalScale,
-        ),
-        destinationTop: Math.round(
-          (bounds.top - gridBounds.top) * verticalScale,
-        ),
-        destinationWidth: panedPixelWidth,
-        destinationHeight: panedPixelHeight,
-      });
-    }
-    return panePlacements;
-  }
-
-  function createRecordCanvasContext() {
-    const recordCanvas = document.createElement("canvas");
-    recordCanvas.width = outputPixelWidth;
-    recordCanvas.height = outputPixelHeight;
-    return recordCanvas.getContext("2d");
-  }
-
-  function renderFixedResolutionFrame(
-    recordContext,
-    panePlacements,
-    elapsedSeconds,
-  ) {
-    recordContext.fillStyle = "#0a1a2f";
-    recordContext.fillRect(0, 0, outputPixelWidth, outputPixelHeight);
-    for (const panePlacement of panePlacements) {
-      panePlacement.renderer.render(elapsedSeconds);
-      recordContext.drawImage(
-        panePlacement.canvasElement,
-        panePlacement.destinationLeft,
-        panePlacement.destinationTop,
-        panePlacement.destinationWidth,
-        panePlacement.destinationHeight,
-      );
-    }
-  }
-
-  function createConfiguredMuxerAndEncoder() {
-    const muxer = new Mp4Muxer.Muxer({
-      target: new Mp4Muxer.ArrayBufferTarget(),
-      video: {
-        codec: "avc",
-        width: outputPixelWidth,
-        height: outputPixelHeight,
-      },
-      fastStart: "in-memory",
-    });
-    const videoEncoder = new VideoEncoder({
-      output: function muxEncodedChunk(encodedChunk, chunkMetadata) {
-        muxer.addVideoChunk(encodedChunk, chunkMetadata);
-      },
-      error: function reportEncodeError(encodeError) {
-        console.error("ambient-canvas record: encode error", encodeError);
-      },
-    });
-    videoEncoder.configure({
-      codec: "avc1.640028",
-      width: outputPixelWidth,
-      height: outputPixelHeight,
-      bitrate: Math.round(
-        outputPixelWidth *
-          outputPixelHeight *
-          captureFramesPerSecond *
-          targetBitsPerPixelPerFrame,
-      ),
-      framerate: captureFramesPerSecond,
-    });
-    return { muxer, videoEncoder };
-  }
-
-  function uploadEncodedLoop(encodedBuffer) {
-    if (!uploadUrl) {
-      return Promise.resolve();
-    }
-    return fetch(uploadUrl + "?extension=mp4", {
-      method: "POST",
-      body: new Blob([encodedBuffer], { type: "video/mp4" }),
-    })
-      .catch(function ignoreUploadFailure() {})
-      .finally(function closeAfterUpload() {
-        window.setTimeout(function requestWindowClose() {
-          window.close();
-        }, 250);
-      });
-  }
-
   async function driveDeterministicRecording(activeRenderers) {
-    const grid = forceDeterministicGridLayout();
+    const grid = compositor.forceDeterministicGridLayout(
+      outputPixelWidth,
+      outputPixelHeight,
+    );
     await nextAnimationFrame();
-    const panePlacements = resolveFixedResolutionPanePlacements(
+    const panePlacements = compositor.resolveFixedResolutionPanePlacements(
       activeRenderers,
       grid,
+      outputPixelWidth,
+      outputPixelHeight,
+      contentFillFraction,
     );
-    const recordContext = createRecordCanvasContext();
-    const { muxer, videoEncoder } = createConfiguredMuxerAndEncoder();
+    const recordContext = compositor.createRecordCanvasContext(
+      outputPixelWidth,
+      outputPixelHeight,
+    );
+    const { muxer, videoEncoder } = encoder.createConfiguredMuxerAndEncoder(
+      outputPixelWidth,
+      outputPixelHeight,
+      captureFramesPerSecond,
+      targetBitsPerPixelPerFrame,
+    );
 
     const totalFrameCount = Math.round(
       captureDurationSeconds * captureFramesPerSecond,
@@ -179,7 +65,13 @@
 
     for (let frameIndex = 0; frameIndex < totalFrameCount; frameIndex++) {
       const elapsedSeconds = frameIndex / captureFramesPerSecond;
-      renderFixedResolutionFrame(recordContext, panePlacements, elapsedSeconds);
+      compositor.renderFixedResolutionFrame(
+        recordContext,
+        panePlacements,
+        elapsedSeconds,
+        outputPixelWidth,
+        outputPixelHeight,
+      );
       const videoFrame = new VideoFrame(recordContext.canvas, {
         timestamp: Math.round(frameIndex * microsecondsPerFrame),
         duration: Math.round(microsecondsPerFrame),
@@ -189,13 +81,16 @@
       });
       videoFrame.close();
       if (videoEncoder.encodeQueueSize > encoderQueueHighWatermark) {
-        await waitForEncoderQueueToDrain(videoEncoder);
+        await encoder.waitForEncoderQueueToDrain(
+          videoEncoder,
+          encoderQueueDrainTarget,
+        );
       }
     }
 
     await videoEncoder.flush();
     muxer.finalize();
-    await uploadEncodedLoop(muxer.target.buffer);
+    await encoder.uploadEncodedLoop(muxer.target.buffer, uploadUrl);
   }
 
   window.AMBIENT_CANVAS_RECORD_DRIVER = function startDeterministicRecording(
