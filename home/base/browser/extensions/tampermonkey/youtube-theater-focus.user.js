@@ -1,14 +1,61 @@
 // ==UserScript==
 // @name         YouTube Theater Focus Layout
-// @version      1.3.0
-// @description  Theater player fills the viewport (title below the fold), header 20% smaller, comments behind a tab, suggestions as a big centered grid
+// @version      1.4.0
+// @description  Theater player fills the viewport (title below the fold), header 20% smaller, comments behind a tab, suggestions as a big centered grid, and a page loaded into a hidden tab stays paused until that tab is first shown
 // @author       zanoni
 // @match        https://www.youtube.com/*
-// @run-at       document-idle
+// @run-at       document-start
 // @grant        none
 // ==/UserScript==
 (function () {
   "use strict";
+  const nativeMediaPlay = HTMLMediaElement.prototype.play;
+  let playbackIsHeld = document.visibilityState === "hidden";
+  let heldVideo = null;
+  let heldVideoWasMuted = false;
+
+  function holdVideo(video) {
+    if (heldVideo !== video) {
+      heldVideo = video;
+      heldVideoWasMuted = video.muted;
+    }
+    try {
+      video.pause();
+    } catch (ignored) {}
+  }
+
+  if (playbackIsHeld) {
+    HTMLMediaElement.prototype.play = function playHeldWhileTabIsHidden() {
+      if (!playbackIsHeld) return nativeMediaPlay.apply(this, arguments);
+      holdVideo(this);
+      return Promise.reject(
+        new DOMException(
+          "play() held until this tab is shown",
+          "NotAllowedError",
+        ),
+      );
+    };
+    document.addEventListener(
+      "play",
+      (event) => {
+        if (playbackIsHeld && event.target instanceof HTMLMediaElement) {
+          holdVideo(event.target);
+        }
+      },
+      true,
+    );
+    document.addEventListener("visibilitychange", function releaseWhenShown() {
+      if (document.visibilityState !== "visible") return;
+      playbackIsHeld = false;
+      HTMLMediaElement.prototype.play = nativeMediaPlay;
+      document.removeEventListener("visibilitychange", releaseWhenShown);
+      if (!heldVideo) return;
+      heldVideo.muted = heldVideoWasMuted;
+      if (heldVideo.paused) nativeMediaPlay.call(heldVideo).catch(() => {});
+      heldVideo = null;
+    });
+  }
+
   const STYLE_ID = "ytweak-style";
   const TABS_ID = "ytweak-tabs";
 
