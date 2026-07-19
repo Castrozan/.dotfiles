@@ -112,12 +112,10 @@
     });
     if (!gl) {
       console.error("ambient-canvas: WebGL unavailable for a yuruyurau pane");
-      return { render() {}, resize() {} };
+      return { render() {}, resize() {}, dispose() {} };
     }
     const variantNames = Object.keys(figureBodyByVariant);
-    const selectedVariant =
-      (options && options.variant) ||
-      variantNames[Math.floor(Math.random() * variantNames.length)];
+    const selectedVariant = (options && options.variant) || variantNames[0];
     const figureExtent = figureExtentByVariant[selectedVariant];
     const devicePixelRatio = (options && options.devicePixelRatio) || 1;
 
@@ -183,6 +181,12 @@
       },
       resize(pixelWidthDevice, pixelHeightDevice) {
         gl.viewport(0, 0, pixelWidthDevice, pixelHeightDevice);
+      },
+      dispose() {
+        const loseContextExtension = gl.getExtension("WEBGL_lose_context");
+        if (loseContextExtension) {
+          loseContextExtension.loseContext();
+        }
       },
     };
   }

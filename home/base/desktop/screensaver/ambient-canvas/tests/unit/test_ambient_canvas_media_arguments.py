@@ -1,5 +1,6 @@
 import ambient_canvas_browser as browser
 import display_ambient_canvas_loop as display
+import recorded_loop_capture_plan as capture_plan
 import render_ambient_canvas_loop as render
 
 
@@ -46,7 +47,7 @@ def test_resolve_browser_executable_path_points_inside_the_app_bundle():
 
 
 def test_build_record_index_url_encodes_record_query():
-    record_url = render.build_record_index_url(
+    record_url = capture_plan.build_record_index_url(
         "file:///store/index.html", "http://127.0.0.1:5000/upload", 30, 24
     )
     assert record_url.startswith("file:///store/index.html?")
@@ -56,8 +57,45 @@ def test_build_record_index_url_encodes_record_query():
     assert "uploadUrl=http%3A%2F%2F127.0.0.1%3A5000%2Fupload" in record_url
 
 
+def test_build_record_index_url_omits_seconds_so_the_playlist_derives_the_length():
+    record_url = capture_plan.build_record_index_url(
+        "file:///store/index.html", "http://127.0.0.1:5000/upload", None, 30
+    )
+    assert "seconds=" not in record_url
+    assert "record=1" in record_url
+    assert "fps=30" in record_url
+
+
+def test_upload_wait_budget_scales_with_an_explicit_duration():
+    assert capture_plan.resolve_upload_wait_budget_seconds(30) == (
+        30 * capture_plan.DETERMINISTIC_RENDER_WALL_CLOCK_MULTIPLIER
+        + capture_plan.CHROME_STARTUP_AND_UPLOAD_GRACE_SECONDS
+    )
+
+
+def test_upload_wait_budget_uses_a_fixed_ceiling_when_the_playlist_derives_the_length():
+    assert (
+        capture_plan.resolve_upload_wait_budget_seconds(None)
+        == capture_plan.PLAYLIST_DERIVED_RENDER_WALL_CLOCK_CEILING_SECONDS
+    )
+
+
+def test_minimum_recorded_bytes_scales_with_an_explicit_duration():
+    assert (
+        capture_plan.resolve_minimum_recorded_bytes(30)
+        == 30 * capture_plan.MINIMUM_RECORDED_BYTES_PER_SECOND
+    )
+
+
+def test_minimum_recorded_bytes_uses_a_fixed_floor_when_the_playlist_derives_length():
+    assert (
+        capture_plan.resolve_minimum_recorded_bytes(None)
+        == capture_plan.PLAYLIST_DERIVED_MINIMUM_RECORDED_BYTES
+    )
+
+
 def test_build_record_browser_arguments_use_throwaway_profile_and_gl():
-    arguments = render.build_record_browser_arguments(
+    arguments = capture_plan.build_record_browser_arguments(
         "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
         "file:///store/index.html?record=1",
         "/tmp/throwaway",

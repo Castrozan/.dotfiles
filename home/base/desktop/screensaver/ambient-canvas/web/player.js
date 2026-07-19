@@ -1,27 +1,64 @@
 (function runAmbientCanvasPlayer() {
   const grid = document.getElementById("ambient-canvas-grid");
-  const paneConfigurations = window.AMBIENT_CANVAS_PANES || [];
-  const explicitLayout = window.AMBIENT_CANVAS_LAYOUT || null;
+  const playlist = window.AMBIENT_CANVAS_PLAYLIST || [];
+  const globalRotationSeconds = window.AMBIENT_CANVAS_ROTATION_SECONDS || 20;
   const sceneFactories = window.AMBIENT_CANVAS_SCENE_FACTORIES || {};
 
-  if (!grid || paneConfigurations.length === 0) {
+  if (!grid || playlist.length === 0) {
     return;
   }
 
-  if (explicitLayout) {
-    grid.style.gridTemplateColumns = explicitLayout.columnTemplate;
-    grid.style.gridTemplateRows = explicitLayout.rowTemplate;
-    grid.style.gridTemplateAreas = explicitLayout.areaRows
-      .map((areaRow) => '"' + areaRow + '"')
-      .join(" ");
-  } else {
-    const columnCount = Math.ceil(Math.sqrt(paneConfigurations.length));
-    const rowCount = Math.ceil(paneConfigurations.length / columnCount);
-    grid.style.gridTemplateColumns = "repeat(" + columnCount + ", 1fr)";
-    grid.style.gridTemplateRows = "repeat(" + rowCount + ", 1fr)";
+  let currentDevicePixelRatio = window.devicePixelRatio || 1;
+
+  function compositionDurationSeconds(composition) {
+    return composition.durationSeconds || globalRotationSeconds;
   }
 
-  let currentDevicePixelRatio = window.devicePixelRatio || 1;
+  const totalCycleSeconds = playlist.reduce(function accumulateDuration(
+    accumulatedSeconds,
+    composition,
+  ) {
+    return accumulatedSeconds + compositionDurationSeconds(composition);
+  }, 0);
+
+  function resolveSegment(elapsedSeconds) {
+    const wrappedElapsedSeconds =
+      ((elapsedSeconds % totalCycleSeconds) + totalCycleSeconds) %
+      totalCycleSeconds;
+    let precedingSeconds = 0;
+    for (let index = 0; index < playlist.length; index += 1) {
+      const durationSeconds = compositionDurationSeconds(playlist[index]);
+      if (wrappedElapsedSeconds < precedingSeconds + durationSeconds) {
+        return {
+          index: index,
+          localElapsedSeconds: wrappedElapsedSeconds - precedingSeconds,
+        };
+      }
+      precedingSeconds += durationSeconds;
+    }
+    const lastIndex = playlist.length - 1;
+    return {
+      index: lastIndex,
+      localElapsedSeconds: compositionDurationSeconds(playlist[lastIndex]),
+    };
+  }
+
+  function applyLayout(compositionIndex) {
+    const layout = playlist[compositionIndex].layout;
+    if (!layout) {
+      grid.style.gridTemplateColumns = "1fr";
+      grid.style.gridTemplateRows = "1fr";
+      grid.style.gridTemplateAreas = "";
+      return;
+    }
+    grid.style.gridTemplateColumns = layout.columnTemplate;
+    grid.style.gridTemplateRows = layout.rowTemplate;
+    grid.style.gridTemplateAreas = layout.areaRows
+      .map(function quoteAreaRow(areaRow) {
+        return '"' + areaRow + '"';
+      })
+      .join(" ");
+  }
 
   function sizeCanvasToPane(canvasElement) {
     const bounds = canvasElement.getBoundingClientRect();
@@ -35,43 +72,87 @@
     );
   }
 
-  const activeRenderers = [];
-  for (const paneConfiguration of paneConfigurations) {
-    const sceneFactory = sceneFactories[paneConfiguration.scene];
-    if (!sceneFactory) {
-      console.error("ambient-canvas: unknown scene " + paneConfiguration.scene);
-      continue;
-    }
-    const canvasElement = document.createElement("canvas");
-    canvasElement.className = "ambient-canvas-pane";
-    if (paneConfiguration.area) {
-      canvasElement.style.gridArea = paneConfiguration.area;
-    }
-    grid.appendChild(canvasElement);
-    sizeCanvasToPane(canvasElement);
-    const rendererOptions = Object.assign(
-      { devicePixelRatio: currentDevicePixelRatio },
-      paneConfiguration.options || {},
-      window.AMBIENT_CANVAS_RENDERER_OPTION_OVERRIDES || {},
-    );
-    try {
-      activeRenderers.push({
-        canvasElement: canvasElement,
-        renderer: sceneFactory(canvasElement, rendererOptions),
-      });
-    } catch (sceneInitializationError) {
-      console.error(
-        "ambient-canvas: scene " +
-          paneConfiguration.scene +
-          " failed to initialize: " +
-          sceneInitializationError,
+  function buildSegment(compositionIndex) {
+    const renderers = [];
+    for (const paneConfiguration of playlist[compositionIndex].panes) {
+      const sceneFactory = sceneFactories[paneConfiguration.scene];
+      if (!sceneFactory) {
+        console.error(
+          "ambient-canvas: unknown scene " + paneConfiguration.scene,
+        );
+        continue;
+      }
+      const canvasElement = document.createElement("canvas");
+      canvasElement.className = "ambient-canvas-pane";
+      if (paneConfiguration.area) {
+        canvasElement.style.gridArea = paneConfiguration.area;
+      }
+      grid.appendChild(canvasElement);
+      sizeCanvasToPane(canvasElement);
+      const rendererOptions = Object.assign(
+        { devicePixelRatio: currentDevicePixelRatio },
+        paneConfiguration.options || {},
+        window.AMBIENT_CANVAS_RENDERER_OPTION_OVERRIDES || {},
       );
+      try {
+        renderers.push({
+          canvasElement: canvasElement,
+          renderer: sceneFactory(canvasElement, rendererOptions),
+        });
+      } catch (sceneInitializationError) {
+        grid.removeChild(canvasElement);
+        console.error(
+          "ambient-canvas: scene " +
+            paneConfiguration.scene +
+            " failed to initialize: " +
+            sceneInitializationError,
+        );
+      }
     }
+    return { renderers: renderers, compositionIndex: compositionIndex };
+  }
+
+  function destroySegment(segmentHandle) {
+    if (!segmentHandle) {
+      return;
+    }
+    for (const activeRenderer of segmentHandle.renderers) {
+      if (activeRenderer.renderer.dispose) {
+        activeRenderer.renderer.dispose();
+      }
+      if (activeRenderer.canvasElement.parentNode === grid) {
+        grid.removeChild(activeRenderer.canvasElement);
+      }
+    }
+  }
+
+  if (window.AMBIENT_CANVAS_RECORD_DRIVER) {
+    window.AMBIENT_CANVAS_RECORD_DRIVER({
+      totalCycleSeconds: totalCycleSeconds,
+      resolveSegment: resolveSegment,
+      applyLayout: applyLayout,
+      buildSegment: buildSegment,
+      destroySegment: destroySegment,
+    });
+    return;
+  }
+
+  let activeSegmentHandle = null;
+  let activeSegmentIndex = null;
+
+  function activateSegment(compositionIndex) {
+    destroySegment(activeSegmentHandle);
+    applyLayout(compositionIndex);
+    activeSegmentHandle = buildSegment(compositionIndex);
+    activeSegmentIndex = compositionIndex;
   }
 
   function handleWindowResize() {
     currentDevicePixelRatio = window.devicePixelRatio || 1;
-    for (const activeRenderer of activeRenderers) {
+    if (!activeSegmentHandle) {
+      return;
+    }
+    for (const activeRenderer of activeSegmentHandle.renderers) {
       sizeCanvasToPane(activeRenderer.canvasElement);
       activeRenderer.renderer.resize(
         activeRenderer.canvasElement.width,
@@ -79,6 +160,7 @@
       );
     }
   }
+
   let startTimestampMilliseconds = null;
   function renderFrame(timestampMilliseconds) {
     if (startTimestampMilliseconds === null) {
@@ -86,18 +168,14 @@
     }
     const elapsedSeconds =
       (timestampMilliseconds - startTimestampMilliseconds) / 1000.0;
-    for (const activeRenderer of activeRenderers) {
-      activeRenderer.renderer.render(elapsedSeconds);
+    const segment = resolveSegment(elapsedSeconds);
+    if (segment.index !== activeSegmentIndex) {
+      activateSegment(segment.index);
     }
-    if (window.AMBIENT_CANVAS_FRAME_OBSERVER) {
-      window.AMBIENT_CANVAS_FRAME_OBSERVER(activeRenderers, elapsedSeconds);
+    for (const activeRenderer of activeSegmentHandle.renderers) {
+      activeRenderer.renderer.render(segment.localElapsedSeconds);
     }
     window.requestAnimationFrame(renderFrame);
-  }
-
-  if (window.AMBIENT_CANVAS_RECORD_DRIVER) {
-    window.AMBIENT_CANVAS_RECORD_DRIVER(activeRenderers);
-    return;
   }
 
   window.addEventListener("resize", handleWindowResize);

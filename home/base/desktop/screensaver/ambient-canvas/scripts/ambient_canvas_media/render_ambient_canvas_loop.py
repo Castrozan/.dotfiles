@@ -5,7 +5,6 @@ import signal
 import subprocess
 import sys
 import tempfile
-import urllib.parse
 
 from ambient_canvas_browser import (
     read_screen_dimensions,
@@ -13,52 +12,18 @@ from ambient_canvas_browser import (
     resolve_centered_window_geometry,
     resolve_chromium_browser_application,
 )
+from recorded_loop_capture_plan import (
+    DEFAULT_CAPTURE_DURATION_SECONDS,
+    DEFAULT_CAPTURE_FRAMES_PER_SECOND,
+    build_record_browser_arguments,
+    build_record_index_url,
+    resolve_minimum_recorded_bytes,
+    resolve_upload_wait_budget_seconds,
+)
 from recorded_loop_upload_server import (
     start_recorded_loop_upload_server,
     write_recorded_loop_pointer_files,
 )
-
-DEFAULT_CAPTURE_DURATION_SECONDS = 30
-DEFAULT_CAPTURE_FRAMES_PER_SECOND = 30
-CHROME_STARTUP_AND_UPLOAD_GRACE_SECONDS = 45
-DETERMINISTIC_RENDER_WALL_CLOCK_MULTIPLIER = 4
-MINIMUM_RECORDED_BYTES_PER_SECOND = 20000
-
-
-def build_record_index_url(
-    index_file_url, upload_url, duration_seconds, frames_per_second
-):
-    record_query = urllib.parse.urlencode(
-        {
-            "record": "1",
-            "seconds": str(duration_seconds),
-            "fps": str(frames_per_second),
-            "uploadUrl": upload_url,
-        }
-    )
-    return f"{index_file_url}?{record_query}"
-
-
-def build_record_browser_arguments(
-    browser_executable_path, record_index_url, throwaway_profile_directory, geometry
-):
-    window_width, window_height, window_left, window_top = geometry
-    return [
-        browser_executable_path,
-        f"--app={record_index_url}",
-        f"--user-data-dir={throwaway_profile_directory}",
-        f"--window-size={window_width},{window_height}",
-        f"--window-position={window_left},{window_top}",
-        "--no-first-run",
-        "--no-default-browser-check",
-        "--autoplay-policy=no-user-gesture-required",
-        "--disable-translate",
-        "--use-gl=angle",
-        "--disable-background-timer-throttling",
-        "--disable-backgrounding-occluded-windows",
-        "--disable-renderer-backgrounding",
-        "--disable-features=CalculateNativeWinOcclusion",
-    ]
 
 
 def terminate_browser_process(browser_process, throwaway_profile_directory):
@@ -120,8 +85,7 @@ def render_recorded_loop(
 
     try:
         upload_arrived = upload_server.upload_completed_event.wait(
-            duration_seconds * DETERMINISTIC_RENDER_WALL_CLOCK_MULTIPLIER
-            + CHROME_STARTUP_AND_UPLOAD_GRACE_SECONDS
+            resolve_upload_wait_budget_seconds(duration_seconds)
         )
     finally:
         terminate_browser_process(browser_process, throwaway_profile_directory)
@@ -133,9 +97,7 @@ def render_recorded_loop(
         print("render-ambient-canvas-loop: recording did not complete", file=sys.stderr)
         return None
 
-    if os.path.getsize(staging_path) < (
-        duration_seconds * MINIMUM_RECORDED_BYTES_PER_SECOND
-    ):
+    if os.path.getsize(staging_path) < resolve_minimum_recorded_bytes(duration_seconds):
         os.remove(staging_path)
         print(
             "render-ambient-canvas-loop: recording had too little motion",

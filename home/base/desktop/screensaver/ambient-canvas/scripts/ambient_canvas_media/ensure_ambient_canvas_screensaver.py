@@ -9,9 +9,11 @@ from display_ambient_canvas_loop import (
     DEFAULT_PLAYER_BINARY_PATH,
     launch_display,
 )
-from render_ambient_canvas_loop import (
+from recorded_loop_capture_plan import (
     DEFAULT_CAPTURE_DURATION_SECONDS,
     DEFAULT_CAPTURE_FRAMES_PER_SECOND,
+)
+from render_ambient_canvas_loop import (
     render_recorded_loop,
     resolve_index_file_path,
 )

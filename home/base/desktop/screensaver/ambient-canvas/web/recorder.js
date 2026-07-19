@@ -4,7 +4,8 @@
     return;
   }
 
-  const captureDurationSeconds = Number(recordParameters.get("seconds")) || 30;
+  const explicitCaptureDurationSeconds =
+    Number(recordParameters.get("seconds")) || 0;
   const captureFramesPerSecond = Number(recordParameters.get("fps")) || 30;
   const uploadUrl = recordParameters.get("uploadUrl") || "";
 
@@ -31,19 +32,15 @@
     });
   }
 
-  async function driveDeterministicRecording(activeRenderers) {
+  async function driveDeterministicRecording(playbackController) {
     const grid = compositor.forceDeterministicGridLayout(
       outputPixelWidth,
       outputPixelHeight,
     );
-    await nextAnimationFrame();
-    const panePlacements = compositor.resolveFixedResolutionPanePlacements(
-      activeRenderers,
-      grid,
-      outputPixelWidth,
-      outputPixelHeight,
-      contentFillFraction,
-    );
+    const captureDurationSeconds =
+      explicitCaptureDurationSeconds > 0
+        ? explicitCaptureDurationSeconds
+        : playbackController.totalCycleSeconds;
     const recordContext = compositor.createRecordCanvasContext(
       outputPixelWidth,
       outputPixelHeight,
@@ -63,12 +60,32 @@
       keyFrameIntervalSeconds * captureFramesPerSecond,
     );
 
+    let activeSegmentHandle = null;
+    let activeSegmentIndex = null;
+    let panePlacements = [];
+
     for (let frameIndex = 0; frameIndex < totalFrameCount; frameIndex++) {
-      const elapsedSeconds = frameIndex / captureFramesPerSecond;
+      const segment = playbackController.resolveSegment(
+        frameIndex / captureFramesPerSecond,
+      );
+      if (segment.index !== activeSegmentIndex) {
+        playbackController.destroySegment(activeSegmentHandle);
+        playbackController.applyLayout(segment.index);
+        await nextAnimationFrame();
+        activeSegmentHandle = playbackController.buildSegment(segment.index);
+        activeSegmentIndex = segment.index;
+        panePlacements = compositor.resolveFixedResolutionPanePlacements(
+          activeSegmentHandle.renderers,
+          grid,
+          outputPixelWidth,
+          outputPixelHeight,
+          contentFillFraction,
+        );
+      }
       compositor.renderFixedResolutionFrame(
         recordContext,
         panePlacements,
-        elapsedSeconds,
+        segment.localElapsedSeconds,
         outputPixelWidth,
         outputPixelHeight,
       );
@@ -88,15 +105,16 @@
       }
     }
 
+    playbackController.destroySegment(activeSegmentHandle);
     await videoEncoder.flush();
     muxer.finalize();
     await encoder.uploadEncodedLoop(muxer.target.buffer, uploadUrl);
   }
 
   window.AMBIENT_CANVAS_RECORD_DRIVER = function startDeterministicRecording(
-    activeRenderers,
+    playbackController,
   ) {
-    driveDeterministicRecording(activeRenderers).catch(
+    driveDeterministicRecording(playbackController).catch(
       function reportRecordingFailure(recordingError) {
         console.error("ambient-canvas record: driver failed", recordingError);
       },
