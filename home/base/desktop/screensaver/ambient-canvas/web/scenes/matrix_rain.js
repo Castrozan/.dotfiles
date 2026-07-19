@@ -5,7 +5,8 @@
   const katakanaGlyphRangeStart = 0x30a0;
   const katakanaGlyphRangeEnd = 0x30ff;
   const supplementalGlyphCharacters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  const trailFadeFillStyle = "rgba(10, 26, 47, 0.10)";
+  const defaultBackgroundColorChannels = "15, 34, 58";
+  const trailFadeOpacity = 0.1;
   const leadingGlyphFillStyle = "#c8ffd0";
   const trailingGlyphColorChannels = "47, 191, 95";
   const minimumFallSpeedRowsPerSecond = 8;
@@ -38,6 +39,9 @@
   function createMatrixRainRenderer(canvasElement, options) {
     const drawingContext = canvasElement.getContext("2d");
     const devicePixelRatio = options.devicePixelRatio || 1;
+    const trailFadeFillStyle = `rgba(${
+      options.backgroundColorChannels || defaultBackgroundColorChannels
+    }, ${trailFadeOpacity})`;
     const fontSizeInDevicePixels = Math.round(
       baseFontSizeInLogicalPixels * devicePixelRatio,
     );
