@@ -74,3 +74,36 @@ def test_generated_config_prunes_stale_brave_devtools_entry(tmp_path):
     )
     generated_config = generate_codex_config(tmp_path)
     assert "brave-devtools" not in generated_config["mcp_servers"]
+
+
+def test_generated_config_prunes_private_matching_entries(tmp_path):
+    config_path = tmp_path / ".codex" / "config.toml"
+    config_path.parent.mkdir(parents=True, exist_ok=True)
+    config_path.write_text(
+        """
+[projects."/repo/work-only-service"]
+trust_level = "trusted"
+
+[projects."/repo/personal-service"]
+trust_level = "trusted"
+
+[mcp_servers.work-server]
+command = "work-mcp"
+args = ["work-only"]
+
+[mcp_servers.personal-server]
+command = "personal-mcp"
+args = []
+""".strip(),
+        encoding="utf-8",
+    )
+
+    generated_config = generate_codex_config(
+        tmp_path,
+        {"CODEX_PRUNED_CONFIG_SUBSTRINGS_JSON": '["work-only"]'},
+    )
+
+    assert "/repo/work-only-service" not in generated_config["projects"]
+    assert "/repo/personal-service" in generated_config["projects"]
+    assert "work-server" not in generated_config["mcp_servers"]
+    assert "personal-server" in generated_config["mcp_servers"]

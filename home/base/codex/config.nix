@@ -13,6 +13,14 @@ let
     inherit pkgs nodejs homeDir;
     chromePackage = latest.google-chrome;
   };
+  privatePrunedConfigSubstringsPath = ../../../private-config/claude/prohibited-words.txt;
+  privatePrunedConfigSubstrings =
+    if builtins.pathExists privatePrunedConfigSubstringsPath then
+      lib.filter (line: line != "" && !(lib.hasPrefix "#" line)) (
+        lib.splitString "\n" (builtins.readFile privatePrunedConfigSubstringsPath)
+      )
+    else
+      [ ];
   codexConfigGenerator = ./config-generator;
   codexDefaultModel = "gpt-5.6-sol";
   codexDeveloperInstructions = "Operate pragmatically: keep diffs small, verify with fast checks, and prefer repo-local truth (AGENTS.md, bin/, home/{base,linux,darwin}/). Use profiles: fast (default), deep, web.";
@@ -26,6 +34,7 @@ let
   vivaldiDevtoolsMcpStdioArgsJson = builtins.toJSON (
     if includeVivaldiDevtoolsMcp then browserMcp.vivaldiDevtoolsMcpStdioArgs else [ ]
   );
+  prunedConfigSubstringsJson = builtins.toJSON privatePrunedConfigSubstrings;
 in
 {
   home.activation.codexBaselineConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
@@ -35,6 +44,7 @@ in
     CODEX_CHROME_DEVTOOLS_MCP_ARGS_JSON=${lib.escapeShellArg chromeDevtoolsMcpStdioArgsJson} \
     CODEX_VIVALDI_DEVTOOLS_MCP_COMMAND=${lib.escapeShellArg vivaldiDevtoolsMcpStdioCommand} \
     CODEX_VIVALDI_DEVTOOLS_MCP_ARGS_JSON=${lib.escapeShellArg vivaldiDevtoolsMcpStdioArgsJson} \
+    CODEX_PRUNED_CONFIG_SUBSTRINGS_JSON=${lib.escapeShellArg prunedConfigSubstringsJson} \
     ${pkgs.python3}/bin/python3 ${codexConfigGenerator}/generate_config.py
   '';
 }
