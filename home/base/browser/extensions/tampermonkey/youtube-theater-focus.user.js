@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         YouTube Theater Focus Layout
-// @version      1.2.0
+// @version      1.2.1
 // @description  Theater player fills the viewport (title below the fold), header 20% smaller, comments behind a tab, suggestions as a big centered grid, and a watch page never plays until you interact with its tab
 // @author       zanoni
 // @match        https://www.youtube.com/*
@@ -18,15 +18,25 @@
       document.querySelector("video")
     );
   }
-  function releaseAutoplay() {
+  function logRelease(reason) {
+    try {
+      const log = JSON.parse(localStorage.getItem("ytweakReleaseLog") || "[]");
+      log.push([reason, Math.round(performance.now()), location.href]);
+      localStorage.setItem("ytweakReleaseLog", JSON.stringify(log.slice(-20)));
+    } catch (ignored) {}
+  }
+  function releaseAutoplay(reason) {
     if (autoplayReleased) return;
     autoplayReleased = true;
+    logRelease(reason);
     const held = autoplayHeldVideo;
     autoplayHeldVideo = null;
     if (held && held.paused) nativeMediaPlay.call(held).catch(() => {});
   }
   function onTrustedInteraction(event) {
-    if (!event || event.isTrusted !== false) releaseAutoplay();
+    if (!event || event.isTrusted !== false) {
+      releaseAutoplay("interaction:" + (event ? event.type : "manual"));
+    }
   }
   HTMLMediaElement.prototype.play = function ytweakGuardedPlay() {
     if (!autoplayReleased) {
@@ -53,9 +63,10 @@
     true,
   );
   document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible") releaseAutoplay();
+    if (document.visibilityState === "visible")
+      releaseAutoplay("visibilitychange");
   });
-  ["pointerdown", "pointermove", "keydown", "wheel"].forEach((type) =>
+  ["pointerdown", "keydown", "wheel"].forEach((type) =>
     document.addEventListener(type, onTrustedInteraction, true),
   );
   setInterval(() => {
