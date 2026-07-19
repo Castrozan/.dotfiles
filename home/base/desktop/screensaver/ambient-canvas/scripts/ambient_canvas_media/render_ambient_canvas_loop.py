@@ -24,6 +24,10 @@ from recorded_loop_upload_server import (
     start_recorded_loop_upload_server,
     write_recorded_loop_pointer_files,
 )
+from scene_video_cache import (
+    download_missing_scene_videos,
+    resolve_scene_video_directory,
+)
 
 
 def terminate_browser_process(browser_process, throwaway_profile_directory):
@@ -58,8 +62,11 @@ def render_recorded_loop(
 
     os.makedirs(output_directory, exist_ok=True)
     served_web_directory = os.path.dirname(index_file_path)
+    download_missing_scene_videos(served_web_directory, output_directory)
     upload_server = start_recorded_loop_upload_server(
-        output_directory, served_web_directory
+        output_directory,
+        served_web_directory,
+        resolve_scene_video_directory(output_directory),
     )
     throwaway_profile_directory = tempfile.mkdtemp(prefix="ambient-canvas-record-")
     record_page_url = (

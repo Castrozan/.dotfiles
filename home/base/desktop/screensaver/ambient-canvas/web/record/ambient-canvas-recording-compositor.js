@@ -62,6 +62,17 @@ window.AmbientCanvasRecordingCompositor = (function buildCompositor() {
     return recordCanvas.getContext("2d");
   }
 
+  function prepareFixedResolutionFrame(panePlacements, localElapsedSeconds) {
+    return Promise.all(
+      panePlacements.map(function prepareOnePane(panePlacement) {
+        if (!panePlacement.renderer.prepareFrame) {
+          return Promise.resolve();
+        }
+        return panePlacement.renderer.prepareFrame(localElapsedSeconds);
+      }),
+    );
+  }
+
   function renderFixedResolutionFrame(
     recordContext,
     panePlacements,
@@ -87,6 +98,7 @@ window.AmbientCanvasRecordingCompositor = (function buildCompositor() {
     forceDeterministicGridLayout,
     resolveFixedResolutionPanePlacements,
     createRecordCanvasContext,
+    prepareFixedResolutionFrame,
     renderFixedResolutionFrame,
   };
 })();

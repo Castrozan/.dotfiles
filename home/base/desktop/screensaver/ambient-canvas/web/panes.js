@@ -8,6 +8,54 @@ window.AMBIENT_CANVAS_PLAYLIST = [
   { panes: [{ scene: "bonsai" }] },
   { panes: [{ scene: "matrix" }] },
   {
+    panes: [
+      {
+        scene: "bad-apple",
+        options: { videoId: "FtutLA63Cp8", startSeconds: 30 },
+      },
+    ],
+  },
+  {
+    panes: [
+      {
+        scene: "bad-apple",
+        options: { videoId: "CqaAs_3azSs", startSeconds: 45 },
+      },
+    ],
+  },
+  {
+    panes: [
+      {
+        scene: "bad-apple",
+        options: { videoId: "lX44CAz-JhU", startSeconds: 40 },
+      },
+    ],
+  },
+  {
+    panes: [
+      {
+        scene: "bad-apple",
+        options: { videoId: "djV11Xbc914", startSeconds: 50 },
+      },
+    ],
+  },
+  {
+    panes: [
+      {
+        scene: "bad-apple",
+        options: { videoId: "OBk3ynRbtsw", startSeconds: 25 },
+      },
+    ],
+  },
+  {
+    panes: [
+      {
+        scene: "bad-apple",
+        options: { videoId: "I03xFqbxUp8", startSeconds: 60 },
+      },
+    ],
+  },
+  {
     durationSeconds: 30,
     layout: {
       columnTemplate: "2fr 1fr",

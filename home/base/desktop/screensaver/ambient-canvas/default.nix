@@ -12,8 +12,11 @@ let
   ambientCanvasSourceIdentifier = "${ambientCanvasWebRoot}";
   ambientCanvasPlayerBinaryPath = "${config.home.homeDirectory}/.local/bin/ambient-canvas-player";
 
+  ambientCanvasSceneVideoDownloaderPath = lib.makeBinPath [ pkgs.yt-dlp ];
+
   ambientCanvasScreensaverLauncher = pkgs.writeShellScriptBin "ambient-canvas" ''
     export AMBIENT_CANVAS_INDEX="${ambientCanvasIndexFile}"
+    export PATH="${ambientCanvasSceneVideoDownloaderPath}:$PATH"
     exec ${pkgs.python312}/bin/python3 \
       ${ambientCanvasMediaScriptsDirectory}/ensure_ambient_canvas_screensaver.py \
       --output-directory "${ambientCanvasStateDirectory}" \
@@ -24,6 +27,7 @@ let
 
   ambientCanvasLoopRenderer = pkgs.writeShellScriptBin "ambient-canvas-render" ''
     export AMBIENT_CANVAS_INDEX="${ambientCanvasIndexFile}"
+    export PATH="${ambientCanvasSceneVideoDownloaderPath}:$PATH"
     exec ${pkgs.python312}/bin/python3 \
       ${ambientCanvasMediaScriptsDirectory}/render_ambient_canvas_loop.py \
       --output-directory "${ambientCanvasStateDirectory}" \

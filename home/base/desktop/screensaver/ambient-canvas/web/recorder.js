@@ -22,7 +22,16 @@
 
   window.AMBIENT_CANVAS_RENDERER_OPTION_OVERRIDES = {
     preserveDrawingBuffer: true,
+    deterministicPlayback: true,
   };
+
+  function waitForSegmentAssetsToLoad(segmentHandle) {
+    return Promise.all(
+      segmentHandle.renderers.map(function awaitOneRenderer(activeRenderer) {
+        return activeRenderer.renderer.ready || Promise.resolve();
+      }),
+    );
+  }
 
   function nextAnimationFrame() {
     return new Promise(function resolveOnNextFrame(resolve) {
@@ -74,6 +83,7 @@
         await nextAnimationFrame();
         activeSegmentHandle = playbackController.buildSegment(segment.index);
         activeSegmentIndex = segment.index;
+        await waitForSegmentAssetsToLoad(activeSegmentHandle);
         panePlacements = compositor.resolveFixedResolutionPanePlacements(
           activeSegmentHandle.renderers,
           grid,
@@ -82,6 +92,10 @@
           contentFillFraction,
         );
       }
+      await compositor.prepareFixedResolutionFrame(
+        panePlacements,
+        segment.localElapsedSeconds,
+      );
       compositor.renderFixedResolutionFrame(
         recordContext,
         panePlacements,
