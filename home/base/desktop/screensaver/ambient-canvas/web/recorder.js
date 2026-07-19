@@ -11,7 +11,6 @@
 
   const outputPixelWidth = 1920;
   const outputPixelHeight = 1080;
-  const contentFillFraction = 0.9;
   const targetBitsPerPixelPerFrame = 0.35;
   const keyFrameIntervalSeconds = 2;
   const encoderQueueHighWatermark = 8;
@@ -89,7 +88,6 @@
           grid,
           outputPixelWidth,
           outputPixelHeight,
-          contentFillFraction,
         );
       }
       await compositor.prepareFixedResolutionFrame(

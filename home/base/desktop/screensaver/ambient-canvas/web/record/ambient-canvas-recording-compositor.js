@@ -14,13 +14,10 @@ window.AmbientCanvasRecordingCompositor = (function buildCompositor() {
     grid,
     outputPixelWidth,
     outputPixelHeight,
-    contentFillFraction,
   ) {
     const gridBounds = grid.getBoundingClientRect();
     const horizontalScale = outputPixelWidth / gridBounds.width;
     const verticalScale = outputPixelHeight / gridBounds.height;
-    const horizontalMargin = (outputPixelWidth * (1 - contentFillFraction)) / 2;
-    const verticalMargin = (outputPixelHeight * (1 - contentFillFraction)) / 2;
     const panePlacements = [];
     for (const activeRenderer of activeRenderers) {
       const bounds = activeRenderer.canvasElement.getBoundingClientRect();
@@ -39,17 +36,13 @@ window.AmbientCanvasRecordingCompositor = (function buildCompositor() {
         renderer: activeRenderer.renderer,
         canvasElement: activeRenderer.canvasElement,
         destinationLeft: Math.round(
-          horizontalMargin +
-            (bounds.left - gridBounds.left) *
-              horizontalScale *
-              contentFillFraction,
+          (bounds.left - gridBounds.left) * horizontalScale,
         ),
         destinationTop: Math.round(
-          verticalMargin +
-            (bounds.top - gridBounds.top) * verticalScale * contentFillFraction,
+          (bounds.top - gridBounds.top) * verticalScale,
         ),
-        destinationWidth: Math.round(panedPixelWidth * contentFillFraction),
-        destinationHeight: Math.round(panedPixelHeight * contentFillFraction),
+        destinationWidth: panedPixelWidth,
+        destinationHeight: panedPixelHeight,
       });
     }
     return panePlacements;

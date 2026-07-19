@@ -87,7 +87,7 @@
   };
 
   const YURUYURAU_POINT_COUNT = 20000;
-  const FIGURE_FILL_RATIO = 0.44;
+  const FIGURE_FILL_RATIO = 0.4;
   const TIME_STEP_PER_SECOND = ((2.0 * Math.PI) / 45.0) * 15.0;
 
   function compileShader(gl, shaderType, shaderSource) {
