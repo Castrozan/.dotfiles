@@ -118,3 +118,24 @@ def test_read_installed_third_party_plugins_missing_manifest_returns_empty(
     )
 
     assert read_installed_third_party_plugins() == []
+
+
+def test_read_installed_third_party_plugins_prunes_private_matching_names(
+    tmp_path, monkeypatch
+):
+    private_install = tmp_path / "work-only"
+    private_install.mkdir()
+    personal_install = tmp_path / "personal"
+    personal_install.mkdir()
+    _write_installed_plugins(
+        tmp_path,
+        monkeypatch,
+        {
+            "work-only@team": [{"installPath": str(private_install)}],
+            "personal@team": [{"installPath": str(personal_install)}],
+        },
+    )
+
+    discovered = read_installed_third_party_plugins(("WORK-ONLY",))
+
+    assert [plugin["name"] for plugin in discovered] == ["personal"]

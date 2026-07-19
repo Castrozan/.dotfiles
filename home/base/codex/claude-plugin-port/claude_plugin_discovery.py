@@ -11,7 +11,7 @@ def strip_relative_prefix(relative_path):
     return relative_path[2:] if relative_path.startswith("./") else relative_path
 
 
-def read_installed_third_party_plugins():
+def read_installed_third_party_plugins(pruned_plugin_substrings=()):
     if not installed_plugins_manifest.exists():
         return []
     try:
@@ -21,6 +21,13 @@ def read_installed_third_party_plugins():
     third_party_plugins = []
     for plugin_key, install_records in manifest.get("plugins", {}).items():
         if plugin_key.endswith(OFFICIAL_MARKETPLACE_SUFFIX):
+            continue
+        plugin_name = plugin_key.split("@", 1)[0]
+        casefolded_plugin_name = plugin_name.casefold()
+        if any(
+            pruned_substring.casefold() in casefolded_plugin_name
+            for pruned_substring in pruned_plugin_substrings
+        ):
             continue
         if not install_records:
             continue
@@ -33,7 +40,7 @@ def read_installed_third_party_plugins():
             continue
         third_party_plugins.append(
             {
-                "name": plugin_key.split("@", 1)[0],
+                "name": plugin_name,
                 "install_directory": install_directory,
                 "version_source": (
                     install_record.get("gitCommitSha")

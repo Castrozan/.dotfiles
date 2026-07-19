@@ -13,14 +13,7 @@ let
     inherit pkgs nodejs homeDir;
     chromePackage = latest.google-chrome;
   };
-  privatePrunedConfigSubstringsPath = ../../../private-config/claude/prohibited-words.txt;
-  privatePrunedConfigSubstrings =
-    if builtins.pathExists privatePrunedConfigSubstringsPath then
-      lib.filter (line: line != "" && !(lib.hasPrefix "#" line)) (
-        lib.splitString "\n" (builtins.readFile privatePrunedConfigSubstringsPath)
-      )
-    else
-      [ ];
+  privatePrunedConfigSubstrings = import ./private-pruned-config-substrings.nix { inherit lib; };
   codexConfigGenerator = ./config-generator;
   codexDefaultModel = "gpt-5.6-sol";
   codexDeveloperInstructions = "Operate pragmatically: keep diffs small, verify with fast checks, and prefer repo-local truth (AGENTS.md, bin/, home/{base,linux,darwin}/). Use profiles: fast (default), deep, web.";
