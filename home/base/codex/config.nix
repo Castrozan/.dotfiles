@@ -16,6 +16,7 @@ let
   codexDefaultModel = "gpt-5.6-sol";
   includeVivaldiDevtoolsMcp = hostname == "chise";
   codexConfigTomlFormat = pkgs.formats.toml { };
+  codexConfigSeedPython = pkgs.python3.withPackages (pythonPackages: [ pythonPackages.tomli-w ]);
   codexConfigSource = codexConfigTomlFormat.generate "codex-config.toml" {
     approval_policy = "never";
     model = codexDefaultModel;
@@ -65,7 +66,7 @@ in
     data = ''
       export CODEX_CONFIG="$HOME/.codex/config.toml"
       export NIX_SOURCE="$HOME/.codex/config.toml.nix-source"
-      ${pkgs.python3}/bin/python3 ${./config/seed_codex_config_mutable.py}
+      ${codexConfigSeedPython}/bin/python3 ${./config/seed_codex_config_mutable.py}
     '';
   };
 }

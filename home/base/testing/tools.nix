@@ -8,6 +8,7 @@ let
   pytestWithScriptDependencies = pkgs.python312.withPackages (pythonPackages: [
     pythonPackages.pytest
     pythonPackages.numpy
+    pythonPackages.tomli-w
   ]);
 
   dotfiles-test = pkgs.writeShellScriptBin "dotfiles-test" ''
