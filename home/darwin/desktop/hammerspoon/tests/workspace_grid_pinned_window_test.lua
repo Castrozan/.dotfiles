@@ -3,7 +3,8 @@ package.path = moduleDirectory .. "?.lua;" .. package.path
 
 local currentlyFocusedWindowId = nil
 
-local function makeFakeWindow(windowId, windowTitle)
+local function makeFakeWindow(windowId, windowTitle, applicationName)
+	local resolvedApplicationName = applicationName or "FakeApp"
 	local fakeWindow = { storedFrame = { x = 100, y = 100, w = 400, h = 300 } }
 	function fakeWindow:id()
 		return windowId
@@ -33,7 +34,7 @@ local function makeFakeWindow(windowId, windowTitle)
 	function fakeWindow:application()
 		return {
 			name = function()
-				return "FakeApp"
+				return resolvedApplicationName
 			end,
 		}
 	end
@@ -45,7 +46,8 @@ end
 
 local ambientCanvasWindow = makeFakeWindow(1, "ambient-canvas-gpu-screensaver")
 local ordinaryWindow = makeFakeWindow(2, "ambient-canvas - Google Chrome - Lucas")
-local allManagedWindowsInIterationOrder = { ambientCanvasWindow, ordinaryWindow }
+local titlelessPlayerWindow = makeFakeWindow(3, "", "ambient-canvas-player")
+local allManagedWindowsInIterationOrder = { ambientCanvasWindow, ordinaryWindow, titlelessPlayerWindow }
 
 local function findWindowById(targetWindowId)
 	for _, window in ipairs(allManagedWindowsInIterationOrder) do
@@ -155,6 +157,15 @@ expectEqual(
 	windowIsOnWorkspace(2, pinnedWorkspaceNumber)
 )
 expectEqual("that ordinary window stays on the workspace it was created on", true, windowIsOnWorkspace(2, 3))
+
+workspaceGrid.switchToWorkspace(5)
+workspaceGrid.onWindowCreated(titlelessPlayerWindow)
+expectEqual(
+	"a player window with no title yet still pins to workspace 11 by application name",
+	true,
+	windowIsOnWorkspace(3, pinnedWorkspaceNumber)
+)
+expectEqual("the titleless player window is absent from its creation workspace 5", false, windowIsOnWorkspace(3, 5))
 
 workspaceGrid.switchToWorkspace(3)
 workspaceGrid.gatherAllWindowsToCurrentWorkspace()
