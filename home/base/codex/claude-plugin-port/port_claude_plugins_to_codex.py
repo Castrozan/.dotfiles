@@ -1,9 +1,8 @@
-import json
-import os
 import shutil
 
 from claude_plugin_discovery import (
     read_claude_plugin_manifest,
+    read_enabled_plugin_keys,
     read_installed_third_party_plugins,
     resolve_component_directory,
 )
@@ -19,21 +18,12 @@ from configuration import (
     ported_marketplace_root,
 )
 
-pruned_config_substrings = tuple(
-    substring.casefold()
-    for substring in json.loads(
-        os.environ.get("CODEX_PRUNED_CONFIG_SUBSTRINGS_JSON", "[]")
-    )
-    if isinstance(substring, str) and substring
-)
-
 
 def collect_ported_plugins():
     ported_marketplace_entries = []
     ported_plugin_names = []
-    for third_party_plugin in read_installed_third_party_plugins(
-        pruned_config_substrings
-    ):
+    enabled_plugin_keys = read_enabled_plugin_keys()
+    for third_party_plugin in read_installed_third_party_plugins(enabled_plugin_keys):
         install_directory = third_party_plugin["install_directory"]
         claude_plugin_manifest = read_claude_plugin_manifest(install_directory)
         skills_directory = resolve_component_directory(
@@ -105,7 +95,7 @@ def main():
         if ported_marketplace_is_registered():
             run_codex_plugin_command(["marketplace", "remove", PORTED_MARKETPLACE_NAME])
         print(
-            "codex-claude-plugin-port: no third-party Claude plugins with skills or commands to port"
+            "codex-claude-plugin-port: no enabled third-party Claude plugins with skills or commands to port"
         )
         return 0
 

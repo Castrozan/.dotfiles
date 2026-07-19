@@ -3,6 +3,7 @@ import pathlib
 
 from configuration import (
     OFFICIAL_MARKETPLACE_SUFFIX,
+    claude_settings_nix_source_path,
     installed_plugins_manifest,
 )
 
@@ -11,7 +12,22 @@ def strip_relative_prefix(relative_path):
     return relative_path[2:] if relative_path.startswith("./") else relative_path
 
 
-def read_installed_third_party_plugins(pruned_plugin_substrings=()):
+def read_enabled_plugin_keys():
+    if not claude_settings_nix_source_path.exists():
+        return set()
+    try:
+        settings = json.loads(claude_settings_nix_source_path.read_text())
+    except json.JSONDecodeError:
+        return set()
+    enabled_plugins = settings.get("enabledPlugins", {})
+    if not isinstance(enabled_plugins, dict):
+        return set()
+    return {
+        plugin_key for plugin_key, enabled in enabled_plugins.items() if enabled is True
+    }
+
+
+def read_installed_third_party_plugins(enabled_plugin_keys=None):
     if not installed_plugins_manifest.exists():
         return []
     try:
@@ -22,13 +38,9 @@ def read_installed_third_party_plugins(pruned_plugin_substrings=()):
     for plugin_key, install_records in manifest.get("plugins", {}).items():
         if plugin_key.endswith(OFFICIAL_MARKETPLACE_SUFFIX):
             continue
-        plugin_name = plugin_key.split("@", 1)[0]
-        casefolded_plugin_name = plugin_name.casefold()
-        if any(
-            pruned_substring.casefold() in casefolded_plugin_name
-            for pruned_substring in pruned_plugin_substrings
-        ):
+        if enabled_plugin_keys is not None and plugin_key not in enabled_plugin_keys:
             continue
+        plugin_name = plugin_key.split("@", 1)[0]
         if not install_records:
             continue
         install_record = install_records[0]

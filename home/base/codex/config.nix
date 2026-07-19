@@ -7,37 +7,62 @@
   ...
 }:
 let
-  nodejs = pkgs.nodejs_22;
   homeDir = config.home.homeDirectory;
   browserMcp = import ../../../agents/skills/browser/install {
-    inherit pkgs nodejs homeDir;
+    inherit pkgs homeDir;
+    nodejs = pkgs.nodejs_22;
     chromePackage = latest.google-chrome;
   };
-  privatePrunedConfigSubstrings = import ./private-pruned-config-substrings.nix { inherit lib; };
-  codexConfigGenerator = ./config-generator;
   codexDefaultModel = "gpt-5.6-sol";
-  codexDeveloperInstructions = "Operate pragmatically: keep diffs small, verify with fast checks, and prefer repo-local truth (AGENTS.md, bin/, home/{base,linux,darwin}/). Use profiles: fast (default), deep, web.";
-  inherit (browserMcp)
-    chromeDevtoolsMcpStdioCommand
-    ;
   includeVivaldiDevtoolsMcp = hostname == "chise";
-  vivaldiDevtoolsMcpStdioCommand =
-    if includeVivaldiDevtoolsMcp then browserMcp.vivaldiDevtoolsMcpStdioCommand else "";
-  chromeDevtoolsMcpStdioArgsJson = builtins.toJSON browserMcp.chromeDevtoolsMcpStdioArgs;
-  vivaldiDevtoolsMcpStdioArgsJson = builtins.toJSON (
-    if includeVivaldiDevtoolsMcp then browserMcp.vivaldiDevtoolsMcpStdioArgs else [ ]
-  );
-  prunedConfigSubstringsJson = builtins.toJSON privatePrunedConfigSubstrings;
+  codexConfigTomlFormat = pkgs.formats.toml { };
+  codexConfigSource = codexConfigTomlFormat.generate "codex-config.toml" {
+    approval_policy = "never";
+    model = codexDefaultModel;
+    model_reasoning_effort = "xhigh";
+    notify = [
+      "notify-send"
+      "--app-name"
+      "Codex"
+    ];
+    sandbox_mode = "danger-full-access";
+    features = {
+      apply_patch_freeform = true;
+      child_agents_md = true;
+      enable_fanout = true;
+      hooks = true;
+      multi_agent = true;
+      undo = true;
+    };
+    tui.show_tooltips = false;
+    projects = {
+      "${homeDir}".trust_level = "trusted";
+      "${homeDir}/.dotfiles".trust_level = "trusted";
+    };
+    mcp_servers = {
+      "chrome-devtools" = {
+        command = browserMcp.chromeDevtoolsMcpStdioCommand;
+        args = browserMcp.chromeDevtoolsMcpStdioArgs;
+      };
+    }
+    // lib.optionalAttrs includeVivaldiDevtoolsMcp {
+      "vivaldi-devtools" = {
+        command = browserMcp.vivaldiDevtoolsMcpStdioCommand;
+        args = browserMcp.vivaldiDevtoolsMcpStdioArgs;
+      };
+    };
+  };
 in
 {
-  home.activation.codexBaselineConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    CODEX_DEFAULT_MODEL=${lib.escapeShellArg codexDefaultModel} \
-    CODEX_DEVELOPER_INSTRUCTIONS=${lib.escapeShellArg codexDeveloperInstructions} \
-    CODEX_CHROME_DEVTOOLS_MCP_COMMAND=${lib.escapeShellArg chromeDevtoolsMcpStdioCommand} \
-    CODEX_CHROME_DEVTOOLS_MCP_ARGS_JSON=${lib.escapeShellArg chromeDevtoolsMcpStdioArgsJson} \
-    CODEX_VIVALDI_DEVTOOLS_MCP_COMMAND=${lib.escapeShellArg vivaldiDevtoolsMcpStdioCommand} \
-    CODEX_VIVALDI_DEVTOOLS_MCP_ARGS_JSON=${lib.escapeShellArg vivaldiDevtoolsMcpStdioArgsJson} \
-    CODEX_PRUNED_CONFIG_SUBSTRINGS_JSON=${lib.escapeShellArg prunedConfigSubstringsJson} \
-    ${pkgs.python3}/bin/python3 ${codexConfigGenerator}/generate_config.py
-  '';
+  home.file.".codex/config.toml.nix-source".source = codexConfigSource;
+
+  home.activation.seedCodexConfigAsMutableFile = {
+    after = [ "writeBoundary" ];
+    before = [ ];
+    data = ''
+      export CODEX_CONFIG="$HOME/.codex/config.toml"
+      export NIX_SOURCE="$HOME/.codex/config.toml.nix-source"
+      ${pkgs.python3}/bin/python3 ${./config/seed_codex_config_mutable.py}
+    '';
+  };
 }

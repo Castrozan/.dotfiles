@@ -2,6 +2,7 @@ import json
 
 import claude_plugin_discovery
 from claude_plugin_discovery import (
+    read_enabled_plugin_keys,
     read_installed_third_party_plugins,
     resolve_component_directory,
     strip_relative_prefix,
@@ -51,6 +52,42 @@ def _write_installed_plugins(tmp_path, monkeypatch, plugins):
     monkeypatch.setattr(
         claude_plugin_discovery, "installed_plugins_manifest", manifest_path
     )
+
+
+def _write_claude_settings(tmp_path, monkeypatch, settings):
+    settings_path = tmp_path / "settings.json.nix-source"
+    settings_path.write_text(json.dumps(settings))
+    monkeypatch.setattr(
+        claude_plugin_discovery, "claude_settings_nix_source_path", settings_path
+    )
+
+
+def test_read_enabled_plugin_keys_returns_only_explicitly_enabled_plugins(
+    tmp_path, monkeypatch
+):
+    _write_claude_settings(
+        tmp_path,
+        monkeypatch,
+        {
+            "enabledPlugins": {
+                "enabled@team": True,
+                "disabled@team": False,
+                "truthy@team": "yes",
+            }
+        },
+    )
+
+    assert read_enabled_plugin_keys() == {"enabled@team"}
+
+
+def test_read_enabled_plugin_keys_missing_settings_returns_empty(tmp_path, monkeypatch):
+    monkeypatch.setattr(
+        claude_plugin_discovery,
+        "claude_settings_nix_source_path",
+        tmp_path / "absent.json",
+    )
+
+    assert read_enabled_plugin_keys() == set()
 
 
 def test_read_installed_third_party_plugins_skips_official_and_invalid(
@@ -120,7 +157,7 @@ def test_read_installed_third_party_plugins_missing_manifest_returns_empty(
     assert read_installed_third_party_plugins() == []
 
 
-def test_read_installed_third_party_plugins_prunes_private_matching_names(
+def test_read_installed_third_party_plugins_includes_only_enabled_plugins(
     tmp_path, monkeypatch
 ):
     private_install = tmp_path / "work-only"
@@ -136,6 +173,6 @@ def test_read_installed_third_party_plugins_prunes_private_matching_names(
         },
     )
 
-    discovered = read_installed_third_party_plugins(("WORK-ONLY",))
+    discovered = read_installed_third_party_plugins({"personal@team"})
 
     assert [plugin["name"] for plugin in discovered] == ["personal"]

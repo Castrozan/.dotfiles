@@ -90,10 +90,26 @@ in
     mkEvalCheck "codex-global-agents-instructions" (builtins.hasAttr ".codex/AGENTS.md" cfg.home.file)
       "core agent rules should be deployed as codex global ~/.codex/AGENTS.md instructions";
 
+  codex-config-nix-source = mkEvalCheck "codex-config-nix-source" (
+    builtins.hasAttr ".codex/config.toml.nix-source" cfg.home.file
+    && !(builtins.hasAttr ".codex/config.toml" cfg.home.file)
+  ) "Codex config must deploy an authoritative nix-source while leaving the live TOML mutable";
+
+  codex-config-mutable-seed-activation = mkEvalCheck "codex-config-mutable-seed-activation" (
+    builtins.hasAttr "seedCodexConfigAsMutableFile" cfg.home.activation
+    && !(builtins.hasAttr "codexBaselineConfig" cfg.home.activation)
+  ) "Codex config must use Claude-style mutable seeding instead of the legacy generator activation";
+
+  codex-config-legacy-profiles-removed = mkEvalCheck "codex-config-legacy-profiles-removed" (
+    !(builtins.hasAttr ".codex/fast.config.toml" cfg.home.file)
+    && !(builtins.hasAttr ".codex/deep.config.toml" cfg.home.file)
+    && !(builtins.hasAttr ".codex/web.config.toml" cfg.home.file)
+  ) "Codex-only generated profiles must stay removed";
+
   codex-claude-plugin-port-activation =
     mkEvalCheck "codex-claude-plugin-port-activation"
       (builtins.hasAttr "codexClaudePluginPort" cfg.home.activation)
-      "third-party Claude Code plugins should be ported into Codex via an activation step";
+      "enabled third-party Claude Code plugins should be ported into Codex via an activation step";
 
   codex-hooks-config-managed-file =
     mkEvalCheck "codex-hooks-config-managed-file" (builtins.hasAttr ".codex/hooks.json" cfg.home.file)
