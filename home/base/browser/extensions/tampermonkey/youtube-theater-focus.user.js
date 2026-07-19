@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         YouTube Theater Focus Layout
-// @version      1.4.0
+// @version      1.5.0
 // @description  Theater player fills the viewport (title below the fold), header 20% smaller, comments behind a tab, suggestions as a big centered grid, and a page loaded into a hidden tab stays paused until that tab is first shown
 // @author       zanoni
 // @match        https://www.youtube.com/*
@@ -10,50 +10,92 @@
 (function () {
   "use strict";
   const nativeMediaPlay = HTMLMediaElement.prototype.play;
-  let playbackIsHeld = document.visibilityState === "hidden";
+  const nativeMediaPause = HTMLMediaElement.prototype.pause;
+  let playbackIsHeld =
+    document.visibilityState === "hidden" || document.prerendering === true;
   let heldVideo = null;
   let heldVideoWasMuted = false;
+  let heldVideoResumePosition = 0;
+  let escapedVideoObserver = null;
 
   function holdVideo(video) {
     if (heldVideo !== video) {
       heldVideo = video;
       heldVideoWasMuted = video.muted;
+      heldVideoResumePosition =
+        video.played && video.played.length > 0
+          ? video.played.start(0)
+          : video.currentTime;
     }
     try {
-      video.pause();
+      nativeMediaPause.call(video);
+      if (video.currentTime > heldVideoResumePosition + 0.05)
+        video.currentTime = heldVideoResumePosition;
     } catch (ignored) {}
   }
 
+  function holdEveryPlayingVideo() {
+    const videos = document.getElementsByTagName("video");
+    for (let index = 0; index < videos.length; index += 1)
+      if (!videos[index].paused) holdVideo(videos[index]);
+  }
+
+  function catchEscapedPlayback(event) {
+    if (playbackIsHeld && event.target instanceof HTMLMediaElement)
+      holdVideo(event.target);
+  }
+
+  function releaseHoldWhenShown() {
+    if (document.visibilityState === "visible") releaseHold();
+  }
+
+  function releaseHoldOnTrustedInteraction(event) {
+    if (event.isTrusted) releaseHold();
+  }
+
+  const holdListeners = [
+    ["play", catchEscapedPlayback, true],
+    ["playing", catchEscapedPlayback, true],
+    ["visibilitychange", releaseHoldWhenShown, false],
+    ["prerenderingchange", releaseHoldWhenShown, false],
+    ["pointerdown", releaseHoldOnTrustedInteraction, true],
+    ["keydown", releaseHoldOnTrustedInteraction, true],
+  ];
+
+  function releaseHold() {
+    if (!playbackIsHeld) return;
+    playbackIsHeld = false;
+    HTMLMediaElement.prototype.play = nativeMediaPlay;
+    if (escapedVideoObserver) escapedVideoObserver.disconnect();
+    holdListeners.forEach(([type, handler, capture]) =>
+      document.removeEventListener(type, handler, capture),
+    );
+    if (!heldVideo) return;
+    heldVideo.muted = heldVideoWasMuted;
+    const moviePlayer = document.getElementById("movie_player");
+    if (moviePlayer && typeof moviePlayer.playVideo === "function")
+      moviePlayer.playVideo();
+    else if (heldVideo.paused) nativeMediaPlay.call(heldVideo).catch(() => {});
+    heldVideo = null;
+  }
+
   if (playbackIsHeld) {
-    HTMLMediaElement.prototype.play = function playHeldWhileTabIsHidden() {
+    HTMLMediaElement.prototype.play = function playHeldUntilTabIsShown() {
       if (!playbackIsHeld) return nativeMediaPlay.apply(this, arguments);
       holdVideo(this);
       return Promise.reject(
-        new DOMException(
-          "play() held until this tab is shown",
-          "NotAllowedError",
-        ),
+        new DOMException("play() held until shown", "NotAllowedError"),
       );
     };
-    document.addEventListener(
-      "play",
-      (event) => {
-        if (playbackIsHeld && event.target instanceof HTMLMediaElement) {
-          holdVideo(event.target);
-        }
-      },
-      true,
+    holdListeners.forEach(([type, handler, capture]) =>
+      document.addEventListener(type, handler, capture),
     );
-    document.addEventListener("visibilitychange", function releaseWhenShown() {
-      if (document.visibilityState !== "visible") return;
-      playbackIsHeld = false;
-      HTMLMediaElement.prototype.play = nativeMediaPlay;
-      document.removeEventListener("visibilitychange", releaseWhenShown);
-      if (!heldVideo) return;
-      heldVideo.muted = heldVideoWasMuted;
-      if (heldVideo.paused) nativeMediaPlay.call(heldVideo).catch(() => {});
-      heldVideo = null;
+    escapedVideoObserver = new MutationObserver(holdEveryPlayingVideo);
+    escapedVideoObserver.observe(document.documentElement || document, {
+      childList: true,
+      subtree: true,
     });
+    holdEveryPlayingVideo();
   }
 
   const STYLE_ID = "ytweak-style";
@@ -73,13 +115,9 @@
     "ytd-watch-flexy #comments { display: none !important; }",
     "ytd-watch-flexy.ytweak-comments #comments { display: block !important; width: 100% !important; max-width: var(--ytweak-col) !important; margin: 0 auto !important; }",
     "ytd-watch-flexy.ytweak-comments #secondary { display: none !important; }",
-    "#" + TABS_ID + " { display: flex; gap: 8px; margin: 16px auto 8px; }",
-    "#" +
-      TABS_ID +
-      " button { font: 500 14px/1 Roboto, system-ui, sans-serif; padding: 10px 20px; border-radius: 18px; border: none; cursor: pointer; background: var(--yt-spec-badge-chip-background, #272727); color: var(--yt-spec-text-primary, #f1f1f1); transition: background .15s; }",
-    "#" +
-      TABS_ID +
-      " button.active { background: var(--yt-spec-call-to-action, #3ea6ff); color: #0f0f0f; }",
+    "#ytweak-tabs { display: flex; gap: 8px; margin: 16px auto 8px; }",
+    "#ytweak-tabs button { font: 500 14px/1 Roboto, system-ui, sans-serif; padding: 10px 20px; border-radius: 18px; border: none; cursor: pointer; background: var(--yt-spec-badge-chip-background, #272727); color: var(--yt-spec-text-primary, #f1f1f1); transition: background .15s; }",
+    "#ytweak-tabs button.active { background: var(--yt-spec-call-to-action, #3ea6ff); color: #0f0f0f; }",
   ];
 
   function ensureStyle() {
