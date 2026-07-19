@@ -13,7 +13,7 @@ struct AmbientCanvasPlayerEntryPoint {
         let recordedLoopFileUrl = URL(fileURLWithPath: CommandLine.arguments[1])
 
         let ambientCanvasPlayerApplication = NSApplication.shared
-        ambientCanvasPlayerApplication.setActivationPolicy(.accessory)
+        ambientCanvasPlayerApplication.setActivationPolicy(.regular)
 
         let ambientCanvasPlayerWindowController = AmbientCanvasPlayerWindowController(
             recordedLoopFileUrl: recordedLoopFileUrl
