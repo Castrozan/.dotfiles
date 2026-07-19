@@ -4,10 +4,10 @@ Ambient eye-candy for an idle desktop. This domain owns both implementations of 
 screensaver concern, one per platform, because each platform has a different renderer
 whose cost profile forced a different choice.
 
-| Platform | Implementation | Renderer | Trigger |
-| --- | --- | --- | --- |
-| darwin | `ambient-canvas/` (WebGL scenes pre-recorded to a looping video) | native Swift `AVPlayer` window, VideoToolbox hardware decode | `com.dotfiles.ambient-canvas` launchd keep-alive, pinned to Hammerspoon workspace 11 |
-| Linux | herdr terminal grid (`scripts/launch_herdr_screensaver.py`) | wezterm cell repaint | manual: the `h` alias runs `herdr-screensaver` |
+| Platform | Implementation                                                   | Renderer                                                     | Trigger                                                                              |
+| -------- | ---------------------------------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------ |
+| darwin   | `ambient-canvas/` (WebGL scenes pre-recorded to a looping video) | native Swift `AVPlayer` window, VideoToolbox hardware decode | `com.dotfiles.ambient-canvas` launchd keep-alive, pinned to Hammerspoon workspace 11 |
+| Linux    | herdr terminal grid (`scripts/launch_herdr_screensaver.py`)      | wezterm cell repaint                                         | manual: the `h` alias runs `herdr-screensaver`                                       |
 
 ## Why two implementations
 
@@ -48,30 +48,48 @@ A build step records them once into a looping video, and the 24/7 window plays t
 
 ### Scenes (authoring surface)
 
-`ambient-canvas/web/index.html` loads a full-window canvas grid. Layout and panes are declared
-data, one line per pane:
+`ambient-canvas/web/index.html` loads a full-window canvas grid driven by a playlist. The
+screensaver cycles whole-screen compositions, and adding eye candy is appending one object:
 
-- `web/panes.js` declares `AMBIENT_CANVAS_LAYOUT` (a CSS `grid-template-areas` spec) and
-  `AMBIENT_CANVAS_PANES` (each `{ area, scene }`).
-- `web/player.js` builds the grid, instantiates one scene per pane, and drives their render
-  loop. After each frame it calls `window.AMBIENT_CANVAS_FRAME_OBSERVER` if present, and it
-  merges `window.AMBIENT_CANVAS_RENDERER_OPTION_OVERRIDES` into every scene's options.
+- `web/panes.js` declares `AMBIENT_CANVAS_ROTATION_SECONDS` (the default dwell) and
+  `AMBIENT_CANVAS_PLAYLIST`, an ordered list of compositions. Each is
+  `{ panes: [{ scene, options, area? }], durationSeconds?, layout? }`. `layout` is optional:
+  a single-pane composition defaults to one full-screen cell, so the common case is one line.
+  `options` is passed straight to the scene factory, which is how `variant` reaches yuruyurau
+  and `videoId` reaches bad-apple.
+- Loop length is derived, never authored: `totalCycleSeconds` is the sum of every
+  composition's `durationSeconds ?? AMBIENT_CANVAS_ROTATION_SECONDS`. Every composition is
+  entered exactly once per loop, and the recorder self-derives the capture length from it.
+- `web/player.js` owns the segment walk. `resolveSegment(elapsed)` is a pure function
+  returning `{ index, localElapsedSeconds }`, shared by the live loop and the recorder so cut
+  points are identical. Renderers are built and torn down per segment, so live GL contexts are
+  bounded by panes-per-composition rather than playlist length; each scene is driven by
+  `localElapsedSeconds`, so it restarts cleanly on entry.
 - `web/scenes/*.js` each register a scene factory on
   `window.AMBIENT_CANVAS_SCENE_FACTORIES[name]`. A factory is
-  `(canvasElement, options) => { render(elapsedSeconds), resize(width, height) }`.
+  `(canvasElement, options) => { render(localElapsedSeconds), resize(width, height) }`, plus
+  three optional members: `dispose()` to release GPU resources at segment teardown, `ready`
+  (a promise) for scenes with assets to load, and `prepareFrame(localElapsedSeconds)` (a
+  promise) for scenes whose frame cannot be produced synchronously. The record loop awaits
+  both, which is what makes a video-backed scene deterministic.
 
-To add a pane: write `web/scenes/<name>.js` registering the factory, add its `<script>` to
-`index.html`, then add one `{ area, scene }` entry to `AMBIENT_CANVAS_PANES` and its area to
-the layout grid. The scenes use `Math.random`, so the recorded loop is not pixel-seamless;
-the loop is long enough that the seam is unobtrusive.
+To add eye candy: write `web/scenes/<name>.js` registering the factory, add its `<script>` to
+`index.html`, then append one composition to `AMBIENT_CANVAS_PLAYLIST`. Scenes that call
+`Math.random` at build time reseed per recording pass, so the recorded loop is not
+pixel-seamless; boundaries are cuts and the loop is long enough that the seam is unobtrusive.
 
 ### Record and play
 
-- `web/recorder.js` activates only when `index.html` is opened with `?record`. It composites
-  every pane canvas into one canvas per frame (WebGL panes honor the injected
-  `preserveDrawingBuffer` option), runs a `MediaRecorder`, and POSTs the encoded clip to a
-  local receiver. It prefers an H.264 MP4 container so the M-series media engine can decode
-  the loop in hardware.
+- `web/recorder.js` activates only when `index.html` is opened with `?record`. It drives a
+  deterministic frame-stepped render rather than a real-time capture: for each frame index it
+  resolves the playlist segment, rebuilds renderers at segment boundaries, awaits each pane's
+  `prepareFrame`, composites every pane canvas into one canvas (WebGL panes honor the injected
+  `preserveDrawingBuffer` option), and encodes it with an explicit timestamp through
+  `VideoEncoder` into the vendored `mp4-muxer`, then POSTs the clip to a local receiver. Because
+  the synthetic clock is `frameIndex / fps` rather than wall time, the output is exact CFR at a
+  fixed 1920x1080 no matter how slowly a frame renders. `MediaRecorder` was replaced because it
+  is real-time-only and could not hold 30fps at full resolution. The codec is H.264 in MP4 so
+  the M-series media engine decodes the loop in hardware.
 - `swift-sources/*.swift` compile to the 24/7 window: a native `AVQueuePlayer` + `AVPlayerLooper`
   behind an `AVPlayerLayer` (seamless loop, no restart flash), `videoGravity = .resizeAspect` so
   the loop is never cropped or zoomed when Hammerspoon resizes the pinned window to full screen,
@@ -87,8 +105,28 @@ the loop is long enough that the seam is unobtrusive.
   `loop.<ext>` atomically), `render_ambient_canvas_loop` (drives a throwaway Chrome record
   window), `display_ambient_canvas_loop` (spawns the native player binary detached), and
   `ensure_ambient_canvas_screensaver` (the launchd entry: regenerate if stale, then keep the
-  window alive). No external encoder is used, because the nixpkgs `ffmpeg` is AMFI-killed on
-  the M-series host; the browser's own `MediaRecorder` produces the H.264 loop instead.
+  window alive), plus `byte_range_request_handler` (HTTP Range support) and `scene_video_cache`
+  (yt-dlp fetches for video-backed scenes). No external encoder is used, because the nixpkgs
+  `ffmpeg` is AMFI-killed on the M-series host; the browser encodes the H.264 loop itself.
+
+### bad-apple (video-backed scene)
+
+`web/scenes/bad-apple/` brings the terminal `bad-apple` toy into the screensaver, and this is
+the right home for it: the chafa pipeline paid a luminance-to-braille conversion per frame
+forever, whereas here it is paid once at record time and the 24/7 window only decodes video.
+The port needs neither `ffmpeg` nor `chafa`. Chrome decodes the source and
+`braille_frame_renderer` rasterises the braille itself, so the AMFI-killed `ffmpeg` is never
+invoked; `scene_video_cache` asks yt-dlp for a pre-muxed format 18, so no stream merge is
+needed either. Sources are declared in `web/scene-videos.json`, cached under
+`~/.local/state/ambient-canvas/videos/`, and served to the record browser at
+`/ambient-canvas-videos/`.
+
+Two things are load-bearing and easy to regress. The record server **must** answer HTTP Range
+requests: `SimpleHTTPRequestHandler` does not, and without `206` responses Chrome reports the
+video as `seekable: [[0, 0]]`, so every seek silently no-ops and every frame captures the
+opening black frame. And the scene is deterministic only through `prepareFrame`, which seeks
+to the exact frame time and resolves on `seeked`; the braille grid is derived from the measured
+glyph advance width, so dots stay square and the source is letterboxed rather than stretched.
 
 ### Refresh
 
@@ -96,7 +134,9 @@ The recorded loop lives in `~/.local/state/ambient-canvas/` next to `loop.source
 records the `web/` nix store path it was rendered from. `ensure_ambient_canvas_screensaver`
 compares that against the current store path, so any change to a scene changes the store path
 and the next launchd tick regenerates the loop automatically. Force a rebuild by hand with
-`ambient-canvas-render` (optionally `--seconds N`).
+`ambient-canvas-render`. Pass no length: the recorder derives it from the playlist so one full
+cycle is always captured. `--seconds N` remains a debug override for a short clip, and passing
+it means compositions past that point are not recorded at all.
 
 `ambient-canvas/default.nix` packages the `ambient-canvas` launcher and the
 `ambient-canvas-render` command and, guarded by `isDarwin`, compiles the native player from
