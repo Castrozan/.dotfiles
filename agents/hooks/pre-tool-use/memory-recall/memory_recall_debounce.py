@@ -1,11 +1,16 @@
 from __future__ import annotations
 
+import fcntl
 import hashlib
 import json
 import os
 import re
 import time
+from contextlib import contextmanager
 from pathlib import Path
+
+STATE_LOCK_ACQUISITION_TIMEOUT_SECONDS = 2.0
+STATE_LOCK_RETRY_INTERVAL_SECONDS = 0.01
 
 DEBOUNCE_SECONDS = 30
 DEBOUNCE_HARD_FLOOR_SECONDS = 15
@@ -28,6 +33,42 @@ def resolve_debounce_state_directory() -> Path:
 def debounce_state_path_for_session(session_id: str) -> Path:
     safe_session_id = re.sub(r"[^a-zA-Z0-9_-]+", "-", session_id or "unknown")
     return resolve_debounce_state_directory() / f"memory-recall-{safe_session_id}.json"
+
+
+def state_lock_path_for_session_state(state_path: Path) -> Path:
+    return state_path.with_name(f"{state_path.name}.lock")
+
+
+def acquire_exclusive_lock_before_deadline(lock_file) -> bool:
+    deadline = time.time() + STATE_LOCK_ACQUISITION_TIMEOUT_SECONDS
+    while True:
+        try:
+            fcntl.flock(lock_file, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            return True
+        except OSError:
+            if time.time() >= deadline:
+                return False
+            time.sleep(STATE_LOCK_RETRY_INTERVAL_SECONDS)
+
+
+@contextmanager
+def exclusive_session_state_lock(state_path: Path):
+    lock_path = state_lock_path_for_session_state(state_path)
+    try:
+        lock_path.parent.mkdir(parents=True, exist_ok=True)
+        lock_file = lock_path.open("w")
+    except OSError:
+        yield
+        return
+    try:
+        acquire_exclusive_lock_before_deadline(lock_file)
+        yield
+    finally:
+        try:
+            fcntl.flock(lock_file, fcntl.LOCK_UN)
+        except OSError:
+            pass
+        lock_file.close()
 
 
 def load_debounce_state(state_path: Path) -> dict:
@@ -62,10 +103,15 @@ def persist_debounce_state(state_path: Path, current_keywords: list[str]) -> Non
 
 
 def write_debounce_state(state_path: Path, state: dict) -> None:
+    staging_path = state_path.with_name(f"{state_path.name}.{os.getpid()}.staging")
     try:
-        state_path.write_text(json.dumps(state))
+        staging_path.write_text(json.dumps(state))
+        os.replace(staging_path, state_path)
     except OSError:
-        pass
+        try:
+            staging_path.unlink()
+        except OSError:
+            pass
 
 
 def hash_recall_path_set(recall_path_identifiers: list[str]) -> str:

@@ -32,6 +32,7 @@ from memory_recall_debounce import (  # noqa: E402, F401
     SUPPRESSION_REASON_DEBOUNCE,
     SUPPRESSION_REASON_DEDUP,
     debounce_state_path_for_session,
+    exclusive_session_state_lock,
     has_recall_session_budget_been_exhausted,
     hash_recall_path_set,
     load_debounce_state,
@@ -68,6 +69,33 @@ from memory_recall_ripgrep import (  # noqa: E402, F401
 )
 
 
+def claim_recall_slot_or_exit(state_path, keywords: list[str]) -> None:
+    with exclusive_session_state_lock(state_path):
+        state = load_debounce_state(state_path)
+        if has_recall_session_budget_been_exhausted(state):
+            record_recall_suppression(state_path, SUPPRESSION_REASON_BUDGET)
+            exit_silently()
+        if should_skip_due_to_debounce(state, set(keywords)):
+            record_recall_suppression(state_path, SUPPRESSION_REASON_DEBOUNCE)
+            exit_silently()
+        persist_debounce_state(state_path, keywords)
+
+
+def record_recall_injection_or_exit(
+    state_path, recall_path_identifiers: list[str], recall_context: str
+) -> None:
+    with exclusive_session_state_lock(state_path):
+        state = load_debounce_state(state_path)
+        if was_recall_path_set_already_injected(state, recall_path_identifiers):
+            record_recall_suppression(
+                state_path, SUPPRESSION_REASON_DEDUP, len(recall_context)
+            )
+            exit_silently()
+        record_recall_injection(
+            state_path, recall_path_identifiers, len(recall_context)
+        )
+
+
 def main() -> None:
     hook_input = read_hook_input_from_stdin()
     cwd = hook_input.get("cwd", "")
@@ -84,35 +112,19 @@ def main() -> None:
         exit_silently()
 
     state_path = debounce_state_path_for_session(session_id)
-    state = load_debounce_state(state_path)
-    if has_recall_session_budget_been_exhausted(state):
-        record_recall_suppression(state_path, SUPPRESSION_REASON_BUDGET)
-        exit_silently()
-    if should_skip_due_to_debounce(state, set(keywords)):
-        record_recall_suppression(state_path, SUPPRESSION_REASON_DEBOUNCE)
-        exit_silently()
+    claim_recall_slot_or_exit(state_path, keywords)
 
     scores = ripgrep_score_per_file(memory_directory, keywords)
     if not scores:
-        persist_debounce_state(state_path, keywords)
         exit_silently()
 
     recall_paths = select_top_recall_paths(scores)
     if not recall_paths:
-        persist_debounce_state(state_path, keywords)
         exit_silently()
 
     recall_path_identifiers = [str(path.resolve()) for path in recall_paths]
     recall_context = format_recall_context(recall_paths, memory_directory)
-    if was_recall_path_set_already_injected(state, recall_path_identifiers):
-        record_recall_suppression(
-            state_path, SUPPRESSION_REASON_DEDUP, len(recall_context)
-        )
-        persist_debounce_state(state_path, keywords)
-        exit_silently()
-
-    persist_debounce_state(state_path, keywords)
-    record_recall_injection(state_path, recall_path_identifiers, len(recall_context))
+    record_recall_injection_or_exit(state_path, recall_path_identifiers, recall_context)
     emit_additional_context_and_exit(recall_context)
 
 
