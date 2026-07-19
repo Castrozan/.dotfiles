@@ -131,47 +131,29 @@ end
 
 function workspaceGrid.focusWindowById(windowId)
 	local window = hs.window.get(windowId)
-	if window then
-		windowAssignment.assignWindowToWorkspace(windowId, currentWorkspaceNumber)
-		window:focus()
-		windowLayout.showWindowOnScreen(window)
-		persistWorkspaceState()
+	if not window then
+		return
 	end
+	if pinnedWindow.windowIsPinned(window) then
+		workspaceGrid.switchToWorkspace(pinnedWindow.resolveWorkspaceForWindow(window, currentWorkspaceNumber), window)
+		return
+	end
+	windowAssignment.assignWindowToWorkspace(windowId, currentWorkspaceNumber)
+	window:focus()
+	windowLayout.showWindowOnScreen(window)
+	persistWorkspaceState()
 end
 
-function workspaceGrid.onWindowCreated(window)
-	if window and window:id() then
-		local assignedWorkspaceNumber = pinnedWindow.resolveWorkspaceForWindow(window, currentWorkspaceNumber)
-		windowAssignment.assignWindowToWorkspace(window:id(), assignedWorkspaceNumber)
-		if assignedWorkspaceNumber ~= currentWorkspaceNumber then
-			windowLayout.parkWindowOffScreen(window)
-		elseif windowLayout.windowIsTileable(window) then
-			windowLayout.showWindowOnScreen(window)
-		end
-		renderMenuBarIndicator()
-		persistWorkspaceState()
-	end
-end
-
-function workspaceGrid.onWindowDestroyed(window)
-	if window and window:id() then
-		windowAssignment.forgetWindow(window:id())
-		renderMenuBarIndicator()
-		persistWorkspaceState()
-	end
-end
-
-function workspaceGrid.onWindowFocused(window)
-	if
-		window
-		and window:id()
-		and windowAssignment.workspaceOfWindowId(window:id()) == currentWorkspaceNumber
-		and windowLayout.windowIsTileable(window)
-	then
-		windowAssignment.rememberFocusedWindow(currentWorkspaceNumber, window:id())
-		windowLayout.showWindowOnScreen(window)
-	end
-end
+local windowEventHandlers = require("workspace_grid_window_events").buildWindowEventHandlers({
+	currentWorkspaceNumber = function()
+		return currentWorkspaceNumber
+	end,
+	renderMenuBarIndicator = renderMenuBarIndicator,
+	persistWorkspaceState = persistWorkspaceState,
+})
+workspaceGrid.onWindowCreated = windowEventHandlers.onWindowCreated
+workspaceGrid.onWindowDestroyed = windowEventHandlers.onWindowDestroyed
+workspaceGrid.onWindowFocused = windowEventHandlers.onWindowFocused
 
 function workspaceGrid.registerExistingWindowsOnDefaultWorkspace()
 	for _, window in ipairs(manageableWindows()) do

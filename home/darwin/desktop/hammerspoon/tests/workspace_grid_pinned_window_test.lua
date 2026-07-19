@@ -177,4 +177,17 @@ expectEqual(
 	ordinaryWindow.storedFrame.h
 )
 
+workspaceGrid.switchToWorkspace(7)
+workspaceGrid.focusWindowById(1)
+expectEqual(
+	"switcher-focusing the pinned window keeps it on workspace 11, not the active workspace",
+	true,
+	windowIsOnWorkspace(1, pinnedWorkspaceNumber)
+)
+expectEqual(
+	"switcher-focusing the pinned window never strands it on the active workspace 7",
+	false,
+	windowIsOnWorkspace(1, 7)
+)
+
 os.exit(failureCount == 0 and 0 or 1)
