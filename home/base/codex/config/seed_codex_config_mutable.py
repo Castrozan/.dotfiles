@@ -59,7 +59,14 @@ def trusted_project_parent_directories() -> tuple[pathlib.Path, ...]:
     return tuple(dict.fromkeys(configured_parent_directories))
 
 
-def add_trusted_project_directories(config_data: dict) -> None:
+def declarative_project_paths(nix_source: dict) -> set[str]:
+    projects = nix_source.get("projects", {})
+    return set(projects) if isinstance(projects, dict) else set()
+
+
+def add_trusted_project_directories(
+    config_data: dict, source_project_paths: set[str]
+) -> None:
     projects = config_data.setdefault("projects", {})
     if not isinstance(projects, dict):
         projects = {}
@@ -74,11 +81,14 @@ def add_trusted_project_directories(config_data: dict) -> None:
         except OSError:
             continue
         for child_directory in child_directories:
+            child_directory_path = str(child_directory)
             if child_directory.name.startswith("."):
-                if projects.get(str(child_directory)) == {"trust_level": "trusted"}:
-                    projects.pop(str(child_directory))
+                if child_directory_path not in source_project_paths and projects.get(
+                    child_directory_path
+                ) == {"trust_level": "trusted"}:
+                    projects.pop(child_directory_path)
                 continue
-            projects.setdefault(str(child_directory), {"trust_level": "trusted"})
+            projects.setdefault(child_directory_path, {"trust_level": "trusted"})
 
 
 def build_seeded_config_content() -> bytes | None:
@@ -87,7 +97,9 @@ def build_seeded_config_content() -> bytes | None:
     if current_config is None:
         return None
     merged_config = merge_runtime_preserved_sections(nix_source, current_config)
-    add_trusted_project_directories(merged_config)
+    add_trusted_project_directories(
+        merged_config, declarative_project_paths(nix_source)
+    )
     return tomli_w.dumps(merged_config).encode()
 
 

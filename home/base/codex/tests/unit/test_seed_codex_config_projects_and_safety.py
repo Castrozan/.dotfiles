@@ -4,9 +4,6 @@ from seed_codex_config_test_support import read_live_config, run_seed
 def test_seed_trusts_direct_children_of_repo_directories(tmp_path):
     codex_directory = tmp_path / ".codex"
     codex_directory.mkdir()
-    (codex_directory / "config.toml.nix-source").write_text(
-        'model = "current-model"\n', encoding="utf-8"
-    )
     default_repo_directory = tmp_path / "repo"
     first_project = default_repo_directory / "first-project"
     second_project = default_repo_directory / "second-project"
@@ -15,6 +12,18 @@ def test_seed_trusts_direct_children_of_repo_directories(tmp_path):
     second_project.mkdir()
     hidden_project = default_repo_directory / ".hidden-project"
     hidden_project.mkdir()
+    declared_hidden_project = default_repo_directory / ".declared-hidden-project"
+    declared_hidden_project.mkdir()
+    (codex_directory / "config.toml.nix-source").write_text(
+        f"""
+model = "current-model"
+
+[projects."{declared_hidden_project}"]
+trust_level = "trusted"
+""".strip()
+        + "\n",
+        encoding="utf-8",
+    )
     (default_repo_directory / "not-a-project").write_text("file", encoding="utf-8")
     (codex_directory / "config.toml").write_text(
         f"""
@@ -46,6 +55,7 @@ trust_level = "trusted"
         str(first_project),
         str(second_project),
         str(extra_project),
+        str(declared_hidden_project),
     }
     assert trusted_projects[str(first_project)] == {"trust_level": "untrusted"}
     assert trusted_projects[str(second_project)] == {"trust_level": "trusted"}
