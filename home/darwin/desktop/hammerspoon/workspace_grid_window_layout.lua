@@ -3,10 +3,15 @@ local workspaceGridWindowLayout = {}
 local pinnedWindow = require("workspace_grid_pinned_window")
 
 local offScreenParkingX = -1000000
+local offScreenParkingDetectionThresholdX = offScreenParkingX / 2
 local savedFloatingFrameByWindowId = {}
 
 function workspaceGridWindowLayout.windowIsTileable(window)
 	return window:isStandard()
+end
+
+function workspaceGridWindowLayout.windowIsParkedOffScreen(window)
+	return window:frame().x <= offScreenParkingDetectionThresholdX
 end
 
 function workspaceGridWindowLayout.parkWindowOffScreen(window)

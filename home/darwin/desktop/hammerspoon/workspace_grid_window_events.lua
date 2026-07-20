@@ -38,7 +38,9 @@ function workspaceGridWindowEvents.buildWindowEventHandlers(context)
 			and windowLayout.windowIsTileable(window)
 		then
 			windowAssignment.rememberFocusedWindow(context.currentWorkspaceNumber(), window:id())
-			windowLayout.showWindowOnScreen(window)
+			if windowLayout.windowIsParkedOffScreen(window) then
+				windowLayout.showWindowOnScreen(window)
+			end
 		end
 	end
 
