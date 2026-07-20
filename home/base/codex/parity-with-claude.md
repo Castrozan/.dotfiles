@@ -147,10 +147,37 @@ imports resolve, exactly like Claude's flat `~/.claude/hooks`.
 - Codex adds `fast` / `deep` / `web` profiles as its analogue of `/fast`, and a
   Claude-to-Codex plugin bridge (`claude-plugin-port`) that Claude has no
   analogue for.
-- Claude-TUI-only surfaces (statusline, `keybindings.json`, spinner verbs, the
-  Done:/Next: reply-shape gate, the OTel/usage/performance telemetry stack, the
-  workflows JS runtime, the LSP plugin packages) are specific to Claude Code's
-  TUI and the clawde launcher and have no Codex equivalent to port.
+- Codex's `[tui]` table is the analogue of several surfaces once believed
+  Claude-only, established by probing the 0.144.4 binary and validating each key
+  against a scratch `CODEX_HOME`. `tui.status_line` is a real status line, but a
+  closed ordered enum of segment ids rather than Claude's arbitrary command hook:
+  `git-branch`, `branch-changes`, `model-with-reasoning`, `context-used`,
+  `weekly-limit`, `five-hour-limit`, `permissions`, `approval-mode`,
+  `current-dir`, `thread-id` and more, colored per segment by
+  `tui.status_line_use_colors`. It cannot express Claude's rate-limit reset
+  countdown or threshold coloring, both of which need a command hook
+  (upstream https://github.com/openai/codex/issues/17827). `tui.keymap.<context>`
+  is a genuine `keybindings.json` analogue. `tui.terminal_title` drives OSC-0.
+- The Done:/Next: reply shape is content, not chrome, so it ports as an
+  instruction: the `codex` wrapper injects
+  `agents/core_rules/communication/interactive-preferences.md` through
+  `-c developer_instructions=` for interactive invocations only (no subcommand,
+  a flag, `resume`, or `fork`), mirroring how `claude-workspace` appends it and
+  keeping it out of `codex exec` and the MCP server, whose output is
+  machine-facing. The Stop-hook gate that enforces the shape on Claude is not
+  ported yet.
+- Two validation facts worth keeping: the `[tui]` table is not
+  `deny_unknown_fields`, so a typo'd key parses with exit 0 and an unknown
+  `theme` name falls back silently, meaning "it parsed" is never evidence; and
+  `CODEX_HOME=<scratch> codex debug models` is an offline config validator that
+  exits non-zero with `file:line:col` serde errors on a wrong value type.
+  The notice suppressors live in a top-level `[notice]` table, not `[tui.notice]`,
+  which parses and is silently inert.
+- Still Claude-TUI-only and out of scope: the boxed rounded composer, the
+  top-right mode badge, the bullet event stream and bold section labels (all
+  hardcoded ratatui, tinted only by the terminal background via OSC-11), spinner
+  verbs, the OTel/usage/performance telemetry stack, the workflows JS runtime,
+  and the LSP plugin packages.
 
 ## Summary of state
 

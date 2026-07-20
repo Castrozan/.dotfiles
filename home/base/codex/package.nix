@@ -32,14 +32,25 @@ let
     archiveBinaryPath = "codex-${currentHostSystem.releaseTargetTriple}";
   };
 
+  interactivePreferencesFile = ../../../agents/core_rules/communication/interactive-preferences.md;
+
   codex = pkgs.writeShellScriptBin "codex" ''
     export NPM_CONFIG_PREFIX="/nonexistent"
+    interactivePreferencesArguments=()
+    case "''${1:-}" in
+      "" | -* | resume | fork)
+        interactivePreferencesArguments=(
+          -c "developer_instructions=$(cat ${interactivePreferencesFile})"
+        )
+        ;;
+    esac
     exec ${codex-unwrapped}/bin/codex \
       --model "gpt-5.6-sol" \
       --sandbox "danger-full-access" \
       --ask-for-approval "never" \
       --dangerously-bypass-hook-trust \
       --no-alt-screen \
+      "''${interactivePreferencesArguments[@]}" \
       "$@"
   '';
 in
