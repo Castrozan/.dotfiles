@@ -25,10 +25,12 @@ let
   ];
 
   watchdogLogFilePath = "/tmp/chrome-devtools-mcp-runaway-watchdog.log";
+
+  chromeDevtoolsMcpRunawayWatchdogEnabled = false;
 in
 {
   config = lib.mkMerge [
-    (lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
+    (lib.mkIf (chromeDevtoolsMcpRunawayWatchdogEnabled && pkgs.stdenv.hostPlatform.isDarwin) {
       launchd.agents.chrome-devtools-mcp-runaway-watchdog = {
         enable = true;
         config = {
@@ -41,7 +43,7 @@ in
         };
       };
     })
-    (lib.mkIf pkgs.stdenv.hostPlatform.isLinux {
+    (lib.mkIf (chromeDevtoolsMcpRunawayWatchdogEnabled && pkgs.stdenv.hostPlatform.isLinux) {
       systemd.user.services.chrome-devtools-mcp-runaway-watchdog = {
         Unit.Description = "Reap orphaned and CPU-runaway chrome-devtools-mcp instances";
         Service = {
