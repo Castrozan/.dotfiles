@@ -31,6 +31,11 @@ off-screen window is not "occluded" to macOS and wezterm never throttles it:
   generated the animation every frame, which measured well over a full core (renderer plus
   a dedicated GPU process) 24/7, because the window is pinned across Spaces so macOS never
   occludes it into throttling. The generative art is the cost, and it is paid continuously.
+- Recorded-loop `ambient-canvas` (the current darwin design): the native player sits at ~1% of
+  a core and ~20MB of footprint while its workspace is on screen, and at exactly 0% while it is
+  not, because the visibility gate stops decode. The compute moved to two one-off costs instead:
+  a Chrome record pass of roughly a quarter hour whenever `web/` changes, and the resident disk
+  of the loop, which grows linearly with the recorded dwell and the playlist length.
 
 The current darwin design pays the generative cost once. The WebGL scenes are recorded to a
 short looping video and the 24/7 window is a native Swift `AVPlayer` (no browser at all), which
@@ -128,7 +133,7 @@ pixel-seamless; boundaries are cuts and the loop is long enough that the seam is
   clamped to a floor in `ambient-canvas-playback-dwell-override.swift` and never rises above the
   recorded dwell.
   Raising that ceiling means raising the recorded dwell and paying one render, which also grows
-  the loop and its ~450MB proportionally.
+  the loop file proportionally at roughly 1.6MB per recorded second.
 
   There is also a visibility-gated playback controller that pauses decode whenever the window is not on the
   active Space, is covered, or the display sleeps (it observes both window occlusion and
