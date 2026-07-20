@@ -17,6 +17,6 @@ in
       ]
       ''
         CODEX_BIN=${lib.escapeShellArg codexBinary} \
-        ${pkgs.python3}/bin/python3 ${claudePluginPortGenerator}/port_claude_plugins_to_codex.py || true
+        ${pkgs.python312}/bin/python3 ${claudePluginPortGenerator}/port_claude_plugins_to_codex.py || true
       '';
 }

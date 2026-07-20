@@ -16,6 +16,7 @@ from configuration import (
     PORTED_MARKETPLACE_NAME,
     ported_marketplace_manifest,
     ported_marketplace_root,
+    ported_plugin_cache_root,
 )
 
 
@@ -61,6 +62,21 @@ def remove_stale_ported_plugins(current_plugin_names):
         )
 
 
+def remove_stale_ported_plugin_cache(current_plugin_names):
+    if not ported_plugin_cache_root.exists():
+        return
+    current_plugin_names = set(current_plugin_names)
+    for cached_plugin_path in ported_plugin_cache_root.iterdir():
+        if cached_plugin_path.name in current_plugin_names:
+            continue
+        if cached_plugin_path.is_dir() and not cached_plugin_path.is_symlink():
+            shutil.rmtree(cached_plugin_path)
+        else:
+            cached_plugin_path.unlink()
+    if not any(ported_plugin_cache_root.iterdir()):
+        ported_plugin_cache_root.rmdir()
+
+
 def register_ported_plugins(ported_plugin_names):
     marketplace_add_code, _, marketplace_add_error = run_codex_plugin_command(
         ["marketplace", "add", str(ported_marketplace_root)]
@@ -90,6 +106,7 @@ def main():
 
     ported_marketplace_entries, ported_plugin_names = collect_ported_plugins()
     remove_stale_ported_plugins(ported_plugin_names)
+    remove_stale_ported_plugin_cache(ported_plugin_names)
 
     if not ported_marketplace_entries:
         if ported_marketplace_is_registered():

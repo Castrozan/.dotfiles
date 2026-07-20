@@ -19,6 +19,9 @@ ported_marketplace_root = codex_home_directory / "claude-plugin-ports"
 ported_marketplace_manifest = (
     ported_marketplace_root / ".agents" / "plugins" / "marketplace.json"
 )
+ported_plugin_cache_root = (
+    codex_home_directory / "plugins" / "cache" / PORTED_MARKETPLACE_NAME
+)
 
 
 def resolve_codex_binary():
