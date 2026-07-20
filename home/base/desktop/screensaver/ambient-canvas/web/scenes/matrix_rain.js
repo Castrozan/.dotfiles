@@ -5,7 +5,7 @@
   const katakanaGlyphRangeStart = 0x30a0;
   const katakanaGlyphRangeEnd = 0x30ff;
   const supplementalGlyphCharacters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  const defaultBackgroundColorChannels = "15, 34, 58";
+  const defaultBackgroundColorChannels = "14, 30, 51";
   const trailFadeOpacity = 0.1;
   const leadingGlyphFillStyle = "#c8ffd0";
   const trailingGlyphColorChannels = "47, 191, 95";
