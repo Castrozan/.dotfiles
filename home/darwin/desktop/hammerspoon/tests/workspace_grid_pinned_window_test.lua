@@ -46,7 +46,7 @@ end
 
 local ambientCanvasWindow = makeFakeWindow(1, "ambient-canvas-gpu-screensaver")
 local ordinaryWindow = makeFakeWindow(2, "ambient-canvas - Google Chrome - Lucas")
-local titlelessPlayerWindow = makeFakeWindow(3, "", "ambient-canvas-player")
+local titlelessPlayerWindow = makeFakeWindow(3, "", "ᓚᘏᗢ")
 local allManagedWindowsInIterationOrder = { ambientCanvasWindow, ordinaryWindow, titlelessPlayerWindow }
 
 local function findWindowById(targetWindowId)

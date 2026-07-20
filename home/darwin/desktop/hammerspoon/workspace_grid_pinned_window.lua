@@ -2,7 +2,7 @@ local workspaceGridPinnedWindow = {}
 
 local pinnedWindowWorkspaceNumber = 11
 local pinnedWindowTitlePrefixPattern = "^ambient%-canvas%-gpu%-screensaver"
-local pinnedWindowApplicationName = "ambient-canvas-player"
+local pinnedWindowApplicationName = "ᓚᘏᗢ"
 
 function workspaceGridPinnedWindow.windowIsPinned(window)
 	if window == nil then

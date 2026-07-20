@@ -10,7 +10,7 @@ let
   ambientCanvasMediaScriptsDirectory = ./scripts/ambient_canvas_media;
   ambientCanvasStateDirectory = "${config.home.homeDirectory}/.local/state/ambient-canvas";
   ambientCanvasSourceIdentifier = "${ambientCanvasWebRoot}";
-  ambientCanvasPlayerBinaryPath = "${config.home.homeDirectory}/.local/bin/ambient-canvas-player";
+  ambientCanvasPlayerBinaryPath = "${config.home.homeDirectory}/.local/bin/ᓚᘏᗢ";
 
   ambientCanvasSceneVideoDownloaderPath = lib.makeBinPath [ pkgs.yt-dlp ];
 

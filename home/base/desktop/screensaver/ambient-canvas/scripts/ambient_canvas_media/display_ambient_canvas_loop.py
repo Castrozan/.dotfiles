@@ -3,7 +3,7 @@ import os
 import subprocess
 import sys
 
-DEFAULT_PLAYER_BINARY_PATH = os.path.expanduser("~/.local/bin/ambient-canvas-player")
+DEFAULT_PLAYER_BINARY_PATH = os.path.expanduser("~/.local/bin/ᓚᘏᗢ")
 
 
 def resolve_recorded_loop_media_path(output_directory):
