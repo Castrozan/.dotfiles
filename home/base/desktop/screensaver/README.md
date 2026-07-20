@@ -116,6 +116,17 @@ pixel-seamless; boundaries are cuts and the loop is long enough that the seam is
   shuffle object rather than the player, so a seek completing while the visibility gate has
   paused cannot silently resume decode.
 
+  Dwell is retunable without re-recording. `AMBIENT_CANVAS_ROTATION_SECONDS` in `panes.js` is
+  the _recorded_ dwell and still costs a render to change, because it decides how many frames
+  exist. On top of it, writing a number of seconds to
+  `~/.local/state/ambient-canvas/playback-dwell-seconds` shortens every segment at playback
+  time, read fresh at each segment start so it takes effect within one dwell and needs no
+  restart. `echo 8 > ~/.local/state/ambient-canvas/playback-dwell-seconds` gives an 8 second
+  rotation; deleting the file restores the recorded length. The value is clamped to at least 2
+  seconds and never above the recorded dwell, so the live range today is 2 to 20 seconds.
+  Raising that ceiling means raising the recorded dwell and paying one render, which also grows
+  the loop and its ~450MB proportionally.
+
   There is also a visibility-gated playback controller that pauses decode whenever the window is not on the
   active Space, is covered, or the display sleeps (it observes both window occlusion and
   `NSWorkspace.activeSpaceDidChangeNotification`). The window title

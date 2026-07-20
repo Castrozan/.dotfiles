@@ -29,7 +29,8 @@ final class AmbientCanvasRecordedLoopVideoView: NSView {
             recordedLoopQueuePlayer.actionAtItemEnd = .pause
             shuffledSegmentPlayback = AmbientCanvasShuffledSegmentPlayback(
                 player: recordedLoopQueuePlayer,
-                segments: segmentTable.segments
+                segments: segmentTable.segments,
+                recordedLoopFileUrl: recordedLoopFileUrl
             )
         } else {
             recordedLoopPlayerLooper = AVPlayerLooper(

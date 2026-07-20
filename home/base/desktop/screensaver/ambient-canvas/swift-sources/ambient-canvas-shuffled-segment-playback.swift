@@ -5,14 +5,20 @@ final class AmbientCanvasShuffledSegmentPlayback {
 
     private let player: AVQueuePlayer
     private let segments: [AmbientCanvasRecordedLoopSegment]
+    private let recordedLoopFileUrl: URL
     private let segmentOrder: AmbientCanvasShuffledSegmentOrder
     private var segmentEndObserver: Any?
     private var issuedSeekGeneration = 0
     private var isPlaybackSuspended = false
 
-    init(player: AVQueuePlayer, segments: [AmbientCanvasRecordedLoopSegment]) {
+    init(
+        player: AVQueuePlayer,
+        segments: [AmbientCanvasRecordedLoopSegment],
+        recordedLoopFileUrl: URL
+    ) {
         self.player = player
         self.segments = segments
+        self.recordedLoopFileUrl = recordedLoopFileUrl
         self.segmentOrder = AmbientCanvasShuffledSegmentOrder(segmentCount: segments.count)
         NotificationCenter.default.addObserver(
             self,
@@ -73,8 +79,12 @@ final class AmbientCanvasShuffledSegmentPlayback {
 
     private func observeEnd(of segment: AmbientCanvasRecordedLoopSegment) {
         removeSegmentEndObserver()
+        let dwellSeconds = AmbientCanvasPlaybackDwellOverride.effectiveDwellSeconds(
+            recordedDwellSeconds: segment.durationSeconds,
+            besideRecordedLoop: recordedLoopFileUrl
+        )
         let endTime = CMTime(
-            seconds: segment.endSeconds,
+            seconds: segment.startSeconds + dwellSeconds,
             preferredTimescale: Self.seekTimescale
         )
         segmentEndObserver = player.addBoundaryTimeObserver(
