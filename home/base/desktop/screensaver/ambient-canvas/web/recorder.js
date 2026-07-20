@@ -120,6 +120,10 @@
     playbackController.destroySegment(activeSegmentHandle);
     await videoEncoder.flush();
     muxer.finalize();
+    await encoder.uploadSegmentTable(
+      playbackController.segmentBoundaries,
+      uploadUrl,
+    );
     await encoder.uploadEncodedLoop(muxer.target.buffer, uploadUrl);
   }
 

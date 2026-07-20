@@ -50,6 +50,16 @@ window.AmbientCanvasRecordingEncoder = (function buildEncoder() {
     });
   }
 
+  function uploadSegmentTable(segmentBoundaries, uploadUrl) {
+    if (!uploadUrl) {
+      return Promise.resolve();
+    }
+    return fetch(uploadUrl + "?kind=segments", {
+      method: "POST",
+      body: JSON.stringify({ segments: segmentBoundaries }),
+    }).catch(function ignoreSegmentUploadFailure() {});
+  }
+
   function uploadEncodedLoop(encodedBuffer, uploadUrl) {
     if (!uploadUrl) {
       return Promise.resolve();
@@ -69,6 +79,7 @@ window.AmbientCanvasRecordingEncoder = (function buildEncoder() {
   return {
     createConfiguredMuxerAndEncoder,
     waitForEncoderQueueToDrain,
+    uploadSegmentTable,
     uploadEncodedLoop,
   };
 })();

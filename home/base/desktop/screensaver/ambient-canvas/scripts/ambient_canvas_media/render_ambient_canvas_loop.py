@@ -23,6 +23,7 @@ from recorded_loop_capture_plan import (
 from recorded_loop_upload_server import (
     start_recorded_loop_upload_server,
     write_recorded_loop_pointer_files,
+    write_recorded_loop_segment_table,
 )
 from scene_video_cache import (
     download_missing_scene_videos,
@@ -114,6 +115,9 @@ def render_recorded_loop(
 
     media_filename = f"loop.{upload_server.received_extension}"
     os.replace(staging_path, os.path.join(output_directory, media_filename))
+    write_recorded_loop_segment_table(
+        output_directory, upload_server.received_segment_table_bytes
+    )
     write_recorded_loop_pointer_files(
         output_directory, media_filename, source_identifier
     )

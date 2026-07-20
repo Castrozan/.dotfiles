@@ -90,8 +90,8 @@ pixel-seamless; boundaries are cuts and the loop is long enough that the seam is
   fixed 1920x1080 no matter how slowly a frame renders. `MediaRecorder` was replaced because it
   is real-time-only and could not hold 30fps at full resolution. The codec is H.264 in MP4 so
   the M-series media engine decodes the loop in hardware.
-- `swift-sources/*.swift` compile to the 24/7 window: a native `AVQueuePlayer` + `AVPlayerLooper`
-  behind an `AVPlayerLayer` (seamless loop, no restart flash), `videoGravity = .resizeAspect` so
+- `swift-sources/*.swift` compile to the 24/7 window: a native `AVQueuePlayer` behind an
+  `AVPlayerLayer`, `videoGravity = .resizeAspect` so
   the loop is never cropped or zoomed. That only holds because the window is an
   `AmbientCanvasUnconstrainedScreensaverWindow`, an `NSWindow` subclass whose
   `constrainFrameRect` returns the proposed rect untouched. `workspace_grid_window_layout.lua`
@@ -102,6 +102,20 @@ pixel-seamless; boundaries are cuts and the loop is long enough that the seam is
   resolution, so the video decodes 1:1 with no pillarbox and no resampling; the menu bar simply
   draws over the top 30px. Reaching for `.resizeAspectFill` instead only hides the clamp, and it
   generalizes badly, cropping roughly 13% of the width on a non-16:9 display.
+
+  Playback order is randomized, which is why there is no `AVPlayerLooper` on the live path. The
+  recorder uploads its segment boundaries alongside the media and
+  `write_recorded_loop_segment_table` drops them at `loop.segments.json`; the player reads that
+  table and plays the compositions in a fresh shuffled permutation, reshuffling once every
+  segment has been used and never repeating one across the seam. Transitions are zero-tolerance
+  seeks driven by a boundary observer at each segment end, plus an `AVPlayerItemDidPlayToEndTime`
+  observer because the final segment ends exactly at EOF where a boundary observer is
+  unreliable. Segment starts are already hard cuts on keyframes, so seeking there costs nothing
+  visually. `AVPlayerLooper` remains only as the fallback for a loop recorded before the segment
+  table existed, which is what plays until the next re-render. Pause and resume route through the
+  shuffle object rather than the player, so a seek completing while the visibility gate has
+  paused cannot silently resume decode.
+
   There is also a visibility-gated playback controller that pauses decode whenever the window is not on the
   active Space, is covered, or the display sleeps (it observes both window occlusion and
   `NSWorkspace.activeSpaceDidChangeNotification`). The window title
@@ -109,6 +123,7 @@ pixel-seamless; boundaries are cuts and the loop is long enough that the seam is
   titled window with a hidden transparent titlebar so the title stays readable via accessibility.
   `compile-player.sh` builds it with the system `/usr/bin/swiftc` during home-manager activation,
   stamped so it only recompiles when the sources change, mirroring the application-launcher daemon.
+
 - `scripts/ambient_canvas_media/` holds the Python: `ambient_canvas_browser` (shared record browser
   and geometry resolution), `recorded_loop_upload_server` (stdlib HTTP receiver that writes
   `loop.<ext>` atomically), `render_ambient_canvas_loop` (drives a throwaway Chrome record

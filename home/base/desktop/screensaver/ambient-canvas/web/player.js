@@ -14,12 +14,17 @@
     return composition.durationSeconds || globalRotationSeconds;
   }
 
-  const totalCycleSeconds = playlist.reduce(function accumulateDuration(
-    accumulatedSeconds,
-    composition,
-  ) {
-    return accumulatedSeconds + compositionDurationSeconds(composition);
-  }, 0);
+  const segmentBoundaries = [];
+  let accumulatedCycleSeconds = 0;
+  for (const composition of playlist) {
+    const durationSeconds = compositionDurationSeconds(composition);
+    segmentBoundaries.push({
+      startSeconds: accumulatedCycleSeconds,
+      durationSeconds: durationSeconds,
+    });
+    accumulatedCycleSeconds += durationSeconds;
+  }
+  const totalCycleSeconds = accumulatedCycleSeconds;
 
   function resolveSegment(elapsedSeconds) {
     const wrappedElapsedSeconds =
@@ -129,6 +134,7 @@
   if (window.AMBIENT_CANVAS_RECORD_DRIVER) {
     window.AMBIENT_CANVAS_RECORD_DRIVER({
       totalCycleSeconds: totalCycleSeconds,
+      segmentBoundaries: segmentBoundaries,
       resolveSegment: resolveSegment,
       applyLayout: applyLayout,
       buildSegment: buildSegment,

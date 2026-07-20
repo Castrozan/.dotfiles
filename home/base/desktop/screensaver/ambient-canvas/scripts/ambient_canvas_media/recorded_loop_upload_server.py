@@ -27,12 +27,15 @@ class RecordedLoopRequestHandler(ByteRangeRequestHandler):
             self.send_response(404)
             self.end_headers()
             return
-        requested_extension = urllib.parse.parse_qs(parsed_request.query).get(
-            "extension", ["webm"]
-        )[0]
+        request_query = urllib.parse.parse_qs(parsed_request.query)
         content_length = int(self.headers.get("Content-Length", "0"))
-        recorded_bytes = self.rfile.read(content_length)
-        self.server.receive_recorded_loop(requested_extension, recorded_bytes)
+        uploaded_bytes = self.rfile.read(content_length)
+        if request_query.get("kind", [""])[0] == "segments":
+            self.server.receive_segment_table(uploaded_bytes)
+        else:
+            self.server.receive_recorded_loop(
+                request_query.get("extension", ["webm"])[0], uploaded_bytes
+            )
         self.send_response(204)
         self.end_headers()
 
@@ -53,10 +56,14 @@ class RecordedLoopUploadServer(http.server.ThreadingHTTPServer):
         self.upload_completed_event = threading.Event()
         self.received_extension = None
         self.received_staging_path = None
+        self.received_segment_table_bytes = None
 
     @property
     def upload_port(self):
         return self.server_address[1]
+
+    def receive_segment_table(self, segment_table_bytes):
+        self.received_segment_table_bytes = segment_table_bytes
 
     def receive_recorded_loop(self, extension, recorded_bytes):
         staging_descriptor, staging_path = tempfile.mkstemp(
@@ -78,6 +85,16 @@ def start_recorded_loop_upload_server(
     server_thread = threading.Thread(target=upload_server.serve_forever, daemon=True)
     server_thread.start()
     return upload_server
+
+
+def write_recorded_loop_segment_table(output_directory, segment_table_bytes):
+    segment_table_path = os.path.join(output_directory, "loop.segments.json")
+    if not segment_table_bytes:
+        if os.path.exists(segment_table_path):
+            os.remove(segment_table_path)
+        return
+    with open(segment_table_path, "wb") as segment_table_file:
+        segment_table_file.write(segment_table_bytes)
 
 
 def write_recorded_loop_pointer_files(

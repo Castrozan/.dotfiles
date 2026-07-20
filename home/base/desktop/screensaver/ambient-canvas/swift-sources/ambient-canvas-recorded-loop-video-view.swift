@@ -5,6 +5,7 @@ final class AmbientCanvasRecordedLoopVideoView: NSView {
     private let recordedLoopQueuePlayer = AVQueuePlayer()
     private let recordedLoopPlayerLayer = AVPlayerLayer()
     private var recordedLoopPlayerLooper: AVPlayerLooper?
+    private var shuffledSegmentPlayback: AmbientCanvasShuffledSegmentPlayback?
 
     init(recordedLoopFileUrl: URL) {
         super.init(frame: .zero)
@@ -20,11 +21,24 @@ final class AmbientCanvasRecordedLoopVideoView: NSView {
             .deepNavyBackgroundColor.cgColor
         backingLayer.addSublayer(recordedLoopPlayerLayer)
 
-        recordedLoopPlayerLooper = AVPlayerLooper(
-            player: recordedLoopQueuePlayer,
-            templateItem: AVPlayerItem(url: recordedLoopFileUrl)
-        )
+        let recordedLoopItem = AVPlayerItem(url: recordedLoopFileUrl)
+        if let segmentTable = AmbientCanvasRecordedLoopSegmentTable
+            .loadAdjacentToRecordedLoop(recordedLoopFileUrl)
+        {
+            recordedLoopQueuePlayer.insert(recordedLoopItem, after: nil)
+            recordedLoopQueuePlayer.actionAtItemEnd = .pause
+            shuffledSegmentPlayback = AmbientCanvasShuffledSegmentPlayback(
+                player: recordedLoopQueuePlayer,
+                segments: segmentTable.segments
+            )
+        } else {
+            recordedLoopPlayerLooper = AVPlayerLooper(
+                player: recordedLoopQueuePlayer,
+                templateItem: recordedLoopItem
+            )
+        }
         recordedLoopQueuePlayer.isMuted = true
+        shuffledSegmentPlayback?.startFirstSegment()
         recordedLoopQueuePlayer.play()
     }
 
@@ -38,10 +52,18 @@ final class AmbientCanvasRecordedLoopVideoView: NSView {
     }
 
     func pausePlayback() {
-        recordedLoopQueuePlayer.pause()
+        guard let shuffledSegmentPlayback else {
+            recordedLoopQueuePlayer.pause()
+            return
+        }
+        shuffledSegmentPlayback.suspendPlayback()
     }
 
     func resumePlayback() {
-        recordedLoopQueuePlayer.play()
+        guard let shuffledSegmentPlayback else {
+            recordedLoopQueuePlayer.play()
+            return
+        }
+        shuffledSegmentPlayback.resumePlayback()
     }
 }
