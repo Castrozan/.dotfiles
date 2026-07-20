@@ -1,4 +1,4 @@
-window.AMBIENT_CANVAS_ROTATION_SECONDS = 20;
+window.AMBIENT_CANVAS_ROTATION_SECONDS = 30;
 
 window.AMBIENT_CANVAS_PLAYLIST = [
   { panes: [{ scene: "yuruyurau", options: { variant: "twin" } }] },

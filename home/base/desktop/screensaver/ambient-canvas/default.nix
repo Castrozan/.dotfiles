@@ -12,7 +12,7 @@ let
   ambientCanvasSourceIdentifier = "${ambientCanvasWebRoot}";
   ambientCanvasPlayerBinaryPath = "${config.home.homeDirectory}/.local/bin/ᓚᘏᗢ";
   ambientCanvasPlaybackDwellSecondsPath = "${ambientCanvasStateDirectory}/playback-dwell-seconds";
-  ambientCanvasDefaultPlaybackDwellSeconds = 5;
+  ambientCanvasDefaultPlaybackDwellSeconds = 30;
 
   ambientCanvasSceneVideoDownloaderPath = lib.makeBinPath [ pkgs.yt-dlp ];
 
