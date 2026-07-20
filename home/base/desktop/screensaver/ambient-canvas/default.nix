@@ -11,6 +11,8 @@ let
   ambientCanvasStateDirectory = "${config.home.homeDirectory}/.local/state/ambient-canvas";
   ambientCanvasSourceIdentifier = "${ambientCanvasWebRoot}";
   ambientCanvasPlayerBinaryPath = "${config.home.homeDirectory}/.local/bin/ᓚᘏᗢ";
+  ambientCanvasPlaybackDwellSecondsPath = "${ambientCanvasStateDirectory}/playback-dwell-seconds";
+  ambientCanvasDefaultPlaybackDwellSeconds = 5;
 
   ambientCanvasSceneVideoDownloaderPath = lib.makeBinPath [ pkgs.yt-dlp ];
 
@@ -45,6 +47,10 @@ in
 
       activation.ensureAmbientCanvasStateDirectory = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
         run mkdir -p ${lib.escapeShellArg ambientCanvasStateDirectory}
+        if [ ! -e ${lib.escapeShellArg ambientCanvasPlaybackDwellSecondsPath} ]; then
+          run ${pkgs.coreutils}/bin/tee ${lib.escapeShellArg ambientCanvasPlaybackDwellSecondsPath} \
+            <<<${toString ambientCanvasDefaultPlaybackDwellSeconds} >/dev/null
+        fi
       '';
 
       activation.compileAmbientCanvasPlayer = lib.hm.dag.entryAfter [ "writeBoundary" ] ''

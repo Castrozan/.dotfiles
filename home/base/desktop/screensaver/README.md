@@ -122,8 +122,11 @@ pixel-seamless; boundaries are cuts and the loop is long enough that the seam is
   `~/.local/state/ambient-canvas/playback-dwell-seconds` shortens every segment at playback
   time, read fresh at each segment start so it takes effect within one dwell and needs no
   restart. `echo 8 > ~/.local/state/ambient-canvas/playback-dwell-seconds` gives an 8 second
-  rotation; deleting the file restores the recorded length. The value is clamped to at least 2
-  seconds and never above the recorded dwell, so the live range today is 2 to 20 seconds.
+  rotation; deleting the file restores the recorded length. The nix module seeds that file with
+  its default only when the file is absent, the same mutable-seed pattern the Claude settings
+  use, so a value tuned live survives every rebuild and only a deletion falls back to the
+  recorded dwell. The value is clamped to at least 2 seconds and never above the recorded dwell,
+  so the live range today is 2 to 20 seconds.
   Raising that ceiling means raising the recorded dwell and paying one render, which also grows
   the loop and its ~450MB proportionally.
 
