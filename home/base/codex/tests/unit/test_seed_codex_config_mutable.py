@@ -100,3 +100,39 @@ def test_seed_is_noop_without_nix_source(tmp_path):
 
     assert result.returncode == 0, result.stderr
     assert live_config_path.read_text(encoding="utf-8") == 'model = "keep-me"\n'
+
+
+def test_seed_resets_runtime_mutated_tui_presentation_to_nix_source(tmp_path):
+    codex_directory = tmp_path / ".codex"
+    codex_directory.mkdir()
+    (codex_directory / "config.toml.nix-source").write_text(
+        """
+[tui]
+session_picker_view = "dense"
+status_line = ["git-branch", "context-used"]
+status_line_use_colors = true
+
+[notice]
+hide_full_access_warning = true
+""".strip()
+        + "\n",
+        encoding="utf-8",
+    )
+    (codex_directory / "config.toml").write_text(
+        """
+[tui]
+session_picker_view = "list"
+status_line = []
+""".strip()
+        + "\n",
+        encoding="utf-8",
+    )
+
+    result = run_seed(tmp_path)
+
+    assert result.returncode == 0, result.stderr
+    live_config = read_live_config(tmp_path)
+    assert live_config["tui"]["status_line"] == ["git-branch", "context-used"]
+    assert live_config["tui"]["session_picker_view"] == "dense"
+    assert live_config["tui"]["status_line_use_colors"] is True
+    assert live_config["notice"]["hide_full_access_warning"] is True

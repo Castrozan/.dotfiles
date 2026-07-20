@@ -38,7 +38,37 @@ let
       multi_agent = true;
       undo = true;
     };
-    tui.show_tooltips = false;
+    tui = {
+      animations = false;
+      session_picker_view = "dense";
+      show_tooltips = false;
+      status_line = [
+        "run-state"
+        "git-branch"
+        "branch-changes"
+        "model-with-reasoning"
+        "context-used"
+        "five-hour-limit"
+        "weekly-limit"
+        "permissions"
+        "approval-mode"
+        "current-dir"
+        "thread-id"
+      ];
+      status_line_use_colors = true;
+      terminal_title = [
+        "activity"
+        "project-name"
+        "git-branch"
+      ];
+    };
+    notice = {
+      fast_default_opt_out = true;
+      hide_full_access_warning = true;
+      hide_gpt5_1_migration_prompt = true;
+      hide_rate_limit_model_nudge = true;
+      hide_world_writable_warning = true;
+    };
     projects = {
       "${homeDir}".trust_level = "trusted";
       "${homeDir}/.dotfiles".trust_level = "trusted";
