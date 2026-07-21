@@ -6,9 +6,9 @@ This document ranks the levers that cut weekly token consumption on a Max 20x su
 
 These are deliberately off-limits. Do not propose touching them:
 
-- Model stays `claude-opus-4-8` (`home/base/claude/settings/global-settings.nix:25`). No downgrade to Sonnet/Haiku for interactive or workflow work.
-- Reasoning effort stays `max` (`effortLevel="max"`, `global-settings.nix:26`).
-- `ultracode=true` and `enableWorkflows=true` stay (`global-settings.nix:27-28`). The workflow/subagent fan-out pattern is required for quality and is itself a token saver (see lever 2).
+- Model stays `claude-opus-4-8` (`home/base/claude/settings/global-settings.nix:35`). No downgrade to Sonnet/Haiku for interactive or workflow work.
+- Reasoning effort stays `max` (`effortLevel="max"`, `global-settings.nix:36`).
+- `ultracode=false`, `enableWorkflows=true` (`global-settings.nix:37-38`). The always-on ultracode reflex is intentionally off (the craftsman-default doctrine: main agent does depth work directly, delegates breadth/bulk under a review-and-rechisel leash, per the `<delegation>` block in `core.md`). Delegation itself stays available and is still a token saver via subagent isolation (lever 2); what changed is that fan-out is no longer forced onto every task.
 
 Compaction mechanics (the 200K clamp, the trigger arithmetic, the resume-500 path, the 1M window) are documented in `home/base/claude/docs/context-management.md`. This doc cites that file and goes beyond it; it does not restate the arithmetic.
 
@@ -119,7 +119,7 @@ These would help but violate the fixed constraints or have no supported surface,
 
 - **Downgrade the model to Sonnet/Haiku for cheap sub-tasks or per-tool routing.** Would cut per-token weight but violates the model=opus-4-8 constraint and the quality bar. Per-tool model routing (issues #19269, #15721) is also not shipped.
 - **Lower reasoning effort below max.** Effort=max is fixed; `MAX_THINKING_TOKENS` is the effort knob and is off-limits.
-- **Disable ultracode or reduce workflow/subagent fan-out.** Mandated to stay; subagent isolation is itself a token saver (lever 2), so reducing it would raise cost.
+- **Eliminate delegation entirely.** The always-on ultracode reflex is off by design (craftsman-default doctrine), but subagent isolation for heavy reads and breadth fan-out is itself a token saver (lever 2), so removing delegation outright would raise cost, not lower it. Keep it available, use it deliberately.
 - **Set `MAX_OUTPUT_TOKENS` higher to read large files in one call.** Would let multi-hundred-k-token files into permanent history and spike the dominant cache_read metric. Keep it unset; this is a do-not-regress guard, not a lever.
 - **Set `CLAUDE_CODE_MAX_OUTPUT_TOKENS` to clip Claude's own output.** Output is 0.7% of volume; the var is reportedly ignored/hard-capped at 32k on Opus 4.6+ (issues #24159, #25569) and not applied to subagent Task calls. Clipping deliverables is a quality hit for negligible savings. The `<audience>` no-paste rule already covers the safe case.
 - **Inject the API context-editing beta (`clear_tool_uses_20250919`) via `CLAUDE_CODE_EXTRA_BODY`.** Sounds high-impact (the headline 84%/100-turn figure) but there is no supported Claude Code setting; the harness already runs this machinery internally as microcompact + Tier-2 server-side clearing. Manual injection could collide with built-in microcompact and invalidate the warm prefix, raising cache_write net-negative. Tracked by issue #26215; do not deploy without throwaway-session measurement.
