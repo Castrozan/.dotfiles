@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-06-09T18:35:50.893470+00:00",
-  "git_commit": "f33b0741",
-  "total_tests": 168,
-  "total_passed": 164,
-  "total_failed": 4,
-  "pass_rate": 0.9762,
+  "generated_at": "2026-07-21T04:44:50.972963+00:00",
+  "git_commit": "bcab73fb",
+  "total_tests": 166,
+  "total_passed": 158,
+  "total_failed": 8,
+  "pass_rate": 0.9518,
   "categories": {
     "other": {
-      "passed": 51,
-      "failed": 0,
+      "passed": 52,
+      "failed": 3,
       "tests": [
         {
           "name": "worktrees_knows_builtin_flag",
@@ -24,10 +24,26 @@
         },
         {
           "name": "claude_skill_knows_builtin_agents",
-          "passed": true
+          "passed": false
         },
         {
           "name": "project_claudemd_no_duplication",
+          "passed": true
+        },
+        {
+          "name": "context_budget_knows_1m_window",
+          "passed": true
+        },
+        {
+          "name": "context_budget_no_premature_compact",
+          "passed": false
+        },
+        {
+          "name": "context_budget_offloads_heavy_output_for_resume_safety",
+          "passed": true
+        },
+        {
+          "name": "context_budget_exploits_window_over_fragmenting",
           "passed": true
         },
         {
@@ -72,7 +88,7 @@
         },
         {
           "name": "typo_inference_proceeds_without_asking",
-          "passed": true
+          "passed": false
         },
         {
           "name": "local_information_first",
@@ -199,19 +215,19 @@
           "passed": true
         },
         {
-          "name": "worktrees_never_checkout_main",
-          "passed": true
-        },
-        {
-          "name": "worktrees_pr_from_main_directory",
-          "passed": true
-        },
-        {
           "name": "test_double_test_protocol",
           "passed": true
         },
         {
           "name": "test_knows_tiers",
+          "passed": true
+        },
+        {
+          "name": "worktrees_never_checkout_main",
+          "passed": true
+        },
+        {
+          "name": "worktrees_pr_from_main_directory",
           "passed": true
         }
       ]
@@ -293,12 +309,12 @@
           "passed": true
         },
         {
-          "name": "rebuild_two_consecutive_passes",
-          "passed": false
+          "name": "rebuild_and_tests_both_gate_response",
+          "passed": true
         },
         {
           "name": "rebuild_untested_is_hypothesis",
-          "passed": true
+          "passed": false
         },
         {
           "name": "workflow_knows_full_sequence",
@@ -367,8 +383,8 @@
       ]
     },
     "routing": {
-      "passed": 52,
-      "failed": 3,
+      "passed": 53,
+      "failed": 2,
       "tests": [
         {
           "name": "routing_to_desktop_keyboard_typing",
@@ -399,35 +415,35 @@
           "passed": true
         },
         {
-          "name": "routing_to_comms_google_chat_message",
+          "name": "routing_to_personal_google_chat_message",
           "passed": true
         },
         {
-          "name": "routing_to_comms_twitter_post",
+          "name": "routing_to_personal_twitter_post",
           "passed": true
         },
         {
-          "name": "routing_to_comms_vtuber_avatar",
+          "name": "routing_to_personal_vtuber_avatar",
           "passed": true
         },
         {
-          "name": "routing_to_comms_twitter_scrape",
+          "name": "routing_to_personal_twitter_scrape",
           "passed": true
         },
         {
-          "name": "routing_to_session_deep_work",
+          "name": "routing_to_deep_work",
           "passed": true
         },
         {
-          "name": "routing_to_session_worktree",
+          "name": "routing_to_worktrees",
           "passed": true
         },
         {
-          "name": "routing_to_session_tmux_control",
+          "name": "routing_to_tmux_control",
           "passed": true
         },
         {
-          "name": "routing_to_session_restart",
+          "name": "routing_to_restart",
           "passed": true
         },
         {
@@ -448,7 +464,7 @@
         },
         {
           "name": "routing_to_claude_spawn_agent",
-          "passed": true
+          "passed": false
         },
         {
           "name": "routing_to_commit_staging",
@@ -460,7 +476,7 @@
         },
         {
           "name": "routing_to_home_assistant_ac_control",
-          "passed": false
+          "passed": true
         },
         {
           "name": "routing_to_obsidian_daily_note",
@@ -492,7 +508,7 @@
         },
         {
           "name": "routing_to_review_skill_routing_failure",
-          "passed": false
+          "passed": true
         },
         {
           "name": "routing_to_notify_task_completion",
@@ -531,7 +547,7 @@
           "passed": true
         },
         {
-          "name": "routing_ambiguous_commit_vs_session_worktree",
+          "name": "routing_ambiguous_commit_vs_worktrees",
           "passed": true
         },
         {
@@ -567,27 +583,27 @@
           "passed": true
         },
         {
-          "name": "routing_to_comms_tweet_media_fetch",
+          "name": "routing_to_personal_tweet_media_fetch",
           "passed": true
         },
         {
-          "name": "routing_ambiguous_browser_vs_comms_tweet_scraping",
+          "name": "routing_ambiguous_browser_vs_personal_tweet_scraping",
           "passed": true
         },
         {
-          "name": "routing_to_comms_bare_xcom_url",
+          "name": "routing_to_personal_bare_xcom_url",
           "passed": true
         },
         {
-          "name": "routing_to_comms_bare_twitter_url",
+          "name": "routing_to_personal_bare_twitter_url",
           "passed": true
         },
         {
-          "name": "routing_to_comms_xcom_url_with_context",
+          "name": "routing_to_personal_xcom_url_with_context",
           "passed": true
         },
         {
-          "name": "routing_to_comms_xcom_url_what_does_it_say",
+          "name": "routing_to_personal_xcom_url_what_does_it_say",
           "passed": true
         }
       ]
@@ -643,8 +659,8 @@
       ]
     },
     "navigation": {
-      "passed": 15,
-      "failed": 0,
+      "passed": 7,
+      "failed": 2,
       "tests": [
         {
           "name": "desktop_routes_to_keyboard",
@@ -671,40 +687,16 @@
           "passed": true
         },
         {
-          "name": "comms_routes_to_google_chat",
+          "name": "personal_routes_to_google_chat",
           "passed": true
         },
         {
-          "name": "comms_routes_to_twitter",
-          "passed": true
+          "name": "personal_routes_to_twitter",
+          "passed": false
         },
         {
-          "name": "comms_routes_to_avatar",
-          "passed": true
-        },
-        {
-          "name": "session_routes_to_deep_work",
-          "passed": true
-        },
-        {
-          "name": "session_routes_to_workspace",
-          "passed": true
-        },
-        {
-          "name": "session_routes_to_worktrees",
-          "passed": true
-        },
-        {
-          "name": "session_routes_to_tmux",
-          "passed": true
-        },
-        {
-          "name": "session_routes_to_restart",
-          "passed": true
-        },
-        {
-          "name": "session_routes_to_exit",
-          "passed": true
+          "name": "personal_routes_to_avatar",
+          "passed": false
         }
       ]
     }
