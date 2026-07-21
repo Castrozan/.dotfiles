@@ -20,6 +20,12 @@ let
   trustedProjectParentDirectories = [
     "${homeDir}/repo"
   ];
+  codexMcpServerSecretFileInjections = builtins.toJSON {
+    jira-desenv = {
+      JIRA_USERNAME = "${homeDir}/.secrets/jira-desenv-username";
+      JIRA_PASSWORD = "${homeDir}/.secrets/jira-desenv-password";
+    };
+  };
   codexConfigSource = codexConfigTomlFormat.generate "codex-config.toml" {
     approval_policy = "never";
     model = codexDefaultModel;
@@ -79,6 +85,18 @@ let
         command = browserMcp.chromeDevtoolsMcpStdioCommand;
         args = browserMcp.chromeDevtoolsMcpStdioArgs;
       };
+      "jira-desenv" = {
+        command = "${pkgs.nodejs_22}/bin/npx";
+        args = [
+          "-y"
+          "@betha/jira-mcp"
+        ];
+        env = {
+          JIRA_BASE_URL = "https://desenv.betha.com.br/";
+          NPM_CONFIG_REGISTRY = "http://nexus3.betha.com.br/repository/npm-all/";
+        };
+        startup_timeout_sec = 120;
+      };
     }
     // lib.optionalAttrs includeVivaldiDevtoolsMcp {
       "vivaldi-devtools" = {
@@ -101,6 +119,7 @@ in
       export CODEX_CONFIG="$HOME/.codex/config.toml"
       export NIX_SOURCE="$HOME/.codex/config.toml.nix-source"
       export CODEX_TRUSTED_PROJECT_PARENT_DIRECTORIES=${lib.escapeShellArg (lib.concatStringsSep "\n" trustedProjectParentDirectories)}
+      export CODEX_MCP_SERVER_SECRET_FILE_INJECTIONS=${lib.escapeShellArg codexMcpServerSecretFileInjections}
       ${codexConfigSeedPython}/bin/python3 ${./config/seed_codex_config_mutable.py}
     '';
   };
