@@ -15,7 +15,7 @@ pkgs.stdenv.mkDerivation {
   src = npmTarball;
 
   patches = [
-    ./chrome-devtools-mcp-patches/parallelize-list-pages-title-fetch.patch
+    ./chrome-devtools-mcp-patches/nonblocking-page-titles.patch
     ./chrome-devtools-mcp-patches/survive-cdp-disconnect.patch
   ];
 
@@ -38,7 +38,7 @@ pkgs.stdenv.mkDerivation {
   '';
 
   meta = {
-    description = "Pinned chrome-devtools-mcp, self-bundled with zero npm dependencies, carrying two upstream-bug patches: one parallelizes the list_pages title fetch so it does not stall for a second per open tab against the consent-attached Chrome, the other clears the cached browser on a mid-session CDP disconnect and guards uncaughtException so a dropped connection degrades to one failed tool call and reconnects instead of killing the server and vanishing the tool namespace for the rest of the session";
+    description = "Pinned chrome-devtools-mcp, self-bundled with zero npm dependencies, carrying two upstream-bug patches: one makes the per-page title fetch in the page listing non-blocking and cached so an op no longer stalls a second per open tab against the slow consent-attached Chrome (the listing returns instantly with cached titles that refresh in the background, keeping op latency flat regardless of how many tabs the user keeps open), the other clears the cached browser on a mid-session CDP disconnect and guards uncaughtException so a dropped connection degrades to one failed tool call and reconnects instead of killing the server and vanishing the tool namespace for the rest of the session";
     homepage = "https://github.com/ChromeDevTools/chrome-devtools-mcp";
   };
 }

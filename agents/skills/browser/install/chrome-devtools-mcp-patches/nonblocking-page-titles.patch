@@ -1,0 +1,48 @@
+--- a/build/src/McpResponse.js
++++ b/build/src/McpResponse.js
+@@ -698,7 +698,7 @@
+                     const contextLabel = isolatedContextName
+                         ? ` isolatedContext=${isolatedContextName}`
+                         : '';
+-                    const title = await fetchPageTitle(mcpPage.pptrPage);
++                    const title = cachedNonBlockingPageTitle(mcpPage.pptrPage);
+                     const pageLabel = title
+                         ? `${truncateTitle(title)} (${mcpPage.pptrPage.url()})`
+                         : mcpPage.pptrPage.url();
+@@ -717,7 +717,7 @@
+                         const contextLabel = isolatedContextName
+                             ? ` isolatedContext=${isolatedContextName}`
+                             : '';
+-                        const title = await fetchPageTitle(mcpPage.pptrPage);
++                        const title = cachedNonBlockingPageTitle(mcpPage.pptrPage);
+                         const pageLabel = title
+                             ? `${truncateTitle(title)} (${mcpPage.pptrPage.url()})`
+                             : mcpPage.pptrPage.url();
+@@ -1078,6 +1078,27 @@
+         new Promise(resolve => setTimeout(() => resolve(''), 1000)),
+     ]);
+ }
++const nonBlockingPageTitleCache = new WeakMap();
++function cachedNonBlockingPageTitle(page) {
++    let entry = nonBlockingPageTitleCache.get(page);
++    if (!entry) {
++        entry = { title: '', refreshedAtEpochMs: 0, refreshInFlight: false };
++        nonBlockingPageTitleCache.set(page, entry);
++    }
++    if (!entry.refreshInFlight && Date.now() - entry.refreshedAtEpochMs > 3000) {
++        entry.refreshInFlight = true;
++        void fetchPageTitle(page)
++            .then(freshTitle => {
++                entry.title = freshTitle;
++                entry.refreshedAtEpochMs = Date.now();
++                entry.refreshInFlight = false;
++            })
++            .catch(() => {
++                entry.refreshInFlight = false;
++            });
++    }
++    return entry.title;
++}
+ function createStructuredPage(mcpPage, context, rawTitle) {
+     const isolatedContextName = mcpPage.isolatedContextName;
+     const title = truncateTitle(rawTitle);
