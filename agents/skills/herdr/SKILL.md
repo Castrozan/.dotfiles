@@ -8,7 +8,7 @@ herdr is the primary multiplexer on every host; tmux is retired. Its CLI is self
 </orientation>
 
 <orchestrating_agents>
-Spawn a Claude with `herdr agent start <name> --cwd <dir> [--workspace ID] [--split right|down] -- claude [--model M] [--name N]`; everything after `--` is the launched argv. Synchronize on reported state, not scraped output: `herdr agent wait <target> --status idle|working|blocked [--timeout MS]` blocks until the agent reaches that state, so wait for `idle` before the first prompt and after every turn instead of polling `agent read`. Read output with `herdr agent read <target> [--source visible|recent|recent-unwrapped] [--lines N]`. A target is the agent name, a terminal id, or a pane id.
+Spawn a Claude with `herdr agent start <name> --cwd <dir> --tab "$HERDR_TAB_ID" --no-focus [--split right|down] -- claude [--model M] [--name N]`; everything after `--` is the launched argv. Pin placement to your own `$HERDR_TAB_ID` and pass `--no-focus`: an unpinned `agent start` splits the focused pane into whatever window the user switched to, and a guard blocks it (target elsewhere only with an explicit `--workspace`/`--tab`). Synchronize on reported state, not scraped output: `herdr agent wait <target> --status idle|working|blocked [--timeout MS]` blocks until the agent reaches that state, so wait for `idle` before the first prompt and after every turn instead of polling `agent read`. Read output with `herdr agent read <target> [--source visible|recent|recent-unwrapped] [--lines N]`. A target is the agent name, a terminal id, or a pane id.
 </orchestrating_agents>
 
 <prompt_submission_trap>

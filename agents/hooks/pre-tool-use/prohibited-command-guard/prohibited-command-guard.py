@@ -38,10 +38,18 @@ PROHIBITED_BASH_COMMAND_PATTERNS = [
         "direnv is prohibited; use 'devenv shell' or 'devenv shell -- command'.",
     ),
     (
+        rf"{COMMAND_BOUNDARY_PREFIX}herdr\s+agent\s+start\b(?:(?!\s--(?:tab|workspace)(?=[\s=]))(?!\s--\s)[^;&|\n])*(?:$|[;&|\n]|\s--\s)",
+        "herdr agent start without --tab/--workspace splits whatever pane is "
+        "focused, so the new pane can land in another window instead of yours; "
+        'pin placement explicitly, e.g. --tab "$HERDR_TAB_ID" --no-focus for '
+        "your own tab, or --workspace <id>/--tab <id> to target another.",
+    ),
+    (
         rf"{COMMAND_BOUNDARY_PREFIX}claude(?![\w-])[^;&|`)\n]*?\s(?:-p|--print)(?:[=\s'\"]|$)",
         "claude -p/--print (headless oneshot) is prohibited; drive an interactive "
         "session instead (the claude-workspace wrapper, or a herdr agent via "
-        "'herdr agent start <name> --cwd <dir> -- claude'). "
+        '\'herdr agent start <name> --cwd <dir> --tab "$HERDR_TAB_ID" --no-focus '
+        "-- claude'). "
         "For a genuinely sanctioned one-off, prefix the command with "
         f"{SANCTIONED_HEADLESS_CLAUDE_OVERRIDE_SENTINEL}.",
         SANCTIONED_HEADLESS_CLAUDE_OVERRIDE_SENTINEL,
