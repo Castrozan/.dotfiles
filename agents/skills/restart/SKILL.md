@@ -4,7 +4,7 @@ description: Restart the current Claude Code session in place, resuming the same
 ---
 
 <prerequisites>
-Running inside tmux. Commit any pending changes before restarting.
+Running inside herdr or tmux. Commit any pending changes before restarting.
 </prerequisites>
 
 <execution>
@@ -19,5 +19,5 @@ claude-restart
 </continuation>
 
 <notes>
-Discovers the current session ID from the claude process cmdline (--resume or --session-id), read via ps so it works on darwin and Linux alike. Falls back to the most recently modified session jsonl in the project directory. Always uses `claude --resume <id>` — never `--continue`. Forks a detached process that waits for claude to die, then sends the resume command to the tmux pane. SessionStart hooks fire on resume, recovering deep-work context automatically.
+Discovers the current session ID from the claude process cmdline (--resume or --session-id), read via ps so it works on darwin and Linux alike. Falls back to the most recently modified session jsonl in the project directory, and to `claude --continue` when no id is found. Detects the enclosing multiplexer (herdr when `HERDR_PANE_ID` is set, else tmux), forks a detached process that waits for claude to die, then drives the resume command back into the same pane through that multiplexer. SessionStart hooks fire on resume, recovering deep-work context automatically.
 </notes>

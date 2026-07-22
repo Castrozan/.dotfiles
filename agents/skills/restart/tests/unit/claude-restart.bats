@@ -22,8 +22,33 @@ load '../../../../../tests/helpers/bash-script-assertions'
 	assert_script_source_matches 'CONTINUATION_PROMPT="\$\{1:-\$DEFAULT_RESTART_HEADS_UP\}"'
 }
 
-@test "requires tmux environment variable" {
+@test "detects herdr as the primary multiplexer via HERDR_PANE_ID" {
+	assert_script_source_matches 'HERDR_PANE_ID'
+}
+
+@test "falls back to tmux via the TMUX environment variable" {
 	assert_script_source_matches 'TMUX'
+}
+
+@test "fails safe when neither herdr nor tmux is present" {
+	assert_script_source_matches 'Not inside herdr or tmux'
+}
+
+@test "relaunches into the herdr pane with pane run" {
+	assert_script_source_matches 'herdr pane run'
+}
+
+@test "waits for the resumed herdr TUI prompt before sending the continuation" {
+	assert_script_source_matches 'herdr wait output.*--match'
+}
+
+@test "submits the herdr continuation via send-text then an Enter key" {
+	assert_script_source_matches 'herdr pane send-text'
+	assert_script_source_matches 'herdr pane send-keys.*Enter'
+}
+
+@test "checks herdr pane existence in watcher loop to prevent orphan watchers" {
+	assert_script_source_matches 'herdr pane get.*exit 0'
 }
 
 @test "extracts session id from --resume flag in process args" {

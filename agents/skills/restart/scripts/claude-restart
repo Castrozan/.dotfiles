@@ -12,14 +12,6 @@ if ! CLAUDE_PID=$(find-claude-ancestor-pid "$ANCESTOR_SCAN_START_PROCESS_ID"); t
 	exit 1
 fi
 
-if [[ -z "${TMUX:-}" ]]; then
-	echo "Not in tmux — cannot auto-restart."
-	echo "Use /exit then manually: claude --continue"
-	exit 1
-fi
-
-CURRENT_TMUX_PANE="$TMUX_PANE"
-
 CLAUDE_CMDLINE=$(ps -ww -p "$CLAUDE_PID" -o args= 2>/dev/null || echo "")
 EXTRACTED_SESSION_ID=""
 if [[ "$CLAUDE_CMDLINE" =~ --resume[[:space:]]+([a-f0-9-]+) ]]; then
@@ -57,43 +49,78 @@ fi
 
 echo "Restarting with: $RESUME_COMMAND"
 
-nohup bash -c "
-    while kill -0 $CLAUDE_PID 2>/dev/null; do
-        tmux display-message -t '$CURRENT_TMUX_PANE' -p '' 2>/dev/null || exit 0
-        sleep 0.2
-    done
+if [[ -n "${HERDR_PANE_ID:-}" ]]; then
+	CURRENT_HERDR_PANE="$HERDR_PANE_ID"
 
-    pkill -TERM -P $CLAUDE_PID 2>/dev/null || true
-    sleep 0.5
-    pkill -KILL -P $CLAUDE_PID 2>/dev/null || true
+	nohup bash -c "
+	    while kill -0 $CLAUDE_PID 2>/dev/null; do
+	        herdr pane get '$CURRENT_HERDR_PANE' >/dev/null 2>&1 || exit 0
+	        sleep 0.2
+	    done
 
-    tmux display-message -t '$CURRENT_TMUX_PANE' -p '' 2>/dev/null || exit 0
+	    pkill -TERM -P $CLAUDE_PID 2>/dev/null || true
+	    sleep 0.5
+	    pkill -KILL -P $CLAUDE_PID 2>/dev/null || true
 
-    sleep 1
-    tmux send-keys -t '$CURRENT_TMUX_PANE' '$RESUME_COMMAND' Enter
+	    herdr pane get '$CURRENT_HERDR_PANE' >/dev/null 2>&1 || exit 0
 
-    if [[ -n '$CONTINUATION_PROMPT' ]]; then
-        for ATTEMPT in \$(seq 1 60); do
-            tmux display-message -t '$CURRENT_TMUX_PANE' -p '' 2>/dev/null || exit 0
-            PANE_CONTENT=\$(tmux capture-pane -t '$CURRENT_TMUX_PANE' -p -S -5)
-            if echo \"\$PANE_CONTENT\" | grep -q '❯'; then
-                break
-            fi
-            sleep 1
-        done
-        sleep 2
-        tmux display-message -t '$CURRENT_TMUX_PANE' -p '' 2>/dev/null || exit 0
+	    sleep 1
+	    herdr pane run '$CURRENT_HERDR_PANE' '$RESUME_COMMAND'
 
-        CONTINUATION_PROMPT_BUFFER_FILE=\$(mktemp -t claude-restart-continuation.XXXXXX)
-        printf '%s' '$CONTINUATION_PROMPT' > \"\$CONTINUATION_PROMPT_BUFFER_FILE\"
-        tmux load-buffer -b claude-restart-continuation \"\$CONTINUATION_PROMPT_BUFFER_FILE\"
-        tmux paste-buffer -b claude-restart-continuation -t '$CURRENT_TMUX_PANE'
-        rm -f \"\$CONTINUATION_PROMPT_BUFFER_FILE\"
-        tmux delete-buffer -b claude-restart-continuation 2>/dev/null || true
-        sleep 0.5
-        tmux send-keys -t '$CURRENT_TMUX_PANE' Enter
-    fi
-" &>/dev/null &
-disown
+	    if [[ -n '$CONTINUATION_PROMPT' ]]; then
+	        herdr wait output '$CURRENT_HERDR_PANE' --match '❯' --timeout 60000 >/dev/null 2>&1 || true
+	        sleep 2
+	        herdr pane send-text '$CURRENT_HERDR_PANE' '$CONTINUATION_PROMPT'
+	        sleep 0.5
+	        herdr pane send-keys '$CURRENT_HERDR_PANE' Enter
+	    fi
+	" &>/dev/null &
+	disown
+elif [[ -n "${TMUX:-}" ]]; then
+	CURRENT_TMUX_PANE="$TMUX_PANE"
+
+	nohup bash -c "
+	    while kill -0 $CLAUDE_PID 2>/dev/null; do
+	        tmux display-message -t '$CURRENT_TMUX_PANE' -p '' 2>/dev/null || exit 0
+	        sleep 0.2
+	    done
+
+	    pkill -TERM -P $CLAUDE_PID 2>/dev/null || true
+	    sleep 0.5
+	    pkill -KILL -P $CLAUDE_PID 2>/dev/null || true
+
+	    tmux display-message -t '$CURRENT_TMUX_PANE' -p '' 2>/dev/null || exit 0
+
+	    sleep 1
+	    tmux send-keys -t '$CURRENT_TMUX_PANE' '$RESUME_COMMAND' Enter
+
+	    if [[ -n '$CONTINUATION_PROMPT' ]]; then
+	        for ATTEMPT in \$(seq 1 60); do
+	            tmux display-message -t '$CURRENT_TMUX_PANE' -p '' 2>/dev/null || exit 0
+	            PANE_CONTENT=\$(tmux capture-pane -t '$CURRENT_TMUX_PANE' -p -S -5)
+	            if echo \"\$PANE_CONTENT\" | grep -q '❯'; then
+	                break
+	            fi
+	            sleep 1
+	        done
+	        sleep 2
+	        tmux display-message -t '$CURRENT_TMUX_PANE' -p '' 2>/dev/null || exit 0
+
+	        CONTINUATION_PROMPT_BUFFER_FILE=\$(mktemp -t claude-restart-continuation.XXXXXX)
+	        printf '%s' '$CONTINUATION_PROMPT' > \"\$CONTINUATION_PROMPT_BUFFER_FILE\"
+	        tmux load-buffer -b claude-restart-continuation \"\$CONTINUATION_PROMPT_BUFFER_FILE\"
+	        tmux paste-buffer -b claude-restart-continuation -t '$CURRENT_TMUX_PANE'
+	        rm -f \"\$CONTINUATION_PROMPT_BUFFER_FILE\"
+	        tmux delete-buffer -b claude-restart-continuation 2>/dev/null || true
+	        sleep 0.5
+	        tmux send-keys -t '$CURRENT_TMUX_PANE' Enter
+	    fi
+	" &>/dev/null &
+	disown
+else
+	echo "Not inside herdr or tmux, cannot auto-restart."
+	echo "Use /exit then manually: claude --continue"
+	exit 1
+fi
 
 kill -TERM "$CLAUDE_PID"
