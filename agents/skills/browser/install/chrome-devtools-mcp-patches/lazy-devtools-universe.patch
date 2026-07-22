@@ -1,0 +1,65 @@
+diff -ruN a/build/src/McpPage.js b/build/src/McpPage.js
+--- a/build/src/McpPage.js	2026-07-22 17:07:44
++++ b/build/src/McpPage.js	2026-07-22 17:07:44
+@@ -32,6 +32,7 @@
+     // Metadata
+     isolatedContextName;
+     #devtoolsUniverse;
++    #devtoolsUniverseInitPromise;
+     // Dialog
+     #dialog;
+     #dialogHandler;
+@@ -67,7 +68,6 @@
+     }
+     async init() {
+         await Promise.allSettled([
+-            this.#initDevToolsUniverseNoThrow(),
+             this.#initFocusEmulationNoThrow(),
+         ]);
+     }
+@@ -89,6 +89,15 @@
+             logger?.('Failed to initialize DevTools universe', e);
+         }
+     }
++    async ensureDevtoolsUniverse() {
++        if (!this.#devtoolsUniverse) {
++            if (!this.#devtoolsUniverseInitPromise) {
++                this.#devtoolsUniverseInitPromise = this.#initDevToolsUniverseNoThrow();
++            }
++            await this.#devtoolsUniverseInitPromise;
++        }
++        return this.#devtoolsUniverse;
++    }
+     get devtoolsUniverse() {
+         return this.#devtoolsUniverse;
+     }
+@@ -412,7 +421,7 @@
+             await page.emulateNetworkConditions(networkCondition);
+             newSettings.networkConditions = options.networkConditions;
+         }
+-        const secondarySession = this.devtoolsUniverse?.session;
++        const secondarySession = (await this.ensureDevtoolsUniverse())?.session;
+         if (!options.cpuThrottlingRate) {
+             await page.emulateCPUThrottling(1);
+             if (secondarySession) {
+diff -ruN a/build/src/McpResponse.js b/build/src/McpResponse.js
+--- a/build/src/McpResponse.js	2026-07-22 17:07:44
++++ b/build/src/McpResponse.js	2026-07-22 17:07:44
+@@ -447,7 +447,7 @@
+             const consoleMessageStableId = this.#attachedConsoleMessageId;
+             if ('args' in message || message instanceof UncaughtError) {
+                 const consoleMessage = message;
+-                const devTools = this.#page.devtoolsUniverse;
++                const devTools = await this.#page.ensureDevtoolsUniverse();
+                 detailedConsoleMessage = await ConsoleFormatter.from(consoleMessage, {
+                     id: consoleMessageStableId,
+                     fetchDetailedData: true,
+@@ -518,7 +518,7 @@
+                     return await ConsoleFormatter.from(consoleMessage, {
+                         id: consoleMessageStableId,
+                         fetchDetailedData: false,
+-                        devTools: page ? page.devtoolsUniverse : undefined,
++                        devTools: page ? await page.ensureDevtoolsUniverse() : undefined,
+                     });
+                 }
+                 if (item instanceof DevTools.AggregatedIssue) {
