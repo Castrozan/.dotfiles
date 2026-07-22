@@ -8,12 +8,17 @@ in atrium rather than being generated here.
 
 ## Published artifacts
 
-Two artifacts are published, each under its own prefix in the bucket:
+Three artifacts are published, each under its own prefix in the bucket:
 
 - `reports/baseline/` — agent-eval pass-rate dashboard, rendered by
   `agents/evals/render_baseline_dashboard.py` from the git history of `agents/evals/baseline.json`.
 - `reports/coverage/` — kcov line coverage for the shell suite, produced by
   `tests/cover/bash-coverage.sh --ci`.
+- `reports/quality/metrics.json` — the live counts the atrium quality writeup renders, derived by
+  `agents/evals/render_quality_metrics.py` straight from the repo: static-eval suite size and pass
+  rate, integration and e2e scenario counts, `core.md` line and rule-block counts, and the wired
+  hook events. The narrative on that page is hand-written; every number in it comes from this file,
+  so the page cannot drift from the repo the way the hand-maintained copy did.
 
 Bucket: `gs://zg-url-shortener-2026-dotfiles-usage-snapshots` (public-read with CORS, defined in
 `infra/gcp/usage_snapshots_bucket.tf`). The public object base URL the atrium SPA iframes is
@@ -47,8 +52,9 @@ nothing, and the atrium baseline and coverage iframes 404 against the bucket.
 
 ```
 nix shell nixpkgs#kcov nixpkgs#bats nixpkgs#bc --command ./tests/cover/bash-coverage.sh --ci
-mkdir -p apps/reports/site
+mkdir -p apps/reports/site/quality
 cp -r tests/coverage apps/reports/site/coverage
 python3 agents/evals/render_baseline_dashboard.py apps/reports/site/baseline
 cp .github/pages/style.css apps/reports/site/baseline/style.css
+python3 agents/evals/render_quality_metrics.py apps/reports/site/quality/metrics.json
 ```

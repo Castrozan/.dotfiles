@@ -36,15 +36,13 @@ jobs:
           find home/base home/linux home/darwin -path "*/scripts/*" -type f -exec chmod +x {} +
           nix shell nixpkgs#kcov nixpkgs#bats nixpkgs#bc --command ./tests/cover/bash-coverage.sh --ci
 
-      - name: Assemble static site
+      - name: Assemble published artifacts
         run: |
           mkdir -p apps/reports/site/quality
-          cp .github/pages/style.css apps/reports/site/style.css
-          cp .github/pages/index.html apps/reports/site/index.html
-          cp .github/pages/quality.html apps/reports/site/quality/index.html
           cp -r tests/coverage apps/reports/site/coverage
           python3 agents/evals/render_baseline_dashboard.py apps/reports/site/baseline
           cp .github/pages/style.css apps/reports/site/baseline/style.css
+          python3 agents/evals/render_quality_metrics.py apps/reports/site/quality/metrics.json
 
       - id: auth
         uses: google-github-actions/auth@v2
@@ -54,11 +52,13 @@ jobs:
 
       - uses: google-github-actions/setup-gcloud@v2
 
-      - name: Publish baseline and coverage to the usage snapshots bucket
+      - name: Publish baseline, coverage and quality metrics to the usage snapshots bucket
         if: ${{ vars.REPORTS_STATIC_GCS_PUBLISH == 'true' }}
         run: |
           BUCKET="gs://${GCP_PROJECT}-dotfiles-usage-snapshots"
           gcloud storage rsync apps/reports/site/baseline "${BUCKET}/reports/baseline" \
             --recursive --delete-unmatched-destination-objects
           gcloud storage rsync apps/reports/site/coverage "${BUCKET}/reports/coverage" \
+            --recursive --delete-unmatched-destination-objects
+          gcloud storage rsync apps/reports/site/quality "${BUCKET}/reports/quality" \
             --recursive --delete-unmatched-destination-objects
