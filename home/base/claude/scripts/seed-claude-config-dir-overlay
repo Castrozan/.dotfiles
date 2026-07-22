@@ -8,6 +8,22 @@ from pathlib import Path
 
 ENTRIES_KEPT_ISOLATED_FROM_SHARED_CONFIG = {"plugins", "settings.json"}
 
+RUNTIME_OWNED_KEYS_PRESERVED_ACROSS_RESEEDS = {
+    "theme",
+    "voice",
+    "voiceEnabled",
+    "enabledPlugins",
+    "extraKnownMarketplaces",
+}
+
+
+def read_json_object_or_empty(json_path):
+    try:
+        parsed = json.loads(json_path.read_text())
+    except (OSError, ValueError):
+        return {}
+    return parsed if isinstance(parsed, dict) else {}
+
 
 def deep_merge_overlay_onto_base(base_value, overlay_value):
     if isinstance(base_value, dict) and isinstance(overlay_value, dict):
@@ -51,14 +67,19 @@ def write_merged_settings_with_overlay(
     source_config_directory, target_config_directory, settings_overlay_file
 ):
     source_settings_path = source_config_directory / "settings.json"
-    base_settings = (
-        json.loads(source_settings_path.read_text())
-        if source_settings_path.exists()
-        else {}
-    )
-    settings_overlay = json.loads(Path(settings_overlay_file).read_text())
-    merged_settings = deep_merge_overlay_onto_base(base_settings, settings_overlay)
     target_settings_path = target_config_directory / "settings.json"
+    base_settings = read_json_object_or_empty(source_settings_path)
+    previously_seeded_settings = read_json_object_or_empty(target_settings_path)
+    runtime_owned_settings = {
+        key: value
+        for key, value in previously_seeded_settings.items()
+        if key in RUNTIME_OWNED_KEYS_PRESERVED_ACROSS_RESEEDS
+    }
+    settings_overlay = json.loads(Path(settings_overlay_file).read_text())
+    merged_settings = deep_merge_overlay_onto_base(
+        deep_merge_overlay_onto_base(base_settings, runtime_owned_settings),
+        settings_overlay,
+    )
     target_settings_path.write_text(json.dumps(merged_settings, indent=2))
     target_settings_path.chmod(0o600)
 
