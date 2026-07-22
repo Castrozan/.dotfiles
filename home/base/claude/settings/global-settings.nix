@@ -33,7 +33,7 @@ let
 
   claudeGlobalSettings = {
     model = "claude-opus-4-8[1m]";
-    effortLevel = "max";
+    effortLevel = "xhigh";
     ultracode = false;
     enableWorkflows = true;
     language = "english";

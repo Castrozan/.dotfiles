@@ -9,6 +9,7 @@ let
     export CLAUDE_BINARY_PATH="${lib.getExe config.claude.package}"
     export CLAUDE_INTERACTIVE_PREFERENCES_PATH="${../../../../agents/core_rules/communication/interactive-preferences.md}"
     export CLAUDE_INTERACTIVE_MODEL="claude-opus-4-8[1m]"
+    export CLAUDE_CODE_EFFORT_LEVEL="max"
     exec ${pkgs.python312}/bin/python3 ${./scripts/launch-claude-workspace-session} "$@"
   '';
 in
