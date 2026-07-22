@@ -1,0 +1,113 @@
+#!/usr/bin/env python3
+import argparse
+import json
+import os
+import shutil
+import sys
+from pathlib import Path
+
+ENTRIES_KEPT_ISOLATED_FROM_SHARED_CONFIG = {"plugins", "settings.json"}
+
+
+def deep_merge_overlay_onto_base(base_value, overlay_value):
+    if isinstance(base_value, dict) and isinstance(overlay_value, dict):
+        merged = dict(base_value)
+        for overlay_key, overlay_child in overlay_value.items():
+            if overlay_key in merged:
+                merged[overlay_key] = deep_merge_overlay_onto_base(
+                    merged[overlay_key], overlay_child
+                )
+            else:
+                merged[overlay_key] = overlay_child
+        return merged
+    return overlay_value
+
+
+def ensure_symlink_pointing_at(link_path, intended_target):
+    if link_path.is_symlink():
+        if os.readlink(link_path) == str(intended_target):
+            return
+        link_path.unlink()
+    elif link_path.exists():
+        if link_path.is_dir():
+            shutil.rmtree(link_path)
+        else:
+            link_path.unlink()
+    link_path.symlink_to(intended_target)
+
+
+def mirror_shared_config_entries_as_symlinks(
+    source_config_directory, target_config_directory
+):
+    for source_entry in source_config_directory.iterdir():
+        if source_entry.name in ENTRIES_KEPT_ISOLATED_FROM_SHARED_CONFIG:
+            continue
+        ensure_symlink_pointing_at(
+            target_config_directory / source_entry.name, source_entry
+        )
+
+
+def write_merged_settings_with_overlay(
+    source_config_directory, target_config_directory, settings_overlay_file
+):
+    source_settings_path = source_config_directory / "settings.json"
+    base_settings = (
+        json.loads(source_settings_path.read_text())
+        if source_settings_path.exists()
+        else {}
+    )
+    settings_overlay = json.loads(Path(settings_overlay_file).read_text())
+    merged_settings = deep_merge_overlay_onto_base(base_settings, settings_overlay)
+    target_settings_path = target_config_directory / "settings.json"
+    target_settings_path.write_text(json.dumps(merged_settings, indent=2))
+    target_settings_path.chmod(0o600)
+
+
+def seed_isolated_dot_claude_json_once(
+    source_config_directory, target_config_directory
+):
+    target_dot_claude_json = target_config_directory / ".claude.json"
+    if target_dot_claude_json.exists():
+        return
+    source_dot_claude_json = source_config_directory.parent / ".claude.json"
+    if source_dot_claude_json.exists():
+        shutil.copyfile(source_dot_claude_json, target_dot_claude_json)
+    else:
+        target_dot_claude_json.write_text(json.dumps({"installMethod": "native"}))
+    target_dot_claude_json.chmod(0o600)
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--source-config-directory", required=True)
+    parser.add_argument("--target-config-directory", required=True)
+    parser.add_argument("--settings-overlay-file", required=True)
+    arguments = parser.parse_args()
+
+    source_config_directory = Path(arguments.source_config_directory)
+    target_config_directory = Path(arguments.target_config_directory)
+
+    if not source_config_directory.is_dir():
+        print(
+            f"source config directory {source_config_directory} does not exist",
+            file=sys.stderr,
+        )
+        return 1
+
+    target_config_directory.mkdir(parents=True, exist_ok=True)
+    (target_config_directory / "plugins").mkdir(exist_ok=True)
+
+    mirror_shared_config_entries_as_symlinks(
+        source_config_directory, target_config_directory
+    )
+    write_merged_settings_with_overlay(
+        source_config_directory,
+        target_config_directory,
+        arguments.settings_overlay_file,
+    )
+    seed_isolated_dot_claude_json_once(source_config_directory, target_config_directory)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
