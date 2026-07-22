@@ -38,11 +38,12 @@ PROHIBITED_BASH_COMMAND_PATTERNS = [
         "direnv is prohibited; use 'devenv shell' or 'devenv shell -- command'.",
     ),
     (
-        rf"{COMMAND_BOUNDARY_PREFIX}herdr\s+agent\s+start\b(?:(?!\s--(?:tab|workspace)(?=[\s=]))(?!\s--\s)[^;&|\n])*(?:$|[;&|\n]|\s--\s)",
-        "herdr agent start without --tab/--workspace splits whatever pane is "
-        "focused, so the new pane can land in another window instead of yours; "
-        'pin placement explicitly, e.g. --tab "$HERDR_TAB_ID" --no-focus for '
-        "your own tab, or --workspace <id>/--tab <id> to target another.",
+        rf"{COMMAND_BOUNDARY_PREFIX}herdr\s+agent\s+start\b(?:(?!\s--tab(?=[\s=]))(?!\s--\s)[^;&|\n])*(?:$|[;&|\n]|\s--\s)",
+        "herdr agent start without --tab splits an active tab someone is "
+        "already working in; --workspace alone is not a pin because it only "
+        "chooses which workspace's active tab gets split. Pin the exact tab: "
+        '--tab "$HERDR_TAB_ID" --no-focus for your own, or create a fresh one '
+        "with 'herdr tab create --workspace <id> --no-focus' and pass its id.",
     ),
     (
         rf"{COMMAND_BOUNDARY_PREFIX}claude(?![\w-])[^;&|`)\n]*?\s(?:-p|--print)(?:[=\s'\"]|$)",

@@ -12,6 +12,9 @@ class TestBashHerdrUnpinnedAgentStartBlocking:
             "true; herdr agent start demo --cwd /tmp -- claude",
             "herdr agent start demo --cwd /tmp -- claude --tab foo",
             "herdr agent start demo --workspace-dir x -- claude",
+            "herdr agent start demo --cwd /tmp --workspace w1 -- claude",
+            "herdr agent start demo --cwd /tmp --workspace=w1 --no-focus -- claude",
+            "herdr agent start demo --cwd /tmp --workspace w1 --split down -- claude",
         ],
     )
     def test_blocks_unpinned_agent_start(
@@ -35,7 +38,8 @@ class TestBashHerdrUnpinnedAgentStartBlocking:
             'herdr agent start demo --cwd "$(pwd)" --tab "$HERDR_TAB_ID" --no-focus -- claude',
             "herdr agent start demo --cwd /tmp --tab w1:tA -- claude",
             "herdr agent start demo --cwd /tmp --tab=w1:tA -- claude",
-            "herdr agent start demo --cwd /tmp --workspace w1 -- claude",
+            "herdr agent start demo --cwd /tmp --workspace w1 --tab w1:tA -- claude",
+            "herdr tab create --workspace w1 --no-focus",
             "herdr agent wait demo --status idle",
             "herdr agent read demo --source recent",
             "herdr agent send demo 'count to 5'",
