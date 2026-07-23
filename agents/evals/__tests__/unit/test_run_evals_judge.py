@@ -32,6 +32,13 @@ def test_parse_verdict_falls_back_to_the_first_word():
     assert passed is True
 
 
+def test_parse_verdict_uses_the_final_verdict_when_several_are_present():
+    passed, _ = parse_judge_verdict(
+        "VERDICT: PASS\nbut on reflection it breaks the rule\nVERDICT: FAIL"
+    )
+    assert passed is False
+
+
 def test_parse_verdict_treats_empty_as_fail():
     passed, reason = parse_judge_verdict("   ")
     assert passed is False

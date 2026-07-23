@@ -4,25 +4,24 @@ from run_evals_statistics import pass_at_k, wilson_score_interval
 
 
 def aggregate_repeated_runs(results_per_epoch):
-    passes_by_test = defaultdict(int)
-    totals_by_test = defaultdict(int)
-    category_by_test = {}
+    passes_by_key = defaultdict(int)
+    totals_by_key = defaultdict(int)
     for epoch_results in results_per_epoch:
         for result in epoch_results:
-            totals_by_test[result.name] += 1
-            category_by_test.setdefault(result.name, result.category)
+            key = (result.category, result.name)
+            totals_by_key[key] += 1
             if result.passed:
-                passes_by_test[result.name] += 1
+                passes_by_key[key] += 1
 
     per_test = []
-    for name in sorted(totals_by_test):
-        passes = passes_by_test[name]
-        total = totals_by_test[name]
+    for category, name in sorted(totals_by_key):
+        passes = passes_by_key[(category, name)]
+        total = totals_by_key[(category, name)]
         lower, upper = wilson_score_interval(passes, total)
         per_test.append(
             {
                 "name": name,
-                "category": category_by_test[name],
+                "category": category,
                 "passes": passes,
                 "total": total,
                 "lower": lower,

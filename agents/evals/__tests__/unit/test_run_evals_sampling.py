@@ -60,6 +60,38 @@ def test_aggregate_carries_the_authored_category():
     assert per_test[0]["category"] == "delegation"
 
 
+def test_aggregate_keeps_same_name_in_different_categories_separate():
+    per_test = aggregate_repeated_runs(
+        [
+            _epoch(("shared", True, "nix/rebuild"), ("shared", False, "nix/knowledge")),
+            _epoch(("shared", True, "nix/rebuild"), ("shared", False, "nix/knowledge")),
+        ]
+    )
+
+    by_key = {(test["category"], test["name"]): test for test in per_test}
+    assert len(per_test) == 2
+    assert by_key[("nix/rebuild", "shared")]["passes"] == 2
+    assert by_key[("nix/rebuild", "shared")]["total"] == 2
+    assert by_key[("nix/knowledge", "shared")]["passes"] == 0
+    assert by_key[("nix/knowledge", "shared")]["total"] == 2
+
+
+def test_epoch_baseline_ties_toward_pass_on_an_even_split():
+    per_test = aggregate_repeated_runs(
+        [
+            _epoch(("even", True, "core_rules")),
+            _epoch(("even", False, "core_rules")),
+        ]
+    )
+
+    baseline = build_epoch_enriched_baseline(
+        per_test, 2, "abc123", "2026-07-23T00:00:00+00:00"
+    )
+
+    assert baseline["categories"]["core_rules"]["passed"] == 1
+    assert baseline["categories"]["core_rules"]["failed"] == 0
+
+
 def test_epoch_baseline_buckets_by_category_and_uses_majority_vote():
     per_test = aggregate_repeated_runs(
         [

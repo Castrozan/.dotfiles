@@ -20,7 +20,7 @@ from run_evals_baseline import (  # noqa: F401, E402
     save_baseline,
     write_baseline,
 )
-from run_evals_claude_cli import run_claude_cli  # noqa: F401, E402
+from run_evals_claude_cli import run_claude_cli  # noqa: E402
 from run_evals_config_loader import (  # noqa: F401, E402
     discover_skill_adjacent_eval_files,
     load_config,
