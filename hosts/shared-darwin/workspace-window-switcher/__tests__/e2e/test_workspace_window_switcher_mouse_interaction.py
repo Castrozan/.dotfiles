@@ -17,15 +17,12 @@ pytestmark = pytest.mark.workspace_switcher_integration
 
 
 def test_switcher_stays_active_during_mouse_movement():
-    print("TEST: switcher stays active during mouse movement")
-
     send_command_to_daemon("next")
     time.sleep(COMMAND_SETTLE_DELAY_SECONDS)
 
     if not is_switcher_active():
-        print("  SKIP: switcher did not activate (need >= 2 windows in workspace)")
         send_command_to_daemon("cancel")
-        return True
+        pytest.skip("switcher did not activate, focused workspace needs >= 2 windows")
 
     for iteration in range(MOUSE_MOVEMENT_ITERATIONS):
         direction = 1 if iteration % 2 == 0 else -1
@@ -34,64 +31,51 @@ def test_switcher_stays_active_during_mouse_movement():
             MOUSE_MOVEMENT_PIXEL_OFFSET * direction,
         )
         time.sleep(0.05)
-
-        if not is_switcher_active():
-            print(f"  FAIL: switcher deactivated after mouse movement #{iteration + 1}")
-            return False
+        assert is_switcher_active(), (
+            f"switcher deactivated after mouse movement #{iteration + 1}"
+        )
 
     send_command_to_daemon("cancel")
     time.sleep(COMMAND_SETTLE_DELAY_SECONDS)
-    print("  PASS")
-    return True
 
 
 def test_selection_advances_past_index_one_with_mouse_movement():
-    print("TEST: selection advances to index 2+ despite mouse movement")
-
     send_command_to_daemon("next")
     time.sleep(COMMAND_SETTLE_DELAY_SECONDS)
 
     if not is_switcher_active():
-        print("  SKIP: switcher did not activate (need >= 3 windows in workspace)")
         send_command_to_daemon("cancel")
-        return True
+        pytest.skip("switcher did not activate, focused workspace needs >= 3 windows")
 
     move_mouse_by_offset(MOUSE_MOVEMENT_PIXEL_OFFSET, MOUSE_MOVEMENT_PIXEL_OFFSET)
     time.sleep(0.05)
 
     send_command_to_daemon("next")
     time.sleep(COMMAND_SETTLE_DELAY_SECONDS)
-
-    if not is_switcher_active():
-        print("  FAIL: switcher deactivated after next+mouse+next (the original bug)")
-        return False
+    assert is_switcher_active(), (
+        "switcher deactivated after next+mouse+next, the original bug"
+    )
 
     move_mouse_by_offset(-MOUSE_MOVEMENT_PIXEL_OFFSET, -MOUSE_MOVEMENT_PIXEL_OFFSET)
     time.sleep(0.05)
 
     send_command_to_daemon("next")
     time.sleep(COMMAND_SETTLE_DELAY_SECONDS)
-
-    if not is_switcher_active():
-        print("  FAIL: switcher deactivated after third next with mouse movement")
-        return False
+    assert is_switcher_active(), (
+        "switcher deactivated after the third next with mouse movement"
+    )
 
     send_command_to_daemon("cancel")
     time.sleep(COMMAND_SETTLE_DELAY_SECONDS)
-    print("  PASS")
-    return True
 
 
 def test_rapid_next_commands_with_continuous_mouse_movement():
-    print("TEST: rapid next commands interleaved with mouse movement")
-
     send_command_to_daemon("next")
     time.sleep(COMMAND_SETTLE_DELAY_SECONDS)
 
     if not is_switcher_active():
-        print("  SKIP: switcher did not activate (need >= 2 windows in workspace)")
         send_command_to_daemon("cancel")
-        return True
+        pytest.skip("switcher did not activate, focused workspace needs >= 2 windows")
 
     for iteration in range(6):
         direction = 1 if iteration % 2 == 0 else -1
@@ -100,12 +84,9 @@ def test_rapid_next_commands_with_continuous_mouse_movement():
         time.sleep(0.05)
 
     time.sleep(COMMAND_SETTLE_DELAY_SECONDS)
-
-    if not is_switcher_active():
-        print("  FAIL: switcher deactivated during rapid next+mouse interleave")
-        return False
+    assert is_switcher_active(), (
+        "switcher deactivated during the rapid next+mouse interleave"
+    )
 
     send_command_to_daemon("cancel")
     time.sleep(COMMAND_SETTLE_DELAY_SECONDS)
-    print("  PASS")
-    return True

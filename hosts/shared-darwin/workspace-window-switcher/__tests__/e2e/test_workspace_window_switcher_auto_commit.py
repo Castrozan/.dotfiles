@@ -16,25 +16,17 @@ pytestmark = pytest.mark.workspace_switcher_integration
 
 
 def test_auto_commit_fires_after_timeout_seconds():
-    print(
-        f"TEST: auto-commit fires after ~{AUTO_COMMIT_TIMEOUT_BUFFER_SECONDS}s of inactivity"
-    )
-
     workspace_window_ids = query_aerospace_focused_workspace_window_ids()
     if len(workspace_window_ids) < 2:
-        print("  SKIP: focused workspace needs at least 2 windows")
-        return True
+        pytest.skip("focused workspace needs at least 2 windows")
 
     send_command_to_daemon("next")
     time.sleep(COMMAND_SETTLE_DELAY_SECONDS)
     if not is_switcher_active():
-        print("  SKIP: switcher did not activate")
-        return True
+        pytest.skip("switcher did not activate")
 
     time.sleep(AUTO_COMMIT_TIMEOUT_BUFFER_SECONDS)
-    if is_switcher_active():
-        print("  FAIL: flag still present after auto-commit window")
-        return False
-
-    print("  PASS")
-    return True
+    assert not is_switcher_active(), (
+        f"active flag still present {AUTO_COMMIT_TIMEOUT_BUFFER_SECONDS}s after the"
+        " last command, so auto-commit never fired"
+    )

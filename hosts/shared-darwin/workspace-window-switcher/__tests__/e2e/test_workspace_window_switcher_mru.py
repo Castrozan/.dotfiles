@@ -17,20 +17,16 @@ pytestmark = pytest.mark.workspace_switcher_integration
 
 
 def test_mru_picks_previously_focused_window_on_next_then_commit():
-    print("TEST: cmd+tab from B selects A when A was focused before B")
-
     workspace_window_ids = query_aerospace_focused_workspace_window_ids()
     if len(workspace_window_ids) < 2:
-        print("  SKIP: focused workspace needs at least 2 windows")
-        return True
+        pytest.skip("focused workspace needs at least 2 windows")
 
     window_id_a = workspace_window_ids[0]
     window_id_b = next(
         (wid for wid in workspace_window_ids if wid != window_id_a), None
     )
     if window_id_b is None:
-        print("  SKIP: could not find a second distinct window")
-        return True
+        pytest.skip("could not find a second distinct window")
 
     focus_window_via_aerospace_and_wait(window_id_b)
 
@@ -47,8 +43,7 @@ def test_mru_picks_previously_focused_window_on_next_then_commit():
 
     starting_focused_id = query_aerospace_focused_window_id()
     if starting_focused_id != window_id_b:
-        print(f"  SKIP: could not establish B as focused (got {starting_focused_id})")
-        return True
+        pytest.skip(f"could not establish B as focused, got {starting_focused_id}")
 
     send_command_to_daemon("next")
     time.sleep(COMMAND_SETTLE_DELAY_SECONDS)
@@ -56,96 +51,71 @@ def test_mru_picks_previously_focused_window_on_next_then_commit():
     time.sleep(COMMAND_SETTLE_DELAY_SECONDS * 2)
 
     final_focused_id = query_aerospace_focused_window_id()
-    if final_focused_id == window_id_a:
-        print("  PASS")
-        return True
-    if final_focused_id == window_id_b:
-        print(f"  FAIL: stayed on B ({window_id_b}) - the bug we fixed earlier")
-        return False
-    print(
-        f"  FAIL: focused unexpected window {final_focused_id}, expected A ({window_id_a})"
+    assert final_focused_id != window_id_b, (
+        f"cmd+tab stayed on B ({window_id_b}) instead of returning to the previously"
+        " focused window"
     )
-    return False
+    assert final_focused_id == window_id_a, (
+        f"focused unexpected window {final_focused_id}, expected A ({window_id_a})"
+    )
 
 
 def test_cancel_during_active_clears_flag_without_changing_focus():
-    print("TEST: cancel during active clears flag and preserves focus")
-
     workspace_window_ids = query_aerospace_focused_workspace_window_ids()
     if len(workspace_window_ids) < 2:
-        print("  SKIP: focused workspace needs at least 2 windows")
-        return True
+        pytest.skip("focused workspace needs at least 2 windows")
 
     starting_focused_id = query_aerospace_focused_window_id()
 
     send_command_to_daemon("next")
     time.sleep(COMMAND_SETTLE_DELAY_SECONDS)
     if not is_switcher_active():
-        print("  SKIP: switcher did not activate")
-        return True
+        pytest.skip("switcher did not activate")
 
     send_command_to_daemon("cancel")
     time.sleep(COMMAND_SETTLE_DELAY_SECONDS)
 
-    if is_switcher_active():
-        print("  FAIL: active flag still present after cancel")
-        return False
+    assert not is_switcher_active(), "active flag still present after cancel"
 
     final_focused_id = query_aerospace_focused_window_id()
-    if final_focused_id != starting_focused_id:
-        print(
-            f"  FAIL: focus changed after cancel: {starting_focused_id} -> {final_focused_id}"
-        )
-        return False
-
-    print("  PASS")
-    return True
+    assert final_focused_id == starting_focused_id, (
+        f"focus changed after cancel: {starting_focused_id} -> {final_focused_id}"
+    )
 
 
 def test_reactivation_after_commit_starts_fresh_cycle():
-    print("TEST: next+commit then next reactivates with fresh state")
-
     workspace_window_ids = query_aerospace_focused_workspace_window_ids()
     if len(workspace_window_ids) < 2:
-        print("  SKIP: focused workspace needs at least 2 windows")
-        return True
+        pytest.skip("focused workspace needs at least 2 windows")
 
     send_command_to_daemon("next")
     time.sleep(COMMAND_SETTLE_DELAY_SECONDS)
     send_command_to_daemon("commit")
     time.sleep(COMMAND_SETTLE_DELAY_SECONDS)
 
-    if is_switcher_active():
-        print("  FAIL: flag still present after commit")
-        return False
+    assert not is_switcher_active(), "active flag still present after commit"
 
     send_command_to_daemon("next")
     time.sleep(COMMAND_SETTLE_DELAY_SECONDS)
-    if not is_switcher_active():
-        print("  FAIL: reactivation did not set flag")
-        return False
+    reactivated = is_switcher_active()
 
     send_command_to_daemon("cancel")
     time.sleep(COMMAND_SETTLE_DELAY_SECONDS)
-    print("  PASS")
-    return True
+
+    assert reactivated, "reactivation after commit did not set the active flag"
 
 
 def test_focus_socket_message_updates_internal_mru():
-    print("TEST: focus:<id> socket messages influence next activation ordering")
-
     workspace_window_ids = query_aerospace_focused_workspace_window_ids()
     if len(workspace_window_ids) < 3:
-        print("  SKIP: focused workspace needs at least 3 windows")
-        return True
+        pytest.skip("focused workspace needs at least 3 windows")
 
     starting_focused_id = query_aerospace_focused_window_id()
     other_window_ids = [
         wid for wid in workspace_window_ids if wid != starting_focused_id
     ]
     if len(other_window_ids) < 2:
-        print("  SKIP: need at least two non-focused windows")
-        return True
+        pytest.skip("need at least two non-focused windows")
 
     desired_second_choice_window_id = other_window_ids[0]
     third_candidate_window_id = other_window_ids[1]
@@ -161,11 +131,7 @@ def test_focus_socket_message_updates_internal_mru():
     time.sleep(COMMAND_SETTLE_DELAY_SECONDS * 2)
 
     final_focused_id = query_aerospace_focused_window_id()
-    if final_focused_id == desired_second_choice_window_id:
-        print("  PASS")
-        return True
-    print(
-        f"  FAIL: expected to land on {desired_second_choice_window_id}, "
-        f"got {final_focused_id}"
+    assert final_focused_id == desired_second_choice_window_id, (
+        f"expected the focus: socket message to make {desired_second_choice_window_id}"
+        f" the next MRU pick, got {final_focused_id}"
     )
-    return False
