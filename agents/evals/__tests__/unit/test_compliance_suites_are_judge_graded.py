@@ -6,6 +6,9 @@ CONFIG_DIR = Path(__file__).resolve().parents[2] / "config"
 
 JUDGE_GRADED_COMPLIANCE_SUITES = [
     "instruction_compliance.yaml",
+    "workflow_compliance.yaml",
+    "delegation.yaml",
+    "core_rules.yaml",
 ]
 
 

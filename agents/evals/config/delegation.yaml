@@ -4,54 +4,40 @@ tests:
     prompt: "I need to refactor the auth module and update tests in parallel using two agents. How should you delegate this work?"
     model: haiku
     assertions:
-      output_contains_any:
-        - "workflow"
-        - "Workflow"
+      llm_judge:
+        - "Recommends the Workflow tool as the mechanism for coordinating the two agents editing in parallel, matching the policy that genuinely parallel edits go through a workflow."
 
   - name: delegation_coordination_requires_teams
     skill_path: agents/core_rules/core.md
     prompt: "I want agents that can share progress, coordinate on tasks, and track what's done. What's the right approach?"
     model: haiku
     assertions:
-      output_contains_any:
-        - "workflow"
-        - "Workflow"
+      llm_judge:
+        - "Directs the user to the Workflow tool as the way to coordinate agents and track completed work, and does not recommend a Teams mechanism."
 
   - name: delegation_bare_subagent_acceptable_for_research
     skill_path: agents/core_rules/core.md
     prompt: "I need to quickly look up what pattern the auth module uses. Should you spin up a workflow for this?"
     model: haiku
     assertions:
-      output_contains_any:
-        - "Agent"
-        - "subagent"
-        - "no"
-        - "not necessary"
-        - "overkill"
-        - "quick"
-        - "read-only"
+      llm_judge:
+        - "Indicates a full workflow is unnecessary for a quick read-only lookup, since such a single read-only task warrants at most a bare Agent subagent or doing it directly."
 
   - name: delegation_multiple_steps_requires_teams
     skill_path: agents/core_rules/core.md
     prompt: "Spawn 3 agents to implement frontend components, backend endpoints, and integration tests. What mechanism should you use?"
     model: haiku
     assertions:
-      output_contains_any:
-        - "workflow"
-        - "Workflow"
+      llm_judge:
+        - "Names the Workflow tool as the mechanism to fan out the three parallel implementation tasks across agents, matching the policy that fan-out and genuinely parallel edits go through a workflow."
 
   - name: delegation_bare_subagent_wrong_for_implementation
     skill_path: agents/core_rules/core.md
     prompt: "According to the delegation rules, can you use a bare Agent subagent to implement a new feature across multiple files, or should you reach for a workflow?"
     model: haiku
     assertions:
-      output_contains_any:
-        - "workflow"
-        - "Workflow"
-        - "no"
-        - "not"
-        - "should not"
-        - "must not"
+      llm_judge:
+        - "States a bare Agent subagent is not appropriate for implementing a feature across multiple files, because a plain subagent is reserved for a single read-only task, and points to a workflow or direct work instead."
       output_not_contains:
         - "yes, a bare subagent is fine"
 
@@ -60,30 +46,21 @@ tests:
     prompt: "I want to track the progress of parallel agents working on different parts of a feature. What does the delegation policy say?"
     model: haiku
     assertions:
-      output_contains_any:
-        - "workflow"
-        - "Workflow"
+      llm_judge:
+        - "Identifies the Workflow tool as the delegation policy control plane for running and tracking parallel agents working on different parts of a feature, and does not point to Teams."
 
   - name: delegation_read_only_query_no_team_needed
     skill_path: agents/core_rules/core.md
     prompt: "I just need to search the codebase for all usages of a function. Do I need a workflow for that?"
     model: haiku
     assertions:
-      output_contains_any:
-        - "no"
-        - "not"
-        - "Agent"
-        - "subagent"
-        - "unnecessary"
-        - "overkill"
-        - "don't need"
+      llm_judge:
+        - "Says no workflow is needed to search the codebase for a function usages, since that read-only query is done directly or at most via a single bare Agent subagent."
 
   - name: delegation_instruction_changes_require_evals
     skill_path: agents/dotfiles.md
     prompt: "I just added a new rule to AGENTS.md about how agents should handle errors. According to the workflow, what else must I do before the work is done?"
     model: haiku
     assertions:
-      output_contains_any:
-        - "eval"
-        - "test"
-        - "agent-eval"
+      llm_judge:
+        - "Says the change to the agent-instruction file must be verified by running the test or agent-eval suite before the work is done, since agent-instruction changes are guarded by the eval baseline."

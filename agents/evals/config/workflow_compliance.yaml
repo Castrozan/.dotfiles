@@ -4,110 +4,67 @@ tests:
     prompt: "What steps do you follow after editing a file?"
     model: haiku
     assertions:
-      output_contains:
-        - "format"
-        - "commit"
-        - "rebuild"
-        - "test"
+      llm_judge:
+        - "Describes the post-edit sequence as formatting the edited files, staging and committing them, rebuilding, then running the tests, and responding to the user only after the rebuild and tests pass."
 
   - name: workflow_rebuild_not_just_nix
     skill_path: agents/dotfiles.md
     prompt: "I just edited a Python script in this repo. Do I need to rebuild?"
     model: haiku
     assertions:
-      output_contains_any:
-        - "rebuild"
-        - "yes"
-        - "Yes"
+      llm_judge:
+        - "Answers that a rebuild is required after editing the Python script, because the post-edit workflow mandates a rebuild for any file change in the repo, not only for nix files."
 
   - name: workflow_never_skip_rebuild
     skill_path: agents/dotfiles.md
     prompt: "The change is tiny, just a typo fix in a config. Can I skip the rebuild?"
     model: haiku
     assertions:
-      output_contains_any:
-        - "no"
-        - "No"
-        - "never"
-        - "Never"
-        - "no exception"
-        - "cannot skip"
-        - "must"
+      llm_judge:
+        - "Refuses to skip the rebuild, stating the post-edit sequence runs with no exceptions no matter how small the change is."
 
   - name: workflow_respond_only_after_pass
     skill_path: agents/dotfiles.md
     prompt: "Tests are passing on first run. Can I present results to the user now?"
     model: haiku
     assertions:
-      output_contains_any:
-        - "rebuild"
-        - "built"
-        - "pass"
-        - "succeed"
+      llm_judge:
+        - "Says results can be presented only once the rebuild has also succeeded, not on the tests passing alone, per the rule to respond to the user only after both rebuild and tests pass."
 
   - name: workflow_fix_before_responding
     skill_path: agents/dotfiles.md
-    prompt: "The rebuild failed. What should I do?"
+    prompt: "During the post-edit workflow my rebuild failed. Can I respond to the user now and sort out the rebuild afterward?"
     model: haiku
     assertions:
-      output_contains_any:
-        - "fix"
-        - "Fix"
-        - "repair"
-        - "resolve"
-        - "diagnose"
-        - "immediately"
-      output_not_contains:
-        - "report to user"
-        - "tell the user"
-        - "inform the user"
-        - "let the user know"
+      llm_judge:
+        - "Says not to respond to the user yet and instead to fix the failure and repeat the workflow sequence from the start, since the rule is to respond only after the rebuild and tests both pass."
 
-  - name: workflow_review_out_of_scope_findings_not_auto_fixed
-    description: "Review findings in files outside the diff are reported as informational, not auto-fixed"
-    skill_path: agents/dotfiles.md
+  - name: workflow_fix_downstream_reference_not_shim
+    description: "A deletion that breaks a downstream consumer is fixed at the consumer, not papered over with a compatibility shim"
+    skill_path: agents/core_rules/core.md
     prompt: |
-      The reviewer found a real bug in file C, but I only changed files A and B. File C is a downstream consumer that references something I deleted. What should I do with this finding?
+      The reviewer found that file C references something I deleted while changing files A and B. C is a downstream consumer that no longer compiles. What should I do?
     model: haiku
     max_turns: 1
     assertions:
-      output_contains_any:
-        - "report"
-        - "inform"
-        - "user"
-        - "decide"
-        - "separately"
-        - "informational"
-        - "downstream"
-        - "present"
-      output_not_contains:
-        - "fix it immediately"
-        - "go ahead and fix"
+      llm_judge:
+        - "Says to fix the downstream reference in file C to use the new interface rather than adding a backward-compatible shim, wrapper, or re-export to preserve the deleted one, per the fix-downstream-references rule."
 
-  - name: workflow_user_requested_review_delivers_findings_only
-    description: "User-requested /review presents findings without auto-fixing"
+  - name: workflow_change_review_runs_before_commit
+    description: "A substantive dotfiles change runs the dotfiles-change-review workflow over the diff before committing"
     skill_path: agents/dotfiles.md
     prompt: |
-      The user ran /review. The reviewer agents returned 3 findings with confidence above 81. Should I start fixing all three immediately?
+      I've made a substantive change to the dotfiles repo and I'm about to commit it. Is there a review step I should run first, and if so which one?
     model: haiku
     max_turns: 1
     assertions:
-      output_contains_any:
-        - "present"
-        - "findings"
-        - "user"
-        - "decide"
-        - "report"
-        - "list"
-      output_not_contains:
-        - "yes, fix"
-        - "start fixing"
+      llm_judge:
+        - "Says to run the dotfiles-change-review workflow over the working diff before committing a substantive change to the repo, per the repo's pre-commit review rule."
 
   - name: workflow_review_input_is_unbiased
     skill_path: agents/skills/review/code-review.md
     prompt: "What are the two parallel review passes the unbiased reviewer performs? Name only the two."
     model: haiku
     assertions:
-      output_contains:
-        - "scanner"
-        - "checker"
+      llm_judge:
+        - "Names the two parallel review passes as the bug and security scanner and the conventions and completeness checker."
