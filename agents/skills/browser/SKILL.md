@@ -4,22 +4,8 @@ description: Interact with a live webpage inside a browser window — fill forms
 ---
 
 <strategy>
-PinchTab plus a stealth CDP target and one CLI are available. PinchTab (`pinchtab` CLI, no MCP) is the general-purpose default - its own persistent-profile Chrome driven entirely from bash, works immediately for general browsing, scraping, Electron apps, and local apps, and a one-time headed login stays authenticated across runs. The stealth CDP targets connect to a real browser for sites that detect automation (Google, banking, Cloudflare): Chrome DevTools (`mcp__chrome-devtools__*`) attaches to the dedicated Chrome Global everywhere, and only on chise Vivaldi DevTools (`mcp__vivaldi-devtools__*`) also attaches to the native Vivaldi on its `~/.config/vivaldi` profile; reach for one when you need the user's actual logged-in session on a bot-detecting site, picking by which browser holds it. Read `README.md` for the full decision framework.
+Two browser paths: a stealth CDP target and the PinchTab CLI. Default to the stealth CDP target - it drives the user's real everyday browser, carrying their live logins (Google SSO, Cloudflare Access, banking, anything already signed in) and running bare so no page detects the automation, which is what most tasks need. Chrome DevTools (`mcp__chrome-devtools__*`) attaches to the dedicated Chrome Global everywhere; only on chise Vivaldi DevTools (`mcp__vivaldi-devtools__*`) also attaches to the native Vivaldi on its own default profile - pick by which browser holds the session you need. PinchTab (`pinchtab` CLI, no MCP) is the deliberate fallback, never the reflex: its own persistent-profile Chrome driven from bash, holding none of the user's real logins, for work you want isolated from the real browser (public scraping, bulk extraction, throwaway browsing, Electron apps, local or dev sessions). One hard exception overrides the default: the stealth target is reserved for the interactive session and exits without connecting when driven by an autonomous clawde agent, so autonomous agents use PinchTab for everything. Read `README.md` for the full decision framework.
 </strategy>
-
-<pinchtab_workflow>
-CLI only (no MCP), driven from bash. Its server runs a persistent-profile Chrome on localhost:9867, so logins survive across runs (log in once in headed mode and stay authenticated). `pinchtab nav` auto-starts the local server.
-
-1. `pinchtab nav <url>` - navigate (auto-starts the server; `--new-tab`, `--snap`)
-2. `pinchtab snap` - accessibility tree with refs (prefer over screenshot)
-3. `pinchtab screenshot --output <file>` - save a screenshot (then Read the file)
-4. `pinchtab text` - extract page text; `pinchtab capture` - paired screenshot + snapshot from one DOM epoch
-5. `pinchtab click <ref>` / `pinchtab type <ref> <text>` - interact using refs from `snap`
-6. `pinchtab health` / `pinchtab tabs` - status; `pinchtab server -H` - headed (visible) for logging in
-7. `pinchtab help` or `pinchtab <command> --help` for the full command and flag list
-
-Guards are UP by default (allowed domains: localhost/127.0.0.1); `pinchtab server -y` lowers them. For an isolated tab set `PINCHTAB_SESSION=$(pinchtab session create --agent-id <id> --print-token)`.
-</pinchtab_workflow>
 
 <chrome_devtools_workflow>
 Connects to the user's real Chrome Global via `--autoConnect`. Chrome runs bare (no automation flags) so Google and bot-detecting sites see a normal browser. The user must enable `chrome://inspect/#remote-debugging` once (persists across restarts) and click Allow on the consent dialog once per Chrome session.
@@ -48,7 +34,22 @@ If `mcp__vivaldi-devtools__list_pages` returns "Could not connect":
 Once connected, the `mcp__vivaldi-devtools__*` tools are identical in shape to the Chrome target (`list_pages`, `new_page`, `take_snapshot`, `click`/`fill`, `take_screenshot`); follow the same once-connected steps, and because this is the user's everyday Vivaldi full of live tabs, always open work with `new_page` (`background: true`) and never `navigate_page` the selected tab, which would replace a tab the user is using.
 </vivaldi_devtools_workflow>
 
+<pinchtab_workflow>
+CLI only (no MCP), driven from bash. Its server runs a persistent-profile Chrome on localhost:9867, so logins survive across runs (log in once in headed mode and stay authenticated). `pinchtab nav` auto-starts the local server.
+
+1. `pinchtab nav <url>` - navigate (auto-starts the server; `--new-tab`, `--snap`)
+2. `pinchtab snap` - accessibility tree with refs (prefer over screenshot)
+3. `pinchtab screenshot --output <file>` - save a screenshot (then Read the file)
+4. `pinchtab text` - extract page text; `pinchtab capture` - paired screenshot + snapshot from one DOM epoch
+5. `pinchtab click <ref>` / `pinchtab type <ref> <text>` - interact using refs from `snap`
+6. `pinchtab health` / `pinchtab tabs` - status; `pinchtab server -H` - headed (visible) for logging in
+7. `pinchtab help` or `pinchtab <command> --help` for the full command and flag list
+
+Guards are UP by default (allowed domains: localhost/127.0.0.1); `pinchtab server -y` lowers them. For an isolated tab set `PINCHTAB_SESSION=$(pinchtab session create --agent-id <id> --print-token)`.
+</pinchtab_workflow>
+
 <tips>
-PinchTab: prefer `snap` (accessibility tree with refs) over screenshots for less tokens; get a fresh `snap` after navigation or interaction because refs change.
 Chrome DevTools and Vivaldi DevTools: always take a fresh snapshot after navigation - uids change between snapshots. Prefer snapshots over screenshots. Each target is single and sequential and needs its own Allow; never drive both concurrently.
+PinchTab: prefer `snap` (accessibility tree with refs) over screenshots for less tokens; get a fresh `snap` after navigation or interaction because refs change.
 </tips>
+</content>
