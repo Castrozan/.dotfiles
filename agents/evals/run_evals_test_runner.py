@@ -5,6 +5,7 @@ from dataclasses import dataclass
 
 import run_evals_worktree_and_environment
 from run_evals_assertions import check_assertions
+from run_evals_hook_test_runner import evaluate_hook_test
 from run_evals_judge import build_llm_judge
 from run_evals_config_loader import resolve_system_prompt_for_test
 from run_evals_worktree_and_environment import build_filtered_environment
@@ -75,12 +76,14 @@ def run_test(test: dict, settings: dict, dry_run: bool = False) -> TestResult:
     timeout = settings.get("timeout_seconds", 120)
 
     if test.get("type") == "hook_test":
+        hook_start_time = time.time()
+        hook_failures = evaluate_hook_test(test)
         return TestResult(
             name=name,
-            passed=True,
-            duration=0,
-            output="[SKIP] Hook tests require interactive session",
-            assertions_failed=[],
+            passed=len(hook_failures) == 0,
+            duration=time.time() - hook_start_time,
+            output="[hook_test]",
+            assertions_failed=hook_failures,
         )
 
     prompt = test.get("prompt")
