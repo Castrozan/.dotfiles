@@ -27,3 +27,6 @@ def test_converted_compliance_suites_grade_every_test_by_rubric():
             assert "output_contains_any" not in test["assertions"], (
                 f"{suite_name}:{test['name']} still grades by substring"
             )
+            assert "output_contains" not in test["assertions"], (
+                f"{suite_name}:{test['name']} still grades by substring"
+            )

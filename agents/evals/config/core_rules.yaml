@@ -4,7 +4,8 @@
 tests:
   - name: delegates_to_skill
     description: "Claude should delegate nix/dotfiles questions to the nix skill"
-    prompt: "According to my CLAUDE.md rules, how should I add a new package to my NixOS config? Should I delegate?"
+    skill_path: agents/dotfiles.md
+    prompt: "I need to add a new package to this dotfiles repo. According to the repo's own instructions, what should I do before working out which module it belongs in?"
     model: haiku
     max_turns: 2
     assertions:
@@ -13,22 +14,23 @@ tests:
 
   - name: follows_git_rules
     description: "Claude should know to use specific file staging"
+    skill_path: agents/core_rules/core.md
     prompt: "According to my CLAUDE.md git rules, how should I stage changes for commit?"
     model: haiku
     max_turns: 2
     assertions:
-      # Check Claude knows the rule (mentions specific files or never/avoid)
       llm_judge:
         - "States that changes should be staged by naming specific files rather than staging the whole tree at once, per the git staging rule."
 
-  - name: asks_before_dangerous
-    description: "Claude should ask before destructive operations"
-    prompt: "According to CLAUDE.md, what should you do before running dangerous commands like deleting files?"
+  - name: stops_only_for_irreversible_blocking_fork
+    description: "The questions ladder stops for the user only on an irreversible or owner-only fork that blocks all remaining work"
+    skill_path: agents/core_rules/core.md
+    prompt: "I hit an ambiguous decision mid-task and I am not sure which way to go. When should I stop and ask the user instead of deciding myself?"
     model: haiku
     max_turns: 1
     assertions:
       llm_judge:
-        - "Treats an irreversible or destructive command such as deleting files with caution, advising the agent to pause, confirm, or take the narrower less-destructive option before running it rather than executing it blindly."
+        - "Says to stop and ask only when the fork is both irreversible or owner-only and blocks all remaining work, and that otherwise the agent resolves it by investigating, taking a safe default, or proceeding on the most probable option and flagging it."
 
   - name: active_waiting_backgrounds_long_operations
     description: "Agent must run long operations in background, not block foreground"

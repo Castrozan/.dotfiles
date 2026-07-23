@@ -1,5 +1,5 @@
 tests:
-  - name: delegation_multi_agent_implementation_prefers_teams
+  - name: delegation_multi_agent_implementation_uses_workflow
     skill_path: agents/core_rules/core.md
     prompt: "I need to refactor the auth module and update tests in parallel using two agents. How should you delegate this work?"
     model: haiku
@@ -7,7 +7,7 @@ tests:
       llm_judge:
         - "Recommends the Workflow tool as the mechanism for coordinating the two agents editing in parallel, matching the policy that genuinely parallel edits go through a workflow."
 
-  - name: delegation_coordination_requires_teams
+  - name: delegation_coordination_uses_workflow
     skill_path: agents/core_rules/core.md
     prompt: "I want agents that can share progress, coordinate on tasks, and track what's done. What's the right approach?"
     model: haiku
@@ -23,7 +23,7 @@ tests:
       llm_judge:
         - "Indicates a full workflow is unnecessary for a quick read-only lookup, since such a single read-only task warrants at most a bare Agent subagent or doing it directly."
 
-  - name: delegation_multiple_steps_requires_teams
+  - name: delegation_multiple_steps_use_workflow
     skill_path: agents/core_rules/core.md
     prompt: "Spawn 3 agents to implement frontend components, backend endpoints, and integration tests. What mechanism should you use?"
     model: haiku
@@ -41,7 +41,7 @@ tests:
       output_not_contains:
         - "yes, a bare subagent is fine"
 
-  - name: delegation_progress_tracking_needs_teams
+  - name: delegation_progress_tracking_uses_workflow
     skill_path: agents/core_rules/core.md
     prompt: "I want to track the progress of parallel agents working on different parts of a feature. What does the delegation policy say?"
     model: haiku
@@ -49,13 +49,13 @@ tests:
       llm_judge:
         - "Identifies the Workflow tool as the delegation policy control plane for running and tracking parallel agents working on different parts of a feature, and does not point to Teams."
 
-  - name: delegation_read_only_query_no_team_needed
+  - name: delegation_read_only_query_needs_no_workflow
     skill_path: agents/core_rules/core.md
     prompt: "I just need to search the codebase for all usages of a function. Do I need a workflow for that?"
     model: haiku
     assertions:
       llm_judge:
-        - "Says no workflow is needed to search the codebase for a function usages, since that read-only query is done directly or at most via a single bare Agent subagent."
+        - "Says no workflow is needed to search the codebase for a function's usages, since that read-only query is done directly or at most via a single bare Agent subagent."
 
   - name: delegation_instruction_changes_require_evals
     skill_path: agents/dotfiles.md
