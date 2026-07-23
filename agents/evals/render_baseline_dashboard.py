@@ -1,4 +1,5 @@
 import sys
+from datetime import date
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -15,8 +16,13 @@ def main():
     output_directory.mkdir(parents=True, exist_ok=True)
     revisions = collect_baseline_revisions()
     summary = summarize_revisions(revisions)
+    latest_baseline_age_days = (
+        (date.today() - date.fromisoformat(summary["last_date"])).days
+        if summary
+        else None
+    )
     (output_directory / "index.html").write_text(
-        render_dashboard_html(revisions, summary)
+        render_dashboard_html(revisions, summary, latest_baseline_age_days)
     )
     print(f"wrote {output_directory / 'index.html'} with {len(revisions)} revisions")
 

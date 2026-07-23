@@ -44,3 +44,24 @@ class TestBaselineDashboardLinksWhenFramedInsideAtrium:
             '<a href="https://github.com/Castrozan/.dotfiles/issues/70" '
             'target="_top">design notes</a>' in html
         )
+
+
+class TestBaselineDashboardGateAndFreshness:
+    def test_lists_the_regression_delta_gate_alongside_the_floors(self):
+        html = render_dashboard_html(SINGLE_REVISION, SINGLE_REVISION_SUMMARY)
+
+        assert "previous baseline" in html
+        assert "&le; 5%" in html
+
+    def test_surfaces_the_latest_baseline_age_when_provided(self):
+        html = render_dashboard_html(
+            SINGLE_REVISION, SINGLE_REVISION_SUMMARY, latest_baseline_age_days=3
+        )
+
+        assert "3 days ago" in html
+        assert "recorded 2026-01-01" in html
+
+    def test_omits_the_freshness_line_without_an_age(self):
+        html = render_dashboard_html(SINGLE_REVISION, SINGLE_REVISION_SUMMARY)
+
+        assert "days ago" not in html

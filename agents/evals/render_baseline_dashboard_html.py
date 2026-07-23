@@ -38,9 +38,15 @@ def render_stat_cards(summary):
     )
 
 
-def render_dashboard_html(revisions, summary):
+def render_dashboard_html(revisions, summary, latest_baseline_age_days=None):
     data_json = json.dumps(revisions)
     stat_cards = render_stat_cards(summary) if summary else ""
+    freshness_note = ""
+    if summary and latest_baseline_age_days is not None:
+        freshness_note = (
+            '<p class="lede">The current baseline was recorded '
+            f"{summary['last_date']}, {latest_baseline_age_days} days ago.</p>"
+        )
     return f"""<!doctype html>
 <html lang="en">
 <head>
@@ -81,12 +87,14 @@ no model calls. It just reads the committed baseline and fails the build when:</
 <div class="chips">
 <span class="chip">overall pass rate <b>&ge; 75%</b></span>
 <span class="chip">compliance pass rate <b>&ge; 85%</b></span>
+<span class="chip">pass rate drop <b>&le; 5%</b> vs previous baseline</span>
 </div>
 <p class="lede">The baseline is a committed snapshot, refreshed intentionally with
-<code>agent-eval --save-baseline</code> when the instruction surface meaningfully changes - never on a
-clock. CI only guards the absolute floor, so this number moves only when someone records a new run.
-Dips that do not reproduce on a standalone re-run are concurrency noise on long runs, not real
-regressions.</p>
+<code>agent-eval --save-baseline</code> when the instruction surface meaningfully changes, never on a
+clock. CI guards both the absolute floors and the drop from the previous committed baseline, so a
+re-save that slid more than five points below the last recorded run fails the build. Dips that do not
+reproduce on a standalone re-run are concurrency noise on long runs, not real regressions.</p>
+{freshness_note}
 
 <h2>Every recorded baseline</h2>
 <table id="dataTable">
