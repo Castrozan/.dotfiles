@@ -9,7 +9,7 @@ in
     ./chise/hyprland.nix
     ./chise/ssh.nix
     ./chise/session-vars.nix
-    ./chise/vivaldi-default-browser.nix
+    ./chise/chrome-default-browser.nix
     ../../base/claude/clawde-agents/steward.nix
 
     ../../base/core.nix
@@ -39,6 +39,7 @@ in
     ../../base/editor/scripts.nix
 
     ../../base/browser/firefox.nix
+    ../../base/browser/chrome-global.nix
 
     ../../linux/desktop/clipse.nix
     ../../base/desktop/fonts.nix
