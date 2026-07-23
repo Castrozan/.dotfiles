@@ -113,7 +113,9 @@ def run_e2e_scenario(
         for prompt_text in prompts:
             delivered = send_prompt_to_claude_session(pane_id, prompt_text)
             completed = delivered and wait_for_response_completion(
-                pane_id, timeout_seconds=timeout
+                pane_id,
+                capture_full_terminal_output(pane_id),
+                timeout_seconds=timeout,
             )
             if not completed:
                 failure_reason = (

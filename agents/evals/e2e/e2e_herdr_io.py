@@ -2,9 +2,10 @@ import time
 
 from e2e_herdr import run_herdr_command
 
-AGENT_START_WORKING_TIMEOUT_SECONDS = 30
 INPUT_SETTLE_SECONDS = 2
 FULL_SCROLLBACK_LINE_BUDGET = 5000
+RESPONSE_POLL_INTERVAL_SECONDS = 1.0
+RESPONSE_QUIESCENCE_SAMPLES = 4
 
 
 def wait_for_agent_status(
@@ -40,12 +41,25 @@ def send_prompt_to_claude_session(pane_id: str, prompt_text: str) -> bool:
     return run_herdr_command(["pane", "send-keys", pane_id, "Enter"]).returncode == 0
 
 
-def wait_for_response_completion(pane_id: str, timeout_seconds: float = 300) -> bool:
-    if not wait_for_agent_status(
-        pane_id, "working", AGENT_START_WORKING_TIMEOUT_SECONDS
-    ):
-        return False
-    return wait_for_agent_status(pane_id, "idle", timeout_seconds)
+def wait_for_response_completion(
+    pane_id: str, output_after_send: str, timeout_seconds: float = 300
+) -> bool:
+    deadline = time.monotonic() + timeout_seconds
+    previous_output = output_after_send
+    unchanged_samples = 0
+    the_pane_ever_changed = False
+    while time.monotonic() < deadline:
+        time.sleep(RESPONSE_POLL_INTERVAL_SECONDS)
+        current_output = capture_full_terminal_output(pane_id)
+        if current_output != previous_output:
+            the_pane_ever_changed = True
+            unchanged_samples = 0
+            previous_output = current_output
+            continue
+        unchanged_samples += 1
+        if the_pane_ever_changed and unchanged_samples >= RESPONSE_QUIESCENCE_SAMPLES:
+            return True
+    return False
 
 
 def capture_full_terminal_output(pane_id: str) -> str:

@@ -106,16 +106,16 @@ def check_bash_command_contains_assertion(
     trace: TerminalSessionTrace,
     expected_substring: str,
 ) -> E2eAssertionResult:
-    found = any(expected_substring in cmd for cmd in trace.detected_bash_commands)
-    found_in_raw = expected_substring in trace.raw_terminal_output
-    passed = found or found_in_raw
+    matching = [
+        cmd for cmd in trace.detected_bash_commands if expected_substring in cmd
+    ]
     return E2eAssertionResult(
         name=f"bash ran '{expected_substring}'",
-        passed=passed,
+        passed=bool(matching),
         detail=(
-            "found in commands"
-            if found
-            else ("found in raw output" if found_in_raw else "not found")
+            f"ran {matching[0]}"
+            if matching
+            else f"no Bash call matched among {trace.detected_bash_commands}"
         ),
     )
 
@@ -124,13 +124,11 @@ def check_bash_command_not_contains_assertion(
     trace: TerminalSessionTrace,
     forbidden_substring: str,
 ) -> E2eAssertionResult:
-    found_in_commands = any(
-        forbidden_substring in cmd for cmd in trace.detected_bash_commands
-    )
-    found_in_raw = forbidden_substring in trace.raw_terminal_output
-    absent = not found_in_commands and not found_in_raw
+    matching = [
+        cmd for cmd in trace.detected_bash_commands if forbidden_substring in cmd
+    ]
     return E2eAssertionResult(
         name=f"did not run '{forbidden_substring}'",
-        passed=absent,
-        detail=("correctly absent" if absent else "found in session"),
+        passed=not matching,
+        detail=("correctly absent" if not matching else f"ran {matching[0]}"),
     )

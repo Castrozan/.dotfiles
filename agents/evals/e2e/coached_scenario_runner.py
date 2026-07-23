@@ -45,7 +45,9 @@ CORRECTION_PROMPT_TEMPLATE = (
 def deliver_prompt_and_wait(pane_id: str, prompt_text: str, timeout: float) -> bool:
     if not send_prompt_to_claude_session(pane_id, prompt_text):
         return False
-    return wait_for_response_completion(pane_id, timeout)
+    return wait_for_response_completion(
+        pane_id, capture_full_terminal_output(pane_id), timeout
+    )
 
 
 def run_coached_scenario(
