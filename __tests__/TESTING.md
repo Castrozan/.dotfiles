@@ -94,8 +94,34 @@ Each tier auto-detects tool availability (bats, nix, docker, kcov) and skips gra
 | Lua / QML suites | `*/__tests__/*_test.lua`, `*/__tests__/qml/run-qml-tests.sh` | lua / quickshell |
 | Domain nix tests | `*/__tests__/checks.nix` | nix |
 | Instruction surface lint | `agents/__tests__/unit/test_instruction_surfaces_are_structurally_sound.py` | pytest |
-| A/B instruction-loading record | `agents/evals/instruction-loading-experiment.json` (`agent-eval --ab`) | claude cli to re-measure |
 | Agent evals | `agents/evals/{evals,integration,e2e}/`, `agents/skills/*/__tests__/evals/` | claude cli |
+
+The A/B instruction-loading measurement is a recorded result, not a tier:
+`agents/evals/instruction-loading-experiment.json` holds the paired comparison
+(re-measure with `agent-eval --ab`), and
+`agents/evals/__tests__/unit/test_instruction_loading_experiment_record.py` guards
+that the record stays internally consistent and claims no significance its own
+p-values do not support.
+
+## Pytest Configuration
+
+The root `pytest.ini` is authoritative for every pytest invocation in the repo,
+including a bare `pytest` at the root:
+
+- `filterwarnings = error`: a warning fails the run. This is not cosmetic; it is
+  what catches leaked file descriptors and sockets, and it is what turns a test
+  that reports its outcome by `return True`/`return False` (which pytest ignores)
+  into a visible failure instead of a silent pass.
+- `--strict-markers`: every `pytest.mark.<name>` must be registered under
+  `markers` here. A module-local `pytest.ini` does not help: when the invocation
+  spans several directories the rootdir resolves to the repo root and the local
+  file is shadowed, so register markers in the root config only.
+- `--strict-config`, `xfail_strict`: an unknown ini key or an unexpectedly
+  passing xfail fails rather than warns.
+- `norecursedirs` mirrors the prune list in `lib/discovery.sh`, so a bare root
+  `pytest` never walks into `private-config`.
+- `python_files = test_*.py` matches the collector's own pattern, so a live
+  stress script named `*_test.py` is not collected as a test suite.
 
 ## Co-located Domain Tests
 

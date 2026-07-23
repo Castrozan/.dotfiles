@@ -15,14 +15,14 @@ _run_bats_tier() {
 		return 0
 	fi
 
-	local testFiles
-	testFiles=$(_collect_bats_test_files_in_tier_directory "$tierDirectoryName")
-	if [[ -z "$testFiles" ]]; then
+	local -a testFiles
+	mapfile -t testFiles < <(_collect_bats_test_files_in_tier_directory "$tierDirectoryName")
+	if [[ ${#testFiles[@]} -eq 0 ]]; then
 		return 0
 	fi
 
 	echo "--- Bin Script Tests (${tierLabel}) ---"
-	bats $testFiles
+	bats "${testFiles[@]}"
 	echo ""
 }
 

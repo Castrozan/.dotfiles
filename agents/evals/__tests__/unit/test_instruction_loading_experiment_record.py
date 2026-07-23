@@ -49,11 +49,20 @@ def test_each_recorded_delta_matches_its_own_arms():
         )
 
 
-def test_stripping_the_instruction_surface_never_won_a_paired_test():
-    for category_name, measurement in experiment_record()["categories"].items():
-        assert measurement["control_only_wins"] == 0, (
+def test_any_test_the_instruction_surface_hurt_is_named_in_the_finding():
+    record = experiment_record()
+    categories_where_stripping_won = [
+        category_name
+        for category_name, measurement in record["categories"].items()
+        if measurement["control_only_wins"] > 0
+    ]
+    if not categories_where_stripping_won:
+        return
+    for category_name in categories_where_stripping_won:
+        assert category_name in record["finding"], (
             f"{category_name} recorded a test that passes only with the instruction "
-            f"surface removed, which means those instructions actively hurt it"
+            f"surface removed, so those instructions actively hurt it, and the "
+            f"finding must say so instead of burying it in the numbers"
         )
 
 

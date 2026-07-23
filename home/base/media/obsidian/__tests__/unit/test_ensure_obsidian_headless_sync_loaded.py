@@ -1,3 +1,4 @@
+import os
 import re
 import subprocess
 from pathlib import Path
@@ -36,7 +37,7 @@ def test_it_exits_quietly_when_no_agent_plist_is_deployed(tmp_path):
         capture_output=True,
         text=True,
         timeout=10,
-        env={"HOME": str(tmp_path), "PATH": "/usr/bin:/bin"},
+        env={"HOME": str(tmp_path), "PATH": os.environ["PATH"]},
     )
     assert completed.returncode == 0
     assert completed.stdout == "", (

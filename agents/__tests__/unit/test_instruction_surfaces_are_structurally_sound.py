@@ -8,9 +8,11 @@ from instruction_surface_scanner import (
     sibling_chapter_references,
     skill_chapter_files,
     skill_definition_files,
+    skill_relative_script_references,
     unclosed_code_fence_count,
     unresolved_repository_paths,
     unresolved_sibling_chapters,
+    unresolved_skill_relative_scripts,
     xml_tag_structure_error,
 )
 
@@ -84,12 +86,33 @@ def test_backticked_sibling_chapter_files_in_skills_resolve():
         )
 
 
+def test_backticked_skill_relative_scripts_resolve():
+    for path in skill_definition_files() + skill_chapter_files():
+        unresolved = unresolved_skill_relative_scripts(path)
+        assert not unresolved, (
+            f"{path.relative_to(REPO_ROOT)} tells the agent to run scripts that "
+            f"are not packaged with the skill: {unresolved}"
+        )
+
+
 def test_markdown_code_fences_are_closed():
     for path in every_linted_markdown_file():
         assert unclosed_code_fence_count(path.read_text()) == 0, (
             f"{path.relative_to(REPO_ROOT)} has an odd number of code fence markers, "
             f"so one fence never closes"
         )
+
+
+def test_every_declared_instruction_surface_exists_on_disk():
+    missing = [
+        str(path.relative_to(REPO_ROOT))
+        for path in instruction_surface_files()
+        if not path.is_file()
+    ]
+    assert not missing, (
+        f"these surfaces are declared for linting but absent, so the lint would "
+        f"silently cover less than it claims: {missing}"
+    )
 
 
 def test_the_instruction_surface_scan_covers_the_repository():
@@ -106,9 +129,16 @@ def test_the_reference_lint_actually_inspects_references():
         len(sibling_chapter_references(path))
         for path in skill_definition_files() + skill_chapter_files()
     )
+    script_references = sum(
+        len(skill_relative_script_references(path))
+        for path in skill_definition_files() + skill_chapter_files()
+    )
     assert repository_references > 5, (
         "the repository path lint found nothing to check, so it passes vacuously"
     )
     assert chapter_references > 10, (
         "the sibling chapter lint found nothing to check, so it passes vacuously"
+    )
+    assert script_references > 3, (
+        "the skill script lint found nothing to check, so it passes vacuously"
     )

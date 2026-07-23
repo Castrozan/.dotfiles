@@ -22,7 +22,7 @@ const COVERAGE_MAP_EXCLUSIONS = `Report only standing rot that NOTHING else catc
 - any file over the 200-line hard limit -> check-line-counts.py and the post-tool-use hook
 - code formatting -> the auto-format hook
 - hardcoded home paths, employer-identifying names, agents/evals/config broken symlinks -> test_repo_hygiene.py
-- SKILL.md missing frontmatter or an unresolved backtick sub-file reference -> validate-skill-frontmatter.sh
+- instruction-surface structure: missing or overlong frontmatter, duplicate skill names, unbalanced XML tags, unclosed code fences, unresolved backtick path or sub-file references -> test_instruction_surfaces_are_structurally_sound.py
 - git add -A or git add . inside scripts -> the prohibited-command guard test
 - anything scoped to a specific uncommitted working diff -> that is the dotfiles-change-review workflow, not this one
 Skip anything a formatter or the lists above already handle, and skip pure preference.`;

@@ -18,6 +18,7 @@ BACKTICKED_TOKEN = re.compile(r"`([^`\n]+?)`")
 STANDALONE_XML_TAG = re.compile(r"^<(/?)([a-z][a-z0-9_]*)>\s*$", re.M)
 FRONTMATTER_KEY_VALUE = re.compile(r"^([a-zA-Z][a-zA-Z0-9_-]*):\s*(.*)$")
 SIBLING_CHAPTER_TOKEN = re.compile(r"[A-Za-z0-9._-]+\.md")
+SKILL_RELATIVE_SCRIPT_TOKEN = re.compile(r"scripts/[A-Za-z0-9._/-]+")
 
 
 def skill_definition_files() -> list[Path]:
@@ -34,13 +35,13 @@ def instruction_surface_files() -> list[Path]:
     surfaces = [
         REPO_ROOT / "agents" / "core_rules" / "core.md",
         REPO_ROOT / "agents" / "dotfiles.md",
-        REPO_ROOT / "CLAUDE.md",
     ]
+    surfaces += sorted((REPO_ROOT / "agents" / "snippets").glob("*.md"))
     surfaces += sorted(
         (REPO_ROOT / "agents" / "core_rules" / "communication").glob("*.md")
     )
     surfaces += sorted((REPO_ROOT / "agents" / "commands").glob("**/*.md"))
-    return [path for path in surfaces if path.exists()]
+    return surfaces
 
 
 def every_linted_markdown_file() -> list[Path]:
@@ -116,6 +117,22 @@ def sibling_chapter_references(path: Path) -> list[str]:
         token
         for token in backticked_path_tokens(path.read_text())
         if SIBLING_CHAPTER_TOKEN.fullmatch(token)
+    ]
+
+
+def skill_relative_script_references(path: Path) -> list[str]:
+    return [
+        token
+        for token in backticked_path_tokens(path.read_text())
+        if SKILL_RELATIVE_SCRIPT_TOKEN.fullmatch(token)
+    ]
+
+
+def unresolved_skill_relative_scripts(path: Path) -> list[str]:
+    return [
+        token
+        for token in skill_relative_script_references(path)
+        if not (path.parent / token).exists()
     ]
 
 

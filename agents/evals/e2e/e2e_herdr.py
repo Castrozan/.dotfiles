@@ -3,7 +3,7 @@ import json
 import subprocess
 from pathlib import Path
 
-E2E_SESSION_PREFIX = "e2e-test-"
+E2E_TAB_LABEL_PREFIX = "e2e-test-"
 HERDR_COMMAND_TIMEOUT_SECONDS = 15
 
 ACTIVE_TEST_TAB_IDS: list[str] = []

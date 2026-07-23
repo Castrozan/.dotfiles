@@ -39,15 +39,11 @@ def send_prompt_to_claude_session(pane_id: str, prompt_text: str) -> None:
 
 
 def wait_for_response_completion(pane_id: str, timeout_seconds: float = 300) -> bool:
-    wait_for_agent_status(pane_id, "working", AGENT_START_WORKING_TIMEOUT_SECONDS)
+    if not wait_for_agent_status(
+        pane_id, "working", AGENT_START_WORKING_TIMEOUT_SECONDS
+    ):
+        return False
     return wait_for_agent_status(pane_id, "idle", timeout_seconds)
-
-
-def capture_last_lines(pane_id: str, line_count: int = 20) -> str:
-    completed = run_herdr_command(
-        ["pane", "read", pane_id, "--source", "visible", "--lines", str(line_count)]
-    )
-    return completed.stdout
 
 
 def capture_full_terminal_output(pane_id: str) -> str:

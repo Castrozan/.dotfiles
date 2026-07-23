@@ -50,6 +50,19 @@ def test_every_positive_substring_assertion_is_an_exact_structured_token():
     )
 
 
+def test_every_negative_substring_assertion_pins_a_specific_wrong_answer():
+    loose = [
+        (f"{suite_path.relative_to(REPO_ROOT)}:{test['name']}", forbidden)
+        for suite_path, test in every_authored_test()
+        for forbidden in test.get("assertions", {}).get("output_not_contains", [])
+        if " " not in str(forbidden)
+    ]
+    assert not loose, (
+        "a bare single-word negative fires on any incidental use of the word, so a "
+        f"negative must quote the specific wrong answer it forbids: {loose}"
+    )
+
+
 def test_the_keyword_bag_scan_covers_every_authored_eval():
     assert len(eval_suite_files()) > 15
     assert len(every_authored_test()) > 100

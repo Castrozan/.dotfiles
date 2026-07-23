@@ -7,7 +7,7 @@ from e2e_assertions_workspace import run_e2e_assertions
 from e2e_models import E2eScenarioResult, TerminalSessionTrace
 from e2e_scoring import calculate_e2e_experience_score
 from e2e_herdr import (
-    E2E_SESSION_PREFIX,
+    E2E_TAB_LABEL_PREFIX,
     create_isolated_herdr_tab_for_test,
     destroy_test_tab,
     herdr_server_is_reachable,
@@ -62,7 +62,7 @@ def run_e2e_scenario(
 
     sanitized = sanitize_name_for_session(scenario_name)
     timestamp = int(time.time())
-    tab_label = f"{E2E_SESSION_PREFIX}{sanitized}-{timestamp}"
+    tab_label = f"{E2E_TAB_LABEL_PREFIX}{sanitized}-{timestamp}"
     E2E_WORKSPACE_PARENT.mkdir(parents=True, exist_ok=True)
     workspace = Path(
         tempfile.mkdtemp(
@@ -71,13 +71,13 @@ def run_e2e_scenario(
         )
     )
     timeout = scenario.get("timeout", 300)
-    session_handle: dict[str, str] = {}
+    tab_handle: dict[str, str] = {}
 
     try:
         setup_e2e_scenario_workspace(scenario, workspace, claude_ab_mode)
 
-        session_handle = create_isolated_herdr_tab_for_test(tab_label, workspace)
-        if not session_handle:
+        tab_handle = create_isolated_herdr_tab_for_test(tab_label, workspace)
+        if not tab_handle:
             return E2eScenarioResult(
                 scenario_name=scenario_name,
                 passed=False,
@@ -87,7 +87,7 @@ def run_e2e_scenario(
                 duration_seconds=0,
                 error="herdr tab could not be created",
             )
-        pane_id = session_handle["pane_id"]
+        pane_id = tab_handle["pane_id"]
 
         launch_claude_in_herdr_pane(pane_id, model)
 
@@ -172,6 +172,6 @@ def run_e2e_scenario(
         )
 
     finally:
-        if session_handle:
-            destroy_test_tab(session_handle["tab_id"])
+        if tab_handle:
+            destroy_test_tab(tab_handle["tab_id"])
         shutil.rmtree(workspace, ignore_errors=True)

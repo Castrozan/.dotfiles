@@ -43,10 +43,10 @@ _run_perf_tier() {
 	echo ""
 
 	echo "--- Performance Threshold Tests ---"
-	local perfTests
-	perfTests=$(find "$REPO_DIR/home/base" "$REPO_DIR/home/linux" "$REPO_DIR/home/darwin" -name "perf-runtime.bats" -type f 2>/dev/null | sort)
-	if [[ -n "$perfTests" ]] && command -v bats &>/dev/null; then
-		bats $perfTests
+	local -a perfTests
+	mapfile -t perfTests < <(find "$REPO_DIR/home/base" "$REPO_DIR/home/linux" "$REPO_DIR/home/darwin" -name "perf-runtime.bats" -type f 2>/dev/null | sort)
+	if [[ ${#perfTests[@]} -gt 0 ]] && command -v bats &>/dev/null; then
+		bats "${perfTests[@]}"
 	else
 		echo "SKIP: no perf-runtime.bats files or bats not installed" >&2
 	fi

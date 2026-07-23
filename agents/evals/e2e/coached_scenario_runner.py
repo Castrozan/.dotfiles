@@ -31,7 +31,7 @@ from e2e_herdr_io import (
     wait_for_response_completion,
 )
 
-COACHED_SESSION_PREFIX = "coached-"
+COACHED_TAB_LABEL_PREFIX = "coached-"
 
 
 def run_coached_scenario(
@@ -63,7 +63,7 @@ def run_coached_scenario(
             dir=E2E_WORKSPACE_PARENT,
         )
     )
-    worker_tab_label = f"{COACHED_SESSION_PREFIX}worker-{timestamp}"
+    worker_tab_label = f"{COACHED_TAB_LABEL_PREFIX}worker-{timestamp}"
     timeout = scenario.get("timeout", 300)
     worker_handle: dict[str, str] = {}
 

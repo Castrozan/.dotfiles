@@ -9,9 +9,9 @@ _run_pytest_tier() {
 	local tierDirectoryName="$1"
 	local tierLabel="$2"
 
-	local testFiles
-	testFiles=$(_collect_pytest_test_files_in_tier_directory "$tierDirectoryName")
-	if [[ -z "$testFiles" ]]; then
+	local -a testFiles
+	mapfile -t testFiles < <(_collect_pytest_test_files_in_tier_directory "$tierDirectoryName")
+	if [[ ${#testFiles[@]} -eq 0 ]]; then
 		return 0
 	fi
 
@@ -21,7 +21,7 @@ _run_pytest_tier() {
 	fi
 
 	echo "--- Python Tests (${tierLabel}) ---"
-	pytest $testFiles -q
+	pytest "${testFiles[@]}" -q
 	echo ""
 }
 
