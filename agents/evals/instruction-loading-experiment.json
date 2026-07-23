@@ -1,0 +1,30 @@
+{
+  "generated_at": "2026-07-23T22:35:02+00:00",
+  "git_commit": "7659f816",
+  "method": "Each test runs twice against the same model: once with its instruction surface injected and once with system_prompt, skill_path, agent and extra_skill_paths stripped. Outcomes are paired per test and compared with an exact McNemar test.",
+  "command": "agent-eval --ab --category <category>",
+  "significance_alpha": 0.05,
+  "categories": {
+    "workflow_compliance": {
+      "paired_tests": 8,
+      "pass_rate_with_instructions": 1.0,
+      "pass_rate_without_instructions": 0.625,
+      "delta": 0.375,
+      "instructions_only_wins": 3,
+      "control_only_wins": 0,
+      "mcnemar_exact_p_value": 0.25,
+      "significant": false
+    },
+    "core_rules": {
+      "paired_tests": 12,
+      "pass_rate_with_instructions": 1.0,
+      "pass_rate_without_instructions": 0.917,
+      "delta": 0.083,
+      "instructions_only_wins": 1,
+      "control_only_wins": 0,
+      "mcnemar_exact_p_value": 1.0,
+      "significant": false
+    }
+  },
+  "finding": "Loading the instruction surface never lost a paired test in either category: every discordant pair went to the instruction arm, 4 to 0. The effect is large on the dotfiles-specific workflow rules and small on the general core rules, which the model largely already follows. Neither reaches significance because 20 paired tests cannot, so the honest reading is a consistent positive direction with the sample too small to prove it; widening the paired set is the next step, not a stronger claim from this data."
+}
