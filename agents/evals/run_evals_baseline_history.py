@@ -1,6 +1,8 @@
 import json
 import subprocess
 
+from run_evals_worktree_and_environment import REPO_ROOT
+
 BASELINE_REPOSITORY_PATH = "agents/evals/baseline.json"
 RESET_PLACEHOLDER_TOTAL_TESTS = 1
 
@@ -19,6 +21,7 @@ def commits_touching_baseline():
             capture_output=True,
             text=True,
             check=True,
+            cwd=REPO_ROOT,
         )
         .stdout.strip()
         .splitlines()
@@ -33,6 +36,7 @@ def baseline_at_commit(commit_sha):
         ["git", "show", f"{commit_sha}:{BASELINE_REPOSITORY_PATH}"],
         capture_output=True,
         text=True,
+        cwd=REPO_ROOT,
     ).stdout
     if not blob.strip():
         return None
