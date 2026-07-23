@@ -1,18 +1,14 @@
-import subprocess
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 
-import run_evals_worktree_and_environment
 from run_evals_assertions import check_assertions
+from run_evals_claude_cli import run_claude_cli
 from run_evals_hook_test_runner import evaluate_hook_test
 from run_evals_judge import build_llm_judge
 from run_evals_config_loader import resolve_system_prompt_for_test
-from run_evals_worktree_and_environment import build_filtered_environment
 
 DEFAULT_PARALLEL_WORKERS = 2
-TRANSIENT_RETRY_ATTEMPTS = 2
-TRANSIENT_RETRY_BACKOFF_SECONDS = 3
 
 
 @dataclass
@@ -23,54 +19,15 @@ class TestResult:
     output: str
     assertions_failed: list[str]
     error: str | None = None
+    category: str = "other"
 
 
-def run_claude_cli(
-    prompt: str,
-    model: str = "sonnet",
-    system_prompt: str | None = None,
-    timeout: int = 120,
-    no_tools: bool = False,
-) -> tuple[str, bool]:
-    cmd = ["claude", "-p", "--model", model, "--strict-mcp-config"]
-
-    if no_tools:
-        cmd.extend(["--tools", ""])
-
-    if system_prompt:
-        cmd.extend(["--system-prompt", system_prompt])
-
-    cmd.append(prompt)
-
-    last_transient_failure = ""
-    for attempt in range(TRANSIENT_RETRY_ATTEMPTS + 1):
-        try:
-            result = subprocess.run(
-                cmd,
-                capture_output=True,
-                text=True,
-                timeout=timeout,
-                cwd=run_evals_worktree_and_environment.EVAL_WORKING_DIRECTORY,
-                env=build_filtered_environment(),
-            )
-            combined_output = result.stdout + result.stderr
-            if result.returncode == 0 and combined_output.strip():
-                return combined_output, True
-            last_transient_failure = (
-                combined_output or f"empty output (exit {result.returncode})"
-            )
-        except subprocess.TimeoutExpired:
-            last_transient_failure = f"Timeout after {timeout}s"
-        except FileNotFoundError:
-            return "claude CLI not found - run 'rebuild' first", False
-        except Exception as e:
-            return str(e), False
-        if attempt < TRANSIENT_RETRY_ATTEMPTS:
-            time.sleep(TRANSIENT_RETRY_BACKOFF_SECONDS * (attempt + 1))
-    return last_transient_failure, False
-
-
-def run_test(test: dict, settings: dict, dry_run: bool = False) -> TestResult:
+def run_test(
+    test: dict,
+    settings: dict,
+    dry_run: bool = False,
+    authored_category: str = "other",
+) -> TestResult:
     name = test["name"]
     model = test.get("model", settings.get("default_model", "sonnet"))
     timeout = settings.get("timeout_seconds", 120)
@@ -84,6 +41,7 @@ def run_test(test: dict, settings: dict, dry_run: bool = False) -> TestResult:
             duration=time.time() - hook_start_time,
             output="[hook_test]",
             assertions_failed=hook_failures,
+            category=authored_category,
         )
 
     prompt = test.get("prompt")
@@ -95,6 +53,7 @@ def run_test(test: dict, settings: dict, dry_run: bool = False) -> TestResult:
             output="",
             assertions_failed=[],
             error="Test missing 'prompt' field",
+            category=authored_category,
         )
 
     if dry_run:
@@ -104,6 +63,7 @@ def run_test(test: dict, settings: dict, dry_run: bool = False) -> TestResult:
             duration=0,
             output="[DRY RUN]",
             assertions_failed=[],
+            category=authored_category,
         )
 
     start_time = time.time()
@@ -128,6 +88,7 @@ def run_test(test: dict, settings: dict, dry_run: bool = False) -> TestResult:
             output=output[:500],
             assertions_failed=[],
             error=output,
+            category=authored_category,
         )
 
     assertions = test.get("assertions", {})
@@ -144,6 +105,7 @@ def run_test(test: dict, settings: dict, dry_run: bool = False) -> TestResult:
         duration=duration,
         output=output[:500],
         assertions_failed=failures,
+        category=authored_category,
     )
 
 
@@ -160,7 +122,7 @@ def run_tests(
     if smoke_only:
         smoke = config.get("smoke_test")
         if smoke:
-            return [run_test(smoke, settings, dry_run)]
+            return [run_test(smoke, settings, dry_run, "smoke")]
         return []
 
     tests_config = config.get("tests", {})
@@ -173,10 +135,13 @@ def run_tests(
         for test in tests:
             if test_name and test["name"] != test_name:
                 continue
-            tests_to_run.append(test)
+            tests_to_run.append((test, cat_name))
 
     if dry_run or len(tests_to_run) <= 1:
-        return [run_test(test, settings, dry_run) for test in tests_to_run]
+        return [
+            run_test(test, settings, dry_run, cat_name)
+            for test, cat_name in tests_to_run
+        ]
 
     max_workers = max_workers_override or settings.get(
         "parallel_workers", DEFAULT_PARALLEL_WORKERS
@@ -185,8 +150,8 @@ def run_tests(
 
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         future_to_index = {
-            executor.submit(run_test, test, settings, False): index
-            for index, test in enumerate(tests_to_run)
+            executor.submit(run_test, test, settings, False, cat_name): index
+            for index, (test, cat_name) in enumerate(tests_to_run)
         }
         for future in as_completed(future_to_index):
             results_by_index[future_to_index[future]] = future.result()

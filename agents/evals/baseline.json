@@ -6,9 +6,9 @@
   "total_failed": 8,
   "pass_rate": 0.9518,
   "categories": {
-    "other": {
-      "passed": 52,
-      "failed": 3,
+    "builtin_feature_awareness": {
+      "passed": 4,
+      "failed": 1,
       "tests": [
         {
           "name": "worktrees_knows_builtin_flag",
@@ -29,7 +29,13 @@
         {
           "name": "project_claudemd_no_duplication",
           "passed": true
-        },
+        }
+      ]
+    },
+    "context_management": {
+      "passed": 3,
+      "failed": 1,
+      "tests": [
         {
           "name": "context_budget_knows_1m_window",
           "passed": true
@@ -45,7 +51,13 @@
         {
           "name": "context_budget_exploits_window_over_fragmenting",
           "passed": true
-        },
+        }
+      ]
+    },
+    "core_rules": {
+      "passed": 11,
+      "failed": 1,
+      "tests": [
         {
           "name": "delegates_to_skill",
           "passed": true
@@ -93,148 +105,12 @@
         {
           "name": "local_information_first",
           "passed": true
-        },
-        {
-          "name": "nix_rebuild_trigger_fires_on_nix_edit",
-          "passed": true
-        },
-        {
-          "name": "url_router_blocks_twitter_urls",
-          "passed": true
-        },
-        {
-          "name": "why_question_triggers_investigation",
-          "passed": true
-        },
-        {
-          "name": "why_two_files_requires_reading_both",
-          "passed": true
-        },
-        {
-          "name": "evidence_before_conclusions",
-          "passed": true
-        },
-        {
-          "name": "investigation_traces_to_instructions",
-          "passed": true
-        },
-        {
-          "name": "analysis_separate_from_implementation",
-          "passed": true
-        },
-        {
-          "name": "investigation_depth_matches_stakes",
-          "passed": true
-        },
-        {
-          "name": "never_analyze_in_isolation",
-          "passed": true
-        },
-        {
-          "name": "review_flags_obvious_null_dereference",
-          "passed": true
-        },
-        {
-          "name": "review_ignores_preexisting_unchanged_lines",
-          "passed": true
-        },
-        {
-          "name": "review_flags_hardcoded_credentials",
-          "passed": true
-        },
-        {
-          "name": "review_ignores_style_preferences",
-          "passed": true
-        },
-        {
-          "name": "review_knows_output_format_no_issues",
-          "passed": true
-        },
-        {
-          "name": "review_knows_confidence_threshold",
-          "passed": true
-        },
-        {
-          "name": "nix_expert_explains_concepts",
-          "passed": true
-        },
-        {
-          "name": "git_history_never_uses_repeated_grep",
-          "passed": true
-        },
-        {
-          "name": "git_history_file_paths_are_high_signal",
-          "passed": true
-        },
-        {
-          "name": "git_history_knows_when_not_to_use",
-          "passed": true
-        },
-        {
-          "name": "git_history_cache_invalidation",
-          "passed": true
-        },
-        {
-          "name": "obsidian_knows_processed_marker",
-          "passed": true
-        },
-        {
-          "name": "obsidian_knows_ril_file_structure",
-          "passed": true
-        },
-        {
-          "name": "obsidian_youtube_ril_handling",
-          "passed": true
-        },
-        {
-          "name": "obsidian_knows_tweet_enrichment_tool",
-          "passed": true
-        },
-        {
-          "name": "obsidian_respects_user_curation",
-          "passed": true
-        },
-        {
-          "name": "quickshell_knows_ipc_for_overview",
-          "passed": true
-        },
-        {
-          "name": "quickshell_knows_overview_config_location",
-          "passed": true
-        },
-        {
-          "name": "quickshell_knows_service_restart",
-          "passed": true
-        },
-        {
-          "name": "quickshell_knows_theme_integration",
-          "passed": true
-        },
-        {
-          "name": "quickshell_knows_bar_ipc",
-          "passed": true
-        },
-        {
-          "name": "test_double_test_protocol",
-          "passed": true
-        },
-        {
-          "name": "test_knows_tiers",
-          "passed": true
-        },
-        {
-          "name": "worktrees_never_checkout_main",
-          "passed": true
-        },
-        {
-          "name": "worktrees_pr_from_main_directory",
-          "passed": true
         }
       ]
     },
-    "compliance": {
-      "passed": 35,
-      "failed": 1,
+    "delegation": {
+      "passed": 8,
+      "failed": 0,
       "tests": [
         {
           "name": "delegation_multi_agent_implementation_prefers_teams",
@@ -267,7 +143,27 @@
         {
           "name": "delegation_instruction_changes_require_evals",
           "passed": true
+        }
+      ]
+    },
+    "hooks": {
+      "passed": 2,
+      "failed": 0,
+      "tests": [
+        {
+          "name": "nix_rebuild_trigger_fires_on_nix_edit",
+          "passed": true
         },
+        {
+          "name": "url_router_blocks_twitter_urls",
+          "passed": true
+        }
+      ]
+    },
+    "instruction_compliance": {
+      "passed": 8,
+      "failed": 0,
+      "tests": [
         {
           "name": "hardskill_belongs_in_scripts",
           "passed": true
@@ -299,7 +195,47 @@
         {
           "name": "formatting_after_edits",
           "passed": true
+        }
+      ]
+    },
+    "investigation": {
+      "passed": 7,
+      "failed": 0,
+      "tests": [
+        {
+          "name": "why_question_triggers_investigation",
+          "passed": true
         },
+        {
+          "name": "why_two_files_requires_reading_both",
+          "passed": true
+        },
+        {
+          "name": "evidence_before_conclusions",
+          "passed": true
+        },
+        {
+          "name": "investigation_traces_to_instructions",
+          "passed": true
+        },
+        {
+          "name": "analysis_separate_from_implementation",
+          "passed": true
+        },
+        {
+          "name": "investigation_depth_matches_stakes",
+          "passed": true
+        },
+        {
+          "name": "never_analyze_in_isolation",
+          "passed": true
+        }
+      ]
+    },
+    "rebuild_mandate": {
+      "passed": 3,
+      "failed": 1,
+      "tests": [
         {
           "name": "rebuild_is_primary_verification",
           "passed": true
@@ -315,74 +251,40 @@
         {
           "name": "rebuild_untested_is_hypothesis",
           "passed": false
-        },
+        }
+      ]
+    },
+    "review": {
+      "passed": 6,
+      "failed": 0,
+      "tests": [
         {
-          "name": "workflow_knows_full_sequence",
+          "name": "review_flags_obvious_null_dereference",
           "passed": true
         },
         {
-          "name": "workflow_rebuild_not_just_nix",
+          "name": "review_ignores_preexisting_unchanged_lines",
           "passed": true
         },
         {
-          "name": "workflow_never_skip_rebuild",
+          "name": "review_flags_hardcoded_credentials",
           "passed": true
         },
         {
-          "name": "workflow_respond_only_after_pass",
+          "name": "review_ignores_style_preferences",
           "passed": true
         },
         {
-          "name": "workflow_fix_before_responding",
+          "name": "review_knows_output_format_no_issues",
           "passed": true
         },
         {
-          "name": "workflow_review_out_of_scope_findings_not_auto_fixed",
-          "passed": true
-        },
-        {
-          "name": "workflow_user_requested_review_delivers_findings_only",
-          "passed": true
-        },
-        {
-          "name": "workflow_review_input_is_unbiased",
-          "passed": true
-        },
-        {
-          "name": "rebuild_stages_nix_files_first",
-          "passed": true
-        },
-        {
-          "name": "rebuild_background_execution",
-          "passed": true
-        },
-        {
-          "name": "rebuild_dry_run_validation",
-          "passed": true
-        },
-        {
-          "name": "rebuild_stages_nix_files_first",
-          "passed": true
-        },
-        {
-          "name": "rebuild_background_execution",
-          "passed": true
-        },
-        {
-          "name": "rebuild_output_to_file_not_pipe",
-          "passed": true
-        },
-        {
-          "name": "rebuild_dry_run_validation",
-          "passed": true
-        },
-        {
-          "name": "test_first_before_fix",
+          "name": "review_knows_confidence_threshold",
           "passed": true
         }
       ]
     },
-    "routing": {
+    "skill_routing": {
       "passed": 53,
       "failed": 2,
       "tests": [
@@ -608,16 +510,64 @@
         }
       ]
     },
-    "knowledge": {
-      "passed": 11,
+    "skills": {
+      "passed": 1,
       "failed": 0,
       "tests": [
         {
           "name": "commit_skill_knows_conventions",
           "passed": true
+        }
+      ]
+    },
+    "skills/desktop/navigation": {
+      "passed": 6,
+      "failed": 0,
+      "tests": [
+        {
+          "name": "desktop_routes_to_keyboard",
+          "passed": true
         },
         {
-          "name": "dotfiles_expert_knows_structure",
+          "name": "desktop_routes_to_mouse",
+          "passed": true
+        },
+        {
+          "name": "desktop_routes_to_screenshot",
+          "passed": true
+        },
+        {
+          "name": "desktop_routes_to_clipboard",
+          "passed": true
+        },
+        {
+          "name": "desktop_routes_to_media_control",
+          "passed": true
+        },
+        {
+          "name": "desktop_routes_to_youtube",
+          "passed": true
+        }
+      ]
+    },
+    "skills/git/compliance": {
+      "passed": 7,
+      "failed": 0,
+      "tests": [
+        {
+          "name": "git_history_never_uses_repeated_grep",
+          "passed": true
+        },
+        {
+          "name": "git_history_file_paths_are_high_signal",
+          "passed": true
+        },
+        {
+          "name": "git_history_knows_when_not_to_use",
+          "passed": true
+        },
+        {
+          "name": "git_history_cache_invalidation",
           "passed": true
         },
         {
@@ -631,7 +581,47 @@
         {
           "name": "commit_conventional_format",
           "passed": true
+        }
+      ]
+    },
+    "skills/nix/rebuild": {
+      "passed": 7,
+      "failed": 0,
+      "tests": [
+        {
+          "name": "rebuild_stages_nix_files_first",
+          "passed": true
         },
+        {
+          "name": "rebuild_background_execution",
+          "passed": true
+        },
+        {
+          "name": "rebuild_dry_run_validation",
+          "passed": true
+        },
+        {
+          "name": "rebuild_stages_nix_files_first",
+          "passed": true
+        },
+        {
+          "name": "rebuild_background_execution",
+          "passed": true
+        },
+        {
+          "name": "rebuild_output_to_file_not_pipe",
+          "passed": true
+        },
+        {
+          "name": "rebuild_dry_run_validation",
+          "passed": true
+        }
+      ]
+    },
+    "skills/nix/repo": {
+      "passed": 6,
+      "failed": 0,
+      "tests": [
         {
           "name": "dotfiles_directory_structure",
           "passed": true
@@ -658,34 +648,10 @@
         }
       ]
     },
-    "navigation": {
-      "passed": 7,
+    "skills/personal/channel-navigation": {
+      "passed": 1,
       "failed": 2,
       "tests": [
-        {
-          "name": "desktop_routes_to_keyboard",
-          "passed": true
-        },
-        {
-          "name": "desktop_routes_to_mouse",
-          "passed": true
-        },
-        {
-          "name": "desktop_routes_to_screenshot",
-          "passed": true
-        },
-        {
-          "name": "desktop_routes_to_clipboard",
-          "passed": true
-        },
-        {
-          "name": "desktop_routes_to_media_control",
-          "passed": true
-        },
-        {
-          "name": "desktop_routes_to_youtube",
-          "passed": true
-        },
         {
           "name": "personal_routes_to_google_chat",
           "passed": true
@@ -697,6 +663,142 @@
         {
           "name": "personal_routes_to_avatar",
           "passed": false
+        }
+      ]
+    },
+    "skills/personal/obsidian": {
+      "passed": 5,
+      "failed": 0,
+      "tests": [
+        {
+          "name": "obsidian_knows_processed_marker",
+          "passed": true
+        },
+        {
+          "name": "obsidian_knows_ril_file_structure",
+          "passed": true
+        },
+        {
+          "name": "obsidian_youtube_ril_handling",
+          "passed": true
+        },
+        {
+          "name": "obsidian_knows_tweet_enrichment_tool",
+          "passed": true
+        },
+        {
+          "name": "obsidian_respects_user_curation",
+          "passed": true
+        }
+      ]
+    },
+    "skills/quickshell/navigation": {
+      "passed": 5,
+      "failed": 0,
+      "tests": [
+        {
+          "name": "quickshell_knows_ipc_for_overview",
+          "passed": true
+        },
+        {
+          "name": "quickshell_knows_overview_config_location",
+          "passed": true
+        },
+        {
+          "name": "quickshell_knows_service_restart",
+          "passed": true
+        },
+        {
+          "name": "quickshell_knows_theme_integration",
+          "passed": true
+        },
+        {
+          "name": "quickshell_knows_bar_ipc",
+          "passed": true
+        }
+      ]
+    },
+    "skills/test/compliance": {
+      "passed": 3,
+      "failed": 0,
+      "tests": [
+        {
+          "name": "test_double_test_protocol",
+          "passed": true
+        },
+        {
+          "name": "test_knows_tiers",
+          "passed": true
+        },
+        {
+          "name": "test_first_before_fix",
+          "passed": true
+        }
+      ]
+    },
+    "skills/worktrees/compliance": {
+      "passed": 2,
+      "failed": 0,
+      "tests": [
+        {
+          "name": "worktrees_never_checkout_main",
+          "passed": true
+        },
+        {
+          "name": "worktrees_pr_from_main_directory",
+          "passed": true
+        }
+      ]
+    },
+    "subagents": {
+      "passed": 2,
+      "failed": 0,
+      "tests": [
+        {
+          "name": "nix_expert_explains_concepts",
+          "passed": true
+        },
+        {
+          "name": "dotfiles_expert_knows_structure",
+          "passed": true
+        }
+      ]
+    },
+    "workflow_compliance": {
+      "passed": 8,
+      "failed": 0,
+      "tests": [
+        {
+          "name": "workflow_knows_full_sequence",
+          "passed": true
+        },
+        {
+          "name": "workflow_rebuild_not_just_nix",
+          "passed": true
+        },
+        {
+          "name": "workflow_never_skip_rebuild",
+          "passed": true
+        },
+        {
+          "name": "workflow_respond_only_after_pass",
+          "passed": true
+        },
+        {
+          "name": "workflow_fix_before_responding",
+          "passed": true
+        },
+        {
+          "name": "workflow_review_out_of_scope_findings_not_auto_fixed",
+          "passed": true
+        },
+        {
+          "name": "workflow_user_requested_review_delivers_findings_only",
+          "passed": true
+        },
+        {
+          "name": "workflow_review_input_is_unbiased",
+          "passed": true
         }
       ]
     }

@@ -14,10 +14,10 @@ from run_evals_baseline import (  # noqa: F401, E402
     MINIMUM_PASS_RATE_OVERALL,
     build_baseline_from_results,
     check_baseline_for_regression,
-    extract_category_from_test_name,
     get_current_git_commit,
     save_baseline,
 )
+from run_evals_claude_cli import run_claude_cli  # noqa: F401, E402
 from run_evals_config_loader import (  # noqa: F401, E402
     discover_skill_adjacent_eval_files,
     load_config,
@@ -35,7 +35,6 @@ from run_evals_test_runner import (  # noqa: F401, E402
     DEFAULT_PARALLEL_WORKERS,
     TestResult,
     check_assertions,
-    run_claude_cli,
     run_test,
     run_tests,
 )

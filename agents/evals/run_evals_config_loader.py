@@ -50,7 +50,7 @@ def discover_skill_adjacent_eval_files(repo_root: Path) -> dict[str, list[dict]]
     for yaml_file in sorted(repo_root.glob("agents/skills/*/__tests__/evals/*.yaml")):
         if yaml_file.name == "settings.yaml":
             continue
-        skill_name = yaml_file.parent.parent.name
+        skill_name = yaml_file.parent.parent.parent.name
         category_name = f"skills/{skill_name}/{yaml_file.stem}"
         with open(yaml_file) as f:
             data = yaml.safe_load(f)

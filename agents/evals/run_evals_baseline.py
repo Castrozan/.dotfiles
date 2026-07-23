@@ -13,31 +13,23 @@ BASELINE_PATH = REPO_ROOT / "agents" / "evals" / "baseline.json"
 MINIMUM_PASS_RATE_OVERALL = 0.75
 MINIMUM_PASS_RATE_COMPLIANCE = 0.85
 MAXIMUM_REGRESSION_DROP = 0.05
+COMPLIANCE_CATEGORIES = {
+    "instruction_compliance",
+    "workflow_compliance",
+    "rebuild_mandate",
+    "delegation",
+    "core_rules",
+}
 
 
-def extract_category_from_test_name(test_name: str) -> str:
-    compliance_prefixes = [
-        "workflow_",
-        "rebuild_",
-        "no_comments_",
-        "python_default_",
-        "test_first_",
-        "specific_file_",
-        "formatting_after_",
-        "hardskill_",
-        "evergreen_",
-        "description_length_",
-        "delegation_",
-    ]
-    if any(test_name.startswith(p) for p in compliance_prefixes):
-        return "compliance"
-    if test_name.startswith("routing_"):
-        return "routing"
-    if "_routes_to_" in test_name:
-        return "navigation"
-    if test_name.startswith("commit_") or test_name.startswith("dotfiles_"):
-        return "knowledge"
-    return "other"
+def compliance_passed_and_total(categories: dict) -> tuple[int, int]:
+    passed = 0
+    total = 0
+    for category_name, bucket in categories.items():
+        if category_name in COMPLIANCE_CATEGORIES:
+            passed += bucket.get("passed", 0)
+            total += bucket.get("passed", 0) + bucket.get("failed", 0)
+    return passed, total
 
 
 def get_current_git_commit() -> str:
@@ -56,7 +48,7 @@ def get_current_git_commit() -> str:
 def build_baseline_from_results(results: list[TestResult]) -> dict:
     categories = {}
     for result in results:
-        category_name = extract_category_from_test_name(result.name)
+        category_name = result.category
         if category_name not in categories:
             categories[category_name] = {
                 "passed": 0,
@@ -116,14 +108,11 @@ def check_baseline_for_regression() -> bool:
             f"below minimum {MINIMUM_PASS_RATE_OVERALL:.1%}"
         )
 
-    compliance_category = baseline.get("categories", {}).get("compliance", {})
-    if compliance_category:
-        compliance_total = compliance_category["passed"] + compliance_category["failed"]
-        compliance_rate = (
-            compliance_category["passed"] / compliance_total
-            if compliance_total > 0
-            else 0
-        )
+    compliance_passed, compliance_total = compliance_passed_and_total(
+        baseline.get("categories", {})
+    )
+    if compliance_total > 0:
+        compliance_rate = compliance_passed / compliance_total
         if compliance_rate < MINIMUM_PASS_RATE_COMPLIANCE:
             failures.append(
                 f"Compliance pass rate {compliance_rate:.1%} "
