@@ -4,11 +4,8 @@ tests:
     prompt: "I need to switch to a feature branch. Should I run git checkout in the main repo?"
     model: haiku
     assertions:
-      output_contains_any:
-        - "never"
-        - "don't"
-        - "do not"
-        - "worktree"
+      llm_judge:
+        - "The response answers that git checkout (or git switch) should not be run in the main repo, and directs the feature-branch work into a git worktree instead."
       output_not_contains:
         - "yes, run git checkout"
 
@@ -17,9 +14,5 @@ tests:
     prompt: "I finished my feature in a worktree. Where should I run the PR command?"
     model: haiku
     assertions:
-      output_contains_any:
-        - "main repo"
-        - "main directory"
-        - "not the worktree"
-        - "original"
-        - "root"
+      llm_judge:
+        - "The response states that the PR command should be run from the main repo directory rather than from inside the worktree."

@@ -4,85 +4,55 @@ tests:
     prompt: "Should I use git add -A to stage all my changes before committing?"
     model: haiku
     assertions:
-      output_contains_any:
-        - "specific"
-        - "git add"
-        - "individual"
-        - "each file"
-        - "by name"
-        - "never"
-        - "avoid"
-        - "don't"
-        - "not"
+      llm_judge:
+        - "The response advises against `git add -A` and `git add .`, instead directing the user to stage specific files by name/path so unrelated parallel work is not staged."
 
   - name: commit_reads_diff_first
     skill_path: agents/skills/git/SKILL.md
     prompt: "What information do you need before writing a commit message?"
     model: haiku
     assertions:
-      output_contains_any:
-        - "diff"
-        - "changes"
-        - "status"
-        - "log"
+      llm_judge:
+        - "The response states that before writing the message you must inspect the actual changes, above all the git diff (staged and unstaged) and ideally git status and the recent git log for existing style, rather than generating the message from filenames alone."
 
   - name: commit_conventional_format
     skill_path: agents/skills/git/SKILL.md
     prompt: "What format should commit messages follow?"
     model: haiku
     assertions:
-      output_contains_any:
-        - "conventional"
-        - "type"
-        - "scope"
-        - "imperative"
+      llm_judge:
+        - "The response describes the Conventional Commits format, `type(scope): subject` written in imperative mood, as the required structure for commit messages."
 
   - name: git_history_never_uses_repeated_grep
     skill_path: agents/skills/git/SKILL.md
     prompt: "I need to search git history for all commits related to authentication. How should I do it?"
     model: haiku
     assertions:
-      output_contains_any:
-        - "dump"
-        - "git-history"
-        - "/tmp"
-        - "layer"
+      llm_judge:
+        - "The response recommends the `git-history` command, which dumps the log once to /tmp so any grep against the dump is instant and reusable, instead of repeated `git log --grep` or `git log -G` scans."
 
   - name: git_history_file_paths_are_high_signal
     skill_path: agents/skills/git/SKILL.md
+    extra_skill_paths:
+      - agents/skills/git/history.md
     prompt: "What's the advantage of searching file paths in layer 1 over commit messages?"
     model: haiku
     assertions:
-      output_contains_any:
-        - "file path"
-        - "directory"
-        - "terse"
-        - "miss"
-        - "keyword"
+      llm_judge:
+        - "The response explains that file paths are higher-signal than commit messages because a directory/path reveals what a commit actually touched even when the terse or misleading commit message omits the keyword, catching work that searching messages alone would miss."
 
   - name: git_history_knows_when_not_to_use
     skill_path: agents/skills/git/SKILL.md
     prompt: "I just want to see the last commit. Should I use this skill?"
     model: haiku
     assertions:
-      output_contains_any:
-        - "no"
-        - "git log"
-        - "git show"
-        - "don't need"
-        - "overkill"
-        - "simple"
-        - "skip"
+      llm_judge:
+        - "The response advises NOT using the git-history skill for a simple last-commit lookup, pointing instead to a direct command such as `git log -1 HEAD` because a single targeted query does not benefit from the dump/cache pattern."
 
   - name: git_history_cache_invalidation
     skill_path: agents/skills/git/SKILL.md
     prompt: "How do I know if the cached git history file is still up to date?"
     model: haiku
     assertions:
-      output_contains_any:
-        - "HEAD"
-        - "stale"
-        - "hour"
-        - "invalidat"
-        - "force"
-        - "info"
+      llm_judge:
+        - "The response explains how to tell whether the cache is current, by running `git-history info` for cache status and/or noting that it auto-invalidates when HEAD changes or the file is older than one hour (refreshable with `--force`)."
