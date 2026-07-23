@@ -4,10 +4,13 @@ import yaml
 
 from run_evals_judge import build_llm_judge, parse_judge_verdict
 from run_evals_judge_calibration import (
+    CALIBRATION_PATH,
     cohens_kappa,
     judge_agreement,
     load_calibration_cases,
 )
+
+RECORDED_KAPPA_FLOOR = 0.7
 
 REBUILD_MANDATE_CONFIG = (
     Path(__file__).resolve().parents[2] / "config" / "rebuild_mandate.yaml"
@@ -93,6 +96,29 @@ def test_calibration_corpus_is_well_formed():
     for case in cases:
         assert case["rubric"] and case["output"]
         assert case["human_label"].strip().upper() in {"PASS", "FAIL"}
+
+
+def test_calibration_corpus_covers_the_conversion_rubric_families_with_both_labels():
+    cases = load_calibration_cases()
+    assert len(cases) >= 20
+    distinct_rubrics = {case["rubric"] for case in cases}
+    assert len(distinct_rubrics) >= 10
+    labels = {case["human_label"].strip().upper() for case in cases}
+    assert labels == {"PASS", "FAIL"}
+    for rubric in distinct_rubrics:
+        rubric_labels = {
+            case["human_label"].strip().upper()
+            for case in cases
+            if case["rubric"] == rubric
+        }
+        assert rubric_labels == {"PASS", "FAIL"}, rubric
+
+
+def test_recorded_agreement_stays_above_the_kappa_floor_and_matches_the_corpus():
+    corpus = yaml.safe_load(CALIBRATION_PATH.read_text())
+    recorded = corpus["recorded_agreement"]
+    assert recorded["cohens_kappa"] >= RECORDED_KAPPA_FLOOR
+    assert recorded["cases"] == len(corpus["cases"])
 
 
 def test_rebuild_mandate_suite_stays_rubric_judged():
