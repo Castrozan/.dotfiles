@@ -23,6 +23,17 @@ def check_assertions(output: str, assertions: dict, judge=None) -> list[str]:
                 f"Expected one of {assertions['output_contains_any']} in output"
             )
 
+    if "output_equals" in assertions:
+        normalized_output = output.strip().lower()
+        accepted_values = [
+            expected.strip().lower() for expected in assertions["output_equals"]
+        ]
+        if normalized_output not in accepted_values:
+            failures.append(
+                f"Expected output to equal one of {assertions['output_equals']}, "
+                f"got '{output.strip()}'"
+            )
+
     if "output_matches_regex" in assertions:
         for pattern in assertions["output_matches_regex"]:
             if re.search(pattern, output, re.IGNORECASE | re.MULTILINE) is None:

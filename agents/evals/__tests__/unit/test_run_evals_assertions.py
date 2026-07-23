@@ -19,6 +19,26 @@ def test_output_contains_any_requires_at_least_one_match():
     assert len(failures) == 1
 
 
+def test_output_equals_matches_after_stripping_and_lowercasing():
+    assert check_assertions("desktop", {"output_equals": ["desktop"]}) == []
+    assert check_assertions("  DESKTOP\n", {"output_equals": ["desktop"]}) == []
+
+
+def test_output_equals_accepts_any_of_several_expected_values():
+    assert check_assertions("git", {"output_equals": ["nix", "git"]}) == []
+
+
+def test_output_equals_rejects_a_substring_that_is_not_the_whole_output():
+    failures = check_assertions("the desktop skill", {"output_equals": ["desktop"]})
+    assert len(failures) == 1
+    assert "desktop" in failures[0]
+
+
+def test_output_equals_rejects_a_different_token():
+    failures = check_assertions("browser", {"output_equals": ["desktop"]})
+    assert len(failures) == 1
+
+
 def test_output_matches_regex_searches_case_insensitively():
     passing = {"output_matches_regex": [r"exit code \d"]}
     assert check_assertions("EXIT CODE 0 returned", passing) == []

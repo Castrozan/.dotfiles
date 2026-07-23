@@ -42,7 +42,7 @@ tests:
     prompt: "Type 'hello world' into the terminal window"
     model: sonnet
     assertions:
-      output_contains_any:
+      output_equals:
         - "desktop"
 
   - name: routing_to_desktop_screenshot_capture
@@ -51,10 +51,8 @@ tests:
     prompt: "Take a screenshot of my current screen"
     model: sonnet
     assertions:
-      output_contains_any:
+      output_equals:
         - "desktop"
-      output_not_contains:
-        - "browser"
 
   - name: routing_to_desktop_clipboard_access
     no_tools: true
@@ -62,7 +60,7 @@ tests:
     prompt: "Copy the selected text to clipboard and paste it into another window"
     model: sonnet
     assertions:
-      output_contains_any:
+      output_equals:
         - "desktop"
 
   - name: routing_to_desktop_mouse_click
@@ -71,7 +69,7 @@ tests:
     prompt: "Click on the close button at position 1900,10"
     model: sonnet
     assertions:
-      output_contains_any:
+      output_equals:
         - "desktop"
 
   - name: routing_to_media_volume_adjustment
@@ -80,7 +78,7 @@ tests:
     prompt: "Turn the volume up to 80%"
     model: sonnet
     assertions:
-      output_contains_any:
+      output_equals:
         - "desktop"
 
   - name: routing_to_media_youtube_search
@@ -89,11 +87,8 @@ tests:
     prompt: "Search YouTube for NixOS tutorials and add the best one to my playlist"
     model: sonnet
     assertions:
-      output_contains_any:
+      output_equals:
         - "desktop"
-      output_not_contains:
-        - "browser"
-        - "research"
 
   - name: routing_to_media_skip_track
     no_tools: true
@@ -101,7 +96,7 @@ tests:
     prompt: "Skip to the next song"
     model: sonnet
     assertions:
-      output_contains_any:
+      output_equals:
         - "desktop"
 
   - name: routing_to_personal_google_chat_message
@@ -110,10 +105,8 @@ tests:
     prompt: "Send a message to the team on Google Chat saying the deploy is done"
     model: sonnet
     assertions:
-      output_contains_any:
+      output_equals:
         - "personal"
-      output_not_contains:
-        - "browser"
 
   - name: routing_to_personal_twitter_post
     no_tools: true
@@ -121,10 +114,8 @@ tests:
     prompt: "Post a tweet about the new release on my X account"
     model: sonnet
     assertions:
-      output_contains_any:
+      output_equals:
         - "personal"
-      output_not_contains:
-        - "browser"
 
   - name: routing_to_personal_vtuber_avatar
     no_tools: true
@@ -132,7 +123,7 @@ tests:
     prompt: "Make the VTuber avatar smile and start lip syncing"
     model: sonnet
     assertions:
-      output_contains_any:
+      output_equals:
         - "personal"
 
   - name: routing_to_personal_twitter_scrape
@@ -141,7 +132,7 @@ tests:
     prompt: "Scrape the latest tweets from @nixos_org"
     model: sonnet
     assertions:
-      output_contains_any:
+      output_equals:
         - "personal"
 
   - name: routing_to_deep_work
@@ -150,7 +141,7 @@ tests:
     prompt: "This is a big task, set up a deep work workspace to track progress"
     model: sonnet
     assertions:
-      output_contains_any:
+      output_equals:
         - "deep-work"
 
   - name: routing_to_worktrees
@@ -159,10 +150,8 @@ tests:
     prompt: "Create a git worktree so I can work on a parallel branch"
     model: sonnet
     assertions:
-      output_contains_any:
+      output_equals:
         - "worktrees"
-      output_not_contains:
-        - "git"
 
   - name: routing_to_tmux_control
     no_tools: true
@@ -170,7 +159,7 @@ tests:
     prompt: "Start a background process in a new herdr pane"
     model: sonnet
     assertions:
-      output_contains_any:
+      output_equals:
         - "herdr"
 
   - name: routing_to_restart
@@ -179,7 +168,7 @@ tests:
     prompt: "Restart the current session and preserve context"
     model: sonnet
     assertions:
-      output_contains_any:
+      output_equals:
         - "restart"
 
   - name: routing_to_browser_web_scraping
@@ -188,7 +177,7 @@ tests:
     prompt: "Open the AWS console and check the EC2 instances page"
     model: sonnet
     assertions:
-      output_contains_any:
+      output_equals:
         - "browser"
 
   - name: routing_to_browser_form_filling
@@ -197,7 +186,7 @@ tests:
     prompt: "Fill out the login form on https://example.com with my credentials"
     model: sonnet
     assertions:
-      output_contains_any:
+      output_equals:
         - "browser"
 
   - name: routing_to_browser_electron_app
@@ -206,10 +195,8 @@ tests:
     prompt: "Automate the VS Code Electron app to open a file and run a command"
     model: sonnet
     assertions:
-      output_contains_any:
+      output_equals:
         - "browser"
-      output_not_contains:
-        - "desktop"
 
   - name: routing_to_browser_interactive_scrape
     no_tools: true
@@ -217,10 +204,8 @@ tests:
     prompt: "Open https://example.com/pricing in a browser, click the 'Load More' button, then extract the pricing table"
     model: sonnet
     assertions:
-      output_contains_any:
+      output_equals:
         - "browser"
-      output_not_contains:
-        - "research"
 
   - name: routing_to_claude_spawn_agent
     no_tools: true
@@ -228,10 +213,8 @@ tests:
     prompt: "Spawn a parallel agent to refactor the utils module while I work on tests"
     model: sonnet
     assertions:
-      output_contains_any:
+      output_equals:
         - "herdr"
-      output_not_contains:
-        - "personal"
 
   - name: routing_to_commit_staging
     no_tools: true
@@ -239,7 +222,7 @@ tests:
     prompt: "Stage the changed files and create a commit with a good message"
     model: sonnet
     assertions:
-      output_contains_any:
+      output_equals:
         - "git"
 
   - name: routing_to_home_assistant_lights
@@ -248,7 +231,7 @@ tests:
     prompt: "Turn on the living room lights and set brightness to 50%"
     model: sonnet
     assertions:
-      output_contains_any:
+      output_equals:
         - "personal"
 
   - name: routing_to_home_assistant_ac_control
@@ -257,7 +240,7 @@ tests:
     prompt: "Set the air conditioner to 22 degrees and fan speed to high"
     model: sonnet
     assertions:
-      output_contains_any:
+      output_equals:
         - "personal"
 
   - name: routing_to_obsidian_daily_note
@@ -266,7 +249,7 @@ tests:
     prompt: "Create today's daily note and add a TODO to review the PR"
     model: sonnet
     assertions:
-      output_contains_any:
+      output_equals:
         - "personal"
 
   - name: routing_to_obsidian_todo_tracking
@@ -275,7 +258,7 @@ tests:
     prompt: "Show me all pending TODOs in my vault"
     model: sonnet
     assertions:
-      output_contains_any:
+      output_equals:
         - "personal"
 
   - name: routing_to_dotfiles_module_addition
@@ -284,7 +267,7 @@ tests:
     prompt: "Add a new home-manager module for configuring zathura PDF viewer"
     model: sonnet
     assertions:
-      output_contains_any:
+      output_equals:
         - "nix"
 
   - name: routing_to_nix_expert_expression
@@ -293,7 +276,7 @@ tests:
     prompt: "Help me write a Nix overlay that patches the source of a package"
     model: sonnet
     assertions:
-      output_contains_any:
+      output_equals:
         - "nix"
 
   - name: routing_to_rebuild_apply_changes
@@ -302,7 +285,7 @@ tests:
     prompt: "Rebuild the system to apply the flake changes"
     model: sonnet
     assertions:
-      output_contains_any:
+      output_equals:
         - "nix"
 
   - name: routing_to_test_verification
@@ -311,7 +294,7 @@ tests:
     prompt: "Run the test suite to verify the changes pass"
     model: sonnet
     assertions:
-      output_contains_any:
+      output_equals:
         - "test"
 
   - name: routing_to_review_skill_creation
@@ -320,7 +303,7 @@ tests:
     prompt: "Create a new skill for managing Docker containers with good prompts"
     model: sonnet
     assertions:
-      output_contains_any:
+      output_equals:
         - "review"
 
   - name: routing_to_review_skill_routing_failure
@@ -329,11 +312,8 @@ tests:
     prompt: "The model keeps using WebFetch instead of the twitter skill when I paste Twitter URLs. How do I fix the skill routing?"
     model: sonnet
     assertions:
-      output_contains_any:
+      output_equals:
         - "review"
-      output_not_contains:
-        - "personal"
-        - "browser"
 
   - name: routing_to_notify_task_completion
     no_tools: true
@@ -341,7 +321,7 @@ tests:
     prompt: "Notify me when the long refactoring task is complete"
     model: sonnet
     assertions:
-      output_contains_any:
+      output_equals:
         - "notify"
 
   - name: routing_to_quickshell_bar_module
@@ -350,7 +330,7 @@ tests:
     prompt: "Add a new battery widget to the Quickshell bar"
     model: sonnet
     assertions:
-      output_contains_any:
+      output_equals:
         - "quickshell"
 
   - name: routing_to_research_tool_comparison
@@ -359,10 +339,8 @@ tests:
     prompt: "Research the latest Wayland compositors and compare their features"
     model: sonnet
     assertions:
-      output_contains_any:
+      output_equals:
         - "research"
-      output_not_contains:
-        - "browser"
 
   - name: routing_to_review_compress_output
     no_tools: true
@@ -370,7 +348,7 @@ tests:
     prompt: "That answer was way too long, give me the short version"
     model: sonnet
     assertions:
-      output_contains_any:
+      output_equals:
         - "review"
 
   - name: routing_to_devenv_shell_setup
@@ -379,7 +357,7 @@ tests:
     prompt: "Set up a devenv shell with PostgreSQL and Python 3.12 for this project"
     model: sonnet
     assertions:
-      output_contains_any:
+      output_equals:
         - "nix"
 
   - name: routing_to_phone_status_battery
@@ -388,7 +366,7 @@ tests:
     prompt: "Check my phone battery level and charging status"
     model: sonnet
     assertions:
-      output_contains_any:
+      output_equals:
         - "personal"
 
   - name: routing_to_ponto_time_tracking
@@ -397,7 +375,7 @@ tests:
     prompt: "Fill my ponto entries for this week on Senior"
     model: sonnet
     assertions:
-      output_contains_any:
+      output_equals:
         - "personal"
 
   - name: routing_ambiguous_browser_vs_desktop_screenshot
@@ -406,10 +384,8 @@ tests:
     prompt: "Take a screenshot of my desktop showing all open windows"
     model: sonnet
     assertions:
-      output_contains_any:
+      output_equals:
         - "desktop"
-      output_not_contains:
-        - "browser"
 
   - name: routing_ambiguous_research_vs_browser
     no_tools: true
@@ -417,10 +393,8 @@ tests:
     prompt: "What are the best practices for Nix flake design in 2026?"
     model: sonnet
     assertions:
-      output_contains_any:
+      output_equals:
         - "research"
-      output_not_contains:
-        - "browser"
 
   - name: routing_ambiguous_commit_vs_worktrees
     no_tools: true
@@ -428,10 +402,8 @@ tests:
     prompt: "I want to commit all my staged changes with a conventional commit message"
     model: sonnet
     assertions:
-      output_contains_any:
+      output_equals:
         - "git"
-      output_not_contains:
-        - "worktrees"
 
   - name: routing_to_review_code_analysis
     no_tools: true
@@ -439,7 +411,7 @@ tests:
     prompt: "Spawn an unbiased reviewer agent to check my implementation for bugs and convention violations"
     model: sonnet
     assertions:
-      output_contains_any:
+      output_equals:
         - "review"
 
   - name: routing_to_git_history_search_commits
@@ -448,11 +420,8 @@ tests:
     prompt: "Search git history for all commits related to browser automation"
     model: sonnet
     assertions:
-      output_contains_any:
+      output_equals:
         - "git"
-      output_not_contains:
-        - "research"
-        - "browser"
 
   - name: routing_to_git_history_find_when_changed
     no_tools: true
@@ -460,10 +429,8 @@ tests:
     prompt: "When was the authentication module first added to this repo?"
     model: sonnet
     assertions:
-      output_contains_any:
+      output_equals:
         - "git"
-      output_not_contains:
-        - "nix"
 
   - name: routing_to_git_history_trace_evolution
     no_tools: true
@@ -471,11 +438,8 @@ tests:
     prompt: "Show me how the browser skill evolved over time in this project"
     model: sonnet
     assertions:
-      output_contains_any:
+      output_equals:
         - "git"
-      output_not_contains:
-        - "browser"
-        - "research"
 
   - name: routing_to_git_history_investigate_past
     no_tools: true
@@ -483,10 +447,8 @@ tests:
     prompt: "I need to understand why we switched from playwright to chrome devtools, check the git history"
     model: sonnet
     assertions:
-      output_contains_any:
+      output_equals:
         - "git"
-      output_not_contains:
-        - "research"
 
   - name: routing_ambiguous_git_history_vs_research
     no_tools: true
@@ -494,10 +456,8 @@ tests:
     prompt: "Research the latest trends in version control systems"
     model: sonnet
     assertions:
-      output_contains_any:
+      output_equals:
         - "research"
-      output_not_contains:
-        - "git"
 
   - name: routing_to_obsidian_inbox_processing
     no_tools: true
@@ -505,10 +465,8 @@ tests:
     prompt: "Process my saved articles from the ReadItLater inbox"
     model: sonnet
     assertions:
-      output_contains_any:
+      output_equals:
         - "personal"
-      output_not_contains:
-        - "browser"
 
   - name: routing_to_obsidian_saved_tweet
     no_tools: true
@@ -516,10 +474,8 @@ tests:
     prompt: "What does this saved tweet in my vault say?"
     model: sonnet
     assertions:
-      output_contains_any:
+      output_equals:
         - "personal"
-      output_not_contains:
-        - "browser"
 
   - name: routing_to_personal_tweet_media_fetch
     no_tools: true
@@ -527,10 +483,8 @@ tests:
     prompt: "Fetch the image attached to this tweet by @user"
     model: sonnet
     assertions:
-      output_contains_any:
+      output_equals:
         - "personal"
-      output_not_contains:
-        - "browser"
 
   - name: routing_ambiguous_browser_vs_personal_tweet_scraping
     no_tools: true
@@ -538,10 +492,8 @@ tests:
     prompt: "I need to read what a tweet says and see its attached image"
     model: sonnet
     assertions:
-      output_contains_any:
+      output_equals:
         - "personal"
-      output_not_contains:
-        - "browser"
 
   - name: routing_to_personal_bare_xcom_url
     no_tools: true
@@ -549,11 +501,8 @@ tests:
     prompt: "https://x.com/neogoose_btw/status/2040598081763471417"
     model: sonnet
     assertions:
-      output_contains_any:
+      output_equals:
         - "personal"
-      output_not_contains:
-        - "browser"
-        - "research"
 
   - name: routing_to_personal_bare_twitter_url
     no_tools: true
@@ -561,11 +510,8 @@ tests:
     prompt: "https://twitter.com/elikiaponde/status/1234567890"
     model: sonnet
     assertions:
-      output_contains_any:
+      output_equals:
         - "personal"
-      output_not_contains:
-        - "browser"
-        - "research"
 
   - name: routing_to_personal_xcom_url_with_context
     no_tools: true
@@ -573,11 +519,8 @@ tests:
     prompt: "https://x.com/schizoidcock/status/2040595546411266214 this looks interesting, is it any good?"
     model: sonnet
     assertions:
-      output_contains_any:
+      output_equals:
         - "personal"
-      output_not_contains:
-        - "browser"
-        - "research"
 
   - name: routing_to_personal_xcom_url_what_does_it_say
     no_tools: true
@@ -585,8 +528,5 @@ tests:
     prompt: "what does this tweet say? https://x.com/user/status/1234567890123"
     model: sonnet
     assertions:
-      output_contains_any:
+      output_equals:
         - "personal"
-      output_not_contains:
-        - "browser"
-        - "research"
