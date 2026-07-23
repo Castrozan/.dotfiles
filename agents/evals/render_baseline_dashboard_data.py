@@ -1,45 +1,8 @@
-import json
-import subprocess
-
-BASELINE_REPOSITORY_PATH = "agents/evals/baseline.json"
-RESET_PLACEHOLDER_TOTAL_TESTS = 1
-
-
-def commits_touching_baseline():
-    output = (
-        subprocess.run(
-            [
-                "git",
-                "log",
-                "--reverse",
-                "--format=%H|%cI",
-                "--",
-                BASELINE_REPOSITORY_PATH,
-            ],
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-        .stdout.strip()
-        .splitlines()
-    )
-    for line in output:
-        commit_sha, committed_iso = line.split("|", 1)
-        yield commit_sha, committed_iso
-
-
-def baseline_at_commit(commit_sha):
-    blob = subprocess.run(
-        ["git", "show", f"{commit_sha}:{BASELINE_REPOSITORY_PATH}"],
-        capture_output=True,
-        text=True,
-    ).stdout
-    if not blob.strip():
-        return None
-    try:
-        return json.loads(blob)
-    except json.JSONDecodeError:
-        return None
+from run_evals_baseline_history import (
+    RESET_PLACEHOLDER_TOTAL_TESTS,
+    baseline_at_commit,
+    commits_touching_baseline,
+)
 
 
 def collect_baseline_revisions():

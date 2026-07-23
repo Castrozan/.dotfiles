@@ -2,6 +2,10 @@ import json
 import subprocess
 from datetime import datetime, timezone
 
+from run_evals_baseline_history import (
+    baseline_regression_failure,
+    previous_committed_baseline_pass_rate,
+)
 from run_evals_test_runner import TestResult
 from run_evals_worktree_and_environment import REPO_ROOT
 
@@ -126,6 +130,13 @@ def check_baseline_for_regression() -> bool:
                 f"below minimum {MINIMUM_PASS_RATE_COMPLIANCE:.1%}"
             )
 
+    previous_pass_rate = previous_committed_baseline_pass_rate()
+    regression = baseline_regression_failure(
+        overall_pass_rate, previous_pass_rate, MAXIMUM_REGRESSION_DROP
+    )
+    if regression:
+        failures.append(regression)
+
     print("=" * 60)
     print("EVAL BASELINE CHECK")
     print("=" * 60)
@@ -133,6 +144,11 @@ def check_baseline_for_regression() -> bool:
     print(f"  Age: {age_days} days")
     print(f"  Commit: {baseline.get('git_commit', 'unknown')}")
     print(f"  Pass rate: {overall_pass_rate:.1%}")
+    if previous_pass_rate is not None:
+        print(
+            f"  Previous baseline: {previous_pass_rate:.1%} "
+            f"(delta {overall_pass_rate - previous_pass_rate:+.1%})"
+        )
     print(f"  Tests: {baseline['total_passed']}/{baseline['total_tests']}")
 
     if failures:
