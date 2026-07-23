@@ -4,7 +4,7 @@ set -Eeuo pipefail
 
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly REPOSITORY_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
-readonly TESTS_DIR="$REPOSITORY_DIR/tests"
+readonly TESTS_DIR="$REPOSITORY_DIR/__tests__"
 readonly COVERAGE_OUTPUT_DIR="$TESTS_DIR/coverage"
 
 main() {

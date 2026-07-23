@@ -21,7 +21,7 @@ result
 result-*
 
 # Test coverage output
-tests/coverage/
+__tests__/coverage/
 
 # Test status tracking (local-only pass/fail records)
 .test-status/

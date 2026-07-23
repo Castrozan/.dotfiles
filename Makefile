@@ -5,22 +5,22 @@ all:
 test: test-nix
 
 test-quick:
-	tests/run.sh --quick
+	__tests__/run.sh --quick
 
 test-nix:
-	tests/run.sh --nix
+	__tests__/run.sh --nix
 
 test-modules:
 	bats tests/nix-modules/home-manager.bats
 
 test-docker:
-	tests/run.sh --docker
+	__tests__/run.sh --docker
 
 test-runtime:
-	tests/run.sh --runtime
+	__tests__/run.sh --runtime
 
 test-all:
-	tests/run.sh --all
+	__tests__/run.sh --all
 
 build:
 	docker compose --profile modules build

@@ -7,6 +7,6 @@ private-config/
 .git/
 agents/skills/*/scripts/
 agents/skills/*/refs/
-tests/
+__tests__/
 *.bats
 *.py
