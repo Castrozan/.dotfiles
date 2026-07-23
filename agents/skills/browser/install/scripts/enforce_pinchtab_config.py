@@ -4,9 +4,9 @@ import secrets
 import sys
 import tempfile
 
-pinchtabConfigPath = os.path.expanduser("~/.pinchtab/config.json")
+pinchtab_config_path = os.path.expanduser("~/.pinchtab/config.json")
 
-fullAccessSecurityAndHeadedDefaultPolicy = {
+full_access_security_and_headed_default_policy = {
     "security": {
         "allowEvaluate": True,
         "allowMacro": True,
@@ -39,65 +39,79 @@ fullAccessSecurityAndHeadedDefaultPolicy = {
 }
 
 
-def mergeEnforcedLeavesPreservingEverythingElse(currentConfig, enforcedPolicy):
-    for key, enforcedValue in enforcedPolicy.items():
-        currentValue = currentConfig.get(key)
-        if isinstance(enforcedValue, dict) and isinstance(currentValue, dict):
-            mergeEnforcedLeavesPreservingEverythingElse(currentValue, enforcedValue)
+def merge_enforced_leaves_preserving_everything_else(current_config, enforced_policy):
+    for key, enforced_value in enforced_policy.items():
+        current_value = current_config.get(key)
+        if isinstance(enforced_value, dict) and isinstance(current_value, dict):
+            merge_enforced_leaves_preserving_everything_else(
+                current_value, enforced_value
+            )
         else:
-            currentConfig[key] = enforcedValue
-    return currentConfig
+            current_config[key] = enforced_value
+    return current_config
 
 
-def loadExistingConfigToleratingAbsenceButNeverClobberingCorruption(path):
+def load_existing_config_tolerating_absence_but_never_clobbering_corruption(path):
     if not os.path.exists(path):
         return {}
-    with open(path) as configHandle:
-        return json.load(configHandle)
+    with open(path) as config_handle:
+        return json.load(config_handle)
 
 
-def ensureServerBearerTokenExistsSoAFreshMachineStartsAuthenticated(config):
-    server = config.setdefault("server", {})
+def ensure_server_bearer_token_exists_so_a_fresh_machine_starts_authenticated(config):
+    server = config.get("server")
+    if not isinstance(server, dict):
+        server = {}
+        config["server"] = server
     if not server.get("token"):
         server["token"] = secrets.token_hex(24)
 
 
-def atomicallyWriteConfigWithOwnerOnlyPermissions(path, config):
+def atomically_write_config_with_owner_only_permissions(path, config):
     directory = os.path.dirname(path)
-    temporaryDescriptor, temporaryPath = tempfile.mkstemp(
+    temporary_descriptor, temporary_path = tempfile.mkstemp(
         dir=directory, prefix=".config.", suffix=".json"
     )
-    with os.fdopen(temporaryDescriptor, "w") as temporaryHandle:
-        json.dump(config, temporaryHandle, indent=2)
-    os.chmod(temporaryPath, 0o600)
-    os.replace(temporaryPath, path)
+    with os.fdopen(temporary_descriptor, "w") as temporary_handle:
+        json.dump(config, temporary_handle, indent=2)
+    os.chmod(temporary_path, 0o600)
+    os.replace(temporary_path, path)
 
 
 def main():
-    directory = os.path.dirname(pinchtabConfigPath)
+    directory = os.path.dirname(pinchtab_config_path)
     os.makedirs(directory, exist_ok=True)
     try:
-        config = loadExistingConfigToleratingAbsenceButNeverClobberingCorruption(
-            pinchtabConfigPath
+        config = (
+            load_existing_config_tolerating_absence_but_never_clobbering_corruption(
+                pinchtab_config_path
+            )
         )
     except json.JSONDecodeError:
         print(
-            f"enforce-pinchtab-config: {pinchtabConfigPath} is not valid JSON; leaving it untouched so the "
+            f"enforce-pinchtab-config: {pinchtab_config_path} is not valid JSON; leaving it untouched so the "
             "server-owned token and machine paths are never destroyed, and skipping enforcement this rebuild",
             file=sys.stderr,
         )
         return
-    serializedBefore = json.dumps(config, sort_keys=True)
-    mergeEnforcedLeavesPreservingEverythingElse(
-        config, fullAccessSecurityAndHeadedDefaultPolicy
-    )
-    ensureServerBearerTokenExistsSoAFreshMachineStartsAuthenticated(config)
-    if json.dumps(config, sort_keys=True) == serializedBefore:
+    if not isinstance(config, dict):
+        print(
+            f"enforce-pinchtab-config: {pinchtab_config_path} is valid JSON but not an object; leaving it "
+            "untouched and skipping enforcement this rebuild rather than aborting the whole activation",
+            file=sys.stderr,
+        )
         return
-    atomicallyWriteConfigWithOwnerOnlyPermissions(pinchtabConfigPath, config)
+    serialized_before = json.dumps(config, sort_keys=True)
+    merge_enforced_leaves_preserving_everything_else(
+        config, full_access_security_and_headed_default_policy
+    )
+    ensure_server_bearer_token_exists_so_a_fresh_machine_starts_authenticated(config)
+    if json.dumps(config, sort_keys=True) == serialized_before:
+        return
+    atomically_write_config_with_owner_only_permissions(pinchtab_config_path, config)
     print(
         "enforce-pinchtab-config: reasserted full-capability, all-hosts, headed-default policy into "
-        f"{pinchtabConfigPath} (a running server needs `pinchtab server restart` to pick it up)"
+        f"{pinchtab_config_path} (a running server needs `pinchtab server restart` to pick it up)"
     )
 
 

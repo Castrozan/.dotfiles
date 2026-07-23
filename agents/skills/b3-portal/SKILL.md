@@ -50,16 +50,15 @@ B3 does NOT require 2FA for Lucas's account today (2026-05-12). The B2C login ac
 </credentials_policy>
 
 <pinchtab_bootstrap>
-One-time setup on golden before the first B3 run:
+One-time setup on golden before the first B3 run. Navigation is globally unrestricted: the browser skill's `enforce_pinchtab_config.py` reasserts wildcard `security.allowedDomains` and IDPI-off into `~/.pinchtab/config.json` on every rebuild, so there is no per-host allowlist step and no `Error 403 ... Domain not in allowlist` to clear. Do not narrow `allowedDomains` to the B3 hosts, the next rebuild reverts it to `["*"]` and the wildcard already covers them.
 
-1. **Domain allowlist**: PinchTab's navigation guard is UP by default and returns `Error 403: navigation blocked by IDPI: Domain not in allowlist` on B3. Add the B3 login + B2C hosts to `security.allowedDomains` in golden's PinchTab config (`~/.pinchtab/config.json`, or `$PINCHTAB_CONFIG`): `www.investidor.b3.com.br`, `investidor.b3.com.br`, `b3investidor.b2clogin.com`. Edit `config.json` on disk only and do not start a server here; step 2's headed start reads the updated allowlist at startup, and a server started now would make that headed start fail at the port bind.
-2. **Dedicated profile + headed login**: use a B3-only profile so the authenticated session is isolated and reused safely rather than sharing the `default` profile: `export PINCHTAB_SESSION=$(pinchtab session create --agent-id golden-b3)`, then `pinchtab server -H` (headed) for the interactive first login. On golden the profile lives under `/home/zanoni/.pinchtab/profiles/<profile>`.
+1. **Dedicated profile + headed login**: use a B3-only profile so the authenticated session is isolated and reused safely rather than sharing the `default` profile: `export PINCHTAB_SESSION=$(pinchtab session create --agent-id golden-b3)`, then start the server for the interactive first login (headed is the enforced default; `pinchtab server -H` forces it explicitly). On golden the profile lives under `/home/zanoni/.pinchtab/profiles/<profile>`.
 
-After this, subsequent runs reuse the authenticated persistent profile with no re-login until B2C token expiry. To apply a later allowlist or config edit to an already-running headless server, `pinchtab server restart`.
+After this, subsequent runs reuse the authenticated persistent profile with no re-login until B2C token expiry. To apply a later config edit to an already-running server, `pinchtab server restart`.
 </pinchtab_bootstrap>
 
 <login_flow>
-1. **Reach the login page**: `pinchtab nav https://www.investidor.b3.com.br/login --snap`. Requires the B3 hosts on the allowlist (see `<pinchtab_bootstrap>`), or the nav returns the 403 IDPI error.
+1. **Reach the login page**: `pinchtab nav https://www.investidor.b3.com.br/login --snap`. Navigation is unrestricted (wildcard allowlist, IDPI off), so no allowlist prep is needed.
 2. **Cookie banner blocks everything**: a OneTrust banner (`REJEITAR TODOS OS COOKIES` / `ACEITAR TODOS OS COOKIES`) keeps the Angular `Entrar` button `disabled="true"` until dismissed. Accept it by clicking `#onetrust-accept-btn-handler` (from `pinchtab snap`, click the ref, or `pinchtab click '#onetrust-accept-btn-handler'`). Rejecting also works but persists across reloads, so re-accept after a profile reset.
 3. **CPF input**: `pinchtab type` the CPF (digits only, no formatting) into the input with placeholder `Digite seu CPF ou CNPJ`. Use `type` (real keystrokes), NEVER `fill` (value injection leaves the Angular form control unaware and Entrar stays disabled, see `<gotchas>`).
 4. **Click Entrar**: `pinchtab click` the `Entrar` button in default mode (trusted `Input.dispatchMouseEvent`); never `--mode dom` or `--mode dispatch`. Redirects to `https://b3investidor.b2clogin.com/b3Investidor.onmicrosoft.com/oauth2/v2.0/authorize?p=B2C_1A_SIGN_IN&...&doc_hint=<CPF>` (Azure AD B2C).
@@ -149,7 +148,7 @@ Persistent endpoint patterns are committed to `/home/zanoni/.claude-discord-agen
 <gotchas>
 **Angular enables Entrar only on a real `input` event.** Use `pinchtab type` (never `fill`) for CPF and password and default `pinchtab click` (never `--mode dom|dispatch`) for buttons; see `<why_not_chrome_devtools>` for why value-injection leaves the button disabled.
 
-**PinchTab domain allowlist 403.** With the default guard up, navigating to B3 returns `Error 403: navigation blocked by IDPI: Domain not in allowlist`. Add the B3 + B2C hosts to `security.allowedDomains` first (see `<pinchtab_bootstrap>`).
+**PinchTab domain allowlist 403.** Should not occur: the browser skill enforces wildcard `allowedDomains` plus IDPI-off on every rebuild. If a `navigation blocked by IDPI: Domain not in allowlist` 403 ever appears, the enforced config drifted or the running server predates it, so `rebuild` the host and `pinchtab server restart`.
 
 **Cookie banner gating.** `Entrar` is permanently disabled until cookies are dismissed. Reject *or* accept works, but rejection persists across page reloads.
 
