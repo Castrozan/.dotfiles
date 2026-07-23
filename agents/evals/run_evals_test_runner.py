@@ -5,6 +5,7 @@ from dataclasses import dataclass
 
 import run_evals_worktree_and_environment
 from run_evals_assertions import check_assertions
+from run_evals_judge import build_llm_judge
 from run_evals_config_loader import resolve_system_prompt_for_test
 from run_evals_worktree_and_environment import build_filtered_environment
 
@@ -126,7 +127,13 @@ def run_test(test: dict, settings: dict, dry_run: bool = False) -> TestResult:
             error=output,
         )
 
-    failures = check_assertions(output, test.get("assertions", {}))
+    assertions = test.get("assertions", {})
+    judge = (
+        build_llm_judge(settings.get("judge_model", "opus"), run_claude_cli)
+        if "llm_judge" in assertions
+        else None
+    )
+    failures = check_assertions(output, assertions, judge=judge)
 
     return TestResult(
         name=name,
