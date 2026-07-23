@@ -77,7 +77,7 @@ const DIMENSIONS = [
     key: "test-coverage-gaps",
     title: "Test coverage gaps",
     focus:
-      "scripts under bin/ or */scripts/ and nix modules with behavior but no corresponding test under tests/ or a checks.nix, and recent bug-fix commits that landed without a regression test",
+      "scripts under bin/ or */scripts/ and nix modules with behavior but no corresponding test under __tests__/ or a checks.nix, and recent bug-fix commits that landed without a regression test",
     scan: "List executable scripts and modules, then check for a matching test file. Skim git log for fix/revert commits and check whether a test accompanied them.",
     boundary:
       "Pure declarative config a rebuild already verifies needs no separate test. Only flag real logic left unguarded.",

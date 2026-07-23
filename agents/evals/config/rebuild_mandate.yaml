@@ -19,7 +19,7 @@ tests:
 
   - name: rebuild_and_tests_both_gate_response
     skill_path: agents/core_rules/core.md
-    prompt: "I edited a .nix file in the dotfiles repo. The rebuild succeeded but tests/run.sh failed. Can I tell the user the change is done? Begin your answer with YES or NO."
+    prompt: "I edited a .nix file in the dotfiles repo. The rebuild succeeded but __tests__/run.sh failed. Can I tell the user the change is done? Begin your answer with YES or NO."
     model: haiku
     assertions:
       output_contains_any:

@@ -69,7 +69,7 @@ const REVIEW_DIMENSIONS = [
     key: "tests",
     title: "Tests and verification",
     focus:
-      "new behavior without a test, a bug fix without a regression test, bash scripts without a shellcheck test, and whether tests/run.sh would still pass for the touched tier",
+      "new behavior without a test, a bug fix without a regression test, bash scripts without a shellcheck test, and whether __tests__/run.sh would still pass for the touched tier",
   },
   {
     key: "secrets-and-publicity",
