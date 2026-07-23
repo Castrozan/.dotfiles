@@ -111,9 +111,16 @@ def run_e2e_scenario(
         start_time = time.time()
 
         for prompt_text in prompts:
-            send_prompt_to_claude_session(pane_id, prompt_text)
-            completed = wait_for_response_completion(pane_id, timeout_seconds=timeout)
+            delivered = send_prompt_to_claude_session(pane_id, prompt_text)
+            completed = delivered and wait_for_response_completion(
+                pane_id, timeout_seconds=timeout
+            )
             if not completed:
+                failure_reason = (
+                    f"Timed out after {timeout}s"
+                    if delivered
+                    else "prompt could not be delivered to the herdr pane"
+                )
                 raw_output = capture_full_terminal_output(pane_id)
                 duration = time.time() - start_time
                 trace = build_terminal_session_trace(
@@ -140,7 +147,7 @@ def run_e2e_scenario(
                     workspace_directory=workspace,
                     duration_seconds=duration,
                     experience_score=experience_score,
-                    error=f"Timed out after {timeout}s",
+                    error=failure_reason,
                 )
 
         raw_output = capture_full_terminal_output(pane_id)

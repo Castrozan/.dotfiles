@@ -12,3 +12,19 @@ class CoachedSessionResult:
     coach_findings: str
     duration_seconds: float
     error: str | None = None
+
+
+def failed_coached_session(
+    scenario_name: str, duration_seconds: float, error: str
+) -> CoachedSessionResult:
+    return CoachedSessionResult(
+        scenario_name=scenario_name,
+        initial_nps=0,
+        coached_nps=0,
+        improvement=0,
+        initial_tool_sequence=[],
+        coached_tool_sequence=[],
+        coach_findings="",
+        duration_seconds=duration_seconds,
+        error=error,
+    )

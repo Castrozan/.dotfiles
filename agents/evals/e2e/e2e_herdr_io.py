@@ -32,10 +32,12 @@ def wait_for_claude_to_become_ready(pane_id: str, timeout_seconds: float = 90) -
     return True
 
 
-def send_prompt_to_claude_session(pane_id: str, prompt_text: str) -> None:
+def send_prompt_to_claude_session(pane_id: str, prompt_text: str) -> bool:
     collapsed_prompt = " ".join(prompt_text.strip().split())
-    run_herdr_command(["pane", "send-text", pane_id, collapsed_prompt])
-    run_herdr_command(["pane", "send-keys", pane_id, "Enter"])
+    typed = run_herdr_command(["pane", "send-text", pane_id, collapsed_prompt])
+    if typed.returncode != 0:
+        return False
+    return run_herdr_command(["pane", "send-keys", pane_id, "Enter"]).returncode == 0
 
 
 def wait_for_response_completion(pane_id: str, timeout_seconds: float = 300) -> bool:
