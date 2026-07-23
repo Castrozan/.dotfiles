@@ -66,6 +66,34 @@ def print_epoch_summary(per_test: list[dict], epochs: int) -> bool:
     return len(hard_failed_tests) == 0
 
 
+def print_ab_summary(comparison: dict) -> bool:
+    print("\n" + "=" * 60)
+    print("A/B INSTRUCTION-LOADING EXPERIMENT")
+    print("=" * 60 + "\n")
+
+    print(f"  Paired tests: {comparison['n_paired']}")
+    print(
+        f"  With instructions:    {comparison['variant_a_pass_rate']:.1%} "
+        f"({comparison['both_pass'] + comparison['a_only_wins']}/{comparison['n_paired']})"
+    )
+    print(
+        f"  Without instructions: {comparison['variant_b_pass_rate']:.1%} "
+        f"({comparison['both_pass'] + comparison['b_only_wins']}/{comparison['n_paired']})"
+    )
+    print(f"  Delta: {comparison['delta']:+.1%}")
+    print(
+        f"  Discordant: instructions-only won {comparison['a_only_wins']}, "
+        f"control-only won {comparison['b_only_wins']}"
+    )
+    print(
+        f"  McNemar exact p = {comparison['p_value']:.4f} "
+        f"({'significant' if comparison['significant'] else 'not significant'} at 0.05)"
+    )
+    print("-" * 60 + "\n")
+
+    return comparison["significant"] and comparison["delta"] > 0
+
+
 def list_categories(config: dict) -> None:
     print("Available test categories:")
     for cat_name, tests in config.get("tests", {}).items():

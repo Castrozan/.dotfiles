@@ -7,6 +7,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+from run_evals_ab import run_instruction_loading_experiment  # noqa: E402
 from run_evals_baseline import (  # noqa: F401, E402
     BASELINE_PATH,
     MAXIMUM_REGRESSION_DROP,
@@ -27,6 +28,7 @@ from run_evals_config_loader import (  # noqa: F401, E402
 )
 from run_evals_reporting import (  # noqa: F401, E402
     list_categories,
+    print_ab_summary,
     print_epoch_summary,
     print_results,
 )
@@ -82,6 +84,11 @@ def main():
         default=1,
         help="Repeat the suite N times to surface flakiness (pass@k and CIs)",
     )
+    parser.add_argument(
+        "--ab",
+        action="store_true",
+        help="Paired A/B: same tests with vs without the instruction surface",
+    )
     args = parser.parse_args()
 
     if args.check_baseline:
@@ -104,6 +111,16 @@ def main():
     print("Running agent evaluations (Claude Max - no API cost)...")
     if args.dry_run:
         print("   (dry run - no claude calls)")
+
+    if args.ab:
+        with temporary_eval_worktree():
+            comparison = run_instruction_loading_experiment(
+                config,
+                category=args.category,
+                max_workers_override=args.workers,
+            )
+        print_ab_summary(comparison)
+        sys.exit(0)
 
     if args.epochs > 1:
         with temporary_eval_worktree():
