@@ -6,6 +6,10 @@ from run_evals_baseline_history import (
     baseline_regression_failure,
     previous_committed_baseline_pass_rate,
 )
+from run_evals_statistics import (
+    format_pass_rate_with_confidence_interval,
+    wilson_score_interval,
+)
 from run_evals_test_runner import TestResult
 from run_evals_worktree_and_environment import REPO_ROOT
 
@@ -77,14 +81,19 @@ def build_baseline_from_results(results: list[TestResult]) -> dict:
     }
 
 
-def save_baseline(results: list[TestResult]) -> None:
-    baseline = build_baseline_from_results(results)
+def write_baseline(baseline: dict) -> None:
     with open(BASELINE_PATH, "w") as f:
         json.dump(baseline, f, indent=2)
     print(f"\nBaseline saved to {BASELINE_PATH}")
     print(f"  Pass rate: {baseline['pass_rate']:.1%}")
     print(f"  Tests: {baseline['total_passed']}/{baseline['total_tests']}")
     print(f"  Commit: {baseline['git_commit']}")
+    if baseline.get("sampling"):
+        print(f"  Epochs: {baseline['sampling']['epochs']}")
+
+
+def save_baseline(results: list[TestResult]) -> None:
+    write_baseline(build_baseline_from_results(results))
 
 
 def check_baseline_for_regression() -> bool:
@@ -132,13 +141,37 @@ def check_baseline_for_regression() -> bool:
     print(f"  Generated: {baseline['generated_at']}")
     print(f"  Age: {age_days} days")
     print(f"  Commit: {baseline.get('git_commit', 'unknown')}")
-    print(f"  Pass rate: {overall_pass_rate:.1%}")
+    print(
+        "  "
+        + format_pass_rate_with_confidence_interval(
+            baseline["total_passed"], baseline["total_tests"]
+        )
+    )
+    if compliance_total > 0:
+        compliance_lower, compliance_upper = wilson_score_interval(
+            compliance_passed, compliance_total
+        )
+        print(
+            f"  Compliance: {compliance_passed / compliance_total:.1%} "
+            f"(95% Wilson CI {compliance_lower:.1%} to {compliance_upper:.1%}, "
+            f"floor {MINIMUM_PASS_RATE_COMPLIANCE:.0%})"
+        )
     if previous_pass_rate is not None:
         print(
             f"  Previous baseline: {previous_pass_rate:.1%} "
             f"(delta {overall_pass_rate - previous_pass_rate:+.1%})"
         )
     print(f"  Tests: {baseline['total_passed']}/{baseline['total_tests']}")
+    sampling = baseline.get("sampling")
+    if sampling:
+        pass_at_2 = sampling.get("suite_pass_at_2")
+        pass_at_2_text = f", pass@2 {pass_at_2:.1%}" if pass_at_2 is not None else ""
+        print(
+            f"  Sampling: {sampling['epochs']} epochs, "
+            f"{sampling['total_samples']} samples, "
+            f"pass@1 {sampling['suite_pass_at_1']:.1%}{pass_at_2_text}, "
+            f"flaky {len(sampling['flaky_tests'])}"
+        )
 
     if failures:
         print(f"\nFAILED ({len(failures)} issues):")

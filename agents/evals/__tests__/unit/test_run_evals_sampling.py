@@ -1,12 +1,21 @@
 from collections import namedtuple
 
-from run_evals_sampling import aggregate_repeated_runs, suite_pass_at_k
+from run_evals_sampling import (
+    aggregate_repeated_runs,
+    build_epoch_enriched_baseline,
+    suite_pass_at_k,
+)
 
-FakeResult = namedtuple("FakeResult", ["name", "passed"])
+FakeResult = namedtuple("FakeResult", ["name", "passed", "category"])
 
 
-def _epoch(*pairs):
-    return [FakeResult(name, passed) for name, passed in pairs]
+def _epoch(*items):
+    results = []
+    for item in items:
+        name, passed = item[0], item[1]
+        category = item[2] if len(item) > 2 else "core_rules"
+        results.append(FakeResult(name, passed, category))
+    return results
 
 
 def test_aggregate_counts_passes_and_flags_flaky_tests():
@@ -44,3 +53,50 @@ def test_suite_pass_at_k_rewards_retries_on_a_flaky_test():
 
 def test_suite_pass_at_k_handles_no_tests():
     assert suite_pass_at_k([], 1) == 0.0
+
+
+def test_aggregate_carries_the_authored_category():
+    per_test = aggregate_repeated_runs([_epoch(("a", True, "delegation"))])
+    assert per_test[0]["category"] == "delegation"
+
+
+def test_epoch_baseline_buckets_by_category_and_uses_majority_vote():
+    per_test = aggregate_repeated_runs(
+        [
+            _epoch(
+                ("solid", True, "workflow_compliance"), ("flaky", True, "core_rules")
+            ),
+            _epoch(
+                ("solid", True, "workflow_compliance"), ("flaky", False, "core_rules")
+            ),
+            _epoch(
+                ("solid", True, "workflow_compliance"), ("flaky", False, "core_rules")
+            ),
+        ]
+    )
+
+    baseline = build_epoch_enriched_baseline(
+        per_test, 3, "abc123", "2026-07-23T00:00:00+00:00"
+    )
+
+    assert baseline["total_tests"] == 2
+    assert baseline["categories"]["workflow_compliance"]["passed"] == 1
+    assert baseline["categories"]["core_rules"]["failed"] == 1
+    assert baseline["total_passed"] == 1
+    assert baseline["pass_rate"] == 0.5
+    assert baseline["sampling"]["epochs"] == 3
+    assert baseline["sampling"]["total_samples"] == 6
+    assert baseline["sampling"]["flaky_tests"] == ["flaky"]
+
+
+def test_epoch_baseline_carries_provenance_and_omits_pass_at_2_for_one_epoch():
+    per_test = aggregate_repeated_runs([_epoch(("a", True, "review"))])
+
+    baseline = build_epoch_enriched_baseline(
+        per_test, 1, "deadbeef", "2026-07-23T00:00:00+00:00"
+    )
+
+    assert baseline["git_commit"] == "deadbeef"
+    assert baseline["generated_at"] == "2026-07-23T00:00:00+00:00"
+    assert baseline["sampling"]["suite_pass_at_2"] is None
+    assert baseline["sampling"]["suite_pass_at_1"] == 1.0

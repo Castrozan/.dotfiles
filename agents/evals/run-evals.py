@@ -3,6 +3,7 @@
 import argparse
 import subprocess
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -17,6 +18,7 @@ from run_evals_baseline import (  # noqa: F401, E402
     check_baseline_for_regression,
     get_current_git_commit,
     save_baseline,
+    write_baseline,
 )
 from run_evals_claude_cli import run_claude_cli  # noqa: F401, E402
 from run_evals_config_loader import (  # noqa: F401, E402
@@ -32,7 +34,10 @@ from run_evals_reporting import (  # noqa: F401, E402
     print_epoch_summary,
     print_results,
 )
-from run_evals_sampling import aggregate_repeated_runs  # noqa: E402
+from run_evals_sampling import (  # noqa: E402
+    aggregate_repeated_runs,
+    build_epoch_enriched_baseline,
+)
 from run_evals_test_runner import (  # noqa: F401, E402
     DEFAULT_PARALLEL_WORKERS,
     TestResult,
@@ -137,9 +142,17 @@ def main():
                         max_workers_override=args.workers,
                     )
                 )
-        no_hard_failures = print_epoch_summary(
-            aggregate_repeated_runs(results_per_epoch), args.epochs
-        )
+        per_test = aggregate_repeated_runs(results_per_epoch)
+        no_hard_failures = print_epoch_summary(per_test, args.epochs)
+        if args.save_baseline:
+            write_baseline(
+                build_epoch_enriched_baseline(
+                    per_test,
+                    args.epochs,
+                    get_current_git_commit(),
+                    datetime.now(timezone.utc).isoformat(),
+                )
+            )
         sys.exit(0 if no_hard_failures else 1)
 
     with temporary_eval_worktree():
