@@ -10,10 +10,6 @@ let
   };
   chromeDevtoolsMcpBinary = "${chromeDevtoolsMcpPackage}/bin/chrome-devtools-mcp";
   chromeGlobalUserDataDir = "${homeDir}/.config/chrome-global";
-  vivaldiDefaultProfile = import ../../../../home/base/browser/vivaldi-default-profile.nix {
-    inherit (pkgs.stdenv.hostPlatform) isDarwin;
-  };
-  vivaldiDefaultUserDataDir = "${homeDir}/${vivaldiDefaultProfile.userDataDirectoryRelativeToHome}";
 
   pinchtabPackage = import ./pinchtab-package.nix {
     inherit pkgs;
@@ -38,15 +34,10 @@ let
 
   chromeDevtoolsMcpStdioCommand = reserveStealthTargetForInteractiveSession;
   chromeDevtoolsMcpStdioArgs = mkChromeDevtoolsAutoConnectArgs chromeGlobalUserDataDir;
-
-  vivaldiDevtoolsMcpStdioCommand = reserveStealthTargetForInteractiveSession;
-  vivaldiDevtoolsMcpStdioArgs = mkChromeDevtoolsAutoConnectArgs vivaldiDefaultUserDataDir;
 in
 {
   inherit chromeDevtoolsMcpStdioCommand;
   inherit chromeDevtoolsMcpStdioArgs;
-  inherit vivaldiDevtoolsMcpStdioCommand;
-  inherit vivaldiDevtoolsMcpStdioArgs;
   inherit pinchtabBinary;
 
   packages = [ pinchtabPackage ];

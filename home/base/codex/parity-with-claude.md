@@ -114,12 +114,10 @@ imports resolve, exactly like Claude's flat `~/.claude/hooks`.
 
 ## MCP servers
 
-- Claude wires: `chrome-devtools`, `vivaldi-devtools` (chise
-  only), `codex` (self-referential: Claude calling Codex), `a2a` (agent-only, not
-  injected into interactive sessions), and `mem0` (host-gated on a per-machine
-  `mem0-host.nix`).
-- Codex wires: `chrome-devtools` and `vivaldi-devtools` (chise
-  only, same host gate). The shared browser MCPs are at parity.
+- Claude wires: `chrome-devtools`, `codex` (self-referential: Claude calling
+  Codex), `a2a` (agent-only, not injected into interactive sessions), and `mem0`
+  (host-gated on a per-machine `mem0-host.nix`).
+- Codex wires: `chrome-devtools`. The shared browser MCP is at parity.
 - Deferred: `a2a` (needs an agent backend Codex has no receiver for), `codex`
   (self-referential, N/A), and `mem0` (remote SSE memory MCP not wired on Codex;
   Lucas has explicitly deprioritized mem0).

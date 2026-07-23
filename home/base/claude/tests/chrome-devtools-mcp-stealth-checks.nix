@@ -20,13 +20,9 @@ let
       argument: lib.hasInfix "--remote-debugging-port" argument
     ) browserMcpInstall.chromeDevtoolsMcpStdioArgs);
 
-  stealthTargetReservedForInteractiveSession =
-    (lib.hasInfix "stealth-browser-mcp-interactive-only" (
-      toString browserMcpInstall.chromeDevtoolsMcpStdioCommand
-    ))
-    && (lib.hasInfix "stealth-browser-mcp-interactive-only" (
-      toString browserMcpInstall.vivaldiDevtoolsMcpStdioCommand
-    ));
+  stealthTargetReservedForInteractiveSession = lib.hasInfix "stealth-browser-mcp-interactive-only" (
+    toString browserMcpInstall.chromeDevtoolsMcpStdioCommand
+  );
 
 in
 {
@@ -38,5 +34,5 @@ in
   domain-claude-stealth-cdp-target-reserved-for-interactive-session =
     mkEvalCheck "domain-claude-stealth-cdp-target-reserved-for-interactive-session"
       stealthTargetReservedForInteractiveSession
-      "the chrome and vivaldi stealth CDP commands must route through the stealth-browser-mcp-interactive-only gate wrapper so an autonomous clawde agent (which carries CLAWDE_RESUME_FLAG in its environment, unlike an interactive session) never attaches to the user's single-client consent-gated browser and knocks the interactive session off; autonomous agents use pinchtab for browsing instead";
+      "the chrome stealth CDP command must route through the stealth-browser-mcp-interactive-only gate wrapper so an autonomous clawde agent (which carries CLAWDE_RESUME_FLAG in its environment, unlike an interactive session) never attaches to the user's single-client consent-gated browser and knocks the interactive session off; autonomous agents use pinchtab for browsing instead";
 }

@@ -3,7 +3,6 @@
   lib,
   config,
   latest,
-  hostname,
   ...
 }:
 let
@@ -14,7 +13,6 @@ let
     chromePackage = latest.google-chrome;
   };
   codexDefaultModel = "gpt-5.6-sol";
-  includeVivaldiDevtoolsMcp = hostname == "chise";
   codexConfigTomlFormat = pkgs.formats.toml { };
   codexConfigSeedPython = pkgs.python312.withPackages (pythonPackages: [ pythonPackages.tomli-w ]);
   trustedProjectParentDirectories = [
@@ -96,12 +94,6 @@ let
           NPM_CONFIG_REGISTRY = "http://nexus3.betha.com.br/repository/npm-all/";
         };
         startup_timeout_sec = 120;
-      };
-    }
-    // lib.optionalAttrs includeVivaldiDevtoolsMcp {
-      "vivaldi-devtools" = {
-        command = browserMcp.vivaldiDevtoolsMcpStdioCommand;
-        args = browserMcp.vivaldiDevtoolsMcpStdioArgs;
       };
     };
   };

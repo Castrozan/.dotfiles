@@ -55,12 +55,6 @@ let
   }
   // lib.optionalAttrs mem0Mcp.remoteConfigured {
     mem0 = mem0Mcp.serverConfig;
-  }
-  // lib.optionalAttrs (hostname == "chise") {
-    vivaldi-devtools = {
-      command = browserMcp.vivaldiDevtoolsMcpStdioCommand;
-      args = browserMcp.vivaldiDevtoolsMcpStdioArgs;
-    };
   };
 
   mcpServerInjectionPartition = import ./mcp-server-injection-partition.nix {

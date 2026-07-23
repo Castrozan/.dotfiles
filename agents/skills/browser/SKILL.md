@@ -4,7 +4,7 @@ description: Interact with a live webpage inside a browser window — fill forms
 ---
 
 <strategy>
-Two browser paths: a stealth CDP target and the PinchTab CLI. Default to the stealth CDP target - it drives the user's real everyday browser, carrying their live logins (Google SSO, Cloudflare Access, banking, anything already signed in) and running bare so no page detects the automation, which is what most tasks need. Chrome DevTools (`mcp__chrome-devtools__*`) attaches to the dedicated Chrome Global everywhere; only on chise Vivaldi DevTools (`mcp__vivaldi-devtools__*`) also attaches to the native Vivaldi on its own default profile - pick by which browser holds the session you need. PinchTab (`pinchtab` CLI, no MCP) is the deliberate fallback, never the reflex: its own persistent-profile Chrome driven from bash, holding none of the user's real logins, for work you want isolated from the real browser (public scraping, bulk extraction, throwaway browsing, Electron apps, local or dev sessions). One hard exception overrides the default: the stealth target is reserved for the interactive session and exits without connecting when driven by an autonomous clawde agent, so autonomous agents use PinchTab for everything. Read `README.md` for the full decision framework.
+Two browser paths: a stealth CDP target and the PinchTab CLI. Default to the stealth CDP target - it drives the user's real everyday browser, carrying their live logins (Google SSO, Cloudflare Access, banking, anything already signed in) and running bare so no page detects the automation, which is what most tasks need. Chrome DevTools (`mcp__chrome-devtools__*`) attaches to the dedicated Chrome Global on every host. PinchTab (`pinchtab` CLI, no MCP) is the deliberate fallback, never the reflex: its own persistent-profile Chrome driven from bash, holding none of the user's real logins, for work you want isolated from the real browser (public scraping, bulk extraction, throwaway browsing, Electron apps, local or dev sessions). One hard exception overrides the default: the stealth target is reserved for the interactive session and exits without connecting when driven by an autonomous clawde agent, so autonomous agents use PinchTab for everything. Read `README.md` for the full decision framework.
 </strategy>
 
 <chrome_devtools_workflow>
@@ -23,17 +23,6 @@ Once connected:
 5. `mcp__chrome-devtools__take_screenshot` - visual verification when needed
 </chrome_devtools_workflow>
 
-<vivaldi_devtools_workflow>
-Same chrome-devtools-mcp tool surface as the Chrome target but pointed at the native Vivaldi on its real default profile via `--autoConnect`. Vivaldi is Chromium, so it exposes identical CDP; it runs bare so bot-detecting sites see a normal browser carrying the user's real Vivaldi logins and extensions. The user must enable `vivaldi://inspect/#remote-debugging` once (persists across restarts) and click Allow on the consent dialog once per Vivaldi session. This is a separate browser from the Chrome target, so a login in one is not a login in the other.
-
-If `mcp__vivaldi-devtools__list_pages` returns "Could not connect":
-1. Ensure native Vivaldi is running for the user: `vivaldi` on Linux.
-2. Tell the user: "Enable vivaldi://inspect/#remote-debugging if not already on (persists across restarts). Then click Allow on the consent dialog that will appear when I connect."
-3. Call `mcp__vivaldi-devtools__list_pages` - this call BLOCKS until the user clicks Allow on the consent dialog in Vivaldi. Do not call any other tools while waiting.
-
-Once connected, the `mcp__vivaldi-devtools__*` tools are identical in shape to the Chrome target (`list_pages`, `new_page`, `take_snapshot`, `click`/`fill`, `take_screenshot`); follow the same once-connected steps, and because this is the user's everyday Vivaldi full of live tabs, always open work with `new_page` (`background: true`) and never `navigate_page` the selected tab, which would replace a tab the user is using.
-</vivaldi_devtools_workflow>
-
 <pinchtab_workflow>
 CLI only (no MCP), driven from bash. Its server runs a persistent-profile Chrome on localhost:9867, so logins survive across runs (log in once in headed mode and stay authenticated). `pinchtab nav` auto-starts the local server.
 
@@ -49,7 +38,7 @@ Guards are UP by default (allowed domains: localhost/127.0.0.1); `pinchtab serve
 </pinchtab_workflow>
 
 <tips>
-Chrome DevTools and Vivaldi DevTools: always take a fresh snapshot after navigation - uids change between snapshots. Prefer snapshots over screenshots. Each target is single and sequential and needs its own Allow; never drive both concurrently.
+Chrome DevTools: always take a fresh snapshot after navigation - uids change between snapshots. Prefer snapshots over screenshots. The target is single and sequential and needs its own Allow.
 PinchTab: prefer `snap` (accessibility tree with refs) over screenshots for less tokens; get a fresh `snap` after navigation or interaction because refs change.
 </tips>
 </content>
