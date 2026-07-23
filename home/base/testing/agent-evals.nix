@@ -13,7 +13,6 @@ let
     export PATH="${
       pkgs.lib.makeBinPath [
         pythonEnv
-        pkgs.tmux
         pkgs.git
       ]
     }:$PATH"
