@@ -46,6 +46,11 @@ jobs:
       - name: Nix flake checks
         run: nix flake check --print-build-logs --show-trace
 
+      - name: Darwin eval-assertion checks
+        run: |
+          nix eval --raw --show-trace '.#checks.aarch64-darwin' \
+            --apply 'checks: builtins.concatStringsSep "\n" (builtins.attrValues (builtins.mapAttrs (name: check: check.name) checks))'
+
       - name: NixOS assertions (dry eval)
         run: |
           nix build .#nixosConfigurations.chise.config.system.build.toplevel --dry-run 2>&1
