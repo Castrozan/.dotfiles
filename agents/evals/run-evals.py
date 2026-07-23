@@ -28,9 +28,15 @@ from run_evals_config_loader import (  # noqa: F401, E402
     load_skill_body_from_path,
     resolve_system_prompt_for_test,
 )
+from run_evals_judge import build_llm_judge  # noqa: E402
+from run_evals_judge_calibration import (  # noqa: E402
+    judge_agreement,
+    load_calibration_cases,
+)
 from run_evals_reporting import (  # noqa: F401, E402
     list_categories,
     print_ab_summary,
+    print_calibration_summary,
     print_epoch_summary,
     print_results,
 )
@@ -94,6 +100,11 @@ def main():
         action="store_true",
         help="Paired A/B: same tests with vs without the instruction surface",
     )
+    parser.add_argument(
+        "--calibrate-judge",
+        action="store_true",
+        help="Run the rubric judge over the labeled calibration set and report agreement",
+    )
     args = parser.parse_args()
 
     if args.check_baseline:
@@ -112,6 +123,13 @@ def main():
             print("Error: claude CLI not found")
             print("Run 'rebuild' to install Claude Code")
             sys.exit(1)
+
+    if args.calibrate_judge:
+        judge_model = config.get("settings", {}).get("judge_model", "opus")
+        judge = build_llm_judge(judge_model, run_claude_cli)
+        agreement = judge_agreement(load_calibration_cases(), judge)
+        print_calibration_summary(agreement)
+        sys.exit(0)
 
     print("Running agent evaluations (Claude Max - no API cost)...")
     if args.dry_run:

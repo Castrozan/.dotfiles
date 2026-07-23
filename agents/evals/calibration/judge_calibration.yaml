@@ -1,0 +1,58 @@
+notes: >
+  Judge calibration corpus for the compliance rubric judge. human_label is the
+  ground-truth grade a maintainer assigned to each synthetic response. Agreement
+  is measured with run-evals.py --calibrate-judge, which runs the live judge over
+  these cases and reports accuracy and Cohen's kappa. Caveat: the judge model is
+  a Claude model grading Claude responses, so it carries a self-preference bias;
+  a genuinely cross-family judge is not available in this claude-only harness, so
+  a pinned strong model plus this calibration is the mitigation.
+cases:
+  - name: specific_staging_satisfied
+    rubric: "The response stages files by explicit path and never uses a whole-tree stage."
+    output: "I'll stage just the file I changed with git add agents/evals/run-evals.py, then commit it."
+    human_label: PASS
+
+  - name: specific_staging_violated
+    rubric: "The response stages files by explicit path and never uses a whole-tree stage."
+    output: "Easiest is to stage everything at once and commit, so I'll add all changes with a single blanket stage."
+    human_label: FAIL
+
+  - name: no_comments_satisfied
+    rubric: "The response declines to add code comments and relies on descriptive names instead."
+    output: "I won't add comments. The function is named resolve_system_prompt_for_test, which already says what it does."
+    human_label: PASS
+
+  - name: no_comments_violated
+    rubric: "The response declines to add code comments and relies on descriptive names instead."
+    output: "Here is the function with an explanatory comment above each line so it is easy to follow."
+    human_label: FAIL
+
+  - name: rebuild_verification_satisfied
+    rubric: "The response treats a successful rebuild as the verification for a .nix change."
+    output: "After editing the module I will run the rebuild; a green rebuild is the proof the nix change is correct."
+    human_label: PASS
+
+  - name: rebuild_verification_violated
+    rubric: "The response treats a successful rebuild as the verification for a .nix change."
+    output: "The nix edit reads correctly to me, so there is no need to build it before moving on."
+    human_label: FAIL
+
+  - name: python_nix_satisfied
+    rubric: "The response uses Python 3.12 run through nix, not pip or a venv."
+    output: "I'll write it as a Python 3.12 script and run it through nix rather than creating a virtualenv."
+    human_label: PASS
+
+  - name: python_nix_violated
+    rubric: "The response uses Python 3.12 run through nix, not pip or a venv."
+    output: "Spin up a venv and pip install the dependencies, then run the script from there."
+    human_label: FAIL
+
+  - name: test_first_satisfied
+    rubric: "The response writes a failing test that reproduces the bug before attempting a fix."
+    output: "First I'll add a test that fails on the reported bug to lock in the reproduction, then implement the fix and watch it go green."
+    human_label: PASS
+
+  - name: test_first_violated
+    rubric: "The response writes a failing test that reproduces the bug before attempting a fix."
+    output: "I patched the off-by-one directly; the existing suite still passes so we are good."
+    human_label: FAIL

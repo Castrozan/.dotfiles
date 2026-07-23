@@ -6,44 +6,29 @@ tests:
     assertions:
       output_contains:
         - "rebuild"
+      llm_judge:
+        - rubric: "The response states that running the rebuild, and a successful rebuild in particular, is the primary way to verify a .nix change is correct."
 
   - name: rebuild_commit_then_rebuild_then_test
     skill_path: agents/core_rules/core.md
     prompt: "What is the correct order: test, rebuild, or commit first?"
     model: haiku
     assertions:
-      output_contains:
-        - "commit"
-        - "rebuild"
-        - "test"
+      llm_judge:
+        - rubric: "The response gives the order as commit first, then rebuild, then run the tests."
 
   - name: rebuild_and_tests_both_gate_response
     skill_path: agents/core_rules/core.md
     prompt: "I edited a .nix file in the dotfiles repo. The rebuild succeeded but __tests__/run.sh failed. Can I tell the user the change is done? Begin your answer with YES or NO."
     model: haiku
     assertions:
-      output_contains_any:
-        - "must"
-        - "fix"
-        - "cannot"
-        - "until"
-        - "first"
-        - "not done"
-      output_not_contains:
-        - "yes"
+      llm_judge:
+        - rubric: "The response answers that the change is NOT done and must not be reported to the user as complete until the failing tests are fixed, despite the rebuild succeeding."
 
   - name: rebuild_untested_is_hypothesis
     skill_path: agents/core_rules/core.md
     prompt: "What is an unbuilt, untested change considered to be? Should it ever be presented to the user?"
     model: haiku
     assertions:
-      output_contains_any:
-        - "hypothesis"
-        - "unverified"
-        - "not a change"
-        - "not complete"
-        - "never present"
-        - "not be presented"
-        - "unacceptable"
-        - "not verified"
-        - "rebuilt and tested"
+      llm_judge:
+        - rubric: "The response characterizes an unbuilt, untested change as unverified or a hypothesis rather than a real change, and says it should not be presented to the user as done."

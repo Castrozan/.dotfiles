@@ -94,6 +94,31 @@ def print_ab_summary(comparison: dict) -> bool:
     return comparison["significant"] and comparison["delta"] > 0
 
 
+def print_calibration_summary(agreement: dict) -> bool:
+    print("\n" + "=" * 60)
+    print("JUDGE CALIBRATION")
+    print("=" * 60 + "\n")
+
+    print(f"  Cases: {agreement['n']}")
+    print(
+        f"  Agreement: {agreement['agreements']}/{agreement['n']} "
+        f"({agreement['accuracy']:.1%})"
+    )
+    print(f"  Cohen's kappa: {agreement['cohens_kappa']:.3f}")
+    if agreement["disagreements"]:
+        print("  Disagreements:")
+        for disagreement in agreement["disagreements"]:
+            human = "PASS" if disagreement["human"] else "FAIL"
+            judged = "PASS" if disagreement["judge"] else "FAIL"
+            print(
+                f"    - {disagreement['name']}: "
+                f"human={human} judge={judged} ({disagreement['reason']})"
+            )
+    print("-" * 60 + "\n")
+
+    return agreement["accuracy"] >= 0.8
+
+
 def list_categories(config: dict) -> None:
     print("Available test categories:")
     for cat_name, tests in config.get("tests", {}).items():
