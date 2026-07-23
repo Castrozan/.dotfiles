@@ -23,13 +23,12 @@ def run_claude_cli(
     if system_prompt:
         cmd.extend(["--system-prompt", system_prompt])
 
-    cmd.append(prompt)
-
     last_transient_failure = ""
     for attempt in range(TRANSIENT_RETRY_ATTEMPTS + 1):
         try:
             result = subprocess.run(
                 cmd,
+                input=prompt,
                 capture_output=True,
                 text=True,
                 timeout=timeout,

@@ -6,6 +6,17 @@ notes: >
   a Claude model grading Claude responses, so it carries a self-preference bias;
   a genuinely cross-family judge is not available in this claude-only harness, so
   a pinned strong model plus this calibration is the mitigation.
+recorded_agreement:
+  judge_model: opus
+  measured_on: "2026-07-23"
+  cases: 10
+  accuracy: 0.90
+  cohens_kappa: 0.80
+  note: >
+    Substantial agreement. The one disagreement was test_first_satisfied, where
+    the judge read "watch it go green" as evidence the test never failed first
+    and graded FAIL against a PASS label. Re-run with --calibrate-judge after
+    changing the judge model, the judge prompt, or these rubrics.
 cases:
   - name: specific_staging_satisfied
     rubric: "The response stages files by explicit path and never uses a whole-tree stage."
