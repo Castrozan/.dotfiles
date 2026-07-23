@@ -198,7 +198,7 @@ graph TD
 
 Flake inputs live in `flake.nix`; outputs are split into `flake/{outputs,nixos-configurations,darwin-configurations,home-manager-modules}.nix`. Each output factory enumerates the hosts it owns and threads `hostname` plus `isNixOS` / `isDarwin` flags into `extraSpecialArgs`.
 
-Home Manager modules under `home/` are split by platform, ryan4yin-style: `home/base/` (any-platform), `home/linux/`, `home/darwin/`. Per-platform subtrees let Linux-only modules never load on darwin and vice versa. Each module owns its `default.nix`, optional `scripts/`, optional `tests/`.
+Home Manager modules under `home/` are split by platform, ryan4yin-style: `home/base/` (any-platform), `home/linux/`, `home/darwin/`. Per-platform subtrees let Linux-only modules never load on darwin and vice versa. Each module owns its `default.nix`, optional `scripts/`, optional `__tests__/`.
 
 System-level host configs live in `hosts/<host>/`; reusable NixOS modules live in `nixos/modules/`. Each machine's home-manager entry point is `home/hosts/{linux,darwin}/<alias>.nix` (ryan4yin-style); host-only home modules can sit beside it in `home/hosts/{linux,darwin}/<alias>/`. Per-user shared bits live in `home/base/` (e.g. `home/base/packages/lucas-zanoni.nix`). Routers at `home/base/dev/git-private.nix` and `home/base/network/ssh-private.nix` look up `private-config/machines/${hostname}/<file>` so per-machine overrides land automatically when the file exists.
 

@@ -14,7 +14,7 @@ else
 	swiftSourceFiles=()
 	while IFS= read -r -d "" swiftSourceFile; do
 		swiftSourceFiles+=("$swiftSourceFile")
-	done < <(/usr/bin/find "$SWIFT_SOURCES_DIR" -name '*.swift' -not -name 'Package.swift' -not -path '*/tests/*' -print0)
+	done < <(/usr/bin/find "$SWIFT_SOURCES_DIR" -name '*.swift' -not -name 'Package.swift' -not -path '*/__tests__/*' -print0)
 	if /usr/bin/swiftc -O -o "$SWIFT_BINARY_PATH" "${swiftSourceFiles[@]}"; then
 		chmod 0755 "$SWIFT_BINARY_PATH"
 		printf '%s' "$swiftDaemonSourceStamp" >"$swiftDaemonSourceStampPath"

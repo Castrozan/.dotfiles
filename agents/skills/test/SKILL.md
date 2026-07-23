@@ -24,7 +24,7 @@ Before presenting results to the user, stop and verify completeness:
 </pre_delivery>
 
 <what_to_test>
-`tests/run.sh` is the canonical entry point — run it with no args to see available tiers. Default workflow: quick after every change, `--nix` when touching `.nix` files, `--all` before delivery.
+`__tests__/run.sh` is the canonical entry point — run it with no args to see available tiers. Default workflow: quick after every change, `--nix` when touching `.nix` files, `--all` before delivery.
 
 For fast iteration on a single file, run `pytest` or `bats` directly — both are globally installed and should be on PATH. Only fall back to `nix shell` if they are genuinely missing.
 </what_to_test>

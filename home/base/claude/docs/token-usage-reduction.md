@@ -33,7 +33,7 @@ In `home/base/claude/settings/environment-variables.nix`: native 1M window (no `
 
 ## Ranked levers
 
-Impact reflects effect on total weekly token volume given the baseline. "Ready" means it can ship now under the repo workflow (edit, format, commit specific-file, rebuild, `tests/run.sh`); "needs sign-off" means it changes interactive UX or behavior the user should approve first.
+Impact reflects effect on total weekly token volume given the baseline. "Ready" means it can ship now under the repo workflow (edit, format, commit specific-file, rebuild, `__tests__/run.sh`); "needs sign-off" means it changes interactive UX or behavior the user should approve first.
 
 ### Theme A: parallel-session and history lifecycle (the 92% directly)
 

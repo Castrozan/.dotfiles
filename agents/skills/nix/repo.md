@@ -57,7 +57,7 @@ Handle directly: file locations in this repo, repository patterns/anti-patterns,
 </delegation_to_expert>
 
 <script_packaging>
-Python scripts are packaged via a module-level helper in scripts.nix (e.g. `mkSystemPythonScript`, `mkMediaPythonScript`) that wraps `pkgs.writeText` + `pkgs.writeShellScriptBin` with `exec python3`. For scripts needing shared libraries, the shell wrapper sets PYTHONPATH to the lib directory. For external deps, use `pkgs.python3.withPackages`. Each module with scripts has a tests/ directory with conftest.py for sys.path setup. Mock subprocess calls in tests, never call real system tools.
+Python scripts are packaged via a module-level helper in scripts.nix (e.g. `mkSystemPythonScript`, `mkMediaPythonScript`) that wraps `pkgs.writeText` + `pkgs.writeShellScriptBin` with `exec python3`. For scripts needing shared libraries, the shell wrapper sets PYTHONPATH to the lib directory. For external deps, use `pkgs.python3.withPackages`. Each module with scripts has a __tests__/ directory with conftest.py for sys.path setup. Mock subprocess calls in tests, never call real system tools.
 </script_packaging>
 
 <relevant_skills>

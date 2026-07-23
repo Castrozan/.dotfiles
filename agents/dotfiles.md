@@ -30,7 +30,7 @@ Only scripts under 10 lines of actual logic may live inline in `.nix` files via 
 </scripts>
 
 <testing>
-Never present code that has not been rebuilt and tested. For .nix files, a successful rebuild IS the primary verification. Run tests/run.sh (--nix when .nix files changed, --quick otherwise).
+Never present code that has not been rebuilt and tested. For .nix files, a successful rebuild IS the primary verification. Run __tests__/run.sh (--nix when .nix files changed, --quick otherwise).
 </testing>
 
 <workflows>
@@ -43,7 +43,7 @@ After editing any file in the dotfiles repo, execute this sequence before respon
 2. Stage each file with git add specific-file (never -A)
 3. Commit
 4. Rebuild for any file change in this repo, running it yourself and never deferring to the user (see <rebuild>)
-5. Run tests/run.sh
+5. Run __tests__/run.sh
 6. If rebuild or tests fail: fix and repeat from 1
 7. Only after rebuild and tests pass: respond to user
 </workflow>

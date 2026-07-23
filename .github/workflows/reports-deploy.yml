@@ -34,12 +34,12 @@ jobs:
       - name: Build coverage report
         run: |
           find home/base home/linux home/darwin -path "*/scripts/*" -type f -exec chmod +x {} +
-          nix shell nixpkgs#kcov nixpkgs#bats nixpkgs#bc --command ./tests/cover/bash-coverage.sh --ci
+          nix shell nixpkgs#kcov nixpkgs#bats nixpkgs#bc --command ./__tests__/cover/bash-coverage.sh --ci
 
       - name: Assemble published artifacts
         run: |
           mkdir -p apps/reports/site/quality
-          cp -r tests/coverage apps/reports/site/coverage
+          cp -r __tests__/coverage apps/reports/site/coverage
           python3 agents/evals/render_baseline_dashboard.py apps/reports/site/baseline
           cp .github/pages/style.css apps/reports/site/baseline/style.css
           python3 agents/evals/render_quality_metrics.py apps/reports/site/quality/metrics.json

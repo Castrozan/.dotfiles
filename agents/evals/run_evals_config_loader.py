@@ -47,7 +47,7 @@ def resolve_system_prompt_for_test(test: dict) -> str | None:
 
 def discover_skill_adjacent_eval_files(repo_root: Path) -> dict[str, list[dict]]:
     discovered_tests = {}
-    for yaml_file in sorted(repo_root.glob("agents/skills/*/evals/*.yaml")):
+    for yaml_file in sorted(repo_root.glob("agents/skills/*/__tests__/evals/*.yaml")):
         if yaml_file.name == "settings.yaml":
             continue
         skill_name = yaml_file.parent.parent.name

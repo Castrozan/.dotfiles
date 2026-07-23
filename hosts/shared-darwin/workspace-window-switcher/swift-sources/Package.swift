@@ -8,7 +8,7 @@ let package = Package(
         .executableTarget(
             name: "WorkspaceWindowSwitcherDaemon",
             path: ".",
-            exclude: ["tests"]
+            exclude: ["__tests__"]
         )
     ]
 )

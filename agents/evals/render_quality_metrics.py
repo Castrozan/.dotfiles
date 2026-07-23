@@ -17,7 +17,7 @@ INTEGRATION_SCENARIO_DIRECTORY = REPOSITORY_ROOT / "agents/evals/integration/sce
 CORE_RULES_PATH = REPOSITORY_ROOT / "agents/core_rules/core.md"
 HOOK_EVENT_ROOT_DIRECTORY = REPOSITORY_ROOT / "agents/hooks"
 DIRECTORIES_THAT_ARE_NOT_HOOK_EVENTS = frozenset(
-    {"common", "lint", "tests", "__pycache__"}
+    {"common", "lint", "__tests__", "__pycache__"}
 )
 RULE_BLOCK_OPENING_TAG_PATTERN = re.compile(r"^<[a-z][a-z-]*>$", re.MULTILINE)
 

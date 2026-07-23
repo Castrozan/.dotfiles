@@ -32,7 +32,7 @@ Read (not cat/head/tail) to read files. Glob (not find/ls) to discover files; `t
 </tools>
 
 <testing>
-When a bug is reported, do not start by fixing it. First write a test that reproduces the bug and fails because a passing test is the only proof the bug is resolved. Never present code that has not been rebuilt and tested. For .nix files, a successful rebuild IS the primary verification. Run tests/run.sh (--nix when .nix files changed, --quick otherwise).
+When a bug is reported, do not start by fixing it. First write a test that reproduces the bug and fails because a passing test is the only proof the bug is resolved. Never present code that has not been rebuilt and tested. For .nix files, a successful rebuild IS the primary verification. Run __tests__/run.sh (--nix when .nix files changed, --quick otherwise).
 </testing>
 
 <session-resilience>
@@ -52,7 +52,7 @@ This model runs a 1M-token context window, but only on the `[1m]` model variant,
 </context-budget>
 
 <workflow>
-After editing any file in the dotfiles repo, execute this sequence before responding, no exceptions: 1) format edited files; 2) stage each file with git add specific-file (never -A); 3) commit; 4) rebuild for any file change in this repo; 5) run tests/run.sh; 6) if rebuild or tests fail: fix and repeat from 1; 7) only after rebuild and tests pass: respond to user. A change to a session-start-loaded surface, a settings key like model/effort/ultracode or the `CLAUDE.md`/`core.md` rules, stays dormant in the running session even after a green rebuild because the session already loaded the old value, so do not report such a change live or self-verify a behavior shift from the rebuild alone; invoke the `restart` skill when the task needs it active in-session.
+After editing any file in the dotfiles repo, execute this sequence before responding, no exceptions: 1) format edited files; 2) stage each file with git add specific-file (never -A); 3) commit; 4) rebuild for any file change in this repo; 5) run __tests__/run.sh; 6) if rebuild or tests fail: fix and repeat from 1; 7) only after rebuild and tests pass: respond to user. A change to a session-start-loaded surface, a settings key like model/effort/ultracode or the `CLAUDE.md`/`core.md` rules, stays dormant in the running session even after a green rebuild because the session already loaded the old value, so do not report such a change live or self-verify a behavior shift from the rebuild alone; invoke the `restart` skill when the task needs it active in-session.
 </workflow>
 
 <questions>

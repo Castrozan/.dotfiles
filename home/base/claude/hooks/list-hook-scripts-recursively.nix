@@ -4,7 +4,8 @@ let
     filename:
     lib.hasSuffix ".py" filename || lib.hasSuffix ".sh" filename || lib.hasSuffix ".md" filename;
 
-  isExcludedDirectoryName = directoryName: directoryName == "__pycache__" || directoryName == "tests";
+  isExcludedDirectoryName =
+    directoryName: directoryName == "__pycache__" || directoryName == "__tests__";
 
   walkHooksDirectory =
     currentDirectory: relativePrefix:
