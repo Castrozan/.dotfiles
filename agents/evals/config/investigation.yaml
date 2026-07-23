@@ -11,11 +11,11 @@ tests:
   - name: why_two_files_requires_reading_both
     skill_path: agents/core_rules/core.md
     prompt: |
-      The user asked why this repo has both memory_recall_debounce.py and memory_recall_io.py and how the two relate. I have not opened either file. Should I answer from the file names, or is there something I have to do first?
+      A teammate is about to answer the user's question "why does this repo have both memory_recall_debounce.py and memory_recall_io.py, and how do they relate?" purely from the two file names, without opening either file. Is that acceptable here, and what should they do instead?
     model: haiku
     assertions:
       llm_judge:
-        - "Says to read both files before answering rather than answering from assumption or memory."
+        - "Says answering from the file names alone is not acceptable and that both files have to be read first, because the answer has to rest on the actual code rather than an assumption."
 
   - name: evidence_before_conclusions
     skill_path: agents/core_rules/core.md
