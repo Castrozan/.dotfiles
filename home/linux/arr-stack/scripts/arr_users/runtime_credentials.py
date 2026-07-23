@@ -6,8 +6,8 @@ from pathlib import Path
 DEFAULT_JELLYFIN_BASE_URL = "http://127.0.0.1:8096"
 DEFAULT_JELLYSEERR_BASE_URL = "http://127.0.0.1:5055"
 DEFAULT_JELLYFIN_API_KEY_FILE = "/run/agenix/jellyfin-admin-api-key"
-DEFAULT_JELLYSEERR_SETTINGS_FILE = (
-    "/home/zanoni/arr-stack/config/jellyseerr/settings.json"
+DEFAULT_JELLYSEERR_SETTINGS_FILE = str(
+    Path.home() / "arr-stack" / "config" / "jellyseerr" / "settings.json"
 )
 
 

@@ -3,7 +3,7 @@ import os
 from dataclasses import dataclass
 from pathlib import Path
 
-DEFAULT_STACK_HOME_DIRECTORY = "/home/zanoni/arr-stack"
+DEFAULT_STACK_HOME_DIRECTORY = str(Path.home() / "arr-stack")
 DEFAULT_JELLYSEERR_BASE_URL = "http://127.0.0.1:5055"
 RADARR_PORT = 7878
 SONARR_PORT = 8989
