@@ -7,19 +7,8 @@ import pytest
 
 
 HARNESS_TESTS_ROOT = pathlib.Path(__file__).resolve().parent.parent
+DISCOVERY_LIBRARY = HARNESS_TESTS_ROOT / "lib" / "discovery.sh"
 PYTEST_TIER_LIBRARY = HARNESS_TESTS_ROOT / "lib" / "pytest.sh"
-
-PYTEST_COLLECTION_ROOT_SUBDIRECTORIES = (
-    "home/base",
-    "home/darwin",
-    "home/linux",
-    "agents/evals",
-    "agents/hooks",
-    "agents/skills",
-    "agents/usage",
-    "nixos",
-    "__tests__",
-)
 
 REQUIRED_EXTERNAL_COMMANDS_FOR_COLLECTION = ("find", "sort", "uname")
 
@@ -67,14 +56,13 @@ def _build_isolated_bin_directory_without_pytest(bin_directory, resolved_command
         (bin_directory / command_name).symlink_to(absolute_path)
 
 
-def _materialize_pytest_collection_roots(fake_repo_root):
-    for subdirectory in PYTEST_COLLECTION_ROOT_SUBDIRECTORIES:
-        (fake_repo_root / subdirectory).mkdir(parents=True, exist_ok=True)
-
-
 def _invoke_pytest_tier_with_pytest_absent(fake_repo_root, isolated_bin_directory):
     modern_bash = _resolve_modern_bash_absolute_path()
-    shell_program = f"source {PYTEST_TIER_LIBRARY}\n_run_pytest_tier unit quick\n"
+    shell_program = (
+        f"source {DISCOVERY_LIBRARY}\n"
+        f"source {PYTEST_TIER_LIBRARY}\n"
+        "_run_pytest_tier unit quick\n"
+    )
     return subprocess.run(
         [modern_bash, "-c", shell_program],
         env={"PATH": str(isolated_bin_directory), "REPO_DIR": str(fake_repo_root)},
@@ -92,7 +80,6 @@ def test_pytest_tier_fails_loudly_when_tests_exist_but_pytest_absent(tmp_path):
     )
 
     fake_repo_root = tmp_path / "repo"
-    _materialize_pytest_collection_roots(fake_repo_root)
     collected_tier_directory = (
         fake_repo_root / "home" / "base" / "mod" / "__tests__" / "unit"
     )
@@ -125,7 +112,7 @@ def test_pytest_tier_skips_cleanly_when_no_tests_and_pytest_absent(tmp_path):
     )
 
     fake_repo_root = tmp_path / "repo"
-    _materialize_pytest_collection_roots(fake_repo_root)
+    fake_repo_root.mkdir()
 
     completed = _invoke_pytest_tier_with_pytest_absent(
         fake_repo_root, isolated_bin_directory

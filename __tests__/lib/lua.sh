@@ -2,7 +2,7 @@
 
 _run_lua_unit_tests() {
 	local luaTests
-	luaTests=$(find "$REPO_DIR/home" -path "*/__tests__/*_test.lua" -type f | sort)
+	luaTests=$(_discover_test_files "cross-platform" "*/__tests__/*_test.lua")
 
 	if [[ -z "$luaTests" ]]; then
 		return 0

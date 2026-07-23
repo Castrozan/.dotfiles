@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-# Re-exec under bash >= 4 when /usr/bin/env picks macOS system bash (3.2).
-# bats.sh / pytest.sh use mapfile, which is bash 4+.
 if [ "${BASH_VERSINFO[0]:-0}" -lt 4 ]; then
 	for _candidateBash in \
 		/run/current-system/sw/bin/bash \
@@ -31,6 +29,8 @@ fi
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
+# shellcheck source=lib/discovery.sh
+source "$SCRIPT_DIR/lib/discovery.sh"
 # shellcheck source=lib/bats.sh
 source "$SCRIPT_DIR/lib/bats.sh"
 # shellcheck source=lib/pytest.sh
@@ -54,6 +54,11 @@ main() {
 	local selectedMode="quick"
 
 	_parse_arguments "$@"
+
+	if [[ "$selectedMode" == "map" ]]; then
+		python3 "$SCRIPT_DIR/map-test-suite.py"
+		return
+	fi
 
 	echo "=== Running Tests (${selectedMode}) ==="
 	echo ""
@@ -96,6 +101,7 @@ _parse_arguments() {
 		--e2e) selectedMode="e2e" && shift ;;
 		--ci) selectedMode="ci" && shift ;;
 		--perf) selectedMode="perf" && shift ;;
+		--map) selectedMode="map" && shift ;;
 		*)
 			echo "Unknown option: $1" >&2
 			exit 1

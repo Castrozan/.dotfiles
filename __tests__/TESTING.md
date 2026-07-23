@@ -2,27 +2,50 @@
 
 ## Taxonomy
 
-Test category is the **directory** a test lives in, not its filename. Every
-module's `__tests__/` directory splits into `unit/`, `integration/`, and `e2e/`,
-and the runner tiers off those directory names.
+Test category is the **directory** a test lives in, not its filename. Any module
+anywhere in the repo may carry a `__tests__/` directory, split into `unit/`,
+`integration/`, `e2e/`, and `evals/`; the runner tiers off those directory names.
 
 - `unit/` — fast, mocked, no system state. The `--quick` (default) gate.
 - `integration/` — needs docker, real services, or multi-step subprocess flows.
 - `e2e/` — runs against a live system (runtime checks, headless browser, perf).
+- `evals/` — per-skill LLM eval yamls the `agent-eval` engine auto-discovers.
 
 Agent LLM tests are a separate axis under `agents/evals/{evals,integration,e2e}/`
 and keep their own flags (`--evals`, `--integration`, `--e2e`).
 
-## Tiers
+## Discovery
 
-`__tests__/run.sh` is the canonical entry point. Script-test tiers collect by
-directory; collection is platform-guarded (`home/linux` on Linux, `home/darwin`
-on macOS).
+`__tests__/run.sh` is the canonical entry point. Every script-test tier collects
+through one shared helper, `_discover_test_files` in `__tests__/lib/discovery.sh`,
+which walks the **whole repo** for `*/__tests__/<tier>/` and prunes `.git`,
+`node_modules`, `private-config`, `result*`, `.deep-work`, `.direnv`,
+`.worktrees`, and `__pycache__`. A new module's tests are picked up with zero
+runner edits — there are no hardcoded collection roots.
+
+Two discovery policies:
+
+- **platform-scoped** (bats, pytest): excludes the *other* platform's home tree
+  (`home/linux` on macOS, `home/darwin` on Linux), because script tests can be
+  platform-specific.
+- **cross-platform** (lua, qml): walks both platforms, because those pure-logic
+  suites run identically everywhere.
+
+Nix domain checks (`checks.nix`) are not shell-discovered; the flake aggregates
+them via `__tests__/nix-checks/default.nix` and they run under `--nix`. Agent
+evals are driven by the `agent-eval` engine, not the shell collectors.
+
+`__tests__/run.sh --map` prints the whole suite as a tree (module × tier ×
+counts: bats `@test` blocks, pytest functions, lua/qml suites, eval yamls, nix
+eval-checks) so the structure is self-describing.
+
+## Tiers
 
 | Tier | Content | Flag |
 |---|---|---|
-| Quick | skill frontmatter + `unit/` bats + `unit/` pytest + qml | `--quick` (default) |
-| Nix | quick + domain nix tests (`home/{base,linux,darwin}/*/__tests__/checks.nix`) | `--nix` |
+| Map | prints the discovered suite tree, runs nothing | `--map` |
+| Quick | skill frontmatter + line counts + `unit/` bats + `unit/` pytest + qml + lua | `--quick` (default) |
+| Nix | quick + domain nix checks (`*/__tests__/checks.nix`) | `--nix` |
 | Integration (scripts) | `integration/` bats + `integration/` pytest | `--integration-scripts` (alias `--docker`) |
 | Runtime / e2e (scripts) | `e2e/` bats + `e2e/` pytest | `--runtime` |
 | Perf | desktop + shell benchmarks, baseline checks, threshold tests | `--perf` |
@@ -35,6 +58,7 @@ runs `unit/` bats through kcov. `--ci` runs quick with CI-appropriate skips.
 
 ```bash
 __tests__/run.sh                       # quick tier (default): unit/ only
+__tests__/run.sh --map                 # print the suite tree (module x tier x counts)
 __tests__/run.sh --nix                 # quick + nix eval tests
 __tests__/run.sh --integration-scripts # integration/ bats + pytest (alias: --docker)
 __tests__/run.sh --runtime             # e2e/ script tests (live system)
@@ -64,23 +88,26 @@ Each tier auto-detects tool availability (bats, nix, docker, kcov) and skips gra
 
 | Category | Location | Requires |
 |---|---|---|
-| Unit script tests | `home/{base,linux,darwin}/*/__tests__/unit/*.bats`, `.../unit/test_*.py` | bats / pytest |
-| Integration script tests | `home/{base,linux,darwin}/*/__tests__/integration/*.bats`, `.../integration/test_*.py` | bats / pytest, docker or services |
-| E2E script tests | `home/{base,linux,darwin}/*/__tests__/e2e/*.bats`, `.../e2e/test_*.py` | bats / pytest, live system |
-| Domain nix tests | `home/{base,linux,darwin}/*/__tests__/checks.nix` | nix |
+| Unit script tests | `*/__tests__/unit/*.bats`, `.../unit/test_*.py` | bats / pytest |
+| Integration script tests | `*/__tests__/integration/*.bats`, `.../integration/test_*.py` | bats / pytest, docker or services |
+| E2E script tests | `*/__tests__/e2e/*.bats`, `.../e2e/test_*.py` | bats / pytest, live system |
+| Lua / QML suites | `*/__tests__/*_test.lua`, `*/__tests__/qml/run-qml-tests.sh` | lua / quickshell |
+| Domain nix tests | `*/__tests__/checks.nix` | nix |
 | Skill frontmatter | `agents/evals/validate-skill-frontmatter.sh` | bash |
-| Agent evals | `agents/evals/{evals,integration,e2e}/` | claude cli |
+| Agent evals | `agents/evals/{evals,integration,e2e}/`, `agents/skills/*/__tests__/evals/` | claude cli |
 
 ## Co-located Domain Tests
 
-Tests live alongside their modules in `home/{base,linux,darwin}/<domain>/__tests__/`,
+Tests live alongside their modules in `<module>/__tests__/` — `home/<domain>`,
+`agents/<tool>`, `nixos/modules/<name>`, `hosts/<host>`, all treated alike —
 split into `unit/`, `integration/`, and `e2e/` subdirectories. The runner
 discovers them by directory (`*/__tests__/<tier>/*.bats` and `*/__tests__/<tier>/test_*.py`)
 — the subdirectory **is** the tier. There is no filename-suffix routing.
 
-Bats tests load shared helpers from `__tests__/helpers/` via relative path; a test in
+Bats tests load shared helpers from the root `__tests__/helpers/` via relative path;
+the number of `../` segments is the module's nesting depth (a test in
 `home/base/<domain>/__tests__/unit/` is five levels deep, so it loads
-`'../../../../../__tests__/helpers/bash-script-assertions'`. Pytest tests resolve the
+`'../../../../../__tests__/helpers/bash-script-assertions'`). Pytest tests resolve the
 script under test through a `conftest.py` at the module's `__tests__/` level, which
 applies to all three subdirectories.
 

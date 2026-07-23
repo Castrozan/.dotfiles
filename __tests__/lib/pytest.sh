@@ -1,28 +1,8 @@
 #!/usr/bin/env bash
 
-_pytest_collection_root_directories() {
-	local platformSpecificHomeDirectory
-	if [[ "$(uname)" == "Darwin" ]]; then
-		platformSpecificHomeDirectory="$REPO_DIR/home/darwin"
-	else
-		platformSpecificHomeDirectory="$REPO_DIR/home/linux"
-	fi
-	printf '%s\n' \
-		"$REPO_DIR/home/base" \
-		"$platformSpecificHomeDirectory" \
-		"$REPO_DIR/agents/evals" \
-		"$REPO_DIR/agents/hooks" \
-		"$REPO_DIR/agents/skills" \
-		"$REPO_DIR/agents/usage" \
-		"$REPO_DIR/nixos" \
-		"$REPO_DIR/__tests__"
-}
-
 _collect_pytest_test_files_in_tier_directory() {
 	local tierDirectoryName="$1"
-	local rootDirectories
-	mapfile -t rootDirectories < <(_pytest_collection_root_directories)
-	find "${rootDirectories[@]}" -path "*/__tests__/${tierDirectoryName}/test_*.py" -type f 2>/dev/null | sort
+	_discover_test_files "platform-scoped" "*/__tests__/${tierDirectoryName}/test_*.py"
 }
 
 _run_pytest_tier() {

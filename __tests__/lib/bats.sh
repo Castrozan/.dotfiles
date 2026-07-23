@@ -1,23 +1,8 @@
 #!/usr/bin/env bash
 
-_bats_collection_root_directories() {
-	local platformSpecificHomeDirectory
-	if [[ "$(uname)" == "Darwin" ]]; then
-		platformSpecificHomeDirectory="$REPO_DIR/home/darwin"
-	else
-		platformSpecificHomeDirectory="$REPO_DIR/home/linux"
-	fi
-	printf '%s\n' \
-		"$REPO_DIR/home/base" \
-		"$platformSpecificHomeDirectory" \
-		"$REPO_DIR/agents"
-}
-
 _collect_bats_test_files_in_tier_directory() {
 	local tierDirectoryName="$1"
-	local rootDirectories
-	mapfile -t rootDirectories < <(_bats_collection_root_directories)
-	find "${rootDirectories[@]}" -path "*/__tests__/${tierDirectoryName}/*.bats" -type f 2>/dev/null | sort
+	_discover_test_files "platform-scoped" "*/__tests__/${tierDirectoryName}/*.bats"
 }
 
 _run_bats_tier() {

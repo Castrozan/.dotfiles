@@ -2,7 +2,7 @@
 
 _run_qml_unit_tests() {
 	local qmlTestDirs
-	qmlTestDirs=$(find "$REPO_DIR/home/base" "$REPO_DIR/home/linux" "$REPO_DIR/home/darwin" -path "*/__tests__/qml/run-qml-tests.sh" -type f | sort)
+	qmlTestDirs=$(_discover_test_files "cross-platform" "*/__tests__/qml/run-qml-tests.sh")
 
 	if [[ -z "$qmlTestDirs" ]]; then
 		return 0
