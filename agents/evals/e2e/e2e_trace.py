@@ -2,8 +2,8 @@ import re
 
 from e2e_models import TerminalSessionTrace, TerminalToolCallEvent
 
-TOOL_CALL_PATTERN = re.compile(r"^[●⬤]\s+(\w+)\((.+)\)\s*$")
-TOOL_CALL_MULTILINE_START_PATTERN = re.compile(r"^[●⬤]\s+(\w+)\((.+)$")
+TOOL_CALL_PATTERN = re.compile(r"^[●⬤⏺]\s+(\w+)\((.+)\)\s*$")
+TOOL_CALL_MULTILINE_START_PATTERN = re.compile(r"^[●⬤⏺]\s+(\w+)\((.+)$")
 
 TOOL_NAME_NORMALIZATION = {
     "Update": "Edit",
@@ -17,6 +17,9 @@ TOOL_NAME_NORMALIZATION = {
     "ToolSearch": "ToolSearch",
 }
 
+ASSISTANT_TEXT_BULLETS = ("●", "⬤", "⏺")
+COLLAPSED_BASH_ARGUMENTS_TEXT = "<collapsed by the transcript>"
+COLLAPSED_SHELL_RUN_PATTERN = re.compile(r"^Ran (\d+) shell commands?$")
 COLLAPSED_READ_PATTERN = re.compile(r"^\s*(?:Read|Reading) \d+ file")
 COLLAPSED_SEARCH_PATTERN = re.compile(r"^\s*Searched for \d+ pattern")
 COLLAPSED_LISTED_PATTERN = re.compile(
@@ -65,7 +68,7 @@ def parse_tool_calls_from_terminal_output(
             )
             continue
 
-        without_bullet = stripped_line.lstrip("●⬤ ")
+        without_bullet = stripped_line.lstrip("●⬤⏺ ")
 
         if COLLAPSED_READ_PATTERN.match(without_bullet):
             tool_calls.append(
@@ -85,6 +88,18 @@ def parse_tool_calls_from_terminal_output(
                     position_in_output=line_index,
                 )
             )
+            continue
+
+        collapsed_shell_run = COLLAPSED_SHELL_RUN_PATTERN.match(without_bullet)
+        if collapsed_shell_run:
+            for _ in range(int(collapsed_shell_run.group(1))):
+                tool_calls.append(
+                    TerminalToolCallEvent(
+                        tool_name="Bash",
+                        tool_arguments_text=COLLAPSED_BASH_ARGUMENTS_TEXT,
+                        position_in_output=line_index,
+                    )
+                )
 
     return tool_calls
 
@@ -103,7 +118,7 @@ def extract_assistant_text_from_terminal_output(
 
     for line in lines:
         stripped = line.strip()
-        if stripped.startswith("●") or stripped.startswith("⬤"):
+        if stripped.startswith(ASSISTANT_TEXT_BULLETS):
             if not TOOL_CALL_PATTERN.match(
                 stripped
             ) and not TOOL_CALL_MULTILINE_START_PATTERN.match(stripped):

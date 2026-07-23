@@ -1,5 +1,6 @@
 from e2e_models import E2eAssertionResult, TerminalSessionTrace
 from e2e_trace import (
+    COLLAPSED_BASH_ARGUMENTS_TEXT,
     extract_invoked_skill_names_from_trace,
     extract_tool_name_sequence,
 )
@@ -127,8 +128,24 @@ def check_bash_command_not_contains_assertion(
     matching = [
         cmd for cmd in trace.detected_bash_commands if forbidden_substring in cmd
     ]
+    if matching:
+        return E2eAssertionResult(
+            name=f"did not run '{forbidden_substring}'",
+            passed=False,
+            detail=f"ran {matching[0]}",
+        )
+    collapsed = trace.detected_bash_commands.count(COLLAPSED_BASH_ARGUMENTS_TEXT)
+    if collapsed:
+        return E2eAssertionResult(
+            name=f"did not run '{forbidden_substring}'",
+            passed=False,
+            detail=(
+                f"{collapsed} shell command(s) ran with their arguments collapsed out "
+                f"of the transcript, so absence cannot be proven from this trace"
+            ),
+        )
     return E2eAssertionResult(
         name=f"did not run '{forbidden_substring}'",
-        passed=not matching,
-        detail=("correctly absent" if not matching else f"ran {matching[0]}"),
+        passed=True,
+        detail="correctly absent",
     )
