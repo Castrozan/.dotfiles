@@ -25,7 +25,12 @@ from run_evals_config_loader import (  # noqa: F401, E402
     load_skill_body_from_path,
     resolve_system_prompt_for_test,
 )
-from run_evals_reporting import list_categories, print_results  # noqa: F401, E402
+from run_evals_reporting import (  # noqa: F401, E402
+    list_categories,
+    print_epoch_summary,
+    print_results,
+)
+from run_evals_sampling import aggregate_repeated_runs  # noqa: E402
 from run_evals_test_runner import (  # noqa: F401, E402
     DEFAULT_PARALLEL_WORKERS,
     TestResult,
@@ -72,6 +77,12 @@ def main():
         default=None,
         help=f"Max parallel workers (default: {DEFAULT_PARALLEL_WORKERS})",
     )
+    parser.add_argument(
+        "--epochs",
+        type=int,
+        default=1,
+        help="Repeat the suite N times to surface flakiness (pass@k and CIs)",
+    )
     args = parser.parse_args()
 
     if args.check_baseline:
@@ -94,6 +105,26 @@ def main():
     print("Running agent evaluations (Claude Max - no API cost)...")
     if args.dry_run:
         print("   (dry run - no claude calls)")
+
+    if args.epochs > 1:
+        with temporary_eval_worktree():
+            results_per_epoch = []
+            for epoch_index in range(args.epochs):
+                print(f"\n--- epoch {epoch_index + 1}/{args.epochs} ---")
+                results_per_epoch.append(
+                    run_tests(
+                        config,
+                        category=args.category,
+                        test_name=args.test,
+                        dry_run=args.dry_run,
+                        smoke_only=args.smoke,
+                        max_workers_override=args.workers,
+                    )
+                )
+        no_hard_failures = print_epoch_summary(
+            aggregate_repeated_runs(results_per_epoch), args.epochs
+        )
+        sys.exit(0 if no_hard_failures else 1)
 
     with temporary_eval_worktree():
         results = run_tests(

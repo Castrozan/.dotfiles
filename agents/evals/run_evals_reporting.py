@@ -1,3 +1,4 @@
+from run_evals_sampling import suite_pass_at_k
 from run_evals_statistics import format_pass_rate_with_confidence_interval
 from run_evals_test_runner import TestResult
 
@@ -38,6 +39,31 @@ def print_results(results: list[TestResult]) -> bool:
     print("-" * 60 + "\n")
 
     return failed == 0
+
+
+def print_epoch_summary(per_test: list[dict], epochs: int) -> bool:
+    print("\n" + "=" * 60)
+    print(f"REPEATED-SAMPLING SUMMARY ({epochs} epochs)")
+    print("=" * 60 + "\n")
+
+    flaky_tests = [test for test in per_test if test["flaky"]]
+    hard_failed_tests = [test for test in per_test if test["passes"] == 0]
+
+    for test in per_test:
+        rate = test["passes"] / test["total"] if test["total"] else 0.0
+        marker = "FLAKY" if test["flaky"] else ("FAIL" if test["passes"] == 0 else "ok")
+        print(
+            f"  [{marker}] {test['name']}: {test['passes']}/{test['total']} "
+            f"({rate:.0%}, 95% CI {test['lower']:.0%} to {test['upper']:.0%})"
+        )
+
+    print(f"\n  suite pass@1: {suite_pass_at_k(per_test, 1):.1%}")
+    if epochs >= 2:
+        print(f"  suite pass@2: {suite_pass_at_k(per_test, 2):.1%}")
+    print(f"  flaky: {len(flaky_tests)}   hard-failed: {len(hard_failed_tests)}")
+    print("-" * 60 + "\n")
+
+    return len(hard_failed_tests) == 0
 
 
 def list_categories(config: dict) -> None:

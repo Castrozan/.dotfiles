@@ -2,6 +2,7 @@ import pytest
 
 from run_evals_statistics import (
     format_pass_rate_with_confidence_interval,
+    pass_at_k,
     wilson_score_interval,
 )
 
@@ -44,3 +45,22 @@ def test_pass_rate_line_handles_no_results():
     assert (
         format_pass_rate_with_confidence_interval(0, 0) == "Pass rate: n/a (no results)"
     )
+
+
+def test_pass_at_one_equals_the_fraction_correct():
+    assert pass_at_k(10, 3, 1) == pytest.approx(0.3)
+    assert pass_at_k(10, 0, 1) == pytest.approx(0.0)
+    assert pass_at_k(10, 10, 1) == pytest.approx(1.0)
+
+
+def test_pass_at_k_increases_with_more_draws():
+    assert pass_at_k(10, 3, 2) > pass_at_k(10, 3, 1)
+
+
+def test_pass_at_k_is_certain_when_failures_are_fewer_than_k():
+    assert pass_at_k(10, 8, 5) == 1.0
+
+
+def test_pass_at_k_guards_degenerate_inputs():
+    assert pass_at_k(0, 0, 1) == 0.0
+    assert pass_at_k(10, 5, 0) == 0.0
