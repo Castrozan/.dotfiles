@@ -16,6 +16,17 @@ let
   };
   pinchtabBinary = "${pinchtabPackage}/bin/pinchtab";
 
+  pinchtabModeWrapper = pkgs.writeShellApplication {
+    name = "pinchtab-mode";
+    runtimeInputs = [
+      pinchtabPackage
+      pkgs.coreutils
+    ];
+    text = builtins.readFile ./scripts/pinchtab-mode.sh;
+  };
+
+  enforcePinchtabConfigActivation = "$DRY_RUN_CMD ${pkgs.python312}/bin/python3 ${./scripts/enforce_pinchtab_config.py}";
+
   mkChromeDevtoolsAutoConnectArgs = userDataDir: [
     "--autoConnect"
     "--userDataDir"
@@ -39,6 +50,10 @@ in
   inherit chromeDevtoolsMcpStdioCommand;
   inherit chromeDevtoolsMcpStdioArgs;
   inherit pinchtabBinary;
+  inherit enforcePinchtabConfigActivation;
 
-  packages = [ pinchtabPackage ];
+  packages = [
+    pinchtabPackage
+    pinchtabModeWrapper
+  ];
 }

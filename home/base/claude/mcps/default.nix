@@ -85,5 +85,9 @@ in
 
   home = {
     inherit (browserMcp) packages;
+
+    activation.enforcePinchtabFullAccessConfig = lib.hm.dag.entryAfter [
+      "writeBoundary"
+    ] browserMcp.enforcePinchtabConfigActivation;
   };
 }

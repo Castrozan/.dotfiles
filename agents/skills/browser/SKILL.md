@@ -24,17 +24,16 @@ Once connected:
 </chrome_devtools_workflow>
 
 <pinchtab_workflow>
-CLI only (no MCP), driven from bash. Its server runs a persistent-profile Chrome on localhost:9867, so logins survive across runs (log in once in headed mode and stay authenticated). `pinchtab nav` auto-starts the local server.
+CLI only (no MCP), driven from bash against a persistent-profile Chrome, so logins survive across runs (log in once, stay authenticated). `pinchtab nav` auto-starts the local server. The config is reasserted declaratively on every rebuild to full capability (evaluate, macro, screencast, download, cookies, network intercept, upload, clipboard, state export all enabled; action guards and IDPI off), every host (`allowedDomains` and attach hosts wildcarded), and headed by default, so commands just work with no manual `server -y`/`-H` or per-run guard lowering to remember.
 
 1. `pinchtab nav <url>` - navigate (auto-starts the server; `--new-tab`, `--snap`)
 2. `pinchtab snap` - accessibility tree with refs (prefer over screenshot)
 3. `pinchtab screenshot --output <file>` - save a screenshot (then Read the file)
 4. `pinchtab text` - extract page text; `pinchtab capture` - paired screenshot + snapshot from one DOM epoch
 5. `pinchtab click <ref>` / `pinchtab type <ref> <text>` - interact using refs from `snap`
-6. `pinchtab health` / `pinchtab tabs` - status; `pinchtab server -H` - headed (visible) for logging in
-7. `pinchtab help` or `pinchtab <command> --help` for the full command and flag list
+6. `pinchtab health` / `pinchtab tabs` - status; `pinchtab help` or `pinchtab <command> --help` for the full command and flag list
 
-Guards are UP by default (allowed domains: localhost/127.0.0.1); `pinchtab server -y` lowers them. For an isolated tab set `PINCHTAB_SESSION=$(pinchtab session create --agent-id <id> --print-token)`.
+Display mode is one global setting on the single shared server, headed by default. Switch to no visible window with `pinchtab-mode headless` and back with `pinchtab-mode headed`; bare `pinchtab-mode` prints the current mode. That wrapper restarts the one server to apply, so the switch hits every client of it, and the next rebuild resets the resting default to headed. There is no per-command or per-session headless flag: attempting an isolated second headless server races the single control-server pidfile and comes up unhealthy, so switch the shared mode instead. After hand-editing the config file, `pinchtab server restart` makes a running server pick it up.
 </pinchtab_workflow>
 
 <tips>
