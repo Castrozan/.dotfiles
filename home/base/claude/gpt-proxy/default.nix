@@ -58,7 +58,7 @@ let
       echo "If you have never authenticated your ChatGPT subscription, run: claude-gpt-login" >&2
       echo "Otherwise inspect the service: launchctl print gui/$(id -u)/${proxyLaunchdAgentLabel}" >&2
     fi
-    exec ${config.claude.package}/bin/claude "$@"
+    exec ${config.claude.package}/bin/claude --model "${gptModelForOpusTier}" "$@"
   '';
 
   claudeGptLoginLauncher = pkgs.writeShellScriptBin "claude-gpt-login" ''

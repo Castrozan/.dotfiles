@@ -13,8 +13,11 @@ because the packaged `cli-proxy-api` binary is the darwin arm64 release.
 - A launchd agent `com.dotfiles.cli-proxy-api` that keeps the proxy listening on
   `127.0.0.1:8317`, reading a read-only nix-store `config.yaml` and booting from the
   embedded model catalog (`--local-model`, so boot is offline-deterministic).
-- `claude-gpt` — launches Claude Code pointed at the proxy, mapping the Opus/Sonnet/Haiku
-  tiers to `gpt-5.6-sol` at high/medium/low reasoning effort.
+- `claude-gpt` — launches Claude Code pointed at the proxy. It forces the main loop to
+  `gpt-5.6-sol(high)` with `--model` (the shared `settings.json` pins a concrete
+  `claude-opus-4-8` slug that would otherwise bypass the opus-alias remap), and maps the
+  sonnet/haiku alias tiers to `gpt-5.6-sol` at medium/low effort for subagent and
+  background traffic. A `--model` you pass yourself still wins.
 - `claude-gpt-login` — the one-time interactive OAuth step.
 
 ## One-time setup
