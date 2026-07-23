@@ -93,7 +93,7 @@ Each tier auto-detects tool availability (bats, nix, docker, kcov) and skips gra
 | E2E script tests | `*/__tests__/e2e/*.bats`, `.../e2e/test_*.py` | bats / pytest, live system |
 | Lua / QML suites | `*/__tests__/*_test.lua`, `*/__tests__/qml/run-qml-tests.sh` | lua / quickshell |
 | Domain nix tests | `*/__tests__/checks.nix` | nix |
-| Skill frontmatter | `agents/evals/validate-skill-frontmatter.sh` | bash |
+| Instruction surface lint | `agents/__tests__/unit/test_instruction_surfaces_are_structurally_sound.py` | pytest |
 | Agent evals | `agents/evals/{evals,integration,e2e}/`, `agents/skills/*/__tests__/evals/` | claude cli |
 
 ## Co-located Domain Tests
