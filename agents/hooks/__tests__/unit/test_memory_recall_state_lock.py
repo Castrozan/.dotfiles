@@ -35,10 +35,11 @@ class TestStateLockPath:
 class TestAcquireExclusiveLockBeforeDeadline:
     def test_free_lock_is_acquired(self, tmp_path, short_lock_timeout):
         state_path = tmp_path / "memory-recall-session.json"
-        lock_file = memory_recall_debounce.state_lock_path_for_session_state(
-            state_path
-        ).open("w")
-        assert memory_recall_debounce.acquire_exclusive_lock_before_deadline(lock_file)
+        lock_path = memory_recall_debounce.state_lock_path_for_session_state(state_path)
+        with lock_path.open("w") as lock_file:
+            assert memory_recall_debounce.acquire_exclusive_lock_before_deadline(
+                lock_file
+            )
 
     def test_held_lock_is_refused_at_the_deadline(self, tmp_path, short_lock_timeout):
         state_path = tmp_path / "memory-recall-session.json"
@@ -60,10 +61,11 @@ class TestAcquireExclusiveLockBeforeDeadline:
         holder = hold_lock_on_state(state_path)
         fcntl.flock(holder, fcntl.LOCK_UN)
         holder.close()
-        contender = memory_recall_debounce.state_lock_path_for_session_state(
-            state_path
-        ).open("w")
-        assert memory_recall_debounce.acquire_exclusive_lock_before_deadline(contender)
+        lock_path = memory_recall_debounce.state_lock_path_for_session_state(state_path)
+        with lock_path.open("w") as contender:
+            assert memory_recall_debounce.acquire_exclusive_lock_before_deadline(
+                contender
+            )
 
 
 class TestExclusiveSessionStateLock:
@@ -85,10 +87,11 @@ class TestExclusiveSessionStateLock:
         state_path = tmp_path / "memory-recall-session.json"
         with memory_recall_debounce.exclusive_session_state_lock(state_path):
             pass
-        contender = memory_recall_debounce.state_lock_path_for_session_state(
-            state_path
-        ).open("w")
-        assert memory_recall_debounce.acquire_exclusive_lock_before_deadline(contender)
+        lock_path = memory_recall_debounce.state_lock_path_for_session_state(state_path)
+        with lock_path.open("w") as contender:
+            assert memory_recall_debounce.acquire_exclusive_lock_before_deadline(
+                contender
+            )
 
     def test_lock_is_released_when_the_critical_section_raises(
         self, tmp_path, short_lock_timeout
@@ -97,10 +100,11 @@ class TestExclusiveSessionStateLock:
         with pytest.raises(SystemExit):
             with memory_recall_debounce.exclusive_session_state_lock(state_path):
                 raise SystemExit(0)
-        contender = memory_recall_debounce.state_lock_path_for_session_state(
-            state_path
-        ).open("w")
-        assert memory_recall_debounce.acquire_exclusive_lock_before_deadline(contender)
+        lock_path = memory_recall_debounce.state_lock_path_for_session_state(state_path)
+        with lock_path.open("w") as contender:
+            assert memory_recall_debounce.acquire_exclusive_lock_before_deadline(
+                contender
+            )
 
     def test_contended_lock_still_runs_the_critical_section_unsynchronized(
         self, tmp_path, short_lock_timeout

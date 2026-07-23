@@ -76,21 +76,23 @@ def test_second_concurrent_acquire_exits_99_with_contention_instructions(
     holder_program = build_bash_program_that_acquires_then_sleeps(
         unique_lock_name_with_cleanup, sleep_seconds=5
     )
-    holder = subprocess.Popen(
+    with subprocess.Popen(
         ["bash", "-c", holder_program],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
-    )
-    try:
-        wait_until_lock_directory_owner_metadata_exists(unique_lock_name_with_cleanup)
-        completed = run_bash_acquire_then_exit(unique_lock_name_with_cleanup)
-        assert completed.returncode == 99
-        assert "LOCKED_BY_CONCURRENT_RUN" in completed.stderr
-        assert "ScheduleWakeup(delaySeconds=" in completed.stderr
-        assert unique_lock_name_with_cleanup in completed.stderr
-    finally:
-        holder.terminate()
-        holder.wait(timeout=5)
+    ) as holder:
+        try:
+            wait_until_lock_directory_owner_metadata_exists(
+                unique_lock_name_with_cleanup
+            )
+            completed = run_bash_acquire_then_exit(unique_lock_name_with_cleanup)
+            assert completed.returncode == 99
+            assert "LOCKED_BY_CONCURRENT_RUN" in completed.stderr
+            assert "ScheduleWakeup(delaySeconds=" in completed.stderr
+            assert unique_lock_name_with_cleanup in completed.stderr
+        finally:
+            holder.terminate()
+            holder.wait(timeout=5)
 
 
 def test_stale_lock_directory_with_dead_owner_pid_is_reclaimed(
@@ -114,18 +116,20 @@ def test_bypass_environment_variable_skips_locking_entirely(
     holder_program = build_bash_program_that_acquires_then_sleeps(
         unique_lock_name_with_cleanup, sleep_seconds=5
     )
-    holder = subprocess.Popen(
+    with subprocess.Popen(
         ["bash", "-c", holder_program],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
-    )
-    try:
-        wait_until_lock_directory_owner_metadata_exists(unique_lock_name_with_cleanup)
-        completed = run_bash_acquire_then_exit(
-            unique_lock_name_with_cleanup,
-            extra_env={"DOTFILES_BYPASS_EXCLUSIVE_RUN_LOCK": "1"},
-        )
-        assert completed.returncode == 0, completed.stderr
-    finally:
-        holder.terminate()
-        holder.wait(timeout=5)
+    ) as holder:
+        try:
+            wait_until_lock_directory_owner_metadata_exists(
+                unique_lock_name_with_cleanup
+            )
+            completed = run_bash_acquire_then_exit(
+                unique_lock_name_with_cleanup,
+                extra_env={"DOTFILES_BYPASS_EXCLUSIVE_RUN_LOCK": "1"},
+            )
+            assert completed.returncode == 0, completed.stderr
+        finally:
+            holder.terminate()
+            holder.wait(timeout=5)

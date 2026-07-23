@@ -1,5 +1,6 @@
 import http.server
 import threading
+from collections.abc import Callable
 
 from .active_task_coordinator import ActiveTaskCoordinator
 from .agent_card import AgentCard
@@ -14,6 +15,7 @@ def run_a2a_server_blocking(
     port: int,
     agent_card: AgentCard,
     agent_backend: AgentBackend,
+    on_server_started: Callable[[http.server.ThreadingHTTPServer], None] | None = None,
 ) -> None:
     task_store = TaskStore()
     http_server_holder: dict[str, http.server.ThreadingHTTPServer] = {}
@@ -35,8 +37,11 @@ def run_a2a_server_blocking(
     http_server_holder["server"] = http_server
     agent_backend.start()
     active_task_coordinator.start_background_observation()
+    if on_server_started is not None:
+        on_server_started(http_server)
     try:
         http_server.serve_forever()
     finally:
         active_task_coordinator.stop_background_observation()
         agent_backend.stop()
+        http_server.server_close()

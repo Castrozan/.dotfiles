@@ -13,6 +13,8 @@ DEFAULT_PARALLEL_WORKERS = 2
 
 @dataclass
 class TestResult:
+    __test__ = False
+
     name: str
     passed: bool
     duration: float

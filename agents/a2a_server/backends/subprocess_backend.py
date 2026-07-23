@@ -75,6 +75,18 @@ class SubprocessAgentBackend(AgentBackend):
                 self._process.kill()
         if self._reader_thread is not None:
             self._reader_thread.join(timeout=2)
+        self._close_subprocess_pipes()
+
+    def _close_subprocess_pipes(self) -> None:
+        if self._process is None:
+            return
+        for pipe in (self._process.stdin, self._process.stdout):
+            if pipe is None:
+                continue
+            try:
+                pipe.close()
+            except OSError:
+                continue
 
     def _is_process_alive(self) -> bool:
         return self._process is not None and self._process.poll() is None
@@ -82,8 +94,15 @@ class SubprocessAgentBackend(AgentBackend):
     def _continuously_drain_subprocess_output_into_buffer(self) -> None:
         if self._process is None or self._process.stdout is None:
             return
-        selector = selectors.DefaultSelector()
-        selector.register(self._process.stdout, selectors.EVENT_READ)
+        with selectors.DefaultSelector() as selector:
+            selector.register(self._process.stdout, selectors.EVENT_READ)
+            self._drain_output_until_the_reader_should_stop(selector)
+
+    def _drain_output_until_the_reader_should_stop(
+        self, selector: selectors.BaseSelector
+    ) -> None:
+        if self._process is None or self._process.stdout is None:
+            return
         while not self._reader_should_stop.is_set():
             if not self._is_process_alive():
                 self._drain_remaining_output_after_exit()

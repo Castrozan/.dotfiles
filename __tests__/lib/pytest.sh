@@ -21,7 +21,7 @@ _run_pytest_tier() {
 	fi
 
 	echo "--- Python Tests (${tierLabel}) ---"
-	pytest $testFiles -x -q
+	pytest $testFiles -q
 	echo ""
 }
 

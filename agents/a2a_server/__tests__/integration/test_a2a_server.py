@@ -65,11 +65,20 @@ class _ServerThreadHandle:
         server_thread: threading.Thread,
         backend: SubprocessAgentBackend,
         port: int,
+        running_server_holder: dict,
     ) -> None:
         self.server_thread = server_thread
         self.backend = backend
         self.port = port
+        self.running_server_holder = running_server_holder
         self.base_url = f"http://127.0.0.1:{port}"
+
+    def stop(self) -> None:
+        running_server = self.running_server_holder.get("server")
+        if running_server is not None:
+            running_server.shutdown()
+        self.server_thread.join(timeout=5)
+        self.backend.stop()
 
 
 def _start_server_in_background_thread(command_argv: list[str]) -> _ServerThreadHandle:
@@ -80,6 +89,7 @@ def _start_server_in_background_thread(command_argv: list[str]) -> _ServerThread
         description="test fixture",
         endpoint_url=f"http://127.0.0.1:{port}",
     )
+    running_server_holder: dict = {}
 
     def _serve_until_shutdown():
         run_a2a_server_blocking(
@@ -87,12 +97,18 @@ def _start_server_in_background_thread(command_argv: list[str]) -> _ServerThread
             port=port,
             agent_card=agent_card,
             agent_backend=backend,
+            on_server_started=lambda server: running_server_holder.update(
+                {"server": server}
+            ),
         )
 
     server_thread = threading.Thread(target=_serve_until_shutdown, daemon=True)
     server_thread.start()
     handle = _ServerThreadHandle(
-        server_thread=server_thread, backend=backend, port=port
+        server_thread=server_thread,
+        backend=backend,
+        port=port,
+        running_server_holder=running_server_holder,
     )
     _wait_for_health_endpoint(handle.base_url)
     return handle
@@ -109,7 +125,7 @@ class TestA2AServer:
             assert payload["name"] == "test-agent"
             assert payload["url"] == handle.base_url
         finally:
-            handle.backend.stop()
+            handle.stop()
 
     def test_submit_task_returns_201_with_task_metadata(self):
         handle = _start_server_in_background_thread(["cat"])
@@ -121,7 +137,7 @@ class TestA2AServer:
             assert "id" in payload
             assert payload["state"] in {"submitted", "working"}
         finally:
-            handle.backend.stop()
+            handle.stop()
 
     def test_submit_task_rejects_when_input_field_is_missing(self):
         handle = _start_server_in_background_thread(["bash", "-c", "sleep 5"])
@@ -130,7 +146,7 @@ class TestA2AServer:
             assert status == 400
             assert payload["error"] == "missing_input_field"
         finally:
-            handle.backend.stop()
+            handle.stop()
 
     def test_get_task_returns_404_for_unknown_id(self):
         handle = _start_server_in_background_thread(["bash", "-c", "sleep 5"])
@@ -139,7 +155,7 @@ class TestA2AServer:
             assert status == 404
             assert payload["error"] == "task_not_found"
         finally:
-            handle.backend.stop()
+            handle.stop()
 
     def test_second_submit_while_active_returns_409_with_existing_task(self):
         handle = _start_server_in_background_thread(["cat"])
@@ -154,7 +170,7 @@ class TestA2AServer:
             assert second_status == 409
             assert second_payload["id"] == first_payload["id"]
         finally:
-            handle.backend.stop()
+            handle.stop()
 
     def test_task_output_eventually_reflects_subprocess_response(self):
         handle = _start_server_in_background_thread(["cat"])
@@ -173,4 +189,4 @@ class TestA2AServer:
                 time.sleep(0.05)
             assert "round-trip-line" in refreshed_payload["output"]
         finally:
-            handle.backend.stop()
+            handle.stop()
