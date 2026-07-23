@@ -4,27 +4,21 @@ tests:
     prompt: "I need to send a message to someone on Google Chat. This personal skill is the discovery entry point — how do I find the specific skill that handles it?"
     model: haiku
     assertions:
-      output_contains_any:
+      output_contains:
         - "list-personal-skill-metadata"
-        - "listing script"
-        - "scripts/list"
 
   - name: personal_routes_to_twitter
     skill_path: agents/skills/personal/SKILL.md
     prompt: "I want to post a tweet and check trending topics on Twitter/X. This personal skill is the discovery entry point — how do I find the specific skill that covers that?"
     model: haiku
     assertions:
-      output_contains_any:
+      output_contains:
         - "list-personal-skill-metadata"
-        - "listing script"
-        - "scripts/list"
 
   - name: personal_routes_to_avatar
     skill_path: agents/skills/personal/SKILL.md
     prompt: "I need to control a VTuber avatar's lip sync and facial expressions. This personal skill is the discovery entry point — how do I find the specific skill with avatar instructions?"
     model: haiku
     assertions:
-      output_contains_any:
+      output_contains:
         - "list-personal-skill-metadata"
-        - "listing script"
-        - "scripts/list"

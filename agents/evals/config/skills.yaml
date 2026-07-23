@@ -4,8 +4,5 @@ tests:
     prompt: "What are the key rules you follow when creating a commit?"
     model: haiku
     assertions:
-      output_contains_any:
-        - "conventional"
-        - "specific"
-        - "diff"
-        - "imperative"
+      llm_judge:
+        - "Names the conventional commit shape of type, optional scope and an imperative lowercase subject, and staging specific files instead of git add -A or git add . so unrelated parallel work is never swept in."

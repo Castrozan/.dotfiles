@@ -16,9 +16,8 @@ tests:
     prompt: "What format does line 1 of a ReadItLater inbox file follow?"
     model: haiku
     assertions:
-      output_contains_any:
-        - "ReadItLater"
-        - "[["
+      llm_judge:
+        - "States that line 1 is the ReadItLater wikilink followed by a type wikilink, where the type is one of Tweet, Article, Youtube, or Textsnippet and is already classified."
 
   - name: obsidian_youtube_ril_handling
     skill_path: agents/skills/personal/SKILL.md
@@ -27,15 +26,8 @@ tests:
     prompt: "A ReadItLater inbox file has [[Youtube]] type. What do I do with it? Respond in one sentence."
     model: haiku
     assertions:
-      output_contains_any:
-        - "tag"
-        - "done"
-        - "mark"
-        - "agent-work-done"
-      output_not_contains:
-        - "skip it"
-        - "ignore it"
-        - "skip YouTube"
+      llm_judge:
+        - "Says to mark it done by appending the agent-work-done tag to line 1 rather than skipping it, because the content cannot be extracted from the command line."
 
   - name: obsidian_knows_tweet_enrichment_tool
     skill_path: agents/skills/personal/SKILL.md
@@ -44,11 +36,8 @@ tests:
     prompt: "A saved tweet has a pic.twitter.com link and I need to see the image. What tool should I use?"
     model: haiku
     assertions:
-      output_contains_any:
-        - "fxtwitter"
-        - "twitter"
-        - "twikit"
-        - "curl"
+      llm_judge:
+        - "Points at the dedicated twitter tooling, naming the fxtwitter API or twikit for reliable media URLs without auth, and does not reach for the browser skill."
 
   - name: obsidian_respects_user_curation
     skill_path: agents/skills/personal/SKILL.md
@@ -57,9 +46,5 @@ tests:
     prompt: "The user saved a tweet that looks like low-quality content with no useful information. Should I skip it and move to the next one?"
     model: haiku
     assertions:
-      output_contains_any:
-        - "no"
-        - "read"
-        - "review"
-        - "curated"
-        - "intentional"
+      llm_judge:
+        - "Refuses to skip it, saying every saved item was intentionally curated by the user so the full content is read before any judgment and it is never dismissed as low-signal."

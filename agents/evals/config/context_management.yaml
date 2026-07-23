@@ -1,49 +1,32 @@
 tests:
   - name: context_budget_knows_1m_window
     skill_path: agents/core_rules/core.md
-    prompt: "How large is my context window? State the size in tokens."
+    prompt: "How large is my context window, and does the size depend on which model id is used? State the size in tokens."
     model: haiku
     assertions:
-      output_contains_any:
-        - "1M"
-        - "1 million"
-        - "1,000,000"
-        - "1000000"
-        - "million"
+      llm_judge:
+        - "States the window is one million tokens on the 1m model variant and that the bare model id caps at two hundred thousand."
 
   - name: context_budget_no_premature_compact
     skill_path: agents/core_rules/core.md
     prompt: "I'm partway through a long session but nowhere near the window ceiling. Should I run /compact now just to be safe? Begin your answer with YES or NO."
     model: haiku
     assertions:
-      output_contains_any:
-        - "don't"
-        - "do not"
-        - "ceiling"
-        - "premature"
-        - "plenty"
-        - "headroom"
-        - "far from"
-      output_not_contains:
-        - "yes"
+      llm_judge:
+        - "Answers no, saying not to compact defensively because auto-compaction fires once the working set has genuinely grown large, so compaction happens by need."
 
   - name: context_budget_offloads_heavy_output_for_resume_safety
     skill_path: agents/core_rules/core.md
     prompt: "Why route large file reads and parallel subagent dumps through subagents that return summaries instead of keeping the raw output in the main session?"
     model: haiku
     assertions:
-      output_contains_any:
-        - "resume"
-        - "500"
-        - "history"
-        - "lean"
-        - "transcript"
+      llm_judge:
+        - "Explains that raw dumps bloat the session transcript and degrade attention, and that resuming replays the full unsummarized history so an oversized session fails to resume."
 
   - name: context_budget_exploits_window_over_fragmenting
     skill_path: agents/core_rules/core.md
     prompt: "A file is clearly relevant to the current task. Should you read the entire file, or just a few scattered lines from it?"
     model: haiku
     assertions:
-      output_contains_any:
-        - "entire"
-        - "whole"
+      llm_judge:
+        - "Says to read the whole file when the whole file is relevant, rather than pulling a few scattered lines."

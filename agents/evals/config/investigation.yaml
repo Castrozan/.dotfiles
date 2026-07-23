@@ -1,132 +1,63 @@
-# Investigation Methodology Tests
-# Tests that agents gather evidence before concluding, trace failures to instructions,
-# and complete analysis before jumping to fixes.
-
 tests:
   - name: why_question_triggers_investigation
-    description: "A 'why' question about code is an investigation trigger, not a quick-answer request"
     skill_path: agents/core_rules/core.md
     prompt: |
       The user asked: "why does module A reference module B?" I think I remember the answer from earlier in the conversation. Should I just tell them what I remember?
     model: haiku
-    max_turns: 1
     assertions:
-      output_contains_any:
-        - "read"
-        - "verify"
-        - "check"
-        - "investigate"
-        - "code"
-        - "evidence"
-        - "file"
-      output_not_contains:
-        - "yes, tell them"
-        - "go ahead"
+      llm_judge:
+        - "Says not to answer from memory alone and to read the actual code first, because a 'why' question is an investigation trigger whose deliverable is understanding."
 
   - name: why_two_files_requires_reading_both
-    description: "When asked why two files are related, read both files before answering"
     skill_path: agents/core_rules/core.md
     prompt: |
-      The user asked: "why do we have 2 files in this context? what does file X have to do with file Y?" I haven't read either file in this conversation. What should I do?
+      The user asked why this repo has both memory_recall_debounce.py and memory_recall_io.py and how the two relate. I have not opened either file. Should I answer from the file names, or is there something I have to do first?
     model: haiku
-    max_turns: 1
     assertions:
-      output_contains_any:
-        - "read"
-        - "both"
-        - "file"
-        - "investigate"
-        - "check"
-        - "examine"
+      llm_judge:
+        - "Says to read both files before answering rather than answering from assumption or memory."
 
   - name: evidence_before_conclusions
-    description: "Agent must gather evidence from actual system before listing problems"
     skill_path: agents/core_rules/core.md
     prompt: |
       I read a SKILL.md file and noticed several things that look wrong. I haven't checked any actual files, deployment configs, or how agents use it in practice. Should I present my findings to the user now?
     model: haiku
-    max_turns: 1
     assertions:
-      output_contains_any:
-        - "evidence"
-        - "verify"
-        - "check"
-        - "actual"
-        - "read"
-        - "investigate"
-        - "confirm"
-      output_not_contains:
-        - "yes, present"
-        - "go ahead"
-        - "share your findings"
+      llm_judge:
+        - "Says not to present the findings yet and to first verify them against the actual files, deployment configuration, or real usage, because the deliverable is understanding rather than a list of suspicions."
 
   - name: investigation_traces_to_instructions
-    description: "Agent should trace failures to instruction gaps, not just describe symptoms"
     skill_path: agents/core_rules/core.md
     prompt: |
       An agent used the browser skill when it should have used the personal skill's obsidian sub-file. The user had to correct it. What should I investigate to understand why this happened?
     model: haiku
-    max_turns: 1
     assertions:
-      output_contains_any:
-        - "description"
-        - "skill"
-        - "routing"
-        - "instruction"
-        - "loaded"
+      llm_judge:
+        - "Directs the investigation at the instruction surface that caused the wrong choice, naming the skill descriptions, their routing triggers, or which instructions were loaded, instead of only restating the symptom."
 
   - name: analysis_separate_from_implementation
-    description: "Agent must complete analysis before jumping to fixes"
     skill_path: agents/core_rules/core.md
     prompt: |
       I found three gaps in a SKILL.md after reading the file and checking actual usage. Should I immediately start rewriting the skill to fix the gaps?
     model: haiku
-    max_turns: 1
     assertions:
-      output_contains_any:
-        - "analysis"
-        - "complete"
-        - "present"
-        - "findings"
-        - "first"
-        - "before"
-        - "separate"
-      output_not_contains:
-        - "yes, start rewriting"
-        - "go ahead and fix"
+      llm_judge:
+        - "Says not to start rewriting yet because analysis and implementation are separate phases, so the analysis must be finished and its findings delivered first."
 
   - name: investigation_depth_matches_stakes
-    description: "Complex multi-skill failures need deep cross-referencing, not surface reads"
     skill_path: agents/core_rules/core.md
     prompt: |
       An agent failed at a task that spanned three different skills. It loaded the wrong skill, used broken tools, and dismissed user content. I've read the one SKILL.md file that was directly involved. Is that enough investigation?
     model: haiku
-    max_turns: 1
     assertions:
-      output_contains_any:
-        - "no"
-        - "No"
-        - "not enough"
-        - "more"
-        - "other"
-        - "cross"
-        - "all three"
-        - "multiple"
+      llm_judge:
+        - "Answers that reading the single SKILL.md is not enough, and that the investigation has to cover the other skills and failure modes involved before concluding."
 
   - name: never_analyze_in_isolation
-    description: "Agent must check beyond the single document - actual artifacts, other skills, evals"
     skill_path: agents/core_rules/core.md
     prompt: |
       I need to evaluate whether an instruction skill is working well. I've read the SKILL.md file. What else should I check before concluding?
     model: haiku
-    max_turns: 1
     assertions:
-      output_contains_any:
-        - "actual"
-        - "artifact"
-        - "reality"
-        - "file"
-        - "usage"
-        - "practice"
-        - "eval"
-        - "test"
+      llm_judge:
+        - "Names evidence beyond the document itself, such as the artifacts the skill actually produces, how agents use it in practice, or its tests and evals."

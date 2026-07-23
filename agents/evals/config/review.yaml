@@ -16,12 +16,8 @@ tests:
       Review this diff.
     model: haiku
     assertions:
-      output_contains_any:
-        - "bug"
-        - "null"
-        - "None"
-        - "[9"
-        - "[8"
+      llm_judge:
+        - "Reports a finding that the lookup result is used without checking it, so a missing user makes the attribute access on it fail."
 
   - name: review_ignores_preexisting_unchanged_lines
     skill_path: agents/skills/review/SKILL.md
@@ -63,13 +59,8 @@ tests:
       Review this diff.
     model: haiku
     assertions:
-      output_contains_any:
-        - "security"
-        - "credential"
-        - "hardcoded"
-        - "password"
-        - "[9"
-        - "[8"
+      llm_judge:
+        - "Reports a security finding that the production database password is hardcoded in the source instead of coming from a secret."
 
   - name: review_ignores_style_preferences
     skill_path: agents/skills/review/SKILL.md
@@ -107,6 +98,5 @@ tests:
     prompt: "What is the minimum confidence score for reporting a finding?"
     model: haiku
     assertions:
-      output_contains_any:
-        - "81"
-        - "80"
+      llm_judge:
+        - "States the minimum confidence for reporting a finding is 81, and does not give a lower number such as 80 as the threshold."

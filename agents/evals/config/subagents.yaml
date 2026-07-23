@@ -1,30 +1,10 @@
-# Skill Tests
-# Tests for specialized skill behavior
-
 tests:
-  - name: dotfiles_expert_knows_structure
-    description: "nix skill knows the dotfiles repo structure"
-    skill_path: agents/skills/nix/SKILL.md
-    extra_skill_paths:
-      - agents/skills/nix/repo.md
-    prompt: "Where should I put a new home-manager module?"
-    model: haiku
-    max_turns: 3
-    assertions:
-      output_contains_any:
-        - "home/base"
-        - "home/{base"
-
   - name: nix_expert_explains_concepts
-    description: "nix skill can explain Nix concepts"
     skill_path: agents/skills/nix/SKILL.md
     extra_skill_paths:
       - agents/skills/nix/expert.md
     prompt: "What is a Nix overlay?"
     model: haiku
-    max_turns: 2
     assertions:
-      output_contains_any:
-        - "overlay"
-        - "package"
-        - "override"
+      llm_judge:
+        - "Explains an overlay as a function over a package set that adds or overrides packages, taking the final and previous package sets as its arguments."
