@@ -29,15 +29,15 @@ _run_pytest_tier() {
 	local tierDirectoryName="$1"
 	local tierLabel="$2"
 
-	if ! command -v pytest &>/dev/null; then
-		echo "WARN: pytest not installed, skipping python tests" >&2
-		return 0
-	fi
-
 	local testFiles
 	testFiles=$(_collect_pytest_test_files_in_tier_directory "$tierDirectoryName")
 	if [[ -z "$testFiles" ]]; then
 		return 0
+	fi
+
+	if ! command -v pytest &>/dev/null; then
+		echo "ERROR: ${tierLabel} python tests were collected but pytest is not installed; refusing to skip silently" >&2
+		return 1
 	fi
 
 	echo "--- Python Tests (${tierLabel}) ---"
