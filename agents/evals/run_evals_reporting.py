@@ -1,3 +1,4 @@
+from run_evals_statistics import format_pass_rate_with_confidence_interval
 from run_evals_test_runner import TestResult
 
 
@@ -32,6 +33,7 @@ def print_results(results: list[TestResult]) -> bool:
     print("\n" + "-" * 60)
     print(f"Passed: {passed}/{len(results)}")
     print(f"Failed: {failed}/{len(results)}")
+    print(format_pass_rate_with_confidence_interval(passed, len(results)))
     print(f"Total time: {total_duration:.1f}s")
     print("-" * 60 + "\n")
 
