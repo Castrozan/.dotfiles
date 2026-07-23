@@ -181,15 +181,14 @@ def run_tests(
     max_workers = max_workers_override or settings.get(
         "parallel_workers", DEFAULT_PARALLEL_WORKERS
     )
-    results_by_name = {}
+    results_by_index = {}
 
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        future_to_test_name = {
-            executor.submit(run_test, test, settings, False): test["name"]
-            for test in tests_to_run
+        future_to_index = {
+            executor.submit(run_test, test, settings, False): index
+            for index, test in enumerate(tests_to_run)
         }
-        for future in as_completed(future_to_test_name):
-            test_name_key = future_to_test_name[future]
-            results_by_name[test_name_key] = future.result()
+        for future in as_completed(future_to_index):
+            results_by_index[future_to_index[future]] = future.result()
 
-    return [results_by_name[test["name"]] for test in tests_to_run]
+    return [results_by_index[index] for index in range(len(tests_to_run))]
