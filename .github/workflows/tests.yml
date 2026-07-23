@@ -30,7 +30,7 @@ jobs:
             export REPO_DIR="$PWD"
             source __tests__/lib/discovery.sh
             source __tests__/lib/pytest.sh
-            pytest $(_collect_pytest_test_files_in_tier_directory unit) -x -q
+            _run_pytest_tier unit quick
           '
 
       - name: Run QML unit tests

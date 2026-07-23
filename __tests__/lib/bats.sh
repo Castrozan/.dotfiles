@@ -22,8 +22,10 @@ _run_bats_tier() {
 	fi
 
 	echo "--- Bin Script Tests (${tierLabel}) ---"
-	bats "${testFiles[@]}"
+	local batsExitCode=0
+	bats "${testFiles[@]}" || batsExitCode=$?
 	echo ""
+	return "$batsExitCode"
 }
 
 _run_quick_bats_tests() {

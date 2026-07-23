@@ -21,8 +21,10 @@ _run_pytest_tier() {
 	fi
 
 	echo "--- Python Tests (${tierLabel}) ---"
-	pytest "${testFiles[@]}" -q
+	local pytestExitCode=0
+	pytest "${testFiles[@]}" -q || pytestExitCode=$?
 	echo ""
+	return "$pytestExitCode"
 }
 
 _run_quick_pytest_tests() {
