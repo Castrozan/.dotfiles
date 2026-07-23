@@ -15,6 +15,10 @@ This repo is continuously kept synced, green, and pushed by an autonomous per-ma
 Every configuration change lives in this repo and applies declaratively through its capabilities - nix modules, home-manager, agenix, overlays, packaged scripts - never by mutating a machine by hand outside the repo. Fold new config into the existing module structure rather than adding one-off files. Make it work on every system type this repo targets (NixOS and darwin) when the feature allows, guarding platform-specific pieces behind `isNixOS`/`isDarwin`.
 </configuration>
 
+<codex-managed-settings-ownership>
+MCP servers are declared in nix at `home/base/claude/mcps/default.nix` for Claude and `home/base/codex/config.nix` for Codex. Codex deploys an authoritative nix-source for managed settings, including `mcp_servers`, then seeds a mutable live config while preserving live entries in projects, marketplaces, and plugins. Declaratively sourced entries win on key collisions, so an MCP dropped from its nix source disappears from the live config on the next rebuild.
+</codex-managed-settings-ownership>
+
 <machine-local-wrapper>
 On chise only, the live system is not built straight from this repo: a machine-local entrypoint flake at `~/zanoni-system` (outside this tree) imports the public chise config from here and layers a private overlay on top, and `rebuild` builds that entrypoint, not this repo directly. So a service, unit, secret, or option that is live on chise but absent from this repo is most likely owned by that overlay, not missing: check `~/zanoni-system` before declaring it undeclared or re-adding it here. That entrypoint is its own standalone private git repo, with its own origin, not this repo and not a submodule of it, no CI and no peer stewards; the chise steward keeps it reconciled with its origin fast-forward-only, so commit a wrapper change into that repo rather than assuming a rebuild alone captures it. Chise-specific; other hosts build directly from this repo.
 </machine-local-wrapper>

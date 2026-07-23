@@ -41,4 +41,3 @@ Guards are UP by default (allowed domains: localhost/127.0.0.1); `pinchtab serve
 Chrome DevTools: always take a fresh snapshot after navigation - uids change between snapshots. Prefer snapshots over screenshots. The target is single and sequential and needs its own Allow.
 PinchTab: prefer `snap` (accessibility tree with refs) over screenshots for less tokens; get a fresh `snap` after navigation or interaction because refs change.
 </tips>
-</content>

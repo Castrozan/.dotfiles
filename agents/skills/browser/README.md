@@ -25,4 +25,3 @@ Once authorized the target sustains tens of thousands of CDP operations per seco
 <pinchtab_tradeoffs>
 PinchTab is the deliberate choice for isolated work, not the default reach. It runs its own persistent-profile Chrome driven from bash, needs no MCP transport, and a one-time headed login stays authenticated across runs; reach for it when the task wants a profile isolated from the user's real browser - public sites, scraping, research, bulk extraction, throwaway browsing, Electron apps, local or dev sessions - or when an autonomous clawde agent needs a browser at all, since the stealth target refuses it. Its profile is separate from the user's real Chrome, so it holds none of their logins and is not a stealth substitute for bot-detecting sites that need the real session; default to a CDP target there.
 </pinchtab_tradeoffs>
-</content>

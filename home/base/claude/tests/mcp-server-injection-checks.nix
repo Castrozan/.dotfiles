@@ -37,8 +37,9 @@ in
         "browser-use"
         "figma"
         "figma-read"
+        "vivaldi-devtools"
       ])
-      "brave-devtools, browser-use, figma, and figma-read must stay in the managed prune set so the injector strips any prior entry from existing ~/.claude.json on every host that previously injected them; dropping one leaves a dead stdio MCP that spawns a server that never connects";
+      "brave-devtools, browser-use, figma, figma-read, and vivaldi-devtools must stay in the managed prune set so the injector strips any prior entry from existing ~/.claude.json on every host that previously injected them; dropping one leaves a dead stdio MCP that spawns a server that never connects";
 
   mem0-remains-in-managed-prune-set-on-hosts-without-it =
     mkEvalCheck "mem0-remains-in-managed-prune-set-on-hosts-without-it"
