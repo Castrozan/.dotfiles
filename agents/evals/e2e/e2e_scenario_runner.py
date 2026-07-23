@@ -6,17 +6,17 @@ from pathlib import Path
 from e2e_assertions_workspace import run_e2e_assertions
 from e2e_models import E2eScenarioResult, TerminalSessionTrace
 from e2e_scoring import calculate_e2e_experience_score
-from e2e_tmux import (
+from e2e_herdr import (
     E2E_SESSION_PREFIX,
-    create_isolated_tmux_session_for_test,
-    destroy_test_session,
-    discover_tmux_socket_path,
-    launch_claude_in_tmux_session,
+    create_isolated_herdr_tab_for_test,
+    destroy_test_tab,
+    herdr_server_is_reachable,
+    launch_claude_in_herdr_pane,
 )
-from e2e_tmux_io import (
+from e2e_herdr_io import (
     capture_full_terminal_output,
     send_prompt_to_claude_session,
-    wait_for_claude_input_prompt_indicator,
+    wait_for_claude_to_become_ready,
     wait_for_response_completion,
 )
 from e2e_trace import build_terminal_session_trace
@@ -49,8 +49,7 @@ def run_e2e_scenario(
             duration_seconds=0,
         )
 
-    socket_path = discover_tmux_socket_path()
-    if not socket_path:
+    if not herdr_server_is_reachable():
         return E2eScenarioResult(
             scenario_name=scenario_name,
             passed=False,
@@ -58,12 +57,12 @@ def run_e2e_scenario(
             trace=TerminalSessionTrace(),
             workspace_directory=None,
             duration_seconds=0,
-            error="tmux socket not found",
+            error="herdr server not reachable",
         )
 
     sanitized = sanitize_name_for_session(scenario_name)
     timestamp = int(time.time())
-    session_name = f"{E2E_SESSION_PREFIX}{sanitized}-{timestamp}"
+    tab_label = f"{E2E_SESSION_PREFIX}{sanitized}-{timestamp}"
     E2E_WORKSPACE_PARENT.mkdir(parents=True, exist_ok=True)
     workspace = Path(
         tempfile.mkdtemp(
@@ -72,19 +71,13 @@ def run_e2e_scenario(
         )
     )
     timeout = scenario.get("timeout", 300)
+    session_handle: dict[str, str] = {}
 
     try:
         setup_e2e_scenario_workspace(scenario, workspace, claude_ab_mode)
 
-        tmux_target = create_isolated_tmux_session_for_test(
-            socket_path, session_name, workspace
-        )
-
-        launch_claude_in_tmux_session(socket_path, tmux_target, model)
-
-        if not wait_for_claude_input_prompt_indicator(
-            socket_path, tmux_target, max_attempts=45
-        ):
+        session_handle = create_isolated_herdr_tab_for_test(tab_label, workspace)
+        if not session_handle:
             return E2eScenarioResult(
                 scenario_name=scenario_name,
                 passed=False,
@@ -92,7 +85,21 @@ def run_e2e_scenario(
                 trace=TerminalSessionTrace(),
                 workspace_directory=workspace,
                 duration_seconds=0,
-                error="Claude failed to start (no prompt detected)",
+                error="herdr tab could not be created",
+            )
+        pane_id = session_handle["pane_id"]
+
+        launch_claude_in_herdr_pane(pane_id, model)
+
+        if not wait_for_claude_to_become_ready(pane_id):
+            return E2eScenarioResult(
+                scenario_name=scenario_name,
+                passed=False,
+                assertion_results=[],
+                trace=TerminalSessionTrace(),
+                workspace_directory=workspace,
+                duration_seconds=0,
+                error="Claude failed to start (agent never reported idle)",
             )
 
         prompts = scenario.get("prompts", [])
@@ -104,15 +111,10 @@ def run_e2e_scenario(
         start_time = time.time()
 
         for prompt_text in prompts:
-            send_prompt_to_claude_session(socket_path, tmux_target, prompt_text)
-            completed = wait_for_response_completion(
-                socket_path,
-                tmux_target,
-                prompt_text=prompt_text,
-                timeout_seconds=timeout,
-            )
+            send_prompt_to_claude_session(pane_id, prompt_text)
+            completed = wait_for_response_completion(pane_id, timeout_seconds=timeout)
             if not completed:
-                raw_output = capture_full_terminal_output(socket_path, tmux_target)
+                raw_output = capture_full_terminal_output(pane_id)
                 duration = time.time() - start_time
                 trace = build_terminal_session_trace(
                     raw_output, duration, timed_out=True
@@ -141,7 +143,7 @@ def run_e2e_scenario(
                     error=f"Timed out after {timeout}s",
                 )
 
-        raw_output = capture_full_terminal_output(socket_path, tmux_target)
+        raw_output = capture_full_terminal_output(pane_id)
         duration = time.time() - start_time
 
         if debug_capture:
@@ -170,5 +172,6 @@ def run_e2e_scenario(
         )
 
     finally:
-        destroy_test_session(socket_path, session_name)
+        if session_handle:
+            destroy_test_tab(session_handle["tab_id"])
         shutil.rmtree(workspace, ignore_errors=True)

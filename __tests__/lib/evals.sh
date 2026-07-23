@@ -27,12 +27,12 @@ _run_e2e_tier() {
 		echo "SKIP: claude CLI not installed, skipping E2E tests" >&2
 		return 0
 	fi
-	if ! command -v tmux &>/dev/null; then
-		echo "SKIP: tmux not installed, skipping E2E tests" >&2
+	if ! command -v herdr &>/dev/null; then
+		echo "SKIP: herdr not installed, skipping E2E tests" >&2
 		return 0
 	fi
 
-	echo "--- E2E Tests (tmux interactive Claude sessions) ---"
+	echo "--- E2E Tests (herdr interactive Claude sessions) ---"
 	"$REPO_DIR/agents/evals/e2e/run-e2e-tests.py"
 	echo ""
 }

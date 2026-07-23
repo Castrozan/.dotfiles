@@ -44,12 +44,12 @@ eval-checks) so the structure is self-describing.
 | Tier | Content | Flag |
 |---|---|---|
 | Map | prints the discovered suite tree, runs nothing | `--map` |
-| Quick | skill frontmatter + line counts + `unit/` bats + `unit/` pytest + qml + lua | `--quick` (default) |
+| Quick | line counts + `unit/` bats + `unit/` pytest + qml + lua | `--quick` (default) |
 | Nix | quick + domain nix checks (`*/__tests__/checks.nix`) | `--nix` |
 | Integration (scripts) | `integration/` bats + `integration/` pytest | `--integration-scripts` (alias `--docker`) |
 | Runtime / e2e (scripts) | `e2e/` bats + `e2e/` pytest | `--runtime` |
 | Perf | desktop + shell benchmarks, baseline checks, threshold tests | `--perf` |
-| Agent evals | `agents/evals/` single-turn / sessions / tmux | `--evals` / `--integration` / `--e2e` |
+| Agent evals | `agents/evals/` single-turn / sessions / herdr | `--evals` / `--integration` / `--e2e` |
 
 Additional modes: `--all` runs quick + nix + integration-scripts. `--coverage`
 runs `unit/` bats through kcov. `--ci` runs quick with CI-appropriate skips.

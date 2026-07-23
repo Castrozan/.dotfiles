@@ -6,7 +6,7 @@ def print_e2e_results(
     results: list[E2eScenarioResult],
 ) -> bool:
     print("\n" + "=" * 60)
-    print("E2E INTEGRATION TEST RESULTS (tmux sessions)")
+    print("E2E INTEGRATION TEST RESULTS (herdr tabs)")
     print("=" * 60 + "\n")
 
     all_passed = True

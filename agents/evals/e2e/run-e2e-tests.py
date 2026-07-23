@@ -12,7 +12,7 @@ from e2e_workspace import SCENARIOS_DIR, discover_scenario_files, load_scenario
 
 def main():
     parser = argparse.ArgumentParser(
-        description=("E2E tmux-based Claude Code integration tests")
+        description=("E2E herdr-based Claude Code integration tests")
     )
     parser.add_argument("--scenario", help="Run specific scenario by name")
     parser.add_argument("--model", default="sonnet", help="Model (default: sonnet)")
@@ -38,7 +38,7 @@ def main():
         "--workers",
         type=int,
         default=1,
-        help="Run scenarios in parallel (each in its own tmux session)",
+        help="Run scenarios in parallel (each in its own herdr tab)",
     )
     parser.add_argument(
         "--runs",
@@ -46,8 +46,8 @@ def main():
         default=1,
         help=(
             "Execute each scenario N independent times for stochasticity stats. "
-            "Each run is an independent tmux session; parallel cap is --workers "
-            "(total concurrent tmux sessions = min(workers, scenarios * runs))."
+            "Each run is an independent herdr tab; parallel cap is --workers "
+            "(total concurrent herdr tabs = min(workers, scenarios * runs))."
         ),
     )
     args = parser.parse_args()
@@ -78,7 +78,7 @@ def main():
             sys.exit(1)
 
     if not args.dry_run:
-        for tool in ["claude", "tmux"]:
+        for tool in ["claude", "herdr"]:
             if subprocess.run(["which", tool], capture_output=True).returncode != 0:
                 print(f"Error: {tool} not found")
                 sys.exit(1)
