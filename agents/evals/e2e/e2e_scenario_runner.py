@@ -126,7 +126,7 @@ def run_e2e_scenario(
                 raw_output = capture_full_terminal_output(pane_id)
                 duration = time.time() - start_time
                 trace = build_terminal_session_trace(
-                    raw_output, duration, timed_out=True
+                    raw_output, duration, timed_out=True, workspace=workspace
                 )
 
                 if debug_capture:
@@ -158,7 +158,9 @@ def run_e2e_scenario(
         if debug_capture:
             save_debug_capture(scenario_name, raw_output)
 
-        trace = build_terminal_session_trace(raw_output, duration, timed_out=False)
+        trace = build_terminal_session_trace(
+            raw_output, duration, timed_out=False, workspace=workspace
+        )
 
         assertion_results = run_e2e_assertions(
             trace,
