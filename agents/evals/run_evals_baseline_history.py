@@ -80,3 +80,13 @@ def baseline_regression_failure(
             f"(max allowed drop {maximum_drop:.1%})"
         )
     return None
+
+
+def baseline_staleness_failure(age_days: int, maximum_age_days: int) -> str | None:
+    if age_days <= maximum_age_days:
+        return None
+    return (
+        f"Baseline is {age_days} days old, past the {maximum_age_days}-day "
+        f"freshness window, so it no longer reflects the current instruction "
+        f"surface; re-record it with 'agent-eval --save-baseline'"
+    )

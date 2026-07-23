@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 
 from run_evals_baseline_history import (
     baseline_regression_failure,
+    baseline_staleness_failure,
     previous_committed_baseline_pass_rate,
 )
 from run_evals_statistics import (
@@ -17,6 +18,7 @@ BASELINE_PATH = REPO_ROOT / "agents" / "evals" / "baseline.json"
 MINIMUM_PASS_RATE_OVERALL = 0.75
 MINIMUM_PASS_RATE_COMPLIANCE = 0.85
 MAXIMUM_REGRESSION_DROP = 0.05
+MAXIMUM_BASELINE_AGE_DAYS = 30
 COMPLIANCE_CATEGORIES = {
     "instruction_compliance",
     "workflow_compliance",
@@ -135,11 +137,15 @@ def check_baseline_for_regression() -> bool:
     if regression:
         failures.append(regression)
 
+    staleness = baseline_staleness_failure(age_days, MAXIMUM_BASELINE_AGE_DAYS)
+    if staleness:
+        failures.append(staleness)
+
     print("=" * 60)
     print("EVAL BASELINE CHECK")
     print("=" * 60)
     print(f"  Generated: {baseline['generated_at']}")
-    print(f"  Age: {age_days} days")
+    print(f"  Age: {age_days} days (freshness window {MAXIMUM_BASELINE_AGE_DAYS})")
     print(f"  Commit: {baseline.get('git_commit', 'unknown')}")
     print(
         "  "
