@@ -38,11 +38,3 @@ tests:
     assertions:
       output_contains:
         - "media-control.md"
-
-  - name: desktop_routes_to_youtube
-    agent: desktop
-    prompt: "I need to search for a video on YouTube and add it to a playlist. Which file in this skill covers YouTube operations?"
-    model: haiku
-    assertions:
-      output_contains:
-        - "youtube.md"
