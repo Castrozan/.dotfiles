@@ -1,9 +1,12 @@
 <principle>
-Code documents itself through naming. Documentation exists only for what naming cannot express: architecture decisions, onboarding context, external integration details, and cross-cutting concerns that span multiple files.
+Code documents itself through naming. Documentation exists only for what naming cannot express: architecture decisions,
+onboarding context, external integration details, and cross-cutting concerns that span multiple files.
 </principle>
 
 <naming_over_docs>
-A well-named function needs no docstring. A well-named file needs no README beside it. A well-named directory needs no index. Long, descriptive, obvious names are the primary documentation system. Never abbreviate. If you find yourself writing a comment or doc to explain something, rename the thing instead.
+A well-named function needs no docstring. A well-named file needs no README beside it. A well-named directory needs no
+index. Long, descriptive, obvious names are the primary documentation system. Never abbreviate. If you find yourself
+writing a comment or doc to explain something, rename the thing instead.
 </naming_over_docs>
 
 <never_write>
@@ -11,17 +14,28 @@ Directory trees, file lists, or structure snapshots. These go stale the moment s
 </never_write>
 
 <evergreen>
-Documentation must stay accurate without maintenance. Reference patterns, not current state. Point to locations, not copies. Write "tests live in tests/" not a tree of every test file. Write "scripts follow the pattern in rebuild" not a list of every script. If documentation requires updating every time code changes, it is written wrong.
+Documentation must stay accurate without maintenance. Reference patterns, not current state. Point to locations, not
+copies. Write "tests live in tests/" not a tree of every test file. Write "scripts follow the pattern in rebuild" not a
+list of every script. If documentation requires updating every time code changes, it is written wrong.
 </evergreen>
 
 <when_docs_are_needed>
-Architecture decisions that affect multiple modules. Non-obvious constraints from upstream dependencies. Migration guides for breaking changes. External integration details, or a pointer to authoritative external docs. These are the only valid reasons to write documentation.
+Architecture decisions that affect multiple modules. Non-obvious constraints from upstream dependencies. Migration
+guides for breaking changes. External integration details, or a pointer to authoritative external docs. These are the
+only valid reasons to write documentation.
 </when_docs_are_needed>
 
 <policy_documentation>
-A policy is not documentation of code; it is a statement of intent, goals, boundaries, and constraints that code must satisfy. Policies define what must be true and why without prescribing specific implementations. Dense prose that makes requisites and boundaries clear. Never describe current state, specific tools, exact commands, or implementation details, as those belong in code. A good policy survives complete reimplementation of the system it governs. Policies live in CLAUDE.md or as NixOS assertions, never in separate docs files, because separated policy documents rot because they are out of the path of work.
+A policy is not documentation of code; it is a statement of intent, goals, boundaries, and constraints that code must
+satisfy. Policies define what must be true and why without prescribing specific implementations. Dense prose that makes
+requisites and boundaries clear. Never describe current state, specific tools, exact commands, or implementation
+details, as those belong in code. A good policy survives complete reimplementation of the system it governs. Policies
+live in CLAUDE.md or as NixOS assertions, never in separate docs files, because separated policy documents rot because
+they are out of the path of work.
 </policy_documentation>
 
 <format>
-Dense prose over bullet lists. No filler phrases. No "This document describes..." preambles. Start with the content. Use headings only when sections are truly distinct. Markdown only. No generated badges, no status indicators that need updating.
+Dense prose over bullet lists. No filler phrases. No "This document describes..." preambles. Start with the content. Use
+headings only when sections are truly distinct. Markdown only. No generated badges, no status indicators that need
+updating.
 </format>

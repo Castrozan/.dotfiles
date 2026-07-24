@@ -13,6 +13,7 @@ For compliance rule auditing, read `compliance.md`.
 
 For code review methodology, read `code-review.md`.
 
-For auditing instruction-file edits (SKILL.md, CLAUDE.md, agent definitions, subagent briefs) against the standards owned by the `instructions` skill, read `authoring.md`.
+For auditing instruction-file edits (SKILL.md, CLAUDE.md, agent definitions, subagent briefs) against the standards
+owned by the `instructions` skill, read `authoring.md`.
 
 For diagnosing and fixing skill routing failures, read `skill-routing.md`.

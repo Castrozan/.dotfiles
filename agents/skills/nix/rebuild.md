@@ -3,31 +3,47 @@
 </announcement>
 
 <prerequisite>
-Nix reads from git index, not working tree. Stage all modified .nix files before rebuilding. Never use `git add -A` or `git add .` (may stage unrelated parallel work).
+Nix reads from git index, not working tree. Stage all modified .nix files before rebuilding. Never use `git add -A` or
+`git add .` (may stage unrelated parallel work).
 </prerequisite>
 
 <execution>
-Run `rebuild` — it auto-detects platform (NixOS vs standalone home-manager) and user. Sources nix-daemon.sh if needed. If `nix: command not found`, source `. /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh` first.
+Run `rebuild`; it auto-detects platform (NixOS vs standalone home-manager) and user. Sources nix-daemon.sh if needed. If
+`nix: command not found`, source `. /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh` first.
 </execution>
 
 <timeout_trap>
-Rebuilds from source (forks, custom packages) can take 10+ minutes. Follow the active-waiting pattern: redirect output to a file (`rebuild > /tmp/rebuild.log 2>&1 &`), then set up a `/loop` monitor that tails the log file to check concrete progress. Never pipe through `tail` in background — it buffers everything and produces empty output. Never poll with timeout > 60000ms — a single long poll eats the entire agent timeout budget and bricks the session.
+Rebuilds from source (forks, custom packages) can take 10+ minutes. Follow the active-waiting pattern: redirect output
+to a file (`rebuild > /tmp/rebuild.log 2>&1 &`), then set up a `/loop` monitor that tails the log file to check concrete
+progress. Never pipe through `tail` in background; it buffers everything and produces empty output. Never poll with
+timeout > 60000ms: a single long poll eats the entire agent timeout budget and bricks the session.
 </timeout_trap>
 
 <dry_run>
-Validate configuration before applying by running `rebuild` with `--dry-run`. Catches syntax errors, missing imports, and evaluation failures without modifying the system.
+Validate configuration before applying by running `rebuild` with `--dry-run`. Catches syntax errors, missing imports,
+and evaluation failures without modifying the system.
 </dry_run>
 
 <platform_difference>
 NixOS: Full system rebuild affecting services, kernel, boot. Home-manager is integrated as a module.
-Home-manager standalone: User-level only — packages, dotfiles, user services.
+Home-manager standalone: User-level only: packages, dotfiles, user services.
 The rebuild script handles detection automatically.
 </platform_difference>
 
 <stale_fetcher_cache>
-`rebuild` resolves the flake via the git fetcher (`?submodules=1`), which caches the repo revision in `~/.cache/nix/fetcher-cache-v*.sqlite` and can pin an old commit so the build keeps using stale source after you commit; `--refresh`, `--option eval-cache false`, and `--option tarball-ttl 0` do not clear it. Symptom: `rebuild` exits 0 but the change is not live and the built store path never changes; confirm by comparing `builtins.getFlake`'s `.rev` against `git rev-parse HEAD`, a mismatch means the cache is stale. Fix: `rm -f ~/.cache/nix/fetcher-cache-v*.sqlite*` then rebuild, deleting only this file and not all of `~/.cache/nix` which forces needless input re-downloads. Verify a deploy from the installed artifact, not the exit code: the hyprland python scripts are `writeShellScriptBin` wrappers that `exec` a separate `<hash>-source.py`, so grep the `-source.py` the wrapper execs (the wrapper itself silently lacks your change).
+`rebuild` resolves the flake via the git fetcher (`?submodules=1`), which caches the repo revision in
+`~/.cache/nix/fetcher-cache-v*.sqlite` and can pin an old commit so the build keeps using stale source after you commit;
+`--refresh`, `--option eval-cache false`, and `--option tarball-ttl 0` do not clear it. Symptom: `rebuild` exits 0 but
+the change is not live and the built store path never changes; confirm by comparing `builtins.getFlake`'s `.rev` against
+`git rev-parse HEAD`, a mismatch means the cache is stale. Fix: `rm -f ~/.cache/nix/fetcher-cache-v*.sqlite*` then
+rebuild, deleting only this file and not all of `~/.cache/nix` which forces needless input re-downloads. Verify a deploy
+from the installed artifact, not the exit code: the hyprland python scripts are `writeShellScriptBin` wrappers that
+`exec` a separate `<hash>-source.py`, so grep the `-source.py` the wrapper execs (the wrapper itself silently lacks your
+change).
 </stale_fetcher_cache>
 
 <troubleshooting>
-Build fails with import error: file not staged (check git status). Attribute not found: module not imported in home.nix or configuration.nix. Unfree package: rebuild sets NIXPKGS_ALLOW_UNFREE=1. Rate limit: install home-manager locally. Wrong config: session-context User field must match flake configuration name.
+Build fails with import error: file not staged (check git status). Attribute not found: module not imported in home.nix
+or configuration.nix. Unfree package: rebuild sets NIXPKGS_ALLOW_UNFREE=1. Rate limit: install home-manager locally.
+Wrong config: session-context User field must match flake configuration name.
 </troubleshooting>

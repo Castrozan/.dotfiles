@@ -1,5 +1,6 @@
 <stance>
-Enforce patterns, not just suggest. When user proposes violation: 1) Explain WHY pattern exists. 2) Show CORRECT way. 3) Only deviate if user explicitly accepts trade-off AND no alternative exists.
+Enforce patterns, not just suggest. When user proposes violation: 1) Explain WHY pattern exists. 2) Show CORRECT way. 3)
+Only deviate if user explicitly accepts trade-off AND no alternative exists.
 </stance>
 
 <architecture>
@@ -10,7 +11,9 @@ Each output threads (hostname=<alias>, isNixOS, isDarwin, username) through extr
 </architecture>
 
 <platform_detection>
-`isNixOS`, `isDarwin`, and `hostname` (the alias) are injected via specialArgs / extraSpecialArgs. Consume as function args: `{ isNixOS, isDarwin, hostname, ... }:`. Use `lib.mkIf` to guard. NEVER use `builtins.pathExists /etc/NIXOS` - broken in pure flake evaluation.
+`isNixOS`, `isDarwin`, and `hostname` (the alias) are injected via specialArgs / extraSpecialArgs. Consume as function
+args: `{ isNixOS, isDarwin, hostname, ... }:`. Use `lib.mkIf` to guard. NEVER use `builtins.pathExists /etc/NIXOS` -
+broken in pure flake evaluation.
 </platform_detection>
 
 <directory_organization>
@@ -37,7 +40,8 @@ Use the rebuild capability (rebuild.md) - it has platform detection, commands, a
 </rebuild_execution>
 
 <git_workflow>
-Commit files first before rebuilds, nix reads from git index. NEVER git add -A or git add . Parallel work is going on the repo. Always add each file you changed with git add FILE.
+Commit files first before rebuilds, nix reads from git index. NEVER git add -A or git add . Parallel work is going on
+the repo. Always add each file you changed with git add FILE.
 </git_workflow>
 
 <package_channels>
@@ -48,16 +52,24 @@ DO NOT UPDATE THE FLAKES MANUALLY unless user specifically requests it.
 </package_channels>
 
 <anti_patterns>
-Reject: config in home.nix (goes in module), packages via specialArgsBase (use inputs), secrets without pathExists guard, scripts in random locations, hardcoded usernames, new file without import, rebuild without staging, git add -A, committing directly, builtins.pathExists /etc/NIXOS for NixOS detection (use isNixOS specialArg).
+Reject: config in home.nix (goes in module), packages via specialArgsBase (use inputs), secrets without pathExists
+guard, scripts in random locations, hardcoded usernames, new file without import, rebuild without staging, git add -A,
+committing directly, builtins.pathExists /etc/NIXOS for NixOS detection (use isNixOS specialArg).
 </anti_patterns>
 
 <delegation_to_expert>
-Delegate to expert.md: Nix syntax/evaluation/lazy evaluation, derivations/overlays/complex expressions, module system internals, debugging evaluation errors, Nix ecosystem tooling questions.
-Handle directly: file locations in this repo, repository patterns/anti-patterns, module structure/import organization, secrets workflow, rebuild failures and enforcing conventions.
+Delegate to expert.md: Nix syntax/evaluation/lazy evaluation, derivations/overlays/complex expressions, module system
+internals, debugging evaluation errors, Nix ecosystem tooling questions.
+Handle directly: file locations in this repo, repository patterns/anti-patterns, module structure/import organization,
+secrets workflow, rebuild failures and enforcing conventions.
 </delegation_to_expert>
 
 <script_packaging>
-Python scripts are packaged via a module-level helper in scripts.nix (e.g. `mkSystemPythonScript`, `mkMediaPythonScript`) that wraps `pkgs.writeText` + `pkgs.writeShellScriptBin` with `exec python3`. For scripts needing shared libraries, the shell wrapper sets PYTHONPATH to the lib directory. For external deps, use `pkgs.python3.withPackages`. Each module with scripts has a __tests__/ directory with conftest.py for sys.path setup. Mock subprocess calls in tests, never call real system tools.
+Python scripts are packaged via a module-level helper in scripts.nix (e.g. `mkSystemPythonScript`,
+`mkMediaPythonScript`) that wraps `pkgs.writeText` + `pkgs.writeShellScriptBin` with `exec python3`. For scripts needing
+shared libraries, the shell wrapper sets PYTHONPATH to the lib directory. For external deps, use
+`pkgs.python3.withPackages`. Each module with scripts has a __tests__/ directory with conftest.py for sys.path setup.
+Mock subprocess calls in tests, never call real system tools.
 </script_packaging>
 
 <relevant_skills>
