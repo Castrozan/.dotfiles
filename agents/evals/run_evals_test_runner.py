@@ -7,6 +7,7 @@ from run_evals_claude_cli import run_claude_cli
 from run_evals_hook_test_runner import evaluate_hook_test
 from run_evals_judge import build_llm_judge
 from run_evals_config_loader import resolve_system_prompt_for_test
+from run_evals_progress import EvaluationProgressReporter
 
 DEFAULT_PARALLEL_WORKERS = 2
 
@@ -149,6 +150,8 @@ def run_tests(
         "parallel_workers", DEFAULT_PARALLEL_WORKERS
     )
     results_by_index = {}
+    reporter = EvaluationProgressReporter(len(tests_to_run), max_workers)
+    reporter.announce_start()
 
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         future_to_index = {
@@ -156,6 +159,9 @@ def run_tests(
             for index, (test, cat_name) in enumerate(tests_to_run)
         }
         for future in as_completed(future_to_index):
-            results_by_index[future_to_index[future]] = future.result()
+            result = future.result()
+            results_by_index[future_to_index[future]] = result
+            reporter.record(result)
 
+    reporter.announce_finish()
     return [results_by_index[index] for index in range(len(tests_to_run))]
