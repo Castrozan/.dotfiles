@@ -1,5 +1,7 @@
 #!/usr/bin/env bats
 
+load '../../../../../__tests__/helpers/docker-container-assertions'
+
 readonly DOCKER_IMAGE_TAG="dotfiles-oom-test"
 readonly SCRIPT_PATH_INSIDE_CONTAINER="/dotfiles/home/base/system/scripts/setup-oom-protection"
 readonly EARLYOOM_CONFIG_PATH="/etc/default/earlyoom"
@@ -7,25 +9,16 @@ readonly ZRAMSWAP_CONFIG_PATH="/etc/default/zramswap"
 readonly SWAPPINESS_SYSCTL_PATH="/etc/sysctl.d/99-swappiness.conf"
 
 setup_file() {
-    if ! command -v docker &>/dev/null; then
-        skip "docker not in PATH"
-    fi
-
-    local repositoryRoot
-    repositoryRoot="$(cd "$BATS_TEST_DIRNAME/../../../.." && pwd)"
-    docker build -t "$DOCKER_IMAGE_TAG" -f "$repositoryRoot/__tests__/Dockerfile" "$repositoryRoot" >/dev/null 2>&1
+    skip_unless_docker_daemon_is_reachable
+    build_privileged_test_image_or_fail "$DOCKER_IMAGE_TAG"
 }
 
 teardown_file() {
-    if command -v docker &>/dev/null; then
-        docker rmi -f "$DOCKER_IMAGE_TAG" >/dev/null 2>&1 || true
-    fi
+    remove_test_image_if_present "$DOCKER_IMAGE_TAG"
 }
 
 _run_in_privileged_container() {
-    if ! command -v docker &>/dev/null; then
-        skip "docker not in PATH"
-    fi
+    skip_unless_docker_daemon_is_reachable
     docker run --rm --privileged "$DOCKER_IMAGE_TAG" bash -c "$1"
 }
 

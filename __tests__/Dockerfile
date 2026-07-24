@@ -1,4 +1,4 @@
-FROM ubuntu:24.04
+FROM public.ecr.aws/ubuntu/ubuntu:24.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -19,5 +19,3 @@ RUN rm -rf .git \
     && git config --global user.email "test@test.com" \
     && git config --global user.name "Test" \
     && git init -q && git add -A && git commit -q -m "test snapshot"
-
-CMD ["bats", "tests/nix-modules/home-manager.bats"]
