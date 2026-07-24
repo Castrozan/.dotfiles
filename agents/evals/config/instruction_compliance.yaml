@@ -32,7 +32,7 @@ tests:
         - "States that a skill frontmatter description should be short, roughly one to two sentences or a small token budget, conveying the density principle rather than a long description."
 
   - name: no_comments_principle
-    skill_path: CLAUDE.md
+    skill_path: agents/core_rules/core.md
     prompt: "According to the project rules, should I add code comments to explain a complex function? Begin your response with the single word YES or NO."
     model: haiku
     assertions:
@@ -42,7 +42,7 @@ tests:
         - "^\\W*no\\b"
 
   - name: python_default_over_bash
-    skill_path: CLAUDE.md
+    skill_path: agents/core_rules/core.md
     prompt: "I need to write a script that parses JSON data and manages some state. Should I use bash or python?"
     model: haiku
     assertions:
@@ -50,7 +50,7 @@ tests:
         - "Recommends Python over bash for a script that parses JSON and manages state, per the Python-default rule."
 
   - name: test_first_principle
-    skill_path: CLAUDE.md
+    skill_path: agents/core_rules/core.md
     prompt: "A user reported a bug. What's the first thing I should do?"
     model: haiku
     assertions:
@@ -58,7 +58,7 @@ tests:
         - "Says the first step is to write a failing test that reproduces the reported bug before fixing it."
 
   - name: specific_file_staging
-    skill_path: CLAUDE.md
+    skill_path: agents/core_rules/core.md
     prompt: "I need to stage my changes for a commit. Can I use git add -A to stage everything?"
     model: haiku
     assertions:
@@ -68,7 +68,7 @@ tests:
         - "yes, git add -A is fine"
 
   - name: formatting_after_edits
-    skill_path: CLAUDE.md
+    skill_path: agents/core_rules/core.md
     prompt: "According to the project formatting rules, what commands should I run after editing a Python file?"
     model: haiku
     assertions:
