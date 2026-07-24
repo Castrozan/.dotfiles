@@ -3,6 +3,7 @@ import Foundation
 struct InstalledApplication: Hashable {
     let displayName: String
     let bundleURL: URL
+    let supportsLaunchingNewInstance: Bool
 }
 
 struct InstalledApplicationCatalog {
@@ -17,6 +18,7 @@ struct InstalledApplicationCatalog {
     private struct ApplicationSearchDirectory {
         let directoryURL: URL
         let userLaunchableDisplayNameAllowlist: Set<String>?
+        let discoveredApplicationsSupportLaunchingNewInstance: Bool
     }
 
     private static let coreServicesUserLaunchableDisplayNames: Set<String> = [
@@ -34,35 +36,43 @@ struct InstalledApplicationCatalog {
     private static let searchDirectories: [ApplicationSearchDirectory] = [
         ApplicationSearchDirectory(
             directoryURL: URL(fileURLWithPath: "/Applications"),
-            userLaunchableDisplayNameAllowlist: nil
+            userLaunchableDisplayNameAllowlist: nil,
+            discoveredApplicationsSupportLaunchingNewInstance: true
         ),
         ApplicationSearchDirectory(
             directoryURL: URL(fileURLWithPath: "/Applications/Utilities"),
-            userLaunchableDisplayNameAllowlist: nil
+            userLaunchableDisplayNameAllowlist: nil,
+            discoveredApplicationsSupportLaunchingNewInstance: true
         ),
         ApplicationSearchDirectory(
             directoryURL: URL(fileURLWithPath: "/System/Applications"),
-            userLaunchableDisplayNameAllowlist: nil
+            userLaunchableDisplayNameAllowlist: nil,
+            discoveredApplicationsSupportLaunchingNewInstance: true
         ),
         ApplicationSearchDirectory(
             directoryURL: URL(fileURLWithPath: "/System/Applications/Utilities"),
-            userLaunchableDisplayNameAllowlist: nil
+            userLaunchableDisplayNameAllowlist: nil,
+            discoveredApplicationsSupportLaunchingNewInstance: true
         ),
         ApplicationSearchDirectory(
             directoryURL: FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Applications"),
-            userLaunchableDisplayNameAllowlist: nil
+            userLaunchableDisplayNameAllowlist: nil,
+            discoveredApplicationsSupportLaunchingNewInstance: true
         ),
         ApplicationSearchDirectory(
             directoryURL: FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Applications/Home Manager Apps"),
-            userLaunchableDisplayNameAllowlist: nil
+            userLaunchableDisplayNameAllowlist: nil,
+            discoveredApplicationsSupportLaunchingNewInstance: true
         ),
         ApplicationSearchDirectory(
             directoryURL: URL(fileURLWithPath: "/System/Library/CoreServices"),
-            userLaunchableDisplayNameAllowlist: coreServicesUserLaunchableDisplayNames
+            userLaunchableDisplayNameAllowlist: coreServicesUserLaunchableDisplayNames,
+            discoveredApplicationsSupportLaunchingNewInstance: false
         ),
         ApplicationSearchDirectory(
             directoryURL: URL(fileURLWithPath: "/System/Library/CoreServices/Applications"),
-            userLaunchableDisplayNameAllowlist: coreServicesUserLaunchableDisplayNames
+            userLaunchableDisplayNameAllowlist: coreServicesUserLaunchableDisplayNames,
+            discoveredApplicationsSupportLaunchingNewInstance: false
         ),
     ]
 
@@ -83,7 +93,8 @@ struct InstalledApplicationCatalog {
                 }
                 bundlesByDisplayName[displayName] = InstalledApplication(
                     displayName: displayName,
-                    bundleURL: bundleURL
+                    bundleURL: bundleURL,
+                    supportsLaunchingNewInstance: searchDirectory.discoveredApplicationsSupportLaunchingNewInstance
                 )
             }
         }

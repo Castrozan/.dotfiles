@@ -9,7 +9,7 @@ enum ApplicationLaunchAction {
 
     static func launchApplication(_ installedApplication: InstalledApplication) {
         let configuration = NSWorkspace.OpenConfiguration()
-        configuration.createsNewApplicationInstance = true
+        configuration.createsNewApplicationInstance = installedApplication.supportsLaunchingNewInstance
         configuration.activates = true
         NSWorkspace.shared.openApplication(
             at: installedApplication.bundleURL,
