@@ -35,9 +35,9 @@ def run_claude_cli(
                 cwd=run_evals_worktree_and_environment.EVAL_WORKING_DIRECTORY,
                 env=build_filtered_environment(),
             )
+            if result.returncode == 0 and result.stdout.strip():
+                return result.stdout, True
             combined_output = result.stdout + result.stderr
-            if result.returncode == 0 and combined_output.strip():
-                return combined_output, True
             last_transient_failure = (
                 combined_output or f"empty output (exit {result.returncode})"
             )
