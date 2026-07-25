@@ -41,23 +41,9 @@ function workspaceGridWindowAssignment.allWorkspaceNumbersByWindowId()
 	return workspaceNumberByWindowId
 end
 
-function workspaceGridWindowAssignment.adoptAssignmentsForLiveWindows(restoredAssignments, liveWindowIdSet)
+function workspaceGridWindowAssignment.adoptPersistedAssignments(restoredAssignments)
 	for windowId, workspaceNumber in pairs(restoredAssignments) do
-		if liveWindowIdSet[windowId] then
-			workspaceNumberByWindowId[windowId] = workspaceNumber
-		end
-	end
-end
-
-function workspaceGridWindowAssignment.forgetWindowsFailingLivenessCheck(windowIsLive)
-	local staleWindowIds = {}
-	for windowId in pairs(workspaceNumberByWindowId) do
-		if not windowIsLive(windowId) then
-			staleWindowIds[#staleWindowIds + 1] = windowId
-		end
-	end
-	for _, windowId in ipairs(staleWindowIds) do
-		workspaceGridWindowAssignment.forgetWindow(windowId)
+		workspaceNumberByWindowId[windowId] = workspaceNumber
 	end
 end
 

@@ -3,6 +3,7 @@ local workspaceGridTestHarness = {}
 local currentWindows = {}
 local currentlyFocusedWindowId = nil
 local filterVisibleWindowIdSet = nil
+local accessibilityVisibleWindowIdSet = nil
 
 local function makeFakeWindow(windowId)
 	local fakeWindow = { storedFrame = { x = 100, y = 100, w = 400, h = 300 } }
@@ -41,6 +42,30 @@ local function makeFakeWindow(windowId)
 	return fakeWindow
 end
 
+local function windowsVisibleThrough(visibleWindowIdSet)
+	if visibleWindowIdSet == nil then
+		return currentWindows
+	end
+	local visibleWindows = {}
+	for _, window in ipairs(currentWindows) do
+		if visibleWindowIdSet[window:id()] then
+			visibleWindows[#visibleWindows + 1] = window
+		end
+	end
+	return visibleWindows
+end
+
+local function windowIdSetFromList(windowIds)
+	if windowIds == nil then
+		return nil
+	end
+	local windowIdSet = {}
+	for _, windowId in ipairs(windowIds) do
+		windowIdSet[windowId] = true
+	end
+	return windowIdSet
+end
+
 local function findWindowById(targetWindowId)
 	for _, window in ipairs(currentWindows) do
 		if window:id() == targetWindowId then
@@ -58,18 +83,16 @@ function workspaceGridTestHarness.setLiveWindowsToIds(windowIds)
 	currentWindows = rebuiltWindows
 	currentlyFocusedWindowId = nil
 	filterVisibleWindowIdSet = nil
+	accessibilityVisibleWindowIdSet = nil
 	return rebuiltWindows
 end
 
 function workspaceGridTestHarness.setFilterVisibleWindowIds(visibleWindowIds)
-	if visibleWindowIds == nil then
-		filterVisibleWindowIdSet = nil
-		return
-	end
-	filterVisibleWindowIdSet = {}
-	for _, windowId in ipairs(visibleWindowIds) do
-		filterVisibleWindowIdSet[windowId] = true
-	end
+	filterVisibleWindowIdSet = windowIdSetFromList(visibleWindowIds)
+end
+
+function workspaceGridTestHarness.setAccessibilityVisibleWindowIds(visibleWindowIds)
+	accessibilityVisibleWindowIdSet = windowIdSetFromList(visibleWindowIds)
 end
 
 function workspaceGridTestHarness.installFakeHammerspoonGlobal()
@@ -96,21 +119,12 @@ function workspaceGridTestHarness.installFakeHammerspoonGlobal()
 				return findWindowById(windowId)
 			end,
 			allWindows = function()
-				return currentWindows
+				return windowsVisibleThrough(accessibilityVisibleWindowIdSet)
 			end,
 			filter = {
 				default = {
 					getWindows = function()
-						if filterVisibleWindowIdSet == nil then
-							return currentWindows
-						end
-						local filteredWindows = {}
-						for _, window in ipairs(currentWindows) do
-							if filterVisibleWindowIdSet[window:id()] then
-								filteredWindows[#filteredWindows + 1] = window
-							end
-						end
-						return filteredWindows
+						return windowsVisibleThrough(filterVisibleWindowIdSet)
 					end,
 				},
 			},
@@ -126,15 +140,18 @@ function workspaceGridTestHarness.stateFilePath()
 	return stateFile
 end
 
+local harnessModuleName = "workspace_grid_test_harness"
+
 function workspaceGridTestHarness.loadFreshGrid()
-	package.loaded["workspace_grid"] = nil
-	package.loaded["workspace_grid_menubar"] = nil
-	package.loaded["workspace_grid_persistence"] = nil
-	package.loaded["workspace_grid_window_layout"] = nil
-	package.loaded["workspace_grid_window_assignment"] = nil
-	package.loaded["workspace_grid_window_query"] = nil
-	package.loaded["workspace_grid_session_generation"] = nil
-	package.loaded["workspace_grid_summon"] = nil
+	for loadedModuleName in pairs(package.loaded) do
+		if
+			type(loadedModuleName) == "string"
+			and loadedModuleName ~= harnessModuleName
+			and loadedModuleName:match("^workspace_grid")
+		then
+			package.loaded[loadedModuleName] = nil
+		end
+	end
 	local grid = require("workspace_grid")
 	require("workspace_grid_persistence").setStateFilePathForTest(stateFile)
 	return grid

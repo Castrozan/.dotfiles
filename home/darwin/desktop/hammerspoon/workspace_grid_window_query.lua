@@ -10,6 +10,14 @@ function workspaceGridWindowQuery.liveWindowIdSet()
 	return liveWindowIds
 end
 
+function workspaceGridWindowQuery.accessibilityConfirmsWindowIsGone(windowId)
+	local liveWindowIds = workspaceGridWindowQuery.liveWindowIdSet()
+	if next(liveWindowIds) == nil then
+		return false
+	end
+	return liveWindowIds[windowId] ~= true
+end
+
 function workspaceGridWindowQuery.manageableWindows()
 	local liveWindowIds = workspaceGridWindowQuery.liveWindowIdSet()
 	local liveWindows = {}

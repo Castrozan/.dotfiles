@@ -25,10 +25,6 @@ function workspaceGrid.setSessionGenerationTokenForTest(token)
 end
 
 local function persistWorkspaceState()
-	local liveWindowIds = windowQuery.liveWindowIdSet()
-	windowAssignment.forgetWindowsFailingLivenessCheck(function(windowId)
-		return liveWindowIds[windowId] == true
-	end)
 	workspaceGridPersistence.save(
 		currentWorkspaceNumber,
 		sessionGeneration.currentToken(),
@@ -154,6 +150,7 @@ local windowEventHandlers = require("workspace_grid_window_events").buildWindowE
 workspaceGrid.onWindowCreated = windowEventHandlers.onWindowCreated
 workspaceGrid.onWindowDestroyed = windowEventHandlers.onWindowDestroyed
 workspaceGrid.onWindowFocused = windowEventHandlers.onWindowFocused
+workspaceGrid.onWindowLeftFullScreen = windowEventHandlers.onWindowLeftFullScreen
 
 function workspaceGrid.registerExistingWindowsOnDefaultWorkspace()
 	for _, window in ipairs(manageableWindows()) do
@@ -172,7 +169,7 @@ function workspaceGrid.restorePersistedWorkspaceState()
 		return
 	end
 	currentWorkspaceNumber = restoredCurrentWorkspaceNumber or currentWorkspaceNumber
-	windowAssignment.adoptAssignmentsForLiveWindows(restoredAssignments, windowQuery.liveWindowIdSet())
+	windowAssignment.adoptPersistedAssignments(restoredAssignments)
 end
 
 function workspaceGrid.currentWorkspaceNumber()
