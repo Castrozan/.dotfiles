@@ -7,10 +7,11 @@ feature-for-feature cloning: Claude-TUI-only and clawde-agent-only mechanisms
 are deliberately out of scope.
 
 The driving asymmetry to keep in mind: interactive Claude keyboard sessions run
-`claude-opus-4-8[1m]` with a 1M context window (the same `settings.json` default
+`claude-opus-5` with a 200K context window (the same `settings.json` default
 that background/subagent/headless runs inherit); Codex runs `gpt-5.5` with a 272K
-window. Several Claude knobs exist only because of the
-larger window and have no safe analogue on the smaller one.
+window. Claude's window is now the smaller of the two, so the knobs that once
+existed only for its 1M window are tuned for 200K rather than being a
+large-window-only concern.
 
 ## Rules / instruction surface
 

@@ -32,7 +32,7 @@ let
   spinnerVerbs = import ./spinner-verbs.nix;
 
   claudeGlobalSettings = {
-    model = "claude-opus-4-8[1m]";
+    model = "claude-opus-5";
     effortLevel = "xhigh";
     ultracode = false;
     enableWorkflows = true;

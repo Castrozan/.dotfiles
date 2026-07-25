@@ -102,8 +102,8 @@ loop abandons the task.
 </active-waiting>
 
 <context-budget>
-This model runs a 1M-token context window, but only on the `[1m]` model variant, the bare model id caps at 200K, so
-treat the window as headroom for genuinely large tasks and parallel fan-out, not as a target to fill. Model attention
+This model runs on the bare (non-1M) context variant, so the working window is 200K, not the 1M the `[1m]` variant
+grants; treat it as a real budget, not headroom to fill. Model attention
 degrades as the working context fills, so a bloated main thread costs answer quality well before the ceiling: keep the
 working set lean. Read a whole file when the whole file is relevant and a targeted range when it is not, and route heavy
 reads, broad searches, and fan-out to subagents and workflows that return summaries instead of pulling raw dumps into

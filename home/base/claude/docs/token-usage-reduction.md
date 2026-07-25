@@ -6,22 +6,22 @@ This document ranks the levers that cut weekly token consumption on a Max 20x su
 
 These are deliberately off-limits. Do not propose touching them:
 
-- Model stays `claude-opus-4-8` (`home/base/claude/settings/global-settings.nix:35`). No downgrade to Sonnet/Haiku for interactive or workflow work.
+- Model stays `claude-opus-5` (`home/base/claude/settings/global-settings.nix:35`). No downgrade to Sonnet/Haiku for interactive or workflow work.
 - Reasoning effort stays `max` (`effortLevel="max"`, `global-settings.nix:36`).
 - `ultracode=false`, `enableWorkflows=true` (`global-settings.nix:37-38`). The always-on ultracode reflex is intentionally off (the craftsman-default doctrine: main agent does depth work directly, delegates breadth/bulk under a review-and-rechisel leash, per the `<delegation>` block in `core.md`). Delegation itself stays available and is still a token saver via subagent isolation (lever 2); what changed is that fan-out is no longer forced onto every task.
 
-Compaction mechanics (the 200K clamp, the trigger arithmetic, the resume-500 path, the 1M window) are documented in `home/base/claude/docs/context-management.md`. This doc cites that file and goes beyond it; it does not restate the arithmetic.
+Compaction mechanics (the 200K window clamp, the trigger arithmetic, the resume-500 path) are documented in `home/base/claude/docs/context-management.md`. This doc cites that file and goes beyond it; it does not restate the arithmetic.
 
 ## Measured baseline
 
-Kira host, `~/.claude` transcripts, 14 days, all Opus 4.8:
+Kira host, `~/.claude` transcripts, 14 days, all Opus 4.8 (baseline captured before the 2026-07-25 switch to `claude-opus-5` at the bare 200K window; the mechanisms below still hold, the absolute figures predate the switch):
 
 - 16.2B total tokens. 92% cache_read, 7% cache_write, 0.4% raw input, 108M output (0.7%).
 - cache_read per request: median 81.5k, p90 420k, max 999k. This is the conversation history re-read every turn. It is the dominant cost.
 - Static prefix (system + tools + CLAUDE.md + skills) first cache_write per session: median 15.4k, p90 24.7k. Prefix trimming is a minor lever.
 - The three CLAUDE.md/core.md files total ~5.6k tokens. Trimming them is noise; adding ~300 tokens to them is also noise.
 - Cache hit ratio 92.5%; cache_write low. Caching is already efficient. The job is to not regress it and to shrink history, not to add breakpoints.
-- Autocompact fires at ~900k tokens (`CLAUDE_AUTOCOMPACT_PCT_OVERRIDE=90` against the native 1M window).
+- Autocompact now fires at 140k tokens (`CLAUDE_AUTOCOMPACT_PCT_OVERRIDE=70` against the 200K window); the 14-day baseline here was captured under the earlier 1M-window config.
 - Attribution: heavy interactive coding sessions dominate (triage 31%, ai-first 25%, dotfiles 15%, orchestrator 14%); autonomous agents are minor (steward 4.4%, jenny 0.1%).
 - 72% of usage happened while 4+ sessions ran in parallel against the shared weekly limit. 25% of usage ran at >150k context.
 
@@ -29,7 +29,7 @@ The structural fact behind every lever: each tool result and each assistant mess
 
 ## Already deployed (do not re-recommend)
 
-In `home/base/claude/settings/environment-variables.nix`: native 1M window (no `CLAUDE_CODE_DISABLE_1M_CONTEXT`), `CLAUDE_CODE_AUTO_COMPACT_WINDOW=1000000`, `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE=90` (autocompact at ~900k), `DISABLE_AUTOUPDATER=1`, `CLAUDE_ENABLE_STREAM_WATCHDOG=1`, `BASH_DEFAULT_TIMEOUT_MS`/`BASH_MAX_TIMEOUT_MS`. MCP schemas are deferred via Tool Search by default on Opus 4.8 (good, keep it). The PreToolUse guard hooks (`prohibited-command-guard`, `prohibited-words-guard`) and `workspace-directory-injector` inject nothing on the happy path; only `memory-recall` is history-additive on the universal matcher.
+In `home/base/claude/settings/environment-variables.nix`: bare 200K window (`model = "claude-opus-5"`, no `CLAUDE_CODE_DISABLE_1M_CONTEXT`), `CLAUDE_CODE_AUTO_COMPACT_WINDOW=200000`, `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE=70` (autocompact at 140k), `DISABLE_AUTOUPDATER=1`, `CLAUDE_ENABLE_STREAM_WATCHDOG=1`, `BASH_DEFAULT_TIMEOUT_MS`/`BASH_MAX_TIMEOUT_MS`. MCP schemas are deferred via Tool Search by default on Opus 4.8 (good, keep it). The PreToolUse guard hooks (`prohibited-command-guard`, `prohibited-words-guard`) and `workspace-directory-injector` inject nothing on the happy path; only `memory-recall` is history-additive on the universal matcher.
 
 ## Ranked levers
 
@@ -104,8 +104,8 @@ Mechanism: when tools are deferred, a server connecting/disconnecting mid-sessio
 
 ### Theme G: compaction and clawde cadence (already-deployed-adjacent, mostly low)
 
-**18. Optionally lower the autocompact trigger from ~900k. Impact: medium-to-high. Needs quality sign-off.**
-Mechanism: turns spent above the trigger re-read a growing raw history; compacting sooner shrinks the re-read base earlier. The deployed config now compacts at ~900k (1M window × 90%), so the raw history is allowed to grow very large before the first lossy summary, and every turn above the trigger re-reads it. Apply (within the 1M window): lower `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` and keep `CLAUDE_CODE_AUTO_COMPACT_WINDOW=1000000`, e.g. `60` gives `min(1000000x0.60, 987000) = 600000`. Apply (back to the old quality-first regime): re-add `CLAUDE_CODE_DISABLE_1M_CONTEXT=1` and set the window+percentage to a 200K-clamped trigger such as `200000` × `45` = 90k. Document the chosen arithmetic alongside the derivation in `context-management.md:21`. Note the tension: the deployed config deliberately uses the full 1M window and accepts late, lossy compaction in exchange for raw context capacity, so this lever trades that capacity (and, near the top of the window, output quality) back for tokens; ship it only if the weekly budget is actually binding. Risk: compaction is lossy. One-line reversible edit; validate subjectively before committing. Estimate: medium-to-high because the current ~900k trigger leaves a large re-read base on long sessions; a 600k (or 200K-clamped) trigger caps it materially, bounded by how often sessions actually climb that high.
+**18. Optionally retune the autocompact trigger (now 140k on the 200K window). Impact: medium-to-high. Needs quality sign-off.**
+Mechanism: turns spent above the trigger re-read a growing raw history; compacting sooner shrinks the re-read base earlier. The deployed config now compacts at 140k (200K window × 70%) after the move off the 1M variant, so this lever is largely already applied; the 1M-window apply-paths below are retained as reference for the retired large-window regime. Apply (within the 1M window): lower `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` and keep `CLAUDE_CODE_AUTO_COMPACT_WINDOW=1000000`, e.g. `60` gives `min(1000000x0.60, 987000) = 600000`. Apply (back to the old quality-first regime): re-add `CLAUDE_CODE_DISABLE_1M_CONTEXT=1` and set the window+percentage to a 200K-clamped trigger such as `200000` × `45` = 90k. Document the chosen arithmetic alongside the derivation in `context-management.md:21`. Note the tension: the deployed config deliberately uses the full 1M window and accepts late, lossy compaction in exchange for raw context capacity, so this lever trades that capacity (and, near the top of the window, output quality) back for tokens; ship it only if the weekly budget is actually binding. Risk: compaction is lossy. One-line reversible edit; validate subjectively before committing. Estimate: medium-to-high because the current ~900k trigger leaves a large re-read base on long sessions; a 600k (or 200K-clamped) trigger caps it materially, bounded by how often sessions actually climb that high.
 
 **19. Add a CLAUDE.md compact preserve-instructions block. Impact: low (enabler). Ready.**
 Mechanism: does not cut tokens itself; it is the quality guardrail that makes levers 3 and 18 safe. Claude Code honors a `## Compact Instructions` block: named items (modified file paths, exact test/rebuild commands and pass/fail, errors and fixes, architectural decisions with rationale) are preserved verbatim in the summary while everything else is compressed harder, preventing re-derivation cost. Apply: add the section to `core.md`/the dotfiles CLAUDE.md (author via `instructions` skill); it survives `/clear` and `/compact`. Estimate: ~0 direct reduction; ~300 added prefix tokens (noise); unblocks the higher-impact compaction/clear levers.
@@ -117,7 +117,7 @@ Mechanism: steward fires every 15 min (change-gated), jenny every 30 min (ungate
 
 These would help but violate the fixed constraints or have no supported surface, recorded so the tradeoff is explicit:
 
-- **Downgrade the model to Sonnet/Haiku for cheap sub-tasks or per-tool routing.** Would cut per-token weight but violates the model=opus-4-8 constraint and the quality bar. Per-tool model routing (issues #19269, #15721) is also not shipped.
+- **Downgrade the model to Sonnet/Haiku for cheap sub-tasks or per-tool routing.** Would cut per-token weight but violates the model=opus-5 constraint and the quality bar. Per-tool model routing (issues #19269, #15721) is also not shipped.
 - **Lower reasoning effort below max.** Effort=max is fixed; `MAX_THINKING_TOKENS` is the effort knob and is off-limits.
 - **Eliminate delegation entirely.** The always-on ultracode reflex is off by design (craftsman-default doctrine), but subagent isolation for heavy reads and breadth fan-out is itself a token saver (lever 2), so removing delegation outright would raise cost, not lower it. Keep it available, use it deliberately.
 - **Set `MAX_OUTPUT_TOKENS` higher to read large files in one call.** Would let multi-hundred-k-token files into permanent history and spike the dominant cache_read metric. Keep it unset; this is a do-not-regress guard, not a lever.
