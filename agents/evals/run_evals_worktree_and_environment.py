@@ -34,5 +34,17 @@ def temporary_eval_worktree():
             shutil.rmtree(worktree_path, ignore_errors=True)
 
 
+SUBJECT_ENVIRONMENT_VARIABLES_STRIPPED_FOR_ISOLATION = frozenset(
+    {
+        "CLAUDECODE",
+        "CLAUDE_INTERACTIVE_PREFERENCES_PATH",
+    }
+)
+
+
 def build_filtered_environment() -> dict[str, str]:
-    return {k: v for k, v in os.environ.items() if k != "CLAUDECODE"}
+    return {
+        key: value
+        for key, value in os.environ.items()
+        if key not in SUBJECT_ENVIRONMENT_VARIABLES_STRIPPED_FOR_ISOLATION
+    }
