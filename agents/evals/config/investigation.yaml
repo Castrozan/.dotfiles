@@ -39,7 +39,7 @@ tests:
     skill_path: agents/core_rules/core.md
     prompt: |
       I found three gaps in a SKILL.md after reading the file and checking actual usage. Should I immediately start rewriting the skill to fix the gaps?
-    model: haiku
+    model: sonnet
     assertions:
       llm_judge:
         - "Says not to start rewriting yet because analysis and implementation are separate phases, so the analysis must be finished and its findings delivered first."

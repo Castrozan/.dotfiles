@@ -59,7 +59,7 @@ tests:
     description: "Passive waiting without monitoring is a failure mode"
     skill_path: agents/core_rules/core.md
     prompt: "Can I just run a command in the background and wait until something triggers me to check it?"
-    model: haiku
+    model: sonnet
     max_turns: 1
     assertions:
       llm_judge:

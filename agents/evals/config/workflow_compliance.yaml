@@ -55,7 +55,7 @@ tests:
     skill_path: agents/dotfiles.md
     prompt: |
       I've made a substantive change to the dotfiles repo and I'm about to commit it. Is there a review step I should run first, and if so which one?
-    model: haiku
+    model: sonnet
     max_turns: 1
     assertions:
       llm_judge:

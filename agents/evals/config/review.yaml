@@ -24,18 +24,18 @@ tests:
     extra_skill_paths:
       - agents/skills/review/code-review.md
     prompt: |
-      Original user request: "Add logging to the handler"
+      Original user request: "Rename the local count variable for clarity"
 
       Git diff:
       ```diff
-       def handle_request(request):
-      -    result = process(request)
-      +    logger.info("Processing request")
-      +    result = process(request)
-           return result
+       def summarize(items):
+      -    n = len(items)
+      -    return f"{n} items"
+      +    item_count = len(items)
+      +    return f"{item_count} items"
       ```
 
-      Note: the `process` function has a known bug where it doesn't validate input, but that line was NOT changed in this diff.
+      Note: a separate `validate()` function elsewhere in the same file has a known bug where it does not reject None, but that function was NOT touched by this diff.
 
       Review this diff.
     model: haiku

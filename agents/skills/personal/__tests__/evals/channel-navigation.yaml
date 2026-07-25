@@ -1,24 +1,24 @@
 tests:
   - name: personal_routes_to_google_chat
     skill_path: agents/skills/personal/SKILL.md
-    prompt: "I need to send a message to someone on Google Chat. This personal skill is the discovery entry point — how do I find the specific skill that handles it?"
-    model: haiku
+    prompt: "I need to send a message to someone on Google Chat. Which skill handles that?"
+    model: sonnet
     assertions:
-      output_contains:
-        - "list-personal-skill-metadata"
+      llm_judge:
+        - Identifies the google-chat skill as the handler for sending a Google Chat message, rather than routing to any other skill.
 
   - name: personal_routes_to_twitter
     skill_path: agents/skills/personal/SKILL.md
-    prompt: "I want to post a tweet and check trending topics on Twitter/X. This personal skill is the discovery entry point — how do I find the specific skill that covers that?"
-    model: haiku
+    prompt: "I want to post a tweet and check trending topics on Twitter/X. Which skill handles that?"
+    model: sonnet
     assertions:
-      output_contains:
-        - "list-personal-skill-metadata"
+      llm_judge:
+        - Identifies the twitter skill as the handler for posting a tweet and reading X/Twitter trends, rather than routing to any other skill.
 
   - name: personal_routes_to_avatar
     skill_path: agents/skills/personal/SKILL.md
-    prompt: "I need to control a VTuber avatar's lip sync and facial expressions. This personal skill is the discovery entry point — how do I find the specific skill with avatar instructions?"
-    model: haiku
+    prompt: "I need to control a VTuber avatar's lip sync and facial expressions. Which skill handles that?"
+    model: sonnet
     assertions:
-      output_contains:
-        - "list-personal-skill-metadata"
+      llm_judge:
+        - Identifies the avatar skill as the handler for controlling the VTuber avatar, rather than routing to any other skill.
