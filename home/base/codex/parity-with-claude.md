@@ -7,10 +7,11 @@ feature-for-feature cloning: Claude-TUI-only and clawde-agent-only mechanisms
 are deliberately out of scope.
 
 The driving asymmetry to keep in mind: interactive Claude keyboard sessions run
-`claude-opus-5` with a 200K context window (the same `settings.json` default
-that background/subagent/headless runs inherit); Codex runs `gpt-5.5` with a 272K
-window. Claude's window is now the smaller of the two, so the knobs that once
-existed only for its 1M window are tuned for 200K rather than being a
+the model pinned in `home/base/claude/settings/global-settings.nix` on its bare
+(non-1M) variant, the same `settings.json` default that background/subagent/headless
+runs inherit; Codex runs the model pinned in `home/base/codex/package.nix`. The two
+windows are now close in size, so the Claude knobs that once existed only for its
+much larger 1M window are tuned for the bounded variant rather than being a
 large-window-only concern.
 
 ## Rules / instruction surface
@@ -125,13 +126,15 @@ imports resolve, exactly like Claude's flat `~/.claude/hooks`.
 
 ## Context management
 
-- Claude: 1M window; env knobs `CLAUDE_CODE_AUTO_COMPACT_WINDOW=1000000` and
-  `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE=35` put the auto-compact trigger at ~350K
-  (35%), leaving heavy-turn headroom (lowered 900K -> 500K -> 350K over time; see
-  `home/base/claude/docs/context-management.md`).
+- Claude: runs the bare non-1M variant; the auto-compact base and percentage are
+  set explicitly in `home/base/claude/settings/environment-variables.nix`
+  (`CLAUDE_CODE_AUTO_COMPACT_WINDOW`/`CLAUDE_AUTOCOMPACT_PCT_OVERRIDE`) so the trigger
+  fires with headroom below the wall; see `home/base/claude/docs/context-management.md`
+  for the mechanism and the base-matches-window invariant.
 - Codex: 272K window, auto-compacting near ~95% via `auto_compact_token_limit`.
-- Gap: none that is safe. gpt-5.5 cannot be raised to a 1M window (hard model
-  limit), and lowering Codex's trigger would compact earlier and lose context.
+- Gap: none that is safe. Both run bounded windows now (Claude on the non-1M
+  variant), so neither side has large-window headroom to trade; lowering Codex's
+  trigger would compact earlier and lose context.
 
 ## Interactive UX / how it is driven
 

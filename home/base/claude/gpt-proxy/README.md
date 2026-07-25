@@ -15,7 +15,7 @@ because the packaged `cli-proxy-api` binary is the darwin arm64 release.
   embedded model catalog (`--local-model`, so boot is offline-deterministic).
 - `claude-gpt` — launches Claude Code pointed at the proxy. It forces the main loop to
   `gpt-5.6-sol(high)` with `--model` (the shared `settings.json` pins a concrete
-  `claude-opus-5` slug that would otherwise bypass the opus-alias remap), and maps the
+  Opus model slug (see `global-settings.nix`) that would otherwise bypass the opus-alias remap), and maps the
   sonnet/haiku alias tiers to `gpt-5.6-sol` at medium/low effort for subagent and
   background traffic. A `--model` you pass yourself still wins.
 - `claude-gpt-login` — the one-time interactive OAuth step.
