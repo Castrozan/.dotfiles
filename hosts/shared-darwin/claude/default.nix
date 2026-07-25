@@ -2,11 +2,11 @@
 let
   claudeAiAccountConnectorsDisabledManagedSettings = builtins.toJSON {
     deniedMcpServers = [
-      "claude_ai_Gmail"
-      "claude_ai_Google_Calendar"
-      "claude_ai_Google_Drive"
-      "claude_ai_Claude_Code_Remote"
-      "claude_ai_Context7"
+      { serverName = "claude.ai Gmail"; }
+      { serverName = "claude.ai Google Calendar"; }
+      { serverName = "claude.ai Google Drive"; }
+      { serverName = "claude.ai Claude Code Remote"; }
+      { serverName = "claude.ai Context7"; }
     ];
   };
 in
