@@ -29,4 +29,4 @@ tests:
     no_tools: true
     assertions:
       llm_judge:
-        - "Explains lazy evaluation as expressions being evaluated only when their value is demanded, and fixed-points as a self-referential definition whose own result is fed back into its construction, which is what lets overlays and the module system extend a set."
+        - "Explains that lazy evaluation defers computing a value until it is demanded, and that a fixed-point is a self-referential definition that feeds its own result back into itself."
