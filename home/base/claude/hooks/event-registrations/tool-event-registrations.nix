@@ -51,6 +51,16 @@
       ];
     }
     {
+      matcher = "Skill";
+      hooks = [
+        {
+          type = "command";
+          command = "${runHook} ${hooksPath}/blocked-skill-invocation-guard.py";
+          timeout = 2000;
+        }
+      ];
+    }
+    {
       matcher = "WebFetch";
       hooks = [
         {
