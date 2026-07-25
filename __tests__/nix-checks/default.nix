@@ -47,6 +47,7 @@ let
 
   chiseChecks = import ../../hosts/chise/__tests__/checks.nix moduleArgs;
   chromeDarwinPolicyChecks = import ../../hosts/shared-darwin/chrome/__tests__/checks.nix domainArgs;
+  claudeDarwinPolicyChecks = import ../../hosts/shared-darwin/claude/__tests__/checks.nix domainArgs;
   braveDarwinPolicyChecks = import ../../hosts/shared-darwin/brave/__tests__/checks.nix domainArgs;
   disableUnusedAppleBackgroundAgentsChecks = import ../../hosts/shared-darwin/disable-unused-apple-background-agents/__tests__/checks.nix domainArgs;
 in
@@ -74,5 +75,6 @@ claudeChecks
 // sourcebotChecks
 // chiseChecks
 // chromeDarwinPolicyChecks
+// claudeDarwinPolicyChecks
 // braveDarwinPolicyChecks
 // disableUnusedAppleBackgroundAgentsChecks
