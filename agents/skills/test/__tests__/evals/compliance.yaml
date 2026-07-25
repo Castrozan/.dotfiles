@@ -18,7 +18,8 @@ tests:
   - name: test_knows_tiers
     skill_path: agents/skills/test/SKILL.md
     prompt: "What test tiers are available in this project and when should I use each?"
-    model: sonnet
+    model: haiku
+    no_tools: true
     assertions:
       llm_judge:
         - "The response explains that __tests__/run.sh is the canonical entry point exposing the test tiers and correctly maps when to use each: quick after every change, --nix when touching .nix files, and --all before delivery."

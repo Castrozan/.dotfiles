@@ -1,11 +1,11 @@
 ---
 name: obsidian
-description: Manage the Obsidian vault (daily notes, TODO tracking, activity logging, and inbox processing). Use when user mentions daily note, wants to log activity, add/check TODOs, review pending tasks, plan their day, process saved items, or interact with the vault.
+description: Manage the Obsidian vault (daily notes, TODO tracking, activity logging). Use when user mentions daily note, wants to log activity, add/check TODOs, review pending tasks, plan their day, or interact with the vault.
 ---
 
 <vault_location>
-Vault at '@homePath@/vault/', daily notes at '@homePath@/vault/daily-note/', CLI tool 'daily-note' creates today's note
-and opens in '$EDITOR', environment variable 'OBSIDIAN_HOME=@homePath@/vault'.
+Vault at '~/vault/', daily notes at '~/vault/daily-note/', CLI tool 'daily-note' creates today's note and opens in
+'$EDITOR', environment variable 'OBSIDIAN_HOME' points at the vault root and is the path to prefer.
 </vault_location>
 
 <daily_note_format>
@@ -35,12 +35,11 @@ Log completed work as already-checked TODO items: - [x] Description of what was 
 alongside planned work.
 </logging_activity>
 
-<inbox_processing>
-The ReadItLater Inbox folder in the vault contains saved links and content. When processing the inbox: classify each
-item (tweet, article, GitHub repo, video, note), summarize with key takeaways, tag with relevant Obsidian tags, rate
-relevance (must-read, interesting, reference, skip), and mark processed items with #agent-work-done tag. Skip YouTube
-saves (no transcript extraction available) and dead links. Process in batches of 20 items.
-</inbox_processing>
+<capture_inbox>
+The vault ReadItLater Inbox is a capture zone owned by the knowledge-intake skill, which researches each capture and
+turns it into a repo change or a filed entry. Never summarize, rate or mark captures from this skill; a capture
+annotated in place reads as worked while nothing was learned or adopted.
+</capture_inbox>
 
 <sync>
 Notes sync across devices via Obsidian Sync when the app is running. Open Obsidian locally before reading to get latest

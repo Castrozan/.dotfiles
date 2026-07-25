@@ -44,7 +44,8 @@ tests:
   - name: git_history_knows_when_not_to_use
     skill_path: agents/skills/git/SKILL.md
     prompt: "I just want to see the last commit. Should I use this skill?"
-    model: sonnet
+    model: haiku
+    no_tools: true
     assertions:
       llm_judge:
         - "The response advises NOT using the git-history skill for a simple last-commit lookup, pointing instead to a direct command such as `git log -1 HEAD` because a single targeted query does not benefit from the dump/cache pattern."

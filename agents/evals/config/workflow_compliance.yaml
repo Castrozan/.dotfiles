@@ -55,8 +55,9 @@ tests:
     skill_path: agents/dotfiles.md
     prompt: |
       I've made a substantive change to the dotfiles repo and I'm about to commit it. Is there a review step I should run first, and if so which one?
-    model: sonnet
+    model: haiku
     max_turns: 1
+    no_tools: true
     assertions:
       llm_judge:
         - "Says to run the dotfiles-change-review workflow over the working diff before committing a substantive change to the repo, per the repo's pre-commit review rule."

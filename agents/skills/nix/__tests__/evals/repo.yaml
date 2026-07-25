@@ -25,7 +25,8 @@ tests:
       - agents/skills/nix/repo.md
       - agents/skills/nix/expert.md
     prompt: "I need help understanding Nix lazy evaluation and fixed-points. Can you explain?"
-    model: sonnet
+    model: haiku
+    no_tools: true
     assertions:
       llm_judge:
         - "Explains lazy evaluation as expressions being evaluated only when their value is demanded, and fixed-points as a self-referential definition whose own result is fed back into its construction, which is what lets overlays and the module system extend a set."
