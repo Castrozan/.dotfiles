@@ -20,11 +20,11 @@ let
   claudeAiAccountConnectorsDeniedByManagedSettings =
     lib.hasInfix "/Library/Application Support/ClaudeCode/managed-settings.json" managedSettingsInstallScript
     && lib.hasInfix "deniedMcpServers" managedSettingsInstallScript
-    && lib.hasInfix "claude.ai Gmail" managedSettingsInstallScript
-    && lib.hasInfix "claude.ai Google Calendar" managedSettingsInstallScript
-    && lib.hasInfix "claude.ai Google Drive" managedSettingsInstallScript
-    && lib.hasInfix "claude.ai Claude Code Remote" managedSettingsInstallScript
-    && lib.hasInfix "claude.ai Context7" managedSettingsInstallScript;
+    && lib.hasInfix "claude_ai_Gmail" managedSettingsInstallScript
+    && lib.hasInfix "claude_ai_Google_Calendar" managedSettingsInstallScript
+    && lib.hasInfix "claude_ai_Google_Drive" managedSettingsInstallScript
+    && lib.hasInfix "claude_ai_Claude_Code_Remote" managedSettingsInstallScript
+    && lib.hasInfix "claude_ai_Context7" managedSettingsInstallScript;
 in
 {
   macbook-claude-ai-account-connectors-disabled =
