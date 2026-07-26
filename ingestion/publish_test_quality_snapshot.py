@@ -7,7 +7,7 @@ DOTFILES_TEST_QUALITY_TOPIC = "dotfiles-test-quality"
 DOTFILES_TEST_QUALITY_SCHEMA_VERSION = 1
 DEFAULT_PRODUCER_LABEL = "dotfiles-test-quality-renderer"
 DEFAULT_QUALITY_DOCUMENT_PATH = (
-    Path(__file__).resolve().parents[2]
+    Path(__file__).resolve().parents[1]
     / "apps"
     / "reports"
     / "site"

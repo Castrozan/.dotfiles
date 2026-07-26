@@ -7,7 +7,7 @@ DOTFILES_TEST_BASELINE_TOPIC = "dotfiles-test-baseline"
 DOTFILES_TEST_BASELINE_SCHEMA_VERSION = 1
 DEFAULT_PRODUCER_LABEL = "dotfiles-agent-evals"
 DEFAULT_BASELINE_DOCUMENT_PATH = (
-    Path(__file__).resolve().parents[2] / "agents" / "__tests__" / "baseline.json"
+    Path(__file__).resolve().parents[1] / "agents" / "__tests__" / "baseline.json"
 )
 
 

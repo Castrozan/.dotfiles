@@ -51,10 +51,10 @@ jobs:
           INGEST_PRODUCER_SECRET: ${{ secrets.INGEST_PRODUCER_SECRET }}
           INGEST_PRODUCER_LABEL: dotfiles-github-actions
         run: |
-          python3 __tests__/ingestion/publish_test_baseline_snapshot.py
-          python3 __tests__/ingestion/publish_test_coverage_snapshot.py \
+          python3 ingestion/publish_test_baseline_snapshot.py
+          python3 ingestion/publish_test_coverage_snapshot.py \
             "$(find __tests__/coverage -name coverage.json -print -quit)"
-          python3 __tests__/ingestion/publish_test_quality_snapshot.py \
+          python3 ingestion/publish_test_quality_snapshot.py \
             apps/reports/site/quality/metrics.json
 
       - id: auth
