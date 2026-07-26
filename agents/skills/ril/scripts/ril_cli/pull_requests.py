@@ -68,11 +68,24 @@ def comment_identity(comment: dict) -> str:
     return str(comment.get("id") or comment.get("createdAt") or "")
 
 
+def written_by_the_watcher(comment: dict) -> bool:
+    return WATCHER_COMMENT_MARKER in str(comment.get("body", ""))
+
+
 def comments_awaiting_an_answer(pull_request: dict) -> list[dict]:
+    comment_thread = pull_request.get("comments") or []
+    answered_through = max(
+        (
+            position
+            for position, comment in enumerate(comment_thread)
+            if written_by_the_watcher(comment)
+        ),
+        default=-1,
+    )
     return [
         comment
-        for comment in pull_request.get("comments") or []
-        if WATCHER_COMMENT_MARKER not in str(comment.get("body", ""))
+        for comment in comment_thread[answered_through + 1 :]
+        if not written_by_the_watcher(comment)
     ]
 
 

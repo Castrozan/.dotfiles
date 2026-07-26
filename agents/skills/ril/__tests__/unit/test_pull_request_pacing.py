@@ -68,16 +68,26 @@ def test_a_failed_lookup_raises_rather_than_reporting_no_pull_requests(monkeypat
         open_ril_pull_requests(Path("/repo"))
 
 
-def test_the_watchers_own_comments_never_count_as_a_response():
-    pull_request = {"number": 7, "comments": [LUCAS_COMMENT, WATCHER_REPLY]}
-
-    assert comments_awaiting_an_answer(pull_request) == [LUCAS_COMMENT]
-
-
-def test_a_pull_request_answered_last_by_the_watcher_still_waits_on_its_own_marker():
+def test_a_comment_the_watcher_already_replied_to_is_no_longer_awaiting_an_answer():
     answered = {"number": 7, "comments": [LUCAS_COMMENT, WATCHER_REPLY]}
 
-    assert unanswered_response_fingerprint(answered) == "7:c1"
+    assert comments_awaiting_an_answer(answered) == []
+    assert unanswered_response_fingerprint(answered) == ""
+
+
+def test_a_comment_arriving_after_the_watchers_reply_reopens_the_thread():
+    reopened = {
+        "number": 7,
+        "comments": [LUCAS_COMMENT, WATCHER_REPLY, {"id": "c3", "body": "still no"}],
+    }
+
+    assert unanswered_response_fingerprint(reopened) == "7:c3"
+
+
+def test_the_watchers_own_words_never_count_as_a_response_on_their_own():
+    talking_to_itself = {"number": 7, "comments": [WATCHER_REPLY]}
+
+    assert unanswered_response_fingerprint(talking_to_itself) == ""
 
 
 def test_a_pull_request_with_no_comments_raises_no_response():
@@ -88,7 +98,7 @@ def test_a_pull_request_with_no_comments_raises_no_response():
 def test_the_newest_unanswered_comment_is_the_fingerprint():
     pull_request = {
         "number": 7,
-        "comments": [LUCAS_COMMENT, WATCHER_REPLY, {"id": "c3", "body": "ship it"}],
+        "comments": [{"id": "c1", "body": "wait"}, {"id": "c3", "body": "ship it"}],
     }
 
     assert unanswered_response_fingerprint(pull_request) == "7:c3"
