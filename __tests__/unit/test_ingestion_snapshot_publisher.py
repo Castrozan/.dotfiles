@@ -1,13 +1,16 @@
 import re
+import urllib.request
 
 import pytest
 
 from ingestion_snapshot_publisher import (
     PRODUCER_SECRET_HEADER_NAME,
+    PUBLISHER_USER_AGENT,
     IngestionRefusedError,
     build_ingest_request_headers,
     build_ingestion_event,
     build_topic_endpoint_url,
+    post_ingestion_event,
     read_required_environment_value,
     resolve_event_source,
 )
@@ -112,3 +115,42 @@ class TestRequestHeadersSurviveTheEdge:
 
         assert headers["content-type"] == "application/json"
         assert headers[PRODUCER_SECRET_HEADER_NAME] == "a-producer-secret"
+
+
+class AcceptedIngestResponse:
+    status = 202
+
+    def read(self):
+        return b'{"accepted": true}'
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exception_details):
+        return False
+
+
+class TestTheRequestThatIsActuallySentCarriesTheHeadersTheBuilderProduces:
+    def test_wires_the_publisher_user_agent_into_the_request_urllib_sends(
+        self, monkeypatch
+    ):
+        requests_handed_to_urlopen = []
+
+        def record_the_request_instead_of_sending_it(request, timeout=None):
+            requests_handed_to_urlopen.append(request)
+            return AcceptedIngestResponse()
+
+        monkeypatch.setattr(
+            urllib.request, "urlopen", record_the_request_instead_of_sending_it
+        )
+
+        post_ingestion_event(
+            "https://ingest.example/ingest",
+            "a-producer-secret",
+            build_ingestion_event("dotfiles-test-baseline", 1, PAYLOAD, "ci", None),
+        )
+
+        assert (
+            requests_handed_to_urlopen[0].get_header("User-agent")
+            == PUBLISHER_USER_AGENT
+        )
