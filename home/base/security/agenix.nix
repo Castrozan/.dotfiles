@@ -63,6 +63,7 @@ let
     "credentials/home-assistant-token"
     "credentials/google-totp-secret"
     "credentials/gcp-usage-uploader-key"
+    "credentials/ingest-producer-secret"
     "credentials/bitwarden-client-id"
     "credentials/bitwarden-client-secret"
     "credentials/bitwarden-master-password"

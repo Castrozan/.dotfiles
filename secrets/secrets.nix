@@ -51,6 +51,7 @@ in
   "credentials/samaritano-tracker.age".publicKeys = all_keys;
   "credentials/google-totp-secret.age".publicKeys = all_keys;
   "credentials/gcp-usage-uploader-key.age".publicKeys = all_keys;
+  "credentials/ingest-producer-secret.age".publicKeys = all_keys;
   "credentials/bitwarden-client-id.age".publicKeys = all_keys;
   "credentials/bitwarden-client-secret.age".publicKeys = all_keys;
   "credentials/bitwarden-master-password.age".publicKeys = all_keys;
