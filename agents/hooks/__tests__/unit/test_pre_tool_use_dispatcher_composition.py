@@ -14,6 +14,7 @@ import codex_sandbox_downgrade_guard_handler  # noqa: E402
 import memory_recall_handler  # noqa: E402
 import monitor_streaming_pattern_validator_handler  # noqa: E402
 import prohibited_command_guard_handler  # noqa: E402
+import prohibited_words_guard_handler  # noqa: E402
 import url_to_skill_router_handler  # noqa: E402
 import workspace_directory_injector_handler  # noqa: E402
 
@@ -37,6 +38,7 @@ def test_memory_recall_and_prohibited_command_run_on_every_tool():
     handlers = handlers_by_handle_function()
     assert handlers[memory_recall_handler.handle].tool_matcher is None
     assert handlers[prohibited_command_guard_handler.handle].tool_matcher is None
+    assert handlers[prohibited_words_guard_handler.handle].tool_matcher is None
 
 
 def test_tool_specific_handlers_carry_their_matchers():

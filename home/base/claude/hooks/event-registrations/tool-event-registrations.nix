@@ -10,13 +10,8 @@
       hooks = [
         {
           type = "command";
-          command = "${runHook} ${hooksPath}/pre-tool-use-dispatcher.py";
+          command = "${prohibitedWordsAllowedEnvironmentAssignment} ${runHook} ${hooksPath}/pre-tool-use-dispatcher.py";
           timeout = 10000;
-        }
-        {
-          type = "command";
-          command = "${prohibitedWordsAllowedEnvironmentAssignment} ${runHook} ${hooksPath}/prohibited-words-guard.py";
-          timeout = 3000;
         }
       ];
     }

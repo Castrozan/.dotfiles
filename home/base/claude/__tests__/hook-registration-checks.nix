@@ -32,5 +32,5 @@ in
   hooks-pre-tool-use-dispatcher-registered-on-pre-tool-use =
     mkEvalCheck "hooks-pre-tool-use-dispatcher-registered-on-pre-tool-use"
       deployedPreToolUseRunsDispatcher
-      "the deployed settings must register pre-tool-use-dispatcher.py on the PreToolUse event; it composes memory-recall, prohibited-command-guard, and the tool-specific guards including codex-sandbox-downgrade-guard, and test_pre_tool_use_dispatcher_composition guards that the codex-sandbox-downgrade handler stays in PRE_TOOL_USE_HANDLERS with tool_matcher mcp__codex__codex so a Claude session cannot silently launch Codex with a weakened sandbox or approval policy";
+      "the deployed settings must register pre-tool-use-dispatcher.py on the PreToolUse event (env-prefixed with the per-host PROHIBITED_WORDS_ALLOWED allowlist); it composes memory-recall, prohibited-command-guard, prohibited-words-guard, and the tool-specific guards including codex-sandbox-downgrade-guard, and test_pre_tool_use_dispatcher_composition guards that the codex-sandbox-downgrade handler stays in PRE_TOOL_USE_HANDLERS with tool_matcher mcp__codex__codex so a Claude session cannot silently launch Codex with a weakened sandbox or approval policy";
 }

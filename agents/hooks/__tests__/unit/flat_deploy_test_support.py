@@ -72,6 +72,7 @@ PRE_TOOL_USE_DISPATCHER_RUNTIME_SOURCES = [
     next(HOOKS_ROOT.rglob("memory_recall_handler.py")),
     next(HOOKS_ROOT.rglob("monitor_streaming_pattern_validator_handler.py")),
     next(HOOKS_ROOT.rglob("prohibited_command_guard_handler.py")),
+    next(HOOKS_ROOT.rglob("prohibited_words_guard_handler.py")),
     next(HOOKS_ROOT.rglob("url_to_skill_router_handler.py")),
     next(HOOKS_ROOT.rglob("workspace_directory_injector_handler.py")),
     next(HOOKS_ROOT.rglob("background_bash_fake_success_detectors.py")),
@@ -83,6 +84,8 @@ PRE_TOOL_USE_DISPATCHER_RUNTIME_SOURCES = [
     next(HOOKS_ROOT.rglob("memory_recall_memory_directory.py")),
     next(HOOKS_ROOT.rglob("memory_recall_ripgrep.py")),
     next(HOOKS_ROOT.rglob("streamed_command_anti_pattern_detectors.py")),
+    next(HOOKS_ROOT.rglob("prohibited_words_segments.py")),
+    CHANGED_FILE_PATHS_SOURCE,
 ]
 
 INTERACTIVE_ENV_VAR = "CLAUDE_INTERACTIVE_PREFERENCES_PATH"

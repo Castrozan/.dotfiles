@@ -25,6 +25,7 @@ import codex_sandbox_downgrade_guard_handler  # noqa: E402
 import memory_recall_handler  # noqa: E402
 import monitor_streaming_pattern_validator_handler  # noqa: E402
 import prohibited_command_guard_handler  # noqa: E402
+import prohibited_words_guard_handler  # noqa: E402
 import url_to_skill_router_handler  # noqa: E402
 import workspace_directory_injector_handler  # noqa: E402
 from hook_dispatch import (  # noqa: E402
@@ -37,6 +38,7 @@ from hook_dispatch import (  # noqa: E402
 PRE_TOOL_USE_HANDLERS = [
     HookHandler(handle=memory_recall_handler.handle, tool_matcher=None),
     HookHandler(handle=prohibited_command_guard_handler.handle, tool_matcher=None),
+    HookHandler(handle=prohibited_words_guard_handler.handle, tool_matcher=None),
     HookHandler(
         handle=workspace_directory_injector_handler.handle, tool_matcher="Bash"
     ),

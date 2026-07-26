@@ -29,6 +29,7 @@ let
     "pre-tool-use/prohibited-command-guard/prohibited-command-guard.py"
     "pre-tool-use/prohibited-command-guard/prohibited_command_guard_handler.py"
     "pre-tool-use/prohibited-words-guard/prohibited-words-guard.py"
+    "pre-tool-use/prohibited-words-guard/prohibited_words_guard_handler.py"
     "pre-tool-use/prohibited-words-guard/prohibited_words_segments.py"
   ];
 
