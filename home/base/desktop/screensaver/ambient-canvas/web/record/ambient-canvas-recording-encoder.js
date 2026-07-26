@@ -50,26 +50,42 @@ window.AmbientCanvasRecordingEncoder = (function buildEncoder() {
     });
   }
 
-  function uploadSegmentTable(segmentBoundaries, uploadUrl) {
+  function uploadRecordedSegment(
+    encodedBuffer,
+    segmentFingerprint,
+    durationSeconds,
+    uploadUrl,
+  ) {
     if (!uploadUrl) {
-      return Promise.resolve();
+      return Promise.resolve(false);
     }
-    return fetch(uploadUrl + "?kind=segments", {
-      method: "POST",
-      body: JSON.stringify({ segments: segmentBoundaries }),
-    }).catch(function ignoreSegmentUploadFailure() {});
-  }
-
-  function uploadEncodedLoop(encodedBuffer, uploadUrl) {
-    if (!uploadUrl) {
-      return Promise.resolve();
-    }
-    return fetch(uploadUrl + "?extension=mp4", {
+    const segmentQuery = new URLSearchParams({
+      extension: "mp4",
+      fingerprint: segmentFingerprint,
+      seconds: String(durationSeconds),
+    });
+    return fetch(uploadUrl + "?" + segmentQuery.toString(), {
       method: "POST",
       body: new Blob([encodedBuffer], { type: "video/mp4" }),
     })
-      .catch(function ignoreUploadFailure() {})
-      .finally(function closeAfterUpload() {
+      .then(function reportStorageOutcome(response) {
+        return response.ok;
+      })
+      .catch(function ignoreSegmentUploadFailure() {
+        return false;
+      });
+  }
+
+  function uploadSegmentManifest(manifestSegments, uploadUrl) {
+    if (!uploadUrl) {
+      return Promise.resolve();
+    }
+    return fetch(uploadUrl + "?kind=manifest", {
+      method: "POST",
+      body: JSON.stringify({ segments: manifestSegments }),
+    })
+      .catch(function ignoreManifestUploadFailure() {})
+      .finally(function closeAfterManifestUpload() {
         window.setTimeout(function requestWindowClose() {
           window.close();
         }, 250);
@@ -79,7 +95,7 @@ window.AmbientCanvasRecordingEncoder = (function buildEncoder() {
   return {
     createConfiguredMuxerAndEncoder,
     waitForEncoderQueueToDrain,
-    uploadSegmentTable,
-    uploadEncodedLoop,
+    uploadRecordedSegment,
+    uploadSegmentManifest,
   };
 })();

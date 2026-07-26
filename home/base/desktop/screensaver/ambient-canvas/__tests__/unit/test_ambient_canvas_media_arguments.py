@@ -66,31 +66,17 @@ def test_build_record_index_url_omits_seconds_so_the_playlist_derives_the_length
     assert "fps=30" in record_url
 
 
-def test_upload_wait_budget_scales_with_an_explicit_duration():
-    assert capture_plan.resolve_upload_wait_budget_seconds(30) == (
-        30 * capture_plan.DETERMINISTIC_RENDER_WALL_CLOCK_MULTIPLIER
-        + capture_plan.CHROME_STARTUP_AND_UPLOAD_GRACE_SECONDS
-    )
-
-
-def test_upload_wait_budget_uses_a_fixed_ceiling_when_the_playlist_derives_the_length():
+def test_upload_wait_budget_covers_a_whole_incremental_record_pass():
     assert (
-        capture_plan.resolve_upload_wait_budget_seconds(None)
-        == capture_plan.PLAYLIST_DERIVED_RENDER_WALL_CLOCK_CEILING_SECONDS
+        capture_plan.resolve_upload_wait_budget_seconds()
+        == capture_plan.RECORD_PASS_WALL_CLOCK_CEILING_SECONDS
     )
 
 
-def test_minimum_recorded_bytes_scales_with_an_explicit_duration():
+def test_minimum_recorded_bytes_scales_with_the_segment_duration():
     assert (
         capture_plan.resolve_minimum_recorded_bytes(30)
         == 30 * capture_plan.MINIMUM_RECORDED_BYTES_PER_SECOND
-    )
-
-
-def test_minimum_recorded_bytes_uses_a_fixed_floor_when_the_playlist_derives_length():
-    assert (
-        capture_plan.resolve_minimum_recorded_bytes(None)
-        == capture_plan.PLAYLIST_DERIVED_MINIMUM_RECORDED_BYTES
     )
 
 
@@ -122,20 +108,7 @@ def test_resolve_index_file_path_returns_existing_asset(monkeypatch, tmp_path):
     assert render.resolve_index_file_path() == str(index_path)
 
 
-def test_build_player_process_arguments_pass_binary_then_media():
+def test_build_player_process_arguments_pass_binary_then_manifest():
     assert display.build_player_process_arguments(
-        "/home/user/.local/bin/ambient-canvas-player", "/state/loop.mp4"
-    ) == ["/home/user/.local/bin/ambient-canvas-player", "/state/loop.mp4"]
-
-
-def test_resolve_recorded_loop_media_path_reads_pointer(tmp_path):
-    (tmp_path / "loop.current").write_text("loop.mp4\n")
-    (tmp_path / "loop.mp4").write_bytes(b"recorded")
-    assert display.resolve_recorded_loop_media_path(str(tmp_path)) == str(
-        tmp_path / "loop.mp4"
-    )
-
-
-def test_resolve_recorded_loop_media_path_is_none_when_media_missing(tmp_path):
-    (tmp_path / "loop.current").write_text("loop.mp4\n")
-    assert display.resolve_recorded_loop_media_path(str(tmp_path)) is None
+        "/home/user/.local/bin/ambient-canvas-player", "/state/loop.segments.json"
+    ) == ["/home/user/.local/bin/ambient-canvas-player", "/state/loop.segments.json"]

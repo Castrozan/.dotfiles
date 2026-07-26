@@ -1,5 +1,5 @@
-import AppKit
 import AVFoundation
+import AppKit
 
 final class AmbientCanvasRecordedLoopVideoView: NSView {
     private let recordedLoopQueuePlayer = AVQueuePlayer()
@@ -7,7 +7,7 @@ final class AmbientCanvasRecordedLoopVideoView: NSView {
     private var recordedLoopPlayerLooper: AVPlayerLooper?
     private var shuffledSegmentPlayback: AmbientCanvasShuffledSegmentPlayback?
 
-    init(recordedLoopFileUrl: URL) {
+    init(recordedSegmentManifestFileUrl: URL) {
         super.init(frame: .zero)
         wantsLayer = true
         let backingLayer = CALayer()
@@ -21,30 +21,41 @@ final class AmbientCanvasRecordedLoopVideoView: NSView {
             .deepNavyBackgroundColor.cgColor
         backingLayer.addSublayer(recordedLoopPlayerLayer)
 
-        let recordedLoopItem = AVPlayerItem(url: recordedLoopFileUrl)
-        if let segmentTable = AmbientCanvasRecordedLoopSegmentTable
-            .loadAdjacentToRecordedLoop(recordedLoopFileUrl)
-        {
-            recordedLoopQueuePlayer.insert(recordedLoopItem, after: nil)
-            recordedLoopQueuePlayer.actionAtItemEnd = .pause
-            shuffledSegmentPlayback = AmbientCanvasShuffledSegmentPlayback(
-                player: recordedLoopQueuePlayer,
-                segments: segmentTable.segments,
-                recordedLoopFileUrl: recordedLoopFileUrl
-            )
-        } else {
-            recordedLoopPlayerLooper = AVPlayerLooper(
-                player: recordedLoopQueuePlayer,
-                templateItem: recordedLoopItem
-            )
-        }
         recordedLoopQueuePlayer.isMuted = true
-        shuffledSegmentPlayback?.startFirstSegment()
-        recordedLoopQueuePlayer.play()
+        startPlayback(of: recordedSegmentManifestFileUrl)
     }
 
     required init?(coder: NSCoder) {
         fatalError("AmbientCanvasRecordedLoopVideoView does not support NSCoder initialization")
+    }
+
+    private func startPlayback(of recordedSegmentManifestFileUrl: URL) {
+        guard
+            let recordedSegmentManifest = AmbientCanvasRecordedSegmentManifest.load(
+                fromManifestFileUrl: recordedSegmentManifestFileUrl
+            )
+        else {
+            return
+        }
+        let segmentFileUrls = recordedSegmentManifest.segmentFileUrls(
+            relativeTo: recordedSegmentManifestFileUrl
+        )
+        guard segmentFileUrls.count > 1 else {
+            recordedLoopPlayerLooper = AVPlayerLooper(
+                player: recordedLoopQueuePlayer,
+                templateItem: AVPlayerItem(url: segmentFileUrls[0])
+            )
+            recordedLoopQueuePlayer.play()
+            return
+        }
+        let segmentPlayback = AmbientCanvasShuffledSegmentPlayback(
+            player: recordedLoopQueuePlayer,
+            segments: recordedSegmentManifest.segments,
+            segmentFileUrls: segmentFileUrls,
+            segmentManifestFileUrl: recordedSegmentManifestFileUrl
+        )
+        shuffledSegmentPlayback = segmentPlayback
+        segmentPlayback.startFirstSegment()
     }
 
     override func layout() {

@@ -2,11 +2,8 @@ import urllib.parse
 
 DEFAULT_CAPTURE_DURATION_SECONDS = None
 DEFAULT_CAPTURE_FRAMES_PER_SECOND = 30
-CHROME_STARTUP_AND_UPLOAD_GRACE_SECONDS = 45
-DETERMINISTIC_RENDER_WALL_CLOCK_MULTIPLIER = 4
 MINIMUM_RECORDED_BYTES_PER_SECOND = 20000
-PLAYLIST_DERIVED_RENDER_WALL_CLOCK_CEILING_SECONDS = 900
-PLAYLIST_DERIVED_MINIMUM_RECORDED_BYTES = 200000
+RECORD_PASS_WALL_CLOCK_CEILING_SECONDS = 900
 
 
 def build_record_index_url(
@@ -23,18 +20,11 @@ def build_record_index_url(
     return f"{index_file_url}?{record_query}"
 
 
-def resolve_upload_wait_budget_seconds(duration_seconds):
-    if duration_seconds is None:
-        return PLAYLIST_DERIVED_RENDER_WALL_CLOCK_CEILING_SECONDS
-    return (
-        duration_seconds * DETERMINISTIC_RENDER_WALL_CLOCK_MULTIPLIER
-        + CHROME_STARTUP_AND_UPLOAD_GRACE_SECONDS
-    )
+def resolve_upload_wait_budget_seconds():
+    return RECORD_PASS_WALL_CLOCK_CEILING_SECONDS
 
 
 def resolve_minimum_recorded_bytes(duration_seconds):
-    if duration_seconds is None:
-        return PLAYLIST_DERIVED_MINIMUM_RECORDED_BYTES
     return duration_seconds * MINIMUM_RECORDED_BYTES_PER_SECOND
 
 

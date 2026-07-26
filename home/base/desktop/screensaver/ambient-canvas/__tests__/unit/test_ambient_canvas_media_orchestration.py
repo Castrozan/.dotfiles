@@ -55,7 +55,10 @@ def test_fresh_loop_with_stopped_display_relaunches(monkeypatch):
 
 def test_stale_render_success_while_running_stops_waits_then_relaunches(monkeypatch):
     result, calls = _run_ensure(
-        monkeypatch, fresh=False, render_result="loop.mp4", display_running=True
+        monkeypatch,
+        fresh=False,
+        render_result="loop.segments.json",
+        display_running=True,
     )
     assert result == 0
     assert calls == ["render", "stop", "wait", "launch"]
@@ -63,7 +66,10 @@ def test_stale_render_success_while_running_stops_waits_then_relaunches(monkeypa
 
 def test_stale_render_success_while_stopped_renders_then_launches(monkeypatch):
     result, calls = _run_ensure(
-        monkeypatch, fresh=False, render_result="loop.mp4", display_running=False
+        monkeypatch,
+        fresh=False,
+        render_result="loop.segments.json",
+        display_running=False,
     )
     assert result == 0
     assert calls == ["render", "launch"]

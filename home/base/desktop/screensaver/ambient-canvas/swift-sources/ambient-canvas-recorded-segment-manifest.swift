@@ -1,37 +1,37 @@
 import Foundation
 
-struct AmbientCanvasRecordedLoopSegment: Decodable {
-    let startSeconds: Double
+struct AmbientCanvasRecordedSegment: Decodable {
+    let file: String
     let durationSeconds: Double
-
-    var endSeconds: Double {
-        return startSeconds + durationSeconds
-    }
 }
 
-struct AmbientCanvasRecordedLoopSegmentTable: Decodable {
-    let segments: [AmbientCanvasRecordedLoopSegment]
+struct AmbientCanvasRecordedSegmentManifest: Decodable {
+    let segments: [AmbientCanvasRecordedSegment]
 
-    static func loadAdjacentToRecordedLoop(_ recordedLoopFileUrl: URL)
-        -> AmbientCanvasRecordedLoopSegmentTable?
+    static func load(fromManifestFileUrl manifestFileUrl: URL)
+        -> AmbientCanvasRecordedSegmentManifest?
     {
-        let segmentTableUrl = recordedLoopFileUrl
-            .deletingLastPathComponent()
-            .appendingPathComponent("loop.segments.json")
-        guard let segmentTableData = try? Data(contentsOf: segmentTableUrl) else {
+        guard let manifestData = try? Data(contentsOf: manifestFileUrl) else {
             return nil
         }
         guard
-            let decodedTable = try? JSONDecoder().decode(
-                AmbientCanvasRecordedLoopSegmentTable.self,
-                from: segmentTableData
+            let decodedManifest = try? JSONDecoder().decode(
+                AmbientCanvasRecordedSegmentManifest.self,
+                from: manifestData
             )
         else {
             return nil
         }
-        guard decodedTable.segments.count > 1 else {
+        guard !decodedManifest.segments.isEmpty else {
             return nil
         }
-        return decodedTable
+        return decodedManifest
+    }
+
+    func segmentFileUrls(relativeTo manifestFileUrl: URL) -> [URL] {
+        let containingDirectoryUrl = manifestFileUrl.deletingLastPathComponent()
+        return segments.map { recordedSegment in
+            containingDirectoryUrl.appendingPathComponent(recordedSegment.file)
+        }
     }
 }

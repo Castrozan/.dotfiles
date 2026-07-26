@@ -1,14 +1,22 @@
 import functools
 import http.server
+import json
 import os
 import posixpath
-import tempfile
 import threading
 import urllib.parse
 
 from byte_range_request_handler import ByteRangeRequestHandler
+from recorded_loop_capture_plan import resolve_minimum_recorded_bytes
+from recorded_segment_store import (
+    list_recorded_segment_fingerprints,
+    store_recorded_segment,
+)
+from scene_source_digests import build_segment_fingerprint_inputs
 
 SERVED_VIDEO_URL_PREFIX = "/ambient-canvas-videos/"
+SEGMENT_FINGERPRINT_INVENTORY_URL = "/recorded-segment-fingerprints"
+SEGMENT_FINGERPRINT_INPUTS_URL = "/segment-fingerprint-inputs"
 
 
 class RecordedLoopRequestHandler(ByteRangeRequestHandler):
@@ -21,6 +29,18 @@ class RecordedLoopRequestHandler(ByteRangeRequestHandler):
         )
         return os.path.join(self.server.served_video_directory, requested_filename)
 
+    def do_GET(self):
+        requested_path = urllib.parse.urlparse(self.path).path
+        if requested_path == SEGMENT_FINGERPRINT_INVENTORY_URL:
+            self.send_json_response(
+                {"fingerprints": self.server.list_recorded_fingerprints()}
+            )
+            return
+        if requested_path == SEGMENT_FINGERPRINT_INPUTS_URL:
+            self.send_json_response(self.server.resolve_fingerprint_inputs())
+            return
+        super().do_GET()
+
     def do_POST(self):
         parsed_request = urllib.parse.urlparse(self.path)
         if parsed_request.path != "/upload":
@@ -30,14 +50,27 @@ class RecordedLoopRequestHandler(ByteRangeRequestHandler):
         request_query = urllib.parse.parse_qs(parsed_request.query)
         content_length = int(self.headers.get("Content-Length", "0"))
         uploaded_bytes = self.rfile.read(content_length)
-        if request_query.get("kind", [""])[0] == "segments":
-            self.server.receive_segment_table(uploaded_bytes)
-        else:
-            self.server.receive_recorded_loop(
-                request_query.get("extension", ["webm"])[0], uploaded_bytes
-            )
-        self.send_response(204)
+        if request_query.get("kind", [""])[0] == "manifest":
+            self.server.receive_segment_manifest(uploaded_bytes)
+            self.send_response(204)
+            self.end_headers()
+            return
+        segment_was_stored = self.server.receive_recorded_segment(
+            request_query.get("fingerprint", [""])[0],
+            request_query.get("extension", ["mp4"])[0],
+            float(request_query.get("seconds", ["0"])[0]),
+            uploaded_bytes,
+        )
+        self.send_response(204 if segment_was_stored else 422)
         self.end_headers()
+
+    def send_json_response(self, response_payload):
+        encoded_payload = json.dumps(response_payload).encode()
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(encoded_payload)))
+        self.end_headers()
+        self.wfile.write(encoded_payload)
 
     def log_message(self, *ignored_arguments):
         return
@@ -51,29 +84,39 @@ class RecordedLoopUploadServer(http.server.ThreadingHTTPServer):
                 RecordedLoopRequestHandler, directory=served_web_directory
             ),
         )
+        self.served_web_directory = served_web_directory
         self.served_video_directory = served_video_directory
         self.output_directory = output_directory
-        self.upload_completed_event = threading.Event()
-        self.received_extension = None
-        self.received_staging_path = None
-        self.received_segment_table_bytes = None
+        self.manifest_received_event = threading.Event()
+        self.received_manifest_bytes = None
+        self.rejected_segment_fingerprints = []
 
     @property
     def upload_port(self):
         return self.server_address[1]
 
-    def receive_segment_table(self, segment_table_bytes):
-        self.received_segment_table_bytes = segment_table_bytes
+    def list_recorded_fingerprints(self):
+        return list_recorded_segment_fingerprints(self.output_directory)
 
-    def receive_recorded_loop(self, extension, recorded_bytes):
-        staging_descriptor, staging_path = tempfile.mkstemp(
-            dir=self.output_directory, suffix=f".{extension}.staging"
+    def resolve_fingerprint_inputs(self):
+        return build_segment_fingerprint_inputs(self.served_web_directory)
+
+    def receive_segment_manifest(self, manifest_bytes):
+        self.received_manifest_bytes = manifest_bytes
+        self.manifest_received_event.set()
+
+    def receive_recorded_segment(
+        self, segment_fingerprint, extension, duration_seconds, recorded_bytes
+    ):
+        if not segment_fingerprint or duration_seconds <= 0:
+            return False
+        if len(recorded_bytes) < resolve_minimum_recorded_bytes(duration_seconds):
+            self.rejected_segment_fingerprints.append(segment_fingerprint)
+            return False
+        store_recorded_segment(
+            self.output_directory, segment_fingerprint, extension, recorded_bytes
         )
-        with os.fdopen(staging_descriptor, "wb") as staging_file:
-            staging_file.write(recorded_bytes)
-        self.received_extension = extension
-        self.received_staging_path = staging_path
-        self.upload_completed_event.set()
+        return True
 
 
 def start_recorded_loop_upload_server(
@@ -85,22 +128,3 @@ def start_recorded_loop_upload_server(
     server_thread = threading.Thread(target=upload_server.serve_forever, daemon=True)
     server_thread.start()
     return upload_server
-
-
-def write_recorded_loop_segment_table(output_directory, segment_table_bytes):
-    segment_table_path = os.path.join(output_directory, "loop.segments.json")
-    if not segment_table_bytes:
-        if os.path.exists(segment_table_path):
-            os.remove(segment_table_path)
-        return
-    with open(segment_table_path, "wb") as segment_table_file:
-        segment_table_file.write(segment_table_bytes)
-
-
-def write_recorded_loop_pointer_files(
-    output_directory, media_filename, source_identifier
-):
-    with open(os.path.join(output_directory, "loop.current"), "w") as pointer_file:
-        pointer_file.write(media_filename + "\n")
-    with open(os.path.join(output_directory, "loop.source"), "w") as source_file:
-        source_file.write(source_identifier + "\n")

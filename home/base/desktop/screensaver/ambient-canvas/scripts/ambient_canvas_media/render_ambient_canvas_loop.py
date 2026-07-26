@@ -17,13 +17,16 @@ from recorded_loop_capture_plan import (
     DEFAULT_CAPTURE_FRAMES_PER_SECOND,
     build_record_browser_arguments,
     build_record_index_url,
-    resolve_minimum_recorded_bytes,
     resolve_upload_wait_budget_seconds,
 )
-from recorded_loop_upload_server import (
-    start_recorded_loop_upload_server,
-    write_recorded_loop_pointer_files,
-    write_recorded_loop_segment_table,
+from recorded_loop_upload_server import start_recorded_loop_upload_server
+from recorded_segment_store import (
+    build_recorded_segment_manifest,
+    manifest_segments_are_all_present,
+    parse_uploaded_segment_manifest,
+    prune_recorded_segments_outside_manifest,
+    write_recorded_segment_manifest,
+    write_recorded_source_identifier,
 )
 from scene_video_cache import (
     download_missing_scene_videos,
@@ -47,21 +50,13 @@ def terminate_browser_process(browser_process, throwaway_profile_directory):
     )
 
 
-def render_recorded_loop(
+def drive_record_browser(
     index_file_path,
     output_directory,
-    source_identifier,
+    browser_application,
     duration_seconds,
     frames_per_second,
 ):
-    browser_application = resolve_chromium_browser_application()
-    if browser_application is None:
-        print(
-            "render-ambient-canvas-loop: no Chromium browser installed", file=sys.stderr
-        )
-        return None
-
-    os.makedirs(output_directory, exist_ok=True)
     served_web_directory = os.path.dirname(index_file_path)
     download_missing_scene_videos(served_web_directory, output_directory)
     upload_server = start_recorded_loop_upload_server(
@@ -92,36 +87,60 @@ def render_recorded_loop(
     )
 
     try:
-        upload_arrived = upload_server.upload_completed_event.wait(
-            resolve_upload_wait_budget_seconds(duration_seconds)
-        )
+        upload_server.manifest_received_event.wait(resolve_upload_wait_budget_seconds())
     finally:
         terminate_browser_process(browser_process, throwaway_profile_directory)
         upload_server.shutdown()
         shutil.rmtree(throwaway_profile_directory, ignore_errors=True)
 
-    staging_path = upload_server.received_staging_path
-    if not upload_arrived or staging_path is None:
+    return upload_server
+
+
+def commit_recorded_segment_manifest(
+    output_directory, uploaded_manifest_bytes, source_identifier
+):
+    uploaded_segments = parse_uploaded_segment_manifest(uploaded_manifest_bytes)
+    if uploaded_segments is None:
         print("render-ambient-canvas-loop: recording did not complete", file=sys.stderr)
         return None
-
-    if os.path.getsize(staging_path) < resolve_minimum_recorded_bytes(duration_seconds):
-        os.remove(staging_path)
+    recorded_manifest = build_recorded_segment_manifest(uploaded_segments)
+    if not manifest_segments_are_all_present(output_directory, recorded_manifest):
         print(
-            "render-ambient-canvas-loop: recording had too little motion",
+            "render-ambient-canvas-loop: a composition recorded too little motion",
             file=sys.stderr,
         )
         return None
+    manifest_path = write_recorded_segment_manifest(output_directory, recorded_manifest)
+    prune_recorded_segments_outside_manifest(output_directory, recorded_manifest)
+    write_recorded_source_identifier(output_directory, source_identifier)
+    return manifest_path
 
-    media_filename = f"loop.{upload_server.received_extension}"
-    os.replace(staging_path, os.path.join(output_directory, media_filename))
-    write_recorded_loop_segment_table(
-        output_directory, upload_server.received_segment_table_bytes
+
+def render_recorded_loop(
+    index_file_path,
+    output_directory,
+    source_identifier,
+    duration_seconds,
+    frames_per_second,
+):
+    browser_application = resolve_chromium_browser_application()
+    if browser_application is None:
+        print(
+            "render-ambient-canvas-loop: no Chromium browser installed", file=sys.stderr
+        )
+        return None
+
+    os.makedirs(output_directory, exist_ok=True)
+    upload_server = drive_record_browser(
+        index_file_path,
+        output_directory,
+        browser_application,
+        duration_seconds,
+        frames_per_second,
     )
-    write_recorded_loop_pointer_files(
-        output_directory, media_filename, source_identifier
+    return commit_recorded_segment_manifest(
+        output_directory, upload_server.received_manifest_bytes, source_identifier
     )
-    return media_filename
 
 
 def resolve_index_file_path():
@@ -148,16 +167,16 @@ def main():
         print("render-ambient-canvas-loop: web assets not found", file=sys.stderr)
         return 1
 
-    media_filename = render_recorded_loop(
+    manifest_path = render_recorded_loop(
         index_file_path,
         parsed_arguments.output_directory,
         parsed_arguments.source_identifier,
         parsed_arguments.seconds,
         parsed_arguments.fps,
     )
-    if media_filename is None:
+    if manifest_path is None:
         return 1
-    print(os.path.join(parsed_arguments.output_directory, media_filename))
+    print(manifest_path)
     return 0
 
 

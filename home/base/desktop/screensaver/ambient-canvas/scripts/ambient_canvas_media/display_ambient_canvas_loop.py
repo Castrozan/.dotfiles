@@ -3,25 +3,13 @@ import os
 import subprocess
 import sys
 
+from recorded_segment_store import resolve_playable_segment_manifest_path
+
 DEFAULT_PLAYER_BINARY_PATH = os.path.expanduser("~/.local/bin/ᓚᘏᗢ")
 
 
-def resolve_recorded_loop_media_path(output_directory):
-    pointer_path = os.path.join(output_directory, "loop.current")
-    if not os.path.isfile(pointer_path):
-        return None
-    with open(pointer_path) as pointer_file:
-        media_filename = pointer_file.read().strip()
-    if not media_filename:
-        return None
-    media_path = os.path.join(output_directory, media_filename)
-    if not os.path.isfile(media_path):
-        return None
-    return media_path
-
-
-def build_player_process_arguments(player_binary_path, recorded_loop_media_path):
-    return [player_binary_path, recorded_loop_media_path]
+def build_player_process_arguments(player_binary_path, segment_manifest_path):
+    return [player_binary_path, segment_manifest_path]
 
 
 def launch_display(player_binary_path, output_directory):
@@ -31,12 +19,12 @@ def launch_display(player_binary_path, output_directory):
             file=sys.stderr,
         )
         return 1
-    recorded_loop_media_path = resolve_recorded_loop_media_path(output_directory)
-    if recorded_loop_media_path is None:
+    segment_manifest_path = resolve_playable_segment_manifest_path(output_directory)
+    if segment_manifest_path is None:
         print("display-ambient-canvas-loop: no recorded loop to play", file=sys.stderr)
         return 1
     subprocess.Popen(
-        build_player_process_arguments(player_binary_path, recorded_loop_media_path),
+        build_player_process_arguments(player_binary_path, segment_manifest_path),
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
         start_new_session=True,

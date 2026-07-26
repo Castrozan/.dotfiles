@@ -34,8 +34,9 @@ off-screen window is not "occluded" to macOS and wezterm never throttles it:
 - Recorded-loop `ambient-canvas` (the current darwin design): the native player sits at ~1% of
   a core and ~20MB of footprint while its workspace is on screen, and at exactly 0% while it is
   not, because the visibility gate stops decode. The compute moved to two one-off costs instead:
-  a Chrome record pass of roughly a quarter hour whenever `web/` changes, and the resident disk
-  of the loop, which grows linearly with the recorded dwell and the playlist length.
+  a Chrome record pass that encodes only the compositions whose fingerprint changed, and the
+  resident disk of the segments, which grows linearly with the recorded dwell and the playlist
+  length.
 
 The current darwin design pays the generative cost once. The WebGL scenes are recorded to a
 short looping video and the 24/7 window is a native Swift `AVPlayer` (no browser at all), which
@@ -62,14 +63,15 @@ screensaver cycles whole-screen compositions, and adding eye candy is appending 
   a single-pane composition defaults to one full-screen cell, so the common case is one line.
   `options` is passed straight to the scene factory, which is how `variant` reaches yuruyurau
   and `videoId` reaches bad-apple.
-- Loop length is derived, never authored: `totalCycleSeconds` is the sum of every
-  composition's `durationSeconds ?? AMBIENT_CANVAS_ROTATION_SECONDS`. Every composition is
-  entered exactly once per loop, and the recorder self-derives the capture length from it.
+- Loop length is derived, never authored: each composition's length is
+  `durationSeconds ?? AMBIENT_CANVAS_ROTATION_SECONDS`, and every composition is recorded
+  exactly once as its own file, so no total is authored anywhere.
 - `web/player.js` owns the segment walk. `resolveSegment(elapsed)` is a pure function
-  returning `{ index, localElapsedSeconds }`, shared by the live loop and the recorder so cut
-  points are identical. Renderers are built and torn down per segment, so live GL contexts are
-  bounded by panes-per-composition rather than playlist length; each scene is driven by
-  `localElapsedSeconds`, so it restarts cleanly on entry.
+  returning `{ index, localElapsedSeconds }` that drives the live page; the recorder walks the
+  same playlist one composition at a time, and both drive a scene by `localElapsedSeconds`
+  counted from zero at segment entry, so cut points are identical. Renderers are built and torn
+  down per segment, so live GL contexts are bounded by panes-per-composition rather than
+  playlist length, and each scene restarts cleanly on entry.
 - `web/scenes/*.js` each register a scene factory on
   `window.AMBIENT_CANVAS_SCENE_FACTORIES[name]`. A factory is
   `(canvasElement, options) => { render(localElapsedSeconds), resize(width, height) }`, plus
@@ -122,24 +124,25 @@ What actually breaks a new scene, in the order it tends to bite:
   file's `<script>` listed in dependency order; `scenes/bad-apple/` is the worked example.
 
 Iterate against the live page rather than the recorded loop: serve `web/` and open
-`index.html`, which runs the same `resolveSegment` walk the recorder uses, so what you see is
-what gets captured except for `preserveDrawingBuffer`. Only then run `ambient-canvas-render`.
+`index.html`, which walks the same playlist the recorder does, so what you see is what gets
+captured except for `preserveDrawingBuffer`. Only then run `ambient-canvas-render`.
 
 Every composition costs its dwell in file size at roughly 1.6MB per recorded second, so one
-30s addition grows `loop.mp4` by around 48MB and lengthens each record pass accordingly.
+30s addition adds a ~48MB segment file. It costs only its own ~30s of encode, not the whole
+playlist's, because the record pass is incremental: see Refresh.
 
 ### Record and play
 
 - `web/recorder.js` activates only when `index.html` is opened with `?record`. It drives a
-  deterministic frame-stepped render rather than a real-time capture: for each frame index it
-  resolves the playlist segment, rebuilds renderers at segment boundaries, awaits each pane's
+  deterministic frame-stepped render rather than a real-time capture, one composition at a time:
+  it builds that composition's renderers, and for each frame index awaits every pane's
   `prepareFrame`, composites every pane canvas into one canvas (WebGL panes honor the injected
   `preserveDrawingBuffer` option), and encodes it with an explicit timestamp through
-  `VideoEncoder` into the vendored `mp4-muxer`, then POSTs the clip to a local receiver. Because
-  the synthetic clock is `frameIndex / fps` rather than wall time, the output is exact CFR at a
-  fixed 1920x1080 no matter how slowly a frame renders. `MediaRecorder` was replaced because it
-  is real-time-only and could not hold 30fps at full resolution. The codec is H.264 in MP4 so
-  the M-series media engine decodes the loop in hardware.
+  `VideoEncoder` into a fresh vendored `mp4-muxer`, then POSTs that one segment to a local
+  receiver. Because the synthetic clock is `frameIndex / fps` rather than wall time, the output
+  is exact CFR at a fixed 1920x1080 no matter how slowly a frame renders. `MediaRecorder` was
+  replaced because it is real-time-only and could not hold 30fps at full resolution. The codec
+  is H.264 in MP4 so the M-series media engine decodes the loop in hardware.
 - `swift-sources/*.swift` compile to the 24/7 window: a native `AVQueuePlayer` behind an
   `AVPlayerLayer`, `videoGravity = .resizeAspect` so
   the loop is never cropped or zoomed. That only holds because the window is an
@@ -153,18 +156,17 @@ Every composition costs its dwell in file size at roughly 1.6MB per recorded sec
   draws over the top 30px. Reaching for `.resizeAspectFill` instead only hides the clamp, and it
   generalizes badly, cropping roughly 13% of the width on a non-16:9 display.
 
-  Playback order is randomized, which is why there is no `AVPlayerLooper` on the live path. The
-  recorder uploads its segment boundaries alongside the media and
-  `write_recorded_loop_segment_table` drops them at `loop.segments.json`; the player reads that
-  table and plays the compositions in a fresh shuffled permutation, reshuffling once every
-  segment has been used and never repeating one across the seam. Transitions are zero-tolerance
-  seeks driven by a boundary observer at each segment end, plus an `AVPlayerItemDidPlayToEndTime`
-  observer because the final segment ends exactly at EOF where a boundary observer is
-  unreliable. Segment starts are already hard cuts on keyframes, so seeking there costs nothing
-  visually. `AVPlayerLooper` remains only as the fallback for a loop recorded before the segment
-  table existed, which is what plays until the next re-render. Pause and resume route through the
-  shuffle object rather than the player, so a seek completing while the visibility gate has
-  paused cannot silently resume decode.
+  Playback order is randomized, which is why there is no `AVPlayerLooper` on the live path. Each
+  composition is its own file under `segments/`, ordered by the `loop.segments.json` manifest,
+  and the player enqueues them in a fresh shuffled permutation, reshuffling once every segment
+  has been used and never repeating one across the seam. Transitions are queue advances rather
+  than seeks: `actionAtItemEnd = .advance` with two items kept queued ahead, KVO on `currentItem`
+  to refill and to re-arm the dwell, so the next segment is already prepared when the current one
+  ends and the swap costs no black frame. A boundary observer is armed only when the playback
+  dwell override is shorter than the segment, and it just calls `advanceToNextItem`.
+  `AVPlayerLooper` remains for the degenerate single-composition playlist. Pause and resume route
+  through the shuffle object rather than the player, so a queue advance landing while the
+  visibility gate has paused cannot silently resume decode.
 
   Dwell is retunable without re-recording. `AMBIENT_CANVAS_ROTATION_SECONDS` in `panes.js` is
   the _recorded_ dwell and still costs a render to change, because it decides how many frames
@@ -178,7 +180,7 @@ Every composition costs its dwell in file size at roughly 1.6MB per recorded sec
   clamped to a floor in `ambient-canvas-playback-dwell-override.swift` and never rises above the
   recorded dwell.
   Raising that ceiling means raising the recorded dwell and paying one render, which also grows
-  the loop file proportionally at roughly 1.6MB per recorded second.
+  the segment files proportionally at roughly 1.6MB per recorded second.
 
   There is also a visibility-gated playback controller that pauses decode whenever the window is not on the
   active Space, is covered, or the display sleeps (it observes both window occlusion and
@@ -189,13 +191,16 @@ Every composition costs its dwell in file size at roughly 1.6MB per recorded sec
   stamped so it only recompiles when the sources change, mirroring the application-launcher daemon.
 
 - `scripts/ambient_canvas_media/` holds the Python: `ambient_canvas_browser` (shared record browser
-  and geometry resolution), `recorded_loop_upload_server` (stdlib HTTP receiver that writes
-  `loop.<ext>` atomically), `render_ambient_canvas_loop` (drives a throwaway Chrome record
-  window), `display_ambient_canvas_loop` (spawns the native player binary detached), and
+  and geometry resolution), `recorded_segment_store` (the whole on-disk layout: atomic segment
+  writes, both manifest shapes, presence checks, pruning), `scene_source_digests` (the
+  per-scene and pipeline digests the fingerprint is built from), `recorded_loop_upload_server`
+  (stdlib HTTP receiver, and the only thing that answers the browser's fingerprint queries),
+  `render_ambient_canvas_loop` (drives a throwaway Chrome record window),
+  `display_ambient_canvas_loop` (spawns the native player binary detached), and
   `ensure_ambient_canvas_screensaver` (the launchd entry: regenerate if stale, then keep the
   window alive), plus `byte_range_request_handler` (HTTP Range support) and `scene_video_cache`
   (yt-dlp fetches for video-backed scenes). No external encoder is used, because the nixpkgs
-  `ffmpeg` is AMFI-killed on the M-series host; the browser encodes the H.264 loop itself.
+  `ffmpeg` is AMFI-killed on the M-series host; the browser encodes the H.264 segments itself.
 
 ### bad-apple (video-backed scene)
 
@@ -224,13 +229,26 @@ five sampled frames. Swap the clip rather than crop it.
 
 ### Refresh
 
-The recorded loop lives in `~/.local/state/ambient-canvas/` next to `loop.source`, which
-records the `web/` nix store path it was rendered from. `ensure_ambient_canvas_screensaver`
-compares that against the current store path, so any change to a scene changes the store path
-and the next launchd tick regenerates the loop automatically. Force a rebuild by hand with
-`ambient-canvas-render`. Pass no length: the recorder derives it from the playlist so one full
-cycle is always captured. `--seconds N` remains a debug override for a short clip, and passing
-it means compositions past that point are not recorded at all.
+The recorded loop lives in `~/.local/state/ambient-canvas/` as one file per composition under
+`segments/`, ordered by `loop.segments.json`, next to `loop.source`, which records the `web/`
+nix store path it was rendered from. `ensure_ambient_canvas_screensaver` compares that against
+the current store path, so any change under `web/` changes the store path and the next launchd
+tick starts a record pass automatically. Force one by hand with `ambient-canvas-render`.
+
+That store-path check is deliberately coarse, and the record pass is what makes it cheap. A
+segment file is named by a fingerprint over the composition's own JSON, its resolved duration,
+the digests of the scene files it references, the shared record pipeline, and the capture
+settings. The browser asks the server which fingerprints already exist and re-encodes only the
+ones missing, so adding a scene pays that one composition's ~30s of encode and every other
+segment is left on disk untouched. Editing one scene re-encodes the compositions that use it;
+editing `player.js` or the encoder changes the pipeline digest and re-encodes everything. The
+manifest is written only after every segment it names is present on disk, and segments the new
+manifest no longer names are pruned, so the state directory never accumulates orphans and the
+player never sees a half-written playlist.
+
+Pass no length: each segment's length comes from the playlist. `--seconds N` remains a debug
+override that shortens every composition to N seconds; it is folded into the fingerprint, so a
+short debug pass never poisons the real segments.
 
 `ambient-canvas/default.nix` packages the `ambient-canvas` launcher and the
 `ambient-canvas-render` command and, guarded by `isDarwin`, compiles the native player from

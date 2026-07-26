@@ -9,13 +9,13 @@ final class AmbientCanvasPlayerWindowController {
         alpha: 1.0
     )
 
-    private let recordedLoopFileUrl: URL
+    private let recordedSegmentManifestFileUrl: URL
     private var screensaverWindow: NSWindow?
     private var recordedLoopVideoView: AmbientCanvasRecordedLoopVideoView?
     private var visibilityGatedPlaybackController: AmbientCanvasVisibilityGatedPlaybackController?
 
-    init(recordedLoopFileUrl: URL) {
-        self.recordedLoopFileUrl = recordedLoopFileUrl
+    init(recordedSegmentManifestFileUrl: URL) {
+        self.recordedSegmentManifestFileUrl = recordedSegmentManifestFileUrl
     }
 
     func presentPinnedScreensaverWindow() {
@@ -35,7 +35,9 @@ final class AmbientCanvasPlayerWindowController {
         hostingWindow.standardWindowButton(.miniaturizeButton)?.isHidden = true
         hostingWindow.standardWindowButton(.zoomButton)?.isHidden = true
 
-        let videoView = AmbientCanvasRecordedLoopVideoView(recordedLoopFileUrl: recordedLoopFileUrl)
+        let videoView = AmbientCanvasRecordedLoopVideoView(
+            recordedSegmentManifestFileUrl: recordedSegmentManifestFileUrl
+        )
         hostingWindow.contentView = videoView
         hostingWindow.orderFrontRegardless()
 

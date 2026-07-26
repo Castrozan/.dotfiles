@@ -1,5 +1,4 @@
 import argparse
-import os
 import signal
 import subprocess
 import sys
@@ -13,37 +12,24 @@ from recorded_loop_capture_plan import (
     DEFAULT_CAPTURE_DURATION_SECONDS,
     DEFAULT_CAPTURE_FRAMES_PER_SECOND,
 )
+from recorded_segment_store import (
+    read_recorded_source_identifier,
+    resolve_playable_segment_manifest_path,
+)
 from render_ambient_canvas_loop import (
     render_recorded_loop,
     resolve_index_file_path,
 )
 
 
-def recorded_loop_is_fresh(output_directory, source_identifier):
-    source_path = os.path.join(output_directory, "loop.source")
-    pointer_path = os.path.join(output_directory, "loop.current")
-    if not os.path.isfile(source_path) or not os.path.isfile(pointer_path):
-        return False
-    with open(source_path) as source_file:
-        recorded_source_identifier = source_file.read().strip()
-    if recorded_source_identifier != source_identifier:
-        return False
-    with open(pointer_path) as pointer_file:
-        media_filename = pointer_file.read().strip()
-    return bool(media_filename) and os.path.isfile(
-        os.path.join(output_directory, media_filename)
-    )
-
-
 def recorded_loop_exists(output_directory):
-    pointer_path = os.path.join(output_directory, "loop.current")
-    if not os.path.isfile(pointer_path):
-        return False
-    with open(pointer_path) as pointer_file:
-        media_filename = pointer_file.read().strip()
-    return bool(media_filename) and os.path.isfile(
-        os.path.join(output_directory, media_filename)
-    )
+    return resolve_playable_segment_manifest_path(output_directory) is not None
+
+
+def recorded_loop_is_fresh(output_directory, source_identifier):
+    return read_recorded_source_identifier(
+        output_directory
+    ) == source_identifier and recorded_loop_exists(output_directory)
 
 
 def is_display_running(display_process_marker):
@@ -83,18 +69,18 @@ def ensure_screensaver(
 ):
     display_needs_relaunch = False
     if not recorded_loop_is_fresh(output_directory, source_identifier):
-        rendered_media_filename = render_recorded_loop(
+        rendered_manifest_path = render_recorded_loop(
             index_file_path,
             output_directory,
             source_identifier,
             duration_seconds,
             frames_per_second,
         )
-        if rendered_media_filename is None and not recorded_loop_exists(
+        if rendered_manifest_path is None and not recorded_loop_exists(
             output_directory
         ):
             return 1
-        if rendered_media_filename is not None and is_display_running(
+        if rendered_manifest_path is not None and is_display_running(
             player_binary_path
         ):
             stop_display(player_binary_path)

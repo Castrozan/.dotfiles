@@ -1,40 +1,42 @@
 import AVFoundation
 
 final class AmbientCanvasShuffledSegmentPlayback {
-    private static let seekTimescale: CMTimeScale = 600
+    private static let boundaryTimescale: CMTimeScale = 600
+    private static let queuedSegmentLookahead = 2
 
     private let player: AVQueuePlayer
-    private let segments: [AmbientCanvasRecordedLoopSegment]
-    private let recordedLoopFileUrl: URL
+    private let segments: [AmbientCanvasRecordedSegment]
+    private let segmentAssets: [AVURLAsset]
+    private let segmentManifestFileUrl: URL
     private let segmentOrder: AmbientCanvasShuffledSegmentOrder
-    private var segmentEndObserver: Any?
-    private var issuedSeekGeneration = 0
+    private var segmentIndexByPlayerItem: [ObjectIdentifier: Int] = [:]
+    private var currentSegmentObservation: NSKeyValueObservation?
+    private var segmentDwellObserver: Any?
     private var isPlaybackSuspended = false
 
     init(
         player: AVQueuePlayer,
-        segments: [AmbientCanvasRecordedLoopSegment],
-        recordedLoopFileUrl: URL
+        segments: [AmbientCanvasRecordedSegment],
+        segmentFileUrls: [URL],
+        segmentManifestFileUrl: URL
     ) {
         self.player = player
         self.segments = segments
-        self.recordedLoopFileUrl = recordedLoopFileUrl
+        self.segmentAssets = segmentFileUrls.map { AVURLAsset(url: $0) }
+        self.segmentManifestFileUrl = segmentManifestFileUrl
         self.segmentOrder = AmbientCanvasShuffledSegmentOrder(segmentCount: segments.count)
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(advancePastPlaybackEnd),
-            name: .AVPlayerItemDidPlayToEndTime,
-            object: nil
-        )
+        player.actionAtItemEnd = .advance
     }
 
     deinit {
-        removeSegmentEndObserver()
-        NotificationCenter.default.removeObserver(self)
+        removeSegmentDwellObserver()
     }
 
     func startFirstSegment() {
-        playNextSegment()
+        fillSegmentQueue()
+        observeCurrentSegmentChanges()
+        observeDwellEndOfCurrentSegment()
+        player.play()
     }
 
     func suspendPlayback() {
@@ -47,59 +49,72 @@ final class AmbientCanvasShuffledSegmentPlayback {
         player.play()
     }
 
-    @objc private func advancePastPlaybackEnd(_ notification: Notification) {
+    private func observeCurrentSegmentChanges() {
+        currentSegmentObservation = player.observe(\.currentItem) { [weak self] _, _ in
+            DispatchQueue.main.async {
+                self?.handleCurrentSegmentChange()
+            }
+        }
+    }
+
+    private func handleCurrentSegmentChange() {
+        forgetDequeuedPlayerItems()
+        fillSegmentQueue()
+        observeDwellEndOfCurrentSegment()
+        if !isPlaybackSuspended {
+            player.play()
+        }
+    }
+
+    private func fillSegmentQueue() {
+        while player.items().count < Self.queuedSegmentLookahead {
+            let segmentIndex = segmentOrder.nextSegmentIndex()
+            let playerItem = AVPlayerItem(asset: segmentAssets[segmentIndex])
+            segmentIndexByPlayerItem[ObjectIdentifier(playerItem)] = segmentIndex
+            player.insert(playerItem, after: nil)
+        }
+    }
+
+    private func forgetDequeuedPlayerItems() {
+        let queuedItemIdentifiers = Set(player.items().map(ObjectIdentifier.init))
+        segmentIndexByPlayerItem = segmentIndexByPlayerItem.filter { playerItemEntry in
+            queuedItemIdentifiers.contains(playerItemEntry.key)
+        }
+    }
+
+    private func observeDwellEndOfCurrentSegment() {
+        removeSegmentDwellObserver()
         guard
-            let endedItem = notification.object as? AVPlayerItem,
-            endedItem === player.currentItem
+            let currentItem = player.currentItem,
+            let currentSegmentIndex = segmentIndexByPlayerItem[ObjectIdentifier(currentItem)]
         else {
             return
         }
-        playNextSegment()
-    }
-
-    private func playNextSegment() {
-        let segment = segments[segmentOrder.nextSegmentIndex()]
-        removeSegmentEndObserver()
-        issuedSeekGeneration += 1
-        let seekGeneration = issuedSeekGeneration
-        player.seek(
-            to: CMTime(seconds: segment.startSeconds, preferredTimescale: Self.seekTimescale),
-            toleranceBefore: .zero,
-            toleranceAfter: .zero
-        ) { [weak self] seekFinished in
-            guard let self, seekFinished, seekGeneration == self.issuedSeekGeneration else {
-                return
-            }
-            self.observeEnd(of: segment)
-            if !self.isPlaybackSuspended {
-                self.player.play()
-            }
-        }
-    }
-
-    private func observeEnd(of segment: AmbientCanvasRecordedLoopSegment) {
-        removeSegmentEndObserver()
+        let currentSegment = segments[currentSegmentIndex]
         let dwellSeconds = AmbientCanvasPlaybackDwellOverride.effectiveDwellSeconds(
-            recordedDwellSeconds: segment.durationSeconds,
-            besideRecordedLoop: recordedLoopFileUrl
+            recordedDwellSeconds: currentSegment.durationSeconds,
+            besideManifestFile: segmentManifestFileUrl
         )
-        let endTime = CMTime(
-            seconds: segment.startSeconds + dwellSeconds,
-            preferredTimescale: Self.seekTimescale
+        guard dwellSeconds < currentSegment.durationSeconds else {
+            return
+        }
+        let dwellEndTime = CMTime(
+            seconds: dwellSeconds,
+            preferredTimescale: Self.boundaryTimescale
         )
-        segmentEndObserver = player.addBoundaryTimeObserver(
-            forTimes: [NSValue(time: endTime)],
+        segmentDwellObserver = player.addBoundaryTimeObserver(
+            forTimes: [NSValue(time: dwellEndTime)],
             queue: .main
         ) { [weak self] in
-            self?.playNextSegment()
+            self?.player.advanceToNextItem()
         }
     }
 
-    private func removeSegmentEndObserver() {
-        guard let existingObserver = segmentEndObserver else {
+    private func removeSegmentDwellObserver() {
+        guard let existingObserver = segmentDwellObserver else {
             return
         }
         player.removeTimeObserver(existingObserver)
-        segmentEndObserver = nil
+        segmentDwellObserver = nil
     }
 }

@@ -18,6 +18,7 @@
 
   const compositor = window.AmbientCanvasRecordingCompositor;
   const encoder = window.AmbientCanvasRecordingEncoder;
+  const fingerprint = window.AmbientCanvasRecordingFingerprint;
 
   window.AMBIENT_CANVAS_RENDERER_OPTION_OVERRIDES = {
     preserveDrawingBuffer: true,
@@ -40,64 +41,58 @@
     });
   }
 
-  async function driveDeterministicRecording(playbackController) {
-    const grid = compositor.forceDeterministicGridLayout(
+  function resolveCaptureSignature() {
+    return {
+      width: outputPixelWidth,
+      height: outputPixelHeight,
+      framesPerSecond: captureFramesPerSecond,
+      bitsPerPixelPerFrame: targetBitsPerPixelPerFrame,
+      keyFrameIntervalSeconds: keyFrameIntervalSeconds,
+    };
+  }
+
+  async function recordOneComposition(
+    playbackController,
+    compositionIndex,
+    durationSeconds,
+    deterministicGrid,
+    recordContext,
+  ) {
+    playbackController.applyLayout(compositionIndex);
+    await nextAnimationFrame();
+    const segmentHandle = playbackController.buildSegment(compositionIndex);
+    await waitForSegmentAssetsToLoad(segmentHandle);
+    const panePlacements = compositor.resolveFixedResolutionPanePlacements(
+      segmentHandle.renderers,
+      deterministicGrid,
       outputPixelWidth,
       outputPixelHeight,
     );
-    const captureDurationSeconds =
-      explicitCaptureDurationSeconds > 0
-        ? explicitCaptureDurationSeconds
-        : playbackController.totalCycleSeconds;
-    const recordContext = compositor.createRecordCanvasContext(
-      outputPixelWidth,
-      outputPixelHeight,
-    );
+
     const { muxer, videoEncoder } = encoder.createConfiguredMuxerAndEncoder(
       outputPixelWidth,
       outputPixelHeight,
       captureFramesPerSecond,
       targetBitsPerPixelPerFrame,
     );
-
     const totalFrameCount = Math.round(
-      captureDurationSeconds * captureFramesPerSecond,
+      durationSeconds * captureFramesPerSecond,
     );
     const microsecondsPerFrame = 1000000 / captureFramesPerSecond;
     const keyFrameIntervalFrames = Math.round(
       keyFrameIntervalSeconds * captureFramesPerSecond,
     );
 
-    let activeSegmentHandle = null;
-    let activeSegmentIndex = null;
-    let panePlacements = [];
-
     for (let frameIndex = 0; frameIndex < totalFrameCount; frameIndex++) {
-      const segment = playbackController.resolveSegment(
-        frameIndex / captureFramesPerSecond,
-      );
-      if (segment.index !== activeSegmentIndex) {
-        playbackController.destroySegment(activeSegmentHandle);
-        playbackController.applyLayout(segment.index);
-        await nextAnimationFrame();
-        activeSegmentHandle = playbackController.buildSegment(segment.index);
-        activeSegmentIndex = segment.index;
-        await waitForSegmentAssetsToLoad(activeSegmentHandle);
-        panePlacements = compositor.resolveFixedResolutionPanePlacements(
-          activeSegmentHandle.renderers,
-          grid,
-          outputPixelWidth,
-          outputPixelHeight,
-        );
-      }
+      const localElapsedSeconds = frameIndex / captureFramesPerSecond;
       await compositor.prepareFixedResolutionFrame(
         panePlacements,
-        segment.localElapsedSeconds,
+        localElapsedSeconds,
       );
       compositor.renderFixedResolutionFrame(
         recordContext,
         panePlacements,
-        segment.localElapsedSeconds,
+        localElapsedSeconds,
         outputPixelWidth,
         outputPixelHeight,
       );
@@ -117,14 +112,70 @@
       }
     }
 
-    playbackController.destroySegment(activeSegmentHandle);
+    playbackController.destroySegment(segmentHandle);
     await videoEncoder.flush();
     muxer.finalize();
-    await encoder.uploadSegmentTable(
-      playbackController.segmentBoundaries,
-      uploadUrl,
+    return muxer.target.buffer;
+  }
+
+  async function driveDeterministicRecording(playbackController) {
+    const deterministicGrid = compositor.forceDeterministicGridLayout(
+      outputPixelWidth,
+      outputPixelHeight,
     );
-    await encoder.uploadEncodedLoop(muxer.target.buffer, uploadUrl);
+    const recordContext = compositor.createRecordCanvasContext(
+      outputPixelWidth,
+      outputPixelHeight,
+    );
+    const fingerprintInputs =
+      await fingerprint.fetchSegmentFingerprintInputs(uploadUrl);
+    const alreadyRecordedFingerprints =
+      await fingerprint.fetchRecordedSegmentFingerprints(uploadUrl);
+    const captureSignature = resolveCaptureSignature();
+    const manifestSegments = [];
+
+    for (
+      let compositionIndex = 0;
+      compositionIndex < playbackController.compositions.length;
+      compositionIndex++
+    ) {
+      const composition = playbackController.compositions[compositionIndex];
+      const durationSeconds =
+        explicitCaptureDurationSeconds > 0
+          ? explicitCaptureDurationSeconds
+          : playbackController.compositionDurationSeconds(composition);
+      const segmentFingerprint =
+        await fingerprint.resolveCompositionFingerprint(
+          composition,
+          durationSeconds,
+          fingerprintInputs,
+          captureSignature,
+        );
+      manifestSegments.push({
+        fingerprint: segmentFingerprint,
+        extension: "mp4",
+        durationSeconds: durationSeconds,
+      });
+      if (alreadyRecordedFingerprints.has(segmentFingerprint)) {
+        continue;
+      }
+      const encodedBuffer = await recordOneComposition(
+        playbackController,
+        compositionIndex,
+        durationSeconds,
+        deterministicGrid,
+        recordContext,
+      );
+      await encoder.uploadRecordedSegment(
+        encodedBuffer,
+        segmentFingerprint,
+        durationSeconds,
+        uploadUrl,
+      );
+      alreadyRecordedFingerprints.add(segmentFingerprint);
+    }
+
+    await encoder.uploadSegmentManifest(manifestSegments, uploadUrl);
   }
 
   window.AMBIENT_CANVAS_RECORD_DRIVER = function startDeterministicRecording(

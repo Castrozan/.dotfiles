@@ -6,9 +6,9 @@ enum AmbientCanvasPlaybackDwellOverride {
 
     static func effectiveDwellSeconds(
         recordedDwellSeconds: Double,
-        besideRecordedLoop recordedLoopFileUrl: URL
+        besideManifestFile manifestFileUrl: URL
     ) -> Double {
-        guard let requestedDwellSeconds = readRequestedDwellSeconds(recordedLoopFileUrl) else {
+        guard let requestedDwellSeconds = readRequestedDwellSeconds(manifestFileUrl) else {
             return recordedDwellSeconds
         }
         return min(
@@ -17,8 +17,8 @@ enum AmbientCanvasPlaybackDwellOverride {
         )
     }
 
-    private static func readRequestedDwellSeconds(_ recordedLoopFileUrl: URL) -> Double? {
-        let overrideUrl = recordedLoopFileUrl
+    private static func readRequestedDwellSeconds(_ manifestFileUrl: URL) -> Double? {
+        let overrideUrl = manifestFileUrl
             .deletingLastPathComponent()
             .appendingPathComponent(overrideFileName)
         guard let overrideText = try? String(contentsOf: overrideUrl, encoding: .utf8) else {
