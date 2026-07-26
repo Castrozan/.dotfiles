@@ -1,15 +1,22 @@
 #!/usr/bin/env python3
-"""session-context.py - Show relevant context at session start."""
 
 from __future__ import annotations
 
-import json
 import sys
 from datetime import datetime
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent))
+hook_script_directory = Path(__file__).resolve().parent
+shared_common_hook_modules_directory = hook_script_directory.parent / "common"
+for importable_directory in (
+    hook_script_directory,
+    shared_common_hook_modules_directory,
+):
+    importable_directory_string = str(importable_directory)
+    if importable_directory.is_dir() and importable_directory_string not in sys.path:
+        sys.path.insert(0, importable_directory_string)
 
+from hook_dispatch import HandlerResult  # noqa: E402
 from session_context_banner_formatter import (  # noqa: E402
     format_environment_section,
     format_git_section,
@@ -27,16 +34,7 @@ from session_context_project_context import check_project_context  # noqa: E402
 from session_context_system_info import get_system_info  # noqa: E402
 
 
-def main():
-    try:
-        data = json.load(sys.stdin)
-    except json.JSONDecodeError:
-        sys.exit(0)
-
-    hook_event = data.get("hook_event_name", "")
-    if hook_event != "SessionStart":
-        sys.exit(0)
-
+def handle(hook_input: dict):
     sections = []
 
     git_section = format_git_section(get_git_status())
@@ -63,18 +61,6 @@ def main():
 
     sections.extend(format_time_sections(datetime.now()))
 
-    if sections:
-        output = {
-            "continue": True,
-            "hookSpecificOutput": {
-                "hookEventName": "SessionStart",
-                "additionalContext": "SESSION CONTEXT:\n" + "\n".join(sections),
-            },
-        }
-        print(json.dumps(output))
-
-    sys.exit(0)
-
-
-if __name__ == "__main__":
-    main()
+    if not sections:
+        return None
+    return HandlerResult(additional_context="SESSION CONTEXT:\n" + "\n".join(sections))

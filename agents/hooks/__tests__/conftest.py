@@ -13,7 +13,7 @@ from hook_module_loader import (
     run_hook_subprocess,
 )
 
-import_hyphenated_hook_module("session-context")
+import_hyphenated_hook_module("session-start-dispatcher")
 import_hyphenated_hook_module("monitor-streaming-pattern-validator")
 import_hyphenated_hook_module("memory-recall")
 

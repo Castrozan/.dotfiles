@@ -9,18 +9,8 @@
       hooks = [
         {
           type = "command";
-          command = "${runHook} ${hooksPath}/session-context.py";
+          command = "${runHook} ${hooksPath}/session-start-dispatcher.py";
           timeout = 5000;
-        }
-      ];
-    }
-    {
-      matcher = "compact";
-      hooks = [
-        {
-          type = "command";
-          command = "${runHook} ${hooksPath}/compaction-context-recovery.py";
-          timeout = 3000;
         }
       ];
     }

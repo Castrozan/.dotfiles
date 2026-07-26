@@ -104,9 +104,9 @@ imports resolve, exactly like Claude's flat `~/.claude/hooks`.
   for Codex (profile-global `home.packages`), and both they and `memory-recall`
   compute the same `~/.claude/projects/<enc>/memory/` dir from cwd.
 - Remaining ports, lower value: `agent-instruction-file-authoring-router`
-  (PreToolUse gate on the `instructions` skill) and `compaction-context-recovery`
+  (PreToolUse gate on the `instructions` skill) and `compaction_context_recovery_handler`
   (SessionStart `compact` reload nudge).
-- Deferred for safety: `session-context` SessionStart enrichment (git status /
+- Deferred for safety: `session_context_handler` SessionStart enrichment (git status /
   recent commits) would pipe private-infra commit text into model context inside
   a PUBLIC repo. Not ported deliberately.
 - Not applicable: `codex-sandbox-downgrade-guard`, `monitor-streaming-pattern-validator`,
@@ -194,5 +194,5 @@ imports resolve, exactly like Claude's flat `~/.claude/hooks`.
   `--dangerously-bypass-hook-trust` is what lets any of them run.
 - Remaining ports are low value (instruction-file authoring gate, compaction
   reload nudge); everything else is a model/window limit, a documented safety
-  deferral (`session-context` leak), or a Claude-TUI/launcher/clawde-agent
+  deferral (`session_context_handler` leak), or a Claude-TUI/launcher/clawde-agent
   artifact.
