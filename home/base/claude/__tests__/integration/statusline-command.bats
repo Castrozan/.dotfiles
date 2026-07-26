@@ -22,6 +22,61 @@ _run_statusline_with_json_without_auto_compact_env() {
 	run bash -c "echo '$json_input' | env -u CLAUDE_CODE_AUTO_COMPACT_WINDOW -u CLAUDE_AUTOCOMPACT_PCT_OVERRIDE bash '$SCRIPT_UNDER_TEST'"
 }
 
+_run_statusline_in_repository_directory() {
+	local repository_directory="$1"
+	_run_statusline_with_json '{"model":{"display_name":"Opus 4.7"},"cwd":"'"$repository_directory"'","session_id":"abc","context_window":{"used_percentage":5}}'
+}
+
+_create_sandbox_repository_with_upstream() {
+	local sandbox_root
+	sandbox_root=$(mktemp -d)
+	git init -q --bare -b main "$sandbox_root/remote.git"
+	git -C "$sandbox_root" clone -q "$sandbox_root/remote.git" checkout 2>/dev/null
+	git -C "$sandbox_root/checkout" config user.email test@example.com
+	git -C "$sandbox_root/checkout" config user.name "Test"
+	echo "first" >"$sandbox_root/checkout/file.txt"
+	git -C "$sandbox_root/checkout" add file.txt
+	git -C "$sandbox_root/checkout" commit -q -m "initial commit"
+	git -C "$sandbox_root/checkout" push -q -u origin main
+	printf "%s" "$sandbox_root"
+}
+
+_push_commit_to_upstream_behind_the_checkout() {
+	local sandbox_root="$1"
+	git -C "$sandbox_root" clone -q "$sandbox_root/remote.git" peer
+	git -C "$sandbox_root/peer" config user.email peer@example.com
+	git -C "$sandbox_root/peer" config user.name "Peer"
+	echo "peer" >>"$sandbox_root/peer/file.txt"
+	git -C "$sandbox_root/peer" add file.txt
+	git -C "$sandbox_root/peer" commit -q -m "peer commit"
+	git -C "$sandbox_root/peer" push -q origin main
+	rm -rf "$sandbox_root/peer"
+}
+
+_commits_behind_upstream_tracking_ref() {
+	git -C "$1" rev-list --count 'HEAD..@{upstream}' 2>/dev/null || echo 0
+}
+
+_wait_for_upstream_tracking_ref_refresh() {
+	local repository_directory="$1"
+	local attempts_remaining=150
+	while [ "$(_commits_behind_upstream_tracking_ref "$repository_directory")" -eq 0 ] && [ "$attempts_remaining" -gt 0 ]; do
+		sleep 0.1
+		attempts_remaining=$((attempts_remaining - 1))
+	done
+}
+
+_upstream_fetch_marker_file_for_repository_directory() {
+	# shellcheck disable=SC1090
+	(source "$(dirname "$SCRIPT_UNDER_TEST")/statusline-command-git-segment.sh" && _upstream_fetch_marker_file_for_repository "$1")
+}
+
+_removed_git_cache_file_for_repository_directory() {
+	local hashed_directory
+	hashed_directory=$(echo "$1" | shasum | cut -d' ' -f1)
+	printf "/tmp/claude-statusline-git-%s" "$hashed_directory"
+}
+
 _minimal_json_input() {
 	echo '{"model":{"display_name":"Opus 4.7"},"cwd":"/tmp","session_id":"bb823787-e6ea-467c-b0ce-d90b8b92fc36","context_window":{"used_percentage":10}}'
 }
@@ -163,4 +218,118 @@ _full_json_input() {
 	stripped=$(echo "$output" | _strip_ansi_escape_codes)
 	[[ "$stripped" == *"main*"* ]]
 	rm -rf "$sandbox_repo_directory"
+}
+
+@test "git segment shows ahead and behind counts against the upstream" {
+	local sandbox_root
+	sandbox_root=$(_create_sandbox_repository_with_upstream)
+	_push_commit_to_upstream_behind_the_checkout "$sandbox_root"
+	git -C "$sandbox_root/checkout" fetch -q origin main
+	echo "local" >"$sandbox_root/checkout/local.txt"
+	git -C "$sandbox_root/checkout" add local.txt
+	git -C "$sandbox_root/checkout" commit -q -m "local commit"
+
+	_run_statusline_in_repository_directory "$sandbox_root/checkout"
+	local stripped
+	stripped=$(echo "$output" | _strip_ansi_escape_codes)
+	[[ "$stripped" == *"main ↑1↓1"* ]]
+	rm -rf "$sandbox_root"
+}
+
+@test "git segment refreshes a stale upstream tracking ref so the behind count appears" {
+	local sandbox_root
+	sandbox_root=$(_create_sandbox_repository_with_upstream)
+	_push_commit_to_upstream_behind_the_checkout "$sandbox_root"
+	[ "$(_commits_behind_upstream_tracking_ref "$sandbox_root/checkout")" -eq 0 ]
+
+	_run_statusline_in_repository_directory "$sandbox_root/checkout"
+	_wait_for_upstream_tracking_ref_refresh "$sandbox_root/checkout"
+
+	_run_statusline_in_repository_directory "$sandbox_root/checkout"
+	local stripped
+	stripped=$(echo "$output" | _strip_ansi_escape_codes)
+	[[ "$stripped" == *"main ↓1"* ]]
+	rm -rf "$sandbox_root"
+}
+
+@test "upstream fetch is rate limited by its marker file" {
+	local sandbox_root
+	sandbox_root=$(_create_sandbox_repository_with_upstream)
+	local marker_file
+	marker_file=$(_upstream_fetch_marker_file_for_repository_directory "$sandbox_root/checkout")
+	rm -f "$marker_file"
+
+	_run_statusline_in_repository_directory "$sandbox_root/checkout"
+	[ -f "$marker_file" ]
+	local first_attempt_epoch
+	first_attempt_epoch=$(cat "$marker_file")
+
+	sleep 1
+	_run_statusline_in_repository_directory "$sandbox_root/checkout"
+	[ "$(cat "$marker_file")" = "$first_attempt_epoch" ]
+
+	rm -f "$marker_file"
+	rm -rf "$sandbox_root"
+}
+
+@test "git segment does not block when the upstream remote is unreachable" {
+	local sandbox_root
+	sandbox_root=$(_create_sandbox_repository_with_upstream)
+	git -C "$sandbox_root/checkout" remote set-url origin "https://10.255.255.1/unreachable.git"
+	rm -f "$(_upstream_fetch_marker_file_for_repository_directory "$sandbox_root/checkout")"
+
+	local started_at_epoch
+	started_at_epoch=$(date +%s)
+	_run_statusline_in_repository_directory "$sandbox_root/checkout"
+	local elapsed_seconds=$(($(date +%s) - started_at_epoch))
+	[ "$status" -eq 0 ]
+	[ "$elapsed_seconds" -lt 5 ]
+
+	rm -f "$(_upstream_fetch_marker_file_for_repository_directory "$sandbox_root/checkout")"
+	rm -rf "$sandbox_root"
+}
+
+@test "git segment writes no cached copy of itself for a large repository" {
+	local sandbox_root
+	sandbox_root=$(_create_sandbox_repository_with_upstream)
+	local file_index
+	for file_index in $(seq 1 500); do
+		: >"$sandbox_root/checkout/file-$file_index.txt"
+	done
+	git -C "$sandbox_root/checkout" add .
+	git -C "$sandbox_root/checkout" commit -q -m "many tracked files"
+
+	local removed_cache_file
+	removed_cache_file=$(_removed_git_cache_file_for_repository_directory "$sandbox_root/checkout")
+	rm -f "$removed_cache_file"
+
+	_run_statusline_in_repository_directory "$sandbox_root/checkout"
+	[ ! -f "$removed_cache_file" ]
+
+	rm -f "$(_upstream_fetch_marker_file_for_repository_directory "$sandbox_root/checkout")"
+	rm -rf "$sandbox_root"
+}
+
+@test "git segment reflects a new commit on the very next render" {
+	local sandbox_root
+	sandbox_root=$(_create_sandbox_repository_with_upstream)
+	echo "one" >"$sandbox_root/checkout/one.txt"
+	git -C "$sandbox_root/checkout" add one.txt
+	git -C "$sandbox_root/checkout" commit -q -m "first local commit"
+
+	_run_statusline_in_repository_directory "$sandbox_root/checkout"
+	local stripped
+	stripped=$(echo "$output" | _strip_ansi_escape_codes)
+	[[ "$stripped" == *"main ↑1"* ]]
+
+	echo "two" >"$sandbox_root/checkout/two.txt"
+	git -C "$sandbox_root/checkout" add two.txt
+	git -C "$sandbox_root/checkout" commit -q -m "second local commit"
+
+	_run_statusline_in_repository_directory "$sandbox_root/checkout"
+	stripped=$(echo "$output" | _strip_ansi_escape_codes)
+	[[ "$stripped" == *"main ↑2"* ]]
+
+	rm -f "$(_upstream_fetch_marker_file_for_repository_directory "$sandbox_root/checkout")"
+	rm -rf "$sandbox_root"
 }
