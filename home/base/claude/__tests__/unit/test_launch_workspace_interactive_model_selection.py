@@ -1,5 +1,5 @@
 CLAWDE_BACKGROUND_AGENT_ENVIRONMENT_MARKER = "CLAWDE_RESUME_FLAG"
-INTERACTIVE_MODEL = "claude-opus-5"
+INTERACTIVE_MODEL = "claude-opus-5[1m]"
 
 
 def set_interactive_model_environment(monkeypatch, module):
