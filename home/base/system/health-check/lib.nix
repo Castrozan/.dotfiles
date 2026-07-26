@@ -23,9 +23,10 @@ rec {
       category ? "daemon",
       name,
       pattern,
+      applicableWhen ? null,
     }:
     {
-      inherit category name;
+      inherit category name applicableWhen;
       probe = "pgrep -f ${lib.escapeShellArg pattern} >/dev/null 2>&1";
     };
 
@@ -34,9 +35,10 @@ rec {
       category ? "daemon",
       name,
       command,
+      applicableWhen ? null,
     }:
     {
-      inherit category name;
+      inherit category name applicableWhen;
       probe = "${command} >/dev/null 2>&1";
     };
 
