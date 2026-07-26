@@ -49,6 +49,7 @@ let
     includeCoAuthoredBy = false;
     includeGitInstructions = false;
     showTurnDuration = true;
+    awaySummaryEnabled = true;
     teammateMode = "tmux";
     permissions = {
       defaultMode = "bypassPermissions";
