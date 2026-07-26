@@ -1,108 +1,112 @@
 #!/usr/bin/env node
-/**
- * Virtual Camera Pipeline
- * Captures the ChatVRM avatar browser tab via CDP screencast
- * and pipes frames to v4l2loopback virtual webcam (/dev/video10)
- *
- * Usage: node virtual-camera.js [--fps 30] [--width 1280] [--height 720]
- */
-
-const http = require("http");
-const { spawn } = require("child_process");
-const WebSocket = require("ws");
+const {
+  ChromeDevtoolsTargetLocator,
+} = require("./chrome-devtools/chrome-devtools-target-locator");
+const {
+  ChromeDevtoolsSession,
+} = require("./chrome-devtools/chrome-devtools-session");
+const {
+  WebSocketMessageSocketClient,
+} = require("./dependencies/message-socket-client/websocket-message-socket-client");
+const {
+  ScreencastFramePipeline,
+} = require("./virtual-camera/screencast-frame-pipeline");
 
 const AVATAR_RENDERER_PORT = process.env.AVATAR_RENDERER_PORT || "3000";
 const AVATAR_RENDERER_URL = `http://localhost:${AVATAR_RENDERER_PORT}`;
 
+const numericArgument = (flagName, fallback) =>
+  parseInt(
+    process.argv.find((_, index, all) => all[index - 1] === flagName) ||
+      fallback,
+  );
+
 const CONFIG = {
   CDP_PORT: parseInt(process.env.CDP_PORT || "9222"),
   V4L2_DEVICE: process.env.V4L2_DEVICE || "/dev/video10",
-  FPS: parseInt(process.argv.find((_, i, a) => a[i - 1] === "--fps") || "15"),
-  WIDTH: parseInt(
-    process.argv.find((_, i, a) => a[i - 1] === "--width") || "1280",
-  ),
-  HEIGHT: parseInt(
-    process.argv.find((_, i, a) => a[i - 1] === "--height") || "720",
-  ),
-  FORMAT: "jpeg", // jpeg is fastest for CDP screencast
+  FPS: numericArgument("--fps", "15"),
+  WIDTH: numericArgument("--width", "1280"),
+  HEIGHT: numericArgument("--height", "720"),
+  FORMAT: "jpeg",
+  SCREENCAST_QUALITY: 60,
 };
 
-function cdpGet(path) {
-  return new Promise((resolve, reject) => {
-    http
-      .get(`http://127.0.0.1:${CONFIG.CDP_PORT}${path}`, (res) => {
-        let data = "";
-        res.on("data", (chunk) => (data += chunk));
-        res.on("end", () => {
-          try {
-            resolve(JSON.parse(data));
-          } catch (e) {
-            reject(e);
-          }
-        });
-      })
-      .on("error", reject);
-  });
-}
+const DISMISS_START_MODAL_EXPRESSION = `(() => {
+  const btn = Array.from(document.querySelectorAll("button")).find(b => b.textContent.trim() === "Start");
+  if (btn) { btn.click(); return "dismissed"; }
+  return "no modal";
+})()`;
 
-function cdpPut(path, body) {
-  return new Promise((resolve, reject) => {
-    const payload = JSON.stringify(body);
-    const req = http.request(
-      `http://127.0.0.1:${CONFIG.CDP_PORT}${path}`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "Content-Length": payload.length,
-        },
-      },
-      (res) => {
-        let data = "";
-        res.on("data", (chunk) => (data += chunk));
-        res.on("end", () => {
-          try {
-            resolve(JSON.parse(data));
-          } catch {
-            resolve(data);
-          }
-        });
-      },
-    );
-    req.on("error", reject);
-    req.end(payload);
-  });
-}
-
-async function getTargetWsUrl() {
-  let targets = await cdpGet("/json");
-  let chatvrm = targets.find(
-    (t) =>
-      t.type === "page" && t.url.includes(`localhost:${AVATAR_RENDERER_PORT}`),
+async function resolveRendererDebuggerUrl() {
+  const targetLocator = new ChromeDevtoolsTargetLocator(CONFIG.CDP_PORT);
+  const rendererTarget = await targetLocator.findOrOpenPageTarget(
+    `localhost:${AVATAR_RENDERER_PORT}`,
+    AVATAR_RENDERER_URL,
   );
 
-  if (!chatvrm) {
-    console.log(`📺 ChatVRM tab not found, opening ${AVATAR_RENDERER_URL}...`);
-    await cdpPut("/json/new", {
-      url: AVATAR_RENDERER_URL,
-    });
-    await new Promise((r) => setTimeout(r, 3000));
-    targets = await cdpGet("/json");
-    chatvrm = targets.find(
-      (t) =>
-        t.type === "page" &&
-        t.url.includes(`localhost:${AVATAR_RENDERER_PORT}`),
-    );
-  }
-
-  if (!chatvrm) {
+  if (!rendererTarget) {
     throw new Error(
       `ChatVRM tab not found after auto-open. Is the renderer running on port ${AVATAR_RENDERER_PORT}?`,
     );
   }
 
-  console.log(`📺 Found ChatVRM tab: ${chatvrm.title} (${chatvrm.url})`);
-  return chatvrm.webSocketDebuggerUrl;
+  console.log(
+    `📺 Found ChatVRM tab: ${rendererTarget.title} (${rendererTarget.url})`,
+  );
+  return rendererTarget.webSocketDebuggerUrl;
+}
+
+async function dismissStartModal(session) {
+  const evaluationResult = await session.sendAndAwaitResult(
+    "Runtime.evaluate",
+    {
+      expression: DISMISS_START_MODAL_EXPRESSION,
+    },
+  );
+  const modalStatus = evaluationResult?.result?.value || "unknown";
+  console.log(`📋 ChatVRM modal: ${modalStatus}`);
+  if (modalStatus === "dismissed") {
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+  }
+}
+
+function streamScreencastFrames(session, framePipeline) {
+  let frameCount = 0;
+
+  session.onEvent((message) => {
+    if (message.method !== "Page.screencastFrame") {
+      return;
+    }
+
+    const { sessionId, metadata } = message.params;
+    framePipeline.writeFrame(Buffer.from(message.params.data, "base64"));
+    session.send("Page.screencastFrameAck", { sessionId });
+
+    frameCount++;
+    if (frameCount % (CONFIG.FPS * 5) === 0) {
+      console.log(
+        `📹 Frames captured: ${frameCount} (${metadata.deviceWidth}x${metadata.deviceHeight})`,
+      );
+    }
+  });
+}
+
+function registerShutdownHandlers(session, framePipeline) {
+  process.on("SIGINT", () => {
+    console.log("\n🛑 Stopping virtual camera...");
+    session.send("Page.stopScreencast");
+    setTimeout(() => {
+      framePipeline.end();
+      session.close();
+      process.exit(0);
+    }, 500);
+  });
+
+  process.on("SIGTERM", () => {
+    framePipeline.end();
+    session.close();
+    process.exit(0);
+  });
 }
 
 async function startCapture() {
@@ -111,93 +115,27 @@ async function startCapture() {
   console.log(`   Resolution: ${CONFIG.WIDTH}x${CONFIG.HEIGHT}`);
   console.log(`   FPS: ${CONFIG.FPS}`);
 
-  // Get CDP WebSocket URL for ChatVRM tab
-  const wsUrl = await getTargetWsUrl();
-  console.log(`🔌 Connecting to CDP: ${wsUrl}`);
+  const debuggerUrl = await resolveRendererDebuggerUrl();
+  console.log(`🔌 Connecting to CDP: ${debuggerUrl}`);
 
-  // Start ffmpeg process: reads MJPEG from stdin, outputs to v4l2loopback
-  const ffmpeg = spawn(
-    "ffmpeg",
-    [
-      "-y",
-      "-f",
-      "mjpeg", // Input: MJPEG stream
-      "-framerate",
-      String(CONFIG.FPS),
-      "-i",
-      "pipe:0", // Read from stdin
-      "-vf",
-      `scale=${CONFIG.WIDTH}:${CONFIG.HEIGHT}`,
-      "-pix_fmt",
-      "yuv420p",
-      "-f",
-      "v4l2", // Output: v4l2 device
-      CONFIG.V4L2_DEVICE,
-    ],
-    {
-      stdio: ["pipe", "pipe", "pipe"],
-    },
+  const framePipeline = new ScreencastFramePipeline({
+    framesPerSecond: CONFIG.FPS,
+    width: CONFIG.WIDTH,
+    height: CONFIG.HEIGHT,
+    videoDevice: CONFIG.V4L2_DEVICE,
+  });
+
+  const session = new ChromeDevtoolsSession(
+    new WebSocketMessageSocketClient(debuggerUrl),
   );
 
-  ffmpeg.stderr.on("data", (data) => {
-    const line = data.toString().trim();
-    if (line && !line.startsWith("frame=")) {
-      console.log(`[ffmpeg] ${line}`);
-    }
-  });
-
-  ffmpeg.on("close", (code) => {
-    console.log(`[ffmpeg] Exited with code ${code}`);
-    process.exit(code || 0);
-  });
-
-  // Connect to CDP
-  const ws = new WebSocket(wsUrl);
-  let msgId = 0;
-  let frameCount = 0;
-
-  function send(method, params = {}) {
-    const id = ++msgId;
-    ws.send(JSON.stringify({ id, method, params }));
-    return id;
-  }
-
-  function sendAndWait(method, params = {}) {
-    return new Promise((resolve) => {
-      const id = send(method, params);
-      const handler = (raw) => {
-        try {
-          const msg = JSON.parse(raw);
-          if (msg.id === id) {
-            ws.removeListener("message", handler);
-            resolve(msg.result);
-          }
-        } catch {}
-      };
-      ws.on("message", handler);
-    });
-  }
-
-  ws.on("open", async () => {
+  session.onOpen(async () => {
     console.log("✅ Connected to CDP");
+    await dismissStartModal(session);
 
-    // Dismiss ChatVRM "About" modal if present
-    const dismissResult = await sendAndWait("Runtime.evaluate", {
-      expression: `(() => {
-        const btn = Array.from(document.querySelectorAll("button")).find(b => b.textContent.trim() === "Start");
-        if (btn) { btn.click(); return "dismissed"; }
-        return "no modal";
-      })()`,
-    });
-    const modalStatus = dismissResult?.result?.value || "unknown";
-    console.log(`📋 ChatVRM modal: ${modalStatus}`);
-    if (modalStatus === "dismissed")
-      await new Promise((r) => setTimeout(r, 1000));
-
-    // Start screencast
-    send("Page.startScreencast", {
+    session.send("Page.startScreencast", {
       format: CONFIG.FORMAT,
-      quality: 60, // Balance quality vs speed
+      quality: CONFIG.SCREENCAST_QUALITY,
       maxWidth: CONFIG.WIDTH,
       maxHeight: CONFIG.HEIGHT,
       everyNthFrame: 1,
@@ -207,63 +145,21 @@ async function startCapture() {
     console.log("   Press Ctrl+C to stop.");
   });
 
-  ws.on("message", (data) => {
-    try {
-      const msg = JSON.parse(data);
+  streamScreencastFrames(session, framePipeline);
 
-      if (msg.method === "Page.screencastFrame") {
-        const { sessionId, metadata } = msg.params;
-        const frameData = Buffer.from(msg.params.data, "base64");
-
-        // Write JPEG frame to ffmpeg stdin
-        if (!ffmpeg.stdin.destroyed) {
-          ffmpeg.stdin.write(frameData);
-        }
-
-        // Acknowledge the frame (required to get next frame)
-        send("Page.screencastFrameAck", { sessionId });
-
-        frameCount++;
-        if (frameCount % (CONFIG.FPS * 5) === 0) {
-          // Log every ~5 seconds
-          console.log(
-            `📹 Frames captured: ${frameCount} (${metadata.deviceWidth}x${metadata.deviceHeight})`,
-          );
-        }
-      }
-    } catch (e) {
-      // Ignore parse errors from non-JSON messages
-    }
-  });
-
-  ws.on("close", () => {
+  session.onClosed(() => {
     console.log("❌ CDP connection closed");
-    ffmpeg.stdin.end();
+    framePipeline.end();
   });
 
-  ws.on("error", (err) => {
-    console.error("❌ CDP error:", err.message);
+  session.onError((error) => {
+    console.error("❌ CDP error:", error.message);
   });
 
-  // Graceful shutdown
-  process.on("SIGINT", () => {
-    console.log("\n🛑 Stopping virtual camera...");
-    send("Page.stopScreencast");
-    setTimeout(() => {
-      ffmpeg.stdin.end();
-      ws.close();
-      process.exit(0);
-    }, 500);
-  });
-
-  process.on("SIGTERM", () => {
-    ffmpeg.stdin.end();
-    ws.close();
-    process.exit(0);
-  });
+  registerShutdownHandlers(session, framePipeline);
 }
 
-startCapture().catch((err) => {
-  console.error("❌ Failed to start:", err.message);
+startCapture().catch((error) => {
+  console.error("❌ Failed to start:", error.message);
   process.exit(1);
 });
