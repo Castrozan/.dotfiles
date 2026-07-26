@@ -60,6 +60,7 @@ class TestPublishedMetricsContractWithTheReportsFrontend:
             "coreRules",
             "hooks",
             "goldStandardPractices",
+            "instructionLoadingExperiment",
         }
         assert set(metrics["staticEvals"]) == {
             "totalTests",
