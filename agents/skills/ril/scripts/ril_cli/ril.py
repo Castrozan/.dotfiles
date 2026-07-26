@@ -79,9 +79,17 @@ def build_parser() -> argparse.ArgumentParser:
     probe_parser = subparsers.add_parser(
         "probe",
         parents=[common],
-        help="Print the queue head as a change-gate fingerprint, or nothing when "
-        "every capture is done. It holds still while the head is claimed, so a "
-        "watcher opens one pull request and waits rather than walking the backlog.",
+        help="Print outstanding work as a change-gate fingerprint: one line per open "
+        "ril pull request carrying an unanswered comment, then the newest capture "
+        "that has neither a marker nor a pull request of its own. Exits non-zero "
+        "without printing when pull requests cannot be listed, so a watcher holds "
+        "still rather than reproposing captures it cannot see.",
+    )
+    probe_parser.add_argument(
+        "--repository",
+        type=Path,
+        default=Path.home() / ".dotfiles",
+        help="Checkout whose pull requests pace the queue.",
     )
     probe_parser.set_defaults(handler=command_probe)
 

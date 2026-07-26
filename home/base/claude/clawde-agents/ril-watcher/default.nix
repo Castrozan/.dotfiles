@@ -12,6 +12,7 @@ in
     "twitter"
     "youtube"
     "research"
+    "browser"
   ];
 
   clawde.agents.ril-watcher = {
@@ -28,22 +29,12 @@ in
       "${config.home.homeDirectory}/vault"
     ];
     denyToolPatterns = [
-      "Bash(gh pr merge:*)"
-      "Bash(ril record:*)"
       "Bash(rebuild:*)"
       "Bash(nixos-rebuild:*)"
       "Bash(darwin-rebuild:*)"
       "Bash(sudo:*)"
       "Bash(rm:*)"
-      "Bash(dd:*)"
-      "Bash(mkfs:*)"
-      "Bash(shutdown:*)"
-      "Bash(reboot:*)"
-      "Skill(discord:configure)"
-      "Skill(discord:access)"
-      "mcp__claude_ai_Gmail__*"
-      "mcp__claude_ai_Google_Calendar__*"
-      "mcp__claude_ai_Google_Drive__*"
+      "mcp__chrome-devtools__*"
     ];
   };
 }

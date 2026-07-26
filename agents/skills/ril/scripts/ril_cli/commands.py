@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import sys
 from datetime import datetime
 
 from captures import (
@@ -8,6 +9,13 @@ from captures import (
     collect_pending_captures,
     newest_pending_capture_fingerprint,
     resolve_capture_path,
+)
+from pull_requests import (
+    PullRequestLookupUnavailable,
+    branches_with_open_pull_request,
+    capture_branch_name,
+    open_ril_pull_requests,
+    response_fingerprints,
 )
 from claims import (
     claim_capture,
@@ -74,11 +82,31 @@ def command_record(arguments: argparse.Namespace) -> int:
     return 0 if recording_outcome == "recorded" else 1
 
 
+def captures_without_an_open_pull_request(
+    pending_captures: list[dict], open_branches: set[str]
+) -> list[dict]:
+    return [
+        capture
+        for capture in claimable_captures(pending_captures)
+        if capture_branch_name(str(capture["name"])) not in open_branches
+    ]
+
+
 def command_probe(arguments: argparse.Namespace) -> int:
     pending_captures = collect_pending_captures(
         arguments.inbox, arguments.expiry_minutes, datetime.now()
     )
-    queue_head_fingerprint = newest_pending_capture_fingerprint(pending_captures)
-    if queue_head_fingerprint:
-        print(queue_head_fingerprint)
+    try:
+        open_pull_requests = open_ril_pull_requests(arguments.repository)
+    except PullRequestLookupUnavailable as lookup_failure:
+        print(f"pull request lookup unavailable: {lookup_failure}", file=sys.stderr)
+        return 1
+    for response_fingerprint in response_fingerprints(open_pull_requests):
+        print(f"response {response_fingerprint}")
+    unproposed_captures = captures_without_an_open_pull_request(
+        pending_captures, branches_with_open_pull_request(open_pull_requests)
+    )
+    next_capture_fingerprint = newest_pending_capture_fingerprint(unproposed_captures)
+    if next_capture_fingerprint:
+        print(f"capture {next_capture_fingerprint}")
     return 0
