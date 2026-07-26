@@ -134,6 +134,8 @@ class TestCommandStartsALingeringDaemonOrService:
             "launchctl bootstrap gui/501 ~/Library/LaunchAgents/foo.plist",
             "brew services start postgresql",
             "service docker restart",
+            "cd /etc/nixos && rebuild",
+            "$(rebuild)",
         ],
     )
     def test_flags_known_daemon_or_service_spawners(self, command):
@@ -148,6 +150,9 @@ class TestCommandStartsALingeringDaemonOrService:
             "brew services list",
             "git rebuild-cache",
             "make rebuild-docs",
+            'until ! pgrep -qf "darwin-rebuild switch"; do sleep 10; done',
+            "pgrep -f nixos-rebuild",
+            'echo "remember to rebuild later"',
         ],
     )
     def test_passes_non_service_starting_commands(self, command):
