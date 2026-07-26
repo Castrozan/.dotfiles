@@ -28,6 +28,8 @@ def test_long_form_granted_for_explicit_document_request():
     assert user_request_permits_long_form("give me a full architecture overview")
     assert user_request_permits_long_form("explain in detail why the sync failed")
     assert user_request_permits_long_form("paste the entire file verbatim")
+    assert user_request_permits_long_form("give me the design of the hook stuff")
+    assert user_request_permits_long_form("what is the architecture behind the gate")
 
 
 def test_long_form_not_granted_for_routine_requests():
@@ -48,6 +50,7 @@ def test_long_form_not_granted_for_verb_substring_or_compression_leaks():
     assert not user_request_permits_long_form(
         "why did you show me that? update the deploy plan status"
     )
+    assert not user_request_permits_long_form("when is the design review meeting?")
 
 
 def test_routine_long_reply_trips_the_hard_ceiling():

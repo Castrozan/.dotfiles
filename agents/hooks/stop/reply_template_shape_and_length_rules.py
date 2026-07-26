@@ -42,6 +42,13 @@ LONG_FORM_DIRECTIVE_PATTERN = re.compile(
     r"the (full|whole|entire) (file|code|script|function|contents|diff|output|log))\b",
     re.IGNORECASE,
 )
+LONG_FORM_DESIGN_REQUEST_PATTERN = re.compile(
+    r"\b(?:the\s+)?(?:design|architecture|technical\s+design|system\s+design)\s+"
+    r"(?:of|for|behind)\s+the\b"
+    r"|\b(?:design|architecture)\s+(?:doc|document|write-?up|proposal|"
+    r"specification|spec)\b",
+    re.IGNORECASE,
+)
 
 
 def prose_lines_outside_code_fences(reply_text: str) -> list[str]:
@@ -84,6 +91,7 @@ def user_request_permits_long_form(user_request_text: str) -> bool:
     return bool(
         LONG_FORM_ARTIFACT_REQUEST_PATTERN.search(user_request_text)
         or LONG_FORM_DIRECTIVE_PATTERN.search(user_request_text)
+        or LONG_FORM_DESIGN_REQUEST_PATTERN.search(user_request_text)
     )
 
 
