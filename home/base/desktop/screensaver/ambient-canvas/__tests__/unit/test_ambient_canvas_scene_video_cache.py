@@ -48,13 +48,38 @@ def test_manifest_videos_are_read_in_declaration_order(tmp_path):
 
 def test_download_arguments_request_a_premuxed_format_so_ffmpeg_is_never_needed():
     arguments = video_cache.build_download_arguments(
-        "abc123", "/state/videos/abc123.mp4"
+        "https://www.youtube.com/watch?v=abc123", "/state/videos/abc123.mp4"
     )
     assert arguments[0] == "yt-dlp"
     assert "--format" in arguments
-    assert arguments[arguments.index("--format") + 1] == "18/best[height<=480][ext=mp4]"
+    assert (
+        arguments[arguments.index("--format") + 1]
+        == "18/best[height<=480][ext=mp4]/best[ext=mp4]/best"
+    )
     assert arguments[arguments.index("--output") + 1] == "/state/videos/abc123.mp4"
     assert arguments[-1] == "https://www.youtube.com/watch?v=abc123"
+
+
+def test_the_format_selector_falls_back_past_youtube_only_constraints():
+    selector = video_cache.YT_DLP_FORMAT_SELECTOR.split("/")
+    assert selector[0] == "18"
+    assert selector[-1] == "best"
+
+
+def test_a_bare_identifier_resolves_to_its_youtube_watch_url():
+    assert (
+        video_cache.resolve_scene_video_source_url({"id": "abc123"})
+        == "https://www.youtube.com/watch?v=abc123"
+    )
+
+
+def test_an_explicit_url_lets_a_scene_video_come_from_any_site():
+    assert (
+        video_cache.resolve_scene_video_source_url(
+            {"id": "crego-the-link", "url": "https://x.com/ALCrego_/status/123"}
+        )
+        == "https://x.com/ALCrego_/status/123"
+    )
 
 
 def test_already_cached_scene_videos_are_not_downloaded_again(tmp_path, monkeypatch):
@@ -87,6 +112,45 @@ def test_already_cached_scene_videos_are_not_downloaded_again(tmp_path, monkeypa
     )
     assert downloaded == ["missing"]
     assert attempted_video_ids == ["https://www.youtube.com/watch?v=missing"]
+
+
+def test_a_url_backed_scene_video_caches_under_its_manifest_identifier(
+    tmp_path, monkeypatch
+):
+    web_directory = tmp_path / "web"
+    web_directory.mkdir()
+    (web_directory / "scene-videos.json").write_text(
+        json.dumps(
+            {
+                "videos": [
+                    {
+                        "id": "crego-the-link",
+                        "url": "https://x.com/ALCrego_/status/123",
+                    }
+                ]
+            }
+        )
+    )
+    state_directory = tmp_path / "state"
+    requested_urls = []
+
+    def fake_run(arguments, **ignored):
+        requested_urls.append(arguments[-1])
+        destination = arguments[arguments.index("--output") + 1]
+        with open(destination, "wb") as downloaded_file:
+            downloaded_file.write(b"downloaded")
+
+        class CompletedDownload:
+            returncode = 0
+
+        return CompletedDownload()
+
+    monkeypatch.setattr(video_cache.subprocess, "run", fake_run)
+    assert video_cache.download_missing_scene_videos(
+        str(web_directory), str(state_directory)
+    ) == ["crego-the-link"]
+    assert requested_urls == ["https://x.com/ALCrego_/status/123"]
+    assert (state_directory / "videos" / "crego-the-link.mp4").is_file()
 
 
 def test_a_failed_download_is_reported_but_does_not_abort_the_render(

@@ -19,6 +19,24 @@ window.AmbientCanvasSeekableVideoSource = (function buildSeekableVideoSource() {
     });
   }
 
+  function resolveLoopedSeekSeconds(
+    videoElement,
+    startSeconds,
+    localElapsedSeconds,
+  ) {
+    const requestedSeconds = startSeconds + localElapsedSeconds;
+    if (!videoElement.duration || !isFinite(videoElement.duration)) {
+      return requestedSeconds;
+    }
+    const playableEndSeconds =
+      videoElement.duration - END_OF_VIDEO_GUARD_SECONDS;
+    const loopableSeconds = playableEndSeconds - startSeconds;
+    if (loopableSeconds <= 0 || requestedSeconds < playableEndSeconds) {
+      return requestedSeconds;
+    }
+    return startSeconds + (localElapsedSeconds % loopableSeconds);
+  }
+
   function seekVideoTo(videoElement, targetSeconds) {
     if (!videoElement.duration || !isFinite(videoElement.duration)) {
       return Promise.resolve();
@@ -80,7 +98,14 @@ window.AmbientCanvasSeekableVideoSource = (function buildSeekableVideoSource() {
         if (!seeksDeterministically) {
           return Promise.resolve();
         }
-        return seekVideoTo(videoElement, startSeconds + localElapsedSeconds);
+        return seekVideoTo(
+          videoElement,
+          resolveLoopedSeekSeconds(
+            videoElement,
+            startSeconds,
+            localElapsedSeconds,
+          ),
+        );
       },
       dispose() {
         videoElement.pause();
