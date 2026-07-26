@@ -44,6 +44,14 @@ jobs:
           cp .github/pages/style.css apps/reports/site/baseline/style.css
           python3 agents/__tests__/render_quality_metrics.py apps/reports/site/quality/metrics.json
 
+      - name: Publish the test baseline snapshot to the ingestion api
+        if: ${{ vars.INGEST_BASE_URL != '' }}
+        env:
+          INGEST_BASE_URL: ${{ vars.INGEST_BASE_URL }}
+          INGEST_PRODUCER_SECRET: ${{ secrets.INGEST_PRODUCER_SECRET }}
+          INGEST_PRODUCER_LABEL: dotfiles-github-actions
+        run: python3 agents/__tests__/publish_test_baseline_snapshot.py
+
       - id: auth
         uses: google-github-actions/auth@v2
         with:
