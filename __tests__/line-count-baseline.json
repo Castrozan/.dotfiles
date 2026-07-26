@@ -35,7 +35,6 @@
   "home/base/browser/extensions/tampermonkey/youtube-theater-focus.user.js": 214,
   "home/base/browser/firefox.nix": 248,
   "home/base/media/scripts/speed_read.py": 319,
-  "home/base/media/__tests__/unit/test_daily_note.py": 263,
   "home/base/media/__tests__/unit/test_speed_read.py": 244,
   "home/base/system/scripts/mouse_poll_rate.py": 274,
   "home/base/system/scripts/nix_gc.py": 267,

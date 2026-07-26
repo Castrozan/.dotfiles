@@ -10,7 +10,8 @@ personal_subskill_router_system_prompt:
 
   google-chat - Send Google Chat messages and webhooks, read history, and resolve contacts by name.
 
-  obsidian - Obsidian vault daily notes, TODO tracking, activity logging, and inbox processing.
+  ril - Work the ReadItLater capture queue: resolve each saved link's origin, turn it into a repo change or a filed
+  Second Brain entry.
 
   todo - Capture and manage Todoist tasks: add, list, complete, reschedule, digest.
 

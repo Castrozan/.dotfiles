@@ -1,0 +1,19 @@
+name: skill_discovery_ril_for_capture_inbox
+description: Agent should autonomously load the ril skill for ReadItLater capture work (leading-question variant). The queue carries non-obvious constraints (claim a capture before working it, the capture file is its own progress record, only the ril CLI marks one done) that the ril skill documents.
+
+setup:
+  git_init: false
+  files: []
+
+prompt: |
+  Process my ReadItLater inbox and mark any already-handled items. There's a
+  specific convention for how processed items are tagged in my vault - apply it.
+
+timeout: 180
+
+assertions:
+  autonomous_skill_invocation:
+    - ril
+  wrong_skill_not_invoked:
+    - nix
+    - review
