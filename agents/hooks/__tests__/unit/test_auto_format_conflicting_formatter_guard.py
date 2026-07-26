@@ -2,7 +2,7 @@ import importlib.util
 from pathlib import Path
 
 HOOKS_ROOT = Path(__file__).resolve().parents[2]
-AUTO_FORMAT_SCRIPT = next(HOOKS_ROOT.rglob("auto-format.py"))
+AUTO_FORMAT_SCRIPT = next(HOOKS_ROOT.rglob("auto_format_handler.py"))
 
 _spec = importlib.util.spec_from_file_location("auto_format_hook", AUTO_FORMAT_SCRIPT)
 auto_format_hook = importlib.util.module_from_spec(_spec)

@@ -111,8 +111,8 @@
       hooks = [
         {
           type = "command";
-          command = "${runHook} ${hooksPath}/record-instructions-skill-invocation.py";
-          timeout = 3000;
+          command = "${runHook} ${hooksPath}/post-tool-use-dispatcher.py";
+          timeout = 15000;
         }
       ];
     }
@@ -121,23 +121,8 @@
       hooks = [
         {
           type = "command";
-          command = "${runHook} ${hooksPath}/auto-format.py";
+          command = "${runHook} ${hooksPath}/post-tool-use-dispatcher.py";
           timeout = 15000;
-        }
-        {
-          type = "command";
-          command = "${runHook} ${hooksPath}/record-edited-source-file.py";
-          timeout = 3000;
-        }
-        {
-          type = "command";
-          command = "${runHook} ${hooksPath}/nix-rebuild-trigger.py";
-          timeout = 3000;
-        }
-        {
-          type = "command";
-          command = "${runHook} ${hooksPath}/line-count-limit-guard.py";
-          timeout = 3000;
         }
       ];
     }

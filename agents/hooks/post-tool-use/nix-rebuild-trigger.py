@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
+from __future__ import annotations
+
 import json
-import os
 import sys
 from pathlib import Path
 
@@ -17,58 +18,23 @@ for _shared_module_candidate_directory in (
     ):
         sys.path.insert(0, _shared_module_candidate_path)
 
-from changed_file_paths import collect_changed_file_paths  # noqa: E402
-
-NIX_FILE_EXTENSIONS = [
-    ".nix",
-]
+from hook_dispatch import read_hook_input_or_exit  # noqa: E402
+from nix_rebuild_trigger_handler import handle  # noqa: E402
 
 
-def has_nix_file_extension(path: str) -> bool:
-    if not path:
-        return False
-
-    for extension in NIX_FILE_EXTENSIONS:
-        if path.endswith(extension):
-            return True
-
-    return False
-
-
-def main():
-    try:
-        data = json.load(sys.stdin)
-    except json.JSONDecodeError:
-        sys.exit(0)
-
-    changed_nix_files = [
-        path
-        for path in collect_changed_file_paths(data)
-        if has_nix_file_extension(path)
-    ]
-
-    if not changed_nix_files:
-        sys.exit(0)
-
-    changed_nix_file_names = ", ".join(
-        sorted({os.path.basename(path) for path in changed_nix_files})
-    )
-    mandatory_rebuild_message = (
-        f"MANDATORY: {changed_nix_file_names} changed. "
-        "You MUST stage, commit, and run the rebuild "
-        "before responding to the user. "
-        "Do not skip. Untested nix changes are not changes."
-    )
-    output = {
-        "continue": True,
-        "systemMessage": mandatory_rebuild_message,
-        "hookSpecificOutput": {
-            "hookEventName": "PostToolUse",
-            "additionalContext": mandatory_rebuild_message,
-        },
-    }
-    print(json.dumps(output))
-
+def main() -> None:
+    hook_input = read_hook_input_or_exit()
+    result = handle(hook_input)
+    if result is not None and (result.additional_context or result.system_message):
+        payload: dict = {"continue": True}
+        if result.system_message:
+            payload["systemMessage"] = result.system_message
+        if result.additional_context:
+            payload["hookSpecificOutput"] = {
+                "hookEventName": "PostToolUse",
+                "additionalContext": result.additional_context,
+            }
+        print(json.dumps(payload))
     sys.exit(0)
 
 

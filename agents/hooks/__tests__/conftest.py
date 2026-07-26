@@ -26,8 +26,8 @@ PROHIBITED_WORDS_GUARD_HOOK_SCRIPT_PATH = find_hook_module_path(
 AGENT_INSTRUCTION_FILE_AUTHORING_ROUTER_HOOK_SCRIPT_PATH = find_hook_module_path(
     "agent-instruction-file-authoring-router"
 )
-RECORD_INSTRUCTIONS_SKILL_INVOCATION_HOOK_SCRIPT_PATH = find_hook_module_path(
-    "record-instructions-skill-invocation"
+POST_TOOL_USE_DISPATCHER_HOOK_SCRIPT_PATH = find_hook_module_path(
+    "post-tool-use-dispatcher"
 )
 MEMORY_RECALL_HOOK_SCRIPT_PATH = find_hook_module_path("memory-recall")
 CODEX_SANDBOX_DOWNGRADE_GUARD_HOOK_SCRIPT_PATH = find_hook_module_path(
@@ -114,7 +114,8 @@ def invoke_record_instructions_skill_invocation_hook(tmp_path, monkeypatch):
 
     def runner(payload: dict):
         return run_hook_subprocess(
-            RECORD_INSTRUCTIONS_SKILL_INVOCATION_HOOK_SCRIPT_PATH, json.dumps(payload)
+            POST_TOOL_USE_DISPATCHER_HOOK_SCRIPT_PATH,
+            json.dumps({**payload, "hook_event_name": "PostToolUse"}),
         )
 
     return runner

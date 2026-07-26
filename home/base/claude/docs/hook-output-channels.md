@@ -25,7 +25,7 @@ design.
 ## Consequence for advisory tiers
 
 A soft tier that only sets `systemMessage` cannot change agent behavior. It is a human dashboard, so justify it as
-terminal output or delete it. `line-count-limit-guard.py` lost its 100-line and 150-line tiers for exactly this reason,
+terminal output or delete it. `line_count_limit_guard_handler.py` lost its 100-line and 150-line tiers for exactly this reason,
 and the lingering-daemon advisory in `background-bash-anti-pattern-validator.py` gained `additionalContext` because its
 text is an instruction to the model. `lint-turn-review.py` stays human-only on purpose: on `Stop` the model-facing
 channel costs a whole extra turn per turn that touched a file.

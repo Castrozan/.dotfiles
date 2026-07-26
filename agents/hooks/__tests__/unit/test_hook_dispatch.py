@@ -11,6 +11,7 @@ from hook_dispatch import (  # noqa: E402
     HandlerResult,
     HookHandler,
     emit_context_injection,
+    emit_post_tool_use_outcome,
     emit_stop_decision,
     run_handlers,
 )
@@ -115,4 +116,73 @@ def test_emit_stop_decision_unions_system_message_and_block(capsys):
         "systemMessage": "lint advisory",
         "decision": "block",
         "reason": "shape",
+    }
+
+
+def context_and_system_message_handler(text):
+    return HookHandler(
+        handle=lambda hook_input: HandlerResult(
+            additional_context=text, system_message=text
+        )
+    )
+
+
+def block_and_system_message_handler(reason, system_message):
+    return HookHandler(
+        handle=lambda hook_input: HandlerResult(
+            decision="block", reason=reason, system_message=system_message
+        )
+    )
+
+
+def test_emit_post_tool_use_outcome_is_silent_when_empty(capsys):
+    emit_post_tool_use_outcome(
+        run_handlers({}, [HookHandler(handle=lambda hook_input: None)])
+    )
+    assert capsys.readouterr().out.strip() == ""
+
+
+def test_emit_post_tool_use_outcome_injects_additional_context(capsys):
+    emit_post_tool_use_outcome(run_handlers({}, [context_handler("ctx")]))
+    payload = json.loads(capsys.readouterr().out)
+    assert payload == {
+        "hookSpecificOutput": {
+            "hookEventName": "PostToolUse",
+            "additionalContext": "ctx",
+        },
+        "continue": True,
+    }
+
+
+def test_emit_post_tool_use_outcome_emits_system_message_only(capsys):
+    emit_post_tool_use_outcome(run_handlers({}, [system_message_handler("advisory")]))
+    payload = json.loads(capsys.readouterr().out)
+    assert payload == {"systemMessage": "advisory", "continue": True}
+
+
+def test_emit_post_tool_use_outcome_unions_context_and_system_message(capsys):
+    emit_post_tool_use_outcome(
+        run_handlers({}, [context_and_system_message_handler("rebuild")])
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert payload == {
+        "systemMessage": "rebuild",
+        "hookSpecificOutput": {
+            "hookEventName": "PostToolUse",
+            "additionalContext": "rebuild",
+        },
+        "continue": True,
+    }
+
+
+def test_emit_post_tool_use_outcome_unions_block_and_system_message(capsys):
+    emit_post_tool_use_outcome(
+        run_handlers({}, [block_and_system_message_handler("too long", "BLOCKED")])
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert payload == {
+        "systemMessage": "BLOCKED",
+        "decision": "block",
+        "reason": "too long",
+        "continue": True,
     }

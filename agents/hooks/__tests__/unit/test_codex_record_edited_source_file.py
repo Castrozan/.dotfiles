@@ -7,8 +7,12 @@ from pathlib import Path
 
 HOOKS_ROOT = Path(__file__).resolve().parents[2]
 CHANGED_FILE_PATHS_SOURCE = HOOKS_ROOT / "common" / "changed_file_paths.py"
+HOOK_DISPATCH_SOURCE = HOOKS_ROOT / "common" / "hook_dispatch.py"
 LINT_LEDGER_SOURCE = next(HOOKS_ROOT.rglob("lint_ledger.py"))
 LINTER_TABLE_SOURCE = next(HOOKS_ROOT.rglob("linter_table_by_extension.py"))
+RECORD_EDITED_HANDLER_SOURCE = next(
+    HOOKS_ROOT.rglob("record_edited_source_file_handler.py")
+)
 RECORD_EDITED_SOURCE = next(HOOKS_ROOT.rglob("record-edited-source-file.py"))
 
 
@@ -24,8 +28,10 @@ def test_record_edited_logs_codex_apply_patch_nix_file(tmp_path):
         runtime_directory,
         [
             CHANGED_FILE_PATHS_SOURCE,
+            HOOK_DISPATCH_SOURCE,
             LINT_LEDGER_SOURCE,
             LINTER_TABLE_SOURCE,
+            RECORD_EDITED_HANDLER_SOURCE,
             RECORD_EDITED_SOURCE,
         ],
     )

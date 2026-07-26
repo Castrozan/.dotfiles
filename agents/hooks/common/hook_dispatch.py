@@ -115,3 +115,22 @@ def emit_stop_decision(outcome: MergedHookOutcome) -> None:
         payload["reason"] = outcome.reason
     if payload:
         print(json.dumps(payload))
+
+
+def emit_post_tool_use_outcome(outcome: MergedHookOutcome) -> None:
+    payload: dict = {}
+    system_message = outcome.combined_system_message
+    if system_message:
+        payload["systemMessage"] = system_message
+    if outcome.decision == "block":
+        payload["decision"] = "block"
+        payload["reason"] = outcome.reason
+    combined_context = outcome.combined_additional_context
+    if combined_context:
+        payload["hookSpecificOutput"] = {
+            "hookEventName": "PostToolUse",
+            "additionalContext": combined_context,
+        }
+    if payload:
+        payload["continue"] = True
+        print(json.dumps(payload))

@@ -6,14 +6,21 @@ from pathlib import Path
 import pytest
 
 HOOK_SCRIPT_PATH = next(
-    Path(__file__).resolve().parent.parent.parent.rglob("line-count-limit-guard.py")
+    Path(__file__).resolve().parent.parent.parent.rglob("post-tool-use-dispatcher.py")
 )
+
+
+@pytest.fixture(autouse=True)
+def isolate_lint_ledger_in_throwaway_temporary_directory(tmp_path, monkeypatch):
+    lint_ledger_directory = tmp_path / "isolated-lint-ledger"
+    lint_ledger_directory.mkdir()
+    monkeypatch.setenv("TMPDIR", str(lint_ledger_directory))
 
 
 def invoke_hook_with_payload(payload: dict) -> subprocess.CompletedProcess:
     return subprocess.run(
         [sys.executable, str(HOOK_SCRIPT_PATH)],
-        input=json.dumps(payload),
+        input=json.dumps({**payload, "hook_event_name": "PostToolUse"}),
         capture_output=True,
         text=True,
         timeout=5,
@@ -150,8 +157,8 @@ class TestMissingOrInvalidInputs:
         assert result.stdout == ""
 
 
-class TestNotebookEditPathField:
-    def test_uses_notebook_path_for_notebook_edit(self, tmp_path):
+class TestToolMatcherRoutingThroughDispatcher:
+    def test_notebook_edit_is_gated_out_by_the_edit_write_matcher(self, tmp_path):
         file_path = write_python_file_with_line_count(tmp_path, "notebook.py", 250)
         result = invoke_hook_with_payload(
             {
@@ -160,5 +167,4 @@ class TestNotebookEditPathField:
             }
         )
         assert result.returncode == 0
-        payload = parse_hook_stdout(result.stdout)
-        assert payload["decision"] == "block"
+        assert result.stdout == ""
