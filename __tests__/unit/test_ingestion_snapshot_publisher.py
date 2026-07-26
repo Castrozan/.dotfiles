@@ -3,7 +3,9 @@ import re
 import pytest
 
 from ingestion_snapshot_publisher import (
+    PRODUCER_SECRET_HEADER_NAME,
     IngestionRefusedError,
+    build_ingest_request_headers,
     build_ingestion_event,
     build_topic_endpoint_url,
     read_required_environment_value,
@@ -92,3 +94,21 @@ class TestTopicRoutingAndEnvironmentRefusals:
     def test_refuses_to_publish_without_the_value_the_request_needs(self):
         with pytest.raises(IngestionRefusedError, match="INGEST_BASE_URL"):
             read_required_environment_value({}, "INGEST_BASE_URL", "name the mount")
+
+
+class TestRequestHeadersSurviveTheEdge:
+    def test_identifies_the_publisher_instead_of_the_banned_default_agent(self):
+        headers = build_ingest_request_headers("a-producer-secret")
+
+        assert not headers["user-agent"].startswith("Python-urllib")
+
+    def test_names_the_publisher_so_an_edge_block_is_attributable(self):
+        headers = build_ingest_request_headers("a-producer-secret")
+
+        assert "ingestion-publisher" in headers["user-agent"]
+
+    def test_still_carries_the_json_content_type_and_producer_secret(self):
+        headers = build_ingest_request_headers("a-producer-secret")
+
+        assert headers["content-type"] == "application/json"
+        assert headers[PRODUCER_SECRET_HEADER_NAME] == "a-producer-secret"

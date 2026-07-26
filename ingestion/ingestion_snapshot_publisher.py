@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 PRODUCER_SECRET_HEADER_NAME = "x-ingest-producer-secret"
+PUBLISHER_USER_AGENT = "dotfiles-ingestion-publisher/1"
 ACCEPTED_INGEST_STATUS_CODE = 202
 INGEST_REQUEST_TIMEOUT_SECONDS = 30
 
@@ -64,15 +65,20 @@ def describe_ingest_refusal(topic, status_code, response_body):
     )
 
 
+def build_ingest_request_headers(producer_secret):
+    return {
+        "content-type": "application/json",
+        "user-agent": PUBLISHER_USER_AGENT,
+        PRODUCER_SECRET_HEADER_NAME: producer_secret,
+    }
+
+
 def post_ingestion_event(ingest_base_url, producer_secret, ingestion_event):
     topic = ingestion_event["topic"]
     request = urllib.request.Request(
         url=build_topic_endpoint_url(ingest_base_url, topic),
         data=json.dumps(ingestion_event).encode("utf-8"),
-        headers={
-            "content-type": "application/json",
-            PRODUCER_SECRET_HEADER_NAME: producer_secret,
-        },
+        headers=build_ingest_request_headers(producer_secret),
         method="POST",
     )
 
