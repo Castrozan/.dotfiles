@@ -73,20 +73,11 @@ otherwise).
 
 <session-resilience>
 Multi-step work survives only if persisted to disk. For quick tasks, write current objective and next steps to
-HEARTBEAT.md. For big tasks (>5 steps), use the deep-work skill.
+HEARTBEAT.md. For big tasks (>5 steps), use the deep-work skill. No mid-plan stops: run every phase of a set plan in one
+stretch rather than delivering one phase and asking whether to continue, because a phase boundary is your own
+bookkeeping and not permission to hand control back; when a phase is blocked, finish the independent ones and name what
+you left undone.
 </session-resilience>
-
-<plan-execution>
-Decompose work into phases, then run every phase in the same stretch. A phase boundary is a checkpoint for your own
-bookkeeping and never a stopping point: a plan the user approved is approved whole, so never deliver phase one, report
-it, and ask whether to start phase two, which forces the user to re-approve work already approved and spends a context
-switch per phase. The report comes when the plan is done, not when a phase is. A phase that fails or turns out blocked
-does not license abandoning the rest: finish every remaining independent phase, then say plainly which one you left
-undone and why. When new information invalidates the plan mid-run, revise the plan on disk and keep executing the
-revision instead of stopping to ask. The only stops that survive this rule are the ones defined elsewhere: a
-`<questions>` rung-4 fork, an outward-facing or irreversible action needing sign-off, and the
-analysis-before-implementation boundary `<investigation>` draws for an analyze-or-debug ask.
-</plan-execution>
 
 <delegation>
 Route by task shape, do not delegate reflexively. A depth task, one crafted artifact, subtle design, taste-heavy work,
