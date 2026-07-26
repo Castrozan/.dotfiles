@@ -14,7 +14,7 @@ from hook_module_loader import (
 )
 
 import_hyphenated_hook_module("session-start-dispatcher")
-import_hyphenated_hook_module("monitor-streaming-pattern-validator")
+import_hyphenated_hook_module("monitor_streaming_pattern_validator_handler")
 import_hyphenated_hook_module("memory-recall")
 
 PROHIBITED_COMMAND_GUARD_HOOK_SCRIPT_PATH = find_hook_module_path(
@@ -23,26 +23,13 @@ PROHIBITED_COMMAND_GUARD_HOOK_SCRIPT_PATH = find_hook_module_path(
 PROHIBITED_WORDS_GUARD_HOOK_SCRIPT_PATH = find_hook_module_path(
     "prohibited-words-guard"
 )
-AGENT_INSTRUCTION_FILE_AUTHORING_ROUTER_HOOK_SCRIPT_PATH = find_hook_module_path(
-    "agent-instruction-file-authoring-router"
-)
 POST_TOOL_USE_DISPATCHER_HOOK_SCRIPT_PATH = find_hook_module_path(
     "post-tool-use-dispatcher"
 )
-MEMORY_RECALL_HOOK_SCRIPT_PATH = find_hook_module_path("memory-recall")
-CODEX_SANDBOX_DOWNGRADE_GUARD_HOOK_SCRIPT_PATH = find_hook_module_path(
-    "codex-sandbox-downgrade-guard"
+PRE_TOOL_USE_DISPATCHER_HOOK_SCRIPT_PATH = find_hook_module_path(
+    "pre-tool-use-dispatcher"
 )
-
-
-@pytest.fixture
-def invoke_codex_sandbox_downgrade_guard_hook():
-    def runner(payload: dict):
-        return run_hook_subprocess(
-            CODEX_SANDBOX_DOWNGRADE_GUARD_HOOK_SCRIPT_PATH, json.dumps(payload)
-        )
-
-    return runner
+MEMORY_RECALL_HOOK_SCRIPT_PATH = find_hook_module_path("memory-recall")
 
 
 @pytest.fixture
@@ -99,8 +86,8 @@ def invoke_agent_instruction_file_authoring_router_hook(tmp_path, monkeypatch):
 
     def runner(payload: dict):
         return run_hook_subprocess(
-            AGENT_INSTRUCTION_FILE_AUTHORING_ROUTER_HOOK_SCRIPT_PATH,
-            json.dumps(payload),
+            PRE_TOOL_USE_DISPATCHER_HOOK_SCRIPT_PATH,
+            json.dumps({**payload, "hook_event_name": "PreToolUse"}),
         )
 
     return runner

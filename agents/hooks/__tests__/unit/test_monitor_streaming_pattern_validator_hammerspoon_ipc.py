@@ -1,4 +1,4 @@
-import monitor_streaming_pattern_validator as sut
+import streamed_command_anti_pattern_detectors as sut
 
 HAMMERSPOON_IPC_RULE_NAME = "hammerspoon-ipc-blocks-without-timeout"
 

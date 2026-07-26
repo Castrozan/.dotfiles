@@ -3,28 +3,30 @@ import subprocess
 import sys
 from pathlib import Path
 
-HOOK_SCRIPT_PATH = next(
+DISPATCHER_SCRIPT_PATH = next(
     candidate
     for candidate in Path(__file__)
     .resolve()
-    .parent.parent.parent.rglob("background-bash-anti-pattern-validator.py")
+    .parent.parent.parent.rglob("pre-tool-use-dispatcher.py")
     if "__pycache__" not in candidate.parts
 )
 
+BACKGROUND_BASH_PATTERNS_REFERENCE = "background-bash-anti-patterns.md"
 
-def _invoke_validator_with_payload(payload):
+
+def _invoke_dispatcher_with_payload(payload):
     return subprocess.run(
-        [sys.executable, str(HOOK_SCRIPT_PATH)],
-        input=json.dumps(payload),
+        [sys.executable, str(DISPATCHER_SCRIPT_PATH)],
+        input=json.dumps({**payload, "hook_event_name": "PreToolUse"}),
         capture_output=True,
         text=True,
         timeout=5,
     )
 
 
-def _invoke_validator_with_raw_stdin(raw_stdin):
+def _invoke_dispatcher_with_raw_stdin(raw_stdin):
     return subprocess.run(
-        [sys.executable, str(HOOK_SCRIPT_PATH)],
+        [sys.executable, str(DISPATCHER_SCRIPT_PATH)],
         input=raw_stdin,
         capture_output=True,
         text=True,
@@ -32,9 +34,15 @@ def _invoke_validator_with_raw_stdin(raw_stdin):
     )
 
 
-class TestHookEndToEndViaSubprocess:
+def _permission_decision(result):
+    if not result.stdout.strip():
+        return None
+    return json.loads(result.stdout)["hookSpecificOutput"].get("permissionDecision")
+
+
+class TestBackgroundBashAntiPatternsEndToEndThroughDispatcher:
     def test_denies_background_bash_with_until_zero_count_loop(self):
-        result = _invoke_validator_with_payload(
+        result = _invoke_dispatcher_with_payload(
             {
                 "tool_name": "Bash",
                 "tool_input": {
@@ -52,7 +60,7 @@ class TestHookEndToEndViaSubprocess:
         )
 
     def test_allows_foreground_bash_with_same_command(self):
-        result = _invoke_validator_with_payload(
+        result = _invoke_dispatcher_with_payload(
             {
                 "tool_name": "Bash",
                 "tool_input": {
@@ -62,7 +70,8 @@ class TestHookEndToEndViaSubprocess:
             }
         )
         assert result.returncode == 0
-        assert result.stdout == ""
+        assert _permission_decision(result) != "deny"
+        assert BACKGROUND_BASH_PATTERNS_REFERENCE not in result.stdout
 
     def test_allows_background_bash_with_safe_polling_pattern(self):
         safe_command = (
@@ -71,17 +80,18 @@ class TestHookEndToEndViaSubprocess:
             '[ "$matched" -gt 0 ] || { echo "no runs match"; exit 1; }; '
             "sleep 15; done"
         )
-        result = _invoke_validator_with_payload(
+        result = _invoke_dispatcher_with_payload(
             {
                 "tool_name": "Bash",
                 "tool_input": {"command": safe_command, "run_in_background": True},
             }
         )
         assert result.returncode == 0
-        assert result.stdout == ""
+        assert _permission_decision(result) != "deny"
+        assert BACKGROUND_BASH_PATTERNS_REFERENCE not in result.stdout
 
     def test_ignores_non_bash_tool(self):
-        result = _invoke_validator_with_payload(
+        result = _invoke_dispatcher_with_payload(
             {
                 "tool_name": "Read",
                 "tool_input": {"file_path": "/etc/hosts"},
@@ -91,12 +101,12 @@ class TestHookEndToEndViaSubprocess:
         assert result.stdout == ""
 
     def test_ignores_malformed_input(self):
-        result = _invoke_validator_with_raw_stdin("not json")
+        result = _invoke_dispatcher_with_raw_stdin("not json")
         assert result.returncode == 0
         assert result.stdout == ""
 
     def test_daemon_advisory_reaches_the_model_not_only_the_terminal(self):
-        result = _invoke_validator_with_payload(
+        result = _invoke_dispatcher_with_payload(
             {
                 "tool_name": "Bash",
                 "tool_input": {
@@ -121,7 +131,7 @@ class TestHookEndToEndViaSubprocess:
             '"1e42771447c81fb6a96b2d3eef3e16df9f8517b3")] | length\''
             " | xargs -I {} test {} = 0"
         )
-        result = _invoke_validator_with_payload(
+        result = _invoke_dispatcher_with_payload(
             {
                 "tool_name": "Bash",
                 "tool_input": {

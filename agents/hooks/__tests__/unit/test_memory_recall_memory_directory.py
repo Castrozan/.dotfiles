@@ -1,23 +1,23 @@
 from pathlib import Path
 
-import memory_recall
+import memory_recall_memory_directory
 
 
 class TestEncodeCwdAsClaudeProjectDirectory:
     def test_replaces_slashes_with_dashes(self):
-        result = memory_recall.encode_cwd_as_claude_project_directory(
+        result = memory_recall_memory_directory.encode_cwd_as_claude_project_directory(
             Path("/Users/lucas/dotfiles")
         )
         assert result == "-Users-lucas-dotfiles"
 
     def test_replaces_dots_with_dashes(self):
-        result = memory_recall.encode_cwd_as_claude_project_directory(
+        result = memory_recall_memory_directory.encode_cwd_as_claude_project_directory(
             Path("/Users/lucas/.dotfiles")
         )
         assert result == "-Users-lucas--dotfiles"
 
     def test_handles_workspace_with_dots_and_dashes(self):
-        result = memory_recall.encode_cwd_as_claude_project_directory(
+        result = memory_recall_memory_directory.encode_cwd_as_claude_project_directory(
             Path("/Users/lucas.zanoni/clawde/work-pm")
         )
         assert result == "-Users-lucas-zanoni-clawde-work-pm"

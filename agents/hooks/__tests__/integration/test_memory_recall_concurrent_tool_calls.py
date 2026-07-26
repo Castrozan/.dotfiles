@@ -1,6 +1,6 @@
 import concurrent.futures
 
-import memory_recall
+import memory_recall_debounce
 
 
 def build_concurrent_payloads(workspace, session_id):
@@ -59,12 +59,14 @@ class TestConcurrentToolCallsShareOneDebounceWindow:
         payloads = build_concurrent_payloads(workspace, "session-concurrent-state")
         with concurrent.futures.ThreadPoolExecutor(max_workers=len(payloads)) as pool:
             list(pool.map(invoke_memory_recall_hook, payloads))
-        state = memory_recall.load_debounce_state(
-            memory_recall.debounce_state_path_for_session("session-concurrent-state")
+        state = memory_recall_debounce.load_debounce_state(
+            memory_recall_debounce.debounce_state_path_for_session(
+                "session-concurrent-state"
+            )
         )
         assert state["recall_event_count"] == 1
         assert state["suppressed_event_count_by_reason"] == {
-            memory_recall.SUPPRESSION_REASON_DEBOUNCE: 1
+            memory_recall_debounce.SUPPRESSION_REASON_DEBOUNCE: 1
         }
 
     def test_single_invocation_still_injects(

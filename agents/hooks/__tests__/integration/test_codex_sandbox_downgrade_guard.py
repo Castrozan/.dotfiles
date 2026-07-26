@@ -1,17 +1,17 @@
-import json
+import sys
+from pathlib import Path
 
 import pytest
 
-from hook_module_loader import find_hook_module_path, run_hook_subprocess
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-CODEX_LAUNCH_TOOL_NAME = "mcp__codex__codex"
-CODEX_SANDBOX_DOWNGRADE_GUARD_HOOK_SCRIPT_PATH = find_hook_module_path(
-    "codex-sandbox-downgrade-guard"
+from hook_module_loader import import_hyphenated_hook_module
+
+codex_sandbox_downgrade_guard_handler = import_hyphenated_hook_module(
+    "codex_sandbox_downgrade_guard_handler"
 )
 
-
-def parse_permission_decision(stdout):
-    return json.loads(stdout)["hookSpecificOutput"]["permissionDecision"]
+CODEX_LAUNCH_TOOL_NAME = "mcp__codex__codex"
 
 
 class TestCodexSandboxDowngradeGuard:
@@ -32,14 +32,12 @@ class TestCodexSandboxDowngradeGuard:
             {"prompt": "x", "sandbox": "read-only", "config": "not-a-dict"},
         ],
     )
-    def test_denies_downgraded_codex_launch(
-        self, tool_input, invoke_codex_sandbox_downgrade_guard_hook
-    ):
-        result = invoke_codex_sandbox_downgrade_guard_hook(
+    def test_denies_downgraded_codex_launch(self, tool_input):
+        result = codex_sandbox_downgrade_guard_handler.handle(
             {"tool_name": CODEX_LAUNCH_TOOL_NAME, "tool_input": tool_input}
         )
-        assert result.returncode == 0
-        assert parse_permission_decision(result.stdout) == "deny"
+        assert result is not None
+        assert result.decision == "deny"
 
     @pytest.mark.parametrize(
         "tool_input",
@@ -58,31 +56,24 @@ class TestCodexSandboxDowngradeGuard:
             {"prompt": "x", "config": 123},
         ],
     )
-    def test_allows_full_access_codex_launch(
-        self, tool_input, invoke_codex_sandbox_downgrade_guard_hook
-    ):
-        result = invoke_codex_sandbox_downgrade_guard_hook(
+    def test_allows_full_access_codex_launch(self, tool_input):
+        result = codex_sandbox_downgrade_guard_handler.handle(
             {"tool_name": CODEX_LAUNCH_TOOL_NAME, "tool_input": tool_input}
         )
-        assert result.returncode == 0
-        assert result.stdout == ""
+        assert result is None
 
     @pytest.mark.parametrize(
         "tool_name",
         ["mcp__codex__codex-reply", "Bash", "Write", "mcp__browser-use__browser_click"],
     )
-    def test_ignores_other_tools_even_with_weak_sandbox(
-        self, tool_name, invoke_codex_sandbox_downgrade_guard_hook
-    ):
-        result = invoke_codex_sandbox_downgrade_guard_hook(
+    def test_ignores_other_tools_even_with_weak_sandbox(self, tool_name):
+        result = codex_sandbox_downgrade_guard_handler.handle(
             {"tool_name": tool_name, "tool_input": {"sandbox": "read-only"}}
         )
-        assert result.returncode == 0
-        assert result.stdout == ""
+        assert result is None
 
-    def test_ignores_malformed_stdin(self):
-        result = run_hook_subprocess(
-            CODEX_SANDBOX_DOWNGRADE_GUARD_HOOK_SCRIPT_PATH, "not json"
+    def test_ignores_input_without_a_tool_input(self):
+        result = codex_sandbox_downgrade_guard_handler.handle(
+            {"tool_name": CODEX_LAUNCH_TOOL_NAME}
         )
-        assert result.returncode == 0
-        assert result.stdout == ""
+        assert result is None

@@ -1,7 +1,7 @@
 import json
 import time
 
-import memory_recall
+import memory_recall_debounce
 
 
 class TestHookSessionBudgetHardStop:
@@ -20,10 +20,12 @@ class TestHookSessionBudgetHardStop:
             "# user-x\n\n- 2026-05-17: pnpm is preferred\n"
         )
         session_id = "session-budget-exhausted"
-        state_path = memory_recall.debounce_state_path_for_session(session_id)
+        state_path = memory_recall_debounce.debounce_state_path_for_session(session_id)
         state_path.write_text(
             json.dumps(
-                {"recall_event_count": memory_recall.SESSION_RECALL_EVENT_BUDGET}
+                {
+                    "recall_event_count": memory_recall_debounce.SESSION_RECALL_EVENT_BUDGET
+                }
             )
         )
         result = invoke_memory_recall_hook(
@@ -63,7 +65,7 @@ class TestHookSessionBudgetHardStop:
 
 class TestHookPathSetDedup:
     def _seed_recent_state(self, session_id, injected_hashes):
-        state_path = memory_recall.debounce_state_path_for_session(session_id)
+        state_path = memory_recall_debounce.debounce_state_path_for_session(session_id)
         state_path.write_text(
             json.dumps(
                 {
@@ -88,7 +90,7 @@ class TestHookPathSetDedup:
         (memory_dir / "user-x.md").write_text(
             "# user-x\n\n- 2026-05-17: pnpm is preferred\n"
         )
-        path_set_hash = memory_recall.hash_recall_path_set(
+        path_set_hash = memory_recall_debounce.hash_recall_path_set(
             [str((memory_dir / "user-x.md").resolve())]
         )
         self._seed_recent_state("session-dedup", [path_set_hash])

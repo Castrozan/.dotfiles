@@ -1,6 +1,6 @@
 import pytest
 
-import monitor_streaming_pattern_validator as sut
+import streamed_command_anti_pattern_detectors as sut
 
 
 class TestCommandInvokesPythonWithBufferedStdout:

@@ -10,15 +10,15 @@ HOOK_SCRIPT_PATH = next(
     candidate
     for candidate in Path(__file__)
     .resolve()
-    .parent.parent.parent.rglob("background-bash-anti-pattern-validator.py")
+    .parent.parent.parent.rglob("background_bash_anti_pattern_validator_handler.py")
     if "__pycache__" not in candidate.parts
 )
 
 _module_spec = importlib.util.spec_from_file_location(
-    "background_bash_anti_pattern_validator", HOOK_SCRIPT_PATH
+    "background_bash_anti_pattern_validator_handler", HOOK_SCRIPT_PATH
 )
 sut = importlib.util.module_from_spec(_module_spec)
-sys.modules["background_bash_anti_pattern_validator"] = sut
+sys.modules["background_bash_anti_pattern_validator_handler"] = sut
 _module_spec.loader.exec_module(sut)
 
 

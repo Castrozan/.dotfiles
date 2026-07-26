@@ -58,6 +58,33 @@ INSTRUCTIONS_SKILL_MARKER_SOURCE = (
     HOOKS_ROOT / "common" / "instructions_skill_marker.py"
 )
 
+CODEX_TOOL_PAYLOAD_SOURCE = HOOKS_ROOT / "common" / "codex_tool_payload.py"
+PRE_TOOL_USE_DISPATCHER_SOURCE = next(HOOKS_ROOT.rglob("pre-tool-use-dispatcher.py"))
+PRE_TOOL_USE_DISPATCHER_RUNTIME_SOURCES = [
+    PRE_TOOL_USE_DISPATCHER_SOURCE,
+    HOOK_DISPATCH_SOURCE,
+    CODEX_TOOL_PAYLOAD_SOURCE,
+    INSTRUCTIONS_SKILL_MARKER_SOURCE,
+    next(HOOKS_ROOT.rglob("agent_instruction_file_authoring_router_handler.py")),
+    next(HOOKS_ROOT.rglob("background_bash_anti_pattern_validator_handler.py")),
+    next(HOOKS_ROOT.rglob("blocked_skill_invocation_guard_handler.py")),
+    next(HOOKS_ROOT.rglob("codex_sandbox_downgrade_guard_handler.py")),
+    next(HOOKS_ROOT.rglob("memory_recall_handler.py")),
+    next(HOOKS_ROOT.rglob("monitor_streaming_pattern_validator_handler.py")),
+    next(HOOKS_ROOT.rglob("prohibited_command_guard_handler.py")),
+    next(HOOKS_ROOT.rglob("url_to_skill_router_handler.py")),
+    next(HOOKS_ROOT.rglob("workspace_directory_injector_handler.py")),
+    next(HOOKS_ROOT.rglob("background_bash_fake_success_detectors.py")),
+    next(HOOKS_ROOT.rglob("background_daemon_spawner_detectors.py")),
+    next(HOOKS_ROOT.rglob("interactive_command_hang_detectors.py")),
+    next(HOOKS_ROOT.rglob("memory_recall_debounce.py")),
+    next(HOOKS_ROOT.rglob("memory_recall_io.py")),
+    next(HOOKS_ROOT.rglob("memory_recall_keywords.py")),
+    next(HOOKS_ROOT.rglob("memory_recall_memory_directory.py")),
+    next(HOOKS_ROOT.rglob("memory_recall_ripgrep.py")),
+    next(HOOKS_ROOT.rglob("streamed_command_anti_pattern_detectors.py")),
+]
+
 INTERACTIVE_ENV_VAR = "CLAUDE_INTERACTIVE_PREFERENCES_PATH"
 CLAWDE_BACKGROUND_AGENT_ENV_MARKER = "CLAWDE_RESUME_FLAG"
 REMINDER_STATE_DIRECTORY_ENV_VAR = "INTERACTIVE_REPLY_REMINDER_STATE_DIRECTORY"

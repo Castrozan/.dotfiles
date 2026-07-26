@@ -1,4 +1,4 @@
-import monitor_streaming_pattern_validator as sut
+import monitor_streaming_pattern_validator_handler as sut
 import pytest
 
 

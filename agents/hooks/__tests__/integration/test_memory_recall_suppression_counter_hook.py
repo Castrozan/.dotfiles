@@ -1,7 +1,7 @@
 import json
 import time
 
-import memory_recall
+import memory_recall_debounce
 
 
 class TestHookRecordsSuppressionCounters:
@@ -20,10 +20,12 @@ class TestHookRecordsSuppressionCounters:
             "# user-x\n\n- 2026-05-17: pnpm is preferred\n"
         )
         session_id = "session-budget-counter"
-        state_path = memory_recall.debounce_state_path_for_session(session_id)
+        state_path = memory_recall_debounce.debounce_state_path_for_session(session_id)
         state_path.write_text(
             json.dumps(
-                {"recall_event_count": memory_recall.SESSION_RECALL_EVENT_BUDGET}
+                {
+                    "recall_event_count": memory_recall_debounce.SESSION_RECALL_EVENT_BUDGET
+                }
             )
         )
         invoke_memory_recall_hook(
@@ -33,10 +35,10 @@ class TestHookRecordsSuppressionCounters:
                 "session_id": session_id,
             }
         )
-        state = memory_recall.load_debounce_state(state_path)
+        state = memory_recall_debounce.load_debounce_state(state_path)
         assert (
             state["suppressed_event_count_by_reason"][
-                memory_recall.SUPPRESSION_REASON_BUDGET
+                memory_recall_debounce.SUPPRESSION_REASON_BUDGET
             ]
             == 1
         )
@@ -56,10 +58,10 @@ class TestHookRecordsSuppressionCounters:
             "# user-x\n\n- 2026-05-17: pnpm is preferred\n"
         )
         session_id = "session-dedup-counter"
-        path_set_hash = memory_recall.hash_recall_path_set(
+        path_set_hash = memory_recall_debounce.hash_recall_path_set(
             [str((memory_dir / "user-x.md").resolve())]
         )
-        state_path = memory_recall.debounce_state_path_for_session(session_id)
+        state_path = memory_recall_debounce.debounce_state_path_for_session(session_id)
         state_path.write_text(
             json.dumps(
                 {
@@ -76,10 +78,10 @@ class TestHookRecordsSuppressionCounters:
                 "session_id": session_id,
             }
         )
-        state = memory_recall.load_debounce_state(state_path)
+        state = memory_recall_debounce.load_debounce_state(state_path)
         assert (
             state["suppressed_event_count_by_reason"][
-                memory_recall.SUPPRESSION_REASON_DEDUP
+                memory_recall_debounce.SUPPRESSION_REASON_DEDUP
             ]
             == 1
         )
