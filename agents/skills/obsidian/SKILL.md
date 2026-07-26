@@ -36,7 +36,7 @@ alongside planned work.
 </logging_activity>
 
 <capture_inbox>
-The vault ReadItLater Inbox is a capture zone owned by the knowledge-intake skill, which researches each capture and
+The vault ReadItLater Inbox is a capture zone owned by the ril skill, which researches each capture and
 turns it into a repo change or a filed entry. Never summarize, rate or mark captures from this skill; a capture
 annotated in place reads as worked while nothing was learned or adopted.
 </capture_inbox>
