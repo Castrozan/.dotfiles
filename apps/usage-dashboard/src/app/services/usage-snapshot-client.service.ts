@@ -1,5 +1,6 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { DASHBOARD_CONFIGURATION, DashboardConfiguration } from '../config/dashboard-config';
+import { JSON_HTTP_CLIENT } from '../dependencies/json-http-client/json-http-client.port';
 import { UsageSnapshot } from '../models/usage-snapshot.model';
 
 interface StorageObjectListing {
@@ -10,6 +11,7 @@ interface StorageObjectListing {
 @Injectable({ providedIn: 'root' })
 export class UsageSnapshotClientService {
   private readonly configuration: DashboardConfiguration = DASHBOARD_CONFIGURATION;
+  private readonly jsonHttpClient = inject(JSON_HTTP_CLIENT);
 
   async fetchAllSnapshots(): Promise<UsageSnapshot[]> {
     const objectNames = await this.listSnapshotObjectNames();
@@ -34,9 +36,7 @@ export class UsageSnapshotClientService {
     return objectNames;
   }
 
-  private async fetchObjectListingPage(
-    pageToken: string | undefined,
-  ): Promise<StorageObjectListing> {
+  private buildObjectListingUrl(pageToken: string | undefined): string {
     const listUrl = new URL(
       `https://storage.googleapis.com/storage/v1/b/${this.configuration.snapshotsBucket}/o`,
     );
@@ -45,21 +45,26 @@ export class UsageSnapshotClientService {
     if (pageToken) {
       listUrl.searchParams.set('pageToken', pageToken);
     }
-    const response = await fetch(listUrl.toString(), { cache: 'no-store' });
-    if (!response.ok) {
+    return listUrl.toString();
+  }
+
+  private async fetchObjectListingPage(
+    pageToken: string | undefined,
+  ): Promise<StorageObjectListing> {
+    const response = await this.jsonHttpClient.getJson<StorageObjectListing>(
+      this.buildObjectListingUrl(pageToken),
+    );
+    if (!response.ok || response.body === null) {
       throw new Error(`snapshot listing failed with status ${response.status}`);
     }
-    return (await response.json()) as StorageObjectListing;
+    return response.body;
   }
 
   private async fetchSnapshotObject(objectName: string): Promise<UsageSnapshot | null> {
     const mediaUrl = `https://storage.googleapis.com/${this.configuration.snapshotsBucket}/${objectName}`;
     try {
-      const response = await fetch(mediaUrl, { cache: 'no-store' });
-      if (!response.ok) {
-        return null;
-      }
-      return (await response.json()) as UsageSnapshot;
+      const response = await this.jsonHttpClient.getJson<UsageSnapshot>(mediaUrl);
+      return response.ok ? response.body : null;
     } catch {
       return null;
     }
