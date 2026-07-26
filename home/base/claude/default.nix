@@ -12,6 +12,7 @@
     ./telemetry
     ./skill-injection
     ./commands
+    ./subagents
     ./workflows
     ./hooks
     ./mcps
