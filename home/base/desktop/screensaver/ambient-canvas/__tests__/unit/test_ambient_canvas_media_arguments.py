@@ -3,6 +3,9 @@ import display_ambient_canvas_loop as display
 import recorded_loop_capture_plan as capture_plan
 import render_ambient_canvas_loop as render
 
+MEASURED_SOLO_BONSAI_RECORDED_BYTES = 270347
+MEASURED_SOLO_BONSAI_DURATION_SECONDS = 30
+
 
 def test_parse_desktop_bounds_returns_width_and_height():
     assert browser.parse_desktop_bounds("0, 0, 2560, 1440") == (2560, 1440)
@@ -77,6 +80,15 @@ def test_minimum_recorded_bytes_scales_with_the_segment_duration():
     assert (
         capture_plan.resolve_minimum_recorded_bytes(30)
         == 30 * capture_plan.MINIMUM_RECORDED_BYTES_PER_SECOND
+    )
+
+
+def test_the_measured_solo_bonsai_composition_clears_the_minimum_recorded_bytes():
+    assert (
+        capture_plan.resolve_minimum_recorded_bytes(
+            MEASURED_SOLO_BONSAI_DURATION_SECONDS
+        )
+        < MEASURED_SOLO_BONSAI_RECORDED_BYTES
     )
 
 

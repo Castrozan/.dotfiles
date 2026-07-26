@@ -113,6 +113,29 @@ def test_manifest_referencing_a_missing_segment_is_not_playable(tmp_path):
     assert store.resolve_playable_segment_manifest_path(str(tmp_path)) is None
 
 
+def test_missing_segments_are_reported_by_their_playlist_position(tmp_path):
+    store.store_recorded_segment(str(tmp_path), "first", "mp4", b"media")
+    recorded_manifest = store.build_recorded_segment_manifest(
+        store.parse_uploaded_segment_manifest(
+            build_uploaded_manifest_bytes("first", "second", "third")
+        )
+    )
+    assert store.list_missing_manifest_segment_positions(
+        str(tmp_path), recorded_manifest
+    ) == [2, 3]
+
+
+def test_no_position_is_reported_once_every_segment_is_stored(tmp_path):
+    store.store_recorded_segment(str(tmp_path), "only", "mp4", b"media")
+    recorded_manifest = store.build_recorded_segment_manifest(
+        store.parse_uploaded_segment_manifest(build_uploaded_manifest_bytes("only"))
+    )
+    assert (
+        store.list_missing_manifest_segment_positions(str(tmp_path), recorded_manifest)
+        == []
+    )
+
+
 def test_manifest_is_not_playable_before_the_first_recording(tmp_path):
     assert store.resolve_playable_segment_manifest_path(str(tmp_path)) is None
 

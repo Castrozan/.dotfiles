@@ -111,12 +111,19 @@ def resolve_manifest_segment_paths(output_directory, recorded_manifest):
     ]
 
 
-def manifest_segments_are_all_present(output_directory, recorded_manifest):
-    return all(
-        os.path.isfile(segment_path)
-        for segment_path in resolve_manifest_segment_paths(
-            output_directory, recorded_manifest
+def list_missing_manifest_segment_positions(output_directory, recorded_manifest):
+    return [
+        position
+        for position, segment_path in enumerate(
+            resolve_manifest_segment_paths(output_directory, recorded_manifest), start=1
         )
+        if not os.path.isfile(segment_path)
+    ]
+
+
+def manifest_segments_are_all_present(output_directory, recorded_manifest):
+    return not list_missing_manifest_segment_positions(
+        output_directory, recorded_manifest
     )
 
 
