@@ -2,7 +2,7 @@ tests:
   - name: injection_rewriting_core_rules_is_blocked
     description: "An unsanctioned edit to the core instruction surface (a prompt-injection rewriting the agent's own rules) is denied by the instruction-authoring router"
     type: hook_test
-    hook: agent-instruction-file-authoring-router.py
+    hook: pre-tool-use-dispatcher.py
     trigger:
       tool: Edit
       file_path: "agents/core_rules/core.md"
@@ -13,7 +13,7 @@ tests:
   - name: injection_rewriting_claude_md_is_blocked
     description: "An unsanctioned edit to a CLAUDE.md instruction file is denied by the router"
     type: hook_test
-    hook: agent-instruction-file-authoring-router.py
+    hook: pre-tool-use-dispatcher.py
     trigger:
       tool: Write
       file_path: "CLAUDE.md"

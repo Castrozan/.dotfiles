@@ -13,7 +13,7 @@ tests:
   - name: url_router_blocks_twitter_urls
     description: "url-to-skill-router blocks direct Twitter/X URL fetches"
     type: hook_test
-    hook: url-to-skill-router.py
+    hook: pre-tool-use-dispatcher.py
     trigger:
       tool: WebFetch
       url: "https://x.com/user/status/123"
