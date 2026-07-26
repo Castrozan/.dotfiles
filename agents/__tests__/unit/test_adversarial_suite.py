@@ -4,14 +4,14 @@ import yaml
 
 from run_evals_hook_test_runner import evaluate_hook_test
 
-ADVERSARIAL_CONFIG = Path(__file__).resolve().parents[2] / "config" / "adversarial.yaml"
+ADVERSARIAL_SUITE = Path(__file__).resolve().parents[1] / "evals" / "adversarial.yaml"
 
 
 def _adversarial_tests():
-    return yaml.safe_load(ADVERSARIAL_CONFIG.read_text())["tests"]
+    return yaml.safe_load(ADVERSARIAL_SUITE.read_text())["tests"]
 
 
-def test_adversarial_config_is_all_deterministic_hook_tests():
+def test_adversarial_suite_is_all_deterministic_hook_tests():
     tests = _adversarial_tests()
     assert tests
     assert all(test.get("type") == "hook_test" for test in tests)

@@ -3,7 +3,8 @@ import subprocess
 
 from run_evals_worktree_and_environment import REPO_ROOT
 
-BASELINE_REPOSITORY_PATH = "agents/evals/baseline.json"
+BASELINE_REPOSITORY_PATH = "agents/__tests__/baseline.json"
+COMMIT_RECORD_PREFIX = "commit "
 RESET_PLACEHOLDER_TOTAL_TESTS = 1
 
 
@@ -13,8 +14,9 @@ def commits_touching_baseline():
             [
                 "git",
                 "log",
-                "--reverse",
-                "--format=%H|%cI",
+                "--follow",
+                "--name-only",
+                f"--format={COMMIT_RECORD_PREFIX}%H|%cI",
                 "--",
                 BASELINE_REPOSITORY_PATH,
             ],
@@ -26,14 +28,22 @@ def commits_touching_baseline():
         .stdout.strip()
         .splitlines()
     )
+    newest_first_records = []
+    commit_sha = None
+    committed_iso = None
     for line in output:
-        commit_sha, committed_iso = line.split("|", 1)
-        yield commit_sha, committed_iso
+        if line.startswith(COMMIT_RECORD_PREFIX):
+            commit_sha, committed_iso = line[len(COMMIT_RECORD_PREFIX) :].split("|", 1)
+            continue
+        if line.strip() and commit_sha is not None:
+            newest_first_records.append((commit_sha, committed_iso, line.strip()))
+            commit_sha = None
+    yield from reversed(newest_first_records)
 
 
-def baseline_at_commit(commit_sha):
+def baseline_at_commit(commit_sha, baseline_path_at_commit):
     blob = subprocess.run(
-        ["git", "show", f"{commit_sha}:{BASELINE_REPOSITORY_PATH}"],
+        ["git", "show", f"{commit_sha}:{baseline_path_at_commit}"],
         capture_output=True,
         text=True,
         cwd=REPO_ROOT,
@@ -48,8 +58,8 @@ def baseline_at_commit(commit_sha):
 
 def committed_baseline_pass_rates():
     pass_rates = []
-    for commit_sha, _ in commits_touching_baseline():
-        baseline = baseline_at_commit(commit_sha)
+    for commit_sha, _, baseline_path_at_commit in commits_touching_baseline():
+        baseline = baseline_at_commit(commit_sha, baseline_path_at_commit)
         if baseline is None:
             continue
         if baseline.get("total_tests") == RESET_PLACEHOLDER_TOTAL_TESTS:

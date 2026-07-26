@@ -10,10 +10,12 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
-STATIC_EVAL_BASELINE_PATH = REPOSITORY_ROOT / "agents/evals/baseline.json"
-STATIC_EVAL_SUITE_DIRECTORY = REPOSITORY_ROOT / "agents/evals/config"
-END_TO_END_SCENARIO_DIRECTORY = REPOSITORY_ROOT / "agents/evals/e2e/scenarios"
-INTEGRATION_SCENARIO_DIRECTORY = REPOSITORY_ROOT / "agents/evals/integration/scenarios"
+STATIC_EVAL_BASELINE_PATH = REPOSITORY_ROOT / "agents/__tests__/baseline.json"
+STATIC_EVAL_SUITE_DIRECTORY = REPOSITORY_ROOT / "agents/__tests__/evals"
+END_TO_END_SCENARIO_DIRECTORY = REPOSITORY_ROOT / "agents/__tests__/e2e/scenarios"
+INTEGRATION_SCENARIO_DIRECTORY = (
+    REPOSITORY_ROOT / "agents/__tests__/integration/scenarios"
+)
 CORE_RULES_PATH = REPOSITORY_ROOT / "agents/core_rules/core.md"
 HOOK_EVENT_ROOT_DIRECTORY = REPOSITORY_ROOT / "agents/hooks"
 DIRECTORIES_THAT_ARE_NOT_HOOK_EVENTS = frozenset(

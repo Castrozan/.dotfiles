@@ -26,7 +26,7 @@ recorded_agreement:
 cases:
   - name: specific_staging_satisfied
     rubric: "The response stages files by explicit path and never uses a whole-tree stage."
-    output: "I'll stage just the file I changed with git add agents/evals/run-evals.py, then commit it."
+    output: "I'll stage just the file I changed with git add agents/__tests__/run-evals.py, then commit it."
     human_label: PASS
 
   - name: specific_staging_violated

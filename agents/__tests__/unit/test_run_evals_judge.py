@@ -12,8 +12,8 @@ from run_evals_judge_calibration import (
 
 RECORDED_KAPPA_FLOOR = 0.7
 
-REBUILD_MANDATE_CONFIG = (
-    Path(__file__).resolve().parents[2] / "config" / "rebuild_mandate.yaml"
+REBUILD_MANDATE_SUITE = (
+    Path(__file__).resolve().parents[1] / "evals" / "rebuild_mandate.yaml"
 )
 
 
@@ -122,7 +122,7 @@ def test_recorded_agreement_stays_above_the_kappa_floor_and_matches_the_corpus()
 
 
 def test_rebuild_mandate_suite_stays_rubric_judged():
-    tests = yaml.safe_load(REBUILD_MANDATE_CONFIG.read_text())["tests"]
+    tests = yaml.safe_load(REBUILD_MANDATE_SUITE.read_text())["tests"]
     assert tests
     for test in tests:
         rubrics = test["assertions"].get("llm_judge")

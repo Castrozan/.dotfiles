@@ -47,6 +47,6 @@ tests:
     hook: prohibited-command-guard.py
     trigger:
       tool: Bash
-      command: "git add agents/evals/run-evals.py"
+      command: "git add agents/__tests__/run-evals.py"
     assertions:
       hook_blocks: false

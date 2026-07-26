@@ -2,12 +2,12 @@ from pathlib import Path
 
 import yaml
 
-REPO_ROOT = Path(__file__).resolve().parents[4]
-EVAL_CONFIG_DIR = REPO_ROOT / "agents" / "evals" / "config"
+REPO_ROOT = Path(__file__).resolve().parents[3]
+EVAL_SUITE_DIRECTORY = REPO_ROOT / "agents" / "__tests__" / "evals"
 
 
 def eval_suite_files() -> list[Path]:
-    return sorted(EVAL_CONFIG_DIR.glob("*.yaml")) + sorted(
+    return sorted(EVAL_SUITE_DIRECTORY.glob("*.yaml")) + sorted(
         REPO_ROOT.glob("agents/skills/*/__tests__/evals/*.yaml")
     )
 

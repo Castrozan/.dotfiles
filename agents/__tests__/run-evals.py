@@ -82,7 +82,7 @@ def main():
         action="store_true",
         help="Check committed baseline for regression (no claude calls)",
     )
-    parser.add_argument("--config", default=Path(__file__).parent / "config")
+    parser.add_argument("--config", default=Path(__file__).parent / "evals")
     parser.add_argument(
         "--workers",
         type=int,

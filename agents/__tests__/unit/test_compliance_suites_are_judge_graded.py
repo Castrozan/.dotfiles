@@ -2,7 +2,7 @@ from pathlib import Path
 
 import yaml
 
-CONFIG_DIR = Path(__file__).resolve().parents[2] / "config"
+EVAL_SUITE_DIRECTORY = Path(__file__).resolve().parents[1] / "evals"
 
 JUDGE_GRADED_COMPLIANCE_SUITES = [
     "instruction_compliance.yaml",
@@ -14,7 +14,7 @@ JUDGE_GRADED_COMPLIANCE_SUITES = [
 
 def test_converted_compliance_suites_grade_every_test_by_rubric():
     for suite_name in JUDGE_GRADED_COMPLIANCE_SUITES:
-        tests = yaml.safe_load((CONFIG_DIR / suite_name).read_text())["tests"]
+        tests = yaml.safe_load((EVAL_SUITE_DIRECTORY / suite_name).read_text())["tests"]
         assert tests, suite_name
         for test in tests:
             rubrics = test["assertions"].get("llm_judge")

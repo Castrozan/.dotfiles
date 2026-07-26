@@ -7,8 +7,12 @@ from run_evals_baseline_history import (
 
 def collect_baseline_revisions():
     revisions = []
-    for commit_sha, committed_iso in commits_touching_baseline():
-        baseline = baseline_at_commit(commit_sha)
+    for (
+        commit_sha,
+        committed_iso,
+        baseline_path_at_commit,
+    ) in commits_touching_baseline():
+        baseline = baseline_at_commit(commit_sha, baseline_path_at_commit)
         if baseline is None:
             continue
         total_tests = baseline.get("total_tests")

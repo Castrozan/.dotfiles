@@ -14,7 +14,7 @@ from run_evals_statistics import (
 from run_evals_test_runner import TestResult
 from run_evals_worktree_and_environment import REPO_ROOT
 
-BASELINE_PATH = REPO_ROOT / "agents" / "evals" / "baseline.json"
+BASELINE_PATH = REPO_ROOT / "agents" / "__tests__" / "baseline.json"
 MINIMUM_PASS_RATE_OVERALL = 0.75
 MINIMUM_PASS_RATE_COMPLIANCE = 0.85
 MAXIMUM_REGRESSION_DROP = 0.05
@@ -100,7 +100,7 @@ def save_baseline(results: list[TestResult]) -> None:
 
 def check_baseline_for_regression() -> bool:
     if not BASELINE_PATH.exists():
-        print("FAIL: No baseline file found at agents/evals/baseline.json")
+        print("FAIL: No baseline file found at agents/__tests__/baseline.json")
         print("  Run 'run-evals.py --save-baseline' locally to generate it.")
         return False
 

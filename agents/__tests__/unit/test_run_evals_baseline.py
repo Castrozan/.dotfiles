@@ -1,5 +1,6 @@
 import run_evals_baseline_history as history
 from run_evals_baseline_history import (
+    BASELINE_REPOSITORY_PATH,
     baseline_regression_failure,
     committed_baseline_pass_rates,
     previous_committed_baseline_pass_rate,
@@ -41,7 +42,13 @@ def test_previous_pass_rate_needs_two_recorded_baselines(monkeypatch):
 
 
 def test_committed_pass_rates_skips_missing_reset_and_malformed_baselines(monkeypatch):
-    commits = [("c1", ""), ("c2", ""), ("c3", ""), ("c4", ""), ("c5", "")]
+    commits = [
+        ("c1", "", BASELINE_REPOSITORY_PATH),
+        ("c2", "", BASELINE_REPOSITORY_PATH),
+        ("c3", "", BASELINE_REPOSITORY_PATH),
+        ("c4", "", BASELINE_REPOSITORY_PATH),
+        ("c5", "", BASELINE_REPOSITORY_PATH),
+    ]
     baselines = {
         "c1": {"total_tests": 174, "pass_rate": 0.90},
         "c2": None,
@@ -50,5 +57,5 @@ def test_committed_pass_rates_skips_missing_reset_and_malformed_baselines(monkey
         "c5": {"total_tests": 166, "pass_rate": 0.95},
     }
     monkeypatch.setattr(history, "commits_touching_baseline", lambda: iter(commits))
-    monkeypatch.setattr(history, "baseline_at_commit", lambda sha: baselines[sha])
+    monkeypatch.setattr(history, "baseline_at_commit", lambda sha, path: baselines[sha])
     assert committed_baseline_pass_rates() == [0.90, 0.95]

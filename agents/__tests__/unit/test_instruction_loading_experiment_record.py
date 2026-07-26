@@ -3,7 +3,7 @@ from datetime import datetime
 from pathlib import Path
 
 EXPERIMENT_RECORD_PATH = (
-    Path(__file__).resolve().parents[2] / "instruction-loading-experiment.json"
+    Path(__file__).resolve().parents[1] / "instruction-loading-experiment.json"
 )
 REQUIRED_CATEGORY_FIELDS = (
     "paired_tests",

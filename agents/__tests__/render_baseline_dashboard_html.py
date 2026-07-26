@@ -72,12 +72,12 @@ the agent passed against the instructions as they stood at that commit.</p>
 <h2>What this measures</h2>
 <div class="panel">
 <p>This is the <b>Tier-1 static-eval pass rate</b> - the headline health number for the agent's
-instruction compliance. A suite of prompt-based evals in <code>agents/evals/</code> runs each prompt
+instruction compliance. A suite of prompt-based evals in <code>agents/__tests__/evals/</code> runs each prompt
 through <code>claude -p</code> (Claude Max, haiku, no API cost) inside a throwaway git worktree,
 then checks assertions on the answer. Tests are bucketed into <code>compliance</code>,
 <code>routing</code>, <code>navigation</code>, <code>knowledge</code> and <code>other</code>.</p>
 <p>Running <code>agent-eval --save-baseline</code> executes the whole suite and commits the result
-to <code>agents/evals/baseline.json</code>. This page reads that file's full git history, so every
+to <code>agents/__tests__/baseline.json</code>. This page reads that file's full git history, so every
 point is a commit - the chart is the repo remembering its own report cards.</p>
 </div>
 
@@ -103,8 +103,8 @@ reproduce on a standalone re-run are concurrency noise on long runs, not real re
 </table>
 
 <footer>
-Auto-generated from <code>agents/evals/baseline.json</code> history by
-<code>agents/evals/render_baseline_dashboard.py</code> on every push &middot;
+Auto-generated from <code>agents/__tests__/baseline.json</code> history by
+<code>agents/__tests__/render_baseline_dashboard.py</code> on every push &middot;
 <a href="{ATRIUM_QUALITY_URL}" target="_top">how quality is measured</a> &middot;
 <a href="https://github.com/Castrozan/.dotfiles/issues/70" target="_top">design notes</a>
 </footer>

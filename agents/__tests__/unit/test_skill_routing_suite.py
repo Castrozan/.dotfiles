@@ -4,22 +4,22 @@ from pathlib import Path
 import pytest
 import yaml
 
-EVALS_ROOT = Path(__file__).resolve().parents[2]
-SKILLS_ROOT = Path(__file__).resolve().parents[3] / "skills"
-SKILL_ROUTING_CONFIG = EVALS_ROOT / "config" / "skill_routing.yaml"
-PERSONAL_CHANNEL_ROUTING_CONFIG = (
+EVAL_HARNESS_ROOT = Path(__file__).resolve().parents[1]
+SKILLS_ROOT = Path(__file__).resolve().parents[2] / "skills"
+SKILL_ROUTING_SUITE = EVAL_HARNESS_ROOT / "evals" / "skill_routing.yaml"
+PERSONAL_CHANNEL_ROUTING_SUITE = (
     SKILLS_ROOT / "personal" / "__tests__" / "evals" / "channel-navigation.yaml"
 )
 ROUTER_CATALOG_ENTRY = re.compile(r"^([a-z][a-z0-9-]*) - ", re.MULTILINE)
 
 ROUTER_CATALOGS = [
-    (SKILL_ROUTING_CONFIG, "shared_system_prompt", 10),
-    (PERSONAL_CHANNEL_ROUTING_CONFIG, "personal_subskill_router_system_prompt", 3),
+    (SKILL_ROUTING_SUITE, "shared_system_prompt", 10),
+    (PERSONAL_CHANNEL_ROUTING_SUITE, "personal_subskill_router_system_prompt", 3),
 ]
 
 
 def load_skill_routing_config():
-    return yaml.safe_load(SKILL_ROUTING_CONFIG.read_text())
+    return yaml.safe_load(SKILL_ROUTING_SUITE.read_text())
 
 
 def router_catalog_skill_names(config, prompt_key):
@@ -61,7 +61,7 @@ def test_every_expected_routing_answer_is_offered_by_its_catalog(
 
 
 def test_skill_routing_grades_by_exact_match_not_substring():
-    tests = yaml.safe_load(SKILL_ROUTING_CONFIG.read_text())["tests"]
+    tests = yaml.safe_load(SKILL_ROUTING_SUITE.read_text())["tests"]
     assert tests
     for test in tests:
         assertions = test["assertions"]
