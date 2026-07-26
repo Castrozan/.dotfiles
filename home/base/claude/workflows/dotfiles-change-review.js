@@ -33,7 +33,7 @@ const scope = await agent(
       ? `Review target ref: "${reviewTarget}".`
       : "No target given: review the uncommitted working changes plus any commits on the current branch that are not yet on the steward base. Diff against the merge-base of HEAD and origin/main, falling back to main."
   } Include both staged and unstaged changes. Return the changed-file list and a compact digest of the diff: the hunks that matter, not whole files.`,
-  { label: "scope", phase: "Scope", schema: DIFF_SCHEMA },
+  { label: "scope", phase: "Scope", schema: DIFF_SCHEMA, model: "sonnet" },
 );
 
 if (!scope || !(scope.changedFiles && scope.changedFiles.length)) {
@@ -121,6 +121,7 @@ const reviewed = await pipeline(
         label: `review:${dimension.key}`,
         phase: "Review",
         schema: FINDINGS_SCHEMA,
+        model: "sonnet",
       },
     ),
   (review, dimension) =>
