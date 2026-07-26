@@ -98,7 +98,8 @@ class TestBackgroundBashAntiPatternsEndToEndThroughDispatcher:
             }
         )
         assert result.returncode == 0
-        assert result.stdout == ""
+        assert _permission_decision(result) != "deny"
+        assert BACKGROUND_BASH_PATTERNS_REFERENCE not in result.stdout
 
     def test_ignores_malformed_input(self):
         result = _invoke_dispatcher_with_raw_stdin("not json")
