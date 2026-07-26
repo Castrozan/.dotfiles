@@ -17,10 +17,11 @@
   "author": "Clever 🤖",
   "license": "MIT",
   "dependencies": {
-    "express": "^4.18.2",
-    "ws": "^8.20.1"
+    "express": "^4.22.2",
+    "ws": "^8.21.1"
   },
   "overrides": {
+    "body-parser": "^1.20.6",
     "path-to-regexp": "^0.1.13",
     "qs": "^6.15.2"
   },
