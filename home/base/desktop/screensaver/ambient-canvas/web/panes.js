@@ -6,6 +6,7 @@ window.AMBIENT_CANVAS_PLAYLIST = [
   { panes: [{ scene: "yuruyurau", options: { variant: "swirl" } }] },
   { panes: [{ scene: "yuruyurau", options: { variant: "petal" } }] },
   { panes: [{ scene: "the-link" }] },
+  { panes: [{ scene: "sixteen-segment" }] },
   { panes: [{ scene: "bonsai" }] },
   { panes: [{ scene: "matrix" }] },
   {
