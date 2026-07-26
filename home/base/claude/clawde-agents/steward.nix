@@ -69,6 +69,7 @@ in
   clawde.agents.steward = {
     type = "steward";
     personality = effectivePersonality;
+    launchOnTrigger = false;
     mcpConfigFile = buildClawdeAgentMcpConfigFile "steward" [ "a2a" ];
   };
 }
