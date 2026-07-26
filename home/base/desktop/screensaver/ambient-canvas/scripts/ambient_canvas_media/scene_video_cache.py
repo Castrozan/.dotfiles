@@ -5,7 +5,8 @@ import sys
 
 SCENE_VIDEO_MANIFEST_FILENAME = "scene-videos.json"
 SCENE_VIDEO_DIRECTORY_NAME = "videos"
-YT_DLP_FORMAT_SELECTOR = "18/best[height<=480][ext=mp4]"
+YT_DLP_FORMAT_SELECTOR = "18/best[height<=480][ext=mp4]/best[ext=mp4]/best"
+YOUTUBE_WATCH_URL_PREFIX = "https://www.youtube.com/watch?v="
 DOWNLOAD_TIMEOUT_SECONDS = 300
 
 
@@ -22,7 +23,11 @@ def read_scene_video_manifest(served_web_directory):
     return manifest.get("videos", [])
 
 
-def build_download_arguments(video_id, destination_path):
+def resolve_scene_video_source_url(scene_video):
+    return scene_video.get("url") or YOUTUBE_WATCH_URL_PREFIX + scene_video["id"]
+
+
+def build_download_arguments(source_url, destination_path):
     return [
         "yt-dlp",
         "--no-warnings",
@@ -32,7 +37,7 @@ def build_download_arguments(video_id, destination_path):
         YT_DLP_FORMAT_SELECTOR,
         "--output",
         destination_path,
-        f"https://www.youtube.com/watch?v={video_id}",
+        source_url,
     ]
 
 
@@ -46,7 +51,9 @@ def download_missing_scene_videos(served_web_directory, output_directory):
         if os.path.isfile(destination_path):
             continue
         completed = subprocess.run(
-            build_download_arguments(video_id, destination_path),
+            build_download_arguments(
+                resolve_scene_video_source_url(scene_video), destination_path
+            ),
             check=False,
             capture_output=True,
             timeout=DOWNLOAD_TIMEOUT_SECONDS,

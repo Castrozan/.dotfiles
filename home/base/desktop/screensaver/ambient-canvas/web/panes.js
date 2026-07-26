@@ -61,6 +61,19 @@ window.AMBIENT_CANVAS_PLAYLIST = [
     ],
   },
   {
+    panes: [
+      {
+        scene: "bad-apple",
+        options: {
+          videoId: "crego-the-link",
+          characterRows: 80,
+          luminanceThreshold: 0.2,
+          glyphColor: "#e8f4ff",
+        },
+      },
+    ],
+  },
+  {
     durationSeconds: 30,
     layout: {
       columnTemplate: "2fr 1fr",
