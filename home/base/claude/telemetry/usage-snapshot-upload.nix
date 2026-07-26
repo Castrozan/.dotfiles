@@ -90,39 +90,45 @@ in
       };
     })
     (lib.mkIf pkgs.stdenv.hostPlatform.isLinux {
-      systemd.user.services.claude-usage-snapshot-upload = {
-        Unit.Description = "Upload anonymized Claude usage snapshot to GCS";
-        Service = {
-          Type = "oneshot";
-          ExecStart = lib.concatStringsSep " " uploadProgramArguments;
-          Environment = uploadEnvironmentList;
+      systemd.user = {
+        services = {
+          claude-usage-snapshot-upload = {
+            Unit.Description = "Upload anonymized Claude usage snapshot to GCS";
+            Service = {
+              Type = "oneshot";
+              ExecStart = lib.concatStringsSep " " uploadProgramArguments;
+              Environment = uploadEnvironmentList;
+            };
+          };
+          claude-usage-ingest-publish = {
+            Unit.Description = "Publish the anonymized Claude usage snapshot under its ingestion contract";
+            Service = {
+              Type = "oneshot";
+              ExecStart = "${ingestPublishLauncher}";
+              Environment = ingestPublishEnvironmentList;
+            };
+          };
         };
-      };
-      systemd.user.timers.claude-usage-snapshot-upload = {
-        Unit.Description = "Periodic anonymized Claude usage snapshot upload to GCS";
-        Timer = {
-          OnBootSec = "2min";
-          OnUnitActiveSec = "${toString uploadIntervalSeconds}s";
-          Persistent = true;
+        timers = {
+          claude-usage-snapshot-upload = {
+            Unit.Description = "Periodic anonymized Claude usage snapshot upload to GCS";
+            Timer = {
+              OnBootSec = "2min";
+              OnUnitActiveSec = "${toString uploadIntervalSeconds}s";
+              Persistent = true;
+            };
+            Install.WantedBy = [ "timers.target" ];
+          };
+          claude-usage-ingest-publish = {
+            Unit.Description = "Periodic contracted Claude usage publish to the ingestion api";
+            Timer = {
+              OnBootSec = "3min";
+              OnUnitActiveSec = "${toString uploadIntervalSeconds}s";
+              Persistent = true;
+            };
+            Install.WantedBy = [ "timers.target" ];
+          };
         };
-        Install.WantedBy = [ "timers.target" ];
-      };
-      systemd.user.services.claude-usage-ingest-publish = {
-        Unit.Description = "Publish the anonymized Claude usage snapshot under its ingestion contract";
-        Service = {
-          Type = "oneshot";
-          ExecStart = "${ingestPublishLauncher}";
-          Environment = ingestPublishEnvironmentList;
-        };
-      };
-      systemd.user.timers.claude-usage-ingest-publish = {
-        Unit.Description = "Periodic contracted Claude usage publish to the ingestion api";
-        Timer = {
-          OnBootSec = "3min";
-          OnUnitActiveSec = "${toString uploadIntervalSeconds}s";
-          Persistent = true;
-        };
-        Install.WantedBy = [ "timers.target" ];
       };
     })
   ];
