@@ -25,6 +25,7 @@ pkgs.writeShellApplication {
     modeJson=0
     modeSummary=0
     catFilter=""
+    probeTimeoutSeconds="''${HEALTH_CHECK_PROBE_TIMEOUT_SECONDS:-10}"
 
     while [ $# -gt 0 ]; do
       case "$1" in
@@ -40,6 +41,7 @@ pkgs.writeShellApplication {
     Statuses: pass, fail, skip. A probe skips when its applicability command
     reports the thing is not meant to be running right now, so a component that
     is dormant by design never counts as a failure.
+    Every probe is bounded at ''${probeTimeoutSeconds}s, and exceeding that counts as a failure.
     Exit code: 0 when no applicable probe fails, 1 when any fails.
     USAGE
           exit 0;;
@@ -68,28 +70,46 @@ pkgs.writeShellApplication {
         fi
       fi
 
-      local status skipReason
-      skipReason=""
+      local status probeReason applicabilityExit bodyExit
+      probeReason=""
+      applicabilityExit=0
+      bodyExit=0
 
-      if [ -n "$probeApplicability" ] && ! skipReason="$(bash -c "$probeApplicability" 2>/dev/null)"; then
-        status=skip
-        skipCount=$((skipCount + 1))
-        if [ -z "$skipReason" ]; then
-          skipReason="not applicable"
-        fi
-      elif bash -c "$probeBody" >/dev/null 2>&1; then
-        status=pass
-        passCount=$((passCount + 1))
-      else
+      if [ -n "$probeApplicability" ]; then
+        probeReason="$(timeout "$probeTimeoutSeconds" bash -c "$probeApplicability" 2>/dev/null)" ||
+          applicabilityExit=$?
+      fi
+
+      if [ "$applicabilityExit" = 124 ]; then
         status=fail
         failCount=$((failCount + 1))
+        probeReason="applicability check timed out after ''${probeTimeoutSeconds}s"
+      elif [ "$applicabilityExit" != 0 ]; then
+        status=skip
+        skipCount=$((skipCount + 1))
+        if [ -z "$probeReason" ]; then
+          probeReason="not applicable"
+        fi
+      else
+        probeReason=""
+        timeout "$probeTimeoutSeconds" bash -c "$probeBody" >/dev/null 2>&1 || bodyExit=$?
+        if [ "$bodyExit" = 0 ]; then
+          status=pass
+          passCount=$((passCount + 1))
+        else
+          status=fail
+          failCount=$((failCount + 1))
+          if [ "$bodyExit" = 124 ]; then
+            probeReason="timed out after ''${probeTimeoutSeconds}s"
+          fi
+        fi
       fi
 
       if [ "$modeJson" = 1 ]; then
         local record
         record="{\"category\":\"$(jsonEscape "$probeCategory")\",\"name\":\"$(jsonEscape "$probeName")\",\"status\":\"$status\""
-        if [ "$status" = skip ]; then
-          record="$record,\"reason\":\"$(jsonEscape "$skipReason")\""
+        if [ -n "$probeReason" ]; then
+          record="$record,\"reason\":\"$(jsonEscape "$probeReason")\""
         fi
         record="$record}"
         if [ -z "$jsonRecords" ]; then
@@ -100,10 +120,13 @@ pkgs.writeShellApplication {
       elif [ "$modeSummary" = 0 ]; then
         local color symbol detail
         detail=""
+        if [ -n "$probeReason" ]; then
+          detail=" ($probeReason)"
+        fi
         if [ "$status" = pass ]; then
           color=32; symbol="✓"
         elif [ "$status" = skip ]; then
-          color=90; symbol="-"; detail=" ($skipReason)"
+          color=90; symbol="-"
         else
           color=31; symbol="✗"
         fi
