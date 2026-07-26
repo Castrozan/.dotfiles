@@ -8,7 +8,7 @@ let
   usageSnapshotBucket = "zg-url-shortener-2026-dotfiles-usage-snapshots";
   usageSnapshotObjectPrefix = "snapshots/";
   uploaderCredentialsPath = "${config.home.homeDirectory}/.secrets/gcp-usage-uploader-key";
-  ingestApiBaseUrl = "https://lucaszanoni.com.br/ingest";
+  ingestApiBaseUrl = "https://lucaszanoni.com/ingest";
   ingestProducerSecretPath = "${config.home.homeDirectory}/.secrets/ingest-producer-secret";
   uploadIntervalSeconds = 300;
 

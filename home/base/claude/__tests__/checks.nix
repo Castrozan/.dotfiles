@@ -43,8 +43,29 @@ let
       == testMachinePrivateMarketplacePlugins.extraKnownMarketplaces
       && (deployedSettings.enabledPlugins or { }) == testMachinePrivateMarketplacePlugins.enabledPlugins
     );
+  darwinCfg = helpers.homeManagerTestConfigurationForDarwin [
+    self.homeManagerModules.claude-code
+  ];
+
+  canonicalIngestBaseUrl = "https://lucaszanoni.com/ingest";
+
+  launchdIngestPublishEnvironment =
+    darwinCfg.launchd.agents.claude-usage-ingest-publish.config.EnvironmentVariables;
+
+  systemdIngestPublishEnvironment =
+    cfg.systemd.user.services.claude-usage-ingest-publish.Service.Environment;
 in
 {
+  claude-usage-ingest-publish-targets-the-canonical-domain-on-darwin =
+    mkEvalCheck "claude-usage-ingest-publish-targets-the-canonical-domain-on-darwin"
+      (launchdIngestPublishEnvironment.INGEST_BASE_URL == canonicalIngestBaseUrl)
+      "the usage producer must POST to the canonical domain; the lucaszanoni.com.br zone is a permanent redirect alias and a 301 silently drops a POST body instead of ingesting it";
+
+  claude-usage-ingest-publish-targets-the-canonical-domain-on-linux =
+    mkEvalCheck "claude-usage-ingest-publish-targets-the-canonical-domain-on-linux"
+      (builtins.elem "INGEST_BASE_URL=${canonicalIngestBaseUrl}" systemdIngestPublishEnvironment)
+      "the linux timer publishes through the same producer, so its systemd Environment must carry the canonical ingest url too; a redirect alias would silently drop the POST body";
+
   claude-settings-nix-source =
     mkEvalCheck "claude-settings-nix-source"
       (builtins.hasAttr ".claude/settings.json.nix-source" cfg.home.file)
