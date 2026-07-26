@@ -9,9 +9,11 @@ if str(RULES_MODULE_DIRECTORY) not in sys.path:
     sys.path.insert(0, str(RULES_MODULE_DIRECTORY))
 
 from end_of_turn_reply_template_rules import (  # noqa: E402
+    template_violations_in_reply,
+)
+from reply_template_shape_and_length_rules import (  # noqa: E402
     REPLY_HARD_CHARACTER_CEILING,
     REPLY_HARD_WORD_CEILING,
-    template_violations_in_reply,
     user_request_permits_long_form,
 )
 
@@ -26,6 +28,8 @@ def test_long_form_granted_for_explicit_document_request():
     assert user_request_permits_long_form("give me a full architecture overview")
     assert user_request_permits_long_form("explain in detail why the sync failed")
     assert user_request_permits_long_form("paste the entire file verbatim")
+    assert user_request_permits_long_form("give me the design of the hook stuff")
+    assert user_request_permits_long_form("what is the architecture behind the gate")
 
 
 def test_long_form_not_granted_for_routine_requests():
@@ -46,6 +50,7 @@ def test_long_form_not_granted_for_verb_substring_or_compression_leaks():
     assert not user_request_permits_long_form(
         "why did you show me that? update the deploy plan status"
     )
+    assert not user_request_permits_long_form("when is the design review meeting?")
 
 
 def test_routine_long_reply_trips_the_hard_ceiling():
@@ -74,3 +79,18 @@ def test_long_form_request_skips_length_and_shape_but_keeps_hygiene():
         long_reply_with_header + " — tail", "write a design doc"
     )
     assert violations_with_em_dash == ["contains an em dash"]
+
+
+def test_deferring_to_an_earlier_message_is_flagged_even_under_long_form():
+    defer_message = "defers to an earlier message instead of standing alone"
+
+    routine = template_violations_in_reply(
+        "As I said above, the rebuild is green.", "is obsidian syncing?"
+    )
+    assert defer_message in routine
+
+    long_form = template_violations_in_reply(
+        "## Overview\nSee my prior message for the full breakdown.",
+        "write a design doc",
+    )
+    assert long_form == [defer_message]

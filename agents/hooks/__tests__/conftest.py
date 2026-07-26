@@ -23,9 +23,6 @@ PROHIBITED_COMMAND_GUARD_HOOK_SCRIPT_PATH = find_hook_module_path(
 PROHIBITED_WORDS_GUARD_HOOK_SCRIPT_PATH = find_hook_module_path(
     "prohibited-words-guard"
 )
-LINE_COUNT_ADVISORY_GUARD_HOOK_SCRIPT_PATH = find_hook_module_path(
-    "line-count-advisory-guard"
-)
 AGENT_INSTRUCTION_FILE_AUTHORING_ROUTER_HOOK_SCRIPT_PATH = find_hook_module_path(
     "agent-instruction-file-authoring-router"
 )
@@ -92,16 +89,6 @@ def invoke_prohibited_words_guard_hook(tmp_path, monkeypatch):
 def invoke_prohibited_words_guard_hook_without_wordlist(tmp_path, monkeypatch):
     monkeypatch.setenv("PROHIBITED_WORDS_FILE", str(tmp_path / "missing-wordlist.txt"))
     return run_prohibited_words_guard
-
-
-@pytest.fixture
-def invoke_line_count_advisory_guard_hook():
-    def runner(payload: dict):
-        return run_hook_subprocess(
-            LINE_COUNT_ADVISORY_GUARD_HOOK_SCRIPT_PATH, json.dumps(payload)
-        )
-
-    return runner
 
 
 @pytest.fixture

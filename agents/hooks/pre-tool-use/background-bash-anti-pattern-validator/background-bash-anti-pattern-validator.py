@@ -109,7 +109,17 @@ def emit_deny_decision_for_pre_tool_use_hook(deny_reason_message):
 
 
 def emit_non_blocking_advisory_for_pre_tool_use_hook(advisory_message):
-    json.dump({"continue": True, "systemMessage": advisory_message}, sys.stdout)
+    json.dump(
+        {
+            "continue": True,
+            "systemMessage": advisory_message,
+            "hookSpecificOutput": {
+                "hookEventName": "PreToolUse",
+                "additionalContext": advisory_message,
+            },
+        },
+        sys.stdout,
+    )
 
 
 def main():

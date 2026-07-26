@@ -13,6 +13,9 @@ INTERACTIVE_SESSION_DETECTION_SOURCE = (
 END_OF_TURN_REPLY_TEMPLATE_RULES_SOURCE = next(
     HOOKS_ROOT.rglob("end_of_turn_reply_template_rules.py")
 )
+REPLY_TEMPLATE_SHAPE_AND_LENGTH_RULES_SOURCE = next(
+    HOOKS_ROOT.rglob("reply_template_shape_and_length_rules.py")
+)
 INTERACTIVE_REPLY_REMINDER_STATE_SOURCE = (
     HOOKS_ROOT / "common" / "interactive_reply_reminder_state.py"
 )
@@ -86,6 +89,7 @@ def test_format_guard_imports_shared_module_after_flat_deploy(tmp_path, monkeypa
             END_OF_TURN_FORMAT_GUARD_SOURCE,
             INTERACTIVE_SESSION_DETECTION_SOURCE,
             END_OF_TURN_REPLY_TEMPLATE_RULES_SOURCE,
+            REPLY_TEMPLATE_SHAPE_AND_LENGTH_RULES_SOURCE,
             INTERACTIVE_REPLY_REMINDER_STATE_SOURCE,
         ],
     )

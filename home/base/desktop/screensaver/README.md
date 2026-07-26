@@ -78,10 +78,55 @@ screensaver cycles whole-screen compositions, and adding eye candy is appending 
   promise) for scenes whose frame cannot be produced synchronously. The record loop awaits
   both, which is what makes a video-backed scene deterministic.
 
-To add eye candy: write `web/scenes/<name>.js` registering the factory, add its `<script>` to
-`index.html`, then append one composition to `AMBIENT_CANVAS_PLAYLIST`. Scenes that call
-`Math.random` at build time reseed per recording pass, so the recorded loop is not
-pixel-seamless; boundaries are cuts and the loop is long enough that the seam is unobtrusive.
+### Adding a scene
+
+Three wiring points, all three required, and each one fails differently when it is the one
+missed. Write `web/scenes/<name>.js` registering the factory under the name you intend to use,
+add its `<script>` to `index.html` (a missing tag leaves the factory undefined and the pane
+renders nothing), then append one composition to `AMBIENT_CANVAS_PLAYLIST` in `panes.js` (a
+scene wired but never listed is dead code the recorder never enters). Nothing else registers a
+scene: there is no manifest and no directory scan, so the name in `panes.js` and the key in
+`AMBIENT_CANVAS_SCENE_FACTORIES` must match exactly.
+
+The factory signature is `(canvasElement, options) => renderer`. `options` is whatever the
+composition declared, which is how `variant` reaches yuruyurau and `videoId` reaches bad-apple.
+`render(localElapsedSeconds)` draws one frame, `resize(pixelWidthDevice, pixelHeightDevice)`
+takes device pixels rather than CSS pixels, and the three optional members are `dispose()`,
+`ready`, and `prepareFrame(localElapsedSeconds)` as described above.
+
+What actually breaks a new scene, in the order it tends to bite:
+
+- **A WebGL scene must honor `options.preserveDrawingBuffer`** and pass it into `getContext`.
+  The recorder injects it through `AMBIENT_CANVAS_RENDERER_OPTION_OVERRIDES`, because it
+  composites each pane canvas into a separate encode canvas after `render` returns, and a
+  context without a preserved drawing buffer has already been cleared by then. The live page
+  looks perfect and the recorded loop comes out black, so this is the one trap that survives
+  every manual check short of watching the recorded file.
+- **Draw as a pure function of `localElapsedSeconds`.** The recorder frame-steps a synthetic
+  clock at `frameIndex / fps`, so anything reading `performance.now()`, `Date.now()`, or a
+  `requestAnimationFrame` delta records as a stutter or a still. State accumulated across
+  `render` calls is equally unsafe: the same segment is rebuilt from scratch on every entry.
+- **`Math.random` at build time reseeds per recording pass**, so the recorded loop is not
+  pixel-seamless. Boundaries are cuts and the loop is long enough that the seam is unobtrusive,
+  but a scene that wants a stable look across renders should hash its point index instead.
+- **Hash carefully in GLSL.** ES 1.0 has no bit operations, and the usual
+  `fract(sin(dot(...)))` degrades badly when it is fed a large point index in fixed linear
+  steps: consecutive points walk a constant phase through `sin`, highp loses the low bits past
+  roughly 1e5, and the result is visible moire rather than noise. Reduce the index to a small
+  two-dimensional lattice first and hash that.
+- **Release the context in `dispose()`.** Renderers are torn down at every segment boundary, so
+  a scene that leaks a GL context exhausts the browser's context limit part way through a
+  record pass and the rest of the loop renders empty.
+- **Keep each file under 200 lines.** The repo hook enforces it. A scene that outgrows one file
+  becomes a domain subfolder of flat siblings, `web/scenes/<name>/<name>_*.js`, with every
+  file's `<script>` listed in dependency order; `scenes/bad-apple/` is the worked example.
+
+Iterate against the live page rather than the recorded loop: serve `web/` and open
+`index.html`, which runs the same `resolveSegment` walk the recorder uses, so what you see is
+what gets captured except for `preserveDrawingBuffer`. Only then run `ambient-canvas-render`.
+
+Every composition costs its dwell in file size at roughly 1.6MB per recorded second, so one
+30s addition grows `loop.mp4` by around 48MB and lengthens each record pass accordingly.
 
 ### Record and play
 

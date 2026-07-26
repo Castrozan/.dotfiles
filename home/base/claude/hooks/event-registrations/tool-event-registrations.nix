@@ -136,7 +136,7 @@
         }
         {
           type = "command";
-          command = "${runHook} ${hooksPath}/line-count-advisory-guard.py";
+          command = "${runHook} ${hooksPath}/line-count-limit-guard.py";
           timeout = 3000;
         }
       ];

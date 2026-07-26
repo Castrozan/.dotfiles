@@ -29,8 +29,7 @@ sys.path.insert(0, str(SHARED_POLICY_DIRECTORY))
 
 from line_count_policy import (  # noqa: E402
     LINE_COUNT_BLOCKING_THRESHOLD,
-    SEVERITY_BLOCKING,
-    evaluate_code_file_line_count,
+    line_count_when_code_file_exceeds_blocking_threshold,
 )
 
 
@@ -55,13 +54,13 @@ def list_tracked_file_paths() -> list[Path]:
 def line_count_per_over_limit_file() -> dict[str, int]:
     over_limit_files = {}
     for absolute_path in list_tracked_file_paths():
-        evaluation = evaluate_code_file_line_count(str(absolute_path))
-        if evaluation is None:
+        line_count = line_count_when_code_file_exceeds_blocking_threshold(
+            str(absolute_path)
+        )
+        if line_count is None:
             continue
-        line_count, severity = evaluation
-        if severity == SEVERITY_BLOCKING:
-            relative_path = str(absolute_path.relative_to(REPOSITORY_ROOT))
-            over_limit_files[relative_path] = line_count
+        relative_path = str(absolute_path.relative_to(REPOSITORY_ROOT))
+        over_limit_files[relative_path] = line_count
     return over_limit_files
 
 

@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
-"""Enforce file-length guidelines on code files after Write/Edit.
+"""Enforce the file-length hard limit on code files after Write/Edit.
 
-Thresholds (line counts) come from line_count_policy.py. Above the blocking
-threshold emits decision="block" so the model gets next-turn feedback.
+The threshold comes from line_count_policy.py. Over it, emits decision="block"
+so the model gets next-turn feedback; at or under it, stays silent.
 
 Exit codes:
-  0 - silent pass-through (no advisory, or non-applicable file)
-  1 - invalid input JSON
+  0 - always (silent pass-through when the file is within the limit)
 """
 
 from __future__ import annotations
@@ -18,13 +17,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
 from line_count_policy import (  # noqa: E402
-    LINE_COUNT_ADVISORY_THRESHOLD,
     LINE_COUNT_BLOCKING_THRESHOLD,
-    LINE_COUNT_WARNING_THRESHOLD,
-    SEVERITY_ADVISORY,
-    SEVERITY_BLOCKING,
-    SEVERITY_WARNING,
-    evaluate_code_file_line_count,
+    line_count_when_code_file_exceeds_blocking_threshold,
 )
 
 APPLICABLE_TOOL_NAMES = frozenset({"Write", "Edit", "MultiEdit", "NotebookEdit"})
@@ -64,38 +58,6 @@ def build_blocking_payload(file_path: str, line_count: int) -> dict:
     }
 
 
-def build_warning_payload(file_path: str, line_count: int) -> dict:
-    return {
-        "systemMessage": (
-            f"WARNING: {file_path} is {line_count} lines "
-            f"(> {LINE_COUNT_WARNING_THRESHOLD}). "
-            "Split this file before it grows further."
-        )
-    }
-
-
-def build_advisory_payload(file_path: str, line_count: int) -> dict:
-    return {
-        "systemMessage": (
-            f"ADVISORY: {file_path} is {line_count} lines "
-            f"(> {LINE_COUNT_ADVISORY_THRESHOLD}). "
-            "Consider whether this file should be split."
-        )
-    }
-
-
-def determine_payload_for_severity(
-    file_path: str, line_count: int, severity: str
-) -> dict | None:
-    if severity == SEVERITY_BLOCKING:
-        return build_blocking_payload(file_path, line_count)
-    if severity == SEVERITY_WARNING:
-        return build_warning_payload(file_path, line_count)
-    if severity == SEVERITY_ADVISORY:
-        return build_advisory_payload(file_path, line_count)
-    return None
-
-
 def main() -> None:
     try:
         hook_input = json.load(sys.stdin)
@@ -111,16 +73,11 @@ def main() -> None:
     if not target_file_path:
         sys.exit(0)
 
-    evaluation = evaluate_code_file_line_count(target_file_path)
-    if evaluation is None:
+    line_count = line_count_when_code_file_exceeds_blocking_threshold(target_file_path)
+    if line_count is None:
         sys.exit(0)
 
-    line_count, severity = evaluation
-    payload = determine_payload_for_severity(target_file_path, line_count, severity)
-    if payload is None:
-        sys.exit(0)
-
-    print(json.dumps(payload))
+    print(json.dumps(build_blocking_payload(target_file_path, line_count)))
     sys.exit(0)
 
 

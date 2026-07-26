@@ -4,8 +4,6 @@ from __future__ import annotations
 
 import os
 
-LINE_COUNT_ADVISORY_THRESHOLD = 100
-LINE_COUNT_WARNING_THRESHOLD = 150
 LINE_COUNT_BLOCKING_THRESHOLD = 200
 
 CODE_FILE_EXTENSIONS = frozenset(
@@ -74,12 +72,6 @@ CODE_FILE_EXTENSIONS = frozenset(
 )
 
 
-SEVERITY_OK = "ok"
-SEVERITY_ADVISORY = "advisory"
-SEVERITY_WARNING = "warning"
-SEVERITY_BLOCKING = "blocking"
-
-
 def file_path_has_code_extension(file_path: str) -> bool:
     _root, extension = os.path.splitext(file_path)
     return extension.lower() in CODE_FILE_EXTENSIONS
@@ -96,17 +88,7 @@ def count_lines_in_file(file_path: str) -> int:
     return line_count
 
 
-def classify_line_count(line_count: int) -> str:
-    if line_count > LINE_COUNT_BLOCKING_THRESHOLD:
-        return SEVERITY_BLOCKING
-    if line_count > LINE_COUNT_WARNING_THRESHOLD:
-        return SEVERITY_WARNING
-    if line_count > LINE_COUNT_ADVISORY_THRESHOLD:
-        return SEVERITY_ADVISORY
-    return SEVERITY_OK
-
-
-def evaluate_code_file_line_count(file_path: str) -> tuple[int, str] | None:
+def line_count_when_code_file_exceeds_blocking_threshold(file_path: str) -> int | None:
     if not file_path_has_code_extension(file_path):
         return None
     if not os.path.isfile(file_path):
@@ -115,4 +97,6 @@ def evaluate_code_file_line_count(file_path: str) -> tuple[int, str] | None:
         line_count = count_lines_in_file(file_path)
     except OSError:
         return None
-    return line_count, classify_line_count(line_count)
+    if line_count <= LINE_COUNT_BLOCKING_THRESHOLD:
+        return None
+    return line_count

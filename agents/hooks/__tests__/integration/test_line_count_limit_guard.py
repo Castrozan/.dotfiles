@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 HOOK_SCRIPT_PATH = next(
-    Path(__file__).resolve().parent.parent.parent.rglob("line-count-advisory-guard.py")
+    Path(__file__).resolve().parent.parent.parent.rglob("line-count-limit-guard.py")
 )
 
 
@@ -33,43 +33,26 @@ def parse_hook_stdout(stdout: str) -> dict:
 
 
 class TestLineCountThresholds:
-    def test_silent_under_advisory_threshold(self, tmp_path):
-        file_path = write_python_file_with_line_count(tmp_path, "small.py", 50)
+    @pytest.mark.parametrize("line_count", [50, 120, 170, 200])
+    def test_silent_at_or_under_blocking_threshold(self, tmp_path, line_count):
+        file_path = write_python_file_with_line_count(
+            tmp_path, f"within_limit_{line_count}.py", line_count
+        )
         result = invoke_hook_with_payload(
             {"tool_name": "Write", "tool_input": {"file_path": str(file_path)}}
         )
         assert result.returncode == 0
         assert result.stdout == ""
 
-    def test_silent_at_advisory_threshold_boundary(self, tmp_path):
-        file_path = write_python_file_with_line_count(tmp_path, "boundary.py", 100)
-        result = invoke_hook_with_payload(
-            {"tool_name": "Write", "tool_input": {"file_path": str(file_path)}}
-        )
-        assert result.returncode == 0
-        assert result.stdout == ""
-
-    def test_advises_above_advisory_threshold(self, tmp_path):
-        file_path = write_python_file_with_line_count(tmp_path, "medium.py", 120)
+    def test_blocks_just_above_blocking_threshold(self, tmp_path):
+        file_path = write_python_file_with_line_count(tmp_path, "over.py", 201)
         result = invoke_hook_with_payload(
             {"tool_name": "Edit", "tool_input": {"file_path": str(file_path)}}
         )
         assert result.returncode == 0
         payload = parse_hook_stdout(result.stdout)
-        assert "ADVISORY" in payload["systemMessage"]
-        assert "120" in payload["systemMessage"]
-        assert "decision" not in payload
-
-    def test_warns_above_warning_threshold(self, tmp_path):
-        file_path = write_python_file_with_line_count(tmp_path, "large.py", 170)
-        result = invoke_hook_with_payload(
-            {"tool_name": "Edit", "tool_input": {"file_path": str(file_path)}}
-        )
-        assert result.returncode == 0
-        payload = parse_hook_stdout(result.stdout)
-        assert "WARNING" in payload["systemMessage"]
-        assert "170" in payload["systemMessage"]
-        assert "decision" not in payload
+        assert payload["decision"] == "block"
+        assert "201" in payload["reason"]
 
     def test_blocks_above_blocking_threshold(self, tmp_path):
         file_path = write_python_file_with_line_count(tmp_path, "huge.py", 250)
