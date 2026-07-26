@@ -32,7 +32,7 @@
       hooks = [
         {
           type = "command";
-          command = "${runHook} ${hooksPath}/tldr-reminder.py";
+          command = "${runHook} ${hooksPath}/user-prompt-submit-dispatcher.py";
           timeout = 2000;
         }
       ];

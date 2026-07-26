@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 
 HOOKS_ROOT = Path(__file__).resolve().parents[2]
-TLDR_REMINDER_HOOK_SCRIPT = next(HOOKS_ROOT.rglob("tldr-reminder.py"))
+TLDR_REMINDER_HOOK_SCRIPT = next(HOOKS_ROOT.rglob("user-prompt-submit-dispatcher.py"))
 REPLY_REMINDER_STATE_MODULE_PATH = next(
     HOOKS_ROOT.rglob("interactive_reply_reminder_state.py")
 )

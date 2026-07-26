@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 import sys
 from pathlib import Path
 
@@ -16,6 +15,7 @@ for importable_directory in (
     if importable_directory.is_dir() and importable_directory_string not in sys.path:
         sys.path.insert(0, importable_directory_string)
 
+from hook_dispatch import HandlerResult  # noqa: E402
 from interactive_reply_reminder_state import (  # noqa: E402
     record_reply_reminder_injected,
     reply_reminder_should_be_injected,
@@ -43,37 +43,11 @@ TLDR_REPLY_REMINDER = (
 )
 
 
-def read_hook_input_or_exit() -> dict:
-    try:
-        return json.load(sys.stdin)
-    except json.JSONDecodeError:
-        sys.exit(0)
-
-
-def main() -> None:
-    hook_input = read_hook_input_or_exit()
-
-    if hook_input.get("hook_event_name", "") != "UserPromptSubmit":
-        sys.exit(0)
-
+def handle(hook_input: dict):
     if not is_keyboard_driven_interactive_session():
-        sys.exit(0)
-
+        return None
     session_id = hook_input.get("session_id") or ""
     if not reply_reminder_should_be_injected(session_id):
-        sys.exit(0)
-
-    output = {
-        "continue": True,
-        "hookSpecificOutput": {
-            "hookEventName": "UserPromptSubmit",
-            "additionalContext": TLDR_REPLY_REMINDER,
-        },
-    }
-    print(json.dumps(output))
+        return None
     record_reply_reminder_injected(session_id)
-    sys.exit(0)
-
-
-if __name__ == "__main__":
-    main()
+    return HandlerResult(additional_context=TLDR_REPLY_REMINDER)

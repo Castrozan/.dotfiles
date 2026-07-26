@@ -5,7 +5,11 @@ import sys
 from pathlib import Path
 
 HOOKS_ROOT = Path(__file__).resolve().parents[2]
-TLDR_REMINDER_SOURCE = next(HOOKS_ROOT.rglob("tldr-reminder.py"))
+USER_PROMPT_SUBMIT_DISPATCHER_SOURCE = next(
+    HOOKS_ROOT.rglob("user-prompt-submit-dispatcher.py")
+)
+TLDR_REMINDER_HANDLER_SOURCE = next(HOOKS_ROOT.rglob("tldr_reminder_handler.py"))
+HOOK_DISPATCH_SOURCE = HOOKS_ROOT / "common" / "hook_dispatch.py"
 END_OF_TURN_FORMAT_GUARD_SOURCE = next(HOOKS_ROOT.rglob("end-of-turn-format-guard.py"))
 INTERACTIVE_SESSION_DETECTION_SOURCE = (
     HOOKS_ROOT / "common" / "interactive_session_detection.py"
@@ -46,7 +50,9 @@ def test_tldr_reminder_imports_shared_module_after_flat_deploy(tmp_path, monkeyp
     flatten_into_single_runtime_directory(
         tmp_path,
         [
-            TLDR_REMINDER_SOURCE,
+            USER_PROMPT_SUBMIT_DISPATCHER_SOURCE,
+            TLDR_REMINDER_HANDLER_SOURCE,
+            HOOK_DISPATCH_SOURCE,
             INTERACTIVE_SESSION_DETECTION_SOURCE,
             INTERACTIVE_REPLY_REMINDER_STATE_SOURCE,
         ],
@@ -54,7 +60,7 @@ def test_tldr_reminder_imports_shared_module_after_flat_deploy(tmp_path, monkeyp
 
     keyboard = run_flattened_hook(
         tmp_path,
-        "tldr-reminder.py",
+        "user-prompt-submit-dispatcher.py",
         {"hook_event_name": "UserPromptSubmit", "session_id": "flat-deploy"},
         {
             INTERACTIVE_ENV_VAR: "/some/interactive-preferences.md",
@@ -69,7 +75,7 @@ def test_tldr_reminder_imports_shared_module_after_flat_deploy(tmp_path, monkeyp
 
     clawde = run_flattened_hook(
         tmp_path,
-        "tldr-reminder.py",
+        "user-prompt-submit-dispatcher.py",
         {"hook_event_name": "UserPromptSubmit", "session_id": "flat-deploy"},
         {
             INTERACTIVE_ENV_VAR: "/some/interactive-preferences.md",
