@@ -28,7 +28,7 @@ in
   a2a-excluded-from-interactive-mcp-injection =
     mkEvalCheck "a2a-excluded-from-interactive-mcp-injection"
       (!(builtins.elem "a2a" partition.interactivelyInjectedMcpServerNames))
-      "a2a must be excluded from the interactive ~/.claude.json injection; re-injecting it interactively regresses the documented token-usage-reduction goal with no other test to catch the change";
+      "a2a must be excluded from the interactive ~/.claude.json injection; re-injecting it interactively regresses the interactive prefix token-cost goal (see docs/context-management.md) with no other test to catch the change";
 
   retired-mcps-remain-in-managed-prune-set =
     mkEvalCheck "retired-mcps-remain-in-managed-prune-set"

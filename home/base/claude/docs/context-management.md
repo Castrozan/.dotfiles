@@ -63,6 +63,16 @@ Autonomous model switching (Claude deciding to change models based on task compl
 - [#19269](https://github.com/anthropics/claude-code/issues/19269) — Per-tool model routing (Haiku for reads, Opus for architecture). Marked high-priority.
 - [#15721](https://github.com/anthropics/claude-code/issues/15721) — Auto plan/execute model routing. Marked high-priority.
 
+## Token Cost and Caching
+
+Conversation-history re-read (`cache_read`) dominates token cost: every tool result and message is re-sent on each later turn until compaction or `/clear`, so a byte added once is re-billed on every subsequent turn. The levers are behavioral and live in `agents/core_rules/core.md` (`<context-budget>`, `<delegation>`, `<audience>`): keep the working set small, delegate heavy reads to subagents whose output never enters the parent history, and `/clear` at task boundaries. Deployed output caps (`MAX_MCP_OUTPUT_TOKENS`, `BASH_MAX_OUTPUT_LENGTH`) live in `environment-variables.nix`; read that file for the values.
+
+Caching invariants worth not breaking: on a Claude subscription the 1-hour cache TTL is auto-requested for free, so never set `FORCE_PROMPT_CACHING_5M` (it shortens the TTL, expires warm prefixes, and drops the hit ratio). The cache key includes both model and effort, so switching either mid-session, or using the `opusplan` alias that toggles Opus and Sonnet, reprocesses the entire history uncached. Keeping MCP tools deferred via Tool Search means a server connecting or disconnecting only appends and leaves the cached prefix intact, so never force tools upfront or add an `alwaysLoad` exemption.
+
+## Scrollback and Session History
+
+Claude Code's fullscreen TUI renders on the terminal's alternate screen and uses DEC scroll-region escapes (DECSTBM), so streamed output never reaches the terminal's native scrollback; stripping alt-screen at the multiplexer does not stop the DECSTBM escapes. The durable record of a conversation is its session jsonl under `~/.claude/projects/<encoded-cwd>/`, reachable via `claude --resume <uuid>` or a direct `Read`. That file, not multiplexer scrollback, is where "search the whole session" or "grab text from much earlier" is answered, and it is independent of the multiplexer, so conversations from another window or a background agent are reachable the same way.
+
 ## References
 
 - [Model Configuration](https://code.claude.com/docs/en/model-config)
