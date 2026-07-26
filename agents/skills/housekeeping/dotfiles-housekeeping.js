@@ -124,6 +124,7 @@ const swept = await pipeline(
         label: `sweep:${dimension.key}`,
         phase: "Sweep",
         schema: FINDINGS_SCHEMA,
+        model: "sonnet",
       },
     ),
   (review, dimension) =>
