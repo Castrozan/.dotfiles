@@ -1,0 +1,86 @@
+import json
+import sys
+from pathlib import Path
+
+HOOKS_ROOT = Path(__file__).resolve().parents[2]
+HOOK_DISPATCH_MODULE_DIRECTORY = next(HOOKS_ROOT.rglob("hook_dispatch.py")).parent
+if str(HOOK_DISPATCH_MODULE_DIRECTORY) not in sys.path:
+    sys.path.insert(0, str(HOOK_DISPATCH_MODULE_DIRECTORY))
+
+from hook_dispatch import (  # noqa: E402
+    HandlerResult,
+    HookHandler,
+    emit_context_injection,
+    emit_stop_decision,
+    run_handlers,
+)
+
+
+def context_handler(text):
+    return HookHandler(handle=lambda hook_input: HandlerResult(additional_context=text))
+
+
+def decision_handler(decision, reason, tool_matcher=None):
+    return HookHandler(
+        handle=lambda hook_input: HandlerResult(decision=decision, reason=reason),
+        tool_matcher=tool_matcher,
+    )
+
+
+def test_context_fragments_concatenate_in_registry_order():
+    outcome = run_handlers({}, [context_handler("first"), context_handler("second")])
+    assert outcome.combined_additional_context == "first\n\nsecond"
+
+
+def test_abstaining_handler_returning_none_is_skipped():
+    abstain = HookHandler(handle=lambda hook_input: None)
+    outcome = run_handlers({}, [abstain, context_handler("only")])
+    assert outcome.combined_additional_context == "only"
+    assert outcome.decision is None
+
+
+def test_tool_matcher_gates_which_handlers_run():
+    bash_only = decision_handler("block", "bash reason", tool_matcher="Bash")
+    outcome_other = run_handlers({"tool_name": "Edit"}, [bash_only])
+    assert outcome_other.decision is None
+    outcome_bash = run_handlers({"tool_name": "Bash"}, [bash_only])
+    assert outcome_bash.decision == "block"
+
+
+def test_stronger_decision_wins_regardless_of_order():
+    handlers = [
+        decision_handler("allow", "allowed"),
+        decision_handler("deny", "denied"),
+    ]
+    outcome = run_handlers({}, handlers)
+    assert outcome.decision == "deny"
+    assert outcome.reason == "denied"
+
+
+def test_first_handler_wins_a_tie_in_decision_strength():
+    handlers = [decision_handler("block", "first"), decision_handler("deny", "second")]
+    outcome = run_handlers({}, handlers)
+    assert outcome.decision == "block"
+    assert outcome.reason == "first"
+
+
+def test_emit_context_injection_writes_combined_payload(capsys):
+    outcome = run_handlers({}, [context_handler("alpha"), context_handler("beta")])
+    emit_context_injection("SessionStart", outcome)
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["hookSpecificOutput"]["hookEventName"] == "SessionStart"
+    assert payload["hookSpecificOutput"]["additionalContext"] == "alpha\n\nbeta"
+
+
+def test_emit_context_injection_is_silent_when_no_context(capsys):
+    outcome = run_handlers({}, [HookHandler(handle=lambda hook_input: None)])
+    emit_context_injection("SessionStart", outcome)
+    assert capsys.readouterr().out.strip() == ""
+
+
+def test_emit_stop_decision_only_prints_on_block(capsys):
+    emit_stop_decision(run_handlers({}, [context_handler("noise")]))
+    assert capsys.readouterr().out.strip() == ""
+    emit_stop_decision(run_handlers({}, [decision_handler("block", "stop reason")]))
+    payload = json.loads(capsys.readouterr().out)
+    assert payload == {"decision": "block", "reason": "stop reason"}
