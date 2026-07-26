@@ -11,7 +11,6 @@ let
 in
 {
   home.packages = [
-    (mkMediaPythonScript "daily-note" ./scripts/daily_note.py)
     (pkgs.writeShellScriptBin "on" (builtins.readFile ./scripts/on))
     (pkgs.writeShellScriptBin "pdf-edit" (builtins.readFile ./scripts/pdf-edit))
     (mkMediaPythonScript "speed-read" ./scripts/speed_read.py)

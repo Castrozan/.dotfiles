@@ -81,7 +81,6 @@ in
         "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1/"
         "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom2/"
         "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom3/"
-        "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom4/"
         "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom5/"
         "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom6/"
         "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom7/"
@@ -104,12 +103,6 @@ in
       name = "obsidian-read-it-later";
       binding = "<Super>r";
       command = "xdg-open 'obsidian://adv-uri?commandid=obsidian-read-it-later%3Asave-clipboard-to-notice'";
-    };
-
-    "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom4" = {
-      name = "daily-note";
-      binding = "<Super>d";
-      command = "bash -c 'OBSIDIAN_HOME=\"$HOME/vault\" daily-note'";
     };
 
     "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom2" = {
