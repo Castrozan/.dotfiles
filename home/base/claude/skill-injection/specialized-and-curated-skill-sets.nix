@@ -1,24 +1,10 @@
-_:
+{ config, lib, ... }:
 let
   skillSetBuilders = import ./skill-set-builders.nix;
 
   personalSkillSetClaudeSkillDirectorySymlinks = skillSetBuilders.claudeSkillDirectorySymlinksAtPrefix ".local/share/claude-skill-sets/personal/.claude/skills" skillSetBuilders.specializedSkillSetSkillNames;
 
-  curatedSkillSets = {
-    steward = [
-      "git"
-      "nix"
-      "test"
-      "deep-work"
-      "workspace"
-      "worktrees"
-      "herdr"
-      "exit"
-      "restart"
-      "notify"
-      "review"
-    ];
-  };
+  curatedSkillSets = config.claudeCuratedSkillSets;
 
   curatedSkillSetClaudeSkillDirectorySymlinks =
     setName: skillNames:
@@ -32,6 +18,20 @@ let
   ) { } (builtins.attrNames curatedSkillSets);
 in
 {
-  home.file =
+  options.claudeCuratedSkillSets = lib.mkOption {
+    type = lib.types.attrsOf (lib.types.listOf lib.types.str);
+    default = { };
+    description = ''
+      Named subsets of the dotfiles skills, each materialized at
+      .local/share/claude-skill-sets/<set>/.claude/skills for an agent to load
+      with --add-dir. Declare a set from the module that owns the agent
+      consuming it, not here, so the skill list stays next to the agent whose
+      job defines it. A name that matches no skill on disk is dropped rather
+      than failing the build, so a set survives a skill rename until someone
+      notices the agent lost it.
+    '';
+  };
+
+  config.home.file =
     personalSkillSetClaudeSkillDirectorySymlinks // allCuratedSkillSetClaudeSkillDirectorySymlinks;
 }

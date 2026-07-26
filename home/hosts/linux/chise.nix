@@ -11,6 +11,7 @@ in
     ./chise/session-vars.nix
     ./chise/chrome-default-browser.nix
     ../../base/claude/clawde-agents/steward.nix
+    ../../base/claude/clawde-agents/ril-watcher
 
     ../../base/core.nix
 

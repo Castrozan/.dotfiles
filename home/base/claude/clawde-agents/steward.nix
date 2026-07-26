@@ -50,6 +50,20 @@ let
   effectivePersonality = personalityWithMachineIdentity + machineLocalWrapperDirective;
 in
 {
+  claudeCuratedSkillSets.steward = [
+    "git"
+    "nix"
+    "test"
+    "deep-work"
+    "workspace"
+    "worktrees"
+    "herdr"
+    "exit"
+    "restart"
+    "notify"
+    "review"
+  ];
+
   home.file."clawde/steward/peers.json".text = builtins.toJSON peersConfiguration;
 
   clawde.agents.steward = {
