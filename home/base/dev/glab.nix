@@ -75,10 +75,10 @@ in
         '';
       };
 
-      healthCheck.probes = [
+      healthCheck.probes = lib.optionals (config.glab.gitlabHost != null) [
         (healthCheckLib.mkBinaryProbe {
-          name = "glab auth recognises configured host + token";
-          command = ". $HOME/.secrets/source-secrets.sh 2>/dev/null; glab auth status 2>&1 | grep -q 'Token found'";
+          name = "glab config holds a token for ${config.glab.gitlabHost}";
+          command = "glab config get token --host ${config.glab.gitlabHost} | grep -q .";
         })
       ];
     };
