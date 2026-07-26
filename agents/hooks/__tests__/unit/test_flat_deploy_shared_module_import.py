@@ -10,7 +10,18 @@ USER_PROMPT_SUBMIT_DISPATCHER_SOURCE = next(
 )
 TLDR_REMINDER_HANDLER_SOURCE = next(HOOKS_ROOT.rglob("tldr_reminder_handler.py"))
 HOOK_DISPATCH_SOURCE = HOOKS_ROOT / "common" / "hook_dispatch.py"
-END_OF_TURN_FORMAT_GUARD_SOURCE = next(HOOKS_ROOT.rglob("end-of-turn-format-guard.py"))
+STOP_DISPATCHER_SOURCE = next(HOOKS_ROOT.rglob("stop-dispatcher.py"))
+END_OF_TURN_FORMAT_GUARD_HANDLER_SOURCE = next(
+    HOOKS_ROOT.rglob("end_of_turn_format_guard_handler.py")
+)
+LINT_TURN_REVIEW_HANDLER_SOURCE = next(HOOKS_ROOT.rglob("lint_turn_review_handler.py"))
+LINT_LEDGER_SOURCE = next(HOOKS_ROOT.rglob("lint_ledger.py"))
+LINTER_TABLE_BY_EXTENSION_SOURCE = next(
+    HOOKS_ROOT.rglob("linter_table_by_extension.py")
+)
+REPO_NATIVE_LINT_COMMAND_DETECTION_SOURCE = next(
+    HOOKS_ROOT.rglob("repo_native_lint_command_detection.py")
+)
 INTERACTIVE_SESSION_DETECTION_SOURCE = (
     HOOKS_ROOT / "common" / "interactive_session_detection.py"
 )
@@ -87,16 +98,24 @@ def test_tldr_reminder_imports_shared_module_after_flat_deploy(tmp_path, monkeyp
     assert clawde.stdout.strip() == ""
 
 
-def test_format_guard_imports_shared_module_after_flat_deploy(tmp_path, monkeypatch):
+def test_stop_dispatcher_imports_shared_modules_after_flat_deploy(
+    tmp_path, monkeypatch
+):
     monkeypatch.delenv(CLAWDE_BACKGROUND_AGENT_ENV_MARKER, raising=False)
     flatten_into_single_runtime_directory(
         tmp_path,
         [
-            END_OF_TURN_FORMAT_GUARD_SOURCE,
+            STOP_DISPATCHER_SOURCE,
+            END_OF_TURN_FORMAT_GUARD_HANDLER_SOURCE,
+            LINT_TURN_REVIEW_HANDLER_SOURCE,
+            HOOK_DISPATCH_SOURCE,
             INTERACTIVE_SESSION_DETECTION_SOURCE,
             END_OF_TURN_REPLY_TEMPLATE_RULES_SOURCE,
             REPLY_TEMPLATE_SHAPE_AND_LENGTH_RULES_SOURCE,
             INTERACTIVE_REPLY_REMINDER_STATE_SOURCE,
+            LINT_LEDGER_SOURCE,
+            LINTER_TABLE_BY_EXTENSION_SOURCE,
+            REPO_NATIVE_LINT_COMMAND_DETECTION_SOURCE,
         ],
     )
 
@@ -126,11 +145,12 @@ def test_format_guard_imports_shared_module_after_flat_deploy(tmp_path, monkeypa
         "hook_event_name": "Stop",
         "transcript_path": str(transcript),
         "stop_hook_active": False,
+        "session_id": "flat-deploy-stop",
     }
 
     keyboard = run_flattened_hook(
         tmp_path,
-        "end-of-turn-format-guard.py",
+        "stop-dispatcher.py",
         payload,
         {
             INTERACTIVE_ENV_VAR: "/some/interactive-preferences.md",
@@ -142,7 +162,7 @@ def test_format_guard_imports_shared_module_after_flat_deploy(tmp_path, monkeypa
 
     clawde = run_flattened_hook(
         tmp_path,
-        "end-of-turn-format-guard.py",
+        "stop-dispatcher.py",
         payload,
         {
             INTERACTIVE_ENV_VAR: "/some/interactive-preferences.md",

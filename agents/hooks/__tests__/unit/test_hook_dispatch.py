@@ -27,6 +27,10 @@ def decision_handler(decision, reason, tool_matcher=None):
     )
 
 
+def system_message_handler(text):
+    return HookHandler(handle=lambda hook_input: HandlerResult(system_message=text))
+
+
 def test_context_fragments_concatenate_in_registry_order():
     outcome = run_handlers({}, [context_handler("first"), context_handler("second")])
     assert outcome.combined_additional_context == "first\n\nsecond"
@@ -84,3 +88,31 @@ def test_emit_stop_decision_only_prints_on_block(capsys):
     emit_stop_decision(run_handlers({}, [decision_handler("block", "stop reason")]))
     payload = json.loads(capsys.readouterr().out)
     assert payload == {"decision": "block", "reason": "stop reason"}
+
+
+def test_system_messages_combine_across_handlers_in_order():
+    outcome = run_handlers(
+        {}, [system_message_handler("first advisory"), system_message_handler("second")]
+    )
+    assert outcome.combined_system_message == "first advisory\n\nsecond"
+
+
+def test_emit_stop_decision_emits_system_message_without_block(capsys):
+    emit_stop_decision(run_handlers({}, [system_message_handler("advisory only")]))
+    payload = json.loads(capsys.readouterr().out)
+    assert payload == {"continue": True, "systemMessage": "advisory only"}
+
+
+def test_emit_stop_decision_unions_system_message_and_block(capsys):
+    outcome = run_handlers(
+        {},
+        [system_message_handler("lint advisory"), decision_handler("block", "shape")],
+    )
+    emit_stop_decision(outcome)
+    payload = json.loads(capsys.readouterr().out)
+    assert payload == {
+        "continue": True,
+        "systemMessage": "lint advisory",
+        "decision": "block",
+        "reason": "shape",
+    }

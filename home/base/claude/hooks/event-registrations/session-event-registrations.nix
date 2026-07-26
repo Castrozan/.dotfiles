@@ -35,12 +35,7 @@
       hooks = [
         {
           type = "command";
-          command = "${runHook} ${hooksPath}/lint-turn-review.py";
-          timeout = 5000;
-        }
-        {
-          type = "command";
-          command = "${runHook} ${hooksPath}/end-of-turn-format-guard.py";
+          command = "${runHook} ${hooksPath}/stop-dispatcher.py";
           timeout = 5000;
         }
       ];
@@ -53,7 +48,7 @@
       hooks = [
         {
           type = "command";
-          command = "${runHook} ${hooksPath}/lint-turn-review.py";
+          command = "${runHook} ${hooksPath}/stop-dispatcher.py";
           timeout = 5000;
         }
       ];

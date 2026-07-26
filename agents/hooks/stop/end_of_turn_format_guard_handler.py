@@ -21,19 +21,13 @@ from end_of_turn_reply_template_rules import (  # noqa: E402
     COMPRESSION_GUIDANCE,
     template_violations_in_reply,
 )
+from hook_dispatch import HandlerResult  # noqa: E402
 from interactive_reply_reminder_state import (  # noqa: E402
     request_reply_reminder_rearm_after_drift,
 )
 from interactive_session_detection import (  # noqa: E402
     is_keyboard_driven_interactive_session,
 )
-
-
-def read_hook_input_or_exit() -> dict:
-    try:
-        return json.load(sys.stdin)
-    except json.JSONDecodeError:
-        sys.exit(0)
 
 
 def user_prompt_text_from_event(transcript_event: dict) -> str:
@@ -85,24 +79,23 @@ def read_final_turn_request_and_reply(transcript_path: str) -> tuple[str, str]:
     return current_turn_user_request, final_reply_text
 
 
-def main() -> None:
-    hook_input = read_hook_input_or_exit()
+def handle(hook_input: dict):
     if hook_input.get("hook_event_name", "") != "Stop":
-        sys.exit(0)
+        return None
     if not is_keyboard_driven_interactive_session():
-        sys.exit(0)
+        return None
     if hook_input.get("stop_hook_active"):
-        sys.exit(0)
+        return None
 
     user_request_text, reply_text = read_final_turn_request_and_reply(
         hook_input.get("transcript_path", "")
     )
     if not reply_text:
-        sys.exit(0)
+        return None
 
     violations = template_violations_in_reply(reply_text, user_request_text)
     if not violations:
-        sys.exit(0)
+        return None
 
     request_reply_reminder_rearm_after_drift(hook_input.get("session_id") or "")
 
@@ -112,9 +105,4 @@ def main() -> None:
         + "). "
         + COMPRESSION_GUIDANCE
     )
-    print(json.dumps({"decision": "block", "reason": block_reason}))
-    sys.exit(0)
-
-
-if __name__ == "__main__":
-    main()
+    return HandlerResult(decision="block", reason=block_reason)

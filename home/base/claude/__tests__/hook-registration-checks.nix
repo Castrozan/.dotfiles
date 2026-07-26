@@ -11,9 +11,9 @@ let
     lib.concatMap (matcherGroup: map (hook: hook.command) (matcherGroup.hooks or [ ])) (
       deployedSettings.hooks.${event} or [ ]
     );
-  deployedEventRunsLintTurnReview =
+  deployedEventRunsStopDispatcher =
     event:
-    lib.any (command: lib.hasInfix "lint-turn-review.py" command) (deployedHookCommandsForEvent event);
+    lib.any (command: lib.hasInfix "stop-dispatcher.py" command) (deployedHookCommandsForEvent event);
 
   deployedPreToolUseMatcherGroupsWithMatcher =
     matcher:
@@ -28,14 +28,14 @@ let
   ) (deployedPreToolUseMatcherGroupsWithMatcher "mcp__codex__codex");
 in
 {
-  hooks-lint-turn-review-registered-on-stop =
-    mkEvalCheck "hooks-lint-turn-review-registered-on-stop" (deployedEventRunsLintTurnReview "Stop")
-      "the deployed settings must register lint-turn-review.py on the Stop event so end-of-turn lint review fires";
+  hooks-stop-dispatcher-registered-on-stop =
+    mkEvalCheck "hooks-stop-dispatcher-registered-on-stop" (deployedEventRunsStopDispatcher "Stop")
+      "the deployed settings must register stop-dispatcher.py on the Stop event; it composes lint-turn-review and end-of-turn-format-guard, and test_stop_dispatcher_composition guards that the lint handler stays in it";
 
-  hooks-lint-turn-review-registered-on-subagent-stop =
-    mkEvalCheck "hooks-lint-turn-review-registered-on-subagent-stop"
-      (deployedEventRunsLintTurnReview "SubagentStop")
-      "the deployed settings must register lint-turn-review.py on the SubagentStop event so subagent turns get the same lint review; guards event-registrations.nix against dropping the SubagentStop registration";
+  hooks-stop-dispatcher-registered-on-subagent-stop =
+    mkEvalCheck "hooks-stop-dispatcher-registered-on-subagent-stop"
+      (deployedEventRunsStopDispatcher "SubagentStop")
+      "the deployed settings must register stop-dispatcher.py on the SubagentStop event so subagent turns get the same lint review; guards event-registrations.nix against dropping the SubagentStop registration";
 
   hooks-codex-sandbox-downgrade-guard-registered-on-codex-launch =
     mkEvalCheck "hooks-codex-sandbox-downgrade-guard-registered-on-codex-launch"

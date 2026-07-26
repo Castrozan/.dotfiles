@@ -6,7 +6,7 @@ from pathlib import Path
 
 HOOKS_ROOT = Path(__file__).resolve().parents[2]
 RECORD_HOOK_SCRIPT = next(HOOKS_ROOT.rglob("record-edited-source-file.py"))
-TURN_REVIEW_HOOK_SCRIPT = next(HOOKS_ROOT.rglob("lint-turn-review.py"))
+STOP_DISPATCHER_SCRIPT = next(HOOKS_ROOT.rglob("stop-dispatcher.py"))
 
 sys.path.insert(0, str(HOOKS_ROOT / "lint"))
 
@@ -66,7 +66,7 @@ def test_turn_review_suggests_repo_native_command(tmp_path):
     typescript_file.write_text("const a = 1\n")
     append_edited_source_file(session_id, str(typescript_file))
     result = run_hook(
-        TURN_REVIEW_HOOK_SCRIPT,
+        STOP_DISPATCHER_SCRIPT,
         {"hook_event_name": "Stop", "session_id": session_id},
     )
     parsed = json.loads(result.stdout)
@@ -80,7 +80,7 @@ def test_turn_review_suggests_linter_when_no_native_command(tmp_path):
     python_file.write_text("value = 1\n")
     append_edited_source_file(session_id, str(python_file))
     result = run_hook(
-        TURN_REVIEW_HOOK_SCRIPT,
+        STOP_DISPATCHER_SCRIPT,
         {"hook_event_name": "Stop", "session_id": session_id},
     )
     parsed = json.loads(result.stdout)
@@ -95,7 +95,7 @@ def test_turn_review_handles_subagent_stop_event(tmp_path):
     typescript_file.write_text("const a = 1\n")
     append_edited_source_file(session_id, str(typescript_file))
     result = run_hook(
-        TURN_REVIEW_HOOK_SCRIPT,
+        STOP_DISPATCHER_SCRIPT,
         {"hook_event_name": "SubagentStop", "session_id": session_id},
     )
     parsed = json.loads(result.stdout)
@@ -106,7 +106,7 @@ def test_turn_review_silent_when_no_files_recorded():
     session_id = "pytest-turn-review-empty"
     clear_session_ledger(session_id)
     result = run_hook(
-        TURN_REVIEW_HOOK_SCRIPT,
+        STOP_DISPATCHER_SCRIPT,
         {"hook_event_name": "Stop", "session_id": session_id},
     )
     assert result.stdout.strip() == ""
@@ -117,7 +117,7 @@ def test_turn_review_silent_on_non_stop_event(tmp_path):
     clear_session_ledger(session_id)
     append_edited_source_file(session_id, str(tmp_path / "x.py"))
     result = run_hook(
-        TURN_REVIEW_HOOK_SCRIPT,
+        STOP_DISPATCHER_SCRIPT,
         {"hook_event_name": "PreToolUse", "session_id": session_id},
     )
     assert result.stdout.strip() == ""

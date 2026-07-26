@@ -111,7 +111,7 @@ imports resolve, exactly like Claude's flat `~/.claude/hooks`.
   a PUBLIC repo. Not ported deliberately.
 - Not applicable: `codex-sandbox-downgrade-guard`, `monitor-streaming-pattern-validator`,
   `workspace-directory-injector`, `background-bash-anti-pattern-validator`, and the
-  `end-of-turn-format-guard`/`user-prompt-submit-dispatcher` reply-shape gate are tied to Claude's
+  `end_of_turn_format_guard_handler`/`user-prompt-submit-dispatcher` reply-shape gate are tied to Claude's
   TUI, its background-bash harness, the clawde launcher, or the `Monitor` tool.
 
 ## MCP servers

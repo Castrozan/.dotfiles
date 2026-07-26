@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 
 HOOKS_ROOT = Path(__file__).resolve().parents[2]
-END_OF_TURN_FORMAT_GUARD_SCRIPT = next(HOOKS_ROOT.rglob("end-of-turn-format-guard.py"))
+STOP_DISPATCHER_SCRIPT = next(HOOKS_ROOT.rglob("stop-dispatcher.py"))
 
 INTERACTIVE_SESSION_ENVIRONMENT_VARIABLE = "CLAUDE_INTERACTIVE_PREFERENCES_PATH"
 CLAWDE_BACKGROUND_AGENT_ENVIRONMENT_MARKER = "CLAWDE_RESUME_FLAG"
@@ -113,7 +113,7 @@ def invoke_guard(
     if clawde_background_agent:
         environment[CLAWDE_BACKGROUND_AGENT_ENVIRONMENT_MARKER] = clawde_marker_value
     return subprocess.run(
-        [sys.executable, str(END_OF_TURN_FORMAT_GUARD_SCRIPT)],
+        [sys.executable, str(STOP_DISPATCHER_SCRIPT)],
         input=json.dumps(payload),
         capture_output=True,
         text=True,

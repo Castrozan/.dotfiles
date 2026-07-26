@@ -16,6 +16,7 @@ class HandlerResult:
     additional_context: str = ""
     decision: Optional[str] = None
     reason: str = ""
+    system_message: str = ""
 
 
 @dataclass
@@ -29,11 +30,18 @@ class MergedHookOutcome:
     additional_context_fragments: list = field(default_factory=list)
     decision: Optional[str] = None
     reason: str = ""
+    system_message_fragments: list = field(default_factory=list)
 
     @property
     def combined_additional_context(self) -> str:
         return "\n\n".join(
             fragment for fragment in self.additional_context_fragments if fragment
+        )
+
+    @property
+    def combined_system_message(self) -> str:
+        return "\n\n".join(
+            fragment for fragment in self.system_message_fragments if fragment
         )
 
 
@@ -71,6 +79,8 @@ def run_handlers(hook_input: dict, handlers) -> MergedHookOutcome:
             continue
         if result.additional_context:
             outcome.additional_context_fragments.append(result.additional_context)
+        if result.system_message:
+            outcome.system_message_fragments.append(result.system_message)
         if candidate_decision_is_stronger(result.decision, outcome.decision):
             outcome.decision = result.decision
             outcome.reason = result.reason
@@ -95,6 +105,13 @@ def emit_context_injection(event_name: str, outcome: MergedHookOutcome) -> None:
 
 
 def emit_stop_decision(outcome: MergedHookOutcome) -> None:
-    if outcome.decision != "block":
-        return
-    print(json.dumps({"decision": "block", "reason": outcome.reason}))
+    payload: dict = {}
+    system_message = outcome.combined_system_message
+    if system_message:
+        payload["continue"] = True
+        payload["systemMessage"] = system_message
+    if outcome.decision == "block":
+        payload["decision"] = "block"
+        payload["reason"] = outcome.reason
+    if payload:
+        print(json.dumps(payload))
