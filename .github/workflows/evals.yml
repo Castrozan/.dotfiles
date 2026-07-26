@@ -7,7 +7,7 @@ on:
       - "CLAUDE.md"
   pull_request:
     paths:
-      - "agents/evals/baseline.json"
+      - "agents/__tests__/baseline.json"
 
 jobs:
   baseline-regression-check:
@@ -27,4 +27,4 @@ jobs:
         run: pip install pyyaml
 
       - name: Check eval baseline for regression
-        run: python3 agents/evals/run-evals.py --check-baseline
+        run: python3 agents/__tests__/run-evals.py --check-baseline

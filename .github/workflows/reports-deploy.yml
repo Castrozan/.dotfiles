@@ -40,9 +40,9 @@ jobs:
         run: |
           mkdir -p apps/reports/site/quality
           cp -r __tests__/coverage apps/reports/site/coverage
-          python3 agents/evals/render_baseline_dashboard.py apps/reports/site/baseline
+          python3 agents/__tests__/render_baseline_dashboard.py apps/reports/site/baseline
           cp .github/pages/style.css apps/reports/site/baseline/style.css
-          python3 agents/evals/render_quality_metrics.py apps/reports/site/quality/metrics.json
+          python3 agents/__tests__/render_quality_metrics.py apps/reports/site/quality/metrics.json
 
       - id: auth
         uses: google-github-actions/auth@v2

@@ -7,7 +7,7 @@ _run_evals_tier() {
 	fi
 
 	echo "--- Agent Evals (LLM) ---"
-	"$REPO_DIR/agents/evals/run-evals.py"
+	"$REPO_DIR/agents/__tests__/run-evals.py"
 	echo ""
 }
 
@@ -18,7 +18,7 @@ _run_integration_tier() {
 	fi
 
 	echo "--- Integration Tests (real Claude sessions) ---"
-	"$REPO_DIR/agents/evals/integration/run-integration-tests.py"
+	"$REPO_DIR/agents/__tests__/integration/run-integration-tests.py"
 	echo ""
 }
 
@@ -33,6 +33,6 @@ _run_e2e_tier() {
 	fi
 
 	echo "--- E2E Tests (herdr interactive Claude sessions) ---"
-	"$REPO_DIR/agents/evals/e2e/run-e2e-tests.py"
+	"$REPO_DIR/agents/__tests__/e2e/run-e2e-tests.py"
 	echo ""
 }
