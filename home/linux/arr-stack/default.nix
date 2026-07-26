@@ -24,8 +24,6 @@ let
     "prowlarr"
     "sonarr"
     "radarr"
-    "lidarr"
-    "readarr"
     "bazarr"
     "jellyfin"
     "jellyseerr"
@@ -34,8 +32,6 @@ let
     "torrents"
     "media/tv"
     "media/movies"
-    "media/music"
-    "media/books"
   ];
   configDirectoriesToCreate = map (
     service: "${stackRoot}/config/${service}"

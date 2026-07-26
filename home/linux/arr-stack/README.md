@@ -21,8 +21,6 @@ reconnects. You can still drive it by hand with `docker compose` (below).
 | prowlarr    | indexer manager               | http://arr:9696 |
 | sonarr      | TV                            | http://arr:8989 |
 | radarr      | movies                        | http://arr:7878 |
-| lidarr      | music                         | http://arr:8686 |
-| readarr     | books                         | http://arr:8788 |
 | bazarr      | subtitles                     | http://arr:6767 |
 
 Jellyfin is the Netflix-style page for watching the library; Jellyseerr is the
@@ -36,9 +34,9 @@ other interface. Open e.g. `http://arr:9696` from a tailnet-joined machine.
 The *arr apps have no login, so this exposes them to the tailnet (accepted);
 qBittorrent keeps its WebUI password.
 
-Readarr's host port is `8788` rather than its default `8787` (chise's cockpit
-session bridge already owns `8787` on loopback). Inside the stack Readarr still
-listens on `8787`, so other apps reach it at `readarr:8787`.
+The stack covers TV and movies only. Lidarr (music) and Readarr (books) were
+removed: neither library was ever used, and Readarr was archived upstream on
+2025-06-27 with no maintained successor.
 
 By default there is no VPN: qBittorrent runs directly on the `arrnet` bridge and
 the *arr apps reach it at host `qbittorrent`, port `8080`. Routing the stack
@@ -68,7 +66,7 @@ Config and data live under documented host paths (created on rebuild, owned by
 
 - `~/arr-stack/config/<service>` -> `/config` per app
 - `~/arr-stack/data` -> `/data` shared across qBittorrent and the *arr apps,
-  laid out as `data/torrents` and `data/media/{tv,movies,music,books}` so
+  laid out as `data/torrents` and `data/media/{tv,movies}` so
   imports are atomic hardlink moves on one filesystem (no slow copies).
 
 ## Moving data to an external drive

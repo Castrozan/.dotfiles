@@ -31,8 +31,6 @@ let
     "prowlarr"
     "sonarr"
     "radarr"
-    "lidarr"
-    "readarr"
     "bazarr"
   ];
   composeContainsEveryService = builtins.all (service: lib.hasInfix service composeText) serviceNames;
@@ -103,12 +101,12 @@ in
 {
   chise-arr-stack-roster-complete =
     mkEvalCheck "chise-arr-stack-roster-complete" composeContainsEveryService
-      "the compose file must define every mandated service (qbittorrent, prowlarr, sonarr, radarr, lidarr, readarr, bazarr) so the full *arr stack is present";
+      "the compose file must define every mandated service (qbittorrent, prowlarr, sonarr, radarr, bazarr) so the full *arr stack is present";
 
   chise-arr-stack-download-chain-restart-no =
     mkEvalCheck "chise-arr-stack-download-chain-restart-no"
       (downloadChainServicesPinnedToRestartNo && restartNoCount == builtins.length serviceNames)
-      ''the seven download-chain *arr services (qbittorrent, prowlarr, sonarr, radarr, lidarr, readarr, bazarr) must each set restart: "no", and no other service may, so docker never resurrects the download chain on boot: the on-demand supervisor, not docker, owns its lifecycle'';
+      ''the five download-chain *arr services (qbittorrent, prowlarr, sonarr, radarr, bazarr) must each set restart: "no", and no other service may, so docker never resurrects the download chain on boot: the on-demand supervisor, not docker, owns its lifecycle'';
 
   chise-arr-stack-front-ends-restart-unless-stopped =
     mkEvalCheck "chise-arr-stack-front-ends-restart-unless-stopped"
@@ -125,7 +123,7 @@ in
 
   chise-arr-stack-qbittorrent-pinned-to-v4 =
     mkEvalCheck "chise-arr-stack-qbittorrent-pinned-to-v4" qbittorrentPinnedToV4
-      "qBittorrent is pinned to a 4.x image because the EOL Readarr 0.4.18 client cannot authenticate against qBittorrent v5's WebUI";
+      "qBittorrent stays pinned to a 4.x image; the original blocker was the EOL Readarr client's inability to authenticate against qBittorrent v5's WebUI, and with Readarr dropped this pin is a deliberate hold until v5's WebUI auth is validated against the remaining apps";
 
   chise-arr-stack-documents-host-level-vpn =
     mkEvalCheck "chise-arr-stack-documents-host-level-vpn" readmeDocumentsHostLevelVpn

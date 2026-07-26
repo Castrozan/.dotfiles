@@ -77,15 +77,16 @@ in
       )
       "the on-demand service set must exclude jellyfin and jellyseerr so the always-on public front ends behind the funnel are never stopped by the idle sweep, only the download chain is";
 
-  chise-arr-on-demand-chain-is-movie-and-tv-only =
-    mkEvalCheck "chise-arr-on-demand-chain-is-movie-and-tv-only"
-      (
-        lib.hasInfix "radarr" enabledEnvironment.ARR_ON_DEMAND_SERVICES
-        && lib.hasInfix "sonarr" enabledEnvironment.ARR_ON_DEMAND_SERVICES
-        && !(lib.hasInfix "lidarr" enabledEnvironment.ARR_ON_DEMAND_SERVICES)
-        && !(lib.hasInfix "readarr" enabledEnvironment.ARR_ON_DEMAND_SERVICES)
-      )
-      "the chain must cover radarr and sonarr since Jellyseerr requests are movie and TV only, and leave the never-requested lidarr and readarr down";
+  chise-arr-on-demand-chain-covers-the-whole-download-chain =
+    mkEvalCheck "chise-arr-on-demand-chain-covers-the-whole-download-chain"
+      (builtins.all (service: lib.hasInfix service enabledEnvironment.ARR_ON_DEMAND_SERVICES) [
+        "radarr"
+        "sonarr"
+        "prowlarr"
+        "qbittorrent"
+        "bazarr"
+      ])
+      "the chain must cover every download-chain service (radarr, sonarr, prowlarr, qbittorrent, bazarr) so the idle sweep starts and stops the stack as one unit and only the always-on front ends stay resident";
 
   chise-arr-on-demand-keeps-tailnet-ip-out-of-source =
     mkEvalCheck "chise-arr-on-demand-keeps-tailnet-ip-out-of-source"

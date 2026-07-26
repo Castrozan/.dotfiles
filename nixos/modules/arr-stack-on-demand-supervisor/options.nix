@@ -23,7 +23,7 @@
         "qbittorrent"
         "bazarr"
       ];
-      description = "The download-chain compose services brought up on demand and stopped when idle; excludes the always-on jellyfin/jellyseerr front ends, and since Jellyseerr requests are movie/TV only it leaves lidarr/readarr down.";
+      description = "The download-chain compose services brought up on demand and stopped when idle; excludes the always-on jellyfin/jellyseerr front ends, which the idle sweep must never stop.";
     };
 
     idleGraceSeconds = lib.mkOption {

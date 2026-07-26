@@ -70,34 +70,6 @@ services:
       - ${ARR_CONFIG_ROOT}/radarr:/config
       - ${ARR_DATA_ROOT}:/data
 
-  lidarr:
-    image: lscr.io/linuxserver/lidarr:3.1.0.4875-ls32@sha256:4ac390131993f3104a43c4abed79b8abd3227e2536f7b468877e5f41d9f54da4
-    container_name: arr-lidarr
-    restart: "no"
-    networks:
-      - arrnet
-    ports:
-      - "${ARR_BIND_ADDR:?set in ~/arr-stack/.env}:8686:8686"
-    environment:
-      <<: *arr-common-environment
-    volumes:
-      - ${ARR_CONFIG_ROOT}/lidarr:/config
-      - ${ARR_DATA_ROOT}:/data
-
-  readarr:
-    image: lscr.io/linuxserver/readarr:0.4.18-develop
-    container_name: arr-readarr
-    restart: "no"
-    networks:
-      - arrnet
-    ports:
-      - "${ARR_BIND_ADDR:?set in ~/arr-stack/.env}:8788:8787"
-    environment:
-      <<: *arr-common-environment
-    volumes:
-      - ${ARR_CONFIG_ROOT}/readarr:/config
-      - ${ARR_DATA_ROOT}:/data
-
   bazarr:
     image: lscr.io/linuxserver/bazarr:v1.5.6-ls352@sha256:aaaa087af75a73b7ac765dcc5d748874cfafdb93c23ec9f64fbb481dea291b23
     container_name: arr-bazarr
