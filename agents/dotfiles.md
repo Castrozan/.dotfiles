@@ -92,7 +92,7 @@ check the live process and respawn if it still runs the old code.
 </applying-clawde-agent-changes>
 
 <agent-instructions>
-The eval baseline (`agents/evals/baseline.json`) is a committed snapshot that CI guards via `agent-eval
+The eval baseline (`agents/__tests__/baseline.json`) is a committed snapshot that CI guards via `agent-eval
 --check-baseline` against absolute pass-rate floors and a relative regression gate that fails when the overall pass rate
 drops more than a fixed margin below the previous committed baseline, and a freshness gate that fails once the recorded
 `generated_at` is older than the window in `run_evals_baseline.py`. Do not re-run `agent-eval --save-baseline` after

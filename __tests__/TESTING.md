@@ -9,9 +9,10 @@ anywhere in the repo may carry a `__tests__/` directory, split into `unit/`,
 - `unit/` — fast, mocked, no system state. The `--quick` (default) gate.
 - `integration/` — needs docker, real services, or multi-step subprocess flows.
 - `e2e/` — runs against a live system (runtime checks, headless browser, perf).
-- `evals/` — per-skill LLM eval yamls the `agent-eval` engine auto-discovers.
+- `evals/` — LLM eval yamls the `agent-eval` engine loads: the central corpus at
+  `agents/__tests__/evals/` plus the per-skill suites it auto-discovers.
 
-Agent LLM tests are a separate axis under `agents/evals/{evals,integration,e2e}/`
+Agent LLM tests are a separate axis under `agents/__tests__/{evals,integration,e2e}/`
 and keep their own flags (`--evals`, `--integration`, `--e2e`).
 
 ## Discovery
@@ -49,7 +50,7 @@ eval-checks) so the structure is self-describing.
 | Integration (scripts) | `integration/` bats + `integration/` pytest | `--integration-scripts` (alias `--docker`) |
 | Runtime / e2e (scripts) | `e2e/` bats + `e2e/` pytest | `--runtime` |
 | Perf | desktop + shell benchmarks, baseline checks, threshold tests | `--perf` |
-| Agent evals | `agents/evals/` single-turn / sessions / herdr | `--evals` / `--integration` / `--e2e` |
+| Agent evals | `agents/__tests__/` single-turn / sessions / herdr | `--evals` / `--integration` / `--e2e` |
 
 Additional modes: `--all` runs quick + nix + integration-scripts. `--coverage`
 runs `unit/` bats through kcov. `--ci` runs quick with CI-appropriate skips.
@@ -94,12 +95,12 @@ Each tier auto-detects tool availability (bats, nix, docker, kcov) and skips gra
 | Lua / QML suites | `*/__tests__/*_test.lua`, `*/__tests__/qml/run-qml-tests.sh` | lua / quickshell |
 | Domain nix tests | `*/__tests__/checks.nix` | nix |
 | Instruction surface lint | `agents/__tests__/unit/test_instruction_surfaces_are_structurally_sound.py` | pytest |
-| Agent evals | `agents/evals/{evals,integration,e2e}/`, `agents/skills/*/__tests__/evals/` | claude cli |
+| Agent evals | `agents/__tests__/{evals,integration,e2e}/`, `agents/skills/*/__tests__/evals/` | claude cli |
 
 The A/B instruction-loading measurement is a recorded result, not a tier:
-`agents/evals/instruction-loading-experiment.json` holds the paired comparison
+`agents/__tests__/instruction-loading-experiment.json` holds the paired comparison
 (re-measure with `agent-eval --ab`), and
-`agents/evals/__tests__/unit/test_instruction_loading_experiment_record.py` guards
+`agents/__tests__/unit/test_instruction_loading_experiment_record.py` guards
 that the record stays internally consistent and claims no significance its own
 p-values do not support.
 
