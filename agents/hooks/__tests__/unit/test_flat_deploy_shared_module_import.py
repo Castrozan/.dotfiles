@@ -13,9 +13,13 @@ INTERACTIVE_SESSION_DETECTION_SOURCE = (
 END_OF_TURN_REPLY_TEMPLATE_RULES_SOURCE = next(
     HOOKS_ROOT.rglob("end_of_turn_reply_template_rules.py")
 )
+INTERACTIVE_REPLY_REMINDER_STATE_SOURCE = (
+    HOOKS_ROOT / "common" / "interactive_reply_reminder_state.py"
+)
 
 INTERACTIVE_ENV_VAR = "CLAUDE_INTERACTIVE_PREFERENCES_PATH"
 CLAWDE_BACKGROUND_AGENT_ENV_MARKER = "CLAWDE_RESUME_FLAG"
+REMINDER_STATE_DIRECTORY_ENV_VAR = "INTERACTIVE_REPLY_REMINDER_STATE_DIRECTORY"
 
 
 def flatten_into_single_runtime_directory(directory, source_files):
@@ -37,14 +41,22 @@ def run_flattened_hook(directory, hook_filename, payload, environment):
 def test_tldr_reminder_imports_shared_module_after_flat_deploy(tmp_path, monkeypatch):
     monkeypatch.delenv(CLAWDE_BACKGROUND_AGENT_ENV_MARKER, raising=False)
     flatten_into_single_runtime_directory(
-        tmp_path, [TLDR_REMINDER_SOURCE, INTERACTIVE_SESSION_DETECTION_SOURCE]
+        tmp_path,
+        [
+            TLDR_REMINDER_SOURCE,
+            INTERACTIVE_SESSION_DETECTION_SOURCE,
+            INTERACTIVE_REPLY_REMINDER_STATE_SOURCE,
+        ],
     )
 
     keyboard = run_flattened_hook(
         tmp_path,
         "tldr-reminder.py",
-        {"hook_event_name": "UserPromptSubmit"},
-        {INTERACTIVE_ENV_VAR: "/some/interactive-preferences.md"},
+        {"hook_event_name": "UserPromptSubmit", "session_id": "flat-deploy"},
+        {
+            INTERACTIVE_ENV_VAR: "/some/interactive-preferences.md",
+            REMINDER_STATE_DIRECTORY_ENV_VAR: str(tmp_path),
+        },
     )
     assert keyboard.returncode == 0
     assert (
@@ -55,9 +67,10 @@ def test_tldr_reminder_imports_shared_module_after_flat_deploy(tmp_path, monkeyp
     clawde = run_flattened_hook(
         tmp_path,
         "tldr-reminder.py",
-        {"hook_event_name": "UserPromptSubmit"},
+        {"hook_event_name": "UserPromptSubmit", "session_id": "flat-deploy"},
         {
             INTERACTIVE_ENV_VAR: "/some/interactive-preferences.md",
+            REMINDER_STATE_DIRECTORY_ENV_VAR: str(tmp_path),
             CLAWDE_BACKGROUND_AGENT_ENV_MARKER: "",
         },
     )
@@ -73,6 +86,7 @@ def test_format_guard_imports_shared_module_after_flat_deploy(tmp_path, monkeypa
             END_OF_TURN_FORMAT_GUARD_SOURCE,
             INTERACTIVE_SESSION_DETECTION_SOURCE,
             END_OF_TURN_REPLY_TEMPLATE_RULES_SOURCE,
+            INTERACTIVE_REPLY_REMINDER_STATE_SOURCE,
         ],
     )
 
@@ -108,7 +122,10 @@ def test_format_guard_imports_shared_module_after_flat_deploy(tmp_path, monkeypa
         tmp_path,
         "end-of-turn-format-guard.py",
         payload,
-        {INTERACTIVE_ENV_VAR: "/some/interactive-preferences.md"},
+        {
+            INTERACTIVE_ENV_VAR: "/some/interactive-preferences.md",
+            REMINDER_STATE_DIRECTORY_ENV_VAR: str(tmp_path),
+        },
     )
     assert keyboard.returncode == 0
     assert json.loads(keyboard.stdout)["decision"] == "block"
@@ -119,6 +136,7 @@ def test_format_guard_imports_shared_module_after_flat_deploy(tmp_path, monkeypa
         payload,
         {
             INTERACTIVE_ENV_VAR: "/some/interactive-preferences.md",
+            REMINDER_STATE_DIRECTORY_ENV_VAR: str(tmp_path),
             CLAWDE_BACKGROUND_AGENT_ENV_MARKER: "",
         },
     )

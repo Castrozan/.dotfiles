@@ -21,6 +21,9 @@ from end_of_turn_reply_template_rules import (  # noqa: E402
     COMPRESSION_GUIDANCE,
     template_violations_in_reply,
 )
+from interactive_reply_reminder_state import (  # noqa: E402
+    request_reply_reminder_rearm_after_drift,
+)
 from interactive_session_detection import (  # noqa: E402
     is_keyboard_driven_interactive_session,
 )
@@ -100,6 +103,8 @@ def main() -> None:
     violations = template_violations_in_reply(reply_text, user_request_text)
     if not violations:
         sys.exit(0)
+
+    request_reply_reminder_rearm_after_drift(hook_input.get("session_id") or "")
 
     block_reason = (
         "End-of-turn reply breaks the enforced plain-prose template ("

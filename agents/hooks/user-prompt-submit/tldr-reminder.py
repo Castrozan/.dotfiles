@@ -16,6 +16,10 @@ for importable_directory in (
     if importable_directory.is_dir() and importable_directory_string not in sys.path:
         sys.path.insert(0, importable_directory_string)
 
+from interactive_reply_reminder_state import (  # noqa: E402
+    record_reply_reminder_injected,
+    reply_reminder_should_be_injected,
+)
 from interactive_session_detection import (  # noqa: E402
     is_keyboard_driven_interactive_session,
 )
@@ -55,6 +59,10 @@ def main() -> None:
     if not is_keyboard_driven_interactive_session():
         sys.exit(0)
 
+    session_id = hook_input.get("session_id") or ""
+    if not reply_reminder_should_be_injected(session_id):
+        sys.exit(0)
+
     output = {
         "continue": True,
         "hookSpecificOutput": {
@@ -63,6 +71,7 @@ def main() -> None:
         },
     }
     print(json.dumps(output))
+    record_reply_reminder_injected(session_id)
     sys.exit(0)
 
 
