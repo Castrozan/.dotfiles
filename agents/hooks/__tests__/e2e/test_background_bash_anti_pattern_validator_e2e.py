@@ -95,6 +95,25 @@ class TestHookEndToEndViaSubprocess:
         assert result.returncode == 0
         assert result.stdout == ""
 
+    def test_daemon_advisory_reaches_the_model_not_only_the_terminal(self):
+        result = _invoke_validator_with_payload(
+            {
+                "tool_name": "Bash",
+                "tool_input": {
+                    "command": "systemctl --user restart syncthing",
+                    "run_in_background": True,
+                },
+            }
+        )
+        assert result.returncode == 0
+        parsed = json.loads(result.stdout)
+        assert parsed["continue"] is True
+        assert parsed["hookSpecificOutput"]["hookEventName"] == "PreToolUse"
+        assert (
+            "launch-command-detached-into-new-session"
+            in parsed["hookSpecificOutput"]["additionalContext"]
+        )
+
     def test_denies_background_bash_with_jq_literal_count_test(self):
         command_with_jq_literal_count = (
             "gh run list --json headSha --jq "
