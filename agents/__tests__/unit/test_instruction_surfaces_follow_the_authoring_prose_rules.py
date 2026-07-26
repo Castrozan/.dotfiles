@@ -3,7 +3,11 @@ from instruction_surface_prose import (
     over_length_lines,
     prose_em_dash_lines,
 )
-from instruction_surface_scanner import REPO_ROOT, every_linted_markdown_file
+from instruction_surface_scanner import (
+    REPO_ROOT,
+    VENDORED_DIRECTORY_NAMES,
+    every_linted_markdown_file,
+)
 
 
 def test_no_instruction_surface_line_exceeds_the_authoring_wrap():
@@ -30,6 +34,19 @@ def test_no_instruction_surface_uses_an_em_dash_in_its_own_prose():
         "surfaces themselves impose; recast with a colon, a semicolon, or a comma. "
         "Em dashes inside code fences, inline code, and quoted literals are exempt "
         f"because they are emitted artifacts, not prose: {offenders}"
+    )
+
+
+def test_the_prose_lints_ignore_installed_dependency_trees():
+    offenders = [
+        str(path.relative_to(REPO_ROOT))
+        for path in every_linted_markdown_file()
+        if any(part in VENDORED_DIRECTORY_NAMES for part in path.parts)
+    ]
+    assert not offenders, (
+        "vendored README and CHANGELOG files are third-party artifacts, not "
+        "instruction surfaces this repo authors, so npm install inside a skill "
+        "must not turn the prose lints red: {offenders}".format(offenders=offenders)
     )
 
 

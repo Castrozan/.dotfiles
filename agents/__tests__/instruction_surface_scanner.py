@@ -3,6 +3,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SKILL_TREE = REPO_ROOT / "agents" / "skills"
+VENDORED_DIRECTORY_NAMES = frozenset({"node_modules", "dist", ".angular"})
 MAXIMUM_SKILL_DESCRIPTION_LENGTH = 1024
 REPOSITORY_TOP_LEVEL_PREFIXES = (
     "agents/",
@@ -21,13 +22,23 @@ SIBLING_CHAPTER_TOKEN = re.compile(r"[A-Za-z0-9._-]+\.md")
 SKILL_RELATIVE_SCRIPT_TOKEN = re.compile(r"scripts/[A-Za-z0-9._/-]+")
 
 
+def is_vendored_dependency_file(path: Path) -> bool:
+    return any(part in VENDORED_DIRECTORY_NAMES for part in path.parts)
+
+
 def skill_definition_files() -> list[Path]:
-    return sorted(SKILL_TREE.glob("**/SKILL.md"))
+    return sorted(
+        path
+        for path in SKILL_TREE.glob("**/SKILL.md")
+        if not is_vendored_dependency_file(path)
+    )
 
 
 def skill_chapter_files() -> list[Path]:
     return sorted(
-        path for path in SKILL_TREE.glob("**/*.md") if path.name != "SKILL.md"
+        path
+        for path in SKILL_TREE.glob("**/*.md")
+        if path.name != "SKILL.md" and not is_vendored_dependency_file(path)
     )
 
 
