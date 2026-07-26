@@ -8,6 +8,8 @@ let
   usageSnapshotBucket = "zg-url-shortener-2026-dotfiles-usage-snapshots";
   usageSnapshotObjectPrefix = "snapshots/";
   uploaderCredentialsPath = "${config.home.homeDirectory}/.secrets/gcp-usage-uploader-key";
+  ingestApiBaseUrl = "https://lucaszanoni.com.br/ingest";
+  ingestProducerSecretPath = "${config.home.homeDirectory}/.secrets/ingest-producer-secret";
   uploadIntervalSeconds = 300;
 
   uploaderPythonEnvironment = pkgs.python312.withPackages (pythonPackages: [
@@ -19,15 +21,37 @@ let
     fileset = lib.fileset.fileFilter (file: file.hasExt "py") ../../../../agents/usage;
   };
 
+  ingestionPublisherSource = lib.fileset.toSource {
+    root = ../../../../ingestion;
+    fileset = lib.fileset.fileFilter (file: file.hasExt "py") ../../../../ingestion;
+  };
+
   usageSnapshotScripts = pkgs.runCommand "claude-usage-snapshot-scripts" { } ''
     mkdir -p "$out"
     cp ${usageSnapshotSource}/*.py "$out"/
+    cp ${ingestionPublisherSource}/*.py "$out"/
   '';
 
   uploadProgramArguments = [
     "${uploaderPythonEnvironment}/bin/python"
     "${usageSnapshotScripts}/upload_usage_snapshot_to_gcs.py"
   ];
+
+  ingestPublishLauncher = pkgs.writeShellScript "claude-usage-ingest-publish" ''
+    set -euo pipefail
+    INGEST_PRODUCER_SECRET="$(cat "${ingestProducerSecretPath}")"
+    export INGEST_PRODUCER_SECRET
+    exec "${uploaderPythonEnvironment}/bin/python" \
+      "${usageSnapshotScripts}/publish_current_usage_snapshot_to_ingest.py"
+  '';
+
+  ingestPublishEnvironment = {
+    INGEST_BASE_URL = ingestApiBaseUrl;
+  };
+
+  ingestPublishEnvironmentList = lib.mapAttrsToList (
+    name: value: "${name}=${value}"
+  ) ingestPublishEnvironment;
 
   uploadEnvironment = {
     USAGE_SNAPSHOT_BUCKET = usageSnapshotBucket;
@@ -52,6 +76,18 @@ in
           StandardErrorPath = "/tmp/claude-usage-snapshot-upload.log";
         };
       };
+      launchd.agents.claude-usage-ingest-publish = {
+        enable = true;
+        config = {
+          Label = "com.dotfiles.claude-usage-ingest-publish";
+          ProgramArguments = [ "${ingestPublishLauncher}" ];
+          EnvironmentVariables = ingestPublishEnvironment;
+          RunAtLoad = true;
+          StartInterval = uploadIntervalSeconds;
+          StandardOutPath = "/tmp/claude-usage-ingest-publish.log";
+          StandardErrorPath = "/tmp/claude-usage-ingest-publish.log";
+        };
+      };
     })
     (lib.mkIf pkgs.stdenv.hostPlatform.isLinux {
       systemd.user.services.claude-usage-snapshot-upload = {
@@ -66,6 +102,23 @@ in
         Unit.Description = "Periodic anonymized Claude usage snapshot upload to GCS";
         Timer = {
           OnBootSec = "2min";
+          OnUnitActiveSec = "${toString uploadIntervalSeconds}s";
+          Persistent = true;
+        };
+        Install.WantedBy = [ "timers.target" ];
+      };
+      systemd.user.services.claude-usage-ingest-publish = {
+        Unit.Description = "Publish the anonymized Claude usage snapshot under its ingestion contract";
+        Service = {
+          Type = "oneshot";
+          ExecStart = "${ingestPublishLauncher}";
+          Environment = ingestPublishEnvironmentList;
+        };
+      };
+      systemd.user.timers.claude-usage-ingest-publish = {
+        Unit.Description = "Periodic contracted Claude usage publish to the ingestion api";
+        Timer = {
+          OnBootSec = "3min";
           OnUnitActiveSec = "${toString uploadIntervalSeconds}s";
           Persistent = true;
         };
