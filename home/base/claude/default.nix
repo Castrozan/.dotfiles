@@ -7,6 +7,7 @@
     inputs.clawde.homeManagerModules.default
     ./clawde-wiring.nix
     ./clawde-discord-channel-access.nix
+    ./clawde-agent-skill-sets.nix
     ./settings
     ./telemetry
     ./skill-injection
