@@ -15,17 +15,9 @@ let
     event:
     lib.any (command: lib.hasInfix "stop-dispatcher.py" command) (deployedHookCommandsForEvent event);
 
-  deployedPreToolUseMatcherGroupsWithMatcher =
-    matcher:
-    lib.filter (matcherGroup: (matcherGroup.matcher or "") == matcher) (
-      deployedSettings.hooks.PreToolUse or [ ]
-    );
-  codexSandboxDowngradeGuardRegisteredOnCodexLaunch = lib.any (
-    matcherGroup:
-    lib.any (hook: lib.hasInfix "codex-sandbox-downgrade-guard.py" (hook.command or "")) (
-      matcherGroup.hooks or [ ]
-    )
-  ) (deployedPreToolUseMatcherGroupsWithMatcher "mcp__codex__codex");
+  deployedPreToolUseRunsDispatcher = lib.any (
+    command: lib.hasInfix "pre-tool-use-dispatcher.py" command
+  ) (deployedHookCommandsForEvent "PreToolUse");
 in
 {
   hooks-stop-dispatcher-registered-on-stop =
@@ -37,8 +29,8 @@ in
       (deployedEventRunsStopDispatcher "SubagentStop")
       "the deployed settings must register stop-dispatcher.py on the SubagentStop event so subagent turns get the same lint review; guards event-registrations.nix against dropping the SubagentStop registration";
 
-  hooks-codex-sandbox-downgrade-guard-registered-on-codex-launch =
-    mkEvalCheck "hooks-codex-sandbox-downgrade-guard-registered-on-codex-launch"
-      codexSandboxDowngradeGuardRegisteredOnCodexLaunch
-      "the deployed settings must register codex-sandbox-downgrade-guard.py on a PreToolUse matcher group whose matcher is exactly mcp__codex__codex, so a dropped or mistyped registration cannot silently let a Claude session launch Codex with a weakened sandbox or approval policy";
+  hooks-pre-tool-use-dispatcher-registered-on-pre-tool-use =
+    mkEvalCheck "hooks-pre-tool-use-dispatcher-registered-on-pre-tool-use"
+      deployedPreToolUseRunsDispatcher
+      "the deployed settings must register pre-tool-use-dispatcher.py on the PreToolUse event; it composes memory-recall, prohibited-command-guard, and the tool-specific guards including codex-sandbox-downgrade-guard, and test_pre_tool_use_dispatcher_composition guards that the codex-sandbox-downgrade handler stays in PRE_TOOL_USE_HANDLERS with tool_matcher mcp__codex__codex so a Claude session cannot silently launch Codex with a weakened sandbox or approval policy";
 }

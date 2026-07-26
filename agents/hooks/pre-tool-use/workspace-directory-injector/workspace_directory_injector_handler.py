@@ -1,9 +1,21 @@
-#!/usr/bin/env python3
+from __future__ import annotations
 
-import json
 import shlex
 import sys
 from pathlib import Path
+
+_MODULE_DIRECTORY = Path(__file__).resolve().parent
+for _shared_module_candidate_directory in [_MODULE_DIRECTORY] + [
+    ancestor / "common" for ancestor in _MODULE_DIRECTORY.parents
+]:
+    _shared_module_candidate_path = str(_shared_module_candidate_directory)
+    if (
+        _shared_module_candidate_directory.is_dir()
+        and _shared_module_candidate_path not in sys.path
+    ):
+        sys.path.insert(0, _shared_module_candidate_path)
+
+from hook_dispatch import HandlerResult  # noqa: E402
 
 WORKSPACE_STATE_FILE = Path("/tmp/claude-code-workspace-cwd")
 
@@ -28,37 +40,13 @@ def build_workspace_environment_prefix(workspace_directory):
     )
 
 
-def main():
-    try:
-        hook_input = json.load(sys.stdin)
-    except json.JSONDecodeError:
-        sys.exit(0)
-
+def handle(hook_input):
     target_directory = read_target_workspace_directory()
-
     if not target_directory:
-        sys.exit(0)
-
+        return None
     original_command = hook_input.get("tool_input", {}).get("command", "")
-
     if not original_command:
-        sys.exit(0)
-
+        return None
     workspace_prefix = build_workspace_environment_prefix(target_directory)
     modified_command = f"{workspace_prefix} && {original_command}"
-
-    output = {
-        "hookSpecificOutput": {
-            "hookEventName": "PreToolUse",
-            "permissionDecision": "allow",
-            "updatedInput": {
-                "command": modified_command,
-            },
-        }
-    }
-    json.dump(output, sys.stdout)
-    sys.exit(0)
-
-
-if __name__ == "__main__":
-    main()
+    return HandlerResult(decision="allow", updated_input={"command": modified_command})

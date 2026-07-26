@@ -1,14 +1,18 @@
-#!/usr/bin/env python3
+from __future__ import annotations
 
-import json
 import sys
 from pathlib import Path
 
-hook_script_directory = Path(__file__).parent
-sys.path.insert(0, str(hook_script_directory))
-shared_common_hook_modules_directory = hook_script_directory.parent / "common"
-if shared_common_hook_modules_directory.is_dir():
-    sys.path.insert(0, str(shared_common_hook_modules_directory))
+_MODULE_DIRECTORY = Path(__file__).resolve().parent
+for _shared_module_candidate_directory in [_MODULE_DIRECTORY] + [
+    ancestor / "common" for ancestor in _MODULE_DIRECTORY.parents
+]:
+    _shared_module_candidate_path = str(_shared_module_candidate_directory)
+    if (
+        _shared_module_candidate_directory.is_dir()
+        and _shared_module_candidate_path not in sys.path
+    ):
+        sys.path.insert(0, _shared_module_candidate_path)
 
 from background_bash_fake_success_detectors import (  # noqa: E402
     command_filters_by_hardcoded_long_literal_used_in_count_or_test,
@@ -18,6 +22,7 @@ from background_bash_fake_success_detectors import (  # noqa: E402
 from background_daemon_spawner_detectors import (  # noqa: E402
     command_starts_a_lingering_daemon_or_service,
 )
+from hook_dispatch import HandlerResult  # noqa: E402
 from interactive_command_hang_detectors import (  # noqa: E402
     command_launches_interactive_full_screen_program,
     command_runs_git_subcommand_that_opens_an_editor,
@@ -97,64 +102,28 @@ def build_lingering_daemon_advisory_message():
     )
 
 
-def emit_deny_decision_for_pre_tool_use_hook(deny_reason_message):
-    output_payload = {
-        "hookSpecificOutput": {
-            "hookEventName": "PreToolUse",
-            "permissionDecision": "deny",
-            "permissionDecisionReason": deny_reason_message,
-        }
-    }
-    json.dump(output_payload, sys.stdout)
-
-
-def emit_non_blocking_advisory_for_pre_tool_use_hook(advisory_message):
-    json.dump(
-        {
-            "continue": True,
-            "systemMessage": advisory_message,
-            "hookSpecificOutput": {
-                "hookEventName": "PreToolUse",
-                "additionalContext": advisory_message,
-            },
-        },
-        sys.stdout,
-    )
-
-
-def main():
-    try:
-        hook_input = json.load(sys.stdin)
-    except json.JSONDecodeError:
-        sys.exit(0)
-
+def handle(hook_input):
     if hook_input.get("tool_name") != "Bash":
-        sys.exit(0)
+        return None
 
     tool_input = hook_input.get("tool_input", {})
-    is_run_in_background = tool_input.get("run_in_background", False)
-    if not is_run_in_background:
-        sys.exit(0)
+    if not tool_input.get("run_in_background", False):
+        return None
 
     command_string = tool_input.get("command", "")
     if not command_string:
-        sys.exit(0)
+        return None
 
     triggered_rule_names = find_background_bash_anti_patterns_in_command(command_string)
     if triggered_rule_names:
-        emit_deny_decision_for_pre_tool_use_hook(
-            build_deny_reason_message(triggered_rule_names)
+        return HandlerResult(
+            decision="deny", reason=build_deny_reason_message(triggered_rule_names)
         )
-        sys.exit(0)
 
     if command_starts_a_lingering_daemon_or_service(command_string):
-        emit_non_blocking_advisory_for_pre_tool_use_hook(
-            build_lingering_daemon_advisory_message()
+        advisory_message = build_lingering_daemon_advisory_message()
+        return HandlerResult(
+            additional_context=advisory_message, system_message=advisory_message
         )
-        sys.exit(0)
 
-    sys.exit(0)
-
-
-if __name__ == "__main__":
-    main()
+    return None

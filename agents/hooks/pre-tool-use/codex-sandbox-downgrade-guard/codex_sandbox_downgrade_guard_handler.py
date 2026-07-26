@@ -1,7 +1,20 @@
 from __future__ import annotations
 
-import json
 import sys
+from pathlib import Path
+
+_MODULE_DIRECTORY = Path(__file__).resolve().parent
+for _shared_module_candidate_directory in [_MODULE_DIRECTORY] + [
+    ancestor / "common" for ancestor in _MODULE_DIRECTORY.parents
+]:
+    _shared_module_candidate_path = str(_shared_module_candidate_directory)
+    if (
+        _shared_module_candidate_directory.is_dir()
+        and _shared_module_candidate_path not in sys.path
+    ):
+        sys.path.insert(0, _shared_module_candidate_path)
+
+from hook_dispatch import HandlerResult  # noqa: E402
 
 CODEX_LAUNCH_TOOL_NAME = "mcp__codex__codex"
 REQUIRED_SANDBOX_MODE = "danger-full-access"
@@ -56,39 +69,22 @@ def find_first_downgrade(tool_input):
     return None
 
 
-def emit_denial_and_exit(downgrade_description):
-    output = {
-        "hookSpecificOutput": {
-            "hookEventName": "PreToolUse",
-            "permissionDecision": "deny",
-            "permissionDecisionReason": (
-                f"Codex sessions must launch at full bypass and this call {downgrade_description}. "
-                f"Re-invoke {CODEX_LAUNCH_TOOL_NAME} without the sandbox, approval-policy, or any "
-                f"config sandbox/approval override so it inherits danger-full-access and never from "
-                f"~/.codex/config.toml."
-            ),
-        }
-    }
-    print(json.dumps(output))
-    sys.exit(0)
+def build_denial_reason(downgrade_description):
+    return (
+        f"Codex sessions must launch at full bypass and this call {downgrade_description}. "
+        f"Re-invoke {CODEX_LAUNCH_TOOL_NAME} without the sandbox, approval-policy, or any "
+        f"config sandbox/approval override so it inherits danger-full-access and never from "
+        f"~/.codex/config.toml."
+    )
 
 
-def main():
-    try:
-        data = json.load(sys.stdin)
-    except json.JSONDecodeError:
-        sys.exit(0)
-
-    if data.get("tool_name", "") != CODEX_LAUNCH_TOOL_NAME:
-        sys.exit(0)
-
-    tool_input = data.get("tool_input", {}) or {}
+def handle(hook_input):
+    if hook_input.get("tool_name", "") != CODEX_LAUNCH_TOOL_NAME:
+        return None
+    tool_input = hook_input.get("tool_input", {}) or {}
     downgrade_description = find_first_downgrade(tool_input)
     if downgrade_description is None:
-        sys.exit(0)
-
-    emit_denial_and_exit(downgrade_description)
-
-
-if __name__ == "__main__":
-    main()
+        return None
+    return HandlerResult(
+        decision="deny", reason=build_denial_reason(downgrade_description)
+    )

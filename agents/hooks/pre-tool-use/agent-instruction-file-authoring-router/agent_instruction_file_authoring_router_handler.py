@@ -1,8 +1,21 @@
-#!/usr/bin/env python3
+from __future__ import annotations
 
-import json
 import sys
 from pathlib import Path
+
+_MODULE_DIRECTORY = Path(__file__).resolve().parent
+for _shared_module_candidate_directory in [_MODULE_DIRECTORY] + [
+    ancestor / "common" for ancestor in _MODULE_DIRECTORY.parents
+]:
+    _shared_module_candidate_path = str(_shared_module_candidate_directory)
+    if (
+        _shared_module_candidate_directory.is_dir()
+        and _shared_module_candidate_path not in sys.path
+    ):
+        sys.path.insert(0, _shared_module_candidate_path)
+
+import instructions_skill_marker  # noqa: E402
+from hook_dispatch import HandlerResult  # noqa: E402
 
 INSTRUCTION_FILENAMES_THAT_ARE_ALWAYS_AGENT_DIRECTED = {"claude.md", "agents.md"}
 
@@ -26,25 +39,7 @@ AUTHORING_STANDARDS_DIRECTIVE = (
 )
 
 
-def load_instructions_skill_marker_module():
-    hook_script_directory = Path(__file__).resolve().parent
-    shared_common_hook_modules_directory = (
-        hook_script_directory.parent.parent / "common"
-    )
-    for candidate_directory in (
-        hook_script_directory,
-        shared_common_hook_modules_directory,
-    ):
-        candidate_directory_string = str(candidate_directory)
-        if candidate_directory.is_dir() and candidate_directory_string not in sys.path:
-            sys.path.insert(0, candidate_directory_string)
-    import instructions_skill_marker
-
-    return instructions_skill_marker
-
-
 def has_loaded_instructions_skill_this_session(session_id):
-    instructions_skill_marker = load_instructions_skill_marker_module()
     return instructions_skill_marker.instructions_skill_loaded_marker_path(
         session_id
     ).exists()
@@ -71,24 +66,14 @@ def is_agent_directed_instruction_file(file_path):
     return any(part.lower() == "skills" for part in path.parts)
 
 
-def main():
-    try:
-        hook_input = json.load(sys.stdin)
-    except json.JSONDecodeError:
-        sys.exit(0)
-
+def handle(hook_input):
     tool_input = hook_input.get("tool_input", {})
     file_path = extract_edited_file_path(tool_input)
 
     if not is_agent_directed_instruction_file(file_path):
-        sys.exit(0)
+        return None
 
     if has_loaded_instructions_skill_this_session(hook_input.get("session_id", "")):
-        sys.exit(0)
+        return None
 
-    print(AUTHORING_STANDARDS_DIRECTIVE, file=sys.stderr)
-    sys.exit(2)
-
-
-if __name__ == "__main__":
-    main()
+    return HandlerResult(decision="deny", reason=AUTHORING_STANDARDS_DIRECTIVE)

@@ -17,6 +17,7 @@ class HandlerResult:
     decision: Optional[str] = None
     reason: str = ""
     system_message: str = ""
+    updated_input: Optional[dict] = None
 
 
 @dataclass
@@ -31,6 +32,7 @@ class MergedHookOutcome:
     decision: Optional[str] = None
     reason: str = ""
     system_message_fragments: list = field(default_factory=list)
+    updated_input: Optional[dict] = None
 
     @property
     def combined_additional_context(self) -> str:
@@ -84,6 +86,8 @@ def run_handlers(hook_input: dict, handlers) -> MergedHookOutcome:
         if candidate_decision_is_stronger(result.decision, outcome.decision):
             outcome.decision = result.decision
             outcome.reason = result.reason
+        if result.updated_input is not None and outcome.updated_input is None:
+            outcome.updated_input = result.updated_input
     return outcome
 
 
@@ -131,6 +135,28 @@ def emit_post_tool_use_outcome(outcome: MergedHookOutcome) -> None:
             "hookEventName": "PostToolUse",
             "additionalContext": combined_context,
         }
+    if payload:
+        payload["continue"] = True
+        print(json.dumps(payload))
+
+
+def emit_pretooluse_decision(outcome: MergedHookOutcome) -> None:
+    hook_specific_output: dict = {"hookEventName": "PreToolUse"}
+    if outcome.decision is not None:
+        hook_specific_output["permissionDecision"] = outcome.decision
+        if outcome.reason:
+            hook_specific_output["permissionDecisionReason"] = outcome.reason
+    if outcome.updated_input is not None:
+        hook_specific_output["updatedInput"] = outcome.updated_input
+    combined_context = outcome.combined_additional_context
+    if combined_context:
+        hook_specific_output["additionalContext"] = combined_context
+    payload: dict = {}
+    system_message = outcome.combined_system_message
+    if system_message:
+        payload["systemMessage"] = system_message
+    if len(hook_specific_output) > 1:
+        payload["hookSpecificOutput"] = hook_specific_output
     if payload:
         payload["continue"] = True
         print(json.dumps(payload))

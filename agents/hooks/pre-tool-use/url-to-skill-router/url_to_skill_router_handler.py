@@ -1,8 +1,21 @@
-#!/usr/bin/env python3
+from __future__ import annotations
 
-import json
 import sys
+from pathlib import Path
 from urllib.parse import urlparse
+
+_MODULE_DIRECTORY = Path(__file__).resolve().parent
+for _shared_module_candidate_directory in [_MODULE_DIRECTORY] + [
+    ancestor / "common" for ancestor in _MODULE_DIRECTORY.parents
+]:
+    _shared_module_candidate_path = str(_shared_module_candidate_directory)
+    if (
+        _shared_module_candidate_directory.is_dir()
+        and _shared_module_candidate_path not in sys.path
+    ):
+        sys.path.insert(0, _shared_module_candidate_path)
+
+from hook_dispatch import HandlerResult  # noqa: E402
 
 TWITTER_HOSTS = {
     "x.com",
@@ -39,21 +52,9 @@ def is_twitter_url(url):
         return False
 
 
-def main():
-    try:
-        data = json.load(sys.stdin)
-    except json.JSONDecodeError:
-        sys.exit(0)
-
-    tool_input = data.get("tool_input", {})
+def handle(hook_input):
+    tool_input = hook_input.get("tool_input", {}) or {}
     url = extract_url_from_tool_input(tool_input)
-
     if not url or not is_twitter_url(url):
-        sys.exit(0)
-
-    print(REDIRECT_MESSAGE, file=sys.stderr)
-    sys.exit(2)
-
-
-if __name__ == "__main__":
-    main()
+        return None
+    return HandlerResult(decision="deny", reason=REDIRECT_MESSAGE)

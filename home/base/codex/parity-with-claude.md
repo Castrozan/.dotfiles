@@ -64,8 +64,8 @@ Two enforcement facts, also established live, drove the design:
   exit (Claude's `continue:false` + exit-2 convention) is logged "PreToolUse
   Failed" and the tool runs anyway. So the guards emit the `permissionDecision:
   deny` schema through a shared `common/pre_tool_use_block.py`; Claude honors the
-  same schema (the in-repo `monitor-streaming-pattern-validator` already relies on
-  it), so one guard blocks on both CLIs.
+  same schema (its `pre-tool-use-dispatcher.py` emits it via
+  `common/hook_dispatch.py`), so one guard blocks on both CLIs.
 - Codex gates hooks behind a per-invocation trust review ("hooks need review
   before they can run") that project trust does NOT satisfy and that a rebuild
   would re-invalidate (the `hooks.json` store path changes). The `codex` wrapper
@@ -91,7 +91,9 @@ imports resolve, exactly like Claude's flat `~/.claude/hooks`.
     `PROHIBITED_WORDS_ALLOWED` allowlist). Both block via the deny schema; the
     words guard also scans `apply_patch` bodies and file names, closing the Codex
     write-path content-scan gap (Codex writes files via `apply_patch`, not
-    Write/Edit).
+    Write/Edit). `memory-recall.py` and `prohibited-command-guard.py` are thin
+    entries over the same `*_handler.py` modules Claude's `pre-tool-use-dispatcher.py`
+    composes, so the recall and command-guard logic is single-sourced across both CLIs.
   - `PostToolUse` (matcher `.*`): `auto-format.py`, `record-edited-source-file.py`
     (feeds the lint ledger), `nix-rebuild-trigger.py`, all reading changed paths
     from the `apply_patch` payload.

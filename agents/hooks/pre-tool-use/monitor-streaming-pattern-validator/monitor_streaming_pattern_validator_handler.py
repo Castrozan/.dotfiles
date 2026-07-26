@@ -1,17 +1,21 @@
-#!/usr/bin/env python3
+from __future__ import annotations
 
-import json
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent))
+_MODULE_DIRECTORY = Path(__file__).resolve().parent
+for _shared_module_candidate_directory in [_MODULE_DIRECTORY] + [
+    ancestor / "common" for ancestor in _MODULE_DIRECTORY.parents
+]:
+    _shared_module_candidate_path = str(_shared_module_candidate_directory)
+    if (
+        _shared_module_candidate_directory.is_dir()
+        and _shared_module_candidate_path not in sys.path
+    ):
+        sys.path.insert(0, _shared_module_candidate_path)
 
-from streamed_command_anti_pattern_detectors import (  # noqa: E402, F401
-    command_invokes_python_with_buffered_stdout,
-    command_pipes_into_awk,
-    command_pipes_into_grep_without_line_buffered_flag,
-    command_pipes_into_sed_without_unbuffered_flag,
-    command_runs_known_stderr_heavy_program_without_redirect,
+from hook_dispatch import HandlerResult  # noqa: E402
+from streamed_command_anti_pattern_detectors import (  # noqa: E402
     find_busy_wait_anti_patterns_in_command,
     find_hang_anti_patterns_in_command,
     find_streaming_anti_patterns_in_command,
@@ -75,31 +79,15 @@ def build_deny_reason_message(
     return " ".join(sentences)
 
 
-def emit_deny_decision_for_pre_tool_use_hook(deny_reason_message):
-    output_payload = {
-        "hookSpecificOutput": {
-            "hookEventName": "PreToolUse",
-            "permissionDecision": "deny",
-            "permissionDecisionReason": deny_reason_message,
-        }
-    }
-    json.dump(output_payload, sys.stdout)
-
-
-def main():
-    try:
-        hook_input = json.load(sys.stdin)
-    except json.JSONDecodeError:
-        sys.exit(0)
-
+def handle(hook_input):
     tool_name = hook_input.get("tool_name")
     tool_input = hook_input.get("tool_input", {})
     if not command_runs_in_a_streamed_or_backgrounded_context(tool_name, tool_input):
-        sys.exit(0)
+        return None
 
     command_string = tool_input.get("command", "")
     if not command_string:
-        sys.exit(0)
+        return None
 
     triggered_streaming_rules = find_streaming_anti_patterns_in_command(command_string)
     triggered_hang_rules = find_hang_anti_patterns_in_command(command_string)
@@ -107,18 +95,14 @@ def main():
     if not (
         triggered_streaming_rules or triggered_hang_rules or triggered_busy_wait_rules
     ):
-        sys.exit(0)
+        return None
 
-    emit_deny_decision_for_pre_tool_use_hook(
-        build_deny_reason_message(
+    return HandlerResult(
+        decision="deny",
+        reason=build_deny_reason_message(
             triggered_streaming_rules,
             triggered_hang_rules,
             triggered_busy_wait_rules,
             streamed_execution_context_label_for_tool(tool_name),
-        )
+        ),
     )
-    sys.exit(0)
-
-
-if __name__ == "__main__":
-    main()
