@@ -11,14 +11,16 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from run_evals_ab import run_instruction_loading_experiment  # noqa: E402
 from run_evals_baseline import (  # noqa: F401, E402
     BASELINE_PATH,
-    MAXIMUM_REGRESSION_DROP,
-    MINIMUM_PASS_RATE_COMPLIANCE,
-    MINIMUM_PASS_RATE_OVERALL,
     build_baseline_from_results,
     check_baseline_for_regression,
     get_current_git_commit,
     save_baseline,
     write_baseline,
+)
+from run_evals_baseline_thresholds import (  # noqa: F401, E402
+    MAXIMUM_REGRESSION_DROP,
+    MINIMUM_PASS_RATE_COMPLIANCE,
+    MINIMUM_PASS_RATE_OVERALL,
 )
 from run_evals_claude_cli import run_claude_cli  # noqa: E402
 from run_evals_config_loader import (  # noqa: F401, E402

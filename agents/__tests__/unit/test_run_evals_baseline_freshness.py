@@ -1,5 +1,5 @@
-from run_evals_baseline import MAXIMUM_BASELINE_AGE_DAYS
 from run_evals_baseline_history import baseline_staleness_failure
+from run_evals_baseline_thresholds import MAXIMUM_BASELINE_AGE_DAYS
 
 
 def test_a_baseline_inside_the_freshness_window_is_not_a_failure():

@@ -9,6 +9,12 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from render_quality_metrics_gold_standard import (  # noqa: E402
+    measure_gold_standard_practices,
+)
+
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 STATIC_EVAL_BASELINE_PATH = REPOSITORY_ROOT / "agents/__tests__/baseline.json"
 STATIC_EVAL_SUITE_DIRECTORY = REPOSITORY_ROOT / "agents/__tests__/evals"
@@ -121,6 +127,7 @@ def build_quality_metrics() -> dict:
         ),
         "coreRules": measure_core_rules_shape(),
         "hooks": summarize_hooks(),
+        "goldStandardPractices": measure_gold_standard_practices(REPOSITORY_ROOT),
     }
 
 

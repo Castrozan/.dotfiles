@@ -7,6 +7,13 @@ from run_evals_baseline_history import (
     baseline_staleness_failure,
     previous_committed_baseline_pass_rate,
 )
+from run_evals_baseline_thresholds import (
+    COMPLIANCE_CATEGORIES,
+    MAXIMUM_BASELINE_AGE_DAYS,
+    MAXIMUM_REGRESSION_DROP,
+    MINIMUM_PASS_RATE_COMPLIANCE,
+    MINIMUM_PASS_RATE_OVERALL,
+)
 from run_evals_statistics import (
     format_pass_rate_with_confidence_interval,
     wilson_score_interval,
@@ -15,17 +22,6 @@ from run_evals_test_runner import TestResult
 from run_evals_worktree_and_environment import REPO_ROOT
 
 BASELINE_PATH = REPO_ROOT / "agents" / "__tests__" / "baseline.json"
-MINIMUM_PASS_RATE_OVERALL = 0.75
-MINIMUM_PASS_RATE_COMPLIANCE = 0.85
-MAXIMUM_REGRESSION_DROP = 0.05
-MAXIMUM_BASELINE_AGE_DAYS = 30
-COMPLIANCE_CATEGORIES = {
-    "instruction_compliance",
-    "workflow_compliance",
-    "rebuild_mandate",
-    "delegation",
-    "core_rules",
-}
 
 
 def compliance_passed_and_total(categories: dict) -> tuple[int, int]:

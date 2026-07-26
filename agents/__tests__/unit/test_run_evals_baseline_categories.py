@@ -1,8 +1,8 @@
 from run_evals_baseline import (
-    COMPLIANCE_CATEGORIES,
     build_baseline_from_results,
     compliance_passed_and_total,
 )
+from run_evals_baseline_thresholds import COMPLIANCE_CATEGORIES
 from run_evals_test_runner import TestResult
 
 

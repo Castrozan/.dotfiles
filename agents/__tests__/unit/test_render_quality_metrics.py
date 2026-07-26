@@ -59,6 +59,7 @@ class TestPublishedMetricsContractWithTheReportsFrontend:
             "endToEndScenarioCount",
             "coreRules",
             "hooks",
+            "goldStandardPractices",
         }
         assert set(metrics["staticEvals"]) == {
             "totalTests",
