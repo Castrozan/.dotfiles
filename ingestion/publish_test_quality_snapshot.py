@@ -42,6 +42,42 @@ def build_hook_summary(hook_document):
     }
 
 
+def build_gold_standard_practice(practice_document):
+    return {
+        "practice": practice_document["practice"],
+        "adopted": practice_document["adopted"],
+        "measurement": practice_document["measurement"],
+        "measurementUnit": practice_document["measurementUnit"],
+        "evidence": practice_document["evidence"],
+    }
+
+
+def build_instruction_loading_category(category_document):
+    return {
+        "category": category_document["category"],
+        "pairedTests": category_document["pairedTests"],
+        "passRateWithInstructions": category_document["passRateWithInstructions"],
+        "passRateWithoutInstructions": category_document["passRateWithoutInstructions"],
+        "delta": category_document["delta"],
+        "instructionsOnlyWins": category_document["instructionsOnlyWins"],
+        "controlOnlyWins": category_document["controlOnlyWins"],
+        "exactPValue": category_document["exactPValue"],
+        "significant": category_document["significant"],
+    }
+
+
+def build_instruction_loading_experiment(experiment_document):
+    return {
+        "recordedAt": experiment_document["recordedAt"],
+        "recordedCommit": experiment_document["recordedCommit"],
+        "significanceAlpha": experiment_document["significanceAlpha"],
+        "categories": [
+            build_instruction_loading_category(category_document)
+            for category_document in experiment_document["categories"]
+        ],
+    }
+
+
 def build_test_quality_payload(quality_metrics_document, environment):
     return {
         "recordedAt": quality_metrics_document["generatedAt"],
@@ -55,6 +91,13 @@ def build_test_quality_payload(quality_metrics_document, environment):
         "endToEndScenarioCount": quality_metrics_document["endToEndScenarioCount"],
         "coreRules": build_core_rule_summary(quality_metrics_document["coreRules"]),
         "hooks": build_hook_summary(quality_metrics_document["hooks"]),
+        "goldStandardPractices": [
+            build_gold_standard_practice(practice_document)
+            for practice_document in quality_metrics_document["goldStandardPractices"]
+        ],
+        "instructionLoadingExperiment": build_instruction_loading_experiment(
+            quality_metrics_document["instructionLoadingExperiment"]
+        ),
     }
 
 

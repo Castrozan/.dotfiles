@@ -29,6 +29,33 @@ QUALITY_METRICS_DOCUMENT = {
         ],
         "entryPointCount": 18,
     },
+    "goldStandardPractices": [
+        {
+            "practice": "execution-graded-assertions",
+            "adopted": True,
+            "measurement": 0.62,
+            "measurementUnit": "fraction",
+            "evidence": "agents/evals/run_evals_assertions.py",
+        }
+    ],
+    "instructionLoadingExperiment": {
+        "recordedAt": "2026-07-23T22:35:02+00:00",
+        "recordedCommit": "7659f816",
+        "significanceAlpha": 0.05,
+        "categories": [
+            {
+                "category": "workflow-compliance",
+                "pairedTests": 8,
+                "passRateWithInstructions": 1.0,
+                "passRateWithoutInstructions": 0.625,
+                "delta": 0.375,
+                "instructionsOnlyWins": 3,
+                "controlOnlyWins": 0,
+                "exactPValue": 0.25,
+                "significant": False,
+            }
+        ],
+    },
 }
 
 
@@ -65,6 +92,28 @@ class TestQualityMetricsAreMappedOntoTheContractPayload:
         assert payload["hooks"]["entryPointCount"] == 18
         assert payload["hooks"]["wiredEvents"][0] == "post-tool-use"
 
+    def test_carries_the_gold_standard_scorecard_the_dashboard_scores(self):
+        payload = build_test_quality_payload(QUALITY_METRICS_DOCUMENT, {})
+
+        assert payload["goldStandardPractices"] == [
+            {
+                "practice": "execution-graded-assertions",
+                "adopted": True,
+                "measurement": 0.62,
+                "measurementUnit": "fraction",
+                "evidence": "agents/evals/run_evals_assertions.py",
+            }
+        ]
+
+    def test_carries_the_paired_instruction_loading_experiment(self):
+        payload = build_test_quality_payload(QUALITY_METRICS_DOCUMENT, {})
+        experiment = payload["instructionLoadingExperiment"]
+
+        assert experiment["significanceAlpha"] == 0.05
+        assert experiment["recordedCommit"] == "7659f816"
+        assert experiment["categories"][0]["category"] == "workflow-compliance"
+        assert experiment["categories"][0]["delta"] == 0.375
+
     def test_emits_no_key_the_contract_does_not_declare(self):
         payload = build_test_quality_payload(QUALITY_METRICS_DOCUMENT, {})
 
@@ -76,6 +125,21 @@ class TestQualityMetricsAreMappedOntoTheContractPayload:
             "endToEndScenarioCount",
             "coreRules",
             "hooks",
+            "goldStandardPractices",
+            "instructionLoadingExperiment",
+        }
+        assert set(payload["goldStandardPractices"][0]) == {
+            "practice",
+            "adopted",
+            "measurement",
+            "measurementUnit",
+            "evidence",
+        }
+        assert set(payload["instructionLoadingExperiment"]) == {
+            "recordedAt",
+            "recordedCommit",
+            "significanceAlpha",
+            "categories",
         }
         assert set(payload["staticEvals"]) == {
             "totalTests",
