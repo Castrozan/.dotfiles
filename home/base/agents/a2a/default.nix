@@ -13,6 +13,6 @@ let
 in
 {
   home.activation.installA2aMcpServer = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    run ${a2aMcpServer.installScript}
+    run ${pkgs.coreutils}/bin/timeout 300 ${a2aMcpServer.installScript}
   '';
 }

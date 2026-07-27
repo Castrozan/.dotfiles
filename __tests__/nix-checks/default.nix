@@ -39,6 +39,7 @@ let
   gamingChecks = import ../../home/base/gaming/__tests__/checks.nix domainArgs;
   gnomeChecks = import ../../home/linux/gnome/__tests__/checks.nix domainArgs;
   securityChecks = import ../../home/base/security/__tests__/checks.nix domainArgs;
+  a2aAgentChecks = import ../../home/base/agents/a2a/__tests__/checks.nix domainArgs;
   ollamaChecks = import ../../home/base/ollama/__tests__/checks.nix domainArgs;
   opencodeChecks = import ../../home/base/opencode/__tests__/checks.nix domainArgs;
   audioChecks = import ../../home/linux/audio/__tests__/checks.nix domainArgs;
@@ -70,6 +71,7 @@ claudeChecks
 // gamingChecks
 // gnomeChecks
 // securityChecks
+// a2aAgentChecks
 // ollamaChecks
 // opencodeChecks
 // audioChecks
