@@ -73,48 +73,62 @@ Two enforcement facts, also established live, drove the design:
   nix-managed guards run every session, matching the danger-full-access /
   approval-never posture. Without this flag the entire hooks port is inert.
 
-Two shared helpers let one script set serve both CLIs:
-`common/changed_file_paths.py` (returns `tool_input.file_path` for Claude
-`Edit`/`Write`, or parses the Codex `apply_patch` `*** Add/Update/Delete File:`
-markers and added-line content) and `common/codex_tool_payload.py` (a defensive
-no-op on the observed `Bash`/`apply_patch` payloads; it only rewrites a
-hypothetical `shell` list-command into a Claude `Bash` string). All hooks stage
-flat into one store dir (`home/base/codex/hooks/hook-scripts.nix`) so sibling
-imports resolve, exactly like Claude's flat `~/.claude/hooks`.
+Both CLIs now run ONE dispatcher set. Codex registers the same
+`pre-tool-use-dispatcher.py`, `post-tool-use-dispatcher.py` and
+`stop-dispatcher.py` Claude registers, one command per event, invoked through
+the same `run-hook.sh` out of the same store path; both surfaces build that path
+from `home/base/agent-hooks/flat-hook-scripts-directory.nix`, which stages every
+hook flat by basename so sibling imports resolve. There is no Codex-specific
+script list to keep in sync, which is what the previous per-guard registration
+and its hand-written 30-path allow-list cost.
 
-- Deployed and live-confirmed (`home/base/codex/hooks/`):
-  - `SessionStart`: deep-work context load.
-  - `PreToolUse` (matcher `.*`): `memory-recall.py` (shares the SAME
+Which handlers run where is declared on the handlers themselves. Every
+`HookHandler` carries a `surfaces` tuple and the dispatcher filters on the
+`--surface=codex` passed at registration, so one registry per event is the
+auditable record of the split. Two shared helpers still absorb the payload
+differences: `common/changed_file_paths.py` (returns `tool_input.file_path` for
+Claude `Edit`/`Write`, or parses the Codex `apply_patch`
+`*** Add/Update/Delete File:` markers and added-line content) and
+`common/codex_tool_payload.py`, which canonicalizes both observed apply_patch
+shapes onto the `apply_patch` tool name and maps it onto `Edit`/`Write` for
+matcher purposes, so a single `Edit|Write` matcher fires on both CLIs.
+
+- Running on the codex surface:
+  - `SessionStart`: deep-work context load, still a shell one-liner rather than
+    a dispatcher (see the deferral below).
+  - `PreToolUse`: `memory_recall_handler` (shares the SAME
     `~/.claude/projects/<enc>/memory/` store as Claude, so recall continuity
-    carries across both CLIs; needs `rg`), then `prohibited-command-guard.py` and
-    `prohibited-words-guard.py` (the latter env-prefixed with the per-host
-    `PROHIBITED_WORDS_ALLOWED` allowlist). Both block via the deny schema; the
-    words guard also scans `apply_patch` bodies and file names, closing the Codex
-    write-path content-scan gap (Codex writes files via `apply_patch`, not
-    Write/Edit). `memory-recall.py` and `prohibited-command-guard.py` are thin
-    entries over the same `*_handler.py` modules Claude's `pre-tool-use-dispatcher.py`
-    composes, so the recall and command-guard logic is single-sourced across both CLIs.
-  - `PostToolUse` (matcher `.*`): `auto-format.py`, `record-edited-source-file.py`
-    (feeds the lint ledger), `nix-rebuild-trigger.py`, all reading changed paths
-    from the `apply_patch` payload.
-  - `Stop` (matcher `.*`): `lint-turn-review.py` reads the ledger and surfaces a
+    carries across both CLIs; needs `rg`), `prohibited_command_guard_handler`
+    and `prohibited_words_guard_handler` (the dispatcher command is env-prefixed
+    with the per-host `PROHIBITED_WORDS_ALLOWED` allowlist). Both guards block
+    via the deny schema; the words guard also scans `apply_patch` bodies and
+    file names, closing the Codex write-path content-scan gap.
+  - `PostToolUse`: `auto_format_handler`, `record_edited_source_file_handler`
+    (feeds the lint ledger) and `nix_rebuild_trigger_handler`, all reading
+    changed paths from the `apply_patch` payload.
+  - `Stop`: `lint_turn_review_handler` reads the ledger and surfaces a
     repo-native lint advisory for the files touched this turn.
 - Live-confirmed via an isolated `CODEX_HOME` exec run: the command guard refuses
-  `git add -A` ("PreToolUse Blocked") and the words guard refuses an `apply_patch`
-  adding a prohibited word.
+  `git add -A` ("PreToolUse Blocked"), the words guard refuses an `apply_patch`
+  adding a prohibited word, and a captured `SessionStart` payload carries
+  `hook_event_name` with Claude's exact key and value.
 - Non-gaps confirmed: the `memory-write`/`memory-prune` CLIs are already on PATH
-  for Codex (profile-global `home.packages`), and both they and `memory-recall`
+  for Codex (profile-global `home.packages`), and both they and memory recall
   compute the same `~/.claude/projects/<enc>/memory/` dir from cwd.
-- Remaining ports, lower value: `agent-instruction-file-authoring-router`
-  (PreToolUse gate on the `instructions` skill) and `compaction_context_recovery_handler`
+- Remaining ports, now a one-word change each: `agent-instruction-file-authoring-router`
+  (PreToolUse gate on the `instructions` skill), `line_count_limit_guard_handler`
+  (needs a path source for `apply_patch`), and `compaction_context_recovery_handler`
   (SessionStart `compact` reload nudge).
 - Deferred for safety: `session_context_handler` SessionStart enrichment (git status /
   recent commits) would pipe private-infra commit text into model context inside
-  a PUBLIC repo. Not ported deliberately.
-- Not applicable: `codex-sandbox-downgrade-guard`, `monitor-streaming-pattern-validator`,
-  `workspace-directory-injector`, `background-bash-anti-pattern-validator`, and the
-  `end_of_turn_format_guard_handler`/`user-prompt-submit-dispatcher` reply-shape gate are tied to Claude's
-  TUI, its background-bash harness, the clawde launcher, or the `Monitor` tool.
+  a PUBLIC repo. Marked `surfaces = (CLAUDE_SURFACE,)` so the call survives even
+  if Codex later registers the SessionStart dispatcher.
+- Claude-only by applicability: `codex-sandbox-downgrade-guard`,
+  `monitor-streaming-pattern-validator`, `workspace-directory-injector`,
+  `background-bash-anti-pattern-validator`, and the
+  `end_of_turn_format_guard_handler`/`user-prompt-submit-dispatcher` reply-shape gate
+  are tied to Claude's TUI, its background-bash harness, the clawde launcher, or
+  the `Monitor` tool.
 
 ## MCP servers
 
