@@ -1,5 +1,5 @@
 ---
-name: plan-implementer
+name: implementer
 description: Implements an already-decided plan inside the files that plan names. Use when the design call is settled and what remains is writing the code, so the tonnage runs a tier below the lead while the lead keeps the design and the review. Not for open design questions and not for judgment-free renames, which belong to mechanical-change-applier.
 tools: Read, Edit, Write, Grep, Glob, Bash
 model: sonnet
