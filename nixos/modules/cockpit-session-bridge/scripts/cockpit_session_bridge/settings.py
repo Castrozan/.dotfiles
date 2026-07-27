@@ -9,6 +9,8 @@ DEFAULT_ALLOWED_REQUEST_ORIGIN = "https://lucaszanoni.com"
 DEFAULT_TERMINAL_TYPE = "xterm-256color"
 DEFAULT_COCKPIT_TMUX_EXECUTABLE_PATH = "tmux"
 DEFAULT_COCKPIT_TMUX_SOCKET_NAME = "cockpit"
+DEFAULT_COCKPIT_HERDR_EXECUTABLE_PATH = "herdr"
+DEFAULT_COCKPIT_HERDR_SESSION_NAME = "default"
 MAXIMUM_PSEUDOTERMINAL_DIMENSION = 10000
 
 
@@ -23,6 +25,8 @@ class CockpitSessionBridgeSettings:
     cockpit_tmux_enumeration_socket_name: str = DEFAULT_COCKPIT_TMUX_SOCKET_NAME
     cockpit_tmux_mutation_socket_name: str = DEFAULT_COCKPIT_TMUX_SOCKET_NAME
     cockpit_tmux_remote_ssh_host: str = ""
+    cockpit_herdr_executable_path: str = DEFAULT_COCKPIT_HERDR_EXECUTABLE_PATH
+    cockpit_herdr_session_name: str = DEFAULT_COCKPIT_HERDR_SESSION_NAME
 
 
 @dataclass(frozen=True)
@@ -105,6 +109,14 @@ def resolve_bridge_settings(process_environment):
         cockpit_tmux_remote_ssh_host=process_environment.get(
             "COCKPIT_SESSION_BRIDGE_TMUX_REMOTE_SSH_HOST",
             "",
+        ),
+        cockpit_herdr_executable_path=process_environment.get(
+            "COCKPIT_SESSION_BRIDGE_HERDR_PATH",
+            DEFAULT_COCKPIT_HERDR_EXECUTABLE_PATH,
+        ),
+        cockpit_herdr_session_name=process_environment.get(
+            "COCKPIT_SESSION_BRIDGE_HERDR_SESSION",
+            DEFAULT_COCKPIT_HERDR_SESSION_NAME,
         ),
     )
 

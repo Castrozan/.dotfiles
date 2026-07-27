@@ -1,3 +1,4 @@
+import asyncio
 import dataclasses
 import sys
 from pathlib import Path
@@ -10,8 +11,10 @@ sys.path.insert(0, str(BRIDGE_PACKAGE_DIRECTORY_PATH))
 import cockpit_tmux_commands
 import server
 import settings
+from cockpit_multiplexer_test_doubles import RecordingSubprocessRunner
 
 TMUX_EXECUTABLE_PATH = "/run/current-system/sw/bin/tmux"
+HERDR_EXECUTABLE_PATH = "/run/current-system/sw/bin/herdr"
 
 
 class _FakeWebsocketRequest:
@@ -34,6 +37,17 @@ def _attach_settings():
         cockpit_tmux_executable_path=TMUX_EXECUTABLE_PATH,
         cockpit_tmux_enumeration_socket_name="",
         cockpit_tmux_mutation_socket_name="cockpit",
+        cockpit_herdr_executable_path=HERDR_EXECUTABLE_PATH,
+    )
+
+
+def _resolve_over_a_tmux_only_machine(websocket_connection, attach_settings):
+    return asyncio.run(
+        server.resolve_session_command(
+            websocket_connection,
+            attach_settings,
+            subprocess_runner=RecordingSubprocessRunner(),
+        )
     )
 
 
@@ -72,7 +86,7 @@ def test_build_attach_session_command_uses_the_enumeration_socket_when_named():
 
 
 def test_resolve_session_command_attaches_the_requested_session_on_the_enumeration_socket():
-    resolved = server.resolve_session_command(
+    resolved = _resolve_over_a_tmux_only_machine(
         _FakeWebsocketConnection("/cockpit/jarvis-session/?sessionName=dotfiles"),
         _attach_settings(),
     )
@@ -89,7 +103,7 @@ def test_resolve_session_command_attaches_the_requested_session_over_ssh_when_a_
     remote_settings = dataclasses.replace(
         _attach_settings(), cockpit_tmux_remote_ssh_host="lucas.zanoni@kira"
     )
-    resolved = server.resolve_session_command(
+    resolved = _resolve_over_a_tmux_only_machine(
         _FakeWebsocketConnection("/cockpit/jarvis-session/?sessionName=dotfiles"),
         remote_settings,
     )
@@ -104,7 +118,7 @@ def test_resolve_session_command_attaches_the_requested_session_over_ssh_when_a_
 
 def test_resolve_session_command_keeps_the_static_command_without_a_session_target():
     settings_with_static_command = _attach_settings()
-    resolved = server.resolve_session_command(
+    resolved = _resolve_over_a_tmux_only_machine(
         _FakeWebsocketConnection("/cockpit/jarvis-session/"),
         settings_with_static_command,
     )

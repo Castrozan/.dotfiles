@@ -1,4 +1,3 @@
-import asyncio
 import sys
 from pathlib import Path
 
@@ -8,36 +7,14 @@ BRIDGE_PACKAGE_DIRECTORY_PATH = (
 sys.path.insert(0, str(BRIDGE_PACKAGE_DIRECTORY_PATH))
 
 import cockpit_lifecycle_control
-import cockpit_tmux_lifecycle
+import cockpit_multiplexer_port
 import pytest
-
-
-TMUX_EXECUTABLE_PATH = "/run/current-system/sw/bin/tmux"
-COCKPIT_SOCKET_PREFIX = [TMUX_EXECUTABLE_PATH, "-L", "cockpit"]
-
-
-class RecordingSubprocessRunner:
-    def __init__(self, scripted_outputs=None):
-        self.executed_commands = []
-        self._scripted_outputs = scripted_outputs or {}
-
-    async def __call__(self, tmux_command):
-        self.executed_commands.append(tmux_command)
-        for command_marker, output in self._scripted_outputs.items():
-            if command_marker in tmux_command:
-                return cockpit_tmux_lifecycle.CockpitTmuxCommandResult(0, output, "")
-        return cockpit_tmux_lifecycle.CockpitTmuxCommandResult(0, "", "")
-
-
-def dispatch(lifecycle_request, subprocess_runner, socket_policy=None):
-    return asyncio.run(
-        cockpit_lifecycle_control.dispatch_cockpit_lifecycle_request(
-            TMUX_EXECUTABLE_PATH,
-            socket_policy or cockpit_lifecycle_control.CockpitTmuxSocketPolicy(),
-            lifecycle_request,
-            subprocess_runner=subprocess_runner,
-        )
-    )
+from cockpit_multiplexer_test_doubles import (
+    COCKPIT_SOCKET_PREFIX,
+    TMUX_EXECUTABLE_PATH,
+    RecordingSubprocessRunner,
+    dispatch_through_tmux as dispatch,
+)
 
 
 def test_list_sessions_returns_the_serialized_inventory_as_plain_data():
@@ -172,7 +149,7 @@ def test_close_window_runs_the_kill_window_command():
 
 def test_a_failed_mutation_surfaces_the_exit_code_and_standard_error():
     async def failing_runner(tmux_command):
-        return cockpit_tmux_lifecycle.CockpitTmuxCommandResult(
+        return cockpit_multiplexer_port.CockpitMultiplexerCommandResult(
             1, "", "duplicate session: reports-deploy\n"
         )
 

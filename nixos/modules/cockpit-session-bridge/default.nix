@@ -2,11 +2,13 @@
   config,
   lib,
   pkgs,
+  inputs,
   ...
 }:
 let
   cockpitSessionBridgeConfig = config.custom.cockpitSessionBridge;
   persistentSessionConfig = cockpitSessionBridgeConfig.persistentSession;
+  herdrPackage = inputs.herdr.packages.${pkgs.stdenv.hostPlatform.system}.default;
   pythonWithWebsockets = pkgs.python3.withPackages (pythonPackages: [ pythonPackages.websockets ]);
 
   tmuxTemporaryDirectory = "/tmp";
@@ -81,6 +83,12 @@ in
       description = "When non-empty, the SSH destination (user@host) the bridge runs every enumeration and attach tmux command through, so a bridge on one host can list and drive another host's real sessions over SSH without exposing that host's loopback bridge to the network; empty keeps all tmux commands local. Destructive mutations always stay on the local sandbox mutation socket and are never forwarded, so the remote host's real sessions can be read and attached but never killed.";
     };
 
+    herdrSessionName = lib.mkOption {
+      type = lib.types.str;
+      default = "default";
+      description = "herdr session the lifecycle enumeration and attach target when herdr is the live multiplexer; herdr hosts the whole fleet on one shared server session, so this is the session every cockpit workspace lives under.";
+    };
+
     persistentSession = {
       enable = lib.mkOption {
         type = lib.types.bool;
@@ -148,6 +156,8 @@ in
         COCKPIT_SESSION_BRIDGE_TMUX_ENUMERATION_SOCKET = cockpitSessionBridgeConfig.tmuxEnumerationSocket;
         COCKPIT_SESSION_BRIDGE_TMUX_MUTATION_SOCKET = cockpitSessionBridgeConfig.tmuxMutationSocket;
         COCKPIT_SESSION_BRIDGE_TMUX_REMOTE_SSH_HOST = cockpitSessionBridgeConfig.tmuxRemoteSshHost;
+        COCKPIT_SESSION_BRIDGE_HERDR_PATH = "${herdrPackage}/bin/herdr";
+        COCKPIT_SESSION_BRIDGE_HERDR_SESSION = cockpitSessionBridgeConfig.herdrSessionName;
         TMUX_TMPDIR = tmuxTemporaryDirectory;
       };
       serviceConfig = {

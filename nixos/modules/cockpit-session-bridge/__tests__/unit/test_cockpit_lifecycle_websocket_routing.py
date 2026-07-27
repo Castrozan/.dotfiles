@@ -1,12 +1,12 @@
 import asyncio
 
-from cockpit_lifecycle_websocket_test_doubles import (
-    TMUX_EXECUTABLE_PATH,
-    RecordingSubprocessRunner,
-    ScriptedLifecycleControlWebsocket,
-)
+from cockpit_lifecycle_websocket_test_doubles import ScriptedLifecycleControlWebsocket
 
 import cockpit_lifecycle_websocket
+from cockpit_multiplexer_test_doubles import (
+    TMUX_EXECUTABLE_PATH,
+    RecordingSubprocessRunner,
+)
 import server
 import settings
 
@@ -63,8 +63,12 @@ def test_the_lifecycle_handler_forwards_enumeration_over_ssh_when_a_remote_host_
     for executed_command in runner.executed_commands:
         assert executed_command[0] == "ssh"
         assert "lucas.zanoni@kira" in executed_command
-        assert executed_command[-1].startswith("tmux ")
         assert "/nix/store/" not in executed_command[-1]
+    assert [
+        executed_command[-1]
+        for executed_command in runner.executed_commands
+        if executed_command[-1].startswith("tmux ")
+    ]
 
 
 def test_the_lifecycle_path_routes_to_the_lifecycle_handler_not_the_session_bridge():

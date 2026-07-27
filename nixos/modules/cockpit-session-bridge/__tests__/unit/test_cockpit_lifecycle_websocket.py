@@ -1,24 +1,21 @@
 import asyncio
 import json
 
-from cockpit_lifecycle_websocket_test_doubles import (
-    COCKPIT_SOCKET_PREFIX,
-    TMUX_EXECUTABLE_PATH,
-    RecordingSubprocessRunner,
-    ScriptedLifecycleControlWebsocket,
-)
+from cockpit_lifecycle_websocket_test_doubles import ScriptedLifecycleControlWebsocket
 
-import cockpit_lifecycle_control
 import cockpit_lifecycle_websocket
+from cockpit_multiplexer_test_doubles import (
+    COCKPIT_SOCKET_PREFIX,
+    RecordingSubprocessRunner,
+    build_tmux_multiplexer,
+)
 
 
 def drive_lifecycle_control(websocket_connection, subprocess_runner):
     asyncio.run(
         cockpit_lifecycle_websocket.stream_cockpit_lifecycle_control_over_websocket(
             websocket_connection,
-            TMUX_EXECUTABLE_PATH,
-            cockpit_lifecycle_control.CockpitTmuxSocketPolicy(),
-            subprocess_runner=subprocess_runner,
+            build_tmux_multiplexer(subprocess_runner),
         )
     )
 
