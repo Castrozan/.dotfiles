@@ -12,6 +12,7 @@ window.AMBIENT_CANVAS_PLAYLIST = [
   { panes: [{ scene: "bonsai" }] },
   { panes: [{ scene: "matrix" }] },
   { panes: [{ scene: "ascii-invader" }] },
+  { panes: [{ scene: "ascii-plotter" }] },
   {
     panes: [
       {
