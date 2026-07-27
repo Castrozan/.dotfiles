@@ -6,7 +6,14 @@ import json
 import re
 import sys
 
+from codex_tool_payload import matchable_tool_names, normalize_codex_tool_payload
+
 DECISION_STRENGTH = {"allow": 1, "ask": 2, "block": 3, "deny": 3}
+
+CLAUDE_SURFACE = "claude"
+CODEX_SURFACE = "codex"
+EVERY_SURFACE = (CLAUDE_SURFACE, CODEX_SURFACE)
+SURFACE_ARGUMENT_PREFIX = "--surface="
 
 
 class HandlerResult:
@@ -26,9 +33,10 @@ class HandlerResult:
 
 
 class HookHandler:
-    def __init__(self, handle, tool_matcher=None):
+    def __init__(self, handle, tool_matcher=None, surfaces=EVERY_SURFACE):
         self.handle = handle
         self.tool_matcher = tool_matcher
+        self.surfaces = surfaces
 
 
 class MergedHookOutcome:
@@ -61,13 +69,35 @@ def read_hook_input_or_exit() -> dict:
         sys.exit(0)
     if not isinstance(parsed_payload.get("tool_input"), dict):
         parsed_payload["tool_input"] = {}
-    return parsed_payload
+    return normalize_codex_tool_payload(parsed_payload)
+
+
+def dispatched_hook_input_or_exit(handled_event_names) -> dict:
+    hook_input = read_hook_input_or_exit()
+    reported_event_name = hook_input.get("hook_event_name", "")
+    if reported_event_name and reported_event_name not in handled_event_names:
+        sys.exit(0)
+    return hook_input
+
+
+def requested_hook_surface() -> str:
+    for command_line_argument in sys.argv[1:]:
+        if command_line_argument.startswith(SURFACE_ARGUMENT_PREFIX):
+            return command_line_argument[len(SURFACE_ARGUMENT_PREFIX) :]
+    return CLAUDE_SURFACE
+
+
+def handler_runs_on_surface(handler, surface: str) -> bool:
+    return surface in handler.surfaces
 
 
 def handler_matches_tool(handler, tool_name: str) -> bool:
     if handler.tool_matcher is None:
         return True
-    return re.fullmatch(handler.tool_matcher, tool_name or "") is not None
+    return any(
+        re.fullmatch(handler.tool_matcher, candidate_tool_name) is not None
+        for candidate_tool_name in matchable_tool_names(tool_name)
+    )
 
 
 def candidate_decision_is_stronger(candidate, current) -> bool:
@@ -87,10 +117,12 @@ def describe_handler(handler) -> str:
     )
 
 
-def run_handlers(hook_input: dict, handlers):
+def run_handlers(hook_input: dict, handlers, surface=CLAUDE_SURFACE):
     outcome = MergedHookOutcome()
     tool_name = hook_input.get("tool_name", "") or ""
     for handler in handlers:
+        if not handler_runs_on_surface(handler, surface):
+            continue
         if not handler_matches_tool(handler, tool_name):
             continue
         try:
@@ -113,74 +145,3 @@ def run_handlers(hook_input: dict, handlers):
         if result.updated_input is not None and outcome.updated_input is None:
             outcome.updated_input = result.updated_input
     return outcome
-
-
-def emit_context_injection(event_name: str, outcome) -> None:
-    combined_context = outcome.combined_additional_context
-    if not combined_context:
-        return
-    print(
-        json.dumps(
-            {
-                "continue": True,
-                "hookSpecificOutput": {
-                    "hookEventName": event_name,
-                    "additionalContext": combined_context,
-                },
-            }
-        )
-    )
-
-
-def emit_stop_decision(outcome) -> None:
-    payload: dict = {}
-    system_message = outcome.combined_system_message
-    if system_message:
-        payload["continue"] = True
-        payload["systemMessage"] = system_message
-    if outcome.decision == "block":
-        payload["decision"] = "block"
-        payload["reason"] = outcome.reason
-    if payload:
-        print(json.dumps(payload))
-
-
-def emit_post_tool_use_outcome(outcome) -> None:
-    payload: dict = {}
-    system_message = outcome.combined_system_message
-    if system_message:
-        payload["systemMessage"] = system_message
-    if outcome.decision == "block":
-        payload["decision"] = "block"
-        payload["reason"] = outcome.reason
-    combined_context = outcome.combined_additional_context
-    if combined_context:
-        payload["hookSpecificOutput"] = {
-            "hookEventName": "PostToolUse",
-            "additionalContext": combined_context,
-        }
-    if payload:
-        payload["continue"] = True
-        print(json.dumps(payload))
-
-
-def emit_pretooluse_decision(outcome) -> None:
-    hook_specific_output: dict = {"hookEventName": "PreToolUse"}
-    if outcome.decision is not None:
-        hook_specific_output["permissionDecision"] = outcome.decision
-        if outcome.reason:
-            hook_specific_output["permissionDecisionReason"] = outcome.reason
-    if outcome.updated_input is not None:
-        hook_specific_output["updatedInput"] = outcome.updated_input
-    combined_context = outcome.combined_additional_context
-    if combined_context:
-        hook_specific_output["additionalContext"] = combined_context
-    payload: dict = {}
-    system_message = outcome.combined_system_message
-    if system_message:
-        payload["systemMessage"] = system_message
-    if len(hook_specific_output) > 1:
-        payload["hookSpecificOutput"] = hook_specific_output
-    if payload:
-        payload["continue"] = True
-        print(json.dumps(payload))

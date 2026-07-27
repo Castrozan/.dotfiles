@@ -1,11 +1,17 @@
 from __future__ import annotations
 
 import os
-import shlex
 
 _CODEX_SHELL_TOOL_NAME = "shell"
+_CODEX_WRITE_TOOL_NAME = "apply_patch"
 _APPLY_PATCH_COMMAND_NAMES = ("apply_patch", "applypatch")
 _SHELL_INTERPRETER_NAMES = ("bash", "sh", "zsh", "dash", "ksh")
+
+CLAUDE_TOOL_NAMES_BY_CODEX_TOOL_NAME = {_CODEX_WRITE_TOOL_NAME: ("Edit", "Write")}
+
+
+def matchable_tool_names(tool_name: str):
+    return (tool_name or "",) + CLAUDE_TOOL_NAMES_BY_CODEX_TOOL_NAME.get(tool_name, ())
 
 
 def script_argument_of_shell_interpreter_invocation(command_argument_vector):
@@ -35,7 +41,9 @@ def normalize_codex_tool_payload(hook_input: dict) -> dict:
     if not isinstance(command_argument_vector, list) or not command_argument_vector:
         return hook_input
     if str(command_argument_vector[0]) in _APPLY_PATCH_COMMAND_NAMES:
-        return hook_input
+        return {**hook_input, "tool_name": _CODEX_WRITE_TOOL_NAME}
+
+    import shlex
 
     normalized_hook_input = dict(hook_input)
     normalized_tool_input = dict(tool_input)

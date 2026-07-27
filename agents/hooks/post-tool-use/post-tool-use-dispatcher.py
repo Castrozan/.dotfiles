@@ -29,16 +29,19 @@ import nix_rebuild_trigger_handler  # noqa: E402
 import record_edited_source_file_handler  # noqa: E402
 import record_instructions_skill_invocation_handler  # noqa: E402
 from hook_dispatch import (  # noqa: E402
+    CLAUDE_SURFACE,
     HookHandler,
-    emit_post_tool_use_outcome,
-    read_hook_input_or_exit,
+    dispatched_hook_input_or_exit,
+    requested_hook_surface,
     run_handlers,
 )
+from hook_event_output import emit_post_tool_use_outcome  # noqa: E402
 
 POST_TOOL_USE_HANDLERS = [
     HookHandler(
         handle=record_instructions_skill_invocation_handler.handle,
         tool_matcher="Skill",
+        surfaces=(CLAUDE_SURFACE,),
     ),
     HookHandler(handle=auto_format_handler.handle, tool_matcher="Edit|Write"),
     HookHandler(
@@ -46,16 +49,16 @@ POST_TOOL_USE_HANDLERS = [
     ),
     HookHandler(handle=nix_rebuild_trigger_handler.handle, tool_matcher="Edit|Write"),
     HookHandler(
-        handle=line_count_limit_guard_handler.handle, tool_matcher="Edit|Write"
+        handle=line_count_limit_guard_handler.handle,
+        tool_matcher="Edit|Write",
+        surfaces=(CLAUDE_SURFACE,),
     ),
 ]
 
 
 def main() -> None:
-    hook_input = read_hook_input_or_exit()
-    if hook_input.get("hook_event_name", "") != "PostToolUse":
-        sys.exit(0)
-    outcome = run_handlers(hook_input, POST_TOOL_USE_HANDLERS)
+    hook_input = dispatched_hook_input_or_exit(("PostToolUse",))
+    outcome = run_handlers(hook_input, POST_TOOL_USE_HANDLERS, requested_hook_surface())
     emit_post_tool_use_outcome(outcome)
     sys.exit(0)
 

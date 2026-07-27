@@ -15,7 +15,6 @@ for _shared_module_candidate_directory in [_MODULE_DIRECTORY] + [
     ):
         sys.path.insert(0, _shared_module_candidate_path)
 
-from codex_tool_payload import normalize_codex_tool_payload  # noqa: E402
 from hook_dispatch import HandlerResult  # noqa: E402
 from shell_command_invocation_position import (  # noqa: E402
     COMMAND_ARGUMENT_TERMINATOR_LOOKAHEAD,
@@ -103,8 +102,6 @@ def find_first_violation(tool_name: str, inspectable_text: str):
 
 
 def handle(hook_input):
-    hook_input = normalize_codex_tool_payload(hook_input)
-
     tool_name = hook_input.get("tool_name", "")
     tool_input = hook_input.get("tool_input", {}) or {}
 

@@ -7,7 +7,16 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from hook_module_loader import (
+HOOKS_ROOT = Path(__file__).resolve().parent.parent
+DIRECTORIES_EXCLUDED_FROM_DEPLOY = ("__pycache__", "__tests__")
+for hook_module_directory in HOOKS_ROOT.rglob("*"):
+    if hook_module_directory.is_dir() and not any(
+        excluded in hook_module_directory.parts
+        for excluded in DIRECTORIES_EXCLUDED_FROM_DEPLOY
+    ):
+        sys.path.insert(0, str(hook_module_directory))
+
+from hook_module_loader import (  # noqa: E402
     find_hook_module_path,
     import_hyphenated_hook_module,
     run_hook_subprocess,
@@ -15,28 +24,21 @@ from hook_module_loader import (
 
 import_hyphenated_hook_module("session-start-dispatcher")
 import_hyphenated_hook_module("monitor_streaming_pattern_validator_handler")
-import_hyphenated_hook_module("memory-recall")
+import_hyphenated_hook_module("memory_recall_memory_directory")
 
-PROHIBITED_COMMAND_GUARD_HOOK_SCRIPT_PATH = find_hook_module_path(
-    "prohibited-command-guard"
-)
-PROHIBITED_WORDS_GUARD_HOOK_SCRIPT_PATH = find_hook_module_path(
-    "prohibited-words-guard"
-)
 POST_TOOL_USE_DISPATCHER_HOOK_SCRIPT_PATH = find_hook_module_path(
     "post-tool-use-dispatcher"
 )
 PRE_TOOL_USE_DISPATCHER_HOOK_SCRIPT_PATH = find_hook_module_path(
     "pre-tool-use-dispatcher"
 )
-MEMORY_RECALL_HOOK_SCRIPT_PATH = find_hook_module_path("memory-recall")
 
 
 @pytest.fixture
 def invoke_prohibited_command_guard_hook():
     def runner(payload: dict):
         return run_hook_subprocess(
-            PROHIBITED_COMMAND_GUARD_HOOK_SCRIPT_PATH, json.dumps(payload)
+            PRE_TOOL_USE_DISPATCHER_HOOK_SCRIPT_PATH, json.dumps(payload)
         )
 
     return runner
@@ -53,14 +55,14 @@ def parse_prohibited_command_guard_system_message():
 @pytest.fixture
 def invoke_prohibited_command_guard_hook_with_raw_stdin():
     def runner(raw_stdin: str):
-        return run_hook_subprocess(PROHIBITED_COMMAND_GUARD_HOOK_SCRIPT_PATH, raw_stdin)
+        return run_hook_subprocess(PRE_TOOL_USE_DISPATCHER_HOOK_SCRIPT_PATH, raw_stdin)
 
     return runner
 
 
 def run_prohibited_words_guard(payload: dict):
     return run_hook_subprocess(
-        PROHIBITED_WORDS_GUARD_HOOK_SCRIPT_PATH, json.dumps(payload)
+        PRE_TOOL_USE_DISPATCHER_HOOK_SCRIPT_PATH, json.dumps(payload)
     )
 
 
@@ -124,10 +126,12 @@ def isolated_memory_recall_environment(tmp_path, monkeypatch):
 @pytest.fixture
 def make_memory_recall_directory():
     def create_memory_directory_for_workspace(fake_home_directory, workspace_directory):
-        import memory_recall
+        import memory_recall_memory_directory
 
-        memory_directory = memory_recall.resolve_memory_directory_for_cwd(
-            str(workspace_directory)
+        memory_directory = (
+            memory_recall_memory_directory.resolve_memory_directory_for_cwd(
+                str(workspace_directory)
+            )
         )
         memory_directory.mkdir(parents=True, exist_ok=True)
         return memory_directory
@@ -138,6 +142,8 @@ def make_memory_recall_directory():
 @pytest.fixture
 def invoke_memory_recall_hook():
     def run_hook_with_payload(payload: dict):
-        return run_hook_subprocess(MEMORY_RECALL_HOOK_SCRIPT_PATH, json.dumps(payload))
+        return run_hook_subprocess(
+            PRE_TOOL_USE_DISPATCHER_HOOK_SCRIPT_PATH, json.dumps(payload)
+        )
 
     return run_hook_with_payload

@@ -68,8 +68,17 @@ let
   codexHookEventRunsScript =
     eventName: scriptName:
     builtins.any (command: lib.hasInfix scriptName command) (codexHookEventCommands eventName);
+
+  codexEventsRegisteringMoreThanOneCommand = lib.filter (
+    eventName: lib.length (codexHookEventCommands eventName) > 1
+  ) (lib.attrNames (parsedCodexHooksConfig.hooks or { }));
 in
 {
+  codex-hooks-every-event-registers-exactly-one-command =
+    mkEvalCheck "codex-hooks-every-event-registers-exactly-one-command"
+      (codexEventsRegisteringMoreThanOneCommand == [ ])
+      "every Codex hook event must register exactly one command, the same invariant settings.json carries on the Claude side. A second registration on the same event is a second interpreter per matching tool call and splits the decision across processes whose ordering and precedence nothing arbitrates. Events currently registering more than one command: ${lib.concatStringsSep ", " codexEventsRegisteringMoreThanOneCommand}. Fold the extra registration into that event's dispatcher and gate it with a handler tool_matcher";
+
   codex-bin-wrapper =
     mkEvalCheck "codex-bin-wrapper" (builtins.hasAttr ".local/bin/codex" cfg.home.file)
       ".local/bin/codex should be in home.file";
@@ -148,26 +157,31 @@ in
       parsedCodexHooksConfig ? hooks && firstSessionStartGroup ? hooks
     ) "Codex hooks.json should use the current top-level hooks schema";
 
-  codex-hooks-config-post-tool-use-auto-format-and-rebuild =
-    mkEvalCheck "codex-hooks-config-post-tool-use-auto-format-and-rebuild"
-      (
-        codexHookEventRunsScript "PostToolUse" "auto-format.py"
-        && codexHookEventRunsScript "PostToolUse" "nix-rebuild-trigger.py"
-        && codexHookEventRunsScript "PostToolUse" "record-edited-source-file.py"
-      )
-      "Codex PostToolUse hooks should run auto-format, nix-rebuild-trigger, and record-edited-source-file";
+  codex-hooks-config-post-tool-use-dispatcher =
+    mkEvalCheck "codex-hooks-config-post-tool-use-dispatcher"
+      (codexHookEventRunsScript "PostToolUse" "post-tool-use-dispatcher.py")
+      "Codex PostToolUse must run the same post-tool-use-dispatcher.py Claude registers; it composes auto-format, record-edited-source-file and nix-rebuild-trigger, and test_codex_surface_handler_composition guards that those three stay on the codex surface";
 
-  codex-hooks-config-pre-tool-use-recall-and-guards =
-    mkEvalCheck "codex-hooks-config-pre-tool-use-recall-and-guards"
-      (
-        codexHookEventRunsScript "PreToolUse" "memory-recall.py"
-        && codexHookEventRunsScript "PreToolUse" "prohibited-command-guard.py"
-        && codexHookEventRunsScript "PreToolUse" "prohibited-words-guard.py"
-      )
-      "Codex PreToolUse hooks should run memory-recall and the prohibited-command/word guards";
+  codex-hooks-config-pre-tool-use-dispatcher =
+    mkEvalCheck "codex-hooks-config-pre-tool-use-dispatcher"
+      (codexHookEventRunsScript "PreToolUse" "pre-tool-use-dispatcher.py")
+      "Codex PreToolUse must run the same pre-tool-use-dispatcher.py Claude registers (env-prefixed with the per-host PROHIBITED_WORDS_ALLOWED allowlist); it composes memory-recall and the prohibited-command/word guards, and test_codex_surface_handler_composition guards that those three stay on the codex surface";
 
-  codex-hooks-config-stop-lint-review =
-    mkEvalCheck "codex-hooks-config-stop-lint-review"
-      (codexHookEventRunsScript "Stop" "lint-turn-review.py")
-      "Codex Stop hook should run lint-turn-review";
+  codex-hooks-config-stop-dispatcher =
+    mkEvalCheck "codex-hooks-config-stop-dispatcher"
+      (codexHookEventRunsScript "Stop" "stop-dispatcher.py")
+      "Codex Stop must run the same stop-dispatcher.py Claude registers; it composes lint-turn-review on both surfaces and end-of-turn-format-guard on Claude only";
+
+  codex-hooks-every-dispatcher-declares-its-surface =
+    let
+      dispatcherCommands = lib.filter (command: lib.hasInfix "-dispatcher.py" command) (
+        lib.concatMap codexHookEventCommands (lib.attrNames (parsedCodexHooksConfig.hooks or { }))
+      );
+    in
+    mkEvalCheck "codex-hooks-every-dispatcher-declares-its-surface"
+      (
+        dispatcherCommands != [ ]
+        && lib.all (command: lib.hasInfix "--surface=codex" command) dispatcherCommands
+      )
+      "every Codex dispatcher registration must pass --surface=codex explicitly; the dispatchers default to the claude surface, so a registration that omits the flag silently runs Claude-only handlers (the reply-shape gate, the background-bash validator, the workspace injector) against a Codex session";
 }

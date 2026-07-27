@@ -2,21 +2,8 @@ import json
 
 from flat_deploy_test_support import (
     CLAWDE_BACKGROUND_AGENT_ENV_MARKER,
-    END_OF_TURN_FORMAT_GUARD_HANDLER_SOURCE,
-    END_OF_TURN_REPLY_TEMPLATE_RULES_SOURCE,
-    HOOK_DISPATCH_SOURCE,
     INTERACTIVE_ENV_VAR,
-    INTERACTIVE_REPLY_REMINDER_STATE_SOURCE,
-    INTERACTIVE_SESSION_DETECTION_SOURCE,
-    LINT_LEDGER_SOURCE,
-    LINT_TURN_REVIEW_HANDLER_SOURCE,
-    LINTER_TABLE_BY_EXTENSION_SOURCE,
     REMINDER_STATE_DIRECTORY_ENV_VAR,
-    REPLY_TEMPLATE_SHAPE_AND_LENGTH_RULES_SOURCE,
-    REPO_NATIVE_LINT_COMMAND_DETECTION_SOURCE,
-    STOP_DISPATCHER_SOURCE,
-    TLDR_REMINDER_HANDLER_SOURCE,
-    USER_PROMPT_SUBMIT_DISPATCHER_SOURCE,
     flatten_into_single_runtime_directory,
     run_flattened_hook,
 )
@@ -24,16 +11,7 @@ from flat_deploy_test_support import (
 
 def test_tldr_reminder_imports_shared_module_after_flat_deploy(tmp_path, monkeypatch):
     monkeypatch.delenv(CLAWDE_BACKGROUND_AGENT_ENV_MARKER, raising=False)
-    flatten_into_single_runtime_directory(
-        tmp_path,
-        [
-            USER_PROMPT_SUBMIT_DISPATCHER_SOURCE,
-            TLDR_REMINDER_HANDLER_SOURCE,
-            HOOK_DISPATCH_SOURCE,
-            INTERACTIVE_SESSION_DETECTION_SOURCE,
-            INTERACTIVE_REPLY_REMINDER_STATE_SOURCE,
-        ],
-    )
+    flatten_into_single_runtime_directory(tmp_path)
 
     keyboard = run_flattened_hook(
         tmp_path,
@@ -68,22 +46,7 @@ def test_stop_dispatcher_imports_shared_modules_after_flat_deploy(
     tmp_path, monkeypatch
 ):
     monkeypatch.delenv(CLAWDE_BACKGROUND_AGENT_ENV_MARKER, raising=False)
-    flatten_into_single_runtime_directory(
-        tmp_path,
-        [
-            STOP_DISPATCHER_SOURCE,
-            END_OF_TURN_FORMAT_GUARD_HANDLER_SOURCE,
-            LINT_TURN_REVIEW_HANDLER_SOURCE,
-            HOOK_DISPATCH_SOURCE,
-            INTERACTIVE_SESSION_DETECTION_SOURCE,
-            END_OF_TURN_REPLY_TEMPLATE_RULES_SOURCE,
-            REPLY_TEMPLATE_SHAPE_AND_LENGTH_RULES_SOURCE,
-            INTERACTIVE_REPLY_REMINDER_STATE_SOURCE,
-            LINT_LEDGER_SOURCE,
-            LINTER_TABLE_BY_EXTENSION_SOURCE,
-            REPO_NATIVE_LINT_COMMAND_DETECTION_SOURCE,
-        ],
-    )
+    flatten_into_single_runtime_directory(tmp_path)
 
     transcript = tmp_path / "transcript.jsonl"
     transcript.write_text(

@@ -1,7 +1,6 @@
 import json
 
 from flat_deploy_test_support import (
-    PRE_TOOL_USE_DISPATCHER_RUNTIME_SOURCES,
     flatten_into_single_runtime_directory,
     run_flattened_hook,
 )
@@ -10,9 +9,7 @@ from flat_deploy_test_support import (
 def test_pre_tool_use_dispatcher_imports_shared_modules_after_flat_deploy(tmp_path):
     runtime_directory = tmp_path / "hooks"
     runtime_directory.mkdir()
-    flatten_into_single_runtime_directory(
-        runtime_directory, PRE_TOOL_USE_DISPATCHER_RUNTIME_SOURCES
-    )
+    flatten_into_single_runtime_directory(runtime_directory)
 
     blocked = run_flattened_hook(
         runtime_directory,
@@ -34,9 +31,7 @@ def test_pre_tool_use_dispatcher_imports_shared_modules_after_flat_deploy(tmp_pa
 def test_pre_tool_use_dispatcher_enforces_prohibited_words_through_the_fold(tmp_path):
     runtime_directory = tmp_path / "hooks"
     runtime_directory.mkdir()
-    flatten_into_single_runtime_directory(
-        runtime_directory, PRE_TOOL_USE_DISPATCHER_RUNTIME_SOURCES
-    )
+    flatten_into_single_runtime_directory(runtime_directory)
     prohibited_words_file = tmp_path / "prohibited-words.txt"
     prohibited_words_file.write_text("supersecretword\n")
 

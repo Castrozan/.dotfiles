@@ -5,10 +5,11 @@
   ...
 }:
 let
-  codexHookScripts = import ./hook-scripts.nix { inherit pkgs lib; };
+  agentHookScripts = import ../../agent-hooks/flat-hook-scripts-directory.nix { inherit pkgs lib; };
 
-  runCodexHookScript =
-    scriptFilename: "${pkgs.python3}/bin/python3 ${codexHookScripts}/${scriptFilename}";
+  runCodexDispatcher =
+    dispatcherFilename:
+    "${agentHookScripts}/run-hook.sh ${agentHookScripts}/${dispatcherFilename} --surface=codex";
 
   machineAllowedProhibitedWordsFile =
     ../../../../private-config/machines + "/${hostname}/claude-prohibited-words-allowed.nix";
@@ -42,18 +43,8 @@ let
           hooks = [
             {
               type = "command";
-              command = runCodexHookScript "memory-recall.py";
+              command = "${prohibitedWordsAllowedEnvironmentAssignment} ${runCodexDispatcher "pre-tool-use-dispatcher.py"}";
               timeout = 5;
-            }
-            {
-              type = "command";
-              command = runCodexHookScript "prohibited-command-guard.py";
-              timeout = 3;
-            }
-            {
-              type = "command";
-              command = "${prohibitedWordsAllowedEnvironmentAssignment} ${runCodexHookScript "prohibited-words-guard.py"}";
-              timeout = 3;
             }
           ];
         }
@@ -64,18 +55,8 @@ let
           hooks = [
             {
               type = "command";
-              command = runCodexHookScript "auto-format.py";
+              command = runCodexDispatcher "post-tool-use-dispatcher.py";
               timeout = 15;
-            }
-            {
-              type = "command";
-              command = runCodexHookScript "record-edited-source-file.py";
-              timeout = 3;
-            }
-            {
-              type = "command";
-              command = runCodexHookScript "nix-rebuild-trigger.py";
-              timeout = 5;
             }
           ];
         }
@@ -86,7 +67,7 @@ let
           hooks = [
             {
               type = "command";
-              command = runCodexHookScript "lint-turn-review.py";
+              command = runCodexDispatcher "stop-dispatcher.py";
               timeout = 15;
             }
           ];

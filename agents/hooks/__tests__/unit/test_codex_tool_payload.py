@@ -63,12 +63,14 @@ def test_claude_bash_payload_is_unchanged():
     assert normalize_codex_tool_payload(payload) == payload
 
 
-def test_apply_patch_shell_call_is_left_untouched():
+def test_apply_patch_shell_call_is_named_as_the_write_tool():
     payload = {
         "tool_name": "shell",
         "tool_input": {"command": ["apply_patch", "*** Begin Patch\n*** End Patch"]},
     }
-    assert normalize_codex_tool_payload(payload) == payload
+    normalized = normalize_codex_tool_payload(payload)
+    assert normalized["tool_name"] == "apply_patch"
+    assert normalized["tool_input"] == payload["tool_input"]
 
 
 def test_non_shell_tool_is_left_untouched():

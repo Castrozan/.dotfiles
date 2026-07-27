@@ -18,23 +18,23 @@ for importable_directory in (
 import compaction_context_recovery_handler  # noqa: E402
 import session_context_handler  # noqa: E402
 from hook_dispatch import (  # noqa: E402
+    CLAUDE_SURFACE,
     HookHandler,
-    emit_context_injection,
-    read_hook_input_or_exit,
+    dispatched_hook_input_or_exit,
+    requested_hook_surface,
     run_handlers,
 )
+from hook_event_output import emit_context_injection  # noqa: E402
 
 SESSION_START_HANDLERS = [
-    HookHandler(handle=session_context_handler.handle),
+    HookHandler(handle=session_context_handler.handle, surfaces=(CLAUDE_SURFACE,)),
     HookHandler(handle=compaction_context_recovery_handler.handle),
 ]
 
 
 def main() -> None:
-    hook_input = read_hook_input_or_exit()
-    if hook_input.get("hook_event_name", "") != "SessionStart":
-        sys.exit(0)
-    outcome = run_handlers(hook_input, SESSION_START_HANDLERS)
+    hook_input = dispatched_hook_input_or_exit(("SessionStart",))
+    outcome = run_handlers(hook_input, SESSION_START_HANDLERS, requested_hook_surface())
     emit_context_injection("SessionStart", outcome)
     sys.exit(0)
 

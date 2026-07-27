@@ -2,25 +2,18 @@ import json
 import os
 
 from codex_guard_test_support import (
-    WORDS_GUARD_RUNTIME_SOURCES,
-    flatten_into_single_runtime_directory,
-    run_flattened_hook,
+    permission_decision_of,
+    run_codex_pre_tool_use_dispatcher,
 )
 
 
 def run_words_guard(tmp_path, payload):
-    runtime_directory = tmp_path / "hooks"
-    runtime_directory.mkdir()
-    flatten_into_single_runtime_directory(
-        runtime_directory, WORDS_GUARD_RUNTIME_SOURCES
-    )
     prohibited_words_file = tmp_path / "prohibited-words.txt"
     prohibited_words_file.write_text("supersecretword\n")
-    return run_flattened_hook(
-        runtime_directory,
-        "prohibited-words-guard.py",
+    return run_codex_pre_tool_use_dispatcher(
+        tmp_path,
         payload,
-        environment={
+        {
             **os.environ,
             "PROHIBITED_WORDS_FILE": str(prohibited_words_file),
             "PROHIBITED_WORDS_ALLOWED": "",
@@ -76,4 +69,4 @@ def test_words_guard_allows_prohibited_word_in_private_config_apply_patch(tmp_pa
     )
     result = run_words_guard(tmp_path, apply_patch_payload(patch, tmp_path))
     assert result.returncode == 0
-    assert result.stdout.strip() == ""
+    assert permission_decision_of(result) is None

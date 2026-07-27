@@ -15,7 +15,6 @@ for _shared_module_candidate_directory in [_MODULE_DIRECTORY] + [
     ):
         sys.path.insert(0, _shared_module_candidate_path)
 
-from codex_tool_payload import normalize_codex_tool_payload  # noqa: E402
 from hook_dispatch import HandlerResult  # noqa: E402
 from prohibited_words_segments import collect_segments_to_inspect  # noqa: E402
 
@@ -71,8 +70,6 @@ def handle(hook_input):
     ]
     if not enforced_prohibited_words:
         return None
-
-    hook_input = normalize_codex_tool_payload(hook_input)
 
     tool_name = hook_input.get("tool_name", "")
     tool_input = hook_input.get("tool_input", {}) or {}

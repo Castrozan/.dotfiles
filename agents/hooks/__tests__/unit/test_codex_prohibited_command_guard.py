@@ -1,19 +1,13 @@
 import json
 
 from codex_guard_test_support import (
-    COMMAND_GUARD_RUNTIME_SOURCES,
-    flatten_into_single_runtime_directory,
-    run_flattened_hook,
+    permission_decision_of,
+    run_codex_pre_tool_use_dispatcher,
 )
 
 
 def run_command_guard(tmp_path, payload):
-    runtime_directory = tmp_path / "hooks"
-    runtime_directory.mkdir()
-    flatten_into_single_runtime_directory(
-        runtime_directory, COMMAND_GUARD_RUNTIME_SOURCES
-    )
-    return run_flattened_hook(runtime_directory, "prohibited-command-guard.py", payload)
+    return run_codex_pre_tool_use_dispatcher(tmp_path, payload)
 
 
 def test_command_guard_blocks_codex_shell_git_add_all(tmp_path):
@@ -46,7 +40,7 @@ def test_command_guard_allows_codex_read_only_shell(tmp_path):
         {"tool_name": "shell", "tool_input": {"command": ["cat", "README.md"]}},
     )
     assert result.returncode == 0
-    assert result.stdout.strip() == ""
+    assert permission_decision_of(result) is None
 
 
 def test_command_guard_allows_a_shell_wrapper_that_only_mentions_the_pattern(tmp_path):
@@ -58,4 +52,4 @@ def test_command_guard_allows_a_shell_wrapper_that_only_mentions_the_pattern(tmp
         },
     )
     assert result.returncode == 0
-    assert result.stdout.strip() == ""
+    assert permission_decision_of(result) is None

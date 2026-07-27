@@ -7,7 +7,7 @@ from pathlib import Path
 from hook_module_loader import HOOK_SUBPROCESS_TIMEOUT_SECONDS
 
 HOOKS_ROOT = Path(__file__).resolve().parents[2]
-RECORD_HOOK_SCRIPT = next(HOOKS_ROOT.rglob("record-edited-source-file.py"))
+POST_TOOL_USE_DISPATCHER_SCRIPT = next(HOOKS_ROOT.rglob("post-tool-use-dispatcher.py"))
 STOP_DISPATCHER_SCRIPT = next(HOOKS_ROOT.rglob("stop-dispatcher.py"))
 
 sys.path.insert(0, str(HOOKS_ROOT / "lint"))
@@ -42,8 +42,13 @@ def test_records_lintable_file(tmp_path):
     python_file = tmp_path / "module.py"
     python_file.write_text("value = 1\n")
     run_hook(
-        RECORD_HOOK_SCRIPT,
-        {"tool_input": {"file_path": str(python_file)}, "session_id": session_id},
+        POST_TOOL_USE_DISPATCHER_SCRIPT,
+        {
+            "hook_event_name": "PostToolUse",
+            "tool_name": "Edit",
+            "tool_input": {"file_path": str(python_file)},
+            "session_id": session_id,
+        },
     )
     assert read_and_clear_edited_source_files(session_id) == [str(python_file)]
 
@@ -54,8 +59,13 @@ def test_ignores_non_lintable_file(tmp_path):
     markdown_file = tmp_path / "notes.md"
     markdown_file.write_text("hello\n")
     run_hook(
-        RECORD_HOOK_SCRIPT,
-        {"tool_input": {"file_path": str(markdown_file)}, "session_id": session_id},
+        POST_TOOL_USE_DISPATCHER_SCRIPT,
+        {
+            "hook_event_name": "PostToolUse",
+            "tool_name": "Edit",
+            "tool_input": {"file_path": str(markdown_file)},
+            "session_id": session_id,
+        },
     )
     assert read_and_clear_edited_source_files(session_id) == []
 

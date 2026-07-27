@@ -9,11 +9,13 @@ if str(HOOK_DISPATCH_MODULE_DIRECTORY) not in sys.path:
 from hook_dispatch import (  # noqa: E402, F401
     HandlerResult,
     HookHandler,
+    run_handlers,
+)
+from hook_event_output import (  # noqa: E402, F401
     emit_context_injection,
     emit_post_tool_use_outcome,
     emit_pretooluse_decision,
     emit_stop_decision,
-    run_handlers,
 )
 
 
