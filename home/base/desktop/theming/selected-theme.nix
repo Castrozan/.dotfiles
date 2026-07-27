@@ -17,13 +17,20 @@ let
 
   firstBackgroundFileName = builtins.head sortedBackgroundFileNames;
 
-  selectedWallpaperPath =
-    themesDirectory + "/${selectedThemeName}/backgrounds/${firstBackgroundFileName}";
+  selectedWallpaperPath = builtins.path {
+    path = themesDirectory + "/${selectedThemeName}/backgrounds/${firstBackgroundFileName}";
+    name = "${selectedThemeName}-wallpaper-${firstBackgroundFileName}";
+  };
+
+  selectedColorsTomlPath = builtins.path {
+    path = themesDirectory + "/${selectedThemeName}/colors.toml";
+    name = "${selectedThemeName}-colors.toml";
+  };
 in
 {
   name = selectedThemeName;
   colorsToml = themeColorsToml;
-  colorsTomlPath = themesDirectory + "/${selectedThemeName}/colors.toml";
+  colorsTomlPath = selectedColorsTomlPath;
   accentHex = themeColorsToml.accent;
   isLight = themeIsLight;
   wallpaperPath = selectedWallpaperPath;
