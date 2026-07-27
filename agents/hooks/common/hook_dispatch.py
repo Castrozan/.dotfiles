@@ -75,13 +75,29 @@ def candidate_decision_is_stronger(
     return DECISION_STRENGTH.get(candidate, 0) > DECISION_STRENGTH.get(current, 0)
 
 
+def describe_handler(handler: HookHandler) -> str:
+    handle_function = handler.handle
+    return (
+        getattr(handle_function, "__module__", "")
+        or getattr(handle_function, "__qualname__", "")
+        or "handler"
+    )
+
+
 def run_handlers(hook_input: dict, handlers) -> MergedHookOutcome:
     outcome = MergedHookOutcome()
     tool_name = hook_input.get("tool_name", "") or ""
     for handler in handlers:
         if not handler_matches_tool(handler, tool_name):
             continue
-        result = handler.handle(hook_input)
+        try:
+            result = handler.handle(hook_input)
+        except Exception as handler_error:
+            outcome.system_message_fragments.append(
+                f"Hook handler {describe_handler(handler)} failed and was skipped: "
+                f"{type(handler_error).__name__}: {handler_error}"
+            )
+            continue
         if result is None:
             continue
         if result.additional_context:
