@@ -15,6 +15,8 @@ CONCLUSIONS_THAT_ARE_NOT_FAILURES = frozenset({"success", "skipped", "neutral"})
 EXIT_CODE_CI_IS_RED = 1
 EXIT_CODE_CI_VERDICT_UNKNOWN = 2
 
+HELP_FLAGS = frozenset({"-h", "--help"})
+
 
 def resolve_commit_sha(commit_reference: str) -> str:
     completed = subprocess.run(
@@ -105,8 +107,23 @@ def report_runs(runs: list[dict]) -> None:
         print(describe_run(run))
 
 
+def print_usage() -> None:
+    print(
+        f"usage: dotfiles-ci [<commit-reference>]\n\n"
+        f"Waits on every GitHub Actions run registered for a commit of the checkout "
+        f"at {DOTFILES_DIRECTORY}, prints each run's outcome, then exits 0 when they "
+        f"all succeeded, {EXIT_CODE_CI_IS_RED} when any run is red, and "
+        f"{EXIT_CODE_CI_VERDICT_UNKNOWN} when CI has no verdict to give.\n\n"
+        f"The commit reference defaults to HEAD and always resolves inside that "
+        f"checkout rather than the caller's working directory."
+    )
+
+
 def main() -> int:
     commit_reference = sys.argv[1] if len(sys.argv) > 1 else "HEAD"
+    if commit_reference in HELP_FLAGS:
+        print_usage()
+        return 0
     try:
         commit_sha = resolve_commit_sha(commit_reference)
     except subprocess.CalledProcessError:

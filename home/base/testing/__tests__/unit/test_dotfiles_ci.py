@@ -31,6 +31,17 @@ def run_main_against(run_batches):
                     return dotfiles_ci.main()
 
 
+def run_main_with_argument(argument):
+    with patch(
+        "dotfiles_ci.resolve_commit_sha", return_value="deadbeef"
+    ) as resolve_commit_sha:
+        with patch("dotfiles_ci.fetch_runs_for_commit", return_value=[]):
+            with patch("dotfiles_ci.time.sleep"):
+                with patch("dotfiles_ci.sys.argv", ["dotfiles-ci", argument]):
+                    exit_code = dotfiles_ci.main()
+    return exit_code, resolve_commit_sha
+
+
 class TestVerdict:
     def test_green_ci_exits_zero(self):
         batches = [
@@ -136,6 +147,24 @@ class TestGithubBeingUnreachableIsNeverAReadCi:
             ),
         ]
         assert run_main_against(batches) == dotfiles_ci.EXIT_CODE_CI_VERDICT_UNKNOWN
+
+
+class TestTheHelpFlagIsNotTreatedAsARevision:
+    def test_the_long_help_flag_prints_usage_instead_of_resolving_a_commit(
+        self, capsys
+    ):
+        exit_code, resolve_commit_sha = run_main_with_argument("--help")
+        assert exit_code == 0
+        resolve_commit_sha.assert_not_called()
+        assert "usage" in capsys.readouterr().out.lower()
+
+    def test_the_short_help_flag_prints_usage_instead_of_resolving_a_commit(
+        self, capsys
+    ):
+        exit_code, resolve_commit_sha = run_main_with_argument("-h")
+        assert exit_code == 0
+        resolve_commit_sha.assert_not_called()
+        assert "usage" in capsys.readouterr().out.lower()
 
 
 class TestReporting:
