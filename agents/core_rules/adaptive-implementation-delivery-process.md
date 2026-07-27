@@ -36,8 +36,9 @@ changes until it is right, and finish it yourself by applying, deploying, mergin
 software-engineer writes code against a design you already fixed.
 quality-assurance verifies the delivered work against the user's stated goal, widens the test scope past what you
 specified, and hunts side effects in behavior nobody meant to change.
-At direct and patch tiers you do all three jobs alone. Load `software-design`, `test` and `review` to do them to the
-same standard the agents would; spawning is a throughput decision, never a quality one.
+At direct and patch tiers you do all three jobs alone. Load `architecture`, `code-craft`, `code-review`, `test` and
+`quality-assurance` to do them to the same standard the agents would; spawning is a throughput decision, never a
+quality one.
 </roles>
 
 <model-tier>

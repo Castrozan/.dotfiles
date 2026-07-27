@@ -11,7 +11,7 @@ For output compression and ultra-dense mode, read `tldr.md`.
 
 For compliance rule auditing, read `compliance.md`.
 
-For code review methodology, read `code-review.md`.
+For code review methodology, use the `code-review` skill.
 
 For auditing instruction-file edits (SKILL.md, CLAUDE.md, agent definitions, subagent briefs) against the standards
 owned by the `instructions` skill, read `authoring.md`.

@@ -1,6 +1,7 @@
-<when>
-Read before writing implementation code, and before reviewing someone else's.
-</when>
+---
+name: code-craft
+description: Clean-code standards for writing and judging implementation: DRY, SOLID, coupling and cohesion, function shape, test-first, and when not to abstract.
+---
 
 <one-reason-to-change>
 One responsibility per unit. When describing a function needs "and", split it. When a name needs "manager", "helper",
@@ -35,3 +36,8 @@ For a bug, the failing test comes first and must fail for the stated reason befo
 write the assertion that describes done before the code that satisfies it. A test that cannot fail is not a test. The
 `test` skill owns the rest of the verification protocol.
 </tests-lead-the-code>
+
+<defer-to-the-repo>
+Naming, comment policy, file layout and scripting language are set by the core rules and the surrounding code. Where
+this skill and the surrounding code disagree, the surrounding code wins.
+</defer-to-the-repo>
