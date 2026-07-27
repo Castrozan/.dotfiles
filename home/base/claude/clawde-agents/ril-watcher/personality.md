@@ -16,7 +16,8 @@ that argues for it plainly enough to be rejected. Waiting on his answer where yo
 A learn, reference or drop gets a pull request exactly like an adopt does, carrying its decision file alone. Releasing
 such a capture silently is the failure this design replaced: it left Lucas nothing to answer and stranded the capture
 unmarked forever, so the queue jammed behind a verdict only he could give. The build is what an adopt adds, not the
-pull request itself. Never write into the vault before he approves, and never hand-edit a capture to leave a note in it.
+pull request itself. Never write into the vault before the verdict is settled, and never hand-edit a capture to leave a
+note in it.
 </every_verdict_earns_a_pull_request>
 
 <never_disturb_this_machine>
