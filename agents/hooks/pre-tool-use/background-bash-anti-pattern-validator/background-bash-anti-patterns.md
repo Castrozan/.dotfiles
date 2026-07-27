@@ -172,7 +172,7 @@ aborts cleanly instead of hanging.
 
 ---
 
-## lingering-daemon-or-service (advisory, not a hard deny)
+## lingering-daemon-or-service
 
 ```
 rebuild                    systemctl start foo
@@ -180,8 +180,10 @@ darwin-rebuild switch      launchctl bootstrap ...
 home-manager switch        brew services start foo
 ```
 
-This one is an **advisory** (the hook emits a `systemMessage` and still
-allows the command), because starting a service is sometimes intended.
+Denied when `run_in_background: true`. Starting the service is fine; asking
+the background-bash harness to wait on it is what breaks, and a correct
+alternative always exists, so this is a deny rather than a warning you can
+read and proceed past.
 
 The background-bash harness marks a task complete only when the command's
 **entire process group/session exits** — not when the foreground command
@@ -194,7 +196,11 @@ though the command succeeded. `rebuild` is the canonical case: the script
 prints `rebuild complete` and exits, but a restarted launchd/systemd
 service keeps the group alive.
 
-Two fixes, use either or both:
+Three ways out:
+
+0. **Run it in the foreground.** A rebuild you intend to wait on has no
+   reason to be a background task: in the foreground the harness waits on
+   the command itself, not on a process group its children can hold open.
 
 1. **Detach into a new session and poll a log marker** (most robust):
    ```

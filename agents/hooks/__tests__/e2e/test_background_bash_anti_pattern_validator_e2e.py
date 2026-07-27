@@ -108,7 +108,7 @@ class TestBackgroundBashAntiPatternsEndToEndThroughDispatcher:
         assert result.returncode == 0
         assert result.stdout == ""
 
-    def test_daemon_advisory_reaches_the_model_not_only_the_terminal(self):
+    def test_backgrounded_daemon_spawn_is_denied_through_the_dispatcher(self):
         result = _invoke_dispatcher_with_payload(
             {
                 "tool_name": "Bash",
@@ -120,11 +120,11 @@ class TestBackgroundBashAntiPatternsEndToEndThroughDispatcher:
         )
         assert result.returncode == 0
         parsed = json.loads(result.stdout)
-        assert parsed["continue"] is True
         assert parsed["hookSpecificOutput"]["hookEventName"] == "PreToolUse"
+        assert parsed["hookSpecificOutput"]["permissionDecision"] == "deny"
         assert (
             "launch-command-detached-into-new-session"
-            in parsed["hookSpecificOutput"]["additionalContext"]
+            in parsed["hookSpecificOutput"]["permissionDecisionReason"]
         )
 
     def test_denies_background_bash_with_jq_literal_count_test(self):

@@ -159,8 +159,8 @@ class TestCommandStartsALingeringDaemonOrService:
         assert sut.command_starts_a_lingering_daemon_or_service(command) is False
 
 
-class TestLingeringDaemonAdvisory:
-    def test_advisory_message_points_to_detach_wrapper(self):
-        message = sut.build_lingering_daemon_advisory_message()
+class TestLingeringDaemonDenial:
+    def test_deny_reason_points_to_detach_wrapper(self):
+        message = sut.build_lingering_daemon_deny_reason()
         assert "launch-command-detached-into-new-session" in message
         assert "process group" in message
