@@ -1,14 +1,7 @@
-{ lib, pkgs, ... }:
-let
-  systemctl = "${pkgs.systemd}/bin/systemctl";
-  graphicalServices = [
-    "mako.service"
-    "xdg-desktop-portal-hyprland.service"
-    "hypr-focus-daemon.service"
-  ];
-in
+{ lib, ... }:
 {
   imports = [
+    ./graphical-services-activation.nix
     ./packages.nix
     ./cursor.nix
     ./themes.nix
@@ -33,13 +26,6 @@ in
 
     activation.ensureMonitorOverrideFile = lib.hm.dag.entryBefore [ "writeBoundary" ] ''
       touch "$HOME/.cache/hypr-monitors-override.conf"
-    '';
-
-    activation.startGraphicalServices = lib.hm.dag.entryAfter [ "reloadSystemd" ] ''
-      HYPR_DIR="/run/user/$(id -u)/hypr"
-      if [ -d "$HYPR_DIR" ] && [ "$(ls -A "$HYPR_DIR" 2>/dev/null)" ]; then
-        $DRY_RUN_CMD ${systemctl} --user restart ${lib.concatStringsSep " " graphicalServices} || true
-      fi
     '';
   };
 

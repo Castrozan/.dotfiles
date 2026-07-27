@@ -40,6 +40,7 @@ let
   obsidianHeadlessChecks = import ../../home/base/media/obsidian/__tests__/checks.nix domainArgs;
   gamingChecks = import ../../home/base/gaming/__tests__/checks.nix domainArgs;
   gnomeChecks = import ../../home/linux/gnome/__tests__/checks.nix domainArgs;
+  hyprlandChecks = import ../../home/linux/hyprland/__tests__/checks.nix domainArgs;
   securityChecks = import ../../home/base/security/__tests__/checks.nix domainArgs;
   a2aAgentChecks = import ../../home/base/agents/a2a/__tests__/checks.nix domainArgs;
   ollamaChecks = import ../../home/base/ollama/__tests__/checks.nix domainArgs;
@@ -74,6 +75,7 @@ claudeChecks
 // obsidianHeadlessChecks
 // gamingChecks
 // gnomeChecks
+// hyprlandChecks
 // securityChecks
 // a2aAgentChecks
 // ollamaChecks
