@@ -22,6 +22,15 @@ git worktree add .worktrees/<branch-name> -b <branch-name>
 ```
 </worktree_creation>
 
+<location_is_enforced>
+A worktree never lives outside its repository, because a sibling checkout is a stray copy of the repo that outlives the
+branch and nothing gitignores it. The `worktree_location_guard` PreToolUse hook denies `git worktree add` with any
+destination outside the repo, including a bare name, `../<name>`, and an absolute path; the accepted destinations are
+`.worktrees/<branch>` and the built-in `.claude/worktrees/<name>` that `--worktree` and EnterWorktree create. For a
+genuinely sanctioned exception prefix the command with `WORKTREE_OUTSIDE_REPOSITORY_SANCTIONED=1`. Relocate an existing
+stray worktree with `git worktree move`, which preserves its branch and uncommitted state.
+</location_is_enforced>
+
 <traps>
 PR commands must run from the main repo directory, not the worktree: `gh` and `glab` misdetect the repo context inside
 worktrees. Use `--head <branch>` to target the worktree branch.

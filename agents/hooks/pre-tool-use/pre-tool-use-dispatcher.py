@@ -28,6 +28,7 @@ import prohibited_command_guard_handler  # noqa: E402
 import prohibited_words_guard_handler  # noqa: E402
 import url_to_skill_router_handler  # noqa: E402
 import workspace_directory_injector_handler  # noqa: E402
+import worktree_location_guard_handler  # noqa: E402
 from hook_dispatch import (  # noqa: E402
     CLAUDE_SURFACE,
     HookHandler,
@@ -41,6 +42,7 @@ PRE_TOOL_USE_HANDLERS = [
     HookHandler(handle=memory_recall_handler.handle, tool_matcher=None),
     HookHandler(handle=prohibited_command_guard_handler.handle, tool_matcher=None),
     HookHandler(handle=prohibited_words_guard_handler.handle, tool_matcher=None),
+    HookHandler(handle=worktree_location_guard_handler.handle, tool_matcher="Bash"),
     HookHandler(
         handle=workspace_directory_injector_handler.handle,
         tool_matcher="Bash",

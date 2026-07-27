@@ -30,6 +30,7 @@ HANDLERS_REQUIRED_ON_THE_CODEX_SURFACE = {
         "prohibited_command_guard_handler",
         "prohibited_words_guard_handler",
         "agent_instruction_file_authoring_router_handler",
+        "worktree_location_guard_handler",
     },
     "POST_TOOL_USE_HANDLERS": {
         "auto_format_handler",
