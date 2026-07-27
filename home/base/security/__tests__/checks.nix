@@ -24,8 +24,20 @@ let
     needle: builtins.any (package: lib.hasInfix needle (package.name or "")) cfg.home.packages;
 
   ingestProducerSecretName = "credentials/ingest-producer-secret";
+
+  gpgKeyImportActivation = cfg.home.activation.importGpgPrivateKeyFromAgenix.data;
 in
 {
+  domain-security-gpg-key-import-is-time-bounded =
+    mkEvalCheck "domain-security-gpg-key-import-is-time-bounded"
+      (lib.hasInfix "/bin/timeout " gpgKeyImportActivation)
+      "The gpg key import must run under a timeout. Every gpg invocation in it talks to gpg-agent, and this configuration sets pinentry-curses, which needs a TTY that activation does not have, so an agent that decides to prompt blocks forever rather than returning non-zero. An unbounded step wedges the whole switch with the new home generation already linked and the system profile still on the old one, and nothing reports it because nothing failed";
+
+  domain-security-gpg-key-import-tolerates-its-own-failure =
+    mkEvalCheck "domain-security-gpg-key-import-tolerates-its-own-failure"
+      (lib.hasInfix "|| true" gpgKeyImportActivation)
+      "The gpg key import must end in `|| true`, because home-manager runs activation under set -e, so a step cut short by its own timeout would otherwise abort activation before any later generation step runs; importing a key is best-effort and must never be able to fail a switch";
+
   domain-security-ingest-producer-secret-materialises =
     mkEvalCheck "domain-security-ingest-producer-secret-materialises"
       (

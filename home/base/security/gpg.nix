@@ -48,6 +48,6 @@ in
         "agenix"
       ]
       ''
-        run ${importGpgPrivateKeyFromAgenix}
+        run ${pkgs.coreutils}/bin/timeout 60 ${importGpgPrivateKeyFromAgenix} || true
       '';
 }
