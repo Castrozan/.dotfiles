@@ -26,6 +26,7 @@ from cockpit_multiplexer_port import (
 
 HERDR_MULTIPLEXER_NAME = "herdr"
 DEFAULT_HERDR_SESSION_NAME = "default"
+DISCARDED_COMMAND_OUTPUT = ">/dev/null 2>&1"
 
 
 class CockpitHerdrMultiplexer:
@@ -100,7 +101,8 @@ class CockpitHerdrMultiplexer:
             attach_command = [
                 LAUNCH_COMMAND_SHELL,
                 "-c",
-                f"{shlex.join(focus_command)}; exec {shlex.join(attach_command)}",
+                f"{shlex.join(focus_command)} {DISCARDED_COMMAND_OUTPUT}"
+                f"; exec {shlex.join(attach_command)}",
             ]
         return wrap_command_for_remote_ssh(
             attach_command,

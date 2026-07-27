@@ -27,7 +27,7 @@ def test_attaching_focuses_the_requested_workspace_before_attaching_the_session(
 
     assert attach_command[:2] == ["/bin/sh", "-c"]
     assert attach_command[2] == (
-        f"{HERDR_EXECUTABLE_PATH} --session default workspace focus w1T"
+        f"{HERDR_EXECUTABLE_PATH} --session default workspace focus w1T >/dev/null 2>&1"
         f"; exec {HERDR_EXECUTABLE_PATH} session attach default"
     )
 
