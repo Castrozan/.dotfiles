@@ -31,6 +31,33 @@ def test_codex_shell_quotes_arguments_with_spaces():
     assert normalized["tool_input"]["command"] == "git commit -m 'a b'"
 
 
+def test_shell_interpreter_wrapper_exposes_the_script_it_would_run():
+    normalized = normalize_codex_tool_payload(
+        {
+            "tool_name": "shell",
+            "tool_input": {"command": ["bash", "-lc", "git add -A"]},
+        }
+    )
+    assert normalized["tool_input"]["command"] == "git add -A"
+
+
+def test_shell_interpreter_wrapper_exposes_a_multi_line_script():
+    normalized = normalize_codex_tool_payload(
+        {
+            "tool_name": "shell",
+            "tool_input": {"command": ["bash", "-c", "echo hi\ngit add -A"]},
+        }
+    )
+    assert normalized["tool_input"]["command"] == "echo hi\ngit add -A"
+
+
+def test_shell_interpreter_without_a_command_flag_still_joins():
+    normalized = normalize_codex_tool_payload(
+        {"tool_name": "shell", "tool_input": {"command": ["bash", "script.sh"]}}
+    )
+    assert normalized["tool_input"]["command"] == "bash script.sh"
+
+
 def test_claude_bash_payload_is_unchanged():
     payload = {"tool_name": "Bash", "tool_input": {"command": "git add -A"}}
     assert normalize_codex_tool_payload(payload) == payload
