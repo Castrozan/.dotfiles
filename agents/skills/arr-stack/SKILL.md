@@ -13,10 +13,10 @@ for the exact interface; do not reconstruct flags from memory. On any host other
 Media friends must not see goes in a private library, backed by a `-private` media directory and hidden by pinning every
 non-administrator to `EnableAllFolders: false` with only the public libraries enabled.
 The library declaration module in the `arr_users` package is the sole source of truth for the split and is default-deny,
-so edit that module to change what is public, never a Jellyfin dashboard checkbox. Download privately by adding the title in
-Radarr or Sonarr directly and choosing the `-private` root folder; a request routed through Jellyseerr always lands in
-the public root. Log in as `friends-view`, an ordinary friend account kept for the purpose, to see the library as a
-friend does.
+so edit that module to change what is public, never a Jellyfin dashboard checkbox. Download privately by adding the
+title in Radarr or Sonarr directly and choosing the `-private` root folder; a request routed through Jellyseerr always
+lands in the public root. Log in as `friends-view`, an ordinary friend account kept for the purpose, to see the library
+as a friend does.
 </private_libraries>
 
 <private_library_traps>
