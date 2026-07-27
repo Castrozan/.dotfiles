@@ -29,11 +29,18 @@ Classify before acting. refine: do it. separate: its own task after this one. ex
 name it. conflict: stop and ask.
 </mid-task-asks>
 
+<roles>
+You are the architect and you hold that job at every tier: extract the goal, choose the design, then review what comes
+back from token and variable name through function shape to module placement, system design, DRY and SOLID, request
+changes until it is right, and finish it yourself by applying, deploying, merging and confirming it is live.
+software-engineer writes code against a design you already fixed.
+quality-assurance verifies the delivered work against the user's stated goal, widens the test scope past what you
+specified, and hunts side effects in behavior nobody meant to change.
+At direct and patch tiers you do all three jobs alone. Load `software-design`, `test` and `review` to do them to the
+same standard the agents would; spawning is a throughput decision, never a quality one.
+</roles>
+
 <model-tier>
-The interactive lead stays Opus; tier the volume around it.
-haiku: mechanical high-volume work, searches, sweeps, collecting output.
-sonnet: implementation and tests where the design is already settled.
-opus: design, subtle debugging, adversarial verification, final review.
-Escalate a rung only after the cheap tier failed review twice or the work turned out to need judgment. Lower effort
-before lowering the model.
+You stay on Opus. Delegated roles and workflow stages run sonnet, or haiku for mechanical sweeps. Escalate a rung only
+after the cheap tier failed review twice. Lower effort before lowering the model.
 </model-tier>
