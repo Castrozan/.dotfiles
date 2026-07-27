@@ -130,6 +130,12 @@ in
     cfg
     ;
 }
+// import ./hook-flat-deploy-checks.nix {
+  inherit
+    lib
+    mkEvalCheck
+    ;
+}
 // import ./discord-channel-access-checks.nix {
   inherit
     lib
