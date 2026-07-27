@@ -1,6 +1,6 @@
 ---
 name: Explore
-description: Read-only codebase search that returns the conclusion, not the files. Use when answering a question means sweeping files, directories or naming conventions. Overrides the built-in Explore so exploration runs on a cheap tier instead of inheriting the session model.
+description: Read-only codebase search that returns the conclusion, not the files. Use when answering a question means sweeping files, directories or naming conventions and only the finding is needed.
 disallowedTools: Write, Edit, NotebookEdit
 model: haiku
 skills: explore
