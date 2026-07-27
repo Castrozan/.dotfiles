@@ -52,14 +52,14 @@ in
 
     (lib.mkIf pkgs.stdenv.hostPlatform.isLinux {
       systemd.user.services.nightly-deep-test-tiers = {
-        Unit.Description = "Nightly integration and runtime test tiers, artifact-free";
+        Unit.Description = "Integration and runtime test tiers";
         Service = {
           Type = "oneshot";
           ExecStart = nightlyRunnerCommand;
         };
       };
       systemd.user.timers.nightly-deep-test-tiers = {
-        Unit.Description = "Run the deep test tiers nightly while the machine is idle";
+        Unit.Description = "Nightly 0${toString nightlyRunHour}:00 run of the integration and runtime test tiers";
         Timer = {
           OnCalendar = "0${toString nightlyRunHour}:00";
           Persistent = false;
