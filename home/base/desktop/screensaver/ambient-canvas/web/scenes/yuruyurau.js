@@ -153,7 +153,7 @@
     const clipUniform = gl.getUniformLocation(program, "u_clip");
     const pointSizeUniform = gl.getUniformLocation(program, "u_point_size");
 
-    gl.clearColor(0.039, 0.102, 0.184, 1.0);
+    gl.clearColor(...window.AmbientCanvasPalette.backgroundGlColor, 1.0);
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
     gl.viewport(0, 0, canvasElement.width, canvasElement.height);

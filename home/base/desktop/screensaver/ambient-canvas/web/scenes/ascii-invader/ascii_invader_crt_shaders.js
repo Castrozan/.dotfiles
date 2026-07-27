@@ -1,5 +1,8 @@
 window.AmbientCanvasAsciiInvaderCrtShaders =
   (function buildAsciiInvaderCrtShaders() {
+    const backgroundGlslVector =
+      window.AmbientCanvasPalette.backgroundGlslVector;
+
     const vertexShaderSource = `
     precision highp float;
     attribute vec2 a_screen_corner;
@@ -25,6 +28,7 @@ window.AmbientCanvasAsciiInvaderCrtShaders =
     const float scanlineDepth = 0.13;
     const float bloomRadius = 0.0055;
     const float burstsPerSecond = 2.4;
+    const vec3 backgroundColour = ${backgroundGlslVector};
 
     float hashedSlot(float slot, float salt) {
       float folded = mod(slot, 512.0);
@@ -111,14 +115,14 @@ window.AmbientCanvasAsciiInvaderCrtShaders =
       vec2 screenUv = acrossPane / screenSideInHeights + 0.5;
       if (screenUv.x < 0.0 || screenUv.x > 1.0 ||
           screenUv.y < 0.0 || screenUv.y > 1.0) {
-        gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+        gl_FragColor = vec4(backgroundColour, 1.0);
         return;
       }
 
       vec2 curved = curveScreen(screenUv);
       float mask = bezelMask(curved);
       if (mask <= 0.0) {
-        gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+        gl_FragColor = vec4(backgroundColour, 1.0);
         return;
       }
 
@@ -138,7 +142,7 @@ window.AmbientCanvasAsciiInvaderCrtShaders =
       float vignette = 1.0 - dot(fromCentre, fromCentre) * 1.15;
       colour *= clamp(vignette, 0.0, 1.0);
 
-      gl_FragColor = vec4(colour * mask, 1.0);
+      gl_FragColor = vec4(mix(backgroundColour, colour, mask), 1.0);
     }
   `;
 

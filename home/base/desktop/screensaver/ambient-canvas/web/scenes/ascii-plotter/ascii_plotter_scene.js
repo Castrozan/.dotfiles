@@ -64,7 +64,7 @@
     }
 
     function render(elapsedSeconds) {
-      drawingContext.fillStyle = "#000000";
+      drawingContext.fillStyle = window.AmbientCanvasPalette.backgroundHex;
       drawingContext.fillRect(0, 0, canvasElement.width, canvasElement.height);
 
       const emittedRows =

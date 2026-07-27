@@ -68,7 +68,7 @@
     const resolutionUniform = gl.getUniformLocation(program, "u_resolution");
     const timeUniform = gl.getUniformLocation(program, "u_time");
 
-    gl.clearColor(0.0, 0.0, 0.0, 1.0);
+    gl.clearColor(...window.AmbientCanvasPalette.backgroundGlColor, 1.0);
     gl.viewport(0, 0, canvasElement.width, canvasElement.height);
 
     return {

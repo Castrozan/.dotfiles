@@ -5,7 +5,8 @@
   const katakanaGlyphRangeStart = 0x30a0;
   const katakanaGlyphRangeEnd = 0x30ff;
   const supplementalGlyphCharacters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  const defaultBackgroundColorChannels = "14, 30, 51";
+  const defaultBackgroundColorChannels =
+    window.AmbientCanvasPalette.backgroundColorChannels;
   const trailFadeOpacity = 0.1;
   const leadingGlyphFillStyle = "#c8ffd0";
   const trailingGlyphColorChannels = "47, 191, 95";
@@ -79,6 +80,8 @@
       }
       drawingContext.font = fontSizeInDevicePixels + "px monospace";
       drawingContext.textBaseline = "top";
+      drawingContext.fillStyle = window.AmbientCanvasPalette.backgroundHex;
+      drawingContext.fillRect(0, 0, pixelWidthDevice, pixelHeightDevice);
     }
 
     function trailingGlyphFillStyleForDepth(trailDepth) {

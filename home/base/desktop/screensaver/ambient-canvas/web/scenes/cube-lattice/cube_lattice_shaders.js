@@ -1,4 +1,6 @@
 window.AmbientCanvasCubeLatticeShaders = (function buildCubeLatticeShaders() {
+  const backgroundGlslVector = window.AmbientCanvasPalette.backgroundGlslVector;
+
   const vertexShaderSource = `
     precision highp float;
     attribute vec2 a_clip_position;
@@ -26,6 +28,7 @@ window.AmbientCanvasCubeLatticeShaders = (function buildCubeLatticeShaders() {
     const float wireRadiansOnScreen = 0.0016;
     const float fogDensity = 0.55;
     const vec3 neonGreenResponse = vec3(0.55, 3.10, 0.95);
+    const vec3 backgroundColour = ${backgroundGlslVector};
 
     float cubeFrameDistance(vec3 position) {
       vec3 outside = abs(position) - cubeHalfExtent;
@@ -87,7 +90,8 @@ window.AmbientCanvasCubeLatticeShaders = (function buildCubeLatticeShaders() {
         vec3(0.0, 0.0, u_time * cellSize / secondsPerCellTravelled);
       float glow =
         nearestWireResponse(rayOrigin, fisheyeRayDirection(screenOffset));
-      gl_FragColor = vec4(1.0 - exp(-glow * neonGreenResponse), 1.0);
+      vec3 neonEmission = 1.0 - exp(-glow * neonGreenResponse);
+      gl_FragColor = vec4(backgroundColour + neonEmission, 1.0);
     }
   `;
 

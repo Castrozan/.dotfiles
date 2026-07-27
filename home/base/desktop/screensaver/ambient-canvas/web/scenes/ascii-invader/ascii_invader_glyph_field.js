@@ -8,10 +8,10 @@ window.AmbientCanvasAsciiInvaderGlyphField =
     const MONOSPACE_ADVANCE_RATIO = 0.6;
     const STAR_COUNT = 150;
     const STATUS_DOT_COUNT = 9;
-    const SCREEN_FIELD_GREY = "#171717";
+    const CRT_SCREEN_FIELD_HEX = window.AmbientCanvasPalette.backgroundHex;
 
     function paintScreenField(context, width, height) {
-      context.fillStyle = SCREEN_FIELD_GREY;
+      context.fillStyle = CRT_SCREEN_FIELD_HEX;
       context.fillRect(0, 0, width, height);
     }
 

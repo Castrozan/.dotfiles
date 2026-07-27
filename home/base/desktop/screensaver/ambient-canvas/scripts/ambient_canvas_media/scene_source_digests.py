@@ -7,6 +7,7 @@ SCENE_FACTORY_REGISTRATION_PATTERN = re.compile(
 )
 SCENES_DIRECTORY_NAME = "scenes"
 RECORDING_PIPELINE_RELATIVE_PATHS = (
+    "ambient_canvas_palette.js",
     "player.js",
     "recorder.js",
     "record/ambient-canvas-recording-compositor.js",

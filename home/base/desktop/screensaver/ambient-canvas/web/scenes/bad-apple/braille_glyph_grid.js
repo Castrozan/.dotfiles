@@ -36,7 +36,8 @@ window.AmbientCanvasBrailleGlyphGrid = (function buildBrailleGlyphGrid() {
     sourcePixelHeight,
     glyphGrid,
   ) {
-    samplingContext.fillStyle = "#000000";
+    samplingContext.fillStyle =
+      window.AmbientCanvasPalette.luminanceSamplingFloorHex;
     samplingContext.fillRect(0, 0, glyphGrid.dotColumns, glyphGrid.dotRows);
     const fittedScale = Math.min(
       (glyphGrid.dotColumns * glyphGrid.dotPixelWidth) / sourcePixelWidth,

@@ -3,8 +3,11 @@
   const SEGMENT_END_GAP_IN_CELL_HEIGHTS = 0.03;
   const BLOOM_HALF_WIDTH_MULTIPLIER = 2.6;
   const BLOOM_ALPHA_SCALE = 0.13;
-  const UNLIT_SEGMENT_FILL_STYLE = "rgba(255, 108, 24, 0.062)";
-  const BACKGROUND_FILL_STYLE = "#05060a";
+  const UNLIT_SEGMENT_FILL_STYLE =
+    "rgba(" +
+    window.AmbientCanvasPalette.accentOrangeColorChannels +
+    ", 0.062)";
+  const BACKGROUND_FILL_STYLE = window.AmbientCanvasPalette.backgroundHex;
 
   const geometry = window.AmbientCanvasSixteenSegmentGeometry;
   const field = window.AmbientCanvasSixteenSegmentField;

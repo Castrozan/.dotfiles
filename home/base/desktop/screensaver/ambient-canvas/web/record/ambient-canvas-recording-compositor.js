@@ -73,7 +73,7 @@ window.AmbientCanvasRecordingCompositor = (function buildCompositor() {
     outputPixelWidth,
     outputPixelHeight,
   ) {
-    recordContext.fillStyle = "#0a1a2f";
+    recordContext.fillStyle = window.AmbientCanvasPalette.backgroundHex;
     recordContext.fillRect(0, 0, outputPixelWidth, outputPixelHeight);
     for (const panePlacement of panePlacements) {
       panePlacement.renderer.render(elapsedSeconds);

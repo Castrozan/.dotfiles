@@ -3,7 +3,7 @@
     window.AMBIENT_CANVAS_SCENE_FACTORIES || {};
   function createBonsaiRenderer(canvasElement, options) {
     const drawingContext = canvasElement.getContext("2d");
-    const backgroundColorHex = "#0a1a2f";
+    const backgroundColorHex = window.AmbientCanvasPalette.backgroundHex;
     const woodColorHex = "#b5844a";
     const potColorHex = "#6b7280";
     const leafColorPalette = ["#4fbf5f", "#5fcf6f", "#6fdf7f", "#7fe88f"];

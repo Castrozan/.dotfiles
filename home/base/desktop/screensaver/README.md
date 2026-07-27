@@ -96,8 +96,36 @@ composition declared, which is how `variant` reaches yuruyurau and `videoId` rea
 takes device pixels rather than CSS pixels, and the three optional members are `dispose()`,
 `ready`, and `prepareFrame(localElapsedSeconds)` as described above.
 
+A fourth requirement is not wiring but theme: **the background comes from
+`web/ambient_canvas_palette.js`, never from a literal.** The playlist cuts between whole-screen
+compositions with no crossfade, so a scene that clears to its own black flashes against every
+neighbour that clears to the dark blue. The palette declares that blue once and derives every form
+a scene needs from it: `backgroundHex` for a 2D `fillStyle`, `backgroundColorChannels` for an
+`rgba(...)` built by concatenation, `backgroundGlColor` to spread into `gl.clearColor`, and
+`backgroundGlslVector` to interpolate into a shader whose fragment stage paints its own field. It
+also carries `accentOrangeColorChannels` for the orange the theme is built around, and
+`luminanceSamplingFloorHex` for the one genuinely black surface here, bad-apple's offscreen
+luminance-sampling canvas, which is a measurement reference rather than anything on screen.
+`test_scene_background_palette.py` enforces this: it rejects any dark colour literal in a scene or
+in `panes.js`, requires every registered scene to reference the palette, and checks that
+`index.html` loads the palette before the first scene script and paints its CSS the same colour.
+
+Retuning the theme is editing the one hex in the palette. That re-encodes every segment, which is
+correct and is why the palette is a recording-pipeline digest input rather than a per-scene one: a
+background change touches every composition, and a palette left out of the fingerprint would leave
+the whole recorded loop stale on disk with no way to notice.
+
 What actually breaks a new scene, in the order it tends to bite:
 
+- **A scene whose fragment shader paints every pixel owns its own background.** `gl.clearColor` is
+  dead code under a full-surface quad, so the palette has to reach the GLSL: interpolate
+  `backgroundGlslVector` into the source and composite over it, additively where the scene emits
+  light (`cube-lattice`) or through `mix` where a mask fades to nothing (`ascii-invader`'s bezel).
+  Setting only the clear colour looks fixed in the source and records black.
+- **A 2D scene that fades rather than clears must start from an opaque background.** `matrix`
+  paints its trail fade at a tenth alpha, and composited onto a fresh transparent canvas that
+  converges toward the background from below and settles several 8-bit steps short of it, off-theme
+  against its neighbours. Filling the background once in `resize` gives the fade a correct base.
 - **A WebGL scene must honor `options.preserveDrawingBuffer`** and pass it into `getContext`.
   The recorder injects it through `AMBIENT_CANVAS_RENDERER_OPTION_OVERRIDES`, because it
   composites each pane canvas into a separate encode canvas after `render` returns, and a

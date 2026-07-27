@@ -4,7 +4,7 @@
   const DEFAULT_LUMINANCE_THRESHOLD = 0.45;
   const DEFAULT_GLYPH_COLOR = "#c8e6ff";
   const DEFAULT_GLYPH_FONT_FAMILY = "Menlo, monospace";
-  const BACKGROUND_FILL_STYLE = "#0a1a2f";
+  const BACKGROUND_FILL_STYLE = window.AmbientCanvasPalette.backgroundHex;
 
   function resolveAppearance(options) {
     return {
