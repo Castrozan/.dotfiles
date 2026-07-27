@@ -1,6 +1,6 @@
 <adaptive-implementation-delivery-process>
 Pick the lightest tier that safely satisfies the task and declare it before spawning any agent or opening a multi-file
-change. "use AIDP patch" or "use the lightest safe AIDP mode" from Lucas overrides your pick.
+change. "use AIDP patch" or "use the lightest safe AIDP mode" from the user overrides your pick.
 direct: answer only, no files, no agents.
 patch: 1-2 files, 0 agents, under 10 minutes.
 guided: 2-5 files, max 2 agents, 10-25 minutes.
