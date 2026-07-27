@@ -7,7 +7,7 @@ let
 
   allHookScriptsAcrossSubdirectories = listHookScriptsRecursively ../../../../agents/hooks;
 
-  sourcePathsByFlatDeploymentFilename = lib.groupBy (
+  sourcePathsByFlatDeploymentFilename = builtins.groupBy (
     entry: entry.flatDeploymentFilename
   ) allHookScriptsAcrossSubdirectories;
 
