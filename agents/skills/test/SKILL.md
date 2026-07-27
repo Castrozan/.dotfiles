@@ -46,11 +46,6 @@ Every tier and every CI job reports all of its failures instead of dying on the 
 the batch in one pass.
 </what_to_test>
 
-<final_qa_pass>
-For verifying finished work against the user's stated goal, widening the scope past the tests the plan named, and
-hunting side effects in behavior nobody meant to change, read `quality-assurance.md`.
-</final_qa_pass>
-
 <test_failures>
 Fix immediately. Do not just report a failure: diagnose and fix it. Re-test after the fix with the double-test protocol.
 If you cannot fix the failure, explain what you tried, what you found, and ask the user for guidance. Never leave tests

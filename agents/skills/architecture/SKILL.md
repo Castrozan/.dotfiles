@@ -1,7 +1,7 @@
-<when>
-Read before choosing a structure, adding a module or service, moving a boundary, or reviewing a design someone else
-chose.
-</when>
+---
+name: architecture
+description: Boundaries, dependency direction, system design, UML and deployment shape. Use when choosing a structure, adding a module or service, moving a boundary, or reviewing a design.
+---
 
 <put-the-seam-where-the-reason-to-change-is>
 Name the thing that changes for its own reason and cut there. Dependencies point inward toward the rules that outlive
@@ -33,3 +33,8 @@ Decide what runs where, what it needs at boot, what happens on restart, how it i
 design that cannot be deployed or reverted is unfinished, and infrastructure discovered after the code is written
 reshapes the code.
 </deployment-is-part-of-the-design>
+
+<defer-to-the-repo>
+Naming, comment policy, module layout and scripting language are set by the core rules and the surrounding code. Where
+this skill and the surrounding code disagree, the surrounding code wins.
+</defer-to-the-repo>
