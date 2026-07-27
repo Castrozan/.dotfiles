@@ -63,7 +63,7 @@ tests:
         - "Says to run the dotfiles-change-review workflow over the working diff before committing a substantive change to the repo, per the repo's pre-commit review rule."
 
   - name: workflow_review_input_is_unbiased
-    skill_path: agents/skills/review/code-review.md
+    skill_path: agents/skills/code-review/SKILL.md
     prompt: "What are the two parallel review passes the unbiased reviewer performs? Name only the two."
     model: haiku
     assertions:

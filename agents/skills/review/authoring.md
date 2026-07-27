@@ -4,8 +4,8 @@ tool calls in the diff. Load the `instructions` skill if not already loaded, the
 instruction file.
 
 Skip rules already enforced elsewhere: the frontmatter validator script already checks description word count and that
-sub-file references resolve; do not re-report those. Skip rules covered by the `code-review` skill (naming, staging, commit
-format) and `compliance.md` (Python over Bash, test-first, local-first).
+sub-file references resolve; do not re-report those. Skip rules covered by the `code-review` skill (naming, staging,
+commit format) and `compliance.md` (Python over Bash, test-first, local-first).
 
 Rules:
 1. Evergreen text: no hardcoded absolute paths, exact command syntax, version numbers, dates, or release names that will
