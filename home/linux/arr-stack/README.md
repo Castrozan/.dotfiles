@@ -89,13 +89,33 @@ runs the same reconcile by hand. Both refuse to write a policy at all when a
 declared public library is missing from Jellyfin, so a half-read library list can
 never silently narrow or widen what friends see.
 
-To download into a private library, add the title in Radarr or Sonarr directly
-(`http://arr:7878`, `http://arr:8989`) and pick the `-private` root folder instead
-of the default. Jellyseerr always sends its requests to the public root, so
-nothing a friend requests can land in a private library. Radarr and Sonarr key a
-title by its TMDB/TVDB id and can only hold it under one root folder, so a title
-you already keep privately will fail a friend's request rather than move itself
-into public view; grab a second public copy by hand if you want them to have it.
+## Requesting into a private library
+
+Which account requests decides where the title lands.
+`scripts/arr_users/private_request_routing.py` declares one ordinary Jellyseerr
+account, `private-requests`, and the override rules that rewrite every request it
+makes to a `-private` root folder. The
+`jellyseerr-private-request-routing-provisioner` systemd unit reconciles those
+rules on every rebuild, and `arr-users sync-request-routing` runs the same
+reconcile by hand. Request as `private-requests` to keep a title off the public
+libraries and as the admin for anything friends should get. Adding the title in
+Radarr or Sonarr directly (`http://arr:7878`, `http://arr:8989`) with the
+`-private` root folder picked still works, and is the fallback when a request has
+to bypass Jellyseerr.
+
+Jellyseerr evaluates override rules only for accounts holding neither admin nor
+manage-requests, so the routing account has to stay an ordinary requester:
+promoting it makes every rule silently stop applying while still reading as
+configured in the dashboard, which is why the reconcile refuses a privileged
+routing account outright. Anime series need a second rule naming the anime
+keyword, because Jellyseerr drops every rule that omits it for anime. Requests are
+private against friends only, who each see nothing but their own; an admin sees
+every account's requests, so this hides private titles from friends, not from you.
+
+Radarr and Sonarr key a title by its TMDB/TVDB id and can only hold it under one
+root folder, so a title you already keep privately will fail a friend's request
+rather than move itself into public view; grab a second public copy by hand if you
+want them to have it.
 
 To see exactly what a friend sees, log into Jellyfin as the `friends-view`
 account, which is an ordinary friend account kept for that purpose.

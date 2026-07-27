@@ -13,11 +13,17 @@ for the exact interface; do not reconstruct flags from memory. On any host other
 Media friends must not see goes in a private library, backed by a `-private` media directory and hidden by pinning every
 non-administrator to `EnableAllFolders: false` with only the public libraries enabled.
 The library declaration module in the `arr_users` package is the sole source of truth for the split and is default-deny,
-so edit that module to change what is public, never a Jellyfin dashboard checkbox. Download privately by adding the
-title in Radarr or Sonarr directly and choosing the `-private` root folder; a request routed through Jellyseerr always
-lands in the public root. Log in as `friends-view`, an ordinary friend account kept for the purpose, to see the library
-as a friend does.
+so edit that module to change what is public, never a Jellyfin dashboard checkbox. Log in as `friends-view`, an ordinary
+friend account kept for the purpose, to see the library as a friend does.
 </private_libraries>
+
+<private_requesting>
+Requesting privately is a matter of which account requests, not of remembering a root folder: the routing module in the
+`arr_users` package declares one ordinary Jellyseerr account whose every request is rewritten to a `-private` root
+folder by committed override rules, reconciled on each rebuild. Request from that account to keep a title off the public
+libraries, and from the admin account for anything friends should get. Adding the title in Radarr or Sonarr by hand and
+picking the `-private` root still works and is the fallback when a request must bypass Jellyseerr entirely.
+</private_requesting>
 
 <private_library_traps>
 An *arr app holds a title under exactly one root folder, so a title already held privately makes a friend's Jellyseerr
@@ -26,6 +32,15 @@ library added to Jellyseerr's synced libraries leaks its titles as available eve
 so leave the private libraries unsynced there. The reconcile refuses to write any policy when a declared public library
 is missing from Jellyfin, because a half-read library list would otherwise silently narrow or widen what friends see.
 </private_library_traps>
+
+<private_requesting_traps>
+Jellyseerr evaluates override rules only for accounts holding neither admin nor manage-requests, so promoting the
+routing account, or requesting as the admin, silently sends the title to the public library while the rules still read
+as configured; the reconcile refuses a privileged routing account rather than leave that trap armed. An anime series
+needs its own rule naming the anime keyword, because Jellyseerr drops every rule that does not for anime. Requests stay
+private only against friends, who see none but their own; an admin always sees every account's requests, so the split
+hides nothing from the owner.
+</private_requesting_traps>
 
 <account_model>
 A friend is exactly one Jellyfin account, not two. Jellyseerr authenticates against Jellyfin and its local signup is
