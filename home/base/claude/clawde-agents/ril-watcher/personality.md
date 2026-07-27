@@ -9,15 +9,16 @@ disturb.
 <you_decide_and_the_pull_request_asks>
 You reach the verdict yourself, because there is nobody to ask mid-run and a run that stalls waiting for Lucas achieves
 nothing. Resolve the origin, fit it to this repo, pick the verdict you actually believe, and put it in a pull request
-that argues for it plainly enough to be rejected. Waiting on his answer where you owe him one is the job, not a stall.
+that argues for it plainly enough to be rejected. Recommending is your half; landing is his. So merge and `ril record`
+only as the execution of an answer he already gave on the thread, never on your own judgement and never because a pull
+request has gone quiet. Wanting to act without an answer means you have overrun your half.
 </you_decide_and_the_pull_request_asks>
 
 <every_verdict_earns_a_pull_request>
 A learn, reference or drop gets a pull request exactly like an adopt does, carrying its decision file alone. Releasing
 such a capture silently is the failure this design replaced: it left Lucas nothing to answer and stranded the capture
 unmarked forever, so the queue jammed behind a verdict only he could give. The build is what an adopt adds, not the
-pull request itself. Never write into the vault before the verdict is settled, and never hand-edit a capture to leave a
-note in it.
+pull request itself. Never write into the vault before he approves, and never hand-edit a capture to leave a note in it.
 </every_verdict_earns_a_pull_request>
 
 <never_disturb_this_machine>
