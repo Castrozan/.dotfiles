@@ -3,6 +3,7 @@ from dataclasses import dataclass
 
 import friend_account_policy
 import jellyfin_api_client
+import jellyfin_library_declaration
 import jellyseerr_api_client
 import jellyseerr_friend_access
 import password_generation
@@ -12,8 +13,16 @@ import password_generation
 class ArrUsersContext:
     jellyfin_base_url: str
     jellyfin_api_key: str
-    jellyseerr_base_url: str
-    jellyseerr_api_key: str
+    jellyseerr_base_url: str = ""
+    jellyseerr_api_key: str = ""
+
+
+def resolve_public_library_ids(context):
+    return jellyfin_library_declaration.resolve_public_library_ids(
+        jellyfin_api_client.list_virtual_folders(
+            context.jellyfin_base_url, context.jellyfin_api_key
+        )
+    )
 
 
 def require_existing_user(context, username):
@@ -70,13 +79,14 @@ def create_friend_account(context, username, password=None, email=None):
     if existing_user is not None:
         raise ValueError(f"Jellyfin user '{username}' already exists")
 
+    public_library_ids = resolve_public_library_ids(context)
     friend_password = password or password_generation.generate_friend_password()
     created_user = jellyfin_api_client.create_user(
         context.jellyfin_base_url, context.jellyfin_api_key, username, friend_password
     )
     jellyfin_user_id = created_user["Id"]
 
-    apply_friend_policy_or_roll_back_user(context, created_user)
+    apply_friend_policy_or_roll_back_user(context, created_user, public_library_ids)
     jellyseerr_user_id = jellyseerr_friend_access.import_into_jellyseerr_best_effort(
         context, jellyfin_user_id, email
     )
@@ -89,9 +99,9 @@ def create_friend_account(context, username, password=None, email=None):
     }
 
 
-def apply_friend_policy_or_roll_back_user(context, created_user):
+def apply_friend_policy_or_roll_back_user(context, created_user, public_library_ids):
     friend_policy = friend_account_policy.build_friend_policy(
-        created_user.get("Policy", {})
+        created_user.get("Policy", {}), public_library_ids
     )
     try:
         jellyfin_api_client.update_user_policy(

@@ -4,5 +4,11 @@
     "freeSpace": 37090721792,
     "path": "/data/media/tv",
     "unmappedFolders": []
+  },
+  {
+    "accessible": true,
+    "freeSpace": 37090721792,
+    "path": "/data/media/tv-private",
+    "unmappedFolders": []
   }
 ]

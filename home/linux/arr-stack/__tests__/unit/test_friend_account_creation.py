@@ -3,6 +3,7 @@ import urllib.error
 import pytest
 from arr_users_test_doubles import (
     FRIEND_USER,
+    PUBLIC_LIBRARY_IDS,
     make_context,
     stub_jellyfin,
     stub_jellyseerr,
@@ -29,11 +30,30 @@ def test_create_applies_friend_policy_and_imports_into_jellyseerr(monkeypatch):
     assert applied_user_id == "new-id"
     assert applied_policy["IsAdministrator"] is False
     assert applied_policy["EnableContentDeletion"] is False
+    assert applied_policy["EnableAllFolders"] is False
+    assert applied_policy["EnabledFolders"] == PUBLIC_LIBRARY_IDS
     assert jellyseerr_calls["imported"] == [["new-id"]]
     assert jellyseerr_calls["permissions"] == [(9, 160)]
     assert jellyseerr_calls["emails"] == []
     assert result["jellyseerr_user_id"] == 9
     assert result["password"] == jellyfin_calls["created"][0][1]
+
+
+def test_create_refuses_before_minting_a_user_when_a_public_library_vanished(
+    monkeypatch,
+):
+    jellyfin_calls = stub_jellyfin(
+        monkeypatch,
+        [],
+        created_user={"Id": "new-id", "Name": "Ana", "Policy": {}},
+        libraries=[{"Name": "Movies", "ItemId": "movies-id"}],
+    )
+    stub_jellyseerr(monkeypatch)
+
+    with pytest.raises(ValueError, match="missing from Jellyfin"):
+        user_account_operations.create_friend_account(make_context(), "Ana")
+
+    assert jellyfin_calls["created"] == []
 
 
 def test_create_auto_approves_and_sets_email_when_email_given(monkeypatch):

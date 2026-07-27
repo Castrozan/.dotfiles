@@ -17,6 +17,8 @@ let
 
   arrStackChecks = import ./arr-stack.nix { inherit pkgs lib; };
 
+  arrStackPrivateLibraryChecks = import ./arr-stack-private-library.nix { inherit pkgs lib; };
+
   cloudflareTunnelChecks = import ./cloudflare-tunnels.nix { inherit pkgs lib; };
 
   arrMediaFunnelChecks = import ./arr-media-funnel.nix { inherit pkgs lib; };
@@ -46,6 +48,7 @@ let
   };
 in
 arrStackChecks
+// arrStackPrivateLibraryChecks
 // cloudflareTunnelChecks
 // arrMediaFunnelChecks
 // arrMediaLoginRateLimitProxyChecks

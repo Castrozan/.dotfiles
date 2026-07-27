@@ -2,8 +2,18 @@ import argparse
 import sys
 import urllib.error
 
+import library_access_synchronization
 import runtime_credentials
 import user_account_operations
+
+JELLYFIN_ONLY_COMMANDS = {"sync"}
+
+
+def build_jellyfin_context():
+    return user_account_operations.ArrUsersContext(
+        jellyfin_base_url=runtime_credentials.jellyfin_base_url(),
+        jellyfin_api_key=runtime_credentials.read_jellyfin_api_key(),
+    )
 
 
 def build_context():
@@ -13,6 +23,12 @@ def build_context():
         jellyseerr_base_url=runtime_credentials.jellyseerr_base_url(),
         jellyseerr_api_key=runtime_credentials.read_jellyseerr_api_key(),
     )
+
+
+def build_context_for_command(command):
+    if command in JELLYFIN_ONLY_COMMANDS:
+        return build_jellyfin_context()
+    return build_context()
 
 
 def print_accounts(accounts):
@@ -76,6 +92,18 @@ def run_disable(context, arguments):
     print(f"disabled {arguments.username}")
 
 
+def run_sync(context, _arguments):
+    synchronized = library_access_synchronization.synchronize_library_access(context)
+    print(
+        f"created libraries: {', '.join(synchronized['created_libraries']) or 'none'}"
+    )
+    print(f"friends can see: {', '.join(synchronized['public_libraries'])}")
+    print(
+        f"friends cannot see: {', '.join(synchronized['private_libraries']) or 'none'}"
+    )
+    print(f"reconciled: {', '.join(synchronized['reconciled_accounts']) or 'none'}")
+
+
 def build_argument_parser():
     parser = argparse.ArgumentParser(
         prog="arr-users",
@@ -84,6 +112,11 @@ def build_argument_parser():
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     subparsers.add_parser("list", help="List every account and its Jellyseerr state")
+
+    subparsers.add_parser(
+        "sync",
+        help="Create any missing declared Jellyfin library and re-apply the private-library boundary to every friend",
+    )
 
     create_parser = subparsers.add_parser("create", help="Create a friend account")
     create_parser.add_argument("username")
@@ -118,6 +151,7 @@ def build_argument_parser():
 
 COMMAND_HANDLERS = {
     "list": run_list,
+    "sync": run_sync,
     "create": run_create,
     "set-email": run_set_email,
     "delete": run_delete,
@@ -129,7 +163,7 @@ COMMAND_HANDLERS = {
 
 def main():
     arguments = build_argument_parser().parse_args()
-    context = build_context()
+    context = build_context_for_command(arguments.command)
     handler = COMMAND_HANDLERS[arguments.command]
     try:
         handler(context, arguments)

@@ -4,7 +4,6 @@ FRIEND_POLICY_OVERRIDES = {
     "IsHidden": True,
     "EnableRemoteAccess": True,
     "EnableMediaPlayback": True,
-    "EnableAllFolders": True,
     "EnableAllDevices": True,
     "EnableContentDeletion": False,
     "EnableContentDownloading": True,
@@ -20,10 +19,17 @@ FRIEND_JELLYSEERR_PERMISSIONS_BITMASK = (
 )
 
 
-def build_friend_policy(current_policy):
+def build_library_visibility_policy(current_policy, public_library_ids):
+    visibility_policy = dict(current_policy)
+    visibility_policy["EnableAllFolders"] = False
+    visibility_policy["EnabledFolders"] = list(public_library_ids)
+    return visibility_policy
+
+
+def build_friend_policy(current_policy, public_library_ids):
     friend_policy = dict(current_policy)
     friend_policy.update(FRIEND_POLICY_OVERRIDES)
-    return friend_policy
+    return build_library_visibility_policy(friend_policy, public_library_ids)
 
 
 def build_enabled_state_policy(current_policy, enabled):

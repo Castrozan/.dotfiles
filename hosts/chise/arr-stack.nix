@@ -73,6 +73,11 @@
       prowlarrPasswordSecretFile = config.age.secrets."arr-prowlarr-password".path;
     };
 
+    jellyfinLibraryAccessProvisioner = {
+      enable = true;
+      jellyfinApiKeySecretFile = config.age.secrets."jellyfin-admin-api-key".path;
+    };
+
     bazarrAuthProvisioner = {
       enable = true;
       configFile = "/home/zanoni/arr-stack/config/bazarr/config/config.yaml";
@@ -104,6 +109,10 @@
 
     bazarr-auth-provisioner.restartTriggers = [
       ../../secrets/credentials/arr-bazarr-password.age
+    ];
+
+    jellyfin-library-access-provisioner.restartTriggers = [
+      ../../secrets/credentials/jellyfin-admin-api-key.age
     ];
   };
 }

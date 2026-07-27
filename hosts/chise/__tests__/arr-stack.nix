@@ -164,4 +164,5 @@ in
   chise-arr-stack-env-matches-chise-user-and-group =
     mkEvalCheck "chise-arr-stack-env-matches-chise-user-and-group" envMatchesChiseUserAndGroup
       "PUID/PGID must match zanoni on chise (uid 1000, gid 100 = users group), or the linuxserver containers write files the user cannot manage and chown the bind mounts to the wrong group";
+
 }

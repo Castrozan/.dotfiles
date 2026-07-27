@@ -1,7 +1,12 @@
 import json
+import time
+import urllib.error
+import urllib.parse
 import urllib.request
 
 JELLYFIN_REQUEST_TIMEOUT_SECONDS = 20
+JELLYFIN_READINESS_ATTEMPTS = 30
+JELLYFIN_READINESS_DELAY_SECONDS = 4
 
 
 def request_json(base_url, api_key, method, path, payload=None):
@@ -20,6 +25,18 @@ def request_json(base_url, api_key, method, path, payload=None):
     ) as response:
         response_body = response.read().decode()
     return json.loads(response_body) if response_body else None
+
+
+def wait_until_ready(base_url, api_key):
+    for remaining_attempt in range(JELLYFIN_READINESS_ATTEMPTS, 0, -1):
+        try:
+            request_json(base_url, api_key, "GET", "/System/Info")
+            return True
+        except (urllib.error.URLError, OSError):
+            if remaining_attempt == 1:
+                return False
+            time.sleep(JELLYFIN_READINESS_DELAY_SECONDS)
+    return False
 
 
 def list_users(base_url, api_key):
@@ -63,4 +80,25 @@ def set_user_password(base_url, api_key, jellyfin_user_id, new_password):
         "POST",
         f"/Users/Password?userId={jellyfin_user_id}",
         {"CurrentPw": "", "NewPw": new_password, "ResetPassword": False},
+    )
+
+
+def list_virtual_folders(base_url, api_key):
+    return request_json(base_url, api_key, "GET", "/Library/VirtualFolders") or []
+
+
+def create_virtual_folder(base_url, api_key, name, collection_type, container_path):
+    query_string = urllib.parse.urlencode(
+        {
+            "name": name,
+            "collectionType": collection_type,
+            "refreshLibrary": "true",
+        }
+    )
+    request_json(
+        base_url,
+        api_key,
+        "POST",
+        f"/Library/VirtualFolders?{query_string}",
+        {"LibraryOptions": {"PathInfos": [{"Path": container_path}]}},
     )

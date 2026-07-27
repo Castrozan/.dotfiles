@@ -49,7 +49,7 @@ def test_parser_requires_a_subcommand():
 
 
 def test_every_subcommand_has_a_handler():
-    subcommands = set(SUBCOMMANDS_REQUIRING_USERNAME) | {"list", "set-email"}
+    subcommands = set(SUBCOMMANDS_REQUIRING_USERNAME) | {"list", "set-email", "sync"}
     assert set(cli.COMMAND_HANDLERS) == subcommands
 
 

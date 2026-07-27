@@ -4,5 +4,11 @@
     "freeSpace": 37090746368,
     "path": "/data/media/movies",
     "unmappedFolders": []
+  },
+  {
+    "accessible": true,
+    "freeSpace": 37090746368,
+    "path": "/data/media/movies-private",
+    "unmappedFolders": []
   }
 ]

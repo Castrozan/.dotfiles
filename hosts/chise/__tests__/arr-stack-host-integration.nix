@@ -66,6 +66,23 @@ in
       )
       "chise must actually run the config provisioner, declare both arr secrets in agenix, and carry a restartTrigger so a re-encrypted secret re-provisions on rebuild, or a wiped config dir would not be reconstructed from the repo";
 
+  chise-jellyfin-library-access-provisioner-wired-on-chise =
+    mkEvalCheck "chise-jellyfin-library-access-provisioner-wired-on-chise"
+      (
+        (nixosCfg.systemd.services ? jellyfin-library-access-provisioner)
+        && builtins.elem "multi-user.target" nixosCfg.systemd.services.jellyfin-library-access-provisioner.wantedBy
+        && lib.hasInfix "jellyfin-admin-api-key" nixosCfg.systemd.services.jellyfin-library-access-provisioner.environment.ARR_USERS_JELLYFIN_API_KEY_FILE
+      )
+      "chise must actually run the library-access reconciler on every rebuild against the agenix admin key, or the private-library boundary would only ever be as correct as the last time someone ran arr-users by hand, and a friend account created before the boundary existed would keep seeing every library";
+
+  chise-jellyfin-library-access-provisioner-reconciles-over-loopback =
+    mkEvalCheck "chise-jellyfin-library-access-provisioner-reconciles-over-loopback"
+      (
+        nixosCfg.systemd.services.jellyfin-library-access-provisioner.environment.ARR_USERS_JELLYFIN_BASE_URL
+        == "http://127.0.0.1:8096"
+      )
+      "the reconciler must reach Jellyfin over the loopback publish rather than the tailnet address, so the privacy boundary is re-applied at boot even when tailscale has not come up yet and the tailnet IP stays out of the nix source";
+
   chise-arr-on-demand-disk-guard-emails-via-agenix-secret =
     mkEvalCheck "chise-arr-on-demand-disk-guard-emails-via-agenix-secret"
       (

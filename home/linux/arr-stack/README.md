@@ -66,8 +66,39 @@ Config and data live under documented host paths (created on rebuild, owned by
 
 - `~/arr-stack/config/<service>` -> `/config` per app
 - `~/arr-stack/data` -> `/data` shared across qBittorrent and the *arr apps,
-  laid out as `data/torrents` and `data/media/{tv,movies}` so
-  imports are atomic hardlink moves on one filesystem (no slow copies).
+  laid out as `data/torrents` and `data/media/{tv,movies,tv-private,movies-private}`
+  so imports are atomic hardlink moves on one filesystem (no slow copies).
+
+## Private libraries friends cannot see
+
+`data/media/movies-private` and `data/media/tv-private` back two Jellyfin
+libraries, `Movies (Private)` and `TV (Private)`, that only administrators can
+see. Friends are pinned to `EnableAllFolders: false` with the public `Movies` and
+`TV` libraries as their entire `EnabledFolders` list, so a private title is
+invisible in their Jellyfin: not in browse, not in search, not playable by direct
+item id. The libraries stay out of Jellyseerr's synced-library list too, so a
+private title is never announced there as available.
+
+The split is code, not clicks. `scripts/arr_users/jellyfin_library_declaration.py`
+is the single source of truth: anything not named in `PUBLIC_LIBRARY_DECLARATIONS`
+is private, so a library added later is hidden from friends by default and has to
+be declared public deliberately. The `jellyfin-library-access-provisioner` systemd
+unit re-applies the whole boundary on every rebuild, creating any declared library
+that is missing and rewriting every non-administrator policy; `arr-users sync`
+runs the same reconcile by hand. Both refuse to write a policy at all when a
+declared public library is missing from Jellyfin, so a half-read library list can
+never silently narrow or widen what friends see.
+
+To download into a private library, add the title in Radarr or Sonarr directly
+(`http://arr:7878`, `http://arr:8989`) and pick the `-private` root folder instead
+of the default. Jellyseerr always sends its requests to the public root, so
+nothing a friend requests can land in a private library. Radarr and Sonarr key a
+title by its TMDB/TVDB id and can only hold it under one root folder, so a title
+you already keep privately will fail a friend's request rather than move itself
+into public view; grab a second public copy by hand if you want them to have it.
+
+To see exactly what a friend sees, log into Jellyfin as the `friends-view`
+account, which is an ordinary friend account kept for that purpose.
 
 ## Moving data to an external drive
 

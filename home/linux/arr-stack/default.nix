@@ -32,6 +32,8 @@ let
     "torrents"
     "media/tv"
     "media/movies"
+    "media/tv-private"
+    "media/movies-private"
   ];
   configDirectoriesToCreate = map (
     service: "${stackRoot}/config/${service}"

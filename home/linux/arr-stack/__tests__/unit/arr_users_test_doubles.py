@@ -15,6 +15,14 @@ FRIEND_USER = {
 }
 ADMIN_USER = {"Id": "admin-id", "Name": "lucas", "Policy": {"IsAdministrator": True}}
 
+DECLARED_LIBRARIES = [
+    {"Name": "Movies", "ItemId": "movies-id"},
+    {"Name": "TV", "ItemId": "tv-id"},
+    {"Name": "Movies (Private)", "ItemId": "movies-private-id"},
+    {"Name": "TV (Private)", "ItemId": "tv-private-id"},
+]
+PUBLIC_LIBRARY_IDS = ["movies-id", "tv-id"]
+
 
 def make_context():
     return user_account_operations.ArrUsersContext(
@@ -25,8 +33,9 @@ def make_context():
     )
 
 
-def stub_jellyfin(monkeypatch, users, created_user=None):
+def stub_jellyfin(monkeypatch, users, created_user=None, libraries=None):
     calls = {"policies": [], "deleted": [], "passwords": [], "created": []}
+    available_libraries = DECLARED_LIBRARIES if libraries is None else libraries
 
     def find_user_by_name(base_url, api_key, username):
         for user in users:
@@ -64,6 +73,11 @@ def stub_jellyfin(monkeypatch, users, created_user=None):
         lambda base_url, api_key, user_id, password: calls["passwords"].append(
             (user_id, password)
         ),
+    )
+    monkeypatch.setattr(
+        user_account_operations.jellyfin_api_client,
+        "list_virtual_folders",
+        lambda base_url, api_key: available_libraries,
     )
     return calls
 
