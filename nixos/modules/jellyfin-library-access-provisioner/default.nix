@@ -6,7 +6,7 @@
 }:
 let
   jellyfinLibraryAccessProvisionerConfig = config.custom.jellyfinLibraryAccessProvisioner;
-  arrUsersPackageDirectory = ../../home/linux/arr-stack/scripts/arr_users;
+  arrUsersPackageDirectory = ../../../home/linux/arr-stack/scripts/arr_users;
 in
 {
   options.custom.jellyfinLibraryAccessProvisioner = {
