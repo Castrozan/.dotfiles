@@ -102,6 +102,13 @@ def run_sync(context, _arguments):
         f"friends cannot see: {', '.join(synchronized['private_libraries']) or 'none'}"
     )
     print(f"reconciled: {', '.join(synchronized['reconciled_accounts']) or 'none'}")
+    failed_library_names = synchronized["failed_libraries"]
+    if failed_library_names:
+        raise ValueError(
+            "friend visibility was reconciled, but Jellyfin refused to create "
+            f"{', '.join(failed_library_names)}; the usual cause is the backing "
+            "media directory not existing yet"
+        )
 
 
 def build_argument_parser():

@@ -2,6 +2,8 @@ import importlib.util
 import sys
 from pathlib import Path
 
+import pytest
+
 ARR_USERS_PACKAGE_DIRECTORY_PATH = (
     Path(__file__).resolve().parents[2] / "scripts" / "arr_users"
 )
@@ -64,6 +66,7 @@ def test_run_sync_names_the_libraries_friends_cannot_see(monkeypatch, capsys):
         "synchronize_library_access",
         lambda context: {
             "created_libraries": ["Movies (Private)"],
+            "failed_libraries": [],
             "public_libraries": ["Movies", "TV"],
             "private_libraries": ["Movies (Private)"],
             "reconciled_accounts": ["Rogerio"],
@@ -77,12 +80,34 @@ def test_run_sync_names_the_libraries_friends_cannot_see(monkeypatch, capsys):
     assert "reconciled: Rogerio" in printed
 
 
+def test_run_sync_reports_the_reconcile_before_failing_on_a_library(
+    monkeypatch, capsys
+):
+    monkeypatch.setattr(
+        cli.library_access_synchronization,
+        "synchronize_library_access",
+        lambda context: {
+            "created_libraries": [],
+            "failed_libraries": ["Movies (Private)"],
+            "public_libraries": ["Movies", "TV"],
+            "private_libraries": [],
+            "reconciled_accounts": ["Rogerio"],
+        },
+    )
+
+    with pytest.raises(ValueError, match="Movies \\(Private\\)"):
+        cli.run_sync(object(), cli.build_argument_parser().parse_args(["sync"]))
+
+    assert "reconciled: Rogerio" in capsys.readouterr().out
+
+
 def test_run_sync_reports_none_when_nothing_was_created(monkeypatch, capsys):
     monkeypatch.setattr(
         cli.library_access_synchronization,
         "synchronize_library_access",
         lambda context: {
             "created_libraries": [],
+            "failed_libraries": [],
             "public_libraries": ["Movies", "TV"],
             "private_libraries": [],
             "reconciled_accounts": [],

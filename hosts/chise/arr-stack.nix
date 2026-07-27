@@ -76,6 +76,7 @@
     jellyfinLibraryAccessProvisioner = {
       enable = true;
       jellyfinApiKeySecretFile = config.age.secrets."jellyfin-admin-api-key".path;
+      libraryPathProviderUnits = [ "home-manager-zanoni.service" ];
     };
 
     bazarrAuthProvisioner = {

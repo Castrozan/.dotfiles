@@ -22,6 +22,12 @@ in
       type = lib.types.str;
       description = "Path to the agenix-decrypted Jellyfin admin API key the reconciler authenticates with; the same key the arr-users CLI reads, so both apply one policy source.";
     };
+
+    libraryPathProviderUnits = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [ ];
+      description = "Units that create the on-disk media directories the declared libraries point at, ordered before the reconcile. Jellyfin rejects a library whose path does not exist yet, so without this the first rebuild after declaring a library races the activation that creates its directory and the library is not created until the next rebuild.";
+    };
   };
 
   config = lib.mkIf jellyfinLibraryAccessProvisionerConfig.enable {
@@ -30,7 +36,8 @@ in
       after = [
         "docker.service"
         "network-online.target"
-      ];
+      ]
+      ++ jellyfinLibraryAccessProvisionerConfig.libraryPathProviderUnits;
       wants = [ "network-online.target" ];
       wantedBy = [ "multi-user.target" ];
       environment = {

@@ -32,7 +32,7 @@ def synchronize_library_access(context):
             f"Jellyfin at {context.jellyfin_base_url} never became reachable; "
             "the private-library boundary was left as it already is"
         )
-    created_library_names = (
+    created_library_names, failed_library_names = (
         jellyfin_library_provisioning.create_missing_declared_libraries(
             context.jellyfin_base_url, context.jellyfin_api_key
         )
@@ -45,6 +45,7 @@ def synchronize_library_access(context):
     )
     return {
         "created_libraries": created_library_names,
+        "failed_libraries": failed_library_names,
         "public_libraries": jellyfin_library_declaration.public_library_names(),
         "private_libraries": jellyfin_library_declaration.private_library_names_present(
             jellyfin_libraries

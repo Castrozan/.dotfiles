@@ -1,4 +1,5 @@
 import sys
+import urllib.error
 from pathlib import Path
 
 import pytest
@@ -24,8 +25,16 @@ DISABLED_FRIEND_USER = {
 }
 
 
-def stub_jellyfin(monkeypatch, users, libraries=DECLARED_LIBRARIES, ready=True):
+def stub_jellyfin(
+    monkeypatch, users, libraries=DECLARED_LIBRARIES, ready=True, creation_error=None
+):
     calls = {"policies": [], "created_libraries": []}
+
+    def create_virtual_folder(base_url, api_key, name, collection_type, path):
+        if creation_error is not None:
+            raise creation_error
+        calls["created_libraries"].append((name, path))
+
     monkeypatch.setattr(
         library_access_synchronization.jellyfin_api_client,
         "wait_until_ready",
@@ -51,9 +60,7 @@ def stub_jellyfin(monkeypatch, users, libraries=DECLARED_LIBRARIES, ready=True):
     monkeypatch.setattr(
         library_access_synchronization.jellyfin_api_client,
         "create_virtual_folder",
-        lambda base_url, api_key, name, collection_type, path: calls[
-            "created_libraries"
-        ].append((name, path)),
+        create_virtual_folder,
     )
     return calls
 
@@ -123,6 +130,27 @@ def test_sync_reports_the_private_libraries_friends_lose(monkeypatch):
 
     assert result["private_libraries"] == ["Movies (Private)", "TV (Private)"]
     assert result["public_libraries"] == ["Movies", "TV"]
+
+
+def test_sync_still_reconciles_visibility_when_a_library_cannot_be_created(monkeypatch):
+    calls = stub_jellyfin(
+        monkeypatch,
+        [FRIEND_USER],
+        libraries=[
+            {"Name": "Movies", "ItemId": "movies-id"},
+            {"Name": "TV", "ItemId": "tv-id"},
+        ],
+        creation_error=urllib.error.HTTPError(
+            "http://jellyfin", 400, "path does not exist", {}, None
+        ),
+    )
+
+    result = library_access_synchronization.synchronize_library_access(make_context())
+
+    _, applied_policy = calls["policies"][0]
+    assert applied_policy["EnableAllFolders"] is False
+    assert result["created_libraries"] == []
+    assert result["failed_libraries"] == ["Movies (Private)", "TV (Private)"]
 
 
 def test_sync_writes_no_policy_when_jellyfin_never_becomes_reachable(monkeypatch):
