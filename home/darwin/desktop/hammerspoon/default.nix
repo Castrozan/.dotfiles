@@ -1,4 +1,4 @@
-{ config, ... }:
+{ config, pkgs, ... }:
 {
   # Hammerspoon is notarized (Developer ID), so Sophos endpoint security trusts
   # it - unlike the ad-hoc-signed AeroSpace fork, whose disk access SophosCryptoGuard
@@ -36,7 +36,7 @@
     # Stop Hammerspoon popping its Console window every launch/reload (a config
     # redeploy on rebuild triggers a reload).
     activation.suppressHammerspoonConsoleAtLaunch = config.lib.dag.entryAfter [ "writeBoundary" ] ''
-      /usr/bin/defaults write org.hammerspoon.Hammerspoon MJShowWindowAtLaunchKey -bool false
+      ${pkgs.coreutils}/bin/timeout 5 /usr/bin/defaults write org.hammerspoon.Hammerspoon MJShowWindowAtLaunchKey -bool false 2>/dev/null || true
     '';
   };
 }

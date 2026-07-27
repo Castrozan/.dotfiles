@@ -31,6 +31,7 @@ let
   chromeDesktopChecks = import ../../home/darwin/desktop/chrome/__tests__/checks.nix domainArgs;
   karabinerDesktopChecks = import ../../home/darwin/desktop/karabiner/__tests__/checks.nix domainArgs;
   maccyDesktopChecks = import ../../home/darwin/desktop/maccy/__tests__/checks.nix domainArgs;
+  hammerspoonDesktopChecks = import ../../home/darwin/desktop/hammerspoon/__tests__/checks.nix domainArgs;
   cloudflareTunnelConnectorChecks = import ../../home/darwin/cloudflare-tunnel-connector/__tests__/checks.nix domainArgs;
   desktopChecks = import ../../home/base/desktop/__tests__/checks.nix domainArgs;
   screensaverChecks = import ../../home/base/desktop/screensaver/__tests__/checks.nix domainArgs;
@@ -63,6 +64,7 @@ claudeChecks
 // chromeDesktopChecks
 // karabinerDesktopChecks
 // maccyDesktopChecks
+// hammerspoonDesktopChecks
 // cloudflareTunnelConnectorChecks
 // desktopChecks
 // screensaverChecks
