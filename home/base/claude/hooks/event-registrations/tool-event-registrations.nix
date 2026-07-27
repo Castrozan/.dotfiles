@@ -32,17 +32,7 @@
 
   PostToolUse = [
     {
-      matcher = "Skill";
-      hooks = [
-        {
-          type = "command";
-          command = "${runHook} ${hooksPath}/post-tool-use-dispatcher.py";
-          timeout = 15000;
-        }
-      ];
-    }
-    {
-      matcher = "Edit|Write";
+      matcher = "Skill|Edit|Write";
       hooks = [
         {
           type = "command";

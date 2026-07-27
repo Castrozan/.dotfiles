@@ -18,8 +18,16 @@ let
   deployedPreToolUseRunsDispatcher = lib.any (
     command: lib.hasInfix "pre-tool-use-dispatcher.py" command
   ) (deployedHookCommandsForEvent "PreToolUse");
+
+  eventsRegisteringMoreThanOneCommand = lib.filter (
+    event: lib.length (deployedHookCommandsForEvent event) > 1
+  ) (lib.attrNames (deployedSettings.hooks or { }));
 in
 {
+  hooks-every-event-registers-exactly-one-command =
+    mkEvalCheck "hooks-every-event-registers-exactly-one-command"
+      (eventsRegisteringMoreThanOneCommand == [ ])
+      "every hook event must register exactly one command so each event has a single entry point that composes its handlers internally; a second registration on the same event splits the decision across processes whose ordering and precedence nothing arbitrates, which is the half-merged shape the single-dispatcher refactor removed. Events currently registering more than one command: ${lib.concatStringsSep ", " eventsRegisteringMoreThanOneCommand}. Fold the extra registration into that event's dispatcher and gate it with a handler tool_matcher, or widen the existing matcher, instead of adding a second hook";
   hooks-stop-dispatcher-registered-on-stop =
     mkEvalCheck "hooks-stop-dispatcher-registered-on-stop" (deployedEventRunsStopDispatcher "Stop")
       "the deployed settings must register stop-dispatcher.py on the Stop event; it composes lint-turn-review and end-of-turn-format-guard, and test_stop_dispatcher_composition guards that the lint handler stays in it";
