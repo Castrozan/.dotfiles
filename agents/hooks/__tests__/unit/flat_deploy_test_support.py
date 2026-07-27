@@ -59,6 +59,9 @@ INSTRUCTIONS_SKILL_MARKER_SOURCE = (
 )
 
 CODEX_TOOL_PAYLOAD_SOURCE = HOOKS_ROOT / "common" / "codex_tool_payload.py"
+SHELL_COMMAND_INVOCATION_POSITION_SOURCE = (
+    HOOKS_ROOT / "common" / "shell_command_invocation_position.py"
+)
 PRE_TOOL_USE_DISPATCHER_SOURCE = next(HOOKS_ROOT.rglob("pre-tool-use-dispatcher.py"))
 PRE_TOOL_USE_DISPATCHER_RUNTIME_SOURCES = [
     PRE_TOOL_USE_DISPATCHER_SOURCE,
@@ -86,6 +89,7 @@ PRE_TOOL_USE_DISPATCHER_RUNTIME_SOURCES = [
     next(HOOKS_ROOT.rglob("streamed_command_anti_pattern_detectors.py")),
     next(HOOKS_ROOT.rglob("prohibited_words_segments.py")),
     CHANGED_FILE_PATHS_SOURCE,
+    SHELL_COMMAND_INVOCATION_POSITION_SOURCE,
 ]
 
 INTERACTIVE_ENV_VAR = "CLAUDE_INTERACTIVE_PREFERENCES_PATH"

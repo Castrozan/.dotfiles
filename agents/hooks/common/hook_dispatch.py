@@ -49,9 +49,14 @@ class MergedHookOutcome:
 
 def read_hook_input_or_exit() -> dict:
     try:
-        return json.load(sys.stdin)
+        parsed_payload = json.load(sys.stdin)
     except json.JSONDecodeError:
         sys.exit(0)
+    if not isinstance(parsed_payload, dict):
+        sys.exit(0)
+    if not isinstance(parsed_payload.get("tool_input"), dict):
+        parsed_payload["tool_input"] = {}
+    return parsed_payload
 
 
 def handler_matches_tool(handler: HookHandler, tool_name: str) -> bool:

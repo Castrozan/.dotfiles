@@ -17,26 +17,29 @@ for _shared_module_candidate_directory in [_MODULE_DIRECTORY] + [
 
 from codex_tool_payload import normalize_codex_tool_payload  # noqa: E402
 from hook_dispatch import HandlerResult  # noqa: E402
-
-COMMAND_BOUNDARY_PREFIX = r"(?:^|[;&|`(]\s*)"
+from shell_command_invocation_position import (  # noqa: E402
+    COMMAND_ARGUMENT_TERMINATOR_LOOKAHEAD,
+    COMMAND_INVOCATION_POSITION_PREFIX,
+)
 
 SANCTIONED_HEADLESS_CLAUDE_OVERRIDE_SENTINEL = "CLAUDE_HEADLESS_SANCTIONED=1"
 
 PROHIBITED_BASH_COMMAND_PATTERNS = [
     (
-        rf"{COMMAND_BOUNDARY_PREFIX}git\s+add\s+(-A|--all|\.)(\s|$)",
+        rf"{COMMAND_INVOCATION_POSITION_PREFIX}git\s+add\s+"
+        rf"(?:-A|--all|\.){COMMAND_ARGUMENT_TERMINATOR_LOOKAHEAD}",
         "git add -A/--all/. is prohibited; stage specific files (parallel work risk).",
     ),
     (
-        rf"{COMMAND_BOUNDARY_PREFIX}(?:git|gh\s+repo)\s+clone\s+\S*castrozan[/-]?\.?dotfiles",
+        rf"{COMMAND_INVOCATION_POSITION_PREFIX}(?:git|gh\s+repo)\s+clone\s+\S*castrozan[/-]?\.?dotfiles",
         "Cloning castrozan/.dotfiles is prohibited; use 'gh api' for remote access.",
     ),
     (
-        rf"{COMMAND_BOUNDARY_PREFIX}direnv\s+(allow|hook|exec|reload|status|edit|deny|block|prune|version)\b",
+        rf"{COMMAND_INVOCATION_POSITION_PREFIX}direnv\s+(allow|hook|exec|reload|status|edit|deny|block|prune|version)\b",
         "direnv is prohibited; use 'devenv shell' or 'devenv shell -- command'.",
     ),
     (
-        rf"{COMMAND_BOUNDARY_PREFIX}herdr\s+agent\s+start\b(?:(?!\s--tab(?=[\s=]))(?!\s--\s)[^;&|\n])*(?:$|[;&|\n]|\s--\s)",
+        rf"{COMMAND_INVOCATION_POSITION_PREFIX}herdr\s+agent\s+start\b(?:(?!\s--tab(?=[\s=]))(?!\s--\s)[^;&|\n])*(?:$|[;&|\n]|\s--\s)",
         "herdr agent start without --tab splits an active tab someone is "
         "already working in; --workspace alone is not a pin because it only "
         "chooses which workspace's active tab gets split. Pin the exact tab: "
@@ -44,7 +47,7 @@ PROHIBITED_BASH_COMMAND_PATTERNS = [
         "with 'herdr tab create --workspace <id> --no-focus' and pass its id.",
     ),
     (
-        rf"{COMMAND_BOUNDARY_PREFIX}claude(?![\w-])[^;&|`)\n]*?\s(?:-p|--print)(?:[=\s'\"]|$)",
+        rf"{COMMAND_INVOCATION_POSITION_PREFIX}claude(?![\w-])[^;&|`)\n]*?\s(?:-p|--print)(?:[=\s'\"]|$)",
         "claude -p/--print (headless oneshot) is prohibited; drive an interactive "
         "session instead (the claude-workspace wrapper, or a herdr agent via "
         '\'herdr agent start <name> --cwd <dir> --tab "$HERDR_TAB_ID" --no-focus '

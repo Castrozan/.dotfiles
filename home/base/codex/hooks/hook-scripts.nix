@@ -7,6 +7,7 @@ let
     "common/codex_tool_payload.py"
     "common/pre_tool_use_block.py"
     "common/hook_dispatch.py"
+    "common/shell_command_invocation_position.py"
     "post-tool-use/formatter_table_by_extension.py"
     "post-tool-use/auto_format_handler.py"
     "post-tool-use/auto-format.py"

@@ -10,6 +10,9 @@ CODEX_TOOL_PAYLOAD_SOURCE = HOOKS_ROOT / "common" / "codex_tool_payload.py"
 CHANGED_FILE_PATHS_SOURCE = HOOKS_ROOT / "common" / "changed_file_paths.py"
 PRE_TOOL_USE_BLOCK_SOURCE = HOOKS_ROOT / "common" / "pre_tool_use_block.py"
 HOOK_DISPATCH_SOURCE = HOOKS_ROOT / "common" / "hook_dispatch.py"
+SHELL_COMMAND_INVOCATION_POSITION_SOURCE = (
+    HOOKS_ROOT / "common" / "shell_command_invocation_position.py"
+)
 PROHIBITED_COMMAND_GUARD_SOURCE = next(HOOKS_ROOT.rglob("prohibited-command-guard.py"))
 PROHIBITED_COMMAND_GUARD_HANDLER_SOURCE = next(
     HOOKS_ROOT.rglob("prohibited_command_guard_handler.py")
@@ -28,6 +31,7 @@ COMMAND_GUARD_RUNTIME_SOURCES = [
     CODEX_TOOL_PAYLOAD_SOURCE,
     PRE_TOOL_USE_BLOCK_SOURCE,
     HOOK_DISPATCH_SOURCE,
+    SHELL_COMMAND_INVOCATION_POSITION_SOURCE,
 ]
 
 WORDS_GUARD_RUNTIME_SOURCES = [

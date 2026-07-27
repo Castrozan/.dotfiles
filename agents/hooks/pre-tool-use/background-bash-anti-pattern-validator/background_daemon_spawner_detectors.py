@@ -1,11 +1,6 @@
 import re
 
-COMMAND_INVOCATION_POSITION_PREFIX = (
-    r"(?:^|[\n;&|(`{!]|\$\(|&&|\|\||"
-    r"\b(?:sudo|exec|nohup|time|xargs|command|if|then|else|elif|do|while|until)\s+"
-    r"(?:-\S+\s+)*|"
-    r"\benv\s+(?:\S+=\S+\s+)+)\s*"
-)
+from shell_command_invocation_position import COMMAND_INVOCATION_POSITION_PREFIX
 
 KNOWN_DAEMON_OR_SERVICE_SPAWNING_COMMAND_PATTERNS = (
     r"(?:darwin-rebuild|nixos-rebuild|rebuild)(?![-\w])",
