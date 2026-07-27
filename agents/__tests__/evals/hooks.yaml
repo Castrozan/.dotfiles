@@ -2,7 +2,7 @@ tests:
   - name: nix_rebuild_trigger_fires_on_nix_edit
     description: "nix-rebuild-trigger emits mandatory rebuild message on .nix file edit"
     type: hook_test
-    hook: nix-rebuild-trigger.py
+    hook: post-tool-use-dispatcher.py
     trigger:
       tool: Edit
       file_path: "test.nix"

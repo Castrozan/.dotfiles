@@ -1,5 +1,7 @@
 from run_evals_hook_test_runner import (
+    HOOK_SCRIPT_SEARCH_ROOT,
     hook_blocked,
+    hook_event_name_for_script,
     hook_message,
     interpret_hook_result,
     synthesize_hook_event,
@@ -86,6 +88,38 @@ def test_missing_expected_message_is_reported():
 
 
 def test_event_synthesis_moves_trigger_fields_into_tool_input():
-    event = synthesize_hook_event({"tool": "Edit", "file_path": "test.nix"})
+    event = synthesize_hook_event(
+        {"tool": "Edit", "file_path": "test.nix"}, "PreToolUse"
+    )
     assert event["tool_name"] == "Edit"
     assert event["tool_input"] == {"file_path": "test.nix"}
+
+
+def test_event_synthesis_carries_the_event_name_it_was_given():
+    event = synthesize_hook_event({"tool": "Edit"}, "PostToolUse")
+    assert event["hook_event_name"] == "PostToolUse"
+
+
+class TestTheEventNameIsDerivedFromTheHookRatherThanAssumed:
+    def test_a_post_tool_use_hook_is_given_a_post_tool_use_event(self):
+        script = (
+            HOOK_SCRIPT_SEARCH_ROOT / "post-tool-use" / "post-tool-use-dispatcher.py"
+        )
+        assert hook_event_name_for_script(script) == "PostToolUse"
+
+    def test_a_pre_tool_use_hook_is_given_a_pre_tool_use_event(self):
+        script = HOOK_SCRIPT_SEARCH_ROOT / "pre-tool-use" / "pre-tool-use-dispatcher.py"
+        assert hook_event_name_for_script(script) == "PreToolUse"
+
+    def test_a_multi_word_event_directory_becomes_one_pascal_case_name(self):
+        script = HOOK_SCRIPT_SEARCH_ROOT / "user-prompt-submit" / "anything.py"
+        assert hook_event_name_for_script(script) == "UserPromptSubmit"
+
+    def test_a_hook_nested_under_its_own_folder_still_reports_the_event(self):
+        script = (
+            HOOK_SCRIPT_SEARCH_ROOT
+            / "pre-tool-use"
+            / "prohibited-command-guard"
+            / "prohibited_command_guard_handler.py"
+        )
+        assert hook_event_name_for_script(script) == "PreToolUse"

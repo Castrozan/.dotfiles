@@ -12,10 +12,15 @@ def find_hook_script(hook_filename):
     return matches[0] if matches else None
 
 
-def synthesize_hook_event(trigger):
+def hook_event_name_for_script(script_path):
+    event_directory = script_path.relative_to(HOOK_SCRIPT_SEARCH_ROOT).parts[0]
+    return "".join(word.capitalize() for word in event_directory.split("-"))
+
+
+def synthesize_hook_event(trigger, hook_event_name):
     tool_input = {key: value for key, value in trigger.items() if key != "tool"}
     return {
-        "hook_event_name": "PreToolUse",
+        "hook_event_name": hook_event_name,
         "tool_name": trigger.get("tool", ""),
         "tool_input": tool_input,
         "cwd": str(REPO_ROOT),
@@ -84,7 +89,11 @@ def evaluate_hook_test(test):
 
     completed = subprocess.run(
         [sys.executable, str(script_path)],
-        input=json.dumps(synthesize_hook_event(test.get("trigger", {}))),
+        input=json.dumps(
+            synthesize_hook_event(
+                test.get("trigger", {}), hook_event_name_for_script(script_path)
+            )
+        ),
         capture_output=True,
         text=True,
         cwd=REPO_ROOT,
