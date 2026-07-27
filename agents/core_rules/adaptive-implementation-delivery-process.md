@@ -14,7 +14,9 @@ five files in ten to twenty-five minutes with at most two agents. Orchestrated i
 authentication, data, or a public interface regardless of file count, and it runs the full path of task packet,
 delegation and validation evidence before acceptance. The counts and clocks calibrate the call rather than decide it,
 so a two-file change to an auth boundary is orchestrated while a nine-file mechanical rename with one decision in it
-never needs to be.
+never needs to be. The budgets are not arbitrary. Instruction adherence measurably decays within a single session as
+the agent keeps generating, so a unit of work kept small stays in the compliant stretch of the run, and tonnage handed
+to a subagent starts on a fresh context instead of further down that curve.
 </the-four-tiers>
 
 <declare-the-tier-before-delegating>
