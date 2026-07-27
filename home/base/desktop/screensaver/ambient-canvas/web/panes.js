@@ -10,6 +10,7 @@ window.AMBIENT_CANVAS_PLAYLIST = [
   { panes: [{ scene: "cube-lattice" }] },
   { panes: [{ scene: "bonsai" }] },
   { panes: [{ scene: "matrix" }] },
+  { panes: [{ scene: "ascii-invader" }] },
   {
     panes: [
       {
