@@ -28,11 +28,20 @@ browse-and-request front end wired to Radarr/Sonarr. Reach each service directly
 its tailnet URL from any tailnet device, e.g. `http://arr:8096` for Jellyfin on chise
 (where `arr` is a hostname alias to chise's tailscale IP) or via chise's MagicDNS name.
 
-All web UIs publish only to chise's tailscale IP, which the `arr` alias resolves
-to, so they are reachable from any device on the tailnet but not on the LAN or any
-other interface. Open e.g. `http://arr:9696` from a tailnet-joined machine.
+Every container publishes only to chise's tailscale IP, which the `arr` alias
+resolves to, so it is reachable from any device on the tailnet but not on the LAN
+or any other interface. Open e.g. `http://arr:9696` from a tailnet-joined machine.
 The *arr apps have no login, so this exposes them to the tailnet (accepted);
 qBittorrent keeps its WebUI password.
+
+Jellyfin and Jellyseerr are the exception: `arr-media-tailscale-funnel` publishes
+them over HTTPS to the public internet so friends can use them without joining the
+tailnet, and `arr-media-login-ratelimit-proxy` fronts each one with a loopback
+nginx that throttles login attempts per real client IP, recovered from the funnel's
+`X-Forwarded-For`. Both modules declare the public hostnames and ports, so read
+them rather than this file. Prefer those HTTPS URLs over the raw tailnet ports even
+from inside the tailnet: the plain-HTTP port sends your password in cleartext, and
+a password manager holding the HTTPS origin will warn before filling it there.
 
 The stack covers TV and movies only. Lidarr (music) and Readarr (books) were
 removed: neither library was ever used, and Readarr was archived upstream on
