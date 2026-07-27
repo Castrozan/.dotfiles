@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import sys
+import time
 from pathlib import Path
 
 _MODULE_DIRECTORY = Path(__file__).resolve().parent
@@ -20,7 +21,10 @@ from hook_dispatch import HandlerResult  # noqa: E402
 
 DEEP_WORK_DIRECTORY_ENVIRONMENT_VARIABLE = "DEEP_WORK_CONTEXT_DIRECTORY"
 DEEP_WORK_DIRECTORY_RELATIVE_TO_HOME = ".dotfiles/.deep-work"
-CONTEXT_FILENAME = "context.md"
+PROGRESS_FILENAME = "progress.md"
+SECONDS_PER_HOUR = 3600
+HOURS_BEFORE_A_WORKSPACE_IS_STALE = 48
+WORKSPACES_NAMED_IN_THE_STALE_REPORT = 8
 
 
 def deep_work_directory() -> Path:
@@ -30,24 +34,88 @@ def deep_work_directory() -> Path:
     return Path.home() / DEEP_WORK_DIRECTORY_RELATIVE_TO_HOME
 
 
-def active_deep_work_context_documents() -> list[str]:
-    try:
-        context_files = sorted(deep_work_directory().glob(f"*/{CONTEXT_FILENAME}"))
-    except OSError:
-        return []
-    documents = []
-    for context_file in context_files:
+def hours_since_last_progress(workspace: Path) -> float:
+    progress_file = workspace / PROGRESS_FILENAME
+    candidates = (
+        [progress_file] if progress_file.exists() else list(workspace.iterdir())
+    )
+    modification_times = []
+    for candidate in candidates:
         try:
-            document = context_file.read_text(encoding="utf-8").strip()
+            modification_times.append(candidate.stat().st_mtime)
         except OSError:
             continue
-        if document:
-            documents.append(document)
-    return documents
+    if not modification_times:
+        return float("inf")
+    return (time.time() - max(modification_times)) / SECONDS_PER_HOUR
+
+
+def workspaces_by_staleness():
+    try:
+        workspaces = sorted(
+            candidate
+            for candidate in deep_work_directory().iterdir()
+            if candidate.is_dir()
+        )
+    except OSError:
+        return [], []
+    aged = [
+        (workspace, hours_since_last_progress(workspace)) for workspace in workspaces
+    ]
+    active = sorted(
+        (entry for entry in aged if entry[1] <= HOURS_BEFORE_A_WORKSPACE_IS_STALE),
+        key=lambda entry: entry[1],
+    )
+    stale = sorted(
+        (entry for entry in aged if entry[1] > HOURS_BEFORE_A_WORKSPACE_IS_STALE),
+        key=lambda entry: entry[1],
+    )
+    return active, stale
+
+
+def describe_age(hours: float) -> str:
+    if hours < 1:
+        return "under an hour ago"
+    if hours < 48:
+        return f"{round(hours)}h ago"
+    return f"{round(hours / 24)}d ago"
+
+
+def format_active_section(active) -> str:
+    lines = [
+        f"DEEP WORK: {len(active)} active workspace(s) in .deep-work/. Read the "
+        "workspace files (prompts.md, plan.md, progress.md, context.md) before "
+        "continuing rather than asking what was already captured:"
+    ]
+    lines.extend(
+        f"  {workspace.name} (last progress {describe_age(hours)})"
+        for workspace, hours in active
+    )
+    return "\n".join(lines)
+
+
+def format_stale_section(stale) -> str:
+    named = ", ".join(
+        workspace.name for workspace, _ in stale[:WORKSPACES_NAMED_IN_THE_STALE_REPORT]
+    )
+    remainder = len(stale) - WORKSPACES_NAMED_IN_THE_STALE_REPORT
+    if remainder > 0:
+        named = f"{named}, and {remainder} more"
+    return (
+        f"STALE: {len(stale)} workspace(s) with no progress in "
+        f"{HOURS_BEFORE_A_WORKSPACE_IS_STALE}h: {named}. The deep-work contract says "
+        "to report these rather than silently resume or delete them, so raise them "
+        "with the user if they look delivered."
+    )
 
 
 def handle(hook_input: dict):
-    documents = active_deep_work_context_documents()
-    if not documents:
+    active, stale = workspaces_by_staleness()
+    if not active and not stale:
         return None
-    return HandlerResult(additional_context="\n\n".join(documents))
+    sections = []
+    if active:
+        sections.append(format_active_section(active))
+    if stale:
+        sections.append(format_stale_section(stale))
+    return HandlerResult(additional_context="\n\n".join(sections))
