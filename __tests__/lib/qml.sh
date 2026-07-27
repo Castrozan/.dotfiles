@@ -9,10 +9,16 @@ _run_qml_unit_tests() {
 	fi
 
 	echo "--- QML Unit Tests ---"
+	local failedRunners=0
 	for runner in $qmlTestDirs; do
-		bash "$runner"
+		bash "$runner" || failedRunners=$((failedRunners + 1))
 	done
 	echo ""
+
+	if [[ "$failedRunners" -gt 0 ]]; then
+		echo "QML unit tests: $failedRunners runner(s) failed" >&2
+		return 1
+	fi
 }
 
 _run_qmllint_checks() {

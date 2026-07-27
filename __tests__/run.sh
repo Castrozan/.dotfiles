@@ -47,6 +47,39 @@ source "$SCRIPT_DIR/lib/line-counts.sh"
 source "$SCRIPT_DIR/lib/evals.sh"
 # shellcheck source=lib/perf.sh
 source "$SCRIPT_DIR/lib/perf.sh"
+# shellcheck source=lib/failure-aggregation.sh
+source "$SCRIPT_DIR/lib/failure-aggregation.sh"
+
+readonly QUICK_TIER_CHECKS=(
+	_run_line_count_check
+	_run_quick_bats_tests
+	_run_quick_pytest_tests
+	_run_qml_unit_tests
+	_run_qmllint_checks
+	_run_lua_unit_tests
+)
+
+readonly NIX_TIER_CHECKS=(
+	_run_nix_flake_checks
+)
+
+readonly INTEGRATION_SCRIPTS_TIER_CHECKS=(
+	_run_integration_scripts_bats_tests
+	_run_integration_scripts_pytest_tests
+)
+
+readonly RUNTIME_TIER_CHECKS=(
+	_run_e2e_scripts_bats_tests
+	_run_e2e_scripts_pytest_tests
+)
+
+readonly CI_TIER_CHECKS=(
+	_run_line_count_check
+	_run_quick_bats_tests_ci
+	_run_nix_flake_checks
+	_run_rebuild_baseline_check
+	_run_desktop_baseline_check
+)
 
 main() {
 	local selectedMode="quick"
@@ -64,15 +97,17 @@ main() {
 	case "$selectedMode" in
 	quick) _run_quick_tier ;;
 	nix)
-		_run_quick_tier
-		_run_nix_tier
+		_run_checks_reporting_every_failure \
+			"${QUICK_TIER_CHECKS[@]}" \
+			"${NIX_TIER_CHECKS[@]}"
 		;;
 	integration-scripts) _run_integration_scripts_tier ;;
 	runtime) _run_runtime_tier ;;
 	all)
-		_run_quick_tier
-		_run_nix_tier
-		_run_integration_scripts_tier
+		_run_checks_reporting_every_failure \
+			"${QUICK_TIER_CHECKS[@]}" \
+			"${NIX_TIER_CHECKS[@]}" \
+			"${INTEGRATION_SCRIPTS_TIER_CHECKS[@]}"
 		;;
 	evals) _run_evals_tier ;;
 	integration) _run_integration_tier ;;
@@ -109,26 +144,19 @@ _parse_arguments() {
 }
 
 _run_quick_tier() {
-	_run_line_count_check
-	_run_quick_bats_tests
-	_run_quick_pytest_tests
-	_run_qml_unit_tests
-	_run_qmllint_checks
-	_run_lua_unit_tests
+	_run_checks_reporting_every_failure "${QUICK_TIER_CHECKS[@]}"
 }
 
 _run_nix_tier() {
-	_run_nix_flake_checks
+	_run_checks_reporting_every_failure "${NIX_TIER_CHECKS[@]}"
 }
 
 _run_integration_scripts_tier() {
-	_run_integration_scripts_bats_tests
-	_run_integration_scripts_pytest_tests
+	_run_checks_reporting_every_failure "${INTEGRATION_SCRIPTS_TIER_CHECKS[@]}"
 }
 
 _run_runtime_tier() {
-	_run_e2e_scripts_bats_tests
-	_run_e2e_scripts_pytest_tests
+	_run_checks_reporting_every_failure "${RUNTIME_TIER_CHECKS[@]}"
 }
 
 _run_coverage_tier() {
@@ -136,11 +164,7 @@ _run_coverage_tier() {
 }
 
 _run_ci_tier() {
-	_run_line_count_check
-	_run_quick_bats_tests_ci
-	_run_nix_tier
-	_run_rebuild_baseline_check
-	_run_desktop_baseline_check
+	_run_checks_reporting_every_failure "${CI_TIER_CHECKS[@]}"
 }
 
 main "$@"

@@ -7,8 +7,10 @@ _run_rebuild_baseline_check() {
 	fi
 
 	echo "--- Rebuild Performance Baseline Check ---"
-	benchmark-rebuild --check-baseline
+	local baselineExitCode=0
+	benchmark-rebuild --check-baseline || baselineExitCode=$?
 	echo ""
+	return "$baselineExitCode"
 }
 
 _run_desktop_baseline_check() {
@@ -18,8 +20,10 @@ _run_desktop_baseline_check() {
 	fi
 
 	echo "--- Desktop Performance Baseline Check ---"
-	benchmark-desktop --check-baseline
+	local baselineExitCode=0
+	benchmark-desktop --check-baseline || baselineExitCode=$?
 	echo ""
+	return "$baselineExitCode"
 }
 
 _run_perf_tier() {

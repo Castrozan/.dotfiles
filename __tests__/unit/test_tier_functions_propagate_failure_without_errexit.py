@@ -8,6 +8,7 @@ import pytest
 HARNESS_TESTS_ROOT = pathlib.Path(__file__).resolve().parent.parent
 DISCOVERY_LIBRARY = HARNESS_TESTS_ROOT / "lib" / "discovery.sh"
 PYTEST_TIER_LIBRARY = HARNESS_TESTS_ROOT / "lib" / "pytest.sh"
+LINE_COUNT_TIER_LIBRARY = HARNESS_TESTS_ROOT / "lib" / "line-counts.sh"
 
 MODERN_BASH_CANDIDATE_PATHS = (
     "/run/current-system/sw/bin/bash",
@@ -69,6 +70,45 @@ def test_the_pytest_tier_reports_a_failing_run_without_relying_on_errexit(tmp_pa
         "green run over failing tests.\n"
         f"stdout: {completed.stdout}\nstderr: {completed.stderr}"
     )
+
+
+def run_line_count_check_without_errexit(script_directory: pathlib.Path):
+    return subprocess.run(
+        [
+            resolve_modern_bash_absolute_path(),
+            "-c",
+            f"SCRIPT_DIR={script_directory}\n"
+            f"source {LINE_COUNT_TIER_LIBRARY}\n"
+            "_run_line_count_check\n",
+        ],
+        capture_output=True,
+        text=True,
+    )
+
+
+def test_the_line_count_check_reports_a_violation_without_relying_on_errexit(tmp_path):
+    if shutil.which("python3") is None:
+        pytest.skip("python3 unavailable")
+    (tmp_path / "check-line-counts.py").write_text("raise SystemExit(1)\n")
+
+    completed = run_line_count_check_without_errexit(tmp_path)
+
+    assert completed.returncode != 0, (
+        "the check must return the policy script's exit code, otherwise the trailing "
+        "echo becomes the function's status and a violation reads as a pass once the "
+        "tier runner drops errexit to aggregate failures.\n"
+        f"stdout: {completed.stdout}\nstderr: {completed.stderr}"
+    )
+
+
+def test_the_line_count_check_still_reports_success_when_the_policy_holds(tmp_path):
+    if shutil.which("python3") is None:
+        pytest.skip("python3 unavailable")
+    (tmp_path / "check-line-counts.py").write_text("raise SystemExit(0)\n")
+
+    completed = run_line_count_check_without_errexit(tmp_path)
+
+    assert completed.returncode == 0
 
 
 def test_the_pytest_tier_still_reports_success_when_the_run_passes(tmp_path):

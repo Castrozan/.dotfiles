@@ -7,6 +7,8 @@ _run_line_count_check() {
 	fi
 
 	echo "--- Line Count Policy ---"
-	python3 "$SCRIPT_DIR/check-line-counts.py"
+	local lineCountExitCode=0
+	python3 "$SCRIPT_DIR/check-line-counts.py" || lineCountExitCode=$?
 	echo ""
+	return "$lineCountExitCode"
 }
