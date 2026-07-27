@@ -100,6 +100,44 @@ class TestTheRepositoryIsPinnedRatherThanInheritedFromTheCaller:
                 assert dotfiles_ci.main() == dotfiles_ci.EXIT_CODE_CI_VERDICT_UNKNOWN
 
 
+def github_is_unreachable():
+    return subprocess.CalledProcessError(1, ["gh", "run", "list"])
+
+
+class TestGithubBeingUnreachableIsNeverAReadCi:
+    def test_a_transient_failure_while_runs_appear_does_not_read_as_red(self):
+        batches = [
+            github_is_unreachable(),
+            [completed_run("tests", "success")],
+        ]
+        assert run_main_against(batches) == 0
+
+    def test_a_transient_failure_mid_completion_poll_does_not_read_as_red(self):
+        batches = [
+            [in_progress_run("tests")],
+            github_is_unreachable(),
+            [completed_run("tests", "success")],
+        ]
+        assert run_main_against(batches) == 0
+
+    def test_a_sustained_outage_is_unknown_rather_than_red(self):
+        batches = [
+            github_is_unreachable()
+            for _ in range(dotfiles_ci.POLLS_WAITING_FOR_RUNS_TO_APPEAR)
+        ]
+        assert run_main_against(batches) == dotfiles_ci.EXIT_CODE_CI_VERDICT_UNKNOWN
+
+    def test_an_outage_after_runs_appear_keeps_the_last_known_runs(self):
+        batches = [
+            [in_progress_run("tests")],
+            *(
+                github_is_unreachable()
+                for _ in range(dotfiles_ci.POLLS_WAITING_FOR_RUNS_TO_COMPLETE)
+            ),
+        ]
+        assert run_main_against(batches) == dotfiles_ci.EXIT_CODE_CI_VERDICT_UNKNOWN
+
+
 class TestReporting:
     def test_each_run_reports_its_outcome_and_url(self, capsys):
         dotfiles_ci.report_runs([completed_run("tests", "failure")])

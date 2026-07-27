@@ -65,9 +65,23 @@ def describe_run(run: dict) -> str:
     return f"{outcome:>12}  {run['workflowName']}  {run['url']}"
 
 
+def fetch_runs_for_commit_tolerating_an_unreachable_github(
+    commit_sha: str,
+) -> list[dict] | None:
+    try:
+        return fetch_runs_for_commit(commit_sha)
+    except subprocess.CalledProcessError:
+        print(
+            f"GitHub could not be queried for {commit_sha} on this poll; retrying "
+            f"rather than reporting a red CI",
+            file=sys.stderr,
+        )
+        return None
+
+
 def wait_for_runs_to_appear(commit_sha: str) -> list[dict]:
     for poll in range(POLLS_WAITING_FOR_RUNS_TO_APPEAR):
-        runs = fetch_runs_for_commit(commit_sha)
+        runs = fetch_runs_for_commit_tolerating_an_unreachable_github(commit_sha)
         if runs:
             return runs
         if poll + 1 < POLLS_WAITING_FOR_RUNS_TO_APPEAR:
@@ -80,7 +94,9 @@ def wait_for_runs_to_complete(commit_sha: str, runs: list[dict]) -> list[dict]:
         if not pending_runs(runs):
             return runs
         time.sleep(SECONDS_BETWEEN_POLLS)
-        runs = fetch_runs_for_commit(commit_sha)
+        polled_runs = fetch_runs_for_commit_tolerating_an_unreachable_github(commit_sha)
+        if polled_runs is not None:
+            runs = polled_runs
     return runs
 
 
