@@ -1,11 +1,13 @@
 {
   lib,
+  pkgs,
   username,
   ...
 }:
 {
   system.activationScripts.postActivation.text = lib.mkAfter ''
     export USERNAME=${lib.escapeShellArg username}
+    export TIMEOUT_BINARY_PATH=${lib.escapeShellArg "${pkgs.coreutils}/bin/timeout"}
     ${builtins.readFile ./configure-displays.sh}
   '';
 

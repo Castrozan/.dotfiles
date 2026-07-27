@@ -4,7 +4,7 @@
 
 echo "configuring display settings..." >&2
 
-USER_UUID=$(/usr/bin/dscl . -read "/Users/$USERNAME" GeneratedUID | /usr/bin/awk '{print $2}')
+USER_UUID=$("$TIMEOUT_BINARY_PATH" 5 /usr/bin/dscl . -read "/Users/$USERNAME" GeneratedUID | /usr/bin/awk '{print $2}')
 
 /usr/bin/defaults write /Library/Preferences/com.apple.BezelServices dAuto -bool true
 

@@ -56,6 +56,7 @@ let
   claudeDarwinPolicyChecks = import ../../hosts/shared-darwin/claude/__tests__/checks.nix domainArgs;
   braveDarwinPolicyChecks = import ../../hosts/shared-darwin/brave/__tests__/checks.nix domainArgs;
   disableUnusedAppleBackgroundAgentsChecks = import ../../hosts/shared-darwin/disable-unused-apple-background-agents/__tests__/checks.nix domainArgs;
+  displaysDarwinChecks = import ../../hosts/shared-darwin/displays/__tests__/checks.nix domainArgs;
 in
 claudeChecks
 // codexChecks
@@ -90,3 +91,4 @@ claudeChecks
 // claudeDarwinPolicyChecks
 // braveDarwinPolicyChecks
 // disableUnusedAppleBackgroundAgentsChecks
+// displaysDarwinChecks
