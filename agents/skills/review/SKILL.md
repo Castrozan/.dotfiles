@@ -1,9 +1,9 @@
 ---
 name: review
-description: Code review, compliance checking, documentation standards, instruction-file audits, and output compression. Use when reviewing code, checking conventions, writing docs, auditing skill or CLAUDE.md edits, or when output needs to be more concise.
+description: Compliance auditing, documentation standards, instruction-file audits, skill routing repair, and output compression. Use when checking conventions, writing docs, auditing a skill or CLAUDE.md edit, or compressing output; for judging code read code-review.
 ---
 
-Umbrella for quality, review, and output craft. Each sub-file is a lens on a diff.
+Umbrella for the quality lenses that are not the code itself. Judging code is the `code-review` skill.
 
 For documentation policies and standards, read `docs.md`.
 
