@@ -35,6 +35,7 @@ in
     ../../nixos/modules/arr-config-provisioner
     ../../nixos/modules/bazarr-auth-provisioner
     ../../nixos/modules/jellyfin-library-access-provisioner
+    ../../nixos/modules/jellyseerr-account-permission-provisioner
     ../../nixos/modules/jellyseerr-private-request-routing-provisioner
   ]
   ++ lib.optional (builtins.pathExists ../../private-config/machines/chise/jarvis-connector.nix) ../../private-config/machines/chise/jarvis-connector.nix;

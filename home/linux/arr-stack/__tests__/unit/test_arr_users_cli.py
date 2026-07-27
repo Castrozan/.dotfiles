@@ -35,6 +35,7 @@ def test_every_subcommand_has_a_handler():
         "set-email",
         "sync",
         "sync-request-routing",
+        "sync-account-permissions",
     }
 
 

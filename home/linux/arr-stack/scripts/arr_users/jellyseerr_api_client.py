@@ -64,6 +64,16 @@ def set_user_permissions(base_url, api_key, jellyseerr_user_id, permissions):
     )
 
 
+def set_accounts_permissions(base_url, api_key, jellyseerr_user_ids, permissions):
+    return request_json(
+        base_url,
+        api_key,
+        "PUT",
+        "/api/v1/user",
+        {"ids": list(jellyseerr_user_ids), "permissions": permissions},
+    )
+
+
 def list_service_servers(base_url, api_key, service_name):
     return (
         request_json(base_url, api_key, "GET", f"/api/v1/settings/{service_name}") or []

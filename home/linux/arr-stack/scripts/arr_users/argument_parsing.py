@@ -20,6 +20,11 @@ def build_argument_parser():
         help="Re-apply the Jellyseerr override rules that send every private-requests account request to a private root folder",
     )
 
+    subparsers.add_parser(
+        "sync-account-permissions",
+        help="Re-apply the Jellyseerr permissions every account holds, so nobody but the declared administrator can approve or read another account's requests and no request ever waits on an approval",
+    )
+
     create_parser = subparsers.add_parser("create", help="Create a friend account")
     create_parser.add_argument("username")
     create_parser.add_argument("--password", default=None)

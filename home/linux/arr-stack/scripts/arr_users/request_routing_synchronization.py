@@ -1,3 +1,4 @@
+import jellyseerr_account_permissions
 import jellyseerr_api_client
 import private_request_routing
 
@@ -6,12 +7,10 @@ def find_private_request_account(context):
     for jellyseerr_user in jellyseerr_api_client.list_users(
         context.jellyseerr_base_url, context.jellyseerr_api_key
     ):
-        account_names = {
-            jellyseerr_user.get("displayName"),
-            jellyseerr_user.get("jellyfinUsername"),
-            jellyseerr_user.get("username"),
-        }
-        if private_request_routing.PRIVATE_REQUEST_ACCOUNT_USERNAME in account_names:
+        if (
+            private_request_routing.PRIVATE_REQUEST_ACCOUNT_USERNAME
+            in jellyseerr_account_permissions.resolve_account_names(jellyseerr_user)
+        ):
             return jellyseerr_user
     return None
 

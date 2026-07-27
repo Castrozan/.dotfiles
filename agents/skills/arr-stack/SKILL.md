@@ -23,10 +23,20 @@ module rather than a Jellyfin dashboard checkbox. Log in as `friends-view` to se
 Requesting privately is a matter of which account requests, not of remembering a root folder: the routing module in the
 `arr_users` package declares one ordinary Jellyseerr account whose every request is rewritten to a `-private` root
 folder by committed override rules, reconciled on each rebuild. That same account is the only one that can watch what it
-requests, so private media is requested and viewed there end to end, while the admin account requests, approves and
+requests, so private media is requested and viewed there end to end, while the owner's daily account requests and
 watches public media only. Adding the title in Radarr or Sonarr by hand and picking the `-private` root still works and
 is the fallback when a request must bypass Jellyseerr entirely.
 </private_requesting>
+
+<jellyseerr_account_permissions>
+No request from anyone waits on an approval: the account-permission module in the `arr_users` package pins every
+Jellyseerr account to request-and-auto-approve, reconciled on each rebuild, so approving is a capability nobody needs
+rather than a chore someone owes. Exactly one declared account keeps Jellyseerr admin, and it is the Jellyseerr owner
+(user id 1, the service account) rather than the owner's daily-driver account, which is deliberately demoted with
+everyone else. Reach Jellyseerr settings, users and override rules by logging in as that administrator; the CLIs and
+provisioners never need it, because Jellyseerr resolves an API key to the owner account regardless of what the human
+accounts hold.
+</jellyseerr_account_permissions>
 
 <private_library_traps>
 An *arr app holds a title under exactly one root folder, so a title already held privately makes a friend's Jellyseerr
@@ -40,9 +50,11 @@ is missing from Jellyfin, because a half-read library list would otherwise silen
 Jellyseerr evaluates override rules only for accounts holding neither admin nor manage-requests, so promoting the
 routing account, or requesting as the admin, silently sends the title to the public library while the rules still read
 as configured; the reconcile refuses a privileged routing account rather than leave that trap armed. An anime series
-needs its own rule naming the anime keyword, because Jellyseerr drops every rule that does not for anime. Requests stay
-private only against friends, who see none but their own; an admin always sees every account's requests, so the split
-hides nothing from the owner.
+needs its own rule naming the anime keyword, because Jellyseerr drops every rule that does not for anime. A Jellyseerr
+account holding admin or manage-requests reads every other account's requests by title, so promoting any account
+re-exposes the private account's requests there even though the private libraries themselves stay hidden; that is the
+second reason the daily-driver account is demoted, and demoting it is safe because the permission reconcile never leaves
+Jellyseerr without a declared administrator.
 </private_requesting_traps>
 
 <account_model>

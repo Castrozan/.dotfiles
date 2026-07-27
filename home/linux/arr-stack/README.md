@@ -118,9 +118,28 @@ manage-requests, so the routing account has to stay an ordinary requester:
 promoting it makes every rule silently stop applying while still reading as
 configured in the dashboard, which is why the reconcile refuses a privileged
 routing account outright. Anime series need a second rule naming the anime
-keyword, because Jellyseerr drops every rule that omits it for anime. Requests are
-private against friends only, who each see nothing but their own; an admin sees
-every account's requests, so this hides private titles from friends, not from you.
+keyword, because Jellyseerr drops every rule that omits it for anime.
+
+## Nobody approves anything
+
+`scripts/arr_users/jellyseerr_account_permissions.py` declares the permissions
+every Jellyseerr account holds: request and auto-approve, the same pair a friend
+gets, and nothing else. The `jellyseerr-account-permission-provisioner` systemd
+unit pins them on every rebuild, and `arr-users sync-account-permissions` runs the
+same reconcile by hand. So no request from anyone, friend or owner, ever sits
+pending: approving is a capability nobody needs rather than a chore someone owes.
+
+Exactly one account is exempt and keeps Jellyseerr admin, the Jellyseerr owner
+account (`jellyseerr`, user id 1). The owner's own `lucas` account is demoted with
+everyone else on purpose, because an account holding admin or manage-requests
+reads every other account's requests by title, which would put the private
+account's request titles back in the daily-driver account's Requests list even
+though the private libraries themselves stay hidden. Log in as `jellyseerr` to
+reach Jellyseerr settings, users, and override rules. The reconcile refuses to run
+at all if it would leave no declared administrator, because granting admin back is
+itself admin-gated and no remaining account could do it. The CLIs and provisioners
+are unaffected either way: Jellyseerr resolves an API key to the owner account, so
+they never depend on what the human accounts hold.
 
 Radarr and Sonarr key a title by its TMDB/TVDB id and can only hold it under one
 root folder, so a title you already keep privately will fail a friend's request

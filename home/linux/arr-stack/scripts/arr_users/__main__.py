@@ -1,6 +1,7 @@
 import sys
 import urllib.error
 
+import account_permission_synchronization
 import argument_parsing
 import library_access_synchronization
 import private_request_routing
@@ -131,10 +132,23 @@ def run_sync_request_routing(context, _arguments):
     print(f"removed rules: {', '.join(synchronized['removed_rules']) or 'none'}")
 
 
+def run_sync_account_permissions(context, _arguments):
+    synchronized = account_permission_synchronization.synchronize_account_permissions(
+        context
+    )
+    print(f"administered by: {', '.join(synchronized['administrator_accounts'])}")
+    print(
+        "requesting without approval: "
+        f"{', '.join(synchronized['self_approving_accounts']) or 'none'}"
+    )
+    print(f"rewritten: {', '.join(synchronized['rewritten_accounts']) or 'none'}")
+
+
 COMMAND_HANDLERS = {
     "list": run_list,
     "sync": run_sync,
     "sync-request-routing": run_sync_request_routing,
+    "sync-account-permissions": run_sync_account_permissions,
     "create": run_create,
     "set-email": run_set_email,
     "delete": run_delete,

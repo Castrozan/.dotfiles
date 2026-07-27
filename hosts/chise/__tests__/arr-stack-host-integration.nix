@@ -99,6 +99,22 @@ in
       (builtins.elem "arr-config-provisioner.service" nixosCfg.systemd.services.jellyseerr-private-request-routing-provisioner.after)
       "the routing reconcile must be ordered after the provisioner that registers the private root folders in radarr and sonarr, because Jellyseerr accepts a rule naming a root folder no *arr app knows and the breakage only appears when a request is finally grabbed";
 
+  chise-jellyseerr-account-permissions-wired-on-chise =
+    mkEvalCheck "chise-jellyseerr-account-permissions-wired-on-chise"
+      (
+        (nixosCfg.systemd.services ? jellyseerr-account-permission-provisioner)
+        && builtins.elem "multi-user.target" nixosCfg.systemd.services.jellyseerr-account-permission-provisioner.wantedBy
+        &&
+          nixosCfg.systemd.services.jellyseerr-account-permission-provisioner.environment.ARR_USERS_JELLYSEERR_BASE_URL
+          == "http://127.0.0.1:5055"
+      )
+      "chise must re-pin every Jellyseerr account's permissions on every rebuild over the loopback publish, or an account promoted in the dashboard would keep reading every other account's requests by title, which is how the private account's requests leak even while the private libraries stay hidden";
+
+  chise-jellyseerr-account-permissions-settle-before-request-routing =
+    mkEvalCheck "chise-jellyseerr-account-permissions-settle-before-request-routing"
+      (builtins.elem "jellyseerr-private-request-routing-provisioner.service" nixosCfg.systemd.services.jellyseerr-account-permission-provisioner.before)
+      "the permission reconcile must be ordered before the request-routing reconcile, which refuses to run at all against a privileged routing account; without the ordering a promoted routing account would fail the routing unit on a state the permission unit was about to correct in the same rebuild";
+
   chise-arr-on-demand-disk-guard-emails-via-agenix-secret =
     mkEvalCheck "chise-arr-on-demand-disk-guard-emails-via-agenix-secret"
       (

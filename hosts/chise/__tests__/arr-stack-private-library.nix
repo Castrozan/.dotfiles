@@ -20,6 +20,15 @@ let
 
   requestRoutingText = builtins.readFile ../../../home/linux/arr-stack/scripts/arr_users/private_request_routing.py;
   visibilityReconcileText = builtins.readFile ../../../home/linux/arr-stack/scripts/arr_users/library_access_synchronization.py;
+  accountPermissionsText = builtins.readFile ../../../home/linux/arr-stack/scripts/arr_users/jellyseerr_account_permissions.py;
+  permissionReconcileText = builtins.readFile ../../../home/linux/arr-stack/scripts/arr_users/account_permission_synchronization.py;
+
+  everyAccountHoldsTheSamePermissionsAsAFriend =
+    lib.hasInfix "friend_account_policy.FRIEND_JELLYSEERR_PERMISSIONS_BITMASK" accountPermissionsText
+    && lib.hasInfix "SELF_APPROVING_REQUESTER_PERMISSIONS" accountPermissionsText;
+  jellyseerrKeepsADeclaredAdministrator =
+    lib.hasInfix "administrator_accounts" permissionReconcileText
+    && lib.hasInfix "raise ValueError" permissionReconcileText;
 
   privateAccessIsAnExplicitAllowlist =
     lib.hasInfix "PRIVATE_LIBRARY_ACCOUNT_USERNAMES" libraryDeclarationText
@@ -93,6 +102,15 @@ in
     mkEvalCheck "chise-arr-visibility-reconcile-never-exempts-an-administrator"
       reconcileNeverExemptsAnAdministrator
       "the visibility reconcile must apply to administrators as well; reintroducing an is_administrator skip there would leave the owner's admin account permanently able to see the private libraries no matter what the allowlist declares";
+
+  chise-arr-no-request-waits-on-an-approval =
+    mkEvalCheck "chise-arr-no-request-waits-on-an-approval" everyAccountHoldsTheSamePermissionsAsAFriend
+      "the permissions pinned onto every non-administrator account must be the very friend bitmask rather than a second literal spelling of it; the two would otherwise drift and an account left without auto-approve would sit pending forever, because the only accounts that could approve it are the ones this reconcile is demoting";
+
+  chise-arr-jellyseerr-keeps-a-declared-administrator =
+    mkEvalCheck "chise-arr-jellyseerr-keeps-a-declared-administrator"
+      jellyseerrKeepsADeclaredAdministrator
+      "the permission reconcile must refuse to run when it would leave no declared administrator; demoting the last one is unrecoverable through the web UI, because granting admin back is itself an admin-gated action and no remaining account could perform it";
 
   chise-arr-jellyfin-mounts-media-root-read-only =
     mkEvalCheck "chise-arr-jellyfin-mounts-media-root-read-only" jellyfinMountsTheWholeMediaRootReadOnly
