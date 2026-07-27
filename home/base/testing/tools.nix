@@ -7,13 +7,15 @@ let
 
   pytestWithScriptDependencies = import ./python-test-environment.nix { inherit pkgs; };
 
+  testSuiteEnvironment = import ./test-suite-environment.nix { inherit pkgs; };
+
   dotfiles-test = pkgs.writeShellScriptBin "dotfiles-test" ''
     export PATH="${
       pkgs.lib.makeBinPath (
         [
           pkgs.bats
           pkgs.bc
-          pytestWithScriptDependencies
+          testSuiteEnvironment
           pkgs.qt6.qtdeclarative
         ]
         ++ kcovPackages

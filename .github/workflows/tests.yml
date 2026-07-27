@@ -27,11 +27,15 @@ jobs:
       - name: Run Python tests
         if: ${{ !cancelled() }}
         run: |
-          nix shell --impure --expr 'let pkgs = (builtins.getFlake "nixpkgs").legacyPackages.${builtins.currentSystem}; in import ./home/base/testing/python-test-environment.nix { inherit pkgs; }' --command bash -c '
+          nix shell --impure --expr 'let pkgs = (builtins.getFlake "nixpkgs").legacyPackages.${builtins.currentSystem}; in import ./home/base/testing/test-suite-environment.nix { inherit pkgs; }' --command bash -c '
             export REPO_DIR="$PWD"
             source __tests__/lib/discovery.sh
             source __tests__/lib/pytest.sh
-            _run_pytest_tier unit quick
+            unitExitCode=0
+            _run_pytest_tier unit quick || unitExitCode=$?
+            integrationExitCode=0
+            _run_pytest_tier integration integration-scripts || integrationExitCode=$?
+            exit $(( unitExitCode > integrationExitCode ? unitExitCode : integrationExitCode ))
           '
 
       - name: Run QML unit tests
