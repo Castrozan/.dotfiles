@@ -37,16 +37,16 @@ def test_run_sync_account_permissions_names_who_can_still_approve(monkeypatch, c
         "synchronize_account_permissions",
         lambda context: {
             "administrator_accounts": ["jellyseerr"],
-            "self_approving_accounts": ["lucas", "Rogerio"],
-            "rewritten_accounts": ["lucas"],
+            "self_approving_accounts": ["owner", "Friend"],
+            "rewritten_accounts": ["owner"],
         },
     )
     cli.run_sync_account_permissions(object(), parse_sync_account_permissions())
 
     printed = capsys.readouterr().out
     assert "administered by: jellyseerr" in printed
-    assert "requesting without approval: lucas, Rogerio" in printed
-    assert "rewritten: lucas" in printed
+    assert "requesting without approval: owner, Friend" in printed
+    assert "rewritten: owner" in printed
 
 
 def test_run_sync_account_permissions_reports_an_untouched_jellyseerr(
@@ -57,7 +57,7 @@ def test_run_sync_account_permissions_reports_an_untouched_jellyseerr(
         "synchronize_account_permissions",
         lambda context: {
             "administrator_accounts": ["jellyseerr"],
-            "self_approving_accounts": ["Rogerio"],
+            "self_approving_accounts": ["Friend"],
             "rewritten_accounts": [],
         },
     )

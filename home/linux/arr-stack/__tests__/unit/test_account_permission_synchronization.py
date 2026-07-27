@@ -13,8 +13,8 @@ import account_permission_synchronization
 import jellyseerr_account_permissions
 
 OWNER_ACCOUNT = {"id": 1, "jellyfinUsername": "jellyseerr", "permissions": 2}
-DAILY_DRIVER_ACCOUNT = {"id": 2, "jellyfinUsername": "lucas", "permissions": 2}
-FRIEND_ACCOUNT = {"id": 4, "jellyfinUsername": "Rogerio", "permissions": 160}
+DAILY_DRIVER_ACCOUNT = {"id": 2, "jellyfinUsername": "owner", "permissions": 2}
+FRIEND_ACCOUNT = {"id": 4, "jellyfinUsername": "Friend", "permissions": 160}
 
 
 def stub_jellyseerr(monkeypatch, users):
@@ -46,7 +46,7 @@ def test_an_undeclared_administrator_is_demoted_to_requesting(monkeypatch):
     assert calls["permissions"] == [
         ([2], jellyseerr_account_permissions.SELF_APPROVING_REQUESTER_PERMISSIONS)
     ]
-    assert synchronized["rewritten_accounts"] == ["lucas"]
+    assert synchronized["rewritten_accounts"] == ["owner"]
 
 
 def test_the_administrator_account_is_never_written_to(monkeypatch):
@@ -78,7 +78,7 @@ def test_every_non_administrator_is_reported_as_requesting_without_approval(
     )
 
     assert synchronized["administrator_accounts"] == ["jellyseerr"]
-    assert synchronized["self_approving_accounts"] == ["lucas", "Rogerio"]
+    assert synchronized["self_approving_accounts"] == ["owner", "Friend"]
 
 
 def test_nothing_is_demoted_when_no_administrator_would_be_left(monkeypatch):

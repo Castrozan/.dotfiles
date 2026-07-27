@@ -17,7 +17,7 @@ ROUTED_ACCOUNT = {
     "displayName": private_request_routing.PRIVATE_REQUEST_ACCOUNT_USERNAME,
     "permissions": 160,
 }
-FRIEND_ACCOUNT = {"id": 4, "displayName": "Rogerio", "permissions": 160}
+FRIEND_ACCOUNT = {"id": 4, "displayName": "Friend", "permissions": 160}
 DEFAULT_SERVERS = [{"id": 0, "isDefault": True, "is4k": False}]
 PUBLIC_RULE = {"id": 50, "rootFolder": "/data/media/movies", "users": "4"}
 

@@ -80,12 +80,12 @@ browse, not in search, not playable by direct item id. The libraries stay out of
 Jellyseerr's synced-library list too, so a private title is never announced there
 as available.
 
-Access is an allowlist of usernames, not a role test, and `lucas` is deliberately
-outside it. Jellyfin honours restricted folders for administrators as well, so the
-owner's daily-driver account stays an administrator and keeps approving requests
-while seeing only public media. The reconcile writes `EnabledFolders` on every
-account including administrators and never touches `IsAdministrator`. This keeps
-private media out of the daily account rather than out of the owner's reach: an
+Access is an allowlist of usernames, not a role test, so it is the declared list
+that decides, never a Jellyfin admin flag. Jellyfin honours restricted folders for
+administrators as well, which is what lets the daily-driver account stay a Jellyfin
+administrator while seeing public media only. The reconcile writes `EnabledFolders`
+on every account including administrators and never touches `IsAdministrator`, so
+this keeps private media out of the daily account rather than out of reach: an
 administrator can re-grant itself the libraries in the dashboard, and the next
 rebuild pins it back.
 
@@ -99,19 +99,34 @@ reconcile by hand. Both refuse to write a policy at all when a declared public
 library is missing from Jellyfin, so a half-read library list can never silently
 narrow or widen what anyone sees.
 
+## Who can do what
+
+Four roles, each declared in the `arr_users` package rather than spelled out here,
+because the account names change and a README that repeats them goes stale
+silently:
+
+- **Friends** request and watch public media. `FRIEND_JELLYSEERR_PERMISSIONS_BITMASK`
+  in `friend_account_policy.py` is what they hold, and one ordinary friend account
+  is kept unused so you can log into Jellyfin as it and see exactly what they see.
+- **The daily driver** is a Jellyfin administrator pinned to the public libraries,
+  and in Jellyseerr it holds the friend bitmask like everyone else.
+- **The private requester**, named in `private_request_routing.py`, has every
+  request rewritten to a `-private` root folder and sees every library, so private
+  media is requested and watched there end to end.
+- **The break-glass administrator**, named in `jellyseerr_account_permissions.py`,
+  is the sole Jellyseerr admin and sees every library. It exists to reach Jellyseerr
+  settings, users, and override rules; nothing routine needs it.
+
 ## Requesting into a private library
 
 Which account requests decides where the title lands.
-`scripts/arr_users/private_request_routing.py` declares one ordinary Jellyseerr
-account, `private-requests`, and the override rules that rewrite every request it
-makes to a `-private` root folder. The
-`jellyseerr-private-request-routing-provisioner` systemd unit reconciles those
-rules on every rebuild, and `arr-users sync-request-routing` runs the same
-reconcile by hand. Request as `private-requests` to keep a title off the public
-libraries and as the admin for anything friends should get. Adding the title in
-Radarr or Sonarr directly (`http://arr:7878`, `http://arr:8989`) with the
-`-private` root folder picked still works, and is the fallback when a request has
-to bypass Jellyseerr.
+`scripts/arr_users/private_request_routing.py` declares the requesting account and
+the override rules that rewrite every request it makes to a `-private` root folder.
+The `jellyseerr-private-request-routing-provisioner` systemd unit reconciles those
+rules on every rebuild, and `arr-users sync-request-routing` runs the same reconcile
+by hand. Adding the title in Radarr or Sonarr directly (`http://arr:7878`,
+`http://arr:8989`) with the `-private` root folder picked still works, and is the
+fallback when a request has to bypass Jellyseerr.
 
 Jellyseerr evaluates override rules only for accounts holding neither admin nor
 manage-requests, so the routing account has to stay an ordinary requester:
@@ -122,32 +137,29 @@ keyword, because Jellyseerr drops every rule that omits it for anime.
 
 ## Nobody approves anything
 
-`scripts/arr_users/jellyseerr_account_permissions.py` declares the permissions
-every Jellyseerr account holds: request and auto-approve, the same pair a friend
-gets, and nothing else. The `jellyseerr-account-permission-provisioner` systemd
-unit pins them on every rebuild, and `arr-users sync-account-permissions` runs the
-same reconcile by hand. So no request from anyone, friend or owner, ever sits
-pending: approving is a capability nobody needs rather than a chore someone owes.
+`scripts/arr_users/jellyseerr_account_permissions.py` declares the permissions every
+Jellyseerr account holds: request and auto-approve, the same pair a friend gets, and
+nothing else. The `jellyseerr-account-permission-provisioner` systemd unit pins them
+on every rebuild, and `arr-users sync-account-permissions` runs the same reconcile by
+hand. So no request from anyone ever sits pending: approving is a capability nobody
+needs rather than a chore someone owes.
 
-Exactly one account is exempt and keeps Jellyseerr admin, the Jellyseerr owner
-account (`jellyseerr`, user id 1). The owner's own `lucas` account is demoted with
-everyone else on purpose, because an account holding admin or manage-requests
-reads every other account's requests by title, which would put the private
-account's request titles back in the daily-driver account's Requests list even
-though the private libraries themselves stay hidden. Log in as `jellyseerr` to
-reach Jellyseerr settings, users, and override rules. The reconcile refuses to run
-at all if it would leave no declared administrator, because granting admin back is
-itself admin-gated and no remaining account could do it. The CLIs and provisioners
-are unaffected either way: Jellyseerr resolves an API key to the owner account, so
-they never depend on what the human accounts hold.
+Only the break-glass administrator is exempt. Everything else is demoted on purpose,
+because a Jellyseerr account holding admin or manage-requests reads every other
+account's requests by title, which would put the private account's request titles
+back in the daily-driver account's Requests list even though the private libraries
+themselves stay hidden. Approval scope is global in Jellyseerr, with no per-library
+or per-root-folder term anywhere in the request query, so "approves public requests
+only" is not a thing that can be configured; universal auto-approve is what replaces
+it. The reconcile refuses to run at all if it would leave no declared administrator,
+because granting admin back is itself admin-gated and no remaining account could do
+it. The CLIs and provisioners are unaffected either way: Jellyseerr resolves an API
+key to the owner account, so they never depend on what the human accounts hold.
 
 Radarr and Sonarr key a title by its TMDB/TVDB id and can only hold it under one
-root folder, so a title you already keep privately will fail a friend's request
-rather than move itself into public view; grab a second public copy by hand if you
-want them to have it.
-
-To see exactly what a friend sees, log into Jellyfin as the `friends-view`
-account, which is an ordinary friend account kept for that purpose.
+root folder, so a title already kept privately will fail a friend's request rather
+than move itself into public view; grab a second public copy by hand if they should
+have it.
 
 ## Moving data to an external drive
 

@@ -73,7 +73,7 @@ def test_run_sync_names_who_holds_private_library_access(monkeypatch, capsys):
             "public_libraries": ["Movies", "TV"],
             "private_libraries": ["Movies (Private)"],
             "private_library_accounts": ["private-requests"],
-            "reconciled_accounts": ["Rogerio"],
+            "reconciled_accounts": ["Friend"],
         },
     )
     cli.run_sync(
@@ -84,7 +84,7 @@ def test_run_sync_names_who_holds_private_library_access(monkeypatch, capsys):
     assert "every account can see: Movies, TV" in printed
     assert "private libraries: Movies (Private)" in printed
     assert "only these accounts see them: private-requests" in printed
-    assert "reconciled: Rogerio" in printed
+    assert "reconciled: Friend" in printed
 
 
 def test_run_sync_reports_the_reconcile_before_failing_on_a_library(
@@ -99,7 +99,7 @@ def test_run_sync_reports_the_reconcile_before_failing_on_a_library(
             "public_libraries": ["Movies", "TV"],
             "private_libraries": [],
             "private_library_accounts": ["private-requests"],
-            "reconciled_accounts": ["Rogerio"],
+            "reconciled_accounts": ["Friend"],
         },
     )
 
@@ -108,7 +108,7 @@ def test_run_sync_reports_the_reconcile_before_failing_on_a_library(
             object(), cli.argument_parsing.build_argument_parser().parse_args(["sync"])
         )
 
-    assert "reconciled: Rogerio" in capsys.readouterr().out
+    assert "reconciled: Friend" in capsys.readouterr().out
 
 
 def test_run_sync_request_routing_names_the_account_it_routes(monkeypatch, capsys):

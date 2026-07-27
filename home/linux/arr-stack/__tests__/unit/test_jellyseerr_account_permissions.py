@@ -11,8 +11,8 @@ import jellyseerr_account_permissions
 import private_request_routing
 
 OWNER_ACCOUNT = {"id": 1, "jellyfinUsername": "jellyseerr", "permissions": 2}
-DAILY_DRIVER_ACCOUNT = {"id": 2, "jellyfinUsername": "lucas", "permissions": 2}
-FRIEND_ACCOUNT = {"id": 4, "jellyfinUsername": "Rogerio", "permissions": 160}
+DAILY_DRIVER_ACCOUNT = {"id": 2, "jellyfinUsername": "owner", "permissions": 2}
+FRIEND_ACCOUNT = {"id": 4, "jellyfinUsername": "Friend", "permissions": 160}
 ROUTED_ACCOUNT = {
     "id": 9,
     "jellyfinUsername": private_request_routing.PRIVATE_REQUEST_ACCOUNT_USERNAME,
@@ -78,7 +78,7 @@ def test_the_administrator_is_never_offered_for_rewrite():
 
 def test_an_account_is_named_by_its_jellyfin_username():
     assert (
-        jellyseerr_account_permissions.describe_account(DAILY_DRIVER_ACCOUNT) == "lucas"
+        jellyseerr_account_permissions.describe_account(DAILY_DRIVER_ACCOUNT) == "owner"
     )
 
 

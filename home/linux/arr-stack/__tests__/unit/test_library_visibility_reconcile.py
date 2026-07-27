@@ -7,6 +7,7 @@ from arr_users_test_doubles import (
     SYNC_ADMIN_USER,
     SYNC_DISABLED_FRIEND_USER,
     SYNC_FRIEND_USER,
+    SYNC_JELLYSEERR_ADMINISTRATOR_USER,
     SYNC_PRIVATE_REQUEST_USER,
     make_context,
     stub_library_synchronization,
@@ -31,7 +32,7 @@ def test_a_friend_is_pinned_to_the_public_libraries(monkeypatch):
     assert applied_user_id == "friend-id"
     assert applied_policy["EnableAllFolders"] is False
     assert applied_policy["EnabledFolders"] == PUBLIC_LIBRARY_IDS
-    assert result["reconciled_accounts"] == ["Rogerio"]
+    assert result["reconciled_accounts"] == ["Friend"]
 
 
 def test_an_administrator_is_pinned_to_the_public_libraries_too(monkeypatch):
@@ -43,7 +44,7 @@ def test_an_administrator_is_pinned_to_the_public_libraries_too(monkeypatch):
     assert applied_user_id == "admin-id"
     assert applied_policy["EnableAllFolders"] is False
     assert applied_policy["EnabledFolders"] == PUBLIC_LIBRARY_IDS
-    assert result["reconciled_accounts"] == ["lucas"]
+    assert result["reconciled_accounts"] == ["owner"]
 
 
 def test_pinning_an_administrator_never_demotes_it(monkeypatch):
@@ -65,6 +66,29 @@ def test_only_the_declared_private_account_sees_every_library(monkeypatch):
     assert applied_policy["EnabledFolders"] == EVERY_LIBRARY_ID
 
 
+def test_the_jellyseerr_administrator_sees_every_library(monkeypatch):
+    calls = stub_library_synchronization(
+        monkeypatch, [SYNC_JELLYSEERR_ADMINISTRATOR_USER]
+    )
+
+    library_access_synchronization.synchronize_library_access(make_context())
+
+    _, applied_policy = calls["policies"][0]
+    assert applied_policy["EnableAllFolders"] is False
+    assert applied_policy["EnabledFolders"] == EVERY_LIBRARY_ID
+
+
+def test_the_everyday_administrator_never_gains_private_libraries(monkeypatch):
+    calls = stub_library_synchronization(
+        monkeypatch, [SYNC_ADMIN_USER, SYNC_JELLYSEERR_ADMINISTRATOR_USER]
+    )
+
+    library_access_synchronization.synchronize_library_access(make_context())
+
+    everyday_policy = dict(calls["policies"])["admin-id"]
+    assert everyday_policy["EnabledFolders"] == PUBLIC_LIBRARY_IDS
+
+
 def test_a_disabled_friend_stays_disabled(monkeypatch):
     calls = stub_library_synchronization(monkeypatch, [SYNC_DISABLED_FRIEND_USER])
 
@@ -80,4 +104,4 @@ def test_the_accounts_holding_private_access_are_reported(monkeypatch):
 
     result = library_access_synchronization.synchronize_library_access(make_context())
 
-    assert result["private_library_accounts"] == ["private-requests"]
+    assert result["private_library_accounts"] == ["private-requests", "jellyseerr"]

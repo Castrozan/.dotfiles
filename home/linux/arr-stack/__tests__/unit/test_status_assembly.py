@@ -86,7 +86,7 @@ def test_build_status_line_tolerating_title_failure_degrades_on_url_error(monkey
     request_object = {
         "status": 2,
         "media": {"mediaType": "tv", "tmdbId": 55, "tvdbId": 77, "status": 3},
-        "requestedBy": {"displayName": "lucas"},
+        "requestedBy": {"displayName": "owner"},
     }
     line = status_assembly.build_status_line_tolerating_title_failure(
         "b", "k", request_object, snapshot, snapshot
@@ -106,10 +106,10 @@ def test_build_status_line_falls_back_to_tmdb_and_reads_requester(monkeypatch):
     request_object = {
         "status": 2,
         "media": {"mediaType": "tv", "tmdbId": 55, "tvdbId": 77, "status": 3},
-        "requestedBy": {"displayName": "xamitos"},
+        "requestedBy": {"displayName": "disabled-friend"},
     }
     line = status_assembly.build_status_line("b", "k", request_object, radarr, sonarr)
     assert line.title == "tmdb:55"
-    assert line.requested_by == "xamitos"
+    assert line.requested_by == "disabled-friend"
     assert line.stage == "processing"
     assert line.arr_reachable is False

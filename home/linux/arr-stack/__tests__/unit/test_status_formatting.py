@@ -15,7 +15,7 @@ def make_line(**overrides):
         "title": "Slime",
         "year": "2018",
         "media_type": "tv",
-        "requested_by": "lucas",
+        "requested_by": "owner",
         "stage": "partial",
         "progress": None,
         "arr_reachable": True,

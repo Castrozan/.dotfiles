@@ -1,7 +1,9 @@
+import jellyseerr_account_permissions
 import private_request_routing
 
 PRIVATE_LIBRARY_ACCOUNT_USERNAMES = (
     private_request_routing.PRIVATE_REQUEST_ACCOUNT_USERNAME,
+    *jellyseerr_account_permissions.JELLYSEERR_ADMINISTRATOR_ACCOUNT_USERNAMES,
 )
 
 PUBLIC_LIBRARY_DECLARATIONS = [

@@ -100,9 +100,9 @@ def test_jellyfin_list_users_falls_back_to_empty_on_none(monkeypatch):
 def test_jellyfin_find_user_by_name_is_case_insensitive_and_tolerates_missing_name(
     monkeypatch,
 ):
-    users = [{"Name": "Rogerio", "Id": "1"}, {"Id": "2"}]
+    users = [{"Name": "Friend", "Id": "1"}, {"Id": "2"}]
     monkeypatch.setattr(jellyfin_api_client, "request_json", lambda *a, **k: users)
-    assert jellyfin_api_client.find_user_by_name("base", "key", "rogerio")["Id"] == "1"
+    assert jellyfin_api_client.find_user_by_name("base", "key", "friend")["Id"] == "1"
     assert jellyfin_api_client.find_user_by_name("base", "key", "ghost") is None
 
 

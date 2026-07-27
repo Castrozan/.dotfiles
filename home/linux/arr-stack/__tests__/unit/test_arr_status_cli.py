@@ -28,7 +28,7 @@ def make_line(title, stage, progress=None, arr_reachable=True):
         title=title,
         year="2018",
         media_type="tv",
-        requested_by="lucas",
+        requested_by="owner",
         stage=stage,
         progress=progress,
         arr_reachable=arr_reachable,

@@ -33,6 +33,9 @@ let
   privateAccessIsAnExplicitAllowlist =
     lib.hasInfix "PRIVATE_LIBRARY_ACCOUNT_USERNAMES" libraryDeclarationText
     && lib.hasInfix "def resolve_visible_library_ids" libraryDeclarationText;
+  privateAccessNamesTheAdministratorByReference =
+    lib.hasInfix "jellyseerr_account_permissions.JELLYSEERR_ADMINISTRATOR_ACCOUNT_USERNAMES" libraryDeclarationText
+    && !(lib.hasInfix ''"jellyseerr"'' libraryDeclarationText);
   reconcileNeverExemptsAnAdministrator = !(lib.hasInfix "is_administrator" visibilityReconcileText);
 
   privateMediaSubdirectories = [
@@ -97,6 +100,11 @@ in
   chise-arr-private-access-is-an-explicit-allowlist =
     mkEvalCheck "chise-arr-private-access-is-an-explicit-allowlist" privateAccessIsAnExplicitAllowlist
       "which accounts see the private libraries must stay a named allowlist resolved per account, not a role test; the owner's own admin account is deliberately outside it, so collapsing this back to administrator-sees-everything would silently put private media back in the daily-driver account";
+
+  chise-arr-private-access-names-the-administrator-by-reference =
+    mkEvalCheck "chise-arr-private-access-names-the-administrator-by-reference"
+      privateAccessNamesTheAdministratorByReference
+      "the library allowlist must take the break-glass account's name from the Jellyseerr permission declaration instead of spelling it a second time; the two literals would drift on a rename and the sole remaining Jellyseerr administrator would quietly lose the private libraries it is the only account allowed to watch";
 
   chise-arr-visibility-reconcile-never-exempts-an-administrator =
     mkEvalCheck "chise-arr-visibility-reconcile-never-exempts-an-administrator"

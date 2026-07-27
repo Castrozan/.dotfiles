@@ -6,36 +6,44 @@ ARR_USERS_PACKAGE_DIRECTORY_PATH = (
 )
 sys.path.insert(0, str(ARR_USERS_PACKAGE_DIRECTORY_PATH))
 
+import jellyseerr_account_permissions
 import library_access_synchronization
 import private_request_routing
 import user_account_operations
 
 FRIEND_USER = {
     "Id": "friend-id",
-    "Name": "Rogerio",
+    "Name": "Friend",
     "Policy": {"IsAdministrator": False},
 }
-ADMIN_USER = {"Id": "admin-id", "Name": "lucas", "Policy": {"IsAdministrator": True}}
+ADMIN_USER = {"Id": "admin-id", "Name": "owner", "Policy": {"IsAdministrator": True}}
 
 SYNC_FRIEND_USER = {
     "Id": "friend-id",
-    "Name": "Rogerio",
+    "Name": "Friend",
     "Policy": {"IsAdministrator": False, "EnableAllFolders": True},
 }
 SYNC_ADMIN_USER = {
     "Id": "admin-id",
-    "Name": "lucas",
+    "Name": "owner",
     "Policy": {"IsAdministrator": True, "EnableAllFolders": True},
 }
 SYNC_DISABLED_FRIEND_USER = {
     "Id": "disabled-id",
-    "Name": "xamitos",
+    "Name": "disabled-friend",
     "Policy": {"IsAdministrator": False, "IsDisabled": True, "EnableAllFolders": True},
 }
 SYNC_PRIVATE_REQUEST_USER = {
     "Id": "private-id",
     "Name": private_request_routing.PRIVATE_REQUEST_ACCOUNT_USERNAME,
     "Policy": {"IsAdministrator": False, "EnableAllFolders": False},
+}
+SYNC_JELLYSEERR_ADMINISTRATOR_USER = {
+    "Id": "jellyseerr-id",
+    "Name": jellyseerr_account_permissions.JELLYSEERR_ADMINISTRATOR_ACCOUNT_USERNAMES[
+        0
+    ],
+    "Policy": {"IsAdministrator": True, "EnableAllFolders": False},
 }
 PUBLIC_ONLY_LIBRARIES = [
     {"Name": "Movies", "ItemId": "movies-id"},

@@ -9,33 +9,40 @@ Two CLIs, chise only: `arr-users` manages friend accounts and reconciles the pri
 for the exact interface; do not reconstruct flags from memory. On any host other than chise these commands do not exist.
 </commands>
 
+<account_roles>
+Four roles, each named in the `arr_users` package rather than anywhere else, so read the declaring module for the
+current username instead of recalling one: friends, who request and watch public media; the daily driver, a Jellyfin
+administrator pinned to the public libraries and holding the friend permissions in Jellyseerr like everyone else; the
+private requester, whose requests are rewritten to `-private` root folders and who sees every library; and the
+break-glass Jellyseerr administrator, the sole Jellyseerr admin, which also sees every library and exists only to reach
+settings, users and override rules. One ordinary friend account is kept unused so logging into Jellyfin as it shows
+exactly what a friend sees.
+</account_roles>
+
 <private_libraries>
 Media friends must not see goes in a private library, backed by a `-private` media directory and hidden by pinning every
 account to `EnableAllFolders: false` with only the libraries it is declared to see. Access is an explicit allowlist of
-usernames, not a role test: the owner's own admin account is outside it on purpose, so private media stays out of the
-daily-driver account and only the declared private account sees it. Administrators are pinned like everyone else, which
-Jellyfin honours, and the reconcile never changes who is an administrator. The library declaration module in the
-`arr_users` package is the sole source of truth for both the split and the allowlist and is default-deny, so edit that
-module rather than a Jellyfin dashboard checkbox. Log in as `friends-view` to see the library as a friend does.
+usernames, not a role test, so the daily-driver account is outside it despite being a Jellyfin administrator and private
+media stays out of the account in daily use. Administrators are pinned like everyone else, which Jellyfin honours, and
+the reconcile never changes who is an administrator. The library declaration module in the `arr_users` package is the
+sole source of truth for both the split and the allowlist and is default-deny, so edit that module rather than a
+Jellyfin dashboard checkbox.
 </private_libraries>
 
 <private_requesting>
 Requesting privately is a matter of which account requests, not of remembering a root folder: the routing module in the
 `arr_users` package declares one ordinary Jellyseerr account whose every request is rewritten to a `-private` root
-folder by committed override rules, reconciled on each rebuild. That same account is the only one that can watch what it
-requests, so private media is requested and viewed there end to end, while the owner's daily account requests and
-watches public media only. Adding the title in Radarr or Sonarr by hand and picking the `-private` root still works and
-is the fallback when a request must bypass Jellyseerr entirely.
+folder by committed override rules, reconciled on each rebuild. Adding the title in Radarr or Sonarr by hand and
+picking the `-private` root still works and is the fallback when a request must bypass Jellyseerr entirely.
 </private_requesting>
 
 <jellyseerr_account_permissions>
 No request from anyone waits on an approval: the account-permission module in the `arr_users` package pins every
 Jellyseerr account to request-and-auto-approve, reconciled on each rebuild, so approving is a capability nobody needs
-rather than a chore someone owes. Exactly one declared account keeps Jellyseerr admin, and it is the Jellyseerr owner
-(user id 1, the service account) rather than the owner's daily-driver account, which is deliberately demoted with
-everyone else. Reach Jellyseerr settings, users and override rules by logging in as that administrator; the CLIs and
-provisioners never need it, because Jellyseerr resolves an API key to the owner account regardless of what the human
-accounts hold.
+rather than a chore someone owes. Jellyseerr scopes approval and request visibility globally, with no library or root
+folder term in either, so an account that may approve reads and approves every request including the private ones and a
+public-only approver cannot be built; universal auto-approve is what replaces it, and the reconcile keeps exactly one
+declared administrator so the capability exists without anyone routinely holding it.
 </jellyseerr_account_permissions>
 
 <private_library_traps>

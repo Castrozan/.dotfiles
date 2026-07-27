@@ -16,7 +16,7 @@ def test_create_rejects_existing_username(monkeypatch):
     stub_jellyfin(monkeypatch, [FRIEND_USER])
     stub_jellyseerr(monkeypatch)
     with pytest.raises(ValueError, match="already exists"):
-        user_account_operations.create_friend_account(make_context(), "Rogerio")
+        user_account_operations.create_friend_account(make_context(), "Friend")
 
 
 def test_create_applies_friend_policy_and_imports_into_jellyseerr(monkeypatch):
