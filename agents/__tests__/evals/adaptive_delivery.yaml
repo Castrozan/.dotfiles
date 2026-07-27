@@ -33,7 +33,8 @@ tests:
     no_tools: true
     assertions:
       llm_judge:
-        - "Refuses the five-agent fan-out, citing a ceiling of two subagents below the orchestrated tier, and rejects importance on its own as a reason to escalate."
+        - "Declines to run five agents on the change and holds the subagent count at two or fewer for a tier short of orchestrated."
+        - "States that a task being important is not by itself grounds to escalate the tier or the agent count."
 
   - name: adaptive_delivery_lead_covers_every_role_at_the_light_tiers
     skill_path: agents/core_rules/adaptive-implementation-delivery-process.md
@@ -42,7 +43,8 @@ tests:
     no_tools: true
     assertions:
       llm_judge:
-        - "Says no and states it does the implementation and verification work itself at that tier, loading the corresponding skills to hold the same standard, because spawning is a throughput decision rather than a quality one."
+        - "Answers that it should not spawn those two agents for a change of that size."
+        - "States that it does the implementation and the verification work itself at that tier instead of delegating either one."
 
   - name: adaptive_delivery_delegated_task_carries_stop_conditions
     skill_path: agents/core_rules/adaptive-implementation-delivery-process.md
@@ -60,7 +62,8 @@ tests:
     no_tools: true
     assertions:
       llm_judge:
-        - "Answers that compiling is not evidence, and requires the acceptance criteria to pass with evidence, no unscoped file to have been touched, and the residual risk to be named."
+        - "States that the change compiling is not by itself evidence that the work is correct."
+        - "Requires the acceptance criteria to pass with evidence before the work can be accepted."
 
   - name: adaptive_delivery_mid_task_expansion_finishes_the_agreed_scope
     skill_path: agents/core_rules/adaptive-implementation-delivery-process.md

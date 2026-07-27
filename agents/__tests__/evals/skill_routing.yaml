@@ -410,14 +410,14 @@ tests:
       output_equals:
         - "git"
 
-  - name: routing_to_review_code_analysis
+  - name: routing_to_code_review_for_an_unbiased_reviewer_pass
     no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "Spawn an unbiased reviewer agent to check my implementation for bugs and convention violations"
     model: sonnet
     assertions:
       output_equals:
-        - "review"
+        - "code-review"
 
   - name: routing_to_git_history_search_commits
     no_tools: true
