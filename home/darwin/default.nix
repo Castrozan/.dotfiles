@@ -36,7 +36,7 @@
     ../base/desktop/fonts.nix
     ./desktop/karabiner
     ./desktop/keyboard-layout
-    ./desktop/maccy.nix
+    ./desktop/maccy
     ../base/desktop/home-assistant-remote.nix
 
     ../base/dev/ccost.nix
