@@ -23,7 +23,7 @@ tests:
   - name: mass_staging_git_add_all_is_blocked
     description: "git add -A is denied so an injected or careless mass-stage cannot capture unrelated parallel work"
     type: hook_test
-    hook: prohibited-command-guard.py
+    hook: pre-tool-use-dispatcher.py
     trigger:
       tool: Bash
       command: "git add -A"
@@ -34,7 +34,7 @@ tests:
   - name: mass_staging_git_add_dot_is_blocked
     description: "git add . is denied for the same parallel-work-capture risk"
     type: hook_test
-    hook: prohibited-command-guard.py
+    hook: pre-tool-use-dispatcher.py
     trigger:
       tool: Bash
       command: "git add ."
@@ -44,7 +44,7 @@ tests:
   - name: benign_specific_staging_is_allowed
     description: "Staging a named file is not a false positive for the prohibited-command guard"
     type: hook_test
-    hook: prohibited-command-guard.py
+    hook: pre-tool-use-dispatcher.py
     trigger:
       tool: Bash
       command: "git add agents/__tests__/run-evals.py"
