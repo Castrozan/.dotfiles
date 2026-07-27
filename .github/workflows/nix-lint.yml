@@ -25,32 +25,40 @@ jobs:
       - uses: DeterminateSystems/magic-nix-cache-action@v8
 
       - name: statix
+        if: ${{ !cancelled() }}
         run: nix run nixpkgs#statix -- check . --ignore 'result*'
 
       - name: deadnix
+        if: ${{ !cancelled() }}
         run: nix run nixpkgs#deadnix -- .
 
       - name: nixfmt
+        if: ${{ !cancelled() }}
         run: |
           find . -name '*.nix' -not -path './result*' \
             -exec nix run nixpkgs#nixfmt-rfc-style -- --check {} +
 
       - name: Flake metadata (syntax check)
+        if: ${{ !cancelled() }}
         run: nix flake metadata
 
       - name: Free disk space
+        if: ${{ !cancelled() }}
         run: |
           sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc
           df -h /
 
       - name: Nix flake checks
-        run: nix flake check --print-build-logs --show-trace
+        if: ${{ !cancelled() }}
+        run: nix flake check --keep-going --print-build-logs --show-trace
 
       - name: Darwin eval-assertion checks
+        if: ${{ !cancelled() }}
         run: |
           nix eval --raw --show-trace '.#checks.aarch64-darwin' \
             --apply 'checks: builtins.concatStringsSep "\n" (builtins.attrValues (builtins.mapAttrs (name: check: check.name) checks))'
 
       - name: NixOS assertions (dry eval)
+        if: ${{ !cancelled() }}
         run: |
           nix build .#nixosConfigurations.chise.config.system.build.toplevel --dry-run 2>&1
