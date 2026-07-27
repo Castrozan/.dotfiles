@@ -3,6 +3,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from hook_module_loader import HOOK_SUBPROCESS_TIMEOUT_SECONDS
+
 DISPATCHER_SCRIPT_PATH = next(
     candidate
     for candidate in Path(__file__)
@@ -20,7 +22,7 @@ def _invoke_dispatcher_with_payload(payload):
         input=json.dumps({**payload, "hook_event_name": "PreToolUse"}),
         capture_output=True,
         text=True,
-        timeout=5,
+        timeout=HOOK_SUBPROCESS_TIMEOUT_SECONDS,
     )
 
 
@@ -30,7 +32,7 @@ def _invoke_dispatcher_with_raw_stdin(raw_stdin):
         input=raw_stdin,
         capture_output=True,
         text=True,
-        timeout=5,
+        timeout=HOOK_SUBPROCESS_TIMEOUT_SECONDS,
     )
 
 

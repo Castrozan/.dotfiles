@@ -4,6 +4,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from hook_module_loader import HOOK_SUBPROCESS_TIMEOUT_SECONDS
+
 HOOKS_ROOT = Path(__file__).resolve().parents[2]
 STOP_DISPATCHER_SCRIPT = next(HOOKS_ROOT.rglob("stop-dispatcher.py"))
 
@@ -117,7 +119,7 @@ def invoke_guard(
         input=json.dumps(payload),
         capture_output=True,
         text=True,
-        timeout=5,
+        timeout=HOOK_SUBPROCESS_TIMEOUT_SECONDS,
         env=environment,
     )
 

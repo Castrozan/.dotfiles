@@ -3,6 +3,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from hook_module_loader import HOOK_SUBPROCESS_TIMEOUT_SECONDS
+
 HOOKS_ROOT = Path(__file__).resolve().parents[2]
 SESSION_START_DISPATCHER_SCRIPT = next(HOOKS_ROOT.rglob("session-start-dispatcher.py"))
 
@@ -13,7 +15,7 @@ def invoke_session_start_dispatcher(payload: dict) -> subprocess.CompletedProces
         input=json.dumps(payload),
         capture_output=True,
         text=True,
-        timeout=10,
+        timeout=HOOK_SUBPROCESS_TIMEOUT_SECONDS,
     )
 
 

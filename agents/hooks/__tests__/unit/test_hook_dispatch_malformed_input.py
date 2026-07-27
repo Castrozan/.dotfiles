@@ -5,6 +5,8 @@ from pathlib import Path
 
 import pytest
 
+from hook_module_loader import HOOK_SUBPROCESS_TIMEOUT_SECONDS
+
 HOOKS_ROOT = Path(__file__).resolve().parents[2]
 
 DISPATCHER_PATHS = [
@@ -37,7 +39,7 @@ def test_dispatchers_exit_cleanly_on_valid_json_that_is_not_an_object(
         input=raw_input,
         capture_output=True,
         text=True,
-        timeout=20,
+        timeout=HOOK_SUBPROCESS_TIMEOUT_SECONDS,
     )
     assert result.returncode == 0, result.stderr
     assert "Traceback" not in result.stderr
@@ -50,7 +52,7 @@ def test_dispatchers_exit_cleanly_on_undecodable_input(dispatcher_path):
         input="{not json at all",
         capture_output=True,
         text=True,
-        timeout=20,
+        timeout=HOOK_SUBPROCESS_TIMEOUT_SECONDS,
     )
     assert result.returncode == 0, result.stderr
     assert "Traceback" not in result.stderr
@@ -70,7 +72,7 @@ def test_dispatchers_exit_cleanly_on_wrongly_typed_tool_input(dispatcher_path):
         input=payload,
         capture_output=True,
         text=True,
-        timeout=20,
+        timeout=HOOK_SUBPROCESS_TIMEOUT_SECONDS,
     )
     assert result.returncode == 0, result.stderr
     assert "Traceback" not in result.stderr

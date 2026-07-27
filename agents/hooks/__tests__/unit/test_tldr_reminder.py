@@ -5,6 +5,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from hook_module_loader import HOOK_SUBPROCESS_TIMEOUT_SECONDS
+
 HOOKS_ROOT = Path(__file__).resolve().parents[2]
 TLDR_REMINDER_HOOK_SCRIPT = next(HOOKS_ROOT.rglob("user-prompt-submit-dispatcher.py"))
 REPLY_REMINDER_STATE_MODULE_PATH = next(
@@ -48,7 +50,7 @@ def invoke_tldr_reminder(
         input=json.dumps(payload),
         capture_output=True,
         text=True,
-        timeout=5,
+        timeout=HOOK_SUBPROCESS_TIMEOUT_SECONDS,
         env=environment,
     )
 

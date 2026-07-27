@@ -5,6 +5,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from hook_module_loader import HOOK_SUBPROCESS_TIMEOUT_SECONDS
+
 HOOKS_ROOT = Path(__file__).resolve().parents[2]
 CHANGED_FILE_PATHS_SOURCE = HOOKS_ROOT / "common" / "changed_file_paths.py"
 HOOK_DISPATCH_SOURCE = HOOKS_ROOT / "common" / "hook_dispatch.py"
@@ -52,7 +54,7 @@ def test_record_edited_logs_codex_apply_patch_nix_file(tmp_path):
         input=json.dumps(payload),
         capture_output=True,
         text=True,
-        timeout=10,
+        timeout=HOOK_SUBPROCESS_TIMEOUT_SECONDS,
         env={**os.environ, "TMPDIR": str(ledger_directory)},
     )
 

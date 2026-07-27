@@ -5,6 +5,8 @@ from pathlib import Path
 
 HOOKS_DIRECTORY = Path(__file__).resolve().parent.parent
 
+HOOK_SUBPROCESS_TIMEOUT_SECONDS = 60
+
 
 def find_hook_module_path(hyphenated_name):
     candidate_module_paths = [
@@ -28,7 +30,9 @@ def import_hyphenated_hook_module(hyphenated_name):
     return module
 
 
-def run_hook_subprocess(hook_script_path, stdin_text, timeout=5):
+def run_hook_subprocess(
+    hook_script_path, stdin_text, timeout=HOOK_SUBPROCESS_TIMEOUT_SECONDS
+):
     return subprocess.run(
         [sys.executable, str(hook_script_path)],
         input=stdin_text,

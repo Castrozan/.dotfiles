@@ -4,6 +4,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from hook_module_loader import HOOK_SUBPROCESS_TIMEOUT_SECONDS
+
 HOOKS_ROOT = Path(__file__).resolve().parents[2]
 USER_PROMPT_SUBMIT_DISPATCHER_SOURCE = next(
     HOOKS_ROOT.rglob("user-prompt-submit-dispatcher.py")
@@ -108,6 +110,6 @@ def run_flattened_hook(directory, hook_filename, payload, environment):
         input=json.dumps(payload),
         capture_output=True,
         text=True,
-        timeout=5,
+        timeout=HOOK_SUBPROCESS_TIMEOUT_SECONDS,
         env=environment,
     )

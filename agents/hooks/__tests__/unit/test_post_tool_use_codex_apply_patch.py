@@ -4,6 +4,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from hook_module_loader import HOOK_SUBPROCESS_TIMEOUT_SECONDS
+
 HOOKS_ROOT = Path(__file__).resolve().parents[2]
 CHANGED_FILE_PATHS_SOURCE = HOOKS_ROOT / "common" / "changed_file_paths.py"
 HOOK_DISPATCH_SOURCE = HOOKS_ROOT / "common" / "hook_dispatch.py"
@@ -27,7 +29,7 @@ def run_flattened_hook(directory, hook_filename, payload):
         input=json.dumps(payload),
         capture_output=True,
         text=True,
-        timeout=15,
+        timeout=HOOK_SUBPROCESS_TIMEOUT_SECONDS,
     )
 
 

@@ -5,6 +5,8 @@ from pathlib import Path
 
 import pytest
 
+from hook_module_loader import HOOK_SUBPROCESS_TIMEOUT_SECONDS
+
 HOOK_SCRIPT_PATH = next(
     Path(__file__).resolve().parent.parent.parent.rglob("post-tool-use-dispatcher.py")
 )
@@ -23,7 +25,7 @@ def invoke_hook_with_payload(payload: dict) -> subprocess.CompletedProcess:
         input=json.dumps({**payload, "hook_event_name": "PostToolUse"}),
         capture_output=True,
         text=True,
-        timeout=5,
+        timeout=HOOK_SUBPROCESS_TIMEOUT_SECONDS,
     )
 
 
@@ -151,7 +153,7 @@ class TestMissingOrInvalidInputs:
             input="not json",
             capture_output=True,
             text=True,
-            timeout=5,
+            timeout=HOOK_SUBPROCESS_TIMEOUT_SECONDS,
         )
         assert result.returncode == 0
         assert result.stdout == ""

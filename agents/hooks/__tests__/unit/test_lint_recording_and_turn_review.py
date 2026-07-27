@@ -4,6 +4,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from hook_module_loader import HOOK_SUBPROCESS_TIMEOUT_SECONDS
+
 HOOKS_ROOT = Path(__file__).resolve().parents[2]
 RECORD_HOOK_SCRIPT = next(HOOKS_ROOT.rglob("record-edited-source-file.py"))
 STOP_DISPATCHER_SCRIPT = next(HOOKS_ROOT.rglob("stop-dispatcher.py"))
@@ -23,7 +25,7 @@ def run_hook(script: Path, payload: dict) -> subprocess.CompletedProcess:
         input=json.dumps(payload),
         capture_output=True,
         text=True,
-        timeout=10,
+        timeout=HOOK_SUBPROCESS_TIMEOUT_SECONDS,
     )
 
 
