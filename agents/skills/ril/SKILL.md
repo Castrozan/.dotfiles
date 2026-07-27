@@ -65,9 +65,8 @@ An adopt is built in an isolated worktree per the worktrees skill, never on the 
 it is proposed. Initialize submodules inside the fresh worktree first or the flake fetch dies on an empty
 `private-config`. Commit inside the worktree before building, because the build reads git and an untracked file never
 reaches the store, so it would build the old code and report success. Build that worktree by naming its path in the
-flake reference: `rebuild` is pinned to `~/.dotfiles` and would silently build main instead. The pull request's CI is
-the test gate, so push the branch and let that run rather than running the suite in the worktree; exercise the change
-live, and say in the pull request what you actually ran rather than that it should work. On chise never switch a bare
+flake reference: `rebuild` is pinned to `~/.dotfiles` and would silently build main instead. Exercise the change live,
+and say in the pull request what you actually ran rather than that it should work. On chise never switch a bare
 worktree, since this machine deploys through a private entrypoint the worktree lacks and a bare switch strips it; build
 there and leave activation to the review. Open the pull request from
 the main checkout with `--head`, one capture per pull request so a bad idea reverts alone, and merge it only as the

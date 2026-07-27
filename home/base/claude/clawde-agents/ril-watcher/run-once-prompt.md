@@ -31,8 +31,7 @@ plus the capture slug, with no `/` in it. Run `git submodule update --init --rec
 or the flake fetch dies on an empty `private-config`. Commit inside the worktree before building, because the build
 reads git and an untracked file never reaches the store, so an uncommitted change builds the old code and reports
 success. Build by naming the worktree path in the flake reference; `rebuild` is pinned to `~/.dotfiles` and is denied to
-you anyway. The pull request's CI is the test gate, so push the branch and read that run rather than running the suite in
-the worktree, and exercise whatever the change permits without activating chise, which deploys through a private
+you anyway. Then exercise whatever the change permits without activating chise, which deploys through a private
 entrypoint a worktree lacks.
 </building_an_adopt>
 
