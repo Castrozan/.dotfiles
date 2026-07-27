@@ -5,8 +5,13 @@
   ...
 }:
 let
-  awsConfigSource = "${toString ../../../private-config}/aws/config";
-  awsConfigSourceExists = builtins.pathExists awsConfigSource;
+  awsConfigSourcePath = ../../../private-config + "/aws/config";
+  awsConfigSourceExists = builtins.pathExists awsConfigSourcePath;
+
+  awsConfigSource = builtins.path {
+    path = awsConfigSourcePath;
+    name = "aws-config";
+  };
 
   awsConfigDestination = "${config.home.homeDirectory}/.aws/config";
 
