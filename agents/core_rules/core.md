@@ -120,8 +120,11 @@ mode live in `home/base/claude/docs/context-management.md`.
 <workflow>
 After editing any file in the dotfiles repo, execute this sequence before responding, no exceptions: 1) format edited
 files; 2) stage each file with git add specific-file (never -A); 3) commit; 4) rebuild for any file change in this
-repo; 5) push; 6) monitor CI to a verdict with `dotfiles-ci`, the one command that waits on every GitHub Actions run for
-the pushed commit and exits non-zero when a run is red or never appears; 7) if the rebuild or CI fails: fix and repeat
+repo; 5) push; 6) monitor CI to a verdict:
+`gh run list --commit $(git rev-parse HEAD) --json databaseId,name,conclusion` gives the run ids, then
+`gh run watch <id> --exit-status` blocks on each until it finishes and exits non-zero when it
+ends red; a short sha matches no run and a just-pushed commit has none for a few seconds, so pass the full sha and retry
+an empty list rather than reading it as a verdict; 7) if the rebuild or CI fails: fix and repeat
 from 1; 8) only after a green rebuild and green CI: respond to user. A change to a session-start-loaded surface, a
 settings key like model/effort/ultracode or the
 `CLAUDE.md`/`core.md` rules, stays dormant in the running session even after a green rebuild because the session already

@@ -49,9 +49,9 @@ let
 
   repoCiToolingDirective = ''
 
-    <repo-ci-tooling>
-    The CI-watching command your skill sends you to is `dotfiles-ci`: it polls every GitHub Actions run for a commit, prints each run's outcome and exits non-zero when one is red or never appears. The integration and runtime tiers need the live machine, so a nightly 03:00 job owns them and no tick of yours ever runs them; a red nightly log under `~/.local/state/dotfiles-nightly-tests` is repo breakage you fix like a red CI.
-    </repo-ci-tooling>
+        <repo-ci-tooling>
+    Watch CI with `gh`: `gh run list --commit $(git rev-parse HEAD) --json databaseId,name,conclusion` gives the run ids for a commit and `gh run watch <id> --exit-status` blocks on each until it finishes and exits non-zero when it ends red. A short sha matches no run and a just-pushed commit has none for a few seconds, so pass the full sha and retry an empty list rather than reading it as a verdict. The integration and runtime tiers need the live machine, so a nightly 03:00 job owns them and no tick of yours ever runs them; a red nightly log under `~/.local/state/dotfiles-nightly-tests` is repo breakage you fix like a red CI.
+        </repo-ci-tooling>
   '';
 
   effectivePersonality =

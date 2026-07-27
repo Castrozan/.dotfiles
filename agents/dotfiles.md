@@ -77,9 +77,11 @@ fan-out.
 <workflow>
 After editing any file in the dotfiles repo, execute this sequence before responding, no exceptions: 1) format edited
 files; 2) stage each file with git add specific-file, never -A; 3) commit; 4) rebuild for any file change in this repo,
-running it yourself and never deferring to the user (see <rebuild>); 5) push; 6) monitor CI to a verdict with
-`dotfiles-ci`, the one command that waits on every GitHub Actions run for the pushed commit, prints each run's outcome
-and exits non-zero when a run is red or never appears; 7) if the rebuild or CI fails: fix and repeat from 1; 8) only
+running it yourself and never deferring to the user (see <rebuild>); 5) push; 6) monitor CI to a verdict:
+`gh run list --commit $(git rev-parse HEAD) --json databaseId,name,conclusion` gives the run ids, then
+`gh run watch <id> --exit-status` blocks on each until it finishes and exits non-zero when it ends red; a short sha
+matches no run and a just-pushed commit has none for a few seconds, so pass the full sha and retry an empty list rather
+than reading it as a verdict; 7) if the rebuild or CI fails: fix and repeat from 1; 8) only
 after a green rebuild and green CI: respond to user. Every CI job reports all of its failures rather than dying on the
 first, so read the whole run and fix the batch in one pass instead of pushing once per error.
 </workflow>
