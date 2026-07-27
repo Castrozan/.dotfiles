@@ -57,6 +57,21 @@ def test_a_second_run_adopts_shared_settings_changed_since_the_first_seed(
     )
 
 
+def test_unreadable_shared_settings_leave_the_isolated_settings_untouched(
+    run_seed, shared_config_directory
+):
+    invoke, isolated = run_seed
+    assert invoke().returncode == 0
+    settings_before = (isolated / "settings.json").read_text()
+
+    (shared_config_directory / "settings.json").write_text("{ truncated mid-write")
+
+    assert invoke().returncode == 0
+    assert (isolated / "settings.json").read_text() == settings_before, (
+        "a shared settings file caught mid-write must not strip the isolated settings"
+    )
+
+
 def test_a_second_run_drops_a_setting_the_shared_config_stopped_declaring(
     run_seed, shared_config_directory
 ):

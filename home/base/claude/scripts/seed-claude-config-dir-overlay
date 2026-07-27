@@ -71,11 +71,15 @@ def mirror_shared_config_entries_as_symlinks(
 def rebuild_isolated_settings_from_shared_settings_and_overlay(
     source_config_directory, target_config_directory, settings_overlay_file
 ):
+    shared_settings_path = source_config_directory / "settings.json"
+    shared_settings = read_json_object_or_none(shared_settings_path)
+    if shared_settings is None:
+        if shared_settings_path.exists():
+            return
+        shared_settings = {}
+
     target_settings_path = target_config_directory / "settings.json"
     isolated_settings = read_json_object_or_none(target_settings_path)
-    shared_settings = (
-        read_json_object_or_none(source_config_directory / "settings.json") or {}
-    )
     runtime_owned_settings = {
         key: value
         for key, value in (isolated_settings or {}).items()
