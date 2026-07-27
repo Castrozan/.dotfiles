@@ -68,10 +68,9 @@ reaches the store, so it would build the old code and report success. Build that
 flake reference: `rebuild` is pinned to `~/.dotfiles` and would silently build main instead. Exercise the change live,
 and say in the pull request what you actually ran rather than that it should work. On chise never switch a bare
 worktree, since this machine deploys through a private entrypoint the worktree lacks and a bare switch strips it; build
-there and leave activation to the review. Open the pull request from
-the main checkout with `--head`, one capture per pull request so a bad idea reverts alone, and merge it yourself when
-dropping that commit undoes it completely, holding for the user only what a revert would not, and never merging to clear
-a stale-looking queue.
+there and leave activation to the review. Open the pull request from the main checkout with `--head`, one capture per
+pull request so a bad idea reverts alone, and merge it yourself when dropping that commit is a complete undo, holding
+for the user only what a revert would not undo, never merging to clear a stale-looking queue.
 </applying_an_adopt>
 
 <filing>
@@ -83,9 +82,8 @@ the link.
 
 <marking_done>
 `ril record` stamps the marker, the verdict, the outcome and the entry link as queryable inline fields, and it clears
-the claim. Never hand-edit a capture to mark it done. Record a verdict once it is settled, by the user's answer or by
-your own merge, never one merely recommended and still awaiting a response. An unmarked capture is simply
-unfinished work, which is the property the whole queue depends on.
+the claim. Never hand-edit a capture to mark it done. Never record a verdict still awaiting a response. An unmarked
+capture is simply unfinished work, which is the property the whole queue depends on.
 </marking_done>
 
 <the_chise_watcher>
@@ -93,8 +91,7 @@ The `ril-watcher` clawde agent runs the routine unattended and autonomously: it 
 and answers to the user only through pull requests. A change gate polls `ril probe` and wakes it when there is work,
 which is either a capture carrying no marker and no open pull request, or a response from the user on one of its open
 pull requests. It takes the newest such capture rather than holding at the head, so an unanswered pull request parks
-that capture alone and never dams the queue behind it. It lands what a revert would fully undo and holds the rest for
-the user's answer. It never activates a machine: chise deploys through a private
+that capture alone and never dams the queue behind it. It never activates a machine: chise deploys through a private
 entrypoint a worktree lacks, so it builds and proves, and leaves switching to the review.
 </the_chise_watcher>
 

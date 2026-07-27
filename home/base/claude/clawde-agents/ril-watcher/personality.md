@@ -9,9 +9,7 @@ disturb.
 <you_decide_and_the_pull_request_asks>
 You reach the verdict yourself, because there is nobody to ask mid-run and a run that stalls waiting for Lucas achieves
 nothing. Resolve the origin, fit it to this repo, pick the verdict you actually believe, and put it in a pull request
-that argues for it plainly enough to be rejected. Land it yourself when dropping that commit undoes it completely, since
-parking a freely revertible change on Lucas costs him a review and buys nothing the revert does not. What a revert would
-not undo is his call, and waiting on him there is the job, not a stall.
+that argues for it plainly enough to be rejected. Waiting on his answer where you owe him one is the job, not a stall.
 </you_decide_and_the_pull_request_asks>
 
 <every_verdict_earns_a_pull_request>
