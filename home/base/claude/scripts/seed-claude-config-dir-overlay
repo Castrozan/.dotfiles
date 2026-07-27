@@ -7,14 +7,27 @@ import sys
 from pathlib import Path
 
 ENTRIES_KEPT_ISOLATED_FROM_SHARED_CONFIG = {"plugins", "settings.json"}
+RUNTIME_OWNED_SETTINGS_KEYS_PRESERVED_ACROSS_LAUNCHES = {
+    "theme",
+    "voice",
+    "voiceEnabled",
+    "extraKnownMarketplaces",
+}
 
 
-def read_json_object_or_empty(json_path):
+def read_json_object_or_none(json_path):
     try:
         parsed = json.loads(json_path.read_text())
     except (OSError, ValueError):
-        return {}
-    return parsed if isinstance(parsed, dict) else {}
+        return None
+    return parsed if isinstance(parsed, dict) else None
+
+
+def write_json_object_as_owner_readable_file(json_path, json_object):
+    temporary_path = json_path.with_name(f"{json_path.name}.tmp.{os.getpid()}")
+    temporary_path.write_text(json.dumps(json_object, indent=2))
+    temporary_path.chmod(0o600)
+    os.replace(temporary_path, json_path)
 
 
 def deep_merge_overlay_onto_base(base_value, overlay_value):
@@ -55,36 +68,65 @@ def mirror_shared_config_entries_as_symlinks(
         )
 
 
-def apply_declared_overlay_to_isolated_settings(
+def rebuild_isolated_settings_from_shared_settings_and_overlay(
     source_config_directory, target_config_directory, settings_overlay_file
 ):
     target_settings_path = target_config_directory / "settings.json"
-    isolated_settings_already_exists = target_settings_path.exists()
-    existing_settings = read_json_object_or_empty(
-        target_settings_path
-        if isolated_settings_already_exists
-        else source_config_directory / "settings.json"
+    isolated_settings = read_json_object_or_none(target_settings_path)
+    shared_settings = (
+        read_json_object_or_none(source_config_directory / "settings.json") or {}
     )
+    runtime_owned_settings = {
+        key: value
+        for key, value in (isolated_settings or {}).items()
+        if key in RUNTIME_OWNED_SETTINGS_KEYS_PRESERVED_ACROSS_LAUNCHES
+    }
     settings_overlay = json.loads(Path(settings_overlay_file).read_text())
-    updated_settings = deep_merge_overlay_onto_base(existing_settings, settings_overlay)
-    if isolated_settings_already_exists and updated_settings == existing_settings:
+    rebuilt_settings = deep_merge_overlay_onto_base(
+        deep_merge_overlay_onto_base(shared_settings, runtime_owned_settings),
+        settings_overlay,
+    )
+    if rebuilt_settings == isolated_settings:
         return
-    target_settings_path.write_text(json.dumps(updated_settings, indent=2))
-    target_settings_path.chmod(0o600)
+    write_json_object_as_owner_readable_file(target_settings_path, rebuilt_settings)
 
 
-def seed_isolated_dot_claude_json_once(
+def seed_isolated_claude_json_once(source_config_directory, target_config_directory):
+    target_claude_json_path = target_config_directory / ".claude.json"
+    if target_claude_json_path.exists():
+        return
+    shared_claude_json_path = source_config_directory.parent / ".claude.json"
+    if shared_claude_json_path.exists():
+        shutil.copyfile(shared_claude_json_path, target_claude_json_path)
+    else:
+        target_claude_json_path.write_text(json.dumps({"installMethod": "native"}))
+    target_claude_json_path.chmod(0o600)
+
+
+def refresh_isolated_mcp_servers_from_shared_claude_json(
     source_config_directory, target_config_directory
 ):
-    target_dot_claude_json = target_config_directory / ".claude.json"
-    if target_dot_claude_json.exists():
+    shared_claude_json = (
+        read_json_object_or_none(source_config_directory.parent / ".claude.json") or {}
+    )
+    shared_mcp_servers = shared_claude_json.get("mcpServers")
+    if not isinstance(shared_mcp_servers, dict):
         return
-    source_dot_claude_json = source_config_directory.parent / ".claude.json"
-    if source_dot_claude_json.exists():
-        shutil.copyfile(source_dot_claude_json, target_dot_claude_json)
-    else:
-        target_dot_claude_json.write_text(json.dumps({"installMethod": "native"}))
-    target_dot_claude_json.chmod(0o600)
+    target_claude_json_path = target_config_directory / ".claude.json"
+    isolated_claude_json = read_json_object_or_none(target_claude_json_path)
+    if isolated_claude_json is None:
+        return
+    isolated_mcp_servers = isolated_claude_json.get("mcpServers")
+    merged_mcp_servers = {
+        **(isolated_mcp_servers if isinstance(isolated_mcp_servers, dict) else {}),
+        **shared_mcp_servers,
+    }
+    if merged_mcp_servers == isolated_mcp_servers:
+        return
+    isolated_claude_json["mcpServers"] = merged_mcp_servers
+    write_json_object_as_owner_readable_file(
+        target_claude_json_path, isolated_claude_json
+    )
 
 
 def main():
@@ -110,12 +152,15 @@ def main():
     mirror_shared_config_entries_as_symlinks(
         source_config_directory, target_config_directory
     )
-    apply_declared_overlay_to_isolated_settings(
+    rebuild_isolated_settings_from_shared_settings_and_overlay(
         source_config_directory,
         target_config_directory,
         arguments.settings_overlay_file,
     )
-    seed_isolated_dot_claude_json_once(source_config_directory, target_config_directory)
+    seed_isolated_claude_json_once(source_config_directory, target_config_directory)
+    refresh_isolated_mcp_servers_from_shared_claude_json(
+        source_config_directory, target_config_directory
+    )
     return 0
 
 
