@@ -5,34 +5,39 @@ from __future__ import annotations
 import json
 import re
 import sys
-from dataclasses import dataclass, field
-from typing import Callable, Optional
 
 DECISION_STRENGTH = {"allow": 1, "ask": 2, "block": 3, "deny": 3}
 
 
-@dataclass
 class HandlerResult:
-    additional_context: str = ""
-    decision: Optional[str] = None
-    reason: str = ""
-    system_message: str = ""
-    updated_input: Optional[dict] = None
+    def __init__(
+        self,
+        additional_context="",
+        decision=None,
+        reason="",
+        system_message="",
+        updated_input=None,
+    ):
+        self.additional_context = additional_context
+        self.decision = decision
+        self.reason = reason
+        self.system_message = system_message
+        self.updated_input = updated_input
 
 
-@dataclass
 class HookHandler:
-    handle: Callable[[dict], "Optional[HandlerResult]"]
-    tool_matcher: Optional[str] = None
+    def __init__(self, handle, tool_matcher=None):
+        self.handle = handle
+        self.tool_matcher = tool_matcher
 
 
-@dataclass
 class MergedHookOutcome:
-    additional_context_fragments: list = field(default_factory=list)
-    decision: Optional[str] = None
-    reason: str = ""
-    system_message_fragments: list = field(default_factory=list)
-    updated_input: Optional[dict] = None
+    def __init__(self):
+        self.additional_context_fragments = []
+        self.decision = None
+        self.reason = ""
+        self.system_message_fragments = []
+        self.updated_input = None
 
     @property
     def combined_additional_context(self) -> str:
@@ -59,15 +64,13 @@ def read_hook_input_or_exit() -> dict:
     return parsed_payload
 
 
-def handler_matches_tool(handler: HookHandler, tool_name: str) -> bool:
+def handler_matches_tool(handler, tool_name: str) -> bool:
     if handler.tool_matcher is None:
         return True
     return re.fullmatch(handler.tool_matcher, tool_name or "") is not None
 
 
-def candidate_decision_is_stronger(
-    candidate: Optional[str], current: Optional[str]
-) -> bool:
+def candidate_decision_is_stronger(candidate, current) -> bool:
     if candidate is None:
         return False
     if current is None:
@@ -75,7 +78,7 @@ def candidate_decision_is_stronger(
     return DECISION_STRENGTH.get(candidate, 0) > DECISION_STRENGTH.get(current, 0)
 
 
-def describe_handler(handler: HookHandler) -> str:
+def describe_handler(handler) -> str:
     handle_function = handler.handle
     return (
         getattr(handle_function, "__module__", "")
@@ -84,7 +87,7 @@ def describe_handler(handler: HookHandler) -> str:
     )
 
 
-def run_handlers(hook_input: dict, handlers) -> MergedHookOutcome:
+def run_handlers(hook_input: dict, handlers):
     outcome = MergedHookOutcome()
     tool_name = hook_input.get("tool_name", "") or ""
     for handler in handlers:
@@ -112,7 +115,7 @@ def run_handlers(hook_input: dict, handlers) -> MergedHookOutcome:
     return outcome
 
 
-def emit_context_injection(event_name: str, outcome: MergedHookOutcome) -> None:
+def emit_context_injection(event_name: str, outcome) -> None:
     combined_context = outcome.combined_additional_context
     if not combined_context:
         return
@@ -129,7 +132,7 @@ def emit_context_injection(event_name: str, outcome: MergedHookOutcome) -> None:
     )
 
 
-def emit_stop_decision(outcome: MergedHookOutcome) -> None:
+def emit_stop_decision(outcome) -> None:
     payload: dict = {}
     system_message = outcome.combined_system_message
     if system_message:
@@ -142,7 +145,7 @@ def emit_stop_decision(outcome: MergedHookOutcome) -> None:
         print(json.dumps(payload))
 
 
-def emit_post_tool_use_outcome(outcome: MergedHookOutcome) -> None:
+def emit_post_tool_use_outcome(outcome) -> None:
     payload: dict = {}
     system_message = outcome.combined_system_message
     if system_message:
@@ -161,7 +164,7 @@ def emit_post_tool_use_outcome(outcome: MergedHookOutcome) -> None:
         print(json.dumps(payload))
 
 
-def emit_pretooluse_decision(outcome: MergedHookOutcome) -> None:
+def emit_pretooluse_decision(outcome) -> None:
     hook_specific_output: dict = {"hookEventName": "PreToolUse"}
     if outcome.decision is not None:
         hook_specific_output["permissionDecision"] = outcome.decision

@@ -14,9 +14,13 @@ let
     + "${hooksDir + "/${entry.relativePathToHooksRoot}"} "
     + ''"$out/${entry.flatDeploymentFilename}"'';
 
+  hookPythonInterpreter = "${pkgs.python312}/bin/python3";
+
   flatlyDeployedHooksDirectory = pkgs.runCommandLocal "claude-code-hooks" { } ''
     mkdir -p "$out"
     ${lib.concatMapStringsSep "\n" installCommandForHookScript allHookScriptsAcrossSubdirectories}
+    substituteInPlace "$out/run-hook.sh" \
+      --replace-fail "@hookPythonInterpreter@" "${hookPythonInterpreter}"
   '';
 in
 {
