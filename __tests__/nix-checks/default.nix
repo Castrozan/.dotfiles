@@ -35,6 +35,7 @@ let
   cloudflareTunnelConnectorChecks = import ../../home/darwin/cloudflare-tunnel-connector/__tests__/checks.nix domainArgs;
   desktopChecks = import ../../home/base/desktop/__tests__/checks.nix domainArgs;
   screensaverChecks = import ../../home/base/desktop/screensaver/__tests__/checks.nix domainArgs;
+  themingDarwinChecks = import ../../home/base/desktop/theming/darwin/__tests__/checks.nix domainArgs;
   devChecks = import ../../home/base/dev/__tests__/checks.nix domainArgs;
   obsidianHeadlessChecks = import ../../home/base/media/obsidian/__tests__/checks.nix domainArgs;
   gamingChecks = import ../../home/base/gaming/__tests__/checks.nix domainArgs;
@@ -68,6 +69,7 @@ claudeChecks
 // cloudflareTunnelConnectorChecks
 // desktopChecks
 // screensaverChecks
+// themingDarwinChecks
 // devChecks
 // obsidianHeadlessChecks
 // gamingChecks

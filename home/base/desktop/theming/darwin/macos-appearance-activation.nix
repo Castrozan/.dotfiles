@@ -4,6 +4,7 @@
   themeIsLight,
   selectedWallpaperPath,
   removeHashFromColor,
+  timeoutBinaryPath,
 }:
 let
   themeAccentColorHex = removeHashFromColor themeColorsToml.accent;
@@ -13,5 +14,6 @@ in
   export WALLPAPER_PATH=${lib.escapeShellArg selectedWallpaperPath}
   export THEME_ACCENT_HEX=${lib.escapeShellArg themeAccentColorHex}
   export ACCENT_FROM_HEX_SCRIPT=${./macos-accent-color-from-hex.py}
+  export TIMEOUT_BINARY_PATH=${lib.escapeShellArg timeoutBinaryPath}
   ${builtins.readFile ./apply-macos-theme-appearance.sh}
 ''

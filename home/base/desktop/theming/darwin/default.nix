@@ -18,6 +18,7 @@ let
       selectedWallpaperPath
       removeHashFromColor
       ;
+    timeoutBinaryPath = "${pkgs.coreutils}/bin/timeout";
   };
 in
 {
