@@ -5,9 +5,14 @@ and service credentials, and is the sole password store now that the old `pass`/
 </vault>
 
 <session>
-Mint an unlocked session before any `bw` read or write: `sess="$(bw-session)"; export BW_SESSION="$sess"`. The
-`bw-session` helper logs in with the API key and unlocks with the master password from agenix secrets, with no prompt,
-desktop app, or biometrics. Re-run it whenever `bw` reports `Vault is locked` or `not logged in`; sessions expire.
+Mint an unlocked session before any `bw` read or write, exporting the account's data directory in the same shell:
+`export BITWARDENCLI_APPDATA_DIR="$(jq -r '.personal.applicationDataDirectory' ~/.config/bitwarden-cli/accounts.json)";
+export BW_SESSION="$(bw-session)"`. The `bw-session` helper logs in with the API key and unlocks with the master
+password from agenix secrets, with no prompt, desktop app, or biometrics. It exports that directory only inside its own
+process, so a caller that skips the export mints a real token against the account vault and then reads the untouched
+default vault, where every command answers `locked` and a working unlock reads as a failed one. Each account registered
+in that same registry file has its own directory and is selected by passing its name to `bw-session`; `personal` is the
+default. Re-run whenever `bw` reports `Vault is locked` or `not logged in`; sessions expire.
 </session>
 
 <reading>
