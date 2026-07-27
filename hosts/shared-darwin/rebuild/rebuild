@@ -52,18 +52,6 @@ _nudge_clawde_agents_to_redeploy_on_continued_sessions() {
 	fi
 }
 
-_stage_unstaged_nix_files() {
-	local unstaged_nix_files
-	unstaged_nix_files=$(git -C "$DOTFILES_DIRECTORY" diff --name-only -- '*.nix' 2>/dev/null || true)
-	if [[ -n "$unstaged_nix_files" ]]; then
-		echo "staging modified nix files:" >&2
-		while IFS= read -r nix_file; do
-			echo "  $nix_file" >&2
-			git -C "$DOTFILES_DIRECTORY" add "$DOTFILES_DIRECTORY/$nix_file"
-		done <<<"$unstaged_nix_files"
-	fi
-}
-
 _regenerate_wallpaper_derived_theme_colors() {
 	if command -v theme-regenerate-wallpaper-derived-colors &>/dev/null; then
 		theme-regenerate-wallpaper-derived-colors "$DOTFILES_DIRECTORY" || true
@@ -152,7 +140,6 @@ main() {
 	source "$DOTFILES_DIRECTORY/agents/scripts/exclusive-run-lock.sh"
 	acquire_exclusive_run_lock_or_emit_retry_instructions "rebuild" 180 "$rebuild_output_logfile"
 
-	_stage_unstaged_nix_files
 	_regenerate_wallpaper_derived_theme_colors
 
 	local current_system_symlink_target_before
