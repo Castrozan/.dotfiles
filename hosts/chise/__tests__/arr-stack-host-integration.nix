@@ -83,6 +83,22 @@ in
       )
       "the reconciler must reach Jellyfin over the loopback publish rather than the tailnet address, so the privacy boundary is re-applied at boot even when tailscale has not come up yet and the tailnet IP stays out of the nix source";
 
+  chise-jellyseerr-private-request-routing-wired-on-chise =
+    mkEvalCheck "chise-jellyseerr-private-request-routing-wired-on-chise"
+      (
+        (nixosCfg.systemd.services ? jellyseerr-private-request-routing-provisioner)
+        && builtins.elem "multi-user.target" nixosCfg.systemd.services.jellyseerr-private-request-routing-provisioner.wantedBy
+        &&
+          nixosCfg.systemd.services.jellyseerr-private-request-routing-provisioner.environment.ARR_USERS_JELLYSEERR_BASE_URL
+          == "http://127.0.0.1:5055"
+      )
+      "chise must re-apply the private request routing on every rebuild over the loopback publish, or a rule deleted in the Jellyseerr dashboard or lost with a wiped config dir would silently send the next private request into the public library instead of failing loudly";
+
+  chise-jellyseerr-private-request-routing-runs-after-the-root-folders-exist =
+    mkEvalCheck "chise-jellyseerr-private-request-routing-runs-after-the-root-folders-exist"
+      (builtins.elem "arr-config-provisioner.service" nixosCfg.systemd.services.jellyseerr-private-request-routing-provisioner.after)
+      "the routing reconcile must be ordered after the provisioner that registers the private root folders in radarr and sonarr, because Jellyseerr accepts a rule naming a root folder no *arr app knows and the breakage only appears when a request is finally grabbed";
+
   chise-arr-on-demand-disk-guard-emails-via-agenix-secret =
     mkEvalCheck "chise-arr-on-demand-disk-guard-emails-via-agenix-secret"
       (

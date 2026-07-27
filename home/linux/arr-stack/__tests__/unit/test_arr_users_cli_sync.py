@@ -23,7 +23,10 @@ cli = load_cli_module()
 
 
 def test_parser_accepts_sync_without_username():
-    assert cli.build_argument_parser().parse_args(["sync"]).command == "sync"
+    assert (
+        cli.argument_parsing.build_argument_parser().parse_args(["sync"]).command
+        == "sync"
+    )
 
 
 def test_sync_builds_a_jellyfin_only_context(monkeypatch):
@@ -72,7 +75,9 @@ def test_run_sync_names_the_libraries_friends_cannot_see(monkeypatch, capsys):
             "reconciled_accounts": ["Rogerio"],
         },
     )
-    cli.run_sync(object(), cli.build_argument_parser().parse_args(["sync"]))
+    cli.run_sync(
+        object(), cli.argument_parsing.build_argument_parser().parse_args(["sync"])
+    )
 
     printed = capsys.readouterr().out
     assert "friends can see: Movies, TV" in printed
@@ -96,9 +101,58 @@ def test_run_sync_reports_the_reconcile_before_failing_on_a_library(
     )
 
     with pytest.raises(ValueError, match="Movies \\(Private\\)"):
-        cli.run_sync(object(), cli.build_argument_parser().parse_args(["sync"]))
+        cli.run_sync(
+            object(), cli.argument_parsing.build_argument_parser().parse_args(["sync"])
+        )
 
     assert "reconciled: Rogerio" in capsys.readouterr().out
+
+
+def test_run_sync_request_routing_names_the_account_it_routes(monkeypatch, capsys):
+    monkeypatch.setattr(
+        cli.request_routing_synchronization,
+        "synchronize_request_routing",
+        lambda context: {
+            "routed_account": "private-requests",
+            "created_rules": ["movies to /data/media/movies-private"],
+            "updated_rules": [],
+            "removed_rules": [],
+        },
+    )
+    cli.run_sync_request_routing(
+        object(),
+        cli.argument_parsing.build_argument_parser().parse_args(
+            ["sync-request-routing"]
+        ),
+    )
+
+    printed = capsys.readouterr().out
+    assert "routing every request from: private-requests" in printed
+    assert "created rules: movies to /data/media/movies-private" in printed
+    assert "removed rules: none" in printed
+
+
+def test_run_sync_request_routing_says_nothing_routes_without_the_account(
+    monkeypatch, capsys
+):
+    monkeypatch.setattr(
+        cli.request_routing_synchronization,
+        "synchronize_request_routing",
+        lambda context: {
+            "routed_account": None,
+            "created_rules": [],
+            "updated_rules": [],
+            "removed_rules": [],
+        },
+    )
+    cli.run_sync_request_routing(
+        object(),
+        cli.argument_parsing.build_argument_parser().parse_args(
+            ["sync-request-routing"]
+        ),
+    )
+
+    assert "no request routes privately yet" in capsys.readouterr().out
 
 
 def test_run_sync_reports_none_when_nothing_was_created(monkeypatch, capsys):
@@ -113,7 +167,9 @@ def test_run_sync_reports_none_when_nothing_was_created(monkeypatch, capsys):
             "reconciled_accounts": [],
         },
     )
-    cli.run_sync(object(), cli.build_argument_parser().parse_args(["sync"]))
+    cli.run_sync(
+        object(), cli.argument_parsing.build_argument_parser().parse_args(["sync"])
+    )
 
     printed = capsys.readouterr().out
     assert "created libraries: none" in printed

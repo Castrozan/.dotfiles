@@ -79,6 +79,13 @@
       libraryPathProviderUnits = [ "home-manager-zanoni.service" ];
     };
 
+    jellyseerrPrivateRequestRoutingProvisioner = {
+      enable = true;
+      jellyfinApiKeySecretFile = config.age.secrets."jellyfin-admin-api-key".path;
+      jellyseerrSettingsFile = "/home/zanoni/arr-stack/config/jellyseerr/settings.json";
+      rootFolderProviderUnits = [ "arr-config-provisioner.service" ];
+    };
+
     bazarrAuthProvisioner = {
       enable = true;
       configFile = "/home/zanoni/arr-stack/config/bazarr/config/config.yaml";
@@ -113,6 +120,10 @@
     ];
 
     jellyfin-library-access-provisioner.restartTriggers = [
+      ../../secrets/credentials/jellyfin-admin-api-key.age
+    ];
+
+    jellyseerr-private-request-routing-provisioner.restartTriggers = [
       ../../secrets/credentials/jellyfin-admin-api-key.age
     ];
   };

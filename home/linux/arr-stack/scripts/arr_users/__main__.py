@@ -1,8 +1,10 @@
-import argparse
 import sys
 import urllib.error
 
+import argument_parsing
 import library_access_synchronization
+import private_request_routing
+import request_routing_synchronization
 import runtime_credentials
 import user_account_operations
 
@@ -111,54 +113,24 @@ def run_sync(context, _arguments):
         )
 
 
-def build_argument_parser():
-    parser = argparse.ArgumentParser(
-        prog="arr-users",
-        description="Manage Jellyfin friend accounts and their Jellyseerr access",
-    )
-    subparsers = parser.add_subparsers(dest="command", required=True)
-
-    subparsers.add_parser("list", help="List every account and its Jellyseerr state")
-
-    subparsers.add_parser(
-        "sync",
-        help="Create any missing declared Jellyfin library and re-apply the private-library boundary to every friend",
-    )
-
-    create_parser = subparsers.add_parser("create", help="Create a friend account")
-    create_parser.add_argument("username")
-    create_parser.add_argument("--password", default=None)
-    create_parser.add_argument("--email", default=None)
-
-    set_email_parser = subparsers.add_parser(
-        "set-email", help="Set a friend's email so request notifications reach them"
-    )
-    set_email_parser.add_argument("username")
-    set_email_parser.add_argument("email")
-
-    delete_parser = subparsers.add_parser("delete", help="Delete a friend account")
-    delete_parser.add_argument("username")
-
-    reset_parser = subparsers.add_parser(
-        "reset-password", help="Reset a friend account password"
-    )
-    reset_parser.add_argument("username")
-    reset_parser.add_argument("--password", default=None)
-
-    enable_parser = subparsers.add_parser("enable", help="Re-enable a friend account")
-    enable_parser.add_argument("username")
-
-    disable_parser = subparsers.add_parser(
-        "disable", help="Disable a friend account without deleting it"
-    )
-    disable_parser.add_argument("username")
-
-    return parser
+def run_sync_request_routing(context, _arguments):
+    synchronized = request_routing_synchronization.synchronize_request_routing(context)
+    if synchronized["routed_account"] is None:
+        print(
+            f"no {private_request_routing.PRIVATE_REQUEST_ACCOUNT_USERNAME} account "
+            "exists, so no request routes privately yet"
+        )
+        return
+    print(f"routing every request from: {synchronized['routed_account']}")
+    print(f"created rules: {', '.join(synchronized['created_rules']) or 'none'}")
+    print(f"updated rules: {', '.join(synchronized['updated_rules']) or 'none'}")
+    print(f"removed rules: {', '.join(synchronized['removed_rules']) or 'none'}")
 
 
 COMMAND_HANDLERS = {
     "list": run_list,
     "sync": run_sync,
+    "sync-request-routing": run_sync_request_routing,
     "create": run_create,
     "set-email": run_set_email,
     "delete": run_delete,
@@ -169,7 +141,7 @@ COMMAND_HANDLERS = {
 
 
 def main():
-    arguments = build_argument_parser().parse_args()
+    arguments = argument_parsing.build_argument_parser().parse_args()
     context = build_context_for_command(arguments.command)
     handler = COMMAND_HANDLERS[arguments.command]
     try:

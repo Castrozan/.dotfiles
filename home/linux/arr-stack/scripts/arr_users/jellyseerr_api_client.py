@@ -64,6 +64,38 @@ def set_user_permissions(base_url, api_key, jellyseerr_user_id, permissions):
     )
 
 
+def list_service_servers(base_url, api_key, service_name):
+    return (
+        request_json(base_url, api_key, "GET", f"/api/v1/settings/{service_name}") or []
+    )
+
+
+def list_override_rules(base_url, api_key):
+    return request_json(base_url, api_key, "GET", "/api/v1/overrideRule") or []
+
+
+def create_override_rule(base_url, api_key, override_rule):
+    return request_json(
+        base_url, api_key, "POST", "/api/v1/overrideRule", override_rule
+    )
+
+
+def update_override_rule(base_url, api_key, override_rule_id, override_rule):
+    return request_json(
+        base_url,
+        api_key,
+        "PUT",
+        f"/api/v1/overrideRule/{override_rule_id}",
+        override_rule,
+    )
+
+
+def delete_override_rule(base_url, api_key, override_rule_id):
+    request_json(
+        base_url, api_key, "DELETE", f"/api/v1/overrideRule/{override_rule_id}"
+    )
+
+
 def set_user_email(base_url, api_key, jellyseerr_user_id, email):
     current_settings = (
         request_json(

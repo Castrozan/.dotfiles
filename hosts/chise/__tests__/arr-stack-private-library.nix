@@ -18,10 +18,19 @@ let
   radarrRootFolderText = builtins.readFile ../../../nixos/modules/arr-config-provisioner/desired-state/radarr/rootfolder.json;
   sonarrRootFolderText = builtins.readFile ../../../nixos/modules/arr-config-provisioner/desired-state/sonarr/rootfolder.json;
 
+  requestRoutingText = builtins.readFile ../../../home/linux/arr-stack/scripts/arr_users/private_request_routing.py;
+
   privateMediaSubdirectories = [
     "media/movies-private"
     "media/tv-private"
   ];
+  routedRootFoldersExistInArrApps =
+    lib.hasInfix ''PRIVATE_MOVIE_ROOT_FOLDER = "/data/media/movies-private"'' requestRoutingText
+    && lib.hasInfix ''PRIVATE_SERIES_ROOT_FOLDER = "/data/media/tv-private"'' requestRoutingText;
+  animeSeriesGetTheirOwnRoutingRule = lib.hasInfix "TMDB_ANIME_KEYWORD_ID" requestRoutingText;
+  routedAccountLosesOverridesWhenPrivileged =
+    lib.hasInfix "JELLYSEERR_PERMISSION_ADMIN" requestRoutingText
+    && lib.hasInfix "JELLYSEERR_PERMISSION_MANAGE_REQUESTS" requestRoutingText;
   everyPrivateDirectoryIsCreatedOnRebuild = builtins.all (
     subdirectory: lib.hasInfix ''"${subdirectory}"'' arrStackModuleText
   ) privateMediaSubdirectories;
@@ -55,6 +64,20 @@ in
   chise-arr-friend-policy-never-grants-every-folder =
     mkEvalCheck "chise-arr-friend-policy-never-grants-every-folder" friendPolicyNeverGrantsEveryFolder
       "the friend policy must never set EnableAllFolders true and must pin it false when it writes library visibility; EnableAllFolders true overrides EnabledFolders entirely in Jellyfin, so reintroducing it would hand every friend the private libraries no matter what the enabled list says";
+
+  chise-arr-routed-root-folders-match-the-arr-desired-state =
+    mkEvalCheck "chise-arr-routed-root-folders-match-the-arr-desired-state"
+      routedRootFoldersExistInArrApps
+      "the root folders the Jellyseerr override rules send private requests to must be spelled exactly as radarr and sonarr declare them; Jellyseerr saves a rule naming an unknown root folder without complaint and the mismatch only surfaces later, when the grab fails to import";
+
+  chise-arr-anime-series-get-their-own-routing-rule =
+    mkEvalCheck "chise-arr-anime-series-get-their-own-routing-rule" animeSeriesGetTheirOwnRoutingRule
+      "a second series rule carrying the anime keyword is mandatory, because Jellyseerr drops every override rule for an anime show unless the rule names that keyword itself, so without it a privately requested anime would land in the public library";
+
+  chise-arr-routed-account-privilege-is-checked =
+    mkEvalCheck "chise-arr-routed-account-privilege-is-checked"
+      routedAccountLosesOverridesWhenPrivileged
+      "the reconciler must keep refusing a routing account that holds Jellyseerr admin or manage-requests, because Jellyseerr skips override rules entirely for those accounts and the private route would read as configured while every request landed in public view";
 
   chise-arr-jellyfin-mounts-media-root-read-only =
     mkEvalCheck "chise-arr-jellyfin-mounts-media-root-read-only" jellyfinMountsTheWholeMediaRootReadOnly
