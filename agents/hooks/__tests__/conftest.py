@@ -35,7 +35,7 @@ PRE_TOOL_USE_DISPATCHER_HOOK_SCRIPT_PATH = find_hook_module_path(
 
 
 @pytest.fixture
-def invoke_prohibited_command_guard_hook():
+def invoke_prohibited_command_guard_hook(isolated_memory_recall_environment):
     def runner(payload: dict):
         return run_hook_subprocess(
             PRE_TOOL_USE_DISPATCHER_HOOK_SCRIPT_PATH, json.dumps(payload)
@@ -53,7 +53,9 @@ def parse_prohibited_command_guard_system_message():
 
 
 @pytest.fixture
-def invoke_prohibited_command_guard_hook_with_raw_stdin():
+def invoke_prohibited_command_guard_hook_with_raw_stdin(
+    isolated_memory_recall_environment,
+):
     def runner(raw_stdin: str):
         return run_hook_subprocess(PRE_TOOL_USE_DISPATCHER_HOOK_SCRIPT_PATH, raw_stdin)
 
@@ -67,7 +69,9 @@ def run_prohibited_words_guard(payload: dict):
 
 
 @pytest.fixture
-def invoke_prohibited_words_guard_hook(tmp_path, monkeypatch):
+def invoke_prohibited_words_guard_hook(
+    tmp_path, monkeypatch, isolated_memory_recall_environment
+):
     wordlist_file = tmp_path / "prohibited-words.txt"
     wordlist_file.write_text("# fake words\nacme\ninitech\n", encoding="utf-8")
     monkeypatch.setenv("PROHIBITED_WORDS_FILE", str(wordlist_file))
@@ -75,7 +79,9 @@ def invoke_prohibited_words_guard_hook(tmp_path, monkeypatch):
 
 
 @pytest.fixture
-def invoke_prohibited_words_guard_hook_without_wordlist(tmp_path, monkeypatch):
+def invoke_prohibited_words_guard_hook_without_wordlist(
+    tmp_path, monkeypatch, isolated_memory_recall_environment
+):
     monkeypatch.setenv("PROHIBITED_WORDS_FILE", str(tmp_path / "missing-wordlist.txt"))
     return run_prohibited_words_guard
 
