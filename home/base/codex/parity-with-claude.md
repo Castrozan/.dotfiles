@@ -207,13 +207,11 @@ matcher purposes, so a single `Edit|Write` matcher fires on both CLIs.
 - Instruction body, skills bodies (and their runtime CLIs), browser MCPs,
   full-access posture, max reasoning, and context-compaction philosophy are at
   parity.
-- Ported to Codex via shared, input-shape-agnostic scripts: memory recall
-  (PreToolUse, shared store with Claude), the prohibited-command and
-  prohibited-words guards (PreToolUse, blocking via the `permissionDecision: deny`
-  schema Codex requires), auto-format + record-edited + nix-rebuild-trigger
-  (PostToolUse), and lint-turn-review (Stop). The wrapper's
-  `--dangerously-bypass-hook-trust` is what lets any of them run.
-- Remaining ports are low value (instruction-file authoring gate, compaction
-  reload nudge); everything else is a model/window limit, a documented safety
-  deferral (`session_context_handler` leak), or a Claude-TUI/launcher/clawde-agent
-  artifact.
+- Hooks are one dispatcher set serving both surfaces, registered per event and
+  discriminated by a `--surface=codex` argument against each handler's `surfaces`
+  tuple, so a handler ports by declaring the surface rather than by growing a
+  second script. Codex blocks only via the `permissionDecision: deny` schema, and
+  the wrapper's `--dangerously-bypass-hook-trust` is what lets any of them run.
+- No hook ports remain. What Codex still lacks is a model/window limit, a
+  documented safety deferral (`session_context_handler` leak), or a
+  Claude-TUI/launcher/clawde-agent artifact.
