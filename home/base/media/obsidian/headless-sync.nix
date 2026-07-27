@@ -62,7 +62,7 @@ in
 
     activation = {
       installObsidianHeadlessViaNpm = config.lib.dag.entryAfter [ "writeBoundary" ] ''
-        run ${installObsidianHeadlessViaNpm}
+        run ${pkgs.coreutils}/bin/timeout 600 ${installObsidianHeadlessViaNpm} || true
       '';
 
       placeObsidianHeadlessSecrets =

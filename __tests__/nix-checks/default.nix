@@ -35,6 +35,7 @@ let
   desktopChecks = import ../../home/base/desktop/__tests__/checks.nix domainArgs;
   screensaverChecks = import ../../home/base/desktop/screensaver/__tests__/checks.nix domainArgs;
   devChecks = import ../../home/base/dev/__tests__/checks.nix domainArgs;
+  obsidianHeadlessChecks = import ../../home/base/media/obsidian/__tests__/checks.nix domainArgs;
   gamingChecks = import ../../home/base/gaming/__tests__/checks.nix domainArgs;
   gnomeChecks = import ../../home/linux/gnome/__tests__/checks.nix domainArgs;
   securityChecks = import ../../home/base/security/__tests__/checks.nix domainArgs;
@@ -65,6 +66,7 @@ claudeChecks
 // desktopChecks
 // screensaverChecks
 // devChecks
+// obsidianHeadlessChecks
 // gamingChecks
 // gnomeChecks
 // securityChecks

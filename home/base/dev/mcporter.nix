@@ -42,7 +42,7 @@ in
 
     activation = {
       installMcporterViaNpm = config.lib.dag.entryAfter [ "writeBoundary" ] ''
-        run ${installMcporterViaNpm}
+        run ${pkgs.coreutils}/bin/timeout 300 ${installMcporterViaNpm} || true
       '';
 
       restartMcporterDaemonAfterConfigChanges =
