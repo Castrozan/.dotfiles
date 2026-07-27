@@ -19,6 +19,12 @@ let
   sonarrRootFolderText = builtins.readFile ../../../nixos/modules/arr-config-provisioner/desired-state/sonarr/rootfolder.json;
 
   requestRoutingText = builtins.readFile ../../../home/linux/arr-stack/scripts/arr_users/private_request_routing.py;
+  visibilityReconcileText = builtins.readFile ../../../home/linux/arr-stack/scripts/arr_users/library_access_synchronization.py;
+
+  privateAccessIsAnExplicitAllowlist =
+    lib.hasInfix "PRIVATE_LIBRARY_ACCOUNT_USERNAMES" libraryDeclarationText
+    && lib.hasInfix "def resolve_visible_library_ids" libraryDeclarationText;
+  reconcileNeverExemptsAnAdministrator = !(lib.hasInfix "is_administrator" visibilityReconcileText);
 
   privateMediaSubdirectories = [
     "media/movies-private"
@@ -78,6 +84,15 @@ in
     mkEvalCheck "chise-arr-routed-account-privilege-is-checked"
       routedAccountLosesOverridesWhenPrivileged
       "the reconciler must keep refusing a routing account that holds Jellyseerr admin or manage-requests, because Jellyseerr skips override rules entirely for those accounts and the private route would read as configured while every request landed in public view";
+
+  chise-arr-private-access-is-an-explicit-allowlist =
+    mkEvalCheck "chise-arr-private-access-is-an-explicit-allowlist" privateAccessIsAnExplicitAllowlist
+      "which accounts see the private libraries must stay a named allowlist resolved per account, not a role test; the owner's own admin account is deliberately outside it, so collapsing this back to administrator-sees-everything would silently put private media back in the daily-driver account";
+
+  chise-arr-visibility-reconcile-never-exempts-an-administrator =
+    mkEvalCheck "chise-arr-visibility-reconcile-never-exempts-an-administrator"
+      reconcileNeverExemptsAnAdministrator
+      "the visibility reconcile must apply to administrators as well; reintroducing an is_administrator skip there would leave the owner's admin account permanently able to see the private libraries no matter what the allowlist declares";
 
   chise-arr-jellyfin-mounts-media-root-read-only =
     mkEvalCheck "chise-arr-jellyfin-mounts-media-root-read-only" jellyfinMountsTheWholeMediaRootReadOnly

@@ -1,3 +1,9 @@
+import private_request_routing
+
+PRIVATE_LIBRARY_ACCOUNT_USERNAMES = (
+    private_request_routing.PRIVATE_REQUEST_ACCOUNT_USERNAME,
+)
+
 PUBLIC_LIBRARY_DECLARATIONS = [
     {
         "name": "Movies",
@@ -44,6 +50,19 @@ def resolve_public_library_ids(jellyfin_libraries):
             f"libraries are missing from Jellyfin: {', '.join(missing_library_names)}"
         )
     return [library_id_by_name[name] for name in public_library_names()]
+
+
+def account_sees_private_libraries(username):
+    return username in PRIVATE_LIBRARY_ACCOUNT_USERNAMES
+
+
+def resolve_visible_library_ids(jellyfin_libraries, username):
+    public_library_ids = resolve_public_library_ids(jellyfin_libraries)
+    if not account_sees_private_libraries(username):
+        return public_library_ids
+    return [
+        library["ItemId"] for library in jellyfin_libraries if library.get("ItemId")
+    ]
 
 
 def private_library_names_present(jellyfin_libraries):

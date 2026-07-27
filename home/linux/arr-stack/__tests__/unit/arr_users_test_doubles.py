@@ -6,6 +6,8 @@ ARR_USERS_PACKAGE_DIRECTORY_PATH = (
 )
 sys.path.insert(0, str(ARR_USERS_PACKAGE_DIRECTORY_PATH))
 
+import library_access_synchronization
+import private_request_routing
 import user_account_operations
 
 FRIEND_USER = {
@@ -14,6 +16,31 @@ FRIEND_USER = {
     "Policy": {"IsAdministrator": False},
 }
 ADMIN_USER = {"Id": "admin-id", "Name": "lucas", "Policy": {"IsAdministrator": True}}
+
+SYNC_FRIEND_USER = {
+    "Id": "friend-id",
+    "Name": "Rogerio",
+    "Policy": {"IsAdministrator": False, "EnableAllFolders": True},
+}
+SYNC_ADMIN_USER = {
+    "Id": "admin-id",
+    "Name": "lucas",
+    "Policy": {"IsAdministrator": True, "EnableAllFolders": True},
+}
+SYNC_DISABLED_FRIEND_USER = {
+    "Id": "disabled-id",
+    "Name": "xamitos",
+    "Policy": {"IsAdministrator": False, "IsDisabled": True, "EnableAllFolders": True},
+}
+SYNC_PRIVATE_REQUEST_USER = {
+    "Id": "private-id",
+    "Name": private_request_routing.PRIVATE_REQUEST_ACCOUNT_USERNAME,
+    "Policy": {"IsAdministrator": False, "EnableAllFolders": False},
+}
+PUBLIC_ONLY_LIBRARIES = [
+    {"Name": "Movies", "ItemId": "movies-id"},
+    {"Name": "TV", "ItemId": "tv-id"},
+]
 
 DECLARED_LIBRARIES = [
     {"Name": "Movies", "ItemId": "movies-id"},
@@ -79,6 +106,34 @@ def stub_jellyfin(monkeypatch, users, created_user=None, libraries=None):
         "list_virtual_folders",
         lambda base_url, api_key: available_libraries,
     )
+    return calls
+
+
+def stub_library_synchronization(
+    monkeypatch, users, libraries=None, ready=True, creation_error=None
+):
+    calls = {"policies": [], "created_libraries": []}
+    available_libraries = DECLARED_LIBRARIES if libraries is None else libraries
+
+    def create_virtual_folder(base_url, api_key, name, collection_type, path):
+        if creation_error is not None:
+            raise creation_error
+        calls["created_libraries"].append((name, path))
+
+    client = library_access_synchronization.jellyfin_api_client
+    monkeypatch.setattr(client, "wait_until_ready", lambda base_url, api_key: ready)
+    monkeypatch.setattr(
+        client, "list_virtual_folders", lambda base_url, api_key: available_libraries
+    )
+    monkeypatch.setattr(client, "list_users", lambda base_url, api_key: users)
+    monkeypatch.setattr(
+        client,
+        "update_user_policy",
+        lambda base_url, api_key, user_id, policy: calls["policies"].append(
+            (user_id, policy)
+        ),
+    )
+    monkeypatch.setattr(client, "create_virtual_folder", create_virtual_folder)
     return calls
 
 

@@ -99,9 +99,13 @@ def run_sync(context, _arguments):
     print(
         f"created libraries: {', '.join(synchronized['created_libraries']) or 'none'}"
     )
-    print(f"friends can see: {', '.join(synchronized['public_libraries'])}")
+    print(f"every account can see: {', '.join(synchronized['public_libraries'])}")
     print(
-        f"friends cannot see: {', '.join(synchronized['private_libraries']) or 'none'}"
+        f"private libraries: {', '.join(synchronized['private_libraries']) or 'none'}"
+    )
+    print(
+        "only these accounts see them: "
+        f"{', '.join(synchronized['private_library_accounts']) or 'none'}"
     )
     print(f"reconciled: {', '.join(synchronized['reconciled_accounts']) or 'none'}")
     failed_library_names = synchronized["failed_libraries"]

@@ -63,7 +63,7 @@ def test_non_sync_commands_still_build_the_full_context(monkeypatch):
     assert context.jellyseerr_api_key == "seerr-key"
 
 
-def test_run_sync_names_the_libraries_friends_cannot_see(monkeypatch, capsys):
+def test_run_sync_names_who_holds_private_library_access(monkeypatch, capsys):
     monkeypatch.setattr(
         cli.library_access_synchronization,
         "synchronize_library_access",
@@ -72,6 +72,7 @@ def test_run_sync_names_the_libraries_friends_cannot_see(monkeypatch, capsys):
             "failed_libraries": [],
             "public_libraries": ["Movies", "TV"],
             "private_libraries": ["Movies (Private)"],
+            "private_library_accounts": ["private-requests"],
             "reconciled_accounts": ["Rogerio"],
         },
     )
@@ -80,8 +81,9 @@ def test_run_sync_names_the_libraries_friends_cannot_see(monkeypatch, capsys):
     )
 
     printed = capsys.readouterr().out
-    assert "friends can see: Movies, TV" in printed
-    assert "friends cannot see: Movies (Private)" in printed
+    assert "every account can see: Movies, TV" in printed
+    assert "private libraries: Movies (Private)" in printed
+    assert "only these accounts see them: private-requests" in printed
     assert "reconciled: Rogerio" in printed
 
 
@@ -96,6 +98,7 @@ def test_run_sync_reports_the_reconcile_before_failing_on_a_library(
             "failed_libraries": ["Movies (Private)"],
             "public_libraries": ["Movies", "TV"],
             "private_libraries": [],
+            "private_library_accounts": ["private-requests"],
             "reconciled_accounts": ["Rogerio"],
         },
     )
@@ -164,6 +167,7 @@ def test_run_sync_reports_none_when_nothing_was_created(monkeypatch, capsys):
             "failed_libraries": [],
             "public_libraries": ["Movies", "TV"],
             "private_libraries": [],
+            "private_library_accounts": [],
             "reconciled_accounts": [],
         },
     )

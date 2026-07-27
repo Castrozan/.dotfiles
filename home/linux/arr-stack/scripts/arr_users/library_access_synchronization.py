@@ -4,15 +4,17 @@ import jellyfin_library_declaration
 import jellyfin_library_provisioning
 
 
-def reconcile_friend_library_visibility(context, public_library_ids):
+def reconcile_library_visibility(context, jellyfin_libraries):
     reconciled_usernames = []
     for jellyfin_user in jellyfin_api_client.list_users(
         context.jellyfin_base_url, context.jellyfin_api_key
     ):
-        if friend_account_policy.is_administrator(jellyfin_user):
-            continue
+        username = jellyfin_user.get("Name")
+        visible_library_ids = jellyfin_library_declaration.resolve_visible_library_ids(
+            jellyfin_libraries, username
+        )
         visibility_policy = friend_account_policy.build_library_visibility_policy(
-            jellyfin_user.get("Policy", {}), public_library_ids
+            jellyfin_user.get("Policy", {}), visible_library_ids
         )
         jellyfin_api_client.update_user_policy(
             context.jellyfin_base_url,
@@ -20,7 +22,7 @@ def reconcile_friend_library_visibility(context, public_library_ids):
             jellyfin_user["Id"],
             visibility_policy,
         )
-        reconciled_usernames.append(jellyfin_user.get("Name"))
+        reconciled_usernames.append(username)
     return reconciled_usernames
 
 
@@ -40,9 +42,6 @@ def synchronize_library_access(context):
     jellyfin_libraries = jellyfin_api_client.list_virtual_folders(
         context.jellyfin_base_url, context.jellyfin_api_key
     )
-    public_library_ids = jellyfin_library_declaration.resolve_public_library_ids(
-        jellyfin_libraries
-    )
     return {
         "created_libraries": created_library_names,
         "failed_libraries": failed_library_names,
@@ -50,7 +49,10 @@ def synchronize_library_access(context):
         "private_libraries": jellyfin_library_declaration.private_library_names_present(
             jellyfin_libraries
         ),
-        "reconciled_accounts": reconcile_friend_library_visibility(
-            context, public_library_ids
+        "private_library_accounts": list(
+            jellyfin_library_declaration.PRIVATE_LIBRARY_ACCOUNT_USERNAMES
+        ),
+        "reconciled_accounts": reconcile_library_visibility(
+            context, jellyfin_libraries
         ),
     }

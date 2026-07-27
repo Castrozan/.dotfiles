@@ -72,22 +72,32 @@ Config and data live under documented host paths (created on rebuild, owned by
 ## Private libraries friends cannot see
 
 `data/media/movies-private` and `data/media/tv-private` back two Jellyfin
-libraries, `Movies (Private)` and `TV (Private)`, that only administrators can
-see. Friends are pinned to `EnableAllFolders: false` with the public `Movies` and
-`TV` libraries as their entire `EnabledFolders` list, so a private title is
-invisible in their Jellyfin: not in browse, not in search, not playable by direct
-item id. The libraries stay out of Jellyseerr's synced-library list too, so a
-private title is never announced there as available.
+libraries, `Movies (Private)` and `TV (Private)`, that only the accounts named in
+`PRIVATE_LIBRARY_ACCOUNT_USERNAMES` can see. Everyone else is pinned to
+`EnableAllFolders: false` with the public `Movies` and `TV` libraries as their
+entire `EnabledFolders` list, so a private title is invisible to them: not in
+browse, not in search, not playable by direct item id. The libraries stay out of
+Jellyseerr's synced-library list too, so a private title is never announced there
+as available.
+
+Access is an allowlist of usernames, not a role test, and `lucas` is deliberately
+outside it. Jellyfin honours restricted folders for administrators as well, so the
+owner's daily-driver account stays an administrator and keeps approving requests
+while seeing only public media. The reconcile writes `EnabledFolders` on every
+account including administrators and never touches `IsAdministrator`. This keeps
+private media out of the daily account rather than out of the owner's reach: an
+administrator can re-grant itself the libraries in the dashboard, and the next
+rebuild pins it back.
 
 The split is code, not clicks. `scripts/arr_users/jellyfin_library_declaration.py`
 is the single source of truth: anything not named in `PUBLIC_LIBRARY_DECLARATIONS`
-is private, so a library added later is hidden from friends by default and has to
-be declared public deliberately. The `jellyfin-library-access-provisioner` systemd
-unit re-applies the whole boundary on every rebuild, creating any declared library
-that is missing and rewriting every non-administrator policy; `arr-users sync`
-runs the same reconcile by hand. Both refuse to write a policy at all when a
-declared public library is missing from Jellyfin, so a half-read library list can
-never silently narrow or widen what friends see.
+is private, so a library added later is hidden by default and has to be declared
+public deliberately. The `jellyfin-library-access-provisioner` systemd unit
+re-applies the whole boundary on every rebuild, creating any declared library that
+is missing and rewriting every account's policy; `arr-users sync` runs the same
+reconcile by hand. Both refuse to write a policy at all when a declared public
+library is missing from Jellyfin, so a half-read library list can never silently
+narrow or widen what anyone sees.
 
 ## Requesting into a private library
 

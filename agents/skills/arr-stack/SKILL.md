@@ -11,18 +11,21 @@ for the exact interface; do not reconstruct flags from memory. On any host other
 
 <private_libraries>
 Media friends must not see goes in a private library, backed by a `-private` media directory and hidden by pinning every
-non-administrator to `EnableAllFolders: false` with only the public libraries enabled.
-The library declaration module in the `arr_users` package is the sole source of truth for the split and is default-deny,
-so edit that module to change what is public, never a Jellyfin dashboard checkbox. Log in as `friends-view`, an ordinary
-friend account kept for the purpose, to see the library as a friend does.
+account to `EnableAllFolders: false` with only the libraries it is declared to see. Access is an explicit allowlist of
+usernames, not a role test: the owner's own admin account is outside it on purpose, so private media stays out of the
+daily-driver account and only the declared private account sees it. Administrators are pinned like everyone else, which
+Jellyfin honours, and the reconcile never changes who is an administrator. The library declaration module in the
+`arr_users` package is the sole source of truth for both the split and the allowlist and is default-deny, so edit that
+module rather than a Jellyfin dashboard checkbox. Log in as `friends-view` to see the library as a friend does.
 </private_libraries>
 
 <private_requesting>
 Requesting privately is a matter of which account requests, not of remembering a root folder: the routing module in the
 `arr_users` package declares one ordinary Jellyseerr account whose every request is rewritten to a `-private` root
-folder by committed override rules, reconciled on each rebuild. Request from that account to keep a title off the public
-libraries, and from the admin account for anything friends should get. Adding the title in Radarr or Sonarr by hand and
-picking the `-private` root still works and is the fallback when a request must bypass Jellyseerr entirely.
+folder by committed override rules, reconciled on each rebuild. That same account is the only one that can watch what it
+requests, so private media is requested and viewed there end to end, while the admin account requests, approves and
+watches public media only. Adding the title in Radarr or Sonarr by hand and picking the `-private` root still works and
+is the fallback when a request must bypass Jellyseerr entirely.
 </private_requesting>
 
 <private_library_traps>
