@@ -21,6 +21,7 @@ DISPATCHERS_BY_REGISTRY_NAME = {
     "PRE_TOOL_USE_HANDLERS": "pre-tool-use-dispatcher",
     "POST_TOOL_USE_HANDLERS": "post-tool-use-dispatcher",
     "STOP_HANDLERS": "stop-dispatcher",
+    "SESSION_START_HANDLERS": "session-start-dispatcher",
 }
 
 HANDLERS_REQUIRED_ON_THE_CODEX_SURFACE = {
@@ -28,13 +29,19 @@ HANDLERS_REQUIRED_ON_THE_CODEX_SURFACE = {
         "memory_recall_handler",
         "prohibited_command_guard_handler",
         "prohibited_words_guard_handler",
+        "agent_instruction_file_authoring_router_handler",
     },
     "POST_TOOL_USE_HANDLERS": {
         "auto_format_handler",
         "nix_rebuild_trigger_handler",
         "record_edited_source_file_handler",
+        "line_count_limit_guard_handler",
     },
     "STOP_HANDLERS": {"lint_turn_review_handler"},
+    "SESSION_START_HANDLERS": {
+        "deep_work_context_handler",
+        "compaction_context_recovery_handler",
+    },
 }
 
 HANDLERS_THAT_MUST_STAY_OFF_THE_CODEX_SURFACE = {
@@ -43,8 +50,8 @@ HANDLERS_THAT_MUST_STAY_OFF_THE_CODEX_SURFACE = {
         "codex_sandbox_downgrade_guard_handler",
         "workspace_directory_injector_handler",
     },
-    "POST_TOOL_USE_HANDLERS": {"line_count_limit_guard_handler"},
     "STOP_HANDLERS": {"end_of_turn_format_guard_handler"},
+    "SESSION_START_HANDLERS": {"session_context_handler"},
 }
 
 

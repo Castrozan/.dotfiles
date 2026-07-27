@@ -15,6 +15,7 @@ for _shared_module_candidate_directory in [_MODULE_DIRECTORY] + [
         sys.path.insert(0, _shared_module_candidate_path)
 
 import instructions_skill_marker  # noqa: E402
+from changed_file_paths import collect_changed_file_paths  # noqa: E402
 from hook_dispatch import HandlerResult  # noqa: E402
 
 INSTRUCTION_FILENAMES_THAT_ARE_ALWAYS_AGENT_DIRECTED = {"claude.md", "agents.md"}
@@ -45,10 +46,6 @@ def has_loaded_instructions_skill_this_session(session_id):
     ).exists()
 
 
-def extract_edited_file_path(tool_input):
-    return tool_input.get("file_path", "") or tool_input.get("notebook_path", "")
-
-
 def is_agent_directed_instruction_file(file_path):
     if not file_path:
         return False
@@ -67,10 +64,8 @@ def is_agent_directed_instruction_file(file_path):
 
 
 def handle(hook_input):
-    tool_input = hook_input.get("tool_input", {})
-    file_path = extract_edited_file_path(tool_input)
-
-    if not is_agent_directed_instruction_file(file_path):
+    edited_paths = collect_changed_file_paths(hook_input)
+    if not any(is_agent_directed_instruction_file(path) for path in edited_paths):
         return None
 
     if has_loaded_instructions_skill_this_session(hook_input.get("session_id", "")):

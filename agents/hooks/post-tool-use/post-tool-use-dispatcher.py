@@ -49,9 +49,7 @@ POST_TOOL_USE_HANDLERS = [
     ),
     HookHandler(handle=nix_rebuild_trigger_handler.handle, tool_matcher="Edit|Write"),
     HookHandler(
-        handle=line_count_limit_guard_handler.handle,
-        tool_matcher="Edit|Write",
-        surfaces=(CLAUDE_SURFACE,),
+        handle=line_count_limit_guard_handler.handle, tool_matcher="Edit|Write"
     ),
 ]
 

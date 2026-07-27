@@ -30,7 +30,7 @@ let
           hooks = [
             {
               type = "command";
-              command = "cat ~/.dotfiles/.deep-work/*/context.md 2>/dev/null || true";
+              command = runCodexDispatcher "session-start-dispatcher.py";
               timeout = 5;
               statusMessage = "Loading deep-work context";
             }

@@ -16,7 +16,12 @@ _APPLY_PATCH_ADDED_LINE_PATTERN = re.compile(r"^\+(.*)$", re.MULTILINE)
 def _directly_reported_edited_path(tool_input: object) -> str:
     if not isinstance(tool_input, dict):
         return ""
-    return str(tool_input.get("file_path") or tool_input.get("path") or "")
+    return str(
+        tool_input.get("file_path")
+        or tool_input.get("notebook_path")
+        or tool_input.get("path")
+        or ""
+    )
 
 
 def _serialized_tool_input(hook_input: dict) -> str:

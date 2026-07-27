@@ -94,18 +94,21 @@ shapes onto the `apply_patch` tool name and maps it onto `Edit`/`Write` for
 matcher purposes, so a single `Edit|Write` matcher fires on both CLIs.
 
 - Running on the codex surface:
-  - `SessionStart`: deep-work context load, still a shell one-liner rather than
-    a dispatcher (see the deferral below).
+  - `SessionStart`: `deep_work_context_handler` (the deep-work context load,
+    now a handler rather than a `cat` one-liner, so the event keeps a single
+    entry point) and `compaction_context_recovery_handler`.
   - `PreToolUse`: `memory_recall_handler` (shares the SAME
     `~/.claude/projects/<enc>/memory/` store as Claude, so recall continuity
     carries across both CLIs; needs `rg`), `prohibited_command_guard_handler`
     and `prohibited_words_guard_handler` (the dispatcher command is env-prefixed
-    with the per-host `PROHIBITED_WORDS_ALLOWED` allowlist). Both guards block
-    via the deny schema; the words guard also scans `apply_patch` bodies and
-    file names, closing the Codex write-path content-scan gap.
+    with the per-host `PROHIBITED_WORDS_ALLOWED` allowlist), plus
+    `agent_instruction_file_authoring_router_handler`. The guards block via the
+    deny schema; the words guard also scans `apply_patch` bodies and file names,
+    closing the Codex write-path content-scan gap.
   - `PostToolUse`: `auto_format_handler`, `record_edited_source_file_handler`
-    (feeds the lint ledger) and `nix_rebuild_trigger_handler`, all reading
-    changed paths from the `apply_patch` payload.
+    (feeds the lint ledger), `nix_rebuild_trigger_handler` and
+    `line_count_limit_guard_handler`, all reading changed paths from the
+    `apply_patch` payload through `common/changed_file_paths.py`.
   - `Stop`: `lint_turn_review_handler` reads the ledger and surfaces a
     repo-native lint advisory for the files touched this turn.
 - Live-confirmed via an isolated `CODEX_HOME` exec run: the command guard refuses
@@ -115,14 +118,16 @@ matcher purposes, so a single `Edit|Write` matcher fires on both CLIs.
 - Non-gaps confirmed: the `memory-write`/`memory-prune` CLIs are already on PATH
   for Codex (profile-global `home.packages`), and both they and memory recall
   compute the same `~/.claude/projects/<enc>/memory/` dir from cwd.
-- Remaining ports, now a one-word change each: `agent-instruction-file-authoring-router`
-  (PreToolUse gate on the `instructions` skill), `line_count_limit_guard_handler`
-  (needs a path source for `apply_patch`), and `compaction_context_recovery_handler`
-  (SessionStart `compact` reload nudge).
+- Remaining ports: none. The last three, the instruction-authoring router, the
+  line-count guard and the compaction reload nudge, all run on Codex now. The
+  first two needed a real change rather than a surface flag, because both read
+  `tool_input.file_path`, which an `apply_patch` payload does not carry; they go
+  through `common/changed_file_paths.py` instead, which resolves the Claude
+  field and the Codex patch markers alike.
 - Deferred for safety: `session_context_handler` SessionStart enrichment (git status /
   recent commits) would pipe private-infra commit text into model context inside
-  a PUBLIC repo. Marked `surfaces = (CLAUDE_SURFACE,)` so the call survives even
-  if Codex later registers the SessionStart dispatcher.
+  a PUBLIC repo. It stays `surfaces = (CLAUDE_SURFACE,)` even though Codex now
+  registers the SessionStart dispatcher, and a test asserts it stays off.
 - Claude-only by applicability: `codex-sandbox-downgrade-guard`,
   `monitor-streaming-pattern-validator`, `workspace-directory-injector`,
   `background-bash-anti-pattern-validator`, and the

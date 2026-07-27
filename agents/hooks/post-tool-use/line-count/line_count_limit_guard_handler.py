@@ -15,24 +15,21 @@ for _shared_module_candidate_directory in (
     ):
         sys.path.insert(0, _shared_module_candidate_path)
 
+from changed_file_paths import collect_changed_file_paths  # noqa: E402
 from hook_dispatch import HandlerResult  # noqa: E402
 from line_count_policy import (  # noqa: E402
     LINE_COUNT_BLOCKING_THRESHOLD,
     line_count_when_code_file_exceeds_blocking_threshold,
 )
 
-APPLICABLE_TOOL_NAMES = frozenset({"Write", "Edit", "MultiEdit", "NotebookEdit"})
+APPLICABLE_TOOL_NAMES = frozenset(
+    {"Write", "Edit", "MultiEdit", "NotebookEdit", "apply_patch"}
+)
 
 BLOCK_MESSAGE_FILE_PATH = _MODULE_DIRECTORY / "line-count-block-message.md"
 BLOCK_MESSAGE_FALLBACK = (
     "Split it into smaller modules with single responsibilities before continuing."
 )
-
-
-def extract_target_file_path_from_tool_input(tool_name: str, tool_input: dict) -> str:
-    if tool_name == "NotebookEdit":
-        return tool_input.get("notebook_path", "") or ""
-    return tool_input.get("file_path", "") or ""
 
 
 def read_block_message_guidance() -> str:
@@ -42,20 +39,7 @@ def read_block_message_guidance() -> str:
         return BLOCK_MESSAGE_FALLBACK
 
 
-def handle(hook_input: dict):
-    tool_name = hook_input.get("tool_name", "")
-    if tool_name not in APPLICABLE_TOOL_NAMES:
-        return None
-
-    tool_input = hook_input.get("tool_input", {}) or {}
-    target_file_path = extract_target_file_path_from_tool_input(tool_name, tool_input)
-    if not target_file_path:
-        return None
-
-    line_count = line_count_when_code_file_exceeds_blocking_threshold(target_file_path)
-    if line_count is None:
-        return None
-
+def blocking_result(target_file_path: str, line_count: int):
     reason = (
         f"File '{target_file_path}' is {line_count} lines, exceeding the "
         f"{LINE_COUNT_BLOCKING_THRESHOLD}-line hard limit. "
@@ -66,3 +50,17 @@ def handle(hook_input: dict):
         f"(> {LINE_COUNT_BLOCKING_THRESHOLD})."
     )
     return HandlerResult(decision="block", reason=reason, system_message=system_message)
+
+
+def handle(hook_input: dict):
+    tool_name = hook_input.get("tool_name", "")
+    if tool_name not in APPLICABLE_TOOL_NAMES:
+        return None
+
+    for target_file_path in collect_changed_file_paths(hook_input):
+        line_count = line_count_when_code_file_exceeds_blocking_threshold(
+            target_file_path
+        )
+        if line_count is not None:
+            return blocking_result(target_file_path, line_count)
+    return None

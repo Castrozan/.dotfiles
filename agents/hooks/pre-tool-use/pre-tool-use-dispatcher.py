@@ -74,7 +74,6 @@ PRE_TOOL_USE_HANDLERS = [
     HookHandler(
         handle=agent_instruction_file_authoring_router_handler.handle,
         tool_matcher="Write|Edit",
-        surfaces=(CLAUDE_SURFACE,),
     ),
 ]
 
