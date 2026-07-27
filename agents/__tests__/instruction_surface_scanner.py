@@ -42,16 +42,16 @@ def skill_chapter_files() -> list[Path]:
     )
 
 
+def subagent_definition_files() -> list[Path]:
+    return sorted((REPO_ROOT / "agents" / "subagents").glob("*.md"))
+
+
 def instruction_surface_files() -> list[Path]:
-    surfaces = [
-        REPO_ROOT / "agents" / "core_rules" / "core.md",
-        REPO_ROOT / "agents" / "dotfiles.md",
-    ]
+    surfaces = [REPO_ROOT / "agents" / "dotfiles.md"]
+    surfaces += sorted((REPO_ROOT / "agents" / "core_rules").glob("**/*.md"))
     surfaces += sorted((REPO_ROOT / "agents" / "snippets").glob("*.md"))
-    surfaces += sorted(
-        (REPO_ROOT / "agents" / "core_rules" / "communication").glob("*.md")
-    )
     surfaces += sorted((REPO_ROOT / "agents" / "commands").glob("**/*.md"))
+    surfaces += subagent_definition_files()
     return surfaces
 
 

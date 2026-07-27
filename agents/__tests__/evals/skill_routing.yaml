@@ -21,7 +21,17 @@ shared_system_prompt: &shared_system_prompt |
 
   research - Current-information research and synthesis for tools, vendors, standards, or decisions. Use when the user asks to research, compare, evaluate, verify, or find the latest external information; not for local repo search.
 
-  review - Quality, review, and output craft — unbiased code review rubric for reviewer subagents, offloaded-rule compliance auditing, documentation policy, skill and instruction authoring, ultra-dense output mode. Use when reviewing code, auditing rule compliance, writing docs or policies, designing skills or prompts, or when the user asks for compressed responses.
+  review - Quality lenses that are not the code itself: offloaded-rule compliance auditing, documentation policy, skill and instruction-file authoring and auditing, skill routing repair, ultra-dense output mode. Use when auditing rule compliance, writing docs or policies, designing skills or prompts, or when the user asks for compressed responses. Do NOT use for judging code; that is the code-review skill.
+
+  code-review - Review a diff for defects and craft, from token and variable name through function shape to module placement and system design, then request changes. Use when judging code, your own or a delegate's, for bugs, security, conventions and completeness.
+
+  architecture - Boundaries, dependency direction, system design, UML and deployment shape. Use when choosing a structure, adding a module or service, moving a boundary, or reviewing a design before the code exists.
+
+  code-craft - Clean-code standards for writing implementation: DRY, SOLID, coupling and cohesion, function shape, test-first, and when not to abstract. Use when writing or cleaning up the code for a design that is already decided.
+
+  quality-assurance - Final QA method: verify finished work against the user's stated goal, widen the scope past the tests the plan named, and hunt side effects in behavior nobody meant to change. Use for the last pass once the code is written and its own tests pass.
+
+  explore - Search a codebase in three widening-then-narrowing cycles using text, file, history and context search, and return the conclusion rather than the files. Use when answering a question means sweeping the repo for where something lives.
 
   deep-work - Persist task context to disk so multi-session or compaction-prone work survives. Use for big work (more than 5 steps, spans sessions, explicit context-preservation request); creates a `.deep-work/{task}/` workspace of verbatim prompts, plan, progress journal, and curated context. Not for quick single-exchange fixes.
 
@@ -516,3 +526,57 @@ tests:
     assertions:
       output_equals:
         - "personal"
+
+  - name: routing_to_code_review_for_a_diff_before_merge
+    no_tools: true
+    system_prompt: *shared_system_prompt
+    prompt: "Here is the diff on the auth module. Check it for bugs and bad naming before I merge it."
+    model: sonnet
+    assertions:
+      output_equals:
+        - "code-review"
+
+  - name: routing_to_review_for_an_instruction_file_audit
+    no_tools: true
+    system_prompt: *shared_system_prompt
+    prompt: "I rewrote a SKILL.md and a CLAUDE.md section. Audit them against our instruction authoring standards."
+    model: sonnet
+    assertions:
+      output_equals:
+        - "review"
+
+  - name: routing_to_architecture_for_a_boundary_decision
+    no_tools: true
+    system_prompt: *shared_system_prompt
+    prompt: "Should the payment retry logic live in its own service or stay inside the order module?"
+    model: sonnet
+    assertions:
+      output_equals:
+        - "architecture"
+
+  - name: routing_to_code_craft_for_a_function_cleanup
+    no_tools: true
+    system_prompt: *shared_system_prompt
+    prompt: "This function does three things and takes a boolean flag argument. Clean it up."
+    model: sonnet
+    assertions:
+      output_equals:
+        - "code-craft"
+
+  - name: routing_to_quality_assurance_for_the_final_pass
+    no_tools: true
+    system_prompt: *shared_system_prompt
+    prompt: "The feature is implemented and its unit tests pass. Do a final pass to confirm what I actually asked for works and nothing else broke."
+    model: sonnet
+    assertions:
+      output_equals:
+        - "quality-assurance"
+
+  - name: routing_to_explore_for_a_repo_sweep
+    no_tools: true
+    system_prompt: *shared_system_prompt
+    prompt: "Where in this repo is the retry timeout configured? Sweep the whole tree and just tell me the answer."
+    model: sonnet
+    assertions:
+      output_equals:
+        - "explore"

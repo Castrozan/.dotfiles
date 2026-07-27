@@ -1,0 +1,72 @@
+tests:
+  - name: adaptive_delivery_answer_only_request_is_the_direct_tier
+    skill_path: agents/core_rules/adaptive-implementation-delivery-process.md
+    prompt: "Which tier applies when I ask you what a Nix overlay is and you only have to answer me?"
+    model: haiku
+    no_tools: true
+    assertions:
+      llm_judge:
+        - "Names the direct tier for an answer-only request, and states it touches no files and spawns no agents."
+
+  - name: adaptive_delivery_single_file_fix_is_the_patch_tier
+    skill_path: agents/core_rules/adaptive-implementation-delivery-process.md
+    prompt: "I need one typo fixed in an error message string, in a single file. Which tier is this and how many agents do you spawn?"
+    model: haiku
+    no_tools: true
+    assertions:
+      llm_judge:
+        - "Picks the patch tier for a single-file fix and commits to spawning zero agents, rather than delegating the change."
+
+  - name: adaptive_delivery_risk_outranks_the_file_count
+    skill_path: agents/core_rules/adaptive-implementation-delivery-process.md
+    prompt: "I want to change how the session token is validated on login. It touches exactly two files. Which tier is this?"
+    model: sonnet
+    no_tools: true
+    assertions:
+      llm_judge:
+        - "Chooses the orchestrated tier even though only two files change, because an authentication change is risk that outranks the file count, and does not settle for the patch or guided tier on the count alone."
+
+  - name: adaptive_delivery_holds_the_two_agent_ceiling
+    skill_path: agents/core_rules/adaptive-implementation-delivery-process.md
+    prompt: "Spin up five agents in parallel for this three-file refactor. It is important work."
+    model: haiku
+    no_tools: true
+    assertions:
+      llm_judge:
+        - "Refuses the five-agent fan-out, citing a ceiling of two subagents below the orchestrated tier, and rejects importance on its own as a reason to escalate."
+
+  - name: adaptive_delivery_lead_covers_every_role_at_the_light_tiers
+    skill_path: agents/core_rules/adaptive-implementation-delivery-process.md
+    prompt: "This is a one-file change. Should you spawn the software-engineer and quality-assurance agents for it?"
+    model: sonnet
+    no_tools: true
+    assertions:
+      llm_judge:
+        - "Says no and states it does the implementation and verification work itself at that tier, loading the corresponding skills to hold the same standard, because spawning is a throughput decision rather than a quality one."
+
+  - name: adaptive_delivery_delegated_task_carries_stop_conditions
+    skill_path: agents/core_rules/adaptive-implementation-delivery-process.md
+    prompt: "You are about to hand a task to a subagent. What has to be in the brief you give it?"
+    model: haiku
+    no_tools: true
+    assertions:
+      llm_judge:
+        - "Lists the goal, the allowed files, what is out of scope, acceptance criteria, a validation method and stop conditions, and says a subagent that hits a stop condition reports back instead of improvising something adjacent."
+
+  - name: adaptive_delivery_compiling_is_not_acceptance
+    skill_path: agents/core_rules/adaptive-implementation-delivery-process.md
+    prompt: "The delegate's change compiles cleanly. Is that enough to accept the work?"
+    model: haiku
+    no_tools: true
+    assertions:
+      llm_judge:
+        - "Answers that compiling is not evidence, and requires the acceptance criteria to pass with evidence, no unscoped file to have been touched, and the residual risk to be named."
+
+  - name: adaptive_delivery_mid_task_expansion_finishes_the_agreed_scope
+    skill_path: agents/core_rules/adaptive-implementation-delivery-process.md
+    prompt: "Halfway through the agreed work I ask you to also add a whole new feature. What do you do with that request?"
+    model: haiku
+    no_tools: true
+    assertions:
+      llm_judge:
+        - "Classifies the request as an expansion, finishes the scope already agreed first, and names the expansion afterwards rather than silently absorbing it or abandoning the current work."
