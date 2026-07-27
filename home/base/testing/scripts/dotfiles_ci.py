@@ -2,7 +2,9 @@ import json
 import subprocess
 import sys
 import time
+from pathlib import Path
 
+DOTFILES_DIRECTORY = Path.home() / ".dotfiles"
 RUN_LIST_FIELDS = "workflowName,status,conclusion,url"
 RUN_LIST_LIMIT = "50"
 SECONDS_BETWEEN_POLLS = 15
@@ -17,6 +19,7 @@ EXIT_CODE_CI_VERDICT_UNKNOWN = 2
 def resolve_commit_sha(commit_reference: str) -> str:
     completed = subprocess.run(
         ["git", "rev-parse", commit_reference],
+        cwd=DOTFILES_DIRECTORY,
         capture_output=True,
         text=True,
         check=True,
@@ -37,6 +40,7 @@ def fetch_runs_for_commit(commit_sha: str) -> list[dict]:
             "--json",
             RUN_LIST_FIELDS,
         ],
+        cwd=DOTFILES_DIRECTORY,
         capture_output=True,
         text=True,
         check=True,
@@ -87,7 +91,15 @@ def report_runs(runs: list[dict]) -> None:
 
 def main() -> int:
     commit_reference = sys.argv[1] if len(sys.argv) > 1 else "HEAD"
-    commit_sha = resolve_commit_sha(commit_reference)
+    try:
+        commit_sha = resolve_commit_sha(commit_reference)
+    except subprocess.CalledProcessError:
+        print(
+            f"'{commit_reference}' does not name a commit in {DOTFILES_DIRECTORY}, so "
+            f"CI has no verdict to give; this is not a red CI",
+            file=sys.stderr,
+        )
+        return EXIT_CODE_CI_VERDICT_UNKNOWN
     print(f"waiting on GitHub Actions for {commit_sha}")
 
     appeared_runs = wait_for_runs_to_appear(commit_sha)

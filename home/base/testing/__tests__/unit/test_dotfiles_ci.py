@@ -1,3 +1,5 @@
+import subprocess
+from types import SimpleNamespace
 from unittest.mock import patch
 
 import dotfiles_ci
@@ -76,6 +78,26 @@ class TestWaiting:
             * dotfiles_ci.SECONDS_BETWEEN_POLLS
         )
         assert budget_seconds <= 600
+
+
+class TestTheRepositoryIsPinnedRatherThanInheritedFromTheCaller:
+    def test_the_commit_is_resolved_inside_the_dotfiles_checkout(self):
+        with patch("dotfiles_ci.subprocess.run") as subprocess_run:
+            subprocess_run.return_value = SimpleNamespace(stdout="deadbeef\n")
+            dotfiles_ci.resolve_commit_sha("HEAD")
+        assert subprocess_run.call_args.kwargs["cwd"] == dotfiles_ci.DOTFILES_DIRECTORY
+
+    def test_the_runs_are_queried_inside_the_dotfiles_checkout(self):
+        with patch("dotfiles_ci.subprocess.run") as subprocess_run:
+            subprocess_run.return_value = SimpleNamespace(stdout="[]")
+            dotfiles_ci.fetch_runs_for_commit("deadbeef")
+        assert subprocess_run.call_args.kwargs["cwd"] == dotfiles_ci.DOTFILES_DIRECTORY
+
+    def test_an_unresolvable_reference_is_unknown_rather_than_red(self):
+        unresolvable = subprocess.CalledProcessError(128, ["git", "rev-parse"])
+        with patch("dotfiles_ci.resolve_commit_sha", side_effect=unresolvable):
+            with patch("dotfiles_ci.sys.argv", ["dotfiles-ci", "not-a-revision"]):
+                assert dotfiles_ci.main() == dotfiles_ci.EXIT_CODE_CI_VERDICT_UNKNOWN
 
 
 class TestReporting:
