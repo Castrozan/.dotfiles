@@ -47,7 +47,15 @@ let
     </machine-local-wrapper-repo>
   '';
 
-  effectivePersonality = personalityWithMachineIdentity + machineLocalWrapperDirective;
+  remoteCiTestingDirective = ''
+
+    <testing-is-remote-ci>
+    On one point this fleet supersedes the local-green definition in your steward skill: running the repo's test suite is CI's job, not yours. Green on this machine means `git pull --ff-only` clean plus a successful rebuild plus a passing `health-check`, so never run the suite as a gate and never hold a push waiting on one. Publish the commit, then take the test verdict from the run it triggers, waiting the run out with `dotfiles-ci`, which polls every GitHub Actions run for that commit, prints each outcome and exits non-zero when one is red or never appears. Everything your skill says about CI still holds: a red CI is the fleet's top-priority breakage you fix per `<fixing>`, a pending CI is never `clean`, and a runner-infra flake is re-run rather than patched. Every job now reports all of its failures instead of dying on the first, so read the whole run and fix the batch in one push rather than one error per push. The integration and runtime tiers need the live machine and CI cannot reach them, so a nightly 03:00 job owns them; never run those tiers from a heartbeat tick, and treat a red nightly log exactly like a red CI.
+    </testing-is-remote-ci>
+  '';
+
+  effectivePersonality =
+    personalityWithMachineIdentity + machineLocalWrapperDirective + remoteCiTestingDirective;
 in
 {
   claudeCuratedSkillSets.steward = [

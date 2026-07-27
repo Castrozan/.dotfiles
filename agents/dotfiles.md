@@ -15,11 +15,12 @@ host split, secrets, script packaging, the "where does this belong" call.
 
 <stewardship>
 This repo is continuously kept synced, green, and pushed by an autonomous per-machine steward agent, declared in the
-clawde-agents module and built from the clawde flake input where its behavior lives. So for complex git reconciliation
-or operations on the main branch, commit your work but leave the push and the reconcile to the steward. A checkout that
-is ahead of, behind, or diverged from origin/main is normal in-flight state the steward will reconcile; never surface it
-as a task pending on the human, and never reconcile it by hand, which races the steward's live loop, unless explicitly
-told to act in the steward's place.
+clawde-agents module and built from the clawde flake input where its behavior lives. You still push your own commits,
+because CI is the test gate and a commit that never reaches origin is never verified, but push only what fast-forwards:
+leave a diverged history, a rebase, or a submodule gitlink conflict to the steward rather than reconciling it by hand,
+which races its live loop, unless explicitly told to act in the steward's place. A checkout that is ahead of, behind, or
+diverged from origin/main is normal in-flight state the steward will reconcile; never surface it as a task pending on
+the human.
 </stewardship>
 
 <configuration>
@@ -60,7 +61,9 @@ interpolation rules destroys quoting. When in doubt, extract.
 
 <testing>
 Never present code that has not been rebuilt and tested. For .nix files, a successful rebuild IS the primary
-verification. Run __tests__/run.sh (--nix when .nix files changed, --quick otherwise).
+verification, and CI owns the test suite: it runs the script tiers and `nix flake check` on every push, so pushing and
+watching CI is how a change gets tested, not a local suite run. Reach for `__tests__/run.sh` only to reproduce a job CI
+turned red, or to iterate on a test you are writing.
 </testing>
 
 <workflows>
@@ -72,14 +75,13 @@ fan-out.
 </workflows>
 
 <workflow>
-After editing any file in the dotfiles repo, execute this sequence before responding. No exceptions.
-1. Format edited files
-2. Stage each file with git add specific-file (never -A)
-3. Commit
-4. Rebuild for any file change in this repo, running it yourself and never deferring to the user (see <rebuild>)
-5. Run __tests__/run.sh
-6. If rebuild or tests fail: fix and repeat from 1
-7. Only after rebuild and tests pass: respond to user
+After editing any file in the dotfiles repo, execute this sequence before responding, no exceptions: 1) format edited
+files; 2) stage each file with git add specific-file, never -A; 3) commit; 4) rebuild for any file change in this repo,
+running it yourself and never deferring to the user (see <rebuild>); 5) push; 6) monitor CI to a verdict with
+`dotfiles-ci`, the one command that waits on every GitHub Actions run for the pushed commit, prints each run's outcome
+and exits non-zero when a run is red or never appears; 7) if the rebuild or CI fails: fix and repeat from 1; 8) only
+after a green rebuild and green CI: respond to user. Every CI job reports all of its failures rather than dying on the
+first, so read the whole run and fix the batch in one pass instead of pushing once per error.
 </workflow>
 
 <applying-clawde-agent-changes>

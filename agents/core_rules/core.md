@@ -67,8 +67,8 @@ Use 'curl -sS' or alternatives instead.
 <testing>
 When a bug is reported, do not start by fixing it. First write a test that reproduces the bug and fails because a
 passing test is the only proof the bug is resolved. Never present code that has not been rebuilt and tested. For .nix
-files, a successful rebuild IS the primary verification. Run __tests__/run.sh (--nix when .nix files changed, --quick
-otherwise).
+files, a successful rebuild IS the primary verification. CI owns the test suite, so the suite is not a gate you run
+locally before responding: push and watch CI instead, and run the suite by hand only to reproduce a job CI turned red.
 </testing>
 
 <session-resilience>
@@ -120,8 +120,10 @@ mode live in `home/base/claude/docs/context-management.md`.
 <workflow>
 After editing any file in the dotfiles repo, execute this sequence before responding, no exceptions: 1) format edited
 files; 2) stage each file with git add specific-file (never -A); 3) commit; 4) rebuild for any file change in this
-repo; 5) run __tests__/run.sh; 6) if rebuild or tests fail: fix and repeat from 1; 7) only after rebuild and tests pass:
-respond to user. A change to a session-start-loaded surface, a settings key like model/effort/ultracode or the
+repo; 5) push; 6) monitor CI to a verdict with `dotfiles-ci`, the one command that waits on every GitHub Actions run for
+the pushed commit and exits non-zero when a run is red or never appears; 7) if the rebuild or CI fails: fix and repeat
+from 1; 8) only after a green rebuild and green CI: respond to user. A change to a session-start-loaded surface, a
+settings key like model/effort/ultracode or the
 `CLAUDE.md`/`core.md` rules, stays dormant in the running session even after a green rebuild because the session already
 loaded the old value, so do not report such a change live or self-verify a behavior shift from the rebuild alone; invoke
 the `restart` skill when the task needs it active in-session.

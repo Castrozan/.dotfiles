@@ -10,11 +10,6 @@
       source = ../../../.githooks/scope-commit.sh;
       executable = true;
     };
-
-    ".githooks/pre-push" = {
-      source = ../../../.githooks/pre-push.sh;
-      executable = true;
-    };
   };
 
   programs.git = {
