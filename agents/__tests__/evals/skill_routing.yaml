@@ -21,7 +21,9 @@ shared_system_prompt: &shared_system_prompt |
 
   research - Current-information research and synthesis for tools, vendors, standards, or decisions. Use when the user asks to research, compare, evaluate, verify, or find the latest external information; not for local repo search.
 
-  review - Quality lenses that are not the code itself: offloaded-rule compliance auditing, documentation policy, skill and instruction-file authoring and auditing, skill routing repair, ultra-dense output mode. Use when auditing rule compliance, writing docs or policies, designing skills or prompts, or when the user asks for compressed responses. Do NOT use for judging code; that is the code-review skill.
+  review - Quality lenses that are not the code itself: offloaded-rule compliance auditing, skill and instruction-file authoring and auditing, skill routing repair, ultra-dense output mode. Use when auditing rule compliance, designing skills or prompts, repairing a skill that never fires, or when the user asks for compressed responses. Do NOT use for judging code (the code-review skill) or for documentation standards (the docs skill).
+
+  docs - Documentation and policy-writing standards: when a doc earns its place, what never to write, evergreen phrasing that does not rot, and how a policy of intent and boundaries differs from a description of code. Use when writing or judging a README, a doc, or a policy.
 
   code-review - Review a diff for defects and craft, from token and variable name through function shape to module placement and system design, then request changes. Use when judging code, your own or a delegate's, for bugs, security, conventions and completeness.
 
@@ -310,6 +312,15 @@ tests:
     assertions:
       output_equals:
         - "review"
+
+  - name: routing_to_docs_readme_standards
+    no_tools: true
+    system_prompt: *shared_system_prompt
+    prompt: "I want to add a README to this module. What belongs in it and what should I leave out?"
+    model: sonnet
+    assertions:
+      output_equals:
+        - "docs"
 
   - name: routing_to_review_skill_routing_failure
     no_tools: true

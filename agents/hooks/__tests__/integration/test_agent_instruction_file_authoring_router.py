@@ -18,7 +18,7 @@ class TestInstructionFileClassification:
             "/home/lucas.zanoni/.claude/CLAUDE.md",
             "project/AGENTS.md",
             "/home/lucas.zanoni/.dotfiles/agents/skills/instructions/SKILL.md",
-            "/home/lucas.zanoni/.dotfiles/agents/skills/review/docs.md",
+            "/home/lucas.zanoni/.dotfiles/agents/skills/docs/SKILL.md",
             "some/repo/skills/nested/deeply/notes.md",
         ],
     )
@@ -37,7 +37,7 @@ class TestInstructionFileClassification:
         )
         assert_blocked(result)
         assert "Skill(skill='instructions')" in permission_reason(result)
-        assert "docs.md" in permission_reason(result)
+        assert "Skill(skill='docs')" in permission_reason(result)
 
     @pytest.mark.parametrize(
         "file_path",

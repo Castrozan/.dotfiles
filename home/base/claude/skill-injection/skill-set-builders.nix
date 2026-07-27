@@ -8,6 +8,7 @@ let
     "deliver"
     "herdr"
     "instructions"
+    "docs"
     "review"
     "humanize"
     "restart"

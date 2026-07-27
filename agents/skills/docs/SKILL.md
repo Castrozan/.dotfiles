@@ -1,3 +1,8 @@
+---
+name: docs
+description: Documentation standards for when a doc earns its place, what never to write, evergreen phrasing, and policy shape. Use when writing or judging a README, doc, or policy; for authoring AI instruction files read instructions.
+---
+
 <principle>
 Code documents itself through naming. Documentation exists only for what naming cannot express: architecture decisions,
 onboarding context, external integration details, and cross-cutting concerns that span multiple files.
