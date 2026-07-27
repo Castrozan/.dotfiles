@@ -10,8 +10,6 @@ let
       (
         builtins.readFile ../../../../agents/core_rules/communication/interactive-preferences.md
         + "\n"
-        + builtins.readFile ../../../../agents/core_rules/model-tier-routing.md
-        + "\n"
         + builtins.readFile ../../../../agents/core_rules/adaptive-implementation-delivery-process.md
       );
 
