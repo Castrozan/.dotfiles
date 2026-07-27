@@ -5,39 +5,60 @@ from __future__ import annotations
 from typing import Any, Dict
 
 from session_context_command_runner import run_cmd
+from session_context_concurrent_gathering import gather_concurrently
+
+
+def parse_porcelain_v2_status(porcelain: str) -> Dict[str, Any]:
+    branch_headers = {}
+    changed_entry_lines = []
+    for line in porcelain.split("\n"):
+        if line.startswith("# branch."):
+            header_name, _, header_value = line[len("# ") :].partition(" ")
+            branch_headers[header_name] = header_value
+        elif line.strip():
+            changed_entry_lines.append(line)
+
+    if "branch.head" not in branch_headers:
+        return {}
+
+    status: Dict[str, Any] = {"is_repo": True}
+    branch = branch_headers["branch.head"]
+    if branch != "(detached)":
+        status["branch"] = branch
+
+    ahead_behind = branch_headers.get("branch.ab", "").split()
+    if len(ahead_behind) == 2:
+        status["ahead"] = int(ahead_behind[0].lstrip("+"))
+        status["behind"] = int(ahead_behind[1].lstrip("-"))
+
+    status["uncommitted"] = len(changed_entry_lines)
+    status["staged"] = sum(
+        1 for line in changed_entry_lines if line[:1] in ("1", "2") and line[2] != "."
+    )
+    status["untracked"] = sum(
+        1 for line in changed_entry_lines if line.startswith("? ")
+    )
+    return status
 
 
 def get_git_status() -> Dict[str, Any]:
-    code, _ = run_cmd(["git", "rev-parse", "--is-inside-work-tree"])
-    if code != 0:
+    probes = gather_concurrently(
+        {
+            "status": lambda: run_cmd(["git", "status", "--porcelain=v2", "--branch"]),
+            "last_commit": lambda: run_cmd(["git", "log", "-1", "--format=%h %s"]),
+        }
+    )
+
+    status_code, porcelain = probes["status"]
+    if status_code != 0:
         return {"is_repo": False}
 
-    status: dict[str, Any] = {"is_repo": True}
+    status = parse_porcelain_v2_status(porcelain)
+    if not status:
+        return {"is_repo": False}
 
-    code, branch = run_cmd(["git", "branch", "--show-current"])
-    if code == 0:
-        status["branch"] = branch
-
-    code, porcelain = run_cmd(["git", "status", "--porcelain"])
-    if code == 0:
-        lines = [line for line in porcelain.split("\n") if line.strip()]
-        status["uncommitted"] = len(lines)
-        status["staged"] = sum(1 for line in lines if line[0] != " " and line[0] != "?")
-        status["untracked"] = sum(1 for line in lines if line.startswith("??"))
-
-    code, ahead_behind = run_cmd(
-        ["git", "rev-list", "--left-right", "--count", "@{u}...HEAD"]
-    )
-    if code == 0:
-        parts = ahead_behind.split()
-        if len(parts) == 2:
-            status["behind"] = int(parts[0])
-            status["ahead"] = int(parts[1])
-
-    code, last_commit = run_cmd(
-        ["git", "log", "-1", "--format=%h %s", "--date=relative"]
-    )
-    if code == 0:
+    last_commit_code, last_commit = probes["last_commit"]
+    if last_commit_code == 0 and last_commit:
         status["last_commit"] = last_commit[:60]
 
     return status

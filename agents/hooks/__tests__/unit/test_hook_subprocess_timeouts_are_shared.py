@@ -1,10 +1,9 @@
-import re
+import ast
 from pathlib import Path
 
 from hook_module_loader import HOOK_SUBPROCESS_TIMEOUT_SECONDS
 
 HOOK_TESTS_DIRECTORY = Path(__file__).resolve().parent.parent
-HARDCODED_TIMEOUT_PATTERN = re.compile(r"\btimeout=(\d+)")
 
 
 def python_test_support_files():
@@ -17,10 +16,13 @@ def python_test_support_files():
 
 def hardcoded_timeouts_in(path):
     return [
-        (line_number, int(match.group(1)))
-        for line_number, line in enumerate(path.read_text().splitlines(), start=1)
-        for match in [HARDCODED_TIMEOUT_PATTERN.search(line)]
-        if match
+        (keyword.value.lineno, keyword.value.value)
+        for node in ast.walk(ast.parse(path.read_text()))
+        if isinstance(node, ast.Call)
+        for keyword in node.keywords
+        if keyword.arg == "timeout"
+        and isinstance(keyword.value, ast.Constant)
+        and isinstance(keyword.value.value, (int, float))
     ]
 
 

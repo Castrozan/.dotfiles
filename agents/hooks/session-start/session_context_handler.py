@@ -24,6 +24,7 @@ from session_context_banner_formatter import (  # noqa: E402
     format_system_info_section,
     format_time_sections,
 )
+from session_context_concurrent_gathering import gather_concurrently  # noqa: E402
 from session_context_environment import check_environment  # noqa: E402
 from session_context_git_status import get_git_status  # noqa: E402
 from session_context_hyprland import (  # noqa: E402
@@ -35,29 +36,27 @@ from session_context_system_info import get_system_info  # noqa: E402
 
 
 def handle(hook_input: dict):
-    sections = []
-
-    git_section = format_git_section(get_git_status())
-    if git_section:
-        sections.append(git_section)
-
-    env_section = format_environment_section(check_environment())
-    if env_section:
-        sections.append(env_section)
-
-    hyprland_section = format_hyprland_workspace_section(
-        detect_hyprland_workspace_context()
+    gathered = gather_concurrently(
+        {
+            "git": get_git_status,
+            "environment": check_environment,
+            "hyprland": detect_hyprland_workspace_context,
+            "project": check_project_context,
+            "system": get_system_info,
+        }
     )
-    if hyprland_section:
-        sections.append(hyprland_section)
 
-    project_section = format_project_context_section(check_project_context())
-    if project_section:
-        sections.append(project_section)
-
-    system_section = format_system_info_section(get_system_info())
-    if system_section:
-        sections.append(system_section)
+    sections = []
+    for formatter, gathered_key in (
+        (format_git_section, "git"),
+        (format_environment_section, "environment"),
+        (format_hyprland_workspace_section, "hyprland"),
+        (format_project_context_section, "project"),
+        (format_system_info_section, "system"),
+    ):
+        section = formatter(gathered[gathered_key])
+        if section:
+            sections.append(section)
 
     sections.extend(format_time_sections(datetime.now()))
 
