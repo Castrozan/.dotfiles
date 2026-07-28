@@ -54,9 +54,13 @@ is missing from Jellyfin, because a half-read library list would otherwise silen
 </private_library_traps>
 
 <private_requesting_traps>
-Jellyseerr evaluates override rules only for accounts holding neither admin nor manage-requests, so promoting the
-routing account, or requesting as the admin, silently sends the title to the public library while the rules still read
-as configured; the reconcile refuses a privileged routing account rather than leave that trap armed. An anime series
+Jellyseerr gates override rules on the logged-in session, `!user.hasPermission([MANAGE_REQUESTS])` in
+`entity/MediaRequest.js`, and never on the account picked in the Advanced "Request As" dropdown, which only sets who the
+request is attributed to. So requesting from an admin session lands the title in the public root folder even when the
+dropdown names the routing account, and the rules still read as configured; log in as the routing account itself, or
+pick the `-private` root folder by hand in that same Advanced panel, where an admin session leaves the submitted value
+untouched. Promoting the routing account arms the same trap from the other side, which is why the reconcile refuses a
+privileged one. An anime series
 needs its own rule naming the anime keyword, because Jellyseerr drops every rule that does not for anime. A Jellyseerr
 account holding admin or manage-requests reads every other account's requests by title, so promoting any account
 re-exposes the private account's requests there even though the private libraries themselves stay hidden; that is the

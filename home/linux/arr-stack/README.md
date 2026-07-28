@@ -137,12 +137,19 @@ by hand. Adding the title in Radarr or Sonarr directly (`http://arr:7878`,
 `http://arr:8989`) with the `-private` root folder picked still works, and is the
 fallback when a request has to bypass Jellyseerr.
 
-Jellyseerr evaluates override rules only for accounts holding neither admin nor
-manage-requests, so the routing account has to stay an ordinary requester:
-promoting it makes every rule silently stop applying while still reading as
-configured in the dashboard, which is why the reconcile refuses a privileged
-routing account outright. Anime series need a second rule naming the anime
-keyword, because Jellyseerr drops every rule that omits it for anime.
+Log in as that account to request privately. The Advanced panel's "Request As"
+dropdown is not a substitute: `MediaRequest.request()` gates the override rules on
+the logged-in session user, `!user.hasPermission([MANAGE_REQUESTS])`, and only
+reassigns `requestUser` for attribution, so an admin session picking the routing
+account there still lands the title in the public root folder while every rule
+reads as configured. From an admin session the submitted root folder is used
+verbatim, so picking `-private` by hand in that same panel is the one way it works
+without switching accounts.
+
+The routing account also has to stay an ordinary requester, because promoting it
+disables the rules from the other side, which is why the reconcile refuses a
+privileged one outright. Anime series need a second rule naming the anime keyword,
+because Jellyseerr drops every rule that omits it for anime.
 
 ## Nobody approves anything
 
