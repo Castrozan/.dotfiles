@@ -11,46 +11,33 @@ fulfilling and idles down after a grace, or stays resident when
 instant its data drive disconnects and brings the front ends back when it
 reconnects. You can still drive it by hand with `docker compose` (below).
 
-## Roster
+## Reaching it
 
-| Service     | Role                          | Tailnet URL     |
-| ----------- | ----------------------------- | --------------- |
-| jellyfin    | media server / watch UI       | http://arr:8096 |
-| jellyseerr  | browse and request front end  | http://arr:5055 |
-| qbittorrent | download client               | http://arr:8080 |
-| prowlarr    | indexer manager               | http://arr:9696 |
-| sonarr      | TV                            | http://arr:8989 |
-| radarr      | movies                        | http://arr:7878 |
-| bazarr      | subtitles                     | http://arr:6767 |
+Every container publishes to chise's tailscale IP alone, which the `arr` alias
+resolves to, so it answers on the tailnet and on no other interface. Read the
+compose file for what runs and on which port; a roster here would only go stale.
+Most of these apps ship no login at all, which is the whole reason the tailnet is
+the boundary: nothing loginless may ever be published past it.
 
-Jellyfin is the Netflix-style page for watching the library; Jellyseerr is the
-browse-and-request front end wired to Radarr/Sonarr. Reach each service directly at
-its tailnet URL from any tailnet device, e.g. `http://arr:8096` for Jellyfin on chise
-(where `arr` is a hostname alias to chise's tailscale IP) or via chise's MagicDNS name.
+The user-facing front ends are the deliberate exception, so that someone can watch
+and request without joining the tailnet. The Tailscale funnel module names which
+ones and on what hostname; the rule it exists to enforce is that a service reachable
+from the public internet carries a login and sits behind the login rate-limiting
+proxy, or it is not published at all. That proxy throttles attempts per real client
+IP recovered from the funnel's `X-Forwarded-For`, and it is the enforcement point
+the host firewall cannot be, because a funnelled request arrives wearing the
+funnel's own address rather than the caller's. Use the HTTPS address rather than the raw tailnet port even
+from inside the tailnet: the plain port sends credentials in cleartext, which is
+also why a password manager holding the HTTPS origin refuses to fill a login form
+served over the other one.
 
-Every container publishes only to chise's tailscale IP, which the `arr` alias
-resolves to, so it is reachable from any device on the tailnet but not on the LAN
-or any other interface. Open e.g. `http://arr:9696` from a tailnet-joined machine.
-The *arr apps have no login, so this exposes them to the tailnet (accepted);
-qBittorrent keeps its WebUI password.
+The stack carries only the libraries that get used. Music and books are gone and
+their *arr apps are not coming back, Readarr having been archived upstream in
+mid-2025 with no maintained successor.
 
-Jellyfin and Jellyseerr are the exception: `arr-media-tailscale-funnel` publishes
-them over HTTPS to the public internet so friends can use them without joining the
-tailnet, and `arr-media-login-ratelimit-proxy` fronts each one with a loopback
-nginx that throttles login attempts per real client IP, recovered from the funnel's
-`X-Forwarded-For`. Both modules declare the public hostnames and ports, so read
-them rather than this file. Prefer those HTTPS URLs over the raw tailnet ports even
-from inside the tailnet: the plain-HTTP port sends your password in cleartext, and
-a password manager holding the HTTPS origin will warn before filling it there.
-
-The stack covers TV and movies only. Lidarr (music) and Readarr (books) were
-removed: neither library was ever used, and Readarr was archived upstream on
-2025-06-27 with no maintained successor.
-
-By default there is no VPN: qBittorrent runs directly on the `arrnet` bridge and
-the *arr apps reach it at host `qbittorrent`, port `8080`. Routing the stack
-through a VPN is an independent, host-level toggle (see below), not a container
-in this stack.
+Nothing in the stack speaks to a VPN and there is no per-container gateway to
+configure. Routing traffic through one is a host-level toggle that moves everything
+on the host at once, described below.
 
 ## Bring it up / down
 
@@ -70,112 +57,82 @@ media persist on disk under the paths below, untouched by rebuilds.
 
 ## Persistence
 
-Config and data live under documented host paths (created on rebuild, owned by
-`zanoni`), bind-mounted into the containers:
+Each app keeps its own config directory, and every app that moves files shares one
+data root, both created on rebuild and bind-mounted in. The compose file and the
+arr-stack module declare the paths; the constraint they exist to satisfy is that
+downloads and the finished library sit on a single filesystem, so an import is an
+atomic hardlink move rather than a copy and seeding survives it. Anything that
+splits those across filesystems, including mounting one of them elsewhere, breaks
+that and has to be undone rather than worked around.
 
-- `~/arr-stack/config/<service>` -> `/config` per app
-- `~/arr-stack/data` -> `/data` shared across qBittorrent and the *arr apps,
-  laid out as `data/torrents` and `data/media/{tv,movies,tv-private,movies-private}`
-  so imports are atomic hardlink moves on one filesystem (no slow copies).
+## Who sees which library
 
-## Private libraries friends cannot see
+Not every library is for everyone. Which ones an account may see is a declared
+per-account allowlist in the `arr_users` package, never a role test, applied by
+pinning `EnableAllFolders` false and writing the permitted libraries out
+explicitly. Jellyfin honours a restricted folder list for administrators too, so
+administering the server and seeing everything on it stay separate concerns, and
+the reconcile writes visibility onto administrators like anyone else while never
+touching who is one. Restricting an account this way is not putting anything out of
+its reach: an administrator can re-grant itself a library in the dashboard, and the
+next rebuild pins it back.
 
-`data/media/movies-private` and `data/media/tv-private` back two Jellyfin
-libraries, `Movies (Private)` and `TV (Private)`, that only the accounts named in
-`PRIVATE_LIBRARY_ACCOUNT_USERNAMES` can see. Everyone else is pinned to
-`EnableAllFolders: false` with the public `Movies` and `TV` libraries as their
-entire `EnabledFolders` list, so a private title is invisible to them: not in
-browse, not in search, not playable by direct item id. The libraries stay out of
-Jellyseerr's synced-library list too, so a private title is never announced there
-as available.
+The declaration is default-deny, so a library nobody declared visible is visible to
+nobody and one added later stays hidden until someone says otherwise. A restricted
+library must also be kept out of the request front end's synced-library list,
+because that front end announces a synced title as available to every account
+regardless of whether Jellyfin will actually serve it to them.
 
-Access is an allowlist of usernames, not a role test, so it is the declared list
-that decides, never a Jellyfin admin flag. Jellyfin honours restricted folders for
-administrators as well, which is what lets the daily-driver account stay a Jellyfin
-administrator while seeing public media only. The reconcile writes `EnabledFolders`
-on every account including administrators and never touches `IsAdministrator`, so
-this keeps private media out of the daily account rather than out of reach: an
-administrator can re-grant itself the libraries in the dashboard, and the next
-rebuild pins it back.
+The reconcile runs from a systemd unit on every rebuild and from `arr-users` on
+demand, and refuses to write any policy at all when a declared library is missing
+from Jellyfin, because acting on a half-read library list would silently narrow or
+widen what everyone sees. Editing visibility in the dashboard is drift and does not
+survive the next rebuild.
 
-The split is code, not clicks. `scripts/arr_users/jellyfin_library_declaration.py`
-is the single source of truth: anything not named in `PUBLIC_LIBRARY_DECLARATIONS`
-is private, so a library added later is hidden by default and has to be declared
-public deliberately. The `jellyfin-library-access-provisioner` systemd unit
-re-applies the whole boundary on every rebuild, creating any declared library that
-is missing and rewriting every account's policy; `arr-users sync` runs the same
-reconcile by hand. Both refuse to write a policy at all when a declared public
-library is missing from Jellyfin, so a half-read library list can never silently
-narrow or widen what anyone sees.
+## Routing a request to a chosen root folder
 
-## Who can do what
+Which account requests decides where the title lands. The routing module in the
+`arr_users` package declares which accounts get their requests rewritten to a
+different root folder, and the override rules that do it, reconciled from a systemd
+unit on every rebuild and by `arr-users` on demand.
 
-Four roles, each declared in the `arr_users` package rather than spelled out here,
-because the account names change and a README that repeats them goes stale
-silently:
+Two upstream behaviours make this fragile enough to know before touching it. First,
+Jellyseerr evaluates override rules only for ordinary requesters, and `MediaRequest`
+takes that gate from the logged-in session user rather than from the account chosen
+in the Advanced panel's "Request As" dropdown, which only reassigns attribution. A
+request made from an admin session therefore ignores every rule and uses whatever
+root folder was submitted, no matter whose name is on it, so route by logging in as
+the intended account or by setting the root folder by hand. The same gate is why a
+routing account must never be promoted. Second, an anime series needs its own rule
+naming the anime keyword, because Jellyseerr drops every rule that omits it.
 
-- **Friends** request and watch public media. `FRIEND_JELLYSEERR_PERMISSIONS_BITMASK`
-  in `friend_account_policy.py` is what they hold, and one ordinary friend account
-  is kept unused so you can log into Jellyfin as it and see exactly what they see.
-- **The daily driver** is a Jellyfin administrator pinned to the public libraries,
-  and in Jellyseerr it holds the friend bitmask like everyone else.
-- **The private requester**, named in `private_request_routing.py`, has every
-  request rewritten to a `-private` root folder and sees every library, so private
-  media is requested and watched there end to end.
-- **The break-glass administrator**, named in `jellyseerr_account_permissions.py`,
-  is the sole Jellyseerr admin and sees every library. It exists to reach Jellyseerr
-  settings, users, and override rules; nothing routine needs it.
-
-## Requesting into a private library
-
-Which account requests decides where the title lands.
-`scripts/arr_users/private_request_routing.py` declares the requesting account and
-the override rules that rewrite every request it makes to a `-private` root folder.
-The `jellyseerr-private-request-routing-provisioner` systemd unit reconciles those
-rules on every rebuild, and `arr-users sync-request-routing` runs the same reconcile
-by hand. Adding the title in Radarr or Sonarr directly (`http://arr:7878`,
-`http://arr:8989`) with the `-private` root folder picked still works, and is the
-fallback when a request has to bypass Jellyseerr.
-
-Log in as that account to request privately. The Advanced panel's "Request As"
-dropdown is not a substitute: `MediaRequest.request()` gates the override rules on
-the logged-in session user, `!user.hasPermission([MANAGE_REQUESTS])`, and only
-reassigns `requestUser` for attribution, so an admin session picking the routing
-account there still lands the title in the public root folder while every rule
-reads as configured. From an admin session the submitted root folder is used
-verbatim, so picking `-private` by hand in that same panel is the one way it works
-without switching accounts.
-
-The routing account also has to stay an ordinary requester, because promoting it
-disables the rules from the other side, which is why the reconcile refuses a
-privileged one outright. Anime series need a second rule naming the anime keyword,
-because Jellyseerr drops every rule that omits it for anime.
+Adding a title in Radarr or Sonarr directly with the root folder picked there works
+too, and is the fallback when a request has to bypass the request front end
+entirely.
 
 ## Nobody approves anything
 
-`scripts/arr_users/jellyseerr_account_permissions.py` declares the permissions every
-Jellyseerr account holds: request and auto-approve, the same pair a friend gets, and
-nothing else. The `jellyseerr-account-permission-provisioner` systemd unit pins them
-on every rebuild, and `arr-users sync-account-permissions` runs the same reconcile by
-hand. So no request from anyone ever sits pending: approving is a capability nobody
-needs rather than a chore someone owes.
+The account-permission module in the `arr_users` package declares what every
+Jellyseerr account holds, request and auto-approve and nothing else, pinned from a
+systemd unit on every rebuild and by `arr-users` on demand. No request from anyone
+sits pending, so approving is a capability nobody needs rather than a chore someone
+owes.
 
-Only the break-glass administrator is exempt. Everything else is demoted on purpose,
-because a Jellyseerr account holding admin or manage-requests reads every other
-account's requests by title, which would put the private account's request titles
-back in the daily-driver account's Requests list even though the private libraries
-themselves stay hidden. Approval scope is global in Jellyseerr, with no per-library
-or per-root-folder term anywhere in the request query, so "approves public requests
-only" is not a thing that can be configured; universal auto-approve is what replaces
-it. The reconcile refuses to run at all if it would leave no declared administrator,
-because granting admin back is itself admin-gated and no remaining account could do
-it. The CLIs and provisioners are unaffected either way: Jellyseerr resolves an API
-key to the owner account, so they never depend on what the human accounts hold.
+Approval and request visibility are global in Jellyseerr, with no per-library or
+per-root-folder term in the query behind either, so an account that may approve also
+reads every other account's requests by title. A scoped approver cannot be built,
+which is what makes universal auto-approve the replacement rather than a shortcut,
+and it is why holding approval is the exception rather than the norm. Exactly one
+declared administrator is exempt, so the capability exists without anyone carrying
+it by default, and the reconcile refuses to run at all if it would leave none:
+granting the permission back is itself gated on holding it, so no remaining account
+could recover. The CLIs and provisioners never depend on any of this, because
+Jellyseerr resolves an API key to the owner account regardless of what the human
+accounts hold.
 
-Radarr and Sonarr key a title by its TMDB/TVDB id and can only hold it under one
-root folder, so a title already kept privately will fail a friend's request rather
-than move itself into public view; grab a second public copy by hand if they should
-have it.
+An *arr app keys a title by its TMDB or TVDB id and can hold it under exactly one
+root folder, so a title the stack already holds makes a new request for it fail
+rather than relocate it. Grab a second copy by hand when both are genuinely wanted.
 
 ## Moving data to an external drive
 
