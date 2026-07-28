@@ -4,7 +4,7 @@ from cockpit_herdr_commands import (
     build_close_workspace_command,
     build_create_tab_command,
     build_create_workspace_command,
-    build_local_attach_session_command,
+    build_local_attach_terminal_command,
     build_rename_workspace_command,
     build_runtime_snapshot_command,
     build_start_agent_command,
@@ -82,7 +82,7 @@ class CockpitHerdrMultiplexer:
 
     async def build_attach_command(self, attach_target):
         return wrap_command_for_remote_ssh(
-            build_local_attach_session_command(self._connection),
+            build_local_attach_terminal_command(self._connection, attach_target),
             self._connection.remote_ssh_host,
             allocate_remote_pseudoterminal=True,
         )

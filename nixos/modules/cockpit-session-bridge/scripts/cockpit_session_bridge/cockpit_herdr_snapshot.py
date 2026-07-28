@@ -12,6 +12,11 @@ def parse_herdr_runtime_snapshot(snapshot_output):
         agent.get("tab_id"): agent.get("agent", "")
         for agent in snapshot.get("agents", [])
     }
+    terminal_by_tab_identifier = {}
+    for pane in snapshot.get("panes", []):
+        terminal_by_tab_identifier.setdefault(
+            pane.get("tab_id"), pane.get("terminal_id", "")
+        )
     tabs_by_workspace_identifier = {}
     for tab in snapshot.get("tabs", []):
         tabs_by_workspace_identifier.setdefault(tab.get("workspace_id"), []).append(
@@ -19,6 +24,9 @@ def parse_herdr_runtime_snapshot(snapshot_output):
                 window_identifier=tab.get("tab_id", ""),
                 window_title=tab.get("label", ""),
                 agent_driver=agent_by_tab_identifier.get(tab.get("tab_id"), ""),
+                terminal_identifier=terminal_by_tab_identifier.get(
+                    tab.get("tab_id"), ""
+                ),
             )
         )
     return [

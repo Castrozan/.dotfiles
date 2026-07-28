@@ -45,6 +45,7 @@ def _serialize_session(session):
                 "windowIdentifier": window.window_identifier,
                 "windowTitle": window.window_title,
                 "agentDriver": window.agent_driver or None,
+                "terminalIdentifier": window.terminal_identifier,
             }
             for window in session.windows
         ],

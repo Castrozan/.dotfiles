@@ -19,7 +19,7 @@ RUNNING_HERDR_SERVER_STATUS_OUTPUT = (
 )
 
 
-def build_runtime_snapshot_output(workspaces, tabs, agents=()):
+def build_runtime_snapshot_output(workspaces, tabs, agents=(), panes=()):
     return json.dumps(
         {
             "id": "cli:api:snapshot",
@@ -28,6 +28,7 @@ def build_runtime_snapshot_output(workspaces, tabs, agents=()):
                     "workspaces": list(workspaces),
                     "tabs": list(tabs),
                     "agents": list(agents),
+                    "panes": list(panes),
                 }
             },
         }
@@ -47,6 +48,23 @@ DOTFILES_SNAPSHOT_OUTPUT = build_runtime_snapshot_output(
     agents=[
         {"tab_id": "w1T:tB", "agent": "claude"},
         {"tab_id": "w1P:t3E", "agent": "codex"},
+    ],
+    panes=[
+        {
+            "tab_id": "w1T:tB",
+            "pane_id": "w1T:p1",
+            "terminal_id": "term_6569e1e60304f89",
+        },
+        {
+            "tab_id": "w1T:tF",
+            "pane_id": "w1T:p2",
+            "terminal_id": "term_656a545f71b2c8b",
+        },
+        {
+            "tab_id": "w1P:t3E",
+            "pane_id": "w1P:p3",
+            "terminal_id": "term_6579e4e1e70b15ac",
+        },
     ],
 )
 

@@ -163,7 +163,7 @@ def read_request_path(websocket_connection):
 
 
 def read_session_attach_target(request_path):
-    requested_session_names = parse_qs(urlsplit(request_path).query).get("sessionName")
-    if requested_session_names and requested_session_names[0]:
-        return requested_session_names[0]
+    requested_terminals = parse_qs(urlsplit(request_path).query).get("terminal")
+    if requested_terminals and requested_terminals[0]:
+        return requested_terminals[0]
     return None

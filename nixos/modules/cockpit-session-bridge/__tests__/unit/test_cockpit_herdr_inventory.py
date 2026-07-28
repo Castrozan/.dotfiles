@@ -24,10 +24,10 @@ def test_a_workspace_becomes_a_session_and_its_tabs_become_that_session_windows(
             session_name="dotfiles",
             windows=(
                 cockpit_multiplexer_port.CockpitMultiplexerWindow(
-                    "w1T:tB", "AIDP", "claude"
+                    "w1T:tB", "AIDP", "claude", "term_6569e1e60304f89"
                 ),
                 cockpit_multiplexer_port.CockpitMultiplexerWindow(
-                    "w1T:tF", "hooks", ""
+                    "w1T:tF", "hooks", "", "term_656a545f71b2c8b"
                 ),
             ),
         ),
@@ -35,7 +35,7 @@ def test_a_workspace_becomes_a_session_and_its_tabs_become_that_session_windows(
             session_name="clawde",
             windows=(
                 cockpit_multiplexer_port.CockpitMultiplexerWindow(
-                    "w1P:t3E", "jenny", "codex"
+                    "w1P:t3E", "jenny", "codex", "term_6579e4e1e70b15ac"
                 ),
             ),
         ),

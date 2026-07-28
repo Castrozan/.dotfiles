@@ -48,6 +48,7 @@ def test_a_list_sessions_request_replies_with_the_serialized_inventory():
                             "windowIdentifier": "@1",
                             "windowTitle": "claude",
                             "agentDriver": "claude",
+                            "terminalIdentifier": "",
                         }
                     ],
                 }

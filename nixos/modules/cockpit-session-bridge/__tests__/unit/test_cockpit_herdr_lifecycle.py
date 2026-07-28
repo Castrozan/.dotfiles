@@ -27,11 +27,13 @@ def test_list_sessions_reads_the_whole_inventory_from_one_snapshot_call():
                 "windowIdentifier": "w1T:tB",
                 "windowTitle": "AIDP",
                 "agentDriver": "claude",
+                "terminalIdentifier": "term_6569e1e60304f89",
             },
             {
                 "windowIdentifier": "w1T:tF",
                 "windowTitle": "hooks",
                 "agentDriver": None,
+                "terminalIdentifier": "term_656a545f71b2c8b",
             },
         ],
     }

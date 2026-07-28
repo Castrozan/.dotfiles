@@ -18,6 +18,7 @@ class CockpitMultiplexerWindow:
     window_identifier: str
     window_title: str
     agent_driver: str = ""
+    terminal_identifier: str = ""
 
 
 @dataclass(frozen=True)

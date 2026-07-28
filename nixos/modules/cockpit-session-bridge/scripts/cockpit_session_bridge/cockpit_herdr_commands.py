@@ -1,3 +1,4 @@
+import re
 from dataclasses import dataclass
 
 from cockpit_multiplexer_port import wrap_command_for_remote_ssh
@@ -5,6 +6,14 @@ from cockpit_multiplexer_port import wrap_command_for_remote_ssh
 REMOTE_HERDR_EXECUTABLE = "herdr"
 LAUNCH_COMMAND_SHELL = "/bin/sh"
 LAUNCH_COMMAND_SHELL_OPTIONS = "-lc"
+HERDR_TERMINAL_IDENTIFIER_PATTERN = re.compile(r"\Aterm_[0-9a-f]+\Z")
+
+
+def is_herdr_terminal_identifier(candidate_identifier):
+    return bool(
+        isinstance(candidate_identifier, str)
+        and HERDR_TERMINAL_IDENTIFIER_PATTERN.match(candidate_identifier)
+    )
 
 
 @dataclass(frozen=True)
@@ -92,7 +101,9 @@ def build_close_tab_command(connection, tab_identifier):
     return connection.build_command("tab", "close", tab_identifier)
 
 
-def build_local_attach_session_command(connection):
+def build_local_attach_terminal_command(connection, terminal_identifier):
+    if not is_herdr_terminal_identifier(terminal_identifier):
+        raise ValueError(f"not a herdr terminal identifier: {terminal_identifier!r}")
     return connection.build_local_command(
-        "session", "attach", connection.herdr_session_name, include_session=False
+        "terminal", "attach", terminal_identifier, include_session=False
     )
