@@ -150,20 +150,3 @@ def build_attach_session_command(
         remote_ssh_host=remote_ssh_host,
         allocate_remote_pseudoterminal=True,
     )
-
-
-def build_select_window_command(
-    tmux_executable_path,
-    enumeration_socket_name,
-    window_identifier,
-    *,
-    remote_ssh_host="",
-):
-    return build_cockpit_tmux_command(
-        tmux_executable_path,
-        enumeration_socket_name,
-        "select-window",
-        "-t",
-        window_identifier,
-        remote_ssh_host=remote_ssh_host,
-    )

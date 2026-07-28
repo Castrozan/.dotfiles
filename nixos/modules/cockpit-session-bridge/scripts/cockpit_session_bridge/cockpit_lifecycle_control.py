@@ -69,7 +69,4 @@ _MUTATION_RUNNERS = {
     "close-window": lambda multiplexer, request: multiplexer.close_window(
         request["windowIdentifier"]
     ),
-    "select-window": lambda multiplexer, request: multiplexer.select_window(
-        request["windowIdentifier"]
-    ),
 }

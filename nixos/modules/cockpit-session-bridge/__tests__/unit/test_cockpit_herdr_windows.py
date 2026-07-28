@@ -77,13 +77,11 @@ def test_open_window_into_an_unknown_session_fails_without_creating_anything():
     assert response["exitCode"] == 1
 
 
-def test_close_window_and_select_window_take_the_tab_identifier_straight_through():
+def test_close_window_takes_the_tab_identifier_straight_through():
     runner = ScriptedHerdrSubprocessRunner()
 
     dispatch({"operation": "close-window", "windowIdentifier": "w1T:tF"}, runner)
-    dispatch({"operation": "select-window", "windowIdentifier": "w1P:t3E"}, runner)
 
     assert runner.mutation_commands == [
         [*HERDR_SESSION_PREFIX, "tab", "close", "w1T:tF"],
-        [*HERDR_SESSION_PREFIX, "tab", "focus", "w1P:t3E"],
     ]

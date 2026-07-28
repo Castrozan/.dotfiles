@@ -59,10 +59,6 @@ def build_close_workspace_command(connection, workspace_identifier):
     return connection.build_command("workspace", "close", workspace_identifier)
 
 
-def build_local_focus_workspace_command(connection, workspace_identifier):
-    return connection.build_local_command("workspace", "focus", workspace_identifier)
-
-
 def build_create_tab_command(connection, workspace_identifier, tab_label):
     return connection.build_command(
         "tab",
@@ -94,10 +90,6 @@ def build_start_agent_command(
 
 def build_close_tab_command(connection, tab_identifier):
     return connection.build_command("tab", "close", tab_identifier)
-
-
-def build_focus_tab_command(connection, tab_identifier):
-    return connection.build_command("tab", "focus", tab_identifier)
 
 
 def build_local_attach_session_command(connection):

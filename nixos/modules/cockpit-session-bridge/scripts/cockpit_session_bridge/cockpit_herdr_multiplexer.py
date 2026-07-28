@@ -1,15 +1,10 @@
-import shlex
-
 from cockpit_herdr_commands import (
-    LAUNCH_COMMAND_SHELL,
     CockpitHerdrConnection,
     build_close_tab_command,
     build_close_workspace_command,
     build_create_tab_command,
     build_create_workspace_command,
-    build_focus_tab_command,
     build_local_attach_session_command,
-    build_local_focus_workspace_command,
     build_rename_workspace_command,
     build_runtime_snapshot_command,
     build_start_agent_command,
@@ -26,7 +21,6 @@ from cockpit_multiplexer_port import (
 
 HERDR_MULTIPLEXER_NAME = "herdr"
 DEFAULT_HERDR_SESSION_NAME = "default"
-DISCARDED_COMMAND_OUTPUT = ">/dev/null 2>&1"
 
 
 class CockpitHerdrMultiplexer:
@@ -86,26 +80,9 @@ class CockpitHerdrMultiplexer:
             build_close_tab_command(self._connection, window_identifier)
         )
 
-    async def select_window(self, window_identifier):
-        return await self._subprocess_runner(
-            build_focus_tab_command(self._connection, window_identifier)
-        )
-
     async def build_attach_command(self, attach_target):
-        attach_command = build_local_attach_session_command(self._connection)
-        workspace_identifier = await self._resolve_workspace_identifier(attach_target)
-        if workspace_identifier is not None:
-            focus_command = build_local_focus_workspace_command(
-                self._connection, workspace_identifier
-            )
-            attach_command = [
-                LAUNCH_COMMAND_SHELL,
-                "-c",
-                f"{shlex.join(focus_command)} {DISCARDED_COMMAND_OUTPUT}"
-                f"; exec {shlex.join(attach_command)}",
-            ]
         return wrap_command_for_remote_ssh(
-            attach_command,
+            build_local_attach_session_command(self._connection),
             self._connection.remote_ssh_host,
             allocate_remote_pseudoterminal=True,
         )

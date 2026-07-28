@@ -12,7 +12,6 @@ from cockpit_tmux_commands import (
     build_open_session_command,
     build_open_window_command,
     build_rename_session_command,
-    build_select_window_command,
 )
 
 TMUX_MULTIPLEXER_NAME = "tmux"
@@ -134,16 +133,6 @@ class CockpitTmuxMultiplexer:
                 self._tmux_executable_path,
                 self._socket_policy.mutation_socket_name,
                 window_identifier,
-            )
-        )
-
-    async def select_window(self, window_identifier):
-        return await self._subprocess_runner(
-            build_select_window_command(
-                self._tmux_executable_path,
-                self._socket_policy.enumeration_socket_name,
-                window_identifier,
-                remote_ssh_host=self._socket_policy.remote_ssh_host,
             )
         )
 

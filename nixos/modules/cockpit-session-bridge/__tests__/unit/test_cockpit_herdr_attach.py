@@ -22,14 +22,13 @@ def build_attach_command(attach_target, remote_ssh_host=""):
     )
 
 
-def test_attaching_focuses_the_requested_workspace_before_attaching_the_session():
-    attach_command = build_attach_command("dotfiles")
-
-    assert attach_command[:2] == ["/bin/sh", "-c"]
-    assert attach_command[2] == (
-        f"{HERDR_EXECUTABLE_PATH} --session default workspace focus w1T >/dev/null 2>&1"
-        f"; exec {HERDR_EXECUTABLE_PATH} session attach default"
-    )
+def test_attaching_never_focuses_a_workspace_for_the_clients_already_connected():
+    assert build_attach_command("dotfiles") == [
+        HERDR_EXECUTABLE_PATH,
+        "session",
+        "attach",
+        "default",
+    ]
 
 
 def test_attaching_an_unknown_workspace_still_attaches_the_session():
@@ -48,5 +47,5 @@ def test_a_remote_attach_allocates_a_pseudoterminal_and_calls_herdr_off_the_remo
     assert "-tt" in attach_command
     assert attach_command[-2] == "lucas.zanoni@kira"
     assert HERDR_EXECUTABLE_PATH not in attach_command[-1]
-    assert "herdr --session default workspace focus w1T" in attach_command[-1]
-    assert "exec herdr session attach default" in attach_command[-1]
+    assert "focus" not in attach_command[-1]
+    assert attach_command[-1] == "herdr session attach default"
