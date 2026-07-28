@@ -12,6 +12,14 @@ class CockpitTmuxSocketPolicy:
     remote_ssh_host: str = ""
 
 
+def build_cockpit_socket_policy(settings):
+    return CockpitTmuxSocketPolicy(
+        enumeration_socket_name=settings.cockpit_tmux_enumeration_socket_name,
+        mutation_socket_name=settings.cockpit_tmux_mutation_socket_name,
+        remote_ssh_host=settings.cockpit_tmux_remote_ssh_host,
+    )
+
+
 class UnsupportedCockpitLifecycleOperation(Exception):
     pass
 

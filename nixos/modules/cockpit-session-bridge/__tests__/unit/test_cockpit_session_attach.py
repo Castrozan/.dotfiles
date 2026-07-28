@@ -8,8 +8,8 @@ BRIDGE_PACKAGE_DIRECTORY_PATH = (
 )
 sys.path.insert(0, str(BRIDGE_PACKAGE_DIRECTORY_PATH))
 
+import cockpit_session_process
 import cockpit_tmux_commands
-import server
 import settings
 from cockpit_multiplexer_test_doubles import RecordingSubprocessRunner
 
@@ -43,7 +43,7 @@ def _attach_settings():
 
 def _resolve_over_a_tmux_only_machine(websocket_connection, attach_settings):
     return asyncio.run(
-        server.resolve_session_command(
+        cockpit_session_process.resolve_session_command(
             websocket_connection,
             attach_settings,
             subprocess_runner=RecordingSubprocessRunner(),
