@@ -27,6 +27,7 @@ class CockpitSessionBridgeSettings:
     cockpit_tmux_remote_ssh_host: str = ""
     cockpit_herdr_executable_path: str = DEFAULT_COCKPIT_HERDR_EXECUTABLE_PATH
     cockpit_herdr_session_name: str = DEFAULT_COCKPIT_HERDR_SESSION_NAME
+    agent_chat_command: list = ()
 
 
 @dataclass(frozen=True)
@@ -77,6 +78,18 @@ def parse_session_command(raw_session_command_json):
     return decoded_session_command
 
 
+def parse_agent_chat_command(raw_agent_chat_command_json):
+    if not raw_agent_chat_command_json:
+        return []
+    decoded_agent_chat_command = json.loads(raw_agent_chat_command_json)
+    if not isinstance(decoded_agent_chat_command, list) or not all(
+        isinstance(command_argument, str)
+        for command_argument in decoded_agent_chat_command
+    ):
+        raise ValueError("agent chat command must be a JSON array of strings")
+    return decoded_agent_chat_command
+
+
 def resolve_bridge_settings(process_environment):
     return CockpitSessionBridgeSettings(
         listen_address=process_environment.get(
@@ -117,6 +130,11 @@ def resolve_bridge_settings(process_environment):
         cockpit_herdr_session_name=process_environment.get(
             "COCKPIT_SESSION_BRIDGE_HERDR_SESSION",
             DEFAULT_COCKPIT_HERDR_SESSION_NAME,
+        ),
+        agent_chat_command=parse_agent_chat_command(
+            process_environment.get(
+                "COCKPIT_SESSION_BRIDGE_AGENT_CHAT_COMMAND_JSON", ""
+            )
         ),
     )
 

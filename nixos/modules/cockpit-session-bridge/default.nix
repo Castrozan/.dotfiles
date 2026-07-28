@@ -53,6 +53,12 @@ in
       description = "Argument vector launched inside a pseudoterminal for each accepted owner session; by default it attaches a client to the always-on opencode tmux session so every owner connection shares the same live terminal.";
     };
 
+    agentChatCommand = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [ ];
+      description = "Argument vector run once per owner chat turn on the /cockpit/agent-chat route, with {message} and {sessionKey} substituted from the request; the empty default leaves the route answering that no command is configured, so a host that has no local agent exposes nothing.";
+    };
+
     allowedRequestOrigin = lib.mkOption {
       type = lib.types.str;
       default = "https://lucaszanoni.com";
@@ -151,6 +157,7 @@ in
         COCKPIT_SESSION_BRIDGE_LISTEN_ADDRESS = cockpitSessionBridgeConfig.listenAddress;
         COCKPIT_SESSION_BRIDGE_LISTEN_PORT = toString cockpitSessionBridgeConfig.listenPort;
         COCKPIT_SESSION_BRIDGE_COMMAND_JSON = builtins.toJSON cockpitSessionBridgeConfig.sessionCommand;
+        COCKPIT_SESSION_BRIDGE_AGENT_CHAT_COMMAND_JSON = builtins.toJSON cockpitSessionBridgeConfig.agentChatCommand;
         COCKPIT_SESSION_BRIDGE_ALLOWED_ORIGIN = cockpitSessionBridgeConfig.allowedRequestOrigin;
         COCKPIT_SESSION_BRIDGE_TMUX_PATH = "${pkgs.tmux}/bin/tmux";
         COCKPIT_SESSION_BRIDGE_TMUX_ENUMERATION_SOCKET = cockpitSessionBridgeConfig.tmuxEnumerationSocket;
