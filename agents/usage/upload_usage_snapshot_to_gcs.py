@@ -7,6 +7,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+from combined_usage_snapshots import publish_combined_snapshots  # noqa: E402
 from current_usage_snapshot import build_current_usage_snapshot  # noqa: E402
 from usage_snapshot_writer import usage_snapshot_file_name  # noqa: E402
 
@@ -42,6 +43,7 @@ def upload_usage_snapshot(bucket_name: str, snapshot_object_prefix: str) -> str:
         serialize_usage_snapshot(usage_snapshot),
         content_type="application/json",
     )
+    publish_combined_snapshots(storage_client, bucket_name, snapshot_object_prefix)
     return f"gs://{bucket_name}/{object_name}"
 
 
