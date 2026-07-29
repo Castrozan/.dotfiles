@@ -23,7 +23,7 @@ in
         builtins.elem "a2a" partition.agentOnlyMcpServerNames
         && !(builtins.elem "a2a" partition.retiredMcpServerNames)
       )
-      "a2a must stay agent-only (kept in mcpServerDefinitions so buildClawdeAgentMcpConfigFile can scope it into the steward's per-agent config) and never retired; retiring it would break the steward's a2a wiring, and lib.getAttrs would throw at build";
+      "a2a must stay agent-only and never retired: it is the outbound peer-messaging server an agent scopes into its own set with selectClawdeAgentMcpServers, and retiring it would make lib.getAttrs throw at build for any agent that names it";
 
   a2a-excluded-from-interactive-mcp-injection =
     mkEvalCheck "a2a-excluded-from-interactive-mcp-injection"

@@ -64,11 +64,7 @@ let
 
   interactivelyInjectedMcpServerDefinitions = removeAttrs mcpServerDefinitions mcpServerInjectionPartition.agentOnlyMcpServerNames;
 
-  buildClawdeAgentMcpConfigFile =
-    agentName: serverNames:
-    "${pkgs.writeText "clawde-agent-mcp-config-${agentName}.json" (
-      builtins.toJSON { mcpServers = lib.getAttrs serverNames mcpServerDefinitions; }
-    )}";
+  selectClawdeAgentMcpServers = serverNames: lib.getAttrs serverNames mcpServerDefinitions;
 
 in
 {
@@ -81,7 +77,7 @@ in
     })
   ];
 
-  _module.args.buildClawdeAgentMcpConfigFile = buildClawdeAgentMcpConfigFile;
+  _module.args.selectClawdeAgentMcpServers = selectClawdeAgentMcpServers;
 
   home = {
     inherit (browserMcp) packages;

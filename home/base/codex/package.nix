@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, lib, ... }:
 let
   fetchPrebuiltBinary = import ../../../lib/fetch-prebuilt-binary.nix { inherit pkgs; };
 
@@ -54,6 +54,15 @@ let
   '';
 in
 {
-  home.packages = [ codex ];
-  home.file.".local/bin/codex".source = "${codex}/bin/codex";
+  options.codex.unwrappedPackage = lib.mkOption {
+    type = lib.types.package;
+    default = codex-unwrapped;
+    readOnly = true;
+    description = "The bare upstream codex binary, without the interactive wrapper that injects a model, sandbox mode, approval policy and the human's own developer_instructions. An autonomous harness builds its own full argv and must launch this, because re-passing a flag the wrapper already injected makes codex exit 2.";
+  };
+
+  config.home = {
+    packages = [ codex ];
+    file.".local/bin/codex".source = "${codex}/bin/codex";
+  };
 }

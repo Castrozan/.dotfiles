@@ -7,7 +7,7 @@
 let
   discordChannelAccessByAgent = config.clawdeDiscordChannelAccess;
   discordChannelsDirectory = "${config.home.homeDirectory}/.claude/channels/discord";
-  mergeAgentAccessScript = ./scripts/merge-discord-agent-access;
+  mergeAgentAccessScript = ../claude/scripts/merge-discord-agent-access;
 
   mergeAccessCommandFor =
     agentName: agentAccess:

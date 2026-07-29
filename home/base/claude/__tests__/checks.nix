@@ -151,10 +151,3 @@ in
     mkEvalCheck
     ;
 }
-// import ./clawde-service-checks.nix {
-  inherit
-    mkEvalCheck
-    helpers
-    self
-    ;
-}

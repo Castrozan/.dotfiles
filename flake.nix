@@ -35,7 +35,7 @@
       flake = false;
     };
 
-    clawde.url = "github:Castrozan/clawde/v0.2.30";
+    clawde.url = "github:Castrozan/clawde/v0.3.1";
     clawde.inputs.nixpkgs.follows = "nixpkgs";
 
     # Tag-pinned — keep own nixpkgs (incompatible or untested with ours)

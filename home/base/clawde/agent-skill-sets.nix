@@ -1,6 +1,6 @@
 { config, lib, ... }:
 let
-  skillSetBuilders = import ./skill-injection/skill-set-builders.nix;
+  skillSetBuilders = import ../claude/skill-injection/skill-set-builders.nix;
 
   personalSkillSetClaudeSkillDirectorySymlinks = skillSetBuilders.claudeSkillDirectorySymlinksAtPrefix ".local/share/claude-skill-sets/personal/.claude/skills" skillSetBuilders.specializedSkillSetSkillNames;
 

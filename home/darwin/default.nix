@@ -6,13 +6,14 @@
     ../base/dev/git-private.nix
     ../base/network/ssh-private.nix
     ../base/system/session-vars-lucas-zanoni.nix
-    ../base/claude/clawde-agents/steward.nix
+    ../base/clawde/agents/steward.nix
 
     ../base/core.nix
 
     ../base/agents
 
     ../base/claude
+    ../base/clawde
     ../base/codex
     ../base/hermes
     ../base/testing

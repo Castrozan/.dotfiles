@@ -22,6 +22,7 @@ let
   };
 
   claudeChecks = import ../../home/base/claude/__tests__/checks.nix moduleArgs;
+  clawdeChecks = import ../../home/base/clawde/__tests__/checks.nix moduleArgs;
   codexChecks = import ../../home/base/codex/__tests__/checks.nix moduleArgs;
 
   terminalChecks = import ../../home/base/terminal/__tests__/checks.nix domainArgs;
@@ -59,6 +60,7 @@ let
   displaysDarwinChecks = import ../../hosts/shared-darwin/displays/__tests__/checks.nix domainArgs;
 in
 claudeChecks
+// clawdeChecks
 // codexChecks
 // terminalChecks
 // editorChecks

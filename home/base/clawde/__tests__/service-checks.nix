@@ -5,7 +5,7 @@
 }:
 let
   cfgWithClawdeAgent = helpers.homeManagerTestConfiguration [
-    self.homeManagerModules.claude-code
+    self.homeManagerModules.clawde
     {
       clawde.agents.test-agent = {
         channel.type = "discord";
@@ -16,7 +16,7 @@ let
   ];
 
   cfgWithClawdeAgentsOnDistinctSessions = helpers.homeManagerTestConfiguration [
-    self.homeManagerModules.claude-code
+    self.homeManagerModules.clawde
     {
       clawde.agents = {
         agent-on-default-session = {

@@ -2,7 +2,6 @@
   lib,
   hostname,
   inputs,
-  buildClawdeAgentMcpConfigFile,
   ...
 }:
 let
@@ -76,8 +75,9 @@ in
 
   clawde.agents.steward = {
     type = "steward";
+    harness = "codex";
     personality = effectivePersonality;
     launchOnTrigger = false;
-    mcpConfigFile = buildClawdeAgentMcpConfigFile "steward" [ "a2a" ];
+    mcpServers = { };
   };
 }

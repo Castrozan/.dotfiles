@@ -10,8 +10,8 @@ in
     ./chise/ssh.nix
     ./chise/session-vars.nix
     ./chise/chrome-default-browser.nix
-    ../../base/claude/clawde-agents/steward.nix
-    ../../base/claude/clawde-agents/ril-watcher
+    ../../base/clawde/agents/steward.nix
+    ../../base/clawde/agents/ril-watcher
 
     ../../base/core.nix
 
@@ -19,6 +19,7 @@ in
     ../../base/security
     ../../linux/audio
     ../../base/claude
+    ../../base/clawde
     ../../base/codex
     ../../linux/gnome
     ../../linux/home-assistant
