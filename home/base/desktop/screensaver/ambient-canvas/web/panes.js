@@ -65,6 +65,19 @@ window.AMBIENT_CANVAS_PLAYLIST = [
     ],
   },
   {
+    panes: [
+      {
+        scene: "bad-apple",
+        options: {
+          videoId: "plmXVrCKwnE",
+          startSeconds: 18,
+          characterRows: 96,
+          luminanceThreshold: 0.55,
+        },
+      },
+    ],
+  },
+  {
     durationSeconds: 30,
     layout: {
       columnTemplate: "2fr 1fr",
