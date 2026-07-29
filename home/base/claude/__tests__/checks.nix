@@ -133,3 +133,12 @@ in
     mkEvalCheck
     ;
 }
+// import ../gpt-proxy/__tests__/checks.nix {
+  inherit
+    pkgs
+    lib
+    mkEvalCheck
+    helpers
+    self
+    ;
+}
