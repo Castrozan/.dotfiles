@@ -1,7 +1,10 @@
-{ config, ... }:
+{ config, lib, ... }:
 {
-  clawde.harnesses = {
-    claude.package = config.claude.package;
-    codex.package = config.codex.unwrappedPackage;
-  };
+  clawde.harnesses =
+    lib.optionalAttrs (config ? claude) {
+      claude.package = config.claude.package;
+    }
+    // lib.optionalAttrs (config ? codex) {
+      codex.package = config.codex.unwrappedPackage;
+    };
 }

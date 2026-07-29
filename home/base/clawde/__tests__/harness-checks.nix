@@ -25,6 +25,10 @@ let
 
   cfgWithBothHarnesses = helpers.homeManagerTestConfiguration bothHarnessModules;
 
+  cfgWithStandaloneClawde = helpers.homeManagerTestConfiguration [
+    self.homeManagerModules.clawde
+  ];
+
   cfgOnTheEvaluatingSystem = helpers.homeManagerTestConfigurationForEvaluatingSystem bothHarnessModules;
 
   inherit (cfgWithBothHarnesses.clawde) harnesses;
@@ -41,6 +45,14 @@ let
     cfgOnTheEvaluatingSystem.home.file."clawde/harness-home/codex/agent-on-codex/config.toml".source;
 in
 {
+  clawde-standalone-module-evaluates-without-harness-packages =
+    mkEvalCheck "clawde-standalone-module-evaluates-without-harness-packages"
+      (
+        cfgWithStandaloneClawde.clawde.harnesses.claude.package == null
+        && cfgWithStandaloneClawde.clawde.harnesses.codex.package == null
+      )
+      "the exported clawde module must evaluate without the claude-code and codex modules when no agents require either harness";
+
   clawde-personal-skill-set-carries-the-research-skill =
     mkEvalCheck "clawde-personal-skill-set-carries-the-research-skill"
       (builtins.hasAttr ".local/share/claude-skill-sets/personal/.claude/skills/research" cfgWithBothHarnesses.home.file)
