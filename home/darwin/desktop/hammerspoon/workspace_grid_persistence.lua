@@ -27,7 +27,9 @@ function workspaceGridPersistence.save(currentWorkspaceNumber, sessionGeneration
 		return
 	end
 	file:write(tostring(currentWorkspaceNumber) .. "\n")
-	file:write("generation " .. tostring(sessionGenerationToken) .. "\n")
+	if sessionGenerationToken ~= nil then
+		file:write("generation " .. sessionGenerationToken .. "\n")
+	end
 	for windowId, workspaceNumber in pairs(workspaceNumberByWindowId) do
 		file:write(tostring(windowId) .. " " .. tostring(workspaceNumber) .. "\n")
 	end

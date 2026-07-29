@@ -16,6 +16,8 @@
       ".hammerspoon/workspace_grid_window_snapshot.lua".source = ./workspace_grid_window_snapshot.lua;
       ".hammerspoon/workspace_grid_window_focus.lua".source = ./workspace_grid_window_focus.lua;
       ".hammerspoon/workspace_grid_window_menu.lua".source = ./workspace_grid_window_menu.lua;
+      ".hammerspoon/workspace_grid_window_menu_bar_item.lua".source =
+        ./workspace_grid_window_menu_bar_item.lua;
       ".hammerspoon/workspace_grid_window_events.lua".source = ./workspace_grid_window_events.lua;
       ".hammerspoon/workspace_grid_session_generation.lua".source =
         ./workspace_grid_session_generation.lua;

@@ -17,7 +17,7 @@ function workspaceGridSessionGeneration.currentToken()
 			return bootSessionUuid
 		end
 	end
-	return "unknown-boot-session"
+	return nil
 end
 
 return workspaceGridSessionGeneration

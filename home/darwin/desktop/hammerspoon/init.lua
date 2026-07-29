@@ -5,10 +5,11 @@ require("hs.ipc")
 local workspaceGrid = require("workspace_grid")
 local menuBarIndicator = require("workspace_grid_menubar")
 local windowMenu = require("workspace_grid_window_menu")
+local windowMenuBarItem = require("workspace_grid_window_menu_bar_item")
 local windowSnapshot = require("workspace_grid_window_snapshot")
 local chromeProfileWindow = require("chrome_profile_window")
 
-menuBarIndicator.attachMenuItemBuilder(windowMenu.buildMenuItemBuilder({
+windowMenuBarItem.installMenuItemBuilder(windowMenu.buildMenuItemBuilder({
 	snapshotForImmediateUse = windowSnapshot.snapshotForImmediateUse,
 	currentWorkspaceNumber = workspaceGrid.currentWorkspaceNumber,
 	revealWindowById = workspaceGrid.revealWindowById,
@@ -16,6 +17,7 @@ menuBarIndicator.attachMenuItemBuilder(windowMenu.buildMenuItemBuilder({
 
 hs.shutdownCallback = function()
 	menuBarIndicator.deleteIndicator()
+	windowMenuBarItem.deleteMenuBarItem()
 end
 
 local workspaceRowSwitchModifiers = { { "cmd" }, { "cmd", "alt" }, { "cmd", "ctrl" } }
