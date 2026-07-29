@@ -27,6 +27,7 @@ import ./service-checks.nix {
 }
 // import ./harness-checks.nix {
   inherit
+    pkgs
     mkEvalCheck
     helpers
     self

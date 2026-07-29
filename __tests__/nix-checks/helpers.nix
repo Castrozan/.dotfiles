@@ -67,6 +67,8 @@ let
       config.allowUnfree = true;
     }
   );
+
+  homeManagerTestConfigurationForEvaluatingSystem = homeManagerTestConfigurationForSystemPkgs pkgs.stdenv.hostPlatform.system pkgs;
 in
 {
   inherit
@@ -74,6 +76,7 @@ in
     mkEvalCheckGroup
     homeManagerTestConfiguration
     homeManagerTestConfigurationForDarwin
+    homeManagerTestConfigurationForEvaluatingSystem
     ;
   stateVersion = home-version;
 }

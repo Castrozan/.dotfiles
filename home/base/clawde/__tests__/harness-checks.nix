@@ -1,10 +1,11 @@
 {
+  pkgs,
   mkEvalCheck,
   helpers,
   self,
 }:
 let
-  cfgWithBothHarnesses = helpers.homeManagerTestConfiguration [
+  bothHarnessModules = [
     self.homeManagerModules.clawde
     self.homeManagerModules.claude-code
     self.homeManagerModules.codex
@@ -22,6 +23,10 @@ let
     }
   ];
 
+  cfgWithBothHarnesses = helpers.homeManagerTestConfiguration bothHarnessModules;
+
+  cfgOnTheEvaluatingSystem = helpers.homeManagerTestConfigurationForEvaluatingSystem bothHarnessModules;
+
   harnesses = cfgWithBothHarnesses.clawde.harnesses;
 
   codexLaunchCommand = harnesses.codex.buildLaunchCommandFor {
@@ -32,6 +37,8 @@ let
     sessionArgvShellExpansion = "\${CLAWDE_SESSION_ARGV:-}";
     channelLaunchFlags = "";
   };
+  codexAgentConfigurationFile =
+    cfgOnTheEvaluatingSystem.home.file."clawde/harness-home/codex/agent-on-codex/config.toml".source;
 in
 {
   clawde-claude-harness-package-is-injected =
@@ -53,9 +60,12 @@ in
       "each codex agent must launch under its own CODEX_HOME so its workspace trust, MCP set and session history stay isolated from the human's ~/.codex and from every peer agent";
 
   clawde-codex-agent-config-is-materialized =
-    mkEvalCheck "clawde-codex-agent-config-is-materialized"
-      (builtins.hasAttr "clawde/harness-home/codex/agent-on-codex/config.toml" cfgWithBothHarnesses.home.file)
-      "the per-agent CODEX_HOME needs a nix-generated config.toml; without it codex raises the directory-trust modal on launch and shows no run-state marker, so the heartbeat driver can never tell an idle pane from a working one";
+    pkgs.runCommandLocal "check-clawde-codex-agent-config-is-materialized" { }
+      ''
+        grep -q 'trust_level = "trusted"' ${codexAgentConfigurationFile}
+        grep -q 'run-state' ${codexAgentConfigurationFile}
+        touch $out
+      '';
 
   clawde-discord-channel-is-refused-on-codex =
     mkEvalCheck "clawde-discord-channel-is-refused-on-codex"
