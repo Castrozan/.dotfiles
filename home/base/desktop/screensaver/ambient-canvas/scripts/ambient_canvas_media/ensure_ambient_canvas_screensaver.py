@@ -4,6 +4,7 @@ import subprocess
 import sys
 import time
 
+from ambient_canvas_browser import read_screen_dimensions
 from display_ambient_canvas_loop import (
     DEFAULT_PLAYER_BINARY_PATH,
     launch_display,
@@ -11,6 +12,7 @@ from display_ambient_canvas_loop import (
 from recorded_loop_capture_plan import (
     DEFAULT_CAPTURE_DURATION_SECONDS,
     DEFAULT_CAPTURE_FRAMES_PER_SECOND,
+    resolve_capture_pixel_dimensions,
 )
 from recorded_segment_store import (
     read_recorded_source_identifier,
@@ -24,6 +26,11 @@ from render_ambient_canvas_loop import (
 
 def recorded_loop_exists(output_directory):
     return resolve_playable_segment_manifest_path(output_directory) is not None
+
+
+def compose_recorded_source_identifier(source_identifier, capture_pixel_dimensions):
+    capture_pixel_width, capture_pixel_height = capture_pixel_dimensions
+    return f"{source_identifier} capture={capture_pixel_width}x{capture_pixel_height}"
 
 
 def recorded_loop_is_fresh(output_directory, source_identifier):
@@ -115,7 +122,10 @@ def main():
     return ensure_screensaver(
         index_file_path,
         parsed_arguments.output_directory,
-        parsed_arguments.source_identifier,
+        compose_recorded_source_identifier(
+            parsed_arguments.source_identifier,
+            resolve_capture_pixel_dimensions(*read_screen_dimensions()),
+        ),
         parsed_arguments.player_binary,
         parsed_arguments.seconds,
         parsed_arguments.fps,

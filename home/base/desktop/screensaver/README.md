@@ -284,9 +284,16 @@ five sampled frames. Swap the clip rather than crop it.
 
 The recorded loop lives in `~/.local/state/ambient-canvas/` as one file per composition under
 `segments/`, ordered by `loop.segments.json`, next to `loop.source`, which records the `web/`
-nix store path it was rendered from. `ensure_ambient_canvas_screensaver` compares that against
-the current store path, so any change under `web/` changes the store path and the next launchd
-tick starts a record pass automatically. Force one by hand with `ambient-canvas-render`.
+nix store path it was rendered from and the capture dimensions it was rendered at.
+`ensure_ambient_canvas_screensaver` compares both against the current pair, so any change under
+`web/` changes the store path and the next launchd tick starts a record pass automatically.
+Force one by hand with `ambient-canvas-render`.
+
+The capture dimensions belong in that key because they are derived from the display rather than
+from anything in the store: plugging into a monitor of a different shape changes what a correct
+recording looks like while every store path stays put, and without the dimensions the loop would
+sit at the old aspect with nothing to notice it. A resolution change re-encodes everything, since
+the frame size reaches every composition's capture signature.
 
 That store-path check is deliberately coarse, and the record pass is what makes it cheap. A
 segment file is named by a fingerprint over the composition's own JSON, its resolved duration,
