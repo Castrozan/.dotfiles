@@ -48,7 +48,6 @@ let
       --model "gpt-5.6-sol" \
       --sandbox "danger-full-access" \
       --ask-for-approval "never" \
-      --dangerously-bypass-hook-trust \
       --no-alt-screen \
       "''${interactivePreferencesArguments[@]}" \
       "$@"

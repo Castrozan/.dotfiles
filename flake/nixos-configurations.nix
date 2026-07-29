@@ -38,6 +38,7 @@ in
     system = linuxSystem;
 
     modules = [
+      ../home/base/codex/system-managed-hooks.nix
       ../hosts/${machineAlias}
       home-manager.nixosModules.home-manager
       homeManagerWrapper

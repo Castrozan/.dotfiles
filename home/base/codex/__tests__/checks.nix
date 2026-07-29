@@ -41,14 +41,12 @@ let
   hasFilePrefix =
     prefix: builtins.any (n: builtins.substring 0 (builtins.stringLength prefix) n == prefix) fileNames;
 
-  parsedCodexHooksConfig =
-    let
-      hooksFile = cfg.home.file.".codex/hooks.json" or null;
-    in
-    if hooksFile != null && hooksFile ? text then
-      builtins.fromJSON (builtins.unsafeDiscardStringContext hooksFile.text)
-    else
-      { };
+  parsedCodexHooksConfig = {
+    hooks = import ../hooks/configuration.nix {
+      inherit pkgs lib;
+      hostname = "test";
+    };
+  };
 
   codexSessionStartGroups =
     if parsedCodexHooksConfig ? hooks && parsedCodexHooksConfig.hooks ? SessionStart then
@@ -148,12 +146,17 @@ in
       "enabled third-party Claude Code plugins should be ported into Codex via an activation step";
 
   codex-hooks-config-managed-file =
-    mkEvalCheck "codex-hooks-config-managed-file" (builtins.hasAttr ".codex/hooks.json" cfg.home.file)
-      "Codex hooks should be deployed as a declarative home.file entry";
+    mkEvalCheck "codex-hooks-config-managed-file"
+      (
+        !(builtins.hasAttr ".codex/hooks.json" cfg.home.file)
+        && builtins.hasAttr "codex/requirements.toml" self.darwinConfigurations.kira.config.environment.etc
+        && builtins.hasAttr "codex/requirements.toml" self.nixosConfigurations.chise.config.environment.etc
+      )
+      "Codex hooks should be deployed through /etc/codex/requirements.toml on Darwin and NixOS so Codex treats them as managed and trusted";
 
   codex-hooks-config-current-schema = mkEvalCheck "codex-hooks-config-current-schema" (
     parsedCodexHooksConfig ? hooks && firstCodexSessionStartGroup ? hooks
-  ) "Codex hooks.json should use the current top-level hooks schema";
+  ) "Codex managed requirements should use the current top-level hooks schema";
 
   codex-hooks-config-session-start-compaction-only =
     mkEvalCheck "codex-hooks-config-session-start-compaction-only"

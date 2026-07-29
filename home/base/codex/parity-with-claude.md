@@ -66,12 +66,10 @@ Two enforcement facts, also established live, drove the design:
   deny` schema through a shared `common/pre_tool_use_block.py`; Claude honors the
   same schema (its `pre-tool-use-dispatcher.py` emits it via
   `common/hook_dispatch.py`), so one guard blocks on both CLIs.
-- Codex gates hooks behind a per-invocation trust review ("hooks need review
-  before they can run") that project trust does NOT satisfy and that a rebuild
-  would re-invalidate (the `hooks.json` store path changes). The `codex` wrapper
-  (`package.nix`) therefore launches with `--dangerously-bypass-hook-trust`, so the
-  nix-managed guards run every session, matching the danger-full-access /
-  approval-never posture. Without this flag the entire hooks port is inert.
+- Codex requires review and persisted trust for user hooks. Project trust does
+  not satisfy that requirement, and rebuilt store paths invalidate the hook
+  hashes. The system installs these hooks through `/etc/codex/requirements.toml`,
+  which makes them managed and trusted without a per-invocation bypass.
 
 Both CLIs now run ONE dispatcher set. Codex registers the same
 `pre-tool-use-dispatcher.py`, `post-tool-use-dispatcher.py` and
@@ -160,9 +158,9 @@ matcher purposes, so a single `Edit|Write` matcher fires on both CLIs.
 
 - Both run full-access with no approval prompts: Claude via
   `dangerouslySkipPermissions` / `bypassPermissions`, Codex via
-  `--sandbox danger-full-access --ask-for-approval never`. The Codex wrapper also
-  passes `--dangerously-bypass-hook-trust` so its nix-managed hooks run without a
-  per-session review prompt.
+  `--sandbox danger-full-access --ask-for-approval never`. Codex loads the shared
+  hooks as managed requirements, so they run without a per-session review
+  prompt.
 - Both default to maximum reasoning: Claude `effortLevel = max`, Codex
   `model_reasoning_effort = xhigh` with `model_verbosity = low` and no reasoning
   summary.
@@ -210,7 +208,7 @@ matcher purposes, so a single `Edit|Write` matcher fires on both CLIs.
   discriminated by a `--surface=codex` argument against each handler's `surfaces`
   tuple, so a handler ports by declaring the surface rather than by growing a
   second script. Codex blocks only via the `permissionDecision: deny` schema, and
-  the wrapper's `--dangerously-bypass-hook-trust` is what lets any of them run.
+  system-managed requirements make the Codex handlers trusted.
 - No hook ports remain. What Codex still lacks is a model/window limit, a
   documented safety deferral (`session_context_handler` leak), or a
   Claude-TUI/launcher/clawde-agent artifact.

@@ -52,6 +52,7 @@ let
 
       modules = [
         { nixpkgs.overlays = darwinSystemOverlays; }
+        ../home/base/codex/system-managed-hooks.nix
         ../hosts/${machineAlias}
         home-manager.darwinModules.home-manager
         (mkHomeManagerWrapperFor machineAlias)
