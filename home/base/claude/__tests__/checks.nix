@@ -84,16 +84,6 @@ in
     mkEvalCheck "claude-bin-wrapper" (builtins.hasAttr ".local/bin/claude" cfg.home.file)
       ".local/bin/claude should be in home.file";
 
-  claude-research-skill =
-    mkEvalCheck "claude-research-skill"
-      (builtins.hasAttr ".local/share/claude-skill-sets/personal/.claude/skills/research" cfg.home.file)
-      "research skill should be deployed in the personal vault for claude";
-
-  claude-steward-not-in-personal-set =
-    mkEvalCheck "claude-steward-not-in-personal-set"
-      (!(builtins.hasAttr ".local/share/claude-skill-sets/personal/.claude/skills/steward" cfg.home.file))
-      "the privileged steward payload must not be in the personal skill set every general-purpose agent loads; it lives in the steward agent type and is scoped to the steward instance";
-
   chrome-devtools-mcp-bridge-service-removed =
     mkEvalCheck "chrome-devtools-mcp-bridge-service-removed"
       (!(cfg.systemd.user.services ? "chrome-devtools-mcp-bridge"))

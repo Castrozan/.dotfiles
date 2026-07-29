@@ -41,6 +41,18 @@ let
     cfgOnTheEvaluatingSystem.home.file."clawde/harness-home/codex/agent-on-codex/config.toml".source;
 in
 {
+  clawde-personal-skill-set-carries-the-research-skill =
+    mkEvalCheck "clawde-personal-skill-set-carries-the-research-skill"
+      (builtins.hasAttr ".local/share/claude-skill-sets/personal/.claude/skills/research" cfgWithBothHarnesses.home.file)
+      "the personal skill set is what every general-purpose clawde agent loads with --add-dir, so it must materialize under .local/share/claude-skill-sets/personal; an empty set leaves those agents with no skills at all";
+
+  clawde-steward-payload-is-not-in-the-personal-skill-set =
+    mkEvalCheck "clawde-steward-payload-is-not-in-the-personal-skill-set"
+      (
+        !(builtins.hasAttr ".local/share/claude-skill-sets/personal/.claude/skills/steward" cfgWithBothHarnesses.home.file)
+      )
+      "the privileged steward payload must not sit in the personal skill set every general-purpose agent loads; it belongs to the steward agent type and is scoped to the steward instance";
+
   clawde-claude-harness-package-is-injected =
     mkEvalCheck "clawde-claude-harness-package-is-injected" (harnesses.claude.package != null)
       "clawde pins no harness itself, so home/base/clawde/harnesses.nix must inject the claude package; a null package fails a clawde assertion the moment any agent runs on claude";
