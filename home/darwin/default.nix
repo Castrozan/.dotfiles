@@ -16,6 +16,8 @@
     ../base/clawde
     ../base/codex
     ../base/hermes
+    ../base/opencode
+    ../base/opencode/private.nix
     ../base/testing
 
     ../base/terminal/bash.nix

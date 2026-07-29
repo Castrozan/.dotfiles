@@ -9,9 +9,6 @@ in
 
     ../../base/dev/git-toggle-user.nix
 
-    ../../base/opencode
-    ../../base/opencode/private.nix
-
     ../../base/browser/firefox.nix
 
     ../../base/editor/jetbrains-idea.nix

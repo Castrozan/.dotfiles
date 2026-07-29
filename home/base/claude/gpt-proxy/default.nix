@@ -6,7 +6,10 @@
   ...
 }:
 let
-  hostsWithClaudeGptProxy = [ "kira" ];
+  hostsWithClaudeGptProxy = [
+    "kira"
+    "rin"
+  ];
   claudeGptProxyEnabledOnThisHost =
     pkgs.stdenv.hostPlatform.isDarwin && lib.elem hostname hostsWithClaudeGptProxy;
 

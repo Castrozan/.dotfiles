@@ -4,7 +4,7 @@ Runs Claude Code against a ChatGPT/Codex subscription instead of Anthropic billi
 by bridging the Anthropic Messages API through a local
 [CLIProxyAPI](https://github.com/router-for-me/CLIProxyAPI) instance.
 
-Scoped to the hosts in `hostsWithClaudeGptProxy` (currently `kira`) and darwin only,
+Scoped to the hosts in `hostsWithClaudeGptProxy` (currently `kira` and `rin`) and darwin only,
 because the packaged `cli-proxy-api` binary is the darwin arm64 release.
 
 ## What this module provides
@@ -50,6 +50,6 @@ placeholder the proxy ignores. The haiku tier maps to `gpt-5.6-sol(low)`; every 
 Claude Code call spends subscription usage, so lower it to a cheaper Codex slug if that
 matters.
 
-Anthropic bans subscription-key reuse through gateways; this bridges a *ChatGPT*
+Anthropic bans subscription-key reuse through gateways; this bridges a _ChatGPT_
 subscription, which OpenAI tolerates. Do not point the same pattern at an Anthropic
 subscription.
