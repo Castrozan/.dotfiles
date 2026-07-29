@@ -26,6 +26,7 @@ let
   };
   codexConfigSource = codexConfigTomlFormat.generate "codex-config.toml" {
     approval_policy = "never";
+    check_for_update_on_startup = false;
     model = codexDefaultModel;
     model_reasoning_effort = "xhigh";
     notify = [
