@@ -26,13 +26,13 @@ let
     hooks = {
       SessionStart = [
         {
-          matcher = "startup|resume|clear|compact";
+          matcher = "compact";
           hooks = [
             {
               type = "command";
               command = runCodexDispatcher "session-start-dispatcher.py";
               timeout = 5;
-              statusMessage = "Loading deep-work context";
+              statusMessage = "Recovering compacted context";
             }
           ];
         }

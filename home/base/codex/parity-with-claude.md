@@ -94,9 +94,8 @@ shapes onto the `apply_patch` tool name and maps it onto `Edit`/`Write` for
 matcher purposes, so a single `Edit|Write` matcher fires on both CLIs.
 
 - Running on the codex surface:
-  - `SessionStart`: `deep_work_context_handler` (the deep-work context load,
-    now a handler rather than a `cat` one-liner, so the event keeps a single
-    entry point) and `compaction_context_recovery_handler`.
+  - `SessionStart`: `compaction_context_recovery_handler`, registered only for
+    compaction so ordinary startup, resume, and clear events stay silent.
   - `PreToolUse`: `memory_recall_handler` (shares the SAME
     `~/.claude/projects/<enc>/memory/` store as Claude, so recall continuity
     carries across both CLIs; needs `rg`), `prohibited_command_guard_handler`

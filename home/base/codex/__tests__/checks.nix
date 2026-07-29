@@ -50,6 +50,14 @@ let
     else
       { };
 
+  codexSessionStartGroups =
+    if parsedCodexHooksConfig ? hooks && parsedCodexHooksConfig.hooks ? SessionStart then
+      parsedCodexHooksConfig.hooks.SessionStart
+    else
+      [ ];
+  firstCodexSessionStartGroup =
+    if codexSessionStartGroups == [ ] then { } else builtins.head codexSessionStartGroups;
+
   dotfilesAgentInstructions = builtins.readFile ../../../../agents/dotfiles.md;
   normalizedDotfilesAgentInstructions = lib.replaceStrings [ "\n" ] [ " " ] dotfilesAgentInstructions;
   codexConfigSeedActivationData = cfg.home.activation.seedCodexConfigAsMutableFile.data or "";
@@ -143,19 +151,14 @@ in
     mkEvalCheck "codex-hooks-config-managed-file" (builtins.hasAttr ".codex/hooks.json" cfg.home.file)
       "Codex hooks should be deployed as a declarative home.file entry";
 
-  codex-hooks-config-current-schema =
-    let
-      sessionStartGroups =
-        if parsedCodexHooksConfig ? hooks && parsedCodexHooksConfig.hooks ? SessionStart then
-          parsedCodexHooksConfig.hooks.SessionStart
-        else
-          [ ];
-      firstSessionStartGroup =
-        if sessionStartGroups == [ ] then { } else builtins.head sessionStartGroups;
-    in
-    mkEvalCheck "codex-hooks-config-current-schema" (
-      parsedCodexHooksConfig ? hooks && firstSessionStartGroup ? hooks
-    ) "Codex hooks.json should use the current top-level hooks schema";
+  codex-hooks-config-current-schema = mkEvalCheck "codex-hooks-config-current-schema" (
+    parsedCodexHooksConfig ? hooks && firstCodexSessionStartGroup ? hooks
+  ) "Codex hooks.json should use the current top-level hooks schema";
+
+  codex-hooks-config-session-start-compaction-only =
+    mkEvalCheck "codex-hooks-config-session-start-compaction-only"
+      ((firstCodexSessionStartGroup.matcher or "") == "compact")
+      "Codex SessionStart should run only after compaction, not on startup, resume, or clear";
 
   codex-hooks-config-post-tool-use-dispatcher =
     mkEvalCheck "codex-hooks-config-post-tool-use-dispatcher"

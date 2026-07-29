@@ -39,10 +39,7 @@ HANDLERS_REQUIRED_ON_THE_CODEX_SURFACE = {
         "line_count_limit_guard_handler",
     },
     "STOP_HANDLERS": {"lint_turn_review_handler"},
-    "SESSION_START_HANDLERS": {
-        "deep_work_context_handler",
-        "compaction_context_recovery_handler",
-    },
+    "SESSION_START_HANDLERS": {"compaction_context_recovery_handler"},
 }
 
 HANDLERS_THAT_MUST_STAY_OFF_THE_CODEX_SURFACE = {
@@ -86,6 +83,13 @@ def test_claude_only_handlers_stay_off_the_codex_surface(registry_name):
     claude_only = HANDLERS_THAT_MUST_STAY_OFF_THE_CODEX_SURFACE[registry_name]
     assert claude_only.isdisjoint(running_on_codex)
     assert claude_only <= running_on_claude
+
+
+def test_codex_session_start_does_not_scan_deep_work_workspaces():
+    running_on_codex = handler_module_names_on_surface(
+        "SESSION_START_HANDLERS", CODEX_SURFACE
+    )
+    assert "deep_work_context_handler" not in running_on_codex
 
 
 def test_run_handlers_skips_handlers_that_do_not_declare_the_surface():

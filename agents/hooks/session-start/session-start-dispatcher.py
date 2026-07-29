@@ -16,11 +16,9 @@ for importable_directory in (
         sys.path.insert(0, importable_directory_string)
 
 import compaction_context_recovery_handler  # noqa: E402
-import deep_work_context_handler  # noqa: E402
 import session_context_handler  # noqa: E402
 from hook_dispatch import (  # noqa: E402
     CLAUDE_SURFACE,
-    CODEX_SURFACE,
     HookHandler,
     dispatched_hook_input_or_exit,
     requested_hook_surface,
@@ -30,7 +28,6 @@ from hook_event_output import emit_context_injection  # noqa: E402
 
 SESSION_START_HANDLERS = [
     HookHandler(handle=session_context_handler.handle, surfaces=(CLAUDE_SURFACE,)),
-    HookHandler(handle=deep_work_context_handler.handle, surfaces=(CODEX_SURFACE,)),
     HookHandler(handle=compaction_context_recovery_handler.handle),
 ]
 
