@@ -2,7 +2,6 @@
   pkgs,
   lib,
   inputs,
-  self,
   nixpkgs-version,
   home-version,
 }:
@@ -18,8 +17,11 @@ let
   };
   inherit (helpers) mkEvalCheck;
 
-  rinHomeManagerConfiguration =
-    self.darwinConfigurations.rin.config.home-manager.users."lucas.zanoni";
+  rinHomeManagerConfiguration = helpers.homeManagerTestConfigurationForDarwinHost "rin" [
+    ../../../home/base/opencode/opencode.nix
+    ../../../home/base/claude/binary.nix
+    ../../../home/base/claude/gpt-proxy
+  ];
   rinPackageNames = map (
     package: package.name or package.pname or "unknown"
   ) rinHomeManagerConfiguration.home.packages;

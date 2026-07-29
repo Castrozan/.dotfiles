@@ -53,7 +53,7 @@ let
   sourcebotChecks = import ../../home/base/sourcebot/__tests__/checks.nix domainArgs;
 
   chiseChecks = import ../../hosts/chise/__tests__/checks.nix moduleArgs;
-  rinChecks = import ../../hosts/rin/__tests__/checks.nix moduleArgs;
+  rinChecks = import ../../hosts/rin/__tests__/checks.nix domainArgs;
   chromeDarwinPolicyChecks = import ../../hosts/shared-darwin/chrome/__tests__/checks.nix domainArgs;
   claudeDarwinPolicyChecks = import ../../hosts/shared-darwin/claude/__tests__/checks.nix domainArgs;
   braveDarwinPolicyChecks = import ../../hosts/shared-darwin/brave/__tests__/checks.nix domainArgs;

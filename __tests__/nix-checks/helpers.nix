@@ -23,7 +23,7 @@ let
     ) checks;
 
   homeManagerTestConfigurationForSystemPkgs =
-    systemDouble: systemPkgs: modules:
+    systemDouble: systemPkgs: hostname: modules:
     (inputs.home-manager.lib.homeManagerConfiguration {
       pkgs = systemPkgs;
       extraSpecialArgs = {
@@ -38,8 +38,11 @@ let
         };
         isNixOS = false;
         username = "test";
-        hostname = "test";
-        inherit nixpkgs-version home-version;
+        inherit
+          hostname
+          nixpkgs-version
+          home-version
+          ;
       };
       modules = [
         ../../home/base/system/health-check
@@ -54,21 +57,28 @@ let
       ++ modules;
     }).config;
 
-  homeManagerTestConfiguration = homeManagerTestConfigurationForSystemPkgs "x86_64-linux" (
-    import inputs.nixpkgs {
+  homeManagerTestConfiguration = homeManagerTestConfigurationForSystemPkgs "x86_64-linux" (import
+    inputs.nixpkgs
+    {
       system = "x86_64-linux";
       config.allowUnfree = true;
     }
-  );
+  ) "test";
 
-  homeManagerTestConfigurationForDarwin = homeManagerTestConfigurationForSystemPkgs "aarch64-darwin" (
-    import inputs.nixpkgs {
-      system = "aarch64-darwin";
-      config.allowUnfree = true;
-    }
-  );
+  darwinTestPkgs = import inputs.nixpkgs {
+    system = "aarch64-darwin";
+    config.allowUnfree = true;
+  };
 
-  homeManagerTestConfigurationForEvaluatingSystem = homeManagerTestConfigurationForSystemPkgs pkgs.stdenv.hostPlatform.system pkgs;
+  homeManagerTestConfigurationForDarwin =
+    homeManagerTestConfigurationForSystemPkgs "aarch64-darwin" darwinTestPkgs
+      "test";
+
+  homeManagerTestConfigurationForDarwinHost = homeManagerTestConfigurationForSystemPkgs "aarch64-darwin" darwinTestPkgs;
+
+  homeManagerTestConfigurationForEvaluatingSystem =
+    homeManagerTestConfigurationForSystemPkgs pkgs.stdenv.hostPlatform.system pkgs
+      "test";
 in
 {
   inherit
@@ -76,6 +86,7 @@ in
     mkEvalCheckGroup
     homeManagerTestConfiguration
     homeManagerTestConfigurationForDarwin
+    homeManagerTestConfigurationForDarwinHost
     homeManagerTestConfigurationForEvaluatingSystem
     ;
   stateVersion = home-version;
