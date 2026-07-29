@@ -38,6 +38,23 @@ let
   provisionerEnabled = evalProvisioner baseSettings;
   enabledService = provisionerEnabled.systemd.services.arr-config-provisioner;
   enabledEnvironment = enabledService.environment;
+
+  declaredQbittorrentPreferences = builtins.fromJSON (
+    builtins.readFile ../../../nixos/modules/arr-config-provisioner/desired-state/qbittorrent/preferences.json
+  );
+  qbittorrentNeverStopsSeedingOnALimit =
+    builtins.all (preferenceName: declaredQbittorrentPreferences.${preferenceName} == false)
+      [
+        "max_ratio_enabled"
+        "max_seeding_time_enabled"
+        "max_inactive_seeding_time_enabled"
+      ];
+  qbittorrentNeverQueuesASeedBehindACap =
+    builtins.all (preferenceName: declaredQbittorrentPreferences.${preferenceName} < 0)
+      [
+        "max_active_torrents"
+        "max_active_uploads"
+      ];
 in
 {
   chise-arr-provisioner-disabled-defines-no-service =
@@ -70,4 +87,14 @@ in
         && lib.hasInfix "agenix" enabledEnvironment.ARR_PROVISIONER_SAMARITANO_APIKEY_FILE
       )
       "the qBittorrent password and the private indexer key must reach the provisioner as agenix file paths substituted into placeholders at runtime, so no real secret is ever committed in the desired-state JSON";
+
+  chise-arr-qbittorrent-never-stops-seeding-on-a-limit =
+    mkEvalCheck "chise-arr-qbittorrent-never-stops-seeding-on-a-limit"
+      qbittorrentNeverStopsSeedingOnALimit
+      "the declared qBittorrent preferences must leave every ratio, seeding-time and inactive-seeding-time limit disabled; a private tracker reads a torrent that stopped seeding as a hit and run and escalates to a permanent warning, and a limit re-enabled here would do that to every torrent at once";
+
+  chise-arr-qbittorrent-never-queues-a-seed-behind-a-cap =
+    mkEvalCheck "chise-arr-qbittorrent-never-queues-a-seed-behind-a-cap"
+      qbittorrentNeverQueuesASeedBehindACap
+      "the declared active-torrent and active-upload caps must stay unlimited; a finite cap parks every torrent past it in the upload queue where it accrues no seed time at all, which reaches a private tracker as never having seeded rather than as a queue";
 }

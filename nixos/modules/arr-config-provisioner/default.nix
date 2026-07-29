@@ -12,7 +12,7 @@ let
 in
 {
   options.custom.arrConfigProvisioner = {
-    enable = lib.mkEnableOption "a root systemd oneshot that reconstructs the arr-stack app config (radarr/sonarr/prowlarr download clients, root folders, custom formats and indexers) declaratively by idempotently upserting committed desired-state JSON into each app's API at rebuild, so a wiped or lost config directory is rebuilt from the repo instead of from an off-host backup; the only real secrets (the qBittorrent password and the private indexer key) are injected from agenix at runtime";
+    enable = lib.mkEnableOption "a root systemd oneshot that reconstructs the arr-stack app config (radarr/sonarr/prowlarr download clients, root folders, custom formats and indexers, plus qBittorrent's own seeding and queueing preferences) declaratively by idempotently writing committed desired-state JSON into each app's API at rebuild, so a wiped or lost config directory is rebuilt from the repo instead of from an off-host backup; the only real secrets (the qBittorrent password and the private indexer key) are injected from agenix at runtime";
 
     stackHomeDirectory = lib.mkOption {
       type = lib.types.str;
@@ -28,7 +28,13 @@ in
     qbittorrentPasswordSecretFile = lib.mkOption {
       type = lib.types.str;
       default = "";
-      description = "Path to the agenix-decrypted qBittorrent WebUI password substituted into the @QBITTORRENT_PASSWORD@ placeholder of the download-client desired state; when unset or the file is absent the download clients are skipped rather than provisioned with an empty password.";
+      description = "Path to the agenix-decrypted qBittorrent WebUI password substituted into the @QBITTORRENT_PASSWORD@ placeholder of the download-client desired state, and used to log the provisioner into qBittorrent's own API to reconcile its preferences; when unset or the file is absent both steps are skipped rather than run with an empty password.";
+    };
+
+    qbittorrentUsername = lib.mkOption {
+      type = lib.types.str;
+      default = "admin";
+      description = "qBittorrent WebUI account the provisioner authenticates as to reconcile qBittorrent's own preferences, which have no API-key auth and no config file the provisioner can write behind the app's back.";
     };
 
     samaritanoApiKeySecretFile = lib.mkOption {
@@ -78,6 +84,7 @@ in
         ARR_PROVISIONER_DESIRED_STATE_DIR = "${desiredStateDirectory}";
         ARR_PROVISIONER_QBITTORRENT_PASSWORD_FILE =
           arrConfigProvisionerConfig.qbittorrentPasswordSecretFile;
+        ARR_PROVISIONER_QBITTORRENT_USERNAME = arrConfigProvisionerConfig.qbittorrentUsername;
         ARR_PROVISIONER_SAMARITANO_APIKEY_FILE = arrConfigProvisionerConfig.samaritanoApiKeySecretFile;
         ARR_PROVISIONER_LOGIN_USERNAME = arrConfigProvisionerConfig.loginUsername;
         ARR_PROVISIONER_RADARR_PASSWORD_FILE = arrConfigProvisionerConfig.radarrPasswordSecretFile;

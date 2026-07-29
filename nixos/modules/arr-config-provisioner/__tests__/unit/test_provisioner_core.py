@@ -23,6 +23,11 @@ def stub_all_steps(monkeypatch):
         "provision_host_login_step",
         lambda configuration, step, dry_run: None,
     )
+    monkeypatch.setattr(
+        provisioner_core,
+        "provision_qbittorrent_preference_step",
+        lambda configuration, step, dry_run: None,
+    )
 
 
 def test_provision_all_continues_after_a_failing_step(monkeypatch):
@@ -73,3 +78,18 @@ def test_provision_all_counts_failing_host_login_steps(monkeypatch):
     )
     failed_steps = provisioner_core.provision_all({}, False)
     assert failed_steps == len(provisioner_core.HOST_LOGIN_PLAN)
+
+
+def test_provision_all_counts_a_failing_qbittorrent_preference_step(monkeypatch):
+    stub_all_steps(monkeypatch)
+
+    def failing_qbittorrent_preference_step(configuration, step, dry_run):
+        raise RuntimeError("qbittorrent preference step failed")
+
+    monkeypatch.setattr(
+        provisioner_core,
+        "provision_qbittorrent_preference_step",
+        failing_qbittorrent_preference_step,
+    )
+    failed_steps = provisioner_core.provision_all({}, False)
+    assert failed_steps == len(provisioner_core.QBITTORRENT_PREFERENCE_PLAN)

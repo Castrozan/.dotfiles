@@ -36,6 +36,12 @@ def resolve_configuration():
         ),
         "login_username": os.environ.get("ARR_PROVISIONER_LOGIN_USERNAME", ""),
         "login_passwords": resolve_login_passwords(),
+        "qbittorrent_username": os.environ.get(
+            "ARR_PROVISIONER_QBITTORRENT_USERNAME", ""
+        ),
+        "qbittorrent_password": read_secret_value(
+            os.environ.get("ARR_PROVISIONER_QBITTORRENT_PASSWORD_FILE", "")
+        ),
         "secret_map": build_secret_map(
             [
                 (
