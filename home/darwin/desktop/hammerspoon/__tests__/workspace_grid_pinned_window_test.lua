@@ -36,6 +36,9 @@ local function makeFakeWindow(windowId, windowTitle, applicationName)
 			name = function()
 				return resolvedApplicationName
 			end,
+			bundleID = function()
+				return "com.example.fakeapp"
+			end,
 		}
 	end
 	function fakeWindow:title()

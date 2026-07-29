@@ -13,6 +13,9 @@
       ".hammerspoon/workspace_grid_window_layout.lua".source = ./workspace_grid_window_layout.lua;
       ".hammerspoon/workspace_grid_window_assignment.lua".source = ./workspace_grid_window_assignment.lua;
       ".hammerspoon/workspace_grid_window_query.lua".source = ./workspace_grid_window_query.lua;
+      ".hammerspoon/workspace_grid_window_snapshot.lua".source = ./workspace_grid_window_snapshot.lua;
+      ".hammerspoon/workspace_grid_window_focus.lua".source = ./workspace_grid_window_focus.lua;
+      ".hammerspoon/workspace_grid_window_menu.lua".source = ./workspace_grid_window_menu.lua;
       ".hammerspoon/workspace_grid_window_events.lua".source = ./workspace_grid_window_events.lua;
       ".hammerspoon/workspace_grid_session_generation.lua".source =
         ./workspace_grid_session_generation.lua;

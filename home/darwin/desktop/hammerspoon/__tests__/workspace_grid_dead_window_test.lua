@@ -27,7 +27,7 @@ local function makeFakeWindow(windowId, onSetFrame)
     return { frame = function() return { x = 0, y = 0, w = 1440, h = 900 } end }
   end
   function fakeWindow:focus() currentlyFocusedWindowId = windowId end
-  function fakeWindow:application() return { name = function() return "FakeApp" end } end
+  function fakeWindow:application() return { name = function() return "FakeApp" end, bundleID = function() return "com.example.fakeapp" end } end
   function fakeWindow:title() return "fake-title-" .. windowId end
   return fakeWindow
 end

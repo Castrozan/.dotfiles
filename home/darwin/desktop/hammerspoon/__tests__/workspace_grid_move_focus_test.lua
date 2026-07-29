@@ -40,7 +40,7 @@ local function makeFakeWindow(windowId, isStandardWindow)
     currentlyFocusedWindowId = windowId
   end
   function fakeWindow:application()
-    return { name = function() return "FakeApp" end }
+    return { name = function() return "FakeApp" end, bundleID = function() return "com.example.fakeapp" end }
   end
   function fakeWindow:title()
     return "fake-title-" .. windowId

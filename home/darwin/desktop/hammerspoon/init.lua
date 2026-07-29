@@ -4,7 +4,15 @@ require("hs.ipc")
 -- defined in workspace_grid.lua, and feed it window create/focus events.
 local workspaceGrid = require("workspace_grid")
 local menuBarIndicator = require("workspace_grid_menubar")
+local windowMenu = require("workspace_grid_window_menu")
+local windowSnapshot = require("workspace_grid_window_snapshot")
 local chromeProfileWindow = require("chrome_profile_window")
+
+menuBarIndicator.attachMenuItemBuilder(windowMenu.buildMenuItemBuilder({
+	snapshotForImmediateUse = windowSnapshot.snapshotForImmediateUse,
+	currentWorkspaceNumber = workspaceGrid.currentWorkspaceNumber,
+	revealWindowById = workspaceGrid.revealWindowById,
+}))
 
 hs.shutdownCallback = function()
 	menuBarIndicator.deleteIndicator()

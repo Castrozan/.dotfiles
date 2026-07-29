@@ -15,6 +15,7 @@ local windowLayout = require("workspace_grid_window_layout")
 local sessionGeneration = require("workspace_grid_session_generation")
 local windowAssignment = require("workspace_grid_window_assignment")
 local windowQuery = require("workspace_grid_window_query")
+local windowSnapshot = require("workspace_grid_window_snapshot")
 local navigation = require("workspace_grid_navigation")
 local pinnedWindow = require("workspace_grid_pinned_window")
 
@@ -118,27 +119,18 @@ function workspaceGrid.gatherAllWindowsToCurrentWorkspace()
 end
 
 function workspaceGrid.currentWorkspaceWindowList()
-	local focused = hs.window.focusedWindow()
-	return {
-		focused = focused and focused:id() or nil,
-		windows = windowQuery.windowDescriptorsOnWorkspace(currentWorkspaceNumber),
-	}
+	return windowSnapshot.windowListForWorkspace(currentWorkspaceNumber)
 end
 
-function workspaceGrid.focusWindowById(windowId)
-	local window = hs.window.get(windowId)
-	if not window then
-		return
-	end
-	if pinnedWindow.windowIsPinned(window) then
-		workspaceGrid.switchToWorkspace(pinnedWindow.resolveWorkspaceForWindow(window, currentWorkspaceNumber), window)
-		return
-	end
-	windowAssignment.assignWindowToWorkspace(windowId, currentWorkspaceNumber)
-	window:focus()
-	windowLayout.showWindowOnScreen(window)
-	persistWorkspaceState()
-end
+local windowFocusEntryPoints = require("workspace_grid_window_focus").buildWindowFocusEntryPoints({
+	currentWorkspaceNumber = function()
+		return currentWorkspaceNumber
+	end,
+	switchToWorkspace = workspaceGrid.switchToWorkspace,
+	persistWorkspaceState = persistWorkspaceState,
+})
+workspaceGrid.focusWindowById = windowFocusEntryPoints.focusWindowById
+workspaceGrid.revealWindowById = windowFocusEntryPoints.revealWindowById
 
 local windowEventHandlers = require("workspace_grid_window_events").buildWindowEventHandlers({
 	currentWorkspaceNumber = function()

@@ -37,19 +37,24 @@ function workspaceGridWindowQuery.occupiedWorkspaceNumbers()
 	return occupied
 end
 
-function workspaceGridWindowQuery.windowDescriptorsOnWorkspace(workspaceNumber)
-	local windowDescriptors = {}
+function workspaceGridWindowQuery.windowDescriptorsByWorkspace()
+	local windowDescriptorsByWorkspaceNumber = {}
 	for _, window in ipairs(workspaceGridWindowQuery.manageableWindows()) do
-		if windowAssignment.workspaceOfWindowId(window:id()) == workspaceNumber then
-			local application = window:application()
-			table.insert(windowDescriptors, {
-				["window-id"] = window:id(),
-				["app-name"] = (application and application:name()) or "",
-				["window-title"] = window:title() or "",
-			})
+		local workspaceNumber = windowAssignment.workspaceOfWindowId(window:id())
+		local windowDescriptorsOnWorkspace = windowDescriptorsByWorkspaceNumber[workspaceNumber]
+		if windowDescriptorsOnWorkspace == nil then
+			windowDescriptorsOnWorkspace = {}
+			windowDescriptorsByWorkspaceNumber[workspaceNumber] = windowDescriptorsOnWorkspace
 		end
+		local application = window:application()
+		table.insert(windowDescriptorsOnWorkspace, {
+			["window-id"] = window:id(),
+			["app-name"] = (application and application:name()) or "",
+			["app-bundle-id"] = (application and application:bundleID()) or "",
+			["window-title"] = window:title() or "",
+		})
 	end
-	return windowDescriptors
+	return windowDescriptorsByWorkspaceNumber
 end
 
 return workspaceGridWindowQuery

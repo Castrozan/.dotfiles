@@ -52,6 +52,13 @@ function workspaceGridMenuBar.render(currentWorkspaceNumber, columnsPerRow, occu
 	menuBarIndicatorHandle:setTitle(styledTitle)
 end
 
+function workspaceGridMenuBar.attachMenuItemBuilder(buildMenuItems)
+	if not menuBarIndicatorHandle then
+		return
+	end
+	menuBarIndicatorHandle:setMenu(buildMenuItems)
+end
+
 function workspaceGridMenuBar.deleteIndicator()
 	if menuBarIndicatorHandle then
 		menuBarIndicatorHandle:delete()

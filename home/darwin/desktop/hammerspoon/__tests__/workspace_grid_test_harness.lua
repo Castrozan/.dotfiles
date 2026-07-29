@@ -34,6 +34,9 @@ local function makeFakeWindow(windowId)
 			name = function()
 				return "FakeApp"
 			end,
+			bundleID = function()
+				return "com.example.fakeapp"
+			end,
 		}
 	end
 	function fakeWindow:title()
@@ -99,7 +102,12 @@ function workspaceGridTestHarness.installFakeHammerspoonGlobal()
 	hs = {
 		menubar = {
 			new = function()
-				return { setTitle = function() end }
+				return { setTitle = function() end, setMenu = function() end }
+			end,
+		},
+		image = {
+			imageFromAppBundle = function()
+				return nil
 			end,
 		},
 		styledtext = {
