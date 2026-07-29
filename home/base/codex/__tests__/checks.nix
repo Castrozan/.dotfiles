@@ -47,6 +47,12 @@ let
       hostname = "test";
     };
   };
+  codexSystemManagedHooksConfig = import ../system-managed-hooks.nix {
+    inherit pkgs lib;
+    hostname = "test";
+  };
+  darwinConfigurationsSource = builtins.readFile ../../../../flake/darwin-configurations.nix;
+  nixosConfigurationsSource = builtins.readFile ../../../../flake/nixos-configurations.nix;
 
   codexSessionStartGroups =
     if parsedCodexHooksConfig ? hooks && parsedCodexHooksConfig.hooks ? SessionStart then
@@ -149,8 +155,9 @@ in
     mkEvalCheck "codex-hooks-config-managed-file"
       (
         !(builtins.hasAttr ".codex/hooks.json" cfg.home.file)
-        && builtins.hasAttr "codex/requirements.toml" self.darwinConfigurations.kira.config.environment.etc
-        && builtins.hasAttr "codex/requirements.toml" self.nixosConfigurations.chise.config.environment.etc
+        && builtins.hasAttr "codex/requirements.toml" codexSystemManagedHooksConfig.environment.etc
+        && lib.hasInfix "../home/base/codex/system-managed-hooks.nix" darwinConfigurationsSource
+        && lib.hasInfix "../home/base/codex/system-managed-hooks.nix" nixosConfigurationsSource
       )
       "Codex hooks should be deployed through /etc/codex/requirements.toml on Darwin and NixOS so Codex treats them as managed and trusted";
 
