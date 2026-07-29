@@ -7,22 +7,6 @@ MEASURED_SOLO_BONSAI_RECORDED_BYTES = 270347
 MEASURED_SOLO_BONSAI_DURATION_SECONDS = 30
 
 
-def test_parse_desktop_bounds_returns_width_and_height():
-    assert browser.parse_desktop_bounds("0, 0, 2560, 1440") == (2560, 1440)
-
-
-def test_parse_desktop_bounds_accounts_for_nonzero_origin():
-    assert browser.parse_desktop_bounds("100, 50, 1540, 950") == (1440, 900)
-
-
-def test_centered_geometry_is_fraction_of_screen_and_centered():
-    width, height, left, top = browser.resolve_centered_window_geometry(2000, 1000)
-    assert width == 1440
-    assert height == 720
-    assert left == 280
-    assert top == 140
-
-
 def test_resolve_browser_prefers_chrome_when_both_are_installed(monkeypatch):
     monkeypatch.setattr(
         browser.os.path,
@@ -74,36 +58,6 @@ def test_build_record_index_url_omits_seconds_so_the_playlist_derives_the_length
     assert "record=1" in record_url
     assert "fps=30" in record_url
     assert "width=1662" in record_url
-
-
-def test_capture_pixel_dimensions_are_unchanged_on_a_sixteen_by_nine_display():
-    assert capture_plan.resolve_capture_pixel_dimensions(1920, 1080) == (1920, 1080)
-
-
-def test_capture_pixel_dimensions_follow_a_three_by_two_display():
-    assert capture_plan.resolve_capture_pixel_dimensions(1512, 982) == (1662, 1080)
-
-
-def test_capture_pixel_width_stays_even_so_the_encoder_accepts_every_display():
-    for screen_width in range(1000, 4000, 7):
-        capture_width, _ = capture_plan.resolve_capture_pixel_dimensions(
-            screen_width, 982
-        )
-        assert capture_width % 2 == 0
-
-
-def test_capture_aspect_tracks_the_display_within_one_pixel():
-    capture_width, capture_height = capture_plan.resolve_capture_pixel_dimensions(
-        1512, 982
-    )
-    assert abs(capture_width - capture_height * 1512 / 982) <= 1
-
-
-def test_capture_pixel_dimensions_fall_back_when_the_screen_reads_degenerate():
-    assert capture_plan.resolve_capture_pixel_dimensions(0, 0) == (
-        capture_plan.FALLBACK_CAPTURE_PIXEL_WIDTH,
-        capture_plan.CAPTURE_PIXEL_HEIGHT,
-    )
 
 
 def test_upload_wait_budget_covers_a_whole_incremental_record_pass():

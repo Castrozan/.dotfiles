@@ -183,6 +183,17 @@ playlist's, because the record pass is incremental: see Refresh.
   The dimensions ride in the `width` and `height` record query parameters and land in the capture
   signature, so they are already fingerprint inputs and a machine that changes displays
   re-encodes on its own.
+
+  The screen is read with `system_profiler SPDisplaysDataType -json`, taking
+  `_spdisplays_resolution` off the entry flagged `spdisplays_main`, because that is the point
+  resolution the player window occupies and it needs no permission. The obvious
+  `osascript -e 'tell application "Finder" to get bounds of window of desktop'` cannot be used:
+  it needs an Automation grant the record pass does not hold under launchd, so it fails straight
+  through to the fallback, and over SSH it hangs indefinitely rather than erroring. That silent
+  fallback costs more now than it used to. A wrong screen size no longer merely mis-sizes the
+  throwaway record window, it bakes the wrong aspect into every segment, which is how the XDR
+  first re-recorded its whole loop at 1728x1080, the 1.6 of the 1440x900 fallback. The read is
+  also given a timeout for the same reason, so a wedged display query can never hang a pass.
 - `swift-sources/*.swift` compile to the 24/7 window: a native `AVQueuePlayer` behind an
   `AVPlayerLayer`, `videoGravity = .resizeAspect` so
   the loop is never cropped or zoomed. That only holds because the window is an
