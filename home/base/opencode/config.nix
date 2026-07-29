@@ -1,6 +1,6 @@
 _:
 let
-
+  defaultOpencodeModel = "openai/gpt-5.6-sol";
   globalRules = ''
     ${builtins.readFile ../../../agents/core_rules/core.md}
   '';
@@ -8,6 +8,7 @@ let
   opencodeGlobalSettings = {
     "$schema" = "https://opencode.ai/config.json";
     autoupdate = false;
+    model = defaultOpencodeModel;
 
     permission = {
       "*" = "allow";
@@ -42,6 +43,8 @@ let
       build = {
         mode = "primary";
         description = "Full-access coding agent with all tools enabled";
+        model = defaultOpencodeModel;
+        variant = "max";
       };
     };
 

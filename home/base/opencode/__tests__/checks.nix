@@ -21,6 +21,7 @@ let
 
   packageNames = map (p: p.name or p.pname or "unknown") cfg.home.packages;
   hasPackageMatching = pattern: builtins.any (n: builtins.match pattern n != null) packageNames;
+  deployedOpencodeSettings = builtins.fromJSON cfg.home.file.".config/opencode/opencode.json".text;
 in
 {
   domain-opencode-package =
@@ -30,4 +31,13 @@ in
   domain-opencode-bin-wrapper =
     mkEvalCheck "domain-opencode-bin-wrapper" (builtins.hasAttr ".local/bin/opencode" cfg.home.file)
       ".local/bin/opencode should be in home.file";
+
+  domain-opencode-default-model = mkEvalCheck "domain-opencode-default-model" (
+    deployedOpencodeSettings.model == "openai/gpt-5.6-sol"
+  ) "opencode must default to GPT-5.6 Sol through the OpenAI OAuth provider";
+
+  domain-opencode-default-model-variant = mkEvalCheck "domain-opencode-default-model-variant" (
+    deployedOpencodeSettings.agent.build.model == "openai/gpt-5.6-sol"
+    && deployedOpencodeSettings.agent.build.variant == "max"
+  ) "opencode's default build agent must run GPT-5.6 Sol at max effort";
 }
