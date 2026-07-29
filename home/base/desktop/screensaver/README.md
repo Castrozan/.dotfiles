@@ -168,9 +168,21 @@ playlist's, because the record pass is incremental: see Refresh.
   `preserveDrawingBuffer` option), and encodes it with an explicit timestamp through
   `VideoEncoder` into a fresh vendored `mp4-muxer`, then POSTs that one segment to a local
   receiver. Because the synthetic clock is `frameIndex / fps` rather than wall time, the output
-  is exact CFR at a fixed 1920x1080 no matter how slowly a frame renders. `MediaRecorder` was
+  is exact CFR no matter how slowly a frame renders. `MediaRecorder` was
   replaced because it is real-time-only and could not hold 30fps at full resolution. The codec
   is H.264 in MP4 so the M-series media engine decodes the loop in hardware.
+
+  The capture resolution follows the display rather than being fixed, because the player fits
+  the loop with `.resizeAspect` and any aspect the loop does not share with the panel comes back
+  as bars. `resolve_capture_pixel_dimensions` holds the height at 1080 and derives the width from
+  the screen, rounded to an even number for the encoder: a 1920x1080 panel resolves to 1920x1080
+  unchanged, and a 3024x1964 MacBook XDR (1512x982 in points) resolves to 1662x1080. Recorded 16:9
+  on that XDR the loop fitted to width at 1512x850 and left a 66pt letterbox above and below,
+  which reads as a header and a footer framing the scene. The derivation is uniform and there is
+  no per-host branch: each machine records its own segments, so each one resolves its own panel.
+  The dimensions ride in the `width` and `height` record query parameters and land in the capture
+  signature, so they are already fingerprint inputs and a machine that changes displays
+  re-encodes on its own.
 - `swift-sources/*.swift` compile to the 24/7 window: a native `AVQueuePlayer` behind an
   `AVPlayerLayer`, `videoGravity = .resizeAspect` so
   the loop is never cropped or zoomed. That only holds because the window is an
@@ -179,10 +191,12 @@ playlist's, because the record pass is incremental: see Refresh.
   pins the window to `screen():fullFrame()`, but AppKit silently re-constrains a `.titled`
   window to the _visible_ frame about a second later, so on a 1920x1080 display the window
   settled at 1920x1050 and `.resizeAspect` fitted the 16:9 loop to 1866x1050, leaving a measured
-  27px pillarbox on each side. With the clamp overridden the window is the loop's exact
-  resolution, so the video decodes 1:1 with no pillarbox and no resampling; the menu bar simply
-  draws over the top 30px. Reaching for `.resizeAspectFill` instead only hides the clamp, and it
-  generalizes badly, cropping roughly 13% of the width on a non-16:9 display.
+  27px pillarbox on each side. With the clamp overridden the window is the full screen frame, and
+  because the capture resolution is derived from that same screen the video decodes with no
+  letterbox and no resampling; the menu bar simply draws over the top 30px. Reaching for
+  `.resizeAspectFill` instead only hides the clamp, and it generalizes badly, cropping roughly
+  13% of the width on a non-16:9 display, which is exactly the panel the derived capture
+  resolution exists to serve.
 
   Playback order is randomized, which is why there is no `AVPlayerLooper` on the live path. Each
   composition is its own file under `segments/`, ordered by the `loop.segments.json` manifest,

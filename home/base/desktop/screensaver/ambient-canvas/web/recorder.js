@@ -9,8 +9,8 @@
   const captureFramesPerSecond = Number(recordParameters.get("fps")) || 30;
   const uploadUrl = recordParameters.get("uploadUrl") || "";
 
-  const outputPixelWidth = 1920;
-  const outputPixelHeight = 1080;
+  const outputPixelWidth = Number(recordParameters.get("width")) || 1920;
+  const outputPixelHeight = Number(recordParameters.get("height")) || 1080;
   const targetBitsPerPixelPerFrame = 0.35;
   const keyFrameIntervalSeconds = 2;
   const encoderQueueHighWatermark = 8;

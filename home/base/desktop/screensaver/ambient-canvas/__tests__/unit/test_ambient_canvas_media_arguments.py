@@ -51,22 +51,59 @@ def test_resolve_browser_executable_path_points_inside_the_app_bundle():
 
 def test_build_record_index_url_encodes_record_query():
     record_url = capture_plan.build_record_index_url(
-        "file:///store/index.html", "http://127.0.0.1:5000/upload", 30, 24
+        "file:///store/index.html", "http://127.0.0.1:5000/upload", 30, 24, (1920, 1080)
     )
     assert record_url.startswith("file:///store/index.html?")
     assert "record=1" in record_url
     assert "seconds=30" in record_url
     assert "fps=24" in record_url
+    assert "width=1920" in record_url
+    assert "height=1080" in record_url
     assert "uploadUrl=http%3A%2F%2F127.0.0.1%3A5000%2Fupload" in record_url
 
 
 def test_build_record_index_url_omits_seconds_so_the_playlist_derives_the_length():
     record_url = capture_plan.build_record_index_url(
-        "file:///store/index.html", "http://127.0.0.1:5000/upload", None, 30
+        "file:///store/index.html",
+        "http://127.0.0.1:5000/upload",
+        None,
+        30,
+        (1662, 1080),
     )
     assert "seconds=" not in record_url
     assert "record=1" in record_url
     assert "fps=30" in record_url
+    assert "width=1662" in record_url
+
+
+def test_capture_pixel_dimensions_are_unchanged_on_a_sixteen_by_nine_display():
+    assert capture_plan.resolve_capture_pixel_dimensions(1920, 1080) == (1920, 1080)
+
+
+def test_capture_pixel_dimensions_follow_a_three_by_two_display():
+    assert capture_plan.resolve_capture_pixel_dimensions(1512, 982) == (1662, 1080)
+
+
+def test_capture_pixel_width_stays_even_so_the_encoder_accepts_every_display():
+    for screen_width in range(1000, 4000, 7):
+        capture_width, _ = capture_plan.resolve_capture_pixel_dimensions(
+            screen_width, 982
+        )
+        assert capture_width % 2 == 0
+
+
+def test_capture_aspect_tracks_the_display_within_one_pixel():
+    capture_width, capture_height = capture_plan.resolve_capture_pixel_dimensions(
+        1512, 982
+    )
+    assert abs(capture_width - capture_height * 1512 / 982) <= 1
+
+
+def test_capture_pixel_dimensions_fall_back_when_the_screen_reads_degenerate():
+    assert capture_plan.resolve_capture_pixel_dimensions(0, 0) == (
+        capture_plan.FALLBACK_CAPTURE_PIXEL_WIDTH,
+        capture_plan.CAPTURE_PIXEL_HEIGHT,
+    )
 
 
 def test_upload_wait_budget_covers_a_whole_incremental_record_pass():

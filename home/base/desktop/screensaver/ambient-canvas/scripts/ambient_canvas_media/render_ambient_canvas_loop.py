@@ -17,6 +17,7 @@ from recorded_loop_capture_plan import (
     DEFAULT_CAPTURE_FRAMES_PER_SECOND,
     build_record_browser_arguments,
     build_record_index_url,
+    resolve_capture_pixel_dimensions,
     resolve_upload_wait_budget_seconds,
 )
 from recorded_loop_upload_server import start_recorded_loop_upload_server
@@ -69,18 +70,20 @@ def drive_record_browser(
         f"http://127.0.0.1:{upload_server.upload_port}/"
         f"{os.path.basename(index_file_path)}"
     )
+    screen_dimensions = read_screen_dimensions()
     record_index_url = build_record_index_url(
         record_page_url,
         f"http://127.0.0.1:{upload_server.upload_port}/upload",
         duration_seconds,
         frames_per_second,
+        resolve_capture_pixel_dimensions(*screen_dimensions),
     )
     browser_process = subprocess.Popen(
         build_record_browser_arguments(
             resolve_browser_executable_path(browser_application),
             record_index_url,
             throwaway_profile_directory,
-            resolve_centered_window_geometry(*read_screen_dimensions()),
+            resolve_centered_window_geometry(*screen_dimensions),
         ),
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
