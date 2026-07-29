@@ -30,12 +30,14 @@ class ScriptedAgentProcess:
 class RecordingAgentCommandRunner:
     def __init__(self, agent_process=None):
         self.executed_commands = []
+        self.executed_keyword_arguments = []
         self._agent_process = agent_process or ScriptedAgentProcess(
             json.dumps({"text": "on it"}).encode()
         )
 
-    async def __call__(self, *command_arguments, **_keyword_arguments):
+    async def __call__(self, *command_arguments, **keyword_arguments):
         self.executed_commands.append(list(command_arguments))
+        self.executed_keyword_arguments.append(keyword_arguments)
         return self._agent_process
 
 

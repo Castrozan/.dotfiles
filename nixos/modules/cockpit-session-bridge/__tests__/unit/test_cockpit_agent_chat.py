@@ -1,3 +1,4 @@
+import asyncio
 import json
 
 from cockpit_agent_chat_test_doubles import (
@@ -82,3 +83,31 @@ def test_an_empty_message_is_rejected_without_running_the_agent():
 
     assert runner.executed_commands == []
     assert json.loads(websocket_connection.sent_messages[0])["type"] == "error"
+
+
+def test_the_agent_command_is_run_with_both_streams_captured():
+    runner = RecordingAgentCommandRunner()
+
+    run_agent_chat(['{"text":"status report"}'], OPENCLAW_STYLE_COMMAND, runner)
+
+    assert runner.executed_keyword_arguments == [
+        {
+            "stdout": asyncio.subprocess.PIPE,
+            "stderr": asyncio.subprocess.PIPE,
+        }
+    ]
+
+
+def test_an_uncaptured_stream_answers_with_an_error_instead_of_crashing():
+    runner = RecordingAgentCommandRunner(
+        ScriptedAgentProcess(standard_output=None, standard_error=None, returncode=1)
+    )
+
+    websocket_connection = run_agent_chat(
+        ['{"text":"status report"}'], OPENCLAW_STYLE_COMMAND, runner
+    )
+
+    assert json.loads(websocket_connection.sent_messages[0]) == {
+        "type": "error",
+        "text": "the agent command failed",
+    }

@@ -51,20 +51,30 @@ def read_agent_reply_text(raw_agent_output):
     return decoded_output
 
 
+def decode_captured_stream(captured_stream):
+    if not captured_stream:
+        return ""
+    return captured_stream.decode(errors="replace")
+
+
 async def run_agent_chat_command(agent_chat_command, subprocess_runner):
-    agent_process = await subprocess_runner(*agent_chat_command)
+    agent_process = await subprocess_runner(
+        *agent_chat_command,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE,
+    )
     standard_output, standard_error = await asyncio.wait_for(
         agent_process.communicate(), AGENT_REPLY_TIMEOUT_SECONDS
     )
     if agent_process.returncode != 0:
         return {
             "type": "error",
-            "text": standard_error.decode(errors="replace").strip()
+            "text": decode_captured_stream(standard_error).strip()
             or "the agent command failed",
         }
     return {
         "type": "reply",
-        "text": read_agent_reply_text(standard_output.decode(errors="replace")),
+        "text": read_agent_reply_text(decode_captured_stream(standard_output)),
     }
 
 
