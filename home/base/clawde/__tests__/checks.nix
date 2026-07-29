@@ -25,6 +25,14 @@ import ./service-checks.nix {
     self
     ;
 }
+// import ./discord-channel-access-checks.nix {
+  inherit
+    lib
+    mkEvalCheck
+    helpers
+    self
+    ;
+}
 // import ./harness-checks.nix {
   inherit
     pkgs

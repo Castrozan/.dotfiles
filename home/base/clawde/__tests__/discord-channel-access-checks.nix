@@ -6,6 +6,7 @@
 }:
 let
   cfgWithDiscordChannelAccess = helpers.homeManagerTestConfiguration [
+    self.homeManagerModules.clawde
     self.homeManagerModules.claude-code
     {
       clawdeDiscordChannelAccess.test-agent.allowFrom = [ "123456789012345678" ];

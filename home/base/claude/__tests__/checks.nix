@@ -126,14 +126,6 @@ in
     mkEvalCheck
     ;
 }
-// import ./discord-channel-access-checks.nix {
-  inherit
-    lib
-    mkEvalCheck
-    helpers
-    self
-    ;
-}
 // import ./chrome-devtools-mcp-stealth-checks.nix {
   inherit
     pkgs
