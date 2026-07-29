@@ -43,7 +43,7 @@ let
     builtins.readFile ../../../nixos/modules/arr-config-provisioner/desired-state/qbittorrent/preferences.json
   );
   qbittorrentNeverStopsSeedingOnALimit =
-    builtins.all (preferenceName: declaredQbittorrentPreferences.${preferenceName} == false)
+    builtins.all (preferenceName: !declaredQbittorrentPreferences.${preferenceName})
       [
         "max_ratio_enabled"
         "max_seeding_time_enabled"

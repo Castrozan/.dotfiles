@@ -1,4 +1,4 @@
-{ ... }:
+_:
 let
   machinesRegistryPath = ../../../private-config/machines.nix;
 in

@@ -27,7 +27,7 @@ let
 
   cfgOnTheEvaluatingSystem = helpers.homeManagerTestConfigurationForEvaluatingSystem bothHarnessModules;
 
-  harnesses = cfgWithBothHarnesses.clawde.harnesses;
+  inherit (cfgWithBothHarnesses.clawde) harnesses;
 
   codexLaunchCommand = harnesses.codex.buildLaunchCommandFor {
     name = "agent-on-codex";
