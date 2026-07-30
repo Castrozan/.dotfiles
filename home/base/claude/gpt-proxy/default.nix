@@ -46,6 +46,9 @@ let
 
   proxyListenAddress = "127.0.0.1";
   proxyListenPort = 8317;
+  proxyIpv4GatewayListenAddress = "127.0.0.1";
+  proxyIpv4GatewayListenPort = 8318;
+  proxyIpv4GatewayLoginPort = 8319;
   proxyAuthenticationDirectory = "${config.home.homeDirectory}/.cli-proxy-api";
   proxyLogFilePath = "${config.home.homeDirectory}/.local/state/cli-proxy-api/cli-proxy-api.log";
   proxyLaunchdAgentLabel = "com.dotfiles.cli-proxy-api";
@@ -63,13 +66,18 @@ let
     else
       "systemctl --user restart ${proxySystemdServiceName} 2>/dev/null || true";
 
-  cliProxyApiConfigFile = pkgs.writeText "cli-proxy-api-config.yaml" ''
-    host: "${proxyListenAddress}"
-    port: ${toString proxyListenPort}
-    auth-dir: "${proxyAuthenticationDirectory}"
-    api-keys: []
-    debug: false
-  '';
+  makeCliProxyApiConfigFile =
+    name: ipv4GatewayPort:
+    pkgs.writeText name ''
+      host: "${proxyListenAddress}"
+      port: ${toString proxyListenPort}
+      auth-dir: "${proxyAuthenticationDirectory}"
+      api-keys: []
+      proxy-url: "http://${proxyIpv4GatewayListenAddress}:${toString ipv4GatewayPort}"
+      debug: false
+    '';
+  cliProxyApiConfigFile = makeCliProxyApiConfigFile "cli-proxy-api-config.yaml" proxyIpv4GatewayListenPort;
+  cliProxyApiLoginConfigFile = makeCliProxyApiConfigFile "cli-proxy-api-login-config.yaml" proxyIpv4GatewayLoginPort;
 
   cliProxyApiProgramArguments = [
     "${cliProxyApiPackage}/bin/cli-proxy-api"
@@ -77,6 +85,16 @@ let
     "${cliProxyApiConfigFile}"
     "--local-model"
   ];
+  cliProxyApiIpv4GatewaySource = pkgs.writeText "cli-proxy-api-ipv4-gateway.py" (
+    builtins.readFile ./scripts/cli_proxy_api_ipv4_gateway.py
+  );
+  ipv4GatewayCliProxyApiProgramArguments = [
+    "${pkgs.python312}/bin/python3"
+    "${cliProxyApiIpv4GatewaySource}"
+    proxyIpv4GatewayListenAddress
+    (toString proxyIpv4GatewayListenPort)
+  ]
+  ++ cliProxyApiProgramArguments;
 
   gptModelForOpusTier = "gpt-5.6-sol(high)";
   gptModelForSonnetTier = "gpt-5.6-sol(medium)";
@@ -100,7 +118,12 @@ let
   claudeGptLoginLauncher = pkgs.writeShellScriptBin "claude-gpt-login" ''
     echo "Authenticating your ChatGPT/Codex subscription for cli-proxy-api."
     echo "A browser window opens for OAuth; the callback listens on ${proxyListenAddress}:1455."
-    ${cliProxyApiPackage}/bin/cli-proxy-api --config ${cliProxyApiConfigFile} --codex-login "$@"
+    if ! ${pkgs.python312}/bin/python3 ${cliProxyApiIpv4GatewaySource} \
+      ${proxyIpv4GatewayListenAddress} ${toString proxyIpv4GatewayLoginPort} \
+      ${cliProxyApiPackage}/bin/cli-proxy-api --config ${cliProxyApiLoginConfigFile} --codex-login "$@"; then
+      echo "Authentication failed; credentials were not updated." >&2
+      exit 1
+    fi
     echo "Credentials stored under ${proxyAuthenticationDirectory}."
     ${reloadProxyServiceCommand}
     echo "Proxy reloaded. Run claude-gpt to start Claude Code on your ChatGPT subscription."
@@ -130,7 +153,7 @@ in
           enable = true;
           config = {
             Label = proxyLaunchdAgentLabel;
-            ProgramArguments = cliProxyApiProgramArguments;
+            ProgramArguments = ipv4GatewayCliProxyApiProgramArguments;
             RunAtLoad = true;
             KeepAlive = true;
             StandardOutPath = proxyLogFilePath;
@@ -145,7 +168,7 @@ in
             After = [ "default.target" ];
           };
           Service = {
-            ExecStart = lib.concatMapStringsSep " " lib.escapeShellArg cliProxyApiProgramArguments;
+            ExecStart = lib.concatMapStringsSep " " lib.escapeShellArg ipv4GatewayCliProxyApiProgramArguments;
             Restart = "always";
             RestartSec = 5;
           };

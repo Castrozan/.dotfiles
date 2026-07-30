@@ -4,21 +4,23 @@ Runs Claude Code against a ChatGPT/Codex subscription instead of Anthropic billi
 by bridging the Anthropic Messages API through a local
 [CLIProxyAPI](https://github.com/router-for-me/CLIProxyAPI) instance.
 
-Scoped to the hosts in `hostsWithClaudeGptProxy` (currently `kira` and `rin`) and darwin only,
-because the packaged `cli-proxy-api` binary is the darwin arm64 release.
+Scoped to the hosts in `hostsWithClaudeGptProxy` (currently `chise`, `kira`, and `rin`), with
+packaged CLIProxyAPI binaries for x86_64 Linux and Apple silicon macOS.
 
 ## What this module provides
 
-- `cli-proxy-api` — the proxy binary (pinned darwin arm64 release).
-- A launchd agent `com.dotfiles.cli-proxy-api` that keeps the proxy listening on
-  `127.0.0.1:8317`, reading a read-only nix-store `config.yaml` and booting from the
-  embedded model catalog (`--local-model`, so boot is offline-deterministic).
-- `claude-gpt` — launches Claude Code pointed at the proxy. It forces the main loop to
+- `cli-proxy-api`: the pinned proxy binary for each supported platform.
+- A managed service that keeps the proxy listening on `127.0.0.1:8317`, reading a
+  read-only nix-store `config.yaml` and booting from the embedded model catalog
+  (`--local-model`, so boot is offline-deterministic). Its upstream requests use a
+  loopback CONNECT gateway that resolves and dials IPv4 only, avoiding blackholed
+  temporary IPv6 routes while leaving the machine's IPv6 configuration untouched.
+- `claude-gpt`: launches Claude Code pointed at the proxy. It forces the main loop to
   `gpt-5.6-sol(high)` with `--model` (the shared `settings.json` pins a concrete
   Opus model slug (see `global-settings.nix`) that would otherwise bypass the opus-alias remap), and maps the
   sonnet/haiku alias tiers to `gpt-5.6-sol` at medium/low effort for subagent and
   background traffic. A `--model` you pass yourself still wins.
-- `claude-gpt-login` — the one-time interactive OAuth step.
+- `claude-gpt-login`: the one-time interactive OAuth step.
 
 ## One-time setup
 
