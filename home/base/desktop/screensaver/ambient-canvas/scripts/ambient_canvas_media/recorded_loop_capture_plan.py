@@ -15,6 +15,11 @@ def resolve_capture_pixel_dimensions(screen_width, screen_height):
     return max(2, round(fitted_width / 2) * 2), CAPTURE_PIXEL_HEIGHT
 
 
+def format_capture_signature(capture_pixel_dimensions):
+    capture_pixel_width, capture_pixel_height = capture_pixel_dimensions
+    return f"{capture_pixel_width}x{capture_pixel_height}"
+
+
 def build_record_index_url(
     index_file_url,
     upload_url,

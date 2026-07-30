@@ -108,7 +108,7 @@ def test_already_cached_scene_videos_are_not_downloaded_again(tmp_path, monkeypa
 
     monkeypatch.setattr(video_cache.subprocess, "run", fake_run)
     downloaded = video_cache.download_missing_scene_videos(
-        str(web_directory), str(state_directory)
+        str(web_directory), str(video_directory)
     )
     assert downloaded == ["missing"]
     assert attempted_video_ids == ["https://www.youtube.com/watch?v=missing"]
@@ -147,7 +147,7 @@ def test_a_url_backed_scene_video_caches_under_its_manifest_identifier(
 
     monkeypatch.setattr(video_cache.subprocess, "run", fake_run)
     assert video_cache.download_missing_scene_videos(
-        str(web_directory), str(state_directory)
+        str(web_directory), str(state_directory / "videos")
     ) == ["crego-the-link"]
     assert requested_urls == ["https://x.com/ALCrego_/status/123"]
     assert (state_directory / "videos" / "crego-the-link.mp4").is_file()
@@ -170,6 +170,8 @@ def test_a_failed_download_is_reported_but_does_not_abort_the_render(
 
     monkeypatch.setattr(video_cache.subprocess, "run", fake_run)
     assert (
-        video_cache.download_missing_scene_videos(str(web_directory), str(tmp_path))
+        video_cache.download_missing_scene_videos(
+            str(web_directory), str(tmp_path / "videos")
+        )
         == []
     )

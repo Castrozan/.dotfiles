@@ -41,8 +41,7 @@ def build_download_arguments(source_url, destination_path):
     ]
 
 
-def download_missing_scene_videos(served_web_directory, output_directory):
-    scene_video_directory = resolve_scene_video_directory(output_directory)
+def download_missing_scene_videos(served_web_directory, scene_video_directory):
     os.makedirs(scene_video_directory, exist_ok=True)
     downloaded_video_ids = []
     for scene_video in read_scene_video_manifest(served_web_directory):

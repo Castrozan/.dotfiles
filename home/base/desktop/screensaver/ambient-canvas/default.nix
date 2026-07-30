@@ -67,7 +67,7 @@ in
         Label = "com.dotfiles.ambient-canvas";
         ProgramArguments = [ "${ambientCanvasScreensaverLauncher}/bin/ambient-canvas" ];
         RunAtLoad = true;
-        StartInterval = 30;
+        StartInterval = 300;
         StandardOutPath = "${ambientCanvasStateDirectory}/keep-alive.log";
         StandardErrorPath = "${ambientCanvasStateDirectory}/keep-alive.log";
       };

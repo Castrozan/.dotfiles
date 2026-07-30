@@ -194,6 +194,7 @@ playlist's, because the record pass is incremental: see Refresh.
   throwaway record window, it bakes the wrong aspect into every segment, which is how the XDR
   first re-recorded its whole loop at 1728x1080, the 1.6 of the 1440x900 fallback. The read is
   also given a timeout for the same reason, so a wedged display query can never hang a pass.
+
 - `swift-sources/*.swift` compile to the 24/7 window: a native `AVQueuePlayer` behind an
   `AVPlayerLayer`, `videoGravity = .resizeAspect` so
   the loop is never cropped or zoomed. That only holds because the window is an
@@ -244,8 +245,10 @@ playlist's, because the record pass is incremental: see Refresh.
   stamped so it only recompiles when the sources change, mirroring the application-launcher daemon.
 
 - `scripts/ambient_canvas_media/` holds the Python: `ambient_canvas_browser` (shared record browser
-  and geometry resolution), `recorded_segment_store` (the whole on-disk layout: atomic segment
-  writes, both manifest shapes, presence checks, pruning), `scene_source_digests` (the
+  and geometry resolution), `recorded_loop_capture_target` (one display read resolved into the
+  capture size, the capture signature and the loop directory that geometry owns, so the cache key
+  and the recording can never disagree), `recorded_segment_store` (the whole on-disk layout: atomic
+  segment writes, both manifest shapes, presence checks, pruning), `scene_source_digests` (the
   per-scene and pipeline digests the fingerprint is built from), `recorded_loop_upload_server`
   (stdlib HTTP receiver, and the only thing that answers the browser's fingerprint queries),
   `render_ambient_canvas_loop` (drives a throwaway Chrome record window),
@@ -282,18 +285,26 @@ five sampled frames. Swap the clip rather than crop it.
 
 ### Refresh
 
-The recorded loop lives in `~/.local/state/ambient-canvas/` as one file per composition under
-`segments/`, ordered by `loop.segments.json`, next to `loop.source`, which records the `web/`
-nix store path it was rendered from and the capture dimensions it was rendered at.
-`ensure_ambient_canvas_screensaver` compares both against the current pair, so any change under
-`web/` changes the store path and the next launchd tick starts a record pass automatically.
-Force one by hand with `ambient-canvas-render`.
+The recorded loop lives in `~/.local/state/ambient-canvas/loops/<width>x<height>/`, one directory
+per capture geometry, holding one file per composition under `segments/`, ordered by
+`loop.segments.json`, next to `loop.source`, which records the `web/` nix store path it was
+rendered from. `recorded_loop_capture_target` reads the main display once and resolves that
+directory, and `ensure_ambient_canvas_screensaver` compares the store path against the one
+recorded there, so any change under `web/` changes the store path and the next launchd tick
+starts a record pass automatically. Force one by hand with `ambient-canvas-render`.
 
-The capture dimensions belong in that key because they are derived from the display rather than
-from anything in the store: plugging into a monitor of a different shape changes what a correct
-recording looks like while every store path stays put, and without the dimensions the loop would
-sit at the old aspect with nothing to notice it. A resolution change re-encodes everything, since
-the frame size reaches every composition's capture signature.
+The capture geometry keys the directory rather than the freshness string because it is derived
+from the display rather than from anything in the store: plugging into a monitor of a different
+shape changes what a correct recording looks like while every store path stays put, and the frame
+size reaches every composition's capture signature, so nothing recorded for one panel is reusable
+on another. Every resolution therefore keeps its own cache and is recorded once. Swapping between
+a laptop panel and an external monitor costs a player relaunch onto the other directory's
+manifest, not a re-encode, and only a `web/` change or a never-before-seen geometry records at
+all. Sharing one slot instead made each swap invalidate all nineteen compositions, and since a
+record pass is capped at `RECORD_PASS_WALL_CLOCK_CEILING_SECONDS` it took several passes to get
+through them, so unplugging a monitor cost roughly twenty minutes of a pinned Chrome GPU process.
+Scene videos stay shared in `videos/` across every geometry, because the source clips do not
+depend on the frame size.
 
 That store-path check is deliberately coarse, and the record pass is what makes it cheap. A
 segment file is named by a fingerprint over the composition's own JSON, its resolved duration,
@@ -303,8 +314,9 @@ ones missing, so adding a scene pays that one composition's ~30s of encode and e
 segment is left on disk untouched. Editing one scene re-encodes the compositions that use it;
 editing `player.js` or the encoder changes the pipeline digest and re-encodes everything. The
 manifest is written only after every segment it names is present on disk, and segments the new
-manifest no longer names are pruned, so the state directory never accumulates orphans and the
-player never sees a half-written playlist.
+manifest no longer names are pruned from that geometry's directory alone, so a directory never
+accumulates orphans, a record pass never evicts another display's cache, and the player never
+sees a half-written playlist.
 
 Pass no length: each segment's length comes from the playlist. `--seconds N` remains a debug
 override that shortens every composition to N seconds; it is folded into the fingerprint, so a
@@ -313,7 +325,11 @@ short debug pass never poisons the real segments.
 `ambient-canvas/default.nix` packages the `ambient-canvas` launcher and the
 `ambient-canvas-render` command and, guarded by `isDarwin`, compiles the native player from
 `swift-sources/` via a `compileAmbientCanvasPlayer` activation and installs the
-`com.dotfiles.ambient-canvas` launchd agent that runs the ensure entry every 30s.
+`com.dotfiles.ambient-canvas` launchd agent that runs the ensure entry every 300s. That tick is
+supervision, not rendering: a `web/` change already re-triggers the agent on its own, because the
+launcher's store path is embedded in `ProgramArguments`, so the rebuild rewrites the plist and
+`RunAtLoad` fires. What the tick alone catches is a player that died and a display that changed
+shape, both of which cost one `system_profiler` read and one `pgrep` when nothing has moved.
 
 ## herdr terminal grid (Linux)
 

@@ -2,10 +2,17 @@ import json
 import os
 import tempfile
 
+RECORDED_LOOP_DIRECTORY_NAME = "loops"
 RECORDED_SEGMENT_DIRECTORY_NAME = "segments"
 RECORDED_SEGMENT_MANIFEST_FILENAME = "loop.segments.json"
 RECORDED_SOURCE_IDENTIFIER_FILENAME = "loop.source"
 DEFAULT_RECORDED_SEGMENT_EXTENSION = "mp4"
+
+
+def resolve_recorded_loop_directory(state_directory, capture_signature):
+    return os.path.join(
+        state_directory, RECORDED_LOOP_DIRECTORY_NAME, capture_signature
+    )
 
 
 def resolve_recorded_segment_directory(output_directory):

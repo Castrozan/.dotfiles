@@ -43,23 +43,16 @@ def test_recorded_loop_exists_true_when_every_segment_is_present(tmp_path):
     assert ensure.recorded_loop_exists(str(tmp_path)) is True
 
 
-def test_capture_dimensions_join_the_freshness_identifier():
-    assert (
-        ensure.compose_recorded_source_identifier("/store/web-abc", (1662, 1080))
-        == "/store/web-abc capture=1662x1080"
+def test_a_rebuilt_web_source_makes_the_recorded_loop_stale(tmp_path):
+    previous_build = ensure.compose_recorded_source_identifier(
+        "/store/web-abc", "1660x1080"
     )
-
-
-def test_a_display_change_alone_makes_the_recorded_loop_stale(tmp_path):
-    sixteen_by_nine = ensure.compose_recorded_source_identifier(
-        "/store/web-abc", (1920, 1080)
-    )
-    _write_recorded_loop(tmp_path, sixteen_by_nine)
-    assert ensure.recorded_loop_is_fresh(str(tmp_path), sixteen_by_nine) is True
+    _write_recorded_loop(tmp_path, previous_build)
+    assert ensure.recorded_loop_is_fresh(str(tmp_path), previous_build) is True
     assert (
         ensure.recorded_loop_is_fresh(
             str(tmp_path),
-            ensure.compose_recorded_source_identifier("/store/web-abc", (1662, 1080)),
+            ensure.compose_recorded_source_identifier("/store/web-new", "1660x1080"),
         )
         is False
     )

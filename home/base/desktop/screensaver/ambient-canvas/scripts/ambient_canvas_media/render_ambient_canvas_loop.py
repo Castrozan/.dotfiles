@@ -7,7 +7,6 @@ import sys
 import tempfile
 
 from ambient_canvas_browser import (
-    read_screen_dimensions,
     resolve_browser_executable_path,
     resolve_centered_window_geometry,
     resolve_chromium_browser_application,
@@ -17,8 +16,11 @@ from recorded_loop_capture_plan import (
     DEFAULT_CAPTURE_FRAMES_PER_SECOND,
     build_record_browser_arguments,
     build_record_index_url,
-    resolve_capture_pixel_dimensions,
     resolve_upload_wait_budget_seconds,
+)
+from recorded_loop_capture_target import (
+    compose_recorded_source_identifier,
+    resolve_recorded_loop_capture_target,
 )
 from recorded_loop_upload_server import start_recorded_loop_upload_server
 from recorded_segment_store import (
@@ -29,10 +31,7 @@ from recorded_segment_store import (
     write_recorded_segment_manifest,
     write_recorded_source_identifier,
 )
-from scene_video_cache import (
-    download_missing_scene_videos,
-    resolve_scene_video_directory,
-)
+from scene_video_cache import download_missing_scene_videos
 
 
 def terminate_browser_process(browser_process, throwaway_profile_directory):
@@ -53,37 +52,38 @@ def terminate_browser_process(browser_process, throwaway_profile_directory):
 
 def drive_record_browser(
     index_file_path,
-    output_directory,
+    capture_target,
     browser_application,
     duration_seconds,
     frames_per_second,
 ):
     served_web_directory = os.path.dirname(index_file_path)
-    download_missing_scene_videos(served_web_directory, output_directory)
+    download_missing_scene_videos(
+        served_web_directory, capture_target.scene_video_directory
+    )
     upload_server = start_recorded_loop_upload_server(
-        output_directory,
+        capture_target.loop_directory,
         served_web_directory,
-        resolve_scene_video_directory(output_directory),
+        capture_target.scene_video_directory,
     )
     throwaway_profile_directory = tempfile.mkdtemp(prefix="ambient-canvas-record-")
     record_page_url = (
         f"http://127.0.0.1:{upload_server.upload_port}/"
         f"{os.path.basename(index_file_path)}"
     )
-    screen_dimensions = read_screen_dimensions()
     record_index_url = build_record_index_url(
         record_page_url,
         f"http://127.0.0.1:{upload_server.upload_port}/upload",
         duration_seconds,
         frames_per_second,
-        resolve_capture_pixel_dimensions(*screen_dimensions),
+        capture_target.capture_pixel_dimensions,
     )
     browser_process = subprocess.Popen(
         build_record_browser_arguments(
             resolve_browser_executable_path(browser_application),
             record_index_url,
             throwaway_profile_directory,
-            resolve_centered_window_geometry(*screen_dimensions),
+            resolve_centered_window_geometry(*capture_target.screen_dimensions),
         ),
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
@@ -125,7 +125,7 @@ def commit_recorded_segment_manifest(
 
 def render_recorded_loop(
     index_file_path,
-    output_directory,
+    capture_target,
     source_identifier,
     duration_seconds,
     frames_per_second,
@@ -137,16 +137,18 @@ def render_recorded_loop(
         )
         return None
 
-    os.makedirs(output_directory, exist_ok=True)
+    os.makedirs(capture_target.loop_directory, exist_ok=True)
     upload_server = drive_record_browser(
         index_file_path,
-        output_directory,
+        capture_target,
         browser_application,
         duration_seconds,
         frames_per_second,
     )
     return commit_recorded_segment_manifest(
-        output_directory, upload_server.received_manifest_bytes, source_identifier
+        capture_target.loop_directory,
+        upload_server.received_manifest_bytes,
+        source_identifier,
     )
 
 
@@ -174,10 +176,15 @@ def main():
         print("render-ambient-canvas-loop: web assets not found", file=sys.stderr)
         return 1
 
+    capture_target = resolve_recorded_loop_capture_target(
+        parsed_arguments.output_directory
+    )
     manifest_path = render_recorded_loop(
         index_file_path,
-        parsed_arguments.output_directory,
-        parsed_arguments.source_identifier,
+        capture_target,
+        compose_recorded_source_identifier(
+            parsed_arguments.source_identifier, capture_target.capture_signature
+        ),
         parsed_arguments.seconds,
         parsed_arguments.fps,
     )

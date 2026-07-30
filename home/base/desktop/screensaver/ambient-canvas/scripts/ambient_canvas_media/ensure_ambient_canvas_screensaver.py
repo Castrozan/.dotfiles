@@ -1,10 +1,10 @@
 import argparse
+import os
 import signal
 import subprocess
 import sys
 import time
 
-from ambient_canvas_browser import read_screen_dimensions
 from display_ambient_canvas_loop import (
     DEFAULT_PLAYER_BINARY_PATH,
     launch_display,
@@ -12,11 +12,15 @@ from display_ambient_canvas_loop import (
 from recorded_loop_capture_plan import (
     DEFAULT_CAPTURE_DURATION_SECONDS,
     DEFAULT_CAPTURE_FRAMES_PER_SECOND,
-    resolve_capture_pixel_dimensions,
+)
+from recorded_loop_capture_target import (
+    compose_recorded_source_identifier,
+    resolve_recorded_loop_capture_target,
 )
 from recorded_segment_store import (
     read_recorded_source_identifier,
     resolve_playable_segment_manifest_path,
+    resolve_recorded_segment_manifest_path,
 )
 from render_ambient_canvas_loop import (
     render_recorded_loop,
@@ -24,79 +28,92 @@ from render_ambient_canvas_loop import (
 )
 
 
-def recorded_loop_exists(output_directory):
-    return resolve_playable_segment_manifest_path(output_directory) is not None
+def recorded_loop_exists(loop_directory):
+    return resolve_playable_segment_manifest_path(loop_directory) is not None
 
 
-def compose_recorded_source_identifier(source_identifier, capture_pixel_dimensions):
-    capture_pixel_width, capture_pixel_height = capture_pixel_dimensions
-    return f"{source_identifier} capture={capture_pixel_width}x{capture_pixel_height}"
-
-
-def recorded_loop_is_fresh(output_directory, source_identifier):
+def recorded_loop_is_fresh(loop_directory, source_identifier):
     return read_recorded_source_identifier(
-        output_directory
-    ) == source_identifier and recorded_loop_exists(output_directory)
+        loop_directory
+    ) == source_identifier and recorded_loop_exists(loop_directory)
 
 
-def is_display_running(display_process_marker):
+def resolve_display_process_name(player_binary_path):
+    return os.path.basename(player_binary_path)
+
+
+def resolve_loop_display_process_marker(player_binary_path, loop_directory):
+    return (
+        f"{player_binary_path} {resolve_recorded_segment_manifest_path(loop_directory)}"
+    )
+
+
+def a_process_matches(match_arguments):
     completed = subprocess.run(
-        ["/usr/bin/pgrep", "-f", display_process_marker],
+        ["/usr/bin/pgrep", *match_arguments],
         check=False,
         capture_output=True,
     )
     return completed.returncode == 0
 
 
-def stop_display(display_process_marker):
+def any_display_is_running(player_binary_path):
+    return a_process_matches(["-x", resolve_display_process_name(player_binary_path)])
+
+
+def is_display_running_for_loop(player_binary_path, loop_directory):
+    return a_process_matches(
+        ["-f", resolve_loop_display_process_marker(player_binary_path, loop_directory)]
+    )
+
+
+def stop_every_display(player_binary_path):
     subprocess.run(
-        ["/usr/bin/pkill", "-f", display_process_marker],
+        ["/usr/bin/pkill", "-x", resolve_display_process_name(player_binary_path)],
         check=False,
         capture_output=True,
     )
 
 
-def wait_for_display_to_exit(
-    display_process_marker, timeout_seconds=5.0, poll_interval_seconds=0.2
+def wait_for_every_display_to_exit(
+    player_binary_path, timeout_seconds=5.0, poll_interval_seconds=0.2
 ):
     deadline = time.monotonic() + timeout_seconds
     while time.monotonic() < deadline:
-        if not is_display_running(display_process_marker):
+        if not any_display_is_running(player_binary_path):
             return
         time.sleep(poll_interval_seconds)
 
 
 def ensure_screensaver(
     index_file_path,
-    output_directory,
+    capture_target,
     source_identifier,
     player_binary_path,
     duration_seconds,
     frames_per_second,
 ):
-    display_needs_relaunch = False
-    if not recorded_loop_is_fresh(output_directory, source_identifier):
+    loop_directory = capture_target.loop_directory
+    recorded_loop_was_replaced = False
+    if not recorded_loop_is_fresh(loop_directory, source_identifier):
         rendered_manifest_path = render_recorded_loop(
             index_file_path,
-            output_directory,
+            capture_target,
             source_identifier,
             duration_seconds,
             frames_per_second,
         )
-        if rendered_manifest_path is None and not recorded_loop_exists(
-            output_directory
-        ):
+        if rendered_manifest_path is None and not recorded_loop_exists(loop_directory):
             return 1
-        if rendered_manifest_path is not None and is_display_running(
-            player_binary_path
-        ):
-            stop_display(player_binary_path)
-            wait_for_display_to_exit(player_binary_path)
-            display_needs_relaunch = True
+        recorded_loop_was_replaced = rendered_manifest_path is not None
 
-    if display_needs_relaunch or not is_display_running(player_binary_path):
-        return launch_display(player_binary_path, output_directory)
-    return 0
+    if not recorded_loop_was_replaced and is_display_running_for_loop(
+        player_binary_path, loop_directory
+    ):
+        return 0
+    stop_every_display(player_binary_path)
+    wait_for_every_display_to_exit(player_binary_path)
+    return launch_display(player_binary_path, loop_directory)
 
 
 def main():
@@ -119,12 +136,14 @@ def main():
         )
         return 1
 
+    capture_target = resolve_recorded_loop_capture_target(
+        parsed_arguments.output_directory
+    )
     return ensure_screensaver(
         index_file_path,
-        parsed_arguments.output_directory,
+        capture_target,
         compose_recorded_source_identifier(
-            parsed_arguments.source_identifier,
-            resolve_capture_pixel_dimensions(*read_screen_dimensions()),
+            parsed_arguments.source_identifier, capture_target.capture_signature
         ),
         parsed_arguments.player_binary,
         parsed_arguments.seconds,
