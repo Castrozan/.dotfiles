@@ -3,18 +3,53 @@
 import signal
 import sys
 import time
+from dataclasses import dataclass
 
 import Quartz
 from AppKit import NSApplicationActivationPolicyRegular, NSWorkspace
 
 POLL_INTERVAL_SECONDS = 2
-GRACE_PERIOD_SECONDS = 5
+SECONDS_WITHOUT_A_WINDOW_BEFORE_QUITTING = 5
+SECONDS_AFTER_LAUNCH_BEFORE_QUITTING_AN_APPLICATION_THAT_NEVER_OPENED_A_WINDOW = 60
+SECONDS_BETWEEN_REPEATED_QUIT_REQUESTS = 15
 
 EXCLUDED_APPLICATION_BUNDLE_IDENTIFIERS = frozenset(
     {
         "com.apple.finder",
     }
 )
+
+
+@dataclass
+class ApplicationWindowHistory:
+    first_seen_at: float
+    last_seen_with_a_window_at: float | None = None
+    quit_requested_at: float | None = None
+
+
+def seconds_the_application_has_been_without_a_window(history, current_time):
+    if history.last_seen_with_a_window_at is None:
+        return current_time - history.first_seen_at
+    return current_time - history.last_seen_with_a_window_at
+
+
+def seconds_without_a_window_tolerated(history):
+    if history.last_seen_with_a_window_at is None:
+        return SECONDS_AFTER_LAUNCH_BEFORE_QUITTING_AN_APPLICATION_THAT_NEVER_OPENED_A_WINDOW
+    return SECONDS_WITHOUT_A_WINDOW_BEFORE_QUITTING
+
+
+def should_request_quit(history, current_time):
+    if seconds_the_application_has_been_without_a_window(
+        history, current_time
+    ) < seconds_without_a_window_tolerated(history):
+        return False
+    if history.quit_requested_at is None:
+        return True
+    return (
+        current_time - history.quit_requested_at
+        >= SECONDS_BETWEEN_REPEATED_QUIT_REQUESTS
+    )
 
 
 def get_process_identifiers_with_visible_windows():
@@ -44,10 +79,21 @@ def get_running_regular_applications():
     ]
 
 
+def forget_applications_that_exited(
+    window_history_by_process_identifier, running_applications
+):
+    running_process_identifiers = {
+        application.processIdentifier() for application in running_applications
+    }
+    for process_identifier in list(window_history_by_process_identifier):
+        if process_identifier not in running_process_identifiers:
+            del window_history_by_process_identifier[process_identifier]
+
+
 def main():
     signal.signal(signal.SIGTERM, lambda _signum, _frame: sys.exit(0))
 
-    last_seen_with_windows_by_process_identifier = {}
+    window_history_by_process_identifier = {}
 
     while True:
         time.sleep(POLL_INTERVAL_SECONDS)
@@ -60,40 +106,40 @@ def main():
 
         for application in running_applications:
             process_identifier = application.processIdentifier()
-            bundle_identifier = application.bundleIdentifier()
 
-            if bundle_identifier in EXCLUDED_APPLICATION_BUNDLE_IDENTIFIERS:
+            if (
+                application.bundleIdentifier()
+                in EXCLUDED_APPLICATION_BUNDLE_IDENTIFIERS
+            ):
                 continue
 
-            if process_identifier in process_identifiers_with_windows:
-                last_seen_with_windows_by_process_identifier[process_identifier] = (
-                    current_time
-                )
-            elif process_identifier in last_seen_with_windows_by_process_identifier:
-                seconds_since_last_window = (
-                    current_time
-                    - last_seen_with_windows_by_process_identifier[process_identifier]
-                )
-                if seconds_since_last_window >= GRACE_PERIOD_SECONDS:
-                    application_name = application.localizedName() or "unknown"
-                    print(
-                        f"Terminating {application_name} (PID {process_identifier})"
-                        f" - no windows for {seconds_since_last_window:.0f}s",
-                        flush=True,
-                    )
-                    application.terminate()
-                    del last_seen_with_windows_by_process_identifier[process_identifier]
+            history = window_history_by_process_identifier.setdefault(
+                process_identifier, ApplicationWindowHistory(first_seen_at=current_time)
+            )
 
-        running_process_identifiers = {
-            application.processIdentifier() for application in running_applications
-        }
-        stale_process_identifiers = [
-            pid
-            for pid in last_seen_with_windows_by_process_identifier
-            if pid not in running_process_identifiers
-        ]
-        for stale_pid in stale_process_identifiers:
-            del last_seen_with_windows_by_process_identifier[stale_pid]
+            if process_identifier in process_identifiers_with_windows:
+                history.last_seen_with_a_window_at = current_time
+                history.quit_requested_at = None
+                continue
+
+            if not should_request_quit(history, current_time):
+                continue
+
+            seconds_without_a_window = (
+                seconds_the_application_has_been_without_a_window(history, current_time)
+            )
+            history.quit_requested_at = current_time
+            application_name = application.localizedName() or "unknown"
+            print(
+                f"Quitting {application_name} (PID {process_identifier})"
+                f" - no windows for {seconds_without_a_window:.0f}s",
+                flush=True,
+            )
+            application.terminate()
+
+        forget_applications_that_exited(
+            window_history_by_process_identifier, running_applications
+        )
 
 
 if __name__ == "__main__":
