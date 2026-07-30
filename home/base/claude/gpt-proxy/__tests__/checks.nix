@@ -40,7 +40,11 @@ in
 
   claude-gpt-linux-systemd-service = mkEvalCheck "claude-gpt-linux-systemd-service" (
     linuxConfiguration.systemd.user.services ? cli-proxy-api
-    && lib.hasInfix "cli-proxy-api-ipv4-gateway.py" linuxConfiguration.systemd.user.services.cli-proxy-api.Service.ExecStart
+    && lib.hasInfix "cli-proxy-api-ipv4-gateway.py" (
+      lib.concatStringsSep " " (
+        lib.toList linuxConfiguration.systemd.user.services.cli-proxy-api.Service.ExecStart
+      )
+    )
   ) "Chise must run cli-proxy-api as a systemd user service";
 
   claude-gpt-darwin-packages = mkEvalCheck "claude-gpt-darwin-packages" (builtins.all
