@@ -725,7 +725,7 @@
       },
       "original": {
         "owner": "Castrozan",
-        "ref": "v0.9.4-integrated",
+        "ref": "v0.10.0",
         "repo": "herdr",
         "type": "github"
       }
