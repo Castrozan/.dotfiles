@@ -40,7 +40,6 @@ let
         name = "${homeFileSkillsPrefix}/${skillDirectoryName}";
         value = {
           source = dotfilesSkillsDirectory + "/${skillDirectoryName}";
-          recursive = true;
         };
       }) skillNames
     );

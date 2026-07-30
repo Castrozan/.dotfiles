@@ -114,6 +114,15 @@ in
       )
       "the codex harness seeds an agent's skills at activation time, so that activation must run against the effective agent: reading the raw clawde.agents entry drops every skill directory an agent type contributes and the agent launches with an empty skills directory while nothing else looks wrong";
 
+  clawde-skill-sets-materialize-as-directory-symlinks =
+    mkEvalCheck "clawde-skill-sets-materialize-as-directory-symlinks"
+      (
+        !(cfgWithBothHarnesses.home.file.".local/share/claude-skill-sets/personal/.claude/skills/research".recursive
+          or false
+        )
+      )
+      "a skill set must materialize as one symlink per skill directory, never recursive: recursive makes home-manager build a real directory whose SKILL.md is itself a symlink, and codex silently skips every such skill, so a codex agent loads none of its declared skills while the directory listing looks complete";
+
   clawde-discord-channel-is-refused-on-codex =
     mkEvalCheck "clawde-discord-channel-is-refused-on-codex"
       (!(builtins.elem "discord" harnesses.codex.supportedChannelTypes))
