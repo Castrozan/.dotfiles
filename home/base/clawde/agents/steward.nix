@@ -76,6 +76,7 @@ in
   clawde.agents.steward = {
     type = "steward";
     harness = "codex";
+    model = "gpt-5.6-terra";
     personality = effectivePersonality;
     launchOnTrigger = false;
     mcpServers = { };
