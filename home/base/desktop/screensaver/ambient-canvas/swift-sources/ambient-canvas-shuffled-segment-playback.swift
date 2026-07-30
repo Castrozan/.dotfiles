@@ -7,7 +7,7 @@ final class AmbientCanvasShuffledSegmentPlayback {
     private let player: AVQueuePlayer
     private let segments: [AmbientCanvasRecordedSegment]
     private let segmentAssets: [AVURLAsset]
-    private let segmentManifestFileUrl: URL
+    private let playbackDwellOverrideFileUrl: URL
     private let segmentOrder: AmbientCanvasShuffledSegmentOrder
     private var segmentIndexByPlayerItem: [ObjectIdentifier: Int] = [:]
     private var currentSegmentObservation: NSKeyValueObservation?
@@ -18,12 +18,12 @@ final class AmbientCanvasShuffledSegmentPlayback {
         player: AVQueuePlayer,
         segments: [AmbientCanvasRecordedSegment],
         segmentFileUrls: [URL],
-        segmentManifestFileUrl: URL
+        playbackDwellOverrideFileUrl: URL
     ) {
         self.player = player
         self.segments = segments
         self.segmentAssets = segmentFileUrls.map { AVURLAsset(url: $0) }
-        self.segmentManifestFileUrl = segmentManifestFileUrl
+        self.playbackDwellOverrideFileUrl = playbackDwellOverrideFileUrl
         self.segmentOrder = AmbientCanvasShuffledSegmentOrder(segmentCount: segments.count)
         player.actionAtItemEnd = .advance
     }
@@ -93,7 +93,7 @@ final class AmbientCanvasShuffledSegmentPlayback {
         let currentSegment = segments[currentSegmentIndex]
         let dwellSeconds = AmbientCanvasPlaybackDwellOverride.effectiveDwellSeconds(
             recordedDwellSeconds: currentSegment.durationSeconds,
-            besideManifestFile: segmentManifestFileUrl
+            readFrom: playbackDwellOverrideFileUrl
         )
         guard dwellSeconds < currentSegment.durationSeconds else {
             return

@@ -113,7 +113,9 @@ def ensure_screensaver(
         return 0
     stop_every_display(player_binary_path)
     wait_for_every_display_to_exit(player_binary_path)
-    return launch_display(player_binary_path, loop_directory)
+    return launch_display(
+        player_binary_path, loop_directory, capture_target.playback_dwell_override_path
+    )
 
 
 def main():

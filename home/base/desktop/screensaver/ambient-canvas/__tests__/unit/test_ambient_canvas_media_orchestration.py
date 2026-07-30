@@ -5,6 +5,7 @@ PLAYER_BINARY_PATH = "/home/user/.local/bin/player"
 LAPTOP_CAPTURE_TARGET = RecordedLoopCaptureTarget(
     loop_directory="/state/loops/1660x1080",
     scene_video_directory="/state/videos",
+    playback_dwell_override_path="/state/playback-dwell-seconds",
     screen_dimensions=(1470, 956),
     capture_pixel_dimensions=(1660, 1080),
     capture_signature="1660x1080",

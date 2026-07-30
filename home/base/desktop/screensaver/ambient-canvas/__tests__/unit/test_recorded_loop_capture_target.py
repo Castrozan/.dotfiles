@@ -1,8 +1,17 @@
+import os
+
 import ensure_ambient_canvas_screensaver as ensure
 import recorded_loop_capture_plan as capture_plan
 import recorded_loop_capture_target as capture_target
 import recorded_segment_store as store
 
+PLAYBACK_DWELL_OVERRIDE_SWIFT_SOURCE = os.path.join(
+    os.path.dirname(__file__),
+    "..",
+    "..",
+    "swift-sources",
+    "ambient-canvas-playback-dwell-override.swift",
+)
 WEB_SOURCE_IDENTIFIER = "/store/web-abc"
 LAPTOP_SCREEN_DIMENSIONS = (1470, 956)
 EXTERNAL_SCREEN_DIMENSIONS = (1920, 1080)
@@ -87,6 +96,28 @@ def test_scene_videos_are_shared_by_every_capture_geometry(monkeypatch):
     assert laptop.scene_video_directory == "/state/videos"
     assert external.scene_video_directory == "/state/videos"
     assert laptop.loop_directory != external.loop_directory
+
+
+def test_the_live_playback_dwell_override_is_shared_by_every_capture_geometry(
+    monkeypatch,
+):
+    monkeypatch.setattr(
+        capture_target, "read_screen_dimensions", lambda: LAPTOP_SCREEN_DIMENSIONS
+    )
+    laptop = capture_target.resolve_recorded_loop_capture_target("/state")
+    monkeypatch.setattr(
+        capture_target, "read_screen_dimensions", lambda: EXTERNAL_SCREEN_DIMENSIONS
+    )
+    external = capture_target.resolve_recorded_loop_capture_target("/state")
+    assert laptop.playback_dwell_override_path == "/state/playback-dwell-seconds"
+    assert external.playback_dwell_override_path == "/state/playback-dwell-seconds"
+
+
+def test_the_player_is_told_where_the_dwell_override_lives_rather_than_guessing():
+    with open(PLAYBACK_DWELL_OVERRIDE_SWIFT_SOURCE) as dwell_override_source_file:
+        dwell_override_source = dwell_override_source_file.read()
+    assert "deletingLastPathComponent" not in dwell_override_source
+    assert "readFrom overrideFileUrl: URL" in dwell_override_source
 
 
 def test_capture_dimensions_join_the_freshness_identifier():

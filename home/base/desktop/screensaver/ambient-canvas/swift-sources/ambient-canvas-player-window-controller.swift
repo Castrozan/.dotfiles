@@ -10,12 +10,14 @@ final class AmbientCanvasPlayerWindowController {
     )
 
     private let recordedSegmentManifestFileUrl: URL
+    private let playbackDwellOverrideFileUrl: URL
     private var screensaverWindow: NSWindow?
     private var recordedLoopVideoView: AmbientCanvasRecordedLoopVideoView?
     private var visibilityGatedPlaybackController: AmbientCanvasVisibilityGatedPlaybackController?
 
-    init(recordedSegmentManifestFileUrl: URL) {
+    init(recordedSegmentManifestFileUrl: URL, playbackDwellOverrideFileUrl: URL) {
         self.recordedSegmentManifestFileUrl = recordedSegmentManifestFileUrl
+        self.playbackDwellOverrideFileUrl = playbackDwellOverrideFileUrl
     }
 
     func presentPinnedScreensaverWindow() {
@@ -36,7 +38,8 @@ final class AmbientCanvasPlayerWindowController {
         hostingWindow.standardWindowButton(.zoomButton)?.isHidden = true
 
         let videoView = AmbientCanvasRecordedLoopVideoView(
-            recordedSegmentManifestFileUrl: recordedSegmentManifestFileUrl
+            recordedSegmentManifestFileUrl: recordedSegmentManifestFileUrl,
+            playbackDwellOverrideFileUrl: playbackDwellOverrideFileUrl
         )
         hostingWindow.contentView = videoView
         hostingWindow.orderFrontRegardless()

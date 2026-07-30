@@ -7,7 +7,10 @@ final class AmbientCanvasRecordedLoopVideoView: NSView {
     private var recordedLoopPlayerLooper: AVPlayerLooper?
     private var shuffledSegmentPlayback: AmbientCanvasShuffledSegmentPlayback?
 
-    init(recordedSegmentManifestFileUrl: URL) {
+    private let playbackDwellOverrideFileUrl: URL
+
+    init(recordedSegmentManifestFileUrl: URL, playbackDwellOverrideFileUrl: URL) {
+        self.playbackDwellOverrideFileUrl = playbackDwellOverrideFileUrl
         super.init(frame: .zero)
         wantsLayer = true
         let backingLayer = CALayer()
@@ -52,7 +55,7 @@ final class AmbientCanvasRecordedLoopVideoView: NSView {
             player: recordedLoopQueuePlayer,
             segments: recordedSegmentManifest.segments,
             segmentFileUrls: segmentFileUrls,
-            segmentManifestFileUrl: recordedSegmentManifestFileUrl
+            playbackDwellOverrideFileUrl: playbackDwellOverrideFileUrl
         )
         shuffledSegmentPlayback = segmentPlayback
         segmentPlayback.startFirstSegment()

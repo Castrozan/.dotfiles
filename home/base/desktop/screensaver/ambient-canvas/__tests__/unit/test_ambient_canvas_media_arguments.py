@@ -111,7 +111,13 @@ def test_resolve_index_file_path_returns_existing_asset(monkeypatch, tmp_path):
     assert render.resolve_index_file_path() == str(index_path)
 
 
-def test_build_player_process_arguments_pass_binary_then_manifest():
+def test_build_player_process_arguments_pass_binary_then_manifest_then_dwell():
     assert display.build_player_process_arguments(
-        "/home/user/.local/bin/ambient-canvas-player", "/state/loop.segments.json"
-    ) == ["/home/user/.local/bin/ambient-canvas-player", "/state/loop.segments.json"]
+        "/home/user/.local/bin/ambient-canvas-player",
+        "/state/loops/1660x1080/loop.segments.json",
+        "/state/playback-dwell-seconds",
+    ) == [
+        "/home/user/.local/bin/ambient-canvas-player",
+        "/state/loops/1660x1080/loop.segments.json",
+        "/state/playback-dwell-seconds",
+    ]
