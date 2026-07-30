@@ -16,8 +16,7 @@ in
   ];
 
   clawde.agents.ril-watcher = {
-    model = "opus";
-    permissionMode = "bypassPermissions";
+    harness = "codex";
     launchOnTrigger = true;
     launchGateIntervalSeconds = 1800;
     heartbeatGateCommand = "clawde-heartbeat-change-gate --label ril --retries-while-pending 2 --probe 'ril probe'";
@@ -27,14 +26,6 @@ in
       rilWatcherSkillSetDirectory
       "${config.home.homeDirectory}/.dotfiles"
       "${config.home.homeDirectory}/vault"
-    ];
-    denyToolPatterns = [
-      "Bash(rebuild:*)"
-      "Bash(nixos-rebuild:*)"
-      "Bash(darwin-rebuild:*)"
-      "Bash(sudo:*)"
-      "Bash(rm:*)"
-      "mcp__chrome-devtools__*"
     ];
   };
 }

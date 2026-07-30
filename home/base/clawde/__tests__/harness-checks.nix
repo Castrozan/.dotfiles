@@ -31,6 +31,21 @@ let
 
   cfgOnTheEvaluatingSystem = helpers.homeManagerTestConfigurationForEvaluatingSystem bothHarnessModules;
 
+  harnessActivationScriptForOneCodexAgent =
+    extraAgentSettings:
+    (helpers.homeManagerTestConfiguration [
+      self.homeManagerModules.clawde
+      self.homeManagerModules.claude-code
+      self.homeManagerModules.codex
+      {
+        clawde.agents.lone-codex-agent = {
+          harness = "codex";
+          personality = "Codex harness agent";
+        }
+        // extraAgentSettings;
+      }
+    ]).home.activation.runHarnessAgentActivations.data;
+
   inherit (cfgWithBothHarnesses.clawde) harnesses;
 
   codexLaunchCommand = harnesses.codex.buildLaunchCommandFor {
@@ -90,6 +105,14 @@ in
         grep -q 'run-state' ${codexAgentConfigurationFile}
         touch $out
       '';
+
+  clawde-codex-activation-seeds-the-agent-type-skill-directories =
+    mkEvalCheck "clawde-codex-activation-seeds-the-agent-type-skill-directories"
+      (
+        harnessActivationScriptForOneCodexAgent { type = "steward"; }
+        != harnessActivationScriptForOneCodexAgent { }
+      )
+      "the codex harness seeds an agent's skills at activation time, so that activation must run against the effective agent: reading the raw clawde.agents entry drops every skill directory an agent type contributes and the agent launches with an empty skills directory while nothing else looks wrong";
 
   clawde-discord-channel-is-refused-on-codex =
     mkEvalCheck "clawde-discord-channel-is-refused-on-codex"
