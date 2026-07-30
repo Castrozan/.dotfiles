@@ -1,5 +1,7 @@
 import importlib.machinery
 import importlib.util
+import os
+import subprocess
 import sys
 import types
 from pathlib import Path
@@ -25,7 +27,19 @@ def build_cocoa_module_stubs():
     appkit_stub.NSApplicationActivationPolicyRegular = 0
     appkit_stub.NSWorkspace = types.SimpleNamespace(sharedWorkspace=lambda: None)
 
-    return {"Quartz": quartz_stub, "AppKit": appkit_stub}
+    foundation_stub = types.ModuleType("Foundation")
+    foundation_stub.NSDate = types.SimpleNamespace(
+        dateWithTimeIntervalSinceNow_=lambda _seconds: None
+    )
+    foundation_stub.NSRunLoop = types.SimpleNamespace(
+        currentRunLoop=lambda: types.SimpleNamespace(runUntilDate_=lambda _date: None)
+    )
+
+    return {
+        "Quartz": quartz_stub,
+        "AppKit": appkit_stub,
+        "Foundation": foundation_stub,
+    }
 
 
 @pytest.fixture(scope="module")
@@ -83,6 +97,39 @@ def test_quit_is_requested_again_when_the_application_ignores_the_first_request(
 
     assert not daemon.should_request_quit(history, 110.0 + repeat_interval - 1)
     assert daemon.should_request_quit(history, 110.0 + repeat_interval)
+
+
+def test_an_application_whose_process_already_exited_is_not_reported_as_running(
+    daemon, monkeypatch
+):
+    already_exited_process = subprocess.Popen(["/bin/sh", "-c", "exit 0"])
+    already_exited_process.wait()
+    running_process_identifier = os.getpid()
+    workspace_entries = [
+        types.SimpleNamespace(
+            processIdentifier=lambda: running_process_identifier,
+            activationPolicy=lambda: daemon.NSApplicationActivationPolicyRegular,
+        ),
+        types.SimpleNamespace(
+            processIdentifier=lambda: already_exited_process.pid,
+            activationPolicy=lambda: daemon.NSApplicationActivationPolicyRegular,
+        ),
+    ]
+    monkeypatch.setattr(
+        daemon,
+        "NSWorkspace",
+        types.SimpleNamespace(
+            sharedWorkspace=lambda: types.SimpleNamespace(
+                runningApplications=lambda: workspace_entries
+            )
+        ),
+    )
+
+    still_running = daemon.get_running_regular_applications()
+
+    assert [entry.processIdentifier() for entry in still_running] == [
+        running_process_identifier
+    ]
 
 
 def test_history_of_applications_that_exited_is_discarded(daemon):

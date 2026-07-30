@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import os
 import signal
 import sys
 import time
@@ -7,6 +8,7 @@ from dataclasses import dataclass
 
 import Quartz
 from AppKit import NSApplicationActivationPolicyRegular, NSWorkspace
+from Foundation import NSDate, NSRunLoop
 
 POLL_INTERVAL_SECONDS = 2
 SECONDS_WITHOUT_A_WINDOW_BEFORE_QUITTING = 5
@@ -70,13 +72,34 @@ def get_process_identifiers_with_visible_windows():
     return process_identifiers
 
 
+def process_is_still_alive(process_identifier):
+    try:
+        os.kill(process_identifier, 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+    return True
+
+
 def get_running_regular_applications():
     workspace = NSWorkspace.sharedWorkspace()
     return [
         application
         for application in workspace.runningApplications()
         if application.activationPolicy() == NSApplicationActivationPolicyRegular
+        and process_is_still_alive(application.processIdentifier())
     ]
+
+
+def wait_for_the_next_poll_while_the_workspace_receives_notifications():
+    deadline = time.monotonic() + POLL_INTERVAL_SECONDS
+    NSRunLoop.currentRunLoop().runUntilDate_(
+        NSDate.dateWithTimeIntervalSinceNow_(POLL_INTERVAL_SECONDS)
+    )
+    remaining_seconds = deadline - time.monotonic()
+    if remaining_seconds > 0:
+        time.sleep(remaining_seconds)
 
 
 def forget_applications_that_exited(
@@ -96,7 +119,7 @@ def main():
     window_history_by_process_identifier = {}
 
     while True:
-        time.sleep(POLL_INTERVAL_SECONDS)
+        wait_for_the_next_poll_while_the_workspace_receives_notifications()
 
         running_applications = get_running_regular_applications()
         process_identifiers_with_windows = (
