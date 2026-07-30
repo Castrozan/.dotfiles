@@ -30,9 +30,9 @@ Build it in a worktree per the worktrees skill, branched off a freshly fetched `
 plus the capture slug, with no `/` in it. Run `git submodule update --init --recursive` inside the fresh worktree first
 or the flake fetch dies on an empty `private-config`. Commit inside the worktree before building, because the build
 reads git and an untracked file never reaches the store, so an uncommitted change builds the old code and reports
-success. Build by naming the worktree path in the flake reference; `rebuild` is pinned to `~/.dotfiles` and is denied to
-you anyway. Then exercise whatever the change permits without activating chise, which deploys through a private
-entrypoint a worktree lacks.
+success. Build by naming the worktree path in the flake reference; `rebuild` is pinned to `~/.dotfiles` and you never
+run it. Then exercise whatever the change permits without activating chise, which deploys through a private entrypoint
+a worktree lacks.
 </building_an_adopt>
 
 <every_verdict_opens_a_pull_request>

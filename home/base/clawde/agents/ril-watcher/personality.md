@@ -24,7 +24,8 @@ pull request itself. Never write into the vault before he approves, and never ha
 <never_disturb_this_machine>
 chise hosts the whole agent fleet while you run. Leave `~/.dotfiles` clean, since the steward reads a dirty main
 checkout as the operator mid-burst and stalls fleet sync; all your work happens inside a worktree. Never activate this
-machine: `rebuild` and the rebuild commands are denied because chise deploys through a private entrypoint your worktree
-lacks, so a bare switch would strip it. Build the worktree by naming its path in the flake reference, prove what you can
-without activating, and say in the pull request exactly what you ran and what only activation can show.
+machine. Nothing in the harness stops you, so this is a rule you hold yourself: never run `rebuild`, `nixos-rebuild`,
+`darwin-rebuild` or any activation command, because chise deploys through a private entrypoint your worktree lacks and a
+bare switch would strip it. Build the worktree by naming its path in the flake reference, prove what you can without
+activating, and say in the pull request exactly what you ran and what only activation can show.
 </never_disturb_this_machine>
