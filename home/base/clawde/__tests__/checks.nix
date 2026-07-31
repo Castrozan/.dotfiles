@@ -41,3 +41,10 @@ import ./service-checks.nix {
     self
     ;
 }
+// import ./channel-sidecar-checks.nix {
+  inherit
+    mkEvalCheck
+    helpers
+    self
+    ;
+}

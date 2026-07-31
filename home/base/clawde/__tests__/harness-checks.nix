@@ -5,42 +5,8 @@
   self,
 }:
 let
-  bothHarnessModules = [
-    self.homeManagerModules.clawde
-    self.homeManagerModules.claude-code
-    self.homeManagerModules.codex
-    self.homeManagerModules.opencode
-    {
-      claudeCuratedSkillSets.harness-check-set = [ "research" ];
-      clawde.agents = {
-        agent-on-claude = {
-          harness = "claude";
-          personality = "Claude harness agent";
-        };
-        agent-on-codex = {
-          harness = "codex";
-          personality = "Codex harness agent";
-          modelByHarness.opencode = "opencode/some-free-model";
-        };
-        agent-on-discord = {
-          harness = "claude";
-          personality = "Discord channel agent";
-          channel.type = "discord";
-        };
-        agent-on-discord-via-codex = {
-          harness = "codex";
-          personality = "Discord channel agent on codex";
-          channel.type = "discord";
-        };
-      };
-    }
-  ];
-
-  parseDeployedJson =
-    deployedText: builtins.fromJSON (builtins.unsafeDiscardStringContext deployedText);
-
-  supervisedWindowsOfTheDefaultWorkspace =
-    (builtins.head cfgWithBothHarnesses.clawde.serviceSpecification.sessions).agents;
+  fixtures = import ./harness-check-fixtures.nix { inherit helpers self; };
+  inherit (fixtures) bothHarnessModules cfgWithBothHarnesses parseDeployedJson;
 
   harnessNamesCarryingDiscord = builtins.sort (a: b: a < b) (
     builtins.attrNames (
@@ -52,8 +18,6 @@ let
     agentName:
     (parseDeployedJson cfgWithBothHarnesses.home.file."clawde/launch-config/${agentName}.json".text)
     .harness_launch_commands;
-
-  cfgWithBothHarnesses = helpers.homeManagerTestConfiguration bothHarnessModules;
 
   cfgWithStandaloneClawde = helpers.homeManagerTestConfiguration [
     self.homeManagerModules.clawde
@@ -151,22 +115,6 @@ in
         )
       )
       "a skill set must materialize as one symlink per skill directory, never recursive: recursive makes home-manager build a real directory whose SKILL.md is itself a symlink, and codex silently skips every such skill, so a codex agent loads none of its declared skills while the directory listing looks complete; the hasAttr half keeps this from passing vacuously when no set materializes at all";
-
-  clawde-discord-on-codex-gets-a-bridge-sidecar =
-    mkEvalCheck "clawde-discord-on-codex-gets-a-bridge-sidecar"
-      (builtins.any (
-        window: window.name == "agent-on-discord-via-codex-discord"
-      ) supervisedWindowsOfTheDefaultWorkspace)
-      "codex has no --channels flag and no plugin providing an inbound channel transport, so a discord agent on it only ever receives a message through the sidecar bridge window; drop that window and the agent looks deployed while nothing can reach it";
-
-  clawde-discord-on-claude-gets-no-bridge-sidecar =
-    mkEvalCheck "clawde-discord-on-claude-gets-no-bridge-sidecar"
-      (
-        !(builtins.any (
-          window: window.name == "agent-on-discord-discord"
-        ) supervisedWindowsOfTheDefaultWorkspace)
-      )
-      "claude carries discord inside its own process through the official plugin, so adding a bridge sidecar beside it would put two clients on one bot token and double every reply";
 
   clawde-every-installed-harness-is-switchable-at-runtime =
     mkEvalCheck "clawde-every-installed-harness-is-switchable-at-runtime"
