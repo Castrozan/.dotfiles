@@ -8,6 +8,7 @@ class BackendObservation:
     is_alive: bool
     last_activity_at_epoch_seconds: float
     exit_code: int | None = None
+    agent_is_busy: bool | None = None
 
 
 class AgentBackend(abc.ABC):

@@ -1,5 +1,11 @@
-{ pkgs, lib, ... }:
+{
+  pkgs,
+  lib,
+  inputs,
+  ...
+}:
 let
+  herdrPackage = inputs.herdr.packages.${pkgs.stdenv.hostPlatform.system}.default;
   claudeUpdateVersionScript = pkgs.writeShellScriptBin "claude-update-version" ''
     export PATH="${pkgs.nix}/bin:${pkgs.git}/bin:$PATH"
     exec ${pkgs.python312}/bin/python3 ${./claude-update-version} "$@"
@@ -8,7 +14,7 @@ let
     exec ${pkgs.python312}/bin/python3 ${./launch-command-detached-into-new-session} "$@"
   '';
   claudeA2aPeerScript = pkgs.writeShellScriptBin "claude-a2a-peer" ''
-    export PATH="${pkgs.tmux}/bin:$PATH"
+    export PATH="${herdrPackage}/bin:$PATH"
     export PYTHONPATH=${../../../../agents}
     exec ${pkgs.python312}/bin/python3 ${./claude-a2a-peer} "$@"
   '';

@@ -31,6 +31,14 @@ rollout. Read the agent's pane tail rather than a wide capture. Most symptoms th
 the known shapes in `knowledge.md`, so check there before opening an investigation.
 </debugging_an_agent>
 
+<talking_to_another_agent>
+The `a2a` command is how one agent reaches another: `a2a list` shows every declared peer and whether it answers, `a2a
+send <agent> <text>` drops a task and returns its id, and `a2a ask <agent> <text>` blocks until that agent finishes and
+prints what it said. It reads `~/.claude/a2a/peers.json`, which a rebuild generates from the agents that set
+`expose.a2a.enable`, so an agent missing from `a2a list` is undeclared rather than broken. There is deliberately no MCP
+for this: the command costs nothing until you run it, while an MCP would put its tool schemas in every session prefix.
+</talking_to_another_agent>
+
 <knowledge>
 `knowledge.md` holds the traps that cost real debugging and leave no trace in the source: resume and session identity,
 the rebuild-versus-respawn matrix and its platform split, supervisor reconciliation, the multiplexer backend, channel

@@ -25,6 +25,7 @@ class ActiveTaskCoordinator:
         self._target_dead_grace_period_seconds = target_dead_grace_period_seconds
         self._on_target_died_callback = on_target_died_callback
         self._active_task_id: str | None = None
+        self._active_task_target_was_observed_busy = False
         self._target_first_observed_dead_at_epoch_seconds: float | None = None
         self._on_target_died_callback_already_fired = False
         self._lock = threading.Lock()
@@ -53,6 +54,7 @@ class ActiveTaskCoordinator:
                 return existing_task, False
             new_task = self._task_store.create_task(input_text)
             self._active_task_id = new_task.id
+            self._active_task_target_was_observed_busy = False
             self._task_store.transition_task_state(new_task.id, "working")
         self._agent_backend.send_input_text(input_text)
         return new_task, True
@@ -101,9 +103,22 @@ class ActiveTaskCoordinator:
             else:
                 self._task_store.transition_task_state(active_task_id, "completed")
             return
+        if self._reported_agent_status_says_the_turn_is_over(observation):
+            self._task_store.transition_task_state(active_task_id, "completed")
+            return
         idle_for_seconds = time.time() - observation.last_activity_at_epoch_seconds
         if idle_for_seconds >= self._auto_complete_idle_timeout_seconds:
             self._task_store.transition_task_state(active_task_id, "completed")
+
+    def _reported_agent_status_says_the_turn_is_over(
+        self, observation: BackendObservation
+    ) -> bool:
+        if observation.agent_is_busy is None:
+            return False
+        if observation.agent_is_busy:
+            self._active_task_target_was_observed_busy = True
+            return False
+        return self._active_task_target_was_observed_busy
 
     @staticmethod
     def _classify_terminal_state_for_dead_backend(

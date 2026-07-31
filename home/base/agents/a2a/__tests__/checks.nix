@@ -19,16 +19,16 @@ let
 
   cfg = helpers.homeManagerTestConfiguration [ ../. ];
 
-  a2aInstallActivation = cfg.home.activation.installA2aMcpServer.data;
+  peerRegistryText = cfg.home.file.".claude/a2a/peers.json".text;
+  peerRegistry = builtins.fromJSON peerRegistryText;
 in
 {
-  domain-agents-a2a-install-is-time-bounded =
-    mkEvalCheck "domain-agents-a2a-install-is-time-bounded"
-      (lib.hasInfix "/bin/timeout " a2aInstallActivation)
-      "The a2a MCP server install must run under a timeout. It shells out to `npm install -g` against a live registry, and an unbounded call that stalls rather than fails wedges the whole switch with the new home generation already linked and the system profile still on the old one, reporting nothing because nothing failed";
+  domain-agents-a2a-peer-registry-is-always-written =
+    mkEvalCheck "domain-agents-a2a-peer-registry-is-always-written" (peerRegistry ? peers)
+      "The a2a CLI reads ~/.claude/a2a/peers.json to learn which agents answer. The file must exist with a peers object even when no agent exposes itself, because the CLI treats a missing file and an empty registry identically only if the shape is stable; a null or absent peers key would make every command fail with a parse error instead of the intended `no A2A peers declared`";
 
-  domain-agents-a2a-install-must-not-swallow-its-own-failure =
-    mkEvalCheck "domain-agents-a2a-install-must-not-swallow-its-own-failure"
-      (!lib.hasInfix "|| true" a2aInstallActivation)
-      "The a2a MCP server install must NOT end in `|| true`, and this check exists to stop a well-meaning sweep from adding one. a2a is the transport the fleet's stewards coordinate over, so a silently skipped install does not degrade to a missing nicety, it produces a machine that activates green and cannot talk to its peers. Bounding the call is right; swallowing its failure is not. Steps whose failure only costs a best-effort nicety take `|| true`; steps the machine's continued operation depends on must fail loudly";
+  domain-agents-a2a-declares-no-mcp-server =
+    mkEvalCheck "domain-agents-a2a-declares-no-mcp-server"
+      (!(lib.hasInfix "a2a-mcp-server" peerRegistryText) && !(cfg.home ? activation.installA2aMcpServer))
+      "a2a is reached through the `a2a` command, never an MCP. Re-introducing the npm a2a-mcp-server install would put its tool schemas back into every agent's session prefix, which is the cost this module exists to avoid, and would resurrect an unbounded `npm install -g` inside activation";
 }

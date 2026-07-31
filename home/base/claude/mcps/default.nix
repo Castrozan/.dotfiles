@@ -19,14 +19,6 @@ let
     chromePackage = latest.google-chrome;
   };
 
-  a2aMcp = import ../../agents/a2a/install.nix {
-    inherit
-      pkgs
-      nodejs
-      homeDir
-      ;
-  };
-
   mem0Mcp = import ./mem0/wrapper.nix {
     inherit lib hostname;
     privateConfigRoot = ../../../../private-config;
@@ -47,10 +39,6 @@ let
         "-c"
         "sandbox_mode=danger-full-access"
       ];
-    };
-    a2a = {
-      command = a2aMcp.mcpServerCommand;
-      args = a2aMcp.mcpServerArgs;
     };
   }
   // lib.optionalAttrs mem0Mcp.remoteConfigured {

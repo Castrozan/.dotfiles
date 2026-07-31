@@ -89,9 +89,9 @@ in
       (!(cfg.systemd.user.services ? "chrome-devtools-mcp-bridge"))
       "chrome-devtools-mcp-bridge.service must not exist; chrome-devtools is a direct stdio MCP";
 
-  a2a-mcp-bridge-service-removed = mkEvalCheck "a2a-mcp-bridge-service-removed" (
-    !(cfg.systemd.user.services ? "a2a-mcp-bridge")
-  ) "a2a-mcp-bridge.service must not exist; a2a is a direct stdio MCP";
+  a2a-mcp-bridge-service-removed =
+    mkEvalCheck "a2a-mcp-bridge-service-removed" (!(cfg.systemd.user.services ? "a2a-mcp-bridge"))
+      "a2a-mcp-bridge.service must not exist; a2a is reached through the `a2a` command line tool over plain HTTP, so neither a bridge service nor an MCP server belongs here";
 
   claude-private-marketplace-plugins-folded-into-settings =
     mkEvalCheck "claude-private-marketplace-plugins-folded-into-settings"
