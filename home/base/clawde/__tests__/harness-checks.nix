@@ -26,12 +26,28 @@ let
           personality = "Discord channel agent";
           channel.type = "discord";
         };
+        agent-on-discord-via-codex = {
+          harness = "codex";
+          personality = "Discord channel agent on codex";
+          channel.type = "discord";
+        };
       };
     }
   ];
 
   parseDeployedJson =
     deployedText: builtins.fromJSON (builtins.unsafeDiscardStringContext deployedText);
+
+  supervisedWindowsOfTheDefaultWorkspace =
+    (builtins.head cfgWithBothHarnesses.clawde.serviceSpecification.sessions).agents;
+
+  harnessNamesCarryingDiscord = builtins.sort (a: b: a < b) (
+    builtins.attrNames (
+      pkgs.lib.filterAttrs (
+        _: harness: builtins.elem "discord" harness.supportedChannelTypes
+      ) harnesses
+    )
+  );
 
   eligibleHarnessesOf =
     agentName:
@@ -136,10 +152,23 @@ in
       )
       "a skill set must materialize as one symlink per skill directory, never recursive: recursive makes home-manager build a real directory whose SKILL.md is itself a symlink, and codex silently skips every such skill, so a codex agent loads none of its declared skills while the directory listing looks complete";
 
-  clawde-discord-channel-is-refused-on-codex =
-    mkEvalCheck "clawde-discord-channel-is-refused-on-codex"
-      (!(builtins.elem "discord" harnesses.codex.supportedChannelTypes))
-      "codex has no --channels flag and no plugin providing an inbound channel transport, so pairing a discord channel with it must fail the build instead of launching an agent that can never receive a message";
+  clawde-discord-on-codex-gets-a-bridge-sidecar =
+    mkEvalCheck "clawde-discord-on-codex-gets-a-bridge-sidecar"
+      (
+        builtins.any (
+          window: window.name == "agent-on-discord-via-codex-discord"
+        ) supervisedWindowsOfTheDefaultWorkspace
+      )
+      "codex has no --channels flag and no plugin providing an inbound channel transport, so a discord agent on it only ever receives a message through the sidecar bridge window; drop that window and the agent looks deployed while nothing can reach it";
+
+  clawde-discord-on-claude-gets-no-bridge-sidecar =
+    mkEvalCheck "clawde-discord-on-claude-gets-no-bridge-sidecar"
+      (
+        !(builtins.any (
+          window: window.name == "agent-on-discord-discord"
+        ) supervisedWindowsOfTheDefaultWorkspace)
+      )
+      "claude carries discord inside its own process through the official plugin, so adding a bridge sidecar beside it would put two clients on one bot token and double every reply";
 
   clawde-every-installed-harness-is-switchable-at-runtime =
     mkEvalCheck "clawde-every-installed-harness-is-switchable-at-runtime"
@@ -154,8 +183,8 @@ in
 
   clawde-a-channel-agent-cannot-be-switched-onto-a-harness-without-that-channel =
     mkEvalCheck "clawde-a-channel-agent-cannot-be-switched-onto-a-harness-without-that-channel"
-      (builtins.attrNames (eligibleHarnessesOf "agent-on-discord") == [ "claude" ])
-      "the runtime harness switch bypasses the build-time channel assertion, so the eligible set is the only thing standing between a discord agent and a harness that cannot receive a message: it must exclude every harness that does not carry the agent's channel";
+      (builtins.attrNames (eligibleHarnessesOf "agent-on-discord") == harnessNamesCarryingDiscord)
+      "the runtime harness switch bypasses the build-time channel assertion, so the eligible set is the only thing standing between a discord agent and a harness that cannot receive a message: it must be exactly the harnesses declaring that channel, so a harness added without discord support stays unreachable by `clawde harness`";
 
   clawde-model-by-harness-pins-what-an-agent-runs-after-a-switch =
     mkEvalCheck "clawde-model-by-harness-pins-what-an-agent-runs-after-a-switch"
