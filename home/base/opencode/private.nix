@@ -1,21 +1,11 @@
-{ lib, ... }:
+{ pkgs, lib, ... }:
 let
-  inherit (import ./lib.nix) colorNameToHex processAgentFile;
-
   privateConfigDir = ../../../private-config/claude;
   agentsDir = privateConfigDir + "/agents";
   skillsDir = privateConfigDir + "/skills";
 
   agentsDirExists = builtins.pathExists agentsDir;
   skillsDirExists = builtins.pathExists skillsDir;
-
-  privateAgentFiles =
-    if agentsDirExists then
-      builtins.filter (name: lib.hasSuffix ".md" name && name != ".gitkeep") (
-        builtins.attrNames (builtins.readDir agentsDir)
-      )
-    else
-      [ ];
 
   privateSkillDirs =
     if skillsDirExists then
@@ -25,14 +15,16 @@ let
     else
       [ ];
 
-  privateAgentEntries = builtins.listToAttrs (
-    map (filename: {
-      name = ".config/opencode/agents/${filename}";
-      value = {
-        text = processAgentFile colorNameToHex (builtins.readFile (agentsDir + "/${filename}"));
+  privateAgentEntries = lib.optionalAttrs agentsDirExists {
+    ".config/opencode/agents" = {
+      source = import ./translate-claude-agent-definitions.nix {
+        inherit pkgs;
+        derivationName = "opencode-private-agent-definitions";
+        claudeAgentDefinitionsDirectory = agentsDir;
       };
-    }) privateAgentFiles
-  );
+      recursive = true;
+    };
+  };
 
   privateSkillEntries = builtins.listToAttrs (
     map (dirname: {
@@ -45,7 +37,5 @@ let
   );
 in
 {
-  home.file = lib.mkIf (agentsDirExists || skillsDirExists) (
-    privateAgentEntries // privateSkillEntries
-  );
+  home.file = privateAgentEntries // privateSkillEntries;
 }

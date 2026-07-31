@@ -1,54 +1,80 @@
-_:
+{
+  pkgs,
+  config,
+  latest,
+  ...
+}:
 let
-  defaultOpencodeModel = "openai/gpt-5.6-sol";
-  globalRules = ''
-    ${builtins.readFile ../../../agents/core_rules/core.md}
-  '';
+  homeDir = config.home.homeDirectory;
+
+  defaultOpencodeModel = "opencode/nemotron-3-ultra-free";
+  titleGenerationModel = "opencode/ling-3.0-flash-free";
+
+  mcpServerDefinitions = import ./mcp-servers.nix {
+    inherit pkgs latest homeDir;
+  };
+
+  fullAccessPermissions = {
+    "*" = "allow";
+    read = "allow";
+    edit = "allow";
+    glob = "allow";
+    grep = "allow";
+    list = "allow";
+    bash = "allow";
+    task = "allow";
+    skill = "allow";
+    lsp = "allow";
+    todowrite = "allow";
+    question = "allow";
+    webfetch = "allow";
+    websearch = "allow";
+    external_directory = "allow";
+    doom_loop = "allow";
+  };
 
   opencodeGlobalSettings = {
     "$schema" = "https://opencode.ai/config.json";
     autoupdate = false;
-    model = defaultOpencodeModel;
+    share = "manual";
+    snapshot = true;
 
-    permission = {
-      "*" = "allow";
-      read = "allow";
-      edit = "allow";
-      bash = "allow";
-      glob = "allow";
-      grep = "allow";
-      list = "allow";
-      task = "allow";
-      skill = "allow";
-      lsp = "allow";
-      todoread = "allow";
-      todowrite = "allow";
-      webfetch = "allow";
-      websearch = "allow";
-      codesearch = "allow";
-      external_directory = "allow";
-      doom_loop = "allow";
-    };
+    model = defaultOpencodeModel;
+    small_model = titleGenerationModel;
+    default_agent = "build";
+    subagent_depth = 2;
+
+    instructions = [ "~/.config/opencode/AGENTS.md" ];
+
+    permission = fullAccessPermissions;
+
+    lsp = true;
+    formatter = true;
 
     compaction = {
       auto = true;
       prune = true;
     };
 
-    share = "manual";
-
-    instructions = [ "~/.config/opencode/AGENTS.md" ];
+    experimental = {
+      batch_tool = true;
+    };
 
     agent = {
       build = {
         mode = "primary";
         description = "Full-access coding agent with all tools enabled";
-        model = defaultOpencodeModel;
+        variant = "max";
+        permission = fullAccessPermissions;
+      };
+      plan = {
+        mode = "primary";
+        description = "Read-only architect that designs a change without editing files";
         variant = "max";
       };
     };
 
-    mcp = { };
+    mcp = mcpServerDefinitions;
   };
 in
 {
@@ -56,7 +82,6 @@ in
     file = {
       ".config/opencode/.keep".text = "";
       ".config/opencode/opencode.json".text = builtins.toJSON opencodeGlobalSettings;
-      ".config/opencode/AGENTS.md".text = globalRules;
     };
 
     sessionVariables = {
