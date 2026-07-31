@@ -8,6 +8,7 @@
     ./skills.nix
     ./subagents.nix
     ./commands.nix
+    ./zen-anonymous-proxy.nix
     ./private.nix
   ];
 }

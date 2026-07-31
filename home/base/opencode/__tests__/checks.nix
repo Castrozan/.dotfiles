@@ -19,6 +19,11 @@ let
 
   cfg = helpers.homeManagerTestConfiguration [ ../. ];
 
+  configurationWithTheZenProxyEnabled = helpers.homeManagerTestConfiguration [
+    ../.
+    { opencode.zenAnonymousProxy.enable = true; }
+  ];
+
   packageNames = map (p: p.name or p.pname or "unknown") cfg.home.packages;
   hasPackageMatching = pattern: builtins.any (n: builtins.match pattern n != null) packageNames;
 
@@ -118,4 +123,23 @@ in
     mkEvalCheck "domain-opencode-tui-matches-the-desktop-theme"
       (deployedTuiSettings.theme == "kanagawa" && deployedTuiSettings.attention.enabled)
       "opencode's TUI must follow the machine's selected theme and chime when a turn finishes";
+
+  domain-opencode-ships-no-zen-proxy-unless-asked =
+    mkEvalCheck "domain-opencode-ships-no-zen-proxy-unless-asked"
+      (!(cfg.systemd.user.services ? opencode-zen-anonymous-proxy))
+      "the Zen anonymous proxy is an opt-in for a runtime that cannot call a keyless remote provider, so a machine that never enables it must get no such service";
+
+  domain-opencode-zen-proxy-listens-where-its-base-url-points =
+    mkEvalCheck "domain-opencode-zen-proxy-listens-where-its-base-url-points"
+      (
+        let
+          service = configurationWithTheZenProxyEnabled.systemd.user.services.opencode-zen-anonymous-proxy;
+          declaredPort = toString configurationWithTheZenProxyEnabled.opencode.zenAnonymousProxy.port;
+        in
+        builtins.elem "OPENCODE_ZEN_PROXY_PORT=${declaredPort}" service.Service.Environment
+        &&
+          configurationWithTheZenProxyEnabled.opencode.zenAnonymousProxy.baseUrl
+          == "http://127.0.0.1:${declaredPort}/v1"
+      )
+      "the port the proxy is told to listen on and the base URL its consumers are handed must come from the same option, or a model runtime silently calls a closed port";
 }
