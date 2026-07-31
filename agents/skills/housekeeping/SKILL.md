@@ -23,6 +23,3 @@ repository's own instruction file, or into `agents/core_rules/` when it is a rul
 remove it from the inbox. Discard anything a competent agent would re-derive from the code in five minutes, anything
 already covered, and anything that has since become false. The design this implements is
 `home/base/claude/docs/agent-memory.md`.
-
-Filing a fact means writing it into the knowledge file that sits beside the owning skill's definition, the same
-router-plus-siblings shape every skill here already uses.
