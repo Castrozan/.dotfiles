@@ -10,7 +10,7 @@ MAXIMUM_ALWAYS_ON_SKILL_DESCRIPTION_BYTES = 12000
 
 def always_on_instruction_files():
     return sorted((REPO_ROOT / "agents" / "core_rules").glob("**/*.md")) + [
-        REPO_ROOT / "CLAUDE.md"
+        REPO_ROOT / "agents" / "dotfiles.md"
     ]
 
 
@@ -28,7 +28,7 @@ def always_on_skill_description_bytes():
 def test_the_always_on_instruction_surface_stays_within_its_budget():
     total = always_on_instruction_bytes()
     assert total <= MAXIMUM_ALWAYS_ON_INSTRUCTION_BYTES, (
-        f"core rules plus the project instruction file now cost {total} bytes of every "
+        f"core rules plus agents/dotfiles.md now cost {total} bytes of every "
         f"session's context, past the {MAXIMUM_ALWAYS_ON_INSTRUCTION_BYTES} byte "
         f"budget. Move the new material into the skill that owns its domain, where it "
         f"loads on demand, rather than raising this ceiling."

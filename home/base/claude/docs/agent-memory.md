@@ -121,14 +121,15 @@ an entry naming a file, function or flag is verified against the tree before it 
 
 `agents/__tests__/unit/test_the_always_on_context_budget_stays_bounded.py` is the only new code the design requires, and it
 is a test rather than a runtime mechanism. It caps the assembled always-on instruction surface (`agents/core_rules/` plus
-the project `CLAUDE.md`, 30.6 KB today) and the sum of every skill description (10.0 KB today, loaded eagerly so the model
+`agents/dotfiles.md`, 30.3 KB today) and the sum of every skill description (10.0 KB today, loaded eagerly so the model
 can route), and it asserts that `CLAUDE_CODE_DISABLE_AUTO_MEMORY` stays set, since re-enabling it recreates both the
 per-directory stores and the unbounded index. Skill bodies are deliberately not capped: they are lazy, so their size costs
 nothing until a session actually needs them, and capping them would push facts back into the tier that broke.
 
 The failure this prevents is precisely the one that happened: a surface nobody budgeted growing past the surfaces everyone
-reviews. For scale, the 19008-byte index was a 47 percent increase on the entire 40.2 KB always-on budget it was invisibly
-added to.
+reviews. For scale, the 19008-byte index was a 47 percent increase on the entire 40.4 KB always-on budget it was invisibly
+added to. The repository-root `CLAUDE.md` is a generated symlink into the store rather than a tracked file, so the check
+reads its source, `agents/dotfiles.md`, which is what CI has.
 
 ## Explicitly rejected
 
