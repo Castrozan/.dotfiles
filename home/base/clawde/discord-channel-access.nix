@@ -33,7 +33,7 @@ in
               "disabled"
             ];
             default = "allowlist";
-            description = "Direct-message gate policy the Discord plugin enforces for this agent.";
+            description = "Direct-message gate policy for this agent. The claude harness enforces it through the Discord plugin, pairing handshake included; the channel bridge that carries every other harness has no pairing flow of its own, so under any policy but disabled it answers exactly the authors listed in allowFrom.";
           };
           allowFrom = lib.mkOption {
             type = lib.types.listOf lib.types.str;
