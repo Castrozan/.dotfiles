@@ -50,3 +50,9 @@ assuming the agent is alive.
 Headless `claude --print` is blocked by a guard because interactive herdr agents are the sanctioned path; for a
 genuinely sanctioned one-off, prefix the command with `CLAUDE_HEADLESS_SANCTIONED=1`.
 </oneshot_is_gated>
+
+<knowledge>
+For traps that cost real debugging: the per-client view fork, why a CLI focus call hijacks the human's view, the
+destructive shifted-digit chords, the pane-run paste wedge, and native agent resume; read `knowledge.md`. Read the
+chord entry before typing any chord into a pane you do not own.
+</knowledge>

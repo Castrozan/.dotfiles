@@ -57,3 +57,9 @@ admin access is an agenix secret, so the tools keep working after a wipe-and-reb
 about: answer for the titles or accounts named in the request and leave the rest of the listing out, rather than
 dumping the full roster or request history into a reply.
 </reporting>
+
+<knowledge>
+For traps that cost real debugging: a request that stalls forever because its one search hit zero active indexers, a
+completed download blocked by a title mismatch that the default queue query hides, and credentials that exist but never
+autofill; read `knowledge.md`.
+</knowledge>

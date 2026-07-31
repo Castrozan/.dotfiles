@@ -14,3 +14,7 @@ Cross-platform capabilities (Linux/Wayland + macOS):
 Linux/Wayland-only capabilities:
 - For keyboard input (type text, send key combos via wtype), read `keyboard.md`.
 - For mouse control (click, move, scroll, drag via ydotool), read `mouse.md`.
+
+For macOS desktop traps that cost real debugging: window and application queries that report confidently wrong state,
+accessibility under-reporting, Hammerspoon probe pitfalls, applications that rewrite their own settings, and the absence
+of screen capture over SSH; read `knowledge.md`.

@@ -1,0 +1,63 @@
+<the_build_cannot_see_untracked_files>
+`rebuild` builds the flake from `git+file://` with submodules, so a dirty tree copies modified tracked files into the
+store but silently excludes untracked ones. A newly written file that was never staged does not exist as far as the
+build is concerned while its tracked callers do, and the auto-stage helper rescues only `.nix`, leaving every new
+`.swift`, `.py`, `.lua` and `.js` exposed. Stage each new file by name before rebuilding, never after and never with a
+blanket add, since parallel work shares the index. "rebuild complete" is not evidence a compiled artifact shipped:
+check the binary's mtime or source hash, and read the compile step's own output.
+</the_build_cannot_see_untracked_files>
+
+<submodule_content_needs_the_gitlink_bumped>
+The build resolves the submodule at the gitlink commit recorded in the superproject, not at the submodule's working-tree
+HEAD, so committing inside the submodule is invisible until the bumped gitlink is also staged and committed in the
+superproject. Verifying with `nix eval` has the mirror-image trap: without `?submodules=1` the flake source copied to
+the store has no submodule at all, every path-existence check reads false, and the evaluation returns a confident
+false-negative green.
+</submodule_content_needs_the_gitlink_bumped>
+
+<landing_a_submodule_change_past_a_peer>
+The submodule is routinely parked on a detached HEAD carrying another agent's unpushed commits. Committing there puts
+your work in a branchless stack that a reset silently orphans, and staging the submodule in the superproject captures
+whatever the live HEAD is, dragging all of their unpushed work into your commit. Stage the intended pointer explicitly
+with `git update-index --cacheinfo` rather than adding the submodule path.
+</landing_a_submodule_change_past_a_peer>
+
+<a_failing_activation_can_report_green>
+An activation step that exits non-zero aborts before the profile swap, leaving `current-system` frozen on an old
+generation while every subsequent rebuild appears to no-op. The wrapper masks it, because a failing pipe under strict
+mode kills the wrapper before its own diagnostic prints. When changes stop deploying for no visible reason, check the
+current-system mtime, then rerun capturing both streams and the real exit code. One recurring instance is the frozen
+nix-darwin branch emitting a deprecated homebrew cleanup flag that current Homebrew rejects.
+</a_failing_activation_can_report_green>
+
+<agenix_stalls_on_a_stale_temporary_file>
+The home-manager agenix activation agent can loop on a stale read-only temporary file it recreates and cannot
+overwrite, dying on that secret before reaching any later one, so no newly added secret decrypts machine-wide while
+older ones from a previous generation stay present and make everything look healthy. The activation log names the
+blocking secret. Clear the offending temporary file or the whole generation directory, kickstart the agent, and verify
+by decrypting the secret directly.
+</agenix_stalls_on_a_stale_temporary_file>
+
+<a_store_swap_kills_long_lived_processes_on_darwin>
+Ad-hoc-signed nix binaries carry a code hash tied to on-disk content, so replacing or collecting a store path under a
+running process makes the kernel's integrity subsystem invalidate the mapped image and kill it. A rebuild that changes
+a terminal multiplexer's store hash therefore kills the running server and all its sessions even when the version is
+unchanged, and no person and no kill command appears in any history. Confirm it in the system log by searching for the
+signature-issue message around the death window and correlating the killed store hash. The remedy is session restore,
+not preventing the kill.
+</a_store_swap_kills_long_lived_processes_on_darwin>
+
+<launchd_agents_drift_after_a_rebuild>
+On darwin a rebuild that rewrites a declared launch agent's plist can leave the agent absent from launchctl entirely,
+neither disabled nor erroring: it simply stops running, with no log line, no failed activation step and no warning. When
+an agent's output looks stale right after a rebuild, list it in launchctl before debugging its own logic. Re-registering
+it needs an enable before the bootstrap, because a bare bootstrap on a disabled label fails with an opaque IO error.
+Only one module carries a self-heal activation step today; the rest drift silently.
+</launchd_agents_drift_after_a_rebuild>
+
+<test_tiers_and_report_publishing>
+The python test tier is provisioned on every machine and fails loudly rather than skipping when a collected test's
+runner is absent, so a skip is a real signal. The quick and nix tiers run only the unit scope, which means integration
+and end-to-end tests slip past them; CI is the gate that runs everything. Reports are published to a single bucket
+prefix by exactly one workflow, and adding a second publisher to that prefix clobbers the others' output.
+</test_tiers_and_report_publishing>

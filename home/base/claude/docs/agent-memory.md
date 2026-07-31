@@ -72,7 +72,10 @@ qualify.
 **A fact about a system goes to the skill that owns that system**, in a `knowledge.md` sibling of its `SKILL.md`. The skill
 description is the router line and it is already paid for in the always-on budget; the body loads only when the session
 touches the domain. This is the eager-description, lazy-body split the original design named as its model, and this repo
-already demonstrates the router-plus-siblings pattern in the `instructions` skill.
+already demonstrates the router-plus-siblings pattern in the `instructions` skill. No registry edit is needed to add a
+domain: `skill-set-builders.nix` enumerates `agents/skills/` from disk, and the interactive workspace launcher
+materializes every one of them into the session's skill namespace, so a new skill directory is discoverable as soon as it
+is committed and rebuilt.
 
 **A fact about a repository goes to that repository's `CLAUDE.md`.** Colocating a fact with the artifact it describes is the
 tightest possible scoping: it loads exactly when relevant, versions with the code, and dies when the code dies.
@@ -116,9 +119,16 @@ an entry naming a file, function or flag is verified against the tree before it 
 
 ## Guard
 
-One check, and it is a test rather than a runtime mechanism: assert a byte ceiling on the assembled always-on surface, and
-a ceiling on any single skill body that forces the router-plus-siblings split before a body gets heavy. This is the forcing
-function the previous design lacked, and it is the only new code the design requires.
+`agents/__tests__/unit/test_the_always_on_context_budget_stays_bounded.py` is the only new code the design requires, and it
+is a test rather than a runtime mechanism. It caps the assembled always-on instruction surface (`agents/core_rules/` plus
+the project `CLAUDE.md`, 30.6 KB today) and the sum of every skill description (10.0 KB today, loaded eagerly so the model
+can route), and it asserts that `CLAUDE_CODE_DISABLE_AUTO_MEMORY` stays set, since re-enabling it recreates both the
+per-directory stores and the unbounded index. Skill bodies are deliberately not capped: they are lazy, so their size costs
+nothing until a session actually needs them, and capping them would push facts back into the tier that broke.
+
+The failure this prevents is precisely the one that happened: a surface nobody budgeted growing past the surfaces everyone
+reviews. For scale, the 19008-byte index was a 47 percent increase on the entire 40.2 KB always-on budget it was invisibly
+added to.
 
 ## Explicitly rejected
 
@@ -130,10 +140,19 @@ stores. Cross-agent store sharing by symlink. A dedicated write CLI and its tele
 one `Write` call and one review already do. `CLAUDE_CODE_DISABLE_AUTO_MEMORY=1` stays set, since without it the harness
 recreates both the cwd-keyed stores and the always-on index.
 
+## What was built
+
+The two missing skills now exist: `clawde` owns the fleet, supervisor, heartbeat and steward domain, and `claude-harness`
+owns Claude Code and Codex behavior itself. Six domains carry a `knowledge.md`: `clawde`, `claude-harness`, `nix`,
+`desktop`, `git`, `herdr`, `arr-stack` and `browser`, each pointed at from its `SKILL.md` router. The behavioral entries
+graduated into `agents/core_rules/core.md`, where the git block now carries explicit-pathspec committing, absolute-path
+anchoring, and the rule that landing a change on a repo the user owns is part of the task, and `<session-resilience>`
+carries the knowledge-versus-work-state split and the capture path.
+
 ## Migration
 
-No big-bang triage. The stores are inert with auto-memory disabled, so they remain on disk as a grep-able archive that
-nothing loads, and there is no correctness pressure to convert them. Filing is incremental: create the two missing skills,
-then graduate a fact into its owner the next time work touches that area. A single bounded pass over the 112 dotfiles
-entries is worthwhile because that store carries this repo's hard-won traps; the other seventeen stores can age out
-untouched.
+No big-bang triage for the rest. The nineteen stores are inert with auto-memory disabled, so they remain on disk as a
+grep-able archive that nothing loads and there is no correctness pressure to convert them. What is filed is the dotfiles
+store, which carried this repo's hard-won traps; the eight entries describing other repositories still belong in those
+repositories, and the work-sensitive ones in private-config. Everything else graduates on contact, the next time work
+touches that area.

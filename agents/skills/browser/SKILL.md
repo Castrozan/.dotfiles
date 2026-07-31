@@ -65,3 +65,9 @@ screenshots. The target is single and sequential and needs its own Allow.
 PinchTab: prefer `snap` (accessibility tree with refs) over screenshots for less tokens; get a fresh `snap` after
 navigation or interaction because refs change.
 </tips>
+
+<knowledge>
+For traps that cost real debugging: threads that virtualize their middle out of the DOM so a one-shot query silently
+returns a partial read, pages that scroll inside a container rather than the window, and why an authenticated site needs
+the real browser target; read `knowledge.md`.
+</knowledge>

@@ -20,8 +20,14 @@ Include body when change is non-obvious, multiple related changes, or breaking.
 </format>
 
 <staging>
-Never git add -A or git add . to avoid staging unrelated parallel work.
+Never git add -A or git add . to avoid staging unrelated parallel work. The index is shared with live peer agents, so
+commit with explicit pathspecs; `knowledge.md` has the failure this prevents.
 </staging>
+
+<knowledge>
+For traps that cost real debugging: the shared index, edits that live in a sibling worktree, and moving a worktree that
+contains submodules; read `knowledge.md`.
+</knowledge>
 
 <history_search>
 Use the `git-history` command for any exploratory commit search instead of repeated `git log --grep` or `git log -G`

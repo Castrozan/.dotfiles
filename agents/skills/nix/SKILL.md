@@ -20,3 +20,7 @@ anti-patterns, script packaging, when to delegate to Nix expertise; read `repo.m
 
 For Docker/Podman container management: the docker-manager script wrapper, safety boundaries (ordering, volume data
 protection), container state, exec, volumes, networking, logging, registry; read `docker.md`.
+
+For traps that cost real debugging and leave no trace in the source: what the build cannot see, submodule deployment,
+activation failures that report green, and platform-specific rebuild fallout; read `knowledge.md`. Read it before
+concluding that a rebuild landed or that a change failed to deploy for an unknown reason.

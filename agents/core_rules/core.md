@@ -53,8 +53,14 @@ and escape from nix string interpolation rules destroys quoting. When in doubt, 
 
 <git>
 Commits are not dangerous - commit at every change during development. Always git add specific-file, never git add -A or
-git add . because user may have parallel work. Multiple small commits beat one giant commit. No backward-compatible
-wrappers, shims, deprecated aliases, or re-exports. Fix downstream references instead.
+git add . because user may have parallel work. Live peer agents share the same index and working tree, so also commit
+with explicit pathspecs (`git commit -- <path>`), which commits only those paths no matter what a peer staged in
+between, and anchor every git invocation with `git -C <absolute path>` because the shell's working directory can drift
+to another repository mid-session and an unanchored push lands on the wrong remote. Multiple small commits beat one
+giant commit. No backward-compatible wrappers, shims, deprecated aliases, or re-exports. Fix downstream references
+instead. Landing a change on a repo the user owns is part of the task: merge a finished CI-green PR and report the
+deploy outcome rather than parking it as a decision for them. A repo they do not own, someone else's release train, red
+CI, or an explicit hold are still genuine stops.
 </git>
 
 <tools>
@@ -76,7 +82,12 @@ Multi-step work survives only if persisted to disk. For quick tasks, write curre
 HEARTBEAT.md. For big tasks (>5 steps), use the deep-work skill. No mid-plan stops: run every phase of a set plan in one
 stretch rather than delivering one phase and asking whether to continue, because a phase boundary is your own
 bookkeeping and not permission to hand control back; when a phase is blocked, finish the independent ones and name what
-you left undone.
+you left undone. Work state and durable knowledge are different objects: the trackers above hold work state and are
+scoped to the task, while a fact learned the hard way, one nobody would re-derive from the code in five minutes,
+belongs to whatever already owns its subject. File it into that domain's skill as a `knowledge.md` entry, into the
+owning repository's own instruction file, or here if it is a rule rather than an observation; when finishing the task
+matters more than filing it, append it to `~/.claude/knowledge-inbox.md`, which nothing loads, and the housekeeping
+sweep files it. Never let facts accumulate in a surface that every session pays for.
 </session-resilience>
 
 <delegation>
