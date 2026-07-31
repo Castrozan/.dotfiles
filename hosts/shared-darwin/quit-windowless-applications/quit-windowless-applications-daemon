@@ -14,6 +14,7 @@ POLL_INTERVAL_SECONDS = 2
 SECONDS_WITHOUT_A_WINDOW_BEFORE_QUITTING = 5
 SECONDS_AFTER_LAUNCH_BEFORE_QUITTING_AN_APPLICATION_THAT_NEVER_OPENED_A_WINDOW = 60
 SECONDS_BETWEEN_REPEATED_QUIT_REQUESTS = 15
+LARGEST_EDGE_OF_AN_UNPLACED_SYSTEM_WINDOW = 500
 
 EXCLUDED_APPLICATION_BUNDLE_IDENTIFIERS = frozenset(
     {
@@ -63,7 +64,35 @@ def get_tallest_menu_bar_height():
     return max(menu_bar_heights, default=0.0)
 
 
-def get_process_identifiers_with_visible_windows(menu_bar_height):
+def get_screen_bottom_left_corners():
+    screens = NSScreen.screens()
+    if not screens:
+        return set()
+    primary_screen_height = screens[0].frame().size.height
+    return {
+        (screen.frame().origin.x, primary_screen_height - screen.frame().origin.y)
+        for screen in screens
+    }
+
+
+def window_was_never_placed_on_a_screen(window_bounds, screen_bottom_left_corners):
+    window_width = window_bounds.get("Width", 0)
+    window_height = window_bounds.get("Height", 0)
+    if (
+        window_width > LARGEST_EDGE_OF_AN_UNPLACED_SYSTEM_WINDOW
+        or window_height > LARGEST_EDGE_OF_AN_UNPLACED_SYSTEM_WINDOW
+    ):
+        return False
+    bottom_left_corner = (
+        window_bounds.get("X", 0),
+        window_bounds.get("Y", 0) + window_height,
+    )
+    return bottom_left_corner in screen_bottom_left_corners
+
+
+def get_process_identifiers_with_visible_windows(
+    menu_bar_height, screen_bottom_left_corners
+):
     window_info_list = Quartz.CGWindowListCopyWindowInfo(
         Quartz.kCGWindowListOptionAll | Quartz.kCGWindowListExcludeDesktopElements,
         Quartz.kCGNullWindowID,
@@ -77,6 +106,10 @@ def get_process_identifiers_with_visible_windows(menu_bar_height):
         if window_bounds.get("Width", 0) <= 0:
             continue
         if window_bounds.get("Height", 0) <= menu_bar_height:
+            continue
+        if window_was_never_placed_on_a_screen(
+            window_bounds, screen_bottom_left_corners
+        ):
             continue
         process_identifier = window_info.get(Quartz.kCGWindowOwnerPID)
         if process_identifier:
@@ -135,7 +168,7 @@ def main():
 
         running_applications = get_running_regular_applications()
         process_identifiers_with_windows = get_process_identifiers_with_visible_windows(
-            get_tallest_menu_bar_height()
+            get_tallest_menu_bar_height(), get_screen_bottom_left_corners()
         )
         current_time = time.time()
 
