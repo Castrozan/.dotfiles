@@ -11,6 +11,7 @@ let
     self.homeManagerModules.codex
     self.homeManagerModules.opencode
     {
+      claudeCuratedSkillSets.harness-check-set = [ "research" ];
       clawde.agents = {
         agent-on-claude = {
           harness = "claude";
@@ -144,11 +145,12 @@ in
   clawde-skill-sets-materialize-as-directory-symlinks =
     mkEvalCheck "clawde-skill-sets-materialize-as-directory-symlinks"
       (
-        !(cfgWithBothHarnesses.home.file.".local/share/claude-skill-sets/personal/.claude/skills/research".recursive
+        builtins.hasAttr ".local/share/claude-skill-sets/harness-check-set/.claude/skills/research" cfgWithBothHarnesses.home.file
+        && !(cfgWithBothHarnesses.home.file.".local/share/claude-skill-sets/harness-check-set/.claude/skills/research".recursive
           or false
         )
       )
-      "a skill set must materialize as one symlink per skill directory, never recursive: recursive makes home-manager build a real directory whose SKILL.md is itself a symlink, and codex silently skips every such skill, so a codex agent loads none of its declared skills while the directory listing looks complete";
+      "a skill set must materialize as one symlink per skill directory, never recursive: recursive makes home-manager build a real directory whose SKILL.md is itself a symlink, and codex silently skips every such skill, so a codex agent loads none of its declared skills while the directory listing looks complete; the hasAttr half keeps this from passing vacuously when no set materializes at all";
 
   clawde-discord-on-codex-gets-a-bridge-sidecar =
     mkEvalCheck "clawde-discord-on-codex-gets-a-bridge-sidecar"
