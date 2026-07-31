@@ -7,7 +7,7 @@ import time
 from dataclasses import dataclass
 
 import Quartz
-from AppKit import NSApplicationActivationPolicyRegular, NSWorkspace
+from AppKit import NSApplicationActivationPolicyRegular, NSScreen, NSWorkspace
 from Foundation import NSDate, NSRunLoop
 
 POLL_INTERVAL_SECONDS = 2
@@ -54,7 +54,16 @@ def should_request_quit(history, current_time):
     )
 
 
-def get_process_identifiers_with_visible_windows():
+def get_tallest_menu_bar_height():
+    menu_bar_heights = [
+        (screen.frame().origin.y + screen.frame().size.height)
+        - (screen.visibleFrame().origin.y + screen.visibleFrame().size.height)
+        for screen in NSScreen.screens()
+    ]
+    return max(menu_bar_heights, default=0.0)
+
+
+def get_process_identifiers_with_visible_windows(menu_bar_height):
     window_info_list = Quartz.CGWindowListCopyWindowInfo(
         Quartz.kCGWindowListOptionAll | Quartz.kCGWindowListExcludeDesktopElements,
         Quartz.kCGNullWindowID,
@@ -65,10 +74,13 @@ def get_process_identifiers_with_visible_windows():
         if window_layer != 0:
             continue
         window_bounds = window_info.get(Quartz.kCGWindowBounds, {})
-        if window_bounds.get("Width", 0) > 0 and window_bounds.get("Height", 0) > 0:
-            process_identifier = window_info.get(Quartz.kCGWindowOwnerPID)
-            if process_identifier:
-                process_identifiers.add(process_identifier)
+        if window_bounds.get("Width", 0) <= 0:
+            continue
+        if window_bounds.get("Height", 0) <= menu_bar_height:
+            continue
+        process_identifier = window_info.get(Quartz.kCGWindowOwnerPID)
+        if process_identifier:
+            process_identifiers.add(process_identifier)
     return process_identifiers
 
 
@@ -122,8 +134,8 @@ def main():
         wait_for_the_next_poll_while_the_workspace_receives_notifications()
 
         running_applications = get_running_regular_applications()
-        process_identifiers_with_windows = (
-            get_process_identifiers_with_visible_windows()
+        process_identifiers_with_windows = get_process_identifiers_with_visible_windows(
+            get_tallest_menu_bar_height()
         )
         current_time = time.time()
 

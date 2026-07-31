@@ -26,6 +26,7 @@ def build_cocoa_module_stubs():
     appkit_stub = types.ModuleType("AppKit")
     appkit_stub.NSApplicationActivationPolicyRegular = 0
     appkit_stub.NSWorkspace = types.SimpleNamespace(sharedWorkspace=lambda: None)
+    appkit_stub.NSScreen = types.SimpleNamespace(screens=lambda: [])
 
     foundation_stub = types.ModuleType("Foundation")
     foundation_stub.NSDate = types.SimpleNamespace(
@@ -97,6 +98,54 @@ def test_quit_is_requested_again_when_the_application_ignores_the_first_request(
 
     assert not daemon.should_request_quit(history, 110.0 + repeat_interval - 1)
     assert daemon.should_request_quit(history, 110.0 + repeat_interval)
+
+
+def test_the_menu_bar_height_is_measured_from_the_screen(daemon, monkeypatch):
+    screen = types.SimpleNamespace(
+        frame=lambda: types.SimpleNamespace(
+            origin=types.SimpleNamespace(y=0.0),
+            size=types.SimpleNamespace(height=1080.0),
+        ),
+        visibleFrame=lambda: types.SimpleNamespace(
+            origin=types.SimpleNamespace(y=0.0),
+            size=types.SimpleNamespace(height=1050.0),
+        ),
+    )
+    monkeypatch.setattr(
+        daemon, "NSScreen", types.SimpleNamespace(screens=lambda: [screen])
+    )
+
+    assert daemon.get_tallest_menu_bar_height() == 30.0
+
+
+def test_the_per_application_menu_bar_strip_does_not_count_as_a_window(
+    daemon, monkeypatch
+):
+    menu_bar_height = 30.0
+    window_info_list = [
+        {
+            "kCGWindowLayer": 0,
+            "kCGWindowOwnerPID": 111,
+            "kCGWindowBounds": {"Width": 1920, "Height": menu_bar_height},
+        },
+        {
+            "kCGWindowLayer": 0,
+            "kCGWindowOwnerPID": 222,
+            "kCGWindowBounds": {"Width": 1920, "Height": 1050},
+        },
+        {
+            "kCGWindowLayer": 25,
+            "kCGWindowOwnerPID": 333,
+            "kCGWindowBounds": {"Width": 400, "Height": 400},
+        },
+    ]
+    monkeypatch.setattr(
+        daemon.Quartz,
+        "CGWindowListCopyWindowInfo",
+        lambda *_arguments: window_info_list,
+    )
+
+    assert daemon.get_process_identifiers_with_visible_windows(menu_bar_height) == {222}
 
 
 def test_an_application_whose_process_already_exited_is_not_reported_as_running(
