@@ -3,11 +3,12 @@
   allMcpServerNames,
 }:
 let
-  agentOnlyMcpServerNames = [ "a2a" ];
+  agentOnlyMcpServerNames = [ ];
 
   hostGatedRemoteMemoryMcpServerNames = [ "mem0" ];
 
   retiredMcpServerNames = [
+    "a2a"
     "brave-devtools"
     "browser-use"
     "figma"

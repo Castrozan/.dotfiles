@@ -94,27 +94,27 @@ class TestLiveAgentDetectionUsesPaneGetAgentField:
         backend, recording_stub = _build_backend_with_stub(
             returncode=0, stdout=_pane_get_payload_with_agent("claude")
         )
-        backend._target_pane_hosts_live_agent()
+        backend._read_pane_information()
         assert recording_stub.invocations == [["pane", "get", "wP:pT"]]
 
     def test_alive_when_pane_reports_an_agent(self):
         backend, _ = _build_backend_with_stub(
             returncode=0, stdout=_pane_get_payload_with_agent("claude")
         )
-        assert backend._target_pane_hosts_live_agent() is True
+        assert backend._read_pane_information().get("agent") == "claude"
 
     def test_not_alive_when_pane_agent_is_null(self):
         backend, _ = _build_backend_with_stub(
             returncode=0, stdout=_pane_get_payload_with_agent(None)
         )
-        assert backend._target_pane_hosts_live_agent() is False
+        assert backend._read_pane_information().get("agent") is None
 
     def test_not_alive_when_pane_get_fails(self):
         backend, _ = _build_backend_with_stub(
             returncode=1, stdout=_pane_get_payload_with_agent("claude")
         )
-        assert backend._target_pane_hosts_live_agent() is False
+        assert backend._read_pane_information() == {}
 
     def test_not_alive_when_pane_get_output_is_not_json(self):
         backend, _ = _build_backend_with_stub(returncode=0, stdout="not json at all")
-        assert backend._target_pane_hosts_live_agent() is False
+        assert backend._read_pane_information() == {}

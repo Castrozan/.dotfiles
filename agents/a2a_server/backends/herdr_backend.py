@@ -7,6 +7,13 @@ from .base import AgentBackend, BackendObservation
 
 PANE_CAPTURE_LINE_COUNT = 200
 DELAY_BETWEEN_TYPING_INPUT_AND_PRESSING_ENTER_SECONDS = 0.25
+AGENT_STATUSES_THAT_MEAN_THE_TURN_IS_STILL_RUNNING = frozenset({"working", "blocked"})
+
+
+def agent_status_means_the_agent_is_busy(agent_status) -> bool | None:
+    if not isinstance(agent_status, str):
+        return None
+    return agent_status in AGENT_STATUSES_THAT_MEAN_THE_TURN_IS_STILL_RUNNING
 
 
 class HerdrAttachedAgentBackend(AgentBackend):
@@ -63,10 +70,14 @@ class HerdrAttachedAgentBackend(AgentBackend):
         self._previously_observed_meaningful_line_occurrence_keys = (
             current_occurrence_keys_as_set
         )
+        pane_information = self._read_pane_information()
         return BackendObservation(
             raw_output_since_last_call="\n".join(new_lines_in_capture_order),
-            is_alive=self._target_pane_hosts_live_agent(),
+            is_alive=pane_information.get("agent") is not None,
             last_activity_at_epoch_seconds=self._last_activity_at_epoch_seconds,
+            agent_is_busy=agent_status_means_the_agent_is_busy(
+                pane_information.get("agent_status")
+            ),
         )
 
     def cancel_gracefully(self) -> None:
@@ -79,15 +90,14 @@ class HerdrAttachedAgentBackend(AgentBackend):
         result = self._run_herdr_command(["pane", "get", self._herdr_pane_id])
         return result.returncode == 0
 
-    def _target_pane_hosts_live_agent(self) -> bool:
+    def _read_pane_information(self) -> dict:
         result = self._run_herdr_command(["pane", "get", self._herdr_pane_id])
         if result.returncode != 0:
-            return False
+            return {}
         try:
-            pane_information = json.loads(result.stdout)["result"]["pane"]
+            return json.loads(result.stdout)["result"]["pane"]
         except (json.JSONDecodeError, KeyError, TypeError):
-            return False
-        return pane_information.get("agent") is not None
+            return {}
 
     def _capture_pane_text(self) -> str:
         result = self._run_herdr_command(

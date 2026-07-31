@@ -10,29 +10,24 @@ let
   representativeInteractiveDefinitionNames = [
     "chrome-devtools"
     "codex"
-    "a2a"
     "mem0"
   ];
 
   partition = partitionFor representativeInteractiveDefinitionNames;
 in
 {
-  a2a-kept-agent-only-and-never-retired =
-    mkEvalCheck "a2a-kept-agent-only-and-never-retired"
+  a2a-stays-retired-so-the-dead-stdio-server-is-pruned =
+    mkEvalCheck "a2a-stays-retired-so-the-dead-stdio-server-is-pruned"
       (
-        builtins.elem "a2a" partition.agentOnlyMcpServerNames
-        && !(builtins.elem "a2a" partition.retiredMcpServerNames)
+        builtins.elem "a2a" partition.retiredMcpServerNames
+        && !(builtins.elem "a2a" partition.agentOnlyMcpServerNames)
       )
-      "a2a must stay agent-only and never retired: it is the outbound peer-messaging server an agent scopes into its own set with selectClawdeAgentMcpServers, and retiring it would make lib.getAttrs throw at build for any agent that names it";
-
-  a2a-excluded-from-interactive-mcp-injection =
-    mkEvalCheck "a2a-excluded-from-interactive-mcp-injection"
-      (!(builtins.elem "a2a" partition.interactivelyInjectedMcpServerNames))
-      "a2a must be excluded from the interactive ~/.claude.json injection; re-injecting it interactively regresses the interactive prefix token-cost goal (see docs/context-management.md) with no other test to catch the change";
+      "a2a is reached through the `a2a` command line tool, not an MCP, so it must stay retired: every host that once injected the stdio server still carries that entry in ~/.claude.json, and only the managed prune set removes it. Re-adding it as a definition also costs every agent its tool schemas at session start, which is what moving to a command line tool bought back";
 
   retired-mcps-remain-in-managed-prune-set =
     mkEvalCheck "retired-mcps-remain-in-managed-prune-set"
       (lib.all (retiredName: builtins.elem retiredName partition.managedMcpServerNames) [
+        "a2a"
         "brave-devtools"
         "browser-use"
         "figma"
@@ -48,7 +43,6 @@ in
           partitionWithoutMem0 = partitionFor [
             "chrome-devtools"
             "codex"
-            "a2a"
           ];
         in
         builtins.elem "mem0" partitionWithoutMem0.managedMcpServerNames
