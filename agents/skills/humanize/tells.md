@@ -22,17 +22,18 @@ false ranges where the endpoints sit on no real scale. Avoid subjectless passive
 </grammar_tells>
 
 <communication_artifacts>
-Cut chat, sycophancy, and signposting wholesale: reaction openers (Great question, You are absolutely right, Of course),
-servile closers (I hope this helps, Want me to), signposting and mechanics narration (Let's dive in, here is what you
-need to know, Let me, Now I will), persuasive-authority tropes (the real question is, at its core, what really matters),
+`enforced-wording-rules.md` already blocks the reaction opener and the mechanics-narration opener; this family runs
+wider, so cut chat, sycophancy, and signposting wholesale wherever they sit in the draft, not only at the front:
+servile closers (I hope this helps, Want me to), signposting mid-draft (Let's dive in, here is what you
+need to know, Now I will), persuasive-authority tropes (the real question is, at its core, what really matters),
 aphorism formulas (X is the language of Y), fake-candid hooks (Honestly?, Here is the thing), and knowledge-cutoff or
 speculative gap-filling disclaimers (maintains a low profile). One short emphatic sentence is fine; a run of
 manufactured staccato punchlines is itself a tell.
 </communication_artifacts>
 
 <punctuation_check>
-Scan the finished draft for em dashes and en dashes before returning; any hit means it is not done. Recast per the
-core.md user rule, in order: period, comma, colon, parentheses, or restructure. Keep attributive compound hyphens
+Scan the finished draft for the dashes `enforced-wording-rules.md` bans before returning; any hit means it is not done.
+Recast in order: period, comma, colon, parentheses, or restructure. Keep attributive compound hyphens
 (read-only, high-signal) but drop the spaced-hyphen sentence dash and predicate-position compounds (write the report is
 high quality, not high-quality). Curly quotes from autocorrect are not a tell on their own.
 </punctuation_check>

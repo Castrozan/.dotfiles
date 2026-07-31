@@ -9,18 +9,18 @@ from pathlib import Path
 
 hook_script_directory = Path(__file__).resolve().parent
 shared_common_hook_modules_directory = hook_script_directory.parent / "common"
+human_facing_reply_modules_directory = (
+    shared_common_hook_modules_directory / "human_facing_reply"
+)
 for importable_directory in (
     hook_script_directory,
     shared_common_hook_modules_directory,
+    human_facing_reply_modules_directory,
 ):
     importable_directory_string = str(importable_directory)
     if importable_directory.is_dir() and importable_directory_string not in sys.path:
         sys.path.insert(0, importable_directory_string)
 
-from end_of_turn_reply_template_rules import (  # noqa: E402
-    COMPRESSION_GUIDANCE,
-    template_violations_in_reply,
-)
 from hook_dispatch import HandlerResult  # noqa: E402
 from interactive_reply_reminder_state import (  # noqa: E402
     request_reply_reminder_rearm_after_drift,
@@ -28,6 +28,8 @@ from interactive_reply_reminder_state import (  # noqa: E402
 from interactive_session_detection import (  # noqa: E402
     is_keyboard_driven_interactive_session,
 )
+from reply_rule_catalog import template_violations_in_reply  # noqa: E402
+from reply_rule_rendering import rendered_bounce_guidance  # noqa: E402
 
 
 def user_prompt_text_from_event(transcript_event: dict) -> str:
@@ -99,10 +101,4 @@ def handle(hook_input: dict):
 
     request_reply_reminder_rearm_after_drift(hook_input.get("session_id") or "")
 
-    block_reason = (
-        "End-of-turn reply breaks the enforced plain-prose template ("
-        + "; ".join(violations)
-        + "). "
-        + COMPRESSION_GUIDANCE
-    )
-    return HandlerResult(decision="block", reason=block_reason)
+    return HandlerResult(decision="block", reason=rendered_bounce_guidance(violations))
