@@ -30,8 +30,8 @@ manager-readable English: no file paths, function names, hook names, class names
 jargon. One bullet captures one outcome; merge investigation, implementation, and verification of the same fix into one
 bullet. Never reference an MR or PR by number alone; use `the <short description> MR (!<number>)` so the manager
 understands without opening GitLab. When summarising an MR, read its description via `glab` `mr-view <id>` and lift the
-user-facing impact, not the implementation detail. Outcomes over activities. No em dashes and no hyphen-dash used as a
-sentence dash; use a comma, a colon, or rewrite. Keep each bullet to roughly one screen line. The Next section lists
+user-facing impact, not the implementation detail. Outcomes over activities. The manager is a human reader, so the
+`humanize` skill governs the wording. Keep each bullet to roughly one screen line. The Next section lists
 concrete handoffs (`ask the team to review`, `monitor X reaching QA`, `kick off Y`), not aspirations.
 </entry_writing_rules>
 

@@ -40,7 +40,7 @@ they are out of the path of work.
 </policy_documentation>
 
 <format>
-Dense prose over bullet lists. No filler phrases. No "This document describes..." preambles. Start with the content. Use
-headings only when sections are truly distinct. Markdown only. No generated badges, no status indicators that need
-updating.
+Markdown only. No generated badges and no status indicators that need updating, because they rot the moment the code
+moves. How the prose itself reads is the `humanize` skill's call on its published page channel, not a second rulebook
+here.
 </format>

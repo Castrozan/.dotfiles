@@ -1,11 +1,10 @@
 ---
 name: review
-description: Compliance auditing, instruction-file audits, skill routing repair, and output compression. Use when checking conventions, auditing a skill or CLAUDE.md edit, fixing a skill that never fires, or compressing output; for judging code read code-review, for writing docs read docs.
+description: Compliance auditing, instruction-file audits, and skill routing repair. Use when checking conventions, auditing a skill or CLAUDE.md edit, or fixing a skill that never fires; for judging code read code-review, for writing docs read docs, for how prose is worded read humanize.
 ---
 
-Umbrella for the quality lenses that are not the code itself. Judging code is the `code-review` skill.
-
-For output compression and ultra-dense mode, read `tldr.md`.
+Umbrella for the quality lenses that are not the code itself. Judging code is the `code-review` skill, and how any
+human-facing text is worded is the `humanize` skill.
 
 For compliance rule auditing, read `compliance.md`.
 
