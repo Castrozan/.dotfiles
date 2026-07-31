@@ -1,13 +1,27 @@
 {
+  lib,
   mkEvalCheck,
   helpers,
   self,
 }:
 let
   fixtures = import ./harness-check-fixtures.nix { inherit helpers self; };
-  inherit (fixtures) supervisedWindowNames sidecarProcessNamesOfAgent;
+  inherit (fixtures)
+    supervisedWindowNames
+    sidecarProcessNamesOfAgent
+    sidecarProcessMatchPatternsOfAgent
+    ;
 in
 {
+  clawde-a-bridge-sidecar-stays-findable-across-its-own-upgrades =
+    mkEvalCheck "clawde-a-bridge-sidecar-stays-findable-across-its-own-upgrades"
+      (
+        !(builtins.any (pattern: lib.hasInfix "/nix/store/" pattern) (
+          sidecarProcessMatchPatternsOfAgent "agent-on-discord-via-codex"
+        ))
+      )
+      "this pattern is the only way the supervisor recognises a bridge it already started, so pinning it to the bridge script's store path makes every edit to that script invisible to the reconcile loop: the bridge from the previous generation is never culled, two discord clients end up holding the same bot token, and the agent answers everything twice";
+
   clawde-discord-on-codex-gets-a-bridge-sidecar-process =
     mkEvalCheck "clawde-discord-on-codex-gets-a-bridge-sidecar-process"
       (

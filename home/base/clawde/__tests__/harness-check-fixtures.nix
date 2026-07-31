@@ -38,12 +38,19 @@ let
 
   supervisedWindowsOfTheDefaultWorkspace =
     (builtins.head cfgWithBothHarnesses.clawde.serviceSpecification.sessions).agents;
+
+  sidecarProcessesOfAgent =
+    agentName:
+    (builtins.head (
+      builtins.filter (window: window.name == agentName) supervisedWindowsOfTheDefaultWorkspace
+    )).sidecar_processes;
 in
 {
   inherit
     bothHarnessModules
     cfgWithBothHarnesses
     supervisedWindowsOfTheDefaultWorkspace
+    sidecarProcessesOfAgent
     ;
 
   parseDeployedJson =
@@ -52,10 +59,9 @@ in
   supervisedWindowNames = map (window: window.name) supervisedWindowsOfTheDefaultWorkspace;
 
   sidecarProcessNamesOfAgent =
+    agentName: map (sidecarProcess: sidecarProcess.name) (sidecarProcessesOfAgent agentName);
+
+  sidecarProcessMatchPatternsOfAgent =
     agentName:
-    map (sidecarProcess: sidecarProcess.name) (
-      (builtins.head (
-        builtins.filter (window: window.name == agentName) supervisedWindowsOfTheDefaultWorkspace
-      )).sidecar_processes
-    );
+    map (sidecarProcess: sidecarProcess.process_match_pattern) (sidecarProcessesOfAgent agentName);
 }
