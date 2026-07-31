@@ -10,21 +10,16 @@ import sys
 import time
 from pathlib import Path
 
-hook_script_directory = Path(__file__).resolve().parent
-shared_common_hook_modules_directory = hook_script_directory.parent / "common"
-for importable_directory in (
-    hook_script_directory,
-    shared_common_hook_modules_directory,
-):
-    importable_directory_string = str(importable_directory)
-    if importable_directory.is_dir() and importable_directory_string not in sys.path:
-        sys.path.insert(0, importable_directory_string)
+shared_common_hook_modules_directory = str(Path(__file__).resolve().parent)
+if shared_common_hook_modules_directory not in sys.path:
+    sys.path.insert(0, shared_common_hook_modules_directory)
 
 from hook_dispatch import CLAUDE_SURFACE, requested_hook_surface  # noqa: E402
 
 HERDR_REPORT_AGENT_SESSION_METHOD = "pane.report_agent_session"
 HERDR_SOCKET_TIMEOUT_SECONDS = 0.5
 HERDR_RESPONSE_READ_BYTES = 4096
+SUBAGENT_HOOK_EVENT_NAME = "SubagentStop"
 
 
 def running_inside_a_herdr_pane() -> bool:
@@ -84,8 +79,15 @@ def send_request_over_the_herdr_socket(request: dict) -> None:
         client.close()
 
 
+def belongs_to_a_subagent(hook_input: dict) -> bool:
+    return (
+        bool(hook_input.get("agent_id"))
+        or hook_input.get("hook_event_name") == SUBAGENT_HOOK_EVENT_NAME
+    )
+
+
 def handle(hook_input: dict):
-    if hook_input.get("agent_id"):
+    if belongs_to_a_subagent(hook_input):
         return None
     if not running_inside_a_herdr_pane():
         return None

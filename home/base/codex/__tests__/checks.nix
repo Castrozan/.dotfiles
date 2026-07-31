@@ -183,7 +183,7 @@ in
   codex-hooks-config-stop-dispatcher =
     mkEvalCheck "codex-hooks-config-stop-dispatcher"
       (codexHookEventRunsScript "Stop" "stop-dispatcher.py")
-      "Codex Stop must run the same stop-dispatcher.py Claude registers; it composes lint-turn-review on both surfaces and end-of-turn-format-guard on Claude only";
+      "Codex Stop must run the same stop-dispatcher.py Claude registers; it composes lint-turn-review and herdr_agent_session_report on both surfaces and end-of-turn-format-guard on Claude only. The herdr report runs per turn as well as per session start so an agent that was already running when the hook shipped registers itself for reboot resume on its next turn instead of staying invisible until it restarts";
 
   codex-hooks-every-dispatcher-declares-its-surface =
     let

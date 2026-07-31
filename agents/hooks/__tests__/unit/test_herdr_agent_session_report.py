@@ -112,6 +112,22 @@ def test_reports_the_codex_agent_on_the_codex_surface(
     assert request["params"]["source"] == "herdr:codex"
 
 
+def test_reports_the_session_id_at_the_end_of_every_turn(herdr_pane_environment):
+    herdr_agent_session_report_handler.handle(
+        {"hook_event_name": "Stop", "session_id": "abc-123"}
+    )
+    herdr_pane_environment.close()
+    request = herdr_pane_environment.received_requests[0]
+    assert request["params"]["agent_session_id"] == "abc-123"
+
+
+def test_reports_nothing_for_a_subagent_stop(herdr_pane_environment):
+    herdr_agent_session_report_handler.handle(
+        {"hook_event_name": "SubagentStop", "session_id": "abc-123"}
+    )
+    assert herdr_pane_environment.received_requests == []
+
+
 def test_reports_nothing_for_a_subagent_session(herdr_pane_environment):
     herdr_agent_session_report_handler.handle(
         {
