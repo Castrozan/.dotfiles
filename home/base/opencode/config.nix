@@ -56,6 +56,17 @@ let
       prune = true;
     };
 
+    watcher = {
+      ignore = [
+        ".git/**"
+        "node_modules/**"
+        "dist/**"
+        "result/**"
+        "result-*/**"
+        ".direnv/**"
+      ];
+    };
+
     experimental = {
       batch_tool = true;
     };
