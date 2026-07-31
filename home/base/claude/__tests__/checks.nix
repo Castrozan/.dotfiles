@@ -18,6 +18,8 @@ let
   };
   inherit (helpers) mkEvalCheck;
 
+  skillSetBuilders = import ../skill-injection/skill-set-builders.nix;
+
   cfg = helpers.homeManagerTestConfiguration [
     self.homeManagerModules.claude-code
   ];
@@ -79,6 +81,13 @@ in
   claude-skills-directory =
     mkEvalCheck "claude-skills-directory" (hasFilePrefix ".claude/skills/")
       "skills directory entries should be in home.file";
+
+  claude-machine-tier-carries-every-skill =
+    mkEvalCheck "claude-machine-tier-carries-every-skill"
+      (builtins.all (
+        skillName: builtins.hasAttr ".claude/skills/${skillName}" cfg.home.file
+      ) skillSetBuilders.allSkillNames)
+      "every skill in agents/skills must deploy into the machine tier at .claude/skills, because that is the only tier a session outside this repository can see; narrowing it back to a curated subset silently strands each skill's knowledge.md in ~/.dotfiles, which is the failure home/base/claude/docs/session-context-loading.md exists to prevent";
 
   claude-bin-wrapper =
     mkEvalCheck "claude-bin-wrapper" (builtins.hasAttr ".local/bin/claude" cfg.home.file)
