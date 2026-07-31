@@ -30,9 +30,12 @@ let
     }
   ];
 
+  parseDeployedJson =
+    deployedText: builtins.fromJSON (builtins.unsafeDiscardStringContext deployedText);
+
   eligibleHarnessesOf =
     agentName:
-    (builtins.fromJSON cfgWithBothHarnesses.home.file."clawde/launch-config/${agentName}.json".text)
+    (parseDeployedJson cfgWithBothHarnesses.home.file."clawde/launch-config/${agentName}.json".text)
     .harness_launch_commands;
 
   cfgWithBothHarnesses = helpers.homeManagerTestConfiguration bothHarnessModules;
@@ -157,7 +160,7 @@ in
   clawde-model-by-harness-pins-what-an-agent-runs-after-a-switch =
     mkEvalCheck "clawde-model-by-harness-pins-what-an-agent-runs-after-a-switch"
       (
-        (builtins.fromJSON
+        (parseDeployedJson
           cfgWithBothHarnesses.home.file."clawde/harness-home/opencode/agent-on-codex/opencode.json".text
         ).model == "opencode/some-free-model"
       )
