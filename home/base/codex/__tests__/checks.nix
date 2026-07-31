@@ -165,10 +165,10 @@ in
     parsedCodexHooksConfig ? hooks && firstCodexSessionStartGroup ? hooks
   ) "Codex managed requirements should use the current top-level hooks schema";
 
-  codex-hooks-config-session-start-compaction-only =
-    mkEvalCheck "codex-hooks-config-session-start-compaction-only"
-      ((firstCodexSessionStartGroup.matcher or "") == "compact")
-      "Codex SessionStart should run only after compaction, not on startup, resume, or clear";
+  codex-hooks-config-session-start-every-source =
+    mkEvalCheck "codex-hooks-config-session-start-every-source"
+      ((firstCodexSessionStartGroup.matcher or "") == ".*")
+      "Codex SessionStart must run on every source, not just compaction: herdr_agent_session_report_handler reports the pane's session id to herdr on startup and resume, and that report is what lets herdr resume the agent after a reboot. compaction_context_recovery_handler gates itself on source == compact, so widening the matcher does not fire the recovery directive outside compaction";
 
   codex-hooks-config-post-tool-use-dispatcher =
     mkEvalCheck "codex-hooks-config-post-tool-use-dispatcher"

@@ -39,7 +39,10 @@ HANDLERS_REQUIRED_ON_THE_CODEX_SURFACE = {
         "line_count_limit_guard_handler",
     },
     "STOP_HANDLERS": {"lint_turn_review_handler"},
-    "SESSION_START_HANDLERS": {"compaction_context_recovery_handler"},
+    "SESSION_START_HANDLERS": {
+        "compaction_context_recovery_handler",
+        "herdr_agent_session_report_handler",
+    },
 }
 
 HANDLERS_THAT_MUST_STAY_OFF_THE_CODEX_SURFACE = {

@@ -24,13 +24,13 @@ in
 {
   SessionStart = [
     {
-      matcher = "compact";
+      matcher = ".*";
       hooks = [
         {
           type = "command";
           command = runCodexDispatcher "session-start-dispatcher.py";
           timeout = 5;
-          statusMessage = "Recovering compacted context";
+          statusMessage = "Restoring session state";
         }
       ];
     }
