@@ -148,5 +148,5 @@ At end of every tick, exactly two artifacts must exist:
 2. A Discord reply via `mcp__plugin_discord_discord__reply` carrying the FULL briefing body, unless
    `quiet-mornings.flag` is set or the chat-id file is missing.
 
-If either is missing, log a near-miss in `briefings/lessons-learned/YYYY-MM-DD-missed-tick.md` and update memory.
+If either is missing, log a near-miss in `briefings/lessons-learned/YYYY-MM-DD-missed-tick.md`.
 </output_contract>
