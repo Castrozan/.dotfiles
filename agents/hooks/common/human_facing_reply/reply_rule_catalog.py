@@ -141,7 +141,9 @@ HUMAN_FACING_REPLY_RULES = [
 
 
 def rules_applying_to(channel_scope: str) -> list[HumanFacingReplyRule]:
-    return [rule for rule in HUMAN_FACING_REPLY_RULES if rule.applies_to == channel_scope]
+    return [
+        rule for rule in HUMAN_FACING_REPLY_RULES if rule.applies_to == channel_scope
+    ]
 
 
 def rules_in_tier(enforcement_tier: str) -> list[HumanFacingReplyRule]:
@@ -160,12 +162,6 @@ def violations_from_rules(
         for violation in (rule.violation_of(reply) for rule in rules)
         if violation
     ]
-
-
-def always_enforced_violations(reply_text: str) -> list[str]:
-    return violations_from_rules(
-        ReplyUnderReview(reply_text), rules_in_tier(ALWAYS_ENFORCED_TIER)
-    )
 
 
 def template_violations_in_reply(

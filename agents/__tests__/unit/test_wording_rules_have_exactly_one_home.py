@@ -19,20 +19,20 @@ SINGLE_HOME_RULE_PHRASES = {
 }
 
 
-def surfaces_stating(phrase: str) -> list[str]:
+def surfaces_stating(phrase: str) -> set[str]:
     pattern = re.compile(re.escape(phrase), re.IGNORECASE)
-    return [
+    return {
         str(path.relative_to(REPO_ROOT))
         for path in every_linted_markdown_file()
-        if pattern.search(path.read_text(encoding="utf-8"))
-    ]
+        if pattern.search(re.sub(r"\s+", " ", path.read_text(encoding="utf-8")))
+    }
 
 
 def test_no_wording_rule_is_stated_outside_its_single_home():
     trespassers = {
-        phrase: sorted(set(surfaces_stating(phrase)) - allowed_surfaces)
+        phrase: sorted(surfaces_stating(phrase) - allowed_surfaces)
         for phrase, allowed_surfaces in SINGLE_HOME_RULE_PHRASES.items()
-        if set(surfaces_stating(phrase)) - allowed_surfaces
+        if surfaces_stating(phrase) - allowed_surfaces
     }
     assert not trespassers, (
         "a wording rule stated in two surfaces drifts the moment one is edited, which is "
