@@ -43,9 +43,7 @@ let
 
   harnessNamesCarryingDiscord = builtins.sort (a: b: a < b) (
     builtins.attrNames (
-      pkgs.lib.filterAttrs (
-        _: harness: builtins.elem "discord" harness.supportedChannelTypes
-      ) harnesses
+      pkgs.lib.filterAttrs (_: harness: builtins.elem "discord" harness.supportedChannelTypes) harnesses
     )
   );
 
@@ -154,11 +152,9 @@ in
 
   clawde-discord-on-codex-gets-a-bridge-sidecar =
     mkEvalCheck "clawde-discord-on-codex-gets-a-bridge-sidecar"
-      (
-        builtins.any (
-          window: window.name == "agent-on-discord-via-codex-discord"
-        ) supervisedWindowsOfTheDefaultWorkspace
-      )
+      (builtins.any (
+        window: window.name == "agent-on-discord-via-codex-discord"
+      ) supervisedWindowsOfTheDefaultWorkspace)
       "codex has no --channels flag and no plugin providing an inbound channel transport, so a discord agent on it only ever receives a message through the sidecar bridge window; drop that window and the agent looks deployed while nothing can reach it";
 
   clawde-discord-on-claude-gets-no-bridge-sidecar =
