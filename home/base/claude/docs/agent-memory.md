@@ -152,8 +152,11 @@ carries the knowledge-versus-work-state split and the capture path.
 
 ## Migration
 
-No big-bang triage for the rest. The nineteen stores are inert with auto-memory disabled, so they remain on disk as a
-grep-able archive that nothing loads and there is no correctness pressure to convert them. What is filed is the dotfiles
-store, which carried this repo's hard-won traps; the eight entries describing other repositories still belong in those
-repositories, and the work-sensitive ones in private-config. Everything else graduates on contact, the next time work
-touches that area.
+What was filed is the dotfiles store, which carried this repo's hard-won traps. The eight entries describing other
+repositories still belong in those repositories, and the work-sensitive ones in private-config.
+
+All nineteen stores are now deleted, along with the seven bridge symlinks that pointed project directories at agent
+workspaces, and the three repositories that held one had it gitignored or untracked so none of them went dirty. The 445
+files are preserved as a single `~/.claude/memory-stores-archive-*.tar.gz`, which nothing loads and nothing indexes;
+delete that too when it stops earning its megabyte. Anything in it that turns out to matter graduates into its owner the
+next time work touches that area, which is the same path any newly learned fact takes.
