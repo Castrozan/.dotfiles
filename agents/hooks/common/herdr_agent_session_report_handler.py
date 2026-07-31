@@ -30,6 +30,10 @@ def running_inside_a_herdr_pane() -> bool:
     )
 
 
+def owned_by_the_clawde_supervisor() -> bool:
+    return bool(os.environ.get("CLAWDE_AGENT_NAME"))
+
+
 def reported_agent_name() -> str:
     return "claude" if requested_hook_surface() == CLAUDE_SURFACE else "codex"
 
@@ -88,6 +92,8 @@ def belongs_to_a_subagent(hook_input: dict) -> bool:
 
 def handle(hook_input: dict):
     if belongs_to_a_subagent(hook_input):
+        return None
+    if owned_by_the_clawde_supervisor():
         return None
     if not running_inside_a_herdr_pane():
         return None

@@ -61,6 +61,7 @@ def herdr_socket_server():
 
 @pytest.fixture
 def herdr_pane_environment(monkeypatch, herdr_socket_server):
+    monkeypatch.delenv("CLAWDE_AGENT_NAME", raising=False)
     monkeypatch.setenv("HERDR_ENV", "1")
     monkeypatch.setenv("HERDR_PANE_ID", HERDR_PANE_ID)
     monkeypatch.setenv("HERDR_SOCKET_PATH", str(herdr_socket_server.socket_path))
@@ -121,6 +122,16 @@ def test_reports_the_session_id_at_the_end_of_every_turn(herdr_pane_environment)
     assert request["params"]["agent_session_id"] == "abc-123"
 
 
+def test_reports_nothing_for_an_agent_the_clawde_supervisor_owns(
+    herdr_pane_environment, monkeypatch
+):
+    monkeypatch.setenv("CLAWDE_AGENT_NAME", "jenny")
+    herdr_agent_session_report_handler.handle(
+        {"hook_event_name": "SessionStart", "session_id": "abc-123"}
+    )
+    assert herdr_pane_environment.received_requests == []
+
+
 def test_reports_nothing_for_a_subagent_stop(herdr_pane_environment):
     herdr_agent_session_report_handler.handle(
         {"hook_event_name": "SubagentStop", "session_id": "abc-123"}
@@ -155,6 +166,7 @@ def test_reports_nothing_outside_a_herdr_pane(monkeypatch, herdr_socket_server):
 
 
 def test_survives_a_missing_herdr_socket(monkeypatch, tmp_path):
+    monkeypatch.delenv("CLAWDE_AGENT_NAME", raising=False)
     monkeypatch.setenv("HERDR_ENV", "1")
     monkeypatch.setenv("HERDR_PANE_ID", HERDR_PANE_ID)
     monkeypatch.setenv("HERDR_SOCKET_PATH", str(tmp_path / "absent.sock"))
