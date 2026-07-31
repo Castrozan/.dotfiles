@@ -68,17 +68,15 @@ in
       )
       "the exported clawde module must evaluate without the claude-code and codex modules when no agents require either harness";
 
-  clawde-personal-skill-set-carries-the-research-skill =
-    mkEvalCheck "clawde-personal-skill-set-carries-the-research-skill"
-      (builtins.hasAttr ".local/share/claude-skill-sets/personal/.claude/skills/research" cfgWithBothHarnesses.home.file)
-      "the personal skill set is what every general-purpose clawde agent loads with --add-dir, so it must materialize under .local/share/claude-skill-sets/personal; an empty set leaves those agents with no skills at all";
+  clawde-machine-tier-carries-the-research-skill =
+    mkEvalCheck "clawde-machine-tier-carries-the-research-skill"
+      (builtins.hasAttr ".claude/skills/research" cfgWithBothHarnesses.home.file)
+      "every clawde agent on the claude harness takes its skills from the machine tier at .claude/skills rather than a per-agent --add-dir set; an empty machine tier leaves those agents with no skills at all";
 
-  clawde-steward-payload-is-not-in-the-personal-skill-set =
-    mkEvalCheck "clawde-steward-payload-is-not-in-the-personal-skill-set"
-      (
-        !(builtins.hasAttr ".local/share/claude-skill-sets/personal/.claude/skills/steward" cfgWithBothHarnesses.home.file)
-      )
-      "the privileged steward payload must not sit in the personal skill set every general-purpose agent loads; it belongs to the steward agent type and is scoped to the steward instance";
+  clawde-steward-payload-is-not-in-the-machine-tier =
+    mkEvalCheck "clawde-steward-payload-is-not-in-the-machine-tier"
+      (!(builtins.hasAttr ".claude/skills/steward" cfgWithBothHarnesses.home.file))
+      "the privileged steward payload must not sit in the machine tier every session loads; it belongs to the steward agent type and is scoped to the steward instance";
 
   clawde-claude-harness-package-is-injected =
     mkEvalCheck "clawde-claude-harness-package-is-injected" (harnesses.claude.package != null)

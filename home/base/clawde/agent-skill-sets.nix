@@ -2,8 +2,6 @@
 let
   skillSetBuilders = import ../claude/skill-injection/skill-set-builders.nix;
 
-  personalSkillSetClaudeSkillDirectorySymlinks = skillSetBuilders.claudeSkillDirectorySymlinksAtPrefix ".local/share/claude-skill-sets/personal/.claude/skills" skillSetBuilders.specializedSkillSetSkillNames;
-
   curatedSkillSets = config.claudeCuratedSkillSets;
 
   curatedSkillSetClaudeSkillDirectorySymlinks =
@@ -29,10 +27,12 @@ in
       a set from the module that owns the agent consuming it, not here, so the
       skill list stays next to the agent whose job defines it. A name matching
       no skill on disk is dropped rather than failing the build, so a set
-      survives a skill rename until someone notices the agent lost it.
+      survives a skill rename until someone notices the agent lost it. A set is
+      only worth declaring for a codex agent: every skill already reaches every
+      Claude session through the machine tier at ~/.claude/skills, so a set of
+      dotfiles skills handed to a Claude agent duplicates what it already has.
     '';
   };
 
-  config.home.file =
-    personalSkillSetClaudeSkillDirectorySymlinks // allCuratedSkillSetClaudeSkillDirectorySymlinks;
+  config.home.file = allCuratedSkillSetClaudeSkillDirectorySymlinks;
 }

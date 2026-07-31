@@ -4,7 +4,7 @@ let
 
   coreRulesDirectory = ../../../../agents/core_rules;
 
-  globalClaudeSkillDirectorySymlinks = skillSetBuilders.claudeSkillDirectorySymlinksAtPrefix ".claude/skills" skillSetBuilders.globallyLoadedSkillNamesPresentOnDisk;
+  globalClaudeSkillDirectorySymlinks = skillSetBuilders.claudeSkillDirectorySymlinksAtPrefix ".claude/skills" skillSetBuilders.allSkillNames;
 
   readInstructionsBodyWithoutFrontmatter =
     instructionsFile:

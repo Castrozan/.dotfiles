@@ -143,15 +143,28 @@ and their registries together, so isolating skills would mean rebuilding an enti
 Injecting the interactive rules through `SessionStart`. Compaction can drop injected context, and a reply-shape rule
 that survives only until the first compaction is worse than none.
 
-## Migration
+## What shipped
 
-Move every `agents/skills/` entry into the machine tier by widening `globallyLoadedSkillNames` to all of them, and
-deploy `private-config/machines/<host>/skills/*` into the same tier from the module that owns the host. Delete the
-`personal` set and jenny's `--add-dir`, leaving the curated codex sets alone. Cut the launcher down to the two-line
-wrapper and rename it, since "workspace" described machinery that no longer exists. Repoint the shell aliases. Delete
-the nine launcher tests and keep the budget test, which is now the only thing standing between the machine tier and the
-failure this document describes.
+`skill-set-builders.nix` no longer splits skills into a global list and a specialized remainder; there is one list,
+`allSkillNames`, and `all-sessions-global.nix` deploys all of it into the machine tier. Machine-private skills already
+took this path: `private.nix` deploys `private-config/machines/<host>/skills/*` into `.claude/skills` for that host
+only, so removing the walk is what stops rin's four private skills from loading on kira.
 
-One behavior is untested and should be confirmed while implementing: which side wins when a repository tier skill and a
-machine tier skill share a name. Either direction is acceptable, because both sets are curated and reviewed, unlike the
-301 drops the walk performs today, but the answer belongs in `claude-harness/knowledge.md`.
+The `personal` set and the `skillDirectories` entries that pointed at it are gone from jenny, golden and claude, since
+all three now receive the same skills from the machine tier. `claudeCuratedSkillSets` survives for the codex agents,
+which never read `~/.claude/skills`.
+
+`launch-claude-workspace-session`, its nine tests, their `conftest.py` and a dead bash predecessor at
+`scripts/claude-workspace` are deleted, 1655 lines in total. `claude-interactive` replaces them: it exports the marker
+and appends the interactive surfaces with `--append-system-prompt-file`, verified end to end against 2.1.220. It passes
+no `--model`, because `settings.json` already pins the same value, and no effort flag, because `binary.nix` already
+exports `CLAUDE_CODE_EFFORT_LEVEL`.
+
+Two agents pay for the machine tier. `monster` on chise and `silver` on rin declare `skillDirectories = [ ]` and today
+see only ten skills, so they gain about 1750 tokens of descriptions per session. That is the accepted price of one list
+with no curation to drift. If it ever bites, `CLAUDE_CONFIG_DIR` is the escape hatch, at the cost of rebuilding a
+config tree for that agent.
+
+One behavior stays untested: which side wins when a repository tier skill and a machine tier skill share a name. Either
+direction is acceptable, because both sets are curated and reviewed, unlike the 301 drops the walk performed, but the
+answer belongs in `claude-harness/knowledge.md` once someone hits it.

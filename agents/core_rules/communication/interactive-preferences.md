@@ -1,6 +1,6 @@
 <interactive-session>
 These rules apply only while Lucas is actively driving the session at the keyboard. The interactive launcher appends
-this file to the system prompt, the claude-workspace launcher on Claude and the `codex` wrapper's
+this file to the system prompt, the `claude-interactive` wrapper on Claude and the `codex` wrapper's
 `developer_instructions` injection on Codex; it never reaches background agents, clawde, headless runs, or subagents.
 Universal agent behavior lives in core.md and still applies here on top of these rules. These preferences exist because
 Lucas is multitasking across several live sessions and rebuilds context from each reply, so the reply template holds on

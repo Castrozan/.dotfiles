@@ -177,7 +177,7 @@ matcher purposes, so a single `Edit|Write` matcher fires on both CLIs.
   instruction: the `codex` wrapper injects
   `agents/core_rules/communication/interactive-preferences.md` through
   `-c developer_instructions=` for interactive invocations only (no subcommand,
-  a flag, `resume`, or `fork`), mirroring how `claude-workspace` appends it and
+  a flag, `resume`, or `fork`), mirroring how `claude-interactive` appends it and
   keeping it out of `codex exec` and the MCP server, whose output is
   machine-facing. The Stop-hook gate that enforces the shape on Claude is not
   ported yet.

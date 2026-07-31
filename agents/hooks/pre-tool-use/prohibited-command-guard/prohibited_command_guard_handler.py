@@ -48,7 +48,7 @@ PROHIBITED_BASH_COMMAND_PATTERNS = [
     (
         rf"{COMMAND_INVOCATION_POSITION_PREFIX}claude(?![\w-])[^;&|`)\n]*?\s(?:-p|--print)(?:[=\s'\"]|$)",
         "claude -p/--print (headless oneshot) is prohibited; drive an interactive "
-        "session instead (the claude-workspace wrapper, or a herdr agent via "
+        "session instead (the claude-interactive wrapper, or a herdr agent via "
         '\'herdr agent start <name> --cwd <dir> --tab "$HERDR_TAB_ID" --no-focus '
         "-- claude'). "
         "For a genuinely sanctioned one-off, prefix the command with "

@@ -1,19 +1,6 @@
 let
   dotfilesSkillsDirectory = ../../../../agents/skills;
 
-  globallyLoadedSkillNames = [
-    "personal"
-    "goal-prompt"
-    "browser"
-    "deliver"
-    "herdr"
-    "instructions"
-    "docs"
-    "review"
-    "humanize"
-    "restart"
-  ];
-
   getSkillNamesFromDirectory =
     directory:
     if builtins.pathExists directory then
@@ -24,14 +11,6 @@ let
       [ ];
 
   allSkillNames = getSkillNamesFromDirectory dotfilesSkillsDirectory;
-
-  globallyLoadedSkillNamesPresentOnDisk = builtins.filter (
-    skillName: builtins.elem skillName globallyLoadedSkillNames
-  ) allSkillNames;
-
-  specializedSkillSetSkillNames = builtins.filter (
-    skillName: !builtins.elem skillName globallyLoadedSkillNames
-  ) allSkillNames;
 
   claudeSkillDirectorySymlinksAtPrefix =
     homeFileSkillsPrefix: skillNames:
@@ -48,8 +27,6 @@ in
   inherit
     dotfilesSkillsDirectory
     allSkillNames
-    globallyLoadedSkillNamesPresentOnDisk
-    specializedSkillSetSkillNames
     claudeSkillDirectorySymlinksAtPrefix
     ;
 }

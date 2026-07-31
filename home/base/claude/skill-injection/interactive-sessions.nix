@@ -15,14 +15,12 @@ let
         + builtins.readFile ../../../../agents/core_rules/adaptive-implementation-delivery-process.md
       );
 
-  claudeWorkspaceScript = pkgs.writeShellScriptBin "claude-workspace" ''
-    export CLAUDE_BINARY_PATH="${lib.getExe config.claude.package}"
+  claudeInteractiveScript = pkgs.writeShellScriptBin "claude-interactive" ''
     export CLAUDE_INTERACTIVE_PREFERENCES_PATH="${interactiveSessionOnlySystemPromptSurfaces}"
-    export CLAUDE_INTERACTIVE_MODEL="claude-opus-5[1m]"
-    export CLAUDE_CODE_EFFORT_LEVEL="max"
-    exec ${pkgs.python312}/bin/python3 ${./scripts/launch-claude-workspace-session} "$@"
+    exec ${lib.getExe config.claude.package} \
+      --append-system-prompt-file "${interactiveSessionOnlySystemPromptSurfaces}" "$@"
   '';
 in
 {
-  home.packages = [ claudeWorkspaceScript ];
+  home.packages = [ claudeInteractiveScript ];
 }
