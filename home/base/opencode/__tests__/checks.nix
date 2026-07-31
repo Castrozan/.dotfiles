@@ -29,8 +29,11 @@ let
       name: builtins.substring 0 (builtins.stringLength prefix) name == prefix
     ) deployedFileNames;
 
-  deployedOpencodeSettings = builtins.fromJSON cfg.home.file.".config/opencode/opencode.json".text;
-  deployedTuiSettings = builtins.fromJSON cfg.home.file.".config/opencode/tui.json".text;
+  parseDeployedJson =
+    deployedText: builtins.fromJSON (builtins.unsafeDiscardStringContext deployedText);
+
+  deployedOpencodeSettings = parseDeployedJson cfg.home.file.".config/opencode/opencode.json".text;
+  deployedTuiSettings = parseDeployedJson cfg.home.file.".config/opencode/tui.json".text;
   deployedGlobalRules = cfg.home.file.".config/opencode/AGENTS.md".text;
 
   codexGlobalInstructions =
