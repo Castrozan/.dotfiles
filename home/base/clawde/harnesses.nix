@@ -6,5 +6,8 @@
     }
     // lib.optionalAttrs (config ? codex) {
       codex.package = config.codex.unwrappedPackage;
+    }
+    // lib.optionalAttrs (config ? opencode) {
+      opencode.package = config.opencode.unwrappedPackage;
     };
 }

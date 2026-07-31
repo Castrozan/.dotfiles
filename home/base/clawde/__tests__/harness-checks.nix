@@ -9,6 +9,7 @@ let
     self.homeManagerModules.clawde
     self.homeManagerModules.claude-code
     self.homeManagerModules.codex
+    self.homeManagerModules.opencode
     {
       clawde.agents = {
         agent-on-claude = {
@@ -18,10 +19,21 @@ let
         agent-on-codex = {
           harness = "codex";
           personality = "Codex harness agent";
+          modelByHarness.opencode = "opencode/some-free-model";
+        };
+        agent-on-discord = {
+          harness = "claude";
+          personality = "Discord channel agent";
+          channel.type = "discord";
         };
       };
     }
   ];
+
+  eligibleHarnessesOf =
+    agentName:
+    (builtins.fromJSON cfgWithBothHarnesses.home.file."clawde/launch-config/${agentName}.json".text)
+    .harness_launch_commands;
 
   cfgWithBothHarnesses = helpers.homeManagerTestConfiguration bothHarnessModules;
 
@@ -125,4 +137,29 @@ in
     mkEvalCheck "clawde-discord-channel-is-refused-on-codex"
       (!(builtins.elem "discord" harnesses.codex.supportedChannelTypes))
       "codex has no --channels flag and no plugin providing an inbound channel transport, so pairing a discord channel with it must fail the build instead of launching an agent that can never receive a message";
+
+  clawde-every-installed-harness-is-switchable-at-runtime =
+    mkEvalCheck "clawde-every-installed-harness-is-switchable-at-runtime"
+      (
+        builtins.attrNames (eligibleHarnessesOf "agent-on-codex") == [
+          "claude"
+          "codex"
+          "opencode"
+        ]
+      )
+      "`clawde harness <agent> <harness>` can only move an agent onto a harness the deployment already materialized a launch command for, so a channel-free agent must carry one per installed harness: drop one and the switch silently refuses a harness the machine can actually run";
+
+  clawde-a-channel-agent-cannot-be-switched-onto-a-harness-without-that-channel =
+    mkEvalCheck "clawde-a-channel-agent-cannot-be-switched-onto-a-harness-without-that-channel"
+      (builtins.attrNames (eligibleHarnessesOf "agent-on-discord") == [ "claude" ])
+      "the runtime harness switch bypasses the build-time channel assertion, so the eligible set is the only thing standing between a discord agent and a harness that cannot receive a message: it must exclude every harness that does not carry the agent's channel";
+
+  clawde-model-by-harness-pins-what-an-agent-runs-after-a-switch =
+    mkEvalCheck "clawde-model-by-harness-pins-what-an-agent-runs-after-a-switch"
+      (
+        (builtins.fromJSON
+          cfgWithBothHarnesses.home.file."clawde/harness-home/opencode/agent-on-codex/opencode.json".text
+        ).model == "opencode/some-free-model"
+      )
+      "a model identifier from one harness is meaningless to another, so switching harnesses must resolve the model again through modelByHarness rather than carrying the declared harness's model across";
 }
