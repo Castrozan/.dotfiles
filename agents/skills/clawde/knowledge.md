@@ -34,6 +34,16 @@ returning early, so use a respawn that replaces the pane and never a plain new-w
 is exactly this, a real window holding a bare login shell.
 </supervisor_reconciles_by_wrapper_identity>
 
+<a_channel_bridge_is_a_headless_sidecar_not_a_window>
+A harness carrying no in-process transport gets its channel driven by a bridge, and that bridge is a sidecar process the
+supervisor owns directly, with no tab of its own, appending to `~/clawde/sidecar-logs/<name>.log` and found again
+through the `pgrep` pattern its adapter declares. That pattern must not carry the bridge script's store path: edit the
+script and the pattern matches nothing, so the previous generation's bridge is never culled and two clients hold one bot
+token and answer everything twice. An eval check fails the build on a pattern containing a store path. The same matching
+is why any shell command containing a reconcile pattern is terminated as a duplicate, so a `pgrep` typed to inspect a
+bridge kills itself; assemble the pattern at runtime or run the inspection from a script file.
+</a_channel_bridge_is_a_headless_sidecar_not_a_window>
+
 <taking_an_agent_offline>
 There is no per-agent `enable`. `onDemand = true` is the off switch: the supervisor never brings the agent up, so it
 holds no process, no multiplexer window, no Discord connection and no firing heartbeat until someone runs `clawde start
