@@ -2,19 +2,46 @@ import sys
 from pathlib import Path
 
 HOOKS_ROOT = Path(__file__).resolve().parents[2]
-RULES_MODULE_DIRECTORY = next(
-    HOOKS_ROOT.rglob("end_of_turn_reply_template_rules.py")
-).parent
-if str(RULES_MODULE_DIRECTORY) not in sys.path:
-    sys.path.insert(0, str(RULES_MODULE_DIRECTORY))
+REPLY_RULE_MODULE_DIRECTORY = next(HOOKS_ROOT.rglob("reply_rule_catalog.py")).parent
+if str(REPLY_RULE_MODULE_DIRECTORY) not in sys.path:
+    sys.path.insert(0, str(REPLY_RULE_MODULE_DIRECTORY))
 
-from end_of_turn_reply_template_rules import (  # noqa: E402
+from long_form_request_gate import user_request_permits_long_form  # noqa: E402
+from reply_rule_catalog import (  # noqa: E402
+    HUMAN_FACING_REPLY_RULES,
     template_violations_in_reply,
 )
-from reply_template_shape_and_length_rules import (  # noqa: E402
+from reply_rule_rendering import (  # noqa: E402
+    rendered_bounce_guidance,
+    rendered_enforced_reply_rules_markdown,
+    rendered_every_channel_wording_rules_markdown,
+    rendered_reply_reminder,
+)
+from reply_template_limits import (  # noqa: E402
+    EVERY_HUMAN_FACING_CHANNEL_SCOPE,
+    LIVE_KEYBOARD_REPLY_SCOPE,
     REPLY_HARD_CHARACTER_CEILING,
     REPLY_HARD_WORD_CEILING,
-    user_request_permits_long_form,
+)
+
+REPOSITORY_ROOT = HOOKS_ROOT.parents[1]
+GENERATED_SURFACES = (
+    (
+        REPOSITORY_ROOT
+        / "agents"
+        / "core_rules"
+        / "communication"
+        / "enforced-reply-rules.md",
+        rendered_enforced_reply_rules_markdown,
+    ),
+    (
+        REPOSITORY_ROOT
+        / "agents"
+        / "skills"
+        / "humanize"
+        / "enforced-wording-rules.md",
+        rendered_every_channel_wording_rules_markdown,
+    ),
 )
 
 
@@ -94,3 +121,63 @@ def test_deferring_to_an_earlier_message_is_flagged_even_under_long_form():
         "write a design doc",
     )
     assert long_form == [defer_message]
+
+
+def test_an_en_dash_is_caught_like_an_em_dash():
+    violations = template_violations_in_reply(
+        "The rebuild is green – CI agrees.", "write a design doc"
+    )
+    assert violations == ["contains an en dash"]
+
+
+def test_a_dash_inside_a_fenced_block_is_a_quoted_artifact_not_prose():
+    reply = "The upstream README reads:\n```\nrange 1–9 — inclusive\n```\nNothing else."
+    assert template_violations_in_reply(reply, "write a design doc") == []
+
+
+def test_every_rule_carries_an_instruction_sentence_for_the_rendered_surfaces():
+    without_sentence = [
+        rule.name
+        for rule in HUMAN_FACING_REPLY_RULES
+        if not rule.instruction_sentence.strip()
+    ]
+    assert not without_sentence, (
+        "a rule enforced by regex but never stated to the model is the drift this "
+        f"catalog exists to prevent: {without_sentence}"
+    )
+
+
+def test_the_reminder_and_the_bounce_text_come_from_the_same_catalog():
+    reminder = rendered_reply_reminder()
+    for rule in HUMAN_FACING_REPLY_RULES:
+        assert rule.instruction_sentence in reminder
+
+    bounce = rendered_bounce_guidance(["contains an em dash"])
+    assert "contains an em dash" in bounce
+    assert "**Done:**" in bounce
+
+
+def test_every_committed_generated_surface_matches_the_catalog():
+    stale = [
+        str(surface_path.relative_to(REPOSITORY_ROOT))
+        for surface_path, render in GENERATED_SURFACES
+        if surface_path.read_text(encoding="utf-8") != render()
+    ]
+    assert not stale, (
+        "these surfaces are generated; run "
+        "agents/scripts/render_enforced_reply_rules_markdown.py after editing the rule "
+        f"catalog so the deployed instruction text matches what the hook enforces: {stale}"
+    )
+
+
+def test_every_rule_declares_the_channels_it_binds():
+    known_scopes = {EVERY_HUMAN_FACING_CHANNEL_SCOPE, LIVE_KEYBOARD_REPLY_SCOPE}
+    unscoped = [
+        rule.name
+        for rule in HUMAN_FACING_REPLY_RULES
+        if rule.applies_to not in known_scopes
+    ]
+    assert not unscoped, (
+        "a rule with no channel scope reaches neither the humanize chapter nor the "
+        f"reply surface, so it would be enforced without ever being stated: {unscoped}"
+    )

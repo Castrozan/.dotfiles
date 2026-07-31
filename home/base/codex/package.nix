@@ -32,7 +32,13 @@ let
     archiveBinaryPath = "codex-${currentHostSystem.releaseTargetTriple}";
   };
 
-  interactivePreferencesFile = ../../../agents/core_rules/communication/interactive-preferences.md;
+  interactivePreferencesFile =
+    pkgs.writeText "codex-interactive-session-only-developer-instructions.md"
+      (
+        builtins.readFile ../../../agents/core_rules/communication/interactive-preferences.md
+        + "\n"
+        + builtins.readFile ../../../agents/core_rules/communication/enforced-reply-rules.md
+      );
 
   codex = pkgs.writeShellScriptBin "codex" ''
     export NPM_CONFIG_PREFIX="/nonexistent"
