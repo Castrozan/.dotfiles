@@ -24,7 +24,6 @@ from hook_module_loader import (  # noqa: E402
 
 import_hyphenated_hook_module("session-start-dispatcher")
 import_hyphenated_hook_module("monitor_streaming_pattern_validator_handler")
-import_hyphenated_hook_module("memory_recall_memory_directory")
 
 POST_TOOL_USE_DISPATCHER_HOOK_SCRIPT_PATH = find_hook_module_path(
     "post-tool-use-dispatcher"
@@ -35,7 +34,7 @@ PRE_TOOL_USE_DISPATCHER_HOOK_SCRIPT_PATH = find_hook_module_path(
 
 
 @pytest.fixture
-def invoke_prohibited_command_guard_hook(isolated_memory_recall_environment):
+def invoke_prohibited_command_guard_hook():
     def runner(payload: dict):
         return run_hook_subprocess(
             PRE_TOOL_USE_DISPATCHER_HOOK_SCRIPT_PATH, json.dumps(payload)
@@ -53,9 +52,7 @@ def parse_prohibited_command_guard_system_message():
 
 
 @pytest.fixture
-def invoke_prohibited_command_guard_hook_with_raw_stdin(
-    isolated_memory_recall_environment,
-):
+def invoke_prohibited_command_guard_hook_with_raw_stdin():
     def runner(raw_stdin: str):
         return run_hook_subprocess(PRE_TOOL_USE_DISPATCHER_HOOK_SCRIPT_PATH, raw_stdin)
 
@@ -69,9 +66,7 @@ def run_prohibited_words_guard(payload: dict):
 
 
 @pytest.fixture
-def invoke_prohibited_words_guard_hook(
-    tmp_path, monkeypatch, isolated_memory_recall_environment
-):
+def invoke_prohibited_words_guard_hook(tmp_path, monkeypatch):
     wordlist_file = tmp_path / "prohibited-words.txt"
     wordlist_file.write_text("# fake words\nacme\ninitech\n", encoding="utf-8")
     monkeypatch.setenv("PROHIBITED_WORDS_FILE", str(wordlist_file))
@@ -79,9 +74,7 @@ def invoke_prohibited_words_guard_hook(
 
 
 @pytest.fixture
-def invoke_prohibited_words_guard_hook_without_wordlist(
-    tmp_path, monkeypatch, isolated_memory_recall_environment
-):
+def invoke_prohibited_words_guard_hook_without_wordlist(tmp_path, monkeypatch):
     monkeypatch.setenv("PROHIBITED_WORDS_FILE", str(tmp_path / "missing-wordlist.txt"))
     return run_prohibited_words_guard
 
@@ -114,42 +107,3 @@ def invoke_record_instructions_skill_invocation_hook(tmp_path, monkeypatch):
         )
 
     return runner
-
-
-@pytest.fixture
-def isolated_memory_recall_environment(tmp_path, monkeypatch):
-    fake_home_directory = tmp_path / "fake-home"
-    fake_home_directory.mkdir()
-    debounce_state_directory = tmp_path / "debounce-state"
-    debounce_state_directory.mkdir()
-    monkeypatch.setenv("HOME", str(fake_home_directory))
-    monkeypatch.setenv(
-        "MEMORY_RECALL_DEBOUNCE_STATE_DIRECTORY", str(debounce_state_directory)
-    )
-    return fake_home_directory, debounce_state_directory
-
-
-@pytest.fixture
-def make_memory_recall_directory():
-    def create_memory_directory_for_workspace(fake_home_directory, workspace_directory):
-        import memory_recall_memory_directory
-
-        memory_directory = (
-            memory_recall_memory_directory.resolve_memory_directory_for_cwd(
-                str(workspace_directory)
-            )
-        )
-        memory_directory.mkdir(parents=True, exist_ok=True)
-        return memory_directory
-
-    return create_memory_directory_for_workspace
-
-
-@pytest.fixture
-def invoke_memory_recall_hook():
-    def run_hook_with_payload(payload: dict):
-        return run_hook_subprocess(
-            PRE_TOOL_USE_DISPATCHER_HOOK_SCRIPT_PATH, json.dumps(payload)
-        )
-
-    return run_hook_with_payload

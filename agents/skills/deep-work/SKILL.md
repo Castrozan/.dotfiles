@@ -46,13 +46,6 @@ user to re-explain what's already captured in prompts.md. A SessionStart compact
 recovery directive into the compacted context, prompting you to re-read the workspace files before continuing.
 </recovery>
 
-<auto_memory_boundary>
-Auto-memory stores persistent facts about the user, project, and feedback across all conversations. Deep-work stores
-active task state that dies when the task is delivered. Use auto-memory for durable knowledge (user preferences, project
-constraints, correction patterns). Use deep-work for ephemeral task context (plans, progress, verbatim prompts). They
-complement each other: auto-memory survives task cleanup, deep-work survives compaction within a task.
-</auto_memory_boundary>
-
 <heartbeat-integration>
 HEARTBEAT.md remains the lightweight signal that work is active. For deep-work tasks, HEARTBEAT.md points to the
 workspace directory so any agent or session knows where to find full context. HEARTBEAT.md says what and where; the

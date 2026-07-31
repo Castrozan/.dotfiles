@@ -18,11 +18,6 @@ const firstMachineSnapshot: UsageSnapshot = {
     },
   },
   daily_model_tokens: [{ date: '2026-06-01', tokens_by_model: { 'claude-opus': 300 } }],
-  memory_recall_savings: {
-    suppressed_recall_event_total: 5,
-    dedup_suppressed_character_total: 40,
-    suppressed_recall_event_count_by_reason: { dedup: 5 },
-  },
   otel_metrics: { token_usage_by_type: { cacheRead: 900 }, total_cost_usd: 1.5 },
   stats_first_session_date: '2026-05-26',
   stats_last_computed_date: '2026-06-10',
@@ -41,10 +36,6 @@ const secondMachineSnapshot: UsageSnapshot = {
     },
   },
   daily_model_tokens: [{ date: '2026-06-02', tokens_by_model: { 'claude-opus': 200 } }],
-  memory_recall_savings: {
-    suppressed_recall_event_total: 3,
-    suppressed_recall_event_count_by_reason: { budget: 3 },
-  },
   otel_metrics: { token_usage_by_type: { cacheRead: 100 }, total_cost_usd: 0.5 },
   stats_first_session_date: '2026-05-20',
   stats_last_computed_date: '2026-06-12',
@@ -102,10 +93,6 @@ describe('UsageAggregationService', () => {
     ]);
     expect(viewModel.summary.account_count).toBe(2);
     expect(viewModel.summary.machine_count).toBe(3);
-    expect(viewModel.summary.memory_recall_savings.suppressed_recall_event_total).toBe(8);
-    expect(viewModel.summary.memory_recall_savings.suppressed_recall_event_count_by_reason).toEqual(
-      { dedup: 5, budget: 3 },
-    );
     expect(viewModel.summary.otel_metrics.has_data).toBe(true);
     expect(viewModel.summary.first_session_date).toBe('2026-05-20');
   });

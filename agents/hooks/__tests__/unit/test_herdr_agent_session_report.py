@@ -7,7 +7,10 @@ import threading
 from pathlib import Path
 
 import pytest
-from hook_module_loader import import_hyphenated_hook_module
+from hook_module_loader import (
+    HOOK_SUBPROCESS_TIMEOUT_SECONDS,
+    import_hyphenated_hook_module,
+)
 
 herdr_agent_session_report_handler = import_hyphenated_hook_module(
     "herdr_agent_session_report_handler"
@@ -43,7 +46,7 @@ class RecordingHerdrSocketServer:
                 pass
 
     def close(self):
-        self.accepting_thread.join(timeout=2)
+        self.accepting_thread.join(timeout=HOOK_SUBPROCESS_TIMEOUT_SECONDS)
         self.listener.close()
 
 

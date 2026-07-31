@@ -29,7 +29,6 @@ export class StatCardsComponent {
   readonly cards = computed<StatCard[]>(() => {
     const summary = this.summary();
     const tokenTotals = summary.token_totals;
-    const savings = summary.memory_recall_savings;
     return [
       {
         label: 'accounts tracked',
@@ -45,16 +44,6 @@ export class StatCardsComponent {
         label: 'cache-read share',
         value: `${cacheReadSharePercent(tokenTotals)}%`,
         subtitle: 'of all input-side tokens',
-      },
-      {
-        label: 'recall events suppressed',
-        value: String(savings.suppressed_recall_event_total),
-        subtitle: 'budget + debounce + dedup',
-      },
-      {
-        label: 'dedup chars saved',
-        value: formatTokenCount(savings.dedup_suppressed_character_total),
-        subtitle: 'duplicate recalls stopped',
       },
     ];
   });

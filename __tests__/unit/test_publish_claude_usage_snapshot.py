@@ -52,7 +52,6 @@ USAGE_SNAPSHOT_DOCUMENT = {
         },
     ],
     "daily_model_tokens": {"2026-05-26": {"claude-opus-4-8": 4096}},
-    "memory_recall_savings": {"recalled_memory_count": 12},
     "otel_metrics": {"exported": False},
 }
 

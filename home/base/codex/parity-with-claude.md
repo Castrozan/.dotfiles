@@ -94,9 +94,7 @@ matcher purposes, so a single `Edit|Write` matcher fires on both CLIs.
 - Running on the codex surface:
   - `SessionStart`: `compaction_context_recovery_handler`, registered only for
     compaction so ordinary startup, resume, and clear events stay silent.
-  - `PreToolUse`: `memory_recall_handler` (shares the SAME
-    `~/.claude/projects/<enc>/memory/` store as Claude, so recall continuity
-    carries across both CLIs; needs `rg`), `prohibited_command_guard_handler`
+  - `PreToolUse`: `prohibited_command_guard_handler`
     and `prohibited_words_guard_handler` (the dispatcher command is env-prefixed
     with the per-host `PROHIBITED_WORDS_ALLOWED` allowlist), plus
     `agent_instruction_file_authoring_router_handler`. The guards block via the
@@ -112,9 +110,6 @@ matcher purposes, so a single `Edit|Write` matcher fires on both CLIs.
   `git add -A` ("PreToolUse Blocked"), the words guard refuses an `apply_patch`
   adding a prohibited word, and a captured `SessionStart` payload carries
   `hook_event_name` with Claude's exact key and value.
-- Non-gaps confirmed: the `memory-write`/`memory-prune` CLIs are already on PATH
-  for Codex (profile-global `home.packages`), and both they and memory recall
-  compute the same `~/.claude/projects/<enc>/memory/` dir from cwd.
 - Remaining ports: none. The last three, the instruction-authoring router, the
   line-count guard and the compaction reload nudge, all run on Codex now. The
   first two needed a real change rather than a surface flag, because both read

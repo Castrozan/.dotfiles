@@ -9,7 +9,6 @@ interface AccountRow {
   cache_read: string;
   output: string;
   cost: string;
-  recalls_suppressed: number;
 }
 
 @Component({
@@ -25,7 +24,6 @@ interface AccountRow {
           <th>cache-read</th>
           <th>output</th>
           <th>cost (notional)</th>
-          <th>recalls suppressed</th>
         </tr>
       </thead>
       <tbody>
@@ -39,7 +37,6 @@ interface AccountRow {
             <td>{{ row.cache_read }}</td>
             <td>{{ row.output }}</td>
             <td>{{ row.cost }}</td>
-            <td>{{ row.recalls_suppressed }}</td>
           </tr>
         }
       </tbody>
@@ -61,7 +58,6 @@ export class AccountTableComponent {
         cache_read: formatTokenCount(tokenTotals.cache_read_input_tokens),
         output: formatTokenCount(tokenTotals.output_tokens),
         cost: `$${Math.round(tokenTotals.cost_usd).toLocaleString('en-US')}`,
-        recalls_suppressed: accountView.memory_recall_savings.suppressed_recall_event_total,
       };
     }),
   );

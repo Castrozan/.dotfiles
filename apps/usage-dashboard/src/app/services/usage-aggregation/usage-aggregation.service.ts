@@ -11,7 +11,7 @@ import {
   combineDailyTotalTokens,
   sumModelUsageTotals,
 } from './token-aggregation';
-import { sumMemoryRecallSavings, sumOtelMetrics } from './savings-aggregation';
+import { sumOtelMetrics } from './otel-metrics-aggregation';
 
 function earliest(dateValues: (string | null | undefined)[]): string | null {
   const present = dateValues.filter((value): value is string => Boolean(value)).sort();
@@ -45,9 +45,6 @@ export class UsageAggregationService {
         token_totals: aggregateTokenFields(modelUsageTotals),
         daily_total_tokens: combineDailyTotalTokens(
           accountSnapshots.map((snapshot) => snapshot.daily_model_tokens ?? []),
-        ),
-        memory_recall_savings: sumMemoryRecallSavings(
-          accountSnapshots.map((snapshot) => snapshot.memory_recall_savings ?? {}),
         ),
         otel_metrics: sumOtelMetrics(
           accountSnapshots.map((snapshot) => snapshot.otel_metrics ?? {}),
@@ -90,9 +87,6 @@ export class UsageAggregationService {
         0,
       ),
       token_totals: aggregateTokenFields(combinedModelUsage),
-      memory_recall_savings: sumMemoryRecallSavings(
-        accountViews.map((accountView) => accountView.memory_recall_savings),
-      ),
       otel_metrics: sumOtelMetrics(accountViews.map((accountView) => accountView.otel_metrics)),
       first_session_date: earliest(
         accountViews.map((accountView) => accountView.first_session_date),

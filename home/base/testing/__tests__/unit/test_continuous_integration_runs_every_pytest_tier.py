@@ -62,8 +62,8 @@ def test_continuous_integration_supplies_the_binaries_the_suite_shells_out_to():
     assert "test-suite-environment.nix" in workflow_text, (
         "the pytest jobs run inside a nix shell built from an expression, so every "
         "binary the tests shell out to has to come from that expression rather than "
-        "from the runner image; memory-recall shells out to ripgrep and its tests "
-        "fail with an unparseable empty hook response when it is absent"
+        "from the runner image; a hook that shells out to a binary missing from the "
+        "shell fails with an unparseable empty hook response"
     )
 
 

@@ -4,12 +4,6 @@ let
     export PATH="${pkgs.nix}/bin:${pkgs.git}/bin:$PATH"
     exec ${pkgs.python312}/bin/python3 ${./claude-update-version} "$@"
   '';
-  memoryWriteScript = pkgs.writeShellScriptBin "memory-write" ''
-    exec ${pkgs.python312}/bin/python3 ${./memory-write} "$@"
-  '';
-  memoryPruneScript = pkgs.writeShellScriptBin "memory-prune" ''
-    exec ${pkgs.python312}/bin/python3 ${./memory-prune} "$@"
-  '';
   launchCommandDetachedIntoNewSessionScript = pkgs.writeShellScriptBin "launch-command-detached-into-new-session" ''
     exec ${pkgs.python312}/bin/python3 ${./launch-command-detached-into-new-session} "$@"
   '';
@@ -26,8 +20,6 @@ in
 {
   home.packages = [
     claudeUpdateVersionScript
-    memoryWriteScript
-    memoryPruneScript
     launchCommandDetachedIntoNewSessionScript
     claudeA2aPeerScript
   ]

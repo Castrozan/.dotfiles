@@ -1,4 +1,4 @@
-import { MemoryRecallSavings, ModelUsageTotals } from './usage-snapshot.model';
+import { ModelUsageTotals } from './usage-snapshot.model';
 
 export interface TokenTotals {
   input_tokens: number;
@@ -14,19 +14,12 @@ export interface AggregatedOtelMetrics {
   has_data: boolean;
 }
 
-export interface AggregatedMemoryRecallSavings extends Required<
-  Omit<MemoryRecallSavings, 'suppressed_recall_event_count_by_reason'>
-> {
-  suppressed_recall_event_count_by_reason: Record<string, number>;
-}
-
 export interface AccountView {
   account_label: string;
   machine_count: number;
   model_usage_totals: ModelUsageTotals;
   token_totals: TokenTotals;
   daily_total_tokens: Record<string, number>;
-  memory_recall_savings: AggregatedMemoryRecallSavings;
   otel_metrics: AggregatedOtelMetrics;
   first_session_date: string | null;
   last_computed_date: string | null;
@@ -36,7 +29,6 @@ export interface UsageSummary {
   account_count: number;
   machine_count: number;
   token_totals: TokenTotals;
-  memory_recall_savings: AggregatedMemoryRecallSavings;
   otel_metrics: AggregatedOtelMetrics;
   first_session_date: string | null;
   last_computed_date: string | null;

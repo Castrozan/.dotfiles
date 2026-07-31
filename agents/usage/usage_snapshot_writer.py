@@ -10,7 +10,6 @@ def build_usage_snapshot(
     account_label: str,
     machine_label: str,
     stats_cache_summary: dict,
-    memory_recall_savings: dict,
     otel_metrics: dict,
 ) -> dict:
     return {
@@ -18,7 +17,6 @@ def build_usage_snapshot(
         "account_label": account_label,
         "machine_label": machine_label,
         **stats_cache_summary,
-        "memory_recall_savings": memory_recall_savings,
         "otel_metrics": otel_metrics,
     }
 

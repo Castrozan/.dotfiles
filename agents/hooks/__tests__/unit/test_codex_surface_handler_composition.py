@@ -26,7 +26,6 @@ DISPATCHERS_BY_REGISTRY_NAME = {
 
 HANDLERS_REQUIRED_ON_THE_CODEX_SURFACE = {
     "PRE_TOOL_USE_HANDLERS": {
-        "memory_recall_handler",
         "prohibited_command_guard_handler",
         "prohibited_words_guard_handler",
         "agent_instruction_file_authoring_router_handler",

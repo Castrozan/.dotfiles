@@ -64,14 +64,6 @@
     <h2>Per-account totals</h2>
     <app-account-table [accounts]="currentViewModel.accounts" />
 
-    <h2>The memory-recall lever</h2>
-    <p class="lede">
-      The memory-recall hook injects relevant memory files into a turn, then suppresses the
-      injection when the same set was already shown (dedup), when a per-session budget is spent, or
-      when nothing changed (debounce). Those suppressions are the directly attributable savings
-      folded into each snapshot.
-    </p>
-
     <h2>Honest caveat on attribution</h2>
     <div class="panel">
       <p>

@@ -11,7 +11,7 @@ tests:
   - name: why_two_files_requires_reading_both
     skill_path: agents/core_rules/core.md
     prompt: |
-      A teammate is about to answer the user's question "why does this repo have both memory_recall_debounce.py and memory_recall_io.py, and how do they relate?" purely from the two file names, without opening either file. Is that acceptable here, and what should they do instead?
+      A teammate is about to answer the user's question "why does this repo have both usage_snapshot_writer.py and current_usage_snapshot.py, and how do they relate?" purely from the two file names, without opening either file. Is that acceptable here, and what should they do instead?
     model: haiku
     assertions:
       llm_judge:

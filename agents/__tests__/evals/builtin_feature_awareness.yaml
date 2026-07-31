@@ -15,14 +15,6 @@ tests:
       llm_judge:
         - "Says a session start compaction hook automatically re-injects a recovery directive, which prompts the agent to re-read the deep-work workspace files and continue from disk."
 
-  - name: deep_work_distinguishes_auto_memory
-    skill_path: agents/skills/deep-work/SKILL.md
-    prompt: "When should I use auto-memory versus deep-work? What's the difference?"
-    model: haiku
-    assertions:
-      llm_judge:
-        - "Separates auto-memory as durable knowledge that persists across conversations from deep-work as active task state that dies once the task is delivered."
-
   - name: claude_skill_knows_builtin_agents
     skill_path: agents/skills/herdr/SKILL.md
     prompt: "I need several agents editing code in parallel. Nobody needs to watch them and the work does not have to outlive this conversation. Should I spawn a separate herdr Claude agent with 'herdr agent start' for each one, or is there a better fit?"

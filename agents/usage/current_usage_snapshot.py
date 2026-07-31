@@ -22,17 +22,7 @@ from claude_usage_stats_reader import (  # noqa: E402
     read_stats_cache,
     summarize_stats_cache,
 )
-from memory_recall_savings_reader import (  # noqa: E402
-    summarize_memory_recall_savings_in_directory,
-)
 from usage_snapshot_writer import build_usage_snapshot  # noqa: E402
-
-DEFAULT_MEMORY_RECALL_STATE_DIRECTORY = Path("/tmp")
-
-
-def memory_recall_state_directory() -> Path:
-    override = os.environ.get("MEMORY_RECALL_DEBOUNCE_STATE_DIRECTORY")
-    return Path(override) if override else DEFAULT_MEMORY_RECALL_STATE_DIRECTORY
 
 
 def build_current_usage_snapshot() -> dict | None:
@@ -44,14 +34,10 @@ def build_current_usage_snapshot() -> dict | None:
     stats_cache_summary = summarize_stats_cache(
         read_stats_cache(default_stats_cache_path())
     )
-    memory_recall_savings = summarize_memory_recall_savings_in_directory(
-        memory_recall_state_directory()
-    )
     otel_metrics = summarize_otel_metrics_file(default_otel_metrics_file_path())
     return build_usage_snapshot(
         account_label,
         machine_label,
         stats_cache_summary,
-        memory_recall_savings,
         otel_metrics,
     )

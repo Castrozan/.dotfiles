@@ -178,7 +178,7 @@ in
   codex-hooks-config-pre-tool-use-dispatcher =
     mkEvalCheck "codex-hooks-config-pre-tool-use-dispatcher"
       (codexHookEventRunsScript "PreToolUse" "pre-tool-use-dispatcher.py")
-      "Codex PreToolUse must run the same pre-tool-use-dispatcher.py Claude registers (env-prefixed with the per-host PROHIBITED_WORDS_ALLOWED allowlist); it composes memory-recall and the prohibited-command/word guards, and test_codex_surface_handler_composition guards that those three stay on the codex surface";
+      "Codex PreToolUse must run the same pre-tool-use-dispatcher.py Claude registers (env-prefixed with the per-host PROHIBITED_WORDS_ALLOWED allowlist); it composes the prohibited-command/word guards, and test_codex_surface_handler_composition guards that they stay on the codex surface";
 
   codex-hooks-config-stop-dispatcher =
     mkEvalCheck "codex-hooks-config-stop-dispatcher"

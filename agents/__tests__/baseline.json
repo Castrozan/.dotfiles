@@ -1,10 +1,10 @@
 {
   "generated_at": "2026-07-24T03:26:24.774576+00:00",
   "git_commit": "5667c9f6",
-  "total_tests": 163,
-  "total_passed": 152,
+  "total_tests": 162,
+  "total_passed": 151,
   "total_failed": 11,
-  "pass_rate": 0.9325,
+  "pass_rate": 0.9321,
   "categories": {
     "adversarial": {
       "passed": 5,
@@ -33,7 +33,7 @@
       ]
     },
     "builtin_feature_awareness": {
-      "passed": 5,
+      "passed": 4,
       "failed": 0,
       "tests": [
         {
@@ -42,10 +42,6 @@
         },
         {
           "name": "deep_work_knows_postcompact",
-          "passed": true
-        },
-        {
-          "name": "deep_work_distinguishes_auto_memory",
           "passed": true
         },
         {

@@ -8,7 +8,6 @@ from pathlib import Path
 import pytest
 
 SCRIPTS_DIRECTORY = Path(__file__).resolve().parent.parent
-MEMORY_WRITE_SCRIPT_PATH = SCRIPTS_DIRECTORY / "memory-write"
 SEED_CONFIG_DIR_OVERLAY_SCRIPT_PATH = (
     SCRIPTS_DIRECTORY / "seed-claude-config-dir-overlay"
 )
@@ -25,47 +24,7 @@ def import_extensionless_python_script(extensionless_name):
     return module
 
 
-import_extensionless_python_script("memory-write")
-import_extensionless_python_script("memory-prune")
 import_extensionless_python_script("merge-discord-agent-access")
-
-
-@pytest.fixture
-def isolated_environment(tmp_path, monkeypatch):
-    fake_home = tmp_path / "home"
-    fake_home.mkdir()
-    workspace = tmp_path / "workspace"
-    workspace.mkdir()
-    monkeypatch.setenv("HOME", str(fake_home))
-    return fake_home, workspace
-
-
-@pytest.fixture
-def expected_memory_directory():
-    def resolve(fake_home: Path, workspace: Path) -> Path:
-        encoded = str(workspace).replace("/", "-").replace(".", "-")
-        return fake_home / ".claude" / "projects" / encoded / "memory"
-
-    return resolve
-
-
-@pytest.fixture
-def invoke_memory_write():
-    def invoke(workspace: Path, **arguments) -> subprocess.CompletedProcess:
-        command = [sys.executable, str(MEMORY_WRITE_SCRIPT_PATH)]
-        for key, value in arguments.items():
-            if value is None:
-                continue
-            command.extend([f"--{key.replace('_', '-')}", value])
-        return subprocess.run(
-            command,
-            cwd=workspace,
-            capture_output=True,
-            text=True,
-            timeout=5,
-        )
-
-    return invoke
 
 
 @pytest.fixture

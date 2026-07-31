@@ -22,7 +22,6 @@ import agent_instruction_file_authoring_router_handler  # noqa: E402
 import background_bash_anti_pattern_validator_handler  # noqa: E402
 import blocked_skill_invocation_guard_handler  # noqa: E402
 import codex_sandbox_downgrade_guard_handler  # noqa: E402
-import memory_recall_handler  # noqa: E402
 import monitor_streaming_pattern_validator_handler  # noqa: E402
 import prohibited_command_guard_handler  # noqa: E402
 import prohibited_words_guard_handler  # noqa: E402
@@ -39,7 +38,6 @@ from hook_dispatch import (  # noqa: E402
 from hook_event_output import emit_pretooluse_decision  # noqa: E402
 
 PRE_TOOL_USE_HANDLERS = [
-    HookHandler(handle=memory_recall_handler.handle, tool_matcher=None),
     HookHandler(handle=prohibited_command_guard_handler.handle, tool_matcher=None),
     HookHandler(handle=prohibited_words_guard_handler.handle, tool_matcher=None),
     HookHandler(handle=worktree_location_guard_handler.handle, tool_matcher="Bash"),

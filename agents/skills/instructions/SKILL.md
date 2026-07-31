@@ -52,7 +52,3 @@ For definitions of CLAUDE.md files per context and workspace, read `claude-md.md
 <subagent_briefs>
 For one-off prompts passed to other agents, read `subagent-briefs.md`.
 </subagent_briefs>
-
-<memory>
-For how we think about agent memory systems, read `memory.md`.
-</memory>

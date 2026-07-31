@@ -12,11 +12,6 @@ SAMPLE_STATS_SUMMARY = {
     "model_usage_totals": {"claude-opus-4-8": {"cache_read_input_tokens": 15970324893}},
 }
 
-SAMPLE_SAVINGS = {
-    "memory_recall_session_count": 2,
-    "dedup_suppressed_character_total": 200,
-}
-
 SAMPLE_OTEL = {
     "token_usage_by_type": {"cacheRead": 5000, "output": 120},
     "total_cost_usd": 1.25,
@@ -27,7 +22,7 @@ SAMPLE_OTEL = {
 class TestBuildUsageSnapshot:
     def test_snapshot_carries_labels_and_schema_version(self):
         snapshot = usage_snapshot_writer.build_usage_snapshot(
-            "acct123", "mach456", SAMPLE_STATS_SUMMARY, SAMPLE_SAVINGS, SAMPLE_OTEL
+            "acct123", "mach456", SAMPLE_STATS_SUMMARY, SAMPLE_OTEL
         )
         assert snapshot["account_label"] == "acct123"
         assert snapshot["machine_label"] == "mach456"
@@ -36,21 +31,20 @@ class TestBuildUsageSnapshot:
             == usage_snapshot_writer.USAGE_SNAPSHOT_SCHEMA_VERSION
         )
 
-    def test_snapshot_folds_in_stats_summary_and_savings(self):
+    def test_snapshot_folds_in_stats_summary_and_otel_metrics(self):
         snapshot = usage_snapshot_writer.build_usage_snapshot(
-            "acct123", "mach456", SAMPLE_STATS_SUMMARY, SAMPLE_SAVINGS, SAMPLE_OTEL
+            "acct123", "mach456", SAMPLE_STATS_SUMMARY, SAMPLE_OTEL
         )
         assert snapshot["stats_last_computed_date"] == "2026-06-17"
         assert (
             snapshot["model_usage_totals"]["claude-opus-4-8"]["cache_read_input_tokens"]
             == 15970324893
         )
-        assert snapshot["memory_recall_savings"] == SAMPLE_SAVINGS
         assert snapshot["otel_metrics"] == SAMPLE_OTEL
 
     def test_snapshot_carries_no_raw_account_identifier(self):
         snapshot = usage_snapshot_writer.build_usage_snapshot(
-            "acct123", "mach456", SAMPLE_STATS_SUMMARY, SAMPLE_SAVINGS, SAMPLE_OTEL
+            "acct123", "mach456", SAMPLE_STATS_SUMMARY, SAMPLE_OTEL
         )
         assert "oauthAccount" not in json.dumps(snapshot)
         assert "emailAddress" not in json.dumps(snapshot)
@@ -65,7 +59,7 @@ class TestWriteUsageSnapshot:
 
     def test_write_creates_directory_and_keyed_file(self, tmp_path):
         snapshot = usage_snapshot_writer.build_usage_snapshot(
-            "acct123", "mach456", SAMPLE_STATS_SUMMARY, SAMPLE_SAVINGS, SAMPLE_OTEL
+            "acct123", "mach456", SAMPLE_STATS_SUMMARY, SAMPLE_OTEL
         )
         snapshot_directory = tmp_path / "snapshots"
         written_path = usage_snapshot_writer.write_usage_snapshot(
@@ -76,7 +70,7 @@ class TestWriteUsageSnapshot:
 
     def test_written_snapshot_is_sorted_and_newline_terminated(self, tmp_path):
         snapshot = usage_snapshot_writer.build_usage_snapshot(
-            "acct123", "mach456", SAMPLE_STATS_SUMMARY, SAMPLE_SAVINGS, SAMPLE_OTEL
+            "acct123", "mach456", SAMPLE_STATS_SUMMARY, SAMPLE_OTEL
         )
         written_path = usage_snapshot_writer.write_usage_snapshot(tmp_path, snapshot)
         written_text = written_path.read_text()
