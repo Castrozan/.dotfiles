@@ -4,11 +4,10 @@ import json
 import time
 import urllib.error
 import urllib.request
-from pathlib import Path
 
-DEFAULT_PEER_REGISTRY_PATH = Path.home() / ".claude" / "a2a" / "peers.json"
+DEFAULT_DAEMON_ENDPOINT = "http://127.0.0.1:7000"
 TERMINAL_TASK_STATES = frozenset({"completed", "canceled", "failed"})
-REACHABILITY_PROBE_TIMEOUT_SECONDS = 2.0
+DIRECTORY_REQUEST_TIMEOUT_SECONDS = 5.0
 TASK_REQUEST_TIMEOUT_SECONDS = 10.0
 DEFAULT_ANSWER_TIMEOUT_SECONDS = 900.0
 POLL_INTERVAL_SECONDS = 2.0
@@ -16,27 +15,6 @@ POLL_INTERVAL_SECONDS = 2.0
 
 class PeerRequestFailure(Exception):
     pass
-
-
-def load_peer_registry(registry_path: Path) -> dict:
-    if not registry_path.is_file():
-        return {}
-    try:
-        return json.loads(registry_path.read_text(encoding="utf-8")).get("peers", {})
-    except (json.JSONDecodeError, UnicodeDecodeError) as parse_failure:
-        raise PeerRequestFailure(
-            f"peer registry {registry_path} is not readable JSON: {parse_failure}"
-        ) from parse_failure
-
-
-def resolve_peer_endpoint(peer_registry: dict, agent_name: str) -> str:
-    peer = peer_registry.get(agent_name)
-    if peer is None:
-        declared_peer_names = ", ".join(sorted(peer_registry)) or "none declared"
-        raise PeerRequestFailure(
-            f"unknown peer {agent_name!r}; declared peers: {declared_peer_names}"
-        )
-    return peer["endpoint"].rstrip("/")
 
 
 def request_peer_json(
@@ -63,16 +41,28 @@ def request_peer_json(
         ) from transport_failure
 
 
-def peer_is_reachable(endpoint: str) -> bool:
-    try:
-        status_code, _ = request_peer_json(
-            "GET",
-            f"{endpoint}/health",
-            timeout_seconds=REACHABILITY_PROBE_TIMEOUT_SECONDS,
+def read_agent_directory(daemon_endpoint: str) -> dict:
+    status_code, document = request_peer_json(
+        "GET",
+        f"{daemon_endpoint.rstrip('/')}/agents",
+        timeout_seconds=DIRECTORY_REQUEST_TIMEOUT_SECONDS,
+    )
+    if status_code != 200:
+        raise PeerRequestFailure(
+            f"the a2a daemon at {daemon_endpoint} answered {status_code} "
+            "instead of listing its agents"
         )
-    except PeerRequestFailure:
-        return False
-    return status_code == 200
+    return {entry["name"]: entry for entry in document.get("agents", [])}
+
+
+def resolve_peer_endpoint(agent_directory: dict, agent_name: str) -> str:
+    agent = agent_directory.get(agent_name)
+    if agent is None:
+        attached_agent_names = ", ".join(sorted(agent_directory)) or "none attached"
+        raise PeerRequestFailure(
+            f"unknown agent {agent_name!r}; attached agents: {attached_agent_names}"
+        )
+    return agent["endpoint"].rstrip("/")
 
 
 def submit_task_to_peer(endpoint: str, input_text: str) -> dict:

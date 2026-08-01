@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import argparse
 import sys
-from pathlib import Path
 
 from .commands import (
     command_ask,
@@ -13,22 +12,22 @@ from .commands import (
 )
 from .peer_transport import (
     DEFAULT_ANSWER_TIMEOUT_SECONDS,
-    DEFAULT_PEER_REGISTRY_PATH,
+    DEFAULT_DAEMON_ENDPOINT,
     PeerRequestFailure,
-    load_peer_registry,
+    read_agent_directory,
 )
 
 
 def build_argument_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="a2a",
-        description="Talk to the fleet's A2A peers over HTTP, without loading an MCP.",
+        description="Talk to any agent session on this machine over HTTP, without loading an MCP.",
     )
-    parser.add_argument("--registry", type=Path, default=DEFAULT_PEER_REGISTRY_PATH)
+    parser.add_argument("--daemon", default=DEFAULT_DAEMON_ENDPOINT)
     subcommands = parser.add_subparsers(dest="command", required=True)
 
     list_parser = subcommands.add_parser(
-        "list", help="declared peers and whether each one answers"
+        "list", help="every agent session the daemon is currently attached to"
     )
     list_parser.add_argument("--json", action="store_true")
     list_parser.set_defaults(handler=command_list)
@@ -41,7 +40,7 @@ def build_argument_parser() -> argparse.ArgumentParser:
     send_parser.set_defaults(handler=command_send)
 
     ask_parser = subcommands.add_parser(
-        "ask", help="submit a task and block until the peer answers"
+        "ask", help="submit a task and block until the agent answers"
     )
     ask_parser.add_argument("agent")
     ask_parser.add_argument("text")
@@ -65,7 +64,7 @@ def build_argument_parser() -> argparse.ArgumentParser:
 def main() -> int:
     arguments = build_argument_parser().parse_args()
     try:
-        return arguments.handler(arguments, load_peer_registry(arguments.registry))
+        return arguments.handler(arguments, read_agent_directory(arguments.daemon))
     except PeerRequestFailure as failure:
         print(f"a2a: {failure}", file=sys.stderr)
         return 1

@@ -5,71 +5,65 @@
   self,
 }:
 let
-  fleetExposingOneAgentAsAPeer = helpers.homeManagerTestConfiguration [
+  fleetWithTwoAgents = helpers.homeManagerTestConfiguration [
     self.homeManagerModules.clawde
     self.homeManagerModules.claude-code
     {
       clawde.multiplexer = "herdr";
       clawde.agents = {
-        agent-reachable-over-a2a = {
+        agent-that-describes-itself = {
           harness = "claude";
-          personality = "Agent exposed as an A2A peer";
-          expose.a2a.enable = true;
-          expose.a2a.listenPort = 7101;
+          personality = "Agent carrying an a2a description";
+          expose.a2a.agentDescriptionForCard = "does the thing a caller routes to";
         };
-        agent-not-reachable-over-a2a = {
+        agent-that-describes-nothing = {
           harness = "claude";
-          personality = "Agent with no peer exposure";
+          personality = "Agent carrying no a2a description";
         };
       };
     }
   ];
 
-  supervisedWindows =
-    (builtins.head fleetExposingOneAgentAsAPeer.clawde.serviceSpecification.sessions).agents;
+  supervisedWindows = (builtins.head fleetWithTwoAgents.clawde.serviceSpecification.sessions).agents;
 
-  windowNamed =
-    agentName: builtins.head (builtins.filter (window: window.name == agentName) supervisedWindows);
+  inherit (fleetWithTwoAgents.clawde.a2a) agentMetadata;
 
-  sidecarProcessNamesOf =
-    agentName: map (sidecar: sidecar.name) (windowNamed agentName).sidecar_processes;
-
-  peerCommandOf = agentName: (builtins.head (windowNamed agentName).sidecar_processes).command;
+  daemonExecStart = toString fleetWithTwoAgents.systemd.user.services.clawde-a2a.Service.ExecStart;
 in
 {
-  clawde-an-a2a-peer-never-takes-a-window-of-its-own =
-    mkEvalCheck "clawde-an-a2a-peer-never-takes-a-window-of-its-own"
+  clawde-the-a2a-daemon-never-takes-a-window-from-an-agent =
+    mkEvalCheck "clawde-the-a2a-daemon-never-takes-a-window-from-an-agent"
       (
         map (window: window.name) supervisedWindows == [
-          "agent-not-reachable-over-a2a"
-          "agent-reachable-over-a2a"
+          "agent-that-describes-itself"
+          "agent-that-describes-nothing"
         ]
+        && lib.all (window: window.sidecar_processes == [ ]) supervisedWindows
       )
-      "the peer is plumbing rather than something a human opens, so it runs headless beside its agent: give it a window and every exposed agent shows up twice in the tab bar, and the window-reconcile loop retypes the peer command into a busy pane on every poll because no agent wrapper is running in it";
+      "one daemon serves the whole machine, so nothing a2a may hang off an individual agent: a per-agent window puts every exposed agent in the tab bar twice, and a per-agent sidecar brings back the process-per-pane poll rate that made the daemon worth building";
 
-  clawde-an-a2a-peer-is-a-sidecar-of-the-agent-it-wraps =
-    mkEvalCheck "clawde-an-a2a-peer-is-a-sidecar-of-the-agent-it-wraps"
+  clawde-the-a2a-daemon-runs-for-the-whole-machine-on-one-port =
+    mkEvalCheck "clawde-the-a2a-daemon-runs-for-the-whole-machine-on-one-port"
       (
-        sidecarProcessNamesOf "agent-reachable-over-a2a" == [ "agent-reachable-over-a2a-a2a" ]
-        && sidecarProcessNamesOf "agent-not-reachable-over-a2a" == [ ]
+        lib.hasInfix "--listen-port 7000" daemonExecStart
+        && lib.hasInfix "--listen-host 127.0.0.1" daemonExecStart
       )
-      "the supervisor only brings up a sidecar it can see on the agent it belongs to, and only while that agent should be running, so an exposed agent whose peer is not listed here is unreachable and an unexposed agent that grows one is serving a port nobody asked for";
+      "the daemon is the only thing listening, and it listens on loopback: a per-agent port would have to be allocated for sessions nobody declared, and a non-loopback bind hands every host on the LAN a keyboard into every live agent session on this machine";
 
-  clawde-an-a2a-peer-attaches-through-the-live-multiplexer =
-    mkEvalCheck "clawde-an-a2a-peer-attaches-through-the-live-multiplexer"
+  clawde-an-agent-reaches-the-daemon-through-its-description-not-a-toggle =
+    mkEvalCheck "clawde-an-agent-reaches-the-daemon-through-its-description-not-a-toggle"
       (
-        lib.hasInfix "--backend-type herdr" (peerCommandOf "agent-reachable-over-a2a")
-        && lib.hasInfix "--herdr-tab-label agent-reachable-over-a2a" (
-          peerCommandOf "agent-reachable-over-a2a"
-        )
+        agentMetadata.agents.agent-that-describes-itself.description == "does the thing a caller routes to"
+        && agentMetadata.agents.agent-that-describes-nothing.description == ""
       )
-      "the peer talks to the agent through whichever multiplexer actually hosts it, so a peer built for the wrong one starts, serves its port, accepts tasks and fails every single call against a target it can never find";
+      "an agent is reachable because it is a running pane, never because it opted in, so this metadata may only carry what a caller could not discover: the moment a description doubles as an enable flag, an agent that set none stops answering";
 
-  clawde-an-a2a-peer-stays-findable-across-its-own-upgrades =
-    mkEvalCheck "clawde-an-a2a-peer-stays-findable-across-its-own-upgrades"
-      (
-        !(lib.hasInfix "/nix/store/" (builtins.head (windowNamed "agent-reachable-over-a2a")
-        .sidecar_processes).process_match_pattern)
-      )
-      "this pattern is the only way the supervisor recognises a peer it already started, so pinning it to the peer script's store path makes every edit to that script invisible to the reconcile loop and leaves the previous generation's peer holding the port the new one needs";
+  clawde-the-daemon-is-told-how-to-read-every-harness-it-may-meet =
+    mkEvalCheck "clawde-the-daemon-is-told-how-to-read-every-harness-it-may-meet"
+      (lib.all (harnessName: agentMetadata.harnessMeaningfulLinePatterns ? ${harnessName}) [
+        "claude"
+        "codex"
+        "opencode"
+      ])
+      "the daemon attaches to panes running harnesses no clawde agent declares, and picks the pattern that isolates an answer from pane chrome by harness name; a harness missing here returns raw pane text as the agent's reply, spinner frames and all";
 }

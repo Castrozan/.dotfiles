@@ -1,54 +1,69 @@
-import json
-
 import pytest
 from a2a_cli import peer_transport
 from a2a_cli.peer_transport import (
     PeerRequestFailure,
-    load_peer_registry,
     poll_task_until_terminal,
+    read_agent_directory,
     resolve_peer_endpoint,
     submit_task_to_peer,
 )
 
-REGISTRY_WITH_ONE_PEER = {
-    "peers": {"golden": {"endpoint": "http://127.0.0.1:7001/", "description": "golden"}}
+DIRECTORY_WITH_ONE_AGENT = {
+    "golden": {
+        "name": "golden",
+        "endpoint": "http://127.0.0.1:7000/agents/golden/",
+        "description": "golden",
+        "harness": "claude",
+        "paneId": "w1:p9",
+    }
 }
 
 
-def write_registry(tmp_path, payload):
-    registry_path = tmp_path / "peers.json"
-    registry_path.write_text(json.dumps(payload), encoding="utf-8")
-    return registry_path
+class TestReadingTheLiveDirectory:
+    def test_the_daemon_answer_is_keyed_by_agent_name(self, monkeypatch):
+        monkeypatch.setattr(
+            peer_transport,
+            "request_peer_json",
+            lambda *_args, **_kwargs: (
+                200,
+                {"agents": list(DIRECTORY_WITH_ONE_AGENT.values())},
+            ),
+        )
+        assert read_agent_directory("http://127.0.0.1:7000")["golden"][
+            "harness"
+        ] == "claude"
 
+    def test_a_daemon_that_is_not_running_names_the_endpoint_it_tried(self, monkeypatch):
+        def refuse(*_args, **_kwargs):
+            raise PeerRequestFailure("http://127.0.0.1:7000/agents is unreachable")
 
-class TestPeerRegistryLoading:
-    def test_a_missing_registry_reads_as_no_peers_rather_than_an_error(self, tmp_path):
-        assert load_peer_registry(tmp_path / "absent.json") == {}
+        monkeypatch.setattr(peer_transport, "request_peer_json", refuse)
+        with pytest.raises(PeerRequestFailure, match="127.0.0.1:7000"):
+            read_agent_directory("http://127.0.0.1:7000")
 
-    def test_a_declared_peer_is_returned_by_name(self, tmp_path):
-        registry = load_peer_registry(write_registry(tmp_path, REGISTRY_WITH_ONE_PEER))
-        assert registry["golden"]["endpoint"] == "http://127.0.0.1:7001/"
-
-    def test_an_unreadable_registry_names_the_file_it_could_not_parse(self, tmp_path):
-        registry_path = tmp_path / "peers.json"
-        registry_path.write_text("{not json", encoding="utf-8")
-        with pytest.raises(PeerRequestFailure, match=str(registry_path)):
-            load_peer_registry(registry_path)
+    def test_a_daemon_answering_anything_but_200_is_a_failure(self, monkeypatch):
+        monkeypatch.setattr(
+            peer_transport,
+            "request_peer_json",
+            lambda *_args, **_kwargs: (503, {}),
+        )
+        with pytest.raises(PeerRequestFailure, match="503"):
+            read_agent_directory("http://127.0.0.1:7000")
 
 
 class TestEndpointResolution:
     def test_the_trailing_slash_is_stripped_so_paths_do_not_double_up(self):
         assert (
-            resolve_peer_endpoint(REGISTRY_WITH_ONE_PEER["peers"], "golden")
-            == "http://127.0.0.1:7001"
+            resolve_peer_endpoint(DIRECTORY_WITH_ONE_AGENT, "golden")
+            == "http://127.0.0.1:7000/agents/golden"
         )
 
-    def test_an_unknown_peer_lists_the_peers_that_do_exist(self):
+    def test_an_unknown_agent_lists_the_agents_that_are_attached(self):
         with pytest.raises(PeerRequestFailure, match="golden"):
-            resolve_peer_endpoint(REGISTRY_WITH_ONE_PEER["peers"], "nobody")
+            resolve_peer_endpoint(DIRECTORY_WITH_ONE_AGENT, "nobody")
 
-    def test_an_empty_registry_says_so_instead_of_listing_nothing(self):
-        with pytest.raises(PeerRequestFailure, match="none declared"):
+    def test_an_empty_directory_says_so_instead_of_listing_nothing(self):
+        with pytest.raises(PeerRequestFailure, match="none attached"):
             resolve_peer_endpoint({}, "nobody")
 
 
