@@ -46,24 +46,15 @@ tests:
         - "Answers that it should not spawn those two agents for a change of that size."
         - "States that it does the implementation and the verification work itself at that tier instead of delegating either one."
 
-  - name: adaptive_delivery_delegated_task_carries_stop_conditions
+  - name: adaptive_delivery_third_spawn_carries_the_orchestrated_declaration
     skill_path: agents/core_rules/adaptive-implementation-delivery-process.md
-    prompt: "You are about to hand a task to a subagent. What has to be in the brief you give it?"
+    prompt: "A guard just denied my third subagent spawn this session. What do I do to get it through?"
     model: haiku
     no_tools: true
     assertions:
       llm_judge:
-        - "Lists the goal, the allowed files, what is out of scope, acceptance criteria, a validation method and stop conditions, and says a subagent that hits a stop condition reports back instead of improvising something adjacent."
-
-  - name: adaptive_delivery_compiling_is_not_acceptance
-    skill_path: agents/core_rules/adaptive-implementation-delivery-process.md
-    prompt: "The delegate's change compiles cleanly. Is that enough to accept the work?"
-    model: haiku
-    no_tools: true
-    assertions:
-      llm_judge:
-        - "States that the change compiling is not by itself evidence that the work is correct."
-        - "Requires the acceptance criteria to pass with evidence before the work can be accepted."
+        - "Says to re-attempt the spawn with the Agent description starting with 'orchestrated:' followed by the trigger that justifies it, or to work inside the ceiling instead."
+        - "Names an actual escalation trigger, such as more than two modules, data or security impact, or a new public interface, rather than treating the block as arbitrary."
 
   - name: adaptive_delivery_mid_task_expansion_finishes_the_agreed_scope
     skill_path: agents/core_rules/adaptive-implementation-delivery-process.md
