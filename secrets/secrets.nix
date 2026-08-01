@@ -32,6 +32,7 @@ in
   "api-keys/deepgram-api-key.age".publicKeys = all_keys;
   "api-keys/gemini-api-key.age".publicKeys = all_keys;
   "api-keys/nvidia-api-key.age".publicKeys = all_keys;
+  "api-keys/opencode-api-key.age".publicKeys = all_keys;
   "api-keys/openai-api-key.age".publicKeys = all_keys;
   "api-keys/tavily-api-key.age".publicKeys = all_keys;
   "api-keys/grid-token-robson.age".publicKeys = all_keys;

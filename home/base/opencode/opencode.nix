@@ -43,6 +43,11 @@ let
       );
 
   opencode = pkgs.writeShellScriptBin "opencode" ''
+    opencodeApiKeyFile="$HOME/.secrets/opencode-api-key"
+    if [ -r "$opencodeApiKeyFile" ]; then
+      OPENCODE_API_KEY="$(cat "$opencodeApiKeyFile")"
+      export OPENCODE_API_KEY
+    fi
     case "''${1:-}" in
       acp | agent | attach | completion | db | debug | export | github | import | mcp | models | plugin | pr | providers | auth | run | serve | session | stats | uninstall | upgrade | web)
         ;;

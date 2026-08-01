@@ -7,7 +7,7 @@
 let
   homeDir = config.home.homeDirectory;
 
-  defaultOpencodeModel = "opencode/deepseek-v4-flash-free";
+  defaultOpencodeModel = "opencode-go/deepseek-v4-flash";
   titleGenerationModel = "opencode/ling-3.0-flash-free";
 
   mcpServerDefinitions = import ./mcp-servers.nix {

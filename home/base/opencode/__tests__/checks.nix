@@ -45,6 +45,11 @@ let
     (import ../../codex/global-instructions.nix { }).home.file.".codex/AGENTS.md".text;
 
   modelProviderOf = model: builtins.head (lib.splitString "/" model);
+
+  providersThisMachineCanAuthenticate = [
+    "opencode"
+    "opencode-go"
+  ];
 in
 {
   domain-opencode-package =
@@ -63,10 +68,10 @@ in
   domain-opencode-default-model-resolves-against-an-authenticated-provider =
     mkEvalCheck "domain-opencode-default-model-resolves-against-an-authenticated-provider"
       (
-        modelProviderOf deployedOpencodeSettings.model == "opencode"
-        && modelProviderOf deployedOpencodeSettings.small_model == "opencode"
+        builtins.elem (modelProviderOf deployedOpencodeSettings.model) providersThisMachineCanAuthenticate
+        && builtins.elem (modelProviderOf deployedOpencodeSettings.small_model) providersThisMachineCanAuthenticate
       )
-      "opencode must default to a model on the built-in opencode provider, which needs no separate credential";
+      "both defaults must resolve against opencode.ai: the free zen tier under `opencode`, which needs no credential, or the paid plan under `opencode-go`, which the wrapper authenticates from the agenix key. Any other provider needs a credential nothing here deploys, so opencode would open on a model it cannot call";
 
   domain-opencode-default-agent-runs-at-max-effort =
     mkEvalCheck "domain-opencode-default-agent-runs-at-max-effort"

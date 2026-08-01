@@ -57,4 +57,12 @@ in
   domain-security-agenix-secrets = mkEvalCheck "domain-security-agenix-secrets" (
     builtins.length (builtins.attrNames cfg.age.secrets) > 0 && hasFile ".secrets/source-secrets.sh"
   ) "agenix secrets should be configured";
+
+  domain-security-opencode-api-key-materialises =
+    mkEvalCheck "domain-security-opencode-api-key-materialises"
+      (
+        (cfg.age.secrets."api-keys/opencode-api-key".path or null)
+        == "${cfg.home.homeDirectory}/.secrets/opencode-api-key"
+      )
+      "opencode defaults to a model on the paid opencode-go plan and its wrapper reads this exact path to authenticate; agenix only declares a secret whose .age file reaches the flake source, so an untracked secrets/api-keys/opencode-api-key.age turns every default-model turn into an auth failure while the free models keep working and hide the cause";
 }

@@ -32,6 +32,7 @@ let
     "api-keys/deepgram-api-key"
     "api-keys/gemini-api-key"
     "api-keys/nvidia-api-key"
+    "api-keys/opencode-api-key"
     "api-keys/openai-api-key"
     "api-keys/todoist-api-token"
     "infrastructure/telegram-ids"
