@@ -7,7 +7,7 @@
 let
   homeDir = config.home.homeDirectory;
 
-  defaultOpencodeModel = "opencode/nemotron-3-ultra-free";
+  defaultOpencodeModel = "opencode/deepseek-v4-flash-free";
   titleGenerationModel = "opencode/ling-3.0-flash-free";
 
   mcpServerDefinitions = import ./mcp-servers.nix {
