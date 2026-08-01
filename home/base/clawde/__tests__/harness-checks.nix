@@ -140,4 +140,14 @@ in
         ).model == "opencode/some-free-model"
       )
       "a model identifier from one harness is meaningless to another, so switching harnesses must resolve the model again through modelByHarness rather than carrying the declared harness's model across";
+
+  clawde-no-launch-command-can-be-rewritten-by-a-shell-alias =
+    mkEvalCheck "clawde-no-launch-command-can-be-rewritten-by-a-shell-alias"
+      (builtins.all (invocationIsAliasProof: invocationIsAliasProof) (
+        pkgs.lib.mapAttrsToList (
+          harnessName: launchCommand:
+          builtins.match ".*command ${harnesses.${harnessName}.binaryName}( .*|)" launchCommand != null
+        ) (eligibleHarnessesOf "agent-on-codex")
+      ))
+      "this machine exports BASH_ENV pointing at an alias file that turns on expand_aliases and aliases claude to a wrapper passing --append-system-prompt-file, and a launch command runs through exactly such a shell: without the command builtin in front of the binary the alias wins over PATH, the wrapper's flags collide with the ones clawde built, and the agent dies at argument parsing on every restart forever";
 }
