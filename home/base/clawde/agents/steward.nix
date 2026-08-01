@@ -81,8 +81,10 @@ in
     personality = effectivePersonality;
     launchOnTrigger = false;
     mcpServers = { };
-    expose.a2a.enable = true;
-    expose.a2a.listenPort = 7001;
-    expose.a2a.agentDescriptionForCard = "keeps every machine's checkout synced, green and pushed";
+    expose.a2a = {
+      enable = true;
+      listenPort = 7001;
+      agentDescriptionForCard = "keeps every machine's checkout synced, green and pushed";
+    };
   };
 }
