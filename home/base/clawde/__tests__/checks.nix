@@ -49,3 +49,11 @@ import ./service-checks.nix {
     self
     ;
 }
+// import ./a2a-peer-checks.nix {
+  inherit
+    lib
+    mkEvalCheck
+    helpers
+    self
+    ;
+}
