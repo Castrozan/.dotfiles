@@ -25,6 +25,7 @@ import codex_sandbox_downgrade_guard_handler  # noqa: E402
 import monitor_streaming_pattern_validator_handler  # noqa: E402
 import prohibited_command_guard_handler  # noqa: E402
 import prohibited_words_guard_handler  # noqa: E402
+import subagent_budget_guard_handler  # noqa: E402
 import url_to_skill_router_handler  # noqa: E402
 import workspace_directory_injector_handler  # noqa: E402
 import worktree_location_guard_handler  # noqa: E402
@@ -74,6 +75,11 @@ PRE_TOOL_USE_HANDLERS = [
     HookHandler(
         handle=agent_instruction_file_authoring_router_handler.handle,
         tool_matcher="Write|Edit",
+    ),
+    HookHandler(
+        handle=subagent_budget_guard_handler.handle,
+        tool_matcher="Agent",
+        surfaces=(CLAUDE_SURFACE,),
     ),
 ]
 
