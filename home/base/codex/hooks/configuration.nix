@@ -20,55 +20,45 @@ let
   prohibitedWordsAllowedEnvironmentAssignment =
     "PROHIBITED_WORDS_ALLOWED="
     + lib.escapeShellArg (lib.concatStringsSep "," machineAllowedProhibitedWords);
+
+  hooksEventDefinition = import ../../../../agents/hooks/event-to-dispatcher-map.nix;
+
+  codexSupportedHookEvents = [
+    "SessionStart"
+    "PreToolUse"
+    "PostToolUse"
+    "Stop"
+  ];
+
+  codexEventTimeouts = {
+    SessionStart = 5;
+    PreToolUse = 5;
+    PostToolUse = 15;
+    Stop = 15;
+  };
+
+  codexHookEvents =
+    lib.mapAttrs
+      (event: dispatcher: [
+        {
+          matcher = ".*";
+          hooks = [
+            {
+              type = "command";
+              command =
+                if event == "PreToolUse" then
+                  "${prohibitedWordsAllowedEnvironmentAssignment} ${runCodexDispatcher dispatcher}"
+                else
+                  runCodexDispatcher dispatcher;
+              timeout = codexEventTimeouts.${event};
+            }
+          ];
+        }
+      ])
+      (
+        lib.filterAttrs (
+          event: _: lib.elem event codexSupportedHookEvents
+        ) hooksEventDefinition.dispatchersByEvent
+      );
 in
-{
-  SessionStart = [
-    {
-      matcher = ".*";
-      hooks = [
-        {
-          type = "command";
-          command = runCodexDispatcher "session-start-dispatcher.py";
-          timeout = 5;
-          statusMessage = "Restoring session state";
-        }
-      ];
-    }
-  ];
-  PreToolUse = [
-    {
-      matcher = ".*";
-      hooks = [
-        {
-          type = "command";
-          command = "${prohibitedWordsAllowedEnvironmentAssignment} ${runCodexDispatcher "pre-tool-use-dispatcher.py"}";
-          timeout = 5;
-        }
-      ];
-    }
-  ];
-  PostToolUse = [
-    {
-      matcher = ".*";
-      hooks = [
-        {
-          type = "command";
-          command = runCodexDispatcher "post-tool-use-dispatcher.py";
-          timeout = 15;
-        }
-      ];
-    }
-  ];
-  Stop = [
-    {
-      matcher = ".*";
-      hooks = [
-        {
-          type = "command";
-          command = runCodexDispatcher "stop-dispatcher.py";
-          timeout = 15;
-        }
-      ];
-    }
-  ];
-}
+codexHookEvents

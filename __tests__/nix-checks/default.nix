@@ -32,6 +32,7 @@ let
   ];
 
   checkModules = [
+    ../../agents/hooks/__tests__/checks.nix
     ../../home/base/terminal/__tests__/checks.nix
     ../../home/base/editor/__tests__/checks.nix
     ../../home/base/browser/__tests__/checks.nix

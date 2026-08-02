@@ -81,15 +81,46 @@ let
     eventName: scriptName:
     builtins.any (command: lib.hasInfix scriptName command) (codexHookEventCommands eventName);
 
-  codexEventsRegisteringMoreThanOneCommand = lib.filter (
-    eventName: lib.length (codexHookEventCommands eventName) > 1
-  ) (lib.attrNames (parsedCodexHooksConfig.hooks or { }));
+  canonicalHooksEventDefinition = import ../../../../agents/hooks/event-to-dispatcher-map.nix;
+
+  codexSupportedHookEvents = [
+    "SessionStart"
+    "PreToolUse"
+    "PostToolUse"
+    "Stop"
+  ];
+
+  codexHookEventNames = lib.attrNames (parsedCodexHooksConfig.hooks or { });
+
+  codexEventsNotInTheSupportedCanonicalSubset = lib.filter (
+    eventName: !(lib.elem eventName codexSupportedHookEvents)
+  ) codexHookEventNames;
+
+  supportedCanonicalEventsMissingFromTheCodexConfig = lib.filter (
+    eventName: !(lib.elem eventName codexHookEventNames)
+  ) codexSupportedHookEvents;
+
+  supportedEventsNotDeclaredInTheCanonicalMap = lib.filter (
+    eventName: !(lib.hasAttr eventName canonicalHooksEventDefinition.dispatchersByEvent)
+  ) codexSupportedHookEvents;
+
+  codexEventsWhoseCommandDivergesFromTheCanonicalDispatcher = lib.filter (
+    eventName:
+    !lib.hasAttr eventName canonicalHooksEventDefinition.dispatchersByEvent
+    || !(lib.any (
+      command: lib.hasInfix canonicalHooksEventDefinition.dispatchersByEvent.${eventName} command
+    ) (codexHookEventCommands eventName))
+  ) codexHookEventNames;
 in
 {
-  codex-hooks-every-event-registers-exactly-one-command =
-    mkEvalCheck "codex-hooks-every-event-registers-exactly-one-command"
-      (codexEventsRegisteringMoreThanOneCommand == [ ])
-      "every Codex hook event must register exactly one command, the same invariant settings.json carries on the Claude side. A second registration on the same event is a second interpreter per matching tool call and splits the decision across processes whose ordering and precedence nothing arbitrates. Events currently registering more than one command: ${lib.concatStringsSep ", " codexEventsRegisteringMoreThanOneCommand}. Fold the extra registration into that event's dispatcher and gate it with a handler tool_matcher";
+  codex-hooks-events-are-the-supported-canonical-subset =
+    mkEvalCheck "codex-hooks-events-are-the-supported-canonical-subset"
+      (
+        codexEventsNotInTheSupportedCanonicalSubset == [ ]
+        && supportedCanonicalEventsMissingFromTheCodexConfig == [ ]
+        && supportedEventsNotDeclaredInTheCanonicalMap == [ ]
+      )
+      "Codex must register exactly the events in agents/hooks/event-to-dispatcher-map.nix that codex supports (${lib.concatStringsSep ", " codexSupportedHookEvents}) and nothing else; a hand-written Codex hook event is a second definition of the hook surface, and an event dropped from the supported list silently unregisters it. Codex events outside the supported canonical subset: ${lib.concatStringsSep ", " codexEventsNotInTheSupportedCanonicalSubset}. Supported canonical events missing from the Codex config: ${lib.concatStringsSep ", " supportedCanonicalEventsMissingFromTheCodexConfig}. Supported events not declared in the canonical map: ${lib.concatStringsSep ", " supportedEventsNotDeclaredInTheCanonicalMap}";
 
   codex-bin-wrapper =
     mkEvalCheck "codex-bin-wrapper" (builtins.hasAttr ".local/bin/codex" cfg.home.file)
@@ -184,6 +215,11 @@ in
     mkEvalCheck "codex-hooks-config-stop-dispatcher"
       (codexHookEventRunsScript "Stop" "stop-dispatcher.py")
       "Codex Stop must run the same stop-dispatcher.py Claude registers; it composes lint-turn-review and herdr_agent_session_report on both surfaces and end-of-turn-format-guard on Claude only. The herdr report runs per turn as well as per session start so an agent that was already running when the hook shipped registers itself for reboot resume on its next turn instead of staying invisible until it restarts";
+
+  codex-hooks-every-command-runs-its-canonical-dispatcher =
+    mkEvalCheck "codex-hooks-every-command-runs-its-canonical-dispatcher"
+      (codexEventsWhoseCommandDivergesFromTheCanonicalDispatcher == [ ])
+      "every Codex hook event's command must run the dispatcher its event maps to in agents/hooks/event-to-dispatcher-map.nix, the single source of truth both harnesses import; a standalone command on a Codex event is a second definition of the hook surface and must be folded into that event's dispatcher as a handler carrying a tool_matcher. Events diverging from the canonical dispatcher: ${lib.concatStringsSep ", " codexEventsWhoseCommandDivergesFromTheCanonicalDispatcher}";
 
   codex-hooks-every-dispatcher-declares-its-surface =
     let
