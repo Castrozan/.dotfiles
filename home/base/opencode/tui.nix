@@ -30,23 +30,15 @@ let
     };
   };
 
-  seedSidebarHiddenByDefault = pkgs.writeShellScript "seed-opencode-sidebar-hidden" ''
-    set -euo pipefail
-    KV_FILE="${opencodeStateDirectory}/kv.json"
-    if [ ! -d "${opencodeStateDirectory}" ]; then
-      mkdir -p "${opencodeStateDirectory}"
-    fi
-    if [ ! -f "$KV_FILE" ]; then
-      echo '{"sidebar":"hide"}' > "$KV_FILE"
-      exit 0
-    fi
-    ${pkgs.jq}/bin/jq 'if has("sidebar") then . else . + {"sidebar":"hide"} end' "$KV_FILE" | ${pkgs.moreutils}/bin/sponge "$KV_FILE"
+  seedOpencodeSidebarHidden = pkgs.writeShellScript "seed-opencode-sidebar-hidden" ''
+    export PATH="${pkgs.jq}/bin:${pkgs.moreutils}/bin:$PATH"
+    exec ${./scripts/seed_opencode_sidebar_hidden.sh} "${opencodeStateDirectory}/kv.json"
   '';
 in
 {
   home.file.".config/opencode/tui.json".text = builtins.toJSON opencodeTuiSettings;
 
   home.activation.seedOpencodeSidebarHiddenByDefault = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    run ${seedSidebarHiddenByDefault}
+    run ${seedOpencodeSidebarHidden}
   '';
 }

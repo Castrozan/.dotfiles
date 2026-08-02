@@ -43,8 +43,16 @@ tools (tmux send-keys, fzf, sysctl pipelines) where Python would just be subproc
 Nix - no uv, no venv, no pip. Only scripts under 10 lines of actual logic may live inline in '.nix' files via
 'pkgs.writeShellScript', 'pkgs.writeText', or similar builders. Anything longer goes to a dedicated file under the
 module's 'scripts/' directory and is referenced by path. Long inline scripts are unreadable, unformattable, untestable,
-and escape from nix string interpolation rules destroys quoting. When in doubt, extract.
+  and escape from nix string interpolation rules destroys quoting. When in doubt, extract.
 </scripts>
+
+<workarounds>
+A workaround, any code that exists to compensate for a limitation outside our control (a vendor quirk, a tool bug, a
+missing upstream option), never lives inline in the module that needs it. Extract it to its own dedicated file, its own
+script or module or overlay depending on the shape, and import it into the consumer surgically: one clean reference,
+named after what it compensates for, with the consumer exposing only the knob that varies. The extracted file is where
+the workaround's reasoning lives, so it can be re-read, tested, and discarded when the upstream limitation goes away.
+</workarounds>
 
 <git>
 Commits are not dangerous - commit at every change during development. Always git add specific-file, never git add -A or
