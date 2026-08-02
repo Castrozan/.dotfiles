@@ -46,6 +46,7 @@ let
   a2aAgentChecks = import ../../home/base/agents/a2a/__tests__/checks.nix domainArgs;
   ollamaChecks = import ../../home/base/ollama/__tests__/checks.nix domainArgs;
   opencodeChecks = import ../../home/base/opencode/__tests__/checks.nix domainArgs;
+  piChecks = import ../../home/base/pi/__tests__/checks.nix domainArgs;
   audioChecks = import ../../home/linux/audio/__tests__/checks.nix domainArgs;
   networkChecks = import ../../home/base/network/__tests__/checks.nix domainArgs;
   systemChecks = import ../../home/base/system/__tests__/checks.nix domainArgs;
@@ -84,6 +85,7 @@ claudeChecks
 // a2aAgentChecks
 // ollamaChecks
 // opencodeChecks
+// piChecks
 // audioChecks
 // networkChecks
 // systemChecks
