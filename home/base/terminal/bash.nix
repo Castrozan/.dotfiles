@@ -43,6 +43,16 @@ let
   shellAliasesForNonInteractiveBash = "$HOME/.dotfiles/home/base/terminal/shell/aliases.sh";
   interactiveBashConfiguration = "$HOME/.dotfiles/home/base/terminal/shell/bash_interactive.sh";
   flylineKeybindingsConfiguration = "$HOME/.dotfiles/home/base/terminal/shell/bash_flyline_config.sh";
+
+  zoxideBashInit = pkgs.runCommand "zoxide-bash-init" { } ''
+    mkdir -p "$out"
+    ${pkgs.zoxide}/bin/zoxide init bash > "$out/zoxide-init.sh"
+  '';
+
+  carapaceBashInit = pkgs.runCommand "carapace-bash-init" { } ''
+    mkdir -p "$out"
+    ${pkgs.carapace}/bin/carapace _carapace bash > "$out/carapace-init.sh"
+  '';
 in
 {
   home.sessionVariables.BASH_ENV = shellAliasesForNonInteractiveBash;
@@ -61,18 +71,24 @@ in
         if [ -r "${interactiveBashConfiguration}" ]; then
           . "${interactiveBashConfiguration}"
         fi
+        if [ -r "${zoxideBashInit}/zoxide-init.sh" ]; then
+          . "${zoxideBashInit}/zoxide-init.sh"
+        fi
+        if [ -r "${carapaceBashInit}/carapace-init.sh" ]; then
+          . "${carapaceBashInit}/carapace-init.sh"
+        fi
       '';
     };
 
     zoxide = {
       enable = true;
-      enableBashIntegration = true;
+      enableBashIntegration = false;
       enableFishIntegration = false;
     };
 
     carapace = {
       enable = true;
-      enableBashIntegration = true;
+      enableBashIntegration = false;
       enableFishIntegration = false;
     };
   };

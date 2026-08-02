@@ -38,8 +38,7 @@ let
 
   claude-code = pkgs.writeShellScriptBin "claude" ''
     ${exportLinesForClaudeEnvironment}
-    rm -rf "$HOME/.local/share/claude/versions"
-    ${pkgs.python312}/bin/python3 ${./scripts/pre-approve-current-workspace-trust-dialog} || true
+    ${pkgs.bash}/bin/bash ${./scripts/pre-approve-current-workspace-trust-dialog.sh} "${pkgs.jq}/bin/jq" || true
     exec ${claude-code-unwrapped}/bin/claude "$@"
   '';
 in

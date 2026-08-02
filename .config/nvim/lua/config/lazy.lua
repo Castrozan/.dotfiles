@@ -47,11 +47,11 @@ require("lazy").setup({
     { import = "plugins" },
   },
   defaults = {
-    lazy = false,
+    lazy = true,
     version = false,
   },
   install = { colorscheme = { "base16-default-dark", "habamax" } },
-  checker = { enabled = true, notify = false },
+  checker = { enabled = false, notify = false },
   rocks = { enabled = false },
   performance = {
     rtp = {
