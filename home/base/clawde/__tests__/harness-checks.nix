@@ -150,4 +150,14 @@ in
         ) (eligibleHarnessesOf "agent-on-codex")
       ))
       "this machine exports BASH_ENV pointing at an alias file that turns on expand_aliases and aliases claude to a wrapper passing --append-system-prompt-file, and a launch command runs through exactly such a shell: without the command builtin in front of the binary the alias wins over PATH, the wrapper's flags collide with the ones clawde built, and the agent dies at argument parsing on every restart forever";
+
+  clawde-no-launch-command-resolves-its-binary-through-the-ambient-path =
+    mkEvalCheck "clawde-no-launch-command-resolves-its-binary-through-the-ambient-path"
+      (builtins.all (resolvesOnlyThroughItsOwnDirectory: resolvesOnlyThroughItsOwnDirectory) (
+        pkgs.lib.mapAttrsToList (
+          harnessName: launchCommand:
+          pkgs.lib.hasInfix "PATH=${cfgWithBothHarnesses.home.homeDirectory}/clawde/harness-home/${harnessName}/bin:\"$PATH\" " launchCommand
+        ) (eligibleHarnessesOf "agent-on-codex")
+      ))
+      "the command builtin defeats the alias but still resolves the name through whatever PATH the pane inherits, so any stale binary sitting earlier on PATH quietly replaces the one the deployment pinned: a claude 2.1.72 left behind in /opt/homebrew/bin did exactly that and killed an agent at argument parsing every 300 seconds for two days while the configured 2.1.220 sat unused. Every launch command must therefore prepend its own harness-home binary directory, which holds nothing but the package this deployment built";
 }
