@@ -18,6 +18,7 @@
     ../base/hermes
     ../base/opencode
     ../base/opencode/private.nix
+    ../base/pi
     ../base/testing
 
     ../base/terminal/bash.nix

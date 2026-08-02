@@ -25,6 +25,7 @@ in
     ../../linux/home-assistant
     ../../linux/hyprland/nixos.nix
     ../../base/opencode
+    ../../base/pi
     ../../base/testing
 
     ../../base/terminal/bash.nix
