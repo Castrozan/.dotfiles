@@ -21,6 +21,9 @@ let
 
   packageNames = map (p: p.name or p.pname or "unknown") cfg.home.packages;
   hasPackageMatching = pattern: builtins.any (n: builtins.match pattern n != null) packageNames;
+
+  codexGlobalInstructions =
+    (import ../../codex/global-instructions.nix { }).home.file.".codex/AGENTS.md".text;
 in
 {
   domain-pi-package =
@@ -34,4 +37,9 @@ in
   domain-pi-installed-package-is-the-wrapper =
     mkEvalCheck "domain-pi-installed-package-is-the-wrapper" (cfg.pi.package.name == "pi")
       "the upstream release unpacks to a directory of sidecar assets around a Bun executable and carries no bin/, so installing it raw would put nothing on PATH. Only the wrapper exposes a `pi` binary";
+
+  domain-pi-global-instructions-carry-the-same-core-rules-as-every-other-harness =
+    mkEvalCheck "domain-pi-global-instructions-carry-the-same-core-rules-as-every-other-harness"
+      (cfg.home.file.".pi/agent/AGENTS.md".text == codexGlobalInstructions)
+      "pi discovers global instructions at ~/.pi/agent/AGENTS.md, so that is where the core rules have to land for pi to behave like claude, codex and opencode rather than like a stock install";
 }

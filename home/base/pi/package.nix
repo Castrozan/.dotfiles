@@ -31,11 +31,19 @@ let
     pkgs.fd
   ];
 
+  interactivePreferencesFile = pkgs.writeText "pi-interactive-session-only-reply-rules.md" (
+    builtins.readFile ../../../agents/core_rules/communication/interactive-preferences.md
+    + "\n"
+    + builtins.readFile ../../../agents/core_rules/communication/enforced-reply-rules.md
+  );
+
   pi = pkgs.writeShellScriptBin "pi" ''
     export PATH="${searchToolsThePiFileToolsShellOutTo}:$PATH"
     export PI_SKIP_VERSION_CHECK="''${PI_SKIP_VERSION_CHECK:-1}"
     export PI_TELEMETRY="''${PI_TELEMETRY:-0}"
-    exec ${pi-unwrapped}/pi "$@"
+    export PI_UNWRAPPED_BINARY="${pi-unwrapped}/pi"
+    export PI_INTERACTIVE_REPLY_RULES_FILE="${interactivePreferencesFile}"
+    exec ${pkgs.bash}/bin/bash ${./scripts/launch-pi-with-the-interactive-reply-rules.sh} "$@"
   '';
 in
 {
