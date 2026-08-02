@@ -21,7 +21,7 @@ GENERATED_SURFACE_NOTICE = (
 
 REPLY_TEMPLATE_SHAPE = (
     "Every reply is a short plain-prose status report. Open with a header-less paragraph that answers directly and "
-    "gives the cause or the context, so it stands alone if Lucas stops reading there. Follow it with a `**Done:**` "
+    "gives the cause or the context, so it stands alone if the user stops reading there. Follow it with a `**Done:**` "
     "line saying what changed or what you found this turn, then a `**Next:**` line saying what is pending or the "
     "single decision you need from him, or `**Next:** nothing pending` when the task is finished. Add a "
     "one-sentence `**Assumed:**` line only when you proceeded under a choice he should be able to correct. A one or "
@@ -29,12 +29,12 @@ REPLY_TEMPLATE_SHAPE = (
 )
 
 REPLY_RECOVERY_INSTRUCTION = (
-    "Rewrite the reply so it satisfies the rules it broke, keeping the substance Lucas needs and cutting only "
+    "Rewrite the reply so it satisfies the rules it broke, keeping the substance the user needs and cutting only "
     "filler, never the answer."
 )
 
 REQUEST_GATE_CONDITION = (
-    "These stand down only when Lucas explicitly asked for a document or an in-detail write-up, and fenced code "
+    "These stand down only when the user explicitly asked for a document or an in-detail write-up, and fenced code "
     "blocks never count toward the line, word, and character counts."
 )
 
@@ -113,7 +113,7 @@ def rendered_enforced_reply_rules_markdown() -> str:
         ("reply_template", REPLY_TEMPLATE_SHAPE),
         (
             "always_enforced",
-            "The Stop hook blocks the turn on any of these, including on a turn where Lucas asked for a document. "
+            "The Stop hook blocks the turn on any of these, including on a turn where the user asked for a document. "
             + joined_rule_sentences(ALWAYS_ENFORCED_TIER),
         ),
         (

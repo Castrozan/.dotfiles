@@ -74,7 +74,7 @@ HUMAN_FACING_REPLY_RULES = [
         "earlier_message_deferral",
         ALWAYS_ENFORCED_TIER,
         LIVE_KEYBOARD_REPLY_SCOPE,
-        "Never point back to an earlier message or turn, because Lucas reads only this end-of-turn message; "
+        "Never point back to an earlier message or turn, because the user reads only this end-of-turn message; "
         "restate what still matters so the reply stands alone.",
         earlier_message_deferral_violation,
     ),
@@ -82,7 +82,7 @@ HUMAN_FACING_REPLY_RULES = [
         "unlinked_artifact",
         ALWAYS_ENFORCED_TIER,
         EVERY_HUMAN_FACING_CHANNEL_SCOPE,
-        "Give the link for any merge request or pull request you name, so Lucas clicks through to validate it.",
+        "Give the link for any merge request or pull request you name, so the user clicks through to validate it.",
         unlinked_artifact_violation,
     ),
     HumanFacingReplyRule(
