@@ -13,7 +13,7 @@ let
     attention = {
       enabled = true;
       notifications = true;
-      sound = true;
+      sound = false;
       volume = 0.4;
     };
 
