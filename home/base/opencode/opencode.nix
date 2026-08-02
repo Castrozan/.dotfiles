@@ -42,12 +42,16 @@ let
         }
       );
 
-  opencode = pkgs.writeShellScriptBin "opencode" ''
+  opencode-authenticated = pkgs.writeShellScriptBin "opencode" ''
     opencodeApiKeyFile="$HOME/.secrets/opencode-api-key"
     if [ -r "$opencodeApiKeyFile" ]; then
       OPENCODE_API_KEY="$(cat "$opencodeApiKeyFile")"
       export OPENCODE_API_KEY
     fi
+    exec ${opencode-unwrapped}/bin/opencode "$@"
+  '';
+
+  opencode = pkgs.writeShellScriptBin "opencode" ''
     case "''${1:-}" in
       acp | agent | attach | completion | db | debug | export | github | import | mcp | models | plugin | pr | providers | auth | run | serve | session | stats | uninstall | upgrade | web)
         ;;
@@ -55,15 +59,15 @@ let
         export OPENCODE_CONFIG="${interactiveSessionConfigOverlay}"
         ;;
     esac
-    exec ${opencode-unwrapped}/bin/opencode "$@"
+    exec ${opencode-authenticated}/bin/opencode "$@"
   '';
 in
 {
   options.opencode.unwrappedPackage = lib.mkOption {
     type = lib.types.package;
-    default = opencode-unwrapped;
+    default = opencode-authenticated;
     readOnly = true;
-    description = "The bare upstream opencode binary, without the interactive wrapper that overlays the human's own reply-shape instructions through OPENCODE_CONFIG. An autonomous harness sets its own per-agent OPENCODE_CONFIG and must launch this, because the wrapper's overlay would replace it.";
+    description = "opencode without the interactive wrapper that overlays the human's own reply-shape instructions through OPENCODE_CONFIG, but still exporting OPENCODE_API_KEY from the agenix secret. An autonomous harness sets its own per-agent OPENCODE_CONFIG and must launch this, because the wrapper's overlay would replace it, while a paid opencode-go model still needs the key the plain upstream binary would never read.";
   };
 
   config.home = {

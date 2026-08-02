@@ -76,7 +76,7 @@ in
   clawde.agents.steward = {
     type = "steward";
     harness = "opencode";
-    model = "opencode/deepseek-v4-flash-free";
+    model = "opencode-go/deepseek-v4-flash";
     modelByHarness.codex = "gpt-5.6-terra";
     personality = effectivePersonality;
     launchOnTrigger = false;
