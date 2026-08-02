@@ -32,7 +32,7 @@ let
 
   seedOpencodeSidebarHidden = pkgs.writeShellScript "seed-opencode-sidebar-hidden" ''
     export PATH="${pkgs.jq}/bin:${pkgs.moreutils}/bin:$PATH"
-    exec ${./scripts/seed_opencode_sidebar_hidden.sh} "${opencodeStateDirectory}/kv.json"
+    exec ${pkgs.bash}/bin/bash ${./scripts/seed_opencode_sidebar_hidden.sh} "${opencodeStateDirectory}/kv.json"
   '';
 in
 {
