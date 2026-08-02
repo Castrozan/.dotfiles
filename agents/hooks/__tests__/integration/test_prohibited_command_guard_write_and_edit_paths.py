@@ -37,7 +37,7 @@ class TestWriteAndEditFilePathBlocking:
         [
             "/Users/lucas.zanoni/.dotfiles/agents/hooks/example.py",
             "/tmp/scratch.txt",
-            "README.md",
+            "example.py",
         ],
     )
     def test_allows_writes_outside_castrozan(

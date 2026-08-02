@@ -14,7 +14,7 @@ for _shared_module_candidate_directory in [_MODULE_DIRECTORY] + [
     ):
         sys.path.insert(0, _shared_module_candidate_path)
 
-import instructions_skill_marker  # noqa: E402
+import skill_loaded_marker  # noqa: E402
 from changed_file_paths import collect_changed_file_paths  # noqa: E402
 from hook_dispatch import HandlerResult  # noqa: E402
 
@@ -41,9 +41,7 @@ AUTHORING_STANDARDS_DIRECTIVE = (
 
 
 def has_loaded_instructions_skill_this_session(session_id):
-    return instructions_skill_marker.instructions_skill_loaded_marker_path(
-        session_id
-    ).exists()
+    return skill_loaded_marker.has_skill_loaded("instructions", session_id)
 
 
 def is_agent_directed_instruction_file(file_path):

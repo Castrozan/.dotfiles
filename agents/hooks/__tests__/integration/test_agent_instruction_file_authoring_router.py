@@ -1,5 +1,5 @@
 import pytest
-from agent_instruction_router_test_support import (
+from authoring_router_test_support import (
     assert_allowed,
     assert_blocked,
     permission_reason,
@@ -44,8 +44,6 @@ class TestInstructionFileClassification:
         [
             "/home/lucas.zanoni/.dotfiles/home/base/claude/hook-config.nix",
             "/tmp/scratch.txt",
-            "/home/lucas.zanoni/.dotfiles/README.md",
-            "docs/architecture.md",
         ],
     )
     def test_allows_files_that_do_not_instruct_an_agent(

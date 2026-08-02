@@ -1,5 +1,5 @@
 import pytest
-from agent_instruction_router_test_support import assert_allowed, assert_blocked
+from authoring_router_test_support import assert_allowed, assert_blocked
 
 CLAUDE_MD_EDIT_TARGET = "/home/lucas.zanoni/.dotfiles/CLAUDE.md"
 
@@ -23,7 +23,7 @@ class TestInstructionsSkillGate:
     def test_opens_the_gate_after_the_instructions_skill_is_recorded(
         self,
         invoke_agent_instruction_file_authoring_router_hook,
-        invoke_record_instructions_skill_invocation_hook,
+        invoke_record_skill_invocation_hook,
     ):
         edit_payload = {
             "session_id": "session-gate-open",
@@ -34,7 +34,7 @@ class TestInstructionsSkillGate:
         blocked_before = invoke_agent_instruction_file_authoring_router_hook(
             edit_payload
         )
-        invoke_record_instructions_skill_invocation_hook(
+        invoke_record_skill_invocation_hook(
             {
                 "session_id": "session-gate-open",
                 "tool_name": "Skill",
@@ -51,9 +51,9 @@ class TestInstructionsSkillGate:
     def test_gate_is_scoped_to_the_recording_session(
         self,
         invoke_agent_instruction_file_authoring_router_hook,
-        invoke_record_instructions_skill_invocation_hook,
+        invoke_record_skill_invocation_hook,
     ):
-        invoke_record_instructions_skill_invocation_hook(
+        invoke_record_skill_invocation_hook(
             {
                 "session_id": "session-with-skill",
                 "tool_name": "Skill",
@@ -71,16 +71,18 @@ class TestInstructionsSkillGate:
 
         assert_blocked(other_session_result)
 
+    @pytest.mark.parametrize("unrelated_skill_name", ["nix", "docs"])
     def test_unrelated_skill_invocation_does_not_open_the_gate(
         self,
+        unrelated_skill_name,
         invoke_agent_instruction_file_authoring_router_hook,
-        invoke_record_instructions_skill_invocation_hook,
+        invoke_record_skill_invocation_hook,
     ):
-        invoke_record_instructions_skill_invocation_hook(
+        invoke_record_skill_invocation_hook(
             {
                 "session_id": "session-unrelated-skill",
                 "tool_name": "Skill",
-                "tool_input": {"skill": "nix"},
+                "tool_input": {"skill": unrelated_skill_name},
             }
         )
 
@@ -109,9 +111,9 @@ class TestInstructionsSkillGate:
         skill_name,
         expected_blocked,
         invoke_agent_instruction_file_authoring_router_hook,
-        invoke_record_instructions_skill_invocation_hook,
+        invoke_record_skill_invocation_hook,
     ):
-        invoke_record_instructions_skill_invocation_hook(
+        invoke_record_skill_invocation_hook(
             {
                 "session_id": "session-namespaced-skill",
                 "tool_name": "Skill",

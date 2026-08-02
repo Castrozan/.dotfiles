@@ -22,6 +22,7 @@ import agent_instruction_file_authoring_router_handler  # noqa: E402
 import background_bash_anti_pattern_validator_handler  # noqa: E402
 import blocked_skill_invocation_guard_handler  # noqa: E402
 import codex_sandbox_downgrade_guard_handler  # noqa: E402
+import documentation_authoring_router_handler  # noqa: E402
 import monitor_streaming_pattern_validator_handler  # noqa: E402
 import prohibited_command_guard_handler  # noqa: E402
 import prohibited_words_guard_handler  # noqa: E402
@@ -74,6 +75,10 @@ PRE_TOOL_USE_HANDLERS = [
     ),
     HookHandler(
         handle=agent_instruction_file_authoring_router_handler.handle,
+        tool_matcher="Write|Edit",
+    ),
+    HookHandler(
+        handle=documentation_authoring_router_handler.handle,
         tool_matcher="Write|Edit",
     ),
     HookHandler(

@@ -81,9 +81,7 @@ def invoke_prohibited_words_guard_hook_without_wordlist(tmp_path, monkeypatch):
 
 @pytest.fixture
 def invoke_agent_instruction_file_authoring_router_hook(tmp_path, monkeypatch):
-    monkeypatch.setenv(
-        "AGENT_INSTRUCTION_AUTHORING_ROUTER_STATE_DIRECTORY", str(tmp_path)
-    )
+    monkeypatch.setenv("AGENT_SKILL_LOADED_MARKER_STATE_DIRECTORY", str(tmp_path))
 
     def runner(payload: dict):
         return run_hook_subprocess(
@@ -95,10 +93,21 @@ def invoke_agent_instruction_file_authoring_router_hook(tmp_path, monkeypatch):
 
 
 @pytest.fixture
-def invoke_record_instructions_skill_invocation_hook(tmp_path, monkeypatch):
-    monkeypatch.setenv(
-        "AGENT_INSTRUCTION_AUTHORING_ROUTER_STATE_DIRECTORY", str(tmp_path)
-    )
+def invoke_documentation_authoring_router_hook(tmp_path, monkeypatch):
+    monkeypatch.setenv("AGENT_SKILL_LOADED_MARKER_STATE_DIRECTORY", str(tmp_path))
+
+    def runner(payload: dict):
+        return run_hook_subprocess(
+            PRE_TOOL_USE_DISPATCHER_HOOK_SCRIPT_PATH,
+            json.dumps({**payload, "hook_event_name": "PreToolUse"}),
+        )
+
+    return runner
+
+
+@pytest.fixture
+def invoke_record_skill_invocation_hook(tmp_path, monkeypatch):
+    monkeypatch.setenv("AGENT_SKILL_LOADED_MARKER_STATE_DIRECTORY", str(tmp_path))
 
     def runner(payload: dict):
         return run_hook_subprocess(
