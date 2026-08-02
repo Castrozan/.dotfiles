@@ -62,8 +62,8 @@ in
 
   domain-opencode-unwrapped-package-is-exposed =
     mkEvalCheck "domain-opencode-unwrapped-package-is-exposed"
-      (cfg.opencode.unwrappedPackage.pname == "opencode")
-      "the bare opencode binary must stay reachable so an autonomous harness can bypass the interactive wrapper";
+      (cfg.opencode.unwrappedPackage.name == "opencode")
+      "an autonomous harness launches this package instead of the interactive wrapper, and clawde symlinks it onto the agent's PATH as `opencode`, so it must keep providing a binary of that name. It is no longer the bare upstream release: that one never reads OPENCODE_API_KEY, which left every agent on a paid opencode-go model unauthenticated while the free tier hid the fault";
 
   domain-opencode-default-model-resolves-against-an-authenticated-provider =
     mkEvalCheck "domain-opencode-default-model-resolves-against-an-authenticated-provider"
