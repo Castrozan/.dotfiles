@@ -14,6 +14,8 @@ let
     inherit pkgs latest homeDir;
   };
 
+  opencodePythonLspEnvironment = import ../testing/python-test-environment.nix { inherit pkgs; };
+
   fullAccessPermissions = {
     "*" = "allow";
     read = "allow";
@@ -48,7 +50,17 @@ let
 
     permission = fullAccessPermissions;
 
-    lsp = true;
+    lsp = {
+      pyright = {
+        command = [
+          "${pkgs.pyright}/bin/pyright-langserver"
+          "--stdio"
+        ];
+        env = {
+          PYTHONPATH = "${opencodePythonLspEnvironment}/lib/python3.12/site-packages";
+        };
+      };
+    };
     formatter = true;
 
     compaction = {

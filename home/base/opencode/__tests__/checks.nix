@@ -99,8 +99,11 @@ in
 
   domain-opencode-enables-language-servers-and-formatters =
     mkEvalCheck "domain-opencode-enables-language-servers-and-formatters"
-      (deployedOpencodeSettings.lsp == true && deployedOpencodeSettings.formatter == true)
-      "opencode must enable its built-in LSP servers and formatters rather than leaving them off";
+      (
+        deployedOpencodeSettings.lsp.pyright.env.PYTHONPATH != ""
+        && deployedOpencodeSettings.formatter == true
+      )
+      "opencode must enable its built-in LSP servers and formatters with the Python test environment available to Pyright";
 
   domain-opencode-wires-the-browser-mcp = mkEvalCheck "domain-opencode-wires-the-browser-mcp" (
     deployedOpencodeSettings.mcp ? chrome-devtools
