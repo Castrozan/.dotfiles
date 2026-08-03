@@ -99,43 +99,32 @@ def read_secret_file(secret_file_path: str) -> str:
         return ""
 
 
-def resolve_secret_file_injections(secret_file_injections: dict) -> dict | None:
-    resolved_secret_values = {}
-    for configuration_key, secret_file_injection in secret_file_injections.items():
-        secret_value = read_secret_file(secret_file_injection["path"])
-        if not secret_value:
-            return None
-        resolved_secret_values[configuration_key] = (
-            f"{secret_file_injection.get('prefix', '')}{secret_value}"
-        )
-    return resolved_secret_values
-
-
 def inject_mcp_server_secret_files(config_data: dict) -> None:
     raw_injections = os.environ.get("CODEX_MCP_SERVER_SECRET_FILE_INJECTIONS", "")
     if not raw_injections:
         return
-    server_name_to_section_secret_files = json.loads(raw_injections)
+    server_name_to_environment_secret_files = json.loads(raw_injections)
     mcp_servers = config_data.get("mcp_servers")
     if not isinstance(mcp_servers, dict):
         return
     for (
         server_name,
-        section_secret_files,
-    ) in server_name_to_section_secret_files.items():
+        environment_secret_files,
+    ) in server_name_to_environment_secret_files.items():
         server_definition = mcp_servers.get(server_name)
         if not isinstance(server_definition, dict):
             continue
-        for section_name, secret_file_injections in section_secret_files.items():
-            resolved_secret_values = resolve_secret_file_injections(
-                secret_file_injections
-            )
-            if resolved_secret_values is None:
-                mcp_servers.pop(server_name, None)
+        resolved_secret_environment = {}
+        for environment_key, secret_file_path in environment_secret_files.items():
+            secret_value = read_secret_file(secret_file_path)
+            if not secret_value:
+                resolved_secret_environment = None
                 break
-            server_definition.setdefault(section_name, {}).update(
-                resolved_secret_values
-            )
+            resolved_secret_environment[environment_key] = secret_value
+        if resolved_secret_environment is None:
+            mcp_servers.pop(server_name, None)
+            continue
+        server_definition.setdefault("env", {}).update(resolved_secret_environment)
 
 
 def build_seeded_config_content() -> bytes | None:

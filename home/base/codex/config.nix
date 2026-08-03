@@ -20,16 +20,8 @@ let
   ];
   codexMcpServerSecretFileInjections = builtins.toJSON {
     jira-desenv = {
-      env = {
-        JIRA_USERNAME.path = "${homeDir}/.secrets/jira-desenv-username";
-        JIRA_PASSWORD.path = "${homeDir}/.secrets/jira-desenv-password";
-      };
-    };
-    sourcebot = {
-      http_headers.Authorization = {
-        path = "${homeDir}/.secrets/sourcebot-token";
-        prefix = "Bearer ";
-      };
+      JIRA_USERNAME = "${homeDir}/.secrets/jira-desenv-username";
+      JIRA_PASSWORD = "${homeDir}/.secrets/jira-desenv-password";
     };
   };
   codexConfigSource = codexConfigTomlFormat.generate "codex-config.toml" {
@@ -104,7 +96,6 @@ let
         };
         startup_timeout_sec = 120;
       };
-      sourcebot.url = "https://sourcebot.betha.cloud/api/mcp";
     };
   };
 in

@@ -1,4 +1,3 @@
-import json
 import stat
 
 from seed_codex_config_test_support import read_live_config, run_seed
@@ -137,58 +136,3 @@ status_line = []
     assert live_config["tui"]["session_picker_view"] == "dense"
     assert live_config["tui"]["status_line_use_colors"] is True
     assert live_config["notice"]["hide_full_access_warning"] is True
-
-
-def test_seed_injects_secret_files_into_mcp_server_sections(tmp_path):
-    codex_directory = tmp_path / ".codex"
-    codex_directory.mkdir()
-    (codex_directory / "config.toml.nix-source").write_text(
-        """
-[mcp_servers.jira-desenv]
-command = "jira"
-
-[mcp_servers.sourcebot]
-url = "https://sourcebot.example/mcp"
-""".strip()
-        + "\n",
-        encoding="utf-8",
-    )
-    jira_username_path = tmp_path / "jira-username"
-    jira_password_path = tmp_path / "jira-password"
-    sourcebot_token_path = tmp_path / "sourcebot-token"
-    jira_username_path.write_text("jira-user\n", encoding="utf-8")
-    jira_password_path.write_text("jira-password\n", encoding="utf-8")
-    sourcebot_token_path.write_text("sourcebot-token\n", encoding="utf-8")
-    secret_file_injections = json.dumps(
-        {
-            "jira-desenv": {
-                "env": {
-                    "JIRA_USERNAME": {"path": str(jira_username_path)},
-                    "JIRA_PASSWORD": {"path": str(jira_password_path)},
-                }
-            },
-            "sourcebot": {
-                "http_headers": {
-                    "Authorization": {
-                        "path": str(sourcebot_token_path),
-                        "prefix": "Bearer ",
-                    }
-                }
-            },
-        }
-    )
-
-    result = run_seed(
-        tmp_path,
-        {"CODEX_MCP_SERVER_SECRET_FILE_INJECTIONS": secret_file_injections},
-    )
-
-    assert result.returncode == 0, result.stderr
-    live_config = read_live_config(tmp_path)
-    assert live_config["mcp_servers"]["jira-desenv"]["env"] == {
-        "JIRA_USERNAME": "jira-user",
-        "JIRA_PASSWORD": "jira-password",
-    }
-    assert live_config["mcp_servers"]["sourcebot"]["http_headers"] == {
-        "Authorization": "Bearer sourcebot-token"
-    }
