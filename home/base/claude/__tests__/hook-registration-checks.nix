@@ -47,14 +47,13 @@ let
   registrationRefusesToDegradeWithoutPrivateConfig =
     let
       attempt = builtins.tryEval (
-        builtins.toJSON (
+        builtins.toJSON
           (import ../hooks/event-registrations {
             inherit lib;
             hostname = "test";
             isDarwin = true;
             privateConfigRoot = "/nonexistent/private-config";
           }).PreToolUse
-        )
       );
     in
     !attempt.success;

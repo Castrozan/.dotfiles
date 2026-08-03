@@ -75,14 +75,13 @@ let
   codexRegistrationRefusesToDegradeWithoutPrivateConfig =
     let
       attempt = builtins.tryEval (
-        builtins.toJSON (
+        builtins.toJSON
           (import ../hooks/configuration.nix {
             inherit pkgs lib;
             hostname = "test";
             isDarwin = true;
             privateConfigRoot = "/nonexistent/private-config";
           }).PreToolUse
-        )
       );
     in
     !attempt.success;
