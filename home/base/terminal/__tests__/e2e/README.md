@@ -26,3 +26,33 @@ python3 wezterm_window_teardown_stress.py --both --cycles 200
 - The stress loop is robustness evidence, not proof the original race is gone:
   the real crash needed days of uptime, so rapid cycling does not reproduce it
   on either backend. Windows flash at the screen corner while it runs.
+
+# herdr tab startup benchmark (manual, needs a live herdr server)
+
+Decomposes the wall time from `herdr tab create` until the new pane's bash is
+writable into client, server, shell-spawn, shell-exec, and prompt-render
+phases. The writable phase is measured in-band (the shell prints its own
+`date +%s%N` when it executes the first queued command), so client polling
+latency does not pollute it. Server phases come from the append-only
+`~/.config/herdr/herdr-server.log`, matched by tab id.
+
+Non-invasive: creates its own `perf-bench-*` tabs, always closes them, never
+focuses a window by default, and touches no config, environment, or profile.
+Skips cleanly when no herdr server is running, so it is safe on any host.
+
+Not wired into `__tests__/run.sh` or `checks.nix`: it needs a live herdr
+server and real pane spawns. The unit-level guard for the same latency lives
+in `../unit/test_bash_login_pty_startup_latency.py`.
+
+```
+cd home/base/terminal/__tests__/e2e
+python3 herdr_tab_startup_benchmark.py --runs 12
+```
+
+- `--runs N` iterations; `--focus` creates the tab focused (defaults to
+  backgrounded); `--warm` splits into an existing tab instead of a new one.
+- The measured findings that drove `home/base/terminal/bash.nix`: flyline's
+  inline viewport blocks on a cursor-position query (DSR) that herdr's
+  emulator does not answer, so the first keystroke lands ~1.2s (median) late
+  in every new pane; the rc now skips flyline under `HERDR_ENV=1`.
+

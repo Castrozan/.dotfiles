@@ -62,9 +62,11 @@ in
       enable = true;
       initExtra = ''
         if [[ $- == *i* ]]; then
-          if enable -f ${flylineLoadableBuiltin}/lib/libflyline.loadable flyline 2>/dev/null; then
-            if [ -r "${flylineKeybindingsConfiguration}" ]; then
-              . "${flylineKeybindingsConfiguration}"
+          if [[ -z "''${HERDR_ENV:-}" ]]; then
+            if enable -f ${flylineLoadableBuiltin}/lib/libflyline.loadable flyline 2>/dev/null; then
+              if [ -r "${flylineKeybindingsConfiguration}" ]; then
+                . "${flylineKeybindingsConfiguration}"
+              fi
             fi
           fi
         fi
