@@ -78,7 +78,7 @@ def test_the_aliases_and_the_exec_line_share_one_model_binding():
     source = module_source()
     declared = re.search(r'opencodeGoModel = "([^"]+)"', source)
     assert declared, "opencodeGoModel is no longer declared in the module"
-    assert f'--model "${{opencodeGoModel}}"' in launcher_exec_line(), (
+    assert '--model "${opencodeGoModel}"' in launcher_exec_line(), (
         "the exec line passes a model other than the declared binding, so the aliases and the pinned model can drift apart silently"
     )
 
