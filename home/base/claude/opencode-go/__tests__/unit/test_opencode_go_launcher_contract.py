@@ -4,7 +4,7 @@ from pathlib import Path
 OPENCODE_GO_MODULE = Path(__file__).resolve().parents[2] / "default.nix"
 OPENCODE_GO_OPUS_MODEL = "deepseek-v4-pro"
 OPENCODE_GO_SONNET_MODEL = "deepseek-v4-flash"
-OPENCODE_GO_HAIKU_MODEL = "kimi-k2.5"
+OPENCODE_GO_HAIKU_MODEL = "kimi-k3"
 OPENCODE_GO_BASE_URL = "https://opencode.ai/zen/go"
 OPENCODE_GO_SECRET_PATH_FRAGMENT = ".secrets/opencode-api-key"
 LAUNCHER_EXEC_LINE = re.compile(r"^\s*exec \S+/bin/claude .*$", re.M)

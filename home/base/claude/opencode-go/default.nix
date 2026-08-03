@@ -16,7 +16,7 @@ let
   opencodeGoBaseUrl = "https://opencode.ai/zen/go";
   opencodeGoOpusModel = "deepseek-v4-pro";
   opencodeGoSonnetModel = "deepseek-v4-flash";
-  opencodeGoHaikuModel = "kimi-k2.5";
+  opencodeGoHaikuModel = "kimi-k3";
 
   claudeGoLauncher = pkgs.writeShellScriptBin "claude-go" ''
     opencodeGoApiKeyFile="$HOME/.secrets/opencode-api-key"
