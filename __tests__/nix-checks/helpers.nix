@@ -37,6 +37,7 @@ let
           config.allowUnfree = true;
         };
         isNixOS = false;
+        isDarwin = false;
         username = "test";
         inherit
           hostname
