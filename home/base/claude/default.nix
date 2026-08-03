@@ -12,6 +12,7 @@
     ./workflows
     ./hooks
     ./mcps
+    ./opencode-go
     ./private.nix
     ./scripts
   ];
