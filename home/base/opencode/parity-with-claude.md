@@ -79,10 +79,6 @@ against the model choice.
   and `mem0` (host-gated). Codex wires `chrome-devtools` and a work Jira server.
 - opencode wires `chrome-devtools`, reusing the same stdio command the browser
   skill builds, so the shared browser MCP is at parity across all three CLIs.
-  It connects on demand (TUI `/mcps`) instead of at startup: the opencode fork
-  awaits every MCP connect on the session-start critical path, which Claude and
-  Codex do not, so booting the server up front buys nothing for sessions that
-  never browse.
 - Deferred: `a2a` (needs an agent backend opencode has no receiver for), `codex`
   and a self-referential opencode server (N/A), `mem0` (explicitly
   deprioritized), and the work Jira server, whose credentials are injected from

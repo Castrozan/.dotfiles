@@ -19,7 +19,7 @@ in
   chrome-devtools = {
     type = "local";
     command = chromeDevtoolsStdioInvocation;
-    enabled = false;
+    enabled = true;
     timeout = 120000;
   };
 }
