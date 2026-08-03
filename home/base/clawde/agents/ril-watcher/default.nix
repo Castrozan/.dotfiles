@@ -6,9 +6,7 @@ in
   claudeCuratedSkillSets.ril-watcher = [
     "ril"
     "nix"
-    "git"
-    "worktrees"
-    "test"
+    "coding"
     "twitter"
     "youtube"
     "research"

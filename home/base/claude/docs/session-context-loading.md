@@ -53,7 +53,7 @@ being the directory you opened.
 
 **The knowledge tier does not travel.** `agent-memory.md` says no registry edit is needed to add a domain because "the
 interactive workspace launcher materializes every one of them into the session's skill namespace". True only inside
-`~/.dotfiles`. Outside it, `nix`, `git`, `clawde`, `claude-harness`, `desktop` and `arr-stack` and their `knowledge.md`
+`~/.dotfiles`. Outside it, `nix`, `coding`, `clawde`, `agent-harness`, `desktop` and `arr-stack` and their `knowledge.md`
 files do not exist, which is precisely the tier the memory design depends on.
 
 ## What the harness already does
@@ -75,25 +75,20 @@ bypassPermissions --append-system-prompt "$(cat instructions/jenny.md)" --add-di
 carries its own `.claude/settings.json`. Nothing bespoke, and it is the only Claude agent on the fleet; the other three
 run codex and take skills through their own path.
 
-## The design: three tiers, all native
+## The design: curated tiers, all native
 
-**Machine tier, `~/.claude/skills/`.** Every skill in `agents/skills/`, nix-declared, loaded in every session on the
-machine regardless of directory. This is the tier that carries `knowledge.md`, so filing a fact under its owner finally
-means what `agent-memory.md` said it meant. Cost is 9471 bytes of descriptions, already the number the existing budget
-test caps at 12000, which stops being notional and becomes the real always-on figure. Machine-private skills such as
-`private-config/machines/rin/skills/*` deploy into this tier from the module that already knows the host, so rin's
-skills stay on rin.
+**Machine tier, `~/.claude/skills/`.** Each interactive harness receives a curated set from
+`interactive-agent-skills.nix`, plus a generated `all-skills` index for the source skills outside that set. This bounds
+always-on descriptions while retaining a path to domain knowledge. Machine-private skills deploy only from the module
+that owns the machine, so they stay on that machine.
 
 **Repository tier, `<repo>/.claude/skills/`.** Owned and curated by the repository, discovered natively by walking up
 from the working directory. A repo with none gets none. `ai-first-initiative` already has this and the launcher was
 hiding it. `~/.dotfiles` needs no such directory, since all of its skills belong to the machine tier.
 
-**Agent tier, `~/.local/share/claude-skill-sets/<set>/.claude/skills/`.** Unchanged. Nix-declared per agent, handed over
-with `--add-dir` from the agent's launch command. Curation here is real because the codex agents that consume it never
-read `~/.claude/skills/`.
-
-The `personal` set falls out. Its only consumer is jenny, who already receives all 41 skills as ten globals plus
-thirty-one from that set, and who would receive the same 41 from the machine tier.
+**Agent tier, `~/.local/share/claude-skill-sets/<set>/.claude/skills/`.** Nix declares this per agent and passes it
+through the agent's launch command. Curation here remains necessary because autonomous agents can have harness-specific
+skill roots.
 
 ## What has no native equivalent
 
@@ -110,22 +105,8 @@ also makes the launcher's environment scrub redundant.
 
 ## Consequences
 
-| Root opened | Eager description bytes before | After | Skills silently dropped before | After |
-|---|---|---|---|---|
-| `~/.dotfiles` | 10378 | 9471 | 0 | 0 |
-| `~/repo/ai-first-initiative` | 6658 plus its own nine | 9471 plus its own nine | 16 | 0 |
-| `~/repo` | 24046 | 9471 | 301 | 0 |
-| `~/code/lucaszanoni-web` | 2458 | 9471 | 0 | 0 |
-
-The worst case improves by 2.5x and stops losing skills. The clean case pays 7013 more bytes, about 1750 tokens, and
-that is the price of every domain's knowledge being reachable from every directory, which is the whole point.
-
-Discovery becomes strictly more capable, not less. The launcher descends from the working directory, so opening a
-subdirectory of a repository finds only what is below it. Native discovery ascends to the project root, so the repo's
-skills load from anywhere inside it.
-
-1314 lines are deleted: 484 in the launcher and 830 across its nine test files. Gone with them are the sha256 `/tmp`
-namespace, the staging swap, both stale sweeps, the `--from` flag and the environment scrub.
+Discovery remains native for repository and agent scopes. The curated machine tier avoids loading every source skill by
+default, while the generated index keeps each excluded skill and its durable knowledge reachable.
 
 ## Explicitly rejected
 
@@ -145,10 +126,9 @@ that survives only until the first compaction is worse than none.
 
 ## What shipped
 
-`skill-set-builders.nix` no longer splits skills into a global list and a specialized remainder; there is one list,
-`allSkillNames`, and `all-sessions-global.nix` deploys all of it into the machine tier. Machine-private skills already
-took this path: `private.nix` deploys `private-config/machines/<host>/skills/*` into `.claude/skills` for that host
-only, so removing the walk is what stops rin's four private skills from loading on kira.
+`skill-set-builders.nix` discovers the source skill set, and `interactive-agent-skills.nix` owns the shared curated list
+that each harness deploys. Machine-private skills still deploy only from the host that owns them, so a private skill
+cannot leak into another machine's interactive namespace.
 
 The `personal` set and the `skillDirectories` entries that pointed at it are gone from jenny, golden and claude, since
 all three now receive the same skills from the machine tier. `claudeCuratedSkillSets` survives for the codex agents,
@@ -160,14 +140,12 @@ and appends the interactive surfaces with `--append-system-prompt-file`, verifie
 no `--model`, because `settings.json` already pins the same value, and no effort flag, because `binary.nix` already
 exports `CLAUDE_CODE_EFFORT_LEVEL`.
 
-Two agents pay for the machine tier. `monster` on chise and `silver` on rin declare `skillDirectories = [ ]` and today
-see only ten skills, so they gain about 1750 tokens of descriptions per session. That is the accepted price of one list
-with no curation to drift. If it ever bites, `CLAUDE_CONFIG_DIR` is the escape hatch, at the cost of rebuilding a
-config tree for that agent.
+The curated machine tier balances reachability with context cost. A harness receives the shared set, its own additions,
+and the generated `all-skills` index for everything else, rather than every source skill by default.
 
 One behavior stays untested: which side wins when a repository tier skill and a machine tier skill share a name. Either
 direction is acceptable, because both sets are curated and reviewed, unlike the 301 drops the walk performed, but the
-answer belongs in `claude-harness/knowledge.md` once someone hits it.
+answer belongs in `agent-harness/knowledge.md` once someone hits it.
 
 ## Follow-up: the curated machine tier and the all-skills index
 

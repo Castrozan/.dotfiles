@@ -1,29 +1,24 @@
 ---
 name: restart
-description: Restart the current Claude Code session in place, resuming the same session with an optional continuation prompt. Use to reload after config changes or resume work without waiting for input.
+description: Restart the current Claude Code, Codex, or OpenCode process and invoke its native resume form in the same pane. Use after a configuration change or to resume work without waiting for input.
 ---
 
 <prerequisites>
-Running inside herdr or tmux. Commit any pending changes before restarting.
+Running inside herdr. Commit any pending changes before restarting.
 </prerequisites>
 
 <execution>
-claude-restart "Continue from where you left off."
+Run `agent-session restart`.
 </execution>
 
 <continuation>
-The script accepts an optional first argument as a continuation prompt. When provided, after claude restarts and shows
-the input prompt, the script automatically types and submits that message. This lets you resume work without waiting for
-user input.
-
-To restart without auto-continuing, call the script with no arguments:
-claude-restart
+The command uses an explicit session identifier when the running command exposes one. Otherwise it uses the harness's
+native continue or most-recent-session behavior, then relaunches in the same herdr pane.
+It fails safely outside herdr, because it cannot preserve the interactive session location there.
+It also refuses to bypass a Clawde wrapper, which owns the harness command and session record for supervised agents.
 </continuation>
 
 <notes>
-Discovers the current session ID from the claude process cmdline (--resume or --session-id), read via ps so it works on
-darwin and Linux alike. Falls back to the most recently modified session jsonl in the project directory, and to `claude
---continue` when no id is found. Detects the enclosing multiplexer (herdr when `HERDR_PANE_ID` is set, else tmux), forks
-a detached process that waits for claude to die, then drives the resume command back into the same pane through that
-multiplexer. SessionStart hooks fire on resume, recovering deep-work context automatically.
+The detached launcher waits for the prior process to exit before sending the resume command. A resume still starts a new
+process, so only durable on-disk state is guaranteed across it.
 </notes>

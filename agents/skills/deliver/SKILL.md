@@ -45,22 +45,22 @@ initiative.
 
 <execute_incrementally>
 Run each slice through one loop: write a failing repro or test first because red-before-green is the only proof the work
-was needed and is done (`test` skill); build the smallest diff for one concern behind a reversible flag defaulted off;
-verify; ship a small commit staged by name; update the tracker. Parallelize with the Workflow tool when work fans out
-across many files, perspectives, or candidates, keeping its control flow deterministic; route coordinated multi-step
-work to a Workflow and single read-only queries to a plain Agent subagent, never to Teams, per the delegation rules.
-Flip a flag default-on only after its slice is green.
+was needed and is done (`coding` skill); build the smallest reversible diff for one concern; verify; ship a small commit
+staged by name; update the tracker. Add a rollout flag only when the change genuinely needs one. Parallelize with the
+Workflow tool when work fans out across many files, perspectives, or candidates, keeping its control flow deterministic;
+route coordinated multi-step work to a Workflow and single read-only queries to a plain Agent subagent, never to Teams,
+per the delegation rules. Flip a required rollout flag default-on only after its slice is green.
 </execute_incrementally>
 
 <prove_it_live>
 Value is real only when it runs, so end every increment with the V-model carried up to a real run: unit, integration,
-then the actual app, UI, or end-to-end path (`verify` skill), not unit tests alone. Never report done from an agent's
+then the actual app, UI, or end-to-end path (`coding` skill), not unit tests alone. Never report done from an agent's
 self-report or scraped output; prove it from observed live behavior, and review the artifact an agent produced before
 trusting its claim of success.
 </prove_it_live>
 
 <discipline>
-Keep every change reversible and flag-gated so a bad slice rolls back by a plain revert; surface owner and irreversible
+Keep every change reversible so a bad slice rolls back by a plain revert; surface owner and irreversible
 decisions and never decide them unilaterally; reuse the goal's shared primitives and never fork a second parallel store
 that drifts from the first; stage commits by name, never with `-A`; and keep the tracker current every increment so an
 interrupted session resumes from disk rather than from re-explanation.

@@ -98,7 +98,7 @@ def test_the_subagent_checks_reject_a_broken_definition():
     broken = [
         (
             SUBAGENT_TREE / "software-enginer.md",
-            {"name": "software-engineer", "skills": "code-craft-typo"},
+            {"name": "software-engineer", "skills": "coding-typo"},
         )
     ]
     assert name_mismatches(broken)

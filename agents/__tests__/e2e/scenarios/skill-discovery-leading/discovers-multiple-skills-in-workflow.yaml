@@ -20,8 +20,7 @@ timeout: 180
 
 assertions:
   autonomous_skill_invocation:
-    - git
+    - coding
     - nix
   wrong_skill_not_invoked:
-    - personal
     - review

@@ -1,0 +1,19 @@
+name: skill_discovery_natural_coding_parallel_branch
+description: User asks for a parallel branch without touching the current tree. Agent should route to coding.
+
+setup:
+  git_init: true
+  files:
+    - path: README.md
+      content: "demo repo"
+
+prompt: |
+  I need a parallel git branch without touching my current tree.
+
+timeout: 180
+
+assertions:
+  autonomous_skill_invocation:
+    - coding
+  wrong_skill_not_invoked:
+    - nix

@@ -1,6 +1,11 @@
-_: {
+{ pkgs, ... }:
+let
+  codingSkillInstall = import ../../../agents/skills/coding/install { inherit pkgs; };
+in
+{
   imports = [
     ./a2a
+    ./agent-session-control.nix
     ./dotfiles-repo-agent-instructions.nix
     ./interactive-skill-index.nix
     ./twitter-cli.nix
@@ -8,4 +13,6 @@ _: {
     ./ril-cli.nix
     ./todo-cli.nix
   ];
+
+  home.packages = codingSkillInstall.packages;
 }

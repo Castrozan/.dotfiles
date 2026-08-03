@@ -28,6 +28,7 @@ let
     ../../home/base/claude/__tests__/checks.nix
     ../../home/base/clawde/__tests__/checks.nix
     ../../home/base/codex/__tests__/checks.nix
+    ../../home/base/agents/__tests__/checks.nix
     ../../hosts/chise/__tests__/checks.nix
   ];
 

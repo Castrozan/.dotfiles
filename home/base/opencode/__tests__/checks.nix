@@ -16,6 +16,7 @@ let
       ;
   };
   inherit (helpers) mkEvalCheck;
+  interactiveAgentSkills = import ../../../../agents/interactive-agent-skills.nix;
 
   cfg = helpers.homeManagerTestConfiguration [ ../. ];
 
@@ -126,6 +127,18 @@ in
   domain-opencode-deploys-skills =
     mkEvalCheck "domain-opencode-deploys-skills" (hasDeployedFilePrefix ".config/opencode/skills/")
       "the shared skills must be deployed into opencode's skills directory";
+
+  domain-opencode-carries-the-shared-interactive-set =
+    mkEvalCheck "domain-opencode-carries-the-shared-interactive-set"
+      (builtins.all (
+        skillName: builtins.hasAttr ".config/opencode/skills/${skillName}" cfg.home.file
+      ) interactiveAgentSkills.defaultInteractiveSkillNames)
+      "every shared interactive skill must deploy into the OpenCode machine tier";
+
+  domain-opencode-core-skill =
+    mkEvalCheck "domain-opencode-core-skill"
+      (builtins.hasAttr ".config/opencode/skills/core/SKILL.md" cfg.home.file)
+      "core must deploy as a generated OpenCode skill as well as global instructions";
 
   domain-opencode-tui-matches-the-desktop-theme =
     mkEvalCheck "domain-opencode-tui-matches-the-desktop-theme"

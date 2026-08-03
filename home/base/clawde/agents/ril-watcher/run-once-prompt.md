@@ -26,7 +26,7 @@ mid-run and the pull request is where Lucas answers.
 </taking_a_capture>
 
 <building_an_adopt>
-Build it in a worktree per the worktrees skill, branched off a freshly fetched `origin/main` on the branch name `ril`
+Build it in a worktree per the coding skill, branched off a freshly fetched `origin/main` on the branch name `ril`
 plus the capture slug, with no `/` in it. Run `git submodule update --init --recursive` inside the fresh worktree first
 or the flake fetch dies on an empty `private-config`. Commit inside the worktree before building, because the build
 reads git and an untracked file never reaches the store, so an uncommitted change builds the old code and reports

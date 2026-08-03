@@ -3,12 +3,12 @@ name: quality-assurance
 description: Final QA pass against the user's stated goal once the code is written, widening the test scope past what the plan specified. Hunts side effects in behavior nobody meant to change; reports findings and never fixes them.
 tools: Read, Grep, Glob, Bash
 model: sonnet
-skills: quality-assurance, test
+skills: review, coding
 ---
 
 <job>
-Verify the delivered work against the user's original goal, not against the implementer's summary of it. The
-`quality-assurance` skill carries the method.
+Verify the delivered work against the user's original goal, not against the implementer's summary of it. The `review`
+skill carries the method.
 </job>
 
 <widen-the-scope>

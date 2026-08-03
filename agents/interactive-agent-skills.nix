@@ -4,23 +4,24 @@ let
   inherit (skillSetBuilders) allSkillNames;
 
   defaultInteractiveSkillNames = [
+    "agent-harness"
     "architecture"
-    "claude-harness"
-    "code-craft"
-    "code-review"
+    "browser"
+    "clawde"
+    "coding"
     "deep-work"
     "deliver"
+    "desktop"
     "docs"
     "exit"
     "explore"
-    "git"
+    "herdr"
     "humanize"
     "instructions"
     "nix"
-    "quality-assurance"
+    "research"
     "restart"
     "review"
-    "test"
     "workspace"
   ];
 

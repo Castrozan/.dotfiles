@@ -1,0 +1,31 @@
+tests:
+  - name: test_first_before_fix
+    skill_path: agents/skills/coding/SKILL.md
+    extra_skill_paths:
+      - agents/skills/coding/testing.md
+    prompt: "A user reported a bug in the rebuild script. What should I do first?"
+    model: haiku
+    assertions:
+      llm_judge:
+        - "The response says the first step is to test first before modifying the rebuild script, establishing a baseline of the current behavior by running the existing tests (or reproducing the failure with a test) rather than jumping straight to a fix."
+
+  - name: test_double_test_protocol
+    skill_path: agents/skills/coding/SKILL.md
+    extra_skill_paths:
+      - agents/skills/coding/testing.md
+    prompt: "I made a code change and the tests passed once. Am I done?"
+    model: haiku
+    assertions:
+      llm_judge:
+        - "The response says no, a single passing run is not enough: the relevant test suite must be run a second time so that two consecutive passes confirm the change is stable and not flaky (the double-test protocol)."
+
+  - name: test_knows_tiers
+    skill_path: agents/skills/coding/SKILL.md
+    extra_skill_paths:
+      - agents/skills/coding/testing.md
+    prompt: "What test tiers are available in this project and when should I use each?"
+    model: haiku
+    no_tools: true
+    assertions:
+      llm_judge:
+        - "The response keeps local verification focused on the changed area, does not use __tests__/run.sh as a normal delivery gate, and identifies CI as the full-suite gate."

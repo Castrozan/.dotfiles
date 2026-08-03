@@ -58,15 +58,12 @@ let
 in
 {
   claudeCuratedSkillSets.steward = [
-    "git"
+    "coding"
     "nix"
-    "test"
     "deep-work"
     "workspace"
-    "worktrees"
     "herdr"
     "exit"
-    "restart"
     "notify"
     "review"
   ];

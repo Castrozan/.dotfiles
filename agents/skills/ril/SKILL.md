@@ -61,7 +61,7 @@ already rejected.
 </verdict_gate>
 
 <applying_an_adopt>
-An adopt is built in an isolated worktree per the worktrees skill, never on the main checkout, and it is proven before
+An adopt is built in an isolated worktree per the coding skill, never on the main checkout, and it is proven before
 it is proposed. Initialize submodules inside the fresh worktree first or the flake fetch dies on an empty
 `private-config`. Commit inside the worktree before building, because the build reads git and an untracked file never
 reaches the store, so it would build the old code and report success. Build that worktree by naming its path in the

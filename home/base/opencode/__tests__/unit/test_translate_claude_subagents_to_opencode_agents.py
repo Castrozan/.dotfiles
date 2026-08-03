@@ -12,7 +12,7 @@ name: software-engineer
 description: Writes the code for a design that is already decided.
 tools: Read, Edit, Write, Grep, Glob, Bash
 model: sonnet
-skills: code-craft, test
+skills: coding
 ---
 
 <job>

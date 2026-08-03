@@ -29,7 +29,7 @@ tests:
   - name: investigation_traces_to_instructions
     skill_path: agents/core_rules/core.md
     prompt: |
-      An agent used the browser skill when it should have used the personal skill's obsidian sub-file. The user had to correct it. What should I investigate to understand why this happened?
+      An agent used the browser skill when it should have used all-skills to reach the indexed obsidian skill. The user had to correct it. What should I investigate to understand why this happened?
     model: haiku
     assertions:
       llm_judge:

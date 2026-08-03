@@ -1,43 +1,57 @@
-_:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 let
   skillSetBuilders = import ../../../agents/skill-set-builders.nix;
   interactiveAgentSkills = import ../../../agents/interactive-agent-skills.nix;
 
-  codexInteractiveSkillNames = interactiveAgentSkills.effectiveInteractiveSkillNames {
-    add = [ "browser" ];
-  };
+  codexInteractiveSkillNames = interactiveAgentSkills.effectiveInteractiveSkillNames { };
 
-  coreAgentRawContent = builtins.readFile ../../../agents/core_rules/core.md;
-  coreAgentSplitOnFrontmatterDelimiter = builtins.split "---\n" coreAgentRawContent;
-  coreAgentBodyWithoutFrontmatter = builtins.elemAt coreAgentSplitOnFrontmatterDelimiter 4;
+  codexSkillsPath = "${config.home.homeDirectory}/.codex/skills";
+
+  coreAgentBodyWithoutFrontmatter = import ../../../lib/core-agent-rules-without-frontmatter.nix;
 
   codexSkillLinks = skillSetBuilders.claudeSkillDirectorySymlinksAtPrefix ".codex/skills" codexInteractiveSkillNames;
 
-  coreSkillFromAgentInstructions = {
-    ".codex/skills/core/SKILL.md".text = ''
-      ---
-      name: core
-      description: Display core agent behavior instructions. Use when user wants to see, review, or reference the core rules, or when injecting core instructions as context into subagents, oneshot sessions, or external tools.
-      ---
+  coreSkillDirectory = pkgs.writeTextDir "SKILL.md" ''
+    ---
+    name: core
+    description: Display core agent behavior instructions. Use when user wants to see, review, or reference the core rules, or when injecting core instructions as context into subagents, oneshot sessions, or external tools.
+    ---
 
-      ${coreAgentBodyWithoutFrontmatter}
-    '';
+    ${coreAgentBodyWithoutFrontmatter}
+  '';
+
+  coreSkillFromAgentInstructions = {
+    ".codex/skills/core".source = coreSkillDirectory;
   };
 
   allSkillsIndexSkill = interactiveAgentSkills.renderAllSkillsIndexSkill codexInteractiveSkillNames;
 
-  allSkillsIndexSkillFile = {
-    ".codex/skills/all-skills/SKILL.md".text = ''
-      ---
-      name: all-skills
-      description: ${allSkillsIndexSkill.description}
-      ---
+  allSkillsIndexSkillDirectory = pkgs.writeTextDir "SKILL.md" ''
+    ---
+    name: all-skills
+    description: ${allSkillsIndexSkill.description}
+    ---
 
-      ${allSkillsIndexSkill.body}
-    '';
+    ${allSkillsIndexSkill.body}
+  '';
+
+  allSkillsIndexSkillFile = {
+    ".codex/skills/all-skills".source = allSkillsIndexSkillDirectory;
   };
 
 in
 {
   home.file = codexSkillLinks // coreSkillFromAgentInstructions // allSkillsIndexSkillFile;
+
+  home.activation.removeLegacyCodexSkillDirectories = lib.hm.dag.entryBefore [ "checkLinkTargets" ] ''
+    CODEX_SKILLS_PATH="${codexSkillsPath}" \
+    COREUTILS_BIN="${pkgs.coreutils}/bin" \
+    GREP_BIN="${pkgs.gnugrep}/bin/grep" \
+    ${pkgs.bash}/bin/bash ${./scripts/replace-legacy-codex-skill-directories}
+  '';
 }

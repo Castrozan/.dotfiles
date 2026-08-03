@@ -83,10 +83,9 @@ tightest possible scoping: it loads exactly when relevant, versions with the cod
 
 **A work-sensitive fact goes to `private-config`**, which is already private, synced and nix-deployed.
 
-The 112 dotfiles memories map onto existing owners almost completely: 13 to the `nix` skill, 13 to `desktop`, 7 to
-`git` and `worktrees`, 6 to `herdr`, and the arr entries to `arr-stack`. Two gaps remain, and they are the loudest signal in
-the data: 29 facts about the clawde fleet and 18 about Claude Code harness behavior have no owning skill at all. Those
-skills should exist regardless of memory. Eight entries describe other repositories and move out to them.
+The 112 dotfiles memories map onto existing owners almost completely: 13 to `nix`, 13 to `desktop`, 7 to `coding`, 6 to
+`herdr`, and the arr entries to `arr-stack`. The remaining domains are `clawde` for fleet behavior and `agent-harness`
+for harness behavior. Eight entries describe other repositories and move out to them.
 
 ## Consequences
 
@@ -144,10 +143,10 @@ recreates both the cwd-keyed stores and the always-on index.
 
 ## What was built
 
-The two missing skills now exist: `clawde` owns the fleet, supervisor, heartbeat and steward domain, and `claude-harness`
-owns Claude Code and Codex behavior itself. Six domains carry a `knowledge.md`: `clawde`, `claude-harness`, `nix`,
-`desktop`, `git`, `herdr`, `arr-stack` and `browser`, each pointed at from its `SKILL.md` router. The behavioral entries
-graduated into `agents/core_rules/core.md`, where the git block now carries explicit-pathspec committing, absolute-path
+The two missing skills now exist: `clawde` owns the fleet, supervisor, heartbeat and steward domain, and `agent-harness`
+owns Claude Code, Codex, and OpenCode behavior. Eight domains carry a `knowledge.md`: `clawde`, `agent-harness`, `nix`,
+`desktop`, `coding`, `herdr`, `arr-stack`, and `browser`, each pointed at from its `SKILL.md` router. The behavioral entries
+graduated into `agents/core_rules/core.md`, where the Git block now carries explicit-pathspec committing, absolute-path
 anchoring, and the rule that landing a change on a repo the user owns is part of the task, and `<session-resilience>`
 carries the knowledge-versus-work-state split and the capture path.
 

@@ -19,6 +19,5 @@ assertions:
   autonomous_skill_invocation:
     - review
   wrong_skill_not_invoked:
-    - git
+    - coding
     - nix
-    - personal

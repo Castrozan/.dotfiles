@@ -1,18 +1,33 @@
 ---
 name: review
-description: Compliance auditing, instruction-file audits, and skill routing repair. Use when checking conventions, auditing a skill or CLAUDE.md edit, or fixing a skill that never fires; for judging code read code-review, for writing docs read docs, for how prose is worded read humanize.
+description: Review code, configurations, AI instructions, or completed work for actionable defects, regressions, security risks, and compliance gaps. Use when inspecting a diff, auditing an instruction surface, or verifying delivery.
 ---
 
-Umbrella for the quality lenses that are not the code itself. Judging code is the `code-review` skill, and how any
-human-facing text is worded is the `humanize` skill.
+<scope>
+Start with the requested artifact and its intended behavior. Review is read-only unless the user explicitly asks for a
+fix. Report only evidence-backed findings in changed code or behavior the change directly affects, not pre-existing
+unrelated defects or personal style preferences.
+</scope>
 
-For compliance rule auditing, read `compliance.md`.
+<method>
+Read the request, diff, surrounding callers, tests, and relevant invariants before judging. Trace each changed path
+through realistic inputs, failure states, ordering, concurrency, resource use, security boundaries, and downstream
+consumers. Verify a claim with code, tests, documentation, or a reproducible scenario before reporting it.
+</method>
 
-For code review methodology, use the `code-review` skill.
+<findings>
+Each finding states severity, file and line, the concrete triggering scenario, observed consequence, and required
+change. Use P0 for release-blocking or destructive failures, P1 for high-priority defects, P2 for ordinary fixes, and
+P3 for bounded improvements. Omit speculative or non-actionable concerns. If no material finding remains, state "No
+findings."
+</findings>
 
-For documentation and policy-writing standards, use the `docs` skill.
+<delivery-verification>
+Read `quality-assurance.md` for a final goal-oriented verification pass that widens beyond named tests without editing.
+</delivery-verification>
 
-For auditing instruction-file edits (SKILL.md, CLAUDE.md, agent definitions, subagent briefs) against the standards
-owned by the `instructions` skill, read `authoring.md`.
-
-For diagnosing and fixing skill routing failures, read `skill-routing.md`.
+<specialized-audits>
+Read `compliance.md` for end-of-turn policy checks, `authoring.md` for AI instruction surfaces, and `skill-routing.md`
+for skill reachability or routing failures. Use `docs` for documentation standards and `humanize` for human-facing
+prose.
+</specialized-audits>

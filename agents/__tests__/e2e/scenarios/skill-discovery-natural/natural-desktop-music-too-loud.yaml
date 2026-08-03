@@ -15,4 +15,3 @@ assertions:
     - desktop
   wrong_skill_not_invoked:
     - browser
-    - personal

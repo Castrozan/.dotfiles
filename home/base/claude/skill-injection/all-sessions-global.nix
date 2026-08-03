@@ -4,15 +4,7 @@ let
   interactiveAgentSkills = import ../../../../agents/interactive-agent-skills.nix;
 
   claudeInteractiveSkillNames = interactiveAgentSkills.effectiveInteractiveSkillNames {
-    add = [
-      "browser"
-      "clawde"
-      "desktop"
-      "herdr"
-      "housekeeping"
-      "research"
-      "research-digest"
-    ];
+    add = [ "housekeeping" ];
   };
 
   coreRulesDirectory = ../../../../agents/core_rules;

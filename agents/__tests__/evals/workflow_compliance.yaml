@@ -63,9 +63,9 @@ tests:
         - "Says to run the dotfiles-change-review workflow over the working diff before committing a substantive change to the repo, per the repo's pre-commit review rule."
 
   - name: workflow_review_input_is_unbiased
-    skill_path: agents/skills/code-review/SKILL.md
-    prompt: "What are the two parallel review passes the unbiased reviewer performs? Name only the two."
+    skill_path: agents/skills/review/SKILL.md
+    prompt: "What evidence should you gather before reporting a defect in a code review?"
     model: haiku
     assertions:
       llm_judge:
-        - "Names the two parallel review passes as the bug and security scanner and the conventions and completeness checker."
+        - "Says to inspect the request, diff, surrounding callers, tests, and relevant invariants, then verify the claim with code, tests, documentation, or a reproducible scenario."

@@ -17,6 +17,7 @@ let
       ;
   };
   inherit (helpers) mkEvalCheck;
+  interactiveAgentSkills = import ../../../../agents/interactive-agent-skills.nix;
 
   cfg =
     (inputs.home-manager.lib.homeManagerConfiguration {
@@ -44,6 +45,7 @@ let
   dotfilesAgentInstructions = builtins.readFile ../../../../agents/dotfiles.md;
   normalizedDotfilesAgentInstructions = lib.replaceStrings [ "\n" ] [ " " ] dotfilesAgentInstructions;
   codexConfigSeedActivationData = cfg.home.activation.seedCodexConfigAsMutableFile.data or "";
+  legacyCodexSkillDirectoriesScript = builtins.readFile ../scripts/replace-legacy-codex-skill-directories;
 in
 {
   codex-bin-wrapper =
@@ -54,18 +56,41 @@ in
     mkEvalCheck "codex-skills-directory" (hasFilePrefix ".codex/skills/")
       "skills directory entries should be in home.file";
 
+  codex-machine-tier-carries-the-shared-interactive-set =
+    mkEvalCheck "codex-machine-tier-carries-the-shared-interactive-set"
+      (builtins.all (
+        skillName: builtins.hasAttr ".codex/skills/${skillName}" cfg.home.file
+      ) interactiveAgentSkills.defaultInteractiveSkillNames)
+      "every shared interactive skill must deploy into the Codex machine tier";
+
   codex-skills-only-deploy-complete-skills = mkEvalCheck "codex-skills-only-deploy-complete-skills" (
     !(builtins.hasAttr ".codex/skills/page-composer" cfg.home.file)
   ) "directories without SKILL.md should not be deployed as codex skills";
 
   codex-all-skills-index-skill =
     mkEvalCheck "codex-all-skills-index-skill"
-      (builtins.hasAttr ".codex/skills/all-skills/SKILL.md" cfg.home.file)
+      (builtins.hasAttr ".codex/skills/all-skills" cfg.home.file)
       "the generated all-skills index should be deployed for codex; research and every other non-curated skill stays reachable through it";
 
   codex-core-skill =
-    mkEvalCheck "codex-core-skill" (builtins.hasAttr ".codex/skills/core/SKILL.md" cfg.home.file)
+    mkEvalCheck "codex-core-skill" (builtins.hasAttr ".codex/skills/core" cfg.home.file)
       "core skill should be generated for codex";
+
+  codex-replaces-legacy-generated-skill-directories =
+    mkEvalCheck "codex-replaces-legacy-generated-skill-directories"
+      (
+        builtins.hasAttr "removeLegacyCodexSkillDirectories" cfg.home.activation
+        && lib.hasInfix "replace-legacy-codex-skill-directories" cfg.home.activation.removeLegacyCodexSkillDirectories.data
+      )
+      "the generated core and all-skills directory links must replace their legacy leaf-symlink directories before Home Manager checks link targets";
+
+  codex-removes-the-retired-pinchtab-skill =
+    mkEvalCheck "codex-removes-the-retired-pinchtab-skill"
+      (
+        builtins.hasAttr "removeLegacyCodexSkillDirectories" cfg.home.activation
+        && lib.hasInfix "pinchtab" legacyCodexSkillDirectoriesScript
+      )
+      "activation must remove the unmanaged PinchTab skill so browser remains the sole browser instruction surface";
 
   codex-global-agents-instructions =
     mkEvalCheck "codex-global-agents-instructions" (builtins.hasAttr ".codex/AGENTS.md" cfg.home.file)

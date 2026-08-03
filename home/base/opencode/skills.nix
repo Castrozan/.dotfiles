@@ -7,9 +7,7 @@ let
   skillSetBuilders = import ../../../agents/skill-set-builders.nix;
   interactiveAgentSkills = import ../../../agents/interactive-agent-skills.nix;
 
-  opencodeInteractiveSkillNames = interactiveAgentSkills.effectiveInteractiveSkillNames {
-    add = [ "browser" ];
-  };
+  opencodeInteractiveSkillNames = interactiveAgentSkills.effectiveInteractiveSkillNames { };
 
   opencodeSkillsPath = "${config.home.homeDirectory}/.config/opencode/skills";
 
@@ -22,6 +20,19 @@ let
       };
     }) opencodeInteractiveSkillNames
   );
+
+  coreAgentBodyWithoutFrontmatter = import ../../../lib/core-agent-rules-without-frontmatter.nix;
+
+  coreSkillFromAgentInstructions = {
+    ".config/opencode/skills/core/SKILL.md".text = ''
+      ---
+      name: core
+      description: Display core agent behavior instructions. Use when user wants to see, review, or reference the core rules, or when injecting core instructions as context into subagents, oneshot sessions, or external tools.
+      ---
+
+      ${coreAgentBodyWithoutFrontmatter}
+    '';
+  };
 
   allSkillsIndexSkill = interactiveAgentSkills.renderAllSkillsIndexSkill opencodeInteractiveSkillNames;
 
@@ -37,7 +48,7 @@ let
   };
 in
 {
-  home.file = globalOpencodeSkills // allSkillsIndexSkillFile;
+  home.file = globalOpencodeSkills // coreSkillFromAgentInstructions // allSkillsIndexSkillFile;
 
   home.activation.removeExternalSymlinksCollidingWithOpencodeSkills =
     lib.hm.dag.entryBefore

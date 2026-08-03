@@ -252,7 +252,7 @@ For "sync Nubank-only positions from B3":
 1. Verify `.env` has `B3_CPF` and `B3_PASSWORD`. If missing, ask Lucas (and tell him to paste in DM not channel).
    Confirm PinchTab bootstrap is done (`<pinchtab_bootstrap>`).
 2. Start the listener: `nohup uv run python
-   ~/.local/share/claude-skill-sets/personal/.claude/skills/b3-portal/scripts/b3_capture_listener.py >
+   ~/.local/share/agent-skill-index/b3-portal/scripts/b3_capture_listener.py >
    /tmp/b3-listener.log 2>&1 & disown`.
 3. Drive login via PinchTab (`<login_flow>`):
    - `pinchtab nav https://www.investidor.b3.com.br/login --snap`

@@ -1,0 +1,33 @@
+name: skill_discovery_coding_for_bug_report
+description: Agent should autonomously load coding for a bug report because it owns the test-first verification workflow.
+
+setup:
+  git_init: true
+  files:
+    - path: calculator.py
+      content: |
+        def divide_numbers(numerator, denominator):
+            return numerator / denominator
+    - path: test_calculator.py
+      content: |
+        from calculator import divide_numbers
+
+        def test_divide_basic():
+            assert divide_numbers(6, 3) == 2
+
+prompt: |
+  Bug report: divide_numbers(10, 0) crashes with ZeroDivisionError instead of
+  returning a sensible value. Before touching the source, follow this project's
+  testing protocol — what does it require for bug reports, and how many test
+  passes are needed to confirm stability?
+
+timeout: 240
+
+assertions:
+  autonomous_skill_invocation:
+    - coding
+  wrong_skill_not_invoked:
+    - review
+  file_changed:
+    - test_calculator.py
+    - calculator.py

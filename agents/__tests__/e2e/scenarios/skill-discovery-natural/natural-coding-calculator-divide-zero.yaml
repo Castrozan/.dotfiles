@@ -1,0 +1,30 @@
+name: skill_discovery_natural_coding_calculator_divide_zero
+description: User reports a bug with no hint about the test-first protocol. Agent should route to coding and write a failing test first.
+
+setup:
+  git_init: true
+  files:
+    - path: calculator.py
+      content: |
+        def divide_numbers(numerator, denominator):
+            return numerator / denominator
+    - path: test_calculator.py
+      content: |
+        from calculator import divide_numbers
+
+        def test_divide_basic():
+            assert divide_numbers(6, 3) == 2
+
+prompt: |
+  There's a bug in calculator.py where divide crashes on zero. Fix it.
+
+timeout: 240
+
+assertions:
+  autonomous_skill_invocation:
+    - coding
+  wrong_skill_not_invoked:
+    - review
+  file_changed:
+    - test_calculator.py
+    - calculator.py

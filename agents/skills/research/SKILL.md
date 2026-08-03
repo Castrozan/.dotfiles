@@ -1,6 +1,6 @@
 ---
 name: research
-description: Current-information research and synthesis for tools, vendors, standards, or decisions. Use when the user asks to research, compare, evaluate, verify, or find the latest external information; not for local repo search.
+description: Research current external information, comparisons, decisions, or themed digests. Use for latest facts, evaluation, verification, "catch me up", or community pulses; not local repository search.
 ---
 
 <research_intake>
@@ -53,3 +53,12 @@ the current state of W". Should not trigger: local repository code search, summa
 or purely internal documentation lookup. Functional check: take one realistic "latest" question and verify that the
 answer contains dates, links, decisive tradeoffs, and a clear recommendation.
 </validation>
+
+<research_pulse>
+For a research digest, community pulse, or "catch me up" request, collect recent topic-specific evidence across GitHub,
+papers, practitioner discussion, and X. Extract the topic verbatim, read `research-pulse-seed-accounts.json`, and run
+`research-pulse.workflow.js` through `Workflow` when its runner is available with `topic`, `accounts`, and `maxItems`.
+Relay its digest and disclose low `sourcesHit` or empty `itemCount`; otherwise perform the same source sweep directly.
+Treat the seed accounts as a relevance hint, never a source allowlist, deduplicate by underlying item, and rank by topic
+fit instead of padding the result.
+</research_pulse>

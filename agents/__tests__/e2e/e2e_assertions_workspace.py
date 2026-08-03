@@ -162,7 +162,7 @@ def run_e2e_assertions(
             check_autonomous_skill_invocation_assertion(trace, expected_skill_name)
         )
 
-    for forbidden_skill_name in assertions.get("wrong_skill_not_invoked", []):
+    for forbidden_skill_name in assertions.get("wrong_skill_not_invoked") or []:
         results.append(
             check_wrong_skill_not_invoked_assertion(trace, forbidden_skill_name)
         )

@@ -1,0 +1,17 @@
+set -euo pipefail
+
+shopt -s dotglob nullglob
+
+for skill_name in pinchtab core all-skills; do
+  skill_directory="$CODEX_SKILLS_PATH/$skill_name"
+  skill_file="$skill_directory/SKILL.md"
+  skill_directory_entries=("$skill_directory"/*)
+  if builtin test -d "$skill_directory" &&
+    builtin test "${#skill_directory_entries[@]}" -eq 1 &&
+    builtin test "${skill_directory_entries[0]}" = "$skill_file" &&
+    builtin test -L "$skill_file" &&
+    "$GREP_BIN" -qx "name: $skill_name" "$skill_file"; then
+    "$COREUTILS_BIN/rm" "$skill_file"
+    "$COREUTILS_BIN/rmdir" "$skill_directory"
+  fi
+done
