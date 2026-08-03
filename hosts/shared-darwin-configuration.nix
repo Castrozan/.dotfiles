@@ -35,7 +35,7 @@
       enableKeyMapping = true;
     };
     defaults = {
-      ".GlobalPreferences"."com.apple.mouse.scaling" = 3.99;
+      ".GlobalPreferences"."com.apple.mouse.scaling" = 5.0;
       CustomUserPreferences = {
         ".GlobalPreferences".AppleActionOnDoubleClick = "None";
         ".GlobalPreferences"."com.apple.scrollwheel.scaling" = -1;
