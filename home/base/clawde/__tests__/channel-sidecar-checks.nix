@@ -8,6 +8,7 @@ let
   fixtures = import ./harness-check-fixtures.nix { inherit helpers self; };
   inherit (fixtures)
     supervisedWindowNames
+    sidecarProcessesOfAgent
     sidecarProcessNamesOfAgent
     sidecarProcessMatchPatternsOfAgent
     ;
@@ -31,10 +32,13 @@ in
       )
       "codex has no --channels flag and no plugin providing an inbound channel transport, so a discord agent on it only ever receives a message through the sidecar bridge process; drop that process and the agent looks deployed while nothing can reach it";
 
-  clawde-discord-on-claude-gets-no-bridge-sidecar-process =
-    mkEvalCheck "clawde-discord-on-claude-gets-no-bridge-sidecar-process"
-      (sidecarProcessNamesOfAgent "agent-on-discord" == [ ])
-      "claude carries discord inside its own process through the official plugin, so adding a bridge sidecar beside it would put two clients on one bot token and double every reply";
+  clawde-discord-on-claude-gets-no-enabled-bridge-sidecar-process =
+    mkEvalCheck "clawde-discord-on-claude-gets-no-enabled-bridge-sidecar-process"
+      (
+        builtins.filter (sidecar: sidecar.enabled or true) (sidecarProcessesOfAgent "agent-on-discord")
+        == [ ]
+      )
+      "claude carries discord inside its own process through the official plugin, so enabling a bridge sidecar beside it would put two clients on one bot token and double every reply";
 
   clawde-a-bridge-sidecar-never-takes-a-window-of-its-own =
     mkEvalCheck "clawde-a-bridge-sidecar-never-takes-a-window-of-its-own"
