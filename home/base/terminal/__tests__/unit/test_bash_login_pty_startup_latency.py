@@ -2,17 +2,19 @@
 
 Measures the same problem as the herdr e2e benchmark at the shell layer: how
 long after spawn a login interactive bash in a fresh PTY processes queued
-input, under the herdr pane environment (HERDR_ENV=1). This is the regression
-guard for the flyline gate in home/base/terminal/bash.nix: flyline's inline
-viewport issues a cursor position query (DSR) and blocks until a timeout when
-the terminal does not answer, and herdr's emulator does not answer it, so an
-ungated rc makes the first keystroke land 1.4-4.5s late in every new pane.
-With the gate in place the herdr-env shell skips flyline and stays fast.
+input, under the herdr pane environment (HERDR_ENV=1). The shell runs the
+repo's rc with the flyline line editor loaded, so the probe also answers the
+cursor position queries (DSR) that flyline's inline viewport issues during
+startup, exactly as herdr's emulator does; flyline issues several, and each
+unanswered one blocks for its full timeout, which is the failure mode this
+test guards. The bound also catches regressions like flyline versions whose
+startup work blocks the editor (v1.3.0's PATH cache scan delayed the first
+prompt by ~0.4s; the v1.4.0 upgrade moved it off the critical path).
 
 Runs hermetically: spawns its own PTY, queues an in-band timestamped marker
 whose exec time is read from the shell's own output, kills the child. On CI
 (no user rc present) it measures a fraction of a second; on the user's machine
-it measures the real rc with the gate applied.
+it measures the real rc with flyline loaded.
 """
 
 from __future__ import annotations
@@ -30,6 +32,8 @@ import time
 import pytest
 
 EXEC_MARKER_PATTERN = re.compile(rb"UNIT_READY_(\d{16,19})")
+CURSOR_POSITION_QUERY = b"\x1b[6n"
+CURSOR_POSITION_RESPONSE = b"\x1b[1;1R"
 STARTUP_LATENCY_BOUND_SECONDS = 2.5
 
 
@@ -71,7 +75,9 @@ def measure_herdr_pane_writable_latency() -> float:
     fcntl.ioctl(pty_fd, termios.TIOCSWINSZ, struct.pack("HHHH", 43, 168, 0, 0))
     spawn_time_ns = time.monotonic_ns()
     input_sent = False
+    cursor_responses_written = 0
     exec_time_ns = None
+    accumulated_output = b""
     deadline_ns = spawn_time_ns + 15_000_000_000
     try:
         while time.monotonic_ns() < deadline_ns:
@@ -84,10 +90,15 @@ def measure_herdr_pane_writable_latency() -> float:
                 break
             if not output_chunk:
                 break
+            accumulated_output += output_chunk
             if not input_sent:
                 os.write(pty_fd, b"echo UNIT_READY_$(date +%s%N)\n")
                 input_sent = True
-            if EXEC_MARKER_PATTERN.search(output_chunk):
+            query_count = accumulated_output.count(CURSOR_POSITION_QUERY)
+            while cursor_responses_written < query_count:
+                os.write(pty_fd, CURSOR_POSITION_RESPONSE)
+                cursor_responses_written += 1
+            if EXEC_MARKER_PATTERN.search(accumulated_output):
                 exec_time_ns = time.monotonic_ns()
                 break
     finally:
@@ -105,6 +116,6 @@ def test_herdr_pane_shell_processes_first_command_within_bound():
     latency = measure_herdr_pane_writable_latency()
     assert latency < STARTUP_LATENCY_BOUND_SECONDS, (
         f"herdr-pane login shell took {latency:.2f}s to process the first "
-        "queued command; the flyline DSR block reproduces as >2.5s when the "
-        "HERDR_ENV gate in home/base/terminal/bash.nix is missing"
+        "queued command; flyline's startup work must not block the editor "
+        "beyond 2.5s when the emulator answers the cursor position query"
     )
