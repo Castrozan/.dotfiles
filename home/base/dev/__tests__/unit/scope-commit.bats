@@ -24,7 +24,9 @@ run_hook_after_staging_path_with_message() {
 	local commit_message_file="$temporary_repository/COMMIT_EDITMSG"
 	printf '%b' "$commit_message" >"$commit_message_file"
 	(cd "$temporary_repository" && "$SCRIPT_UNDER_TEST" "$commit_message_file")
+	local hook_status=$?
 	cat "$commit_message_file"
+	return "$hook_status"
 }
 
 @test "is executable" {
@@ -45,6 +47,34 @@ run_hook_after_staging_path_with_message() {
 	run run_hook_after_staging_path_with_message "home/hosts/darwin/rin.nix" "feat: tweak"
 	[ "$status" -eq 0 ]
 	[ "${lines[0]}" = "feat(rin): tweak" ]
+}
+
+@test "derives scope from top-level hosts/<host>-configuration.nix changes" {
+	run run_hook_after_staging_path_with_message "hosts/shared-darwin-configuration.nix" "fix: invert scroll"
+	[ "$status" -eq 0 ]
+	[ "${lines[0]}" = "fix(shared-darwin): invert scroll" ]
+}
+
+@test "derives scope from .githooks/ changes" {
+	run run_hook_after_staging_path_with_message ".githooks/scope-commit.sh" "fix: invert scroll"
+	[ "$status" -eq 0 ]
+	[ "${lines[0]}" = "fix(githooks): invert scroll" ]
+}
+
+@test "rejects a subject without a conventional type on a scoped path" {
+	run run_hook_after_staging_path_with_message "hosts/kira/default.nix" "invert scroll"
+	[ "$status" -eq 1 ]
+}
+
+@test "rejects a subject without a conventional type on an unscoped path" {
+	run run_hook_after_staging_path_with_message "README.md" "invert scroll"
+	[ "$status" -eq 1 ]
+}
+
+@test "passes through git-generated merge subjects" {
+	run run_hook_after_staging_path_with_message "hosts/kira/default.nix" "Merge branch 'main'"
+	[ "$status" -eq 0 ]
+	[ "${lines[0]}" = "Merge branch 'main'" ]
 }
 
 @test "preserves the commit body below the rewritten subject" {
