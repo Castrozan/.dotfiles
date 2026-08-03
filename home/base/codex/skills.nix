@@ -1,36 +1,17 @@
 _:
 let
-  dotfilesSkillsDir = ../../../agents/skills;
+  skillSetBuilders = import ../../../agents/skill-set-builders.nix;
+  interactiveAgentSkills = import ../../../agents/interactive-agent-skills.nix;
 
-  getSkillNamesFromDir =
-    dir:
-    if builtins.pathExists dir then
-      let
-        directoryEntries = builtins.readDir dir;
-      in
-      builtins.filter (
-        name:
-        directoryEntries.${name} == "directory"
-        && name != ".system"
-        && builtins.pathExists (dir + "/${name}/SKILL.md")
-      ) (builtins.attrNames directoryEntries)
-    else
-      [ ];
-
-  skillNames = getSkillNamesFromDir dotfilesSkillsDir;
+  codexInteractiveSkillNames = interactiveAgentSkills.effectiveInteractiveSkillNames {
+    add = [ "browser" ];
+  };
 
   coreAgentRawContent = builtins.readFile ../../../agents/core_rules/core.md;
   coreAgentSplitOnFrontmatterDelimiter = builtins.split "---\n" coreAgentRawContent;
   coreAgentBodyWithoutFrontmatter = builtins.elemAt coreAgentSplitOnFrontmatterDelimiter 4;
 
-  codexSkillLinks = builtins.listToAttrs (
-    map (name: {
-      name = ".codex/skills/${name}";
-      value = {
-        source = "${dotfilesSkillsDir}/${name}";
-      };
-    }) skillNames
-  );
+  codexSkillLinks = skillSetBuilders.claudeSkillDirectorySymlinksAtPrefix ".codex/skills" codexInteractiveSkillNames;
 
   coreSkillFromAgentInstructions = {
     ".codex/skills/core/SKILL.md".text = ''
@@ -43,7 +24,20 @@ let
     '';
   };
 
+  allSkillsIndexSkill = interactiveAgentSkills.renderAllSkillsIndexSkill codexInteractiveSkillNames;
+
+  allSkillsIndexSkillFile = {
+    ".codex/skills/all-skills/SKILL.md".text = ''
+      ---
+      name: all-skills
+      description: ${allSkillsIndexSkill.description}
+      ---
+
+      ${allSkillsIndexSkill.body}
+    '';
+  };
+
 in
 {
-  home.file = codexSkillLinks // coreSkillFromAgentInstructions;
+  home.file = codexSkillLinks // coreSkillFromAgentInstructions // allSkillsIndexSkillFile;
 }

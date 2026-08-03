@@ -52,13 +52,16 @@ against the model choice.
 
 ## Skills, subagents and commands
 
-- Skills: every `agents/skills/*` skill is deployed to
-  `~/.config/opencode/skills/`, and `OPENCODE_DISABLE_CLAUDE_CODE_SKILLS=false`
-  makes opencode read `~/.claude/skills/` as well. The skills' runtime CLIs go
-  into `home.packages`, which is the profile-global package set shared with the
-  Claude and Codex modules, so they are already on PATH. `opencode debug skill`
-  lists what a given invocation can actually load, which is the verification
-  command, never `ls`.
+- Skills: the curated interactive set from `agents/interactive-agent-skills.nix`
+  (shared default plus opencode's own additions) is deployed to
+  `~/.config/opencode/skills/` along with the generated `all-skills` index that
+  points at every non-curated skill at
+  `~/.local/share/agent-skill-index/<name>/SKILL.md`.
+  `OPENCODE_DISABLE_CLAUDE_CODE_SKILLS=true` keeps opencode from double-loading
+  `~/.claude/skills/`. The skills' runtime CLIs go into `home.packages`, which is
+  the profile-global package set shared with the Claude and Codex modules, so
+  they are already on PATH. `opencode debug skill` lists what a given invocation
+  can actually load, which is the verification command, never `ls`.
 - Subagents: opencode reads agent definitions from `agent/` and `agents/` alike,
   but its frontmatter schema is not Claude's. Claude's `tools:` is a
   comma-separated allow-list string where opencode wants a permission map, and an

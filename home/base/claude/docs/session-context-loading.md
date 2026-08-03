@@ -168,3 +168,23 @@ config tree for that agent.
 One behavior stays untested: which side wins when a repository tier skill and a machine tier skill share a name. Either
 direction is acceptable, because both sets are curated and reviewed, unlike the 301 drops the walk performed, but the
 answer belongs in `claude-harness/knowledge.md` once someone hits it.
+
+## Follow-up: the curated machine tier and the all-skills index
+
+The machine tier stopped carrying every skill. `agents/interactive-agent-skills.nix` now owns a shared curated list,
+`defaultInteractiveSkillNames`, and each harness module passes its own additions and removals through
+`effectiveInteractiveSkillNames`, so claude, codex and opencode each deploy only their effective set into their own
+skills directory. The `claude-machine-tier-carries-every-skill` check was replaced by three invariants: the curated set
+must all deploy, the generated `all-skills` index must deploy, and every skill excluded from the curated set must stay
+reachable at `~/.local/share/agent-skill-index/<name>`, deployed by `home/base/agents/interactive-skill-index.nix`.
+
+The former `personal` umbrella skill was deleted and replaced by a nix-generated `all-skills` skill, built like `core`
+from `renderAllSkillsIndexSkill` in `interactive-agent-skills.nix`. Its frontmatter description names every skill not
+curated-injected for that harness, and its body points at each indexed skill's reachable path. Its chapters became real
+skills: `agents/skills/obsidian` and `agents/skills/passwords`.
+
+The knowledge tier still travels, with a change in reachability: a fact filed under an indexed skill's `knowledge.md`
+is not in the machine tier, but the index points at it and the mirror keeps the whole skill directory reachable, so the
+promise of `agent-memory.md` holds through one index read. The 9471-byte always-on description figure is now the
+curated set's cost; the index description is the price of every other domain being reachable, and the per-harness
+description budgets are bounded by the curated list plus one line.

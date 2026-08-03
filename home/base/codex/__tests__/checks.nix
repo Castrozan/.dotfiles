@@ -58,9 +58,10 @@ in
     !(builtins.hasAttr ".codex/skills/page-composer" cfg.home.file)
   ) "directories without SKILL.md should not be deployed as codex skills";
 
-  codex-research-skill =
-    mkEvalCheck "codex-research-skill" (builtins.hasAttr ".codex/skills/research" cfg.home.file)
-      "research skill should be deployed for codex";
+  codex-all-skills-index-skill =
+    mkEvalCheck "codex-all-skills-index-skill"
+      (builtins.hasAttr ".codex/skills/all-skills/SKILL.md" cfg.home.file)
+      "the generated all-skills index should be deployed for codex; research and every other non-curated skill stays reachable through it";
 
   codex-core-skill =
     mkEvalCheck "codex-core-skill" (builtins.hasAttr ".codex/skills/core/SKILL.md" cfg.home.file)

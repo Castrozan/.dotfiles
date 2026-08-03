@@ -1,6 +1,6 @@
 { pkgs, ... }:
 let
-  skillSetBuilders = import ./skill-set-builders.nix;
+  skillSetBuilders = import ../../../../agents/skill-set-builders.nix;
 
   skillNamesWithInstallModule = builtins.filter (
     skillName:

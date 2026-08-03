@@ -18,10 +18,23 @@ let
   };
   inherit (helpers) mkEvalCheck;
 
-  skillSetBuilders = import ../skill-injection/skill-set-builders.nix;
+  interactiveAgentSkills = import ../../../../agents/interactive-agent-skills.nix;
+
+  claudeInteractiveSkillNames = interactiveAgentSkills.effectiveInteractiveSkillNames {
+    add = [
+      "browser"
+      "clawde"
+      "desktop"
+      "herdr"
+      "housekeeping"
+      "research"
+      "research-digest"
+    ];
+  };
 
   cfg = helpers.homeManagerTestConfiguration [
     self.homeManagerModules.claude-code
+    ../../agents/interactive-skill-index.nix
   ];
 
   fileNames = builtins.attrNames cfg.home.file;
@@ -82,12 +95,24 @@ in
     mkEvalCheck "claude-skills-directory" (hasFilePrefix ".claude/skills/")
       "skills directory entries should be in home.file";
 
-  claude-machine-tier-carries-every-skill =
-    mkEvalCheck "claude-machine-tier-carries-every-skill"
+  claude-machine-tier-carries-the-curated-interactive-set =
+    mkEvalCheck "claude-machine-tier-carries-the-curated-interactive-set"
       (builtins.all (
         skillName: builtins.hasAttr ".claude/skills/${skillName}" cfg.home.file
-      ) skillSetBuilders.allSkillNames)
-      "every skill in agents/skills must deploy into the machine tier at .claude/skills, because that is the only tier a session outside this repository can see; narrowing it back to a curated subset silently strands each skill's knowledge.md in ~/.dotfiles, which is the failure home/base/claude/docs/session-context-loading.md exists to prevent";
+      ) claudeInteractiveSkillNames)
+      "every curated interactive skill must deploy into the machine tier at .claude/skills; a dropped skill silently vanishes from every interactive session";
+
+  claude-machine-tier-carries-the-generated-all-skills-index =
+    mkEvalCheck "claude-machine-tier-carries-the-generated-all-skills-index"
+      (builtins.hasAttr ".claude/skills/all-skills/SKILL.md" cfg.home.file)
+      "the generated all-skills index must deploy into the machine tier; it is the only reachability path for every non-curated skill, and a session without it cannot reach them";
+
+  claude-indexed-skills-stay-reachable-outside-the-machine-tier =
+    mkEvalCheck "claude-indexed-skills-stay-reachable-outside-the-machine-tier"
+      (builtins.all (
+        skillName: builtins.hasAttr ".local/share/agent-skill-index/${skillName}" cfg.home.file
+      ) (interactiveAgentSkills.indexedSkillNamesFor claudeInteractiveSkillNames))
+      "every skill excluded from the curated machine tier must stay reachable at .local/share/agent-skill-index, because the all-skills index points there; a skill that is neither curated nor mirrored is stranded on disk";
 
   claude-bin-wrapper =
     mkEvalCheck "claude-bin-wrapper" (builtins.hasAttr ".local/bin/claude" cfg.home.file)

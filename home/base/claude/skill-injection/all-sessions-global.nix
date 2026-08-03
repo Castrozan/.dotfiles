@@ -1,10 +1,23 @@
 _:
 let
-  skillSetBuilders = import ./skill-set-builders.nix;
+  skillSetBuilders = import ../../../../agents/skill-set-builders.nix;
+  interactiveAgentSkills = import ../../../../agents/interactive-agent-skills.nix;
+
+  claudeInteractiveSkillNames = interactiveAgentSkills.effectiveInteractiveSkillNames {
+    add = [
+      "browser"
+      "clawde"
+      "desktop"
+      "herdr"
+      "housekeeping"
+      "research"
+      "research-digest"
+    ];
+  };
 
   coreRulesDirectory = ../../../../agents/core_rules;
 
-  globalClaudeSkillDirectorySymlinks = skillSetBuilders.claudeSkillDirectorySymlinksAtPrefix ".claude/skills" skillSetBuilders.allSkillNames;
+  globalClaudeSkillDirectorySymlinks = skillSetBuilders.claudeSkillDirectorySymlinksAtPrefix ".claude/skills" claudeInteractiveSkillNames;
 
   readInstructionsBodyWithoutFrontmatter =
     instructionsFile:
@@ -39,7 +52,21 @@ let
     skillDescription = "Display core agent behavior instructions. Use when user wants to see, review, or reference the core rules, or when injecting core instructions as context into subagents, oneshot sessions, or external tools.";
     instructionsFile = coreRulesDirectory + "/core.md";
   };
+
+  allSkillsIndexSkill = interactiveAgentSkills.renderAllSkillsIndexSkill claudeInteractiveSkillNames;
+
+  allSkillsIndexSkillFile = {
+    ".claude/skills/all-skills/SKILL.md".text = ''
+      ---
+      name: all-skills
+      description: ${allSkillsIndexSkill.description}
+      ---
+
+      ${allSkillsIndexSkill.body}
+    '';
+  };
 in
 {
-  home.file = globalClaudeSkillDirectorySymlinks // coreSkillFromAgentInstructions;
+  home.file =
+    globalClaudeSkillDirectorySymlinks // coreSkillFromAgentInstructions // allSkillsIndexSkillFile;
 }

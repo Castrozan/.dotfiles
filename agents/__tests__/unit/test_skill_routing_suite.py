@@ -7,15 +7,13 @@ import yaml
 EVAL_HARNESS_ROOT = Path(__file__).resolve().parents[1]
 SKILLS_ROOT = Path(__file__).resolve().parents[2] / "skills"
 SKILL_ROUTING_SUITE = EVAL_HARNESS_ROOT / "evals" / "skill_routing.yaml"
-PERSONAL_CHANNEL_ROUTING_SUITE = (
-    SKILLS_ROOT / "personal" / "__tests__" / "evals" / "channel-navigation.yaml"
-)
 ROUTER_CATALOG_ENTRY = re.compile(r"^([a-z][a-z0-9-]*) - ", re.MULTILINE)
 
 ROUTER_CATALOGS = [
     (SKILL_ROUTING_SUITE, "shared_system_prompt", 10),
-    (PERSONAL_CHANNEL_ROUTING_SUITE, "personal_subskill_router_system_prompt", 3),
 ]
+
+GENERATED_SKILL_NAMES = {"all-skills"}
 
 
 def load_skill_routing_config():
@@ -33,7 +31,11 @@ def test_every_skill_in_a_router_catalog_exists_on_disk(
     config = yaml.safe_load(config_path.read_text())
     catalog = router_catalog_skill_names(config, prompt_key)
     assert len(catalog) >= minimum
-    missing = [name for name in catalog if not (SKILLS_ROOT / name).is_dir()]
+    missing = [
+        name
+        for name in catalog
+        if name not in GENERATED_SKILL_NAMES and not (SKILLS_ROOT / name).is_dir()
+    ]
     assert not missing, (
         f"{config_path.name} offers skills that no longer exist: {missing}; a routing "
         f"test can never pass once its expected answer has been deleted or renamed"

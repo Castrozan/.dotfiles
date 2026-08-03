@@ -29,12 +29,16 @@ large-window-only concern.
 
 ## Skills
 
-- Claude: every `agents/skills/*` skill plus curated skill SETS routed per
-  session-type via `skill-injection/`, launch-time workspace skill discovery,
-  and the skills' bundled runtime CLIs installed via
-  `skill-runtime-dependency-packages.nix`.
-- Codex: every `agents/skills/*` skill plus a generated `core` skill deployed
-  flat to `~/.codex/skills/<name>/SKILL.md` (`skills.nix`).
+- Claude: the curated interactive skill set from `agents/interactive-agent-skills.nix`
+  (shared default plus claude's own additions) deploys to `~/.claude/skills/`
+  alongside the generated `core` skill and the generated `all-skills` index that
+  points at every non-curated skill at
+  `~/.local/share/agent-skill-index/<name>/SKILL.md`, plus curated skill SETS
+  routed per session-type via `skill-injection/` and the skills' bundled runtime
+  CLIs installed via `skill-runtime-dependency-packages.nix`.
+- Codex: the same curated interactive set (shared default plus codex's own
+  additions) plus a generated `core` skill and the generated `all-skills` index
+  deployed flat to `~/.codex/skills/<name>/SKILL.md` (`skills.nix`).
 - No gap. The skills' runtime CLIs (`skill-runtime-dependency-packages.nix`) go
   into `home.packages`, which is the profile-global package set: the Claude and
   Codex modules are imported into the SAME home-manager config, so those CLIs are

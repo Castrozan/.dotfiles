@@ -1,0 +1,34 @@
+tests:
+  - name: obsidian_capture_inbox_belongs_to_ril
+    skill_path: agents/skills/obsidian/SKILL.md
+    prompt: "I want to go through the ReadItLater inbox and tag each saved item. How do I do that?"
+    model: haiku
+    assertions:
+      llm_judge:
+        - "Hands the inbox to the ril skill and its ril CLI, and refuses to summarize, rate or tag a capture in place because an annotated capture reads as worked while nothing was learned or adopted."
+
+  - name: obsidian_names_the_two_vault_zones
+    skill_path: agents/skills/obsidian/SKILL.md
+    prompt: "Where is the vault and what lives in it? Respond in one sentence."
+    model: haiku
+    assertions:
+      output_contains:
+        - "OBSIDIAN_HOME"
+      llm_judge:
+        - "Names the two zones: the ReadItLater capture inbox and the Second Brain."
+
+  - name: obsidian_sync_contention_is_not_a_fault
+    skill_path: agents/skills/obsidian/SKILL.md
+    prompt: "The sync log complains that another sync instance is already running. Is the vault broken?"
+    model: haiku
+    assertions:
+      llm_judge:
+        - "Says no, concurrent runs of the scheduled headless sync contend and that message is normal rather than a fault."
+
+  - name: obsidian_second_brain_contract_is_read_not_recalled
+    skill_path: agents/skills/obsidian/SKILL.md
+    prompt: "I am about to write a new Second Brain entry. What do I do first?"
+    model: haiku
+    assertions:
+      llm_judge:
+        - "Reads the authoritative CONTRIBUTING contract inside the vault first, rather than recalling the structure, because it evolves."

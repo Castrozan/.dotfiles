@@ -1,6 +1,6 @@
 { config, lib, ... }:
 let
-  skillSetBuilders = import ../claude/skill-injection/skill-set-builders.nix;
+  skillSetBuilders = import ../../../agents/skill-set-builders.nix;
 
   curatedSkillSets = config.claudeCuratedSkillSets;
 
@@ -28,9 +28,10 @@ in
       skill list stays next to the agent whose job defines it. A name matching
       no skill on disk is dropped rather than failing the build, so a set
       survives a skill rename until someone notices the agent lost it. A set is
-      only worth declaring for a codex agent: every skill already reaches every
-      Claude session through the machine tier at ~/.claude/skills, so a set of
-      dotfiles skills handed to a Claude agent duplicates what it already has.
+      only worth declaring for a codex agent: every curated skill already reaches
+      every Claude session through the machine tier at ~/.claude/skills, so a set
+      of curated dotfiles skills handed to a Claude agent duplicates what it
+      already has, and the rest are one all-skills read away.
     '';
   };
 

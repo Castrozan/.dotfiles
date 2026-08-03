@@ -4,18 +4,12 @@
   ...
 }:
 let
-  dotfilesSkillsDir = ../../../agents/skills;
+  skillSetBuilders = import ../../../agents/skill-set-builders.nix;
+  interactiveAgentSkills = import ../../../agents/interactive-agent-skills.nix;
 
-  getSkillNamesFromDir =
-    dir:
-    if builtins.pathExists dir then
-      builtins.filter (name: builtins.pathExists (dir + "/${name}/SKILL.md")) (
-        builtins.attrNames (builtins.readDir dir)
-      )
-    else
-      [ ];
-
-  skillNames = getSkillNamesFromDir dotfilesSkillsDir;
+  opencodeInteractiveSkillNames = interactiveAgentSkills.effectiveInteractiveSkillNames {
+    add = [ "browser" ];
+  };
 
   opencodeSkillsPath = "${config.home.homeDirectory}/.config/opencode/skills";
 
@@ -23,14 +17,27 @@ let
     map (dirname: {
       name = ".config/opencode/skills/${dirname}";
       value = {
-        source = dotfilesSkillsDir + "/${dirname}";
+        source = skillSetBuilders.dotfilesSkillsDirectory + "/${dirname}";
         recursive = true;
       };
-    }) skillNames
+    }) opencodeInteractiveSkillNames
   );
+
+  allSkillsIndexSkill = interactiveAgentSkills.renderAllSkillsIndexSkill opencodeInteractiveSkillNames;
+
+  allSkillsIndexSkillFile = {
+    ".config/opencode/skills/all-skills/SKILL.md".text = ''
+      ---
+      name: all-skills
+      description: ${allSkillsIndexSkill.description}
+      ---
+
+      ${allSkillsIndexSkill.body}
+    '';
+  };
 in
 {
-  home.file = globalOpencodeSkills;
+  home.file = globalOpencodeSkills // allSkillsIndexSkillFile;
 
   home.activation.removeExternalSymlinksCollidingWithOpencodeSkills =
     lib.hm.dag.entryBefore
@@ -39,7 +46,7 @@ in
       ]
       ''
         if [ -d "${opencodeSkillsPath}" ]; then
-          for skillName in ${builtins.concatStringsSep " " skillNames}; do
+          for skillName in ${builtins.concatStringsSep " " opencodeInteractiveSkillNames}; do
             skillPath="${opencodeSkillsPath}/$skillName"
             if [ -L "$skillPath" ]; then
               linkTarget=$(readlink "$skillPath")
