@@ -22,8 +22,48 @@ from shell_command_invocation_position import (  # noqa: E402
 )
 
 SANCTIONED_HEADLESS_CLAUDE_OVERRIDE_SENTINEL = "CLAUDE_HEADLESS_SANCTIONED=1"
+TEST_DIRECTORY_PATTERN = (
+    r"(?:__tests__|__test[*?@\[][^\s/]*|__tes[*?@\[][^\s/]*|"
+    r"__te[*?@\[][^\s/]*|__t[*?@\[][^\s/]*|__[*?@\[][^\s/]*|"
+    r"[*?@\[][^\s/]*tests__)"
+)
+TEST_RUNNER_PATH_PATTERN = rf"{TEST_DIRECTORY_PATTERN}/run\.sh"
+TEST_RUNNER_DYNAMIC_PATH_PATTERN = rf"{TEST_DIRECTORY_PATTERN}/[^\s;&|]*[$*?\[{{%`]"
+TEST_RUNNER_VARIABLE_PATH_PATTERN = (
+    rf"(?=[\s\S]*={TEST_DIRECTORY_PATTERN})(?=[\s\S]*\./\$)"
+    rf"(?=[\s\S]*(?:=run\.sh\b|=run(?:[;\s]|$)))"
+    rf"(?=[\s\S]*(?:=sh(?:[;\s]|$)|\brun\.sh\b))"
+)
+TEST_RUNNER_TEMPLATE_PATH_PATTERN = rf"\$\([^;\n]*{TEST_DIRECTORY_PATTERN}/[^;\n]*%"
+TEST_RUNNER_AFTER_DIRECTORY_CHANGE_PATTERN = (
+    rf"\bcd\s+{TEST_DIRECTORY_PATTERN}\s*(?:&&|;)\s*\./[^;\n]*(?:\brun\.sh\b|`|\$\()"
+)
+TEST_RUNNER_DENIAL_REASON = (
+    "__tests__/run.sh is prohibited locally; CI runs it after push. Run the affected "
+    "test file or small named set directly."
+)
 
 PROHIBITED_BASH_COMMAND_PATTERNS = [
+    (
+        TEST_RUNNER_PATH_PATTERN,
+        TEST_RUNNER_DENIAL_REASON,
+    ),
+    (
+        TEST_RUNNER_DYNAMIC_PATH_PATTERN,
+        TEST_RUNNER_DENIAL_REASON,
+    ),
+    (
+        TEST_RUNNER_VARIABLE_PATH_PATTERN,
+        TEST_RUNNER_DENIAL_REASON,
+    ),
+    (
+        TEST_RUNNER_TEMPLATE_PATH_PATTERN,
+        TEST_RUNNER_DENIAL_REASON,
+    ),
+    (
+        TEST_RUNNER_AFTER_DIRECTORY_CHANGE_PATTERN,
+        TEST_RUNNER_DENIAL_REASON,
+    ),
     (
         rf"{COMMAND_INVOCATION_POSITION_PREFIX}git\s+add\s+"
         rf"(?:-A|--all|\.){COMMAND_ARGUMENT_TERMINATOR_LOOKAHEAD}",
@@ -89,11 +129,26 @@ def find_first_violation(tool_name: str, inspectable_text: str):
         return None
 
     patterns_for_this_tool = PROHIBITED_PATTERNS_BY_TOOL.get(tool_name, [])
+    inspection_texts = (inspectable_text,)
+    if tool_name == "Bash":
+        shell_quote_normalized_text = (
+            inspectable_text.replace("\\\n", "")
+            .replace("\\", "")
+            .replace("'", "")
+            .replace('"', "")
+        )
+        inspection_texts += (
+            shell_quote_normalized_text,
+            shell_quote_normalized_text.replace("$", ""),
+        )
 
     for rule in patterns_for_this_tool:
         pattern, reason = rule[0], rule[1]
         override_sentinel = rule[2] if len(rule) > 2 else None
-        if not re.search(pattern, inspectable_text, re.IGNORECASE):
+        if not any(
+            re.search(pattern, candidate_text, re.IGNORECASE)
+            for candidate_text in inspection_texts
+        ):
             continue
         if override_sentinel and override_sentinel in inspectable_text:
             continue
