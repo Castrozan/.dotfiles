@@ -105,13 +105,10 @@ in
       )
       "opencode must enable its built-in LSP servers and formatters with the Python test environment available to Pyright";
 
-  domain-opencode-wires-the-browser-mcp-on-demand =
-    mkEvalCheck "domain-opencode-wires-the-browser-mcp-on-demand"
-      (
-        deployedOpencodeSettings.mcp ? chrome-devtools
-        && deployedOpencodeSettings.mcp.chrome-devtools.enabled == false
-      )
-      "opencode must declare the shared chrome-devtools MCP for on-demand TUI connection without paying its boot cost on the session-start critical path";
+  domain-opencode-wires-the-browser-mcp = mkEvalCheck "domain-opencode-wires-the-browser-mcp" (
+    deployedOpencodeSettings.mcp ? chrome-devtools
+    && deployedOpencodeSettings.mcp.chrome-devtools.enabled
+  ) "opencode must wire the shared chrome-devtools MCP that Claude and Codex both wire";
 
   domain-opencode-allows-nested-subagents = mkEvalCheck "domain-opencode-allows-nested-subagents" (
     deployedOpencodeSettings.subagent_depth >= 2
