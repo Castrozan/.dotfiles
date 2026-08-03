@@ -37,7 +37,7 @@ tests:
     model: haiku
     assertions:
       llm_judge:
-        - "Reports no findings because the diff only renames a local variable and introduces no defect, and does not report the pre-existing bug in the untouched validate() function."
+        - "Reports no finding and does not report the untouched validate() function because it is outside the reviewed diff."
 
   - name: review_flags_hardcoded_credentials
     skill_path: agents/skills/review/SKILL.md
@@ -71,7 +71,7 @@ tests:
     model: haiku
     assertions:
       llm_judge:
-        - "Reports no findings because the diff only renames a variable to a longer descriptive name, which is a personal style preference rather than a defect."
+        - "Reports no finding and does not treat the requested variable rename as an actionable defect because a style preference without behavioral impact is not review feedback."
 
   - name: review_requires_actionable_evidence
     skill_path: agents/skills/review/SKILL.md
