@@ -52,7 +52,9 @@ python3 herdr_tab_startup_benchmark.py --runs 12
 - `--runs N` iterations; `--focus` creates the tab focused (defaults to
   backgrounded); `--warm` splits into an existing tab instead of a new one.
 - The measured findings that drove `home/base/terminal/bash.nix`: flyline's
-  inline viewport blocks on a cursor-position query (DSR) that herdr's
-  emulator does not answer, so the first keystroke lands ~1.2s (median) late
-  in every new pane; the rc now skips flyline under `HERDR_ENV=1`.
+  inline viewport issues a cursor position query (DSR) that herdr's emulator
+  answers only ~190ms late, and flyline v1.3.0's startup PATH cache scan held
+  a lock that blocked the first prompt by ~0.4s more. The v1.4.0 upgrade moved
+  the scan off the critical path; the unit guard lives in
+  `../unit/test_bash_login_pty_startup_latency.py`.
 

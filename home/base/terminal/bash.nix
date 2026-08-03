@@ -1,15 +1,15 @@
 { pkgs, ... }:
 let
-  flylineVersion = "1.3.0";
+  flylineVersion = "1.4.0";
 
   flylineReleaseAssetForSystem = {
     "aarch64-darwin" = {
       asset = "libflyline-v${flylineVersion}-aarch64-apple-darwin.tar.gz";
-      hash = "sha256-fYPAf3OGMrLu/r4rG98mZM1qXAagA9ZaI2KnY8vhhBc=";
+      hash = "sha256-JDA9XBOl5xTt1NoHbdUGhbUMlJ8G85TKPYkCErA3Ddw=";
     };
     "x86_64-linux" = {
       asset = "libflyline-v${flylineVersion}-x86_64-unknown-linux-gnu.tar.gz";
-      hash = "sha256-IbsKeg5BdJb/aO+DecrcBdNeQq7jV/xkrZqNlfaTIPg=";
+      hash = "sha256-YmwiehbsD/Krwz+EjAkO2GcR8JSvHMtruEX+IHzvIrA=";
     };
   };
 
@@ -62,11 +62,9 @@ in
       enable = true;
       initExtra = ''
         if [[ $- == *i* ]]; then
-          if [[ -z "''${HERDR_ENV:-}" ]]; then
-            if enable -f ${flylineLoadableBuiltin}/lib/libflyline.loadable flyline 2>/dev/null; then
-              if [ -r "${flylineKeybindingsConfiguration}" ]; then
-                . "${flylineKeybindingsConfiguration}"
-              fi
+          if enable -f ${flylineLoadableBuiltin}/lib/libflyline.loadable flyline 2>/dev/null; then
+            if [ -r "${flylineKeybindingsConfiguration}" ]; then
+              . "${flylineKeybindingsConfiguration}"
             fi
           fi
         fi
