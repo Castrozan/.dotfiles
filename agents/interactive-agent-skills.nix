@@ -1,7 +1,7 @@
 let
   skillSetBuilders = import ./skill-set-builders.nix;
 
-  allSkillNames = skillSetBuilders.allSkillNames;
+  inherit (skillSetBuilders) allSkillNames;
 
   defaultInteractiveSkillNames = [
     "architecture"
