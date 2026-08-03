@@ -2,10 +2,18 @@
   pkgs,
   lib,
   hostname,
+  isDarwin ? false,
   ...
 }:
 let
-  codexHookEvents = import ./hooks/configuration.nix { inherit pkgs lib hostname; };
+  codexHookEvents = import ./hooks/configuration.nix {
+    inherit
+      pkgs
+      lib
+      hostname
+      isDarwin
+      ;
+  };
   codexRequirementsTomlFormat = pkgs.formats.toml { };
   codexManagedHooksRequirements =
     codexRequirementsTomlFormat.generate "codex-managed-requirements.toml"

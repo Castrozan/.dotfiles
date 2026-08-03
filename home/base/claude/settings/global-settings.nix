@@ -2,10 +2,11 @@
   pkgs,
   lib,
   hostname,
+  isDarwin ? false,
   ...
 }:
 let
-  hooksConfig = import ../hooks/event-registrations { inherit lib hostname; };
+  hooksConfig = import ../hooks/event-registrations { inherit lib hostname isDarwin; };
   pluginsConfig = import ./plugins.nix { inherit pkgs; };
 
   privateMarketplacePluginsPath =

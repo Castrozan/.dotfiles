@@ -33,3 +33,7 @@ load '../../../../../__tests__/helpers/bash-script-assertions'
 @test "initializes git submodules" {
     assert_script_source_matches "submodule update --init"
 }
+
+@test "runs the deployed claude allowlist verification after rebuilding" {
+    assert_script_source_matches "verify-deployed-prohibited-words-allowlist"
+}

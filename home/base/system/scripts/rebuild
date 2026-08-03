@@ -32,6 +32,7 @@ _ensure_setuid_wrappers_in_path() {
 main() {
 	_ensure_setuid_wrappers_in_path
 	_rebuild_system
+	"@verify-deployed-prohibited-words-allowlist@" "$DOTFILES_DIR" "$(_resolve_machine_alias)" || return 1
 	_reload_hyprland || true
 }
 

@@ -71,6 +71,21 @@ let
       command: lib.hasInfix canonicalHooksEventDefinition.dispatchersByEvent.${eventName} command
     ) (codexHookEventCommands eventName))
   ) codexHookEventNames;
+
+  codexRegistrationRefusesToDegradeWithoutPrivateConfig =
+    let
+      attempt = builtins.tryEval (
+        builtins.toJSON (
+          (import ../hooks/configuration.nix {
+            inherit pkgs lib;
+            hostname = "test";
+            isDarwin = true;
+            privateConfigRoot = "/nonexistent/private-config";
+          }).PreToolUse
+        )
+      );
+    in
+    !attempt.success;
 in
 {
   codex-hooks-events-are-the-supported-canonical-subset =
@@ -133,4 +148,9 @@ in
         && lib.all (command: lib.hasInfix "--surface=codex" command) dispatcherCommands
       )
       "every Codex dispatcher registration must pass --surface=codex explicitly; the dispatchers default to the claude surface, so a registration that omits the flag silently runs Claude-only handlers (the reply-shape gate, the background-bash validator, the workspace injector) against a Codex session";
+
+  codex-hooks-registration-fails-loud-when-private-config-is-missing =
+    mkEvalCheck "codex-hooks-registration-fails-loud-when-private-config-is-missing"
+      codexRegistrationRefusesToDegradeWithoutPrivateConfig
+      "on a darwin host the codex hook registration must refuse to build when private-config/machines.nix is missing from the flake source; the previous silent fallback baked an empty PROHIBITED_WORDS_ALLOWED into the PreToolUse command and the guard re-blocked sessions on hosts whose per-machine allowlist file exists";
 }

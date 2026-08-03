@@ -2,6 +2,8 @@
   pkgs,
   lib,
   hostname,
+  isDarwin ? false,
+  privateConfigRoot ? ../../../../private-config,
 }:
 let
   agentHookScripts = import ../../agent-hooks/flat-hook-scripts-directory.nix { inherit pkgs lib; };
@@ -10,10 +12,19 @@ let
     dispatcherFilename:
     "${agentHookScripts}/run-hook.sh ${agentHookScripts}/${dispatcherFilename} --surface=codex";
 
+  machinesRegistryFile = privateConfigRoot + "/machines.nix";
   machineAllowedProhibitedWordsFile =
-    ../../../../private-config/machines + "/${hostname}/claude-prohibited-words-allowed.nix";
+    privateConfigRoot + "/machines/${hostname}/claude-prohibited-words-allowed.nix";
   machineAllowedProhibitedWords =
-    if builtins.pathExists machineAllowedProhibitedWordsFile then
+    if !(builtins.pathExists machinesRegistryFile) && isDarwin then
+      throw ''
+        private-config/machines.nix is missing from the flake source, so the per-machine
+        prohibited-words allowlist would silently degrade to empty and the guard would block
+        sessions that the machine allowlist is meant to exempt. Refusing to build the codex
+        hook registrations; rebuild from a flake source that carries the private-config
+        submodule content (a git+file flake ref with ?submodules=1).
+      ''
+    else if builtins.pathExists machineAllowedProhibitedWordsFile then
       import machineAllowedProhibitedWordsFile
     else
       [ ];

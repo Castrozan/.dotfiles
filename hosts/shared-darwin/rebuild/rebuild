@@ -3,6 +3,7 @@ set -Eeuo pipefail
 
 readonly DOTFILES_DIRECTORY="$HOME/.dotfiles"
 readonly FLAKE_REFERENCE="git+file://${DOTFILES_DIRECTORY}?submodules=1#@FLAKE_HOST_ATTRIBUTE@"
+readonly MACHINE_ALIAS="@FLAKE_HOST_ATTRIBUTE@"
 readonly CURRENT_SYSTEM_SYMLINK_PATH="/run/current-system"
 readonly ANSI_RED_BOLD="\033[1;31m"
 readonly ANSI_RESET="\033[0m"
@@ -155,6 +156,8 @@ main() {
 		"$rebuild_output_logfile" \
 		"$current_system_symlink_target_before" \
 		"$current_system_symlink_modification_epoch_seconds_before"
+
+	"@verify-deployed-prohibited-words-allowlist@" "$DOTFILES_DIRECTORY" "$MACHINE_ALIAS"
 
 	_reload_hammerspoon_config
 
