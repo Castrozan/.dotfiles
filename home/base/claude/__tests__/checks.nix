@@ -151,3 +151,12 @@ in
     self
     ;
 }
+// import ../opencode-go/__tests__/checks.nix {
+  inherit
+    pkgs
+    lib
+    mkEvalCheck
+    helpers
+    self
+    ;
+}
