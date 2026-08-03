@@ -2,7 +2,9 @@ import re
 from pathlib import Path
 
 OPENCODE_GO_MODULE = Path(__file__).resolve().parents[2] / "default.nix"
-OPENCODE_GO_MODEL = "qwen3.7-plus"
+OPENCODE_GO_OPUS_MODEL = "deepseek-v4-pro"
+OPENCODE_GO_SONNET_MODEL = "deepseek-v4-flash"
+OPENCODE_GO_HAIKU_MODEL = "kimi-k2.5"
 OPENCODE_GO_BASE_URL = "https://opencode.ai/zen/go"
 OPENCODE_GO_SECRET_PATH_FRAGMENT = ".secrets/opencode-api-key"
 LAUNCHER_EXEC_LINE = re.compile(r"^\s*exec \S+/bin/claude .*$", re.M)
@@ -63,29 +65,37 @@ def test_the_launcher_removes_bearer_authentication():
     )
 
 
-def test_all_three_model_aliases_resolve_to_the_opencode_go_model():
+def test_all_three_model_aliases_resolve_to_their_declared_tier():
     source = module_source()
-    assert f'opencodeGoModel = "{OPENCODE_GO_MODEL}"' in source, (
-        "the module must declare the opencode-go model binding"
-    )
-    for alias in ("OPUS", "SONNET", "HAIKU"):
-        assert f'ANTHROPIC_DEFAULT_{alias}_MODEL="${{opencodeGoModel}}"' in source, (
-            f"the {alias.lower()} alias must resolve to the declared opencode-go model"
+    expected_tiers = [
+        ("OPUS", OPENCODE_GO_OPUS_MODEL, "opencodeGoOpusModel"),
+        ("SONNET", OPENCODE_GO_SONNET_MODEL, "opencodeGoSonnetModel"),
+        ("HAIKU", OPENCODE_GO_HAIKU_MODEL, "opencodeGoHaikuModel"),
+    ]
+    for alias, model, binding in expected_tiers:
+        assert f'{binding} = "{model}"' in source, (
+            f"the module must declare the opencode-go {binding} binding"
+        )
+        assert f'ANTHROPIC_DEFAULT_{alias}_MODEL="${{{binding}}}"' in source, (
+            f"the {alias.lower()} alias must resolve to the declared {binding} binding"
         )
 
 
-def test_the_aliases_and_the_exec_line_share_one_model_binding():
+def test_the_launch_default_and_the_exec_line_share_one_model_binding():
     source = module_source()
-    declared = re.search(r'opencodeGoModel = "([^"]+)"', source)
-    assert declared, "opencodeGoModel is no longer declared in the module"
-    assert '--model "${opencodeGoModel}"' in launcher_exec_line(), (
-        "the exec line passes a model other than the declared binding, so the aliases and the pinned model can drift apart silently"
+    declared = re.search(r'opencodeGoSonnetModel = "([^"]+)"', source)
+    assert declared, "opencodeGoSonnetModel is no longer declared in the module"
+    assert declared.group(1) == OPENCODE_GO_SONNET_MODEL, (
+        "the declared launch model drifted from the pinned test expectation"
+    )
+    assert '--model "${opencodeGoSonnetModel}"' in launcher_exec_line(), (
+        "the exec line passes a model other than the sonnet binding, so the aliases and the pinned model can drift apart silently"
     )
 
 
 def test_the_default_model_flag_precedes_caller_arguments():
-    assert '--model "${opencodeGoModel}" "$@"' in launcher_exec_line(), (
-        "claude-go must pass --model qwen3.7-plus before the caller arguments so a caller's later --model still wins"
+    assert '--model "${opencodeGoSonnetModel}" "$@"' in launcher_exec_line(), (
+        "claude-go must pass --model deepseek-v4-flash before the caller arguments so a caller's later --model still wins"
     )
 
 

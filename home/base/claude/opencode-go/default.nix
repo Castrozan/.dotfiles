@@ -14,7 +14,9 @@ let
   claudeGoEnabledOnThisHost = lib.elem hostname hostsWithClaudeGo;
 
   opencodeGoBaseUrl = "https://opencode.ai/zen/go";
-  opencodeGoModel = "qwen3.7-plus";
+  opencodeGoOpusModel = "deepseek-v4-pro";
+  opencodeGoSonnetModel = "deepseek-v4-flash";
+  opencodeGoHaikuModel = "kimi-k2.5";
 
   claudeGoLauncher = pkgs.writeShellScriptBin "claude-go" ''
     opencodeGoApiKeyFile="$HOME/.secrets/opencode-api-key"
@@ -26,10 +28,10 @@ let
     unset ANTHROPIC_AUTH_TOKEN
     export ANTHROPIC_API_KEY="$(cat "$opencodeGoApiKeyFile")"
     export ANTHROPIC_BASE_URL="${opencodeGoBaseUrl}"
-    export ANTHROPIC_DEFAULT_OPUS_MODEL="${opencodeGoModel}"
-    export ANTHROPIC_DEFAULT_SONNET_MODEL="${opencodeGoModel}"
-    export ANTHROPIC_DEFAULT_HAIKU_MODEL="${opencodeGoModel}"
-    exec ${config.claude.package}/bin/claude --model "${opencodeGoModel}" "$@"
+    export ANTHROPIC_DEFAULT_OPUS_MODEL="${opencodeGoOpusModel}"
+    export ANTHROPIC_DEFAULT_SONNET_MODEL="${opencodeGoSonnetModel}"
+    export ANTHROPIC_DEFAULT_HAIKU_MODEL="${opencodeGoHaikuModel}"
+    exec ${config.claude.package}/bin/claude --model "${opencodeGoSonnetModel}" "$@"
   '';
 in
 {
