@@ -172,6 +172,30 @@ class TestFindChromeGlobalMainWindow:
         ]
         assert len(tag_calls) > 0
 
+    def test_falls_back_to_standard_window_when_tag_and_titles_do_not_match(
+        self, mock_subprocess_run, hyprctl_response_builder
+    ):
+        hyprctl_response_builder(
+            "clients",
+            [
+                {
+                    "class": "chrome-global",
+                    "address": "0xc",
+                    "tags": [],
+                    "title": "WhatsApp - Google Chrome",
+                    "initialTitle": "Everything F1 is banning in 2027 - YouTube - Google Chrome",
+                    "floating": False,
+                    "workspace": {"id": 1},
+                }
+            ],
+        )
+        result = summoner.find_chrome_global_main_window()
+        assert result["address"] == "0xc"
+        tag_calls = [
+            c for c in mock_subprocess_run.call_args_list if "tagwindow" in str(c)
+        ]
+        assert len(tag_calls) > 0
+
     def test_returns_none_when_no_chrome_global(self, hyprctl_response_builder):
         hyprctl_response_builder("clients", [])
         result = summoner.find_chrome_global_main_window()

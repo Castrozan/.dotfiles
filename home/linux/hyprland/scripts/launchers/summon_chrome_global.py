@@ -74,6 +74,14 @@ def find_chrome_global_window_by_initial_title_pattern() -> dict | None:
     return None
 
 
+def find_standard_chrome_global_window() -> dict | None:
+    for client in find_clients_by_class(CHROME_GLOBAL_CLASS):
+        if client.get("floating"):
+            continue
+        return client
+    return None
+
+
 def tag_window_as_chrome_global_main(window_address: str) -> None:
     run_hyprctl(
         "dispatch",
@@ -94,6 +102,11 @@ def find_chrome_global_main_window() -> dict | None:
         return client
 
     client = find_chrome_global_window_by_initial_title_pattern()
+    if client:
+        tag_window_as_chrome_global_main(client["address"])
+        return client
+
+    client = find_standard_chrome_global_window()
     if client:
         tag_window_as_chrome_global_main(client["address"])
         return client
