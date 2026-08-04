@@ -34,9 +34,6 @@ class TestBashTestRunnerBlocking:
             "bash -lc \"$(printf './__tests__/%s%s --quick' run .sh)\"",
             "cd __tests__; ./`printf run`.`printf sh` --quick",
             'bash -O extglob -c "./__test@(s)__/run.sh --quick"',
-            "grep -R '__tests__/run.sh' agents",
-            "echo '__tests__/run.sh is reserved for CI'",
-            "cat __tests__/run.sh",
         ],
     )
     def test_blocks_test_runner_invocations(

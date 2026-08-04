@@ -1,19 +1,23 @@
 from __future__ import annotations
 
+import os
 import re
 import sys
-from pathlib import Path
 
-_MODULE_DIRECTORY = Path(__file__).resolve().parent
-for _shared_module_candidate_directory in [_MODULE_DIRECTORY] + [
-    ancestor / "common" for ancestor in _MODULE_DIRECTORY.parents
-]:
-    _shared_module_candidate_path = str(_shared_module_candidate_directory)
+_MODULE_DIRECTORY = os.path.dirname(os.path.realpath(__file__))
+_ANCESTOR_DIRECTORY = _MODULE_DIRECTORY
+_SHARED_MODULE_CANDIDATE_DIRECTORIES = [_MODULE_DIRECTORY]
+while _ANCESTOR_DIRECTORY != os.path.dirname(_ANCESTOR_DIRECTORY):
+    _ANCESTOR_DIRECTORY = os.path.dirname(_ANCESTOR_DIRECTORY)
+    _SHARED_MODULE_CANDIDATE_DIRECTORIES.append(
+        os.path.join(_ANCESTOR_DIRECTORY, "common")
+    )
+for _shared_module_candidate_directory in _SHARED_MODULE_CANDIDATE_DIRECTORIES:
     if (
-        _shared_module_candidate_directory.is_dir()
-        and _shared_module_candidate_path not in sys.path
+        os.path.isdir(_shared_module_candidate_directory)
+        and _shared_module_candidate_directory not in sys.path
     ):
-        sys.path.insert(0, _shared_module_candidate_path)
+        sys.path.insert(0, _shared_module_candidate_directory)
 
 from hook_dispatch import HandlerResult  # noqa: E402
 from prohibited_command_patterns import PROHIBITED_PATTERNS_BY_TOOL  # noqa: E402
@@ -37,6 +41,21 @@ def extract_inspectable_text(tool_name: str, tool_input: dict) -> str:
     return ""
 
 
+def pattern_matches_outside_read_only_inspection(pattern: str, candidate_text: str):
+    from shell_read_only_inspection_command import (
+        offset_lies_in_read_only_inspection_command_segment,
+    )
+
+    for match in re.finditer(pattern, candidate_text, re.IGNORECASE):
+        if match.start() == match.end():
+            return True
+        if not offset_lies_in_read_only_inspection_command_segment(
+            candidate_text, match.start()
+        ):
+            return True
+    return False
+
+
 def find_first_violation(tool_name: str, inspectable_text: str):
     if not inspectable_text:
         return None
@@ -58,9 +77,16 @@ def find_first_violation(tool_name: str, inspectable_text: str):
     for rule in patterns_for_this_tool:
         pattern, reason = rule[0], rule[1]
         override_sentinel = rule[2] if len(rule) > 2 else None
-        if not any(
-            re.search(pattern, candidate_text, re.IGNORECASE)
+        matching_texts = [
+            candidate_text
             for candidate_text in inspection_texts
+            if re.search(pattern, candidate_text, re.IGNORECASE)
+        ]
+        if not matching_texts:
+            continue
+        if tool_name == "Bash" and not any(
+            pattern_matches_outside_read_only_inspection(pattern, candidate_text)
+            for candidate_text in matching_texts
         ):
             continue
         if override_sentinel and override_sentinel in inspectable_text:
