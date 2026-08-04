@@ -7,7 +7,11 @@
 let
   provenanceScripts = ./scripts;
   agentSessionScripts = ../../../../agents/scripts;
-  runtimePath = lib.makeBinPath ([ pkgs.git ] ++ lib.optionals pkgs.stdenv.isLinux [ pkgs.procps ]);
+  runtimePath = lib.makeBinPath (
+    [ pkgs.git ]
+    ++ lib.optionals pkgs.stdenv.isLinux [ pkgs.procps ]
+    ++ lib.optionals pkgs.stdenv.isDarwin [ pkgs.lsof ]
+  );
   runtimeEnvironment = ''
     export PATH="${runtimePath}:$PATH"
     export PYTHONPATH="${provenanceScripts}:${agentSessionScripts}"

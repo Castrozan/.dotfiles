@@ -11,6 +11,7 @@ from agent_session.harness import (
 )
 
 from .codex_rollout_lookup import codex_session_identifier_for_working_directory
+from .opencode_session_lookup import opencode_session_identifier_for_process
 
 CLAUDE_SESSION_IDENTIFIER_ENVIRONMENT_VARIABLE = "CLAUDE_CODE_SESSION_ID"
 CLAWDE_AGENT_NAME_ENVIRONMENT_VARIABLE = "CLAWDE_AGENT_NAME"
@@ -62,11 +63,15 @@ def harness_and_session_from_process_ancestry(
     agent_session = find_agent_session(process_identifier)
     if agent_session is None:
         return None
-    _harness_process_identifier, harness_name, command_line = agent_session
+    harness_process_identifier, harness_name, command_line = agent_session
     session_identifier = session_identifier_from_command(harness_name, command_line)
     if session_identifier is None and harness_name == "codex":
         session_identifier = codex_session_identifier_for_working_directory(
             working_directory
+        )
+    if session_identifier is None and harness_name == "opencode":
+        session_identifier = opencode_session_identifier_for_process(
+            harness_process_identifier
         )
     return harness_name, session_identifier
 

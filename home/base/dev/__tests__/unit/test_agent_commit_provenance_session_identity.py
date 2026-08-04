@@ -70,10 +70,31 @@ class TestResolveFromProcessAncestry:
             identity = resolve_agent_session_identity({}, 4242, Path("/repo"))
         assert identity.session_identifier == "019fafd2-8d5c-70a2"
 
-    def test_fresh_opencode_session_records_the_harness_without_a_session(self):
-        with patch(
-            "agent_commit_provenance.session_identity.find_agent_session",
-            return_value=(99, "opencode", "opencode"),
+    def test_fresh_opencode_session_is_resolved_from_its_session_database(self):
+        with (
+            patch(
+                "agent_commit_provenance.session_identity.find_agent_session",
+                return_value=(99, "opencode", "opencode --continue"),
+            ),
+            patch(
+                "agent_commit_provenance.session_identity.opencode_session_identifier_for_process",
+                return_value="ses_0353b5c16ffep4zDjdRlGcaePG",
+            ) as session_database_lookup,
+        ):
+            identity = resolve_agent_session_identity({}, 4242, Path("/repo"))
+        session_database_lookup.assert_called_once_with(99)
+        assert identity.session_identifier == "ses_0353b5c16ffep4zDjdRlGcaePG"
+
+    def test_opencode_records_the_harness_when_no_session_can_be_resolved(self):
+        with (
+            patch(
+                "agent_commit_provenance.session_identity.find_agent_session",
+                return_value=(99, "opencode", "opencode"),
+            ),
+            patch(
+                "agent_commit_provenance.session_identity.opencode_session_identifier_for_process",
+                return_value=None,
+            ),
         ):
             identity = resolve_agent_session_identity({}, 4242, Path("/repo"))
         assert identity.harness_name == "opencode"
