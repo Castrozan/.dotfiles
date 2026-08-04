@@ -68,7 +68,13 @@ def read_hook_input_or_exit() -> dict:
         sys.exit(0)
     if not isinstance(parsed_payload, dict):
         sys.exit(0)
-    if not isinstance(parsed_payload.get("tool_input"), dict):
+    raw_apply_patch_input = parsed_payload.get(
+        "tool_name"
+    ) == "apply_patch" and isinstance(parsed_payload.get("tool_input"), str)
+    if (
+        not isinstance(parsed_payload.get("tool_input"), dict)
+        and not raw_apply_patch_input
+    ):
         parsed_payload["tool_input"] = {}
     return normalize_codex_tool_payload(parsed_payload)
 

@@ -99,7 +99,7 @@ PROHIBITED_BASH_COMMAND_PATTERNS = [
 
 PROHIBITED_FILE_PATH_PATTERNS = [
     (
-        r"(?:^|/)castrozan/\.?dotfiles(?:/|$)",
+        r"(?:^|[\s/])castrozan/\.?dotfiles(?:/|$)",
         "Writing under castrozan/.dotfiles is prohibited; repo must not live on disk.",
     ),
 ]
@@ -109,12 +109,19 @@ PROHIBITED_PATTERNS_BY_TOOL = {
     "Write": PROHIBITED_FILE_PATH_PATTERNS,
     "Edit": PROHIBITED_FILE_PATH_PATTERNS,
     "NotebookEdit": PROHIBITED_FILE_PATH_PATTERNS,
+    "apply_patch": PROHIBITED_FILE_PATH_PATTERNS,
 }
 
 
 def extract_inspectable_text(tool_name: str, tool_input: dict) -> str:
     if tool_name == "Bash":
         return tool_input.get("command", "") or ""
+    if tool_name == "apply_patch":
+        if isinstance(tool_input, str):
+            return tool_input
+        if isinstance(tool_input, dict):
+            return tool_input.get("patch_text", "") or ""
+        return ""
     if tool_name in ("Write", "Edit"):
         return tool_input.get("file_path", "") or ""
     if tool_name == "NotebookEdit":

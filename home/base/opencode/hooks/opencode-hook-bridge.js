@@ -83,6 +83,13 @@ function canonicalToolName(toolName) {
 function toolInputForDispatcher(toolName, toolInput) {
   const normalizedInput = normalizeToolInput(toolInput);
   if (
+    canonicalToolName(toolName) === "apply_patch" &&
+    isRecord(normalizedInput) &&
+    typeof normalizedInput.patch_text === "string"
+  ) {
+    return normalizedInput.patch_text;
+  }
+  if (
     canonicalToolName(toolName) !== "Skill" ||
     !isRecord(normalizedInput) ||
     typeof normalizedInput.name !== "string"
@@ -116,7 +123,12 @@ function parseDispatcherOutput(output, dispatcherFilename) {
   }
   try {
     const parsedOutput = JSON.parse(trimmedOutput);
-    return isRecord(parsedOutput) ? parsedOutput : {};
+    if (!isRecord(parsedOutput)) {
+      throw new Error(
+        `OpenCode ${dispatcherFilename} hook returned invalid JSON`,
+      );
+    }
+    return parsedOutput;
   } catch {
     throw new Error(
       `OpenCode ${dispatcherFilename} hook returned invalid JSON`,

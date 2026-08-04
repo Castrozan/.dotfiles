@@ -382,3 +382,40 @@ def test_file_only_prompt_defers_context_injection_until_a_text_prompt(tmp_path)
 
     assert "error" not in result
     assert records == []
+
+
+def test_apply_patch_hook_passes_raw_patch_text_to_shared_handlers(tmp_path):
+    patch_text = "*** Update File: module.py\n@@\n-value = 1\n+value = 2\n"
+    result, records = invoke_hook_bridge(
+        tmp_path,
+        {
+            "hookSpecificOutput": {
+                "permissionDecision": "deny",
+                "permissionDecisionReason": "patch blocked",
+            }
+        },
+        "tool.execute.before",
+        {"tool": "apply_patch", "sessionID": "ses-10", "callID": "call-10"},
+        {"args": {"patchText": patch_text}},
+    )
+
+    assert result["error"] == "patch blocked"
+    record = only_dispatcher_record(records)
+    assert record["payload"]["tool_name"] == "apply_patch"
+    assert record["payload"]["tool_input"] == patch_text
+
+
+def test_pre_tool_hook_rejects_non_object_dispatcher_output(tmp_path):
+    result, records = invoke_hook_bridge(
+        tmp_path,
+        [],
+        "tool.execute.before",
+        {"tool": "bash", "sessionID": "ses-11", "callID": "call-11"},
+        {"args": {"command": "git add ."}},
+    )
+
+    assert (
+        result["error"]
+        == "OpenCode pre-tool-use-dispatcher.py hook returned invalid JSON"
+    )
+    assert only_dispatcher_record(records)["payload"]["tool_name"] == "Bash"

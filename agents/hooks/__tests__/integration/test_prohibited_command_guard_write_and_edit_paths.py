@@ -48,3 +48,19 @@ class TestWriteAndEditFilePathBlocking:
         )
         assert result.returncode == 0
         assert result.stdout == ""
+
+    def test_blocks_apply_patch_under_castrozan_dotfiles(
+        self,
+        invoke_prohibited_command_guard_hook,
+        parse_prohibited_command_guard_system_message,
+    ):
+        result = invoke_prohibited_command_guard_hook(
+            {
+                "tool_name": "apply_patch",
+                "tool_input": "*** Update File: castrozan/.dotfiles/init.lua\n",
+            }
+        )
+
+        assert result.returncode == 0
+        message = parse_prohibited_command_guard_system_message(result.stdout)
+        assert "castrozan" in message.lower()
