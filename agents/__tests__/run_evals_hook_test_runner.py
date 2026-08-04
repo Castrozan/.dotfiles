@@ -78,6 +78,9 @@ def interpret_hook_result(returncode, stdout, stderr, assertions):
     expected_substring = assertions.get("message_contains")
     if expected_substring and expected_substring not in message:
         failures.append(f"hook message did not contain {expected_substring!r}")
+    forbidden_substring = assertions.get("message_does_not_contain")
+    if forbidden_substring and forbidden_substring in message:
+        failures.append(f"hook message contained {forbidden_substring!r}")
     return failures
 
 

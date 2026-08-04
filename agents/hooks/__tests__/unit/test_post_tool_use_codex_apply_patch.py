@@ -35,25 +35,34 @@ def apply_patch_payload(patch_text, working_directory):
 
 def make_directory_look_like_dotfiles_repository(root):
     (root / ".git").mkdir()
-    marker = root / "agents" / "hooks" / "post-tool-use"
+    marker = root / "agents" / "hooks" / "nix-rebuild"
     marker.mkdir(parents=True)
-    marker.joinpath("nix_rebuild_trigger_handler.py").write_text("")
+    marker.joinpath("nix_rebuild_obligation.py").write_text("")
 
 
-def test_nix_rebuild_trigger_fires_on_codex_apply_patch(tmp_path):
+def recorded_ledger_contents(tmp_path):
+    ledger_files = list(tmp_path.glob("claude-nix-rebuild-ledger-*.txt"))
+    return "\n".join(path.read_text() for path in ledger_files)
+
+
+def test_a_changed_nix_file_is_recorded_silently_on_codex_apply_patch(tmp_path):
     make_directory_look_like_dotfiles_repository(tmp_path)
+    (tmp_path / "home" / "base" / "codex" / "hooks").mkdir(parents=True)
+    (tmp_path / "home" / "base" / "codex" / "hooks" / "default.nix").write_text("{}")
     patch = "*** Begin Patch\n*** Update File: home/base/codex/hooks/default.nix\n*** End Patch"
     result = run_codex_post_tool_use_dispatcher(
         tmp_path, apply_patch_payload(patch, tmp_path)
     )
 
     assert result.returncode == 0
-    emitted = json.loads(result.stdout)
-    assert "default.nix" in emitted["hookSpecificOutput"]["additionalContext"]
-    assert "MANDATORY" in emitted["systemMessage"]
+    assert result.stdout.strip() == "", (
+        "the recorder speaks at Stop through the ledger, not at edit time; an "
+        "edit-time emission is the per-file noise this replaced"
+    )
+    assert "default.nix" in recorded_ledger_contents(tmp_path)
 
 
-def test_nix_rebuild_trigger_silent_when_nix_file_outside_dotfiles_repo(tmp_path):
+def test_nothing_is_recorded_when_the_nix_file_is_outside_the_dotfiles_repo(tmp_path):
     patch = "*** Begin Patch\n*** Update File: home/base/codex/hooks/default.nix\n*** End Patch"
     result = run_codex_post_tool_use_dispatcher(
         tmp_path, apply_patch_payload(patch, tmp_path)
@@ -61,9 +70,10 @@ def test_nix_rebuild_trigger_silent_when_nix_file_outside_dotfiles_repo(tmp_path
 
     assert result.returncode == 0
     assert result.stdout.strip() == ""
+    assert recorded_ledger_contents(tmp_path) == ""
 
 
-def test_nix_rebuild_trigger_silent_when_no_nix_file_changed(tmp_path):
+def test_nothing_is_recorded_when_no_nix_file_changed(tmp_path):
     make_directory_look_like_dotfiles_repository(tmp_path)
     patch = "*** Begin Patch\n*** Update File: app/main.py\n*** End Patch"
     result = run_codex_post_tool_use_dispatcher(
@@ -72,6 +82,7 @@ def test_nix_rebuild_trigger_silent_when_no_nix_file_changed(tmp_path):
 
     assert result.returncode == 0
     assert result.stdout.strip() == ""
+    assert recorded_ledger_contents(tmp_path) == ""
 
 
 def test_auto_format_runs_on_codex_apply_patch(tmp_path):

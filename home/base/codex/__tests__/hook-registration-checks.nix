@@ -118,7 +118,7 @@ in
   codex-hooks-config-post-tool-use-dispatcher =
     mkEvalCheck "codex-hooks-config-post-tool-use-dispatcher"
       (codexHookEventRunsScript "PostToolUse" "post-tool-use-dispatcher.py")
-      "Codex PostToolUse must run the same post-tool-use-dispatcher.py Claude registers; it composes auto-format, record-edited-source-file and nix-rebuild-trigger, and test_codex_surface_handler_composition guards that those three stay on the codex surface";
+      "Codex PostToolUse must run the same post-tool-use-dispatcher.py Claude registers; it composes auto-format, record-edited-source-file and record-changed-nix-file, and test_codex_surface_handler_composition guards that those three stay on the codex surface";
 
   codex-hooks-config-pre-tool-use-dispatcher =
     mkEvalCheck "codex-hooks-config-pre-tool-use-dispatcher"

@@ -1,6 +1,6 @@
 tests:
-  - name: nix_rebuild_trigger_fires_on_nix_edit
-    description: "nix-rebuild-trigger emits mandatory rebuild message on .nix file edit"
+  - name: nix_edit_is_recorded_without_interrupting_the_turn
+    description: "a .nix edit records into the rebuild ledger silently; the reminder is a Stop-time concern"
     type: hook_test
     hook: post-tool-use-dispatcher.py
     trigger:
@@ -8,7 +8,7 @@ tests:
       file_path: "test.nix"
     assertions:
       hook_blocks: false
-      message_contains: "MANDATORY"
+      message_does_not_contain: "rebuild"
 
   - name: url_router_blocks_twitter_urls
     description: "url-to-skill-router blocks direct Twitter/X URL fetches"

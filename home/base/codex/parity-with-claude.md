@@ -105,11 +105,13 @@ matcher purposes, so a single `Edit|Write` matcher fires on both CLIs.
     deny schema; the words guard also scans `apply_patch` bodies and file names,
     closing the Codex write-path content-scan gap.
   - `PostToolUse`: `auto_format_handler`, `record_edited_source_file_handler`
-    (feeds the lint ledger), `nix_rebuild_trigger_handler` and
-    `line_count_limit_guard_handler`, all reading changed paths from the
-    `apply_patch` payload through `common/changed_file_paths.py`.
-  - `Stop`: `lint_turn_review_handler` reads the ledger and surfaces a
-    repo-native lint advisory for the files touched this turn.
+    (feeds the lint ledger), `record_changed_nix_file_handler` (feeds the nix
+    rebuild ledger) and `line_count_limit_guard_handler`, all reading changed
+    paths from the `apply_patch` payload through `common/changed_file_paths.py`.
+  - `Stop`: `lint_turn_review_handler` reads the lint ledger and surfaces a
+    repo-native lint advisory for the files touched this turn, and
+    `nix_rebuild_reminder_handler` reads the nix ledger and blocks once if the
+    turn's nix files are still uncommitted or still unactivated.
 - Live-confirmed via an isolated `CODEX_HOME` exec run: the command guard refuses
   `git add -A` ("PreToolUse Blocked"), the words guard refuses an `apply_patch`
   adding a prohibited word, and a captured `SessionStart` payload carries

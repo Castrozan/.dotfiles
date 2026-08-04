@@ -32,7 +32,7 @@ def test_edit_or_write_matched_handlers_carry_the_edit_write_matcher():
     for edit_or_write_handler_module_name in (
         "auto_format_handler",
         "record_edited_source_file_handler",
-        "nix_rebuild_trigger_handler",
+        "record_changed_nix_file_handler",
         "line_count_limit_guard_handler",
     ):
         assert handlers[edit_or_write_handler_module_name].tool_matcher == "Edit|Write"

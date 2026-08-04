@@ -11,6 +11,7 @@ for importable_directory in (
     hook_script_directory,
     os.path.join(hooks_root_directory, "common"),
     os.path.join(hooks_root_directory, "lint"),
+    os.path.join(hooks_root_directory, "nix-rebuild"),
     os.path.join(hook_script_directory, "line-count"),
     os.path.join(hook_script_directory, "skill-invocation-marker"),
 ):
@@ -39,7 +40,7 @@ POST_TOOL_USE_HANDLERS = [
         tool_matcher="Edit|Write",
     ),
     HookHandler(
-        handler_module_name="nix_rebuild_trigger_handler", tool_matcher="Edit|Write"
+        handler_module_name="record_changed_nix_file_handler", tool_matcher="Edit|Write"
     ),
     HookHandler(
         handler_module_name="line_count_limit_guard_handler", tool_matcher="Edit|Write"

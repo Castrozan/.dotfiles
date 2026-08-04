@@ -35,7 +35,7 @@ HANDLERS_REQUIRED_ON_THE_CODEX_SURFACE = {
     },
     "POST_TOOL_USE_HANDLERS": {
         "auto_format_handler",
-        "nix_rebuild_trigger_handler",
+        "record_changed_nix_file_handler",
         "record_edited_source_file_handler",
         "line_count_limit_guard_handler",
     },
@@ -72,7 +72,7 @@ HANDLERS_REQUIRED_ON_THE_OPENCODE_SURFACE = {
     },
     "POST_TOOL_USE_HANDLERS": {
         "auto_format_handler",
-        "nix_rebuild_trigger_handler",
+        "record_changed_nix_file_handler",
         "record_edited_source_file_handler",
         "record_skill_invocation_handler",
         "line_count_limit_guard_handler",

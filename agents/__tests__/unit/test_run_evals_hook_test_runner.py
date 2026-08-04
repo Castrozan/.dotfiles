@@ -65,6 +65,27 @@ def test_blocking_stderr_hook_passes_its_assertions():
     assert failures == []
 
 
+def test_a_hook_that_must_stay_silent_passes_when_it_says_nothing():
+    failures = interpret_hook_result(
+        returncode=0,
+        stdout="",
+        stderr="",
+        assertions={"hook_blocks": False, "message_does_not_contain": "rebuild"},
+    )
+    assert failures == []
+
+
+def test_a_hook_that_must_stay_silent_is_reported_when_it_speaks():
+    failures = interpret_hook_result(
+        returncode=0,
+        stdout='{"continue": true, "systemMessage": "run the rebuild now"}',
+        stderr="",
+        assertions={"hook_blocks": False, "message_does_not_contain": "rebuild"},
+    )
+    assert len(failures) == 1
+    assert "rebuild" in failures[0]
+
+
 def test_wrong_block_outcome_is_reported():
     failures = interpret_hook_result(
         returncode=0,
