@@ -29,6 +29,12 @@ ALWAYS_ON_PRE_TOOL_USE_HANDLER_MODULES = {
     "prohibited_words_segments",
 }
 
+BASH_MATCHED_PRE_TOOL_USE_HANDLER_MODULES = {
+    "background_bash_anti_pattern_validator_handler",
+    "workspace_directory_injector_handler",
+    "worktree_location_guard_handler",
+}
+
 
 def module_level_imports_of(path):
     tree = ast.parse(path.read_text())
@@ -111,6 +117,28 @@ def test_the_always_on_pre_tool_use_handlers_avoid_pathlib():
         "these handlers carry no tool matcher, so they load on every single tool "
         "call and their imports are as hot as the dispatcher's own; keeping pathlib "
         f"out of them is what makes the lazy handler import pay off: {offenders}"
+    )
+
+
+def test_the_bash_matched_pre_tool_use_handlers_avoid_pathlib():
+    bash_matched_sources = [
+        find_hook_module_path(module_name)
+        for module_name in sorted(BASH_MATCHED_PRE_TOOL_USE_HANDLER_MODULES)
+    ]
+    offenders = {
+        path.name: sorted(
+            module_level_imports_of(path)
+            & MODULES_TOO_EXPENSIVE_FOR_A_SYS_PATH_BOOTSTRAP
+        )
+        for path in bash_matched_sources
+        if module_level_imports_of(path)
+        & MODULES_TOO_EXPENSIVE_FOR_A_SYS_PATH_BOOTSTRAP
+    }
+    assert not offenders, (
+        "Bash is the tool an agent drives all day and these three load on every "
+        "one of its calls, so a pathlib bootstrap here bills urllib.parse, "
+        "ipaddress and math to each shell command; moving them to os.path took a "
+        f"Bash invocation from 80 modules to 69: {offenders}"
     )
 
 

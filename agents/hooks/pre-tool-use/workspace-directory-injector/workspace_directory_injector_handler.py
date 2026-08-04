@@ -1,35 +1,41 @@
 from __future__ import annotations
 
+import os
 import shlex
 import sys
-from pathlib import Path
 
-_MODULE_DIRECTORY = Path(__file__).resolve().parent
-for _shared_module_candidate_directory in [_MODULE_DIRECTORY] + [
-    ancestor / "common" for ancestor in _MODULE_DIRECTORY.parents
-]:
-    _shared_module_candidate_path = str(_shared_module_candidate_directory)
+_MODULE_DIRECTORY = os.path.dirname(os.path.realpath(__file__))
+_ANCESTOR_DIRECTORY = _MODULE_DIRECTORY
+_SHARED_MODULE_CANDIDATE_DIRECTORIES = [_MODULE_DIRECTORY]
+while _ANCESTOR_DIRECTORY != os.path.dirname(_ANCESTOR_DIRECTORY):
+    _ANCESTOR_DIRECTORY = os.path.dirname(_ANCESTOR_DIRECTORY)
+    _SHARED_MODULE_CANDIDATE_DIRECTORIES.append(
+        os.path.join(_ANCESTOR_DIRECTORY, "common")
+    )
+for _shared_module_candidate_directory in _SHARED_MODULE_CANDIDATE_DIRECTORIES:
     if (
-        _shared_module_candidate_directory.is_dir()
-        and _shared_module_candidate_path not in sys.path
+        os.path.isdir(_shared_module_candidate_directory)
+        and _shared_module_candidate_directory not in sys.path
     ):
-        sys.path.insert(0, _shared_module_candidate_path)
+        sys.path.insert(0, _shared_module_candidate_directory)
 
 from hook_dispatch import HandlerResult  # noqa: E402
 
-WORKSPACE_STATE_FILE = Path("/tmp/claude-code-workspace-cwd")
+WORKSPACE_STATE_FILE = "/tmp/claude-code-workspace-cwd"
 
 
 def read_target_workspace_directory():
-    if not WORKSPACE_STATE_FILE.exists():
+    try:
+        with open(WORKSPACE_STATE_FILE) as workspace_state_file:
+            recorded_directory = workspace_state_file.read().strip()
+    except OSError:
         return None
-    content = WORKSPACE_STATE_FILE.read_text().strip()
-    if not content:
+    if not recorded_directory:
         return None
-    target = Path(content).expanduser()
-    if not target.is_dir():
+    target = os.path.expanduser(recorded_directory)
+    if not os.path.isdir(target):
         return None
-    return str(target.resolve())
+    return os.path.realpath(target)
 
 
 def build_workspace_environment_prefix(workspace_directory):
