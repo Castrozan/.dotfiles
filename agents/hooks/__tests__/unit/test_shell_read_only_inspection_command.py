@@ -20,12 +20,15 @@ import pytest
 HOOKS_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(HOOKS_ROOT / "common"))
 
-from shell_read_only_inspection_command import (  # noqa: E402
+from shell_command_segment_scanning import (  # noqa: E402
     offset_is_inside_command_substitution,
-    offset_lies_in_read_only_inspection_command_segment,
     offset_separates_segments,
     quote_state_by_offset,
     segment_bounds_containing_offset,
+)
+from shell_read_only_inspection_command import (  # noqa: E402
+    offset_lies_in_read_only_inspection_command_segment,
+    offset_lies_in_text_the_shell_never_runs,
 )
 
 

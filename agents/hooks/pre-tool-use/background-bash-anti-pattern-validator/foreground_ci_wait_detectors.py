@@ -20,7 +20,7 @@ for _shared_module_candidate_directory in _SHARED_MODULE_CANDIDATE_DIRECTORIES:
         sys.path.insert(0, _shared_module_candidate_directory)
 
 from shell_read_only_inspection_command import (  # noqa: E402
-    offset_lies_in_read_only_inspection_command_segment,
+    offset_lies_in_text_the_shell_never_runs,
 )
 
 COMMANDS_THAT_BLOCK_UNTIL_CI_FINISHES = (
@@ -43,9 +43,7 @@ def command_waits_on_ci_in_the_foreground(command_string):
             )
             if re.search(HELP_FLAGS_THAT_RETURN_IMMEDIATELY, invocation_segment):
                 continue
-            if offset_lies_in_read_only_inspection_command_segment(
-                command_string, match.start()
-            ):
+            if offset_lies_in_text_the_shell_never_runs(command_string, match.start()):
                 continue
             return True
     return False

@@ -43,15 +43,13 @@ def extract_inspectable_text(tool_name: str, tool_input: dict) -> str:
 
 def pattern_matches_outside_read_only_inspection(pattern: str, candidate_text: str):
     from shell_read_only_inspection_command import (
-        offset_lies_in_read_only_inspection_command_segment,
+        offset_lies_in_text_the_shell_never_runs,
     )
 
     for match in re.finditer(pattern, candidate_text, re.IGNORECASE):
         if match.start() == match.end():
             return True
-        if not offset_lies_in_read_only_inspection_command_segment(
-            candidate_text, match.start()
-        ):
+        if not offset_lies_in_text_the_shell_never_runs(candidate_text, match.start()):
             return True
     return False
 

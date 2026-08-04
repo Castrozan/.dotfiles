@@ -58,6 +58,48 @@ class TestBashReadOnlyInspectionCommandsStayAllowed:
         assert result.stdout == ""
 
 
+class TestHeredocBodiesAreDataRatherThanCommands:
+    @pytest.mark.parametrize(
+        "command",
+        [
+            "git commit -F- -- agents/hooks <<'MESSAGE'\n"
+            "fix(hooks): explain the ban\n"
+            "\n"
+            "Running __tests__/run.sh locally stays prohibited.\n"
+            "MESSAGE",
+            "gh issue create --body-file - <<'BODY'\n"
+            "pytest agents/ belongs to CI.\n"
+            "BODY",
+            "cat <<'NOTE' > notes.md\nmake test is CI-owned.\nNOTE",
+        ],
+    )
+    def test_a_body_the_command_only_reads_is_allowed(
+        self, command, invoke_prohibited_command_guard_hook
+    ):
+        result = invoke_prohibited_command_guard_hook(
+            {"tool_name": "Bash", "tool_input": {"command": command}}
+        )
+        assert result.returncode == 0
+        assert result.stdout == ""
+
+    @pytest.mark.parametrize(
+        "command",
+        [
+            "bash <<'EOF'\n__tests__/run.sh --quick\nEOF",
+            "cat <<'EOF' | bash\n__tests__/run.sh --quick\nEOF",
+            "sudo bash <<'EOF'\n__tests__/run.sh\nEOF",
+        ],
+    )
+    def test_a_body_an_interpreter_executes_is_still_blocked(
+        self, command, invoke_prohibited_command_guard_hook
+    ):
+        result = invoke_prohibited_command_guard_hook(
+            {"tool_name": "Bash", "tool_input": {"command": command}}
+        )
+        assert result.returncode == 0
+        assert result.stdout != ""
+
+
 class TestBashReadOnlyInspectionExemptionDoesNotLeakExecution:
     @pytest.mark.parametrize(
         "command",
