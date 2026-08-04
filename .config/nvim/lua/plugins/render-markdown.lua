@@ -7,6 +7,9 @@ return {
         left_pad = 0,
         right_pad = 1,
       },
+      pipe_table = {
+        enabled = false,
+      },
       checkbox = {
         unchecked = {
           icon = "☐ ",
