@@ -10,6 +10,12 @@ smallest focused testable contract first. Read relevant tests and run only the f
 establishes the behavior being changed. Do not use a broad suite as a baseline; CI owns the complete suite.
 </before_changes>
 
+<coverage>
+Test the boundary, empty, malformed and duplicate inputs of every changed path, every caller of every changed
+signature, repeated and concurrent invocation, and the failure paths the happy path skips. This coverage is the
+regression suite's job, never re-derived by an agent at delivery time.
+</coverage>
+
 <after_changes>
 Commit and push after every change, so the suite runs where it is the gate. A test that passes locally and fails on CI,
 or fails on one CI run and passes on the next, is a race or a state leak in the test rather than infrastructure noise;
@@ -19,12 +25,13 @@ regardless of the outcome.
 
 <pre_delivery>
 Before presenting results to the user, stop and verify completeness:
+
 1. Re-read the user's original request from conversation history. What exactly did they ask for?
 2. Compare your implementation against every point in their request. Did you miss anything? Did you add anything they
    didn't ask for?
 3. Push the complete change set, not just the last file you touched, and wait out every CI run with `gh run watch`.
 4. Only after CI is green for that commit, present your work to the user.
-</pre_delivery>
+   </pre_delivery>
 
 <what_to_test>
 In the dotfiles repo, CI is the test gate: pushing runs the script tiers and `nix flake check` on GitHub Actions, and

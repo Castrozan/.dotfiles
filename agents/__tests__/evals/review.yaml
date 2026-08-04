@@ -89,10 +89,10 @@ tests:
       llm_judge:
         - "Says not to report speculative or non-actionable concerns and to verify claims with code, tests, documentation, or a reproducible scenario first."
 
-  - name: review_quality_assurance_widens_verification_without_repairing
+  - name: review_goal_verification_judges_quality_without_repairing
     skill_path: agents/skills/review/SKILL.md
-    prompt: "Perform final quality assurance after a feature was implemented. What should you verify and what should you do with defects you find?"
+    prompt: "Perform final quality assurance after a feature was implemented. What should you verify and what should you do with problems you find?"
     model: haiku
     assertions:
       llm_judge:
-        - "Checks the user's goal, neighboring behavior, failure paths, shared state, and focused verification beyond the named tests; reports defects with reproductions rather than repairing them."
+        - "Verifies delivery against the user's own goal rather than the implementer's summary, judges the quality tests cannot measure such as design and cohesion, and reports findings with evidence instead of repairing them."

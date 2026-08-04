@@ -22,9 +22,13 @@ P3 for bounded improvements. Omit speculative or non-actionable concerns. If no 
 findings."
 </findings>
 
-<delivery-verification>
-Read `quality-assurance.md` for a final goal-oriented verification pass that widens beyond named tests without editing.
-</delivery-verification>
+<goal-verification>
+Verify delivery against the user's own words, not the implementer's summary. Mark every stated requirement met or not
+met with the evidence that settled it; the requirement nobody translated into a test is the most likely unmet. Judge the
+quality no test can measure: design soundness, cohesion, naming, and whether the shape matches the intent. Name what
+should have stayed identical and judge whether the change leaked into it. Report evidence-backed findings with a closing
+verdict on whether the goal is achieved; never repair.
+</goal-verification>
 
 <specialized-audits>
 Read `compliance.md` for end-of-turn policy checks, `authoring.md` for AI instruction surfaces, and `skill-routing.md`
