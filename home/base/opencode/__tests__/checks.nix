@@ -39,7 +39,6 @@ let
   deployedHookBridge = cfg.home.file.".config/opencode/plugins/opencode-hook-bridge.js";
   opencodeWrapperSource = builtins.readFile ../opencode.nix;
   opencodeGoProvider = import ../go-provider.nix { inherit (cfg.home) homeDirectory; };
-  consoleGoToolTranslation = import ../console-go-anthropic-tool-translation-workaround.nix;
 
   codexGlobalInstructions =
     (import ../../codex/global-instructions.nix { }).home.file.".codex/AGENTS.md".text;
@@ -80,20 +79,18 @@ in
       )
       "the interactive and title defaults must use the shared Go provider model definitions";
 
-  domain-opencode-go-claude-code-aliases-avoid-the-broken-tool-translation =
-    mkEvalCheck "domain-opencode-go-claude-code-aliases-avoid-the-broken-tool-translation"
-      (builtins.all (
-        model: builtins.elem model consoleGoToolTranslation.modelsConsoleGoTranslatesToolsCorrectlyFor
-      ) (builtins.attrValues opencodeGoProvider.claudeCodeModels))
-      "Console Go's Anthropic endpoint emits `tools[0].function` without its `name` when it translates tool schemas for the DeepSeek, Kimi and GLM upstreams, so Claude Code takes a hard 400 on its very first message. Every claude-go alias must resolve to a model whose translation was verified to survive, while native OpenCode keeps DeepSeek over the OpenAI wire format Console Go relays untouched";
-
-  domain-opencode-go-claude-code-aliases-keep-a-cost-tier =
-    mkEvalCheck "domain-opencode-go-claude-code-aliases-keep-a-cost-tier"
+  domain-opencode-go-provider-exposes-one-model-selection =
+    mkEvalCheck "domain-opencode-go-provider-exposes-one-model-selection"
       (
-        opencodeGoProvider.claudeCodeModels.haiku != opencodeGoProvider.claudeCodeModels.opus
-        && opencodeGoProvider.claudeCodeModels.haiku != opencodeGoProvider.claudeCodeModels.sonnet
+        !(opencodeGoProvider ? claudeCodeModels)
+        &&
+          builtins.attrNames opencodeGoProvider.models == [
+            "haiku"
+            "opus"
+            "sonnet"
+          ]
       )
-      "collapsing every claude-go alias onto one substitute bills background haiku work at the top tier; the substitutes must stay tiered the way the native DeepSeek selection is";
+      "Console Go's Anthropic endpoint drops tool names, and claude-go answers that by translating locally rather than by running different models, so a second per-harness model set would silently split the two surfaces again";
 
   domain-opencode-default-agent-runs-at-max-effort =
     mkEvalCheck "domain-opencode-default-agent-runs-at-max-effort"
