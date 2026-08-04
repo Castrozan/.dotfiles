@@ -42,6 +42,7 @@ return {
                 keys = {
                   ["<c-n>"] = "explorer_add",
                   ["<c-k>"] = false,
+                  ["<c-p>"] = false,
                   ["<c-k>e"] = toggle_directory_under_cursor,
                   ["y"] = { yank_selected_paths_without_trailing_newline, mode = { "n", "x" } },
                 },
