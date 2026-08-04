@@ -97,3 +97,52 @@ def test_command_guard_allows_a_shell_wrapper_that_only_mentions_the_pattern(tmp
     )
     assert result.returncode == 0
     assert permission_decision_of(result) is None
+
+
+@pytest.mark.parametrize(
+    "command",
+    [
+        ["pytest", "agents/__tests__/unit"],
+        ["pytest", "agents/__tests__/unit/"],
+        ["pytest", "agents/__tests__/integration"],
+        ["pytest", "agents/__tests__"],
+        ["pytest"],
+        ["pytest", "."],
+        ["make", "test"],
+        ["nix", "flake", "check"],
+    ],
+)
+def test_command_guard_blocks_codex_ci_owned_suite_runs(tmp_path, command):
+    result = run_command_guard(
+        tmp_path,
+        {"tool_name": "shell", "tool_input": {"command": command}},
+    )
+    assert result.returncode == 0
+    blocked = json.loads(result.stdout)
+    assert blocked["hookSpecificOutput"]["permissionDecision"] == "deny"
+
+
+def test_command_guard_allows_codex_info_flags(tmp_path):
+    result = run_command_guard(
+        tmp_path,
+        {"tool_name": "shell", "tool_input": {"command": ["pytest", "--version"]}},
+    )
+    assert result.returncode == 0
+    assert permission_decision_of(result) is None
+
+
+def test_command_guard_allows_codex_targeted_test_file(tmp_path):
+    result = run_command_guard(
+        tmp_path,
+        {
+            "tool_name": "shell",
+            "tool_input": {
+                "command": [
+                    "pytest",
+                    "agents/__tests__/unit/test_run_evals_baseline.py",
+                ]
+            },
+        },
+    )
+    assert result.returncode == 0
+    assert permission_decision_of(result) is None

@@ -42,7 +42,10 @@ writing, or to exercise a tier CI cannot reach. The integration and runtime tier
 job runs them at 03:00 rather than any interactive session.
 
 For fast iteration on a single file, run `pytest` or `bats` directly: both are globally installed and should be on PATH.
-Only fall back to `nix shell` if they are genuinely missing.
+Only fall back to `nix shell` if they are genuinely missing. Point `pytest` at a specific test file; bare `pytest`,
+`pytest .`, `pytest agents`, whole `*/__tests__/unit` or `*/__tests__/integration` directories, `make test`, and
+`nix flake check` are CI-owned whole-suite runs the hook blocks. Local nix verification is `rebuild`, not
+`nix flake check`.
 
 Every tier and every CI job reports all of its failures instead of dying on the first, so read the whole output and fix
 the batch in one pass.

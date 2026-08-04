@@ -42,11 +42,64 @@ TEST_RUNNER_DENIAL_REASON = (
     "__tests__/run.sh is prohibited locally; CI runs it after push. Run the affected "
     "test file or small named set directly."
 )
+PYTEST_INVOCATION_PREFIX = r"(?:python3? -m )?pytest\b"
+PYTEST_WHOLE_TIER_PATH_TERMINATOR = r"(?:/[*?[]|[\s;&|]|$)"
+PYTEST_WHOLE_CI_OWNED_TIER_DIRECTORY_PATTERN = (
+    rf"{PYTEST_INVOCATION_PREFIX}[^;&|\n]*?{TEST_DIRECTORY_PATTERN}/"
+    rf"(?:unit|integration)/*{PYTEST_WHOLE_TIER_PATH_TERMINATOR}"
+)
+PYTEST_WHOLE_TESTS_TREE_PATTERN = (
+    rf"{PYTEST_INVOCATION_PREFIX}[^;&|\n]*?{TEST_DIRECTORY_PATTERN}/"
+    rf"*{PYTEST_WHOLE_TIER_PATH_TERMINATOR}"
+)
+PYTEST_NO_PATH_PATTERN = (
+    rf"{PYTEST_INVOCATION_PREFIX}(?!\s+--?(?:version|help|fixtures)\b)(?!\s+-h\b)"
+    rf"(?:\s+(?:-\S+(?:\s+\S+)?|\S+=\S+))*\s*(?:[;&|]|$)"
+)
+PYTEST_DOT_PATH_PATTERN = rf"{PYTEST_INVOCATION_PREFIX}\s+\.(?:/\.|/)?(?:\s|$|[;&|])"
+PYTEST_AGENTS_TREE_PATTERN = (
+    rf"{PYTEST_INVOCATION_PREFIX}[^;&|\n]*?\bagents\b/?"
+    rf"(?:\s+-\S+(?:\s+\S+)?)*\s*(?:[;&|]|$)"
+)
+PYTEST_CI_OWNED_TIER_DENIAL_REASON = (
+    "pytest over a whole CI-owned tier directory is prohibited; CI runs the unit "
+    "and integration tiers after push. Run a specific test file, for example "
+    "'pytest agents/hooks/__tests__/unit/test_specific_thing.py'."
+)
+PYTEST_WHOLE_COLLECTION_DENIAL_REASON = (
+    "Bare pytest or a whole tests-tree run collects CI-owned tiers; CI runs them "
+    "after push. Run a specific test file, for example "
+    "'pytest agents/hooks/__tests__/unit/test_specific_thing.py'."
+)
+MAKE_TEST_SUITE_PATTERN = (
+    rf"{COMMAND_INVOCATION_POSITION_PREFIX}make"
+    rf"(?:\s+-[^\s]+(?:\s+[^\s]+)?)*\s+test(?:\s|$)"
+)
+MAKE_TEST_SUITE_DENIAL_REASON = (
+    "make test funnels into __tests__/run.sh, which CI runs after push. Run a "
+    "specific test file or the affected module's test directly."
+)
+NIX_FLAKE_CHECK_PATTERN = (
+    rf"{COMMAND_INVOCATION_POSITION_PREFIX}nix\s+flake\s+check"
+    rf"(?!\s+--?(?:help|version)\b)(?:\s|$|[;&|])"
+)
+NIX_FLAKE_CHECK_DENIAL_REASON = (
+    "nix flake check runs in CI after push; the local verification for a nix "
+    "change is 'rebuild'."
+)
 
 PROHIBITED_BASH_COMMAND_PATTERNS = [
     (
         TEST_RUNNER_PATH_PATTERN,
         TEST_RUNNER_DENIAL_REASON,
+    ),
+    (
+        PYTEST_WHOLE_CI_OWNED_TIER_DIRECTORY_PATTERN,
+        PYTEST_CI_OWNED_TIER_DENIAL_REASON,
+    ),
+    (
+        PYTEST_WHOLE_TESTS_TREE_PATTERN,
+        PYTEST_WHOLE_COLLECTION_DENIAL_REASON,
     ),
     (
         TEST_RUNNER_DYNAMIC_PATH_PATTERN,
@@ -63,6 +116,26 @@ PROHIBITED_BASH_COMMAND_PATTERNS = [
     (
         TEST_RUNNER_AFTER_DIRECTORY_CHANGE_PATTERN,
         TEST_RUNNER_DENIAL_REASON,
+    ),
+    (
+        PYTEST_NO_PATH_PATTERN,
+        PYTEST_WHOLE_COLLECTION_DENIAL_REASON,
+    ),
+    (
+        PYTEST_DOT_PATH_PATTERN,
+        PYTEST_WHOLE_COLLECTION_DENIAL_REASON,
+    ),
+    (
+        PYTEST_AGENTS_TREE_PATTERN,
+        PYTEST_WHOLE_COLLECTION_DENIAL_REASON,
+    ),
+    (
+        MAKE_TEST_SUITE_PATTERN,
+        MAKE_TEST_SUITE_DENIAL_REASON,
+    ),
+    (
+        NIX_FLAKE_CHECK_PATTERN,
+        NIX_FLAKE_CHECK_DENIAL_REASON,
     ),
     (
         rf"{COMMAND_INVOCATION_POSITION_PREFIX}git\s+add\s+"
