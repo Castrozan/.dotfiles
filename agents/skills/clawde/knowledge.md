@@ -101,6 +101,17 @@ cherry-picked onto `origin/main` and fast-forward push it, rather than reconcili
 racing the loop.
 </pushing_to_a_stewarded_repo>
 
+<the_service_cgroup_is_the_whole_shared_server>
+The service cgroup is not the agent fleet. It holds the shared multiplexer server, so everything that server hosts is
+accounted to it: the fleet, the steward, the human's interactive session, and every command that session launches, a
+rebuild included. Read `/proc/self/cgroup` from an interactive pane and it names the clawde unit. Any memory knob on
+that unit therefore throttles the human, and a ceiling sized to the fleet's resting set starves the rebuild that would
+deploy it. `MemoryHigh` alone relocates pages into swap rather than reducing them, so a ceiling under the honest
+working set trades a RAM shortage for a swap exhaustion and leaves the desktop worse off. Size such a ceiling as a
+runaway backstop above the resting set plus a concurrent build, never as a daily throttle, and never add
+`MemorySwapMax` while swap is already full, which converts throttling into OOM kills.
+</the_service_cgroup_is_the_whole_shared_server>
+
 <ci_sandbox_lacks_pgrep>
 The nix build sandbox provides no `pgrep` on either platform, so any test that shells out to it fails the flake check
 on both runners. Stub it in the unit `conftest.py` as an autouse fixture exiting non-zero with no output, which is
