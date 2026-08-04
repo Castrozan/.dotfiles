@@ -1,18 +1,8 @@
-{
-  lib,
-  ...
-}:
+{ hostname, ... }:
 let
-  skillSetBuilders = import ../../../agents/skill-set-builders.nix;
+  interactiveAgentSkills = import ../../../agents/interactive-agent-skills.nix { inherit hostname; };
 
-  reachableSkillDirectorySymlinks = builtins.listToAttrs (
-    map (skillName: {
-      name = ".local/share/agent-skill-index/${skillName}";
-      value = {
-        source = skillSetBuilders.dotfilesSkillsDirectory + "/${skillName}";
-      };
-    }) skillSetBuilders.allSkillNames
-  );
+  reachableSkillDirectorySymlinks = interactiveAgentSkills.skillDirectorySymlinksAtPrefix ".local/share/agent-skill-index" interactiveAgentSkills.allSkillNames;
 in
 {
   home.file = reachableSkillDirectorySymlinks;

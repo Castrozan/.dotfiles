@@ -1,7 +1,12 @@
+{ hostname }:
 let
-  skillSetBuilders = import ./skill-set-builders.nix;
+  skillSetBuilders = import ./skill-set-builders.nix { inherit hostname; };
 
-  inherit (skillSetBuilders) allSkillNames;
+  inherit (skillSetBuilders)
+    allSkillNames
+    skillSourceDirectoryByName
+    skillDirectorySymlinksAtPrefix
+    ;
 
   defaultInteractiveSkillNames = [
     "agent-harness"
@@ -57,7 +62,7 @@ let
   readSkillDescription =
     skillName:
     frontmatterDescriptionFrom (
-      builtins.readFile (skillSetBuilders.dotfilesSkillsDirectory + "/${skillName}/SKILL.md")
+      builtins.readFile (skillSourceDirectoryByName.${skillName} + "/SKILL.md")
     );
 
   reachableSkillPathFor = skillName: "~/.local/share/agent-skill-index/${skillName}/SKILL.md";
@@ -86,6 +91,8 @@ in
 {
   inherit
     allSkillNames
+    skillSourceDirectoryByName
+    skillDirectorySymlinksAtPrefix
     defaultInteractiveSkillNames
     effectiveInteractiveSkillNames
     indexedSkillNamesFor

@@ -1,11 +1,11 @@
 {
   config,
+  hostname,
   lib,
   ...
 }:
 let
-  skillSetBuilders = import ../../../agents/skill-set-builders.nix;
-  interactiveAgentSkills = import ../../../agents/interactive-agent-skills.nix;
+  interactiveAgentSkills = import ../../../agents/interactive-agent-skills.nix { inherit hostname; };
 
   opencodeInteractiveSkillNames = interactiveAgentSkills.effectiveInteractiveSkillNames { };
 
@@ -15,7 +15,7 @@ let
     map (dirname: {
       name = ".config/opencode/skills/${dirname}";
       value = {
-        source = skillSetBuilders.dotfilesSkillsDirectory + "/${dirname}";
+        source = interactiveAgentSkills.skillSourceDirectoryByName.${dirname};
         recursive = true;
       };
     }) opencodeInteractiveSkillNames

@@ -18,12 +18,6 @@ let
   };
   inherit (helpers) mkEvalCheck;
 
-  interactiveAgentSkills = import ../../../../agents/interactive-agent-skills.nix;
-
-  claudeInteractiveSkillNames = interactiveAgentSkills.effectiveInteractiveSkillNames {
-    add = [ "housekeeping" ];
-  };
-
   cfg = helpers.homeManagerTestConfiguration [
     self.homeManagerModules.claude-code
     ../../agents/interactive-skill-index.nix
@@ -83,29 +77,6 @@ in
       (builtins.hasAttr ".claude/hooks" cfg.home.file && !(hasFilePrefix ".claude/hooks/"))
       "hooks must deploy as one atomic directory symlink (home.file.\".claude/hooks\"), never per-file entries; per-file relinking transiently removes helper modules mid-rebuild and breaks hook imports";
 
-  claude-skills-directory =
-    mkEvalCheck "claude-skills-directory" (hasFilePrefix ".claude/skills/")
-      "skills directory entries should be in home.file";
-
-  claude-machine-tier-carries-the-curated-interactive-set =
-    mkEvalCheck "claude-machine-tier-carries-the-curated-interactive-set"
-      (builtins.all (
-        skillName: builtins.hasAttr ".claude/skills/${skillName}" cfg.home.file
-      ) claudeInteractiveSkillNames)
-      "every curated interactive skill must deploy into the machine tier at .claude/skills; a dropped skill silently vanishes from every interactive session";
-
-  claude-machine-tier-carries-the-generated-all-skills-index =
-    mkEvalCheck "claude-machine-tier-carries-the-generated-all-skills-index"
-      (builtins.hasAttr ".claude/skills/all-skills/SKILL.md" cfg.home.file)
-      "the generated all-skills index must deploy into the machine tier; it is the only reachability path for every non-curated skill, and a session without it cannot reach them";
-
-  claude-indexed-skills-stay-reachable-outside-the-machine-tier =
-    mkEvalCheck "claude-indexed-skills-stay-reachable-outside-the-machine-tier"
-      (builtins.all (
-        skillName: builtins.hasAttr ".local/share/agent-skill-index/${skillName}" cfg.home.file
-      ) (interactiveAgentSkills.indexedSkillNamesFor claudeInteractiveSkillNames))
-      "every skill excluded from the curated machine tier must stay reachable at .local/share/agent-skill-index, because the all-skills index points there; a skill that is neither curated nor mirrored is stranded on disk";
-
   claude-bin-wrapper =
     mkEvalCheck "claude-bin-wrapper" (builtins.hasAttr ".local/bin/claude" cfg.home.file)
       ".local/bin/claude should be in home.file";
@@ -124,6 +95,14 @@ in
       privateMarketplacePluginsAreFoldedIntoSettings
       "when a private-config/machines/<hostname>/claude-plugins.nix exists, global-settings.nix must fold its extraKnownMarketplaces and enabledPlugins into the deployed settings.json.nix-source; a dropped `// privateMarketplacePlugins` would silently regress the only path that installs the per-machine plugin";
 
+}
+// import ./skill-tier-checks.nix {
+  inherit
+    lib
+    mkEvalCheck
+    cfg
+    hasFilePrefix
+    ;
 }
 // import ./mem0-mcp-checks.nix {
   inherit

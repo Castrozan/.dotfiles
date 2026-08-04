@@ -73,7 +73,7 @@ qualify.
 description is the router line and it is already paid for in the always-on budget; the body loads only when the session
 touches the domain. This is the eager-description, lazy-body split the original design named as its model, and this repo
 already demonstrates the router-plus-siblings pattern in the `instructions` skill. No registry edit is needed to add a
-domain: `skill-set-builders.nix` enumerates `agents/skills/` from disk, so a new skill directory ships as soon as it is
+domain: `skill-set-builders.nix` enumerates every skill root from disk, so a new skill directory ships as soon as it is
 committed and rebuilt. Whether that skill is then loadable from the directory the session opened is a separate question
 this design assumed and did not verify; `session-context-loading.md` measures it, finds the assumption false outside
 `~/.dotfiles`, and fixes it.

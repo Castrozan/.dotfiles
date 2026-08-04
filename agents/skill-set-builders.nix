@@ -1,32 +1,49 @@
+{ hostname }:
 let
-  dotfilesSkillsDirectory = ./skills;
+  publicSkillsDirectory = ./skills;
+  privateSharedSkillsDirectory = ../private-config/claude/skills;
+  privateMachineSkillsDirectory = ../private-config/machines + "/${hostname}/skills";
 
-  getSkillNamesFromDirectory =
-    directory:
-    if builtins.pathExists directory then
-      builtins.filter (skillName: builtins.pathExists (directory + "/${skillName}/SKILL.md")) (
-        builtins.attrNames (builtins.readDir directory)
-      )
-    else
-      [ ];
+  skillSourceDirectories = builtins.filter builtins.pathExists [
+    publicSkillsDirectory
+    privateSharedSkillsDirectory
+    privateMachineSkillsDirectory
+  ];
 
-  allSkillNames = getSkillNamesFromDirectory dotfilesSkillsDirectory;
+  completeSkillNamesIn =
+    skillSourceDirectory:
+    builtins.filter (skillName: builtins.pathExists (skillSourceDirectory + "/${skillName}/SKILL.md")) (
+      builtins.attrNames (builtins.readDir skillSourceDirectory)
+    );
 
-  claudeSkillDirectorySymlinksAtPrefix =
+  skillSourceDirectoryByName = builtins.foldl' (
+    accumulatedSourceDirectoryByName: skillSourceDirectory:
+    accumulatedSourceDirectoryByName
+    // builtins.listToAttrs (
+      map (skillName: {
+        name = skillName;
+        value = skillSourceDirectory + "/${skillName}";
+      }) (completeSkillNamesIn skillSourceDirectory)
+    )
+  ) { } skillSourceDirectories;
+
+  allSkillNames = builtins.attrNames skillSourceDirectoryByName;
+
+  skillDirectorySymlinksAtPrefix =
     homeFileSkillsPrefix: skillNames:
     builtins.listToAttrs (
-      map (skillDirectoryName: {
-        name = "${homeFileSkillsPrefix}/${skillDirectoryName}";
+      map (skillName: {
+        name = "${homeFileSkillsPrefix}/${skillName}";
         value = {
-          source = dotfilesSkillsDirectory + "/${skillDirectoryName}";
+          source = skillSourceDirectoryByName.${skillName};
         };
       }) skillNames
     );
 in
 {
   inherit
-    dotfilesSkillsDirectory
     allSkillNames
-    claudeSkillDirectorySymlinksAtPrefix
+    skillSourceDirectoryByName
+    skillDirectorySymlinksAtPrefix
     ;
 }

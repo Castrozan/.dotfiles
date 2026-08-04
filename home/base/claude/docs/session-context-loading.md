@@ -79,8 +79,9 @@ run codex and take skills through their own path.
 
 **Machine tier, `~/.claude/skills/`.** Each interactive harness receives a curated set from
 `interactive-agent-skills.nix`, plus a generated `all-skills` index for the source skills outside that set. This bounds
-always-on descriptions while retaining a path to domain knowledge. Machine-private skills deploy only from the module
-that owns the machine, so they stay on that machine.
+always-on descriptions while retaining a path to domain knowledge. Machine-private skills are enumerated by that same
+catalog under the building host's name, so they obey the same curation and reach a session that does not curate them
+only through the index.
 
 **Repository tier, `<repo>/.claude/skills/`.** Owned and curated by the repository, discovered natively by walking up
 from the working directory. A repo with none gets none. `ai-first-initiative` already has this and the launcher was
@@ -127,8 +128,8 @@ that survives only until the first compaction is worse than none.
 ## What shipped
 
 `skill-set-builders.nix` discovers the source skill set, and `interactive-agent-skills.nix` owns the shared curated list
-that each harness deploys. Machine-private skills still deploy only from the host that owns them, so a private skill
-cannot leak into another machine's interactive namespace.
+that each harness deploys. A private skill still cannot leak into another machine's namespace, because the private roots
+are read under the building host's name.
 
 The `personal` set and the `skillDirectories` entries that pointed at it are gone from jenny, golden and claude, since
 all three now receive the same skills from the machine tier. `claudeCuratedSkillSets` survives for the codex agents,

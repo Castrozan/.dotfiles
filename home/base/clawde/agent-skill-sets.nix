@@ -1,14 +1,21 @@
-{ config, lib, ... }:
+{
+  config,
+  hostname,
+  lib,
+  ...
+}:
 let
-  skillSetBuilders = import ../../../agents/skill-set-builders.nix;
+  interactiveAgentSkills = import ../../../agents/interactive-agent-skills.nix { inherit hostname; };
 
   curatedSkillSets = config.claudeCuratedSkillSets;
 
   curatedSkillSetClaudeSkillDirectorySymlinks =
     setName: skillNames:
-    skillSetBuilders.claudeSkillDirectorySymlinksAtPrefix
+    interactiveAgentSkills.skillDirectorySymlinksAtPrefix
       ".local/share/claude-skill-sets/${setName}/.claude/skills"
-      (builtins.filter (skillName: builtins.elem skillName skillSetBuilders.allSkillNames) skillNames);
+      (
+        builtins.filter (skillName: builtins.elem skillName interactiveAgentSkills.allSkillNames) skillNames
+      );
 
   allCuratedSkillSetClaudeSkillDirectorySymlinks = builtins.foldl' (
     accumulated: setName:

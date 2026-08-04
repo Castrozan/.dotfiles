@@ -1,16 +1,20 @@
-{ pkgs, ... }:
+{ hostname, pkgs, ... }:
 let
-  skillSetBuilders = import ../../../../agents/skill-set-builders.nix;
+  interactiveAgentSkills = import ../../../../agents/interactive-agent-skills.nix {
+    inherit hostname;
+  };
+
+  skillInstallModuleDirectory =
+    skillName: interactiveAgentSkills.skillSourceDirectoryByName.${skillName} + "/install";
 
   skillNamesWithInstallModule = builtins.filter (
-    skillName:
-    builtins.pathExists (skillSetBuilders.dotfilesSkillsDirectory + "/${skillName}/install/default.nix")
-  ) skillSetBuilders.allSkillNames;
+    skillName: builtins.pathExists (skillInstallModuleDirectory skillName + "/default.nix")
+  ) interactiveAgentSkills.allSkillNames;
 
   installModuleAcceptsOnlyPkgs =
     skillName:
     let
-      installModule = import (skillSetBuilders.dotfilesSkillsDirectory + "/${skillName}/install");
+      installModule = import (skillInstallModuleDirectory skillName);
       installModuleArgs = builtins.functionArgs installModule;
     in
     builtins.length (builtins.attrNames installModuleArgs) == 1 && installModuleArgs ? pkgs;
@@ -21,7 +25,7 @@ let
     map (
       skillName:
       let
-        installModule = import (skillSetBuilders.dotfilesSkillsDirectory + "/${skillName}/install") {
+        installModule = import (skillInstallModuleDirectory skillName) {
           inherit pkgs;
         };
       in

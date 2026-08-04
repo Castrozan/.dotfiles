@@ -1,12 +1,12 @@
 {
   config,
+  hostname,
   lib,
   pkgs,
   ...
 }:
 let
-  skillSetBuilders = import ../../../agents/skill-set-builders.nix;
-  interactiveAgentSkills = import ../../../agents/interactive-agent-skills.nix;
+  interactiveAgentSkills = import ../../../agents/interactive-agent-skills.nix { inherit hostname; };
 
   codexInteractiveSkillNames = interactiveAgentSkills.effectiveInteractiveSkillNames { };
 
@@ -14,7 +14,7 @@ let
 
   coreAgentBodyWithoutFrontmatter = import ../../../lib/core-agent-rules-without-frontmatter.nix;
 
-  codexSkillLinks = skillSetBuilders.claudeSkillDirectorySymlinksAtPrefix ".codex/skills" codexInteractiveSkillNames;
+  codexSkillLinks = interactiveAgentSkills.skillDirectorySymlinksAtPrefix ".codex/skills" codexInteractiveSkillNames;
 
   coreSkillDirectory = pkgs.writeTextDir "SKILL.md" ''
     ---

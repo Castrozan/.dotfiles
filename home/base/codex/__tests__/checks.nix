@@ -17,7 +17,9 @@ let
       ;
   };
   inherit (helpers) mkEvalCheck;
-  interactiveAgentSkills = import ../../../../agents/interactive-agent-skills.nix;
+  interactiveAgentSkills = import ../../../../agents/interactive-agent-skills.nix {
+    hostname = "test";
+  };
 
   cfg =
     (inputs.home-manager.lib.homeManagerConfiguration {

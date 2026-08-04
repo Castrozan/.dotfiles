@@ -1,7 +1,8 @@
-_:
+{ hostname, ... }:
 let
-  skillSetBuilders = import ../../../../agents/skill-set-builders.nix;
-  interactiveAgentSkills = import ../../../../agents/interactive-agent-skills.nix;
+  interactiveAgentSkills = import ../../../../agents/interactive-agent-skills.nix {
+    inherit hostname;
+  };
 
   claudeInteractiveSkillNames = interactiveAgentSkills.effectiveInteractiveSkillNames {
     add = [ "housekeeping" ];
@@ -9,7 +10,7 @@ let
 
   coreRulesDirectory = ../../../../agents/core_rules;
 
-  globalClaudeSkillDirectorySymlinks = skillSetBuilders.claudeSkillDirectorySymlinksAtPrefix ".claude/skills" claudeInteractiveSkillNames;
+  globalClaudeSkillDirectorySymlinks = interactiveAgentSkills.skillDirectorySymlinksAtPrefix ".claude/skills" claudeInteractiveSkillNames;
 
   readInstructionsBodyWithoutFrontmatter =
     instructionsFile:
