@@ -48,6 +48,14 @@ copy_mode = "prefix+["
 edit_scrollback = ""
 toggle_sidebar = "prefix+shift+b"
 
+[[keys.copy_mode_command]]
+key = "ctrl+left"
+command = "previous-word"
+
+[[keys.copy_mode_command]]
+key = "ctrl+right"
+command = "next-word"
+
 [[keys.command]]
 key = "prefix+i"
 type = "pane"
