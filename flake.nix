@@ -43,7 +43,7 @@
     systemd-manager-tui.url = "github:matheus-git/systemd-manager-tui";
     systemd-manager-tui.inputs.nixpkgs.follows = "nixpkgs";
     readItNow-rc.url = "github:castrozan/readItNow-rc/1.1.0";
-    devenv.url = "github:cachix/devenv/v1.11.2";
+    devenv.url = "github:cachix/devenv/v2.2.1";
     bluetui.url = "github:castrozan/bluetui/v0.9.1";
     hyprland.url = "github:hyprwm/Hyprland/v0.55.2";
     herdr.url = "github:Castrozan/herdr/v0.10.1";
