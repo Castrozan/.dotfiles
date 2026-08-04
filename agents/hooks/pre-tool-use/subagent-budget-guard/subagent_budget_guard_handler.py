@@ -53,26 +53,20 @@ def handle(hook_input):
     if not is_keyboard_driven_interactive_session():
         return None
     session_id = hook_input.get("session_id", "")
-    state = subagent_spawn_budget_state.read_subagent_spawn_budget_state(session_id)
-    allowed_spawn_count = state[subagent_spawn_budget_state.ALLOWED_SPAWN_COUNT_KEY]
     spawn_declares_the_orchestrated_tier = declares_the_orchestrated_tier(
         hook_input.get("tool_input", {}) or {}
     )
-    session_already_declared_the_orchestrated_tier = state[
-        subagent_spawn_budget_state.ORCHESTRATED_TIER_DECLARED_KEY
-    ]
-    if (
-        allowed_spawn_count >= SUBAGENT_CEILING_BELOW_THE_ORCHESTRATED_TIER
-        and not session_already_declared_the_orchestrated_tier
-        and not spawn_declares_the_orchestrated_tier
+    if not subagent_spawn_budget_state.reserve_subagent_spawn(
+        session_id,
+        spawn_declares_the_orchestrated_tier,
+        SUBAGENT_CEILING_BELOW_THE_ORCHESTRATED_TIER,
     ):
-        ceiling_reached_message = build_ceiling_reached_message(allowed_spawn_count)
+        ceiling_reached_message = build_ceiling_reached_message(
+            SUBAGENT_CEILING_BELOW_THE_ORCHESTRATED_TIER
+        )
         return HandlerResult(
             decision="deny",
             reason=ceiling_reached_message,
             system_message=ceiling_reached_message,
         )
-    subagent_spawn_budget_state.record_allowed_subagent_spawn(
-        session_id, spawn_declares_the_orchestrated_tier
-    )
     return None

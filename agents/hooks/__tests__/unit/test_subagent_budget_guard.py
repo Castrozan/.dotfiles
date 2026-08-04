@@ -1,5 +1,7 @@
 import sys
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
+from threading import Barrier
 
 import pytest
 
@@ -65,6 +67,21 @@ def test_a_denied_spawn_does_not_count_against_the_budget(
         "session-under-test"
     )
     assert state[subagent_spawn_budget_state.ALLOWED_SPAWN_COUNT_KEY] == 2
+
+
+def test_concurrent_spawns_never_exceed_the_budget_ceiling(
+    interactive_session_with_isolated_state,
+):
+    start_barrier = Barrier(24)
+
+    def attempt_subagent_spawn(_):
+        start_barrier.wait()
+        return subagent_budget_guard_handler.handle(spawn_hook_input())
+
+    with ThreadPoolExecutor(max_workers=24) as executor:
+        results = list(executor.map(attempt_subagent_spawn, range(24)))
+
+    assert sum(result is None for result in results) == 2
 
 
 def test_an_orchestrated_declaration_unlocks_the_rest_of_the_session(
