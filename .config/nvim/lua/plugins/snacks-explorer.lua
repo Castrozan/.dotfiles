@@ -36,6 +36,7 @@ return {
             hidden = true,
             follow = true,
             ignored = true,
+            exclude = { ".git" },
             win = {
               list = {
                 keys = {
