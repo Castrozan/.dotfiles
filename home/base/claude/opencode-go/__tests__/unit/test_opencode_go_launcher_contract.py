@@ -2,7 +2,11 @@ import re
 from pathlib import Path
 
 OPENCODE_GO_MODULE = Path(__file__).resolve().parents[2] / "default.nix"
-OPENCODE_GO_PROVIDER = OPENCODE_GO_MODULE.parents[2] / "opencode" / "go-provider.nix"
+OPENCODE_MODULE_DIRECTORY = OPENCODE_GO_MODULE.parents[2] / "opencode"
+OPENCODE_GO_PROVIDER = OPENCODE_MODULE_DIRECTORY / "go-provider.nix"
+TOOL_TRANSLATION_WORKAROUND = (
+    OPENCODE_MODULE_DIRECTORY / "console-go-anthropic-tool-translation-workaround.nix"
+)
 OPENCODE_GO_BASE_URL = "https://opencode.ai/zen/go"
 OPENCODE_GO_SECRET_PATH_FRAGMENT = ".secrets/opencode-api-key"
 NATIVE_OPENCODE_MODELS = {
@@ -10,11 +14,7 @@ NATIVE_OPENCODE_MODELS = {
     "sonnet": "deepseek-v4-flash",
     "haiku": "kimi-k3",
 }
-CLAUDE_CODE_MODELS = {
-    "opus": "qwen3.7-max",
-    "sonnet": "qwen3.7-max",
-    "haiku": "qwen3.7-max",
-}
+MODEL_ALIASES = tuple(NATIVE_OPENCODE_MODELS)
 LAUNCHER_EXEC_LINE = re.compile(r"^\s*exec \S+/bin/claude .*$", re.M)
 
 
@@ -26,12 +26,26 @@ def provider_source() -> str:
     return OPENCODE_GO_PROVIDER.read_text()
 
 
-def model_definitions(section: str) -> dict[str, str]:
-    matched = re.search(
-        rf"^  {section} = \{{(?P<body>.*?)^  \}};", provider_source(), re.M | re.S
-    )
-    assert matched, f"the shared provider must define {section}"
+def workaround_source() -> str:
+    return TOOL_TRANSLATION_WORKAROUND.read_text()
+
+
+def model_definitions(section: str, source: str) -> dict[str, str]:
+    matched = re.search(rf"^  {section} = \{{(?P<body>.*?)^  \}};", source, re.M | re.S)
+    assert matched, f"{section} must be defined as a literal attribute set"
     return dict(re.findall(r'^    (\w+) = "([^"]+)";$', matched.group("body"), re.M))
+
+
+def models_with_working_tool_translation() -> list[str]:
+    matched = re.search(
+        r"^  modelsConsoleGoTranslatesToolsCorrectlyFor = \[(?P<body>.*?)^  \];",
+        workaround_source(),
+        re.M | re.S,
+    )
+    assert matched, (
+        "the workaround must list the models whose tool translation was verified to work"
+    )
+    return re.findall(r'^    "([^"]+)"$', matched.group("body"), re.M)
 
 
 def launcher_exec_line() -> str:
@@ -93,20 +107,54 @@ def test_the_launcher_removes_bearer_authentication():
 
 
 def test_native_opencode_models_retain_their_existing_model_selection():
-    assert model_definitions("models") == NATIVE_OPENCODE_MODELS, (
-        "native OpenCode must retain its DeepSeek model selection"
+    assert (
+        model_definitions("nativeModels", provider_source()) == NATIVE_OPENCODE_MODELS
+    ), (
+        "native OpenCode speaks the OpenAI wire format, whose tool schemas Console Go relays untouched, so it keeps its DeepSeek selection"
     )
 
 
-def test_all_claude_code_aliases_use_the_tool_compatible_model():
-    assert model_definitions("claudeCodeModels") == CLAUDE_CODE_MODELS, (
-        "Claude Code must avoid the Console Go DeepSeek tool conversion path"
+def test_the_tool_translation_workaround_lives_in_its_own_module():
+    assert TOOL_TRANSLATION_WORKAROUND.is_file(), (
+        "the Console Go tool-translation compensation must live in a file named after the upstream limitation, not inline in the shared provider"
     )
+    assert f"import ./{TOOL_TRANSLATION_WORKAROUND.name}" in provider_source(), (
+        "the shared provider must reach the workaround through one clean import"
+    )
+
+
+def test_the_provider_derives_claude_code_models_instead_of_hardcoding_them():
+    assert (
+        "claudeCodeModels = consoleGoAnthropicToolTranslation." in provider_source()
+    ), (
+        "claudeCodeModels must be derived from the native selection so restoring a model upstream fixes needs only the workaround's compatibility list"
+    )
+
+
+def test_every_substituted_model_was_verified_to_survive_the_translation():
+    compatible = models_with_working_tool_translation()
+    assert compatible, "the verified-compatible list must not be empty"
+    substitutes = model_definitions("toolCompatibleSubstitutes", workaround_source())
+    assert set(substitutes) == set(MODEL_ALIASES), (
+        "every Claude Code alias needs a substitute for when its native model cannot carry tools"
+    )
+    for alias, model in substitutes.items():
+        assert model in compatible, (
+            f"the {alias} substitute must be a model whose Console Go tool translation was verified to work"
+        )
+
+
+def test_no_native_model_is_assumed_to_survive_the_translation():
+    compatible = models_with_working_tool_translation()
+    for alias, model in NATIVE_OPENCODE_MODELS.items():
+        assert model not in compatible, (
+            f"{model} still 400s on tools through the Anthropic endpoint, so listing it would send the {alias} alias back into the broken path"
+        )
 
 
 def test_all_three_model_aliases_resolve_to_the_claude_code_models():
     source = module_source()
-    for alias, model in CLAUDE_CODE_MODELS.items():
+    for alias in MODEL_ALIASES:
         assert (
             f'ANTHROPIC_DEFAULT_{alias.upper()}_MODEL="${{opencodeGo.claudeCodeModels.{alias}}}"'
             in source
