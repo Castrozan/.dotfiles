@@ -66,7 +66,9 @@ deploy outcome rather than parking it as a decision for them. A repo they do not
 CI, or an explicit hold are still genuine stops. A commit hook stamps every commit you make with the harness, machine,
 session and resume command that produced it as `Agent-*` trailers, so never write or edit those trailers by hand, which
 records a session that does not exist, and read the session behind any past commit with `git agent-session <sha>`,
-adding `--prompts` for the prompts that drove it.
+adding `--prompts` for the prompts that drove it. Confirm `HEAD` is still the commit you just made before any `git
+commit --amend`, because a peer agent commits into the same working tree and an amend that lands after theirs rewrites
+their commit instead of yours.
 </git>
 
 <tools>
