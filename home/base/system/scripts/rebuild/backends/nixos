@@ -110,10 +110,7 @@ backend_verify_switch_landed() {
 
 backend_after_switch() {
 	command -v hyprctl >/dev/null 2>&1 || return 0
-	local hyprland_runtime_directory
-	hyprland_runtime_directory="/run/user/$(id -u)/hypr"
-	[ -d "$hyprland_runtime_directory" ] || return 0
-	[ -n "$(ls -A "$hyprland_runtime_directory" 2>/dev/null)" ] || return 0
+	[ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ] || return 0
 
 	echo ":: Reloading Hyprland config..."
 	hyprctl reload config-only

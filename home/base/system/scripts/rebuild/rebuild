@@ -74,7 +74,7 @@ main() {
 
 	backend_switch "$@"
 	backend_verify_switch_landed
-	backend_after_switch
+	backend_after_switch || echo ":: Post-switch desktop refresh did not complete." >&2
 
 	echo ":: Rebuild complete on ${MACHINE_ALIAS}."
 }

@@ -196,6 +196,38 @@ readonly BACKEND_CONTRACT=(
 	grep -q 'nixos-rebuild switch --flake' "$BACKENDS_SOURCE_DIRECTORY/nixos"
 }
 
+@test "the entrypoint initializes git submodules before switching" {
+	grep -q 'submodule update --init' "$SCRIPT_UNDER_TEST"
+	local submodule_line switch_line
+	submodule_line=$(grep -n '^	initialize_git_submodules$' "$SCRIPT_UNDER_TEST" | cut -d: -f1)
+	switch_line=$(grep -n '^	backend_switch ' "$SCRIPT_UNDER_TEST" | cut -d: -f1)
+	[ "$submodule_line" -lt "$switch_line" ]
+}
+
+@test "a desktop refresh that fails does not fail a switch that already landed" {
+	grep -q 'backend_after_switch || echo' "$SCRIPT_UNDER_TEST"
+}
+
+@test "hyprland is reloaded only when this shell is attached to a compositor" {
+	source "$BACKENDS_SOURCE_DIRECTORY/nixos"
+	hyprctl() { echo "HYPRCTL_CALLED"; }
+	HYPRLAND_INSTANCE_SIGNATURE=""
+	run backend_after_switch
+	[ "$status" -eq 0 ]
+	[[ "$output" != *"HYPRCTL_CALLED"* ]]
+}
+
+@test "hyprland is reloaded when a compositor instance is attached" {
+	source "$BACKENDS_SOURCE_DIRECTORY/nixos"
+	hyprctl() { echo "HYPRCTL_CALLED"; }
+	hypr-apply-theme-colors() { echo "THEME_COLORS_APPLIED"; }
+	HYPRLAND_INSTANCE_SIGNATURE="a-live-instance"
+	run backend_after_switch
+	[ "$status" -eq 0 ]
+	[[ "$output" == *"HYPRCTL_CALLED"* ]]
+	[[ "$output" == *"THEME_COLORS_APPLIED"* ]]
+}
+
 @test "the darwin backend proves activation refreshed the current-system symlink" {
 	source "$BACKENDS_SOURCE_DIRECTORY/darwin"
 	current_system_symlink_mtime_before_switch="1700000000"
