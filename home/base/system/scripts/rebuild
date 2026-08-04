@@ -10,6 +10,7 @@ readonly AGENIX_IDENTITY_KEY="${HOME}/.ssh/id_ed25519"
 readonly NIXOS_SETUID_WRAPPERS_DIR="/run/wrappers/bin"
 readonly ZANONI_SYSTEM_FLAKE="${ZANONI_SYSTEM_FLAKE:-${HOME}/zanoni-system/flake.nix}"
 readonly ETC_NIXOS_FLAKE="${ETC_NIXOS_FLAKE:-/etc/nixos/flake.nix}"
+readonly REBUILD_TYPICAL_DURATION_SECONDS=420
 
 _sudo() {
 	local sudo_bin="sudo"
@@ -34,26 +35,18 @@ _ensure_setuid_wrappers_in_path() {
 	fi
 }
 
-_resolve_rebuild_lock_file() {
-	echo "${XDG_RUNTIME_DIR:-/tmp}/dotfiles-rebuild.lock"
-}
-
-_flock_is_available() {
-	command -v flock >/dev/null 2>&1
+_resolve_exclusive_run_lock_helper() {
+	echo "${DOTFILES_DIR}/agents/scripts/exclusive-run-lock.sh"
 }
 
 _hold_exclusive_rebuild_lock() {
-	_flock_is_available || return 0
+	local exclusive_run_lock_helper
+	exclusive_run_lock_helper="$(_resolve_exclusive_run_lock_helper)"
+	[ -f "$exclusive_run_lock_helper" ] || return 0
 
-	local lock_file
-	lock_file="$(_resolve_rebuild_lock_file)"
-	exec 9>"$lock_file" 2>/dev/null || return 0
-
-	flock -n 9 && return 0
-
-	echo ":: Another rebuild holds ${lock_file}. Queuing behind it rather than starting a second"
-	echo ":: nix evaluation, which costs gigabytes and would stack onto the one already running."
-	flock 9
+	# shellcheck disable=SC1090
+	. "$exclusive_run_lock_helper"
+	acquire_exclusive_run_lock_or_emit_retry_instructions "rebuild" "$REBUILD_TYPICAL_DURATION_SECONDS"
 }
 
 main() {

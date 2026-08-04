@@ -93,37 +93,34 @@ setup() {
 	grep -q 'DOTFILES_REBUILD_WRAPPER=1' "$SCRIPT_UNDER_TEST"
 }
 
-@test "an uncontended rebuild takes the lock and prints no queue notice" {
-	_flock_is_available() { return 0; }
-	_resolve_rebuild_lock_file() { echo "$BATS_TEST_TMPDIR/uncontended.lock"; }
-	flock() { [ "$1" = "-n" ]; }
+@test "the linux rebuild takes the shared exclusive-run lock" {
+	local helper="$BATS_TEST_TMPDIR/exclusive-run-lock.sh"
+	cat >"$helper" <<'STUB'
+acquire_exclusive_run_lock_or_emit_retry_instructions() {
+	echo "LOCK_ACQUIRED name=$1 typical_duration=$2"
+}
+STUB
+	_resolve_exclusive_run_lock_helper() { echo "$helper"; }
 	run _hold_exclusive_rebuild_lock
 	[ "$status" -eq 0 ]
-	[[ "$output" != *"Queuing behind"* ]]
+	[[ "$output" == *"LOCK_ACQUIRED name=rebuild"* ]]
+	[[ "$output" == *"typical_duration=420"* ]]
 }
 
-@test "a contended rebuild queues behind the running one instead of evaluating in parallel" {
-	_flock_is_available() { return 0; }
-	_resolve_rebuild_lock_file() { echo "$BATS_TEST_TMPDIR/contended.lock"; }
-	flock() {
-		[ "$1" = "-n" ] && return 1
-		echo "BLOCKING_FLOCK_ACQUIRED"
-	}
+@test "rebuild still runs when the shared lock helper is absent from the checkout" {
+	_resolve_exclusive_run_lock_helper() { echo "$BATS_TEST_TMPDIR/absent-helper.sh"; }
 	run _hold_exclusive_rebuild_lock
 	[ "$status" -eq 0 ]
-	[[ "$output" == *"Queuing behind"* ]]
-	[[ "$output" == *"BLOCKING_FLOCK_ACQUIRED"* ]]
-}
-
-@test "rebuild still runs on a host without flock" {
-	_flock_is_available() { return 1; }
-	flock() { echo "FLOCK_CALLED"; }
-	run _hold_exclusive_rebuild_lock
-	[ "$status" -eq 0 ]
-	[[ "$output" != *"FLOCK_CALLED"* ]]
+	[ -z "$output" ]
 }
 
 @test "main takes the rebuild lock before evaluating anything" {
 	grep -q '_hold_exclusive_rebuild_lock' "$SCRIPT_UNDER_TEST"
 	[ "$(grep -n '_hold_exclusive_rebuild_lock$' "$SCRIPT_UNDER_TEST" | tail -1 | cut -d: -f1)" -lt "$(grep -n '_rebuild_system$' "$SCRIPT_UNDER_TEST" | tail -1 | cut -d: -f1)" ]
+}
+
+@test "both platform rebuild scripts guard against a concurrent rebuild the same way" {
+	grep -q 'exclusive-run-lock.sh' "$SCRIPT_UNDER_TEST"
+	grep -q 'acquire_exclusive_run_lock_or_emit_retry_instructions "rebuild"' "$SCRIPT_UNDER_TEST"
+	grep -q 'acquire_exclusive_run_lock_or_emit_retry_instructions "rebuild"' "$REPO_ROOT/hosts/shared-darwin/rebuild/rebuild"
 }
