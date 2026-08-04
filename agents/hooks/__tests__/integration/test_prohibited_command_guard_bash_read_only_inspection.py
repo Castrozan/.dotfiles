@@ -38,6 +38,25 @@ class TestBashReadOnlyInspectionCommandsStayAllowed:
         assert result.returncode == 0
         assert result.stdout == ""
 
+    @pytest.mark.parametrize(
+        "command",
+        [
+            'grep -rn "check_baseline\\|check-baseline" agents/__tests__/evals/*.py',
+            "grep -c 'unit\\|integration' agents/hooks/__tests__/unit/test_thing.py",
+            'echo "the suite lives at __tests__/run.sh; CI runs it" | wc -l',
+            "git log --oneline -- 'agents/__tests__/*'",
+            'grep -rln "pytest agents/" agents | head -5',
+        ],
+    )
+    def test_a_separator_inside_quotes_does_not_split_the_read_only_segment(
+        self, command, invoke_prohibited_command_guard_hook
+    ):
+        result = invoke_prohibited_command_guard_hook(
+            {"tool_name": "Bash", "tool_input": {"command": command}}
+        )
+        assert result.returncode == 0
+        assert result.stdout == ""
+
 
 class TestBashReadOnlyInspectionExemptionDoesNotLeakExecution:
     @pytest.mark.parametrize(
@@ -52,6 +71,8 @@ class TestBashReadOnlyInspectionExemptionDoesNotLeakExecution:
             "grep -R x agents && ./__tests__/run.sh --quick",
             "echo starting | xargs __tests__/run.sh",
             "ls agents && pytest agents/hooks/__tests__/unit",
+            "grep -rn 'a\\|b' agents; pytest agents/hooks/__tests__/unit",
+            "echo 'a|b' | bash -c 'pytest agents/hooks/__tests__/unit'",
         ],
     )
     def test_blocks_execution_reached_through_a_read_only_segment(

@@ -2,6 +2,14 @@ from __future__ import annotations
 
 SHELL_SEGMENT_SEPARATOR_CHARACTERS = frozenset(";\n|&()`")
 
+SHELL_QUOTE_CHARACTERS = frozenset("'\"")
+
+SHELL_SUBSTITUTION_CHARACTERS = frozenset("()`")
+
+UNQUOTED_STATE = ""
+
+LITERAL_QUOTE_CHARACTER = "'"
+
 READ_ONLY_INSPECTION_COMMANDS = frozenset(
     "ack basename bat cat cksum column comm cut date diff dirname du echo egrep "
     "fgrep file grep head hexdump jq less ls md5sum more nl od printf pwd readlink "
@@ -73,9 +81,47 @@ def segment_is_read_only_inspection(segment_text):
     return False
 
 
+def quote_state_by_offset(command_text):
+    quote_states = [UNQUOTED_STATE] * len(command_text)
+    open_quote_character = UNQUOTED_STATE
+    scan_index = 0
+    while scan_index < len(command_text):
+        character = command_text[scan_index]
+        if character == "\\" and open_quote_character != LITERAL_QUOTE_CHARACTER:
+            quote_states[scan_index] = LITERAL_QUOTE_CHARACTER
+            if scan_index + 1 < len(command_text):
+                quote_states[scan_index + 1] = LITERAL_QUOTE_CHARACTER
+            scan_index += 2
+            continue
+        if open_quote_character:
+            quote_states[scan_index] = open_quote_character
+            if character == open_quote_character:
+                open_quote_character = UNQUOTED_STATE
+        elif character in SHELL_QUOTE_CHARACTERS:
+            quote_states[scan_index] = character
+            open_quote_character = character
+        scan_index += 1
+    return quote_states
+
+
+def offset_separates_segments(command_text, offset, quote_states=None):
+    character = command_text[offset]
+    if character not in SHELL_SEGMENT_SEPARATOR_CHARACTERS:
+        return False
+    if quote_states is None:
+        quote_states = quote_state_by_offset(command_text)
+    quote_state = quote_states[offset]
+    if quote_state == UNQUOTED_STATE:
+        return True
+    if quote_state == LITERAL_QUOTE_CHARACTER:
+        return False
+    return character in SHELL_SUBSTITUTION_CHARACTERS
+
+
 def offset_after_leading_segment_separators(command_text, offset):
+    quote_states = quote_state_by_offset(command_text)
     while offset < len(command_text) and (
-        command_text[offset] in SHELL_SEGMENT_SEPARATOR_CHARACTERS
+        offset_separates_segments(command_text, offset, quote_states)
         or command_text[offset].isspace()
     ):
         offset += 1
@@ -83,17 +129,18 @@ def offset_after_leading_segment_separators(command_text, offset):
 
 
 def segment_bounds_containing_offset(command_text, offset):
+    quote_states = quote_state_by_offset(command_text)
     segment_start = 0
     scan_index = offset - 1
     while scan_index >= 0:
-        if command_text[scan_index] in SHELL_SEGMENT_SEPARATOR_CHARACTERS:
+        if offset_separates_segments(command_text, scan_index, quote_states):
             segment_start = scan_index + 1
             break
         scan_index -= 1
     segment_end = len(command_text)
     scan_index = offset
     while scan_index < len(command_text):
-        if command_text[scan_index] in SHELL_SEGMENT_SEPARATOR_CHARACTERS:
+        if offset_separates_segments(command_text, scan_index, quote_states):
             segment_end = scan_index
             break
         scan_index += 1
@@ -101,22 +148,29 @@ def segment_bounds_containing_offset(command_text, offset):
 
 
 def offset_is_inside_command_substitution(command_text, offset):
-    text_before_offset = command_text[:offset]
-    if text_before_offset.count("`") % 2 == 1:
+    quote_states = quote_state_by_offset(command_text)
+    substitution_characters_in_force = [
+        character
+        for character_offset, character in enumerate(command_text[:offset])
+        if quote_states[character_offset] != LITERAL_QUOTE_CHARACTER
+    ]
+    if substitution_characters_in_force.count("`") % 2 == 1:
         return True
-    return text_before_offset.count("(") > text_before_offset.count(")")
+    return substitution_characters_in_force.count(
+        "("
+    ) > substitution_characters_in_force.count(")")
 
 
 def pipeline_downstream_executes_its_input(command_text, segment_end):
+    quote_states = quote_state_by_offset(command_text)
     scan_index = segment_end
     while scan_index < len(command_text) and command_text[scan_index] == "|":
         if command_text.startswith("||", scan_index):
             return False
         downstream_start = scan_index + 1
         downstream_end = downstream_start
-        while (
-            downstream_end < len(command_text)
-            and command_text[downstream_end] not in SHELL_SEGMENT_SEPARATOR_CHARACTERS
+        while downstream_end < len(command_text) and not offset_separates_segments(
+            command_text, downstream_end, quote_states
         ):
             downstream_end += 1
         downstream_command_name = leading_command_name(

@@ -61,7 +61,7 @@ def find_first_violation(tool_name: str, inspectable_text: str):
         return None
 
     patterns_for_this_tool = PROHIBITED_PATTERNS_BY_TOOL.get(tool_name, [])
-    inspection_texts = (inspectable_text,)
+    inspection_texts_most_faithful_first = (inspectable_text,)
     if tool_name == "Bash":
         shell_quote_normalized_text = (
             inspectable_text.replace("\\\n", "")
@@ -69,7 +69,7 @@ def find_first_violation(tool_name: str, inspectable_text: str):
             .replace("'", "")
             .replace('"', "")
         )
-        inspection_texts += (
+        inspection_texts_most_faithful_first += (
             shell_quote_normalized_text,
             shell_quote_normalized_text.replace("$", ""),
         )
@@ -77,16 +77,15 @@ def find_first_violation(tool_name: str, inspectable_text: str):
     for rule in patterns_for_this_tool:
         pattern, reason = rule[0], rule[1]
         override_sentinel = rule[2] if len(rule) > 2 else None
-        matching_texts = [
+        matching_texts_most_faithful_first = [
             candidate_text
-            for candidate_text in inspection_texts
+            for candidate_text in inspection_texts_most_faithful_first
             if re.search(pattern, candidate_text, re.IGNORECASE)
         ]
-        if not matching_texts:
+        if not matching_texts_most_faithful_first:
             continue
-        if tool_name == "Bash" and not any(
-            pattern_matches_outside_read_only_inspection(pattern, candidate_text)
-            for candidate_text in matching_texts
+        if tool_name == "Bash" and not pattern_matches_outside_read_only_inspection(
+            pattern, matching_texts_most_faithful_first[0]
         ):
             continue
         if override_sentinel and override_sentinel in inspectable_text:
