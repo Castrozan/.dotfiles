@@ -1,15 +1,10 @@
 {
+  helpers,
   pkgs,
   lib,
   ...
 }:
 let
-  helpers = import ../../../../__tests__/nix-checks/helpers.nix {
-    inherit pkgs lib;
-    inputs = null;
-    nixpkgs-version = null;
-    home-version = null;
-  };
   inherit (helpers) mkEvalCheck;
 
   symbolicHotKeysConfig = import ../default.nix;

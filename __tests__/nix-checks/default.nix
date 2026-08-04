@@ -7,7 +7,7 @@
   home-version,
 }:
 let
-  domainArgs = {
+  helpers = import ./helpers.nix {
     inherit
       pkgs
       lib
@@ -17,22 +17,24 @@ let
       ;
   };
 
-  moduleArgs = domainArgs // {
-    inherit self;
+  checkModuleArgs = {
+    inherit
+      pkgs
+      lib
+      inputs
+      self
+      nixpkgs-version
+      home-version
+      helpers
+      ;
   };
 
-  importEveryCheckModuleWith =
-    checkArgs: checkModules: map (checkModule: import checkModule checkArgs) checkModules;
-
-  checkModulesNeedingTheFlakeItself = [
+  checkModules = [
     ../../home/base/claude/__tests__/checks.nix
     ../../home/base/clawde/__tests__/checks.nix
     ../../home/base/codex/__tests__/checks.nix
     ../../home/base/agents/__tests__/checks.nix
     ../../hosts/chise/__tests__/checks.nix
-  ];
-
-  checkModules = [
     ../../agents/hooks/__tests__/checks.nix
     ../../home/base/terminal/__tests__/checks.nix
     ../../home/base/editor/__tests__/checks.nix
@@ -69,7 +71,4 @@ let
     ../../hosts/shared-darwin/displays/__tests__/checks.nix
   ];
 in
-lib.foldl' lib.mergeAttrs { } (
-  importEveryCheckModuleWith moduleArgs checkModulesNeedingTheFlakeItself
-  ++ importEveryCheckModuleWith domainArgs checkModules
-)
+lib.foldl' lib.mergeAttrs { } (map (checkModule: import checkModule checkModuleArgs) checkModules)

@@ -2,6 +2,7 @@
   mkEvalCheck,
   helpers,
   self,
+  ...
 }:
 let
   cfgWithClawdeAgent = helpers.homeManagerTestConfiguration [

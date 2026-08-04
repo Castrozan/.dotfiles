@@ -1,6 +1,7 @@
 {
   helpers,
   self,
+  ...
 }:
 let
   bothHarnessModules = [
