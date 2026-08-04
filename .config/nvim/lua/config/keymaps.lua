@@ -157,11 +157,11 @@ local function close_current_buffer_focusing_right_then_left()
 end
 
 map("n", "<leader>c", close_current_buffer_focusing_right_then_left, { desc = "Close buffer" })
-map("n", "<C-w>", close_current_buffer_focusing_right_then_left, { desc = "Close buffer (focus next or prev)" })
+map("n", "<C-w>", close_current_buffer_focusing_right_then_left, { desc = "Close buffer (focus next or prev)", nowait = true })
 map("i", "<C-w>", function()
   vim.cmd("stopinsert")
   close_current_buffer_focusing_right_then_left()
-end, { desc = "Close buffer (focus next or prev)" })
+end, { desc = "Close buffer (focus next or prev)", nowait = true })
 
 map({ "n", "v" }, "<leader>y", [["+y]], { desc = "Yank to system clipboard" })
 map("n", "<leader>Y", [["+Y]], { desc = "Yank line to system clipboard" })
