@@ -74,6 +74,19 @@ class TestLineCountThresholds:
         assert "250" in payload["reason"]
         assert "BLOCKED" in payload["systemMessage"]
 
+    def test_blocks_apply_patch_above_blocking_threshold(self, tmp_path):
+        file_path = write_python_file_with_line_count(tmp_path, "patched.py", 201)
+        result = invoke_hook_with_payload(
+            {
+                "tool_name": "apply_patch",
+                "tool_input": f"*** Update File: {file_path}\n@@\n-value = 1\n+value = 2\n",
+            }
+        )
+        assert result.returncode == 0
+        payload = parse_hook_stdout(result.stdout)
+        assert payload["decision"] == "block"
+        assert "201" in payload["reason"]
+
 
 class TestFileTypeFiltering:
     @pytest.mark.parametrize(
