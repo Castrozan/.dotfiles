@@ -1,0 +1,121 @@
+#!/usr/bin/env bash
+
+readonly SETUID_WRAPPERS_DIRECTORY="/run/wrappers/bin"
+readonly AGENIX_IDENTITY_KEY="${HOME}/.ssh/id_ed25519"
+readonly MACHINE_LOCAL_ENTRYPOINT_FLAKE="${MACHINE_LOCAL_ENTRYPOINT_FLAKE:-${HOME}/zanoni-system/flake.nix}"
+readonly ETC_NIXOS_FLAKE="${ETC_NIXOS_FLAKE:-/etc/nixos/flake.nix}"
+readonly MACHINE_LOCAL_ENTRYPOINT_OWNER="chise"
+
+run_privileged() {
+	local sudo_binary="sudo"
+	if [ -x "${SETUID_WRAPPERS_DIRECTORY}/sudo" ]; then
+		sudo_binary="${SETUID_WRAPPERS_DIRECTORY}/sudo"
+	fi
+	"$sudo_binary" -n "$@"
+}
+
+etc_nixos_flake_present() {
+	[ -f "$ETC_NIXOS_FLAKE" ]
+}
+
+machine_local_entrypoint_flake_present() {
+	[ -f "$MACHINE_LOCAL_ENTRYPOINT_FLAKE" ]
+}
+
+etc_nixos_flake_matches_machine_local_entrypoint() {
+	cmp -s "$MACHINE_LOCAL_ENTRYPOINT_FLAKE" "$ETC_NIXOS_FLAKE"
+}
+
+prepend_setuid_wrappers_to_the_path() {
+	[ -d "$SETUID_WRAPPERS_DIRECTORY" ] || return 0
+	case ":${PATH}:" in
+	*":${SETUID_WRAPPERS_DIRECTORY}:"*) ;;
+	*) export PATH="${SETUID_WRAPPERS_DIRECTORY}:${PATH}" ;;
+	esac
+}
+
+take_ownership_of_the_agenix_identity_key() {
+	[ -f "$AGENIX_IDENTITY_KEY" ] || return 0
+
+	local current_owner expected_owner
+	current_owner="$(stat -c '%U' "$AGENIX_IDENTITY_KEY")"
+	expected_owner="$(id -un)"
+	[ "$current_owner" = "$expected_owner" ] && return 0
+
+	echo ":: Fixing agenix identity key ownership (${current_owner} -> ${expected_owner})..."
+	run_privileged chown "$expected_owner" "$AGENIX_IDENTITY_KEY"
+	run_privileged chmod 600 "$AGENIX_IDENTITY_KEY"
+
+	[ -f "${AGENIX_IDENTITY_KEY}.pub" ] || return 0
+	run_privileged chown "$expected_owner" "${AGENIX_IDENTITY_KEY}.pub"
+	run_privileged chmod 644 "${AGENIX_IDENTITY_KEY}.pub"
+}
+
+sync_etc_nixos_flake_from_machine_local_entrypoint() {
+	[ "$1" = "$MACHINE_LOCAL_ENTRYPOINT_OWNER" ] || return 0
+	machine_local_entrypoint_flake_present || return 0
+	etc_nixos_flake_matches_machine_local_entrypoint && return 0
+
+	echo ":: Syncing ${ETC_NIXOS_FLAKE} from ${MACHINE_LOCAL_ENTRYPOINT_FLAKE}..."
+	run_privileged install -D -m 0644 "$MACHINE_LOCAL_ENTRYPOINT_FLAKE" "$ETC_NIXOS_FLAKE"
+}
+
+refuse_to_deploy_the_entrypoint_owner_from_bare_dotfiles() {
+	[ "$1" = "$MACHINE_LOCAL_ENTRYPOINT_OWNER" ] || return 0
+	etc_nixos_flake_present && return 0
+
+	fail "refusing to deploy $1 from bare ${DOTFILES_DIRECTORY}.
+       $1 must deploy via ${ETC_NIXOS_FLAKE}, the machine-local entrypoint that layers the openclaw overlay onto dotfiles.
+       Bare dotfiles carries no openclaw by design, so this would strip openclaw-gateway.service and take clever+jarvis offline.
+       Restore ${ETC_NIXOS_FLAKE} (a copy of ${MACHINE_LOCAL_ENTRYPOINT_FLAKE}) and retry."
+}
+
+resolve_flake_reference() {
+	if etc_nixos_flake_present; then
+		echo "/etc/nixos#$1"
+	else
+		echo "${DOTFILES_DIRECTORY}?submodules=1#$1"
+	fi
+}
+
+backend_prepare_environment() {
+	prepend_setuid_wrappers_to_the_path
+	take_ownership_of_the_agenix_identity_key
+}
+
+backend_switch() {
+	sync_etc_nixos_flake_from_machine_local_entrypoint "$MACHINE_ALIAS"
+	refuse_to_deploy_the_entrypoint_owner_from_bare_dotfiles "$MACHINE_ALIAS"
+
+	local flake_reference
+	flake_reference="$(resolve_flake_reference "$MACHINE_ALIAS")"
+
+	local -a lock_flags=()
+	if etc_nixos_flake_present; then
+		lock_flags+=(--no-write-lock-file)
+	fi
+
+	echo ":: Rebuilding NixOS from ${flake_reference}..."
+	run_privileged env \
+		"PATH=${SETUID_WRAPPERS_DIRECTORY}:${PATH}" \
+		NIXPKGS_ALLOW_UNFREE=1 \
+		DOTFILES_REBUILD_WRAPPER=1 \
+		"${LOW_PRIORITY_COMMAND_PREFIX[@]}" \
+		nixos-rebuild switch --flake "$flake_reference" "${lock_flags[@]}" "$@"
+}
+
+backend_verify_switch_landed() {
+	return 0
+}
+
+backend_after_switch() {
+	command -v hyprctl >/dev/null 2>&1 || return 0
+	local hyprland_runtime_directory
+	hyprland_runtime_directory="/run/user/$(id -u)/hypr"
+	[ -d "$hyprland_runtime_directory" ] || return 0
+	[ -n "$(ls -A "$hyprland_runtime_directory" 2>/dev/null)" ] || return 0
+
+	echo ":: Reloading Hyprland config..."
+	hyprctl reload config-only
+	hypr-apply-theme-colors
+}

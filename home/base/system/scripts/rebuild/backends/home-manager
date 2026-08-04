@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+
+readonly HOME_MANAGER_BACKUP_SUFFIX="backup"
+
+switch_with_the_installed_home_manager() {
+	"${LOW_PRIORITY_COMMAND_PREFIX[@]}" home-manager switch \
+		--flake "$1" -b "$HOME_MANAGER_BACKUP_SUFFIX"
+}
+
+switch_with_home_manager_from_nixpkgs() {
+	"${LOW_PRIORITY_COMMAND_PREFIX[@]}" nix run nixpkgs#home-manager -- switch \
+		--flake "$1" -b "$HOME_MANAGER_BACKUP_SUFFIX" 2>/dev/null
+}
+
+switch_with_home_manager_from_upstream() {
+	echo "Falling back to the GitHub source, which may hit rate limits." >&2
+	echo "Install home-manager to avoid this: nix profile install nixpkgs#home-manager" >&2
+	"${LOW_PRIORITY_COMMAND_PREFIX[@]}" nix run home-manager/master -- switch \
+		--flake "$1" -b "$HOME_MANAGER_BACKUP_SUFFIX"
+}
+
+backend_prepare_environment() {
+	export HOME_MANAGER_BACKUP_OVERWRITE=1
+}
+
+resolve_flake_reference() {
+	echo "${DOTFILES_DIRECTORY}?submodules=1#$1"
+}
+
+backend_switch() {
+	local flake_reference
+	flake_reference="$(resolve_flake_reference "$MACHINE_ALIAS")"
+	echo ":: Rebuilding home-manager from ${flake_reference}..."
+
+	if command -v home-manager >/dev/null 2>&1; then
+		switch_with_the_installed_home_manager "$flake_reference"
+		return 0
+	fi
+
+	switch_with_home_manager_from_nixpkgs "$flake_reference" && return 0
+	switch_with_home_manager_from_upstream "$flake_reference"
+}
+
+backend_verify_switch_landed() {
+	return 0
+}
+
+backend_after_switch() {
+	return 0
+}

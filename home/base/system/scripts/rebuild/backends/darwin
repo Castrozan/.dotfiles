@@ -1,0 +1,113 @@
+#!/usr/bin/env bash
+
+readonly CURRENT_SYSTEM_SYMLINK="/run/current-system"
+readonly DARWIN_SYSTEM_PROFILE_BIN="/run/current-system/sw/bin"
+readonly ANSI_RED_BOLD="\033[1;31m"
+readonly ANSI_RESET="\033[0m"
+
+current_system_symlink_target_before_switch=""
+current_system_symlink_mtime_before_switch=""
+
+run_privileged() {
+	sudo "$@"
+}
+
+read_current_system_symlink_target() {
+	readlink "$CURRENT_SYSTEM_SYMLINK" 2>/dev/null || echo ""
+}
+
+read_current_system_symlink_mtime() {
+	stat -f "%Sm" -t "%s" "$CURRENT_SYSTEM_SYMLINK" 2>/dev/null || echo "0"
+}
+
+ensure_darwin_rebuild_is_on_the_path() {
+	command -v darwin-rebuild >/dev/null 2>&1 && return 0
+	export PATH="${DARWIN_SYSTEM_PROFILE_BIN}:${PATH}"
+	command -v darwin-rebuild >/dev/null 2>&1 || fail "darwin-rebuild not found"
+}
+
+regenerate_wallpaper_derived_theme_colors() {
+	command -v theme-regenerate-wallpaper-derived-colors >/dev/null 2>&1 || return 0
+	theme-regenerate-wallpaper-derived-colors "$DOTFILES_DIRECTORY" || true
+}
+
+reload_hammerspoon_config() {
+	local hammerspoon_cli
+	hammerspoon_cli="$(command -v hs || echo /opt/homebrew/bin/hs)"
+	[ -x "$hammerspoon_cli" ] || return 0
+
+	"$hammerspoon_cli" -c "hs.reload()" >/dev/null 2>&1 &
+	local reload_pid=$!
+	local waited_seconds=0
+	while [ "$waited_seconds" -lt 5 ] && kill -0 "$reload_pid" 2>/dev/null; do
+		sleep 1
+		waited_seconds=$((waited_seconds + 1))
+	done
+	kill "$reload_pid" 2>/dev/null || true
+	wait "$reload_pid" 2>/dev/null || true
+}
+
+nudge_clawde_agents_to_redeploy_on_continued_sessions() {
+	command -v clawde-redeploy >/dev/null 2>&1 || return 0
+	clawde-redeploy || true
+}
+
+extract_activation_failure_hint() {
+	local hint
+	hint="$(grep -E "brew bundle failed|Homebrew bundle|error:" "$REBUILD_SWITCH_LOG_PATH" | tail -5 || true)"
+	echo "${hint:-(no obvious failure cue found in rebuild output)}"
+}
+
+abort_because_the_current_system_symlink_is_stale() {
+	{
+		printf '%b' "$ANSI_RED_BOLD"
+		echo "error: ${CURRENT_SYSTEM_SYMLINK} was not refreshed by darwin-rebuild switch"
+		echo "       target:       ${current_system_symlink_target_before_switch}"
+		echo "       mtime:        ${current_system_symlink_mtime_before_switch} (unchanged)"
+		echo ""
+		echo "the activate script aborted before updating ${CURRENT_SYSTEM_SYMLINK},"
+		echo "so you are still running the previous system generation."
+		echo ""
+		echo "likely culprit (from rebuild output):"
+		extract_activation_failure_hint
+		echo ""
+		echo "full rebuild log: ${REBUILD_SWITCH_LOG_PATH}"
+		echo "to re-run activation manually: sudo ${CURRENT_SYSTEM_SYMLINK}/activate"
+		printf '%b' "$ANSI_RESET"
+	} >&2
+	exit 1
+}
+
+backend_prepare_environment() {
+	ensure_darwin_rebuild_is_on_the_path
+	REBUILD_SWITCH_LOG_PATH="$(mktemp -t darwin-rebuild-output.XXXXXX)"
+	regenerate_wallpaper_derived_theme_colors
+}
+
+resolve_flake_reference() {
+	echo "git+file://${DOTFILES_DIRECTORY}?submodules=1#$1"
+}
+
+backend_switch() {
+	current_system_symlink_target_before_switch="$(read_current_system_symlink_target)"
+	current_system_symlink_mtime_before_switch="$(read_current_system_symlink_mtime)"
+
+	local flake_reference
+	flake_reference="$(resolve_flake_reference "$MACHINE_ALIAS")"
+	echo ":: Rebuilding darwin from ${flake_reference}..."
+	echo ":: Rebuild output is logged to ${REBUILD_SWITCH_LOG_PATH}"
+	run_privileged darwin-rebuild switch --flake "$flake_reference" "$@" 2>&1 |
+		tee "$REBUILD_SWITCH_LOG_PATH"
+}
+
+backend_verify_switch_landed() {
+	local mtime_after
+	mtime_after="$(read_current_system_symlink_mtime)"
+	[ "$current_system_symlink_mtime_before_switch" != "$mtime_after" ] && return 0
+	abort_because_the_current_system_symlink_is_stale
+}
+
+backend_after_switch() {
+	reload_hammerspoon_config
+	nudge_clawde_agents_to_redeploy_on_continued_sessions
+}
