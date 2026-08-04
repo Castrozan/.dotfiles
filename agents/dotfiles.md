@@ -63,7 +63,8 @@ interpolation rules destroys quoting. When in doubt, extract.
 Never present code that has not been rebuilt and tested. For .nix files, a successful rebuild IS the primary
 verification, and CI owns the test suite: it runs the script tiers and `nix flake check` on every push, so pushing and
 watching CI is how a change gets tested, not a local suite run. Reach for `__tests__/run.sh` only to reproduce a job CI
-turned red, or to iterate on a test you are writing.
+turned red, or to iterate on a test you are writing. Test every Neovim change live in a newly created Herdr pane;
+automated and headless checks do not replace this manual test.
 </testing>
 
 <workflows>

@@ -6,6 +6,7 @@ pkgs.buildEnv {
   name = "dotfiles-test-suite-environment";
   paths = [
     pythonTestEnvironment
+    pkgs.neovim
     pkgs.pyright
     pkgs.ripgrep
   ];

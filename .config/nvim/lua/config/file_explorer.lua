@@ -77,11 +77,16 @@ end, { desc = "Decrease file explorer width" })
 
 map("n", "<C-S-e>", function()
   local current_filetype = vim.bo.filetype
+  local open_explorer_picker = find_open_file_explorer_picker()
   if current_filetype == "snacks_picker_list" or current_filetype == "snacks_picker_input" then
-    vim.cmd("wincmd p")
+    local main_window_id = open_explorer_picker and open_explorer_picker.main
+    if main_window_id and vim.api.nvim_win_is_valid(main_window_id) then
+      vim.api.nvim_set_current_win(main_window_id)
+    else
+      vim.cmd("wincmd p")
+    end
     return
   end
-  local open_explorer_picker = find_open_file_explorer_picker()
   if open_explorer_picker then
     open_explorer_picker:focus()
   else
