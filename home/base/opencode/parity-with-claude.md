@@ -128,14 +128,15 @@ against the model choice.
 
 - Claude runs a dispatcher per event out of `home/base/agent-hooks/`, and Codex
   registers the same dispatchers with a `--surface=codex` flag.
-- opencode has no hook subsystem. Its extension point is a plugin: a JS or TS
-  module listed under `plugin`, with `tool.execute.before`/`after` handlers that
-  deny by throwing. A plugin shelling out to the existing dispatchers with a
-  `--surface=opencode` flag is the port, and it is the one remaining parity gap.
-  Until it exists, opencode enforces nothing the guards enforce: no prohibited
-  command guard, no prohibited words guard, no line-count guard, no lint ledger,
-  and no reply-shape gate. The reply shape reaches opencode as an instruction
-  only, unenforced.
+- OpenCode auto-discovers JS plugins under its configuration directory.
+  `opencode-hook-bridge.js` maps plugin events to the shared dispatchers with
+  `--surface=opencode`. It applies pre-tool denials and input updates, carries
+  post-tool formatter, lint, and rebuild guidance forward in tool output,
+  rejects hard line-count violations, injects prompt context, and adds
+  compaction recovery context.
+- The plugin API has no synchronous end-of-turn interceptor. Claude's reply
+  shape bounce therefore remains unavailable to OpenCode, where reply shape is
+  enforced by instructions rather than a stop hook.
 
 ## Summary of state
 
@@ -144,6 +145,7 @@ against the model choice.
   and the interactive reply shape are at parity.
 - Model and effort are deliberately NOT pinned to a single choice; they are
   runtime-selectable defaults.
-- What opencode still lacks is the hook subsystem, which needs a plugin rather
-  than a config key, and the MCP servers deferred above for credential or
-  applicability reasons.
+- OpenCode's hook bridge now covers the compatible dispatcher events. Its reply
+  shape stop gate remains unavailable because the upstream plugin API does not
+  expose a synchronous end-of-turn interception point, and the MCP servers
+  deferred above remain credential or applicability decisions.

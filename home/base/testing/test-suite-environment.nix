@@ -7,6 +7,7 @@ pkgs.buildEnv {
   paths = [
     pythonTestEnvironment
     pkgs.neovim
+    pkgs.nodejs_22
     pkgs.pyright
     pkgs.ripgrep
   ];

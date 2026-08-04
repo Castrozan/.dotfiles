@@ -30,6 +30,7 @@ import record_edited_source_file_handler  # noqa: E402
 import record_skill_invocation_handler  # noqa: E402
 from hook_dispatch import (  # noqa: E402
     CLAUDE_SURFACE,
+    OPENCODE_SURFACE,
     HookHandler,
     dispatched_hook_input_or_exit,
     requested_hook_surface,
@@ -41,7 +42,7 @@ POST_TOOL_USE_HANDLERS = [
     HookHandler(
         handle=record_skill_invocation_handler.handle,
         tool_matcher="Skill",
-        surfaces=(CLAUDE_SURFACE,),
+        surfaces=(CLAUDE_SURFACE, OPENCODE_SURFACE),
     ),
     HookHandler(handle=auto_format_handler.handle, tool_matcher="Edit|Write"),
     HookHandler(

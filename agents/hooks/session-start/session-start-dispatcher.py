@@ -20,6 +20,7 @@ import herdr_agent_session_report_handler  # noqa: E402
 import session_context_handler  # noqa: E402
 from hook_dispatch import (  # noqa: E402
     CLAUDE_SURFACE,
+    CODEX_SURFACE,
     HookHandler,
     dispatched_hook_input_or_exit,
     requested_hook_surface,
@@ -30,7 +31,10 @@ from hook_event_output import emit_context_injection  # noqa: E402
 SESSION_START_HANDLERS = [
     HookHandler(handle=session_context_handler.handle, surfaces=(CLAUDE_SURFACE,)),
     HookHandler(handle=compaction_context_recovery_handler.handle),
-    HookHandler(handle=herdr_agent_session_report_handler.handle),
+    HookHandler(
+        handle=herdr_agent_session_report_handler.handle,
+        surfaces=(CLAUDE_SURFACE, CODEX_SURFACE),
+    ),
 ]
 
 

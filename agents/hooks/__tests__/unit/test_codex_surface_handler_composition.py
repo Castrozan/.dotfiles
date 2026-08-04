@@ -9,6 +9,7 @@ sys.path.insert(0, str(HOOKS_ROOT / "common"))
 from hook_dispatch import (  # noqa: E402
     CLAUDE_SURFACE,
     CODEX_SURFACE,
+    OPENCODE_SURFACE,
     HandlerResult,
     HookHandler,
     handler_matches_tool,
@@ -58,6 +59,46 @@ HANDLERS_THAT_MUST_STAY_OFF_THE_CODEX_SURFACE = {
     "SESSION_START_HANDLERS": {"session_context_handler"},
 }
 
+HANDLERS_REQUIRED_ON_THE_OPENCODE_SURFACE = {
+    "PRE_TOOL_USE_HANDLERS": {
+        "prohibited_command_guard_handler",
+        "prohibited_words_guard_handler",
+        "agent_instruction_file_authoring_router_handler",
+        "documentation_authoring_router_handler",
+        "worktree_location_guard_handler",
+        "blocked_skill_invocation_guard_handler",
+        "url_to_skill_router_handler",
+        "subagent_budget_guard_handler",
+    },
+    "POST_TOOL_USE_HANDLERS": {
+        "auto_format_handler",
+        "nix_rebuild_trigger_handler",
+        "record_edited_source_file_handler",
+        "record_skill_invocation_handler",
+        "line_count_limit_guard_handler",
+    },
+    "SESSION_START_HANDLERS": {
+        "compaction_context_recovery_handler",
+    },
+}
+
+HANDLERS_THAT_MUST_STAY_OFF_THE_OPENCODE_SURFACE = {
+    "PRE_TOOL_USE_HANDLERS": {
+        "background_bash_anti_pattern_validator_handler",
+        "codex_sandbox_downgrade_guard_handler",
+        "workspace_directory_injector_handler",
+        "monitor_streaming_pattern_validator_handler",
+    },
+    "SESSION_START_HANDLERS": {
+        "session_context_handler",
+        "herdr_agent_session_report_handler",
+    },
+    "STOP_HANDLERS": {
+        "end_of_turn_format_guard_handler",
+        "herdr_agent_session_report_handler",
+    },
+}
+
 
 def handler_module_names_on_surface(registry_name, surface):
     from hook_module_loader import import_hyphenated_hook_module
@@ -96,6 +137,30 @@ def test_codex_session_start_does_not_scan_deep_work_workspaces():
         "SESSION_START_HANDLERS", CODEX_SURFACE
     )
     assert "deep_work_context_handler" not in running_on_codex
+
+
+@pytest.mark.parametrize(
+    "registry_name", sorted(HANDLERS_REQUIRED_ON_THE_OPENCODE_SURFACE)
+)
+def test_opencode_surface_keeps_compatible_handlers(registry_name):
+    running_on_opencode = handler_module_names_on_surface(
+        registry_name, OPENCODE_SURFACE
+    )
+    assert (
+        HANDLERS_REQUIRED_ON_THE_OPENCODE_SURFACE[registry_name] <= running_on_opencode
+    )
+
+
+@pytest.mark.parametrize(
+    "registry_name", sorted(HANDLERS_THAT_MUST_STAY_OFF_THE_OPENCODE_SURFACE)
+)
+def test_opencode_surface_excludes_unsupported_handlers(registry_name):
+    running_on_opencode = handler_module_names_on_surface(
+        registry_name, OPENCODE_SURFACE
+    )
+    assert HANDLERS_THAT_MUST_STAY_OFF_THE_OPENCODE_SURFACE[registry_name].isdisjoint(
+        running_on_opencode
+    )
 
 
 def test_run_handlers_skips_handlers_that_do_not_declare_the_surface():

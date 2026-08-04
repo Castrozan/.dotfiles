@@ -63,6 +63,7 @@ let
         ;;
       *)
         export OPENCODE_CONFIG="${interactiveSessionConfigOverlay}"
+        export OPENCODE_INTERACTIVE_PREFERENCES_PATH="${interactivePreferencesFile}"
         ;;
     esac
     exec ${opencode-authenticated}/bin/opencode "$@"

@@ -36,6 +36,8 @@ let
   deployedOpencodeSettings = parseDeployedJson cfg.home.file.".config/opencode/opencode.json".text;
   deployedTuiSettings = parseDeployedJson cfg.home.file.".config/opencode/tui.json".text;
   deployedGlobalRules = cfg.home.file.".config/opencode/AGENTS.md".text;
+  deployedHookBridge = cfg.home.file.".config/opencode/plugins/opencode-hook-bridge.js";
+  opencodeWrapperSource = builtins.readFile ../opencode.nix;
   opencodeGoProvider = import ../go-provider.nix { homeDirectory = cfg.home.homeDirectory; };
 
   codexGlobalInstructions =
@@ -142,6 +144,20 @@ in
     mkEvalCheck "domain-opencode-core-skill"
       (builtins.hasAttr ".config/opencode/skills/core/SKILL.md" cfg.home.file)
       "core must deploy as a generated OpenCode skill as well as global instructions";
+
+  domain-opencode-deploys-hook-bridge =
+    mkEvalCheck "domain-opencode-deploys-hook-bridge"
+      (
+        deployedHookBridge ? source
+        && lib.hasInfix "pkgs.replaceVars" (builtins.readFile ../hooks.nix)
+        && lib.hasInfix "opencodeHookDispatcher" (builtins.readFile ../hooks.nix)
+      )
+      "OpenCode must deploy the auto-discovered hook bridge and substitute its dispatcher path from Nix, so pre-tool guard denials and post-tool dispatchers run without depending on a shell-session environment variable";
+
+  domain-opencode-marks-interactive-sessions =
+    mkEvalCheck "domain-opencode-marks-interactive-sessions"
+      (lib.hasInfix "OPENCODE_INTERACTIVE_PREFERENCES_PATH" opencodeWrapperSource)
+      "the interactive OpenCode wrapper must mark keyboard-driven sessions so shared prompt and subagent hook guards run there while unwrapped autonomous sessions remain excluded";
 
   domain-opencode-tui-matches-the-desktop-theme =
     mkEvalCheck "domain-opencode-tui-matches-the-desktop-theme"

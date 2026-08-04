@@ -9,5 +9,6 @@
     ./subagents.nix
     ./commands.nix
     ./private.nix
+    ./hooks.nix
   ];
 }

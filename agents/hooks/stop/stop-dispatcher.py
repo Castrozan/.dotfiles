@@ -22,6 +22,7 @@ import herdr_agent_session_report_handler  # noqa: E402
 import lint_turn_review_handler  # noqa: E402
 from hook_dispatch import (  # noqa: E402
     CLAUDE_SURFACE,
+    CODEX_SURFACE,
     HookHandler,
     dispatched_hook_input_or_exit,
     requested_hook_surface,
@@ -34,7 +35,10 @@ STOP_HANDLERS = [
     HookHandler(
         handle=end_of_turn_format_guard_handler.handle, surfaces=(CLAUDE_SURFACE,)
     ),
-    HookHandler(handle=herdr_agent_session_report_handler.handle),
+    HookHandler(
+        handle=herdr_agent_session_report_handler.handle,
+        surfaces=(CLAUDE_SURFACE, CODEX_SURFACE),
+    ),
 ]
 
 

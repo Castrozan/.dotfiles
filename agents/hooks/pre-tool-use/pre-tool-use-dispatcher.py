@@ -32,6 +32,7 @@ import workspace_directory_injector_handler  # noqa: E402
 import worktree_location_guard_handler  # noqa: E402
 from hook_dispatch import (  # noqa: E402
     CLAUDE_SURFACE,
+    OPENCODE_SURFACE,
     HookHandler,
     dispatched_hook_input_or_exit,
     requested_hook_surface,
@@ -61,12 +62,12 @@ PRE_TOOL_USE_HANDLERS = [
     HookHandler(
         handle=blocked_skill_invocation_guard_handler.handle,
         tool_matcher="Skill",
-        surfaces=(CLAUDE_SURFACE,),
+        surfaces=(CLAUDE_SURFACE, OPENCODE_SURFACE),
     ),
     HookHandler(
         handle=url_to_skill_router_handler.handle,
         tool_matcher="WebFetch",
-        surfaces=(CLAUDE_SURFACE,),
+        surfaces=(CLAUDE_SURFACE, OPENCODE_SURFACE),
     ),
     HookHandler(
         handle=monitor_streaming_pattern_validator_handler.handle,
@@ -84,7 +85,7 @@ PRE_TOOL_USE_HANDLERS = [
     HookHandler(
         handle=subagent_budget_guard_handler.handle,
         tool_matcher="Agent",
-        surfaces=(CLAUDE_SURFACE,),
+        surfaces=(CLAUDE_SURFACE, OPENCODE_SURFACE),
     ),
 ]
 
