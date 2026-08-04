@@ -1,3 +1,16 @@
+"""Deterministic budget for what a hook invocation loads before it dispatches.
+
+Every dispatcher runs as a fresh interpreter, so its import set is its cost,
+and unlike wall time that set is exactly reproducible on any machine. The
+budgets below are the measured counts plus a few slots of headroom: tight
+enough that re-adding pathlib to the always-on path, or importing a handler
+the matcher cannot select, fails here rather than showing up as an agent that
+feels slow.
+
+Raising a budget is a deliberate act. Measure first, and if the new module is
+genuinely needed on that path, move the number and say what bought it.
+"""
+
 import json
 import subprocess
 import sys
@@ -7,6 +20,9 @@ import pytest
 from hook_module_loader import HOOK_SUBPROCESS_TIMEOUT_SECONDS, find_hook_module_path
 
 HOOKS_ROOT = Path(__file__).resolve().parents[2]
+
+IMPORTTIME_HEADER_LABEL = "imported package"
+INTERPRETER_STARTUP_MODULES = {"site", "sitecustomize"}
 
 STDLIB_MODULES_TOO_EXPENSIVE_FOR_EVERY_TOOL_CALL = {
     "dataclasses",
@@ -23,24 +39,63 @@ HANDLERS_THAT_RUN_ON_EVERY_PRE_TOOL_USE_CALL = {
     "prohibited_words_guard_handler",
 }
 
-READ_TOOL_PRE_TOOL_USE_PAYLOAD = {
+SESSION_PAYLOAD_FIELDS = {
     "session_id": "import-budget",
     "transcript_path": "/dev/null",
     "cwd": str(HOOKS_ROOT),
-    "hook_event_name": "PreToolUse",
-    "tool_name": "Read",
-    "tool_input": {"file_path": "/etc/hosts"},
+}
+
+INVOCATIONS_UNDER_BUDGET = {
+    "pre-tool-use/Read": (
+        "pre-tool-use-dispatcher",
+        {
+            "hook_event_name": "PreToolUse",
+            "tool_name": "Read",
+            "tool_input": {"file_path": "/etc/hosts"},
+        },
+        62,
+    ),
+    "pre-tool-use/Bash": (
+        "pre-tool-use-dispatcher",
+        {
+            "hook_event_name": "PreToolUse",
+            "tool_name": "Bash",
+            "tool_input": {"command": "ls -la"},
+        },
+        86,
+    ),
+    "post-tool-use/Skill": (
+        "post-tool-use-dispatcher",
+        {
+            "hook_event_name": "PostToolUse",
+            "tool_name": "Skill",
+            "tool_input": {},
+            "tool_response": {},
+        },
+        75,
+    ),
+    "stop": (
+        "stop-dispatcher",
+        {"hook_event_name": "Stop", "stop_hook_active": False},
+        120,
+    ),
+    "user-prompt-submit": (
+        "user-prompt-submit-dispatcher",
+        {"hook_event_name": "UserPromptSubmit", "prompt": "hello"},
+        83,
+    ),
 }
 
 
-IMPORTTIME_HEADER_LABEL = "imported package"
-INTERPRETER_STARTUP_MODULES = {"site", "sitecustomize"}
-
-
-def modules_imported_by(dispatcher_path, payload):
+def modules_imported_by(dispatcher_name, payload):
     completed = subprocess.run(
-        [sys.executable, "-X", "importtime", str(dispatcher_path)],
-        input=json.dumps(payload),
+        [
+            sys.executable,
+            "-X",
+            "importtime",
+            str(find_hook_module_path(dispatcher_name)),
+        ],
+        input=json.dumps({**SESSION_PAYLOAD_FIELDS, **payload}),
         capture_output=True,
         text=True,
         timeout=HOOK_SUBPROCESS_TIMEOUT_SECONDS,
@@ -58,8 +113,21 @@ def modules_imported_by(dispatcher_path, payload):
 
 @pytest.fixture(scope="module")
 def modules_a_read_tool_call_imports():
-    return modules_imported_by(
-        find_hook_module_path("pre-tool-use-dispatcher"), READ_TOOL_PRE_TOOL_USE_PAYLOAD
+    dispatcher_name, payload, _budget = INVOCATIONS_UNDER_BUDGET["pre-tool-use/Read"]
+    return modules_imported_by(dispatcher_name, payload)
+
+
+@pytest.mark.parametrize("invocation_name", sorted(INVOCATIONS_UNDER_BUDGET))
+def test_every_hook_invocation_stays_within_its_module_budget(invocation_name):
+    dispatcher_name, payload, budget = INVOCATIONS_UNDER_BUDGET[invocation_name]
+    imported = modules_imported_by(dispatcher_name, payload)
+    assert len(imported) <= budget, (
+        f"{invocation_name} imported {len(imported)} modules against a budget of "
+        f"{budget}. Every import is a stat, a read and an unmarshal in a process "
+        "that lives for milliseconds and runs on every matching tool call, so the "
+        "module count is the reproducible proxy for what the hook costs. Find what "
+        "landed on this path and either move it behind its matcher or justify the "
+        "raise with a measurement."
     )
 
 
@@ -92,17 +160,6 @@ def test_a_read_tool_call_imports_no_handler_it_cannot_run(
         "handler imported here is dead weight the tool call paid for. Keep the "
         "handler table on HookHandler(handler_module_name=...) so run_handlers "
         f"imports a handler only once its matcher selects it: {offenders}"
-    )
-
-
-def test_a_read_tool_call_stays_within_its_module_count_budget(
-    modules_a_read_tool_call_imports,
-):
-    assert len(modules_a_read_tool_call_imports) <= 70, (
-        "the module count is the honest proxy for hook startup cost, since every "
-        "import is a stat, a read and an unmarshal in a process that lives for "
-        "milliseconds; it sat at 60 when this bound was written and a jump means "
-        f"a new module landed on the always-on path: {len(modules_a_read_tool_call_imports)}"
     )
 
 

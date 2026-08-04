@@ -25,8 +25,8 @@ from hook_module_loader import HOOK_SUBPROCESS_TIMEOUT_SECONDS, find_hook_module
 
 HOOKS_ROOT = Path(__file__).resolve().parents[2]
 
-MEASURED_RUNS = 15
-DISPATCH_OVERHEAD_BUDGET_MULTIPLIER = 0.8
+MEASURED_RUNS = 21
+DISPATCH_OVERHEAD_BUDGET_MULTIPLIER = 0.65
 
 READ_TOOL_PRE_TOOL_USE_PAYLOAD = {
     "session_id": "startup-latency",
