@@ -33,7 +33,15 @@ def apply_patch_payload(patch_text, working_directory):
     }
 
 
+def make_directory_look_like_dotfiles_repository(root):
+    (root / ".git").mkdir()
+    marker = root / "agents" / "hooks" / "post-tool-use"
+    marker.mkdir(parents=True)
+    marker.joinpath("nix_rebuild_trigger_handler.py").write_text("")
+
+
 def test_nix_rebuild_trigger_fires_on_codex_apply_patch(tmp_path):
+    make_directory_look_like_dotfiles_repository(tmp_path)
     patch = "*** Begin Patch\n*** Update File: home/base/codex/hooks/default.nix\n*** End Patch"
     result = run_codex_post_tool_use_dispatcher(
         tmp_path, apply_patch_payload(patch, tmp_path)
@@ -45,7 +53,18 @@ def test_nix_rebuild_trigger_fires_on_codex_apply_patch(tmp_path):
     assert "MANDATORY" in emitted["systemMessage"]
 
 
+def test_nix_rebuild_trigger_silent_when_nix_file_outside_dotfiles_repo(tmp_path):
+    patch = "*** Begin Patch\n*** Update File: home/base/codex/hooks/default.nix\n*** End Patch"
+    result = run_codex_post_tool_use_dispatcher(
+        tmp_path, apply_patch_payload(patch, tmp_path)
+    )
+
+    assert result.returncode == 0
+    assert result.stdout.strip() == ""
+
+
 def test_nix_rebuild_trigger_silent_when_no_nix_file_changed(tmp_path):
+    make_directory_look_like_dotfiles_repository(tmp_path)
     patch = "*** Begin Patch\n*** Update File: app/main.py\n*** End Patch"
     result = run_codex_post_tool_use_dispatcher(
         tmp_path, apply_patch_payload(patch, tmp_path)

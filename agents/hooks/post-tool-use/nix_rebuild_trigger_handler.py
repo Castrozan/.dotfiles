@@ -23,6 +23,10 @@ NIX_FILE_EXTENSIONS = [
     ".nix",
 ]
 
+DOTFILES_REPOSITORY_MARKER_RELATIVE_PATH = (
+    "agents/hooks/post-tool-use/nix_rebuild_trigger_handler.py"
+)
+
 
 def has_nix_file_extension(path: str) -> bool:
     if not path:
@@ -35,11 +39,30 @@ def has_nix_file_extension(path: str) -> bool:
     return False
 
 
+def is_inside_dotfiles_repository(path: str) -> bool:
+    candidate = os.path.abspath(path)
+    if os.path.isfile(candidate):
+        candidate = os.path.dirname(candidate)
+
+    while True:
+        has_git_boundary = os.path.exists(os.path.join(candidate, ".git"))
+        has_dotfiles_marker = os.path.exists(
+            os.path.join(candidate, DOTFILES_REPOSITORY_MARKER_RELATIVE_PATH)
+        )
+        if has_git_boundary and has_dotfiles_marker:
+            return True
+
+        parent = os.path.dirname(candidate)
+        if parent == candidate:
+            return False
+        candidate = parent
+
+
 def handle(hook_input: dict):
     changed_nix_files = [
         path
         for path in collect_changed_file_paths(hook_input)
-        if has_nix_file_extension(path)
+        if has_nix_file_extension(path) and is_inside_dotfiles_repository(path)
     ]
 
     if not changed_nix_files:
