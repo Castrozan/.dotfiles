@@ -33,6 +33,8 @@
   "home/base/browser/firefox.nix": 248,
   "home/base/media/__tests__/unit/test_speed_read.py": 244,
   "home/base/media/scripts/speed_read.py": 319,
+  "home/base/opencode/hooks/__tests__/unit/test_opencode_hook_bridge.py": 423,
+  "home/base/opencode/hooks/opencode-hook-bridge.js": 380,
   "home/base/system/__tests__/unit/test_mouse_poll_rate.py": 400,
   "home/base/system/__tests__/unit/test_nix_gc.py": 372,
   "home/base/system/scripts/mouse_poll_rate.py": 274,
