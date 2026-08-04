@@ -1,20 +1,13 @@
 {
+  helpers,
   pkgs,
   lib,
   inputs,
   nixpkgs-version,
   home-version,
+  ...
 }:
 let
-  helpers = import ../../../../../__tests__/nix-checks/helpers.nix {
-    inherit
-      pkgs
-      lib
-      inputs
-      nixpkgs-version
-      home-version
-      ;
-  };
   inherit (helpers) mkEvalCheck;
 
   chromeGlobalLauncher = import ../chrome-global-launcher.nix { inherit pkgs; };
@@ -117,6 +110,7 @@ in
     inputs
     nixpkgs-version
     home-version
+    helpers
     ;
 }
 // import ./checks/preferences-overrides-checks.nix {
@@ -126,6 +120,7 @@ in
     inputs
     nixpkgs-version
     home-version
+    helpers
     ;
 }
 // import ./checks/personal-profile-icon-checks.nix {
@@ -135,5 +130,6 @@ in
     inputs
     nixpkgs-version
     home-version
+    helpers
     ;
 }

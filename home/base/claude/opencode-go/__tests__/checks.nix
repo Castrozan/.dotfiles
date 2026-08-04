@@ -4,6 +4,7 @@
   mkEvalCheck,
   helpers,
   self,
+  ...
 }:
 let
   linuxConfiguration = helpers.homeManagerTestConfigurationForLinuxHost "chise" [
