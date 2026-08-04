@@ -3,6 +3,9 @@ from pathlib import Path
 
 OPENCODE_GO_MODULE = Path(__file__).resolve().parents[2] / "default.nix"
 OPENCODE_GO_PROVIDER = OPENCODE_GO_MODULE.parents[2] / "opencode" / "go-provider.nix"
+TRANSLATION_PROXY_CONFIGURATION = (
+    OPENCODE_GO_MODULE.parent / "translation-proxy-configuration.nix"
+)
 CONSOLE_GO_BASE_URL = "https://opencode.ai/zen/go"
 OPENCODE_GO_SECRET_PATH_FRAGMENT = ".secrets/opencode-api-key"
 CONSOLE_GO_MODELS = {
@@ -55,13 +58,15 @@ def test_the_launcher_targets_the_loopback_translation_proxy():
 
 
 def test_the_proxy_forwards_to_the_console_go_openai_endpoint():
-    source = module_source()
     assert f'baseUrl = "{CONSOLE_GO_BASE_URL}"' in provider_source(), (
         "the shared provider must define the Console Go endpoint"
     )
-    assert 'base-url: "${opencodeGo.baseUrl}/v1"' in source, (
+    assert 'upstreamBaseUrl = "${opencodeGo.baseUrl}/v1"' in module_source(), (
         "the proxy must forward to Console Go's OpenAI path, which is the one that keeps tool names intact"
     )
+    assert (
+        'base-url: "${upstreamBaseUrl}"' in TRANSLATION_PROXY_CONFIGURATION.read_text()
+    ), "the generated config must place that upstream on the provider's base-url"
 
 
 def test_the_api_key_never_reaches_the_nix_store():
