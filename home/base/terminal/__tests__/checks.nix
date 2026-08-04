@@ -109,28 +109,30 @@ in
       (hasBypassMouseReporting && hasOpenLinkAction && hasNopDownEvent && hasMouseReportingBindings)
       "wezterm must have bypass_mouse_reporting_modifiers, OpenLinkAtMouseCursor, Nop down-event, and mouse_reporting=true bindings for ctrl+click to work inside tmux";
 
-  domain-terminal-wezterm-ctrl-click-opens-work-chrome-only =
+  domain-terminal-wezterm-ctrl-click-opens-configured-default-browser =
     let
       weztermConfig = cfg.programs.wezterm.extraConfig;
       hasOpenUriHandler = lib.hasInfix "wezterm.on(\"open-uri\"" weztermConfig;
       routesToWorkChrome = lib.hasInfix "summon-chrome-work-profile" weztermConfig;
-      hasLinuxBraveBinary = lib.hasInfix "{ \"brave\", uri }" weztermConfig;
+      hasLinuxXdgOpenBinary = lib.hasInfix "{ \"xdg-open\", uri }" weztermConfig;
+      noHardcodedLinuxBrowserBinary = !(lib.hasInfix "{ \"brave\", uri }" weztermConfig);
       opensLinkAtMouseCursor = lib.hasInfix "OpenLinkAtMouseCursor" weztermConfig;
       hasPlainCtrlMods = lib.hasInfix "mods = \"CTRL\"" weztermConfig;
       noPersonalProfileRouting = !(lib.hasInfix "summon-chrome-personal-profile" weztermConfig);
       noSuperMouseBinding = !(lib.hasInfix "mods = \"CTRL|SUPER\"" weztermConfig);
     in
-    mkEvalCheck "domain-terminal-wezterm-ctrl-click-opens-work-chrome-only"
+    mkEvalCheck "domain-terminal-wezterm-ctrl-click-opens-configured-default-browser"
       (
         hasOpenUriHandler
         && routesToWorkChrome
-        && hasLinuxBraveBinary
+        && hasLinuxXdgOpenBinary
+        && noHardcodedLinuxBrowserBinary
         && opensLinkAtMouseCursor
         && hasPlainCtrlMods
         && noPersonalProfileRouting
         && noSuperMouseBinding
       )
-      "wezterm ctrl+click must open the hovered link only in the work Chrome profile: an open-uri handler that unconditionally runs summon-chrome-work-profile on darwin (brave on linux), a plain CTRL mouse binding using OpenLinkAtMouseCursor, and no personal-profile routing or ctrl+super mouse binding";
+      "wezterm ctrl+click must open the hovered link in the browser the machine already declares as default, never in a second browser the lua names on its own: the open-uri handler returns false so wezterm never falls through to its own launcher, which makes that handler the only thing deciding where a link lands. On darwin it runs summon-chrome-work-profile because the work profile is the intended target there, and on linux it must hand the uri to xdg-open so the xdg default (chrome-global.desktop) stays the single source of truth and a browser switch needs no lua edit. A hardcoded linux browser binary is what this check exists to catch: it silently outranks xdg-settings, xdg-mime and gio all agreeing on a different browser. The binding stays a plain CTRL mouse binding using OpenLinkAtMouseCursor, with no personal-profile routing and no ctrl+super mouse binding";
 
   domain-terminal-wezterm-binds-reload-configuration =
     mkEvalCheck "domain-terminal-wezterm-binds-reload-configuration"

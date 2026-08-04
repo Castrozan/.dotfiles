@@ -37,7 +37,7 @@ wezterm.on("open-uri", function(window, pane, uri)
 			uri,
 		})
 	else
-		wezterm.background_child_process({ "brave", uri })
+		wezterm.background_child_process({ "xdg-open", uri })
 	end
 	return false
 end)
