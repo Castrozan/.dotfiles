@@ -123,8 +123,7 @@ local config = {
 		{ key = "p", mods = "CTRL|SHIFT", action = wezterm.action.DisableDefaultAssignment },
 		{ key = "UpArrow", mods = "CTRL|SHIFT", action = wezterm.action.SendString("\x1b[1;6A") },
 		{ key = "DownArrow", mods = "CTRL|SHIFT", action = wezterm.action.SendString("\x1b[1;6B") },
-		{ key = "PageUp", mods = "CTRL|SHIFT", action = wezterm.action.SendString("\x02p") },
-		{ key = "PageDown", mods = "CTRL|SHIFT", action = wezterm.action.SendString("\x02n") },
+
 		{ key = "w", mods = "CTRL|SHIFT", action = wezterm.action.CloseCurrentTab({ confirm = false }) },
 	},
 

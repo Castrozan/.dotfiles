@@ -75,6 +75,10 @@ map("n", "<C-PageUp>", "<cmd>BufferLineCyclePrev<cr>", { desc = "Previous open f
 map("n", "<C-PageDown>", "<cmd>BufferLineCycleNext<cr>", { desc = "Next open file" })
 map("i", "<C-PageUp>", "<cmd>BufferLineCyclePrev<cr>", { desc = "Previous open file" })
 map("i", "<C-PageDown>", "<cmd>BufferLineCycleNext<cr>", { desc = "Next open file" })
+map("n", "<C-S-PageUp>", "<cmd>BufferLineMovePrev<cr>", { desc = "Move open file left" })
+map("n", "<C-S-PageDown>", "<cmd>BufferLineMoveNext<cr>", { desc = "Move open file right" })
+map("i", "<C-S-PageUp>", "<cmd>BufferLineMovePrev<cr>", { desc = "Move open file left" })
+map("i", "<C-S-PageDown>", "<cmd>BufferLineMoveNext<cr>", { desc = "Move open file right" })
 
 map("n", "<A-Up>", "<cmd>m .-2<cr>==", { desc = "Move line up" })
 map("n", "<A-Down>", "<cmd>m .+1<cr>==", { desc = "Move line down" })
