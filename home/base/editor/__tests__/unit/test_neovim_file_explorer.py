@@ -74,3 +74,48 @@ def test_ctrl_shift_e_focuses_dashboard_and_preserves_other_picker_navigation(
         check=False,
     )
     assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_explorer_dims_gitignored_entries_only_and_not_every_dot_prefixed_entry(
+    tmp_path,
+):
+    repository_root = Path(__file__).resolve().parents[5]
+    explorer_plugin_path = (
+        repository_root / ".config/nvim/lua/plugins/snacks-explorer.lua"
+    )
+    lua_script_path = tmp_path / "explorer_dimming.lua"
+    lua_script_path.write_text(
+        textwrap.dedent(
+            f"""
+            local explorer = dofile({json.dumps(str(explorer_plugin_path))})[1].opts.picker.sources.explorer
+
+            local tracked_dot_directory = {{ file = "/repo/.husky", dir = true, hidden = true }}
+            assert(
+              explorer.transform(tracked_dot_directory) ~= false,
+              "the explorer transform dropped a dot-prefixed entry from the tree"
+            )
+            assert(
+              not tracked_dot_directory.hidden,
+              "a tracked dot-prefixed entry is still flagged hidden and renders dimmed"
+            )
+
+            local gitignored_dot_directory = {{ file = "/repo/.logs", dir = true, hidden = true, ignored = true }}
+            explorer.transform(gitignored_dot_directory)
+            assert(
+              gitignored_dot_directory.ignored,
+              "a gitignored entry lost the flag that renders it dimmed"
+            )
+            vim.cmd("qa!")
+            """
+        ).strip()
+    )
+    environment = dict(os.environ, XDG_STATE_HOME=str(tmp_path / "state"))
+    result = subprocess.run(
+        ["nvim", "--headless", "-u", "NONE", "-l", str(lua_script_path)],
+        cwd=repository_root,
+        env=environment,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr

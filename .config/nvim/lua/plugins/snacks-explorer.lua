@@ -26,6 +26,10 @@ local function yank_selected_paths_without_trailing_newline()
   Snacks.notify.info("Yanked " .. #selected_paths .. " files")
 end
 
+local function clear_hidden_flag_so_only_gitignored_entries_render_dimmed(item)
+  item.hidden = false
+end
+
 return {
   {
     "folke/snacks.nvim",
@@ -37,6 +41,7 @@ return {
             follow = true,
             ignored = true,
             exclude = { ".git" },
+            transform = clear_hidden_flag_so_only_gitignored_entries_render_dimmed,
             win = {
               list = {
                 keys = {
