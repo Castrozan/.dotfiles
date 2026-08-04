@@ -6,24 +6,41 @@ from pathlib import Path
 REPOSITORY_LOCAL_HOOK_NAME = "prepare-commit-msg"
 SKIPPED_MESSAGE_SOURCES = frozenset({"merge", "squash"})
 PROVENANCE_ENABLED_CONFIGURATION_KEY = "agent.provenance.enabled"
+COMMENT_CHARACTER_CONFIGURATION_KEY = "core.commentchar"
+READ_BOTH_CONFIGURATION_KEYS = f"^({PROVENANCE_ENABLED_CONFIGURATION_KEY}|{COMMENT_CHARACTER_CONFIGURATION_KEY})$".replace(
+    ".", r"\."
+)
+DISABLING_CONFIGURATION_VALUES = frozenset({"false", "0", "no", "off"})
 DEFAULT_COMMENT_CHARACTER = "#"
 
 
-def comment_character_for_repository() -> str:
+def repository_provenance_configuration() -> tuple[bool, str]:
     configuration_read = subprocess.run(
-        ["git", "config", "--get", "core.commentChar"],
+        ["git", "config", "-z", "--get-regexp", READ_BOTH_CONFIGURATION_KEYS],
         capture_output=True,
         text=True,
         check=False,
     )
-    configured_comment_character = configuration_read.stdout.strip()
-    if not configured_comment_character or configured_comment_character == "auto":
-        return DEFAULT_COMMENT_CHARACTER
-    return configured_comment_character
+    provenance_is_enabled = True
+    comment_character = DEFAULT_COMMENT_CHARACTER
+    for configuration_entry in configuration_read.stdout.split("\0"):
+        configuration_key, _newline, configuration_value = (
+            configuration_entry.partition("\n")
+        )
+        configuration_value = configuration_value.strip()
+        if configuration_key == PROVENANCE_ENABLED_CONFIGURATION_KEY:
+            provenance_is_enabled = (
+                configuration_value.lower() not in DISABLING_CONFIGURATION_VALUES
+            )
+        elif configuration_key == COMMENT_CHARACTER_CONFIGURATION_KEY:
+            if configuration_value and configuration_value != "auto":
+                comment_character = configuration_value
+    return provenance_is_enabled, comment_character
 
 
-def message_file_carries_a_message(message_file_path: Path) -> bool:
-    comment_character = comment_character_for_repository()
+def message_file_carries_a_message(
+    message_file_path: Path, comment_character: str
+) -> bool:
     try:
         message_lines = message_file_path.read_text(encoding="utf-8").splitlines()
     except OSError:
@@ -32,16 +49,6 @@ def message_file_carries_a_message(message_file_path: Path) -> bool:
         message_line.strip() and not message_line.startswith(comment_character)
         for message_line in message_lines
     )
-
-
-def provenance_is_disabled_for_repository() -> bool:
-    configuration_read = subprocess.run(
-        ["git", "config", "--get", PROVENANCE_ENABLED_CONFIGURATION_KEY],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    return configuration_read.stdout.strip().lower() in {"false", "0", "no", "off"}
 
 
 def repository_local_hook_path() -> Path | None:
@@ -95,10 +102,11 @@ def main(hook_arguments: list[str]) -> int:
     message_source = hook_arguments[1] if len(hook_arguments) > 1 else ""
     if message_source in SKIPPED_MESSAGE_SOURCES:
         return 0
-    if provenance_is_disabled_for_repository():
+    provenance_is_enabled, comment_character = repository_provenance_configuration()
+    if not provenance_is_enabled:
         return 0
     message_file_path = Path(hook_arguments[0])
-    if not message_file_carries_a_message(message_file_path):
+    if not message_file_carries_a_message(message_file_path, comment_character):
         return 0
     write_trailers_without_blocking_the_commit(message_file_path)
     return 0
