@@ -1,46 +1,41 @@
 {
+  helpers,
   pkgs,
   lib,
   self,
   ...
 }:
 let
-  helpers = import ../../../__tests__/nix-checks/helpers.nix {
-    inherit pkgs lib;
-    inputs = { };
-    nixpkgs-version = "25.11";
-    home-version = "25.11";
-  };
   inherit (helpers) mkEvalCheck;
 
   nixosCfg = self.nixosConfigurations.chise.config;
 
-  arrStackChecks = import ./arr-stack.nix { inherit pkgs lib; };
+  arrStackChecks = import ./arr-stack.nix { inherit pkgs lib helpers; };
 
-  arrStackPrivateLibraryChecks = import ./arr-stack-private-library.nix { inherit pkgs lib; };
+  arrStackPrivateLibraryChecks = import ./arr-stack-private-library.nix { inherit pkgs lib helpers; };
 
-  cloudflareTunnelChecks = import ./cloudflare-tunnels.nix { inherit pkgs lib; };
+  cloudflareTunnelChecks = import ./cloudflare-tunnels.nix { inherit pkgs lib helpers; };
 
-  arrMediaFunnelChecks = import ./arr-media-funnel.nix { inherit pkgs lib; };
+  arrMediaFunnelChecks = import ./arr-media-funnel.nix { inherit pkgs lib helpers; };
 
   arrMediaLoginRateLimitProxyChecks = import ./arr-media-login-ratelimit-proxy.nix {
-    inherit pkgs lib;
+    inherit pkgs lib helpers;
   };
 
   arrStackOnDemandSupervisorChecks = import ./arr-stack-on-demand-supervisor.nix {
-    inherit pkgs lib;
+    inherit pkgs lib helpers;
   };
 
   jellyseerrNotificationsChecks = import ./jellyseerr-notifications.nix {
-    inherit pkgs lib;
+    inherit pkgs lib helpers;
   };
 
   arrConfigProvisionerChecks = import ./arr-config-provisioner.nix {
-    inherit pkgs lib;
+    inherit pkgs lib helpers;
   };
 
   bazarrAuthProvisionerChecks = import ./bazarr-auth-provisioner.nix {
-    inherit pkgs lib;
+    inherit pkgs lib helpers;
   };
 
   arrStackHostIntegrationChecks = import ./arr-stack-host-integration.nix {

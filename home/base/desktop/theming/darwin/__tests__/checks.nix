@@ -1,20 +1,10 @@
 {
+  helpers,
   pkgs,
   lib,
-  inputs,
-  nixpkgs-version,
-  home-version,
+  ...
 }:
 let
-  helpers = import ../../../../../../__tests__/nix-checks/helpers.nix {
-    inherit
-      pkgs
-      lib
-      inputs
-      nixpkgs-version
-      home-version
-      ;
-  };
   inherit (helpers) mkEvalCheck;
 
   appearanceConfiguration = helpers.homeManagerTestConfigurationForDarwin [ ../default.nix ];

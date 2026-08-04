@@ -1,14 +1,10 @@
 {
+  helpers,
   pkgs,
   lib,
+  ...
 }:
 let
-  helpers = import ../../../__tests__/nix-checks/helpers.nix {
-    inherit pkgs lib;
-    inputs = { };
-    nixpkgs-version = "25.11";
-    home-version = "25.11";
-  };
   inherit (helpers) mkEvalCheck;
 
   evalNotifications =

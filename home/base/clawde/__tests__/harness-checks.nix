@@ -3,6 +3,7 @@
   mkEvalCheck,
   helpers,
   self,
+  ...
 }:
 let
   fixtures = import ./harness-check-fixtures.nix { inherit helpers self; };

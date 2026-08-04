@@ -3,6 +3,7 @@
   mkEvalCheck,
   helpers,
   self,
+  ...
 }:
 let
   cfgWithDiscordChannelAccess = helpers.homeManagerTestConfiguration [

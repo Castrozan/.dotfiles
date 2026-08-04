@@ -3,6 +3,7 @@
   mkEvalCheck,
   helpers,
   self,
+  ...
 }:
 let
   fleetWithTwoAgents = helpers.homeManagerTestConfiguration [
