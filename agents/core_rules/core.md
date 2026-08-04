@@ -63,7 +63,10 @@ to another repository mid-session and an unanchored push lands on the wrong remo
 giant commit. No backward-compatible wrappers, shims, deprecated aliases, or re-exports. Fix downstream references
 instead. Landing a change on a repo the user owns is part of the task: merge a finished CI-green PR and report the
 deploy outcome rather than parking it as a decision for them. A repo they do not own, someone else's release train, red
-CI, or an explicit hold are still genuine stops.
+CI, or an explicit hold are still genuine stops. A commit hook stamps every commit you make with the harness, machine,
+session and resume command that produced it as `Agent-*` trailers, so never write or edit those trailers by hand, which
+records a session that does not exist, and read the session behind any past commit with `git agent-session <sha>`,
+adding `--prompts` for the prompts that drove it.
 </git>
 
 <tools>

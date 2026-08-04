@@ -49,6 +49,7 @@ let
     skipDangerousModePermissionPrompt = true;
     includeCoAuthoredBy = false;
     includeGitInstructions = false;
+    cleanupPeriodDays = 3650;
     showTurnDuration = true;
     awaySummaryEnabled = true;
     teammateMode = "tmux";

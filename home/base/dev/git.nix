@@ -1,5 +1,7 @@
 { pkgs, ... }:
 {
+  imports = [ ./agent-commit-provenance ];
+
   home.packages = with pkgs; [
     gh
     delta
