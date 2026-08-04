@@ -8,7 +8,7 @@ let
   homeDir = config.home.homeDirectory;
 
   defaultOpencodeModel = "opencode-go/deepseek-v4-flash";
-  titleGenerationModel = "opencode/ling-3.0-flash-free";
+  titleGenerationModel = "opencode-go/kimi-k3";
 
   mcpServerDefinitions = import ./mcp-servers.nix {
     inherit pkgs latest homeDir;

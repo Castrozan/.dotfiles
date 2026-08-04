@@ -16,9 +16,10 @@ against the model choice.
 ## Provider and model
 
 - opencode reaches models through provider credentials in
-  `~/.local/share/opencode/auth.json`, not through the nix config. The built-in
-  `opencode` provider serves its free tier with no separate credential, so the
-  declared default lives there and resolves on any host in the fleet.
+  `~/.local/share/opencode/auth.json`, not through the nix config. The `opencode`
+  wrapper exports `OPENCODE_API_KEY` from the agenix secret, so the declared
+  `opencode-go` default is authenticated on every host in the fleet. The free
+  Zen tier was dropped; the paid Go plan is the only provider in use.
 - A default naming a provider the host has not authenticated is not a validation
   error. `opencode debug config` accepts it and the failure only surfaces as an
   opaque server error on the first turn, so a model default is only proven by
