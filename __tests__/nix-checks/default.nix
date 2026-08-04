@@ -69,6 +69,9 @@ let
     ../../hosts/shared-darwin/brave/__tests__/checks.nix
     ../../hosts/shared-darwin/disable-unused-apple-background-agents/__tests__/checks.nix
     ../../hosts/shared-darwin/displays/__tests__/checks.nix
+    ../../hosts/shared-darwin/finder/__tests__/checks.nix
+    ../../hosts/shared-darwin/symbolic-hotkeys/__tests__/checks.nix
+    ../../hosts/shared-darwin/window-manager/__tests__/checks.nix
   ];
 in
 lib.foldl' lib.mergeAttrs { } (map (checkModule: import checkModule checkModuleArgs) checkModules)
