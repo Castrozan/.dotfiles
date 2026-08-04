@@ -1,4 +1,3 @@
-import json
 import os
 
 from flat_deploy_test_support import (

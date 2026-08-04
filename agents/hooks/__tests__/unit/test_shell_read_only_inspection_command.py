@@ -140,3 +140,16 @@ class TestTheExemptionItself:
         assert not offset_lies_in_read_only_inspection_command_segment(
             command_text, offset_of(command_text, needle)
         )
+
+    def test_the_composed_question_covers_both_kinds_of_unexecuted_text(self):
+        read_only_segment = "grep -rn '__tests__/run.sh' agents"
+        heredoc_body = (
+            "git commit -F- <<'MESSAGE'\n__tests__/run.sh is CI-owned\nMESSAGE"
+        )
+        for command_text in (read_only_segment, heredoc_body):
+            assert offset_lies_in_text_the_shell_never_runs(
+                command_text, offset_of(command_text, "__tests__")
+            )
+        assert not offset_lies_in_text_the_shell_never_runs(
+            "__tests__/run.sh --quick", 0
+        )

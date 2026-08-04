@@ -4,12 +4,17 @@ from shell_command_segment_scanning import (
     leading_command_name,
     offset_after_leading_segment_separators,
     offset_is_inside_command_substitution,
+    offset_separates_segments,
     pipeline_downstream_executes_its_input,
+    quote_state_by_offset,
     segment_bounds_containing_offset,
     subcommand_after_global_options,
     tokens_after_leading_variable_assignments,
 )
-from shell_heredoc_body import offset_lies_in_inert_heredoc_body
+from shell_heredoc_body import (
+    inert_heredoc_body_bounds,
+    offset_lies_in_inert_heredoc_body,
+)
 
 READ_ONLY_INSPECTION_COMMANDS = frozenset(
     "ack basename bat cat cksum column comm cut date diff dirname du echo egrep "
@@ -61,3 +66,49 @@ def offset_lies_in_text_the_shell_never_runs(command_text, offset):
     if offset_lies_in_inert_heredoc_body(command_text, inspected_offset):
         return True
     return offset_lies_in_read_only_inspection_command_segment(command_text, offset)
+
+
+def read_only_segment_bounds(command_text):
+    quote_states = quote_state_by_offset(command_text)
+    inert_bounds = []
+    segment_start = 0
+    for offset in range(len(command_text) + 1):
+        ends_the_segment = offset == len(command_text) or offset_separates_segments(
+            command_text, offset, quote_states
+        )
+        if not ends_the_segment:
+            continue
+        segment_is_inert = not offset_is_inside_command_substitution(
+            command_text, segment_start
+        ) and segment_is_read_only_inspection(command_text[segment_start:offset])
+        if segment_is_inert and not pipeline_downstream_executes_its_input(
+            command_text, offset
+        ):
+            inert_bounds.append((segment_start, offset))
+        segment_start = offset + 1
+    return inert_bounds
+
+
+def text_with_spans_blanked(command_text, spans):
+    if not spans:
+        return command_text
+    remaining_characters = list(command_text)
+    for span_start, span_end in spans:
+        for offset in range(span_start, min(span_end, len(command_text))):
+            if not remaining_characters[offset].isspace():
+                remaining_characters[offset] = " "
+    return "".join(remaining_characters)
+
+
+def command_text_outside_inert_heredoc_bodies(command_text):
+    return text_with_spans_blanked(
+        command_text, inert_heredoc_body_bounds(command_text)
+    )
+
+
+def command_text_the_shell_executes(command_text):
+    return text_with_spans_blanked(
+        command_text,
+        inert_heredoc_body_bounds(command_text)
+        + read_only_segment_bounds(command_text),
+    )

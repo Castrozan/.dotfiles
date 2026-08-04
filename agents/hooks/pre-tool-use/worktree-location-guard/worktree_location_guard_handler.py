@@ -20,6 +20,9 @@ from hook_dispatch import HandlerResult  # noqa: E402
 from shell_command_invocation_position import (  # noqa: E402
     COMMAND_INVOCATION_POSITION_PREFIX,
 )
+from shell_read_only_inspection_command import (  # noqa: E402
+    command_text_the_shell_executes,
+)
 
 OUTSIDE_REPOSITORY_OVERRIDE_SENTINEL = "WORKTREE_OUTSIDE_REPOSITORY_SANCTIONED=1"
 CANONICAL_WORKTREE_DIRECTORY = ".worktrees"
@@ -95,7 +98,7 @@ def handle(hook_input):
     command = (hook_input.get("tool_input", {}) or {}).get("command", "") or ""
     if OUTSIDE_REPOSITORY_OVERRIDE_SENTINEL in command:
         return None
-    for segment in worktree_creation_segments(command):
+    for segment in worktree_creation_segments(command_text_the_shell_executes(command)):
         destination = destination_argument_of(segment)
         if destination is None:
             continue

@@ -30,6 +30,9 @@ from interactive_command_hang_detectors import (  # noqa: E402
     command_launches_interactive_full_screen_program,
     command_runs_git_subcommand_that_opens_an_editor,
 )
+from shell_read_only_inspection_command import (  # noqa: E402
+    command_text_the_shell_executes,
+)
 
 BACKGROUND_BASH_PATTERNS_REFERENCE_FILE_PATH = (
     "~/.claude/hooks/background-bash-anti-patterns.md"
@@ -125,20 +128,24 @@ def handle(hook_input):
     if not command_string:
         return None
 
+    executed_command_text = command_text_the_shell_executes(command_string)
+
     if not tool_input.get("run_in_background", False):
-        if command_waits_on_ci_in_the_foreground(command_string):
+        if command_waits_on_ci_in_the_foreground(executed_command_text):
             return HandlerResult(
                 decision="deny", reason=build_foreground_ci_wait_deny_reason()
             )
         return None
 
-    triggered_rule_names = find_background_bash_anti_patterns_in_command(command_string)
+    triggered_rule_names = find_background_bash_anti_patterns_in_command(
+        executed_command_text
+    )
     if triggered_rule_names:
         return HandlerResult(
             decision="deny", reason=build_deny_reason_message(triggered_rule_names)
         )
 
-    if command_starts_a_lingering_daemon_or_service(command_string):
+    if command_starts_a_lingering_daemon_or_service(executed_command_text):
         deny_reason = build_lingering_daemon_deny_reason()
         return HandlerResult(decision="deny", reason=deny_reason)
 

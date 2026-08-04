@@ -15,6 +15,10 @@ for _shared_module_candidate_directory in [_MODULE_DIRECTORY] + [
         sys.path.insert(0, _shared_module_candidate_path)
 
 from hook_dispatch import HandlerResult  # noqa: E402
+from shell_read_only_inspection_command import (  # noqa: E402
+    command_text_outside_inert_heredoc_bodies,
+    command_text_the_shell_executes,
+)
 from streamed_command_anti_pattern_detectors import (  # noqa: E402
     find_busy_wait_anti_patterns_in_command,
     find_hang_anti_patterns_in_command,
@@ -89,9 +93,14 @@ def handle(hook_input):
     if not command_string:
         return None
 
-    triggered_streaming_rules = find_streaming_anti_patterns_in_command(command_string)
-    triggered_hang_rules = find_hang_anti_patterns_in_command(command_string)
-    triggered_busy_wait_rules = find_busy_wait_anti_patterns_in_command(command_string)
+    executed_command_text = command_text_the_shell_executes(command_string)
+    triggered_streaming_rules = find_streaming_anti_patterns_in_command(
+        command_text_outside_inert_heredoc_bodies(command_string)
+    )
+    triggered_hang_rules = find_hang_anti_patterns_in_command(executed_command_text)
+    triggered_busy_wait_rules = find_busy_wait_anti_patterns_in_command(
+        executed_command_text
+    )
     if not (
         triggered_streaming_rules or triggered_hang_rules or triggered_busy_wait_rules
     ):
