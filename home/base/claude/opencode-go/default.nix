@@ -32,25 +32,18 @@ let
       "systemctl --user status ${translationProxySystemdServiceName}";
 
   translatedModelNames = lib.unique (builtins.attrValues opencodeGo.models);
-  translatedModelEntries = lib.concatMapStrings (modelName: ''
-    - name: "${modelName}"
-      alias: "${modelName}"
-  '') translatedModelNames;
 
-  translationProxyConfigurationTemplate = pkgs.writeText "claude-go-proxy-config-template.yaml" ''
-    host: "${translationProxyListenAddress}"
-    port: ${toString translationProxyListenPort}
-    auth-dir: "${translationProxyAuthenticationDirectory}"
-    api-keys: []
-    debug: false
-    openai-compatibility:
-      - name: "opencode-go"
-        base-url: "${opencodeGo.baseUrl}/v1"
-        api-key-entries:
-          - api-key: "@OPENCODE_GO_API_KEY@"
-        models:
-    ${translatedModelEntries}
-  '';
+  translationProxyConfigurationText = import ./translation-proxy-configuration.nix {
+    listenAddress = translationProxyListenAddress;
+    listenPort = translationProxyListenPort;
+    authenticationDirectory = translationProxyAuthenticationDirectory;
+    upstreamBaseUrl = "${opencodeGo.baseUrl}/v1";
+    upstreamProviderName = "opencode-go";
+    modelNames = translatedModelNames;
+    apiKeyPlaceholder = "@OPENCODE_GO_API_KEY@";
+  };
+
+  translationProxyConfigurationTemplate = pkgs.writeText "claude-go-proxy-config-template.yaml" translationProxyConfigurationText;
 
   renderProxyConfigurationSource = pkgs.writeText "render-proxy-configuration-and-exec.py" (
     builtins.readFile ./scripts/render_proxy_configuration_and_exec.py
