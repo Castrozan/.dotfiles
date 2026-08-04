@@ -26,24 +26,15 @@ APPLICABLE_TOOL_NAMES = frozenset(
     {"Write", "Edit", "MultiEdit", "NotebookEdit", "apply_patch"}
 )
 
-BLOCK_MESSAGE_FILE_PATH = _MODULE_DIRECTORY / "line-count-block-message.md"
-BLOCK_MESSAGE_FALLBACK = (
-    "Split it into smaller modules with single responsibilities before continuing."
-)
-
-
-def read_block_message_guidance() -> str:
-    try:
-        return BLOCK_MESSAGE_FILE_PATH.read_text(encoding="utf-8").strip()
-    except OSError:
-        return BLOCK_MESSAGE_FALLBACK
+BLOCK_MESSAGE_REFERENCE_FILE_PATH = "~/.claude/hooks/line-count-block-message.md"
 
 
 def blocking_result(target_file_path: str, line_count: int):
     reason = (
-        f"File '{target_file_path}' is {line_count} lines, exceeding the "
-        f"{LINE_COUNT_BLOCKING_THRESHOLD}-line hard limit. "
-        f"{read_block_message_guidance()}"
+        f"File '{target_file_path}' is {line_count} lines, over the "
+        f"{LINE_COUNT_BLOCKING_THRESHOLD}-line hard limit. Split it into modules "
+        f"with single responsibilities, then read "
+        f"{BLOCK_MESSAGE_REFERENCE_FILE_PATH} for where the pieces belong."
     )
     system_message = (
         f"BLOCKED: {target_file_path} has {line_count} lines "

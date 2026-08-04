@@ -1,1 +1,11 @@
-Split it into smaller modules with single responsibilities before continuing. When the split lands 2+ related files in a generic catch-all folder (`scripts/`, `lib/`, `utils/`, or a flat hooks directory), move them into a new domain-named subfolder rather than leaving them flat among unrelated files. Reference such a folder from nix by its directory, not the single entry file, so the sibling modules resolve from the same store path.
+# A file went over the line limit
+
+Split it into modules that each do one thing. Two rules govern where the
+pieces land.
+
+Do not leave the new siblings loose in a generic catch-all folder. When the
+split puts two or more related files into `scripts/`, `lib/`, `utils/`, or a
+flat hooks directory, give them a subfolder named for their domain.
+
+Reference such a folder from nix by the directory, not by the single entry
+file, so the sibling modules resolve from the same store path.
