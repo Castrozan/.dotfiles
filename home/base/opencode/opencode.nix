@@ -59,7 +59,18 @@ let
 
   opencode = pkgs.writeShellScriptBin "opencode" ''
     case "''${1:-}" in
-      acp | agent | attach | completion | db | debug | export | github | import | mcp | models | plugin | pr | providers | auth | run | serve | session | stats | uninstall | upgrade | web)
+      acp | agent | attach | completion | db | debug | export | github | import | mcp | models | plugin | pr | providers | auth | serve | session | stats | uninstall | upgrade)
+        ;;
+      run)
+        for argument in "$@"; do
+          case "$argument" in
+            --mini | --mini=*)
+              export OPENCODE_CONFIG="${interactiveSessionConfigOverlay}"
+              export OPENCODE_INTERACTIVE_PREFERENCES_PATH="${interactivePreferencesFile}"
+              break
+              ;;
+          esac
+        done
         ;;
       *)
         export OPENCODE_CONFIG="${interactiveSessionConfigOverlay}"
