@@ -34,7 +34,30 @@ _ensure_setuid_wrappers_in_path() {
 	fi
 }
 
+_resolve_rebuild_lock_file() {
+	echo "${XDG_RUNTIME_DIR:-/tmp}/dotfiles-rebuild.lock"
+}
+
+_flock_is_available() {
+	command -v flock >/dev/null 2>&1
+}
+
+_hold_exclusive_rebuild_lock() {
+	_flock_is_available || return 0
+
+	local lock_file
+	lock_file="$(_resolve_rebuild_lock_file)"
+	exec 9>"$lock_file" 2>/dev/null || return 0
+
+	flock -n 9 && return 0
+
+	echo ":: Another rebuild holds ${lock_file}. Queuing behind it rather than starting a second"
+	echo ":: nix evaluation, which costs gigabytes and would stack onto the one already running."
+	flock 9
+}
+
 main() {
+	_hold_exclusive_rebuild_lock
 	_ensure_setuid_wrappers_in_path
 	_rebuild_system
 	"@verify-deployed-prohibited-words-allowlist@" "$DOTFILES_DIR" "$(_resolve_machine_alias)" || return 1
