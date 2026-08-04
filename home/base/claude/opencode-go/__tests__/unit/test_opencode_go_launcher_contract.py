@@ -2,6 +2,9 @@ import re
 from pathlib import Path
 
 OPENCODE_GO_MODULE = Path(__file__).resolve().parents[2] / "default.nix"
+OPENCODE_GO_PROVIDER = (
+    OPENCODE_GO_MODULE.parent.parent.parent / "opencode" / "go-provider.nix"
+)
 OPENCODE_GO_OPUS_MODEL = "deepseek-v4-pro"
 OPENCODE_GO_SONNET_MODEL = "deepseek-v4-flash"
 OPENCODE_GO_HAIKU_MODEL = "kimi-k3"
@@ -12,6 +15,10 @@ LAUNCHER_EXEC_LINE = re.compile(r"^\s*exec \S+/bin/claude .*$", re.M)
 
 def module_source() -> str:
     return OPENCODE_GO_MODULE.read_text()
+
+
+def provider_source() -> str:
+    return OPENCODE_GO_PROVIDER.read_text()
 
 
 def launcher_exec_line() -> str:
@@ -30,20 +37,22 @@ def test_the_opencode_go_module_still_defines_a_claude_launcher():
 
 def test_the_launcher_targets_the_opencode_go_base_url():
     source = module_source()
-    assert f'opencodeGoBaseUrl = "{OPENCODE_GO_BASE_URL}"' in source, (
-        "the module must declare the opencode-go endpoint as its base URL binding"
+    provider = provider_source()
+    assert f'baseUrl = "{OPENCODE_GO_BASE_URL}"' in provider, (
+        "the shared go provider must declare the opencode-go endpoint as its base URL"
     )
-    assert 'ANTHROPIC_BASE_URL="${opencodeGoBaseUrl}"' in source, (
+    assert 'ANTHROPIC_BASE_URL="${opencodeGo.baseUrl}"' in source, (
         "claude-go must point ANTHROPIC_BASE_URL at the declared opencode-go endpoint"
     )
 
 
 def test_the_api_key_variable_is_exported_from_the_secret_file_at_runtime():
     source = module_source()
+    provider = provider_source()
     assert 'ANTHROPIC_API_KEY="$(cat' in source, (
         "claude-go must read the API key from a file at runtime; a literal value would leak it into the Nix store"
     )
-    assert OPENCODE_GO_SECRET_PATH_FRAGMENT in source, (
+    assert OPENCODE_GO_SECRET_PATH_FRAGMENT in provider, (
         "claude-go must reference the agenix-deployed ~/.secrets/opencode-api-key"
     )
 
@@ -66,35 +75,40 @@ def test_the_launcher_removes_bearer_authentication():
 
 
 def test_all_three_model_aliases_resolve_to_their_declared_tier():
+    provider = provider_source()
     source = module_source()
     expected_tiers = [
-        ("OPUS", OPENCODE_GO_OPUS_MODEL, "opencodeGoOpusModel"),
-        ("SONNET", OPENCODE_GO_SONNET_MODEL, "opencodeGoSonnetModel"),
-        ("HAIKU", OPENCODE_GO_HAIKU_MODEL, "opencodeGoHaikuModel"),
+        ("OPUS", OPENCODE_GO_OPUS_MODEL, "opus"),
+        ("SONNET", OPENCODE_GO_SONNET_MODEL, "sonnet"),
+        ("HAIKU", OPENCODE_GO_HAIKU_MODEL, "haiku"),
     ]
-    for alias, model, binding in expected_tiers:
-        assert f'{binding} = "{model}"' in source, (
-            f"the module must declare the opencode-go {binding} binding"
+    for alias, model, provider_model in expected_tiers:
+        assert f'{provider_model} = "{model}"' in provider, (
+            f"the shared go provider must declare the opencode-go {provider_model} model"
         )
-        assert f'ANTHROPIC_DEFAULT_{alias}_MODEL="${{{binding}}}"' in source, (
-            f"the {alias.lower()} alias must resolve to the declared {binding} binding"
+        assert (
+            f'ANTHROPIC_DEFAULT_{alias}_MODEL="${{opencodeGo.models.{provider_model}}}"'
+            in source
+        ), (
+            f"the {alias.lower()} alias must resolve to the declared {provider_model} model"
         )
 
 
 def test_the_launch_default_and_the_exec_line_share_one_model_binding():
+    provider = provider_source()
     source = module_source()
-    declared = re.search(r'opencodeGoSonnetModel = "([^"]+)"', source)
-    assert declared, "opencodeGoSonnetModel is no longer declared in the module"
+    declared = re.search(r'sonnet = "([^"]+)"', provider)
+    assert declared, "the go provider no longer declares a sonnet model"
     assert declared.group(1) == OPENCODE_GO_SONNET_MODEL, (
         "the declared launch model drifted from the pinned test expectation"
     )
-    assert '--model "${opencodeGoSonnetModel}"' in launcher_exec_line(), (
+    assert '--model "${opencodeGo.models.sonnet}"' in launcher_exec_line(), (
         "the exec line passes a model other than the sonnet binding, so the aliases and the pinned model can drift apart silently"
     )
 
 
 def test_the_default_model_flag_precedes_caller_arguments():
-    assert '--model "${opencodeGoSonnetModel}" "$@"' in launcher_exec_line(), (
+    assert '--model "${opencodeGo.models.sonnet}" "$@"' in launcher_exec_line(), (
         "claude-go must pass --model deepseek-v4-flash before the caller arguments so a caller's later --model still wins"
     )
 
