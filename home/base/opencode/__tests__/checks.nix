@@ -38,7 +38,7 @@ let
   deployedGlobalRules = cfg.home.file.".config/opencode/AGENTS.md".text;
   deployedHookBridge = cfg.home.file.".config/opencode/plugins/opencode-hook-bridge.js";
   opencodeWrapperSource = builtins.readFile ../opencode.nix;
-  opencodeGoProvider = import ../go-provider.nix { homeDirectory = cfg.home.homeDirectory; };
+  opencodeGoProvider = import ../go-provider.nix { inherit (cfg.home) homeDirectory; };
   consoleGoToolTranslation = import ../console-go-anthropic-tool-translation-workaround.nix;
 
   codexGlobalInstructions =
@@ -121,10 +121,7 @@ in
 
   domain-opencode-enables-language-servers-and-formatters =
     mkEvalCheck "domain-opencode-enables-language-servers-and-formatters"
-      (
-        deployedOpencodeSettings.lsp.pyright.env.PYTHONPATH != ""
-        && deployedOpencodeSettings.formatter == true
-      )
+      (deployedOpencodeSettings.lsp.pyright.env.PYTHONPATH != "" && deployedOpencodeSettings.formatter)
       "opencode must enable its built-in LSP servers and formatters with the Python test environment available to Pyright";
 
   domain-opencode-wires-the-browser-mcp = mkEvalCheck "domain-opencode-wires-the-browser-mcp" (

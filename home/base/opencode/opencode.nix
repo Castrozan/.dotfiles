@@ -6,7 +6,7 @@
 }:
 let
   fetchPrebuiltBinary = import ../../../lib/fetch-prebuilt-binary.nix { inherit pkgs; };
-  opencodeGo = import ./go-provider.nix { homeDirectory = config.home.homeDirectory; };
+  opencodeGo = import ./go-provider.nix { inherit (config.home) homeDirectory; };
 
   version = "1.18.11";
 

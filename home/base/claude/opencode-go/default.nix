@@ -12,7 +12,7 @@ let
     "rin"
   ];
   claudeGoEnabledOnThisHost = lib.elem hostname hostsWithClaudeGo;
-  opencodeGo = import ../../opencode/go-provider.nix { homeDirectory = config.home.homeDirectory; };
+  opencodeGo = import ../../opencode/go-provider.nix { inherit (config.home) homeDirectory; };
 
   claudeGoLauncher = pkgs.writeShellScriptBin "claude-go" ''
     opencodeGoApiKeyFile="${opencodeGo.apiKeyFile}"
