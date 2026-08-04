@@ -24,10 +24,10 @@ let
     unset ANTHROPIC_AUTH_TOKEN
     export ANTHROPIC_API_KEY="$(cat "$opencodeGoApiKeyFile")"
     export ANTHROPIC_BASE_URL="${opencodeGo.baseUrl}"
-    export ANTHROPIC_DEFAULT_OPUS_MODEL="${opencodeGo.models.opus}"
-    export ANTHROPIC_DEFAULT_SONNET_MODEL="${opencodeGo.models.sonnet}"
-    export ANTHROPIC_DEFAULT_HAIKU_MODEL="${opencodeGo.models.haiku}"
-    exec ${config.claude.package}/bin/claude --model "${opencodeGo.models.sonnet}" "$@"
+    export ANTHROPIC_DEFAULT_OPUS_MODEL="${opencodeGo.claudeCodeModels.opus}"
+    export ANTHROPIC_DEFAULT_SONNET_MODEL="${opencodeGo.claudeCodeModels.sonnet}"
+    export ANTHROPIC_DEFAULT_HAIKU_MODEL="${opencodeGo.claudeCodeModels.haiku}"
+    exec ${config.claude.package}/bin/claude --model "${opencodeGo.claudeCodeModels.sonnet}" "$@"
   '';
 in
 {
