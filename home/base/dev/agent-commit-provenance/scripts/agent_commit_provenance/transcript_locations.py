@@ -1,9 +1,9 @@
 import json
 from pathlib import Path
 
+from .codex_rollout_lookup import CODEX_SESSIONS_DIRECTORY
+
 CLAUDE_PROJECTS_DIRECTORY = Path.home() / ".claude" / "projects"
-CODEX_SESSIONS_DIRECTORY = Path.home() / ".codex" / "sessions"
-OPENCODE_STORAGE_DIRECTORY = Path.home() / ".local" / "share" / "opencode"
 
 
 def transcript_path_for_session(
