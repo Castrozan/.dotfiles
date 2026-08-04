@@ -97,15 +97,10 @@ def build_deny_reason_message(triggered_rule_names):
 
 def build_lingering_daemon_deny_reason():
     return (
-        "This background command starts a long-lived service or daemon. The "
-        "background task completes only when the whole process group exits, so a "
-        "child left running in the same session makes the task hang even after "
-        "the command itself succeeds (e.g. rebuild finishes but a restarted "
-        "service keeps the group alive). Run it detached instead: "
-        "launch-command-detached-into-new-session <log_file> <command>, then poll "
-        "<log_file> for the command's own success marker rather than waiting for "
-        "the completion notification. A rebuild you intend to wait on belongs in "
-        "the foreground, where the process group never outlives it. See "
+        "This background command starts a long-lived service, whose surviving "
+        "children hold the task open past the command's own success. Run it "
+        "detached with launch-command-detached-into-new-session <log> <command> "
+        "and poll the log, or run it in the foreground. Read "
         f"{BACKGROUND_BASH_PATTERNS_REFERENCE_FILE_PATH}."
     )
 

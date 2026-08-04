@@ -163,4 +163,11 @@ class TestLingeringDaemonDenial:
     def test_deny_reason_points_to_detach_wrapper(self):
         message = sut.build_lingering_daemon_deny_reason()
         assert "launch-command-detached-into-new-session" in message
-        assert "process group" in message
+        assert sut.BACKGROUND_BASH_PATTERNS_REFERENCE_FILE_PATH in message
+
+    def test_deny_reason_stays_short_enough_to_read_at_a_glance(self):
+        message = sut.build_lingering_daemon_deny_reason()
+        assert len(message) <= 400, (
+            "the failure mode is explained once in the reference file; a denial "
+            f"names the block and points there. {len(message)} characters: {message}"
+        )
