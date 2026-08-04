@@ -87,6 +87,13 @@ _read_lock_metadata_value() {
 	grep "^${metadataKey}=" "$lockOwnerMetadataPath" 2>/dev/null | head -1 | cut -d= -f2- || true
 }
 
+_format_epoch_as_local_timestamp() {
+	local epochSeconds="$1"
+	date -d "@${epochSeconds}" '+%Y-%m-%d %H:%M:%S' 2>/dev/null && return 0
+	date -r "$epochSeconds" '+%Y-%m-%d %H:%M:%S' 2>/dev/null && return 0
+	echo "unknown"
+}
+
 _emit_concurrent_run_contention_retry_instructions_to_stderr() {
 	local lockHumanName="$1"
 	local lockOwnerMetadataPath="$2"
@@ -115,7 +122,7 @@ _emit_concurrent_run_contention_retry_instructions_to_stderr() {
 	fi
 	local recommendedWaitSeconds=$((estimatedRemainingSeconds + 30))
 	local startedAtHuman
-	startedAtHuman=$(date -r "$startedAtEpoch" '+%Y-%m-%d %H:%M:%S' 2>/dev/null || echo "unknown")
+	startedAtHuman=$(_format_epoch_as_local_timestamp "$startedAtEpoch")
 
 	{
 		echo "LOCKED_BY_CONCURRENT_RUN"

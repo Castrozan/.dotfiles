@@ -90,6 +90,7 @@ def test_second_concurrent_acquire_exits_99_with_contention_instructions(
             assert "LOCKED_BY_CONCURRENT_RUN" in completed.stderr
             assert "ScheduleWakeup(delaySeconds=" in completed.stderr
             assert unique_lock_name_with_cleanup in completed.stderr
+            assert "started_at:           unknown" not in completed.stderr
         finally:
             holder.terminate()
             holder.wait(timeout=5)
