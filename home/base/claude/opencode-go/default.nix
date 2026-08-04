@@ -12,14 +12,10 @@ let
     "rin"
   ];
   claudeGoEnabledOnThisHost = lib.elem hostname hostsWithClaudeGo;
-
-  opencodeGoBaseUrl = "https://opencode.ai/zen/go";
-  opencodeGoOpusModel = "deepseek-v4-pro";
-  opencodeGoSonnetModel = "deepseek-v4-flash";
-  opencodeGoHaikuModel = "kimi-k3";
+  opencodeGo = import ../../opencode/go-provider.nix { homeDirectory = config.home.homeDirectory; };
 
   claudeGoLauncher = pkgs.writeShellScriptBin "claude-go" ''
-    opencodeGoApiKeyFile="$HOME/.secrets/opencode-api-key"
+    opencodeGoApiKeyFile="${opencodeGo.apiKeyFile}"
     if [ ! -f "$opencodeGoApiKeyFile" ] || [ ! -r "$opencodeGoApiKeyFile" ]; then
       echo "claude-go: no readable API key at $opencodeGoApiKeyFile" >&2
       echo "deploy the opencode-api-key agenix secret and retry" >&2
@@ -27,11 +23,11 @@ let
     fi
     unset ANTHROPIC_AUTH_TOKEN
     export ANTHROPIC_API_KEY="$(cat "$opencodeGoApiKeyFile")"
-    export ANTHROPIC_BASE_URL="${opencodeGoBaseUrl}"
-    export ANTHROPIC_DEFAULT_OPUS_MODEL="${opencodeGoOpusModel}"
-    export ANTHROPIC_DEFAULT_SONNET_MODEL="${opencodeGoSonnetModel}"
-    export ANTHROPIC_DEFAULT_HAIKU_MODEL="${opencodeGoHaikuModel}"
-    exec ${config.claude.package}/bin/claude --model "${opencodeGoSonnetModel}" "$@"
+    export ANTHROPIC_BASE_URL="${opencodeGo.baseUrl}"
+    export ANTHROPIC_DEFAULT_OPUS_MODEL="${opencodeGo.models.opus}"
+    export ANTHROPIC_DEFAULT_SONNET_MODEL="${opencodeGo.models.sonnet}"
+    export ANTHROPIC_DEFAULT_HAIKU_MODEL="${opencodeGo.models.haiku}"
+    exec ${config.claude.package}/bin/claude --model "${opencodeGo.models.sonnet}" "$@"
   '';
 in
 {

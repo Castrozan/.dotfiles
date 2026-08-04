@@ -1,6 +1,12 @@
-{ pkgs, lib, ... }:
+{
+  pkgs,
+  lib,
+  config,
+  ...
+}:
 let
   fetchPrebuiltBinary = import ../../../lib/fetch-prebuilt-binary.nix { inherit pkgs; };
+  opencodeGo = import ./go-provider.nix { homeDirectory = config.home.homeDirectory; };
 
   version = "1.18.11";
 
@@ -43,7 +49,7 @@ let
       );
 
   opencode-authenticated = pkgs.writeShellScriptBin "opencode" ''
-    opencodeApiKeyFile="$HOME/.secrets/opencode-api-key"
+    opencodeApiKeyFile="${opencodeGo.apiKeyFile}"
     if [ -r "$opencodeApiKeyFile" ]; then
       OPENCODE_API_KEY="$(cat "$opencodeApiKeyFile")"
       export OPENCODE_API_KEY

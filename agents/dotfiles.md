@@ -45,6 +45,8 @@ but absent from this repo is most likely owned by that overlay, not missing: che
 undeclared or re-adding it here. That entrypoint is its own standalone private git repo, with its own origin, not this
 repo and not a submodule of it, no CI and no peer stewards; the chise steward keeps it reconciled with its origin
 fast-forward-only, so commit a wrapper change into that repo rather than assuming a rebuild alone captures it.
+Keep `~/zanoni-system` limited to private OpenClaw integration and secrets. Generic host, provider, and harness
+configuration belongs in this repo; do not make public configuration depend on the private wrapper.
 Chise-specific; other hosts build directly from this repo.
 </machine-local-wrapper>
 

@@ -6,9 +6,10 @@
 }:
 let
   homeDir = config.home.homeDirectory;
+  opencodeGo = import ./go-provider.nix { homeDirectory = homeDir; };
 
-  defaultOpencodeModel = "opencode-go/deepseek-v4-flash";
-  titleGenerationModel = "opencode-go/kimi-k3";
+  defaultOpencodeModel = "opencode-go/${opencodeGo.models.sonnet}";
+  titleGenerationModel = "opencode-go/${opencodeGo.models.haiku}";
 
   mcpServerDefinitions = import ./mcp-servers.nix {
     inherit pkgs latest homeDir;

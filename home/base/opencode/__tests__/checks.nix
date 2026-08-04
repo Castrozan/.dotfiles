@@ -36,6 +36,7 @@ let
   deployedOpencodeSettings = parseDeployedJson cfg.home.file.".config/opencode/opencode.json".text;
   deployedTuiSettings = parseDeployedJson cfg.home.file.".config/opencode/tui.json".text;
   deployedGlobalRules = cfg.home.file.".config/opencode/AGENTS.md".text;
+  opencodeGoProvider = import ../go-provider.nix { homeDirectory = cfg.home.homeDirectory; };
 
   codexGlobalInstructions =
     (import ../../codex/global-instructions.nix { }).home.file.".codex/AGENTS.md".text;
@@ -67,6 +68,14 @@ in
         && builtins.elem (modelProviderOf deployedOpencodeSettings.small_model) providersThisMachineCanAuthenticate
       )
       "both defaults must resolve against opencode.ai on the paid Go plan under `opencode-go`, which the wrapper authenticates from the agenix key. Any other provider needs a credential nothing here deploys, so opencode would open on a model it cannot call";
+
+  domain-opencode-default-models-use-the-shared-go-provider =
+    mkEvalCheck "domain-opencode-default-models-use-the-shared-go-provider"
+      (
+        deployedOpencodeSettings.model == "opencode-go/${opencodeGoProvider.models.sonnet}"
+        && deployedOpencodeSettings.small_model == "opencode-go/${opencodeGoProvider.models.haiku}"
+      )
+      "the interactive and title defaults must use the shared Go provider model definitions";
 
   domain-opencode-default-agent-runs-at-max-effort =
     mkEvalCheck "domain-opencode-default-agent-runs-at-max-effort"
