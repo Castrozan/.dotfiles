@@ -63,10 +63,14 @@ interpolation rules destroys quoting. When in doubt, extract.
 
 <testing>
 Never present code that has not been rebuilt and tested. For .nix files, a successful rebuild IS the primary
-verification, and CI owns the test suite: it runs the script tiers and `nix flake check` on every push, so pushing and
-watching CI is how a change gets tested, not a local suite run. Reach for `__tests__/run.sh` only to reproduce a job CI
-turned red, or to iterate on a test you are writing. Test every Neovim change live in a newly created Herdr pane;
-automated and headless checks do not replace this manual test.
+verification. Do all the work locally first: edit, format, stage, and commit the change, rebuild it, run the manual
+tests the change calls for, and only then push. Pushing is what starts CI: it runs the script tiers and `nix flake
+check` on every push, and CI is the test gate, so a local full-suite pass is not what proves a change. Once pushed, the
+run proceeds in the background always; never stay stuck waiting on it. Parallelize: while the run is in flight,
+continue with the next independent piece of the task, and check the verdict only when other work is exhausted and a
+response to the user is due. Reach for `__tests__/run.sh` only to reproduce a job CI turned red, or to iterate on a
+test you are writing. Test every Neovim change live in a newly created Herdr pane; automated and headless checks do not
+replace this manual test.
 </testing>
 
 <workflows>
@@ -80,13 +84,15 @@ fan-out.
 <workflow>
 After editing any file in the dotfiles repo, execute this sequence before responding, no exceptions: 1) format edited
 files; 2) stage each file with git add specific-file, never -A; 3) commit; 4) rebuild for any file change in this repo,
-running it yourself and never deferring to the user (see <rebuild>); 5) push; 6) monitor CI to a verdict:
-`gh run list --commit $(git rev-parse HEAD) --json databaseId,name,conclusion` gives the run ids, then
-`gh run watch <id> --exit-status` blocks on each until it finishes and exits non-zero when it ends red; a short sha
-matches no run and a just-pushed commit has none for a few seconds, so pass the full sha and retry an empty list rather
-than reading it as a verdict; 7) if the rebuild or CI fails: fix and repeat from 1; 8) only
-after a green rebuild and green CI: respond to user. Every CI job reports all of its failures rather than dying on the
-first, so read the whole run and fix the batch in one pass instead of pushing once per error.
+running it yourself and never deferring to the user (see <rebuild>); 5) push, which starts the run in the background;
+6) do not block on the run: continue with the next independent piece of the task while CI works, and check the verdict
+only when other work is exhausted and a response to the user is due - `gh run list --commit $(git rev-parse HEAD)
+--json databaseId,name,conclusion` gives the run ids, then `gh run watch <id> --exit-status` blocks on each until it
+finishes and exits non-zero when it ends red; a short sha matches no run and a just-pushed commit has none for a few
+seconds, so pass the full sha and retry an empty list rather than reading it as a verdict; 7) if the rebuild or CI
+fails: fix and repeat from 1; 8) only after a green rebuild and green CI: respond to user. Every CI job reports all of
+its failures rather than dying on the first, so read the whole run and fix the batch in one pass instead of pushing
+once per error.
 </workflow>
 
 <applying-clawde-agent-changes>

@@ -76,8 +76,8 @@ Use 'curl -sS' or alternatives instead.
 <testing>
 When a bug is reported, do not start by fixing it. First write a test that reproduces the bug and fails because a
 passing test is the only proof the bug is resolved. Never present code that has not been rebuilt and tested. For .nix
-files, a successful rebuild IS the primary verification. CI owns the test suite, so the suite is not a gate you run
-locally before responding: push and watch CI instead, and run the suite by hand only to reproduce a job CI turned red.
+files, a successful rebuild IS the primary verification. The repository's own instruction file owns the CI gate and the
+local-suite discipline; follow that repo's rules there rather than re-deriving them here.
 </testing>
 
 <session-resilience>
@@ -136,8 +136,9 @@ mode live in `home/base/claude/docs/context-management.md`.
 <workflow>
 After editing any file in the dotfiles repo, execute this sequence before responding, no exceptions: 1) format edited
 files; 2) stage each file with git add specific-file (never -A); 3) commit; 4) rebuild for any file change in this
-repo; 5) push; 6) monitor CI to a verdict:
-`gh run list --commit $(git rev-parse HEAD) --json databaseId,name,conclusion` gives the run ids, then
+repo; 5) push, which starts the run in the background; 6) do not block on the run: continue with the next independent
+piece of the task while CI works, and check the verdict only when other work is exhausted and a response to the user is
+due - `gh run list --commit $(git rev-parse HEAD) --json databaseId,name,conclusion` gives the run ids, then
 `gh run watch <id> --exit-status` blocks on each until it finishes and exits non-zero when it
 ends red; a short sha matches no run and a just-pushed commit has none for a few seconds, so pass the full sha and retry
 an empty list rather than reading it as a verdict; 7) if the rebuild or CI fails: fix and repeat
