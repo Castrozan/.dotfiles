@@ -1,0 +1,5 @@
+"$CLIPSE_WL_PASTE_BINARY" --type text --watch "$CLIPSE_BINARY" --wl-store &
+text_watcher_process_id=$!
+"$CLIPSE_WL_PASTE_BINARY" --type image/png --watch "$CLIPSE_BINARY" --wl-store &
+image_watcher_process_id=$!
+wait -n "$text_watcher_process_id" "$image_watcher_process_id"

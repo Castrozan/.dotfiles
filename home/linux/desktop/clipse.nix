@@ -28,6 +28,9 @@ let
       license = licenses.mit;
     };
   };
+  clipseWaylandListener = pkgs.writeShellScript "clipse-wayland-listener" (
+    builtins.readFile ./scripts/clipse-wayland-listener
+  );
 in
 {
   home.packages = [
@@ -75,12 +78,17 @@ in
     Unit = {
       Description = "Clipse clipboard manager listener";
       After = [ "graphical-session.target" ];
+      ConditionEnvironment = "WAYLAND_DISPLAY";
       StartLimitIntervalSec = 30;
       StartLimitBurst = 3;
     };
     Service = {
       Type = "simple";
-      ExecStart = "${clipse-zanoni}/bin/clipse --listen-shell";
+      ExecStart = "${clipseWaylandListener}";
+      Environment = [
+        "CLIPSE_WL_PASTE_BINARY=${pkgs.wl-clipboard}/bin/wl-paste"
+        "CLIPSE_BINARY=${clipse-zanoni}/bin/clipse"
+      ];
       Restart = "always";
       RestartSec = 5;
     };

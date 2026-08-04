@@ -7,6 +7,7 @@ let
     "mako.service"
     "xdg-desktop-portal-hyprland.service"
     "hypr-focus-daemon.service"
+    "clipse.service"
   ];
 in
 {
