@@ -2,22 +2,17 @@
 
 from __future__ import annotations
 
+import os
 import sys
-from pathlib import Path
 
-hook_script_directory = Path(__file__).resolve().parent
-shared_common_hook_modules_directory = hook_script_directory.parent / "common"
+hook_script_directory = os.path.dirname(os.path.realpath(__file__))
 for importable_directory in (
     hook_script_directory,
-    shared_common_hook_modules_directory,
+    os.path.join(os.path.dirname(hook_script_directory), "common"),
 ):
-    importable_directory_string = str(importable_directory)
-    if importable_directory.is_dir() and importable_directory_string not in sys.path:
-        sys.path.insert(0, importable_directory_string)
+    if os.path.isdir(importable_directory) and importable_directory not in sys.path:
+        sys.path.insert(0, importable_directory)
 
-import compaction_context_recovery_handler  # noqa: E402
-import herdr_agent_session_report_handler  # noqa: E402
-import session_context_handler  # noqa: E402
 from hook_dispatch import (  # noqa: E402
     CLAUDE_SURFACE,
     CODEX_SURFACE,
@@ -29,10 +24,12 @@ from hook_dispatch import (  # noqa: E402
 from hook_event_output import emit_context_injection  # noqa: E402
 
 SESSION_START_HANDLERS = [
-    HookHandler(handle=session_context_handler.handle, surfaces=(CLAUDE_SURFACE,)),
-    HookHandler(handle=compaction_context_recovery_handler.handle),
     HookHandler(
-        handle=herdr_agent_session_report_handler.handle,
+        handler_module_name="session_context_handler", surfaces=(CLAUDE_SURFACE,)
+    ),
+    HookHandler(handler_module_name="compaction_context_recovery_handler"),
+    HookHandler(
+        handler_module_name="herdr_agent_session_report_handler",
         surfaces=(CLAUDE_SURFACE, CODEX_SURFACE),
     ),
 ]

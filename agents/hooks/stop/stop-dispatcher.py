@@ -2,24 +2,19 @@
 
 from __future__ import annotations
 
+import os
 import sys
-from pathlib import Path
 
-hook_script_directory = Path(__file__).resolve().parent
-shared_common_hook_modules_directory = hook_script_directory.parent / "common"
-lint_hook_modules_directory = hook_script_directory.parent / "lint"
+hook_script_directory = os.path.dirname(os.path.realpath(__file__))
+hooks_root_directory = os.path.dirname(hook_script_directory)
 for importable_directory in (
     hook_script_directory,
-    shared_common_hook_modules_directory,
-    lint_hook_modules_directory,
+    os.path.join(hooks_root_directory, "common"),
+    os.path.join(hooks_root_directory, "lint"),
 ):
-    importable_directory_string = str(importable_directory)
-    if importable_directory.is_dir() and importable_directory_string not in sys.path:
-        sys.path.insert(0, importable_directory_string)
+    if os.path.isdir(importable_directory) and importable_directory not in sys.path:
+        sys.path.insert(0, importable_directory)
 
-import end_of_turn_format_guard_handler  # noqa: E402
-import herdr_agent_session_report_handler  # noqa: E402
-import lint_turn_review_handler  # noqa: E402
 from hook_dispatch import (  # noqa: E402
     CLAUDE_SURFACE,
     CODEX_SURFACE,
@@ -31,12 +26,13 @@ from hook_dispatch import (  # noqa: E402
 from hook_event_output import emit_stop_decision  # noqa: E402
 
 STOP_HANDLERS = [
-    HookHandler(handle=lint_turn_review_handler.handle),
+    HookHandler(handler_module_name="lint_turn_review_handler"),
     HookHandler(
-        handle=end_of_turn_format_guard_handler.handle, surfaces=(CLAUDE_SURFACE,)
+        handler_module_name="end_of_turn_format_guard_handler",
+        surfaces=(CLAUDE_SURFACE,),
     ),
     HookHandler(
-        handle=herdr_agent_session_report_handler.handle,
+        handler_module_name="herdr_agent_session_report_handler",
         surfaces=(CLAUDE_SURFACE, CODEX_SURFACE),
     ),
 ]

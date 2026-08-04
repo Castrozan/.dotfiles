@@ -2,20 +2,17 @@
 
 from __future__ import annotations
 
+import os
 import sys
-from pathlib import Path
 
-hook_script_directory = Path(__file__).resolve().parent
-shared_common_hook_modules_directory = hook_script_directory.parent / "common"
+hook_script_directory = os.path.dirname(os.path.realpath(__file__))
 for importable_directory in (
     hook_script_directory,
-    shared_common_hook_modules_directory,
+    os.path.join(os.path.dirname(hook_script_directory), "common"),
 ):
-    importable_directory_string = str(importable_directory)
-    if importable_directory.is_dir() and importable_directory_string not in sys.path:
-        sys.path.insert(0, importable_directory_string)
+    if os.path.isdir(importable_directory) and importable_directory not in sys.path:
+        sys.path.insert(0, importable_directory)
 
-import tldr_reminder_handler  # noqa: E402
 from hook_dispatch import (  # noqa: E402
     HookHandler,
     dispatched_hook_input_or_exit,
@@ -25,7 +22,7 @@ from hook_dispatch import (  # noqa: E402
 from hook_event_output import emit_context_injection  # noqa: E402
 
 USER_PROMPT_SUBMIT_HANDLERS = [
-    HookHandler(handle=tldr_reminder_handler.handle),
+    HookHandler(handler_module_name="tldr_reminder_handler"),
 ]
 
 

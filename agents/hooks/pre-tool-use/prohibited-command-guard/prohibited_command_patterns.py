@@ -1,18 +1,22 @@
 from __future__ import annotations
 
+import os
 import sys
-from pathlib import Path
 
-_MODULE_DIRECTORY = Path(__file__).resolve().parent
-for _shared_module_candidate_directory in [_MODULE_DIRECTORY] + [
-    ancestor / "common" for ancestor in _MODULE_DIRECTORY.parents
-]:
-    _shared_module_candidate_path = str(_shared_module_candidate_directory)
+_MODULE_DIRECTORY = os.path.dirname(os.path.realpath(__file__))
+_ANCESTOR_DIRECTORY = _MODULE_DIRECTORY
+_SHARED_MODULE_CANDIDATE_DIRECTORIES = [_MODULE_DIRECTORY]
+while _ANCESTOR_DIRECTORY != os.path.dirname(_ANCESTOR_DIRECTORY):
+    _ANCESTOR_DIRECTORY = os.path.dirname(_ANCESTOR_DIRECTORY)
+    _SHARED_MODULE_CANDIDATE_DIRECTORIES.append(
+        os.path.join(_ANCESTOR_DIRECTORY, "common")
+    )
+for _shared_module_candidate_directory in _SHARED_MODULE_CANDIDATE_DIRECTORIES:
     if (
-        _shared_module_candidate_directory.is_dir()
-        and _shared_module_candidate_path not in sys.path
+        os.path.isdir(_shared_module_candidate_directory)
+        and _shared_module_candidate_directory not in sys.path
     ):
-        sys.path.insert(0, _shared_module_candidate_path)
+        sys.path.insert(0, _shared_module_candidate_directory)
 
 from shell_command_invocation_position import (  # noqa: E402
     COMMAND_ARGUMENT_TERMINATOR_LOOKAHEAD,

@@ -2,32 +2,21 @@
 
 from __future__ import annotations
 
+import os
 import sys
-from pathlib import Path
 
-hook_script_directory = Path(__file__).resolve().parent
-shared_common_hook_modules_directory = hook_script_directory.parent / "common"
-lint_hook_modules_directory = hook_script_directory.parent / "lint"
-line_count_hook_modules_directory = hook_script_directory / "line-count"
-skill_invocation_hook_modules_directory = (
-    hook_script_directory / "skill-invocation-marker"
-)
+hook_script_directory = os.path.dirname(os.path.realpath(__file__))
+hooks_root_directory = os.path.dirname(hook_script_directory)
 for importable_directory in (
     hook_script_directory,
-    shared_common_hook_modules_directory,
-    lint_hook_modules_directory,
-    line_count_hook_modules_directory,
-    skill_invocation_hook_modules_directory,
+    os.path.join(hooks_root_directory, "common"),
+    os.path.join(hooks_root_directory, "lint"),
+    os.path.join(hook_script_directory, "line-count"),
+    os.path.join(hook_script_directory, "skill-invocation-marker"),
 ):
-    importable_directory_string = str(importable_directory)
-    if importable_directory.is_dir() and importable_directory_string not in sys.path:
-        sys.path.insert(0, importable_directory_string)
+    if os.path.isdir(importable_directory) and importable_directory not in sys.path:
+        sys.path.insert(0, importable_directory)
 
-import auto_format_handler  # noqa: E402
-import line_count_limit_guard_handler  # noqa: E402
-import nix_rebuild_trigger_handler  # noqa: E402
-import record_edited_source_file_handler  # noqa: E402
-import record_skill_invocation_handler  # noqa: E402
 from hook_dispatch import (  # noqa: E402
     CLAUDE_SURFACE,
     OPENCODE_SURFACE,
@@ -40,17 +29,20 @@ from hook_event_output import emit_post_tool_use_outcome  # noqa: E402
 
 POST_TOOL_USE_HANDLERS = [
     HookHandler(
-        handle=record_skill_invocation_handler.handle,
+        handler_module_name="record_skill_invocation_handler",
         tool_matcher="Skill",
         surfaces=(CLAUDE_SURFACE, OPENCODE_SURFACE),
     ),
-    HookHandler(handle=auto_format_handler.handle, tool_matcher="Edit|Write"),
+    HookHandler(handler_module_name="auto_format_handler", tool_matcher="Edit|Write"),
     HookHandler(
-        handle=record_edited_source_file_handler.handle, tool_matcher="Edit|Write"
+        handler_module_name="record_edited_source_file_handler",
+        tool_matcher="Edit|Write",
     ),
-    HookHandler(handle=nix_rebuild_trigger_handler.handle, tool_matcher="Edit|Write"),
     HookHandler(
-        handle=line_count_limit_guard_handler.handle, tool_matcher="Edit|Write"
+        handler_module_name="nix_rebuild_trigger_handler", tool_matcher="Edit|Write"
+    ),
+    HookHandler(
+        handler_module_name="line_count_limit_guard_handler", tool_matcher="Edit|Write"
     ),
 ]
 

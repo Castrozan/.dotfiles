@@ -16,4 +16,4 @@ fi
 
 export PYTHONPYCACHEPREFIX="${XDG_CACHE_HOME:-$HOME/.cache}/claude-code-hooks/pycache"
 
-"@hookPythonInterpreter@" "$HOOK_SCRIPT" "$@"
+exec "@hookPythonInterpreter@" "$HOOK_SCRIPT" "$@"

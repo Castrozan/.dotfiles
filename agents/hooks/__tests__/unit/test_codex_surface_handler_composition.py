@@ -107,7 +107,7 @@ def handler_module_names_on_surface(registry_name, surface):
         DISPATCHERS_BY_REGISTRY_NAME[registry_name]
     )
     return {
-        handler.handle.__module__
+        handler.handler_module_name
         for handler in getattr(dispatcher, registry_name)
         if handler_runs_on_surface(handler, surface)
     }

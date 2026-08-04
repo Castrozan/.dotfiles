@@ -34,10 +34,22 @@ class HandlerResult:
 
 
 class HookHandler:
-    def __init__(self, handle, tool_matcher=None, surfaces=EVERY_SURFACE):
+    def __init__(
+        self,
+        handle=None,
+        tool_matcher=None,
+        surfaces=EVERY_SURFACE,
+        handler_module_name="",
+    ):
         self.handle = handle
+        self.handler_module_name = handler_module_name
         self.tool_matcher = tool_matcher
         self.surfaces = surfaces
+
+    def imported_handle(self):
+        if self.handle is None:
+            self.handle = __import__(self.handler_module_name).handle
+        return self.handle
 
 
 class MergedHookOutcome:
@@ -116,6 +128,8 @@ def candidate_decision_is_stronger(candidate, current) -> bool:
 
 
 def describe_handler(handler) -> str:
+    if handler.handler_module_name:
+        return handler.handler_module_name
     handle_function = handler.handle
     return (
         getattr(handle_function, "__module__", "")
@@ -133,7 +147,7 @@ def run_handlers(hook_input: dict, handlers, surface=CLAUDE_SURFACE):
         if not handler_matches_tool(handler, tool_name):
             continue
         try:
-            result = handler.handle(hook_input)
+            result = handler.imported_handle()(hook_input)
         except Exception as handler_error:
             outcome.system_message_fragments.append(
                 f"Hook handler {describe_handler(handler)} failed and was skipped: "

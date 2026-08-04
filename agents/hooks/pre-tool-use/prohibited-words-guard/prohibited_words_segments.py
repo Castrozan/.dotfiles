@@ -1,7 +1,7 @@
 from __future__ import annotations
 
+import os
 import re
-from pathlib import Path
 
 from changed_file_paths import apply_patch_added_content, collect_changed_file_paths
 
@@ -18,7 +18,7 @@ PUBLISHING_COMMAND_PATTERNS = [
 def path_is_within_private_repository(file_path: str) -> bool:
     if not file_path:
         return False
-    return PRIVATE_REPOSITORY_PATH_SEGMENT in Path(file_path).parts
+    return PRIVATE_REPOSITORY_PATH_SEGMENT in file_path.split(os.sep)
 
 
 def command_targets_private_repository(

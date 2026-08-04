@@ -2,34 +2,23 @@
 
 from __future__ import annotations
 
+import os
 import sys
-from pathlib import Path
 
-hook_script_directory = Path(__file__).resolve().parent
-shared_common_hook_modules_directory = hook_script_directory.parent / "common"
-importable_directories = [hook_script_directory, shared_common_hook_modules_directory]
+hook_script_directory = os.path.dirname(os.path.realpath(__file__))
+importable_directories = [
+    hook_script_directory,
+    os.path.join(os.path.dirname(hook_script_directory), "common"),
+]
 importable_directories.extend(
-    child_directory
-    for child_directory in hook_script_directory.iterdir()
-    if child_directory.is_dir()
+    child_entry.path
+    for child_entry in os.scandir(hook_script_directory)
+    if child_entry.is_dir()
 )
 for importable_directory in importable_directories:
-    importable_directory_string = str(importable_directory)
-    if importable_directory.is_dir() and importable_directory_string not in sys.path:
-        sys.path.insert(0, importable_directory_string)
+    if os.path.isdir(importable_directory) and importable_directory not in sys.path:
+        sys.path.insert(0, importable_directory)
 
-import agent_instruction_file_authoring_router_handler  # noqa: E402
-import background_bash_anti_pattern_validator_handler  # noqa: E402
-import blocked_skill_invocation_guard_handler  # noqa: E402
-import codex_sandbox_downgrade_guard_handler  # noqa: E402
-import documentation_authoring_router_handler  # noqa: E402
-import monitor_streaming_pattern_validator_handler  # noqa: E402
-import prohibited_command_guard_handler  # noqa: E402
-import prohibited_words_guard_handler  # noqa: E402
-import subagent_budget_guard_handler  # noqa: E402
-import url_to_skill_router_handler  # noqa: E402
-import workspace_directory_injector_handler  # noqa: E402
-import worktree_location_guard_handler  # noqa: E402
 from hook_dispatch import (  # noqa: E402
     CLAUDE_SURFACE,
     OPENCODE_SURFACE,
@@ -41,49 +30,55 @@ from hook_dispatch import (  # noqa: E402
 from hook_event_output import emit_pretooluse_decision  # noqa: E402
 
 PRE_TOOL_USE_HANDLERS = [
-    HookHandler(handle=prohibited_command_guard_handler.handle, tool_matcher=None),
-    HookHandler(handle=prohibited_words_guard_handler.handle, tool_matcher=None),
-    HookHandler(handle=worktree_location_guard_handler.handle, tool_matcher="Bash"),
     HookHandler(
-        handle=workspace_directory_injector_handler.handle,
+        handler_module_name="prohibited_command_guard_handler", tool_matcher=None
+    ),
+    HookHandler(
+        handler_module_name="prohibited_words_guard_handler", tool_matcher=None
+    ),
+    HookHandler(
+        handler_module_name="worktree_location_guard_handler", tool_matcher="Bash"
+    ),
+    HookHandler(
+        handler_module_name="workspace_directory_injector_handler",
         tool_matcher="Bash",
         surfaces=(CLAUDE_SURFACE,),
     ),
     HookHandler(
-        handle=background_bash_anti_pattern_validator_handler.handle,
+        handler_module_name="background_bash_anti_pattern_validator_handler",
         tool_matcher="Bash",
         surfaces=(CLAUDE_SURFACE,),
     ),
     HookHandler(
-        handle=codex_sandbox_downgrade_guard_handler.handle,
+        handler_module_name="codex_sandbox_downgrade_guard_handler",
         tool_matcher="mcp__codex__codex",
         surfaces=(CLAUDE_SURFACE,),
     ),
     HookHandler(
-        handle=blocked_skill_invocation_guard_handler.handle,
+        handler_module_name="blocked_skill_invocation_guard_handler",
         tool_matcher="Skill",
         surfaces=(CLAUDE_SURFACE, OPENCODE_SURFACE),
     ),
     HookHandler(
-        handle=url_to_skill_router_handler.handle,
+        handler_module_name="url_to_skill_router_handler",
         tool_matcher="WebFetch",
         surfaces=(CLAUDE_SURFACE, OPENCODE_SURFACE),
     ),
     HookHandler(
-        handle=monitor_streaming_pattern_validator_handler.handle,
+        handler_module_name="monitor_streaming_pattern_validator_handler",
         tool_matcher="Monitor",
         surfaces=(CLAUDE_SURFACE,),
     ),
     HookHandler(
-        handle=agent_instruction_file_authoring_router_handler.handle,
+        handler_module_name="agent_instruction_file_authoring_router_handler",
         tool_matcher="Write|Edit",
     ),
     HookHandler(
-        handle=documentation_authoring_router_handler.handle,
+        handler_module_name="documentation_authoring_router_handler",
         tool_matcher="Write|Edit",
     ),
     HookHandler(
-        handle=subagent_budget_guard_handler.handle,
+        handler_module_name="subagent_budget_guard_handler",
         tool_matcher="Agent",
         surfaces=(CLAUDE_SURFACE, OPENCODE_SURFACE),
     ),
