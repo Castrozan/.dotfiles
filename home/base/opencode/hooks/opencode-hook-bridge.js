@@ -332,18 +332,23 @@ export async function OpenCodeHookBridge({ directory } = {}) {
         toolHookPayload("PostToolUse", input, input.args, workingDirectory),
       );
       const postToolBlock = blockingDecisionReason(dispatcherOutput);
-      if (postToolBlock) {
-        throw new Error(postToolBlock);
-      }
-      appendToolOutputMessage(output, dispatcherOutput);
       const turnReviewOutput = await invokeHookDispatcher(
         hookDispatchers.stop,
         hookPayload("Stop", input.sessionID, workingDirectory),
-      );
+      ).catch((failure) => {
+        if (!postToolBlock) {
+          throw failure;
+        }
+        return {};
+      });
+      if (postToolBlock) {
+        throw new Error(postToolBlock);
+      }
       const turnReviewBlock = blockingDecisionReason(turnReviewOutput);
       if (turnReviewBlock) {
         throw new Error(turnReviewBlock);
       }
+      appendToolOutputMessage(output, dispatcherOutput);
       appendToolOutputMessage(output, turnReviewOutput);
     },
     "chat.message": async (input, output) => {
