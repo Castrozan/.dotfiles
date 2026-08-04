@@ -3,11 +3,12 @@
   lib,
   hostname,
   isDarwin ? false,
-  privateConfigRoot ? ../../../private-config,
   ...
 }:
 let
   agentHookScripts = import ../agent-hooks/flat-hook-scripts-directory.nix { inherit pkgs lib; };
+
+  privateConfigRoot = ../../../private-config;
 
   machinesRegistryFile = privateConfigRoot + "/machines.nix";
   machineAllowedProhibitedWordsFile =
