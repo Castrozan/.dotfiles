@@ -52,8 +52,8 @@
         "devenv.cachix.org-1:w1cLUi8dv3hnoSPGAuibQv+f9TZLr6cv/Hm9XgU50cw="
       ];
 
-      max-jobs = 6;
-      cores = 2;
+      max-jobs = 3;
+      cores = 1;
 
       download-buffer-size = "524288000";
       http-connections = 50;
@@ -61,7 +61,7 @@
       eval-cache = true;
 
       sandbox = true;
-      auto-optimise-store = true;
+      auto-optimise-store = false;
 
       trusted-users = [ username ];
     };

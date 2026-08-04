@@ -20,6 +20,11 @@ _sudo() {
 	"$sudo_bin" -n "$@"
 }
 
+THROTTLE=(nice -n 19)
+if command -v ionice >/dev/null 2>&1; then
+	THROTTLE+=(ionice -c 3)
+fi
+
 _ensure_setuid_wrappers_in_path() {
 	if [ -d "$NIXOS_SETUID_WRAPPERS_DIR" ]; then
 		case ":$PATH:" in
@@ -192,7 +197,7 @@ _rebuild_nixos() {
 		lock_flags+=(--no-write-lock-file)
 	fi
 
-	_sudo env "PATH=${NIXOS_SETUID_WRAPPERS_DIR}:${PATH}" "$NIXOS_ALLOW_UNFREE" "$REBUILD_WRAPPER_SENTINEL" nixos-rebuild switch --flake "${flake_ref}" "${lock_flags[@]}"
+	_sudo env "PATH=${NIXOS_SETUID_WRAPPERS_DIR}:${PATH}" "$NIXOS_ALLOW_UNFREE" "$REBUILD_WRAPPER_SENTINEL" "${THROTTLE[@]}" nixos-rebuild switch --flake "${flake_ref}" "${lock_flags[@]}"
 }
 
 _rebuild_home_manager() {
@@ -212,11 +217,11 @@ _hm_switch_with_rate_limit_fallback() {
 	export HOME_MANAGER_BACKUP_OVERWRITE=1
 
 	if command -v home-manager >/dev/null 2>&1; then
-		home-manager switch --flake "$flake_ref" -b "$BACKUP_PREFIX"
+		"${THROTTLE[@]}" home-manager switch --flake "$flake_ref" -b "$BACKUP_PREFIX"
 		return 0
 	fi
 
-	if nix run nixpkgs#home-manager -- switch --flake "$flake_ref" -b "$BACKUP_PREFIX" 2>/dev/null; then
+	if "${THROTTLE[@]}" nix run nixpkgs#home-manager -- switch --flake "$flake_ref" -b "$BACKUP_PREFIX" 2>/dev/null; then
 		return 0
 	fi
 
@@ -224,7 +229,7 @@ _hm_switch_with_rate_limit_fallback() {
 	echo "Tip: Install home-manager to avoid this:" >&2
 	echo "  nix profile install nixpkgs#home-manager" >&2
 
-	nix run home-manager/master -- switch --flake "$flake_ref" -b "$BACKUP_PREFIX"
+	"${THROTTLE[@]}" nix run home-manager/master -- switch --flake "$flake_ref" -b "$BACKUP_PREFIX"
 }
 
 _reload_hyprland() {
