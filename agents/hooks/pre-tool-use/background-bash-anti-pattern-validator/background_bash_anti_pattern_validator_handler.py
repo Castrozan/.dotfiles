@@ -22,6 +22,9 @@ from background_bash_fake_success_detectors import (  # noqa: E402
 from background_daemon_spawner_detectors import (  # noqa: E402
     command_starts_a_lingering_daemon_or_service,
 )
+from foreground_ci_wait_detectors import (  # noqa: E402
+    command_waits_on_ci_in_the_foreground,
+)
 from hook_dispatch import HandlerResult  # noqa: E402
 from interactive_command_hang_detectors import (  # noqa: E402
     command_launches_interactive_full_screen_program,
@@ -104,16 +107,29 @@ def build_lingering_daemon_deny_reason():
     )
 
 
+def build_foreground_ci_wait_deny_reason():
+    return (
+        "Waiting on a CI run in the foreground parks this session for the whole "
+        "run and streams its progress redraws into the context. Background it "
+        "instead and the harness reports the exit, or poll 'gh run list' when a "
+        f"verdict is actually due. See {BACKGROUND_BASH_PATTERNS_REFERENCE_FILE_PATH}."
+    )
+
+
 def handle(hook_input):
     if hook_input.get("tool_name") != "Bash":
         return None
 
     tool_input = hook_input.get("tool_input", {})
-    if not tool_input.get("run_in_background", False):
-        return None
-
     command_string = tool_input.get("command", "")
     if not command_string:
+        return None
+
+    if not tool_input.get("run_in_background", False):
+        if command_waits_on_ci_in_the_foreground(command_string):
+            return HandlerResult(
+                decision="deny", reason=build_foreground_ci_wait_deny_reason()
+            )
         return None
 
     triggered_rule_names = find_background_bash_anti_patterns_in_command(command_string)

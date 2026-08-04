@@ -1,8 +1,9 @@
 # Background Bash — denied shapes
 
-Every rule here is a hard deny on `run_in_background: true`. The denial names
-the rule; find it below, take the right-hand shape, retry. Nothing here is
-advice you may weigh.
+Every rule here is a hard deny about where a command runs. All but the last
+deny a shape on `run_in_background: true`; the last denies a shape that must
+not run in the foreground. The denial names the rule; find it below, take the
+right-hand shape, retry. Nothing here is advice you may weigh.
 
 Two failure modes justify the wall. A shape that **exits 0 with empty output**
 is indistinguishable from success, so a typo'd filter reads as a clean result.
@@ -53,6 +54,18 @@ A typo'd literal filters to nothing silently; a derived one fails loudly.
 
 Starting the service is fine. Asking a background task to wait on one is not:
 the restarted daemon keeps the group alive past the command's own success.
+
+## foreground-wait-on-ci
+
+- Wrong: `gh run watch <id>`, `gh pr checks <n> --watch`
+- Right: background the same command and let the harness report its exit, or
+  poll `gh run list --commit <sha> --json name,conclusion` when a verdict is
+  actually due.
+
+The wait is minutes long, and every progress redraw it prints lands in the
+context. Backgrounded it costs nothing; in the foreground it buys dead time
+with tokens. Reading about a run stays allowed: `gh run list`, `gh run view`,
+`gh run watch --help`, and grepping for the string all pass.
 
 ## Still allowed
 
