@@ -154,19 +154,15 @@ PROHIBITED_BASH_COMMAND_PATTERNS = [
     ),
     (
         rf"{COMMAND_INVOCATION_POSITION_PREFIX}herdr\s+agent\s+start\b(?:(?!\s--tab(?=[\s=]))(?!\s--\s)[^;&|\n])*(?:$|[;&|\n]|\s--\s)",
-        "herdr agent start without --tab splits an active tab someone is "
-        "already working in; --workspace alone is not a pin because it only "
-        "chooses which workspace's active tab gets split. Pin the exact tab: "
-        '--tab "$HERDR_TAB_ID" --no-focus for your own, or create a fresh one '
-        "with 'herdr tab create --workspace <id> --no-focus' and pass its id.",
+        "herdr agent start without --tab splits an active tab someone is already "
+        "working in, and --workspace alone is not a pin. Pin the exact tab with "
+        "--tab and pass --no-focus; the herdr skill carries the recipe.",
     ),
     (
         rf"{COMMAND_INVOCATION_POSITION_PREFIX}claude(?![\w-])[^;&|`)\n]*?\s(?:-p|--print)(?:[=\s'\"]|$)",
         "claude -p/--print (headless oneshot) is prohibited; drive an interactive "
-        "session instead (the claude-interactive wrapper, or a herdr agent via "
-        '\'herdr agent start <name> --cwd <dir> --tab "$HERDR_TAB_ID" --no-focus '
-        "-- claude'). "
-        "For a genuinely sanctioned one-off, prefix the command with "
+        "session instead, through the claude-interactive wrapper or a herdr agent "
+        "as the herdr skill describes. A sanctioned one-off needs the prefix "
         f"{SANCTIONED_HEADLESS_CLAUDE_OVERRIDE_SENTINEL}.",
         SANCTIONED_HEADLESS_CLAUDE_OVERRIDE_SENTINEL,
     ),

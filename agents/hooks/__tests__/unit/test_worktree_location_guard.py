@@ -102,3 +102,16 @@ def test_ignores_tools_other_than_bash():
 def test_names_the_offending_destination_in_the_denial():
     result = guard("git worktree add ../feature-branch")
     assert "../feature-branch" in result.reason
+
+
+def test_the_denial_points_at_its_reference_file_rather_than_reciting_it():
+    result = guard("git worktree add ../feature-branch")
+    assert (
+        worktree_location_guard_handler.WORKTREE_LOCATION_REFERENCE_FILE_PATH
+        in result.reason
+    )
+    assert len(result.reason) <= 300, (
+        "a blocking reason says what is blocked and points at a file; the detail "
+        "belongs in the file, where it can be read once rather than pasted into "
+        "every denial"
+    )

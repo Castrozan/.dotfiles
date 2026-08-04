@@ -32,6 +32,7 @@ WORKTREE_CREATION_PATTERN = (
     rf"{COMMAND_INVOCATION_POSITION_PREFIX}git\b[^;&|\n]*?\bworktree\s+add\b"
 )
 FLAGS_TAKING_A_SEPARATE_VALUE = ("-b", "-B", "--reason", "--track")
+WORKTREE_LOCATION_REFERENCE_FILE_PATH = "~/.claude/hooks/worktree-location.md"
 
 
 def worktree_creation_segments(command: str):
@@ -81,13 +82,10 @@ def destination_is_inside_a_repository_worktree_directory(destination: str) -> b
 
 def build_denial_reason(destination: str) -> str:
     return (
-        f"BLOCKED (Bash): 'git worktree add {destination}' would put a worktree "
-        f"outside the repository, which leaves stray copies of the repo lying around "
-        f"the filesystem. Worktrees live inside the repo where .gitignore already "
-        f"covers them: 'git worktree add {CANONICAL_WORKTREE_DIRECTORY}/<branch> "
-        f"-b <branch>'. The built-in {BUILT_IN_WORKTREE_DIRECTORY}/ path is accepted "
-        f"too. For a genuinely sanctioned exception, prefix the command with "
-        f"{OUTSIDE_REPOSITORY_OVERRIDE_SENTINEL}."
+        f"BLOCKED (Bash): 'git worktree add {destination}' puts a worktree outside "
+        f"the repository. Worktrees live under {CANONICAL_WORKTREE_DIRECTORY}/ "
+        f"inside the repo; read {WORKTREE_LOCATION_REFERENCE_FILE_PATH} for the "
+        f"accepted paths and the override."
     )
 
 
