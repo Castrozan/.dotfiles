@@ -22,6 +22,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from hook_module_loader import import_hyphenated_hook_module  # noqa: E402
 
 nix_rebuild_ledger = import_hyphenated_hook_module("nix_rebuild_ledger")
+nix_file_location = import_hyphenated_hook_module("nix_file_location")
 nix_rebuild_obligation = import_hyphenated_hook_module("nix_rebuild_obligation")
 record_changed_nix_file_handler = import_hyphenated_hook_module(
     "record_changed_nix_file_handler"
@@ -43,9 +44,9 @@ def make_dotfiles_repository(root):
     subprocess.run(["git", "init", "-q", str(root)], check=True)
     subprocess.run(["git", "-C", str(root), "config", "user.email", "t@t"], check=True)
     subprocess.run(["git", "-C", str(root), "config", "user.name", "t"], check=True)
-    marker_directory = root / "agents" / "hooks" / "nix-rebuild"
-    marker_directory.mkdir(parents=True)
-    marker_directory.joinpath("nix_rebuild_obligation.py").write_text("")
+    marker_path = root / nix_file_location.DOTFILES_REPOSITORY_MARKER_RELATIVE_PATH
+    marker_path.parent.mkdir(parents=True)
+    marker_path.write_text("")
     return root
 
 

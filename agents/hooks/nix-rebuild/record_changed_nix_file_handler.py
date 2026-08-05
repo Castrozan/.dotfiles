@@ -20,7 +20,7 @@ for _shared_module_candidate_directory in _SHARED_MODULE_CANDIDATE_DIRECTORIES:
 
 from changed_file_paths import collect_changed_file_paths  # noqa: E402
 from nix_rebuild_ledger import append_changed_nix_file  # noqa: E402
-from nix_rebuild_obligation import (  # noqa: E402
+from nix_file_location import (  # noqa: E402
     has_nix_file_extension,
     is_inside_dotfiles_repository,
 )

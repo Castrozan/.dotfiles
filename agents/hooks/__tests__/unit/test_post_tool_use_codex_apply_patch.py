@@ -36,7 +36,7 @@ def make_directory_look_like_dotfiles_repository(root):
     (root / ".git").mkdir()
     marker = root / "agents" / "hooks" / "nix-rebuild"
     marker.mkdir(parents=True)
-    marker.joinpath("nix_rebuild_obligation.py").write_text("")
+    marker.joinpath("nix_file_location.py").write_text("")
 
 
 def recorded_ledger_contents(tmp_path):

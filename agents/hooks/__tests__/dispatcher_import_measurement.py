@@ -45,6 +45,10 @@ SESSION_PAYLOAD_FIELDS = {
     "cwd": str(HOOKS_ROOT),
 }
 
+FILE_NO_FORMATTER_OR_LINTER_COVERS = str(
+    HOOKS_ROOT / "post-tool-use" / "line-count" / "line-count-block-message.md"
+)
+
 INVOCATIONS_UNDER_BUDGET = {
     "pre-tool-use/Read": (
         "pre-tool-use-dispatcher",
@@ -73,6 +77,16 @@ INVOCATIONS_UNDER_BUDGET = {
             "tool_response": {},
         },
         75,
+    ),
+    "post-tool-use/Edit": (
+        "post-tool-use-dispatcher",
+        {
+            "hook_event_name": "PostToolUse",
+            "tool_name": "Edit",
+            "tool_input": {"file_path": FILE_NO_FORMATTER_OR_LINTER_COVERS},
+            "tool_response": {"filePath": FILE_NO_FORMATTER_OR_LINTER_COVERS},
+        },
+        71,
     ),
     "stop": (
         "stop-dispatcher",

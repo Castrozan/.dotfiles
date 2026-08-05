@@ -6,9 +6,9 @@ it, a handler imported before its matcher could select it, and a third-party
 import that ties the hooks to an environment rather than the bare interpreter
 run-hook.sh pins.
 
-Read and Bash are both checked because they cost differently. A Read selects
-only the two matcher-less guards; a Bash selects four more, and Bash is the
-tool an agent drives all day.
+Read, Bash and Edit are all checked because they cost differently. A Read
+selects only the two matcher-less guards; a Bash selects four more; an Edit is
+the one tool call that also spawns the PostToolUse dispatcher behind it.
 """
 
 import sys
@@ -31,6 +31,11 @@ def modules_a_read_tool_call_imports():
 @pytest.fixture(scope="module")
 def modules_a_bash_tool_call_imports():
     return modules_imported_by_invocation("pre-tool-use/Bash")
+
+
+@pytest.fixture(scope="module")
+def modules_an_unformattable_edit_imports():
+    return modules_imported_by_invocation("post-tool-use/Edit")
 
 
 def test_a_read_tool_call_skips_the_expensive_stdlib_modules(
@@ -60,6 +65,25 @@ def test_a_bash_tool_call_skips_the_expensive_stdlib_modules(
         "bootstrap among them charges urllib.parse, ipaddress and math to every "
         "shell command the agent runs; that cost 9ms of every Bash call until the "
         f"three Bash-matched handlers moved to os.path: {offenders}"
+    )
+
+
+def test_an_edit_that_nothing_formats_skips_the_expensive_stdlib_modules(
+    modules_an_unformattable_edit_imports,
+):
+    offenders = sorted(
+        modules_an_unformattable_edit_imports
+        & (
+            STDLIB_MODULES_TOO_EXPENSIVE_FOR_EVERY_TOOL_CALL
+            | {"subprocess", "tempfile"}
+        )
+    )
+    assert not offenders, (
+        "an Edit spawns PostToolUse on top of PreToolUse, so it is the most "
+        "expensive tool call an agent makes; a markdown or plain-text edit runs "
+        "no formatter and no linter, so it should not pay for subprocess and its "
+        "selectors, threading and signal, nor for tempfile and the shutil behind "
+        f"it. Import them where the work happens instead: {offenders}"
     )
 
 
