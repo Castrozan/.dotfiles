@@ -25,7 +25,7 @@ from shell_command_invocation_position import (  # noqa: E402
 
 SANCTIONED_HEADLESS_CLAUDE_OVERRIDE_SENTINEL = "CLAUDE_HEADLESS_SANCTIONED=1"
 TEST_DIRECTORY_PATTERN = (
-    r"(?:__tests__|__test[*?@\[][^\s/]*|__tes[*?@\[][^\s/]*|"
+    r"(?:agent-harness/quality/evaluations|__tests__|__test[*?@\[][^\s/]*|__tes[*?@\[][^\s/]*|"
     r"__te[*?@\[][^\s/]*|__t[*?@\[][^\s/]*|__[*?@\[][^\s/]*|"
     r"[*?@\[][^\s/]*tests__)"
 )

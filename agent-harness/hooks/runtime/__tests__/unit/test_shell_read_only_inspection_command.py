@@ -97,9 +97,9 @@ class TestCommandSubstitutionSurvivesDoubleQuotes:
 
 class TestSegmentBounds:
     def test_a_quoted_pipe_keeps_the_grep_in_one_segment(self):
-        command_text = 'grep -rn "a\\|b" agents/__tests__/evals/*.py'
+        command_text = 'grep -rn "a\\|b" agent-harness/quality/evaluations/evals/*.py'
         segment_start, segment_end = segment_bounds_containing_offset(
-            command_text, offset_of(command_text, "agents")
+            command_text, offset_of(command_text, "agent-harness")
         )
         assert command_text[segment_start:segment_end] == command_text
 
@@ -115,12 +115,18 @@ class TestTheExemptionItself:
     @pytest.mark.parametrize(
         "command_text,needle",
         [
-            ('grep -rn "a\\|b" agents/__tests__/evals/*.py', "__tests__"),
+            (
+                'grep -rn "a\\|b" agent-harness/quality/evaluations/evals/*.py',
+                "evaluations",
+            ),
             (
                 "echo 'run repository/verification/run.sh in CI; never here'",
                 "repository",
             ),
-            ("git log --oneline -- 'agents/__tests__/*'", "__tests__"),
+            (
+                "git log --oneline -- 'agent-harness/quality/evaluations/*'",
+                "evaluations",
+            ),
         ],
     )
     def test_a_read_only_segment_is_exempt(self, command_text, needle):

@@ -120,7 +120,7 @@ an entry naming a file, function or flag is verified against the tree before it 
 
 ## Guard
 
-`agents/__tests__/unit/test_the_always_on_context_budget_stays_bounded.py` is the only new code the design requires, and it
+`agent-harness/quality/evaluations/unit/test_the_always_on_context_budget_stays_bounded.py` is the only new code the design requires, and it
 is a test rather than a runtime mechanism. It caps the assembled always-on instruction surface (`agent-harness/agent-instructions/core-rules/` plus
 `agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md`, 30.3 KB today) and the sum of every skill description (10.0 KB today, loaded eagerly so the model
 can route), and it asserts that `CLAUDE_CODE_DISABLE_AUTO_MEMORY` stays set, since re-enabling it recreates both the

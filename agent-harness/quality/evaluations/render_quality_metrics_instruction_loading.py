@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 
 INSTRUCTION_LOADING_EXPERIMENT_RELATIVE_PATH = (
-    "agents/__tests__/instruction-loading-experiment.json"
+    "agent-harness/quality/evaluations/instruction-loading-experiment.json"
 )
 
 

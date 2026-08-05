@@ -2,7 +2,7 @@ import os
 import subprocess
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parent.parent.parent.parent
+REPO_ROOT = Path(__file__).resolve().parents[4]
 SCENARIOS_DIR = Path(__file__).resolve().parent / "scenarios"
 CORE_INSTRUCTIONS_PATH = (
     REPO_ROOT / "agent-harness" / "agent-instructions" / "core-rules" / "core.md"

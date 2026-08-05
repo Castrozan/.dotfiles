@@ -41,10 +41,10 @@ class TestBashReadOnlyInspectionCommandsStayAllowed:
     @pytest.mark.parametrize(
         "command",
         [
-            'grep -rn "check_baseline\\|check-baseline" agents/__tests__/evals/*.py',
+            'grep -rn "check_baseline\\|check-baseline" agent-harness/quality/evaluations/evals/*.py',
             "grep -c 'unit\\|integration' agent-harness/hooks/runtime/__tests__/unit/test_thing.py",
             'echo "the suite lives at repository/verification/run.sh; CI runs it" | wc -l',
-            "git log --oneline -- 'agents/__tests__/*'",
+            "git log --oneline -- 'agent-harness/quality/evaluations/*'",
             'grep -rln "pytest agents/" agents | head -5',
         ],
     )

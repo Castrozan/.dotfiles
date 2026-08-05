@@ -110,9 +110,11 @@ def _collect_symlinks_under(directory):
 
 
 def test_eval_config_symlinks_resolve():
-    eval_suite_directory = REPO_ROOT / "agents" / "__tests__" / "evals"
+    eval_suite_directory = (
+        REPO_ROOT / "agent-harness" / "quality" / "evaluations" / "evals"
+    )
     if not eval_suite_directory.exists():
-        pytest.skip("agents/__tests__/evals not present")
+        pytest.skip("agent-harness/quality/evaluations/evals not present")
 
     broken_symlinks = []
     for symlink_path in _collect_symlinks_under(eval_suite_directory):
@@ -120,7 +122,7 @@ def test_eval_config_symlinks_resolve():
             broken_symlinks.append(f"{symlink_path} -> {os.readlink(symlink_path)}")
 
     assert not broken_symlinks, (
-        "Broken symlink(s) under agents/__tests__/evals. The eval framework "
+        "Broken symlink(s) under agent-harness/quality/evaluations/evals. The eval framework "
         "imports these YAML files; a broken link crashes --list and "
         "--save-baseline.\n" + "\n".join(broken_symlinks)
     )

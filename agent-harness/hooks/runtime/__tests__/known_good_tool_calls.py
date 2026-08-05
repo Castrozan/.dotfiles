@@ -25,7 +25,7 @@ KNOWN_GOOD_BASH_COMMANDS = (
     "git commit -F /tmp/commit-message.txt -- agent-harness/hooks/runtime/common",
     "git diff --stat origin/main",
     "git worktree add .worktrees/feature -b feature",
-    "grep -rn 'check_baseline\\|check-baseline' agents/__tests__/evals/*.py",
+    "grep -rn 'check_baseline\\|check-baseline' agent-harness/quality/evaluations/evals/*.py",
     "grep -R 'repository/verification/run.sh' agents",
     "ls -la agent-harness/hooks/runtime/__tests__/unit",
     "tree agent-harness/hooks/runtime/nix-rebuild",

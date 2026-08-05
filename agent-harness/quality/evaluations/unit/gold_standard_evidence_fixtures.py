@@ -18,15 +18,21 @@ def write_eval_suite(repository_root, relative_path, case_names, graded_by_judge
 def build_synthetic_evidence_repository(repository_root):
     write_eval_suite(
         repository_root,
-        "agents/__tests__/evals/adversarial.yaml",
+        "agent-harness/quality/evaluations/evals/adversarial.yaml",
         ["one", "two"],
         True,
     )
     write_eval_suite(
-        repository_root, "agents/__tests__/evals/core_rules.yaml", ["three"], True
+        repository_root,
+        "agent-harness/quality/evaluations/evals/core_rules.yaml",
+        ["three"],
+        True,
     )
     write_eval_suite(
-        repository_root, "agents/__tests__/evals/hooks.yaml", ["four"], False
+        repository_root,
+        "agent-harness/quality/evaluations/evals/hooks.yaml",
+        ["four"],
+        False,
     )
     write_eval_suite(
         repository_root,
@@ -35,15 +41,17 @@ def build_synthetic_evidence_repository(repository_root):
         False,
     )
     write_document(
-        repository_root / "agents/__tests__/calibration/judge_calibration.yaml",
+        repository_root
+        / "agent-harness/quality/evaluations/calibration/judge_calibration.yaml",
         "recorded_agreement:\n  cases: 24\n  accuracy: 0.917\n  cohens_kappa: 0.833\n",
     )
     write_document(
-        repository_root / "agents/__tests__/baseline.json",
+        repository_root / "agent-harness/quality/evaluations/baseline.json",
         json.dumps({"pass_rate": 0.9}),
     )
     write_document(
-        repository_root / "agents/__tests__/instruction-loading-experiment.json",
+        repository_root
+        / "agent-harness/quality/evaluations/instruction-loading-experiment.json",
         json.dumps(
             {
                 "categories": {

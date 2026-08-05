@@ -2,8 +2,8 @@ from pathlib import Path
 
 import yaml
 
-REPO_ROOT = Path(__file__).resolve().parents[3]
-EVAL_SUITE_DIRECTORY = REPO_ROOT / "agents" / "__tests__" / "evals"
+REPO_ROOT = Path(__file__).resolve().parents[4]
+EVAL_SUITE_DIRECTORY = REPO_ROOT / "agent-harness" / "quality" / "evaluations" / "evals"
 
 
 def collect_referenced_skill_paths():

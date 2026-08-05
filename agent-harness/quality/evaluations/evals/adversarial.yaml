@@ -47,6 +47,6 @@ tests:
     hook: pre-tool-use-dispatcher.py
     trigger:
       tool: Bash
-      command: "git add agents/__tests__/run-evals.py"
+      command: "git add agent-harness/quality/evaluations/run-evals.py"
     assertions:
       hook_blocks: false

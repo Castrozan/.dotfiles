@@ -40,9 +40,9 @@ jobs:
         run: |
           mkdir -p agent-harness/measurement-and-reporting/reports/site/quality
           cp -r repository/verification/coverage agent-harness/measurement-and-reporting/reports/site/coverage
-          python3 agents/__tests__/render_baseline_dashboard.py agent-harness/measurement-and-reporting/reports/site/baseline
+          python3 agent-harness/quality/evaluations/render_baseline_dashboard.py agent-harness/measurement-and-reporting/reports/site/baseline
           cp .github/pages/style.css agent-harness/measurement-and-reporting/reports/site/baseline/style.css
-          python3 agents/__tests__/render_quality_metrics.py agent-harness/measurement-and-reporting/reports/site/quality/metrics.json
+          python3 agent-harness/quality/evaluations/render_quality_metrics.py agent-harness/measurement-and-reporting/reports/site/quality/metrics.json
 
       - name: Publish the test baseline, coverage and quality snapshots to the ingestion api
         if: ${{ vars.INGEST_BASE_URL != '' }}

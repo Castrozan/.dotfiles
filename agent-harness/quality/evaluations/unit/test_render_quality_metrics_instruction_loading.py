@@ -5,7 +5,7 @@ from render_quality_metrics_instruction_loading import (
     build_instruction_loading_experiment,
 )
 
-REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
+REPOSITORY_ROOT = Path(__file__).resolve().parents[4]
 
 RECORDED_EXPERIMENT = {
     "generated_at": "2026-07-23T22:35:02+00:00",
@@ -38,7 +38,8 @@ RECORDED_EXPERIMENT = {
 
 def write_recorded_experiment(repository_root, experiment):
     experiment_path = (
-        repository_root / "agents/__tests__/instruction-loading-experiment.json"
+        repository_root
+        / "agent-harness/quality/evaluations/instruction-loading-experiment.json"
     )
     experiment_path.parent.mkdir(parents=True, exist_ok=True)
     experiment_path.write_text(json.dumps(experiment))

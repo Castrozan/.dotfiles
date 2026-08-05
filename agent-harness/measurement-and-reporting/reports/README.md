@@ -11,12 +11,12 @@ in atrium rather than being generated here.
 Three artifacts are published, each under its own prefix in the bucket:
 
 - `reports/baseline/` — agent-eval pass-rate dashboard, rendered by
-  `agents/__tests__/render_baseline_dashboard.py` from the git history of
-  `agents/__tests__/baseline.json`.
+  `agent-harness/quality/evaluations/render_baseline_dashboard.py` from the git history of
+  `agent-harness/quality/evaluations/baseline.json`.
 - `reports/coverage/` — kcov line coverage for the shell suite, produced by
   `repository/verification/cover/bash-coverage.sh --ci`.
 - `reports/quality/metrics.json` — the live counts the atrium quality writeup renders, derived by
-  `agents/__tests__/render_quality_metrics.py` straight from the repo: static-eval suite size and pass
+  `agent-harness/quality/evaluations/render_quality_metrics.py` straight from the repo: static-eval suite size and pass
   rate, integration and e2e scenario counts, `core.md` line and rule-block counts, and the wired
   hook events. The narrative on that page is hand-written; every number in it comes from this file,
   so the page cannot drift from the repo the way the hand-maintained copy did.
@@ -55,7 +55,7 @@ nothing, and the atrium baseline and coverage iframes 404 against the bucket.
 nix shell nixpkgs#kcov nixpkgs#bats nixpkgs#bc --command ./repository/verification/cover/bash-coverage.sh --ci
 mkdir -p agent-harness/measurement-and-reporting/reports/site/quality
 cp -r repository/verification/coverage agent-harness/measurement-and-reporting/reports/site/coverage
-python3 agents/__tests__/render_baseline_dashboard.py agent-harness/measurement-and-reporting/reports/site/baseline
+python3 agent-harness/quality/evaluations/render_baseline_dashboard.py agent-harness/measurement-and-reporting/reports/site/baseline
 cp .github/pages/style.css agent-harness/measurement-and-reporting/reports/site/baseline/style.css
-python3 agents/__tests__/render_quality_metrics.py agent-harness/measurement-and-reporting/reports/site/quality/metrics.json
+python3 agent-harness/quality/evaluations/render_quality_metrics.py agent-harness/measurement-and-reporting/reports/site/quality/metrics.json
 ```

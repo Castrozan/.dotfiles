@@ -6,7 +6,7 @@ import yaml
 
 EVAL_HARNESS_ROOT = Path(__file__).resolve().parents[1]
 SKILLS_ROOT = (
-    Path(__file__).resolve().parents[3]
+    Path(__file__).resolve().parents[4]
     / "agent-harness"
     / "agent-instructions"
     / "skills"

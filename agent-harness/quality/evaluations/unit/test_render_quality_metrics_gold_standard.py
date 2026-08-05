@@ -16,7 +16,7 @@ from run_evals_baseline_thresholds import (
     MAXIMUM_REGRESSION_DROP,
 )
 
-REPOSITORY_ROOT_OF_THE_LIVE_CHECKOUT = Path(__file__).resolve().parents[2]
+REPOSITORY_ROOT_OF_THE_LIVE_CHECKOUT = Path(__file__).resolve().parents[4]
 PRACTICES_NOT_MEASURED_FROM_THE_CHECKOUT = {
     "regression-gating",
     "baseline-freshness-gating",
@@ -63,7 +63,7 @@ class TestPracticesAreMeasuredFromCommittedEvidenceNotAsserted:
     ):
         write_document(
             synthetic_repository_root
-            / "agents/__tests__/calibration/judge_calibration.yaml",
+            / "agent-harness/quality/evaluations/calibration/judge_calibration.yaml",
             "recorded_agreement:\n  cases: 24\n  cohens_kappa: 0.41\n",
         )
         practice = practice_named(
@@ -94,7 +94,8 @@ class TestPracticesAreMeasuredFromCommittedEvidenceNotAsserted:
 
     def test_a_sampled_baseline_reports_its_epochs(self, synthetic_repository_root):
         write_document(
-            synthetic_repository_root / "agents/__tests__/baseline.json",
+            synthetic_repository_root
+            / "agent-harness/quality/evaluations/baseline.json",
             json.dumps({"pass_rate": 0.9, "sampling": {"epochs": 5}}),
         )
         practice = practice_named(

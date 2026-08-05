@@ -3,7 +3,7 @@ import subprocess
 
 from run_evals_worktree_and_environment import REPO_ROOT
 
-BASELINE_REPOSITORY_PATH = "agents/__tests__/baseline.json"
+BASELINE_REPOSITORY_PATH = "agent-harness/quality/evaluations/baseline.json"
 COMMIT_RECORD_PREFIX = "commit "
 RESET_PLACEHOLDER_TOTAL_TESTS = 1
 

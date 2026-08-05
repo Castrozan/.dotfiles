@@ -18,12 +18,18 @@ from render_quality_metrics_instruction_loading import (  # noqa: E402
     build_instruction_loading_experiment,
 )
 
-REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
-STATIC_EVAL_BASELINE_PATH = REPOSITORY_ROOT / "agents/__tests__/baseline.json"
-STATIC_EVAL_SUITE_DIRECTORY = REPOSITORY_ROOT / "agents/__tests__/evals"
-END_TO_END_SCENARIO_DIRECTORY = REPOSITORY_ROOT / "agents/__tests__/e2e/scenarios"
+REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
+STATIC_EVAL_BASELINE_PATH = (
+    REPOSITORY_ROOT / "agent-harness/quality/evaluations/baseline.json"
+)
+STATIC_EVAL_SUITE_DIRECTORY = (
+    REPOSITORY_ROOT / "agent-harness/quality/evaluations/evals"
+)
+END_TO_END_SCENARIO_DIRECTORY = (
+    REPOSITORY_ROOT / "agent-harness/quality/evaluations/e2e/scenarios"
+)
 INTEGRATION_SCENARIO_DIRECTORY = (
-    REPOSITORY_ROOT / "agents/__tests__/integration/scenarios"
+    REPOSITORY_ROOT / "agent-harness/quality/evaluations/integration/scenarios"
 )
 CORE_RULES_PATH = (
     REPOSITORY_ROOT / "agent-harness/agent-instructions/core-rules/core.md"

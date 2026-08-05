@@ -21,7 +21,9 @@ from run_evals_statistics import (
 from run_evals_test_runner import TestResult
 from run_evals_worktree_and_environment import REPO_ROOT
 
-BASELINE_PATH = REPO_ROOT / "agents" / "__tests__" / "baseline.json"
+BASELINE_PATH = (
+    REPO_ROOT / "agent-harness" / "quality" / "evaluations" / "baseline.json"
+)
 
 
 def compliance_passed_and_total(categories: dict) -> tuple[int, int]:
@@ -96,7 +98,9 @@ def save_baseline(results: list[TestResult]) -> None:
 
 def check_baseline_for_regression() -> bool:
     if not BASELINE_PATH.exists():
-        print("FAIL: No baseline file found at agents/__tests__/baseline.json")
+        print(
+            "FAIL: No baseline file found at agent-harness/quality/evaluations/baseline.json"
+        )
         print("  Run 'run-evals.py --save-baseline' locally to generate it.")
         return False
 

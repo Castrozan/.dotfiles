@@ -9,15 +9,19 @@ from run_evals_baseline_thresholds import (
     MAXIMUM_REGRESSION_DROP,
 )
 
-CENTRAL_EVAL_SUITE_GLOB = "agents/__tests__/evals/*.yaml"
+CENTRAL_EVAL_SUITE_GLOB = "agent-harness/quality/evaluations/evals/*.yaml"
 SKILL_EVAL_SUITE_GLOB = (
     "agent-harness/agent-instructions/skills/*/__tests__/evals/*.yaml"
 )
-ADVERSARIAL_SUITE_RELATIVE_PATH = "agents/__tests__/evals/adversarial.yaml"
-JUDGE_CALIBRATION_RELATIVE_PATH = "agents/__tests__/calibration/judge_calibration.yaml"
-STATIC_EVAL_BASELINE_RELATIVE_PATH = "agents/__tests__/baseline.json"
+ADVERSARIAL_SUITE_RELATIVE_PATH = (
+    "agent-harness/quality/evaluations/evals/adversarial.yaml"
+)
+JUDGE_CALIBRATION_RELATIVE_PATH = (
+    "agent-harness/quality/evaluations/calibration/judge_calibration.yaml"
+)
+STATIC_EVAL_BASELINE_RELATIVE_PATH = "agent-harness/quality/evaluations/baseline.json"
 INSTRUCTION_LOADING_EXPERIMENT_RELATIVE_PATH = (
-    "agents/__tests__/instruction-loading-experiment.json"
+    "agent-harness/quality/evaluations/instruction-loading-experiment.json"
 )
 
 RUBRIC_JUDGE_ASSERTION_NAME = "llm_judge"
