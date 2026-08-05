@@ -5,8 +5,8 @@ import subprocess
 
 import pytest
 
-HARNESS_TESTS_ROOT = pathlib.Path(__file__).resolve().parent.parent
-FAILURE_AGGREGATION_LIBRARY = HARNESS_TESTS_ROOT / "lib" / "failure-aggregation.sh"
+HARNESS_TESTS_ROOT = pathlib.Path(__file__).resolve().parents[2]
+FAILURE_AGGREGATION_LIBRARY = HARNESS_TESTS_ROOT / "runner" / "failure-aggregation.sh"
 
 MODERN_BASH_CANDIDATE_PATHS = (
     "/run/current-system/sw/bin/bash",

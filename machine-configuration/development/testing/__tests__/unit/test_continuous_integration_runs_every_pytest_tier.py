@@ -6,7 +6,7 @@ import yaml
 REPOSITORY_ROOT = Path(__file__).resolve().parents[5]
 TESTS_WORKFLOW = REPOSITORY_ROOT / ".github" / "workflows" / "tests.yml"
 DISCOVERY_LIBRARY = (
-    REPOSITORY_ROOT / "repository" / "verification" / "lib" / "discovery.sh"
+    REPOSITORY_ROOT / "repository" / "verification" / "runner" / "discovery.sh"
 )
 
 PYTEST_TIERS_THAT_MUST_RUN_IN_CONTINUOUS_INTEGRATION = ("unit", "integration")
@@ -41,6 +41,11 @@ def discovered_test_files_in_tier(tier_directory_name):
         capture_output=True,
         text=True,
         timeout=120,
+    )
+    assert completed.returncode == 0, (
+        "discovery failed to run, so every tier below would look empty and this gate "
+        "would pass without inspecting anything. A moved discovery library is the "
+        f"usual cause. Exit {completed.returncode}, stderr: {completed.stderr}"
     )
     return [line for line in completed.stdout.splitlines() if line.strip()]
 

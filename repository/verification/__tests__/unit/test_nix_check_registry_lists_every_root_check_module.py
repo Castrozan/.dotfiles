@@ -1,7 +1,7 @@
 import pathlib
 import subprocess
 
-REPO_ROOT = pathlib.Path(__file__).resolve().parents[3]
+REPO_ROOT = pathlib.Path(__file__).resolve().parents[4]
 CHECK_REGISTRY_PATH = (
     REPO_ROOT / "repository" / "verification" / "nix-checks" / "default.nix"
 )

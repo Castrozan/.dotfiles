@@ -4,8 +4,8 @@ import subprocess
 
 import pytest
 
-HARNESS_TESTS_ROOT = pathlib.Path(__file__).resolve().parent.parent
-HARNESS_LIBRARY_DIRECTORY = HARNESS_TESTS_ROOT / "lib"
+HARNESS_TESTS_ROOT = pathlib.Path(__file__).resolve().parents[2]
+HARNESS_LIBRARY_DIRECTORY = HARNESS_TESTS_ROOT / "runner"
 
 
 def harness_library_files() -> list[pathlib.Path]:

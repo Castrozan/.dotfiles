@@ -4,7 +4,7 @@
     "agent-harness/agent-to-agent-communication/server",
     "agent-harness/agent-to-agent-communication/client/scripts",
     "repository/verification",
-    "repository/verification/unit",
+    "repository/verification/__tests__/unit",
     "agent-harness/hooks/runtime",
     "agent-harness/hooks/runtime/__tests__",
     "agent-harness/hooks/runtime/__tests__/e2e",

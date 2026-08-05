@@ -5,7 +5,7 @@ import re
 import pytest
 
 
-REPO_ROOT = pathlib.Path(__file__).resolve().parents[3]
+REPO_ROOT = pathlib.Path(__file__).resolve().parents[4]
 THIS_TEST_FILE = pathlib.Path(__file__).resolve()
 
 

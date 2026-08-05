@@ -5,10 +5,10 @@ import subprocess
 
 import pytest
 
-HARNESS_TESTS_ROOT = pathlib.Path(__file__).resolve().parent.parent
-DISCOVERY_LIBRARY = HARNESS_TESTS_ROOT / "lib" / "discovery.sh"
-PYTEST_TIER_LIBRARY = HARNESS_TESTS_ROOT / "lib" / "pytest.sh"
-LINE_COUNT_TIER_LIBRARY = HARNESS_TESTS_ROOT / "lib" / "line-counts.sh"
+HARNESS_TESTS_ROOT = pathlib.Path(__file__).resolve().parents[2]
+DISCOVERY_LIBRARY = HARNESS_TESTS_ROOT / "runner" / "discovery.sh"
+PYTEST_TIER_LIBRARY = HARNESS_TESTS_ROOT / "runner" / "pytest.sh"
+LINE_COUNT_TIER_LIBRARY = HARNESS_TESTS_ROOT / "runner" / "line-counts.sh"
 
 MODERN_BASH_CANDIDATE_PATHS = (
     "/run/current-system/sw/bin/bash",

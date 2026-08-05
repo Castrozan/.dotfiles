@@ -6,9 +6,9 @@ import subprocess
 import pytest
 
 
-HARNESS_TESTS_ROOT = pathlib.Path(__file__).resolve().parent.parent
-DISCOVERY_LIBRARY = HARNESS_TESTS_ROOT / "lib" / "discovery.sh"
-PYTEST_TIER_LIBRARY = HARNESS_TESTS_ROOT / "lib" / "pytest.sh"
+HARNESS_TESTS_ROOT = pathlib.Path(__file__).resolve().parents[2]
+DISCOVERY_LIBRARY = HARNESS_TESTS_ROOT / "runner" / "discovery.sh"
+PYTEST_TIER_LIBRARY = HARNESS_TESTS_ROOT / "runner" / "pytest.sh"
 
 REQUIRED_EXTERNAL_COMMANDS_FOR_COLLECTION = ("find", "sort", "uname")
 
