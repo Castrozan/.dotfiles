@@ -7,7 +7,7 @@
 let
   inherit (helpers) mkEvalCheck;
 
-  listHookScriptsRecursively = import ../../home-manager/list-hook-scripts-recursively.nix {
+  listHookScriptsRecursively = import ../../list-hook-scripts-recursively.nix {
     inherit lib;
   };
 

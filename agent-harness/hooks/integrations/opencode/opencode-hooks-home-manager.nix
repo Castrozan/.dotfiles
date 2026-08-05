@@ -6,7 +6,7 @@
   ...
 }:
 let
-  agentHookScripts = import ../../home-manager/flat-hook-scripts-directory.nix { inherit pkgs lib; };
+  agentHookScripts = import ../../flat-hook-scripts-directory.nix { inherit pkgs lib; };
 
   privateConfigRoot = ../../../../private-configuration;
 

@@ -29,26 +29,26 @@ fi
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly REPO_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
-# shellcheck source=lib/discovery.sh
-source "$SCRIPT_DIR/lib/discovery.sh"
-# shellcheck source=lib/bats.sh
-source "$SCRIPT_DIR/lib/bats.sh"
-# shellcheck source=lib/pytest.sh
-source "$SCRIPT_DIR/lib/pytest.sh"
-# shellcheck source=lib/nix-checks.sh
-source "$SCRIPT_DIR/lib/nix-checks.sh"
-# shellcheck source=lib/qml.sh
-source "$SCRIPT_DIR/lib/qml.sh"
-# shellcheck source=lib/lua.sh
-source "$SCRIPT_DIR/lib/lua.sh"
-# shellcheck source=lib/line-counts.sh
-source "$SCRIPT_DIR/lib/line-counts.sh"
-# shellcheck source=lib/evals.sh
-source "$SCRIPT_DIR/lib/evals.sh"
-# shellcheck source=lib/perf.sh
-source "$SCRIPT_DIR/lib/perf.sh"
-# shellcheck source=lib/failure-aggregation.sh
-source "$SCRIPT_DIR/lib/failure-aggregation.sh"
+# shellcheck source=runner/discovery.sh
+source "$SCRIPT_DIR/runner/discovery.sh"
+# shellcheck source=runner/bats.sh
+source "$SCRIPT_DIR/runner/bats.sh"
+# shellcheck source=runner/pytest.sh
+source "$SCRIPT_DIR/runner/pytest.sh"
+# shellcheck source=runner/nix-checks.sh
+source "$SCRIPT_DIR/runner/nix-checks.sh"
+# shellcheck source=runner/qml.sh
+source "$SCRIPT_DIR/runner/qml.sh"
+# shellcheck source=runner/lua.sh
+source "$SCRIPT_DIR/runner/lua.sh"
+# shellcheck source=runner/line-counts.sh
+source "$SCRIPT_DIR/runner/line-counts.sh"
+# shellcheck source=runner/evals.sh
+source "$SCRIPT_DIR/runner/evals.sh"
+# shellcheck source=runner/perf.sh
+source "$SCRIPT_DIR/runner/perf.sh"
+# shellcheck source=runner/failure-aggregation.sh
+source "$SCRIPT_DIR/runner/failure-aggregation.sh"
 
 readonly QUICK_TIER_CHECKS=(
 	_run_line_count_check

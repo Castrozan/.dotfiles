@@ -31,8 +31,8 @@ jobs:
         run: |
           nix shell --impure --expr 'let pkgs = (builtins.getFlake "nixpkgs").legacyPackages.${builtins.currentSystem}; in import ./machine-configuration/development/testing/test-suite-environment.nix { inherit pkgs; }' --command bash -c '
             export REPO_DIR="$PWD"
-            source repository/verification/lib/discovery.sh
-            source repository/verification/lib/pytest.sh
+            source repository/verification/runner/discovery.sh
+            source repository/verification/runner/pytest.sh
             unitExitCode=0
             _run_pytest_tier unit quick || unitExitCode=$?
             integrationExitCode=0

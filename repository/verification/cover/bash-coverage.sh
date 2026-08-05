@@ -57,7 +57,7 @@ _collect_quick_bats_test_files() {
 		while read -r linuxOnlyTestRoot; do
 			[[ -n "$linuxOnlyTestRoot" ]] || continue
 			linuxOnlyExclusions+=(-not -path "$REPOSITORY_DIR/$linuxOnlyTestRoot/*")
-		done <"$TESTS_DIR/lib/linux-only-test-roots.txt"
+		done <"$TESTS_DIR/runner/linux-only-test-roots.txt"
 	fi
 	find "$REPOSITORY_DIR/machine-configuration" \
 		-path "*/__tests__/unit/*.bats" -type f \

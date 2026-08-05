@@ -5,8 +5,8 @@ import shutil
 import subprocess
 
 HARNESS_TESTS_ROOT = pathlib.Path(__file__).resolve().parent.parent
-DISCOVERY_LIBRARY = HARNESS_TESTS_ROOT / "lib" / "discovery.sh"
-LINUX_ONLY_TEST_ROOTS_FILE = HARNESS_TESTS_ROOT / "lib" / "linux-only-test-roots.txt"
+DISCOVERY_LIBRARY = HARNESS_TESTS_ROOT / "runner" / "discovery.sh"
+LINUX_ONLY_TEST_ROOTS_FILE = HARNESS_TESTS_ROOT / "runner" / "linux-only-test-roots.txt"
 
 UNIT_TIER_TEST_PATTERN = "*/__tests__/unit/test_*.py"
 

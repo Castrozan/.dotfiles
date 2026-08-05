@@ -1,6 +1,6 @@
 { pkgs, lib }:
 let
-  hooksRootDirectory = ../runtime;
+  hooksRootDirectory = ./runtime;
 
   listHookScriptsRecursively = import ./list-hook-scripts-recursively.nix { inherit lib; };
 

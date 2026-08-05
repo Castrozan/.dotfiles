@@ -3,11 +3,9 @@
   mkEvalCheck,
 }:
 let
-  listHookScriptsRecursively =
-    import ../../../../agent-harness/hooks/home-manager/list-hook-scripts-recursively.nix
-      {
-        inherit lib;
-      };
+  listHookScriptsRecursively = import ../../../hooks/list-hook-scripts-recursively.nix {
+    inherit lib;
+  };
 
   allHookScriptsAcrossSubdirectories = listHookScriptsRecursively ../../../../agent-harness/hooks/runtime;
 
