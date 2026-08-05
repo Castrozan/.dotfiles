@@ -34,7 +34,7 @@ KCOV_DOCUMENT = {
             "total_lines": "125",
         },
         {
-            "file": "/home/runner/work/.dotfiles/.dotfiles/home/base/terminal/scripts/tmux-restore-pane-after-toggle",
+            "file": "/home/runner/work/.dotfiles/.dotfiles/machine-configuration/terminal/multiplexer/tmux/scripts/tmux-restore-pane-after-toggle",
             "percent_covered": "31.25",
             "covered_lines": "5",
             "total_lines": "16",
@@ -73,7 +73,7 @@ class TestKcovDocumentIsMappedOntoTheContractPayload:
         assert [entry["path"] for entry in payload["files"]] == [
             "home/base/security/scripts/bw-session.sh",
             "home/base/system/scripts/rebuild",
-            "home/base/terminal/scripts/tmux-restore-pane-after-toggle",
+            "machine-configuration/terminal/multiplexer/tmux/scripts/tmux-restore-pane-after-toggle",
         ]
 
     def test_reads_the_string_line_counts_kcov_writes_as_numbers(self):

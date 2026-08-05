@@ -28,13 +28,13 @@ in
     ../../../agent-harness/harnesses/pi
     ../../../home/base/testing
 
-    ../../../home/base/terminal/bash.nix
-    ../../../home/base/terminal/kitty.nix
-    ../../../home/base/terminal/tmux.nix
-    ../../../home/base/terminal/herdr.nix
-    ../../../home/base/terminal/wezterm.nix
-    ../../../home/base/terminal/scripts.nix
-    ../../../home/base/terminal/cmatrix.nix
+    ../../../machine-configuration/terminal/shell/bash/bash-home-manager.nix
+    ../../../machine-configuration/terminal/emulators/kitty/kitty-home-manager.nix
+    ../../../machine-configuration/terminal/multiplexer/tmux/tmux-home-manager.nix
+    ../../../machine-configuration/terminal/workspace-manager/herdr/herdr-home-manager.nix
+    ../../../machine-configuration/terminal/emulators/wezterm/wezterm-home-manager.nix
+    ../../../machine-configuration/terminal/terminal-command-packages-home-manager.nix
+    ../../../machine-configuration/terminal/visual-effects/cmatrix/cmatrix-home-manager.nix
 
     ../../../home/base/editor/cursor
     ../../../home/base/editor/neovim.nix

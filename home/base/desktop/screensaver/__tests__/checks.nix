@@ -10,7 +10,7 @@ let
   linuxCfg = helpers.homeManagerTestConfiguration [ ../default.nix ];
   darwinCfg = helpers.homeManagerTestConfigurationForDarwin [ ../default.nix ];
 
-  aliasesContent = builtins.readFile ../../../terminal/shell/aliases.sh;
+  aliasesContent = builtins.readFile ../../../../../machine-configuration/terminal/shell/bash/program-configuration/aliases.sh;
 
   packageIsInstalled = name: cfg: builtins.any (pkg: (pkg.name or "") == name) cfg.home.packages;
 

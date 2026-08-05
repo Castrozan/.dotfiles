@@ -21,13 +21,13 @@
     ../../agent-harness/harnesses/pi
     ../base/testing
 
-    ../base/terminal/bash.nix
-    ../base/terminal/kitty.nix
-    ../base/terminal/scripts.nix
-    ../base/terminal/tmux.nix
-    ../base/terminal/herdr.nix
-    ../base/terminal/wezterm.nix
-    ../base/terminal/yazi
+    ../../machine-configuration/terminal/shell/bash/bash-home-manager.nix
+    ../../machine-configuration/terminal/emulators/kitty/kitty-home-manager.nix
+    ../../machine-configuration/terminal/terminal-command-packages-home-manager.nix
+    ../../machine-configuration/terminal/multiplexer/tmux/tmux-home-manager.nix
+    ../../machine-configuration/terminal/workspace-manager/herdr/herdr-home-manager.nix
+    ../../machine-configuration/terminal/emulators/wezterm/wezterm-home-manager.nix
+    ../../machine-configuration/terminal/file-manager/yazi/yazi-home-manager.nix
 
     ../base/editor/neovim.nix
 
@@ -52,9 +52,9 @@
     ../base/dev/lazygit.nix
     ../base/dev/scripts.nix
 
-    # ../base/terminal/bad-apple.nix  # disabled on darwin: pulls latest.yt-dlp -> deno -> rusty-v8 (V8 build takes 30+ min on aarch64-darwin)
-    ../base/terminal/cbonsai.nix
-    ../base/terminal/cmatrix.nix
+    # ../../machine-configuration/terminal/visual-effects/bad-apple/bad-apple-home-manager.nix  # disabled on darwin: pulls latest.yt-dlp -> deno -> rusty-v8 (V8 build takes 30+ min on aarch64-darwin)
+    ../../machine-configuration/terminal/visual-effects/cbonsai/cbonsai-home-manager.nix
+    ../../machine-configuration/terminal/visual-effects/cmatrix/cmatrix-home-manager.nix
 
     ../base/security/agenix.nix
     ../base/security/bitwarden.nix
