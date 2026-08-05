@@ -6,7 +6,7 @@
 }:
 let
   provenanceScripts = ./scripts;
-  agentSessionScripts = ../../../../agents/scripts;
+  agentSessionScripts = ../../../../agent-harness/session-control;
   runtimePath = lib.makeBinPath (
     [ pkgs.git ]
     ++ lib.optionals pkgs.stdenv.isLinux [ pkgs.procps ]

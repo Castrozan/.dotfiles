@@ -1,5 +1,8 @@
 {
   "extraPaths": [
+    "agent-harness/session-control",
+    "agent-harness/agent-to-agent-communication/server",
+    "agent-harness/agent-to-agent-communication/client/scripts",
     "repository/verification",
     "repository/verification/unit",
     "agents/hooks",

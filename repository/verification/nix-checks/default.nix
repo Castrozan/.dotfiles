@@ -54,7 +54,7 @@ let
     ../../../home/linux/gnome/__tests__/checks.nix
     ../../../home/linux/hyprland/__tests__/checks.nix
     ../../../home/base/security/__tests__/checks.nix
-    ../../../home/base/agents/a2a/__tests__/checks.nix
+    ../../../agent-harness/agent-to-agent-communication/client/__tests__/a2a-client-checks.nix
     ../../../home/base/ollama/__tests__/checks.nix
     ../../../home/base/opencode/__tests__/checks.nix
     ../../../home/base/pi/__tests__/checks.nix

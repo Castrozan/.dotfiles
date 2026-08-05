@@ -23,15 +23,7 @@ Home-manager module that installs Claude Code, declares its config, and runs per
 
 ## a2a is provider-agnostic
 
-The a2a MCP client (the `a2a-mcp-server` npm package that lets an agent call peers) lives in the shared `home/base/agents/a2a/` layer, not inside this module:
-
-| Path                                | Purpose                                                                            |
-| ----------------------------------- | ---------------------------------------------------------------------------------- |
-| `home/base/agents/a2a/install.nix`  | Single source for the npm install + binary/command/args, consumed by any provider  |
-| `home/base/agents/a2a/default.nix`  | Runs the install activation exactly once                                           |
-| `home/base/agents/a2a/register.nix` | `registerStdioServerInJsonConfig` helper for providers that register a2a via stdio |
-
-Claude registers a2a as an HTTP bridge in `mcps/` (consuming `a2a/install.nix`); codex/opencode/hermes can register it via the same shared layer. The real A2A server implementation is the provider-agnostic Python package at the repo-root `agents/a2a_server/`.
+The `a2a` command is defined in `agent-harness/agent-to-agent-communication/client/a2a-client-home-manager.nix` and runs the `a2a_cli` package in `agent-harness/agent-to-agent-communication/client/scripts/`. The provider-agnostic server package is `agent-harness/agent-to-agent-communication/server/a2a_server/`; `claude-a2a-peer` launches it for an existing herdr-attached agent.
 
 ## clawde
 

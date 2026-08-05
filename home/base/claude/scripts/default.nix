@@ -15,7 +15,7 @@ let
   '';
   claudeA2aPeerScript = pkgs.writeShellScriptBin "claude-a2a-peer" ''
     export PATH="${herdrPackage}/bin:$PATH"
-    export PYTHONPATH=${../../../../agents}
+    export PYTHONPATH=${../../../../agent-harness/agent-to-agent-communication/server}
     exec ${pkgs.python312}/bin/python3 ${./claude-a2a-peer} "$@"
   '';
   notifyClaudeTurnEndedWithFocusActionScript = pkgs.writeShellScriptBin "notify-claude-turn-ended-with-focus-action" ''

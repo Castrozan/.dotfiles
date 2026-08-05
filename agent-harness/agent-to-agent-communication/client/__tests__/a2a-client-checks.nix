@@ -7,7 +7,7 @@
 let
   inherit (helpers) mkEvalCheck;
 
-  cfg = helpers.homeManagerTestConfiguration [ ../. ];
+  cfg = helpers.homeManagerTestConfiguration [ ../a2a-client-home-manager.nix ];
 
   declaresNoFileUnder =
     directory: !(lib.any (lib.hasPrefix directory) (builtins.attrNames cfg.home.file));

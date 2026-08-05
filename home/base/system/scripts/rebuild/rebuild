@@ -5,7 +5,7 @@ set -Eeuo pipefail
 readonly DOTFILES_DIRECTORY="${HOME}/.dotfiles"
 readonly MACHINE_ALIAS="@machineAlias@"
 readonly BACKENDS_DIRECTORY="@backendsDirectory@"
-readonly EXCLUSIVE_RUN_LOCK_HELPER="${DOTFILES_DIRECTORY}/agents/scripts/exclusive-run-lock.sh"
+readonly EXCLUSIVE_RUN_LOCK_HELPER="${DOTFILES_DIRECTORY}/agent-harness/session-control/exclusive-run-lock.sh"
 readonly TYPICAL_REBUILD_DURATION_SECONDS=420
 readonly NIX_DAEMON_PROFILE="/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh"
 

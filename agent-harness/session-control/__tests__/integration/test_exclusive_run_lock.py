@@ -7,7 +7,9 @@ from pathlib import Path
 import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
-EXCLUSIVE_RUN_LOCK_HELPER_PATH = REPO_ROOT / "agents/scripts/exclusive-run-lock.sh"
+EXCLUSIVE_RUN_LOCK_HELPER_PATH = (
+    REPO_ROOT / "agent-harness/session-control/exclusive-run-lock.sh"
+)
 
 
 def build_unique_lock_name():

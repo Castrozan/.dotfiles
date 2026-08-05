@@ -6,8 +6,8 @@ let
 in
 {
   imports = [
-    ./a2a
-    ./agent-session-control.nix
+    ../../../agent-harness/agent-to-agent-communication/client/a2a-client-home-manager.nix
+    ../../../agent-harness/session-control/agent-session-control-home-manager.nix
     ./dotfiles-repo-agent-instructions.nix
     ./dotfiles-repo-skills.nix
     ./interactive-skill-index.nix

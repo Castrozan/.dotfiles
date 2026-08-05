@@ -5,7 +5,7 @@
   ...
 }:
 let
-  agentSessionControlScripts = ../../../agents/scripts;
+  agentSessionControlScripts = ./.;
   herdrPackage = inputs.herdr.packages.${pkgs.stdenv.hostPlatform.system}.default;
   runtimePath = lib.makeBinPath (
     [ herdrPackage ] ++ lib.optionals pkgs.stdenv.isLinux [ pkgs.procps ]
