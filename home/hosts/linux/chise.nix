@@ -15,7 +15,7 @@ in
 
     ../../base/core.nix
 
-    ../../base/agents
+    ../../../agent-harness/agent-instructions/agent-instructions-home-manager.nix
     ../../base/security
     ../../linux/audio
     ../../base/claude
