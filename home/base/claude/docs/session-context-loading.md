@@ -156,7 +156,7 @@ The machine tier stopped carrying every skill. `agent-harness/agent-instructions
 `effectiveInteractiveSkillNames`, so claude, codex and opencode each deploy only their effective set into their own
 skills directory. The `claude-machine-tier-carries-every-skill` check was replaced by three invariants: the curated set
 must all deploy, the generated `all-skills` index must deploy, and every skill excluded from the curated set must stay
-reachable at `~/.local/share/agent-skill-index/<name>`, deployed by `home/base/agents/interactive-skill-index.nix`.
+reachable at `~/.local/share/agent-skill-index/<name>`, deployed by `agent-harness/agent-instructions/interactive-skill-catalog/interactive-skill-index-home-manager.nix`.
 
 The former `personal` umbrella skill was deleted and replaced by a nix-generated `all-skills` skill, built like `core`
 from `renderAllSkillsIndexSkill` in `interactive-agent-skills.nix`. Its frontmatter description names every skill not
@@ -189,8 +189,8 @@ their descriptions, including sessions in unrelated repositories. `dotfilesRepoS
 `interactive-agent-skills.nix` is the fourth state: named there, a skill leaves the machine tier, the `all-skills` index
 and the reachability mirror exactly as an uninjected one does, but instead of waiting for an agent to name its path it
 deploys into the dotfiles checkout's own project skill directories, which every harness discovers by walking up from the
-working directory. `home/base/agents/dotfiles-repo-skills.nix` writes them, gitignored, the same way
-`dotfiles-repo-agent-instructions.nix` writes `AGENTS.md` and `CLAUDE.md` into the same checkout.
+working directory. `agent-harness/agent-instructions/repository-local-deployment/dotfiles-repo-skills-home-manager.nix` writes them, gitignored, the same way
+`agent-harness/agent-instructions/repository-local-deployment/dotfiles-repo-agent-instructions-home-manager.nix` writes `AGENTS.md` and `CLAUDE.md` into the same checkout.
 
 The tier is deliberately plural, because the project convention is per harness rather than shared: Claude reads
 `.claude/skills`, OpenCode reads `.opencode/skills`, and one list of conventions in the shared module covers both from a

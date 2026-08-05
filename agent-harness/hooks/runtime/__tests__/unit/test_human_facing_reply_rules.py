@@ -167,7 +167,7 @@ def test_every_committed_generated_surface_matches_the_catalog():
     ]
     assert not stale, (
         "these surfaces are generated; run "
-        "agents/scripts/render_enforced_reply_rules_markdown.py after editing the rule "
+        "agent-harness/agent-instructions/core-rules/communication/render-enforced-reply-rules-markdown.py after editing the rule "
         f"catalog so the deployed instruction text matches what the hook enforces: {stale}"
     )
 

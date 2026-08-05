@@ -22,12 +22,9 @@ let
   deploysAgentSession = configuration: builtins.elem "agent-session" (packageNamesFor configuration);
   deploysGitHistory = configuration: builtins.elem "git-history" (packageNamesFor configuration);
 
-  interactiveAgentSkills =
-    import
-      ../../../../agent-harness/agent-instructions/interactive-skill-catalog/interactive-agent-skills.nix
-      {
-        hostname = "test";
-      };
+  interactiveAgentSkills = import ../interactive-skill-catalog/interactive-agent-skills.nix {
+    hostname = "test";
+  };
 
   harnessProjectSkillDirectoriesInRepository = [
     ".claude/skills"

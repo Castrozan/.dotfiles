@@ -10,7 +10,7 @@ let
 
   cfg = helpers.homeManagerTestConfiguration [
     self.homeManagerModules.claude-code
-    ../../agents/interactive-skill-index.nix
+    ../../../../agent-harness/agent-instructions/interactive-skill-catalog/interactive-skill-index-home-manager.nix
   ];
 
   fileNames = builtins.attrNames cfg.home.file;

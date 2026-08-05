@@ -15,7 +15,7 @@ let
 
   codexSkillsPath = "${config.home.homeDirectory}/.codex/skills";
 
-  coreAgentBodyWithoutFrontmatter = import ../../../lib/core-agent-rules-without-frontmatter.nix;
+  coreAgentBodyWithoutFrontmatter = import ../../../agent-harness/agent-instructions/core-rules/core-agent-rules-without-frontmatter.nix;
 
   codexSkillLinks = interactiveAgentSkills.skillDirectorySymlinksAtPrefix ".codex/skills" codexInteractiveSkillNames;
 

@@ -1,9 +1,9 @@
 { config, ... }:
 let
   dotfilesRepoAgentInstructions =
-    builtins.readFile ../../../agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md
+    builtins.readFile ../project-context/dotfiles-agent-instructions.md
     + "\n"
-    + builtins.readFile ../../../agent-harness/agent-instructions/rebuild-guidance/rebuild-agent-instructions.md;
+    + builtins.readFile ../rebuild-guidance/rebuild-agent-instructions.md;
 in
 {
   home.file = {

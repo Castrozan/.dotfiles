@@ -15,7 +15,7 @@ from reply_template_limits import (
 GENERATED_SURFACE_NOTICE = (
     "This file is generated from the reply rule catalog in `agent-harness/hooks/runtime/common/human_facing_reply`, the one place "
     "these rules exist as prose, as regex, and as the reminder the hooks inject. Edit that catalog and run "
-    "`agents/scripts/render_enforced_reply_rules_markdown.py` rather than editing this file, which CI checks "
+    "`agent-harness/agent-instructions/core-rules/communication/render-enforced-reply-rules-markdown.py` rather than editing this file, which CI checks "
     "character for character against the catalog."
 )
 

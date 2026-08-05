@@ -1,25 +1,25 @@
 {
   claude-code = {
     imports = [
-      ../../home/base/agents
+      ../../agent-harness/agent-instructions/agent-instructions-home-manager.nix
       ../../home/base/claude
     ];
   };
   clawde = {
     imports = [
-      ../../home/base/agents
+      ../../agent-harness/agent-instructions/agent-instructions-home-manager.nix
       ../../home/base/clawde
     ];
   };
   codex = {
     imports = [
-      ../../home/base/agents
+      ../../agent-harness/agent-instructions/agent-instructions-home-manager.nix
       ../../home/base/codex
     ];
   };
   opencode = {
     imports = [
-      ../../home/base/agents
+      ../../agent-harness/agent-instructions/agent-instructions-home-manager.nix
       ../../home/base/opencode
     ];
   };
@@ -30,7 +30,7 @@
       ../../home/base/clawde
       ../../home/base/codex
       ../../home/base/opencode
-      ../../home/base/agents
+      ../../agent-harness/agent-instructions/agent-instructions-home-manager.nix
       ../../home/base/pi
     ];
   };

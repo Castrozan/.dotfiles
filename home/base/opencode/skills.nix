@@ -24,7 +24,7 @@ let
     }) opencodeInteractiveSkillNames
   );
 
-  coreAgentBodyWithoutFrontmatter = import ../../../lib/core-agent-rules-without-frontmatter.nix;
+  coreAgentBodyWithoutFrontmatter = import ../../../agent-harness/agent-instructions/core-rules/core-agent-rules-without-frontmatter.nix;
 
   coreSkillFromAgentInstructions = {
     ".config/opencode/skills/core/SKILL.md".text = ''

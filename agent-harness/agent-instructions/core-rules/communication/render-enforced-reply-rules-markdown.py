@@ -5,7 +5,7 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
+REPOSITORY_ROOT = Path(__file__).resolve().parents[4]
 HUMAN_FACING_REPLY_MODULES_DIRECTORY = (
     REPOSITORY_ROOT
     / "agent-harness"
