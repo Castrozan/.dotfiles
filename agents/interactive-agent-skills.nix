@@ -9,35 +9,37 @@ let
     ;
 
   defaultInteractiveSkillNames = [
-    "agent-harness"
     "architecture"
     "browser"
     "coding"
     "deep-work"
     "deliver"
+    "devenv"
     "docs"
-    "exit"
     "explore"
+    "goal-prompt"
     "herdr"
     "humanize"
     "instructions"
-    "nix"
     "research"
     "restart"
     "review"
     "workspace"
   ];
 
+  dotfilesRepoSkillNames = [
+    "agent-harness"
+    "nix"
+  ];
+
   uninjectedSkillNames = [
-    "avatar"
     "b3-portal"
     "daily-report"
-    "desktop"
     "google-chat"
-    "housekeeping"
     "morning-briefing"
-    "passwords"
   ];
+
+  skillNamesOffTheGlobalSurface = dotfilesRepoSkillNames ++ uninjectedSkillNames;
 
   effectiveInteractiveSkillNames =
     {
@@ -49,7 +51,7 @@ let
     );
 
   reachableSkillNames = builtins.filter (
-    skillName: !(builtins.elem skillName uninjectedSkillNames)
+    skillName: !(builtins.elem skillName skillNamesOffTheGlobalSurface)
   ) allSkillNames;
 
   indexedSkillNamesFor =
@@ -107,6 +109,7 @@ in
     skillSourceDirectoryByName
     skillDirectorySymlinksAtPrefix
     defaultInteractiveSkillNames
+    dotfilesRepoSkillNames
     uninjectedSkillNames
     reachableSkillNames
     effectiveInteractiveSkillNames

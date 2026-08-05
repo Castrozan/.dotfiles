@@ -1,5 +1,5 @@
 <usage>
-Run scripts/mouse.sh with subcommands: click X Y, move X Y, scroll DIRECTION [AMOUNT], drag X1 Y1 X2 Y2. Click accepts
+Run `scripts/mouse.sh` with subcommands: click X Y, move X Y, scroll DIRECTION [AMOUNT], drag X1 Y1 X2 Y2. Click accepts
 --button left|right|middle and --double.
 </usage>
 

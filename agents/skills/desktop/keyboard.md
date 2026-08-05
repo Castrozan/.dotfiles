@@ -1,5 +1,5 @@
 <usage>
-Run scripts/keyboard.sh type "text" or scripts/keyboard.sh key "combo". Combos use + separator: ctrl+s, alt+F4,
+Run `scripts/keyboard.sh` type "text" or `scripts/keyboard.sh` key "combo". Combos use + separator: ctrl+s, alt+F4,
 ctrl+shift+t.
 </usage>
 

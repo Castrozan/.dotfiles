@@ -13,6 +13,13 @@ editing that. Before guessing where something lives, load the `nix` skill: it ca
 host split, secrets, script packaging, the "where does this belong" call.
 </orientation>
 
+<repo-local-skills>
+`nix` and `agent-harness` are repo-local: both describe this tree, so they reach no global skill surface and instead
+deploy into this repo's own project skill directories, gitignored exactly like the instruction file you are reading.
+Claude and OpenCode load them automatically here. Codex discovers skills only under its own home, so read them in the
+tree at `agents/skills/nix/SKILL.md` and `agents/skills/agent-harness/SKILL.md`, each with a `knowledge.md` beside it.
+</repo-local-skills>
+
 <stewardship>
 This repo is continuously kept synced, green, and pushed by an autonomous per-machine steward agent, declared in the
 clawde-agents module and built from the clawde flake input where its behavior lives. You still push your own commits,
@@ -103,7 +110,9 @@ per-agent file the wrapper re-reads on every restart, so a rebuild's warm redepl
 respawn needed. The exception is a change to the agent-wrapper code itself: the running wrapper keeps executing the code
 it launched with, so wrapper-code changes stay dormant until the window is fully respawned (reboot, or kill the window
 so the supervisor recreates it from the new spec). Never assume rebuilt wrapper code is live on the running agents -
-check the live process and respawn if it still runs the old code.
+check the live process and respawn if it still runs the old code. Every other fleet trap that leaves no trace in the
+source - resume identity, supervisor reconciliation, channel gating, the steward loop, the shared server cgroup - is in
+`home/base/clawde/knowledge.md`; read it before touching any agent, supervisor or heartbeat behavior.
 </applying-clawde-agent-changes>
 
 <agent-instructions>

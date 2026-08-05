@@ -11,14 +11,17 @@ let
 
   claudeInteractiveSkillNames = interactiveAgentSkills.effectiveInteractiveSkillNames { };
 
-  uninjectedSkillsStayOutOfEverySurface = builtins.all (
+  staysOffEveryGlobalSurface =
     skillName:
     !(builtins.hasAttr ".claude/skills/${skillName}" cfg.home.file)
     && !(builtins.hasAttr ".local/share/agent-skill-index/${skillName}" cfg.home.file)
     && !(builtins.elem skillName (
       interactiveAgentSkills.indexedSkillNamesFor claudeInteractiveSkillNames
-    ))
-  ) interactiveAgentSkills.uninjectedSkillNames;
+    ));
+
+  uninjectedSkillsStayOutOfEverySurface = builtins.all staysOffEveryGlobalSurface interactiveAgentSkills.uninjectedSkillNames;
+
+  dotfilesRepoSkillsStayOutOfEverySurface = builtins.all staysOffEveryGlobalSurface interactiveAgentSkills.dotfilesRepoSkillNames;
 
   generatedMachineTierSkillNames = [
     "all-skills"
@@ -102,6 +105,11 @@ in
   claude-uninjected-skills-reach-no-global-surface =
     mkEvalCheck "claude-uninjected-skills-reach-no-global-surface" uninjectedSkillsStayOutOfEverySurface
       "a skill named in uninjectedSkillNames must stay out of the machine tier, out of the all-skills index and out of the reachability mirror; it exists for the one agent that declares it by path, and any of those three surfaces would put it back in every session's budget";
+
+  claude-dotfiles-repo-skills-reach-no-global-surface =
+    mkEvalCheck "claude-dotfiles-repo-skills-reach-no-global-surface"
+      dotfilesRepoSkillsStayOutOfEverySurface
+      "a skill named in dotfilesRepoSkillNames describes the dotfiles tree alone and must stay out of the machine tier, out of the all-skills index and out of the reachability mirror; it reaches an agent through the repository's own project skill directories, and any global surface would charge every unrelated session for it";
 
   claude-private-machine-skills-are-catalogued =
     mkEvalCheck "claude-private-machine-skills-are-catalogued" everyPrivateMachineSkillIsCatalogued

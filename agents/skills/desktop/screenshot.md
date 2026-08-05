@@ -1,5 +1,5 @@
 <usage>
-Run scripts/screenshot.sh. Flags: --region (interactive slurp select), --active (focused window via hyprctl), --output
+Run `scripts/screenshot.sh`. Flags: --region (interactive slurp select), --active (focused window via hyprctl), --output
 PATH. Prints absolute path to saved PNG.
 </usage>
 

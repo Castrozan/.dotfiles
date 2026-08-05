@@ -85,7 +85,8 @@ only through the index.
 
 **Repository tier, `<repo>/.claude/skills/`.** Owned and curated by the repository, discovered natively by walking up
 from the working directory. A repo with none gets none. `ai-first-initiative` already has this and the launcher was
-hiding it. `~/.dotfiles` needs no such directory, since all of its skills belong to the machine tier.
+hiding it. `~/.dotfiles` needed no such directory while all of its skills belonged to the machine tier; the follow-up
+below is where that stopped holding.
 
 **Agent tier, `~/.local/share/claude-skill-sets/<set>/.claude/skills/`.** Nix declares this per agent and passes it
 through the agent's launch command. Curation here remains necessary because autonomous agents can have harness-specific
@@ -180,3 +181,20 @@ is not in the machine tier, but the index points at it and the mirror keeps the 
 promise of `agent-memory.md` holds through one index read. The 9471-byte always-on description figure is now the
 curated set's cost; the index description is the price of every other domain being reachable, and the per-harness
 description budgets are bounded by the curated list plus one line.
+
+## Follow-up: the fourth state, skills scoped to the repository they describe
+
+`nix` and `agent-harness` describe the dotfiles tree and nothing else, yet the machine tier charged every session for
+their descriptions, including sessions in unrelated repositories. `dotfilesRepoSkillNames` in
+`interactive-agent-skills.nix` is the fourth state: named there, a skill leaves the machine tier, the `all-skills` index
+and the reachability mirror exactly as an uninjected one does, but instead of waiting for an agent to name its path it
+deploys into the dotfiles checkout's own project skill directories, which every harness discovers by walking up from the
+working directory. `home/base/agents/dotfiles-repo-skills.nix` writes them, gitignored, the same way
+`dotfiles-repo-agent-instructions.nix` writes `AGENTS.md` and `CLAUDE.md` into the same checkout.
+
+The tier is deliberately plural, because the project convention is per harness rather than shared: Claude reads
+`.claude/skills`, OpenCode reads `.opencode/skills`, and one list of conventions in the shared module covers both from a
+single source, so adding a harness is one entry rather than a new module. Codex is the exception that shapes the rest of
+the design: it discovers skills only under `$CODEX_HOME`, so no project directory reaches it, and `agents/dotfiles.md`
+names the in-tree paths instead. That instruction file is itself the harness-agnostic floor here, since every harness
+loads it when working in the repository.

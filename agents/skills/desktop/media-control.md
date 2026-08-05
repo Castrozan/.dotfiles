@@ -1,5 +1,5 @@
 <usage>
-Run scripts/media-control.sh with subcommands: status, play, pause, toggle, next, previous, volume VALUE, list. Pass
+Run `scripts/media-control.sh` with subcommands: status, play, pause, toggle, next, previous, volume VALUE, list. Pass
 --player NAME to target a specific player when multiple are active.
 </usage>
 
