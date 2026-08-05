@@ -49,15 +49,17 @@ def _path_is_in_chise_host_tree(path):
 HARDCODED_NON_LUCAS_HOME_PATTERN = re.compile(r"/home/zanoni(?:/|\b)")
 
 
+CHISE_ONLY_CAPABILITY_ROOTS = (
+    "machine-configuration/media/arr-stack/",
+    "nixos/",
+)
+
+
 def _is_acceptable_zanoni_home_reference(path):
     relative = path.relative_to(REPO_ROOT).as_posix()
     if _path_is_in_chise_host_tree(path):
         return True
-    if relative.startswith("nixos/"):
-        return True
-    if relative.startswith("hosts/"):
-        return True
-    return False
+    return relative.startswith(CHISE_ONLY_CAPABILITY_ROOTS)
 
 
 @pytest.fixture(scope="module")
@@ -95,7 +97,7 @@ def test_no_hardcoded_zanoni_home_paths_outside_zanoni_user_tree(
                 offenders.append(f"{path}:{line_number}: {line.strip()}")
 
     assert not offenders, (
-        "Hardcoded /home/zanoni/ path found outside the chise host tree. "
+        "Hardcoded /home/zanoni/ path found outside chise-owned configuration. "
         "Use config.home.homeDirectory or $HOME instead.\n" + "\n".join(offenders)
     )
 

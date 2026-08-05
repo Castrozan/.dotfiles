@@ -1,0 +1,64 @@
+{
+  config,
+  lib,
+  pkgs,
+  hostname,
+  ...
+}:
+let
+  isChise = hostname == "chise";
+  stackRoot = "${config.home.homeDirectory}/arr-stack";
+  arrUsersCli = import ../users/arr-users-cli-home-manager.nix { inherit pkgs stackRoot; };
+  arrStatusCli = import ../status/arr-status-cli-home-manager.nix { inherit pkgs stackRoot; };
+  machineIdentityMapPath = ../../../../private-config/machines.nix;
+  privateConfigPresent = builtins.pathExists machineIdentityMapPath;
+  chiseMachineIdentity = lib.optionalAttrs privateConfigPresent (import machineIdentityMapPath).chise;
+  chiseTailnetBindAddress = chiseMachineIdentity.tailscaleIp or "127.0.0.1";
+  staticEnvironmentFileContents = builtins.readFile ./env;
+  runtimeEnvironmentFileContents =
+    (lib.removeSuffix "\n" staticEnvironmentFileContents)
+    + "\n"
+    + "ARR_BIND_ADDR=${chiseTailnetBindAddress}\n";
+  configServiceDirectories = [
+    "qbittorrent"
+    "prowlarr"
+    "sonarr"
+    "radarr"
+    "bazarr"
+    "jellyfin"
+    "jellyseerr"
+  ];
+  dataDirectories = [
+    "torrents"
+    "media/tv"
+    "media/movies"
+    "media/tv-private"
+    "media/movies-private"
+  ];
+  configDirectoriesToCreate = map (
+    service: "${stackRoot}/config/${service}"
+  ) configServiceDirectories;
+  dataDirectoriesToCreate = map (directory: "${stackRoot}/data/${directory}") dataDirectories;
+  allPersistenceDirectories = configDirectoriesToCreate ++ dataDirectoriesToCreate;
+  makePersistenceDirectoriesCommand = lib.concatMapStringsSep "\n" (
+    directory: ''$DRY_RUN_CMD mkdir -p $VERBOSE_ARG "${directory}"''
+  ) allPersistenceDirectories;
+in
+lib.mkIf isChise {
+  home = {
+    packages = [
+      arrUsersCli
+      arrStatusCli
+    ];
+
+    file = {
+      "arr-stack/docker-compose.yml".source = ./docker-compose.yml;
+      "arr-stack/.env".text = runtimeEnvironmentFileContents;
+      "arr-stack/README.md".source = ./README.md;
+    };
+
+    activation.createArrStackPersistenceDirectories = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+      ${makePersistenceDirectoriesCommand}
+    '';
+  };
+}

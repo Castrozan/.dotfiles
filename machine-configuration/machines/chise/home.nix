@@ -61,7 +61,7 @@ in
     ../../../machine-configuration/terminal/visual-effects/bad-apple/bad-apple-chise-home-manager.nix
     ../../../machine-configuration/media/manga-streaming/suwayomi-server-home-manager.nix
     ../../../machine-configuration/media/media-command-packages-home-manager.nix
-    ../../../home/linux/arr-stack
+    ../../../machine-configuration/media/arr-stack/stack/arr-stack-home-manager.nix
 
     ../../../home/base/system/scripts.nix
     ../../../home/base/system/stale-symlink-cleanup.nix

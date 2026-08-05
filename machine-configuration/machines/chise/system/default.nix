@@ -10,7 +10,7 @@
     # User-specific NixOS configuration for zanoni on this host
     ./nixos-system.nix
 
-    ./configs/arr-stack-host-integration.nix
+    ../../../media/arr-stack/chise/chise-arr-stack-host-integration-nixos.nix
 
     ../../../browsers/brave/chise-brave-policy-nixos.nix
   ];

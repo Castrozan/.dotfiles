@@ -12,7 +12,7 @@ in
   imports = [
     ./scripts
     ./secrets.nix
-    ./arr-stack.nix
+    ../../../media/arr-stack/chise/chise-arr-stack-nixos.nix
     ./pkgs.nix
     ../../../../nixos/modules/virtualization.nix
     ../../../../nixos/modules/fonts.nix
@@ -28,15 +28,15 @@ in
     ../../../home-automation/home-assistant/home-assistant-nixos.nix
     ../../../../nixos/modules/cockpit-session-bridge
     ../../../../nixos/modules/cloudflare-tunnel-connector
-    ../../../../nixos/modules/arr-media-tailscale-funnel
-    ../../../../nixos/modules/arr-media-login-ratelimit-proxy
-    ../../../../nixos/modules/arr-stack-on-demand-supervisor
-    ../../../../nixos/modules/jellyseerr-notifications
-    ../../../../nixos/modules/arr-config-provisioner
-    ../../../../nixos/modules/bazarr-auth-provisioner
-    ../../../../nixos/modules/jellyfin-library-access-provisioner
-    ../../../../nixos/modules/jellyseerr-account-permission-provisioner
-    ../../../../nixos/modules/jellyseerr-private-request-routing-provisioner
+    ../../../media/arr-stack/tailscale-funnel/arr-media-tailscale-funnel-nixos.nix
+    ../../../media/arr-stack/login-rate-limit-proxy/arr-media-login-ratelimit-proxy-nixos.nix
+    ../../../media/arr-stack/on-demand-supervisor/arr-stack-on-demand-supervisor-nixos.nix
+    ../../../media/arr-stack/jellyseerr-notifications/jellyseerr-notifications-nixos.nix
+    ../../../media/arr-stack/configuration/arr-config-provisioner-nixos.nix
+    ../../../media/arr-stack/bazarr-auth/bazarr-auth-provisioner-nixos.nix
+    ../../../media/arr-stack/jellyfin-library-access/jellyfin-library-access-provisioner-nixos.nix
+    ../../../media/arr-stack/jellyseerr-account-permissions/jellyseerr-account-permission-provisioner-nixos.nix
+    ../../../media/arr-stack/jellyseerr-private-request-routing/jellyseerr-private-request-routing-provisioner-nixos.nix
   ]
   ++ lib.optional (builtins.pathExists ../../../../private-config/machines/chise/jarvis-connector.nix) ../../../../private-config/machines/chise/jarvis-connector.nix;
 
