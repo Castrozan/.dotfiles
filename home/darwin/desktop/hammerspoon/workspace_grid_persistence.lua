@@ -12,17 +12,29 @@ function workspaceGridPersistence.setStateFilePathForTest(stateFilePath)
 	stateFilePathOverrideForTest = stateFilePath
 end
 
-local function ensureParentDirectoryExists(filePath)
-	local parentDirectory = filePath:match("^(.*)/[^/]+$")
-	if parentDirectory then
-		os.execute("mkdir -p '" .. parentDirectory .. "'")
+local function createEveryMissingAncestorDirectory(directoryPath)
+	local ancestorPath = directoryPath:sub(1, 1) == "/" and "" or "."
+	for pathSegment in directoryPath:gmatch("[^/]+") do
+		ancestorPath = ancestorPath .. "/" .. pathSegment
+		hs.fs.mkdir(ancestorPath)
 	end
 end
 
-function workspaceGridPersistence.save(currentWorkspaceNumber, sessionGenerationToken, workspaceNumberByWindowId)
-	local stateFilePath = resolveStateFilePath()
-	ensureParentDirectoryExists(stateFilePath)
+local function openStateFileForWriting(stateFilePath)
 	local file = io.open(stateFilePath, "w")
+	if file then
+		return file
+	end
+	local parentDirectory = stateFilePath:match("^(.*)/[^/]+$")
+	if not parentDirectory then
+		return nil
+	end
+	createEveryMissingAncestorDirectory(parentDirectory)
+	return io.open(stateFilePath, "w")
+end
+
+function workspaceGridPersistence.save(currentWorkspaceNumber, sessionGenerationToken, workspaceNumberByWindowId)
+	local file = openStateFileForWriting(resolveStateFilePath())
 	if not file then
 		return
 	end
