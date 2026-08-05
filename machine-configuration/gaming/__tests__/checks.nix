@@ -8,9 +8,9 @@ let
   inherit (helpers) mkEvalCheck;
 
   cfg = helpers.homeManagerTestConfiguration [
-    ../../../linux/gaming/vesktop.nix
-    ../cbonsai.nix
-    ../install-nothing.nix
+    ../vesktop/vesktop-home-manager.nix
+    ../../terminal/visual-effects/cbonsai/cbonsai-chise-home-manager.nix
+    ../install-nothing/install-nothing-home-manager.nix
   ];
 
   hasFile = name: builtins.hasAttr name cfg.home.file;

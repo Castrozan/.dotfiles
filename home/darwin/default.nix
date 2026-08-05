@@ -41,7 +41,7 @@
     ../../machine-configuration/desktop/karabiner/karabiner-home-manager.nix
     ./desktop/keyboard-layout
     ./desktop/maccy
-    ../base/desktop/home-assistant-remote.nix
+    ../../machine-configuration/home-automation/home-assistant/home-assistant-remote-home-manager.nix
 
     ../../machine-configuration/development/cost-monitoring/ccost-home-manager.nix
     ../../machine-configuration/development/cost-monitoring/ccusage-home-manager.nix
@@ -64,8 +64,8 @@
     ./cockpit-session-bridge
     ./cloudflare-tunnel-connector
 
-    ../base/media/obsidian
-    ../base/media/zathura
+    ../../machine-configuration/media/obsidian/obsidian-home-manager.nix
+    ../../machine-configuration/media/zathura/zathura-home-manager.nix
 
     "${inputs.private-config}/sb-toolkit"
   ];

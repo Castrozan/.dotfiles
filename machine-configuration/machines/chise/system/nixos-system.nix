@@ -16,8 +16,8 @@ in
     ./pkgs.nix
     ../../../../nixos/modules/virtualization.nix
     ../../../../nixos/modules/fonts.nix
-    ../../../../nixos/modules/steam.nix
-    # ../../../../nixos/modules/media-streaming # Removed: requires insecure qtwebengine-5.15.19
+    ../../../gaming/steam/steam-nixos.nix
+    # ../../../media/media-streaming/media-streaming-nixos.nix # Removed: requires insecure qtwebengine-5.15.19
     ../../../../nixos/modules/agenix.nix
     ../../../../nixos/modules/nixos-rebuild-guard.nix
     ../../../../nixos/modules/tailscale.nix
@@ -25,7 +25,7 @@ in
     ../../../../nixos/modules/lid-switch.nix
     ../../../../nixos/modules/sudo.nix
     ../../../../nixos/modules/mouse-8k-polling.nix
-    ../../../../nixos/modules/home-assistant.nix
+    ../../../home-automation/home-assistant/home-assistant-nixos.nix
     ../../../../nixos/modules/cockpit-session-bridge
     ../../../../nixos/modules/cloudflare-tunnel-connector
     ../../../../nixos/modules/arr-media-tailscale-funnel

@@ -7,7 +7,7 @@
 let
   inherit (helpers) mkEvalCheck;
 
-  cfg = helpers.homeManagerTestConfiguration [ ../headless-sync.nix ];
+  cfg = helpers.homeManagerTestConfiguration [ ../obsidian-headless-sync-home-manager.nix ];
 
   obsidianHeadlessNpmInstallActivation = cfg.home.activation.installObsidianHeadlessViaNpm.data;
 in

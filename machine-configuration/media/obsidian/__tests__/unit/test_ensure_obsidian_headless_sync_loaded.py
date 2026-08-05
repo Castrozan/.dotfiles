@@ -7,7 +7,9 @@ OBSIDIAN_MODULE_DIRECTORY = Path(__file__).resolve().parents[2]
 RECONCILE_SCRIPT_PATH = (
     OBSIDIAN_MODULE_DIRECTORY / "scripts" / "ensure-obsidian-headless-sync-loaded.sh"
 )
-HEADLESS_SYNC_MODULE = OBSIDIAN_MODULE_DIRECTORY / "headless-sync.nix"
+HEADLESS_SYNC_MODULE = (
+    OBSIDIAN_MODULE_DIRECTORY / "obsidian-headless-sync-home-manager.nix"
+)
 LAUNCHCTL_ASSIGNMENT = re.compile(r'^LAUNCHCTL="[^"]+"$', re.M)
 
 

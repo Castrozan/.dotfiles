@@ -11,8 +11,10 @@ let
 in
 {
   home.packages = [
-    (pkgs.writeShellScriptBin "on" (builtins.readFile ./scripts/on))
-    (pkgs.writeShellScriptBin "pdf-edit" (builtins.readFile ./scripts/pdf-edit))
-    (mkMediaPythonScript "speed-read" ./scripts/speed_read.py)
+    (pkgs.writeShellScriptBin "on" (builtins.readFile ./obsidian/scripts/open-new-note))
+    (pkgs.writeShellScriptBin "pdf-edit" (
+      builtins.readFile ./pdf-editing/scripts/start-bentopdf-pdf-editor
+    ))
+    (mkMediaPythonScript "speed-read" ./speed-reading/scripts/speed_read.py)
   ];
 }

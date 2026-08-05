@@ -22,7 +22,7 @@ in
     ../../../agent-harness/harnesses/clawde
     ../../../agent-harness/harnesses/codex
     ../../../home/linux/gnome
-    ../../../home/linux/home-assistant
+    ../../../machine-configuration/home-automation/home-assistant/home-assistant-home-manager.nix
     ../../../machine-configuration/desktop/hyprland/hyprland-nixos.nix
     ../../../agent-harness/harnesses/opencode
     ../../../agent-harness/harnesses/pi
@@ -57,10 +57,10 @@ in
     ../../../machine-configuration/development/model-context-protocol/mcporter-home-manager.nix
     ../../../machine-configuration/development/version-control/git-fzf-home-manager.nix
 
-    ../../../home/base/media/ani-cli.nix
-    ../../../home/base/media/bad-apple.nix
-    ../../../home/base/media/suwayomi-server.nix
-    ../../../home/base/media/scripts.nix
+    ../../../machine-configuration/media/anime-streaming/ani-cli-home-manager.nix
+    ../../../machine-configuration/terminal/visual-effects/bad-apple/bad-apple-chise-home-manager.nix
+    ../../../machine-configuration/media/manga-streaming/suwayomi-server-home-manager.nix
+    ../../../machine-configuration/media/media-command-packages-home-manager.nix
     ../../../home/linux/arr-stack
 
     ../../../home/base/system/scripts.nix
@@ -72,17 +72,17 @@ in
     ../../../home/linux/voice/voxtype.nix
     ../../../home/linux/voice/whisp-away.nix
 
-    ../../../home/base/gaming/cbonsai.nix
-    ../../../home/base/gaming/install-nothing.nix
-    ../../../home/linux/gaming/vesktop.nix
+    ../../../machine-configuration/terminal/visual-effects/cbonsai/cbonsai-chise-home-manager.nix
+    ../../../machine-configuration/gaming/install-nothing/install-nothing-home-manager.nix
+    ../../../machine-configuration/gaming/vesktop/vesktop-home-manager.nix
 
     ../../../home/base/system/bluetui.nix
     ../../../home/base/system/systemd-manager-tui.nix
     ../../../machine-configuration/development/development-environments/ralph-tui-home-manager.nix
     ../../../machine-configuration/desktop/vial/vial-home-manager.nix
-    ../../../home/base/media/obsidian
-    ../../../home/base/media/summarize.nix
-    ../../../home/base/media/viu.nix
+    ../../../machine-configuration/media/obsidian/obsidian-home-manager.nix
+    ../../../machine-configuration/media/content-summarization/summarize-home-manager.nix
+    ../../../machine-configuration/media/terminal-media-viewer/viu-home-manager.nix
   ]
   ++ lib.optionals chisePrivateConfigExists [
     "${privateConfigRoot}/machines/chise/clawde-agents"
