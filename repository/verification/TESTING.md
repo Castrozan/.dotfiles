@@ -26,9 +26,11 @@ runner edits — there are no hardcoded collection roots.
 
 Two discovery policies:
 
-- **platform-scoped** (bats, pytest): on macOS it excludes the capability roots
-  listed in `repository/verification/runner/linux-only-test-roots.txt`, because
-  script tests can be platform-specific.
+- **platform-scoped** (bats, pytest): excludes the capability roots belonging to
+  the other platform, because script tests can be platform-specific. macOS reads
+  `repository/verification/runner/linux-only-test-roots.txt` and Linux reads
+  `darwin-only-test-roots.txt`; `foreign-platform-test-roots.sh` picks between
+  them so the collectors and the coverage run agree.
 - **cross-platform** (lua, qml): walks both platforms, because those pure-logic
   suites run identically everywhere.
 
