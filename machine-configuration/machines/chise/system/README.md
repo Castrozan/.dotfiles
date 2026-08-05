@@ -3,7 +3,7 @@
 </identity>
 
 <stack>
-NixOS owns the system and runs home-manager inside it, both from this flake. System config lives under `machine-configuration/machines/chise/system/` (the hardware scan, the machine configuration, the NixOS-system module). The user environment composes `home/base` under `home/linux` through `machine-configuration/machines/chise/home.nix`. Personal-only overlays are layered at deploy time by a machine-local `/etc/nixos/flake.nix` wrapper that composes this flake with the private overlay as separate inputs, never committed here.
+NixOS owns the system and runs home-manager inside it, both from this flake. System config lives under `machine-configuration/machines/chise/system/` (the hardware scan, the machine configuration, the NixOS-system module). The user environment composes the `machine-configuration/` capabilities this host runs through `machine-configuration/machines/chise/home.nix`. Personal-only overlays are layered at deploy time by a machine-local `/etc/nixos/flake.nix` wrapper that composes this flake with the private overlay as separate inputs, never committed here.
 </stack>
 
 <per_host_delta>

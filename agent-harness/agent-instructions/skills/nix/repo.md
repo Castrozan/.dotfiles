@@ -18,13 +18,11 @@ broken in pure flake evaluation.
 </platform_detection>
 
 <directory_organization>
-bin/ - standalone scripts (system-wide, executable)
-home/core.nix - shared home-manager core
-home/scripts/ - home-manager managed scripts (nix-built)
-home/{base,linux,darwin}/ - shared modules (name.nix or name/default.nix for complex)
+machine-configuration/machines/shared-home-manager-core.nix - shared home-manager core every machine imports
+machine-configuration/machines/shared-darwin-{home-manager,system-nix-darwin}.nix - the layer both macOS hosts share
 machine-configuration/machines/<alias>/home.nix - per-machine home-manager entry point (IMPORTS ONLY)
 machine-configuration/machines/<alias>/home/ - optional per-machine home-manager submodules
-home/base/packages/<user>.nix - per-user shared package set (used by multiple machines)
+machine-configuration/machines/user-packages-<user>-home-manager.nix - per-user shared package set (used by multiple machines)
 machine-configuration/development/version-control/git-private-home-manager.nix - per-user git router (sources private-config/machines/<hostname>/git-user.nix)
 machine-configuration/network/ssh/ssh-private-home-manager.nix - per-user ssh router (sources private-config/machines/<hostname>/ssh.nix)
 machine-configuration/network/ssh/scripts/ - shared per-user ssh activation scripts

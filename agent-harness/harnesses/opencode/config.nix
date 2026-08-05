@@ -15,9 +15,11 @@ let
     inherit pkgs latest homeDir;
   };
 
-  opencodePythonLspEnvironment = import ../../../home/base/testing/python-test-environment.nix {
-    inherit pkgs;
-  };
+  opencodePythonLspEnvironment =
+    import ../../../machine-configuration/development/testing/python-test-environment.nix
+      {
+        inherit pkgs;
+      };
 
   fullAccessPermissions = {
     "*" = "allow";

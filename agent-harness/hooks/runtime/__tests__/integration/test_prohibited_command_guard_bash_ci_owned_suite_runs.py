@@ -12,7 +12,7 @@ class TestCiOwnedSuiteRunBlocking:
             "pytest agent-harness/quality/evaluations/unit && echo done",
             "pytest agent-harness/quality/evaluations/integration",
             "pytest agent-harness/hooks/runtime/__tests__/unit",
-            "pytest home/base/system/__tests__/integration",
+            "pytest machine-configuration/operating-system/memory-protection/__tests__/integration",
             "pytest agent-harness/quality/evaluations",
             "pytest agent-harness/quality/evaluations/",
             "pytest agent-harness/quality/evaluations -q",
@@ -61,7 +61,9 @@ class TestCiOwnedSuiteRunBlocking:
         result = invoke_prohibited_command_guard_hook(
             {
                 "tool_name": "Bash",
-                "tool_input": {"command": "pytest agent-harness/quality/evaluations/unit/*"},
+                "tool_input": {
+                    "command": "pytest agent-harness/quality/evaluations/unit/*"
+                },
             }
         )
         assert result.returncode == 0

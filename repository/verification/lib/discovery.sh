@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+LINUX_ONLY_TEST_ROOTS_FILE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/linux-only-test-roots.txt"
+
 _discover_test_files() {
 	local discoveryPolicy="$1"
 	local pathPattern="$2"
@@ -17,7 +19,11 @@ _discover_test_files() {
 	)
 
 	if [[ "$discoveryPolicy" == "platform-scoped" && "$(uname)" == "Darwin" ]]; then
-		prunedDirectoryExpression+=(-o -path "$REPO_DIR/home/linux")
+		local linuxOnlyTestRoot
+		while read -r linuxOnlyTestRoot; do
+			[[ -n "$linuxOnlyTestRoot" ]] || continue
+			prunedDirectoryExpression+=(-o -path "$REPO_DIR/$linuxOnlyTestRoot")
+		done <"$LINUX_ONLY_TEST_ROOTS_FILE"
 	fi
 
 	find "$REPO_DIR" \

@@ -6,22 +6,23 @@ import subprocess
 
 HARNESS_TESTS_ROOT = pathlib.Path(__file__).resolve().parent.parent
 DISCOVERY_LIBRARY = HARNESS_TESTS_ROOT / "lib" / "discovery.sh"
+LINUX_ONLY_TEST_ROOTS_FILE = HARNESS_TESTS_ROOT / "lib" / "linux-only-test-roots.txt"
 
 UNIT_TIER_TEST_PATTERN = "*/__tests__/unit/test_*.py"
 
-PLANTED_TEST_MODULE_DIRECTORIES = (
-    "home/base/included_module",
-    "home/linux/linux_only_module",
-    "machine-configuration/included_capability",
+LINUX_ONLY_CAPABILITY = LINUX_ONLY_TEST_ROOTS_FILE.read_text().split()[0]
+SHARED_CAPABILITY_MODULE = "machine-configuration/included_capability"
+AGENT_HARNESS_MODULE = "agent-harness/included_harness"
+PRUNED_MODULES = (
     "private-config/pruned_submodule",
     ".worktrees/pruned_worktree",
 )
 
-LINUX_HOME_MODULE = "home/linux/linux_only_module"
-SHARED_CAPABILITY_MODULE = "machine-configuration/included_capability"
-PRUNED_MODULES = (
-    "private-config/pruned_submodule",
-    ".worktrees/pruned_worktree",
+PLANTED_TEST_MODULE_DIRECTORIES = (
+    AGENT_HARNESS_MODULE,
+    LINUX_ONLY_CAPABILITY,
+    SHARED_CAPABILITY_MODULE,
+    *PRUNED_MODULES,
 )
 
 
@@ -68,12 +69,12 @@ def test_platform_scoped_discovery_excludes_foreign_platform_and_pruned_dirs(tmp
 
     discovered = _discover_with_policy(fake_repository_root, "platform-scoped")
 
-    assert _relative_planted_test("home/base/included_module") in discovered
+    assert _relative_planted_test(AGENT_HARNESS_MODULE) in discovered
     assert _relative_planted_test(SHARED_CAPABILITY_MODULE) in discovered
     if platform.system() == "Darwin":
-        assert _relative_planted_test(LINUX_HOME_MODULE) not in discovered
+        assert _relative_planted_test(LINUX_ONLY_CAPABILITY) not in discovered
     else:
-        assert _relative_planted_test(LINUX_HOME_MODULE) in discovered
+        assert _relative_planted_test(LINUX_ONLY_CAPABILITY) in discovered
     for pruned_module in PRUNED_MODULES:
         assert _relative_planted_test(pruned_module) not in discovered
 
@@ -84,8 +85,8 @@ def test_cross_platform_discovery_includes_both_platforms_but_prunes_vendored(tm
 
     discovered = _discover_with_policy(fake_repository_root, "cross-platform")
 
-    assert _relative_planted_test("home/base/included_module") in discovered
-    assert _relative_planted_test(LINUX_HOME_MODULE) in discovered
+    assert _relative_planted_test(AGENT_HARNESS_MODULE) in discovered
+    assert _relative_planted_test(LINUX_ONLY_CAPABILITY) in discovered
     assert _relative_planted_test(SHARED_CAPABILITY_MODULE) in discovered
     for pruned_module in PRUNED_MODULES:
         assert _relative_planted_test(pruned_module) not in discovered

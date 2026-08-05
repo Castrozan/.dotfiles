@@ -26,8 +26,9 @@ runner edits — there are no hardcoded collection roots.
 
 Two discovery policies:
 
-- **platform-scoped** (bats, pytest): on macOS it excludes the Linux-only home
-  tree (`home/linux`), because script tests can be platform-specific.
+- **platform-scoped** (bats, pytest): on macOS it excludes the capability roots
+  listed in `repository/verification/lib/linux-only-test-roots.txt`, because
+  script tests can be platform-specific.
 - **cross-platform** (lua, qml): walks both platforms, because those pure-logic
   suites run identically everywhere.
 
@@ -65,7 +66,7 @@ repository/verification/run.sh --runtime             # e2e/ script tests (live s
 repository/verification/run.sh --all                 # quick + nix + integration-scripts
 repository/verification/run.sh --coverage            # unit/ bats with kcov coverage
 repository/verification/run.sh --perf                # performance benchmarks + threshold tests
-bats home/base/system/__tests__/unit/foo.bats  # single test file
+bats machine-configuration/operating-system/power-management/__tests__/unit/foo.bats  # single test file
 ```
 
 ### Performance testing
@@ -134,14 +135,14 @@ discovers them by directory (`*/__tests__/<tier>/*.bats` and `*/__tests__/<tier>
 
 Bats tests load shared helpers from the root `repository/verification/helpers/` via relative path;
 the number of `../` segments is the module's nesting depth (a test in
-`home/base/<domain>/__tests__/unit/` is five levels deep, so it loads
+`machine-configuration/<domain>/<capability>/__tests__/unit/` is five levels deep, so it loads
 `'../../../../../repository/verification/helpers/bash-script-assertions'`). Pytest tests resolve the
 script under test through a `conftest.py` at the module's `__tests__/` level, which
 applies to all three subdirectories.
 
 ## Writing Bin Script Tests
 
-Test filename must match script name: `bin/foo` → `home/{base,linux,darwin}/<domain>/__tests__/unit/foo.bats` (or `integration/` / `e2e/` for the heavier tiers).
+Test filename must match script name: a `scripts/foo` under a capability is covered by `<capability>/__tests__/unit/foo.bats` (or `integration/` / `e2e/` for the heavier tiers).
 
 The shared helper at `repository/verification/helpers/bash-script-assertions.bash` auto-resolves the script path from the test filename.
 

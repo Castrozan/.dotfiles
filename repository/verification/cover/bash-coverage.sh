@@ -51,15 +51,17 @@ _clean_previous_coverage() {
 }
 
 _collect_quick_bats_test_files() {
-	local -a testDirectories=(
-		"$REPOSITORY_DIR/home/base"
-		"$REPOSITORY_DIR/machine-configuration"
-	)
-	if [[ "$(uname)" != "Darwin" ]]; then
-		testDirectories+=("$REPOSITORY_DIR/home/linux")
+	local -a linuxOnlyExclusions=()
+	if [[ "$(uname)" == "Darwin" ]]; then
+		local linuxOnlyTestRoot
+		while read -r linuxOnlyTestRoot; do
+			[[ -n "$linuxOnlyTestRoot" ]] || continue
+			linuxOnlyExclusions+=(-not -path "$REPOSITORY_DIR/$linuxOnlyTestRoot/*")
+		done <"$TESTS_DIR/lib/linux-only-test-roots.txt"
 	fi
-	find "${testDirectories[@]}" \
-		-path "*/__tests__/unit/*.bats" -type f | sort
+	find "$REPOSITORY_DIR/machine-configuration" \
+		-path "*/__tests__/unit/*.bats" -type f \
+		${linuxOnlyExclusions[@]+"${linuxOnlyExclusions[@]}"} | sort
 }
 
 _run_bats_through_kcov() {
@@ -69,7 +71,7 @@ _run_bats_through_kcov() {
 	testFiles=$(_collect_quick_bats_test_files)
 	kcov \
 		--bash-dont-parse-binary-dir \
-		--include-pattern="$REPOSITORY_DIR/home/base/,$REPOSITORY_DIR/home/linux/,$REPOSITORY_DIR/machine-configuration/" \
+		--include-pattern="$REPOSITORY_DIR/machine-configuration/" \
 		"$COVERAGE_OUTPUT_DIR" \
 		bats $testFiles
 }

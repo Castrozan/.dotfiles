@@ -5,11 +5,9 @@
   ...
 }:
 let
-  verifyDeployedProhibitedWordsAllowlist =
-    import ../../../../../home/base/system/scripts/verify-deployed-prohibited-words-allowlist.nix
-      {
-        inherit pkgs;
-      };
+  verifyDeployedProhibitedWordsAllowlist = import ./verify-deployed-prohibited-words-allowlist.nix {
+    inherit pkgs;
+  };
 in
 {
   home.activation = {

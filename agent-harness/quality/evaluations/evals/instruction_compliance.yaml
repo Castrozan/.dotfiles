@@ -15,7 +15,7 @@ tests:
     skill_path: agent-harness/agent-instructions/skills/review/SKILL.md
     extra_skill_paths:
       - agent-harness/agent-instructions/skills/review/authoring.md
-    prompt: "I want my skill to reference the rebuild script. Should I write the full path like ./home/base/system/scripts/rebuild.sh?"
+    prompt: "I want my skill to reference the rebuild script. Should I write the full path like ./machine-configuration/development/system-rebuild/scripts/rebuild.sh?"
     model: haiku
     assertions:
       llm_judge:

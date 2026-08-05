@@ -1,14 +1,14 @@
 { inputs, ... }:
 {
   imports = [
-    ../../home/base/packages/lucas-zanoni.nix
+    ./user-packages-lucas-zanoni-home-manager.nix
 
     ../development/version-control/git-private-home-manager.nix
     ../network/ssh/ssh-private-home-manager.nix
-    ../../home/base/system/session-vars-lucas-zanoni.nix
+    ./session-variables-lucas-zanoni-home-manager.nix
     ../../agent-harness/harnesses/clawde/agents/steward.nix
 
-    ../../home/base/core.nix
+    ./shared-home-manager-core.nix
 
     ../../agent-harness/agent-instructions/agent-instructions-home-manager.nix
 
@@ -19,7 +19,7 @@
     ../../agent-harness/harnesses/opencode
     ../../agent-harness/harnesses/opencode/private.nix
     ../../agent-harness/harnesses/pi
-    ../../home/base/testing
+    ../development/testing/testing-home-manager.nix
 
     ../terminal/shell/bash/bash-home-manager.nix
     ../terminal/emulators/kitty/kitty-home-manager.nix
@@ -56,8 +56,8 @@
     ../terminal/visual-effects/cbonsai/cbonsai-home-manager.nix
     ../terminal/visual-effects/cmatrix/cmatrix-home-manager.nix
 
-    ../../home/base/security/agenix.nix
-    ../../home/base/security/bitwarden.nix
+    ../security/secrets/agenix-home-manager.nix
+    ../security/password-manager/bitwarden-home-manager.nix
 
     ../network/tailscale/tailscale-daemon-home-manager.nix
 

@@ -46,7 +46,7 @@ let
           ;
       };
       modules = [
-        ../../../home/base/system/health-check
+        ../../../machine-configuration/operating-system/health-check/health-check-home-manager.nix
         {
           home = {
             username = "test";

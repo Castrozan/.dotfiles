@@ -29,7 +29,7 @@ jobs:
       - name: Run Python tests
         if: ${{ !cancelled() }}
         run: |
-          nix shell --impure --expr 'let pkgs = (builtins.getFlake "nixpkgs").legacyPackages.${builtins.currentSystem}; in import ./home/base/testing/test-suite-environment.nix { inherit pkgs; }' --command bash -c '
+          nix shell --impure --expr 'let pkgs = (builtins.getFlake "nixpkgs").legacyPackages.${builtins.currentSystem}; in import ./machine-configuration/development/testing/test-suite-environment.nix { inherit pkgs; }' --command bash -c '
             export REPO_DIR="$PWD"
             source repository/verification/lib/discovery.sh
             source repository/verification/lib/pytest.sh

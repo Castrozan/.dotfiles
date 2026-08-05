@@ -22,13 +22,13 @@ KCOV_DOCUMENT = {
     "percent_high": 75,
     "files": [
         {
-            "file": "/home/runner/work/.dotfiles/.dotfiles/home/base/security/scripts/bw-session.sh",
+            "file": "/home/runner/work/.dotfiles/.dotfiles/machine-configuration/security/password-manager/scripts/bw-session.sh",
             "percent_covered": "100.00",
             "covered_lines": "28",
             "total_lines": "28",
         },
         {
-            "file": "/home/runner/work/.dotfiles/.dotfiles/home/base/system/scripts/rebuild",
+            "file": "/home/runner/work/.dotfiles/.dotfiles/machine-configuration/development/system-rebuild/scripts/rebuild",
             "percent_covered": "22.40",
             "covered_lines": "28",
             "total_lines": "125",
@@ -71,8 +71,8 @@ class TestKcovDocumentIsMappedOntoTheContractPayload:
         payload = build_test_coverage_payload(KCOV_DOCUMENT, WORKSPACE_ENVIRONMENT)
 
         assert [entry["path"] for entry in payload["files"]] == [
-            "home/base/security/scripts/bw-session.sh",
-            "home/base/system/scripts/rebuild",
+            "machine-configuration/security/password-manager/scripts/bw-session.sh",
+            "machine-configuration/development/system-rebuild/scripts/rebuild",
             "machine-configuration/terminal/multiplexer/tmux/scripts/tmux-restore-pane-after-toggle",
         ]
 

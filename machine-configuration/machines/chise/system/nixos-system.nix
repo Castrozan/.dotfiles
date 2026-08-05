@@ -21,8 +21,8 @@ in
     ../../../security/secrets/agenix-nixos.nix
     ../../../development/system-rebuild/nixos-rebuild-guard-nixos.nix
     ../../../network/tailscale/tailscale-nixos.nix
-    ../../../development/manual-pages/man-cache-nixos.nix
-    ../../../power-management/lid-switch-nixos.nix
+    ../../../operating-system/manual-pages/man-cache-nixos.nix
+    ../../../operating-system/power-management/lid-switch-nixos.nix
     ../../../security/privilege-escalation/sudo-nixos.nix
     ../../../desktop/mouse/mouse-polling-rate-nixos.nix
     ../../../home-automation/home-assistant/home-assistant-nixos.nix
