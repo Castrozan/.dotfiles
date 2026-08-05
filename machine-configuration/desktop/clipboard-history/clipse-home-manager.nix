@@ -29,7 +29,7 @@ let
     };
   };
   clipseWaylandListener = pkgs.writeShellScript "clipse-wayland-listener" (
-    builtins.readFile ./scripts/clipse-wayland-listener
+    builtins.readFile ./clipse-wayland-listener
   );
 in
 {

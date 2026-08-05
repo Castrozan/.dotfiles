@@ -2,9 +2,13 @@ from pathlib import Path
 
 
 DOTFILES_ROOT = Path(__file__).resolve().parents[5]
-CLIPSE_MODULE = DOTFILES_ROOT / "home/linux/desktop/clipse.nix"
+CLIPSE_MODULE = (
+    DOTFILES_ROOT
+    / "machine-configuration/desktop/clipboard-history/clipse-home-manager.nix"
+)
 CLIPSE_WAYLAND_LISTENER = (
-    DOTFILES_ROOT / "home/linux/desktop/scripts/clipse-wayland-listener"
+    DOTFILES_ROOT
+    / "machine-configuration/desktop/clipboard-history/clipse-wayland-listener"
 )
 HYPRLAND_AUTOSTART = (
     DOTFILES_ROOT
@@ -22,7 +26,7 @@ def test_the_clipse_service_runs_wayland_clipboard_watchers():
 
     assert 'ConditionEnvironment = "WAYLAND_DISPLAY";' in clipse_module_source
     assert "--listen-shell" not in clipse_module_source
-    assert "builtins.readFile ./scripts/clipse-wayland-listener" in clipse_module_source
+    assert "builtins.readFile ./clipse-wayland-listener" in clipse_module_source
     assert (
         '"CLIPSE_WL_PASTE_BINARY=${pkgs.wl-clipboard}/bin/wl-paste"'
         in clipse_module_source

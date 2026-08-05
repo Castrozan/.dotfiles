@@ -116,7 +116,7 @@ against the model choice.
   `tui.json` at all, so a typo there parses and is silently inert; that file is
   only proven by launching the TUI.
 - `theme` follows the machine's selected theme
-  (`home/base/desktop/theming/selected-theme.nix`), which is how Claude looks
+  (`machine-configuration/desktop/theming/selected-theme.nix`), which is how Claude looks
   too: Claude takes its palette from the terminal, so matching the terminal is
   the parity move.
 - `attention` is the analogue of Claude's

@@ -1,7 +1,7 @@
 let
   selectedThemeName = "kanagawa";
 
-  themesDirectory = ../../../../static/themes;
+  themesDirectory = ./themes;
 
   themeColorsToml = builtins.fromTOML (
     builtins.readFile (themesDirectory + "/${selectedThemeName}/colors.toml")

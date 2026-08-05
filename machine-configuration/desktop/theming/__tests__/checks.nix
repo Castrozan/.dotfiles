@@ -7,7 +7,15 @@
 let
   inherit (helpers) mkEvalCheck;
 
-  appearanceConfiguration = helpers.homeManagerTestConfigurationForDarwin [ ../default.nix ];
+  appearanceConfiguration = helpers.homeManagerTestConfigurationForDarwin [
+    ../macos-theme-appearance-home-manager.nix
+  ];
+
+  themingPackageNames = map (
+    package: package.name or package.pname or "unknown"
+  ) appearanceConfiguration.home.packages;
+  themingHasPackageMatching =
+    pattern: builtins.any (name: builtins.match pattern name != null) themingPackageNames;
 
   activationLines = lib.splitString "\n" appearanceConfiguration.home.activation.applyMacosThemeAppearance.data;
 
@@ -28,6 +36,11 @@ let
     preferenceCommandLines != [ ] && lib.all (line: lib.hasInfix "||" line) preferenceCommandLines;
 in
 {
+  domain-desktop-theming-wallpaper-derived-regeneration-command-darwin =
+    mkEvalCheck "domain-desktop-theming-wallpaper-derived-regeneration-command-darwin"
+      (themingHasPackageMatching ".*theme-regenerate-wallpaper-derived-colors.*")
+      "the darwin theming module must install the wallpaper-derived colors regeneration command the rebuild wrapper invokes";
+
   domain-desktop-theming-darwin-preference-commands-are-time-bounded =
     mkEvalCheck "domain-desktop-theming-darwin-preference-commands-are-time-bounded"
       everyPreferenceCommandIsTimeBounded

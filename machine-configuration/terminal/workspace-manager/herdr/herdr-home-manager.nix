@@ -7,7 +7,7 @@
 let
   herdrPackage = inputs.herdr.packages.${pkgs.stdenv.hostPlatform.system}.default;
 
-  selectedTheme = import ../../../../home/base/desktop/theming/selected-theme.nix;
+  selectedTheme = import ../../../desktop/theming/selected-theme.nix;
 
   herdrConfigWithThemeAccent = pkgs.writeText "herdr-config.toml" (
     lib.replaceStrings [ "@herdr_accent@" ] [ selectedTheme.accentHex ] (

@@ -16,7 +16,7 @@ let
   equationArtPython = pkgs.python312.withPackages (pythonPackages: [ pythonPackages.numpy ]);
 in
 {
-  imports = [ ./ambient-canvas ];
+  imports = [ ./ambient-canvas/ambient-canvas-home-manager.nix ];
 
   home.packages = [
     (mkScreensaverPythonScript "precompute-loop" ./scripts/precompute_loop.py)

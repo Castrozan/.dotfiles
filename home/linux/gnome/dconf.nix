@@ -2,7 +2,7 @@
 let
   wezterm-quick-temp-shell-command = "wezterm start -- tmux new-session";
   inherit (config.home) homeDirectory;
-  wallpaper-file-uri = "file://${homeDirectory}/.dotfiles/static/alter-jellyfish-dark.jpg";
+  wallpaper-file-uri = "file://${homeDirectory}/.dotfiles/machine-configuration/desktop/theming/wallpapers/alter-jellyfish-dark.jpg";
 in
 {
   dconf.settings = {

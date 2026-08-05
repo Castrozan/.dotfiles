@@ -31,13 +31,13 @@
 
     ../../machine-configuration/editors/neovim/neovim-home-manager.nix
 
-    ../base/desktop/theming
+    ../../machine-configuration/desktop/theming/theming-home-manager.nix
     ../../machine-configuration/desktop/hammerspoon/hammerspoon-home-manager.nix
     ../../machine-configuration/desktop/application-launcher/application-launcher-home-manager.nix
-    ../base/desktop/screensaver
+    ../../machine-configuration/desktop/screensaver/screensaver-home-manager.nix
     ../../machine-configuration/browsers/brave/brave-profile-preferences-home-manager.nix
     ../../machine-configuration/browsers/chrome/chrome-profile-launchers-home-manager.nix
-    ../base/desktop/fonts.nix
+    ../../machine-configuration/desktop/fonts/fonts-home-manager.nix
     ../../machine-configuration/desktop/karabiner/karabiner-home-manager.nix
     ./desktop/keyboard-layout
     ./desktop/maccy

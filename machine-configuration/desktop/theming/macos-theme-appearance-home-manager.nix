@@ -1,6 +1,6 @@
 { pkgs, lib, ... }:
 let
-  selectedTheme = import ../selected-theme.nix;
+  selectedTheme = import ./selected-theme.nix;
 
   themeColorsToml = selectedTheme.colorsToml;
 
@@ -33,11 +33,11 @@ in
     };
 
     packages = lib.mkIf pkgs.stdenv.hostPlatform.isDarwin [
-      (import ../color-generation/package.nix {
+      (import ./color-generation/package.nix {
         inherit pkgs;
         binName = "theme-colors-from-wallpaper";
       })
-      (import ../color-generation/regeneration-command-package.nix {
+      (import ./color-generation/regeneration-command-package.nix {
         inherit pkgs;
       })
     ];

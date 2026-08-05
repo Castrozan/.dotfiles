@@ -36,7 +36,8 @@ let
       weztermAfterNixGL;
 in
 {
-  home.file.".config/wezterm/wallpaper.png".source = ../../../../static/wallpaper.png;
+  home.file.".config/wezterm/wallpaper.png".source =
+    ../../../desktop/theming/wallpapers/wallpaper.png;
 
   programs.wezterm = {
     enable = true;

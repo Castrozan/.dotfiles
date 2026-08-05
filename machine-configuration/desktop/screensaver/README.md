@@ -322,7 +322,7 @@ Pass no length: each segment's length comes from the playlist. `--seconds N` rem
 override that shortens every composition to N seconds; it is folded into the fingerprint, so a
 short debug pass never poisons the real segments.
 
-`ambient-canvas/default.nix` packages the `ambient-canvas` launcher and the
+`ambient-canvas/ambient-canvas-home-manager.nix` packages the `ambient-canvas` launcher and the
 `ambient-canvas-render` command and, guarded by `isDarwin`, compiles the native player from
 `swift-sources/` via a `compileAmbientCanvasPlayer` activation and installs the
 `com.dotfiles.ambient-canvas` launchd agent that runs the ensure entry every 300s. That tick is
@@ -346,7 +346,7 @@ replayed cheaply.
 
 ## Wiring
 
-`default.nix` imports `./ambient-canvas` and packages the herdr launcher and scenes. It is
+`screensaver-home-manager.nix` imports `ambient-canvas/ambient-canvas-home-manager.nix` and packages the herdr launcher and scenes. It is
 imported by `home/darwin/default.nix` (for ambient-canvas) and `machine-configuration/machines/chise/home.nix`
 (for the herdr grid); each half is platform-gated internally, so importing the domain on the
 wrong platform is inert. Tests live in `__tests__/` and are wired into the flake checks via

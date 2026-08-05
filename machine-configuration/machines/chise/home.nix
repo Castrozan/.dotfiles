@@ -44,11 +44,11 @@ in
     ../../../machine-configuration/browsers/firefox/firefox-home-manager.nix
     ../../../machine-configuration/browsers/chrome/chrome-global-linux-home-manager.nix
 
-    ../../../home/linux/desktop/clipse.nix
-    ../../../home/base/desktop/fonts.nix
-    ../../../home/base/desktop/screensaver
-    ../../../home/linux/desktop/fuzzel.nix
-    ../../../home/linux/desktop/scripts.nix
+    ../../../machine-configuration/desktop/clipboard-history/clipse-home-manager.nix
+    ../../../machine-configuration/desktop/fonts/fonts-home-manager.nix
+    ../../../machine-configuration/desktop/screensaver/screensaver-home-manager.nix
+    ../../../machine-configuration/desktop/application-launcher/fuzzel-home-manager.nix
+    ../../../machine-configuration/desktop/screen-capture/screen-capture-command-packages-home-manager.nix
 
     ../../../home/base/dev/ccost.nix
     ../../../home/base/dev/ccusage.nix
@@ -79,7 +79,7 @@ in
     ../../../home/base/system/bluetui.nix
     ../../../home/base/system/systemd-manager-tui.nix
     ../../../home/base/dev/ralph-tui.nix
-    ../../../home/linux/desktop/vial.nix
+    ../../../machine-configuration/desktop/vial/vial-home-manager.nix
     ../../../home/base/media/obsidian
     ../../../home/base/media/summarize.nix
     ../../../home/base/media/viu.nix

@@ -7,10 +7,10 @@
 let
   inherit (helpers) mkEvalCheck;
 
-  linuxCfg = helpers.homeManagerTestConfiguration [ ../default.nix ];
-  darwinCfg = helpers.homeManagerTestConfigurationForDarwin [ ../default.nix ];
+  linuxCfg = helpers.homeManagerTestConfiguration [ ../screensaver-home-manager.nix ];
+  darwinCfg = helpers.homeManagerTestConfigurationForDarwin [ ../screensaver-home-manager.nix ];
 
-  aliasesContent = builtins.readFile ../../../../../machine-configuration/terminal/shell/bash/program-configuration/aliases.sh;
+  aliasesContent = builtins.readFile ../../../terminal/shell/bash/program-configuration/aliases.sh;
 
   packageIsInstalled = name: cfg: builtins.any (pkg: (pkg.name or "") == name) cfg.home.packages;
 

@@ -26,7 +26,7 @@ in
     (mkHyprlandPythonScript "hypr-theme-bg-next" ./scripts/theme/theme_bg_next.py)
     (mkHyprlandPythonScript "hypr-theme-set-gnome" ./scripts/theme/theme_set_gnome.py)
     (mkHyprlandPythonScript "hypr-theme-set-herdr" ./scripts/theme/theme_set_herdr_accent.py)
-    (import ../../../home/base/desktop/theming/color-generation/package.nix {
+    (import ../theming/color-generation/package.nix {
       inherit pkgs;
       binName = "hypr-theme-generate-from-wallpaper";
     })

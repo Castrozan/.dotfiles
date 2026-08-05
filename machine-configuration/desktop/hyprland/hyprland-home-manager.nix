@@ -14,11 +14,11 @@
     ./mako.nix
     ../quickshell/window-switcher/quickshell-window-switcher-home-manager.nix
     ../quickshell/overview/quickshell-overview-home-manager.nix
-    ../../../home/linux/desktop/satty.nix
+    ../screen-capture/satty-home-manager.nix
     ../../../home/linux/audio/wiremix.nix
     ./xdg-desktop-portal-hyprland-service.nix
     ./focus-daemon-service.nix
-    ../../../home/linux/desktop/fuzzel.nix
+    ../application-launcher/fuzzel-home-manager.nix
   ];
 
   home = {
