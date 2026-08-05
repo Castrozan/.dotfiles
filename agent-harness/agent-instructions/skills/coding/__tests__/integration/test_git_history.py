@@ -1,5 +1,6 @@
 import hashlib
 import os
+import shutil
 import subprocess
 import tempfile
 from pathlib import Path
@@ -54,11 +55,12 @@ def test_script_is_executable():
 
 
 def test_script_runs_through_its_shebang():
+    directory_holding_python3 = str(Path(shutil.which("python3")).parent)
     result = subprocess.run(
         [str(SCRIPT), "--help"],
         capture_output=True,
         text=True,
-        env=os.environ | {"PATH": "/usr/bin:/bin"},
+        env=os.environ | {"PATH": directory_holding_python3},
     )
 
     assert result.returncode == 0
