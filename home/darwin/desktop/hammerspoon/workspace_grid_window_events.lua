@@ -27,7 +27,7 @@ function workspaceGridWindowEvents.buildWindowEventHandlers(context)
 	handlers.onWindowLeftFullScreen = adoptWindowOntoCurrentWorkspace
 
 	function handlers.onWindowDestroyed(window)
-		if window and window:id() and windowQuery.windowServerConfirmsWindowIsGone(window:id()) then
+		if window and window:id() and windowQuery.windowIsNoLongerManageable(window:id()) then
 			windowAssignment.forgetWindow(window:id())
 			context.renderMenuBarIndicator()
 			context.persistWorkspaceState()

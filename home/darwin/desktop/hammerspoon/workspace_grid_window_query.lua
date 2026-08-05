@@ -1,34 +1,42 @@
 local workspaceGridWindowQuery = {}
 
 local windowAssignment = require("workspace_grid_window_assignment")
+local windowServerOwnerName = require("window_server_truncated_owner_name")
 
 local includeWindowsBelowTheDock = false
+local switcherOverlayProcessName = "workspace-window-switcher-daemon"
 
-function workspaceGridWindowQuery.liveWindowIdSet()
-	local liveWindowIds = {}
+function workspaceGridWindowQuery.manageableWindowIdSet()
+	local manageableWindowIds = {}
 	for _, windowServerEntry in ipairs(hs.window.list(includeWindowsBelowTheDock)) do
-		liveWindowIds[windowServerEntry.kCGWindowNumber] = true
+		local belongsToTheSwitcherOverlay = windowServerOwnerName.identifiesProcessNamed(
+			windowServerEntry.kCGWindowOwnerName,
+			switcherOverlayProcessName
+		)
+		if not belongsToTheSwitcherOverlay then
+			manageableWindowIds[windowServerEntry.kCGWindowNumber] = true
+		end
 	end
-	return liveWindowIds
+	return manageableWindowIds
 end
 
-function workspaceGridWindowQuery.windowServerConfirmsWindowIsGone(windowId)
-	local liveWindowIds = workspaceGridWindowQuery.liveWindowIdSet()
-	if next(liveWindowIds) == nil then
+function workspaceGridWindowQuery.windowIsNoLongerManageable(windowId)
+	local manageableWindowIds = workspaceGridWindowQuery.manageableWindowIdSet()
+	if next(manageableWindowIds) == nil then
 		return false
 	end
-	return liveWindowIds[windowId] ~= true
+	return manageableWindowIds[windowId] ~= true
 end
 
 function workspaceGridWindowQuery.manageableWindows()
-	local liveWindowIds = workspaceGridWindowQuery.liveWindowIdSet()
-	local liveWindows = {}
+	local manageableWindowIds = workspaceGridWindowQuery.manageableWindowIdSet()
+	local manageableWindows = {}
 	for _, window in ipairs(hs.window.filter.default:getWindows()) do
-		if liveWindowIds[window:id()] then
-			liveWindows[#liveWindows + 1] = window
+		if manageableWindowIds[window:id()] then
+			manageableWindows[#manageableWindows + 1] = window
 		end
 	end
-	return liveWindows
+	return manageableWindows
 end
 
 function workspaceGridWindowQuery.manageableWindowById(windowId)

@@ -53,7 +53,7 @@ grid.onWindowDestroyed(windows[3])
 windowQuery.manageableWindows()
 windowQuery.occupiedWorkspaceNumbers()
 windowQuery.windowDescriptorsByWorkspace()
-windowQuery.windowServerConfirmsWindowIsGone(403)
+windowQuery.windowIsNoLongerManageable(403)
 
 expectEqual(
 	"no grid path queries every application over accessibility (hs.window.allWindows and friends"
