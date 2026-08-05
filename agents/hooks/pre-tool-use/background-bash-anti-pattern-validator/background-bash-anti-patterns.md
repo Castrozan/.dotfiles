@@ -67,6 +67,17 @@ context. Backgrounded it costs nothing; in the foreground it buys dead time
 with tokens. Reading about a run stays allowed: `gh run list`, `gh run view`,
 `gh run watch --help`, and grepping for the string all pass.
 
+## foreground-ci-polling-loop
+
+- Wrong: `for i in $(seq 1 25); do gh run list ... ; sleep 40; done`
+- Right: background the same loop, or run one `gh run list --commit <sha>` when
+  the verdict is due.
+
+Hand-rolling the wait out of a loop, a query and a `sleep` costs exactly what
+`gh run watch` costs, so it is denied on the same grounds. A loop that sleeps
+and re-queries CI trips this; a single query does not, and neither does the
+same loop backgrounded.
+
 ## Still allowed
 
 Servers, `tail -f`, `journalctl -f`, `watch`, long `sleep`s: legitimate

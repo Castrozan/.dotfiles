@@ -27,6 +27,9 @@ COMMANDS_THAT_MUST_STAY_ALLOWED_IN_THE_FOREGROUND = [
     "echo 'use gh run watch in the background'",
     "rg 'gh run watch' --files-with-matches",
     "gh api repos/Castrozan/.dotfiles/actions/runs",
+    "for sha in a1 b2; do gh run list --commit $sha --json conclusion; done",
+    "for i in $(seq 1 5); do curl -sS localhost:8080/health; sleep 5; done",
+    "gh run list --json conclusion && sleep 5 && gh run list --json conclusion",
 ]
 
 COMMANDS_THAT_MUST_BE_DENIED_IN_THE_FOREGROUND = [
@@ -37,6 +40,12 @@ COMMANDS_THAT_MUST_BE_DENIED_IN_THE_FOREGROUND = [
     "gh pr checks --watch --fail-fast",
     "cd /tmp && gh run watch 123",
     "gh run watch 123 >/dev/null 2>&1; echo done",
+    (
+        "for i in $(seq 1 25); do out=$(gh run list --commit abc --json conclusion); "
+        'if [ -n "$out" ]; then echo "$out"; exit 0; fi; sleep 40; done'
+    ),
+    "while true; do gh run view 123 --json conclusion; sleep 30; done",
+    "until gh pr checks 42 | grep -q pass; do sleep 20; done",
 ]
 
 
@@ -76,14 +85,23 @@ def test_waiting_on_ci_in_the_foreground_is_denied(command_string):
     assert run_pre_tool_use(command_string, run_in_background=False) == "deny"
 
 
-def test_the_denial_points_at_the_reference_file_rather_than_inlining_it():
+@pytest.mark.parametrize(
+    "command_string",
+    [
+        "gh run watch 123",
+        "while true; do gh run view 1 --json conclusion; sleep 30; done",
+    ],
+)
+def test_the_denial_points_at_the_reference_file_rather_than_inlining_it(
+    command_string,
+):
     payload = {
         "session_id": "foreground-ci-wait",
         "transcript_path": "/dev/null",
         "cwd": "/Users/lucas.zanoni/.dotfiles",
         "hook_event_name": "PreToolUse",
         "tool_name": "Bash",
-        "tool_input": {"command": "gh run watch 123", "run_in_background": False},
+        "tool_input": {"command": command_string, "run_in_background": False},
     }
     completed = run_hook_subprocess(PRE_TOOL_USE_DISPATCHER, json.dumps(payload))
     reason = json.loads(completed.stdout)["hookSpecificOutput"][

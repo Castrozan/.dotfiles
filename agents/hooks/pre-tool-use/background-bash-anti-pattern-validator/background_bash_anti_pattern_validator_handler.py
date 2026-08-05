@@ -27,6 +27,7 @@ from background_daemon_spawner_detectors import (  # noqa: E402
     command_starts_a_lingering_daemon_or_service,
 )
 from foreground_ci_wait_detectors import (  # noqa: E402
+    command_polls_ci_in_a_foreground_loop,
     command_waits_on_ci_in_the_foreground,
 )
 from hook_dispatch import HandlerResult  # noqa: E402
@@ -118,6 +119,15 @@ def build_foreground_ci_wait_deny_reason():
     )
 
 
+def build_foreground_ci_polling_loop_deny_reason():
+    return (
+        "This is a sleep-and-recheck loop over a CI run, which parks this session "
+        "for every iteration it takes and buys nothing that one query at verdict "
+        "time would not. Background the loop, or query once when the verdict is "
+        f"actually due. See {BACKGROUND_BASH_PATTERNS_REFERENCE_FILE_PATH}."
+    )
+
+
 def handle(hook_input):
     if hook_input.get("tool_name") != "Bash":
         return None
@@ -133,6 +143,10 @@ def handle(hook_input):
         if command_waits_on_ci_in_the_foreground(executed_command_text):
             return HandlerResult(
                 decision="deny", reason=build_foreground_ci_wait_deny_reason()
+            )
+        if command_polls_ci_in_a_foreground_loop(executed_command_text):
+            return HandlerResult(
+                decision="deny", reason=build_foreground_ci_polling_loop_deny_reason()
             )
         return None
 
