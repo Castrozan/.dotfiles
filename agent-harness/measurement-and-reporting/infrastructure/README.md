@@ -10,9 +10,9 @@ region `southamerica-east1`), mirroring the deploy pattern of the `zg-url-shorte
 - `google_service_account.usage_snapshot_uploader` — the identity each machine uses to push
   its snapshot to the bucket (`roles/storage.objectAdmin` scoped to the bucket only).
 - `google_artifact_registry_repository.dotfiles_apps` — Docker images for Cloud Run.
-- `google_cloud_run_v2_service.usage_dashboard` — the Angular usage front end (`apps/usage-dashboard`).
+- `google_cloud_run_v2_service.usage_dashboard` — the Angular usage front end (`agent-harness/measurement-and-reporting/dashboard`).
 - `google_cloud_run_v2_service.reports` — the static reports hub, baseline, coverage and quality
-  pages (`apps/reports`).
+  pages (`agent-harness/measurement-and-reporting/reports`).
 - `github_workload_identity.tf` — keyless GitHub Actions auth (WIF pool, provider, deployer SA)
   so the deploy workflows push images and roll out new revisions without a stored key.
 

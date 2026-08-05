@@ -5,7 +5,7 @@
     ./config-dir-launchers.nix
     ./gpt-proxy
     ./settings
-    ./telemetry
+    ../../../agent-harness/measurement-and-reporting/claude-telemetry/claude-telemetry-home-manager.nix
     ./skill-injection
     ./commands
     ./subagents

@@ -17,13 +17,13 @@ let
   ]);
 
   usageSnapshotSource = lib.fileset.toSource {
-    root = ../../../../agents/usage;
-    fileset = lib.fileset.fileFilter (file: file.hasExt "py") ../../../../agents/usage;
+    root = ../usage-collection;
+    fileset = lib.fileset.fileFilter (file: file.hasExt "py") ../usage-collection;
   };
 
   ingestionPublisherSource = lib.fileset.toSource {
-    root = ../../../../ingestion;
-    fileset = lib.fileset.fileFilter (file: file.hasExt "py") ../../../../ingestion;
+    root = ../snapshot-ingestion;
+    fileset = lib.fileset.fileFilter (file: file.hasExt "py") ../snapshot-ingestion;
   };
 
   usageSnapshotScripts = pkgs.runCommand "claude-usage-snapshot-scripts" { } ''

@@ -41,8 +41,8 @@ __pycache__/
 
 .cache/
 snapshot.json
-agents/usage/snapshots/
-apps/reports/site/
+agent-harness/measurement-and-reporting/usage-collection/snapshots/
+agent-harness/measurement-and-reporting/reports/site/
 /.config/cava/
 /.config/pulse/
 .claude/

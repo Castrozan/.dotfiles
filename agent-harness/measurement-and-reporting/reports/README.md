@@ -22,7 +22,7 @@ Three artifacts are published, each under its own prefix in the bucket:
   so the page cannot drift from the repo the way the hand-maintained copy did.
 
 Bucket: `gs://zg-url-shortener-2026-dotfiles-usage-snapshots` (public-read with CORS, defined in
-`infra/gcp/usage_snapshots_bucket.tf`). The public object base URL the atrium SPA iframes is
+`agent-harness/measurement-and-reporting/infrastructure/usage_snapshots_bucket.tf`). The public object base URL the atrium SPA iframes is
 `https://storage.googleapis.com/zg-url-shortener-2026-dotfiles-usage-snapshots/reports/`, so atrium
 loads `reports/baseline/index.html` and `reports/coverage/index.html` directly.
 
@@ -33,7 +33,7 @@ carries its own top nav, and its remaining cross-links point at absolute atrium 
 ## Deploy
 
 `.github/workflows/reports-deploy.yml` runs on push to `main`. It builds the coverage report,
-renders the baseline dashboard, assembles `apps/reports/site/`, then `gcloud storage rsync`s
+renders the baseline dashboard, assembles `agent-harness/measurement-and-reporting/reports/site/`, then `gcloud storage rsync`s
 `site/baseline` and `site/coverage` into the bucket. It does not build a container or deploy to
 Cloud Run; the retired nginx-on-Cloud-Run stack was removed.
 
@@ -53,9 +53,9 @@ nothing, and the atrium baseline and coverage iframes 404 against the bucket.
 
 ```
 nix shell nixpkgs#kcov nixpkgs#bats nixpkgs#bc --command ./repository/verification/cover/bash-coverage.sh --ci
-mkdir -p apps/reports/site/quality
-cp -r repository/verification/coverage apps/reports/site/coverage
-python3 agents/__tests__/render_baseline_dashboard.py apps/reports/site/baseline
-cp .github/pages/style.css apps/reports/site/baseline/style.css
-python3 agents/__tests__/render_quality_metrics.py apps/reports/site/quality/metrics.json
+mkdir -p agent-harness/measurement-and-reporting/reports/site/quality
+cp -r repository/verification/coverage agent-harness/measurement-and-reporting/reports/site/coverage
+python3 agents/__tests__/render_baseline_dashboard.py agent-harness/measurement-and-reporting/reports/site/baseline
+cp .github/pages/style.css agent-harness/measurement-and-reporting/reports/site/baseline/style.css
+python3 agents/__tests__/render_quality_metrics.py agent-harness/measurement-and-reporting/reports/site/quality/metrics.json
 ```

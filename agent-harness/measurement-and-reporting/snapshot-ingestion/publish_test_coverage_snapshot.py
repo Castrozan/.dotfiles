@@ -49,7 +49,7 @@ def build_measured_file_result(file_document, checkout_root):
 
 def resolve_checkout_root(environment):
     return Path(
-        environment.get("GITHUB_WORKSPACE") or Path(__file__).resolve().parents[1]
+        environment.get("GITHUB_WORKSPACE") or Path(__file__).resolve().parents[3]
     )
 
 

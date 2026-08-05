@@ -46,8 +46,8 @@ class TestDocumentationFileClassification:
             "/home/lucas.zanoni/.dotfiles/HEARTBEAT.md",
             "/home/lucas.zanoni/.dotfiles/briefings/2026-08-02.md",
             "/home/lucas.zanoni/.dotfiles/ril/decisions/tweet-from-2026-07-25-10-16-14.md",
-            "/home/lucas.zanoni/.dotfiles/apps/usage-dashboard/node_modules/@algolia/client-search/README.md",
-            "/home/lucas.zanoni/.dotfiles/infra/gcp/.terraform/providers/google/6.50.0/darwin_arm64/README.md",
+            "/home/lucas.zanoni/.dotfiles/agent-harness/measurement-and-reporting/dashboard/node_modules/@algolia/client-search/README.md",
+            "/home/lucas.zanoni/.dotfiles/agent-harness/measurement-and-reporting/infrastructure/.terraform/providers/google/6.50.0/darwin_arm64/README.md",
             "/home/lucas.zanoni/.dotfiles/nixos/modules/network-policy.md",
         ],
     )

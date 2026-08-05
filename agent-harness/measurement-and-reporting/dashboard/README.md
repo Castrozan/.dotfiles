@@ -13,7 +13,7 @@ token-stream panel and per-account table. It re-fetches on a fixed interval so t
 rather than a frozen build-time snapshot.
 
 The aggregation is a faithful port of the Python aggregation in
-`agents/usage/usage_otel_metrics_aggregation.py`; the unit tests pin that contract. This Angular
+`agent-harness/measurement-and-reporting/usage-collection/usage_otel_metrics_aggregation.py`; the unit tests pin that contract. This Angular
 app is now the usage front end, replacing the retired GitHub Pages report.
 
 ## Structure

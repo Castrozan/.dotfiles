@@ -60,8 +60,8 @@ let
 in
 {
   imports = [
-    ./usage-snapshot-upload.nix
-    ./performance-sampler
+    ./usage-snapshot-upload-home-manager.nix
+    ./performance-sampler/performance-sampler-home-manager.nix
   ];
 
   config = lib.mkMerge [
