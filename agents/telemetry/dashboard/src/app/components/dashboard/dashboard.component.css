@@ -1,0 +1,52 @@
+.page-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.live-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: #8b949e;
+}
+
+.status-dot {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.status-live {
+  background: #3fb950;
+  box-shadow: 0 0 0 0 rgba(63, 185, 80, 0.6);
+  animation: live-pulse 2s infinite;
+}
+
+.status-loading {
+  background: #d29922;
+}
+
+.status-error {
+  background: #f85149;
+}
+
+.error-panel {
+  border-color: #f85149;
+}
+
+@keyframes live-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(63, 185, 80, 0.5);
+  }
+  70% {
+    box-shadow: 0 0 0 0.5rem rgba(63, 185, 80, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(63, 185, 80, 0);
+  }
+}
