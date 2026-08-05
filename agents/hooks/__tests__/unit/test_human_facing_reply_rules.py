@@ -37,7 +37,8 @@ GENERATED_SURFACES = (
     ),
     (
         REPOSITORY_ROOT
-        / "agents"
+        / "agent-harness"
+        / "agent-instructions"
         / "skills"
         / "humanize"
         / "enforced-wording-rules.md",

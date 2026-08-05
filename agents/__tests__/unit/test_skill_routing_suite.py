@@ -5,7 +5,12 @@ import pytest
 import yaml
 
 EVAL_HARNESS_ROOT = Path(__file__).resolve().parents[1]
-SKILLS_ROOT = Path(__file__).resolve().parents[2] / "skills"
+SKILLS_ROOT = (
+    Path(__file__).resolve().parents[3]
+    / "agent-harness"
+    / "agent-instructions"
+    / "skills"
+)
 SKILL_ROUTING_SUITE = EVAL_HARNESS_ROOT / "evals" / "skill_routing.yaml"
 ROUTER_CATALOG_ENTRY = re.compile(r"^([a-z][a-z0-9-]*) - ", re.MULTILINE)
 
