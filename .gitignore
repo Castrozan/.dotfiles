@@ -17,7 +17,7 @@ HEARTBEAT.md
 /.vscode
 /.opencode/
 .cursor/
-home/base/editor/cursor/cursor-global-user-rules.md
+machine-configuration/editors/cursor/cursor-global-user-rules.md
 
 # Nix build output
 result

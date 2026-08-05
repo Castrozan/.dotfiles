@@ -11,9 +11,9 @@ in
 
     ../../../home/base/browser/firefox.nix
 
-    ../../../home/base/editor/jetbrains-idea.nix
-    ../../../home/base/editor/scripts.nix
-    ../../../home/base/editor/zed-editor.nix
+    ../../../machine-configuration/editors/jetbrains-idea/jetbrains-idea-home-manager.nix
+    ../../../machine-configuration/editors/editor-command-packages-home-manager.nix
+    ../../../machine-configuration/editors/zed/zed-home-manager.nix
 
     ../../../home/base/dev/aws.nix
     ../../../home/base/dev/bitwarden-cli.nix

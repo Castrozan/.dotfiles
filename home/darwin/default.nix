@@ -29,7 +29,7 @@
     ../../machine-configuration/terminal/emulators/wezterm/wezterm-home-manager.nix
     ../../machine-configuration/terminal/file-manager/yazi/yazi-home-manager.nix
 
-    ../base/editor/neovim.nix
+    ../../machine-configuration/editors/neovim/neovim-home-manager.nix
 
     ../base/desktop/theming
     ./desktop/hammerspoon

@@ -10,7 +10,8 @@ def test_ctrl_shift_e_focuses_dashboard_and_preserves_other_picker_navigation(
 ):
     repository_root = Path(__file__).resolve().parents[5]
     file_explorer_config_path = (
-        repository_root / ".config/nvim/lua/config/file_explorer.lua"
+        repository_root
+        / "machine-configuration/editors/neovim/program-configuration/lua/config/file_explorer.lua"
     )
     lua_script_path = tmp_path / "file_explorer_focus.lua"
     lua_script_path.write_text(
@@ -81,7 +82,8 @@ def test_explorer_dims_gitignored_entries_only_and_not_every_dot_prefixed_entry(
 ):
     repository_root = Path(__file__).resolve().parents[5]
     explorer_plugin_path = (
-        repository_root / ".config/nvim/lua/plugins/snacks-explorer.lua"
+        repository_root
+        / "machine-configuration/editors/neovim/program-configuration/lua/plugins/snacks-explorer.lua"
     )
     lua_script_path = tmp_path / "explorer_dimming.lua"
     lua_script_path.write_text(

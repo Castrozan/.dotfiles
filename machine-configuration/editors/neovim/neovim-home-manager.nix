@@ -45,7 +45,7 @@ let
 in
 {
   home.file.".config/nvim".source =
-    config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.dotfiles/.config/nvim";
+    config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.dotfiles/machine-configuration/editors/neovim/program-configuration";
 
   xdg.dataFile."nvim/site/spell/pt.utf-8.spl".source = brazilianPortugueseSpellFile;
 

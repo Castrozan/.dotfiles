@@ -8,8 +8,8 @@ let
   inherit (helpers) mkEvalCheck;
 
   cfg = helpers.homeManagerTestConfiguration [
-    ../neovim.nix
-    ../zed-editor.nix
+    ../neovim/neovim-home-manager.nix
+    ../zed/zed-home-manager.nix
   ];
 
   hasFile = name: builtins.hasAttr name cfg.home.file;

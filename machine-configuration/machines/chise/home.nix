@@ -36,10 +36,10 @@ in
     ../../../machine-configuration/terminal/terminal-command-packages-home-manager.nix
     ../../../machine-configuration/terminal/visual-effects/cmatrix/cmatrix-home-manager.nix
 
-    ../../../home/base/editor/cursor
-    ../../../home/base/editor/neovim.nix
-    ../../../home/base/editor/vscode
-    ../../../home/base/editor/scripts.nix
+    ../../../machine-configuration/editors/cursor/cursor-home-manager.nix
+    ../../../machine-configuration/editors/neovim/neovim-home-manager.nix
+    ../../../machine-configuration/editors/visual-studio-code/visual-studio-code-home-manager.nix
+    ../../../machine-configuration/editors/editor-command-packages-home-manager.nix
 
     ../../../home/base/browser/firefox.nix
     ../../../home/base/browser/chrome-global.nix

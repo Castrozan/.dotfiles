@@ -1,9 +1,9 @@
 { pkgs, lib, ... }:
 let
-  vscodePinnedLinuxBuild = import ./vscode-pinned-linux-build.nix { inherit pkgs; };
+  vscodePinnedLinuxBuild = import ./visual-studio-code-pinned-linux-build.nix { inherit pkgs; };
 
   vscodePackageExposingChromeDevToolsProtocol =
-    import ./vscode-package-exposing-chrome-devtools-protocol.nix
+    import ./visual-studio-code-package-exposing-chrome-devtools-protocol.nix
       {
         inherit pkgs lib;
         basePackage = vscodePinnedLinuxBuild;

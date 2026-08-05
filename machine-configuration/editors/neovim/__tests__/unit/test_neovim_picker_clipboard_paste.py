@@ -7,7 +7,10 @@ from pathlib import Path
 
 def test_ctrl_v_pastes_a_single_line_into_picker_prompts_instead_of_splitting(tmp_path):
     repository_root = Path(__file__).resolve().parents[5]
-    neovim_lua_root = repository_root / ".config/nvim/lua"
+    neovim_lua_root = (
+        repository_root
+        / "machine-configuration/editors/neovim/program-configuration/lua"
+    )
     telescope_config_path = neovim_lua_root / "plugins/telescope.lua"
     snacks_picker_config_path = neovim_lua_root / "plugins/snacks-picker.lua"
     lua_script_path = tmp_path / "picker_clipboard_paste.lua"

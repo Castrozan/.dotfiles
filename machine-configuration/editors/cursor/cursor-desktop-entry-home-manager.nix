@@ -1,6 +1,6 @@
 _:
 let
-  cursorIconPath = ./favicon.ico;
+  cursorIconPath = ./program-configuration/favicon.ico;
 in
 {
   xdg.desktopEntries.cursor = {
