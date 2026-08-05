@@ -25,12 +25,25 @@ function workspaceGrid.setSessionGenerationTokenForTest(token)
 	sessionGeneration.setTokenForTest(token)
 end
 
+local workspaceLayoutChangeObservers = {}
+
 local function persistWorkspaceState()
 	workspaceGridPersistence.save(
 		currentWorkspaceNumber,
 		sessionGeneration.currentToken(),
 		windowAssignment.allWorkspaceNumbersByWindowId()
 	)
+end
+
+local function onWorkspaceLayoutChanged()
+	persistWorkspaceState()
+	for _, observer in ipairs(workspaceLayoutChangeObservers) do
+		observer()
+	end
+end
+
+function workspaceGrid.observeWorkspaceLayoutChanges(observer)
+	table.insert(workspaceLayoutChangeObservers, observer)
 end
 
 local function renderMenuBarIndicator()
@@ -64,7 +77,7 @@ function workspaceGrid.switchToWorkspace(targetWorkspaceNumber, preferredFocusWi
 		windowAssignment.rememberFocusedWindow(targetWorkspaceNumber, windowToRefocus:id())
 	end
 	renderMenuBarIndicator()
-	persistWorkspaceState()
+	onWorkspaceLayoutChanged()
 end
 
 function workspaceGrid.moveFocusedWindowToWorkspace(targetWorkspaceNumber)
@@ -94,7 +107,7 @@ local function placeSummonedWindowOnCurrentWorkspace(window)
 	windowLayout.showWindowOnScreen(window)
 	window:focus()
 	renderMenuBarIndicator()
-	persistWorkspaceState()
+	onWorkspaceLayoutChanged()
 end
 
 local summonToWorkspaceEntryPoints = require("workspace_grid_summon_to_workspace").buildSummonToWorkspaceEntryPoints(
@@ -115,7 +128,7 @@ function workspaceGrid.gatherAllWindowsToCurrentWorkspace()
 		windowAssignment.rememberFocusedWindow(currentWorkspaceNumber, focusedWindow:id())
 	end
 	renderMenuBarIndicator()
-	persistWorkspaceState()
+	onWorkspaceLayoutChanged()
 end
 
 function workspaceGrid.currentWorkspaceWindowList()
@@ -127,7 +140,7 @@ local windowFocusEntryPoints = require("workspace_grid_window_focus").buildWindo
 		return currentWorkspaceNumber
 	end,
 	switchToWorkspace = workspaceGrid.switchToWorkspace,
-	persistWorkspaceState = persistWorkspaceState,
+	onWorkspaceLayoutChanged = onWorkspaceLayoutChanged,
 })
 workspaceGrid.focusWindowById = windowFocusEntryPoints.focusWindowById
 workspaceGrid.revealWindowById = windowFocusEntryPoints.revealWindowById
@@ -137,7 +150,7 @@ local windowEventHandlers = require("workspace_grid_window_events").buildWindowE
 		return currentWorkspaceNumber
 	end,
 	renderMenuBarIndicator = renderMenuBarIndicator,
-	persistWorkspaceState = persistWorkspaceState,
+	onWorkspaceLayoutChanged = onWorkspaceLayoutChanged,
 })
 workspaceGrid.onWindowCreated = windowEventHandlers.onWindowCreated
 workspaceGrid.onWindowDestroyed = windowEventHandlers.onWindowDestroyed

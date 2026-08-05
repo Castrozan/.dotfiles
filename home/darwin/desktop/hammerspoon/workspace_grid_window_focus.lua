@@ -24,7 +24,7 @@ function workspaceGridWindowFocus.buildWindowFocusEntryPoints(dependencies)
 		windowAssignment.assignWindowToWorkspace(windowId, currentWorkspaceNumber)
 		window:focus()
 		windowLayout.showWindowOnScreen(window)
-		dependencies.persistWorkspaceState()
+		dependencies.onWorkspaceLayoutChanged()
 	end
 
 	function entryPoints.revealWindowById(windowId)

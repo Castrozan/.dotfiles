@@ -20,7 +20,7 @@ function workspaceGridWindowEvents.buildWindowEventHandlers(context)
 			windowLayout.showWindowOnScreen(window)
 		end
 		context.renderMenuBarIndicator()
-		context.persistWorkspaceState()
+		context.onWorkspaceLayoutChanged()
 	end
 
 	handlers.onWindowCreated = adoptWindowOntoCurrentWorkspace
@@ -30,7 +30,7 @@ function workspaceGridWindowEvents.buildWindowEventHandlers(context)
 		if window and window:id() and windowQuery.windowIsNoLongerManageable(window:id()) then
 			windowAssignment.forgetWindow(window:id())
 			context.renderMenuBarIndicator()
-			context.persistWorkspaceState()
+			context.onWorkspaceLayoutChanged()
 		end
 	end
 
