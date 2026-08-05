@@ -17,7 +17,7 @@ in
 
     ../../base/dev/aws.nix
     ../../base/dev/bitwarden-cli.nix
-    ../../base/dev/google-workspace-cli.nix
+    ../../base/dev/google-workspace-cli
     ../../base/dev/infisical.nix
     ../../base/dev/mcporter.nix
     ../../base/dev/mongodb-atlas-cli.nix

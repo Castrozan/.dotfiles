@@ -13,7 +13,7 @@ let
     ../ccost.nix
     ../ccusage.nix
     ../mcporter.nix
-    ../google-workspace-cli.nix
+    ../google-workspace-cli
   ];
 
   mcporterNpmInstallActivation = cfg.home.activation.installMcporterViaNpm.data;
