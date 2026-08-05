@@ -1,6 +1,6 @@
 import types
 
-from conftest import build_screen
+from window_detection_test_helpers import build_screen
 
 
 def test_the_menu_bar_height_is_measured_from_the_screen(daemon, monkeypatch):
