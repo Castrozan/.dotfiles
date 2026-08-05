@@ -13,7 +13,7 @@ let
   chromeGlobalLauncher = import ../chrome-global-launcher.nix { inherit pkgs; };
 
   chromeGlobalLauncherConfiguration = helpers.homeManagerTestConfigurationForDarwin [
-    ../default.nix
+    ../chrome-profile-launchers-home-manager.nix
   ];
 
   chromeGlobalLauncherTargetsChromeGlobalUserDataDir = lib.hasInfix ''--user-data-dir="$HOME/.config/chrome-global"'' chromeGlobalLauncher.chromeGlobalLauncherScript;
@@ -103,7 +103,7 @@ in
       chromeWorkProfileLauncherIsInHomePackages
       "summon-chrome-work-profile must be wired into home.packages so the hammerspoon Cmd+C cold-launch resolves it on PATH";
 }
-// import ./checks/converge-entry-points-checks.nix {
+// import ./home-manager/checks/converge-entry-points-checks.nix {
   inherit
     pkgs
     lib
@@ -113,7 +113,7 @@ in
     helpers
     ;
 }
-// import ./checks/preferences-overrides-checks.nix {
+// import ./home-manager/checks/preferences-overrides-checks.nix {
   inherit
     pkgs
     lib
@@ -123,7 +123,7 @@ in
     helpers
     ;
 }
-// import ./checks/personal-profile-icon-checks.nix {
+// import ./home-manager/checks/personal-profile-icon-checks.nix {
   inherit
     pkgs
     lib
@@ -132,4 +132,7 @@ in
     home-version
     helpers
     ;
+}
+// import ./nix-darwin-checks.nix {
+  inherit helpers pkgs lib;
 }

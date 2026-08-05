@@ -8,7 +8,7 @@ let
   inherit (helpers) mkEvalCheck;
 
   personalProfileIconOverrides = builtins.fromJSON (
-    builtins.readFile ../../local-state-personal-profile-overrides.json
+    builtins.readFile ../../../program-configuration/local-state-personal-profile-overrides.json
   );
 
   personalProfileOverrides = personalProfileIconOverrides.profile.info_cache."Profile 2";
@@ -21,7 +21,7 @@ let
   iconOverridesDisableGaiaPicture = !personalProfileOverrides.use_gaia_picture;
 
   chromeConfiguration = helpers.homeManagerTestConfigurationForDarwin [
-    ../../default.nix
+    ../../../chrome-profile-launchers-home-manager.nix
   ];
 
   iconActivationIsWired =

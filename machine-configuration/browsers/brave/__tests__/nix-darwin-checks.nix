@@ -7,7 +7,7 @@
 let
   inherit (helpers) mkEvalCheck;
 
-  braveDarwinPolicyConfig = import ../default.nix { inherit lib; };
+  braveDarwinPolicyConfig = import ../brave-update-policy-nix-darwin.nix { inherit lib; };
   braveDarwinManagedPolicyKeys =
     braveDarwinPolicyConfig.system.defaults.CustomUserPreferences."com.brave.Browser";
 

@@ -9,7 +9,7 @@ in
 
     ../../../home/base/dev/git-toggle-user.nix
 
-    ../../../home/base/browser/firefox.nix
+    ../../../machine-configuration/browsers/firefox/firefox-home-manager.nix
 
     ../../../machine-configuration/editors/jetbrains-idea/jetbrains-idea-home-manager.nix
     ../../../machine-configuration/editors/editor-command-packages-home-manager.nix

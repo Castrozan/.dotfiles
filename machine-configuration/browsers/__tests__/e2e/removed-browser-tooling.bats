@@ -1,7 +1,7 @@
 #!/usr/bin/env bats
 bats_require_minimum_version 1.5.0
 
-readonly REPOSITORY_ROOT="$BATS_TEST_DIRNAME/../../../../.."
+readonly REPOSITORY_ROOT="$BATS_TEST_DIRNAME/../../../.."
 readonly BROWSER_MODULE_DIRECTORY="$BATS_TEST_DIRNAME/../.."
 
 @test "pw CLI is no longer in PATH" {
@@ -29,7 +29,7 @@ readonly BROWSER_MODULE_DIRECTORY="$BATS_TEST_DIRNAME/../.."
 
 @test "no stale PW_PORT or playwright-resolver references" {
 	run ! grep -r --include='*.js' --include='*.sh' --include='*.nix' \
-		'PW_PORT' "$REPOSITORY_ROOT/agents" "$REPOSITORY_ROOT/home"
+		'PW_PORT' "$REPOSITORY_ROOT/agent-harness" "$REPOSITORY_ROOT/machine-configuration" "$REPOSITORY_ROOT/home"
 	run ! grep -r --include='*.js' --include='*.sh' --include='*.nix' \
-		'playwright-resolver' "$REPOSITORY_ROOT/agents" "$REPOSITORY_ROOT/home"
+		'playwright-resolver' "$REPOSITORY_ROOT/agent-harness" "$REPOSITORY_ROOT/machine-configuration" "$REPOSITORY_ROOT/home"
 }

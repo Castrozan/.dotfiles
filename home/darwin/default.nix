@@ -35,8 +35,8 @@
     ./desktop/hammerspoon
     ./desktop/application-launcher
     ../base/desktop/screensaver
-    ./desktop/brave
-    ./desktop/chrome
+    ../../machine-configuration/browsers/brave/brave-profile-preferences-home-manager.nix
+    ../../machine-configuration/browsers/chrome/chrome-profile-launchers-home-manager.nix
     ../base/desktop/fonts.nix
     ./desktop/karabiner
     ./desktop/keyboard-layout

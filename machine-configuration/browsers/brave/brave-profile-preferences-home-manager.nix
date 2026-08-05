@@ -4,10 +4,12 @@
   ...
 }:
 let
-  chromiumProfilePreferenceMerge = import ../chromium-preferences/profile-preference-merge.nix {
-    inherit pkgs;
-  };
-  braveDefaultProfile = import ../../../base/browser/brave-default-profile.nix {
+  chromiumProfilePreferenceMerge =
+    import ../chromium-profile-preferences/chromium-profile-preference-merge.nix
+      {
+        inherit pkgs;
+      };
+  braveDefaultProfile = import ./brave-default-profile.nix {
     isDarwin = true;
   };
 in
@@ -21,7 +23,7 @@ in
         chromiumProfilePreferenceMerge.mkChromiumProfilePreferenceMergeActivationScript {
           browserDisplayProcessName = "Brave Browser";
           browserUserDataDirectoryRelativeToHome = braveDefaultProfile.userDataDirectoryRelativeToHome;
-          preferencesOverridesJsonFile = ./preferences-overrides.json;
+          preferencesOverridesJsonFile = ./program-configuration/preferences-overrides.json;
           sentinelBasename = "brave-preferences-applied";
         }
       );

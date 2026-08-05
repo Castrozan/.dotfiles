@@ -6,8 +6,8 @@
 }:
 {
   imports = [
-    ./shared-darwin/brave
-    ./shared-darwin/chrome
+    ../machine-configuration/browsers/brave/brave-update-policy-nix-darwin.nix
+    ../machine-configuration/browsers/chrome/chrome-update-policy-nix-darwin.nix
     ./shared-darwin/claude
     ./shared-darwin/wezterm
     ./shared-darwin/displays

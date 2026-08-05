@@ -7,7 +7,7 @@
 let
   inherit (helpers) mkEvalCheck;
 
-  chromeDarwinPolicyConfig = import ../default.nix {
+  chromeDarwinPolicyConfig = import ../chrome-update-policy-nix-darwin.nix {
     inherit lib;
     username = "chrome-policy-check-user";
   };

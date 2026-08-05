@@ -41,8 +41,8 @@ in
     ../../../machine-configuration/editors/visual-studio-code/visual-studio-code-home-manager.nix
     ../../../machine-configuration/editors/editor-command-packages-home-manager.nix
 
-    ../../../home/base/browser/firefox.nix
-    ../../../home/base/browser/chrome-global.nix
+    ../../../machine-configuration/browsers/firefox/firefox-home-manager.nix
+    ../../../machine-configuration/browsers/chrome/chrome-global-linux-home-manager.nix
 
     ../../../home/linux/desktop/clipse.nix
     ../../../home/base/desktop/fonts.nix

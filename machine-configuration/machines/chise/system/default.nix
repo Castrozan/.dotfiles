@@ -12,6 +12,6 @@
 
     ./configs/arr-stack-host-integration.nix
 
-    ./configs/brave-policies.nix
+    ../../../browsers/brave/chise-brave-policy-nixos.nix
   ];
 }

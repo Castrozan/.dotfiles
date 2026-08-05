@@ -8,7 +8,7 @@ let
   inherit (helpers) mkEvalCheck;
 
   chromeGlobalLauncherConfiguration = helpers.homeManagerTestConfigurationForDarwin [
-    ../../default.nix
+    ../../../chrome-profile-launchers-home-manager.nix
   ];
 
   convergeActivationData =
@@ -23,7 +23,7 @@ let
 
   convergeActivationSetsPlainChromeBundleId = lib.hasInfix "com.google.Chrome" convergeActivationData;
 
-  convergeScriptSource = builtins.readFile ../../scripts/converge-chrome-entry-points-on-chrome-global.sh;
+  convergeScriptSource = builtins.readFile ../../../scripts/converge-chrome-entry-points-on-chrome-global.sh;
 
   convergeScriptSymlinksDefaultPathToChromeGlobal = lib.hasInfix ''ln -s "$chromeGlobalUserDataDirectory" "$defaultChromeUserDataDirectory"'' convergeScriptSource;
 

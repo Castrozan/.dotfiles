@@ -7,7 +7,9 @@
 let
   inherit (helpers) mkEvalCheck;
 
-  chromePreferencesOverrides = builtins.fromJSON (builtins.readFile ../../preferences-overrides.json);
+  chromePreferencesOverrides = builtins.fromJSON (
+    builtins.readFile ../../../program-configuration/preferences-overrides.json
+  );
 
   chromeBookmarkBarShownOnAllTabs = chromePreferencesOverrides.bookmark_bar.show_on_all_tabs;
 

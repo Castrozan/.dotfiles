@@ -7,7 +7,9 @@
 let
   inherit (helpers) mkEvalCheck;
 
-  bravePreferencesOverrides = builtins.fromJSON (builtins.readFile ../preferences-overrides.json);
+  bravePreferencesOverrides = builtins.fromJSON (
+    builtins.readFile ../program-configuration/preferences-overrides.json
+  );
 
   braveDuplicateTabCustomKeybindIsBoundToControlD =
     bravePreferencesOverrides.brave.accelerators."34027" == [ "Control+KeyD" ];
@@ -71,4 +73,7 @@ in
     mkEvalCheck "domain-desktop-brave-zoom-accelerators-not-overridden"
       braveZoomAcceleratorsAreNotOverriddenBecauseBraveStripsControlShiftAdditionsOnLaunch
       "Brave Zoom In/Out (command ids 38001/38003) must not be set in preferences overrides because Brave strips Control+Shift+Equal / Control+Shift+Minus additions on launch; zoom is driven at the Karabiner keystroke layer instead (see brave-keybind-passthrough-rules)";
+}
+// import ./nix-darwin-checks.nix {
+  inherit helpers pkgs lib;
 }

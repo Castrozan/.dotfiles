@@ -4,9 +4,11 @@
   ...
 }:
 let
-  chromiumProfilePreferenceMerge = import ../chromium-preferences/profile-preference-merge.nix {
-    inherit pkgs;
-  };
+  chromiumProfilePreferenceMerge =
+    import ../chromium-profile-preferences/chromium-profile-preference-merge.nix
+      {
+        inherit pkgs;
+      };
 
   chromeGlobalLauncher = import ./chrome-global-launcher.nix { inherit pkgs; };
 
@@ -32,7 +34,7 @@ in
             chromiumProfilePreferenceMerge.mkChromiumProfilePreferenceMergeActivationScript {
               browserDisplayProcessName = "Google Chrome";
               browserUserDataDirectoryRelativeToHome = ".config/chrome-global";
-              preferencesOverridesJsonFile = ./preferences-overrides.json;
+              preferencesOverridesJsonFile = ./program-configuration/preferences-overrides.json;
               sentinelBasename = "chrome-global-preferences-applied";
             }
           );
@@ -46,7 +48,7 @@ in
             chromiumProfilePreferenceMerge.mkChromiumProfilePreferenceMergeActivationScript {
               browserDisplayProcessName = "Google Chrome";
               browserUserDataDirectoryRelativeToHome = ".config/chrome-global";
-              preferencesOverridesJsonFile = ./local-state-personal-profile-overrides.json;
+              preferencesOverridesJsonFile = ./program-configuration/local-state-personal-profile-overrides.json;
               sentinelBasename = "chrome-global-personal-profile-icon-applied";
               targetFileRelativeToUserDataDirectory = "Local State";
             }

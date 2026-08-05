@@ -8,8 +8,8 @@ let
   inherit (helpers) mkEvalCheck;
 
   cfg = helpers.homeManagerTestConfiguration [
-    ../firefox.nix
-    ../chrome-global.nix
+    ../firefox/firefox-home-manager.nix
+    ../chrome/chrome-global-linux-home-manager.nix
   ];
 in
 {
