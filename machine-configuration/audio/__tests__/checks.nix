@@ -7,7 +7,7 @@
 let
   inherit (helpers) mkEvalCheck;
 
-  cfg = helpers.homeManagerTestConfiguration [ ../. ];
+  cfg = helpers.homeManagerTestConfiguration [ ../audio-home-manager.nix ];
 
   hasService = name: builtins.hasAttr name cfg.systemd.user.services;
 

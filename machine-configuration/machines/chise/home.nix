@@ -17,11 +17,11 @@ in
 
     ../../../agent-harness/agent-instructions/agent-instructions-home-manager.nix
     ../../../home/base/security
-    ../../../home/linux/audio
+    ../../../machine-configuration/audio/audio-home-manager.nix
     ../../../agent-harness/harnesses/claude-code
     ../../../agent-harness/harnesses/clawde
     ../../../agent-harness/harnesses/codex
-    ../../../home/linux/gnome
+    ../../../machine-configuration/desktop/gnome/gnome-home-manager.nix
     ../../../machine-configuration/home-automation/home-assistant/home-assistant-home-manager.nix
     ../../../machine-configuration/desktop/hyprland/hyprland-nixos.nix
     ../../../agent-harness/harnesses/opencode
@@ -66,11 +66,11 @@ in
     ../../../home/base/system/scripts.nix
     ../../../home/base/system/stale-symlink-cleanup.nix
 
-    ../../../home/linux/voice/hey-bot.nix
-    ../../../home/linux/voice/hey-bot-test.nix
+    ../../../machine-configuration/voice/hey-bot-home-manager.nix
+    ../../../machine-configuration/voice/hey-bot-test-home-manager.nix
     ./home/hey-bot.nix
-    ../../../home/linux/voice/voxtype.nix
-    ../../../home/linux/voice/whisp-away.nix
+    ../../../machine-configuration/voice/voxtype-home-manager.nix
+    ../../../machine-configuration/voice/whisp-away-home-manager.nix
 
     ../../../machine-configuration/terminal/visual-effects/cbonsai/cbonsai-chise-home-manager.nix
     ../../../machine-configuration/gaming/install-nothing/install-nothing-home-manager.nix

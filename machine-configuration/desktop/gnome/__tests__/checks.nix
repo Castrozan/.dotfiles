@@ -8,8 +8,8 @@ let
   inherit (helpers) mkEvalCheck;
 
   cfg = helpers.homeManagerTestConfiguration [
-    ../dconf.nix
-    ../gtk.nix
+    ../gnome-dconf-home-manager.nix
+    ../gtk-home-manager.nix
   ];
 in
 {

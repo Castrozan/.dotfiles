@@ -15,7 +15,7 @@
     ../quickshell/window-switcher/quickshell-window-switcher-home-manager.nix
     ../quickshell/overview/quickshell-overview-home-manager.nix
     ../screen-capture/satty-home-manager.nix
-    ../../../home/linux/audio/wiremix.nix
+    ../../audio/wiremix-home-manager.nix
     ./xdg-desktop-portal-hyprland-service.nix
     ./focus-daemon-service.nix
     ../application-launcher/fuzzel-home-manager.nix

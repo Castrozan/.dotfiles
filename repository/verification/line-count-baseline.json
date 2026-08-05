@@ -42,7 +42,7 @@
   "home/base/testing/scripts/benchmark_desktop.py": 679,
   "home/base/testing/scripts/benchmark_rebuild.py": 368,
   "machine-configuration/desktop/hammerspoon/__tests__/workspace_grid_pinned_window_test.lua": 204,
-  "home/linux/audio/__tests__/unit/test_volume.py": 317,
+  "machine-configuration/audio/__tests__/unit/test_volume.py": 317,
   "machine-configuration/home-automation/home-assistant/__tests__/unit/test_home_assistant_air_conditioner_control.py": 361,
   "machine-configuration/home-automation/home-assistant/__tests__/unit/test_home_assistant_air_conditioner_recover_ip.py": 382,
   "machine-configuration/home-automation/home-assistant/__tests__/unit/test_home_assistant_light_control.py": 310,
@@ -68,8 +68,8 @@
   "machine-configuration/desktop/hyprland/__tests__/unit/test_theme_set.py": 264,
   "machine-configuration/desktop/hyprland/scripts/hardware/network.py": 490,
   "machine-configuration/desktop/hyprland/scripts/hardware/notification_sound_toggle.py": 206,
-  "home/linux/voice/hey-bot-test.nix": 244,
-  "home/linux/voice/hey-bot.nix": 546,
+  "machine-configuration/voice/hey-bot-test-home-manager.nix": 244,
+  "machine-configuration/voice/hey-bot-home-manager.nix": 546,
   "machine-configuration/machines/chise/system/configs/configuration.nix": 258,
   "machine-configuration/machines/chise/system/configs/keyboard-backlight.nix": 212
 }

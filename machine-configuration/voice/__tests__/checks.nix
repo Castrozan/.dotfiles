@@ -8,10 +8,10 @@ let
   inherit (helpers) mkEvalCheck;
 
   cfg = helpers.homeManagerTestConfiguration [
-    ../hey-bot.nix
-    ../voxtype.nix
-    ../whisp-away.nix
-    ../voice-pipeline.nix
+    ../hey-bot-home-manager.nix
+    ../voxtype-home-manager.nix
+    ../whisp-away-home-manager.nix
+    ../voice-pipeline-home-manager.nix
   ];
 in
 {

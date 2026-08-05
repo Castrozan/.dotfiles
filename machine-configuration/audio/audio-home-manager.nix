@@ -8,7 +8,7 @@ let
   btPolicy = import ./bluetooth-policy.nix;
 in
 {
-  imports = [ ./scripts.nix ];
+  imports = [ ./audio-scripts-home-manager.nix ];
   systemd.user.services.unmute-alsa-headphone-on-pipewire-start = {
     Unit = {
       Description = "Unmute ALSA headphone switch after PipeWire starts (UCM init.conf mutes it)";
