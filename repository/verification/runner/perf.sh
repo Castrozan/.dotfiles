@@ -48,7 +48,7 @@ _run_perf_tier() {
 
 	echo "--- Performance Threshold Tests ---"
 	local -a perfTests
-	mapfile -t perfTests < <(find "$REPO_DIR/machine-configuration" -name "perf-runtime.bats" -type f 2>/dev/null | sort)
+	mapfile -t perfTests < <(_discover_test_files "platform-scoped" "*/__tests__/e2e/perf-runtime.bats")
 	if [[ ${#perfTests[@]} -gt 0 ]] && command -v bats &>/dev/null; then
 		bats "${perfTests[@]}"
 	else
