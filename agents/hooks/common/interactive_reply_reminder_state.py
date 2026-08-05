@@ -3,42 +3,43 @@ from __future__ import annotations
 import json
 import os
 import re
-from pathlib import Path
+
+DEFAULT_REMINDER_STATE_DIRECTORY = "/tmp"
 
 
-def resolve_reminder_state_directory() -> Path:
-    override = os.environ.get("INTERACTIVE_REPLY_REMINDER_STATE_DIRECTORY")
-    if override:
-        return Path(override)
-    return Path("/tmp")
-
-
-def reminder_state_path_for_session(session_id: str) -> Path:
-    safe_session_id = re.sub(r"[^a-zA-Z0-9_-]+", "-", session_id or "unknown")
+def resolve_reminder_state_directory() -> str:
     return (
-        resolve_reminder_state_directory()
-        / f"interactive-reply-reminder-{safe_session_id}.json"
+        os.environ.get("INTERACTIVE_REPLY_REMINDER_STATE_DIRECTORY")
+        or DEFAULT_REMINDER_STATE_DIRECTORY
     )
 
 
-def load_reminder_state(state_path: Path) -> dict:
-    if not state_path.exists():
-        return {}
+def reminder_state_path_for_session(session_id: str) -> str:
+    safe_session_id = re.sub(r"[^a-zA-Z0-9_-]+", "-", session_id or "unknown")
+    return os.path.join(
+        resolve_reminder_state_directory(),
+        f"interactive-reply-reminder-{safe_session_id}.json",
+    )
+
+
+def load_reminder_state(state_path: str) -> dict:
     try:
-        return json.loads(state_path.read_text())
+        with open(state_path) as state_file:
+            return json.loads(state_file.read())
     except (json.JSONDecodeError, OSError):
         return {}
 
 
-def write_reminder_state(state_path: Path, state: dict) -> None:
-    staging_path = state_path.with_name(f"{state_path.name}.{os.getpid()}.staging")
+def write_reminder_state(state_path: str, state: dict) -> None:
+    staging_path = f"{state_path}.{os.getpid()}.staging"
     try:
-        state_path.parent.mkdir(parents=True, exist_ok=True)
-        staging_path.write_text(json.dumps(state))
+        os.makedirs(os.path.dirname(state_path), exist_ok=True)
+        with open(staging_path, "w") as staging_file:
+            staging_file.write(json.dumps(state))
         os.replace(staging_path, state_path)
     except OSError:
         try:
-            staging_path.unlink()
+            os.remove(staging_path)
         except OSError:
             pass
 

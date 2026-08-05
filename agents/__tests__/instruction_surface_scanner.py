@@ -3,6 +3,9 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SKILL_TREE = REPO_ROOT / "agents" / "skills"
+PRIVATE_MACHINE_SKILL_TREES = sorted(
+    (REPO_ROOT / "private-config" / "machines").glob("*/skills")
+)
 VENDORED_DIRECTORY_NAMES = frozenset({"node_modules", "dist", ".angular"})
 MAXIMUM_SKILL_DESCRIPTION_LENGTH = 1024
 REPOSITORY_TOP_LEVEL_PREFIXES = (
@@ -26,10 +29,15 @@ def is_vendored_dependency_file(path: Path) -> bool:
     return any(part in VENDORED_DIRECTORY_NAMES for part in path.parts)
 
 
+def every_skill_tree() -> list[Path]:
+    return [SKILL_TREE] + PRIVATE_MACHINE_SKILL_TREES
+
+
 def skill_definition_files() -> list[Path]:
     return sorted(
         path
-        for path in SKILL_TREE.glob("**/SKILL.md")
+        for skill_tree in every_skill_tree()
+        for path in skill_tree.glob("**/SKILL.md")
         if not is_vendored_dependency_file(path)
     )
 
@@ -37,7 +45,8 @@ def skill_definition_files() -> list[Path]:
 def skill_chapter_files() -> list[Path]:
     return sorted(
         path
-        for path in SKILL_TREE.glob("**/*.md")
+        for skill_tree in every_skill_tree()
+        for path in skill_tree.glob("**/*.md")
         if path.name != "SKILL.md" and not is_vendored_dependency_file(path)
     )
 

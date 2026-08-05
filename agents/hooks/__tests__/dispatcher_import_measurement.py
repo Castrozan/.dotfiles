@@ -68,6 +68,19 @@ INVOCATIONS_UNDER_BUDGET = {
         },
         73,
     ),
+    "pre-tool-use/Edit": (
+        "pre-tool-use-dispatcher",
+        {
+            "hook_event_name": "PreToolUse",
+            "tool_name": "Edit",
+            "tool_input": {
+                "file_path": FILE_NO_FORMATTER_OR_LINTER_COVERS,
+                "old_string": "a",
+                "new_string": "b",
+            },
+        },
+        69,
+    ),
     "post-tool-use/Skill": (
         "post-tool-use-dispatcher",
         {

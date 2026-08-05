@@ -8,9 +8,8 @@ import random
 import socket
 import sys
 import time
-from pathlib import Path
 
-shared_common_hook_modules_directory = str(Path(__file__).resolve().parent)
+shared_common_hook_modules_directory = os.path.dirname(os.path.realpath(__file__))
 if shared_common_hook_modules_directory not in sys.path:
     sys.path.insert(0, shared_common_hook_modules_directory)
 

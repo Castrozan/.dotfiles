@@ -1,5 +1,3 @@
-from pathlib import Path
-
 import record_skill_invocation_handler
 import skill_loaded_marker
 
@@ -13,7 +11,9 @@ def test_marker_path_templates_skill_name_and_sanitizes_session_id(
         "docs", "session/with:weird chars"
     )
 
-    assert marker_path == tmp_path / "docs-skill-loaded-session-with-weird-chars.marker"
+    assert marker_path == str(
+        tmp_path / "docs-skill-loaded-session-with-weird-chars.marker"
+    )
 
 
 def test_marker_path_defaults_to_the_tmp_directory(monkeypatch):
@@ -21,7 +21,7 @@ def test_marker_path_defaults_to_the_tmp_directory(monkeypatch):
 
     marker_path = skill_loaded_marker.skill_loaded_marker_path("instructions", "abc")
 
-    assert marker_path == Path("/tmp/instructions-skill-loaded-abc.marker")
+    assert marker_path == "/tmp/instructions-skill-loaded-abc.marker"
 
 
 def test_recorded_marker_is_detected_by_has_skill_loaded(tmp_path, monkeypatch):
