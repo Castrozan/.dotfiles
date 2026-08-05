@@ -117,6 +117,18 @@ in
       )
       "a skill set must materialize as one symlink per skill directory, never recursive: recursive makes home-manager build a real directory whose SKILL.md is itself a symlink, and codex silently skips every such skill, so a codex agent loads none of its declared skills while the directory listing looks complete; the hasAttr half keeps this from passing vacuously when no set materializes at all";
 
+  clawde-the-normal-harness-set-carries-every-interactive-skill =
+    mkEvalCheck "clawde-the-normal-harness-set-carries-every-interactive-skill"
+      (builtins.all
+        (
+          skillName:
+          builtins.hasAttr ".local/share/claude-skill-sets/normal-harness/.claude/skills/${skillName}" cfgWithBothHarnesses.home.file
+        )
+        (import ../../../../agents/interactive-agent-skills.nix { hostname = "test"; })
+        .defaultInteractiveSkillNames
+      )
+      "an agent naming normalHarnessSkillSetDirectory is asking for what a keyboard session carries, so that set must hold the curated interactive list: materialized short, the agent silently runs a harness switch onto codex or opencode missing exactly the skills its job assumes";
+
   clawde-every-installed-harness-is-switchable-at-runtime =
     mkEvalCheck "clawde-every-installed-harness-is-switchable-at-runtime"
       (

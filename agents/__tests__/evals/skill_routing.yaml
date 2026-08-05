@@ -2,7 +2,7 @@ shared_system_prompt: &shared_system_prompt |
   You are a skill router. Given a user request, respond with the name of the single most appropriate skill to handle it. Respond with ONLY the skill name, nothing else.
   Available skills:
 
-  all-skills - This skill compiles all skills not curatedly injected into interactive agent sessions for agent reachability and context management. The skills here are for: arr-stack, avatar, b3-portal, daily-report, goal-prompt, google-chat, jira, morning-briefing, notify, obsidian, passwords, quickshell, ril, todo, twitter, youtube
+  all-skills - This skill compiles all skills not curatedly injected into interactive agent sessions for agent reachability and context management. The skills here are for: arr-stack, clawde, goal-prompt, jira, notify, obsidian, quickshell, ril, todo, twitter, youtube
 
   agent-harness - Debug and configure the Claude Code, Codex, or OpenCode harness instead of the project it edits. Use for settings, skills, hooks, model routing, transcripts, MCPs, session state, or tool-targeting failures.
 
@@ -10,7 +10,6 @@ shared_system_prompt: &shared_system_prompt |
 
   browser - Interact with a live webpage inside a browser window: fill forms, click buttons, navigate authenticated apps, automate Electron apps, test web UI, capture browser-window screenshots for visual verification of web pages. Do NOT use for fetching or reading web content programmatically (use curl or MCP fetch). Do NOT use for desktop screenshots, system media/audio control, MPRIS players, or non-browser GUI; those belong to the desktop skill.
 
-  clawde - Operate the clawde autonomous agent fleet - declare or change an agent, make a change actually reach the running agents, and debug one that is dead, unresumed, wedged, silent, or spending on the wrong model. Covers the steward loop. Read before touching any agent, supervisor, or heartbeat behavior.
 
   coding - Implement and evolve code safely through clean design, focused tests, measured performance, Git discipline, and worktree isolation. Use for coding, fixing, testing, committing, history, or parallel branch work.
 
@@ -18,7 +17,6 @@ shared_system_prompt: &shared_system_prompt |
 
   deliver - Drive a large software goal end-to-end - investigate context, design the build process, author a goal prompt, then execute with workflows and subagents until it works live. For big objectives needing a process, not one-off tasks.
 
-  desktop - Desktop automation and media control: type text, send key combos, click/move/scroll/drag mouse, capture screenshots, read/write clipboard, music and audio playback (pause, play, next, previous, volume). Cross-platform for screenshots, clipboard, and media control (Linux/Wayland + macOS); keyboard and mouse remain Linux/Wayland-only. Use for any non-browser GUI interaction, any request to pause/play music, adjust volume, or control local media. For YouTube CLI, see the youtube skill.
 
   docs - Documentation standards for when a doc earns its place, what never to write, evergreen phrasing, and policy shape. Use when writing or judging a README, doc, or policy; for authoring AI instruction files read instructions.
 
@@ -28,7 +26,6 @@ shared_system_prompt: &shared_system_prompt |
 
   herdr - Drive herdr, the terminal workspace manager, and orchestrate interactive agents in it: spawn, prompt, read, wait on, or take over background work. Also scripts workspaces, tabs, and panes.
 
-  housekeeping - Recurring housekeeping sweep of the dotfiles tree for standing rot nothing else catches: stale markers, dead code, orphaned files, instruction drift, convention debt, chronic infra traps, test gaps. Triggers the dotfiles-housekeeping workflow.
 
   humanize - The single home for how text a human reads is worded: plain-language discipline, AI-writing tells to strip, per-channel phrasing and length (chat, commit, MR, ticket, doc, page), and the wording rules a hook blocks on. Load before drafting any human-facing text.
 
@@ -45,51 +42,6 @@ shared_system_prompt: &shared_system_prompt |
   workspace - Switch the Bash working directory to another repo or directory for the session. Use when work must run commands outside the primary repo.
 
 tests:
-  - name: routing_to_desktop_keyboard_typing
-    no_tools: true
-    system_prompt: *shared_system_prompt
-    prompt: "Type 'hello world' into the terminal window"
-    model: sonnet
-    assertions:
-      output_equals:
-        - "desktop"
-
-  - name: routing_to_desktop_screenshot_capture
-    no_tools: true
-    system_prompt: *shared_system_prompt
-    prompt: "Take a screenshot of my current screen"
-    model: sonnet
-    assertions:
-      output_equals:
-        - "desktop"
-
-  - name: routing_to_desktop_clipboard_access
-    no_tools: true
-    system_prompt: *shared_system_prompt
-    prompt: "Copy the selected text to clipboard and paste it into another window"
-    model: sonnet
-    assertions:
-      output_equals:
-        - "desktop"
-
-  - name: routing_to_desktop_mouse_click
-    no_tools: true
-    system_prompt: *shared_system_prompt
-    prompt: "Click on the close button at position 1900,10"
-    model: sonnet
-    assertions:
-      output_equals:
-        - "desktop"
-
-  - name: routing_to_media_volume_adjustment
-    no_tools: true
-    system_prompt: *shared_system_prompt
-    prompt: "Turn the volume up to 80%"
-    model: sonnet
-    assertions:
-      output_equals:
-        - "desktop"
-
   - name: routing_to_media_youtube_search
     no_tools: true
     system_prompt: *shared_system_prompt
@@ -99,37 +51,10 @@ tests:
       output_equals:
         - "all-skills"
 
-  - name: routing_to_media_skip_track
-    no_tools: true
-    system_prompt: *shared_system_prompt
-    prompt: "Skip to the next song"
-    model: sonnet
-    assertions:
-      output_equals:
-        - "desktop"
-
-  - name: routing_to_personal_google_chat_message
-    no_tools: true
-    system_prompt: *shared_system_prompt
-    prompt: "Send a message to the team on Google Chat saying the deploy is done"
-    model: sonnet
-    assertions:
-      output_equals:
-        - "all-skills"
-
   - name: routing_to_personal_twitter_post
     no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "Post a tweet about the new release on my X account"
-    model: sonnet
-    assertions:
-      output_equals:
-        - "all-skills"
-
-  - name: routing_to_personal_vtuber_avatar
-    no_tools: true
-    system_prompt: *shared_system_prompt
-    prompt: "Make the VTuber avatar smile and start lip syncing"
     model: sonnet
     assertions:
       output_equals:
@@ -404,15 +329,6 @@ tests:
     assertions:
       output_equals:
         - "all-skills"
-
-  - name: routing_ambiguous_browser_vs_desktop_screenshot
-    no_tools: true
-    system_prompt: *shared_system_prompt
-    prompt: "Take a screenshot of my desktop showing all open windows"
-    model: sonnet
-    assertions:
-      output_equals:
-        - "desktop"
 
   - name: routing_ambiguous_research_vs_browser
     no_tools: true

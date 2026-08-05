@@ -12,11 +12,9 @@ let
     "agent-harness"
     "architecture"
     "browser"
-    "clawde"
     "coding"
     "deep-work"
     "deliver"
-    "desktop"
     "docs"
     "exit"
     "explore"
@@ -30,6 +28,17 @@ let
     "workspace"
   ];
 
+  uninjectedSkillNames = [
+    "avatar"
+    "b3-portal"
+    "daily-report"
+    "desktop"
+    "google-chat"
+    "housekeeping"
+    "morning-briefing"
+    "passwords"
+  ];
+
   effectiveInteractiveSkillNames =
     {
       add ? [ ],
@@ -39,9 +48,13 @@ let
       defaultInteractiveSkillNames ++ add
     );
 
+  reachableSkillNames = builtins.filter (
+    skillName: !(builtins.elem skillName uninjectedSkillNames)
+  ) allSkillNames;
+
   indexedSkillNamesFor =
     interactiveSkillNames:
-    builtins.filter (skillName: !(builtins.elem skillName interactiveSkillNames)) allSkillNames;
+    builtins.filter (skillName: !(builtins.elem skillName interactiveSkillNames)) reachableSkillNames;
 
   frontmatterDescriptionFrom =
     skillMarkdownContent:
@@ -94,6 +107,8 @@ in
     skillSourceDirectoryByName
     skillDirectorySymlinksAtPrefix
     defaultInteractiveSkillNames
+    uninjectedSkillNames
+    reachableSkillNames
     effectiveInteractiveSkillNames
     indexedSkillNamesFor
     readSkillDescription

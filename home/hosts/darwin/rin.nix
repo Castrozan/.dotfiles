@@ -9,6 +9,7 @@ in
   ]
   ++ lib.optionals rinPrivateConfigExists [
     "${privateConfigRoot}/machines/rin/clawde-agents"
+    "${privateConfigRoot}/machines/rin/claude/mcd-ca-workspace-credentials.nix"
   ]
   ++ lib.optional (builtins.pathExists ../../../private-config/machines/rin/cloudflare-tunnel-connector.nix) ../../../private-config/machines/rin/cloudflare-tunnel-connector.nix;
 

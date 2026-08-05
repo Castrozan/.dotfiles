@@ -1,9 +1,6 @@
 { config, ... }:
-let
-  rilWatcherSkillSetDirectory = "${config.home.homeDirectory}/.local/share/claude-skill-sets/ril-watcher";
-in
 {
-  claudeCuratedSkillSets.ril-watcher = [
+  clawdeAgentSkillSets.ril-watcher = [
     "ril"
     "nix"
     "coding"
@@ -21,7 +18,7 @@ in
     heartbeatPrompt = builtins.readFile ./run-once-prompt.md;
     personality = builtins.readFile ./personality.md;
     skillDirectories = [
-      rilWatcherSkillSetDirectory
+      config.clawdeAgentSkillSetDirectories.ril-watcher
       "${config.home.homeDirectory}/.dotfiles"
       "${config.home.homeDirectory}/vault"
     ];

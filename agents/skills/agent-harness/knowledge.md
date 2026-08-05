@@ -63,6 +63,13 @@ with a sandbox or approval setting weaker than full access, or every escalation 
 strands.
 </codex_hooks_and_launch>
 
+<claude_add_dir_skills_need_the_nested_layout>
+Claude Code loads skills from `--add-dir <dir>` only at `<dir>/.claude/skills/<name>/SKILL.md`; pointing it at a skill
+directory itself grants file access and loads no skill, with nothing logged. On a name collision with the machine tier
+at `~/.claude/skills` the session lists the name once and keeps the machine tier's description, so an added set that
+overlaps the machine tier costs no extra context and can never shadow it.
+</claude_add_dir_skills_need_the_nested_layout>
+
 <codex_skips_a_symlinked_skill_file>
 Codex loads a skill whose directory is a symlink, but silently skips one whose `SKILL.md` is itself a symlink, which is
 exactly what home-manager produces for a recursive file entry. Nothing is logged and a directory listing shows every

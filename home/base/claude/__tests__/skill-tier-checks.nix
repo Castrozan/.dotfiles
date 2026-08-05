@@ -9,9 +9,16 @@ let
     hostname = "test";
   };
 
-  claudeInteractiveSkillNames = interactiveAgentSkills.effectiveInteractiveSkillNames {
-    add = [ "housekeeping" ];
-  };
+  claudeInteractiveSkillNames = interactiveAgentSkills.effectiveInteractiveSkillNames { };
+
+  uninjectedSkillsStayOutOfEverySurface = builtins.all (
+    skillName:
+    !(builtins.hasAttr ".claude/skills/${skillName}" cfg.home.file)
+    && !(builtins.hasAttr ".local/share/agent-skill-index/${skillName}" cfg.home.file)
+    && !(builtins.elem skillName (
+      interactiveAgentSkills.indexedSkillNamesFor claudeInteractiveSkillNames
+    ))
+  ) interactiveAgentSkills.uninjectedSkillNames;
 
   generatedMachineTierSkillNames = [
     "all-skills"
@@ -91,6 +98,10 @@ in
         skillName: builtins.hasAttr ".local/share/agent-skill-index/${skillName}" cfg.home.file
       ) (interactiveAgentSkills.indexedSkillNamesFor claudeInteractiveSkillNames))
       "every skill excluded from the curated machine tier must stay reachable at .local/share/agent-skill-index, because the all-skills index points there; a skill that is neither curated nor mirrored is stranded on disk";
+
+  claude-uninjected-skills-reach-no-global-surface =
+    mkEvalCheck "claude-uninjected-skills-reach-no-global-surface" uninjectedSkillsStayOutOfEverySurface
+      "a skill named in uninjectedSkillNames must stay out of the machine tier, out of the all-skills index and out of the reachability mirror; it exists for the one agent that declares it by path, and any of those three surfaces would put it back in every session's budget";
 
   claude-private-machine-skills-are-catalogued =
     mkEvalCheck "claude-private-machine-skills-are-catalogued" everyPrivateMachineSkillIsCatalogued

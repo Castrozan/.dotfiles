@@ -17,5 +17,4 @@ assertions:
   autonomous_skill_invocation:
     - quickshell
   wrong_skill_not_invoked:
-    - desktop
     - nix

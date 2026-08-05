@@ -17,4 +17,3 @@ assertions:
     - browser
   wrong_skill_not_invoked:
     - research
-    - desktop

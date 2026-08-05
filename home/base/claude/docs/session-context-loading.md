@@ -132,8 +132,8 @@ that each harness deploys. A private skill still cannot leak into another machin
 are read under the building host's name.
 
 The `personal` set and the `skillDirectories` entries that pointed at it are gone from jenny, golden and claude, since
-all three now receive the same skills from the machine tier. `claudeCuratedSkillSets` survives for the codex agents,
-which never read `~/.claude/skills`.
+all three now receive the same skills from the machine tier. The named skill sets survive for the codex agents, which
+never read `~/.claude/skills`.
 
 `launch-claude-workspace-session`, its nine tests, their `conftest.py` and a dead bash predecessor at
 `scripts/claude-workspace` are deleted, 1655 lines in total. `claude-interactive` replaces them: it exports the marker
@@ -161,6 +161,19 @@ The former `personal` umbrella skill was deleted and replaced by a nix-generated
 from `renderAllSkillsIndexSkill` in `interactive-agent-skills.nix`. Its frontmatter description names every skill not
 curated-injected for that harness, and its body points at each indexed skill's reachable path. Its chapters became real
 skills: `agents/skills/obsidian` and `agents/skills/passwords`.
+
+## Follow-up: the third state, skills no interactive session reaches
+
+Curated and indexed were the only two states, so every skill on disk cost every session at least an index line. A skill
+that exists for one autonomous agent, or for one machine's hardware, earned none of that. `uninjectedSkillNames` in
+`interactive-agent-skills.nix` is the third state: named there, a skill deploys into no machine tier, appears in no
+`all-skills` index and gets no mirror under `~/.local/share/agent-skill-index`, so the only way to reach it is an agent
+naming its path through `skillDirectories`. `claude-uninjected-skills-reach-no-global-surface` asserts all three
+absences together, because any one of them alone would put the skill back in every session's budget.
+
+A skill only one machine can act on belongs in that machine's private root rather than in the shared uninjected list:
+the catalog reads `private-config/machines/<hostname>/skills` under the building host's name, so it is absent from every
+other machine by construction instead of by a name someone has to keep listing.
 
 The knowledge tier still travels, with a change in reachability: a fact filed under an indexed skill's `knowledge.md`
 is not in the machine tier, but the index points at it and the mirror keeps the whole skill directory reachable, so the

@@ -4,9 +4,7 @@ let
     inherit hostname;
   };
 
-  claudeInteractiveSkillNames = interactiveAgentSkills.effectiveInteractiveSkillNames {
-    add = [ "housekeeping" ];
-  };
+  claudeInteractiveSkillNames = interactiveAgentSkills.effectiveInteractiveSkillNames { };
 
   coreRulesDirectory = ../../../../agents/core_rules;
 

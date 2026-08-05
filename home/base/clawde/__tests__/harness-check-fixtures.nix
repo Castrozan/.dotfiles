@@ -10,7 +10,7 @@ let
     self.homeManagerModules.codex
     self.homeManagerModules.opencode
     {
-      claudeCuratedSkillSets.harness-check-set = [ "research" ];
+      clawdeAgentSkillSets.harness-check-set = [ "research" ];
       clawde.agents = {
         agent-on-claude = {
           harness = "claude";

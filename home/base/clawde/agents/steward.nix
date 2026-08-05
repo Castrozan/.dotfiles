@@ -57,7 +57,7 @@ let
     personalityWithMachineIdentity + machineLocalWrapperDirective + repoCiToolingDirective;
 in
 {
-  claudeCuratedSkillSets.steward = [
+  clawdeAgentSkillSets.steward = [
     "coding"
     "nix"
     "deep-work"
