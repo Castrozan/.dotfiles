@@ -1,4 +1,5 @@
 {
+  lib,
   pkgs,
   inputs,
   isNixOS,
@@ -40,6 +41,8 @@ in
 {
   home.file.".config/wezterm/wallpaper.png".source =
     ../../../desktop/theming/wallpapers/wallpaper.png;
+
+  xdg.configFile."xdg-terminals.list" = lib.mkIf isNixOS { source = ./xdg-terminals.list; };
 
   programs.wezterm = {
     enable = true;

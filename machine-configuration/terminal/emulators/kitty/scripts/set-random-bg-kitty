@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-IMAGE_DIR="$HOME/.dotfiles/static/fate"
+IMAGE_DIR="$HOME/.dotfiles/machine-configuration/terminal/emulators/kitty/backgrounds"
 
 RANDOM_IMAGE=$(find "$IMAGE_DIR" -type f | shuf -n 1)
 

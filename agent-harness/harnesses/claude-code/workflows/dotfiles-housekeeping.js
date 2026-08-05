@@ -41,7 +41,7 @@ const DIMENSIONS = [
     key: "orphaned-files",
     title: "Orphaned files and dead symlinks",
     focus:
-      "scripts under */scripts/ and bin/ and .config/scripts/ referenced by no .nix, .py, .sh, .yaml, .json, or .md anywhere, and broken symlinks outside the zone test_repo_hygiene.py already covers",
+      "scripts under */scripts/ referenced by no .nix, .py, .sh, .yaml, .json, or .md anywhere, and broken symlinks outside the zone test_repo_hygiene.py already covers",
     scan: "List candidate scripts, then grep the whole tree for each basename. Run find for broken symlinks.",
     boundary:
       "A script referenced only through a nix glob, lib.fileset, a directory-wide source, or a runtime PATH lookup is NOT orphaned. Resolve globs before flagging, and default to keep when a reference is plausible.",

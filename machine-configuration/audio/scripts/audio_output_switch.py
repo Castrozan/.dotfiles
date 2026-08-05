@@ -1,7 +1,7 @@
 import subprocess
 from pathlib import Path
 
-AUDIO_OUTPUT_ICONS_DIR = Path.home() / ".config" / "scripts" / "icons"
+AUDIO_OUTPUT_ICONS_DIR = Path.home() / ".config" / "audio" / "notification-icons"
 
 
 def list_all_hardware_sink_names() -> list[str]:

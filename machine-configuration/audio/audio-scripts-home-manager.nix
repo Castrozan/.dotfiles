@@ -16,6 +16,8 @@ let
     '';
 in
 {
+  xdg.configFile."audio/notification-icons".source = ./notification-icons;
+
   home.packages = [
     (mkAudioPythonScriptWithDeps "volume" ./scripts/volume.py [
       pkgs.pulseaudio

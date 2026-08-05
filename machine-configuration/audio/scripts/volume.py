@@ -3,7 +3,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-VOLUME_ICONS_DIR = Path.home() / ".config" / "scripts" / "icons"
+VOLUME_ICONS_DIR = Path.home() / ".config" / "audio" / "notification-icons"
 VOLUME_STEP_NORMAL = 5
 VOLUME_STEP_PRECISE = 1
 
