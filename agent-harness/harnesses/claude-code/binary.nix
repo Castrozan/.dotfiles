@@ -4,7 +4,9 @@
   ...
 }:
 let
-  fetchPrebuiltBinary = import ../../../lib/fetch-prebuilt-binary.nix { inherit pkgs; };
+  fetchPrebuiltBinary = import ../../../repository/nix-library/fetch-prebuilt-binary.nix {
+    inherit pkgs;
+  };
 
   version = "2.1.220";
   bucket = "https://storage.googleapis.com/claude-code-dist-86c565f3-f756-42ad-8dfa-d59b1c096819/claude-code-releases";

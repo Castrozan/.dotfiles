@@ -6,7 +6,9 @@
   ...
 }:
 let
-  nixglWrap = import ../../../../lib/nixgl-wrap.nix { inherit pkgs inputs isNixOS; };
+  nixglWrap = import ../../../../repository/nix-library/nixgl-wrap.nix {
+    inherit pkgs inputs isNixOS;
+  };
 
   weztermAfterNixGL = nixglWrap.wrapWithNixGLIntel {
     package = latest.wezterm;
