@@ -75,11 +75,11 @@ in
 
   clawde-claude-harness-package-is-injected =
     mkEvalCheck "clawde-claude-harness-package-is-injected" (harnesses.claude.package != null)
-      "clawde pins no harness itself, so home/base/clawde/harnesses.nix must inject the claude package; a null package fails a clawde assertion the moment any agent runs on claude";
+      "clawde pins no harness itself, so agent-harness/harnesses/clawde/harnesses.nix must inject the claude package; a null package fails a clawde assertion the moment any agent runs on claude";
 
   clawde-codex-harness-package-is-injected =
     mkEvalCheck "clawde-codex-harness-package-is-injected" (harnesses.codex.package != null)
-      "codex agents need clawde.harnesses.codex.package set from home/base/clawde/harnesses.nix, otherwise every codex agent fails a build-time assertion";
+      "codex agents need clawde.harnesses.codex.package set from agent-harness/harnesses/clawde/harnesses.nix, otherwise every codex agent fails a build-time assertion";
 
   clawde-codex-harness-launches-the-unwrapped-binary =
     mkEvalCheck "clawde-codex-harness-launches-the-unwrapped-binary"
@@ -161,7 +161,7 @@ in
       (builtins.all (invocationIsAliasProof: invocationIsAliasProof) (
         pkgs.lib.mapAttrsToList (
           harnessName: launchCommand:
-          builtins.match ".*command ${harnesses.${harnessName}.binaryName}( .*|)" launchCommand != null
+          pkgs.lib.hasInfix " command ${harnesses.${harnessName}.binaryName} " " ${launchCommand} "
         ) (eligibleHarnessesOf "agent-on-codex")
       ))
       "this machine exports BASH_ENV pointing at an alias file that turns on expand_aliases and aliases claude to a wrapper passing --append-system-prompt-file, and a launch command runs through exactly such a shell: without the command builtin in front of the binary the alias wins over PATH, the wrapper's flags collide with the ones clawde built, and the agent dies at argument parsing on every restart forever";

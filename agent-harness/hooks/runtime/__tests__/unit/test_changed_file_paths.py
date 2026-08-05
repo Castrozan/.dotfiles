@@ -22,7 +22,7 @@ def test_claude_edit_shape_returns_direct_file_path(tmp_path):
 def test_codex_apply_patch_update_marker_resolves_against_cwd(tmp_path):
     patch = (
         "*** Begin Patch\n"
-        "*** Update File: home/base/codex/config.nix\n"
+        "*** Update File: agent-harness/harnesses/codex/config.nix\n"
         "@@\n-a\n+b\n"
         "*** End Patch"
     )
@@ -31,7 +31,7 @@ def test_codex_apply_patch_update_marker_resolves_against_cwd(tmp_path):
         "cwd": str(tmp_path),
         "tool_input": {"command": ["apply_patch", patch]},
     }
-    expected = str(tmp_path / "home" / "base" / "codex" / "config.nix")
+    expected = str(tmp_path / "agent-harness" / "harnesses" / "codex" / "config.nix")
     assert collect_changed_file_paths(payload) == [expected]
 
 

@@ -56,9 +56,9 @@ def test_the_always_on_skill_descriptions_stay_within_their_budget():
 def test_the_harness_auto_memory_stays_disabled():
     declared = (
         REPO_ROOT
-        / "home"
-        / "base"
-        / "claude"
+        / "agent-harness"
+        / "harnesses"
+        / "claude-code"
         / "settings"
         / "environment-variables.nix"
     ).read_text()
@@ -66,7 +66,7 @@ def test_the_harness_auto_memory_stays_disabled():
         "the harness auto-memory writes per-working-directory stores and loads a "
         "per-fact index into every session at start, which grows without bound and is "
         "never reviewed. Durable facts belong in the skill that owns their domain. "
-        "See home/base/claude/docs/agent-memory.md before re-enabling it."
+        "See agent-harness/harnesses/claude-code/docs/agent-memory.md before re-enabling it."
     )
 
 

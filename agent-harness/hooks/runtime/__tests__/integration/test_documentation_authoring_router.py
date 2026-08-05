@@ -16,7 +16,7 @@ class TestDocumentationFileClassification:
         [
             "/home/lucas.zanoni/.dotfiles/README.md",
             "/home/lucas.zanoni/.dotfiles/hosts/chise/README.md",
-            "/home/lucas.zanoni/.dotfiles/home/base/claude/docs/context-management.md",
+            "/home/lucas.zanoni/.dotfiles/agent-harness/harnesses/claude-code/docs/context-management.md",
             "/home/lucas.zanoni/.dotfiles/docs/architecture.md",
             "docs/architecture.md",
             "/home/lucas.zanoni/.dotfiles/Documentation/guides/install.md",
@@ -41,7 +41,7 @@ class TestDocumentationFileClassification:
     @pytest.mark.parametrize(
         "file_path",
         [
-            "/home/lucas.zanoni/.dotfiles/home/base/claude/hook-config.nix",
+            "/home/lucas.zanoni/.dotfiles/agent-harness/harnesses/claude-code/hook-config.nix",
             "/tmp/scratch.txt",
             "/home/lucas.zanoni/.dotfiles/HEARTBEAT.md",
             "/home/lucas.zanoni/.dotfiles/briefings/2026-08-02.md",

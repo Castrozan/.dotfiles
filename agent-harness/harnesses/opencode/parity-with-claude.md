@@ -7,7 +7,7 @@ feature-for-feature cloning: Claude-TUI-only and clawde-agent-only mechanisms ar
 deliberately out of scope.
 
 The driving asymmetry: Claude pins its model and effort in
-`home/base/claude/settings/global-settings.nix`, while opencode keeps both
+`agent-harness/harnesses/claude-code/settings/global-settings.nix`, while opencode keeps both
 runtime-selectable. The config default is a starting point the model picker
 (`<leader>m`, `f2`) and the variant cycler (`ctrl+t`) override per session, so
 every other knob is set to its maximum-capability value rather than being traded
@@ -105,7 +105,7 @@ against the model choice.
 - `experimental.batch_tool` enables the batch tool, the analogue of Claude's
   parallel tool calls.
 - `compaction.auto` and `compaction.prune` are the analogue of Claude's
-  auto-compact window; see `home/base/claude/docs/context-management.md` for how
+  auto-compact window; see `agent-harness/harnesses/claude-code/docs/context-management.md` for how
   the Claude side is tuned.
 
 ## TUI

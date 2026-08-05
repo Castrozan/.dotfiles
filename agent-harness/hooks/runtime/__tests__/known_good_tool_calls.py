@@ -36,7 +36,7 @@ KNOWN_GOOD_BASH_COMMANDS = (
     "pytest agent-harness/hooks/runtime/__tests__/integration/test_foreground_ci_wait_guard.py -q",
     "ruff format agent-harness/hooks/runtime/common/shell_heredoc_body.py",
     "ruff check agent-harness/hooks/runtime/common",
-    "nixfmt home/base/codex/__tests__/hook-registration-checks.nix",
+    "nixfmt agent-harness/harnesses/codex/__tests__/hook-registration-checks.nix",
     "gh run list --commit abc123def456 --json databaseId,name,conclusion",
     "gh pr view 124 --json state,mergeStateStatus",
     "gh api repos/Castrozan/.dotfiles/actions/runs",

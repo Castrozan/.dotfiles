@@ -6,7 +6,7 @@
 }:
 let
   verifyDeployedProhibitedWordsAllowlist =
-    import ../../../system/scripts/verify-deployed-prohibited-words-allowlist.nix
+    import ../../../../../home/base/system/scripts/verify-deployed-prohibited-words-allowlist.nix
       {
         inherit pkgs;
       };

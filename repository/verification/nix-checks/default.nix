@@ -18,6 +18,7 @@ let
   };
 
   checkModuleArgs = {
+    inherit (helpers) mkEvalCheck;
     inherit
       pkgs
       lib
@@ -29,49 +30,10 @@ let
       ;
   };
 
-  checkModules = [
-    ../../../home/base/claude/__tests__/checks.nix
-    ../../../home/base/clawde/__tests__/checks.nix
-    ../../../home/base/codex/__tests__/checks.nix
-    ../../../agent-harness/agent-instructions/__tests__/checks.nix
-    ../../../hosts/chise/__tests__/checks.nix
-    ../../../agent-harness/hooks/runtime/__tests__/checks.nix
-    ../../../home/base/terminal/__tests__/checks.nix
-    ../../../home/base/editor/__tests__/checks.nix
-    ../../../home/base/browser/__tests__/checks.nix
-    ../../../home/darwin/desktop/brave/__tests__/checks.nix
-    ../../../home/darwin/desktop/chrome/__tests__/checks.nix
-    ../../../home/darwin/desktop/karabiner/__tests__/checks.nix
-    ../../../home/darwin/desktop/maccy/__tests__/checks.nix
-    ../../../home/darwin/desktop/hammerspoon/__tests__/checks.nix
-    ../../../home/darwin/cloudflare-tunnel-connector/__tests__/checks.nix
-    ../../../home/base/desktop/__tests__/checks.nix
-    ../../../home/base/desktop/screensaver/__tests__/checks.nix
-    ../../../home/base/desktop/theming/darwin/__tests__/checks.nix
-    ../../../home/base/dev/__tests__/checks.nix
-    ../../../home/base/media/obsidian/__tests__/checks.nix
-    ../../../home/base/gaming/__tests__/checks.nix
-    ../../../home/linux/gnome/__tests__/checks.nix
-    ../../../home/linux/hyprland/__tests__/checks.nix
-    ../../../home/base/security/__tests__/checks.nix
-    ../../../agent-harness/agent-to-agent-communication/client/__tests__/a2a-client-checks.nix
-    ../../../home/base/ollama/__tests__/checks.nix
-    ../../../home/base/opencode/__tests__/checks.nix
-    ../../../home/base/pi/__tests__/checks.nix
-    ../../../home/linux/audio/__tests__/checks.nix
-    ../../../home/base/network/__tests__/checks.nix
-    ../../../home/base/system/__tests__/checks.nix
-    ../../../home/linux/voice/__tests__/checks.nix
-    ../../../home/base/sourcebot/__tests__/checks.nix
-    ../../../hosts/rin/__tests__/checks.nix
-    ../../../hosts/shared-darwin/chrome/__tests__/checks.nix
-    ../../../hosts/shared-darwin/claude/__tests__/checks.nix
-    ../../../hosts/shared-darwin/brave/__tests__/checks.nix
-    ../../../hosts/shared-darwin/disable-unused-apple-background-agents/__tests__/checks.nix
-    ../../../hosts/shared-darwin/displays/__tests__/checks.nix
-    ../../../hosts/shared-darwin/finder/__tests__/checks.nix
-    ../../../hosts/shared-darwin/symbolic-hotkeys/__tests__/checks.nix
-    ../../../hosts/shared-darwin/window-manager/__tests__/checks.nix
-  ];
+  checkModules = builtins.filter (
+    checkModule:
+    builtins.baseNameOf checkModule == "checks.nix"
+    && builtins.baseNameOf (builtins.dirOf checkModule) == "__tests__"
+  ) (lib.filesystem.listFilesRecursive self.outPath);
 in
 lib.foldl' lib.mergeAttrs { } (map (checkModule: import checkModule checkModuleArgs) checkModules)

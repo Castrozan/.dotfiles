@@ -7,9 +7,9 @@ feature-for-feature cloning: Claude-TUI-only and clawde-agent-only mechanisms
 are deliberately out of scope.
 
 The driving asymmetry to keep in mind: interactive Claude keyboard sessions run
-the model pinned in `home/base/claude/settings/global-settings.nix` on its bare
+the model pinned in `agent-harness/harnesses/claude-code/settings/global-settings.nix` on its bare
 (non-1M) variant, the same `settings.json` default that background/subagent/headless
-runs inherit; Codex runs the model pinned in `home/base/codex/package.nix`. The two
+runs inherit; Codex runs the model pinned in `agent-harness/harnesses/codex/package.nix`. The two
 windows are now close in size, so the Claude knobs that once existed only for its
 much larger 1M window are tuned for the bounded variant rather than being a
 large-window-only concern.
@@ -146,9 +146,9 @@ matcher purposes, so a single `Edit|Write` matcher fires on both CLIs.
 ## Context management
 
 - Claude: runs the bare non-1M variant; the auto-compact base and percentage are
-  set explicitly in `home/base/claude/settings/environment-variables.nix`
+  set explicitly in `agent-harness/harnesses/claude-code/settings/environment-variables.nix`
   (`CLAUDE_CODE_AUTO_COMPACT_WINDOW`/`CLAUDE_AUTOCOMPACT_PCT_OVERRIDE`) so the trigger
-  fires with headroom below the wall; see `home/base/claude/docs/context-management.md`
+  fires with headroom below the wall; see `agent-harness/harnesses/claude-code/docs/context-management.md`
   for the mechanism and the base-matches-window invariant.
 - Codex: 272K window, auto-compacting near ~95% via `auto_compact_token_limit`.
 - Gap: none that is safe. Both run bounded windows now (Claude on the non-1M

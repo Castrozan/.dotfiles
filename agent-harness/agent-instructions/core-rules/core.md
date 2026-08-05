@@ -136,7 +136,7 @@ do. You need not pre-emptively `/compact`; auto-compaction fires once the workin
 compact by need, not defensively. The other budget is raw transcript size: `--resume` replays the full unsummarized
 history, so a session fat with large file dumps and parallel subagent outputs fails resume with a 500, one more reason
 to route heavy reads and fan-out through summarizing subagents. The compaction math, env knobs, and resume-500 failure
-mode live in `home/base/claude/docs/context-management.md`.
+mode live in `agent-harness/harnesses/claude-code/docs/context-management.md`.
 </context-budget>
 
 <workflow>

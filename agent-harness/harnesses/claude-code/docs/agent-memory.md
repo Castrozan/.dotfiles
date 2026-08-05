@@ -147,7 +147,7 @@ recreates both the cwd-keyed stores and the always-on index.
 The two missing domains now exist: the fleet, supervisor, heartbeat and steward domain, and `agent-harness` for Claude
 Code, Codex, and OpenCode behavior. Eight domains carry a `knowledge.md`: `agent-harness`, `nix`, `desktop`, `coding`,
 `herdr`, `arr-stack`, `browser`, and the fleet, each pointed at from its `SKILL.md` router except the fleet, whose skill
-was later deleted as repo-only work and whose knowledge moved beside its module at `home/base/clawde/knowledge.md`. The behavioral entries
+was later deleted as repo-only work and whose knowledge moved beside its module at `agent-harness/harnesses/clawde/knowledge.md`. The behavioral entries
 graduated into `agent-harness/agent-instructions/core-rules/core.md`, where the Git block now carries explicit-pathspec committing, absolute-path
 anchoring, and the rule that landing a change on a repo the user owns is part of the task, and `<session-resilience>`
 carries the knowledge-versus-work-state split and the capture path.

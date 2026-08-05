@@ -39,7 +39,7 @@ into the existing module structure rather than adding one-off files. Make it wor
 </configuration>
 
 <codex-managed-settings-ownership>
-MCP servers are declared in nix at `home/base/claude/mcps/default.nix` for Claude and `home/base/codex/config.nix` for
+MCP servers are declared in nix at `agent-harness/harnesses/claude-code/mcps/default.nix` for Claude and `agent-harness/harnesses/codex/config.nix` for
 Codex. Codex deploys an authoritative nix-source for managed settings, including `mcp_servers`, then seeds a mutable
 live config while preserving live entries in projects, marketplaces, and plugins. Declaratively sourced entries win on
 key collisions, so an MCP dropped from its nix source disappears from the live config on the next rebuild.
@@ -87,7 +87,7 @@ and headless checks do not replace this manual test.
 For a substantive change to this repo, run the `dotfiles-change-review` workflow over the working diff before
 committing; it fans out one reviewer per dimension (correctness, nix rebuild safety, code style, instruction-surface
 quality, test coverage, public-repo safety) and adversarially verifies each finding. Author further repo workflows as
-`dotfiles-*` under `home/base/claude/workflows/`, deployed to `~/.claude/workflows/`, rather than ad-hoc subagent
+`dotfiles-*` under `agent-harness/harnesses/claude-code/workflows/`, deployed to `~/.claude/workflows/`, rather than ad-hoc subagent
 fan-out.
 </workflows>
 
@@ -113,7 +113,7 @@ it launched with, so wrapper-code changes stay dormant until the window is fully
 so the supervisor recreates it from the new spec). Never assume rebuilt wrapper code is live on the running agents -
 check the live process and respawn if it still runs the old code. Every other fleet trap that leaves no trace in the
 source - resume identity, supervisor reconciliation, channel gating, the steward loop, the shared server cgroup - is in
-`home/base/clawde/knowledge.md`; read it before touching any agent, supervisor or heartbeat behavior.
+`agent-harness/harnesses/clawde/knowledge.md`; read it before touching any agent, supervisor or heartbeat behavior.
 </applying-clawde-agent-changes>
 
 <agent-instructions>

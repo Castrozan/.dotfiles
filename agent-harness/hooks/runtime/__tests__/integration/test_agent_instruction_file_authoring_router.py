@@ -42,7 +42,7 @@ class TestInstructionFileClassification:
     @pytest.mark.parametrize(
         "file_path",
         [
-            "/home/lucas.zanoni/.dotfiles/home/base/claude/hook-config.nix",
+            "/home/lucas.zanoni/.dotfiles/agent-harness/harnesses/claude-code/hook-config.nix",
             "/tmp/scratch.txt",
         ],
     )

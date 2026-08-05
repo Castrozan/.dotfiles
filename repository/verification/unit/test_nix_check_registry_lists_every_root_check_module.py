@@ -20,7 +20,7 @@ def every_check_module_path():
     return {
         path
         for path in tracked_repository_paths()
-        if path.endswith("__tests__/checks.nix")
+        if "/__tests__/" in path and path.endswith("checks.nix")
     }
 
 
@@ -44,36 +44,41 @@ def check_module_paths_imported_by_another_module(check_module_paths):
     return imported_paths
 
 
-def check_module_paths_listed_in_the_registry():
-    registry_text = CHECK_REGISTRY_PATH.read_text(encoding="utf-8")
+def automatically_discoverable_check_module_paths():
     return {
-        line.strip().removeprefix("../../../")
-        for line in registry_text.splitlines()
-        if line.strip().startswith("../../../") and line.strip().endswith("checks.nix")
+        path
+        for path in every_check_module_path()
+        if pathlib.PurePosixPath(path).name == "checks.nix"
+        and pathlib.PurePosixPath(path).parent.name == "__tests__"
     }
 
 
-def test_every_root_check_module_is_registered_so_its_assertions_actually_run():
+def test_every_root_check_module_uses_the_auto_discovered_file_name():
     check_module_paths = every_check_module_path()
     root_check_module_paths = check_module_paths - (
         check_module_paths_imported_by_another_module(check_module_paths)
     )
-    unregistered_root_modules = (
-        root_check_module_paths - check_module_paths_listed_in_the_registry()
+    undiscoverable_root_modules = (
+        root_check_module_paths - automatically_discoverable_check_module_paths()
     )
-    assert not unregistered_root_modules, (
+    assert not undiscoverable_root_modules, (
         "these check files sit on disk with live assertions that no module imports "
-        "and the registry never lists, so nix flake check never evaluates them and "
-        "the module reads as covered while its configuration drifts freely; add each "
-        f"to repository/verification/nix-checks/default.nix: {sorted(unregistered_root_modules)}"
+        "and their names prevent the registry from discovering them, so nix flake "
+        "check never evaluates them and the module reads as covered while its "
+        f"configuration drifts freely; rename each to checks.nix: {sorted(undiscoverable_root_modules)}"
     )
 
 
-def test_the_registry_lists_no_check_module_that_has_been_deleted():
-    missing_from_disk = check_module_paths_listed_in_the_registry() - (
-        every_check_module_path()
-    )
-    assert not missing_from_disk, (
-        "the registry names check files that no longer exist, which makes the whole "
-        f"flake check output fail to evaluate: {sorted(missing_from_disk)}"
+def test_the_registry_discovers_check_modules_instead_of_listing_them_by_hand():
+    registry_text = CHECK_REGISTRY_PATH.read_text(encoding="utf-8")
+    assert "lib.filesystem.listFilesRecursive self.outPath" in registry_text
+    hard_coded_check_module_paths = {
+        line.strip()
+        for line in registry_text.splitlines()
+        if line.strip().startswith("../../../") and line.strip().endswith("checks.nix")
+    }
+    assert not hard_coded_check_module_paths, (
+        "the registry must derive check modules from the repository tree so moving "
+        "or adding a capability cannot leave checks unevaluated; remove these "
+        f"hand-maintained paths: {sorted(hard_coded_check_module_paths)}"
     )

@@ -31,7 +31,7 @@ Anthropic Messages endpoint on the loopback interface, converts each request to 
 locally, and forwards it to Console Go's OpenAI endpoint, which keeps tool names intact.
 Native OpenCode needs none of this, because it speaks OpenAI to that endpoint directly, so
 both surfaces still read their model tiers from the one shared definition in
-`home/base/opencode/go-provider.nix` and stay on the same selection.
+`agent-harness/harnesses/opencode/go-provider.nix` and stay on the same selection.
 
 The proxy needs the plan's API key, and a key written into a Nix store file would be world
 readable, so the service renders its configuration at start from a store template plus the

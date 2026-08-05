@@ -2,36 +2,36 @@
   claude-code = {
     imports = [
       ../../agent-harness/agent-instructions/agent-instructions-home-manager.nix
-      ../../home/base/claude
+      ../../agent-harness/harnesses/claude-code
     ];
   };
   clawde = {
     imports = [
       ../../agent-harness/agent-instructions/agent-instructions-home-manager.nix
-      ../../home/base/clawde
+      ../../agent-harness/harnesses/clawde
     ];
   };
   codex = {
     imports = [
       ../../agent-harness/agent-instructions/agent-instructions-home-manager.nix
-      ../../home/base/codex
+      ../../agent-harness/harnesses/codex
     ];
   };
   opencode = {
     imports = [
       ../../agent-harness/agent-instructions/agent-instructions-home-manager.nix
-      ../../home/base/opencode
+      ../../agent-harness/harnesses/opencode
     ];
   };
-  pi = ../../home/base/pi;
+  pi = ../../agent-harness/harnesses/pi;
   default = {
     imports = [
-      ../../home/base/claude
-      ../../home/base/clawde
-      ../../home/base/codex
-      ../../home/base/opencode
+      ../../agent-harness/harnesses/claude-code
+      ../../agent-harness/harnesses/clawde
+      ../../agent-harness/harnesses/codex
+      ../../agent-harness/harnesses/opencode
       ../../agent-harness/agent-instructions/agent-instructions-home-manager.nix
-      ../../home/base/pi
+      ../../agent-harness/harnesses/pi
     ];
   };
 }

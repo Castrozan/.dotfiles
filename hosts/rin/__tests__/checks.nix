@@ -8,9 +8,9 @@ let
   inherit (helpers) mkEvalCheck;
 
   rinHomeManagerConfiguration = helpers.homeManagerTestConfigurationForDarwinHost "rin" [
-    ../../../home/base/opencode/opencode.nix
-    ../../../home/base/claude/binary.nix
-    ../../../home/base/claude/gpt-proxy
+    ../../../agent-harness/harnesses/opencode/opencode.nix
+    ../../../agent-harness/harnesses/claude-code/binary.nix
+    ../../../agent-harness/harnesses/claude-code/gpt-proxy
   ];
   rinPackageNames = map (
     package: package.name or package.pname or "unknown"

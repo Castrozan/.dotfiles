@@ -10,22 +10,22 @@ in
     ./chise/ssh.nix
     ./chise/session-vars.nix
     ./chise/chrome-default-browser.nix
-    ../../base/clawde/agents/steward.nix
-    ../../base/clawde/agents/ril-watcher
+    ../../../agent-harness/harnesses/clawde/agents/steward.nix
+    ../../../agent-harness/harnesses/clawde/agents/ril-watcher
 
     ../../base/core.nix
 
     ../../../agent-harness/agent-instructions/agent-instructions-home-manager.nix
     ../../base/security
     ../../linux/audio
-    ../../base/claude
-    ../../base/clawde
-    ../../base/codex
+    ../../../agent-harness/harnesses/claude-code
+    ../../../agent-harness/harnesses/clawde
+    ../../../agent-harness/harnesses/codex
     ../../linux/gnome
     ../../linux/home-assistant
     ../../linux/hyprland/nixos.nix
-    ../../base/opencode
-    ../../base/pi
+    ../../../agent-harness/harnesses/opencode
+    ../../../agent-harness/harnesses/pi
     ../../base/testing
 
     ../../base/terminal/bash.nix

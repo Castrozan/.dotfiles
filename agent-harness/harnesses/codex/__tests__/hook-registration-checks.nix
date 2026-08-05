@@ -101,8 +101,8 @@ in
       (
         !(builtins.hasAttr ".codex/hooks.json" cfg.home.file)
         && builtins.hasAttr "codex/requirements.toml" codexSystemManagedHooksConfig.environment.etc
-        && lib.hasInfix "../../home/base/codex/system-managed-hooks.nix" darwinConfigurationsSource
-        && lib.hasInfix "../../home/base/codex/system-managed-hooks.nix" nixosConfigurationsSource
+        && lib.hasInfix "../../agent-harness/harnesses/codex/system-managed-hooks.nix" darwinConfigurationsSource
+        && lib.hasInfix "../../agent-harness/harnesses/codex/system-managed-hooks.nix" nixosConfigurationsSource
       )
       "Codex hooks should be deployed through /etc/codex/requirements.toml on Darwin and NixOS so Codex treats them as managed and trusted";
 
