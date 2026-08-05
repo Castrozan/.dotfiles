@@ -79,7 +79,7 @@ INVOCATIONS_UNDER_BUDGET = {
                 "new_string": "b",
             },
         },
-        69,
+        65,
     ),
     "post-tool-use/Skill": (
         "post-tool-use-dispatcher",
@@ -89,7 +89,7 @@ INVOCATIONS_UNDER_BUDGET = {
             "tool_input": {},
             "tool_response": {},
         },
-        75,
+        57,
     ),
     "post-tool-use/Edit": (
         "post-tool-use-dispatcher",
@@ -99,17 +99,17 @@ INVOCATIONS_UNDER_BUDGET = {
             "tool_input": {"file_path": FILE_NO_FORMATTER_OR_LINTER_COVERS},
             "tool_response": {"filePath": FILE_NO_FORMATTER_OR_LINTER_COVERS},
         },
-        71,
+        67,
     ),
     "stop": (
         "stop-dispatcher",
         {"hook_event_name": "Stop", "stop_hook_active": False},
-        120,
+        99,
     ),
     "user-prompt-submit": (
         "user-prompt-submit-dispatcher",
         {"hook_event_name": "UserPromptSubmit", "prompt": "hello"},
-        83,
+        65,
     ),
 }
 
