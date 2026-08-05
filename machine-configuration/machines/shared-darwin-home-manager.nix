@@ -4,7 +4,7 @@
     ../../home/base/packages/lucas-zanoni.nix
 
     ../development/version-control/git-private-home-manager.nix
-    ../../home/base/network/ssh-private.nix
+    ../network/ssh/ssh-private-home-manager.nix
     ../../home/base/system/session-vars-lucas-zanoni.nix
     ../../agent-harness/harnesses/clawde/agents/steward.nix
 
@@ -59,7 +59,7 @@
     ../../home/base/security/agenix.nix
     ../../home/base/security/bitwarden.nix
 
-    ../../home/base/network/tailscale-daemon.nix
+    ../network/tailscale/tailscale-daemon-home-manager.nix
 
     ../terminal/workspace-manager/cockpit-session-bridge/cockpit-session-bridge-home-manager.nix
     ../network/cloudflare-tunnel-connector/cloudflare-tunnel-connector-home-manager.nix

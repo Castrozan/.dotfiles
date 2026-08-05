@@ -4,7 +4,7 @@ let
 in
 {
   security.wrappers.nord-on = {
-    source = "${buildSetuidRootScriptWrapper ../../../../../home/base/network/scripts/nord-on}";
+    source = "${buildSetuidRootScriptWrapper ../../../../network/vpn/nordvpn/scripts/nord-on}";
     owner = "root";
     group = "root";
     setuid = true;

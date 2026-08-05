@@ -26,8 +26,8 @@ machine-configuration/machines/<alias>/home.nix - per-machine home-manager entry
 machine-configuration/machines/<alias>/home/ - optional per-machine home-manager submodules
 home/base/packages/<user>.nix - per-user shared package set (used by multiple machines)
 machine-configuration/development/version-control/git-private-home-manager.nix - per-user git router (sources private-config/machines/<hostname>/git-user.nix)
-home/base/network/ssh-private.nix - per-user ssh router (sources private-config/machines/<hostname>/ssh.nix)
-home/base/network/scripts/ - shared per-user ssh activation scripts
+machine-configuration/network/ssh/ssh-private-home-manager.nix - per-user ssh router (sources private-config/machines/<hostname>/ssh.nix)
+machine-configuration/network/ssh/scripts/ - shared per-user ssh activation scripts
 machine-configuration/<domain>/<capability>/ - a capability owning its nix modules, raw config,
 scripts and tests; deployment mechanism is the file-name suffix (-nixos, -nix-darwin, -home-manager)
 machine-configuration/machines/<alias>/system/ - machine-specific system config; NixOS retains

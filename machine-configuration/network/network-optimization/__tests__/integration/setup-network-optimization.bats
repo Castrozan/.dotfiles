@@ -3,7 +3,7 @@
 load '../../../../../repository/verification/helpers/docker-container-assertions'
 
 readonly DOCKER_IMAGE_TAG="dotfiles-network-test"
-readonly SCRIPT_PATH_INSIDE_CONTAINER="/dotfiles/home/base/network/scripts/setup-network-optimization"
+readonly SCRIPT_PATH_INSIDE_CONTAINER="/dotfiles/machine-configuration/network/network-optimization/scripts/setup-network-optimization"
 readonly SYSCTL_NETWORK_CONFIG_PATH="/etc/sysctl.d/99-network-optimization.conf"
 readonly NETWORKMANAGER_WIFI_POWERSAVE_CONFIG_PATH="/etc/NetworkManager/conf.d/wifi-powersave-off.conf"
 readonly RESOLVED_DNS_CONFIG_PATH="/etc/systemd/resolved.conf.d/dns-optimization.conf"

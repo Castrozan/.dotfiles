@@ -205,7 +205,7 @@ nord-on-us    # connect NordVPN (US) on chise: wgnord c US
 nord-off      # disconnect: wgnord d
 ```
 
-See `home/base/network/scripts/` (`nord-on-us`, `nord-off`, `nord-on`,
+See `machine-configuration/network/vpn/nordvpn/scripts/` (`nord-on-us`, `nord-off`, `nord-on`,
 `setup_wgnord`) and `machine-configuration/machines/chise/system/scripts/` for the script definitions. Bring the
 stack up the same way regardless; the VPN is an independent host toggle.
 

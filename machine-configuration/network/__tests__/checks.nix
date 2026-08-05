@@ -8,8 +8,8 @@ let
   inherit (helpers) mkEvalCheck;
 
   cfg = helpers.homeManagerTestConfiguration [
-    ../../../linux/network/network-optimization.nix
-    ../tailscale-daemon.nix
+    ../network-optimization/network-optimization-home-manager.nix
+    ../tailscale/tailscale-daemon-home-manager.nix
   ];
 
   hasActivation = name: builtins.hasAttr name cfg.home.activation;
