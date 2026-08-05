@@ -1563,7 +1563,7 @@
         "type": "github"
       }
     },
-    "private-configuration": {
+    "private-config": {
       "flake": false,
       "locked": {
         "lastModified": 1774228123,
@@ -1638,7 +1638,7 @@
         "nixpkgs": "nixpkgs_8",
         "nixpkgs-latest": "nixpkgs-latest",
         "nixpkgs-unstable": "nixpkgs-unstable",
-        "private-configuration": "private-configuration",
+        "private-config": "private-config",
         "quickshell": "quickshell",
         "readItNow-rc": "readItNow-rc",
         "stylix": "stylix",

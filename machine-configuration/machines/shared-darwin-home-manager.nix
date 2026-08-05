@@ -67,6 +67,6 @@
     ../media/obsidian/obsidian-home-manager.nix
     ../media/zathura/zathura-home-manager.nix
 
-    "${inputs.private-configuration}/sb-toolkit"
+    "${inputs.private-config}/sb-toolkit"
   ];
 }
