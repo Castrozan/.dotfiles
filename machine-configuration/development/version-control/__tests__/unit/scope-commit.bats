@@ -55,8 +55,8 @@ run_hook_after_staging_path_with_message() {
 	[ "${lines[0]}" = "fix(chise): update identity" ]
 }
 
-@test "derives scope from top-level hosts/<host>-configuration.nix changes" {
-	run run_hook_after_staging_path_with_message "hosts/shared-darwin-configuration.nix" "fix: invert scroll"
+@test "derives scope from shared darwin machine composition changes" {
+	run run_hook_after_staging_path_with_message "machine-configuration/machines/shared-darwin-system-nix-darwin.nix" "fix: invert scroll"
 	[ "$status" -eq 0 ]
 	[ "${lines[0]}" = "fix(shared-darwin): invert scroll" ]
 }

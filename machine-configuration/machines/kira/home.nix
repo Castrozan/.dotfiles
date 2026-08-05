@@ -5,7 +5,7 @@ let
 in
 {
   imports = [
-    ../../../home/darwin
+    ../shared-darwin-home-manager.nix
 
     ../../../machine-configuration/development/version-control/git-toggle-user-home-manager.nix
 

@@ -120,7 +120,7 @@ nix run nix-darwin -- switch --flake .?submodules=1#<alias>
 ```bash
 sudo darwin-rebuild switch --flake .?submodules=1#<alias>
 ```
-Use the host's alias (`rin`, `kira`, ...). The WezTerm cask is declared in `hosts/shared-darwin-configuration.nix`.
+Use the host's alias (`rin`, `kira`, ...). The WezTerm cask is declared in `machine-configuration/terminal/emulators/wezterm/wezterm-nix-darwin.nix`.
 
 </details>
 </details>
@@ -198,7 +198,7 @@ graph TD
 
 Flake inputs live in `flake.nix`; outputs are split into `repository/flake-assembly/{outputs,nixos-configurations,darwin-configurations,home-manager-modules}.nix`. Each output factory enumerates the hosts it owns and threads `hostname` plus `isNixOS` / `isDarwin` flags into `extraSpecialArgs`.
 
-Home Manager modules under `home/` are split by platform, ryan4yin-style: `home/base/` (any-platform), `home/linux/`, `home/darwin/`. Per-platform subtrees let Linux-only modules never load on darwin and vice versa. Each module owns its `default.nix`, optional `scripts/`, optional `__tests__/`.
+Capabilities live under `machine-configuration/` grouped by what they do, and each capability owns its Nix modules, raw configuration, `scripts/`, and `__tests__/` together. Deployment mechanism and platform appear in the file name (`-home-manager.nix`, `-nixos.nix`, `-nix-darwin.nix`), never as a directory level, so a capability implemented differently on each platform still reads as one place. The Home Manager entry points that compose those capabilities for the two macOS hosts are `machine-configuration/machines/shared-darwin-home-manager.nix` and `machine-configuration/machines/shared-darwin-system-nix-darwin.nix`. What has not migrated yet still sits under `home/base/`, `home/linux/`, and `nixos/modules/`.
 
 Machine-specific system configuration lives in `machine-configuration/machines/<alias>/system/`; reusable NixOS modules live in `nixos/modules/`. Each machine's home-manager entry point is `machine-configuration/machines/<alias>/home.nix` (ryan4yin-style); host-only home modules live in `machine-configuration/machines/<alias>/home/`. Per-user shared bits live in `home/base/` (e.g. `home/base/packages/lucas-zanoni.nix`). Routers at `machine-configuration/development/version-control/git-private-home-manager.nix` and `home/base/network/ssh-private.nix` look up `private-config/machines/${hostname}/<file>` so per-machine overrides land automatically when the file exists.
 

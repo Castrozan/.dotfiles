@@ -15,7 +15,7 @@ jobs:
 
       - name: Run tests with coverage
         run: |
-          find home/base home/linux home/darwin -path "*/scripts/*" -type f -exec chmod +x {} +
+          find home/base home/linux machine-configuration -path "*/scripts/*" -type f -exec chmod +x {} +
           nix shell nixpkgs#kcov nixpkgs#bats nixpkgs#bc --command ./repository/verification/cover/bash-coverage.sh --ci
 
       - name: Upload coverage report

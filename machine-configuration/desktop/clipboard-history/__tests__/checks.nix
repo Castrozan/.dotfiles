@@ -1,5 +1,7 @@
 {
   helpers,
+  pkgs,
+  lib,
   ...
 }:
 let
@@ -14,4 +16,7 @@ in
   domain-desktop-clipse-service-config = mkEvalCheck "domain-desktop-clipse-service-config" (
     hasService "clipse" && hasXdgConfig "clipse/config.json"
   ) "clipse should have service and config";
+}
+// import ./maccy-home-manager-checks.nix {
+  inherit helpers pkgs lib;
 }

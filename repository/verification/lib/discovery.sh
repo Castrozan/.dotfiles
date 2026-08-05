@@ -1,13 +1,5 @@
 #!/usr/bin/env bash
 
-_other_platform_home_directory_to_exclude() {
-	if [[ "$(uname)" == "Darwin" ]]; then
-		echo "$REPO_DIR/home/linux"
-	else
-		echo "$REPO_DIR/home/darwin"
-	fi
-}
-
 _discover_test_files() {
 	local discoveryPolicy="$1"
 	local pathPattern="$2"
@@ -24,8 +16,8 @@ _discover_test_files() {
 		-o -path '*/__pycache__'
 	)
 
-	if [[ "$discoveryPolicy" == "platform-scoped" ]]; then
-		prunedDirectoryExpression+=(-o -path "$(_other_platform_home_directory_to_exclude)")
+	if [[ "$discoveryPolicy" == "platform-scoped" && "$(uname)" == "Darwin" ]]; then
+		prunedDirectoryExpression+=(-o -path "$REPO_DIR/home/linux")
 	fi
 
 	find "$REPO_DIR" \

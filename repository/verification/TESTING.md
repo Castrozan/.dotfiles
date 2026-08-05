@@ -26,9 +26,8 @@ runner edits — there are no hardcoded collection roots.
 
 Two discovery policies:
 
-- **platform-scoped** (bats, pytest): excludes the *other* platform's home tree
-  (`home/linux` on macOS, `home/darwin` on Linux), because script tests can be
-  platform-specific.
+- **platform-scoped** (bats, pytest): on macOS it excludes the Linux-only home
+  tree (`home/linux`), because script tests can be platform-specific.
 - **cross-platform** (lua, qml): walks both platforms, because those pure-logic
   suites run identically everywhere.
 

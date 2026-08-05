@@ -3,7 +3,7 @@
 </identity>
 
 <stack>
-nix-darwin owns the system, home-manager owns the user environment. The Mac baseline (input, dock, browsers, window manager, terminal, the `rebuild` command) comes from the shared darwin layer at `hosts/shared-darwin-configuration.nix` and `hosts/shared-darwin/`. The user environment composes `home/base` under `home/darwin` through `machine-configuration/machines/kira/home.nix`.
+nix-darwin owns the system, home-manager owns the user environment. The Mac baseline (input, dock, browsers, window manager, terminal, the `rebuild` command) comes from the shared darwin layer at `machine-configuration/machines/shared-darwin-system-nix-darwin.nix`, which imports the `-nix-darwin.nix` module of each capability that participates. The user environment composes `machine-configuration/machines/shared-darwin-home-manager.nix` through `machine-configuration/machines/kira/home.nix`.
 </stack>
 
 <per_host_delta>

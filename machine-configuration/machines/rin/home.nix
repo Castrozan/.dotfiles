@@ -5,7 +5,7 @@ let
 in
 {
   imports = [
-    ../../../home/darwin
+    ../shared-darwin-home-manager.nix
   ]
   ++ lib.optionals rinPrivateConfigExists [
     "${privateConfigRoot}/machines/rin/clawde-agents"

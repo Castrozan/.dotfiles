@@ -86,6 +86,9 @@ in
       "when a private-config/machines/<hostname>/claude-plugins.nix exists, global-settings.nix must fold its extraKnownMarketplaces and enabledPlugins into the deployed settings.json.nix-source; a dropped `// privateMarketplacePlugins` would silently regress the only path that installs the per-machine plugin";
 
 }
+// import ./claude-managed-settings-nix-darwin-checks.nix {
+  inherit helpers pkgs lib;
+}
 // import ./skill-tier-checks.nix {
   inherit
     lib

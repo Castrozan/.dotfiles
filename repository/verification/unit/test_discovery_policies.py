@@ -12,21 +12,13 @@ UNIT_TIER_TEST_PATTERN = "*/__tests__/unit/test_*.py"
 PLANTED_TEST_MODULE_DIRECTORIES = (
     "home/base/included_module",
     "home/linux/linux_only_module",
-    "home/darwin/darwin_only_module",
+    "machine-configuration/included_capability",
     "private-config/pruned_submodule",
     ".worktrees/pruned_worktree",
 )
 
-CURRENT_PLATFORM_MODULE = (
-    "home/darwin/darwin_only_module"
-    if platform.system() == "Darwin"
-    else "home/linux/linux_only_module"
-)
-FOREIGN_PLATFORM_MODULE = (
-    "home/linux/linux_only_module"
-    if platform.system() == "Darwin"
-    else "home/darwin/darwin_only_module"
-)
+LINUX_HOME_MODULE = "home/linux/linux_only_module"
+SHARED_CAPABILITY_MODULE = "machine-configuration/included_capability"
 PRUNED_MODULES = (
     "private-config/pruned_submodule",
     ".worktrees/pruned_worktree",
@@ -77,8 +69,11 @@ def test_platform_scoped_discovery_excludes_foreign_platform_and_pruned_dirs(tmp
     discovered = _discover_with_policy(fake_repository_root, "platform-scoped")
 
     assert _relative_planted_test("home/base/included_module") in discovered
-    assert _relative_planted_test(CURRENT_PLATFORM_MODULE) in discovered
-    assert _relative_planted_test(FOREIGN_PLATFORM_MODULE) not in discovered
+    assert _relative_planted_test(SHARED_CAPABILITY_MODULE) in discovered
+    if platform.system() == "Darwin":
+        assert _relative_planted_test(LINUX_HOME_MODULE) not in discovered
+    else:
+        assert _relative_planted_test(LINUX_HOME_MODULE) in discovered
     for pruned_module in PRUNED_MODULES:
         assert _relative_planted_test(pruned_module) not in discovered
 
@@ -90,7 +85,7 @@ def test_cross_platform_discovery_includes_both_platforms_but_prunes_vendored(tm
     discovered = _discover_with_policy(fake_repository_root, "cross-platform")
 
     assert _relative_planted_test("home/base/included_module") in discovered
-    assert _relative_planted_test("home/linux/linux_only_module") in discovered
-    assert _relative_planted_test("home/darwin/darwin_only_module") in discovered
+    assert _relative_planted_test(LINUX_HOME_MODULE) in discovered
+    assert _relative_planted_test(SHARED_CAPABILITY_MODULE) in discovered
     for pruned_module in PRUNED_MODULES:
         assert _relative_planted_test(pruned_module) not in discovered

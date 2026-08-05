@@ -5,8 +5,8 @@ commit_message_file="$1"
 staged_files=$(git diff --cached --name-only)
 
 scope=$(printf '%s\n' "$staged_files" |
-	grep -m1 -E '^(machine-configuration/machines/[^/]+/(home(\.nix|/)|system/)|hosts/[^/]+/|hosts/[^/.]+-configuration\.nix$|home/hosts/(linux|darwin)/[^/]+(\.nix|/)|repository/git-hooks/)' |
-	sed -E -e 's#^machine-configuration/machines/([^/]+)/(home\.nix|home/.*|system/.*)#\1#' -e 's#^hosts/([^/]+)/.*#\1#' -e 's#^hosts/([^/.]+)-configuration\.nix$#\1#' -e 's#^home/hosts/(linux|darwin)/([^/.]+)(\.nix|/.*)#\2#' -e 's#^repository/git-hooks/.*#git-hooks#')
+	grep -m1 -E '^(machine-configuration/machines/[^/]+/(home(\.nix|/)|system/)|machine-configuration/machines/shared-darwin-(system-nix-darwin|home-manager)\.nix$|repository/git-hooks/)' |
+	sed -E -e 's#^machine-configuration/machines/([^/]+)/(home\.nix|home/.*|system/.*)#\1#' -e 's#^machine-configuration/machines/shared-darwin-(system-nix-darwin|home-manager)\.nix$#shared-darwin#' -e 's#^repository/git-hooks/.*#git-hooks#')
 
 subject=$(head -n 1 "$commit_message_file")
 body=$(tail -n +2 "$commit_message_file")
