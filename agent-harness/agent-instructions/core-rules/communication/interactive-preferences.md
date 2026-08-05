@@ -7,8 +7,9 @@ each reply, so the reply template holds on every turn and never lapses as the co
 
 <where_the_reply_rules_live>
 The reply template, its shape and every rule a program can check, is deployed beside this file as
-`agents/core_rules/communication/enforced-reply-rules.md`, generated from the same catalog the Stop hook runs, so what
-you are told and what you are blocked on cannot drift apart. Hold no copy of those rules here, and reach for the
+`agent-harness/agent-instructions/core-rules/communication/enforced-reply-rules.md`, generated from the same catalog the
+Stop hook runs, so what you are told and what you are blocked on cannot drift apart. Hold no copy of those rules here,
+and reach for the
 `humanize` skill for the wording judgment no checker can make.
 </where_the_reply_rules_live>
 

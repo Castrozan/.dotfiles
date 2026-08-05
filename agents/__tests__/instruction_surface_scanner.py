@@ -9,6 +9,7 @@ PRIVATE_MACHINE_SKILL_TREES = sorted(
 VENDORED_DIRECTORY_NAMES = frozenset({"node_modules", "dist", ".angular"})
 MAXIMUM_SKILL_DESCRIPTION_LENGTH = 1024
 REPOSITORY_TOP_LEVEL_PREFIXES = (
+    "agent-harness/",
     "agents/",
     "home/",
     "nixos/",
@@ -51,14 +52,17 @@ def skill_chapter_files() -> list[Path]:
 
 
 def subagent_definition_files() -> list[Path]:
-    return sorted((REPO_ROOT / "agents" / "subagents").glob("*.md"))
+    return sorted(
+        (REPO_ROOT / "agent-harness" / "agent-instructions" / "subagents").glob("*.md")
+    )
 
 
 def instruction_surface_files() -> list[Path]:
-    surfaces = [REPO_ROOT / "agents" / "dotfiles.md"]
-    surfaces += sorted((REPO_ROOT / "agents" / "core_rules").glob("**/*.md"))
-    surfaces += sorted((REPO_ROOT / "agents" / "snippets").glob("*.md"))
-    surfaces += sorted((REPO_ROOT / "agents" / "commands").glob("**/*.md"))
+    instruction_root = REPO_ROOT / "agent-harness" / "agent-instructions"
+    surfaces = [instruction_root / "project-context" / "dotfiles-agent-instructions.md"]
+    surfaces += sorted((instruction_root / "core-rules").glob("**/*.md"))
+    surfaces += sorted((instruction_root / "rebuild-guidance").glob("*.md"))
+    surfaces += sorted((instruction_root / "commands").glob("**/*.md"))
     surfaces += subagent_definition_files()
     return surfaces
 

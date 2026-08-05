@@ -22,9 +22,12 @@ let
   deploysAgentSession = configuration: builtins.elem "agent-session" (packageNamesFor configuration);
   deploysGitHistory = configuration: builtins.elem "git-history" (packageNamesFor configuration);
 
-  interactiveAgentSkills = import ../../../../agents/interactive-agent-skills.nix {
-    hostname = "test";
-  };
+  interactiveAgentSkills =
+    import
+      ../../../../agent-harness/agent-instructions/interactive-skill-catalog/interactive-agent-skills.nix
+      {
+        hostname = "test";
+      };
 
   harnessProjectSkillDirectoriesInRepository = [
     ".claude/skills"
@@ -37,6 +40,10 @@ let
       skillName: builtins.hasAttr ".dotfiles/${pathInRepository}/${skillName}" cfg.home.file
     ) interactiveAgentSkills.dotfilesRepoSkillNames
   ) harnessProjectSkillDirectoriesInRepository;
+
+  interactiveSkillCatalogContainsEveryCuratedSkill = builtins.all (
+    skillName: builtins.elem skillName interactiveAgentSkills.allSkillNames
+  ) interactiveAgentSkills.defaultInteractiveSkillNames;
 
   dotfilesRepositoryDiscoveryLinkSourcesAreDeclared =
     builtins.hasAttr ".dotfiles/.githooks" cfgOnTheEvaluatingSystem.home.file
@@ -68,8 +75,11 @@ in
 
   dotfiles-repo-skills-deploy-into-every-project-skill-directory =
     mkEvalCheck "dotfiles-repo-skills-deploy-into-every-project-skill-directory"
-      everyRepositorySkillDirectoryCarriesTheRepoLocalSkills
-      "every repo-local skill must deploy into each harness project skill directory inside the dotfiles checkout; these skills reach no global surface, so a missing project directory strands them for that harness entirely";
+      (
+        interactiveSkillCatalogContainsEveryCuratedSkill
+        && everyRepositorySkillDirectoryCarriesTheRepoLocalSkills
+      )
+      "the interactive skill catalog must resolve every curated skill and deploy every repo-local skill into each harness project skill directory inside the dotfiles checkout";
 
   harness-modules-deploy-git-history = mkEvalCheck "harness-modules-deploy-git-history" (builtins.all
     deploysGitHistory

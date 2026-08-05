@@ -5,7 +5,7 @@ tests:
     hook: pre-tool-use-dispatcher.py
     trigger:
       tool: Edit
-      file_path: "agents/core_rules/core.md"
+      file_path: "agent-harness/agent-instructions/core-rules/core.md"
     assertions:
       hook_blocks: true
       message_contains: "instruction"

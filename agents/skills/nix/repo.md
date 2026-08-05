@@ -4,7 +4,8 @@ Only deviate if user explicitly accepts trade-off AND no alternative exists.
 </stance>
 
 <architecture>
-flake.nix (inputs) + repository/flake-assembly/{outputs,nixos-configurations,darwin-configurations,home-manager-modules}.nix (outputs)
+flake.nix (inputs) +
+repository/flake-assembly/{outputs,nixos-configurations,darwin-configurations,home-manager-modules}.nix (outputs)
   nixosConfigurations.<alias>          (full NixOS system, e.g. chise)
   darwinConfigurations.<alias>         (nix-darwin macOS, e.g. rin, kira)
 Each output threads (hostname=<alias>, isNixOS, isDarwin, username) through extraSpecialArgs.

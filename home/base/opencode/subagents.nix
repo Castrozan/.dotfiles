@@ -3,7 +3,7 @@ let
   opencodeAgentDefinitions = import ./translate-claude-agent-definitions.nix {
     inherit pkgs;
     derivationName = "opencode-agent-definitions";
-    claudeAgentDefinitionsDirectory = ../../../agents/subagents;
+    claudeAgentDefinitionsDirectory = ../../../agent-harness/agent-instructions/subagents;
   };
 in
 {

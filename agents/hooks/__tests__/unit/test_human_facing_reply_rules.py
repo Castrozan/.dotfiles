@@ -28,8 +28,9 @@ REPOSITORY_ROOT = HOOKS_ROOT.parents[1]
 GENERATED_SURFACES = (
     (
         REPOSITORY_ROOT
-        / "agents"
-        / "core_rules"
+        / "agent-harness"
+        / "agent-instructions"
+        / "core-rules"
         / "communication"
         / "enforced-reply-rules.md",
         rendered_enforced_reply_rules_markdown,

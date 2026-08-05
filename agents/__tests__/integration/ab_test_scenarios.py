@@ -2,7 +2,9 @@ from pathlib import Path
 
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent.parent
-CORE_INSTRUCTIONS_PATH = REPO_ROOT / "agents" / "core_rules" / "core.md"
+CORE_INSTRUCTIONS_PATH = (
+    REPO_ROOT / "agent-harness" / "agent-instructions" / "core-rules" / "core.md"
+)
 
 
 def load_core_instructions_body() -> str:

@@ -5,9 +5,12 @@
   hasFilePrefix,
 }:
 let
-  interactiveAgentSkills = import ../../../../agents/interactive-agent-skills.nix {
-    hostname = "test";
-  };
+  interactiveAgentSkills =
+    import
+      ../../../../agent-harness/agent-instructions/interactive-skill-catalog/interactive-agent-skills.nix
+      {
+        hostname = "test";
+      };
 
   claudeInteractiveSkillNames = interactiveAgentSkills.effectiveInteractiveSkillNames { };
 
@@ -66,7 +69,10 @@ let
     machineName:
     let
       cataloguedSkillNames =
-        (import ../../../../agents/interactive-agent-skills.nix { hostname = machineName; }).allSkillNames;
+        (import
+          ../../../../agent-harness/agent-instructions/interactive-skill-catalog/interactive-agent-skills.nix
+          { hostname = machineName; }
+        ).allSkillNames;
     in
     builtins.all (skillName: builtins.elem skillName cataloguedSkillNames) (
       privateMachineSkillNamesFor machineName

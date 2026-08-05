@@ -6,9 +6,12 @@
 }:
 let
   inherit (helpers) mkEvalCheck;
-  interactiveAgentSkills = import ../../../../agents/interactive-agent-skills.nix {
-    hostname = "test";
-  };
+  interactiveAgentSkills =
+    import
+      ../../../../agent-harness/agent-instructions/interactive-skill-catalog/interactive-agent-skills.nix
+      {
+        hostname = "test";
+      };
 
   cfg = helpers.homeManagerTestConfiguration [ ../. ];
 

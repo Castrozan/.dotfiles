@@ -77,9 +77,9 @@ run proceeds in the background always; never stay stuck waiting on it. Paralleli
 continue with the next independent piece of the task, and check the verdict only when other work is exhausted and a
 response to the user is due. Reach for `repository/verification/run.sh` only to reproduce a job CI turned red, or to
 iterate on a test you are writing. The same goes for a whole pytest tier directory (`*/__tests__/unit`,
-`*/__tests__/integration`), bare `pytest`, `pytest agents`, `pytest .`, and `nix flake check`: run a specific test file, or use
-`rebuild` as the local nix verification. Test every Neovim change live in a newly created Herdr pane; automated and
-headless checks do not replace this manual test.
+`*/__tests__/integration`), bare `pytest`, `pytest agents`, `pytest .`, and `nix flake check`: run a specific test file,
+or use `rebuild` as the local nix verification. Test every Neovim change live in a newly created Herdr pane; automated
+and headless checks do not replace this manual test.
 </testing>
 
 <workflows>

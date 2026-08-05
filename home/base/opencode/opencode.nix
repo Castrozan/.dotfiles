@@ -35,9 +35,9 @@ let
   };
 
   interactivePreferencesFile = pkgs.writeText "opencode-interactive-session-only-instructions.md" (
-    builtins.readFile ../../../agents/core_rules/communication/interactive-preferences.md
+    builtins.readFile ../../../agent-harness/agent-instructions/core-rules/communication/interactive-preferences.md
     + "\n"
-    + builtins.readFile ../../../agents/core_rules/communication/enforced-reply-rules.md
+    + builtins.readFile ../../../agent-harness/agent-instructions/core-rules/communication/enforced-reply-rules.md
   );
 
   interactiveSessionConfigOverlay =

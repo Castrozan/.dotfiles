@@ -11,8 +11,9 @@ HUMAN_FACING_REPLY_MODULES_DIRECTORY = (
 )
 ENFORCED_REPLY_RULES_SURFACE = (
     REPOSITORY_ROOT
-    / "agents"
-    / "core_rules"
+    / "agent-harness"
+    / "agent-instructions"
+    / "core-rules"
     / "communication"
     / "enforced-reply-rules.md"
 )

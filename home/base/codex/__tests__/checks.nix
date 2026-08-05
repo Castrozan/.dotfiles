@@ -8,9 +8,12 @@
 }:
 let
   inherit (helpers) mkEvalCheck;
-  interactiveAgentSkills = import ../../../../agents/interactive-agent-skills.nix {
-    hostname = "test";
-  };
+  interactiveAgentSkills =
+    import
+      ../../../../agent-harness/agent-instructions/interactive-skill-catalog/interactive-agent-skills.nix
+      {
+        hostname = "test";
+      };
 
   cfg =
     (inputs.home-manager.lib.homeManagerConfiguration {
@@ -35,7 +38,7 @@ let
   hasFilePrefix =
     prefix: builtins.any (n: builtins.substring 0 (builtins.stringLength prefix) n == prefix) fileNames;
 
-  dotfilesAgentInstructions = builtins.readFile ../../../../agents/dotfiles.md;
+  dotfilesAgentInstructions = builtins.readFile ../../../../agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md;
   normalizedDotfilesAgentInstructions = lib.replaceStrings [ "\n" ] [ " " ] dotfilesAgentInstructions;
   codexConfigSeedActivationData = cfg.home.activation.seedCodexConfigAsMutableFile.data or "";
   legacyCodexSkillDirectoriesScript = builtins.readFile ../scripts/replace-legacy-codex-skill-directories;

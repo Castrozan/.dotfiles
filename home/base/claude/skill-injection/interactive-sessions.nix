@@ -8,11 +8,11 @@ let
   interactiveSessionOnlySystemPromptSurfaces =
     pkgs.writeText "claude-interactive-session-only-system-prompt-surfaces.md"
       (
-        builtins.readFile ../../../../agents/core_rules/communication/interactive-preferences.md
+        builtins.readFile ../../../../agent-harness/agent-instructions/core-rules/communication/interactive-preferences.md
         + "\n"
-        + builtins.readFile ../../../../agents/core_rules/communication/enforced-reply-rules.md
+        + builtins.readFile ../../../../agent-harness/agent-instructions/core-rules/communication/enforced-reply-rules.md
         + "\n"
-        + builtins.readFile ../../../../agents/core_rules/adaptive-implementation-delivery-process.md
+        + builtins.readFile ../../../../agent-harness/agent-instructions/core-rules/adaptive-implementation-delivery-process.md
       );
 
   claudeInteractiveScript = pkgs.writeShellScriptBin "claude-interactive" ''

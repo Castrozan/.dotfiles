@@ -29,7 +29,7 @@ against the model choice.
 
 ## Rules / instruction surface
 
-- Claude: the post-frontmatter body of `agents/core_rules/core.md` is deployed
+- Claude: the post-frontmatter body of `agent-harness/agent-instructions/core-rules/core.md` is deployed
   verbatim as `~/.claude/CLAUDE.md` (always-on global rules).
 - opencode: `~/.config/opencode/AGENTS.md` carries the same body via the same
   frontmatter split (`global-instructions.nix`), and the config's `instructions`
@@ -53,7 +53,7 @@ against the model choice.
 
 ## Skills, subagents and commands
 
-- Skills: the curated interactive set from `agents/interactive-agent-skills.nix`
+- Skills: the curated interactive set from `agent-harness/agent-instructions/interactive-skill-catalog/interactive-agent-skills.nix`
   (shared default plus opencode's own additions) is deployed to
   `~/.config/opencode/skills/` along with the generated `all-skills` index that
   points at every non-curated skill at
@@ -67,13 +67,13 @@ against the model choice.
   but its frontmatter schema is not Claude's. Claude's `tools:` is a
   comma-separated allow-list string where opencode wants a permission map, and an
   invalid agent file is fatal: it fails the whole config, not just that agent. So
-  `agents/subagents/*.md` is translated at build time by
+  `agent-harness/agent-instructions/subagents/*.md` is translated at build time by
   `scripts/translate_claude_subagents_to_opencode_agents.py`, which turns
   `tools:` into a deny-by-default permission map, `disallowedTools:` into an
   allow-by-default one, and drops `model:` so a subagent inherits the session's
   model rather than pinning one. Private agents from `private-config` go through
   the same translator.
-- Commands: `agents/commands/*.md` deploy unchanged to
+- Commands: `agent-harness/agent-instructions/commands/*.md` deploy unchanged to
   `~/.config/opencode/command/`. opencode parses the same frontmatter and the
   same `$ARGUMENTS` placeholder, and ignores Claude's `argument-hint`.
 

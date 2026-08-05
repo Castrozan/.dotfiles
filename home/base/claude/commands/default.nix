@@ -1,6 +1,6 @@
 { lib, ... }:
 let
-  publicCommandsDirectory = ../../../../agents/commands;
+  publicCommandsDirectory = ../../../../agent-harness/agent-instructions/commands;
 
   commandMarkdownFileNames =
     if builtins.pathExists publicCommandsDirectory then

@@ -6,7 +6,9 @@ import yaml
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent.parent
 SCENARIOS_DIR = Path(__file__).resolve().parent / "scenarios"
-CORE_INSTRUCTIONS_PATH = REPO_ROOT / "agents" / "core_rules" / "core.md"
+CORE_INSTRUCTIONS_PATH = (
+    REPO_ROOT / "agent-harness" / "agent-instructions" / "core-rules" / "core.md"
+)
 
 
 def load_core_instructions_with_frontmatter() -> str:

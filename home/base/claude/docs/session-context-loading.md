@@ -151,7 +151,7 @@ answer belongs in `agent-harness/knowledge.md` once someone hits it.
 
 ## Follow-up: the curated machine tier and the all-skills index
 
-The machine tier stopped carrying every skill. `agents/interactive-agent-skills.nix` now owns a shared curated list,
+The machine tier stopped carrying every skill. `agent-harness/agent-instructions/interactive-skill-catalog/interactive-agent-skills.nix` now owns a shared curated list,
 `defaultInteractiveSkillNames`, and each harness module passes its own additions and removals through
 `effectiveInteractiveSkillNames`, so claude, codex and opencode each deploy only their effective set into their own
 skills directory. The `claude-machine-tier-carries-every-skill` check was replaced by three invariants: the curated set
@@ -195,6 +195,6 @@ working directory. `home/base/agents/dotfiles-repo-skills.nix` writes them, giti
 The tier is deliberately plural, because the project convention is per harness rather than shared: Claude reads
 `.claude/skills`, OpenCode reads `.opencode/skills`, and one list of conventions in the shared module covers both from a
 single source, so adding a harness is one entry rather than a new module. Codex is the exception that shapes the rest of
-the design: it discovers skills only under `$CODEX_HOME`, so no project directory reaches it, and `agents/dotfiles.md`
+the design: it discovers skills only under `$CODEX_HOME`, so no project directory reaches it, and `agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md`
 names the in-tree paths instead. That instruction file is itself the harness-agnostic floor here, since every harness
 loads it when working in the repository.

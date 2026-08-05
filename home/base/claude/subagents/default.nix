@@ -1,6 +1,6 @@
 { lib, ... }:
 let
-  subagentDefinitionsDirectory = ../../../../agents/subagents;
+  subagentDefinitionsDirectory = ../../../../agent-harness/agent-instructions/subagents;
 
   subagentDefinitionFileNames =
     if builtins.pathExists subagentDefinitionsDirectory then

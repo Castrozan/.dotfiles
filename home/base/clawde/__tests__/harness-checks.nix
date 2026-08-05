@@ -124,8 +124,10 @@ in
           skillName:
           builtins.hasAttr ".local/share/claude-skill-sets/normal-harness/.claude/skills/${skillName}" cfgWithBothHarnesses.home.file
         )
-        (import ../../../../agents/interactive-agent-skills.nix { hostname = "test"; })
-        .defaultInteractiveSkillNames
+        (import
+          ../../../../agent-harness/agent-instructions/interactive-skill-catalog/interactive-agent-skills.nix
+          { hostname = "test"; }
+        ).defaultInteractiveSkillNames
       )
       "an agent naming normalHarnessSkillSetDirectory is asking for what a keyboard session carries, so that set must hold the curated interactive list: materialized short, the agent silently runs a harness switch onto codex or opencode missing exactly the skills its job assumes";
 

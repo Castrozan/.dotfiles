@@ -16,7 +16,7 @@ large-window-only concern.
 
 ## Rules / instruction surface
 
-- Claude: the post-frontmatter body of `agents/core_rules/core.md` is deployed
+- Claude: the post-frontmatter body of `agent-harness/agent-instructions/core-rules/core.md` is deployed
   verbatim as `~/.claude/CLAUDE.md` (always-on global rules), and
   `~/.dotfiles/AGENTS.md` carries the repo-scoped instructions.
 - Codex: `~/.codex/AGENTS.md` carries the same `core.md` body via byte-identical
@@ -29,7 +29,7 @@ large-window-only concern.
 
 ## Skills
 
-- Claude: the curated interactive skill set from `agents/interactive-agent-skills.nix`
+- Claude: the curated interactive skill set from `agent-harness/agent-instructions/interactive-skill-catalog/interactive-agent-skills.nix`
   (shared default plus claude's own additions) deploys to `~/.claude/skills/`
   alongside the generated `core` skill and the generated `all-skills` index that
   points at every non-curated skill at
@@ -181,7 +181,7 @@ matcher purposes, so a single `Edit|Write` matcher fires on both CLIs.
   is a genuine `keybindings.json` analogue. `tui.terminal_title` drives OSC-0.
 - The Done:/Next: reply shape is content, not chrome, so it ports as an
   instruction: the `codex` wrapper injects
-  `agents/core_rules/communication/interactive-preferences.md` through
+  `agent-harness/agent-instructions/core-rules/communication/interactive-preferences.md` through
   `-c developer_instructions=` for interactive invocations only (no subcommand,
   a flag, `resume`, or `fork`), mirroring how `claude-interactive` appends it and
   keeping it out of `codex exec` and the MCP server, whose output is

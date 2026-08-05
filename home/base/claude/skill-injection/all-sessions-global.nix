@@ -1,12 +1,15 @@
 { hostname, ... }:
 let
-  interactiveAgentSkills = import ../../../../agents/interactive-agent-skills.nix {
-    inherit hostname;
-  };
+  interactiveAgentSkills =
+    import
+      ../../../../agent-harness/agent-instructions/interactive-skill-catalog/interactive-agent-skills.nix
+      {
+        inherit hostname;
+      };
 
   claudeInteractiveSkillNames = interactiveAgentSkills.effectiveInteractiveSkillNames { };
 
-  coreRulesDirectory = ../../../../agents/core_rules;
+  coreRulesDirectory = ../../../../agent-harness/agent-instructions/core-rules;
 
   globalClaudeSkillDirectorySymlinks = interactiveAgentSkills.skillDirectorySymlinksAtPrefix ".claude/skills" claudeInteractiveSkillNames;
 

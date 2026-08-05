@@ -26,10 +26,10 @@ from hook_dispatch import HandlerResult  # noqa: E402
 INSTRUCTION_FILENAMES_THAT_ARE_ALWAYS_AGENT_DIRECTED = {"claude.md", "agents.md"}
 
 AGENT_DIRECTED_INSTRUCTION_RELATIVE_PATHS = {
-    "agents/dotfiles.md",
-    "agents/core_rules/core.md",
-    "agents/core_rules/core-skill-frontmatter.md",
-    "agents/snippets/rebuild.md",
+    "agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md",
+    "agent-harness/agent-instructions/core-rules/core.md",
+    "agent-harness/agent-instructions/core-rules/core-skill-frontmatter.md",
+    "agent-harness/agent-instructions/rebuild-guidance/rebuild-agent-instructions.md",
 }
 
 AUTHORING_STANDARDS_DIRECTIVE = (

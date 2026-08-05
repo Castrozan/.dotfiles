@@ -10,7 +10,7 @@ Measured on kira, 2026-07-30, before removal:
 
 | Surface | Bytes | Always-on | Reviewed |
 |---|---|---|---|
-| `~/.claude/CLAUDE.md` (assembled from `agents/core_rules/`) | 12665 | yes | yes |
+| `~/.claude/CLAUDE.md` (assembled from `agent-harness/agent-instructions/core-rules/`) | 12665 | yes | yes |
 | `.dotfiles/CLAUDE.md` | 9155 | yes | yes |
 | `~/.claude/projects/-Users-lucas-zanoni--dotfiles/memory/MEMORY.md` | **19008** | yes | **no** |
 
@@ -65,7 +65,7 @@ holds knowledge only. Nothing dated, nothing in-flight, nothing that will be fal
 There is no memory subsystem. A fact is filed against whatever already owns its subject, and that owner's existing loading
 semantics do the tiering for free.
 
-**A behavioral rule goes to `agents/core_rules/`.** If the fact is "always do X" or "never do Y", it is an instruction, not
+**A behavioral rule goes to `agent-harness/agent-instructions/core-rules/`.** If the fact is "always do X" or "never do Y", it is an instruction, not
 an observation, and it belongs in the always-on tier that is already budgeted and reviewed. Roughly six current memories
 qualify.
 
@@ -115,14 +115,14 @@ that silently skips symlinked files. Anything the code states plainly does not.
 
 One fact per entry, two to five lines, naming the observable symptom and the invariant behind it. No line numbers, no
 dates unless the fact is genuinely time-bounded, no wikilink graph: adjacency inside a domain file is the link. A
-`knowledge.md` entry is an observation, never a rule. If it starts prescribing, it belongs in `core_rules/`. Facts age, so
+`knowledge.md` entry is an observation, never a rule. If it starts prescribing, it belongs in `agent-harness/agent-instructions/core-rules/`. Facts age, so
 an entry naming a file, function or flag is verified against the tree before it is acted on.
 
 ## Guard
 
 `agents/__tests__/unit/test_the_always_on_context_budget_stays_bounded.py` is the only new code the design requires, and it
-is a test rather than a runtime mechanism. It caps the assembled always-on instruction surface (`agents/core_rules/` plus
-`agents/dotfiles.md`, 30.3 KB today) and the sum of every skill description (10.0 KB today, loaded eagerly so the model
+is a test rather than a runtime mechanism. It caps the assembled always-on instruction surface (`agent-harness/agent-instructions/core-rules/` plus
+`agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md`, 30.3 KB today) and the sum of every skill description (10.0 KB today, loaded eagerly so the model
 can route), and it asserts that `CLAUDE_CODE_DISABLE_AUTO_MEMORY` stays set, since re-enabling it recreates both the
 per-directory stores and the unbounded index. Skill bodies are deliberately not capped: they are lazy, so their size costs
 nothing until a session actually needs them, and capping them would push facts back into the tier that broke.
@@ -130,7 +130,7 @@ nothing until a session actually needs them, and capping them would push facts b
 The failure this prevents is precisely the one that happened: a surface nobody budgeted growing past the surfaces everyone
 reviews. For scale, the 19008-byte index was a 47 percent increase on the entire 40.4 KB always-on budget it was invisibly
 added to. The repository-root `CLAUDE.md` is a generated symlink into the store rather than a tracked file, so the check
-reads its source, `agents/dotfiles.md`, which is what CI has.
+reads its source, `agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md`, which is what CI has.
 
 ## Explicitly rejected
 
@@ -148,7 +148,7 @@ The two missing domains now exist: the fleet, supervisor, heartbeat and steward 
 Code, Codex, and OpenCode behavior. Eight domains carry a `knowledge.md`: `agent-harness`, `nix`, `desktop`, `coding`,
 `herdr`, `arr-stack`, `browser`, and the fleet, each pointed at from its `SKILL.md` router except the fleet, whose skill
 was later deleted as repo-only work and whose knowledge moved beside its module at `home/base/clawde/knowledge.md`. The behavioral entries
-graduated into `agents/core_rules/core.md`, where the Git block now carries explicit-pathspec committing, absolute-path
+graduated into `agent-harness/agent-instructions/core-rules/core.md`, where the Git block now carries explicit-pathspec committing, absolute-path
 anchoring, and the rule that landing a change on a repo the user owns is part of the task, and `<session-resilience>`
 carries the knowledge-versus-work-state split and the capture path.
 

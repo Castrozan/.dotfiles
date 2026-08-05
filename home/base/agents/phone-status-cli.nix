@@ -1,6 +1,6 @@
 { pkgs, ... }:
 let
-  phoneStatusScriptSource = ../../../agents/commands/scripts/phone-status.sh;
+  phoneStatusScriptSource = ../../../agent-harness/agent-instructions/commands/scripts/phone-status.sh;
 
   phoneStatusCli = pkgs.writeShellScriptBin "phone-status" ''
     set -Eeuo pipefail

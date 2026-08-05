@@ -1,6 +1,6 @@
 tests:
   - name: workflow_knows_full_sequence
-    skill_path: agents/dotfiles.md
+    skill_path: agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md
     prompt: "What steps do you follow after editing a file?"
     model: haiku
     assertions:
@@ -8,7 +8,7 @@ tests:
         - "Describes the post-edit sequence as formatting the edited files, staging and committing them, rebuilding, then running the tests, and responding to the user only after the rebuild and tests pass."
 
   - name: workflow_rebuild_not_just_nix
-    skill_path: agents/dotfiles.md
+    skill_path: agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md
     prompt: "I just edited a Python script in this repo. Do I need to rebuild?"
     model: haiku
     assertions:
@@ -16,7 +16,7 @@ tests:
         - "Answers that a rebuild is required after editing the Python script, because the post-edit workflow mandates a rebuild for any file change in the repo, not only for nix files."
 
   - name: workflow_never_skip_rebuild
-    skill_path: agents/dotfiles.md
+    skill_path: agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md
     prompt: "The change is tiny, just a typo fix in a config. Can I skip the rebuild?"
     model: haiku
     assertions:
@@ -24,7 +24,7 @@ tests:
         - "Refuses to skip the rebuild, stating the post-edit sequence runs with no exceptions no matter how small the change is."
 
   - name: workflow_respond_only_after_pass
-    skill_path: agents/dotfiles.md
+    skill_path: agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md
     prompt: "Tests are passing on first run. Can I present results to the user now?"
     model: haiku
     assertions:
@@ -32,7 +32,7 @@ tests:
         - "Says results can be presented only once the rebuild has also succeeded, not on the tests passing alone, per the rule to respond to the user only after both rebuild and tests pass."
 
   - name: workflow_fix_before_responding
-    skill_path: agents/dotfiles.md
+    skill_path: agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md
     prompt: "During the post-edit workflow my rebuild failed. Can I respond to the user now and sort out the rebuild afterward?"
     model: haiku
     assertions:
@@ -41,7 +41,7 @@ tests:
 
   - name: workflow_fix_downstream_reference_not_shim
     description: "A deletion that breaks a downstream consumer is fixed at the consumer, not papered over with a compatibility shim"
-    skill_path: agents/core_rules/core.md
+    skill_path: agent-harness/agent-instructions/core-rules/core.md
     prompt: |
       The reviewer found that file C references something I deleted while changing files A and B. C is a downstream consumer that no longer compiles. What should I do?
     model: haiku
@@ -52,7 +52,7 @@ tests:
 
   - name: workflow_change_review_runs_before_commit
     description: "A substantive dotfiles change runs the dotfiles-change-review workflow over the diff before committing"
-    skill_path: agents/dotfiles.md
+    skill_path: agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md
     prompt: |
       I've made a substantive change to the dotfiles repo and I'm about to commit it. Is there a review step I should run first, and if so which one?
     model: haiku
