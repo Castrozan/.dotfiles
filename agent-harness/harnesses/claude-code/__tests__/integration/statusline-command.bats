@@ -27,13 +27,22 @@ _run_statusline_in_repository_directory() {
 	_run_statusline_with_json '{"model":{"display_name":"Opus 4.7"},"cwd":"'"$repository_directory"'","session_id":"abc","context_window":{"used_percentage":5}}'
 }
 
+_configure_sandbox_repository_ignoring_ambient_git_hooks() {
+	local sandbox_repository_directory="$1"
+	local author_name="$2"
+	local author_email="$3"
+	git -C "$sandbox_repository_directory" config user.email "$author_email"
+	git -C "$sandbox_repository_directory" config user.name "$author_name"
+	git -C "$sandbox_repository_directory" config core.hooksPath /dev/null
+}
+
 _create_sandbox_repository_with_upstream() {
 	local sandbox_root
 	sandbox_root=$(mktemp -d)
 	git init -q --bare -b main "$sandbox_root/remote.git"
 	git -C "$sandbox_root" clone -q "$sandbox_root/remote.git" checkout 2>/dev/null
-	git -C "$sandbox_root/checkout" config user.email test@example.com
-	git -C "$sandbox_root/checkout" config user.name "Test"
+	_configure_sandbox_repository_ignoring_ambient_git_hooks \
+		"$sandbox_root/checkout" "Test" test@example.com
 	echo "first" >"$sandbox_root/checkout/file.txt"
 	git -C "$sandbox_root/checkout" add file.txt
 	git -C "$sandbox_root/checkout" commit -q -m "initial commit"
@@ -44,8 +53,8 @@ _create_sandbox_repository_with_upstream() {
 _push_commit_to_upstream_behind_the_checkout() {
 	local sandbox_root="$1"
 	git -C "$sandbox_root" clone -q "$sandbox_root/remote.git" peer
-	git -C "$sandbox_root/peer" config user.email peer@example.com
-	git -C "$sandbox_root/peer" config user.name "Peer"
+	_configure_sandbox_repository_ignoring_ambient_git_hooks \
+		"$sandbox_root/peer" "Peer" peer@example.com
 	echo "peer" >>"$sandbox_root/peer/file.txt"
 	git -C "$sandbox_root/peer" add file.txt
 	git -C "$sandbox_root/peer" commit -q -m "peer commit"
@@ -205,8 +214,8 @@ _full_json_input() {
 	local sandbox_repo_directory
 	sandbox_repo_directory=$(mktemp -d)
 	git -C "$sandbox_repo_directory" init -q -b main
-	git -C "$sandbox_repo_directory" config user.email test@example.com
-	git -C "$sandbox_repo_directory" config user.name "Test"
+	_configure_sandbox_repository_ignoring_ambient_git_hooks \
+		"$sandbox_repo_directory" "Test" test@example.com
 	echo "first" >"$sandbox_repo_directory/file.txt"
 	git -C "$sandbox_repo_directory" add file.txt
 	git -C "$sandbox_repo_directory" commit -q -m "initial commit"
