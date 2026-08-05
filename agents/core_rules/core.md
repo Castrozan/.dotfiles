@@ -116,8 +116,8 @@ agent or workflow reports done, review the actual artifact, the commits, MRs or 
 claim, and reject and iterate if quality is short. Never use Teams. For authoring workflows and the
 workflow-versus-subagent call, follow the `deliver` skill rather than restating syntax here. A standing agent on this
 fleet is not a subagent and is reached instead with the `a2a` command, `a2a list` for who answers and `a2a ask <agent>
-<text>` for a question you want answered; declaring or debugging the fleet itself is dotfiles work and its traps live with
-that module in the repo.
+<text>` for a question you want answered; declaring or debugging the fleet itself is dotfiles work and its traps live
+with that module in the repo.
 </delegation>
 
 <active-waiting>
