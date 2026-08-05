@@ -3,7 +3,7 @@ local workspaceGridTestHarness = {}
 local currentWindows = {}
 local currentlyFocusedWindowId = nil
 local filterVisibleWindowIdSet = nil
-local accessibilityVisibleWindowIdSet = nil
+local windowServerVisibleWindowIdSet = nil
 
 local function makeFakeWindow(windowId)
 	local fakeWindow = { storedFrame = { x = 100, y = 100, w = 400, h = 300 } }
@@ -86,7 +86,7 @@ function workspaceGridTestHarness.setLiveWindowsToIds(windowIds)
 	currentWindows = rebuiltWindows
 	currentlyFocusedWindowId = nil
 	filterVisibleWindowIdSet = nil
-	accessibilityVisibleWindowIdSet = nil
+	windowServerVisibleWindowIdSet = nil
 	return rebuiltWindows
 end
 
@@ -94,8 +94,16 @@ function workspaceGridTestHarness.setFilterVisibleWindowIds(visibleWindowIds)
 	filterVisibleWindowIdSet = windowIdSetFromList(visibleWindowIds)
 end
 
-function workspaceGridTestHarness.setAccessibilityVisibleWindowIds(visibleWindowIds)
-	accessibilityVisibleWindowIdSet = windowIdSetFromList(visibleWindowIds)
+function workspaceGridTestHarness.setWindowServerVisibleWindowIds(visibleWindowIds)
+	windowServerVisibleWindowIdSet = windowIdSetFromList(visibleWindowIds)
+end
+
+function workspaceGridTestHarness.windowServerEntriesForWindows(windows)
+	local windowServerEntries = {}
+	for _, window in ipairs(windows) do
+		windowServerEntries[#windowServerEntries + 1] = { kCGWindowNumber = window:id() }
+	end
+	return windowServerEntries
 end
 
 function workspaceGridTestHarness.installFakeHammerspoonGlobal()
@@ -126,8 +134,10 @@ function workspaceGridTestHarness.installFakeHammerspoonGlobal()
 			get = function(windowId)
 				return findWindowById(windowId)
 			end,
-			allWindows = function()
-				return windowsVisibleThrough(accessibilityVisibleWindowIdSet)
+			list = function()
+				return workspaceGridTestHarness.windowServerEntriesForWindows(
+					windowsVisibleThrough(windowServerVisibleWindowIdSet)
+				)
 			end,
 			filter = {
 				default = {

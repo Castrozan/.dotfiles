@@ -2,15 +2,17 @@ local workspaceGridWindowQuery = {}
 
 local windowAssignment = require("workspace_grid_window_assignment")
 
+local includeWindowsBelowTheDock = false
+
 function workspaceGridWindowQuery.liveWindowIdSet()
 	local liveWindowIds = {}
-	for _, window in ipairs(hs.window.allWindows()) do
-		liveWindowIds[window:id()] = true
+	for _, windowServerEntry in ipairs(hs.window.list(includeWindowsBelowTheDock)) do
+		liveWindowIds[windowServerEntry.kCGWindowNumber] = true
 	end
 	return liveWindowIds
 end
 
-function workspaceGridWindowQuery.accessibilityConfirmsWindowIsGone(windowId)
+function workspaceGridWindowQuery.windowServerConfirmsWindowIsGone(windowId)
 	local liveWindowIds = workspaceGridWindowQuery.liveWindowIdSet()
 	if next(liveWindowIds) == nil then
 		return false
@@ -27,6 +29,15 @@ function workspaceGridWindowQuery.manageableWindows()
 		end
 	end
 	return liveWindows
+end
+
+function workspaceGridWindowQuery.manageableWindowById(windowId)
+	for _, window in ipairs(workspaceGridWindowQuery.manageableWindows()) do
+		if window:id() == windowId then
+			return window
+		end
+	end
+	return nil
 end
 
 function workspaceGridWindowQuery.occupiedWorkspaceNumbers()

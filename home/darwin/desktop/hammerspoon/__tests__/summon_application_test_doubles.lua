@@ -102,7 +102,7 @@ function summonApplicationTestDoubles.installGlobalHammerspoonMock()
 			get = function()
 				return nil
 			end,
-			allWindows = function()
+			list = function()
 				return {}
 			end,
 			filter = {

@@ -35,11 +35,19 @@ end
 local liveWindow = makeFakeWindow(1, function() liveWindowSetFrameCallCount = liveWindowSetFrameCallCount + 1 end)
 local deadWindow = makeFakeWindow(99, function() deadWindowSetFrameCallCount = deadWindowSetFrameCallCount + 1 end)
 
-local liveWindowsReturnedByAllWindows = { liveWindow }
+local liveWindowsReturnedByWindowServer = { liveWindow }
 local windowsReturnedByDefaultFilter = { liveWindow, deadWindow }
 local function resolveLiveWindowById(targetWindowId)
   if targetWindowId == 1 then return liveWindow end
   return nil
+end
+
+local function windowServerEntriesForWindows(windows)
+  local windowServerEntries = {}
+  for _, window in ipairs(windows) do
+    windowServerEntries[#windowServerEntries + 1] = { kCGWindowNumber = window:id() }
+  end
+  return windowServerEntries
 end
 
 hs = {
@@ -54,7 +62,7 @@ hs = {
   window = {
     focusedWindow = function() return resolveLiveWindowById(currentlyFocusedWindowId) end,
     get = function(windowId) return resolveLiveWindowById(windowId) end,
-    allWindows = function() return liveWindowsReturnedByAllWindows end,
+    list = function() return windowServerEntriesForWindows(liveWindowsReturnedByWindowServer) end,
     filter = { default = { getWindows = function() return windowsReturnedByDefaultFilter end } },
   },
 }

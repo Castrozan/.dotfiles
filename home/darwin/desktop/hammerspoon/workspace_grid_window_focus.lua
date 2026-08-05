@@ -3,12 +3,13 @@ local workspaceGridWindowFocus = {}
 local windowAssignment = require("workspace_grid_window_assignment")
 local windowLayout = require("workspace_grid_window_layout")
 local pinnedWindow = require("workspace_grid_pinned_window")
+local windowQuery = require("workspace_grid_window_query")
 
 function workspaceGridWindowFocus.buildWindowFocusEntryPoints(dependencies)
 	local entryPoints = {}
 
 	function entryPoints.focusWindowById(windowId)
-		local window = hs.window.get(windowId)
+		local window = windowQuery.manageableWindowById(windowId)
 		if not window then
 			return
 		end
@@ -27,7 +28,7 @@ function workspaceGridWindowFocus.buildWindowFocusEntryPoints(dependencies)
 	end
 
 	function entryPoints.revealWindowById(windowId)
-		local window = hs.window.get(windowId)
+		local window = windowQuery.manageableWindowById(windowId)
 		if not window then
 			return
 		end

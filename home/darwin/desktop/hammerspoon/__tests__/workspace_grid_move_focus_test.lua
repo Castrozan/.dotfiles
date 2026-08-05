@@ -61,6 +61,14 @@ local function findWindowById(targetWindowId)
   return nil
 end
 
+local function windowServerEntriesForWindows(windows)
+  local windowServerEntries = {}
+  for _, window in ipairs(windows) do
+    windowServerEntries[#windowServerEntries + 1] = { kCGWindowNumber = window:id() }
+  end
+  return windowServerEntries
+end
+
 hs = {
   menubar = {
     new = function()
@@ -83,8 +91,8 @@ hs = {
     get = function(windowId)
       return findWindowById(windowId)
     end,
-    allWindows = function()
-      return allManagedWindowsInIterationOrder
+    list = function()
+      return windowServerEntriesForWindows(allManagedWindowsInIterationOrder)
     end,
     filter = {
       default = {

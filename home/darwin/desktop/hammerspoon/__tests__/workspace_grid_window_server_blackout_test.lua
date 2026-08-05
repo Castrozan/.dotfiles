@@ -16,21 +16,21 @@ windows[2]:focus()
 grid.moveFocusedWindowToWorkspace(5)
 grid.switchToWorkspace(18)
 
-harness.setAccessibilityVisibleWindowIds({})
+harness.setWindowServerVisibleWindowIds({})
 grid.onWindowCreated(windows[3])
 grid.onWindowDestroyed(windows[1])
-harness.setAccessibilityVisibleWindowIds(nil)
+harness.setWindowServerVisibleWindowIds(nil)
 
 grid.switchToWorkspace(3)
 expectEqual(
-	"window 201 keeps workspace 3 through an accessibility blackout",
+	"window 201 keeps workspace 3 through a window-server blackout",
 	1,
 	#grid.currentWorkspaceWindowList().windows
 )
 
 grid.switchToWorkspace(5)
 expectEqual(
-	"window 202 keeps workspace 5 through an accessibility blackout",
+	"window 202 keeps workspace 5 through a window-server blackout",
 	1,
 	#grid.currentWorkspaceWindowList().windows
 )
@@ -61,7 +61,7 @@ expectEqual(
 harness.setLiveWindowsToIds({ 201, 202 })
 reloadedGrid.onWindowDestroyed(windows[3])
 expectEqual(
-	"a destroyed window the accessibility layer confirms is gone still loses its assignment",
+	"a destroyed window the window server confirms is gone still loses its assignment",
 	nil,
 	restoredWindowAssignment.allWorkspaceNumbersByWindowId()[203]
 )
