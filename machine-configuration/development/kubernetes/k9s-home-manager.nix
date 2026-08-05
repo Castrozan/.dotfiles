@@ -19,8 +19,8 @@ in
 {
   home = {
     file = {
-      ".config/k9s/config.yaml".source = ../../../.config/k9s/config.yaml;
-      ".config/k9s/aliases.yaml".source = ../../../.config/k9s/aliases.yaml;
+      ".config/k9s/config.yaml".source = ./program-configuration/k9s/config.yaml;
+      ".config/k9s/aliases.yaml".source = ./program-configuration/k9s/aliases.yaml;
     };
 
     packages = [ k9s ];

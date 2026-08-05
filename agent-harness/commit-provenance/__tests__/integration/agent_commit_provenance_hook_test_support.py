@@ -4,10 +4,9 @@ import sys
 from pathlib import Path
 
 DEVELOPMENT_MODULE_DIRECTORY = Path(__file__).resolve().parents[2]
-REPOSITORY_ROOT_DIRECTORY = DEVELOPMENT_MODULE_DIRECTORY.parents[2]
+REPOSITORY_ROOT_DIRECTORY = DEVELOPMENT_MODULE_DIRECTORY.parents[1]
 HOOK_ENTRYPOINT_PATH = (
     DEVELOPMENT_MODULE_DIRECTORY
-    / "agent-commit-provenance"
     / "scripts"
     / "record_agent_commit_provenance_trailers.py"
 )

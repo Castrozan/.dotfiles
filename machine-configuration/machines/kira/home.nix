@@ -7,7 +7,7 @@ in
   imports = [
     ../../../home/darwin
 
-    ../../../home/base/dev/git-toggle-user.nix
+    ../../../machine-configuration/development/version-control/git-toggle-user-home-manager.nix
 
     ../../../machine-configuration/browsers/firefox/firefox-home-manager.nix
 
@@ -15,15 +15,15 @@ in
     ../../../machine-configuration/editors/editor-command-packages-home-manager.nix
     ../../../machine-configuration/editors/zed/zed-home-manager.nix
 
-    ../../../home/base/dev/aws.nix
-    ../../../home/base/dev/bitwarden-cli.nix
-    ../../../home/base/dev/google-workspace-cli
-    ../../../home/base/dev/infisical.nix
-    ../../../home/base/dev/mcporter.nix
-    ../../../home/base/dev/mongodb-atlas-cli.nix
-    ../../../home/base/dev/ralph-tui.nix
-    ../../../home/base/dev/temporal.nix
-    ../../../home/base/dev/tuisvn.nix
+    ../../../machine-configuration/development/cloud-services/aws-home-manager.nix
+    ../../../machine-configuration/development/cloud-services/bitwarden-cli-home-manager.nix
+    ../../../machine-configuration/development/cloud-services/google-workspace-cli/google-workspace-cli-home-manager.nix
+    ../../../machine-configuration/development/cloud-services/infisical-home-manager.nix
+    ../../../machine-configuration/development/model-context-protocol/mcporter-home-manager.nix
+    ../../../machine-configuration/development/database-tools/mongodb-atlas-cli-home-manager.nix
+    ../../../machine-configuration/development/development-environments/ralph-tui-home-manager.nix
+    ../../../machine-configuration/development/development-environments/temporal-home-manager.nix
+    ../../../machine-configuration/development/version-control/tuisvn-home-manager.nix
   ]
   ++ lib.optionals kiraPrivateConfigExists [
     "${privateConfigRoot}/machines/kira/clawde-agents"

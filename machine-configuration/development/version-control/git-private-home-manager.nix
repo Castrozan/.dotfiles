@@ -12,7 +12,7 @@ let
 in
 {
   imports = [
-    ./git.nix
+    ./git-home-manager.nix
   ]
   ++ lib.optionals privateGitUserExists [
     privateGitUserPath

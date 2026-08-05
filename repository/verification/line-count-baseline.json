@@ -30,7 +30,7 @@
   "agent-harness/agent-instructions/skills/youtube/scripts/youtube-cli.py": 327,
   "machine-configuration/browsers/extensions/tampermonkey/youtube-theater-focus.user.js": 286,
   "machine-configuration/browsers/firefox/firefox-home-manager.nix": 248,
-  "home/base/dev/google-workspace-cli/scripts/google-chat-browser-cli.py": 907,
+  "machine-configuration/development/cloud-services/google-workspace-cli/scripts/google-chat-browser-cli.py": 907,
   "home/base/media/__tests__/unit/test_speed_read.py": 244,
   "home/base/media/scripts/speed_read.py": 319,
   "agent-harness/hooks/integrations/opencode/opencode-hook-bridge.js": 377,

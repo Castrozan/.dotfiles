@@ -30,7 +30,7 @@ In `ai-first-initiative` that resolves `jira` to `betha-desenvolvimento/packages
 on sort order alone. In `~/repo` the colliding pairs include `aplicacoes-atendimento-triage` against
 `betha-ai-maintainer`, the same two subjects the original context-bleed report named.
 
-Five of the 46 in `~/.dotfiles` are not skills for this session at all. `home/base/sourcebot/skill` is a deployment
+Five of the 46 in `~/.dotfiles` are not skills for this session at all. `machine-configuration/development/source-code-search/sourcebot/skill` is a deployment
 template that happens to contain a `SKILL.md`, and four are `private-config/machines/rin/skills/*`, another machine's
 private skills loaded on this one.
 

@@ -25,7 +25,7 @@ home/{base,linux,darwin}/ - shared modules (name.nix or name/default.nix for com
 machine-configuration/machines/<alias>/home.nix - per-machine home-manager entry point (IMPORTS ONLY)
 machine-configuration/machines/<alias>/home/ - optional per-machine home-manager submodules
 home/base/packages/<user>.nix - per-user shared package set (used by multiple machines)
-home/base/dev/git-private.nix - per-user git router (sources private-config/machines/<hostname>/git-user.nix)
+machine-configuration/development/version-control/git-private-home-manager.nix - per-user git router (sources private-config/machines/<hostname>/git-user.nix)
 home/base/network/ssh-private.nix - per-user ssh router (sources private-config/machines/<hostname>/ssh.nix)
 home/base/network/scripts/ - shared per-user ssh activation scripts
 nixos/modules/ - NixOS-only modules

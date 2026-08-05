@@ -1,6 +1,6 @@
 { pkgs, ... }:
 {
-  imports = [ ./agent-commit-provenance ];
+  imports = [ ../../../agent-harness/commit-provenance/commit-provenance-home-manager.nix ];
 
   home.packages = with pkgs; [
     gh

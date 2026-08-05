@@ -50,12 +50,12 @@ in
     ../../../machine-configuration/desktop/application-launcher/fuzzel-home-manager.nix
     ../../../machine-configuration/desktop/screen-capture/screen-capture-command-packages-home-manager.nix
 
-    ../../../home/base/dev/ccost.nix
-    ../../../home/base/dev/ccusage.nix
-    ../../../home/base/dev/devenv.nix
-    ../../../home/base/dev/lazygit.nix
-    ../../../home/base/dev/mcporter.nix
-    ../../../home/base/dev/scripts.nix
+    ../../../machine-configuration/development/cost-monitoring/ccost-home-manager.nix
+    ../../../machine-configuration/development/cost-monitoring/ccusage-home-manager.nix
+    ../../../machine-configuration/development/development-environments/devenv-home-manager.nix
+    ../../../machine-configuration/development/version-control/lazygit-home-manager.nix
+    ../../../machine-configuration/development/model-context-protocol/mcporter-home-manager.nix
+    ../../../machine-configuration/development/version-control/git-fzf-home-manager.nix
 
     ../../../home/base/media/ani-cli.nix
     ../../../home/base/media/bad-apple.nix
@@ -78,7 +78,7 @@ in
 
     ../../../home/base/system/bluetui.nix
     ../../../home/base/system/systemd-manager-tui.nix
-    ../../../home/base/dev/ralph-tui.nix
+    ../../../machine-configuration/development/development-environments/ralph-tui-home-manager.nix
     ../../../machine-configuration/desktop/vial/vial-home-manager.nix
     ../../../home/base/media/obsidian
     ../../../home/base/media/summarize.nix
