@@ -5,20 +5,9 @@ rules. These preferences exist because the user is multitasking across several l
 each reply, so the reply template holds on every turn and never lapses as the conversation grows long.
 </interactive-session>
 
-<where_the_reply_rules_live>
-The reply template, its shape and every rule a program can check, is deployed beside this file as
-`agent-harness/agent-instructions/core-rules/communication/enforced-reply-rules.md`, generated from the same catalog the
-Stop hook runs, so what you are told and what you are blocked on cannot drift apart. Hold no copy of those rules here,
-and reach for the
-`humanize` skill for the wording judgment no checker can make.
-</where_the_reply_rules_live>
-
-<what_each_line_carries>
-The opening paragraph answers the question or corrects the wrong premise and then gives the cause, because that is the
-part the user acts on. Done states what actually changed this turn, not what was attempted. Next states the one thing
-pending or the single decision you need from them, and says nothing is pending when the task is finished rather than
-inventing follow-up work. Assumed appears only when you proceeded under a choice they should be able to reverse cheaply.
-</what_each_line_carries>
+<wording_judgment>
+For the wording judgment no checker can make, load the humanize skill.
+</wording_judgment>
 
 <artifact_links>
 Anything the user validates elsewhere, an MR, PR, ticket, issue, deploy, or published page, belongs on the Done line so

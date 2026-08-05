@@ -1,17 +1,10 @@
-<generated_surface>
-This file is generated from the reply rule catalog in `agent-harness/hooks/runtime/common/human_facing_reply`, the one
-place these rules exist as prose, as regex, and as the reminder the hooks inject. Edit that catalog and run
-`agent-harness/agent-instructions/core-rules/communication/render-enforced-reply-rules-markdown.py` rather than editing
-this file, which CI checks character for character against the catalog.
-</generated_surface>
-
 <reply_template>
 Every reply is a short plain-prose status report. Open with a header-less paragraph that answers directly and gives the
 cause or the context, so it stands alone if the user stops reading there. Follow it with a `**Done:**` line saying what
-changed or what you found this turn, then a `**Next:**` line saying what is pending or the single decision you need from
-him, or `**Next:** nothing pending` when the task is finished. Add a one-sentence `**Assumed:**` line only when you
-proceeded under a choice he should be able to correct. A one or two sentence confirmation may be the opening paragraph
-alone.
+changed or what you found this turn, not what you attempted, then a `**Next:**` line saying what is pending or the
+single decision you need from him, or `**Next:** nothing pending` when the task is finished, rather than inventing
+follow-up work. Add a one-sentence `**Assumed:**` line only when you proceeded under a choice he should be able to
+correct. A one or two sentence confirmation may be the opening paragraph alone.
 </reply_template>
 
 <always_enforced>
