@@ -30,7 +30,7 @@ def test_the_branch_and_decision_path_come_from_one_slug():
         "ril-tweet-from-a-l-crego-2026-07-25-11-53-34"
     )
     assert capture_decision_path(CAPTURE_NAME) == (
-        "ril/decisions/tweet-from-a-l-crego-2026-07-25-11-53-34.md"
+        "agent-harness/read-it-later/decisions/tweet-from-a-l-crego-2026-07-25-11-53-34.md"
     )
 
 

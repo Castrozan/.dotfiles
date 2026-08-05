@@ -101,10 +101,11 @@ entrypoint a worktree lacks, so it builds and proves, and leaves switching to th
 Unattended, each capture gets one pull request whatever the verdict, because a verdict that produces no pull request
 leaves the user nothing to answer and strands the capture unmarked forever. An adopt carries the proven change plus its
 decision file. A trial, learn, reference or drop carries the decision file alone, which is what gives a no-code verdict
-a reviewable diff. The decision file is `ril/decisions/<capture-date>-<slug>.md` and it records the origin as resolved,
-what the thing actually is, what it touches here by `path:line` or plainly that it touches nothing, the verdict and its
-reasoning, and the drafted vault entry. That log is the git-backed audit trail the vault cannot be, since the vault is
-not a git repository. It is a public repository, so redact anything employer-identifying exactly as everywhere else.
+a reviewable diff. The decision file is in `agent-harness/read-it-later/decisions/`. It is named from the capture
+date and slug. It records the origin as resolved, what the thing actually is, what it touches here by `path:line`
+or plainly that it touches nothing, the verdict and its reasoning, and the drafted vault entry. That log is the
+git-backed audit trail the vault cannot be, since the vault is not a git repository. It is a public repository, so
+redact anything employer-identifying exactly as everywhere else.
 </every_capture_ends_at_a_pull_request>
 
 <the_pull_request_conversation>

@@ -39,8 +39,9 @@ into the existing module structure rather than adding one-off files. Make it wor
 </configuration>
 
 <codex-managed-settings-ownership>
-MCP servers are declared in nix at `agent-harness/harnesses/claude-code/mcps/default.nix` for Claude and `agent-harness/harnesses/codex/config.nix` for
-Codex. Codex deploys an authoritative nix-source for managed settings, including `mcp_servers`, then seeds a mutable
+MCP servers are declared in nix at `agent-harness/harnesses/claude-code/mcps/default.nix` for Claude and
+`agent-harness/harnesses/codex/config.nix` for Codex. Codex deploys an authoritative nix-source for managed settings,
+including `mcp_servers`, then seeds a mutable
 live config while preserving live entries in projects, marketplaces, and plugins. Declaratively sourced entries win on
 key collisions, so an MCP dropped from its nix source disappears from the live config on the next rebuild.
 </codex-managed-settings-ownership>
@@ -87,8 +88,8 @@ and headless checks do not replace this manual test.
 For a substantive change to this repo, run the `dotfiles-change-review` workflow over the working diff before
 committing; it fans out one reviewer per dimension (correctness, nix rebuild safety, code style, instruction-surface
 quality, test coverage, public-repo safety) and adversarially verifies each finding. Author further repo workflows as
-`dotfiles-*` under `agent-harness/harnesses/claude-code/workflows/`, deployed to `~/.claude/workflows/`, rather than ad-hoc subagent
-fan-out.
+`dotfiles-*` under `agent-harness/harnesses/claude-code/workflows/`, deployed to `~/.claude/workflows/`, rather than
+ad-hoc subagent fan-out.
 </workflows>
 
 <workflow>
@@ -117,9 +118,10 @@ source - resume identity, supervisor reconciliation, channel gating, the steward
 </applying-clawde-agent-changes>
 
 <agent-instructions>
-The eval baseline (`agent-harness/quality/evaluations/baseline.json`) is a committed snapshot that CI guards via `agent-eval
---check-baseline` against absolute pass-rate floors and a relative regression gate that fails when the overall pass rate
-drops more than a fixed margin below the previous committed baseline, and a freshness gate that fails once the recorded
+The eval baseline (`agent-harness/quality/evaluations/baseline.json`) is a committed snapshot that CI guards via
+`agent-eval --check-baseline` against absolute pass-rate floors and a relative regression gate that fails when the
+overall pass rate drops more than a fixed margin below the previous committed baseline, and a freshness gate that fails
+once the recorded
 `generated_at` is older than the window in `run_evals_baseline.py`. Do not re-run `agent-eval --save-baseline` after
 editing agent instructions; the full suite is a slow LLM run whose routing evals flake, so a proactive re-save bakes
 transient failures into the committed baseline. Re-save only when `--check-baseline` fails CI, whether on a genuine

@@ -38,9 +38,10 @@ a worktree lacks.
 <every_verdict_opens_a_pull_request>
 A trial, learn, reference or drop still gets a pull request, carrying its decision file alone; that file is what gives a
 no-code verdict a reviewable diff, and without it the capture would sit unmarked forever with nothing for Lucas to
-answer. Write `ril/decisions/<capture-slug>.md` for every verdict including an adopt, recording the origin as you
-resolved it, what the thing actually is, what it touches here or plainly that it touches nothing, the verdict and its
-reasoning, and the drafted vault entry. This repository is public, so redact anything employer-identifying.
+answer. Write `agent-harness/read-it-later/decisions/<capture-slug>.md` for every verdict including an adopt, recording
+the origin as you resolved it, what the thing actually is, what it touches here or plainly that it touches nothing, the
+verdict and its reasoning, and the drafted vault entry. This repository is public, so redact anything
+employer-identifying.
 </every_verdict_opens_a_pull_request>
 
 <opening_it>

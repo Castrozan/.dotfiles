@@ -26,7 +26,7 @@ def capture_branch_name(capture_name: str) -> str:
 
 
 def capture_decision_path(capture_name: str) -> str:
-    return f"ril/decisions/{capture_slug(capture_name)}.md"
+    return f"agent-harness/read-it-later/decisions/{capture_slug(capture_name)}.md"
 
 
 def open_ril_pull_requests(repository_directory: Path) -> list[dict]:
