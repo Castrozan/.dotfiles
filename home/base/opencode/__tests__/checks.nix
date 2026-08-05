@@ -154,8 +154,12 @@ in
     mkEvalCheck "domain-opencode-deploys-hook-bridge"
       (
         deployedHookBridge ? source
-        && lib.hasInfix "pkgs.replaceVars" (builtins.readFile ../hooks.nix)
-        && lib.hasInfix "opencodeHookDispatcher" (builtins.readFile ../hooks.nix)
+        && lib.hasInfix "pkgs.replaceVars" (
+          builtins.readFile ../../../../agent-harness/hooks/integrations/opencode/opencode-hooks-home-manager.nix
+        )
+        && lib.hasInfix "opencodeHookDispatcher" (
+          builtins.readFile ../../../../agent-harness/hooks/integrations/opencode/opencode-hooks-home-manager.nix
+        )
       )
       "OpenCode must deploy the auto-discovered hook bridge and substitute its dispatcher path from Nix, so pre-tool guard denials and post-tool dispatchers run without depending on a shell-session environment variable";
 

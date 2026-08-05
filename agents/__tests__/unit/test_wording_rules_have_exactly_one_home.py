@@ -36,7 +36,7 @@ def test_no_wording_rule_is_stated_outside_its_single_home():
     }
     assert not trespassers, (
         "a wording rule stated in two surfaces drifts the moment one is edited, which is "
-        "why the rule catalog in agents/hooks/common/human_facing_reply renders the only "
+        "why the rule catalog in agent-harness/hooks/runtime/common/human_facing_reply renders the only "
         "copies; point at the generated surface instead of restating it "
         f"(phrase -> surfaces that restate it): {trespassers}"
     )

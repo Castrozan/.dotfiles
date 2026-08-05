@@ -9,7 +9,7 @@ file grows beyond its recorded count. Shrinking always passes. Run with
 accepting files.
 
 Thresholds and the code-extension list are shared with the Write/Edit hook via
-agents/hooks/post-tool-use/line-count/line_count_policy.py.
+agent-harness/hooks/runtime/post-tool-use/line-count/line_count_policy.py.
 """
 
 from __future__ import annotations
@@ -21,7 +21,12 @@ from pathlib import Path
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 SHARED_POLICY_DIRECTORY = (
-    REPOSITORY_ROOT / "agents" / "hooks" / "post-tool-use" / "line-count"
+    REPOSITORY_ROOT
+    / "agent-harness"
+    / "hooks"
+    / "runtime"
+    / "post-tool-use"
+    / "line-count"
 )
 BASELINE_FILE_PATH = Path(__file__).resolve().parent / "line-count-baseline.json"
 

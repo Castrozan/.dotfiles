@@ -7,7 +7,12 @@ from pathlib import Path
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 HUMAN_FACING_REPLY_MODULES_DIRECTORY = (
-    REPOSITORY_ROOT / "agents" / "hooks" / "common" / "human_facing_reply"
+    REPOSITORY_ROOT
+    / "agent-harness"
+    / "hooks"
+    / "runtime"
+    / "common"
+    / "human_facing_reply"
 )
 ENFORCED_REPLY_RULES_SURFACE = (
     REPOSITORY_ROOT

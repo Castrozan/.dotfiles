@@ -79,7 +79,7 @@ Both CLIs now run ONE dispatcher set. Codex registers the same
 `pre-tool-use-dispatcher.py`, `post-tool-use-dispatcher.py` and
 `stop-dispatcher.py` Claude registers, one command per event, invoked through
 the same `run-hook.sh` out of the same store path; both surfaces build that path
-from `home/base/agent-hooks/flat-hook-scripts-directory.nix`, which stages every
+from `agent-harness/hooks/home-manager/flat-hook-scripts-directory.nix`, which stages every
 hook flat by basename so sibling imports resolve. There is no Codex-specific
 script list to keep in sync, which is what the previous per-guard registration
 and its hand-written 30-path allow-list cost.

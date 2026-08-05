@@ -10,7 +10,7 @@
     ./commands
     ./subagents
     ./workflows
-    ./hooks
+    ../../../agent-harness/hooks/integrations/claude/claude-hooks-home-manager.nix
     ./mcps
     ./opencode-go
     ./private.nix

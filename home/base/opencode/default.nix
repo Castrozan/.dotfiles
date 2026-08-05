@@ -9,6 +9,6 @@
     ./subagents.nix
     ./commands.nix
     ./private.nix
-    ./hooks.nix
+    ../../../agent-harness/hooks/integrations/opencode/opencode-hooks-home-manager.nix
   ];
 }

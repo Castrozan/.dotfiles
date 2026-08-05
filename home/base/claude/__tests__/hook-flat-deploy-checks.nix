@@ -3,11 +3,13 @@
   mkEvalCheck,
 }:
 let
-  listHookScriptsRecursively = import ../../agent-hooks/list-hook-scripts-recursively.nix {
-    inherit lib;
-  };
+  listHookScriptsRecursively =
+    import ../../../../agent-harness/hooks/home-manager/list-hook-scripts-recursively.nix
+      {
+        inherit lib;
+      };
 
-  allHookScriptsAcrossSubdirectories = listHookScriptsRecursively ../../../../agents/hooks;
+  allHookScriptsAcrossSubdirectories = listHookScriptsRecursively ../../../../agent-harness/hooks/runtime;
 
   sourcePathsByFlatDeploymentFilename = builtins.groupBy (
     entry: entry.flatDeploymentFilename

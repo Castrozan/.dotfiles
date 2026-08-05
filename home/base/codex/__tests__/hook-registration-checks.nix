@@ -6,7 +6,7 @@
 }:
 let
   parsedCodexHooksConfig = {
-    hooks = import ../hooks/configuration.nix {
+    hooks = import ../../../../agent-harness/hooks/integrations/codex/codex-hooks-configuration.nix {
       inherit pkgs lib;
       hostname = "test";
     };
@@ -41,7 +41,7 @@ let
     eventName: scriptName:
     builtins.any (command: lib.hasInfix scriptName command) (codexHookEventCommands eventName);
 
-  canonicalHooksEventDefinition = import ../../../../agents/hooks/event-to-dispatcher-map.nix;
+  canonicalHooksEventDefinition = import ../../../../agent-harness/hooks/runtime/event-to-dispatcher-map.nix;
 
   codexSupportedHookEvents = [
     "SessionStart"
@@ -76,7 +76,7 @@ let
     let
       attempt = builtins.tryEval (
         builtins.toJSON
-          (import ../hooks/configuration.nix {
+          (import ../../../../agent-harness/hooks/integrations/codex/codex-hooks-configuration.nix {
             inherit pkgs lib;
             hostname = "test";
             isDarwin = true;
@@ -94,7 +94,7 @@ in
         && supportedCanonicalEventsMissingFromTheCodexConfig == [ ]
         && supportedEventsNotDeclaredInTheCanonicalMap == [ ]
       )
-      "Codex must register exactly the events in agents/hooks/event-to-dispatcher-map.nix that codex supports (${lib.concatStringsSep ", " codexSupportedHookEvents}) and nothing else; a hand-written Codex hook event is a second definition of the hook surface, and an event dropped from the supported list silently unregisters it. Codex events outside the supported canonical subset: ${lib.concatStringsSep ", " codexEventsNotInTheSupportedCanonicalSubset}. Supported canonical events missing from the Codex config: ${lib.concatStringsSep ", " supportedCanonicalEventsMissingFromTheCodexConfig}. Supported events not declared in the canonical map: ${lib.concatStringsSep ", " supportedEventsNotDeclaredInTheCanonicalMap}";
+      "Codex must register exactly the events in agent-harness/hooks/runtime/event-to-dispatcher-map.nix that codex supports (${lib.concatStringsSep ", " codexSupportedHookEvents}) and nothing else; a hand-written Codex hook event is a second definition of the hook surface, and an event dropped from the supported list silently unregisters it. Codex events outside the supported canonical subset: ${lib.concatStringsSep ", " codexEventsNotInTheSupportedCanonicalSubset}. Supported canonical events missing from the Codex config: ${lib.concatStringsSep ", " supportedCanonicalEventsMissingFromTheCodexConfig}. Supported events not declared in the canonical map: ${lib.concatStringsSep ", " supportedEventsNotDeclaredInTheCanonicalMap}";
 
   codex-hooks-config-managed-file =
     mkEvalCheck "codex-hooks-config-managed-file"
@@ -133,7 +133,7 @@ in
   codex-hooks-every-command-runs-its-canonical-dispatcher =
     mkEvalCheck "codex-hooks-every-command-runs-its-canonical-dispatcher"
       (codexEventsWhoseCommandDivergesFromTheCanonicalDispatcher == [ ])
-      "every Codex hook event's command must run the dispatcher its event maps to in agents/hooks/event-to-dispatcher-map.nix, the single source of truth both harnesses import; a standalone command on a Codex event is a second definition of the hook surface and must be folded into that event's dispatcher as a handler carrying a tool_matcher. Events diverging from the canonical dispatcher: ${lib.concatStringsSep ", " codexEventsWhoseCommandDivergesFromTheCanonicalDispatcher}";
+      "every Codex hook event's command must run the dispatcher its event maps to in agent-harness/hooks/runtime/event-to-dispatcher-map.nix, the single source of truth both harnesses import; a standalone command on a Codex event is a second definition of the hook surface and must be folded into that event's dispatcher as a handler carrying a tool_matcher. Events diverging from the canonical dispatcher: ${lib.concatStringsSep ", " codexEventsWhoseCommandDivergesFromTheCanonicalDispatcher}";
 
   codex-hooks-every-dispatcher-declares-its-surface =
     let

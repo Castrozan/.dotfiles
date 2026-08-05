@@ -6,7 +6,10 @@
   ...
 }:
 let
-  hooksConfig = import ../hooks/event-registrations { inherit lib hostname isDarwin; };
+  hooksConfig =
+    import
+      ../../../../agent-harness/hooks/integrations/claude/event-registrations/claude-hook-event-registrations.nix
+      { inherit lib hostname isDarwin; };
   pluginsConfig = import ./plugins.nix { inherit pkgs; };
 
   privateMarketplacePluginsPath =

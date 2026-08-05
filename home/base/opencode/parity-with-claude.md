@@ -126,7 +126,7 @@ against the model choice.
 
 ## Hooks
 
-- Claude runs a dispatcher per event out of `home/base/agent-hooks/`, and Codex
+- Claude runs a dispatcher per event from `agent-harness/hooks/runtime/`, and Codex
   registers the same dispatchers with a `--surface=codex` flag.
 - OpenCode auto-discovers JS plugins under its configuration directory.
   `opencode-hook-bridge.js` maps plugin events to the shared dispatchers with

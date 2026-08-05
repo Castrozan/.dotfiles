@@ -4,7 +4,7 @@ import sys
 
 from run_evals_worktree_and_environment import REPO_ROOT
 
-HOOK_SCRIPT_SEARCH_ROOT = REPO_ROOT / "agents" / "hooks"
+HOOK_SCRIPT_SEARCH_ROOT = REPO_ROOT / "agent-harness" / "hooks" / "runtime"
 
 
 def find_hook_script(hook_filename):

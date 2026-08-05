@@ -4,7 +4,7 @@
   cfg,
 }:
 let
-  hooksEventDefinition = import ../../../../agents/hooks/event-to-dispatcher-map.nix;
+  hooksEventDefinition = import ../../../../agent-harness/hooks/runtime/event-to-dispatcher-map.nix;
 
   deployedSettings = builtins.fromJSON cfg.home.file.".claude/settings.json.nix-source".text;
 
@@ -48,12 +48,15 @@ let
     let
       attempt = builtins.tryEval (
         builtins.toJSON
-          (import ../hooks/event-registrations {
-            inherit lib;
-            hostname = "test";
-            isDarwin = true;
-            privateConfigRoot = "/nonexistent/private-config";
-          }).PreToolUse
+          (import
+            ../../../../agent-harness/hooks/integrations/claude/event-registrations/claude-hook-event-registrations.nix
+            {
+              inherit lib;
+              hostname = "test";
+              isDarwin = true;
+              privateConfigRoot = "/nonexistent/private-config";
+            }
+          ).PreToolUse
       );
     in
     !attempt.success;
@@ -64,7 +67,7 @@ in
       (deployedEventsNotDeclaredInTheCanonicalMap == [ ] && canonicalEventsMissingFromTheDeploy == [ ])
       (
         "the deployed settings.json must register exactly the events declared in "
-        + "agents/hooks/event-to-dispatcher-map.nix (plus the inline exception events); a hook option "
+        + "agent-harness/hooks/runtime/event-to-dispatcher-map.nix (plus the inline exception events); a hook option "
         + "registered here but not in the map is a hand-written harness hook, the half-merged shape "
         + "the single-dispatcher refactor removed, and a map event missing from the deploy is a "
         + "silently dropped registration. Events deployed but not declared: "
@@ -81,7 +84,7 @@ in
       )
       (
         "each event's deployed registration must be exactly one command running the canonical "
-        + "dispatcher from agents/hooks/event-to-dispatcher-map.nix through run-hook.sh, with no "
+        + "dispatcher from agent-harness/hooks/runtime/event-to-dispatcher-map.nix through run-hook.sh, with no "
         + "standalone command beside or instead of it; events violating that: "
         + lib.concatStringsSep ", " eventsWhoseDeployedCommandDivergesFromTheCanonicalDispatcher
         + ". Inline exception events must also register exactly one command: "

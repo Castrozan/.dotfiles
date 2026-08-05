@@ -7,6 +7,6 @@ repository_root_directory = development_module_directory.parent.parent.parent
 for scripts_directory in (
     development_module_directory / "scripts",
     development_module_directory / "agent-commit-provenance" / "scripts",
-    repository_root_directory / "agents" / "scripts",
+    repository_root_directory / "agent-harness" / "session-control",
 ):
     sys.path.insert(0, str(scripts_directory))

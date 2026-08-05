@@ -35,7 +35,7 @@ let
     ../../../home/base/codex/__tests__/checks.nix
     ../../../home/base/agents/__tests__/checks.nix
     ../../../hosts/chise/__tests__/checks.nix
-    ../../../agents/hooks/__tests__/checks.nix
+    ../../../agent-harness/hooks/runtime/__tests__/checks.nix
     ../../../home/base/terminal/__tests__/checks.nix
     ../../../home/base/editor/__tests__/checks.nix
     ../../../home/base/browser/__tests__/checks.nix

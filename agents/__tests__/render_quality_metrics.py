@@ -28,7 +28,7 @@ INTEGRATION_SCENARIO_DIRECTORY = (
 CORE_RULES_PATH = (
     REPOSITORY_ROOT / "agent-harness/agent-instructions/core-rules/core.md"
 )
-HOOK_EVENT_ROOT_DIRECTORY = REPOSITORY_ROOT / "agents/hooks"
+HOOK_EVENT_ROOT_DIRECTORY = REPOSITORY_ROOT / "agent-harness/hooks/runtime"
 DIRECTORIES_THAT_ARE_NOT_HOOK_EVENTS = frozenset(
     {"common", "lint", "__tests__", "__pycache__"}
 )
