@@ -84,7 +84,7 @@ tightest possible scoping: it loads exactly when relevant, versions with the cod
 **A work-sensitive fact goes to `private-config`**, which is already private, synced and nix-deployed.
 
 The 112 dotfiles memories map onto existing owners almost completely: 13 to `nix`, 13 to `desktop`, 7 to `coding`, 6 to
-`herdr`, and the arr entries to `arr-stack`. The remaining domains are `clawde` for fleet behavior and `agent-harness`
+`herdr`, and the arr entries to `arr-stack`. The remaining domains are the clawde fleet's behavior and `agent-harness`
 for harness behavior. Eight entries describe other repositories and move out to them.
 
 ## Consequences
@@ -144,9 +144,10 @@ recreates both the cwd-keyed stores and the always-on index.
 
 ## What was built
 
-The two missing skills now exist: `clawde` owns the fleet, supervisor, heartbeat and steward domain, and `agent-harness`
-owns Claude Code, Codex, and OpenCode behavior. Eight domains carry a `knowledge.md`: `clawde`, `agent-harness`, `nix`,
-`desktop`, `coding`, `herdr`, `arr-stack`, and `browser`, each pointed at from its `SKILL.md` router. The behavioral entries
+The two missing domains now exist: the fleet, supervisor, heartbeat and steward domain, and `agent-harness` for Claude
+Code, Codex, and OpenCode behavior. Eight domains carry a `knowledge.md`: `agent-harness`, `nix`, `desktop`, `coding`,
+`herdr`, `arr-stack`, `browser`, and the fleet, each pointed at from its `SKILL.md` router except the fleet, whose skill
+was later deleted as repo-only work and whose knowledge moved beside its module at `home/base/clawde/knowledge.md`. The behavioral entries
 graduated into `agents/core_rules/core.md`, where the Git block now carries explicit-pathspec committing, absolute-path
 anchoring, and the rule that landing a change on a repo the user owns is part of the task, and `<session-resilience>`
 carries the knowledge-versus-work-state split and the capture path.
