@@ -4,7 +4,7 @@
   homeDir,
 }:
 let
-  browserMcp = import ../../../agents/skills/browser/install {
+  browserMcp = import ../../../agent-harness/agent-instructions/skills/browser/install {
     inherit pkgs homeDir;
     nodejs = pkgs.nodejs_22;
     chromePackage = latest.google-chrome;

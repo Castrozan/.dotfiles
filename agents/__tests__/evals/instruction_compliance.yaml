@@ -1,8 +1,8 @@
 tests:
   - name: hardskill_belongs_in_scripts
-    skill_path: agents/skills/review/SKILL.md
+    skill_path: agent-harness/agent-instructions/skills/review/SKILL.md
     extra_skill_paths:
-      - agents/skills/review/authoring.md
+      - agent-harness/agent-instructions/skills/review/authoring.md
     prompt: "I'm writing a skill for a CLI tool called 'deploy'. The tool has --env, --service, and --dry-run flags. Should I document all the flags in the SKILL.md body?"
     model: haiku
     assertions:
@@ -12,9 +12,9 @@ tests:
         - "here are the flags"
 
   - name: evergreen_no_hardcoded_paths
-    skill_path: agents/skills/review/SKILL.md
+    skill_path: agent-harness/agent-instructions/skills/review/SKILL.md
     extra_skill_paths:
-      - agents/skills/review/authoring.md
+      - agent-harness/agent-instructions/skills/review/authoring.md
     prompt: "I want my skill to reference the rebuild script. Should I write the full path like ./home/base/system/scripts/rebuild.sh?"
     model: haiku
     assertions:
@@ -22,9 +22,9 @@ tests:
         - "Advises against hardcoding the full path and recommends a stable pointer or referring to the rebuild by name, because hardcoded paths go stale (the evergreen principle)."
 
   - name: description_length_awareness
-    skill_path: agents/skills/instructions/SKILL.md
+    skill_path: agent-harness/agent-instructions/skills/instructions/SKILL.md
     extra_skill_paths:
-      - agents/skills/instructions/skills.md
+      - agent-harness/agent-instructions/skills/instructions/skills.md
     prompt: "How long should a skill frontmatter description be? What's the word limit?"
     model: haiku
     assertions:

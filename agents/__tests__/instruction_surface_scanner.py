@@ -2,7 +2,7 @@ import re
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-SKILL_TREE = REPO_ROOT / "agents" / "skills"
+SKILL_TREE = REPO_ROOT / "agent-harness" / "agent-instructions" / "skills"
 PRIVATE_MACHINE_SKILL_TREES = sorted(
     (REPO_ROOT / "private-config" / "machines").glob("*/skills")
 )

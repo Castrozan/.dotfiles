@@ -17,7 +17,8 @@ host split, secrets, script packaging, the "where does this belong" call.
 `nix` and `agent-harness` are repo-local: both describe this tree, so they reach no global skill surface and instead
 deploy into this repo's own project skill directories, gitignored exactly like the instruction file you are reading.
 Claude and OpenCode load them automatically here. Codex discovers skills only under its own home, so read them in the
-tree at `agents/skills/nix/SKILL.md` and `agents/skills/agent-harness/SKILL.md`, each with a `knowledge.md` beside it.
+tree at `agent-harness/agent-instructions/skills/nix/SKILL.md` and
+`agent-harness/agent-instructions/skills/agent-harness/SKILL.md`, each with a `knowledge.md` beside it.
 </repo-local-skills>
 
 <stewardship>

@@ -1,6 +1,6 @@
 { pkgs, ... }:
 let
-  rilCli = import ../../../agents/skills/ril/install { inherit pkgs; };
+  rilCli = import ../../../agent-harness/agent-instructions/skills/ril/install { inherit pkgs; };
 in
 {
   home.packages = rilCli.packages;

@@ -24,7 +24,7 @@ def test_stripping_removes_instruction_fields_without_mutating_the_original():
                 {
                     "name": "t1",
                     "prompt": "p",
-                    "skill_path": "agents/skills/x/SKILL.md",
+                    "skill_path": "agent-harness/agent-instructions/skills/x/SKILL.md",
                     "agent": "x",
                     "system_prompt": "sp",
                     "extra_skill_paths": ["y"],
@@ -42,7 +42,10 @@ def test_stripping_removes_instruction_fields_without_mutating_the_original():
     assert "extra_skill_paths" not in control_test
     assert control_test["prompt"] == "p"
     assert control_test["no_tools"] is True
-    assert config["tests"]["routing"][0]["skill_path"] == "agents/skills/x/SKILL.md"
+    assert (
+        config["tests"]["routing"][0]["skill_path"]
+        == "agent-harness/agent-instructions/skills/x/SKILL.md"
+    )
 
 
 def test_outcomes_by_name_maps_pass_state():

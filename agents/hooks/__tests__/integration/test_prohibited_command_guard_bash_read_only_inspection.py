@@ -14,7 +14,7 @@ class TestBashReadOnlyInspectionCommandsStayAllowed:
             "git show HEAD:repository/verification/run.sh",
             "git diff -- repository/verification/run.sh",
             "grep -R 'repository/verification/run.sh' agents",
-            "grep -rn 'pytest agents/' agents/skills",
+            "grep -rn 'pytest agents/' agent-harness/agent-instructions/skills",
             "grep -rn 'nix flake check' agents",
             "rg 'make test' agents",
             "cat repository/verification/run.sh",

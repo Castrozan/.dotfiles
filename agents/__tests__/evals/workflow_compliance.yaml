@@ -63,7 +63,7 @@ tests:
         - "Says to run the dotfiles-change-review workflow over the working diff before committing a substantive change to the repo, per the repo's pre-commit review rule."
 
   - name: workflow_review_input_is_unbiased
-    skill_path: agents/skills/review/SKILL.md
+    skill_path: agent-harness/agent-instructions/skills/review/SKILL.md
     prompt: "What evidence should you gather before reporting a defect in a code review?"
     model: haiku
     assertions:

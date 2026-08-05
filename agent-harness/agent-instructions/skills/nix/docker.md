@@ -1,5 +1,6 @@
 <invocation>
-The docker-manager script lives at `agents/skills/nix/scripts/docker-manager`. Run it with `--help` for the
+The docker-manager script lives at `agent-harness/agent-instructions/skills/nix/scripts/docker-manager`. Run it with
+`--help` for the
 authoritative command reference. It is the curated interface; do not shell out to raw `docker` or `podman` commands even
 if they seem faster. The script enforces ordering (stop before remove), prevents data loss (volume backup before
 delete), and surfaces errors the daemon hides.

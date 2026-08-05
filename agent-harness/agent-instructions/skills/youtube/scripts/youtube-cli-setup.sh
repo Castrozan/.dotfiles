@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-# TODO: migrate to nix install like agents/skills/browser
+# TODO: migrate to nix install like agent-harness/agent-instructions/skills/browser
 readonly CREDENTIALS_DIR="$HOME/.config/youtube-cli"
 readonly CREDENTIALS_FILE="$CREDENTIALS_DIR/credentials.json"
 readonly PROJECT_PREFIX="youtube-cli"

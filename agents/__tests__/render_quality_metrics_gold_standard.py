@@ -10,7 +10,9 @@ from run_evals_baseline_thresholds import (
 )
 
 CENTRAL_EVAL_SUITE_GLOB = "agents/__tests__/evals/*.yaml"
-SKILL_EVAL_SUITE_GLOB = "agents/skills/*/__tests__/evals/*.yaml"
+SKILL_EVAL_SUITE_GLOB = (
+    "agent-harness/agent-instructions/skills/*/__tests__/evals/*.yaml"
+)
 ADVERSARIAL_SUITE_RELATIVE_PATH = "agents/__tests__/evals/adversarial.yaml"
 JUDGE_CALIBRATION_RELATIVE_PATH = "agents/__tests__/calibration/judge_calibration.yaml"
 STATIC_EVAL_BASELINE_RELATIVE_PATH = "agents/__tests__/baseline.json"

@@ -2,7 +2,15 @@ from run_evals_config_loader import discover_skill_adjacent_eval_files
 
 
 def _write_skill_eval(repo_root, skill, stem, test_name):
-    eval_dir = repo_root / "agents" / "skills" / skill / "__tests__" / "evals"
+    eval_dir = (
+        repo_root
+        / "agent-harness"
+        / "agent-instructions"
+        / "skills"
+        / skill
+        / "__tests__"
+        / "evals"
+    )
     eval_dir.mkdir(parents=True, exist_ok=True)
     (eval_dir / f"{stem}.yaml").write_text(
         f"tests:\n  - name: {test_name}\n    prompt: p\n"

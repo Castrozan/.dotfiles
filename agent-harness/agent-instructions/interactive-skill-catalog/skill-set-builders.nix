@@ -1,6 +1,6 @@
 { hostname }:
 let
-  publicSkillsDirectory = ../../../agents/skills;
+  publicSkillsDirectory = ../skills;
   privateSharedSkillsDirectory = ../../../private-config/claude/skills;
   privateMachineSkillsDirectory = ../../../private-config/machines + "/${hostname}/skills";
 

@@ -1,8 +1,8 @@
 tests:
   - name: worktrees_knows_builtin_flag
-    skill_path: agents/skills/coding/SKILL.md
+    skill_path: agent-harness/agent-instructions/skills/coding/SKILL.md
     extra_skill_paths:
-      - agents/skills/coding/worktrees.md
+      - agent-harness/agent-instructions/skills/coding/worktrees.md
     prompt: "I need to run a quick isolated task. Should I always create a manual worktree, or is there a simpler built-in option?"
     model: haiku
     assertions:
@@ -10,7 +10,7 @@ tests:
         - "Points at the built-in worktree flag or the EnterWorktree tools as the simpler option for quick throwaway isolation, and reserves the manual worktree workflow for persistent, multi-branch, or pull request work."
 
   - name: deep_work_knows_postcompact
-    skill_path: agents/skills/deep-work/SKILL.md
+    skill_path: agent-harness/agent-instructions/skills/deep-work/SKILL.md
     prompt: "What happens to deep-work context when a compaction occurs? Is there any automatic recovery?"
     model: haiku
     assertions:
@@ -18,7 +18,7 @@ tests:
         - "Says a session start compaction hook automatically re-injects a recovery directive, which prompts the agent to re-read the deep-work workspace files and continue from disk."
 
   - name: claude_skill_knows_builtin_agents
-    skill_path: agents/skills/herdr/SKILL.md
+    skill_path: agent-harness/agent-instructions/skills/herdr/SKILL.md
     prompt: "I need several agents editing code in parallel. Nobody needs to watch them and the work does not have to outlive this conversation. Should I spawn a separate herdr Claude agent with 'herdr agent start' for each one, or is there a better fit?"
     model: haiku
     assertions:

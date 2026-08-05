@@ -20,7 +20,9 @@ let
     }) localWorkflowFileNames
   );
 
-  pageComposerInstall = import ../../../../agents/skills/page-composer/install { };
+  pageComposerInstall =
+    import ../../../../agent-harness/agent-instructions/skills/page-composer/install
+      { };
 in
 {
   home.file = localWorkflowFiles // workflowFilesFromInstall pageComposerInstall;

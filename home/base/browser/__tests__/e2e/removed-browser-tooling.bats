@@ -15,16 +15,16 @@ readonly BROWSER_MODULE_DIRECTORY="$BATS_TEST_DIRNAME/../.."
 }
 
 @test "deleted pw and playwright files do not exist" {
-	[[ ! -f "$REPOSITORY_ROOT/agents/skills/browser/scripts/pw.sh" ]]
-	[[ ! -f "$REPOSITORY_ROOT/agents/skills/browser/scripts/pw.js" ]]
-	[[ ! -f "$REPOSITORY_ROOT/agents/skills/browser/scripts/pw-daemon.js" ]]
-	[[ ! -f "$REPOSITORY_ROOT/agents/skills/browser/default.nix" ]]
-	[[ ! -f "$REPOSITORY_ROOT/agents/skills/ponto/scripts/playwright-resolver.js" ]]
+	[[ ! -f "$REPOSITORY_ROOT/agent-harness/agent-instructions/skills/browser/scripts/pw.sh" ]]
+	[[ ! -f "$REPOSITORY_ROOT/agent-harness/agent-instructions/skills/browser/scripts/pw.js" ]]
+	[[ ! -f "$REPOSITORY_ROOT/agent-harness/agent-instructions/skills/browser/scripts/pw-daemon.js" ]]
+	[[ ! -f "$REPOSITORY_ROOT/agent-harness/agent-instructions/skills/browser/default.nix" ]]
+	[[ ! -f "$REPOSITORY_ROOT/agent-harness/agent-instructions/skills/ponto/scripts/playwright-resolver.js" ]]
 	[[ ! -f "$REPOSITORY_ROOT/home/base/playwright.nix" ]]
 }
 
 @test "cdp-browser module removed with the CDP scripts stays removed" {
-	[[ ! -f "$REPOSITORY_ROOT/agents/skills/ponto/scripts/cdp-browser.js" ]]
+	[[ ! -f "$REPOSITORY_ROOT/agent-harness/agent-instructions/skills/ponto/scripts/cdp-browser.js" ]]
 }
 
 @test "no stale PW_PORT or playwright-resolver references" {

@@ -48,7 +48,7 @@ name starts with a dot, so `<repo>/.claude/skills/` is the single tree it never 
 nine skills there; the walk ignores those nine and injects 32 accidental ones instead.
 
 **Nothing bounds it.** The repo caps its own always-on instruction and description budgets in a test. That test governs
-`agents/skills/` and cannot see a foreign tree, so any repository can inject any amount into the system prompt just by
+`agent-harness/agent-instructions/skills/` and cannot see a foreign tree, so any repository can inject any amount into the system prompt just by
 being the directory you opened.
 
 **The knowledge tier does not travel.** `agent-memory.md` says no registry edit is needed to add a domain because "the
@@ -112,7 +112,7 @@ default, while the generated index keeps each excluded skill and its durable kno
 
 ## Explicitly rejected
 
-Packaging `agents/skills/` as a plugin with a local marketplace. It would allow per-project enable and disable through
+Packaging `agent-harness/agent-instructions/skills/` as a plugin with a local marketplace. It would allow per-project enable and disable through
 `enabledPlugins`, and the repo already has a private marketplace pipeline, but it adds a manifest, a marketplace entry
 and an install step to solve a scoping problem that three tiers already solve for one human on their own machines.
 
@@ -161,7 +161,7 @@ reachable at `~/.local/share/agent-skill-index/<name>`, deployed by `home/base/a
 The former `personal` umbrella skill was deleted and replaced by a nix-generated `all-skills` skill, built like `core`
 from `renderAllSkillsIndexSkill` in `interactive-agent-skills.nix`. Its frontmatter description names every skill not
 curated-injected for that harness, and its body points at each indexed skill's reachable path. Its chapters became real
-skills: `agents/skills/obsidian` and `agents/skills/passwords`.
+skills: `agent-harness/agent-instructions/skills/obsidian` and `agent-harness/agent-instructions/skills/passwords`.
 
 ## Follow-up: the third state, skills no interactive session reaches
 

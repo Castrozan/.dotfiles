@@ -11,11 +11,11 @@ let
   ]);
 
   watchdogScriptSource = lib.fileset.toSource {
-    root = ../../../../agents/skills/browser/install/watchdog;
+    root = ../../../../agent-harness/agent-instructions/skills/browser/install/watchdog;
     fileset = lib.fileset.unions [
-      ../../../../agents/skills/browser/install/watchdog/chrome_devtools_mcp_watchdog.py
-      ../../../../agents/skills/browser/install/watchdog/kill_runaway_chrome_devtools_mcp_instances.py
-      ../../../../agents/skills/browser/install/watchdog/reap_orphaned_chrome_devtools_mcp_instances.py
+      ../../../../agent-harness/agent-instructions/skills/browser/install/watchdog/chrome_devtools_mcp_watchdog.py
+      ../../../../agent-harness/agent-instructions/skills/browser/install/watchdog/kill_runaway_chrome_devtools_mcp_instances.py
+      ../../../../agent-harness/agent-instructions/skills/browser/install/watchdog/reap_orphaned_chrome_devtools_mcp_instances.py
     ];
   };
 

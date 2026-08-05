@@ -4,7 +4,7 @@ from instruction_surface_scanner import (
     subagent_definition_files,
 )
 
-SKILL_TREE = REPO_ROOT / "agents" / "skills"
+SKILL_TREE = REPO_ROOT / "agent-harness" / "agent-instructions" / "skills"
 SUBAGENT_TREE = REPO_ROOT / "agents" / "subagents"
 
 

@@ -6,7 +6,7 @@
 let
   homeDir = config.home.homeDirectory;
 
-  twitterCli = import ../../../agents/skills/twitter/install {
+  twitterCli = import ../../../agent-harness/agent-instructions/skills/twitter/install {
     inherit pkgs homeDir;
   };
 in

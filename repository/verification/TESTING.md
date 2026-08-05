@@ -95,7 +95,7 @@ Each tier auto-detects tool availability (bats, nix, docker, kcov) and skips gra
 | Lua / QML suites | `*/__tests__/*_test.lua`, `*/__tests__/qml/run-qml-tests.sh` | lua / quickshell |
 | Domain nix tests | `*/__tests__/checks.nix` | nix |
 | Instruction surface lint | `agents/__tests__/unit/test_instruction_surfaces_are_structurally_sound.py` | pytest |
-| Agent evals | `agents/__tests__/{evals,integration,e2e}/`, `agents/skills/*/__tests__/evals/` | claude cli |
+| Agent evals | `agents/__tests__/{evals,integration,e2e}/`, `agent-harness/agent-instructions/skills/*/__tests__/evals/` | claude cli |
 
 The A/B instruction-loading measurement is a recorded result, not a tier:
 `agents/__tests__/instruction-loading-experiment.json` holds the paired comparison

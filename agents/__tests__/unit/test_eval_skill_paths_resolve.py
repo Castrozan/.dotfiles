@@ -9,7 +9,9 @@ EVAL_SUITE_DIRECTORY = REPO_ROOT / "agents" / "__tests__" / "evals"
 def collect_referenced_skill_paths():
     referenced = []
     eval_files = sorted(EVAL_SUITE_DIRECTORY.glob("*.yaml")) + sorted(
-        REPO_ROOT.glob("agents/skills/*/__tests__/evals/*.yaml")
+        REPO_ROOT.glob(
+            "agent-harness/agent-instructions/skills/*/__tests__/evals/*.yaml"
+        )
     )
     for eval_file in eval_files:
         if eval_file.name == "settings.yaml":

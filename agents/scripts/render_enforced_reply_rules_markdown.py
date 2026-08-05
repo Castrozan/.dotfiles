@@ -18,7 +18,12 @@ ENFORCED_REPLY_RULES_SURFACE = (
     / "enforced-reply-rules.md"
 )
 EVERY_CHANNEL_WORDING_RULES_SURFACE = (
-    REPOSITORY_ROOT / "agents" / "skills" / "humanize" / "enforced-wording-rules.md"
+    REPOSITORY_ROOT
+    / "agent-harness"
+    / "agent-instructions"
+    / "skills"
+    / "humanize"
+    / "enforced-wording-rules.md"
 )
 
 sys.path.insert(0, str(HUMAN_FACING_REPLY_MODULES_DIRECTORY))

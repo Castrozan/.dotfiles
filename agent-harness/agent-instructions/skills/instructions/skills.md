@@ -5,7 +5,9 @@ repeatable, template-based action with fixed inputs and outputs.
 </extension_decision>
 
 <skill_format>
-Skills live in 'agents/skills/<name>/SKILL.md' and deploy to AI agents via home-manager (drop a directory, the build
+Skills live in
+'agent-harness/agent-instructions/skills/<name>/SKILL.md' and deploy to AI agents via home-manager (drop a
+directory, the build
 picks it up). YAML frontmatter requires 'name' and 'description'. Short directory names for easy discovery. Body uses
 XML tags with dense prose per the instructions SKILL.md. Script-backed skills keep logic in a 'scripts/' subdirectory
 with SKILL.md as a minimal entry point.

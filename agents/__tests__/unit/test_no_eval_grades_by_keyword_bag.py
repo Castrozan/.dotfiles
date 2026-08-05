@@ -8,7 +8,9 @@ EVAL_SUITE_DIRECTORY = REPO_ROOT / "agents" / "__tests__" / "evals"
 
 def eval_suite_files() -> list[Path]:
     return sorted(EVAL_SUITE_DIRECTORY.glob("*.yaml")) + sorted(
-        REPO_ROOT.glob("agents/skills/*/__tests__/evals/*.yaml")
+        REPO_ROOT.glob(
+            "agent-harness/agent-instructions/skills/*/__tests__/evals/*.yaml"
+        )
     )
 
 

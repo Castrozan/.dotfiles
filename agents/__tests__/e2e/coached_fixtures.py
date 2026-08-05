@@ -7,7 +7,14 @@ SCENARIOS_DIR = Path(__file__).resolve().parent / "scenarios"
 CORE_INSTRUCTIONS_PATH = (
     REPO_ROOT / "agent-harness" / "agent-instructions" / "core-rules" / "core.md"
 )
-COMPLIANCE_SKILL_PATH = REPO_ROOT / "agents" / "skills" / "review" / "compliance.md"
+COMPLIANCE_SKILL_PATH = (
+    REPO_ROOT
+    / "agent-harness"
+    / "agent-instructions"
+    / "skills"
+    / "review"
+    / "compliance.md"
+)
 E2E_WORKSPACE_PARENT = Path.home() / "repo" / ".e2e-tests"
 
 

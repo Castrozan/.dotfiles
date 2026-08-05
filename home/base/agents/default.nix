@@ -1,6 +1,8 @@
 { pkgs, ... }:
 let
-  codingSkillInstall = import ../../../agents/skills/coding/install { inherit pkgs; };
+  codingSkillInstall = import ../../../agent-harness/agent-instructions/skills/coding/install {
+    inherit pkgs;
+  };
 in
 {
   imports = [

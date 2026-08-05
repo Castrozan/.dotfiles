@@ -10,7 +10,7 @@ let
   nodejs = pkgs.nodejs_22;
   homeDir = config.home.homeDirectory;
 
-  browserMcp = import ../../../../agents/skills/browser/install {
+  browserMcp = import ../../../../agent-harness/agent-instructions/skills/browser/install {
     inherit
       pkgs
       nodejs
