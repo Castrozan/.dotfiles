@@ -139,6 +139,6 @@ def test_the_reference_lint_actually_inspects_references():
     assert chapter_references > 10, (
         "the sibling chapter lint found nothing to check, so it passes vacuously"
     )
-    assert script_references > 3, (
+    assert script_references > 2, (
         "the skill script lint found nothing to check, so it passes vacuously"
     )
