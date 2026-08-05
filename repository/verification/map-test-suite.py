@@ -56,11 +56,11 @@ def summarize_tier(tests_directory, tier_directory_name):
         return None
     bats_blocks = sum(
         count_matching_lines(bats_file, BATS_TEST_BLOCK_PATTERN)
-        for bats_file in tier_directory.glob("*.bats")
+        for bats_file in tier_directory.rglob("*.bats")
     )
     pytest_functions = sum(
         count_matching_lines(python_file, PYTEST_TEST_FUNCTION_PATTERN)
-        for python_file in tier_directory.glob("test_*.py")
+        for python_file in tier_directory.rglob("test_*.py")
     )
     if bats_blocks == 0 and pytest_functions == 0:
         return None
@@ -74,7 +74,7 @@ def summarize_tests_directory(tests_directory):
         if tier_summary is not None:
             tiers[tier_directory_name] = tier_summary
 
-    lua_test_files = list(tests_directory.glob("*_test.lua"))
+    lua_test_files = list(tests_directory.rglob("*_test.lua"))
     qml_runner = tests_directory / "qml" / "run-qml-tests.sh"
     eval_yaml_files = list((tests_directory / "evals").glob("*.yaml"))
     checks_nix_file = tests_directory / "checks.nix"
