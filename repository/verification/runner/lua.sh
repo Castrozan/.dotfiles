@@ -1,8 +1,12 @@
 #!/usr/bin/env bash
 
+_collect_lua_test_files() {
+	_discover_test_files "cross-platform" "*/__tests__/*" "*_test.lua"
+}
+
 _run_lua_unit_tests() {
 	local luaTests
-	luaTests=$(_discover_test_files "cross-platform" "*/__tests__/*_test.lua")
+	luaTests=$(_collect_lua_test_files)
 
 	if [[ -z "$luaTests" ]]; then
 		return 0

@@ -2,7 +2,7 @@
 
 _collect_pytest_test_files_in_tier_directory() {
 	local tierDirectoryName="$1"
-	_discover_test_files "platform-scoped" "*/__tests__/${tierDirectoryName}/test_*.py"
+	_discover_test_files "platform-scoped" "*/__tests__/${tierDirectoryName}/*" "test_*.py"
 }
 
 _run_pytest_tier() {

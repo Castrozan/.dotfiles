@@ -2,7 +2,7 @@
 
 _collect_bats_test_files_in_tier_directory() {
 	local tierDirectoryName="$1"
-	_discover_test_files "platform-scoped" "*/__tests__/${tierDirectoryName}/*.bats"
+	_discover_test_files "platform-scoped" "*/__tests__/${tierDirectoryName}/*" "*.bats"
 }
 
 _run_bats_tier() {

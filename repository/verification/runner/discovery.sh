@@ -6,6 +6,7 @@ source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/foreign-platform-test-root
 _discover_test_files() {
 	local discoveryPolicy="$1"
 	local pathPattern="$2"
+	local testFileNamePattern="${3:-*}"
 
 	local -a prunedDirectoryExpression=(
 		-path '*/.git'
@@ -28,5 +29,5 @@ _discover_test_files() {
 
 	find "$REPO_DIR" \
 		\( "${prunedDirectoryExpression[@]}" \) -prune -o \
-		-path "$pathPattern" -type f -print 2>/dev/null | sort
+		-path "$pathPattern" -name "$testFileNamePattern" -type f -print 2>/dev/null | sort
 }

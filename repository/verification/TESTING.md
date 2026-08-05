@@ -24,6 +24,12 @@ which walks the **whole repo** for `*/__tests__/<tier>/` and prunes `.git`,
 `.worktrees`, and `__pycache__`. A new module's tests are picked up with zero
 runner edits — there are no hardcoded collection roots.
 
+A tier collects at **any depth** below its tier directory: the path pattern stops
+at `*/__tests__/<tier>/*` and the file name is matched separately, so grouping a
+tier's files into subdirectories keeps them collected.
+`repository/verification/__tests__/unit/test_every_test_file_is_reachable_by_a_tier.py`
+fails whenever a test file in the repo sits where no collector reaches it.
+
 Two discovery policies:
 
 - **platform-scoped** (bats, pytest): excludes the capability roots belonging to
