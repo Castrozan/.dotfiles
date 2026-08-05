@@ -1,4 +1,7 @@
 local map = vim.keymap.set
+local goto_definition = require("config.goto_definition_prefers_file_under_cursor")
+
+goto_definition.install()
 
 map({ "n", "i", "v" }, "<C-s>", "<cmd>w<cr><esc>", { desc = "Save file" })
 map("n", "<C-q>", "<cmd>qa<cr>", { desc = "Quit all" })
@@ -51,7 +54,9 @@ map("n", "<C-`>", function()
 end, { desc = "Toggle terminal" })
 
 map("n", "<F2>", vim.lsp.buf.rename, { desc = "Rename symbol" })
-map("n", "<F12>", vim.lsp.buf.definition, { desc = "Go to definition" })
+map("n", "<F12>", function()
+  goto_definition.jump_to_file_under_cursor_or(vim.lsp.buf.definition)
+end, { desc = "Go to definition" })
 map("n", "<S-F12>", function()
   require("telescope.builtin").lsp_references()
 end, { desc = "Find references" })
@@ -165,7 +170,12 @@ local function close_current_buffer_focusing_right_then_left()
 end
 
 map("n", "<leader>c", close_current_buffer_focusing_right_then_left, { desc = "Close buffer" })
-map("n", "<C-w>", close_current_buffer_focusing_right_then_left, { desc = "Close buffer (focus next or prev)", nowait = true })
+map(
+  "n",
+  "<C-w>",
+  close_current_buffer_focusing_right_then_left,
+  { desc = "Close buffer (focus next or prev)", nowait = true }
+)
 map("i", "<C-w>", function()
   vim.cmd("stopinsert")
   close_current_buffer_focusing_right_then_left()
