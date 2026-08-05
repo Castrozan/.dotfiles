@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-LINUX_ONLY_TEST_ROOTS_FILE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/linux-only-test-roots.txt"
+# shellcheck source=runner/foreign-platform-test-roots.sh
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/foreign-platform-test-roots.sh"
 
 _discover_test_files() {
 	local discoveryPolicy="$1"
@@ -18,12 +19,11 @@ _discover_test_files() {
 		-o -path '*/__pycache__'
 	)
 
-	if [[ "$discoveryPolicy" == "platform-scoped" && "$(uname)" == "Darwin" ]]; then
-		local linuxOnlyTestRoot
-		while read -r linuxOnlyTestRoot; do
-			[[ -n "$linuxOnlyTestRoot" ]] || continue
-			prunedDirectoryExpression+=(-o -path "$REPO_DIR/$linuxOnlyTestRoot")
-		done <"$LINUX_ONLY_TEST_ROOTS_FILE"
+	if [[ "$discoveryPolicy" == "platform-scoped" ]]; then
+		local foreignPlatformTestRoot
+		while read -r foreignPlatformTestRoot; do
+			prunedDirectoryExpression+=(-o -path "$REPO_DIR/$foreignPlatformTestRoot")
+		done < <(_foreign_platform_test_roots)
 	fi
 
 	find "$REPO_DIR" \

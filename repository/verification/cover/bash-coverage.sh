@@ -7,6 +7,9 @@ readonly REPOSITORY_DIR="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 readonly TESTS_DIR="$REPOSITORY_DIR/repository/verification"
 readonly COVERAGE_OUTPUT_DIR="$TESTS_DIR/coverage"
 
+# shellcheck source=runner/foreign-platform-test-roots.sh
+source "$TESTS_DIR/runner/foreign-platform-test-roots.sh"
+
 main() {
 	local ciMode=false
 
@@ -51,17 +54,14 @@ _clean_previous_coverage() {
 }
 
 _collect_quick_bats_test_files() {
-	local -a linuxOnlyExclusions=()
-	if [[ "$(uname)" == "Darwin" ]]; then
-		local linuxOnlyTestRoot
-		while read -r linuxOnlyTestRoot; do
-			[[ -n "$linuxOnlyTestRoot" ]] || continue
-			linuxOnlyExclusions+=(-not -path "$REPOSITORY_DIR/$linuxOnlyTestRoot/*")
-		done <"$TESTS_DIR/runner/linux-only-test-roots.txt"
-	fi
+	local -a foreignPlatformExclusions=()
+	local foreignPlatformTestRoot
+	while read -r foreignPlatformTestRoot; do
+		foreignPlatformExclusions+=(-not -path "$REPOSITORY_DIR/$foreignPlatformTestRoot/*")
+	done < <(_foreign_platform_test_roots)
 	find "$REPOSITORY_DIR/machine-configuration" \
 		-path "*/__tests__/unit/*.bats" -type f \
-		${linuxOnlyExclusions[@]+"${linuxOnlyExclusions[@]}"} | sort
+		${foreignPlatformExclusions[@]+"${foreignPlatformExclusions[@]}"} | sort
 }
 
 _run_bats_through_kcov() {
