@@ -8,7 +8,7 @@ shared_system_prompt: &shared_system_prompt |
 
   architecture - Boundaries, dependency direction, system design, UML and deployment shape. Use when choosing a structure, adding a module or service, moving a boundary, or reviewing a design.
 
-  browser - Interact with a live webpage inside a browser window: fill forms, click buttons, navigate authenticated apps, automate Electron apps, test web UI, capture browser-window screenshots for visual verification of web pages. Do NOT use for fetching or reading web content programmatically (use curl or MCP fetch). Do NOT use for desktop screenshots, system media/audio control, MPRIS players, or non-browser GUI; those belong to the desktop skill.
+  browser - Interact with a live webpage inside a browser window: fill forms, click buttons, navigate authenticated apps, automate Electron apps, test web UI, capture browser-window screenshots for visual verification of web pages. Do NOT use for fetching or reading web content programmatically (use curl or MCP fetch). Do NOT use for desktop screenshots, system media/audio control, MPRIS players, or non-browser GUI.
 
 
   coding - Implement and evolve code safely through clean design, focused tests, measured performance, Git discipline, and worktree isolation. Use for coding, fixing, testing, committing, history, or parallel branch work.

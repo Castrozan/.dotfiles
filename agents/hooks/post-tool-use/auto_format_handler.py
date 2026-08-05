@@ -1,65 +1,45 @@
 from __future__ import annotations
 
 import os
-import subprocess
 import sys
-from pathlib import Path
 
-_MODULE_DIRECTORY = Path(__file__).resolve().parent
+_MODULE_DIRECTORY = os.path.dirname(os.path.realpath(__file__))
 for _shared_module_candidate_directory in (
     _MODULE_DIRECTORY,
-    _MODULE_DIRECTORY.parent / "common",
+    os.path.join(os.path.dirname(_MODULE_DIRECTORY), "common"),
 ):
-    _shared_module_candidate_path = str(_shared_module_candidate_directory)
     if (
-        _shared_module_candidate_directory.is_dir()
-        and _shared_module_candidate_path not in sys.path
+        os.path.isdir(_shared_module_candidate_directory)
+        and _shared_module_candidate_directory not in sys.path
     ):
-        sys.path.insert(0, _shared_module_candidate_path)
+        sys.path.insert(0, _shared_module_candidate_directory)
 
 from changed_file_paths import collect_changed_file_paths  # noqa: E402
 from formatter_table_by_extension import FORMATTERS_BY_FILE_EXTENSION  # noqa: E402
 
 
-def check_formatter_available(formatter_cmd: list[str]) -> bool:
-    try:
-        subprocess.run([formatter_cmd[0], "--version"], capture_output=True, timeout=2)
-        return True
-    except (FileNotFoundError, subprocess.TimeoutExpired):
-        try:
-            subprocess.run([formatter_cmd[0], "--help"], capture_output=True, timeout=2)
-            return True
-        except (FileNotFoundError, subprocess.TimeoutExpired):
-            return False
+def run_formatter(file_path: str, formatter: dict) -> None:
+    import subprocess
 
+    if not formatter.get("redirect"):
+        subprocess.run(
+            formatter["cmd"] + [file_path], capture_output=True, text=True, timeout=10
+        )
+        return
 
-def run_formatter(file_path: str, formatter: dict) -> bool:
-    cmd = formatter["cmd"] + [file_path]
+    with open(file_path) as source_file:
+        original_content = source_file.read()
 
-    try:
-        if formatter.get("redirect"):
-            with open(file_path, "r") as f:
-                content = f.read()
-
-            result = subprocess.run(
-                formatter["cmd"],
-                input=content,
-                text=True,
-                capture_output=True,
-                timeout=10,
-            )
-
-            if result.returncode == 0:
-                with open(file_path, "w") as f:
-                    f.write(result.stdout)
-                return True
-            return False
-        else:
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=10)
-            return result.returncode == 0
-
-    except (subprocess.TimeoutExpired, Exception):
-        return False
+    result = subprocess.run(
+        formatter["cmd"],
+        input=original_content,
+        text=True,
+        capture_output=True,
+        timeout=10,
+    )
+    if result.returncode == 0:
+        with open(file_path, "w") as source_file:
+            source_file.write(result.stdout)
 
 
 def find_file_in_ancestor_directories(start_directory: str, filename: str):
@@ -117,8 +97,12 @@ def format_single_file(file_path: str) -> None:
         return
 
     for formatter in FORMATTERS_BY_FILE_EXTENSION[ext]["formatters"]:
-        if check_formatter_available(formatter["cmd"]):
+        try:
             run_formatter(file_path, formatter)
+            return
+        except FileNotFoundError:
+            continue
+        except Exception:
             return
 
 
