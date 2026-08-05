@@ -20,12 +20,8 @@ let
     }) localWorkflowFileNames
   );
 
-  housekeepingInstall = import ../../../../agents/skills/housekeeping/install { };
   pageComposerInstall = import ../../../../agents/skills/page-composer/install { };
 in
 {
-  home.file =
-    localWorkflowFiles
-    // workflowFilesFromInstall housekeepingInstall
-    // workflowFilesFromInstall pageComposerInstall;
+  home.file = localWorkflowFiles // workflowFilesFromInstall pageComposerInstall;
 }

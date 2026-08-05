@@ -104,7 +104,8 @@ lesson.
 
 Gate friction at the moment of discovery is fatal, so capture is separated from filing. An agent that learns something
 mid-task appends it to `~/.claude/knowledge-inbox.md`, which is untracked, per-machine, and never loaded into context. The
-`housekeeping` skill drains it, filing each entry against its owner or discarding it. Only the filed form is ever read.
+`dotfiles-housekeeping` workflow drains it, filing each entry against its owner or discarding it. Only the filed form is
+ever read.
 
 ## Write contract
 
