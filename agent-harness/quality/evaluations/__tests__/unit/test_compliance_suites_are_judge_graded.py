@@ -2,7 +2,7 @@ from pathlib import Path
 
 import yaml
 
-EVAL_SUITE_DIRECTORY = Path(__file__).resolve().parents[1] / "evals"
+EVAL_SUITE_DIRECTORY = Path(__file__).resolve().parents[2] / "evals"
 
 JUDGE_GRADED_COMPLIANCE_SUITES = [
     "instruction_compliance.yaml",

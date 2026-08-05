@@ -13,7 +13,7 @@ from run_evals_judge_calibration import (
 RECORDED_KAPPA_FLOOR = 0.7
 
 REBUILD_MANDATE_SUITE = (
-    Path(__file__).resolve().parents[1] / "evals" / "rebuild_mandate.yaml"
+    Path(__file__).resolve().parents[2] / "evals" / "rebuild_mandate.yaml"
 )
 
 

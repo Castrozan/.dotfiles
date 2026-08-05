@@ -2,7 +2,7 @@ from pathlib import Path
 
 import yaml
 
-REPO_ROOT = Path(__file__).resolve().parents[4]
+REPO_ROOT = Path(__file__).resolve().parents[5]
 EVAL_SUITE_DIRECTORY = REPO_ROOT / "agent-harness" / "quality" / "evaluations" / "evals"
 
 

@@ -5,11 +5,11 @@ class TestCiOwnedSuiteRunBlocking:
     @pytest.mark.parametrize(
         "command",
         [
-            "pytest agent-harness/quality/evaluations/unit",
-            "pytest agent-harness/quality/evaluations/unit -q",
-            "pytest agent-harness/quality/evaluations/unit/",
-            "pytest agent-harness/quality/evaluations/unit//",
-            "pytest agent-harness/quality/evaluations/unit && echo done",
+            "pytest agent-harness/quality/evaluations/__tests__/unit",
+            "pytest agent-harness/quality/evaluations/__tests__/unit -q",
+            "pytest agent-harness/quality/evaluations/__tests__/unit/",
+            "pytest agent-harness/quality/evaluations/__tests__/unit//",
+            "pytest agent-harness/quality/evaluations/__tests__/unit && echo done",
             "pytest agent-harness/quality/evaluations/integration",
             "pytest agent-harness/hooks/runtime/__tests__/unit",
             "pytest machine-configuration/operating-system/memory-protection/__tests__/integration",
@@ -29,11 +29,11 @@ class TestCiOwnedSuiteRunBlocking:
             "pytest -q",
             "pytest -n auto",
             "pytest -q -n auto",
-            "python3 -m pytest agent-harness/quality/evaluations/unit",
-            "python3 -m pytest agent-harness/quality/evaluations/unit/",
-            "cd __tests__; pytest ../agent-harness/quality/evaluations/unit",
-            "pytest agent-harness/quality/evaluations/unit/*",
-            "pytest agent-harness/quality/evaluations/unit/**",
+            "python3 -m pytest agent-harness/quality/evaluations/__tests__/unit",
+            "python3 -m pytest agent-harness/quality/evaluations/__tests__/unit/",
+            "cd __tests__; pytest ../agent-harness/quality/evaluations/__tests__/unit",
+            "pytest agent-harness/quality/evaluations/__tests__/unit/*",
+            "pytest agent-harness/quality/evaluations/__tests__/unit/**",
             "nix flake check",
             "nix flake check --keep-going --print-build-logs --show-trace",
             "sudo nix flake check",
@@ -62,7 +62,7 @@ class TestCiOwnedSuiteRunBlocking:
             {
                 "tool_name": "Bash",
                 "tool_input": {
-                    "command": "pytest agent-harness/quality/evaluations/unit/*"
+                    "command": "pytest agent-harness/quality/evaluations/__tests__/unit/*"
                 },
             }
         )
@@ -74,8 +74,8 @@ class TestCiOwnedSuiteRunBlocking:
     @pytest.mark.parametrize(
         "command",
         [
-            "pytest agent-harness/quality/evaluations/unit/test_run_evals_baseline.py",
-            "pytest agent-harness/quality/evaluations/unit/test_run_evals_baseline.py -k freshness",
+            "pytest agent-harness/quality/evaluations/__tests__/unit/test_run_evals_baseline.py",
+            "pytest agent-harness/quality/evaluations/__tests__/unit/test_run_evals_baseline.py -k freshness",
             "pytest agent-harness/quality/evaluations/e2e/",
             "pytest agent-harness/quality/evaluations/e2e -q",
             "pytest agent-harness/quality/evaluations/integration/run-integration-tests.py",

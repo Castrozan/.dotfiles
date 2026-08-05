@@ -25,7 +25,7 @@ from shell_command_invocation_position import (  # noqa: E402
 
 SANCTIONED_HEADLESS_CLAUDE_OVERRIDE_SENTINEL = "CLAUDE_HEADLESS_SANCTIONED=1"
 TEST_DIRECTORY_PATTERN = (
-    r"(?:agent-harness/quality/evaluations|__tests__|__test[*?@\[][^\s/]*|__tes[*?@\[][^\s/]*|"
+    r"(?:__tests__|__test[*?@\[][^\s/]*|__tes[*?@\[][^\s/]*|"
     r"__te[*?@\[][^\s/]*|__t[*?@\[][^\s/]*|__[*?@\[][^\s/]*|"
     r"[*?@\[][^\s/]*tests__)"
 )
@@ -49,12 +49,15 @@ TEST_RUNNER_DENIAL_REASON = (
 )
 PYTEST_INVOCATION_PREFIX = r"(?:python3? -m )?pytest\b"
 PYTEST_WHOLE_TIER_PATH_TERMINATOR = r"(?:/[*?[]|[\s;&|]|$)"
+PYTEST_CI_OWNED_TREE_ROOT_PATTERN = (
+    rf"(?:{TEST_DIRECTORY_PATTERN}|agent-harness/quality/evaluations)"
+)
 PYTEST_WHOLE_CI_OWNED_TIER_DIRECTORY_PATTERN = (
-    rf"{PYTEST_INVOCATION_PREFIX}[^;&|\n]*?{TEST_DIRECTORY_PATTERN}/"
+    rf"{PYTEST_INVOCATION_PREFIX}[^;&|\n]*?{PYTEST_CI_OWNED_TREE_ROOT_PATTERN}/"
     rf"(?:unit|integration)/*{PYTEST_WHOLE_TIER_PATH_TERMINATOR}"
 )
 PYTEST_WHOLE_TESTS_TREE_PATTERN = (
-    rf"{PYTEST_INVOCATION_PREFIX}[^;&|\n]*?{TEST_DIRECTORY_PATTERN}/"
+    rf"{PYTEST_INVOCATION_PREFIX}[^;&|\n]*?{PYTEST_CI_OWNED_TREE_ROOT_PATTERN}/"
     rf"*{PYTEST_WHOLE_TIER_PATH_TERMINATOR}"
 )
 PYTEST_NO_PATH_PATTERN = (

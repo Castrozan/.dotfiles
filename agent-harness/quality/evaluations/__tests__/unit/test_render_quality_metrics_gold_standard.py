@@ -16,7 +16,7 @@ from run_evals_baseline_thresholds import (
     MAXIMUM_REGRESSION_DROP,
 )
 
-REPOSITORY_ROOT_OF_THE_LIVE_CHECKOUT = Path(__file__).resolve().parents[4]
+REPOSITORY_ROOT_OF_THE_LIVE_CHECKOUT = Path(__file__).resolve().parents[5]
 PRACTICES_NOT_MEASURED_FROM_THE_CHECKOUT = {
     "regression-gating",
     "baseline-freshness-gating",

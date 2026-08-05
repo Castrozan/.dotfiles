@@ -100,8 +100,8 @@ def test_command_guard_allows_a_shell_wrapper_that_only_mentions_the_pattern(tmp
 @pytest.mark.parametrize(
     "command",
     [
-        ["pytest", "agent-harness/quality/evaluations/unit"],
-        ["pytest", "agent-harness/quality/evaluations/unit/"],
+        ["pytest", "agent-harness/quality/evaluations/__tests__/unit"],
+        ["pytest", "agent-harness/quality/evaluations/__tests__/unit/"],
         ["pytest", "agent-harness/quality/evaluations/integration"],
         ["pytest", "agent-harness/quality/evaluations"],
         ["pytest"],
@@ -136,7 +136,7 @@ def test_command_guard_allows_codex_targeted_test_file(tmp_path):
             "tool_input": {
                 "command": [
                     "pytest",
-                    "agent-harness/quality/evaluations/unit/test_run_evals_baseline.py",
+                    "agent-harness/quality/evaluations/__tests__/unit/test_run_evals_baseline.py",
                 ]
             },
         },

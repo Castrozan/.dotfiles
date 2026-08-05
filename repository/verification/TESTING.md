@@ -96,13 +96,13 @@ Each tier auto-detects tool availability (bats, nix, docker, kcov) and skips gra
 | E2E script tests | `*/__tests__/e2e/*.bats`, `.../e2e/test_*.py` | bats / pytest, live system |
 | Lua / QML suites | `*/__tests__/*_test.lua`, `*/__tests__/qml/run-qml-tests.sh` | lua / quickshell |
 | Domain nix tests | `*/__tests__/checks.nix` | nix |
-| Instruction surface lint | `agent-harness/quality/evaluations/unit/test_instruction_surfaces_are_structurally_sound.py` | pytest |
+| Instruction surface lint | `agent-harness/quality/evaluations/__tests__/unit/test_instruction_surfaces_are_structurally_sound.py` | pytest |
 | Agent evals | `agent-harness/quality/evaluations/{evals,integration,e2e}/`, `agent-harness/agent-instructions/skills/*/__tests__/evals/` | claude cli |
 
 The A/B instruction-loading measurement is a recorded result, not a tier:
 `agent-harness/quality/evaluations/instruction-loading-experiment.json` holds the paired comparison
 (re-measure with `agent-eval --ab`), and
-`agent-harness/quality/evaluations/unit/test_instruction_loading_experiment_record.py` guards
+`agent-harness/quality/evaluations/__tests__/unit/test_instruction_loading_experiment_record.py` guards
 that the record stays internally consistent and claims no significance its own
 p-values do not support.
 

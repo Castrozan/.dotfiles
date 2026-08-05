@@ -4,7 +4,7 @@ import yaml
 
 from run_evals_hook_test_runner import find_hook_script
 
-EVAL_SUITE_DIRECTORY = Path(__file__).resolve().parents[1] / "evals"
+EVAL_SUITE_DIRECTORY = Path(__file__).resolve().parents[2] / "evals"
 
 
 def hook_references_declared_by_every_suite():

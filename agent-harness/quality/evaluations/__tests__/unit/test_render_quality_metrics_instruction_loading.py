@@ -5,7 +5,7 @@ from render_quality_metrics_instruction_loading import (
     build_instruction_loading_experiment,
 )
 
-REPOSITORY_ROOT = Path(__file__).resolve().parents[4]
+REPOSITORY_ROOT = Path(__file__).resolve().parents[5]
 
 RECORDED_EXPERIMENT = {
     "generated_at": "2026-07-23T22:35:02+00:00",

@@ -4,9 +4,9 @@ from pathlib import Path
 import pytest
 import yaml
 
-EVAL_HARNESS_ROOT = Path(__file__).resolve().parents[1]
+EVAL_HARNESS_ROOT = Path(__file__).resolve().parents[2]
 SKILLS_ROOT = (
-    Path(__file__).resolve().parents[4]
+    Path(__file__).resolve().parents[5]
     / "agent-harness"
     / "agent-instructions"
     / "skills"

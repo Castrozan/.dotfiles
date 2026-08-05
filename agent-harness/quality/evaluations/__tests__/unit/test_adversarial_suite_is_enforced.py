@@ -4,7 +4,7 @@ import yaml
 
 from run_evals_hook_test_runner import evaluate_hook_test, find_hook_script
 
-ADVERSARIAL_SUITE = Path(__file__).resolve().parents[1] / "evals" / "adversarial.yaml"
+ADVERSARIAL_SUITE = Path(__file__).resolve().parents[2] / "evals" / "adversarial.yaml"
 
 
 def load_adversarial_tests():
