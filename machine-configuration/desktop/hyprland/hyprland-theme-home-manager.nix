@@ -1,6 +1,6 @@
 { config, ... }:
 let
-  dotfilesStaticPath = "${config.home.homeDirectory}/.dotfiles/static";
+  dotfilesThemingWallpapersPath = "${config.home.homeDirectory}/.dotfiles/machine-configuration/desktop/theming/wallpapers";
   wallpaperFiles = [
     "Milad-Fakurian-Abstract-Purple-Blue.jpg"
     "alter-jellyfish-dark.jpg"
@@ -52,7 +52,8 @@ in
 
       ${builtins.concatStringsSep "\n      " (
         map (
-          file: ''ln -sf "${dotfilesStaticPath}/${file}" "$HOME/.config/hypr-theme/wallpapers/${file}"''
+          file:
+          ''ln -sf "${dotfilesThemingWallpapersPath}/${file}" "$HOME/.config/hypr-theme/wallpapers/${file}"''
         ) wallpaperFiles
       )}
     '';
