@@ -9,7 +9,7 @@ _discover_test_files() {
 	local -a prunedDirectoryExpression=(
 		-path '*/.git'
 		-o -path '*/node_modules'
-		-o -path '*/private-config'
+		-o -path '*/private-configuration'
 		-o -path '*/result'
 		-o -path '*/result-*'
 		-o -path '*/.deep-work'

@@ -6,16 +6,16 @@ import pytest
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[6]
 PRIVATE_DISCORD_IDENTITY_PATH = (
-    REPOSITORY_ROOT / "private-config" / "clawde-discord-identity.nix"
+    REPOSITORY_ROOT / "private-configuration" / "clawde-discord-identity.nix"
 )
-PRIVATE_SUBMODULE_DIRECTORY_NAME = "private-config"
+PRIVATE_SUBMODULE_DIRECTORY_NAME = "private-configuration"
 
 
 def read_private_discord_user_id():
     identity_source = PRIVATE_DISCORD_IDENTITY_PATH.read_text()
     match = re.search(r'lucasDiscordUserId\s*=\s*"(\d+)"', identity_source)
     if match is None:
-        pytest.skip("private-config no longer declares lucasDiscordUserId")
+        pytest.skip("private-configuration no longer declares lucasDiscordUserId")
     return match.group(1)
 
 
@@ -49,13 +49,13 @@ def files_containing(needle, candidate_paths):
 class TestPublicTreeExcludesPrivateDiscordIdentity:
     def test_no_public_tracked_file_contains_the_owner_discord_user_id(self):
         if not PRIVATE_DISCORD_IDENTITY_PATH.is_file():
-            pytest.skip("private-config submodule is not checked out")
+            pytest.skip("private-configuration submodule is not checked out")
         private_discord_user_id = read_private_discord_user_id()
         leaking_paths = files_containing(
             private_discord_user_id, list_public_tracked_files()
         )
         assert leaking_paths == [], (
-            "the owner's real Discord user id lives in the private-config submodule "
+            "the owner's real Discord user id lives in the private-configuration submodule "
             "and must never appear in the public repository; found it in: "
             + ", ".join(leaking_paths)
         )

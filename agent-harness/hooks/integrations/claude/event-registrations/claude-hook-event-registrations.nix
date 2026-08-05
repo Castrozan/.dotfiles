@@ -2,7 +2,7 @@
   lib,
   hostname,
   isDarwin ? false,
-  privateConfigRoot ? ../../../../../private-config,
+  privateConfigRoot ? ../../../../../private-configuration,
 }:
 let
   hooksPath = "~/.claude/hooks";
@@ -14,10 +14,10 @@ let
   machineAllowedProhibitedWords =
     if !(builtins.pathExists machinesRegistryFile) && isDarwin then
       throw ''
-        private-config/machines.nix is missing from the flake source, so the per-machine
+        private-configuration/machines.nix is missing from the flake source, so the per-machine
         prohibited-words allowlist would silently degrade to empty and the guard would block
         sessions that the machine allowlist is meant to exempt. Refusing to build the darwin
-        hook registrations; rebuild from a flake source that carries the private-config
+        hook registrations; rebuild from a flake source that carries the private-configuration
         submodule content (a git+file flake ref with ?submodules=1).
       ''
     else if builtins.pathExists machineAllowedProhibitedWordsFile then

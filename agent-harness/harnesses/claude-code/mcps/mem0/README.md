@@ -8,7 +8,7 @@ machine, and leaves mem0 unwired otherwise.
 
 ## How it is wired
 
-- `wrapper.nix` reads `private-config/machines/<host>/mem0-host.nix` (a bare base
+- `wrapper.nix` reads `private-configuration/machines/<host>/mem0-host.nix` (a bare base
   URL string, kept out of the public tree). When it exists, the host is
   remote-configured and the wrapper emits an `sse` MCP server entry at
   `<base-url>/mcp/claude/sse/<user>` that the managed injector writes into

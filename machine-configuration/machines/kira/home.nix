@@ -1,6 +1,6 @@
 { lib, ... }:
 let
-  privateConfigRoot = ../../../private-config;
+  privateConfigRoot = ../../../private-configuration;
   kiraPrivateConfigExists = builtins.pathExists privateConfigRoot;
 in
 {
@@ -29,7 +29,7 @@ in
     "${privateConfigRoot}/machines/kira/clawde-agents"
     "${privateConfigRoot}/machines/kira/scheduled-tasks"
   ]
-  ++ lib.optional (builtins.pathExists ../../../private-config/machines/kira/cloudflare-tunnel-connector.nix) ../../../private-config/machines/kira/cloudflare-tunnel-connector.nix;
+  ++ lib.optional (builtins.pathExists ../../../private-configuration/machines/kira/cloudflare-tunnel-connector.nix) ../../../private-configuration/machines/kira/cloudflare-tunnel-connector.nix;
 
   custom.cockpitSessionBridge = {
     enable = true;

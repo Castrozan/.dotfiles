@@ -68,8 +68,8 @@ const DIMENSIONS = [
     key: "chronic-infra-traps",
     title: "Chronic infra traps",
     focus:
-      "the durable foot-guns this repo hits repeatedly: an uncommitted private-config submodule gitlink bump, orphaned tmux sessions left by disabled agents, the settings-seed allowlist missing a live runtime key, and nix eval call sites that omit ?submodules=1 for private-config",
-    scan: "Run git submodule status and flag a leading +. Grep for nix eval call sites touching private-config without ?submodules=1, and check the settings-seed allowlist against the runtime keys it must cover.",
+      "the durable foot-guns this repo hits repeatedly: an uncommitted private-configuration submodule gitlink bump, orphaned tmux sessions left by disabled agents, the settings-seed allowlist missing a live runtime key, and nix eval call sites that omit ?submodules=1 for private-configuration",
+    scan: "Run git submodule status and flag a leading +. Grep for nix eval call sites touching private-configuration without ?submodules=1, and check the settings-seed allowlist against the runtime keys it must cover.",
     boundary:
       "An in-flight gitlink the steward will reconcile is normal state, not a finding; only flag a gitlink bump that is staged or committed in the superproject yet points at an unpushed submodule commit.",
   },

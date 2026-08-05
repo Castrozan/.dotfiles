@@ -13,7 +13,7 @@ let
   pluginsConfig = import ./plugins.nix { inherit pkgs; };
 
   privateMarketplacePluginsPath =
-    ../../../../private-config/machines + "/${hostname}/claude-plugins.nix";
+    ../../../../private-configuration/machines + "/${hostname}/claude-plugins.nix";
   privateMarketplacePlugins =
     if builtins.pathExists privateMarketplacePluginsPath then
       import privateMarketplacePluginsPath

@@ -6,11 +6,11 @@
   isNixOS,
   ...
 }:
-# Adds private-config/machines/<hostname>/ssh.nix when that file exists.
+# Adds private-configuration/machines/<hostname>/ssh.nix when that file exists.
 let
   sshHostsSecretExists = builtins.pathExists ../../../secrets/infrastructure/ssh-hosts.age;
 
-  privateConfigRoot = ../../../private-config;
+  privateConfigRoot = ../../../private-configuration;
   privateConfigExists = builtins.pathExists privateConfigRoot;
   privateSshOverridePath = "${toString privateConfigRoot}/machines/${hostname}/ssh.nix";
   privateSshOverrideExists = privateConfigExists && builtins.pathExists privateSshOverridePath;

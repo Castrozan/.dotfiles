@@ -81,7 +81,7 @@ this design assumed and did not verify; `session-context-loading.md` measures it
 **A fact about a repository goes to that repository's `CLAUDE.md`.** Colocating a fact with the artifact it describes is the
 tightest possible scoping: it loads exactly when relevant, versions with the code, and dies when the code dies.
 
-**A work-sensitive fact goes to `private-config`**, which is already private, synced and nix-deployed.
+**A work-sensitive fact goes to `private-configuration`**, which is already private, synced and nix-deployed.
 
 The 112 dotfiles memories map onto existing owners almost completely: 13 to `nix`, 13 to `desktop`, 7 to `coding`, 6 to
 `herdr`, and the arr entries to `arr-stack`. The remaining domains are the clawde fleet's behavior and `agent-harness`
@@ -155,7 +155,7 @@ carries the knowledge-versus-work-state split and the capture path.
 ## Migration
 
 What was filed is the dotfiles store, which carried this repo's hard-won traps. The eight entries describing other
-repositories still belong in those repositories, and the work-sensitive ones in private-config.
+repositories still belong in those repositories, and the work-sensitive ones in private-configuration.
 
 All nineteen stores are now deleted, along with the seven bridge symlinks that pointed project directories at agent
 workspaces, and the three repositories that held one had it gitignored or untracked so none of them went dirty. The 445

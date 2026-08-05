@@ -1,6 +1,6 @@
 { lib, ... }:
 let
-  machineIdentityMapPath = ../../../../private-config/machines.nix;
+  machineIdentityMapPath = ../../../../private-configuration/machines.nix;
   chiseTailnetBindAddress =
     if builtins.pathExists machineIdentityMapPath then
       (import machineIdentityMapPath).chise.tailscaleIp

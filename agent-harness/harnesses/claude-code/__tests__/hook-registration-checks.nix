@@ -54,7 +54,7 @@ let
               inherit lib;
               hostname = "test";
               isDarwin = true;
-              privateConfigRoot = "/nonexistent/private-config";
+              privateConfigRoot = "/nonexistent/private-configuration";
             }
           ).PreToolUse
       );
@@ -91,13 +91,13 @@ in
         + lib.concatStringsSep ", " inlineExceptionEventsWithDivergingCommandCount
       );
 
-  hooks-registration-fails-loud-when-private-config-is-missing =
-    mkEvalCheck "hooks-registration-fails-loud-when-private-config-is-missing"
+  hooks-registration-fails-loud-when-private-configuration-is-missing =
+    mkEvalCheck "hooks-registration-fails-loud-when-private-configuration-is-missing"
       registrationRefusesToDegradeWithoutPrivateConfig
-      "on a darwin host the claude hook registration must refuse to build when private-config/machines.nix is missing from the flake source; the previous silent fallback shipped generations with an empty per-machine allowlist, which re-blocked sessions on hosts whose allowlist file exists (the rebuild produced PROHIBITED_WORDS_ALLOWED='' and sessions kept those hooks for their whole life)";
+      "on a darwin host the claude hook registration must refuse to build when private-configuration/machines.nix is missing from the flake source; the previous silent fallback shipped generations with an empty per-machine allowlist, which re-blocked sessions on hosts whose allowlist file exists (the rebuild produced PROHIBITED_WORDS_ALLOWED='' and sessions kept those hooks for their whole life)";
 
   hooks-registration-verifies-the-active-settings-after-seeding =
     mkEvalCheck "hooks-registration-verifies-the-active-settings-after-seeding"
       (builtins.hasAttr "verifyDeployedProhibitedWordsAllowlist" cfg.home.activation)
-      "the mutable Claude settings activation must verify the source, active Claude settings, and active Codex requirements after seeding, so a missing private-config submodule cannot silently deploy an empty machine allowlist";
+      "the mutable Claude settings activation must verify the source, active Claude settings, and active Codex requirements after seeding, so a missing private-configuration submodule cannot silently deploy an empty machine allowlist";
 }

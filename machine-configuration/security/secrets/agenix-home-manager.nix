@@ -13,7 +13,7 @@ let
   primaryIdentityKeyPath = "${config.home.homeDirectory}/.ssh/id_ed25519";
   identityKeyPaths = [ primaryIdentityKeyPath ];
 
-  privateConfigRoot = ../../../private-config;
+  privateConfigRoot = ../../../private-configuration;
   privateMachineSecretsModulePath = "${toString privateConfigRoot}/machines/${hostname}/secrets.nix";
   privateMachineSecretsModuleExists = builtins.pathExists privateMachineSecretsModulePath;
 

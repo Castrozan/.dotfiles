@@ -9,7 +9,7 @@ let
     hostname:
     import ../mcps/mem0/wrapper.nix {
       inherit lib hostname;
-      privateConfigRoot = ../../../../private-config;
+      privateConfigRoot = ../../../../private-configuration;
       defaultUserId = "lucas";
     };
 in
@@ -39,13 +39,13 @@ in
         && wrapper.serverConfig.type == "sse"
         && wrapper.serverConfig.url == "https://synthetic-mem0-host.test/mcp/claude/sse/lucas"
       )
-      "a mem0-host.nix base URL ending in a slash (the production shape) must normalize to a single-slash sse path, not a //mcp double slash the remote MCP would reject; this uses an in-tree fixture so the endpoint construction is exercised under the standard nix test tier without depending on the private-config submodule being checked out";
+      "a mem0-host.nix base URL ending in a slash (the production shape) must normalize to a single-slash sse path, not a //mcp double slash the remote MCP would reject; this uses an in-tree fixture so the endpoint construction is exercised under the standard nix test tier without depending on the private-configuration submodule being checked out";
 
   mem0-mcp-points-at-remote-when-private-host-file-is-present =
     mkEvalCheck "mem0-mcp-points-at-remote-when-private-host-file-is-present"
       (
         let
-          privateTestHostFile = ../../../../private-config/machines/test/mem0-host.nix;
+          privateTestHostFile = ../../../../private-configuration/machines/test/mem0-host.nix;
           wrapper = mem0WrapperFor "test";
         in
         (!builtins.pathExists privateTestHostFile)
@@ -55,7 +55,7 @@ in
           && wrapper.serverConfig.url == "http://mem0-remote.test.invalid/mcp/claude/sse/lucas"
         )
       )
-      "when private-config/machines/<host>/mem0-host.nix exists, the wrapper must mark the host remote-configured and emit exactly the normalized sse endpoint at that remote host; guards the production-active per-machine host-switch the omitted-default check cannot see";
+      "when private-configuration/machines/<host>/mem0-host.nix exists, the wrapper must mark the host remote-configured and emit exactly the normalized sse endpoint at that remote host; guards the production-active per-machine host-switch the omitted-default check cannot see";
 
   mem0-mcp-no-self-host-machinery-remains =
     mkEvalCheck "mem0-mcp-no-self-host-machinery-remains"

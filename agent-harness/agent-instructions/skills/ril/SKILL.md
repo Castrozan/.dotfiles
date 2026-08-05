@@ -63,7 +63,7 @@ already rejected.
 <applying_an_adopt>
 An adopt is built in an isolated worktree per the coding skill, never on the main checkout, and it is proven before
 it is proposed. Initialize submodules inside the fresh worktree first or the flake fetch dies on an empty
-`private-config`. Commit inside the worktree before building, because the build reads git and an untracked file never
+`private-configuration`. Commit inside the worktree before building, because the build reads git and an untracked file never
 reaches the store, so it would build the old code and report success. Build that worktree by naming its path in the
 flake reference: `rebuild` is pinned to `~/.dotfiles` and would silently build main instead. Exercise the change live,
 and say in the pull request what you actually ran rather than that it should work. On chise never switch a bare

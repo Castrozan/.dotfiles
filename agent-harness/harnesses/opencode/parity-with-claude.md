@@ -71,7 +71,7 @@ against the model choice.
   `scripts/translate_claude_subagents_to_opencode_agents.py`, which turns
   `tools:` into a deny-by-default permission map, `disallowedTools:` into an
   allow-by-default one, and drops `model:` so a subagent inherits the session's
-  model rather than pinning one. Private agents from `private-config` go through
+  model rather than pinning one. Private agents from `private-configuration` go through
   the same translator.
 - Commands: `agent-harness/agent-instructions/commands/*.md` deploy unchanged to
   `~/.config/opencode/command/`. opencode parses the same frontmatter and the

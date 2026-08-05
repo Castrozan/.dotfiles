@@ -1,8 +1,8 @@
 { hostname }:
 let
   publicSkillsDirectory = ../skills;
-  privateSharedSkillsDirectory = ../../../private-config/claude/skills;
-  privateMachineSkillsDirectory = ../../../private-config/machines + "/${hostname}/skills";
+  privateSharedSkillsDirectory = ../../../private-configuration/claude/skills;
+  privateMachineSkillsDirectory = ../../../private-configuration/machines + "/${hostname}/skills";
 
   skillSourceDirectories = builtins.filter builtins.pathExists [
     publicSkillsDirectory

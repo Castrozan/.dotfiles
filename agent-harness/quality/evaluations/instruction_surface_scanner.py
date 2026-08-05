@@ -4,7 +4,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[3]
 SKILL_TREE = REPO_ROOT / "agent-harness" / "agent-instructions" / "skills"
 PRIVATE_MACHINE_SKILL_TREES = sorted(
-    (REPO_ROOT / "private-config" / "machines").glob("*/skills")
+    (REPO_ROOT / "private-configuration" / "machines").glob("*/skills")
 )
 VENDORED_DIRECTORY_NAMES = frozenset({"node_modules", "dist", ".angular"})
 MAXIMUM_SKILL_DESCRIPTION_LENGTH = 1024

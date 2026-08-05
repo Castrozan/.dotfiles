@@ -3,7 +3,7 @@
 #   sudo darwin-rebuild switch --flake .#rin
 #   sudo darwin-rebuild switch --flake .#kira
 #
-# rin = toosaka rin, kira = kira yoshikage. See private-config/machines.nix
+# rin = toosaka rin, kira = kira yoshikage. See private-configuration/machines.nix
 # for the alias<->hostname mapping and per-machine role.
 # machine-configuration/machines/<alias>/system owns hardware-level config,
 # machine-configuration/machines/<alias>/home.nix owns the home-manager entry point.

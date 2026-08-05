@@ -6,7 +6,7 @@
   ...
 }:
 let
-  jiraConfigSourcePath = ../../../private-config + "/machines/${hostname}/jira-config.yml";
+  jiraConfigSourcePath = ../../../private-configuration + "/machines/${hostname}/jira-config.yml";
   jiraConfigSourceExists = builtins.pathExists jiraConfigSourcePath;
 
   jiraConfigSource = builtins.path {

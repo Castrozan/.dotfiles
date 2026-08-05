@@ -45,7 +45,7 @@ let
     sortedAlphabetically machineTierSkillNames
     == sortedAlphabetically (claudeInteractiveSkillNames ++ generatedMachineTierSkillNames);
 
-  privateMachinesDirectory = ../../../../private-config/machines;
+  privateMachinesDirectory = ../../../../private-configuration/machines;
 
   privateMachineNames =
     if builtins.pathExists privateMachinesDirectory then
@@ -119,5 +119,5 @@ in
 
   claude-private-machine-skills-are-catalogued =
     mkEvalCheck "claude-private-machine-skills-are-catalogued" everyPrivateMachineSkillIsCatalogued
-      "every private-config/machines/<hostname>/skills skill must be enumerated by the shared catalog for that hostname; a private root the catalog never reads is either injected behind the curated list's back or missing from the all-skills index entirely";
+      "every private-configuration/machines/<hostname>/skills skill must be enumerated by the shared catalog for that hostname; a private root the catalog never reads is either injected behind the curated list's back or missing from the all-skills index entirely";
 }

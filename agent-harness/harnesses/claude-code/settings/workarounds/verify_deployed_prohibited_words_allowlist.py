@@ -9,7 +9,7 @@ from pathlib import Path
 def machine_allowed_words_file(dotfiles_directory: Path, machine_alias: str) -> Path:
     return (
         dotfiles_directory
-        / "private-config"
+        / "private-configuration"
         / "machines"
         / machine_alias
         / "claude-prohibited-words-allowed.nix"

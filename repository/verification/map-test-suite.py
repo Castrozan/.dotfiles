@@ -8,7 +8,7 @@ TIER_DIRECTORY_NAMES = ["unit", "integration", "e2e"]
 EXCLUDED_PATH_SEGMENTS = {
     ".git",
     "node_modules",
-    "private-config",
+    "private-configuration",
     ".deep-work",
     ".direnv",
     ".worktrees",

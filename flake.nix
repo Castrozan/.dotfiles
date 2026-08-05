@@ -28,9 +28,9 @@
     stylix.url = "github:danth/stylix/release-25.11";
     stylix.inputs.nixpkgs.follows = "nixpkgs";
 
-    # Private assets repo (already mounted as a git submodule at private-config/);
+    # Private assets repo (already mounted as a git submodule at private-configuration/);
     # also exposed as a flake input so darwin modules that take it via inputs.
-    private-config = {
+    private-configuration = {
       url = "git+ssh://git@github.com/Castrozan/private-config";
       flake = false;
     };

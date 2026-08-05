@@ -1,6 +1,6 @@
 _:
 let
-  machinesRegistryPath = ../../../private-config/machines.nix;
+  machinesRegistryPath = ../../../private-configuration/machines.nix;
 in
 {
   clawde = {

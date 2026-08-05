@@ -18,7 +18,7 @@ SKIP_DIRECTORY_NAMES = {
     ".pytest_cache",
     ".mypy_cache",
     ".devenv",
-    "private-config",
+    "private-configuration",
     ".worktrees",
     ".deep-work",
 }

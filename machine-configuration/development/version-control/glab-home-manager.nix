@@ -6,7 +6,7 @@
   ...
 }:
 let
-  privateConfigRoot = ../../../private-config;
+  privateConfigRoot = ../../../private-configuration;
   privateGlabHostPath = "${toString privateConfigRoot}/machines/${hostname}/glab-host.nix";
   privateGlabHostExists = builtins.pathExists privateGlabHostPath;
 in
@@ -18,7 +18,7 @@ in
   options.glab.gitlabHost = lib.mkOption {
     type = lib.types.nullOr lib.types.str;
     default = null;
-    description = "Optional hosts.<host> entry for glab-cli. Set in private-config when the host is non-public.";
+    description = "Optional hosts.<host> entry for glab-cli. Set in private-configuration when the host is non-public.";
   };
 
   config =

@@ -20,7 +20,7 @@ and keep their own flags (`--evals`, `--integration`, `--e2e`).
 `repository/verification/run.sh` is the canonical entry point. Every script-test tier collects
 through one shared helper, `_discover_test_files` in `repository/verification/lib/discovery.sh`,
 which walks the **whole repo** for `*/__tests__/<tier>/` and prunes `.git`,
-`node_modules`, `private-config`, `result*`, `.deep-work`, `.direnv`,
+`node_modules`, `private-configuration`, `result*`, `.deep-work`, `.direnv`,
 `.worktrees`, and `__pycache__`. A new module's tests are picked up with zero
 runner edits — there are no hardcoded collection roots.
 
@@ -120,7 +120,7 @@ including a bare `pytest` at the root:
 - `--strict-config`, `xfail_strict`: an unknown ini key or an unexpectedly
   passing xfail fails rather than warns.
 - `norecursedirs` mirrors the prune list in `repository/verification/lib/discovery.sh`, so a bare root
-  `pytest` never walks into `private-config`.
+  `pytest` never walks into `private-configuration`.
 - `python_files = test_*.py` matches the collector's own pattern, so a live
   stress script named `*_test.py` is not collected as a test suite.
 

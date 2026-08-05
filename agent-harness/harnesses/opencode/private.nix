@@ -1,6 +1,6 @@
 { pkgs, lib, ... }:
 let
-  privateConfigDir = ../../../private-config/claude;
+  privateConfigDir = ../../../private-configuration/claude;
   agentsDir = privateConfigDir + "/agents";
   skillsDir = privateConfigDir + "/skills";
 

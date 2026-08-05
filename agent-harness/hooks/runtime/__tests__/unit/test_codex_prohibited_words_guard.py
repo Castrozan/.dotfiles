@@ -59,11 +59,11 @@ def test_words_guard_blocks_prohibited_word_in_codex_apply_patch_body(tmp_path):
 
 
 def test_words_guard_allows_prohibited_word_in_private_config_apply_patch(tmp_path):
-    private_directory = tmp_path / "private-config"
+    private_directory = tmp_path / "private-configuration"
     private_directory.mkdir()
     patch = (
         "*** Begin Patch\n"
-        "*** Add File: private-config/note.md\n"
+        "*** Add File: private-configuration/note.md\n"
         "+contains supersecretword here\n"
         "*** End Patch"
     )

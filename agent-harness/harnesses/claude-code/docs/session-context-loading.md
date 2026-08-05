@@ -31,7 +31,7 @@ on sort order alone. In `~/repo` the colliding pairs include `aplicacoes-atendim
 `betha-ai-maintainer`, the same two subjects the original context-bleed report named.
 
 Five of the 46 in `~/.dotfiles` are not skills for this session at all. `machine-configuration/development/source-code-search/sourcebot/skill` is a deployment
-template that happens to contain a `SKILL.md`, and four are `private-config/machines/rin/skills/*`, another machine's
+template that happens to contain a `SKILL.md`, and four are `private-configuration/machines/rin/skills/*`, another machine's
 private skills loaded on this one.
 
 ## The defects
@@ -173,7 +173,7 @@ naming its path through `skillDirectories`. `claude-uninjected-skills-reach-no-g
 absences together, because any one of them alone would put the skill back in every session's budget.
 
 A skill only one machine can act on belongs in that machine's private root rather than in the shared uninjected list:
-the catalog reads `private-config/machines/<hostname>/skills` under the building host's name, so it is absent from every
+the catalog reads `private-configuration/machines/<hostname>/skills` under the building host's name, so it is absent from every
 other machine by construction instead of by a name someone has to keep listing.
 
 The knowledge tier still travels, with a change in reachability: a fact filed under an indexed skill's `knowledge.md`

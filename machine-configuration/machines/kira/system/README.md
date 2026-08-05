@@ -1,5 +1,5 @@
 <identity>
-`kira` (kira yoshikage) is a macOS laptop, user `lucas.zanoni`, built from this flake as the `.#kira` attribute. The alias resolves to a physical hostname in `private-config/machines.nix`, outside this repo, so reimaging or renaming the hardware never touches config.
+`kira` (kira yoshikage) is a macOS laptop, user `lucas.zanoni`, built from this flake as the `.#kira` attribute. The alias resolves to a physical hostname in `private-configuration/machines.nix`, outside this repo, so reimaging or renaming the hardware never touches config.
 </identity>
 
 <stack>

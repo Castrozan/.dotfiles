@@ -6,7 +6,7 @@
 }:
 let
   perMachineLauncherSpecsPath =
-    ../../../private-config/machines + "/${hostname}/claude/config-dir-launchers.nix";
+    ../../../private-configuration/machines + "/${hostname}/claude/config-dir-launchers.nix";
   perMachineLauncherSpecs =
     if builtins.pathExists perMachineLauncherSpecsPath then import perMachineLauncherSpecsPath else [ ];
 

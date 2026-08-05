@@ -21,7 +21,7 @@ let
 
   mem0Mcp = import ./mem0/wrapper.nix {
     inherit lib hostname;
-    privateConfigRoot = ../../../../private-config;
+    privateConfigRoot = ../../../../private-configuration;
     defaultUserId = "lucas";
   };
 

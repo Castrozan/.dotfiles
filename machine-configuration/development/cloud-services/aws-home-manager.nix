@@ -5,7 +5,7 @@
   ...
 }:
 let
-  awsConfigSourcePath = ../../../private-config + "/aws/config";
+  awsConfigSourcePath = ../../../private-configuration + "/aws/config";
   awsConfigSourceExists = builtins.pathExists awsConfigSourcePath;
 
   awsConfigSource = builtins.path {

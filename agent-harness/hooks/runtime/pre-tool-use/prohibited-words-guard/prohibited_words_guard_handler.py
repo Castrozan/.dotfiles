@@ -24,7 +24,7 @@ from prohibited_words_segments import collect_segments_to_inspect  # noqa: E402
 DEFAULT_PROHIBITED_WORDS_FILE = os.path.join(
     os.path.expanduser("~"),
     ".dotfiles",
-    "private-config",
+    "private-configuration",
     "claude",
     "prohibited-words.txt",
 )
@@ -93,7 +93,7 @@ def handle(hook_input):
     word, label = violation
     block_message = (
         f"BLOCKED ({tool_name}): the word '{word}' must not appear in {label} "
-        f"outside private repositories. Move it into private-config, or remove it."
+        f"outside private repositories. Move it into private-configuration, or remove it."
     )
     return HandlerResult(
         decision="deny", reason=block_message, system_message=block_message

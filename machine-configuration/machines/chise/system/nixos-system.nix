@@ -38,7 +38,7 @@ in
     ../../../media/arr-stack/jellyseerr-account-permissions/jellyseerr-account-permission-provisioner-nixos.nix
     ../../../media/arr-stack/jellyseerr-private-request-routing/jellyseerr-private-request-routing-provisioner-nixos.nix
   ]
-  ++ lib.optional (builtins.pathExists ../../../../private-config/machines/chise/jarvis-connector.nix) ../../../../private-config/machines/chise/jarvis-connector.nix;
+  ++ lib.optional (builtins.pathExists ../../../../private-configuration/machines/chise/jarvis-connector.nix) ../../../../private-configuration/machines/chise/jarvis-connector.nix;
 
   custom = {
     cockpitSessionBridge = {

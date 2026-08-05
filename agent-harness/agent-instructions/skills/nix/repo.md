@@ -23,8 +23,8 @@ machine-configuration/machines/shared-darwin-{home-manager,system-nix-darwin}.ni
 machine-configuration/machines/<alias>/home.nix - per-machine home-manager entry point (IMPORTS ONLY)
 machine-configuration/machines/<alias>/home/ - optional per-machine home-manager submodules
 machine-configuration/machines/user-packages-<user>-home-manager.nix - per-user shared package set (used by multiple machines)
-machine-configuration/development/version-control/git-private-home-manager.nix - per-user git router (sources private-config/machines/<hostname>/git-user.nix)
-machine-configuration/network/ssh/ssh-private-home-manager.nix - per-user ssh router (sources private-config/machines/<hostname>/ssh.nix)
+machine-configuration/development/version-control/git-private-home-manager.nix - per-user git router (sources private-configuration/machines/<hostname>/git-user.nix)
+machine-configuration/network/ssh/ssh-private-home-manager.nix - per-user ssh router (sources private-configuration/machines/<hostname>/ssh.nix)
 machine-configuration/network/ssh/scripts/ - shared per-user ssh activation scripts
 machine-configuration/<domain>/<capability>/ - a capability owning its nix modules, raw config,
 scripts and tests; deployment mechanism is the file-name suffix (-nixos, -nix-darwin, -home-manager)
@@ -32,8 +32,8 @@ machine-configuration/machines/<alias>/system/ - machine-specific system config;
 nixos-system.nix for per-user-on-the-host bits
 secrets/*.age - agenix encrypted secrets
 secrets/secrets.nix - public key mappings
-private-config/ - private git submodule (work agents, company skills, identity docs)
-agents/ - AI agent instructions .md files (symlinked to AI tools configs)
+private-configuration/ - private git submodule (work agents, company skills, identity docs)
+agent-harness/agent-instructions/ - instruction surfaces and shared skills deployed to every AI tool
 </directory_organization>
 
 <rebuild_execution>

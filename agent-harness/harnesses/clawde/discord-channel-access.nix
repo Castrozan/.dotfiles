@@ -51,7 +51,7 @@ in
       channel opt-ins (groups) stay with the clawde channel adapter's
       allowedChannelsSecretName merge, and both passes are field-disjoint so
       they compose regardless of activation order. Populate the identifiers from
-      private-config so they stay out of the public tree.
+      private-configuration so they stay out of the public tree.
     '';
   };
 

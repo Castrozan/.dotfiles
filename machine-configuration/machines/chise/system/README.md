@@ -1,5 +1,5 @@
 <identity>
-`chise` (hatori chise) is a NixOS desktop, user `zanoni`, built from this flake as the `.#chise` attribute. The alias resolves to a physical hostname in `private-config/machines.nix`, outside this repo.
+`chise` (hatori chise) is a NixOS desktop, user `zanoni`, built from this flake as the `.#chise` attribute. The alias resolves to a physical hostname in `private-configuration/machines.nix`, outside this repo.
 </identity>
 
 <stack>

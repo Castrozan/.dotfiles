@@ -15,7 +15,7 @@ let
         server = lib.mkOption {
           type = lib.types.nullOr lib.types.str;
           default = null;
-          description = "Base URL of the Bitwarden or Vaultwarden server this account authenticates against; null uses the public Bitwarden cloud. Declare an employer-hosted server from private-config so its host name never lands in the public repository.";
+          description = "Base URL of the Bitwarden or Vaultwarden server this account authenticates against; null uses the public Bitwarden cloud. Declare an employer-hosted server from private-configuration so its host name never lands in the public repository.";
         };
         clientIdSecret = lib.mkOption {
           type = lib.types.str;
@@ -86,7 +86,7 @@ in
   options.custom.bitwardenCli.accounts = lib.mkOption {
     type = lib.types.attrsOf (lib.types.submodule bitwardenAccountModule);
     default = { };
-    description = "Bitwarden accounts the bitwarden-cli can hold side by side, each isolated in its own writable BITWARDENCLI_APPDATA_DIR with its own pinned server and agenix-backed API key and master password. The public repository declares only the personal account on the default cloud; an employer account is added from private-config so its server host stays private. Each declared account gets a bw-<name> wrapper that runs bw against that account's data directory, and `bw-session <name>` (defaulting to personal) mints an unlocked session for it without a prompt.";
+    description = "Bitwarden accounts the bitwarden-cli can hold side by side, each isolated in its own writable BITWARDENCLI_APPDATA_DIR with its own pinned server and agenix-backed API key and master password. The public repository declares only the personal account on the default cloud; an employer account is added from private-configuration so its server host stays private. Each declared account gets a bw-<name> wrapper that runs bw against that account's data directory, and `bw-session <name>` (defaulting to personal) mints an unlocked session for it without a prompt.";
   };
 
   config = {

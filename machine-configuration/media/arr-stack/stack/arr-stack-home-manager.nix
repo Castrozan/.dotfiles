@@ -10,7 +10,7 @@ let
   stackRoot = "${config.home.homeDirectory}/arr-stack";
   arrUsersCli = import ../users/arr-users-cli-home-manager.nix { inherit pkgs stackRoot; };
   arrStatusCli = import ../status/arr-status-cli-home-manager.nix { inherit pkgs stackRoot; };
-  machineIdentityMapPath = ../../../../private-config/machines.nix;
+  machineIdentityMapPath = ../../../../private-configuration/machines.nix;
   privateConfigPresent = builtins.pathExists machineIdentityMapPath;
   chiseMachineIdentity = lib.optionalAttrs privateConfigPresent (import machineIdentityMapPath).chise;
   chiseTailnetBindAddress = chiseMachineIdentity.tailscaleIp or "127.0.0.1";

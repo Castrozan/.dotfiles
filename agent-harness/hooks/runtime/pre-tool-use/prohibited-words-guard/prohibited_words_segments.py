@@ -5,7 +5,7 @@ import re
 
 from changed_file_paths import apply_patch_added_content, collect_changed_file_paths
 
-PRIVATE_REPOSITORY_PATH_SEGMENT = "private-config"
+PRIVATE_REPOSITORY_PATH_SEGMENT = "private-configuration"
 
 PUBLISHING_COMMAND_PATTERNS = [
     r"\bgit\b[^\n|;&]*\bcommit\b",

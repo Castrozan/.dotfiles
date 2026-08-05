@@ -11,7 +11,7 @@ let
   envText = builtins.readFile ../env;
   readmeText = builtins.readFile ../README.md;
 
-  machineIdentityMapPath = ../../../../../private-config/machines.nix;
+  machineIdentityMapPath = ../../../../../private-configuration/machines.nix;
   privateConfigPresent = builtins.pathExists machineIdentityMapPath;
   forbiddenTailnetBindAddress =
     if privateConfigPresent then (import machineIdentityMapPath).chise.tailscaleIp else null;
@@ -146,7 +146,7 @@ in
   chise-arr-stack-no-tailnet-ip-literal-in-public-sources =
     mkEvalCheck "chise-arr-stack-no-tailnet-ip-literal-in-public-sources"
       publicSourcesCarryNoTailnetIpLiteral
-      "chise's tailnet bind address must never appear as a literal in the public compose or README; it flows in only through the runtime ARR_BIND_ADDR variable and the private-config machine map, so any reintroduction of the raw IP fails this guard on a checkout that has the private submodule";
+      "chise's tailnet bind address must never appear as a literal in the public compose or README; it flows in only through the runtime ARR_BIND_ADDR variable and the private-configuration machine map, so any reintroduction of the raw IP fails this guard on a checkout that has the private submodule";
 
   chise-arr-stack-config-volume-per-service =
     mkEvalCheck "chise-arr-stack-config-volume-per-service" everyServiceHasConfigVolume

@@ -18,7 +18,7 @@ def test_load_machine_allowed_words_returns_none_without_a_machine_file(tmp_path
 def test_load_machine_allowed_words_evaluates_the_machine_file(tmp_path):
     allowed_words_file = (
         tmp_path
-        / "private-config"
+        / "private-configuration"
         / "machines"
         / "test"
         / "claude-prohibited-words-allowed.nix"

@@ -14,7 +14,7 @@ LINUX_ONLY_CAPABILITY = LINUX_ONLY_TEST_ROOTS_FILE.read_text().split()[0]
 SHARED_CAPABILITY_MODULE = "machine-configuration/included_capability"
 AGENT_HARNESS_MODULE = "agent-harness/included_harness"
 PRUNED_MODULES = (
-    "private-config/pruned_submodule",
+    "private-configuration/pruned_submodule",
     ".worktrees/pruned_worktree",
 )
 

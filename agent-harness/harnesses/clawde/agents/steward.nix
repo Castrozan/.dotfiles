@@ -7,7 +7,7 @@
 let
   stewardPayloadRoot = inputs.clawde.stewardPayloadPath;
 
-  machinesRegistryPath = ../../../../private-config/machines.nix;
+  machinesRegistryPath = ../../../../private-configuration/machines.nix;
   machinesRegistry =
     if builtins.pathExists machinesRegistryPath then import machinesRegistryPath else { };
 

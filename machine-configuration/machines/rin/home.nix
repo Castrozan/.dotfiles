@@ -1,6 +1,6 @@
 { lib, ... }:
 let
-  privateConfigRoot = ../../../private-config;
+  privateConfigRoot = ../../../private-configuration;
   rinPrivateConfigExists = builtins.pathExists privateConfigRoot;
 in
 {
@@ -11,7 +11,7 @@ in
     "${privateConfigRoot}/machines/rin/clawde-agents"
     "${privateConfigRoot}/machines/rin/claude/mcd-ca-workspace-credentials.nix"
   ]
-  ++ lib.optional (builtins.pathExists ../../../private-config/machines/rin/cloudflare-tunnel-connector.nix) ../../../private-config/machines/rin/cloudflare-tunnel-connector.nix;
+  ++ lib.optional (builtins.pathExists ../../../private-configuration/machines/rin/cloudflare-tunnel-connector.nix) ../../../private-configuration/machines/rin/cloudflare-tunnel-connector.nix;
 
   custom.cockpitSessionBridge = {
     enable = true;

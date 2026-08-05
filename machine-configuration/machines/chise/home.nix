@@ -1,6 +1,6 @@
 { lib, ... }:
 let
-  privateConfigRoot = ../../../private-config;
+  privateConfigRoot = ../../../private-configuration;
   chisePrivateConfigExists = builtins.pathExists privateConfigRoot;
 in
 {

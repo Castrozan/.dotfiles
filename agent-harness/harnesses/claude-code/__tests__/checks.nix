@@ -20,7 +20,7 @@ let
 
   deployedSettings = builtins.fromJSON cfg.home.file.".claude/settings.json.nix-source".text;
 
-  testMachinePrivateMarketplacePluginsFixture = ../../../../private-config/machines/test/claude-plugins.nix;
+  testMachinePrivateMarketplacePluginsFixture = ../../../../private-configuration/machines/test/claude-plugins.nix;
   testMachinePrivateMarketplacePluginsFixtureExists = builtins.pathExists testMachinePrivateMarketplacePluginsFixture;
   testMachinePrivateMarketplacePlugins =
     if testMachinePrivateMarketplacePluginsFixtureExists then
@@ -83,7 +83,7 @@ in
   claude-private-marketplace-plugins-folded-into-settings =
     mkEvalCheck "claude-private-marketplace-plugins-folded-into-settings"
       privateMarketplacePluginsAreFoldedIntoSettings
-      "when a private-config/machines/<hostname>/claude-plugins.nix exists, global-settings.nix must fold its extraKnownMarketplaces and enabledPlugins into the deployed settings.json.nix-source; a dropped `// privateMarketplacePlugins` would silently regress the only path that installs the per-machine plugin";
+      "when a private-configuration/machines/<hostname>/claude-plugins.nix exists, global-settings.nix must fold its extraKnownMarketplaces and enabledPlugins into the deployed settings.json.nix-source; a dropped `// privateMarketplacePlugins` would silently regress the only path that installs the per-machine plugin";
 
 }
 // import ./claude-managed-settings-nix-darwin-checks.nix {

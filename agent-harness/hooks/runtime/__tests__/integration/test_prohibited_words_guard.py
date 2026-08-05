@@ -82,7 +82,7 @@ class TestPrivateConfigExemption:
             {
                 "tool_name": "Write",
                 "tool_input": {
-                    "file_path": "/Users/x/.dotfiles/private-config/machines.nix",
+                    "file_path": "/Users/x/.dotfiles/private-configuration/machines.nix",
                     "content": "acme and initech are fine here",
                 },
             }
@@ -120,7 +120,7 @@ class TestPublishingCommands:
             {
                 "tool_name": "Bash",
                 "tool_input": {
-                    "command": 'git -C private-config commit -m "acme rename"'
+                    "command": 'git -C private-configuration commit -m "acme rename"'
                 },
             }
         )
