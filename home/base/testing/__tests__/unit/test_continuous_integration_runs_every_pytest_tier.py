@@ -5,7 +5,9 @@ import yaml
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[5]
 TESTS_WORKFLOW = REPOSITORY_ROOT / ".github" / "workflows" / "tests.yml"
-DISCOVERY_LIBRARY = REPOSITORY_ROOT / "__tests__" / "lib" / "discovery.sh"
+DISCOVERY_LIBRARY = (
+    REPOSITORY_ROOT / "repository" / "verification" / "lib" / "discovery.sh"
+)
 
 PYTEST_TIERS_THAT_MUST_RUN_IN_CONTINUOUS_INTEGRATION = ("unit", "integration")
 

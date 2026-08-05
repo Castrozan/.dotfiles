@@ -26,13 +26,12 @@ KNOWN_GOOD_BASH_COMMANDS = (
     "git diff --stat origin/main",
     "git worktree add .worktrees/feature -b feature",
     "grep -rn 'check_baseline\\|check-baseline' agents/__tests__/evals/*.py",
-    "grep -R '__tests__/run.sh' agents",
-    "rg 'make test' agents",
+    "grep -R 'repository/verification/run.sh' agents",
     "ls -la agents/hooks/__tests__/unit",
     "tree agents/hooks/nix-rebuild",
     "cat agents/hooks/common/shell_heredoc_body.py",
     "wc -l agents/hooks/common/*.py",
-    "echo '__tests__/run.sh belongs to CI'",
+    "echo 'repository/verification/run.sh belongs to CI'",
     "pytest agents/hooks/__tests__/unit/test_shell_heredoc_body.py",
     "pytest agents/hooks/__tests__/integration/test_foreground_ci_wait_guard.py -q",
     "ruff format agents/hooks/common/shell_heredoc_body.py",
@@ -46,7 +45,7 @@ KNOWN_GOOD_BASH_COMMANDS = (
     "git commit -F- -- agents/hooks <<'MESSAGE'\n"
     "fix(hooks): explain what the guard forbids\n"
     "\n"
-    "Running __tests__/run.sh locally stays prohibited; CI owns it.\n"
+    "Running repository/verification/run.sh locally stays prohibited; CI owns it.\n"
     "MESSAGE",
     "gh issue create --title perf --body-file - <<'BODY'\n"
     "pytest agents/ is CI-owned, so measure with a single file instead.\n"

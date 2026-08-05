@@ -1,6 +1,6 @@
 #!/usr/bin/env bats
 
-load '../../../../../__tests__/helpers/bash-script-assertions'
+load '../../../../../repository/verification/helpers/bash-script-assertions'
 
 setup() {
 	export SCRIPT_UNDER_TEST="$DOTFILES_ROOT_DIRECTORY/.config/tmux/binds.conf"

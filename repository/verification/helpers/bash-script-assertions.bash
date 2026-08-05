@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-readonly DOTFILES_ROOT_DIRECTORY="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+readonly DOTFILES_ROOT_DIRECTORY="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 readonly DOTFILES_BIN_DIRECTORY="$DOTFILES_ROOT_DIRECTORY/bin"
 readonly DOTFILES_HOME_BASE_DIRECTORY="$DOTFILES_ROOT_DIRECTORY/home/base"
 readonly DOTFILES_HOME_LINUX_DIRECTORY="$DOTFILES_ROOT_DIRECTORY/home/linux"

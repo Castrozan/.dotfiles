@@ -9,22 +9,22 @@ class TestBashReadOnlyInspectionCommandsStayAllowed:
             "git ls-files '*/__tests__/*' | wc -l",
             "git ls-files '*/__tests__/*' | grep run",
             "git -C /Users/someone/.dotfiles ls-files '*/__tests__/*'",
-            "git log --oneline -- __tests__/run.sh",
+            "git log --oneline -- repository/verification/run.sh",
             "git grep -n 'make test' -- agents",
-            "git show HEAD:__tests__/run.sh",
-            "git diff -- __tests__/run.sh",
-            "grep -R '__tests__/run.sh' agents",
+            "git show HEAD:repository/verification/run.sh",
+            "git diff -- repository/verification/run.sh",
+            "grep -R 'repository/verification/run.sh' agents",
             "grep -rn 'pytest agents/' agents/skills",
             "grep -rn 'nix flake check' agents",
             "rg 'make test' agents",
-            "cat __tests__/run.sh",
-            "head -20 __tests__/run.sh",
-            "tail -5 __tests__/run.sh",
-            "wc -l __tests__/run.sh",
+            "cat repository/verification/run.sh",
+            "head -20 repository/verification/run.sh",
+            "tail -5 repository/verification/run.sh",
+            "wc -l repository/verification/run.sh",
             "ls -la agents/hooks/__tests__/unit",
             "tree agents/hooks/__tests__",
-            "stat __tests__/run.sh",
-            "echo '__tests__/run.sh is reserved for CI'",
+            "stat repository/verification/run.sh",
+            "echo 'repository/verification/run.sh is reserved for CI'",
             "command -v pytest",
             "which pytest",
         ],
@@ -43,7 +43,7 @@ class TestBashReadOnlyInspectionCommandsStayAllowed:
         [
             'grep -rn "check_baseline\\|check-baseline" agents/__tests__/evals/*.py',
             "grep -c 'unit\\|integration' agents/hooks/__tests__/unit/test_thing.py",
-            'echo "the suite lives at __tests__/run.sh; CI runs it" | wc -l',
+            'echo "the suite lives at repository/verification/run.sh; CI runs it" | wc -l',
             "git log --oneline -- 'agents/__tests__/*'",
             'grep -rln "pytest agents/" agents | head -5',
         ],
@@ -65,7 +65,7 @@ class TestHeredocBodiesAreDataRatherThanCommands:
             "git commit -F- -- agents/hooks <<'MESSAGE'\n"
             "fix(hooks): explain the ban\n"
             "\n"
-            "Running __tests__/run.sh locally stays prohibited.\n"
+            "Running repository/verification/run.sh locally stays prohibited.\n"
             "MESSAGE",
             "gh issue create --body-file - <<'BODY'\n"
             "pytest agents/ belongs to CI.\n"
@@ -85,9 +85,9 @@ class TestHeredocBodiesAreDataRatherThanCommands:
     @pytest.mark.parametrize(
         "command",
         [
-            "bash <<'EOF'\n__tests__/run.sh --quick\nEOF",
-            "cat <<'EOF' | bash\n__tests__/run.sh --quick\nEOF",
-            "sudo bash <<'EOF'\n__tests__/run.sh\nEOF",
+            "bash <<'EOF'\nrepository/verification/run.sh --quick\nEOF",
+            "cat <<'EOF' | bash\nrepository/verification/run.sh --quick\nEOF",
+            "sudo bash <<'EOF'\nrepository/verification/run.sh\nEOF",
         ],
     )
     def test_a_body_an_interpreter_executes_is_still_blocked(
@@ -104,14 +104,14 @@ class TestBashReadOnlyInspectionExemptionDoesNotLeakExecution:
     @pytest.mark.parametrize(
         "command",
         [
-            "cat __tests__/run.sh | bash",
-            "cat __tests__/run.sh | sh -",
-            "cat __tests__/run.sh | python3",
-            'bash -lc "$(cat __tests__/run.sh)"',
-            'eval "$(cat __tests__/run.sh)"',
-            "git ls-files '*/__tests__/*'; __tests__/run.sh",
-            "grep -R x agents && ./__tests__/run.sh --quick",
-            "echo starting | xargs __tests__/run.sh",
+            "cat repository/verification/run.sh | bash",
+            "cat repository/verification/run.sh | sh -",
+            "cat repository/verification/run.sh | python3",
+            'bash -lc "$(cat repository/verification/run.sh)"',
+            'eval "$(cat repository/verification/run.sh)"',
+            "git ls-files '*/__tests__/*'; repository/verification/run.sh",
+            "grep -R x agents && ./repository/verification/run.sh --quick",
+            "echo starting | xargs repository/verification/run.sh",
             "ls agents && pytest agents/hooks/__tests__/unit",
             "grep -rn 'a\\|b' agents; pytest agents/hooks/__tests__/unit",
             "echo 'a|b' | bash -c 'pytest agents/hooks/__tests__/unit'",

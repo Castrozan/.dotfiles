@@ -22,7 +22,7 @@ let
       )
     }:$PATH"
     export QT_DECLARATIVE_PATH="${pkgs.qt6.qtdeclarative}"
-    exec ~/.dotfiles/__tests__/run.sh "$@"
+    exec ~/.dotfiles/repository/verification/run.sh "$@"
   '';
   dotfiles-coverage = pkgs.writeShellScriptBin "dotfiles-coverage" ''
     export PATH="${
@@ -34,7 +34,7 @@ let
         ++ kcovPackages
       )
     }:$PATH"
-    exec ~/.dotfiles/__tests__/cover/bash-coverage.sh "$@"
+    exec ~/.dotfiles/repository/verification/cover/bash-coverage.sh "$@"
   '';
   dotfiles-perf = pkgs.writeShellScriptBin "dotfiles-perf" ''
     set -Eeuo pipefail

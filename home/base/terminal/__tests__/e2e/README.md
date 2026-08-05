@@ -6,7 +6,7 @@ exiting. Launches an isolated GUI instance (its own `--class`, own socket, off
 the user's session), proves which GPU backend is active, then drives many window
 open/close cycles asserting the process never segfaults.
 
-Not wired into `__tests__/run.sh` or `checks.nix`: it needs a live macOS window
+Not wired into `repository/verification/run.sh` or `checks.nix`: it needs a live macOS window
 server and opens real windows, so it cannot run in the Linux CI sandbox. The
 headless regression guard that the config stays on WebGpu lives in
 `../checks.nix` (`domain-terminal-wezterm-webgpu-front-end`).
@@ -40,7 +40,7 @@ Non-invasive: creates its own `perf-bench-*` tabs, always closes them, never
 focuses a window by default, and touches no config, environment, or profile.
 Skips cleanly when no herdr server is running, so it is safe on any host.
 
-Not wired into `__tests__/run.sh` or `checks.nix`: it needs a live herdr
+Not wired into `repository/verification/run.sh` or `checks.nix`: it needs a live herdr
 server and real pane spawns. The unit-level guard for the same latency lives
 in `../unit/test_bash_login_pty_startup_latency.py`.
 

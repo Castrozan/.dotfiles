@@ -1,6 +1,6 @@
 #!/usr/bin/env bats
 
-load '../../../../../__tests__/helpers/docker-container-assertions'
+load '../../../../../repository/verification/helpers/docker-container-assertions'
 
 readonly DOCKER_IMAGE_TAG="dotfiles-network-test"
 readonly SCRIPT_PATH_INSIDE_CONTAINER="/dotfiles/home/base/network/scripts/setup-network-optimization"

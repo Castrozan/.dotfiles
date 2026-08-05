@@ -9,7 +9,7 @@
 
   home.file = {
     ".githooks/commit-msg" = {
-      source = ../../../.githooks/scope-commit.sh;
+      source = ../../../repository/git-hooks/scope-commit.sh;
       executable = true;
     };
   };

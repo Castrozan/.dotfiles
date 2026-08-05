@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-DOCKER_TEST_REPOSITORY_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+DOCKER_TEST_REPOSITORY_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 readonly DOCKER_TEST_REPOSITORY_ROOT
-readonly DOCKER_TEST_IMAGE_DOCKERFILE="$DOCKER_TEST_REPOSITORY_ROOT/__tests__/Dockerfile"
+readonly DOCKER_TEST_IMAGE_DOCKERFILE="$DOCKER_TEST_REPOSITORY_ROOT/repository/verification/Dockerfile"
 
 docker_daemon_is_reachable() {
 	command -v docker &>/dev/null && docker info &>/dev/null

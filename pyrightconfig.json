@@ -1,5 +1,7 @@
 {
   "extraPaths": [
+    "repository/verification",
+    "repository/verification/unit",
     "agents/hooks",
     "agents/hooks/__tests__",
     "agents/hooks/__tests__/e2e",

@@ -46,7 +46,7 @@ let
           ;
       };
       modules = [
-        ../../home/base/system/health-check
+        ../../../home/base/system/health-check
         {
           home = {
             username = "test";

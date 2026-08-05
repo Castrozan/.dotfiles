@@ -66,7 +66,7 @@ in
 
   homeManagerModules = import ./home-manager-modules.nix;
 
-  checks.${linuxSystem} = import ../__tests__/nix-checks {
+  checks.${linuxSystem} = import ../verification/nix-checks {
     inherit
       pkgs
       inputs
@@ -77,7 +77,7 @@ in
     inherit (nixpkgs) lib;
   };
 
-  checks.${darwinSystem} = import ../__tests__/nix-checks {
+  checks.${darwinSystem} = import ../verification/nix-checks {
     inherit
       inputs
       self

@@ -14,7 +14,7 @@ Three artifacts are published, each under its own prefix in the bucket:
   `agents/__tests__/render_baseline_dashboard.py` from the git history of
   `agents/__tests__/baseline.json`.
 - `reports/coverage/` — kcov line coverage for the shell suite, produced by
-  `__tests__/cover/bash-coverage.sh --ci`.
+  `repository/verification/cover/bash-coverage.sh --ci`.
 - `reports/quality/metrics.json` — the live counts the atrium quality writeup renders, derived by
   `agents/__tests__/render_quality_metrics.py` straight from the repo: static-eval suite size and pass
   rate, integration and e2e scenario counts, `core.md` line and rule-block counts, and the wired
@@ -52,9 +52,9 @@ nothing, and the atrium baseline and coverage iframes 404 against the bucket.
 ## Generate the artifacts locally
 
 ```
-nix shell nixpkgs#kcov nixpkgs#bats nixpkgs#bc --command ./__tests__/cover/bash-coverage.sh --ci
+nix shell nixpkgs#kcov nixpkgs#bats nixpkgs#bc --command ./repository/verification/cover/bash-coverage.sh --ci
 mkdir -p apps/reports/site/quality
-cp -r __tests__/coverage apps/reports/site/coverage
+cp -r repository/verification/coverage apps/reports/site/coverage
 python3 agents/__tests__/render_baseline_dashboard.py apps/reports/site/baseline
 cp .github/pages/style.css apps/reports/site/baseline/style.css
 python3 agents/__tests__/render_quality_metrics.py apps/reports/site/quality/metrics.json

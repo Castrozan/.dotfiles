@@ -39,31 +39,29 @@ def test_command_guard_blocks_git_add_all_inside_a_shell_wrapper(tmp_path):
 @pytest.mark.parametrize(
     "command",
     [
-        ["./__tests__/run.sh", "--quick"],
-        ["./__test[s]__/run.sh", "--quick"],
-        ["./__tes[t]s__/run.sh", "--quick"],
-        ["./__t[e]sts__/run.sh", "--quick"],
-        ["./*tests__/run.sh", "--quick"],
-        ["./__test*/run.sh", "--quick"],
-        ["bash", "-lc", "./__tests__/run.sh --quick"],
-        ["bash", "-lc", "./__tests__/'run.sh' --quick"],
-        ["bash", "-lc", "./__tests__/$'run.sh' --quick"],
-        ["bash", "-lc", "cd __tests__; ./`printf run`.`printf sh` --quick"],
-        ["bash", "-O", "extglob", "-c", "./__test@(s)__/run.sh --quick"],
+        ["./repository/verification/run.sh", "--quick"],
+        ["bash", "-lc", "./repository/verification/run.sh --quick"],
+        ["bash", "-lc", "./repository/verification/'run.sh' --quick"],
+        ["bash", "-lc", "./repository/verification/$'run.sh' --quick"],
         [
             "bash",
             "-lc",
-            "directory=__tests__; runner=run.sh; ./$directory/$runner --quick",
+            "cd repository/verification; ./`printf run`.`printf sh` --quick",
         ],
         [
             "bash",
             "-lc",
-            "directory=__tests__; runner=run; extension=sh; ./$directory/$runner.$extension --quick",
+            "directory=repository/verification; runner=run.sh; ./$directory/$runner --quick",
         ],
         [
             "bash",
             "-lc",
-            "directory='__tests__'; runner=run; extension=sh; ./$directory/$runner.$extension --quick",
+            "directory=repository/verification; runner=run; extension=sh; ./$directory/$runner.$extension --quick",
+        ],
+        [
+            "bash",
+            "-lc",
+            "directory='repository/verification'; runner=run; extension=sh; ./$directory/$runner.$extension --quick",
         ],
     ],
 )
@@ -75,7 +73,7 @@ def test_command_guard_blocks_codex_test_runner_invocations(tmp_path, command):
     assert result.returncode == 0
     blocked = json.loads(result.stdout)
     assert blocked["hookSpecificOutput"]["permissionDecision"] == "deny"
-    assert "__tests__/run.sh" in blocked["systemMessage"]
+    assert "repository/verification/run.sh" in blocked["systemMessage"]
 
 
 def test_command_guard_allows_codex_read_only_shell(tmp_path):
@@ -108,7 +106,6 @@ def test_command_guard_allows_a_shell_wrapper_that_only_mentions_the_pattern(tmp
         ["pytest", "agents/__tests__"],
         ["pytest"],
         ["pytest", "."],
-        ["make", "test"],
         ["nix", "flake", "check"],
     ],
 )

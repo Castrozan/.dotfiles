@@ -1,9 +1,9 @@
 #!/usr/bin/env bats
 
-load '../../../../../__tests__/helpers/bash-script-assertions'
+load '../../../../../repository/verification/helpers/bash-script-assertions'
 
 setup() {
-	SCRIPT_UNDER_TEST="$DOTFILES_ROOT_DIRECTORY/.githooks/scope-commit.sh"
+	SCRIPT_UNDER_TEST="$DOTFILES_ROOT_DIRECTORY/repository/git-hooks/scope-commit.sh"
 	export SCRIPT_UNDER_TEST
 	temporary_repository="$(mktemp -d)"
 	git -C "$temporary_repository" init -q
@@ -55,10 +55,10 @@ run_hook_after_staging_path_with_message() {
 	[ "${lines[0]}" = "fix(shared-darwin): invert scroll" ]
 }
 
-@test "derives scope from .githooks/ changes" {
-	run run_hook_after_staging_path_with_message ".githooks/scope-commit.sh" "fix: invert scroll"
+@test "derives scope from repository git hook changes" {
+	run run_hook_after_staging_path_with_message "repository/git-hooks/scope-commit.sh" "fix: invert scroll"
 	[ "$status" -eq 0 ]
-	[ "${lines[0]}" = "fix(githooks): invert scroll" ]
+	[ "${lines[0]}" = "fix(git-hooks): invert scroll" ]
 }
 
 @test "rejects a subject without a conventional type on a scoped path" {

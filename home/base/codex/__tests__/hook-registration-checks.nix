@@ -15,8 +15,8 @@ let
     inherit pkgs lib;
     hostname = "test";
   };
-  darwinConfigurationsSource = builtins.readFile ../../../../flake/darwin-configurations.nix;
-  nixosConfigurationsSource = builtins.readFile ../../../../flake/nixos-configurations.nix;
+  darwinConfigurationsSource = builtins.readFile ../../../../repository/flake-assembly/darwin-configurations.nix;
+  nixosConfigurationsSource = builtins.readFile ../../../../repository/flake-assembly/nixos-configurations.nix;
 
   codexSessionStartGroups =
     if parsedCodexHooksConfig ? hooks && parsedCodexHooksConfig.hooks ? SessionStart then
@@ -101,8 +101,8 @@ in
       (
         !(builtins.hasAttr ".codex/hooks.json" cfg.home.file)
         && builtins.hasAttr "codex/requirements.toml" codexSystemManagedHooksConfig.environment.etc
-        && lib.hasInfix "../home/base/codex/system-managed-hooks.nix" darwinConfigurationsSource
-        && lib.hasInfix "../home/base/codex/system-managed-hooks.nix" nixosConfigurationsSource
+        && lib.hasInfix "../../home/base/codex/system-managed-hooks.nix" darwinConfigurationsSource
+        && lib.hasInfix "../../home/base/codex/system-managed-hooks.nix" nixosConfigurationsSource
       )
       "Codex hooks should be deployed through /etc/codex/requirements.toml on Darwin and NixOS so Codex treats them as managed and trusted";
 

@@ -87,7 +87,7 @@ sudo nixos-generate-config --dir hosts/<alias>/configs
 
 #### 3. Customize Your Configuration
 - Copy `hosts/chise/` (system config) and `home/hosts/linux/chise.nix` plus `home/hosts/linux/chise/` (per-user home-manager modules) as templates for the new alias
-- Update `flake/nixos-configurations.nix` to register `nixosConfigurations.<alias>`
+- Update `repository/flake-assembly/nixos-configurations.nix` to register `nixosConfigurations.<alias>`
 
 #### 4. Deploy the Flake
 ```bash
@@ -136,8 +136,8 @@ Here's how everything fits together:
 
 ```mermaid
 graph TD
-    subgraph "flake.nix"
-        Flake["Entry Point<br/>defines configs"]
+    subgraph "repository/flake-assembly"
+        Flake["Flake output assembly<br/>defines configs"]
     end
 
     subgraph "NixOS Configuration"
@@ -196,7 +196,7 @@ graph TD
 
 ## 📂 Repository Layout
 
-Flake inputs live in `flake.nix`; outputs are split into `flake/{outputs,nixos-configurations,darwin-configurations,home-manager-modules}.nix`. Each output factory enumerates the hosts it owns and threads `hostname` plus `isNixOS` / `isDarwin` flags into `extraSpecialArgs`.
+Flake inputs live in `flake.nix`; outputs are split into `repository/flake-assembly/{outputs,nixos-configurations,darwin-configurations,home-manager-modules}.nix`. Each output factory enumerates the hosts it owns and threads `hostname` plus `isNixOS` / `isDarwin` flags into `extraSpecialArgs`.
 
 Home Manager modules under `home/` are split by platform, ryan4yin-style: `home/base/` (any-platform), `home/linux/`, `home/darwin/`. Per-platform subtrees let Linux-only modules never load on darwin and vice versa. Each module owns its `default.nix`, optional `scripts/`, optional `__tests__/`.
 

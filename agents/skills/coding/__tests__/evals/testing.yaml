@@ -28,4 +28,4 @@ tests:
     no_tools: true
     assertions:
       llm_judge:
-        - "The response keeps local verification focused on the changed area, does not use __tests__/run.sh as a normal delivery gate, and identifies CI as the full-suite gate."
+        - "The response keeps local verification focused on the changed area, does not use repository/verification/run.sh as a normal delivery gate, and identifies CI as the full-suite gate."

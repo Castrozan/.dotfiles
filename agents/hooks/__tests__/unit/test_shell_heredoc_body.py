@@ -27,14 +27,16 @@ COMMIT_MESSAGE_QUOTING_A_PROHIBITED_COMMAND = (
     "git commit -F- -- agents/hooks <<'MESSAGE'\n"
     "fix(hooks): stop denying a message that mentions the suite\n"
     "\n"
-    "Running __tests__/run.sh locally stays prohibited.\n"
+    "Running repository/verification/run.sh locally stays prohibited.\n"
     "MESSAGE"
 )
 
-SCRIPT_FED_TO_AN_INTERPRETER = "bash <<'EOF'\n__tests__/run.sh --quick\nEOF"
+SCRIPT_FED_TO_AN_INTERPRETER = (
+    "bash <<'EOF'\nrepository/verification/run.sh --quick\nEOF"
+)
 
 INERT_BODY_PIPED_INTO_AN_INTERPRETER = (
-    "cat <<'EOF' | bash\n__tests__/run.sh --quick\nEOF"
+    "cat <<'EOF' | bash\nrepository/verification/run.sh --quick\nEOF"
 )
 
 
@@ -46,7 +48,7 @@ class TestAnInertBodyIsNotExecutedText:
     @pytest.mark.parametrize(
         "command_text,needle",
         [
-            (COMMIT_MESSAGE_QUOTING_A_PROHIBITED_COMMAND, "__tests__"),
+            (COMMIT_MESSAGE_QUOTING_A_PROHIBITED_COMMAND, "repository"),
             (
                 "gh issue create --body-file - <<'BODY'\npytest agents/ is CI-only\nBODY",
                 "pytest",
@@ -80,13 +82,13 @@ class TestABodyAnInterpreterReadsIsAScript:
         [
             SCRIPT_FED_TO_AN_INTERPRETER,
             INERT_BODY_PIPED_INTO_AN_INTERPRETER,
-            "sudo bash <<'EOF'\n__tests__/run.sh\nEOF",
-            "python3 <<'EOF'\n__tests__/run.sh\nEOF",
+            "sudo bash <<'EOF'\nrepository/verification/run.sh\nEOF",
+            "python3 <<'EOF'\nrepository/verification/run.sh\nEOF",
         ],
     )
     def test_a_body_that_gets_executed_is_never_inert(self, command_text):
         assert not offset_lies_in_inert_heredoc_body(
-            command_text, offset_of(command_text, "__tests__")
+            command_text, offset_of(command_text, "repository")
         )
 
 

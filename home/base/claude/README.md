@@ -46,8 +46,8 @@ Agent declarations live per-machine in `private-config/machines/<host>/clawde-*.
 From the dotfiles root:
 
 ```sh
-__tests__/run.sh --quick   # bats + qml tests
-__tests__/run.sh --nix     # also runs nix evaluation checks
+repository/verification/run.sh --quick   # bats + qml tests
+repository/verification/run.sh --nix     # also runs nix evaluation checks
 ```
 
 Module-specific tests live under `__tests__/`.

@@ -2,7 +2,7 @@
 
 setup() {
 	REPO_ROOT="$(cd "$(dirname "$BATS_TEST_FILENAME")/../../../../../.." && pwd)"
-	source "$REPO_ROOT/__tests__/helpers/bash-script-assertions.bash"
+	source "$REPO_ROOT/repository/verification/helpers/bash-script-assertions.bash"
 	SCRIPT_UNDER_TEST="$(_resolve_script_under_test)"
 	BACKENDS_SOURCE_DIRECTORY="$(dirname "$SCRIPT_UNDER_TEST")/backends"
 	source "$SCRIPT_UNDER_TEST"

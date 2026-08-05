@@ -29,19 +29,22 @@ TEST_DIRECTORY_PATTERN = (
     r"__te[*?@\[][^\s/]*|__t[*?@\[][^\s/]*|__[*?@\[][^\s/]*|"
     r"[*?@\[][^\s/]*tests__)"
 )
-TEST_RUNNER_PATH_PATTERN = rf"{TEST_DIRECTORY_PATTERN}/run\.sh"
-TEST_RUNNER_DYNAMIC_PATH_PATTERN = rf"{TEST_DIRECTORY_PATTERN}/[^\s;&|]*[$*?\[{{%`]"
+TEST_RUNNER_DIRECTORY_PATTERN = rf"(?:{TEST_DIRECTORY_PATTERN}|repository/verification)"
+TEST_RUNNER_PATH_PATTERN = rf"{TEST_RUNNER_DIRECTORY_PATTERN}/run\.sh"
+TEST_RUNNER_DYNAMIC_PATH_PATTERN = (
+    rf"{TEST_RUNNER_DIRECTORY_PATTERN}/[^\s;&|]*[$*?\[{{%`]"
+)
 TEST_RUNNER_VARIABLE_PATH_PATTERN = (
-    rf"(?=[\s\S]*={TEST_DIRECTORY_PATTERN})(?=[\s\S]*\./\$)"
+    rf"(?=[\s\S]*={TEST_RUNNER_DIRECTORY_PATTERN})(?=[\s\S]*\./\$)"
     rf"(?=[\s\S]*(?:=run\.sh\b|=run(?:[;\s]|$)))"
     rf"(?=[\s\S]*(?:=sh(?:[;\s]|$)|\brun\.sh\b))"
 )
-TEST_RUNNER_TEMPLATE_PATH_PATTERN = rf"\$\([^;\n]*{TEST_DIRECTORY_PATTERN}/[^;\n]*%"
-TEST_RUNNER_AFTER_DIRECTORY_CHANGE_PATTERN = (
-    rf"\bcd\s+{TEST_DIRECTORY_PATTERN}\s*(?:&&|;)\s*\./[^;\n]*(?:\brun\.sh\b|`|\$\()"
+TEST_RUNNER_TEMPLATE_PATH_PATTERN = (
+    rf"\$\([^;\n]*{TEST_RUNNER_DIRECTORY_PATTERN}/[^;\n]*%"
 )
+TEST_RUNNER_AFTER_DIRECTORY_CHANGE_PATTERN = rf"\bcd\s+{TEST_RUNNER_DIRECTORY_PATTERN}\s*(?:&&|;)\s*\./[^;\n]*(?:\brun\.sh\b|`|\$\()"
 TEST_RUNNER_DENIAL_REASON = (
-    "__tests__/run.sh is prohibited locally; CI runs it after push. Run the affected "
+    "repository/verification/run.sh is prohibited locally; CI runs it after push. Run the affected "
     "test file or small named set directly."
 )
 PYTEST_INVOCATION_PREFIX = r"(?:python3? -m )?pytest\b"
@@ -72,14 +75,6 @@ PYTEST_WHOLE_COLLECTION_DENIAL_REASON = (
     "Bare pytest or a whole tests-tree run collects CI-owned tiers; CI runs them "
     "after push. Run a specific test file, for example "
     "'pytest agents/hooks/__tests__/unit/test_specific_thing.py'."
-)
-MAKE_TEST_SUITE_PATTERN = (
-    rf"{COMMAND_INVOCATION_POSITION_PREFIX}make"
-    rf"(?:\s+-[^\s]+(?:\s+[^\s]+)?)*\s+test(?:\s|$)"
-)
-MAKE_TEST_SUITE_DENIAL_REASON = (
-    "make test funnels into __tests__/run.sh, which CI runs after push. Run a "
-    "specific test file or the affected module's test directly."
 )
 NIX_FLAKE_CHECK_PATTERN = (
     rf"{COMMAND_INVOCATION_POSITION_PREFIX}nix\s+flake\s+check"
@@ -130,10 +125,6 @@ PROHIBITED_BASH_COMMAND_PATTERNS = [
     (
         PYTEST_AGENTS_TREE_PATTERN,
         PYTEST_WHOLE_COLLECTION_DENIAL_REASON,
-    ),
-    (
-        MAKE_TEST_SUITE_PATTERN,
-        MAKE_TEST_SUITE_DENIAL_REASON,
     ),
     (
         NIX_FLAKE_CHECK_PATTERN,

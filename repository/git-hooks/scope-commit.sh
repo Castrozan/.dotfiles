@@ -5,8 +5,8 @@ commit_message_file="$1"
 staged_files=$(git diff --cached --name-only)
 
 scope=$(printf '%s\n' "$staged_files" |
-	grep -m1 -E '^(hosts/[^/]+/|hosts/[^/.]+-configuration\.nix$|home/hosts/(linux|darwin)/[^/]+(\.nix|/)|\.githooks/)' |
-	sed -E -e 's#^hosts/([^/]+)/.*#\1#' -e 's#^hosts/([^/.]+)-configuration\.nix$#\1#' -e 's#^home/hosts/(linux|darwin)/([^/.]+)(\.nix|/.*)#\2#' -e 's#^\.githooks/.*#githooks#')
+	grep -m1 -E '^(hosts/[^/]+/|hosts/[^/.]+-configuration\.nix$|home/hosts/(linux|darwin)/[^/]+(\.nix|/)|repository/git-hooks/)' |
+	sed -E -e 's#^hosts/([^/]+)/.*#\1#' -e 's#^hosts/([^/.]+)-configuration\.nix$#\1#' -e 's#^home/hosts/(linux|darwin)/([^/.]+)(\.nix|/.*)#\2#' -e 's#^repository/git-hooks/.*#git-hooks#')
 
 subject=$(head -n 1 "$commit_message_file")
 body=$(tail -n +2 "$commit_message_file")

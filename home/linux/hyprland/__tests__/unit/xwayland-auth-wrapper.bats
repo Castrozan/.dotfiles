@@ -1,6 +1,6 @@
 #!/usr/bin/env bats
 
-load '../../../../../__tests__/helpers/bash-script-assertions'
+load '../../../../../repository/verification/helpers/bash-script-assertions'
 
 @test "is nix template with substitution tokens" {
     assert_script_source_matches "@EXTRA_PATH@"

@@ -350,4 +350,4 @@ replayed cheaply.
 imported by `home/darwin/default.nix` (for ambient-canvas) and `home/hosts/linux/chise.nix`
 (for the herdr grid); each half is platform-gated internally, so importing the domain on the
 wrong platform is inert. Tests live in `__tests__/` and are wired into the flake checks via
-`__tests__/nix-checks/default.nix`.
+`repository/verification/nix-checks/default.nix`.

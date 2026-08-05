@@ -1,6 +1,6 @@
 #!/usr/bin/env bats
 
-load '../../../../../__tests__/helpers/bash-script-assertions'
+load '../../../../../repository/verification/helpers/bash-script-assertions'
 
 SCRIPT_UNDER_TEST="$(cd "$(dirname "$BATS_TEST_FILENAME")" && pwd)/../../settings/workarounds/seed-claude-settings-mutable.sh"
 

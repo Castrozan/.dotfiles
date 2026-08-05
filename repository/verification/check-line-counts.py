@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Block files from newly exceeding the line-count hard limit.
 
-Existing over-limit files are grandfathered in __tests__/line-count-baseline.json,
+Existing over-limit files are grandfathered in repository/verification/line-count-baseline.json,
 which maps each one to its allowed line count. The check fails when a file that
 is not grandfathered exceeds the blocking threshold, or when a grandfathered
 file grows beyond its recorded count. Shrinking always passes. Run with
@@ -19,7 +19,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-REPOSITORY_ROOT = Path(__file__).resolve().parent.parent
+REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 SHARED_POLICY_DIRECTORY = (
     REPOSITORY_ROOT / "agents" / "hooks" / "post-tool-use" / "line-count"
 )
@@ -106,7 +106,7 @@ def print_regression_failure(regressions: list[tuple[str, int, int]]) -> None:
         )
     print(
         "\nSplit the file into smaller single-responsibility modules, or run "
-        "__tests__/check-line-counts.py --update-baseline if the growth is intended.",
+        "repository/verification/check-line-counts.py --update-baseline if the growth is intended.",
         file=sys.stderr,
     )
 

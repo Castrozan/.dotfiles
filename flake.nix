@@ -4,11 +4,11 @@
 
     Forget everything you know about nix, this is just a framework to configure apps and dotfiles.
 
-    Outputs live in ./flake/outputs.nix to keep this file short. Inputs must
+    Outputs live in ./repository/flake-assembly/outputs.nix to keep this file short. Inputs must
     stay here because Nix parses flake.nix statically to discover them.
   '';
 
-  outputs = inputs: (import ./flake/outputs.nix) inputs;
+  outputs = inputs: (import ./repository/flake-assembly/outputs.nix) inputs;
 
   inputs = {
     # For stable packages definitions

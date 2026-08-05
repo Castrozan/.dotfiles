@@ -17,8 +17,8 @@ and keep their own flags (`--evals`, `--integration`, `--e2e`).
 
 ## Discovery
 
-`__tests__/run.sh` is the canonical entry point. Every script-test tier collects
-through one shared helper, `_discover_test_files` in `__tests__/lib/discovery.sh`,
+`repository/verification/run.sh` is the canonical entry point. Every script-test tier collects
+through one shared helper, `_discover_test_files` in `repository/verification/lib/discovery.sh`,
 which walks the **whole repo** for `*/__tests__/<tier>/` and prunes `.git`,
 `node_modules`, `private-config`, `result*`, `.deep-work`, `.direnv`,
 `.worktrees`, and `__pycache__`. A new module's tests are picked up with zero
@@ -33,10 +33,10 @@ Two discovery policies:
   suites run identically everywhere.
 
 Nix domain checks (`checks.nix`) are not shell-discovered; the flake aggregates
-them via `__tests__/nix-checks/default.nix` and they run under `--nix`. Agent
+them via `repository/verification/nix-checks/default.nix` and they run under `--nix`. Agent
 evals are driven by the `agent-eval` engine, not the shell collectors.
 
-`__tests__/run.sh --map` prints the whole suite as a tree (module × tier ×
+`repository/verification/run.sh --map` prints the whole suite as a tree (module × tier ×
 counts: bats `@test` blocks, pytest functions, lua/qml suites, eval yamls, nix
 eval-checks) so the structure is self-describing.
 
@@ -58,14 +58,14 @@ runs `unit/` bats through kcov. `--ci` runs quick with CI-appropriate skips.
 ## Run
 
 ```bash
-__tests__/run.sh                       # quick tier (default): unit/ only
-__tests__/run.sh --map                 # print the suite tree (module x tier x counts)
-__tests__/run.sh --nix                 # quick + nix eval tests
-__tests__/run.sh --integration-scripts # integration/ bats + pytest (alias: --docker)
-__tests__/run.sh --runtime             # e2e/ script tests (live system)
-__tests__/run.sh --all                 # quick + nix + integration-scripts
-__tests__/run.sh --coverage            # unit/ bats with kcov coverage
-__tests__/run.sh --perf                # performance benchmarks + threshold tests
+repository/verification/run.sh                       # quick tier (default): unit/ only
+repository/verification/run.sh --map                 # print the suite tree (module x tier x counts)
+repository/verification/run.sh --nix                 # quick + nix eval tests
+repository/verification/run.sh --integration-scripts # integration/ bats + pytest (alias: --docker)
+repository/verification/run.sh --runtime             # e2e/ script tests (live system)
+repository/verification/run.sh --all                 # quick + nix + integration-scripts
+repository/verification/run.sh --coverage            # unit/ bats with kcov coverage
+repository/verification/run.sh --perf                # performance benchmarks + threshold tests
 bats home/base/system/__tests__/unit/foo.bats  # single test file
 ```
 
@@ -119,7 +119,7 @@ including a bare `pytest` at the root:
   file is shadowed, so register markers in the root config only.
 - `--strict-config`, `xfail_strict`: an unknown ini key or an unexpectedly
   passing xfail fails rather than warns.
-- `norecursedirs` mirrors the prune list in `lib/discovery.sh`, so a bare root
+- `norecursedirs` mirrors the prune list in `repository/verification/lib/discovery.sh`, so a bare root
   `pytest` never walks into `private-config`.
 - `python_files = test_*.py` matches the collector's own pattern, so a live
   stress script named `*_test.py` is not collected as a test suite.
@@ -132,10 +132,10 @@ split into `unit/`, `integration/`, and `e2e/` subdirectories. The runner
 discovers them by directory (`*/__tests__/<tier>/*.bats` and `*/__tests__/<tier>/test_*.py`)
 — the subdirectory **is** the tier. There is no filename-suffix routing.
 
-Bats tests load shared helpers from the root `__tests__/helpers/` via relative path;
+Bats tests load shared helpers from the root `repository/verification/helpers/` via relative path;
 the number of `../` segments is the module's nesting depth (a test in
 `home/base/<domain>/__tests__/unit/` is five levels deep, so it loads
-`'../../../../../__tests__/helpers/bash-script-assertions'`). Pytest tests resolve the
+`'../../../../../repository/verification/helpers/bash-script-assertions'`). Pytest tests resolve the
 script under test through a `conftest.py` at the module's `__tests__/` level, which
 applies to all three subdirectories.
 
@@ -143,14 +143,14 @@ applies to all three subdirectories.
 
 Test filename must match script name: `bin/foo` → `home/{base,linux,darwin}/<domain>/__tests__/unit/foo.bats` (or `integration/` / `e2e/` for the heavier tiers).
 
-The shared helper at `__tests__/helpers/bash-script-assertions.bash` auto-resolves the script path from the test filename.
+The shared helper at `repository/verification/helpers/bash-script-assertions.bash` auto-resolves the script path from the test filename.
 
 ### Minimal template
 
 ```bash
 #!/usr/bin/env bats
 
-load '../../../../../__tests__/helpers/bash-script-assertions'
+load '../../../../../repository/verification/helpers/bash-script-assertions'
 
 @test "is executable" {
     assert_is_executable
@@ -195,7 +195,7 @@ load '../../../../../__tests__/helpers/bash-script-assertions'
 ```bash
 #!/usr/bin/env bats
 
-load '../../../../../__tests__/helpers/bash-script-assertions'
+load '../../../../../repository/verification/helpers/bash-script-assertions'
 
 @test "is executable"     { assert_is_executable; }
 @test "passes shellcheck" { assert_passes_shellcheck; }
@@ -214,7 +214,7 @@ load '../../../../../__tests__/helpers/bash-script-assertions'
 ```bash
 #!/usr/bin/env bats
 
-load '../../../../../__tests__/helpers/bash-script-assertions'
+load '../../../../../repository/verification/helpers/bash-script-assertions'
 
 @test "is executable"              { assert_is_executable; }
 @test "passes shellcheck"          { assert_passes_shellcheck; }
@@ -252,7 +252,7 @@ teardown() {
 3. **Static over execution for setup scripts.** Scripts requiring sudo/root are tested via content analysis, not execution. Verify configs, packages, and service activation are declared correctly.
 4. **Behavioral tests for CLI scripts.** Scripts that take user input should test error paths (missing args, bad input) and success paths.
 5. **Containerized integration tests go in `integration/`.** Place docker-backed tests under `<domain>/__tests__/integration/`; they run via `--integration-scripts` (alias `--docker`) and stay out of the quick gate by directory, not by filename. Run `docker run --rm --privileged dotfiles-test bash -c 'bin/setup-foo'` to verify setup scripts install and configure correctly on Ubuntu.
-6. **No external test libraries.** `__tests__/helpers/bash-script-assertions.bash` covers common assertions. Avoid adding bats-assert/bats-file/bats-mock unless a concrete need arises.
+6. **No external test libraries.** `repository/verification/helpers/bash-script-assertions.bash` covers common assertions. Avoid adding bats-assert/bats-file/bats-mock unless a concrete need arises.
 7. **Shellcheck is mandatory.** All bash scripts must pass shellcheck. The `assert_passes_shellcheck` assertion handles environments where shellcheck isn't installed by skipping.
 8. **Names mean things.** Test directories mirror source directories. File and function names describe what they test, not how. Follow `agents/core_rules/core.md` naming and script conventions.
 9. **Canonical script pattern.** All shell scripts under `__tests__/` follow the same pattern as `home/{base,linux,darwin}/system/scripts/rebuild`: `set -Eeuo pipefail`, `readonly` constants, `main()` at bottom, `_` prefixed private functions, no comments.

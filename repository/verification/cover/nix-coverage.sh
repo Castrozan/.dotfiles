@@ -2,7 +2,7 @@
 
 set -Eeuo pipefail
 
-readonly REPOSITORY_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+readonly REPOSITORY_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 
 main() {
 	echo "=== Nix Module Coverage ==="

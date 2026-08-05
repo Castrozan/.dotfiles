@@ -39,7 +39,7 @@ let
         extraSpecialArgs = specialArgs // {
           hostname = machineAlias;
         };
-        users.${username} = import (../home/hosts/darwin + "/${machineAlias}.nix");
+        users.${username} = import (../../home/hosts/darwin + "/${machineAlias}.nix");
       };
     };
 
@@ -52,8 +52,8 @@ let
 
       modules = [
         { nixpkgs.overlays = darwinSystemOverlays; }
-        ../home/base/codex/system-managed-hooks.nix
-        ../hosts/${machineAlias}
+        ../../home/base/codex/system-managed-hooks.nix
+        ../../hosts/${machineAlias}
         home-manager.darwinModules.home-manager
         (mkHomeManagerWrapperFor machineAlias)
       ];
@@ -61,7 +61,7 @@ let
   };
 
   machineAliasesWithExistingHostDirectory =
-    builtins.filter (machineAlias: builtins.pathExists (../hosts + "/${machineAlias}"))
+    builtins.filter (machineAlias: builtins.pathExists (../../hosts + "/${machineAlias}"))
       [
         "rin"
         "kira"

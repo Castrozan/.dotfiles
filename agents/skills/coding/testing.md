@@ -36,15 +36,16 @@ Before presenting results to the user, stop and verify completeness:
 <what_to_test>
 CI is the full-suite gate for the dotfiles repo: pushing runs the script tiers and `nix flake check` on GitHub Actions,
 and the run proceeds in the background, so a local full-suite pass is not what proves a change and you never block on
-the run; the dotfiles repo instruction carries the push-and-verdict mechanics. Do not run `__tests__/run.sh` as a gate
+the run; the dotfiles repo instruction carries the push-and-verdict mechanics. Do not run
+`repository/verification/run.sh` as a gate
 before responding. Run it when it earns its wall time: to reproduce a job CI turned red, to iterate on a test you are
 writing, or to exercise a tier CI cannot reach. The integration and runtime tiers need the live machine, so a nightly
 job runs them at 03:00 rather than any interactive session.
 
 For fast iteration on a single file, run `pytest` or `bats` directly: both are globally installed and should be on PATH.
 Only fall back to `nix shell` if they are genuinely missing. Point `pytest` at a specific test file; bare `pytest`,
-`pytest .`, `pytest agents`, whole `*/__tests__/unit` or `*/__tests__/integration` directories, `make test`, and
-`nix flake check` are CI-owned whole-suite runs the hook blocks. Local nix verification is `rebuild`, not
+`pytest .`, `pytest agents`, whole `*/__tests__/unit` or `*/__tests__/integration` directories, and `nix flake check`
+are CI-owned whole-suite runs the hook blocks. Local nix verification is `rebuild`, not
 `nix flake check`.
 
 Every tier and every CI job reports all of its failures instead of dying on the first, so read the whole output and fix

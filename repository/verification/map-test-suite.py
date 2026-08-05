@@ -2,7 +2,7 @@
 import pathlib
 import re
 
-REPOSITORY_ROOT = pathlib.Path(__file__).resolve().parent.parent
+REPOSITORY_ROOT = pathlib.Path(__file__).resolve().parents[2]
 TESTS_DIRECTORY_NAME = "__tests__"
 TIER_DIRECTORY_NAMES = ["unit", "integration", "e2e"]
 EXCLUDED_PATH_SEGMENTS = {

@@ -13,6 +13,8 @@ HEARTBEAT.md
 /CLAUDE.md.*
 /AGENTS.md
 /AGENTS.md.*
+/.githooks
+/.vscode
 /.opencode/
 .cursor/
 home/base/editor/cursor/cursor-global-user-rules.md
@@ -22,7 +24,7 @@ result
 result-*
 
 # Test coverage output
-__tests__/coverage/
+repository/verification/coverage/
 
 # Test status tracking (local-only pass/fail records)
 .test-status/

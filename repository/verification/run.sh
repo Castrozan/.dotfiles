@@ -9,7 +9,7 @@ if [ "${BASH_VERSINFO[0]:-0}" -lt 4 ]; then
 			exec "$_candidateBash" "$0" "$@"
 		fi
 	done
-	echo "__tests__/run.sh: bash >= 4 required, only $BASH_VERSION found" >&2
+	echo "repository/verification/run.sh: bash >= 4 required, only $BASH_VERSION found" >&2
 	exit 1
 fi
 
@@ -27,7 +27,7 @@ if [ -z "${__NIX_MEMORY_SCOPED:-}" ] &&
 fi
 
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-readonly REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+readonly REPO_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 # shellcheck source=lib/discovery.sh
 source "$SCRIPT_DIR/lib/discovery.sh"

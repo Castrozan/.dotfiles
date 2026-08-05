@@ -8,6 +8,9 @@
 let
   inherit (helpers) mkEvalCheck;
   cfg = helpers.homeManagerTestConfiguration [ self.homeManagerModules.default ];
+  cfgOnTheEvaluatingSystem = helpers.homeManagerTestConfigurationForEvaluatingSystem [
+    self.homeManagerModules.default
+  ];
   exportedHarnessModules = [
     self.homeManagerModules.claude-code
     self.homeManagerModules.clawde
@@ -34,11 +37,27 @@ let
       skillName: builtins.hasAttr ".dotfiles/${pathInRepository}/${skillName}" cfg.home.file
     ) interactiveAgentSkills.dotfilesRepoSkillNames
   ) harnessProjectSkillDirectoriesInRepository;
+
+  dotfilesRepositoryDiscoveryLinkSourcesAreDeclared =
+    builtins.hasAttr ".dotfiles/.githooks" cfgOnTheEvaluatingSystem.home.file
+    && builtins.hasAttr ".dotfiles/.vscode" cfgOnTheEvaluatingSystem.home.file;
 in
 {
   default-home-manager-module-deploys-agent-session =
-    mkEvalCheck "default-home-manager-module-deploys-agent-session" (deploysAgentSession cfg)
-      "the default exported Home Manager module must install agent-session because the restart skill and the exit path both invoke it";
+    if
+      deploysAgentSession cfgOnTheEvaluatingSystem && dotfilesRepositoryDiscoveryLinkSourcesAreDeclared
+    then
+      pkgs.runCommandLocal "check-default-home-manager-module-deploys-agent-session" { } ''
+        test "$(readlink ${
+          cfgOnTheEvaluatingSystem.home.file.".dotfiles/.githooks".source
+        })" = "/home/test/.dotfiles/repository/git-hooks"
+        test "$(readlink ${
+          cfgOnTheEvaluatingSystem.home.file.".dotfiles/.vscode".source
+        })" = "/home/test/.dotfiles/repository/visual-studio-code-workspace"
+        touch $out
+      ''
+    else
+      builtins.throw "CHECK FAILED [default-home-manager-module-deploys-agent-session]: the default exported Home Manager module must install agent-session and declare the repository discovery links consumed by agent and editor tooling";
 
   standalone-harness-modules-deploy-agent-session =
     mkEvalCheck "standalone-harness-modules-deploy-agent-session"
