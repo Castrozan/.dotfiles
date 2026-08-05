@@ -15,11 +15,11 @@
     ./shared-darwin/spotlight
     ./shared-darwin/window-manager
     ./shared-darwin/symbolic-hotkeys
-    ./shared-darwin/quit-windowless-applications
+    ../machine-configuration/desktop/quit-windowless-applications/quit-windowless-applications-nix-darwin.nix
     ./shared-darwin/disable-unused-apple-background-agents
-    ./shared-darwin/workspace-window-switcher
+    ../machine-configuration/desktop/workspace-window-switcher/workspace-window-switcher-nix-darwin.nix
     ./shared-darwin/rebuild
-    ./shared-darwin/karabiner
+    ../machine-configuration/desktop/karabiner/karabiner-nix-darwin.nix
   ];
 
   users.users.${username} = {

@@ -41,7 +41,7 @@
   "home/base/testing/__tests__/unit/test_benchmark_desktop.py": 259,
   "home/base/testing/scripts/benchmark_desktop.py": 679,
   "home/base/testing/scripts/benchmark_rebuild.py": 368,
-  "home/darwin/desktop/hammerspoon/__tests__/workspace_grid_pinned_window_test.lua": 204,
+  "machine-configuration/desktop/hammerspoon/__tests__/workspace_grid_pinned_window_test.lua": 204,
   "home/linux/audio/__tests__/unit/test_volume.py": 317,
   "home/linux/home-assistant/__tests__/unit/test_home_assistant_air_conditioner_control.py": 361,
   "home/linux/home-assistant/__tests__/unit/test_home_assistant_air_conditioner_recover_ip.py": 382,

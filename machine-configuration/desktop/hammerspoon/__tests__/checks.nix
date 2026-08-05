@@ -7,7 +7,9 @@
 let
   inherit (helpers) mkEvalCheck;
 
-  hammerspoonConfiguration = helpers.homeManagerTestConfigurationForDarwin [ ../default.nix ];
+  hammerspoonConfiguration = helpers.homeManagerTestConfigurationForDarwin [
+    ../hammerspoon-home-manager.nix
+  ];
 
   preferenceWriteLines = lib.filter (line: lib.hasInfix "/usr/bin/defaults write" line) (
     lib.splitString "\n" hammerspoonConfiguration.home.activation.suppressHammerspoonConsoleAtLaunch.data
