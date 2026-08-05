@@ -48,7 +48,7 @@ class TestDocumentationFileClassification:
             "/home/lucas.zanoni/.dotfiles/agent-harness/read-it-later/decisions/tweet-from-2026-07-25-10-16-14.md",
             "/home/lucas.zanoni/.dotfiles/agent-harness/measurement-and-reporting/dashboard/node_modules/@algolia/client-search/README.md",
             "/home/lucas.zanoni/.dotfiles/agent-harness/measurement-and-reporting/infrastructure/.terraform/providers/google/6.50.0/darwin_arm64/README.md",
-            "/home/lucas.zanoni/.dotfiles/nixos/modules/network-policy.md",
+            "/home/lucas.zanoni/.dotfiles/machine-configuration/network/network-optimization/network-policy.md",
         ],
     )
     def test_allows_files_that_are_not_user_facing_documentation(

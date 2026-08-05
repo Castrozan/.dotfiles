@@ -11,7 +11,7 @@ let
     connectorSettings:
     (lib.evalModules {
       modules = [
-        ../../../../../nixos/modules/cloudflare-tunnel-connector
+        ../../../../network/cloudflare-tunnel-connector/cloudflare-tunnel-connector-nixos.nix
         {
           options.services.cloudflared = lib.mkOption {
             type = lib.types.attrs;

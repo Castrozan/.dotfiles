@@ -14,8 +14,8 @@
     ./nix-daemon.nix
     ./memory-pressure.nix
     ../scripts
-    ../../../../../nixos/modules/xdg-portal.nix
-    ../../../../../nixos/modules/network-optimization.nix
+    ../../../../desktop/xdg-portal/xdg-portal-nixos.nix
+    ../../../../network/network-optimization/network-optimization-nixos.nix
   ];
 
   boot = {

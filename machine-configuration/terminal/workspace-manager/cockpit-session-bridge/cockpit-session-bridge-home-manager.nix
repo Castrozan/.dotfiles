@@ -13,8 +13,8 @@ let
 
   pythonWithWebsockets = pkgs.python3.withPackages (pythonPackages: [ pythonPackages.websockets ]);
 
-  maintainPersistentSessionScript = ../../../../nixos/modules/cockpit-session-bridge/scripts/maintain_persistent_session.sh;
-  cockpitSessionBridgePackage = ../../../../nixos/modules/cockpit-session-bridge/scripts/cockpit_session_bridge;
+  maintainPersistentSessionScript = ./scripts/maintain_persistent_session.sh;
+  cockpitSessionBridgePackage = ./scripts/cockpit_session_bridge;
 
   tmuxTemporaryDirectory = "/tmp";
 

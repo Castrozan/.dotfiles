@@ -8,7 +8,7 @@ in
     PATH="/usr/bin:/usr/sbin:/sbin:$PATH"
 
     if [ -f /etc/NIXOS ]; then
-      $VERBOSE_ECHO "Skipping lid switch setup on NixOS (use nixos/modules/lid-switch.nix)"
+      $VERBOSE_ECHO "Skipping lid switch setup on NixOS (use machine-configuration/power-management/lid-switch-nixos.nix)"
     elif [ -f /etc/systemd/logind.conf.d/lid-switch.conf ] \
       && grep -q "HandleLidSwitch=ignore" /etc/systemd/logind.conf.d/lid-switch.conf 2>/dev/null \
       && grep -q "HandleLidSwitchExternalPower=ignore" /etc/systemd/logind.conf.d/lid-switch.conf 2>/dev/null \

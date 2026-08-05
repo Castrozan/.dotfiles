@@ -14,20 +14,20 @@ in
     ./secrets.nix
     ../../../media/arr-stack/chise/chise-arr-stack-nixos.nix
     ./pkgs.nix
-    ../../../../nixos/modules/virtualization.nix
-    ../../../../nixos/modules/fonts.nix
+    ../../../development/virtualization/virtualization-nixos.nix
+    ../../../desktop/fonts/fonts-nixos.nix
     ../../../gaming/steam/steam-nixos.nix
     # ../../../media/media-streaming/media-streaming-nixos.nix # Removed: requires insecure qtwebengine-5.15.19
-    ../../../../nixos/modules/agenix.nix
-    ../../../../nixos/modules/nixos-rebuild-guard.nix
-    ../../../../nixos/modules/tailscale.nix
-    ../../../../nixos/modules/man-cache.nix
-    ../../../../nixos/modules/lid-switch.nix
-    ../../../../nixos/modules/sudo.nix
-    ../../../../nixos/modules/mouse-8k-polling.nix
+    ../../../security/secrets/agenix-nixos.nix
+    ../../../development/system-rebuild/nixos-rebuild-guard-nixos.nix
+    ../../../network/tailscale/tailscale-nixos.nix
+    ../../../development/manual-pages/man-cache-nixos.nix
+    ../../../power-management/lid-switch-nixos.nix
+    ../../../security/privilege-escalation/sudo-nixos.nix
+    ../../../desktop/mouse/mouse-polling-rate-nixos.nix
     ../../../home-automation/home-assistant/home-assistant-nixos.nix
-    ../../../../nixos/modules/cockpit-session-bridge
-    ../../../../nixos/modules/cloudflare-tunnel-connector
+    ../../../terminal/workspace-manager/cockpit-session-bridge/cockpit-session-bridge-nixos.nix
+    ../../../network/cloudflare-tunnel-connector/cloudflare-tunnel-connector-nixos.nix
     ../../../media/arr-stack/tailscale-funnel/arr-media-tailscale-funnel-nixos.nix
     ../../../media/arr-stack/login-rate-limit-proxy/arr-media-login-ratelimit-proxy-nixos.nix
     ../../../media/arr-stack/on-demand-supervisor/arr-stack-on-demand-supervisor-nixos.nix

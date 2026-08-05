@@ -28,7 +28,8 @@ home/base/packages/<user>.nix - per-user shared package set (used by multiple ma
 machine-configuration/development/version-control/git-private-home-manager.nix - per-user git router (sources private-config/machines/<hostname>/git-user.nix)
 home/base/network/ssh-private.nix - per-user ssh router (sources private-config/machines/<hostname>/ssh.nix)
 home/base/network/scripts/ - shared per-user ssh activation scripts
-nixos/modules/ - NixOS-only modules
+machine-configuration/<domain>/<capability>/ - a capability owning its nix modules, raw config,
+scripts and tests; deployment mechanism is the file-name suffix (-nixos, -nix-darwin, -home-manager)
 machine-configuration/machines/<alias>/system/ - machine-specific system config; NixOS retains
 nixos-system.nix for per-user-on-the-host bits
 secrets/*.age - agenix encrypted secrets
