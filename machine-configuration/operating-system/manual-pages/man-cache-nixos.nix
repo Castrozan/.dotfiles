@@ -2,6 +2,8 @@
 {
   documentation.man.generateCaches = false;
 
+  systemd.tmpfiles.rules = [ "d /var/cache/man/nixos 0755 root root -" ];
+
   systemd.services.update-man-db = {
     description = "Update man-db cache";
     serviceConfig = {

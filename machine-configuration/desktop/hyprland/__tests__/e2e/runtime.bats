@@ -13,8 +13,10 @@ setup() {
 }
 
 @test "hyprctl: version matches expected release" {
+    repositoryRoot=$(realpath "${BATS_TEST_DIRNAME}/../../../../..")
+    expectedVersion=$(grep -oP 'Hyprland/v\K[0-9.]+' "${repositoryRoot}/flake.nix")
     run hyprctl version
-    [[ "$output" == *"0.54"* ]]
+    [[ "$output" == *"${expectedVersion}"* ]]
 }
 
 @test "hyprctl: monitors configured" {
@@ -34,10 +36,10 @@ setup() {
     [ "$bindCount" -gt 0 ]
 }
 
-@test "hyprctl: dwindle layout is active" {
+@test "hyprctl: scrolling layout is active" {
     result=$(hyprctl activeworkspace -j)
     layout=$(echo "$result" | jq -r '.tiledLayout')
-    [ "$layout" = "dwindle" ]
+    [ "$layout" = "scrolling" ]
 }
 
 @test "hyprctl: no config errors" {

@@ -61,7 +61,7 @@ class TestBackgroundBashAntiPatternsEndToEndThroughDispatcher:
             in parsed["hookSpecificOutput"]["permissionDecisionReason"]
         )
 
-    def test_allows_foreground_bash_with_same_command(self):
+    def test_denies_foreground_bash_with_until_ci_polling_loop(self):
         result = _invoke_dispatcher_with_payload(
             {
                 "tool_name": "Bash",
@@ -72,8 +72,8 @@ class TestBackgroundBashAntiPatternsEndToEndThroughDispatcher:
             }
         )
         assert result.returncode == 0
-        assert _permission_decision(result) != "deny"
-        assert BACKGROUND_BASH_PATTERNS_REFERENCE not in result.stdout
+        assert _permission_decision(result) == "deny"
+        assert "sleep-and-recheck loop" in result.stdout
 
     def test_allows_background_bash_with_safe_polling_pattern(self):
         safe_command = (
