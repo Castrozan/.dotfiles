@@ -82,11 +82,11 @@ cd .dotfiles
 #### 2. Generate Hardware Configuration
 Pick a short alias for the machine (this repo uses anime names: `chise`, `rin`, `kira`). Then:
 ```bash
-sudo nixos-generate-config --dir hosts/<alias>/configs
+sudo nixos-generate-config --dir machine-configuration/machines/<alias>/system/configs
 ```
 
 #### 3. Customize Your Configuration
-- Copy `hosts/chise/` (system config) and `home/hosts/linux/chise.nix` plus `home/hosts/linux/chise/` (per-user home-manager modules) as templates for the new alias
+- Copy `machine-configuration/machines/chise/system/` (system config) and `machine-configuration/machines/chise/home.nix` plus `machine-configuration/machines/chise/home/` (per-user home-manager modules) as templates for the new alias
 - Update `repository/flake-assembly/nixos-configurations.nix` to register `nixosConfigurations.<alias>`
 
 #### 4. Deploy the Flake
@@ -120,7 +120,7 @@ nix run nix-darwin -- switch --flake .?submodules=1#<alias>
 ```bash
 sudo darwin-rebuild switch --flake .?submodules=1#<alias>
 ```
-Use the host's alias (`rin`, `kira`, ...). Wezterm is expected to be installed as a Homebrew cask; the cask list is declared in `hosts/<alias>/default.nix`.
+Use the host's alias (`rin`, `kira`, ...). The WezTerm cask is declared in `hosts/shared-darwin-configuration.nix`.
 
 </details>
 </details>
@@ -142,18 +142,18 @@ graph TD
 
     subgraph "NixOS Configuration"
         NixOS["nixosConfigurations.&lt;host&gt;"]
-        Host["hosts/&lt;host&gt;<br/>hardware config"]
-        UserNixOS["hosts/&lt;host&gt;/nixos-system.nix<br/>+ home/hosts/linux/&lt;alias&gt;.nix"]
+        Host["machine-configuration/machines/&lt;alias&gt;/system/<br/>hardware config"]
+        UserNixOS["machine-configuration/machines/&lt;alias&gt;/system/nixos-system.nix<br/>+ machine-configuration/machines/&lt;alias&gt;/home.nix"]
     end
 
     subgraph "Darwin Configuration"
         Darwin["darwinConfigurations.&lt;host&gt;"]
-        DarwinHost["hosts/&lt;host&gt;<br/>nix-darwin host config"]
-        DarwinHome["home/hosts/darwin/&lt;alias&gt;.nix"]
+        DarwinHost["machine-configuration/machines/&lt;alias&gt;/system/<br/>nix-darwin host config"]
+        DarwinHome["machine-configuration/machines/&lt;alias&gt;/home.nix"]
     end
 
     subgraph "Home Manager Configuration"
-        UserHome["home/hosts/linux/&lt;alias&gt;.nix"]
+        UserHome["machine-configuration/machines/&lt;alias&gt;/home.nix"]
         Modules["home/{base,linux,darwin}/*<br/>platform-gated modules"]
     end
 
@@ -200,9 +200,9 @@ Flake inputs live in `flake.nix`; outputs are split into `repository/flake-assem
 
 Home Manager modules under `home/` are split by platform, ryan4yin-style: `home/base/` (any-platform), `home/linux/`, `home/darwin/`. Per-platform subtrees let Linux-only modules never load on darwin and vice versa. Each module owns its `default.nix`, optional `scripts/`, optional `__tests__/`.
 
-System-level host configs live in `hosts/<host>/`; reusable NixOS modules live in `nixos/modules/`. Each machine's home-manager entry point is `home/hosts/{linux,darwin}/<alias>.nix` (ryan4yin-style); host-only home modules can sit beside it in `home/hosts/{linux,darwin}/<alias>/`. Per-user shared bits live in `home/base/` (e.g. `home/base/packages/lucas-zanoni.nix`). Routers at `home/base/dev/git-private.nix` and `home/base/network/ssh-private.nix` look up `private-config/machines/${hostname}/<file>` so per-machine overrides land automatically when the file exists.
+Machine-specific system configuration lives in `machine-configuration/machines/<alias>/system/`; reusable NixOS modules live in `nixos/modules/`. Each machine's home-manager entry point is `machine-configuration/machines/<alias>/home.nix` (ryan4yin-style); host-only home modules live in `machine-configuration/machines/<alias>/home/`. Per-user shared bits live in `home/base/` (e.g. `home/base/packages/lucas-zanoni.nix`). Routers at `home/base/dev/git-private.nix` and `home/base/network/ssh-private.nix` look up `private-config/machines/${hostname}/<file>` so per-machine overrides land automatically when the file exists.
 
-Private, machine-specific configuration (work emails, gitlab hosts, company skills) lives in the `private-config/` submodule under `private-config/machines/<hostname>/`. Encrypted secrets live in `secrets/` (agenix). Static assets in `static/`. Agent instructions and shared skills live in `agent-harness/agent-instructions/`; the skill convention is `agent-harness/agent-instructions/skills/<name>/SKILL.md`. Hooks and evaluations remain in `agents/`.
+Private, machine-specific configuration (work emails, gitlab hosts, company skills) lives in the `private-config/` submodule under `private-config/machines/<hostname>/`. Encrypted secrets live in `secrets/` (agenix). Static assets in `static/`. Agent instructions and shared skills live in `agent-harness/agent-instructions/`; the skill convention is `agent-harness/agent-instructions/skills/<name>/SKILL.md`. Hooks live in `agent-harness/hooks/`; evaluations live in `agent-harness/quality/evaluations/`.
 
 ---
 

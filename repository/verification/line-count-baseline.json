@@ -70,6 +70,6 @@
   "home/linux/hyprland/scripts/hardware/notification_sound_toggle.py": 206,
   "home/linux/voice/hey-bot-test.nix": 244,
   "home/linux/voice/hey-bot.nix": 546,
-  "hosts/chise/configs/configuration.nix": 258,
-  "hosts/chise/configs/keyboard-backlight.nix": 212
+  "machine-configuration/machines/chise/system/configs/configuration.nix": 258,
+  "machine-configuration/machines/chise/system/configs/keyboard-backlight.nix": 212
 }

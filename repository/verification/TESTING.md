@@ -126,9 +126,10 @@ including a bare `pytest` at the root:
 
 ## Co-located Domain Tests
 
-Tests live alongside their modules in `<module>/__tests__/` — `home/<domain>`,
-`agents/<tool>`, `nixos/modules/<name>`, `hosts/<host>`, all treated alike —
-split into `unit/`, `integration/`, and `e2e/` subdirectories. The runner
+Tests live alongside their modules in `<module>/__tests__/`: `home/<domain>`,
+`agent-harness/<capability>`, `nixos/modules/<name>`, and
+`machine-configuration/machines/<alias>`, all treated alike, split into `unit/`,
+`integration/`, and `e2e/` subdirectories. The runner
 discovers them by directory (`*/__tests__/<tier>/*.bats` and `*/__tests__/<tier>/test_*.py`)
 — the subdirectory **is** the tier. There is no filename-suffix routing.
 

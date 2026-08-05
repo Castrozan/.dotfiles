@@ -43,12 +43,7 @@ def _collect_files_with_extension(extension):
 
 def _path_is_in_chise_host_tree(path):
     relative = path.relative_to(REPO_ROOT).as_posix()
-    return (
-        relative.startswith("hosts/chise/")
-        or relative == "hosts/chise"
-        or relative.startswith("home/hosts/linux/chise/")
-        or relative == "home/hosts/linux/chise.nix"
-    )
+    return relative.startswith("machine-configuration/machines/chise/")
 
 
 HARDCODED_NON_LUCAS_HOME_PATTERN = re.compile(r"/home/zanoni(?:/|\b)")

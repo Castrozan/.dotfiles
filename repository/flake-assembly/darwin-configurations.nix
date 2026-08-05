@@ -4,9 +4,9 @@
 #   sudo darwin-rebuild switch --flake .#kira
 #
 # rin = toosaka rin, kira = kira yoshikage. See private-config/machines.nix
-# for the alias<->hostname mapping and per-machine role. hosts/<alias>/ owns
-# hardware-level config, home/hosts/darwin/<alias>.nix owns the home-manager
-# entry point.
+# for the alias<->hostname mapping and per-machine role.
+# machine-configuration/machines/<alias>/system owns hardware-level config,
+# machine-configuration/machines/<alias>/home.nix owns the home-manager entry point.
 {
   nix-darwin,
   home-manager,
@@ -39,7 +39,7 @@ let
         extraSpecialArgs = specialArgs // {
           hostname = machineAlias;
         };
-        users.${username} = import (../../home/hosts/darwin + "/${machineAlias}.nix");
+        users.${username} = import (../../machine-configuration/machines + "/${machineAlias}/home.nix");
       };
     };
 
@@ -53,7 +53,7 @@ let
       modules = [
         { nixpkgs.overlays = darwinSystemOverlays; }
         ../../agent-harness/harnesses/codex/system-managed-hooks.nix
-        ../../hosts/${machineAlias}
+        ../../machine-configuration/machines/${machineAlias}/system
         home-manager.darwinModules.home-manager
         (mkHomeManagerWrapperFor machineAlias)
       ];
@@ -61,7 +61,10 @@ let
   };
 
   machineAliasesWithExistingHostDirectory =
-    builtins.filter (machineAlias: builtins.pathExists (../../hosts + "/${machineAlias}"))
+    builtins.filter
+      (
+        machineAlias: builtins.pathExists (../../machine-configuration/machines + "/${machineAlias}/system")
+      )
       [
         "rin"
         "kira"

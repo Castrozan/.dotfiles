@@ -167,7 +167,7 @@ expose an empty library:
 The nix change is three edits:
 
 - Add the mount to chise's forced filesystems block in
-  `hosts/chise/configs/configuration.nix`:
+  `machine-configuration/machines/chise/system/configs/configuration.nix`:
 
   ```nix
   "/home/zanoni/arr-stack/data" = {
@@ -178,7 +178,7 @@ The nix change is three edits:
   ```
 
 - Gate the stack on the mount in the `systemd.services` block of
-  `hosts/chise/arr-stack.nix`, so the host still boots if the drive dies but
+  `machine-configuration/machines/chise/system/arr-stack.nix`, so the host still boots if the drive dies but
   docker (the whole stack) waits for it:
 
   ```nix
@@ -187,7 +187,7 @@ The nix change is three edits:
 
 - Point the disk-guard at the drive instead of the internal disk by adding
   `path = "/home/zanoni/arr-stack/data";` to the `arrStackOnDemandSupervisor.diskGuard`
-  block in `hosts/chise/arr-stack.nix`.
+  block in `machine-configuration/machines/chise/system/arr-stack.nix`.
 
 ## Optional VPN (off by default, host-level)
 
@@ -206,7 +206,7 @@ nord-off      # disconnect: wgnord d
 ```
 
 See `home/base/network/scripts/` (`nord-on-us`, `nord-off`, `nord-on`,
-`setup_wgnord`) and `hosts/chise/scripts/` for the script definitions. Bring the
+`setup_wgnord`) and `machine-configuration/machines/chise/system/scripts/` for the script definitions. Bring the
 stack up the same way regardless; the VPN is an independent host toggle.
 
 ## Media server GPU transcoding
@@ -214,5 +214,5 @@ stack up the same way regardless; the VPN is an independent host toggle.
 Jellyfin and Jellyseerr now ship as compose services. Jellyfin mounts
 `data/media` read-only and serves the library at port 8096. Hardware transcoding
 uses chise's NVIDIA RTX 3050 via `hardware.nvidia-container-toolkit` (enabled in
-`hosts/chise/configs/arr-stack-host-integration.nix`); direct play works without
+`machine-configuration/machines/chise/system/configs/arr-stack-host-integration.nix`); direct play works without
 it, and the GPU is used for on-the-fly transcode when a client needs it.

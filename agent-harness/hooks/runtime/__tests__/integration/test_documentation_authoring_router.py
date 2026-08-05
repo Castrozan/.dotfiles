@@ -15,7 +15,7 @@ class TestDocumentationFileClassification:
         "file_path",
         [
             "/home/lucas.zanoni/.dotfiles/README.md",
-            "/home/lucas.zanoni/.dotfiles/hosts/chise/README.md",
+            "/home/lucas.zanoni/.dotfiles/machine-configuration/machines/chise/system/README.md",
             "/home/lucas.zanoni/.dotfiles/agent-harness/harnesses/claude-code/docs/context-management.md",
             "/home/lucas.zanoni/.dotfiles/docs/architecture.md",
             "docs/architecture.md",

@@ -37,16 +37,22 @@ run_hook_after_staging_path_with_message() {
 	assert_passes_shellcheck
 }
 
-@test "prefixes subject with host scope for hosts/<host>/ changes" {
-	run run_hook_after_staging_path_with_message "hosts/kira/default.nix" "fix: invert scroll"
+@test "prefixes subject with machine scope for system module changes" {
+	run run_hook_after_staging_path_with_message "machine-configuration/machines/kira/system/default.nix" "fix: invert scroll"
 	[ "$status" -eq 0 ]
 	[ "${lines[0]}" = "fix(kira): invert scroll" ]
 }
 
-@test "derives scope from home/hosts/darwin/<alias>.nix path" {
-	run run_hook_after_staging_path_with_message "home/hosts/darwin/rin.nix" "feat: tweak"
+@test "derives scope from machine home entry point changes" {
+	run run_hook_after_staging_path_with_message "machine-configuration/machines/rin/home.nix" "feat: tweak"
 	[ "$status" -eq 0 ]
 	[ "${lines[0]}" = "feat(rin): tweak" ]
+}
+
+@test "derives scope from machine home module changes" {
+	run run_hook_after_staging_path_with_message "machine-configuration/machines/chise/home/git.nix" "fix: update identity"
+	[ "$status" -eq 0 ]
+	[ "${lines[0]}" = "fix(chise): update identity" ]
 }
 
 @test "derives scope from top-level hosts/<host>-configuration.nix changes" {
@@ -62,7 +68,7 @@ run_hook_after_staging_path_with_message() {
 }
 
 @test "rejects a subject without a conventional type on a scoped path" {
-	run run_hook_after_staging_path_with_message "hosts/kira/default.nix" "invert scroll"
+	run run_hook_after_staging_path_with_message "machine-configuration/machines/kira/system/default.nix" "invert scroll"
 	[ "$status" -eq 1 ]
 }
 
@@ -72,13 +78,13 @@ run_hook_after_staging_path_with_message() {
 }
 
 @test "passes through git-generated merge subjects" {
-	run run_hook_after_staging_path_with_message "hosts/kira/default.nix" "Merge branch 'main'"
+	run run_hook_after_staging_path_with_message "machine-configuration/machines/kira/system/default.nix" "Merge branch 'main'"
 	[ "$status" -eq 0 ]
 	[ "${lines[0]}" = "Merge branch 'main'" ]
 }
 
 @test "preserves the commit body below the rewritten subject" {
-	run run_hook_after_staging_path_with_message "hosts/kira/default.nix" "fix: invert scroll\n\nbody line one\nbody line two"
+	run run_hook_after_staging_path_with_message "machine-configuration/machines/kira/system/default.nix" "fix: invert scroll\n\nbody line one\nbody line two"
 	[ "$status" -eq 0 ]
 	[ "${lines[0]}" = "fix(kira): invert scroll" ]
 	[ "${lines[1]}" = "body line one" ]
@@ -86,7 +92,7 @@ run_hook_after_staging_path_with_message() {
 }
 
 @test "does not double-prefix an already-scoped subject" {
-	run run_hook_after_staging_path_with_message "hosts/kira/default.nix" "fix(kira): invert scroll"
+	run run_hook_after_staging_path_with_message "machine-configuration/machines/kira/system/default.nix" "fix(kira): invert scroll"
 	[ "$status" -eq 0 ]
 	[ "${lines[0]}" = "fix(kira): invert scroll" ]
 }

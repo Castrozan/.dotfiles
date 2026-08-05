@@ -347,7 +347,7 @@ replayed cheaply.
 ## Wiring
 
 `default.nix` imports `./ambient-canvas` and packages the herdr launcher and scenes. It is
-imported by `home/darwin/default.nix` (for ambient-canvas) and `home/hosts/linux/chise.nix`
+imported by `home/darwin/default.nix` (for ambient-canvas) and `machine-configuration/machines/chise/home.nix`
 (for the herdr grid); each half is platform-gated internally, so importing the domain on the
 wrong platform is inert. Tests live in `__tests__/` and are wired into the flake checks via
 `repository/verification/nix-checks/default.nix`.

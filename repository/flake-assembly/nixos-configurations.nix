@@ -28,7 +28,7 @@ let
       overwriteBackup = true;
 
       extraSpecialArgs = specialArgs;
-      users.${username} = import ../../home/hosts/linux/chise.nix;
+      users.${username} = import ../../machine-configuration/machines/chise/home.nix;
     };
   };
 in
@@ -39,7 +39,7 @@ in
 
     modules = [
       ../../agent-harness/harnesses/codex/system-managed-hooks.nix
-      ../../hosts/${machineAlias}
+      ../../machine-configuration/machines/${machineAlias}/system
       home-manager.nixosModules.home-manager
       homeManagerWrapper
     ];
