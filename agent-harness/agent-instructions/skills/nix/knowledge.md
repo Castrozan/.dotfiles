@@ -30,6 +30,16 @@ current-system mtime, then rerun capturing both streams and the real exit code. 
 nix-darwin branch emitting a deprecated homebrew cleanup flag that current Homebrew rejects.
 </a_failing_activation_can_report_green>
 
+<a_darwin_rebuild_over_ssh_cannot_clear_the_app_management_gate>
+Home Manager's `checkAppManagementPermission` step aborts a darwin activation with "permission denied when trying to
+update apps" unless macOS has granted App Management to the responsible process, and that grant is per responsible
+process rather than per user. Over SSH the responsible process is sshd, which never holds it, so an SSH-launched rebuild
+on a darwin host aborts there every time no matter how healthy the host is, and it aborts after the system profile has
+already advanced, leaving `current-system` behind the profile. Run the rebuild from a session on the machine itself,
+where the granted terminal emulator is the responsible process. If it still aborts from there the grant has genuinely
+lapsed, and restoring it is owner-only through System Settings, Privacy and Security, App Management.
+</a_darwin_rebuild_over_ssh_cannot_clear_the_app_management_gate>
+
 <agenix_stalls_on_a_stale_temporary_file>
 The home-manager agenix activation agent can loop on a stale read-only temporary file it recreates and cannot
 overwrite, dying on that secret before reaching any later one, so no newly added secret decrypts machine-wide while
