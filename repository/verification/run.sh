@@ -76,6 +76,7 @@ readonly RUNTIME_TIER_CHECKS=(
 readonly CI_TIER_CHECKS=(
 	_run_line_count_check
 	_run_quick_bats_tests_ci
+	_run_integration_scripts_bats_tests
 	_run_nix_flake_checks
 	_run_rebuild_baseline_check
 	_run_desktop_baseline_check

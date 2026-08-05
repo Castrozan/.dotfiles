@@ -47,3 +47,13 @@ jobs:
             export QT_DECLARATIVE_PATH=$(dirname $(dirname $(which qmltestrunner)))
             bash machine-configuration/desktop/hyprland/__tests__/qml/run-qml-tests.sh
           '
+
+      - name: Run Lua unit tests
+        if: ${{ !cancelled() }}
+        run: |
+          nix shell nixpkgs#lua5_4 --command bash -c '
+            export REPO_DIR="$PWD"
+            source repository/verification/runner/discovery.sh
+            source repository/verification/runner/lua.sh
+            _run_lua_unit_tests
+          '
