@@ -4,11 +4,15 @@ set -Eeuo pipefail
 
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly REPOSITORY_DIR="$(cd "$SCRIPT_DIR/../../.." && pwd)"
+readonly REPO_DIR="$REPOSITORY_DIR"
 readonly TESTS_DIR="$REPOSITORY_DIR/repository/verification"
 readonly COVERAGE_OUTPUT_DIR="$TESTS_DIR/coverage"
+readonly INSTRUMENTED_SOURCE_ROOT="$REPOSITORY_DIR/machine-configuration"
 
-# shellcheck source=runner/foreign-platform-test-roots.sh
-source "$TESTS_DIR/runner/foreign-platform-test-roots.sh"
+# shellcheck source=runner/discovery.sh
+source "$TESTS_DIR/runner/discovery.sh"
+# shellcheck source=runner/bats.sh
+source "$TESTS_DIR/runner/bats.sh"
 
 main() {
 	local ciMode=false
@@ -54,14 +58,12 @@ _clean_previous_coverage() {
 }
 
 _collect_quick_bats_test_files() {
-	local -a foreignPlatformExclusions=()
-	local foreignPlatformTestRoot
-	while read -r foreignPlatformTestRoot; do
-		foreignPlatformExclusions+=(-not -path "$REPOSITORY_DIR/$foreignPlatformTestRoot/*")
-	done < <(_foreign_platform_test_roots)
-	find "$REPOSITORY_DIR/machine-configuration" \
-		-path "*/__tests__/unit/*.bats" -type f \
-		${foreignPlatformExclusions[@]+"${foreignPlatformExclusions[@]}"} | sort
+	local discoveredTestFile
+	while IFS= read -r discoveredTestFile; do
+		case "$discoveredTestFile" in
+		"$INSTRUMENTED_SOURCE_ROOT"/*) echo "$discoveredTestFile" ;;
+		esac
+	done < <(_collect_bats_test_files_in_tier_directory "unit")
 }
 
 _run_bats_through_kcov() {
@@ -71,7 +73,7 @@ _run_bats_through_kcov() {
 	testFiles=$(_collect_quick_bats_test_files)
 	kcov \
 		--bash-dont-parse-binary-dir \
-		--include-pattern="$REPOSITORY_DIR/machine-configuration/" \
+		--include-pattern="$INSTRUMENTED_SOURCE_ROOT/" \
 		"$COVERAGE_OUTPUT_DIR" \
 		bats $testFiles
 }
