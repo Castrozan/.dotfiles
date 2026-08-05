@@ -63,14 +63,14 @@ already rejected.
 <applying_an_adopt>
 An adopt is built in an isolated worktree per the coding skill, never on the main checkout, and it is proven before
 it is proposed. Initialize submodules inside the fresh worktree first or the flake fetch dies on an empty
-`private-configuration`. Commit inside the worktree before building, because the build reads git and an untracked file never
-reaches the store, so it would build the old code and report success. Build that worktree by naming its path in the
-flake reference: `rebuild` is pinned to `~/.dotfiles` and would silently build main instead. Exercise the change live,
-and say in the pull request what you actually ran rather than that it should work. On chise never switch a bare
+`private-configuration`. Commit inside the worktree before building, because the build reads git and an untracked file
+never reaches the store, so it would build the old code and report success. Build that worktree by naming its path in
+the flake reference: `rebuild` is pinned to `~/.dotfiles` and would silently build main instead. Exercise the change
+live, and say in the pull request what you actually ran rather than that it should work. On chise never switch a bare
 worktree, since this machine deploys through a private entrypoint the worktree lacks and a bare switch strips it; build
-there and leave activation to the review. Open the pull request from
-the main checkout with `--head`, one capture per pull request so a bad idea reverts alone, and merge it only as the
-execution of an approving review, never on your own judgement and never to clear a stale-looking queue.
+there and leave activation to the review. Open the pull request from the main checkout with `--head`, one capture per
+pull request so a bad idea reverts alone, and merge it only as the execution of an approving review, never on your own
+judgement and never to clear a stale-looking queue.
 </applying_an_adopt>
 
 <filing>

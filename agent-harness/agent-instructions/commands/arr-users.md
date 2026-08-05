@@ -32,8 +32,9 @@ rather than repo-declared.
 <friend_policy>
 A created account is not an administrator, is hidden from the login user list, can play and download content and set its
 own preferences, cannot delete content, and has no Live TV. On Jellyseerr the CLI grants the imported user Request plus
-Auto-Approve (bitmask 160, defined in `machine-configuration/media/arr-stack/users/scripts/arr_users/friend_account_policy.py`), so a friend's
-request auto-approves and downloads without admin sign-off, and Jellyseerr emails the friend that the media is available
+Auto-Approve (bitmask 160, defined in
+`machine-configuration/media/arr-stack/users/scripts/arr_users/friend_account_policy.py`), so a friend's request
+auto-approves and downloads without admin sign-off, and Jellyseerr emails the friend that the media is available
 once their account carries a real email. To change what a friend may do, edit that policy and rebuild, never by clicking
 in the Jellyfin dashboard, which drifts from the repo.
 </friend_policy>

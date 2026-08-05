@@ -22,9 +22,12 @@ machine-configuration/machines/shared-home-manager-core.nix - shared home-manage
 machine-configuration/machines/shared-darwin-{home-manager,system-nix-darwin}.nix - the layer both macOS hosts share
 machine-configuration/machines/<alias>/home.nix - per-machine home-manager entry point (IMPORTS ONLY)
 machine-configuration/machines/<alias>/home/ - optional per-machine home-manager submodules
-machine-configuration/machines/user-packages-<user>-home-manager.nix - per-user shared package set (used by multiple machines)
-machine-configuration/development/version-control/git-private-home-manager.nix - per-user git router (sources private-configuration/machines/<hostname>/git-user.nix)
-machine-configuration/network/ssh/ssh-private-home-manager.nix - per-user ssh router (sources private-configuration/machines/<hostname>/ssh.nix)
+machine-configuration/machines/user-packages-<user>-home-manager.nix - per-user shared package set (used by
+multiple machines)
+machine-configuration/development/version-control/git-private-home-manager.nix - per-user git router (sources
+private-configuration/machines/<hostname>/git-user.nix)
+machine-configuration/network/ssh/ssh-private-home-manager.nix - per-user ssh router (sources
+private-configuration/machines/<hostname>/ssh.nix)
 machine-configuration/network/ssh/scripts/ - shared per-user ssh activation scripts
 machine-configuration/<domain>/<capability>/ - a capability owning its nix modules, raw config,
 scripts and tests; deployment mechanism is the file-name suffix (-nixos, -nix-darwin, -home-manager)

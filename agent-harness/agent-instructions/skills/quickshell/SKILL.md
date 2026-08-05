@@ -33,14 +33,16 @@ Always pass `ipc --any-display`: the systemd service registers its display as `w
 
 Three quickshell services run independently:
 - `quickshell-bar.service`: vertical bar (dashboard, launcher, sidebar via IPC: `qs -p
-  ~/.dotfiles/machine-configuration/desktop/quickshell/bar/program-configuration ipc --any-display call dashboard toggle`)
+  ~/.dotfiles/machine-configuration/desktop/quickshell/bar/program-configuration ipc --any-display call dashboard
+  toggle`)
 - `quickshell-switcher.service`: window switcher (`qs -c switcher ipc --any-display call switcher
   open/next/prev/confirm/cancel`)
 - `quickshell-overview.service`: workspace overview (`qs -c overview ipc --any-display call overview toggle/open/close`)
 
 The overview reads colors from `~/.config/hypr-theme/current/theme/quickshell-bar-colors.json` via FileView with live
 file watching. Colors auto-update on theme change. Grid config (rows, columns, scale, effects) lives in
-`machine-configuration/desktop/quickshell/overview/program-configuration/config.json`. Theme-to-M3 mapping is in `Appearance.qml:applyHyprTheme()`.
+`machine-configuration/desktop/quickshell/overview/program-configuration/config.json`. Theme-to-M3 mapping is in
+`Appearance.qml:applyHyprTheme()`.
 </service_lifecycle>
 
 <visual_verification>
