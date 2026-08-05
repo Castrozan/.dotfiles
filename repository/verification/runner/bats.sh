@@ -15,8 +15,11 @@ _run_bats_tier() {
 		return 0
 	fi
 
-	local -a testFiles
-	mapfile -t testFiles < <(_collect_bats_test_files_in_tier_directory "$tierDirectoryName")
+	local -a testFiles=()
+	local discoveredTestFile
+	while IFS= read -r discoveredTestFile; do
+		testFiles+=("$discoveredTestFile")
+	done < <(_collect_bats_test_files_in_tier_directory "$tierDirectoryName")
 	if [[ ${#testFiles[@]} -eq 0 ]]; then
 		return 0
 	fi

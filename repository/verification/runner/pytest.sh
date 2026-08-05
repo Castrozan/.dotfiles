@@ -9,8 +9,11 @@ _run_pytest_tier() {
 	local tierDirectoryName="$1"
 	local tierLabel="$2"
 
-	local -a testFiles
-	mapfile -t testFiles < <(_collect_pytest_test_files_in_tier_directory "$tierDirectoryName")
+	local -a testFiles=()
+	local discoveredTestFile
+	while IFS= read -r discoveredTestFile; do
+		testFiles+=("$discoveredTestFile")
+	done < <(_collect_pytest_test_files_in_tier_directory "$tierDirectoryName")
 	if [[ ${#testFiles[@]} -eq 0 ]]; then
 		return 0
 	fi

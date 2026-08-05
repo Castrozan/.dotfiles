@@ -47,8 +47,11 @@ _run_perf_tier() {
 	echo ""
 
 	echo "--- Performance Threshold Tests ---"
-	local -a perfTests
-	mapfile -t perfTests < <(_discover_test_files "platform-scoped" "*/__tests__/e2e/perf-runtime.bats")
+	local -a perfTests=()
+	local discoveredPerfTest
+	while IFS= read -r discoveredPerfTest; do
+		perfTests+=("$discoveredPerfTest")
+	done < <(_discover_test_files "platform-scoped" "*/__tests__/e2e/perf-runtime.bats")
 	if [[ ${#perfTests[@]} -gt 0 ]] && command -v bats &>/dev/null; then
 		bats "${perfTests[@]}"
 	else
