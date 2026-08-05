@@ -2,19 +2,15 @@ local workspaceGridWindowQuery = {}
 
 local windowAssignment = require("workspace_grid_window_assignment")
 local windowServerOwnerName = require("window_server_truncated_owner_name")
+local onScreenWindows = require("window_server_on_screen_windows")
 
-local includeWindowsBelowTheDock = false
 local switcherOverlayProcessName = "workspace-window-switcher-daemon"
 
 function workspaceGridWindowQuery.manageableWindowIdSet()
 	local manageableWindowIds = {}
-	for _, windowServerEntry in ipairs(hs.window.list(includeWindowsBelowTheDock)) do
-		local belongsToTheSwitcherOverlay = windowServerOwnerName.identifiesProcessNamed(
-			windowServerEntry.kCGWindowOwnerName,
-			switcherOverlayProcessName
-		)
-		if not belongsToTheSwitcherOverlay then
-			manageableWindowIds[windowServerEntry.kCGWindowNumber] = true
+	for windowId, ownerName in pairs(onScreenWindows.ownerNameByWindowId()) do
+		if not windowServerOwnerName.identifiesProcessNamed(ownerName, switcherOverlayProcessName) then
+			manageableWindowIds[windowId] = true
 		end
 	end
 	return manageableWindowIds
