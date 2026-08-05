@@ -1,0 +1,34 @@
+tests:
+  - name: worktrees_knows_builtin_flag
+    skill_path: agent-harness/agent-instructions/skills/coding/SKILL.md
+    extra_skill_paths:
+      - agent-harness/agent-instructions/skills/coding/worktrees.md
+    prompt: "I need to run a quick isolated task. Should I always create a manual worktree, or is there a simpler built-in option?"
+    model: haiku
+    assertions:
+      llm_judge:
+        - "Points at the built-in worktree flag or the EnterWorktree tools as the simpler option for quick throwaway isolation, and reserves the manual worktree workflow for persistent, multi-branch, or pull request work."
+
+  - name: deep_work_knows_postcompact
+    skill_path: agent-harness/agent-instructions/skills/deep-work/SKILL.md
+    prompt: "What happens to deep-work context when a compaction occurs? Is there any automatic recovery?"
+    model: haiku
+    assertions:
+      llm_judge:
+        - "Says a session start compaction hook automatically re-injects a recovery directive, which prompts the agent to re-read the deep-work workspace files and continue from disk."
+
+  - name: claude_skill_knows_builtin_agents
+    skill_path: agent-harness/agent-instructions/skills/herdr/SKILL.md
+    prompt: "I need several agents editing code in parallel. Nobody needs to watch them and the work does not have to outlive this conversation. Should I spawn a separate herdr Claude agent with 'herdr agent start' for each one, or is there a better fit?"
+    model: haiku
+    assertions:
+      llm_judge:
+        - "Says a herdr agent is not the right fit here because nobody needs to watch or take over the work, and routes the parallel code editing to a workflow with worktree isolation instead."
+
+  - name: project_claudemd_no_duplication
+    system_prompt: "You are a configuration auditor. Judge only the CLAUDE.md content quoted in the message, never any file on disk, and say whether it duplicates core behavior instructions or is properly scoped."
+    prompt: "Audit only the content between the markers below. Do not read any file from disk.\n\n--- BEGIN CLAUDE.md ---\n# Dotfiles Repository\n\nNix-based dotfiles repository managing system and home configurations across NixOS and standalone home-manager hosts. Use the nix skill for repository patterns, directory organization, rebuild workflow, and anti-patterns. Use the coding skill for implementation and verification. Core behavior instructions live in the global CLAUDE.md, so do not duplicate them here.\n--- END CLAUDE.md ---"
+    model: haiku
+    assertions:
+      llm_judge:
+        - "Judges the file as properly scoped to the project and correctly deferring core behavior to the global instructions, rather than calling it incomplete for omitting core instructions."

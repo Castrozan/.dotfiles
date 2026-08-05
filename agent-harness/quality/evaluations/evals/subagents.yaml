@@ -1,0 +1,10 @@
+tests:
+  - name: nix_expert_explains_concepts
+    skill_path: agent-harness/agent-instructions/skills/nix/SKILL.md
+    extra_skill_paths:
+      - agent-harness/agent-instructions/skills/nix/expert.md
+    prompt: "What is a Nix overlay?"
+    model: haiku
+    assertions:
+      llm_judge:
+        - "Explains an overlay as a function over a package set that adds or overrides packages, taking the final and previous package sets as its arguments."

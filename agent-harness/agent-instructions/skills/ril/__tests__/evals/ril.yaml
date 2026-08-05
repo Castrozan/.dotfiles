@@ -1,0 +1,48 @@
+tests:
+  - name: ril_marks_done_only_through_the_cli
+    skill_path: agent-harness/agent-instructions/skills/ril/SKILL.md
+    prompt: "I finished working a capture. How do I mark it done?"
+    model: haiku
+    assertions:
+      llm_judge:
+        - "Names the ril record command, which stamps the marker, the verdict, the outcome and the entry link and clears the claim, and rules out hand-editing the capture to mark it done."
+
+  - name: ril_claim_collision_stops_the_run
+    skill_path: agent-harness/agent-instructions/skills/ril/SKILL.md
+    prompt: "I claimed a capture and the command exited non-zero. What now? Respond in one sentence."
+    model: haiku
+    assertions:
+      llm_judge:
+        - "Says another run already holds that capture, so stop and take the next one instead of forcing a takeover."
+
+  - name: ril_never_annotates_a_capture
+    skill_path: agent-harness/agent-instructions/skills/ril/SKILL.md
+    prompt: "Should I summarize each saved item, tag it and rate its relevance in place?"
+    model: haiku
+    assertions:
+      llm_judge:
+        - "Refuses, saying a capture must end as a change to the repo, a deliberate thing to learn, or a filed reference, and that a pass leaving the machines and the brain unchanged has failed."
+
+  - name: ril_resolves_the_capture_origin
+    skill_path: agent-harness/agent-instructions/skills/ril/SKILL.md
+    prompt: "The capture is an Instagram reel that serves an empty page to curl. How do I read it?"
+    model: haiku
+    assertions:
+      llm_judge:
+        - "Opens the capture's own first link through the already logged-in browser over chrome-devtools because the page renders client side, and does not fall back to WebFetch or to searching the topic."
+
+  - name: ril_verdict_belongs_to_the_user
+    skill_path: agent-harness/agent-instructions/skills/ril/SKILL.md
+    prompt: "This capture is obviously worth adopting. Can I just apply it and move on?"
+    model: haiku
+    assertions:
+      llm_judge:
+        - "Refuses to self-approve, saying the user picks the verdict at the gate after being shown what it is, what it changes here, and the cost."
+
+  - name: ril_proves_an_adopt_before_proposing_it
+    skill_path: agent-harness/agent-instructions/skills/ril/SKILL.md
+    prompt: "The user approved an adopt. Outline how it gets applied."
+    model: haiku
+    assertions:
+      llm_judge:
+        - "Builds in an isolated worktree rather than the main checkout, commits inside the worktree before building, names the worktree path in the flake reference instead of running rebuild, runs the test suite, and opens a pull request it never merges."

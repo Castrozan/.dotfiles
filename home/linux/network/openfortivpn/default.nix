@@ -1,4 +1,0 @@
-{ ... }:
-{
-  imports = [ ./openfortivpn.nix ];
-}

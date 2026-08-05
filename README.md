@@ -28,19 +28,19 @@ https://github.com/user-attachments/assets/c5959f36-6b7a-450c-a18c-f430d60fcafc
 <details>
 <summary>🪟 Panes</summary>
 
-![panes](static/docs/tmux/showcase-panes.png)
+![panes](machine-configuration/terminal/multiplexer/tmux/showcase/showcase-panes.png)
 
 </details>
 <details>
 <summary>🪴 Screensaver</summary>
 
-![screensaver](static/docs/tmux/showcase-screensaver.png)
+![screensaver](machine-configuration/terminal/multiplexer/tmux/showcase/showcase-screensaver.png)
 
 </details>
 <details>
 <summary>🔱 Sessions</summary>
 
-![sessions](static/docs/tmux/showcase-sessions.png)
+![sessions](machine-configuration/terminal/multiplexer/tmux/showcase/showcase-sessions.png)
 
 </details>
 
@@ -49,13 +49,13 @@ https://github.com/user-attachments/assets/c5959f36-6b7a-450c-a18c-f430d60fcafc
 <details>
 <summary>:wq Editor</summary>
 
-![editor](static/docs/neovim/showcase-editor.png)
+![editor](machine-configuration/editors/neovim/showcase/showcase-editor.png)
 
 </details>
 <details>
 <summary>🎯 Focused Editor</summary>
 
-![editor](static/docs/neovim/showcase-focused-editor.png)
+![editor](machine-configuration/editors/neovim/showcase/showcase-focused-editor.png)
 
 </details>
 
@@ -82,12 +82,12 @@ cd .dotfiles
 #### 2. Generate Hardware Configuration
 Pick a short alias for the machine (this repo uses anime names: `chise`, `rin`, `kira`). Then:
 ```bash
-sudo nixos-generate-config --dir hosts/<alias>/configs
+sudo nixos-generate-config --dir machine-configuration/machines/<alias>/system/configs
 ```
 
 #### 3. Customize Your Configuration
-- Copy `hosts/chise/` (system config) and `home/hosts/linux/chise.nix` plus `home/hosts/linux/chise/` (per-user home-manager modules) as templates for the new alias
-- Update `flake/nixos-configurations.nix` to register `nixosConfigurations.<alias>`
+- Copy `machine-configuration/machines/chise/system/` (system config) and `machine-configuration/machines/chise/home.nix` plus `machine-configuration/machines/chise/home/` (per-user home-manager modules) as templates for the new alias
+- Update `repository/flake-assembly/nixos-configurations.nix` to register `nixosConfigurations.<alias>`
 
 #### 4. Deploy the Flake
 ```bash
@@ -120,7 +120,7 @@ nix run nix-darwin -- switch --flake .?submodules=1#<alias>
 ```bash
 sudo darwin-rebuild switch --flake .?submodules=1#<alias>
 ```
-Use the host's alias (`rin`, `kira`, ...). Wezterm is expected to be installed as a Homebrew cask; the cask list is declared in `hosts/<alias>/default.nix`.
+Use the host's alias (`rin`, `kira`, ...). The WezTerm cask is declared in `machine-configuration/terminal/emulators/wezterm/wezterm-nix-darwin.nix`.
 
 </details>
 </details>
@@ -136,25 +136,25 @@ Here's how everything fits together:
 
 ```mermaid
 graph TD
-    subgraph "flake.nix"
-        Flake["Entry Point<br/>defines configs"]
+    subgraph "repository/flake-assembly"
+        Flake["Flake output assembly<br/>defines configs"]
     end
 
     subgraph "NixOS Configuration"
         NixOS["nixosConfigurations.&lt;host&gt;"]
-        Host["hosts/&lt;host&gt;<br/>hardware config"]
-        UserNixOS["hosts/&lt;host&gt;/nixos-system.nix<br/>+ home/hosts/linux/&lt;alias&gt;.nix"]
+        Host["machine-configuration/machines/&lt;alias&gt;/system/<br/>hardware config"]
+        UserNixOS["machine-configuration/machines/&lt;alias&gt;/system/nixos-system.nix<br/>+ machine-configuration/machines/&lt;alias&gt;/home.nix"]
     end
 
     subgraph "Darwin Configuration"
         Darwin["darwinConfigurations.&lt;host&gt;"]
-        DarwinHost["hosts/&lt;host&gt;<br/>nix-darwin host config"]
-        DarwinHome["home/hosts/darwin/&lt;alias&gt;.nix"]
+        DarwinHost["machine-configuration/machines/&lt;alias&gt;/system/<br/>nix-darwin host config"]
+        DarwinHome["machine-configuration/machines/&lt;alias&gt;/home.nix"]
     end
 
     subgraph "Home Manager Configuration"
-        UserHome["home/hosts/linux/&lt;alias&gt;.nix"]
-        Modules["home/{base,linux,darwin}/*<br/>platform-gated modules"]
+        UserHome["machine-configuration/machines/&lt;alias&gt;/home.nix"]
+        Modules["machine-configuration/&lt;domain&gt;/&lt;capability&gt;/*<br/>platform-gated modules"]
     end
 
     subgraph "External Inputs"
@@ -196,13 +196,13 @@ graph TD
 
 ## 📂 Repository Layout
 
-Flake inputs live in `flake.nix`; outputs are split into `flake/{outputs,nixos-configurations,darwin-configurations,home-manager-modules}.nix`. Each output factory enumerates the hosts it owns and threads `hostname` plus `isNixOS` / `isDarwin` flags into `extraSpecialArgs`.
+Flake inputs live in `flake.nix`; outputs are split into `repository/flake-assembly/{outputs,nixos-configurations,darwin-configurations,home-manager-modules}.nix`. Each output factory enumerates the hosts it owns and threads `hostname` plus `isNixOS` / `isDarwin` flags into `extraSpecialArgs`.
 
-Home Manager modules under `home/` are split by platform, ryan4yin-style: `home/base/` (any-platform), `home/linux/`, `home/darwin/`. Per-platform subtrees let Linux-only modules never load on darwin and vice versa. Each module owns its `default.nix`, optional `scripts/`, optional `__tests__/`.
+Capabilities live under `machine-configuration/` grouped by what they do, and each capability owns its Nix modules, raw configuration, `scripts/`, and `__tests__/` together. Deployment mechanism and platform appear in the file name (`-home-manager.nix`, `-nixos.nix`, `-nix-darwin.nix`), never as a directory level, so a capability implemented differently on each platform still reads as one place. The Home Manager entry points that compose those capabilities are `machine-configuration/machines/<alias>/home.nix` per host, layered over `machine-configuration/machines/shared-home-manager-core.nix` and, for the two macOS hosts, `machine-configuration/machines/shared-darwin-home-manager.nix` plus `machine-configuration/machines/shared-darwin-system-nix-darwin.nix`.
 
-System-level host configs live in `hosts/<host>/`; reusable NixOS modules live in `nixos/modules/`. Each machine's home-manager entry point is `home/hosts/{linux,darwin}/<alias>.nix` (ryan4yin-style); host-only home modules can sit beside it in `home/hosts/{linux,darwin}/<alias>/`. Per-user shared bits live in `home/base/` (e.g. `home/base/packages/lucas-zanoni.nix`). Routers at `home/base/dev/git-private.nix` and `home/base/network/ssh-private.nix` look up `private-config/machines/${hostname}/<file>` so per-machine overrides land automatically when the file exists.
+Machine-specific system configuration lives in `machine-configuration/machines/<alias>/system/`; every reusable module lives with the capability it implements. Each machine's home-manager entry point is `machine-configuration/machines/<alias>/home.nix` (ryan4yin-style); host-only home modules live in `machine-configuration/machines/<alias>/home/`. Per-user shared bits live in `machine-configuration/machines/` (e.g. `machine-configuration/machines/user-packages-lucas-zanoni-home-manager.nix`). Routers at `machine-configuration/development/version-control/git-private-home-manager.nix` and `machine-configuration/network/ssh/ssh-private-home-manager.nix` look up `private-configuration/machines/${hostname}/<file>` so per-machine overrides land automatically when the file exists.
 
-Private, machine-specific configuration (work emails, gitlab hosts, company skills) lives in the `private-config/` submodule under `private-config/machines/<hostname>/`. Encrypted secrets live in `secrets/` (agenix). Static assets in `static/`. The Claude Code agent system lives in `agents/` with `core_rules/core.md` always applied and skills/hooks/evals as siblings; `agents/skills/<name>/SKILL.md` is the convention.
+Private, machine-specific configuration (work emails, gitlab hosts, company skills) lives in the `private-configuration/` submodule under `private-configuration/machines/<hostname>/`. Encrypted secrets live in `secrets/` (agenix). Assets belong to whatever uses them, so backgrounds, icons and screenshots sit inside the capability or skill that reads them. Agent instructions and shared skills live in `agent-harness/agent-instructions/`; the skill convention is `agent-harness/agent-instructions/skills/<name>/SKILL.md`. Hooks live in `agent-harness/hooks/`; evaluations live in `agent-harness/quality/evaluations/`.
 
 ---
 

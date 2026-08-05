@@ -1,0 +1,5 @@
+{
+  imports = [
+    ./stremio-nixos.nix
+  ];
+}

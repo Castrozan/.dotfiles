@@ -1,0 +1,36 @@
+#!/usr/bin/env sh
+
+commit_message_file="$1"
+
+staged_files=$(git diff --cached --name-only)
+
+scope=$(printf '%s\n' "$staged_files" |
+	grep -m1 -E '^(machine-configuration/machines/[^/]+/(home(\.nix|/)|system/)|machine-configuration/machines/shared-darwin-(system-nix-darwin|home-manager)\.nix$|repository/git-hooks/)' |
+	sed -E -e 's#^machine-configuration/machines/([^/]+)/(home\.nix|home/.*|system/.*)#\1#' -e 's#^machine-configuration/machines/shared-darwin-(system-nix-darwin|home-manager)\.nix$#shared-darwin#' -e 's#^repository/git-hooks/.*#git-hooks#')
+
+subject=$(head -n 1 "$commit_message_file")
+body=$(tail -n +2 "$commit_message_file")
+
+case "$subject" in
+"Merge "* | "Revert "* | "fixup! "* | "squash! "*) exit 0 ;;
+esac
+
+if ! printf '%s' "$subject" | grep -E -q '^[a-z]+(\([a-z0-9-]+\))*: '; then
+	printf 'commit-msg: subject must be "type(scope): subject", got:\n  %s\n' "$subject" >&2
+	exit 1
+fi
+
+[ -z "$scope" ] && exit 0
+
+case "$subject" in
+*"($scope):"*) exit 0 ;;
+esac
+
+prefixed_subject=$(printf '%s' "$subject" | sed -E "s/^([^:]+):/\\1($scope):/")
+
+{
+	printf '%s\n' "$prefixed_subject"
+	printf '%s' "$body"
+} >"$commit_message_file"
+
+exit 0

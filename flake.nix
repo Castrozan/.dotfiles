@@ -4,11 +4,11 @@
 
     Forget everything you know about nix, this is just a framework to configure apps and dotfiles.
 
-    Outputs live in ./flake/outputs.nix to keep this file short. Inputs must
+    Outputs live in ./repository/flake-assembly/outputs.nix to keep this file short. Inputs must
     stay here because Nix parses flake.nix statically to discover them.
   '';
 
-  outputs = inputs: (import ./flake/outputs.nix) inputs;
+  outputs = inputs: (import ./repository/flake-assembly/outputs.nix) inputs;
 
   inputs = {
     # For stable packages definitions
@@ -28,8 +28,10 @@
     stylix.url = "github:danth/stylix/release-25.11";
     stylix.inputs.nixpkgs.follows = "nixpkgs";
 
-    # Private assets repo (already mounted as a git submodule at private-config/);
-    # also exposed as a flake input so darwin modules that take it via inputs.
+    # Private assets repo, a different repository from the private-configuration/
+    # submodule; exposed as a flake input so darwin modules take it via inputs.
+    # Its own modules read inputs.private-config, so the input keeps the name
+    # GitHub gives the repo rather than the name this tree gives its boundary.
     private-config = {
       url = "git+ssh://git@github.com/Castrozan/private-config";
       flake = false;
@@ -70,7 +72,7 @@
     agenix.url = "github:ryantm/agenix";
     agenix.inputs.nixpkgs.follows = "nixpkgs";
     # Tracks master for nullptr guards and scene-graph fixes landed after v0.2.1.
-    # See .config/quickshell/CRASHES.md for the incident log and update cadence.
+    # See machine-configuration/desktop/quickshell/CRASHES.md for the incident log and update cadence.
     quickshell.url = "git+https://git.outfoxxed.me/quickshell/quickshell?ref=master";
     quickshell.inputs.nixpkgs.follows = "nixpkgs-unstable";
 

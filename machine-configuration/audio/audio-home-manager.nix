@@ -1,0 +1,161 @@
+{
+  lib,
+  isNixOS,
+  pkgs,
+  ...
+}:
+let
+  btPolicy = import ./bluetooth-policy.nix;
+in
+{
+  imports = [ ./audio-scripts-home-manager.nix ];
+  systemd.user.services.unmute-alsa-headphone-on-pipewire-start = {
+    Unit = {
+      Description = "Unmute ALSA headphone switch after PipeWire starts (UCM init.conf mutes it)";
+      After = [ "wireplumber.service" ];
+      Requires = [ "wireplumber.service" ];
+    };
+    Service = {
+      Type = "oneshot";
+      ExecStartPre = "${pkgs.coreutils}/bin/sleep 2";
+      ExecStart =
+        let
+          script = pkgs.writeShellScript "unmute-alsa-headphone" ''
+            ${pkgs.alsa-utils}/bin/amixer -c 0 sset Headphone unmute >/dev/null 2>&1 || true
+            ${pkgs.alsa-utils}/bin/amixer -c 0 sset Headphone 100% >/dev/null 2>&1 || true
+          '';
+        in
+        "${script}";
+    };
+    Install = {
+      WantedBy = [ "wireplumber.service" ];
+    };
+  };
+
+  systemd.user.services.bluetooth-audio-autoswitch = {
+    Unit = {
+      Description = "Auto-switch audio sink on Bluetooth connect/disconnect";
+      After = [ "pipewire-pulse.service" ];
+    };
+    Service = {
+      ExecStart =
+        let
+          moveAllStreamsToDefaultSink = pkgs.writeShellScript "move-all-streams-to-default-sink" ''
+            default_sink_index=$(${pkgs.pulseaudio}/bin/pactl list sinks short | ${pkgs.gawk}/bin/awk -v name="$(${pkgs.pulseaudio}/bin/pactl get-default-sink)" '$2 == name { print $1 }')
+            [ -z "$default_sink_index" ] && exit 0
+            ${pkgs.pulseaudio}/bin/pactl list sink-inputs short | ${pkgs.gawk}/bin/awk '{ print $1 }' | while read -r stream_index; do
+              ${pkgs.pulseaudio}/bin/pactl move-sink-input "$stream_index" "$default_sink_index" 2>/dev/null || true
+            done
+          '';
+
+          script = pkgs.writeShellScript "bluetooth-audio-autoswitch" ''
+            ${pkgs.pulseaudio}/bin/pactl subscribe | while read -r line; do
+              if echo "$line" | ${pkgs.gnugrep}/bin/grep -q "'new' on sink"; then
+                sink_index=$(echo "$line" | ${pkgs.gnugrep}/bin/grep -oP '#\K\d+')
+                sink_name=$(${pkgs.pulseaudio}/bin/pactl list sinks short | ${pkgs.gawk}/bin/awk -v idx="$sink_index" '$1 == idx { print $2 }')
+                if [[ "$sink_name" == bluez_output.* ]]; then
+                  ${pkgs.pulseaudio}/bin/pactl set-default-sink "$sink_name"
+                  sleep 0.5
+                  ${moveAllStreamsToDefaultSink}
+                fi
+              elif echo "$line" | ${pkgs.gnugrep}/bin/grep -q "'remove' on sink"; then
+                sleep 0.5
+                ${moveAllStreamsToDefaultSink}
+              fi
+            done
+          '';
+        in
+        "${script}";
+      Restart = "always";
+      RestartSec = 5;
+    };
+    Install = {
+      WantedBy = [ "pipewire-pulse.service" ];
+    };
+  };
+
+  xdg.configFile = lib.mkIf (!isNixOS) {
+    "pipewire/pipewire.conf.d/05-realtime-scheduling.conf".text = builtins.toJSON {
+      "context.modules" = [
+        {
+          name = "libpipewire-module-rt";
+          args = {
+            "nice.level" = -11;
+            "rt.prio" = 88;
+            "rt.time.soft" = 2000000;
+            "rt.time.hard" = 2000000;
+          };
+          flags = [
+            "ifexists"
+            "nofail"
+          ];
+        }
+      ];
+    };
+
+    "pipewire/pipewire.conf.d/10-clock-rate.conf".text = builtins.toJSON {
+      "context.properties" = {
+        "default.clock.rate" = 48000;
+        "default.clock.allowed-rates" = [
+          44100
+          48000
+        ];
+      };
+    };
+
+    "wireplumber/main.lua.d/50-disable-bt-autoswitch.lua".text = ''
+      table.insert(alsa_monitor.rules, {
+        matches = {
+          {
+            { "node.name", "matches", "alsa_input.*" },
+          },
+        },
+        apply_properties = {
+          ["priority.driver"] = ${toString btPolicy.laptopMicPriority},
+          ["priority.session"] = ${toString btPolicy.laptopMicPriority},
+        },
+      })
+    '';
+
+    "wireplumber/main.lua.d/41-disable-stream-restore-target.lua".text = ''
+      stream_defaults.properties["restore-target"] = ${lib.boolToString btPolicy.restoreStreamTarget}
+    '';
+
+    "wireplumber/bluetooth.lua.d/50-bluetooth-codec-preference.lua".text = ''
+      table.insert(bluez_monitor.rules, {
+        matches = {
+          {
+            { "device.name", "matches", "bluez_card.*" },
+          },
+        },
+        apply_properties = {
+          ["bluez5.auto-connect"] = { ${
+            lib.concatMapStringsSep ", " (c: ''"${c}"'') btPolicy.autoConnect
+          } },
+          ["bluez5.codecs"] = { ${lib.concatMapStringsSep ", " (c: ''"${c}"'') btPolicy.codecs} },
+          ["bluez5.autoswitch-to-headset-profile"] = ${lib.boolToString btPolicy.autoswitchToHeadsetProfile},
+        },
+      })
+    '';
+
+    "wireplumber/bluetooth.lua.d/51-bluetooth-sink-priority.lua".text = ''
+      table.insert(bluez_monitor.rules, {
+        matches = {
+          {
+            { "node.name", "matches", "bluez_output.*" },
+          },
+        },
+        apply_properties = {
+          ["priority.driver"] = ${toString btPolicy.sinkPriority},
+          ["priority.session"] = ${toString btPolicy.sinkPriority},
+        },
+      })
+    '';
+
+    "systemd/user/wireplumber.service.d/force-c-locale-for-ascii-safe-device-descriptions.conf".text =
+      ''
+        [Service]
+        Environment=LANG=C
+      '';
+  };
+}

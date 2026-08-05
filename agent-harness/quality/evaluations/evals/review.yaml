@@ -1,0 +1,98 @@
+tests:
+  - name: review_flags_obvious_null_dereference
+    skill_path: agent-harness/agent-instructions/skills/review/SKILL.md
+    prompt: |
+      Original user request: "Add a function to get user by ID"
+
+      Git diff:
+      ```diff
+      +def get_user_by_id(user_id):
+      +    user = database.find(user_id)
+      +    return user.name
+      ```
+
+      Review this diff.
+    model: haiku
+    assertions:
+      llm_judge:
+        - "Reports a finding that the lookup result is used without checking it, so a missing user makes the attribute access on it fail."
+
+  - name: review_ignores_preexisting_unchanged_lines
+    skill_path: agent-harness/agent-instructions/skills/review/SKILL.md
+    prompt: |
+      Original user request: "Rename the local count variable for clarity"
+
+      Git diff:
+      ```diff
+       def summarize(items):
+      -    n = len(items)
+      -    return f"{n} items"
+      +    item_count = len(items)
+      +    return f"{item_count} items"
+      ```
+
+      Note: a separate `validate()` function elsewhere in the same file has a known bug where it does not reject None, but that function was NOT touched by this diff.
+
+      Review this diff.
+    model: haiku
+    assertions:
+      llm_judge:
+        - "Reports no finding and does not report the untouched validate() function because it is outside the reviewed diff."
+
+  - name: review_flags_hardcoded_credentials
+    skill_path: agent-harness/agent-instructions/skills/review/SKILL.md
+    prompt: |
+      Original user request: "Add database connection"
+
+      Git diff:
+      ```diff
+      +DB_PASSWORD = "admin123"
+      +connection = connect(host="db.prod.internal", password=DB_PASSWORD)
+      ```
+
+      Review this diff.
+    model: haiku
+    assertions:
+      llm_judge:
+        - "Reports a security finding that the production database password is hardcoded in the source instead of coming from a secret."
+
+  - name: review_ignores_style_preferences
+    skill_path: agent-harness/agent-instructions/skills/review/SKILL.md
+    prompt: |
+      Original user request: "Rename the variable for clarity"
+
+      Git diff:
+      ```diff
+      -x = calculate_total(items)
+      +total_price_for_all_items_in_cart = calculate_total(items)
+      ```
+
+      Review this diff.
+    model: haiku
+    assertions:
+      llm_judge:
+        - "Reports no finding and does not treat the requested variable rename as an actionable defect because a style preference without behavioral impact is not review feedback."
+
+  - name: review_requires_actionable_evidence
+    skill_path: agent-harness/agent-instructions/skills/review/SKILL.md
+    prompt: "What must every review finding include?"
+    model: haiku
+    assertions:
+      llm_judge:
+        - "States that each finding includes severity, file and line, a concrete triggering scenario, observed consequence, and required change."
+
+  - name: review_omits_speculation
+    skill_path: agent-harness/agent-instructions/skills/review/SKILL.md
+    prompt: "Should you report a concern when you cannot show a concrete scenario or impact?"
+    model: haiku
+    assertions:
+      llm_judge:
+        - "Says not to report speculative or non-actionable concerns and to verify claims with code, tests, documentation, or a reproducible scenario first."
+
+  - name: review_goal_verification_judges_quality_without_repairing
+    skill_path: agent-harness/agent-instructions/skills/review/SKILL.md
+    prompt: "Perform final quality assurance after a feature was implemented. What should you verify and what should you do with problems you find?"
+    model: haiku
+    assertions:
+      llm_judge:
+        - "Verifies delivery against the user's own goal rather than the implementer's summary, judges the quality tests cannot measure such as design and cohesion, and reports findings with evidence instead of repairing them."

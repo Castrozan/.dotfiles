@@ -13,16 +13,18 @@ HEARTBEAT.md
 /CLAUDE.md.*
 /AGENTS.md
 /AGENTS.md.*
+/.githooks
+/.vscode
 /.opencode/
 .cursor/
-home/base/editor/cursor/cursor-global-user-rules.md
+machine-configuration/editors/cursor/cursor-global-user-rules.md
 
 # Nix build output
 result
 result-*
 
 # Test coverage output
-__tests__/coverage/
+repository/verification/coverage/
 
 # Test status tracking (local-only pass/fail records)
 .test-status/
@@ -39,8 +41,8 @@ __pycache__/
 
 .cache/
 snapshot.json
-agents/usage/snapshots/
-apps/reports/site/
+agent-harness/measurement-and-reporting/usage-collection/snapshots/
+agent-harness/measurement-and-reporting/reports/site/
 /.config/cava/
 /.config/pulse/
 .claude/

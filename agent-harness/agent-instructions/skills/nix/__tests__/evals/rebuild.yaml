@@ -1,0 +1,44 @@
+tests:
+  - name: rebuild_stages_nix_files_first
+    skill_path: agent-harness/agent-instructions/skills/nix/SKILL.md
+    extra_skill_paths:
+      - agent-harness/agent-instructions/skills/nix/rebuild.md
+    prompt: "I modified a .nix file. What must I do before running rebuild?"
+    model: haiku
+    assertions:
+      llm_judge:
+        - "The response states that the modified .nix file(s) must be staged into the git index (git add) before running rebuild, because nix builds from the git index rather than the working tree."
+
+  - name: rebuild_background_execution
+    skill_path: agent-harness/agent-instructions/skills/nix/SKILL.md
+    extra_skill_paths:
+      - agent-harness/agent-instructions/skills/nix/rebuild.md
+    prompt: "How should I run the rebuild command to avoid timeout issues?"
+    model: haiku
+    assertions:
+      llm_judge:
+        - "The response advises running rebuild in the background with its output redirected to a log file and its progress monitored by tailing that log (the active-waiting pattern) rather than blocking in the foreground, since a from-source rebuild can take 10+ minutes."
+
+  - name: rebuild_output_to_file_not_pipe
+    skill_path: agent-harness/agent-instructions/skills/nix/SKILL.md
+    extra_skill_paths:
+      - agent-harness/agent-instructions/skills/nix/rebuild.md
+    prompt: "I want to run rebuild in the background. Should I use 'rebuild 2>&1 | tail -20' with run_in_background?"
+    model: haiku
+    assertions:
+      llm_judge:
+        - "The response rejects piping rebuild through `tail` in the background (which buffers output and produces empty results) and instead recommends redirecting rebuild's output to a log file that is tailed separately."
+      output_not_contains:
+        - "yes, that"
+        - "looks good"
+        - "correct approach"
+
+  - name: rebuild_dry_run_validation
+    skill_path: agent-harness/agent-instructions/skills/nix/SKILL.md
+    extra_skill_paths:
+      - agent-harness/agent-instructions/skills/nix/rebuild.md
+    prompt: "How can I validate my nix configuration without applying it?"
+    model: haiku
+    assertions:
+      llm_judge:
+        - "The response explains that the nix configuration can be validated without applying it by running rebuild with the `--dry-run` flag, which catches syntax errors, missing imports, and evaluation failures without modifying the system."

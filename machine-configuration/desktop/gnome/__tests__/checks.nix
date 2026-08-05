@@ -1,0 +1,24 @@
+{
+  helpers,
+  pkgs,
+  lib,
+  ...
+}:
+let
+  inherit (helpers) mkEvalCheck;
+
+  cfg = helpers.homeManagerTestConfiguration [
+    ../gnome-dconf-home-manager.nix
+    ../gtk-home-manager.nix
+  ];
+in
+{
+  domain-gnome-gtk-enabled =
+    mkEvalCheck "domain-gnome-gtk-enabled" cfg.gtk.enable
+      "gtk theming should be enabled";
+
+  domain-gnome-dconf-settings =
+    mkEvalCheck "domain-gnome-dconf-settings"
+      (builtins.hasAttr "org/gnome/desktop/interface" cfg.dconf.settings)
+      "dconf settings should be configured";
+}

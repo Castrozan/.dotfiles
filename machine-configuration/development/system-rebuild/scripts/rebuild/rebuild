@@ -1,0 +1,84 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+readonly DOTFILES_DIRECTORY="${HOME}/.dotfiles"
+readonly MACHINE_ALIAS="@machineAlias@"
+readonly BACKENDS_DIRECTORY="@backendsDirectory@"
+readonly EXCLUSIVE_RUN_LOCK_HELPER="${DOTFILES_DIRECTORY}/agent-harness/session-control/exclusive-run-lock.sh"
+readonly TYPICAL_REBUILD_DURATION_SECONDS=420
+readonly NIX_DAEMON_PROFILE="/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh"
+
+REBUILD_SWITCH_LOG_PATH=""
+
+LOW_PRIORITY_COMMAND_PREFIX=(nice -n 19)
+if command -v ionice >/dev/null 2>&1; then
+	LOW_PRIORITY_COMMAND_PREFIX+=(ionice -c 3)
+fi
+
+fail() {
+	echo "error: $*" >&2
+	exit 1
+}
+
+detect_backend_name() {
+	if [ "$(uname -s)" = "Darwin" ]; then
+		echo "darwin"
+	elif [ -e /etc/NIXOS ]; then
+		echo "nixos"
+	else
+		echo "home-manager"
+	fi
+}
+
+source_backend_for_this_platform() {
+	local backend_path
+	backend_path="${BACKENDS_DIRECTORY}/$(detect_backend_name)"
+	[ -f "$backend_path" ] || fail "no rebuild backend at ${backend_path}"
+	# shellcheck disable=SC1090
+	. "$backend_path"
+}
+
+ensure_dotfiles_directory_exists() {
+	[ -d "$DOTFILES_DIRECTORY" ] || fail "dotfiles directory not found at ${DOTFILES_DIRECTORY}"
+}
+
+ensure_nix_is_on_the_path() {
+	command -v nix >/dev/null 2>&1 && return 0
+	[ -f "$NIX_DAEMON_PROFILE" ] || fail "nix is not on PATH and ${NIX_DAEMON_PROFILE} does not exist"
+	# shellcheck disable=SC1090
+	. "$NIX_DAEMON_PROFILE"
+}
+
+hold_exclusive_rebuild_lock() {
+	[ -f "$EXCLUSIVE_RUN_LOCK_HELPER" ] || return 0
+	# shellcheck disable=SC1090
+	. "$EXCLUSIVE_RUN_LOCK_HELPER"
+	acquire_exclusive_run_lock_or_emit_retry_instructions \
+		"rebuild" "$TYPICAL_REBUILD_DURATION_SECONDS" "$REBUILD_SWITCH_LOG_PATH"
+}
+
+initialize_git_submodules() {
+	[ -f "${DOTFILES_DIRECTORY}/.gitmodules" ] || return 0
+	git -C "$DOTFILES_DIRECTORY" submodule update --init --recursive 2>/dev/null || true
+}
+
+main() {
+	ensure_dotfiles_directory_exists
+	ensure_nix_is_on_the_path
+	source_backend_for_this_platform
+
+	backend_prepare_environment
+	hold_exclusive_rebuild_lock
+	initialize_git_submodules
+
+	backend_switch "$@"
+	backend_verify_switch_landed
+	backend_after_switch || echo ":: Post-switch desktop refresh did not complete." >&2
+
+	echo ":: Rebuild complete on ${MACHINE_ALIAS}."
+}
+
+if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
+	main "$@"
+fi

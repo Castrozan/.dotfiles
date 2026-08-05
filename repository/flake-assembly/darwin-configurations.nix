@@ -1,0 +1,75 @@
+# Two macbooks (different physical machines, same lucas.zanoni user).
+# Activate with:
+#   sudo darwin-rebuild switch --flake .#rin
+#   sudo darwin-rebuild switch --flake .#kira
+#
+# rin = toosaka rin, kira = kira yoshikage. See private-configuration/machines.nix
+# for the alias<->hostname mapping and per-machine role.
+# machine-configuration/machines/<alias>/system owns hardware-level config,
+# machine-configuration/machines/<alias>/home.nix owns the home-manager entry point.
+{
+  nix-darwin,
+  home-manager,
+  darwinSystem,
+  darwinPkgs,
+  darwinSystemOverlays,
+  specialArgsBase,
+}:
+let
+  username = "lucas.zanoni";
+
+  specialArgs = specialArgsBase // {
+    inherit username;
+    inherit (darwinPkgs) unstable latest;
+    isNixOS = false;
+    isDarwin = true;
+  };
+
+  mkHomeManagerWrapperFor =
+    machineAlias:
+    { inputs, ... }:
+    {
+      home-manager = {
+        useGlobalPkgs = true;
+        useUserPackages = true;
+        backupFileExtension = "backup";
+        overwriteBackup = true;
+        sharedModules = [ inputs.stylix.homeModules.stylix ];
+
+        extraSpecialArgs = specialArgs // {
+          hostname = machineAlias;
+        };
+        users.${username} = import (../../machine-configuration/machines + "/${machineAlias}/home.nix");
+      };
+    };
+
+  mkDarwinHostFor = machineAlias: {
+    ${machineAlias} = nix-darwin.lib.darwinSystem {
+      specialArgs = specialArgs // {
+        hostname = machineAlias;
+      };
+      system = darwinSystem;
+
+      modules = [
+        { nixpkgs.overlays = darwinSystemOverlays; }
+        ../../agent-harness/harnesses/codex/system-managed-hooks.nix
+        ../../machine-configuration/machines/${machineAlias}/system
+        home-manager.darwinModules.home-manager
+        (mkHomeManagerWrapperFor machineAlias)
+      ];
+    };
+  };
+
+  machineAliasesWithExistingHostDirectory =
+    builtins.filter
+      (
+        machineAlias: builtins.pathExists (../../machine-configuration/machines + "/${machineAlias}/system")
+      )
+      [
+        "rin"
+        "kira"
+      ];
+in
+builtins.foldl' (
+  acc: machineAlias: acc // mkDarwinHostFor machineAlias
+) { } machineAliasesWithExistingHostDirectory

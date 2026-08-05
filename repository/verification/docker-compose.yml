@@ -1,0 +1,8 @@
+services:
+  test-modules-eval:
+    build:
+      context: ../..
+      dockerfile: repository/verification/Dockerfile
+      network: host
+    image: dotfiles-test:eval
+    profiles: ["eval", "modules"]
