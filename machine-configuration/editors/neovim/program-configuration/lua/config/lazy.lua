@@ -65,3 +65,5 @@ require("lazy").setup({
     },
   },
 })
+
+require("config.which_key_fallback_for_disabled_plugin").install()
