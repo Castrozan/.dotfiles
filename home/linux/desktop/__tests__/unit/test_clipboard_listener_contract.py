@@ -6,9 +6,13 @@ CLIPSE_MODULE = DOTFILES_ROOT / "home/linux/desktop/clipse.nix"
 CLIPSE_WAYLAND_LISTENER = (
     DOTFILES_ROOT / "home/linux/desktop/scripts/clipse-wayland-listener"
 )
-HYPRLAND_AUTOSTART = DOTFILES_ROOT / ".config/hypr/conf.d/autostart.conf"
+HYPRLAND_AUTOSTART = (
+    DOTFILES_ROOT
+    / "machine-configuration/desktop/hyprland/program-configuration/conf.d/autostart.conf"
+)
 GRAPHICAL_SERVICES_ACTIVATION_MODULE = (
-    DOTFILES_ROOT / "home/linux/hyprland/graphical-services-activation.nix"
+    DOTFILES_ROOT
+    / "machine-configuration/desktop/hyprland/graphical-services-activation.nix"
 )
 
 

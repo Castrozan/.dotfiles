@@ -23,7 +23,7 @@ in
     ../../../agent-harness/harnesses/codex
     ../../../home/linux/gnome
     ../../../home/linux/home-assistant
-    ../../../home/linux/hyprland/nixos.nix
+    ../../../machine-configuration/desktop/hyprland/hyprland-nixos.nix
     ../../../agent-harness/harnesses/opencode
     ../../../agent-harness/harnesses/pi
     ../../../home/base/testing

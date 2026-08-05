@@ -6,7 +6,7 @@
 }:
 let
   nixglWrap = import ../../../../lib/nixgl-wrap.nix { inherit pkgs inputs isNixOS; };
-  hyprlandFlake = import ../../../../lib/patched-hyprland.nix { inherit pkgs inputs; };
+  hyprlandFlake = import ../patched-hyprland.nix { inherit pkgs inputs; };
 
   hyprlandWrapped = nixglWrap.wrapWithNixGLIntel {
     package = hyprlandFlake;

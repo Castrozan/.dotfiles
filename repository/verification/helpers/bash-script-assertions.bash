@@ -5,6 +5,7 @@ readonly DOTFILES_BIN_DIRECTORY="$DOTFILES_ROOT_DIRECTORY/bin"
 readonly DOTFILES_HOME_BASE_DIRECTORY="$DOTFILES_ROOT_DIRECTORY/home/base"
 readonly DOTFILES_HOME_LINUX_DIRECTORY="$DOTFILES_ROOT_DIRECTORY/home/linux"
 readonly DOTFILES_HOME_DARWIN_DIRECTORY="$DOTFILES_ROOT_DIRECTORY/home/darwin"
+readonly DOTFILES_MACHINE_CONFIGURATION_DIRECTORY="$DOTFILES_ROOT_DIRECTORY/machine-configuration"
 readonly DOTFILES_SKILLS_DIRECTORY="$DOTFILES_ROOT_DIRECTORY/agent-harness/agent-instructions/skills"
 
 _resolve_script_under_test() {
@@ -24,6 +25,7 @@ _resolve_script_under_test() {
 		"$DOTFILES_HOME_BASE_DIRECTORY" \
 		"$DOTFILES_HOME_LINUX_DIRECTORY" \
 		"$DOTFILES_HOME_DARWIN_DIRECTORY" \
+		"$DOTFILES_MACHINE_CONFIGURATION_DIRECTORY" \
 		-type f -name "$testFileName" -path "*/scripts/*" 2>/dev/null | head -1)
 	if [ -n "$domainScriptMatch" ]; then
 		echo "$domainScriptMatch"

@@ -12,7 +12,8 @@ LAUNCHERS_SCRIPTS_DIR = SCRIPTS_DIR / "launchers"
 THEME_SCRIPTS_DIR = SCRIPTS_DIR / "theme"
 UTILITIES_SCRIPTS_DIR = SCRIPTS_DIR / "utilities"
 COLOR_GENERATION_DIR = (
-    Path(__file__).parent.parent.parent.parent
+    Path(__file__).resolve().parents[4]
+    / "home"
     / "base"
     / "desktop"
     / "theming"

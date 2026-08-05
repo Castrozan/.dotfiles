@@ -2,6 +2,7 @@
   pkgs,
   inputs,
   isNixOS,
+  healthCheckLib,
   ...
 }:
 let
@@ -15,14 +16,14 @@ let
   };
 in
 {
-  xdg.configFile."quickshell/switcher" = {
-    source = ../../../../.config/quickshell/switcher;
+  xdg.configFile."quickshell/overview" = {
+    source = ./program-configuration;
     recursive = true;
   };
 
-  systemd.user.services.quickshell-switcher = {
+  systemd.user.services.quickshell-overview = {
     Unit = {
-      Description = "Quickshell window switcher with thumbnails";
+      Description = "Quickshell workspace overview";
       After = [ "graphical-session.target" ];
       ConditionEnvironment = "WAYLAND_DISPLAY";
       X-Restart-Triggers = [ "${quickshellPackage}" ];
@@ -30,8 +31,9 @@ in
 
     Service = {
       Type = "simple";
-      ExecStart = "${quickshellPackage}/bin/quickshell -c switcher";
+      ExecStart = "${quickshellPackage}/bin/quickshell -c overview";
       Environment = [
+        "QML_IMPORT_PATH=${pkgs.qt6Packages.qt5compat}/lib/qt-6/qml"
         "QT_QPA_PLATFORM=wayland"
         "QS_DROP_EXPENSIVE_FONTS=1"
       ];
@@ -43,4 +45,11 @@ in
       WantedBy = [ "graphical-session.target" ];
     };
   };
+
+  healthCheck.probes = [
+    (healthCheckLib.mkSystemdUserUnitProbe {
+      name = "linux app launcher (quickshell overview)";
+      unit = "quickshell-overview.service";
+    })
+  ];
 }

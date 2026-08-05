@@ -43,7 +43,7 @@ _run_qmllint_checks() {
 
 	echo "--- QML Lint ---"
 	local qmlFiles
-	qmlFiles=$(find "$REPO_DIR/.config/quickshell" -name "*.qml" -type f | sort)
+	qmlFiles=$(find "$REPO_DIR/machine-configuration/desktop/quickshell" -name "*.qml" -type f | sort)
 	local failCount=0
 
 	for qmlFile in $qmlFiles; do

@@ -84,7 +84,9 @@ in
     hyprland = {
       enable = true;
       xwayland.enable = true;
-      package = import ../../../../lib/patched-hyprland.nix { inherit pkgs inputs; };
+      package = import ../../../../machine-configuration/desktop/hyprland/patched-hyprland.nix {
+        inherit pkgs inputs;
+      };
       portalPackage =
         inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland;
     };

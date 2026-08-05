@@ -66,4 +66,4 @@ Append to the top when a new crash cluster shows up. Keep entries terse.
 If crashes persist after pinning master and a `nix flake update quickshell`:
 1. Decode the minidump with `minidump_stackwalk` to see which QML object triggered it.
 2. File upstream at https://git.outfoxxed.me/quickshell/quickshell/issues with the stack trace and the QML path.
-3. If a specific module is implicated, disable that module in `.config/quickshell/bar/Bar.qml` to confirm, then report.
+3. If a specific module is implicated, disable that module in `machine-configuration/desktop/quickshell/bar/program-configuration/Bar.qml` to confirm, then report.

@@ -15,7 +15,7 @@ _measure_ms() {
 }
 
 _qs_bar_ipc() {
-	qs -p ~/.dotfiles/.config/quickshell/bar ipc --any-display call "$@"
+	qs -p ~/.dotfiles/machine-configuration/desktop/quickshell/bar/program-configuration ipc --any-display call "$@"
 }
 
 # ── Hyprland IPC ──────────────────────────────────────────────────────────────

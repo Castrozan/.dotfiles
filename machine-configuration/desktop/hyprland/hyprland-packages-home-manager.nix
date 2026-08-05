@@ -3,7 +3,7 @@ let
   hyprlandPkgs = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system};
   inherit (hyprlandPkgs) xdg-desktop-portal-hyprland;
 
-  patchedHyprland = import ../../../lib/patched-hyprland.nix { inherit pkgs inputs; };
+  patchedHyprland = import ./patched-hyprland.nix { inherit pkgs inputs; };
 
   hyprshot-fixed = pkgs.hyprshot.override {
     hyprland = patchedHyprland;

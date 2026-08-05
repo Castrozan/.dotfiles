@@ -1,5 +1,4 @@
 {
-  config,
   pkgs,
   inputs,
   isNixOS,
@@ -16,19 +15,14 @@ let
   };
 in
 {
-  home.packages = [
-    quickshellPackage
-    pkgs.cava
-  ];
-
-  xdg.configFile."quickshell/bar" = {
-    source = ../../../../.config/quickshell/bar;
+  xdg.configFile."quickshell/switcher" = {
+    source = ./program-configuration;
     recursive = true;
   };
 
-  systemd.user.services.quickshell-bar = {
+  systemd.user.services.quickshell-switcher = {
     Unit = {
-      Description = "Quickshell vertical bar";
+      Description = "Quickshell window switcher with thumbnails";
       After = [ "graphical-session.target" ];
       ConditionEnvironment = "WAYLAND_DISPLAY";
       X-Restart-Triggers = [ "${quickshellPackage}" ];
@@ -36,9 +30,8 @@ in
 
     Service = {
       Type = "simple";
-      ExecStart = "${quickshellPackage}/bin/quickshell --path ${config.home.homeDirectory}/.dotfiles/.config/quickshell/bar";
+      ExecStart = "${quickshellPackage}/bin/quickshell -c switcher";
       Environment = [
-        "QML_IMPORT_PATH=${pkgs.qt6Packages.qt5compat}/lib/qt-6/qml"
         "QT_QPA_PLATFORM=wayland"
         "QS_DROP_EXPENSIVE_FONTS=1"
       ];

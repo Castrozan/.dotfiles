@@ -1,6 +1,6 @@
 {
   imports = [
-    ./default.nix
+    ./hyprland-home-manager.nix
     ./alternatives/hyprland-nixos.nix
   ];
 }
