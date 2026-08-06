@@ -14,5 +14,6 @@
     ./opencode-go
     ./private.nix
     ./scripts
+    ../../workspace-profiles
   ];
 }
