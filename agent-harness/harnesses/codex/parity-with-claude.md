@@ -127,11 +127,12 @@ matcher purposes, so a single `Edit|Write` matcher fires on both CLIs.
   a PUBLIC repo. It stays `surfaces = (CLAUDE_SURFACE,)` even though Codex now
   registers the SessionStart dispatcher, and a test asserts it stays off.
 - Claude-only by applicability: `codex-sandbox-downgrade-guard`,
-  `monitor-streaming-pattern-validator`, `workspace-directory-injector`,
-  `background-bash-anti-pattern-validator`, and the
-  `end_of_turn_format_guard_handler`/`user-prompt-submit-dispatcher` reply-shape gate
+  `monitor-streaming-pattern-validator`, `workspace-directory-injector`, and the
+  `end_of_turn_format_guard_handler` reply-shape gate
   are tied to Claude's TUI, its background-bash harness, the clawde launcher, or
-  the `Monitor` tool.
+  the `Monitor` tool. `background-bash-anti-pattern-validator` also runs on
+  OpenCode, which has no background-bash harness but suffers the same
+  foreground CI waits and interactive hangs.
 
 ## MCP servers
 

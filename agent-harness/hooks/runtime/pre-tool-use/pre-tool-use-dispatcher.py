@@ -47,7 +47,7 @@ PRE_TOOL_USE_HANDLERS = [
     HookHandler(
         handler_module_name="background_bash_anti_pattern_validator_handler",
         tool_matcher="Bash",
-        surfaces=(CLAUDE_SURFACE,),
+        surfaces=(CLAUDE_SURFACE, OPENCODE_SURFACE),
     ),
     HookHandler(
         handler_module_name="codex_sandbox_downgrade_guard_handler",
