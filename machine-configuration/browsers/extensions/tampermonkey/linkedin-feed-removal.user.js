@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name         LinkedIn Feed Removal
-// @version      1.0.0
+// @version      1.1.0
 // @description  Strip the LinkedIn home feed down to a centered profile card: no post stream, no composer, no sort control, no right rail with puzzles and suggestions, and no premium upsell or shortcut menu in the left rail. The For Business menu and the premium chip leave the top nav on every page. Single post permalinks and every other LinkedIn page keep their content.
 // @author       zanoni
 // @match        https://www.linkedin.com/*
 // @run-at       document-start
-// @grant        none
+// @grant        GM_addStyle
 // ==/UserScript==
 
 (function () {
@@ -14,7 +14,6 @@
   const FEED_ROUTE_PATHNAME = /^\/(feed\/?)?$/;
   const FEED_REMOVED_ROOT_CLASS = "linkedin-feed-removed";
   const HIDDEN_SIDEBAR_BLOCK_CLASS = "linkedin-feed-removed-sidebar-block";
-  const STYLE_ID = "linkedin-feed-removal-style";
   const SIDEBAR_NOISE_LINK_SELECTOR =
     'a[href*="/premium/"], a[href*="/my-items/"]';
   const SIDEBAR_COLUMN_WIDTH = "216px";
@@ -31,15 +30,14 @@
     `.${FEED_REMOVED_ROOT_CLASS} aside[aria-label="Sidebar"] { grid-column: 1 / -1 !important; justify-self: center !important; width: ${SIDEBAR_COLUMN_WIDTH} !important; }`,
   ];
 
+  let injectedStyle = null;
+
   function ensureStyle() {
-    const host = document.head || document.documentElement;
+    if (injectedStyle && injectedStyle.isConnected) return;
 
-    if (!host || host.contains(document.getElementById(STYLE_ID))) return;
-
-    const style = document.createElement("style");
-    style.id = STYLE_ID;
-    style.textContent = everyPageCssRules.concat(feedPageCssRules).join("\n");
-    host.appendChild(style);
+    injectedStyle = GM_addStyle(
+      everyPageCssRules.concat(feedPageCssRules).join("\n"),
+    );
   }
 
   function isFeedRoute() {
