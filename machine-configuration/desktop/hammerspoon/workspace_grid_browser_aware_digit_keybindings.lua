@@ -28,10 +28,10 @@ function workspaceGridBrowserAwareDigitKeybindings.buildRoutingDecision(
 		end
 		return nil
 	end
-	return {
-		kind = eventFlags.shift and "move" or "switch",
-		workspaceNumber = workspaceColumnNumber,
-	}
+	if eventFlags.shift then
+		return { kind = "ignore" }
+	end
+	return { kind = "switch", workspaceNumber = workspaceColumnNumber }
 end
 
 local function currentFrontmostApplicationBundleIdentifier()
@@ -56,11 +56,7 @@ function workspaceGridBrowserAwareDigitKeybindings.install(dependencies)
 		if routingDecision.kind == "ignore" then
 			return true
 		end
-		if routingDecision.kind == "move" then
-			dependencies.workspaceGrid.moveFocusedWindowToWorkspace(routingDecision.workspaceNumber)
-		else
-			dependencies.workspaceGrid.switchToWorkspace(routingDecision.workspaceNumber)
-		end
+		dependencies.workspaceGrid.switchToWorkspace(routingDecision.workspaceNumber)
 		return true
 	end)
 	keyDownEventTap:start()

@@ -91,14 +91,14 @@ expectEqual(
 	routingDecisionFor({ cmd = true }, 18, "com.brave.Browser")
 )
 expectEqual(
-	"Cmd+Shift+1 outside a browser moves the focused window to workspace one",
-	"move",
+	"Cmd+Shift+1 outside a browser is ignored",
+	"ignore",
 	routingDecisionFor({ cmd = true, shift = true }, 18, "com.apple.Terminal").kind
 )
 expectEqual(
-	"Cmd+Shift+7 outside a browser moves the focused window to workspace seven",
-	7,
-	routingDecisionFor({ cmd = true, shift = true }, 24, "com.apple.Terminal").workspaceNumber
+	"Cmd+Shift+7 outside a browser is ignored",
+	"ignore",
+	routingDecisionFor({ cmd = true, shift = true }, 24, "com.apple.Terminal").kind
 )
 expectEqual(
 	"Cmd+Shift+1 with Chrome frontmost is ignored",
@@ -162,9 +162,9 @@ local terminalSwitchResult = createdEventTaps[1].eventHandler(keyDownEventFor({ 
 expectEqual("a Cmd+1 keydown with a terminal frontmost is consumed", true, terminalSwitchResult)
 expectEqual("a consumed Cmd+1 switches to workspace one", 1, switchedWorkspaceNumbers[1])
 
-local terminalMoveResult = createdEventTaps[1].eventHandler(keyDownEventFor({ cmd = true, shift = true }))
-expectEqual("a Cmd+Shift+1 keydown with a terminal frontmost is consumed", true, terminalMoveResult)
-expectEqual("a consumed Cmd+Shift+1 moves the window to workspace one", 1, movedWorkspaceNumbers[1])
-expectEqual("a Cmd+Shift+1 keydown never switches workspace", 1, #switchedWorkspaceNumbers)
+local terminalMoveIgnoreResult = createdEventTaps[1].eventHandler(keyDownEventFor({ cmd = true, shift = true }))
+expectEqual("a Cmd+Shift+1 keydown with a terminal frontmost is consumed", true, terminalMoveIgnoreResult)
+expectEqual("an ignored Cmd+Shift+1 never moves a window", 0, #movedWorkspaceNumbers)
+expectEqual("an ignored Cmd+Shift+1 never switches workspace", 1, #switchedWorkspaceNumbers)
 
 os.exit(failureCount == 0 and 0 or 1)
