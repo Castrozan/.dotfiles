@@ -5,6 +5,12 @@ transcript is a phantom: `claude --resume` answers "No conversation found with s
 that one id rather than wiping the whole record, so the fallback chain survives. When an agent keeps coming back
 unresumed, suspect the workspace launcher crash-looping before it ever execs the harness, not the resume logic, because
 a launcher that dies early never persists the id and every later read looks phantom.
+
+The pinned id is a launch request, not an observation of what the harness opened. A `/clear`, a `/rewind` and a
+compaction fork each mint a new session id inside the running process, and the wrapper never learns any of them, so
+diagnose a session from the transcript directory rather than from the record. The transcript directory itself is
+slugged from the harness process's cwd at launch, so an agent that execs from a subdirectory writes where nothing
+looking at the configured workspace will find it.
 </resume_and_session_identity>
 
 <a_rebuilt_change_is_not_a_live_change>
@@ -52,7 +58,10 @@ heartbeat driver runs inside the agent's own window, so no window is what actual
 agent that owned its own dedicated multiplexer session is worse: the supervisor only iterates sessions present in the
 spec and has no pass that kills sessions absent from it, so the live session and its wrapper keep running forever and
 must be killed by hand. Agents scheduled by a separate gateway keep their crons firing after being disabled, because
-those live in a mutable store nix never writes.
+those live in a mutable store nix never writes. An on-demand agent that vanishes exactly one idle timeout after `clawde
+start` did not crash: the lease went idle, the reconcile loop removed its window, and the give-away is the lease file
+disappearing at `started_at` plus the timeout. The idle clock reads transcript modification times under the agent's
+workspace, so a conversation the probe cannot see reads as no conversation at all.
 </taking_an_agent_offline>
 
 <launch_on_trigger_and_active_hours>
