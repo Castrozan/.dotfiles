@@ -15,9 +15,12 @@ let
   opencodeGo = import ../../opencode/go-provider.nix { inherit (config.home) homeDirectory; };
 
   cliProxyApiPackage = import ../cli-proxy-api/package.nix { inherit pkgs lib; };
+  cliProxyApiIpv4Gateway = import ../cli-proxy-api/ipv4-gateway { inherit pkgs; };
 
   translationProxyListenAddress = "127.0.0.1";
   translationProxyListenPort = 8321;
+  translationProxyIpv4GatewayListenAddress = "127.0.0.1";
+  translationProxyIpv4GatewayListenPort = 8322;
   translationProxyStateDirectory = "${config.home.homeDirectory}/.local/state/claude-go-proxy";
   translationProxyAuthenticationDirectory = "${translationProxyStateDirectory}/auth";
   translationProxyRenderedConfigurationPath = "${translationProxyStateDirectory}/config.yaml";
@@ -41,6 +44,10 @@ let
     upstreamProviderName = "opencode-go";
     modelNames = translatedModelNames;
     apiKeyPlaceholder = "@OPENCODE_GO_API_KEY@";
+    outboundProxyUrl = cliProxyApiIpv4Gateway.outboundProxyUrlFor {
+      listenAddress = translationProxyIpv4GatewayListenAddress;
+      listenPort = translationProxyIpv4GatewayListenPort;
+    };
   };
 
   translationProxyConfigurationTemplate = pkgs.writeText "claude-go-proxy-config-template.yaml" translationProxyConfigurationText;
@@ -55,11 +62,17 @@ let
     "${translationProxyConfigurationTemplate}"
     opencodeGo.apiKeyFile
     translationProxyRenderedConfigurationPath
-    "${cliProxyApiPackage}/bin/cli-proxy-api"
-    "--config"
-    translationProxyRenderedConfigurationPath
-    "--local-model"
-  ];
+  ]
+  ++ cliProxyApiIpv4Gateway.programArgumentsThroughIpv4Gateway {
+    listenAddress = translationProxyIpv4GatewayListenAddress;
+    listenPort = translationProxyIpv4GatewayListenPort;
+    programArguments = [
+      "${cliProxyApiPackage}/bin/cli-proxy-api"
+      "--config"
+      translationProxyRenderedConfigurationPath
+      "--local-model"
+    ];
+  };
 
   claudeGoLauncher = pkgs.writeShellScriptBin "claude-go" ''
     unset ANTHROPIC_API_KEY

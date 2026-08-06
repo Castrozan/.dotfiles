@@ -49,6 +49,7 @@ let
     upstreamProviderName = "opencode-go";
     modelNames = translatedModelNames;
     apiKeyPlaceholder = "@OPENCODE_GO_API_KEY@";
+    outboundProxyUrl = "http://127.0.0.1:8322";
   };
 in
 {
@@ -82,6 +83,19 @@ in
     mkEvalCheck "opencode-go-translation-proxy-template-carries-no-credential"
       (lib.hasInfix "api-key: \"@OPENCODE_GO_API_KEY@\"" translationProxyConfigurationText)
       "the template is written to the world-readable Nix store, so it must carry the placeholder the service substitutes at start and never the key itself";
+
+  opencode-go-translation-proxy-routes-its-upstream-through-the-ipv4-gateway =
+    mkEvalCheck "opencode-go-translation-proxy-routes-its-upstream-through-the-ipv4-gateway"
+      (
+        lib.hasInfix "proxy-url: \"http://127.0.0.1:8322\"" translationProxyConfigurationText
+        && lib.hasInfix "cli-proxy-api-ipv4-gateway.py" linuxProxyCommand
+        && builtins.all (
+          agent:
+          agent != null
+          && builtins.any (lib.hasSuffix "cli-proxy-api-ipv4-gateway.py") agent.config.ProgramArguments
+        ) darwinProxyAgents
+      )
+      "a host that resolves Console Go to an AAAA record it cannot reach fails the write mid-request, so claude-go reports a bare socket error instead of the upstream's own answer; pinning the proxy's egress to IPv4 through the gateway is what makes a quota or authentication failure arrive as the message the API actually sent";
 
   opencode-go-translation-proxy-takes-the-key-from-disk =
     mkEvalCheck "opencode-go-translation-proxy-takes-the-key-from-disk"

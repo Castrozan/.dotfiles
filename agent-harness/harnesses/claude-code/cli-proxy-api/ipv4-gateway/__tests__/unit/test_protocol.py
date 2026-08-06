@@ -5,7 +5,7 @@ import threading
 from pathlib import Path
 
 GATEWAY_PATH = (
-    Path(__file__).resolve().parents[3] / "scripts" / "cli_proxy_api_ipv4_gateway.py"
+    Path(__file__).resolve().parents[2] / "scripts" / "cli_proxy_api_ipv4_gateway.py"
 )
 GATEWAY_SPECIFICATION = importlib.util.spec_from_file_location(
     "cli_proxy_api_ipv4_gateway_protocol", GATEWAY_PATH

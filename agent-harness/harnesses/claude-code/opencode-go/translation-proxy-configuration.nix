@@ -6,6 +6,7 @@
   upstreamProviderName,
   modelNames,
   apiKeyPlaceholder,
+  outboundProxyUrl,
 }:
 let
   modelEntryLines = map (
@@ -17,6 +18,7 @@ in
   port: ${toString listenPort}
   auth-dir: "${authenticationDirectory}"
   api-keys: []
+  proxy-url: "${outboundProxyUrl}"
   debug: false
   openai-compatibility:
     - name: "${upstreamProviderName}"

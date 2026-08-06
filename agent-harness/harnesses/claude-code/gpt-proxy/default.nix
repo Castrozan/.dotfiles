@@ -14,6 +14,7 @@ let
   claudeGptProxyEnabledOnThisHost = lib.elem hostname hostsWithClaudeGptProxy;
 
   cliProxyApiPackage = import ../cli-proxy-api/package.nix { inherit pkgs lib; };
+  cliProxyApiIpv4Gateway = import ../cli-proxy-api/ipv4-gateway { inherit pkgs; };
 
   proxyListenAddress = "127.0.0.1";
   proxyListenPort = 8317;
@@ -37,6 +38,13 @@ let
     else
       "systemctl --user restart ${proxySystemdServiceName} 2>/dev/null || true";
 
+  outboundProxyUrlForGatewayPort =
+    ipv4GatewayPort:
+    cliProxyApiIpv4Gateway.outboundProxyUrlFor {
+      listenAddress = proxyIpv4GatewayListenAddress;
+      listenPort = ipv4GatewayPort;
+    };
+
   makeCliProxyApiConfigFile =
     name: ipv4GatewayPort:
     pkgs.writeText name ''
@@ -44,7 +52,7 @@ let
       port: ${toString proxyListenPort}
       auth-dir: "${proxyAuthenticationDirectory}"
       api-keys: []
-      proxy-url: "http://${proxyIpv4GatewayListenAddress}:${toString ipv4GatewayPort}"
+      proxy-url: "${outboundProxyUrlForGatewayPort ipv4GatewayPort}"
       debug: false
     '';
   cliProxyApiConfigFile = makeCliProxyApiConfigFile "cli-proxy-api-config.yaml" proxyIpv4GatewayListenPort;
@@ -56,16 +64,23 @@ let
     "${cliProxyApiConfigFile}"
     "--local-model"
   ];
-  cliProxyApiIpv4GatewaySource = pkgs.writeText "cli-proxy-api-ipv4-gateway.py" (
-    builtins.readFile ./scripts/cli_proxy_api_ipv4_gateway.py
-  );
-  ipv4GatewayCliProxyApiProgramArguments = [
-    "${pkgs.python312}/bin/python3"
-    "${cliProxyApiIpv4GatewaySource}"
-    proxyIpv4GatewayListenAddress
-    (toString proxyIpv4GatewayListenPort)
-  ]
-  ++ cliProxyApiProgramArguments;
+  ipv4GatewayCliProxyApiProgramArguments = cliProxyApiIpv4Gateway.programArgumentsThroughIpv4Gateway {
+    listenAddress = proxyIpv4GatewayListenAddress;
+    listenPort = proxyIpv4GatewayListenPort;
+    programArguments = cliProxyApiProgramArguments;
+  };
+  ipv4GatewayCliProxyApiLoginProgramArguments =
+    cliProxyApiIpv4Gateway.programArgumentsThroughIpv4Gateway
+      {
+        listenAddress = proxyIpv4GatewayListenAddress;
+        listenPort = proxyIpv4GatewayLoginPort;
+        programArguments = [
+          "${cliProxyApiPackage}/bin/cli-proxy-api"
+          "--config"
+          "${cliProxyApiLoginConfigFile}"
+          "--codex-login"
+        ];
+      };
 
   gptModelForOpusTier = "gpt-5.6-sol(high)";
   gptModelForSonnetTier = "gpt-5.6-sol(medium)";
@@ -89,9 +104,7 @@ let
   claudeGptLoginLauncher = pkgs.writeShellScriptBin "claude-gpt-login" ''
     echo "Authenticating your ChatGPT/Codex subscription for cli-proxy-api."
     echo "A browser window opens for OAuth; the callback listens on ${proxyListenAddress}:1455."
-    if ! ${pkgs.python312}/bin/python3 ${cliProxyApiIpv4GatewaySource} \
-      ${proxyIpv4GatewayListenAddress} ${toString proxyIpv4GatewayLoginPort} \
-      ${cliProxyApiPackage}/bin/cli-proxy-api --config ${cliProxyApiLoginConfigFile} --codex-login "$@"; then
+    if ! ${lib.escapeShellArgs ipv4GatewayCliProxyApiLoginProgramArguments} "$@"; then
       echo "Authentication failed; credentials were not updated." >&2
       exit 1
     fi

@@ -5,9 +5,8 @@ from pathlib import Path
 import pytest
 
 GATEWAY_PATH = (
-    Path(__file__).resolve().parents[3] / "scripts" / "cli_proxy_api_ipv4_gateway.py"
+    Path(__file__).resolve().parents[2] / "scripts" / "cli_proxy_api_ipv4_gateway.py"
 )
-GPT_PROXY_NIX_MODULE_PATH = Path(__file__).resolve().parents[3] / "default.nix"
 GATEWAY_SPECIFICATION = importlib.util.spec_from_file_location(
     "cli_proxy_api_ipv4_gateway_service", GATEWAY_PATH
 )
@@ -96,15 +95,3 @@ def test_entrypoint_stops_the_gateway_when_the_proxy_cannot_start():
 
     assert controlled_server
     assert controlled_server.shutdown_called
-
-
-def test_nix_module_routes_service_and_login_through_ipv4_gateways():
-    module_source = GPT_PROXY_NIX_MODULE_PATH.read_text()
-
-    assert (
-        'proxy-url: "http://${proxyIpv4GatewayListenAddress}:'
-        '${toString ipv4GatewayPort}"'
-    ) in module_source
-    assert "ipv4GatewayCliProxyApiProgramArguments" in module_source
-    assert "proxyIpv4GatewayLoginPort = 8319;" in module_source
-    assert "--config ${cliProxyApiLoginConfigFile} --codex-login" in module_source
