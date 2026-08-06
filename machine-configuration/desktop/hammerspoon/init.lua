@@ -41,12 +41,6 @@ for rowIndex = 1, #workspaceRowSwitchModifiers - 1 do
 	end
 end
 
-for columnNumber = 1, workspaceGrid.columns do
-	hs.hotkey.bind({ "cmd", "shift" }, tostring(columnNumber), function()
-		workspaceGrid.moveFocusedWindowToWorkspace(columnNumber)
-	end)
-end
-
 hs.hotkey.bind({ "cmd", "ctrl", "alt" }, "g", function()
 	workspaceGrid.gatherAllWindowsToCurrentWorkspace()
 end)

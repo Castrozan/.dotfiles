@@ -13,6 +13,7 @@ local workspaceColumnByKeyCode = {
 
 local frontmostBundleIdentifier = nil
 local switchedWorkspaceNumbers = {}
+local movedWorkspaceNumbers = {}
 local createdEventTaps = {}
 
 hs = {
@@ -64,11 +65,20 @@ local function routingDecisionFor(eventFlags, keyCode, bundleIdentifier)
 	return digitKeybindings.buildRoutingDecision(eventFlags, keyCode, bundleIdentifier, workspaceColumnByKeyCode)
 end
 
-expectEqual("plain Cmd+1 outside a browser switches to workspace one", 1, routingDecisionFor({ cmd = true }, 18, nil))
 expectEqual(
-	"plain Cmd+7 outside a browser switches to workspace seven",
+	"plain Cmd+1 outside a browser switches to workspace one",
+	"switch",
+	routingDecisionFor({ cmd = true }, 18, nil).kind
+)
+expectEqual(
+	"plain Cmd+1 outside a browser targets workspace one",
+	1,
+	routingDecisionFor({ cmd = true }, 18, nil).workspaceNumber
+)
+expectEqual(
+	"plain Cmd+7 outside a browser targets workspace seven",
 	7,
-	routingDecisionFor({ cmd = true }, 24, "com.apple.Terminal")
+	routingDecisionFor({ cmd = true }, 24, "com.apple.Terminal").workspaceNumber
 )
 expectEqual(
 	"plain Cmd+1 with Chrome frontmost passes through to the browser",
@@ -81,6 +91,26 @@ expectEqual(
 	routingDecisionFor({ cmd = true }, 18, "com.brave.Browser")
 )
 expectEqual(
+	"Cmd+Shift+1 outside a browser moves the focused window to workspace one",
+	"move",
+	routingDecisionFor({ cmd = true, shift = true }, 18, "com.apple.Terminal").kind
+)
+expectEqual(
+	"Cmd+Shift+7 outside a browser moves the focused window to workspace seven",
+	7,
+	routingDecisionFor({ cmd = true, shift = true }, 24, "com.apple.Terminal").workspaceNumber
+)
+expectEqual(
+	"Cmd+Shift+1 with Chrome frontmost is ignored",
+	"ignore",
+	routingDecisionFor({ cmd = true, shift = true }, 18, "com.google.Chrome").kind
+)
+expectEqual(
+	"Cmd+Shift+1 with Brave frontmost is ignored",
+	"ignore",
+	routingDecisionFor({ cmd = true, shift = true }, 18, "com.brave.Browser").kind
+)
+expectEqual(
 	"Cmd+Alt+1 is not routed by this binding because row two stays a plain hotkey",
 	nil,
 	routingDecisionFor({ cmd = true, alt = true }, 18, "com.google.Chrome")
@@ -90,17 +120,15 @@ expectEqual(
 	nil,
 	routingDecisionFor({ cmd = true, ctrl = true }, 18, "com.google.Chrome")
 )
-expectEqual(
-	"Cmd+Shift+1 is not routed by this binding because window moves stay a plain hotkey",
-	nil,
-	routingDecisionFor({ cmd = true, shift = true }, 18, "com.google.Chrome")
-)
 expectEqual("plain Cmd+8 is not a bound workspace column", nil, routingDecisionFor({ cmd = true }, 25, nil))
 expectEqual("plain Cmd with a letter key is not a workspace column", nil, routingDecisionFor({ cmd = true }, 0, nil))
 
 local fakeWorkspaceGrid = {
 	switchToWorkspace = function(workspaceNumber)
 		table.insert(switchedWorkspaceNumbers, workspaceNumber)
+	end,
+	moveFocusedWindowToWorkspace = function(workspaceNumber)
+		table.insert(movedWorkspaceNumbers, workspaceNumber)
 	end,
 }
 
@@ -109,27 +137,34 @@ digitKeybindings.install({ workspaceGrid = fakeWorkspaceGrid, workspaceColumnByK
 expectEqual("install registers exactly one keydown event tap", 1, #createdEventTaps)
 expectEqual("the keydown event tap starts immediately", true, createdEventTaps[1].started)
 
-local chromePassThroughResult = createdEventTaps[1].eventHandler({
-	getFlags = function()
-		return { cmd = true }
-	end,
-	getKeyCode = function()
-		return 18
-	end,
-})
-expectEqual("a Cmd+1 keydown with Chrome frontmost passes through untouched", nil, chromePassThroughResult)
+local function keyDownEventFor(flags)
+	return {
+		getFlags = function()
+			return flags
+		end,
+		getKeyCode = function()
+			return 18
+		end,
+	}
+end
+
+local chromeTabPassThroughResult = createdEventTaps[1].eventHandler(keyDownEventFor({ cmd = true }))
+expectEqual("a Cmd+1 keydown with Chrome frontmost passes through untouched", nil, chromeTabPassThroughResult)
 expectEqual("a browser pass-through never switches workspace", 0, #switchedWorkspaceNumbers)
 
+local chromeMoveIgnoreResult = createdEventTaps[1].eventHandler(keyDownEventFor({ cmd = true, shift = true }))
+expectEqual("a Cmd+Shift+1 keydown with Chrome frontmost is consumed", true, chromeMoveIgnoreResult)
+expectEqual("a browser move-ignore never moves a window", 0, #movedWorkspaceNumbers)
+expectEqual("a browser move-ignore never switches workspace", 0, #switchedWorkspaceNumbers)
+
 frontmostBundleIdentifier = "com.apple.Terminal"
-local terminalSwitchResult = createdEventTaps[1].eventHandler({
-	getFlags = function()
-		return { cmd = true }
-	end,
-	getKeyCode = function()
-		return 18
-	end,
-})
+local terminalSwitchResult = createdEventTaps[1].eventHandler(keyDownEventFor({ cmd = true }))
 expectEqual("a Cmd+1 keydown with a terminal frontmost is consumed", true, terminalSwitchResult)
 expectEqual("a consumed Cmd+1 switches to workspace one", 1, switchedWorkspaceNumbers[1])
+
+local terminalMoveResult = createdEventTaps[1].eventHandler(keyDownEventFor({ cmd = true, shift = true }))
+expectEqual("a Cmd+Shift+1 keydown with a terminal frontmost is consumed", true, terminalMoveResult)
+expectEqual("a consumed Cmd+Shift+1 moves the window to workspace one", 1, movedWorkspaceNumbers[1])
+expectEqual("a Cmd+Shift+1 keydown never switches workspace", 1, #switchedWorkspaceNumbers)
 
 os.exit(failureCount == 0 and 0 or 1)

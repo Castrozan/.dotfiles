@@ -5,8 +5,8 @@ local browserBundleIdentifiers = {
 	["com.brave.Browser"] = true,
 }
 
-local function isPlainCommandDigitChord(eventFlags, keyCode, workspaceColumnByKeyCode)
-	if not eventFlags or not eventFlags.cmd or eventFlags.alt or eventFlags.ctrl or eventFlags.shift then
+local function isDigitChord(eventFlags, keyCode, workspaceColumnByKeyCode)
+	if not eventFlags or not eventFlags.cmd or eventFlags.alt or eventFlags.ctrl then
 		return false
 	end
 	return workspaceColumnByKeyCode[keyCode] ~= nil
@@ -18,13 +18,20 @@ function workspaceGridBrowserAwareDigitKeybindings.buildRoutingDecision(
 	frontmostApplicationBundleIdentifier,
 	workspaceColumnByKeyCode
 )
-	if not isPlainCommandDigitChord(eventFlags, keyCode, workspaceColumnByKeyCode) then
+	if not isDigitChord(eventFlags, keyCode, workspaceColumnByKeyCode) then
 		return nil
 	end
+	local workspaceColumnNumber = workspaceColumnByKeyCode[keyCode]
 	if browserBundleIdentifiers[frontmostApplicationBundleIdentifier] then
+		if eventFlags.shift then
+			return { kind = "ignore" }
+		end
 		return nil
 	end
-	return workspaceColumnByKeyCode[keyCode]
+	return {
+		kind = eventFlags.shift and "move" or "switch",
+		workspaceNumber = workspaceColumnNumber,
+	}
 end
 
 local function currentFrontmostApplicationBundleIdentifier()
@@ -37,16 +44,23 @@ end
 
 function workspaceGridBrowserAwareDigitKeybindings.install(dependencies)
 	local keyDownEventTap = hs.eventtap.new({ hs.eventtap.event.types.keyDown }, function(event)
-		local workspaceColumnNumber = workspaceGridBrowserAwareDigitKeybindings.buildRoutingDecision(
+		local routingDecision = workspaceGridBrowserAwareDigitKeybindings.buildRoutingDecision(
 			event:getFlags(),
 			event:getKeyCode(),
 			currentFrontmostApplicationBundleIdentifier(),
 			dependencies.workspaceColumnByKeyCode
 		)
-		if workspaceColumnNumber == nil then
+		if routingDecision == nil then
 			return nil
 		end
-		dependencies.workspaceGrid.switchToWorkspace(workspaceColumnNumber)
+		if routingDecision.kind == "ignore" then
+			return true
+		end
+		if routingDecision.kind == "move" then
+			dependencies.workspaceGrid.moveFocusedWindowToWorkspace(routingDecision.workspaceNumber)
+		else
+			dependencies.workspaceGrid.switchToWorkspace(routingDecision.workspaceNumber)
+		end
 		return true
 	end)
 	keyDownEventTap:start()
