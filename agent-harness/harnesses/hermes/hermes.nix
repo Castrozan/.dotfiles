@@ -4,7 +4,7 @@
   ...
 }:
 let
-  version = "0.16.0";
+  version = "0.19.0";
   packageSpec = "hermes-agent[anthropic,cli]==${version}";
 
   configTemplate = import ./config.nix { inherit pkgs; };
