@@ -12,11 +12,15 @@ worktree command's help for exact syntax.
 
 <location_is_enforced>
 A worktree never lives outside its repository, because a sibling checkout is a stray copy of the repo that outlives the
-branch and nothing gitignores it. The `worktree_location_guard` PreToolUse hook denies `git worktree add` with any
-destination outside the repo, including a bare name, `../<name>`, and an absolute path; the accepted destinations are
-`.worktrees/<branch>` and the built-in `.claude/worktrees/<name>` that `--worktree` and EnterWorktree create. For a
-genuinely sanctioned exception prefix the command with `WORKTREE_OUTSIDE_REPOSITORY_SANCTIONED=1`. Relocate an existing
-stray worktree with `git worktree move`, which preserves its branch and uncommitted state.
+branch, nothing gitignores it, and a temp directory hands it to the OS purge and to whatever scans unexcluded paths. The
+accepted destinations are `.worktrees/<branch>` and the built-in `.claude/worktrees/<name>` that `--worktree` and
+EnterWorktree create; a bare name, `../<name>`, an absolute path, and anything under `/tmp` are all refused. The rule
+binds you, not the tooling: the `worktree_location_guard` PreToolUse hook denies a stray `git worktree add` on the
+claude harness only, so an agent on opencode or codex gets no refusal and must hold the location itself. For a genuinely
+sanctioned exception prefix the command with `WORKTREE_OUTSIDE_REPOSITORY_SANCTIONED=1`. Relocate a stray worktree with
+`git worktree move`, which preserves its branch and uncommitted state, except where the repo carries submodules: git
+refuses to move or remove that worktree at all, so delete the directory and `git worktree prune`, first confirming its
+commits are ancestors of the upstream branch and its submodules clean.
 </location_is_enforced>
 
 <traps>
