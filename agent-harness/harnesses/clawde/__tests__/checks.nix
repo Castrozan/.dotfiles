@@ -23,6 +23,13 @@ import ./service-checks.nix {
     self
     ;
 }
+// import ./discord-agents-allowed-to-stay-silent-checks.nix {
+  inherit
+    mkEvalCheck
+    helpers
+    self
+    ;
+}
 // import ./harness-checks.nix {
   inherit
     pkgs
