@@ -34,7 +34,6 @@ let
     PreToolUse = 10000;
     PostToolUse = 15000;
     SessionStart = 5000;
-    UserPromptSubmit = 2000;
     Stop = 5000;
     SubagentStop = 5000;
   };
@@ -43,7 +42,6 @@ let
     PreToolUse = ".*";
     PostToolUse = "Skill|Edit|Write";
     SessionStart = ".*";
-    UserPromptSubmit = ".*";
     Stop = ".*";
     SubagentStop = ".*";
   };

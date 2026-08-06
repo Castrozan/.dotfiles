@@ -18,7 +18,7 @@ time it fires. On `PreToolUse` and `PostToolUse` it just appends to that tool ca
 ## Blocking channels also reach the model
 
 `PreToolUse` denies with `hookSpecificOutput.permissionDecision: "deny"` plus `permissionDecisionReason`.
-`PostToolUse`, `Stop`, and `UserPromptSubmit` block with top-level `decision: "block"` plus `reason`. The reason string
+`PostToolUse` and `Stop` block with top-level `decision: "block"` plus `reason`. The reason string
 is model-facing, so a hook that blocks and also sets `systemMessage` is telling the model and the human separately, by
 design.
 

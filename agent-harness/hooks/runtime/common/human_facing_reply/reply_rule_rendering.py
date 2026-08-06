@@ -23,8 +23,7 @@ REPLY_TEMPLATE_SHAPE = (
 )
 
 REPLY_RECOVERY_INSTRUCTION = (
-    "Rewrite the reply so it satisfies the rules it broke, keeping the substance the user needs and cutting only "
-    "filler, never the answer."
+    "Rewrite it to satisfy the rules it broke, cutting only filler, never the answer."
 )
 
 REQUEST_GATE_CONDITION = (
@@ -45,20 +44,9 @@ def joined_scope_sentences(channel_scope: str) -> str:
     )
 
 
-def rendered_reply_reminder() -> str:
-    return " ".join(
-        (
-            REPLY_TEMPLATE_SHAPE,
-            joined_rule_sentences(ALWAYS_ENFORCED_TIER),
-            joined_rule_sentences(REQUEST_GATED_TIER),
-            REQUEST_GATE_CONDITION,
-        )
-    )
-
-
 def rendered_bounce_guidance(violations: list[str]) -> str:
     return (
-        "End-of-turn reply breaks the enforced plain-prose template ("
+        "Reply breaks the enforced plain-prose template ("
         + "; ".join(violations)
         + "). "
         + REPLY_RECOVERY_INSTRUCTION

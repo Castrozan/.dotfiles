@@ -41,7 +41,6 @@ EXPECTED_EXTRA_PATHS = {
     "agent-harness/hooks/runtime/pre-tool-use/worktree-location-guard",
     "agent-harness/hooks/runtime/session-start",
     "agent-harness/hooks/runtime/stop",
-    "agent-harness/hooks/runtime/user-prompt-submit",
 }
 
 

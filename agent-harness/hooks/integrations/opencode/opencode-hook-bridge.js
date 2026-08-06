@@ -16,10 +16,6 @@ const hookDispatchers = {
     timeoutMilliseconds: 5000,
   },
   stop: { filename: "stop-dispatcher.py", timeoutMilliseconds: 15000 },
-  userPromptSubmit: {
-    filename: "user-prompt-submit-dispatcher.py",
-    timeoutMilliseconds: 2000,
-  },
 };
 
 const canonicalToolNames = {
@@ -261,16 +257,6 @@ function appendPromptContext(parts, context) {
   textPart.text = [textPart.text, context].filter(Boolean).join("\n\n");
 }
 
-function containsTextPart(parts) {
-  return (
-    Array.isArray(parts) &&
-    parts.some(
-      (part) =>
-        isRecord(part) && part.type === "text" && typeof part.text === "string",
-    )
-  );
-}
-
 function applyUpdatedToolInput(toolOutput, updatedInput) {
   const translatedInput = opencodeToolInput(updatedInput);
   if (!isRecord(toolOutput.args)) {
@@ -350,16 +336,6 @@ export async function OpenCodeHookBridge({ directory } = {}) {
       }
       appendToolOutputMessage(output, dispatcherOutput);
       appendToolOutputMessage(output, turnReviewOutput);
-    },
-    "chat.message": async (input, output) => {
-      if (!containsTextPart(output.parts)) {
-        return;
-      }
-      const dispatcherOutput = await invokeHookDispatcher(
-        hookDispatchers.userPromptSubmit,
-        hookPayload("UserPromptSubmit", input.sessionID, workingDirectory),
-      );
-      appendPromptContext(output.parts, additionalContext(dispatcherOutput));
     },
     "experimental.session.compacting": async (input, output) => {
       const dispatcherOutput = await invokeHookDispatcher(

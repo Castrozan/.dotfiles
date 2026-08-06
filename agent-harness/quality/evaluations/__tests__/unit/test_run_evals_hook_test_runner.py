@@ -133,8 +133,8 @@ class TestTheEventNameIsDerivedFromTheHookRatherThanAssumed:
         assert hook_event_name_for_script(script) == "PreToolUse"
 
     def test_a_multi_word_event_directory_becomes_one_pascal_case_name(self):
-        script = HOOK_SCRIPT_SEARCH_ROOT / "user-prompt-submit" / "anything.py"
-        assert hook_event_name_for_script(script) == "UserPromptSubmit"
+        script = HOOK_SCRIPT_SEARCH_ROOT / "session-start" / "anything.py"
+        assert hook_event_name_for_script(script) == "SessionStart"
 
     def test_a_hook_nested_under_its_own_folder_still_reports_the_event(self):
         script = (

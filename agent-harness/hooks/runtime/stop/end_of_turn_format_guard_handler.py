@@ -22,9 +22,6 @@ for importable_directory in (
         sys.path.insert(0, importable_directory)
 
 from hook_dispatch import HandlerResult  # noqa: E402
-from interactive_reply_reminder_state import (  # noqa: E402
-    request_reply_reminder_rearm_after_drift,
-)
 from interactive_session_detection import (  # noqa: E402
     is_keyboard_driven_interactive_session,
 )
@@ -98,7 +95,5 @@ def handle(hook_input: dict):
     violations = template_violations_in_reply(reply_text, user_request_text)
     if not violations:
         return None
-
-    request_reply_reminder_rearm_after_drift(hook_input.get("session_id") or "")
 
     return HandlerResult(decision="block", reason=rendered_bounce_guidance(violations))

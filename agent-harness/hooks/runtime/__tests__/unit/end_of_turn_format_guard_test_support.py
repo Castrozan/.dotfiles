@@ -106,6 +106,7 @@ def invoke_guard(
         not in (
             INTERACTIVE_SESSION_ENVIRONMENT_VARIABLE,
             CLAWDE_BACKGROUND_AGENT_ENVIRONMENT_MARKER,
+            "OPENCODE_INTERACTIVE_PREFERENCES_PATH",
         )
     }
     if interactive:

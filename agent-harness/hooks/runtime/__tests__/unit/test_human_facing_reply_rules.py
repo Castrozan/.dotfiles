@@ -15,7 +15,6 @@ from reply_rule_rendering import (  # noqa: E402
     rendered_bounce_guidance,
     rendered_enforced_reply_rules_markdown,
     rendered_every_channel_wording_rules_markdown,
-    rendered_reply_reminder,
 )
 from reply_template_limits import (  # noqa: E402
     EVERY_HUMAN_FACING_CHANNEL_SCOPE,
@@ -149,11 +148,7 @@ def test_every_rule_carries_an_instruction_sentence_for_the_rendered_surfaces():
     )
 
 
-def test_the_reminder_and_the_bounce_text_come_from_the_same_catalog():
-    reminder = rendered_reply_reminder()
-    for rule in HUMAN_FACING_REPLY_RULES:
-        assert rule.instruction_sentence in reminder
-
+def test_the_bounce_text_carries_the_violations_and_the_template():
     bounce = rendered_bounce_guidance(["contains an em dash"])
     assert "contains an em dash" in bounce
     assert "**Done:**" in bounce

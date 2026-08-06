@@ -16,7 +16,6 @@ DISPATCHER_PATHS = [
         "post-tool-use-dispatcher.py",
         "stop-dispatcher.py",
         "session-start-dispatcher.py",
-        "user-prompt-submit-dispatcher.py",
     )
 ]
 
