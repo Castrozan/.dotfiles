@@ -38,6 +38,13 @@ into the existing module structure rather than adding one-off files. Make it wor
 (NixOS and darwin) when the feature allows, guarding platform-specific pieces behind `isNixOS`/`isDarwin`.
 </configuration>
 
+<nvim-keymaps>
+Before suggesting, adding, or restoring any Neovim keybind, read and follow
+`machine-configuration/editors/neovim/KEYMAPS_POLICY.md`: native Vim built-ins first, LazyVim conventions second,
+custom maps only as a documented last resort, never shadowing a native key. Keep that file current whenever a binding
+is added or removed on purpose; bindings it lists as removed stay removed unless the owner names one explicitly.
+</nvim-keymaps>
+
 <codex-managed-settings-ownership>
 MCP servers are declared in nix at `agent-harness/harnesses/claude-code/mcps/default.nix` for Claude and
 `agent-harness/harnesses/codex/config.nix` for Codex. Codex deploys an authoritative nix-source for managed settings,
