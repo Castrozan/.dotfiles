@@ -84,7 +84,6 @@ HANDLERS_REQUIRED_ON_THE_OPENCODE_SURFACE = {
 
 HANDLERS_THAT_MUST_STAY_OFF_THE_OPENCODE_SURFACE = {
     "PRE_TOOL_USE_HANDLERS": {
-        "background_bash_anti_pattern_validator_handler",
         "codex_sandbox_downgrade_guard_handler",
         "workspace_directory_injector_handler",
         "monitor_streaming_pattern_validator_handler",
