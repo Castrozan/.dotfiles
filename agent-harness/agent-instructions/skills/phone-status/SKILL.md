@@ -1,5 +1,6 @@
 ---
-description: Report the phone's battery, charging state, uptime, load, and storage over SSH
+name: phone-status
+description: Report the phone's battery, charging, uptime, load, and storage over SSH with the phone-status CLI. Use for how the phone is doing, its battery, or its storage.
 ---
 
 Run `phone-status` (no arguments) and report the result. It SSHes to the phone over Tailscale and prints single-line
