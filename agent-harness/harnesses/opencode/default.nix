@@ -7,7 +7,6 @@
     ./tui.nix
     ./skills.nix
     ./subagents.nix
-    ./commands.nix
     ./private.nix
     ../../../agent-harness/hooks/integrations/opencode/opencode-hooks-home-manager.nix
   ];

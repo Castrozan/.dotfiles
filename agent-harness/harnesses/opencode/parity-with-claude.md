@@ -51,7 +51,7 @@ against the model choice.
   its own per-agent config file must launch `opencode.unwrappedPackage` instead,
   exactly as `codex.unwrappedPackage` exists for the same reason.
 
-## Skills, subagents and commands
+## Skills and subagents
 
 - Skills: the curated interactive set from `agent-harness/agent-instructions/interactive-skill-catalog/interactive-agent-skills.nix`
   (shared default plus opencode's own additions) is deployed to
@@ -72,10 +72,7 @@ against the model choice.
   `tools:` into a deny-by-default permission map, `disallowedTools:` into an
   allow-by-default one, and drops `model:` so a subagent inherits the session's
   model rather than pinning one. Private agents from `private-configuration` go through
-  the same translator.
-- Commands: `agent-harness/agent-instructions/commands/*.md` deploy unchanged to
-  `~/.config/opencode/command/`. opencode parses the same frontmatter and the
-  same `$ARGUMENTS` placeholder, and ignores Claude's `argument-hint`.
+    the same translator.
 
 ## MCP servers
 
@@ -140,7 +137,7 @@ against the model choice.
 
 ## Summary of state
 
-- Instruction body, skills, subagents, commands, browser MCP, full-access
+- Instruction body, skills, subagents, browser MCP, full-access
   posture, max reasoning default, nested subagents, language servers, formatters
   and the interactive reply shape are at parity.
 - Model and effort are deliberately NOT pinned to a single choice; they are

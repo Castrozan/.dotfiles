@@ -7,7 +7,6 @@
     ./settings
     ../../../agent-harness/measurement-and-reporting/claude-telemetry/claude-telemetry-home-manager.nix
     ./skill-injection
-    ./commands
     ./subagents
     ./workflows
     ../../../agent-harness/hooks/integrations/claude/claude-hooks-home-manager.nix

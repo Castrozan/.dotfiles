@@ -130,10 +130,6 @@ in
       (builtins.hasAttr ".config/opencode/agent" cfg.home.file)
       "the shared subagent definitions must be translated into opencode's agent directory";
 
-  domain-opencode-deploys-commands =
-    mkEvalCheck "domain-opencode-deploys-commands" (hasDeployedFilePrefix ".config/opencode/command/")
-      "the shared slash commands must be deployed into opencode's command directory";
-
   domain-opencode-deploys-skills =
     mkEvalCheck "domain-opencode-deploys-skills" (hasDeployedFilePrefix ".config/opencode/skills/")
       "the shared skills must be deployed into opencode's skills directory";
