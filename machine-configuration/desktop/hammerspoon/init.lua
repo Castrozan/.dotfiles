@@ -8,6 +8,7 @@ local windowMenu = require("workspace_grid_window_menu")
 local windowMenuBarItem = require("workspace_grid_window_menu_bar_item")
 local windowSnapshot = require("workspace_grid_window_snapshot")
 local chromeProfileWindow = require("chrome_profile_window")
+local browserAwareDigitKeybindings = require("workspace_grid_browser_aware_digit_keybindings")
 
 windowMenuBarItem.installMenuItemBuilder(windowMenu.buildMenuItemBuilder({
 	snapshotForImmediateUse = windowSnapshot.snapshotForImmediateUse,
@@ -21,7 +22,17 @@ hs.shutdownCallback = function()
 end
 
 local workspaceRowSwitchModifiers = { { "cmd" }, { "cmd", "alt" }, { "cmd", "ctrl" } }
-for rowIndex = 0, #workspaceRowSwitchModifiers - 1 do
+local workspaceColumnByKeyCode = {}
+for columnNumber = 1, workspaceGrid.columns do
+	workspaceColumnByKeyCode[hs.keycodes.map[tostring(columnNumber)]] = columnNumber
+end
+
+browserAwareDigitKeybindings.install({
+	workspaceGrid = workspaceGrid,
+	workspaceColumnByKeyCode = workspaceColumnByKeyCode,
+})
+
+for rowIndex = 1, #workspaceRowSwitchModifiers - 1 do
 	for columnNumber = 1, workspaceGrid.columns do
 		local targetWorkspaceNumber = rowIndex * workspaceGrid.columns + columnNumber
 		hs.hotkey.bind(workspaceRowSwitchModifiers[rowIndex + 1], tostring(columnNumber), function()

@@ -8,6 +8,8 @@
     file = {
       ".hammerspoon/init.lua".source = ./init.lua;
       ".hammerspoon/workspace_grid.lua".source = ./workspace_grid.lua;
+      ".hammerspoon/workspace_grid_browser_aware_digit_keybindings.lua".source =
+        ./workspace_grid_browser_aware_digit_keybindings.lua;
       ".hammerspoon/workspace_grid_navigation.lua".source = ./workspace_grid_navigation.lua;
       ".hammerspoon/workspace_grid_pinned_window.lua".source = ./workspace_grid_pinned_window.lua;
       ".hammerspoon/workspace_grid_window_layout.lua".source = ./workspace_grid_window_layout.lua;
