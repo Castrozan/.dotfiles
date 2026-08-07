@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+import json
 import os
+import random
+import socket
 import sys
 import time
 
@@ -10,21 +13,32 @@ shared_common_hook_modules_directory = os.path.dirname(os.path.realpath(__file__
 if shared_common_hook_modules_directory not in sys.path:
     sys.path.insert(0, shared_common_hook_modules_directory)
 
-from herdr_pane_report import (  # noqa: E402
-    belongs_to_a_subagent,
-    build_request,
-    non_empty_string_or_none,
-    report_source_for_agent,
-    reported_agent_name,
-    running_inside_a_herdr_pane,
-    send_request_over_the_herdr_socket,
-)
+from hook_dispatch import CLAUDE_SURFACE, requested_hook_surface  # noqa: E402
 
 HERDR_REPORT_AGENT_SESSION_METHOD = "pane.report_agent_session"
+HERDR_SOCKET_TIMEOUT_SECONDS = 0.5
+HERDR_RESPONSE_READ_BYTES = 4096
+SUBAGENT_HOOK_EVENT_NAME = "SubagentStop"
+
+
+def running_inside_a_herdr_pane() -> bool:
+    return (
+        os.environ.get("HERDR_ENV") == "1"
+        and bool(os.environ.get("HERDR_PANE_ID"))
+        and bool(os.environ.get("HERDR_SOCKET_PATH"))
+    )
 
 
 def owned_by_the_clawde_supervisor() -> bool:
     return bool(os.environ.get("CLAWDE_AGENT_NAME"))
+
+
+def reported_agent_name() -> str:
+    return "claude" if requested_hook_surface() == CLAUDE_SURFACE else "codex"
+
+
+def non_empty_string_or_none(value) -> str | None:
+    return value if isinstance(value, str) and value else None
 
 
 def build_report_agent_session_request(
@@ -33,7 +47,7 @@ def build_report_agent_session_request(
     agent_session_id = non_empty_string_or_none(hook_input.get("session_id"))
     if agent_session_id is None:
         return None
-    report_source = report_source_for_agent(agent_name)
+    report_source = f"herdr:{agent_name}"
     request_parameters = {
         "pane_id": os.environ["HERDR_PANE_ID"],
         "source": report_source,
@@ -47,8 +61,31 @@ def build_report_agent_session_request(
     session_start_source = non_empty_string_or_none(hook_input.get("source"))
     if session_start_source is not None:
         request_parameters["session_start_source"] = session_start_source
-    return build_request(
-        HERDR_REPORT_AGENT_SESSION_METHOD, report_source, request_parameters
+    return {
+        "id": f"{report_source}:{time.time_ns()}:{random.randrange(1_000_000):06d}",
+        "method": HERDR_REPORT_AGENT_SESSION_METHOD,
+        "params": request_parameters,
+    }
+
+
+def send_request_over_the_herdr_socket(request: dict) -> None:
+    client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    client.settimeout(HERDR_SOCKET_TIMEOUT_SECONDS)
+    try:
+        client.connect(os.environ["HERDR_SOCKET_PATH"])
+        client.sendall((json.dumps(request) + "\n").encode())
+        try:
+            client.recv(HERDR_RESPONSE_READ_BYTES)
+        except OSError:
+            pass
+    finally:
+        client.close()
+
+
+def belongs_to_a_subagent(hook_input: dict) -> bool:
+    return (
+        bool(hook_input.get("agent_id"))
+        or hook_input.get("hook_event_name") == SUBAGENT_HOOK_EVENT_NAME
     )
 
 

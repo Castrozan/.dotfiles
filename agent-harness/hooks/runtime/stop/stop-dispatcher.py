@@ -37,10 +37,6 @@ STOP_HANDLERS = [
         handler_module_name="herdr_agent_session_report_handler",
         surfaces=(CLAUDE_SURFACE, CODEX_SURFACE),
     ),
-    HookHandler(
-        handler_module_name="herdr_agent_state_report_handler",
-        surfaces=(CLAUDE_SURFACE, CODEX_SURFACE),
-    ),
 ]
 
 

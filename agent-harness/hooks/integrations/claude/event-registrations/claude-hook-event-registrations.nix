@@ -36,7 +36,6 @@ let
     SessionStart = 5000;
     Stop = 5000;
     SubagentStop = 5000;
-    UserPromptSubmit = 5000;
   };
 
   claudeEventMatchers = {
@@ -45,7 +44,6 @@ let
     SessionStart = ".*";
     Stop = ".*";
     SubagentStop = ".*";
-    UserPromptSubmit = ".*";
   };
 
   dispatcherRegistrationForEvent = event: dispatcher: [
