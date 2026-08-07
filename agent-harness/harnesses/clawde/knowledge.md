@@ -121,6 +121,18 @@ runaway backstop above the resting set plus a concurrent build, never as a daily
 `MemorySwapMax` while swap is already full, which converts throttling into OOM kills.
 </the_service_cgroup_is_the_whole_shared_server>
 
+<a_quota_dead_agent_reads_as_healthy>
+An agent whose model has exhausted its quota is the hardest fleet failure to see, because every layer reports fine: the
+supervisor finds a live wrapper, the watchdog finds a pane parked at its idle prompt, the change gate keeps firing, and
+each heartbeat submits cleanly and then dies inside the harness leaving an empty assistant turn. The only tell is a
+banner in the pane's own status row, and opencode parks on one for days behind a retry countdown rather than failing
+the turn. So before suspecting the supervisor, the resume chain or the heartbeat driver, read the agent's pane wide
+enough to catch that row and check the model's quota; a stack of submitted heartbeats with no replies under them is the
+signature, and a workspace whose HEARTBEAT and inbox stopped moving days ago confirms it. That row also wraps mid-word
+at the widths agents really run at, splitting a marker like `esc interrupt` across four lines, so any indicator matched
+against it must ignore whitespace or it misses a banner that is plainly on screen.
+</a_quota_dead_agent_reads_as_healthy>
+
 <ci_sandbox_lacks_pgrep>
 The nix build sandbox provides no `pgrep` on either platform, so any test that shells out to it fails the flake check
 on both runners. Stub it in the unit `conftest.py` as an autouse fixture exiting non-zero with no output, which is
