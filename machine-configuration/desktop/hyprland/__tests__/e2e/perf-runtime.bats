@@ -1,9 +1,21 @@
 #!/usr/bin/env bats
 
+QUICKSHELL_BAR_CONFIGURATION_PATH=~/.dotfiles/machine-configuration/desktop/quickshell/bar/program-configuration
+
+setup_file() {
+	[ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ] || return 0
+	_warm_the_quickshell_client_so_no_measurement_absorbs_its_process_start
+}
+
 setup() {
 	if [ -z "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]; then
 		skip "no Hyprland session running"
 	fi
+}
+
+_warm_the_quickshell_client_so_no_measurement_absorbs_its_process_start() {
+	qs -c switcher ipc --any-display show >/dev/null 2>&1 || true
+	qs -p "$QUICKSHELL_BAR_CONFIGURATION_PATH" ipc --any-display show >/dev/null 2>&1 || true
 }
 
 _measure_ms() {
@@ -15,7 +27,7 @@ _measure_ms() {
 }
 
 _qs_bar_ipc() {
-	qs -p ~/.dotfiles/machine-configuration/desktop/quickshell/bar/program-configuration ipc --any-display call "$@"
+	qs -p "$QUICKSHELL_BAR_CONFIGURATION_PATH" ipc --any-display call "$@"
 }
 
 # ── Hyprland IPC ──────────────────────────────────────────────────────────────
