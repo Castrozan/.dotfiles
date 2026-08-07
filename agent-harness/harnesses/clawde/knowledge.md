@@ -92,6 +92,27 @@ Setting an explicit MCP config file is mutually exclusive with a plugin-provided
 only the named servers and excludes the plugin's own, which silently takes the bot offline.
 </channel_gating>
 
+<a_parked_agent_passes_every_liveness_probe>
+An agent whose provider refuses work is indistinguishable from a healthy quiet one at every layer that watches it: the
+wrapper process runs, the supervisor is satisfied, the heartbeat fires and is accepted, and the pane sits at its idle
+prompt because a refused request returns in about two seconds. The pane check is worse than useless here, since it
+short-circuits on the idle prompt before it ever looks for a quota banner, and opencode's banner scrolls away under the
+next heartbeat anyway. The only honest signal is whether a delivered prompt produced a turn, which is why the heartbeat
+driver watches the pane for twelve seconds after each send and writes the run of empty ticks to
+`~/clawde/harness-productivity/<agent>.json`; three in a row is the signature, and the supervisor and the health probe
+both read that one record. Failover only reaches warm heartbeat agents, because a `launchOnTrigger` agent runs one turn
+per gate edge and holds no driver to observe.
+</a_parked_agent_passes_every_liveness_probe>
+
+<a_failover_is_a_loan_not_a_move>
+The runtime moves a refused agent through `harnessFallbackChain` by writing the same override `clawde harness` writes,
+so the two are one mechanism and the automatic one wins if it fires over a manual pin. It differs in carrying an expiry
+and a `superseded_harness`, which is what sends the agent home a day later to retry the harness it was declared on, and
+what makes `clawde harness <agent>` say it was moved rather than pinned. The rotation starts at the declared harness
+and wraps, so a chain whose every entry is refusing keeps cycling instead of dead-ending on the last one. Nothing about
+this reaches an agent with an empty chain: it stays parked, deliberately, and the health probe turns red instead.
+</a_failover_is_a_loan_not_a_move>
+
 <steward_loop>
 A submodule divergence verdict is returned before every other verdict and short-circuits the whole loop, so the steward
 keeps ticking and pushes nothing no matter how green CI is; the recoverable shape is now rebased automatically and only

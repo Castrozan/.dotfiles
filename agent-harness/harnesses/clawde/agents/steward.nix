@@ -75,6 +75,11 @@ in
   clawde.agents.steward = {
     type = "steward";
     harness = stewardHarnessForMachine;
+    harnessFallbackChain = [
+      "codex"
+      "claude"
+      "opencode"
+    ];
     modelByHarness = {
       codex = "gpt-5.6-terra";
       opencode = "opencode-go/deepseek-v4-flash";

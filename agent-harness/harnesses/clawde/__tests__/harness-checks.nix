@@ -53,6 +53,11 @@ let
   };
   codexAgentConfigurationFile =
     cfgOnTheEvaluatingSystem.home.file."clawde/harness-home/codex/agent-on-codex/config.toml".source;
+
+  stewardLaunchConfig =
+    parseDeployedJson
+      (helpers.homeManagerTestConfiguration (bothHarnessModules ++ [ ../agents/steward.nix ]))
+      .home.file."clawde/launch-config/steward.json".text;
 in
 {
   clawde-standalone-module-evaluates-without-harness-packages =
@@ -146,6 +151,23 @@ in
     mkEvalCheck "clawde-a-channel-agent-cannot-be-switched-onto-a-harness-without-that-channel"
       (builtins.attrNames (eligibleHarnessesOf "agent-on-discord") == harnessNamesCarryingDiscord)
       "the runtime harness switch bypasses the build-time channel assertion, so the eligible set is the only thing standing between a discord agent and a harness that cannot receive a message: it must be exactly the harnesses declaring that channel, so a harness added without discord support stays unreachable by `clawde harness`";
+
+  clawde-the-steward-can-fall-off-a-harness-that-stops-producing-turns =
+    mkEvalCheck "clawde-the-steward-can-fall-off-a-harness-that-stops-producing-turns"
+      (
+        builtins.filter (
+          harnessName: harnessName != stewardLaunchConfig.declared_harness
+        ) stewardLaunchConfig.harness_fallback_chain != [ ]
+      )
+      "the steward is the one agent nothing else watches, so a fallback chain holding nothing but its own declared harness leaves it parked and silent the next time its provider refuses work: it holds a live process, an idle pane and a firing heartbeat throughout, which is how it once sat out three days of a weekly usage limit while every liveness probe reported it healthy";
+
+  clawde-every-steward-fallback-is-a-harness-it-can-actually-reach =
+    mkEvalCheck "clawde-every-steward-fallback-is-a-harness-it-can-actually-reach"
+      (builtins.all (
+        harnessName:
+        builtins.elem harnessName (builtins.attrNames stewardLaunchConfig.harness_launch_commands)
+      ) stewardLaunchConfig.harness_fallback_chain)
+      "the runtime skips a fallback the agent is not eligible for, so a chain naming a harness this machine never materialized a launch command for silently shortens to nothing and the failover reads as configured while doing nothing";
 
   clawde-model-by-harness-pins-what-an-agent-runs-after-a-switch =
     mkEvalCheck "clawde-model-by-harness-pins-what-an-agent-runs-after-a-switch"
