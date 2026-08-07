@@ -137,12 +137,10 @@ matcher purposes, so a single `Edit|Write` matcher fires on both CLIs.
 ## MCP servers
 
 - Claude wires: `chrome-devtools`, `codex` (self-referential: Claude calling
-  Codex), `a2a` (agent-only, not injected into interactive sessions), and `mem0`
-  (host-gated on a per-machine `mem0-host.nix`).
+  Codex), and `a2a` (agent-only, not injected into interactive sessions).
 - Codex wires: `chrome-devtools`. The shared browser MCP is at parity.
-- Deferred: `a2a` (needs an agent backend Codex has no receiver for), `codex`
-  (self-referential, N/A), and `mem0` (remote SSE memory MCP not wired on Codex;
-  Lucas has explicitly deprioritized mem0).
+- Deferred: `a2a` (needs an agent backend Codex has no receiver for) and `codex`
+  (self-referential, N/A).
 
 ## Context management
 

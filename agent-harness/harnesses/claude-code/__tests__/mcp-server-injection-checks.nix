@@ -10,7 +10,6 @@ let
   representativeInteractiveDefinitionNames = [
     "chrome-devtools"
     "codex"
-    "mem0"
   ];
 
   partition = partitionFor representativeInteractiveDefinitionNames;
@@ -32,20 +31,8 @@ in
         "browser-use"
         "figma"
         "figma-read"
+        "mem0"
         "vivaldi-devtools"
       ])
-      "brave-devtools, browser-use, figma, figma-read, and vivaldi-devtools must stay in the managed prune set so the injector strips any prior entry from existing ~/.claude.json on every host that previously injected them; dropping one leaves a dead stdio MCP that spawns a server that never connects";
-
-  mem0-remains-in-managed-prune-set-on-hosts-without-it =
-    mkEvalCheck "mem0-remains-in-managed-prune-set-on-hosts-without-it"
-      (
-        let
-          partitionWithoutMem0 = partitionFor [
-            "chrome-devtools"
-            "codex"
-          ];
-        in
-        builtins.elem "mem0" partitionWithoutMem0.managedMcpServerNames
-      )
-      "mem0 must stay in the managed prune set even on hosts whose mcpServerDefinitions omit it (no private mem0-host.nix), because mem0 is host-gated into the definitions; without the standalone hostGatedRemoteMemoryMcpServerNames entry a stale localhost mem0 sse entry written by a prior rebuild would never be pruned from ~/.claude.json and would persist as a dead server";
+      "brave-devtools, browser-use, figma, figma-read, mem0, and vivaldi-devtools must stay in the managed prune set so the injector strips any prior entry from existing ~/.claude.json on every host that previously injected them; dropping one leaves a dead MCP that spawns a server that never connects, and mem0 in particular was a remote sse entry that answers 503";
 }

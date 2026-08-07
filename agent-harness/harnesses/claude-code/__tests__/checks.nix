@@ -97,14 +97,6 @@ in
     hasFilePrefix
     ;
 }
-// import ./mem0-mcp-checks.nix {
-  inherit
-    pkgs
-    lib
-    mkEvalCheck
-    cfg
-    ;
-}
 // import ./mcp-server-injection-checks.nix {
   inherit
     lib

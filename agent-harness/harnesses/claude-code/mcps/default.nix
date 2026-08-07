@@ -3,7 +3,6 @@
   config,
   lib,
   latest,
-  hostname,
   ...
 }:
 let
@@ -17,12 +16,6 @@ let
       homeDir
       ;
     chromePackage = latest.google-chrome;
-  };
-
-  mem0Mcp = import ./mem0/wrapper.nix {
-    inherit lib hostname;
-    privateConfigRoot = ../../../../private-configuration;
-    defaultUserId = "lucas";
   };
 
   mcpServerDefinitions = {
@@ -40,9 +33,6 @@ let
         "sandbox_mode=danger-full-access"
       ];
     };
-  }
-  // lib.optionalAttrs mem0Mcp.remoteConfigured {
-    mem0 = mem0Mcp.serverConfig;
   };
 
   mcpServerInjectionPartition = import ./mcp-server-injection-partition.nix {

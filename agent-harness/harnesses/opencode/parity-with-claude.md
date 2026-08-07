@@ -76,15 +76,14 @@ against the model choice.
 
 ## MCP servers
 
-- Claude wires `chrome-devtools`, `codex` (self-referential), `a2a` (agent-only)
-  and `mem0` (host-gated). Codex wires `chrome-devtools` and a work Jira server.
+- Claude wires `chrome-devtools`, `codex` (self-referential) and `a2a`
+  (agent-only). Codex wires `chrome-devtools` and a work Jira server.
 - opencode wires `chrome-devtools`, reusing the same stdio command the browser
   skill builds, so the shared browser MCP is at parity across all three CLIs.
 - Deferred: `a2a` (needs an agent backend opencode has no receiver for), `codex`
-  and a self-referential opencode server (N/A), `mem0` (explicitly
-  deprioritized), and the work Jira server, whose credentials are injected from
-  files by the Codex seed script; opencode's `environment` map cannot read a
-  secret from a file, and this is a public repo.
+  and a self-referential opencode server (N/A), and the work Jira server, whose
+  credentials are injected from files by the Codex seed script; opencode's
+  `environment` map cannot read a secret from a file, and this is a public repo.
 
 ## Tooling posture
 

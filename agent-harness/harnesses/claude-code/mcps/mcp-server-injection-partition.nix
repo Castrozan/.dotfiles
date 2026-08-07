@@ -5,27 +5,23 @@
 let
   agentOnlyMcpServerNames = [ ];
 
-  hostGatedRemoteMemoryMcpServerNames = [ "mem0" ];
-
   retiredMcpServerNames = [
     "a2a"
     "brave-devtools"
     "browser-use"
     "figma"
     "figma-read"
+    "mem0"
     "vivaldi-devtools"
   ];
 
   interactivelyInjectedMcpServerNames = lib.subtractLists agentOnlyMcpServerNames allMcpServerNames;
 
-  managedMcpServerNames = lib.unique (
-    allMcpServerNames ++ hostGatedRemoteMemoryMcpServerNames ++ retiredMcpServerNames
-  );
+  managedMcpServerNames = lib.unique (allMcpServerNames ++ retiredMcpServerNames);
 in
 {
   inherit
     agentOnlyMcpServerNames
-    hostGatedRemoteMemoryMcpServerNames
     retiredMcpServerNames
     interactivelyInjectedMcpServerNames
     managedMcpServerNames
