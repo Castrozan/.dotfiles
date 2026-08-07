@@ -14,6 +14,13 @@
           upstreamUrl = "http://127.0.0.1:5055";
           loginLocationRegexes = [ "^/api/v1/auth/(jellyfin|plex|local)" ];
         }
+        {
+          listenPort = 9445;
+          upstreamUrl = "http://127.0.0.1:5000";
+          loginLocationRegexes = [
+            "^/api/Account/(login|register|forgot-password|reset-password|confirm-password-reset)"
+          ];
+        }
       ];
     };
 
@@ -27,6 +34,10 @@
         {
           publicHttpsPort = 8443;
           loopbackUrl = "http://127.0.0.1:9444";
+        }
+        {
+          publicHttpsPort = 10000;
+          loopbackUrl = "http://127.0.0.1:9445";
         }
       ];
     };
@@ -49,6 +60,7 @@
         frontEndServices = [
           "jellyfin"
           "jellyseerr"
+          "kavita"
         ];
       };
     };

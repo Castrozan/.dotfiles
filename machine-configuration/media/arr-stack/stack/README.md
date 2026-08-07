@@ -33,7 +33,8 @@ served over the other one.
 
 The stack carries only the libraries that get used. Music and books are gone and
 their *arr apps are not coming back, Readarr having been archived upstream in
-mid-2025 with no maintained successor.
+mid-2025 with no maintained successor. Manga is carried, but by a separate path
+that shares none of the machinery below; see "Manga is a second pipeline".
 
 Nothing in the stack speaks to a VPN and there is no per-container gateway to
 configure. Routing traffic through one is a host-level toggle that moves everything
@@ -133,6 +134,36 @@ accounts hold.
 An *arr app keys a title by its TMDB or TVDB id and can hold it under exactly one
 root folder, so a title the stack already holds makes a new request for it fail
 rather than relocate it. Grab a second copy by hand when both are genuinely wanted.
+
+## Manga is a second pipeline
+
+Manga shares the data drive and nothing else. No *arr app indexes it, Prowlarr and
+qBittorrent never see it, and the request front end cannot reach it: Jellyseerr
+descends from Overseerr and models only movies and television, so books and manga
+have no media type there and no plugin adds one. Wanting a title is therefore
+something you act on in the manga reader, not something anyone approves.
+
+Suwayomi acquires and Kavita serves. Suwayomi pulls from scanlation sources through
+its own extensions rather than from indexers, and the module in
+`machine-configuration/media/manga-streaming/` forces the settings the rest of this
+pipeline depends on: chapters archived as CBZ, written under the data drive's manga
+root, on a bind address that is never the wildcard. They are forced as JVM system
+properties on every start, so changing them in the Suwayomi UI is drift the next
+start overwrites, the same bargain the Jellyfin library allowlist makes. Kavita
+mounts that tree read-only, which is what stops the reader mutating what the
+downloader owns, and reads the source directory as a publisher with the title
+directory beneath it as a series, a nesting Kavita documents as supported. Loose
+chapter image folders are not, which is why CBZ is forced rather than preferred.
+
+Two boundaries are easy to erase by accident. The manga tree sits beside the Jellyfin
+media root rather than inside it, because Jellyfin bind-mounts that whole root while
+the per-account allowlist reasons only about declared Jellyfin libraries, so anything
+else living there is content Jellyfin serves paths into and no allowlist covers. And
+who may read what is Kavita's own account model, not the friend policy in the
+`arr_users` package, which knows only Jellyfin and Jellyseerr. Kavita carries a login
+and is published on the funnel behind the login rate-limiting proxy like the other
+front ends; Suwayomi carries none and stays on the tailnet, which is the rule the
+rest of the stack already follows rather than an exception made for it.
 
 ## Moving data to an external drive
 

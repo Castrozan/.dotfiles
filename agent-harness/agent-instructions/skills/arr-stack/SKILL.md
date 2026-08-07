@@ -1,6 +1,6 @@
 ---
 name: arr-stack
-description: Manage the chise media stack: Jellyfin friend accounts and Jellyseerr request and download status. Use for friends, media requests, or Jellyfin users.
+description: Manage the chise media stack: Jellyfin friend accounts, Jellyseerr request and download status, and the separate Suwayomi and Kavita manga pipeline. Use for friends, media requests, Jellyfin users, or manga.
 ---
 
 <commands>
@@ -44,6 +44,24 @@ rather than overwrite when the name already exists. `arr-status` degrades instea
 shows as `tmdb:<id>`; only Jellyseerr being unreachable is a hard failure. An *arr app holds a title under exactly one
 root folder, so a title the stack already holds can make a new request for it fail rather than relocate it.
 </guards_and_traps>
+
+<manga_is_a_separate_pipeline>
+Manga never touches Jellyseerr, Prowlarr, the *arr apps or the torrent client. Jellyseerr descends from Overseerr and
+models only movies and television, so it has no media type for manga and no plugin adds one; never search for a way to
+request manga there, and answer that it cannot. Suwayomi acquires from its own scanlation-source extensions and Kavita
+serves what it wrote, both declared in the repo like the rest of the stack. `arr-status` and `arr-users` know nothing
+about either, so neither reports manga; Kavita holds its own accounts and the friend policy in the `arr_users` package
+does not reach them.
+</manga_is_a_separate_pipeline>
+
+<manga_traps>
+Suwayomi's download format, download path and bind address are forced as JVM system properties on every start, so a
+change made in its UI silently reverts on restart; edit the manga module in the repo instead. CBZ is forced rather than
+preferred because Kavita ingests archives and skips the loose per-chapter image folders Suwayomi writes by default, so
+a chapter downloaded before that setting took effect stays invisible in Kavita until it is downloaded again. Suwayomi
+ships no login and stays on the tailnet; Kavita has one and is published, so never publish Suwayomi to reach it from
+outside.
+</manga_traps>
 
 <declarative_boundary>
 Friend permissions and stack config are code: the friend policy lives in the `arr_users` package and the stack in the

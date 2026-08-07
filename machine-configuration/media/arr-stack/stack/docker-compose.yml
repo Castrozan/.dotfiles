@@ -117,3 +117,18 @@ services:
       LOG_LEVEL: "info"
     volumes:
       - ${ARR_CONFIG_ROOT}/jellyseerr:/app/config
+
+  kavita:
+    image: lscr.io/linuxserver/kavita:v0.9.0.2-ls119@sha256:08bc0679401c5370e32373a9a7fa43ed4aa800388e04dcb2015500c09ead8ddb
+    container_name: arr-kavita
+    restart: unless-stopped
+    networks:
+      - arrnet
+    ports:
+      - "${ARR_BIND_ADDR:?set in ~/arr-stack/.env}:5000:5000"
+      - "127.0.0.1:5000:5000"
+    environment:
+      <<: *arr-common-environment
+    volumes:
+      - ${ARR_CONFIG_ROOT}/kavita:/config
+      - ${ARR_DATA_ROOT}/manga/mangas:/manga:ro

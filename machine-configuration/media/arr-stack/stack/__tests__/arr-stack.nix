@@ -36,6 +36,7 @@ let
   alwaysOnFrontEndServices = [
     "jellyfin"
     "jellyseerr"
+    "kavita"
   ];
   serviceRestartPolicyBlock =
     service: policy: "container_name: arr-${service}\n    restart: ${policy}";
@@ -55,6 +56,7 @@ let
   funnelLoopbackPublishes = [
     "127.0.0.1:8096:8096"
     "127.0.0.1:5055:5055"
+    "127.0.0.1:5000:5000"
   ];
   lineIsFunnelLoopbackPublish =
     line: builtins.any (publish: lib.hasInfix publish line) funnelLoopbackPublishes;
@@ -77,6 +79,10 @@ let
   envPinsChiseConfigRoot = lib.hasInfix "ARR_CONFIG_ROOT=/home/zanoni/arr-stack/config" envText;
   envPinsChiseDataRoot = lib.hasInfix "ARR_DATA_ROOT=/home/zanoni/arr-stack/data" envText;
   envMatchesChiseUserAndGroup = lib.hasInfix "PUID=1000" envText && lib.hasInfix "PGID=100" envText;
+
+  kavitaReadsMangaLibraryReadOnly = lib.hasInfix "\${ARR_DATA_ROOT}/manga/mangas:/manga:ro" composeText;
+  mangaLibraryStaysOutOfJellyfinMediaRoot =
+    !(lib.hasInfix "\${ARR_DATA_ROOT}/media/manga" composeText);
 
   composeHasNoVpnContainer =
     !(lib.hasInfix "gluetun" composeText) && !(lib.hasInfix "service:gluetun" composeText);
@@ -111,7 +117,16 @@ in
         && unlessStoppedCount == builtins.length alwaysOnFrontEndServices
         && composeHasNoAlwaysRestartPolicy
       )
-      "restart: unless-stopped is allowed only on the always-on front ends (jellyfin, jellyseerr) so they self-heal and come back after a reboot without a manual bring-up, is forbidden on every other service, and restart: always is never allowed";
+      "restart: unless-stopped is allowed only on the always-on front ends (jellyfin, jellyseerr, kavita) so they self-heal and come back after a reboot without a manual bring-up, is forbidden on every other service, and restart: always is never allowed";
+
+  chise-arr-stack-kavita-reads-manga-library-read-only =
+    mkEvalCheck "chise-arr-stack-kavita-reads-manga-library-read-only" kavitaReadsMangaLibraryReadOnly
+      "Kavita must mount the manga library read-only; Suwayomi is the only writer of that tree, so the reader can never delete or rewrite a download the downloader owns";
+
+  chise-arr-stack-manga-outside-jellyfin-media-root =
+    mkEvalCheck "chise-arr-stack-manga-outside-jellyfin-media-root"
+      mangaLibraryStaysOutOfJellyfinMediaRoot
+      "the manga tree must live at ARR_DATA_ROOT/manga rather than under ARR_DATA_ROOT/media, because Jellyfin bind-mounts the whole media root and its library-visibility allowlist is declared per Jellyfin library: a manga folder inside that root would be content Jellyfin serves paths into but the allowlist never reasons about";
 
   chise-arr-stack-no-vpn-container =
     mkEvalCheck "chise-arr-stack-no-vpn-container" composeHasNoVpnContainer
@@ -141,7 +156,7 @@ in
         && !composeBindsAWildcardInterface
         && composeLoopbackPublishesOnlyFunnelTargets
       )
-      "every published port must bind chise's tailnet address through the \${ARR_BIND_ADDR} variable, except the Jellyfin 127.0.0.1:8096 and Jellyseerr 127.0.0.1:5055 loopback publishes the Tailscale Funnels proxy to reach the public internet; no port may bind the 0.0.0.0 wildcard, and loopback may publish nothing but those funnel targets";
+      "every published port must bind chise's tailnet address through the \${ARR_BIND_ADDR} variable, except the Jellyfin 127.0.0.1:8096, Jellyseerr 127.0.0.1:5055 and Kavita 127.0.0.1:5000 loopback publishes the Tailscale Funnels proxy to reach the public internet; no port may bind the 0.0.0.0 wildcard, and loopback may publish nothing but those funnel targets";
 
   chise-arr-stack-no-tailnet-ip-literal-in-public-sources =
     mkEvalCheck "chise-arr-stack-no-tailnet-ip-literal-in-public-sources"

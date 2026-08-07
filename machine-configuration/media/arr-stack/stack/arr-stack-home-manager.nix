@@ -27,6 +27,7 @@ let
     "bazarr"
     "jellyfin"
     "jellyseerr"
+    "kavita"
   ];
   dataDirectories = [
     "torrents"
@@ -34,6 +35,7 @@ let
     "media/movies"
     "media/tv-private"
     "media/movies-private"
+    "manga/mangas"
   ];
   configDirectoriesToCreate = map (
     service: "${stackRoot}/config/${service}"
