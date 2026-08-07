@@ -38,6 +38,14 @@ import ./service-checks.nix {
     self
     ;
 }
+// import ./steward-launch-config-checks.nix {
+  inherit
+    pkgs
+    mkEvalCheck
+    helpers
+    self
+    ;
+}
 // import ./channel-sidecar-checks.nix {
   inherit
     lib
