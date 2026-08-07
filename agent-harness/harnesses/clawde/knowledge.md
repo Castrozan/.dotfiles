@@ -83,6 +83,22 @@ renders inline with no alternate screen, so a wide capture catches stale scrollb
 pane that is actually wedged at a pre-prompt modal.
 </multiplexer_backend>
 
+<the_reported_state_that_vetoes_a_send_is_written_from_this_repo>
+The heartbeat driver no longer trusts the pane capture alone: before typing it reads `agent_status` off `herdr pane get`
+and refuses to send when that state is `working` or `blocked`. Nothing inside clawde ever writes that field, so reading
+its source in the clawde tree finds only the reader and the gate looks dead. The writer is this repo's hook surface,
+`herdr_agent_state_report_handler`, which pushes `pane.report_agent` over the herdr socket on `UserPromptSubmit`
+(working), `Stop` (idle) and `SessionStart` (idle). The state is a veto only, never an authorization, so a pane with no
+reporter behaves exactly as it did before and only the capture regex decides. That also means the veto is live only for
+harnesses that register `UserPromptSubmit`: claude does, codex does not yet, and opencode has no hook surface here at
+all, so an opencode agent still runs on the capture check alone.
+
+The turn-start edge has to be `UserPromptSubmit` rather than `PreToolUse`. `PreToolUse` fires on every tool call and
+carries a measured import budget and a startup-latency floor, and adding a socket round trip there charged about 5ms to
+every tool call an agent makes and turned five dispatcher tests red. `UserPromptSubmit` fires once per turn, latches
+`working` from before the model produces a token, and so also covers a prose-only turn that never calls a tool.
+</the_reported_state_that_vetoes_a_send_is_written_from_this_repo>
+
 <channel_gating>
 A Discord agent that sends but receives nothing is almost always the plugin's own access gate, an empty per-agent
 `access.json`, and almost never intents, gateway, plugin version or network: outbound is REST and needs no allowlist

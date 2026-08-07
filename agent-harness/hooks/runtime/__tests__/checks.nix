@@ -65,6 +65,7 @@ in
           "SessionStart"
           "Stop"
           "SubagentStop"
+          "UserPromptSubmit"
         ]
       )
       (

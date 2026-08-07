@@ -106,6 +106,11 @@ INVOCATIONS_UNDER_BUDGET = {
         {"hook_event_name": "Stop", "stop_hook_active": False},
         99,
     ),
+    "user-prompt-submit": (
+        "user-prompt-submit-dispatcher",
+        {"hook_event_name": "UserPromptSubmit", "prompt": "hello"},
+        72,
+    ),
 }
 
 
