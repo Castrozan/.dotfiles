@@ -97,11 +97,16 @@ An agent whose provider refuses work is indistinguishable from a healthy quiet o
 wrapper process runs, the supervisor is satisfied, the heartbeat fires and is accepted, and the pane sits at its idle
 prompt because a refused request returns in about two seconds. The pane check is worse than useless here, since it
 short-circuits on the idle prompt before it ever looks for a quota banner, and opencode's banner scrolls away under the
-next heartbeat anyway. The only honest signal is whether a delivered prompt produced a turn, which is why the heartbeat
-driver watches the pane for twelve seconds after each send and writes the run of empty ticks to
-`~/clawde/harness-productivity/<agent>.json`; three in a row is the signature, and the supervisor and the health probe
-both read that one record. Failover only reaches warm heartbeat agents, because a `launchOnTrigger` agent runs one turn
-per gate edge and holds no driver to observe.
+next heartbeat anyway. Reading the pane cannot fix this either: `pane_is_at_idle_prompt` answers "the harness accepts
+input", never "the harness is not working", and claude renders its input box permanently, so a healthy claude agent
+scores an empty tick on every single send. The only honest signal is what the harness wrote, gathered on two channels
+that cover different harnesses and combined so that missing evidence never counts against one. opencode and codex
+report their own working state to herdr, which the driver samples across the settle window after each send. claude
+reports nothing there but keeps a per-session transcript, so the driver compares its byte size against the size taken
+after the previous delivery, which puts the prompt's own bytes in the baseline and spans a whole heartbeat interval, far
+longer than any single tool call. The run of empty ticks lands in `~/clawde/harness-productivity/<agent>.json`; three in
+a row is the signature, and the supervisor and the health probe both read that one record. Failover only reaches warm
+heartbeat agents, because a `launchOnTrigger` agent runs one turn per gate edge and holds no driver to observe.
 </a_parked_agent_passes_every_liveness_probe>
 
 <a_failover_is_a_loan_not_a_move>
