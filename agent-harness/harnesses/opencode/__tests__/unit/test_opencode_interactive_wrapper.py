@@ -13,4 +13,6 @@ def test_web_and_mini_run_sessions_receive_interactive_preferences():
     assert "web" not in noninteractive_command_case
     assert "run)" in source
     assert "--mini" in source
-    assert source.count("OPENCODE_INTERACTIVE_PREFERENCES_PATH") >= 2
+    assert "OPENCODE_INTERACTIVE_PREFERENCES_PATH" in source
+    assert "applyInteractiveSessionOverlay() {" in source
+    assert source.count("applyInteractiveSessionOverlay") >= 3

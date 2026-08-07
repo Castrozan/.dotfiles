@@ -1,0 +1,39 @@
+import argparse
+import os
+import sys
+from pathlib import Path
+
+from workspace_profile_routing.profile_resolution import resolve_workspace_profile
+from workspace_profile_routing.routing_table_loading import load_routing_table
+
+ROUTING_TABLE_ENVIRONMENT_VARIABLE = "AGENT_WORKSPACE_PROFILE_ROUTING_TABLE"
+REQUESTED_PROFILE_ENVIRONMENT_VARIABLE = "AGENT_WORKSPACE_PROFILE"
+
+
+def parse_arguments() -> argparse.Namespace:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--working-directory", default=os.getcwd())
+    return parser.parse_args()
+
+
+def routing_table_path() -> Path | None:
+    declared_path = os.environ.get(ROUTING_TABLE_ENVIRONMENT_VARIABLE)
+    return Path(declared_path) if declared_path else None
+
+
+def main() -> int:
+    arguments = parse_arguments()
+    resolution = resolve_workspace_profile(
+        profiles=load_routing_table(routing_table_path()),
+        working_directory=Path(arguments.working_directory),
+        requested_profile_name=os.environ.get(REQUESTED_PROFILE_ENVIRONMENT_VARIABLE),
+    )
+    if resolution.explanation is not None:
+        print(resolution.explanation, file=sys.stderr)
+    if resolution.profile_name is not None:
+        print(resolution.profile_name)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

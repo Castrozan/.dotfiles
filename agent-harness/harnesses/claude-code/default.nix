@@ -2,7 +2,6 @@
 {
   imports = [
     ./binary.nix
-    ./config-dir-launchers.nix
     ./gpt-proxy
     ./settings
     ../../../agent-harness/measurement-and-reporting/claude-telemetry/claude-telemetry-home-manager.nix
@@ -14,5 +13,6 @@
     ./opencode-go
     ./private.nix
     ./scripts
+    ../../workspace-profiles
   ];
 }

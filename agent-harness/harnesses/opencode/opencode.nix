@@ -50,6 +50,19 @@ let
         }
       );
 
+  workspaceProfileActivation = import ./workspace-profile-activation.nix {
+    inherit pkgs lib interactivePreferencesFile;
+  };
+
+  inherit (import ../../workspace-profiles/activation/harness-launch-dispatch.nix { inherit lib; })
+    mkWorkspaceProfileLaunchDispatch
+    ;
+
+  workspaceProfileLaunchDispatch = mkWorkspaceProfileLaunchDispatch {
+    inherit (config) agentWorkspaceProfiles;
+    inherit (workspaceProfileActivation) activationShellStatementsForProfile;
+  };
+
   opencode-authenticated = pkgs.writeShellScriptBin "opencode" ''
     opencodeApiKeyFile="${opencodeGo.apiKeyFile}"
     if [ -r "$opencodeApiKeyFile" ]; then
@@ -60,6 +73,14 @@ let
   '';
 
   opencode = pkgs.writeShellScriptBin "opencode" ''
+    opencodeConfigOverlayFile="${interactiveSessionConfigOverlay}"
+
+    applyInteractiveSessionOverlay() {
+      ${workspaceProfileLaunchDispatch}
+      export OPENCODE_CONFIG="$opencodeConfigOverlayFile"
+      export OPENCODE_INTERACTIVE_PREFERENCES_PATH="${interactivePreferencesFile}"
+    }
+
     case "''${1:-}" in
       acp | agent | attach | completion | db | debug | export | github | import | mcp | models | plugin | pr | providers | auth | serve | session | stats | uninstall | upgrade)
         ;;
@@ -67,16 +88,14 @@ let
         for argument in "$@"; do
           case "$argument" in
             --mini | --mini=*)
-              export OPENCODE_CONFIG="${interactiveSessionConfigOverlay}"
-              export OPENCODE_INTERACTIVE_PREFERENCES_PATH="${interactivePreferencesFile}"
+              applyInteractiveSessionOverlay
               break
               ;;
           esac
         done
         ;;
       *)
-        export OPENCODE_CONFIG="${interactiveSessionConfigOverlay}"
-        export OPENCODE_INTERACTIVE_PREFERENCES_PATH="${interactivePreferencesFile}"
+        applyInteractiveSessionOverlay
         ;;
     esac
     exec ${opencode-authenticated}/bin/opencode "$@"

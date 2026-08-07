@@ -1,4 +1,9 @@
-{ pkgs, lib, ... }:
+{
+  pkgs,
+  lib,
+  config,
+  ...
+}:
 let
   fetchPrebuiltBinary = import ../../../repository/nix-library/fetch-prebuilt-binary.nix {
     inherit pkgs;
@@ -34,21 +39,36 @@ let
     archiveBinaryPath = "codex-${currentHostSystem.releaseTargetTriple}";
   };
 
-  interactivePreferencesFile =
-    pkgs.writeText "codex-interactive-session-only-developer-instructions.md"
-      (
-        builtins.readFile ../../../agent-harness/agent-instructions/core-rules/communication/interactive-preferences.md
-        + "\n"
-        + builtins.readFile ../../../agent-harness/agent-instructions/core-rules/communication/enforced-reply-rules.md
-      );
+  interactiveSessionDeveloperInstructionsText = lib.concatStringsSep "\n" [
+    (builtins.readFile ../../../agent-harness/agent-instructions/core-rules/communication/interactive-preferences.md)
+    (builtins.readFile ../../../agent-harness/agent-instructions/core-rules/communication/enforced-reply-rules.md)
+  ];
+
+  interactivePreferencesFile = pkgs.writeText "codex-interactive-session-only-developer-instructions.md" interactiveSessionDeveloperInstructionsText;
+
+  workspaceProfileActivation = import ./workspace-profile-activation.nix {
+    inherit pkgs lib interactiveSessionDeveloperInstructionsText;
+  };
+
+  inherit (import ../../workspace-profiles/activation/harness-launch-dispatch.nix { inherit lib; })
+    mkWorkspaceProfileLaunchDispatch
+    ;
+
+  workspaceProfileLaunchDispatch = mkWorkspaceProfileLaunchDispatch {
+    inherit (config) agentWorkspaceProfiles;
+    inherit (workspaceProfileActivation) activationShellStatementsForProfile;
+  };
 
   codex = pkgs.writeShellScriptBin "codex" ''
     export NPM_CONFIG_PREFIX="/nonexistent"
+    codexDeveloperInstructionsFile="${interactivePreferencesFile}"
+    workspaceProfileArguments=()
     interactivePreferencesArguments=()
     case "''${1:-}" in
       "" | -* | resume | fork)
+        ${workspaceProfileLaunchDispatch}
         interactivePreferencesArguments=(
-          -c "developer_instructions=$(cat ${interactivePreferencesFile})"
+          -c "developer_instructions=$(cat "$codexDeveloperInstructionsFile")"
         )
         ;;
     esac
@@ -58,6 +78,7 @@ let
       --ask-for-approval "never" \
       --no-alt-screen \
       "''${interactivePreferencesArguments[@]}" \
+      "''${workspaceProfileArguments[@]}" \
       "$@"
   '';
 in

@@ -7,5 +7,6 @@
     ./skills.nix
     ./claude-plugin-port.nix
     ./global-instructions.nix
+    ../../workspace-profiles
   ];
 }
