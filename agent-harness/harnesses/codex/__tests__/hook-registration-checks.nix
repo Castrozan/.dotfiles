@@ -15,8 +15,8 @@ let
     inherit pkgs lib;
     hostname = "test";
   };
-  darwinConfigurationsSource = builtins.readFile ../../../../repository/flake-assembly/darwin-configurations.nix;
-  nixosConfigurationsSource = builtins.readFile ../../../../repository/flake-assembly/nixos-configurations.nix;
+  darwinMachineSource = builtins.readFile ../../../../repository/flake-assembly/darwin-machine.nix;
+  nixosMachineSource = builtins.readFile ../../../../repository/flake-assembly/nixos-machine.nix;
 
   codexSessionStartGroups =
     if parsedCodexHooksConfig ? hooks && parsedCodexHooksConfig.hooks ? SessionStart then
@@ -101,8 +101,8 @@ in
       (
         !(builtins.hasAttr ".codex/hooks.json" cfg.home.file)
         && builtins.hasAttr "codex/requirements.toml" codexSystemManagedHooksConfig.environment.etc
-        && lib.hasInfix "../../agent-harness/harnesses/codex/system-managed-hooks.nix" darwinConfigurationsSource
-        && lib.hasInfix "../../agent-harness/harnesses/codex/system-managed-hooks.nix" nixosConfigurationsSource
+        && lib.hasInfix "../../agent-harness/harnesses/codex/system-managed-hooks.nix" darwinMachineSource
+        && lib.hasInfix "../../agent-harness/harnesses/codex/system-managed-hooks.nix" nixosMachineSource
       )
       "Codex hooks should be deployed through /etc/codex/requirements.toml on Darwin and NixOS so Codex treats them as managed and trusted";
 

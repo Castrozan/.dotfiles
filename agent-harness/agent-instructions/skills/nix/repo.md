@@ -4,11 +4,13 @@ Only deviate if user explicitly accepts trade-off AND no alternative exists.
 </stance>
 
 <architecture>
-flake.nix (inputs) +
-repository/flake-assembly/{outputs,nixos-configurations,darwin-configurations,home-manager-modules}.nix (outputs)
-  nixosConfigurations.<alias>          (full NixOS system, e.g. chise)
-  darwinConfigurations.<alias>         (nix-darwin macOS, e.g. rin, kira)
-Each output threads (hostname=<alias>, isNixOS, isDarwin, username) through extraSpecialArgs.
+`flake.nix` owns inputs. `repository/flake-assembly/outputs.nix` owns outputs: it names every host explicitly and
+calls `nixos-machine.nix` or `darwin-machine.nix` once per host to build `nixosConfigurations.<alias>` (full NixOS
+system, e.g. chise) and `darwinConfigurations.<alias>` (nix-darwin macOS, e.g. rin, kira). Adding a host is one more
+explicit call; never reintroduce a host list, an attrset iteration or a `pathExists` directory scan, all of which hide
+which hosts exist. Package channels, the home-manager block both platforms share and the checks are factored out
+beside it, one file each. Each machine factory builds its channels from its own system and threads `hostname` (the
+alias), `username`, `isNixOS` and `isDarwin` through `specialArgs` / `extraSpecialArgs`.
 </architecture>
 
 <platform_detection>

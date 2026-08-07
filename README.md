@@ -87,7 +87,7 @@ sudo nixos-generate-config --dir machine-configuration/machines/<alias>/system/c
 
 #### 3. Customize Your Configuration
 - Copy `machine-configuration/machines/chise/system/` (system config) and `machine-configuration/machines/chise/home.nix` plus `machine-configuration/machines/chise/home/` (per-user home-manager modules) as templates for the new alias
-- Update `repository/flake-assembly/nixos-configurations.nix` to register `nixosConfigurations.<alias>`
+- Add one explicit `nixosConfigurations.<alias> = nixosMachine { ... };` call in `repository/flake-assembly/outputs.nix`
 
 #### 4. Deploy the Flake
 ```bash
@@ -137,7 +137,9 @@ Here's how everything fits together:
 ```mermaid
 graph TD
     subgraph "repository/flake-assembly"
-        Flake["Flake output assembly<br/>defines configs"]
+        Flake["outputs.nix<br/>explicit host calls"]
+        NixOSMachine["nixos-machine.nix<br/>builds one NixOS host"]
+        DarwinMachine["darwin-machine.nix<br/>builds one Darwin host"]
     end
 
     subgraph "NixOS Configuration"
@@ -164,8 +166,10 @@ graph TD
         ND["nix-darwin"]
     end
 
-    Flake --> NixOS
-    Flake --> Darwin
+    Flake --> NixOSMachine
+    Flake --> DarwinMachine
+    NixOSMachine --> NixOS
+    DarwinMachine --> Darwin
 
     NixOS --> Host
     NixOS --> UserNixOS
@@ -196,7 +200,7 @@ graph TD
 
 ## 📂 Repository Layout
 
-Flake inputs live in `flake.nix`; outputs are split into `repository/flake-assembly/{outputs,nixos-configurations,darwin-configurations,home-manager-modules}.nix`. Each output factory enumerates the hosts it owns and threads `hostname` plus `isNixOS` / `isDarwin` flags into `extraSpecialArgs`.
+Flake inputs live in `flake.nix`; `repository/flake-assembly/outputs.nix` names every host explicitly and calls one machine builder per host, with the package channels, the shared home-manager block and the checks factored out beside it. Each machine builder threads `hostname`, `username` plus `isNixOS` / `isDarwin` flags into `specialArgs` and `extraSpecialArgs`.
 
 Capabilities live under `machine-configuration/` grouped by what they do, and each capability owns its Nix modules, raw configuration, `scripts/`, and `__tests__/` together. Deployment mechanism and platform appear in the file name (`-home-manager.nix`, `-nixos.nix`, `-nix-darwin.nix`), never as a directory level, so a capability implemented differently on each platform still reads as one place. The Home Manager entry points that compose those capabilities are `machine-configuration/machines/<alias>/home.nix` per host, layered over `machine-configuration/machines/shared-home-manager-core.nix` and, for the two macOS hosts, `machine-configuration/machines/shared-darwin-home-manager.nix` plus `machine-configuration/machines/shared-darwin-system-nix-darwin.nix`.
 

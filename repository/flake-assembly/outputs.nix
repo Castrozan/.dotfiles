@@ -1,90 +1,40 @@
-inputs@{
-  self,
-  nixpkgs,
-  nixpkgs-unstable,
-  nixpkgs-latest,
-  home-manager,
-  nix-darwin,
-  ...
-}:
+inputs@{ self, ... }:
 let
-  linuxSystem = "x86_64-linux";
-  darwinSystem = "aarch64-darwin";
-  home-version = "25.11";
-  nixpkgs-version = "25.11";
+  release = "25.11";
+  linux = "x86_64-linux";
+  darwin = "aarch64-darwin";
 
-  mkPkgsFor = system: {
-    pkgs = import nixpkgs {
-      inherit system;
-      config.allowUnfree = true;
-    };
-    unstable = import nixpkgs-unstable {
-      inherit system;
-      config.allowUnfree = true;
-    };
-    latest = import nixpkgs-latest {
-      inherit system;
-      config.allowUnfree = true;
-    };
+  nixosMachine = import ./nixos-machine.nix {
+    inherit inputs release;
+    system = linux;
   };
-
-  linux = mkPkgsFor linuxSystem;
-  inherit (linux) pkgs unstable latest;
-
-  darwin = mkPkgsFor darwinSystem;
-
-  specialArgsBase = {
-    inherit
-      nixpkgs-version
-      home-version
-      unstable
-      inputs
-      latest
-      ;
+  darwinMachine = import ./darwin-machine.nix {
+    inherit inputs release;
+    system = darwin;
   };
 in
 {
-  nixosConfigurations = import ./nixos-configurations.nix {
-    inherit
-      nixpkgs
-      home-manager
-      linuxSystem
-      specialArgsBase
-      ;
+  nixosConfigurations.chise = nixosMachine {
+    hostname = "chise";
+    username = "zanoni";
   };
 
-  darwinConfigurations = import ./darwin-configurations.nix {
-    inherit
-      nix-darwin
-      home-manager
-      darwinSystem
-      specialArgsBase
-      ;
-    darwinPkgs = darwin;
-    darwinSystemOverlays = [ ];
+  darwinConfigurations.rin = darwinMachine {
+    hostname = "rin";
+    username = "lucas.zanoni";
+  };
+  darwinConfigurations.kira = darwinMachine {
+    hostname = "kira";
+    username = "lucas.zanoni";
   };
 
   homeManagerModules = import ./home-manager-modules.nix;
 
-  checks.${linuxSystem} = import ../verification/nix-checks {
-    inherit
-      pkgs
-      inputs
-      self
-      nixpkgs-version
-      home-version
-      ;
-    inherit (nixpkgs) lib;
-  };
-
-  checks.${darwinSystem} = import ../verification/nix-checks {
-    inherit
-      inputs
-      self
-      nixpkgs-version
-      home-version
-      ;
-    inherit (darwin) pkgs;
-    inherit (nixpkgs) lib;
+  checks = import ./checks.nix {
+    inherit inputs self release;
+    systems = [
+      linux
+      darwin
+    ];
   };
 }
