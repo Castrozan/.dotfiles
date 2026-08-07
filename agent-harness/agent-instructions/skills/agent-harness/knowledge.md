@@ -76,3 +76,11 @@ exactly what home-manager produces for a recursive file entry. Nothing is logged
 entry present, so the only reliable check is to ask the agent to list the skills it can actually load. Never mark a
 skill-set file entry recursive.
 </codex_skips_a_symlinked_skill_file>
+
+<probe_an_environment_gate_past_the_packaged_wrapper>
+A packaged harness binary is reached through a generated wrapper that exports every declared environment variable before
+it execs, so clearing one in the calling shell and launching the harness proves nothing: the wrapper puts it back and
+the probe reads as if the variable were not the gate. Probe such a gate by running the unwrapped binary, or a copy of
+the wrapper with that export filtered out, and confirm the variable's absence in the running process rather than in the
+shell that started it.
+</probe_an_environment_gate_past_the_packaged_wrapper>

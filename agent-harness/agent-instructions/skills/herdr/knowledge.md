@@ -34,3 +34,21 @@ reported the session id, which a session-start hook now does. No server restart 
 running server accepts the report on its existing socket. The limitation is that the replay uses a fixed argument list,
 so a pane needing a different launcher still needs the fallback manifest.
 </agent_resume_across_reboots_is_native>
+
+<a_claude_pane_reads_idle_until_its_osc_title_arrives>
+Claude Code keeps its prompt box rendered while it works, so the `live_prompt_box` rule matches all through a turn and
+the pane reports idle. The one rule that outranks it, `osc_title_working`, reads the OSC title region, and Claude Code
+writes that title only while `CLAUDE_CODE_DISABLE_TERMINAL_TITLE` is unset: that variable is the whole gate, read once
+when the REPL mounts, and it suppresses the working title and the idle title together. herdr records the title
+faithfully once one is sent, so an empty title region means the harness wrote nothing rather than a terminal that drops
+it. Setting that variable therefore costs every claude pane's `agent_status` on the machine, and every gate built on a
+working pane goes with it.
+</a_claude_pane_reads_idle_until_its_osc_title_arrives>
+
+<a_reported_state_loses_to_screen_detection>
+`pane.report_agent` sets agent and state together on a pane herdr has not detected, and on a pane whose agent carries a
+detection manifest it answers ok and changes nothing, whatever source or sequence number it passes. A hook that pushes
+turn state can therefore never compensate for a detector that reads the rendering wrong: repair what the manifest
+matches, or ship a local manifest override, and read `herdr agent explain` for the winning rule and its per-region
+evidence before writing any reporter at all.
+</a_reported_state_loses_to_screen_detection>
