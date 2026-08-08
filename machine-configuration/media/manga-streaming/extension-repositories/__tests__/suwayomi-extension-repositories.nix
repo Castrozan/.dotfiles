@@ -14,6 +14,7 @@ let
   environmentText = lib.concatStringsSep " " provisionerUnit.Service.Environment;
 
   serverModuleText = builtins.readFile ../../suwayomi-server-home-manager.nix;
+  releaseOverrideText = builtins.readFile ../../suwayomi-server-release-ahead-of-nixpkgs.nix;
   provisionerModuleText = builtins.readFile ../suwayomi-extension-repositories-home-manager.nix;
   clientText = builtins.readFile ../scripts/suwayomi_extension_repositories/suwayomi_graphql_client.py;
   reconcileText = builtins.readFile ../scripts/suwayomi_extension_repositories/extension_repository_synchronization.py;
@@ -27,6 +28,7 @@ let
       [
         provisionerModuleText
         serverModuleText
+        releaseOverrideText
         declarationText
         reconcileText
         clientText
@@ -71,9 +73,8 @@ let
 
   theErrorMessageDropsTheJavaStackTrace = lib.hasInfix "def first_line_of" clientText;
 
-  aRepositorySuwayomiWouldRefuseIsCaughtBeforeTheWrite =
-    lib.hasInfix "SUWAYOMI_ACCEPTED_REPOSITORY_URL_PREFIX" declarationText
-    && lib.hasInfix "would take every other " declarationText;
+  theDeclarationNeverSecondGuessesWhichHostsSuwayomiAccepts =
+    !(lib.hasInfix "startswith" declarationText) && !(lib.hasInfix "githubusercontent" declarationText);
 in
 {
   suwayomi-the-public-repo-names-no-extension-repository =
@@ -111,10 +112,10 @@ in
       aHostWithoutTheSecretLeavesSuwayomiAlone
       "an absent list file must skip the reconcile rather than fail it; the server module is imported by hosts that hold no such secret, and failing there would turn every one of their rebuilds red over a file they are not meant to have";
 
-  suwayomi-a-repository-suwayomi-would-refuse-is-caught-before-the-write =
-    mkEvalCheck "suwayomi-a-repository-suwayomi-would-refuse-is-caught-before-the-write"
-      aRepositorySuwayomiWouldRefuseIsCaughtBeforeTheWrite
-      "a repository served from anywhere but the accepted prefix must be caught before the write; Suwayomi validates the whole list at once and rejects all of it over one entry, so a single foreign host silently takes every other repository down with it and the only clue is an Invalid value message naming the entire list";
+  suwayomi-the-declaration-never-second-guesses-which-hosts-suwayomi-accepts =
+    mkEvalCheck "suwayomi-the-declaration-never-second-guesses-which-hosts-suwayomi-accepts"
+      theDeclarationNeverSecondGuessesWhichHostsSuwayomiAccepts
+      "the declaration must not filter entries by host prefix: which URLs Suwayomi accepts is a property of the server release and widened between 2.1 and 2.3, so a copy of that rule here goes stale silently and starts dropping repositories the running server would have taken; the echo-back comparison is what catches a rejected list, and it needs no guess about why";
 
   suwayomi-an-empty-declaration-refuses-to-run =
     mkEvalCheck "suwayomi-an-empty-declaration-refuses-to-run" anEmptyDeclarationRefusesToRun
@@ -122,7 +123,7 @@ in
 
   suwayomi-a-write-that-does-not-stick-is-caught =
     mkEvalCheck "suwayomi-a-write-that-does-not-stick-is-caught" aWriteThatDoesNotStickIsCaught
-      "the reconcile must compare what Suwayomi echoes back against what was declared; the settings mutation reports success while silently keeping the old list when it rejects a value, so trusting the response would report a repository as configured when it is not";
+      "the reconcile must compare what Suwayomi echoes back against what was declared; the settings mutation reports success while silently keeping the old list when it rejects a value, and it validates the whole list at once so one unacceptable entry takes every other repository down with it, which makes this comparison the only thing standing between a rejected list and a rebuild that reports the repositories as configured";
 
   suwayomi-an-unchanged-list-is-never-rewritten =
     mkEvalCheck "suwayomi-an-unchanged-list-is-never-rewritten" anUnchangedListIsNeverRewritten

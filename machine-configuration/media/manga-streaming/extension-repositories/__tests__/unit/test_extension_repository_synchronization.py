@@ -25,9 +25,7 @@ def declare(monkeypatch, tmp_path, repository_urls=None):
         json.dumps(DECLARED_URLS if repository_urls is None else repository_urls)
     )
     monkeypatch.setenv("SUWAYOMI_GRAPHQL_URL", "http://suwayomi/api/graphql")
-    monkeypatch.setenv(
-        "SUWAYOMI_EXTENSION_REPOSITORIES_FILE", str(list_file_path)
-    )
+    monkeypatch.setenv("SUWAYOMI_EXTENSION_REPOSITORIES_FILE", str(list_file_path))
     monkeypatch.setattr(
         suwayomi_graphql_client, "wait_until_ready", lambda graphql_url: True
     )
@@ -159,19 +157,3 @@ def test_a_host_without_the_declared_list_leaves_suwayomi_alone(monkeypatch, tmp
 
     assert result["repositories"] is None
     assert result["rewritten"] is False
-
-
-def test_a_repository_suwayomi_would_refuse_stops_the_run(monkeypatch, tmp_path):
-    declare(
-        monkeypatch,
-        tmp_path,
-        repository_urls=[*DECLARED_URLS, "https://elsewhere.example/index.json"],
-    )
-
-    def refuse_contact(graphql_url):
-        raise AssertionError("a list Suwayomi would reject must never be sent")
-
-    monkeypatch.setattr(suwayomi_graphql_client, "wait_until_ready", refuse_contact)
-
-    with pytest.raises(SystemExit):
-        extension_repository_synchronization.synchronize_extension_repositories()
