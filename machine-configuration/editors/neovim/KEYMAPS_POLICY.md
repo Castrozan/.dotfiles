@@ -19,6 +19,14 @@ the editor and the file explorer, and opens the explorer when none is open. It c
 the persisted-width and resize machinery it originally shipped with, so `C-S-b`, `C-S-j`, and
 `C-S-k` stay removed.
 
+`C-S-Up` and `C-S-Down` were restored on the owner's explicit request and jump ten at a time
+everywhere a cursor moves: ten lines in a buffer in normal, insert, and visual mode, and ten
+entries inside the snacks pickers, the file explorer, and the telescope pickers. They stop at the
+first and last line rather than refusing to move the way a bare `10j` does with fewer than ten
+lines left. Lists no longer wrap either, because the owner asked for a hard stop at both ends:
+snacks runs with `layout.cycle` off and telescope with `scroll_strategy` set to `limit`, so
+single-step navigation stops at the ends too.
+
 ## Canonical references
 
 Find how Neovim itself does a thing before proposing any mapping:
@@ -36,7 +44,11 @@ Find how Neovim itself does a thing before proposing any mapping:
 2. If nothing built-in exists, follow the LazyVim conventions: `<leader>` groups registered with
    descriptions, inside the namespaces documented at lazyvim.org/keymaps.
 3. A custom map is the last resort, added in `lua/config/keymaps.lua` with a `desc`, in that
-   file's existing style.
+   file's existing style. `keymaps.lua` holds one-line wiring only: anything with a body goes in
+   a named module under `lua/config/<domain>/`, the way `lua/config/navigation/` holds the
+   explorer focus toggle and the ten-line jumps, and the map calls into it. Picker-side bindings
+   belong in that plugin's spec under `lua/plugins/` and call the same module, so a chord means
+   the same thing in a buffer and in a list.
 4. Never shadow a native Vim key. Check `:help <key>` before mapping; keys like `C-w` (window
    commands), `C-t` (tag pop), `C-b`/`C-f` (paging), `C-p`/`C-n` (completion and motion),
    `C-o`/`C-i` (jumplist), `J`/`K`, `Q`, and the `g` family carry native meaning. The baseline
@@ -48,7 +60,7 @@ Find how Neovim itself does a thing before proposing any mapping:
 
 `C-w` close buffer in normal and insert mode, `leader r` config reload, `C-p` in insert and
 terminal mode, `C-Up`/`C-Down` viewport scroll, `C-Right`/`C-Left` word jumps,
-`C-S-Up`/`C-S-Down` ten-line jumps, `C-PageUp`/`C-PageDown` buffer cycling,
+`C-PageUp`/`C-PageDown` buffer cycling,
 `C-S-PageUp`/`C-S-PageDown` buffer moving, `C-S-b`/`C-S-j`/`C-S-k` explorer show and resize,
 explorer `C-n` create file, explorer `C-k e` folder toggle, explorer `y` path yank,
 picker `C-v` clipboard paste, the `:q` and `:wq` quit-all abbreviations, the smart close-buffer

@@ -26,35 +26,8 @@ map("n", "<C-b>", function()
   Snacks.explorer()
 end, { desc = "Toggle file explorer" })
 
-local function find_open_file_explorer_picker()
-  return Snacks.picker.get({ source = "explorer" })[1]
-end
-
-local function is_cursor_inside_file_explorer_window()
-  local current_filetype = vim.bo.filetype
-  return current_filetype == "snacks_picker_list" or current_filetype == "snacks_picker_input"
-end
-
-local function return_focus_to_editor_window(open_explorer_picker)
-  local main_window_id = open_explorer_picker and open_explorer_picker.main
-  if main_window_id and vim.api.nvim_win_is_valid(main_window_id) then
-    vim.api.nvim_set_current_win(main_window_id)
-  else
-    vim.cmd("wincmd p")
-  end
-end
-
 map("n", "<C-S-e>", function()
-  local open_explorer_picker = find_open_file_explorer_picker()
-  if is_cursor_inside_file_explorer_window() then
-    return_focus_to_editor_window(open_explorer_picker)
-    return
-  end
-  if open_explorer_picker then
-    open_explorer_picker:focus()
-  else
-    Snacks.explorer()
-  end
+  require("config.navigation.file_explorer_focus").toggle_between_editor_and_file_explorer()
 end, { desc = "Toggle file explorer focus" })
 
 map("n", "<C-`>", function()
@@ -85,6 +58,13 @@ map("n", "<C-u>", "<C-u>zz", { desc = "Half-page up (centered)" })
 map("n", "<C-d>", "<C-d>zz", { desc = "Half-page down (centered)" })
 map("n", "n", "nzzzv", { desc = "Next search match (centered)" })
 map("n", "N", "Nzzzv", { desc = "Prev search match (centered)" })
+
+map({ "n", "i", "v" }, "<C-S-Down>", function()
+  require("config.navigation.ten_line_jumping").jump_buffer_down()
+end, { desc = "Jump 10 lines down" })
+map({ "n", "i", "v" }, "<C-S-Up>", function()
+  require("config.navigation.ten_line_jumping").jump_buffer_up()
+end, { desc = "Jump 10 lines up" })
 
 map("v", "K", ":m '<-2<cr>gv=gv", { silent = true, desc = "Move block up" })
 map("v", "J", ":m '>+1<cr>gv=gv", { silent = true, desc = "Move block down" })
