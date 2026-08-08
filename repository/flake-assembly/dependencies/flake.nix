@@ -1,17 +1,4 @@
 {
-  description = ''
-    Every flake input this repo depends on.
-
-    Nix refuses to force a thunk for `inputs`, so the block cannot be imported into the
-    root flake.nix from another file. Declaring it in a sub-flake taken as the root's
-    single input is the one indirection Nix does accept: the root flake.lock still owns
-    the whole dependency graph, and outputs.nix reads every input through
-    `dependencies.inputs`.
-
-    Every input name gains a `dependencies/` prefix at the command line, so bump a
-    single input with `nix flake update dependencies/<name>` from the repository root.
-  '';
-
   outputs = _: { };
 
   inputs = {
