@@ -44,11 +44,14 @@ Find how Neovim itself does a thing before proposing any mapping:
 2. If nothing built-in exists, follow the LazyVim conventions: `<leader>` groups registered with
    descriptions, inside the namespaces documented at lazyvim.org/keymaps.
 3. A custom map is the last resort, added in `lua/config/keymaps.lua` with a `desc`, in that
-   file's existing style. `keymaps.lua` holds one-line wiring only: anything with a body goes in
-   a named module under `lua/config/<domain>/`, the way `lua/config/navigation/` holds the
-   explorer focus toggle and the ten-line jumps, and the map calls into it. Picker-side bindings
-   belong in that plugin's spec under `lua/plugins/` and call the same module, so a chord means
-   the same thing in a buffer and in a list.
+   file's existing style. That file is a chord table and nothing else: every entry is a single
+   `map(...)` line pointing at a named function, so a handler carrying a body lives in its own
+   module under `lua/config/`, the way `navigation/file_explorer.lua`, `navigation/pickers.lua`,
+   `navigation/ten_line_jumping.lua`, `terminal.lua`, and `command_line_abbreviations.lua` do.
+   Keep the exported name short enough that the `map(...)` call still fits on one line, because
+   the module name already carries the subject. Picker-side bindings belong in that plugin's spec
+   under `lua/plugins/` and call the same module, so a chord means the same thing in a buffer and
+   in a list.
 4. Never shadow a native Vim key. Check `:help <key>` before mapping; keys like `C-w` (window
    commands), `C-t` (tag pop), `C-b`/`C-f` (paging), `C-p`/`C-n` (completion and motion),
    `C-o`/`C-i` (jumplist), `J`/`K`, `Q`, and the `g` family carry native meaning. The baseline

@@ -1,4 +1,4 @@
-local file_explorer_focus = {}
+local file_explorer = {}
 
 local function find_open_file_explorer_picker()
   return Snacks.picker.get({ source = "explorer" })[1]
@@ -18,7 +18,11 @@ local function return_focus_to_editor_window(open_explorer_picker)
   end
 end
 
-function file_explorer_focus.toggle_between_editor_and_file_explorer()
+function file_explorer.toggle_visibility()
+  Snacks.explorer()
+end
+
+function file_explorer.toggle_focus()
   local open_explorer_picker = find_open_file_explorer_picker()
   if is_cursor_inside_file_explorer_window() then
     return_focus_to_editor_window(open_explorer_picker)
@@ -31,4 +35,4 @@ function file_explorer_focus.toggle_between_editor_and_file_explorer()
   end
 end
 
-return file_explorer_focus
+return file_explorer

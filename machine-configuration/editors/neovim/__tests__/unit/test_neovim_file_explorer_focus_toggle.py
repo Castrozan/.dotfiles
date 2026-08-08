@@ -32,7 +32,7 @@ def run_headless_lua(tmp_path, script_name, lua_body):
 
 
 def test_toggle_returns_focus_from_the_explorer_back_to_the_editor_window(tmp_path):
-    module_path = neovim_lua_path("config", "navigation", "file_explorer_focus.lua")
+    module_path = neovim_lua_path("config", "navigation", "file_explorer.lua")
     result = run_headless_lua(
         tmp_path,
         "file_explorer_focus_returns_to_editor.lua",
@@ -58,8 +58,8 @@ def test_toggle_returns_focus_from_the_explorer_back_to_the_editor_window(tmp_pa
           }},
         }}
 
-        local file_explorer_focus = dofile({json.dumps(str(module_path))})
-        file_explorer_focus.toggle_between_editor_and_file_explorer()
+        local file_explorer = dofile({json.dumps(str(module_path))})
+        file_explorer.toggle_focus()
         assert(
           vim.api.nvim_get_current_win() == editor_window_id,
           "the toggle did not jump from the explorer to the window it was opened from"
@@ -70,7 +70,7 @@ def test_toggle_returns_focus_from_the_explorer_back_to_the_editor_window(tmp_pa
         vim.cmd("vnew")
         vim.bo.filetype = "snacks_picker_list"
         active_explorer_pickers = {{}}
-        file_explorer_focus.toggle_between_editor_and_file_explorer()
+        file_explorer.toggle_focus()
         assert(
           vim.api.nvim_get_current_win() == other_editor_window_id,
           "the toggle did not fall back to the previous window when no explorer picker was open"
@@ -82,7 +82,7 @@ def test_toggle_returns_focus_from_the_explorer_back_to_the_editor_window(tmp_pa
 
 
 def test_toggle_focuses_an_open_explorer_and_opens_one_when_none_is_open(tmp_path):
-    module_path = neovim_lua_path("config", "navigation", "file_explorer_focus.lua")
+    module_path = neovim_lua_path("config", "navigation", "file_explorer.lua")
     result = run_headless_lua(
         tmp_path,
         "file_explorer_focus_enters_explorer.lua",
@@ -101,8 +101,8 @@ def test_toggle_focuses_an_open_explorer_and_opens_one_when_none_is_open(tmp_pat
           }},
         }}
 
-        local file_explorer_focus = dofile({json.dumps(str(module_path))})
-        file_explorer_focus.toggle_between_editor_and_file_explorer()
+        local file_explorer = dofile({json.dumps(str(module_path))})
+        file_explorer.toggle_focus()
         assert(explorer_was_opened, "the toggle did not open the explorer while none was open")
 
         explorer_was_opened = false
@@ -114,7 +114,7 @@ def test_toggle_focuses_an_open_explorer_and_opens_one_when_none_is_open(tmp_pat
             end,
           }},
         }}
-        file_explorer_focus.toggle_between_editor_and_file_explorer()
+        file_explorer.toggle_focus()
         assert(explorer_was_focused, "the toggle did not focus the explorer that was already open")
         assert(not explorer_was_opened, "the toggle opened a second explorer instead of focusing the open one")
         vim.cmd("qa!")
@@ -137,6 +137,10 @@ def test_keymaps_wire_the_owned_navigation_chords_to_the_extracted_modules(tmp_p
           ["<C-S-e>"] = "Toggle file explorer focus",
           ["<C-S-Down>"] = "Jump 10 lines down",
           ["<C-S-Up>"] = "Jump 10 lines up",
+          ["<C-b>"] = "Toggle file explorer",
+          ["<C-`>"] = "Toggle terminal",
+          ["<C-p>"] = "Find files",
+          ["<S-F12>"] = "Find references",
         }}
         for chord, expected_description in pairs(expected_descriptions) do
           local mapping = vim.fn.maparg(chord, "n", false, true)
@@ -155,6 +159,11 @@ def test_keymaps_wire_the_owned_navigation_chords_to_the_extracted_modules(tmp_p
             )
           end
         end
+
+        assert(
+          vim.fn.execute("cabbrev Wq"):find("wq", 1, true) ~= nil,
+          "the command line abbreviations were never installed"
+        )
         vim.cmd("qa!")
         """,
     )
