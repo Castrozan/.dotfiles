@@ -55,9 +55,10 @@ in
         && builtins.elem "timers.target" enabledTimer.wantedBy
         && enabledTimer.timerConfig.OnUnitInactiveSec == "30min"
         && !(enabledTimer.timerConfig ? OnUnitActiveSec)
-        && enabledTimer.timerConfig.Persistent
+        && enabledTimer.timerConfig.OnBootSec == "10min"
+        && !(enabledTimer.timerConfig ? Persistent)
       )
-      "the sweep must be a oneshot pulled in only by its timer, never by multi-user.target and never restarted by activation, because a sweep spends most of its life waiting for a gap between playbacks and switch-to-configuration blocks until a restarted oneshot finishes its ExecStart, so restarting it on a rebuild hangs the rebuild for as long as somebody keeps watching; the interval runs from the end of the previous sweep for the same reason, that a sweep has no bounded length to measure from its start, and a machine that was off catches up on its next boot";
+      "the sweep must be a oneshot pulled in only by its timer, never by multi-user.target and never restarted by activation, because a sweep spends most of its life waiting for a gap between playbacks and switch-to-configuration blocks until a restarted oneshot finishes its ExecStart, so restarting it on a rebuild hangs the rebuild for as long as somebody keeps watching; the interval runs from the end of the previous sweep for the same reason, that a sweep has no bounded length to measure from its start, and a boot-relative trigger is what catches a machine up after downtime rather than Persistent, which systemd silently ignores on a monotonic timer";
 
   chise-jellyfin-subtitle-warmer-reads-agenix-key-and-cache-directory =
     mkEvalCheck "chise-jellyfin-subtitle-warmer-reads-agenix-key-and-cache-directory"

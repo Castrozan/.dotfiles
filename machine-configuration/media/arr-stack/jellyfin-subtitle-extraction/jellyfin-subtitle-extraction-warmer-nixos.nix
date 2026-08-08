@@ -98,7 +98,6 @@ in
       timerConfig = {
         OnBootSec = "10min";
         OnUnitInactiveSec = warmerConfig.sweepInterval;
-        Persistent = true;
       };
     };
   };
