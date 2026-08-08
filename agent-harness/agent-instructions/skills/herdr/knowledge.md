@@ -52,3 +52,15 @@ turn state can therefore never compensate for a detector that reads the renderin
 matches, or ship a local manifest override, and read `herdr agent explain` for the winning rule and its per-region
 evidence before writing any reporter at all.
 </a_reported_state_loses_to_screen_detection>
+
+<panes_inherit_a_display_less_environment>
+The server starts from the systemd user manager before the compositor imports the graphical session variables, and it
+outlives compositor restarts, so its environment is frozen without `WAYLAND_DISPLAY`, `DISPLAY` or `XAUTHORITY` and
+every pane shell inherits that gap. Compositor-dependent work inside a pane then fails as if the tool rejected its input
+rather than an environment fault: Claude Code reads a clipboard image by shelling out to `wl-paste` and `xclip`, so it
+refuses every pasted image without ever naming the missing display. Do not reach for `remote_image_paste`, which is
+hard-gated on the remote-client environment variable and yields no key on a local client, leaving a `config.toml`
+binding inert. Recover the variables in the pane shell from `systemctl --user show-environment`, which the compositor
+autostart import keeps current across restarts. A running pane keeps the environment it launched with, so the repair
+reaches new panes only.
+</panes_inherit_a_display_less_environment>
