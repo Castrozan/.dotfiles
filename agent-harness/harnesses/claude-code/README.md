@@ -28,7 +28,7 @@ The `a2a` command is defined in `agent-harness/agent-to-agent-communication/clie
 
 The persistent-agent framework lives in its own private flake at `github.com/Castrozan/clawde`, consumed as the `clawde` flake input and imported via `inputs.clawde.homeManagerModules.default`. One systemd-user service supervises one tmux session (`clawde`), with one window per agent. Each agent is declared as `clawde.agents.<name>` with an agent type (`type = "project-manager"`, defaulting to `"generic"`) that supplies role defaults inherited unless the instance overrides them, a channel adapter (`channel.type = "discord"` or `"none"`) for transport, and optional peer adapters (`expose.a2a.enable = true`).
 
-The dotfiles owns only the host wiring (`clawde-wiring.nix` supplies `clawde.machinesRegistry`, `clawde.claudePackage`, `clawde.dotfilesRepoPath`) and the agent declarations; the module, option schema, runtime instructions, agent types, and channel adapters live in the clawde repo. Bump it with `nix flake update clawde`.
+The dotfiles owns only the host wiring (`clawde-wiring.nix` supplies `clawde.machinesRegistry`, `clawde.claudePackage`, `clawde.dotfilesRepoPath`) and the agent declarations; the module, option schema, runtime instructions, agent types, and channel adapters live in the clawde repo. Bump it with `nix flake update dependencies/clawde`.
 
 Agent declarations live per-machine in `private-configuration/machines/<host>/clawde-*.nix` (e.g. the per-host PM agents and rin's `clawde-silver.nix`); the shared `steward` agent, which reads the public steward skill at eval time, lives in `clawde-agents/steward.nix`.
 

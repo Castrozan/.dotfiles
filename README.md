@@ -200,7 +200,7 @@ graph TD
 
 ## 📂 Repository Layout
 
-Flake inputs live in `flake.nix`; `repository/flake-assembly/outputs.nix` names every host explicitly and calls one machine builder per host, with the package channels, the shared home-manager block and the checks factored out beside it. Each machine builder threads `hostname`, `username` plus `isNixOS` / `isDarwin` flags into `specialArgs` and `extraSpecialArgs`.
+Flake inputs live in a dependencies sub-flake that the root `flake.nix` takes as its single input, so bumping one reads `nix flake update dependencies/<name>`; `repository/flake-assembly/outputs.nix` names every host explicitly and calls one machine builder per host, with the package channels, the shared home-manager block and the checks factored out beside it. Each machine builder threads `hostname`, `username` plus `isNixOS` / `isDarwin` flags into `specialArgs` and `extraSpecialArgs`.
 
 Capabilities live under `machine-configuration/` grouped by what they do, and each capability owns its Nix modules, raw configuration, `scripts/`, and `__tests__/` together. Deployment mechanism and platform appear in the file name (`-home-manager.nix`, `-nixos.nix`, `-nix-darwin.nix`), never as a directory level, so a capability implemented differently on each platform still reads as one place. The Home Manager entry points that compose those capabilities are `machine-configuration/machines/<alias>/home.nix` per host, layered over `machine-configuration/machines/shared-home-manager-core.nix` and, for the two macOS hosts, `machine-configuration/machines/shared-darwin-home-manager.nix` plus `machine-configuration/machines/shared-darwin-system-nix-darwin.nix`.
 

@@ -4,7 +4,10 @@ Only deviate if user explicitly accepts trade-off AND no alternative exists.
 </stance>
 
 <architecture>
-`flake.nix` owns inputs. `repository/flake-assembly/outputs.nix` owns outputs: it names every host explicitly and
+The dependencies sub-flake owns every input and the root `flake.nix` takes it as its single input, because Nix refuses
+to force a thunk for `inputs` and a sub-flake is the only indirection it accepts. Bump one input with `nix flake update
+dependencies/<name>`; the bare name matches nothing and only warns.
+`repository/flake-assembly/outputs.nix` owns outputs: it names every host explicitly and
 calls `nixos-machine-factory.nix` or `darwin-machine-factory.nix` once per host to build `nixosConfigurations.<alias>`
 (full NixOS system, e.g. chise) and `darwinConfigurations.<alias>` (nix-darwin macOS, e.g. rin, kira). Adding a host
 is one more explicit call; never reintroduce a host list, an attrset iteration or a `pathExists` directory scan, all
@@ -54,7 +57,7 @@ the repo. Always add each file you changed with git add FILE.
 <package_channels>
 pkgs: stable (check flake.nix for version)
 unstable: nixos-unstable
-latest: same as unstable, updated with nix flake update nixpkgs-latest but done daily.
+latest: same as unstable, updated with nix flake update dependencies/nixpkgs-latest but done daily.
 DO NOT UPDATE THE FLAKES MANUALLY unless user specifically requests it.
 </package_channels>
 

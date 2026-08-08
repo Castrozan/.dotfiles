@@ -25,9 +25,9 @@ Relevant post-v0.2.1 commits:
 
 ## Current mitigations
 
-1. **Flake input pinned to upstream master**: `flake.nix` has `quickshell.url = "git+https://git.outfoxxed.me/quickshell/quickshell?ref=master"` and all three service modules consume `inputs.quickshell.packages.${system}.quickshell` instead of `pkgs.quickshell`. Bump with:
+1. **Flake input pinned to upstream master**: the dependencies flake has `quickshell.url = "git+https://git.outfoxxed.me/quickshell/quickshell?ref=master"` and all three service modules consume `inputs.quickshell.packages.${system}.quickshell` instead of `pkgs.quickshell`. Bump with:
    ```sh
-   nix flake update quickshell
+   nix flake update dependencies/quickshell
    rebuild
    ```
 2. **`QS_DROP_EXPENSIVE_FONTS=1`** in the systemd Environment of every quickshell service. This is upstream's own workaround for font-related scene-graph crashes.
@@ -63,7 +63,7 @@ Append to the top when a new crash cluster shows up. Keep entries terse.
 
 ## Escalation
 
-If crashes persist after pinning master and a `nix flake update quickshell`:
+If crashes persist after pinning master and a `nix flake update dependencies/quickshell`:
 1. Decode the minidump with `minidump_stackwalk` to see which QML object triggered it.
 2. File upstream at https://git.outfoxxed.me/quickshell/quickshell/issues with the stack trace and the QML path.
 3. If a specific module is implicated, disable that module in `machine-configuration/desktop/quickshell/bar/program-configuration/Bar.qml` to confirm, then report.

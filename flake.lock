@@ -5,6 +5,7 @@
         "darwin": "darwin",
         "home-manager": "home-manager",
         "nixpkgs": [
+          "dependencies",
           "nixpkgs"
         ],
         "systems": "systems"
@@ -26,18 +27,22 @@
     "aquamarine": {
       "inputs": {
         "hyprutils": [
+          "dependencies",
           "hyprland",
           "hyprutils"
         ],
         "hyprwayland-scanner": [
+          "dependencies",
           "hyprland",
           "hyprwayland-scanner"
         ],
         "nixpkgs": [
+          "dependencies",
           "hyprland",
           "nixpkgs"
         ],
         "systems": [
+          "dependencies",
           "hyprland",
           "systems"
         ]
@@ -148,13 +153,16 @@
     "cachix": {
       "inputs": {
         "devenv": [
+          "dependencies",
           "devenv"
         ],
         "flake-compat": [
+          "dependencies",
           "devenv",
           "flake-compat"
         ],
         "git-hooks": [
+          "dependencies",
           "devenv",
           "git-hooks"
         ],
@@ -179,6 +187,7 @@
       "inputs": {
         "flake-utils": "flake-utils_2",
         "nixpkgs": [
+          "dependencies",
           "nixpkgs"
         ]
       },
@@ -199,6 +208,7 @@
     "clawde": {
       "inputs": {
         "nixpkgs": [
+          "dependencies",
           "nixpkgs"
         ]
       },
@@ -221,6 +231,7 @@
       "inputs": {
         "flake-utils": "flake-utils_3",
         "nixpkgs": [
+          "dependencies",
           "nixpkgs"
         ]
       },
@@ -273,6 +284,7 @@
     "darwin": {
       "inputs": {
         "nixpkgs": [
+          "dependencies",
           "agenix",
           "nixpkgs"
         ]
@@ -385,6 +397,7 @@
     "flake-parts": {
       "inputs": {
         "nixpkgs-lib": [
+          "dependencies",
           "devenv",
           "nixpkgs"
         ]
@@ -424,6 +437,7 @@
     "flake-parts_3": {
       "inputs": {
         "nixpkgs-lib": [
+          "dependencies",
           "stylix",
           "nixpkgs"
         ]
@@ -639,10 +653,12 @@
     "git-hooks": {
       "inputs": {
         "flake-compat": [
+          "dependencies",
           "devenv",
           "flake-compat"
         ],
         "nixpkgs": [
+          "dependencies",
           "devenv",
           "nixpkgs"
         ]
@@ -664,6 +680,7 @@
     "gitignore": {
       "inputs": {
         "nixpkgs": [
+          "dependencies",
           "hyprland",
           "pre-commit-hooks",
           "nixpkgs"
@@ -744,6 +761,7 @@
     "home-manager": {
       "inputs": {
         "nixpkgs": [
+          "dependencies",
           "agenix",
           "nixpkgs"
         ]
@@ -765,6 +783,7 @@
     "home-manager_2": {
       "inputs": {
         "nixpkgs": [
+          "dependencies",
           "nixpkgs"
         ]
       },
@@ -786,14 +805,17 @@
     "hyprcursor": {
       "inputs": {
         "hyprlang": [
+          "dependencies",
           "hyprland",
           "hyprlang"
         ],
         "nixpkgs": [
+          "dependencies",
           "hyprland",
           "nixpkgs"
         ],
         "systems": [
+          "dependencies",
           "hyprland",
           "systems"
         ]
@@ -815,14 +837,17 @@
     "hyprgraphics": {
       "inputs": {
         "hyprutils": [
+          "dependencies",
           "hyprland",
           "hyprutils"
         ],
         "nixpkgs": [
+          "dependencies",
           "hyprland",
           "nixpkgs"
         ],
         "systems": [
+          "dependencies",
           "hyprland",
           "systems"
         ]
@@ -875,31 +900,38 @@
     "hyprland-guiutils": {
       "inputs": {
         "aquamarine": [
+          "dependencies",
           "hyprland",
           "aquamarine"
         ],
         "hyprgraphics": [
+          "dependencies",
           "hyprland",
           "hyprgraphics"
         ],
         "hyprlang": [
+          "dependencies",
           "hyprland",
           "hyprlang"
         ],
         "hyprtoolkit": "hyprtoolkit",
         "hyprutils": [
+          "dependencies",
           "hyprland",
           "hyprutils"
         ],
         "hyprwayland-scanner": [
+          "dependencies",
           "hyprland",
           "hyprwayland-scanner"
         ],
         "nixpkgs": [
+          "dependencies",
           "hyprland",
           "nixpkgs"
         ],
         "systems": [
+          "dependencies",
           "hyprland",
           "systems"
         ]
@@ -921,10 +953,12 @@
     "hyprland-protocols": {
       "inputs": {
         "nixpkgs": [
+          "dependencies",
           "hyprland",
           "nixpkgs"
         ],
         "systems": [
+          "dependencies",
           "hyprland",
           "systems"
         ]
@@ -946,14 +980,17 @@
     "hyprlang": {
       "inputs": {
         "hyprutils": [
+          "dependencies",
           "hyprland",
           "hyprutils"
         ],
         "nixpkgs": [
+          "dependencies",
           "hyprland",
           "nixpkgs"
         ],
         "systems": [
+          "dependencies",
           "hyprland",
           "systems"
         ]
@@ -975,36 +1012,43 @@
     "hyprtoolkit": {
       "inputs": {
         "aquamarine": [
+          "dependencies",
           "hyprland",
           "hyprland-guiutils",
           "aquamarine"
         ],
         "hyprgraphics": [
+          "dependencies",
           "hyprland",
           "hyprland-guiutils",
           "hyprgraphics"
         ],
         "hyprlang": [
+          "dependencies",
           "hyprland",
           "hyprland-guiutils",
           "hyprlang"
         ],
         "hyprutils": [
+          "dependencies",
           "hyprland",
           "hyprland-guiutils",
           "hyprutils"
         ],
         "hyprwayland-scanner": [
+          "dependencies",
           "hyprland",
           "hyprland-guiutils",
           "hyprwayland-scanner"
         ],
         "nixpkgs": [
+          "dependencies",
           "hyprland",
           "hyprland-guiutils",
           "nixpkgs"
         ],
         "systems": [
+          "dependencies",
           "hyprland",
           "hyprland-guiutils",
           "systems"
@@ -1027,10 +1071,12 @@
     "hyprutils": {
       "inputs": {
         "nixpkgs": [
+          "dependencies",
           "hyprland",
           "nixpkgs"
         ],
         "systems": [
+          "dependencies",
           "hyprland",
           "systems"
         ]
@@ -1052,10 +1098,12 @@
     "hyprwayland-scanner": {
       "inputs": {
         "nixpkgs": [
+          "dependencies",
           "hyprland",
           "nixpkgs"
         ],
         "systems": [
+          "dependencies",
           "hyprland",
           "systems"
         ]
@@ -1077,14 +1125,17 @@
     "hyprwire": {
       "inputs": {
         "hyprutils": [
+          "dependencies",
           "hyprland",
           "hyprutils"
         ],
         "nixpkgs": [
+          "dependencies",
           "hyprland",
           "nixpkgs"
         ],
         "systems": [
+          "dependencies",
           "hyprland",
           "systems"
         ]
@@ -1107,6 +1158,7 @@
       "inputs": {
         "flake-utils": "flake-utils_5",
         "nixpkgs": [
+          "dependencies",
           "nixpkgs"
         ]
       },
@@ -1129,6 +1181,7 @@
         "flake-compat": "flake-compat_3",
         "flake-parts": "flake-parts_2",
         "nixpkgs": [
+          "dependencies",
           "nixpkgs"
         ],
         "systems": "systems_8",
@@ -1151,25 +1204,31 @@
     "nix": {
       "inputs": {
         "flake-compat": [
+          "dependencies",
           "devenv",
           "flake-compat"
         ],
         "flake-parts": [
+          "dependencies",
           "devenv",
           "flake-parts"
         ],
         "git-hooks-nix": [
+          "dependencies",
           "devenv",
           "git-hooks"
         ],
         "nixpkgs": [
+          "dependencies",
           "devenv",
           "nixpkgs"
         ],
         "nixpkgs-23-11": [
+          "dependencies",
           "devenv"
         ],
         "nixpkgs-regression": [
+          "dependencies",
           "devenv"
         ]
       },
@@ -1191,6 +1250,7 @@
     "nix-darwin": {
       "inputs": {
         "nixpkgs": [
+          "dependencies",
           "nixpkgs"
         ]
       },
@@ -1212,10 +1272,12 @@
     "nixd": {
       "inputs": {
         "flake-parts": [
+          "dependencies",
           "devenv",
           "flake-parts"
         ],
         "nixpkgs": [
+          "dependencies",
           "devenv",
           "nixpkgs"
         ],
@@ -1239,6 +1301,7 @@
       "inputs": {
         "flake-utils": "flake-utils_6",
         "nixpkgs": [
+          "dependencies",
           "nixpkgs"
         ]
       },
@@ -1518,10 +1581,12 @@
     "nur": {
       "inputs": {
         "flake-parts": [
+          "dependencies",
           "stylix",
           "flake-parts"
         ],
         "nixpkgs": [
+          "dependencies",
           "stylix",
           "nixpkgs"
         ]
@@ -1545,6 +1610,7 @@
         "flake-compat": "flake-compat_2",
         "gitignore": "gitignore",
         "nixpkgs": [
+          "dependencies",
           "hyprland",
           "nixpkgs"
         ]
@@ -1582,6 +1648,7 @@
     "quickshell": {
       "inputs": {
         "nixpkgs": [
+          "dependencies",
           "nixpkgs-unstable"
         ]
       },
@@ -1621,39 +1688,13 @@
     },
     "root": {
       "inputs": {
-        "agenix": "agenix",
-        "bluetui": "bluetui",
-        "cbonsai": "cbonsai",
-        "clawde": "clawde",
-        "cmatrix": "cmatrix",
-        "devenv": "devenv",
-        "google-workspace-cli": "google-workspace-cli",
-        "herdr": "herdr",
-        "home-manager": "home-manager_2",
-        "hyprland": "hyprland",
-        "install-nothing": "install-nothing",
-        "lazygit": "lazygit",
-        "nix-darwin": "nix-darwin",
-        "nixgl": "nixgl",
-        "nixpkgs": "nixpkgs_8",
-        "nixpkgs-latest": "nixpkgs-latest",
-        "nixpkgs-unstable": "nixpkgs-unstable",
-        "private-config": "private-config",
-        "quickshell": "quickshell",
-        "readItNow-rc": "readItNow-rc",
-        "stylix": "stylix",
-        "systemd-manager-tui": "systemd-manager-tui",
-        "tui-notifier": "tui-notifier",
-        "tuisvn": "tuisvn",
-        "viu": "viu",
-        "voice-pipeline": "voice-pipeline",
-        "voxtype": "voxtype",
-        "whisp-away": "whisp-away"
+        "dependencies": "dependencies"
       }
     },
     "rust-overlay": {
       "inputs": {
         "nixpkgs": [
+          "dependencies",
           "bluetui",
           "nixpkgs"
         ]
@@ -1675,6 +1716,7 @@
     "rust-overlay_2": {
       "inputs": {
         "nixpkgs": [
+          "dependencies",
           "devenv",
           "nixpkgs"
         ]
@@ -1696,6 +1738,7 @@
     "rust-overlay_3": {
       "inputs": {
         "nixpkgs": [
+          "dependencies",
           "herdr",
           "nixpkgs"
         ]
@@ -1724,6 +1767,7 @@
         "flake-parts": "flake-parts_3",
         "gnome-shell": "gnome-shell",
         "nixpkgs": [
+          "dependencies",
           "nixpkgs"
         ],
         "nur": "nur",
@@ -1752,6 +1796,7 @@
     "systemd-manager-tui": {
       "inputs": {
         "nixpkgs": [
+          "dependencies",
           "nixpkgs"
         ]
       },
@@ -2048,6 +2093,7 @@
     "treefmt-nix": {
       "inputs": {
         "nixpkgs": [
+          "dependencies",
           "devenv",
           "nixd",
           "nixpkgs"
@@ -2108,6 +2154,7 @@
       "inputs": {
         "flake-utils": "flake-utils_7",
         "nixpkgs": [
+          "dependencies",
           "nixpkgs"
         ]
       },
@@ -2129,6 +2176,7 @@
       "inputs": {
         "flake-utils": "flake-utils_8",
         "nixpkgs": [
+          "dependencies",
           "nixpkgs"
         ]
       },
@@ -2149,6 +2197,7 @@
     "voice-pipeline": {
       "inputs": {
         "nixpkgs": [
+          "dependencies",
           "nixpkgs"
         ]
       },
@@ -2207,26 +2256,32 @@
     "xdph": {
       "inputs": {
         "hyprland-protocols": [
+          "dependencies",
           "hyprland",
           "hyprland-protocols"
         ],
         "hyprlang": [
+          "dependencies",
           "hyprland",
           "hyprlang"
         ],
         "hyprutils": [
+          "dependencies",
           "hyprland",
           "hyprutils"
         ],
         "hyprwayland-scanner": [
+          "dependencies",
           "hyprland",
           "hyprwayland-scanner"
         ],
         "nixpkgs": [
+          "dependencies",
           "hyprland",
           "nixpkgs"
         ],
         "systems": [
+          "dependencies",
           "hyprland",
           "systems"
         ]
@@ -2244,6 +2299,47 @@
         "repo": "xdg-desktop-portal-hyprland",
         "type": "github"
       }
+    },
+    "dependencies": {
+      "inputs": {
+        "agenix": "agenix",
+        "bluetui": "bluetui",
+        "cbonsai": "cbonsai",
+        "clawde": "clawde",
+        "cmatrix": "cmatrix",
+        "devenv": "devenv",
+        "google-workspace-cli": "google-workspace-cli",
+        "herdr": "herdr",
+        "home-manager": "home-manager_2",
+        "hyprland": "hyprland",
+        "install-nothing": "install-nothing",
+        "lazygit": "lazygit",
+        "nix-darwin": "nix-darwin",
+        "nixgl": "nixgl",
+        "nixpkgs": "nixpkgs_8",
+        "nixpkgs-latest": "nixpkgs-latest",
+        "nixpkgs-unstable": "nixpkgs-unstable",
+        "private-config": "private-config",
+        "quickshell": "quickshell",
+        "readItNow-rc": "readItNow-rc",
+        "stylix": "stylix",
+        "systemd-manager-tui": "systemd-manager-tui",
+        "tui-notifier": "tui-notifier",
+        "tuisvn": "tuisvn",
+        "viu": "viu",
+        "voice-pipeline": "voice-pipeline",
+        "voxtype": "voxtype",
+        "whisp-away": "whisp-away"
+      },
+      "locked": {
+        "path": "./repository/flake-assembly/dependencies",
+        "type": "path"
+      },
+      "original": {
+        "path": "./repository/flake-assembly/dependencies",
+        "type": "path"
+      },
+      "parent": []
     }
   },
   "root": "root",
