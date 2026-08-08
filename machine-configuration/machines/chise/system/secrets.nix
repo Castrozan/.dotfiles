@@ -135,6 +135,11 @@
         owner = "zanoni";
         mode = "400";
       };
+      "suwayomi-extension-repositories" = {
+        file = ../../../../secrets/credentials/suwayomi-extension-repositories.age;
+        owner = "zanoni";
+        mode = "400";
+      };
     };
   };
 }
