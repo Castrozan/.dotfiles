@@ -22,6 +22,14 @@ whatever the live HEAD is, dragging all of their unpushed work into your commit.
 with `git update-index --cacheinfo` rather than adding the submodule path.
 </landing_a_submodule_change_past_a_peer>
 
+<the_machine_local_wrapper_lock_is_not_in_the_deploy_path>
+On the host built through the machine-local entrypoint flake, the rebuild copies that flake to the system flake
+directory and builds from there with lock writing disabled, and that directory carries no lock at all, so the dotfiles
+input resolves fresh at the branch tip on every rebuild. Landing the commit on the branch is therefore the whole deploy
+step, and the wrapper's own recorded revision can sit arbitrarily far behind without holding anything back. When a
+change fails to appear, do not chase a stale lock there; check whether the commit reached the branch.
+</the_machine_local_wrapper_lock_is_not_in_the_deploy_path>
+
 <a_failing_activation_can_report_green>
 An activation step that exits non-zero aborts before the profile swap, leaving `current-system` frozen on an old
 generation while every subsequent rebuild appears to no-op. The wrapper masks it, because a failing pipe under strict

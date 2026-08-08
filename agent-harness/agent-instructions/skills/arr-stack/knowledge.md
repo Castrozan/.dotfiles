@@ -19,3 +19,29 @@ A password manager reporting nothing for these applications has, at least once, 
 rather than a missing entry: a global URI match set to exact silently kills autofill for every URL that carries a path,
 which is all of them here. Check the vault contents and the match mode before concluding a credential was never saved.
 </credentials_that_are_present_but_never_autofill>
+
+<kavita_names_series_from_the_filename_until_the_library_reads_embedded_metadata>
+Suwayomi names every archive after the scanlation group before the chapter, and Kavita parses a series name out of the
+filename ahead of the containing folder, so a library created with embedded metadata reading off shows each series named
+after the scanlation group instead of the title. Suwayomi exposes no setting for the download filename pattern, so do
+not hunt for one; it does write a correct `ComicInfo.xml` into every archive, and switching the library to read embedded
+metadata is what recovers the real titles. Delete the mis-parsed series before the forced rescan rather than trusting
+the rescan to rename it in place.
+</kavita_names_series_from_the_filename_until_the_library_reads_embedded_metadata>
+
+<a_newly_declared_front_end_does_not_start_on_the_rebuild_that_declares_it>
+The unit that runs compose up for the always-on front ends is declared neither to restart nor to stop when it changes,
+and to remain after exit, so a rebuild that adds a front end leaves it resting on the start script it already ran and
+the new container simply never appears, with no failed unit and no error anywhere. Bring the one missing service up
+against the deployed compose file, env file and project name instead of restarting that unit, whose stop step tears
+down the entire on-demand download chain and interrupts live torrents. The container spec still comes wholly from the
+repo, so that is convergence rather than drift.
+</a_newly_declared_front_end_does_not_start_on_the_rebuild_that_declares_it>
+
+<kavita_is_the_one_stack_app_the_repo_provisions_nothing_for>
+Nothing here declares Kavita's admin account, its libraries or its settings, so that state exists only inside its config
+volume and a wipe loses all of it. Its registration endpoint mints the first administrator on the first call carrying a
+valid body, so probing that endpoint creates a real admin rather than describing itself. Library create and update also
+require the file group list and the exclude patterns under field names the read response does not use, which is what
+makes an update assembled from a read fail validation.
+</kavita_is_the_one_stack_app_the_repo_provisions_nothing_for>
