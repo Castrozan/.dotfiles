@@ -33,6 +33,14 @@ let
       lib.last (lib.splitString "def reconcile_account_library_access" reconcileText)
     ));
 
+  theBoundaryIsWrittenBeforeTheCosmeticRepoint = lib.hasInfix "reconciled_account_usernames = reconcile_account_library_access" (
+    builtins.head (
+      lib.splitString "repointed_library_names = reconcile_library_source_folders" reconcileText
+    )
+  );
+
+  theRepointCarriesTheFieldNameTheUpdateDtoDemands = lib.hasInfix ''library_update["fileGroupTypes"] = library.get("libraryFileTypes")'' sourceFolderText;
+
   aFriendNeverKeepsAPrivilegedRole =
     lib.hasInfix ''"Admin",'' accountPolicyText
     && lib.hasInfix ''"Promote",'' accountPolicyText
@@ -97,6 +105,16 @@ in
     mkEvalCheck "chise-kavita-the-write-always-carries-an-explicit-library-list"
       theWriteAlwaysCarriesAnExplicitLibraryList
       "the account update must always name the full library list it intends; Kavita replaces an account's libraries with exactly what the payload carries, so omitting the key on a partial update would leave the previous grant untouched and the reconcile would silently do nothing";
+
+  chise-kavita-the-boundary-is-written-before-the-cosmetic-repoint =
+    mkEvalCheck "chise-kavita-the-boundary-is-written-before-the-cosmetic-repoint"
+      theBoundaryIsWrittenBeforeTheCosmeticRepoint
+      "the account reconcile must run before the folder repoint; Kavita rejects a library update that omits any required field, and doing the repoint first means one such rejection aborts the run before a single account's access has been rewritten, which is how this landed broken the first time";
+
+  chise-kavita-the-repoint-carries-the-field-the-update-demands =
+    mkEvalCheck "chise-kavita-the-repoint-carries-the-field-the-update-demands"
+      theRepointCarriesTheFieldNameTheUpdateDtoDemands
+      "the library update must rename libraryFileTypes to fileGroupTypes; Kavita reads the field under one name and writes it under the other, so echoing back the library exactly as it was read is rejected with a validation error rather than accepted as a no-op";
 
   chise-kavita-source-folders-are-never-blanked-by-an-empty-root =
     mkEvalCheck "chise-kavita-source-folders-are-never-blanked-by-an-empty-root"

@@ -26,4 +26,5 @@ def library_already_points_at_sources(library, source_library_folders):
 def build_library_source_folder_update(library, source_library_folders):
     library_update = dict(library)
     library_update["folders"] = list(source_library_folders)
+    library_update["fileGroupTypes"] = library.get("libraryFileTypes") or []
     return library_update

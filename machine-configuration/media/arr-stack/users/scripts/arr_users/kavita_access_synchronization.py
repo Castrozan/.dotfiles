@@ -64,6 +64,12 @@ def synchronize_kavita_library_access(context):
         context.kavita_base_url, bearer_token
     )
     kavita_users = kavita_api_client.list_users(context.kavita_base_url, bearer_token)
+    reconciled_account_usernames = reconcile_account_library_access(
+        context, kavita_users, kavita_libraries
+    )
+    repointed_library_names = reconcile_library_source_folders(
+        context, kavita_libraries
+    )
     return {
         "public_libraries": kavita_library_declaration.public_library_names(),
         "private_libraries": kavita_library_declaration.private_library_names_present(
@@ -75,10 +81,6 @@ def synchronize_kavita_library_access(context):
         "undeclared_accounts": kavita_library_declaration.undeclared_account_usernames(
             kavita_users
         ),
-        "repointed_libraries": reconcile_library_source_folders(
-            context, kavita_libraries
-        ),
-        "reconciled_accounts": reconcile_account_library_access(
-            context, kavita_users, kavita_libraries
-        ),
+        "reconciled_accounts": reconciled_account_usernames,
+        "repointed_libraries": repointed_library_names,
     }
