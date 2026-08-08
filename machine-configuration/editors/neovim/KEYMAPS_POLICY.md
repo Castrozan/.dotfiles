@@ -14,6 +14,11 @@ were removed and are listed at the bottom of this file; they stay removed unless
 one explicitly. The snacks explorer also disables its own `<c-p>` list action so the owned `C-p`
 keeps working inside the explorer window, and that guard is part of the baseline.
 
+`C-S-e` was restored on the owner's explicit request and is owned again. It moves focus between
+the editor and the file explorer, and opens the explorer when none is open. It came back without
+the persisted-width and resize machinery it originally shipped with, so `C-S-b`, `C-S-j`, and
+`C-S-k` stay removed.
+
 ## Canonical references
 
 Find how Neovim itself does a thing before proposing any mapping:
@@ -44,8 +49,8 @@ Find how Neovim itself does a thing before proposing any mapping:
 `C-w` close buffer in normal and insert mode, `leader r` config reload, `C-p` in insert and
 terminal mode, `C-Up`/`C-Down` viewport scroll, `C-Right`/`C-Left` word jumps,
 `C-S-Up`/`C-S-Down` ten-line jumps, `C-PageUp`/`C-PageDown` buffer cycling,
-`C-S-PageUp`/`C-S-PageDown` buffer moving, `C-S-b`/`C-S-e`/`C-S-j`/`C-S-k` explorer show, focus,
-and resize, explorer `C-n` create file, explorer `C-k e` folder toggle, explorer `y` path yank,
+`C-S-PageUp`/`C-S-PageDown` buffer moving, `C-S-b`/`C-S-j`/`C-S-k` explorer show and resize,
+explorer `C-n` create file, explorer `C-k e` folder toggle, explorer `y` path yank,
 picker `C-v` clipboard paste, the `:q` and `:wq` quit-all abbreviations, the smart close-buffer
 focus behavior on `leader c`, and the F12 file-path-under-cursor definition jump. Native
 replacements for the common ones: `:w`, `:qa`, `C-y`/`C-e` scrolling, `w`/`b` word motion,
