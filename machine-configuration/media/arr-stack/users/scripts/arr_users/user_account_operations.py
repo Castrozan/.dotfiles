@@ -11,10 +11,13 @@ import password_generation
 
 @dataclass
 class ArrUsersContext:
-    jellyfin_base_url: str
-    jellyfin_api_key: str
+    jellyfin_base_url: str = ""
+    jellyfin_api_key: str = ""
     jellyseerr_base_url: str = ""
     jellyseerr_api_key: str = ""
+    kavita_base_url: str = ""
+    kavita_api_key: str = ""
+    kavita_bearer_token: str = ""
 
 
 def resolve_public_library_ids(context):

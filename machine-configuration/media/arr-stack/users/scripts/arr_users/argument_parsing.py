@@ -16,6 +16,11 @@ def build_argument_parser():
     )
 
     subparsers.add_parser(
+        "sync-kavita-access",
+        help="Re-apply the declared Kavita library allowlist to every account and point the manga library at each source directory instead of at their shared parent",
+    )
+
+    subparsers.add_parser(
         "sync-request-routing",
         help="Re-apply the Jellyseerr override rules that send every private-requests account request to a private root folder",
     )

@@ -31,17 +31,17 @@ def test_parser_accepts_sync_without_username():
 
 def test_sync_builds_a_jellyfin_only_context(monkeypatch):
     monkeypatch.setattr(
-        cli.runtime_credentials, "jellyfin_base_url", lambda: "http://jellyfin"
+        cli.command_contexts.runtime_credentials, "jellyfin_base_url", lambda: "http://jellyfin"
     )
-    monkeypatch.setattr(cli.runtime_credentials, "read_jellyfin_api_key", lambda: "key")
+    monkeypatch.setattr(cli.command_contexts.runtime_credentials, "read_jellyfin_api_key", lambda: "key")
 
     def fail_on_jellyseerr_read():
         raise AssertionError("sync must not require the Jellyseerr settings file")
 
     monkeypatch.setattr(
-        cli.runtime_credentials, "read_jellyseerr_api_key", fail_on_jellyseerr_read
+        cli.command_contexts.runtime_credentials, "read_jellyseerr_api_key", fail_on_jellyseerr_read
     )
-    context = cli.build_context_for_command("sync")
+    context = cli.command_contexts.build_context_for_command("sync")
 
     assert context.jellyfin_api_key == "key"
     assert context.jellyseerr_api_key == ""
@@ -49,23 +49,23 @@ def test_sync_builds_a_jellyfin_only_context(monkeypatch):
 
 def test_non_sync_commands_still_build_the_full_context(monkeypatch):
     monkeypatch.setattr(
-        cli.runtime_credentials, "jellyfin_base_url", lambda: "http://jellyfin"
+        cli.command_contexts.runtime_credentials, "jellyfin_base_url", lambda: "http://jellyfin"
     )
-    monkeypatch.setattr(cli.runtime_credentials, "read_jellyfin_api_key", lambda: "key")
+    monkeypatch.setattr(cli.command_contexts.runtime_credentials, "read_jellyfin_api_key", lambda: "key")
     monkeypatch.setattr(
-        cli.runtime_credentials, "jellyseerr_base_url", lambda: "http://jellyseerr"
+        cli.command_contexts.runtime_credentials, "jellyseerr_base_url", lambda: "http://jellyseerr"
     )
     monkeypatch.setattr(
-        cli.runtime_credentials, "read_jellyseerr_api_key", lambda: "seerr-key"
+        cli.command_contexts.runtime_credentials, "read_jellyseerr_api_key", lambda: "seerr-key"
     )
-    context = cli.build_context_for_command("list")
+    context = cli.command_contexts.build_context_for_command("list")
 
     assert context.jellyseerr_api_key == "seerr-key"
 
 
 def test_run_sync_names_who_holds_private_library_access(monkeypatch, capsys):
     monkeypatch.setattr(
-        cli.library_access_synchronization,
+        cli.command_handlers.library_access_synchronization,
         "synchronize_library_access",
         lambda context: {
             "created_libraries": ["Movies (Private)"],
@@ -76,7 +76,7 @@ def test_run_sync_names_who_holds_private_library_access(monkeypatch, capsys):
             "reconciled_accounts": ["Friend"],
         },
     )
-    cli.run_sync(
+    cli.command_handlers.run_sync(
         object(), cli.argument_parsing.build_argument_parser().parse_args(["sync"])
     )
 
@@ -91,7 +91,7 @@ def test_run_sync_reports_the_reconcile_before_failing_on_a_library(
     monkeypatch, capsys
 ):
     monkeypatch.setattr(
-        cli.library_access_synchronization,
+        cli.command_handlers.library_access_synchronization,
         "synchronize_library_access",
         lambda context: {
             "created_libraries": [],
@@ -104,7 +104,7 @@ def test_run_sync_reports_the_reconcile_before_failing_on_a_library(
     )
 
     with pytest.raises(ValueError, match="Movies \\(Private\\)"):
-        cli.run_sync(
+        cli.command_handlers.run_sync(
             object(), cli.argument_parsing.build_argument_parser().parse_args(["sync"])
         )
 
@@ -113,7 +113,7 @@ def test_run_sync_reports_the_reconcile_before_failing_on_a_library(
 
 def test_run_sync_request_routing_names_the_account_it_routes(monkeypatch, capsys):
     monkeypatch.setattr(
-        cli.request_routing_synchronization,
+        cli.command_handlers.request_routing_synchronization,
         "synchronize_request_routing",
         lambda context: {
             "routed_account": "private-requests",
@@ -122,7 +122,7 @@ def test_run_sync_request_routing_names_the_account_it_routes(monkeypatch, capsy
             "removed_rules": [],
         },
     )
-    cli.run_sync_request_routing(
+    cli.command_handlers.run_sync_request_routing(
         object(),
         cli.argument_parsing.build_argument_parser().parse_args(
             ["sync-request-routing"]
@@ -139,7 +139,7 @@ def test_run_sync_request_routing_says_nothing_routes_without_the_account(
     monkeypatch, capsys
 ):
     monkeypatch.setattr(
-        cli.request_routing_synchronization,
+        cli.command_handlers.request_routing_synchronization,
         "synchronize_request_routing",
         lambda context: {
             "routed_account": None,
@@ -148,7 +148,7 @@ def test_run_sync_request_routing_says_nothing_routes_without_the_account(
             "removed_rules": [],
         },
     )
-    cli.run_sync_request_routing(
+    cli.command_handlers.run_sync_request_routing(
         object(),
         cli.argument_parsing.build_argument_parser().parse_args(
             ["sync-request-routing"]
@@ -160,7 +160,7 @@ def test_run_sync_request_routing_says_nothing_routes_without_the_account(
 
 def test_run_sync_reports_none_when_nothing_was_created(monkeypatch, capsys):
     monkeypatch.setattr(
-        cli.library_access_synchronization,
+        cli.command_handlers.library_access_synchronization,
         "synchronize_library_access",
         lambda context: {
             "created_libraries": [],
@@ -171,7 +171,7 @@ def test_run_sync_reports_none_when_nothing_was_created(monkeypatch, capsys):
             "reconciled_accounts": [],
         },
     )
-    cli.run_sync(
+    cli.command_handlers.run_sync(
         object(), cli.argument_parsing.build_argument_parser().parse_args(["sync"])
     )
 

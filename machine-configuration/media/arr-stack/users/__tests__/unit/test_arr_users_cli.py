@@ -25,7 +25,7 @@ cli = load_cli_module()
 
 
 def test_every_subcommand_has_a_handler():
-    assert set(cli.COMMAND_HANDLERS) == {
+    assert set(cli.command_handlers.COMMAND_HANDLERS) == {
         "create",
         "delete",
         "reset-password",
@@ -34,6 +34,7 @@ def test_every_subcommand_has_a_handler():
         "list",
         "set-email",
         "sync",
+        "sync-kavita-access",
         "sync-request-routing",
         "sync-account-permissions",
     }
@@ -41,14 +42,14 @@ def test_every_subcommand_has_a_handler():
 
 def test_run_set_email_prints_username_and_email(monkeypatch, capsys):
     monkeypatch.setattr(
-        cli.user_account_operations,
+        cli.command_handlers.user_account_operations,
         "set_friend_email",
         lambda context, username, email: {"username": username, "email": email},
     )
     arguments = cli.argument_parsing.build_argument_parser().parse_args(
         ["set-email", "Bruno", "bruno@example.com"]
     )
-    cli.run_set_email(object(), arguments)
+    cli.command_handlers.run_set_email(object(), arguments)
 
     printed = capsys.readouterr().out
     assert "Bruno" in printed
@@ -56,12 +57,12 @@ def test_run_set_email_prints_username_and_email(monkeypatch, capsys):
 
 
 def test_main_maps_value_error_to_exit_one(monkeypatch):
-    monkeypatch.setattr(cli, "build_context", lambda: object())
+    monkeypatch.setattr(cli.command_contexts, "build_context", lambda: object())
 
     def raise_value_error(context):
         raise ValueError("no such user")
 
-    monkeypatch.setattr(cli.user_account_operations, "list_accounts", raise_value_error)
+    monkeypatch.setattr(cli.command_handlers.user_account_operations, "list_accounts", raise_value_error)
     monkeypatch.setattr(sys, "argv", ["arr-users", "list"])
 
     with pytest.raises(SystemExit) as exit_info:
@@ -70,14 +71,14 @@ def test_main_maps_value_error_to_exit_one(monkeypatch):
 
 
 def test_main_maps_http_error_to_exit_one(monkeypatch):
-    monkeypatch.setattr(cli, "build_context", lambda: object())
+    monkeypatch.setattr(cli.command_contexts, "build_context", lambda: object())
 
     def raise_http_error(context):
         raise urllib.error.HTTPError(
             "http://jellyfin/Users", 500, "boom", {}, io.BytesIO(b"body")
         )
 
-    monkeypatch.setattr(cli.user_account_operations, "list_accounts", raise_http_error)
+    monkeypatch.setattr(cli.command_handlers.user_account_operations, "list_accounts", raise_http_error)
     monkeypatch.setattr(sys, "argv", ["arr-users", "list"])
 
     with pytest.raises(SystemExit) as exit_info:
@@ -86,12 +87,12 @@ def test_main_maps_http_error_to_exit_one(monkeypatch):
 
 
 def test_main_maps_url_error_to_exit_one(monkeypatch):
-    monkeypatch.setattr(cli, "build_context", lambda: object())
+    monkeypatch.setattr(cli.command_contexts, "build_context", lambda: object())
 
     def raise_url_error(context):
         raise urllib.error.URLError("connection refused")
 
-    monkeypatch.setattr(cli.user_account_operations, "list_accounts", raise_url_error)
+    monkeypatch.setattr(cli.command_handlers.user_account_operations, "list_accounts", raise_url_error)
     monkeypatch.setattr(sys, "argv", ["arr-users", "list"])
 
     with pytest.raises(SystemExit) as exit_info:
@@ -101,7 +102,7 @@ def test_main_maps_url_error_to_exit_one(monkeypatch):
 
 def test_run_create_prints_email_when_set_and_import_succeeded(monkeypatch, capsys):
     monkeypatch.setattr(
-        cli.user_account_operations,
+        cli.command_handlers.user_account_operations,
         "create_friend_account",
         lambda context, username, password, email: {
             "username": username,
@@ -113,14 +114,14 @@ def test_run_create_prints_email_when_set_and_import_succeeded(monkeypatch, caps
     arguments = cli.argument_parsing.build_argument_parser().parse_args(
         ["create", "Bruno", "--email", "bruno@example.com"]
     )
-    cli.run_create(object(), arguments)
+    cli.command_handlers.run_create(object(), arguments)
 
     assert "email: bruno@example.com" in capsys.readouterr().out
 
 
 def test_run_create_omits_email_line_when_import_pending(monkeypatch, capsys):
     monkeypatch.setattr(
-        cli.user_account_operations,
+        cli.command_handlers.user_account_operations,
         "create_friend_account",
         lambda context, username, password, email: {
             "username": username,
@@ -132,7 +133,7 @@ def test_run_create_omits_email_line_when_import_pending(monkeypatch, capsys):
     arguments = cli.argument_parsing.build_argument_parser().parse_args(
         ["create", "Bruno", "--email", "bruno@example.com"]
     )
-    cli.run_create(object(), arguments)
+    cli.command_handlers.run_create(object(), arguments)
 
     printed = capsys.readouterr().out
     assert "email:" not in printed
@@ -141,7 +142,7 @@ def test_run_create_omits_email_line_when_import_pending(monkeypatch, capsys):
 
 def test_run_create_reports_import_pending_when_jellyseerr_absent(monkeypatch, capsys):
     monkeypatch.setattr(
-        cli.user_account_operations,
+        cli.command_handlers.user_account_operations,
         "create_friend_account",
         lambda context, username, password, email: {
             "username": username,
@@ -153,7 +154,7 @@ def test_run_create_reports_import_pending_when_jellyseerr_absent(monkeypatch, c
     arguments = cli.argument_parsing.build_argument_parser().parse_args(
         ["create", "Bruno"]
     )
-    cli.run_create(object(), arguments)
+    cli.command_handlers.run_create(object(), arguments)
 
     printed = capsys.readouterr().out
     assert "Bruno" in printed

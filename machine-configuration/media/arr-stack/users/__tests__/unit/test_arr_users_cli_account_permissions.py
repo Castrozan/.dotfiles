@@ -28,12 +28,12 @@ def parse_sync_account_permissions():
 
 
 def test_the_permission_reconcile_needs_the_jellyseerr_context():
-    assert "sync-account-permissions" not in cli.JELLYFIN_ONLY_COMMANDS
+    assert "sync-account-permissions" not in cli.command_contexts.JELLYFIN_ONLY_COMMANDS
 
 
 def test_run_sync_account_permissions_names_who_can_still_approve(monkeypatch, capsys):
     monkeypatch.setattr(
-        cli.account_permission_synchronization,
+        cli.command_handlers.account_permission_synchronization,
         "synchronize_account_permissions",
         lambda context: {
             "administrator_accounts": ["jellyseerr"],
@@ -41,7 +41,7 @@ def test_run_sync_account_permissions_names_who_can_still_approve(monkeypatch, c
             "rewritten_accounts": ["owner"],
         },
     )
-    cli.run_sync_account_permissions(object(), parse_sync_account_permissions())
+    cli.command_handlers.run_sync_account_permissions(object(), parse_sync_account_permissions())
 
     printed = capsys.readouterr().out
     assert "administered by: jellyseerr" in printed
@@ -53,7 +53,7 @@ def test_run_sync_account_permissions_reports_an_untouched_jellyseerr(
     monkeypatch, capsys
 ):
     monkeypatch.setattr(
-        cli.account_permission_synchronization,
+        cli.command_handlers.account_permission_synchronization,
         "synchronize_account_permissions",
         lambda context: {
             "administrator_accounts": ["jellyseerr"],
@@ -61,6 +61,6 @@ def test_run_sync_account_permissions_reports_an_untouched_jellyseerr(
             "rewritten_accounts": [],
         },
     )
-    cli.run_sync_account_permissions(object(), parse_sync_account_permissions())
+    cli.command_handlers.run_sync_account_permissions(object(), parse_sync_account_permissions())
 
     assert "rewritten: none" in capsys.readouterr().out

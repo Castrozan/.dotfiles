@@ -105,6 +105,22 @@
       rootFolderProviderUnits = [ "arr-config-provisioner.service" ];
     };
 
+    kavitaLibraryAccessProvisioner = {
+      enable = true;
+      kavitaApiKeySecretFile = config.age.secrets."kavita-admin-api-key".path;
+      publicLibraryNames = [ "Manga" ];
+      privilegedAccountUsernames = [ "zanoni" ];
+      friendAccountUsernames = [
+        "joshen"
+        "rogerio"
+        "Xamitos"
+      ];
+      sourceFolderLibraryName = "Manga";
+      sourceRootHostPath = "/home/zanoni/arr-stack/data/manga/mangas";
+      sourceRootContainerPath = "/manga";
+      libraryPathProviderUnits = [ "docker.service" ];
+    };
+
     bazarrAuthProvisioner = {
       enable = true;
       configFile = "/home/zanoni/arr-stack/config/bazarr/config/config.yaml";
@@ -140,6 +156,10 @@
 
     jellyfin-library-access-provisioner.restartTriggers = [
       ../../../../secrets/credentials/jellyfin-admin-api-key.age
+    ];
+
+    kavita-library-access-provisioner.restartTriggers = [
+      ../../../../secrets/credentials/kavita-admin-api-key.age
     ];
 
     jellyseerr-private-request-routing-provisioner.restartTriggers = [
