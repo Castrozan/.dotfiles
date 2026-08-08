@@ -2,6 +2,7 @@ local map = vim.keymap.set
 
 local command_line_abbreviations = require("config.command_line_abbreviations")
 local file_explorer = require("config.navigation.file_explorer")
+local lazyvim_defaults = require("config.lazyvim_defaults")
 local pickers = require("config.navigation.pickers")
 local ten_line_jumping = require("config.navigation.ten_line_jumping")
 local terminal = require("config.terminal")
@@ -21,6 +22,9 @@ map("v", "<C-/>", "gc", { remap = true, desc = "Toggle comment (visual)" })
 map("n", "<C-b>", file_explorer.toggle_visibility, { desc = "Toggle file explorer" })
 map("n", "<C-S-e>", file_explorer.toggle_focus, { desc = "Toggle file explorer focus" })
 map("n", "<C-`>", terminal.toggle, { desc = "Toggle terminal" })
+
+map("n", "<C-S-j>", "<cmd>vertical resize -2<cr>", { desc = "Decrease window width" })
+map("n", "<C-S-k>", "<cmd>vertical resize +2<cr>", { desc = "Increase window width" })
 
 map("n", "<F2>", vim.lsp.buf.rename, { desc = "Rename symbol" })
 map("n", "<F12>", vim.lsp.buf.definition, { desc = "Go to definition" })
@@ -55,3 +59,4 @@ map("x", "p", [["_dP]], { desc = "Paste without yanking replaced text" })
 map("i", "<C-c>", "<esc>", { desc = "Escape" })
 
 command_line_abbreviations.install()
+lazyvim_defaults.remove_replaced_keymaps()

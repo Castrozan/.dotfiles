@@ -16,8 +16,7 @@ keeps working inside the explorer window, and that guard is part of the baseline
 
 `C-S-e` was restored on the owner's explicit request and is owned again. It moves focus between
 the editor and the file explorer, and opens the explorer when none is open. It came back without
-the persisted-width and resize machinery it originally shipped with, so `C-S-b`, `C-S-j`, and
-`C-S-k` stay removed.
+the persisted-width and resize machinery it originally shipped with, so `C-S-b` stays removed.
 
 `C-S-Up` and `C-S-Down` were restored on the owner's explicit request and jump ten at a time
 everywhere a cursor moves: ten lines in a buffer in normal, insert, and visual mode, and ten
@@ -26,6 +25,13 @@ first and last line rather than refusing to move the way a bare `10j` does with 
 lines left. Lists no longer wrap either, because the owner asked for a hard stop at both ends:
 snacks runs with `layout.cycle` off and telescope with `scroll_strategy` set to `limit`, so
 single-step navigation stops at the ends too.
+
+Window width resizing moved to `C-S-j` for narrower and `C-S-k` for wider, on the owner's request,
+which is why those two came off the removed list. It is the LazyVim `vertical resize` pair rather
+than the explorer-only resize that once lived here, so it works in any vertical split and happens
+to be what narrows and widens the file tree. The LazyVim `C-Left` and `C-Right` width defaults are
+deleted in `lua/config/lazyvim_defaults.lua` so the chord moved rather than doubled; `C-Up` and
+`C-Down` keep their LazyVim height resize.
 
 ## Canonical references
 
@@ -64,7 +70,7 @@ Find how Neovim itself does a thing before proposing any mapping:
 `C-w` close buffer in normal and insert mode, `leader r` config reload, `C-p` in insert and
 terminal mode, `C-Up`/`C-Down` viewport scroll, `C-Right`/`C-Left` word jumps,
 `C-PageUp`/`C-PageDown` buffer cycling,
-`C-S-PageUp`/`C-S-PageDown` buffer moving, `C-S-b`/`C-S-j`/`C-S-k` explorer show and resize,
+`C-S-PageUp`/`C-S-PageDown` buffer moving, `C-S-b` explorer show,
 explorer `C-n` create file, explorer `C-k e` folder toggle, explorer `y` path yank,
 picker `C-v` clipboard paste, the `:q` and `:wq` quit-all abbreviations, the smart close-buffer
 focus behavior on `leader c`, and the F12 file-path-under-cursor definition jump. Native

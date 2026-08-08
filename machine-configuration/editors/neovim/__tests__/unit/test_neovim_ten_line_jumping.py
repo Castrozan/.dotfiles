@@ -1,40 +1,11 @@
 import json
-import os
-import subprocess
-import textwrap
-from pathlib import Path
-
-NEOVIM_LUA_RELATIVE_PATH = (
-    "machine-configuration/editors/neovim/program-configuration/lua"
-)
 
 
-def repository_root():
-    return Path(__file__).resolve().parents[5]
-
-
-def neovim_lua_path(*module_path_parts):
-    return repository_root() / NEOVIM_LUA_RELATIVE_PATH / Path(*module_path_parts)
-
-
-def run_headless_lua(tmp_path, script_name, lua_body):
-    lua_script_path = tmp_path / script_name
-    lua_script_path.write_text(textwrap.dedent(lua_body).strip())
-    environment = dict(os.environ, XDG_STATE_HOME=str(tmp_path / "state"))
-    return subprocess.run(
-        ["nvim", "--headless", "-u", "NONE", "-l", str(lua_script_path)],
-        cwd=repository_root(),
-        env=environment,
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-
-
-def test_buffer_jump_moves_ten_lines_and_stops_at_the_first_and_last_line(tmp_path):
+def test_buffer_jump_moves_ten_lines_and_stops_at_the_first_and_last_line(
+    run_headless_lua, neovim_lua_path
+):
     module_path = neovim_lua_path("config", "navigation", "ten_line_jumping.lua")
     result = run_headless_lua(
-        tmp_path,
         "ten_line_jumping_buffer.lua",
         f"""
         local ten_line_jumping = dofile({json.dumps(str(module_path))})
@@ -77,10 +48,11 @@ def test_buffer_jump_moves_ten_lines_and_stops_at_the_first_and_last_line(tmp_pa
     assert result.returncode == 0, result.stdout + result.stderr
 
 
-def test_snacks_selection_jump_moves_the_list_by_ten_entries(tmp_path):
+def test_snacks_selection_jump_moves_the_list_by_ten_entries(
+    run_headless_lua, neovim_lua_path
+):
     module_path = neovim_lua_path("config", "navigation", "ten_line_jumping.lua")
     result = run_headless_lua(
-        tmp_path,
         "ten_line_jumping_snacks.lua",
         f"""
         local ten_line_jumping = dofile({json.dumps(str(module_path))})
@@ -104,10 +76,11 @@ def test_snacks_selection_jump_moves_the_list_by_ten_entries(tmp_path):
     assert result.returncode == 0, result.stdout + result.stderr
 
 
-def test_telescope_selection_jump_shifts_the_selection_by_ten_entries(tmp_path):
+def test_telescope_selection_jump_shifts_the_selection_by_ten_entries(
+    run_headless_lua, neovim_lua_path
+):
     module_path = neovim_lua_path("config", "navigation", "ten_line_jumping.lua")
     result = run_headless_lua(
-        tmp_path,
         "ten_line_jumping_telescope.lua",
         f"""
         local ten_line_jumping = dofile({json.dumps(str(module_path))})
@@ -130,15 +103,15 @@ def test_telescope_selection_jump_shifts_the_selection_by_ten_entries(tmp_path):
     assert result.returncode == 0, result.stdout + result.stderr
 
 
-def test_picker_specs_stop_at_the_ends_instead_of_wrapping_around(tmp_path):
-    lua_directory = repository_root() / NEOVIM_LUA_RELATIVE_PATH
+def test_picker_specs_stop_at_the_ends_instead_of_wrapping_around(
+    run_headless_lua, neovim_lua_path, neovim_lua_directory
+):
     snacks_spec_path = neovim_lua_path("plugins", "snacks-picker.lua")
     telescope_spec_path = neovim_lua_path("plugins", "telescope.lua")
     result = run_headless_lua(
-        tmp_path,
         "picker_specs_no_wrap.lua",
         f"""
-        package.path = {json.dumps(str(lua_directory) + "/?.lua")} .. ";" .. package.path
+        package.path = {json.dumps(str(neovim_lua_directory) + "/?.lua")} .. ";" .. package.path
 
         local snacks_spec = dofile({json.dumps(str(snacks_spec_path))})[1]
         assert(
