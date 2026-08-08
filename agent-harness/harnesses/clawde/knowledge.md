@@ -24,13 +24,13 @@ session record and killing the process, which makes the next launch mint a fresh
 </a_rebuilt_change_is_not_a_live_change>
 
 <a_supervisor_restart_spares_everything_sharing_its_cgroup>
-The unit sets `X-RestartIfChanged = false`, and a check asserts it, on the belief that a restart kills the multiplexer
-server in its cgroup and destroys every agent window. Both halves are wrong as deployed. The flag does not hold, since
-the unit has been stopped and restarted by activation while it was set, so never assume a rebuild left the fleet on the
-previous store paths. The restart is also cheap, because the unit sets `KillMode = process` and declares no `ExecStop`,
-so systemd kills the supervisor alone and logs `Unit process N remains running after unit stopped` for the multiplexer
-server, every wrapper, every harness under them and the human's own session, all of which survive. Read that journal
-line rather than the assertion's comment before warning anyone off a restart. What a restart does not do is refresh a
+Restarting the supervisor unit reads like a fleet-wide outage and is not one. The unit sets `KillMode = process` and
+declares no `ExecStop`, so systemd kills the supervisor pid alone and logs `Unit process N remains running after unit
+stopped` for the multiplexer server, every wrapper, every harness under them and the human's own session, all of which
+survive: one `herdr` pid was observed surviving two such stops four days apart. Read that journal line rather than any
+warning before deciding a restart is too expensive. The unit's `X-RestartIfChanged = false` suppresses the churn and
+guarantees nothing, three restarts having got through 105 home-manager activations in one measured week, so read the
+fleet's live store paths rather than inferring them from the flag. What a restart does not do is refresh a
 wrapper that survived it, so the rollout is still rebuild, restart, then kill the surviving wrappers for the supervisor
 to recreate; darwin's launchd agent restarts on rebuild by itself. Compare wrapper store hashes before claiming a
 rollout landed, because a green rebuild and a live fleet on new paths are separate facts.
