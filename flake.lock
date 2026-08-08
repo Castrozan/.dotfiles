@@ -213,16 +213,16 @@
         ]
       },
       "locked": {
-        "lastModified": 1786144873,
-        "narHash": "sha256-R+twWMuO+z78X7AYpuzed3C7Mv8XPJA7MhPc6iUuOsc=",
+        "lastModified": 1786161219,
+        "narHash": "sha256-2Cv+DqoAJMvdXtE5TJ2QbZy9jpIFXCs/TuJZaqkUSBQ=",
         "owner": "Castrozan",
         "repo": "clawde",
-        "rev": "3499c372803de8ebbc2885512d486e27bfe193d2",
+        "rev": "c46a0f0885d7b5bc3d3b57628d84cedd0e58c4e5",
         "type": "github"
       },
       "original": {
         "owner": "Castrozan",
-        "ref": "v0.11.4",
+        "ref": "v0.12.0",
         "repo": "clawde",
         "type": "github"
       }
@@ -303,6 +303,47 @@
         "repo": "nix-darwin",
         "type": "github"
       }
+    },
+    "dependencies": {
+      "inputs": {
+        "agenix": "agenix",
+        "bluetui": "bluetui",
+        "cbonsai": "cbonsai",
+        "clawde": "clawde",
+        "cmatrix": "cmatrix",
+        "devenv": "devenv",
+        "google-workspace-cli": "google-workspace-cli",
+        "herdr": "herdr",
+        "home-manager": "home-manager_2",
+        "hyprland": "hyprland",
+        "install-nothing": "install-nothing",
+        "lazygit": "lazygit",
+        "nix-darwin": "nix-darwin",
+        "nixgl": "nixgl",
+        "nixpkgs": "nixpkgs_8",
+        "nixpkgs-latest": "nixpkgs-latest",
+        "nixpkgs-unstable": "nixpkgs-unstable",
+        "private-config": "private-config",
+        "quickshell": "quickshell",
+        "readItNow-rc": "readItNow-rc",
+        "stylix": "stylix",
+        "systemd-manager-tui": "systemd-manager-tui",
+        "tui-notifier": "tui-notifier",
+        "tuisvn": "tuisvn",
+        "viu": "viu",
+        "voice-pipeline": "voice-pipeline",
+        "voxtype": "voxtype",
+        "whisp-away": "whisp-away"
+      },
+      "locked": {
+        "path": "./repository/flake-assembly/dependencies",
+        "type": "path"
+      },
+      "original": {
+        "path": "./repository/flake-assembly/dependencies",
+        "type": "path"
+      },
+      "parent": []
     },
     "devenv": {
       "inputs": {
@@ -2299,47 +2340,6 @@
         "repo": "xdg-desktop-portal-hyprland",
         "type": "github"
       }
-    },
-    "dependencies": {
-      "inputs": {
-        "agenix": "agenix",
-        "bluetui": "bluetui",
-        "cbonsai": "cbonsai",
-        "clawde": "clawde",
-        "cmatrix": "cmatrix",
-        "devenv": "devenv",
-        "google-workspace-cli": "google-workspace-cli",
-        "herdr": "herdr",
-        "home-manager": "home-manager_2",
-        "hyprland": "hyprland",
-        "install-nothing": "install-nothing",
-        "lazygit": "lazygit",
-        "nix-darwin": "nix-darwin",
-        "nixgl": "nixgl",
-        "nixpkgs": "nixpkgs_8",
-        "nixpkgs-latest": "nixpkgs-latest",
-        "nixpkgs-unstable": "nixpkgs-unstable",
-        "private-config": "private-config",
-        "quickshell": "quickshell",
-        "readItNow-rc": "readItNow-rc",
-        "stylix": "stylix",
-        "systemd-manager-tui": "systemd-manager-tui",
-        "tui-notifier": "tui-notifier",
-        "tuisvn": "tuisvn",
-        "viu": "viu",
-        "voice-pipeline": "voice-pipeline",
-        "voxtype": "voxtype",
-        "whisp-away": "whisp-away"
-      },
-      "locked": {
-        "path": "./repository/flake-assembly/dependencies",
-        "type": "path"
-      },
-      "original": {
-        "path": "./repository/flake-assembly/dependencies",
-        "type": "path"
-      },
-      "parent": []
     }
   },
   "root": "root",
