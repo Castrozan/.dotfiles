@@ -37,7 +37,7 @@ navigation expands into `<C-w>h` with `remap` on, so it would close a buffer on 
 of the owned chord. `leader c` keeps the plain `:bd` it was pruned to, so the focus behavior lives
 on `C-w` alone.
 
-Window width resizing moved to `C-S-j` for narrower and `C-S-k` for wider, on the owner's request,
+Window width resizing moved to `C-S-j` for wider and `C-S-k` for narrower, on the owner's request,
 which is why those two came off the removed list. It is the LazyVim `vertical resize` pair rather
 than the explorer-only resize that once lived here, so it works in any vertical split and happens
 to be what narrows and widens the file tree. The LazyVim `C-Left` and `C-Right` width defaults are
