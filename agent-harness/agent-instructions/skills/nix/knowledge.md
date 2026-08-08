@@ -56,6 +56,16 @@ blocking secret. Clear the offending temporary file or the whole generation dire
 by decrypting the secret directly.
 </agenix_stalls_on_a_stale_temporary_file>
 
+<the_agenix_recipients_here_are_user_keys_not_host_keys>
+`secrets/secrets.nix` names one ssh key per machine, and each is that machine's `~/.ssh/id_ed25519.pub`, not
+`/etc/ssh/ssh_host_ed25519_key.pub`. So decrypting a secret by hand, to read an older version out of git history or to
+re-encrypt a list with one entry added, uses `age --decrypt --identity ~/.ssh/id_ed25519` and needs no sudo. Reaching
+for the host key instead fails with "no identity matched any of the recipients", which reads like the wrong recipient
+set or a corrupt file rather than the wrong identity. The armored files defeat the obvious sanity checks too: the
+recipient stanzas are inside the base64 body, so grepping the file for `ssh-ed25519` returns nothing on a perfectly
+good secret. Decode the body first, then count `-> ssh-ed25519`.
+</the_agenix_recipients_here_are_user_keys_not_host_keys>
+
 <a_store_swap_kills_long_lived_processes_on_darwin>
 Ad-hoc-signed nix binaries carry a code hash tied to on-disk content, so replacing or collecting a store path under a
 running process makes the kernel's integrity subsystem invalidate the mapped image and kill it. A rebuild that changes
