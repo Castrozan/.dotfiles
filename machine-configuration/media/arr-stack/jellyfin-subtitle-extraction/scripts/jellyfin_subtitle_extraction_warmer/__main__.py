@@ -1,10 +1,14 @@
-import json
 import os
 import time
 import urllib.error
-import urllib.parse
-import urllib.request
 
+from jellyfin_http_client import (
+    jellyfin_is_reachable,
+    list_active_sessions,
+    list_video_items,
+    read_api_key,
+    request_body,
+)
 from subtitle_extraction_cache import (
     someone_is_watching,
     subtitle_stream_request_path,
@@ -12,64 +16,7 @@ from subtitle_extraction_cache import (
 )
 
 LOG_PREFIX = "jellyfin-subtitle-extraction-warmer"
-EXTRACTION_REQUEST_TIMEOUT_SECONDS = 600
-ITEM_PAGE_SIZE = 200
 QUIET_POLLS_BEFORE_SWEEPING = 2
-
-
-def read_api_key(api_key_file_path):
-    with open(api_key_file_path, encoding="utf-8") as handle:
-        return handle.read().strip()
-
-
-def request_body(base_url, api_key, path):
-    request = urllib.request.Request(
-        f"{base_url}{path}", headers={"X-Emby-Token": api_key}
-    )
-    with urllib.request.urlopen(
-        request, timeout=EXTRACTION_REQUEST_TIMEOUT_SECONDS
-    ) as response:
-        return response.read()
-
-
-def request_json(base_url, api_key, path):
-    body = request_body(base_url, api_key, path)
-    return json.loads(body) if body else None
-
-
-def jellyfin_is_reachable(base_url, api_key):
-    try:
-        request_json(base_url, api_key, "/System/Info")
-        return True
-    except (urllib.error.URLError, OSError):
-        return False
-
-
-def list_active_sessions(base_url, api_key):
-    return request_json(base_url, api_key, "/Sessions") or []
-
-
-def list_video_items(base_url, api_key):
-    video_items = []
-    start_index = 0
-    while True:
-        query_string = urllib.parse.urlencode(
-            {
-                "recursive": "true",
-                "includeItemTypes": "Movie,Episode",
-                "fields": "MediaSources",
-                "enableTotalRecordCount": "false",
-                "startIndex": start_index,
-                "limit": ITEM_PAGE_SIZE,
-            }
-        )
-        page_items = (
-            request_json(base_url, api_key, f"/Items?{query_string}") or {}
-        ).get("Items") or []
-        video_items.extend(page_items)
-        if len(page_items) < ITEM_PAGE_SIZE:
-            return video_items
-        start_index += ITEM_PAGE_SIZE
 
 
 def extract_streams_of_item(base_url, api_key, item, unextracted_streams):
@@ -164,22 +111,26 @@ def main():
     if not jellyfin_is_reachable(base_url, api_key):
         print(f"{LOG_PREFIX}: skipped, jellyfin is not reachable")
         return
-    server_went_quiet = wait_for_a_quiet_server(
-        base_url, api_key, quiet_poll_seconds, quiet_wait_seconds
-    )
-    if not server_went_quiet:
-        print(
-            f"{LOG_PREFIX}: no gap between playbacks, extracting {busy_item_budget} "
-            "items alongside the stream"
+    try:
+        server_went_quiet = wait_for_a_quiet_server(
+            base_url, api_key, quiet_poll_seconds, quiet_wait_seconds
         )
-    extracted_items, extracted_streams = sweep(
-        base_url,
-        api_key,
-        jellyfin_data_directory,
-        item_budget if server_went_quiet else busy_item_budget,
-        pause_seconds,
-        yield_to_playback=server_went_quiet,
-    )
+        if not server_went_quiet:
+            print(
+                f"{LOG_PREFIX}: no gap between playbacks, extracting "
+                f"{busy_item_budget} items alongside the stream"
+            )
+        extracted_items, extracted_streams = sweep(
+            base_url,
+            api_key,
+            jellyfin_data_directory,
+            item_budget if server_went_quiet else busy_item_budget,
+            pause_seconds,
+            yield_to_playback=server_went_quiet,
+        )
+    except (urllib.error.URLError, OSError) as jellyfin_failure:
+        print(f"{LOG_PREFIX}: stopped, jellyfin stopped answering: {jellyfin_failure}")
+        return
     print(
         f"{LOG_PREFIX}: sweep finished, {extracted_streams} subtitle streams "
         f"extracted across {extracted_items} items"
