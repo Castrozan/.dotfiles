@@ -71,9 +71,10 @@ in
       (
         enabledEnvironment.JELLYFIN_SUBTITLE_EXTRACTION_WARMER_ITEM_BUDGET == "20"
         && enabledEnvironment.JELLYFIN_SUBTITLE_EXTRACTION_WARMER_PAUSE_SECONDS == "5"
-        && enabledService.serviceConfig.RuntimeMaxSec > 0
+        && enabledService.serviceConfig.TimeoutStartSec > 0
+        && !(enabledService.serviceConfig ? RuntimeMaxSec)
       )
-      "one sweep must carry a per-item budget, a pause between items and a hard runtime ceiling, so a freshly filled library, a cache-layout change in a future Jellyfin, or a wait for a gap that never comes cannot pin the media disk or leave a unit running forever";
+      "one sweep must carry a per-item budget, a pause between items and a hard runtime ceiling, so a freshly filled library, a cache-layout change in a future Jellyfin, or a wait for a gap that never comes cannot pin the media disk or leave a unit running forever; the ceiling has to be the start timeout because systemd ignores RuntimeMaxSec on a oneshot and logs it rather than failing";
 
   chise-jellyfin-subtitle-warmer-waits-for-a-gap-between-playbacks =
     mkEvalCheck "chise-jellyfin-subtitle-warmer-waits-for-a-gap-between-playbacks"

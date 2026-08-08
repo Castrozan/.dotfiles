@@ -79,7 +79,7 @@ in
       serviceConfig = {
         Type = "oneshot";
         ExecStart = "${pkgs.python3}/bin/python3 ${warmerPackageDirectory}";
-        RuntimeMaxSec = 3600;
+        TimeoutStartSec = 7200;
       };
     };
 
