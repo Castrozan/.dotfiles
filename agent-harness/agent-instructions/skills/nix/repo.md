@@ -5,12 +5,13 @@ Only deviate if user explicitly accepts trade-off AND no alternative exists.
 
 <architecture>
 `flake.nix` owns inputs. `repository/flake-assembly/outputs.nix` owns outputs: it names every host explicitly and
-calls `nixos-machine.nix` or `darwin-machine.nix` once per host to build `nixosConfigurations.<alias>` (full NixOS
-system, e.g. chise) and `darwinConfigurations.<alias>` (nix-darwin macOS, e.g. rin, kira). Adding a host is one more
-explicit call; never reintroduce a host list, an attrset iteration or a `pathExists` directory scan, all of which hide
-which hosts exist. Package channels, the home-manager block both platforms share and the checks are factored out
-beside it, one file each. Each machine factory builds its channels from its own system and threads `hostname` (the
-alias), `username`, `isNixOS` and `isDarwin` through `specialArgs` / `extraSpecialArgs`.
+calls `nixos-machine-factory.nix` or `darwin-machine-factory.nix` once per host to build `nixosConfigurations.<alias>`
+(full NixOS system, e.g. chise) and `darwinConfigurations.<alias>` (nix-darwin macOS, e.g. rin, kira). Adding a host
+is one more explicit call; never reintroduce a host list, an attrset iteration or a `pathExists` directory scan, all
+of which hide which hosts exist. A factory file is curried, taking the platform arguments at import and the per-host
+ones at each call; `channels.nix`, `home-manager.nix` and `checks.nix` are single application and keep noun names.
+Each machine factory builds its channels from its own system and threads `hostname` (the alias), `username`,
+`isNixOS` and `isDarwin` through `specialArgs` / `extraSpecialArgs`.
 </architecture>
 
 <platform_detection>

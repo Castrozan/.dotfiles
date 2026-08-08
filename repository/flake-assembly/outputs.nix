@@ -4,26 +4,26 @@ let
   linux = "x86_64-linux";
   darwin = "aarch64-darwin";
 
-  nixosMachine = import ./nixos-machine.nix {
+  nixosMachineFactory = import ./nixos-machine-factory.nix {
     inherit inputs release;
     system = linux;
   };
-  darwinMachine = import ./darwin-machine.nix {
+  darwinMachineFactory = import ./darwin-machine-factory.nix {
     inherit inputs release;
     system = darwin;
   };
 in
 {
-  nixosConfigurations.chise = nixosMachine {
+  nixosConfigurations.chise = nixosMachineFactory {
     hostname = "chise";
     username = "zanoni";
   };
 
-  darwinConfigurations.rin = darwinMachine {
+  darwinConfigurations.rin = darwinMachineFactory {
     hostname = "rin";
     username = "lucas.zanoni";
   };
-  darwinConfigurations.kira = darwinMachine {
+  darwinConfigurations.kira = darwinMachineFactory {
     hostname = "kira";
     username = "lucas.zanoni";
   };

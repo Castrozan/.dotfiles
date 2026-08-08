@@ -87,7 +87,7 @@ sudo nixos-generate-config --dir machine-configuration/machines/<alias>/system/c
 
 #### 3. Customize Your Configuration
 - Copy `machine-configuration/machines/chise/system/` (system config) and `machine-configuration/machines/chise/home.nix` plus `machine-configuration/machines/chise/home/` (per-user home-manager modules) as templates for the new alias
-- Add one explicit `nixosConfigurations.<alias> = nixosMachine { ... };` call in `repository/flake-assembly/outputs.nix`
+- Add one explicit `nixosConfigurations.<alias> = nixosMachineFactory { ... };` call in `repository/flake-assembly/outputs.nix`
 
 #### 4. Deploy the Flake
 ```bash
@@ -138,8 +138,8 @@ Here's how everything fits together:
 graph TD
     subgraph "repository/flake-assembly"
         Flake["outputs.nix<br/>explicit host calls"]
-        NixOSMachine["nixos-machine.nix<br/>builds one NixOS host"]
-        DarwinMachine["darwin-machine.nix<br/>builds one Darwin host"]
+        NixOSMachine["nixos-machine-factory.nix<br/>builds one NixOS host per call"]
+        DarwinMachine["darwin-machine-factory.nix<br/>builds one Darwin host per call"]
     end
 
     subgraph "NixOS Configuration"
