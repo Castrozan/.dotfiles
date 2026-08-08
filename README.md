@@ -19,11 +19,15 @@
 
 Welcome to my dotfiles! This repository contains my desktop environment setup for **NixOS** and **macOS** under one flake. Built with Nix Flakes, Home Manager, and nix-darwin.
 
-> Linux
-> https://github.com/user-attachments/assets/c5959f36-6b7a-450c-a18c-f430d60fcafc
+**Linux**
 
-> Mac
-> links here
+https://github.com/user-attachments/assets/c5959f36-6b7a-450c-a18c-f430d60fcafc
+
+**Mac**
+
+https://github.com/user-attachments/assets/afc82d97-0dcf-40cf-9199-d23297c12c71
+
+![macOS desktop running WezTerm, herdr and Neovim](https://github.com/user-attachments/assets/6b17231b-44e4-45c3-8d40-e801d9c9cb81)
 
 ## Desktop Showcase
 
@@ -231,4 +235,3 @@ This setup is inspired by and borrows from:
 ---
 
 Enjoy ricing and happy hacking! If you like this setup, consider giving it a ⭐
-
