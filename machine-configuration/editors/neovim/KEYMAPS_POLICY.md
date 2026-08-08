@@ -26,6 +26,17 @@ lines left. Lists no longer wrap either, because the owner asked for a hard stop
 snacks runs with `layout.cycle` off and telescope with `scroll_strategy` set to `limit`, so
 single-step navigation stops at the ends too.
 
+`C-w` was restored on the owner's explicit request and closes the current file buffer in normal and
+insert mode, focusing the buffer to its right and falling back to the one on its left, and landing
+on the snacks dashboard once the last file buffer goes. It is mapped `nowait` so it fires instead of
+waiting for a window command key, which costs the whole native `C-w` window prefix: split, close and
+zoom windows with `:vsplit`, `:split`, `:close` and `:only` instead. Insert mode loses the native
+delete-word-before-cursor, which has no other native key. LazyVim's `C-h`/`C-j`/`C-k`/`C-l` window
+navigation expands into `<C-w>h` with `remap` on, so it would close a buffer on every window jump;
+`lua/config/lazyvim_defaults.lua` rebinds those four onto `wincmd` directly to keep them clear
+of the owned chord. `leader c` keeps the plain `:bd` it was pruned to, so the focus behavior lives
+on `C-w` alone.
+
 Window width resizing moved to `C-S-j` for narrower and `C-S-k` for wider, on the owner's request,
 which is why those two came off the removed list. It is the LazyVim `vertical resize` pair rather
 than the explorer-only resize that once lived here, so it works in any vertical split and happens
@@ -61,13 +72,15 @@ Find how Neovim itself does a thing before proposing any mapping:
 4. Never shadow a native Vim key. Check `:help <key>` before mapping; keys like `C-w` (window
    commands), `C-t` (tag pop), `C-b`/`C-f` (paging), `C-p`/`C-n` (completion and motion),
    `C-o`/`C-i` (jumplist), `J`/`K`, `Q`, and the `g` family carry native meaning. The baseline
-   deliberately shadows a closed list (`C-p`, `C-t`, `C-b`, `C-<grave>`, `C-/`, and visual-mode
-   `J`/`K`); do not grow it.
+   deliberately shadows a closed list (`C-w`, `C-p`, `C-t`, `C-b`, `C-<grave>`, `C-/`, and
+   visual-mode `J`/`K`); do not grow it. When a shadowed key is also a prefix or reachable through
+   another mapping's right-hand side, hunt down the defaults that expand into it, the way the
+   window navigation rebind does, or the shadow fires where nobody asked for it.
 5. Never re-add a binding from the removed list on your own initiative.
 
 ## Removed bindings (do not restore unprompted)
 
-`C-w` close buffer in normal and insert mode, `leader r` config reload, `C-p` in insert and
+`leader r` config reload, `C-p` in insert and
 terminal mode, `C-Up`/`C-Down` viewport scroll, `C-Right`/`C-Left` word jumps,
 `C-PageUp`/`C-PageDown` buffer cycling,
 `C-S-PageUp`/`C-S-PageDown` buffer moving, `C-S-b` explorer show,

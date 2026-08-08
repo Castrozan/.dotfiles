@@ -1,5 +1,6 @@
 local map = vim.keymap.set
 
+local buffer_closing = require("config.buffer_closing")
 local command_line_abbreviations = require("config.command_line_abbreviations")
 local file_explorer = require("config.navigation.file_explorer")
 local lazyvim_defaults = require("config.lazyvim_defaults")
@@ -39,6 +40,8 @@ map("v", "<A-Down>", ":m '>+1<cr>gv=gv", { desc = "Move selection down" })
 
 map("n", "<leader>w", "<cmd>w<cr>", { desc = "Save file" })
 map("n", "<leader>c", "<cmd>bd<cr>", { desc = "Close buffer" })
+map("n", "<C-w>", buffer_closing.close, { desc = "Close buffer (focus next or prev)", nowait = true })
+map("i", "<C-w>", buffer_closing.close_from_insert, { desc = "Close buffer (focus next or prev)", nowait = true })
 
 map({ "n", "v" }, "<leader>y", [["+y]], { desc = "Yank to system clipboard" })
 map("n", "<leader>Y", [["+Y]], { desc = "Yank line to system clipboard" })
@@ -60,3 +63,4 @@ map("i", "<C-c>", "<esc>", { desc = "Escape" })
 
 command_line_abbreviations.install()
 lazyvim_defaults.remove_replaced_keymaps()
+lazyvim_defaults.rebind_window_navigation_to_bypass_the_buffer_close_chord()

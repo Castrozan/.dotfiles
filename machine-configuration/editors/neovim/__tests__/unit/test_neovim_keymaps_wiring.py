@@ -7,6 +7,7 @@ EXPECTED_NORMAL_MODE_DESCRIPTIONS = {
     "<C-S-j>": "Decrease window width",
     "<C-S-k>": "Increase window width",
     "<C-b>": "Toggle file explorer",
+    "<C-w>": "Close buffer (focus next or prev)",
     "<C-`>": "Toggle terminal",
     "<C-p>": "Find files",
     "<S-F12>": "Find references",
@@ -43,9 +44,70 @@ def test_every_owned_chord_reaches_the_module_that_implements_it(
           end
         end
 
+        local insert_mode_buffer_close = vim.fn.maparg("<C-w>", "i", false, true)
+        assert(
+          insert_mode_buffer_close and insert_mode_buffer_close.callback ~= nil,
+          "<C-w> lost its mapping in insert mode"
+        )
+
+        for _, mode in ipairs({{ "n", "i" }}) do
+          assert(
+            vim.fn.maparg("<C-w>", mode, false, true).nowait == 1,
+            "<C-w> waits for a window command key in " .. mode .. " mode instead of closing the buffer"
+          )
+        end
+
         assert(
           vim.fn.execute("cabbrev Wq"):find("wq", 1, true) ~= nil,
           "the command line abbreviations were never installed"
+        )
+        vim.cmd("qa!")
+        """,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_window_navigation_no_longer_expands_into_the_buffer_close_chord(
+    run_headless_lua, neovim_lua_path
+):
+    module_path = neovim_lua_path("config", "lazyvim_defaults.lua")
+    result = run_headless_lua(
+        "lazyvim_defaults_window_navigation.lua",
+        f"""
+        local buffer_was_closed = false
+        vim.keymap.set("n", "<C-w>", function()
+          buffer_was_closed = true
+        end, {{ nowait = true }})
+        vim.keymap.set("n", "<C-h>", "<C-w>h", {{ desc = "Go to Left Window", remap = true }})
+
+        local function press_go_to_left_window()
+          vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<C-h>", true, false, true), "x", false)
+        end
+
+        vim.cmd("vsplit")
+        local left_window_id = vim.api.nvim_get_current_win()
+        vim.cmd("wincmd l")
+        local right_window_id = vim.api.nvim_get_current_win()
+
+        press_go_to_left_window()
+        assert(
+          buffer_was_closed,
+          "the LazyVim window navigation default stopped expanding through <C-w>, so this guard is obsolete"
+        )
+        assert(
+          vim.api.nvim_get_current_win() == right_window_id,
+          "the unfixed navigation moved windows, so it never went through the buffer close chord"
+        )
+
+        local lazyvim_defaults = dofile({json.dumps(str(module_path))})
+        lazyvim_defaults.rebind_window_navigation_to_bypass_the_buffer_close_chord()
+
+        buffer_was_closed = false
+        press_go_to_left_window()
+        assert(not buffer_was_closed, "window navigation still closes the buffer instead of moving windows")
+        assert(
+          vim.api.nvim_get_current_win() == left_window_id,
+          "window navigation did not reach the window on the left"
         )
         vim.cmd("qa!")
         """,
