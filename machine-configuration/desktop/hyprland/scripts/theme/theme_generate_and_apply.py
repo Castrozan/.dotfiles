@@ -94,6 +94,12 @@ def write_theme_configuration_files(
     )
 
 
+def cached_theme_still_resolves(theme_directory: Path, image_path: Path) -> bool:
+    if not (theme_directory / "colors.toml").is_file():
+        return False
+    return (theme_directory / "backgrounds" / image_path.name).is_file()
+
+
 def apply_generated_theme(theme_name: str) -> None:
     subprocess.run(["hypr-theme-set", theme_name])
 
@@ -110,9 +116,8 @@ def main() -> None:
 
     theme_name = derive_theme_name_from_image_path(wallpaper_image_path)
     theme_directory = HYPR_THEMES_PATH / theme_name
-    cached_colors_toml = theme_directory / "colors.toml"
 
-    if not cached_colors_toml.is_file():
+    if not cached_theme_still_resolves(theme_directory, wallpaper_image_path):
         create_theme_directory_structure(theme_directory)
         colors_toml_content = generate_colors_toml_for_wallpaper(wallpaper_image_path)
         write_theme_configuration_files(

@@ -33,6 +33,8 @@ def make_directory_tree_writable(directory: Path) -> None:
         root_path.chmod(root_path.stat().st_mode | stat.S_IWUSR)
         for name in files:
             filepath = root_path / name
+            if filepath.is_symlink():
+                continue
             filepath.chmod(filepath.stat().st_mode | stat.S_IWUSR)
 
 
