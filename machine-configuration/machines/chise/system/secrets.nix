@@ -130,6 +130,11 @@
         owner = "zanoni";
         mode = "400";
       };
+      "kavita-admin-api-key" = {
+        file = ../../../../secrets/credentials/kavita-admin-api-key.age;
+        owner = "zanoni";
+        mode = "400";
+      };
     };
   };
 }
