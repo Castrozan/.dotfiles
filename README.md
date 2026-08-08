@@ -25,7 +25,7 @@ https://github.com/user-attachments/assets/c5959f36-6b7a-450c-a18c-f430d60fcafc
 
 **Mac**
 
-https://github.com/user-attachments/assets/afc82d97-0dcf-40cf-9199-d23297c12c71
+https://github.com/user-attachments/assets/61732d66-f775-447a-a28e-ff007e6c994e
 
 ![macOS desktop running WezTerm, herdr and Neovim](https://github.com/user-attachments/assets/6b17231b-44e4-45c3-8d40-e801d9c9cb81)
 
