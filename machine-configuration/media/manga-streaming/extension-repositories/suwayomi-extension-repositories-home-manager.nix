@@ -8,6 +8,7 @@ let
   suwayomiGraphqlUrl = "http://${suwayomiBindAddress}:4567/api/graphql";
   extensionRepositoriesPackageDirectory = ./scripts/suwayomi_extension_repositories;
   declaredRepositoryListFile = "/run/agenix/suwayomi-extension-repositories";
+  declaredRepositoryListDigest = builtins.hashFile "sha256" ../../../../secrets/credentials/suwayomi-extension-repositories.age;
 in
 {
   systemd.user.services.suwayomi-extension-repositories = {
@@ -24,6 +25,7 @@ in
       Environment = [
         "SUWAYOMI_GRAPHQL_URL=${suwayomiGraphqlUrl}"
         "SUWAYOMI_EXTENSION_REPOSITORIES_FILE=${declaredRepositoryListFile}"
+        "SUWAYOMI_EXTENSION_REPOSITORIES_DECLARATION_DIGEST=${declaredRepositoryListDigest}"
       ];
     };
 

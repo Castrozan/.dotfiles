@@ -35,6 +35,10 @@ let
         synchronizationTestText
       ];
 
+  declaredRepositoryListDigest = builtins.hashFile "sha256" ../../../../../secrets/credentials/suwayomi-extension-repositories.age;
+
+  aChangedListReachesTheRunningServer = lib.hasInfix "SUWAYOMI_EXTENSION_REPOSITORIES_DECLARATION_DIGEST=${declaredRepositoryListDigest}" environmentText;
+
   theListComesFromAnEncryptedFile =
     lib.hasInfix "SUWAYOMI_EXTENSION_REPOSITORIES_FILE=/run/agenix/" environmentText
     && lib.hasInfix "suwayomi-extension-repositories.age" secretDeclarationText;
@@ -86,6 +90,10 @@ in
     mkEvalCheck "suwayomi-the-repository-list-comes-from-an-encrypted-file"
       theListComesFromAnEncryptedFile
       "the unit must read the list from an agenix path and the secret must be declared with its recipients; pointing at an undeclared path would leave the file absent after a rebuild and the provisioner would silently skip on every boot";
+
+  suwayomi-a-changed-list-reaches-the-running-server =
+    mkEvalCheck "suwayomi-a-changed-list-reaches-the-running-server" aChangedListReachesTheRunningServer
+      "the unit must carry a digest of the encrypted list, computed from the file rather than written down, because nothing else in the unit changes when the list does: the decrypted path is a fixed string, so a rebuild that only re-encrypts the list gives the switch no reason to restart the provisioner and Suwayomi keeps serving the previous repositories until the next reboot, with the declaration and the running server disagreeing and both looking healthy";
 
   suwayomi-extension-repositories-are-never-forced-as-a-jvm-property =
     mkEvalCheck "suwayomi-extension-repositories-are-never-forced-as-a-jvm-property"
