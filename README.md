@@ -19,7 +19,11 @@
 
 Welcome to my dotfiles! This repository contains my desktop environment setup for **NixOS** and **macOS** under one flake. Built with Nix Flakes, Home Manager, and nix-darwin.
 
-https://github.com/user-attachments/assets/c5959f36-6b7a-450c-a18c-f430d60fcafc
+> Linux
+> https://github.com/user-attachments/assets/c5959f36-6b7a-450c-a18c-f430d60fcafc
+
+> Mac
+> links here
 
 ## Desktop Showcase
 
@@ -61,7 +65,7 @@ https://github.com/user-attachments/assets/c5959f36-6b7a-450c-a18c-f430d60fcafc
 
 ---
 
-## Getting Started
+## Wanna use it?
 
 ### The Declarative Way
 
@@ -73,6 +77,7 @@ Got NixOS from the <a href="https://nixos.org/download.html" target="_blank" rel
 </summary>
 
 #### 1. Clone the Repository
+
 ```bash
 cd ~
 git clone https://github.com/castrozan/.dotfiles.git
@@ -80,21 +85,26 @@ cd .dotfiles
 ```
 
 #### 2. Generate Hardware Configuration
+
 Pick a short alias for the machine (this repo uses anime names: `chise`, `rin`, `kira`). Then:
+
 ```bash
 sudo nixos-generate-config --dir machine-configuration/machines/<alias>/system/configs
 ```
 
 #### 3. Customize Your Configuration
+
 - Copy `machine-configuration/machines/chise/system/` (system config) and `machine-configuration/machines/chise/home.nix` plus `machine-configuration/machines/chise/home/` (per-user home-manager modules) as templates for the new alias
 - Add one explicit `nixosConfigurations.<alias> = nixosMachineFactory { ... };` call in `repository/flake-assembly/outputs.nix`
 
 #### 4. Deploy the Flake
+
 ```bash
 sudo nixos-rebuild switch --flake .?submodules=1#<alias>
 ```
 
 #### 5. Post-Deployment
+
 - Restart your system (recommended)
 - Enjoy your new setup! 🎉
 
@@ -105,21 +115,25 @@ sudo nixos-rebuild switch --flake .?submodules=1#<alias>
 ### macOS (nix-darwin)
 
 For macOS, the flake composes nix-darwin with home-manager:
+
 <details>
 <summary>
    <b>Quick Start for: 🍎 macOS</b>
 </summary>
 
 #### 1. Install Nix + nix-darwin
+
 ```bash
 sh <(curl -L https://nixos.org/nix/install)
 nix run nix-darwin -- switch --flake .?submodules=1#<alias>
 ```
 
 #### 2. Activate later rebuilds
+
 ```bash
 sudo darwin-rebuild switch --flake .?submodules=1#<alias>
 ```
+
 Use the host's alias (`rin`, `kira`, ...). The WezTerm cask is declared in `machine-configuration/terminal/emulators/wezterm/wezterm-nix-darwin.nix`.
 
 </details>
@@ -182,7 +196,7 @@ graph TD
     NixOS --> UserHome
     UserHome --> Modules
     DarwinHome --> Modules
-    
+
     Flake --> Nixpkgs
     Flake --> Unstable
 
@@ -198,21 +212,10 @@ graph TD
 
 ---
 
-## 📂 Repository Layout
-
-Flake inputs live in a dependencies sub-flake that the root `flake.nix` takes as its single input, so bumping one reads `nix flake update dependencies/<name>`; `repository/flake-assembly/outputs.nix` names every host explicitly and calls one machine builder per host, with the package channels, the shared home-manager block and the checks factored out beside it. Each machine builder threads `hostname`, `username` plus `isNixOS` / `isDarwin` flags into `specialArgs` and `extraSpecialArgs`.
-
-Capabilities live under `machine-configuration/` grouped by what they do, and each capability owns its Nix modules, raw configuration, `scripts/`, and `__tests__/` together. Deployment mechanism and platform appear in the file name (`-home-manager.nix`, `-nixos.nix`, `-nix-darwin.nix`), never as a directory level, so a capability implemented differently on each platform still reads as one place. The Home Manager entry points that compose those capabilities are `machine-configuration/machines/<alias>/home.nix` per host, layered over `machine-configuration/machines/shared-home-manager-core.nix` and, for the two macOS hosts, `machine-configuration/machines/shared-darwin-home-manager.nix` plus `machine-configuration/machines/shared-darwin-system-nix-darwin.nix`.
-
-Machine-specific system configuration lives in `machine-configuration/machines/<alias>/system/`; every reusable module lives with the capability it implements. Each machine's home-manager entry point is `machine-configuration/machines/<alias>/home.nix` (ryan4yin-style); host-only home modules live in `machine-configuration/machines/<alias>/home/`. Per-user shared bits live in `machine-configuration/machines/` (e.g. `machine-configuration/machines/user-packages-lucas-zanoni-home-manager.nix`). Routers at `machine-configuration/development/version-control/git-private-home-manager.nix` and `machine-configuration/network/ssh/ssh-private-home-manager.nix` look up `private-configuration/machines/${hostname}/<file>` so per-machine overrides land automatically when the file exists.
-
-Private, machine-specific configuration (work emails, gitlab hosts, company skills) lives in the `private-configuration/` submodule under `private-configuration/machines/<hostname>/`. Encrypted secrets live in `secrets/` (agenix). Assets belong to whatever uses them, so backgrounds, icons and screenshots sit inside the capability or skill that reads them. Agent instructions and shared skills live in `agent-harness/agent-instructions/`; the skill convention is `agent-harness/agent-instructions/skills/<name>/SKILL.md`. Hooks live in `agent-harness/hooks/`; evaluations live in `agent-harness/quality/evaluations/`.
-
----
-
 ## 🔗 Inspiration & Credits
 
 This setup is inspired by and borrows from:
+
 - <a href="https://github.com/ryan4yin/nix-config" target="_blank" rel="noopener noreferrer">ryan4yin/nix-config</a> - Excellent complex Nix configurations
 - <a href="https://github.com/OfflineBot/nixos" target="_blank" rel="noopener noreferrer">OfflineBot/nixos</a> - Clean NixOS setup
 - The amazing NixOS and Home Manager communities
@@ -228,3 +231,4 @@ This setup is inspired by and borrows from:
 ---
 
 Enjoy ricing and happy hacking! If you like this setup, consider giving it a ⭐
+
