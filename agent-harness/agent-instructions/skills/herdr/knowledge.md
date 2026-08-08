@@ -56,9 +56,9 @@ evidence before writing any reporter at all.
 <panes_inherit_a_display_less_environment>
 The server starts from the systemd user manager before the compositor imports the graphical session variables, so its
 environment carries no `WAYLAND_DISPLAY`, `DISPLAY` or `XAUTHORITY` and every pane shell inherits that gap, which the
-interactive bash rc repairs from `systemctl --user show-environment`. In a pane that missed the repair,
-compositor-dependent work fails as if the tool rejected its input rather than an environment fault: Claude Code reads a
-clipboard image by shelling out to `wl-paste` and `xclip`, so it refuses every pasted image without ever naming the
-missing display. Do not reach for `remote_image_paste`, which is hard-gated on the remote-client environment variable
-and yields no key on a local client, leaving a `config.toml` binding inert.
+interactive bash rc repairs. In a pane that missed the repair, compositor-dependent work fails as if the tool rejected
+its input rather than an environment fault: Claude Code reads a clipboard image by shelling out to `wl-paste` and
+`xclip`, so it refuses every pasted image without ever naming the missing display. Do not reach for
+`remote_image_paste`, which is hard-gated on the remote-client environment variable and yields no key on a local client,
+leaving a `config.toml` binding inert.
 </panes_inherit_a_display_less_environment>
