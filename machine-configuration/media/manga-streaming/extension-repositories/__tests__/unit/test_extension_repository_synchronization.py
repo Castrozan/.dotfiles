@@ -14,8 +14,8 @@ import extension_repository_synchronization
 import suwayomi_graphql_client
 
 DECLARED_URLS = [
-    "https://raw.githubusercontent.com/keiyoushi/extensions/repo/index.min.json",
-    "https://observeroftime.frama.io/tachiyomi-extensions/index.min.json",
+    "https://declared-repository-one.example/repository-index.json",
+    "https://declared-repository-two.example/repository-index.json",
 ]
 
 
@@ -39,7 +39,7 @@ def test_the_declared_repositories_replace_whatever_is_stored(monkeypatch, tmp_p
     monkeypatch.setattr(
         suwayomi_graphql_client,
         "read_extension_repository_urls",
-        lambda graphql_url: ["https://raw.githubusercontent.com/dead/repo/index.json"],
+        lambda graphql_url: ["https://repository-that-has-since-died.example/index.json"],
     )
     monkeypatch.setattr(
         suwayomi_graphql_client,

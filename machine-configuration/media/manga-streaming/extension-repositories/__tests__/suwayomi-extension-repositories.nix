@@ -20,13 +20,21 @@ let
   declarationText = builtins.readFile ../scripts/suwayomi_extension_repositories/runtime_configuration.py;
   secretDeclarationText = builtins.readFile ../../../../../secrets/secrets.nix;
 
+  synchronizationTestText = builtins.readFile ./unit/test_extension_repository_synchronization.py;
+
   publicRepositoryNamesNoRepositoryUrl =
-    builtins.all (moduleText: !(lib.hasInfix "index.min.json" moduleText))
+    builtins.all
+      (
+        trackedText:
+        !(lib.hasInfix "index.min.json" trackedText) && !(lib.hasInfix "githubusercontent" trackedText)
+      )
       [
         provisionerModuleText
         serverModuleText
         declarationText
         reconcileText
+        clientText
+        synchronizationTestText
       ];
 
   theListComesFromAnEncryptedFile =
