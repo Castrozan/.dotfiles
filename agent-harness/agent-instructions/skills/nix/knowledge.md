@@ -99,7 +99,10 @@ Only one module carries a self-heal activation step today; the rest drift silent
 file under it is live the moment it is saved and no rebuild publishes it. A green rebuild is therefore no evidence at
 all for a keymap or plugin change; verify by opening a real nvim and pressing the key. The trap runs the other way too,
 because an uncommitted or half-finished lua edit is already affecting every running editor on the machine.
-`repository/git-hooks` and the vscode workspace deploy the same way.
+The vscode workspace deploys the same way, but `repository/git-hooks` does not, though its symlink looks identical:
+`~/.dotfiles/.githooks` points into the working tree and git never reads that path. Resolve `core.hooksPath` before
+believing a hook edit is live, because it selects a different directory whose entries are store paths built from these
+sources, and a local override in `~/.dotfiles/.git/config` can leave the repo running no hook at all.
 </the_neovim_config_is_live_from_the_working_tree>
 
 <test_tiers_and_report_publishing>
