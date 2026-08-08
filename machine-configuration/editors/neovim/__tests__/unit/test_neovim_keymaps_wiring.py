@@ -92,7 +92,7 @@ def test_window_navigation_no_longer_expands_into_the_buffer_close_chord(
         press_go_to_left_window()
         assert(
           buffer_was_closed,
-          "the LazyVim window navigation default stopped expanding through <C-w>, so this guard is obsolete"
+          "a remapped <C-w>h no longer reaches the <C-w> mapping, so this guard has nothing left to fix"
         )
         assert(
           vim.api.nvim_get_current_win() == right_window_id,
