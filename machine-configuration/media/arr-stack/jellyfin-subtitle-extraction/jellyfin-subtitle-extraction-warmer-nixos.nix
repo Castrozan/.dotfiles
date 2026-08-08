@@ -76,6 +76,7 @@ in
       restartIfChanged = false;
       stopIfChanged = false;
       environment = {
+        PYTHONUNBUFFERED = "1";
         JELLYFIN_SUBTITLE_EXTRACTION_WARMER_BASE_URL = warmerConfig.jellyfinBaseUrl;
         JELLYFIN_SUBTITLE_EXTRACTION_WARMER_API_KEY_FILE = warmerConfig.jellyfinApiKeySecretFile;
         JELLYFIN_SUBTITLE_EXTRACTION_WARMER_DATA_DIRECTORY = warmerConfig.jellyfinDataDirectory;

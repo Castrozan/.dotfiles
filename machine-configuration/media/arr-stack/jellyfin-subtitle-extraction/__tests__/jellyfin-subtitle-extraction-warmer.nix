@@ -66,8 +66,9 @@ in
         lib.hasInfix "agenix" enabledEnvironment.JELLYFIN_SUBTITLE_EXTRACTION_WARMER_API_KEY_FILE
         && lib.hasSuffix "data/data" enabledEnvironment.JELLYFIN_SUBTITLE_EXTRACTION_WARMER_DATA_DIRECTORY
         && lib.hasInfix "127.0.0.1" enabledEnvironment.JELLYFIN_SUBTITLE_EXTRACTION_WARMER_BASE_URL
+        && enabledEnvironment.PYTHONUNBUFFERED == "1"
       )
-      "the warmer must authenticate from an agenix file path over loopback and be pointed at Jellyfin's doubled data directory, so no secret is committed, warming never depends on the tailnet, and the cache probe looks where the linuxserver image actually writes extracted subtitles";
+      "the warmer must authenticate from an agenix file path over loopback and be pointed at Jellyfin's doubled data directory, so no secret is committed, warming never depends on the tailnet, and the cache probe looks where the linuxserver image actually writes extracted subtitles; unbuffered output is what makes the unit log readable while a sweep is still running, since python block-buffers into a journal pipe and would otherwise reveal an hour of progress only once the run ends";
 
   chise-jellyfin-subtitle-warmer-bounds-one-sweep =
     mkEvalCheck "chise-jellyfin-subtitle-warmer-bounds-one-sweep"
