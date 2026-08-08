@@ -64,7 +64,8 @@ Find how Neovim itself does a thing before proposing any mapping:
    file's existing style. That file is a chord table and nothing else: every entry is a single
    `map(...)` line pointing at a named function, so a handler carrying a body lives in its own
    module under `lua/config/`, the way `navigation/file_explorer.lua`, `navigation/pickers.lua`,
-   `navigation/ten_line_jumping.lua`, `terminal.lua`, and `command_line_abbreviations.lua` do.
+   `navigation/ten_line_jumping.lua`, `buffer_closing.lua`, `terminal.lua`, and
+   `command_line_abbreviations.lua` do.
    Keep the exported name short enough that the `map(...)` call still fits on one line, because
    the module name already carries the subject. Picker-side bindings belong in that plugin's spec
    under `lua/plugins/` and call the same module, so a chord means the same thing in a buffer and
@@ -80,13 +81,12 @@ Find how Neovim itself does a thing before proposing any mapping:
 
 ## Removed bindings (do not restore unprompted)
 
-`leader r` config reload, `C-p` in insert and
-terminal mode, `C-Up`/`C-Down` viewport scroll, `C-Right`/`C-Left` word jumps,
-`C-PageUp`/`C-PageDown` buffer cycling,
-`C-S-PageUp`/`C-S-PageDown` buffer moving, `C-S-b` explorer show,
-explorer `C-n` create file, explorer `C-k e` folder toggle, explorer `y` path yank,
-picker `C-v` clipboard paste, the `:q` and `:wq` quit-all abbreviations, the smart close-buffer
-focus behavior on `leader c`, and the F12 file-path-under-cursor definition jump. Native
+`leader r` config reload, `C-p` in insert and terminal mode, `C-Up`/`C-Down` viewport scroll,
+`C-Right`/`C-Left` word jumps, `C-PageUp`/`C-PageDown` buffer cycling, `C-S-PageUp`/`C-S-PageDown`
+buffer moving, `C-S-b` explorer show, explorer `C-n` create file, explorer `C-k e` folder toggle,
+explorer `y` path yank, picker `C-v` clipboard paste, the `:q` and `:wq` quit-all abbreviations,
+the smart close-buffer focus behavior on `leader c`, which `C-w` carries instead, and the F12
+file-path-under-cursor definition jump. Native
 replacements for the common ones: `:w`, `:qa`, `C-y`/`C-e` scrolling, `w`/`b` word motion,
 `:bnext`/`:bprevious` buffer cycling, `gd` plus `grn`/`grr` LSP actions, and `"+y` clipboard
 yank.
