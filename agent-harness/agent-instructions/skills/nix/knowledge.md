@@ -30,6 +30,17 @@ step, and the wrapper's own recorded revision can sit arbitrarily far behind wit
 change fails to appear, do not chase a stale lock there; check whether the commit reached the branch.
 </the_machine_local_wrapper_lock_is_not_in_the_deploy_path>
 
+<a_oneshot_that_runs_long_hangs_every_rebuild_that_restarts_it>
+Activation waits for a restarted `Type=oneshot` to finish its `ExecStart` before it moves on, so any oneshot that can
+legitimately run for minutes, one that polls for a condition or works through a queue, freezes the whole rebuild for its
+full duration the moment a `restartTriggers` entry or a changed unit definition marks it for restart. Nothing reports
+this as an error; the rebuild simply sits there, and killing the rebuild leaves activation half applied. A timer-driven
+oneshot never needs the restart anyway, because its next fire runs the new configuration, so declare it
+`restartIfChanged = false` with `stopIfChanged = false` and drop the secret restart trigger, which is redundant once
+every fire reads the secret file fresh. Reach for `RuntimeMaxSec` to bound such a unit and systemd ignores it on a
+oneshot with only a log line; `TimeoutStartSec` is the ceiling that applies.
+</a_oneshot_that_runs_long_hangs_every_rebuild_that_restarts_it>
+
 <a_failing_activation_can_report_green>
 An activation step that exits non-zero aborts before the profile swap, leaving `current-system` frozen on an old
 generation while every subsequent rebuild appears to no-op. The wrapper masks it, because a failing pipe under strict
