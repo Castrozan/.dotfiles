@@ -86,4 +86,14 @@ in
           > lib.toInt enabledEnvironment.JELLYFIN_SUBTITLE_EXTRACTION_WARMER_QUIET_POLL_SECONDS
       )
       "a sweep must wait for a gap rather than give up the moment it finds playback, because a long binge is exactly when newly imported episodes need extracting and a timer that only fires into an already-idle server would never reach them";
+
+  chise-jellyfin-subtitle-warmer-still-works-a-nonstop-binge =
+    mkEvalCheck "chise-jellyfin-subtitle-warmer-still-works-a-nonstop-binge"
+      (
+        lib.toInt enabledEnvironment.JELLYFIN_SUBTITLE_EXTRACTION_WARMER_BUSY_ITEM_BUDGET > 0
+        &&
+          lib.toInt enabledEnvironment.JELLYFIN_SUBTITLE_EXTRACTION_WARMER_BUSY_ITEM_BUDGET
+          < lib.toInt enabledEnvironment.JELLYFIN_SUBTITLE_EXTRACTION_WARMER_ITEM_BUDGET
+      )
+      "a sweep that waited out its whole deadline without finding a gap must still extract a few titles beside the stream, because autoplay leaves no gap at all and the alternative is that the one viewer who binges is the only one the warmer never helps; that budget stays well under the quiet-server one so the competing reads stay brief";
 }

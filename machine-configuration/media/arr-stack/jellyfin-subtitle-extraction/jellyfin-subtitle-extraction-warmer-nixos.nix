@@ -40,6 +40,12 @@ in
       description = "Maximum number of videos one sweep extracts. Each extraction reads a whole file off the media disk, so a bounded sweep keeps a freshly filled library from pinning the disk for hours and caps the damage if a future Jellyfin changes its cache layout and every probe starts reporting work to do.";
     };
 
+    busyItemBudgetPerSweep = lib.mkOption {
+      type = lib.types.int;
+      default = 3;
+      description = "How many videos a sweep extracts when it never found a gap and gives up waiting. A binge is exactly when a stall is most likely and least welcome, so the sweep extracts a handful of titles alongside the stream rather than nothing at all; it stays far below the quiet-server budget because those reads compete with playback on the same disk.";
+    };
+
     pauseSecondsBetweenItems = lib.mkOption {
       type = lib.types.int;
       default = 5;
@@ -72,6 +78,7 @@ in
         JELLYFIN_SUBTITLE_EXTRACTION_WARMER_API_KEY_FILE = warmerConfig.jellyfinApiKeySecretFile;
         JELLYFIN_SUBTITLE_EXTRACTION_WARMER_DATA_DIRECTORY = warmerConfig.jellyfinDataDirectory;
         JELLYFIN_SUBTITLE_EXTRACTION_WARMER_ITEM_BUDGET = toString warmerConfig.itemBudgetPerSweep;
+        JELLYFIN_SUBTITLE_EXTRACTION_WARMER_BUSY_ITEM_BUDGET = toString warmerConfig.busyItemBudgetPerSweep;
         JELLYFIN_SUBTITLE_EXTRACTION_WARMER_PAUSE_SECONDS = toString warmerConfig.pauseSecondsBetweenItems;
         JELLYFIN_SUBTITLE_EXTRACTION_WARMER_QUIET_POLL_SECONDS = toString warmerConfig.quietPollSeconds;
         JELLYFIN_SUBTITLE_EXTRACTION_WARMER_QUIET_WAIT_SECONDS = toString warmerConfig.quietWaitSeconds;

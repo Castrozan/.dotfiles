@@ -118,6 +118,25 @@ def test_sweep_of_a_fully_extracted_library_asks_jellyfin_for_nothing(monkeypatc
     assert requested_paths == []
 
 
+def test_a_sweep_that_does_not_yield_keeps_extracting_through_playback(monkeypatch):
+    requested_paths = []
+    install_fake_jellyfin(
+        monkeypatch,
+        COLD_EPISODES,
+        [[{"NowPlayingItem": {"Id": "watching"}}]] * len(COLD_EPISODES),
+        requested_paths,
+    )
+    extracted_items, extracted_streams = main_module.sweep(
+        "http://127.0.0.1:8096",
+        "key",
+        JELLYFIN_DATA_DIRECTORY,
+        3,
+        0,
+        yield_to_playback=False,
+    )
+    assert (extracted_items, extracted_streams) == (3, 3)
+
+
 def test_waiting_needs_two_quiet_polls_so_an_autoplay_gap_is_not_mistaken_for_idle(
     monkeypatch,
 ):

@@ -88,7 +88,14 @@ def extract_streams_of_item(base_url, api_key, item, unextracted_streams):
     return extracted_count
 
 
-def sweep(base_url, api_key, jellyfin_data_directory, item_budget, pause_seconds):
+def sweep(
+    base_url,
+    api_key,
+    jellyfin_data_directory,
+    item_budget,
+    pause_seconds,
+    yield_to_playback=True,
+):
     extracted_streams = 0
     extracted_items = 0
     for item in list_video_items(base_url, api_key):
@@ -100,7 +107,9 @@ def sweep(base_url, api_key, jellyfin_data_directory, item_budget, pause_seconds
         if extracted_items >= item_budget:
             print(f"{LOG_PREFIX}: sweep budget of {item_budget} items reached")
             break
-        if someone_is_watching(list_active_sessions(base_url, api_key)):
+        if yield_to_playback and someone_is_watching(
+            list_active_sessions(base_url, api_key)
+        ):
             print(f"{LOG_PREFIX}: sweep stopped, playback started")
             break
         extracted_streams += extract_streams_of_item(
@@ -140,6 +149,9 @@ def main():
         "JELLYFIN_SUBTITLE_EXTRACTION_WARMER_DATA_DIRECTORY"
     ]
     item_budget = int(os.environ["JELLYFIN_SUBTITLE_EXTRACTION_WARMER_ITEM_BUDGET"])
+    busy_item_budget = int(
+        os.environ["JELLYFIN_SUBTITLE_EXTRACTION_WARMER_BUSY_ITEM_BUDGET"]
+    )
     pause_seconds = float(
         os.environ["JELLYFIN_SUBTITLE_EXTRACTION_WARMER_PAUSE_SECONDS"]
     )
@@ -152,13 +164,21 @@ def main():
     if not jellyfin_is_reachable(base_url, api_key):
         print(f"{LOG_PREFIX}: skipped, jellyfin is not reachable")
         return
-    if not wait_for_a_quiet_server(
+    server_went_quiet = wait_for_a_quiet_server(
         base_url, api_key, quiet_poll_seconds, quiet_wait_seconds
-    ):
-        print(f"{LOG_PREFIX}: gave up waiting for a gap between playbacks")
-        return
+    )
+    if not server_went_quiet:
+        print(
+            f"{LOG_PREFIX}: no gap between playbacks, extracting {busy_item_budget} "
+            "items alongside the stream"
+        )
     extracted_items, extracted_streams = sweep(
-        base_url, api_key, jellyfin_data_directory, item_budget, pause_seconds
+        base_url,
+        api_key,
+        jellyfin_data_directory,
+        item_budget if server_went_quiet else busy_item_budget,
+        pause_seconds,
+        yield_to_playback=server_went_quiet,
     )
     print(
         f"{LOG_PREFIX}: sweep finished, {extracted_streams} subtitle streams "
