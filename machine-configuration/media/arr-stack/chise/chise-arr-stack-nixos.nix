@@ -164,10 +164,6 @@
       ../../../../secrets/credentials/jellyfin-admin-api-key.age
     ];
 
-    jellyfin-subtitle-extraction-warmer.restartTriggers = [
-      ../../../../secrets/credentials/jellyfin-admin-api-key.age
-    ];
-
     kavita-library-access-provisioner.restartTriggers = [
       ../../../../secrets/credentials/kavita-admin-api-key.age
     ];

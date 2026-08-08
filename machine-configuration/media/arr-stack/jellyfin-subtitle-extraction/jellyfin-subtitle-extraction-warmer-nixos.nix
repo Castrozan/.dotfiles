@@ -73,6 +73,8 @@ in
         "network-online.target"
       ];
       wants = [ "network-online.target" ];
+      restartIfChanged = false;
+      stopIfChanged = false;
       environment = {
         JELLYFIN_SUBTITLE_EXTRACTION_WARMER_BASE_URL = warmerConfig.jellyfinBaseUrl;
         JELLYFIN_SUBTITLE_EXTRACTION_WARMER_API_KEY_FILE = warmerConfig.jellyfinApiKeySecretFile;

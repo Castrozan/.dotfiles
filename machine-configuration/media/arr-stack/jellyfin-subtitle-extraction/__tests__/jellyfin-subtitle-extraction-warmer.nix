@@ -50,12 +50,14 @@ in
         enabledService.serviceConfig.Type == "oneshot"
         && lib.hasInfix "jellyfin_subtitle_extraction_warmer" enabledService.serviceConfig.ExecStart
         && !(builtins.elem "multi-user.target" (enabledService.wantedBy or [ ]))
+        && !enabledService.restartIfChanged
+        && !enabledService.stopIfChanged
         && builtins.elem "timers.target" enabledTimer.wantedBy
         && enabledTimer.timerConfig.OnUnitInactiveSec == "30min"
         && !(enabledTimer.timerConfig ? OnUnitActiveSec)
         && enabledTimer.timerConfig.Persistent
       )
-      "the sweep must be a oneshot pulled in only by its timer, never by multi-user.target, so a rebuild never starts a long disk-bound extraction run in the middle of someone watching, and a machine that was off catches up on its next boot; the interval runs from the end of the previous sweep because a sweep that waits out a binge before extracting has no bounded length to measure from its start";
+      "the sweep must be a oneshot pulled in only by its timer, never by multi-user.target and never restarted by activation, because a sweep spends most of its life waiting for a gap between playbacks and switch-to-configuration blocks until a restarted oneshot finishes its ExecStart, so restarting it on a rebuild hangs the rebuild for as long as somebody keeps watching; the interval runs from the end of the previous sweep for the same reason, that a sweep has no bounded length to measure from its start, and a machine that was off catches up on its next boot";
 
   chise-jellyfin-subtitle-warmer-reads-agenix-key-and-cache-directory =
     mkEvalCheck "chise-jellyfin-subtitle-warmer-reads-agenix-key-and-cache-directory"
