@@ -118,6 +118,32 @@ def test_sweep_of_a_fully_extracted_library_asks_jellyfin_for_nothing(monkeypatc
     assert requested_paths == []
 
 
+def test_waiting_needs_two_quiet_polls_so_an_autoplay_gap_is_not_mistaken_for_idle(
+    monkeypatch,
+):
+    watching = [{"NowPlayingItem": {"Id": "episode"}}]
+    session_reads = [watching, [], watching, [], []]
+    slept_seconds = []
+    monkeypatch.setattr(
+        main_module, "list_active_sessions", lambda *_: session_reads.pop(0)
+    )
+    monkeypatch.setattr(main_module.time, "sleep", slept_seconds.append)
+    assert main_module.wait_for_a_quiet_server("http://127.0.0.1:8096", "key", 30, 1200)
+    assert slept_seconds == [30, 30, 30, 30]
+
+
+def test_waiting_gives_up_once_its_deadline_passes(monkeypatch):
+    monkeypatch.setattr(
+        main_module,
+        "list_active_sessions",
+        lambda *_: [{"NowPlayingItem": {"Id": "x"}}],
+    )
+    monkeypatch.setattr(main_module.time, "sleep", lambda _: None)
+    assert not main_module.wait_for_a_quiet_server(
+        "http://127.0.0.1:8096", "key", 30, 60
+    )
+
+
 def test_a_failed_extraction_does_not_abort_the_rest_of_the_sweep(monkeypatch):
     requested_paths = []
     install_fake_jellyfin(

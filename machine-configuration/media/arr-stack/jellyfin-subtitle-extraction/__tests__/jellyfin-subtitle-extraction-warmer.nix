@@ -51,10 +51,11 @@ in
         && lib.hasInfix "jellyfin_subtitle_extraction_warmer" enabledService.serviceConfig.ExecStart
         && !(builtins.elem "multi-user.target" (enabledService.wantedBy or [ ]))
         && builtins.elem "timers.target" enabledTimer.wantedBy
-        && enabledTimer.timerConfig.OnUnitActiveSec == "30min"
+        && enabledTimer.timerConfig.OnUnitInactiveSec == "30min"
+        && !(enabledTimer.timerConfig ? OnUnitActiveSec)
         && enabledTimer.timerConfig.Persistent
       )
-      "the sweep must be a oneshot pulled in only by its timer, never by multi-user.target, so a rebuild never starts a long disk-bound extraction run in the middle of someone watching, and a machine that was off catches up on its next boot";
+      "the sweep must be a oneshot pulled in only by its timer, never by multi-user.target, so a rebuild never starts a long disk-bound extraction run in the middle of someone watching, and a machine that was off catches up on its next boot; the interval runs from the end of the previous sweep because a sweep that waits out a binge before extracting has no bounded length to measure from its start";
 
   chise-jellyfin-subtitle-warmer-reads-agenix-key-and-cache-directory =
     mkEvalCheck "chise-jellyfin-subtitle-warmer-reads-agenix-key-and-cache-directory"
@@ -70,6 +71,18 @@ in
       (
         enabledEnvironment.JELLYFIN_SUBTITLE_EXTRACTION_WARMER_ITEM_BUDGET == "20"
         && enabledEnvironment.JELLYFIN_SUBTITLE_EXTRACTION_WARMER_PAUSE_SECONDS == "5"
+        && enabledService.serviceConfig.RuntimeMaxSec > 0
       )
-      "one sweep must carry a per-item budget and a pause between items, so a freshly filled library or a cache-layout change in a future Jellyfin cannot pin the media disk for hours";
+      "one sweep must carry a per-item budget, a pause between items and a hard runtime ceiling, so a freshly filled library, a cache-layout change in a future Jellyfin, or a wait for a gap that never comes cannot pin the media disk or leave a unit running forever";
+
+  chise-jellyfin-subtitle-warmer-waits-for-a-gap-between-playbacks =
+    mkEvalCheck "chise-jellyfin-subtitle-warmer-waits-for-a-gap-between-playbacks"
+      (
+        enabledEnvironment.JELLYFIN_SUBTITLE_EXTRACTION_WARMER_QUIET_POLL_SECONDS == "30"
+        && enabledEnvironment.JELLYFIN_SUBTITLE_EXTRACTION_WARMER_QUIET_WAIT_SECONDS == "1200"
+        &&
+          lib.toInt enabledEnvironment.JELLYFIN_SUBTITLE_EXTRACTION_WARMER_QUIET_WAIT_SECONDS
+          > lib.toInt enabledEnvironment.JELLYFIN_SUBTITLE_EXTRACTION_WARMER_QUIET_POLL_SECONDS
+      )
+      "a sweep must wait for a gap rather than give up the moment it finds playback, because a long binge is exactly when newly imported episodes need extracting and a timer that only fires into an already-idle server would never reach them";
 }

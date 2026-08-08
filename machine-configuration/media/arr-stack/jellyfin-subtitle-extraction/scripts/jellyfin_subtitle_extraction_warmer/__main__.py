@@ -14,6 +14,7 @@ from subtitle_extraction_cache import (
 LOG_PREFIX = "jellyfin-subtitle-extraction-warmer"
 EXTRACTION_REQUEST_TIMEOUT_SECONDS = 600
 ITEM_PAGE_SIZE = 200
+QUIET_POLLS_BEFORE_SWEEPING = 2
 
 
 def read_api_key(api_key_file_path):
@@ -114,6 +115,22 @@ def sweep(base_url, api_key, jellyfin_data_directory, item_budget, pause_seconds
     return extracted_items, extracted_streams
 
 
+def wait_for_a_quiet_server(base_url, api_key, poll_seconds, deadline_seconds):
+    consecutive_quiet_polls = 0
+    waited_seconds = 0
+    while True:
+        if someone_is_watching(list_active_sessions(base_url, api_key)):
+            consecutive_quiet_polls = 0
+        else:
+            consecutive_quiet_polls += 1
+            if consecutive_quiet_polls >= QUIET_POLLS_BEFORE_SWEEPING:
+                return True
+        if waited_seconds >= deadline_seconds:
+            return False
+        time.sleep(poll_seconds)
+        waited_seconds += poll_seconds
+
+
 def main():
     base_url = os.environ["JELLYFIN_SUBTITLE_EXTRACTION_WARMER_BASE_URL"]
     api_key = read_api_key(
@@ -126,11 +143,19 @@ def main():
     pause_seconds = float(
         os.environ["JELLYFIN_SUBTITLE_EXTRACTION_WARMER_PAUSE_SECONDS"]
     )
+    quiet_poll_seconds = float(
+        os.environ["JELLYFIN_SUBTITLE_EXTRACTION_WARMER_QUIET_POLL_SECONDS"]
+    )
+    quiet_wait_seconds = float(
+        os.environ["JELLYFIN_SUBTITLE_EXTRACTION_WARMER_QUIET_WAIT_SECONDS"]
+    )
     if not jellyfin_is_reachable(base_url, api_key):
         print(f"{LOG_PREFIX}: skipped, jellyfin is not reachable")
         return
-    if someone_is_watching(list_active_sessions(base_url, api_key)):
-        print(f"{LOG_PREFIX}: skipped, playback is in progress")
+    if not wait_for_a_quiet_server(
+        base_url, api_key, quiet_poll_seconds, quiet_wait_seconds
+    ):
+        print(f"{LOG_PREFIX}: gave up waiting for a gap between playbacks")
         return
     extracted_items, extracted_streams = sweep(
         base_url, api_key, jellyfin_data_directory, item_budget, pause_seconds

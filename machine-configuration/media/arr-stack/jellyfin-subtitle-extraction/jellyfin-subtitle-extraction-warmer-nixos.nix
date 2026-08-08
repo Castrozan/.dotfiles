@@ -31,7 +31,7 @@ in
     sweepInterval = lib.mkOption {
       type = lib.types.str;
       default = "30min";
-      description = "How long after a finished sweep the next one starts; short enough that a freshly imported episode is extracted well before anyone opens it, and every sweep is a no-op once the library is fully extracted.";
+      description = "How long after a finished sweep the next one starts. It is measured from the end rather than the start of the previous run, because a sweep waits for a gap between playbacks and then extracts, so its own length is unbounded enough that a start-relative interval would queue runs behind each other.";
     };
 
     itemBudgetPerSweep = lib.mkOption {
@@ -44,6 +44,18 @@ in
       type = lib.types.int;
       default = 5;
       description = "Idle gap left between videos so the media disk and the Jellyfin container are never saturated back to back by the sweep.";
+    };
+
+    quietPollSeconds = lib.mkOption {
+      type = lib.types.int;
+      default = 30;
+      description = "How often a started sweep re-asks Jellyfin whether anybody is watching while it waits for a gap. Two quiet answers in a row are required before extraction begins, so the few seconds between one episode ending and the next one autoplaying never look like an idle server.";
+    };
+
+    quietWaitSeconds = lib.mkOption {
+      type = lib.types.int;
+      default = 1200;
+      description = "How long a sweep waits for that gap before giving up until the next timer fire. Without the wait a long binge would never surface an idle moment at the instant the timer happens to fire, and freshly imported episodes would still stall on their first play.";
     };
   };
 
@@ -61,10 +73,13 @@ in
         JELLYFIN_SUBTITLE_EXTRACTION_WARMER_DATA_DIRECTORY = warmerConfig.jellyfinDataDirectory;
         JELLYFIN_SUBTITLE_EXTRACTION_WARMER_ITEM_BUDGET = toString warmerConfig.itemBudgetPerSweep;
         JELLYFIN_SUBTITLE_EXTRACTION_WARMER_PAUSE_SECONDS = toString warmerConfig.pauseSecondsBetweenItems;
+        JELLYFIN_SUBTITLE_EXTRACTION_WARMER_QUIET_POLL_SECONDS = toString warmerConfig.quietPollSeconds;
+        JELLYFIN_SUBTITLE_EXTRACTION_WARMER_QUIET_WAIT_SECONDS = toString warmerConfig.quietWaitSeconds;
       };
       serviceConfig = {
         Type = "oneshot";
         ExecStart = "${pkgs.python3}/bin/python3 ${warmerPackageDirectory}";
+        RuntimeMaxSec = 3600;
       };
     };
 
@@ -73,7 +88,7 @@ in
       wantedBy = [ "timers.target" ];
       timerConfig = {
         OnBootSec = "10min";
-        OnUnitActiveSec = warmerConfig.sweepInterval;
+        OnUnitInactiveSec = warmerConfig.sweepInterval;
         Persistent = true;
       };
     };
