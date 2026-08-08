@@ -38,6 +38,16 @@ down the entire on-demand download chain and interrupts live torrents. The conta
 repo, so that is convergence rather than drift.
 </a_newly_declared_front_end_does_not_start_on_the_rebuild_that_declares_it>
 
+<fetching_additional_data_is_ffmpeg_lifting_subtitles_out_of_the_container>
+The spinner the Jellyfin player raises over its transport bar is the client waiting on one subtitle request and nothing
+else, so do not read it as metadata, as the requester, or as a plugin. Serving that request runs ffmpeg over the whole
+media file to lift every embedded text track out of the container, so the wait tracks file size rather than subtitle
+size and costs tens of seconds off a spinning disk. The extraction is cached per file forever, which is why the stall
+hits only whoever opens a title first and never reproduces on a second try. Paying that in advance is what the subtitle
+extraction warmer module is for, so when the spinner returns read its unit log before suspecting the player: a sweep
+that deferred to live playback and a genuinely new file are indistinguishable from the client side.
+</fetching_additional_data_is_ffmpeg_lifting_subtitles_out_of_the_container>
+
 <kavita_is_the_one_stack_app_the_repo_provisions_nothing_for>
 Nothing here declares Kavita's admin account, its libraries or its settings, so that state exists only inside its config
 volume and a wipe loses all of it. Its registration endpoint mints the first administrator on the first call carrying a
