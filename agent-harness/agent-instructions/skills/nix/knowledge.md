@@ -94,6 +94,14 @@ it needs an enable before the bootstrap, because a bare bootstrap on a disabled 
 Only one module carries a self-heal activation step today; the rest drift silently.
 </launchd_agents_drift_after_a_rebuild>
 
+<the_neovim_config_is_live_from_the_working_tree>
+`~/.config/nvim` is an out-of-store symlink into the neovim module's `program-configuration` directory, so every lua
+file under it is live the moment it is saved and no rebuild publishes it. A green rebuild is therefore no evidence at
+all for a keymap or plugin change; verify by opening a real nvim and pressing the key. The trap runs the other way too,
+because an uncommitted or half-finished lua edit is already affecting every running editor on the machine.
+`repository/git-hooks` and the vscode workspace deploy the same way.
+</the_neovim_config_is_live_from_the_working_tree>
+
 <test_tiers_and_report_publishing>
 The python test tier is provisioned on every machine and fails loudly rather than skipping when a collected test's
 runner is absent, so a skip is a real signal. The quick and nix tiers run only the unit scope, which means integration
