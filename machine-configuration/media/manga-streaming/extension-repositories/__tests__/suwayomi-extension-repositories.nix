@@ -23,11 +23,7 @@ let
   synchronizationTestText = builtins.readFile ./unit/test_extension_repository_synchronization.py;
 
   publicRepositoryNamesNoRepositoryUrl =
-    builtins.all
-      (
-        trackedText:
-        !(lib.hasInfix "index.min.json" trackedText) && !(lib.hasInfix "githubusercontent" trackedText)
-      )
+    builtins.all (trackedText: !(lib.hasInfix "index.min.json" trackedText))
       [
         provisionerModuleText
         serverModuleText
@@ -74,6 +70,10 @@ let
     && lib.hasInfix "except (ValueError, urllib.error.URLError, OSError)" clientText;
 
   theErrorMessageDropsTheJavaStackTrace = lib.hasInfix "def first_line_of" clientText;
+
+  aRepositorySuwayomiWouldRefuseIsCaughtBeforeTheWrite =
+    lib.hasInfix "SUWAYOMI_ACCEPTED_REPOSITORY_URL_PREFIX" declarationText
+    && lib.hasInfix "would take every other " declarationText;
 in
 {
   suwayomi-the-public-repo-names-no-extension-repository =
@@ -110,6 +110,11 @@ in
     mkEvalCheck "suwayomi-a-host-without-the-secret-leaves-suwayomi-alone"
       aHostWithoutTheSecretLeavesSuwayomiAlone
       "an absent list file must skip the reconcile rather than fail it; the server module is imported by hosts that hold no such secret, and failing there would turn every one of their rebuilds red over a file they are not meant to have";
+
+  suwayomi-a-repository-suwayomi-would-refuse-is-caught-before-the-write =
+    mkEvalCheck "suwayomi-a-repository-suwayomi-would-refuse-is-caught-before-the-write"
+      aRepositorySuwayomiWouldRefuseIsCaughtBeforeTheWrite
+      "a repository served from anywhere but the accepted prefix must be caught before the write; Suwayomi validates the whole list at once and rejects all of it over one entry, so a single foreign host silently takes every other repository down with it and the only clue is an Invalid value message naming the entire list";
 
   suwayomi-an-empty-declaration-refuses-to-run =
     mkEvalCheck "suwayomi-an-empty-declaration-refuses-to-run" anEmptyDeclarationRefusesToRun

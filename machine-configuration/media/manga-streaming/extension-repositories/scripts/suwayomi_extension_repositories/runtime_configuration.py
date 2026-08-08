@@ -5,6 +5,7 @@ from pathlib import Path
 
 DECLARED_REPOSITORY_LIST_FILE_VARIABLE = "SUWAYOMI_EXTENSION_REPOSITORIES_FILE"
 GRAPHQL_URL_VARIABLE = "SUWAYOMI_GRAPHQL_URL"
+SUWAYOMI_ACCEPTED_REPOSITORY_URL_PREFIX = "https://raw.githubusercontent.com/"
 
 
 def graphql_url() -> str:
@@ -36,6 +37,20 @@ def declared_repository_urls():
         print(
             f"{list_file_path} declares no repository, which would leave Suwayomi "
             "unable to install any extension",
+            file=sys.stderr,
+        )
+        raise SystemExit(1)
+    unacceptable_repository_urls = [
+        repository_url
+        for repository_url in repository_urls
+        if not repository_url.startswith(SUWAYOMI_ACCEPTED_REPOSITORY_URL_PREFIX)
+    ]
+    if unacceptable_repository_urls:
+        print(
+            "Suwayomi only accepts a repository served from "
+            f"{SUWAYOMI_ACCEPTED_REPOSITORY_URL_PREFIX} and rejects the whole list "
+            "when one entry is elsewhere, so these would take every other "
+            f"repository down with them: {', '.join(unacceptable_repository_urls)}",
             file=sys.stderr,
         )
         raise SystemExit(1)

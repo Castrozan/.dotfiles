@@ -14,8 +14,8 @@ import extension_repository_synchronization
 import suwayomi_graphql_client
 
 DECLARED_URLS = [
-    "https://declared-repository-one.example/repository-index.json",
-    "https://declared-repository-two.example/repository-index.json",
+    "https://raw.githubusercontent.com/declared-one/extensions/repository-index.json",
+    "https://raw.githubusercontent.com/declared-two/extensions/repository-index.json",
 ]
 
 
@@ -39,7 +39,7 @@ def test_the_declared_repositories_replace_whatever_is_stored(monkeypatch, tmp_p
     monkeypatch.setattr(
         suwayomi_graphql_client,
         "read_extension_repository_urls",
-        lambda graphql_url: ["https://repository-that-has-since-died.example/index.json"],
+        lambda graphql_url: ["https://raw.githubusercontent.com/died/index.json"],
     )
     monkeypatch.setattr(
         suwayomi_graphql_client,
@@ -159,3 +159,19 @@ def test_a_host_without_the_declared_list_leaves_suwayomi_alone(monkeypatch, tmp
 
     assert result["repositories"] is None
     assert result["rewritten"] is False
+
+
+def test_a_repository_suwayomi_would_refuse_stops_the_run(monkeypatch, tmp_path):
+    declare(
+        monkeypatch,
+        tmp_path,
+        repository_urls=[*DECLARED_URLS, "https://elsewhere.example/index.json"],
+    )
+
+    def refuse_contact(graphql_url):
+        raise AssertionError("a list Suwayomi would reject must never be sent")
+
+    monkeypatch.setattr(suwayomi_graphql_client, "wait_until_ready", refuse_contact)
+
+    with pytest.raises(SystemExit):
+        extension_repository_synchronization.synchronize_extension_repositories()
