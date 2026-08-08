@@ -8,10 +8,7 @@ let
   homeDir = config.home.homeDirectory;
   arrStackDataRoot = "${homeDir}/arr-stack/data";
   mangaDownloadRoot = "${arrStackDataRoot}/manga";
-  machineIdentityMapPath = ../../../private-configuration/machines.nix;
-  privateConfigPresent = builtins.pathExists machineIdentityMapPath;
-  chiseMachineIdentity = lib.optionalAttrs privateConfigPresent (import machineIdentityMapPath).chise;
-  chiseTailnetBindAddress = chiseMachineIdentity.tailscaleIp or "127.0.0.1";
+  chiseTailnetBindAddress = import ./tailnet-bind-address.nix { inherit lib; };
   forcedServerSettings = {
     ip = chiseTailnetBindAddress;
     downloadAsCbz = "true";
@@ -27,6 +24,10 @@ let
   );
 in
 {
+  imports = [
+    ./extension-repositories/suwayomi-extension-repositories-home-manager.nix
+  ];
+
   systemd.user.services.suwayomi-server = {
     Unit = {
       Description = "Suwayomi-Server - Manga server";
