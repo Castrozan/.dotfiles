@@ -12,9 +12,12 @@ let
     };
     inherit lib;
     latest = {
-      suwayomi-server = "/nix/store/test-suwayomi-server";
+      suwayomi-server.overrideAttrs = _overriddenAttributes: "/nix/store/test-suwayomi-server";
+      fetchurl = _fetchArguments: "/nix/store/test-suwayomi-server-jar";
     };
   };
+
+  releaseOverrideText = builtins.readFile ../suwayomi-server-release-ahead-of-nixpkgs.nix;
 
   suwayomiUnit = suwayomiModule.systemd.user.services.suwayomi-server;
   environmentEntries = suwayomiUnit.Service.Environment;
@@ -43,6 +46,22 @@ let
   webInterfaceComesFromThePinnedServerBuild = lib.hasInfix "${forcedSettingPrefix}webUIChannel=bundled" environmentText;
 
   webInterfaceNeverUpdatesItself = lib.hasInfix "${forcedSettingPrefix}webUIUpdateCheckInterval=0" environmentText;
+
+  serverModuleText = builtins.readFile ../suwayomi-server-home-manager.nix;
+
+  pinnedReleaseVersion = lib.elemAt (lib.splitString ''"'' (
+    lib.head (
+      lib.filter (line: lib.hasInfix "releaseVersion = " line) (lib.splitString "\n" releaseOverrideText)
+    )
+  )) 1;
+
+  serverIsPinnedPastTheExtensionIndexGate =
+    lib.hasInfix "import ./suwayomi-server-release-ahead-of-nixpkgs.nix" serverModuleText
+    && lib.versionAtLeast pinnedReleaseVersion "2.3";
+
+  theOverrideReplacesTheJarAndNotJustTheVersionString =
+    lib.hasInfix "src = latest.fetchurl" releaseOverrideText
+    && lib.hasInfix "Suwayomi-Server-v\${releaseVersion}.jar" releaseOverrideText;
 in
 {
   chise-suwayomi-starts-with-the-user-session =
@@ -85,4 +104,14 @@ in
   chise-suwayomi-web-interface-never-updates-itself =
     mkEvalCheck "chise-suwayomi-web-interface-never-updates-itself" webInterfaceNeverUpdatesItself
       "the web interface update check must be off, which is what the zero interval means: left at the default it nags about an available update every 23 hours and rewrites the served interface behind the pinned package, and the version belongs to the package rather than to whatever the server fetched last";
+
+  chise-suwayomi-is-pinned-past-the-extension-index-gate =
+    mkEvalCheck "chise-suwayomi-is-pinned-past-the-extension-index-gate"
+      serverIsPinnedPastTheExtensionIndexGate
+      "the server must come from the release override pinned at 2.3 or later rather than straight from nixpkgs; the extension repositories this machine declares publish an index the 2.1 line cannot parse, so it reads the same repository as two placeholder entries instead of the full catalogue and the stack looks configured while being able to install almost nothing";
+
+  chise-suwayomi-release-override-replaces-the-jar =
+    mkEvalCheck "chise-suwayomi-release-override-replaces-the-jar"
+      theOverrideReplacesTheJarAndNotJustTheVersionString
+      "the override must fetch the release jar for the version it names, because the package is that one jar; overriding the version string alone would relabel the nixpkgs build without changing a byte of it, and every report of the running version would then agree with the declaration while the old server kept running";
 }

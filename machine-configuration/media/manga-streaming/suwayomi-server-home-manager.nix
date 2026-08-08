@@ -9,6 +9,7 @@ let
   arrStackDataRoot = "${homeDir}/arr-stack/data";
   mangaDownloadRoot = "${arrStackDataRoot}/manga";
   chiseTailnetBindAddress = import ./tailnet-bind-address.nix { inherit lib; };
+  suwayomiServerPackage = import ./suwayomi-server-release-ahead-of-nixpkgs.nix { inherit latest; };
   forcedServerSettings = {
     ip = chiseTailnetBindAddress;
     downloadAsCbz = "true";
@@ -37,7 +38,7 @@ in
     };
 
     Service = {
-      ExecStart = "${latest.suwayomi-server}/bin/tachidesk-server";
+      ExecStart = "${suwayomiServerPackage}/bin/tachidesk-server";
       Restart = "on-failure";
       RestartSec = "5s";
       WorkingDirectory = homeDir;
